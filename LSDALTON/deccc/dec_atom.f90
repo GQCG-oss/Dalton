@@ -1504,7 +1504,7 @@ contains
 
 
 
-  !> Set transformation matrices between fragment-adapted and local orbital bases for
+  !> Set fragment-adapted MO coefficients for
   !> pair fragment (FragmentPQ%CoccFA andFragmentPQ%CunoccFA).
   !> \author Kasper Kristensen
   !> \date February 2013
@@ -1529,8 +1529,8 @@ contains
     !> Pair fragment PQ (it is assumed that everything except fragment-adapted
     !> stuff has already been initialized).
     type(ccatom),intent(inout) :: FragmentPQ
-    real(realk) :: lambdathr
-    real(realk),pointer :: CoccPQ(:,:), CunoccPQ(:,:),aoS(:,:),moS(:,:),CoccPQ_tmp(:,:),SinvEOS(:,:)
+    real(realk) :: lambdathr,lambdathr_default
+    real(realk),pointer :: CoccPQ(:,:), CunoccPQ(:,:),aoS(:,:),moS(:,:),CoccPQ_tmp(:,:),Sinv(:,:)
     real(realk),pointer :: T(:,:),lambda(:),MOtmp(:,:),tmp(:,:),tmp2(:,:),CEOS(:,:),CunoccPQ_tmp(:,:)
     logical,pointer :: whichOrbitals(:)
     integer :: noccPQ,nunoccPQ,nbasisPQ,noccPQ_FA, nunoccPQ_FA,i,mu,idx, EOSidx,j
@@ -1538,8 +1538,9 @@ contains
     real(realk) :: diagdev, nondiagdev
 
     debugprint=.true.
+    lambdathr_default = 1.0e-3_realk
 
-    ! Dimensions for FA space (remove EOS)
+    ! Initial dimensions for FA space (remove EOS)
     noccPQ = fragmentP%noccFA + fragmentQ%noccFA &
          & - fragmentP%noccEOS - fragmentQ%noccEOS
     nunoccPQ = fragmentP%nunoccFA + fragmentQ%nunoccFA &
@@ -1558,124 +1559,184 @@ contains
        return
     end if
 
+    ! Calculate AO overlap matrix for pair fragment
+    call mem_alloc(aoS,nbasisPQ,nbasisPQ)
+    call adjust_square_matrix(MyMolecule%overlap,aoS,fragmentPQ%atoms_idx, &
+         & MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end, &
+         & MyMolecule%nbasis,MyMolecule%natoms,fragmentPQ%number_basis,FragmentPQ%number_atoms)
 
-    ! Set pair PQ MO-coefficients by simply copying P and Q coefficients
-    ! ******************************************************************
+
+
+
+    ! *****************************************************************************************
+    ! *    Fragment-adapted orbitals (FAOs) for pair PQ are set by the following procedure:   *
+    ! *****************************************************************************************
+    !
+    ! 1. Set up MO coefficient matrix using union of existing FAOs for atomic fragments P and Q.
+    ! 2. Project onto local AOS for pair (cleanup).
+    ! 3. Project out orbitals assignsed to P or Q.
+    ! 4. Setup MO overlap matrix for resulting orbitals.
+    ! 5. Diagonalize MO overlap matrix: SMO = T^T lambda T
+    ! 6. Each lambda (and its associated eigenvector) represents a FAO
+    !    --> Throw away FAOs where lambda<lambdathr_default.
+    ! 7. Calculate FAOs in terms of lambda eigenvalues and T eigenvectors.
+    !
+    ! (the purpose and more details for each step is given below)
+    !
+
+
+    ! 1. Set pair PQ MO-coefficients by simply copying P and Q coefficients
+    ! *********************************************************************
     call mem_alloc(CoccPQ_tmp,NbasisPQ,noccPQ)
     call mem_alloc(CunoccPQ_tmp,NbasisPQ,nunoccPQ)
     call set_pair_fragment_adapted_redundant_orbitals(MyMolecule,FragmentP,FragmentQ,&
          & FragmentPQ,noccPQ,nunoccPQ,CoccPQ_tmp,CunoccPQ_tmp)
     ! Note: At this stage the PQ orbitals are redundant and not orthogonal.
     !       Furthermore, the EOS orbitals have been taken out of the orbital pool.
-    !       However, FA orbitals originally used for fragment P may still contain
+    !       However, FAOs originally used for fragment P may still contain
     !       components of EOS orbitals on fragment Q (and vice versa).
     !       These EOS components must be projected out.
-
-
-    ! Calculate AO overlap matrix for pair fragment
-    call mem_alloc(aoS,nbasisPQ,nbasisPQ)
-    call adjust_square_matrix(MyMolecule%overlap,aoS,fragmentPQ%atoms_idx, &
-         & MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end, &
-         & MyMolecule%nbasis,MyMolecule%natoms,fragmentPQ%number_basis,FragmentPQ%number_atoms)
-!    call ii_get_mixed_overlap_full(DECinfo%output,DECinfo%output,&
- !        & fragmentPQ%mylsitem%setting,aoS,nbasisPQ,nbasisPQ,AORdefault,AORdefault)
+    ! 
+    ! We consider first the occupied space and then do the same for the unoccupied space.
 
 
 
-
-    ! ******************************************************************
-    !                          OCCUPIED SPACE                          *
-    ! ******************************************************************
-
-    ! Project out EOS components
-    ! ==========================
-    ! MO coefficients where orbital components are projected out:
+    ! 2. Project onto local AOS
+    ! *************************
+    ! We need to project against the local AOS since the current CoccPQ_tmp coefficients
+    ! are simply the FAO coefficients for fragments P and Q. These FAO coefficients have been
+    ! determined by diagonalizing the correlation density matrix expressed in terms of local orbitals.
+    ! However, in general P and Q have different atomic extents, which again are different
+    ! from the atomic extent for pair fragment PQ. This means that the FAOs from P and Q may
+    ! contain (artificial) components outside the local AOS for pair fragment PQ.
+    ! Therefore we need to project against the local AOS for pair fragment PQ to ensure that 
+    ! CoccPQ_tmp really does not contain components outside the local AOS for pair PQ.
     !
-    ! CoccPQ = CoccPQ_tmp - CEOS SinvEOS CEOS^T aoS CoccPQ_tmp
+    ! The MOs projected against the local AOS for PQ are:
+    ! 
+    ! CoccPQ_tmp --> PROJ CoccPQ_tmp 
+    ! 
+    ! PROJ = Clocal Sinv Clocal^T aoS    (projector)
+    ! 
+    ! where Clocal are the local MOs for pair PQ (fitted in the atomic extent for PQ),
+    ! Sinv is the inverse overlap matrix for the local MOs for pair PQ (the identity matrix in the
+    ! limit where the atomic extent for PQ contains all atomic basis functions in the molecule),
+    ! aoS is the AO overlap matrix.
+
+    ! Get inverse overlap for local AOS orbitals:
+    ! tmp = Clocal^T aoS Clocal
+    call mem_alloc(tmp,fragmentPQ%noccAOS,fragmentPQ%noccAOS)
+    call dec_simple_basis_transform1(nbasisPQ,fragmentPQ%noccAOS,fragmentPQ%ypo,aoS,tmp)
+    ! Sinv = tmp^-1
+    call mem_alloc(Sinv,fragmentPQ%noccAOS,fragmentPQ%noccAOS)
+    call invert_matrix(tmp,Sinv,fragmentPQ%noccAOS)
+    call mem_dealloc(tmp)
+
+    ! tmp = aoS CoccPQ_tmp
+    call mem_alloc(tmp,nbasisPQ,noccPQ)
+    call dec_simple_dgemm(nbasisPQ,nbasisPQ,noccPQ,aoS,CoccPQ_tmp,tmp,'n','n')
+
+    ! tmp2 = Clocal^T aoS CoccPQ_tmp
+    call mem_alloc(tmp2,fragmentPQ%noccAOS,noccPQ)
+    call dec_simple_dgemm(fragmentPQ%noccAOS,nbasisPQ,noccPQ,FragmentPQ%ypo,tmp,tmp2,'t','n')
+    call mem_dealloc(tmp)
+
+    ! tmp = Sinv Clocal^T aoS CoccPQ_tmp 
+    call mem_alloc(tmp,fragmentPQ%noccAOS,noccPQ)
+    call dec_simple_dgemm(fragmentPQ%noccAOS,fragmentPQ%noccAOS,noccPQ,Sinv,tmp2,tmp,'n','n')
+    call mem_dealloc(tmp2)
+
+    ! CoccPQ_tmp --> Clocal Sinv Clocal^T aoS CoccPQ_tmp                                              
+    call dec_simple_dgemm(nbasisPQ,fragmentPQ%noccAOS,noccPQ,fragmentPQ%ypo,tmp,CoccPQ_tmp,'n','n')
+    call mem_dealloc(tmp)
+    call mem_dealloc(Sinv)
+
+
+
+
+    ! 3. Project out EOS components
+    ! *****************************
+
+    ! MO coefficients where EOS orbital components are projected out:
+    !
+    ! CoccPQ = CoccPQ_tmp - CEOS Sinv CEOS^T aoS CoccPQ_tmp
     !
     ! where CoccPQ_tmp are the MO coefficients determined above 
     ! (which currently contain EOS components),
-    ! CEOS are the EOS MO coefficients for the pair fragment, 
-    ! and SinvEOS is the inverse overlap matrix for EOS orbitals.
-    ! (SinvEOS is simply the identity matrix in the special case where the atomic extent
-    !  contains all basis functions in the molecule.)
+    ! CEOS are the EOS MO coefficients for the pair fragment (orbitals assigned to P or Q), 
+    ! and Sinv is the inverse overlap matrix for EOS orbitals.
 
 
     ! Extract EOS indices
-    ! -------------------
     call mem_alloc(CEOS,nbasisPQ,fragmentPQ%noccEOS)
     do i=1,fragmentPQ%noccEOS
        CEOS(:,i) = fragmentPQ%ypo(:,fragmentPQ%idxo(i))
     end do
 
 
-    ! Get inverse overlap for EOS orbitals
-    ! ------------------------------------
+    ! Get inverse overlap for EOS orbitals: 
     ! EOS overlap: tmp = CEOS^T aoS CEOS
     call mem_alloc(tmp,fragmentPQ%noccEOS,fragmentPQ%noccEOS)
     call dec_simple_basis_transform1(nbasisPQ,fragmentPQ%noccEOS,CEOS,aoS,tmp)
-
-    ! Inverse EOS overlap: SinvEOS = tmp^-1
-    call mem_alloc(SinvEOS,fragmentPQ%noccEOS,fragmentPQ%noccEOS)
-    call invert_matrix(tmp,SinvEOS,fragmentPQ%noccEOS)
+    ! Inverse EOS overlap: Sinv = tmp^-1
+    call mem_alloc(Sinv,fragmentPQ%noccEOS,fragmentPQ%noccEOS)
+    call invert_matrix(tmp,Sinv,fragmentPQ%noccEOS)
     call mem_dealloc(tmp)
 
-
     ! tmp = aoS CoccPQ_tmp
-    ! --------------------
     call mem_alloc(tmp,nbasisPQ,noccPQ)
     call dec_simple_dgemm(nbasisPQ,nbasisPQ,noccPQ,aoS,CoccPQ_tmp,tmp,'n','n')    
 
-
     ! tmp2 = CEOS^T aoS CoccPQ_tmp
-    ! ----------------------------
     call mem_alloc(tmp2,fragmentPQ%noccEOS,noccPQ)
     call dec_simple_dgemm(fragmentPQ%noccEOS,nbasisPQ,noccPQ,CEOS,tmp,tmp2,'t','n')
     call mem_dealloc(tmp)
 
-
-    ! tmp = SinvEOS CEOS^T aoS CoccPQ_tmp
-    ! -----------------------------------
+    ! tmp = Sinv CEOS^T aoS CoccPQ_tmp
     call mem_alloc(tmp,fragmentPQ%noccEOS,noccPQ)
-    call dec_simple_dgemm(fragmentPQ%noccEOS,fragmentPQ%noccEOS,noccPQ,SinvEOS,tmp2,tmp,'n','n')
+    call dec_simple_dgemm(fragmentPQ%noccEOS,fragmentPQ%noccEOS,noccPQ,Sinv,tmp2,tmp,'n','n')
     call mem_dealloc(tmp2)
 
 
-    ! tmp2 = CEOS SinvEOS CEOS^T aoS CoccPQ_tmp
-    ! -----------------------------------------
+    ! tmp2 = CEOS Sinv CEOS^T aoS CoccPQ_tmp
     call mem_alloc(tmp2,nbasisPQ,noccPQ)
     call dec_simple_dgemm(nbasisPQ,fragmentPQ%noccEOS,noccPQ,CEOS,tmp,tmp2,'n','n')
     call mem_dealloc(tmp)
 
 
-    ! CoccPQ = CoccPQ_tmp - CEOS SinvEOS CEOS^T aoS CoccPQ_tmp  
-    ! --------------------------------------------------------
+    ! CoccPQ = CoccPQ_tmp - CEOS Sinv CEOS^T aoS CoccPQ_tmp  
     call mem_alloc(CoccPQ,nbasisPQ,noccPQ)
     CoccPQ = CoccPQ_tmp - tmp2
     call mem_dealloc(tmp2)
     call mem_dealloc(CEOS)
     call mem_dealloc(CoccPQ_tmp)
-    call mem_dealloc(SinvEOS)
+    call mem_dealloc(Sinv)
 
 
-    ! Pair MO overlap matrix
-    ! ======================
+
+    ! 4. Setup MO overlap matrix
+    ! **************************
     call mem_alloc(moS,noccPQ,noccPQ)
     call dec_simple_basis_transform1(nbasisPQ,noccPQ,CoccPQ,aoS,moS)
 
 
-    ! Diagonalize overlap matrix for redundant pair molecular orbitals
-    ! ================================================================
 
+    ! 5. Diagonalize MO overlap matrix: moS = T^T lambda T
+    ! ****************************************************
     call mem_alloc(lambda,noccPQ)
     call mem_alloc(T,noccPQ,noccPQ)
     call solve_eigenvalue_problem_unitoverlap(noccPQ,moS,lambda,T)
     lambda=abs(lambda)
     call mem_alloc(whichorbitals,noccPQ)
 
+
+
+    ! 6. Throw away eigenvalues smaller than threshold
+    ! ************************************************
+
     ! Determine which orbitals to include
     keepon=.true.
-    lambdathr = 1.0e-3_realk
+    lambdathr = lambdathr_default
     OccCheck: do while(keepon)
        whichorbitals=.false.
        do i=1,noccPQ
@@ -1690,7 +1751,7 @@ contains
        end if
 
     end do OccCheck
-    ! Number of FA orbitals for pair (not including EOS orbitals)
+    ! Number of FAOs for pair (not including EOS orbitals)
     noccPQ_FA = count(whichorbitals)
        
     if(debugprint) then
@@ -1701,10 +1762,11 @@ contains
 
 
 
-    ! Get orthogonal non-redundant MOs for pair
-    ! =========================================
+    ! 7. Calculate FAOs from lambda and T
+    ! ***********************************
 
     ! Orthogonal fragment-adapted molecular orbitals (psi) are given as:
+    ! 
     ! psi(i) = lambda(i)^{-1/2} * sum_{mu} (CoccPQ T)_{mu i} chi(mu)
     !
     ! where chi(mu) is atomic orbital "mu" in pair atomic fragment extent.
@@ -1715,9 +1777,9 @@ contains
     call dec_simple_dgemm(nbasisPQ,noccPQ,noccPQ,CoccPQ,T,MOtmp,'n','n')
 
     ! Final MO coefficents (EOS orbitals + FA orbitals) are stored in fragmentPQ%CoccFA and found by:
-    ! 1. Copying existing EOS MO coefficients into the first "noccEOS" columns
-    ! 2. Copying the non-redundant orthogonal orbitals (defined by whichorbitals) 
-    !    in MOtmp into the remaining columns.
+    ! (i)  Copying existing EOS MO coefficients into the first "noccEOS" columns
+    ! (ii) Copying the non-redundant orthogonal orbitals (defined by whichorbitals) 
+    !      in MOtmp into the remaining columns.
 
     ! Total number of pair orbitals (EOS +FA)
     fragmentPQ%noccFA = fragmentPQ%noccEOS + noccPQ_FA
@@ -1725,7 +1787,7 @@ contains
     call mem_alloc(fragmentPQ%CoccFA,nbasisPQ,fragmentPQ%noccFA)
     fragmentPQ%CoccFA = 0.0_realk
 
-    ! 1. Copy EOS
+    ! (i) Copy EOS
     ! Note: For FA orbitals we always put EOS orbitals before remaining orbitals,
     !      this is not the case for local orbitals (see fragment_adapted_transformation_matrices)
     do i=1,fragmentPQ%noccEOS
@@ -1737,7 +1799,7 @@ contains
     end do
     idx= fragmentPQ%noccEOS  ! counter
 
-    ! 2. Copy FA orbitals (also divide my lambda^{-1/2} as shown above)
+    ! (ii) Copy FA orbitals (also divide my lambda^{-1/2} as shown above)
     do i=1,noccPQ
        if(whichorbitals(i)) then
           idx = idx+1
@@ -1785,14 +1847,35 @@ contains
     ! ******************************************************************
     ! Do exactly the same as for occupied space (see comments above)
 
+
+    ! 2
+    call mem_alloc(tmp,fragmentPQ%nunoccAOS,fragmentPQ%nunoccAOS)
+    call dec_simple_basis_transform1(nbasisPQ,fragmentPQ%nunoccAOS,fragmentPQ%ypv,aoS,tmp)
+    call mem_alloc(Sinv,fragmentPQ%nunoccAOS,fragmentPQ%nunoccAOS)
+    call invert_matrix(tmp,Sinv,fragmentPQ%nunoccAOS)
+    call mem_dealloc(tmp)
+    call mem_alloc(tmp,nbasisPQ,nunoccPQ)
+    call dec_simple_dgemm(nbasisPQ,nbasisPQ,nunoccPQ,aoS,CunoccPQ_tmp,tmp,'n','n')
+    call mem_alloc(tmp2,fragmentPQ%nunoccAOS,nunoccPQ)
+    call dec_simple_dgemm(fragmentPQ%nunoccAOS,nbasisPQ,nunoccPQ,FragmentPQ%ypv,tmp,tmp2,'t','n')
+    call mem_dealloc(tmp)
+    call mem_alloc(tmp,fragmentPQ%nunoccAOS,nunoccPQ)
+    call dec_simple_dgemm(fragmentPQ%nunoccAOS,fragmentPQ%nunoccAOS,nunoccPQ,Sinv,tmp2,tmp,'n','n')
+    call mem_dealloc(tmp2)
+    call dec_simple_dgemm(nbasisPQ,fragmentPQ%nunoccAOS,nunoccPQ,fragmentPQ%ypv,tmp,CunoccPQ_tmp,'n','n')
+    call mem_dealloc(tmp)
+    call mem_dealloc(Sinv)
+
+
+    ! 3
     call mem_alloc(CEOS,nbasisPQ,fragmentPQ%nunoccEOS)
     do i=1,fragmentPQ%nunoccEOS
        CEOS(:,i) = fragmentPQ%ypv(:,fragmentPQ%idxu(i))
     end do
     call mem_alloc(tmp,fragmentPQ%nunoccEOS,fragmentPQ%nunoccEOS)
     call dec_simple_basis_transform1(nbasisPQ,fragmentPQ%nunoccEOS,CEOS,aoS,tmp)
-    call mem_alloc(SinvEOS,fragmentPQ%nunoccEOS,fragmentPQ%nunoccEOS)
-    call invert_matrix(tmp,SinvEOS,fragmentPQ%nunoccEOS)
+    call mem_alloc(Sinv,fragmentPQ%nunoccEOS,fragmentPQ%nunoccEOS)
+    call invert_matrix(tmp,Sinv,fragmentPQ%nunoccEOS)
     call mem_dealloc(tmp)
     call mem_alloc(tmp,nbasisPQ,nunoccPQ)
     call dec_simple_dgemm(nbasisPQ,nbasisPQ,nunoccPQ,aoS,CunoccPQ_tmp,tmp,'n','n')    
@@ -1800,7 +1883,7 @@ contains
     call dec_simple_dgemm(fragmentPQ%nunoccEOS,nbasisPQ,nunoccPQ,CEOS,tmp,tmp2,'t','n')
     call mem_dealloc(tmp)
     call mem_alloc(tmp,fragmentPQ%nunoccEOS,nunoccPQ)
-    call dec_simple_dgemm(fragmentPQ%nunoccEOS,fragmentPQ%nunoccEOS,nunoccPQ,SinvEOS,tmp2,tmp,'n','n')
+    call dec_simple_dgemm(fragmentPQ%nunoccEOS,fragmentPQ%nunoccEOS,nunoccPQ,Sinv,tmp2,tmp,'n','n')
     call mem_dealloc(tmp2)
     call mem_alloc(tmp2,nbasisPQ,nunoccPQ)
     call dec_simple_dgemm(nbasisPQ,fragmentPQ%nunoccEOS,nunoccPQ,CEOS,tmp,tmp2,'n','n')
@@ -1810,32 +1893,32 @@ contains
     call mem_dealloc(tmp2)
     call mem_dealloc(CEOS)
     call mem_dealloc(CunoccPQ_tmp)
-    call mem_dealloc(SinvEOS)
+    call mem_dealloc(Sinv)
 
 
-    ! Pair MO overlap matrix
+    ! 4
     call mem_alloc(moS,nunoccPQ,nunoccPQ)
     call dec_simple_basis_transform1(nbasisPQ,nunoccPQ,CunoccPQ,aoS,moS)
 
 
-    ! Diagonalize overlap matrix for redundant pair molecular orbitals
+    ! 5
     call mem_alloc(lambda,nunoccPQ)
     call mem_alloc(T,nunoccPQ,nunoccPQ)
     call solve_eigenvalue_problem_unitoverlap(nunoccPQ,moS,lambda,T)
     lambda=abs(lambda)
     call mem_alloc(whichorbitals,nunoccPQ)
-    whichorbitals=.false.
 
-    ! Determine which orbitals to include
+
+
+    ! 6
     keepon=.true.
-    lambdathr = 1.0e-3_realk
+    lambdathr = lambdathr_default
     UnoccCheck: do while(keepon)
        whichorbitals=.false.
        do i=1,nunoccPQ
           if(lambda(i) > lambdathr) whichorbitals(i)=.true.
        end do
 
-       ! Make sanity check that number of orbitals is not larger than in local basis
        if(count(whichorbitals)>fragmentPQ%nunoccAOS - fragmentPQ%nunoccEOS) then
           lambdathr = lambdathr*10.0_realk ! increase lambda threshold
        else ! done          
@@ -1843,18 +1926,16 @@ contains
        end if
 
     end do UnoccCheck
-    nunoccPQ_FA = count(whichorbitals)
-
+    nunoccPQ_FA = count(whichorbitals)       
     if(debugprint) then
-       print *
        do i=1,nunoccPQ
-          if(lambda(i)>lambdathr) whichorbitals(i)=.true.
           print *, 'lambda unocc', i, lambda(i)
        end do
     end if
 
 
-    ! Get orthogonal non-redundant MOs for pair
+
+    ! 7
     call mem_alloc(MOtmp,nbasisPQ,nunoccPQ)
     call dec_simple_dgemm(nbasisPQ,nunoccPQ,nunoccPQ,CunoccPQ,T,MOtmp,'n','n')
     fragmentPQ%nunoccFA = fragmentPQ%nunoccEOS + nunoccPQ_FA
@@ -1866,7 +1947,7 @@ contains
           fragmentPQ%CunoccFA(mu,i) = fragmentPQ%ypv(mu,EOSidx)
        end do
     end do
-    idx= fragmentPQ%nunoccEOS  
+    idx= fragmentPQ%nunoccEOS  ! counter
     do i=1,nunoccPQ
        if(whichorbitals(i)) then
           idx = idx+1
@@ -1879,7 +1960,6 @@ contains
        call lsquit('pair_fragment_adapted_transformation_matrices: &
             & Counter is different from number of unoccupied FA orbitals!',-1)
     end if
-
 
 
     ! JUST TESTING
@@ -1908,7 +1988,7 @@ contains
     call mem_dealloc(aoS)
 
 
-    ! Transformation matrices set
+    ! Transformation matrices have been set!
     fragmentPQ%FAtransSet=.true.
 
   end subroutine pair_fragment_adapted_transformation_matrices

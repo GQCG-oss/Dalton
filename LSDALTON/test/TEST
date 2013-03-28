@@ -154,6 +154,7 @@ DEC="dectests/arraytest
      dectests/fullccsdpt
      dectests/dec_ccsdpt
      dectests/fulldec 
+     dectests/fragment_adapted
      dectests/mp2density_special
      dectests/mp2_gradient_diatomic
      dectests/mp2_gradient_special
