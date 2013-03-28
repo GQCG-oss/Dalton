@@ -52,17 +52,17 @@ cat > pehf_small_direct.pot <<'%EOF%'
 ! Two water molecules modelled by a Polarizable Embedding potential
 coordinates
 10
-AU
-O       -6.2900497831       -0.1950764279       -0.0007861261
-H       -4.7314868231        0.7808745191        0.0006406172
-H       -7.6330082202        1.0331680746       -0.0016062672
-X       -5.5107683031        0.2928990456       -0.0000727545
-X       -6.9615290017        0.4190458234       -0.0011961966
-O        3.2924641584        4.4245310497       -0.0014078460
-H        1.5905409054        3.7261752013       -0.0015495754
-H        3.0850893929        6.2328855678        0.0078499223
-X        2.4415025319        4.0753531255       -0.0014787107
-X        3.1887767756        5.3287083088        0.0032210382
+AA
+O   -3.3285510  -0.1032300  -0.0004160
+H   -2.5037950  0.4132210   0.0003390
+H   -4.0392140  0.5467290   -0.0008500
+X   -2.9161730  0.1549955   -0.0000385
+X   -3.6838825  0.2217495   -0.0006330
+O   1.7422970   2.3413610   -0.0007450
+H   0.8416780   1.9718070   -0.0008200
+H   1.6325590   3.2983010   0.0041540
+X   1.2919875   2.1565840   -0.0007825
+X   1.6874280   2.8198310   0.0017045
 monopoles
 6
 1    -0.7423294438  
@@ -189,15 +189,15 @@ ERROR[2]="CONVERGENCE PROBLEM"
 #
 # Energy tests
 #
-CRIT1=`$GREP "Monopoles * (\-|\-0)\.0284746" $log | wc -l`
-CRIT2=`$GREP "Dipoles * (|0)\.0069567" $log | wc -l`
-CRIT3=`$GREP "Quadrupoles * (\-|\-0)\.0091398" $log | wc -l`
-CRIT4=`$GREP "Octopoles * (\-|\-0)\.0026838" $log | wc -l`
-CRIT5=`$GREP "Electronic * (\-|\-0)\.0873585" $log | wc -l`
-CRIT6=`$GREP "Nuclear       * (|0)\.0841049" $log | wc -l`
-CRIT7=`$GREP "Multipole * (|0)\.0002580" $log | wc -l`
-CRIT8=`$GREP "Total PE energy: * (\-|\-0)\.0363371" $log | wc -l`
-CRIT9=`$GREP "Final HF energy: * \-190\.7976383" $log | wc -l`
+CRIT1=`$GREP "Monopoles * (\-|\-0)\.028474" $log | wc -l`
+CRIT2=`$GREP "Dipoles * (|0)\.006956" $log | wc -l`
+CRIT3=`$GREP "Quadrupoles * (\-|\-0)\.009139" $log | wc -l`
+CRIT4=`$GREP "Octopoles * (\-|\-0)\.002683" $log | wc -l`
+CRIT5=`$GREP "Electronic * (\-|\-0)\.087358" $log | wc -l`
+CRIT6=`$GREP "Nuclear       * (|0)\.084104" $log | wc -l`
+CRIT7=`$GREP "Multipole * (|0)\.000258" $log | wc -l`
+CRIT8=`$GREP "Total PE energy: * (\-|\-0)\.036337" $log | wc -l`
+CRIT9=`$GREP "Final HF energy: * \-190\.797638" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
 CTRL[3]=9
 ERROR[3]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
