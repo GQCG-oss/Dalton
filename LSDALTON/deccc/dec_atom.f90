@@ -6201,4 +6201,144 @@ end subroutine get_main_pair_info
 
   end subroutine prioritize_orbitals_based_on_atom
 
+
+  !> \date Init logical vectors describing fragment AOS based on orbital
+  !> interaction vectors (previously determined in prioritize_orbitals_based_on_atom).
+  !> \author Kasper Kristensen
+  !> \date March 2013
+  subroutine init_fragment_logical_vectors_from_orbital_interactions(P,nocc,nunocc,&
+       & OccOrbitals,UnoccOrbitals,occidx,unoccidx,MyMolecule,occsize,unoccsize,occAOS,unoccAOS)
+    implicit none
+
+    !> Central atom in atomic fragment
+    integer,intent(in) :: P
+    !> Number of occupied/unoccupied orbitals in full molecule
+    integer,intent(in) :: nocc,nunocc
+    !> All occupied orbitals
+    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
+    !> All unoccupied orbitals
+    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
+    !> Occupied orbital indices listed in order of decreasing interaction with unocc EOS orbitals
+    integer,intent(in),dimension(nocc) :: occidx
+    !> Unocc orbital indices listed in order of decreasing interaction with occupied EOS orbitals
+    integer,intent(in),dimension(nunocc) :: unoccidx
+    !> Full molecule information 
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> Number of occupied orbitals to include IN ADDITION to the EOS orbitals
+    integer,intent(in) :: occsize
+    !> Number of unoccupied orbitals to include IN ADDITION to the EOS orbitals
+    integer,intent(in) :: unoccsize
+    !> Which orbitals to include in occ AOS?
+    logical,intent(inout),dimension(nocc) :: occAOS
+    !> Which orbitals to include in unocc AOS?
+    logical,intent(inout),dimension(nunocc) :: unoccAOS
+    integer :: startidx,i
+
+    ! Init logical vectors describing AOS
+    occAOS = .false.
+    unoccAOS = .false.
+
+    if(DECinfo%frozencore) then
+       ! start counting from the first valence orbital (never include core orbitals in occ AOS)
+       startidx = MyMolecule%ncore+1  
+    else
+       ! Consider all occcupied orbitals
+       startidx=1
+    end if
+
+    ! Obviously, all orbitals assigned to P should be included
+    do i=startidx,nocc
+       if(OccOrbitals(i)%centralatom == P) occAOS(i)=.true.
+    end do
+    do i=1,nunocc
+       if(UnoccOrbitals(i)%centralatom == P) unoccAOS(i)=.true.
+    end do
+
+
+    ! Include addition orbitals for occ and unocc AOS until the number
+    ! occ/unocc AOS orbitals equals the number of EOS orbitals included above
+    ! PLUS occsize/unoccsize.
+    call expand_fragment_logical_vectors_from_orbital_interactions(nocc,nunocc,&
+         & occidx,unoccidx,MyMolecule,occsize,unoccsize,occAOS,unoccAOS)
+
+
+  end subroutine init_fragment_logical_vectors_from_orbital_interactions
+
+
+
+  !> \date Expand fragment AOS using orbital
+  !> interaction vectors (previously determined in prioritize_orbitals_based_on_atom).
+  !> \author Kasper Kristensen
+  !> \date March 2013
+  subroutine expand_fragment_logical_vectors_from_orbital_interactions(nocc,nunocc,&
+       & occidx,unoccidx,MyMolecule,occsize,unoccsize,occAOS,unoccAOS)
+    implicit none
+
+    !> Number of occupied/unoccupied orbitals in full molecule
+    integer,intent(in) :: nocc,nunocc
+    !> Occupied orbital indices listed in order of decreasing interaction with unocc EOS orbitals
+    integer,intent(in),dimension(nocc) :: occidx
+    !> Unocc orbital indices listed in order of decreasing interaction with occupied EOS orbitals
+    integer,intent(in),dimension(nunocc) :: unoccidx
+    !> Full molecule information 
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> Number of occupied orbitals to include IN ADDITION to the EOS orbitals
+    integer,intent(in) :: occsize
+    !> Number of unoccupied orbitals to include IN ADDITION to the EOS orbitals
+    integer,intent(in) :: unoccsize
+    !> Which orbitals to include in occ AOS?
+    logical,intent(inout),dimension(nocc) :: occAOS
+    !> Which orbitals to include in unocc AOS?
+    logical,intent(inout),dimension(nunocc) :: unoccAOS
+    integer :: i,counter
+
+
+    ! Include occ AOS orbitals
+    ! ************************
+    ! Continue including from occidx list until "occsize" orbitals have been included
+    ! in ADDITION to the orbitals already included at input.
+
+    counter = 0
+    IncludeOccOrbitals: do i=1,nocc
+       
+       ! For frozen core: Do not include core orbitals
+       if(DECinfo%frozencore .and. (occidx(i) .le. MyMolecule%ncore) ) then
+          cycle IncludeOccOrbitals
+       end if
+
+       ! Include orbital if it has not already been included
+       if(.not. occAOS(i)) then
+          occAOS(occidx(i))=.true.
+          counter = counter+1
+          ! Exit when "occsize" orbitals have been included 
+          if(counter==occsize) exit IncludeOccOrbitals  
+       end if
+
+    end do IncludeOccOrbitals
+    ! Note: In the special case where counter < occsize here, we have included all occupied
+    ! orbitals in the molecule. This will work fine - but of course will only happen for 
+    ! small test molecules.
+
+
+    ! Include unocc AOS orbitals
+    ! **************************
+    ! Same procedure as for occ space above.
+
+    counter = 0
+    IncludeUnoccOrbitals: do i=1,nunocc
+       
+       ! Include orbital in unoccidx list if it has not already been included
+       if(.not. unoccAOS(i)) then
+          unoccAOS(unoccidx(i))=.true.
+          counter = counter+1
+          ! Exit when "unoccsize" orbitals have been included 
+          if(counter==unoccsize) exit IncludeUnoccOrbitals  
+       end if
+
+    end do IncludeUnoccOrbitals
+
+
+  end subroutine expand_fragment_logical_vectors_from_orbital_interactions
+
+
 end module atomic_fragment_operations
