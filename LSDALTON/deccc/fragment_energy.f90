@@ -3652,7 +3652,7 @@ call mem_TurnOffThread_Memory()
     integer,dimension(natoms)      :: DistTrackMyAtom
     integer,dimension(natoms)      :: nocc_per_atom,nunocc_per_atom
     type(ccatom) :: FAfragment
-    integer      :: iter,i,ov
+    integer      :: iter,i,ov,occsize,unoccsize
     integer      :: Nnew,Nold, max_iter_red,nocc_exp,nvirt_exp
     logical      :: converged,storeamp,ampset,ReductionPossible(2)
     logical :: expansion_converged, lag_converged, occ_converged, virt_converged
@@ -3688,10 +3688,6 @@ call mem_TurnOffThread_Memory()
     call mem_alloc(occval,nocc)
     call mem_alloc(unoccval,nunocc)
 
-    ! Prioritize all orbitals based on interactions with orbitals assigned to MyAtom
-    call prioritize_orbitals_based_on_atom(MyAtom,MyMolecule,OccOrbitals,UnoccOrbitals,&
-         & occidx,unoccidx,occval,unoccval)
-
     ampset=.false.
     storeamp=.false.
     if(DECinfo%ccmodel==4 .and. present(t1) .and. present(t2) ) then 
@@ -3704,6 +3700,14 @@ call mem_TurnOffThread_Memory()
     call GetSortedList(SortedDistMyAtom,DistTrackMyAtom,DistanceTable,natoms,MyAtom)
     nocc_per_atom=get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
     nunocc_per_atom=get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
+
+    ! Prioritize all orbitals based on interactions with orbitals assigned to MyAtom
+    call prioritize_orbitals_based_on_atom(MyAtom,MyMolecule,OccOrbitals,UnoccOrbitals,&
+         & occidx,unoccidx,occval,unoccval)
+
+    ! Number of orbitals to include in expansion loop (under investigation)
+    call get_expansion_parameters_for_fragopt(MyMolecule,nocc_per_atom(MyAtom),&
+         & nunocc_per_atom(MyAtom),occsize,unoccsize)
 
     ! MPI fragment statistics
     flops_slaves = 0.0E0_realk
@@ -3737,10 +3741,18 @@ call mem_TurnOffThread_Memory()
        end if
        return
     else
-       call InitialFragment_L(Occ_atoms,Virt_atoms,DistMyAtom,nAtoms)
-       call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-            & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-            & AtomicFragment)
+
+       ! Get initial fragment logical vectors
+       call init_fragment_logical_vectors_from_orbital_interactions(MyAtom,&
+            & nocc,nunocc,OccOrbitals,UnoccOrbitals,occidx,unoccidx,MyMolecule,&
+            & occsize,unoccsize,occAOS,unoccAOS)
+
+       ! Init fragment type based on logical vectors
+       call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, UnoccAOS, &
+            & occAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.)
+       ! Calculate energy for fragment
+       call single_lagrangian_energy_and_prop(AtomicFragment)
+
        ! MPI fragment statistics
        slavetime = slavetime +  AtomicFragment%slavetime
        flops_slaves = flops_slaves + AtomicFragment%flops_slaves

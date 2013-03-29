@@ -6350,4 +6350,48 @@ end subroutine get_main_pair_info
   end subroutine expand_fragment_logical_vectors_from_orbital_interactions
 
 
+  !> \brief Get expansion parameters for fragment optimization based on
+  !> orbital interaction matrix (see expand_fragment_logical_vectors_from_orbital_interactions).
+  !> Specifically, we set the number of additional occ and unocc orbitals to include
+  !> in fragment AOS when the fragment is expanded.
+  !> UNDER INVESTIGATION...!
+  !> \author Kasper Kristensen
+  !> \date March 2013
+  subroutine get_expansion_parameters_for_fragopt(MyMolecule,noccEOS,&
+       & nunoccEOS,occsize,unoccsize)
+    implicit none
+    !> Full molecule info
+    type(fullmolecule),intent(in) :: MyMolecule
+    !> Number of occupied orbitals assigned to central atom
+    !> (can be found by get_number_of_orbitals_per_atom function).
+    integer,intent(in) :: noccEOS
+    !> Number of unoccupied orbitals assigned to central atom
+    !> (can be found by get_number_of_orbitals_per_atom function).
+    integer,intent(in) :: nunoccEOS
+    !> Number of additional occupied orbitals to include when fragment is expanded
+    integer,intent(inout) :: occsize
+    !> Number of additional unoccupied orbitals to include when fragment is expanded
+    integer,intent(inout) :: unoccsize
+    integer :: noccmax,nunoccmax
+
+    ! Maximum possible number of occupied orbitals to add:
+    ! Total number of occupied orbitals - occupied EOS    
+    ! (EOS orbitals are included by definition so they will never be added)
+    noccmax = MyMolecule%numocc - noccEOS
+    ! Same for unocc orbitals
+    nunoccmax = MyMolecule%numvirt - nunoccEOS
+
+    ! Set number of unoccupied orbitals to 100, then set the number of occupied
+    ! orbitals to include by scaling with the ratio between occ and unocc orbitals
+    unoccsize = 100
+    occsize = int( real(unoccsize) * (real(noccmax)/real(nunoccmax)) )
+
+    ! Sanity check for small molecules - 
+    ! we should not include more orbitals than there actually are....
+    if(unoccsize > nunoccmax) unoccsize = nunoccmax  ! just include all unocc orbitals
+    if(occsize > noccmax) occsize = noccmax  ! just include all occ orbitals
+
+  end subroutine get_expansion_parameters_for_fragopt
+
+
 end module atomic_fragment_operations
