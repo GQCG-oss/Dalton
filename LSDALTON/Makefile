@@ -16,12 +16,13 @@ DALTON_LIBS =             \
 -L$(FMMDIR) -lmm          \
 -Linterest/lib -linterest \
 -Lpdpack -lpdpack         \
+-Lxcfun_host -lxcfun_host  \
 -Llsutil -llsutil      
 
 
-MODULES = LSU_OBJ PD_OBJ BSM_OBJ INT_OBJ FMM_OBJ LSI_OBJ PBC_OBJ2 DFT_OBJ \
+MODULES = LSU_OBJ XFH_OBJ PD_OBJ BSM_OBJ INT_OBJ FMM_OBJ LSI_OBJ PBC_OBJ2 DFT_OBJ \
 	SOU_OBJ RSO_OBJ RSP_OBJ DEC_OBJ GEO_OBJ DYN_OBJ LIN_OBJ LSD_OBJ 	
-SUBDIRS = lsutil pdpack interest/lib $(FMMDIR) LSint pbc2 dft SolverUtilities \
+SUBDIRS = lsutil xcfun_host pdpack interest/lib $(FMMDIR) LSint pbc2 dft SolverUtilities \
 	responsesolver rsp_properties deccc geomopt ddynam linears lsdaltonsrc
 
 PDLIB = pdpack/pdlib.a
@@ -133,6 +134,9 @@ PD_OBJ	:
 LSU_OBJ :
 	cd lsutil && $(MAKE) all
 
+XFH_OBJ : LSU_OBJ
+	cd xcfun_host && $(MAKE) all
+
 DFT_OBJ	: LSU_OBJ
 	cd dft && $(MAKE) all
 
@@ -142,7 +146,7 @@ GEO_OBJ : LSU_OBJ LSI_OBJ
 DYN_OBJ : LSU_OBJ LSI_OBJ GEO_OBJ
 	cd ddynam && $(MAKE) all
 
-LSI_OBJ : LSU_OBJ INT_OBJ
+LSI_OBJ : LSU_OBJ INT_OBJ XFH_OBJ
 	cd LSint && $(MAKE) all
 
 DEC_OBJ : LSU_OBJ LSI_OBJ

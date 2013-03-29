@@ -513,8 +513,9 @@ contains
        call lsquit('Restart option currently not implemented for CCSD(T)!',DECinfo%output)
     end if
 
-    ! Fragment-adapted orbitals only work when super fragments are just simulated and not actually used
-    ! Also site orbitals do not work with reduced pairs, set reduction distance to 1000000 to
+    ! Fragment-adapted orbitals (FAOs) only work when super fragments 
+    ! are just simulated and not actually used.
+    ! Also FAOs do not work with reduced pairs, set reduction distance to 1000000 to
     ! avoid it from being used in practice
     if(DECinfo%fragadapt) then
        DECinfo%simulateSF = .true.
