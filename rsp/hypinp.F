@@ -526,8 +526,8 @@ C
          END IF
 
          if (peqm) then
-            write(lupri,'(3x,a)')
-     &                      'Polarizable Embedding response calculation'
+            write(lupri,'(a)')
+     &                      'PE-QM response calculation'
          end if
 
          IF (QRSHG) THEN
@@ -998,8 +998,8 @@ C
          END IF
 
          if (peqm) then
-            write(lupri,'(3x,a)')
-     &                      'Polarizable Embedding response calculation'
+            write(lupri,'(a)')
+     &                      'PE-QM response calculation'
          end if
 
          IF (MCDCAL) THEN

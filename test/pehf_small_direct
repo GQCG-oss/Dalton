@@ -137,12 +137,13 @@ exclists
 #######################################################################
 cat > pehf_small_direct.dal <<'%EOF%'
 **DALTON
-.RUN PROPERTIES
+.RUN RESPONSE
 *PEQM
 .PEQM
 .DIRECT
 **WAVE FUNCTIONS
-.HF
+.DFT
+B3LYP
 *SCF INPUT
 .THRESHOLD
 1.0d-8

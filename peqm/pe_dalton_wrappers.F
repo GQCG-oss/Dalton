@@ -635,11 +635,114 @@
       end subroutine pe_rsplno
 
 !------------------------------------------------------------------------------
-!
-!      subroutine pe_rspqro()
-!
-!      end subroutine pe_rspqro
-!
+
+      subroutine pe_rspqro(vecb, vecc, etrs, xindx, zymb, zymc,
+     &                 udv, wrk, lfree, kzyva, kzyvb, kzyvc,
+     &                 isyma, isymb, isymc, cmo, mjwop)
+
+         use polarizable_embedding, only: pe_master
+
+         implicit none
+
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infdim.h"
+#include "qrinf.h"
+
+         integer :: kzyva, kzyvb, kzyvc
+         integer :: isyma, isymb, isymc
+         integer :: lfree
+         real*8, dimension(lfree) :: wrk
+         real*8, dimension(kzyva) :: etrs
+         real*8, dimension(kzyvb) :: vecb
+         real*8, dimension(kzyvc) :: vecc
+         real*8, dimension(ncmot) :: cmo
+         real*8, dimension(norbt,norbt) :: zymb, zymc
+         real*8, dimension(nashdi,nashdi) :: udv
+         real*8, dimension(lcindx) :: xindx
+         integer, dimension(2,maxwop,8) :: mjwop
+
+         integer :: i, j, k
+         integer :: idum = 1
+         real*8, dimension(:), allocatable :: udcao, ufcmo
+         real*8, dimension(:), allocatable :: dcaos, fcaos
+         real*8, dimension(:), allocatable :: fcmo
+
+         call gtzymt(1, vecb, kzyvb, isymb, zymb, mjwop)
+         call gtzymt(1, vecc, kzyvc, isymc, zymc, mjwop)
+
+         allocate(udcao(n2basx))
+         allocate(ufcmo(n2orbx))
+         allocate(dcaos(4*nnbasx))
+         dcaos = 0.0d0
+
+         udcao = 0.0d0
+         call cdens1(isymb, cmo, zymb, udcao, wrk, lfree)
+         call dgefsp(nbast, udcao, dcaos(1:nnbasx))
+
+         udcao = 0.0d0
+         call cdens2(isymb, isymc, cmo, zymb, zymc, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(nnbasx+1:2*nnbasx))
+
+         udcao = 0.0d0
+         call cdens1(isymc, cmo, zymc, udcao, wrk, lfree)
+         call dgefsp(nbast, udcao, dcaos(2*nnbasx+1:3*nnbasx))
+
+         udcao = 0.0d0
+         call cdens2(isymc, isymb, cmo, zymc, zymb, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(3*nnbasx+1:4*nnbasx))
+
+         deallocate(udcao)
+
+         allocate(fcaos(4*nnbasx))
+         fcaos = 0.0d0
+         call pe_master(runtype='response',
+     &                  denmats=dcaos, fckmats=fcaos,
+     &                  nmats=4, dalwrk=wrk(1:lfree))
+         deallocate(dcaos)
+
+         allocate(fcmo(nnorbx))
+         ufcmo = 0.0d0
+
+         i = 1
+         j = nnbasx
+         call uthu(2.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymc, zymc, wrk(1:n2orbx), ufcmo, isyma)
+
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         ufcmo = ufcmo + wrk(1:n2orbx)
+
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(2.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymb, zymb, wrk(1:n2orbx), ufcmo, isyma)
+
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         ufcmo = ufcmo + wrk(1:n2orbx)
+
+         call rsp1gr(1, kzyva, idum, 0, isyma, 0, 1, etrs,
+     &               wrk, idum, idum, 1.0d0, 1, udv, ufcmo, xindx,
+     &               mjwop, wrk, lfree, .true., .false., .false.)
+
+         deallocate(fcaos, fcmo, ufcmo)
+
+      end subroutine pe_rspqro
+
 !------------------------------------------------------------------------------
 
       subroutine dalton_cavity(all_centers, all_charges, ncents,

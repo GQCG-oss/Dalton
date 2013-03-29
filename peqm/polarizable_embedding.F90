@@ -1777,6 +1777,18 @@ subroutine pe_polarization(denmats, fckmats)
                 Fktots(3*npols+1:,i) = - Vels(:,i)
             end do 
         end if
+        if (pe_debug) then
+            write(luout,'(a)') 'Total electric field at polarizable sites:'
+            do n = 1, ndens
+                write(luout,'(a,i2)') 'From density matrix:', n
+                i = 1
+                do j = 1, npols
+                    write(luout,'(i3,3f12.5)') j, Fktots(i,n), Fktots(i+1,n),&
+                                             &Fktots(i+2,n)
+                    i = i + 3
+                end do
+            end do
+        end if
         call induced_moments(Mkinds, Fktots)
     else
         if (lpol(1)) then
