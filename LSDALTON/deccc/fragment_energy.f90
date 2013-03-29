@@ -111,6 +111,65 @@ contains
 
 
 
+  !> \brief Construct new fragment based on list of orbitals in OccAOS and UnoccAOS,
+  !> and calculate fragment energy. 
+  !> \author Kasper Kristensen
+  !> \date March 2013
+  subroutine get_fragment_and_Energy_orb_specific(MyAtom,MyMolecule,mylsitem,&
+       & OccOrbitals,UnoccOrbitals,OccAOS,UnoccAOS, MyFragment,t1,t2)
+
+    implicit none
+    !> Central atom in fragment
+    integer, intent(in) :: MyAtom
+    !> Full molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> Full molecule lsitem
+    type(lsitem), intent(inout) :: mylsitem
+    !> Occupied orbitals for full molecule
+    type(ccorbital), dimension(MyMolecule%numocc), intent(in) :: OccOrbitals
+    !> Unoccupied orbitals for full molecule
+    type(ccorbital), dimension(MyMolecule%numvirt), intent(in) :: UnoccOrbitals
+    !> Which atoms are in the occupied fragment space
+    logical, dimension(MyMolecule%numocc),intent(in) :: OccAOS
+    !> Which atoms are in the unoccupied fragment space
+    logical, dimension(MyMolecule%numvirt),intent(in) :: UnoccAOS
+    !> Fragment to be determined 
+    type(ccatom), intent(inout) :: MyFragment
+    !> Singles AOS amplitudes
+    type(array2),intent(inout),optional :: t1
+    !> Doubles AOS amplitudes
+    type(array4),intent(inout),optional :: t2
+    real(realk) :: tcpu, twall
+    logical :: DoBasis
+
+
+    ! **************************************************************
+    ! *                       RUN CALCULATION                      *
+    ! **************************************************************
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+
+
+    ! Init fragment type based on logical vectors
+    DoBasis=.true.
+    call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%numvirt, &
+         & MyMolecule%numocc, UnoccAOS, &
+         & occAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,MyFragment,DoBasis)
+
+
+    ! Calculate fragment energies
+    if(present(t1) .and. present(t2)) then
+       call single_lagrangian_energy_and_prop(MyFragment,t1=t1,t2=t2)
+    else
+       call single_lagrangian_energy_and_prop(MyFragment)
+    end if
+
+    call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output)
+
+
+  end subroutine get_fragment_and_Energy_orb_specific
+
+
+
 
   !> \brief Wrapper for single_lagrangian_driver with the following special features:
   !> 1. It is assumed that the input fragment has been initialized but that
@@ -3747,11 +3806,9 @@ call mem_TurnOffThread_Memory()
             & nocc,nunocc,OccOrbitals,UnoccOrbitals,occidx,unoccidx,MyMolecule,&
             & occsize,unoccsize,occAOS,unoccAOS)
 
-       ! Init fragment type based on logical vectors
-       call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, UnoccAOS, &
-            & occAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.)
-       ! Calculate energy for fragment
-       call single_lagrangian_energy_and_prop(AtomicFragment)
+       ! Init fragment type based on logical vectors and calculate fragment energies
+       call get_fragment_and_Energy_orb_specific(MyAtom,MyMolecule,mylsitem,&
+            & OccOrbitals,UnoccOrbitals,OccAOS,UnoccAOS, AtomicFragment)
 
        ! MPI fragment statistics
        slavetime = slavetime +  AtomicFragment%slavetime
