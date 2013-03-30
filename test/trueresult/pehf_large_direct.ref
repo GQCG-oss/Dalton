@@ -90,14 +90,14 @@
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Feb  8 14:14:07 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Sat Mar 30 12:32:34 2013
+     Host name              : socialist                               
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /people/disk2/magnus/Projects/dalton_devel/dalton/test/2013-02-08T14_10-testjob-pid-83375
-   2) /people/disk2/magnus/Projects/dalton_devel/dalton/build/basis
+   1) /home/magnus/Projects/dalton_devel/dalton/test/2013-03-30T12_28-testjob-pid-6247
+   2) /home/magnus/Projects/dalton_devel/dalton/build/basis
 
 
    Content of the .dal input file
@@ -174,7 +174,7 @@ H      -0.0000000000   -0.7568037633   -0.4687941397
   Number of symmetry independent centers:    1
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   8 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/6-31+G*"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/6-31+G*"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-31+G*                                                                         
@@ -185,7 +185,7 @@ H      -0.0000000000   -0.7568037633   -0.4687941397
   Number of symmetry independent centers:    2
   Number of basis sets to read;    2
   Basis set file used for this atomic type with Z =   1 :
-     "/people/disk2/magnus/Projects/dalton_devel/dalton/build/basis/6-31+G*"
+     "/home/magnus/Projects/dalton_devel/dalton/build/basis/6-31+G*"
 
   Info about the basis set file: your basis has no documentation.
   Basis set: 6-31+G*                                                                         
@@ -236,7 +236,7 @@ Point group: C1
   Total number of coordinates:    9
   O       :     1  x   0.0000000000    2  y   0.0000000000    3  z   0.2214777916
   H       :     4  x   0.0000000000    5  y   1.4301376196    6  z  -0.8859109023
-  H       :     7  x   0.0000000000    8  y  -1.4301518430    9  z  -0.8858925330
+  H       :     7  x  -0.0000000000    8  y  -1.4301518430    9  z  -0.8858925330
 
 
    Interatomic separations (in Angstrom):
@@ -329,8 +329,8 @@ Point group: C1
  Number of two-electron integrals written:       12068 ( 37.6% )
  Megabytes written:                              0.144
 
- >>>> Total CPU  time used in HERMIT:   0.02 seconds
- >>>> Total wall time used in HERMIT:   0.07 seconds
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
 
 
                         .----------------------------------.
@@ -363,8 +363,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Feb  8 14:14:07 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Sat Mar 30 12:32:34 2013
+     Host name              : socialist                               
 
  Title lines from ".mol" input file:
      H2O molecule                                                            
@@ -455,19 +455,19 @@ Point group: C1
       Virial theorem: -V/T =      2.020971
 @      MULPOP O      -1.24; H       0.66; H       0.58; 
  -----------------------------------------------------------------------------
-  10  -77.4751433192      -1.46977744808        1.00938D-06   -5.17D-12
+  10  -77.4751433192      -1.46977744808        1.00938D-06   -4.97D-12
       Virial theorem: -V/T =      2.020971
 @      MULPOP O      -1.24; H       0.66; H       0.58; 
  -----------------------------------------------------------------------------
-  11  -77.4751433192      -1.46977743375        1.66902D-07   -5.68D-14
+  11  -77.4751433192      -1.46977743375        1.66902D-07   -1.85D-13
       Virial theorem: -V/T =      2.020971
 @      MULPOP O      -1.24; H       0.66; H       0.58; 
  -----------------------------------------------------------------------------
-  12  -77.4751433192      -1.46977743504        3.01806D-08    1.42D-14
+  12  -77.4751433192      -1.46977743504        3.01806D-08    5.68D-14
       Virial theorem: -V/T =      2.020971
 @      MULPOP O      -1.24; H       0.66; H       0.58; 
  -----------------------------------------------------------------------------
-  13  -77.4751433192      -1.46977743520        7.25542D-09   -2.84D-14
+  13  -77.4751433192      -1.46977743520        7.25543D-09   -2.84D-14
 
  *** DIIS converged in  13 iterations !
 @    Converged SCF energy, gradient:    -77.475143319226    7.26D-09
@@ -509,7 +509,7 @@ Point group: C1
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :      29.560      29.893
+ >>>> CPU and wall time for SCF :      49.483      50.695
 
 
                        .-----------------------------------.
@@ -528,8 +528,8 @@ Point group: C1
 @    Final gradient norm:           0.000000007255
 
  
-     Date and time (Linux)  : Fri Feb  8 14:14:37 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Sat Mar 30 12:33:25 2013
+     Host name              : socialist                               
 
  (Only coefficients >0.0100 are printed.)
 
@@ -561,12 +561,12 @@ Point group: C1
 
 
 
- >>>> Total CPU  time used in SIRIUS :     29.56 seconds
- >>>> Total wall time used in SIRIUS :     29.91 seconds
+ >>>> Total CPU  time used in SIRIUS :     49.49 seconds
+ >>>> Total wall time used in SIRIUS :     50.70 seconds
 
  
-     Date and time (Linux)  : Fri Feb  8 14:14:37 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Sat Mar 30 12:33:25 2013
+     Host name              : socialist                               
 
 
                      .---------------------------------------.
@@ -615,11 +615,11 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Fri Feb  8 14:14:37 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Sat Mar 30 12:33:25 2013
+     Host name              : socialist                               
 
- Integral transformation: Total CPU and WALL times (sec)       0.012       0.020
- >>>  Time used in EXCITA     is  15.30 seconds
+ Integral transformation: Total CPU and WALL times (sec)       0.006       0.006
+ >>>  Time used in EXCITA     is  38.12 seconds
 
 
    ***************************************************************************
@@ -628,8 +628,8 @@ Point group: C1
 
 
  
-     Date and time (Linux)  : Fri Feb  8 14:14:53 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Sat Mar 30 12:34:04 2013
+     Host name              : socialist                               
 
 
                              Molecular geometry (au)
@@ -637,7 +637,7 @@ Point group: C1
 
  O          0.0000000000            0.0000000000            0.2214777916
  H          0.0000000000            1.4301376196           -0.8859109023
- H          0.0000000000           -1.4301518430           -0.8858925330
+ H         -0.0000000000           -1.4301518430           -0.8858925330
 
 
 
@@ -767,22 +767,22 @@ Point group: C1
  CPU time statistics for ABACUS
  ------------------------------
 
- EXCITA     00:00:15     100 %
+ EXCITA     00:00:38     100 %
 
- TOTAL      00:00:15     100 %
+ TOTAL      00:00:38     100 %
 
 
- >>>> Total CPU  time used in ABACUS:  15.30 seconds
- >>>> Total wall time used in ABACUS:  15.44 seconds
+ >>>> Total CPU  time used in ABACUS:  38.12 seconds
+ >>>> Total wall time used in ABACUS:  39.15 seconds
 
 
                    .-------------------------------------------.
                    | End of Static Property Section (ABACUS) - |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  44.91 seconds
- >>>> Total wall time used in DALTON:  45.47 seconds
+ >>>> Total CPU  time used in DALTON:  1 minute  28 seconds
+ >>>> Total wall time used in DALTON:  1 minute  30 seconds
 
  
-     Date and time (Linux)  : Fri Feb  8 14:14:53 2013
-     Host name              : fe8                                     
+     Date and time (Linux)  : Sat Mar 30 12:34:04 2013
+     Host name              : socialist                               

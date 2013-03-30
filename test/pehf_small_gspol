@@ -22,7 +22,9 @@ cat > pehf_small_gspol.info <<'%EOF%'
    -----------
    Molecule:         Acrolein and two classical water molecules
    Wave Function:    PE-HF / 6-31+G*
-   Test Purpose:     Test of energies, dipole moment and excitation energies through ABACUS
+   Test Purpose:     Test of energies, dipole moment and excitation
+                     energies through ABACUS using frozen ground-state
+                     environment polarization
 %EOF%
 #######################################################################
 #  MOLECULE INPUT

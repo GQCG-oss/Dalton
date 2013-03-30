@@ -22,8 +22,9 @@ cat > pehf_small_london.info <<'%EOF%'
    -----------
    Molecule:         Acrolein and two classical water molecules
    Wave Function:    PE-HF / 6-31+G*
-   Test Purpose:     Test of energies, dipole moment and nuclear magnetic shieldings through ABACUS
-                     using the default iterative solver for induced moments
+   Test Purpose:     Test of energies, dipole moment and nuclear
+                     magnetic shieldings through ABACUS using the
+                     default iterative solver for induced moments
 %EOF%
 #######################################################################
 #  MOLECULE INPUT

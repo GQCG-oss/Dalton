@@ -22,7 +22,9 @@ cat > pehf_large_redthr.info <<'%EOF%'
    -----------
    Molecule:         H2O embedded in a water cluster
    Wave Function:    PE-HF / 6-31+G*
-   Test Purpose:     Test of energies, dipole moment and excitation energies through ABACUS
+   Test Purpose:     Test of energies, dipole moment and excitation
+                     energies through ABACUS using reduced thresholds
+                     during beginning of SCF optimization
 %EOF%
 #######################################################################
 #  MOLECULE INPUT

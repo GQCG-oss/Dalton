@@ -17,17 +17,18 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > pehf_small_fixsol_direct.info <<'%EOF%'
-   pehf_small_direct
+cat > pehf_fixsol_direct.info <<'%EOF%'
+   pehf_fixsol_direct
    -----------
-   Molecule:         Acrolein and two classical water molecules
+   Molecule:         Acrolein
    Wave Function:    PE-HF / 6-31+G*
-   Test Purpose:     Test of energies, dipole moment and excitation energies through ABACUS
+   Test Purpose:     Test of energies, dipole moment and excitation
+                     energies through ABACUS using FIXSOL solvation
 %EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > pehf_small_fixsol_direct.mol <<'%EOF%'
+cat > pehf_fixsol_direct.mol <<'%EOF%'
 BASIS
 6-31+G*
 Acrolein
@@ -48,7 +49,7 @@ H              2.675323   -2.516779   -0.000673
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > pehf_small_fixsol_direct.dal <<'%EOF%'
+cat > pehf_fixsol_direct.dal <<'%EOF%'
 **DALTON                                          
 .RUN WAVEFUNCTION                                 
 *PEQM                                             
@@ -65,8 +66,8 @@ cat > pehf_small_fixsol_direct.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > pehf_small_fixsol_direct.check
-cat >> pehf_small_fixsol_direct.check <<'%EOF%'
+echo $CHECK_SHELL > pehf_fixsol_direct.check
+cat >> pehf_fixsol_direct.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -120,5 +121,5 @@ else
   exit 1
 fi                
 %EOF%
-chmod +x pehf_small_fixsol_direct.check
+chmod +x pehf_fixsol_direct.check
 #######################################################################

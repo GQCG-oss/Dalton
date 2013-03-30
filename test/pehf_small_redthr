@@ -22,7 +22,9 @@ cat > pehf_small_redthr.info <<'%EOF%'
    -----------
    Molecule:         Acrolein and two classical water molecules
    Wave Function:    PE-HF / 6-31+G*
-   Test Purpose:     Test of energies, dipole moment and excitation energies through ABACUS
+   Test Purpose:     Test of energies, dipole moment and excitation
+                     energies through ABACUS using reduced thresholds
+                     during beginning of SCF optimization
 %EOF%
 #######################################################################
 #  MOLECULE INPUT
