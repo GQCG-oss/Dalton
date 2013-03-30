@@ -162,6 +162,7 @@ C
      *                  ISYMA,ISYMB,ISYMC,ISYMD,CMO,FC,MJWOP)
 C
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
@@ -246,6 +247,23 @@ C
            WRITE (LUPRI,'(A,F20.1)') 'Contribution from DFTCRCS:',
      *          DDOT(KZYVA,VECA,1,ETRS,1) - VAL
       END IF
+C
+      if (peqm .and. tdhf) then
+        if (ncsim > 0) then
+            call quit('PE cubic response not implemented for
+     & ncsim > 0.')
+        else if (nasht > 0) then
+            call quit('PE cubic response not implemented for
+     & open shell.')
+        else if (trplet) then
+            call quit('Triplets not implemented for PE cubic response.')
+        endif
+
+        call pe_rspcro(vecb, vecc, vecd, etrs, xindx, wrk(kzymb),
+     &                 wrk(kzymc), wrk(kzymd), udv, wrk(kfree), lfree,
+     &                 kzyva, kzyvb, kzyvc, kzyvd, isyma, isymb, isymc,
+     &                 isymd, cmo, mjwop)
+      end if
 C
       IF (QMMM) THEN
          IF (TDHF) THEN

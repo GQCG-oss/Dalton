@@ -637,7 +637,7 @@
 !------------------------------------------------------------------------------
 
       subroutine pe_rspqro(vecb, vecc, etrs, xindx, zymb, zymc,
-     &                 udv, wrk, lfree, kzyva, kzyvb, kzyvc,
+     &                 udv, wrk, nwrk, kzyva, kzyvb, kzyvc,
      &                 isyma, isymb, isymc, cmo, mjwop)
 
          use polarizable_embedding, only: pe_master
@@ -652,8 +652,8 @@
 
          integer :: kzyva, kzyvb, kzyvc
          integer :: isyma, isymb, isymc
-         integer :: lfree
-         real*8, dimension(lfree) :: wrk
+         integer :: nwrk
+         real*8, dimension(nwrk) :: wrk
          real*8, dimension(kzyva) :: etrs
          real*8, dimension(kzyvb) :: vecb
          real*8, dimension(kzyvc) :: vecc
@@ -678,7 +678,7 @@
          dcaos = 0.0d0
 
          udcao = 0.0d0
-         call cdens1(isymb, cmo, zymb, udcao, wrk, lfree)
+         call cdens1(isymb, cmo, zymb, udcao, wrk, nwrk)
          call dgefsp(nbast, udcao, dcaos(1:nnbasx))
 
          udcao = 0.0d0
@@ -687,7 +687,7 @@
          call dgefsp(nbast, udcao, dcaos(nnbasx+1:2*nnbasx))
 
          udcao = 0.0d0
-         call cdens1(isymc, cmo, zymc, udcao, wrk, lfree)
+         call cdens1(isymc, cmo, zymc, udcao, wrk, nwrk)
          call dgefsp(nbast, udcao, dcaos(2*nnbasx+1:3*nnbasx))
 
          udcao = 0.0d0
@@ -701,7 +701,7 @@
          fcaos = 0.0d0
          call pe_master(runtype='response',
      &                  denmats=dcaos, fckmats=fcaos,
-     &                  nmats=4, dalwrk=wrk(1:lfree))
+     &                  nmats=4, dalwrk=wrk(1:nwrk))
          deallocate(dcaos)
 
          allocate(fcmo(nnorbx))
@@ -737,11 +737,259 @@
 
          call rsp1gr(1, kzyva, idum, 0, isyma, 0, 1, etrs,
      &               wrk, idum, idum, 1.0d0, 1, udv, ufcmo, xindx,
-     &               mjwop, wrk, lfree, .true., .false., .false.)
+     &               mjwop, wrk, nwrk, .true., .false., .false.)
 
          deallocate(fcaos, fcmo, ufcmo)
 
       end subroutine pe_rspqro
+
+!------------------------------------------------------------------------------
+
+      subroutine pe_rspcro(vecb, vecc, vecd, etrs, xindx, zymb, zymc,
+     &                     zymd, udv, wrk, nwrk, kzyva, kzyvb, kzyvc,
+     &                     kzyvd, isyma, isymb, isymc, isymd, cmo,mjwop)
+
+         use polarizable_embedding, only: pe_master
+
+         implicit none
+
+#include "inforb.h"
+#include "infvar.h"
+#include "infrsp.h"
+#include "infdim.h"
+#include "qrinf.h"
+
+         integer :: kzyva, kzyvb, kzyvc, kzyvd
+         integer :: isyma, isymb, isymc, isymd
+         integer :: nwrk
+         real*8, dimension(nwrk) :: wrk
+         real*8, dimension(kzyva) :: etrs
+         real*8, dimension(kzyvb) :: vecb
+         real*8, dimension(kzyvc) :: vecc
+         real*8, dimension(kzyvd) :: vecd
+         real*8, dimension(ncmot) :: cmo
+         real*8, dimension(norbt,norbt) :: zymb, zymc, zymd
+         real*8, dimension(nashdi,nashdi) :: udv
+         real*8, dimension(lcindx) :: xindx
+         integer, dimension(2,maxwop,8) :: mjwop
+
+         integer :: i, j, k
+         integer :: idum = 1
+         real*8, dimension(:), allocatable :: udcao, ufcmo
+         real*8, dimension(:), allocatable :: dcaos, fcaos
+         real*8, dimension(:), allocatable :: fcmo
+
+         call gtzymt(1, vecb, kzyvb, isymb, zymb, mjwop)
+         call gtzymt(1, vecc, kzyvc, isymc, zymc, mjwop)
+         call gtzymt(1, vecd, kzyvd, isymd, zymd, mjwop)
+
+         allocate(udcao(n2basx))
+         allocate(ufcmo(n2orbx))
+         allocate(dcaos(15*nnbasx))
+         dcaos = 0.0d0
+
+         udcao = 0.0d0
+         call cdens1(isymb, cmo, zymb, udcao, wrk, nwrk)
+         call dgefsp(nbast, udcao, dcaos(1:nnbasx))
+         udcao = 0.0d0
+         call cdens1(isymc, cmo, zymc, udcao, wrk, nwrk)
+         call dgefsp(nbast, udcao, dcaos(nnbasx+1:2*nnbasx))
+         udcao = 0.0d0
+         call cdens1(isymd, cmo, zymd, udcao, wrk, nwrk)
+         call dgefsp(nbast, udcao, dcaos(2*nnbasx+1:3*nnbasx))
+
+         udcao = 0.0d0
+         call cdens2(isymb, isymc, cmo, zymb, zymc, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(3*nnbasx+1:4*nnbasx))
+         udcao = 0.0d0
+         call cdens2(isymc, isymb, cmo, zymc, zymb, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(4*nnbasx+1:5*nnbasx))
+         udcao = 0.0d0
+         call cdens2(isymb, isymd, cmo, zymb, zymd, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(5*nnbasx+1:6*nnbasx))
+         udcao = 0.0d0
+         call cdens2(isymd, isymb, cmo, zymd, zymb, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(6*nnbasx+1:7*nnbasx))
+         udcao = 0.0d0
+         call cdens2(isymc, isymd, cmo, zymc, zymd, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(7*nnbasx+1:8*nnbasx))
+         udcao = 0.0d0
+         call cdens2(isymd, isymc, cmo, zymd, zymc, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(8*nnbasx+1:9*nnbasx))
+
+         udcao = 0.0d0
+         call cdens3(isymb, isymc, isymd, cmo, zymb, zymc, zymd, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(9*nnbasx+1:10*nnbasx))
+         udcao = 0.0d0
+         call cdens3(isymd, isymb, isymc, cmo, zymd, zymb, zymc, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(10*nnbasx+1:11*nnbasx))
+         udcao = 0.0d0
+         call cdens3(isymc, isymd, isymb, cmo, zymc, zymd, zymb, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(11*nnbasx+1:12*nnbasx))
+         udcao = 0.0d0
+         call cdens3(isymb, isymd, isymc, cmo, zymb, zymd, zymc, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(12*nnbasx+1:13*nnbasx))
+         udcao = 0.0d0
+         call cdens3(isymc, isymb, isymd, cmo, zymc, zymb, zymd, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(13*nnbasx+1:14*nnbasx))
+         udcao = 0.0d0
+         call cdens3(isymd, isymc, isymb, cmo, zymd, zymc, zymb, udcao,
+     &               wrk(1:n2basx), wrk(n2basx+1:2*n2basx), ufcmo)
+         call dgefsp(nbast, udcao, dcaos(14*nnbasx+1:15*nnbasx))
+
+         deallocate(udcao)
+
+         allocate(fcaos(15*nnbasx))
+         fcaos = 0.0d0
+         call pe_master(runtype='response',
+     &                  denmats=dcaos, fckmats=fcaos,
+     &                  nmats=15, dalwrk=wrk(1:nwrk))
+         deallocate(dcaos)
+
+         allocate(fcmo(nnorbx))
+         ufcmo = 0.0d0
+
+         i = 1
+         j = nnbasx
+         call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:2*n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymc, zymc, wrk(1:n2orbx),
+     &              wrk(n2orbx+1:2*n2orbx), isyma)
+         call oith1(isymd, zymd, wrk(n2orbx+1:2*n2orbx), ufcmo, isyma)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:2*n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymb, zymb, wrk(1:n2orbx),
+     &              wrk(n2orbx+1:2*n2orbx), isyma)
+         call oith1(isymd, zymd, wrk(n2orbx+1:2*n2orbx), ufcmo, isyma)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:2*n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymb, zymb, wrk(1:n2orbx),
+     &              wrk(n2orbx+1:2*n2orbx), isyma)
+         call oith1(isymc, zymc, wrk(n2orbx+1:2*n2orbx), ufcmo, isyma)
+         i = 1
+         j = nnbasx
+         call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:2*n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymd, zymd, wrk(1:n2orbx),
+     &              wrk(n2orbx+1:2*n2orbx), isyma)
+         call oith1(isymc, zymc, wrk(n2orbx+1:2*n2orbx), ufcmo, isyma)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:2*n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymd, zymd, wrk(1:n2orbx),
+     &              wrk(n2orbx+1:2*n2orbx), isyma)
+         call oith1(isymb, zymb, wrk(n2orbx+1:2*n2orbx), ufcmo, isyma)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:2*n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymc, zymc, wrk(1:n2orbx),
+     &              wrk(n2orbx+1:2*n2orbx), isyma)
+         call oith1(isymb, zymb, wrk(n2orbx+1:2*n2orbx), ufcmo, isyma)
+
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymd, zymd, wrk(1:n2orbx), ufcmo, isyma)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymd, zymd, wrk(1:n2orbx), ufcmo, isyma)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymc, zymc, wrk(1:n2orbx), ufcmo, isyma)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymc, zymc, wrk(1:n2orbx), ufcmo, isyma)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymb, zymb, wrk(1:n2orbx), ufcmo, isyma)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         call oith1(isymb, zymb, wrk(1:n2orbx), ufcmo, isyma)
+
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0/3.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         ufcmo = ufcmo + wrk(1:n2orbx)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0/3.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         ufcmo = ufcmo + wrk(1:n2orbx)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0/3.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         ufcmo = ufcmo + wrk(1:n2orbx)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0/3.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         ufcmo = ufcmo + wrk(1:n2orbx)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0/3.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         ufcmo = ufcmo + wrk(1:n2orbx)
+         i = i + nnbasx
+         j = j + nnbasx
+         call uthu(1.0d0/3.0d0*fcaos(i:j), fcmo, cmo, wrk, nbast, norbt)
+         wrk(1:n2orbx) = 0.0d0
+         call dsptsi(norbt, fcmo, wrk(1:n2orbx))
+         ufcmo = ufcmo + wrk(1:n2orbx)
+
+         call rsp1gr(1, kzyva, idum, 0, isyma, 0, 1, etrs,
+     &               wrk, idum, idum, 1.0d0, 1, udv, ufcmo, xindx,
+     &               mjwop, wrk, nwrk, .true., .false., .false.)
+
+         deallocate(fcaos, fcmo, ufcmo)
+
+      end subroutine pe_rspcro
 
 !------------------------------------------------------------------------------
 
