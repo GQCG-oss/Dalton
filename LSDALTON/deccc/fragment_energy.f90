@@ -3708,7 +3708,7 @@ call mem_TurnOffThread_Memory()
     real(realk)                    :: FOT
     integer,dimension(natoms)      :: nocc_per_atom,nunocc_per_atom
     type(ccatom) :: FAfragment
-    integer      :: iter,i,ov,occsize,unoccsize
+    integer      :: iter,ov,occsize,unoccsize
     integer      :: Nnew,Nold, max_iter_red,nocc_exp,nvirt_exp
     logical      :: converged,storeamp,ampset,ReductionPossible(2)
     logical :: expansion_converged, lag_converged, occ_converged, virt_converged,allorbs
@@ -3737,15 +3737,6 @@ call mem_TurnOffThread_Memory()
     ! ******************************************
     ! **   Initialization of stuff needed..   **
     ! ******************************************
-    call mem_alloc(OccOld,nocc)
-    call mem_alloc(UnoccOld,nunocc)
-    call mem_alloc(OccAOS,nocc)
-    call mem_alloc(UnoccAOS,nunocc)
-    call mem_alloc(occidx,nocc)
-    call mem_alloc(unoccidx,nunocc)
-    call mem_alloc(occval,nocc)
-    call mem_alloc(unoccval,nunocc)
-
     allorbs=.false.
     ampset=.false.
     storeamp=.false.
@@ -3758,18 +3749,11 @@ call mem_TurnOffThread_Memory()
     nocc_per_atom=get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
     nunocc_per_atom=get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
 
-    ! Prioritize all orbitals based on interactions with orbitals assigned to MyAtom
-    call prioritize_orbitals_based_on_atom(MyAtom,MyMolecule,OccOrbitals,UnoccOrbitals,&
-         & occidx,unoccidx,occval,unoccval)
-
-    ! Number of orbitals to include in expansion loop (under investigation)
-    call get_expansion_parameters_for_fragopt(MyMolecule,nocc_per_atom(MyAtom),&
-         & nunocc_per_atom(MyAtom),occsize,unoccsize)
-
     ! MPI fragment statistics
     flops_slaves = 0.0E0_realk
     slavetime = 0.0E0_realk
 
+    ! Sanity quit
     if( (nocc_per_atom(MyAtom) == 0) .and. (nunocc_per_atom(MyAtom) == 0) ) then
        write(DECinfo%output,*) 'FOP Skipping optimization of fragment ', MyAtom
        AtomicFragment%LagFOP=0E0_realk
@@ -3797,20 +3781,39 @@ call mem_TurnOffThread_Memory()
           call atomic_fragment_free_basis_info(AtomicFragment)
        end if
        return
-    else
+
+    else  ! regular fragment optimization
+
+       call mem_alloc(OccOld,nocc)
+       call mem_alloc(UnoccOld,nunocc)
+       call mem_alloc(OccAOS,nocc)
+       call mem_alloc(UnoccAOS,nunocc)
+       call mem_alloc(occidx,nocc)
+       call mem_alloc(unoccidx,nunocc)
+       call mem_alloc(occval,nocc)
+       call mem_alloc(unoccval,nunocc)
+
+       ! Prioritize all orbitals based on interactions with orbitals assigned to MyAtom
+       call prioritize_orbitals_based_on_atom(MyAtom,MyMolecule,OccOrbitals,UnoccOrbitals,&
+            & occidx,unoccidx,occval,unoccval)
+
+       ! Number of orbitals to include in expansion loop (under investigation)
+       call get_expansion_parameters_for_fragopt(MyMolecule,nocc_per_atom(MyAtom),&
+            & nunocc_per_atom(MyAtom),occsize,unoccsize)
 
        ! Get initial fragment logical vectors
        call init_fragment_logical_vectors_from_orbital_interactions(MyAtom,&
             & nocc,nunocc,OccOrbitals,UnoccOrbitals,occidx,unoccidx,MyMolecule,&
             & occsize,unoccsize,occAOS,unoccAOS)
 
-       ! Init fragment type based on logical vectors and calculate fragment energies
+       ! Init fragment type based on logical vectors and calculate associated fragment energies
        call get_fragment_and_Energy_orb_specific(MyAtom,MyMolecule,mylsitem,&
             & OccOrbitals,UnoccOrbitals,OccAOS,UnoccAOS, AtomicFragment)
 
        ! MPI fragment statistics
        slavetime = slavetime +  AtomicFragment%slavetime
        flops_slaves = flops_slaves + AtomicFragment%flops_slaves
+
     end if
 
     ! Print initial fragment information
@@ -3852,11 +3855,13 @@ call mem_TurnOffThread_Memory()
        LagEnergyOld = AtomicFragment%LagFOP
        OccEnergyOld = AtomicFragment%EoccFOP
        VirtEnergyOld = AtomicFragment%EvirtFOP
-       ! correlation density matrices
+
+       ! Save correlation density matrices
        call mem_alloc(OccMat,AtomicFragment%noccAOS,AtomicFragment%noccAOS)
        call mem_alloc(VirtMat,AtomicFragment%nunoccAOS,AtomicFragment%nunoccAOS)
        OccMat = AtomicFragment%OccMat
        VirtMat = AtomicFragment%VirtMat
+
 
        ! Expand fragment!
        ! ----------------
@@ -3865,7 +3870,7 @@ call mem_TurnOffThread_Memory()
             & occidx,unoccidx,MyMolecule,occsize,unoccsize,occAOS,unoccAOS)
        ! Free existing fragment
        call atomic_fragment_free(AtomicFragment)
-       ! Init fragment structure with new AOS and calculate assoiciated fragment energies
+       ! Init fragment structure with new AOS and calculate associated fragment energies
        call get_fragment_and_Energy_orb_specific(MyAtom,MyMolecule,mylsitem,&
             & OccOrbitals,UnoccOrbitals,OccAOS,UnoccAOS, AtomicFragment)
        ! MPI fragment statistics
@@ -3938,24 +3943,26 @@ call mem_TurnOffThread_Memory()
 
 
     ! Set AtomicFragment to be the converged fragment
-    call atomic_fragment_free(AtomicFragment)
-    call atomic_fragment_init_orbital_specific(MyAtom,nunocc,nocc, UnoccAOS, &
-         & occAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.)
-    ! Set energies correctly without having to do a new calculation
-    ! --> but do not do this for special case where fragment is the whole molecule
+    ! --> but do not do this for special case where current 
+    !     fragment is already the whole molecule
     if(.not. allorbs) then
+       call atomic_fragment_free(AtomicFragment)
+       call atomic_fragment_init_orbital_specific(MyAtom,nunocc,nocc, UnoccAOS, &
+            & occAOS,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.)
+
+       ! Set energies and correlation densities correctly without having to do a new calculation
        AtomicFragment%LagFOP = LagEnergyOld
        AtomicFragment%EoccFOP = OccEnergyOld
        AtomicFragment%EvirtFOP = VirtEnergyOld
+
+       ! correlation density matrices
+       call mem_alloc(AtomicFragment%OccMat,AtomicFragment%noccAOS,AtomicFragment%noccAOS)
+       call mem_alloc(AtomicFragment%VirtMat,AtomicFragment%nunoccAOS,AtomicFragment%nunoccAOS)
+       AtomicFragment%CDSet=.true. ! correlation density matrices have been set
+       AtomicFragment%OccMat = OccMat
+       AtomicFragment%VirtMat = VirtMat
     end if
-
-    ! correlation density matrices
-    call mem_alloc(AtomicFragment%OccMat,AtomicFragment%noccAOS,AtomicFragment%noccAOS)
-    call mem_alloc(AtomicFragment%VirtMat,AtomicFragment%nunoccAOS,AtomicFragment%nunoccAOS)
-    AtomicFragment%CDSet=.true. ! correlation density matrices have been set
-    AtomicFragment%OccMat = OccMat
-    AtomicFragment%VirtMat = VirtMat
-
+       
     call mem_dealloc(OccMat)
     call mem_dealloc(VirtMat)
 
@@ -4038,7 +4045,9 @@ call mem_TurnOffThread_Memory()
 
           ! Cycle if the AOS was not decreased in the rejection procedure
           if( Nold==Nnew ) then
-             if(iter == max_iter_red) then
+
+             ! special case if max number of iterations was reached
+             if(iter == max_iter_red) then   
                 if(ov==2) then  ! not possible to reduce virtual space, try occupied space
                    cycle OCC_OR_VIRT
 
@@ -4049,6 +4058,7 @@ call mem_TurnOffThread_Memory()
                 write(DECinfo%output,*) 'FOP No reduction occurred - try again...'
                 cycle REDUCTION_LOOP
              end if
+
           end if
           if(storeamp) then
              if(ampset) then  ! free existing amplitudes before calculating new ones
@@ -4141,6 +4151,7 @@ call mem_TurnOffThread_Memory()
           ! Quit if fragment reduction is converged
           ! ***************************************
           if(converged) then
+
              if(ov==2) then  ! virtual reduction converged 
                 write(DECinfo%output,*) 'FOP Virt reduction of fragment converged in step', iter
                 AtomicFragment%LagFOP = FAfragment%LagFOP
@@ -4155,6 +4166,7 @@ call mem_TurnOffThread_Memory()
                 AtomicFragment%EvirtFOP = FAfragment%EvirtFOP
                 exit
              end if
+
           end if
 
 1000      continue
@@ -4165,7 +4177,7 @@ call mem_TurnOffThread_Memory()
 
              ! Go back to old fragment
              ! ***********************
-             ! This is extra work but it will never be done in practice, only
+             ! Recalculate! This is extra work but it will never be done in practice, only
              ! relevant for small debug systems.
              occAOS=.true.
              unoccAOS=.true.
@@ -4195,6 +4207,8 @@ call mem_TurnOffThread_Memory()
     end do OCC_OR_VIRT
 
 
+    call mem_dealloc(OccOld)
+    call mem_dealloc(UnoccOld)
     call mem_dealloc(OccAOS)
     call mem_dealloc(UnoccAOS)
     call mem_dealloc(occidx)
@@ -4244,7 +4258,7 @@ call mem_TurnOffThread_Memory()
     AtomicFragment%slavetime  = slavetime
     AtomicFragment%flops_slaves = flops_slaves
 
-    ! Ensure that energies in fragment are set consistently
+    ! Ensure that energies within fragment structure are set consistently
     call set_energies_ccatom_structure_fragopt(AtomicFragment)
 
 

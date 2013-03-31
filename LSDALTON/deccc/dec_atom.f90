@@ -6346,6 +6346,9 @@ end subroutine get_main_pair_info
 
     end do IncludeUnoccOrbitals
 
+    write(DECinfo%output,'(1X,a,2i7)') 'FOP Expanded fragment, new occ/unocc dims: ', &
+         & count(occAOS),count(unoccAOS)
+
 
   end subroutine expand_fragment_logical_vectors_from_orbital_interactions
 
