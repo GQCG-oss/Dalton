@@ -6205,7 +6205,7 @@ end subroutine get_main_pair_info
     end do UnoccEOSLoop
 
     ! Sort interaction vector and set indices (largest elements first)
-    call real_inv_sort_with_tracking(unoccval,unoccidx,nunocc)
+    call real_inv_sort_with_tracking(occval,occidx,nocc)
 
 
   end subroutine prioritize_orbitals_based_on_atom
@@ -6316,7 +6316,7 @@ end subroutine get_main_pair_info
        end if
 
        ! Include orbital if it has not already been included
-       if(.not. occAOS(i)) then
+       if(.not. occAOS(occidx(i))) then
           occAOS(occidx(i))=.true.
           counter = counter+1
           ! Exit when "occsize" orbitals have been included 
@@ -6337,7 +6337,7 @@ end subroutine get_main_pair_info
     IncludeUnoccOrbitals: do i=1,nunocc
        
        ! Include orbital in unoccidx list if it has not already been included
-       if(.not. unoccAOS(i)) then
+       if(.not. unoccAOS(unoccidx(i)) ) then
           unoccAOS(unoccidx(i))=.true.
           counter = counter+1
           ! Exit when "unoccsize" orbitals have been included 
