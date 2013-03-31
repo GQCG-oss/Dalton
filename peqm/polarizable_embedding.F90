@@ -1631,7 +1631,7 @@ subroutine es_fragment_densities(denmats, Eel, Enuc, fckmats)
                     call Tk_tensor(Tfm, Rfm)
                     Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
                 end do
-    !            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j)) 
+    !            call Tk_integrals('es', Zfd_ints, nnbas, 1, Rfd(:,j)) 
     !            Zfd_ints = Zfd(1,j) * Zfd_ints
                 call Mk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
                 do m = 1, ndens
@@ -1923,7 +1923,7 @@ subroutine pe_polarization(denmats, fckmats)
             i = 0
             do site = site_start, site_finish
                 if (zeroalphas(site)) cycle
-                call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site))
+                call Tk_integrals('es', Fel_ints, nnbas, 3, Rs(:,site))
                 do j = 1, 3
                     do k = 1, ndens
                         l = (k - 1) * nnbas + 1
@@ -1940,7 +1940,7 @@ subroutine pe_polarization(denmats, fckmats)
             i = 1
             allocate(Vel_ints(nnbas,1))
             do site = surp_start, surp_finish
-                call Tk_integrals(Vel_ints, nnbas, 1, Sp(:,site))
+                call Tk_integrals('es', Vel_ints, nnbas, 1, Sp(:,site))
                 do k = 1, ndens
                     l = (k - 1) * nnbas + 1
                     m = k * nnbas
@@ -1974,7 +1974,7 @@ subroutine pe_polarization(denmats, fckmats)
                     write(lunoneq) fckmats(l:m)
                 end do
                 close(lunoneq)
-                call Tk_integrals(Vel_ints, nnbas, 1, Sp(:,site))
+                call Tk_integrals('es', Vel_ints, nnbas, 1, Sp(:,site))
                 do k = 1, ndens
                     l = (k - 1) * nnbas + 1
                     m = k * nnbas
@@ -2713,7 +2713,7 @@ subroutine electron_potentials(Vels, denmats)
 
     i = 1
     do site = surp_start, surp_finish 
-        call Tk_integrals(Vel_ints, nnbas, 1, Sp(:,site))
+        call Tk_integrals('es', Vel_ints, nnbas, 1, Sp(:,site))
         do k = 1, ndens
             l = (k - 1) * nnbas + 1
             m = k * nnbas
@@ -2777,7 +2777,7 @@ subroutine electron_fields(Fels, denmats)
                 cycle
             end if
         end if
-        call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site))
+        call Tk_integrals('es', Fel_ints, nnbas, 3, Rs(:,site))
         do j = 1, 3
             do k = 1, ndens
                 l = (k - 1) * nnbas + 1
@@ -3715,7 +3715,7 @@ subroutine Mk_integrals(Mk_ints, Rij, Mk)
 
     ncomps = size(Mk_ints, 2)
 
-    call Tk_integrals(Mk_ints, nnbas, ncomps, Rij)
+    call Tk_integrals('es', Mk_ints, nnbas, ncomps, Rij)
 
     ! get symmetry factors
     allocate(factors(ncomps))
@@ -4062,7 +4062,7 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb, coords,&
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, corenucs
-        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i))
+        call Tk_integrals('es', T0_ints, nnbas, 1, Rc(:,i))
         T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(denmat, T0_ints(:,1))
     end do
@@ -4672,7 +4672,7 @@ subroutine pe_compute_mep(denmats)
         allocate(Tk_ints(nnbas,1))
         i = 1
         do point = site_start, site_finish
-            call Tk_integrals(Tk_ints(:,1), nnbas, 1, mepgrid(:,i))
+            call Tk_integrals('es', Tk_ints(:,1), nnbas, 1, mepgrid(:,i))
             Vqm(1,i) = dot(denmats, Tk_ints(:,1))
             do j = 1, qmnucs
                 call Tk_tensor(Tm(1:1), mepgrid(:,i) - Rm(:,j))
@@ -5041,7 +5041,7 @@ subroutine pe_compute_mep(denmats)
             allocate(Tk_ints(nnbas,3))
             i = 1
             do point = site_start, site_finish
-                call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i))
+                call Tk_integrals('es', Tk_ints, nnbas, 3, mepgrid(:,i))
                 do j = 1, 3
                     Fqm(j,i) = dot(denmats, Tk_ints(:,j))
                 end do
