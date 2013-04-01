@@ -1083,7 +1083,7 @@ C
      &' ERROR: Nuclear charge',INTQ,
      &   ' is an unsupported element for basis ',BASNAM,
      &' ERROR: You must choose another basis set, or enter it manually.'
-      CALL QUIT('Unsupported element in HERBAS')
+      CALL QUIT('Unsupported element in specified basis set file')
       END 
 C/* Deck finnqd */
       SUBROUTINE FIND_NQD(BASNAM, INTQ,NBLOCK,ALPHA,CPRIMU,CPRIM,NUC,
@@ -1150,7 +1150,8 @@ C
                END IF
                NBLOCK = NBLOCK + 1
                IF (NBLOCK .GT. KAOVEC) THEN
-                  CALL QUIT('Too many AO blocks; increase MXAOVC')
+                  CALL QUIT(
+     &            'FIND_NQD: Too many AO blocks; increase MXAOVC')
                END IF
 C
 C Setting ALPHA, CPRIMU AND CPRIM to zero. 
@@ -1303,13 +1304,13 @@ C
      &  ' >>> FIND_NQD error, number of primitives per block',ISPRIM,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KPRIM
-        CALL QUIT('Too many primitives')
+        CALL QUIT('FIND_NQD: Too many primitives')
  5020 CONTINUE
         WRITE (LUPRI,'(/A,I6/2A/A,I6)')
      &  ' >>> FIND_NQD error, number of contracted functions',ISCONT,
      &  '                   in basis ',BASNAM,
      &  '                   current maximum number          ',KAOVEC
-        CALL QUIT('Too many contracted functions')
+        CALL QUIT('FIND_NQD: Too many contracted functions')
       END 
 C/* Deck find_ref */
       SUBROUTINE FIND_REF(BASREF, LUBAS, BASNAM)
@@ -1601,7 +1602,7 @@ C
          WRITE (LUPRI,'(/A)')
      +   'NB! This basis must be available to use Huckel guess!'
       END IF
-      CALL QUIT('Non-existing basis set in HERBAS')
+      CALL QUIT('Basis set not found.')
       END
 C/* Deck ECP_LCORE */
       SUBROUTINE ECP_LCORE(IQCORE,IQM,ILOFF)
