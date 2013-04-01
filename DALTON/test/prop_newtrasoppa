@@ -162,7 +162,7 @@ CRIT5=`$GREP "A parameter * \: * 2\.95.. Hz" $log | wc -l`
 CRIT6=`$GREP "Isotropic DSO contribution\: * \-3\.45.. Hz" $log | wc -l`
 CRIT7=`$GREP "Isotropic PSO contribution\: * 2\.59.. Hz" $log | wc -l`
 CRIT8=`$GREP "Isotropic SD contribution \: * 0*\.3[34].. Hz" $log | wc -l`
-CRIT9=`$GREP "Isotropic FC contribution \: * \-13\.(13|12|11|10|09).. Hz" $log | wc -l`
+CRIT9=`$GREP "Isotropic FC contribution \: * \-13\.[01]... Hz" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
 		$CRIT7 \+ $CRIT8 \+ $CRIT9`
 CTRL[7]=54
