@@ -6397,4 +6397,21 @@ end subroutine get_main_pair_info
   end subroutine get_expansion_parameters_for_fragopt
 
 
+  !> \brief For calculation using FA fragment, copy main MPI info to
+  !> original fragment (including energies and MPI timings).
+  subroutine copy_mpi_main_info_from_FAfragment(FAfragment,MyFragment)
+    implicit none
+    !> Fragment-adapted fragment (to copy from)
+    type(ccatom),intent(inout) :: FAfragment
+    !> Original fragment (to copy to)
+    type(ccatom),intent(inout) :: MyFragment
+
+    MyFragment%slavetime = FAfragment%slavetime
+    MyFragment%flops_slaves = FAfragment%flops_slaves
+    MyFragment%ntasks = FAfragment%ntasks
+    MyFragment%energies = FAfragment%energies
+
+  end subroutine copy_mpi_main_info_from_FAfragment
+
+
 end module atomic_fragment_operations

@@ -287,8 +287,10 @@ contains
           end if
        end if
 
-       ! Copy energies into output fragment structure
-       MyFragment%energies = FAfragment%energies
+       ! Copy stuff from FA fragment to original fragment
+       call copy_mpi_main_info_from_FAfragment(FAfragment,MyFragment)
+
+       ! Ensure that energies within fragment structure are set consistently
        call get_occ_virt_lag_energies_fragopt(MyFragment)
 
        call atomic_fragment_free(FAfragment)
@@ -1067,8 +1069,8 @@ end if
        call pair_lagrangian_energy_and_prop(Fragment1,Fragment2, &
             & natoms, DistanceTable, FAfragment,grad)
 
-       ! Copy energies into output fragment structure
-       PairFragment%energies = FAfragment%energies
+       ! Copy stuff from FA fragment to original fragment
+       call copy_mpi_main_info_from_FAfragment(FAfragment,PairFragment)
 
        call atomic_fragment_free(FAfragment)
     else
