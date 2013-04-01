@@ -1205,7 +1205,7 @@ contains
     type(Matrix), intent(inout) :: rho_i
     !> If true, construct rho part of linear transformation
     logical, intent(in) :: make_rhos
-    type(matrix) :: prod(1),prod1,prod2(1),GbDs
+    type(matrix) :: prod(1),prod1,prod2(1),GbDs(1)
     integer :: ndim
     logical :: cov
 !Test: declarations used in testing
@@ -1218,7 +1218,7 @@ contains
     call mat_init(prod(1),ndim,ndim)
     call mat_init(prod1,ndim,ndim)
     call mat_init(prod2(1),ndim,ndim)
-    call mat_init(GbDs,ndim,ndim)
+    call mat_init(GbDs(1),ndim,ndim)
 
     call ABCcommutator(ndim,bvecs_i,D,S,prod2(1))
     if (make_rhos) then
@@ -1238,11 +1238,10 @@ contains
 !       call mat_daxpy(1E0_realk,prod(1),GbDs) 
 !    endif
     
-    call ABCcommutator(ndim,GbDs,S,D,prod(1))
+    call ABCcommutator(ndim,GbDs(1),S,D,prod(1))
     call mat_DAXPY(1E0_realk,prod(1),sigma_i)
     call mat_scal(2.0E0_realk,sigma_i)
     
-    !call mat_free(GbDs)
     ! Project out redundancies
     call util_scriptPx('T',D,S,sigma_i)
     
@@ -1254,7 +1253,7 @@ contains
     call mat_free(prod(1))
     call mat_free(prod1)
     call mat_free(prod2(1))
-    call mat_free(GbDs)
+    call mat_free(GbDs(1))
   end subroutine make_lintran_vecs
 
 !> \brief See make_lintran_vecs - this one is just for many at a time
@@ -1308,6 +1307,7 @@ contains
           call mat_mul(S,prod1,'n','n',2E0_realk,0E0_realk,rho(i)) !Sign changed 15/7-09!
        endif
     enddo
+    
     call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
          &prod2,GbDs,nnew,molcfg%setting) 
     if(molcfg%setting%do_dft)then

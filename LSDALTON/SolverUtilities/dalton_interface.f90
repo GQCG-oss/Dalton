@@ -43,7 +43,11 @@ MODULE dal_interface
    use cgto_diff_eri_host_interface, only: cgto_diff_eri_DGD_Econt
 #endif
 INTERFACE di_GET_GbDs
-  MODULE PROCEDURE di_GET_GbDsSingle, di_GET_GbDsArray
+	MODULE PROCEDURE di_GET_GbDsSingle, di_GET_GbDsArray
+END INTERFACE
+	
+INTERFACE di_GET_GbDs_and_XC_linrsp
+	MODULE PROCEDURE di_GET_GbDs_and_XC_linrsp_Single, di_GET_GbDs_and_XC_linrsp_Array
 END INTERFACE
 
 INTERFACE di_get_sigma_xc_cont_lsdalton
@@ -2300,23 +2304,54 @@ CONTAINS
 	!> \param nBmat The number of Bmat matrices
 	!> \param nbast The number of basisfunctions
 	!> \param Dmat  The Density matrix
-	SUBROUTINE di_GET_GbDs_and_XC_linrsp(GbDs,Gxc,lupri,luerr,setting,&
+	SUBROUTINE di_GET_GbDs_and_XC_linrsp_Array(GbDs,Gxc,lupri,luerr,setting,&
 											& Bmat,nBmat,nbast,Dmat)
 		IMPLICIT NONE
 		INTEGER, intent(in)           :: lupri,luerr,nBmat,nbast
 		TYPE(LSsetting),intent(inout) :: setting
 		TYPE(Matrix), intent(in)      :: Bmat(nBmat)
 		TYPE(Matrix), intent(in)      :: Dmat
-		TYPE(Matrix), intent(inout)   :: GbDs
+		TYPE(Matrix), intent(inout)   :: GbDs(nBmat)
 		TYPE(Matrix), intent(inout)   :: Gxc(nBmat)
 		!
-		call di_GET_GbDs(lupri,luerr,Bmat(1),GbDs,setting)
+		INTEGER  :: iBmat
+		!call di_GET_GbDs(lupri,luerr,Bmat(1),GbDs,setting)
+		
+		call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
 		if (setting%do_dft) THEN 
 			! Add extra XC contributions to G 
 			call II_get_xc_linrsp(lupri,luerr,setting,nbast,Bmat,Dmat,Gxc,1) 
-			call mat_daxpy(1E0_realk,Gxc(1),GbDs) 
+			DO iBmat=1,nBmat
+				call mat_daxpy(1E0_realk,Gxc(iBmat),GbDs(iBmat)) 
+			ENDDO
 		endif
-	END SUBROUTINE di_GET_GbDs_and_XC_linrsp
+	END SUBROUTINE di_GET_GbDs_and_XC_linrsp_Array
+	
+	SUBROUTINE di_GET_GbDs_and_XC_linrsp_Single(GbDs,Gxc,lupri,luerr,setting,&
+											& Bmat,nbast,Dmat)
+		IMPLICIT NONE
+		INTEGER, intent(in)           :: lupri,luerr,nbast
+		TYPE(LSsetting),intent(inout) :: setting
+		TYPE(Matrix), intent(in)      :: Bmat
+		TYPE(Matrix), intent(in)      :: Dmat
+		TYPE(Matrix), intent(inout)   :: GbDs
+		TYPE(Matrix), intent(inout)   :: Gxc
+		!
+		type(matrix) :: GbDSArray(1), GxcArray(1), BmatArray(1)
+		!
+		call mat_init(GbDsArray(1),nbast,nbast)
+		call mat_init(GxcArray(1),nbast,nbast)
+		call mat_init(BmatArray(1),nbast,nbast)
+		call mat_assign(BmatArray(1),Bmat)
+		call mat_assign(GxcArray(1),Gxc)
+		call mat_assign(GbDSArray(1),GbDs)
+		call di_GET_GbDs_and_XC_linrsp_Array(GbDsArray,GxcArray,lupri,luerr,setting,&
+											& BmatArray,1,nbast,Dmat)
+		call mat_free(GbDSArray(1))
+		call mat_free(GxcArray(1))
+		call mat_free(BmatArray(1))
+	END SUBROUTINE di_GET_GbDs_and_XC_linrsp_Single
+	
 	
       subroutine di_GET_GbDsArray(lupri,luerr,Dens,GbDs,nDmat,setting)
         !*********************************************************
