@@ -61,6 +61,12 @@ subroutine pe_init(coords, charges, dalwrk)
     logical :: lexist
     real(dp) :: rclose
 
+    if (allocated(Rm) .and. allocated(Zm)) then
+        Rm(:,:) = coords
+        Zm(1,:) = charges
+        return
+    end if
+
     if (present(coords) .and. present(charges)) then
         qmnucs = size(charges)
         allocate(Rm(3,qmnucs), Zm(1,qmnucs))
