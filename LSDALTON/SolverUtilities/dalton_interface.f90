@@ -2315,17 +2315,17 @@ CONTAINS
 		TYPE(Matrix), intent(inout)   :: Gxc(nBmat)
 		!
 		INTEGER  :: iBmat
-		!call di_GET_GbDs(lupri,luerr,Bmat(1),GbDs,setting)
-		
+		!
 		call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
 		if (setting%do_dft) THEN 
 			! Add extra XC contributions to G 
-			call II_get_xc_linrsp(lupri,luerr,setting,nbast,Bmat,Dmat,Gxc,1) 
+			call II_get_xc_linrsp(lupri,luerr,setting,nbast,Bmat,Dmat,Gxc,nBmat) 
 			DO iBmat=1,nBmat
 				call mat_daxpy(1E0_realk,Gxc(iBmat),GbDs(iBmat)) 
 			ENDDO
 		endif
 	END SUBROUTINE di_GET_GbDs_and_XC_linrsp_Array
+	
 	
 	SUBROUTINE di_GET_GbDs_and_XC_linrsp_Single(GbDs,Gxc,lupri,luerr,setting,&
 											& Bmat,nbast,Dmat)

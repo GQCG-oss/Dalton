@@ -1230,12 +1230,12 @@ contains
 	call di_GET_GbDs_and_XC_linrsp(GbDs,prod,molcfg%lupri,molcfg%luerr,molcfg%setting,&
 											& prod2,1,ndim,D)
 !    call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
-!         &prod2(1),GbDs,molcfg%setting)
-!    if (molcfg%setting%do_dft) THEN 
+!         &prod2(1),GbDs(1),molcfg%setting)
+!   	 if (molcfg%setting%do_dft) THEN 
 !       !Add extra G contributions 
 !       call II_get_xc_linrsp(molcfg%lupri,molcfg%luerr,& 
 !            &molcfg%setting,ndim,prod2,D,prod,1) 
-!       call mat_daxpy(1E0_realk,prod(1),GbDs) 
+!       call mat_daxpy(1E0_realk,prod(1),GbDs(1)) 
 !    endif
     
     call ABCcommutator(ndim,GbDs(1),S,D,prod(1))
@@ -1308,15 +1308,17 @@ contains
        endif
     enddo
     
-    call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
-         &prod2,GbDs,nnew,molcfg%setting) 
-    if(molcfg%setting%do_dft)then
-       call II_get_xc_linrsp(molcfg%lupri,molcfg%luerr,& 
-            &molcfg%setting,ndim,prod2,D,sigma,nnew)   !sigma used as temp mat 
-       do i=1,nnew
-          call mat_daxpy(1E0_realk,sigma(i),GbDs(i))
-       enddo
-    endif
+	call di_GET_GbDs_and_XC_linrsp(GbDs,sigma,molcfg%lupri,molcfg%luerr,molcfg%setting,&
+									& prod2,nnew,ndim,D)
+!    call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
+!         &prod2,GbDs,nnew,molcfg%setting) 
+!    if(molcfg%setting%do_dft)then
+!       call II_get_xc_linrsp(molcfg%lupri,molcfg%luerr,& 
+!            &molcfg%setting,ndim,prod2,D,sigma,nnew)   !sigma used as temp mat 
+!       do i=1,nnew
+!          call mat_daxpy(1E0_realk,sigma(i),GbDs(i))
+!       enddo
+!    endif
 
     do i=1,nnew
        call ABCcommutator(ndim,F,S,prod2(i),sigma(i))    
