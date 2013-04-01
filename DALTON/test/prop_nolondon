@@ -186,9 +186,9 @@ CTRL[6]=5
 ERROR[6]="MAGNETIZABILITIES NOT CORRECT"
 
 # Total magnetizability tensor
-CRIT1=`$GREP "Bx *   \-3\.053778...... * \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
-CRIT2=`$GREP "By * \-*0*\.000000000000 *   \-2\.995363...... * \-*0*\.000000000000" $log | wc -l`
-CRIT3=`$GREP "Bz * \-*0*\.000000000000 * \-*0*\.000000000000 *   \-3\.062225......" $log | wc -l`
+CRIT1=`$GREP "Bx *   \-3\.053778.* \-*0*\.000000000000 * \-*0*\.000000000000" $log | wc -l`
+CRIT2=`$GREP "By * \-*0*\.000000000000 *  \-2\.99536[34].*  * \-*0*\.000000000000" $log | wc -l`
+CRIT3=`$GREP "Bz * \-*0*\.000000000000 *\-*0*\.000000000000 *   \-3\.062225" $log | wc -l`
 TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[7]=3
 ERROR[7]="TOTAL MAGNETIZABILITY TENSOR NOT CORRECT"
