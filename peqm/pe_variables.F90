@@ -32,6 +32,7 @@ module pe_variables
     logical, save :: pe_savden = .false.
     logical, save :: pe_fd = .false.
     logical, save :: pe_fdes = .true.
+    logical, save :: lvdw  = .false.
     logical, save :: pe_sol = .false.
     logical, save :: pe_noneq = .true.
     logical, save :: pe_infld = .false.
@@ -45,6 +46,7 @@ module pe_variables
     logical, save :: fock = .false.
     logical, save :: energy = .false.
     logical, save :: response = .false.
+    logical, save :: molgrad = .false.
     logical, save :: mep = .false.
     logical, save :: noneq = .false.
     logical, save :: london = .false.
@@ -131,6 +133,8 @@ module pe_variables
     logical, dimension(1), save :: lpol = .false.
     ! lhypol(1): dipole-dipole-dipole polarizabilities/1st hyperpolarizability
 !    logical, dimension(1), save :: lhypol
+!    ! lvdw: LJ parameters
+!    logical, dimension(1), save :: lvdw = .false.
 
     ! charges, areas, coordinates, elements and exclusion lists
     ! site nuclear charges
@@ -165,6 +169,8 @@ module pe_variables
     real(dp), dimension(:,:), allocatable, save :: Esol
     ! fragment density
     real(dp), dimension(:,:), allocatable, save :: Efd
+    ! LJ 
+    real(dp), dimension(:), allocatable, save :: Elj
 
     ! multipole moments
     ! order of the highest order multipole moment
@@ -179,6 +185,10 @@ module pe_variables
     ! .true. if P1 > 0 else .false.
     logical, dimension(:), allocatable, save :: zeroalphas
 
+    ! LJ parameters for MM region - from pot file
+    real(dp), dimension(:,:), allocatable, save :: LJs
+    ! LJ paramters for QM region - from dal file
+    real(dp), dimension(:,:), allocatable, save :: qmLJs
 
     ! MEP stuff
     ! ---------

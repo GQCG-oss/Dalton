@@ -408,7 +408,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
     integer, intent(in) :: luinp
     integer, intent(in) :: lupri
 
-    integer :: i, j
+    integer :: i, j, qmLJsites
     character(len=7) :: option
     character(len=2) :: auoraa
 
@@ -534,6 +534,23 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! skip electrostatics from fragment densities
         else if (trim(option(2:)) == 'NOFDES') then
             pe_fdes = .false.
+        ! provide LJ parameters for the QM region
+        else if (trim(option(2:)) == 'LJ') then
+            read(luinp,*) option
+            backspace(luinp)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                read(luinp,*) qmLJsites
+                if (qmljsites /= qmnucs) then
+                    stop 'ERROR: Number of ljsites must equal number of atoms in the QM region'
+                else
+                    allocate(qmLJs(2, qmnucs))
+                    do i = 1, qmnucs
+                        read(luinp,*) (qmLJs(j,i), j = 1, 2)
+                    end do
+                    lvdw = .true.
+                end if
+             end if
         ! skip QM calculations, i.e. go directly into PE module
         else if (trim(option(2:)) == 'SKIPQM') then
             pe_skipqm = .true.
@@ -800,6 +817,15 @@ subroutine read_potential(filename)
                 read(lupot,*) s, (temp(j), j = 1, 6)
                 P1s(:,s) = temp(1:6)
             end do
+        else if (trim(word) == 'LJ parameters') then
+            lvdw = .true.
+            allocate(LJs(2,nsites))
+            LJs = 0.0d0
+            read(lupot,*) nlines
+            do i = 1, nlines
+                read(lupot,*) s, (temp(j), j = 1, 2)
+                LJs(:,s) = temp(1:2)
+            end do
         else if (trim(word) == 'exclists' .or. trim(word) == 'exlists') then
             read(lupot,*) lexlst
             allocate(exclists(lexlst,nsites))
@@ -898,11 +924,12 @@ end subroutine read_surface
 
 !------------------------------------------------------------------------------
 
-subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
+subroutine pe_master(runtype, denmats, fckmats, molgrads, nmats, energies, dalwrk)
 
     character(*), intent(in) :: runtype
     integer, intent(in) :: nmats
     real(dp), dimension(:), intent(in), optional :: denmats
+    real(dp), dimension(:,:), intent(out), optional :: molgrads !Er denne korrekt? Jeg vil gerne have dimension (3:qmnucs), hvorfor jeg har sat den til (:,:) i stedet for (:) som den var sat til ellers.
     real(dp), dimension(:), intent(inout), optional :: fckmats
     real(dp), dimension(:), intent(out), optional :: energies
     real(dp), dimension(:), target, intent(inout) :: dalwrk
@@ -922,6 +949,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         fock = .true.
         energy = .false.
         response = .false.
+        molgrad = .false.
         mep = .false.
         noneq = .false.
         london = .false.
@@ -935,6 +963,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         fock = .false.
         energy = .true.
         response = .false.
+        molgrad = .false.
         mep = .false.
         noneq = .false.
         london = .false.
@@ -943,16 +972,29 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         fock = .false.
         energy = .false.
         response = .true.
+        molgrad = .false.
         mep = .false.
         noneq = .false.
         london = .false.
         if (.not. present(fckmats)) then
             stop 'Output matrices are missing from input'
         end if
+    else if (runtype == 'molgrad') then
+        fock = .false.
+        energy = .false.
+        response = .false.
+        molgrad = .true.
+        mep = .false.
+        noneq = .false.
+        london = .false.
+        if (.not. present(molgrads)) then
+            stop 'Output matrices are missing from input'
+        end if
     else if (runtype == 'mep') then
         fock = .false.
         energy = .false.
         response = .false.
+        molgrad = .false.
         mep = .true.
         noneq = .false.
         london = .false.
@@ -960,6 +1002,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         fock = .false.
         energy = .false.
         response = .false.
+        molgrad = .false.
         mep = .false.
 !        noneq = .false.
         noneq = .true.
@@ -998,6 +1041,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
     Epol = 0.0d0
     allocate(Esol(3,ndens))
     Esol = 0.0d0
+    allocate(Elj(2))
+    Elj = 0.0d0
 
 #if defined(VAR_MPI)
     if (myid == 0 .and. nprocs > 1) then
@@ -1059,6 +1104,12 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
                 write(luout,'(9x,a16,5x,f20.12)') 'Multipole       ', Epol(3,1)
             end if
         end if
+!        if (molgrad) then
+!            call LJenergy
+!            write(luout,'(/7x,a)') 'LJ energy contribution:'
+!            write(luout,'(9x,a16,5x,f20.12)') 'Repulsion 12   ', Elj(1)
+!            write(luout,'(9x,a16,5x,f20.12)') 'Dispersion 6   ', Elj(2)
+!        end if 
         if (pe_sol) then
             write(luout,'(/7x,a)') 'Continuum solvation contributions:'
             write(luout,'(9x,a16,5x,f20.12)') 'Electronic      ', Esol(1,1)
@@ -1087,6 +1138,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         endif
     else if (response) then
         call pe_fock(denmats, fckmats)
+    else if (molgrad) then
+        call pe_molgrad(denmats, molgrads)
     else if (noneq) then
         call pe_fock(denmats, fckmats)
 ! TODO read in fckmats from file and subtrack from new fckmats 
@@ -1097,7 +1150,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         call pe_compute_london(fckmats)
     end if
 
-    deallocate(Epe, Ees, Epol, Esol, Efd)
+    deallocate(Epe, Ees, Epol, Esol, Efd, Elj)
     nullify(work)
 
 end subroutine pe_master
@@ -1368,6 +1421,361 @@ end subroutine pe_sync
 
 !------------------------------------------------------------------------------
 
+subroutine lj_energy
+
+    real(dp) :: eps_sm, r_sm, term_6, norm
+    real(dp), dimension(3) :: Rsm
+    integer :: i, site
+    logical :: lj6, lj12
+
+    eps_sm = 0.0d0; r_sm = 0.0d0; Rsm = 0.0d0
+    term_6 = 0.0d0; norm = 0.0d0
+
+    do site = site_start, site_finish
+       do i = 1, qmnucs
+           eps_sm = sqrt(LJs(1,site) * qmLJs(1,i))
+           r_sm = LJs(2,site) + qmLJs(2,i)      
+           Rsm = Rm(:,i) - Rs(:,site)
+           norm = nrm2(Rsm)
+           term_6 = (r_sm / norm)**(6.0d0)
+           if (lj6) then
+               Elj(1) = Elj(1) - 2.0d0 * eps_sm * term_6
+           end if
+           if (lj12) then
+               Elj(2) = Elj(2) + eps_sm * (term_6)**(2.0d0) 
+           end if
+       end do
+     end do
+
+end subroutine lj_energy
+!------------------------------------------------------------------------------
+
+subroutine lj_gradients(molgrads)
+
+    real(dp), dimension(:,:), intent(inout) :: molgrads
+
+    real(dp), dimension(:,:), allocatable :: grd_lj
+    real(dp) :: eps_sm, r_sm, term_6, norm
+    real(dp), dimension(3) :: fac, Rsm
+    integer :: i, site
+    logical :: lj6, lj12
+
+    eps_sm = 0.0d0; r_sm = 0.0d0; Rsm = 0.0d0
+    term_6 = 0.0d0; norm = 0.0d0
+
+    allocate(grd_lj(3,qmnucs))
+    grd_lj = 0.0d0
+    
+    do site = site_start, site_finish
+       do i = 1, qmnucs
+          eps_sm = sqrt(LJs(1,site) * qmLJs(1,i))
+          r_sm = LJs(2,site) + qmLJs(2,i)
+          Rsm = Rm(:,i) - Rs(:,site)
+          norm = nrm2(Rsm) 
+          fac = -12.0d0 * eps_sm * Rsm / (norm**(2.0d0))
+          term_6 = (r_sm / norm)**(6.0d0)
+          if (lj6) then
+              grd_lj(:,i) = grd_lj(:,i) - fac * term_6
+          end if
+          if (lj12) then
+              grd_lj(:,i) = grd_lj(:,i) + fac * (term_6**(2.0d0))     
+          end if
+        end do
+    end do
+
+    molgrads = molgrads + grd_lj
+
+end subroutine lj_gradients
+!------------------------------------------------------------------------------
+
+subroutine pe_molgrad(denmats, molgrads)
+
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:,:), intent(out) :: molgrads
+
+    molgrads = 0.0d0
+
+    if (mulorder >= 0 ) then 
+        call es_gradients(denmats, molgrads)
+    end if   
+    if (lpol(1)) then   !true when having (iso)alphas
+        call pol_gradients(denmats, molgrads)
+    end if
+    if (lvdw) then
+        call lj_gradients(molgrads)
+    end if
+
+end subroutine pe_molgrad
+!------------------------------------------------------------------------------
+
+subroutine pol_gradients(denmats, molgrads)
+
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:,:), intent(inout) :: molgrads
+
+    real(dp), dimension(3*npols,ndens) :: Mkinds, Fktots, Fels
+    real(dp), dimension(3*npols) :: Fnucs, Fmuls !, Ffds
+    real(dp), dimension(6) :: grdFnucs
+    real(dp), dimension(3,qmnucs) :: grd_npol, grd_epol
+    real(dp), dimension(9,ndens)  :: grdFels
+
+    integer :: i, l, site, lu
+    logical :: lexist
+
+!    allocate(Mkinds(3*npols,ndens), Fktots(3*npols,ndens))
+!    allocate(Fels(3*npols,ndens))
+!    allocate(Fnucs(3*npols), Fmuls(3*npols))!, Ffds(3*npols))
+!    allocate(grdFnucs(6)) !packed matrix = vector holding derivatives of Fnucs wrt. all QM coords.
+!    allocate(grd_npols(3,qmnucs))
+!    allocate(grdFels(9,ndens))
+
+    Mkinds = 0.0d0; Fktots = 0.0d0
+    Fels = 0.0d0; Fnucs = 0.0d0
+
+!   Read in induced moments
+    if (myid == 0) then
+        inquire(file='pe_induced_dipoles.bin', exist=lexist)
+    end if
+
+    if (lexist) then
+        if (myid == 0) then
+            call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted') !jeg vil mene, at den skal være "old", da vi gerne skulle have lavet 1 SCF før.
+            rewind(lu)
+            read(lu) Mkinds
+            close(lu)
+        end if
+    else    
+        call electron_fields(Fels, denmats)
+        call nuclear_fields(Fnucs)
+        call multipole_fields(Fmuls)
+        do i = 1, ndens
+            Fktots(:3*npols,i) = Fels(:,i) + Fnucs + Fmuls !+ Ffds gradient of frozen densities not implemented yet.
+        end do
+        call induced_moments(Mkinds, Fktots)
+    end if
+
+!   derivative of QM nuclear field 
+    
+    grd_npol = 0.0d0
+    grdFnucs = 0.0d0
+    grd_epol = 0.0d0
+    l = 1
+    do site = site_start, site_finish
+        if (zeroalphas(site)) cycle
+        do i = 1, qmnucs
+            call grd_nuclear_fields(grdFnucs, i, site) !Symmetrisk matrice - Z_i * T_(i,site)^(2)
+            call spmv(grdFnucs(1:6), Mkinds(l:l+2,1), grd_npol(1:3,i), 'u', -1.0d0, 1.0d0) !grdFnucs skulle gerne være symmetrisk !ToDO: Loop over densities in Mkinds??? Jeg har her sat den til blot at tage den første densitet
+            call grd_electron_fields(denmats, grdFels, i, site)   !Denne skal dernæst dottes på de inducerede dipoler.
+!            grd_epols(1:3,i) = !en rutine, der kan matrix-vector multiplication - vaer meget opmaerksom på, at du faar gjort dette komponentvist rigtigt, dvs. at du faar fat i den rigtige MM dimensionen af grdFels, når du multiplicerer.  
+            grdFnucs = 0.0d0 
+            grdFels = 0.0d0
+        end do
+        l = l + 3
+    end do
+
+  !deallocate everything 
+
+end subroutine pol_gradients
+
+!------------------------------------------------------------------------------
+
+subroutine grd_electron_fields(denmats, grdFels, idx_qmnuc, idx_site)
+
+!   Calculates the molecular gradient with respect to QM coord idx_qmnuc of the 
+!   field generated by the QM electrons on an MM site, idx_site, 
+!   and holds it in grdFels. 
+
+    external :: derTk_integrals
+
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(9, ndens), intent(out) :: grdFels 
+
+    integer :: site
+    integer :: i, j, k, l, m, idx_qmnuc, idx_site
+    real(dp), dimension(nnbas, 9) :: grdFels_ints  !vector holding the integrals for each component 
+
+    grdFels = 0.0d0
+
+!    do site = site_start, site_finish    !This is done in the routine, which calls grd_electron_fields
+!        if (zeroalphas(idx_site)) cycle
+    call derTk_integrals(grdFels_ints, nnbas, 3, Rs(:,idx_site), idx_qmnuc) 
+! OBS - rutinen, skal vide, at 3 refererer til gradient af felt => at der er 9 elementer xx, xy, xz, osv, da vi ikke har symmetri mellem xy og yx, da det ikke er en dobbelt afledt. 
+    do j = 1, 9   !loop over elements: xx, xy, xz, ect.
+        do k = 1, ndens  !loop over densities - we can only have one - should we do something here?
+            l = (k - 1) * nnbas + 1  !pointer to the beginning of the elements of the kth density in the denmats array
+            m = k * nnbas  ! pointer to the end of the elements of the kth density in the denmats array
+            grdFels(j,k) = dot(denmats(l:m), grdFels_ints(:,j))
+        end do
+    end do
+
+end subroutine grd_electron_fields 
+
+!------------------------------------------------------------------------------
+
+subroutine grd_nuclear_fields(grdFnucs, idx_qmnuc, idx_site)
+
+!   Calculates the molecular gradient of the field generated by the QM nucleus
+!   idx_qmnuc on an MM site, idx_site and holds it in grdFnucs.
+
+    real(dp), dimension(:), intent(out) :: grdFnucs
+    integer, intent(in) :: idx_qmnuc, idx_site
+
+    real(dp), dimension(6) :: Tms
+    real(dp), dimension(3) :: Rms 
+    integer :: k 
+
+    grdFnucs = 0.0d0
+    Tms = 0.0d0; Rms = 0.0d0
+
+    Rms = Rs(:,idx_site) - Rm(:,idx_qmnuc)
+    call Tk_tensor(Tms ,Rms)
+    do k = 1, 6
+        grdFnucs(k) = - Zm(1,idx_qmnuc) * Tms(k)
+    end do
+
+end subroutine grd_nuclear_fields 
+ 
+!------------------------------------------------------------------------------
+
+subroutine es_gradients(denmats, molgrads)
+
+!   Calculates gradient contribution from QM nuclear - multipole
+!   and QM electron - multipole interaction energies
+ 
+    real(dp), dimension(:), intent(in) :: denmats
+    real(dp), dimension(:,:), intent(inout) :: molgrads
+
+    real(dp), dimension(:,:), allocatable :: grdnmul
+    real(dp), dimension(:,:), allocatable :: grdemul
+    real(dp), dimension(:,:,:), allocatable :: Mk_ints 
+    real(dp), dimension(3) :: Rsm 
+    integer :: i, site
+
+    allocate(grdnmul(3,qmnucs))
+    allocate(grdemul(3,qmnucs))
+
+    grdnmul = 0.0d0
+    grdemul = 0.0d0
+
+    do site = site_start, site_finish
+        do i = 1, qmnucs
+            Rsm = Rm(:,i) - Rs(:,site)  !for Rm(:,i) skal vi bruge CEP koordinater
+            if (lmul(0)) then
+                if (abs(maxval(M0s(:,site))) >= zero) then
+                    allocate(Mk_ints(nnbas,size(M0s(:,site), 1), 3))   !HOW TO DO WITH NULLIFY/ALLOCATE?
+                    Mk_ints = 0.0d0
+                    call multipole_field(grdnmul(:,i), Rsm, M0s(:,site)) 
+                    call derMk_integrals(Mk_ints, Rs(:,site), M0s(:,site), i)
+!                    grdemul(1:3,i) = !Mk_ints * densmat 
+!udregn Mk_ints bidrag til grdemul for at Mk_ints kan deallokeres. Alternativt skal derMk_integrals laves så Mk_ints er intent(inout) 
+! input i skal bruges til at fortælle gen1int, hvilken kernekoordinat, der skal differentieres mht. 
+                    deallocate(Mk_ints)
+                end if
+            end if
+            if (lmul(1)) then
+                if (abs(maxval(M1s(:,site))) >= zero) then
+                    allocate(Mk_ints(nnbas, size(M1s(:,site), 1), 3)) !last dim holds x,y and z derivatives with respect to QM nucleus i
+                    Mk_ints = 0.0d0
+                    call multipole_field(grdnmul(:,i), Rsm, M1s(:,site))
+                    call derMk_integrals(Mk_ints, Rs(:,site), M1s(:,site), i)
+!                    grdemul(1:3,i) =  
+                    deallocate(Mk_ints)  
+                end if
+            end if
+            if (lmul(2)) then
+                if (abs(maxval(M2s(:,site))) >= zero) then
+                    allocate(Mk_ints(nnbas, size(M2s(:,site), 1),3)) 
+                    Mk_ints = 0.0d0
+                    call multipole_field(grdnmul(:,i), Rsm, M2s(:,site))
+                    call derMk_integrals(Mk_ints, Rs(:,site), M2s(:,site), i)
+!                   grdemul(1:3,i) = 
+                    deallocate(Mk_ints)  
+                end if
+            end if
+            if (lmul(3)) then
+                if (abs(maxval(M3s(:,site))) >= zero) then
+                    allocate(Mk_ints(nnbas, size(M3s(:,site), 1),3)) 
+                    Mk_ints = 0.0d0
+                    call multipole_field(grdnmul(:,i), Rsm, M3s(:,site))
+                    call derMk_integrals((Mk_ints, Rs(:,site), M3s(:,site), i)
+!                    grdemul(1:3,i) = 
+                    deallocate(Mk_ints)  
+                end if
+            end if
+            if (lmul(4)) then
+                if (abs(maxval(M4s(:,site))) >= zero) then
+                    allocate(Mk_ints(nnbas, size(M4s(:,site), 1),3)) 
+                    Mk_ints = 0.0d0
+                    call multipole_field(grdnmul(:,i), Rsm, M4s(:,site))
+                    call derMk_integrals((Mk_ints, Rs(:,site), M4s(:,site), i)  
+!                    grdemul(1:3,i) = 
+                    deallocate(Mk_ints)  
+                end if
+            end if
+            if (lmul(5)) then
+                if (abs(maxval(M5s(:,site))) >= zero) then
+                    allocate(Mk_ints(nnbas, size(M5s(:,site), 1),3)) 
+                    Mk_ints = 0.0d0
+                    call multipole_field(grdnmul(:,i), Rsm, M5s(:,site))
+                    call derMk_integrals((Mk_ints, Rs(:,site), M5s(:,site), i)  
+!                    grdemul(1:3,i) = 
+                    deallocate(Mk_ints)  
+                end if
+            end if
+            grdnmul(:,i) = - Zm(1,i) * grdnmul(:,i)
+        end do
+    end do
+   
+    deallocate(grdnmul)
+    deallocate(grdemul) 
+   
+end subroutine es_gradients
+!------------------------------------------------------------------------------
+
+subroutine derMk_integrals(Mk_ints, Rij, Mk, idx_qmnuc)
+
+!   Calculates gradient contribution from QM electron - multipole
+!   interaction energy 
+
+    external :: derTk_integrals
+
+    real(dp), dimension(:,:,:), intent(out) :: Mk_ints
+    real(dp), dimension(:), intent(in) :: Mk
+    real(dp), dimension(3), intent(in) :: Rij
+
+    integer :: i, k, l 
+    integer :: ncomps, idx_qmnuc
+    real(dp) :: taylor
+    real(dp), dimension(:), allocatable :: factors
+
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Mk)) - 1.0d0)) - 1
+
+    if (mod(k,2) == 0) then
+        taylor = 1.0d0 / factorial(k)
+    else if (mod(k,2) /= 0) then
+        taylor = - 1.0d0 / factorial(k)
+    end if
+
+    ncomps = size(Mk_ints, 2)
+
+    call derTk_integrals(Mk_ints, nnbas, ncomps, Rij, idx_qmnuc)  !this routine is missing
+
+    ! get symmetry factors
+    allocate(factors(ncomps))
+    call symmetry_factors(factors)
+
+    ! dot T^(k) integrals with multipole to get M^(k) integrals
+    do l = 1, 3
+        do i = 1, ncomps
+            Mk_ints(:,i,l) = taylor * factors(i) * Mk(i) * Mk_ints(:,i,l)
+        end do
+    end do
+    deallocate(factors)
+
+end subroutine derMk_integrals
+
+!-----------------------------------------------------------------------------
+
 subroutine pe_fock(denmats, fckmats, energies)
 
     real(dp), dimension(:), intent(in) :: denmats
@@ -1393,15 +1801,19 @@ subroutine pe_fock(denmats, fckmats, energies)
         if (pol) call pe_polarization(denmats, fckmats)
     end if
 
+    if (lvdw) call lj_energy
+        
     if (fock .or. energy) then
         if (myid == 0) then
             do i = 1, ndens
                 Epe(i) = sum(Ees(:,i)) + sum(Efd(:,i)) + sum(Epol(:,i)) +&
-                       & sum(Esol(:,i))
+                       & sum(Esol(:,i)) + sum(Elj(:))
             end do
             if (fock) energies = Epe
         end if
     end if
+ 
+        
 
 #if defined(VAR_MPI)
     if (fock .or. response) then
@@ -1674,12 +2086,12 @@ subroutine es_multipoles(Mks, denmats, Eel, Enuc, fckmats)
 
     ncomps = size(Mks,1)
 
-    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * ncomps) - 1.0d0)) - 1
+    k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * ncomps) - 1.0d0)) - 1 
 
     if (mod(k,2) == 0) then
-        taylor = 1.0d0 / factorial(k)
-    else if (mod(k,2) /= 0) then
-        taylor = - 1.0d0 / factorial(k)
+        taylor =  1.0d0 / factorial(k) 
+    else if (mod(k,2) /= 0) then   
+        taylor = - 1.0d0 / factorial(k) 
     end if
 
     allocate(Tsm(ncomps))

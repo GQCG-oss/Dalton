@@ -318,6 +318,8 @@ C     1983.
 C
 C     Symmetry included  880406  TUH & PRT
 C
+        use pe_variables, only: peqm
+        use polarizable_embedding, only: pe_master
 #include "implicit.h"
 #include "mxcent.h"
 #include "maxaqn.h"
@@ -372,6 +374,8 @@ C
 C... added by Bin Gao, Feb. 16, 2011
 C... for ECP
 #include "ecpinf.h"
+!     peqm
+      real*8, dimension(:), allocatable :: molgrad
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
       TIMHER = D0
@@ -877,6 +881,31 @@ Ckr
 Ckr   Get QMMM gradient/Hessian integrals
 Ckr
 C
+
+C     ****************************************
+C     ***** PE contribution to gradient ******
+C     ****************************************
+C     NHL 03/13
+
+      ! den dalwrk vi sender ind kommer til at holde PE-gradientbidrag.
+
+      if (propty .and. peqm) then
+         allocate(molgrad(3*natoms))
+         call pe_master(runtype='molgrad', denmats=denmat,
+     &                  molgrads=molgrad, nmats=1,
+     &                  dalwrk=wrk(1:lwork))
+         pegrad = 0.0d0
+         pegrad(1:3*natoms) = molgrad
+         deallocate(molgrad)
+!     når man giver input variable ved "navn=", så kan man skrive dem i
+!     vilkårlig rækkefølge     
+!     What is expgra and should we do something if true. It's something
+!     with the analytical gradient.
+      end if
+C        CALL HEADER('GRADFT in DFT_MOLGRAD ',-1)
+C        CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
+
+
 C     *************************
 C     ***** Print Section *****
 C     *************************
@@ -907,6 +936,17 @@ C
                CALL PRIGRD(GSOLTT,WORK(KCSTRA),WORK(KSCTRA))
                CALL HEADER('Nuclear solvent part of gradient',-1)
                CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
+!            IF (PEQM) THEN
+!               CALL HEADER('Polarizable Embedding 
+!     &                                  energy contributions',-1)
+!               WRITE(LUPRI,'(3(/A,F15.10))')
+!     &            ' Nuclear PE energy:',EPENN,
+!     &            ' Electr. PE energy:',EPETT,
+!     &            ' Total   solvent energy:',EPENN+EPETT
+!               CALL HEADER('Electronic solvent part of gradient',-1)
+!               CALL PRIGRD(GSOLTT,WORK(KCSTRA),WORK(KSCTRA))
+!               CALL HEADER('Nuclear solvent part of gradient',-1)
+!               CALL PRIGRD(GSOLNN,WORK(KCSTRA),WORK(KSCTRA))
             ELSE IF (PCM) THEN
                CALL HEADER('PCM Solvent energy contributions',-1)
                WRITE(LUPRI,'(3(/A,F15.10))')
