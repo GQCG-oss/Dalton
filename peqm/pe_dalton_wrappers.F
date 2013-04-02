@@ -1121,20 +1121,19 @@ C     as to what works best for singly bonded C,N,O
 #include "qm3.h"
 #include "orgcom.h"
 
+      logical :: trimat
       character(len=8), dimension(9*mxcent) :: labint
       integer, dimension(9*mxcent) :: intrep, intadr
-  
+
+      integer :: i, j, k, l, m, n
+      real(8) :: dd
+      real(8), dimension(3) :: backup
       integer, intent(in) :: nints, ncomps, nwrk
       real(8), dimension(nints*ncomps*3), intent(inout) :: Tk_ints
       real(8), dimension(3), intent(in) :: coord
       real(8), dimension(nwrk), intent(inout) :: work
-  
-      logical :: trimat
-      integer :: i, j, k, l, m, n
       character(len=7) :: inttype
-      real(8), dimension(3) :: backup
-      real(8) :: dd
-      real(8), dimension(:), allocatable :: diff
+
       dd = 0.001d0
       k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * real(ncomps)) - 1.0d0)) - 1
   
@@ -1150,13 +1149,11 @@ C     as to what works best for singly bonded C,N,O
       else if (k == 1) then
           inttype = 'EFIELB1'
       else if (k == 2) then
-        !inttype = 'ELFGRDC'
+        !inttype = 'EFIELB1'
+        continue
       else if (k >= 3) then
-          stop 'Electric field hessian and higher order integrals not
-     &          implemented.'
-!        print *, 'WARNING: using simple finite difference to obtain
-!        EFH&
-!                 & integrals from potentially unstable EFG integrals.'
+          stop 'ERROR: electric field hessian and higher order integrals
+     & not implemented for london orbitals.'
 !        if (nwrk < 24 * nints) then
 !            print *, 'Not enough work space for T^(3) integrals!'
 !        end if
@@ -1168,11 +1165,11 @@ C     as to what works best for singly bonded C,N,O
       Tk_ints = 0.0d0
 !
       if (k == 0) then
-          n = ncomps*3
+          n = ncomps * 3
           call get1in(Tk_ints(1), inttype, n, work(1), nwrk, labint,
      &                intrep, intadr, 0, .false., 0, trimat, dummy,
      &                .false., dummy, 1)
-          Tk_ints = -Tk_ints
+          Tk_ints = - Tk_ints
       else if (k == 1) then
 !          n = 3
 !          m = nints*n
@@ -1199,8 +1196,7 @@ C     as to what works best for singly bonded C,N,O
      &                .false., dummy, 1)
       else if (k == 2) then
           n = 9
-          m = nints*n
-!          allocate(diff(nints))
+          m = nints * n
           ! xx, xy, xz
           diporg = coord
           diporg(1) = coord(1) + dd
@@ -1211,7 +1207,7 @@ C     as to what works best for singly bonded C,N,O
           call get1in(work(1+m:2*m), 'EFIELB1', n, work(2*m+1), nwrk,
      &                labint, intrep, intadr, 0, .false., 0, trimat,
      &                dummy, .false., dummy, 1)
-          Tk_ints(1:m) = work(1:m)-work(m+1:2*m)
+          Tk_ints(1:m) = work(1:m) - work(m+1:2*m)
    
           ! yy, yz
           diporg = coord
@@ -1223,8 +1219,8 @@ C     as to what works best for singly bonded C,N,O
           call get1in(work(1+m:2*m), 'EFIELB1', n, work(2*m+1), nwrk,
      &                labint, intrep, intadr, 0, .false., 0, trimat,
      &                dummy, .false., dummy, 1)
-          i=3*nints
-          Tk_ints(m+1:m+2*i+1)=work(i+1:m)-work(m+i+1:2*m)
+          i = 3 * nints
+          Tk_ints(m+1:m+2*i+1) = work(i+1:m) - work(m+i+1:2*m)
    
           ! zz
           diporg = coord
@@ -1237,41 +1233,40 @@ C     as to what works best for singly bonded C,N,O
      &                labint, intrep, intadr, 0, .false., 0, trimat,
      &                dummy, .false., dummy, 1)
 
-          i=6*nints
-          Tk_ints(m+i+1:2*m)=work(i+1:m)-work(m+i+1:2*m)
+          i = 6 * nints
+          Tk_ints(m+i+1:2*m) = work(i+1:m) - work(m+i+1:2*m)
           ! suspecting sign from magnus
-          Tk_ints = -Tk_ints / (2.0d0 * dd)
-!          deallocate(diff)
-      else if (k == 3) then
-          n = 6
-          m = nints
-          i = n * nints
-          l = 0
-          do j = 1, 3
-              diporg(j) = diporg(j) + 0.01d0
-              call get1in(work(l*i+1), inttype, n, work(j*i+1), nwrk,
-     &                    labint, intrep, intadr, 0, .false., 0, trimat,
-     &                    dummy, .false., dummy, 1)
-              diporg(j) = diporg(j) - 2.0d0 * 0.01d0
-              call get1in(work(j*i+1), inttype, n, work((j+1)*i+1),
-     &                    nwrk, labint, intrep, intadr, 0, .false., 0,
-     &                    trimat, dummy, .false., dummy, 1)
-              diporg(j) = coord(j)
-              work(l*i+1:j*i) = (work(l*i+1:j*i) - work(j*i+1:(j+1)*i))
-     &                                           / (2.0d0 * 0.01d0)
-              l = l + 1
-          end do
-          Tk_ints(1:m) = work(1:m)
-          Tk_ints(m+1:2*m) = work(i+1:i+1+m)
-          Tk_ints(2*m+1:3*m) = work(2*i+1:2*i+1+m)
-          Tk_ints(3*m+1:4*m) = work(i+1+m:i+1+2*m)
-          Tk_ints(4*m+1:5*m) = work(2*i+1+m:2*i+1+2*m)
-          Tk_ints(5*m+1:6*m) = work(2*i+1+2*m:2*i+1+3*m)
-          Tk_ints(6*m+1:7*m) = work(i+1+3*m:i+1+4*m)
-          Tk_ints(7*m+1:8*m) = work(2*i+1+3*m:2*i+1+4*m)
-          Tk_ints(8*m+1:9*m) = work(2*i+1+4*m:2*i+1+5*m)
-          Tk_ints(9*m+1:10*m) = work(2*i+1+5*m:2*i+1+6*m)
-          Tk_ints = -1.0d0 * Tk_ints
+          Tk_ints = - Tk_ints / (2.0d0 * dd)
+!      else if (k == 3) then
+!          n = 6
+!          m = nints
+!          i = n * nints
+!          l = 0
+!          do j = 1, 3
+!              diporg(j) = diporg(j) + 0.01d0
+!              call get1in(work(l*i+1), inttype, n, work(j*i+1), nwrk,
+!     &                    labint, intrep, intadr, 0, .false., 0, trimat,
+!     &                    dummy, .false., dummy, 1)
+!              diporg(j) = diporg(j) - 2.0d0 * 0.01d0
+!              call get1in(work(j*i+1), inttype, n, work((j+1)*i+1),
+!     &                    nwrk, labint, intrep, intadr, 0, .false., 0,
+!     &                    trimat, dummy, .false., dummy, 1)
+!              diporg(j) = coord(j)
+!              work(l*i+1:j*i) = (work(l*i+1:j*i) - work(j*i+1:(j+1)*i))
+!     &                                           / (2.0d0 * 0.01d0)
+!              l = l + 1
+!          end do
+!          Tk_ints(1:m) = work(1:m)
+!          Tk_ints(m+1:2*m) = work(i+1:i+1+m)
+!          Tk_ints(2*m+1:3*m) = work(2*i+1:2*i+1+m)
+!          Tk_ints(3*m+1:4*m) = work(i+1+m:i+1+2*m)
+!          Tk_ints(4*m+1:5*m) = work(2*i+1+m:2*i+1+2*m)
+!          Tk_ints(5*m+1:6*m) = work(2*i+1+2*m:2*i+1+3*m)
+!          Tk_ints(6*m+1:7*m) = work(i+1+3*m:i+1+4*m)
+!          Tk_ints(7*m+1:8*m) = work(2*i+1+3*m:2*i+1+4*m)
+!          Tk_ints(8*m+1:9*m) = work(2*i+1+4*m:2*i+1+5*m)
+!          Tk_ints(9*m+1:10*m) = work(2*i+1+5*m:2*i+1+6*m)
+!          Tk_ints = -1.0d0 * Tk_ints
       end if
   
       runqm3 = .false.
