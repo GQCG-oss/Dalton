@@ -133,6 +133,9 @@ contains
     ! Fock matrix in MO basis
     call molecule_mo_fock(molecule)
 
+    ! Init interaction matrices
+    call molecule_get_interaction_matrices(molecule,mylsitem)
+
     ! Print some info about the molecule
     write(DECinfo%output,*)
     write(DECinfo%output,'(/,a)') '-- Full moleculecular info --'
@@ -735,6 +738,7 @@ contains
 
     ! Get interaction matrix in AO basis
     call mat_init(AOint_mat,molecule%nbasis,molecule%nbasis)
+    call mat_zero(AOint_mat)
     call II_get_2int_ScreenMat(DECinfo%output,DECinfo%output,mylsitem%setting,AOint_mat)
 
     ! Temporary fix until Thomas makes routine which gives Fortran arrays as output

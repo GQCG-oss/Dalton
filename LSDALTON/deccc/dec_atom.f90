@@ -6346,6 +6346,15 @@ end subroutine get_main_pair_info
 
     end do IncludeUnoccOrbitals
 
+
+    ! Sanity check: If the whole molecule is included for eith occ or unocc,
+    ! we might as well include the whole molecule for the other orbital space as well.
+    ! (Only relevant for small test systems).
+    if(all(occAOS) .or. all(unoccAOS)) then
+       occAOS=.true.
+       unoccAOS=.true.
+    end if
+
     write(DECinfo%output,'(1X,a,2i7)') 'FOP Expanded fragment, new occ/unocc dims: ', &
          & count(occAOS),count(unoccAOS)
 
