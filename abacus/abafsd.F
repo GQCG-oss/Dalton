@@ -1705,8 +1705,8 @@ C  /* Deck onedrl */
       SUBROUTINE ONEDRL(KEY,OMATX,OMATY,OMATZ,IATOM,DERX,DERY,DERZ,WORK,
      &                  LWORK,IPRINT,INTPRI)
 C
-       use pe_variables, only : peqm
-       use polarizable_embedding, only : pe_master
+       use pe_variables, only: peqm
+       use polarizable_embedding, only: pe_master
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"

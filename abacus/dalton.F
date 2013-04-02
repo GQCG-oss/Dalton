@@ -295,6 +295,8 @@ C
      &  '(cubic response and complex response in RESPONS)',
      *'Jeppe Olsen,','Aarhus University,','Denmark',
      &  '(SIRIUS CI/density modules)',
+     *'Jogvan Magnus H. Olsen,','Univ. of Southern Denmark,', 'Denmark',
+     &  '(Polarizable Embedding (PE) module)',
      *'Anders Osted,','Copenhagen University,','Denmark','(QM/MM code)',
      *'Martin J. Packer,','University of Sheffield,','UK',
      &  '(SOPPA)',

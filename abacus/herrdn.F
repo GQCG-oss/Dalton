@@ -4581,7 +4581,8 @@ C
       END IF
 
       if (peqm .or. pe_mep .or. pe_savden) then
-        call pe_init(cord(:,1:natoms), charge(1:natoms), work(1:lwork))
+        call pe_init(lupri, cord(:,1:natoms), charge(1:natoms),
+     &               work(1:lwork))
       end if
 
       RETURN

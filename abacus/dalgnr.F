@@ -1109,6 +1109,7 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
+      use pe_variables, only: peqm
       use polarizable_embedding, only: pe_dalton_input
 #include "implicit.h"
 #include "dummy.h"
@@ -1139,7 +1140,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 11, NTABLE = 32, D0 = 0.D0)
+      PARAMETER (NDIR = 11, NTABLE = 33, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1163,7 +1164,7 @@ C
      &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
-     &            '.THRRED', '.DOUGLA'/
+     &            '.THRRED', '.DOUGLA', '.PEQM  '/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1334,7 +1335,7 @@ C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-32: '.THRRED', '.DOUGLA'
+C 31-33: '.THRRED', '.DOUGLA', '.PEQM  '.
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1348,7 +1349,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                131,132), I
+     &                131,132,133), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1468,6 +1469,10 @@ C        '.DOUGLA'
  132     CONTINUE
             DKTRAN = .TRUE.
          GOTO 100
+!        .PEQM
+ 133     continue
+            peqm = .true.
+         goto 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1578,6 +1583,9 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
+        if (peqm) write(lupri,'(4x,a)')
+     &   'Environment is modeled using polarizable embedding scheme'//
+     &   ' (PE module)'
 C
 Cholesky
       IF (CHOINT) WRITE (LUPRI,'(4X,A)')
