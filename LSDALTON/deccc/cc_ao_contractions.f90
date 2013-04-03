@@ -84,54 +84,13 @@ contains
     type(array2), intent(in) :: Cvirt
     !> (C K | D L) integrals in the order (C,K,D,L)
     type(array4),intent(inout) :: VOVO
-    type(array4) :: LCKsigma, DLCK1, sigmaLCK1
-    integer :: K,sigma
-    real(realk) :: tcpu1,twall1,tcpu2,twall2,ttot
 
-    if(DECinfo%hack) then
-
-       ! Get integrals (a i | b j) stored as (i,j,b,a)
-       VOVO = array4_init([nocc,nocc,nvirt,nvirt])
-       call get_ijba_integrals(mylsitem%setting,nbasis,nocc,nvirt,Cocc%val,Cvirt%val,VOVO%val)
-
-       ! Reorder: (i,j,b,a) --> (a,i,b,j)
-       call array4_reorder(LCKsigma,[4,1,3,2])
-
-    else
-
-    ! Note on the indices.
-    ! Virtual indices    : C,D
-    ! Batch (AO) indices : X,Y
-    ! Occupied indices   : K,L
-    ! Full AO indices: mu,nu,rho,sigma
-    ! Of course we have (CK|DL)=(CK|LD) and (CK|DL) = (DL|CK) etc.
-    call LSTIMER('START',tcpu1,twall1,DECinfo%output)
-
-
-    ! Get (sigma L | C K) integrals stored in the order (L,C,K,sigma)
-    ! ***************************************************************
-    call get_AOVO_integrals(mylsitem,nbasis,nocc,nvirt,Cvirt,Cocc,LCKsigma)
-
-
-    ! Reorder and transform AO index to virtual index: (L,C,K,sigma) --> (D,L,C,K)
-    ! ****************************************************************************
-    call get_VOVO_from_AOVO_integrals(nbasis,nocc,nvirt,Cocc,Cvirt,LCKsigma,VOVO)
-
-
-    ! Clean up
-    ! ********
-    if(DECinfo%array4OnFile) call array4_delete_file(LCKsigma)
-    call array4_free(LCKsigma)
-    call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    ttot=twall2-twall1
-    if(DECinfo%PL>0) write(DECinfo%output,'(a,3i8,g18.5)') 'INFO SUMMARY (nocc,nvirt,nbasis,time):', &
-         & nocc, nvirt, nbasis, ttot
-
-    ! Update total time for MO integral
-    DECinfo%MOintegral_time_cpu = DECinfo%MOintegral_time_cpu + (tcpu2-tcpu1)
-    DECinfo%MOintegral_time_wall = DECinfo%MOintegral_time_wall + ttot
-
- end if
+    ! Get integrals (a i | b j) stored as (i,j,b,a)
+    VOVO = array4_init([nocc,nocc,nvirt,nvirt])
+    call get_ijba_integrals(mylsitem%setting,nbasis,nocc,nvirt,Cocc%val,Cvirt%val,VOVO%val)
+    
+    ! Reorder: (i,j,b,a) --> (a,i,b,j)
+    call array4_reorder(VOVO,[4,1,3,2])
 
   end subroutine get_VOVO_integrals
 
@@ -2182,6 +2141,8 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
   !> No MPI here, intended to be a simple routine to be used for 
   !> (i) calculations not requiring MPI, (ii) debugging,
   !> (iii) starting point for more advanced routine giving other integrals.
+  !> So: PLEASE DO NOT POLLUTE THIS SUBROUTINE, IT SHOULD BE KEPT AS AN EASILY ACCESIBLE
+  !>     STARTING POINT FOR MORE ADVANCED ROUTINES!
   !> \author Kasper Kristensen
   !> \date March 2013
   subroutine get_ijba_integrals(MySetting,nbasis,nocc,nunocc,Cocc,Cunocc,ijba)
@@ -2217,7 +2178,6 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     TYPE(DECscreenITEM)   :: DecScreen
     Character            :: intSpec(5)
     integer :: MinAObatchSize, MaxAObatchSize, GammaBatchSize, AlphaBatchSize
-
 
 
     ! ***********************************************************
@@ -2340,7 +2300,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
     ! Zero output integrals to be on the safe side
     ijba = 0.0_realk
 
-      
     FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
        dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
@@ -2352,7 +2311,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
        AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
        AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
-
 
 
        ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
@@ -2375,7 +2333,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        ! tmp2(delta,alphaB,gammaB,j) = sum_{beta} tmp1^T(beta;delta,alphaB,gammaB) Cocc_{beta j}
        m = nbasis*dimGamma*dimAlpha   ! # elements in "delta alphaB gammaB" dimension of tmp1^T
        k = nbasis                     ! # elements in "beta" dimension of tmp1^T
-       n = nbasis*nocc                ! # elements in second dimension of Cocc
+       n = nocc                       ! # elements in second dimension of Cocc
        dim2 = i8*nocc*nbasis*dimAlpha*dimGamma  ! dimension of tmp2 array
        call mem_alloc(tmp2,dim2)
        call dec_simple_dgemm(m,k,n,tmp1,Cocc,tmp2, 't', 'n')
@@ -2394,7 +2352,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        call mem_alloc(tmp1,dim1)
        call dec_simple_dgemm(m,k,n,CunoccT,tmp2,tmp1, 'n', 'n')
        call mem_dealloc(tmp2)
-
 
        ! Transpose to make alphaB and gammaB indices available
        ! *****************************************************
@@ -2418,7 +2375,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        call dec_simple_dgemm(m,k,n,CoccT(:,GammaStart:GammaEnd),tmp2,tmp1, 'n', 'n')
        call mem_dealloc(tmp2)
 
-
        ! Transform alpha batch index to unoccupied index and update output integral
        ! **************************************************************************
        ! ijba(i,j,b,a) =+ sum_{alpha in alphaBatch} tmp1(i,j,b,alpha)  Cunocc(alpha,a)
@@ -2429,7 +2385,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        call mem_dealloc(tmp1)
        ! Note: To have things consecutive in memory it is better to pass CunoccT to the dgemm
        ! routine and then transpose (insted of passing Cunocc and not transpose).
-
 
     end do BatchAlpha
  end do BatchGamma
@@ -2473,7 +2428,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
  end do
  call mem_dealloc(batch2orbAlpha)
  batch2orbAlpha => null()
-
 
 
  call mem_dealloc(CoccT)
