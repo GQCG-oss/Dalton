@@ -57,6 +57,7 @@ option(ENABLE_PROFILING      "Enable profiling"              OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
 option(ENABLE_INTERNAL_MATH  "Enable internal math library implementation"  OFF)
+option(ENABLE_XCFUN          "Enable XCFUN"                  OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
 option(ENABLE_MPI32          "Enable 32 bit integer MPI lib workaround" OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
@@ -109,9 +110,11 @@ include(ConfigExternal)
 
 #add_subdirectory(LSint)
 set(LIBS)
-set(LIBS ${LIBS} ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a)
-
-add_subdirectory(xcfun_host)
+if(ENABLE_XCFUN)
+	set(LIBS ${LIBS} ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a)
+#	add_subdirectory(xcfun_host)
+	add_definitions(-DVAR_XCFUN)
+endif()
 
 if(ENABLE_OPENRSP)
 	set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
@@ -383,10 +386,11 @@ set(ExternalProjectCMakeArgs
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
 
-add_external(xcfun)
-
 target_link_libraries(xcfun_interface lsutillib)
-add_dependencies(xcfun_interface xcfun)
+if(ENABLE_XCFUN)
+	add_external(xcfun)
+	add_dependencies(xcfun_interface xcfun)
+endif()
 
 if(ENABLE_INTEREST)
         add_definitions(-DVAR_INTEREST)
@@ -394,7 +398,7 @@ if(ENABLE_INTEREST)
 		interestlib
     		${INTERESTLIB_SOURCES}
 		)
-	target_link_libraries(interestlib xcfun_interface)
+		target_link_libraries(interestlib xcfun_interface)
 endif()
 
 add_library(
@@ -402,7 +406,7 @@ add_library(
     ${FMM_SOURCES}
     ${FMM_C_SOURCES}
     )
-target_link_libraries(fmmlib xcfun_interface)
+	target_link_libraries(fmmlib xcfun_interface)
 if(ENABLE_INTEREST)
 target_link_libraries(fmmlib interestlib)
 endif()
@@ -564,6 +568,7 @@ else()
     )
 endif()
 
+
 MERGE_STATIC_LIBS(
     lsdalton
     lsutillib_precision
@@ -575,6 +580,7 @@ MERGE_STATIC_LIBS(
     lsutiltypelib_common
     lsutillib
     fmmlib
+    xcfun_interface
     dftfunclib
     lsint
     pbclib
@@ -586,7 +592,6 @@ MERGE_STATIC_LIBS(
     rsp_prop
     geooptlib
     lsdaltonmain 
-    xcfun_interface
     )
 target_link_libraries(lsdalton lsdaltonmain)
 
