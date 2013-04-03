@@ -893,7 +893,7 @@ C     NHL 03/13
          allocate(molgrad(3*natoms))
          call pe_master(runtype='molgrad', denmats=denmat,
      &                  molgrads=molgrad, nmats=1,
-     &                  dalwrk=wrk(1:lwork))
+     &                  dalwrk=work(1:lwork))
          pegrad = 0.0d0
          pegrad(1:3*natoms) = molgrad
          deallocate(molgrad)

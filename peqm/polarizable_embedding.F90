@@ -1157,7 +1157,6 @@ subroutine pe_master(runtype, denmats, fckmats, molgrads, nmats, energies, dalwr
         call pe_compute_london(fckmats)
     end if
 
-    deallocate(Epe, Ees, Epol, Esol, Efd, Elj)
     nullify(work)
 
 end subroutine pe_master
