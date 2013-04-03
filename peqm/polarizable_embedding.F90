@@ -134,7 +134,7 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
         write(luout,'(/4x,a)') 'Multipole moments upto 0th order.'
     end if
     if (pe_polar) then
-        write(luout,'(/4x,a)') 'Dipole-dipole polarizabilities.'
+        if (lpol(1)) write(luout,'(/4x,a)') 'Dipole-dipole polarizabilities.'
         if (pe_gspol) then
             write(luout,'(/4x,a)') 'Dynamic response from environment will be&
                                    & neglected during response calculation.'
@@ -2030,9 +2030,9 @@ subroutine induced_moments(Mkinds, Fs)
             call direct_solver(Mkinds, Fs)
         end if
     end if
-    do i = 1, 3*npols+nsurp
-        write(luout,*) 'Induced dipole i', Mkinds(i,1), i
-    end do
+!    do i = 1, 3*npols+nsurp
+!        write(luout,*) 'Induced dipole i', Mkinds(i,1), i
+!    end do
 
     ! check induced dipoles
     if (myid == 0) then

@@ -25,9 +25,9 @@ parser.add_argument('--open-shell', dest='openshell', action='store_true',
 parser.add_argument('--field-strength', dest='field', metavar='FIELD_STRENGTH',
                     default=0.001, type=float,
                     help='''Specify field strength [default: %(default)s]''')
-parser.add_argument('--no-diis', dest='nodiis', action='store_true',
+parser.add_argument('--qc-scf', dest='qcscf', action='store_true',
                     default=False,
-                    help='''Use quadratic convergence optimization
+                    help='''Use quadratic convergence SCF optimization
                             [default: %(default)s]''')
 parser.add_argument('--linear', dest='linear', action='store_true',
                     default=False,
@@ -38,9 +38,23 @@ parser.add_argument('--quadratic', dest='quadratic', action='store_true',
 parser.add_argument('--vacuum', dest='vacuum', action='store_true',
                     default=False,
                     help='''In vacuo? [default: %(default)s]''')
+parser.add_argument('--small', dest='small', action='store_true',
+                    default=False,
+                    help='''Small test system? [default: %(default)s]''')
 parser.add_argument('--no-calc', dest='nocalc', action='store_true',
                     default=False,
-                    help='''In vacuo? [default: %(default)s]''')
+                    help='''Read existing output files? [default: %(default)s]''')
+parser.add_argument('--fixsol', dest='fixsol', action='store_true',
+                    default=False,
+                    help='''Use FIXSOL solvation? [default: %(default)s]''')
+parser.add_argument('--pe-direct', dest='pedirect', action='store_true',
+                    default=False,
+                    help='''Use direct solver for induced moments?
+                            [default: %(default)s]''')
+parser.add_argument('--pe-diis', dest='pediis', action='store_true',
+                    default=False,
+                    help='''Use DIIS solver for induced moments?
+                            [default: %(default)s]''')
 #parser.add_argument('-sub', dest='sublist', nargs='+', default=[], type=int,
 #                    metavar=('CUBE1', 'CUBE2'),
 #                    help='''Specify which cubes to subtract. The cubes are
@@ -68,18 +82,86 @@ if args.openshell:
 else:
     charge = 0
 
-mol = ('BASIS\n'
-       '{0}\n'.format(args.basis) +
-       'Finite Field test of a H2O molecule\n'
-       'embedded in liquid water.\n'
-       'Atomtypes=2 NoSymmetry Angstrom Charge={0}\n'.format(charge) +
-       'Charge=8.0 Atoms=1\n'
-       'O       0.0000000000    0.0000000000    0.1172010000\n'
-       'Charge=1.0 Atoms=2\n'
-       'H       0.0000000000    0.7567962366   -0.4688038603\n'
-       'H      -0.0000000000   -0.7568037633   -0.4687941397\n')
+if args.small:
+    mol = ('BASIS\n'
+           '{0}\n'.format(args.basis) +
+           'Finite Field test of acrolein\n'
+           'and two water\n'
+        'AtomTypes=3 NoSymmetry Angstrom\n'
+        'Charge=6.0 Atoms=3\n'
+        'C             -0.145335   -0.546770    0.000607\n'
+        'C              1.274009   -0.912471   -0.000167\n'
+        'C              1.630116   -2.207690   -0.000132\n'
+        'Charge=8.0 Atoms=1\n'
+        'O             -0.560104    0.608977    0.000534\n'
+        'Charge=1.0 Atoms=4\n'
+        'H             -0.871904   -1.386459    0.001253\n'
+        'H              2.004448   -0.101417   -0.000710\n'
+        'H              0.879028   -3.000685    0.000484\n'
+        'H              2.675323   -2.516779   -0.000673\n')
+    pot = (
+'''coordinates
+6
+AA
+O   -3.3285510  -0.1032300  -0.0004160
+H   -2.5037950  0.4132210   0.0003390
+H   -4.0392140  0.5467290   -0.0008500
+O   1.7422970   2.3413610   -0.0007450
+H   0.8416780   1.9718070   -0.0008200
+H   1.6325590   3.2983010   0.0041540
+monopoles
+6
+1    -0.7423294438  
+2     0.3699305781  
+3     0.3723988657  
+4    -0.7424407021  
+5     0.3699635356  
+6     0.3724771666  
+dipoles
+6
+1        0.0303539300        0.3280749969        0.0000894127
+2       -0.1005787187       -0.0557286568       -0.0000906399
+3        0.0911510444       -0.0729658327        0.0000575297
+4       -0.2840371815        0.1671869101        0.0013661730
+5        0.1039146227        0.0490621032        0.0000401115
+6        0.0058194611       -0.1165815150       -0.0005822607
+quadrupoles
+6
+1       -3.9516312016       -0.0561791973        0.0008348984       -4.5778807726        0.0000430036       -5.0206878337
+2       -0.5774205281       -0.0533068952       -0.0000246837       -0.6043997755       -0.0000510833       -0.5595888419
+3       -0.5583105371        0.0466697048        0.0000093367       -0.6224134008        0.0000240992       -0.5582982578
+4       -4.4188113058        0.2801417448        0.0002126277       -4.1129942280        0.0039064597       -5.0206529493
+5       -0.6455428297       -0.0041180935        0.0001453595       -0.5362599824        0.0001224056       -0.5596286658
+6       -0.5562677027        0.0450154899        0.0002165578       -0.6244100291       -0.0004104801       -0.5583164804
+alphas
+6
+1        1.5931619660        0.0800886126       -0.0012113893        2.5255643422        0.0013486011        3.3670040387
+2        0.7929865198        0.1542303414        0.0001503753        0.6015087761        0.0002890322        0.5925152779
+3        0.7209493065       -0.1783490996        0.0000586528        0.6420261847        0.0000623389        0.5751449171
+4        2.2823444229       -0.4207398269       -0.0006457588        1.8324399300       -0.0069062619        3.3666855109
+5        0.8132771942        0.1387943320        0.0004103386        0.5814638105       -0.0000004496        0.5927954021
+6        0.4993246061       -0.0196042351        0.0000571000        0.8612729797        0.0020132268        0.5750737753
+exclists
+3
+1 2 3
+2 1 3
+3 1 2
+4 5 6
+5 4 6
+6 4 5''')
 
-pot = (
+else:
+    mol = ('BASIS\n'
+           '{0}\n'.format(args.basis) +
+           'Finite Field test of a H2O molecule\n'
+           'embedded in liquid water.\n'
+           'Atomtypes=2 NoSymmetry Angstrom Charge={0}\n'.format(charge) +
+           'Charge=8.0 Atoms=1\n'
+           'O       0.0000000000    0.0000000000    0.1172010000\n'
+           'Charge=1.0 Atoms=2\n'
+           'H       0.0000000000    0.7567962366   -0.4688038603\n'
+           'H      -0.0000000000   -0.7568037633   -0.4687941397\n')
+    pot = (
 '''coordinates
 1245
 AA
@@ -7565,23 +7647,55 @@ exlists
    249
 ''')
 
+if args.pediis and args.pedirect:
+    exit('ERROR: cannot use both DIIS and direct solver...')
+elif args.pediis and not args.pedirect:
+    solv = ('.DIIS\n'
+            '1.0d-10\n')
+elif args.pedirect and not args.pediis:
+    solv = '.DIRECT\n'
+else:
+    solv = ('.ITERATIVE\n'
+            '1.0d-10\n')
+
+if args.vacuum and not args.fixsol:
+    wftn = ''
+elif not args.vacuum and not args.fixsol:
+    wftn = ('.PEQM\n'
+            '*PEQM\n'
+            '.PEQM\n')
+    wftn += solv
+elif args.fixsol and not args.vacuum:
+    wftn = ('.PEQM\n'
+            '*PEQM\n'
+            '.PEQM\n'
+            '.SOLVAT\n'
+            '.FIXPVA\n'
+            '.MAXTES\n'
+            '2000\n')
+    wftn += solv
+elif args.vacuum and args.fixsol:
+    wftn = ('.PEQM\n'
+            '*PEQM\n'
+            '.PEQM\n'
+            '.SOLVAT\n'
+            '.FIXPVA\n'
+            '.MAXTES\n'
+            '2000\n')
+    wftn += solv
+wftn += ('**WAVE FUNCTIONS\n'
+        '.{0}\n'.format(args.method))
+if args.method == 'DFT':
+    wftn += '{0}\n'.format(args.xcfun)
+wftn += ('*SCF INPUT\n'
+         '.THRESH\n'
+         '1.0d-9\n')
+if args.qcscf:
+    wftn += '.NODIIS\n'
+
 if args.linear:
-    head = ('**DALTON\n'
+    main = ('**DALTON\n'
             '.RUN PROPERTIES\n')
-    if not args.vacuum:
-        head += ('*PEQM\n'
-                  '.PEQM\n'
-                  '.ITERATIVE\n'
-                  '1.0d-9\n')
-    head += ('**WAVE FUNCTIONS\n'
-            '.{0}\n'.format(args.method))
-    if args.method == 'DFT':
-        head += '{0}\n'.format(args.xcfun)
-    head += ('*SCF INPUT\n'
-             '.THRESH\n'
-             '1.0d-9\n')
-    if args.nodiis:
-        head += '.NODIIS\n'
 
     anal = ('**PROPERTIES\n'
             '.ALPHA\n'
@@ -7606,51 +7720,59 @@ if args.linear:
     end = ('**PROPERTIES\n'
            '**END OF\n')
 
-    molfile = open('h2o.mol', 'w')
+    molfile = open('qm.mol', 'w')
     molfile.write(mol)
     molfile.close()
 
-    potfile = open('water.pot', 'w')
+    potfile = open('mm.pot', 'w')
     potfile.write(pot)
     potfile.close()
 
     dalfile = open('analytic.dal', 'w')
-    dalfile.write(head + anal)
+    dalfile.write(main + wftn + anal)
     dalfile.close()
 
     dalfile = open('xplus.dal', 'w')
-    dalfile.write(head + hamil + plus + x + end)
+    dalfile.write(main + wftn + hamil + plus + x + end)
     dalfile.close()
 
     dalfile = open('xminus.dal', 'w')
-    dalfile.write(head + hamil + minus + x + end)
+    dalfile.write(main + wftn + hamil + minus + x + end)
     dalfile.close()
 
     dalfile = open('yplus.dal', 'w')
-    dalfile.write(head + hamil + plus + y + end)
+    dalfile.write(main + wftn + hamil + plus + y + end)
     dalfile.close()
 
     dalfile = open('yminus.dal', 'w')
-    dalfile.write(head + hamil + minus + y + end)
+    dalfile.write(main + wftn + hamil + minus + y + end)
     dalfile.close()
 
     dalfile = open('zplus.dal', 'w')
-    dalfile.write(head + hamil + plus + z + end)
+    dalfile.write(main + wftn + hamil + plus + z + end)
     dalfile.close()
 
     dalfile = open('zminus.dal', 'w')
-    dalfile.write(head + hamil + minus + z + end)
+    dalfile.write(main + wftn + hamil + minus + z + end)
     dalfile.close()
+
+    if args.vacuum:
+        potfile = ''
+    else:
+        potfile = 'mm.pot'
 
     dalfiles = ['analytic', 'xplus', 'xminus', 'yplus',
                 'yminus', 'zplus', 'zminus']
 
     outfiles = []
     for dalfile in dalfiles:
-        print('Running calculation using {0}.dal'.format(dalfile))
-        cmd = ('{0}/dalton -d -D -nobackup -noarch -M 1024 -N 1'.format(dalton) +
+        if args.nocalc:
+            print('Reusing outputfile from calculation using {0}.dal'.format(dalfile))
+        else:
+            print('Running calculation using {0}.dal'.format(dalfile))
+            cmd = ('{0}/dalton -d -D -nobackup -noarch -M 1024 -N 1'.format(dalton) +
                ' -o {0}.out {0} h2o water > /dev/null 2> /dev/null'.format(dalfile))
-        os.system(cmd)
+            os.system(cmd)
         outfiles.append(open('{0}.out'.format(dalfile), 'r'))
 
     alpha = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
@@ -7707,22 +7829,8 @@ if args.linear:
             print('{0:15.8f}'.format(ff_alpha[i][j] - alpha[i][j]))
 
 if args.quadratic:
-    head = ('**DALTON\n'
+    main = ('**DALTON\n'
             '.RUN RESPONSE\n')
-    if not args.vacuum:
-        head += ('*PEQM\n'
-                  '.PEQM\n'
-                  '.ITERATIVE\n'
-                  '1.0d-9\n')
-    head += ('**WAVE FUNCTIONS\n'
-            '.{0}\n'.format(args.method))
-    if args.method == 'DFT':
-        head += '{0}\n'.format(args.xcfun)
-    head += ('*SCF INPUT\n'
-             '.THRESH\n'
-             '1.0d-9\n')
-    if args.nodiis:
-        head += '.NODIIS\n'
 
     anal = ('**RESPONSE\n'
             '*QUADRATIC\n'
@@ -7757,32 +7865,37 @@ if args.quadratic:
     potfile.close()
 
     dalfile = open('analytic.dal', 'w')
-    dalfile.write(head + anal)
+    dalfile.write(main + wftn + anal)
     dalfile.close()
 
     dalfile = open('xplus.dal', 'w')
-    dalfile.write(head + hamil + plus + x + end)
+    dalfile.write(main + wftn + hamil + plus + x + end)
     dalfile.close()
 
     dalfile = open('xminus.dal', 'w')
-    dalfile.write(head + hamil + minus + x + end)
+    dalfile.write(main + wftn + hamil + minus + x + end)
     dalfile.close()
 
     dalfile = open('yplus.dal', 'w')
-    dalfile.write(head + hamil + plus + y + end)
+    dalfile.write(main + wftn + hamil + plus + y + end)
     dalfile.close()
 
     dalfile = open('yminus.dal', 'w')
-    dalfile.write(head + hamil + minus + y + end)
+    dalfile.write(main + wftn + hamil + minus + y + end)
     dalfile.close()
 
     dalfile = open('zplus.dal', 'w')
-    dalfile.write(head + hamil + plus + z + end)
+    dalfile.write(main + wftn + hamil + plus + z + end)
     dalfile.close()
 
     dalfile = open('zminus.dal', 'w')
-    dalfile.write(head + hamil + minus + z + end)
+    dalfile.write(main + wftn + hamil + minus + z + end)
     dalfile.close()
+
+    if args.vacuum:
+        potfile = ''
+    else:
+        potfile = 'mm.pot'
 
     dalfiles = ['analytic', 'xplus', 'xminus', 'yplus',
                 'yminus', 'zplus', 'zminus']

@@ -1517,8 +1517,8 @@ C
       IF (QMMM) WRITE(LUPRI,*) 'QMMM calculation'
 
       if (peqm) then
-        write(lupri,'(a)') 'Environment is modeled using'
-        write(lupri,'(a)') 'the polarizable embedding (PE) scheme.'
+        write(lupri,'(a)') 'Environment is modeled using'//
+     &                     'the polarizable embedding (PE) scheme.'
         if (nsym > 1) then    
             write(lupri,'(a)') 'PE is not compatible with symmetry.'
             write(lupri,'(a)') 'Please rerun with NoSymmetry keyword...'
