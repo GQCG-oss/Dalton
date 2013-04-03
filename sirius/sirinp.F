@@ -5302,39 +5302,16 @@ C          to get here unless someone modifies SIRIUS incorrectly
             IF ( DORSP ) WRITE (IWUNIT,1050)
      *      'Time-dependent HF-srDFT calculation (response properties).'
          ELSE IF (DODFT) THEN
-            if (peqm) then
-                if (wftype == ' ') then
-                    wftype = 'PE-DFT'
-                    write(iwunit,1053)
-     &                      ' Polarizable Embedding KS-DFT calculation.'
-                end if
-                if (dorsp) write(iwunit,1050)
-     &              'Time-dependent Polarizable Embedding KS-DFT'//
-     &              ' calculation (PE-TDDFT)'
-            else
-                IF (WFTYPE .EQ. ' ') WFTYPE='KS-DFT'
-                WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
-                IF ( DORSP ) WRITE (IWUNIT,1050)
-     &              'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
-            end if
+            IF (WFTYPE .EQ. ' ') WFTYPE='KS-DFT'
+            WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
+            IF ( DORSP ) WRITE (IWUNIT,1050)
+     &          'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
          ELSE
-            if (peqm) then
-                if (wftype == ' ') then
-                    wftype = 'PE-HF'
-                    write(iwunit,1053)
-     &                       ' Polarizable Embedding Hartree-Fock'//
-     &                       ' calculation.'
-                end if
-                if (dorsp) write(iwunit,1050)
-     &              'Time-dependent Polarizable Embedding KS-DFT'//
-     &              ' calculation (PE-TDDFT)'
-            else
-                IF (WFTYPE .EQ. ' ') WFTYPE='HF'
-                WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
-                IF ( DORSP ) WRITE (IWUNIT,1050)
-     *              'Time-dependent Hartree-Fock calculation '//
-     *              '(random phase approximation).'
-            end if
+            IF (WFTYPE .EQ. ' ') WFTYPE='HF'
+            WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
+            IF ( DORSP ) WRITE (IWUNIT,1050)
+     *          'Time-dependent Hartree-Fock calculation '//
+     *          '(random phase approximation).'
          END IF
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE
@@ -5481,6 +5458,11 @@ C
          WRITE(IWUNIT,'(/5X,A/)')
      &   'For the specification of the GAS CI in LUCITA: see later.'
       END IF
+      if (peqm) then
+        write(iwunit,'(/5x,a)') 'Wave function environment is modeled'
+        write(iwunit,'(5x,a/)') 'using the polarizable embedding model.'
+        WFTYPE = 'PE-'//WFTYPE
+      end if
 C     for SIRIUS (not LUCITA) :
       NINEL = 2*NISHT
       CALL MOLCHR(ICHARG)

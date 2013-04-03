@@ -85,7 +85,7 @@ module pe_variables
     real(dp), parameter :: pi = 3.141592653589793
     real(dp), parameter :: zero = 1.0d-8
     integer, save :: scfcycle = 0
-    real(dp), save :: thriter = 1.0d-5
+    real(dp), save :: thriter = 1.0d-8
     real(dp), save :: damp = 2.1304
     real(dp), save :: gauss_factor = 1.0
     real(dp), dimension(3), save :: repfacs = 1.0

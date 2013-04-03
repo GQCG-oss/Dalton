@@ -31,13 +31,10 @@ module polarizable_embedding
 ! TODO:
 ! handle interface better, e.g. scale or remove higher order moments and pols
 ! damping of electric field from QM system?
-! insert quit if symmetry or QM3, QMMM etc.
 ! find better solution for electric field calculation from fragment densities
 ! higher order polarizabilities
 ! write list of publications which should be cited
 ! remove double zeroing and unecessary zeroing
-! nonlinear response properties
-! magnetic properties
 ! cutoffs and damping
 ! memory management
 ! add error catching
@@ -46,10 +43,10 @@ contains
 
 !------------------------------------------------------------------------------
 
-subroutine pe_init(coords, charges, dalwrk)
+subroutine pe_init(lupri, coords, charges, dalwrk)
 
     ! Initialization routine for the PE module.
-
+    integer :: lupri
     real(dp), dimension(:), intent(in), optional :: charges
     real(dp), dimension(:,:), intent(in), optional :: coords
     real(dp), dimension(:), target, intent(inout) :: dalwrk
@@ -60,6 +57,15 @@ subroutine pe_init(coords, charges, dalwrk)
     logical, dimension(:), allocatable :: redists
     logical :: lexist
     real(dp) :: rclose
+
+    ! Assume geometry optimization
+    if (allocated(Rm) .and. allocated(Zm)) then
+        Rm(:,:) = coords
+        Zm(1,:) = charges
+        return
+    end if
+
+    luout = lupri
 
     if (present(coords) .and. present(charges)) then
         qmnucs = size(charges)
@@ -109,8 +115,8 @@ subroutine pe_init(coords, charges, dalwrk)
            if (.not. fixpva) call read_surface(trim(surfile))
     end if
 
-    write(luout,'(//2x,a)') 'Polarizable Embedding potential'
-    write(luout,'(2x,a)')   '-------------------------------'
+    write(luout,'(//2x,a)') 'Polarizable embedding information'
+    write(luout,'(2x,a)')   '---------------------------------'
     if (nsites > 0) then
         write(luout,'(/4x,a,i6)') 'Number of classical sites: ', nsites
     end if
@@ -666,8 +672,9 @@ subroutine pe_dalton_input(word, luinp, lupri)
     end do
 
 ! compatibility checks
-    if (pe_sol .and. ndens .gt. 1) stop 'Solvation model only implemented for ndens = 1'
-!    if (pe_nomb .and. pe_iter) stop 'NOMB and ITERATIVE are not compatible'
+    if (pe_sol .and. ndens .gt. 1) then
+        stop 'Solvation model only implemented for ndens = 1'
+    end if
 
 end subroutine pe_dalton_input
 
@@ -1031,15 +1038,15 @@ subroutine pe_master(runtype, denmats, fckmats, molgrads, nmats, energies, dalwr
       nnbas = size(denmats) / ndens
       nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * nnbas) - 1.0d0))
     endif
-    allocate(Epe(ndens))
+    if (.not. allocated(Epe)) allocate(Epe(ndens))
     Epe = 0.0d0
-    allocate(Ees(0:5,ndens))
+    if (.not. allocated(Ees)) allocate(Ees(0:5,ndens))
     Ees = 0.0d0
-    allocate(Efd(3,ndens))
+    if (.not. allocated(Efd)) allocate(Efd(3,ndens))
     Efd = 0.0d0
-    allocate(Epol(3,ndens))
+    if (.not. allocated(Epol)) allocate(Epol(3,ndens))
     Epol = 0.0d0
-    allocate(Esol(3,ndens))
+    if (.not. allocated(Esol)) allocate(Esol(3,ndens))
     Esol = 0.0d0
     allocate(Elj(2))
     Elj = 0.0d0
@@ -1081,7 +1088,7 @@ subroutine pe_master(runtype, denmats, fckmats, molgrads, nmats, energies, dalwr
         call pe_fock(denmats, fckmats, energies)
     else if (energy) then
         call pe_fock(denmats)
-        write(luout,'(/6x,a)') 'Polarizable Embedding energy contributions:'
+        write(luout,'(/6x,a)') 'Polarizable embedding energy contributions:'
         write(luout,'(5x,a)') '---------------------------------------------'
         if (mulorder >= 0) write(luout,'(/7x,a)') 'Electrostatic contributions:'
         if (lmul(0)) write(luout,'(9x,a16,5x,f20.12)') 'Monopoles       ',&
@@ -2043,7 +2050,7 @@ subroutine es_fragment_densities(denmats, Eel, Enuc, fckmats)
                     call Tk_tensor(Tfm, Rfm)
                     Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
                 end do
-    !            call Tk_integrals(Zfd_ints, nnbas, 1, Rfd(:,j)) 
+    !            call Tk_integrals('es', Zfd_ints, nnbas, 1, Rfd(:,j)) 
     !            Zfd_ints = Zfd(1,j) * Zfd_ints
                 call Mk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
                 do m = 1, ndens
@@ -2253,8 +2260,8 @@ subroutine pe_polarization(denmats, fckmats)
     end if
     if (myid == 0) then
         if (pe_verbose .or. pe_debug) then
-            write(luout,'(/2x,a)') ' Polarizable Embedding '
-            write(luout,'(2x,a/)') '-----------------------'
+            write(luout,'(/2x,a)') ' Polarizable embedding information'
+            write(luout,'(2x,a/)') '-----------------------------------'
         end if
         do i = 1, ndens
             if (pe_verbose .or. pe_debug) then
@@ -2335,7 +2342,7 @@ subroutine pe_polarization(denmats, fckmats)
             i = 0
             do site = site_start, site_finish
                 if (zeroalphas(site)) cycle
-                call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site))
+                call Tk_integrals('es', Fel_ints, nnbas, 3, Rs(:,site))
                 do j = 1, 3
                     do k = 1, ndens
                         l = (k - 1) * nnbas + 1
@@ -2352,7 +2359,7 @@ subroutine pe_polarization(denmats, fckmats)
             i = 1
             allocate(Vel_ints(nnbas,1))
             do site = surp_start, surp_finish
-                call Tk_integrals(Vel_ints, nnbas, 1, Sp(:,site))
+                call Tk_integrals('es', Vel_ints, nnbas, 1, Sp(:,site))
                 do k = 1, ndens
                     l = (k - 1) * nnbas + 1
                     m = k * nnbas
@@ -2386,7 +2393,7 @@ subroutine pe_polarization(denmats, fckmats)
                     write(lunoneq) fckmats(l:m)
                 end do
                 close(lunoneq)
-                call Tk_integrals(Vel_ints, nnbas, 1, Sp(:,site))
+                call Tk_integrals('es', Vel_ints, nnbas, 1, Sp(:,site))
                 do k = 1, ndens
                     l = (k - 1) * nnbas + 1
                     m = k * nnbas
@@ -3125,7 +3132,7 @@ subroutine electron_potentials(Vels, denmats)
 
     i = 1
     do site = surp_start, surp_finish 
-        call Tk_integrals(Vel_ints, nnbas, 1, Sp(:,site))
+        call Tk_integrals('es', Vel_ints, nnbas, 1, Sp(:,site))
         do k = 1, ndens
             l = (k - 1) * nnbas + 1
             m = k * nnbas
@@ -3189,7 +3196,7 @@ subroutine electron_fields(Fels, denmats)
                 cycle
             end if
         end if
-        call Tk_integrals(Fel_ints, nnbas, 3, Rs(:,site))
+        call Tk_integrals('es', Fel_ints, nnbas, 3, Rs(:,site))
         do j = 1, 3
             do k = 1, ndens
                 l = (k - 1) * nnbas + 1
@@ -4127,7 +4134,7 @@ subroutine Mk_integrals(Mk_ints, Rij, Mk)
 
     ncomps = size(Mk_ints, 2)
 
-    call Tk_integrals(Mk_ints, nnbas, ncomps, Rij)
+    call Tk_integrals('es', Mk_ints, nnbas, ncomps, Rij)
 
     ! get symmetry factors
     allocate(factors(ncomps))
@@ -4474,7 +4481,7 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb, coords,&
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, corenucs
-        call Tk_integrals(T0_ints, nnbas, 1, Rc(:,i))
+        call Tk_integrals('es', T0_ints, nnbas, 1, Rc(:,i))
         T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(denmat, T0_ints(:,1))
     end do
@@ -5084,7 +5091,7 @@ subroutine pe_compute_mep(denmats)
         allocate(Tk_ints(nnbas,1))
         i = 1
         do point = site_start, site_finish
-            call Tk_integrals(Tk_ints(:,1), nnbas, 1, mepgrid(:,i))
+            call Tk_integrals('es', Tk_ints(:,1), nnbas, 1, mepgrid(:,i))
             Vqm(1,i) = dot(denmats, Tk_ints(:,1))
             do j = 1, qmnucs
                 call Tk_tensor(Tm(1:1), mepgrid(:,i) - Rm(:,j))
@@ -5111,7 +5118,7 @@ subroutine pe_compute_mep(denmats)
         if (myid == 0) then
             call openfile('qm_mep.cube', lu, 'new', 'formatted')
             write(lu,'(a)') 'QM MEP'
-            write(lu,'(a)') 'Generated by the Polarizable Embedding module'
+            write(lu,'(a)') 'Generated by the polarizable embedding (PE) module'
             write(lu,'(i5,3f12.6)') qmnucs, origin
             write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
             write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
@@ -5252,7 +5259,7 @@ subroutine pe_compute_mep(denmats)
                     lu = lum5
                 end if
                 write(lu,'(a)') 'PE electrostatic potential'
-                write(lu,'(a)') 'Generated by the Polarizable Embedding module'
+                write(lu,'(a)') 'Generated by the polarizable embedding (PE) module'
                 write(lu,'(i5,3f12.6)') qmnucs, origin
                 write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
                 write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
@@ -5429,7 +5436,7 @@ subroutine pe_compute_mep(denmats)
         if (myid == 0) then
             call openfile('ind_mep.cube', lu, 'new', 'formatted')
             write(lu,'(a)') 'PE induced potential'
-            write(lu,'(a)') 'Generated by the Polarizable Embedding module'
+            write(lu,'(a)') 'Generated by the polarizable embedding (PE) module'
             write(lu,'(i5,3f12.6)') qmnucs, origin
             write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
             write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
@@ -5453,7 +5460,7 @@ subroutine pe_compute_mep(denmats)
             allocate(Tk_ints(nnbas,3))
             i = 1
             do point = site_start, site_finish
-                call Tk_integrals(Tk_ints, nnbas, 3, mepgrid(:,i))
+                call Tk_integrals('es', Tk_ints, nnbas, 3, mepgrid(:,i))
                 do j = 1, 3
                     Fqm(j,i) = dot(denmats, Tk_ints(:,j))
                 end do
@@ -5485,8 +5492,8 @@ subroutine pe_compute_mep(denmats)
                 if (mep_fldnrm) then
                     call openfile('qm_field.cube', lu, 'new', 'formatted')
                     write(lu,'(a)') 'QM electric field norm'
-                    write(lu,'(a)') 'Generated by the Polarizable Embedding&
-                                    & module'
+                    write(lu,'(a)') 'Generated by the polarizable embedding&
+                                    & (PE) module'
                     write(lu,'(i5,3f12.6)') qmnucs, origin
                     write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
                     write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
@@ -5907,8 +5914,8 @@ subroutine pe_compute_mep(denmats)
                 if (mep_fldnrm) then
                     call openfile('ind_field.cube', lu, 'new', 'formatted')
                     write(lu,'(a)') 'PE induced electric field norm'
-                    write(lu,'(a)') 'Generated by the Polarizable Embedding&
-                                    & module'
+                    write(lu,'(a)') 'Generated by the polarizable embedding&
+                                    & (PE) module'
                     write(lu,'(i5,3f12.6)') qmnucs, origin
                     write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
                     write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
