@@ -1823,6 +1823,7 @@ subroutine pe_polarization(denmats, fckmats)
                        Fktots(3*npols+1:,i) =  Vels(:,i) + Vnucs + Vmuls
                     else
                        Fktots(3*npols+1:,i) = - eps_fac * ( Vels(:,i) + Vnucs + Vmuls )
+                       print *, eps_fac
                     end if
                 end if
             end do
@@ -2029,6 +2030,9 @@ subroutine induced_moments(Mkinds, Fs)
             call direct_solver(Mkinds, Fs)
         end if
     end if
+    do i = 1, 3*npols+nsurp
+        write(luout,*) 'Induced dipole i', Mkinds(i,1), i
+    end do
 
     ! check induced dipoles
     if (myid == 0) then
@@ -2062,8 +2066,6 @@ subroutine iterative_solver(Mkinds, Fs)
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
     real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr
-    real(dp) :: prefac, eps_fac
-    real(dp), parameter :: fourpi = 4.0d0 * pi
     real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp), dimension(:), allocatable :: T, Rij, Ftmp, M1tmp
@@ -2077,17 +2079,6 @@ subroutine iterative_solver(Mkinds, Fs)
         else
             redthr = 1.0d0
         end if
-    end if
-
-    if (pe_sol) then
-        if (noneq) then
-            eps_fac = (eps - epsinf) / ((eps - epsinf) - 1.0d0)
-        else if (response) then
-            eps_fac = epsinf / (epsinf - 1.0d0)
-        else if (fock) then
-            eps_fac = eps / (eps - 1.0d0)
-        end if
-        prefac = 1.07d0 * eps_fac
     end if
 
     if (myid == 0) then
@@ -2132,12 +2123,6 @@ subroutine iterative_solver(Mkinds, Fs)
                 call spmv(P1s(:,i), Fs(l:l+2,n), Mkinds(l:l+2,n), 'L')
                 l = l + 3
             end do
-            if (pe_sol) then
-                do i = surp_start, surp_finish
-                    Mkinds(3*npols+i,n) = (prefac * sqrt(fourpi / Sa(i)))**(-1)&
-                                        & * Fs(3*npols+i,n)
-                end do
-            end if
 
 #if defined(VAR_MPI)
             if (myid == 0 .and. nprocs > 1) then
@@ -2230,16 +2215,6 @@ subroutine iterative_solver(Mkinds, Fs)
                     call spmv(T, Mkinds(m:m+2,n), Ftmp, 'L', 1.0d0, 1.0d0)
                     m = m + 3
                 end do
-                if (pe_sol) then
-                    do j = surp_start, surp_finish
-                        do k = 1, 3 
-                            Rij = Sp(:,j) - Rs(:,i)
-                            R3 = nrm2(Rij)**3
-                            T(k) = - Rij(k) / R3
-                        end do
-                        Ftmp = Ftmp - T * Mkinds(3*npols+j,n)
-                    end do
-                end if
 
 #if defined(VAR_MPI)
                 if (myid == 0 .and. nprocs > 1) then
@@ -2272,34 +2247,6 @@ subroutine iterative_solver(Mkinds, Fs)
 #endif
                 l = l + 3
             end do
-
-            if (pe_sol) then
-                do i = 1, nsurp
-                    Ftmp = 0.0d0
-                    l = 0
-                    do j = site_start, site_finish
-                        do k = 1, 3
-                            Rij = Rs(:,j) - Sp(:,i)
-                            R3 = nrm2(Rij)**3
-                            T(k) = -Rij(k)/R3
-                        end do
-                        Ftmp(1) = Ftmp(1) - dot(T,Mkinds(j+l:j+l+2,n))
-                        l = l + 3
-                    end do
-                    do j = surp_start, surp_finish
-                        if (i == j) cycle
-                        Rij = Sp(:,j) - Sp(:,i)
-                        R = nrm2(Rij)
-                        T(1) = eps_fac / R
-                        Ftmp(1) = Ftmp(1) - T(1) * Mkinds(3*npols + j,n)
-                    end do
-                    Ftmp(1) = Ftmp(1) + Fs(3*npols + i,n)
-                    M1tmp(1) = Mkinds(3*npols+i,n)
-                    Mkinds(3*npols+i,n) = (prefac * sqrt(fourpi / Sa(i)))**(-1)&
-                                        & * Ftmp(1)
-                    norm = norm + (Mkinds(3*npols+i,n) - M1tmp(1))**2
-                end do
-            end if
 
             if (myid == 0) then
                 if (norm < redthr * thriter) then
@@ -5764,17 +5711,20 @@ subroutine pe_diis_solver_charges(Mkinds,Fs)
     real(dp), dimension(:,:), intent(in) :: Fs
 
     integer :: lu, itdiis, info, ndiis
-    integer :: i, j, n
+    integer :: i, j, n, m
     logical :: exclude, lexist
     logical :: converged = .false.
     integer, parameter :: mxdiis = 100
     real(dp) :: FACTOR, DSCALE
     real(dp) :: error, X, Y, Z, R2, DISM0, DUM, temp, bla, R
-    real(dp), dimension(3*npols+nsurp) :: QFIX, QNEW, VFIX2
-    real(dp), dimension(:,:), allocatable :: tmpmat, dimat
+    real(dp) :: oner, oner2, oner3, xi, yi, zi, xj, yj, zj
+    real(dp) :: dipjx, dipjy, dipjz , qj
+    real(dp), dimension(nsurp) :: QFIX, QNEW, VFIX2
+    real(dp), dimension(:,:), allocatable :: tmpmat, dimat, field2
     real(dp), dimension(:), allocatable :: tmp, ipvt
     real(dp), dimension(:,:,:), allocatable :: qrep
 
+    allocate(field2(3*npols, ndens))
     allocate(tmpmat(mxdiis+1,mxdiis+1))
     allocate(dimat(mxdiis+1,mxdiis+1))
     allocate(tmp(mxdiis+1))
@@ -5806,6 +5756,7 @@ subroutine pe_diis_solver_charges(Mkinds,Fs)
     IF(NTSATM.EQ.960) DISM0 = 0.1000D+00*aa2au 
     FACTOR  = 1.0d0/SQRT(4.0d0*pi)/1.07D+00
     DSCALE   = (eps - 1.0d0)/eps 
+    print *, dscale
     
     do n = 1, ndens
       
@@ -5834,9 +5785,66 @@ subroutine pe_diis_solver_charges(Mkinds,Fs)
                  END IF
               end do   
            end do   
+  
+           if (lpol(1)) then
+           ! calculate field at induced dipoles due to surface charges
+               field2 = 0.0d0
+               m = 1
+               do i = 1, nsites 
+                   xi = Rs(1,i)
+                   yi = Rs(2,i)
+                   zi = Rs(3,i)
+                   do j = 1, nsurp
+                       xj = Sp(1,j)
+                       yj = Sp(2,j)
+                       zj = Sp(3,j)
+                       qj = qfix(j)*dscale
+                       x = xi - xj
+                       y = yi - yj
+                       z = zi - zj
+                       r2 = x*x + y*y +z*z
+                       oner2 = 1.0d0/r2
+                       oner = sqrt(oner2)
+                       oner3 = oner*oner2
+                       dum = qj*oner3
+                       field2(m,n)   = field2(m,n)   - dum*x
+                       field2(m+1,n) = field2(m+1,n) - dum*y
+                       field2(m+2,n) = field2(m+2,n) - dum*z
+                   end do
+                   m = m + 3
+               end do
+
+! Get induced dipols
+               call iterative_solver(Mkinds(1:3*npols,n:n), (Fs(1:3*npols,n:n)+field2(:,n:n)))
+
+! Potential at surface charge due to mm pol's
+               do i = 1, nsurp
+                    xi = Sp(1,i)
+                    yi = Sp(2,i)
+                    zi = Sp(3,i)
+                    m = 1
+                    do j = 1, nsites
+                        xj = Rs(1,j)
+                        yj = Rs(2,j)
+                        zj = Rs(3,j)
+                        dipjx = Mkinds( m, n)
+                        dipjy = Mkinds( m + 1, n)
+                        dipjz = Mkinds( m + 2, n)
+                        x = xi - xj
+                        y = yi - yj
+                        z = zi - zj
+                        r2 = x*x + y*y + z*z
+                        oner2 = 1.0d0/r2
+                        oner  = sqrt(oner2)
+                        oner3 = oner2*oner
+                        vfix2(i) = vfix2(i) - (dipjx*x + dipjy*y + dipjz*z)*oner3
+                        m = m + 3
+                    end do
+               end do
+           end if
 
            do i = 1, nsurp 
-              QNEW(i) = -FACTOR*SQRT(Sa(i))*(Fs(i,n) + VFIX2(I))
+              QNEW(i) = -FACTOR*SQRT(Sa(i))*(Fs(3*npols+i,n) + VFIX2(I))
            end do
 
 !      Check convergance
@@ -5861,7 +5869,7 @@ subroutine pe_diis_solver_charges(Mkinds,Fs)
                     converged = .false.
                     call fixdiis(nsurp,itdiis,mxdiis,QNEW,QFIX,DIMAT&
                                &,QREP,TMP,TMPMAT,IPVT,nsurp) 
-                    CALL DCOPY(NFFTS,QNEW,1,QFIX,1)
+                    CALL DCOPY(nsurp,QNEW,1,QFIX,1)
                 end if
             end if
 !     #if defined(VAR_MPI)
@@ -5870,9 +5878,8 @@ subroutine pe_diis_solver_charges(Mkinds,Fs)
 !                 end if
 !     #endif
             if (converged) then
-                 write(luout,*) 'AM I HERE?'
                 CALL DSCAL(nsurp,DSCALE,QFIX,1)
-                CALL DCOPY(nsurp,QFIX,1,Mkinds,1)
+                CALL DCOPY(nsurp,QFIX,1,Mkinds(3*npols+1:,n),1)
                 exit
             end if
      
@@ -5884,7 +5891,7 @@ subroutine pe_diis_solver_charges(Mkinds,Fs)
             call openfile('pe_induced_charges.bin', lu, 'unknown',&
                          & 'unformatted')
             rewind(lu)
-            write(lu) Mkinds
+            write(lu) Mkinds(3*npols+1:,1)
             close(lu)
         end if
     end if
@@ -7069,6 +7076,8 @@ subroutine FIXDIIS(NFFPAR, NIT, MXDIIS, QOUT, QIN, DIMAT,&
       RETURN
 !
 end subroutine fixdiis
+
+!-----------------------------------------------------------------------------
 
 subroutine pe_compute_london(fckmats)
     real(dp), dimension(:), intent(out) :: fckmats
