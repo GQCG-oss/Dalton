@@ -1784,7 +1784,12 @@ subroutine pe_polarization(denmats, fckmats)
         if (pe_sol) then
             call electron_potentials(Vels, denmats)
             do i = 1, ndens
-                Fktots(3*npols+1:,i) = - Vels(:,i)
+                if (pe_iter) then
+                  ! Fktots(3*npols+1:,i) = - Vels(:,i)
+                   Fktots(3*npols+1:,i) =  Vels(:,i)
+                else
+                   Fktots(3*npols+1:,i) = - eps_fac * Vels(:,i)
+                end if
             end do 
         end if
         if (pe_debug) then
@@ -1826,7 +1831,6 @@ subroutine pe_polarization(denmats, fckmats)
                        Fktots(3*npols+1:,i) =  Vels(:,i) + Vnucs + Vmuls
                     else
                        Fktots(3*npols+1:,i) = - eps_fac * ( Vels(:,i) + Vnucs + Vmuls )
-                       print *, eps_fac
                     end if
                 end if
             end do
