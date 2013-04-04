@@ -565,38 +565,38 @@ C
   520    CONTINUE
 	 WRITE(LUPRI,9040) NTS,STOT,VOL
       END IF
-!C
-!C     ----- set up for possible gradient calculation -----
-!C           DONE ONLY IF WE HAVE SPHERES ON ATOMS
-!C
-!      IF(ICESPH.NE.1) THEN
-!C
-!	 IF(NESFP.GT.NUCDEP) THEN
-!	    WRITE(LUPRI,9050) NESFP,NUCDEP
-!	    CALL QUIT('More spheres than nuclei in PEDRA')
-!	 END IF
-!C
-!         CALL DZERO(DERCEN,MXSP*MXCENT*3*3)
-!         CALL DZERO(DERRAD,MXSP*MXCENT*3)
-!         DO NSFE = 1,NUCDEP
-!            NATSPH=0
-!            NSFER=NSFE
-!            IF(ICESPH.EQ.2)THEN
-!               NATSPH=1
-!               DO JJ=1,NESFP
-!                  IF(INA(JJ).EQ.NSFE)THEN
-!                     NATSPH=0
-!                     NSFER=JJ
-!                  ENDIF
-!               ENDDO
-!            ENDIF
-!            IF(NATSPH.EQ.0)then
-!               DO ICOORD = 1, 3
-!                  CALL CAVDER(NSFE,NSFER,ICOORD,INTSPH,NEWSPH)
-!               ENDDO
-!            ENDIF
-!         ENDDO
-!      END IF
+C
+C     ----- set up for possible gradient calculation -----
+C           DONE ONLY IF WE HAVE SPHERES ON ATOMS
+C
+      IF(ICESPH.NE.1) THEN
+C
+	 IF(NESFP.GT.NUCDEP) THEN
+	    WRITE(LUPRI,9050) NESFP,NUCDEP
+	    CALL QUIT('More spheres than nuclei in PEDRA')
+	 END IF
+C
+         CALL DZERO(DERCEN,MXSP*MXCENT*3*3)
+         CALL DZERO(DERRAD,MXSP*MXCENT*3)
+         DO NSFE = 1,NUCDEP
+            NATSPH=0
+            NSFER=NSFE
+            IF(ICESPH.EQ.2)THEN
+               NATSPH=1
+               DO JJ=1,NESFP
+                  IF(INA(JJ).EQ.NSFE)THEN
+                     NATSPH=0
+                     NSFER=JJ
+                  ENDIF
+               ENDDO
+            ENDIF
+            IF(NATSPH.EQ.0)then
+               DO ICOORD = 1, 3
+                  CALL CAVDER(NSFE,NSFER,ICOORD,INTSPH,NEWSPH)
+               ENDDO
+            ENDIF
+         ENDDO
+      END IF
 C
 C     Trasforma i risultati in bohr
 C
