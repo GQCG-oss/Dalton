@@ -7770,8 +7770,8 @@ if args.linear:
             print('Reusing outputfile from calculation using {0}.dal'.format(dalfile))
         else:
             print('Running calculation using {0}.dal'.format(dalfile))
-            cmd = ('{0}/dalton -d -D -nobackup -noarch -M 1024 -N 1'.format(dalton) +
-               ' -o {0}.out {0} h2o water > /dev/null 2> /dev/null'.format(dalfile))
+            cmd = ('{0}/dalton -d -nobackup -noarch -M 1024 -N 1'.format(dalton) +
+               ' -o {0}.out {0} qm {1} > /dev/null 2> /dev/null'.format(dalfile, potfile))
             os.system(cmd)
         outfiles.append(open('{0}.out'.format(dalfile), 'r'))
 
@@ -7906,8 +7906,8 @@ if args.quadratic:
             print('Reusing outputfile from calculation using {0}.dal'.format(dalfile))
         else:
             print('Running calculation using {0}.dal'.format(dalfile))
-            cmd = ('{0}/dalton -d -D -nobackup -noarch -M 1024 -N 1'.format(dalton) +
-               ' -o {0}.out {0} h2o water > /dev/null 2> /dev/null'.format(dalfile))
+            cmd = ('{0}/dalton -d -nobackup -noarch -M 1024 -N 1'.format(dalton) +
+               ' -o {0}.out {0} qm {1} > /dev/null 2> /dev/null'.format(dalfile, potfile))
             os.system(cmd)
         outfiles.append(open('{0}.out'.format(dalfile), 'r'))
 
