@@ -451,7 +451,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
             backspace(luinp)
             if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.& 
                & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
-                read(luinp,*) thriter
+                read(luinp,*) fixtol  
             end if
             pe_iter = .true.
             pe_diis = .true.
@@ -3874,10 +3874,10 @@ subroutine setup_cavity()
      all_charges(1:qmnucs) = Zm(1,:)
      nz = 0
      do i = 1, nsites
-         if (Zs(1,i) <= zero) then
-            nz = nz + 1
-            cycle
-         end if
+!         if (Zs(1,i) <= zero) then
+!            nz = nz + 1
+!            cycle
+!         end if
          all_coords(:,qmnucs+i-nz) = Rs(:,i)
          all_charges(qmnucs+i-nz) = Zs(1,i)
      end do
@@ -6205,6 +6205,7 @@ subroutine fixtes(all_centers, all_z)
          inuc = int(all_z(i))
          RFIX(I) = 2.400D+00*aa2au 
 
+         IF(INUC.EQ. 0) RFIX(I) = 0.001D+00*aa2au 
          IF(INUC.EQ. 1) RFIX(I) = 1.400D+00*aa2au 
          IF(INUC.EQ. 3) RFIX(I) = 1.400D+00*aa2au 
          IF(INUC.EQ. 4) RFIX(I) = 1.400D+00*aa2au 
