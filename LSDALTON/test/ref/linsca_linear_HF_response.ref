@@ -1,0 +1,1518 @@
+
+ Work memory size (LMWORK+2):   100000002 =  762.94 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:09:23 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+          - first magnetic derivatives of overlap integrals
+          - second magnetic derivatives of overlap integrals
+          - electronic angular momentum around the origin
+          - second magnetic derivatives of overlap integrals, ket part
+          - second magnetic derivatives of overlap integrals, mixed bra and ket part
+          - one-electron contribution to magnetic moment
+          - Magnetic susceptibility integrals
+          - Bra-differentiated overlap matrix with respect to B
+          - Ket-differentiated overlap matrix with respect to B
+          - Ket differentiated half-derivative overlap matrix
+          - Diamagnetic magnetizability using common gauge origin
+          - Dipole gradient integrals
+          - Geometrical derivatives of overlap integrals
+          - Geometrical derivatives of one-electron Hamiltonian integrals
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+ Warning: Not enough memory allocated for readin.   101256671
+          needed, but only    100000000  specified.
+          Trying to allocate needed memory.
+
+
+  Title Cards
+  -----------
+
+  Hydrogen Peroxide                                                       
+                                                                          
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           O          15.994915
+                           O          15.994915
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    34.005480 amu
+                       Natural abundance:  99.491 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    4
+
+  Basis set used is "STO-3G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  O           1       8      15       5      [6s3p|2s1p]                                                                      
+  O           1       8      15       5      [6s3p|2s1p]                                                                      
+  H           1       1       3       1      [3s|1s]                                                                          
+  H           1       1       3       1      [3s|1s]                                                                          
+  ----------------------------------------------------------------------
+  total:      4      18      36      12
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates: 12
+
+   1   O        x      0.0000000000
+   2            y      1.4078458600
+   3            z     -0.0988560000
+
+   4   O        x      0.0000000000
+   5            y     -1.4078458600
+   6            z     -0.0988560000
+
+   7   H        x      0.6908148900
+   8            y      1.7261489100
+   9            z      1.5689186800
+
+  10   H        x     -0.6908148900
+  11            y     -1.7261489100
+  12            z      1.5689186800
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           O           H           H     
+            ------      ------      ------      ------
+ O     :    0.000000
+ O     :    1.490000    0.000000
+ H     :    0.970000    1.913883    0.000000
+ H     :    1.913883    0.970000    1.967747    0.000000
+
+
+  Max interatomic separation is    1.9677 Angstroms
+  between atoms "H     " and "H     ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  O          O            1.490000
+  bond distance:  H          O            0.970000
+  bond distance:  H          O            0.970000
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     O          O          H            100.000
+  bond angle:     O          O          H            100.000
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    1.722673          0.035050    0.999386    0.000000
+   IB   19.706316          0.000000    0.000000    1.000000
+   IC   20.937470          0.999386   -0.035050    0.000000
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+         293369.0677          25645.5349          24137.5391 MHz
+            9.785739            0.855443            0.805142 cm-1
+
+
+  Nuclear repulsion energy :     36.151288508275
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.02 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ >>> Time used in DIPLEN is   0.00 seconds
+
+
+ >>> Time used in SQHDOR is   0.02 seconds
+
+
+ >>> Time used in S1MAG  is   0.00 seconds
+
+
+ >>> Time used in S1MAGL is   0.00 seconds
+
+
+ >>> Time used in S1MAGR is   0.01 seconds
+
+
+ >>> Time used in S2MAG  is   0.01 seconds
+
+
+ >>> Time used in S2MKET is   0.01 seconds
+
+
+ >>> Time used in S2MMIX is   0.02 seconds
+
+
+ >>> Time used in ANGMOM is   0.01 seconds
+
+
+ >>> Time used in MAGMOM is   0.06 seconds
+
+
+ >>> Time used in SUSCGO is   0.01 seconds
+
+
+ >>> Time used in DIASUS is   0.15 seconds
+
+
+ >>> Time used in DPLGRA is   0.03 seconds
+
+
+ >>> Time used in DEROVL is   0.00 seconds
+
+
+ >>> Time used in DERHAM is   0.02 seconds
+
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ >>> Time used in GABGEN is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.39 seconds
+ >>>> Total wall time used in HERMIT:   0.39 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ AO-based response function calculations are carried out...
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:09:24 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ Title lines from integral program:
+     Hydrogen Peroxide                                                       
+                                                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         18
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 12
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          12
+     Number of basis functions         12
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              9
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING DIPLEN IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING S1MAG  IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING S1MAGR IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING S1MAGL IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING MAGMOM IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING ANGMOM IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING SUSCGO IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING DIASUS IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING S2MAG  IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+
+ Keyword ".S2MKET                                                               " not recognized in LINSCA **INTEGRALS.
+
+
+ Keyword ".S2MMIX                                                               " not recognized in LINSCA **INTEGRALS.
+
+ WARNING SQHDOR IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING DERHAM IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING DIPGRA IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING DEROVL IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ AO-based response function calculations are carried out...
+
+ Keyword ".RESPONSE-FUNCTION                      " not recognized in config_rsp_input
+
+
+ Keyword "2 EL MAG                                " not recognized in config_rsp_input
+
+
+ Keyword ".COMPONENTS                             " not recognized in config_rsp_input
+
+
+ Keyword "2 1:1 1:1                               " not recognized in config_rsp_input
+
+
+ Keyword "1 0.1                                   " not recognized in config_rsp_input
+
+
+ Keyword ".RESPONSE-FUNCTION                      " not recognized in config_rsp_input
+
+
+ Keyword "2 GEO GEO                               " not recognized in config_rsp_input
+
+
+ Keyword ".COMPONENTS                             " not recognized in config_rsp_input
+
+
+ Keyword "2 1:1 1:1                               " not recognized in config_rsp_input
+
+
+ Keyword "1 0.0                                   " not recognized in config_rsp_input
+
+
+ Keyword ".TRANSITION-MOMENT                      " not recognized in config_rsp_input
+
+
+ Keyword "2 MAG EXCI                              " not recognized in config_rsp_input
+
+
+ Keyword ".COMPONENTS                             " not recognized in config_rsp_input
+
+
+ Keyword "1 1:1                                   " not recognized in config_rsp_input
+
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DIIS                    
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           8
+Convergence threshold for gradient:   0.10E-09
+ End of configuration from new input structure!
+ Take first density from Hueckel guess
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.00 seconds
+ >>> wall Time used in LWDIAG          is   0.00 seconds
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   0.01 seconds
+ >>> wall Time used in **INIT          is   0.01 seconds
+** Get Fock matrix number   1
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.03 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   4.54298663730164     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1   -148.2976580422    0.00000000000    0.00      0.00000    0.00    0.0000000    0.45E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.03 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.515408616313865     
+  2   -148.7117440271   -0.41408598493    0.00      0.00000    0.00    0.0000000    0.52E+00  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.03 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.126346546039860     
+  3   -148.7418583822   -0.03011435511   -1.00      0.00000    0.00    0.0000000    0.13E+00  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.625311562516566E-002
+  4   -148.7448955976   -0.00303721539   -1.00      0.00000    0.00    0.0000000    0.36E-01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   5
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.03 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  6.559815035370985E-003
+  5   -148.7451651887   -0.00026959108   -1.00      0.00000    0.00    0.0000000    0.66E-02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   6
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.03 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.613187394114824E-003
+  6   -148.7451740036   -0.00000881498   -1.00      0.00000    0.00    0.0000000    0.16E-02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   7
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.03 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  5.079984662186229E-004
+  7   -148.7451745191   -0.00000051548   -1.00      0.00000    0.00    0.0000000    0.51E-03  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   8
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  8.759767872116934E-005
+  8   -148.7451745741   -0.00000005500   -1.00      0.00000    0.00    0.0000000    0.88E-04  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   9
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.03 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  9.243258897123850E-006
+  9   -148.7451745754   -0.00000000130   -1.00      0.00000    0.00    0.0000000    0.92E-05  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  10
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.03 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.006536616009589E-006
+ 10   -148.7451745754   -0.00000000002   -1.00      0.00000    0.00    0.0000000    0.10E-05  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  11
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.709207664267204E-007
+ 11   -148.7451745754    0.00000000000   -1.00      0.00000    0.00    0.0000000    0.37E-06  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  12
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.03 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.927169142666884E-008
+ 12   -148.7451745754    0.00000000000   -1.00      0.00000    0.00    0.0000000    0.39E-07  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  13
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.03 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  5.163342592574137E-009
+ 13   -148.7451745754    0.00000000000   -1.00      0.00000    0.00    0.0000000    0.52E-08  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  14
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  4.352135734069006E-010
+ 14   -148.7451745754    0.00000000000   -1.00      0.00000    0.00    0.0000000    0.44E-09  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  15
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.03 seconds
+ >>> wall Time used in FCK_FO          is   0.03 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.762621895027548E-011
+ 15   -148.7451745754    0.00000000000   -1.00      0.00000    0.00    0.0000000    0.18E-10  ###
+ >>>  CPU Time used in **ITER          is   0.50 seconds
+ >>> wall Time used in **ITER          is   0.50 seconds
+Total no. of matmuls in SCF optimization:         45
+ Postponing calculation of HOMO-LUMO gap to response part...
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.41408598493    0.0000    0.0000    0.0000000
+  3   -0.03011435511   -1.0000    0.0000    0.0000000
+  4   -0.00303721539   -1.0000    0.0000    0.0000000
+  5   -0.00026959108   -1.0000    0.0000    0.0000000
+  6   -0.00000881498   -1.0000    0.0000    0.0000000
+  7   -0.00000051548   -1.0000    0.0000    0.0000000
+  8   -0.00000005500   -1.0000    0.0000    0.0000000
+  9   -0.00000000130   -1.0000    0.0000    0.0000000
+ 10   -0.00000000002   -1.0000    0.0000    0.0000000
+ 11    0.00000000000   -1.0000    0.0000    0.0000000
+ 12    0.00000000000   -1.0000    0.0000    0.0000000
+ 13    0.00000000000   -1.0000    0.0000    0.0000000
+ 14    0.00000000000   -1.0000    0.0000    0.0000000
+ 15    0.00000000000   -1.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1          -148.29765804215503521846      0.454298663730164D+01
+    2          -148.71174402708214756785      0.515408616313865D+00
+    3          -148.74185838219318611664      0.126346546039860D+00
+    4          -148.74489559758603718365      0.362531156251657D-01
+    5          -148.74516518866539627197      0.655981503537098D-02
+    6          -148.74517400364646846356      0.161318739411482D-02
+    7          -148.74517451912652177271      0.507998466218623D-03
+    8          -148.74517457413011811695      0.875976787211693D-04
+    9          -148.74517457543373666340      0.924325889712385D-05
+   10          -148.74517457544885701282      0.100653661600959D-05
+   11          -148.74517457544905596478      0.370920766426720D-06
+   12          -148.74517457544911280820      0.392716914266688D-07
+   13          -148.74517457544914122991      0.516334259257414D-08
+   14          -148.74517457544908438649      0.435213573406901D-09
+   15          -148.74517457544922649504      0.176262189502755D-10
+ 
+      SCF converged !!!! 
+ call util_save_MOinfo
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (LSTDHF) >>>
+
+
+ Use MO orbital energy differences to find  first guess for eigenvectors/values
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   1.332397867085699E-312
+ Response convergence threshold is  1.000000000000000E-008
+Residual norm for vector   1 is:   0.972241E-01    and eigenvalue =   0.26498895   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.04 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.264988945128779     
+Residual norm for vector   1 is:   0.553048E-01    and eigenvalue =   0.25936013   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.259360128135146     
+Residual norm for vector   1 is:   0.224852E-01    and eigenvalue =   0.25449016   It =   3 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.04 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.254490155658719     
+Residual norm for vector   1 is:   0.133206E-01    and eigenvalue =   0.25398380   It =   4 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.253983797674940     
+Residual norm for vector   1 is:   0.346837E-02    and eigenvalue =   0.25378816   It =   5 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.253788157755338     
+Residual norm for vector   1 is:   0.133131E-02    and eigenvalue =   0.25378225   It =   6 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.04 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.253782246130406     
+Residual norm for vector   1 is:   0.645796E-03    and eigenvalue =   0.25378103   It =   7 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.04 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.04 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.253781030057605     
+Residual norm for vector   1 is:   0.251001E-03    and eigenvalue =   0.25378087   It =   8 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.04 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.253780871183282     
+Residual norm for vector   1 is:   0.123476E-03    and eigenvalue =   0.25378081   It =   9 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   1.27 seconds
+ >>> wall Time used in RSP_IT          is   0.14 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          10
+
+ >>> Time used in TWOINT is   0.47 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.47 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.253780814082036     
+Residual norm for vector   1 is:   0.256938E-04    and eigenvalue =   0.25378081   It =  10 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.61 seconds
+ >>> wall Time used in RSP_IT          is   0.04 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          11
+
+ >>> Time used in TWOINT is   0.46 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.47 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.253780811347540     
+Residual norm for vector   1 is:   0.183568E-04    and eigenvalue =   0.25378081   It =  11 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.54 seconds
+ >>> wall Time used in RSP_IT          is   0.04 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          12
+
+ >>> Time used in TWOINT is   0.47 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.47 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.253780811004535     
+Residual norm for vector   1 is:   0.207559E-05    and eigenvalue =   0.25378081   It =  12 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.60 seconds
+ >>> wall Time used in RSP_IT          is   0.04 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          13
+
+ >>> Time used in TWOINT is   0.46 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.47 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.253780810964106     
+Residual norm for vector   1 is:   0.146237E-07    and eigenvalue =   0.25378081   It =  13 CONV = F
+ >>>  CPU Time used in RSP_IT          is   1.54 seconds
+ >>> wall Time used in RSP_IT          is   0.11 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          14
+
+ >>> Time used in TWOINT is   0.47 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.47 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.253780810963908     
+Residual norm for vector   1 is:   0.550590E-14    and eigenvalue =   0.25378081   It =  14 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ 
+ The following excitation energies are used for the response calculation:
+ 
+           1  0.253780810963909     
+ 
+ 
+ 
+ ****************************************************************
+ *                       RESPONSE INPUT  1                      *
+ *          Property type: Response function (order 2)          *
+ ****************************************************************
+ 
+ OPERATOR 1
+ ''''''''''
+ Operator type: EL  
+ First component:    1
+ Last component:     1
+ Real frequency:   -0.1000000
+ 
+ OPERATOR 2
+ ''''''''''
+ Operator type: MAG 
+ First component:    1
+ Last component:     1
+ Real frequency:    0.1000000
+ 
+ 
+ 
+ ****************************************************************
+ *                       RESPONSE INPUT  2                      *
+ *          Property type: Response function (order 2)          *
+ ****************************************************************
+ 
+ OPERATOR 1
+ ''''''''''
+ Operator type: GEO 
+ First component:    1
+ Last component:     1
+ Real frequency:    0.0000000
+ 
+ OPERATOR 2
+ ''''''''''
+ Operator type: GEO 
+ First component:    1
+ Last component:     1
+ Real frequency:    0.0000000
+ 
+ 
+ 
+ ****************************************************************
+ *                       RESPONSE INPUT  3                      *
+ *           Property type: Single transition moment            *
+ ****************************************************************
+ 
+ OPERATOR 1
+ ''''''''''
+ Operator type: MAG 
+ First component:    1
+ Last component:     1
+ Real frequency:   -0.2537808
+ 
+ OPERATOR 2
+ ''''''''''
+ Operator type: EXCI
+ Real frequency (excitation energy):    0.2537808
+ Excited state number for this operator:  1
+ 
+ Starting linear response function calculation for: << EL  ; MAG >>
+ 
+
+ >>> Time used in TWOINT is   0.45 seconds
+
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+
+ >>> Time used in TWOINT is   0.31 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.31 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+ Response convergence threshold is  1.000000000000000E-008
+Residual norm for vector   1 is:   0.189637E+00    and frequency =     0.100000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.32 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.04 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.978775E-01    and frequency =     0.100000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.409545E-01    and frequency =     0.100000   It =   3 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.180024E-01    and frequency =     0.100000   It =   4 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.856799E-02    and frequency =     0.100000   It =   5 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.145171E-02    and frequency =     0.100000   It =   6 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.04 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.270554E-03    and frequency =     0.100000   It =   7 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.734499E-04    and frequency =     0.100000   It =   8 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.04 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.270491E-04    and frequency =     0.100000   It =   9 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          10
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.576597E-05    and frequency =     0.100000   It =  10 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          11
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.744417E-06    and frequency =     0.100000   It =  11 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          12
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.580349E-07    and frequency =     0.100000   It =  12 CONV = F
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          13
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.732565E-09    and frequency =     0.100000   It =  13 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+
+ >>> Time used in TWOINT is   0.46 seconds
+
+ Starting linear response function calculation for: << GEO ; GEO >>
+ 
+
+ >>> Time used in TWOINT is   0.45 seconds
+
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+
+ >>> Time used in TWOINT is   0.46 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.47 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Response convergence threshold is  1.000000000000000E-008
+Residual norm for vector   1 is:   0.631309E-01    and frequency =     0.000000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.47 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+
+ >>> Time used in TWOINT is   0.30 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.31 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.144922E-01    and frequency =     0.000000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.31 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.675121E-02    and frequency =     0.000000   It =   3 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.04 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.122954E-02    and frequency =     0.000000   It =   4 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.131242E-03    and frequency =     0.000000   It =   5 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.347983E-04    and frequency =     0.000000   It =   6 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.237331E-04    and frequency =     0.000000   It =   7 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.292343E-05    and frequency =     0.000000   It =   8 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+
+ >>> Time used in TWOINT is   0.04 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.04 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.256815E-06    and frequency =     0.000000   It =   9 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          10
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.350388E-07    and frequency =     0.000000   It =  10 CONV = F
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          11
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.465156E-07    and frequency =     0.000000   It =  11 CONV = F
+ >>>  CPU Time used in RSP_IT          is   0.04 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          12
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.356553E-07    and frequency =     0.000000   It =  12 CONV = F
+ >>>  CPU Time used in RSP_IT          is   0.03 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          13
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.03 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.107250E-07    and frequency =     0.000000   It =  13 CONV = F
+ >>>  CPU Time used in RSP_IT          is   0.05 seconds
+ >>> wall Time used in RSP_IT          is   0.03 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          14
+
+ >>> Time used in TWOINT is   0.46 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.46 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.140980E-07    and frequency =     0.000000   It =  14 CONV = F
+ >>>  CPU Time used in RSP_IT          is   0.48 seconds
+ >>> wall Time used in RSP_IT          is   0.04 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          15
+
+ >>> Time used in TWOINT is   0.46 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.47 seconds
+ >>> wall Time used in LINTRA          is   0.03 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.531257E-08    and frequency =     0.000000   It =  15 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+
+ >>> Time used in TWOINT is   0.45 seconds
+
+ Starting linear response function calculation for: << MAG ; EXCI>>
+ 
+
+ >>> Time used in TWOINT is   0.03 seconds
+
+ 
+ 
+ 
+ ****************************************************************
+ *                      RESPONSE RESULTS  1                     *
+ *          Property type: Response function (order 2)          *
+ ****************************************************************
+ 
+ OPERATOR 1
+ ''''''''''
+ Operator type: EL  
+ First component:    1
+ Last component:     1
+ Real frequency:   -0.1000000
+ 
+ OPERATOR 2
+ ''''''''''
+ Operator type: MAG 
+ First component:    1
+ Last component:     1
+ Real frequency:    0.1000000
+ 
+ LINEAR RESPONSE RESULTS (REAL PART)
+ '''''''''''''''''''''''''''''''''''
+     Comp1   Comp2           Result 
+       1      1           -0.1964549
+ 
+ 
+ 
+ 
+ ****************************************************************
+ *                      RESPONSE RESULTS  2                     *
+ *          Property type: Response function (order 2)          *
+ ****************************************************************
+ 
+ OPERATOR 1
+ ''''''''''
+ Operator type: GEO 
+ First component:    1
+ Last component:     1
+ Real frequency:    0.0000000
+ 
+ OPERATOR 2
+ ''''''''''
+ Operator type: GEO 
+ First component:    1
+ Last component:     1
+ Real frequency:    0.0000000
+ 
+ LINEAR RESPONSE RESULTS (REAL PART)
+ '''''''''''''''''''''''''''''''''''
+     Comp1   Comp2           Result 
+       1      1            0.1337070
+ 
+ 
+ 
+ 
+ ****************************************************************
+ *                      RESPONSE RESULTS  3                     *
+ *           Property type: Single transition moment            *
+ ****************************************************************
+ 
+ OPERATOR 1
+ ''''''''''
+ Operator type: MAG 
+ First component:    1
+ Last component:     1
+ Real frequency:   -0.2537808
+ 
+ OPERATOR 2
+ ''''''''''
+ Operator type: EXCI
+ Real frequency (excitation energy):    0.2537808
+ Excited state number for this operator:  1
+ 
+ LINEAR TRANSITION MOMENT
+ ''''''''''''''''''''''''
+     Comp1            Result 
+       1           -0.1246269
+ 
+ 
+ Total no. of matmuls used:        1646
+ Total no. of Fock/KS matrix evaluations:          15
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                  97.520 MB
+  Max allocated memory, type(matrix)           97.520 MB
+  Max allocated memory, real(realk)             0.000 Byte
+  Max allocated memory, integer                 0.000 Byte
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               0.000 Byte
+  Max allocated memory, integralitem            0.000 Byte
+  Max allocated memory, Overlap                 0.000 Byte
+  Max allocated memory, ODitem                  0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    16.22253        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:            -148.745174575449
+     Nuclear repulsion:            36.151288508275
+     Electronic energy:          -184.896463083725
+
+     Final gradient norm:           0.000000000018
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:09:27 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  O   1s     1.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   2  O   1s     0.0000   1.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   3  O   2px    0.0000   0.0000   1.0000   0.0000   0.0000   0.0000   0.0000
+   4  O   2py    0.0000   0.0000   0.0000   1.0000   0.0000   0.0000   0.0000
+   5  O   2pz    0.0000   0.0000   0.0000   0.0000   1.0000   0.0000   0.0000
+   6  O   1s     0.0000   0.0000   0.0000   0.0000   0.0000   1.0000   0.0000
+   7  O   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   1.0000
+   8  O   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   9  O   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  10  O   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  11  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  12  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+
+ Orbital          8        9
+   1  O   1s     0.0000   0.0000
+   2  O   1s     0.0000   0.0000
+   3  O   2px    0.0000   0.0000
+   4  O   2py    0.0000   0.0000
+   5  O   2pz    0.0000   0.0000
+   6  O   1s     0.0000   0.0000
+   7  O   1s     0.0000   0.0000
+   8  O   2px    1.0000   0.0000
+   9  O   2py    0.0000   1.0000
+  10  O   2pz    0.0000   0.0000
+  11  H   1s     0.0000   0.0000
+  12  H   1s     0.0000   0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :     16.23 seconds
+ >>>> Total wall time used in SIRIUS :      3.14 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:09:27 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:  16.62 seconds
+ >>>> Total wall time used in DALTON:   3.53 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:09:27 2010
+     Host name              : fe2.grendel.cscaa.dk                    

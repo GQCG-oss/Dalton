@@ -1,0 +1,601 @@
+#!/bin/bash
+################################################################################
+#                                                                              #
+# TEST-script for LSDALTON                                                     #
+#                                                                              #
+################################################################################
+#
+# location of default lsdalton script
+LSDALTON_script="$PWD/../lsdalton"
+# radovan: this is to figure out whether TEST is called from test directory
+#          or from outside
+SCRIPT_DIR="${0%/*}"
+# if the script was started from the base directory, then the
+# expansion returns a period
+if test "$SCRIPT_DIR" == "." ; then
+  SCRIPT_DIR="$PWD"
+# if the script was not called with an absolute path, then we need to add the
+# current working directory to the relative path of the script
+elif test "${SCRIPT_DIR:0:1}" != "/" ; then
+  SCRIPT_DIR="$PWD/$SCRIPT_DIR"
+fi
+
+#########################################################################
+# define all the different test suites
+#########################################################################
+# LINSCA is a set of tests that MUST be run before commiting to linsca-ng
+# branch
+LINSCA="linsca/linsca_energy  
+  linsca/linsca_dft_energy
+  linsca/linsca_sp        
+  linsca/linsca_unrest_energy
+  linsca/linsca_unrest_dft_energy
+  linsca/linsca_rhf_stability
+  linsca/linsca_uhf_stability
+  linsca/linsca_direct_dens
+  linsca/linsca_arh
+  linsca/linsca_arh_davidson
+  linsca/linsca_lcm_nongc
+  linsca/linsca_trilevel 
+  linsca/linsca_atoms
+  linsca/linsca_trilevel_2nd_local
+  linsca/linsca_trilevel_2nd_all
+  linsca/test_kurtosis
+  linsca/PipekMezeyLowdin
+  linsca/test_soeo"
+ARH="linsca/linsca_atoms
+  linsca/linsca_trilevel
+  linsca/linsca_arh"
+LSDALTON="linsca/lsdalton_dft_ssfgrid
+  LSint/LSDALTON_screen1
+  LSint/LSDALTON_screen2
+  LSint/LSDALTON_b3lyp_water
+  LSint/LSDALTON_userdefined_basis1
+  LSint/LSDALTON_userdefined_basis2
+  LSint/LSDALTON_PropertyTest1
+  LSint/LSDALTON_NOBQBQ2
+  LSint/LSDALTON_pointcharge
+  LSint/LSDALTON_pointcharge2
+  LSint/LSDALTON_phantom
+  LSint/LSDALTON_phantom2
+  LSint/LSDALTON_donotsavegab
+  LSint/LSDALTON_EP
+  LSint/LSDALTON_geoderiv
+  LSint/LSDALTON_magderiv
+  LSint/LSDALTON_magderiv2
+  LSint/LSDALTON_camb3lyp
+  LSint/LSDALTON_camb3lyp2
+  LSint/LSDALTON_cartesian_ecoeff 
+  LSint/LSDALTON_DaLink
+  LSint/LSDALTON_DENSFIT_FMM
+  LSint/LSDALTON_dftfunc_bp86
+  LSint/LSDALTON_dftfunc_bpw91
+  LSint/LSDALTON_dftfunc_kt3 
+  LSint/LSDALTON_dftfunc_lb94
+  LSint/LSDALTON_dftfunc_pbe0
+  LSint/LSDALTON_dftfunc_pw86x
+  LSint/LSDALTON_dftfunc_vwn3 
+  LSint/LSDALTON_ethane_df_dft_molgrad
+  LSint/LSDALTON_ethane_df_lda_jengine
+  LSint/LSDALTON_ethane_df_overlap_lda
+  LSint/LSDALTON_ethane_dft_molgrad
+  LSint/LSDALTON_ethane_lda_jengine
+  LSint/LSDALTON_FMM
+  LSint/LSDALTON_FMM_trilevel
+  LSint/LSDALTON_fmm_gradient
+  LSint/LSDALTON_fmm_df_gradient
+  LSint/LSDALTON_fmm_twoel_gradient
+  LSint/LSDALTON_INCREM
+  LSint/LSDALTON_INCREM2
+  LSint/LSDALTON_J_NSETUV
+  LSint/LSDALTON_Link
+  LSint/LSDALTON_MBIE
+  LSint/LSDALTON_SR_EXCHANGE
+  LSint/LSDALTON_pass
+  LSint/LSDALTON_PrimAng
+  LSint/LSDALTON_ethane_pari_b3lyp
+  LSint/LSDALTON_ethane_pari_b3lyp_unconstrained
+  LSint/LSDALTON_ethane_pari_b3lyp_ChgConst
+  LSint/LSDALTON_ethane_pari_b3lyp_ChgDipConst
+  LSint/LSDALTON_sparse
+  LSint/LSDALTON_UDFT
+  LSint/LSDALTON_UHF_DEFAULT
+  LSint/LSDALTON_UHF_excit
+  LSint/LSDALTON_UHF_excit2
+  LSint/LSDALTON_UHF_excit_radical
+  LSint/LSDALTON_UHF_hessian
+  LSint/LSDALTON_UHF_JENGINE
+  LSint/LSDALTON_UHF_JENGINE_LINK
+  LSint/LSDALTON_UHF_LINK
+  LSint/LSDALTON_UNCONT
+  LSint/LSDALTON_ethane_dft_disp
+  LSint/LSDALTON_HF_cartesian
+  LSint/LSDALTON_augTZ"
+RSP="LSresponse/LSresponse_HF_alpha
+  LSresponse/LSresponse_HF_alpha_astv
+  LSresponse/LSresponse_HF_beta
+  LSresponse/LSresponse_HF_dipole
+  LSresponse/LSresponse_HF_dtpa
+  LSresponse/LSresponse_HF_esd
+  LSresponse/LSresponse_HF_esg
+  LSresponse/LSresponse_HF_gamma
+  LSresponse/LSresponse_HF_gamma_lcm
+  LSresponse/LSresponse_HF_molgra
+  LSresponse/LSresponse_HF_molHessian
+  LSresponse/LSresponse_HF_opa
+  LSresponse/LSresponse_HF_tpa
+  LSresponse/LSresponse_DFT_alpha
+  LSresponse/LSresponse_DFT_alpha_aptv
+  LSresponse/LSresponse_DFT_beta
+  LSresponse/LSresponse_DFT_dipole
+  LSresponse/LSresponse_DFT_esd
+  LSresponse/LSresponse_DFT_esg
+  LSresponse/LSresponse_DFT_dtpa
+  LSresponse/LSresponse_DFT_molgra
+  LSresponse/LSresponse_DFT_opa
+  LSresponse/LSresponse_DFT_tpa
+  LSresponse/LSresponse_NMR_SHIELD"
+GEO="geomopt/cartes_bfgs_min
+     geomopt/redint_bfgs
+     geomopt/cartes_trilevel_newconv
+     geomopt/cartes_psb_min
+     geomopt/ethane_dec_mp2"
+DEC="dectests/arraytest
+     dectests/reordertest
+     dectests/fullmp2
+     dectests/fullmp2_f12
+     dectests/fullccsd_f12
+     dectests/fullcc2 
+     dectests/fullccsd_low
+     dectests/fullccsd_1
+     dectests/fullccsd_2
+     dectests/fullccsd_3
+     dectests/fullccsd_high
+     dectests/fullccsdpt
+     dectests/dec_ccsdpt
+     dectests/fulldec 
+     dectests/fragment_adapted
+     dectests/mp2density_special
+     dectests/mp2_gradient_diatomic
+     dectests/mp2_gradient_special
+     dectests/mp2grad_frozencore
+     dectests/fragmentccsd_simple
+     dectests/fragmentccsd_singlespolari
+     geomopt/ethane_dec_mp2"
+ALL="$LSDALTON $LINSCA $RSP $GEO $DEC"
+# used to be $LINSCA and $LSINT but not anymore 
+# Test code compiled with 64 bit integers
+# These are the only test cases that MUST work for 64-bit integers
+# Others MIGHT work, though!
+INT64="$ALL linsca/linsca_trilevel_64bit linsca/linsca_atoms_64bit"
+#   needed for PASSES 
+CSR="csr/linsca_atoms_csr
+     csr/linsca_atoms_csr_debug        
+     csr/linsca_direct_dens_csr        
+     csr/linsca_energy_csr             
+     csr/linsca_onestep_csr                 
+     csr/linsca_rhf_stability_csr
+     csr/linsca_trilevel_csr
+     csr/linsca_trilevel_2nd_local_csr
+     csr/linsca_trilevel_2nd_all_csr
+     csr/LSDALTON_INCREM_csr
+     csr/LSDALTON_DENSFIT_FMM_csr
+     csr/LSDALTON_FMM_csr
+     csr/LSDALTON_ethane_dft_molgrad_csr"
+
+SCALAPACK="SCALAPACK/linsca_arh_SCALAPACK
+     SCALAPACK/linsca_atoms_SCALAPACK
+     SCALAPACK/linsca_direct_dens_SCALAPACK        
+     SCALAPACK/linsca_energy_SCALAPACK             
+     SCALAPACK/linsca_trilevel_2nd_local_SCALAPACK
+     SCALAPACK/linsca_trilevel_2nd_all_SCALAPACK
+     SCALAPACK/LSDALTON_DENSFIT_FMM_SCALAPACK
+     SCALAPACK/LSDALTON_FMM_SCALAPACK
+     SCALAPACK/LSDALTON_ethane_dft_molgrad_SCALAPACK
+     SCALAPACK/LSresponse_DFT_beta_SCALAPACK"
+PBC="pbc2/pbc2_h2fock
+     pbc2/pbc2_h2SCF_iter1
+	 pbc2/pbc2_h2STO3G"
+
+#The SHORT, MEDIUM, and LONG suites currently don't contain nothing. Do we need
+#them? Currently, the LSDALTON test suite is so small that all tests can be run 
+#without problems.
+ESSENTIAL=""
+#
+SHORTNOCC=""
+
+#
+SHORTCC=""
+#
+SHORT="$SHORTNOCC $SHORTCC"
+#
+MEDIUM=""
+#
+MEDIUMCC=""
+#
+MEDIUM="$MEDIUM $MEDIUMCC"
+#
+LONG=""
+#
+LONGCC=""
+#
+LONG="$LONG $LONGCC"
+#
+DFT=""
+#
+ALLCC="$SHORTCC $MEDIUMCC $LONGCC"
+#
+#########################################################################
+# function usage(): print usage information 
+#########################################################################
+usage() {
+ cat <<%EOF%
+Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
+            [-param "option list"] [-lsdalton script] [-log logfile] testcase
+
+       -h | -help | --help  : show this help description
+       -keep                : keep *.mol, *.dal, *.check and *.log files
+       -geotest             : standalone geometry optimization run
+       -reftest             : test reference file(s); do not run any calculations
+       -benchmark           : print CPU time for each testcase as part of the summary
+       -param "option list" : pass "option list" to lsdalton-script
+       -externloc           : use externloc
+       -gridgen             : use gridgen
+       -lsdalton script     : use script instead of the default
+                              lsdalton-script "$LSDALTON_script"
+       -log logfile         : write output into logfile instead of the "TESTLOG"
+
+       and where testcase might be one of the following:
+          all                  -- run all LSDALTON test cases
+          arh                  -- run Augmented Roothaan-Hall test cases
+          csr                  -- run Compressed-Sparse Row test cases (requires linking to MKL!)
+          scalapack            -- run SCALAPACK test cases (requires linking to SCALAPACK!)
+          dec                  -- run Divide-Expand-Consolidate coupled cluster tests
+          rsp                  -- run LSresponse tests
+		  pbc                  -- run periodic boundary condition test cases
+          geo                  -- run test cases for geometry optimization
+          int64                -- run test cases for code compiled using 64-bit integers
+          linsca               -- run tests related to density optimization
+          lsdalton             -- run tests for integral code
+          <case1 [case2] ...>  -- run only the specified testcase(s)
+%EOF%
+exit 1
+}
+
+#########################################################################
+# function myprint(string): print to stdout and $listing
+#########################################################################
+myprint(){
+ echo "$1";
+ echo "$1" >> $listing;
+ echo "$1" >> $SCRIPT_DIR/$listing;
+}
+
+#########################################################################
+#########################################################################
+# start with real work:
+#########################################################################
+#########################################################################
+
+#########################################################################
+# set defaults and evaluate parameters
+#########################################################################
+TESTparams="$0 $*"
+help=""
+geotest="false"
+externloctest="false"
+gridgentest="false"
+keep="false"
+paramlist=""
+reftest=""
+benchmark=""
+listing="TESTLOG"
+emptystring="                                "
+answer_yes=
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+while echo $1 | egrep -q '^-'; do
+   case $1 in
+     "-h" | "-help" | "--help" ) help="true" ; break;;
+     "-lsdalton" )  shift; LSDALTON_script=$1; shift;;
+     "-log" ) shift; listing=$1; shift;;
+     "-geotest" ) geotest="true"; shift;;
+     "-externloc" ) externloctest="true"; shift;;
+     "-gridgen" ) gridgentest="true"; shift;;
+     "-keep" ) keep="true"; shift;;
+     -param* ) shift; paramlist="$1"; shift;;
+     "-reftest" ) reftest="true"; shift;;
+     "-y") answer_yes=true; shift;;
+     "-benchmark" ) benchmark="true"; shift;;
+     * ) echo; echo "***** SORRY ***** option $1 is not known"; echo; usage;;
+   esac
+done
+if [ $help ]; then
+  usage
+fi
+if [ ! -x $LSDALTON_script ]; then
+   echo ' '
+   echo '----> ERROR, the "lsdalton" job script '
+   echo    '"'$LSDALTON_script'"'
+   echo '  does not exist or is not executable.'
+   echo 'The person who installed lsdalton has probably selected'
+   echo '  another place for the "lsdalton" job script.'
+   echo 'Please modify the LSDALTON_script variable in this script (i.e. '$0')'
+   echo '  to point to that place.    Alternatively, you may'
+   echo '  specify where the lsdalton script is with the -lsdalton option'
+   echo ' '
+#  usage
+   exit 1
+fi
+
+
+#########################################################################
+# set list of test cases:
+#########################################################################
+testcase=$*
+if   [ "$testcase" = "" ]; then
+  echo '    ***********************************'
+  echo '    * ERROR: No testcase(s) specified *'
+  echo '    ***********************************'
+  usage
+else 
+  case "$testcase" in
+      all)         testcase=$ALL;;
+      arh)         testcase=$ARH;;
+      csr)         testcase=$CSR;;
+      scalapack)   testcase=$SCALAPACK;;
+      dec)         testcase=$DEC;;
+      rsp)         testcase=$RSP;;
+      linsca)      testcase=$LINSCA;;
+      lsdalton)    testcase=$LSDALTON;;
+      int64)       testcase=$INT64;;
+      dft)         testcase=$DFT;;
+      geo)         testcase=$GEO;;
+	  pbc)         testcase=$PBC;;
+  esac
+fi
+
+
+#########################################################################
+# create a unique directory for test output /hjaaj
+# nonportable characters in the directory name removed. /pawsa
+#########################################################################
+testdir="`date +'%Y-%m-%dT%H_%M'`-testjob-pid-$$"
+while [ -e $testdir ]; do
+    testdir=${testdir}x
+done
+mkdir -p testruns/$testdir 
+cd testruns/$testdir || exit 1
+
+#########################################################################
+# check files for test listing:
+#########################################################################
+if [  -s $listing -a "$answer_yes" = '' ]; then
+   echo "$listing already exists... should it be deleted first? (y/n)"
+   read answer
+   if [ "$answer" = "yes"  -o  "$answer" = "y" -o "$answer" = "Y" ]; then
+       rm -f $listing
+   fi
+fi
+if [  -s $SCRIPT_DIR/$listing ]; then
+   rm -f $SCRIPT_DIR/$listing
+fi
+
+myprint "#####################################################################"
+myprint "                        LSDALTON test suite"
+myprint "#####################################################################"
+myprint "invoked with          : $TESTparams"
+myprint "date and time         : `date`"
+myprint "lsdalton script       : $LSDALTON_script"
+myprint "parameter list passed : $paramlist"
+myprint "test job directory    : testruns/$testdir"
+myprint "test listing          : $listing"
+myprint "test cases            : $testcase"
+
+#########################################################################
+# loop over test cases:
+#########################################################################
+passedall="ALL TESTS ENDED PROPERLY!"
+problems=""
+exitcode=0
+numresult=0
+num_reftests_not_found=0
+for fitem in ${testcase}
+do
+  trouble=0
+  myprint "###########################################################"
+  myprint "`date`"
+  myprint "start now with test $fitem:"
+  myprint "-----------------------------------------------------------"
+  sh $SCRIPT_DIR/$fitem || exit 1
+  item=`basename $fitem`
+  if [ -f $item.info ]; then
+    cat $item.info | tee -a $listing | tee -a $SCRIPT_DIR/$listing
+  fi
+# Check if this is a multistep job
+  numsteps=1
+  if [ -r ./$item'__'1.dal ]; then
+      multi=1
+      numsteps=`ls ./$item\_\_[0-9].dal | wc -l`
+      myprint "   This is a multi-step job consisting of $numsteps steps"
+      rm -f ./$item'__'[0-9]'_'$item.log
+      chmod +x ./$item'__'[0-9].check
+  else
+      multi=0
+      rm -f ./$item.log
+      chmod +x ./$item.check
+  fi
+# Multi-step tests loop over the different jobsteps, regular tests just
+# go through this once
+  step=1
+  while [ "$step" -le "$numsteps" ]
+  do
+      if [ "$multi" -eq 1 ]; then
+          myprint "-----------------------------------------------------------"
+          myprint "  Start $item step $step of $numsteps :"
+          myprint "-----------------------------------------------------------"
+          molfile=$item
+	  cp $item'__'$step'.dal' $item'.dal'
+          dalfile=$item
+          logfile=./$item'__'$step'_'$item.log
+          extlogfile=./$item'__'$step'_'$item.ext.log
+          gridlogfile=./$item'__'$step'_'$item.grid.log
+          checkfile=./$item'__'$step.check
+          reffile=../ref/$item'__'$step.*ref
+          moldenfile=./$item'__'$step'_'$item.molden
+      else
+          molfile=$item
+          dalfile=$item
+          logfile=./$item.log
+          extlogfile=./$item.ext.log
+          gridlogfile=./$item.grid.log
+          checkfile=./$item.check
+          reffile=../ref/$item.*ref
+          moldenfile=./$item.molden
+      fi
+# If it's a reftest, no calculation is performed
+      if [ "$reftest" = "true" ]; then
+          myprint ""
+          myprint "evaluate reference output file $reffile:"
+          myprint "-----------------------------------------------------------"
+          compressed="false"
+          if [ ! -r $reffile ]; then
+              if [ -r $reffile.gz ]; then
+                  compressed="true"
+                  gunzip -f $reffile.gz
+              fi
+          fi
+              checkout=`$checkfile $reffile | tee -a $listing` | tee -a $SCRIPT_DIR/$listing
+          if [ "$compressed" = "true" ]; then
+              gzip -f --best $reffile
+          fi
+      else
+	  if [ "$geotest" = "true" ]; then
+	      $LSDALTON_script -geo1 $paramlist -ext log $dalfile $molfile | \
+		  grep -v '\*\*\**' | \
+		  grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
+		  grep -v '^$' | tee -a $listing | tee -a $SCRIPT_DIR/$listing
+	      # do it a second time this time with standlone version
+	      $LSDALTON_script -geo2 $paramlist -ext log $dalfile $molfile | \
+		  grep -v '\*\*\**' | \
+		  grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
+		  grep -v '^$' | tee -a $listing | tee -a $SCRIPT_DIR/$listing
+	  else
+              if [ "$step" -eq "$numsteps" ]; then
+		  $LSDALTON_script $paramlist -ext log $dalfile $molfile | \
+		      grep -v '\*\*\**' | \
+		      grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
+		      grep -v '^$' | tee -a $listing | tee -a $SCRIPT_DIR/$listing
+              else
+		  $LSDALTON_script -D $paramlist -ext log $dalfile $molfile | \
+		      grep -v '\*\*\**' | \
+		      grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
+		      grep -v '^$' | tee -a $listing | tee -a $SCRIPT_DIR/$listing
+              fi
+	  fi
+          if [ "$multi" -eq 1 ]; then
+	      cp $molfile'.log' $logfile
+          fi
+          myprint ""
+          myprint "evaluate output file $logfile:"
+          myprint "-----------------------------------------------------------"
+	  if [ "$externloctest" = "true" ]; then
+	      checkout=`$checkfile $extlogfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
+	  else
+	      if [ "$gridgentest" = "true" ]; then
+		  checkout=`$checkfile $gridlogfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
+	      else
+		  checkout=`$checkfile $logfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
+	      fi
+	  fi
+          if [ "$benchmark" = "true" ]; then
+              if [ `$GREP "CPU Time used in LSDALTON  *is" $logfile | wc -l` = 1 ]; then
+                  CPU_usage=`$GREP "CPU Time used in LSDALTON  *is" $logfile | sed s/">* *CPU Time used in LSDALTON *is"/""/`
+              else
+                  CPU_usage="N/A"
+              fi
+          fi
+      fi
+      if [ "$benchmark" = "true" ]; then
+          numresult=`expr $numresult \+ 1`
+          if [ $step -eq 1 ]; then
+              testlist[$numresult]="$item"
+          else
+              testlist[$numresult]="...step$step"
+          fi
+          timelist[$numresult]="$CPU_usage"
+      fi
+      echo $checkout
+      passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
+      if [ -z "$passed" ]; then
+        trouble=`expr $trouble \+ 1`
+        passedall="THERE IS A PROBLEM IN TEST CASE(S)"
+        if [ "$trouble" -eq 1 ]; then
+            problems="$problems $item"
+        fi
+        exitcode=1
+      elif [ "$keep" = "false" ]; then
+
+        rm -f $dalfile.dal $dalfile.BAS $checkfile $logfile $extlogfile $item.info $dalfile.tar.gz
+#     else everything OK and -keep defined
+      fi
+    step=`expr $step \+ 1`
+  done
+  if [ "$trouble" -eq 0 ]; then
+      if [ "$keep" = "false" ]; then
+          rm -f $molfile.mol
+      fi
+  fi
+done
+
+#########################################################################
+# final result:
+#########################################################################
+
+myprint ""
+myprint "#####################################################################"
+myprint "                              Summary"
+myprint "#####################################################################"
+myprint ""
+
+if [ "$benchmark" = "true" ]; then
+    if [ "$numresult" -gt 0  ]; then
+      ind=1
+      while [ "$ind" -le "$numresult" ]; do
+        awk "END{printf \"%32s %s\\n\", \"${testlist[$ind]}\",\"${timelist[$ind]}\"}"</dev/null 
+        awk "END{printf \"%32s %s\\n\", \"${testlist[$ind]}\",\"${timelist[$ind]}\"}"</dev/null >> $listing
+        awk "END{printf \"%32s %s\\n\", \"${testlist[$ind]}\",\"${timelist[$ind]}\"}"</dev/null >> $SCRIPT_DIR/$listing
+        ind=`expr $ind \+ 1`
+      done
+      myprint ""
+    fi
+fi
+
+if [ "$reftest" = "true" ]; then
+   myprint " >>>>> THIS IS A TEST OF THE REFERENCE OUTPUTS >>>>>"
+   myprint ""
+fi
+
+n=0
+for problem in ${problems}
+do
+  n=`expr $n \+ 1`
+done
+if [ "$n" -eq 0 ]; then
+    myprint "$passedall"
+else
+    myprint "$passedall $n TEST CASE(S)"
+    for problem in ${problems}
+    do
+      myprint "$problem"
+    done
+fi
+
+myprint "date and time         : `date`"
+
+exit $exitcode

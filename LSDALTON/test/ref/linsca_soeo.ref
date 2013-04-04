@@ -1,0 +1,2036 @@
+
+ Work memory size (LMWORK+2):   100000002 =  762.94 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:15:09 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+ Warning: Not enough memory allocated for readin.   101256671
+          needed, but only    100000000  specified.
+          Trying to allocate needed memory.
+
+
+  Title Cards
+  -----------
+
+  The H2 molecule                                                         
+  in a cc-pVDZ basis                                                      
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:     2.015650 amu
+                       Natural abundance:  99.970 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     1
+  Total number of atoms:    2
+
+  Basis set used is "cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H           1       1       7       5      [4s1p|2s1p]                                                                      
+  H           1       1       7       5      [4s1p|2s1p]                                                                      
+  ----------------------------------------------------------------------
+  total:      2       2      14      10
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.00 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ Number of two-electron integrals written:         149 (  9.7% )
+ Megabytes written:                              0.007
+
+
+
+ >>> Time used in TWOINT is   0.01 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:15:09 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ Title lines from integral program:
+     The H2 molecule                                                         
+     in a cc-pVDZ basis                                                      
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons          2
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 10
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          10
+     Number of basis functions         10
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              1
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ LSint is requested by *LINSCA under **INTEGRALS 
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+   You have requested Augmented Roothaan-Hall optimization
+   => explicit averaging is turned off!
+Expand trust radius if ratio is larger than:            0.75
+Contract trust radius if ratio is smaller than:         0.25
+On expansion, trust radius is expanded by a factor      1.20
+On contraction, trust radius is contracted by a factor  0.70
+ 
+ Maximum size of subspace in ARH linear equations:           2
+ 
+LINSCF configuration :
+Density subspace min. method    : None                    
+Density optimization : Augmented RH optimization          
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           8
+Dynamic convergence threshold for gradient:   0.14E-04
+ 
+ End of configuration from new input structure!
+ Replace S with S build from new integral driver
+ QQQ New Overlap S1:   13.2666000677539     
+ QQQ Old Overlap S:   13.2666000677539     
+ QQQ DIFF S-S1:  1.429810390713084E-030
+  SUCCESFULLY REPLACED OLD OVERLAP WITH NEW
+ QQQ New H1:   6.48828491415373     
+ QQQ Old H1:   6.48828491415374     
+ QQQ DIFF H-H1:  3.305408958382292E-030
+  SUCCESFULLY REPLACED OLD h1 WITH NEW
+ Take first density from Hueckel guess
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.00 seconds
+ >>> wall Time used in LWDIAG          is   0.00 seconds
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   1.25 seconds
+ >>> wall Time used in **INIT          is   0.11 seconds
+** Get Fock matrix number   1
+
+ Precalculated two-electron integrals are transformed to P-supermatrix elements.
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.01 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   5.83347341659761     
+ QQQ Old  F:   5.83347341659761     
+ QQQ DIFF  :  4.135038694371813E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   0.17 seconds
+ >>> wall Time used in FCK_FO          is   0.01 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.552905204142683     
+*************************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     OAO gradient     ###
+******************************************************************  *******************************###
+  1     -0.3455074610    0.00000000000    0.00      0.00000    0.00    0.00E+00    0.55E+00  ###
+*******************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+*******************************************************************************************%%%
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=         4 sparsity:      4.000 %
+Matrix AO F  has nnz=        22 sparsity:     22.000 %
+Matrix OAO D has nnz=         4 sparsity:      4.000 %
+Matrix OAO F has nnz=        22 sparsity:     22.000 %
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  0.322810532815127     
+ Number of densities in queue:           0
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000625310 (mu =   0.00, xmax = 0.250435E+00, xnorm = 0.354169E+00, THR = 0.322811E-02)
+Newton equations converged in  1 iterations!
+ >>>  CPU Time used in CROP solver     is   0.01 seconds
+ >>> wall Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    33
+ >>>  CPU Time used in G_DENS          is   0.02 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+ Replace F with F build from new integral driver
+ QQQ New  F:   4.31258825261401     
+ QQQ Old  F:   4.31258825261401     
+ QQQ DIFF  :  1.248871550404465E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.60000 (xnorm)    0.25043    0.35417    0.00    0.3586    0.0000         0          1    %%%
+ Trust radius based on max norm!
+ % trust-radius ok, h =   0.600000000000000     
+ >>>  CPU Time used in FCK_FO          is   0.17 seconds
+ >>> wall Time used in FCK_FO          is   0.01 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.860062233578101E-002
+  2     -0.4685124661   -0.12300500510    0.00      0.00000    0.00    0.00E+00    0.29E-01  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=         9 sparsity:      9.000 %
+Matrix AO F  has nnz=        22 sparsity:     22.000 %
+Matrix OAO D has nnz=         9 sparsity:      9.000 %
+Matrix OAO F has nnz=        22 sparsity:     22.000 %
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.669839566541078E-002
+ Number of densities in queue:           1
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0001563477 (mu =   0.00, xmax = 0.127371E-01, xnorm = 0.180130E-01, THR = 0.166984E-03)
+Newton equations converged in  1 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>> wall Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    33
+ >>>  CPU Time used in G_DENS          is   0.02 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+ Replace F with F build from new integral driver
+ QQQ New  F:   4.24525413824402     
+ QQQ Old  F:   4.24525413824402     
+ QQQ DIFF  :  4.925790913454277E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.60000 (xnorm)    0.01274    0.01801    0.00    0.3457    0.9656         1          2    %%%
+ Trust radius based on max norm!
+ % trust-radius ok, h =   0.600000000000000     
+ >>>  CPU Time used in FCK_FO          is   0.16 seconds
+ >>> wall Time used in FCK_FO          is   0.01 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  9.883324743583406E-004
+  3     -0.4688234326   -0.00031096643    0.00      0.00000    0.00    0.00E+00    0.99E-03  ###
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=         9 sparsity:      9.000 %
+Matrix AO F  has nnz=        22 sparsity:     22.000 %
+Matrix OAO D has nnz=         9 sparsity:      9.000 %
+Matrix OAO F has nnz=        22 sparsity:     22.000 %
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  5.770188456715106E-004
+ Number of densities in queue:           2
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000085462 (mu =   0.00, xmax = 0.450182E-03, xnorm = 0.636655E-03, THR = 0.577019E-05)
+  Error of red space iteration  2:      0.0000000227 (mu =   0.00, xmax = 0.456947E-03, xnorm = 0.646221E-03, THR = 0.577019E-05)
+Newton equations converged in  2 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>> wall Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    41
+ >>>  CPU Time used in G_DENS          is   0.02 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+ Replace F with F build from new integral driver
+ QQQ New  F:   4.24286112084826     
+ QQQ Old  F:   4.24286112084826     
+ QQQ DIFF  :  6.612197859557932E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ 0.60000 (xnorm)    0.00046    0.00065    0.00    0.3334    1.0000         2          3    %%%
+ Trust radius based on max norm!
+ % trust-radius ok, h =   0.600000000000000     
+ >>>  CPU Time used in FCK_FO          is   0.16 seconds
+ >>> wall Time used in FCK_FO          is   0.01 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  8.075254061919437E-007
+  4     -0.4688238055   -0.00000037290    0.00      0.00000    0.00    0.00E+00    0.81E-06  ###
+ >>>  CPU Time used in **ITER          is   0.73 seconds
+ >>> wall Time used in **ITER          is   0.05 seconds
+Total no. of matmuls in SCF optimization:        131
+SOEO-TIME!
+ SOEOLOOP STARTED!
+ =============================================
+ 
+ Number of electrons:           1
+ Number of basis-functions:          10
+ Size of occupied space:           0
+ Size of active space:          10
+ Size of virtual space:           0
+ 
+ First Dao =
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.30078856     0.26128561     0.00000000     0.00000000
+       2       0.26128561     0.22697064     0.00000000     0.00000000
+       3       0.00000000     0.00000000     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00000000
+       5      -0.00008434    -0.00007326     0.00000000     0.00000000
+       6       0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     0.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       1      -0.00008434     0.00000000     0.00000000     0.00000000
+       2      -0.00007326     0.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00000000
+       5       0.00000002     0.00000000     0.00000000     0.00000000
+       6       0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     0.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.00000000
+
+               Column   9     Column  10
+       1       0.00000000     0.00000000
+       2       0.00000000     0.00000000
+       3       0.00000000     0.00000000
+       4       0.00000000     0.00000000
+       5       0.00000000     0.00000000
+       6       0.00000000     0.00000000
+       7       0.00000000     0.00000000
+       8       0.00000000     0.00000000
+       9       0.00000000     0.00000000
+      10       0.00000000     0.00000000
+ First Fao =
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.04522288    -0.04773250     0.00000000     0.00000000
+       2      -0.04773250     0.05924580     0.00000000     0.00000000
+       3       0.00000000     0.00000000     1.94752975     0.00000000
+       4       0.00000000     0.00000000     0.00000000     1.94752975
+       5       0.00030594     0.00027551     0.00000000     0.00000000
+       6       0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     0.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       1       0.00030594     0.00000000     0.00000000     0.00000000
+       2       0.00027551     0.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00000000
+       5       1.94752148     0.00000000     0.00000000     0.00000000
+       6       0.00000000    -0.47927824    -0.43311737     0.00000000
+       7       0.00000000    -0.43311737    -0.35437803     0.00000000
+       8       0.00000000     0.00000000     0.00000000     0.93041655
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10       0.00000000     0.00026621     0.00023606     0.00000000
+
+               Column   9     Column  10
+       1       0.00000000     0.00000000
+       2       0.00000000     0.00000000
+       3       0.00000000     0.00000000
+       4       0.00000000     0.00000000
+       5       0.00000000     0.00000000
+       6       0.00000000     0.00026621
+       7       0.00000000     0.00023606
+       8       0.00000000     0.00000000
+       9       0.93041655     0.00000000
+      10       0.00000000     0.93042480
+ First C =
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.00000000     0.54844186     0.00000000     0.00000000
+       2       0.00000000     0.47641444     0.00000000     0.00000000
+       3       0.00000000     0.00000000     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00000000
+       5       0.00000000    -0.00015372     0.00000000     0.00000000
+       6       1.00000075     0.00000000    -2.11046170     0.00000000
+       7      -0.00000085     0.00000000     2.33539079     0.00000000
+       8       0.00000000     0.00000000     0.00000000    -0.18702743
+       9       0.00000000     0.00000000     0.00000000     0.98235469
+      10      -0.00018884     0.00000000     0.00001443     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       1       0.00000000     0.00000000     2.27007965     0.00024561
+       2       0.00000000     0.00000000    -2.28628069    -0.00008922
+       3       0.00000000     0.00000000     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00000000
+       5       0.00000000     0.00000000    -0.00007106     0.99999999
+       6       0.00000000    -0.00021930     0.00000000     0.00000000
+       7       0.00000000     0.00003370     0.00000000     0.00000000
+       8      -0.98235469     0.00000000     0.00000000     0.00000000
+       9      -0.18702743     0.00000000     0.00000000     0.00000000
+      10       0.00000000    -0.99999998     0.00000000     0.00000000
+
+               Column   9     Column  10
+       1       0.00000000     0.00000000
+       2       0.00000000     0.00000000
+       3      -0.81934241    -0.57330447
+       4       0.57330447    -0.81934241
+       5       0.00000000     0.00000000
+       6       0.00000000     0.00000000
+       7       0.00000000     0.00000000
+       8       0.00000000     0.00000000
+       9       0.00000000     0.00000000
+      10       0.00000000     0.00000000
+ First oldtheta =
+
+               Column   1
+       1       1.57079633
+       2       0.00000006
+       3       1.57079633
+       4       1.57079633
+       5       1.57079633
+       6       1.57079633
+       7       1.57079633
+       8       1.57079633
+       9       1.57079633
+      10       1.57079633
+ First Dmo =
+
+               Column   1     Column   2     Column   3     Column   4
+       2       0.00000000     1.00000000     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ 
+ First Fmo =
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.47927829     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.00210591     0.00000000     0.00000000
+       3       0.00000000     0.00000000     0.20193273     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.93041655
+       5       0.00000000     0.00000000     0.00000000     0.00000000
+       6       0.00000000     0.00000000     0.00000000     0.00000000
+       7       0.00000000     0.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.00000000     0.00000000
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       1       0.00000000     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.00000000     0.00000000     0.00000000
+       3       0.00000000     0.00000000     0.00000000     0.00000000
+       4       0.00000000     0.00000000     0.00000000     0.00000000
+       5       0.93041655     0.00000000     0.00000000     0.00000000
+       6       0.00000000     0.93042485     0.00000000     0.00000000
+       7       0.00000000     0.00000000     1.03819491     0.00000000
+       8       0.00000000     0.00000000     0.00000000     1.94752153
+       9       0.00000000     0.00000000     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.00000000
+
+               Column   9     Column  10
+       1       0.00000000     0.00000000
+       2       0.00000000     0.00000000
+       3       0.00000000     0.00000000
+       4       0.00000000     0.00000000
+       5       0.00000000     0.00000000
+       6       0.00000000     0.00000000
+       7       0.00000000     0.00000000
+       8       0.00000000     0.00000000
+       9       1.94752975     0.00000000
+      10       0.00000000     1.94752975
+ Starting the stability test
+ soeo_isit_aufbau done, aufbau = F
+ Replace F with F build from new integral driver
+ QQQ New  F:   4.24286093566114     
+ QQQ Old  F:   4.24286093566114     
+ QQQ DIFF  :  2.388158690970768E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Replace F with F build from new integral driver
+ QQQ New  F:   2.63594236230602     
+ QQQ Old  F:   2.63594236230602     
+ QQQ DIFF  :  2.819562998309546E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Replace F with F build from new integral driver
+ QQQ New  F:   5.45439812326124     
+ QQQ Old  F:   5.45439812326124     
+ QQQ DIFF  :  6.789867636749472E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Replace F with F build from new integral driver
+ QQQ New  F:   2.59563896831804     
+ QQQ Old  F:   2.59563896831804     
+ QQQ DIFF  :  1.694820254924684E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Replace F with F build from new integral driver
+ QQQ New  F:   2.59805038242181     
+ QQQ Old  F:   2.59805038242181     
+ QQQ DIFF  :  7.857809180816932E-032
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Replace F with F build from new integral driver
+ QQQ New  F:   2.60355082050732     
+ QQQ Old  F:   2.60355082050732     
+ QQQ DIFF  :  7.518831956448493E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Replace F with F build from new integral driver
+ QQQ New  F:   2.60357095392862     
+ QQQ Old  F:   2.60357095392862     
+ QQQ DIFF  :  3.235564230192170E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Replace F with F build from new integral driver
+ QQQ New  F:   2.60358494301795     
+ QQQ Old  F:   2.60358494301795     
+ QQQ DIFF  :  4.452751279040667E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Replace F with F build from new integral driver
+ QQQ New  F:   2.60358500336591     
+ QQQ Old  F:   2.60358500336591     
+ QQQ DIFF  :  2.418969478172527E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Replace F with F build from new integral driver
+ QQQ New  F:   2.60358502895417     
+ QQQ Old  F:   2.60358502895417     
+ QQQ DIFF  :  3.543712742018651E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Replace F with F build from new integral driver
+ QQQ New  F:   2.60358502622503     
+ QQQ Old  F:   2.60358502622503     
+ QQQ DIFF  :  4.637641009205338E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Line_Search gives alpha =  0.748993741884023     
+ 
+ soeo-iter =           1
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.46362773     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.53637233     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.00000006305278     
+ Replace F with F build from new integral driver
+ QQQ New  F:   2.60358502622503     
+ QQQ Old  F:   2.60358502622503     
+ QQQ DIFF  :  4.791715404756317E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.692006881877994     
+ gradnorm =  0.605381639232531     
+ Dmo_diffnorm =  0.655668584791014     
+ Etotal and dE: -0.692006881877994      -0.692006881877994     
+ QQQ DIFF   1.066194864232548E-030
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  0.237713379642658     
+ QQQ DIFF   1.171793836565865E-029
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.895506033186389E-002
+ QQQ DIFF   6.323754863560020E-029
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  7.931993051527414E-003
+ QQQ DIFF   7.820448049658408E-028
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.244436270796991E-005
+ QQQ DIFF   1.908668271138734E-023
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.722947016933903E-006
+ QQQ DIFF   4.050499322486703E-021
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.365534546389881E-016
+Reduced space calculation converged in    6 iterations
+Iteration   1 done in    2.0626870000 seconds
+ 
+ soeo-iter =           2
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.60804966     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.67447554     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.28252519601175     
+ Replace F with F build from new integral driver
+ QQQ New  F:   3.93076508383362     
+ QQQ Old  F:   3.93076508383363     
+ QQQ DIFF  :  8.720614971592395E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.794572195424699     
+ gradnorm =  0.400919477765077     
+ Dmo_diffnorm =  0.199825394861015     
+ Etotal and dE: -0.794572195424699      -0.102565313546705     
+ QQQ DIFF   1.300696245312162E-029
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  0.194664376501656     
+ QQQ DIFF   3.926085711518524E-029
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  9.963784441958581E-003
+ QQQ DIFF   1.988214180998662E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.834061408551037E-003
+ QQQ DIFF   1.397080571232935E-026
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.562281589487440E-004
+ QQQ DIFF   6.661348980971020E-026
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.246685391345048E-006
+ QQQ DIFF   5.246650724817770E-023
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.767783765764140E-017
+Reduced space calculation converged in    6 iterations
+Iteration   2 done in    2.0626860000 seconds
+ 
+ soeo-iter =           3
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.71186606     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.75756703     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.46943308972297     
+ Replace F with F build from new integral driver
+ QQQ New  F:   5.12414557458941     
+ QQQ Old  F:   5.12414557458942     
+ QQQ DIFF  :  6.440310748095055E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.845773568137050     
+ gradnorm =  0.243939216256092     
+ Dmo_diffnorm =  0.132973837069054     
+ Etotal and dE: -0.845773568137050      -5.120137271235103E-002
+ QQQ DIFF   7.846085994871205E-029
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  0.143616352174948     
+ QQQ DIFF   6.668533562090875E-029
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.806562340269682E-003
+ QQQ DIFF   5.750187110290727E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.347038889884331E-003
+ QQQ DIFF   1.386390724423315E-026
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.058735297892962E-004
+ QQQ DIFF   5.754892271496955E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.488577135300203E-006
+ QQQ DIFF   6.221966754362063E-024
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  6.597776827835242E-017
+Reduced space calculation converged in    6 iterations
+Iteration   3 done in    2.0836830000 seconds
+ 
+ soeo-iter =           4
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.78056791     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.81171838     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.59228628846397     
+ Replace F with F build from new integral driver
+ QQQ New  F:   6.00597733306333     
+ QQQ Old  F:   6.00597733306333     
+ QQQ DIFF  :  6.255422355690529E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.868026930140135     
+ gradnorm =  0.146305520119021     
+ Dmo_diffnorm =  8.747749851183603E-002
+ Etotal and dE: -0.868026930140135      -2.225336200308436E-002
+ QQQ DIFF   9.361561970797445E-030
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  0.101631911832424     
+ QQQ DIFF   1.164417451557402E-030
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.915338915368199E-003
+ QQQ DIFF   7.111397570601235E-028
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.212700331810344E-003
+ QQQ DIFF   1.274525668562679E-029
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.128783175310964E-004
+ QQQ DIFF   7.178765513711042E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.673529911131406E-006
+ QQQ DIFF   1.126256667370984E-023
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.482358947410706E-017
+Reduced space calculation converged in    6 iterations
+Iteration   4 done in    2.0796840000 seconds
+ 
+ soeo-iter =           5
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.82639185     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.84767660     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.67406845124127     
+ Replace F with F build from new integral driver
+ QQQ New  F:   6.62847638859924     
+ QQQ Old  F:   6.62847638859924     
+ QQQ DIFF  :  5.084456028433922E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.877624671815697     
+ gradnorm =  8.773726911922768E-002
+ Dmo_diffnorm =  5.824798131402006E-002
+ Etotal and dE: -0.877624671815697      -9.597741675562710E-003
+ QQQ DIFF   2.068911253234498E-029
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  7.014386933791045E-002
+ QQQ DIFF   3.180269791209713E-029
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.924306255224347E-003
+ QQQ DIFF   6.211260342229463E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.757382757215830E-003
+ QQQ DIFF   2.939447026687684E-028
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.943458573655051E-004
+ QQQ DIFF   5.970700634930204E-026
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.487108189675735E-006
+ QQQ DIFF   2.964494415009107E-022
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.074514734464691E-017
+Reduced space calculation converged in    6 iterations
+Iteration   5 done in    2.1016810000 seconds
+ 
+ soeo-iter =           6
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.85709630     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.87161040     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.72870670342976     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.05908850963974     
+ QQQ Old  F:   7.05908850963974     
+ QQQ DIFF  :  5.485049198014018E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.881779451864055     
+ gradnorm =  5.276094755087345E-002
+ Dmo_diffnorm =  3.893058110367930E-002
+ Etotal and dE: -0.881779451864055      -4.154780048357565E-003
+ QQQ DIFF   1.097626101609843E-029
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  4.740296132976425E-002
+ QQQ DIFF   3.609575924001312E-030
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.050730260059019E-003
+ QQQ DIFF   6.027114473517556E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.088337001195757E-003
+ QQQ DIFF   2.971041125016316E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.612057904707020E-004
+ QQQ DIFF   2.520083497054203E-026
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.498246750635461E-006
+ QQQ DIFF   5.643144685913554E-022
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.822174783903779E-017
+Reduced space calculation converged in    6 iterations
+Iteration   6 done in    2.0606860000 seconds
+ 
+ soeo-iter =           7
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.87760502     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.88741926     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.76502428566693     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.35185837027473     
+ QQQ Old  F:   7.35185837027473     
+ QQQ DIFF  :  9.121213146675531E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.883562854300707     
+ gradnorm =  3.181643647603657E-002
+ Dmo_diffnorm =  2.589455039198016E-002
+ Etotal and dE: -0.883562854300707      -1.783402436651760E-003
+ QQQ DIFF   1.899972777055517E-026
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  3.138262733355981E-002
+ QQQ DIFF   8.365730000683249E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.800632973291286E-004
+ QQQ DIFF   2.568096510919679E-023
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  5.567414948580179E-004
+ QQQ DIFF   5.981003286498954E-024
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.210513607874640E-004
+ QQQ DIFF   2.204839254811592E-022
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  8.194320606327245E-007
+ QQQ DIFF   2.069388016365907E-018
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.339750523290878E-016
+Reduced space calculation converged in    6 iterations
+Iteration   7 done in    2.0816830000 seconds
+ 
+ soeo-iter =           8
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.89116848     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.89771636     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.78888483495827     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.54720211640157     
+ QQQ Old  F:   7.54720211640157     
+ QQQ DIFF  :  5.577497958530091E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884313881931736     
+ gradnorm =  1.922329007711060E-002
+ Dmo_diffnorm =  1.702931195492220E-002
+ Etotal and dE: -0.884313881931736      -7.510276310296327E-004
+ QQQ DIFF   1.029712640126048E-026
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  2.036100097266651E-002
+ QQQ DIFF   5.914644191985478E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.745389538173598E-004
+ QQQ DIFF   5.406695263475698E-023
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.061572213018963E-004
+ QQQ DIFF   3.047605430434744E-024
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  8.013799082364173E-005
+ QQQ DIFF   2.122458909269638E-022
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.103516807142787E-007
+ QQQ DIFF   3.410396384268131E-018
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  9.074989268384649E-017
+Reduced space calculation converged in    6 iterations
+Iteration   8 done in    2.0686860000 seconds
+ 
+ soeo-iter =           9
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.90000983     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.90430976     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.80431958956879     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.67494662525773     
+ QQQ Old  F:   7.67494662525773     
+ QQQ DIFF  :  1.389751753084279E-030
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884622248581257     
+ gradnorm =  1.162494215094927E-002
+ Dmo_diffnorm =  1.102916474478389E-002
+ Etotal and dE: -0.884622248581257      -3.083666495207193E-004
+ QQQ DIFF   1.371461132549457E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  1.296588650186225E-002
+ QQQ DIFF   1.158383155595845E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.574867818342217E-005
+ QQQ DIFF   5.570900806211286E-023
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.444912656067868E-005
+ QQQ DIFF   4.378986405375899E-023
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.008811307024927E-005
+ QQQ DIFF   3.356560477007846E-023
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.898959304050178E-007
+ QQQ DIFF   1.466296556687922E-018
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  6.770154572799775E-017
+Reduced space calculation converged in    6 iterations
+Iteration   9 done in    2.0666860000 seconds
+ 
+ soeo-iter =          10
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.90567999     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.90846005     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.81414003584166     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.75685856583096     
+ QQQ Old  F:   7.75685856583096     
+ QQQ DIFF  :  5.207763761379406E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884745483816155     
+ gradnorm =  7.030355326587627E-003
+ Dmo_diffnorm =  7.026775926484685E-003
+ Etotal and dE: -0.884745483816155      -1.232352348979893E-004
+ QQQ DIFF   4.020205664827598E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  8.126763082886571E-003
+ QQQ DIFF   4.650547796946762E-027
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.234265450358747E-005
+ QQQ DIFF   1.639754944126023E-022
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.684821004737615E-005
+ QQQ DIFF   6.451077237801064E-024
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.771389134149765E-005
+ QQQ DIFF   3.523996611927782E-022
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  8.224124128879410E-008
+ QQQ DIFF   1.374000063797503E-017
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  6.428694267429517E-017
+Reduced space calculation converged in    6 iterations
+Iteration  10 done in    2.0846830000 seconds
+ 
+ soeo-iter =          11
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.90926043     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91103400     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.82029443152871     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.80847717158899     
+ QQQ Old  F:   7.80847717158899     
+ QQQ DIFF  :  1.611618347436542E-030
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884793513297471     
+ gradnorm =  4.249887757921018E-003
+ Dmo_diffnorm =  4.409625603726331E-003
+ Etotal and dE: -0.884793513297471      -4.802948131577001E-005
+ QQQ DIFF   9.070544985788674E-025
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  5.030947892792057E-003
+ QQQ DIFF   1.010527505872302E-024
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.486543723913308E-005
+ QQQ DIFF   1.178039271268016E-020
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.010210027379873E-005
+ QQQ DIFF   6.334905890134666E-021
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.047663711572478E-005
+ QQQ DIFF   2.062426005866053E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.381418512920622E-008
+ QQQ DIFF   7.534243859444500E-015
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.082905079495246E-016
+Reduced space calculation converged in    6 iterations
+Iteration  11 done in    2.0396910000 seconds
+ 
+ soeo-iter =          12
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91149210     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91261198     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.82410407889360     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.84055408259369     
+ QQQ Old  F:   7.84055408259369     
+ QQQ DIFF  :  5.176904298818144E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884811845543238     
+ gradnorm =  2.567561001446364E-003
+ Dmo_diffnorm =  2.733196199852045E-003
+ Etotal and dE: -0.884811845543238      -1.833224576763826E-005
+ QQQ DIFF   1.143006643564337E-024
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  3.086509600713744E-003
+ QQQ DIFF   1.351173461242136E-024
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.873550104112284E-005
+ QQQ DIFF   8.604924288548842E-021
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.085554747868784E-005
+ QQQ DIFF   1.479098352504971E-020
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.833398884661113E-006
+ QQQ DIFF   6.006072996383352E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.337443135717329E-008
+ QQQ DIFF   2.555939243446556E-014
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.381959696275417E-016
+Reduced space calculation converged in    6 iterations
+Iteration  12 done in    2.9845460000 seconds
+ 
+ soeo-iter =          13
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91286940     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91357135     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.82644075400649     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.86028105644716     
+ QQQ Old  F:   7.86028105644716     
+ QQQ DIFF  :  6.378701252033132E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884818732194645     
+ gradnorm =  1.550326443535913E-003
+ Dmo_diffnorm =  1.678499149702297E-003
+ Etotal and dE: -0.884818732194645      -6.886651406357025E-006
+ QQQ DIFF   1.706395370594790E-024
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  1.881904032013246E-003
+ QQQ DIFF   2.092703313042197E-024
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.077548015080348E-005
+ QQQ DIFF   9.445813614752301E-021
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.044183248153015E-005
+ QQQ DIFF   2.773319770725935E-020
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.154118968985027E-006
+ QQQ DIFF   1.930831897694095E-018
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  5.140494835511666E-009
+Reduced space calculation converged in    5 iterations
+Iteration  13 done in    1.7607320000 seconds
+ 
+ soeo-iter =          14
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91371351     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91415132     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.82786483873676     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.87232494772782     
+ QQQ Old  F:   7.87232494772782     
+ QQQ DIFF  :  2.865830520692744E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884821290039304     
+ gradnorm =  9.357004640059706E-004
+ Dmo_diffnorm =  1.024154929373058E-003
+ Etotal and dE: -0.884821290039304      -2.557844659523134E-006
+ QQQ DIFF   1.306247320331747E-023
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  1.142772262521451E-003
+ QQQ DIFF   1.648749972144059E-023
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.404246229954463E-005
+ QQQ DIFF   5.961149220056296E-020
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.293193921370555E-005
+ QQQ DIFF   2.365540818849056E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  9.748129262838383E-007
+ QQQ DIFF   2.875508779838133E-017
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.931625133648522E-009
+Reduced space calculation converged in    5 iterations
+Iteration  14 done in    1.7597330000 seconds
+ 
+ soeo-iter =          15
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91422844     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91450063     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.82872906886536     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.87964239946660     
+ QQQ Old  F:   7.87964239946660     
+ QQQ DIFF  :  1.913625507823168E-030
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822232819372     
+ gradnorm =  5.645714629159918E-004
+ Dmo_diffnorm =  6.222236504443962E-004
+ Etotal and dE: -0.884822232819372      -9.427800676808928E-007
+ QQQ DIFF   1.745378483888301E-025
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  6.921440338229426E-004
+ QQQ DIFF   2.185121122235138E-025
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  9.144688554304389E-006
+ QQQ DIFF   6.809391483693631E-022
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  8.023089580308231E-006
+ QQQ DIFF   3.258828991158644E-021
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.596912967139374E-007
+ QQQ DIFF   6.459762882704787E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  7.107250950058641E-010
+Reduced space calculation converged in    5 iterations
+Iteration  15 done in    1.7407350000 seconds
+ 
+ soeo-iter =          16
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91454162     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91471049     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.82925211223280     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.88407425884083     
+ QQQ Old  F:   7.88407425884083     
+ QQQ DIFF  :  1.164803864529196E-030
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822578586494     
+ gradnorm =  3.405786609163577E-004
+ Dmo_diffnorm =  3.769931960121883E-004
+ Etotal and dE: -0.884822578586494      -3.457671219342373E-007
+ QQQ DIFF   1.488362041676530E-022
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  4.185376710627441E-004
+ QQQ DIFF   1.918441024140053E-022
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  5.829050673781666E-006
+ QQQ DIFF   5.381674859170568E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.927631792178245E-006
+ QQQ DIFF   2.926092293395256E-018
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.287570678181435E-007
+ QQQ DIFF   8.519972699718546E-016
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.550329574169613E-010
+Reduced space calculation converged in    5 iterations
+Iteration  16 done in    1.7337360000 seconds
+ 
+ soeo-iter =          17
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91473174     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91483638     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.82956812218084     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.88675310657544     
+ QQQ Old  F:   7.88675310657544     
+ QQQ DIFF  :  9.244485945052985E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822705000361     
+ gradnorm =  2.054320072332107E-004
+ Dmo_diffnorm =  2.280218530099570E-004
+ Etotal and dE: -0.884822705000361      -1.264138675960425E-007
+ QQQ DIFF   8.921590429376479E-025
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  2.528415440583500E-004
+ QQQ DIFF   1.157880485496534E-024
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.669163319132680E-006
+ QQQ DIFF   2.975266573769628E-021
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.009140317637971E-006
+ QQQ DIFF   1.779916293832771E-020
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.202944195641957E-007
+ QQQ DIFF   6.814033588841986E-018
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  8.811835831922549E-011
+Reduced space calculation converged in    5 iterations
+Iteration  17 done in    1.8387210000 seconds
+ 
+ soeo-iter =          18
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91484703     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91491182     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.82975884472817     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.88837033908446     
+ QQQ Old  F:   7.88837033908446     
+ QQQ DIFF  :  1.377426924615478E-030
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822751128928     
+ gradnorm =  1.239069793535934E-004
+ Dmo_diffnorm =  1.377737753674207E-004
+ Etotal and dE: -0.884822751128928      -4.612856696617484E-008
+ QQQ DIFF   5.114242806936859E-024
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  1.526550272250195E-004
+ QQQ DIFF   6.652546622716359E-024
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.292407263879523E-006
+ QQQ DIFF   1.601289389296155E-020
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.831364312443824E-006
+ QQQ DIFF   1.033155151881547E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  6.639001855490677E-008
+ QQQ DIFF   4.726202176537177E-017
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.841569173829029E-011
+Reduced space calculation converged in    5 iterations
+Iteration  18 done in    1.8257220000 seconds
+ 
+ soeo-iter =          19
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91491689     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91495699     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.82987387705566     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.88934592586773     
+ QQQ Old  F:   7.88934592586773     
+ QQQ DIFF  :  1.429811464862931E-030
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822767941965     
+ gradnorm =  7.473379376488317E-005
+ Dmo_diffnorm =  8.319321851659104E-005
+ Etotal and dE: -0.884822767941965      -1.681303651857036E-008
+ QQQ DIFF   3.043596555254973E-021
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  9.213618876919967E-005
+ QQQ DIFF   3.969233462003414E-021
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.425851072768912E-006
+ QQQ DIFF   8.996078404607274E-018
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.112306955753763E-006
+ QQQ DIFF   6.193563190657707E-017
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.804440825131039E-008
+ QQQ DIFF   3.137667913707696E-014
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  7.843974926225499E-012
+Reduced space calculation converged in    5 iterations
+Iteration  19 done in    1.9007110000 seconds
+ 
+ soeo-iter =          20
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91495921     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91498402     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.82994322999726     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.88993416918862     
+ QQQ Old  F:   7.88993416918862     
+ QQQ DIFF  :  8.350843630167699E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822774065961     
+ gradnorm =  4.507573804745948E-005
+ Dmo_diffnorm =  5.021753894362228E-005
+ Etotal and dE: -0.884822774065961      -6.123996088014394E-009
+ QQQ DIFF   4.621701060261706E-023
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  5.559969596504926E-005
+ QQQ DIFF   6.032772223632156E-023
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  8.844783625937034E-007
+ QQQ DIFF   1.294589229595811E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  6.747474512311281E-007
+ QQQ DIFF   9.444392885383811E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.239366455156147E-008
+ QQQ DIFF   5.021650387614415E-016
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.232249704714797E-012
+Reduced space calculation converged in    5 iterations
+Iteration  20 done in    1.7257370000 seconds
+ 
+ soeo-iter =          21
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91498484     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91500019     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.82998503274284     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89028875794412     
+ QQQ Old  F:   7.89028875794413     
+ QQQ DIFF  :  1.019976706432400E-030
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822776295771     
+ gradnorm =  2.718820133446541E-005
+ Dmo_diffnorm =  3.030680710712190E-005
+ Etotal and dE: -0.884822776295771      -2.229809892284607E-009
+ QQQ DIFF   1.509611726636982E-022
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  3.354893811449980E-005
+ QQQ DIFF   1.971457311846705E-022
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  5.477624173547718E-007
+ QQQ DIFF   4.012908659473813E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.090094152064734E-007
+ QQQ DIFF   3.088916821587992E-018
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.342053332146776E-008
+ QQQ DIFF   1.663068591941416E-015
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  5.807681777056133E-013
+Reduced space calculation converged in    5 iterations
+Iteration  21 done in    5.8981040000 seconds
+ 
+ soeo-iter =          22
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91500037     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91500986     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.83001022580980     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89050246467105     
+ QQQ Old  F:   7.89050246467105     
+ QQQ DIFF  :  3.666973875570395E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822777107530     
+ gradnorm =  1.639965970463660E-005
+ Dmo_diffnorm =  1.828884143734831E-005
+ Etotal and dE: -0.884822777107530      -8.117589933576141E-010
+ QQQ DIFF   1.743932491911895E-020
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  2.024300018999871E-005
+ QQQ DIFF   2.281394268797502E-020
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.388950585377244E-007
+ QQQ DIFF   4.416735703868443E-017
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.478143320947686E-007
+ QQQ DIFF   3.578147553780062E-016
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  8.136516867165168E-009
+Reduced space calculation converged in    4 iterations
+Iteration  22 done in    2.9835470000 seconds
+ 
+ soeo-iter =          23
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91500977     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91501564     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.83002540771414     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89063125331239     
+ QQQ Old  F:   7.89063125331239     
+ QQQ DIFF  :  5.361983689545039E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822777403032     
+ gradnorm =  9.892574259891053E-006
+ Dmo_diffnorm =  1.103618257127463E-005
+ Etotal and dE: -0.884822777403032      -2.955021782824474E-010
+ QQQ DIFF   8.163702289887678E-020
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  1.221456813546572E-005
+ QQQ DIFF   1.068563120906670E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.096127325098606E-007
+ QQQ DIFF   1.968767932098971E-016
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.501135630950375E-007
+ QQQ DIFF   1.676626456214138E-015
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.970444878665431E-009
+Reduced space calculation converged in    4 iterations
+Iteration  23 done in    1.5177680000 seconds
+ 
+ soeo-iter =          24
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91501546     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91501909     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.83003455587375     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89070885768184     
+ QQQ Old  F:   7.89070885768184     
+ QQQ DIFF  :  8.106004306247422E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822777510606     
+ gradnorm =  5.967697460105143E-006
+ Dmo_diffnorm =  6.659796886710005E-006
+ Etotal and dE: -0.884822777510606      -1.075740607703324E-010
+ QQQ DIFF   5.973392554454883E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  7.370503084686869E-006
+ QQQ DIFF   7.822322052469958E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.295798966772955E-007
+ QQQ DIFF   1.373207969720487E-015
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  9.091316767387696E-008
+ QQQ DIFF   1.227434719182498E-014
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.049431168435251E-009
+Reduced space calculation converged in    4 iterations
+Iteration  24 done in    1.3028020000 seconds
+ 
+ soeo-iter =          25
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91501891     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91502116     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.83004006813636     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89075561875657     
+ QQQ Old  F:   7.89075561875657     
+ QQQ DIFF  :  1.707155974002850E-030
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822777549770     
+ gradnorm =  3.600221999663704E-006
+ Dmo_diffnorm =  4.019012111417950E-006
+ Etotal and dE: -0.884822777549770      -3.916378332746717E-011
+ QQQ DIFF   1.514780002361264E-018
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  4.447736698742827E-006
+ QQQ DIFF   1.984492942983214E-018
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  8.008091516793447E-008
+ QQQ DIFF   3.321692965245571E-015
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  5.505338232660223E-008
+ QQQ DIFF   3.113092304549948E-014
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.875818948835943E-009
+Reduced space calculation converged in    4 iterations
+Iteration  25 done in    1.4487810000 seconds
+ 
+ soeo-iter =          26
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91502100     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91502239     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.83004338951425     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89078379444666     
+ QQQ Old  F:   7.89078379444666     
+ QQQ DIFF  :  8.504942025756861E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822777564029     
+ gradnorm =  2.172093822132672E-006
+ Dmo_diffnorm =  2.425501846922517E-006
+ Etotal and dE: -0.884822777564029      -1.425926043907566E-011
+ QQQ DIFF   7.353334608402964E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  2.684162625625693E-006
+ QQQ DIFF   9.637288820935040E-019
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.948121028028840E-008
+ QQQ DIFF   1.538849598810547E-015
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.333596785783368E-008
+ QQQ DIFF   1.510971839571548E-014
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.155724090979843E-009
+Reduced space calculation converged in    4 iterations
+Iteration  26 done in    2.3876360000 seconds
+ 
+ soeo-iter =          27
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91502227     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91502313     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.83004539076567     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89080077137083     
+ QQQ Old  F:   7.89080077137084     
+ QQQ DIFF  :  5.978175712244532E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822777569222     
+ gradnorm =  1.310558341167217E-006
+ Dmo_diffnorm =  1.463905735885813E-006
+ Etotal and dE: -0.884822777569222      -5.192624108474320E-012
+ QQQ DIFF   3.255901880068244E-018
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  1.619981241854655E-006
+ QQQ DIFF   4.268839953577111E-018
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.057004055054607E-008
+ QQQ DIFF   6.505186924737841E-015
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  2.018495604882877E-008
+ QQQ DIFF   6.687498690090098E-014
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  7.127293236983113E-010
+Reduced space calculation converged in    4 iterations
+Iteration  27 done in    1.2468110000 seconds
+ 
+ soeo-iter =          28
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91502303     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91502356     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.83004659658387     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89081100052692     
+ QQQ Old  F:   7.89081100052692     
+ QQQ DIFF  :  3.913496897005405E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822777571113     
+ gradnorm =  7.907955299781467E-007
+ Dmo_diffnorm =  8.836039222890653E-007
+ Etotal and dE: -0.884822777571113      -1.891153900146492E-012
+ QQQ DIFF   2.982082796395054E-020
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  9.777895426092129E-007
+ QQQ DIFF   3.911364054665128E-020
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.888465675346143E-008
+ QQQ DIFF   5.690415863739260E-017
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.222187744783360E-008
+ QQQ DIFF   6.121152337402017E-016
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.397726148538823E-010
+Reduced space calculation converged in    4 iterations
+Iteration  28 done in    2.6236010000 seconds
+ 
+ soeo-iter =          29
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91502350     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91502383     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.83004732312465     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89081716389729     
+ QQQ Old  F:   7.89081716389730     
+ QQQ DIFF  :  8.690028418482178E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822777571802     
+ gradnorm =  4.772035740375656E-007
+ Dmo_diffnorm =  5.333817742509455E-007
+ Etotal and dE: -0.884822777571802      -6.888933867799096E-013
+ QQQ DIFF   4.879618304959788E-017
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  5.902247924431024E-007
+ QQQ DIFF   6.402924023783025E-017
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  1.166504476488485E-008
+ QQQ DIFF   8.896069775547393E-014
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  7.400330300420029E-009
+Reduced space calculation converged in    3 iterations
+Iteration  29 done in    1.0198450000 seconds
+ 
+ soeo-iter =          30
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91502378     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91502398     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.83004776102722     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89082087857309     
+ QQQ Old  F:   7.89082087857309     
+ QQQ DIFF  :  3.237721816096367E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822777572053     
+ gradnorm =  2.879874044196373E-007
+ Dmo_diffnorm =  3.219754248022079E-007
+ Etotal and dE: -0.884822777572053      -2.509104035652854E-013
+ QQQ DIFF   2.741084321895482E-016
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  3.563210995753299E-007
+ QQQ DIFF   3.598486875582910E-016
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  7.223914763286106E-009
+Reduced space calculation converged in    2 iterations
+Iteration  30 done in    1.2288130000 seconds
+ 
+ soeo-iter =          31
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91502395     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91502408     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.83004802644990     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89082312736213     
+ QQQ Old  F:   7.89082312736213     
+ QQQ DIFF  :  4.420555887039766E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822777572144     
+ gradnorm =  1.738060057305459E-007
+ Dmo_diffnorm =  1.941709490136887E-007
+ Etotal and dE: -0.884822777572144      -9.114931032172535E-014
+ QQQ DIFF   1.483564784358125E-015
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  2.152659323114626E-007
+ QQQ DIFF   1.950233887469746E-015
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  4.661374028535816E-009
+Reduced space calculation converged in    2 iterations
+Iteration  31 done in    0.8108760000 seconds
+ 
+ soeo-iter =          32
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91502405     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91502414     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.83004818596497     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89082448094365     
+ QQQ Old  F:   7.89082448094365     
+ QQQ DIFF  :  6.872049166934964E-031
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822777572177     
+ gradnorm =  1.049405107708587E-007
+ Dmo_diffnorm =  1.173267504477830E-007
+ Etotal and dE: -0.884822777572177      -3.319566843629218E-014
+ QQQ DIFF   3.661640232672911E-015
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ Test for convergence in soeo_solver:
+ resnorm =  1.301541898226272E-007
+ QQQ DIFF   4.822263112295580E-015
+  SUCCESFULLY REPLACED OLD GAOL WITH NEW GAOL
+ resnorm =  3.040886352269523E-009
+Reduced space calculation converged in    2 iterations
+Iteration  32 done in    0.7378880000 seconds
+ 
+ soeo-iter =          33
+ New Dmo:
+
+               Column   1     Column   2     Column   3     Column   4
+       1       0.91502411     0.00000000     0.00000000     0.00000000
+       2       0.00000000     0.91502417     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+
+               Column   9     Column  10
+ Tr(Dmo) =   1.83004828171619     
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89082529388245     
+ QQQ Old  F:   7.89082529388245     
+ QQQ DIFF  :  1.248016181556500E-030
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Etotal from FCK_get_fock: -0.884822777572189     
+ gradnorm =  6.339173602141723E-008
+ Dmo_diffnorm =  7.095583528937226E-008
+ Etotal and dE: -0.884822777572189      -1.221245327087672E-014
+ 
+ Warning!! nfirst is not zero
+ Replace F with F build from new integral driver
+ QQQ New  F:   7.89082529388245     
+ QQQ Old  F:   7.89082529388245     
+ QQQ DIFF  :  1.248016181556500E-030
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ Final energy (fck_get_fock)= -0.884822777572189     
+ Occupation numbers:  0.915024111902637       0.915024169813551     
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000  0.000000000000000E+000
+  0.000000000000000E+000  0.000000000000000E+000
+ SOEOLOOP FINISHED!
+ Number of soeo-iterations =          32
+ =============================================
+Time spend in soeoloop:  65.3230690000
+ 
+ Number of occupied orbitals:           1
+ Number of virtual orbitals:           9
+ 
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ 
+    E(LUMO):                         0.000000 au
+   -E(HOMO):                         0.000000 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.000000 au
+ 
+ >>>  CPU Time used in HL GAP          is   2.99 seconds
+ >>> wall Time used in HL GAP          is   0.73 seconds
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.12300500510    0.0000    0.0000    0.0000000
+  3   -0.00031096643    0.0000    0.0000    0.0000000
+  4   -0.00000037290    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1            -0.34550746101998630611      0.552905204142683D+00
+    2            -0.46851246612119423762      0.286006223357810D-01
+    3            -0.46882343255002523197      0.988332474358341D-03
+    4            -0.46882380545367624558      0.807525406191944D-06
+ 
+      SCF converged !!!! 
+ Total no. of matmuls used:        4538
+ Total no. of Fock/KS matrix evaluations:          49
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                 454.478 MB
+  Max allocated memory, type(matrix)           97.520 MB
+  Max allocated memory, real(realk)           454.365 MB
+  Max allocated memory, integer                75.191 kB
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               3.418 MB
+  Max allocated memory, integralitem          449.731 MB
+  Max allocated memory, Overlap               868.359 kB
+  Max allocated memory, ODitem                  1.875 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    70.29931        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:              -0.468823805454
+     Nuclear repulsion:             0.020000000000
+     Electronic energy:            -0.488823805454
+
+     Final gradient norm:           0.000000807525
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:15:15 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :     70.31 seconds
+ >>>> Total wall time used in SIRIUS :      5.77 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:15:15 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:  1 minute  10 seconds
+ >>>> Total wall time used in DALTON:   5.79 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:15:15 2010
+     Host name              : fe2.grendel.cscaa.dk                    

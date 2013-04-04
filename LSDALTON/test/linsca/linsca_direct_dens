@@ -1,0 +1,108 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > linsca_direct_dens.info <<'%EOF%'
+   linsca_direct_dens
+   -------------
+   Molecule:         H2O
+   Wave Function:    HF
+   Test Purpose:     Check Direct Density Optimization with Cholesky-PAO basis
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > linsca_direct_dens.mol <<'%EOF%'
+BASIS
+aug-cc-pVDZ
+water R(OH) = 0.95Aa , <HOH = 109 deg.
+Distance in Aangstroms
+   2     0         *
+        8.    1
+O      0.00000   0.00000   0.00000
+        1.    2
+H      0.55168   0.77340   0.00000
+H      0.55168  -0.77340   0.00000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > linsca_direct_dens.dal <<'%EOF%'
+**WAVE FUNCTIONS
+.HF
+*DENSOPT
+.TrFD
+.DSM
+.NVEC
+ 8
+.CONVTHR
+ 1.D-5
+.START
+ H1DIAG
+$INFO
+INFO_LINEQ
+$END INFO
+*END OF INPUT
+%EOF%
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >linsca_direct_dens.check
+cat >> linsca_direct_dens.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# ENERGY test
+CRIT1=`$GREP "Final HF energy: * -76.04147637" $log | wc -l`
+TEST[1]=`expr  $CRIT1`
+CTRL[1]=1
+ERROR[1]="ENERGY NOT CORRECT -"
+
+# Memory test
+CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[2]=`expr  $CRIT1`
+CTRL[2]=1
+ERROR[2]="Memory leak -"
+
+PASSED=1
+for i in 1 2 ; do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+      echo ${ERROR[i]}
+      PASSED=0
+   fi
+done
+ 
+if [ $PASSED -eq 1 ]
+then
+   echo TEST ENDED PROPERLY
+   exit 0
+else
+   echo THERE IS A PROBLEM
+   exit 1
+fi
+ 
+%EOF%
+#######################################################################

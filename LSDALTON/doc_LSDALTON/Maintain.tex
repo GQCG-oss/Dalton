@@ -1,0 +1,60 @@
+\chapter{Maintenance}\label{ch:maintain}
+
+\section{New versions, patches}
+
+New versions will be announced on the Dalton homepage
+(\verb|http://daltonprogram.org|)
+and the \dalton\ mailing-list
+(\verb|dalton-users@kjemi.uio.no|)\index{mailing list}.
+
+In between releases, bug fixes will be distributed as
+patches\index{patches} to an
+existing version. New patches will be
+freely available from the 
+Dalton homepage, and will be announced on the dalton-users mailing
+list. Patches will normally be distributed in order to correct
+significant errors. In case of minor changes, explicit
+instructions on modifying the source file(s) may be given.
+
+In general, users should not make local
+modifications in the source code, as this usually makes it
+much harder to incorporate the changes into subsequent versions.
+It is more convenient to use the C preprocessor code.  Indeed, by
+judicious use of local \verb|#define|\index{define} variables (this
+is described in any book on C that also describes the C
+preprocessor) it is often possible to isolate local
+modifications\index{modifications} completely, making it much easier
+to apply them to later
+releases.
+
+\section{Reporting bugs and user support}
+
+The \lsdalton\ program is distributed to the computational chemistry
+community with no obligations on the side of the
+authors. The authors thus take no responsibility\index{responsibility}
+for the performance
+of the code or for the correctness\index{correctness} of the
+results. This distribution
+policy gives the authors no responsibility for problems experienced by
+the users when using the \lsdalton\ program.
+
+A mailing-list\index{mailing list} ---
+\verb|dalton-users@kjemi.uio.no| --- has been created for
+the purpose of communication among the authors and the users about
+new patches and releases, and communication between users of the
+program. The authors hope that the
+users will be able to help each others out when problems
+arise. All authors of the \lsdalton\ program also receive mail from the
+mailing-list, but we do not guarantee that any author will reply to
+requests posted to the mailing-list. By default, all users signing a
+license agreement form will be added to this mailing list. If more
+people use the same licensed version, these users may send mail to
+\verb|dalton-admin@kjemi.uio.no| asking to be added to this list as
+well as indicating whose licensed version of the program they are using.
+
+Bug reports\index{bugs} are to be reported to \verb|dalton-admin@kjemi.uio.no| and
+will be dealt with by one of the authors, although no responsibility
+on the promptness of this response is given. In general, serious bugs
+that have been
+reported and fixed will lead to a new patch\index{patches} of the program, distributed from the
+Dalton homepage (\verb|http://daltonprogram.org|).

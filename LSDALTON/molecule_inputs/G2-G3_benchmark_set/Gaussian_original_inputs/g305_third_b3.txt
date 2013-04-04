@@ -1,0 +1,524 @@
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+germanium tetrahydride //b3lyp/631g(2df,p) = -2079.1488128
+
+0,1
+Ge,0,0.,0.,0.
+ H,0,0.,0.,1.5325523266
+ H,0,1.4449041902,0.,-0.5108507755
+ H,0,-0.7224520951,1.2513237347,-0.5108507755
+ H,0,-0.7224520951,-1.2513237347,-0.5108507755
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+arsenic monohydride //b3lyp/631g(2df,p) = -2236.1665502
+
+0 3
+ As,0,0.,0.,-0.0451282321
+ H,0,0.,0.,1.4892316607
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+arsenic monohydride cation //b3lyp/631g(2df,p) = -2235.8112928
+
+1 2
+ As,0,0.,0.,-0.0452717358
+ H,0,0.,0.,1.4939672814
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+arsenic dihydride //b3lyp/631g(2df,p) = -2236.785989
+
+0 2
+ As,0,-0.0439152339,0.,-0.0429058832
+ H,0,-0.0348893287,0.,1.4853046003
+ H,0,1.4840920488,0.,-0.0694104558
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+arsenic dihydride cation //b3lyp/631g(2df,p) = -2236.438308
+
+1 1
+ As,0,-0.0441424473,0.,-0.0428356937
+ H,0,-0.0319341108,0.,1.4902668177
+ H,0,1.4886348727,0.,-0.076688924
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+arsenic trihydride //b3lyp/631g(2df,p) = -2237.4123051
+
+0 1
+ As,0,0.,0.,0.0708023734
+ H,0,1.264515994,0.,-0.7788261077
+ H,0,-0.632257997,-1.0951029743,-0.7788261077
+ H,0,-0.632257997,1.0951029743,-0.7788261077
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+selenium monohydride //b3lyp/631g(2df,p) = -2401.8490572
+
+0 2
+ Se,0,0.,0.,-0.0421015832
+ H,0,0.,0.,1.4314538304
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+selenium monohydride cation //b3lyp/631g(2df,p) = -2401.4886491
+
+1 3
+ Se,0,0.,0.,-0.0427154239
+ H,0,0.,0.,1.4523244116
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+selenium monohydride anion //b3lyp/631g(2df,p) = -2401.9204625
+
+-1 1
+ Se,0,0.,0.,-0.042158106
+ H,0,0.,0.,1.433375603
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Selenium Dihydride //b3lyp/631g(2df,p) = -2402.4841843
+
+0 1
+ Se,0,-0.0409211781,0.,-0.0398844753
+ H,0,-0.0361665698,0.,1.428884784
+ H,0,1.4274866264,0.,-0.0728126238
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Selenium Dihydride cation //b3lyp/631g(2df,p) = -2402.1232631
+
+1 2
+ Se,0,-0.0415630785,0.,-0.0399887187
+ H,0,-0.0324690634,0.,1.44794575
+ H,0,1.4456137338,0.,-0.088329313
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Hydrogen Bromide //b3lyp/631g(2df,p) = -2574.4744981
+
+0 1
+ Br,0,0.,0.,-0.0395106197
+ H,0,0.,0.,1.3828716892
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Hydrogen Bromide cation //b3lyp/631g(2df,p) = -2574.0426403
+
+1 2
+ Br,0,0.,0.,-0.04048574
+ H,0,0.,0.,1.4170009014
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Germanium Oxide //b3lyp/631g(2df,p) = -2151.9923768
+
+0 1
+ Ge,0,0.,0.,-0.3261408866
+ O,0,0.,0.,1.3045635465
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Germanium Disulfide //b3lyp/631g(2df,p) = -2873.1912236
+
+0 1
+ Ge,0,0.,0.,0.
+ S,0,0.,0.,2.0106315522
+ S,0,0.,0.,-2.0106315522
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Arsenic dimer //b3lyp/631g(2df,p) = -4471.2545025
+
+0 1
+ As,0,0.,0.,-1.0531910068
+ As,0,0.,0.,1.0531910068
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Bromine Chloride //b3lyp/631g(2df,p) = -3034.0482277
+
+0 1
+ Br,0,0.,0.,-0.7086741868
+ Cl,0,0.,0.,1.4590350905
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Bromine Fluoride //b3lyp/631g(2df,p) = -2673.6472671
+
+0 1
+ Br,0,0.,0.,-0.3613192855
+ F,0,0.,0.,1.4051305547
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Bromine Fluoride cation //b3lyp/631g(2df,p) = -2673.2201833
+
+1 2
+ Br,0,0.,0.,-0.3458291066
+ F,0,0.,0.,1.3448909703
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Bromine Monooxide //b3lyp/631g(2df,p) = -2648.9873893
+
+0 2
+ Br,0,0.,0.,-0.3226154632
+ O,0,0.,0.,1.4114426514
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Bromine Monooxide anion //b3lyp/631g(2df,p) = -2649.0442118
+
+-1 1
+ Br,0,0.,0.,-0.3415424242
+ O,0,0.,0.,1.4942481059
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+HOBr //b3lyp/631g(2df,p) = -2649.6462256
+
+0 1
+ Br,0,-0.0224215886,0.,-0.3822996246
+ O,0,-0.0177377033,0.,1.4633905555
+ H,0,0.9266572289,0.,1.6733624162
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+HOBr cation //b3lyp/631g(2df,p) = -2649.2651456
+
+1 2
+ Br,0,0.,0.0210461348,-0.3628972192
+ O,0,0.,0.0215763223,1.3744334809
+ H,0,0.,-0.9092252947,1.7059348238
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Boron Bromide //b3lyp/631g(2df,p) = -2598.6476658
+
+0 1
+ Br,0,0.,0.,-0.2395161855
+ B,0,0.,0.,1.6766132983
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Sodium Bromide //b3lyp/631g(2df,p) = -2736.2432029
+
+0 1
+ Br,0,0.,0.,-0.600155031
+ Na,0,0.,0.,1.9095841896
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Sodium Bromide cation //b3lyp/631g(2df,p) = -2735.9254795
+
+1 2
+ Br,0,0.,0.,-0.6932510889
+ Na,0,0.,0.,2.2057989192
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Bromine dimer //b3lyp/631g(2df,p) = -5147.7337167
+
+0 1
+ Br,0,0.,0.,-1.1588292774
+ Br,0,0.,0.,1.1588292774
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Bromine dimer cation //b3lyp/631g(2df,p) = -5147.3481973
+
+1 2
+ Br,0,0.,0.,-1.1132706386
+ Br,0,0.,0.,1.1132706386
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Bromo Methane //b3lyp/631g(2df,p) = -2613.7890728
+
+0 1
+ C,0,0.,0.,-1.5344880168
+ Br,0,0.,0.,0.4230103833
+ H,0,1.0358990113,0.,-1.8661451052
+ H,0,-0.5179495056,-0.8971148595,-1.8661451052
+ H,0,-0.5179495056,0.8971148595,-1.8661451052
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+ch4br+ //b3lyp/631g(2df,p) = -2614.0503112
+
+1 1
+ Br,0,0.0293186742,0.,-0.4183647376
+ C,0,0.0350668284,0.,1.6055453762
+ H,0,1.1016697188,0.,1.8258877833
+ H,0,-0.4689197885,0.9193282524,1.8923839042
+ H,0,-0.4689197885,-0.9193282524,1.8923839042
+ H,0,-1.4003847104,0.,-0.6011620319
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Gallium Chloride //b3lyp/631g(2df,p) = -2384.8879599
+
+0 1
+ Ga,0,0.,0.,-0.7931967194
+ Cl,0,0.,0.,1.4464175472
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+Krypton Difluoride //b3lyp/631g(2df,p) = -2952.941184
+
+0 1
+ Kr,0,0.,0.,0.
+ F,0,0.,0.,1.8873979552
+ F,0,0.,0.,-1.8873979552
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+K2 1S+g d*h //b3lyp/631g(2df,p) = -1199.8017217
+
+0 1
+ K,0,0.,0.,-1.9760028947
+ K,0,0.,0.,1.9760028947
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+KBr 1S+ c*v //b3lyp/631g(2df,p) = -3173.8614898
+
+0 1
+ K,0,0.,0.,-1.8392437863
+ Br,0,0.,0.,0.9984466269
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+KCl 1S+ c*v //b3lyp/631g(2df,p) = -1060.1838834
+
+0 1
+ K,0,0.,0.,-1.2640319483
+ Cl,0,0.,0.,1.4127415893
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+--link1--
+%mem=800MB
+%rwf=a,1900MB,b,1900MB,c,1900MB,d,1900MB,e,1900MB
+%chk=3rdg305b32dftest
+# b3lyp/gen 6d 7f opt scf=direct
+
+KF 1S+ c*v //b3lyp/631g(2df,p) = -699.7972737
+
+0 1
+ K,0,0.,0.,0.
+ F,0,0.,0.,-2.12657184
+
+@/home/redfern/basis/hkr631g2df900.gbs/N
+
+

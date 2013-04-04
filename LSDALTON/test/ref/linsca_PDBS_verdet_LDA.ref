@@ -1,0 +1,1583 @@
+
+ Work memory size (LMWORK+2):   123123125 =  939.35 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:47 2010
+     Host name              : login-0-1.local                         
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+          - first magnetic derivatives of overlap integrals
+          - electronic angular momentum around the origin
+          - one-electron contribution to magnetic moment
+          - First order magnetic derivative of electric field
+            Electric field applied in X-direction
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Bterm (MCD) components                                                  
+  -----------------------------------                                     
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H           1.007825
+                           F          18.998403
+
+                       Total mass:    20.006228 amu
+                       Natural abundance:  99.985 %
+
+ Center-of-mass coordinates (A):   -0.781732    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  Basis set used is "3-21G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H           1       1       3       2      [3s|2s]                                                                          
+  F           1       9      15       9      [6s3p|3s2p]                                                                      
+  ----------------------------------------------------------------------
+  total:      2      10      18      11
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+   1   H        x      0.0920090000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   F        x     -0.8280820000
+   5            y      0.0000000000
+   6            z      0.0000000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            H           F     
+            ------      ------
+ H     :    0.000000
+ F     :    0.486891    0.000000
+
+
+  Max interatomic separation is    0.4869 Angstroms
+  between atoms "F     " and "H     ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  F          H            0.486891
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.000000          1.000000    0.000000    0.000000
+   IB    0.226882          0.000000    1.000000    0.000000
+   IC    0.226882          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is linear.
+
+               B =      2227493.07 MHz     (   74.301171 cm-1)
+
+
+  Nuclear repulsion energy :      9.781641163754
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ >>> Time used in DIPLEN is   0.00 seconds
+
+
+ >>> Time used in S1MAG  is   0.00 seconds
+
+
+ >>> Time used in ANGMOM is   0.00 seconds
+
+
+ >>> Time used in MAGMOM is   0.00 seconds
+
+
+ >>> Time used in CM1    is   0.00 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ Number of two-electron integrals written:         677 ( 30.6% )
+ Megabytes written:                              0.014
+
+
+
+ >>> Time used in TWOINT is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+
+
+ Settings for DFT calculation:
+ -----------------------------
+
+     Default thresholds:                       0.10D-08    0.10D-09    0.20D-11
+     Default threshold for number of electrons:                        0.10D-02
+     DFT radial quadrature accuracy/ang. expansion order:  0.10E-10  31
+ Pertubation dependent basis set  calculations are carried out
+ 
+No frequencies specified in input. Only static properties will be  calculated.
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:47 2010
+     Host name              : login-0-1.local                         
+
+ Title lines from integral program:
+     Bterm (MCD) components                                                  
+     -----------------------------------                                     
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Kohn-Sham calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 11
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+ 
+     This is a DFT calculation of type: LDA
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          11
+     Number of basis functions         11
+
+      ** Automatic occupation of RKS orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              5
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ 
+Dynamic response convergence threshold:
+Response residuals will be reduced by a factor   0.10E-02
+ 
+ WARNING DIPLEN IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING CM-1   IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING S1MAG  IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING MAGMOM IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING ANGMOM IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ Pertubation dependent basis set  calculations are carried out
+
+ Keyword "1                                       " not recognized in config_rsp_input
+
+
+ Keyword "0.11d0                                  " not recognized in config_rsp_input
+
+
+ Keyword "TIGHT                                   " not recognized in config_rsp_input
+
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DIIS                    
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           8
+Dynamic convergence threshold for gradient:   0.32E-05
+ 
+ End of configuration from new input structure!
+ Take first density from Hueckel guess
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   0.00 seconds
+** Get Fock matrix number   1
+ Radial Quadrature : LMG scheme
+ Space partitioning: Becke partitioning with atomic radius correction
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 8969 compressed from  8982 ( 57 radial)
+ Atom:    2*1 points= 8451 compressed from  8464 ( 74 radial)
+ Number of grid points:    17420 Grid generation time:       0.0 s
+KS electrons/energy:    9.99999977225516  -10.32391288951404 rel.err:-0.23E-07
+ >>>  CPU Time used in DFT_KS          is   0.06 seconds
+ >>>  CPU Time used in FCK_FO          is   0.06 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   7.81052335390219     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -97.8794570315    0.00000000000    0.00      0.00000    0.00    0.0000000    0.78E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+KS electrons/energy:    9.99999976126337  -10.77924079201447 rel.err:-0.24E-07
+ >>>  CPU Time used in DFT_KS          is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   1.75293712051371     
+  2    -98.3298980133   -0.45044098177    0.00      0.00000    0.00    0.0000000    0.18E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+KS electrons/energy:    9.99999977894956  -10.42447756737894 rel.err:-0.22E-07
+ >>>  CPU Time used in DFT_KS          is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   1.16317557676333     
+  3    -98.3570740264   -0.02717601314   -1.00      0.00000    0.00    0.0000000    0.12E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+KS electrons/energy:    9.99999977140339  -10.56820676082929 rel.err:-0.23E-07
+ >>>  CPU Time used in DFT_KS          is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.171817025600771E-002
+  4    -98.3781700748   -0.02109604843   -1.00      0.00000    0.00    0.0000000    0.22E-01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   5
+KS electrons/energy:    9.99999977159717  -10.56632881330403 rel.err:-0.23E-07
+ >>>  CPU Time used in DFT_KS          is   0.05 seconds
+ >>>  CPU Time used in FCK_FO          is   0.05 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.288824275093110E-004
+  5    -98.3781851078   -0.00001503302   -1.00      0.00000    0.00    0.0000000    0.33E-03  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   6
+KS electrons/energy:    9.99999977159270  -10.56629235827557 rel.err:-0.23E-07
+ >>>  CPU Time used in DFT_KS          is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.295586084738579E-005
+  6    -98.3781851136   -0.00000000580   -1.00      0.00000    0.00    0.0000000    0.33E-04  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   7
+KS electrons/energy:    9.99999977159267  -10.56629673593890 rel.err:-0.23E-07
+ >>>  CPU Time used in DFT_KS          is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.638170606789456E-007
+  7    -98.3781851137   -0.00000000003   -1.00      0.00000    0.00    0.0000000    0.26E-06  ###
+ >>>  CPU Time used in **ITER          is   0.31 seconds
+Total no. of matmuls in SCF optimization:         21
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.45044098177    0.0000    0.0000    0.0000000
+  3   -0.02717601314   -1.0000    0.0000    0.0000000
+  4   -0.02109604843   -1.0000    0.0000    0.0000000
+  5   -0.00001503302   -1.0000    0.0000    0.0000000
+  6   -0.00000000580   -1.0000    0.0000    0.0000000
+  7   -0.00000000003   -1.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1           -97.87945703148575660180      0.781052335390219D+01
+    2           -98.32989801325470580196      0.175293712051371D+01
+    3           -98.35707402639526719668      0.116317557676333D+01
+    4           -98.37817007482490794246      0.217181702560077D-01
+    5           -98.37818510784990166940      0.328882427509311D-03
+    6           -98.37818511364804408004      0.329558608473858D-04
+    7           -98.37818511367559892733      0.263817060678946D-06
+ 
+      SCF converged !!!! 
+ call util_save_MOinfo
+ Operator label-indices for requested rsp functions:
+ 
+ Number of different B operators:           0
+ 
+ Number of requested operator pairs:           0
+ 
+   There are   1 frequencies, so   0 unique rsp vectors will be computed
+   to obtain the requested   0 response functions.
+ 
+ 
+ ============================================================
+                     RESPONSE RESULTS                        
+ ============================================================
+ 
+     LINEAR RESPONSE:
+ 
+ *****************************************************
+ **    CPU-TIME USED IN new POLARI:   1.000000000000001E-003  **
+ *****************************************************
+ Number of linear transformations performed in LINRSP:           0
+ ******************************************************
+ **                                                  **
+ **  PDBS:                                           **
+ **  VERDET CALCULATION                              **
+ **                                                  **
+ ******************************************************
+ PDBS: --------------------------------------------------------------
+ PDBS: Calculate the A response vector: XDIPLEN 
+ calling Calculated_before
+ PDBS: With frequency  0.110000000000000     
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.110000000000000     
+ Dynamic response convergence threshold set to  1.148850968092848E-004
+Residual norm for vector   1 is:   0.114885E+00    and frequency =     0.110000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.110000000000000     
+Residual norm for vector   1 is:   0.316861E-01    and frequency =     0.110000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.110000000000000     
+Residual norm for vector   1 is:   0.222546E-02    and frequency =     0.110000   It =   3 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.110000000000000     
+Residual norm for vector   1 is:   0.580221E-04    and frequency =     0.110000   It =   4 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ Writing to disk
+ vec_on_file           1
+ DISK(vec_on_file)%LabelXDIPLEN 
+ DISK(vec_on_file)%freq  0.110000000000000     
+ DISK(vec_on_file)%A1 T
+ PDBS: --------------------------------------------------------------
+ Calculate the B response vector: YDIPLEN 
+ PDBS: With frequency  0.110000000000000     
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.110000000000000     
+ Dynamic response convergence threshold set to  1.159846400783411E-004
+Residual norm for vector   1 is:   0.115985E+00    and frequency =     0.110000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.110000000000000     
+Residual norm for vector   1 is:   0.123099E-02    and frequency =     0.110000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.110000000000000     
+Residual norm for vector   1 is:   0.383451E-04    and frequency =     0.110000   It =   3 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ Writing to disk
+ vec_on_file           2
+ DISK(vec_on_file)%LabelYDIPLEN 
+ DISK(vec_on_file)%freq  0.110000000000000     
+ DISK(vec_on_file)%A1 F
+ PDBS: vecBdagger: The adjoint vector (B+ or Xf+)
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+ BUILD_PDBS_RHS: vecA*B[2] PART
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  2.622778209764583E-004
+Residual norm for vector   1 is:   0.262278E+00    and frequency =     0.000000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.07 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.05 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.260896E-02    and frequency =     0.000000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.05 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.432473E-04    and frequency =     0.000000   It =   3 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ PDBS: --------------------------------------------------------------
+ PDBS: Calculate the A response vector: YDIPLEN 
+ calling Calculated_before
+ Read from disk  nr.          -2
+ PDBS: --------------------------------------------------------------
+ Calculate the B response vector: ZDIPLEN 
+ PDBS: With frequency  0.110000000000000     
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.110000000000000     
+ Dynamic response convergence threshold set to  1.159846400783436E-004
+Residual norm for vector   1 is:   0.115985E+00    and frequency =     0.110000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.110000000000000     
+Residual norm for vector   1 is:   0.123099E-02    and frequency =     0.110000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.110000000000000     
+Residual norm for vector   1 is:   0.383451E-04    and frequency =     0.110000   It =   3 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ Writing to disk
+ vec_on_file           3
+ DISK(vec_on_file)%LabelZDIPLEN 
+ DISK(vec_on_file)%freq  0.110000000000000     
+ DISK(vec_on_file)%A1 F
+ PDBS: vecBdagger: The adjoint vector (B+ or Xf+)
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+ BUILD_PDBS_RHS: vecA*B[2] PART
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  7.865835173566561E-007
+Residual norm for vector   1 is:   0.786584E-03    and frequency =     0.000000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.379918E-15    and frequency =     0.000000   It =   2 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ PDBS: --------------------------------------------------------------
+ PDBS: Calculate the A response vector: ZDIPLEN 
+ calling Calculated_before
+ Read from disk  nr.          -3
+ PDBS: --------------------------------------------------------------
+ Calculate the B response vector: XDIPLEN 
+ PDBS: With frequency  0.110000000000000     
+ Read from disk  nr.          -1
+ PDBS: vecBdagger: The adjoint vector (B+ or Xf+)
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+ BUILD_PDBS_RHS: vecA*B[2] PART
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  2.502400928037010E-004
+Residual norm for vector   1 is:   0.250240E+00    and frequency =     0.000000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.244832E-02    and frequency =     0.000000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.395086E-04    and frequency =     0.000000   It =   3 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ PDBS: --------------------------------------------------------------
+ PDBS: Calculate the A response vector: XDIPLEN 
+ calling Calculated_before
+ Read from disk  nr.           1
+ PDBS: --------------------------------------------------------------
+ Calculate the B response vector: ZDIPLEN 
+ PDBS: With frequency  0.110000000000000     
+ Read from disk  nr.           3
+ PDBS: vecBdagger: The adjoint vector (B+ or Xf+)
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+ BUILD_PDBS_RHS: vecA*B[2] PART
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  2.622778209764683E-004
+Residual norm for vector   1 is:   0.262278E+00    and frequency =     0.000000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.260896E-02    and frequency =     0.000000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.07 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.05 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.432473E-04    and frequency =     0.000000   It =   3 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ PDBS: --------------------------------------------------------------
+ PDBS: Calculate the A response vector: YDIPLEN 
+ calling Calculated_before
+ Read from disk  nr.          -2
+ PDBS: --------------------------------------------------------------
+ Calculate the B response vector: XDIPLEN 
+ PDBS: With frequency  0.110000000000000     
+ Read from disk  nr.          -1
+ PDBS: vecBdagger: The adjoint vector (B+ or Xf+)
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+ BUILD_PDBS_RHS: vecA*B[2] PART
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.05 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  2.502400928036925E-004
+Residual norm for vector   1 is:   0.250240E+00    and frequency =     0.000000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.05 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.244832E-02    and frequency =     0.000000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.395086E-04    and frequency =     0.000000   It =   3 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ PDBS: --------------------------------------------------------------
+ PDBS: Calculate the A response vector: ZDIPLEN 
+ calling Calculated_before
+ Read from disk  nr.          -3
+ PDBS: --------------------------------------------------------------
+ Calculate the B response vector: YDIPLEN 
+ PDBS: With frequency  0.110000000000000     
+ Read from disk  nr.           2
+ PDBS: vecBdagger: The adjoint vector (B+ or Xf+)
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+ BUILD_PDBS_RHS: vecA*B[2] PART
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  7.865835173579168E-007
+Residual norm for vector   1 is:   0.786584E-03    and frequency =     0.000000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.373412E-15    and frequency =     0.000000   It =   2 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ *******************************
+ Number of unique vectors calculated           3
+ *******************************
+ *******************************
+ PDBS_driver: NOW BUILD PROPERTY
+ *******************************
+ READING VECTORS
+ READ VECTORER   vec_on_file           3
+ Label to be read XDIPLEN 
+ SINCE DISK(i)labelXDIPLEN for i=           1
+ SINCE DISK(i)freq  0.110000000000000      for i=           1
+ READ A1
+ READING VECTOR nr           1
+ READ VECTORER   vec_on_file           3
+ Label to be read YDIPLEN 
+ SINCE DISK(i)labelYDIPLEN for i=           2
+ SINCE DISK(i)freq  0.110000000000000      for i=           2
+ READ A1
+ READING VECTOR nr           2
+ DONE READING VECTORS
+ ****************************************
+ call BUILD PROPERTY for J index :           1
+ PDBS_STACK(i)%LOOP(j)%Alabel    :XDIPLEN 
+ PDBS_STACK(i)%LOOP(j)%Blabel    :YDIPLEN 
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           1
+ CALL BUILD PROPERTY with THOMAS BVEC           1
+ CALL BUILD PROPERTY with THOMAS Xbar           1
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:   0.110000000000000     
+ MAGNETIC DIFFERENTIATION            0
+ ENTER Chose Clist            2
+ LEAVING Chose Clist            2
+ npert           3
+ startpert           1
+ step           1
+ Precompute matrices independent of the pertubation
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ I should now call the test_Xbar routine
+ I am now inside the test Xbar routine
+Beta_XYX(    0.1100,0.0)  0.000000
+Beta_XYY(    0.1100,0.0)  1.148930
+Beta_XYZ(    0.1100,0.0)  0.000000
+ starting ANGMOM
+ starting ANGMOM 1
+ print label:XANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMXYX(    0.1100,0.0)  0.000000
+ starting ANGMOM 6
+ starting ANGMOM 1
+ print label:YANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMXYY(    0.1100,0.0)  0.000000
+ starting ANGMOM 6
+ starting ANGMOM 1
+ print label:ZANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMXYZ(    0.1100,0.0)  0.111379
+ starting ANGMOM 6
+ loop runs over number of perturbations npert:           3
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBX  
+ Sxlabel : dS/dBX  
+ Alabel : XDIPLEN 
+ Axlabel : X-CM1 X 
+ Blabel : YDIPLEN 
+ Bxlabel : Y-CM1 X 
+ -------------------------------------
+ Perturbation npert                1
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBY  
+ Sxlabel : dS/dBY  
+ Alabel : XDIPLEN 
+ Axlabel : X-CM1 Y 
+ Blabel : YDIPLEN 
+ Bxlabel : Y-CM1 Y 
+ -------------------------------------
+ Perturbation npert                2
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBZ  
+ Sxlabel : dS/dBZ  
+ Alabel : XDIPLEN 
+ Axlabel : X-CM1 Z 
+ Blabel : YDIPLEN 
+ Bxlabel : Y-CM1 Z 
+ -------------------------------------
+ Perturbation npert                3
+ -------------------------------------
+ gga_is  0 
+
+ ***********************************************************
+ For the given loop index in Build_Property the total derivative is
+             A:X B:Y         
+ ***********************************************************
+          Bx             By             Bz
+
+               0.00000000     0.00000000    -0.02203000
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ READING VECTORS
+ READ VECTORER   vec_on_file           3
+ Label to be read YDIPLEN 
+ SINCE DISK(i)labelYDIPLEN for i=           2
+ SINCE DISK(i)freq  0.110000000000000      for i=           2
+ READ B1
+ READING VECTOR nr          -2
+ READ VECTORER   vec_on_file           3
+ Label to be read ZDIPLEN 
+ SINCE DISK(i)labelZDIPLEN for i=           3
+ SINCE DISK(i)freq  0.110000000000000      for i=           3
+ READ A1
+ READING VECTOR nr           3
+ DONE READING VECTORS
+ ****************************************
+ call BUILD PROPERTY for J index :           2
+ PDBS_STACK(i)%LOOP(j)%Alabel    :YDIPLEN 
+ PDBS_STACK(i)%LOOP(j)%Blabel    :ZDIPLEN 
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           2
+ CALL BUILD PROPERTY with THOMAS BVEC           2
+ CALL BUILD PROPERTY with THOMAS Xbar           2
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:   0.110000000000000     
+ MAGNETIC DIFFERENTIATION            0
+ ENTER Chose Clist            2
+ LEAVING Chose Clist            2
+ npert           3
+ startpert           1
+ step           1
+ Precompute matrices independent of the pertubation
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ I should now call the test_Xbar routine
+ I am now inside the test Xbar routine
+Beta_YZX(    0.1100,0.0)  0.000000
+Beta_YZY(    0.1100,0.0)  0.000000
+Beta_YZZ(    0.1100,0.0)  0.000000
+ starting ANGMOM
+ starting ANGMOM 1
+ print label:XANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMYZX(    0.1100,0.0) -0.355587
+ starting ANGMOM 6
+ starting ANGMOM 1
+ print label:YANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMYZY(    0.1100,0.0)  0.000000
+ starting ANGMOM 6
+ starting ANGMOM 1
+ print label:ZANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMYZZ(    0.1100,0.0)  0.000000
+ starting ANGMOM 6
+ loop runs over number of perturbations npert:           3
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBX  
+ Sxlabel : dS/dBX  
+ Alabel : YDIPLEN 
+ Axlabel : Y-CM1 X 
+ Blabel : ZDIPLEN 
+ Bxlabel : Z-CM1 X 
+ -------------------------------------
+ Perturbation npert                1
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBY  
+ Sxlabel : dS/dBY  
+ Alabel : YDIPLEN 
+ Axlabel : Y-CM1 Y 
+ Blabel : ZDIPLEN 
+ Bxlabel : Z-CM1 Y 
+ -------------------------------------
+ Perturbation npert                2
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBZ  
+ Sxlabel : dS/dBZ  
+ Alabel : YDIPLEN 
+ Axlabel : Y-CM1 Z 
+ Blabel : ZDIPLEN 
+ Bxlabel : Z-CM1 Z 
+ -------------------------------------
+ Perturbation npert                3
+ -------------------------------------
+ gga_is  0 
+
+ ***********************************************************
+ For the given loop index in Build_Property the total derivative is
+             A:Y B:Z         
+ ***********************************************************
+          Bx             By             Bz
+
+               0.17779366     0.00000000     0.00000000
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ READING VECTORS
+ READ VECTORER   vec_on_file           3
+ Label to be read ZDIPLEN 
+ SINCE DISK(i)labelZDIPLEN for i=           3
+ SINCE DISK(i)freq  0.110000000000000      for i=           3
+ READ B1
+ READING VECTOR nr          -3
+ READ VECTORER   vec_on_file           3
+ Label to be read XDIPLEN 
+ SINCE DISK(i)labelXDIPLEN for i=           1
+ SINCE DISK(i)freq  0.110000000000000      for i=           1
+ READ B1
+ READING VECTOR nr          -1
+ DONE READING VECTORS
+ ****************************************
+ call BUILD PROPERTY for J index :           3
+ PDBS_STACK(i)%LOOP(j)%Alabel    :ZDIPLEN 
+ PDBS_STACK(i)%LOOP(j)%Blabel    :XDIPLEN 
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           3
+ CALL BUILD PROPERTY with THOMAS BVEC           3
+ CALL BUILD PROPERTY with THOMAS Xbar           3
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:   0.110000000000000     
+ MAGNETIC DIFFERENTIATION            0
+ ENTER Chose Clist            2
+ LEAVING Chose Clist            2
+ npert           3
+ startpert           1
+ step           1
+ Precompute matrices independent of the pertubation
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ I should now call the test_Xbar routine
+ I am now inside the test Xbar routine
+Beta_ZXX(    0.1100,0.0)  0.000000
+Beta_ZXY(    0.1100,0.0)  0.000000
+Beta_ZXZ(    0.1100,0.0) -1.079059
+ starting ANGMOM
+ starting ANGMOM 1
+ print label:XANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMZXX(    0.1100,0.0)  0.000000
+ starting ANGMOM 6
+ starting ANGMOM 1
+ print label:YANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMZXY(    0.1100,0.0)  0.111379
+ starting ANGMOM 6
+ starting ANGMOM 1
+ print label:ZANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMZXZ(    0.1100,0.0)  0.000000
+ starting ANGMOM 6
+ loop runs over number of perturbations npert:           3
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBX  
+ Sxlabel : dS/dBX  
+ Alabel : ZDIPLEN 
+ Axlabel : Z-CM1 X 
+ Blabel : XDIPLEN 
+ Bxlabel : X-CM1 X 
+ -------------------------------------
+ Perturbation npert                1
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBY  
+ Sxlabel : dS/dBY  
+ Alabel : ZDIPLEN 
+ Axlabel : Z-CM1 Y 
+ Blabel : XDIPLEN 
+ Bxlabel : X-CM1 Y 
+ -------------------------------------
+ Perturbation npert                2
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBZ  
+ Sxlabel : dS/dBZ  
+ Alabel : ZDIPLEN 
+ Axlabel : Z-CM1 Z 
+ Blabel : XDIPLEN 
+ Bxlabel : X-CM1 Z 
+ -------------------------------------
+ Perturbation npert                3
+ -------------------------------------
+ gga_is  0 
+
+ ***********************************************************
+ For the given loop index in Build_Property the total derivative is
+             A:Z B:X         
+ ***********************************************************
+          Bx             By             Bz
+
+               0.00000000    -0.02203000     0.00000000
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ READING VECTORS
+ READ VECTORER   vec_on_file           3
+ Label to be read XDIPLEN 
+ SINCE DISK(i)labelXDIPLEN for i=           1
+ SINCE DISK(i)freq  0.110000000000000      for i=           1
+ READ A1
+ READING VECTOR nr           1
+ READ VECTORER   vec_on_file           3
+ Label to be read ZDIPLEN 
+ SINCE DISK(i)labelZDIPLEN for i=           3
+ SINCE DISK(i)freq  0.110000000000000      for i=           3
+ READ A1
+ READING VECTOR nr           3
+ DONE READING VECTORS
+ ****************************************
+ call BUILD PROPERTY for J index :           4
+ PDBS_STACK(i)%LOOP(j)%Alabel    :XDIPLEN 
+ PDBS_STACK(i)%LOOP(j)%Blabel    :ZDIPLEN 
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           4
+ CALL BUILD PROPERTY with THOMAS BVEC           4
+ CALL BUILD PROPERTY with THOMAS Xbar           4
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:   0.110000000000000     
+ MAGNETIC DIFFERENTIATION            0
+ ENTER Chose Clist            2
+ LEAVING Chose Clist            2
+ npert           3
+ startpert           1
+ step           1
+ Precompute matrices independent of the pertubation
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ I should now call the test_Xbar routine
+ I am now inside the test Xbar routine
+Beta_XZX(    0.1100,0.0)  0.000000
+Beta_XZY(    0.1100,0.0)  0.000000
+Beta_XZZ(    0.1100,0.0)  1.148930
+ starting ANGMOM
+ starting ANGMOM 1
+ print label:XANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMXZX(    0.1100,0.0)  0.000000
+ starting ANGMOM 6
+ starting ANGMOM 1
+ print label:YANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMXZY(    0.1100,0.0) -0.111379
+ starting ANGMOM 6
+ starting ANGMOM 1
+ print label:ZANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMXZZ(    0.1100,0.0)  0.000000
+ starting ANGMOM 6
+ loop runs over number of perturbations npert:           3
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBX  
+ Sxlabel : dS/dBX  
+ Alabel : XDIPLEN 
+ Axlabel : X-CM1 X 
+ Blabel : ZDIPLEN 
+ Bxlabel : Z-CM1 X 
+ -------------------------------------
+ Perturbation npert                1
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBY  
+ Sxlabel : dS/dBY  
+ Alabel : XDIPLEN 
+ Axlabel : X-CM1 Y 
+ Blabel : ZDIPLEN 
+ Bxlabel : Z-CM1 Y 
+ -------------------------------------
+ Perturbation npert                2
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBZ  
+ Sxlabel : dS/dBZ  
+ Alabel : XDIPLEN 
+ Axlabel : X-CM1 Z 
+ Blabel : ZDIPLEN 
+ Bxlabel : Z-CM1 Z 
+ -------------------------------------
+ Perturbation npert                3
+ -------------------------------------
+ gga_is  0 
+
+ ***********************************************************
+ For the given loop index in Build_Property the total derivative is
+             A:X B:Z         
+ ***********************************************************
+          Bx             By             Bz
+
+               0.00000000     0.02203000     0.00000000
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ READING VECTORS
+ READ VECTORER   vec_on_file           3
+ Label to be read YDIPLEN 
+ SINCE DISK(i)labelYDIPLEN for i=           2
+ SINCE DISK(i)freq  0.110000000000000      for i=           2
+ READ B1
+ READING VECTOR nr          -2
+ READ VECTORER   vec_on_file           3
+ Label to be read XDIPLEN 
+ SINCE DISK(i)labelXDIPLEN for i=           1
+ SINCE DISK(i)freq  0.110000000000000      for i=           1
+ READ B1
+ READING VECTOR nr          -1
+ DONE READING VECTORS
+ ****************************************
+ call BUILD PROPERTY for J index :           5
+ PDBS_STACK(i)%LOOP(j)%Alabel    :YDIPLEN 
+ PDBS_STACK(i)%LOOP(j)%Blabel    :XDIPLEN 
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           5
+ CALL BUILD PROPERTY with THOMAS BVEC           5
+ CALL BUILD PROPERTY with THOMAS Xbar           5
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:   0.110000000000000     
+ MAGNETIC DIFFERENTIATION            0
+ ENTER Chose Clist            2
+ LEAVING Chose Clist            2
+ npert           3
+ startpert           1
+ step           1
+ Precompute matrices independent of the pertubation
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ I should now call the test_Xbar routine
+ I am now inside the test Xbar routine
+Beta_YXX(    0.1100,0.0)  0.000000
+Beta_YXY(    0.1100,0.0) -1.079059
+Beta_YXZ(    0.1100,0.0)  0.000000
+ starting ANGMOM
+ starting ANGMOM 1
+ print label:XANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMYXX(    0.1100,0.0)  0.000000
+ starting ANGMOM 6
+ starting ANGMOM 1
+ print label:YANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMYXY(    0.1100,0.0)  0.000000
+ starting ANGMOM 6
+ starting ANGMOM 1
+ print label:ZANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMYXZ(    0.1100,0.0) -0.111379
+ starting ANGMOM 6
+ loop runs over number of perturbations npert:           3
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBX  
+ Sxlabel : dS/dBX  
+ Alabel : YDIPLEN 
+ Axlabel : Y-CM1 X 
+ Blabel : XDIPLEN 
+ Bxlabel : X-CM1 X 
+ -------------------------------------
+ Perturbation npert                1
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBY  
+ Sxlabel : dS/dBY  
+ Alabel : YDIPLEN 
+ Axlabel : Y-CM1 Y 
+ Blabel : XDIPLEN 
+ Bxlabel : X-CM1 Y 
+ -------------------------------------
+ Perturbation npert                2
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBZ  
+ Sxlabel : dS/dBZ  
+ Alabel : YDIPLEN 
+ Axlabel : Y-CM1 Z 
+ Blabel : XDIPLEN 
+ Bxlabel : X-CM1 Z 
+ -------------------------------------
+ Perturbation npert                3
+ -------------------------------------
+ gga_is  0 
+
+ ***********************************************************
+ For the given loop index in Build_Property the total derivative is
+             A:Y B:X         
+ ***********************************************************
+          Bx             By             Bz
+
+               0.00000000     0.00000000     0.02203000
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ READING VECTORS
+ READ VECTORER   vec_on_file           3
+ Label to be read ZDIPLEN 
+ SINCE DISK(i)labelZDIPLEN for i=           3
+ SINCE DISK(i)freq  0.110000000000000      for i=           3
+ READ B1
+ READING VECTOR nr          -3
+ READ VECTORER   vec_on_file           3
+ Label to be read YDIPLEN 
+ SINCE DISK(i)labelYDIPLEN for i=           2
+ SINCE DISK(i)freq  0.110000000000000      for i=           2
+ READ A1
+ READING VECTOR nr           2
+ DONE READING VECTORS
+ ****************************************
+ call BUILD PROPERTY for J index :           6
+ PDBS_STACK(i)%LOOP(j)%Alabel    :ZDIPLEN 
+ PDBS_STACK(i)%LOOP(j)%Blabel    :YDIPLEN 
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           6
+ CALL BUILD PROPERTY with THOMAS BVEC           6
+ CALL BUILD PROPERTY with THOMAS Xbar           6
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:   0.110000000000000     
+ MAGNETIC DIFFERENTIATION            0
+ ENTER Chose Clist            2
+ LEAVING Chose Clist            2
+ npert           3
+ startpert           1
+ step           1
+ Precompute matrices independent of the pertubation
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ I should now call the test_Xbar routine
+ I am now inside the test Xbar routine
+Beta_ZYX(    0.1100,0.0)  0.000000
+Beta_ZYY(    0.1100,0.0)  0.000000
+Beta_ZYZ(    0.1100,0.0)  0.000000
+ starting ANGMOM
+ starting ANGMOM 1
+ print label:XANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMZYX(    0.1100,0.0)  0.355587
+ starting ANGMOM 6
+ starting ANGMOM 1
+ print label:YANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMZYY(    0.1100,0.0)  0.000000
+ starting ANGMOM 6
+ starting ANGMOM 1
+ print label:ZANGMOM 
+ starting ANGMOM 4
+ starting ANGMOM 5
+BetaMZYZ(    0.1100,0.0)  0.000000
+ starting ANGMOM 6
+ loop runs over number of perturbations npert:           3
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBX  
+ Sxlabel : dS/dBX  
+ Alabel : ZDIPLEN 
+ Axlabel : Z-CM1 X 
+ Blabel : YDIPLEN 
+ Bxlabel : Y-CM1 X 
+ -------------------------------------
+ Perturbation npert                1
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBY  
+ Sxlabel : dS/dBY  
+ Alabel : ZDIPLEN 
+ Axlabel : Z-CM1 Y 
+ Blabel : YDIPLEN 
+ Bxlabel : Y-CM1 Y 
+ -------------------------------------
+ Perturbation npert                2
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBZ  
+ Sxlabel : dS/dBZ  
+ Alabel : ZDIPLEN 
+ Axlabel : Z-CM1 Z 
+ Blabel : YDIPLEN 
+ Bxlabel : Y-CM1 Z 
+ -------------------------------------
+ Perturbation npert                3
+ -------------------------------------
+ gga_is  0 
+
+ ***********************************************************
+ For the given loop index in Build_Property the total derivative is
+             A:Z B:Y         
+ ***********************************************************
+          Bx             By             Bz
+
+              -0.17779366     0.00000000     0.00000000
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ PDBS: Call build averages
+ selecting: VERDET
+ ============================================================
+                  LAO VERDET-results                         
+ ============================================================
+VERDET-contribution from XYZ:   -0.044060
+VERDET-contribution from YZX:    0.355587
+VERDET-contribution from ZXY:   -0.044060
+VERDET-contribution from XZY:    0.044060
+VERDET-contribution from YXZ:    0.044060
+VERDET-contribution from ZYX:   -0.355587
+ Levita civita SUM of contributions      :  0.534934646461764     
+  
+VERDET-Frequenc    0.110000
+  
+ LAO VERDET-result                       :  8.951345201633819E-010
+  
+ ============================================================
+               NON-LAO VERDET-results                         
+ ============================================================
+VERDET-contribution from XYZ:    0.111379
+VERDET-contribution from YZX:   -0.355587
+VERDET-contribution from ZXY:    0.111379
+VERDET-contribution from XZY:   -0.111379
+VERDET-contribution from YXZ:   -0.111379
+VERDET-contribution from ZYX:    0.355587
+ Levita civita SUM of contributions      : -0.265657678167140     
+  
+ NON LAO-result                          : -4.445390850017763E-010
+  
+ PDBS: done build averages
+ Total no. of matmuls used:        3045
+ Total no. of Fock/KS matrix evaluations:           7
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):             63888 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):      63888 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                  80.352 kB
+  Max allocated memory, type(matrix)           80.352 kB
+  Max allocated memory, real(realk)             0.000 Byte
+  Max allocated memory, integer                 0.000 Byte
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               0.000 Byte
+  Max allocated memory, integralitem            0.000 Byte
+  Max allocated memory, Overlap                 0.000 Byte
+  Max allocated memory, ODitem                  0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    4.242355        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final DFT energy:            -98.378185113676
+     Nuclear repulsion:             9.781641163754
+     Electronic energy:          -108.159826277430
+
+     Final gradient norm:           0.000000263817
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:51 2010
+     Host name              : login-0-1.local                         
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5
+   1  H   1s     1.0000   0.0000   0.0000   0.0000   0.0000
+   2  H   1s     0.0000   1.0000   0.0000   0.0000   0.0000
+   3  F   1s     0.0000   0.0000   1.0000   0.0000   0.0000
+   4  F   1s     0.0000   0.0000   0.0000   1.0000   0.0000
+   5  F   1s     0.0000   0.0000   0.0000   0.0000   1.0000
+   6  F   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+   7  F   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+   8  F   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+   9  F   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  10  F   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  11  F   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      4.23 seconds
+ >>>> Total wall time used in SIRIUS :      4.25 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:51 2010
+     Host name              : login-0-1.local                         
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:   4.25 seconds
+ >>>> Total wall time used in DALTON:   4.27 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:51 2010
+     Host name              : login-0-1.local                         

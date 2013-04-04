@@ -1,0 +1,118 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > LSresponse_HF_dipole.info <<'%EOF%'
+   LSresponse_HF_dipole
+   -------------------
+   Molecule:         H2O2
+   Wave Function:    HF / 6-31G
+   Test Purpose:     Test electric dipole (Kasper K)
+                     
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > LSresponse_HF_dipole.mol <<'%EOF%'
+BASIS
+6-31G
+Hydrogen Peroxide
+
+AtomTypes=2 Generators=0
+Charge=8.0 Atoms=2
+O    -0.00000000  1.40784586 -0.09885600
+O     0.00000000 -1.40784586 -0.09885600
+Charge=1.0 Atoms=2
+H     0.69081489  1.72614891  1.56891868
+H    -0.69081489 -1.72614891  1.56891868
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > LSresponse_HF_dipole.dal <<'%EOF%'
+**WAVE FUNCTIONS
+.HF
+*DENSOPT
+.RH                                                                                       
+.DIIS
+.NVEC
+8
+.CONVTHR
+1.0D-6
+*END OF INPUT  
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL > LSresponse_HF_dipole.check
+cat >> LSresponse_HF_dipole.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Energy
+CRIT1=`$GREP "Final * HF energy\: * \-150\.69387" $log | wc -l`
+TEST[1]=`expr   $CRIT1`
+CTRL[1]=1
+ERROR[1]="HF ENERGY NOT CORRECT -"
+
+# Memory test
+CRIT2=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[2]=`expr  $CRIT2`
+CTRL[2]=1
+ERROR[2]="Memory leak -"
+
+# Dipole
+CRIT1=`$GREP "z * 1\.52858 * 3\.88526 * 12\.9598" $log | wc -l`
+TEST[3]=`expr  $CRIT1`
+CTRL[3]=1
+ERROR[3]="Error in electric dipole"
+
+
+PASSED=1
+for i in 1 2 3
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################
