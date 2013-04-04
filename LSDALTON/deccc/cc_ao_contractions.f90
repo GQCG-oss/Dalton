@@ -62,7 +62,7 @@ contains
 
 
 
-  !> \brief Get (C K | D L) integrals stored in the order (C,K,D,L).
+  !> \brief Get (a i | b j) integrals stored in the order (a,i,b,j).
   !> \author Kasper Kristensen
   !> \date February 2011
   subroutine get_VOVO_integrals(mylsitem,nbasis,nocc,nvirt,Cvirt,Cocc,VOVO)
@@ -82,7 +82,7 @@ contains
     type(array2), intent(in) :: Cocc
     !> Virtual orbital coefficients
     type(array2), intent(in) :: Cvirt
-    !> (C K | D L) integrals in the order (C,K,D,L)
+    !> (a i | b j) integrals stored in the order (a,i,b,j)
     type(array4),intent(inout) :: VOVO
 
     ! Get integrals (a i | b j) stored as (i,j,b,a)
@@ -2201,7 +2201,7 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     ! Minimum AO batch size
     call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAObatchSize)
 
-    ! Maximum AO batch size (all basis functions
+    ! Maximum AO batch size (all basis functions)
     MaxAObatchSize = nbasis
 
     ! Set alpha and gamma batch size as written above
@@ -2283,6 +2283,7 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
             & batchdimAlpha,batchdimGamma,DECinfo%output,DECinfo%output)
     endif
+    FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
 
 #ifdef VAR_OMP
 if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - OMP. Number of threads: ', &
@@ -2300,7 +2301,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
     ! Zero output integrals to be on the safe side
     ijba = 0.0_realk
 
-    FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
     BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
        dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
        GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
@@ -2353,6 +2353,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        call dec_simple_dgemm(m,k,n,CunoccT,tmp2,tmp1, 'n', 'n')
        call mem_dealloc(tmp2)
 
+
        ! Transpose to make alphaB and gammaB indices available
        ! *****************************************************
        dim2=dim1
@@ -2374,6 +2375,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        call mem_alloc(tmp1,dim1)
        call dec_simple_dgemm(m,k,n,CoccT(:,GammaStart:GammaEnd),tmp2,tmp1, 'n', 'n')
        call mem_dealloc(tmp2)
+
 
        ! Transform alpha batch index to unoccupied index and update output integral
        ! **************************************************************************
