@@ -607,6 +607,9 @@ subroutine pe_dalton_input(word, luinp, lupri)
             end if
             pe_sol = .true.
             pe_polar = .true.
+        ! continuum solvation (COSMO) calculation 
+        else if (trim(option(2:)) == 'EQSOL') then
+            pe_noneq = .false.
         ! specify surface file
         else if (trim(option(2:)) == 'SURFAC') then
             read(luinp,*) option
@@ -1955,7 +1958,7 @@ subroutine pe_polarization(denmats, fckmats)
                     fckmats(l:m) = fckmats(l:m) + Mkinds(3*npols+i,k) *&
                                  & Vel_ints(:,1)
                 end do
-                if ( pe_noneq .and. fock ) then
+                if (pe_noneq .and. fock) then
                     call openfile('pe_noneq.bin', lunoneq, 'unknown', 'unformatted')
                     rewind(lunoneq)
                     do k = 1, ndens
