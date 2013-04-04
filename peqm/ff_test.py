@@ -7731,16 +7731,16 @@ elif args.fixsol:
             '*PEQM\n'
             '.PEQM\n'
             '.SOLVAT\n'
+#            '.EQSOL\n'
             '.FIXPVA\n'
             '.MAXTES\n'
-            '2000\n')
+            '20000\n')
     wftn += solv
 elif args.pepot:
     wftn = ('.PEQM\n'
             '*PEQM\n'
             '.PEQM\n')
     wftn += solv
-    wftn = ''
 else:
     wftn = ''
 wftn += ('**WAVE FUNCTIONS\n'
@@ -7749,7 +7749,7 @@ if args.method == 'DFT':
     wftn += '{0}\n'.format(args.xcfun)
 wftn += ('*SCF INPUT\n'
          '.THRESH\n'
-         '1.0d-10\n')
+         '1.0d-8\n')
 if args.qcscf:
     wftn += '.NODIIS\n'
 
@@ -7761,7 +7761,7 @@ if args.linear:
             '.ALPHA\n'
             '*ABALNR\n'
             '.THRESH\n'
-            '1.0d-3\n'
+            '1.0d-6\n'
             '.FREQUENCY\n'
             '1\n'
             '0.0d0\n'
