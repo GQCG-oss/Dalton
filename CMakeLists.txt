@@ -123,6 +123,21 @@ configure_script(
     ${CMAKE_BINARY_DIR}/dalton
     )
 
+# if BLAS and/or LAPACK not found, add own sources to the list of
+# sources to compile
+if(USE_OWN_BLAS)
+    set(FIXED_FORTRAN_SOURCES
+        ${FIXED_FORTRAN_SOURCES}
+        ${OWN_BLAS_SOURCES}
+        )
+endif()
+if(USE_OWN_LAPACK)
+    set(FIXED_FORTRAN_SOURCES
+        ${FIXED_FORTRAN_SOURCES}
+        ${OWN_LAPACK_SOURCES}
+        )
+endif()
+
 add_library(
     dalton
     ${C_SOURCES}
