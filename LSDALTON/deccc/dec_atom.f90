@@ -1544,8 +1544,8 @@ contains
     !> stuff has already been initialized).
     type(ccatom),intent(inout) :: FragmentPQ
     real(realk) :: lambdathr,lambdathr_default
-    real(realk),pointer :: CoccPQ(:,:), CunoccPQ(:,:),aoS(:,:),moS(:,:),CoccPQ_tmp(:,:),Sinv(:,:)
-    real(realk),pointer :: T(:,:),lambda(:),MOtmp(:,:),tmp(:,:),tmp2(:,:),CEOS(:,:),CunoccPQ_tmp(:,:)
+    real(realk),pointer :: CoccPQ(:,:), CunoccPQ(:,:),aoS(:,:),moS(:,:),Sinv(:,:)
+    real(realk),pointer :: T(:,:),lambda(:),MOtmp(:,:),tmp(:,:),tmp2(:,:),CEOS(:,:)
     logical,pointer :: whichOrbitals(:)
     integer :: noccPQ,nunoccPQ,nbasisPQ,noccPQ_FA, nunoccPQ_FA,i,mu,idx, EOSidx,j
     logical :: debugprint,keepon  ! temporary debug prints
@@ -1601,10 +1601,10 @@ contains
 
     ! 1. Set pair PQ MO-coefficients by simply copying P and Q coefficients
     ! *********************************************************************
-    call mem_alloc(CoccPQ_tmp,NbasisPQ,noccPQ)
-    call mem_alloc(CunoccPQ_tmp,NbasisPQ,nunoccPQ)
+    call mem_alloc(CoccPQ,NbasisPQ,noccPQ)
+    call mem_alloc(CunoccPQ,NbasisPQ,nunoccPQ)
     call set_pair_fragment_adapted_redundant_orbitals(MyMolecule,FragmentP,FragmentQ,&
-         & FragmentPQ,noccPQ,nunoccPQ,CoccPQ_tmp,CunoccPQ_tmp)
+         & FragmentPQ,noccPQ,nunoccPQ,CoccPQ,CunoccPQ)
     ! Note: At this stage the PQ orbitals are redundant and not orthogonal.
     !       Furthermore, the EOS orbitals have been taken out of the orbital pool.
     !       However, FAOs originally used for fragment P may still contain
@@ -1617,18 +1617,18 @@ contains
 
     ! 2. Project onto local AOS
     ! *************************
-    ! We need to project against the local AOS since the current CoccPQ_tmp coefficients
+    ! We need to project against the local AOS since the current CoccPQ coefficients
     ! are simply the FAO coefficients for fragments P and Q. These FAO coefficients have been
     ! determined by diagonalizing the correlation density matrix expressed in terms of local orbitals.
     ! However, in general P and Q have different atomic extents, which again are different
     ! from the atomic extent for pair fragment PQ. This means that the FAOs from P and Q may
     ! contain (artificial) components outside the local AOS for pair fragment PQ.
     ! Therefore we need to project against the local AOS for pair fragment PQ to ensure that 
-    ! CoccPQ_tmp really does not contain components outside the local AOS for pair PQ.
+    ! CoccPQ really does not contain components outside the local AOS for pair PQ.
     !
     ! The MOs projected against the local AOS for PQ are:
     ! 
-    ! CoccPQ_tmp --> PROJ CoccPQ_tmp 
+    ! CoccPQ --> PROJ CoccPQ
     ! 
     ! PROJ = Clocal Sinv Clocal^T aoS    (projector)
     ! 
@@ -1636,46 +1636,17 @@ contains
     ! Sinv is the inverse overlap matrix for the local MOs for pair PQ (the identity matrix in the
     ! limit where the atomic extent for PQ contains all atomic basis functions in the molecule),
     ! aoS is the AO overlap matrix.
-
-    ! Get inverse overlap for local AOS orbitals:
-    ! tmp = Clocal^T aoS Clocal
-    call mem_alloc(tmp,fragmentPQ%noccAOS,fragmentPQ%noccAOS)
-    call dec_simple_basis_transform1(nbasisPQ,fragmentPQ%noccAOS,fragmentPQ%ypo,aoS,tmp)
-    ! Sinv = tmp^-1
-    call mem_alloc(Sinv,fragmentPQ%noccAOS,fragmentPQ%noccAOS)
-    call invert_matrix(tmp,Sinv,fragmentPQ%noccAOS)
-    call mem_dealloc(tmp)
-
-    ! tmp = aoS CoccPQ_tmp
-    call mem_alloc(tmp,nbasisPQ,noccPQ)
-    call dec_simple_dgemm(nbasisPQ,nbasisPQ,noccPQ,aoS,CoccPQ_tmp,tmp,'n','n')
-
-    ! tmp2 = Clocal^T aoS CoccPQ_tmp
-    call mem_alloc(tmp2,fragmentPQ%noccAOS,noccPQ)
-    call dec_simple_dgemm(fragmentPQ%noccAOS,nbasisPQ,noccPQ,FragmentPQ%ypo,tmp,tmp2,'t','n')
-    call mem_dealloc(tmp)
-
-    ! tmp = Sinv Clocal^T aoS CoccPQ_tmp 
-    call mem_alloc(tmp,fragmentPQ%noccAOS,noccPQ)
-    call dec_simple_dgemm(fragmentPQ%noccAOS,fragmentPQ%noccAOS,noccPQ,Sinv,tmp2,tmp,'n','n')
-    call mem_dealloc(tmp2)
-
-    ! CoccPQ_tmp --> Clocal Sinv Clocal^T aoS CoccPQ_tmp                                              
-    call dec_simple_dgemm(nbasisPQ,fragmentPQ%noccAOS,noccPQ,fragmentPQ%ypo,tmp,CoccPQ_tmp,'n','n')
-    call mem_dealloc(tmp)
-    call mem_dealloc(Sinv)
-
-
+    call project_onto_MO_space(fragmentPQ%noccAOS,noccPQ,nbasisPQ,fragmentPQ%ypo,aoS,CoccPQ)
 
 
     ! 3. Project out EOS components
     ! *****************************
-
+    !
     ! MO coefficients where EOS orbital components are projected out:
     !
-    ! CoccPQ = CoccPQ_tmp - CEOS Sinv CEOS^T aoS CoccPQ_tmp
+    ! CoccPQ = CoccPQ - CEOS Sinv CEOS^T aoS CoccPQ
     !
-    ! where CoccPQ_tmp are the MO coefficients determined above 
+    ! where CoccPQ are the MO coefficients determined above 
     ! (which currently contain EOS components),
     ! CEOS are the EOS MO coefficients for the pair fragment (orbitals assigned to P or Q), 
     ! and Sinv is the inverse overlap matrix for EOS orbitals.
@@ -1687,45 +1658,9 @@ contains
        CEOS(:,i) = fragmentPQ%ypo(:,fragmentPQ%idxo(i))
     end do
 
-
-    ! Get inverse overlap for EOS orbitals: 
-    ! EOS overlap: tmp = CEOS^T aoS CEOS
-    call mem_alloc(tmp,fragmentPQ%noccEOS,fragmentPQ%noccEOS)
-    call dec_simple_basis_transform1(nbasisPQ,fragmentPQ%noccEOS,CEOS,aoS,tmp)
-    ! Inverse EOS overlap: Sinv = tmp^-1
-    call mem_alloc(Sinv,fragmentPQ%noccEOS,fragmentPQ%noccEOS)
-    call invert_matrix(tmp,Sinv,fragmentPQ%noccEOS)
-    call mem_dealloc(tmp)
-
-    ! tmp = aoS CoccPQ_tmp
-    call mem_alloc(tmp,nbasisPQ,noccPQ)
-    call dec_simple_dgemm(nbasisPQ,nbasisPQ,noccPQ,aoS,CoccPQ_tmp,tmp,'n','n')    
-
-    ! tmp2 = CEOS^T aoS CoccPQ_tmp
-    call mem_alloc(tmp2,fragmentPQ%noccEOS,noccPQ)
-    call dec_simple_dgemm(fragmentPQ%noccEOS,nbasisPQ,noccPQ,CEOS,tmp,tmp2,'t','n')
-    call mem_dealloc(tmp)
-
-    ! tmp = Sinv CEOS^T aoS CoccPQ_tmp
-    call mem_alloc(tmp,fragmentPQ%noccEOS,noccPQ)
-    call dec_simple_dgemm(fragmentPQ%noccEOS,fragmentPQ%noccEOS,noccPQ,Sinv,tmp2,tmp,'n','n')
-    call mem_dealloc(tmp2)
-
-
-    ! tmp2 = CEOS Sinv CEOS^T aoS CoccPQ_tmp
-    call mem_alloc(tmp2,nbasisPQ,noccPQ)
-    call dec_simple_dgemm(nbasisPQ,fragmentPQ%noccEOS,noccPQ,CEOS,tmp,tmp2,'n','n')
-    call mem_dealloc(tmp)
-
-
-    ! CoccPQ = CoccPQ_tmp - CEOS Sinv CEOS^T aoS CoccPQ_tmp  
-    call mem_alloc(CoccPQ,nbasisPQ,noccPQ)
-    CoccPQ = CoccPQ_tmp - tmp2
-    call mem_dealloc(tmp2)
+    ! Project out EOS componets
+    call project_out_MO_space(fragmentPQ%noccEOS,noccPQ,nbasisPQ,CEOS,aoS,CoccPQ)
     call mem_dealloc(CEOS)
-    call mem_dealloc(CoccPQ_tmp)
-    call mem_dealloc(Sinv)
-
 
 
     ! 4. Setup MO overlap matrix
@@ -1863,22 +1798,7 @@ contains
 
 
     ! 2
-    call mem_alloc(tmp,fragmentPQ%nunoccAOS,fragmentPQ%nunoccAOS)
-    call dec_simple_basis_transform1(nbasisPQ,fragmentPQ%nunoccAOS,fragmentPQ%ypv,aoS,tmp)
-    call mem_alloc(Sinv,fragmentPQ%nunoccAOS,fragmentPQ%nunoccAOS)
-    call invert_matrix(tmp,Sinv,fragmentPQ%nunoccAOS)
-    call mem_dealloc(tmp)
-    call mem_alloc(tmp,nbasisPQ,nunoccPQ)
-    call dec_simple_dgemm(nbasisPQ,nbasisPQ,nunoccPQ,aoS,CunoccPQ_tmp,tmp,'n','n')
-    call mem_alloc(tmp2,fragmentPQ%nunoccAOS,nunoccPQ)
-    call dec_simple_dgemm(fragmentPQ%nunoccAOS,nbasisPQ,nunoccPQ,FragmentPQ%ypv,tmp,tmp2,'t','n')
-    call mem_dealloc(tmp)
-    call mem_alloc(tmp,fragmentPQ%nunoccAOS,nunoccPQ)
-    call dec_simple_dgemm(fragmentPQ%nunoccAOS,fragmentPQ%nunoccAOS,nunoccPQ,Sinv,tmp2,tmp,'n','n')
-    call mem_dealloc(tmp2)
-    call dec_simple_dgemm(nbasisPQ,fragmentPQ%nunoccAOS,nunoccPQ,fragmentPQ%ypv,tmp,CunoccPQ_tmp,'n','n')
-    call mem_dealloc(tmp)
-    call mem_dealloc(Sinv)
+    call project_onto_MO_space(fragmentPQ%nunoccAOS,nunoccPQ,nbasisPQ,fragmentPQ%ypv,aoS,CunoccPQ)
 
 
     ! 3
@@ -1886,29 +1806,8 @@ contains
     do i=1,fragmentPQ%nunoccEOS
        CEOS(:,i) = fragmentPQ%ypv(:,fragmentPQ%idxu(i))
     end do
-    call mem_alloc(tmp,fragmentPQ%nunoccEOS,fragmentPQ%nunoccEOS)
-    call dec_simple_basis_transform1(nbasisPQ,fragmentPQ%nunoccEOS,CEOS,aoS,tmp)
-    call mem_alloc(Sinv,fragmentPQ%nunoccEOS,fragmentPQ%nunoccEOS)
-    call invert_matrix(tmp,Sinv,fragmentPQ%nunoccEOS)
-    call mem_dealloc(tmp)
-    call mem_alloc(tmp,nbasisPQ,nunoccPQ)
-    call dec_simple_dgemm(nbasisPQ,nbasisPQ,nunoccPQ,aoS,CunoccPQ_tmp,tmp,'n','n')    
-    call mem_alloc(tmp2,fragmentPQ%nunoccEOS,nunoccPQ)
-    call dec_simple_dgemm(fragmentPQ%nunoccEOS,nbasisPQ,nunoccPQ,CEOS,tmp,tmp2,'t','n')
-    call mem_dealloc(tmp)
-    call mem_alloc(tmp,fragmentPQ%nunoccEOS,nunoccPQ)
-    call dec_simple_dgemm(fragmentPQ%nunoccEOS,fragmentPQ%nunoccEOS,nunoccPQ,Sinv,tmp2,tmp,'n','n')
-    call mem_dealloc(tmp2)
-    call mem_alloc(tmp2,nbasisPQ,nunoccPQ)
-    call dec_simple_dgemm(nbasisPQ,fragmentPQ%nunoccEOS,nunoccPQ,CEOS,tmp,tmp2,'n','n')
-    call mem_dealloc(tmp)
-    call mem_alloc(CunoccPQ,nbasisPQ,nunoccPQ)
-    CunoccPQ = CunoccPQ_tmp - tmp2
-    call mem_dealloc(tmp2)
+    call project_out_MO_space(fragmentPQ%nunoccEOS,nunoccPQ,nbasisPQ,CEOS,aoS,CunoccPQ)
     call mem_dealloc(CEOS)
-    call mem_dealloc(CunoccPQ_tmp)
-    call mem_dealloc(Sinv)
-
 
     ! 4
     call mem_alloc(moS,nunoccPQ,nunoccPQ)
@@ -1921,7 +1820,6 @@ contains
     call solve_eigenvalue_problem_unitoverlap(nunoccPQ,moS,lambda,T)
     lambda=abs(lambda)
     call mem_alloc(whichorbitals,nunoccPQ)
-
 
 
     ! 6
