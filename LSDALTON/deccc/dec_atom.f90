@@ -1184,9 +1184,9 @@ contains
          fragment%number_atoms,DECinfo%output,0)
 #endif
 
-    ! normalize if requested
-    if(DECinfo%NormalizeFragment) then
-       call atomic_fragment_normalize(fragment)
+    ! Purify fitted MO coefficients
+    if(DECinfo%PurifyMOs) then
+       call fragment_purify(fragment)
     end if
 
     ! Basis info has now been set
@@ -1195,75 +1195,11 @@ contains
   end subroutine atomic_fragment_init_basis_part
 
 
-
-  !> \brief Normalize atomic fragment basis
-  !> \author Marcin Ziolkowski
-  !> \param fragment Atomic fragment/atomic pair fragment
-
-  ! Normalize basis for an atomic fragment. truncated basis in not normalized if
-  ! molecular orbitals expansion coefficients are taken only for selected atoms.
-  ! this subroutine normalized occupied and unoccupied orbitals for the
-  ! fragment.
-  subroutine atomic_fragment_normalize(fragment)
-
-
+  subroutine fragment_purify(fragment)
     implicit none
-    type(ccatom), intent(inout) :: fragment
-    integer :: nocc,nvirt,nbasis
-    real(realk), pointer :: aoS(:,:), moSp(:,:)
-    real(realk) :: norm_factor_particle
-    integer :: mu,i
+    type(ccatom),intent(inout) :: fragment
 
-    write(DECinfo%output,*) 'WARNING: Normalization of basis for fragment is not recommended!'
-    write(DECinfo%output,*) 'WARNING: It is both slow and may give unstable results!'
-
-    nocc = fragment%noccAOS
-    nvirt = fragment%nunoccAOS
-    nbasis = fragment%number_basis
-
-    ! calculate overlap matrix
-    call mem_alloc(aoS,nbasis,nbasis)
-    call ii_get_mixed_overlap_full(DECinfo%output,DECinfo%output,&
-         & fragment%mylsitem%setting,aoS,nbasis,nbasis,AORdefault,AORdefault)
-
-    ! -- occupied
-
-    ! transform overlap to occupied
-    call mem_alloc(moSp,nocc,nocc)  ! particle
-    moSp = 0.0E0_realk
-    moSp = matmul(matmul(transpose(fragment%ypo),aoS),fragment%ypo)
-
-    ! normalize MOs coefficients
-    do i=1,nocc
-       norm_factor_particle = 1.0E0_realk/sqrt(moSp(i,i))
-       do mu=1,nbasis
-          fragment%ypo(mu,i) = fragment%ypo(mu,i) * norm_factor_particle
-       end do
-    end do
-
-    call mem_dealloc(moSp)
-
-    ! -- virtuals
-
-    call mem_alloc(moSp,nvirt,nvirt)
-    moSp = 0.0E0_realk
-    moSp = matmul(matmul(transpose(fragment%ypv),aoS),fragment%ypv)
-
-    do i=1,nvirt
-       norm_factor_particle = 1.0E0_realk/sqrt(moSp(i,i))
-       do mu=1,nbasis
-          fragment%ypv(mu,i) = fragment%ypv(mu,i) * norm_factor_particle
-       end do
-    end do
-
-    call mem_dealloc(moSp)
-
-
-    call mem_dealloc(aoS)
-
-    return
-  end subroutine atomic_fragment_normalize
-
+  end subroutine fragment_purify
 
 
 

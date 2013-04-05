@@ -96,7 +96,7 @@ contains
     DECinfo%InclFullMolecule = .false.
     DECinfo%PL=0
     DECinfo%SkipCC=.false.
-    DECinfo%NormalizeFragment=.false.
+    DECinfo%PurifyMOs=.true.
     DECinfo%precondition_with_full=.false.
     DECinfo%HybridScheme=.false.
     DECinfo%LagStepSize = 5
@@ -339,7 +339,7 @@ contains
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
        case('.ccsdExpl'); DECinfo%ccsd_expl=.true.
        case('.skipCC'); DECinfo%SkipCC=.true. 
-       case('.NormalizeFragment'); DECinfo%NormalizeFragment=.true.
+       case('.NoPurification'); DECinfo%PurifyMOs=.false.
        case('.precWithFull'); DECinfo%precondition_with_full=.true.
        case('.SimpleMullikenThresh'); DECinfo%simple_mulliken_threshold=.true.
        case('.normThresh'); read(input,*) DECinfo%approximated_norm_threshold
@@ -605,7 +605,7 @@ end if
     WRITE(lupri,'(A32,ES18.9)')' FOT ' ,DECitem%FOT
     WRITE(lupri,'(A32,I8)')' PL ' ,DECitem%PL
     WRITE(lupri,'(A32,L1)')' SkipCC ' ,DECitem%SkipCC
-    WRITE(lupri,'(A32,L1)')' NormalizeFragment ' ,DECitem%NormalizeFragment
+    WRITE(lupri,'(A32,L1)')' PurifyMOs ' ,DECitem%PurifyMOs
     WRITE(lupri,'(A32,L1)')' precondition_with_full ' ,DECitem%precondition_with_full
     WRITE(lupri,'(A32,L1)')' InclFullMolecule ' ,DECitem%InclFullMolecule
     WRITE(lupri,'(A32,L1)')' HybridScheme ' ,DECitem%HybridScheme

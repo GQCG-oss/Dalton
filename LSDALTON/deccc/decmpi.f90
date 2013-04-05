@@ -1683,7 +1683,7 @@ contains
     call ls_mpi_buffer(DECitem%FOT,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
     call ls_mpi_buffer(DECitem%SkipCC,Master)
-    call ls_mpi_buffer(DECitem%NormalizeFragment,Master)
+    call ls_mpi_buffer(DECitem%purifyMOs,Master)
     call ls_mpi_buffer(DECitem%precondition_with_full,Master)
     call ls_mpi_buffer(DECitem%InclFullMolecule,Master)
     call ls_mpi_buffer(DECitem%HybridScheme,Master)

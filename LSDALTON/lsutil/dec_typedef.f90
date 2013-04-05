@@ -151,8 +151,8 @@ module dec_typedef_module
      integer :: PL
      !> Dont dispatch CC jobs for fragments
      logical :: SkipCC
-     !> Normalize basis for fragment
-     logical :: NormalizeFragment
+     !> Purify fitted MO coefficients (projection + orthogonalization)
+     logical :: PurifyMOs
      !> Use full molecular Fock matrix to precondition
      logical :: precondition_with_full
      !> Includes the whole molecule in all fragments
