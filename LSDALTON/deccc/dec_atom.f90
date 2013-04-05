@@ -1199,7 +1199,7 @@ contains
     type(ccatom),intent(inout) :: fragment
     !> Overlap matrix for fragment
     real(realk),dimension(fragment%number_basis,fragment%number_basis) :: S
-    integer :: nXOS,nbasis,noccAOS,nunoccAOS,ncore
+    integer :: nXOS,nbasis,noccAOS,nunoccAOS,ncore,i
     real(realk),pointer :: XOS(:,:)
 
     ! Dimensions
@@ -1208,73 +1208,78 @@ contains
     nunoccAOS = fragment%nunoccAOS
     ncore = fragment%ncore
 
-    ! OCCUPIED ORBITALS
-    ! *****************
-    ! Note: We only consider the XOS (AOS-EOS) because the EOS orbitals must remain untouched!
+    ! We purify twice to be on the safe side
+    Purify: do i=1,2
 
-    ! Extract occupied XOS orbitals
-    nXOS = fragment%noccAOS - fragment%noccEOS
-    if(nXOS>0) then
-       call mem_alloc(XOS,nbasis,nXOS)
-       call extract_XOS_orbitals_occ(Fragment,nbasis,nXOS,XOS)
+       ! OCCUPIED ORBITALS
+       ! *****************
+       ! Note: We only consider the XOS (AOS-EOS) because the EOS orbitals must remain untouched!
 
-       ! (i) Project out possible unoccupied components from the occupied XOS
-       call project_out_MO_space(nunoccAOS,nXOS,nbasis,Fragment%ypv,S,XOS)
-       ! For frozen core also project out possible core orbital components
-       if(DECinfo%frozencore .and. ncore>0) then
-          call project_out_MO_space(ncore,nXOS,nbasis,Fragment%coreMO,S,XOS)
+       ! Extract occupied XOS orbitals
+       nXOS = fragment%noccAOS - fragment%noccEOS
+       if(nXOS>0) then
+          call mem_alloc(XOS,nbasis,nXOS)
+          call extract_XOS_orbitals_occ(Fragment,nbasis,nXOS,XOS)
+
+          ! (i) Project out possible unoccupied components from the occupied XOS
+          call project_out_MO_space(nunoccAOS,nXOS,nbasis,Fragment%ypv,S,XOS)
+          ! For frozen core also project out possible core orbital components
+          if(DECinfo%frozencore .and. ncore>0) then
+             call project_out_MO_space(ncore,nXOS,nbasis,Fragment%coreMO,S,XOS)
+          end if
+
+          ! (ii) Orthogonalize XOS orbitals
+          call orthogonalize_MOs(nXOS,nbasis,S,XOS)
+
+          ! Put purified XOS orbitals back into fragment structure
+          call put_XOS_orbitals_occ(nbasis,nXOS,XOS,Fragment)
+          call mem_dealloc(XOS)
        end if
 
-       ! (ii) Orthogonalize XOS orbitals
-       call orthogonalize_MOs(nXOS,nbasis,S,XOS)
 
-       ! Put purified XOS orbitals back into fragment structure
-       call put_XOS_orbitals_occ(nbasis,nXOS,XOS,Fragment)
-       call mem_dealloc(XOS)
-    end if
+       ! UNOCCUPIED ORBITALS
+       ! *******************
+       ! Same procedure as for occ orbitals
 
+       ! Extract unoccupied XOS orbitals
+       nXOS = fragment%nunoccAOS - fragment%nunoccEOS
+       if(nXOS>0) then
+          call mem_alloc(XOS,nbasis,nXOS)
+          call extract_XOS_orbitals_unocc(Fragment,nbasis,nXOS,XOS)
 
-    ! UNOCCUPIED ORBITALS
-    ! *******************
-    ! Same procedure as for occ orbitals
+          ! (i) Project out possible occupied components from the unoccupied XOS
+          call project_out_MO_space(noccAOS,nXOS,nbasis,Fragment%ypo,S,XOS)
+          ! For frozen core also project out possible core orbital components
+          if(DECinfo%frozencore .and. ncore>0) then
+             call project_out_MO_space(ncore,nXOS,nbasis,Fragment%coreMO,S,XOS)
+          end if
 
-    ! Extract unoccupied XOS orbitals
-    nXOS = fragment%nunoccAOS - fragment%nunoccEOS
-    if(nXOS>0) then
-       call mem_alloc(XOS,nbasis,nXOS)
-       call extract_XOS_orbitals_unocc(Fragment,nbasis,nXOS,XOS)
+          ! (ii) Orthogonalize XOS orbitals
+          call orthogonalize_MOs(nXOS,nbasis,S,XOS)
 
-       ! (i) Project out possible occupied components from the unoccupied XOS
-       call project_out_MO_space(noccAOS,nXOS,nbasis,Fragment%ypo,S,XOS)
-       ! For frozen core also project out possible core orbital components
-       if(DECinfo%frozencore .and. ncore>0) then
-          call project_out_MO_space(ncore,nXOS,nbasis,Fragment%coreMO,S,XOS)
+          ! Put purified XOS orbitals back into fragment structure
+          call put_XOS_orbitals_unocc(nbasis,nXOS,XOS,Fragment)
+          call mem_dealloc(XOS)
        end if
 
-       ! (ii) Orthogonalize XOS orbitals
-       call orthogonalize_MOs(nXOS,nbasis,S,XOS)
 
-       ! Put purified XOS orbitals back into fragment structure
-       call put_XOS_orbitals_unocc(nbasis,nXOS,XOS,Fragment)
-       call mem_dealloc(XOS)
-    end if
+       ! CORE ORBITALS
+       ! *************
+       if(ncore>0) then
 
+          ! (i) Project out possible unoccupied components from core space
+          call project_out_MO_space(nunoccAOS,ncore,nbasis,Fragment%ypv,S,fragment%coreMO)
+          ! For frozen core also project out possible valence orbital components
+          if(DECinfo%frozencore) then
+             call project_out_MO_space(noccAOS,ncore,nbasis,fragment%ypo,S,Fragment%coreMO)
+          end if
 
-    ! CORE ORBITALS
-    ! *************
-    if(ncore>0) then
+          ! (ii) Orthogonalize core orbitals
+          call orthogonalize_MOs(ncore,nbasis,S,fragment%coreMO)
 
-       ! (i) Project out possible unoccupied components from core space
-       call project_out_MO_space(nunoccAOS,ncore,nbasis,Fragment%ypv,S,fragment%coreMO)
-       ! For frozen core also project out possible valence orbital components
-       if(DECinfo%frozencore) then
-          call project_out_MO_space(noccAOS,ncore,nbasis,fragment%ypo,S,Fragment%coreMO)
        end if
 
-       ! (ii) Orthogonalize core orbitals
-       call orthogonalize_MOs(ncore,nbasis,S,fragment%coreMO)
-
-    end if
+    end do Purify
 
 
   end subroutine fragment_purify
@@ -2279,6 +2284,15 @@ contains
     end if FitOrbitalsForFragment
 
 
+    ! Purify fragment MO coefficients 
+    ! (not for fragment-adapted orbitals since these are automatically orthogonal
+    !  by virtue of the purification of the local orbitals).
+    if(DECinfo%PurifyMOs .and. (.not. fragment%fragmentadapted) ) then
+       call fragment_purify(fragment,smallS)
+    end if
+    call mem_dealloc(smallS)
+ 
+
  ! adjust fock matrix in ao basis
  call mem_alloc(fragment%fock,fragment%number_basis,fragment%number_basis)
  fragment%fock=0.0E0_realk
@@ -2312,13 +2326,6 @@ contains
          & fragment%coreMO,fragment%fock,fragment%ccfock) 
  end if
 
- ! Purify fragment MO coefficients 
- ! (not for fragment-adapted orbitals since these are automatically orthogonal
- !  by virtue of the purification of the local orbitals).
- if(DECinfo%PurifyMOs .and. (.not. fragment%fragmentadapted) ) then
-    call fragment_purify(fragment,smallS)
- end if
- call mem_dealloc(smallS)
  
 end subroutine atomic_fragment_basis
 
