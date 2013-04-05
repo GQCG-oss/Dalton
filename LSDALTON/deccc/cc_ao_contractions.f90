@@ -62,7 +62,7 @@ contains
 
 
 
-  !> \brief Get (C K | D L) integrals stored in the order (C,K,D,L).
+  !> \brief Get (a i | b j) integrals stored in the order (a,i,b,j).
   !> \author Kasper Kristensen
   !> \date February 2011
   subroutine get_VOVO_integrals(mylsitem,nbasis,nocc,nvirt,Cvirt,Cocc,VOVO)
@@ -82,43 +82,15 @@ contains
     type(array2), intent(in) :: Cocc
     !> Virtual orbital coefficients
     type(array2), intent(in) :: Cvirt
-    !> (C K | D L) integrals in the order (C,K,D,L)
+    !> (a i | b j) integrals stored in the order (a,i,b,j)
     type(array4),intent(inout) :: VOVO
-    type(array4) :: LCKsigma, DLCK1, sigmaLCK1
-    integer :: K,sigma
-    real(realk) :: tcpu1,twall1,tcpu2,twall2,ttot
 
-    ! Note on the indices.
-    ! Virtual indices    : C,D
-    ! Batch (AO) indices : X,Y
-    ! Occupied indices   : K,L
-    ! Full AO indices: mu,nu,rho,sigma
-    ! Of course we have (CK|DL)=(CK|LD) and (CK|DL) = (DL|CK) etc.
-    call LSTIMER('START',tcpu1,twall1,DECinfo%output)
-
-
-    ! Get (sigma L | C K) integrals stored in the order (L,C,K,sigma)
-    ! ***************************************************************
-    call get_AOVO_integrals(mylsitem,nbasis,nocc,nvirt,Cvirt,Cocc,LCKsigma)
-
-
-    ! Reorder and transform AO index to virtual index: (L,C,K,sigma) --> (D,L,C,K)
-    ! ****************************************************************************
-    call get_VOVO_from_AOVO_integrals(nbasis,nocc,nvirt,Cocc,Cvirt,LCKsigma,VOVO)
-
-
-    ! Clean up
-    ! ********
-    if(DECinfo%array4OnFile) call array4_delete_file(LCKsigma)
-    call array4_free(LCKsigma)
-    call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    ttot=twall2-twall1
-    if(DECinfo%PL>0) write(DECinfo%output,'(a,3i8,g18.5)') 'INFO SUMMARY (nocc,nvirt,nbasis,time):', &
-         & nocc, nvirt, nbasis, ttot
-
-    ! Update total time for MO integral
-    DECinfo%MOintegral_time_cpu = DECinfo%MOintegral_time_cpu + (tcpu2-tcpu1)
-    DECinfo%MOintegral_time_wall = DECinfo%MOintegral_time_wall + ttot
+    ! Get integrals (a i | b j) stored as (i,j,b,a)
+    VOVO = array4_init([nocc,nocc,nvirt,nvirt])
+    call get_ijba_integrals(mylsitem%setting,nbasis,nocc,nvirt,Cocc%val,Cvirt%val,VOVO%val)
+    
+    ! Reorder: (i,j,b,a) --> (a,i,b,j)
+    call array4_reorder(VOVO,[4,1,3,2])
 
   end subroutine get_VOVO_integrals
 
@@ -2161,6 +2133,309 @@ if(master) then
 end if
 
 end subroutine MP2_integrals_and_amplitudes_workhorse
+
+
+
+
+  !> \brief Get (a i | b j) integrals stored in the order (i,j,b,a).
+  !> No MPI here, intended to be a simple routine to be used for 
+  !> (i) calculations not requiring MPI, (ii) debugging,
+  !> (iii) starting point for more advanced routine giving other integrals.
+  !> So: PLEASE DO NOT POLLUTE THIS SUBROUTINE, IT SHOULD BE KEPT AS AN EASILY ACCESIBLE
+  !>     STARTING POINT FOR MORE ADVANCED ROUTINES!
+  !> \author Kasper Kristensen
+  !> \date March 2013
+  subroutine get_ijba_integrals(MySetting,nbasis,nocc,nunocc,Cocc,Cunocc,ijba)
+
+    implicit none
+
+    !> Integrals settings
+    type(lssetting), intent(inout) :: mysetting
+    !> Number of basis functions
+    integer,intent(in) :: nbasis
+    !> Number of occupied orbitals
+    integer,intent(in) :: nocc
+    !> Number of unoccupied orbitals
+    integer,intent(in) :: nunocc
+    !> Occupied MO coefficients
+    real(realk),intent(in),dimension(nbasis,nocc) :: Cocc
+    !> Unoccupied MO coefficients
+    real(realk),intent(in),dimension(nbasis,nunocc) :: Cunocc
+    !>  (a i | b j) integrals stored in the order (i,j,b,a)
+    real(realk),intent(inout) :: ijba(nocc,nocc,nunocc,nunocc)
+    integer :: alphaB,gammaB,dimAlpha,dimGamma,GammaStart, GammaEnd, AlphaStart, AlphaEnd
+    real(realk),pointer :: tmp1(:),tmp2(:),CoccT(:,:), CunoccT(:,:)
+    integer(kind=long) :: dim1,dim2
+    integer :: m,k,n,idx
+    logical :: FullRHS,doscreen
+    integer :: MaxActualDimAlpha,nbatchesAlpha,nbatches,MaxActualDimGamma,nbatchesGamma,iorb
+    integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+    integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
+    type(batchtoorb), pointer :: batch2orbAlpha(:),batch2orbGamma(:)
+#ifdef VAR_OMP
+    integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
+#endif
+    TYPE(DECscreenITEM)   :: DecScreen
+    Character            :: intSpec(5)
+    integer :: MinAObatchSize, MaxAObatchSize, GammaBatchSize, AlphaBatchSize
+
+
+    ! ***********************************************************
+    ! For efficiency when calling dgemm, save transposed matrices
+    ! ***********************************************************
+    call mem_alloc(CoccT,nocc,nbasis)
+    call mem_alloc(CunoccT,nunocc,nbasis)
+    call mat_transpose(Cocc,nbasis,nocc,CoccT)
+    call mat_transpose(Cunocc,nbasis,nunocc,CunoccT)
+
+
+
+    ! ************************
+    ! Determine AO batch sizes
+    ! ************************
+    ! NOTE: Ideally the batch sizes should be optimized according to the available memory
+    ! (as is done e.g. in get_optimal_batch_sizes_for_mp2_integrals).
+    ! For simplicity we simply choose the gamma batch to contain all basis functions,
+    ! while we make the alpha batch as small as possible
+
+    ! Minimum AO batch size
+    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAObatchSize)
+
+    ! Maximum AO batch size (all basis functions)
+    MaxAObatchSize = nbasis
+
+    ! Set alpha and gamma batch size as written above
+    GammaBatchSize = MaxAObatchSize
+    AlphaBatchSize = MinAObatchSize
+
+
+
+
+    ! ************************************************
+    ! * Determine batch information for Gamma batch  *
+    ! ************************************************
+
+    ! Orbital to batch information
+    ! ----------------------------
+    call mem_alloc(orb2batchGamma,nbasis)
+    call build_batchesofAOS(DECinfo%output,mysetting,GammaBatchSize,nbasis,MaxActualDimGamma,&
+         & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma)
+
+    ! Batch to orbital information
+    ! ----------------------------
+    call mem_alloc(batch2orbGamma,nbatchesGamma)
+    do idx=1,nbatchesGamma
+       call mem_alloc(batch2orbGamma(idx)%orbindex,batchdimGamma(idx) )
+       batch2orbGamma(idx)%orbindex = 0
+       batch2orbGamma(idx)%norbindex = 0
+    end do
+    do iorb=1,nbasis
+       idx = orb2batchGamma(iorb)
+       batch2orbGamma(idx)%norbindex = batch2orbGamma(idx)%norbindex+1
+       K = batch2orbGamma(idx)%norbindex
+       batch2orbGamma(idx)%orbindex(K) = iorb
+    end do
+
+
+
+    ! ************************************************
+    ! * Determine batch information for Alpha batch  *
+    ! ************************************************
+
+    ! Orbital to batch information
+    ! ----------------------------
+    call mem_alloc(orb2batchAlpha,nbasis)
+    call build_batchesofAOS(DECinfo%output,mysetting,AlphaBatchSize,nbasis,&
+        & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha)
+
+    ! Batch to orbital information
+    ! ----------------------------
+    call mem_alloc(batch2orbAlpha,nbatchesAlpha)
+    do idx=1,nbatchesAlpha
+       call mem_alloc(batch2orbAlpha(idx)%orbindex,batchdimAlpha(idx) )
+       batch2orbAlpha(idx)%orbindex = 0
+       batch2orbAlpha(idx)%norbindex = 0
+    end do
+    do iorb=1,nbasis
+       idx = orb2batchAlpha(iorb)
+       batch2orbAlpha(idx)%norbindex = batch2orbAlpha(idx)%norbindex+1
+       K = batch2orbAlpha(idx)%norbindex
+       batch2orbAlpha(idx)%orbindex(K) = iorb
+    end do
+
+
+    ! *****************
+    ! Set integral info
+    ! *****************
+    INTSPEC(1)='R' !R = Regular Basis set on the 1th center 
+    INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
+    INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
+    INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
+    INTSPEC(5)='C' !C = Coulomb operator
+
+    ! Integral screening stuff
+    doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
+    call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
+         & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
+    IF(doscreen)then
+       call II_getBatchOrbitalScreen(DecScreen,mysetting,&
+            & nbasis,nbatchesAlpha,nbatchesGamma,&
+            & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
+            & batchdimAlpha,batchdimGamma,DECinfo%output,DECinfo%output)
+    endif
+    FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
+
+#ifdef VAR_OMP
+if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - OMP. Number of threads: ', &
+     & OMP_GET_MAX_THREADS()
+#else
+if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
+#endif
+
+
+
+    ! ******************************************************************
+    ! Start looping over gamma and alpha batches and calculate integrals
+    ! ******************************************************************
+
+    ! Zero output integrals to be on the safe side
+    ijba = 0.0_realk
+
+    BatchGamma: do gammaB = 1,nbatchesGamma  ! AO batches
+       dimGamma = batchdimGamma(gammaB)                           ! Dimension of gamma batch
+       GammaStart = batch2orbGamma(gammaB)%orbindex(1)            ! First index in gamma batch
+       GammaEnd = batch2orbGamma(gammaB)%orbindex(dimGamma)       ! Last index in gamma batch
+
+
+    BatchAlpha: do alphaB = 1,nbatchesAlpha  ! AO batches
+       dimAlpha = batchdimAlpha(alphaB)                                ! Dimension of alpha batch
+       AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
+       AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
+
+
+       ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
+       ! ************************************************************************************
+       dim1 = i8*nbasis*nbasis*dimAlpha*dimGamma   ! dimension for integral array
+
+       call mem_alloc(tmp1,dim1)
+       ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
+       IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
+       IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+       call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
+            & mysetting, tmp1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
+            & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,FullRHS,&
+            & nbatches,INTSPEC)
+
+
+       ! Transform beta to occupied index "j".
+       ! *************************************
+       ! Note: ";" indicates the place where the array is transposed:
+       ! tmp2(delta,alphaB,gammaB,j) = sum_{beta} tmp1^T(beta;delta,alphaB,gammaB) Cocc_{beta j}
+       m = nbasis*dimGamma*dimAlpha   ! # elements in "delta alphaB gammaB" dimension of tmp1^T
+       k = nbasis                     ! # elements in "beta" dimension of tmp1^T
+       n = nocc                       ! # elements in second dimension of Cocc
+       dim2 = i8*nocc*nbasis*dimAlpha*dimGamma  ! dimension of tmp2 array
+       call mem_alloc(tmp2,dim2)
+       call dec_simple_dgemm(m,k,n,tmp1,Cocc,tmp2, 't', 'n')
+       call mem_dealloc(tmp1)
+
+
+       ! Transform beta to unoccupied index "b".
+       ! ***************************************
+       ! tmp1(b,alphaB,gammaB,j) = sum_{delta} CunoccT(b,delta) tmp2(delta,alphaB,gammaB,j)
+       ! Note: We have stored the transposed Cunocc matrix, so no need to transpose in
+       ! the call to dgemm.
+       m = nunocc
+       k = nbasis
+       n = dimAlpha*dimGamma*nocc
+       dim1 = i8*nocc*nunocc*dimAlpha*dimGamma  ! dimension of tmp2 array
+       call mem_alloc(tmp1,dim1)
+       call dec_simple_dgemm(m,k,n,CunoccT,tmp2,tmp1, 'n', 'n')
+       call mem_dealloc(tmp2)
+
+
+       ! Transpose to make alphaB and gammaB indices available
+       ! *****************************************************
+       dim2=dim1
+       call mem_alloc(tmp2,dim2)
+       ! tmp2(gammaB,j,b,alphaB) = tmp1^T(b,alphaB;gammaB,j)
+       m = nunocc*dimAlpha    ! dimension of "row" in tmp1 array (to be "column" in tmp2)
+       n = nocc*dimGamma      ! dimension of "column" in tmp1 array (to be "row" in tmp2)
+       call mat_transpose(tmp1,m,n,tmp2)
+       call mem_dealloc(tmp1)
+
+
+       ! Transform gamma batch index to occupied index
+       ! *********************************************
+       ! tmp1(i,j,b,alphaB) = sum_{gamma in gammaBatch} CoccT(i,gamma) tmp2(gamma,j,b,alphaB)
+       m = nocc
+       k = dimGamma
+       n = nocc*nunocc*dimAlpha
+       dim1 = i8*nocc*nocc*nunocc*dimAlpha
+       call mem_alloc(tmp1,dim1)
+       call dec_simple_dgemm(m,k,n,CoccT(:,GammaStart:GammaEnd),tmp2,tmp1, 'n', 'n')
+       call mem_dealloc(tmp2)
+
+
+       ! Transform alpha batch index to unoccupied index and update output integral
+       ! **************************************************************************
+       ! ijba(i,j,b,a) =+ sum_{alpha in alphaBatch} tmp1(i,j,b,alpha)  Cunocc(alpha,a)
+       m = nocc*nocc*nunocc
+       k = dimAlpha
+       n = nunocc
+       call dec_simple_dgemm_update(m,k,n,tmp1,CunoccT(:,AlphaStart:AlphaEnd),ijba, 'n', 't')
+       call mem_dealloc(tmp1)
+       ! Note: To have things consecutive in memory it is better to pass CunoccT to the dgemm
+       ! routine and then transpose (insted of passing Cunocc and not transpose).
+
+    end do BatchAlpha
+ end do BatchGamma
+
+
+ ! Free and nullify stuff
+ ! **********************
+
+ nullify(mysetting%LST_GAB_LHS)
+ nullify(mysetting%LST_GAB_RHS)
+ call free_decscreen(DECSCREEN)
+
+ ! Free gamma batch stuff
+ call mem_dealloc(orb2batchGamma)
+ call mem_dealloc(batchdimGamma)
+ call mem_dealloc(batchsizeGamma)
+ call mem_dealloc(batchindexGamma)
+ orb2batchGamma => null()
+ batchdimGamma => null()
+ batchsizeGamma => null()
+ batchindexGamma => null()
+ do idx=1,nbatchesGamma
+    call mem_dealloc(batch2orbGamma(idx)%orbindex)
+    batch2orbGamma(idx)%orbindex => null()
+ end do
+ call mem_dealloc(batch2orbGamma)
+ batch2orbGamma => null()
+
+ ! Free alpha batch stuff
+ call mem_dealloc(orb2batchAlpha)
+ call mem_dealloc(batchdimAlpha)
+ call mem_dealloc(batchsizeAlpha)
+ call mem_dealloc(batchindexAlpha)
+ orb2batchAlpha => null()
+ batchdimAlpha => null()
+ batchsizeAlpha => null()
+ batchindexAlpha => null()
+ do idx=1,nbatchesAlpha
+    call mem_dealloc(batch2orbAlpha(idx)%orbindex)
+    batch2orbAlpha(idx)%orbindex => null()
+ end do
+ call mem_dealloc(batch2orbAlpha)
+ batch2orbAlpha => null()
+
+
+ call mem_dealloc(CoccT)
+ call mem_dealloc(CunoccT)
+
+end subroutine Get_ijba_integrals
 
 
 

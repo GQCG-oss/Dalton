@@ -1080,7 +1080,7 @@ END SUBROUTINE II_DISTMETA
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_geoderiv_molgrad_worker(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAOS,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
   IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -1108,6 +1108,8 @@ REAL(REALK),intent(in) :: GAOS(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -1326,7 +1328,7 @@ END SUBROUTINE II_GEODERIV_MOLGRAD_WORKER
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE ii_dft_linrsplda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -1354,6 +1356,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates
@@ -1978,7 +1982,7 @@ END SUBROUTINE II_DFT_LINRSPGGAUNRES
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE ii_dft_quadrsplda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -2006,6 +2010,8 @@ REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
 REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
 !> the gradient of electron density for all gridpoints
 REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
 !> max number of gridpoints
 INTEGER     :: MXBLLEN
 !> grippoint coordinates

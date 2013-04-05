@@ -75,7 +75,7 @@ contains
     integer :: i,j,k,idx,tuple_type
     !> mpi stuff
 #ifdef VAR_LSMPI
-    integer :: mpi_counter_out, mpi_counter_in
+    !> logical determining whether a parallel task should be joined by several procs
     logical :: collab
 #endif
     !> orbital energies
@@ -178,14 +178,6 @@ contains
     ! initially, reorder ccsd_doubles
     call array4_reorder(ccsd_doubles,[3,1,4,2]) ! ccsd_doubles(a,i,b,j) --> ccsd_doubles(b,a,j,i)
 
-#ifdef VAR_LSMPI
-
-    ! init mpi counter
-    mpi_counter_out = 0
-    mpi_counter_in = 0
-
-#endif
-
     ! init triples tuples array3 structures
     trip_tmp  = array3_init_standard(dims_aaa)
     trip_ampl = array3_init_standard(dims_aaa)
@@ -209,9 +201,11 @@ contains
     ! remaining notes at the end of the i,j,k nested loop.
     !
     ! a note on the number of mpi_get calls.
-    ! at the irun level, there will be [(nocc - lg_nodtot + 1) + (lg_nodtot - 1) * lg_nodtot] number of calls
-    ! at the jrun level, there will be [(nocc/2) * (1 + nocc)] number of calls
-    ! at the krun level, there will be [(nocc/6) * (nocc + 1) * (nocc + 2)] number of calls
+    !  - at the irun level, there will be [(nocc - lg_nodtot + 1) + (lg_nodtot - 1) * lg_nodtot] number of calls,
+    ! where (nocc - lg_nodtot + 1) is the number of 'collab == .false.' calls,
+    ! and (lg_nodtot - 1) * lg_nodtot is the number of 'collab == .true.' calls
+    !  - at the jrun level, there will be [(nocc/2) * (1 + nocc)] number of calls (minimum number of calls)
+    !  - at the krun level, there will be [(nocc/6) * (nocc + 1) * (nocc + 2)] number of calls (minimum number of calls)
 
  irun: do i=1,nocc
 
@@ -220,12 +214,9 @@ contains
           if ((infpar%lg_nodtot + i - 1) .le. nocc) then
 
              collab = .false.
-
-             ! increment outer mpi counter
-             mpi_counter_out = mpi_counter_out + 1
-   
+ 
              ! determine if this is my job or not
-             if (infpar%lg_mynum .ne. mod(mpi_counter_out,infpar%lg_nodtot)) cycle irun
+             if (infpar%lg_mynum .ne. mod(i,infpar%lg_nodtot)) cycle irun
    
              ! get the i'th v^3 tile
              call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
@@ -256,12 +247,9 @@ contains
 
              else
 
-                ! increment inner mpi counter
-                mpi_counter_in = mpi_counter_in + 1
-   
                 ! determine if this is my job or not
-                if (infpar%lg_mynum .ne. mod(mpi_counter_in,infpar%lg_nodtot)) cycle jrun
-   
+                if (infpar%lg_mynum .ne. mod(j,infpar%lg_nodtot)) cycle jrun
+ 
                 ! get the j'th tile
                 call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
 
