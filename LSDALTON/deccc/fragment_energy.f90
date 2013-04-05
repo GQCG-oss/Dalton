@@ -3667,13 +3667,13 @@ call mem_TurnOffThread_Memory()
 
 
 
-  !> Routine that optimizes an atomic fragment by (1) expanding to include neighbour atoms,
+  !> Routine that optimizes an atomic fragment by (1) expanding based on orbital interaction matrix,
   !> (2) checking that energy change is smaller than FOT, (3) for converged fragment we 
   !> make unitary transformations of occupied and virtual AOS (NOT including EOS) to 
   !> generate fragment-adapted orbitals which describe AOS with as few orbitals as possible.
   !> \date February 2013
   !> \author Ida-Marie Hoeyvik & Kasper Kristensen
-  subroutine optimize_atomic_fragment_FA(MyAtom,AtomicFragment,nAtoms, &
+  subroutine optimize_atomic_fragment_FA_experimental(MyAtom,AtomicFragment,nAtoms, &
        &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
        &MyMolecule,mylsitem,freebasisinfo,t1,t2,t1full)
     implicit none
@@ -4264,21 +4264,17 @@ call mem_TurnOffThread_Memory()
     call set_energies_ccatom_structure_fragopt(AtomicFragment)
 
 
-  end subroutine optimize_atomic_fragment_FA
+  end subroutine optimize_atomic_fragment_FA_experimental
 
 
 
-
-
-  !> THIS WILL SOON BE DELETED BUT WE KEEP IT UNTIL the new optimize_atomic_fragment_FA
-  !> HAS BEEN PORPERLY TESTED!
   !> Routine that optimizes an atomic fragment by (1) expanding to include neighbour atoms,
   !> (2) checking that energy change is smaller than FOT, (3) for converged fragment we 
   !> make unitary transformations of occupied and virtual AOS (NOT including EOS) to 
   !> generate fragment-adapted orbitals which describe AOS with as few orbitals as possible.
   !> \date February 2013
   !> \author Ida-Marie Hoeyvik & Kasper Kristensen
-  subroutine optimize_atomic_fragment_FA_old(MyAtom,AtomicFragment,nAtoms, &
+  subroutine optimize_atomic_fragment_FA(MyAtom,AtomicFragment,nAtoms, &
        &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
        &MyMolecule,mylsitem,freebasisinfo,t1,t2,t1full)
     implicit none
@@ -4382,6 +4378,7 @@ call mem_TurnOffThread_Memory()
           write(DECinfo%output,*) 'WARNING! For fragment-adapted orbitals we cannot skip energy calculation! '
           call single_lagrangian_energy_and_prop(AtomicFragment)
        end if
+       call fragment_adapted_transformation_matrices(AtomicFragment)
 
        call PrintInfo_Lagrangian(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
        if(freebasisinfo) then
@@ -4805,7 +4802,7 @@ call mem_TurnOffThread_Memory()
     ! Ensure that energies in fragment are set consistently
     call set_energies_ccatom_structure_fragopt(AtomicFragment)
 
-  end subroutine optimize_atomic_fragment_FA_old
+  end subroutine optimize_atomic_fragment_FA
 
 
 
