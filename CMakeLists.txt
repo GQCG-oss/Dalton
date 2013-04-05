@@ -138,11 +138,24 @@ if(USE_OWN_LAPACK)
         )
 endif()
 
+# add binary_info.F90
+set(GENERATED_FILES
+    ${CMAKE_BINARY_DIR}/binary_info.F90
+    )
+
+# always invalidate generated files
+add_custom_target(dalton_interfaces
+    ALL
+    DEPENDS
+    ${GENERATED_FILES}
+)
+
 add_library(
     dalton
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
+    ${GENERATED_FILES}
     )
 
 if(ENABLE_GEN1INT)
