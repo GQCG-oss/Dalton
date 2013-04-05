@@ -1227,8 +1227,9 @@ contains
     endif
     call ABCcommutator(ndim,F,S,prod2(1),sigma_i)
     
-	call di_GET_GbDs_and_XC_linrsp(GbDs,prod,molcfg%lupri,molcfg%luerr,molcfg%setting,&
-											& prod2,1,ndim,D)
+	call di_GET_GbDs_and_XC_linrsp(GbDs,prod,molcfg%lupri,&
+						& molcfg%luerr,prod2,1,ndim,D,&
+						& molcfg%setting%do_dft,molcfg%setting)
 !    call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
 !         &prod2(1),GbDs(1),molcfg%setting)
 !   	 if (molcfg%setting%do_dft) THEN 
@@ -1308,8 +1309,9 @@ contains
        endif
     enddo
     
-	call di_GET_GbDs_and_XC_linrsp(GbDs,sigma,molcfg%lupri,molcfg%luerr,molcfg%setting,&
-									& prod2,nnew,ndim,D)
+	call di_GET_GbDs_and_XC_linrsp(GbDs,sigma,molcfg%lupri,&
+						& molcfg%luerr,prod2,nnew,ndim,D,&
+						& molcfg%setting%do_dft,molcfg%setting)
 !    call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
 !         &prod2,GbDs,nnew,molcfg%setting) 
 !    if(molcfg%setting%do_dft)then

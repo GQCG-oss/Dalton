@@ -19,7 +19,7 @@ module prop_contribs
   use Integralparameters
   use matrix_defop
   use RSPsolver, only: prop_molcfg
-  use dal_interface, only: di_GET_GbDs
+  use dal_interface , only: di_GET_GbDs, di_GET_GbDs_and_XC_linrsp
   use matrix_module, only: Matrixp, matrix
   use integralinterfaceMod
   use II_XC_interfaceModule
@@ -1444,6 +1444,10 @@ contains
       integer, optional, intent(in)    :: a, b
       type(matrix) reimF(1)
       integer      nf, i
+      type(matrix) :: Gxc(1)
+      integer      :: nbast
+      type(Matrix) :: Dmat
+      type(matrix) :: D_part(1)
       nf = size(F)
       !make usre F is properly allocated
       do i = 1, nf
@@ -1453,17 +1457,28 @@ contains
          end if
       end do
       !process complex D with two calls
+	  nbast = D(1)%nrow
+	  call mat_init(D_part(1),nbast,nbast)
       if (D(1)%complex) then
          ! real part
          reimF(1:1) = (/mat_get_part(F(1), imag=.false.)/)
-         call di_GET_GbDs(6, 6, mat_get_part(D(1), imag=.false.), reimF(1))
+         !call di_GET_GbDs(6, 6, mat_get_part(D(1), imag=.false.), reimF(1))
+         call mat_assign(D_part(1), mat_get_part(D(1), imag=.false.))
+         call di_GET_GbDs_and_XC_linrsp(reimF, Gxc, 6, 6, D_part, 1, nbast, Dmat, .false.)
+
          ! imaginary part
          reimF(1:1) = (/mat_get_part(F(1), imag=.true.)/)
-         call di_GET_GbDs(6, 6, mat_get_part(D(1), imag=.true.), reimF(1))
+         !call di_GET_GbDs(6, 6, mat_get_part(D(1), imag=.true.), reimF(1))
+         call mat_assign(D_part(1), mat_get_part(D(1), imag=.true.))
+         call di_GET_GbDs_and_XC_linrsp(reimF, Gxc, 6, 6, D_part, 1, nbast, Dmat, .false.)
+       
+         
          reimF(1:1) = 0
       else
-         call di_GET_GbDs(6, 6, D(1), F(1))
+         !call di_GET_GbDs(6, 6, D(1), F(1))
+         call di_GET_GbDs_and_XC_linrsp(F, Gxc, 6, 6, D, 1, nbast, Dmat, .false.)
       end if
+      call mat_free(D_part(1))
    end subroutine
 
 
