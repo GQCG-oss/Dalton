@@ -517,7 +517,6 @@ contains
   !> compared to the fragment in the local basis).
   !> NOTE: The EOS orbitals (assigned to central atom in fragment) are left untouched, 
   !> so only the subset of AOS orbitals OUTSIDE the EOS are rotated.
-  !> which are NOT in the EOS
   !> \author Kasper Kristensen
   !> \date February 2013
   subroutine fragment_adapted_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
@@ -2415,8 +2414,10 @@ contains
          & fragment%coreMO,fragment%fock,fragment%ccfock) 
  end if
 
- ! Purify fragment MO coefficients
- if(DECinfo%PurifyMOs) then
+ ! Purify fragment MO coefficients 
+ ! (not for fragment-adapted orbitals since these are automatically orthogonal
+ !  by virtue of the purification of the local orbitals).
+ if(DECinfo%PurifyMOs .and. (.not. fragment%fragmentadapted) ) then
     call fragment_purify(fragment,smallS)
  end if
  call mem_dealloc(smallS)
