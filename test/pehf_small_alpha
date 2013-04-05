@@ -208,12 +208,12 @@ ERROR[3]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
 #
 # Frequency independent polarizability tensor
 #
-CRIT1=`$GREP "@ -<< XDIPLEN  ; XDIPLEN  >> =  3.943846416662D\+01" $log | wc -l`
-CRIT2=`$GREP "@ -<< XDIPLEN  ; YDIPLEN  >> = -1.361006698932D\+01" $log | wc -l`
-CRIT3=`$GREP "@ -<< XDIPLEN  ; ZDIPLEN  >> = -6.782681528958D\-03" $log | wc -l`
-CRIT4=`$GREP "@ -<< YDIPLEN  ; YDIPLEN  >> =  5.629636489773D\+01" $log | wc -l`
-CRIT5=`$GREP "@ -<< YDIPLEN  ; ZDIPLEN  >> =  3.902205681048D\-04" $log | wc -l`
-CRIT6=`$GREP "@ -<< ZDIPLEN  ; ZDIPLEN  >> =  2.276940374068D\+01" $log | wc -l`
+CRIT1=`$GREP "@ -<< XDIPLEN  ; XDIPLEN  >> =  3.9438464.....D\+01" $log | wc -l`
+CRIT2=`$GREP "@ -<< XDIPLEN  ; YDIPLEN  >> = -1.3610066.....D\+01" $log | wc -l`
+CRIT3=`$GREP "@ -<< XDIPLEN  ; ZDIPLEN  >> = -6.7826815.....D\-03" $log | wc -l`
+CRIT4=`$GREP "@ -<< YDIPLEN  ; YDIPLEN  >> =  5.6296364.....D\+01" $log | wc -l`
+CRIT5=`$GREP "@ -<< YDIPLEN  ; ZDIPLEN  >> =  3.9022056.....D\-04" $log | wc -l`
+CRIT6=`$GREP "@ -<< ZDIPLEN  ; ZDIPLEN  >> =  2.2769403.....D\+01" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[4]=6
 ERROR[4]="PE-HF FREQUENCY INDEPENDENT POLARIZABILITY NOT CORRECT"
@@ -221,12 +221,12 @@ ERROR[4]="PE-HF FREQUENCY INDEPENDENT POLARIZABILITY NOT CORRECT"
 # Frequency dependent polarizability tensor
 #
 CRIT1=`$GREP "@    a.u.:  4.0000000D-02" $log | wc -l`
-CRIT2=`$GREP "@ -<< XDIPLEN  ; XDIPLEN  >> =  3.982594550441D\+01" $log | wc -l`
-CRIT3=`$GREP "@ -<< XDIPLEN  ; YDIPLEN  >> = -1.399870212632D\+01" $log | wc -l`
-CRIT4=`$GREP "@ -<< XDIPLEN  ; ZDIPLEN  >> = -6.839116943992D\-03" $log | wc -l`
-CRIT5=`$GREP "@ -<< YDIPLEN  ; YDIPLEN  >> =  5.712017885321D\+01" $log | wc -l`
-CRIT6=`$GREP "@ -<< YDIPLEN  ; ZDIPLEN  >> =  4.703622492989D\-04" $log | wc -l`
-CRIT7=`$GREP "@ -<< ZDIPLEN  ; ZDIPLEN  >> =  2.292056155318D\+01" $log | wc -l`
+CRIT2=`$GREP "@ -<< XDIPLEN  ; XDIPLEN  >> =  3.9825945.....D\+01" $log | wc -l`
+CRIT3=`$GREP "@ -<< XDIPLEN  ; YDIPLEN  >> = -1.3998702.....D\+01" $log | wc -l`
+CRIT4=`$GREP "@ -<< XDIPLEN  ; ZDIPLEN  >> = -6.8391169.....D\-03" $log | wc -l`
+CRIT5=`$GREP "@ -<< YDIPLEN  ; YDIPLEN  >> =  5.7120178.....D\+01" $log | wc -l`
+CRIT6=`$GREP "@ -<< YDIPLEN  ; ZDIPLEN  >> =  4.7036224.....D\-04" $log | wc -l`
+CRIT7=`$GREP "@ -<< ZDIPLEN  ; ZDIPLEN  >> =  2.2920561.....D\+01" $log | wc -l`
 TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7`
 CTRL[5]=7
 ERROR[5]="PE-HF FREQUENCY DEPENDENT POLARIZABILITY NOT CORRECT"
