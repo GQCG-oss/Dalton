@@ -779,9 +779,9 @@ contains
   subroutine invert_matrix(input,output,n)
 
     implicit none
+    integer, intent(in) :: n
     real(realk), dimension(n,n), intent(in) :: input
     real(realk), dimension(n,n), intent(out) :: output
-    integer, intent(in) :: n
     real(realk), pointer :: output_full(:,:)
 
     real(realk), pointer :: work(:)
@@ -797,9 +797,9 @@ contains
     output_full = 0.0E0_realk
     output_full = input
     call dgetrf(n,n,output_full,n,ipiv,info)
-    if(info /= 0) stop 'error :: invert_matrix'
+    if(info /= 0) stop 'error1 :: invert_matrix'
     call dgetri(n,output_full,n,ipiv,work,n,info)
-    if(info /= 0) stop 'error :: invert_matrix'
+    if(info /= 0) stop 'error2 :: invert_matrix'
 
     output = 0.0E0_realk
     output = output_full
@@ -4079,5 +4079,213 @@ retval=0
 
 
   end subroutine add_dec_energies
+
+
+  !> \brief Project orbitals onto MO space defined by input (see details inside subroutine).
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine project_onto_MO_space(nMO,nAO,C,S,Z)
+    implicit none
+
+    !> MO dimension (e.g. for indices p,q, and r below)
+    integer,intent(in) :: nMO
+    !> AO dimension (e.g. for indices mu,nu, and alpha below)
+    integer,intent(in) :: nAO
+    !> MO coefficients for orbitals {phi} to use in projector (see details below)
+    real(realk),intent(in),dimension(nAO,nMO) :: C
+    !> AO overlap matrix
+    real(realk),intent(in),dimension(nAO,nAO) :: S
+    !> MO coefficients for orbitals {psi} to be projected (see details below)
+    real(realk),intent(inout),dimension(nAO,nMO) :: Z
+    real(realk),pointer :: tmp(:,:),tmp2(:,:),M(:,:),Minv(:,:)
+
+    ! The orbitals to be projected |psi_r> are written in terms of AOs {chi}:
+    !
+    ! |psi_r> = sum_{alpha} Z_{alpha r} |chi_alpha>
+    ! 
+    ! The projector is: 
+    ! 
+    ! P = sum_{pq} |phi_p> (M^-1)_pq <phi_q|
+    ! 
+    ! where the MOs to project against {phi} are given in terms of AOs as:
+    !
+    ! |phi_p> = sum_{mu} C_{mu p} |chi_mu> 
+    !
+    ! and M is the MO overlap matrix:
+    !
+    ! M_pq = <phi_p | phi_q>.
+    ! 
+    ! Effectively we do the projection:
+    ! 
+    ! |psi_r> --> P |psi_r> = ( C M^-1 C^T S Z )_{mu r} |chi_mu>
+    !
+    ! where S is the AO overlap matrix: S_{mu nu} = <chi_mu | chi_nu>
+    !
+    ! Thus, the task of this subroutine is to change the input Z to (C M^-1 C^T S Z).
+    
+
+    ! Get inverse overlap for phi orbitals: M^-1 = (C^T S C)^-1
+    ! *********************************************************
+    call mem_alloc(M,nMO,nMO)
+    call dec_simple_basis_transform1(nAO,nMO,C,S,M)
+    ! Minv = M^-1
+    call mem_alloc(Minv,nMO,nMO)
+    call invert_matrix(M,Minv,nMO)
+    call mem_dealloc(M)
+
+    ! tmp = S Z
+    call mem_alloc(tmp,nAO,nMO)
+    call dec_simple_dgemm(nAO,nAO,nMO,S,Z,tmp,'n','n')
+
+    ! tmp2 = C^T S Z
+    call mem_alloc(tmp2,nMO,nMO)
+    call dec_simple_dgemm(nMO,nAO,nMO,C,tmp,tmp2,'t','n')
+    call mem_dealloc(tmp)
+
+    ! tmp = M^-1 C^T S Z
+    call mem_alloc(tmp,nMO,nMO)
+    call dec_simple_dgemm(nMO,nMO,nMO,Minv,tmp2,tmp,'n','n')
+    call mem_dealloc(tmp2)
+
+    ! Z --> C M^-1 C^T S Z
+    call dec_simple_dgemm(nAO,nMO,nMO,C,tmp,Z,'n','n')
+    call mem_dealloc(tmp)
+    call mem_dealloc(Minv)
+
+  end subroutine project_onto_MO_space
+
+
+
+  !> \brief Project {phi} MO space defined by input out of {psi} MO space (details inside subroutine).
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine project_out_MO_space(nMO,nAO,C,S,Z)
+    implicit none
+
+    !> MO dimension (e.g. for indices p,q, and r below)
+    integer,intent(in) :: nMO
+    !> AO dimension (e.g. for indices mu,nu, and alpha below)
+    integer,intent(in) :: nAO
+    !> MO coefficients for orbitals {phi} to use in projector (see details below)
+    real(realk),intent(in),dimension(nAO,nMO) :: C
+    !> AO overlap matrix
+    real(realk),intent(in),dimension(nAO,nAO) :: S
+    !> MO coefficients for orbitals {psi} to be projected (see details below)
+    real(realk),intent(inout),dimension(nAO,nMO) :: Z
+    real(realk),pointer :: PZ(:,:)
+
+    ! The orbitals to be projected |psi_r> are written in terms of AOs {chi}:
+    !
+    ! |psi_r> = sum_{alpha} Z_{alpha r} |chi_alpha>
+    ! 
+    ! The projector is: 
+    ! 
+    ! P = 1 - sum_{pq} |phi_p> (M^-1)_pq <phi_q|
+    ! 
+    ! where the MOs to projected out {phi} are given in terms of AOs as:
+    !
+    ! |phi_p> = sum_{mu} C_{mu p} |chi_mu> 
+    !
+    ! and M is the MO overlap matrix:
+    !
+    ! M_pq = <phi_p | phi_q>.
+    ! 
+    ! Effectively we do the projection:
+    ! 
+    ! |psi_r> --> (1 - P) |psi_r> = (Z  -  C M^-1 C^T S Z )_{mu r} |chi_mu>
+    !
+    ! where S is the AO overlap matrix: S_{mu nu} = <chi_mu | chi_nu>
+    !
+    ! Thus, the task of this subroutine is to change the input Z to:
+    ! Z - PZ = (Z  -  C M^-1 C^T S Z).
+ 
+    ! Copy Z and calculate projection on Z: PZ = (C M^-1 C^T S) Z
+    call mem_alloc(PZ,nAO,nMO)
+    PZ = Z 
+    call project_onto_MO_space(nMO,nAO,C,S,PZ)
+
+    ! Set output Z as: Z - PZ
+    Z = Z - PZ
+    call mem_dealloc(PZ)
+
+  end subroutine project_out_MO_space
+
+
+  !> \brief Orthogonalize MOs by (i) setting up MO overlap matrix,
+  !> (ii) diagonalizing MO overlap matrix, (iii) writing new orthogonalized MOs
+  !> in terms of eigenvalues and eigenvalues of MO overlap matrix.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine orthogonalize_MOs(nMO,nAO,S,C)
+    implicit none
+
+    !> MO dimension 
+    integer,intent(in) :: nMO
+    !> AO dimension 
+    integer,intent(in) :: nAO
+    !> AO overlap matrix
+    real(realk),intent(in),dimension(nAO,nAO) :: S
+    !> MO coefficients to be orthogonalized
+    real(realk),intent(inout),dimension(nAO,nMO) :: C
+    real(realk),pointer :: M(:,:), lambda(:), T(:,:), CT(:,:)
+    integer :: mu,p,lambdascale
+
+    ! The MOs are orthogonalized as follows:
+    !
+    ! (i) Setup MO overlap matrix:  M = C^T S C
+    !
+    ! (ii) Diagonalize M:  lambda = T^T M T    (lambda is diagonal matrix, T is unitary)
+    !
+    ! (iii) Labelling the input MOs as {phi} and the AOs as {chi}, we may write {phi} as
+    !
+    ! phi_p = sum_{mu} C_{mu p} |chi_mu>
+    ! 
+    ! and the orthogonalized MOs {psi} are given as:
+    !
+    ! psi_p = sum_mu lambda_p^{-1/2} (C T)_{mu p} |chi_mu>
+    !
+    ! Thus, the task of this subroutine is to change the input C_{mu p} 
+    ! to lambda_p^{-1/2} (C T)_{mu p}.
+
+
+    ! (i) M = C^T S C
+    ! ***************
+    call mem_alloc(M,nMO,nMO)
+    call dec_simple_basis_transform1(nAO,nMO,C,S,M)
+    
+
+    ! (ii) Diagonalize MO overlap matrix: lambda = T^T M T
+    ! ****************************************************
+    call mem_alloc(lambda,nMO)
+    call mem_alloc(T,nMO,nMO)
+    call solve_eigenvalue_problem_unitoverlap(nMO,M,lambda,T)
+
+    ! All lambda's should be positive. However, to be complete sure we do not do something
+    ! dirty with square roots and negative numbers, we take the absolute value...
+    lambda=abs(lambda)
+
+    
+    ! (iii) Get final orthogonalized MOs
+    ! **********************************
+
+    ! C T
+    call mem_alloc(CT,nAO,nMO)
+    call dec_simple_dgemm(nAO,nMO,nMO,C,T,CT,'n','n')
+
+    ! C_{mu p} --> lambda_p^{-1/2} (C T)_{mu p}
+    do p=1,nMO
+       lambdascale = 1.0_realk/sqrt(lambda(p)) ! Lambda scaling factor: lambda_p^{-1/2}
+       do mu=1,nAO
+          C(mu,p) = CT(mu,p)*lambdascale
+       end do
+    end do
+
+
+    call mem_dealloc(M)
+    call mem_dealloc(lambda)
+    call mem_dealloc(T)
+    call mem_dealloc(CT)
+
+  end subroutine orthogonalize_MOs
 
 end module dec_fragment_utils

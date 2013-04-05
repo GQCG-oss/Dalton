@@ -6423,4 +6423,132 @@ end subroutine get_main_pair_info
   end subroutine copy_mpi_main_info_from_FAfragment
 
 
+  !> \brief Extract XOS orbitals from occupied AOS orbitals. The set of XOS orbitals is the
+  !> Xtra Orbital Space needed in addition to the EOS orbitals. For example,
+  !> for fragment P the XOS orbitals are the subset of AOS orbitals NOT assigned to atom P.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine extract_XOS_orbitals_occ(MyFragment,nbasis,nXOS,XOS)
+    implicit none
+    !> Fragment info (atomic fragment or pair fragment)
+    type(ccatom),intent(inout) :: MyFragment
+    !> Number of basis functions in fragment
+    integer,intent(in) :: nbasis
+    !> Number of XOS orbitals
+    integer,intent(in) :: nXOS
+    !> XOS MO coefficients
+    real(realk),intent(inout),dimension(nbasis,nXOS) :: XOS
+    integer :: i,idx,nAOS,nEOS
+    logical,pointer :: which_XOS(:)
+
+    ! Dimensions
+    nAOS = MyFragment%noccAOS
+    nEOS = MyFragment%noccEOS
+
+
+    ! Sanity checks for dimensions
+    ! ****************************
+    if(nXOS /= nAOS - nEOS) then
+       print '(a,3i8)','EOS,AOS,XOS', nEOS,nAOS,nXOS
+       call lsquit('extract_XOS_orbitals_occ: XOS dimension mismatch!',-1)
+    end if
+
+    ! AO basis dimension consistent
+    if(MyFragment%number_basis /= nbasis) then
+       print '(a,i8)','basis input', nbasis
+       print '(a,i8)','basis frag ', MyFragment%number_basis
+       call lsquit('extract_XOS_orbitals_occ: AO basis dimension mismatch!',-1)
+    end if
+
+    ! Special case: No XOS orbitals, just return
+    if(nXOS==0) return
+
+    
+    ! Which AOS orbitals are XOS orbitals?
+    call mem_alloc(which_XOS,nAOS)
+    which_XOS=.true.
+    do i=1,nAOS
+       ! Index MyFragment%idxo(i) is an EOS orbital and therefore not an XOS orbital
+       which_XOS(MyFragment%idxo(i)) = .false.
+    end do
+
+    ! Extract XOS orbitals and put them into XOS output array
+    idx=0
+    do i=1,nAOS
+       if(which_XOS(i)) then
+         idx=idx+1
+         XOS(:,idx) = MyFragment%ypo(:,i)
+       end if
+    end do
+    if(idx/=nXOS) then
+       call lsquit('extract_XOS_orbitals_occ: XOS book keeping error',-1)
+    end if
+    call mem_dealloc(which_XOS)
+
+  end subroutine extract_XOS_orbitals_occ
+
+
+  !> \brief Extract XOS orbitals from unoccupied AOS orbitals, see extract_XOS_orbitals_occ.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine extract_XOS_orbitals_unocc(MyFragment,nbasis,nXOS,XOS)
+    implicit none
+    !> Fragment info (atomic fragment or pair fragment)
+    type(ccatom),intent(inout) :: MyFragment
+    !> Number of basis functions in fragment
+    integer,intent(in) :: nbasis
+    !> Number of XOS orbitals
+    integer,intent(in) :: nXOS
+    !> XOS MO coefficients
+    real(realk),intent(inout),dimension(nbasis,nXOS) :: XOS
+    integer :: i,idx,nAOS,nEOS
+    logical,pointer :: which_XOS(:)
+
+    ! Dimensions
+    nAOS = MyFragment%nunoccAOS
+    nEOS = MyFragment%nunoccEOS
+
+
+    ! Sanity checks for dimensions
+    ! ****************************
+    if(nXOS /= nAOS - nEOS) then
+       print '(a,3i8)','EOS,AOS,XOS', nEOS,nAOS,nXOS
+       call lsquit('extract_XOS_orbitals_unocc: XOS dimension mismatch!',-1)
+    end if
+
+    ! AO basis dimension consistent
+    if(MyFragment%number_basis /= nbasis) then
+       print '(a,i8)','basis input', nbasis
+       print '(a,i8)','basis frag ', MyFragment%number_basis
+       call lsquit('extract_XOS_orbitals_unocc: AO basis dimension mismatch!',-1)
+    end if
+
+    ! Special case: No XOS orbitals, just return
+    if(nXOS==0) return
+
+    
+    ! Which AOS orbitals are XOS orbitals?
+    call mem_alloc(which_XOS,nAOS)
+    which_XOS=.true.
+    do i=1,nAOS
+       ! Index MyFragment%idxu(i) is an EOS orbital and therefore not an XOS orbital
+       which_XOS(MyFragment%idxu(i)) = .false.
+    end do
+
+    ! Extract XOS orbitals and put them into XOS output array
+    idx=0
+    do i=1,nAOS
+       if(which_XOS(i)) then
+         idx=idx+1
+         XOS(:,idx) = MyFragment%ypv(:,i)
+       end if
+    end do
+    if(idx/=nXOS) then
+       call lsquit('extract_XOS_orbitals_occ: XOS book keeping error',-1)
+    end if
+    call mem_dealloc(which_XOS)
+
+  end subroutine extract_XOS_orbitals_unocc
+
+
 end module atomic_fragment_operations
