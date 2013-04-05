@@ -680,6 +680,9 @@ module dec_typedef_module
      ! planning of a large number of fragment calculations.
      ! ---------------------------------------------------------------------------
 
+     !> AO overlap matrix for fragment
+     real(realk),pointer :: S(:,:) => null()
+
      !> Occupied MO coefficients (only valence space for frozen core approx)
      real(realk), pointer :: ypo(:,:) => null()
      !> Virtual MO coefficients

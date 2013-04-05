@@ -808,6 +808,7 @@ contains
 
        ! Real pointers
        if(.not. AddToBuffer) then
+          call mem_alloc(MyFragment%S,MyFragment%number_basis,MyFragment%number_basis)
           call mem_alloc(MyFragment%ypo,MyFragment%number_basis,MyFragment%noccAOS)
           call mem_alloc(MyFragment%ypv,MyFragment%number_basis,MyFragment%nunoccAOS)
           call mem_alloc(MyFragment%coreMO,MyFragment%number_basis,MyFragment%ncore)
@@ -816,6 +817,7 @@ contains
           call mem_alloc(MyFragment%ccfock,MyFragment%ncore,MyFragment%ncore)
           call mem_alloc(MyFragment%qqfock,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
        end if
+       call ls_mpi_buffer(MyFragment%S,MyFragment%number_basis,MyFragment%number_basis,master)
        call ls_mpi_buffer(MyFragment%ypo,MyFragment%number_basis,MyFragment%noccAOS,master)
        call ls_mpi_buffer(MyFragment%ypv,MyFragment%number_basis,MyFragment%nunoccAOS,master)
        call ls_mpi_buffer(MyFragment%coreMO,MyFragment%number_basis,MyFragment%ncore,master)

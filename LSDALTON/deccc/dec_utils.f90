@@ -2341,6 +2341,9 @@ retval=0
     type(ccatom),intent(inout) :: fragment
     integer :: i
 
+    if(associated(fragment%S)) then
+       call mem_dealloc(fragment%S)
+    end if
 
     ! Transformation matrices
     if(associated(fragment%ypo)) then

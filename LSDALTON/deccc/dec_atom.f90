@@ -890,6 +890,7 @@ contains
     logical,pointer :: VirtLocal(:), OccLocal(:)
     logical :: pairfrag,SFsave
 
+
     ! Dims
     nocc = LocalFragment%noccAOS
     nvirt = LocalFragment%nunoccAOS
@@ -1015,6 +1016,11 @@ contains
     FAfragment%ypv = LocalFragment%CunoccFA
 
 
+    ! Purify FAOs
+    if(DECinfo%PurifyMOs) then
+       call fragment_purify(FAfragment)
+    end if
+
 
     ! Set fragment-adapted MO Fock matrix
     ! -----------------------------------
@@ -1032,7 +1038,7 @@ contains
          & FAfragment%ypv,FAfragment%fock,FAfragment%qqfock)
 
 
-    ! Reset keyword (more elegant solution with soon be introduced)
+    ! Reset keyword (more elegant solution will soon be introduced)
     if(pairfrag .or. LocalFragment%SF) then
        ! Reset super fragment keyword (more elegant solution is coming up...)
        DECinfo%SF = SFsave
@@ -1193,12 +1199,10 @@ contains
   !> components from the unoccupied MOs (and vice versa), (ii) orthogonalize orbitalsæ.
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine fragment_purify(fragment,S)
+  subroutine fragment_purify(fragment)
     implicit none
     !> Fragment where the MOs (fragment%ypo, fragment%ypv, fragment%coremo) will be purified
     type(ccatom),intent(inout) :: fragment
-    !> Overlap matrix for fragment
-    real(realk),dimension(fragment%number_basis,fragment%number_basis) :: S
     integer :: nXOS,nbasis,noccAOS,nunoccAOS,ncore,i
     real(realk),pointer :: XOS(:,:)
 
@@ -1222,14 +1226,14 @@ contains
           call extract_XOS_orbitals_occ(Fragment,nbasis,nXOS,XOS)
 
           ! (i) Project out possible unoccupied components from the occupied XOS
-          call project_out_MO_space(nunoccAOS,nXOS,nbasis,Fragment%ypv,S,XOS)
+          call project_out_MO_space(nunoccAOS,nXOS,nbasis,Fragment%ypv,fragment%S,XOS)
           ! For frozen core also project out possible core orbital components
           if(DECinfo%frozencore .and. ncore>0) then
-             call project_out_MO_space(ncore,nXOS,nbasis,Fragment%coreMO,S,XOS)
+             call project_out_MO_space(ncore,nXOS,nbasis,Fragment%coreMO,fragment%S,XOS)
           end if
 
           ! (ii) Orthogonalize XOS orbitals
-          call orthogonalize_MOs(nXOS,nbasis,S,XOS)
+          call orthogonalize_MOs(nXOS,nbasis,fragment%S,XOS)
 
           ! Put purified XOS orbitals back into fragment structure
           call put_XOS_orbitals_occ(nbasis,nXOS,XOS,Fragment)
@@ -1248,14 +1252,14 @@ contains
           call extract_XOS_orbitals_unocc(Fragment,nbasis,nXOS,XOS)
 
           ! (i) Project out possible occupied components from the unoccupied XOS
-          call project_out_MO_space(noccAOS,nXOS,nbasis,Fragment%ypo,S,XOS)
+          call project_out_MO_space(noccAOS,nXOS,nbasis,Fragment%ypo,fragment%S,XOS)
           ! For frozen core also project out possible core orbital components
           if(DECinfo%frozencore .and. ncore>0) then
-             call project_out_MO_space(ncore,nXOS,nbasis,Fragment%coreMO,S,XOS)
+             call project_out_MO_space(ncore,nXOS,nbasis,Fragment%coreMO,fragment%S,XOS)
           end if
 
           ! (ii) Orthogonalize XOS orbitals
-          call orthogonalize_MOs(nXOS,nbasis,S,XOS)
+          call orthogonalize_MOs(nXOS,nbasis,fragment%S,XOS)
 
           ! Put purified XOS orbitals back into fragment structure
           call put_XOS_orbitals_unocc(nbasis,nXOS,XOS,Fragment)
@@ -1268,14 +1272,14 @@ contains
        if(ncore>0) then
 
           ! (i) Project out possible unoccupied components from core space
-          call project_out_MO_space(nunoccAOS,ncore,nbasis,Fragment%ypv,S,fragment%coreMO)
+          call project_out_MO_space(nunoccAOS,ncore,nbasis,Fragment%ypv,fragment%S,fragment%coreMO)
           ! For frozen core also project out possible valence orbital components
           if(DECinfo%frozencore) then
-             call project_out_MO_space(noccAOS,ncore,nbasis,fragment%ypo,S,Fragment%coreMO)
+             call project_out_MO_space(noccAOS,ncore,nbasis,fragment%ypo,fragment%S,Fragment%coreMO)
           end if
 
           ! (ii) Orthogonalize core orbitals
-          call orthogonalize_MOs(ncore,nbasis,S,fragment%coreMO)
+          call orthogonalize_MOs(ncore,nbasis,fragment%S,fragment%coreMO)
 
        end if
 
@@ -1549,7 +1553,7 @@ contains
     !> stuff has already been initialized).
     type(ccatom),intent(inout) :: FragmentPQ
     real(realk) :: lambdathr,lambdathr_default
-    real(realk),pointer :: CoccPQ(:,:), CunoccPQ(:,:),aoS(:,:),moS(:,:),Sinv(:,:)
+    real(realk),pointer :: CoccPQ(:,:), CunoccPQ(:,:),moS(:,:),Sinv(:,:)
     real(realk),pointer :: T(:,:),lambda(:),MOtmp(:,:),tmp(:,:),tmp2(:,:),CEOS(:,:)
     logical,pointer :: whichOrbitals(:)
     integer :: noccPQ,nunoccPQ,nbasisPQ,noccPQ_FA, nunoccPQ_FA,i,mu,idx, EOSidx,j
@@ -1577,14 +1581,6 @@ contains
        call pair_fragment_adapted_transformation_matrices_justEOS(fragmentP,fragmentQ,fragmentPQ)
        return
     end if
-
-    ! Calculate AO overlap matrix for pair fragment
-    call mem_alloc(aoS,nbasisPQ,nbasisPQ)
-    call adjust_square_matrix(MyMolecule%overlap,aoS,fragmentPQ%atoms_idx, &
-         & MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end, &
-         & MyMolecule%nbasis,MyMolecule%natoms,fragmentPQ%number_basis,FragmentPQ%number_atoms)
-
-
 
 
     ! *****************************************************************************************
@@ -1641,7 +1637,8 @@ contains
     ! Sinv is the inverse overlap matrix for the local MOs for pair PQ (the identity matrix in the
     ! limit where the atomic extent for PQ contains all atomic basis functions in the molecule),
     ! aoS is the AO overlap matrix.
-    call project_onto_MO_space(fragmentPQ%noccAOS,noccPQ,nbasisPQ,fragmentPQ%ypo,aoS,CoccPQ)
+    call project_onto_MO_space(fragmentPQ%noccAOS,noccPQ,nbasisPQ,fragmentPQ%ypo,&
+         & fragmentPQ%S,CoccPQ)
 
 
     ! 3. Project out EOS components
@@ -1664,14 +1661,14 @@ contains
     end do
 
     ! Project out EOS componets
-    call project_out_MO_space(fragmentPQ%noccEOS,noccPQ,nbasisPQ,CEOS,aoS,CoccPQ)
+    call project_out_MO_space(fragmentPQ%noccEOS,noccPQ,nbasisPQ,CEOS,fragmentPQ%S,CoccPQ)
     call mem_dealloc(CEOS)
 
 
     ! 4. Setup MO overlap matrix
     ! **************************
     call mem_alloc(moS,noccPQ,noccPQ)
-    call dec_simple_basis_transform1(nbasisPQ,noccPQ,CoccPQ,aoS,moS)
+    call dec_simple_basis_transform1(nbasisPQ,noccPQ,CoccPQ,fragmentPQ%S,moS)
 
 
 
@@ -1773,7 +1770,7 @@ contains
        call mem_dealloc(moS)
        call mem_alloc(moS,fragmentPQ%noccFA,fragmentPQ%noccFA)
        call dec_simple_basis_transform1(nbasisPQ,fragmentPQ%noccFA,&
-            &  fragmentPQ%CoccFA,aoS,moS)
+            &  fragmentPQ%CoccFA,fragmentPQ%S,moS)
        diagdev=0.0_realk
        nondiagdev=0.0_realk
        do j=1,fragmentPQ%noccFA
@@ -1803,7 +1800,7 @@ contains
 
 
     ! 2
-    call project_onto_MO_space(fragmentPQ%nunoccAOS,nunoccPQ,nbasisPQ,fragmentPQ%ypv,aoS,CunoccPQ)
+    call project_onto_MO_space(fragmentPQ%nunoccAOS,nunoccPQ,nbasisPQ,fragmentPQ%ypv,fragmentPQ%S,CunoccPQ)
 
 
     ! 3
@@ -1811,12 +1808,12 @@ contains
     do i=1,fragmentPQ%nunoccEOS
        CEOS(:,i) = fragmentPQ%ypv(:,fragmentPQ%idxu(i))
     end do
-    call project_out_MO_space(fragmentPQ%nunoccEOS,nunoccPQ,nbasisPQ,CEOS,aoS,CunoccPQ)
+    call project_out_MO_space(fragmentPQ%nunoccEOS,nunoccPQ,nbasisPQ,CEOS,fragmentPQ%S,CunoccPQ)
     call mem_dealloc(CEOS)
 
     ! 4
     call mem_alloc(moS,nunoccPQ,nunoccPQ)
-    call dec_simple_basis_transform1(nbasisPQ,nunoccPQ,CunoccPQ,aoS,moS)
+    call dec_simple_basis_transform1(nbasisPQ,nunoccPQ,CunoccPQ,fragmentPQ%S,moS)
 
 
     ! 5
@@ -1884,7 +1881,7 @@ contains
        call mem_dealloc(moS)
        call mem_alloc(moS,fragmentPQ%nunoccFA,fragmentPQ%nunoccFA)
        call dec_simple_basis_transform1(nbasisPQ,fragmentPQ%nunoccFA,&
-            &  fragmentPQ%CunoccFA,aoS,moS)
+            &  fragmentPQ%CunoccFA,fragmentPQ%S,moS)
        diagdev=0.0_realk
        nondiagdev=0.0_realk
        do j=1,fragmentPQ%nunoccFA
@@ -1902,7 +1899,6 @@ contains
     call mem_dealloc(whichorbitals)
     call mem_dealloc(moS)
     call mem_dealloc(CunoccPQ)
-    call mem_dealloc(aoS)
 
 
     ! Transformation matrices have been set!
@@ -2117,7 +2113,6 @@ contains
     type(ccatom), intent(inout) :: fragment
     type(fullmolecule), intent(in) :: MyMolecule
     type(array2) :: S,tmp1,tmp2
-    real(realk), pointer :: smallS(:,:)
     real(realk), pointer :: correct_vector_moS(:), approximated_orbital(:)
     integer :: i,j,idx,atom_k,nocc,nunocc,nbasis,natoms,k,bas_offset,offset, &
          full_orb_idx
@@ -2146,8 +2141,8 @@ contains
     dimsAO(2)=nbasis
 
     ! Overlap matrix for fragment
-    call mem_alloc(smallS,fragment%number_basis,fragment%number_basis)
-    call adjust_square_matrix(MyMolecule%overlap,smallS,fragment%atoms_idx, &
+    call mem_alloc(fragment%S,fragment%number_basis,fragment%number_basis)
+    call adjust_square_matrix(MyMolecule%overlap,fragment%S,fragment%atoms_idx, &
          & MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end, &
          & nbasis,natoms,fragment%number_basis,Fragment%number_atoms)
 
@@ -2187,7 +2182,7 @@ contains
 
              ! fit orbital
              approximated_orbital = 0.0E0_realk
-             call solve_linear_equations(smallS,approximated_orbital, &
+             call solve_linear_equations(fragment%S,approximated_orbital, &
                   correct_vector_moS,fragment%number_basis)
              fragment%ypo(:,i) = approximated_orbital
 
@@ -2213,7 +2208,7 @@ contains
 
           ! fit orbital
           approximated_orbital = 0.0E0_realk
-          call solve_linear_equations(smallS,approximated_orbital, &
+          call solve_linear_equations(fragment%S,approximated_orbital, &
                correct_vector_moS,fragment%number_basis)
           fragment%coreMO(:,i) = approximated_orbital
 
@@ -2249,7 +2244,7 @@ contains
 
              ! fit orbital
              approximated_orbital = 0.0E0_realk
-             call solve_linear_equations(smallS,approximated_orbital, &
+             call solve_linear_equations(fragment%S,approximated_orbital, &
                   correct_vector_moS,fragment%number_basis)
              fragment%ypv(:,i) = approximated_orbital
           end do
@@ -2288,9 +2283,8 @@ contains
     ! (not for fragment-adapted orbitals since these are automatically orthogonal
     !  by virtue of the purification of the local orbitals).
     if(DECinfo%PurifyMOs .and. (.not. fragment%fragmentadapted) ) then
-       call fragment_purify(fragment,smallS)
+       call fragment_purify(fragment)
     end if
-    call mem_dealloc(smallS)
  
 
  ! adjust fock matrix in ao basis
