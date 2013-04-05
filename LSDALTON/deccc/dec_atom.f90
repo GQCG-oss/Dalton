@@ -1184,20 +1184,99 @@ contains
          fragment%number_atoms,DECinfo%output,0)
 #endif
 
-    ! Purify fitted MO coefficients
-    if(DECinfo%PurifyMOs) then
-       call fragment_purify(fragment)
-    end if
-
     ! Basis info has now been set
     fragment%BasisInfoIsSet=.true.
 
   end subroutine atomic_fragment_init_basis_part
 
 
-  subroutine fragment_purify(fragment)
+  !\ brief Purify fragment MO coefficients by (i) projecting out possible occupied
+  !> components from the unoccupied MOs (and vice versa), (ii) orthogonalize orbitalsæ.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine fragment_purify(fragment,S)
     implicit none
+    !> Fragment where the MOs (fragment%ypo, fragment%ypv, fragment%coremo) will be purified
     type(ccatom),intent(inout) :: fragment
+    !> Overlap matrix for fragment
+    real(realk),dimension(fragment%number_basis,fragment%number_basis) :: S
+    integer :: nXOS,nbasis,noccAOS,nunoccAOS,ncore
+    real(realk),pointer :: XOS(:,:)
+
+    ! Dimensions
+    nbasis = fragment%number_basis
+    noccAOS = fragment%noccAOS
+    nunoccAOS = fragment%nunoccAOS
+    ncore = fragment%ncore
+
+    ! OCCUPIED ORBITALS
+    ! *****************
+    ! Note: We only consider the XOS (AOS-EOS) because the EOS orbitals must remain untouched!
+
+    ! Extract occupied XOS orbitals
+    nXOS = fragment%noccAOS - fragment%noccEOS
+    if(nXOS>0) then
+       call mem_alloc(XOS,nbasis,nXOS)
+       call extract_XOS_orbitals_occ(Fragment,nbasis,nXOS,XOS)
+
+       ! (i) Project out possible unoccupied components from the occupied XOS
+       call project_out_MO_space(nunoccAOS,nXOS,nbasis,Fragment%ypv,S,XOS)
+       ! For frozen core also project out possible core orbital components
+       if(DECinfo%frozencore .and. ncore>0) then
+          call project_out_MO_space(ncore,nXOS,nbasis,Fragment%coreMO,S,XOS)
+       end if
+
+       ! (ii) Orthogonalize XOS orbitals
+       call orthogonalize_MOs(nXOS,nbasis,S,XOS)
+
+       ! Put purified XOS orbitals back into fragment structure
+       call put_XOS_orbitals_occ(nbasis,nXOS,XOS,Fragment)
+       call mem_dealloc(XOS)
+    end if
+
+
+    ! UNOCCUPIED ORBITALS
+    ! *******************
+    ! Same procedure as for occ orbitals
+
+    ! Extract unoccupied XOS orbitals
+    nXOS = fragment%nunoccAOS - fragment%nunoccEOS
+    if(nXOS>0) then
+       call mem_alloc(XOS,nbasis,nXOS)
+       call extract_XOS_orbitals_unocc(Fragment,nbasis,nXOS,XOS)
+
+       ! (i) Project out possible occupied components from the unoccupied XOS
+       call project_out_MO_space(noccAOS,nXOS,nbasis,Fragment%ypo,S,XOS)
+       ! For frozen core also project out possible core orbital components
+       if(DECinfo%frozencore .and. ncore>0) then
+          call project_out_MO_space(ncore,nXOS,nbasis,Fragment%coreMO,S,XOS)
+       end if
+
+       ! (ii) Orthogonalize XOS orbitals
+       call orthogonalize_MOs(nXOS,nbasis,S,XOS)
+
+       ! Put purified XOS orbitals back into fragment structure
+       call put_XOS_orbitals_unocc(nbasis,nXOS,XOS,Fragment)
+       call mem_dealloc(XOS)
+    end if
+
+
+    ! CORE ORBITALS
+    ! *************
+    if(ncore>0) then
+
+       ! (i) Project out possible unoccupied components from core space
+       call project_out_MO_space(nunoccAOS,ncore,nbasis,Fragment%ypv,S,fragment%coreMO)
+       ! For frozen core also project out possible valence orbital components
+       if(DECinfo%frozencore) then
+          call project_out_MO_space(noccAOS,ncore,nbasis,fragment%ypo,S,Fragment%coreMO)
+       end if
+
+       ! (ii) Orthogonalize core orbitals
+       call orthogonalize_MOs(ncore,nbasis,S,fragment%coreMO)
+
+    end if
+
 
   end subroutine fragment_purify
 
@@ -2164,6 +2243,13 @@ contains
     dimsAO(1)=nbasis
     dimsAO(2)=nbasis
 
+    ! Overlap matrix for fragment
+    call mem_alloc(smallS,fragment%number_basis,fragment%number_basis)
+    call adjust_square_matrix(MyMolecule%overlap,smallS,fragment%atoms_idx, &
+         & MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end, &
+         & nbasis,natoms,fragment%number_basis,Fragment%number_atoms)
+
+
     FitOrbitalsForFragment: if(DECinfo%FitOrbitals) then ! fit orbitals for fragment to exact orbitals
 
        ! fit orbitals
@@ -2174,11 +2260,6 @@ contains
        S = array2_init(dims)
        call mem_alloc(correct_vector_moS,fragment%number_basis)
        call mem_alloc(approximated_orbital,fragment%number_basis)
-       call mem_alloc(smallS,fragment%number_basis,fragment%number_basis)
-
-       call adjust_square_matrix(MyMolecule%overlap,smallS,fragment%atoms_idx, &
-            MyMolecule%atom_size,MyMolecule%atom_start,MyMolecule%atom_end, &
-            nbasis,natoms,fragment%number_basis,Fragment%number_atoms)
 
        ! Fragment YPO
        ! half transform overlap
@@ -2276,7 +2357,6 @@ contains
        ! remove stuff
        call mem_dealloc(correct_vector_moS)
        call mem_dealloc(approximated_orbital)
-       call mem_dealloc(smallS)
        call array2_free(tmp1)
        call array2_free(tmp2)
        call array2_free(S)
@@ -2334,6 +2414,12 @@ contains
     call dec_simple_basis_transform1(fragment%number_basis,fragment%ncore,&
          & fragment%coreMO,fragment%fock,fragment%ccfock) 
  end if
+
+ ! Purify fragment MO coefficients
+ if(DECinfo%PurifyMOs) then
+    call fragment_purify(fragment,smallS)
+ end if
+ call mem_dealloc(smallS)
  
 end subroutine atomic_fragment_basis
 
@@ -6403,7 +6489,7 @@ end subroutine get_main_pair_info
     ! Which AOS orbitals are XOS orbitals?
     call mem_alloc(which_XOS,nAOS)
     which_XOS=.true.
-    do i=1,nAOS
+    do i=1,nEOS
        ! Index MyFragment%idxo(i) is an EOS orbital and therefore not an XOS orbital
        which_XOS(MyFragment%idxo(i)) = .false.
     end do
@@ -6466,7 +6552,7 @@ end subroutine get_main_pair_info
     ! Which AOS orbitals are XOS orbitals?
     call mem_alloc(which_XOS,nAOS)
     which_XOS=.true.
-    do i=1,nAOS
+    do i=1,nEOS
        ! Index MyFragment%idxu(i) is an EOS orbital and therefore not an XOS orbital
        which_XOS(MyFragment%idxu(i)) = .false.
     end do
@@ -6485,6 +6571,135 @@ end subroutine get_main_pair_info
     call mem_dealloc(which_XOS)
 
   end subroutine extract_XOS_orbitals_unocc
+
+
+  !> \brief Put occupied XOS orbitals into fragment structure, effectively copying elements 
+  !> "the inverse way" of what extract_XOS_orbitals_occ is doing.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine put_XOS_orbitals_occ(nbasis,nXOS,XOS,MyFragment)
+    implicit none
+    !> Number of basis functions in fragment
+    integer,intent(in) :: nbasis
+    !> Number of XOS orbitals
+    integer,intent(in) :: nXOS
+    !> XOS MO coefficients
+    real(realk),intent(in),dimension(nbasis,nXOS) :: XOS
+    !> Fragment info (MyFragment%ypo will be modified here)
+    type(ccatom),intent(inout) :: MyFragment
+    integer :: i,idx,nAOS,nEOS
+    logical,pointer :: which_XOS(:)
+
+
+    ! Dimensions
+    nAOS = MyFragment%noccAOS
+    nEOS = MyFragment%noccEOS
+
+    ! Sanity checks for dimensions
+    ! ****************************
+    if(nXOS /= nAOS - nEOS) then
+       print '(a,3i8)','EOS,AOS,XOS', nEOS,nAOS,nXOS
+       call lsquit('put_XOS_orbitals_occ: XOS dimension mismatch!',-1)
+    end if
+
+    ! AO basis dimension consistent
+    if(MyFragment%number_basis /= nbasis) then
+       print '(a,i8)','basis input', nbasis
+       print '(a,i8)','basis frag ', MyFragment%number_basis
+       call lsquit('put_XOS_orbitals_occ: AO basis dimension mismatch!',-1)
+    end if
+
+    ! Special case: No XOS orbitals, just return
+    if(nXOS==0) return
+
+    
+    ! Which AOS orbitals are XOS orbitals?
+    call mem_alloc(which_XOS,nAOS)
+    which_XOS=.true.
+    do i=1,nEOS
+       ! Index MyFragment%idxo(i) is an EOS orbital and therefore not an XOS orbital
+       which_XOS(MyFragment%idxo(i)) = .false.
+    end do
+
+    ! Put XOS orbitals into fragment structure
+    idx=0
+    do i=1,nAOS
+       if(which_XOS(i)) then
+         idx=idx+1
+         MyFragment%ypo(:,i) = XOS(:,idx)
+       end if
+    end do
+    if(idx/=nXOS) then
+       call lsquit('extract_XOS_orbitals_occ: XOS book keeping error',-1)
+    end if
+    call mem_dealloc(which_XOS)
+
+  end subroutine put_XOS_orbitals_occ
+
+
+
+  !> \brief Put unoccupied XOS orbitals into fragment structure, effectively copying elements 
+  !> "the inverse way" of what extract_XOS_orbitals_unocc is doing.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine put_XOS_orbitals_unocc(nbasis,nXOS,XOS,MyFragment)
+    implicit none
+    !> Number of basis functions in fragment
+    integer,intent(in) :: nbasis
+    !> Number of XOS orbitals
+    integer,intent(in) :: nXOS
+    !> XOS MO coefficients
+    real(realk),intent(in),dimension(nbasis,nXOS) :: XOS
+    !> Fragment info (MyFragment%ypv will be modified here)
+    type(ccatom),intent(inout) :: MyFragment
+    integer :: i,idx,nAOS,nEOS
+    logical,pointer :: which_XOS(:)
+
+    ! Dimensions
+    nAOS = MyFragment%nunoccAOS
+    nEOS = MyFragment%nunoccEOS
+
+    ! Sanity checks for dimensions
+    ! ****************************
+    if(nXOS /= nAOS - nEOS) then
+       print '(a,3i8)','EOS,AOS,XOS', nEOS,nAOS,nXOS
+       call lsquit('put_XOS_orbitals_unocc: XOS dimension mismatch!',-1)
+    end if
+
+    ! AO basis dimension consistent
+    if(MyFragment%number_basis /= nbasis) then
+       print '(a,i8)','basis input', nbasis
+       print '(a,i8)','basis frag ', MyFragment%number_basis
+       call lsquit('put_XOS_orbitals_unocc: AO basis dimension mismatch!',-1)
+    end if
+
+    ! Special case: No XOS orbitals, just return
+    if(nXOS==0) return
+
+    
+    ! Which AOS orbitals are XOS orbitals?
+    call mem_alloc(which_XOS,nAOS)
+    which_XOS=.true.
+    do i=1,nEOS
+       ! Index MyFragment%idxu(i) is an EOS orbital and therefore not an XOS orbital
+       which_XOS(MyFragment%idxu(i)) = .false.
+    end do
+
+    ! Put XOS orbitals into fragment structure
+    idx=0
+    do i=1,nAOS
+       if(which_XOS(i)) then
+         idx=idx+1
+         MyFragment%ypv(:,i) = XOS(:,idx)
+       end if
+    end do
+    if(idx/=nXOS) then
+       call lsquit('extract_XOS_orbitals_unocc: XOS book keeping error',-1)
+    end if
+    call mem_dealloc(which_XOS)
+
+  end subroutine put_XOS_orbitals_unocc
+
 
 
 end module atomic_fragment_operations

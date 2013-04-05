@@ -797,9 +797,15 @@ contains
     output_full = 0.0E0_realk
     output_full = input
     call dgetrf(n,n,output_full,n,ipiv,info)
-    if(info /= 0) stop 'error1 :: invert_matrix'
+    if(info /= 0) then
+       print *, 'info=', info
+       call lsquit('error1 :: invert_matrix',-1)
+    end if
     call dgetri(n,output_full,n,ipiv,work,n,info)
-    if(info /= 0) stop 'error2 :: invert_matrix'
+    if(info /= 0) then
+       print *, 'info=', info
+       call lsquit('error2 :: invert_matrix',-1)
+    end if
 
     output = 0.0E0_realk
     output = output_full
@@ -4084,20 +4090,23 @@ retval=0
   !> \brief Project orbitals onto MO space defined by input (see details inside subroutine).
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine project_onto_MO_space(nMO,nAO,C,S,Z)
+  subroutine project_onto_MO_space(nMOC,nMOZ,nAO,C,S,Z)
     implicit none
 
-    !> MO dimension (e.g. for indices p,q, and r below)
-    integer,intent(in) :: nMO
-    !> AO dimension (e.g. for indices mu,nu, and alpha below)
+    !> MO dimension for C coefficients (see below)
+    integer,intent(in) :: nMOC
+    !> MO dimension for Z coefficients (see below)
+    integer,intent(in) :: nMOZ
+    !> AO dimension 
     integer,intent(in) :: nAO
     !> MO coefficients for orbitals {phi} to use in projector (see details below)
-    real(realk),intent(in),dimension(nAO,nMO) :: C
+    real(realk),intent(in),dimension(nAO,nMOC) :: C
     !> AO overlap matrix
     real(realk),intent(in),dimension(nAO,nAO) :: S
     !> MO coefficients for orbitals {psi} to be projected (see details below)
-    real(realk),intent(inout),dimension(nAO,nMO) :: Z
+    real(realk),intent(inout),dimension(nAO,nMOZ) :: Z
     real(realk),pointer :: tmp(:,:),tmp2(:,:),M(:,:),Minv(:,:)
+
 
     ! The orbitals to be projected |psi_r> are written in terms of AOs {chi}:
     !
@@ -4126,29 +4135,30 @@ retval=0
 
     ! Get inverse overlap for phi orbitals: M^-1 = (C^T S C)^-1
     ! *********************************************************
-    call mem_alloc(M,nMO,nMO)
-    call dec_simple_basis_transform1(nAO,nMO,C,S,M)
+    call mem_alloc(M,nMOC,nMOC)
+    call dec_simple_basis_transform1(nAO,nMOC,C,S,M)
     ! Minv = M^-1
-    call mem_alloc(Minv,nMO,nMO)
-    call invert_matrix(M,Minv,nMO)
+    call mem_alloc(Minv,nMOC,nMOC)
+
+    call invert_matrix(M,Minv,nMOC)
     call mem_dealloc(M)
 
     ! tmp = S Z
-    call mem_alloc(tmp,nAO,nMO)
-    call dec_simple_dgemm(nAO,nAO,nMO,S,Z,tmp,'n','n')
+    call mem_alloc(tmp,nAO,nMOZ)
+    call dec_simple_dgemm(nAO,nAO,nMOZ,S,Z,tmp,'n','n')
 
     ! tmp2 = C^T S Z
-    call mem_alloc(tmp2,nMO,nMO)
-    call dec_simple_dgemm(nMO,nAO,nMO,C,tmp,tmp2,'t','n')
+    call mem_alloc(tmp2,nMOC,nMOZ)
+    call dec_simple_dgemm(nMOC,nAO,nMOZ,C,tmp,tmp2,'t','n')
     call mem_dealloc(tmp)
 
     ! tmp = M^-1 C^T S Z
-    call mem_alloc(tmp,nMO,nMO)
-    call dec_simple_dgemm(nMO,nMO,nMO,Minv,tmp2,tmp,'n','n')
+    call mem_alloc(tmp,nMOC,nMOZ)
+    call dec_simple_dgemm(nMOC,nMOC,nMOZ,Minv,tmp2,tmp,'n','n')
     call mem_dealloc(tmp2)
 
     ! Z --> C M^-1 C^T S Z
-    call dec_simple_dgemm(nAO,nMO,nMO,C,tmp,Z,'n','n')
+    call dec_simple_dgemm(nAO,nMOC,nMOZ,C,tmp,Z,'n','n')
     call mem_dealloc(tmp)
     call mem_dealloc(Minv)
 
@@ -4159,20 +4169,24 @@ retval=0
   !> \brief Project {phi} MO space defined by input out of {psi} MO space (details inside subroutine).
   !> \author Kasper Kristensen
   !> \date April 2013
-  subroutine project_out_MO_space(nMO,nAO,C,S,Z)
+  subroutine project_out_MO_space(nMOC,nMOZ,nAO,C,S,Z)
     implicit none
 
-    !> MO dimension (e.g. for indices p,q, and r below)
-    integer,intent(in) :: nMO
-    !> AO dimension (e.g. for indices mu,nu, and alpha below)
+    !> MO dimension for C coefficients (see below)
+    integer,intent(in) :: nMOC
+    !> MO dimension for Z coefficients (see below)
+    integer,intent(in) :: nMOZ
+    !> AO dimension 
     integer,intent(in) :: nAO
-    !> MO coefficients for orbitals {phi} to use in projector (see details below)
-    real(realk),intent(in),dimension(nAO,nMO) :: C
+    !> MO coefficients for orbitals {phi} to project out (see details below)
+    real(realk),intent(in),dimension(nAO,nMOC) :: C
     !> AO overlap matrix
     real(realk),intent(in),dimension(nAO,nAO) :: S
     !> MO coefficients for orbitals {psi} to be projected (see details below)
-    real(realk),intent(inout),dimension(nAO,nMO) :: Z
+    real(realk),intent(inout),dimension(nAO,nMOZ) :: Z
     real(realk),pointer :: PZ(:,:)
+
+    integer :: i,j
 
     ! The orbitals to be projected |psi_r> are written in terms of AOs {chi}:
     !
@@ -4200,12 +4214,16 @@ retval=0
     ! Z - PZ = (Z  -  C M^-1 C^T S Z).
  
     ! Copy Z and calculate projection on Z: PZ = (C M^-1 C^T S) Z
-    call mem_alloc(PZ,nAO,nMO)
+    call mem_alloc(PZ,nAO,nMOZ)
     PZ = Z 
-    call project_onto_MO_space(nMO,nAO,C,S,PZ)
+    call project_onto_MO_space(nMOC,nMOZ,nAO,C,S,PZ)
 
     ! Set output Z as: Z - PZ
-    Z = Z - PZ
+    do i=1,nAO
+       do j=1,nMOZ
+          Z(i,j) = Z(i,j) - PZ(i,j)
+       end do
+    end do
     call mem_dealloc(PZ)
 
   end subroutine project_out_MO_space
@@ -4228,7 +4246,8 @@ retval=0
     !> MO coefficients to be orthogonalized
     real(realk),intent(inout),dimension(nAO,nMO) :: C
     real(realk),pointer :: M(:,:), lambda(:), T(:,:), CT(:,:)
-    integer :: mu,p,lambdascale
+    integer :: mu,p
+    real(realk) :: lambdascale
 
     ! The MOs are orthogonalized as follows:
     !
@@ -4252,7 +4271,7 @@ retval=0
     ! ***************
     call mem_alloc(M,nMO,nMO)
     call dec_simple_basis_transform1(nAO,nMO,C,S,M)
-    
+
 
     ! (ii) Diagonalize MO overlap matrix: lambda = T^T M T
     ! ****************************************************
