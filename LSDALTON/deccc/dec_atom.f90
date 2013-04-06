@@ -3836,8 +3836,8 @@ if(DECinfo%PL>0) then
   !> \brief Create job list for DEC calculations remaining after fragment optimization.
   !> \author Kasper Kristensen
   !> \date January 2013
-  subroutine create_dec_joblist(MyMolecule,mylsitem,natoms,nocc,nunocc,&
-       &DistanceTable,OccOrbitals,UnoccOrbitals,AtomicFragments,which_superfragments,jobs)
+  subroutine create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,&
+       &DistanceTable,OccOrbitals,UnoccOrbitals,AtomicFragments,which_fragments,jobs)
 
     implicit none
     !> Full molecule info
@@ -3857,17 +3857,233 @@ if(DECinfo%PL>0) then
     !> Unoccupied orbitals
     type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
     !> Atomic fragments
-    type(ccatom),dimension(natoms),intent(inout) :: AtomicFragments
-    !> which_superfragments(i) is true if atom "i" is central in one of the super fragments
-    logical, dimension(natoms),intent(inout) :: which_superfragments
+    type(ccatom),dimension(natoms),intent(in) :: AtomicFragments
+    !> which_fragments(i) is true if atom "i" is central in one of the fragments
+    logical, dimension(natoms),intent(in) :: which_fragments
     !> Job list of super fragments listed according to size
     type(joblist),intent(inout) :: jobs
+    integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags
+    integer:: maxbasis, avbasis,nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs
+    real(realk) :: avocc,avunocc,tcpu,twall
+    logical,pointer :: occAOS(:,:),unoccAOS(:,:),REDoccAOS(:,:),REDunoccAOS(:,:),fragbasis(:,:)
+    integer,pointer :: fragsize(:),fragtrack(:),occsize(:),unoccsize(:),basissize(:)
 
-    call create_superfragments(MyMolecule,mylsitem,natoms,nocc,nunocc,&
-         &DistanceTable,OccOrbitals,UnoccOrbitals, &
-         & AtomicFragments,which_superfragments,jobs)
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-  end subroutine create_dec_joblist
+    write(DECinfo%output,*) 'Preparing job list...'
+    write(DECinfo%output,*)
+    nbasis = MyMolecule%nbasis
+
+
+    ! Fragment dimension statistics
+    ! *****************************
+    nsingle = count(which_fragments)
+    maxocc=0
+    maxunocc=0
+    maxbasis = 0
+    avocc=0.0_realk
+    avunocc=0.0_realk
+    avbasis = 0.0_realk
+    call mem_alloc(occAOS,nocc,natoms)
+    call mem_alloc(unoccAOS,nunocc,natoms)
+    call mem_alloc(REDoccAOS,nocc,natoms)
+    call mem_alloc(REDunoccAOS,nunocc,natoms)
+    call mem_alloc(Fragbasis,nbasis,natoms)
+    call mem_alloc(fragsize,natoms)
+    call mem_alloc(occsize,nocc)
+    call mem_alloc(unoccsize,nunocc)
+    call mem_alloc(basissize,nbasis)
+    occAOS=.false.
+    unoccAOS=.false.
+    REDoccAOS=.false.
+    REDunoccAOS=.false.
+    fragbasis=.false.
+    fragsize=0
+    occsize=0
+    unoccsize=0
+    basissize=0
+
+    GetStandardFrag: do atom=1,natoms
+
+       if(.not. which_fragments(atom)) cycle
+
+       ! Set occupied AOS logical vector
+       ! ===============================
+       do j=1,AtomicFragments(atom)%noccAOS
+          idx=AtomicFragments(atom)%occAOSidx(j)  ! index for local occupied AOS orbital
+          occAOS(idx,atom) = .true.  ! idx is included in "atom" fragment
+       end do
+       ! Same for reduced occ fragment space
+       do j=1,AtomicFragments(atom)%REDnoccAOS
+          idx=AtomicFragments(atom)%REDoccAOSidx(j) 
+          REDoccAOS(idx,atom) = .true.
+       end do
+
+
+       ! Set unoccupied AOS logical vector
+       ! =================================
+       do j=1,AtomicFragments(atom)%nunoccAOS
+          idx=AtomicFragments(atom)%unoccAOSidx(j)  ! index for unoccupied AOS orbital
+          unoccAOS(idx,atom) = .true.  ! idx is included in "atom" fragment
+       end do
+       ! Same for reduced unocc fragment space
+       do j=1,AtomicFragments(atom)%REDnunoccAOS
+          idx=AtomicFragments(atom)%REDunoccAOSidx(j) 
+          REDunoccAOS(idx,atom) = .true.
+       end do
+
+
+       ! Set AO basis logical vector
+       ! ===========================
+       do j=1,AtomicFragments(atom)%number_basis
+          idx=AtomicFragments(atom)%basis_idx(j)  ! index for AO basis function
+          fragbasis(idx,atom) = .true.  ! idx is included in "atom" fragment
+       end do
+
+
+       ! Statistics: Fragment sizes
+       ! ==========================
+       if(DECinfo%fragadapt) then ! use dimensions for fragment-adapted orbitals
+          occdim = AtomicFragments(atom)%noccFA
+          unoccdim = AtomicFragments(atom)%nunoccFA
+       else ! use dimensions for local orbitals
+          occdim = AtomicFragments(atom)%noccAOS
+          unoccdim = AtomicFragments(atom)%nunoccAOS
+       end if
+       basisdim = AtomicFragments(atom)%number_basis
+
+       ! Max and average dimensions
+       maxocc = max(maxocc,occdim)
+       maxunocc = max(maxunocc,unoccdim)
+       maxbasis = max(maxbasis,basisdim)
+       avOCC = avOCC +real(occdim)
+       avUNOCC = avUNOCC +real(unoccdim)
+       avbasis = avbasis + real(basisdim)
+
+       ! Store dimensions
+       occsize(atom) = occdim
+       unoccsize(atom) = unoccdim
+       basissize(atom) = basisdim
+
+       ! Fragment size measure: occ*unocc*basis
+       fragsize(atom) = occdim*unoccdim*basisdim
+
+    end do GetStandardFrag
+
+
+    ! Average dimensions
+    avOCC = avOCC/real(nsingle)
+    avUNOCC = avUNOCC/real(nsingle)
+    avbasis = avbasis/real(nsingle)
+
+
+
+    ! Sort standard fragments according to size and print out
+    ! *******************************************************
+    call mem_alloc(fragtrack,natoms)
+    call integer_inv_sort_with_tracking(fragsize, fragtrack, natoms)
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(1X,a)') '***************************************************************&
+         &****************'
+    write(DECinfo%output,*) '             Atomic fragments listed according to total size'
+    write(DECinfo%output,'(1X,a)') '***************************************************************&
+         &****************'
+
+    write(DECinfo%output,*) '   Index     Occupied (no. orb)      Virtual (no. orb)   Basis funcs.'
+
+    do i=1,natoms
+       myatom = fragtrack(i)
+
+       PrintFragInfo: if(which_fragments(myatom)) then
+
+          write(DECinfo%output,'(1X,i6,10X,i6,17X,i6,10X,i6)') myatom, occsize(myatom),&
+               & unoccsize(myatom),basissize(myatom)
+
+       end if PrintFragInfo
+
+    end do
+    write(DECinfo%output,*)
+
+    write(DECinfo%output,'(1X,a,i8)') 'FRAGANALYSIS: Max occ   ', maxocc
+    write(DECinfo%output,'(1X,a,i8)') 'FRAGANALYSIS: Max unocc ', maxunocc
+    write(DECinfo%output,'(1X,a,i8)') 'FRAGANALYSIS: Max basis ', maxbasis
+    write(DECinfo%output,'(1X,a,g15.5)') 'FRAGANALYSIS: Ave occ   ', avocc
+    write(DECinfo%output,'(1X,a,g15.5)') 'FRAGANALYSIS: Ave unocc ', avunocc
+    write(DECinfo%output,'(1X,a,g15.5)') 'FRAGANALYSIS: Ave basis ', avbasis
+    write(DECinfo%output,*)
+
+
+    ! Number of pair fragments
+    npair=0
+    do i=1,natoms
+       if(which_fragments(i)) cycle
+       do j=i+1,natoms
+          CheckPair: if(DistanceTable(i,j) < DECinfo%pair_distance_threshold) then  
+             ! Pair needs to be computed
+             npair = npair+1
+          end if CheckPair
+       end do
+    end do
+
+
+    ! Set job list for super fragments
+    ! ---------------------------------
+    if(DECinfo%first_order .or. (.not. DECinfo%simulateSF) .or. DECinfo%InclFullMolecule &
+         & .or. nsingle==1 ) then
+       ! First order calculation or actual super fragment calculation requires
+       ! atomic fragment calculations to be repeated
+       njobs = nsingle+npair
+    else
+       ! For simple energy calculation with no super fragments it is not necessary to repeat atomic
+       ! fragment calculations so we only do the pairs
+       njobs = npair
+    end if
+
+    call init_joblist(njobs,jobs)
+
+    call set_dec_joblist(natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+         & REDoccAOS,REDunoccAOS,FragBasis,which_fragments, DistanceTable, jobs)
+
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) '*****************************************************'
+    write(DECinfo%output,*) '*               DEC FRAGMENT JOB LIST               *'
+    write(DECinfo%output,*) '*****************************************************'
+    write(DECinfo%output,*) 'Number of jobs = ', njobs
+    write(DECinfo%output,*)
+    write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved '
+    do i=1,njobs
+       if(jobs%atom1(i)==jobs%atom2(i)) then ! single
+          write(DECinfo%output,'(1X,i8,4X,i15,7X,i8)') i,jobs%jobsize(i),jobs%atom1(i)
+       else ! pair
+          write(DECinfo%output,'(1X,i8,4X,i15,7X,2i8)') i,jobs%jobsize(i),jobs%atom1(i),jobs%atom2(i)
+       end if
+    end do
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+
+    ! Summary print out
+    write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Number of single jobs = ', nsingle
+    write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Number of pair jobs   = ', npair
+    write(DECinfo%output,'(1X,a,i10)') 'DEC JOB SUMMARY: Total number of jobs  = ', njobs
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+
+    call mem_dealloc(occAOS)
+    call mem_dealloc(unoccAOS)
+    call mem_dealloc(REDoccAOS)
+    call mem_dealloc(REDunoccAOS)
+    call mem_dealloc(Fragbasis)
+    call mem_dealloc(fragsize)
+    call mem_dealloc(fragtrack)
+    call mem_dealloc(occsize)
+    call mem_dealloc(unoccsize)
+    call mem_dealloc(basissize)
+
+
+  end subroutine create_dec_joblist_driver
 
 
   !> \brief Create super fragments based on information for optimized standard fragments.
@@ -5120,6 +5336,171 @@ end subroutine get_main_pair_info
 
 
   end subroutine set_superfragment_joblist
+
+
+
+
+
+  !> \brief Set fragment job list. The jobs are listed according to size
+  !> with the largest jobs first.
+  !> Note: MPI fragment statistics is not modified here.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine set_dec_joblist(natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
+       & REDoccAOS,REDunoccAOS,FragBasis,which_fragments, DistanceTable, jobs)
+
+    implicit none
+    !> Number of atoms in full molecule
+    integer,intent(in) :: natoms
+    !> Number of occupied orbitals in full molecule
+    integer,intent(in) :: nocc
+    !> Number of unoccupied orbitals in full molecule
+    integer,intent(in) :: nunocc
+    !> Number of basis functions in full molecule
+    integer,intent(in) :: nbasis
+    !> Logical vector describing occupied AOS (see create_dec_joblist_driver)
+    logical,dimension(nocc,natoms),intent(in) :: occAOS
+    !> Logical vector describing unoccupied AOS (see create_dec_joblist_driver)
+    logical,dimension(nunocc,natoms),intent(in) :: unoccAOS
+    !> Logical vector describing reduced occupied AOS (see create_dec_joblist_driver)
+    logical,dimension(nocc,natoms),intent(in) :: REDoccAOS
+    !> Logical vector describing reduced unoccupied AOS (see create_dec_joblist_driver)
+    logical,dimension(nunocc,natoms),intent(in) :: REDunoccAOS
+    !> Logical vector describing which atomic basis functions to include for each fragment
+    logical,dimension(nbasis,natoms) :: FragBasis
+    !> Logical vector describing which atoms have orbitals assigned
+    logical,dimension(natoms),intent(in) :: which_fragments
+    !> Distance table with interatomic distances
+    real(realk),dimension(natoms,natoms),intent(in) :: DistanceTable
+    !> Job list for super fragments
+    type(joblist),intent(inout) :: jobs
+    logical,pointer :: occpairAOS(:), unoccpairAOS(:),basispair(:)
+    integer :: i,j,k,njobs,nsingle
+    real(realk) :: dist
+    integer,pointer :: atom1(:),atom2(:),order(:)
+
+    ! Init stuff
+    k=0
+    njobs = jobs%njobs
+    if(njobs < 1) then ! Sanity check
+       call lsquit('set_dec_joblist : Number of jobs must be positive!',-1)
+    end if
+    call mem_alloc(atom1,njobs)
+    call mem_alloc(atom2,njobs)
+    atom1=0
+    atom2=0
+    nsingle=count(which_fragments)
+    call mem_alloc(occpairAOS,nocc)
+    call mem_alloc(unoccpairAOS,nunocc)
+    call mem_alloc(basispair,nbasis)
+
+
+
+    ! **************************
+    ! MAIN LOOP TO GET JOB SIZES
+    ! **************************
+
+    do i=1,natoms  ! Loop over atoms
+
+       if(.not. which_fragments(i)) cycle  ! No fragment for atom i
+
+       if(DECinfo%first_order .or. DECinfo%InclFullMolecule &
+            & .or. nsingle==1 ) then
+
+          ! First order calculation or full molecular calculations require
+          ! atomic fragment calculations to be repeated, while this is not necessary for
+          ! simple energy calculation.
+
+          ! Set atom indices for single super fragment job
+          k=k+1
+          atom1(k) = i
+          atom2(k) = i   ! Same index for both atoms to distinguish single from pair jobs
+
+          ! Job size is defined as occupied AOS * unoccupied AOS dimensions * nbasis
+          jobs%jobsize(k) = count(occAOS(1:nocc,i))*count(unoccAOS(1:nunocc,i))&
+               &*count(fragbasis(1:nbasis,i))
+
+       end if
+
+       ! Pair loop
+       do j=i+1,natoms
+          if(.not. which_fragments(j)) cycle ! No super fragment for atom j
+
+          ! Distance between atoms i and j
+          dist = DistanceTable(i,j)
+
+          CheckPair: if(dist < DECinfo%pair_distance_threshold) then  ! Pair needs to be computed
+             k=k+1
+
+             if(dist < DECinfo%PairReductionDistance) then
+
+                ! Merge AOS for fragment 1 and 2 for standard pair
+                call get_logical_pair_vector(nocc,occAOS(1:nocc,i),occAOS(1:nocc,j),occpairAOS)
+                call get_logical_pair_vector(nunocc,unoccAOS(1:nunocc,i),&
+                     &unoccAOS(1:nunocc,j),unoccpairAOS)
+
+             else
+
+                ! Merge AOS for fragment 1 and 2 for reduced pair
+                call get_logical_pair_vector(nocc,REDoccAOS(1:nocc,i),REDoccAOS(1:nocc,j),occpairAOS)
+                call get_logical_pair_vector(nunocc,REDunoccAOS(1:nunocc,i),&
+                     & REDunoccAOS(1:nunocc,j),unoccpairAOS)
+
+             end if
+
+             ! Logical vector for basis functions
+             call get_logical_pair_vector(nbasis,FragBasis(1:nbasis,i),FragBasis(1:nbasis,j),&
+                  & basispair)
+
+             ! Atomic indices and jobsize for pair
+             atom1(k) = i
+             atom2(k) = j
+
+             ! Job size is defined as occupied AOS * unoccupied AOS dimensions * nbasis
+             jobs%jobsize(k) = count(occpairAOS)*count(unoccpairAOS)*count(basispair)
+
+             if(jobs%jobsize(k)<1) then
+                print *, 'dist', dist
+                print *, 'k=',k
+                print *, 'pair=', i,j
+                print *, 'job size: ', jobs%jobsize(k)
+                call lsquit('set_dec_joblist: Non-positive job size, something wrong',DECinfo%output)
+             end if
+
+          end if CheckPair
+
+       end do
+    end do
+
+    ! Sanity check: k must equal number of jobs
+    if(k/=njobs) then
+       print *, 'k     = ',k
+       print *, 'njobs = ', njobs
+       call lsquit('set_dec_joblist: Something wrong in superfragment bookkeeping',-1)
+    end if
+
+    ! Sort job list according to size (largest elements first)
+    call mem_alloc(order,njobs)
+    call integer_inv_sort_with_tracking(jobs%jobsize,order,njobs)
+
+    ! Arrange atoms in correct order and put into job structure
+    do i=1,njobs
+       jobs%atom1(i) = atom1(order(i))
+       jobs%atom2(i) = atom2(order(i))
+    end do
+
+    ! No jobs have been done
+    jobs%jobsdone=.false.
+
+    ! Clean up
+    call mem_dealloc(atom1)
+    call mem_dealloc(atom2)
+    call mem_dealloc(order)
+    call mem_dealloc(occpairAOS)
+    call mem_dealloc(unoccpairAOS)
+    call mem_dealloc(basispair)
+
+  end subroutine set_dec_joblist
 
 
 

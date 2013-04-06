@@ -503,7 +503,7 @@ contains
     DoSuperFragment: if(DECinfo%SF) then
 
        ! Get job list 
-       call create_dec_joblist(MyMolecule,mylsitem,natoms,nocc,nunocc,DistanceTable,&
+       call create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,DistanceTable,&
             &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
        njobs = jobs%njobs
 
