@@ -1348,45 +1348,6 @@ contains
   end subroutine get_logical_pair_vector
 
 
-  !> \brief Find averaged center for the atoms in atomlist
-  !> whose coordinates are defined by the geometry input.
-  !> \author Kasper Kristensen
-  !> \date August 2011
-  function get_superfragment_center(listsize,atomlist,natoms,geometry) result(SF_center)
-    implicit none
-    !> Averaged center for the atoms in the atomlist; (x,y,z)-coordinates
-    real(realk), dimension(3) :: SF_center
-    !> Number of atoms in atomlist under consideration
-    integer, intent(in) :: listsize
-    !> List of atoms
-    integer, dimension(listsize), intent(in) :: atomlist
-    !> Number of atoms in fulle molecule (natoms => listsize)
-    integer, intent(in) :: natoms
-    !> Geometric coordinates for all atoms in the molecule
-    real(realk), dimension(natoms,3), intent(in) :: geometry
-    integer :: i,j,idx
-
-    SF_center=0E0_realk
-    AtomListLoop: do i=1,listsize
-       idx = atomlist(i)
-
-       xyzLOOP: do j=1,3
-          ! Add up coordinates
-          SF_center(j) = SF_center(j) + geometry(idx,j)
-       end do xyzLOOP
-
-    end do AtomListLoop
-
-    ! Divide by listsize to get averaged coordinates
-    do j=1,3
-       SF_center(j) = SF_center(j)/real(listsize)
-    end do
-
-  end function get_superfragment_center
-
-
-
-
 
   subroutine InitialFragment(MyAtom,EOS,Buffer,DistList,DistTrack,natoms)
     implicit none
@@ -2037,19 +1998,19 @@ retval=0
     end do
 
     write(DECinfo%output,*)
-    write(DECinfo%output,*) 'Fragment-adapted orbital (FAO) information:'
-    write(DECinfo%output,*) 'Using FAOs: ', MyFragment%fragmentadapted
-    write(DECinfo%output,'(1X,a,i8)') 'Size occ FAOs   = ', MyFragment%noccFA
-    write(DECinfo%output,'(1X,a,i8)') 'Size unocc FAOs = ', MyFragment%nunoccFA
+    write(DECinfo%output,*) 'Fragment-adapted orbital (FO) information:'
+    write(DECinfo%output,*) 'Using FOs: ', MyFragment%fragmentadapted
+    write(DECinfo%output,'(1X,a,i8)') 'Size occ FOs   = ', MyFragment%noccFA
+    write(DECinfo%output,'(1X,a,i8)') 'Size unocc FOs = ', MyFragment%nunoccFA
     write(DECinfo%output,'(1X,a,g12.2)') 'Occ rejection thr   ', MyFragment%RejectThr(2)
     write(DECinfo%output,'(1X,a,g12.2)') 'Unocc rejection thr ', MyFragment%RejectThr(1)
     write(DECinfo%output,*)
 
 
-    if(MyFragment%SF) then
-       write(DECinfo%output,*) 'This is a super fragment!'
+    if(MyFragment%pairfrag) then
+       write(DECinfo%output,*) 'This is a pair fragment!'
        write(DECinfo%output,*) 'Number of EOS atoms =', MyFragment%nEOSatoms
-       if(printlevel>1) write(DECinfo%output,*) 'List of EOS atoms = ', MyFragment%EOSatoms
+       write(DECinfo%output,*) 'List of EOS atoms = ', MyFragment%EOSatoms
     else
        write(DECinfo%output,*) 'This is a standard fragment!'
     end if
@@ -2155,13 +2116,13 @@ retval=0
        end if
 
        if(MyFragment%FATransSet) then
-          write(DECinfo%output,*) 'Occupied FAO coefficients (column, elements in column)'
+          write(DECinfo%output,*) 'Occupied FO coefficients (column, elements in column)'
           do i=1,MyFragment%noccFA
              write(DECinfo%output,*) i, MyFragment%CoccFA(:,i)
           end do
           write(DECinfo%output,*)
 
-          write(DECinfo%output,*) 'Virtual FAO coefficients (column, elements in column)'
+          write(DECinfo%output,*) 'Virtual FO coefficients (column, elements in column)'
           do i=1,MyFragment%nunoccFA
              write(DECinfo%output,*) i, MyFragment%CunoccFA(:,i)
           end do
@@ -2821,10 +2782,8 @@ retval=0
 
 
 
-
-
-  !> \brief Calculate distance between two superfragments defined as the
-  !> smallest distance between an atom in superfragment 1 and an atom in superfragment 2.
+  !> \brief Calculate distance between two fragments defined as the
+  !> smallest distance between an atom in fragment 1 and an atom in fragment 2.
   !> (Also works for standard fragments).
   !> \author Kasper Kristensen
   !> \date November 2011
@@ -2834,9 +2793,9 @@ retval=0
     implicit none
     !> Distance between fragments
     real(realk) :: fragdist
-    !> Super fragment 1
+    !>  fragment 1
     type(ccatom),intent(inout) :: Fragment1
-    !> Super fragment 2
+    !>  fragment 2
     type(ccatom),intent(inout) :: Fragment2
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
@@ -3040,10 +2999,10 @@ retval=0
   end function get_HF_energy_fullmolecule
 
 
-  !> Check whether super fragment restart file exist.
+  !> Check whether fragment restart file exist.
   !> \author Kasper Kristensen
   !> \date December 2012
-  function sf_restart_file_exist(first_order) result(file_exist)
+  function fragment_restart_file_exist(first_order) result(file_exist)
 
     implicit none
     !> First order calculation?
@@ -3052,7 +3011,7 @@ retval=0
     character(len=40) :: FileName
 
     if(first_order) then  ! first order calculation
-       filename = 'supergrad.info'
+       filename = 'mp2grad.info'
 
     else ! energy calculation
        filename = 'fragenergies.info'
@@ -3061,7 +3020,7 @@ retval=0
     inquire(file=FileName,exist=file_exist)
 
 
-  end function sf_restart_file_exist
+  end function fragment_restart_file_exist
 
   !> Read 64 bit integer from file and convert to 32 bit integer
   !> \author Kasper Kristensen
@@ -3287,16 +3246,15 @@ retval=0
   !> \brief Construct logical array telling which atomic pair combinations should be
   !> included when calculating pair interaction energies and other pair interaction
   !> properties - to avoid double counting.
-  !> Mainly to be used for super fragments.
   !> It also works for standard fragments but in that case the output is trivial.
   !> \author Kasper Kristensen
   !> \date September 2011
   subroutine which_pairs(Fragment1,Fragment2,natoms,dopair)
 
     implicit none
-    ! (Super) Fragment 1 in pair
+    ! Fragment 1 in pair
     type(ccatom),intent(inout) :: Fragment1
-    ! (Super) Fragment 2 in pair
+    ! Fragment 2 in pair
     type(ccatom),intent(inout) :: Fragment2
     integer, intent(in) :: natoms
     logical,dimension(natoms,natoms),intent(inout) :: dopair
@@ -3307,8 +3265,8 @@ retval=0
     !
     ! Example:
     ! ********
-    ! Super fragment 1 has been constructed from standard atoms 3 and 5
-    ! Super fragment 2 has been constructed from standard atoms 7 and 8.
+    ! fragment 1 has been constructed from standard atoms 3 and 5
+    ! fragment 2 has been constructed from standard atoms 7 and 8.
     ! In this case we should include all pair combinaitons of 3 and 5
     ! with 7 and 8 - and of course not the diagonal elements, since that would
     ! introduce double countings.
@@ -3322,7 +3280,7 @@ retval=0
 
     ! Set which atoms to consider for pair
     dopair=.false.
-    do a=1,fragment1%nEOSatoms  ! Loop over atoms in fragment 1 (just a single atom if not super fragment)
+    do a=1,fragment1%nEOSatoms  ! Loop over atoms in fragment 1 
        do b=1,fragment2%nEOSatoms ! Loop over atoms in fragment 2
 
           ax=fragment1%EOSatoms(a) ! Atom index for atom in fragment 1
@@ -3353,9 +3311,9 @@ retval=0
   subroutine which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair)
 
     implicit none
-    ! (Super) Fragment 1 in pair
+    ! Fragment 1 in pair
     type(ccatom),intent(inout) :: Fragment1
-    ! (Super) Fragment 2 in pair
+    ! Fragment 2 in pair
     type(ccatom),intent(inout) :: Fragment2
     !> Pair fragment
     type(ccatom),intent(inout) :: PairFragment
@@ -3455,9 +3413,9 @@ retval=0
   subroutine which_pairs_unocc(Fragment1,Fragment2,PairFragment,dopair)
 
     implicit none
-    ! (Super) Fragment 1 in pair
+    ! Fragment 1 in pair
     type(ccatom),intent(inout) :: Fragment1
-    ! (Super) Fragment 2 in pair
+    ! Fragment 2 in pair
     type(ccatom),intent(inout) :: Fragment2
     !> Pair fragment
     type(ccatom),intent(inout) :: PairFragment

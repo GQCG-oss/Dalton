@@ -1227,10 +1227,11 @@ contains
   end subroutine distribute_mpi_jobs
 
 
-  !> \brief Bcast super fragment joblist from master to slaves
+  !> \brief Bcast fragment joblist from master to slaves
+  !> for fragment job list AFTER fragment optimization is done.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine bcast_superfragment_joblist(jobs,comm)
+  subroutine bcast_post_fragopt_joblist(jobs,comm)
 
     implicit none
     !> Job list (send from master to slaves via communicator)
@@ -1252,11 +1253,11 @@ contains
     call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,comm)
 
 
-  end subroutine bcast_superfragment_joblist
+  end subroutine bcast_post_fragopt_joblist
 
 
 
-  !> \brief MPI copy super fragment joblist from master to slaves using MPI buffer
+  !> \brief MPI copy fragment joblist from master to slaves using MPI buffer
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine mpicopy_fragment_joblist(jobs)

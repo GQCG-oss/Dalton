@@ -170,8 +170,9 @@ module dec_typedef_module
      integer :: AEstep
      !> Use fragment-adapted orbitals for fragment calculations
      logical :: FragAdapt
-     !> for ccsd(t) calculations, option to use ccsd optimized fragments
-     logical :: use_ccsd_frag
+     !> for ccsd(t) calculations, option to use MP2 optimized fragments
+     !KK fixme: Currently DEC-CCSD(T) ONLY works when use_mp2_frag=.true.!
+     logical :: use_mp2_frag
      ! --  
 
      ! -- Pair fragments
@@ -865,7 +866,7 @@ module dec_typedef_module
      !> Number of EOS atoms (1 for atomic fragment, 2 for pair fragment)
      integer :: nEOSatoms
      !> List of  EOS atoms
-     integer, pointer :: EOSatoms => null()
+     integer, pointer :: EOSatoms(:) => null()
 
      !> Indices for atomic basis functions in the list of basis functions for full molecule
      integer,pointer :: basis_idx(:) => null()

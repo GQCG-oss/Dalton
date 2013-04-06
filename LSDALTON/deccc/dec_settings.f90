@@ -102,8 +102,8 @@ contains
     DECinfo%LagStepSize = 5
     DECinfo%AEstep = 3
     DECinfo%fragadapt=.false.
-    ! for ccsd(t) calculations, option to use ccsd optimized fragments
-    DECinfo%use_ccsd_frag=.false.
+    ! for ccsd(t) calculations, option to use MP2 optimized fragments
+    DECinfo%use_mp2_frag=.true.
 
     ! -- Pair fragments
     DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
@@ -190,12 +190,6 @@ contains
     !> Lagrangian MP2 energy
     DECinfo%lagrangian=.true.
 
-    !> Super fragment information
-    DECinfo%SF=.true.
-    DECinfo%SF_maxdist = 2.5E0_realk/bohr_to_angstrom ! 2.5 angstrom
-    DECinfo%SF_thr = 0.999E0_realk
-    DECinfo%SimulateSF=.false.
-
     !> MPI (undefined by default)
     DECinfo%MPIgroupsize=0
 
@@ -277,7 +271,9 @@ contains
        case('.CCSD'); DECinfo%ccModel=3; DECinfo%use_singles=.true.
        case('.CCSD(T)'); DECinfo%ccModel=4; DECinfo%use_singles=.true.
        case('.RPA'); DECinfo%ccModel=5; DECinfo%use_singles=.false.
-       case('.useCCSDfrag'); DECinfo%use_ccsd_frag=.true.
+       case('.NotuseMP2frag') 
+          stop 'CCSD(T) only works with MP2 fragments! Needs fixing!'
+          DECinfo%use_mp2_frag=.false.
        !
        case('.ccMaxIter'); read(input,*) DECinfo%ccMaxIter 
        case('.F12'); DECinfo%F12=.true.
@@ -372,7 +368,6 @@ contains
        case('.gradient') 
           DECinfo%gradient=.true.
           DECinfo%first_order=.true.
-          DECinfo%SF=.true.
           DECinfo%Lagrangian=.true.
        case('.kappaMaxIter'); read(input,*) DECinfo%kappaMaxIter 
        case('.kappaMaxDIIS'); read(input,*) DECinfo%kappaMaxDIIS
@@ -388,14 +383,6 @@ contains
        case('.Memory') 
           read(input,*) DECinfo%memory           
           DECinfo%memory_defined=.true.
-          !> Super fragment calculation
-       case('.NotSuperFragment'); DECinfo%SF=.false.
-       case('.MaxDistSF'); read(input,*) DECinfo%SF_maxdist
-       case('.MaxDistSFAngstrom') 
-          read(input,*) DECinfo%SF_maxdist
-          DECinfo%SF_maxdist = DECinfo%SF_maxdist/bohr_to_angstrom
-       case('.OverlapThrSF'); read(input,*) DECinfo%SF_thr
-       case('.SimulateSF'); DECinfo%SimulateSF=.true.
        case('.CCSDforce_scheme'); DECinfo%force_scheme=.true.
                read(input,*) DECinfo%en_mem
        case('.TESTARRAY'); DECinfo%array_test=.true.
@@ -408,7 +395,6 @@ contains
        case('.MP2density') 
           DECinfo%MP2density=.true.
           DECinfo%first_order=.true.
-          DECinfo%SF=.true.
           DECinfo%Lagrangian=.true.
           !> Collect fragment contributions to calculate full molecular MP2 density
        case('.SkipFull') 
@@ -501,25 +487,18 @@ contains
        DECinfo%InclFullMolecule = .true.
     end if SimulateFullCalc
 
-    ccsdpt_calc_tmp: if ((DECinfo%ccModel .eq. 4 .and. (.not. DECinfo%SimulateSF)) &
-                         & .and. (DECinfo%ccModel .eq. 4 .and. (.not. DECinfo%full_molecular_cc))) then
 
-       call lsquit('temporarily, dec-ccsd(t) must be done in combination &
-               & with .SimulateSF or .ccFull keywords',DECinfo%output)
-
-    end if ccsdpt_calc_tmp    
-
-    if(DECinfo%ccmodel==4 .and. DECinfo%restart .and. (.not. DECinfo%use_ccsd_frag)) then
+    if(DECinfo%ccmodel==4 .and. DECinfo%restart .and. (.not. DECinfo%use_mp2_frag)) then
        call lsquit('Restart option currently not implemented for CCSD(T)!',DECinfo%output)
     end if
 
-    ! Fragment-adapted orbitals (FAOs) only work when super fragments 
-    ! are just simulated and not actually used.
-    ! Also FAOs do not work with reduced pairs, set reduction distance to 1000000 to
+    ! FOs do not work with reduced pairs, set reduction distance to 1000000 to
     ! avoid it from being used in practice
     if(DECinfo%fragadapt) then
-       DECinfo%simulateSF = .true.
        DECinfo%PairReductionDistance = 1.0e6_realk
+       if(DECinfo%ccmodel==4) then
+          call lsquit('CCSD(T) not implemented for fragment-adapted orbitals',-1)
+       end if
     end if
 
 
@@ -546,15 +525,9 @@ if(DECinfo%restart) then
 end if
 #endif
 
-if(DECinfo%frozencore .and. DECinfo%singlespolari) then
-call lsquit('Frozen core not implemented with long range singles correction!',-1)
-end if
-
-#ifdef VAR_LSMPI
 if(DECinfo%SinglesPolari) then
-call lsquit('Full singles polarization has been temporarily disabled for MPI',-1)
+call lsquit('Full singles polarization has been temporarily disabled!',-1)
 end if
-#endif
 
 
   end subroutine check_dec_input
@@ -655,10 +628,6 @@ end if
     WRITE(lupri,'(A32,ES18.9)')' memallo_time_cpu ' ,DECitem%memallo_time_cpu
     WRITE(lupri,'(A32,ES18.9)')' memallo_time_wall ' ,DECitem%memallo_time_wall
     WRITE(lupri,'(A32,L1)')' lagrangian ' ,DECitem%lagrangian
-    WRITE(lupri,'(A32,L1)')' SF ' ,DECitem%SF
-    WRITE(lupri,'(A32,ES18.9)')' SF_maxdist ' ,DECitem%SF_maxdist
-    WRITE(lupri,'(A31,ES18.9)')' SF_THR ' ,DECitem%SF_THR
-    WRITE(lupri,'(A31,L1)')' SimulateSF ' ,DECitem%SimulateSF
     WRITE(lupri,'(A31,I8)')' MPIgroupsize ' ,DECitem%MPIgroupsize
     WRITE(lupri,'(A31,L1)')' first_order ' ,DECitem%first_order
     WRITE(lupri,'(A31,L1)')' MP2density ' ,DECitem%MP2density

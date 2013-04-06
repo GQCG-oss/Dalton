@@ -267,7 +267,7 @@ contains
 
 
     implicit none
-    !> Atomic (super) fragment
+    !> Atomic fragment
     type(ccatom),intent(inout) :: MyFragment
     !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
     type(array4),intent(inout) :: t2occ  ! ordered as (C,I,J,D) at output
@@ -290,10 +290,7 @@ contains
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
 
-    if(.not. MyFragment%SF) then
-       call lsquit('single_calculate_mp2gradient_driver: Only implemented for super fragments!',DECinfo%output)
-    end if
-    write(DECinfo%output,*) 'Calculating MP2 gradient for super fragment', MyFragment%atomic_number
+    write(DECinfo%output,*) 'Calculating MP2 gradient for fragment', MyFragment%atomic_number
 
     ! Init MP2 gradient structure
     call init_mp2grad(MyFragment,grad)
@@ -344,7 +341,7 @@ contains
 
     implicit none
 
-    !> Atomic (super) fragment
+    !> Atomic fragment
     type(ccatom),intent(inout) :: MyFragment
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: ThetaOCC
@@ -468,7 +465,7 @@ contains
     implicit none
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: ThetaOCC
-    !> Atomic (super) fragment
+    !> Atomic fragment
     type(ccatom),intent(inout) :: MyFragment
     !> Structure containing MP2 gradient info, including Ltheta.
     type(mp2grad), intent(inout) :: grad
@@ -661,11 +658,11 @@ contains
 
 
     implicit none
-    !> Super Fragment 1 in the pair fragment
+    !> Fragment 1 in the pair fragment
     type(ccatom),intent(inout) :: Fragment1
-    !> Super Fragment 2 in the pair fragment
+    !> Fragment 2 in the pair fragment
     type(ccatom),intent(inout) :: Fragment2
-    !> Super Pair fragment
+    !> Pair fragment
     type(ccatom),intent(inout) :: pairfragment
     !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
     type(array4),intent(in) :: t2occ
@@ -687,9 +684,6 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-    if(.not. PairFragment%SF) then
-       call lsquit('pair_calculate_mp2gradient: Only implemented for super fragments!',DECinfo%output)
-    end if
     write(DECinfo%output,*) 'Calculating MP2 gradient for pair fragment', &
          & PairFragment%EOSatoms
 
@@ -737,11 +731,11 @@ contains
 
     implicit none
 
-    !> Super Fragment 1 in the pair fragment
+    !> Fragment 1 in the pair fragment
     type(ccatom),intent(inout) :: Fragment1
-    !> Super Fragment 2 in the pair fragment
+    !> Fragment 2 in the pair fragment
     type(ccatom),intent(inout) :: Fragment2
-    !> Super Pair fragment
+    !> Pair fragment
     type(ccatom),intent(inout) :: pairfragment
     !> Theta array, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
     type(array4),intent(inout) :: ThetaOCC       ! ordered as (C,I,J,D) at output
@@ -954,7 +948,7 @@ contains
     implicit none
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: ThetaOCC
-    !> Pair (super) fragment
+    !> Pair fragment
     type(ccatom),intent(inout) :: PairFragment
     !> Number of occupied EOS orbitals
     integer,intent(in) :: noccEOS
@@ -1898,7 +1892,7 @@ contains
 
 
   !> \brief Write intermediates for full MP2 gradient structure and
-  !> super fragment energies to file supergrad.info for easy restart.
+  !> fragment energies to file mp2grad.info for easy restart.
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine write_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
@@ -1908,7 +1902,7 @@ contains
     integer,intent(in) :: natoms
     !> Fragment energies (see ccatom type def)
     real(realk),dimension(natoms,natoms,ndecenergies),intent(in) :: FragEnergies
-    !> Job list of super fragments
+    !> Job list of fragments
     type(joblist),intent(in) :: jobs
     !> Full MP2 gradient structure
     type(fullmp2grad),intent(in) :: fullgrad
@@ -1918,19 +1912,19 @@ contains
 
     ! Init stuff
     funit = -1
-    FileName='supergrad.info'
+    FileName='mp2grad.info'
 
     ! backup exisiting file
     inquire(file=FileName,exist=file_exist)
     if(file_exist) then
 #ifdef SYS_AIX
-       call rename('supergrad.info\0','supergrad.backup\0')
+       call rename('mp2grad.info\0','mp2grad.backup\0')
 #else
-       call rename('supergrad.info','supergrad.backup')
+       call rename('mp2grad.info','mp2grad.backup')
 #endif
     end if
 
-    ! Create a new file supergrad.info
+    ! Create a new file mp2grad.info
     call lsopen(funit,FileName,'NEW','UNFORMATTED')
 
 
@@ -1959,7 +1953,7 @@ contains
 
 
   !> \brief Read intermediates for full MP2 gradient structure and
-  !> super fragment energies from file supergrad.info for easy restart.
+  !> fragment energies from file mp2grad.info for easy restart.
   !> \author Kasper Kristensen
   !> \date June 2012
   subroutine read_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
@@ -1969,7 +1963,7 @@ contains
     integer,intent(in) :: natoms
     !> Fragment energies (see ccatom type def)
     real(realk),dimension(natoms,natoms,ndecenergies),intent(inout) :: FragEnergies
-    !> Job list of super fragments
+    !> Job list of fragments
     type(joblist),intent(inout) :: jobs
     !> Full MP2 gradient structure
     !> (the values are changed here, but it is assumed that the matrices have been initialized)
@@ -1980,16 +1974,16 @@ contains
 
     ! Init stuff
     funit = -1
-    FileName='supergrad.info'
+    FileName='mp2grad.info'
 
     ! Sanity check
     inquire(file=FileName,exist=file_exist)
     if(.not. file_exist) then
        call lsquit('read_gradient_and_energies_for_restart: &
-            & File supergrad.info does not exist!',-1)
+            & File mp2grad.info does not exist!',-1)
     end if
 
-    ! Open file supergrad.info
+    ! Open file mp2grad.info
     call lsopen(funit,FileName,'OLD','UNFORMATTED')
 
 
@@ -2421,11 +2415,11 @@ contains
 
 
     implicit none
-    !> Super Fragment 1 in the pair fragment
+    !> Fragment 1 in the pair fragment
     type(ccatom),intent(inout) :: Fragment1
-    !> Super Fragment 2 in the pair fragment
+    !> Fragment 2 in the pair fragment
     type(ccatom),intent(inout) :: Fragment2
-    !> Atomic (super) pairfragment
+    !> Pair fragment
     type(ccatom),intent(inout) :: pairfragment
     !> t2 amplitudes, only for EOS orbitals using occupied partitioning, order:  (A,I,B,J)
     type(array4),intent(in) :: t2occ
