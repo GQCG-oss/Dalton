@@ -1397,18 +1397,9 @@ contains
     if(.not. AddToBuffer) then
        nullify(dens%SF_atomlist)
        call mem_alloc(dens%SF_atomlist,dens%SF_nfrags)
-       nullify(dens%virtidx)
-       call mem_alloc(dens%virtidx,dens%nvirt)
-       nullify(dens%occidx)
-       call mem_alloc(dens%occidx,dens%nocc)
-       nullify(dens%occtotidx)
-       call mem_alloc(dens%occtotidx,dens%nocctot)
     end if
     ! Buffer handling
     call ls_mpi_buffer(dens%SF_atomlist,dens%SF_nfrags,infpar%master)
-    call ls_mpi_buffer(dens%virtidx,dens%nvirt,infpar%master)
-    call ls_mpi_buffer(dens%occidx,dens%nocc,infpar%master)
-    call ls_mpi_buffer(dens%occtotidx,dens%nocctot,infpar%master)
 
 
     ! Real pointers

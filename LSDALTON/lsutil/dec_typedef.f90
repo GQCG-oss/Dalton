@@ -879,13 +879,6 @@ module dec_typedef_module
      !> List of atomic sites for the corresponding standard fragments
      integer, pointer :: SF_atomlist(:) => null()
 
-     !> Indices for virtual AOS orbitals in fragment in the list of orbitals for the full molecule
-     ! (dimension nvirt, same as total_unocc_space_idx in ccatom type)
-     integer, pointer :: virtidx(:) => null()
-     !> Indices for occupied AOS orbitals in fragment in the list of orbitals for the full molecule
-     integer, pointer :: occidx(:) => null()
-     !> Indices for occupied core+valence AOS orbitals (only different from occidx for frozen core)
-     integer, pointer :: occtotidx(:) => null()
      !> Indices for atomic basis functions in the list of basis functions for full molecule
      integer,pointer :: basis_idx(:) => null()
 

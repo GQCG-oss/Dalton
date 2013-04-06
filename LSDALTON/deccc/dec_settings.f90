@@ -96,7 +96,7 @@ contains
     DECinfo%InclFullMolecule = .false.
     DECinfo%PL=0
     DECinfo%SkipCC=.false.
-    DECinfo%PurifyMOs=.true.
+    DECinfo%PurifyMOs=.false.
     DECinfo%precondition_with_full=.false.
     DECinfo%HybridScheme=.false.
     DECinfo%LagStepSize = 5
@@ -339,7 +339,7 @@ contains
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
        case('.ccsdExpl'); DECinfo%ccsd_expl=.true.
        case('.skipCC'); DECinfo%SkipCC=.true. 
-       case('.NoPurification'); DECinfo%PurifyMOs=.false.
+       case('.Purification'); DECinfo%PurifyMOs=.true.
        case('.precWithFull'); DECinfo%precondition_with_full=.true.
        case('.SimpleMullikenThresh'); DECinfo%simple_mulliken_threshold=.true.
        case('.normThresh'); read(input,*) DECinfo%approximated_norm_threshold

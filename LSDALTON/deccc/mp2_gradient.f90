@@ -131,9 +131,6 @@ contains
     type(mp2dens), intent(inout) :: dens
 
     nullify(dens%SF_atomlist)
-    nullify(dens%virtidx)
-    nullify(dens%occidx)
-    nullify(dens%occtotidx)
     nullify(dens%basis_idx)
     nullify(dens%Y)
     nullify(dens%X)
@@ -2163,41 +2160,6 @@ contains
     end if
 
 
-    ! Keep track of virtual AOS indices
-    ! *********************************
-    call mem_alloc(dens%virtidx,dens%nvirt)
-    do i=1,dens%nvirt
-       dens%virtidx(i) = fragment%unoccAOSidx(i)
-    end do
-
-
-    ! Keep track of occupied AOS indices
-    ! **********************************
-    call mem_alloc(dens%occidx,dens%nocc)
-    do i=1,dens%nocc
-       dens%occidx(i) = fragment%occAOSidx(i)
-    end do
-
-    ! Occupied AOS indices: core+valence
-    ! **********************************
-    ! This is only different from dens%occidx if the frozen core approx is used!
-    call mem_alloc(dens%occtotidx,dens%nocctot)
-    if(DECinfo%frozencore) then  
-
-       ! Copy core indices
-       do i=1,Fragment%ncore
-          dens%occtotidx(i) = fragment%coreidx(i)
-       end do
-       ! Copy valence indices
-       do i=1,dens%nocc
-          dens%occtotidx(Fragment%ncore+i) = fragment%occAOSidx(i)
-       end do
-
-    else
-       ! just copy occ indices which already include both core and valence
-       dens%occtotidx = dens%occidx
-    end if
-
     ! Atomic orbital indices
     ! **********************
     call mem_alloc(dens%basis_idx,dens%nbasis)
@@ -2283,9 +2245,6 @@ contains
 
     ! Deallocate vectors/arrays
     if(associated(dens%SF_atomlist)) call mem_dealloc(dens%SF_atomlist)
-    if(associated(dens%virtidx)) call mem_dealloc(dens%virtidx)
-    if(associated(dens%occidx)) call mem_dealloc(dens%occidx)
-    if(associated(dens%occtotidx)) call mem_dealloc(dens%occtotidx)
     if(associated(dens%basis_idx)) call mem_dealloc(dens%basis_idx)
     if(associated(dens%Y)) call mem_dealloc(dens%Y)
     if(associated(dens%X)) call mem_dealloc(dens%X)
