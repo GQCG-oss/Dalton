@@ -4018,8 +4018,9 @@ if(DECinfo%PL>0) then
     ! Number of pair fragments
     npair=0
     do i=1,natoms
-       if(which_fragments(i)) cycle
+       if(.not. which_fragments(i)) cycle
        do j=i+1,natoms
+          if(.not. which_fragments(j)) cycle
           CheckPair: if(DistanceTable(i,j) < DECinfo%pair_distance_threshold) then  
              ! Pair needs to be computed
              npair = npair+1
@@ -4030,9 +4031,8 @@ if(DECinfo%PL>0) then
 
     ! Set job list for super fragments
     ! ---------------------------------
-    if(DECinfo%first_order .or. (.not. DECinfo%simulateSF) .or. DECinfo%InclFullMolecule &
-         & .or. nsingle==1 ) then
-       ! First order calculation or actual super fragment calculation requires
+    if(DECinfo%first_order .or. DECinfo%InclFullMolecule .or. nsingle==1 ) then
+       ! First order calculation or other special cases require
        ! atomic fragment calculations to be repeated
        njobs = nsingle+npair
     else
@@ -4042,6 +4042,7 @@ if(DECinfo%PL>0) then
     end if
 
     call init_joblist(njobs,jobs)
+print *, nsingle,npair,njobs
 
     call set_dec_joblist(natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
          & REDoccAOS,REDunoccAOS,FragBasis,which_fragments, DistanceTable, jobs)
@@ -5404,12 +5405,9 @@ end subroutine get_main_pair_info
 
        if(.not. which_fragments(i)) cycle  ! No fragment for atom i
 
-       if(DECinfo%first_order .or. DECinfo%InclFullMolecule &
-            & .or. nsingle==1 ) then
-
-          ! First order calculation or full molecular calculations require
-          ! atomic fragment calculations to be repeated, while this is not necessary for
-          ! simple energy calculation.
+       ! First order calculation or other special cases require
+       ! atomic fragment calculations to be repeated
+       if(DECinfo%first_order .or. DECinfo%InclFullMolecule .or. nsingle==1 ) then
 
           ! Set atom indices for single super fragment job
           k=k+1
