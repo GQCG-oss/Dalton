@@ -78,7 +78,6 @@ contains
 
     fragment%basisinfoisset=.false.
     fragment%atomic_number = 0
-    fragment%atomic_number2 = 0
     fragment%noccEOS = 0
     fragment%nunoccEOS = 0
     fragment%noccAOS = 0
@@ -98,12 +97,12 @@ contains
 
   !> \brief Initialize atomic fragment based on a list of atoms for the occupied and
   !> unoccupied orbital spaces. 
-  !> For a super fragment calculation it is assumed that SF_atomlist and SF_nfrags
-  !> are set BEFORE calling this routine!
+  !> For a pair fragment calculation it is assumed that EOSatoms and nEOSatoms
+  !> are set and that fragment%pairfrag=.true. before calling this routine
   !> \author Kasper Kristensen
   subroutine atomic_fragment_init_atom_specific(MyAtom,natoms,Unocc_atoms, &
        & Occ_atoms,nOcc,nUnocc,OccOrbitals,UnoccOrbitals, &
-       & MyMolecule,mylsitem,fragment,DoBasis,FA)
+       & MyMolecule,mylsitem,fragment,DoBasis,Pairfrag,FA)
 
     implicit none
     !> Number of atom to build a fragment on
@@ -130,6 +129,8 @@ contains
     type(ccatom), intent(inout) :: fragment
     !> Make fragment basis (MO coeff and Fock matrix for fragment)?
     logical, intent(in) :: DoBasis
+    !> Is it a pair fragment?
+    logical,intent(in) :: pairfrag
     !> Use fragment-adapted orbitals?
     !> NOTE: If FA=.true. then the MO coefficients and MO Fock matrix
     !> elements in the fragment are NOT set here. Rather they should be
@@ -173,11 +174,11 @@ contains
 
 
   !> \brief Initialize atomic fragment based on a list of specific AOS orbitals.
-  !> For a super fragment calculation it is assumed that SF_atomlist and SF_nfrags
-  !> are set BEFORE calling this routine!
+  !> For a pair fragment calculation it is assumed that EOSatoms and nEOSatoms
+  !> are set and that fragment%pairfrag=.true. before calling this routine
   !> \author Kasper Kristensen
   subroutine atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, unocc_list, &
-       & occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,FA)
+       & occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,pairfrag,FA)
 
     implicit none
     !> Number of atom to build a fragment on
@@ -202,6 +203,8 @@ contains
     type(ccatom), intent(inout) :: fragment
     !> Make fragment basis (MO coeff and Fock matrix for fragment)?
     logical, intent(in) :: DoBasis
+    !> Is it a pair fragment?
+    logical,intent(in) :: pairfrag
     !> Use fragment-adapted orbitals?
     !> NOTE: If FA=.true. then the MO coefficients and MO Fock matrix
     !> elements in the fragment are NOT set here. Rather they should be
@@ -233,39 +236,35 @@ contains
     fragment%atomic_number = MyAtom
 
 
-    ! SUPER FRAGMENT SETTINGS
-    ! ***********************
-    IsThisASuperFragment: if(DECinfo%SF) then ! Super fragment
-       if(DECinfo%PL>0) write(DECinfo%output,*) '-- Initializing super fragment for atoms : ', fragment%SF_atomlist
+    ! ATOMIC VS. PAIR FRAGMENT
+    ! ************************
+    IsThisAPairFragment: if(pairfrag) then 
+       if(DECinfo%PL>0) write(DECinfo%output,*) '-- Initializing pair fragment for atoms : ', fragment%EOSatoms
 
        ! Sanity checks
-       if( (.not. associated(fragment%SF_atomlist)) ) then
-          call lsquit('atomic_fragment_init_orbital_specific: Super fragment calculation, &
-               & but SF_atomlist has not been initiated!',-1)
+       if( (.not. associated(fragment%EOSatoms)) ) then
+          call lsquit('atomic_fragment_init_orbital_specific: Pair fragment calculation, &
+               & but EOSatoms has not been initiated!',-1)
        end if
-       if( fragment%SF_nfrags /= size(fragment%SF_atomlist) ) then
-          call lsquit('atomic_fragment_init_orbital_specific: Super fragment calculation, &
+       if( fragment%nEOSatoms /= size(fragment%EOSatoms) ) then
+          call lsquit('atomic_fragment_init_orbital_specific: Pair fragment calculation, &
                & Numbers of atoms in atomlist is incorrect!',-1)
        end if
+       fragment%pairfrag=.true.
 
-       ! Set remaining super fragment info
-       fragment%SF=.true. ! super fragment
-
-    else ! NOT a super fragment
+    else 
 
        if(DECinfo%PL>0) write(DECinfo%output,*) '-- Initializing standard fragment on atom : ',MyAtom
-       fragment%SF=.false. ! not super fragment
-       fragment%SF_nfrags=1 ! contains just one fragment (itself)
+       fragment%nEOSatoms=1 ! atomic fragment, 1 EOS atom
 
-       if(associated(fragment%SF_atomlist)) then  ! dealloc and realloc with the correct size of 1
-          call mem_dealloc(fragment%SF_atomlist)
-          fragment%SF_atomlist => null()
+       if(associated(fragment%EOSatoms)) then  ! dealloc and realloc with the correct size of 1
+          call mem_dealloc(fragment%EOSatoms)
+          fragment%EOSatoms => null()
        end if
-       call mem_alloc(fragment%SF_atomlist,fragment%SF_nfrags)
-       fragment%SF_atomlist(1) = MyAtom
-    end if IsThisASuperFragment
-
-    ! ---- Done with super fragment settings
+       call mem_alloc(fragment%EOSatoms,fragment%nEOSatoms)
+       fragment%EOSatoms(1) = MyAtom
+       fragment%pairfrag=.false.
+    end if IsThisAPairFragment
 
 
 
@@ -277,6 +276,7 @@ contains
        occ_listEFF(1:MyMolecule%ncore) = .false.
     end if
     fragment%noccAOS = count(occ_listEFF)
+
 
     ! Size of unoccupied AOS - number of "true" elements in logical unoccupied vector
     ! *******************************************************************************
@@ -291,7 +291,7 @@ contains
     ! ********************
 
     ! Occupied EOS orbitals are those assigned to central atom in fragment
-    ! (or central atomS in case of a super fragment)
+    ! (or central atomS in case of a pair fragment)
 
     ! Avoid including core orbitals in EOS if frozen core approx. is used
     if(DECinfo%frozencore) then
@@ -305,9 +305,9 @@ contains
     OccEOSSize: do j=startidx,nOcc  
        CentralAtom=OccOrbitals(j)%centralatom
 
-       ! Loop over atoms in super fragment list (just one atom, MyAtom, if it is not a superfragment)
-       do i=1,fragment%SF_nfrags
-          listidx=fragment%SF_atomlist(i)
+       ! Loop over atoms in pair fragment list (just one atom, MyAtom, if it is not a pairfragment)
+       do i=1,fragment%nEOSatoms
+          listidx=fragment%EOSatoms(i)
           if( CentralAtom==listidx ) then ! Orbital is included in the EOS
              fragment%noccEOS = fragment%noccEOS + 1
           end if
@@ -324,9 +324,9 @@ contains
     do j=1,nunocc
        CentralAtom=UnoccOrbitals(j)%centralatom
 
-       ! Loop over atoms in super fragment list (just one atom, Myatom, if it is not a superfragment)
-       do i=1,fragment%SF_nfrags
-          listidx=fragment%SF_atomlist(i)
+       ! Loop over atoms in pair fragment list (just one atom, Myatom, if it is not a pairfragment)
+       do i=1,fragment%nEOSatoms
+          listidx=fragment%EOSatoms(i)
           if( CentralAtom==listidx ) then ! Orbital is included in the EOS
              fragment%nunoccEOS = fragment%nunoccEOS + 1
           end if
@@ -365,16 +365,16 @@ contains
     call mem_alloc(fragment%occEOSidx,fragment%noccEOS)
 
     ! Occupied EOS orbitals are those assigned to central atom in fragment
-    ! (or central atomS in case of a super fragment)
+    ! (or central atomS in case of a pair fragment)
 
     fragment%occEOSidx = 0
     idx=0
     do j=startidx,nOcc   ! no core orbitals in EOS for frozen core approx
        CentralAtom=OccOrbitals(j)%centralatom
 
-       ! Loop over atoms in super fragment list (just one atom - MyAtom - if it is not a superfragment)
-       do i=1,fragment%SF_nfrags
-          listidx=fragment%SF_atomlist(i)
+       ! Loop over atoms in pair fragment list (just one atom - MyAtom - if it is not a pairfragment)
+       do i=1,fragment%nEOSatoms
+          listidx=fragment%EOSatoms(i)
           if( CentralAtom==listidx ) then ! Orbital is included in the EOS
              idx=idx+1
              fragment%occEOSidx(idx)=j
@@ -393,16 +393,16 @@ contains
     call mem_alloc(fragment%unoccEOSidx,fragment%nunoccEOS)
 
     ! Virtual EOS orbitals are those assigned to the central atom
-    ! (or central atomS in case of a super fragment)
+    ! (or central atomS in case of a pair fragment)
 
     fragment%unoccEOSidx = 0
     idx=0
     do j=1,nunocc
        CentralAtom=UnOccOrbitals(j)%centralatom
 
-       ! Loop over atoms in super fragment list (just one atom - MyAtom - if it is not a superfragment)
-       do i=1,fragment%SF_nfrags
-          listidx=fragment%SF_atomlist(i)
+       ! Loop over atoms in pair fragment list (just one atom - MyAtom - if it is not a pairfragment)
+       do i=1,fragment%nEOSatoms
+          listidx=fragment%EOSatoms(i)
           if( CentralAtom==listidx ) then ! Orbital is included in the EOS
              idx=idx+1
              fragment%unoccEOSidx(idx)=j
@@ -452,8 +452,7 @@ contains
        fragment%BasisInfoIsSet=.false.
     end if
 
-    ! Information only used for pair, set to zero
-    fragment%atomic_number2=0
+    ! Information only used for pair, set to zero (set correctly in merged_fragment_init)
     fragment%pairdist=0.0E0_realk
 
 
@@ -888,19 +887,11 @@ contains
     type(ccatom), intent(inout) :: FAfragment
     integer :: i,ix,MyAtom,nocc,nvirt
     logical,pointer :: VirtLocal(:), OccLocal(:)
-    logical :: pairfrag,SFsave
 
 
     ! Dims
     nocc = LocalFragment%noccAOS
     nvirt = LocalFragment%nunoccAOS
-
-    ! Is this a pair fragment?
-    if(LocalFragment%atomic_number2/=0) then
-       pairfrag = .true.  ! yes it is, two central atoms have been defined
-    else
-       pairfrag = .false.  ! no it is not, only 1 central atom
-    end if
 
 
     ! =================================================
@@ -927,18 +918,15 @@ contains
     call atomic_fragment_nullify(FAfragment)
 
     ! Special info required for pair fragment (similar to merged_fragment_init subroutine)
-    ! (Also for fragment which is formally a single super fragment)
-    if(pairfrag .or. LocalFragment%SF) then
-       ! Ensure super fragment keyword is set (should be replaced by more elegant solution)
-       SFsave = DECinfo%SF
-       DECinfo%SF = .true.
-       
-       ! Copy super fragment info (pair fragment is effectively considered to be a super fragment)
-       FAfragment%SF_nfrags = localfragment%SF_nfrags
-       call mem_alloc(FAfragment%SF_atomlist,FAfragment%SF_nfrags)
-       do i=1,FAfragment%SF_nfrags
-          FAfragment%SF_atomlist(i) = localfragment%SF_atomlist(i)
+    if(LocalFragment%pairfrag) then
+
+       ! Copy pair fragment info
+       FAfragment%nEOSatoms = localfragment%nEOSatoms
+       call mem_alloc(FAfragment%EOSatoms,FAfragment%nEOSatoms)
+       do i=1,FAfragment%nEOSatoms
+          FAfragment%EOSatoms(i) = localfragment%EOSatoms(i)
        end do
+       FAfragment%pairfrag=.true.
 
        MyAtom=0  ! no central atom because it is a pair fragment
 
@@ -952,12 +940,8 @@ contains
          & mylsitem,FAfragment,.true.,FA=.true.)
 
     ! Copy special pair fragment info
-    if(pairfrag) then
-       FAfragment%atomic_number = LocalFragment%atomic_number
-       FAfragment%atomic_number2 = LocalFragment%atomic_number2
-       FAfragment%pairdist = LocalFragment%pairdist
-    end if
-    
+    if(FAfragment%pairfrag) FAfragment%pairdist = LocalFragment%pairdist
+
 
     ! Reset information for site fragment that differs from local fragment
     ! ********************************************************************
@@ -1037,12 +1021,6 @@ contains
     call dec_simple_basis_transform1(FAfragment%number_basis,FAfragment%nunoccAOS,&
          & FAfragment%ypv,FAfragment%fock,FAfragment%qqfock)
 
-
-    ! Reset keyword (more elegant solution will soon be introduced)
-    if(pairfrag .or. LocalFragment%SF) then
-       ! Reset super fragment keyword (more elegant solution is coming up...)
-       DECinfo%SF = SFsave
-    end if
 
     call mem_dealloc(VirtLocal)
     call mem_dealloc(OccLocal)
@@ -1330,7 +1308,6 @@ contains
 
 
   !> \brief Merge two single fragment into one pair fragment
-  !> NOTE: The pair fragment is considered as a super fragment.
   !> \author Kasper Kristensen
   !> \date December 2011
   subroutine merged_fragment_init(Fragment1,Fragment2,nunocc, nocc, natoms, &
@@ -1364,7 +1341,7 @@ contains
     type(ccatom),intent(inout) :: pairfragment
     logical, dimension(nunocc) :: Unocc_list
     logical, dimension(nocc) :: Occ_list
-    logical :: SFsave,pairreduction
+    logical :: pairreduction
     logical,pointer :: EOSatoms(:)
     integer :: i,j,idx
     real(realk) :: pairdist
@@ -1378,27 +1355,21 @@ contains
     call mem_alloc(EOSatoms,natoms)
     EOSatoms=.false.
 
-    do i=1,fragment1%SF_nfrags
-       EOSatoms(fragment1%SF_atomlist(i))=.true.
-       do j=1,fragment2%SF_nfrags
-          EOSatoms(fragment2%SF_atomlist(j))=.true.
-          if(fragment1%SF_atomlist(i) == fragment2%SF_atomlist(j)) then
+    do i=1,fragment1%nEOSatoms
+       EOSatoms(fragment1%EOSatoms(i))=.true.
+       do j=1,fragment2%nEOSatoms
+          EOSatoms(fragment2%EOSatoms(j))=.true.
+          if(fragment1%EOSatoms(i) == fragment2%EOSatoms(j)) then
              call lsquit('merged_fragment_init: Overlap between EOS atoms for fragment 1 and 2 ',DECinfo%output)
           end if
        end do
     end do
 
-    ! Save super fragment info - the super fragment keyword must be true
-    ! when atomic_fragment_init_orbital_specific is called.
-    ! At the end, the keyword is restored
-    SFsave = DECinfo%SF
-    DECinfo%SF = .true.
-
     ! just to be sure, initialize everything to zero or null
     call atomic_fragment_nullify(pairfragment)
 
     ! Find pair distance
-    pairdist = get_distance_between_superfragments(fragment1,&
+    pairdist = get_distance_between_fragments(fragment1,&
          & fragment2,natoms,DistanceTable)
     ! Use reduced fragments for large distances
     if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,F12.3)') 'Pair distance (Angstrom)      = '&
@@ -1420,12 +1391,12 @@ contains
 
     ! Since there is no overlap between the EOS atoms (sanity check 2),
     ! the pair EOS size is just the sum of the individual sizes
-    pairfragment%SF_nfrags = fragment1%SF_nfrags + fragment2%SF_nfrags
-    call mem_alloc(pairfragment%SF_atomlist,pairfragment%SF_nfrags)
-    if(pairfragment%SF_nfrags /= count(EOSatoms)) then
-       write(DECinfo%output,*) 'Atoms in fragment1 = ', fragment1%SF_atomlist
-       write(DECinfo%output,*) 'Atoms in fragment2 = ', fragment2%SF_atomlist
-       call lsquit('merged_fragment_init: pairfragment%SF_nfrags /= count(EOSatoms)',DECinfo%output)
+    pairfragment%nEOSatoms = fragment1%nEOSatoms + fragment2%nEOSatoms
+    call mem_alloc(pairfragment%EOSatoms,pairfragment%nEOSatoms)
+    if(pairfragment%nEOSatoms /= count(EOSatoms)) then
+       write(DECinfo%output,*) 'Atoms in fragment1 = ', fragment1%EOSatoms
+       write(DECinfo%output,*) 'Atoms in fragment2 = ', fragment2%EOSatoms
+       call lsquit('merged_fragment_init: pairfragment%nEOSatoms /= count(EOSatoms)',DECinfo%output)
     end if
 
     ! Set indices for EOS atoms for pair
@@ -1433,7 +1404,7 @@ contains
     do i=1,natoms
        if(EOSatoms(i)) then
           idx=idx+1
-          pairfragment%SF_atomlist(idx) = i
+          pairfragment%EOSatoms(idx) = i
        end if
     end do
 
@@ -1486,6 +1457,7 @@ contains
     ! Construct pair fragment as union of input fragments
     ! ***************************************************
     ! Simply set MyAtom=0 for pairs
+    pairfragment%pairfrag=.true.
     call atomic_fragment_init_orbital_specific(0,nunocc, nocc, unocc_list, &
          & occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,pairfragment,DoBasis)
 
@@ -1493,8 +1465,7 @@ contains
     ! Set remaining information special for pair
     ! ******************************************
     PairFragment%atomic_number = fragment1%atomic_number ! atom 1 in pair
-    PairFragment%atomic_number2 = fragment2%atomic_number ! atom 2 in pair
-    ! Distance between original (super) fragments
+    ! Distance between original fragments
     PairFragment%pairdist =  pairdist
     call mem_dealloc(EOSatoms)
 
@@ -1503,8 +1474,8 @@ contains
        write(DECinfo%output,*)
        write(DECinfo%output,*) 'PAIR CONSTRUCTION SUMMARY'
        write(DECinfo%output,*) '*************************'
-       write(DECinfo%output,'(1X,a,20i4)')  'PCS: EOS atoms in fragment 1          :', Fragment1%SF_atomlist
-       write(DECinfo%output,'(1X,a,20i4)')  'PCS: EOS atoms in fragment 2          :', Fragment2%SF_atomlist
+       write(DECinfo%output,'(1X,a,20i4)')  'PCS: EOS atoms in fragment 1          :', Fragment1%EOSatoms
+       write(DECinfo%output,'(1X,a,20i4)')  'PCS: EOS atoms in fragment 2          :', Fragment2%EOSatoms
        write(DECinfo%output,'(1X,a,i4)')    'PCS: Number of orbitals in virt total :', PairFragment%nunoccAOS
        write(DECinfo%output,'(1X,a,i4)')    'PCS: Number of orbitals in occ total  :', PairFragment%noccAOS
        write(DECinfo%output,'(1X,a,i4)')    'PCS: Number of basis functions        :', PairFragment%number_basis
@@ -1516,11 +1487,6 @@ contains
        call pair_fragment_adapted_transformation_matrices(MyMolecule,nocc,nunocc,&
             & OccOrbitals,UnoccOrbitals, Fragment1,Fragment2,PairFragment)
    end if
-
-
-    ! Set DECinfo%SF back to the input value
-    DECinfo%SF = SFsave
-
 
   end subroutine merged_fragment_init
 
@@ -2365,7 +2331,7 @@ end subroutine atomic_fragment_basis
 
   !> \brief Write info for a given fragment to the common file
   !> atomicfragments.info, which, eventually will contain the information
-  !> for all atomic fragments (not super fragments).
+  !> for all atomic fragments (not pair fragments).
   !> Furthermore, the file atomicfragmentsdone.info containing the job list info 
   !> (e.g. which fragments have been calculated at this stage) is updated.
   !> \author Kasper Kristensen
@@ -2455,11 +2421,10 @@ end subroutine atomic_fragment_basis
     write(wunit) fragment%unoccAOSidx
 
 
-    ! Info used mainly for super fragments
-    write(wunit) fragment%SF
-    write(wunit) fragment%SF_nfrags
-    do i=1,fragment%SF_nfrags
-       write(wunit) fragment%SF_atomlist(i)
+    ! EOS atom(s)
+    write(wunit) fragment%nEOSatoms
+    do i=1,fragment%nEOSatoms
+       write(wunit) fragment%EOSatoms(i)
     end do
 
     ! Energies
@@ -2699,31 +2664,22 @@ end subroutine atomic_fragment_basis
     end do
 
 
-    ! Info used mainly for super fragment
     if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,fragment%SF)
+       call read_64bit_to_32bit(runit,fragment%nEOSatoms)
     elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(runit,fragment%SF)
+       call read_32bit_to_64bit(runit,fragment%nEOSatoms)
     else
-       read(runit) fragment%SF
+       read(runit) fragment%nEOSatoms
     end if
 
-    if(DECinfo%convert64to32) then
-       call read_64bit_to_32bit(runit,fragment%SF_nfrags)
-    elseif(DECinfo%convert32to64) then
-       call read_32bit_to_64bit(runit,fragment%SF_nfrags)
-    else
-       read(runit) fragment%SF_nfrags
-    end if
-
-    call mem_alloc(fragment%SF_atomlist,fragment%SF_nfrags)
-    do i=1,fragment%SF_nfrags
+    call mem_alloc(fragment%EOSatoms,fragment%nEOSatoms)
+    do i=1,fragment%nEOSatoms
        if(DECinfo%convert64to32) then
-          call read_64bit_to_32bit(runit,fragment%SF_atomlist(i))
+          call read_64bit_to_32bit(runit,fragment%EOSatoms(i))
        elseif(DECinfo%convert32to64) then
-          call read_32bit_to_64bit(runit,fragment%SF_atomlist(i))
+          call read_32bit_to_64bit(runit,fragment%EOSatoms(i))
        else
-          read(runit) fragment%SF_atomlist(i)
+          read(runit) fragment%EOSatoms(i)
        end if
     end do
 
@@ -2826,50 +2782,6 @@ end subroutine atomic_fragment_basis
 
   end subroutine fragment_read_data
 
-
-
-
-  !> \brief Get file name for atomic (super) fragment, depends on partitioning scheme and atomic number:
-  !> FileName = prefixMyAtom  (e.g. LagFragment17 for standard fragment 17, see prefixes inside)
-  !> \author Kasper Kristensen
-  !> \date December 2011
-  subroutine get_fragment_name(MyAtom,FileName)
-    implicit none
-    !> Atomic number for fragment
-    integer,intent(in) :: MyAtom
-    character(len=40),intent(inout) :: FileName
-    character(len=40) :: prefix
-    integer :: length
-
-
-    ! Different prefix depending on scheme and standard vs. super fragments
-    if(DECinfo%SF) then ! Super fragment
-       prefix = "SF_LagFragment"
-    else
-       prefix = "LagFragment"
-    end if
-
-    ! Filename = prefixMyAtom   (e.g. LagFragment17 for standard fragment number 17)
-    FileName=prefix
-    length=LEN_TRIM(prefix)
-
-    ! Not very elegant - but quick - solution to annoying Fortran issue
-    if( (MyAtom > 0) .and. (MyAtom < 10) ) then
-       write(FileName(length+1:length+1),'(i1.1)') MyAtom
-    elseif( (MyAtom > 9) .and. (MyAtom < 100) ) then
-       write(FileName(length+1:length+2),'(i2.2)') MyAtom
-    elseif( (MyAtom > 99) .and. (MyAtom < 1000) ) then
-       write(FileName(length+1:length+3),'(i3.3)') MyAtom
-    elseif( (MyAtom > 999) .and. (MyAtom < 10000) ) then
-       write(FileName(length+1:length+4),'(i4.4)') MyAtom
-    elseif( (MyAtom > 9999) .and. (MyAtom < 100000) ) then
-       write(FileName(length+1:length+5),'(i5.5)') MyAtom
-    else
-       if(DECinfo%PL>0) write(DECinfo%output,*) 'MyAtom = ', MyAtom
-       call lsquit('get_fragment_name: Illegal atom number!',DECinfo%output)
-    end if
-
-  end subroutine get_fragment_name
 
 
 
@@ -3360,7 +3272,7 @@ if(DECinfo%PL>0) then
 
           ! Update full t1 array
           ! Only if orbitals "ix" and "ax" are assigned to different
-          ! super fragments (to avoid double counting).
+          ! fragments (to avoid double counting).
           if(dopair(atomA,atomI)) then
              t1full%val(ax,ix) = t1full%val(ax,ix) + PairFragment%t1(a,i)
           end if
@@ -3600,9 +3512,9 @@ if(DECinfo%PL>0) then
     ! Set redo parameter
     if(reldiff > DECinfo%SinglesThr) then
        write(DECinfo%output,*) 'Relative singles difference is larger than threhold!'
-       write(DECinfo%output,*) '--> We redo the super fragment calculations'
+       write(DECinfo%output,*) '--> We redo the fragment calculations'
        print *, 'Relative singles difference is larger than threhold!'
-       print *, '--> We redo the super fragment calculations'
+       print *, '--> We redo the fragment calculations'
        redo=.true.
     else
        write(DECinfo%output,*) 'Relative singles difference is smaller than threhold!'
@@ -3828,10 +3740,6 @@ if(DECinfo%PL>0) then
 
 
 
-  ! SUPER FRAGMENT STUFF - TO BE MODIFIED ASAP
-  ! ******************************************
-
-
 
   !> \brief Create job list for DEC calculations remaining after fragment optimization.
   !> \author Kasper Kristensen
@@ -3856,11 +3764,11 @@ if(DECinfo%PL>0) then
     type(ccorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals
     type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
-    !> Atomic fragments
+    !> Optimized atomic fragments
     type(ccatom),dimension(natoms),intent(in) :: AtomicFragments
     !> which_fragments(i) is true if atom "i" is central in one of the fragments
     logical, dimension(natoms),intent(in) :: which_fragments
-    !> Job list of super fragments listed according to size
+    !> Job list of fragments listed according to size
     type(joblist),intent(inout) :: jobs
     integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags
     integer:: maxbasis, avbasis,nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs
@@ -4029,20 +3937,19 @@ if(DECinfo%PL>0) then
     end do
 
 
-    ! Set job list for super fragments
-    ! ---------------------------------
+    ! Set job list for fragments
+    ! --------------------------
     if(DECinfo%first_order .or. DECinfo%InclFullMolecule .or. nsingle==1 ) then
        ! First order calculation or other special cases require
        ! atomic fragment calculations to be repeated
        njobs = nsingle+npair
     else
-       ! For simple energy calculation with no super fragments it is not necessary to repeat atomic
+       ! For simple energy calculation with no fragments it is not necessary to repeat atomic
        ! fragment calculations so we only do the pairs
        njobs = npair
     end if
 
     call init_joblist(njobs,jobs)
-print *, nsingle,npair,njobs
 
     call set_dec_joblist(natoms,nocc,nunocc,nbasis,occAOS,unoccAOS,&
          & REDoccAOS,REDunoccAOS,FragBasis,which_fragments, DistanceTable, jobs)
@@ -4087,1027 +3994,6 @@ print *, nsingle,npair,njobs
   end subroutine create_dec_joblist_driver
 
 
-  !> \brief Create super fragments based on information for optimized standard fragments.
-  !> This is done if:
-  !> (i)  The size of the super fragment and all its associated pairs are smaller than
-  !>      the maximum dimensions for existing fragments.
-  !> (ii) The distance between any atoms within a super fragment is below
-  !>      the maximum accepted super fragment distance (default: 2.5 Angstrom).
-  !> \author Kasper Kristensen
-  !> \date August 2011
-  subroutine create_superfragments(MyMolecule,mylsitem,natoms,nocc,nunocc,&
-       &DistanceTable,OccOrbitals,UnoccOrbitals,AtomicFragments,which_superfragments,jobs)
-
-    implicit none
-    !> Full molecule info
-    type(fullmolecule), intent(in) :: MyMolecule
-    !> LS item info for full molecule
-    type(lsitem), intent(inout) :: mylsitem
-    !> Number of atoms for full molecule
-    integer, intent(in) :: natoms
-    !> Number of occupied orbitals for full molecule
-    integer, intent(in) :: nocc
-    !> Number of unoccupied orbitals for full molecule
-    integer, intent(in) :: nunocc
-    !> Table with atomic distances
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
-    !> Occupied orbitals
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
-    !> Unoccupied orbitals
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
-    !> Standard fragments
-    !> Note 1: Only standard atoms with orbitals assigned are associated with
-    !>         a standard fragment.
-    !> Note 2: Standard fragments will be deleted and replaced by super fragments
-    !> Note 3: Both at input (standard fragments) and at output (super fragments)
-    !>         only the information in the ccatom type outside the "expensive box"
-    !>         is initiated (see type definition of ccatom).
-    type(ccatom),dimension(natoms),intent(inout) :: AtomicFragments
-    !> which_superfragments(i) is true if atom "i" is central in one of the super fragments
-    logical, dimension(natoms),intent(inout) :: which_superfragments
-    !> Job list of super fragments listed according to size
-    type(joblist),intent(inout) :: jobs
-    real(realk), dimension(nAtoms,nAtoms) :: SortedDistTable
-    integer, dimension(nAtoms,nAtoms) :: DistanceTrackMatrix
-    integer, dimension(natoms) :: nocc_per_atom, nunocc_per_atom
-    logical, dimension(natoms,natoms) :: Superfragment
-    logical,pointer :: occAOS(:,:), unoccAOS(:,:), REDoccAOS(:,:), REDunoccAOS(:,:)
-    logical,pointer :: occAOSpt(:,:), unoccAOSpt(:,:)
-    logical,pointer :: occEOS(:,:), unoccEOS(:,:)
-    logical, dimension(nocc) :: occpairAOS, occpairEOS, REDoccpairAOS
-    logical, dimension(nunocc) :: UNOCCpairAOS, unoccpairEOS, REDunoccpairAOS
-    logical,dimension(natoms) :: tmpsuperEOS
-    integer :: i,j,k,l,idx,nsuperfrag,myatom
-    integer :: atomA, atomB
-    logical :: distance_accepted, size_accepted
-    integer, pointer :: atomlist(:)
-    integer :: npairs, nsuperpairs, REDmaxocc, REDmaxunocc
-    integer :: occtmp, unocctmp, EOStmp,atom, nfrags,tmp,maxoccFA,maxunoccFA
-    real(realk) :: dist,avoccFA,avunoccFA
-    real(realk) :: pairdist(natoms,natoms)
-    integer,pointer :: fragsize(:),fragTrack(:)
-    real(realk) :: avOCC, avUNOCC, REDavOCC, REDavUNOCC
-    integer :: maxoccAOS, maxunoccAOS, noccAOS, nunoccAOS, noccEOS, nunoccEOS
-    integer :: maxoccEOS, maxunoccEOS,noccFA,nunoccFA,nbasisFA
-    real(realk) :: memavailable, maxmem, memtmp, tcpu,twall
-    integer :: njobs
-
-    call LSTIMER('START',tcpu,twall,DECinfo%output)
-
-    ! Get available memory
-    call get_currently_available_memory(MemAvailable)
-
-    ! Sanity check
-    if(.not. DECinfo%SF) then
-       call lsquit('create_superfragments_orbital_specific: DECinfo%SF not set!', DECinfo%output)
-    end if
-
-    write(DECinfo%output,*) 'Creating super fragments...'
-    write(DECinfo%output,*)
-
-    ! Init stuff
-    call mem_alloc(occAOS,nocc,natoms)
-    call mem_alloc(unoccAOS,nunocc,natoms)
-    call mem_alloc(occEOS,nocc,natoms)
-    call mem_alloc(unoccEOS,nunocc,natoms)
-    call mem_alloc(REDoccAOS,nocc,natoms)
-    call mem_alloc(REDunoccAOS,nunocc,natoms)
-    occAOS=.false.
-    unoccAOS=.false.
-    occEOS=.false.
-    unoccEOS=.false.
-    REDoccAOS=.false.
-    REDunoccAOS=.false.
-    if(DECinfo%ccmodel==4) then
-       call mem_alloc(occAOSpt,nocc,natoms)
-       call mem_alloc(unoccAOSpt,nunocc,natoms)
-       occAOSpt=.false.
-       unoccAOSpt=.false.
-    end if
-
-    ! Get number of occupied/unoccupied orbitals assigned to each atom
-    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
-    nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)
-
-
-    ! Notation to keep track of fragments and superfragments
-    ! ******************************************************
-    ! Initially the diagonal elements of the logical array superfragment tells which atoms are
-    ! associated with a standard atomic fragment, i.e. all atoms with at least one orbital assigned.
-    ! Before constructing any SFs, this is usually all non-hydrogenic atoms.
-    ! During the subroutine small atomic fragments are absorbed into larger atomic fragments to
-    ! create super fragments. This in controlled by the off-diagonal elements of the superfragment array.
-    !
-    ! Example:
-    ! --------
-    ! If orbitals are originaly assigned to both atom 4 and atom 5 we set:
-    ! superfragment(4,4)=.true.   superfragment(j,4)=.false.   for j/=4
-    ! superfragment(5,5)=.true.   superfragment(j,5)=.false.   for j/=5
-    !
-    ! If fragment 5 is absorbed in fragment 4 we set:
-    ! superfragment(4,4)=.true.   superfragment(5,4)=.true.
-    ! superfragment(j,5)=.false.  for all j (including j=5)
-    !
-    !
-    ! Similar bookkeeping is used for the orbital spaces:
-    ! ---------------------------------------------------
-    !
-    ! occAOS: Occupied AOS orbital space - dimension (nocc,natoms)
-    ! Thus, if occAOS(j,i)=.true. then occupied orbital "j" is included in the (super) fragment for atom "i"
-    !
-    ! unoccAOS: Unoccupied AOS orbital space - dimension (nunocc,natoms)
-    ! Thus, if unoccAOS(j,i)=.true. then unoccupied orbital "j" is included in the (super) fragment for atom "i"
-    !
-    ! etc.
-
-
-
-    ! Set initial fragment information (no SF so far)
-    ! ***********************************************
-    superfragment=.false.
-    nfrags=0
-    do i=1,natoms
-
-       if( (nunocc_per_atom(i) /= 0) .or. (nocc_per_atom(i) /= 0) ) then
-          nfrags=nfrags+1
-          superfragment(i,i)=.true.
-       end if
-
-    end do
-
-
-    ! Read information from standard fragments
-    ! ****************************************
-
-    ! We need to turn off the superfragment keyword when handling the standard fragments
-    ! It is turned back on after the standard fragment information has been obtained.
-    maxoccFA=0
-    maxunoccFA=0
-    avoccFA=0.0_realk
-    avunoccFA=0.0_realk
-    maxmem=0E0_realk
-    maxoccAOS=0
-    maxunoccAOS=0
-    REDmaxocc=0
-    REDmaxunocc=0
-    avOCC=0.0E0_realk
-    avUNOCC=0.0E0_realk
-    REDavOCC=0.0E0_realk
-    REDavUNOCC=0.0E0_realk
-    call mem_alloc(fragsize,natoms)
-    fragsize=0
-
-    GetStandardFrag: do atom=1,natoms
-
-       if(.not. superfragment(atom,atom)) cycle
-
-       ! Set occupied EOS logical vector
-       ! ===============================
-       do j=1,AtomicFragments(atom)%noccEOS
-          idx=AtomicFragments(atom)%occEOSidx(j)  ! index for occupied EOS orbital
-          occEOS(idx,atom) = .true.  ! idx is included in "atom" fragment
-       end do
-
-       ! Set unoccupied EOS logical vector
-       ! =================================
-       do j=1,AtomicFragments(atom)%nunoccEOS
-          idx=AtomicFragments(atom)%unoccEOSidx(j)  ! index for unoccupied EOS orbital
-          unoccEOS(idx,atom) = .true.  ! idx is included in "atom" fragment
-       end do
-
-       ! Set occupied AOS logical vector
-       ! ===============================
-       do j=1,AtomicFragments(atom)%noccAOS
-          idx=AtomicFragments(atom)%occAOSidx(j)  ! index for occupied AOS orbital
-          occAOS(idx,atom) = .true.  ! idx is included in "atom" fragment
-       end do
-       ! Same for (T) fragment
-       if(DECinfo%ccmodel==4) then
-          do j=1,AtomicFragments(atom)%parenthesis_t%noccAOS
-             idx=AtomicFragments(atom)%parenthesis_t%occAOSidx(j)  
-             occAOSpt(idx,atom) = .true. 
-          end do
-       end if
-
-       ! Set unoccupied AOS logical vector
-       ! =================================
-       do j=1,AtomicFragments(atom)%nunoccAOS
-          idx=AtomicFragments(atom)%unoccAOSidx(j)  ! index for unoccupied AOS orbital
-          unoccAOS(idx,atom) = .true.  ! idx is included in "atom" fragment
-       end do
-       ! Same for (T) fragment
-       if(DECinfo%ccmodel==4) then
-          do j=1,AtomicFragments(atom)%parenthesis_t%nunoccAOS
-             idx=AtomicFragments(atom)%parenthesis_t%unoccAOSidx(j)  
-             unoccAOSpt(idx,atom) = .true.  
-          end do
-       end if
-
-       ! Also set occ and unocc AOS vectors for reduced fragment of low accuracy
-       ! =======================================================================
-       do j=1,AtomicFragments(atom)%REDnoccAOS
-          idx=AtomicFragments(atom)%REDoccAOSidx(j)  ! index for occupied AOS orbital
-          REDoccAOS(idx,atom) = .true.  ! idx is included in "atom" fragment
-       end do
-       do j=1,AtomicFragments(atom)%REDnunoccAOS
-          idx=AtomicFragments(atom)%REDunoccAOSidx(j)  ! index for unoccupied AOS orbital
-          REDunoccAOS(idx,atom) = .true.  ! idx is included in "atom" fragment
-       end do
-
-
-       ! Statistics: Fragment sizes
-       ! ==========================
-
-       ! Max occupied AOS (measured in no. orbitals)
-       occtmp = count(occAOS(1:nocc,atom))
-       if(occtmp > maxoccAOS) maxoccAOS=occtmp
-       avOCC = avOCC +real(occtmp)
-       if(AtomicFragments(atom)%noccFA > maxoccFA) maxoccFA=AtomicFragments(atom)%noccFA
-       avoccFA = avoccFA + real(AtomicFragments(atom)%noccFA)
-       
-       ! Max unoccupied AOS (measured in no. orbitals)
-       unocctmp = count(unoccAOS(1:nunocc,atom))
-       if(unocctmp > maxunoccAOS) maxunoccAOS=unocctmp
-       avUNOCC = avUNOCC +real(unocctmp)
-       if(AtomicFragments(atom)%nunoccFA > maxunoccFA) maxunoccFA=AtomicFragments(atom)%nunoccFA
-       avunoccFA = avunoccFA + real(AtomicFragments(atom)%nunoccFA)
-
-       ! Fragment size for "atom" measured as (occ AOS size)*(unocc AOS size)
-       fragsize(atom) = occtmp*unocctmp
-
-       ! Info for reduced (lower-accuracy) fragment
-       tmp = count(REDoccAOS(1:nocc,atom))
-       if(tmp > REDmaxocc) REDmaxocc=tmp
-       REDavOCC = REDavOCC +real(tmp)
-
-       tmp = count(REDunoccAOS(1:nunocc,atom))
-       if(tmp > REDmaxunocc) REDmaxunocc=tmp
-       REDavUNOCC = REDavUNOCC +real(tmp)
-
-       ! Free standard fragment (not for simulated super fragments)
-       if(.not. DECinfo%simulateSF) then
-          if(DECinfo%ccmodel==4) then  ! also free (T) fragments
-             call atomic_fragment_free_simple(AtomicFragments(atom)%parenthesis_t)
-             deallocate(AtomicFragments(atom)%parenthesis_t)
-             nullify(AtomicFragments(atom)%parenthesis_t)
-          end if
-          call atomic_fragment_free_simple(AtomicFragments(atom))
-       end if
-
-    end do GetStandardFrag
-
-
-    ! Average AOS sizes
-    avOCC = avOCC/real(nfrags)
-    avUNOCC = avUNOCC/real(nfrags)
-    REDavOCC = REDavOCC/real(nfrags)
-    REDavUNOCC = REDavUNOCC/real(nfrags)
-    avoccFA = avoccFA/real(nfrags)
-    avunoccFA = avunoccFA/real(nfrags)
-
-
-    ! Sort standard fragments according to size and print out
-    ! *******************************************************
-    call mem_alloc(fragtrack,natoms)
-    call integer_inv_sort_with_tracking(fragsize, fragtrack, natoms)
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '***************************************************************&
-         &****************'
-    write(DECinfo%output,*) '             Standard fragments listed according to total size'
-    write(DECinfo%output,'(1X,a)') '***************************************************************&
-         &****************'
-
-    if(DECinfo%ccmodel==4) then
-       write(DECinfo%output,*) '   Index     Occupied (no. orb)      Virtual (no. orb)   Occ(T)  Vir(T)'
-    else
-       write(DECinfo%output,*) '   Index     Occupied (no. orb)      Virtual (no. orb)'
-    end if
-
-    do i=1,natoms
-       myatom = fragtrack(i)
-       if(.not. SuperFragment(myatom,myatom)) cycle
-
-       occtmp = count(occAOS(1:nocc,myatom))
-       unocctmp = count(unoccAOS(1:nunocc,myatom))
-       if(DECinfo%ccmodel==4) then
-          write(DECinfo%output,'(1X,i6,10X,i6,17X,i6,10X,2i6)') myatom, occtmp, unocctmp,&
-               & count(occAOSpt(1:nocc,myatom)), count(unoccAOSpt(1:nunocc,myatom))
-       else
-          write(DECinfo%output,'(1X,i6,10X,i6,17X,i6)') myatom, occtmp, unocctmp
-       end if
-
-    end do
-    write(DECinfo%output,*)
-
-    if(DECinfo%fragadapt) then
-       write(DECinfo%output,'(1X,a,i8)')    'STANDARD: MAXIMUM OCCUPIED FA SPACE = ', maxoccFA
-       write(DECinfo%output,'(1X,a,F12.3)') 'STANDARD: AVERAGE OCCUPIED FA SPACE = ', avoccFA
-       write(DECinfo%output,'(1X,a,i8)')    'STANDARD: MAXIMUM VIRTUAL  FA SPACE = ', maxunoccFA
-       write(DECinfo%output,'(1X,a,F12.3)') 'STANDARD: AVERAGE VIRTUAL  FA SPACE = ', avunoccFA
-    else
-       write(DECinfo%output,'(1X,a,i8)')    'STANDARD: MAXIMUM OCCUPIED SPACE = ', maxoccAOS
-       write(DECinfo%output,'(1X,a,F12.3)') 'STANDARD: AVERAGE OCCUPIED SPACE = ', avOCC
-       write(DECinfo%output,'(1X,a,i8)')    'STANDARD: MAXIMUM VIRTUAL  SPACE = ', maxunoccAOS
-       write(DECinfo%output,'(1X,a,F12.3)') 'STANDARD: AVERAGE VIRTUAL  SPACE = ', avUNOCC
-       write(DECinfo%output,'(1X,a,i8)')    'STANDARD: REDUCED MAX OCC  SPACE = ', REDmaxOCC
-       write(DECinfo%output,'(1X,a,F12.3)') 'STANDARD: REDUCED AVE OCC  SPACE = ', REDavOCC
-       write(DECinfo%output,'(1X,a,i8)')    'STANDARD: REDUCED MAX VIRT SPACE = ', REDmaxUNOCC
-       write(DECinfo%output,'(1X,a,F12.3)') 'STANDARD: REDUCED AVE VIRT SPACE = ', REDavUNOCC
-    end if
-    write(DECinfo%output,*)
-
-
-
-    ! Find maximum sizes for standard pair fragments
-    ! **********************************************
-    maxoccAOS=0
-    maxunoccAOS=0
-    maxoccEOS=0
-    maxunoccEOS=0
-    maxoccFA=0
-    maxunoccFA=0
-    avoccFA=0.0_realk
-    avunoccFA=0.0_realk
-    avocc=0.0_realk
-    avunocc=0.0_realk
-    npairs=0
-    do i=1,natoms
-       if(.not. superfragment(i,i)) cycle
-
-       do j=i+1,natoms
-
-          if(.not. superfragment(j,j)) cycle
-
-          PairDistCheck: if(DistanceTable(i,j)<DECinfo%pair_distance_threshold) then
-             ! Pair (i,j) is needed - check its size now
-             npairs=npairs+1
-
-
-             if(DECinfo%fragadapt) then  ! different dimensions
-
-                ! Get fragment-adapted dimensions
-                call get_fragment_adapted_dimensions_for_pair(AtomicFragments(i),AtomicFragments(j),&
-                     & nunocc, nocc, natoms, OccOrbitals,UnoccOrbitals,DistanceTable,MyMolecule,&
-                     & mylsitem,noccFA,nunoccFA,nbasisFA)
-
-
-                maxoccFA = max(maxoccFA,noccFA)
-                maxunoccFA = max(maxunoccFA,nunoccFA)
-                avoccFA = avoccFA + real(noccFA)
-                avunoccFA = avunoccFA + real(nunoccFA)
-                
-             else
-                
-                if(DistanceTable(i,j) < DECinfo%PairReductionDistance) then ! standard pair
-                   
-                   call get_main_pair_info(nocc,nunocc,occAOS(1:nocc,i),unoccAOS(1:nunocc,i),&
-                        & occEOS(1:nocc,i),unoccEOS(1:nunocc,i),&
-                        & occAOS(1:nocc,j),unoccAOS(1:nunocc,j),&
-                        & occEOS(1:nocc,j),unoccEOS(1:nunocc,j),&
-                        & noccAOS,nunoccAOS,noccEOS,nunoccEOS,memtmp)
-                   
-                else ! reduced pair
-                   
-                   call get_main_pair_info(nocc,nunocc,REDoccAOS(1:nocc,i),REDunoccAOS(1:nunocc,i),&
-                        & occEOS(1:nocc,i),unoccEOS(1:nunocc,i),&
-                        & REDoccAOS(1:nocc,j),REDunoccAOS(1:nunocc,j),&
-                        & occEOS(1:nocc,j),unoccEOS(1:nunocc,j),&
-                        & noccAOS,nunoccAOS,noccEOS,nunoccEOS,memtmp)
-                   
-                end if
-
-                ! Max memory
-                if(DECinfo%ccModel==1) maxmem = max(maxmem,memtmp)
-
-                ! Max sizes
-                maxoccAOS = max(maxoccAOS,noccAOS)
-                maxunoccAOS = max(maxunoccAOS,nunoccAOS)
-                maxoccEOS = max(maxoccEOS,noccEOS)
-                maxunoccEOS = max(maxunoccEOS,nunoccEOS)
-
-                ! Av sizes
-                avocc = avocc + real(noccAOS)
-                avunocc = avunocc + real(nunoccAOS)
-
-             end if
-
-          end if PairDistCheck
-
-       end do
-    end do
-
-    if(DECinfo%fragadapt) then
-
-       if(npairs==0) then  ! avoid dividing by zero
-          avoccFA = 0.0_realk
-          avunoccFA = 0.0_realk
-       else
-          avoccFA = avoccFA/real(npairs)
-          avunoccFA = avunoccFA/real(npairs)
-       end if
-
-       write(DECinfo%output,'(1X,a,i8)')    'STANDARD PAIR: MAXIMUM OCCUPIED FA  = ', maxoccFA
-       write(DECinfo%output,'(1X,a,F12.3)') 'STANDARD PAIR: AVERAGE OCCUPIED FA  = ', avoccFA
-       write(DECinfo%output,'(1X,a,i8)')    'STANDARD PAIR: MAXIMUM VIRTUAL  FA  = ', maxunoccFA
-       write(DECinfo%output,'(1X,a,F12.3)') 'STANDARD PAIR: AVERAGE VIRTUAL  FA  = ', avunoccFA
-
-    else
-
-       if(npairs==0) then  ! avoid dividing by zero
-          avocc = 0.0_realk
-          avunocc = 0.0_realk
-       else
-          avocc = avocc/real(npairs)
-          avunocc = avunocc/real(npairs)
-       end if
-
-       write(DECinfo%output,'(a,2i7)') 'STANDARD PAIR: Max occ (AOS,EOS)     ', maxoccAOS, maxoccEOS
-       write(DECinfo%output,'(a,2i7)') 'STANDARD PAIR: Max unocc (AOS,EOS)   ', maxunoccAOS, maxunoccEOS
-       write(DECinfo%output,'(a,F12.3)') 'STANDARD PAIR: Average occ (AOS)   ', avocc
-       write(DECinfo%output,'(a,F12.3)') 'STANDARD PAIR: Average unocc (AOS) ', avunocc
-       if(DECinfo%ccModel==1) then
-          write(DECinfo%output,'(a,2g12.3)') 'STANDARD PAIR: Max memory, mem available (GB)  ', &
-               & maxmem, memavailable
-          if(maxmem > memavailable) then
-             call lsquit('Maximum memory required is larger than memory available!',DECinfo%output)
-          end if
-       end if
-
-    end if
-
-
-    ! Create sorted distance table
-    ! ****************************
-    SortedDistTable=DistanceTable
-    call sort_track(SortedDistTable,DistanceTrackMatrix,nAtoms)
-
-    ! At this stage no superfragments have yet been created but we are now in a position to do that...
-
-
-    ! If super fragments are just simulated, we skip super fragment construction part
-    if(DECinfo%SimulateSF) then
-       write(DECinfo%output,*) 'SIMULATING SUPER FRAGMENTS, EFFECTIVELY USING STANDARD FRAGMENTS!'
-       goto 100
-    end if
-
-
-    ! *************************************************************************************
-    ! *************************************************************************************
-    ! *                             CREATE SUPER FRAGMENTS                                *
-    ! *************************************************************************************
-    ! *************************************************************************************
-
-    ! Merge two atomic fragments into a super fragment if:
-    ! (i)  The size of the super fragment and all its associated pairs are smaller than
-    !      the maximum dimensions maxoccAOS, maxunoccAOS, and mem (for MP2) determined above.
-    ! (ii) The distance between the two atomic fragments is below
-    !      the maximum accepted super fragment distance (default: 2.5 Angstrom).
-    !      (More generally, this distance criterion must be satisfied for any two atoms
-    !       in a super fragment).
-
-
-    ! Loop over current atomic fragments
-    CurrentFrags: do i=1,natoms
-
-       myatom=fragtrack(i)  ! largest atomic fragment first
-       if(.not. Superfragment(myatom,myatom)) cycle CurrentFrags
-       !       write(DECinfo%output,*)
-       !       write(DECinfo%output,*) 'Super fragment analysis for atom: ', myatom
-
-       ! Loop over all atomic fragments to see if any can be absorbed in super fragment "myatom",
-       ! starting with the atomic fragment where the central atom is closest to "myatom"
-       PossibleToAbsorb: do j=1,natoms
-
-          ! Index "idx" for atom number "j" according to distance from myatom
-          idx = DistanceTrackMatrix(j,myatom)
-
-          ! Fragment "idx" has no orbitals assigned or is the same as fragment "myatom" --> No merging
-          if( (.not. Superfragment(idx,idx)) .or. (idx==myatom) ) cycle PossibleToAbsorb
-
-
-          ! Distance between fragments is larger than distance threshold --> No merging
-          ! ---------------------------------------------------------------------------
-          distance_accepted=.true.
-          DistanceCheck: do k=1,natoms
-             if(Superfragment(k,myatom)) then ! Is atom k included in super fragment "myatom"?
-                do l=1,natoms
-                   if(Superfragment(l,idx)) then ! Is atom l included in super fragment "idx"?
-
-                      ! (k,l) distance must be below threshold for any atoms k and l
-                      ! in (super) atomic fragments myatom and idx.
-                      if(DistanceTable(k,l) > DECinfo%SF_maxdist) then
-                         distance_accepted=.false.
-                         exit
-                      end if
-
-                   end if
-                end do
-             end if
-             if(.not. distance_accepted) exit
-          end do DistanceCheck
-          if(.not. distance_accepted) cycle PossibleToAbsorb
-
-
-          ! Distance condition accepted: Next, check size of possible new super fragment
-          ! ****************************************************************************
-
-          ! Occ space
-          ! ---------
-          ! Note: occpairAOS etc. describe the possible new super fragment
-          ! which is equivalent to a pair fragment formed between current fragments
-          ! "myatom" and "idx" (hence, the "pair" name).
-          Call get_logical_pair_vector(nocc,occAOS(1:nocc,myatom),occAOS(1:nocc,idx),occpairAOS)
-          Call get_logical_pair_vector(nocc,REDoccAOS(1:nocc,myatom),REDoccAOS(1:nocc,idx),&
-               & REDoccpairAOS)
-          call get_logical_pair_vector(nocc,occEOS(1:nocc,myatom),occEOS(1:nocc,idx),occpairEOS)
-          ! Skip super fragment if occupied AOS of super fragment (myatom,idx) is larger than
-          ! the maximum size of standard (single and pair) fragments
-          if(count(occpairAOS) > maxoccAOS) cycle PossibleToAbsorb
-
-
-          ! Unocc space
-          ! -----------
-          call get_logical_pair_vector(nunocc,unoccAOS(1:nunocc,myatom),&
-               & unoccAOS(1:nunocc,idx),unoccpairAOS)
-          call get_logical_pair_vector(nunocc,REDunoccAOS(1:nunocc,myatom),&
-               & REDunoccAOS(1:nunocc,idx),REDunoccpairAOS)
-          call get_logical_pair_vector(nunocc,unoccEOS(1:nunocc,myatom),&
-               & unoccEOS(1:nunocc,idx),unoccpairEOS)
-          ! Skip super fragment if unoccupied AOS of super fragment (myatom,idx) is larger than
-          ! the maximum size for standard (single and pair) fragments
-          if(count(unoccpairAOS) > maxunoccAOS) cycle PossibleToAbsorb
-
-
-          ! EOS atoms
-          ! ---------
-          call get_logical_pair_vector(natoms,superfragment(1:natoms,myatom),&
-               & superfragment(1:natoms,idx), tmpsuperEOS)
-
-
-          ! Check sizes of all relevant pairs associated with possible new super fragment
-          size_accepted=.true.
-          kloop: do k=1,natoms
-
-             if(.not. superfragment(k,k) .or. (k==myatom) .or. (k==idx) ) cycle kloop
-
-             ! Distance for possible super pair fragment([myatom,idx], k)
-             dist = get_superpair_distance_simple(natoms,&
-                  & tmpsuperEOS,superfragment(1:natoms,k), DistanceTable)
-
-             CheckPair: if(dist < DECinfo%pair_distance_threshold) then
-
-                if(dist < DECinfo%PairReductionDistance) then ! standard pair
-
-                   call get_main_pair_info(nocc,nunocc,occpairAOS,unoccpairAOS,&
-                        & occpairEOS,unoccpairEOS,&
-                        & occAOS(1:nocc,k),unoccAOS(1:nunocc,k),&
-                        & occEOS(1:nocc,k),unoccEOS(1:nunocc,k),&
-                        & noccAOS,nunoccAOS,noccEOS,nunoccEOS,memtmp)
-
-                else ! reduced pair
-
-                   call get_main_pair_info(nocc,nunocc,REDoccpairAOS,REDunoccpairAOS,&
-                        & occpairEOS,unoccpairEOS,&
-                        & REDoccAOS(1:nocc,k),REDunoccAOS(1:nunocc,k),&
-                        & occEOS(1:nocc,k),unoccEOS(1:nunocc,k),&
-                        & noccAOS,nunoccAOS,noccEOS,nunoccEOS,memtmp)
-
-                end if
-
-                ! Is pair larger than largest existing pair? If so, exit k-loop.
-                if(noccAOS > maxoccAOS) size_accepted=.false.
-                if(nunoccAOS > maxunoccAOS) size_accepted=.false.
-                if(DECinfo%ccModel==1) then
-                   if(memtmp > maxmem) size_accepted=.false.
-                end if
-
-                if(.not. size_accepted) exit kloop
-
-             end if CheckPair
-
-          end do kloop
-
-
-          ! No super fragments if size is not accepted (cycle)
-          if(.not. size_accepted) cycle PossibleToAbsorb
-
-
-          ! ABSORB FRAGMENT "idx" in FRAGMENT "myatom"
-          ! ------------------------------------------
-          !          write(DECinfo%output,'(1X,a,i5,a,i5)') 'Absorbing fragment', idx, &
-          !               & ' in fragment ', myatom
-
-          ! 1. Absorb central atom
-          call absorb_logical_vector(natoms, Superfragment(1:natoms,myatom), Superfragment(1:natoms,idx) )
-          ! 2. Absorb occupied EOS vector
-          call absorb_logical_vector(nocc, occEOS(1:nocc,myatom), occEOS(1:nocc,idx) )
-          ! 3. Absorb virtual EOS vector
-          call absorb_logical_vector(nunocc, unoccEOS(1:nunocc,myatom), unoccEOS(1:nunocc,idx) )
-          ! 4. Absorb occupied AOS vector
-          call absorb_logical_vector(nocc, occAOS(1:nocc,myatom), occAOS(1:nocc,idx) )
-          ! 5. Absorb virtual AOS vector
-          call absorb_logical_vector(nunocc, unoccAOS(1:nunocc,myatom), unoccAOS(1:nunocc,idx) )
-          ! 6. Absorb occupied reduced AOS vector
-          call absorb_logical_vector(nocc, REDoccAOS(1:nocc,myatom), REDoccAOS(1:nocc,idx) )
-          ! 7. Absorb virtual reduced AOS vector
-          call absorb_logical_vector(nunocc, REDunoccAOS(1:nunocc,myatom), REDunoccAOS(1:nunocc,idx) )
-
-
-       end do PossibleToAbsorb
-    end do CurrentFrags
-
-
-
-    ! Set output vector for superfragments
-    ! ************************************
-100 which_superfragments=.false.
-    nsuperfrag=0
-    do i=1,natoms
-       if(SuperFragment(i,i)) then
-          which_superfragments(i) = .true.
-          nsuperfrag = nsuperfrag + 1
-       end if
-    end do
-
-
-    ! Set super fragment output (ccatom type)
-    ! ***************************************
-    maxoccAOS=0
-    maxunoccAOS=0
-    REDmaxocc=0
-    REDmaxunocc=0
-    avOCC=0.0E0_realk
-    avUNOCC=0.0E0_realk
-    REDavOCC=0.0E0_realk
-    REDavUNOCC=0.0E0_realk
-    nsuperfrag=0
-    fragsize=0
-    SetSuperFrag: do atom=1,natoms
-       if(.not. which_superfragments(atom)) cycle SetSuperFrag
-
-       InitNewFrag: if(.not. DECinfo%simulateSF) then
-
-          ! Set information required to initialize super fragment
-          ! *****************************************************
-
-          ! Count number of EOS atoms that have been merged to create SF
-          AtomicFragments(atom)%SF_nfrags = count(superfragment(:,atom))
-
-          ! Set list of original atoms now merged into SF
-          call mem_alloc(AtomicFragments(atom)%SF_atomlist,AtomicFragments(atom)%SF_nfrags)
-          idx=0
-          do j=1,natoms
-             if(superfragment(j,atom)) then
-                idx = idx+1
-                AtomicFragments(atom)%SF_atomlist(idx)=j
-             end if
-          end do
-
-          ! Initialize super fragment (but not basis info)
-! HACK
-          call atomic_fragment_init_orbital_specific(Atom,nunocc, nocc, unoccAOS(1:nunocc,atom), &
-               & occAOS(1:nocc,atom),OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
-               & AtomicFragments(atom),.false.)
-
-          if (DECinfo%ccModel==4) then
-
-             allocate(AtomicFragments(atom)%parenthesis_t)
-
-             ! Use same super fragments for (T) fragments as for CCSD in CCSD(T) calculations
-             AtomicFragments(atom)%parenthesis_t%SF_nfrags = AtomicFragments(atom)%SF_nfrags
-             call mem_alloc(AtomicFragments(atom)%parenthesis_t%SF_atomlist,&
-                  & AtomicFragments(atom)%SF_nfrags)
-             do j=1,AtomicFragments(atom)%SF_nfrags
-                AtomicFragments(atom)%parenthesis_t%SF_atomlist(j) = AtomicFragments(atom)%SF_atomlist(j)
-             end do
-! HACK
-             call atomic_fragment_init_orbital_specific(Atom,nunocc, nocc, unoccAOSpt(1:nunocc,atom), &
-                  & occAOSpt(1:nocc,atom),OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,&
-                  & AtomicFragments(atom)%parenthesis_t,.false.)
-
-          end if
-
-
-          ! Set reduced fragment information correctly
-          ! ******************************************
-          AtomicFragments(atom)%REDnoccAOS = count(REDoccAOS(1:nocc,atom))
-          AtomicFragments(atom)%REDnunoccAOS = count(REDunoccAOS(1:nunocc,atom))
-          call mem_dealloc(AtomicFragments(atom)%REDoccAOSidx)
-          call mem_dealloc(AtomicFragments(atom)%REDunoccAOSidx)
-          call mem_alloc(AtomicFragments(atom)%REDoccAOSidx,&
-               & AtomicFragments(atom)%REDnoccAOS)
-          call mem_alloc(AtomicFragments(atom)%REDunoccAOSidx,&
-               & AtomicFragments(atom)%REDnunoccAOS)
-          idx=0
-          do j=1,nocc  ! occupied AOS indices for reduced superfragment
-             if(REDoccAOS(j,atom)) then
-                idx=idx+1
-                AtomicFragments(atom)%REDoccAOSidx(idx) = j
-             end if
-          end do
-
-          idx=0
-          do j=1,nunocc  ! unoccupied AOS indices for reduced superfragment
-             if(REDunoccAOS(j,atom)) then
-                idx=idx+1
-                AtomicFragments(atom)%REDunoccAOSidx(idx) = j
-             end if
-          end do
-
-       else ! keep fragment as it is but formally consider it to be a super fragment
-          AtomicFragments(atom)%SF = .true.
-       end if InitNewFrag
-
-
-       ! Statistics: Fragment sizes
-       ! ==========================
-       nsuperfrag=nsuperfrag+1
-
-       ! Max occupied AOS (measured in no. orbitals)
-       occtmp = count(occAOS(1:nocc,atom))
-       if(occtmp > maxoccAOS) maxoccAOS=occtmp
-       avOCC = avOCC +real(occtmp)
-
-       ! Max unoccupied AOS (measured in no. orbitals)
-       unocctmp = count(unoccAOS(1:nunocc,atom))
-       if(unocctmp > maxunoccAOS) maxunoccAOS=unocctmp
-       avUNOCC = avUNOCC +real(unocctmp)
-
-       ! Fragment size for "atom" measured as (occ AOS size)*(unocc AOS size)
-       fragsize(atom) = occtmp*unocctmp
-
-       ! Info for reduced (lower-accuracy) fragment
-       tmp = count(REDoccAOS(1:nocc,atom))
-       if(tmp > REDmaxocc) REDmaxocc=tmp
-       REDavOCC = REDavOCC +real(tmp)
-
-       tmp = count(REDunoccAOS(1:nunocc,atom))
-       if(tmp > REDmaxunocc) REDmaxunocc=tmp
-       REDavUNOCC = REDavUNOCC +real(tmp)
-
-
-    end do SetSuperFrag
-
-
-    ! Average sizes
-    avOCC = avOCC/real(nsuperfrag)
-    avUNOCC = avUNOCC/real(nsuperfrag)
-    REDavOCC = REDavOCC/real(nsuperfrag)
-    REDavUNOCC = REDavUNOCC/real(nsuperfrag)
-
-
-    ! Sort list according to size
-    call integer_inv_sort_with_tracking(fragsize, fragtrack, natoms)
-
-
-    ! Print superfragment info to output
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '**************************************************************&
-         &*******************'
-    write(DECinfo%output,*) '                 Super fragments listed according to total size'
-    write(DECinfo%output,'(1X,a)') '**************************************************************&
-         &*******************'
-    write(DECinfo%output,'(5X,a)') 'Index   Occ(orb)   Virt(orb)    EOS(atoms)  --  Atoms in EOS'
-
-    do i=1,natoms
-       myatom = fragtrack(i)
-       if(.not. SuperFragment(myatom,myatom)) cycle
-
-       occtmp = count(occAOS(1:nocc,myatom))
-       unocctmp = count(unoccAOS(1:nunocc,myatom))
-       EOStmp = count(superfragment(1:natoms,myatom))
-
-
-       ! Set list of original atoms now merged into SF
-       call mem_alloc(atomlist,EOStmp)
-       idx=0
-       do j=1,natoms
-          if(superfragment(j,myatom)) then
-             idx = idx+1
-             atomlist(idx)=j
-          end if
-       end do
-
-       write(DECinfo%output,'(2X,i6,5X,i6,5X,i6,6X,i6,3X,3X,a,20i6)') myatom, occtmp, unocctmp, &
-            & EOStmp, ' -- ', atomlist
-
-       call mem_dealloc(atomlist)
-    end do
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a,i8)')    'SUPER: MAXIMUM OCCUPIED SPACE = ', maxoccAOS
-    write(DECinfo%output,'(1X,a,F12.3)') 'SUPER: AVERAGE OCCUPIED SPACE = ', avOCC
-    write(DECinfo%output,'(1X,a,i8)')    'SUPER: MAXIMUM VIRTUAL  SPACE = ', maxunoccAOS
-    write(DECinfo%output,'(1X,a,F12.3)') 'SUPER: AVERAGE VIRTUAL  SPACE = ', avUNOCC
-    write(DECinfo%output,'(1X,a,i8)')    'SUPER: REDUCED MAX OCC  SPACE = ', REDmaxOCC
-    write(DECinfo%output,'(1X,a,F12.3)') 'SUPER: REDUCED AVE OCC  SPACE = ', REDavOCC
-    write(DECinfo%output,'(1X,a,i8)')    'SUPER: REDUCED VIRTUAL  SPACE = ', REDmaxUNOCC
-    write(DECinfo%output,'(1X,a,F12.3)') 'SUPER: REDUCED VIRTUAL  SPACE = ', REDavUNOCC
-
-
-    write(DECinfo%output,*)
-
-
-
-
-    ! Find maximum sizes for super pair fragments
-    ! **********************************************
-    maxoccAOS=0
-    maxunoccAOS=0
-    maxoccEOS=0
-    maxunoccEOS=0
-    do i=1,natoms
-       if(.not. superfragment(i,i)) cycle
-
-       do j=i+1,natoms
-
-          if(.not. superfragment(j,j)) cycle
-
-          dist = get_superpair_distance_simple(natoms,&
-               & superfragment(1:natoms,i),superfragment(1:natoms,j), DistanceTable)
-
-          SuperPairDistCheck: if(dist<DECinfo%pair_distance_threshold) then
-
-             ! Pair (i,j) is needed - check its size now
-             if(dist < DECinfo%PairReductionDistance) then ! super pair
-
-                call get_main_pair_info(nocc,nunocc,occAOS(1:nocc,i),unoccAOS(1:nunocc,i),&
-                     & occEOS(1:nocc,i),unoccEOS(1:nunocc,i),&
-                     & occAOS(1:nocc,j),unoccAOS(1:nunocc,j),&
-                     & occEOS(1:nocc,j),unoccEOS(1:nunocc,j),&
-                     & noccAOS,nunoccAOS,noccEOS,nunoccEOS,memtmp)
-
-             else ! reduced pair
-
-                call get_main_pair_info(nocc,nunocc,REDoccAOS(1:nocc,i),REDunoccAOS(1:nunocc,i),&
-                     & occEOS(1:nocc,i),unoccEOS(1:nunocc,i),&
-                     & REDoccAOS(1:nocc,j),REDunoccAOS(1:nunocc,j),&
-                     & occEOS(1:nocc,j),unoccEOS(1:nunocc,j),&
-                     & noccAOS,nunoccAOS,noccEOS,nunoccEOS,memtmp)
-
-             end if
-
-             ! Max memory
-             if(DECinfo%ccModel==1) maxmem = max(maxmem,memtmp)
-
-             ! Max sizes
-             maxoccAOS = max(maxoccAOS,noccAOS)
-             maxunoccAOS = max(maxunoccAOS,nunoccAOS)
-             maxoccEOS = max(maxoccEOS,noccEOS)
-             maxunoccEOS = max(maxunoccEOS,nunoccEOS)
-
-          end if SuperPairDistCheck
-
-       end do
-    end do
-
-    write(DECinfo%output,'(a,2i7)') 'SUPER PAIR: Max occ (AOS,EOS)  ', maxoccAOS, maxoccEOS
-    write(DECinfo%output,'(a,2i7)') 'SUPER PAIR: Max unocc (AOS,EOS)', maxunoccAOS, maxunoccEOS
-    if(DECinfo%ccModel==1) then
-       write(DECinfo%output,'(a,2g12.3)') 'SUPER PAIR: Max memory, mem available (GB)  ', &
-            & maxmem, memavailable
-       if(maxmem > memavailable) then
-          call lsquit('Super pair: Maximum memory required is larger than memory available!',DECinfo%output)
-       end if
-    end if
-
-
-
-
-    ! Single fragment list - for easy grepping
-    ! ****************************************
-    if(DECinfo%PL>0) then
-       write(DECinfo%output,*)
-       write(DECinfo%output,*)
-       write(DECinfo%output,*) 'SINGLE SUPER FRAGMENT LIST'
-       write(DECinfo%output,*) '**************************'
-       write(DECinfo%output,*)
-       do atomA=1,natoms
-          if(which_superfragments(atomA)) then
-             write(DECinfo%output,*) 'SF SINGLE', atomA
-          end if
-       end do
-    end if
-    call mem_dealloc(fragsize)
-    call mem_dealloc(fragtrack)
-
-    ! Pair fragment list - for easy grepping
-    ! **************************************
-
-
-
-    ! Find distances between super fragments:
-    ! =======================================
-    ! Super fragments distance between SF1 and SF2 =
-    ! Minimum distance between an EOS atom in SF1 and an EOS atom in SF2
-    pairdist=0E0_realk
-
-    do k=1,natoms
-
-       if(.not. Superfragment(k,k)) cycle
-       do l=k+1,natoms
-          if(.not. Superfragment(l,l)) cycle
-
-          pairdist(k,l)= get_superpair_distance_simple(natoms,&
-               & superfragment(1:natoms,k), superfragment(1:natoms,l), DistanceTable)
-          pairdist(l,k) = pairdist(k,l)
-
-       end do
-    end do
-
-
-    if(DECinfo%PL>0) then
-       write(DECinfo%output,*)
-       write(DECinfo%output,*)
-       write(DECinfo%output,*) 'PAIR SUPER FRAGMENT LIST'
-       write(DECinfo%output,*) '************************'
-       write(DECinfo%output,*)
-    end if
-    nsuperpairs=0
-    do atomA=1,natoms
-       do atomB=atomA+1,natoms
-
-          if(which_superfragments(atomA) .and. which_superfragments(atomB)) then
-             ! AtomA and atomB are both superfragments
-
-             if(pairdist(AtomA,AtomB) < DECinfo%pair_distance_threshold) then
-                ! Distance between SF A and B is smaller than pair cut-off threshold
-
-                if(DECinfo%PL>0) then
-                   write(DECinfo%output,'(1X,a,F12.3,2i5)') 'SF PAIR (distance[Ang],atom1,atom2)', &
-                        & bohr_to_angstrom*pairdist(AtomA,AtomB), atomA,atomB
-                end if
-                nsuperpairs=nsuperpairs+1
-
-             end if
-
-          end if
-
-       end do
-    end do
-
-    ! Set job list for super fragments
-    ! ---------------------------------
-    if(DECinfo%first_order .or. (.not. DECinfo%simulateSF) .or. DECinfo%InclFullMolecule &
-         & .or. count(which_superfragments)==1 ) then
-       ! First order calculation or actual super fragment calculation requires
-       ! atomic fragment calculations to be repeated
-       njobs = nsuperfrag + nsuperpairs
-    else
-       ! For simple energy calculation with no super fragments it is not necessary to repeat atomic
-       ! fragment calculations so we only do the pairs
-       njobs = nsuperpairs
-    end if
-    call init_joblist(njobs,jobs)
-
-    call set_superfragment_joblist(natoms,nocc,nunocc,occAOS,unoccAOS,&
-         & REDoccAOS,REDunoccAOS,superfragment, DistanceTable, MyMolecule, &
-         & OccOrbitals,UnoccOrbitals,jobs)
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) '*****************************************************'
-    write(DECinfo%output,*) '*              SUPER FRAGMENT JOB LIST              *'
-    write(DECinfo%output,*) '*****************************************************'
-    write(DECinfo%output,*) 'Number of jobs = ', njobs
-    write(DECinfo%output,*)
-    write(DECinfo%output,*) 'JobIndex            Jobsize         Atom(s) involved '
-    do i=1,njobs
-       if(jobs%atom1(i)==jobs%atom2(i)) then ! single
-          write(DECinfo%output,'(1X,i8,4X,i15,7X,i8)') i,jobs%jobsize(i),jobs%atom1(i)
-       else ! pair
-          write(DECinfo%output,'(1X,i8,4X,i15,7X,2i8)') i,jobs%jobsize(i),jobs%atom1(i),jobs%atom2(i)
-       end if
-    end do
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-    ! Summary print out
-    write(DECinfo%output,'(1X,a,2i8,F10.2,i8)') 'SF SUMMARY (single superfrags, single frags, ratio)', &
-         & nsuperfrag, nfrags, real(nsuperfrag)/real(nfrags)
-    if(npairs>0) then
-       write(DECinfo%output,'(1X,a,2i8,F10.2,i8)') 'SF SUMMARY (pair superfrags,   pair frags,   ratio)', &
-            & nsuperpairs, npairs, real(nsuperpairs)/real(npairs)
-    end if
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-    call mem_dealloc(occAOS)
-    call mem_dealloc(unoccAOS)
-    call mem_dealloc(occEOS)
-    call mem_dealloc(unoccEOS)
-    call mem_dealloc(REDoccAOS)
-    call mem_dealloc(REDunoccAOS)
-    if(DECinfo%ccmodel==4) then
-       call mem_dealloc(occAOSpt)
-       call mem_dealloc(unoccAOSpt)
-    end if
-    call LSTIMER('GET SUPERFRAGS',tcpu,twall,DECinfo%output)
-
-
-  end subroutine create_superfragments
 
 
   ! \brief Get main info about size for pair fragment from sets of logical arrays
@@ -5171,173 +4057,7 @@ print *, nsingle,npair,njobs
     ! Memory used (fix me - generalize to CC2 and CCSD)
     mem=0E0_realk
 
-end subroutine get_main_pair_info
-
-
-
-  !> \brief Set superfragment job list. The jobs are listed according to size
-  !> with the largest jobs first.
-  !> Note: MPI fragment statistics is not modified here.
-  !> \author Kasper Kristensen
-  !> \date May 2012
-  subroutine set_superfragment_joblist(natoms,nocc,nunocc,occAOS,unoccAOS,&
-       & REDoccAOS,REDunoccAOS,superfragment, DistanceTable, MyMolecule, &
-       & OccOrbitals,UnoccOrbitals, jobs)
-
-    implicit none
-    !> Number of atoms
-    integer,intent(in) :: natoms
-    !> Number of occupied orbitals
-    integer,intent(in) :: nocc
-    !> Number of unoccupied orbitals
-    integer,intent(in) :: nunocc
-    !> Logical vector describing occupied AOS (see create_superfragments)
-    logical,dimension(nocc,natoms),intent(in) :: occAOS
-    !> Logical vector describing unoccupied AOS (see create_superfragments)
-    logical,dimension(nunocc,natoms),intent(in) :: unoccAOS
-    !> Logical vector describing reduced occupied AOS (see create_superfragments)
-    logical,dimension(nocc,natoms),intent(in) :: REDoccAOS
-    !> Logical vector describing reduced unoccupied AOS (see create_superfragments)
-    logical,dimension(nunocc,natoms),intent(in) :: REDunoccAOS
-    !> Logical vector describing super fragment composition (see create_superfragments)
-    logical,dimension(natoms,natoms),intent(in) :: superfragment
-    !> Distance table with interatomic distances
-    real(realk),dimension(natoms,natoms),intent(in) :: DistanceTable
-    !> Full molecule info
-    type(fullmolecule), intent(in) :: MyMolecule
-    !> Occupied orbitals
-    type(ccorbital), intent(in) :: OccOrbitals(nocc)
-    !> Unoccupied orbitals
-    type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
-    !> Job list for super fragments
-    type(joblist),intent(inout) :: jobs
-    logical :: occpairAOS(nocc), unoccpairAOS(nunocc)
-    integer :: i,j,k,njobs,nbasisFragment,nsingle
-    real(realk) :: dist,tcpu,twall
-    integer,pointer :: atom1(:),atom2(:),order(:)
-
-    call LSTIMER('START',tcpu,twall,DECinfo%output)
-
-    ! Init stuff
-    k=0
-    njobs = jobs%njobs
-    if(njobs < 1) then ! Sanity check
-       call lsquit('set_superfragment_joblist : Number of jobs must be positive!',-1)
-    end if
-    call mem_alloc(atom1,njobs)
-    call mem_alloc(atom2,njobs)
-    atom1=0
-    atom2=0
-
-    nsingle=0
-    do i=1,natoms
-       if(superfragment(i,i)) nsingle=nsingle+1
-    end do
-
-    ! **************************
-    ! MAIN LOOP TO GET JOB SIZES
-    ! **************************
-
-    do i=1,natoms  ! Loop over atoms
-
-       if(.not. superfragment(i,i)) cycle  ! No superfragment for atom i
-
-       if(DECinfo%first_order .or. (.not. DECinfo%simulateSF) .or. DECinfo%InclFullMolecule &
-            & .or. nsingle==1 ) then
-
-          ! First order calculation or actual super fragment calculation requires
-          ! atomic fragment calculations to be repeated, while this is not necessary for
-          ! simple energy calculation.
-
-          ! Set atom indices for single super fragment job
-          k=k+1
-          atom1(k) = i
-          atom2(k) = i   ! Same index for both atoms to distinguish single from pair jobs
-
-          ! Job size is defined as occupied AOS * unoccupied AOS dimensions * nbasis
-          call get_nbasis_for_fragment(nocc,nunocc,occAOS(1:nocc,i),unoccAOS(1:nunocc,i),&
-               & OccOrbitals,UnoccOrbitals,MyMolecule,nbasisFragment)
-          jobs%jobsize(k) = count(occAOS(1:nocc,i))*count(unoccAOS(1:nunocc,i))*nbasisFragment
-
-       end if
-
-       ! Pair loop
-       do j=i+1,natoms
-          if(.not. superfragment(j,j)) cycle ! No super fragment for atom j
-
-          ! Distance between atoms i and j
-          dist = get_superpair_distance_simple(natoms,&
-               & superfragment(1:natoms,i),superfragment(1:natoms,j), DistanceTable)
-
-          CheckPair: if(dist < DECinfo%pair_distance_threshold) then  ! Pair needs to be computed
-             k=k+1
-
-             if(dist < DECinfo%PairReductionDistance) then
-
-                ! Merge AOS for fragment 1 and 2 for standard pair
-                call get_logical_pair_vector(nocc,occAOS(1:nocc,i),occAOS(1:nocc,j),occpairAOS)
-                call get_logical_pair_vector(nunocc,unoccAOS(1:nunocc,i),&
-                     &unoccAOS(1:nunocc,j),unoccpairAOS)
-
-             else
-
-                ! Merge AOS for fragment 1 and 2 for reduced pair
-                call get_logical_pair_vector(nocc,REDoccAOS(1:nocc,i),REDoccAOS(1:nocc,j),occpairAOS)
-                call get_logical_pair_vector(nunocc,REDunoccAOS(1:nunocc,i),&
-                     & REDunoccAOS(1:nunocc,j),unoccpairAOS)
-
-             end if
-
-             ! Atomic indices and jobsize for pair
-             atom1(k) = i
-             atom2(k) = j
-             call get_nbasis_for_fragment(nocc,nunocc,occpairAOS,unoccpairAOS,&
-                  & OccOrbitals,UnoccOrbitals,MyMolecule,nbasisFragment)
-             jobs%jobsize(k) = count(occpairAOS(1:nocc))*count(unoccpairAOS(1:nunocc))*nbasisFragment
-
-             if(jobs%jobsize(k)<1) then
-                print *, 'dist', dist
-                print *, 'k=',k
-                print *, 'pair=', i,j
-                print *, 'job size: ', jobs%jobsize(k)
-                call lsquit('set_superfragment_joblist: Non-positive job size, something wrong',DECinfo%output)
-             end if
-
-          end if CheckPair
-
-       end do
-    end do
-
-    ! Sanity check: k must equal number of jobs
-    if(k/=njobs) then
-       print *, 'k     = ',k
-       print *, 'njobs = ', njobs
-       call lsquit('set_superfragment_joblist: Something wrong in superfragment bookkeeping',-1)
-    end if
-
-    ! Sort job list according to size (largest elements first)
-    call mem_alloc(order,njobs)
-    call integer_inv_sort_with_tracking(jobs%jobsize,order,njobs)
-
-    ! Arrange atoms in correct order and put into job structure
-    do i=1,njobs
-       jobs%atom1(i) = atom1(order(i))
-       jobs%atom2(i) = atom2(order(i))
-    end do
-
-    ! No jobs have been done
-    jobs%jobsdone=.false.
-
-    ! Clean up
-    call mem_dealloc(atom1)
-    call mem_dealloc(atom2)
-    call mem_dealloc(order)
-
-    call LSTIMER('SF JOBLIST',tcpu,twall,DECinfo%output)
-
-
-  end subroutine set_superfragment_joblist
-
+  end subroutine get_main_pair_info
 
 
 
@@ -5373,7 +4093,7 @@ end subroutine get_main_pair_info
     logical,dimension(natoms),intent(in) :: which_fragments
     !> Distance table with interatomic distances
     real(realk),dimension(natoms,natoms),intent(in) :: DistanceTable
-    !> Job list for super fragments
+    !> Job list for fragments
     type(joblist),intent(inout) :: jobs
     logical,pointer :: occpairAOS(:), unoccpairAOS(:),basispair(:)
     integer :: i,j,k,njobs,nsingle
@@ -5409,7 +4129,7 @@ end subroutine get_main_pair_info
        ! atomic fragment calculations to be repeated
        if(DECinfo%first_order .or. DECinfo%InclFullMolecule .or. nsingle==1 ) then
 
-          ! Set atom indices for single super fragment job
+          ! Set atom indices for single fragment job
           k=k+1
           atom1(k) = i
           atom2(k) = i   ! Same index for both atoms to distinguish single from pair jobs
@@ -5422,7 +4142,7 @@ end subroutine get_main_pair_info
 
        ! Pair loop
        do j=i+1,natoms
-          if(.not. which_fragments(j)) cycle ! No super fragment for atom j
+          if(.not. which_fragments(j)) cycle ! No fragment for atom j
 
           ! Distance between atoms i and j
           dist = DistanceTable(i,j)
@@ -5474,7 +4194,7 @@ end subroutine get_main_pair_info
     if(k/=njobs) then
        print *, 'k     = ',k
        print *, 'njobs = ', njobs
-       call lsquit('set_dec_joblist: Something wrong in superfragment bookkeeping',-1)
+       call lsquit('set_dec_joblist: Something wrong in fragment bookkeeping',-1)
     end if
 
     ! Sort job list according to size (largest elements first)
@@ -5502,18 +4222,18 @@ end subroutine get_main_pair_info
 
 
 
-  !> \brief Write fragment energies for super fragment for easy restart to
-  !> file superenergies.info.
+  !> \brief Write fragment energies for fragment for easy restart to
+  !> file fragenergies.info.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine write_superfragment_energies_for_restart(natoms,FragEnergies,jobs)
+  subroutine write_fragment_energies_for_restart(natoms,FragEnergies,jobs)
 
     implicit none
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
     !> Fragment energies (see ccatom type def)
     real(realk),dimension(natoms,natoms,ndecenergies),intent(in) :: FragEnergies
-    !> Job list of super fragments 
+    !> Job list of fragment jobs
     type(joblist),intent(in) :: jobs
     character(len=40) :: FileName
     integer :: funit
@@ -5521,19 +4241,19 @@ end subroutine get_main_pair_info
 
     ! Init stuff
     funit = -1
-    FileName='superenergies.info'
+    FileName='fragenergies.info'
 
     ! Delete existing file
     inquire(file=FileName,exist=file_exist)
     if(file_exist) then  ! backup exisiting file
 #ifdef SYS_AIX
-       call rename('superenergies.info\0','superenergies.backup\0')
+       call rename('fragenergies.info\0','fragenergies.backup\0')
 #else
-       call rename('superenergies.info','superenergies.backup')
+       call rename('fragenergies.info','fragenergies.backup')
 #endif
     end if
 
-    ! Create a new file superenergies.info
+    ! Create a new file fragenergies.info
     call lsopen(funit,FileName,'NEW','UNFORMATTED')
 
     ! Write job list info and fragment energies
@@ -5542,21 +4262,21 @@ end subroutine get_main_pair_info
 
     call lsclose(funit,'KEEP')
 
-  end subroutine write_superfragment_energies_for_restart
+  end subroutine write_fragment_energies_for_restart
 
 
 
-  !> \brief Read fragment energies for super fragment from file superenergies.info.
+  !> \brief Read fragment energies for fragment from file fragenergies.info.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine read_superfragment_energies_for_restart(natoms,FragEnergies,jobs)
+  subroutine read_fragment_energies_for_restart(natoms,FragEnergies,jobs)
 
     implicit none
     !> Number of atoms in the molecule
     integer,intent(in) :: natoms
     !> Fragment energies (see ccatom type def)
     real(realk),dimension(natoms,natoms,ndecenergies),intent(inout) :: FragEnergies
-    !> Job list of super fragments 
+    !> Job list of fragments 
     type(joblist),intent(inout) :: jobs
     character(len=40) :: FileName
     integer :: funit
@@ -5564,16 +4284,16 @@ end subroutine get_main_pair_info
 
     ! Init stuff
     funit = -1
-    FileName='superenergies.info'
+    FileName='fragenergies.info'
 
     ! Sanity check
     inquire(file=FileName,exist=file_exist)
     if(.not. file_exist) then
-       call lsquit('read_superfragment_energies_for_restart: &
-            & File superenergies.info does not exist!',-1)
+       call lsquit('read_fragment_energies_for_restart: &
+            & File fragenergies.info does not exist!',-1)
     end if
 
-    ! Create a new file superenergies.info
+    ! Create a new file fragenergies.info
     call lsopen(funit,FileName,'OLD','UNFORMATTED')
 
     ! Read job list and fragment energies from file
@@ -5581,17 +4301,17 @@ end subroutine get_main_pair_info
     read(funit) FragEnergies
     call lsclose(funit,'KEEP')
 
-  end subroutine read_superfragment_energies_for_restart
+  end subroutine read_fragment_energies_for_restart
 
 
 
-  !> \brief Expand superfragment job list to include additional pair fragments
+  !> \brief Expand fragment job list to include additional pair fragments
   !> (the additional pairs to include are determined in dec_energy_control_center).
   !> Note: The order of the existing jobs will be unchanged, the new jobs will
   !> simply be appended at the end of the job list.
   !> \author Kasper Kristensen
   !> \data October 2012
-  subroutine expand_joblist_to_include_more_pairs(nocc,nunocc,natoms,SuperDistanceTable,dofrag,&
+  subroutine expand_joblist_to_include_more_pairs(nocc,nunocc,natoms,DistanceTable,dofrag,&
        & Fragments,oldpaircut,newpaircut,MyMolecule,OccOrbitals,UnoccOrbitals,jobs)
 
     implicit none
@@ -5601,11 +4321,11 @@ end subroutine get_main_pair_info
     integer,intent(in) :: nunocc
     !> Number of atoms in full molecule 
     integer,intent(in) :: nAtoms
-    !> Distances between super fragments, NOT standard atoms (see set_super_distance_table) 
-    real(realk),intent(in) :: SuperDistanceTable(natoms,natoms)
-    !> dofrag(P) is true if P is central atom for a super fragment (see main_fragment_driver)
+    !> Distances between atoms
+    real(realk),intent(in) :: DistanceTable(natoms,natoms)
+    !> dofrag(P) is true if P is central atom for a fragment (see main_fragment_driver)
     logical,intent(in) :: dofrag(natoms)
-    !> Single super fragments
+    !> Single fragments
     type(ccatom),intent(inout) :: Fragments(natoms)
     !> Pair cutoff distance used for current job list
     real(realk),intent(in) :: oldpaircut
@@ -5632,17 +4352,17 @@ end subroutine get_main_pair_info
     npairold=0
     npairnew=0
     do i=1,natoms
-       if(.not. dofrag(i)) cycle ! atom "i" is not central atom in a super fragment
-       nsingle = nsingle +1 ! number of single super fragments
+       if(.not. dofrag(i)) cycle ! atom "i" is not central atom in a  fragment
+       nsingle = nsingle +1 ! number of single  fragments
 
        do j=i+1,natoms
-          if(.not. dofrag(j)) cycle ! atom "j" is not central atom in a super fragment
+          if(.not. dofrag(j)) cycle ! atom "j" is not central atom in a  fragment
 
           ! Number of pairs for old cutoff
-          if(SuperDistanceTable(i,j) < oldpaircut) npairold = npairold+1
+          if(DistanceTable(i,j) < oldpaircut) npairold = npairold+1
 
           ! Number of pairs for new cutoff
-          if(SuperDistanceTable(i,j) < newpaircut) npairnew = npairnew+1
+          if(DistanceTable(i,j) < newpaircut) npairnew = npairnew+1
 
        end do
     end do
@@ -5650,8 +4370,8 @@ end subroutine get_main_pair_info
 
     ! Sanity check 1: Number current jobs should be sum of single jobs + old pairs
     if( jobs%njobs /= (nsingle+npairold) ) then
-       write(DECinfo%output,*) 'Number of single super frags: ', nsingle
-       write(DECinfo%output,*) 'Number of pair   super frags: ', npairold
+       write(DECinfo%output,*) 'Number of single  frags: ', nsingle
+       write(DECinfo%output,*) 'Number of pair    frags: ', npairold
        write(DECinfo%output,*) 'Number of jobs in job list  : ', jobs%njobs
        call lsquit('expand_joblist_to_include_more_pairs: Error for job bookkeeping!',-1)
     end if
@@ -5698,7 +4418,7 @@ end subroutine get_main_pair_info
 
     ! Set logical vectors with fragment orbital information
     ! *****************************************************
-    ! occAOS(i,j) is true (false) if occupied orbital "i" is (not) included in super fragment "j"
+    ! occAOS(i,j) is true (false) if occupied orbital "i" is (not) included in  fragment "j"
     call mem_alloc(occAOS,nocc,natoms)
     call mem_alloc(unoccAOS,nunocc,natoms)
     ! same for reduced fragment spaces (see ccatom type)
@@ -5706,7 +4426,6 @@ end subroutine get_main_pair_info
     call mem_alloc(REDunoccAOS,nunocc,natoms)
     call get_logical_vectors_for_AOS(nocc,nunocc,natoms,dofrag,Fragments,&
          & occAOS, unoccAOS, REDoccAOS, REDunoccAOS)
-
 
 
 
@@ -5721,13 +4440,13 @@ end subroutine get_main_pair_info
     call mem_alloc(jobsize,npairdelta)
 
     do i=1,natoms  ! Loop over atoms
-       if(.not. dofrag(i)) cycle  ! No superfragment for atom i
+       if(.not. dofrag(i)) cycle  ! No fragment for atom i
 
        do j=i+1,natoms
-          if(.not. dofrag(j) ) cycle ! No super fragment for atom j
+          if(.not. dofrag(j) ) cycle ! No  fragment for atom j
 
           ! Distance between atoms i and j
-          dist = SuperDistanceTable(i,j)
+          dist = DistanceTable(i,j)
 
           ! Add pairs with distances between old and new paircut
           AddPairToJobList: if( (dist < newpaircut) .and. (dist >= oldpaircut) ) then  
@@ -5807,7 +4526,7 @@ end subroutine get_main_pair_info
 
 
   !> Determine logical vector for occ and unocc AOS where e.g.
-  !> occAOS(i,P) is true (false) if occupied orbital "i" is (not) included in super fragment "P".
+  !> occAOS(i,P) is true (false) if occupied orbital "i" is (not) included in  fragment "P".
   !> The same is done for fragment spaces of reduced size.
   !> \author Kasper Kristensen
   !> \date October 2012
@@ -5821,9 +4540,9 @@ end subroutine get_main_pair_info
     integer,intent(in) :: nunocc
     !> Number of atoms in full molecule 
     integer,intent(in) :: nAtoms
-    !> dofrag(P) is true if P is central atom for a super fragment (see main_fragment_driver)
+    !> dofrag(P) is true if P is central atom for a  fragment (see main_fragment_driver)
     logical,intent(in) :: dofrag(natoms)
-    !> Single super fragments
+    !> Single  fragments
     type(ccatom),intent(inout) :: Fragments(natoms)
     !> Logical vector for occupied AOS
     logical,intent(inout) :: occAOS(nocc,natoms)
@@ -5846,7 +4565,7 @@ end subroutine get_main_pair_info
     ! *******************
 
     do P=1,natoms  ! loop over atoms
-       if(.not. dofrag(P)) cycle  ! skip if P is not a super fragment
+       if(.not. dofrag(P)) cycle  ! skip if P is not a  fragment
 
        ! Set occupied AOS for P
        do i=1,Fragments(P)%noccAOS
@@ -5879,7 +4598,7 @@ end subroutine get_main_pair_info
   end subroutine get_logical_vectors_for_AOS
 
 
-  !> Copy super fragment job list (the new copied joblist is also initialized here)
+  !> Copy  fragment job list (the new copied joblist is also initialized here)
   !> \author Kasper Kristensen
   !> \date November 2012
   subroutine copy_joblist(jobs,jobscopy)
@@ -5910,12 +4629,12 @@ end subroutine get_main_pair_info
 
   end subroutine copy_joblist
 
-  !> \brief Compare list of single super fragments 
-  !> for two different super fragment job lists.
+  !> \brief Compare list of single  fragments 
+  !> for two different  fragment job lists.
   !> If they do not match, the program prints error message and quits.
   !> (deliberately we do not compare pairs since they may be different if
   !>  the pair cutoff distance is increased).
-  subroutine superfragment_sanity_check(jobs1,jobs2)
+  subroutine fragment_sanity_check(jobs1,jobs2)
     implicit none
     !> The first job list
     type(joblist),intent(in) :: jobs1
@@ -5952,13 +4671,13 @@ end subroutine get_main_pair_info
     ! Same number of single fragments
     if(n1/=n2) then
        write(DECinfo%output,*) 'n1,n2: ',n1,n2
-       call lsquit('superfragment_sanity_check: The number of single fragments differ!',-1)
+       call lsquit('fragment_sanity_check: The number of single fragments differ!',-1)
     end if
 
     ! Same max index
     if(max1/=max2) then
        write(DECinfo%output,*) 'max1,max2: ',max1,max2
-       call lsquit('superfragment_sanity_check: Maximum atomic indices differ!',-1)
+       call lsquit('fragment_sanity_check: Maximum atomic indices differ!',-1)
     end if
 
 
@@ -5992,7 +4711,7 @@ end subroutine get_main_pair_info
           write(DECinfo%output,*) 'Single jobs1: ', singlejobs1
           write(DECinfo%output,*)
           write(DECinfo%output,*) 'Single jobs2: ', singlejobs2
-          call lsquit('superfragment_sanity_check: Single super fragment indices differ!',-1)
+          call lsquit('fragment_sanity_check: Single  fragment indices differ!',-1)
        end if
     end do
 
@@ -6000,7 +4719,7 @@ end subroutine get_main_pair_info
     call mem_dealloc(singlejobs1)
     call mem_dealloc(singlejobs2)
 
-  end subroutine superfragment_sanity_check
+  end subroutine fragment_sanity_check
 
   
   !> \brief Get number of basis functions for fragment based on logical

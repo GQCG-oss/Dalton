@@ -90,7 +90,7 @@ module dec_typedef_module
      logical :: hack2
      !> Debug prints for DEC MPI parallelization
      logical :: mpidebug
-     !> Factor determining whether MPI groups should split, see super_fragments_slave
+     !> Factor determining whether MPI groups should split
      integer :: mpisplit
      !\> forcing ome or the other scheme in get_coubles residual integral_driven
      logical :: force_scheme,dyn_load
@@ -272,17 +272,6 @@ module dec_typedef_module
 
      !> Use (varitional) Lagrangian MP2 energy
      logical :: lagrangian
-
-     !> Super fragment information
-     !> Is this a super fragment calculation?
-     logical :: SF 
-     !> Maximum allowed distance between original fragments when constructing superfragments
-     real(realk) :: SF_maxdist 
-     !> Fragment overlap threshold for constructing superfragments
-     real(realk) :: SF_thr
-     !> Simulate super fragments by going through the super fragment framework, but effectively
-     !> using standard fragments
-     logical :: SimulateSF
 
      ! MPI information
      integer(kind=ls_mpik) :: MPIgroupsize
@@ -566,6 +555,9 @@ module dec_typedef_module
      !> Total number of unoccupied orbitals (AOS)
      integer :: nunoccAOS=0
 
+     !> Pair fragment?
+     logical :: pairfrag
+
      !> Occupied orbital EOS indices 
      integer, pointer :: occEOSidx(:) => null()
      !> Unoccupied orbital EOS indices 
@@ -634,14 +626,10 @@ module dec_typedef_module
      real(realk),pointer :: OccContribs(:) => null()
      real(realk),pointer :: VirtContribs(:) => null()
 
-     !> Super fragment information (not used for standard fragment)
-     !  ***********************************************************
-     !> Fragment is a super fragment (true) or not (false)
-     logical :: SF
-     !> Number of standard fragments merged to form super fragment (1 for standard fragment)
-     integer :: SF_nfrags
-     !> List of atomic sites for the corresponding standard fragments
-     integer, pointer :: SF_atomlist(:) => null()
+     !> Number of EOS atoms (1 for atomic fragment, 2 for pair fragment)
+     integer :: nEOSatoms
+     !> List of EOS atoms
+     integer, pointer :: EOSatoms(:) => null()
 
 
      !> Information used only when the ccatom is a pair fragment
@@ -874,10 +862,10 @@ module dec_typedef_module
      !> Only pair frags: Distance between (super) fragments in pair (zero for single fragments)
      real(realk) :: pairdist
 
-     !> Number of standard fragments merged to form super fragment (1 for standard fragment)
-     integer :: SF_nfrags
-     !> List of atomic sites for the corresponding standard fragments
-     integer, pointer :: SF_atomlist(:) => null()
+     !> Number of EOS atoms (1 for atomic fragment, 2 for pair fragment)
+     integer :: nEOSatoms
+     !> List of  EOS atoms
+     integer, pointer :: EOSatoms => null()
 
      !> Indices for atomic basis functions in the list of basis functions for full molecule
      integer,pointer :: basis_idx(:) => null()

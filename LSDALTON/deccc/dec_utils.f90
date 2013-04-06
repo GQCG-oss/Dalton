@@ -2014,13 +2014,13 @@ retval=0
     write(DECinfo%output,*) '*                    FRAGMENT INFORMATION                   *'
     write(DECinfo%output,*) '*************************************************************'
     write(DECinfo%output,*)
-    if(MyFragment%atomic_number2==0) then
+    if(MyFragment%nEOSatoms==2) then
        pair=.false.
        write(DECinfo%output,'(1X,a,i6)') 'SINGLE FRAGMENT, atomic number:', MyFragment%atomic_number
     else
        pair=.true.
        write(DECinfo%output,'(1X,a,2i6)') 'PAIR FRAGMENT, atomic numbers:', &
-            & MyFragment%atomic_number, MyFragment%atomic_number2
+            & MyFragment%EOSatoms(1),MyFragment%EOSatoms(2)
        write(DECinfo%output,'(1X,a,f12.2)') 'Pair distance = ', MyFragment%pairdist
     end if
     write(DECinfo%output,'(1X,a,i8)') 'Size occ EOS   =', MyFragment%noccEOS
@@ -2048,8 +2048,8 @@ retval=0
 
     if(MyFragment%SF) then
        write(DECinfo%output,*) 'This is a super fragment!'
-       write(DECinfo%output,*) 'Number of EOS atoms =', MyFragment%SF_nfrags
-       if(printlevel>1) write(DECinfo%output,*) 'List of EOS atoms = ', MyFragment%SF_atomlist
+       write(DECinfo%output,*) 'Number of EOS atoms =', MyFragment%nEOSatoms
+       if(printlevel>1) write(DECinfo%output,*) 'List of EOS atoms = ', MyFragment%EOSatoms
     else
        write(DECinfo%output,*) 'This is a standard fragment!'
     end if
@@ -2278,9 +2278,9 @@ retval=0
     end if
 
 
-    if(associated(fragment%SF_atomlist)) then
-       call mem_dealloc(fragment%SF_atomlist)
-       fragment%SF_atomlist => null()
+    if(associated(fragment%EOSatoms)) then
+       call mem_dealloc(fragment%EOSatoms)
+       fragment%EOSatoms => null()
     end if
 
     if(associated(fragment%OccContribs)) then
@@ -2821,94 +2821,6 @@ retval=0
 
 
 
-  !> \brief Get distance between two super fragments described by two simple
-  !> logical vectors. The super pair distance is the smallest distance between
-  !> any EOS atom in fragment 1 and any EOS atom in fragment 2.
-  !> \author Kasper Kristensen
-  !> \date March 2012
-  function get_superpair_distance_simple(natoms,frag1,frag2,DistanceTable) result(pairdist)
-    implicit none
-
-    !> Pair distance
-    real(realk) :: pairdist
-    !> Number of atoms for full molecule
-    integer, intent(in) :: natoms
-    !> Table with atomic distances
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
-    !> Logical vector describing which EOS atoms are included in fragment 1
-    logical,intent(in) :: frag1(natoms)
-    !> Logical vector describing which EOS atoms are included in fragment 2
-    logical,intent(in) :: frag2(natoms)
-    integer :: i,j
-
-
-    pairdist=huge(1.0)
-
-    ! Sanity check
-    if(count(frag1)==0 .or. count(frag2)==0) then
-       print *, 'frag1 = ', frag1
-       print *, 'frag2 = ', frag2
-       call lsquit('get_superpair_distance_simple: No atoms in super fragment!',-1)
-    end if
-
-    do i=1,natoms
-       do j=1,natoms
-          if( frag1(i) .and. frag2(j) ) then
-             ! Atom "i" is included in fragment 1 AND
-             ! atom "j" is included in fragment 2
-             if(DistanceTable(i,j) < pairdist) pairdist = DistanceTable(i,j)
-          end if
-       end do
-    end do
-
-  end function get_superpair_distance_simple
-
-
-
-  !> \brief Create super distance table with distances between super fragments.
-  !> The super pair distance between super fragments 1 and 2 is the smallest distance between
-  !> any EOS atom in super fragment 1 and any EOS atom in fragment 2.
-  !> Any entries in SuperDistanceTable(P,Q) where either atom P or atom Q
-  !> is NOT the central atom of a super fragment will be set to huge(1.0).
-  !> (In other words, an infinitely large pair distance indicating that a pair
-  !>  should never be calculated).
-  !> \author Kasper Kristensen
-  !> \date October 2012
-  subroutine set_super_distance_table(natoms,dofrag,fragments,DistanceTable,SuperDistanceTable)
-    implicit none
-
-    !> Number of atoms for full molecule
-    integer, intent(in) :: natoms
-    !> dofrag(P) is true if P is the central atom in a super fragment
-    logical,intent(in) :: dofrag(natoms)
-    !> Super fragments
-    type(ccatom),intent(inout) :: fragments(natoms)
-    !> Table with atomic distances for all "normal" atoms
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
-    !> Table with distances between super fragments
-    real(realk), intent(inout) :: SuperDistanceTable(natoms,natoms)
-    integer :: i,j
-
-    SuperDistanceTable = huge(1.0)
-
-    do i=1,natoms
-       if(.not. dofrag(i)) cycle ! atom "i" is not a super fragment
-       SuperDistanceTable(i,i) = 0.0E0_realk
-       
-       do j=i+1,natoms
-          if(.not. dofrag(j)) cycle ! atom "j" is not a super fragment
-
-          ! Set pair distance for super fragment (i,j)
-          SuperDistanceTable(i,j) = get_distance_between_superfragments(Fragments(i),&
-               & Fragments(j),natoms,DistanceTable)
-
-       end do
-    end do
-
-
-  end subroutine set_super_distance_table
-
-
 
 
   !> \brief Calculate distance between two superfragments defined as the
@@ -2916,12 +2828,12 @@ retval=0
   !> (Also works for standard fragments).
   !> \author Kasper Kristensen
   !> \date November 2011
-  function get_distance_between_superfragments(Fragment1,Fragment2,natoms,DistanceTable) result(SFdistance)
+  function get_distance_between_fragments(Fragment1,Fragment2,natoms,DistanceTable) result(fragdist)
 
 
     implicit none
-    !> Distance between super fragments
-    real(realk) :: SFdistance
+    !> Distance between fragments
+    real(realk) :: fragdist
     !> Super fragment 1
     type(ccatom),intent(inout) :: Fragment1
     !> Super fragment 2
@@ -2933,10 +2845,12 @@ retval=0
     integer :: i,j
     real(realk) :: dist
 
-    SFdistance = get_minimum_distance_between_groups_of_atoms(Fragment1%SF_nfrags,&
-         & Fragment2%SF_nfrags, Fragment1%SF_atomlist,  Fragment2%SF_atomlist, natoms,DistanceTable)
+    ! In principle this can also give the "distance" between two pair fragments
+    ! as the maximu distance between an atom in pair1 and an atom in pair2.
+    fragdist = get_minimum_distance_between_groups_of_atoms(Fragment1%nEOSatoms,&
+         & Fragment2%nEOSatoms, Fragment1%EOSatoms,  Fragment2%EOSatoms, natoms,DistanceTable)
 
-  end function get_distance_between_superfragments
+  end function get_distance_between_fragments
 
 
 
@@ -3141,7 +3055,7 @@ retval=0
        filename = 'supergrad.info'
 
     else ! energy calculation
-       filename = 'superenergies.info'
+       filename = 'fragenergies.info'
     end if
 
     inquire(file=FileName,exist=file_exist)
@@ -3408,11 +3322,11 @@ retval=0
 
     ! Set which atoms to consider for pair
     dopair=.false.
-    do a=1,fragment1%SF_nfrags  ! Loop over atoms in fragment 1 (just a single atom if not super fragment)
-       do b=1,fragment2%SF_nfrags ! Loop over atoms in fragment 2
+    do a=1,fragment1%nEOSatoms  ! Loop over atoms in fragment 1 (just a single atom if not super fragment)
+       do b=1,fragment2%nEOSatoms ! Loop over atoms in fragment 2
 
-          ax=fragment1%SF_atomlist(a) ! Atom index for atom in fragment 1
-          bx=fragment2%SF_atomlist(b) ! Atom index for atom in fragment 2
+          ax=fragment1%EOSatoms(a) ! Atom index for atom in fragment 1
+          bx=fragment2%EOSatoms(b) ! Atom index for atom in fragment 2
           dopair(ax,bx)=.true.
           dopair(bx,ax)=.true.
 

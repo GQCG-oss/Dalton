@@ -18,7 +18,7 @@ module dec_driver_module
   ! *****************************************
   use dec_fragment_utils!,only: files_opened, atomic_fragment_free_basis_info,sf_restart_file_exist,&
 !       & getdistances, atomic_fragment_free, orbital_free, get_HF_energy_fullmolecule,&
-!       & atomic_fragment_free_simple,set_super_distance_table,get_distance_between_superfragments,&
+!       & atomic_fragment_free_simple,set_super_distance_table,get_distance_between_fragments,&
 !       & atomic_fragment_pT_free
   use array2_simple_operations !,only: array2_init, array2_free, array2_copy
   use orbital_operations!,only: get_number_of_orbitals_per_atom
@@ -1075,7 +1075,7 @@ contains
           if(.not. dofrag(j)) cycle
 
           ! Pair distance between superfragment centers
-          pairdist = get_distance_between_superfragments(atomicfragments(i),&
+          pairdist = get_distance_between_fragments(atomicfragments(i),&
                & atomicfragments(j),natoms,DistanceTable)
 
           DistanceCheck: if(pairdist < DECinfo%pair_distance_threshold ) then
@@ -1206,11 +1206,11 @@ contains
        if(DECinfo%first_order) then ! density or gradient
           call read_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
        else
-          call read_superfragment_energies_for_restart(natoms,FragEnergies,jobs)
+          call read_fragment_energies_for_restart(natoms,FragEnergies,jobs)
        end if
 
        ! Sanity check for job list read from file
-       call superfragment_sanity_check(jobs,jobsold)
+       call fragment_sanity_check(jobs,jobsold)
        ! Done with old job list
        call free_joblist(jobsold)
 
@@ -1332,7 +1332,7 @@ contains
              if(DECinfo%first_order) then  ! density and/or gradient 
                 call write_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
              else ! just energy
-                call write_superfragment_energies_for_restart(natoms,FragEnergies,jobs)
+                call write_fragment_energies_for_restart(natoms,FragEnergies,jobs)
              end if
 
              ! Reset timer

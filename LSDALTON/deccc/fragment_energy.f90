@@ -1409,7 +1409,7 @@ end if
     e3_final=0E0_realk
     e4_final=0E0_realk
     ! Distance between fragments in Angstrom
-    pairdist = get_distance_between_superfragments(Fragment1,Fragment2,natoms,DistanceTable)
+    pairdist = get_distance_between_fragments(Fragment1,Fragment2,natoms,DistanceTable)
     au_to_angstrom = bohr_to_angstrom
     pairdist = au_to_angstrom*pairdist
 

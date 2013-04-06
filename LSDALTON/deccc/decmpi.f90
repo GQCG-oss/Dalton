@@ -619,8 +619,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%nunoccAOS,master)
     CALL ls_mpi_buffer(MyFragment%REDnoccAOS,master)
     CALL ls_mpi_buffer(MyFragment%REDnunoccAOS,master)
-    CALL ls_mpi_buffer(MyFragment%SF_nfrags,master)
-    CALL ls_mpi_buffer(MyFragment%atomic_number2,master)
+    CALL ls_mpi_buffer(MyFragment%nEOSatoms,master)
     CALL ls_mpi_buffer(MyFragment%ntasks,master)
     CALL ls_mpi_buffer(MyFragment%t1dims,2,master)
     CALL ls_mpi_buffer(MyFragment%noccFA,master)
@@ -632,11 +631,11 @@ contains
     ! Logicals that are not pointers
     ! ------------------------------
     CALL ls_mpi_buffer(MyFragment%BasisInfoIsSet,master)
-    CALL ls_mpi_buffer(MyFragment%SF,master)
     CALL ls_mpi_buffer(MyFragment%t1_stored,master)
     CALL ls_mpi_buffer(MyFragment%CDset,master)
     CALL ls_mpi_buffer(MyFragment%FAtransSet,master)
     CALL ls_mpi_buffer(MyFragment%fragmentadapted,master)
+    CALL ls_mpi_buffer(MyFragment%pairfrag,master)
 
     ! Reals that are not pointers
     ! ---------------------------
@@ -675,8 +674,8 @@ contains
        call mem_alloc(MyFragment%idxo,MyFragment%noccEOS)
        nullify(MyFragment%idxu)
        call mem_alloc(MyFragment%idxu,MyFragment%nunoccEOS)
-       nullify(MyFragment%SF_atomlist)
-       call mem_alloc(MyFragment%SF_atomlist,MyFragment%SF_nfrags)
+       nullify(MyFragment%EOSatoms)
+       call mem_alloc(MyFragment%EOSatoms,MyFragment%nEOSatoms)
        if(MyFragment%t1_stored) then ! only used for CC singles effects
           nullify(MyFragment%t1_occidx)
           call mem_alloc(MyFragment%t1_occidx,MyFragment%t1dims(2) )
@@ -704,7 +703,7 @@ contains
          MyFragment%REDnunoccAOS,master)
     call ls_mpi_buffer(MyFragment%idxo,MyFragment%noccEOS,master)
     call ls_mpi_buffer(MyFragment%idxu,MyFragment%nunoccEOS,master)
-    call ls_mpi_buffer(MyFragment%SF_atomlist,MyFragment%SF_nfrags,master)
+    call ls_mpi_buffer(MyFragment%EOSatoms,MyFragment%nEOSatoms,master)
     call ls_mpi_buffer(MyFragment%atoms_idx,MyFragment%number_atoms,master)
     call ls_mpi_buffer(MyFragment%basis_idx,MyFragment%number_basis,master)
     if(MyFragment%t1_stored) then ! only used for CC singles effects
@@ -1385,7 +1384,7 @@ contains
     CALL ls_mpi_buffer(dens%nvirt,infpar%master)
     CALL ls_mpi_buffer(dens%nocc,infpar%master)
     CALL ls_mpi_buffer(dens%nocctot,infpar%master)
-    CALL ls_mpi_buffer(dens%SF_nfrags,infpar%master)
+    CALL ls_mpi_buffer(dens%nEOSatoms,infpar%master)
 
     ! Reals that are not pointers
     call ls_mpi_buffer(dens%pairdist,infpar%master)
@@ -1395,11 +1394,11 @@ contains
     ! ----------------
     ! Nullify and allocate stuff for receiver (global addtobuffer is false)
     if(.not. AddToBuffer) then
-       nullify(dens%SF_atomlist)
-       call mem_alloc(dens%SF_atomlist,dens%SF_nfrags)
+       nullify(dens%EOSatoms)
+       call mem_alloc(dens%EOSatoms,dens%nEOSatoms)
     end if
     ! Buffer handling
-    call ls_mpi_buffer(dens%SF_atomlist,dens%SF_nfrags,infpar%master)
+    call ls_mpi_buffer(dens%EOSatoms,dens%nEOSatoms,infpar%master)
 
 
     ! Real pointers
@@ -1732,10 +1731,6 @@ contains
     call ls_mpi_buffer(DECitem%memallo_time_cpu,Master)
     call ls_mpi_buffer(DECitem%memallo_time_wall,Master)
     call ls_mpi_buffer(DECitem%lagrangian,Master)
-    call ls_mpi_buffer(DECitem%SF,Master)
-    call ls_mpi_buffer(DECitem%SF_maxdist,Master)
-    call ls_mpi_buffer(DECitem%SF_thr,Master)
-    call ls_mpi_buffer(DECitem%SimulateSF,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%MP2density,Master)

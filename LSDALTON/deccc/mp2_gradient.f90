@@ -130,7 +130,7 @@ contains
     !> MP2 density for fragment
     type(mp2dens), intent(inout) :: dens
 
-    nullify(dens%SF_atomlist)
+    nullify(dens%EOSatoms)
     nullify(dens%basis_idx)
     nullify(dens%Y)
     nullify(dens%X)
@@ -160,14 +160,15 @@ contains
     ! Check if it is a pair fragment
     ! ******************************
     atom1 = fragment%atomic_number
-    atom2 = fragment%atomic_number2
-    if(atom2==0) then  ! single fragment
-       is_pair=.false.
-       write(DECinfo%output,*) 'Initiating MP2 gradient structure for single fragment ', fragment%atomic_number
-    else
+    if(fragment%nEOSatoms==2) then  ! pair fragment
        is_pair=.true.
        write(DECinfo%output,*) 'Initiating MP2 gradient structure for pair fragment ', &
-            & fragment%atomic_number, fragment%atomic_number2
+            & fragment%EOSatoms
+       atom2 = fragment%EOSatoms(2)
+    else
+       is_pair=.false.
+       write(DECinfo%output,*) 'Initiating MP2 gradient structure for single fragment ', fragment%atomic_number
+       atom2 = 0
     end if
 
 
@@ -689,8 +690,8 @@ contains
     if(.not. PairFragment%SF) then
        call lsquit('pair_calculate_mp2gradient: Only implemented for super fragments!',DECinfo%output)
     end if
-    write(DECinfo%output,*) 'Calculating MP2 gradient for super pair fragment', &
-         & PairFragment%atomic_number, PairFragment%atomic_number2
+    write(DECinfo%output,*) 'Calculating MP2 gradient for pair fragment', &
+         & PairFragment%EOSatoms
 
     ! Init MP2 gradient structure
     call init_mp2grad(PairFragment,grad)
@@ -767,7 +768,7 @@ contains
     noccAOS = Thetavirt%dims(2) ! number of occupied AOS orbitals
     nvirtEOS = Thetavirt%dims(1) ! number of virtual EOS orbitals
     nvirtAOS = Thetaocc%dims(1) ! number of virtual AOS orbitals
-    ! number of occupied core+valence orbitals (only different from noccAOS for frozen approx)
+    ! number of occupied core+valence orbitals (only different from noccAOS for frozen core approx)
     nocctot = VOVOvirt%dims(4)
     ! Just in case, zero matrices in grad structure
     grad%Phioo = 0e0_realk
@@ -2144,11 +2145,11 @@ contains
     dens%nocctot = fragment%nocctot
     dens%energy = fragment%energies(1)
     dens%pairdist = 0E0_realk
-    dens%SF_nfrags = fragment%SF_nfrags
+    dens%nEOSatoms = fragment%nEOSatoms
 
-    call mem_alloc(dens%SF_atomlist,dens%SF_nfrags)
-    do i=1,dens%SF_nfrags
-       dens%SF_atomlist(i) = fragment%SF_atomlist(i)
+    call mem_alloc(dens%EOSatoms,dens%nEOSatoms)
+    do i=1,dens%nEOSatoms
+       dens%EOSatoms(i) = fragment%EOSatoms(i)
     end do
 
     ! Sanity check
@@ -2244,7 +2245,7 @@ contains
     dens%pairdist=0E0_realk
 
     ! Deallocate vectors/arrays
-    if(associated(dens%SF_atomlist)) call mem_dealloc(dens%SF_atomlist)
+    if(associated(dens%EOSatoms)) call mem_dealloc(dens%EOSatoms)
     if(associated(dens%basis_idx)) call mem_dealloc(dens%basis_idx)
     if(associated(dens%Y)) call mem_dealloc(dens%Y)
     if(associated(dens%X)) call mem_dealloc(dens%X)
