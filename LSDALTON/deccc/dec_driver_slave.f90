@@ -47,13 +47,13 @@ subroutine main_fragment_driver_slave()
   type(lsitem) :: MyLsitem
   type(ccatom),pointer :: AtomicFragments(:)
   type(fullmolecule) :: MyMolecule
-  real(realk),pointer :: DistanceTable(:,:), SuperDistanceTable(:,:)
+  real(realk),pointer :: DistanceTable(:,:)
   type(ccorbital),pointer :: OccOrbitals(:), UnoccOrbitals(:)
   logical,pointer :: dofrag(:)
   type(joblist) :: jobs
   integer :: groups,signal
   integer(kind=ls_mpik) :: groupsize,ierr
-  logical :: SF_save, dens_save,FO_save,grad_save, localslave, in_master_group, moresuperjobs
+  logical :: dens_save,FO_save,grad_save, localslave, in_master_group, morejobs
   integer(kind=ls_mpik) :: master
   master=0
 
@@ -75,14 +75,12 @@ subroutine main_fragment_driver_slave()
   ! Set output unit number to 0 for slaves
   DECinfo%output=0
 
-  ! Internal control of super fragment and first order property keywords
+  ! Internal control of first order property keywords
   ! (Necessary because these must be false during fragment optimization.)
   ! Better solution should be implemented at some point...
-  SF_save = DECinfo%SF
   dens_save = DECinfo%MP2density
   FO_save = DECinfo%first_order
   grad_save = DECinfo%gradient
-  DECinfo%SF=.false.
   DECinfo%MP2density=.false.
   DECinfo%first_order=.false.
   DECinfo%gradient=.false.
@@ -135,52 +133,46 @@ subroutine main_fragment_driver_slave()
 
 
 
-  ! *********************************************************
-  ! *       Get new super fragments from master node        *
-  ! *********************************************************
-  ! 1. Get list of which fragments are super fragments
+  ! ********************************************************************
+  ! *       Get new optimized atomic fragments from master node        *
+  ! ********************************************************************
+  ! 1. Get list of which atoms are EOS atoms
   call mem_alloc(dofrag,natoms)
   dofrag=.false.
   call ls_mpibcast(dofrag,natoms,master,MPI_COMM_LSDALTON)
 
-  ! 2. Get super fragments
+  ! 2. Get  fragments
   call mem_alloc(AtomicFragments,natoms)
   call mpi_bcast_many_fragments(natoms,dofrag,AtomicFragments,MPI_COMM_LSDALTON)
-
-  ! 3. Create distance table for super fragments
-  call mem_alloc(SuperDistanceTable,natoms,natoms)
-  call set_super_distance_table(natoms,dofrag,AtomicFragments,DistanceTable,SuperDistanceTable)
-
 
 
 
 
      ! *************************************************************
-     ! *                SUPER FRAGMENT CALCULATIONS                *
+     ! *         POST-FRAGOPT FRAGMENT CALCULATIONS                *
      ! *************************************************************
 
      ! Init stuff
      ! **********
 
-     ! Restore superfragment and mp2 density keywords
-     DECinfo%SF=SF_save
+     ! Restore first order keywords
      DECinfo%MP2density=dens_save
      DECinfo%first_order = FO_save
      DECinfo%gradient = grad_save
 
 
      ! Continue as long as there are more jobs to be done
-     ! (we might need to add more pairs than in original super job list to adapt to precision)
-     moresuperjobs=.true.
-     MorePairs: do while(moresuperjobs)
+     ! (we might need to add more pairs than in original  job list to adapt to precision)
+     morejobs=.true.
+     MorePairs: do while(morejobs)
 
-        !  Get super fragment job list (includes initalization of pointers in job list)
-        call bcast_superfragment_joblist(jobs,MPI_COMM_LSDALTON)
+        !  Get  fragment job list (includes initalization of pointers in job list)
+        call bcast_post_fragopt_joblist(jobs,MPI_COMM_LSDALTON)
         ! Receive pair distance threshold to make sure we are consistent
         call ls_mpibcast(DECinfo%pair_distance_threshold,master,MPI_COMM_LSDALTON)
 
 
-        ! Redefine MPI groups for super fragments
+        ! Redefine MPI groups for  fragments
         ! ***************************************
         call lsmpi_barrier(MPI_COMM_LSDALTON)
 
@@ -236,9 +228,9 @@ subroutine main_fragment_driver_slave()
         end do
 
   
-        ! Receive super fragment jobs from master and carry those out
-        ! ===========================================================
-        call super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbitals,&
+        ! Receive  fragment jobs from master and carry those out
+        ! ======================================================
+        call fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
              & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
 
         ! Remaining local slaves should exit local slave routine for good (infpar%lg_morejobs=.false.)
@@ -247,8 +239,8 @@ subroutine main_fragment_driver_slave()
            call ls_mpibcast(job,master,infpar%lg_comm)
         end if
      
-        ! Receive information telling whether there are more superjobs or not
-        call ls_mpibcast(moresuperjobs,master,MPI_COMM_LSDALTON)
+        ! Receive information telling whether there are more jobs or not
+        call ls_mpibcast(morejobs,master,MPI_COMM_LSDALTON)
         
         ! Done with existing job list
         call free_joblist(jobs)
@@ -279,7 +271,6 @@ subroutine main_fragment_driver_slave()
   call mem_dealloc(OccOrbitals)
   call mem_dealloc(UnoccOrbitals)
   call mem_dealloc(DistanceTable)
-  call mem_dealloc(SuperDistanceTable)
   call ls_free(MyLsitem)
   call molecule_finalize(MyMolecule)
 
@@ -429,11 +420,11 @@ end subroutine atomic_fragments_slave
 
 
 
-!> \brief For each local master: Carry out super fragment calculations (both single and pair)
-!> for those super fragments requested by main master.
+!> \brief For each local master: Carry out  fragment calculations (both single and pair)
+!> for those  fragments requested by main master.
 !> \author Kasper Kristensen
 !> \date May 2012
-subroutine super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbitals,&
+subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
      & UnoccOrbitals,MyMolecule,MyLsitem,AtomicFragments,jobs)
 
   implicit none
@@ -444,8 +435,8 @@ subroutine super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbita
   integer,intent(in) :: nocc
   !> Number of unoccupied orbitals in the molecule
   integer,intent(in) :: nunocc
-  !> Distances between super fragments, NOT standard atoms (see set_super_distance_table) 
-  real(realk) :: SuperDistanceTable(natoms,natoms)
+  !> Distances between atoms
+  real(realk) :: DistanceTable(natoms,natoms)
   !> Occupied orbitals, DEC format
   type(ccorbital),intent(in) :: OccOrbitals(nocc)
   !> Unoccupied orbitals, DEC format
@@ -454,9 +445,9 @@ subroutine super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbita
   type(fullmolecule),intent(inout) :: MyMolecule
   !> LS item structure
   type(lsitem),intent(inout) :: MyLsitem
-  !> Single super fragments
+  !> Atomic fragments
   type(ccatom),dimension(natoms),intent(inout) :: AtomicFragments
-  !> Job list for super fragments
+  !> Job list for  fragments
   type(joblist),intent(inout) :: jobs
   type(joblist) :: singlejob
   type(ccatom) :: PairFragment
@@ -475,8 +466,10 @@ subroutine super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbita
 
   call LSTIMER('START',t1cpuacc,t1wallacc,DECinfo%output)
 
+
+
   ! ********************************************************************
-  ! *                   SUPER FRAGMENT OPTIMIZATION                    *
+  ! *               POST-FRAGOPT FRAGMENT CALCULATIONS                 *
   ! ********************************************************************
 
   ! Local master asks main master for fragment jobs
@@ -490,7 +483,7 @@ subroutine super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbita
   call init_joblist(1,singlejob)
 
 
-  AskForSuperJob: do while(morejobs)
+  AskForJob: do while(morejobs)
 
 
      ! Send finished job to master
@@ -523,7 +516,7 @@ subroutine super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbita
      ! ********************************************************************************
      DoJob: IF(job==-1) then
         call LSTIMER('START',t2cpuacc,t2wallacc,DECinfo%output)
-        print '(a,i6,a,g14.6)', 'Slave ', infpar%mynum, ' exits super fragments. Time: ',&
+        print '(a,i6,a,g14.6)', 'Slave ', infpar%mynum, ' exits  fragments. Time: ',&
              & t2wallacc-t1wallacc
         morejobs=.false.
      else
@@ -552,7 +545,7 @@ subroutine super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbita
 
            ! init pair
            call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-                & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, SuperDistanceTable, &
+                & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, DistanceTable, &
                 & MyMolecule,mylsitem,.true.,PairFragment)
            call get_number_of_integral_tasks(PairFragment,ntasks)
 
@@ -560,7 +553,7 @@ subroutine super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbita
            if (DECinfo%ccModel .eq. 4) then
               allocate(PairFragment%parenthesis_t)
               call merged_fragment_init(AtomicFragments(atomA)%parenthesis_t,AtomicFragments(atomB)%parenthesis_t,&
-                   &nunocc,nocc,natoms,OccOrbitals,UnoccOrbitals,SuperDistanceTable,MyMolecule,&
+                   &nunocc,nocc,natoms,OccOrbitals,UnoccOrbitals,DistanceTable,MyMolecule,&
                    &mylsitem,.true.,PairFragment%parenthesis_t)
            end if
 
@@ -596,7 +589,7 @@ subroutine super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbita
            end if
         end do DoDivide
 
-        print '(a,i8,a,i8)', 'Slave ', infpar%mynum, ' will do super job ', job
+        print '(a,i8,a,i8)', 'Slave ', infpar%mynum, ' will do  job ', job
 
         ! Communicator in setting may have changed due to division of local group
         ! Ensure that the correct local communicator is used.
@@ -609,9 +602,9 @@ subroutine super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbita
         end if
 
 
-        ! RUN SUPER FRAGMENT CALCULATION
-        ! ******************************
-        SingleOrPair: if( atomA == atomB ) then ! single super fragment
+        ! RUN FRAGMENT CALCULATION
+        ! ************************
+        SingleOrPair: if( atomA == atomB ) then ! single  fragment
 
            call single_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                 & AtomicFragments(atomA),grad=grad)
@@ -623,11 +616,11 @@ subroutine super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbita
               call atomic_fragment_free_basis_info(AtomicFragments(atomA)%parenthesis_t)
            end if
 
-        else ! pair super fragment
+        else ! pair  fragment
 
            call pair_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                 & AtomicFragments(atomA), AtomicFragments(atomB), &
-                & natoms,SuperDistanceTable,PairFragment,grad)
+                & natoms,DistanceTable,PairFragment,grad)
            flops_slaves = PairFragment%flops_slaves
            tottime = PairFragment%slavetime ! time used by all local slaves
            fragenergy=PairFragment%energies
@@ -667,19 +660,19 @@ subroutine super_fragments_slave(natoms,nocc,nunocc,SuperDistanceTable,OccOrbita
         end if
         singlejob%jobsize(1) = singlejob%nocc(1)*singlejob%nvirt(1)*PairFragment%number_basis
 
-        print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with super job/time ', &
+        print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
              & job, singlejob%LMtime(1)
      end if DoJob
 
 
 
 
-  end do AskForSuperJob
+  end do AskForJob
 
 
   call free_joblist(singlejob)
 
-end subroutine super_fragments_slave
+end subroutine fragments_slave
 
 end module dec_driver_slave_module
 

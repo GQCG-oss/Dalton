@@ -1946,15 +1946,15 @@ contains
                        ! occ in frag # 1, virt in frag # 2
 
                           occ_in_frag_1 = .false.
-                          do idx = 1,Fragment1%SF_nfrags
-                             if (Fragment1%SF_atomlist(idx) .eq. AtomI) then
+                          do idx = 1,Fragment1%nEOSatoms
+                             if (Fragment1%EOSatoms(idx) .eq. AtomI) then
                                 occ_in_frag_1 = .true.
                              end if
                           end do
 
                           virt_in_frag_2 = .false.
-                          do adx = 1,Fragment2%SF_nfrags
-                             if (Fragment2%SF_atomlist(adx) .eq. AtomA) then
+                          do adx = 1,Fragment2%nEOSatoms
+                             if (Fragment2%EOSatoms(adx) .eq. AtomA) then
                                 virt_in_frag_2 = .true.
                              end if
                           end do
@@ -1968,15 +1968,15 @@ contains
                        ! virt in frag # 1, occ in frag # 2
                             
                           occ_in_frag_2 = .false. 
-                          do idx = 1,Fragment2%SF_nfrags
-                             if (Fragment2%SF_atomlist(idx) .eq. AtomI) then
+                          do idx = 1,Fragment2%nEOSatoms
+                             if (Fragment2%EOSatoms(idx) .eq. AtomI) then
                                 occ_in_frag_2 = .true.
                              end if
                           end do 
                              
                           virt_in_frag_1 = .false.
-                          do adx = 1,Fragment1%SF_nfrags
-                             if (Fragment1%SF_atomlist(adx) .eq. AtomA) then
+                          do adx = 1,Fragment1%nEOSatoms
+                             if (Fragment1%EOSatoms(adx) .eq. AtomA) then
                                 virt_in_frag_1 = .true.
                              end if
                           end do

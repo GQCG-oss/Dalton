@@ -772,7 +772,7 @@ end if
     else
        if(DECinfo%PL>0) write(DECinfo%output,*) 'Calculating MP2 integrals (only energy) and MP2 amplitudes...'
     end if
-    if(MyFragment%atomic_number2/=0) then ! pair fragment
+    if(MyFragment%nEOSatoms==2) then ! pair fragment
        if(master) write(DECinfo%output,'(a,3i8)') '#PAIRDIMS# basis,occ,virt ', nbasis,nocc,nvirt
     else ! single fragment
        if(master) write(DECinfo%output,'(a,3i8)') '#SINGLEDIMS# basis,occ,virt ', nbasis,nocc,nvirt

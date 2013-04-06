@@ -73,7 +73,6 @@ $END INFO
 .ccThr
 1.0d-6
 .IncludeFullMolecule
-.SimulateSF
 .ReassignHatoms
 *END OF INPUT
 %EOF%
