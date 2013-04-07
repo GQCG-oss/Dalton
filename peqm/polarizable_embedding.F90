@@ -20,6 +20,7 @@ module polarizable_embedding
     private
 
     intrinsic :: allocated, present, min, minval, max, maxval, size, cpu_time
+    intrinsic :: int, sqrt
 
     ! public subroutines/functions
     public :: pe_init, pe_master, pe_dalton_input
@@ -1032,7 +1033,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         if (.not. london) then
             call mpi_bcast(nnbas, 1, impi, 0, comm, ierr)
             call mpi_bcast(denmats, nnbas * ndens, rmpi, 0, comm, ierr)
-        else is (london) then
+        else if (london) then
             call mpi_bcast(n2bas, 1, impi, 0, comm, ierr)
         end if
 
