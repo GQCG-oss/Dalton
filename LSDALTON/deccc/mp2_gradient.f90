@@ -3296,6 +3296,7 @@ call mem_TurnOffThread_Memory()
     end if
 
     if(DECinfo%ccModel /= 1) then
+       print *, 'CC model: ', DECinfo%ccModel
        call lsquit('dec_solve_kappabar_equation:&
             & kappabar multiplier equation is only implemented for MP2',-1)
     end if

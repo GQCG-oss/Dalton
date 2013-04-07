@@ -226,10 +226,11 @@ contains
 
     ! Sanity check
     ! ************
-    if( (.not. DECinfo%gradient) .or. (.not. DECinfo%first_order) ) then
-       ! Modify DECinfo to calculate first order properties (gradient)
+    if( (.not. DECinfo%gradient) .or. (.not. DECinfo%first_order) .or. (DECinfo%ccmodel/=1) ) then
+       ! Modify DECinfo to calculate first order properties (gradient) for MP2
        DECinfo%gradient=.true.
        DECinfo%first_order=.true.
+       DECinfo%ccmodel=1
     end if
     write(DECinfo%output,*) 'Calculating MP2 energy and gradient from Fock, density, overlap, and MO inputs...'
 
