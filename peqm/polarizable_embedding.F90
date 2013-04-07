@@ -20,7 +20,6 @@ module polarizable_embedding
     private
 
     intrinsic :: allocated, present, min, minval, max, maxval, size, cpu_time
-    intrinsic :: int, sqrt
 
     ! public subroutines/functions
     public :: pe_init, pe_master, pe_dalton_input
@@ -995,8 +994,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
     ndens = nmats
     if (london) then
         if (ndens > 1) stop 'WARNING: LAO contribution for nmats > 1 requested'
-        n2bas = size(fckmats) / 3
-        nbas = int(sqrt(n2bas))
+        n2bas = int(size(fckmats) / 3.0d0)
+        nbas = int(sqrt(real(n2bas, dp)))
     else
         nnbas = size(denmats) / ndens
         nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * nnbas) - 1.0d0))
