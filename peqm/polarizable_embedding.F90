@@ -994,7 +994,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
     ndens = nmats
     if (london) then
         if (ndens > 1) stop 'WARNING: LAO contribution for nmats > 1 requested'
-        nbas = int(sqrt(size(fckmats) / 3.0d0))
+        n2bas = size(fckmats) / 3
+        nbas = int(sqrt(n2bas))
     else
         nnbas = size(denmats) / ndens
         nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * nnbas) - 1.0d0))
@@ -1031,6 +1032,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         if (.not. london) then
             call mpi_bcast(nnbas, 1, impi, 0, comm, ierr)
             call mpi_bcast(denmats, nnbas * ndens, rmpi, 0, comm, ierr)
+        else is (london) then
+            call mpi_bcast(n2bas, 1, impi, 0, comm, ierr)
         end if
 
         if (.not. synced) then
@@ -1167,6 +1170,8 @@ subroutine pe_mpi(dalwrk, runtype)
     if (.not. london) then
         call mpi_bcast(nnbas, 1, impi, 0, comm, ierr)
         call mpi_bcast(work(1), nnbas * ndens, rmpi, 0, comm, ierr)
+    else if (london) then
+        call mpi_bcast(n2bas, 1, impi, 0, comm, ierr)
     end if
 
     if (.not. allocated(Epe)) allocate(Epe(ndens))
@@ -1194,7 +1199,7 @@ subroutine pe_mpi(dalwrk, runtype)
     else if (mep) then
         call pe_compute_mep(work(1:ndens*nnbas))
     else if (london) then
-        call pe_compute_london(work(1:ndens*nbas*nbas))
+        call pe_compute_london(work(1:3*nbas*nbas))
     end if
 
 !    deallocate(Epe, Ees, Epol, Esol, Efd)
@@ -7141,10 +7146,10 @@ subroutine pe_compute_london(fckmats)
 
 #if defined(VAR_MPI)
     if (myid == 0 .and. nprocs > 1) then
-        call mpi_reduce(mpi_in_place, fckmats, ndens * n2bas, rmpi, mpi_sum,&
+        call mpi_reduce(mpi_in_place, fckmats, 3 * n2bas, rmpi, mpi_sum,&
                        & 0, comm, ierr)
     else
-        call mpi_reduce(fckmats, 0, ndens * n2bas, rmpi, mpi_sum, 0,&
+        call mpi_reduce(fckmats, 0, 3 * n2bas, rmpi, mpi_sum, 0,&
                        & comm, ierr)
     end if
 #endif
@@ -7160,7 +7165,7 @@ subroutine lao_multipoles(Mks, fckmats, linduced)
     logical, intent(in), optional :: linduced
 
     integer :: i, j, ifrom, ito
-    integer :: site, ncomps, n2bas
+    integer :: site, ncomps
     real(dp), dimension(:), allocatable :: symfacs
     real(dp), dimension(:,:,:), allocatable :: Mk_ints
     logical :: pol
@@ -7169,7 +7174,6 @@ subroutine lao_multipoles(Mks, fckmats, linduced)
     if (present(linduced)) pol = linduced
 
     ncomps = size(Mks, 1)
-    n2bas = nbas * nbas
 
     ! notice change to n2bas instead of nnbas here
     ! also, the integrals now have a Bx, By and Bz factor on them

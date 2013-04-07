@@ -121,6 +121,8 @@ module pe_variables
     integer, save :: nbas
     ! size of packed matrices
     integer, save :: nnbas
+    ! size of full matrices
+    integer, save :: n2bas
     ! number of nuclei in core region
     integer, save :: qmnucs = 0
 
