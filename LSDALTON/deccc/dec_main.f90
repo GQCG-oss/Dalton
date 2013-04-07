@@ -224,17 +224,13 @@ contains
 
     write(DECinfo%output,*) 'Calculating DEC-MP2 gradient, FOT = ', DECinfo%FOT
 
-    ! Sanity checks
-    ! *************
-    if(.not. DECinfo%gradient) then
-       call lsquit('get_mp2gradient_from_inputs called - but gradient keyword is not set!  &
-            & Suggstion: Insert .gradient keyword in **DEC section',DECinfo%output)
+    ! Sanity check
+    ! ************
+    if( (.not. DECinfo%gradient) .or. (.not. DECinfo%first_order) ) then
+       ! Modify DECinfo to calculate first order properties (gradient)
+       DECinfo%gradient=.true.
+       DECinfo%first_order=.true.
     end if
-    if(DECinfo%single_calculation) then
-       call lsquit('get_mp2gradient_from_inputs do not work for single fragment calculations! &
-       & Suggstion: Remove keywords .singleFragment and .singlePair in **DEC section',DECinfo%output)
-    end if
-
     write(DECinfo%output,*) 'Calculating MP2 energy and gradient from Fock, density, overlap, and MO inputs...'
 
 

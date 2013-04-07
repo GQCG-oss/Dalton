@@ -91,7 +91,7 @@ contains
     ! -- Fragment
     DECinfo%MaxIter=20
     DECinfo%FOTlevel=4
-    DECinfo%maxFOTlevel=8
+    DECinfo%maxFOTlevel=8   ! if you modify this remember to modify dimension of ncalc as well!
     DECinfo%FOT=1.0E-4_realk
     DECinfo%InclFullMolecule = .false.
     DECinfo%PL=0
@@ -186,9 +186,6 @@ contains
     DECinfo%reorder_time_wall=0E0_realk
     DECinfo%memallo_time_cpu=0E0_realk
     DECinfo%memallo_time_wall=0E0_realk
-
-    !> Lagrangian MP2 energy
-    DECinfo%lagrangian=.true.
 
     !> MPI (undefined by default)
     DECinfo%MPIgroupsize=0
@@ -368,7 +365,6 @@ contains
        case('.gradient') 
           DECinfo%gradient=.true.
           DECinfo%first_order=.true.
-          DECinfo%Lagrangian=.true.
        case('.kappaMaxIter'); read(input,*) DECinfo%kappaMaxIter 
        case('.kappaMaxDIIS'); read(input,*) DECinfo%kappaMaxDIIS
        case('.kappa_debug'); DECinfo%kappa_driver_debug=.true.
@@ -395,7 +391,6 @@ contains
        case('.MP2density') 
           DECinfo%MP2density=.true.
           DECinfo%first_order=.true.
-          DECinfo%Lagrangian=.true.
           !> Collect fragment contributions to calculate full molecular MP2 density
        case('.SkipFull') 
           DECinfo%SkipFull=.true.
@@ -466,7 +461,6 @@ contains
 
        write(DECinfo%output,*) 'Coupled-cluster beyond MP2 is requested!'
        write(DECinfo%output,*) 'I turn on the occupied/virtual hybrid partitioning scheme!'
-       DECinfo%Lagrangian=.true.
        DECinfo%HybridScheme=.true.
 
     end if BeyondMp2
@@ -632,7 +626,6 @@ contains
     WRITE(lupri,'(A32,ES18.9)')' reorder_time_wall ' ,DECitem%reorder_time_wall
     WRITE(lupri,'(A32,ES18.9)')' memallo_time_cpu ' ,DECitem%memallo_time_cpu
     WRITE(lupri,'(A32,ES18.9)')' memallo_time_wall ' ,DECitem%memallo_time_wall
-    WRITE(lupri,'(A32,L1)')' lagrangian ' ,DECitem%lagrangian
     WRITE(lupri,'(A31,I8)')' MPIgroupsize ' ,DECitem%MPIgroupsize
     WRITE(lupri,'(A31,L1)')' first_order ' ,DECitem%first_order
     WRITE(lupri,'(A31,L1)')' MP2density ' ,DECitem%MP2density

@@ -70,7 +70,6 @@ DEBUG_MPI_MEM
 $END INFO
 **DEC
 .SimulateFull
-.gradient
 *END OF INPUT
 %EOF%
 #######################################################################

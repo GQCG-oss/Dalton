@@ -731,7 +731,6 @@ contains
     write(DECinfo%output,'(a,/)') '--------------------------'
     write(DECinfo%output,'(a,f8.3)')   'Simple orbital thr.    = ',DECinfo%simple_orbital_threshold
     write(DECinfo%output,'(a,f8.3)')   'Mulliken charge thr.   = ',DECinfo%mulliken_threshold
-    write(DECinfo%output,'(a,l1)')     'Lagrangian part.       = ',DECinfo%Lagrangian
     write(DECinfo%output,'(a,l1)')     'Mulliken analysis      = ',DECinfo%Mulliken
     write(DECinfo%output,'(a,l1)')     'Boughton-Pulay         = ',DECinfo%BoughtonPulay
     write(DECinfo%output,'(a,ES8.2)')  'FOT                    = ',DECinfo%FOT
@@ -741,9 +740,7 @@ contains
     write(DECinfo%output,'(a,l1)')     'Fragmentation debug    = ',DECinfo%fragmentation_debug
     write(DECinfo%output,'(a,l1)')     'DEC driver debug       = ',DECinfo%dec_driver_debug
     write(DECinfo%output,'(a,i4)')     'Print level            = ',DECinfo%PL
-    if(DECinfo%Lagrangian) then
-       write(DECinfo%output,'(a,i4)')  'Expansion step size    = ',DECinfo%LagStepSize
-    end if
+    write(DECinfo%output,'(a,i4)')     'Expansion step size    = ',DECinfo%LagStepSize
 
     ! print cc parameters
     write(DECinfo%output,'(/,a)') '--------------------------'

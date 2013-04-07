@@ -33,15 +33,11 @@ module dec_typedef_module
      logical :: frozencore
      !> Book keeping of the number of DEC calculations for each FOT level
      !> (only relevant for geometry optimizations)
-     integer,dimension(7) :: ncalc
+     integer,dimension(8) :: ncalc
 
      ! -- Type of calculation
      !> Full molecular job
      logical :: full_molecular_cc ! full molecular cc
-     !> Single atomic fragment job
-     logical :: single_fragment
-     !> One single calculation (either single or pair)
-     logical :: single_calculation
      !> Full calculation where individual pair and single energies are calculated in ONE energy calc.
      logical :: FullDEC
      !> Simulate full molecular calculation in DEC mode
@@ -271,8 +267,6 @@ module dec_typedef_module
      real(realk) :: memallo_time_cpu  
      real(realk) :: memallo_time_wall
 
-     !> Use (varitional) Lagrangian MP2 energy
-     logical :: lagrangian
 
      ! MPI information
      integer(kind=ls_mpik) :: MPIgroupsize
@@ -623,7 +617,7 @@ module dec_typedef_module
      real(realk) :: LagFOP
   
      !> Contributions to the fragment Lagrangian energy from each individual
-     !  occupied or virtual orbitals - only implemented for Lagrangian scheme.
+     !  occupied or virtual orbital.
      real(realk),pointer :: OccContribs(:) => null()
      real(realk),pointer :: VirtContribs(:) => null()
 
