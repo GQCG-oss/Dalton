@@ -91,7 +91,7 @@ contains
     ! -- Fragment
     DECinfo%MaxIter=20
     DECinfo%FOTlevel=4
-    DECinfo%maxFOTlevel=7
+    DECinfo%maxFOTlevel=8
     DECinfo%FOT=1.0E-4_realk
     DECinfo%InclFullMolecule = .false.
     DECinfo%PL=0
@@ -520,15 +520,20 @@ contains
     end if
 
 #ifndef VAR_LSMPI
-if(DECinfo%restart) then
+    if(DECinfo%restart) then
        call lsquit('DEC Restart option only possible using MPI!',DECinfo%output)
-end if
+    end if
 #endif
 
-if(DECinfo%SinglesPolari) then
-call lsquit('Full singles polarization has been temporarily disabled!',-1)
-end if
+    if(DECinfo%SinglesPolari) then
+       call lsquit('Full singles polarization has been temporarily disabled!',-1)
+    end if
 
+
+    if(DECinfo%fragadapt) then
+       write(DECinfo%output,*) 'DEC: Fragment-adapted orbitals requested --> turn on orbital purification.'
+       DECinfo%purifyMOs=.true.
+    end if
 
   end subroutine check_dec_input
   
@@ -656,35 +661,38 @@ end if
     !> FOTlevel: Defines the precision of the whole calculation:
     !>           In general FOT=10^{-FOTlevel}
     !>           So a large FOTlevel means HIGH precision.
-    !>           Reasonable pair cutoff distances and 
-    !>           atomic extent orbital thresholds are associated
-    !>           with each FOT level.
+    !>           Reasonable pair cutoff distances are associated with each FOT level.
     !>           If necessary, the paircut off is increased
     !>           in a self-adaptive black box manner during
     !>           the calculation.
+    !>           It is also possible to adapt the orbital threshold to the given FOT,
+    !>           however, for now we simply set the orbital threshold to 0.01 for all levels.
     !> 
     !> FOTlevel = 1: 
-    !> FOT=10^{-1}, pair_distance_threshold=4Angstrom, simple_orbital_threshold=0.1
+    !> FOT=10^{-1}, pair_distance_threshold=4Angstrom.
     !>
     !> FOTlevel = 2: 
-    !> FOT=10^{-2}, pair_distance_threshold=6Angstrom, simple_orbital_threshold=0.1
+    !> FOT=10^{-2}, pair_distance_threshold=6Angstrom.
     !> 
     !> FOTlevel = 3: 
-    !> FOT=10^{-3}, pair_distance_threshold=8Angstrom, simple_orbital_threshold=0.03
+    !> FOT=10^{-3}, pair_distance_threshold=8Angstrom.
     !> 
     !> FOTlevel = 4: 
-    !> FOT=10^{-4}, pair_distance_threshold=10Angstrom, simple_orbital_threshold=0.01
+    !> FOT=10^{-4}, pair_distance_threshold=10Angstrom.
     !>
     !> FOTlevel = 5: 
-    !> FOT=10^{-5}, pair_distance_threshold=12Angstrom, simple_orbital_threshold=0.003
+    !> FOT=10^{-5}, pair_distance_threshold=12Angstrom.
     !> 
     !> FOTlevel = 6: 
-    !> FOT=10^{-6}, pair_distance_threshold=14Angstrom, simple_orbital_threshold=0.001
+    !> FOT=10^{-6}, pair_distance_threshold=14Angstrom.
     !>
     !> FOTlevel = 7: 
-    !> FOT=10^{-7}, pair_distance_threshold=16Angstrom, simple_orbital_threshold=0.0003
+    !> FOT=10^{-7}, pair_distance_threshold=16Angstrom.
     !> 
-    !> Default: FOTlevel=4. If FOTlevel is not from 1 to 7, the program will quit.
+    !> FOTlevel = 8: 
+    !> FOT=10^{-8}, pair_distance_threshold=18Angstrom.
+    !>
+    !> Default: FOTlevel=4. If FOTlevel is not 1,2,3,4,5,6,7, or 8, the program will quit.
 
     ! Set FOT level
     DECinfo%FOTlevel = FOTlevel
@@ -697,21 +705,21 @@ end if
        ! only if these were not set set manually
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=4.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.1E0_realk
+          DECinfo%simple_orbital_threshold = 0.01E0_realk
        end if
 
     case(2)
        DECinfo%FOT = 1.0E-2_realk
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=6.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.1E0_realk
+          DECinfo%simple_orbital_threshold = 0.01E0_realk
        end if
 
     case(3)
        DECinfo%FOT = 1.0E-3_realk
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=8.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.03E0_realk
+          DECinfo%simple_orbital_threshold = 0.01E0_realk
        end if
 
     case(4)
@@ -725,25 +733,32 @@ end if
        DECinfo%FOT = 1.0E-5_realk
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=12.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.003E0_realk
+          DECinfo%simple_orbital_threshold = 0.01E0_realk
        end if
 
     case(6)
        DECinfo%FOT = 1.0E-6_realk
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=14.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.001E0_realk
+          DECinfo%simple_orbital_threshold = 0.01E0_realk
        end if
 
     case(7)
        DECinfo%FOT = 1.0E-7_realk
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=16.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.0003E0_realk
+          DECinfo%simple_orbital_threshold = 0.01E0_realk
+       end if
+
+    case(8)
+       DECinfo%FOT = 1.0E-8_realk
+       if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=18.0E0_realk/bohr_to_angstrom
+       if(.not. DECinfo%simple_orbital_threshold_set) then
+          DECinfo%simple_orbital_threshold = 0.01E0_realk
        end if
 
     case default
-       call lsquit('set_input_for_fot_level: FOT level must be 1,2,3,4,5,6, or 7!',DECinfo%output)
+       call lsquit('set_input_for_fot_level: FOT level must be 1,2,3,4,5,6,7, or 8!',DECinfo%output)
 
     end SELECT WhatFOTlevel
 

@@ -63,7 +63,6 @@ STANDARD
 **DEC
 .FrozenCore
 .FragmentAdapted
-.Purification
 *END OF INPUT
 %EOF%
 #######################################################################
