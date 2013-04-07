@@ -993,11 +993,13 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
 
     ndens = nmats
     if (london) then
-      nbas = int(sqrt(size(fckmats) / 3.0d0))
+        if (ndens > 1) stop 'WARNING: LAO contribution for nmats > 1 requested'
+        nbas = int(sqrt(size(fckmats) / 3.0d0))
     else
-      nnbas = size(denmats) / ndens
-      nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * nnbas) - 1.0d0))
+        nnbas = size(denmats) / ndens
+        nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * nnbas) - 1.0d0))
     endif
+
     if (.not. allocated(Epe)) allocate(Epe(ndens))
     Epe = 0.0d0
     if (.not. allocated(Ees)) allocate(Ees(0:5,ndens))
@@ -1020,6 +1022,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
             call mpi_bcast(3, 1, impi, 0, comm, ierr)
         else if (mep) then
             call mpi_bcast(4, 1, impi, 0, comm, ierr)
+        else if (london) then
+            call mpi_bcast(5, 1, impi, 0, comm, ierr)
         end if
 
         call mpi_bcast(nbas, 1, impi, 0, comm, ierr)
@@ -1150,22 +1154,30 @@ subroutine pe_mpi(dalwrk, runtype)
         energy = .false.
         response = .false.
         mep = .true.
+    else if (runtype == 5) then
+        fock = .false.
+        energy = .false.
+        response = .false.
+        mep = .false.
+        london = .true.
     end if
 
     call mpi_bcast(nbas, 1, impi, 0, comm, ierr)
     call mpi_bcast(ndens, 1, impi, 0, comm, ierr)
-    call mpi_bcast(nnbas, 1, impi, 0, comm, ierr)
-    call mpi_bcast(work(1), nnbas * ndens, rmpi, 0, comm, ierr)
+    if (.not. london) then
+        call mpi_bcast(nnbas, 1, impi, 0, comm, ierr)
+        call mpi_bcast(work(1), nnbas * ndens, rmpi, 0, comm, ierr)
+    end if
 
-    allocate(Epe(ndens))
+    if (.not. allocated(Epe)) allocate(Epe(ndens))
     Epe = 0.0d0
-    allocate(Ees(0:5,ndens))
+    if (.not. allocated(Ees)) allocate(Ees(0:5,ndens))
     Ees = 0.0d0
-    allocate(Efd(3,ndens))
+    if (.not. allocated(Efd)) allocate(Efd(3,ndens))
     Efd = 0.0d0
-    allocate(Epol(3,ndens))
+    if (.not. allocated(Epol)) allocate(Epol(3,ndens))
     Epol = 0.0d0
-    allocate(Esol(3,ndens))
+    if (.not. allocated(Esol)) allocate(Esol(3,ndens))
     Esol = 0.0d0
 
     if (.not. synced) then
@@ -1181,9 +1193,11 @@ subroutine pe_mpi(dalwrk, runtype)
         call pe_fock(work(1:ndens*nnbas), work(ndens*nnbas+1:2*ndens*nnbas))
     else if (mep) then
         call pe_compute_mep(work(1:ndens*nnbas))
+    else if (london) then
+        call pe_compute_london(work(1:ndens*nbas*nbas))
     end if
 
-    deallocate(Epe, Ees, Epol, Esol, Efd)
+!    deallocate(Epe, Ees, Epol, Esol, Efd)
     nullify(work)
 
 end subroutine pe_mpi
@@ -7085,86 +7099,105 @@ subroutine FIXDIIS(NFFPAR, NIT, MXDIIS, QOUT, QIN, DIMAT,&
 !
 end subroutine fixdiis
 
-!-----------------------------------------------------------------------------
+!------------------------------------------------------------------------------
 
 subroutine pe_compute_london(fckmats)
+
     real(dp), dimension(:), intent(out) :: fckmats
-    real(dp), dimension(:,:), allocatable :: Mkinds
+
     integer :: k, lu
+    real(dp), dimension(:,:), allocatable :: Mkinds
     logical :: lexist
+
     fckmats = 0.0d0
 
-    if(lmul(0)) call b_multipoles(M0s, fckmats)
-    if(lmul(1)) call b_multipoles(M1s, fckmats)
-    if(lmul(2)) call b_multipoles(M2s, fckmats)
+    if (lmul(0)) call lao_multipoles(M0s, fckmats)
+    if (lmul(1)) call lao_multipoles(M1s, fckmats)
+    if (lmul(2)) call lao_multipoles(M2s, fckmats)
 
-    if(lpol(1)) then
-
-    allocate(Mkinds(3,npols))
-    if (myid == 0) then
-        inquire(file='pe_induced_dipoles.bin', exist=lexist)
-    end if
-!    print *, "pe_induced_dipoles", lexist
+    if (lpol(1)) then
+        allocate(Mkinds(3,npols))
+        if (myid == 0) then
+            inquire(file='pe_induced_dipoles.bin', exist=lexist)
+        end if
 #if defined(VAR_MPI)
-    if (nprocs > 1) then
-        call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
+        if (nprocs > 1) then
+            call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
+        end if
+#endif
+        if (lexist) then
+            if (myid == 0) then
+                call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted')
+                rewind(lu)
+                read(lu) Mkinds
+                close(lu)
+            end if
+        else
+            stop 'ERROR: pe_induced_dipoles.bin does not exist'
+        end if
+        call lao_multipoles(Mkinds, fckmats, linduced=.true.)
+        deallocate(Mkinds)
+    endif
+
+#if defined(VAR_MPI)
+    if (myid == 0 .and. nprocs > 1) then
+        call mpi_reduce(mpi_in_place, fckmats, ndens * n2bas, rmpi, mpi_sum,&
+                       & 0, comm, ierr)
+    else
+        call mpi_reduce(fckmats, 0, ndens * n2bas, rmpi, mpi_sum, 0,&
+                       & comm, ierr)
     end if
 #endif
-    if (lexist) then
-        if (myid == 0) then
-            call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted')
-            rewind(lu)
-            read(lu) Mkinds
-            close(lu)
-        end if
-    end if
-    call b_multipoles(Mkinds, fckmats, linduced=.true.)
-    deallocate(Mkinds)
-    endif
-    !print *, Mkinds(1,1)
+
 end subroutine pe_compute_london
 
-! -------
-subroutine b_multipoles(MKs, fckmats, linduced)
+!------------------------------------------------------------------------------
+
+subroutine lao_multipoles(Mks, fckmats, linduced)
+
     real(dp), dimension(:,:), intent(in) :: Mks
     real(dp), dimension(:), intent(inout) :: fckmats
     logical, intent(in), optional :: linduced
 
-    integer :: i, j, n2bas, ifrom, ito
-    integer :: site, ncomps
+    integer :: i, j, ifrom, ito
+    integer :: site, ncomps, n2bas
     real(dp), dimension(:), allocatable :: symfacs
     real(dp), dimension(:,:,:), allocatable :: Mk_ints
     logical :: pol
 
     pol = .false.
-    if(present(linduced)) pol = linduced
-    ncomps = size(Mks,1)
-    n2bas=nbas*nbas
+    if (present(linduced)) pol = linduced
 
-    ! notice change to nbas instead of nnbas here
-    ! also, the integrals now have a
-    ! Bx, By and Bz factor on them
+    ncomps = size(Mks, 1)
+    n2bas = nbas * nbas
+
+    ! notice change to n2bas instead of nnbas here
+    ! also, the integrals now have a Bx, By and Bz factor on them
     allocate(Mk_ints(n2bas,3,ncomps))
 
     do site = site_start, site_finish
         if (abs(maxval(Mks(:,site))) < zero) then
             cycle
         end if
-        if(pol.and.zeroalphas(site)) cycle
-        call Mkb_integrals(Mk_ints, Rs(:,site), Mks(:,site))
+        if (pol .and. zeroalphas(site)) cycle
+
+        call Mk_lao_integrals(Mk_ints, Rs(:,site), Mks(:,site))
 
         ! update for all directions of the magnetic field
-        do j=1,3
-            ifrom = (j-1)*n2bas+1
-            ito   = j*n2bas
-            fckmats(ifrom:ito) = fckmats(ifrom:ito) + sum(Mk_ints(:,j,:),2)
-        enddo
+        do j = 1, 3
+            ifrom = (j - 1) * n2bas + 1
+            ito   = j * n2bas
+            fckmats(ifrom:ito) = fckmats(ifrom:ito) + sum(Mk_ints(:,j,:), 2)
+        end do
     end do
+
     deallocate(Mk_ints)
     
-end subroutine b_multipoles
-!----------------------------------------
-subroutine Mkb_integrals(Mk_ints, Rij, Mk)
+end subroutine lao_multipoles
+
+!-----------------------------------------------------------------------------
+
+subroutine Mk_lao_integrals(Mk_ints, Rij, Mk)
 
     external :: Tk_lao_integrals
 
@@ -7172,8 +7205,8 @@ subroutine Mkb_integrals(Mk_ints, Rij, Mk)
     real(dp), dimension(:), intent(in) :: Mk
     real(dp), dimension(3), intent(in) :: Rij
 
-    integer :: i, j, k, nwrk, nints
-    integer :: ncomps
+    integer :: i, j, k
+    integer :: ncomps, nints, nwrk
     real(dp) :: taylor
     real(dp), dimension(:), allocatable :: factors
 
@@ -7187,22 +7220,23 @@ subroutine Mkb_integrals(Mk_ints, Rij, Mk)
         taylor = - 1.0d0 / factorial(k)
     end if
 
-    ncomps = size(Mk_ints,3)
-    nints = size(Mk_ints,1)
+    ncomps = size(Mk_ints, 3)
+    nints = size(Mk_ints, 1)
 
     call Tk_lao_integrals(Mk_ints, nints, ncomps, Rij, work, nwrk)
+
     allocate(factors(ncomps))
     call symmetry_factors(factors)
-!
-     ! dot T^(k) integrals with multipole to get M^(k) integrals
-    do i=1, ncomps
-        do j = 1,3
-            Mk_ints(:,j,i) = taylor * factors(i)*Mk(i) * Mk_ints(:,j,i)
-        enddo
+
+    ! dot T^(k) integrals with multipole to get M^(k) integrals
+    do i = 1, ncomps
+        do j = 1, 3
+            Mk_ints(:,j,i) = taylor * factors(i) * Mk(i) * Mk_ints(:,j,i)
+        end do
     enddo
-!
+
     deallocate(factors)
 
-end subroutine Mkb_integrals
+end subroutine Mk_lao_integrals
 
 end module polarizable_embedding

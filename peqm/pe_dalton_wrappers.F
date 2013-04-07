@@ -1125,13 +1125,14 @@ C     as to what works best for singly bonded C,N,O
       character(len=8), dimension(9*mxcent) :: labint
       integer, dimension(9*mxcent) :: intrep, intadr
 
+      integer, intent(in) :: nints, ncomps, nwrk
+      real(8), dimension(3), intent(in) :: coord
+      real(8), dimension(nints*ncomps*3), intent(inout) :: Tk_ints
+      real(8), dimension(nwrk), intent(inout) :: work
+
       integer :: i, j, k, l, m, n
       real(8) :: dd
       real(8), dimension(3) :: backup
-      integer, intent(in) :: nints, ncomps, nwrk
-      real(8), dimension(nints*ncomps*3), intent(inout) :: Tk_ints
-      real(8), dimension(3), intent(in) :: coord
-      real(8), dimension(nwrk), intent(inout) :: work
       character(len=7) :: inttype
 
       dd = 0.001d0
