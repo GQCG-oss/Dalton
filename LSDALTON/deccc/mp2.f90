@@ -1,13 +1,8 @@
 !> @file
-!> Direct contraction with AO integrals
+!> Two-electron integrals and amplitudes for MP2.
+!> \ author Kasper Kristensen
 
-!> General index convention:
-!> *************************
-!> a,b   : Virtual EOS
-!> c,d,e : Virtual AOS
-!> i,j   : Occupied EOS
-!> k,l,m : Occupied AOS
-module ao_contractions
+module mp2_module
 
 #ifdef VAR_LSMPI
       use infpar_module
@@ -59,487 +54,6 @@ module ao_contractions
 
 
 contains
-
-
-
-  !> \brief Get (a i | b j) integrals stored in the order (a,i,b,j).
-  !> \author Kasper Kristensen
-  !> \date February 2011
-  subroutine get_VOVO_integrals(mylsitem,nbasis,nocc,nvirt,Cvirt,Cocc,VOVO)
-
-    implicit none
-
-
-    !> LS item
-    type(lsitem), intent(inout) :: mylsitem
-    !> Number of basis functions
-    integer, intent(in) :: nbasis
-    !> Number of occupied orbitals
-    integer, intent(in) :: nocc
-    !> Number of virtual orbitals
-    integer, intent(in) :: nvirt
-    !> Occupied orbital coefficients
-    type(array2), intent(in) :: Cocc
-    !> Virtual orbital coefficients
-    type(array2), intent(in) :: Cvirt
-    !> (a i | b j) integrals stored in the order (a,i,b,j)
-    type(array4),intent(inout) :: VOVO
-
-    ! Get integrals (a i | b j) stored as (i,j,b,a)
-    VOVO = array4_init([nocc,nocc,nvirt,nvirt])
-    call get_ijba_integrals(mylsitem%setting,nbasis,nocc,nvirt,Cocc%val,Cvirt%val,VOVO%val)
-    
-    ! Reorder: (i,j,b,a) --> (a,i,b,j)
-    call array4_reorder(VOVO,[4,1,3,2])
-
-  end subroutine get_VOVO_integrals
-
-
-  !> \brief Get (sigma L | C K) integrals stored in the order (L,C,K,sigma), where
-  !> L,K: Occupied
-  !> sigma: AO indiex
-  !> C: Virtual index
-  !> \author Kasper Kristensen
-  !> \date February 2011
-  subroutine get_AOVO_integrals(mylsitem,nbasis,nocc,nvirt,Cvirt,Cocc,LCKsigma)
-    implicit none
-
-    !> LS item
-    type(lsitem), intent(inout) :: mylsitem
-    !> Number of basis functions
-    integer, intent(in) :: nbasis
-    !> Number of occupied orbitals
-    integer, intent(in) :: nocc
-    !> Number of virtual orbitals
-    integer, intent(in) :: nvirt
-    !> Occupied orbital coefficients
-    type(array2), intent(in) :: Cocc
-    !> Virtual orbital coefficients
-    type(array2), intent(in) :: Cvirt
-    !> (sigma L | C K) integrals stored in the order (L,C,K,sigma)
-    type(array4),intent(inout) :: LCKsigma
-    type(array4) ::  CKrhoY,LCKY
-    type(array4) :: MuNuXY
-    type(array4) :: CNuXY, CKXY
-    real(realk) :: ttot_cpu_start, ttot_wall_start,ttot_cpu_end, ttot_wall_end
-    integer, pointer :: orb2batch(:), batchdim(:)
-    integer :: X,Y,dimX,dimY,batch_iX,batch_iY,i,K,MinAObatch,MaxAllowedDim,MaxActualDim
-    integer :: nbatches,iorb,JK,ao_iX,ao_iY,lu_pri, lu_err,thread_idx,nthreads,idx,nbatchesXY
-    integer,dimension(4) :: dims
-    type(batchtoorb), pointer :: batch2orb(:)
-    type(lssetting) :: mysetting
-    real(realk) :: thread_start_cpu, thread_start_wall, thread_end_cpu, thread_end_wall
-    real(realk) :: total_thread_time, max_thread_time, maxval,dt,perc
-    real(realk),pointer :: thread_times(:)
-    real(realk),pointer :: val(:,:,:,:)
-    integer, pointer :: batchsize(:), batchindex(:)
-    Character            :: intSpec(5)
-    Character(80)        :: FilenameCS,FilenamePS
-    Character(80),pointer:: BatchfilenamesCS(:,:)
-    Character(80),pointer:: BatchfilenamesPS(:,:)
-    logical :: FoundInMem,doScreen,FullRHS
-#ifdef VAR_OMP
-    integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
-#endif
-    TYPE(DECscreenITEM)    :: DecScreen
-
-    ! Note on the indices.
-    ! Virtual indices    : C,D
-    ! Batch (AO) indices : X,Y
-    ! Occupied indices   : K,L
-    ! Full AO indices: mu,nu,rho,sigma
-    !
-    ! The indices are connected to the Mulliken notation in the following way:
-    ! (C K | L D)  <--> (mu nu | rho sigma) <--> (mu nu | X Y)
-    !
-    ! Of course we have (CK|DL)=(CK|LD) and (CK|DL) = (DL|CK) etc.
-
-    call LSTIMER('START',ttot_cpu_start,ttot_wall_start,DECinfo%output)
-
-    doScreen = mylsitem%SETTING%SCHEME%CS_SCREEN.OR.mylsitem%SETTING%SCHEME%PS_SCREEN
-    ! Initialize stuff
-    nullify(orb2batch)
-    nullify(batchdim)
-    nullify(batch2orb)
-    nullify(batchsize)
-    nullify(batchindex)
-    lu_pri = DECinfo%output
-    lu_err = DECinfo%output
-
-    ! Mulliken notation: (C K | sigma L)
-    ! Actual order: (L,C,K,sigma)
-    StoreOnFile1: if(DECinfo%array4OnFile) then ! Store LCKsigma values only on file
-      LCKsigma = array4_init_file([nocc,nvirt,nocc,nbasis],2,.false.)
-    else ! Store LCKsigma values in memory
-      LCKsigma = array4_init_standard([nocc,nvirt,nocc,nbasis])
-    end if StoreOnFile1
-
-    call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch)
-    MaxAllowedDim = MinAObatch
-
-    ! get number of batches and their dimensions
-    call mem_alloc(orb2batch,nbasis)
-    call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDim,&
-         & nbasis,MaxActualDim,batchsize,batchdim,batchindex,nbatchesXY,orb2Batch)
-
-    ! Translate batchindex to orbital index
-    ! -------------------------------------
-    call mem_alloc(batch2orb,nbatchesXY)
-    do idx=1,nbatchesXY
-       call mem_alloc(batch2orb(idx)%orbindex,batchdim(idx) )
-       batch2orb(idx)%orbindex = 0
-       batch2orb(idx)%norbindex = 0
-    end do
-    do iorb=1,nbasis
-       idx = orb2batch(iorb)
-       batch2orb(idx)%norbindex = batch2orb(idx)%norbindex+1
-       K = batch2orb(idx)%norbindex
-       batch2orb(idx)%orbindex(K) = iorb
-    end do
-
-
-#ifdef VAR_OMP
-nthreads=OMP_GET_MAX_THREADS()
-write(lu_pri,*) 'Starting DEC integrals, using OMP. Number of threads: ', OMP_GET_MAX_THREADS()
-#else
-nthreads=1
-write(lu_pri,*) 'Starting DEC integral loop, NOT using OMP...'
-#endif
-    INTSPEC(1)='R' !R = Regular Basis set on the 1th center 
-    INTSPEC(2)='R' !R = Regular Basis set on the 2th center 
-    INTSPEC(3)='R' !R = Regular Basis set on the 3th center 
-    INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
-    INTSPEC(5)='C' !C = Coulomb operator
-    call II_precalc_DECScreenMat(DecScreen,lu_pri,6,mylsitem%setting,nbatches,nbatchesXY,nbatchesXY,INTSPEC)
-    IF(doscreen)then
-       call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
-            & nbasis,nbatchesXY,nbatchesXY,batchsize,batchsize,batchindex,batchindex,&
-            & batchdim,batchdim,DECinfo%output,DECinfo%output)
-    endif
-    FullRHS = .FALSE.
-    ! Init timings
-    total_thread_time = 0E0_realk
-    max_thread_time = 0E0_realk
-    call mem_alloc(thread_times,nthreads)
-    thread_times=0E0_realk
-
-    BatchY: do Y = 1,nbatchesXY
-       dimY = batchdim(Y)
-
-       ! Allocate array for (C K | rho Y) integrals
-       dims=[nvirt,nocc,nbasis,dimY]
-       CKrhoY = array4_init_standard(dims)
-       thread_times=0E0_realk
-       val => CKrhoY%val  ! Quick fix of ifort compiler bug
-#ifndef VAR_CRAY
-!this does not compile for CRAY I do not know why
-call mem_TurnONThread_Memory()
-!$OMP PARALLEL DEFAULT(none) PRIVATE(mysetting,X,dimX,&
-!$OMP MuNuXY, CNuXY, CKXY, batch_iY, batch_iX, ao_iX, dims,thread_idx,&
-!$OMP thread_start_cpu, thread_start_wall, thread_end_cpu, thread_end_wall,&
-!$OMP dt) SHARED(mylsitem,lu_pri,nbatchesXY,batchdim,nbasis,dimY,doscreen,&
-!$OMP DECSCREEN,DECinfo,batchindex,Y,batchsize,FullRHS,nbatches,nvirt,nocc,Cvirt,&
-!$OMP Cocc,batch2orb,val,thread_times,INTSPEC)
-call init_threadmemvar()
-#endif
-    ! Copy setting info for each thread
-    call copy_setting(mysetting,mylsitem%setting,lu_pri)
-    mysetting%scheme%noOMP = .TRUE.
-
-    ! Nullify stuff
-    nullify(CNuXY%val)
-    nullify(CKXY%val)
-    nullify(MuNuXY%val)
-    dt=0E0_realk
-#ifndef VAR_CRAY
-!$OMP DO SCHEDULE(dynamic,1)
-#endif
-
-       BatchX: do X = 1,nbatchesXY
-          dimX = batchdim(X)
-          ! integrals in AO: (Mu Nu | X Y)  stored as (Mu,Nu,X,Y)
-          dims = [nbasis,nbasis,dimX,dimY]
-          MuNuXY = array4_init_standard(dims)
-
-          ! Time for each thread
-          call LSTIMER('START',thread_start_cpu,thread_start_wall,lu_pri)
-
-          ! Get exchange (mu nu | X Y) integrals using (Mu,Nu,X,Y) ordering
-          IF(doscreen)mysetting%LST_GAB_LHS => DECSCREEN%batchGab(X,Y)%p
-          IF(doscreen)mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
-          call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
-               & Mysetting,MuNuXY%val,batchindex(X),batchindex(Y),&
-               & batchsize(X),batchsize(Y),nbasis,nbasis,dimX,dimY,FullRHS,&
-               & nbatches,INTSPEC)
-
-          call LSTIMER('START',thread_end_cpu,thread_end_wall,lu_pri)
-          ! Update time
-          dt = dt + thread_end_wall - thread_start_wall
-
-          ! Transform indices: (MuNu|XY) --> (CK|XY)
-          ! ****************************************
-           dims=[nvirt,nbasis,dimX,dimY]
-           CNuXY = array4_init_standard(dims)
-           dims=[nvirt,nocc,dimX,dimY]
-           CKXY= array4_init_standard(dims)
-
-          ! transform each matrix
-          do batch_iY = 1,dimY
-             do batch_iX = 1,dimX
-
-                ! (Mu,Nu,X,Y) -> (C,Nu,X,Y)
-                call dgemm('t','n',nvirt,nbasis,nbasis,1.0E0_realk,Cvirt%val,nbasis, &
-                     & MuNuXY%val(:,:,batch_iX,batch_iY),nbasis,0.0E0_realk, &
-                     & CNuXY%val(:,:,batch_iX,batch_iY),nvirt)
-
-                ! (C,Nu,X,Y) --> (C,K,X,Y)
-                call dgemm('n','n',nvirt,nocc,nbasis,1.0E0_realk,&
-                     & CNuXY%val(:,:,batch_iX,batch_iY), nvirt,Cocc%val,&
-                     & nbasis,0.0E0_realk,CKXY%val(:,:,batch_iX,batch_iY),nvirt)
-
-                ! Now CKXY contains the integrals (CK|XY) stored as (C,K,X,Y)
-                ! We put these integrals into CKrhoY stored as (C,K,rho,Y)
-                ! where the third index eventually will contain the full set of AO indices.
-                ao_iX = batch2orb(X)%orbindex(batch_iX)
-                val(:,:,ao_iX,batch_iY) = CKXY%val(:,:,batch_iX,batch_iY)
-
-             end do
-          end do
-
-          call array4_free(MuNuXY)
-          call array4_free(CNuXY)
-          call array4_free(CKXY)
-
-       end do BatchX
-#ifndef VAR_CRAY
-!$OMP END DO NOWAIT
-#endif
-       nullify(Mysetting%LST_GAB_LHS)
-       nullify(Mysetting%LST_GAB_RHS)
-       call typedef_free_setting(mysetting)
-#ifdef VAR_OMP
-       ! Save time use for AO integrals for each thread
-       thread_idx = OMP_GET_THREAD_NUM()
-       ! Thread number starts from 0, therefore we need to add 1.
-       thread_idx = thread_idx+1
-       thread_times(thread_idx) = dt
-#endif
-#ifndef VAR_CRAY
-call collect_thread_memory()
-!$OMP END PARALLEL
-call mem_TurnOffThread_Memory()
-#endif
-
-! Thread time analysis
-#ifdef VAR_OMP
-maxval=0E0_realk
-do idx=1,nthreads
-    total_thread_time = total_thread_time + thread_times(idx)
-    if(thread_times(idx) > maxval) maxval = thread_times(idx)
- end do
-max_thread_time = max_thread_time + maxval
-#else
-max_thread_time = max_thread_time + dt
-#endif
-
-
-
-       ! At this point CKrhoY contains all integrals for a given
-       ! batch index Y where the
-       ! remaining three indices are virtual,occupied, and AO indices.
-       ! In Mulliken notation the integral is: (C K | rho Y)
-       ! It is ordered as : (C,K,rho,Y)
-       ! I.e., we only have batch Y for the last index but the full set of AO
-       ! indices for the second-last index.
-
-
-
-       ! Go from ( C K | rho Y ) --> (L Y | C K) integrals
-       ! *************************************************
-
-       ! Reorder CKrhoY integrals:
-       ! (C,K,rho,Y) --> (rho,C,K,Y)
-       ! (Necessary for contracting)
-       call array4_reorder(CKrhoY,[3,1,2,4])
-
-       ! Now we CKrhoY is ordered as (rho,C,K,Y) and we can transform:
-       ! (rho,C,K,Y) --> (L,C,K,Y)
-       dims=[nocc,nvirt,nocc,dimY]
-       LCKY = array4_init(dims)
-
-       ! Transform: (rho,C,K,Y) --> (L,C,K,Y)
-       call array4_contract1(CKrhoY,Cocc,LCKY,.true.)
-
-
-    ! Store LCKY integrals for all Y batches such that we eventually have
-    ! (L sigma | C K) integrals stored as (L,C,K,sigma) for all AO indices sigma.
-    StoreOnFile2: if(DECinfo%array4OnFile) then ! Store LCKsigma values on file
-
-       call array4_open_file(LCKsigma)
-       do K=1,nocc
-          do batch_iY = 1,dimY
-             ! Write (L,C,K,sigma) to file for given K and
-             ! sigma=ao_iY ("ao_iY" is the AO index corresponding to batch index "batch_iY")
-             ao_iY = batch2orb(Y)%orbindex(batch_iY)
-             call array4_write_file_type2(LCKsigma,K,ao_iY,&
-                  & LCKY%val(1:nocc,1:nvirt,K,batch_iY),nocc,nvirt)
-          end do
-       end do
-       call array4_close_file(LCKsigma,'KEEP')
-
-    else ! Store LCKsigma values in memory
-
-       do batch_iY = 1,dimY
-          ao_iY = batch2orb(Y)%orbindex(batch_iY)
-          LCKsigma%val(1:nocc,1:nvirt,1:nocc,ao_iY) &
-               & = LCKY%val(1:nocc,1:nvirt,1:nocc,batch_iY)
-       end do
-
-    end if StoreOnFile2
-
-
-       ! Free CKrhoY and LCKY
-       call array4_free(CKrhoY)
-       call array4_free(LCKY)
-
-    end do BatchY
-
-!    call mem_dealloc(BatchfilenamesCS)
-!    call mem_dealloc(BatchfilenamesPS)
-
-#ifdef VAR_OMP
-    write(lu_pri,*)
-    write(lu_pri,*)
-    write(lu_pri,*) 'THREAD DISTRIBUTION ANALYSIS (ONLY FOR AO INTEGRAL PART)'
-    write(lu_pri,*) '========================================================'
-    write(lu_pri,'(1X,a,i6)') 'Number of threads  = ', nthreads
-    write(lu_pri,'(1X,a,g16.3)') 'Total time for all threads (s)  = ', total_thread_time
-    write(lu_pri,'(1X,a,g16.3)') 'Sum of maximum thread times (s) = ', max_thread_time
-    write(lu_pri,'(1X,a,g16.3)') 'Ratio (total/max) = ', total_thread_time/max_thread_time
-    write(lu_pri,*)
-    write(lu_pri,*)
-#endif
-
-    ! Now LCKsigma contains the integrals (sigma L | C K) in the order (L,C,K,sigma).
-
-    ! Free stuff
-    call free_decscreen(DECSCREEN)
-    call mem_dealloc(orb2batch)
-    call mem_dealloc(batchdim)
-    call mem_dealloc(batchsize)
-    call mem_dealloc(batchindex)
-    orb2batch => null()
-    batchdim => null()
-    do X=1,nbatchesXY
-       call mem_dealloc(batch2orb(X)%orbindex)
-       batch2orb(X)%orbindex => null()
-    end do
-    call mem_dealloc(batch2orb)
-    batch2orb => null()
-    call mem_dealloc(thread_times)
-
-    ! Print timings
-    call LSTIMER('START',ttot_cpu_end,ttot_wall_end,lu_pri)
-    DECinfo%integral_time_wall = DECinfo%integral_time_wall + max_thread_time
-    perc = 100E0_realk*max_thread_time/(ttot_wall_end-ttot_wall_start+tiny(ttot_wall_start))
-    write(lu_pri,*)
-    write(lu_pri,*)
-    write(lu_pri,'(a,g16.5,a)') ' DEC AO INTEGRALS: INTEGRAL LOOP PERCENTAGE : ', &
-           & perc, ' %'
-    write(lu_pri,'(a,g16.5,a)') ' DEC AO INTEGRALS: TOTAL WALLTIME           : ',&
-         & ttot_wall_end-ttot_wall_start,' s'
-    write(lu_pri,*)
-    write(lu_pri,*)
-
-
-  end subroutine get_AOVO_integrals
-
-
-
-  !> \brief Get (C K | D L) integrals in the order (C,K,D,L) from
-  !> (sigma L | C K) integrals stored in the order (L,C,K,sigma).
-  !> \author Kasper Kristensen
-  !> \date April 2011
-  subroutine get_VOVO_from_AOVO_integrals(nbasis,nocc,nvirt,Cocc,Cvirt,LCKsigma,VOVO)
-
-    implicit none
-
-    !> Number of basis functions
-    integer, intent(in) :: nbasis
-    !> Number of occupied orbitals
-    integer, intent(in) :: nocc
-    !> Number of virtual orbitals
-    integer, intent(in) :: nvirt
-    !> Occupied orbital coefficients
-    type(array2), intent(in) :: Cocc
-    !> Virtual orbital coefficients
-    type(array2), intent(in) :: Cvirt
-    !> (sigma L | C K) integrals stored in the order (L,C,K,sigma)
-    !> [will be reordered to (sigma,L,C,K) if stored in memory]
-    type(array4), intent(inout) :: LCKsigma
-    !> (C K | D L) integrals in the order (C,K,D,L)
-    type(array4),intent(inout) :: VOVO
-    type(array4) :: DLCK1, sigmaLCK1
-    integer :: K,sigma
-
-
-    StoreOnFile: if(DECinfo%array4OnFile) then ! LCKsigma and VOVO on file
-
-       ! Final VOVO (DL|CK)=(CK|DL) array. Values only stored on file
-       VOVO = array4_init_file([nvirt,nocc,nvirt,nocc],1,.false.)
-
-       ! Keep array (D,L,C,K) for a FIXED K in memory
-       DLCK1 = array4_init([nvirt,nocc,nvirt,1])
-
-       call array4_open_file(LCKsigma)
-       call array4_open_file(VOVO)
-       do K=1,nocc
-
-          ! The array for reading in the first, second, and third
-          ! dimensions of LCKsigma is called sigmaLCK1.
-          ! Current order: (L,C,sigma,K) for a fixed K (to be reordered soon).
-          sigmaLCK1 = array4_init([nocc,nvirt,nbasis,1])
-
-          do sigma=1,nbasis
-             ! Read in (L,C,K,sigma) into sigmaLCK1 for a given (K,sigma)
-             call array4_read_file_type2(LCKsigma,K,sigma,&
-                  & sigmaLCK1%val(1:nocc,1:nvirt,sigma,1),nocc,nvirt)
-          end do
-
-          ! Now sigmaLCK1 contains (L,C,K,sigma) values for a fixed K ordered as (L,C,sigma,K).
-          ! Reorder: (L,C,sigma,K) --> (sigma,L,C,K)  [fixed K]
-          call array4_reorder(sigmaLCK1,[3,1,2,4])
-
-          ! Transform: (sigma,L,C,K) --> (D,L,C,K)  [fixed K]
-          call array4_contract1(sigmaLCK1,Cvirt,DLCK1,.true.)
-
-          ! Write array values to VOVO file using storing type 1
-          call array4_write_file_type1(VOVO,K,&
-               & DLCK1%val(1:nvirt,1:nocc,1:nvirt,1),nvirt,nocc,nvirt)
-          call array4_free(sigmaLCK1)
-
-       end do
-       call array4_close_file(LCKsigma,'KEEP')
-       call array4_close_file(VOVO,'KEEP')
-       call array4_free(DLCK1)
-
-
-    else ! LCKsigma and VOVO in memory
-
-       ! 1. Reorder: (L,C,K,sigma) --> (sigma,L,C,K)
-       call array4_reorder(LCKsigma,[4,1,2,3])
-
-       ! 2. Init (D,L,C,K) array
-       VOVO = array4_init([nvirt,nocc,nvirt,nocc])
-
-       ! 3. Transform: (sigma,L,C,K) --> (D,L,C,K)
-       call array4_contract1(LCKsigma,Cvirt,VOVO,.true.)
-
-
-    end if StoreOnFile
-
-
-  end subroutine get_VOVO_from_AOVO_integrals
 
 
 
@@ -2137,6 +1651,40 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
 
 
 
+  !> \brief Get (a i | b j) integrals stored in the order (a,i,b,j).
+  !> \author Kasper Kristensen
+  !> \date February 2011
+  subroutine get_VOVO_integrals(mylsitem,nbasis,nocc,nvirt,Cvirt,Cocc,VOVO)
+
+    implicit none
+
+
+    !> LS item
+    type(lsitem), intent(inout) :: mylsitem
+    !> Number of basis functions
+    integer, intent(in) :: nbasis
+    !> Number of occupied orbitals
+    integer, intent(in) :: nocc
+    !> Number of virtual orbitals
+    integer, intent(in) :: nvirt
+    !> Occupied orbital coefficients
+    type(array2), intent(in) :: Cocc
+    !> Virtual orbital coefficients
+    type(array2), intent(in) :: Cvirt
+    !> (a i | b j) integrals stored in the order (a,i,b,j)
+    type(array4),intent(inout) :: VOVO
+
+    ! Get integrals (a i | b j) stored as (i,j,b,a)
+    VOVO = array4_init([nocc,nocc,nvirt,nvirt])
+    call get_ijba_integrals(mylsitem%setting,nbasis,nocc,nvirt,Cocc%val,Cvirt%val,VOVO%val)
+    
+    ! Reorder: (i,j,b,a) --> (a,i,b,j)
+    call array4_reorder(VOVO,[4,1,3,2])
+
+  end subroutine get_VOVO_integrals
+
+
+
   !> \brief Get (a i | b j) integrals stored in the order (i,j,b,a).
   !> No MPI here, intended to be a simple routine to be used for 
   !> (i) calculations not requiring MPI, (ii) debugging,
@@ -3086,23 +2634,6 @@ subroutine get_VOVO_from_full_AO(nbasis,nocc,nvirt,Cocc,Cvirt,gao,gmo)
 end subroutine get_VOVO_from_full_AO
 
 
-
-subroutine ccsd_contract_alpha(m1,m2,m3,nb,nv,no,fa,la)
-
-  implicit none
-  integer,intent(in)        :: nb,nv,no,fa,la
-  real(realk),intent(in)    :: m1(:,:),m2(:)
-  real(realk),intent(inout) :: m3(*)
-  
-!  if(matrix_type==mtype_scalapack)then
-!#ifdef VAR_SCALAPACK
-!    call ccsd_contract_alpha_scalapack(m1,m2,m3,nb,nv,no,fa,la)
-!#endif
-!  else
-    call dgemm('t','n',nv,no*no*nv,la,1.0E0_realk,m1(fa,1),nb,m2,la,1.0E0_realk,m3,nv)
-!  endif
-end subroutine
-
 #ifdef VAR_LSMPI
 
 !> \brief Get array defining - for each (alpha,gamma) batch
@@ -3152,7 +2683,7 @@ end subroutine get_mpi_tasks_for_MP2_int_and_amp
 #endif
 
 
-end module ao_contractions
+end module mp2_module
 
 
 #ifdef VAR_LSMPI
@@ -3170,7 +2701,7 @@ subroutine MP2_integrals_and_amplitudes_workhorse_slave()
   ! DEC DEPENDENCIES (within deccc directory)  
   ! *****************************************
   use decmpi_module, only: mpi_communicate_mp2_int_and_amp
-  use ao_contractions,only: MP2_integrals_and_amplitudes_workhorse
+  use mp2_module,only: MP2_integrals_and_amplitudes_workhorse
 
   implicit none
 

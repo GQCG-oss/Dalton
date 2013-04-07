@@ -22,7 +22,7 @@ module dec_driver_slave_module
   use full_molecule!, only: molecule_finalize
   use decmpi_module
   use atomic_fragment_operations
-  use ao_contractions
+  use mp2_module
   use mp2_gradient_module
   use fragment_energy_module
 

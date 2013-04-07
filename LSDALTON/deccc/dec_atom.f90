@@ -28,7 +28,7 @@ module atomic_fragment_operations
   use array4_simple_operations!, only: array4_init,array4_extract_eos_indices_both_schemes,&
   use orbital_operations!,only: get_number_of_orbitals_per_atom,orbital_init,&
 !       & copy_orbital
-  use ao_contractions!,only: max_batch_dimension,get_vovo_integrals,&
+  use mp2_module!,only: max_batch_dimension,get_vovo_integrals,&
 !       & mp2_integrals_memory_for_updating_arrays,&
 !       & mp2_integrals_and_amplitudes
 !       & array4_free, operator(*)

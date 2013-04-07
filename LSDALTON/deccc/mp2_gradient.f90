@@ -273,9 +273,9 @@ contains
     type(array4),intent(inout) :: t2occ  ! ordered as (C,I,J,D) at output
     !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
     type(array4),intent(in) :: t2virt
-    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in cc_ao_contractions]
+    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOOO
-    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in cc_ao_contractions]
+    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOVV
     !> (C I | D J) integrals stored as (C,I,D,J)   [using occ partitioning]
     type(array4),intent(inout) :: VOVOocc   ! ordered as (C,I,J,D) at output
@@ -668,9 +668,9 @@ contains
     type(array4),intent(in) :: t2occ
     !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
     type(array4),intent(in) :: t2virt
-    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in cc_ao_contractions]
+    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOOO
-    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in cc_ao_contractions]
+    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOVV
     !> (C I | D J) integrals stored as (C,I,D,J)   [using occ partitioning]
     type(array4),intent(inout) :: VOVOocc
@@ -2269,9 +2269,9 @@ contains
     type(array4),intent(in) :: ThetaOCC
     !> Theta array, only for EOS orbitals using virtual partitioning, order:  (A,K,B,L)
     type(array4),intent(in) :: ThetaVIRT
-    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in cc_ao_contractions]
+    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOOO
-    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in cc_ao_contractions]
+    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOVV
     !> MP2 density matrix contribution from given single fragment
     type(mp2dens),intent(inout) :: dens
@@ -2429,9 +2429,9 @@ contains
     type(array4),intent(inout) :: ThetaOCC
     !> Theta array, only for EOS orbitals using virtual partitioning, order:  (A,I,B,J)
     type(array4),intent(in) :: ThetaVIRT
-    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in cc_ao_contractions]
+    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOOO
-    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in cc_ao_contractions]
+    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOVV
     !> MP2 density matrix contribution from given pair fragment
     type(mp2dens),intent(inout) :: dens

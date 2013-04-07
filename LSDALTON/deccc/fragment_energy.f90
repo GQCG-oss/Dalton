@@ -20,7 +20,7 @@ module fragment_energy_module
   use array2_simple_operations
   use array4_simple_operations
   use orbital_operations
-  use ao_contractions !,only: max_batch_dimension,get_vovo_integrals, &
+  use mp2_module !,only: max_batch_dimension,get_vovo_integrals, &
 !       & mp2_integrals_and_amplitudes
   use atomic_fragment_operations!  ,only: atomic_fragment_init_basis_part, &
 !       & get_fragmentt1_AOSAOS_from_full, extract_specific_fragmentt1, &

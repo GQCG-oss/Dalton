@@ -31,7 +31,7 @@ module ccdriver
   use array4_simple_operations
   use array_operations
   use ri_simple_operations!,only: get_ao_ri_intermediate, ri_reset,ri_init, ri_free
-  use ao_contractions!,only: get_VOVO_integrals
+  use mp2_module!,only: get_VOVO_integrals
   use ccintegrals!,only:get_full_eri,getL_simple_from_gmo,&
 !       & get_gmo_simple,get_h1
   use ccsd_module!,only: getDoublesResidualMP2_simple, &

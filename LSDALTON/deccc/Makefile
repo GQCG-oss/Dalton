@@ -19,7 +19,7 @@ F90_OBJS = dec_settings.o \
 	ccarray3_simple.o \
 	fullmolecule.o \
 	ccri_simple.o \
-	cc_ao_contractions.o \
+	mp2.o \
 	ccsdpt.o \
 	ccorbital.o \
 	cc_integrals.o \
