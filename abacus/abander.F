@@ -617,7 +617,7 @@ C
       IF (NMORDR .GE. 3) THEN
          LDPMTX = LDPMTX + (NCOOR*(NCOOR+1)*(NCOOR+2))/6
       END IF
-CRF   Trying to enable calculations with NMRDRP .ge. NMORDR
+CRF
       NSTRDR = MAX( NMORDR, NMRDRP) + 1
 C     ... hjaaj Dec 07: used for allocation, and NMORDR+1 is sometimes referenced
       IF (NMORDR .GE. 2) THEN
@@ -706,7 +706,7 @@ c#endif
 C
 C 
 C
-CRF 6/12 12  Attempt to rerun NUMDR1 with new basis set, to get properties 
+CRF 6/12 12  Rerun NUMDR1 with new basis set, to get properties 
 CRF          with a different basis set
       IF ( PRPBAS .AND. .NOT. PRPONL ) THEN
 C        Resetting variables for property derivatives
@@ -1114,7 +1114,7 @@ C
          END IF
       END IF
 C
-CRF   Also need to take this branch if we evaluate property derivatis only
+CRF   Also need to take this branch if we evaluate property derivatives only
       IF (NRMCRD .AND. ( ((NAORDR+NMORDR).GT.2) .OR. PRPONL  ) ) THEN
          FRSTNM = .FALSE.
 C
@@ -1863,8 +1863,6 @@ C
          END IF
       END IF
 CRF   A crude way of avoiding redudant calculations
-CRF   Hopefully the code can be made to work properly
-CRF   when NMRDRP .GT. NMORDR and this can then be skipped
       IF (PRPONL .AND. .NOT. CNMPRP) THEN
          CALL QEXIT('GTNPNT') 
          RETURN
@@ -5718,9 +5716,6 @@ C     /*Deck prpder*/
 #include "pvibav.h"
 #include "prpc.h"
       LOGICAL PRIVAL,CCPRP
-CRFtest
-      INTEGER   NDISPL,LURFTEST
-CRFendtest
       DIMENSION COEFF(-MXCOEF:MXCOEF,0:NMRDRP), SYMCOR(NCOOR,NCOOR),
      &          SPSPDR(NCOOR ,NCOOR,6,NPPDER), GRIREP(NGORDR,NGVERT),
      &          SPSPFV(NCOOR,NCOOR,6,NMPCAL),EXENFV(NSYM,MXNEXI,NMPCAL),
@@ -5747,16 +5742,6 @@ C
      &            WORK(KEXTMP),WORK(KTRTMP),WORK(KEXERF),
      &            WORK(KLAST),WORK(KNREDS),LWRK1,IPRINT,CCPRP)
       IF (NPRPDR) CALL GPCLOSE(LUNDPR,'DELETE')
-
-CRFtest 12/11 - 12 Backup property displacements  
-c      CALL GPOPEN(LURFTEST,'WLK.bak','UNKNOWN','SEQUENTIAL',
-c     &            'FORMATTED',IDUMMY,.FALSE.)
-c      DO NDISPL=1,NMPCAL
-c       CALL WRAVFL(SPSPFV(1,1,1,NDISPL),NCOOR,NCOOR,6,
-c     &             'SPIN-SPIN',IPRINT)
-c      END DO
-c      CALL GPCLOSE(LURFTEST,'KEEP')
-CRFendtest
 
 c      KTRAMA = 1
 c      KLAST  = KTRAMA + NMPCAL*NCOOR**2
