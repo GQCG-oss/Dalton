@@ -32,8 +32,8 @@ module fragment_energy_module
        & pair_calculate_mp2gradient_driver
   use ccdriver, only: mp2_solver,fragment_ccsolver
 
-public :: optimize_atomic_fragment, pair_lagrangian_driver_singles, single_lagrangian_driver, &
-     & pair_lagrangian_driver,single_lagrangian_driver_advanced,dec_energy_control_center,&
+public :: optimize_atomic_fragment, pair_driver_singles, atomic_driver, &
+     & pair_driver,atomic_driver_advanced,dec_energy_control_center,&
      & Full_DEC_calculation_Lagrangian,estimate_energy_error
 private
 
@@ -155,7 +155,7 @@ contains
 
 
 
-  !> \brief Wrapper for single_lagrangian_driver with the following special features:
+  !> \brief Wrapper for atomic_driver with the following special features:
   !> 1. It is assumed that the input fragment has been initialized but that
   !> the fragment basis information (expensive box in ccatom type) has not been set.
   !> 2. The fragment basis information is calculated here and then freed again.
@@ -164,7 +164,7 @@ contains
   !>    by the calculated fragment singles amplitudes.
   !> \author Kasper Kristensen
   !> \date March 2012
-  subroutine single_lagrangian_driver_advanced(nocc,nunocc,&
+  subroutine atomic_driver_advanced(nocc,nunocc,&
        & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,MyFragment,grad,&
        & t1old,t1new)
 
@@ -202,7 +202,7 @@ contains
     end if
 
     ! Call main driver to get energy (and possibly density or gradient)
-    call single_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+    call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
          & MyFragment,grad=grad)
 
     ! Update full molecular singles amplitudes with (virt EOS,occ EOS) fragment contributions
@@ -217,14 +217,14 @@ contains
     call atomic_fragment_free_basis_info(MyFragment)
     if(DECinfo%SinglesPolari) call free_fragment_t1(MyFragment)
 
-  end subroutine single_lagrangian_driver_advanced
+  end subroutine atomic_driver_advanced
 
 
   !> \brief Driver for calculating atomic fragment energy for a given fragment using
   !> the Lagrangian approach.
   !> If requested, first order properties (MP2 density or gradient) are also calculated.
   !> \author Kasper Kristensen
-  subroutine single_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+  subroutine atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
        & MyFragment,grad)
 
     implicit none
@@ -245,7 +245,7 @@ contains
     ! Sanity check
     if(DECinfo%first_order) then
        if(.not. present(grad)) then
-          call lsquit('single_lagrangian_driver: Gradient argument not present!',-1)
+          call lsquit('atomic_driver: Gradient argument not present!',-1)
        end if
     end if
 
@@ -282,7 +282,7 @@ contains
 
     end if
 
-  end subroutine single_lagrangian_driver
+  end subroutine atomic_driver
 
 
 
@@ -812,12 +812,12 @@ call mem_TurnOffThread_Memory()
 
 
 
-  !> \brief Wrapper for pair_lagrangian_driver where can attach existing full
+  !> \brief Wrapper for pair_driver where can attach existing full
   !> molecular singles amplitudes to the fragment structure and update new
   !> improved full molecular singles amplitudes by the calculated fragment singles amplitudes.
   !> \author Kasper Kristensen
   !> \date March 2012
-  subroutine pair_lagrangian_driver_singles(natoms,nocc,nunocc,distancetable,&
+  subroutine pair_driver_singles(natoms,nocc,nunocc,distancetable,&
        & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
        & Fragment1,Fragment2,PairFragment,t1old,t1new)
 
@@ -856,7 +856,7 @@ call mem_TurnOffThread_Memory()
     call get_fragmentt1_AOSAOS_from_full(PairFragment,t1old)
 
     ! Call main driver to get energy
-    call pair_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
+    call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
          & Fragment1,Fragment2,natoms,distancetable, PairFragment,grad)
 
     ! Update full molecular singles amplitudes with (virt EOS,occ EOS) fragment contributions
@@ -878,7 +878,7 @@ call mem_TurnOffThread_Memory()
     ! Free t1 info again
     call free_fragment_t1(PairFragment)
 
-  end subroutine pair_lagrangian_driver_singles
+  end subroutine pair_driver_singles
 
 
 
@@ -886,7 +886,7 @@ call mem_TurnOffThread_Memory()
   !> the Lagrangian approach.
   !> If requested, first order properties (MP2 density or gradient) are also calculated and saved.
   !> \author Kasper Kristensen
-  subroutine pair_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+  subroutine pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
        & Fragment1,Fragment2,natoms,distancetable,PairFragment,grad)
 
     implicit none
@@ -932,7 +932,7 @@ call mem_TurnOffThread_Memory()
             & natoms, DistanceTable, PairFragment,grad)       
     end if
 
-  end subroutine pair_lagrangian_driver
+  end subroutine pair_driver
 
 
 

@@ -1333,7 +1333,7 @@ contains
           ! Get single fragment energy (and possibly density or gradient)
           ! *******************************************************************
           if(DECinfo%SinglesPolari) then
-             call single_lagrangian_driver_advanced(nocc,nunocc,&
+             call atomic_driver_advanced(nocc,nunocc,&
                   & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
                   & AtomicFragments(atomA),grad,t1old=t1old,t1new=t1new)
           else
@@ -1343,7 +1343,7 @@ contains
                   & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
 
              ! Call main driver to get energy (and possibly density or gradient)
-             call single_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+             call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                   & AtomicFragments(atomA),grad=grad)
 
              ! Free basis info again
@@ -1372,11 +1372,11 @@ contains
 
 
           if(DECinfo%SinglesPolari) then
-             call pair_lagrangian_driver_singles(natoms,nocc,nunocc,DistanceTable,&
+             call pair_driver_singles(natoms,nocc,nunocc,DistanceTable,&
                   & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
                   & AtomicFragments(atomA), AtomicFragments(atomB),PairFragment,t1old,t1new)
           else
-             call pair_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+             call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                   & AtomicFragments(atomA), AtomicFragments(atomB),&
                   & natoms,DistanceTable,PairFragment,grad)
           end if

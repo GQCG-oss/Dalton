@@ -584,7 +584,7 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
         ! ************************
         SingleOrPair: if( atomA == atomB ) then ! single  fragment
 
-           call single_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+           call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                 & AtomicFragments(atomA),grad=grad)
            flops_slaves = AtomicFragments(atomA)%flops_slaves
            tottime = AtomicFragments(atomA)%slavetime ! time used by all local slaves
@@ -593,7 +593,7 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
 
         else ! pair  fragment
 
-           call pair_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+           call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                 & AtomicFragments(atomA), AtomicFragments(atomB), &
                 & natoms,DistanceTable,PairFragment,grad)
            flops_slaves = PairFragment%flops_slaves
