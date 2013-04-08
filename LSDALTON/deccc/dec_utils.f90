@@ -2150,35 +2150,12 @@ retval=0
     !> Atomic fragment to be freed
     type(ccatom),intent(inout) :: fragment
 
-    if (associated(fragment%parenthesis_t)) then
-       call atomic_fragment_pT_free(fragment)
-    end if
-
     ! Free everything in fragment - including basis info (fock matrix, MO coefficients, lsitem etc.)
     call atomic_fragment_free_simple(fragment)
     call atomic_fragment_free_basis_info(fragment)
     call free_fragment_t1(fragment)
 
   end subroutine atomic_fragment_free
-
-  !> \brief Delete atomic fragment (ccsd(t) part)
-  !> \author Janus Juul Eriksen & Kasper Kristensen
-  !> \date January 2013
-  subroutine atomic_fragment_pT_free(fragment)
-
-    implicit none
-    !> Atomic fragment to be freed
-    type(ccatom),intent(inout) :: fragment
-
-    ! Free everything in fragment%parenthesis_t - 
-    ! including basis info (fock matrix, MO coefficients, lsitem etc.)
-    call atomic_fragment_free_simple(fragment%parenthesis_t)
-    call atomic_fragment_free_basis_info(fragment%parenthesis_t)
-    call free_fragment_t1(fragment%parenthesis_t)
-    deallocate(fragment%parenthesis_t)
-    nullify(fragment%parenthesis_t)
-
-  end subroutine atomic_fragment_pT_free
 
 
   !> \brief Delete the "simple" part of the atomic fragment structure, i.e.

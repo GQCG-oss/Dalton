@@ -252,11 +252,6 @@ subroutine main_fragment_driver_slave()
   ! **********
   do i=1,natoms
      if(dofrag(i)) then
-        if(DECinfo%ccmodel==4) then
-           call atomic_fragment_free_simple(AtomicFragments(i)%parenthesis_t)
-           deallocate(AtomicFragments(i)%parenthesis_t)
-           nullify(AtomicFragments(i)%parenthesis_t)
-        end if
         call atomic_fragment_free_simple(AtomicFragments(i))
      end if
   end do
@@ -344,11 +339,6 @@ subroutine atomic_fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
      if(jobidx/=0) then
         call mpi_send_recv_single_fragment(AtomicFragment,MPI_COMM_LSDALTON,&
              & infpar%mynum,master,job)
-        if(DECinfo%ccmodel==4) then
-           call atomic_fragment_free_simple(AtomicFragment%parenthesis_t)
-           deallocate(AtomicFragment%parenthesis_t)
-           nullify(AtomicFragment%parenthesis_t)
-        end if
         call atomic_fragment_free_simple(AtomicFragment)
      end if
 
@@ -535,10 +525,6 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
            ! Init basis for fragment
            call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
                 & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
-           if(DECinfo%ccmodel==4) then
-              call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
-                   & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA)%parenthesis_t)
-           end if
 
            call get_number_of_integral_tasks(AtomicFragments(atomA),ntasks)
         else ! pair fragment
@@ -548,14 +534,6 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
                 & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, DistanceTable, &
                 & MyMolecule,mylsitem,.true.,PairFragment)
            call get_number_of_integral_tasks(PairFragment,ntasks)
-
-           ! also for ccsd(t)
-           if (DECinfo%ccModel .eq. 4) then
-              allocate(PairFragment%parenthesis_t)
-              call merged_fragment_init(AtomicFragments(atomA)%parenthesis_t,AtomicFragments(atomB)%parenthesis_t,&
-                   &nunocc,nocc,natoms,OccOrbitals,UnoccOrbitals,DistanceTable,MyMolecule,&
-                   &mylsitem,.true.,PairFragment%parenthesis_t)
-           end if
 
         end if
 
@@ -606,19 +584,16 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
         ! ************************
         SingleOrPair: if( atomA == atomB ) then ! single  fragment
 
-           call single_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+           call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                 & AtomicFragments(atomA),grad=grad)
            flops_slaves = AtomicFragments(atomA)%flops_slaves
            tottime = AtomicFragments(atomA)%slavetime ! time used by all local slaves
            fragenergy = AtomicFragments(atomA)%energies
            call atomic_fragment_free_basis_info(AtomicFragments(atomA))
-           if(DECinfo%ccmodel==4) then
-              call atomic_fragment_free_basis_info(AtomicFragments(atomA)%parenthesis_t)
-           end if
 
         else ! pair  fragment
 
-           call pair_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+           call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                 & AtomicFragments(atomA), AtomicFragments(atomB), &
                 & natoms,DistanceTable,PairFragment,grad)
            flops_slaves = PairFragment%flops_slaves
