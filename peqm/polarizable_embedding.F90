@@ -1017,7 +1017,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
     character(*), intent(in) :: runtype
     integer, intent(in) :: nmats
     real(dp), dimension(:), intent(in), optional :: denmats
-    real(dp), dimension(:), intent(inout), optional :: fckmats
+    real(dp), dimension(:), intent(out), optional :: fckmats
     real(dp), dimension(:), intent(out), optional :: energies
     real(dp), dimension(:), target, intent(inout) :: dalwrk
 
@@ -1244,29 +1244,33 @@ subroutine pe_mpi(dalwrk, runtype)
         fock = .true.
         energy = .false.
         response = .false.
+        london = .false.
         mep = .false.
         scfcycle = scfcycle + 1
     else if (runtype == 2) then
         fock = .false.
         energy = .true.
         response = .false.
+        london = .false.
         mep = .false.
     else if (runtype == 3) then
         fock = .false.
         energy = .false.
         response = .true.
+        london = .false.
         mep = .false.
     else if (runtype == 4) then
         fock = .false.
         energy = .false.
         response = .false.
+        london = .false.
         mep = .true.
     else if (runtype == 5) then
         fock = .false.
         energy = .false.
         response = .false.
-        mep = .false.
         london = .true.
+        mep = .false.
     end if
 
     call mpi_bcast(nbas, 1, impi, 0, comm, ierr)
@@ -1303,7 +1307,7 @@ subroutine pe_mpi(dalwrk, runtype)
     else if (mep) then
         call pe_compute_mep(work(1:ndens*nnbas))
     else if (london) then
-        call pe_compute_london(work(1:3*nbas*nbas))
+        call pe_compute_london(work(1:3*n2bas))
     end if
 
 !    deallocate(Epe, Ees, Epol, Esol, Efd)
@@ -1541,7 +1545,7 @@ subroutine pe_fock(denmats, fckmats, energies)
         if (myid == 0 .and. nprocs > 1) then
             call mpi_reduce(mpi_in_place, fckmats, ndens * nnbas, rmpi,&
                            & mpi_sum, 0, comm, ierr)
-        else
+        else if (myid /= 0) then
             call mpi_reduce(fckmats, 0, ndens * nnbas, rmpi, mpi_sum, 0,&
                            & comm, ierr)
         end if
@@ -2149,7 +2153,7 @@ subroutine induced_moments(Mkinds, Fs)
     if (pe_iter) then
         if (pe_diis) then
 !            call pe_diis_solver(Mkinds, Fs)
-            call pe_diis_solver_charges(Mkinds,Fs)
+            call pe_diis_solver_charges(Mkinds, Fs)
         else if (pe_mixed) then
             call mixed_solver(Mkinds, Fs)
         else
@@ -2160,9 +2164,6 @@ subroutine induced_moments(Mkinds, Fs)
             call direct_solver(Mkinds, Fs)
         end if
     end if
-!    do i = 1, 3*npols+nsurp
-!        write(luout,*) 'Induced dipole i', Mkinds(i,1), i
-!    end do
 
     ! check induced dipoles
     if (myid == 0) then
@@ -5835,7 +5836,7 @@ end subroutine pe_diis_solver
 
 !------------------------------------------------------------------------------
 
-subroutine pe_diis_solver_charges(Mkinds,Fs)
+subroutine pe_diis_solver_charges(Mkinds, Fs)
 
     real(dp), dimension(:,:), intent(out) :: Mkinds
     real(dp), dimension(:,:), intent(in) :: Fs
@@ -5845,13 +5846,14 @@ subroutine pe_diis_solver_charges(Mkinds,Fs)
     logical :: exclude, lexist
     logical :: converged = .false.
     integer, parameter :: mxdiis = 100
+    integer, dimension(:), allocatable :: ipvt
     real(dp) :: FACTOR, DSCALE
     real(dp) :: error, X, Y, Z, R2, DISM0, DUM, temp, bla, R
     real(dp) :: oner, oner2, oner3, xi, yi, zi, xj, yj, zj
     real(dp) :: dipjx, dipjy, dipjz , qj
     real(dp), dimension(nsurp) :: QFIX, QNEW, VFIX2
     real(dp), dimension(:,:), allocatable :: tmpmat, dimat, field2
-    real(dp), dimension(:), allocatable :: tmp, ipvt
+    real(dp), dimension(:), allocatable :: tmp
     real(dp), dimension(:,:,:), allocatable :: qrep
 
     allocate(field2(3*npols, ndens))
@@ -6008,12 +6010,11 @@ subroutine pe_diis_solver_charges(Mkinds,Fs)
 !                 end if
 !     #endif
             if (converged) then
-                CALL DSCAL(nsurp,DSCALE,QFIX,1)
-                CALL DCOPY(nsurp,QFIX,1,Mkinds(3*npols+1:,n),1)
+                Mkinds(3*npols+1:3*npols+nsurp,n) = dscale * qfix
                 exit
             end if
      
-        end do !itdiis 
+        end do ! itdiis 
     end do ! n= 1, ndens
 
     if (fock) then
@@ -6021,7 +6022,7 @@ subroutine pe_diis_solver_charges(Mkinds,Fs)
             call openfile('pe_induced_charges.bin', lu, 'unknown',&
                          & 'unformatted')
             rewind(lu)
-            write(lu) Mkinds(3*npols+1:,1)
+            write(lu) Mkinds(3*npols+1:3*npols+nsurp,1)
             close(lu)
         end if
     end if
@@ -7113,11 +7114,12 @@ subroutine FIXDIIS(NFFPAR, NIT, MXDIIS, QOUT, QIN, DIMAT,&
     real(dp), dimension(:) :: qin, qout
     real(dp), dimension(:,:) :: DIMAT, tmpmat
     real(dp), dimension(:,:,:) :: qrep
-    real(dp), dimension(:) :: ipvt, tmp
+    real(dp), dimension(:) :: tmp
     real(dp), dimension(:), allocatable :: bla, bla2
     integer :: nitmax, nit0, I0, nffme, info
 ! ME used for parallelisation in GAMES here we just set it to zero
     integer :: ME, NIT, i, j, nffpar, NSIZE, MXDIIS, IMAX, IMIN
+    integer, dimension(:) :: ipvt
 
       nitmax = min(nit, mxdiis)
       nit0 = mod(nit-1,mxdiis) + 1
@@ -7244,6 +7246,11 @@ subroutine pe_compute_london(fckmats)
         else
             stop 'ERROR: pe_induced_dipoles.bin does not exist'
         end if
+#if defined(VAR_MPI)
+        if (nprocs > 1) then
+            call mpi_bcast(Mkinds, 3 * npols, rmpi, 0, comm, ierr)
+        end if
+#endif
         call lao_multipoles(Mkinds, fckmats, linduced=.true.)
         deallocate(Mkinds)
     endif
@@ -7252,7 +7259,7 @@ subroutine pe_compute_london(fckmats)
     if (myid == 0 .and. nprocs > 1) then
         call mpi_reduce(mpi_in_place, fckmats, 3 * n2bas, rmpi, mpi_sum,&
                        & 0, comm, ierr)
-    else
+    else if (myid /= 0) then
         call mpi_reduce(fckmats, 0, 3 * n2bas, rmpi, mpi_sum, 0,&
                        & comm, ierr)
     end if
@@ -7284,10 +7291,8 @@ subroutine lao_multipoles(Mks, fckmats, linduced)
     allocate(Mk_ints(n2bas,3,ncomps))
 
     do site = site_start, site_finish
-        if (abs(maxval(Mks(:,site))) < zero) then
-            cycle
-        end if
         if (pol .and. zeroalphas(site)) cycle
+        if (abs(maxval(Mks(:,site))) < zero) cycle
 
         call Mk_lao_integrals(Mk_ints, Rs(:,site), Mks(:,site))
 
