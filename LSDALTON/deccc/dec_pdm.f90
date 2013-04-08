@@ -1105,7 +1105,7 @@ module dec_pdm_module
     integer, intent(in) :: nelms
     logical, intent(in) :: pdm
     integer, intent(in), optional :: order(arr%mode)
-    integer :: i,j,k,tmdidx(arr%mode),minimode(arr%mode)
+    integer :: i,j,k,tmdidx(arr%mode),minimode(arr%mode),o(arr%mode)
     integer :: glbmodeidx(arr%mode),glbidx,l,nelintile,tdim(arr%mode)
     real(realk), pointer :: tmp(:)
     if(nelms/=arr%nelms)call lsquit("ERROR(cp_tileddate2fort):array&
@@ -1113,6 +1113,10 @@ module dec_pdm_module
     if(pdm)then
       call mem_alloc(tmp,arr%tsize)
     endif
+    do i=1,arr%mode
+      o(i)=i
+    enddo
+    if(present(order))o=order
 
     do i=1,arr%ntiles
       call get_midx(i,tmdidx,arr%ntpm,arr%mode)
@@ -1123,8 +1127,7 @@ module dec_pdm_module
       else
         tmp => arr%ti(i)%t
       endif
-      if(present(order))call put_tile_in_fort(tmp,i,arr%tdim,fort,arr%dims,arr%mode,order)
-      if(.not.present(order))call put_tile_in_fort(tmp,i,arr%tdim,fort,arr%dims,arr%mode)
+      call put_tile_in_fort(tmp,i,arr%tdim,fort,arr%dims,arr%mode,o)
     enddo
 
     if(pdm)then
@@ -1814,6 +1817,7 @@ module dec_pdm_module
     integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode)
     integer :: simpleorder,bs
     bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
+    !bs=5
     nels=1
     do i=1,mode
       o(i)=i
@@ -1884,7 +1888,7 @@ module dec_pdm_module
   !> \autor Patrick Ettenhuber
   !> \brief Subroutine to put a specific tile in a general matrix
   !> \date January 2013
-  subroutine put_tile_in_fort(tilein,tnr,tdims,fort,dims,mode,optorder)
+  subroutine put_tile_in_fort(tilein,tnr,tdims,fort,dims,mode,o)
     implicit none
     !> input array with data in arbtirary order
     real(realk), intent(inout) :: fort(*)
@@ -1897,48 +1901,48 @@ module dec_pdm_module
     !> batch information for the tiles
     integer, intent(in) :: tdims(mode)
     !> specify the order if the tile stems from a matrix with a different order
-    integer,intent(in),optional :: optorder(mode)
+    integer,intent(in) :: o(mode)
     !> tile output
     real(realk), intent(in) :: tilein(*)
     integer :: i,nccblcks,nelms,k
-    integer :: tmodeidx(mode),o(mode)
-    integer :: idxintile(mode),glbidx,rorder(mode),olddims(mode)
+    integer :: tmodeidx(mode),rtd(mode)
+    integer :: idxintile(mode),glbidx,ro(mode),olddims(mode)
     integer :: ccels,ntimes,el,acttdim(mode),nels,fels(mode)
     integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode)
     integer :: simpleorder,bs
-    !bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
-    bs=5
+    bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
+    !bs=5
     nels=1
-    do i=1,mode
-      o(i)=i
-      nels=nels*dims(i)
-    enddo
     simpleorder=0
+    do i=1,mode
+      if(o(i)/=i)simpleorder=-1
+      nels=nels*dims(i)
+      ro(o(i))=i
+    enddo
 
-    if(present(optorder))o=optorder
     
     do i=1,mode
-      rorder(o(i))=i
-      if(o(i)/=i)simpleorder=-1
+      olddims(i) = dims(ro(i))
       ntpm(i) = dims(i)/tdims(i)
       if(mod(dims(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
     enddo
     if(mode==4)then
       if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)simpleorder=1
+      if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)simpleorder=2
     endif
     call get_midx(tnr,tmodeidx,ntpm,mode)
 
     ntimes=1
     !call get_tile_dim(tdim,tnr,arr%dims,arr%tdim,arr%mode)
     do i=1,mode
-      fels(i) = (tmodeidx(i)-1) * tdims(i) + 1
-      olddims(i) = dims(rorder(i))
+      fels(o(i)) = (tmodeidx(i)-1) * tdims(i) + 1
       if(tmodeidx(i)*tdims(i)>dims(i))then
         acttdim(i)=mod(dims(i),tdims(i))
       else
         acttdim(i)=tdims(i)
       endif
       if(i>1)ntimes=ntimes*acttdim(i)
+      rtd(o(i)) = acttdim(i)
     enddo
     
 
@@ -1955,7 +1959,9 @@ module dec_pdm_module
           call dcopy(ccels,tilein(1+(i-1)*ccels),1,fort(pos1),1)
         enddo
       case(1)
-        call manual_2143_reordering_tile2full(bs,tdims,dims,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
+        call manual_2143_reordering_tile2full(bs,acttdim,dims,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
+      !case(2)
+      !  call manual_1423_reordering_tile2full(bs,acttdim,dims,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
     case default
       print *,"default part reorder put",o
       !count elements in the current tile for loop over elements
@@ -2037,12 +2043,6 @@ module dec_pdm_module
       endif
       if(i>1)ntimes=ntimes*acttdim(i)
     enddo
-    !if(infpar%lg_mynum==1)print*,"dims",dims
-    !if(infpar%lg_mynum==1)print*,"olddims",olddims
-    !if(infpar%lg_mynum==1)print*,"tdims",tdims
-    !if(infpar%lg_mynum==1)print *,"tileidx",tmodeidx 
-    !if(infpar%lg_mynum==1)print *,"order",order 
-    !if(infpar%lg_mynum==1)print *,"rorder",rorder
 
     if(simpleorder)then
 
@@ -2108,10 +2108,11 @@ module dec_pdm_module
     integer :: tmodeidx(mode)
     integer :: idxintile(mode),glbidx
     integer :: ccels,ntimes,el,acttdim(mode),olddims(mode),nelms
-    integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode),rorder(mode),fels(mode)
-    integer :: simpleorder,bs
-    !bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
-    bs=5
+    integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode),ro(mode),rtd(mode),fels(mode)
+    integer :: simpleorder,bs,a,b,c,d
+    real(realk),pointer :: dummy(:)
+    bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
+    !bs=5
     simpleorder=0
     do i=1,mode
       if(o(i)/=i)simpleorder=-1
@@ -2120,29 +2121,36 @@ module dec_pdm_module
 
     do i=1,mode
       !get the reverse order information
-      rorder(o(i))=i
+      ro(o(i))=i
     enddo
 
     !calculate number of tiles per mode
     nels=1
     do i=1,mode
-      olddims(i) = dims(rorder(i))
+      olddims(i) = dims(ro(i))
       ntpm(i) = dims(i)/tdims(i)
       if(mod(dims(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
       nels=nels*dims(i)
     enddo
+    call mem_alloc(dummy,nels)
     if(mode==4)then
       if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)simpleorder=1
+      if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)simpleorder=2
+      if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)simpleorder=3
+      if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)simpleorder=4
+      if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)simpleorder=5
     endif
     call get_midx(tnr,tmodeidx,ntpm,mode)
     ntimes=1
     do i=1,mode
+      fels(o(i)) = (tmodeidx(i)-1) * tdims(i) + 1
       if(tmodeidx(i)*tdims(i)>dims(i))then
         acttdim(i)=mod(dims(i),tdims(i))
       else
         acttdim(i)=tdims(i)
       endif
       if(i>1)ntimes=ntimes*acttdim(i)
+      rtd(o(i))     = acttdim(i)
     enddo
 
     select case(simpleorder)
@@ -2160,9 +2168,16 @@ module dec_pdm_module
           pos1=get_cidx(glbmodeidx,dims,mode)
           call dcopy(ccels,fort(pos1),1,tileout(1+(i-1)*ccels),1)
         enddo
-      !case(1)
-      !  print *,"using fast order routine"
-      !  call manual_2143_reordering_tile2full(bs,tdims,dims,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
+      case(1)
+        call manual_2143_reordering_full2tile(bs,rtd,olddims,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
+      case(2)
+        call manual_1324_reordering_full2tile(bs,rtd,olddims,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
+      case(3)
+        call manual_1342_reordering_full2tile(bs,rtd,olddims,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
+      case(4)
+        call manual_2134_reordering_full2tile(bs,rtd,olddims,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
+      case(5)
+        call manual_1423_reordering_full2tile(bs,rtd,olddims,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
       case default
         print *,"default part reorder extract2",o
         !count elements in the current tile for loop over elements
@@ -2184,7 +2199,7 @@ module dec_pdm_module
           tileout(i)=fort(pos1)
         enddo
     end select
-    
+    call mem_dealloc(dummy)
   end subroutine extract_tile_from_fort
 
   subroutine array_free_pdm(arr)

@@ -1358,7 +1358,7 @@ contains
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
     real(realk) :: eigenocc(no), eigenvirt(nv)
-    real(realk), dimension(nv,nv,nv), optional, intent(inout) :: trip
+    real(realk), dimension(nv,nv,nv), intent(inout) :: trip
     !> temporary quantities
     integer :: trip_type, a, b, c
     real(realk) :: e_orb, e_orb_occ
