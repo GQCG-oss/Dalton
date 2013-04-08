@@ -573,20 +573,26 @@ subroutine pe_dalton_input(word, luinp, lupri)
             backspace(luinp)
             if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.& 
                & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
-                read(luinp,*) border_type, Rmin, auoraa, nredist
+                read(luinp,'(a)',advance='no') border_type
                 call chcase(border_type)
                 if ((trim(border_type) /= 'REMOVE') .and.&
                    & (trim(border_type) /= 'REDIST') .and.&
                    & (trim(border_type) /= 'REDISC') .and.&
                    & (trim(border_type) /= 'REDISA')) then
                     stop 'ERROR: unknown handling of border sites!'
+                else if (trim(border_type) == 'REMOVE') then
+                    read(luinp,*) Rmin, auoraa
+                else if ((trim(border_type) /= 'REDIST') .and.&
+                   & (trim(border_type) /= 'REDISC') .and.&
+                   & (trim(border_type) /= 'REDISA')) then
+                    read(luinp,*) Rmin, auoraa, nredist
+                    if ((nredist > 3) .or. (nredist < 1)) then
+                        stop 'ERROR: classical sites cannot only be distributed to&
+                             & minimum one site and maximum three sites.'
+                    end if
                 end if
                 call chcase(auoraa)
                 if (trim(auoraa) == 'AA') Rmin = Rmin * aa2au
-                if ((nredist > 3) .or. (nredist < 1)) then
-                    stop 'ERROR: classical sites cannot only be distributed to&
-                         & minimum one site and maximum three sites.'
-                end if
             end if
             pe_border = .true.
         ! damping interactions between inducible moments
