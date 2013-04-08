@@ -2146,7 +2146,7 @@ contains
       
       !check if the current job is to be done by current node
       call check_job(scheme,first_round,dynamic_load,alphaB,gammaB,nbatchesAlpha,&
-        &nbatchesGamma,mpi_task_distribution,win_in_g,.false.)
+        &nbatchesGamma,mpi_task_distribution,win_in_g,.true.)
        !break the loop if alpha become too large, necessary to account for all
        !of the mpi and non mpi schemes, this is accounted for, because static,
        !and dynamic load balancing are enabled
