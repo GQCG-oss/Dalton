@@ -230,7 +230,6 @@ contains
 
     ! To be on the safe side, initialize everything to zero or null
     call atomic_fragment_nullify(fragment)
-    nullify(fragment%parenthesis_t)
 
     ! -- Assign things --
     fragment%atomic_number = MyAtom
@@ -2690,25 +2689,9 @@ end subroutine atomic_fragment_basis
     call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%numvirt, MyMolecule%numocc,&
          & virt_list,occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,.false.)
 
-    ! if DECinfo%use_mp2_frag is .true., then we can safely initialize the parenthesis_t ccatom type
-    ! from the CCSD atomic fragment restart files
-    if (DECinfo%ccModel .eq. 4 .and. DECinfo%use_mp2_frag) then
-
-       ! allocate the parenthesis_t ccatom type
-       allocate(fragment%parenthesis_t)
-
-       ! Initialize fragment
-       call atomic_fragment_init_orbital_specific(MyAtom,MyMolecule%numvirt,MyMolecule%numocc,&
-            & virt_list,occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment%parenthesis_t,DoBasis,.false.)
-
-    end if
 
     ! Fragment energies (only for the Lagrangian scheme are all three used)
     read(runit) fragment%energies
-
-    if (DECinfo%ccModel .eq. 4 .and. DECinfo%use_mp2_frag) then
-       fragment%parenthesis_t%energies = fragment%energies
-    end if
 
 
     ! Occupied AOS orbitals for reduced fragment of lower accuracy

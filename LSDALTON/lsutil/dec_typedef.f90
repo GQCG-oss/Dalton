@@ -739,9 +739,6 @@ module dec_typedef_module
      ! MPI: Time(s) used by local slaves
      real(realk) :: slavetime
 
-     ! ccsd(t) ccatom type
-     ! *******************
-     type(ccatom), pointer :: parenthesis_t
 
   end type ccatom
 
