@@ -675,11 +675,6 @@ contains
     end if
     do i=1,nAtoms
        if(.not. dofrag(i)) cycle
-          if (DECinfo%ccmodel==4) then
-             call atomic_fragment_free_simple(AtomicFragments(i)%parenthesis_t)
-             deallocate(AtomicFragments(i)%parenthesis_t)
-             nullify(AtomicFragments(i)%parenthesis_t)
-          end if
        call atomic_fragment_free_simple(AtomicFragments(i))
     end do
     call mem_dealloc(AtomicFragments)
@@ -1338,7 +1333,7 @@ contains
           ! Get single fragment energy (and possibly density or gradient)
           ! *******************************************************************
           if(DECinfo%SinglesPolari) then
-             call single_lagrangian_driver_advanced(nocc,nunocc,&
+             call atomic_driver_advanced(nocc,nunocc,&
                   & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
                   & AtomicFragments(atomA),grad,t1old=t1old,t1new=t1new)
           else
@@ -1346,20 +1341,13 @@ contains
              ! Init fragment basis information
              call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
                   & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
-             if(DECinfo%ccmodel==4) then
-                call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
-                     & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA)%parenthesis_t)
-             end if
 
              ! Call main driver to get energy (and possibly density or gradient)
-             call single_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+             call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                   & AtomicFragments(atomA),grad=grad)
 
              ! Free basis info again
              call atomic_fragment_free_basis_info(AtomicFragments(atomA))
-             if(DECinfo%ccmodel==4) then
-                call atomic_fragment_free_basis_info(AtomicFragments(atomA)%parenthesis_t)
-             end if
 
           end if
 
@@ -1382,22 +1370,13 @@ contains
                & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, DistanceTable, &
                & MyMolecule,mylsitem,.true.,PairFragment)
 
-          ! also for ccsd(t)
-          if (DECinfo%ccModel .eq. 4) then
-      
-             allocate(PairFragment%parenthesis_t)
-             call merged_fragment_init(AtomicFragments(atomA)%parenthesis_t,AtomicFragments(atomB)%parenthesis_t,&
-                  &nunocc,nocc,natoms,OccOrbitals,UnoccOrbitals,DistanceTable,MyMolecule,&
-                  &mylsitem,.true.,PairFragment%parenthesis_t)
-
-          end if
 
           if(DECinfo%SinglesPolari) then
-             call pair_lagrangian_driver_singles(natoms,nocc,nunocc,DistanceTable,&
+             call pair_driver_singles(natoms,nocc,nunocc,DistanceTable,&
                   & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
                   & AtomicFragments(atomA), AtomicFragments(atomB),PairFragment,t1old,t1new)
           else
-             call pair_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+             call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                   & AtomicFragments(atomA), AtomicFragments(atomB),&
                   & natoms,DistanceTable,PairFragment,grad)
           end if

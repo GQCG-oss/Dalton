@@ -163,10 +163,6 @@ contains
     ! Sender: Copy fragment info into buffer
     ! Receiver: Read fragment info from buffer
     call mpicopy_fragment(MyFragment,comm,.false.)
-    if(DECinfo%ccmodel==4) then ! copy (T) fragment
-       if(mynum==MyReceiver) allocate(MyFragment%parenthesis_t)
-       Call mpicopy_fragment(MyFragment%parenthesis_t,comm,.false.)
-    end if
 
     ! Copy fragment statistics
     call mpicopy_fragment_joblist(job)
@@ -237,10 +233,6 @@ contains
           ! Sender: Copy fragment info into buffer
           ! Receiver: Read fragment info from buffer into Fragments(atom)
           call mpicopy_fragment(Fragments(atom),comm,.false.)
-          if(DECinfo%ccmodel==4) then
-             if(mynum==MyReceiver) allocate(Fragments(atom)%parenthesis_t)
-             call mpicopy_fragment(Fragments(atom)%parenthesis_t,comm,.false.)
-          end if
 
           ! Check that the correct fragment number was communicated
           if(Fragments(atom)%atomic_number /= atom) then
@@ -308,10 +300,6 @@ contains
           ! Master: Copy fragment info into buffer
           ! Slave: Read fragment info from buffer into Fragments(atom)
           call mpicopy_fragment(Fragments(atom),comm,.false.)
-          if(DECinfo%ccmodel==4) then
-             if(mynum/=0) allocate(Fragments(atom)%parenthesis_t)
-             call mpicopy_fragment(Fragments(atom)%parenthesis_t,comm,.false.)
-          end if
 
           ! Check that the correct fragment number was communicated
           if(Fragments(atom)%atomic_number /= atom) then
@@ -555,7 +543,6 @@ contains
        call mem_alloc(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%ppfock,MyMolecule%numocc,MyMolecule%numocc)
        call mem_alloc(MyMolecule%qqfock,MyMolecule%numvirt,MyMolecule%numvirt)
-       call mem_alloc(MyMolecule%orbint,MyMolecule%numocc,MyMolecule%numvirt)
     end if
 
 
@@ -574,7 +561,6 @@ contains
     call ls_mpibcast(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ppfock,MyMolecule%numocc,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%qqfock,MyMolecule%numvirt,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(MyMolecule%orbint,MyMolecule%numocc,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
 
 
   end subroutine mpi_bcast_fullmolecule

@@ -523,12 +523,6 @@ module dec_typedef_module
      !> Virt-virt block of Fock matrix in MO basis
      real(realk), pointer :: qqfock(:,:) => null()
 
-     !> Orbital interaction matrix describing interaction between occupied orbital "i"
-     !> and virtual orbital "a".
-     !> See subroutine get_interaction_matrices for details.
-     !> Dimension: (numocc,numvirt)
-     real(realk),pointer :: orbint(:,:) => null() 
-
   end type fullmolecule
 
 
@@ -739,9 +733,6 @@ module dec_typedef_module
      ! MPI: Time(s) used by local slaves
      real(realk) :: slavetime
 
-     ! ccsd(t) ccatom type
-     ! *******************
-     type(ccatom), pointer :: parenthesis_t
 
   end type ccatom
 
