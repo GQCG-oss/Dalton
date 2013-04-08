@@ -2059,63 +2059,6 @@ end subroutine Get_ijba_integrals
 
 
 
-!> \brief Get number of tasks in integral loop (nalpha*ngamma)
-!> Note: Only works for MP2 - must be generalized to CCSD!
-!> \author Kasper Kristensen
-!> \date May 2012
-subroutine get_number_of_integral_tasks(MyFragment,ntasks)
-
-  implicit none
-  !> Atomic fragment
-  type(ccatom),intent(inout) :: MyFragment
-  !> Number of tasks
-  integer,intent(inout) :: ntasks
-  type(mp2_batch_construction) :: bat
-  integer :: MaxActualDimAlpha,nbatchesAlpha
-  integer :: MaxActualDimGamma,nbatchesGamma
-  integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
-  integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
-
-  ! Initialize stuff (just dummy arguments here)
-  nullify(orb2batchAlpha)
-  nullify(batchdimAlpha)
-  nullify(batchsizeAlpha)
-  nullify(batchindexAlpha)
-  nullify(orb2batchGamma)
-  nullify(batchdimGamma)
-  nullify(batchsizeGamma)
-  nullify(batchindexGamma)
-
-  ! Determine optimal batchsizes with available memory
-  call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.)
-
-
-  ! Get number of gamma batches
-  call mem_alloc(orb2batchGamma,MyFragment%number_basis)
-  call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimGamma,&
-       & MyFragment%number_basis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,&
-       & batchindexGamma,nbatchesGamma,orb2BatchGamma)
-  call mem_dealloc(orb2batchGamma)
-  call mem_dealloc(batchdimGamma)
-  call mem_dealloc(batchsizeGamma)
-  call mem_dealloc(batchindexGamma)
-
-  ! Get number of alpha batches
-  call mem_alloc(orb2batchAlpha,MyFragment%number_basis)
-  call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimAlpha,&
-       & MyFragment%number_basis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,&
-       & batchindexAlpha,nbatchesAlpha,orb2BatchAlpha)
-  call mem_dealloc(orb2batchAlpha)
-  call mem_dealloc(batchdimAlpha)
-  call mem_dealloc(batchsizeAlpha)
-  call mem_dealloc(batchindexAlpha)
-
-
-  ! Number of tasks = nalpha*ngamma
-  ntasks = nbatchesGamma*nbatchesAlpha
-
-end subroutine get_number_of_integral_tasks
-
 
 
   !> \brief Get optimal batch sizes to be used in MP2_integrals_and_amplitudes
@@ -2165,8 +2108,16 @@ nthreads=1
 
   ! Init stuff
   GB = 1.000E9_realk ! 1 GB
-  nocc=MyFragment%noccAOS
-  nvirt=MyFragment%nunoccAOS
+
+  ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
+  ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
+  if(DECinfo%fragadapt .and. (.not. MyFragment%fragmentadapted) ) then
+     nocc=MyFragment%noccFA
+     nvirt=MyFragment%nunoccFA
+  else
+     nocc=MyFragment%noccAOS
+     nvirt=MyFragment%nunoccAOS
+  end if
   noccEOS=MyFragment%noccEOS
   nvirtEOS=MyFragment%nunoccEOS
   nbasis = MyFragment%number_basis

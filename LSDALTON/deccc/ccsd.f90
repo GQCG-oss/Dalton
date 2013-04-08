@@ -60,7 +60,8 @@ module ccsd_module
          & get_ccsd_residual_integral_driven_oldarray_wrapper, get_ccsd_residual_integral_driven, &
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
-         & gett1transformation, getsinglesresidualccsd,fullmolecular_get_aot1fock,calculate_E2_and_permute
+         & gett1transformation, getsinglesresidualccsd,fullmolecular_get_aot1fock,calculate_E2_and_permute, &
+         & get_max_batch_sizes
     private
 
   interface Get_AOt1Fock

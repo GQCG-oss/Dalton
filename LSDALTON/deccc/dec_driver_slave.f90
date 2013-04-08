@@ -13,6 +13,7 @@ module dec_driver_slave_module
   use typedeftype
   use dec_typedef_module
   use DALTONINFO, only: ls_free
+  use BUILDAOBATCH
 
 
   ! DEC DEPENDENCIES (within deccc directory) 
@@ -23,6 +24,7 @@ module dec_driver_slave_module
   use decmpi_module
   use atomic_fragment_operations
   use mp2_module
+  use ccsd_module
   use mp2_gradient_module
   use fragment_energy_module
 
@@ -526,14 +528,14 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
            call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
                 & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
 
-           call get_number_of_integral_tasks(AtomicFragments(atomA),ntasks)
+           call get_number_of_integral_tasks_for_mpi(AtomicFragments(atomA),ntasks)
         else ! pair fragment
 
            ! init pair
            call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
                 & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, DistanceTable, &
                 & MyMolecule,mylsitem,.true.,PairFragment)
-           call get_number_of_integral_tasks(PairFragment,ntasks)
+           call get_number_of_integral_tasks_for_mpi(PairFragment,ntasks)
 
         end if
 
@@ -648,6 +650,84 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
   call free_joblist(singlejob)
 
 end subroutine fragments_slave
+
+
+!> \brief Get number of tasks in integral loop (nalpha*ngamma)
+!> \author Kasper Kristensen
+!> \date May 2012
+subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
+
+  implicit none
+  !> Atomic fragment
+  type(ccatom),intent(inout) :: MyFragment
+  !> Number of tasks
+  integer,intent(inout) :: ntasks
+  type(mp2_batch_construction) :: bat
+  integer :: MaxActualDimAlpha,nbatchesAlpha
+  integer :: MaxActualDimGamma,nbatchesGamma
+  integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
+  integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
+  integer :: scheme,nocc,nunocc,MinAObatch,iter
+  real(realk) :: MemFree
+
+  ! Initialize stuff (just dummy arguments here)
+  nullify(orb2batchAlpha)
+  nullify(batchdimAlpha)
+  nullify(batchsizeAlpha)
+  nullify(batchindexAlpha)
+  nullify(orb2batchGamma)
+  nullify(batchdimGamma)
+  nullify(batchsizeGamma)
+  nullify(batchindexGamma)
+
+  ! For fragment with local orbitals where we really want to use the fragment-adapted orbitals
+  ! we need to set nocc and nvirt equal to the fragment-adapted dimensions
+  if(DECinfo%fragadapt .and. (.not. MyFragment%fragmentadapted) ) then
+     nocc=MyFragment%noccFA
+     nunocc=MyFragment%nunoccFA
+  else
+     nocc=MyFragment%noccAOS
+     nunocc=MyFragment%nunoccAOS
+  end if
+
+  ! Determine optimal batchsizes with available memory
+  if(DECinfo%ccmodel==1) then ! MP2
+     call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.)
+  else  ! CC2 or CCSD
+     iter=1
+     call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch)
+     call get_currently_available_memory(MemFree)
+     call get_max_batch_sizes(scheme,MyFragment%number_basis,nunocc,nocc,bat%MaxAllowedDimAlpha,&
+          & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.)
+  end if
+
+
+  ! Get number of gamma batches
+  call mem_alloc(orb2batchGamma,MyFragment%number_basis)
+  call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimGamma,&
+       & MyFragment%number_basis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,&
+       & batchindexGamma,nbatchesGamma,orb2BatchGamma)
+  call mem_dealloc(orb2batchGamma)
+  call mem_dealloc(batchdimGamma)
+  call mem_dealloc(batchsizeGamma)
+  call mem_dealloc(batchindexGamma)
+
+  ! Get number of alpha batches
+  call mem_alloc(orb2batchAlpha,MyFragment%number_basis)
+  call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimAlpha,&
+       & MyFragment%number_basis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,&
+       & batchindexAlpha,nbatchesAlpha,orb2BatchAlpha)
+  call mem_dealloc(orb2batchAlpha)
+  call mem_dealloc(batchdimAlpha)
+  call mem_dealloc(batchsizeAlpha)
+  call mem_dealloc(batchindexAlpha)
+
+
+  ! Number of tasks = nalpha*ngamma
+  ntasks = nbatchesGamma*nbatchesAlpha
+
+end subroutine get_number_of_integral_tasks_for_mpi
+
 
 end module dec_driver_slave_module
 
