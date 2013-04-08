@@ -234,6 +234,8 @@ contains
     end if
     write(DECinfo%output,*) 'Calculating MP2 energy and gradient from Fock, density, overlap, and MO inputs...'
 
+    ! Set DEC memory
+    call get_memory_for_dec_calculation()
 
     ! Get informations about full molecule
     ! ************************************
@@ -343,6 +345,9 @@ contains
     DECinfo%MP2density=.false.
     
     write(DECinfo%output,*) 'Calculating DEC-MP2 energy, FOT = ', DECinfo%FOT
+
+    ! Set DEC memory
+    call get_memory_for_dec_calculation()
 
     ! Get informations about full molecule
     ! ************************************
