@@ -56,7 +56,7 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
     integer, dimension(:), allocatable :: idxs
     logical, dimension(:), allocatable :: redists
     logical :: lexist
-    real(dp) :: rclose
+    real(dp) :: rclose, redist
 
     ! Assume geometry optimization
     if (allocated(Rm) .and. allocated(Zm)) then
@@ -232,6 +232,7 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
             end do
         else if ((border_type == 'REDIST') .or. (border_type == 'REDISA') .or.&
                 &(border_type == 'REDISC')) then
+            redist = real(nredist, dp)
             allocate(redists(nsites))
             redists = .false.
             do i = 1, nidx
@@ -251,26 +252,26 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
                     end if
                 end do
                 if (lmul(0)) then
-                    M0s(:,idx) = M0s(:,idx) + M0s(:,idxs(i)) / 3.0d0
+                    M0s(:,idx) = M0s(:,idx) + M0s(:,idxs(i)) / redist
                 endif
                 if (border_type == 'REDISA') then
                     if (lmul(1)) then
-                        M1s(:,idx) = M1s(:,idx) + M1s(:,idxs(i)) / 3.0d0
+                        M1s(:,idx) = M1s(:,idx) + M1s(:,idxs(i)) / redist
                     endif
                     if (lmul(2)) then
-                        M2s(:,idx) = M2s(:,idx) + M2s(:,idxs(i)) / 3.0d0
+                        M2s(:,idx) = M2s(:,idx) + M2s(:,idxs(i)) / redist
                     endif
                     if (lmul(3)) then
-                        M3s(:,idx) = M3s(:,idx) + M3s(:,idxs(i)) / 3.0d0
+                        M3s(:,idx) = M3s(:,idx) + M3s(:,idxs(i)) / redist
                     endif
                     if (lmul(4)) then
-                        M4s(:,idx) = M4s(:,idx) + M4s(:,idxs(i)) / 3.0d0
+                        M4s(:,idx) = M4s(:,idx) + M4s(:,idxs(i)) / redist
                     endif
                     if (lmul(5)) then
-                        M5s(:,idx) = M5s(:,idx) + M5s(:,idxs(i)) / 3.0d0
+                        M5s(:,idx) = M5s(:,idx) + M5s(:,idxs(i)) / redist
                     endif
                     if (lpol(1)) then
-                        P1s(:,idx) = P1s(:,idx) + P1s(:,idxs(i)) / 3.0d0
+                        P1s(:,idx) = P1s(:,idx) + P1s(:,idxs(i)) / redist
                     end if
                 end if
                 if (nredist > 1) then
@@ -291,26 +292,26 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
                         end if
                     end do
                     if (lmul(0)) then
-                        M0s(:,jdx) = M0s(:,jdx) + M0s(:,idxs(i)) / 3.0d0
+                        M0s(:,jdx) = M0s(:,jdx) + M0s(:,idxs(i)) / redist
                     endif
                     if (border_type == 'REDISA') then
                         if (lmul(1)) then
-                            M1s(:,jdx) = M1s(:,jdx) + M1s(:,idxs(i)) / 3.0d0
+                            M1s(:,jdx) = M1s(:,jdx) + M1s(:,idxs(i)) / redist
                         endif
                         if (lmul(2)) then
-                            M2s(:,jdx) = M2s(:,jdx) + M2s(:,idxs(i)) / 3.0d0
+                            M2s(:,jdx) = M2s(:,jdx) + M2s(:,idxs(i)) / redist
                         endif
                         if (lmul(3)) then
-                            M3s(:,jdx) = M3s(:,jdx) + M3s(:,idxs(i)) / 3.0d0
+                            M3s(:,jdx) = M3s(:,jdx) + M3s(:,idxs(i)) / redist
                         endif
                         if (lmul(4)) then
-                            M4s(:,jdx) = M4s(:,jdx) + M4s(:,idxs(i)) / 3.0d0
+                            M4s(:,jdx) = M4s(:,jdx) + M4s(:,idxs(i)) / redist
                         endif
                         if (lmul(5)) then
-                            M5s(:,jdx) = M5s(:,jdx) + M5s(:,idxs(i)) / 3.0d0
+                            M5s(:,jdx) = M5s(:,jdx) + M5s(:,idxs(i)) / redist
                         endif
                         if (lpol(1)) then
-                            P1s(:,jdx) = P1s(:,jdx) + P1s(:,idxs(i)) / 3.0d0
+                            P1s(:,jdx) = P1s(:,jdx) + P1s(:,idxs(i)) / redist
                         end if
                     end if
                 end if
@@ -333,26 +334,26 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
                         end if
                     end do
                     if (lmul(0)) then
-                        M0s(:,kdx) = M0s(:,kdx) + M0s(:,idxs(i)) / 3.0d0
+                        M0s(:,kdx) = M0s(:,kdx) + M0s(:,idxs(i)) / redist
                     endif
                     if (border_type == 'REDISA') then
                         if (lmul(1)) then
-                            M1s(:,kdx) = M1s(:,kdx) + M1s(:,idxs(i)) / 3.0d0
+                            M1s(:,kdx) = M1s(:,kdx) + M1s(:,idxs(i)) / redist
                         endif
                         if (lmul(2)) then
-                            M2s(:,kdx) = M2s(:,kdx) + M2s(:,idxs(i)) / 3.0d0
+                            M2s(:,kdx) = M2s(:,kdx) + M2s(:,idxs(i)) / redist
                         endif
                         if (lmul(3)) then
-                            M3s(:,kdx) = M3s(:,kdx) + M3s(:,idxs(i)) / 3.0d0
+                            M3s(:,kdx) = M3s(:,kdx) + M3s(:,idxs(i)) / redist
                         endif
                         if (lmul(4)) then
-                            M4s(:,kdx) = M4s(:,kdx) + M4s(:,idxs(i)) / 3.0d0
+                            M4s(:,kdx) = M4s(:,kdx) + M4s(:,idxs(i)) / redist
                         endif
                         if (lmul(5)) then
-                            M5s(:,kdx) = M5s(:,kdx) + M5s(:,idxs(i)) / 3.0d0
+                            M5s(:,kdx) = M5s(:,kdx) + M5s(:,idxs(i)) / redist
                         endif
                         if (lpol(1)) then
-                            P1s(:,kdx) = P1s(:,kdx) + P1s(:,idxs(i)) / 3.0d0
+                            P1s(:,kdx) = P1s(:,kdx) + P1s(:,idxs(i)) / redist
                         end if
                     end if
                 end if
@@ -421,63 +422,63 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
                 end do
             end if
             if (border_type == 'REDISA') then
-                if (lmul(0)) then
+                if (lmul(1)) then
                     write(luout,'(/6x,a)') ' Resulting dipoles: '
                     write(luout,'(6x,a)') '--------------------'
                     do i = 1, nsites
                         if (redists(i)) then
-                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
-                                                                & M0s(:,i)
+                            write(luout,'(7x,a,1x,i6,2x,3f9.4)') elems(i), i,&
+                                                                 & M1s(:,i)
                         end if
                     end do
                 end if
-                if (lmul(0)) then
+                if (lmul(2)) then
                     write(luout,'(/6x,a)') ' Resulting quadrupoles: '
                     write(luout,'(6x,a)') '------------------------'
                     do i = 1, nsites
                         if (redists(i)) then
-                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
-                                                                & M0s(:,i)
+                            write(luout,'(7x,a,1x,i6,2x,6f9.4)') elems(i), i,&
+                                                                 & M2s(:,i)
                         end if
                     end do
                 end if
-                if (lmul(0)) then
+                if (lmul(3)) then
                     write(luout,'(/6x,a)') ' Resulting octopoles: '
                     write(luout,'(6x,a)') '----------------------'
                     do i = 1, nsites
                         if (redists(i)) then
-                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
-                                                                & M0s(:,i)
+                            write(luout,'(7x,a,1x,i6,2x,10f9.4)') elems(i), i,&
+                                                                  & M3s(:,i)
                         end if
                     end do
                 end if
-                if (lmul(0)) then
+                if (lmul(4)) then
                     write(luout,'(/6x,a)') ' Resulting hexadecapoles: '
                     write(luout,'(6x,a)') '--------------------------'
                     do i = 1, nsites
                         if (redists(i)) then
-                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
-                                                                & M0s(:,i)
+                            write(luout,'(7x,a,1x,i6,2x,15f9.4)') elems(i), i,&
+                                                                  & M4s(:,i)
                         end if
                     end do
                 end if
-                if (lmul(0)) then
+                if (lmul(5)) then
                     write(luout,'(/6x,a)') ' Resulting ditriacontapoles: '
                     write(luout,'(6x,a)') '-----------------------------'
                     do i = 1, nsites
                         if (redists(i)) then
-                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
-                                                                & M0s(:,i)
+                            write(luout,'(7x,a,1x,i6,2x,21f9.4)') elems(i), i,&
+                                                                  & M5s(:,i)
                         end if
                     end do
                 end if
-                if (lmul(0)) then
-                    write(luout,'(/6x,a)') ' Resulting monopoles: '
-                    write(luout,'(6x,a)') '----------------------'
+                if (lpol(0)) then
+                    write(luout,'(/6x,a)') ' Resulting polarizabilities: '
+                    write(luout,'(6x,a)') '-----------------------------'
                     do i = 1, nsites
                         if (redists(i)) then
-                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
-                                                                & M0s(:,i)
+                            write(luout,'(7x,a,1x,i6,2x,6f9.4)') elems(i), i,&
+                                                                 & P1s(:,i)
                         end if
                     end do
                 end if
