@@ -2823,8 +2823,10 @@ call mem_TurnOffThread_Memory()
     integer :: savemodel
 
     ! Save existing model and do fragment optimization with MP2
-    savemodel = DECinfo%ccmodel
-    DECinfo%ccmodel = 1
+    if(DECinfo%use_mp2_frag) then
+       savemodel = DECinfo%ccmodel
+       DECinfo%ccmodel = 1
+    end if
 
     if(DECinfo%SinglesPolari) then 
        ! currently we store full amplitudes but not AOS amplitudes,
@@ -2836,7 +2838,7 @@ call mem_TurnOffThread_Memory()
 
 
        if(DECinfo%fragadapt) then
-          call optimize_atomic_fragment_FA(MyAtom,AtomicFragment,nAtoms, &
+          call optimize_atomic_fragment_FO(MyAtom,AtomicFragment,nAtoms, &
                &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
                &MyMolecule,mylsitem,freebasisinfo)
        else
@@ -2848,7 +2850,9 @@ call mem_TurnOffThread_Memory()
 
     end if
 
-    DECinfo%ccmodel = savemodel
+    if(DECinfo%use_mp2_frag) then
+       DECinfo%ccmodel = savemodel
+    end if
 
   end subroutine optimize_atomic_fragment
 
@@ -3385,7 +3389,7 @@ call mem_TurnOffThread_Memory()
   !> generate fragment-adapted orbitals which describe AOS with as few orbitals as possible.
   !> \date February 2013
   !> \author Ida-Marie Hoeyvik & Kasper Kristensen
-!!$  subroutine optimize_atomic_fragment_FA_experimental(MyAtom,AtomicFragment,nAtoms, &
+!!$  subroutine optimize_atomic_fragment_FO_experimental(MyAtom,AtomicFragment,nAtoms, &
 !!$       &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
 !!$       &MyMolecule,mylsitem,freebasisinfo,t1,t2,t1full)
 !!$    implicit none
@@ -3976,7 +3980,7 @@ call mem_TurnOffThread_Memory()
 !!$    call set_energies_ccatom_structure_fragopt(AtomicFragment)
 !!$
 !!$
-!!$  end subroutine optimize_atomic_fragment_FA_experimental
+!!$  end subroutine optimize_atomic_fragment_FO_experimental
 
 
 
@@ -3986,7 +3990,7 @@ call mem_TurnOffThread_Memory()
   !> generate fragment-adapted orbitals which describe AOS with as few orbitals as possible.
   !> \date February 2013
   !> \author Ida-Marie Hoeyvik & Kasper Kristensen
-  subroutine optimize_atomic_fragment_FA(MyAtom,AtomicFragment,nAtoms, &
+  subroutine optimize_atomic_fragment_FO(MyAtom,AtomicFragment,nAtoms, &
        &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
        &MyMolecule,mylsitem,freebasisinfo,t1,t2,t1full)
     implicit none
@@ -4489,7 +4493,7 @@ call mem_TurnOffThread_Memory()
     ! Ensure that energies in fragment are set consistently
     call set_energies_ccatom_structure_fragopt(AtomicFragment)
 
-  end subroutine optimize_atomic_fragment_FA
+  end subroutine optimize_atomic_fragment_FO
 
 
 

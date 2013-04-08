@@ -269,7 +269,6 @@ contains
        case('.CCSD(T)'); DECinfo%ccModel=4; DECinfo%use_singles=.true.
        case('.RPA'); DECinfo%ccModel=5; DECinfo%use_singles=.false.
        case('.NotuseMP2frag') 
-          stop 'CCSD(T) only works with MP2 fragments! Needs fixing!'
           DECinfo%use_mp2_frag=.false.
        !
        case('.ccMaxIter'); read(input,*) DECinfo%ccMaxIter 
@@ -486,14 +485,6 @@ contains
        call lsquit('Restart option currently not implemented for CCSD(T)!',DECinfo%output)
     end if
 
-    ! FOs do not work with reduced pairs, set reduction distance to 1000000 to
-    ! avoid it from being used in practice
-    if(DECinfo%fragadapt) then
-       DECinfo%PairReductionDistance = 1.0e6_realk
-       if(DECinfo%ccmodel==4) then
-          call lsquit('CCSD(T) not implemented for fragment-adapted orbitals',-1)
-       end if
-    end if
 
 
     ! Set CC residual threshold to be 0.01*FOT
@@ -524,8 +515,11 @@ contains
     end if
 
 
+    ! FOs do not work with reduced pairs, set reduction distance to 1000000 to
+    ! avoid it from being used in practice
+    ! Also use purification of MOs.
     if(DECinfo%fragadapt) then
-       write(DECinfo%output,*) 'DEC: Fragment-adapted orbitals requested --> turn on orbital purification.'
+       DECinfo%PairReductionDistance = 1.0e6_realk
        DECinfo%purifyMOs=.true.
     end if
 

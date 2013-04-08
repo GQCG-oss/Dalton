@@ -66,7 +66,6 @@ contains
     call molecule_get_overlap(molecule,mylsitem)
     call molecule_get_atomic_sizes(molecule,mylsitem)
     call molecule_mo_fock(molecule)
-    call molecule_get_interaction_matrices(molecule,mylsitem)
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
@@ -132,9 +131,6 @@ contains
 
     ! Fock matrix in MO basis
     call molecule_mo_fock(molecule)
-
-    ! Init interaction matrices
-    call molecule_get_interaction_matrices(molecule,mylsitem)
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
