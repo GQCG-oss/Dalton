@@ -16,10 +16,7 @@ module dec_driver_module
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
-  use dec_fragment_utils!,only: files_opened, atomic_fragment_free_basis_info,sf_restart_file_exist,&
-!       & getdistances, atomic_fragment_free, orbital_free, get_HF_energy_fullmolecule,&
-!       & atomic_fragment_free_simple,set_super_distance_table,get_distance_between_superfragments,&
-!       & atomic_fragment_pT_free
+  use dec_fragment_utils
   use array2_simple_operations !,only: array2_init, array2_free, array2_copy
   use orbital_operations!,only: get_number_of_orbitals_per_atom
   use full_molecule!,only:molecule_get_fock
@@ -34,11 +31,8 @@ module dec_driver_module
   use mp2_gradient_module!,only:free_mp2grad,&
 !       & init_fullmp2grad,update_full_mp2gradient,get_mp2gradient_main,free_fullmp2grad,&
 !       & write_gradient_and_energies_for_restart,read_gradient_and_energies_for_restart
-  use fragment_energy_module!,only: full_dec_calculation_lagrangian,&
-!       & single_lagrangian_driver, super_single_lagrangian_driver_advanced,&
+  use fragment_energy_module
 
-!       & super_pair_lagrangian_driver_singles,&
-!       & pair_lagrangian_driver,dec_energy_control_center
 #ifdef VAR_LSMPI
   use infpar_module
   use dec_driver_slave_module
@@ -187,14 +181,13 @@ contains
     type(ccatom),pointer :: AtomicFragments(:)
     integer :: i,j,k,dims(2),nbasis,counter
     real(realk) :: energies(ndecenergies)
-    logical :: SF_save ! Internal control of super fragment keyword
     logical :: dens_save ! Internal control of MP2 density keyword
     logical :: FO_save  ! Internal control of first order property keyword
     logical :: grad_save  ! Internal control of MP2 gradient keyword
     logical :: dofrag(natoms), fragdone(natoms)
     integer, dimension(natoms) :: nocc_per_atom, nunocc_per_atom
     type(array2) :: t1old,fockt1,t1new
-    logical :: redo,sf_restart
+    logical :: redo,post_fragopt_restart
     logical,dimension(natoms) :: whichfrags
     type(mp2grad) :: grad
     type(fullmp2grad) :: fullgrad
@@ -206,8 +199,7 @@ contains
     ! (T) contribution to fragment energies for occupied (:,:,1), and virtual (:,:,2) schemes 
     !> (:,:,3): Occupied E[4] contribution;  (:,:,4): Virtual E[4] contribution
     !> (:,:,5): Occupied E[5] contribution;  (:,:,6): Virtual E[5] contribution
-    logical :: moresuperjobs
-    real(realk), pointer :: SuperDistanceTable(:,:)
+    logical :: morejobs
     integer(kind=ls_mpik) :: master,IERR,comm,sender
 #ifdef VAR_LSMPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
@@ -307,35 +299,32 @@ contains
 
 
 
-    ! Internal control of super fragment and first order property keywords
+    ! Internal control of first order property keywords
     ! (Necessary because these must be false during fragment optimization.)
-    ! Better solution should be implemented at some point...
-    SF_save = DECinfo%SF
     dens_save = DECinfo%MP2density
     FO_save = DECinfo%first_order
     grad_save = DECinfo%gradient
-    DECinfo%SF=.false.
     DECinfo%MP2density=.false.
     DECinfo%first_order=.false.
     DECinfo%gradient=.false.
 
     ! Restart option: In case some fragments are already done and stored in atomicfragments.info.
     fragdone=.false.
-    sf_restart=.false.
+    post_fragopt_restart=.false.
     if(DECinfo%restart) then
        call restart_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,&
             & UnoccOrbitals,.false.,AtomicFragments,jobs)
        write(DECinfo%output,'(a,2i8)') 'RESTARTING STANDARD FRAGMENTS - jobs to do ', &
             & count(dofrag)-count(jobs%jobsdone)
 
-       ! Restart super fragments only if all atomic fragments are done AND super fragment file exists
+       ! Restart pair fragments only if all atomic fragments are done AND fragment file exists
        if(count(dofrag) == count(jobs%jobsdone)) then
-          sf_restart = sf_restart_file_exist(FO_save)
-          if(sf_restart) then
-             write(DECinfo%output,'(a,2i8)') 'All standard fragments are done, restart super fragments'
+          post_fragopt_restart = fragment_restart_file_exist(FO_save)
+          if(post_fragopt_restart) then
+             write(DECinfo%output,'(a,2i8)') 'All standard fragments are done, restart fragments'
           else
-             write(DECinfo%output,'(a,2i8)') 'All standard fragments are done, but no super fragment file'
-             write(DECinfo%output,'(a,2i8)') '--> We will calculate all super fragments from scratch!'
+             write(DECinfo%output,'(a,2i8)') 'All standard fragments are done, but no fragment file'
+             write(DECinfo%output,'(a,2i8)') '--> We will calculate all fragments from scratch!'
           end if
        end if
 
@@ -484,42 +473,23 @@ contains
 
 
     ! ************************************************************************
-    ! *             Construct super fragments (if requested)                 *
+    ! *             Construct job list for remaining fragments               *
     ! ************************************************************************
 
-    ! Restore superfragment and mp2 density keywords
-    DECinfo%SF=SF_save
+    ! Restore first order
     DECinfo%MP2density=dens_save
     DECinfo%first_order = FO_save
     DECinfo%gradient = grad_save
-    ! Quick fix: Always use super fragments
-    if(.not. DECinfo%SF) then
-       print *, 'WARNING!!! I turn on super fragments in DEC driver &
-            & although this has not been explicitly requested'
-       DECinfo%SF=.true.
-    end if
 
-    ! Construct super fragments if requested
-    DoSuperFragment: if(DECinfo%SF) then
-
-       ! Get job list 
-       call create_dec_joblist(MyMolecule,mylsitem,natoms,nocc,nunocc,DistanceTable,&
-            &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
-       njobs = jobs%njobs
-
-    end if DoSuperFragment
+    ! Get job list 
+    call create_dec_joblist_driver(MyMolecule,mylsitem,natoms,nocc,nunocc,DistanceTable,&
+         &OccOrbitals,UnoccOrbitals,AtomicFragments,dofrag,jobs)
+    njobs = jobs%njobs
 
 
-    ! Init stuff for super fragment calculations
-    ! ******************************************
-
-    ! Construct distance table for super fragments
-    call mem_alloc(SuperDistanceTable,natoms,natoms)
-    call set_super_distance_table(natoms,dofrag,AtomicFragments,DistanceTable,SuperDistanceTable)
-
-    ! Zero fragment energies for first-order calculation because they will be recalculated.
-    ! Also zero for true super fragment calculation, because fragments will be redefined.
-    if(DECinfo%first_order .or. (.not. DECinfo%simulateSF) .or. DECinfo%InclFullMolecule ) then
+    ! Zero fragment energies because they are recalculated
+    ! (except for simple DEC-MP2 with only energies)
+    if(DECinfo%ccmodel/=1 .or. DECinfo%first_order .or. DECinfo%InclFullMolecule ) then
        FragEnergies = 0.0E0_realk
     end if
 
@@ -532,35 +502,37 @@ contains
 
 #ifdef VAR_LSMPI
 
-    ! Super fragment MPI communication
-    ! ********************************
+    ! Fragment MPI communication
+    ! **************************
 
-    ! 1. Communicate list of which atoms are super fragments
+    ! 1. Communicate list of which atoms are EOS atoms
     call ls_mpibcast(dofrag,natoms,master,MPI_COMM_LSDALTON)
 
-    ! 2. Communicate new super fragments (single fragments) to slaves
+    ! 2. Communicate fragments (single fragments) to slaves
     call mpi_bcast_many_fragments(natoms,dofrag,AtomicFragments,MPI_COMM_LSDALTON)
 
 #endif
-    call LSTIMER('DEC MAKE SUPER',tcpu,twall,DECinfo%output)
+    call LSTIMER('DEC JOBLIST',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
 
+
+
     ! ***************************************************************************
-    ! *                    SUPER FRAGMENTS (single and pairs)
+    ! *                    SINGLE+PAIR FRAGMENTS                                *
     ! ***************************************************************************
     
 
-    moresuperjobs=.true.
+    morejobs=.true.
 
     ! Continue as long as there are more jobs to be done
-    ! (we might need to add more pairs than in original super job list to adapt to precision)
-    MorePairs: do while(moresuperjobs)
+    ! (we might need to add more pairs than in original job list to adapt to precision)
+    MorePairs: do while(morejobs)
 
 
        redo=.true.
        counter=0
-       MainSuperLoop: do while(redo)
+       MainFragLoop: do while(redo)
 
           ! ***************************************************************************
           ! *               Get full molecular T1-transformed Fock matrix             *
@@ -580,23 +552,23 @@ contains
              call array2_free(fockt1)
 
              ! Init improved full molecular singles constructed from
-             ! single and pair super fragment calculations.
+             ! single and pair fragment calculations.
              dims(1) = nunocc
              dims(2) = nocc
              t1new = array2_init_plain(dims)
           end if
 
           write(DECinfo%output,*)
-          write(DECinfo%output,*) '*** Calculating super single and pair interaction energies ***'
+          write(DECinfo%output,*) '*** Calculating single and pair interaction energies ***'
           write(DECinfo%output,*)
 
-          ! Calculate all super fragments (both single and pairs)
-          call superfragment_jobs(sf_restart,nocc,nunocc,natoms,MyMolecule,mylsitem,&
-               & OccOrbitals,UnoccOrbitals,SuperDistanceTable,jobs,AtomicFragments,&
+          ! Calculate all fragments (both single and pairs)
+          call fragment_jobs(post_fragopt_restart,nocc,nunocc,natoms,MyMolecule,mylsitem,&
+               & OccOrbitals,UnoccOrbitals,DistanceTable,jobs,AtomicFragments,&
                & FragEnergies,fullgrad,t1old,t1new)
           
           ! Compare amplitudes from single fragment calculations
-          ! to amplitudes from super fragment (single+pair) calculations
+          ! to amplitudes from  fragment (single+pair) calculations
           redo=.false.  ! never redo unless singles correction is requested
           if(DECinfo%SinglesPolari) then
              call redo_fragment_calculations(t1old,t1new,redo)
@@ -604,14 +576,14 @@ contains
              ! If we need to redo, then the current t1new takes the role of
              ! t1old in the next round
              if(redo) then
-                print *, 'Rerunning ALL super fragment calculations!'
+                print *, 'Rerunning ALL  fragment calculations!'
                 counter=counter+1
                 call array2_copy(t1old,t1new)
                 call array2_free(t1new)
              end if
           end if
 
-       end do MainSuperLoop
+       end do MainFragLoop
 
 
        ! DEC energy control center
@@ -619,16 +591,16 @@ contains
 
        ! Determine whether more pairs are required, if so determine new pair cutoff
        oldpaircut = DECinfo%pair_distance_threshold
-       call dec_energy_control_center(natoms,oldpaircut,dofrag,SuperDistanceTable,&
-            & FragEnergies,AtomicFragments,moresuperjobs,newpaircut,Eerr)
+       call dec_energy_control_center(natoms,oldpaircut,dofrag,DistanceTable,&
+            & FragEnergies,AtomicFragments,morejobs,newpaircut,Eerr)
 
-       if(moresuperjobs) then ! update pair cutoff
+       if(morejobs) then ! update pair cutoff
           DECinfo%pair_distance_threshold = newpaircut
           
           ! Expand existing job list (where are jobs are already done) to include additional pair jobs
           ! ------------------------------------------------------------------------------------------
           ! Append new jobs to existing job list
-          call expand_joblist_to_include_more_pairs(nocc,nunocc,natoms,SuperDistanceTable,dofrag,&
+          call expand_joblist_to_include_more_pairs(nocc,nunocc,natoms,DistanceTable,dofrag,&
                & AtomicFragments,oldpaircut,newpaircut,MyMolecule,OccOrbitals,&
                & UnoccOrbitals,jobs)
 
@@ -637,32 +609,32 @@ contains
           
        end if
 
-       if(moresuperjobs .and. DECinfo%SinglesPolari) then
+       if(morejobs .and. DECinfo%SinglesPolari) then
           call lsquit('DEC singles polarization not implemented when job list in increased!',-1)
        end if
 
 #ifdef VAR_LSMPI
-       ! Bcast information telling whether there are more superjobs or not
-       call ls_mpibcast(moresuperjobs,master,MPI_COMM_LSDALTON)
+       ! Bcast information telling whether there are more jobs or not
+       call ls_mpibcast(morejobs,master,MPI_COMM_LSDALTON)
 #endif
 
        ! If we need to take one more round we should never restart because the 
        ! restart file would not contain the new pairs.
-       sf_restart=.false.
+       post_fragopt_restart=.false.
        
     end do MorePairs
 
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
     mastertime = twall2-twall1
-    call LSTIMER('DEC SUPERFRAG',tcpu,twall,DECinfo%output)
+    call LSTIMER('DEC ALLFRAG',tcpu,twall,DECinfo%output)
 
 #ifdef VAR_LSMPI
     call MPI_COMM_FREE(infpar%lg_comm,IERR)
     ! Set all MPI groups equal to the world group
     call lsmpi_default_mpi_group
     ! Print MPI statistics
-    call print_MPI_fragment_statistics(jobs,mastertime,'SUPER FRAGMENTS')
+    call print_MPI_fragment_statistics(jobs,mastertime,'ALL FRAGMENTS')
 #endif
 
 
@@ -703,11 +675,6 @@ contains
     end if
     do i=1,nAtoms
        if(.not. dofrag(i)) cycle
-          if (DECinfo%ccmodel==4) then
-             call atomic_fragment_free_simple(AtomicFragments(i)%parenthesis_t)
-             deallocate(AtomicFragments(i)%parenthesis_t)
-             nullify(AtomicFragments(i)%parenthesis_t)
-          end if
        call atomic_fragment_free_simple(AtomicFragments(i))
     end do
     call mem_dealloc(AtomicFragments)
@@ -733,7 +700,6 @@ contains
     end if
 
     call free_joblist(jobs)
-    call mem_dealloc(SuperDistanceTable)
 
     ! Print short summary
     call print_total_energy_summary(EHF,Ecorr,Eerr)
@@ -760,7 +726,6 @@ contains
     write(DECinfo%output,'(a,/)') '--------------------------'
     write(DECinfo%output,'(a,f8.3)')   'Simple orbital thr.    = ',DECinfo%simple_orbital_threshold
     write(DECinfo%output,'(a,f8.3)')   'Mulliken charge thr.   = ',DECinfo%mulliken_threshold
-    write(DECinfo%output,'(a,l1)')     'Lagrangian part.       = ',DECinfo%Lagrangian
     write(DECinfo%output,'(a,l1)')     'Mulliken analysis      = ',DECinfo%Mulliken
     write(DECinfo%output,'(a,l1)')     'Boughton-Pulay         = ',DECinfo%BoughtonPulay
     write(DECinfo%output,'(a,ES8.2)')  'FOT                    = ',DECinfo%FOT
@@ -770,9 +735,7 @@ contains
     write(DECinfo%output,'(a,l1)')     'Fragmentation debug    = ',DECinfo%fragmentation_debug
     write(DECinfo%output,'(a,l1)')     'DEC driver debug       = ',DECinfo%dec_driver_debug
     write(DECinfo%output,'(a,i4)')     'Print level            = ',DECinfo%PL
-    if(DECinfo%Lagrangian) then
-       write(DECinfo%output,'(a,i4)')  'Expansion step size    = ',DECinfo%LagStepSize
-    end if
+    write(DECinfo%output,'(a,i4)')     'Expansion step size    = ',DECinfo%LagStepSize
 
     ! print cc parameters
     write(DECinfo%output,'(/,a)') '--------------------------'
@@ -1074,8 +1037,8 @@ contains
           if(.not. dofrag(i)) cycle
           if(.not. dofrag(j)) cycle
 
-          ! Pair distance between superfragment centers
-          pairdist = get_distance_between_superfragments(atomicfragments(i),&
+          ! Pair distance between fragment centers
+          pairdist = get_distance_between_fragments(atomicfragments(i),&
                & atomicfragments(j),natoms,DistanceTable)
 
           DistanceCheck: if(pairdist < DECinfo%pair_distance_threshold ) then
@@ -1131,17 +1094,17 @@ contains
 
 
 
-  !> \brief Driver for doing all super fragment jobs and updating
+  !> \brief Driver for doing all fragment jobs and updating
   !> the relevant quantities (energy, density, gradient, t1).
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine superfragment_jobs(sf_restart,nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
-       & UnoccOrbitals,SuperDistanceTable,jobs,AtomicFragments,FragEnergies,&
+  subroutine fragment_jobs(post_fragopt_restart,nocc,nunocc,natoms,MyMolecule,mylsitem,OccOrbitals,&
+       & UnoccOrbitals,DistanceTable,jobs,AtomicFragments,FragEnergies,&
        & fullgrad,t1old,t1new)
 
     implicit none
-    !> Restart super fragments
-    logical,intent(in) :: sf_restart
+    !> Restart fragments
+    logical,intent(in) :: post_fragopt_restart
     !> Number of occupied orbitals in full molecule
     integer,intent(in) :: nOcc
     !> Number of unoccupied orbitals in full molecule
@@ -1156,11 +1119,11 @@ contains
     type(ccorbital), intent(in) :: OccOrbitals(nocc)
     !> Unoccupied orbitals in DEC format 
     type(ccorbital), intent(in) :: UnoccOrbitals(nunocc)
-    !> Distances between super fragments, NOT standard atoms (see set_super_distance_table) 
-    real(realk),intent(in) :: SuperDistanceTable(natoms,natoms)
-    !> Super fragment job list
+    !> Distances between atoms
+    real(realk),intent(in) :: DistanceTable(natoms,natoms)
+    !>  fragment job list
     type(joblist),intent(inout) :: jobs
-    !> Single super fragments
+    !> Atomic fragments
     type(ccatom),dimension(natoms),intent(inout) :: AtomicFragments
     !> Fragment energies, see "energies" in ccatom type def
     real(realk),intent(inout) :: FragEnergies(natoms,natoms,ndecenergies)
@@ -1193,8 +1156,8 @@ contains
     nworkers=0   ! master node does all jobs
 #endif
 
-    ! Restart in case some super fragments are already done
-    if(sf_restart) then
+    ! Restart in case some fragments are already done
+    if(post_fragopt_restart) then
 
        ! Copy existing job list (only used for sanity check)
        call copy_joblist(jobs,jobsold)
@@ -1206,34 +1169,34 @@ contains
        if(DECinfo%first_order) then ! density or gradient
           call read_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
        else
-          call read_superfragment_energies_for_restart(natoms,FragEnergies,jobs)
+          call read_fragment_energies_for_restart(natoms,FragEnergies,jobs)
        end if
 
        ! Sanity check for job list read from file
-       call superfragment_sanity_check(jobs,jobsold)
+       call fragment_sanity_check(jobs,jobsold)
        ! Done with old job list
        call free_joblist(jobsold)
 
        ! Only do jobs which are not already finished
        jobstodo = jobs%njobs - count(jobs%jobsdone)
-       write(DECinfo%output,'(a,2i8)') 'RESTARTING SUPERFRAGMENTS - jobs to do ',  jobstodo
+       write(DECinfo%output,'(a,2i8)') 'RESTARTING FRAGMENTS - jobs to do ',  jobstodo
     else
        ! Do all jobs
        jobstodo = jobs%njobs
     end if
 
 
-    ! Send super fragment job list to slaves and redefine MPI groups
+    ! Send fragment job list to slaves and redefine MPI groups
 #ifdef VAR_LSMPI
 
-       ! Send super fragment job list
-       call bcast_superfragment_joblist(jobs,MPI_COMM_LSDALTON)
+       ! Send fragment job list
+       call bcast_post_fragopt_joblist(jobs,MPI_COMM_LSDALTON)
        ! Send pair distance threshold to make sure we are consistent
        call ls_mpibcast(DECinfo%pair_distance_threshold,master,MPI_COMM_LSDALTON)
 
 
-       ! Reset MPI group structure for super fragments
-       ! **********************************************
+       ! Reset MPI group structure for post-fragopt fragments
+       ! ****************************************************
        ! New groupsize: 64 or number of slaves
        if(DECinfo%MPIgroupsize>0) then ! group size was defined explicitly in input
           groupsize=DECinfo%MPIgroupsize
@@ -1281,7 +1244,7 @@ contains
        ! ******************************************************
        ! Receive stuff from local master and update
        ReceiveJob: if(jobdone>0) then
-       write(DECinfo%output,'(a,i8,a,i8,a,i8)') 'Master received super job', jobdone, &
+       write(DECinfo%output,'(a,i8,a,i8,a,i8)') 'Master received job', jobdone, &
             & ' from ', MPISTATUS(MPI_SOURCE), ' -- missing #jobs: ', &
             & jobs%njobs-count(jobs%jobsdone)-1
 
@@ -1332,7 +1295,7 @@ contains
              if(DECinfo%first_order) then  ! density and/or gradient 
                 call write_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
              else ! just energy
-                call write_superfragment_energies_for_restart(natoms,FragEnergies,jobs)
+                call write_fragment_energies_for_restart(natoms,FragEnergies,jobs)
              end if
 
              ! Reset timer
@@ -1357,20 +1320,20 @@ contains
        ! Identify job "k"
        atomA = jobs%atom1(k)
        atomB = jobs%atom2(k)
-       ! atomA=atomB  : Single super fragment job
-       ! atomA/=atomB : Pair super fragment job
+       ! atomA=atomB  : Single fragment job
+       ! atomA/=atomB : Pair fragment job
 
        if(atomA==atomB) then ! single
           print '(1X,a,i8,a,i15,a,i8)', 'Job: ', k, ' of size ', jobs%jobsize(k),&
                &  ' is single fragment: ', atomA
 
-          ! Super fragment "atomA" is stored in AtomicFragments(atomA).
+          ! Fragment "atomA" is stored in AtomicFragments(atomA).
           ! However, the basis information has not yet been initialized
 
-          ! Get single super fragment energy (and possibly density or gradient)
+          ! Get single fragment energy (and possibly density or gradient)
           ! *******************************************************************
           if(DECinfo%SinglesPolari) then
-             call super_single_lagrangian_driver_advanced(nocc,nunocc,&
+             call atomic_driver_advanced(nocc,nunocc,&
                   & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
                   & AtomicFragments(atomA),grad,t1old=t1old,t1new=t1new)
           else
@@ -1378,20 +1341,13 @@ contains
              ! Init fragment basis information
              call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
                   & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA))
-             if(DECinfo%ccmodel==4) then
-                call atomic_fragment_init_basis_part(nunocc, nocc, OccOrbitals,&
-                     & UnoccOrbitals,MyMolecule,mylsitem,AtomicFragments(atomA)%parenthesis_t)
-             end if
 
              ! Call main driver to get energy (and possibly density or gradient)
-             call single_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+             call atomic_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                   & AtomicFragments(atomA),grad=grad)
 
              ! Free basis info again
              call atomic_fragment_free_basis_info(AtomicFragments(atomA))
-             if(DECinfo%ccmodel==4) then
-                call atomic_fragment_free_basis_info(AtomicFragments(atomA)%parenthesis_t)
-             end if
 
           end if
 
@@ -1401,7 +1357,7 @@ contains
           end do
 
 
-       else ! Super pair calculation
+       else ! pair calculation
 
           print '(1X,a,i8,a,i15,a,2i8)', 'Job: ', k, ' of size ', jobs%jobsize(k),&
                &  ' is pair fragment: ', atomA,atomB
@@ -1411,27 +1367,18 @@ contains
 
           ! Init pair
           call merged_fragment_init(AtomicFragments(atomA), AtomicFragments(atomB),&
-               & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, SuperDistanceTable, &
+               & nunocc, nocc, natoms,OccOrbitals,UnoccOrbitals, DistanceTable, &
                & MyMolecule,mylsitem,.true.,PairFragment)
 
-          ! also for ccsd(t)
-          if (DECinfo%ccModel .eq. 4) then
-      
-             allocate(PairFragment%parenthesis_t)
-             call merged_fragment_init(AtomicFragments(atomA)%parenthesis_t,AtomicFragments(atomB)%parenthesis_t,&
-                  &nunocc,nocc,natoms,OccOrbitals,UnoccOrbitals,SuperDistanceTable,MyMolecule,&
-                  &mylsitem,.true.,PairFragment%parenthesis_t)
-
-          end if
 
           if(DECinfo%SinglesPolari) then
-             call super_pair_lagrangian_driver_singles(natoms,nocc,nunocc,SuperDistanceTable,&
+             call pair_driver_singles(natoms,nocc,nunocc,DistanceTable,&
                   & OccOrbitals,UnoccOrbitals,MyLsitem,MyMolecule,&
                   & AtomicFragments(atomA), AtomicFragments(atomB),PairFragment,t1old,t1new)
           else
-             call pair_lagrangian_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
+             call pair_driver(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals,&
                   & AtomicFragments(atomA), AtomicFragments(atomB),&
-                  & natoms,SuperDistanceTable,PairFragment,grad)
+                  & natoms,DistanceTable,PairFragment,grad)
           end if
 
           ! Update pair energies
@@ -1456,7 +1403,7 @@ contains
     end do JobLoop
 
 
-  end subroutine superfragment_jobs
+  end subroutine fragment_jobs
 
 
 end module dec_driver_module
