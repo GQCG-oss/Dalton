@@ -1817,7 +1817,7 @@ module dec_pdm_module
     integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode)
     integer :: simpleorder,bs
     bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
-    bs=5
+    !bs=5
     nels=1
     do i=1,mode
       o(i)=i
@@ -1910,8 +1910,8 @@ module dec_pdm_module
     integer :: ccels,ntimes,el,acttdim(mode),nels,fels(mode)
     integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode)
     integer :: simpleorder,bs
-    !bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
-    bs=5
+    bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
+    !bs=5
     nels=1
     simpleorder=0
     do i=1,mode
@@ -1960,8 +1960,8 @@ module dec_pdm_module
         enddo
       case(1)
         call manual_2143_reordering_tile2full(bs,acttdim,dims,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
-      case(2)
-        call manual_1423_reordering_tile2full(bs,acttdim,dims,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
+      !case(2)
+      !  call manual_1423_reordering_tile2full(bs,acttdim,dims,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
     case default
       print *,"default part reorder put",o
       !count elements in the current tile for loop over elements
@@ -2112,7 +2112,7 @@ module dec_pdm_module
     integer :: simpleorder,bs,a,b,c,d
     real(realk),pointer :: dummy(:)
     bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
-    bs=5
+    !bs=5
     simpleorder=0
     do i=1,mode
       if(o(i)/=i)simpleorder=-1
