@@ -154,12 +154,13 @@ DEC="dectests/arraytest
      dectests/fullccsdpt
      dectests/dec_ccsdpt
      dectests/fulldec 
+     dectests/fragment_adapted
      dectests/mp2density_special
      dectests/mp2_gradient_diatomic
      dectests/mp2_gradient_special
      dectests/mp2grad_frozencore
      dectests/fragmentccsd_simple
-     dectests/fragmentccsd_singlespolari
+     dectests/dec_geoopt
      geomopt/ethane_dec_mp2"
 ALL="$LSDALTON $LINSCA $RSP $GEO $DEC"
 # used to be $LINSCA and $LSINT but not anymore 

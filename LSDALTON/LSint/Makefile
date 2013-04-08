@@ -2,7 +2,7 @@ all: libLSint.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../lsutil -I../mm
+INCLUDES := $(INCLUDES) -I../lsutil -I../mm -I../xcfun_host
 
 # Keep the file lists sorted for easier modification.
 
@@ -52,7 +52,7 @@ clean :
 
 
 Makefile.depend depend: $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90) > Makefile.depend
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../xcfun_host -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

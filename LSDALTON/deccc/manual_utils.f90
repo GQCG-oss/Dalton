@@ -59,7 +59,7 @@ module manual_utils_module
 
     !elseif (pre2 /= 0.0E0_realk .and. pre1 /= 1.0E0_realk) then
       !$OMP PARALLEL DEFAULT(NONE),PRIVATE(a,b,c,d,ba,bb,bc,bd,baf,bbf,bcf,bdf),SHARED(array_in,array_out,&
-      !$OMP& !da,db,dc,dd,da2,db2,dc2,dd2,bcntr,moda,modb,modc,modd,pre1,pre2,bs,fa,fb,fc,fd)
+      !$OMP da,db,dc,dd,da2,db2,dc2,dd2,bcntr,moda,modb,modc,modd,pre1,pre2,bs,fa,fb,fc,fd)
       if(da2>0.and.db2>0.and.dc2>0.and.dd2>0)then
         !$OMP DO
         do bc=1,dc2,bs
@@ -7717,7 +7717,7 @@ module manual_utils_module
 
     if (pre2 == 0.0E0_realk .and. pre1 == 1.0E0_realk) then
       !$OMP PARALLEL DEFAULT(NONE),PRIVATE(a,b,c,d,ba,bb,bc,bd,baf,bbf,bcf,bdf),SHARED(array_in,array_out,&
-      !$OMP& !da,db,dc,dd,da2,db2,dc2,dd2,bcntr,moda,modb,modc,modd,pre1,pre2,bs,fa,fb,fc,fd)
+      !$OMP da,db,dc,dd,da2,db2,dc2,dd2,bcntr,moda,modb,modc,modd,pre1,pre2,bs,fa,fb,fc,fd)
       if(da2>0.and.db2>0.and.dc2>0.and.dd2>0)then
         !$OMP DO
         do bc=1,dc2,bs
@@ -8053,7 +8053,7 @@ module manual_utils_module
       endif
     elseif (pre2 == 0.0E0_realk .and. pre1 /= 1.0E0_realk) then
       !$OMP PARALLEL DEFAULT(NONE),PRIVATE(a,b,c,d,ba,bb,bc,bd,baf,bbf,bcf,bdf),SHARED(array_in,array_out,&
-      !$OMP& !da,db,dc,dd,da2,db2,dc2,dd2,bcntr,moda,modb,modc,modd,pre1,pre2,bs,fa,fb,fc,fd)
+      !$OMP da,db,dc,dd,da2,db2,dc2,dd2,bcntr,moda,modb,modc,modd,pre1,pre2,bs,fa,fb,fc,fd)
       if(da2>0.and.db2>0.and.dc2>0.and.dd2>0)then
         !$OMP DO
         do bc=1,dc2,bs
@@ -8389,7 +8389,7 @@ module manual_utils_module
       endif
     elseif (pre2 /= 0.0E0_realk .and. pre1 == 1.0E0_realk) then
       !$OMP PARALLEL DEFAULT(NONE),PRIVATE(a,b,c,d,ba,bb,bc,bd,baf,bbf,bcf,bdf),SHARED(array_in,array_out,&
-      !$OMP& !da,db,dc,dd,da2,db2,dc2,dd2,bcntr,moda,modb,modc,modd,pre1,pre2,bs,fa,fb,fc,fd)
+      !$OMP da,db,dc,dd,da2,db2,dc2,dd2,bcntr,moda,modb,modc,modd,pre1,pre2,bs,fa,fb,fc,fd)
       if(da2>0.and.db2>0.and.dc2>0.and.dd2>0)then
         !$OMP DO
         do bc=1,dc2,bs
@@ -8741,7 +8741,7 @@ module manual_utils_module
       endif
     elseif (pre2 /= 0.0E0_realk .and. pre1 /= 1.0E0_realk) then
       !$OMP PARALLEL DEFAULT(NONE),PRIVATE(a,b,c,d,ba,bb,bc,bd,baf,bbf,bcf,bdf),SHARED(array_in,array_out,&
-      !$OMP& !da,db,dc,dd,da2,db2,dc2,dd2,bcntr,moda,modb,modc,modd,pre1,pre2,bs,fa,fb,fc,fd)
+      !$OMP da,db,dc,dd,da2,db2,dc2,dd2,bcntr,moda,modb,modc,modd,pre1,pre2,bs,fa,fb,fc,fd)
       if(da2>0.and.db2>0.and.dc2>0.and.dd2>0)then
         !$OMP DO
         do bc=1,dc2,bs

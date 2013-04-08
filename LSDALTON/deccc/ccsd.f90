@@ -4676,7 +4676,7 @@ contains
       &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
       &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
       ! allocation of matrices ONLY used outside loop
-      ! w1 + FAO + w2 + w3
+      ! w1 + FO + w2 + w3
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+nb*nb+2*no*no*nv*nv)
       !memrq=memrq+max(memin,memout)
     elseif(memintensive==3)then
@@ -4707,7 +4707,7 @@ contains
       &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
       &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
       ! allocation of matrices ONLY used outside loop
-      ! w1 + FAO + w2 + w3 + govov
+      ! w1 + FO + w2 + w3 + govov
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+max(nb*nb,max(2*tl1,tl2)))
       !memrq=memrq+max(memin,memout)
     elseif(memintensive==2)then
@@ -4743,7 +4743,7 @@ contains
       &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
       &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
       ! allocation of matrices ONLY used outside loop
-      ! w1 + FAO + w2 + w3
+      ! w1 + FO + w2 + w3
       !in cd terms w2 and w3 have tl1, in b2 w2 has tl2
       cd = max(2*tl1,tl2)
       ! in e2 term w2 has max(tl2,tl3) and w3 has max(no2,nv2)
@@ -4777,7 +4777,7 @@ contains
       &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
       &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
       ! allocation of matrices ONLY used outside loop
-      ! w1 + FAO + w2 + w3 + govov
+      ! w1 + FO + w2 + w3 + govov
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+nb*nb+3*no*no*nv*nv)
       !memrq=memrq+max(memin,memout)
     elseif(memintensive==0)then
@@ -4802,7 +4802,7 @@ contains
       &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
       &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
       ! allocation of matrices ONLY used outside loop
-      ! w1 + FAO 
+      ! w1 + FO 
       memout = 1.0E0_realk*max(nv*nv*no*no,nb*nb)+nb*nb
       !memrq=memrq+max(memin,memout)
     else

@@ -17,47 +17,42 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > ethane_dec_mp2.info <<'%EOF%'
-   ethane_dec_mp2 
-   -------------
-   Molecule:         Ethane
-   Wave Function:    dec-MP2 / 6-31G 
-   Test Purpose:     Test geometry optimizer in redundant internal
-   coordinates with full dec-MP2
-                     
+cat > fragment_adapted.info <<'%EOF%'
+   DEC-MP2 energies for full DEC
+   -----------------------------
+   Molecule:         ethane
+   Wave Function:    MP2 / 3-21G
+   Test Purpose:     Test DEC calculation using fragment adapted orbitals (Kasper K)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > ethane_dec_mp2.mol <<'%EOF%'
+cat > fragment_adapted.mol <<'%EOF%'
 BASIS
-6-31G
+3-21G
 Ethane
 
 Atomtypes=2 Charge=0 Nosymmetry Angstrom
-Charge=1.0 Atoms=4
-H          1.16103        0.06607        1.02388
-H          1.33519       -0.08301       -0.78143
-H         -1.33549        0.08301        0.78127
-H         -1.16080       -0.06606       -1.02386
+Charge=1.0 Atoms=6
+H         -4.76577        1.91343        0.96555
+H         -4.76581        0.14249        0.45690
+H         -4.76577        1.12214       -1.02239
+H         -2.48498        0.99665        1.02239
+H         -2.48495        1.97630       -0.45690
+H         -2.48498        0.20536       -0.56555
 Charge=6.0 Atoms=2
-C          0.65790       -0.00446        0.06398
-C         -0.65783        0.00446       -0.06385
+C         -4.38136        1.05954       -0.00007
+C         -2.86939        1.05925        0.00007
 %EOF%
-
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > ethane_dec_mp2.dal <<'%EOF%'
-**OPTIMI
-.BAKER
-.LOOSE
+cat > fragment_adapted.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.NOGCBASIS
-.ARH
+.ARH DAVID
 .START
 TRILEVEL
 .CONVDYN
@@ -65,11 +60,9 @@ STANDARD
 .LCM
 .MLO
 2 2
-$INFO
-DEBUG_MPI_MEM
-$END INFO
 **DEC
-.SimulateFull
+.FrozenCore
+.FragmentAdapted
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -81,8 +74,9 @@ $END INFO
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > ethane_dec_mp2.check
-cat >> ethane_dec_mp2.check <<'%EOF%'
+echo $CHECK_SHELL >fragment_adapted.check
+cat >>fragment_adapted.check <<'%EOF%'
+
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -91,24 +85,24 @@ else
    GREP="egrep"
 fi
 
-# Energy
-CRIT1=`$GREP "Energy at final geometry is * \: * \-78\.186750" $log | wc -l`
+# HF ENERGY 
+CRIT1=`$GREP "Final HF energy: * \-78\.75744888" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
-ERROR[1]="MP2 ENERGY NOT CORRECT -"
+ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# Memory test
-CRIT2=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
-TEST[2]=`expr  $CRIT2`
+# Total correlation energy
+CRIT1=`$GREP "Correlation energy  \: * \-0\.1923" $log | wc -l`
+TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="Memory leak -"
+ERROR[2]="Total correlation energy is not correct"
 
-# Number of gradient calculations
-CRIT3=`$GREP "G\: Total * MP2 energy" $log | wc -l` 
-TEST[3]=`expr   $CRIT3`
-CTRL[3]=6
-ERROR[3]="Wrong number of geometry steps"
-
+# Memory test for total memory                                             
+CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
+TEST[3]=`expr  $CRIT1`                                                    
+CTRL[3]=1                                                                 
+ERROR[3]="Memory leak -"
+                                                                          
 # MPI Memory test
 CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
 TEST[4]=`expr  $CRIT1`
@@ -134,4 +128,7 @@ else
 fi
 
 %EOF%
-#######################################################################
+
+
+
+

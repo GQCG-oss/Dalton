@@ -1809,7 +1809,7 @@ module dec_pdm_module
     !> specify the order if the tile stems from a matrix with a different order
     integer,intent(in),optional :: optorder(mode)
     !> tile output
-    real(realk), intent(out) :: tilein(*)
+    real(realk), intent(in) :: tilein(*)
     integer :: i,nccblcks,nelms,k
     integer :: tmodeidx(mode),o(mode)
     integer :: idxintile(mode),glbidx,rorder(mode),olddims(mode)
@@ -1903,7 +1903,7 @@ module dec_pdm_module
     !> specify the order if the tile stems from a matrix with a different order
     integer,intent(in) :: o(mode)
     !> tile output
-    real(realk), intent(out) :: tilein(*)
+    real(realk), intent(in) :: tilein(*)
     integer :: i,nccblcks,nelms,k
     integer :: tmodeidx(mode),rtd(mode)
     integer :: idxintile(mode),glbidx,ro(mode),olddims(mode)

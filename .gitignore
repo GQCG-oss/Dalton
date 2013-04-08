@@ -7,7 +7,6 @@ Makefile.config
 bin/
 modules/
 include/compinfo.h
-gp/binary_info.F90
 dalton.setup
 build*
 Doc/*.aux

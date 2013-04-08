@@ -33,15 +33,11 @@ module dec_typedef_module
      logical :: frozencore
      !> Book keeping of the number of DEC calculations for each FOT level
      !> (only relevant for geometry optimizations)
-     integer,dimension(7) :: ncalc
+     integer,dimension(8) :: ncalc
 
      ! -- Type of calculation
      !> Full molecular job
      logical :: full_molecular_cc ! full molecular cc
-     !> Single atomic fragment job
-     logical :: single_fragment
-     !> One single calculation (either single or pair)
-     logical :: single_calculation
      !> Full calculation where individual pair and single energies are calculated in ONE energy calc.
      logical :: FullDEC
      !> Simulate full molecular calculation in DEC mode
@@ -90,7 +86,7 @@ module dec_typedef_module
      logical :: hack2
      !> Debug prints for DEC MPI parallelization
      logical :: mpidebug
-     !> Factor determining whether MPI groups should split, see super_fragments_slave
+     !> Factor determining whether MPI groups should split
      integer :: mpisplit
      !\> forcing ome or the other scheme in get_coubles residual integral_driven
      logical :: force_scheme,dyn_load
@@ -151,8 +147,8 @@ module dec_typedef_module
      integer :: PL
      !> Dont dispatch CC jobs for fragments
      logical :: SkipCC
-     !> Normalize basis for fragment
-     logical :: NormalizeFragment
+     !> Purify fitted MO coefficients (projection + orthogonalization)
+     logical :: PurifyMOs
      !> Use full molecular Fock matrix to precondition
      logical :: precondition_with_full
      !> Includes the whole molecule in all fragments
@@ -170,8 +166,9 @@ module dec_typedef_module
      integer :: AEstep
      !> Use fragment-adapted orbitals for fragment calculations
      logical :: FragAdapt
-     !> for ccsd(t) calculations, option to use ccsd optimized fragments
-     logical :: use_ccsd_frag
+     !> for ccsd(t) calculations, option to use MP2 optimized fragments
+     !KK fixme: Currently DEC-CCSD(T) ONLY works when use_mp2_frag=.true.!
+     logical :: use_mp2_frag
      ! --  
 
      ! -- Pair fragments
@@ -270,19 +267,6 @@ module dec_typedef_module
      real(realk) :: memallo_time_cpu  
      real(realk) :: memallo_time_wall
 
-     !> Use (varitional) Lagrangian MP2 energy
-     logical :: lagrangian
-
-     !> Super fragment information
-     !> Is this a super fragment calculation?
-     logical :: SF 
-     !> Maximum allowed distance between original fragments when constructing superfragments
-     real(realk) :: SF_maxdist 
-     !> Fragment overlap threshold for constructing superfragments
-     real(realk) :: SF_thr
-     !> Simulate super fragments by going through the super fragment framework, but effectively
-     !> using standard fragments
-     logical :: SimulateSF
 
      ! MPI information
      integer(kind=ls_mpik) :: MPIgroupsize
@@ -539,6 +523,12 @@ module dec_typedef_module
      !> Virt-virt block of Fock matrix in MO basis
      real(realk), pointer :: qqfock(:,:) => null()
 
+     !> Orbital interaction matrix describing interaction between occupied orbital "i"
+     !> and virtual orbital "a".
+     !> See subroutine get_interaction_matrices for details.
+     !> Dimension: (numocc,numvirt)
+     real(realk),pointer :: orbint(:,:) => null() 
+
   end type fullmolecule
 
 
@@ -559,6 +549,9 @@ module dec_typedef_module
      integer :: nocctot=0
      !> Total number of unoccupied orbitals (AOS)
      integer :: nunoccAOS=0
+
+     !> Pair fragment?
+     logical :: pairfrag
 
      !> Occupied orbital EOS indices 
      integer, pointer :: occEOSidx(:) => null()
@@ -624,18 +617,14 @@ module dec_typedef_module
      real(realk) :: LagFOP
   
      !> Contributions to the fragment Lagrangian energy from each individual
-     !  occupied or virtual orbitals - only implemented for Lagrangian scheme.
+     !  occupied or virtual orbital.
      real(realk),pointer :: OccContribs(:) => null()
      real(realk),pointer :: VirtContribs(:) => null()
 
-     !> Super fragment information (not used for standard fragment)
-     !  ***********************************************************
-     !> Fragment is a super fragment (true) or not (false)
-     logical :: SF
-     !> Number of standard fragments merged to form super fragment (1 for standard fragment)
-     integer :: SF_nfrags
-     !> List of atomic sites for the corresponding standard fragments
-     integer, pointer :: SF_atomlist(:) => null()
+     !> Number of EOS atoms (1 for atomic fragment, 2 for pair fragment)
+     integer :: nEOSatoms
+     !> List of EOS atoms
+     integer, pointer :: EOSatoms(:) => null()
 
 
      !> Information used only when the ccatom is a pair fragment
@@ -673,6 +662,9 @@ module dec_typedef_module
      ! can be obtained in a very cheap manner, which is convenient for
      ! planning of a large number of fragment calculations.
      ! ---------------------------------------------------------------------------
+
+     !> AO overlap matrix for fragment
+     real(realk),pointer :: S(:,:) => null()
 
      !> Occupied MO coefficients (only valence space for frozen core approx)
      real(realk), pointer :: ypo(:,:) => null()
@@ -865,18 +857,11 @@ module dec_typedef_module
      !> Only pair frags: Distance between (super) fragments in pair (zero for single fragments)
      real(realk) :: pairdist
 
-     !> Number of standard fragments merged to form super fragment (1 for standard fragment)
-     integer :: SF_nfrags
-     !> List of atomic sites for the corresponding standard fragments
-     integer, pointer :: SF_atomlist(:) => null()
+     !> Number of EOS atoms (1 for atomic fragment, 2 for pair fragment)
+     integer :: nEOSatoms
+     !> List of  EOS atoms
+     integer, pointer :: EOSatoms(:) => null()
 
-     !> Indices for virtual AOS orbitals in fragment in the list of orbitals for the full molecule
-     ! (dimension nvirt, same as total_unocc_space_idx in ccatom type)
-     integer, pointer :: virtidx(:) => null()
-     !> Indices for occupied AOS orbitals in fragment in the list of orbitals for the full molecule
-     integer, pointer :: occidx(:) => null()
-     !> Indices for occupied core+valence AOS orbitals (only different from occidx for frozen core)
-     integer, pointer :: occtotidx(:) => null()
      !> Indices for atomic basis functions in the list of basis functions for full molecule
      integer,pointer :: basis_idx(:) => null()
 

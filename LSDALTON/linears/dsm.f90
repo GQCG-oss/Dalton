@@ -1151,13 +1151,17 @@ CONTAINS
       real(realk), intent(in) :: coef(msize-1), DSMenerold,DSMgd(msize-1), &
            & DSMhes(msize-1,msize-1)
       real(realk), intent(out) :: DSMenerpred
+      real(realk) :: TMPC
       integer :: i,j
 
       DSMenerpred  = DSMenerold 
       do i = 1,msize-1
          DSMenerpred  = DSMenerpred + DSMgd(i)*coef(i)
-         do j = 1,msize-1
-            DSMenerpred = DSMenerpred + 0.5E0_realk*coef(i)*DSMhes(i,j)*coef(j)
+      enddo
+      do j = 1,msize-1
+         TMPC = 0.5E0_realk*coef(j)
+         do i = 1,msize-1
+            DSMenerpred = DSMenerpred + coef(i)*DSMhes(i,j)*TMPC
          enddo
       enddo
 

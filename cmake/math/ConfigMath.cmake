@@ -18,10 +18,8 @@ macro(config_math_service _SERVICE)
             message("-- No external ${_SERVICE} library found")
         endif()
         message("-- Using own ${_SERVICE} implementation (slow)")
-        set(FIXED_FORTRAN_SOURCES
-            ${FIXED_FORTRAN_SOURCES}
-            ${OWN_${_SERVICE}_SOURCES}
-            )
+        add_definitions(-DUSE_OWN_${_SERVICE})
+        set(USE_OWN_${_SERVICE} TRUE)
     endif()
 endmacro()
 
@@ -33,6 +31,9 @@ set(EXPLICIT_LIBS
     "User set math libraries"
     FORCE
     )
+
+set(USE_OWN_BLAS   FALSE)
+set(USE_OWN_LAPACK FALSE)
 
 if(EXPLICIT_LIBS)
     set(LIBS

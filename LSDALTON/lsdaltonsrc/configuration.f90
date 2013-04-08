@@ -52,6 +52,7 @@ use cgto_diff_eri_host_interface, only: cgto_diff_eri_xfac_general
 #endif
 use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
+!use xcfun_host,only: xcfun_host_init, USEXCFUN
 contains
 
 !> \brief Call routines to set default values for different structures.
@@ -61,7 +62,7 @@ subroutine config_set_default_config(config)
 implicit none
    !> Contains info, settings and data for entire calculation
    type(ConfigItem), intent(inout) :: config
-  
+!  USEXCFUN = .FALSE.  
   nullify(config%solver)
   allocate(config%solver)
   call arh_set_default_config(config%solver)
@@ -328,7 +329,11 @@ DO
                      !different from zero. 
                      !note the 40 is harcoded in DFTsetFunc routine in general.c 
                      config%integral%dft%dftfunc = WORD
-                     CALL II_DFTsetFunc(WORD,hfweight)
+!                     IF(.NOT.USEXCFUN)THEN
+                        CALL II_DFTsetFunc(WORD,hfweight)
+!                     ELSE
+!                        call xcfun_host_init(WORD,hfweight,lupri)
+!                     ENDIF
                      config%integral%exchangeFactor = hfweight
                      config%integral%dft%HFexchangeFac = hfweight
 #ifdef BUILD_CGTODIFF
@@ -695,6 +700,7 @@ DO
       CALL LS_optimization_input(config%optinfo,readword,word,lucmd, &
            & lupri,config%molecule%nAtoms)
    ENDIF
+
 !
 ! Find dynamics input section
 !
@@ -797,6 +803,12 @@ ENDDO
 !   CALL lsQUIT('.LINSCA WAS NOT USED.')
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
+
+! KK: Make sure that DEC geometry optimizations use dynamical optimization procedure
+if(config%dodec .and. config%optinfo%optimize) then
+config%optinfo%dynopt=.true.
+end if
+
 END SUBROUTINE read_dalton_input
 
 subroutine PROFILE_INPUT(profinput,readword,word,lucmd,lupri)
@@ -874,6 +886,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
+!        CASE ('.XCFUN'); USEXCFUN=.TRUE. 
         CASE ('.CONTANG'); INTEGRAL%CONTANG=.TRUE. ! Specifies that the AO-shell ordering is contracted first then 
                                                    ! angular components (for genereally contracted functions)
         CASE ('.NOGCINTEGRALTRANSFORM'); INTEGRAL%NOGCINTEGRALTRANSFORM=.TRUE.
@@ -2324,6 +2337,7 @@ DO
          ENDDO
          deallocate(GRIDspec)
          CALL DFTGRIDINPUT(LINE,DALTON%DFT%TURBO)
+!         IF(USEXCFUN) DALTON%DFT%XCFUN = .TRUE.
       CASE ('.OLDGRID'); DALTON%DFT%NEWGRID = .FALSE.
       CASE ('.NOPRUN'); DALTON%DFT%NOPRUN = .TRUE.
       CASE ('.RADINT'); READ(LUCMD,*) DALTON%DFT%RADINT
@@ -3387,6 +3401,7 @@ use lsmpi_mod
   implicit none
   character(len=80)  :: WORD
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
+!  call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
 end subroutine lsmpi_setmasterToSlaveFunc
 
 subroutine lsmpi_setSlaveFunc()
@@ -3397,8 +3412,13 @@ use typedef
   character(len=80)  :: WORD
   real(realk) :: hfweight
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
-  hfweight=0E0_realk 
-  CALL DFTsetFunc(WORD(1:80),hfweight)
+!  call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
+  hfweight=0E0_realk   
+!  IF(.NOT.USEXCFUN)THEN
+     CALL DFTsetFunc(WORD(1:80),hfweight)
+!  ELSE
+!     call xcfun_host_init(WORD,hfweight,lupri)
+!  ENDIF
 end subroutine lsmpi_setSlaveFunc
 
 subroutine lsmpi_addSlaveFunc()
@@ -3409,7 +3429,12 @@ use typedef
   character(len=80)  :: WORD
   real(realk) :: hfweight
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
+!  call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
   hfweight=0E0_realk 
-  CALL DFTaddFunc(WORD(1:80),hfweight)
+!  IF(.NOT.USEXCFUN)THEN
+     CALL DFTaddFunc(WORD(1:80),hfweight)
+!  ELSE
+!     call lsquit('not implemented',-1)
+!  ENDIF
 end subroutine lsmpi_addSlaveFunc
 #endif
