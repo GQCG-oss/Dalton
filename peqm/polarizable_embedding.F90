@@ -569,12 +569,13 @@ subroutine pe_dalton_input(word, luinp, lupri)
         else if (trim(option(2:)) == 'REDTHR') then
             pe_redthr = .true.
         ! handling sites near quantum-classical border
-        else if (trim(option(2:)) == 'BORDER') then
+         else if (trim(option(2:)) == 'BORDER') then
             read(luinp,*) option
             backspace(luinp)
             if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.& 
                & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
                 read(luinp,'(a)',advance='no') border_type
+                backspace(luinp)
                 call chcase(border_type)
                 if ((trim(border_type) /= 'REMOVE') .and.&
                    & (trim(border_type) /= 'REDIST') .and.&
@@ -582,13 +583,14 @@ subroutine pe_dalton_input(word, luinp, lupri)
                    & (trim(border_type) /= 'REDISA')) then
                     stop 'ERROR: unknown handling of border sites!'
                 else if (trim(border_type) == 'REMOVE') then
-                    read(luinp,*) Rmin, auoraa
-                else if ((trim(border_type) /= 'REDIST') .and.&
-                   & (trim(border_type) /= 'REDISC') .and.&
-                   & (trim(border_type) /= 'REDISA')) then
-                    read(luinp,*) Rmin, auoraa, nredist
+                    read(luinp,*) border_type, Rmin, auoraa
+                else if (trim(border_type) == 'REDIST') then
+                    read(luinp,*) border_type, Rmin, auoraa
+                else if ((trim(border_type) == 'REDISC') .or.&
+                        & (trim(border_type) == 'REDISA')) then
+                    read(luinp,*) border_type, Rmin, auoraa, nredist
                     if ((nredist > 3) .or. (nredist < 1)) then
-                        stop 'ERROR: classical sites cannot only be distributed to&
+                        stop 'ERROR: parameters cannot only be distributed to&
                              & minimum one site and maximum three sites.'
                     end if
                 end if
