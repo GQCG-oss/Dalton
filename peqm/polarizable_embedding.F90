@@ -913,7 +913,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
     character(*), intent(in) :: runtype
     integer, intent(in) :: nmats
     real(dp), dimension(:), intent(in), optional :: denmats
-    real(dp), dimension(:), intent(inout), optional :: fckmats
+    real(dp), dimension(:), intent(out), optional :: fckmats
     real(dp), dimension(:), intent(out), optional :: energies
     real(dp), dimension(:), target, intent(inout) :: dalwrk
 
@@ -1140,29 +1140,33 @@ subroutine pe_mpi(dalwrk, runtype)
         fock = .true.
         energy = .false.
         response = .false.
+        london = .false.
         mep = .false.
         scfcycle = scfcycle + 1
     else if (runtype == 2) then
         fock = .false.
         energy = .true.
         response = .false.
+        london = .false.
         mep = .false.
     else if (runtype == 3) then
         fock = .false.
         energy = .false.
         response = .true.
+        london = .false.
         mep = .false.
     else if (runtype == 4) then
         fock = .false.
         energy = .false.
         response = .false.
+        london = .false.
         mep = .true.
     else if (runtype == 5) then
         fock = .false.
         energy = .false.
         response = .false.
-        mep = .false.
         london = .true.
+        mep = .false.
     end if
 
     call mpi_bcast(nbas, 1, impi, 0, comm, ierr)
@@ -1199,7 +1203,7 @@ subroutine pe_mpi(dalwrk, runtype)
     else if (mep) then
         call pe_compute_mep(work(1:ndens*nnbas))
     else if (london) then
-        call pe_compute_london(work(1:3*nbas*nbas))
+        call pe_compute_london(work(1:3*n2bas))
     end if
 
 !    deallocate(Epe, Ees, Epol, Esol, Efd)
@@ -1437,7 +1441,7 @@ subroutine pe_fock(denmats, fckmats, energies)
         if (myid == 0 .and. nprocs > 1) then
             call mpi_reduce(mpi_in_place, fckmats, ndens * nnbas, rmpi,&
                            & mpi_sum, 0, comm, ierr)
-        else
+        else if (myid /= 0) then
             call mpi_reduce(fckmats, 0, ndens * nnbas, rmpi, mpi_sum, 0,&
                            & comm, ierr)
         end if
@@ -7140,6 +7144,11 @@ subroutine pe_compute_london(fckmats)
         else
             stop 'ERROR: pe_induced_dipoles.bin does not exist'
         end if
+#if defined(VAR_MPI)
+        if (nprocs > 1) then
+            call mpi_bcast(Mkinds, 3 * npols, rmpi, 0, comm, ierr)
+        end if
+#endif
         call lao_multipoles(Mkinds, fckmats, linduced=.true.)
         deallocate(Mkinds)
     endif
@@ -7148,7 +7157,7 @@ subroutine pe_compute_london(fckmats)
     if (myid == 0 .and. nprocs > 1) then
         call mpi_reduce(mpi_in_place, fckmats, 3 * n2bas, rmpi, mpi_sum,&
                        & 0, comm, ierr)
-    else
+    else if (myid /= 0) then
         call mpi_reduce(fckmats, 0, 3 * n2bas, rmpi, mpi_sum, 0,&
                        & comm, ierr)
     end if
@@ -7180,10 +7189,8 @@ subroutine lao_multipoles(Mks, fckmats, linduced)
     allocate(Mk_ints(n2bas,3,ncomps))
 
     do site = site_start, site_finish
-        if (abs(maxval(Mks(:,site))) < zero) then
-            cycle
-        end if
         if (pol .and. zeroalphas(site)) cycle
+        if (abs(maxval(Mks(:,site))) < zero) cycle
 
         call Mk_lao_integrals(Mk_ints, Rs(:,site), Mks(:,site))
 
