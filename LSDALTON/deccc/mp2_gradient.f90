@@ -4425,28 +4425,20 @@ call mem_TurnOffThread_Memory()
     !> Number of occupied orbitals, virtual orbitals, and basis functions
     integer,intent(in) :: nocc,nvirt,nbasis
     !> Overlap matrix
-    real(realk),dimension(nbasis,nbasis),intent(in) :: S(nbasis,nbasis)
+    real(realk),dimension(nbasis,nbasis),intent(in) :: S
     !> Occupied MO coefficients
-    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc(nbasis,nocc)
+    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
     !> Virtual MO coefficients
-    real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt(nbasis,nvirt)
+    real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
     !> Phi matrix in AO basis
-    real(realk),dimension(nbasis,nbasis),intent(in) :: PhiAO(nbasis,nbasis)
+    real(realk),dimension(nbasis,nbasis),intent(in) :: PhiAO
     !> Virt-occ block of Phi matrix in MO basis
-    real(realk),dimension(nvirt,nocc),intent(inout) :: Phivo(nvirt,nocc)
+    real(realk),dimension(nvirt,nocc),intent(inout) :: Phivo
     !> Occ-virt block of Phi matrix in MO basis
-    real(realk),dimension(nocc,nvirt),intent(inout) :: Phiov(nocc,nvirt)
+    real(realk),dimension(nocc,nvirt),intent(inout) :: Phiov
     !> Occ-occ block of Phi matrix (only for frozen core)
-    real(realk),dimension(nocc,nocc),intent(inout),optional :: Phioo(nocc,nocc)
+    real(realk),dimension(nocc,nocc),intent(inout) :: Phioo
     real(realk),pointer :: S_PhiAO_S(:,:)
-
-    ! Sanity check
-    if(DECinfo%frozencore) then
-       if(.not. present(Phioo)) then
-          call lsquit('get_Phi_MO_blocks_from_AO : &
-               & Phioo must be present for frozen core!',-1)
-       end if
-    end if
 
 
     ! Phi in AO and MO bases are related as follows:
@@ -4479,12 +4471,8 @@ call mem_TurnOffThread_Memory()
     ! Phiov = Cocc^T (S PhiAO S) Cvirt
     call dec_diff_basis_transform1(nbasis,nocc,nvirt,Cocc,Cvirt,S_PhiAO_S,Phiov)
 
-    if(DECinfo%frozencore) then
-
-       ! Phioo = Cocc^T (S PhiAO S) Cocc
-       call dec_simple_basis_transform1(nbasis,nocc,Cocc,S_PhiAO_S,Phioo)
-
-    end if
+    ! Phioo = Cocc^T (S PhiAO S) Cocc
+    call dec_simple_basis_transform1(nbasis,nocc,Cocc,S_PhiAO_S,Phioo)
 
     call mem_dealloc(S_PhiAO_S)
 
@@ -4532,17 +4520,10 @@ call mem_TurnOffThread_Memory()
     ! Get MO blocks for Phi matrix in simple fortran form
     call mem_alloc(Phivo_simple,nvirt,nocc)
     call mem_alloc(Phiov_simple,nocc,nvirt)
-    if(DECinfo%frozencore) then
-       call mem_alloc(Phioo_simple,nocc,nocc)
-       call get_Phi_MO_blocks_from_AO_simple(nbasis,nocc,nvirt,MyMolecule%overlap,&
-            & MyMolecule%ypo,MyMolecule%ypv,fullgrad%Phi,&
-            & Phivo_simple,Phiov_simple,Phioo=Phioo_simple)
-    else
-       call get_Phi_MO_blocks_from_AO_simple(nbasis,nocc,nvirt,MyMolecule%overlap,&
-            & MyMolecule%ypo,MyMolecule%ypv,fullgrad%Phi,&
-            & Phivo_simple,Phiov_simple)
-    end if
-
+    call mem_alloc(Phioo_simple,nocc,nocc)
+    call get_Phi_MO_blocks_from_AO_simple(nbasis,nocc,nvirt,MyMolecule%overlap,&
+         & MyMolecule%ypo,MyMolecule%ypv,fullgrad%Phi,&
+         & Phivo_simple,Phiov_simple,Phioo_simple)
 
     ! Init and convert to type(matrix) form
     call mat_init(Phivo,nvirt,nocc)
@@ -4556,8 +4537,8 @@ call mem_TurnOffThread_Memory()
     if(DECinfo%frozencore) then
        call mat_init(Phioo,nocc,nocc)
        call mat_set_from_full(Phioo_simple, 1.0_realk, Phioo)
-       call mem_dealloc(Phioo_simple)
     end if
+    call mem_dealloc(Phioo_simple)
 
   end subroutine get_Phi_MO_blocks
 
