@@ -4282,8 +4282,6 @@ call mem_TurnOffThread_Memory()
     type(ccatom),intent(in) :: fragment
     !> MP2 gradient structure for fragment
     type(mp2grad), intent(inout) :: grad
-    integer :: nocc,nvirt,nbasis,i,nocctot
-    real(realk),pointer :: Cocctot(:,:)
 
     ! Frozen core requires special treatment of core orbitals
     if(DECinfo%frozencore) then
@@ -4310,7 +4308,7 @@ call mem_TurnOffThread_Memory()
     !> virtual orbitals, and basis functions
     integer,intent(in) :: ncore,nval,nvirt,nbasis
     !> Occupied core MO coefficients
-    real(realk),intent(in),optional :: Ccore(nbasis,ncore)
+    real(realk),intent(in) :: Ccore(nbasis,ncore)
     !> Occupied valence MO coefficients
     real(realk),intent(in) :: Cval(nbasis,nval)
     !> Virtual MO coefficients
