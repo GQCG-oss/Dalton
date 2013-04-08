@@ -230,7 +230,8 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
                     P1s(:,idxs(i)) = 0.0d0
                 end if
             end do
-        else if (border_type == 'REDIST') then
+        else if ((border_type == 'REDIST') .or. (border_type == 'REDISA') .or.&
+                &(border_type == 'REDISC')) then
             allocate(redists(nsites))
             redists = .false.
             do i = 1, nidx
@@ -252,98 +253,110 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
                 if (lmul(0)) then
                     M0s(:,idx) = M0s(:,idx) + M0s(:,idxs(i)) / 3.0d0
                 endif
-!                if (lmul(1)) then
-!                    M1s(:,idx) = M1s(:,idx) + M1s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(2)) then
-!                    M2s(:,idx) = M2s(:,idx) + M2s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(3)) then
-!                    M3s(:,idx) = M3s(:,idx) + M3s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(4)) then
-!                    M4s(:,idx) = M4s(:,idx) + M4s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(5)) then
-!                    M5s(:,idx) = M5s(:,idx) + M5s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lpol(1)) then
-!                    P1s(:,idx) = P1s(:,idx) + P1s(:,idxs(i)) / 3.0d0
-!                end if
-                rclose = 1.0d10
-                do j = 1, nsites
-                    if (j == idx) cycle
-                    lexist = .false.
-                    do k = 1, nidx
-                        if (j == idxs(k)) then
-                            lexist = .true.
-                            exit
+                if (border_type == 'REDISA') then
+                    if (lmul(1)) then
+                        M1s(:,idx) = M1s(:,idx) + M1s(:,idxs(i)) / 3.0d0
+                    endif
+                    if (lmul(2)) then
+                        M2s(:,idx) = M2s(:,idx) + M2s(:,idxs(i)) / 3.0d0
+                    endif
+                    if (lmul(3)) then
+                        M3s(:,idx) = M3s(:,idx) + M3s(:,idxs(i)) / 3.0d0
+                    endif
+                    if (lmul(4)) then
+                        M4s(:,idx) = M4s(:,idx) + M4s(:,idxs(i)) / 3.0d0
+                    endif
+                    if (lmul(5)) then
+                        M5s(:,idx) = M5s(:,idx) + M5s(:,idxs(i)) / 3.0d0
+                    endif
+                    if (lpol(1)) then
+                        P1s(:,idx) = P1s(:,idx) + P1s(:,idxs(i)) / 3.0d0
+                    end if
+                end if
+                if (nredist > 1) then
+                    rclose = 1.0d10
+                    do j = 1, nsites
+                        if (j == idx) cycle
+                        lexist = .false.
+                        do k = 1, nidx
+                            if (j == idxs(k)) then
+                                lexist = .true.
+                                exit
+                            end if
+                        end do
+                        if (lexist) cycle
+                        if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= rclose) then
+                            rclose = nrm2(Rs(:,idxs(i)) - Rs(:,j))
+                            jdx = j
                         end if
                     end do
-                    if (lexist) cycle
-                    if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= rclose) then
-                        rclose = nrm2(Rs(:,idxs(i)) - Rs(:,j))
-                        jdx = j
+                    if (lmul(0)) then
+                        M0s(:,jdx) = M0s(:,jdx) + M0s(:,idxs(i)) / 3.0d0
+                    endif
+                    if (border_type == 'REDISA') then
+                        if (lmul(1)) then
+                            M1s(:,jdx) = M1s(:,jdx) + M1s(:,idxs(i)) / 3.0d0
+                        endif
+                        if (lmul(2)) then
+                            M2s(:,jdx) = M2s(:,jdx) + M2s(:,idxs(i)) / 3.0d0
+                        endif
+                        if (lmul(3)) then
+                            M3s(:,jdx) = M3s(:,jdx) + M3s(:,idxs(i)) / 3.0d0
+                        endif
+                        if (lmul(4)) then
+                            M4s(:,jdx) = M4s(:,jdx) + M4s(:,idxs(i)) / 3.0d0
+                        endif
+                        if (lmul(5)) then
+                            M5s(:,jdx) = M5s(:,jdx) + M5s(:,idxs(i)) / 3.0d0
+                        endif
+                        if (lpol(1)) then
+                            P1s(:,jdx) = P1s(:,jdx) + P1s(:,idxs(i)) / 3.0d0
+                        end if
                     end if
-                end do
-                if (lmul(0)) then
-                    M0s(:,jdx) = M0s(:,jdx) + M0s(:,idxs(i)) / 3.0d0
-                endif
-!                if (lmul(1)) then
-!                    M1s(:,jdx) = M1s(:,jdx) + M1s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(2)) then
-!                    M2s(:,jdx) = M2s(:,jdx) + M2s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(3)) then
-!                    M3s(:,jdx) = M3s(:,jdx) + M3s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(4)) then
-!                    M4s(:,jdx) = M4s(:,jdx) + M4s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(5)) then
-!                    M5s(:,jdx) = M5s(:,jdx) + M5s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lpol(1)) then
-!                    P1s(:,jdx) = P1s(:,jdx) + P1s(:,idxs(i)) / 3.0d0
-!                end if
-                rclose = 1.0d10
-                do j = 1, nsites
-                    if (j == idx .or. j == jdx) cycle
-                    lexist = .false.
-                    do k = 1, nidx
-                        if (j == idxs(k)) then
-                            lexist = .true.
-                            exit
+                end if
+
+                if (nredist > 2) then
+                    rclose = 1.0d10
+                    do j = 1, nsites
+                        if (j == idx .or. j == jdx) cycle
+                        lexist = .false.
+                        do k = 1, nidx
+                            if (j == idxs(k)) then
+                                lexist = .true.
+                                exit
+                            end if
+                        end do
+                        if (lexist) cycle
+                        if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= rclose) then
+                            rclose = nrm2(Rs(:,idxs(i)) - Rs(:,j))
+                            kdx = j
                         end if
                     end do
-                    if (lexist) cycle
-                    if (nrm2(Rs(:,idxs(i)) - Rs(:,j)) <= rclose) then
-                        rclose = nrm2(Rs(:,idxs(i)) - Rs(:,j))
-                        kdx = j
+                    if (lmul(0)) then
+                        M0s(:,kdx) = M0s(:,kdx) + M0s(:,idxs(i)) / 3.0d0
+                    endif
+                    if (border_type == 'REDISA') then
+                        if (lmul(1)) then
+                            M1s(:,kdx) = M1s(:,kdx) + M1s(:,idxs(i)) / 3.0d0
+                        endif
+                        if (lmul(2)) then
+                            M2s(:,kdx) = M2s(:,kdx) + M2s(:,idxs(i)) / 3.0d0
+                        endif
+                        if (lmul(3)) then
+                            M3s(:,kdx) = M3s(:,kdx) + M3s(:,idxs(i)) / 3.0d0
+                        endif
+                        if (lmul(4)) then
+                            M4s(:,kdx) = M4s(:,kdx) + M4s(:,idxs(i)) / 3.0d0
+                        endif
+                        if (lmul(5)) then
+                            M5s(:,kdx) = M5s(:,kdx) + M5s(:,idxs(i)) / 3.0d0
+                        endif
+                        if (lpol(1)) then
+                            P1s(:,kdx) = P1s(:,kdx) + P1s(:,idxs(i)) / 3.0d0
+                        end if
                     end if
-                end do
-                if (lmul(0)) then
-                    M0s(:,kdx) = M0s(:,kdx) + M0s(:,idxs(i)) / 3.0d0
-                endif
-!                if (lmul(1)) then
-!                    M1s(:,kdx) = M1s(:,kdx) + M1s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(2)) then
-!                    M2s(:,kdx) = M2s(:,kdx) + M2s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(3)) then
-!                    M3s(:,kdx) = M3s(:,kdx) + M3s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(4)) then
-!                    M4s(:,kdx) = M4s(:,kdx) + M4s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lmul(5)) then
-!                    M5s(:,kdx) = M5s(:,kdx) + M5s(:,idxs(i)) / 3.0d0
-!                endif
-!                if (lpol(1)) then
-!                    P1s(:,kdx) = P1s(:,kdx) + P1s(:,idxs(i)) / 3.0d0
-!                end if
+                end if
+
                 if (lmul(0)) then
                     M0s(:,idxs(i)) = 0.0d0
                 endif
@@ -365,14 +378,37 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
                 if (lpol(1)) then
                     P1s(:,idxs(i)) = 0.0d0
                 end if
-                write(luout,'(/4x,a,i6)') 'Redistributing charges from site:',&
-                                          & idxs(i)
-                write(luout,'(4x,a,3i6)') 'to neighbouring sites:', idx, jdx,&
-                                          & kdx
-                write(luout,'(4x,a)') 'and removing all other parameters.'
+                if ((border_type == 'REDISC') .or. (border_type == 'REDIST')) then
+                    write(luout,'(/4x,a,i6)') 'Redistributing charges from site:',&
+                                              & idxs(i)
+                    if (nredist == 3) then
+                        write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
+                                                  & idx, jdx, kdx
+                    else if (nredist == 2) then
+                        write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
+                                                  & idx, jdx
+                    else if (nredist == 1) then
+                        write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
+                                                  & idx
+                    end if
+                    write(luout,'(4x,a)') 'and removing all other parameters.'
+                else if (border_type == 'REDISA') then
+                    write(luout,'(/4x,a,i6)') 'Redistributing parameters from site:',&
+                                              & idxs(i)
+                    if (nredist == 3) then
+                        write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
+                                                  & idx, jdx, kdx
+                    else if (nredist == 2) then
+                        write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
+                                                  & idx, jdx
+                    else if (nredist == 1) then
+                        write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
+                                                  & idx
+                    end if
+                end if
                 redists(idx) = .true.
-                redists(jdx) = .true.
-                redists(kdx) = .true.
+                if (nredist > 1) redists(jdx) = .true.
+                if (nredist > 2) redists(kdx) = .true.
             end do
             if (lmul(0)) then
                 write(luout,'(/6x,a)') ' Resulting monopoles: '
@@ -383,6 +419,68 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
                                                             & M0s(:,i)
                     end if
                 end do
+            end if
+            if (border_type == 'REDISA') then
+                if (lmul(0)) then
+                    write(luout,'(/6x,a)') ' Resulting dipoles: '
+                    write(luout,'(6x,a)') '--------------------'
+                    do i = 1, nsites
+                        if (redists(i)) then
+                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
+                                                                & M0s(:,i)
+                        end if
+                    end do
+                end if
+                if (lmul(0)) then
+                    write(luout,'(/6x,a)') ' Resulting quadrupoles: '
+                    write(luout,'(6x,a)') '------------------------'
+                    do i = 1, nsites
+                        if (redists(i)) then
+                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
+                                                                & M0s(:,i)
+                        end if
+                    end do
+                end if
+                if (lmul(0)) then
+                    write(luout,'(/6x,a)') ' Resulting octopoles: '
+                    write(luout,'(6x,a)') '----------------------'
+                    do i = 1, nsites
+                        if (redists(i)) then
+                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
+                                                                & M0s(:,i)
+                        end if
+                    end do
+                end if
+                if (lmul(0)) then
+                    write(luout,'(/6x,a)') ' Resulting hexadecapoles: '
+                    write(luout,'(6x,a)') '--------------------------'
+                    do i = 1, nsites
+                        if (redists(i)) then
+                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
+                                                                & M0s(:,i)
+                        end if
+                    end do
+                end if
+                if (lmul(0)) then
+                    write(luout,'(/6x,a)') ' Resulting ditriacontapoles: '
+                    write(luout,'(6x,a)') '-----------------------------'
+                    do i = 1, nsites
+                        if (redists(i)) then
+                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
+                                                                & M0s(:,i)
+                        end if
+                    end do
+                end if
+                if (lmul(0)) then
+                    write(luout,'(/6x,a)') ' Resulting monopoles: '
+                    write(luout,'(6x,a)') '----------------------'
+                    do i = 1, nsites
+                        if (redists(i)) then
+                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
+                                                                & M0s(:,i)
+                        end if
+                    end do
+                end if
             end if
             deallocate(redists)
         end if
@@ -475,14 +573,20 @@ subroutine pe_dalton_input(word, luinp, lupri)
             backspace(luinp)
             if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.& 
                & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
-                read(luinp,*) border_type, Rmin, auoraa
+                read(luinp,*) border_type, Rmin, auoraa, nredist
                 call chcase(border_type)
                 if ((trim(border_type) /= 'REMOVE') .and.&
-                   & (trim(border_type) /= 'REDIST')) then
+                   & (trim(border_type) /= 'REDIST') .and.&
+                   & (trim(border_type) /= 'REDISC') .and.&
+                   & (trim(border_type) /= 'REDISA')) then
                     stop 'ERROR: unknown handling of border sites!'
                 end if
                 call chcase(auoraa)
                 if (trim(auoraa) == 'AA') Rmin = Rmin * aa2au
+                if ((nredist > 3) .or. (nredist < 1)) then
+                    stop 'ERROR: classical sites cannot only be distributed to&
+                         & minimum one site and maximum three sites.'
+                end if
             end if
             pe_border = .true.
         ! damping interactions between inducible moments
