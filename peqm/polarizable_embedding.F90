@@ -472,7 +472,7 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
                         end if
                     end do
                 end if
-                if (lpol(0)) then
+                if (lpol(1)) then
                     write(luout,'(/6x,a)') ' Resulting polarizabilities: '
                     write(luout,'(6x,a)') '-----------------------------'
                     do i = 1, nsites
