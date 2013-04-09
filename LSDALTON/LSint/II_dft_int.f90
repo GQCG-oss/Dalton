@@ -413,6 +413,7 @@ TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
 REAL(REALK),intent(in) :: DFTHRI
 !> is it a GGA calc or a LDA calc
 LOGICAl,intent(in) :: DOGGA
+LOGICAl :: DOMETA = .FALSE. !Should be changed to input (perhaps integer 0 lda, 1 gga, 2 meta or something)
 !> shoould OpenMP be deactivated
 LOGICAL  :: noOMP
 !> do london derivative GAOs?
@@ -448,7 +449,7 @@ EXTERNAL CB
 !real(realk) :: GAO(MXBLLEN*NBAST*NTYPSO) 
 INTEGER :: NactBAS
 INTEGER,pointer :: SHELLBLOCKS(:,:),BLOCKS(:,:)
-real(realk),pointer :: RHOA(:,:),GRADA(:,:,:),WEIGHT(:)
+real(realk),pointer :: RHOA(:,:),GRADA(:,:,:),TAU(:,:),WEIGHT(:)
 real(realk),pointer :: COOR(:,:)
 real(realk),pointer :: ACTIVE_DMAT(:)
 real(realk),pointer :: GAO(:) 
@@ -481,7 +482,7 @@ ENDIF
 myBoxMemRequirement = BoxMemRequirement
 IF(.NOT.noOMP) call mem_dft_TurnONThread_Memory()
 !$OMP PARALLEL IF(.NOT.noOMP) PRIVATE(XX,NSHELLBLOCKS,SHELLBLOCKS,COOR,COOR_pt,WEIGHT,IPT,NCURLEN,&
-!$OMP ACTIVE_DMAT,BLOCKS,RHOA,GRADA,GAO,NLEN,NactBAS,INXACT,I,IDMAT,myDFTdata,WORK,WORKLENGTH,W1,&
+!$OMP ACTIVE_DMAT,BLOCKS,RHOA,GRADA,TAU,GAO,NLEN,NactBAS,INXACT,I,IDMAT,myDFTdata,WORK,WORKLENGTH,W1,&
 !$OMP W2,W3,W4,W5,W6,W7,W8,tid,nthreads,IDMAT1,IDMAT2,WORKLENGTH2) FIRSTPRIVATE(myBoxMemRequirement)& 
 !$OMP SHARED(ushells,CC,CCSTART,CCINDEX,CENT,Dmat,&
 !$OMP dogga,PRIEXPSTART,nsob,shellangmom,MMM,maxangmom,nstart,priexp,rhothr,spsize,spsize2,sphmat,&
@@ -501,6 +502,7 @@ call mem_dft_alloc(BLOCKS,2,MAXNSHELL)
 call mem_dft_alloc(INXACT,maxNactBAST)
 call mem_dft_alloc(RHOA,MXBLLEN,NDMAT)
 call mem_dft_alloc(GRADA,3,MXBLLEN,NDMAT)
+call mem_dft_alloc(TAU,MXBLLEN,NDMAT)
 call mem_dft_alloc(WEIGHT,NBUFLEN)
 call mem_dft_alloc(COOR,3,NBUFLEN)
 call mem_dft_alloc(ACTIVE_DMAT,maxNactBAST*maxNactBAST*NDMAT)
@@ -578,7 +580,20 @@ DO XX=1+tid,IT,nthreads
       !     GAO(:,:,11:20) contains third derivatives - if requested.
       !     After requested geometric derivatives, london related derivatives
       !     are placed.
-      IF(DOGGA) THEN
+      IF(DOMETA) THEN
+         W1 = 1; W2 = NactBAS*NactBAS                           !Dred(NactBas*NactBas)
+         W3 = NactBAS*NactBAS+1; W4 = NactBAS*NactBAS+NactBAS   !GAOGMX(NactBAS)
+         W5=  NactBAS*NactBAS+NactBAS+1
+         W6 = NactBAS*NactBAS+NactBAS+4*NCURLEN*NactBAS         !GAORED(NCURLEN,NactBAS,4)
+         W7 = NactBAS*NactBAS+NactBAS+4*NCURLEN*NactBAS+1       
+         W8 = NactBAS*NactBAS+NactBAS+8*NCURLEN*NactBAS         !TMP(NCURLEN,NactBAS)
+         CALL II_GETRHO_BLOCKED_META(LUPRI,ACTIVE_DMAT,NactBAS,GAO,NTYPSO,&
+              & NSHELLBLOCKS,MAXNSHELL,BLOCKS,NCURLEN,NDMAT,RHOA,GRADA,TAU,RHOTHR,MXBLLEN,WORK(W1:W2),&
+              & WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
+         ! computes rho_a and gradients of rho, Dmat is a density matrix
+         ! (it can be a total density and then one will get total density,
+         ! or it can be an alpha/beta density    assert(NTYPSO>=NRHO)
+      ELSE IF(DOGGA) THEN
          W1 = 1; W2 = NactBAS*NactBAS                           !Dred(NactBas*NactBas)
          W3 = NactBAS*NactBAS+1; W4 = NactBAS*NactBAS+NactBAS   !GAOGMX(NactBAS)
          W5=  NactBAS*NactBAS+NactBAS+1
@@ -621,7 +636,7 @@ DO XX=1+tid,IT,nthreads
        ENDDO
       ENDIF
       CALL CB(LUPRI,NCURLEN,NSHELLBLOCKS,BLOCKS(:,:),INXACT(:),NactBas,NBAST,NDMAT,ACTIVE_DMAT(:),NTYPSO,GAO(:),&
-           &RHOA(:,:),GRADA(:,:,:),MXBLLEN,COOR(:,IPT:IPT+NCURLEN-1),WEIGHT(IPT:IPT+NCURLEN-1),&
+           &RHOA(:,:),GRADA(:,:,:),TAU(:,:),MXBLLEN,COOR(:,IPT:IPT+NCURLEN-1),WEIGHT(IPT:IPT+NCURLEN-1),&
            &myDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
    ENDDO
 ENDDO
@@ -629,6 +644,7 @@ ENDDO
 !$OMP CRITICAL (freeDFTdatablock)
 call mem_dft_dealloc(RHOA)
 call mem_dft_dealloc(GRADA)
+call mem_dft_dealloc(TAU)
 call mem_dft_dealloc(WEIGHT)
 call mem_dft_dealloc(COOR)
 call mem_dft_dealloc(ACTIVE_DMAT)
@@ -1197,6 +1213,156 @@ ELSE
    ENDDO
 ENDIF
 END SUBROUTINE II_GETRHO_BLOCKED_GGA
+
+!> \brief determines the rho for a GGA type calc
+!> \author S. _eine
+!> \date 2013-03-27
+!>
+!>     computes       rho(r_i) = sum_ab X_a(r_i) X_b(r_i) D_ab
+!>               grad rho(r_i) = sum_ab (grad X_a(r_i) X_b(r_i) + X_a(r_i) grad  X_b(r_i)) D_ab
+!>                    tau(r_i) = sum_ab grad X_a(r_i) grad X_b(r_i) D_ab
+!>     i.e rho(r_i) where D_ab is a density matrix (it can be a total
+!>     density end then one will get total density, or it can be an
+!>     alpha/beta density.
+!>     assert(NTYPSO>=NRHO)
+!>
+SUBROUTINE II_GETRHO_BLOCKED_META(LUPRI,DMAT,NactBAS,GAO,NTYPSO,NBLOCKS,MAXNSHELL,BLOCKS,&
+     & NVCLEN,NDMAT,RHO,GRAD,TAU,RHOTHR,MXBLLEN,DRED,GAOGMX,GAORED,TMP)
+IMPLICIT NONE
+INTEGER,intent(in)     :: NactBAS,NVCLEN,NBLOCKS,NTYPSO,LUPRI,ndmat,MXBLLEN,MAXNSHELL!,nbast
+REAL(REALK),intent(in) :: DMAT(NactBAS,NactBAS,ndmat), GAO(NVCLEN,NactBAS,NTYPSO)
+INTEGER,intent(in)     :: BLOCKS(2,MAXNSHELL)
+REAL(REALK),intent(inout) :: RHO(MXBLLEN,NDMAT), GRAD(3,MXBLLEN,NDMAT), TAU(MXBLLEN,NDMAT)
+REAL(REALK),intent(inout) :: DRED(NactBAS*NactBAS)
+REAL(REALK),intent(inout) :: GAOGMX(NactBAS)
+REAL(REALK),intent(inout) :: GAORED(NVCLEN,NactBAS,4)
+REAL(REALK),intent(inout) :: TMP(NVCLEN,NactBAS,4)
+!
+REAL(REALK) :: GAOMAX,DMAX,RHOTHR
+INTEGER :: INXRED(NactBAS)
+INTEGER     :: IBL,ISTART,IBLEN,JBL,JSTART,JBLEN,IDX,JTOP,JDX
+INTEGER     :: K,I,J,NRED,JRED,IRED,idmat,offset,JEND,IEND
+
+! Set up maximum Gaussian AO elements
+GAOMAX = 0.0E0_realk
+DO IBL=1, NBLOCKS
+   DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
+      GAOGMX(I) = 0.0E0_realk
+      DO J=1,4
+         DO K = 1, NVCLEN
+            GAOMAX = MAX(GAOMAX,ABS(GAO(K,I,J)))
+         ENDDO
+      ENDDO
+      GAOGMX(I) = MAX(GAOGMX(I),GAOMAX)
+   ENDDO
+ENDDO
+! Set up maximum density-matrix elements
+DMAX = 0.0E0_realk
+DO IDMAT=1,NDMAT
+ DO JBL=1, NBLOCKS
+  DO IBL=1, NBLOCKS
+    DO J = BLOCKS(1,JBL),BLOCKS(2,JBL)
+     DO I = BLOCKS(1,IBL),BLOCKS(2,IBL)
+      DMAX = MAX(DMAX,ABS(DMAT(I,J,IDMAT)))
+     ENDDO
+    ENDDO
+  ENDDO
+ ENDDO
+ENDDO
+!Set up reduced Gaussian AO's
+NRED = 0
+DO IBL=1, NBLOCKS
+   DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
+      IF (GAOGMX(I)*GAOMAX*DMAX.GT.RHOTHR) THEN
+         NRED = NRED + 1
+         INXRED(NRED) = I
+         DO K = 1, NVCLEN
+            GAORED(K,NRED,1) = GAO(K,I,1)
+            GAORED(K,NRED,2) = GAO(K,I,2)
+            GAORED(K,NRED,3) = GAO(K,I,3)
+            GAORED(K,NRED,4) = GAO(K,I,4)
+         ENDDO
+      ENDIF
+   ENDDO
+ENDDO
+IF (NRED.GT. 0) THEN
+   DO IDMAT=1,NDMAT
+      IF(NRED.EQ.NactBAS)THEN 
+         !no screening
+         !First half-contraction of Gaussian AO with density-matrix
+         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+              &     DMAT(1:NRED,1:NRED,IDMAT),NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+      ELSE
+         !Set up reduced density-matrix
+         DO JRED=1,NRED
+            J = INXRED(JRED)
+            offset = (JRED-1)*NRED
+            DO IRED=1,NRED
+               I = INXRED(IRED)
+               DRED(IRED+offset) = DMAT(I,J,IDMAT)
+            ENDDO
+         ENDDO
+         !First half-contraction of Gaussian AO with density-matrix
+         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,1),NVCLEN,&
+              &     DRED,NRED,0.0E0_realk,TMP(:,:,1),NVCLEN)
+         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,2),NVCLEN,&
+              &     DRED,NRED,0.0E0_realk,TMP(:,:,2),NVCLEN)
+         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,3),NVCLEN,&
+              &     DRED,NRED,0.0E0_realk,TMP(:,:,3),NVCLEN)
+         CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED(:,:,4),NVCLEN,&
+              &     DRED,NRED,0.0E0_realk,TMP(:,:,4),NVCLEN)
+      ENDIF
+      !Second half-contraction
+      DO K = 1, NVCLEN
+         RHO(K,IDMAT)    = GAORED(K,1,1)*TMP(K,1,1)
+         GRAD(1,K,IDMAT) = 2*GAORED(K,1,2)*TMP(K,1,1)
+         GRAD(2,K,IDMAT) = 2*GAORED(K,1,3)*TMP(K,1,1)
+         GRAD(3,K,IDMAT) = 2*GAORED(K,1,4)*TMP(K,1,1)
+         TAU(K,IDMAT)    = GAORED(K,1,2)*TMP(K,1,2)+GAORED(K,1,3)*TMP(K,1,3)+GAORED(K,1,4)*TMP(K,1,4)
+      END DO
+      DO I = 2, NRED
+         DO K = 1, NVCLEN
+            RHO(K,IDMAT)    = RHO(K,IDMAT)    +   GAORED(K,I,1)*TMP(K,I,1)
+            GRAD(1,K,IDMAT) = GRAD(1,K,IDMAT) + 2*GAORED(K,I,2)*TMP(K,I,1)
+            GRAD(2,K,IDMAT) = GRAD(2,K,IDMAT) + 2*GAORED(K,I,3)*TMP(K,I,1)
+            GRAD(3,K,IDMAT) = GRAD(3,K,IDMAT) + 2*GAORED(K,I,4)*TMP(K,I,1)
+            TAU(K,IDMAT)    = TAU(K,IDMAT)    + GAORED(K,I,2)*TMP(K,I,2) + GAORED(K,I,3)*TMP(K,I,3) + GAORED(K,I,4)*TMP(K,I,4)
+         END DO
+      END DO
+   ENDDO
+   !Hack Severeal functionals does not handle a zero density - so
+   !     we set these values explicitly to some small value.
+   !     Should instead skip these contributions.
+   DO IDMAT=1,NDMAT   
+      DO K = 1, NVCLEN
+         IF (ABS(RHO(K,IDMAT)).LE. 1.0E-20_realk) RHO(K,IDMAT) = 1.0E-20_realk
+         IF (ABS(GRAD(1,K,IDMAT)).LE. 1.0E-20_realk) GRAD(1,K,IDMAT) = 1.0E-20_realk
+         IF (ABS(GRAD(2,K,IDMAT)).LE. 1.0E-20_realk) GRAD(2,K,IDMAT) = 1.0E-20_realk
+         IF (ABS(GRAD(3,K,IDMAT)).LE. 1.0E-20_realk) GRAD(3,K,IDMAT) = 1.0E-20_realk
+         IF (ABS(TAU(K,IDMAT)).LE. 1.0E-20_realk) TAU(K,IDMAT) = 1.0E-20_realk
+      END DO
+   ENDDO
+ELSE
+   !Hack Severeal functionals does not handle a zero density - so
+   !     we set these values explicitly to some small value.
+   !     Should instead skip these contributions.
+   DO IDMAT=1,NDMAT
+      DO K = 1, NVCLEN
+         RHO(K,IDMAT) = 1.0E-20_realk
+         GRAD(1,K,IDMAT) = 1.0E-20_realk
+         GRAD(2,K,IDMAT) = 1.0E-20_realk
+         GRAD(3,K,IDMAT) = 1.0E-20_realk
+         TAU(K,IDMAT) = 1.0E-20_realk
+      END DO
+   ENDDO
+ENDIF
+END SUBROUTINE II_GETRHO_BLOCKED_META
 
 !> \brief evaluates the pure GAO(gaussian atomic orbitals) , so no derivatives
 !> \author T. Kjaergaard

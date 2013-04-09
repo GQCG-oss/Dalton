@@ -211,6 +211,12 @@ group.add_option('--openrsp',
                  default=False,
                  help='enable OpenRSP library [default: %default]',
                  metavar='PATH')
+group.add_option('--xcfun',
+                 action='store_true',
+                 dest='xcfun',
+                 default=False,
+                 help='enable XCFUN external library [default: %default]',
+                 metavar='PATH')
 group.add_option('--interest',
                  type='string',
                  action='store',
@@ -326,6 +332,8 @@ def gen_cmake_command():
         command += ' -DENABLE_OPENRSP=1'
         command += ' -DENABLE_GIT_SUBMODULES=1'
         command += ' -DENABLE_INTEREST=1'
+    if options.xcfun:
+        command += ' -DENABLE_XCFUN=1'
     if options.install:
         command += ' -DCMAKE_INSTALL_PREFIX=' + options.install
     if options.scratch:

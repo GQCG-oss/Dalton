@@ -130,10 +130,7 @@ contains
     !> MP2 density for fragment
     type(mp2dens), intent(inout) :: dens
 
-    nullify(dens%SF_atomlist)
-    nullify(dens%virtidx)
-    nullify(dens%occidx)
-    nullify(dens%occtotidx)
+    nullify(dens%EOSatoms)
     nullify(dens%basis_idx)
     nullify(dens%Y)
     nullify(dens%X)
@@ -163,14 +160,15 @@ contains
     ! Check if it is a pair fragment
     ! ******************************
     atom1 = fragment%atomic_number
-    atom2 = fragment%atomic_number2
-    if(atom2==0) then  ! single fragment
-       is_pair=.false.
-       write(DECinfo%output,*) 'Initiating MP2 gradient structure for single fragment ', fragment%atomic_number
-    else
+    if(fragment%nEOSatoms==2) then  ! pair fragment
        is_pair=.true.
        write(DECinfo%output,*) 'Initiating MP2 gradient structure for pair fragment ', &
-            & fragment%atomic_number, fragment%atomic_number2
+            & fragment%EOSatoms
+       atom2 = fragment%EOSatoms(2)
+    else
+       is_pair=.false.
+       write(DECinfo%output,*) 'Initiating MP2 gradient structure for single fragment ', fragment%atomic_number
+       atom2 = 0
     end if
 
 
@@ -269,15 +267,15 @@ contains
 
 
     implicit none
-    !> Atomic (super) fragment
+    !> Atomic fragment
     type(ccatom),intent(inout) :: MyFragment
     !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
     type(array4),intent(inout) :: t2occ  ! ordered as (C,I,J,D) at output
     !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
     type(array4),intent(in) :: t2virt
-    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in cc_ao_contractions]
+    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOOO
-    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in cc_ao_contractions]
+    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOVV
     !> (C I | D J) integrals stored as (C,I,D,J)   [using occ partitioning]
     type(array4),intent(inout) :: VOVOocc   ! ordered as (C,I,J,D) at output
@@ -292,10 +290,7 @@ contains
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
 
-    if(.not. MyFragment%SF) then
-       call lsquit('single_calculate_mp2gradient_driver: Only implemented for super fragments!',DECinfo%output)
-    end if
-    write(DECinfo%output,*) 'Calculating MP2 gradient for super fragment', MyFragment%atomic_number
+    write(DECinfo%output,*) 'Calculating MP2 gradient for fragment', MyFragment%atomic_number
 
     ! Init MP2 gradient structure
     call init_mp2grad(MyFragment,grad)
@@ -346,7 +341,7 @@ contains
 
     implicit none
 
-    !> Atomic (super) fragment
+    !> Atomic fragment
     type(ccatom),intent(inout) :: MyFragment
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: ThetaOCC
@@ -470,7 +465,7 @@ contains
     implicit none
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: ThetaOCC
-    !> Atomic (super) fragment
+    !> Atomic fragment
     type(ccatom),intent(inout) :: MyFragment
     !> Structure containing MP2 gradient info, including Ltheta.
     type(mp2grad), intent(inout) :: grad
@@ -663,19 +658,19 @@ contains
 
 
     implicit none
-    !> Super Fragment 1 in the pair fragment
+    !> Fragment 1 in the pair fragment
     type(ccatom),intent(inout) :: Fragment1
-    !> Super Fragment 2 in the pair fragment
+    !> Fragment 2 in the pair fragment
     type(ccatom),intent(inout) :: Fragment2
-    !> Super Pair fragment
+    !> Pair fragment
     type(ccatom),intent(inout) :: pairfragment
     !> t2 amplitudes t_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
     type(array4),intent(in) :: t2occ
     !> t2 amplitudes t_{KL}^{AB}, only for EOS orbitals using virtual partitioning, order: (A,K,B,L)
     type(array4),intent(in) :: t2virt
-    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in cc_ao_contractions]
+    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOOO
-    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in cc_ao_contractions]
+    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOVV
     !> (C I | D J) integrals stored as (C,I,D,J)   [using occ partitioning]
     type(array4),intent(inout) :: VOVOocc
@@ -689,11 +684,8 @@ contains
     call LSTIMER('START',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
-    if(.not. PairFragment%SF) then
-       call lsquit('pair_calculate_mp2gradient: Only implemented for super fragments!',DECinfo%output)
-    end if
-    write(DECinfo%output,*) 'Calculating MP2 gradient for super pair fragment', &
-         & PairFragment%atomic_number, PairFragment%atomic_number2
+    write(DECinfo%output,*) 'Calculating MP2 gradient for pair fragment', &
+         & PairFragment%EOSatoms
 
     ! Init MP2 gradient structure
     call init_mp2grad(PairFragment,grad)
@@ -739,11 +731,11 @@ contains
 
     implicit none
 
-    !> Super Fragment 1 in the pair fragment
+    !> Fragment 1 in the pair fragment
     type(ccatom),intent(inout) :: Fragment1
-    !> Super Fragment 2 in the pair fragment
+    !> Fragment 2 in the pair fragment
     type(ccatom),intent(inout) :: Fragment2
-    !> Super Pair fragment
+    !> Pair fragment
     type(ccatom),intent(inout) :: pairfragment
     !> Theta array, only for EOS orbitals using occupied partitioning, order:  (C,I,D,J)
     type(array4),intent(inout) :: ThetaOCC       ! ordered as (C,I,J,D) at output
@@ -770,7 +762,7 @@ contains
     noccAOS = Thetavirt%dims(2) ! number of occupied AOS orbitals
     nvirtEOS = Thetavirt%dims(1) ! number of virtual EOS orbitals
     nvirtAOS = Thetaocc%dims(1) ! number of virtual AOS orbitals
-    ! number of occupied core+valence orbitals (only different from noccAOS for frozen approx)
+    ! number of occupied core+valence orbitals (only different from noccAOS for frozen core approx)
     nocctot = VOVOvirt%dims(4)
     ! Just in case, zero matrices in grad structure
     grad%Phioo = 0e0_realk
@@ -956,7 +948,7 @@ contains
     implicit none
     !> Theta array Theta_{IJ}^{CD}, only for EOS orbitals using occupied partitioning, order:  (C,I,J,D)
     type(array4),intent(in) :: ThetaOCC
-    !> Pair (super) fragment
+    !> Pair fragment
     type(ccatom),intent(inout) :: PairFragment
     !> Number of occupied EOS orbitals
     integer,intent(in) :: noccEOS
@@ -1900,7 +1892,7 @@ contains
 
 
   !> \brief Write intermediates for full MP2 gradient structure and
-  !> super fragment energies to file supergrad.info for easy restart.
+  !> fragment energies to file mp2grad.info for easy restart.
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine write_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
@@ -1910,7 +1902,7 @@ contains
     integer,intent(in) :: natoms
     !> Fragment energies (see ccatom type def)
     real(realk),dimension(natoms,natoms,ndecenergies),intent(in) :: FragEnergies
-    !> Job list of super fragments
+    !> Job list of fragments
     type(joblist),intent(in) :: jobs
     !> Full MP2 gradient structure
     type(fullmp2grad),intent(in) :: fullgrad
@@ -1920,19 +1912,19 @@ contains
 
     ! Init stuff
     funit = -1
-    FileName='supergrad.info'
+    FileName='mp2grad.info'
 
     ! backup exisiting file
     inquire(file=FileName,exist=file_exist)
     if(file_exist) then
 #ifdef SYS_AIX
-       call rename('supergrad.info\0','supergrad.backup\0')
+       call rename('mp2grad.info\0','mp2grad.backup\0')
 #else
-       call rename('supergrad.info','supergrad.backup')
+       call rename('mp2grad.info','mp2grad.backup')
 #endif
     end if
 
-    ! Create a new file supergrad.info
+    ! Create a new file mp2grad.info
     call lsopen(funit,FileName,'NEW','UNFORMATTED')
 
 
@@ -1961,7 +1953,7 @@ contains
 
 
   !> \brief Read intermediates for full MP2 gradient structure and
-  !> super fragment energies from file supergrad.info for easy restart.
+  !> fragment energies from file mp2grad.info for easy restart.
   !> \author Kasper Kristensen
   !> \date June 2012
   subroutine read_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
@@ -1971,7 +1963,7 @@ contains
     integer,intent(in) :: natoms
     !> Fragment energies (see ccatom type def)
     real(realk),dimension(natoms,natoms,ndecenergies),intent(inout) :: FragEnergies
-    !> Job list of super fragments
+    !> Job list of fragments
     type(joblist),intent(inout) :: jobs
     !> Full MP2 gradient structure
     !> (the values are changed here, but it is assumed that the matrices have been initialized)
@@ -1982,16 +1974,16 @@ contains
 
     ! Init stuff
     funit = -1
-    FileName='supergrad.info'
+    FileName='mp2grad.info'
 
     ! Sanity check
     inquire(file=FileName,exist=file_exist)
     if(.not. file_exist) then
        call lsquit('read_gradient_and_energies_for_restart: &
-            & File supergrad.info does not exist!',-1)
+            & File mp2grad.info does not exist!',-1)
     end if
 
-    ! Open file supergrad.info
+    ! Open file mp2grad.info
     call lsopen(funit,FileName,'OLD','UNFORMATTED')
 
 
@@ -2147,11 +2139,11 @@ contains
     dens%nocctot = fragment%nocctot
     dens%energy = fragment%energies(1)
     dens%pairdist = 0E0_realk
-    dens%SF_nfrags = fragment%SF_nfrags
+    dens%nEOSatoms = fragment%nEOSatoms
 
-    call mem_alloc(dens%SF_atomlist,dens%SF_nfrags)
-    do i=1,dens%SF_nfrags
-       dens%SF_atomlist(i) = fragment%SF_atomlist(i)
+    call mem_alloc(dens%EOSatoms,dens%nEOSatoms)
+    do i=1,dens%nEOSatoms
+       dens%EOSatoms(i) = fragment%EOSatoms(i)
     end do
 
     ! Sanity check
@@ -2162,41 +2154,6 @@ contains
             & has not been initialized before initiating the density',-1)
     end if
 
-
-    ! Keep track of virtual AOS indices
-    ! *********************************
-    call mem_alloc(dens%virtidx,dens%nvirt)
-    do i=1,dens%nvirt
-       dens%virtidx(i) = fragment%unoccAOSidx(i)
-    end do
-
-
-    ! Keep track of occupied AOS indices
-    ! **********************************
-    call mem_alloc(dens%occidx,dens%nocc)
-    do i=1,dens%nocc
-       dens%occidx(i) = fragment%occAOSidx(i)
-    end do
-
-    ! Occupied AOS indices: core+valence
-    ! **********************************
-    ! This is only different from dens%occidx if the frozen core approx is used!
-    call mem_alloc(dens%occtotidx,dens%nocctot)
-    if(DECinfo%frozencore) then  
-
-       ! Copy core indices
-       do i=1,Fragment%ncore
-          dens%occtotidx(i) = fragment%coreidx(i)
-       end do
-       ! Copy valence indices
-       do i=1,dens%nocc
-          dens%occtotidx(Fragment%ncore+i) = fragment%occAOSidx(i)
-       end do
-
-    else
-       ! just copy occ indices which already include both core and valence
-       dens%occtotidx = dens%occidx
-    end if
 
     ! Atomic orbital indices
     ! **********************
@@ -2282,10 +2239,7 @@ contains
     dens%pairdist=0E0_realk
 
     ! Deallocate vectors/arrays
-    if(associated(dens%SF_atomlist)) call mem_dealloc(dens%SF_atomlist)
-    if(associated(dens%virtidx)) call mem_dealloc(dens%virtidx)
-    if(associated(dens%occidx)) call mem_dealloc(dens%occidx)
-    if(associated(dens%occtotidx)) call mem_dealloc(dens%occtotidx)
+    if(associated(dens%EOSatoms)) call mem_dealloc(dens%EOSatoms)
     if(associated(dens%basis_idx)) call mem_dealloc(dens%basis_idx)
     if(associated(dens%Y)) call mem_dealloc(dens%Y)
     if(associated(dens%X)) call mem_dealloc(dens%X)
@@ -2315,9 +2269,9 @@ contains
     type(array4),intent(in) :: ThetaOCC
     !> Theta array, only for EOS orbitals using virtual partitioning, order:  (A,K,B,L)
     type(array4),intent(in) :: ThetaVIRT
-    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in cc_ao_contractions]
+    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOOO
-    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in cc_ao_contractions]
+    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOVV
     !> MP2 density matrix contribution from given single fragment
     type(mp2dens),intent(inout) :: dens
@@ -2461,11 +2415,11 @@ contains
 
 
     implicit none
-    !> Super Fragment 1 in the pair fragment
+    !> Fragment 1 in the pair fragment
     type(ccatom),intent(inout) :: Fragment1
-    !> Super Fragment 2 in the pair fragment
+    !> Fragment 2 in the pair fragment
     type(ccatom),intent(inout) :: Fragment2
-    !> Atomic (super) pairfragment
+    !> Pair fragment
     type(ccatom),intent(inout) :: pairfragment
     !> t2 amplitudes, only for EOS orbitals using occupied partitioning, order:  (A,I,B,J)
     type(array4),intent(in) :: t2occ
@@ -2475,9 +2429,9 @@ contains
     type(array4),intent(inout) :: ThetaOCC
     !> Theta array, only for EOS orbitals using virtual partitioning, order:  (A,I,B,J)
     type(array4),intent(in) :: ThetaVIRT
-    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in cc_ao_contractions]
+    !> (C I | J L) integrals stored as (C,I,J,L)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOOO
-    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in cc_ao_contractions]
+    !> (B K | A C) integrals stored as (B,K,A,C)    [see index conventions in mp2.f90]
     type(array4),intent(in) :: VOVV
     !> MP2 density matrix contribution from given pair fragment
     type(mp2dens),intent(inout) :: dens
@@ -3342,6 +3296,7 @@ call mem_TurnOffThread_Memory()
     end if
 
     if(DECinfo%ccModel /= 1) then
+       print *, 'CC model: ', DECinfo%ccModel
        call lsquit('dec_solve_kappabar_equation:&
             & kappabar multiplier equation is only implemented for MP2',-1)
     end if
@@ -4327,8 +4282,6 @@ call mem_TurnOffThread_Memory()
     type(ccatom),intent(in) :: fragment
     !> MP2 gradient structure for fragment
     type(mp2grad), intent(inout) :: grad
-    integer :: nocc,nvirt,nbasis,i,nocctot
-    real(realk),pointer :: Cocctot(:,:)
 
     ! Frozen core requires special treatment of core orbitals
     if(DECinfo%frozencore) then
@@ -4355,7 +4308,7 @@ call mem_TurnOffThread_Memory()
     !> virtual orbitals, and basis functions
     integer,intent(in) :: ncore,nval,nvirt,nbasis
     !> Occupied core MO coefficients
-    real(realk),intent(in),optional :: Ccore(nbasis,ncore)
+    real(realk),intent(in) :: Ccore(nbasis,ncore)
     !> Occupied valence MO coefficients
     real(realk),intent(in) :: Cval(nbasis,nval)
     !> Virtual MO coefficients
@@ -4470,28 +4423,20 @@ call mem_TurnOffThread_Memory()
     !> Number of occupied orbitals, virtual orbitals, and basis functions
     integer,intent(in) :: nocc,nvirt,nbasis
     !> Overlap matrix
-    real(realk),dimension(nbasis,nbasis),intent(in) :: S(nbasis,nbasis)
+    real(realk),dimension(nbasis,nbasis),intent(in) :: S
     !> Occupied MO coefficients
-    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc(nbasis,nocc)
+    real(realk),dimension(nbasis,nocc),intent(in) :: Cocc
     !> Virtual MO coefficients
-    real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt(nbasis,nvirt)
+    real(realk),dimension(nbasis,nvirt),intent(in) :: Cvirt
     !> Phi matrix in AO basis
-    real(realk),dimension(nbasis,nbasis),intent(in) :: PhiAO(nbasis,nbasis)
+    real(realk),dimension(nbasis,nbasis),intent(in) :: PhiAO
     !> Virt-occ block of Phi matrix in MO basis
-    real(realk),dimension(nvirt,nocc),intent(inout) :: Phivo(nvirt,nocc)
+    real(realk),dimension(nvirt,nocc),intent(inout) :: Phivo
     !> Occ-virt block of Phi matrix in MO basis
-    real(realk),dimension(nocc,nvirt),intent(inout) :: Phiov(nocc,nvirt)
+    real(realk),dimension(nocc,nvirt),intent(inout) :: Phiov
     !> Occ-occ block of Phi matrix (only for frozen core)
-    real(realk),dimension(nocc,nocc),intent(inout),optional :: Phioo(nocc,nocc)
+    real(realk),dimension(nocc,nocc),intent(inout) :: Phioo
     real(realk),pointer :: S_PhiAO_S(:,:)
-
-    ! Sanity check
-    if(DECinfo%frozencore) then
-       if(.not. present(Phioo)) then
-          call lsquit('get_Phi_MO_blocks_from_AO : &
-               & Phioo must be present for frozen core!',-1)
-       end if
-    end if
 
 
     ! Phi in AO and MO bases are related as follows:
@@ -4524,12 +4469,8 @@ call mem_TurnOffThread_Memory()
     ! Phiov = Cocc^T (S PhiAO S) Cvirt
     call dec_diff_basis_transform1(nbasis,nocc,nvirt,Cocc,Cvirt,S_PhiAO_S,Phiov)
 
-    if(DECinfo%frozencore) then
-
-       ! Phioo = Cocc^T (S PhiAO S) Cocc
-       call dec_simple_basis_transform1(nbasis,nocc,Cocc,S_PhiAO_S,Phioo)
-
-    end if
+    ! Phioo = Cocc^T (S PhiAO S) Cocc
+    call dec_simple_basis_transform1(nbasis,nocc,Cocc,S_PhiAO_S,Phioo)
 
     call mem_dealloc(S_PhiAO_S)
 
@@ -4577,17 +4518,10 @@ call mem_TurnOffThread_Memory()
     ! Get MO blocks for Phi matrix in simple fortran form
     call mem_alloc(Phivo_simple,nvirt,nocc)
     call mem_alloc(Phiov_simple,nocc,nvirt)
-    if(DECinfo%frozencore) then
-       call mem_alloc(Phioo_simple,nocc,nocc)
-       call get_Phi_MO_blocks_from_AO_simple(nbasis,nocc,nvirt,MyMolecule%overlap,&
-            & MyMolecule%ypo,MyMolecule%ypv,fullgrad%Phi,&
-            & Phivo_simple,Phiov_simple,Phioo=Phioo_simple)
-    else
-       call get_Phi_MO_blocks_from_AO_simple(nbasis,nocc,nvirt,MyMolecule%overlap,&
-            & MyMolecule%ypo,MyMolecule%ypv,fullgrad%Phi,&
-            & Phivo_simple,Phiov_simple)
-    end if
-
+    call mem_alloc(Phioo_simple,nocc,nocc)
+    call get_Phi_MO_blocks_from_AO_simple(nbasis,nocc,nvirt,MyMolecule%overlap,&
+         & MyMolecule%ypo,MyMolecule%ypv,fullgrad%Phi,&
+         & Phivo_simple,Phiov_simple,Phioo_simple)
 
     ! Init and convert to type(matrix) form
     call mat_init(Phivo,nvirt,nocc)
@@ -4601,8 +4535,8 @@ call mem_TurnOffThread_Memory()
     if(DECinfo%frozencore) then
        call mat_init(Phioo,nocc,nocc)
        call mat_set_from_full(Phioo_simple, 1.0_realk, Phioo)
-       call mem_dealloc(Phioo_simple)
     end if
+    call mem_dealloc(Phioo_simple)
 
   end subroutine get_Phi_MO_blocks
 

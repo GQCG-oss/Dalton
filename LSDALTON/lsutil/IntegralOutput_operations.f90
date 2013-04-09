@@ -27,6 +27,7 @@ IntOut%ndim(4) = 0
 IntOut%ndim(5) = 0
 IntOut%memdistResultTensor = .FALSE.
 IntOut%doGRAD = .FALSE.
+IntOut%RealGabMatrix = .FALSE.
 END SUBROUTINE nullifyIntegralOutput
 
 !> \brief set the dimensions of the integral output structure
@@ -50,6 +51,7 @@ IntOut%decpackedK = .FALSE.
 call mem_alloc(IntOut%postprocess,dim5)
 IntOut%postprocess = 0
 call initIntegralOutputDims1(IntOut,dim1,dim2,dim3,dim4,dim5)
+IntOut%RealGabMatrix = .FALSE.
 
 END SUBROUTINE initIntegralOutputDims
 

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 
-project(LSDALTON Fortran C)
+project(LSDALTON Fortran C CXX)
 
 # set version
 set(VERSION_MAJOR 2011)
@@ -57,6 +57,7 @@ option(ENABLE_PROFILING      "Enable profiling"              OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
 option(ENABLE_INTERNAL_MATH  "Enable internal math library implementation"  OFF)
+option(ENABLE_XCFUN          "Enable XCFUN"                  OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
 option(ENABLE_MPI32          "Enable 32 bit integer MPI lib workaround" OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
@@ -64,7 +65,6 @@ option(ENABLE_MKLFLAG        "Enable MKL FLAG"               OFF)
 option(ENABLE_INTEREST       "Enable interest integrals"     OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
 option(ENABLE_OPENRSP        "Enable OpenRSP module"         OFF)
-option(ENABLE_XCFUN          "Enable XCFun library"          OFF)
 option(ENABLE_UTILITIES      "Enable utilities"              OFF)
 option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
 option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"           OFF)
@@ -106,14 +106,17 @@ endif()
 include(Archs)
 include(Sources)
 include(Compilers)
+include(ConfigExternal)
 
 #add_subdirectory(LSint)
-
 set(LIBS)
-
+if(ENABLE_XCFUN)
+	set(LIBS ${LIBS} ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a)
+#	add_subdirectory(xcfun_host)
+	add_definitions(-DVAR_XCFUN)
+endif()
 
 if(ENABLE_OPENRSP)
-    include(ConfigExternal)
 	set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
 	add_definitions(-DBUILD_GEN1INT)
 	set(CMAKE_Fortran_MODULE_DIRECTORY
@@ -366,6 +369,28 @@ target_link_libraries(lsutillib lsutiltypelib_common)
 add_dependencies(lsutillib generate_revinfo)
 add_dependencies(lsutillib generate_compinfo)
 
+add_library(
+    xcfun_interface
+    xcfun_host/xcfun_host.F90
+    )
+
+set(PARENT_DEFINITIONS "-DVAR_LSDALTON")
+
+set(ExternalProjectCMakeArgs
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+    -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    -DPARENT_INCLUDE_DIR=${PROJECT_SOURCE_DIR}/include
+    -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+    -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+    )
+
+target_link_libraries(xcfun_interface lsutillib)
+if(ENABLE_XCFUN)
+	add_external(xcfun)
+	add_dependencies(xcfun_interface xcfun)
+endif()
 
 if(ENABLE_INTEREST)
         add_definitions(-DVAR_INTEREST)
@@ -373,7 +398,7 @@ if(ENABLE_INTEREST)
 		interestlib
     		${INTERESTLIB_SOURCES}
 		)
-	target_link_libraries(interestlib lsutillib)
+		target_link_libraries(interestlib xcfun_interface)
 endif()
 
 add_library(
@@ -381,7 +406,7 @@ add_library(
     ${FMM_SOURCES}
     ${FMM_C_SOURCES}
     )
-target_link_libraries(fmmlib lsutillib)
+	target_link_libraries(fmmlib xcfun_interface)
 if(ENABLE_INTEREST)
 target_link_libraries(fmmlib interestlib)
 endif()
@@ -477,6 +502,7 @@ if(ENABLE_OPENRSP)
 	add_dependencies(gen1int_interface matrixolib)
 	add_dependencies(gen1int_interface matrixulib)
 	add_dependencies(gen1int_interface lsutiltypelib_common)
+	add_dependencies(lsintlib gen1int)
 	add_dependencies(gen1int_interface lsintlib)
 	add_dependencies(linearslib gen1int_interface)
 	add_dependencies(lsdaltonmain gen1int_interface)
@@ -542,6 +568,7 @@ else()
     )
 endif()
 
+
 MERGE_STATIC_LIBS(
     lsdalton
     lsutillib_precision
@@ -553,6 +580,7 @@ MERGE_STATIC_LIBS(
     lsutiltypelib_common
     lsutillib
     fmmlib
+    xcfun_interface
     dftfunclib
     lsint
     pbclib

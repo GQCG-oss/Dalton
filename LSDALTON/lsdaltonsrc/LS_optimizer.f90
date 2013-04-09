@@ -1175,8 +1175,8 @@ Endif ! Optimization
           !
           ! Special case for dec and dynamical thresholding
           if( DECinfo%dodec) then
-             write(lupri,'(a,i4,2g16.6)') '1. DEC STAT: FOT level, Eerr, Ediff', &
-                  & DECinfo%FOTlevel,Eerr,abs(optinfo%energyOld-E)
+             write(lupri,'(a,i4,2g16.6,g22.12)') '1. DEC STAT: FOT level, Eerr, Ediff, E', &
+                  & DECinfo%FOTlevel,Eerr,abs(optinfo%energyOld-E),E
              if( Eerr.GT.abs(optinfo%energyOld-E) ) then
                 Egeodiff = abs(optinfo%energyOld-E)
                 Eerrsave = Eerr
@@ -1208,8 +1208,8 @@ Endif ! Optimization
           FAILED = .FALSE.
           ! Special case for dec and dynamical thresholding
           if( DECinfo%dodec) then
-             write(lupri,'(a,i4,2g16.6)') '2. DEC STAT: FOT level, Eerr, Ediff', &
-                  & DECinfo%FOTlevel,Eerr,abs(optinfo%energyOld-E)
+             write(lupri,'(a,i4,2g16.6,g22.12)') '2. DEC STAT: FOT level, Eerr, Ediff, E', &
+                  & DECinfo%FOTlevel,Eerr,abs(optinfo%energyOld-E),E
              if( Eerr.GT.abs(optinfo%energyOld-E) ) then
                 Egeodiff = abs(optinfo%energyOld-E)
                 Eerrsave = Eerr

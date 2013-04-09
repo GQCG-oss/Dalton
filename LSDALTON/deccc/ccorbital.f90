@@ -108,12 +108,9 @@ contains
     call print_orbital_info(mylsitem,nocc,natoms,nunocc,OccOrbitals,UnoccOrbitals)
 
 
-    ! For Lagrangian scheme, check that assigment is meaningful
-    if(DECinfo%Lagrangian) then
-       call orbital_check_for_lagrangian(natoms,nocc,nunocc,OccOrbitals,&
-            & UnoccOrbitals,MyMolecule)
-    end if
-
+    ! Check that assigment is meaningful
+    call dec_orbital_sanity_check(natoms,nocc,nunocc,OccOrbitals,&
+         & UnoccOrbitals,MyMolecule)
 
     ! Write orbitals to file
     call write_DECorbitals_to_file(nocc,nunocc,&
@@ -2103,14 +2100,14 @@ contains
 
 
 
-  !> \brief The Lagrangian scheme only works if for each atom either zero occupied AND zero virtual
-  !> orbital are assigned - or if nonzero occupied AND nonzero virtual orbitals are assigned.
+  !> \brief The DEC scheme only works if for each atom either zero occupied AND zero virtual
+  !> orbitals are assigned - or if nonzero occupied AND nonzero virtual orbitals are assigned.
   !> If this is not the case, the system under consideration is presumably a debug molecule
   !> and we quit here, rather than encountering uninitialized pointers later on...
   !> all atoms in the molecule.
   !> \author Kasper Kristensen
   !> \date December 2011
-  subroutine orbital_check_for_lagrangian(natoms,nocc,nunocc,OccOrbitals,&
+  subroutine dec_orbital_sanity_check(natoms,nocc,nunocc,OccOrbitals,&
        & UnoccOrbitals,MyMolecule)
 
     implicit none
@@ -2154,13 +2151,13 @@ contains
           write(DECinfo%output,*) 'Atom = ',i
           write(DECinfo%output,*) 'Number of occupied orbitals   assigned = ', nocc_per_atom(i)
           write(DECinfo%output,*) 'Number of unoccupied orbitals assigned = ', nunocc_per_atom(i)
-          call lsquit('orbital_check_for_lagrangian: Orbital assigment is inconsistent &
-               & with Lagrangian scheme',DECinfo%output)
+          call lsquit('Orbital assigment is inconsistent &
+               & with DEC scheme',DECinfo%output)
        end if
     end do
 
 
-  end subroutine orbital_check_for_lagrangian
+  end subroutine dec_orbital_sanity_check
 
 
 

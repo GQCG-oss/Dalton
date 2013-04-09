@@ -60,6 +60,7 @@ REAL(REALK)       :: HFexchangeFac
 type(dft_grid)    :: L2GRID     !Grid parameters for level 2/ADMM grid
 type(dft_grid)    :: L3GRID     !Grid parameters for level 3/regular grid
 CHARACTER(len=80) :: dftfunc                 !""
+LOGICAL           :: XCFUN                   !.FALSE.
 END type DFTPARAM
 
 !> USED IN II_DFTINT TO save data like Fockmatrix and gradients

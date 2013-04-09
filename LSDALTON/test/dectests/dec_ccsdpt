@@ -51,7 +51,6 @@ cat > dec_ccsdpt.dal <<'%EOF%'
 .HF
 *DENSOPT
 .ARH
-.NOGCBASIS
 .START
 TRILEVEL
 .CONVTHR
@@ -64,6 +63,7 @@ $INFO
 DEBUG_MPI_MEM
 $END INFO
 **DEC
+#.FragmentAdapted
 .CCSDsolver_par
 .manual_batchsizes
 19 19
@@ -72,8 +72,6 @@ $END INFO
 .CCSD(T)
 .ccThr
 1.0d-6
-.IncludeFullMolecule
-.SimulateSF
 .ReassignHatoms
 *END OF INPUT
 %EOF%
@@ -116,25 +114,25 @@ CTRL[3]=1
 ERROR[3]="CCSD correlation energy (unocc. part. scheme) is not correct"
 
 # E[4] contribution to (T) energy correction (occ. part. scheme)
-CRIT1=`$GREP "\(T\) occupied 4th order energy : * \-0\.54436[6-7]" $log | wc -l`
+CRIT1=`$GREP "\(T\) occupied 4th order energy * : * \-0\.54436[6-7]" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="4th-order contribution to (T) energy correction (occ. part. scheme) is not correct"
 
 # E[4] contribution to (T) energy correction (unocc. part. scheme)
-CRIT1=`$GREP "\(T\) virtual  4th order energy : * \-0\.54436[6-7]" $log | wc -l`
+CRIT1=`$GREP "\(T\) virtual  4th order energy * : * \-0\.54436[6-7]" $log | wc -l`
 TEST[5]=`expr   $CRIT1`
 CTRL[5]=1
 ERROR[5]="4th-order contribution to (T) energy correction (unocc. part. scheme) is not correct"
 
 # E[5] contribution to (T) energy correction (occ. part. scheme)
-CRIT1=`$GREP "\(T\) occupied 5th order energy : * 0\.23709[5-6]" $log | wc -l`
+CRIT1=`$GREP "\(T\) occupied 5th order energy * : * 0\.23709[5-6]" $log | wc -l`
 TEST[6]=`expr   $CRIT1`
 CTRL[6]=1
 ERROR[6]="5th-order contribution to (T) energy correction (occ. part. scheme) is not correct"
 
 # E[5] contribution to (T) energy correction (unocc. part. scheme)
-CRIT1=`$GREP "\(T\) virtual  5th order energy : * 0\.23709[5-6]" $log | wc -l`
+CRIT1=`$GREP "\(T\) virtual  5th order energy * : * 0\.23709[5-6]" $log | wc -l`
 TEST[7]=`expr   $CRIT1`
 CTRL[7]=1
 ERROR[7]="5th-order contribution to (T) energy correction (unocc. part. scheme) is not correct"

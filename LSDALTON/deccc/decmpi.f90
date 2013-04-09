@@ -163,10 +163,6 @@ contains
     ! Sender: Copy fragment info into buffer
     ! Receiver: Read fragment info from buffer
     call mpicopy_fragment(MyFragment,comm,.false.)
-    if(DECinfo%ccmodel==4) then ! copy (T) fragment
-       if(mynum==MyReceiver) allocate(MyFragment%parenthesis_t)
-       Call mpicopy_fragment(MyFragment%parenthesis_t,comm,.false.)
-    end if
 
     ! Copy fragment statistics
     call mpicopy_fragment_joblist(job)
@@ -237,10 +233,6 @@ contains
           ! Sender: Copy fragment info into buffer
           ! Receiver: Read fragment info from buffer into Fragments(atom)
           call mpicopy_fragment(Fragments(atom),comm,.false.)
-          if(DECinfo%ccmodel==4) then
-             if(mynum==MyReceiver) allocate(Fragments(atom)%parenthesis_t)
-             call mpicopy_fragment(Fragments(atom)%parenthesis_t,comm,.false.)
-          end if
 
           ! Check that the correct fragment number was communicated
           if(Fragments(atom)%atomic_number /= atom) then
@@ -308,10 +300,6 @@ contains
           ! Master: Copy fragment info into buffer
           ! Slave: Read fragment info from buffer into Fragments(atom)
           call mpicopy_fragment(Fragments(atom),comm,.false.)
-          if(DECinfo%ccmodel==4) then
-             if(mynum/=0) allocate(Fragments(atom)%parenthesis_t)
-             call mpicopy_fragment(Fragments(atom)%parenthesis_t,comm,.false.)
-          end if
 
           ! Check that the correct fragment number was communicated
           if(Fragments(atom)%atomic_number /= atom) then
@@ -575,7 +563,6 @@ contains
     call ls_mpibcast(MyMolecule%qqfock,MyMolecule%numvirt,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
 
 
-
   end subroutine mpi_bcast_fullmolecule
 
 
@@ -618,8 +605,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%nunoccAOS,master)
     CALL ls_mpi_buffer(MyFragment%REDnoccAOS,master)
     CALL ls_mpi_buffer(MyFragment%REDnunoccAOS,master)
-    CALL ls_mpi_buffer(MyFragment%SF_nfrags,master)
-    CALL ls_mpi_buffer(MyFragment%atomic_number2,master)
+    CALL ls_mpi_buffer(MyFragment%nEOSatoms,master)
     CALL ls_mpi_buffer(MyFragment%ntasks,master)
     CALL ls_mpi_buffer(MyFragment%t1dims,2,master)
     CALL ls_mpi_buffer(MyFragment%noccFA,master)
@@ -631,11 +617,11 @@ contains
     ! Logicals that are not pointers
     ! ------------------------------
     CALL ls_mpi_buffer(MyFragment%BasisInfoIsSet,master)
-    CALL ls_mpi_buffer(MyFragment%SF,master)
     CALL ls_mpi_buffer(MyFragment%t1_stored,master)
     CALL ls_mpi_buffer(MyFragment%CDset,master)
     CALL ls_mpi_buffer(MyFragment%FAtransSet,master)
     CALL ls_mpi_buffer(MyFragment%fragmentadapted,master)
+    CALL ls_mpi_buffer(MyFragment%pairfrag,master)
 
     ! Reals that are not pointers
     ! ---------------------------
@@ -674,8 +660,8 @@ contains
        call mem_alloc(MyFragment%idxo,MyFragment%noccEOS)
        nullify(MyFragment%idxu)
        call mem_alloc(MyFragment%idxu,MyFragment%nunoccEOS)
-       nullify(MyFragment%SF_atomlist)
-       call mem_alloc(MyFragment%SF_atomlist,MyFragment%SF_nfrags)
+       nullify(MyFragment%EOSatoms)
+       call mem_alloc(MyFragment%EOSatoms,MyFragment%nEOSatoms)
        if(MyFragment%t1_stored) then ! only used for CC singles effects
           nullify(MyFragment%t1_occidx)
           call mem_alloc(MyFragment%t1_occidx,MyFragment%t1dims(2) )
@@ -703,7 +689,7 @@ contains
          MyFragment%REDnunoccAOS,master)
     call ls_mpi_buffer(MyFragment%idxo,MyFragment%noccEOS,master)
     call ls_mpi_buffer(MyFragment%idxu,MyFragment%nunoccEOS,master)
-    call ls_mpi_buffer(MyFragment%SF_atomlist,MyFragment%SF_nfrags,master)
+    call ls_mpi_buffer(MyFragment%EOSatoms,MyFragment%nEOSatoms,master)
     call ls_mpi_buffer(MyFragment%atoms_idx,MyFragment%number_atoms,master)
     call ls_mpi_buffer(MyFragment%basis_idx,MyFragment%number_basis,master)
     if(MyFragment%t1_stored) then ! only used for CC singles effects
@@ -807,6 +793,7 @@ contains
 
        ! Real pointers
        if(.not. AddToBuffer) then
+          call mem_alloc(MyFragment%S,MyFragment%number_basis,MyFragment%number_basis)
           call mem_alloc(MyFragment%ypo,MyFragment%number_basis,MyFragment%noccAOS)
           call mem_alloc(MyFragment%ypv,MyFragment%number_basis,MyFragment%nunoccAOS)
           call mem_alloc(MyFragment%coreMO,MyFragment%number_basis,MyFragment%ncore)
@@ -815,6 +802,7 @@ contains
           call mem_alloc(MyFragment%ccfock,MyFragment%ncore,MyFragment%ncore)
           call mem_alloc(MyFragment%qqfock,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
        end if
+       call ls_mpi_buffer(MyFragment%S,MyFragment%number_basis,MyFragment%number_basis,master)
        call ls_mpi_buffer(MyFragment%ypo,MyFragment%number_basis,MyFragment%noccAOS,master)
        call ls_mpi_buffer(MyFragment%ypv,MyFragment%number_basis,MyFragment%nunoccAOS,master)
        call ls_mpi_buffer(MyFragment%coreMO,MyFragment%number_basis,MyFragment%ncore,master)
@@ -1225,10 +1213,11 @@ contains
   end subroutine distribute_mpi_jobs
 
 
-  !> \brief Bcast super fragment joblist from master to slaves
+  !> \brief Bcast fragment joblist from master to slaves
+  !> for fragment job list AFTER fragment optimization is done.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine bcast_superfragment_joblist(jobs,comm)
+  subroutine bcast_post_fragopt_joblist(jobs,comm)
 
     implicit none
     !> Job list (send from master to slaves via communicator)
@@ -1250,11 +1239,11 @@ contains
     call ls_mpiFinalizeBuffer(master,LSMPIBROADCAST,comm)
 
 
-  end subroutine bcast_superfragment_joblist
+  end subroutine bcast_post_fragopt_joblist
 
 
 
-  !> \brief MPI copy super fragment joblist from master to slaves using MPI buffer
+  !> \brief MPI copy fragment joblist from master to slaves using MPI buffer
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine mpicopy_fragment_joblist(jobs)
@@ -1382,7 +1371,7 @@ contains
     CALL ls_mpi_buffer(dens%nvirt,infpar%master)
     CALL ls_mpi_buffer(dens%nocc,infpar%master)
     CALL ls_mpi_buffer(dens%nocctot,infpar%master)
-    CALL ls_mpi_buffer(dens%SF_nfrags,infpar%master)
+    CALL ls_mpi_buffer(dens%nEOSatoms,infpar%master)
 
     ! Reals that are not pointers
     call ls_mpi_buffer(dens%pairdist,infpar%master)
@@ -1392,20 +1381,11 @@ contains
     ! ----------------
     ! Nullify and allocate stuff for receiver (global addtobuffer is false)
     if(.not. AddToBuffer) then
-       nullify(dens%SF_atomlist)
-       call mem_alloc(dens%SF_atomlist,dens%SF_nfrags)
-       nullify(dens%virtidx)
-       call mem_alloc(dens%virtidx,dens%nvirt)
-       nullify(dens%occidx)
-       call mem_alloc(dens%occidx,dens%nocc)
-       nullify(dens%occtotidx)
-       call mem_alloc(dens%occtotidx,dens%nocctot)
+       nullify(dens%EOSatoms)
+       call mem_alloc(dens%EOSatoms,dens%nEOSatoms)
     end if
     ! Buffer handling
-    call ls_mpi_buffer(dens%SF_atomlist,dens%SF_nfrags,infpar%master)
-    call ls_mpi_buffer(dens%virtidx,dens%nvirt,infpar%master)
-    call ls_mpi_buffer(dens%occidx,dens%nocc,infpar%master)
-    call ls_mpi_buffer(dens%occtotidx,dens%nocctot,infpar%master)
+    call ls_mpi_buffer(dens%EOSatoms,dens%nEOSatoms,infpar%master)
 
 
     ! Real pointers
@@ -1644,8 +1624,6 @@ contains
     call ls_mpi_buffer(DECitem%doHF,Master)
     call ls_mpi_buffer(DECitem%memory,Master)
     call ls_mpi_buffer(DECitem%full_molecular_cc,Master)
-    call ls_mpi_buffer(DECitem%single_fragment,Master)
-    call ls_mpi_buffer(DECitem%single_calculation,Master)
     call ls_mpi_buffer(DECitem%FullDEC,Master)
     call ls_mpi_buffer(DECitem%simulate_full,Master)
     call ls_mpi_buffer(DECitem%simulate_natoms,Master)
@@ -1682,7 +1660,7 @@ contains
     call ls_mpi_buffer(DECitem%FOT,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
     call ls_mpi_buffer(DECitem%SkipCC,Master)
-    call ls_mpi_buffer(DECitem%NormalizeFragment,Master)
+    call ls_mpi_buffer(DECitem%purifyMOs,Master)
     call ls_mpi_buffer(DECitem%precondition_with_full,Master)
     call ls_mpi_buffer(DECitem%InclFullMolecule,Master)
     call ls_mpi_buffer(DECitem%HybridScheme,Master)
@@ -1737,11 +1715,6 @@ contains
     call ls_mpi_buffer(DECitem%reorder_time_wall,Master)
     call ls_mpi_buffer(DECitem%memallo_time_cpu,Master)
     call ls_mpi_buffer(DECitem%memallo_time_wall,Master)
-    call ls_mpi_buffer(DECitem%lagrangian,Master)
-    call ls_mpi_buffer(DECitem%SF,Master)
-    call ls_mpi_buffer(DECitem%SF_maxdist,Master)
-    call ls_mpi_buffer(DECitem%SF_thr,Master)
-    call ls_mpi_buffer(DECitem%SimulateSF,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%MP2density,Master)
