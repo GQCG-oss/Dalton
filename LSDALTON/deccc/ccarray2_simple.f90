@@ -761,42 +761,43 @@ module array2_simple_operations
   !> 2. Transformation matrix from atomic basis (atomic extent) to Fock-diagonal basis (AOS).
   !> Matrices are constructed separately for occupied and virtual spaces.
   !> Note: The array2 structures are also initialized here according to the incomming dimensions.
-  !> \author Janus Juul Eriksen (adapted from mp2 routine by Kasper Kristensen)
+  !> \author Janus Juul Eriksen (adapted from mp2 routine by Kasper Kristensen),changed by PE
   !> \date February 2013
-  subroutine get_ccsdpt_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,&
-                                       & CDIAGocc, CDIAGvirt, Uocc, Uvirt,EVocc, EVvirt)
+  subroutine get_canonical_integral_transformation_matrices(no,nv,nb,ppfock,qqfock,&
+             &ypo,ypv,CDIAGocc, CDIAGvirt, Uocc, Uvirt,EVocc, EVvirt)
 
     implicit none
 
     !> nocc, nvirt, and nbasis for fragment or full molecule
-    integer, intent(in) :: nocc, nvirt, nbasis
+    integer, intent(in) :: no, nv, nb
     !> ppfock and qqfock for fragment or full molecule
-    real(realk), intent(in) :: ppfock(nocc,nocc), qqfock(nvirt,nvirt)
+    real(realk), intent(in) :: ppfock(no,no), qqfock(nv,nv)
     !> mo coefficents for occ and virt space for fragment or full molecule
-    real(realk), intent(in) :: ypo(nbasis,nocc), ypv(nbasis,nvirt)
+    real(realk), intent(in) :: ypo(nb,no), ypv(nb,nv)
     !> Transforming from AO to occupied orbitals in the basis where the fock matrix is diagonal
-    type(array2),intent(inout) :: CDIAGocc
+    real(realk),intent(inout) :: CDIAGocc(nb,no)
     !> Transforming from AO to virtual orbitals in the basis where the fock matrix is diagonal
-    type(array2),intent(inout) :: CDIAGvirt
+    real(realk),intent(inout) :: CDIAGvirt(nb,nv)
     !> Occupied space: Transforming between local basis and basis where the fock matrix is diagonal
-    type(array2),intent(inout) :: Uocc
+    real(realk),intent(inout) :: Uocc(no,no)
     !> Virtual space: Transforming between local basis and basis where the fock matrix is diagonal
-    type(array2),intent(inout) :: Uvirt
+    real(realk),intent(inout) :: Uvirt(nv,nv)
     !> Eigenvalues from diagonalization of occ-occ Fock matrix block
-    real(realk), dimension(nocc),intent(inout) :: EVocc
+    real(realk), dimension(no),intent(inout) :: EVocc
     !> Eigenvalues from diagonalization of virt-virt Fock matrix block
-    real(realk), dimension(nvirt),intent(inout) :: EVvirt
+    real(realk), dimension(nv),intent(inout) :: EVvirt
     real(realk), pointer :: S(:,:)
     integer :: i!,nocc,nvirt,nbasis,i
     integer, dimension(2) :: occocc,virtvirt,occAO,virtAO
     type(array2) :: Ctmp
+    
 
     ! Init stuff
     ! **********
-    occocc = [nocc,nocc]
-    virtvirt = [nvirt,nvirt]
-    occAO = [nbasis,nocc]
-    virtAO = [nbasis,nvirt]
+    occocc = [no,no]
+    virtvirt = [nv,nv]
+    occAO = [nb,no]
+    virtAO = [nb,nv]
 
     ! ****************************************************************************************
     ! *                                  OCCUPIED ORBITAL SPACE                              *
@@ -805,19 +806,17 @@ module array2_simple_operations
     ! 1. Solve Fock eigenvalue problem
     ! ********************************
 
-    ! Eigenvectors
-    Uocc = array2_init(occocc)
 
     ! The overlap matrix is simply the unit matrix because the local basis functions are orthogonal.
-    call mem_alloc(S,nocc,nocc)
+    call mem_alloc(S,no,no)
     S=0.0E0_realk
-    do i=1,nocc
+    do i=1,no
        S(i,i) = 1E0_realk
     end do
 
     ! Solve eigenvalue problem
 
-    call solve_eigenvalue_problem(nocc,ppfock,S,EVocc,Uocc%val)
+    call solve_eigenvalue_problem(no,ppfock,S,EVocc,Uocc)
 
     call mem_dealloc(S)
 
@@ -836,13 +835,8 @@ module array2_simple_operations
     !
     ! where CLOCALocc are the basis MO coefficients in MyFragment%ypo
 
-    ! Local MO coefficients
-    Ctmp = array2_init(occAO,ypo)
-
     ! Determine CDIAGocc
-    CDIAGocc = array2_init(occAO)
-    call array2_matmul(Ctmp,Uocc,CDIAGocc,'n','n',1.0E0_realk,0.0E0_realk)
-    call array2_free(Ctmp)
+    call dgemm('n','n',nb,no,no,1.0E0_realk,ypo,nb,Uocc,no,0.0E0_realk,CDIAGocc,nb)
 
     ! ***************************************************************************************
     ! *                                  VIRTUAL ORBITAL SPACE                              *
@@ -851,23 +845,18 @@ module array2_simple_operations
     ! For the virtual space we do exactly the same with the virt-virt blocks of the Fock matrix
     ! and the virtual local MO coefficients (MyFragment%ypv). (Thus, comments are omitted below)
 
-    Uvirt = array2_init(virtvirt)
-
-    call mem_alloc(S,nvirt,nvirt)
+    call mem_alloc(S,nv,nv)
     S=0.0E0_realk
-    do i=1,nvirt
+    do i=1,nv
        S(i,i) = 1E0_realk
     end do
-    call solve_eigenvalue_problem(nvirt,qqfock,S,EVvirt,Uvirt%val)
+    call solve_eigenvalue_problem(nv,qqfock,S,EVvirt,Uvirt)
     call mem_dealloc(S)
 
-    Ctmp = array2_init(virtAO,ypv)
-    CDIAGvirt = array2_init(virtAO)
-    call array2_matmul(Ctmp,Uvirt,CDIAGvirt,'n','n',1.0E0_realk,0.0E0_realk)
-    call array2_free(Ctmp)
+    call dgemm('n','n',nb,nv,nv,1.0E0_realk,ypv,nb,Uvirt,nv,0.0E0_realk,CDIAGvirt,nb)
 
 
-  end subroutine get_ccsdpt_integral_transformation_matrices
+  end subroutine get_canonical_integral_transformation_matrices
 
 
   !> \brief Construct transformation matrices used in MP2 integral scheme for MP2 gradient

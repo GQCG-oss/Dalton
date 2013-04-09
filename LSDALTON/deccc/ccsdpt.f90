@@ -83,7 +83,7 @@ contains
     !> MOs and unitary transformation matrices
     type(array2) :: C_can_occ, C_can_virt, Uocc, Uvirt
     !> dimensions
-    integer, dimension(2) :: occdims, virtdims, virtoccdims
+    integer, dimension(2) :: occdims, virtdims, virtoccdims,occAO,virtAO
     integer, dimension(3) :: dims_aaa
     integer, dimension(4) :: dims_iaai, dims_aaii
     !> input for the actual triples computation
@@ -93,12 +93,14 @@ contains
     type(array2),intent(inout) :: ccsdpt_singles
 
     ! init dimensions
-    occdims = [nocc,nocc]
-    virtdims = [nvirt,nvirt]
+    occdims     = [nocc,nocc]
+    virtdims    = [nvirt,nvirt]
     virtoccdims = [nvirt,nocc]
-    dims_iaai = [nocc,nvirt,nvirt,nocc]
-    dims_aaii = [nvirt,nvirt,nocc,nocc]
-    dims_aaa = [nvirt,nvirt,nvirt]
+    dims_iaai   = [nocc,nvirt,nvirt,nocc]
+    dims_aaii   = [nvirt,nvirt,nocc,nocc]
+    dims_aaa    = [nvirt,nvirt,nvirt]
+    occAO       = [nbasis,nocc]
+    virtAO      = [nbasis,nvirt]
 
 #ifdef VAR_LSMPI
 
@@ -124,8 +126,12 @@ contains
 
     call mem_alloc(eivalocc,nocc)
     call mem_alloc(eivalvirt,nvirt)
-    call get_ccsdpt_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,&
-                                       & C_can_occ,C_can_virt,Uocc,Uvirt,eivalocc,eivalvirt)
+    Uocc       = array2_init(occdims)
+    Uvirt      = array2_init(virtdims)
+    C_can_occ  = array2_init(occAO)
+    C_can_virt = array2_init(virtAO)
+    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,&
+                         & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
 
     ! ***************************************************
     ! get vo³, v²o², and v³o integrals in proper sequence
