@@ -2305,7 +2305,7 @@ CONTAINS
 	!> \param nBmat The number of Bmat matrices
 	!> \param nbast The number of basisfunctions
 	!> \param Dmat  The Density matrix
-	SUBROUTINE di_GET_GbDs_and_XC_linrsp_Array(GbDs,Gxc,lupri,luerr,&
+ 	SUBROUTINE di_GET_GbDs_and_XC_linrsp_Array(GbDs,Gxc,lupri,luerr,&
 						& Bmat,nBmat,nbast,Dmat,do_dft,setting)
 		IMPLICIT NONE
 		INTEGER, intent(in)           :: lupri,luerr,nBmat,nbast
@@ -2336,7 +2336,8 @@ CONTAINS
 			call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,setting)
 		ELSE 
 			! GdBs = J(B) + K(B)
-			call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
+			call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,setting)
+			!call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
 		ENDIF
 		
 		IF (do_dft) THEN  
@@ -2410,6 +2411,9 @@ CONTAINS
 		ELSE
 		   call II_get_Fock_mat(lupri,luerr,lsint_fock_data%ls%setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
 		ENDIF
+		write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
+		call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
+
       end subroutine di_GET_GbDsArray
 
 
@@ -2446,12 +2450,18 @@ CONTAINS
 			type(Matrix), intent(inout)    :: GbDs(nDmat)
 			type(lssetting), intent(inout) :: setting
 			!
-			logical                :: Dsym, copy_IntegralTransformGC
+			logical                :: Dsym, copy_IntegralTransformGC, inc_scheme, do_inc
 			type(Matrix)           :: Dens_AO(nDmat), K(nDmat)
 			integer                :: i
 			!
 			IF(matrix_type .EQ. mtype_unres_dense) THEN
 				call lsquit('di_GET_GbDsArray_ADMM does not support unrestricted matrices',lupri)
+			ENDIF
+			call get_incremental_settings(inc_scheme,do_inc)
+			IF(inc_scheme .OR. do_inc)THEN
+				write (lupri,*) 'inc_scheme = ', inc_scheme
+				write (lupri,*) 'do_inc = ', do_inc
+				call lsquit('II_get_Fock_mat incremental scheme not allowed in di_GET_GbDsArray_ADMM_setting()',lupri)
 			ENDIF
 			!This should be changed to a test like the MATSYM function for full matrices   
 			Dsym = .FALSE. !NONsymmetric Density matrix
@@ -2459,16 +2469,16 @@ CONTAINS
 			! Get rid of Grand canonical
 			copy_IntegralTransformGC = setting%IntegralTransformGC
 			IF(copy_IntegralTransformGC) THEN
+			write (lupri,*) "copy_IntegralTransformGC = TRUE...ADMM in di_GET_GbDsArray_ADMM_setting()"
 				setting%IntegralTransformGC = .FALSE.
-				copy_IntegralTransformGC = .FALSE.
 				! we do this manually in order to get incremental correct
 				! change D to AO basis (currently in GCAO basis)
-				
 				DO i=1,nDmat
 					call mat_init(Dens_AO(i),Dens(1)%nrow,Dens(1)%ncol)
 					call GCAO2AO_transform_matrixD2(Dens(i),Dens_AO(i),setting,lupri)
 				ENDDO
-			ELSE
+			ELSE ! no GC transformation
+			write (lupri,*) "copy_IntegralTransformGC = FALSE...ADMM in di_GET_GbDsArray_ADMM_setting()"
 				DO i=1,nDmat
 				  call mat_init(Dens_AO(i),Dens(1)%nrow,Dens(1)%ncol)
 				  call mat_assign(Dens_AO(i),Dens(i))
@@ -2476,7 +2486,12 @@ CONTAINS
 			ENDIF
 
 			! J(B)
+			DO i=1,nDmat
+				call mat_zero(GbDs(i))
+			ENDDO
 			call II_get_coulomb_mat(LUPRI,LUERR,setting,Dens_AO,GbDs,nDmat)   
+			write (lupri,*) "Coulomb mat in ADMM di_GET_GbDsArray_ADMM_setting()"
+			call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
 
 			! K(B)
 			DO i=1,nDmat
@@ -2487,21 +2502,45 @@ CONTAINS
 				call lsquit('di_GET_GbDsArray_ADMM does not support daLink',lupri)
 			ENDIF
 			call II_get_exchange_mat(LUPRI,LUERR,setting,Dens_AO,nDmat,Dsym,K)
+			write (lupri,*) "Exchange mat in ADMM di_GET_GbDsArray_ADMM_setting()"
+			call mat_print(K(1),1,K(1)%nrow,1,K(1)%ncol,lupri)
 			DO i=1,ndmat
 				call mat_daxpy(1E0_realk,K(i),GbDs(i))
 				call mat_free(K(i))
 			ENDDO
 
+					
+
+		
+!		   call II_get_Fock_mat(lupri,luerr,setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
+	
+!			write (lupri,*) "Fock_mat=J+K mat in di_GET_GbDsArray_ADMM_setting()"
+!			call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
+!			! DEBUG PAT  END -----------------------------
+			
 			! Transform back to GCAO basis 
-			DO i=1,nDmat
-				call AO2GCAO_transform_matrixF(GbDs(i),setting,lupri)
-			ENDDO
+			IF(copy_IntegralTransformGC) THEN
+				write (lupri,*) "Transformation to GC required YES...ADMM in di_GET_GbDsArray_ADMM_setting()"
+				! Reset to the original value of IntegralTransformGC
+				setting%IntegralTransformGC = copy_IntegralTransformGC 
+				DO i=1,nDmat
+					call AO2GCAO_transform_matrixF(GbDs(i),setting,lupri)
+				ENDDO
+			ENDIF
+			
+			
+			! DEBUG PAT START -----------------------------	
+			write (lupri,*) "J+K mat in ADMM di_GET_GbDsArray_ADMM_setting()"
+			call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
+!			DO i=1,nDmat
+!				call mat_zero(GbDs(i))
+!			ENDDO
+
+
+			! FREE MEMORY
 			DO I=1,ndmat
 				call mat_free(Dens_AO(I))
 			ENDDO
-			
-			! Reset to the original value of IntegralTransformGC
-			setting%IntegralTransformGC = copy_IntegralTransformGC 
 		  END SUBROUTINE di_GET_GbDsArray_ADMM_setting
 	  !CONTAINS END
       END SUBROUTINE di_GET_GbDsArray_ADMM
