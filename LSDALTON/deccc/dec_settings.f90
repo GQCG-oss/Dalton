@@ -69,6 +69,7 @@ contains
     DECinfo%reorder_test=.false.
     DECinfo%CCSDno_restart=.false.
     DECinfo%CCSDsaferun=.false.
+    DECinfo%CCSDpreventcanonical=.false.
 
     ! -- Output options 
     DECinfo%output=output
@@ -253,6 +254,7 @@ contains
        case('.CCSDdynamic_load'); DECinfo%dyn_load=.true.
        case('.CCSDsaferun'); DECinfo%CCSDsaferun=.true.
        case('.CCSDno_restart'); DECinfo%CCSDno_restart=.true.
+       case('.CCSDpreventcanonical'); DECinfo%CCSDpreventcanonical=.true.
        case('.manual_batchsizes'); DECinfo%manual_batchsizes=.true.;read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
        case('.SkipHartreeFock'); DECinfo%doHF=.false.
        case('.hack'); DECinfo%hack=.true.

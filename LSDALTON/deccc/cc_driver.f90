@@ -60,7 +60,8 @@ contains
   !> fragment calculation (depending on the value of fragment_job).
   !> Returns CC energy, converged singles and doubles amplitudes, and
   !> two-electron integrals (a i | b j) stored as (a,i,b,j)
-  !> \author Marcin Ziolkowski (modified by Kasper Kristensen)
+  !> \author Marcin Ziolkowski (modified by Kasper Kristensen and Patrick
+  !  Ettenhuber)
   subroutine ccsolver(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
        & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
        & t1_final,t2_final,VOVO,longrange_singles)
@@ -103,7 +104,8 @@ contains
     !> IMPORTANT: If this it TRUE, then the singles amplitudes for the fragment
     !> (from previous calculations) must be stored in t1_final at input!
     logical,intent(in) :: longrange_singles
-    real(realk),pointer :: yho_f(:,:), yhv_f(:,:)
+    real(realk),pointer :: yho_d(:,:), yhv_d(:,:),ypo_d(:,:),ypv_d(:,:),focc(:),fvirt(:)
+    real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:), Uocc(:,:), Uvirt(:,:)
 
     integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims
     integer, dimension(4) :: ampl4_dims
@@ -128,6 +130,7 @@ contains
     real(realk) :: iter_cpu,iter_wall, sosex
     character(18) :: save_to,keep
     character(ARR_MSG_LEN) :: msg
+    integer :: ii,aa
 
 
     call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
@@ -149,12 +152,6 @@ contains
        end if
     end if
 
-    ! Copy MO coeffcients. It is very convenient to store them twice to handle transformation
-    ! (including transposed MO matrices) efficiently.
-    call mem_alloc(yho_f,nbasis,nocc)
-    call mem_alloc(yhv_f,nbasis,nvirt)
-    yho_f = ypo_f
-    yhv_f = ypv_f
 
 
     ! title
@@ -167,12 +164,62 @@ contains
     ampl4_dims = [nvirt,nocc,nvirt,nocc]
     ampl2_dims = [nvirt,nocc]
 
+    ! go to a (pseudo) canonical basis
+    call mem_alloc(focc,nocc)
+    call mem_alloc(fvirt,nvirt)
+    call mem_alloc(ypo_d,nbasis,nocc)
+    call mem_alloc(ypv_d,nbasis,nvirt)
+    call mem_alloc(yho_d,nbasis,nocc)
+    call mem_alloc(yhv_d,nbasis,nvirt)
+    call mem_alloc(ppfock_d,nocc,nocc)
+    call mem_alloc(qqfock_d,nvirt,nvirt)
+    call mem_alloc(Uocc,nocc,nocc)
+    call mem_alloc(Uvirt,nvirt,nvirt)
+    if(DECinfo%CCSDpreventcanonical)then
+      !nocc diagonalization
+      ypo_d   = ypo_f
+      ypv_d   = ypv_f
+      ppfock_d = ppfock_f
+      qqfock_d = qqfock_f
+      Uocc=0.0E0_realk
+      Uvirt=0.0E0_realk
+      do ii=1,nocc
+        Uocc(ii,ii) = 1.0E0_realk
+      enddo
+      do aa=1,nvirt
+        Uvirt(aa,aa) = 1.0E0_realk
+      enddo
+    else
+      call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock_f,&
+           &qqfock_f,ypo_f,ypv_f,ypo_d,ypv_d,Uocc,Uvirt,focc,fvirt)
+      ppfock_d = 0.0E0_realk
+      qqfock_d = 0.0E0_realk
+      do ii=1,nocc
+        ppfock_d(ii,ii) = focc(ii)
+      enddo
+      do aa=1,nvirt
+        qqfock_d(aa,aa) = fvirt(aa)
+      enddo
+    endif
+    call mem_dealloc(focc)
+    call mem_dealloc(fvirt)
+
+    ! Copy MO coeffcients. It is very convenient to store them twice to handle transformation
+    ! (including transposed MO matrices) efficiently. 
+    yho_d = ypo_d
+    yhv_d = ypv_d
+
     ! create transformation matrices in array form
-    ypo = array2_init(occ_dims,ypo_f)
-    ypv = array2_init(virt_dims,ypv_f)
-    yho = array2_init(occ_dims,yho_f)
-    yhv = array2_init(virt_dims,yhv_f)
+    ypo = array2_init(occ_dims,ypo_d)
+    ypv = array2_init(virt_dims,ypv_d)
+    yho = array2_init(occ_dims,yho_d)
+    yhv = array2_init(virt_dims,yhv_d)
     fock = array2_init(ao2_dims,fock_f)
+
+    call mem_dealloc(ypo_d)
+    call mem_dealloc(ypv_d)
+    call mem_dealloc(yho_d)
+    call mem_dealloc(yhv_d)
 
 
 
@@ -270,13 +317,15 @@ contains
     ! get fock matrices for preconditioning
     Preconditioner : if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
        if(DECinfo%precondition_with_full) then
-          ppfock_prec = array2_init([nocc,nocc],ppfock_f)
-          qqfock_prec = array2_init([nvirt,nvirt],qqfock_f)
+          ppfock_prec = array2_init([nocc,nocc],ppfock_d)
+          qqfock_prec = array2_init([nvirt,nvirt],qqfock_d)
        else
           ppfock_prec = array2_similarity_transformation(ypo,fock,yho,[nocc,nocc])
           qqfock_prec = array2_similarity_transformation(ypv,fock,yhv,[nvirt,nvirt])
        end if
     end if Preconditioner
+    call mem_dealloc(ppfock_d)
+    call mem_dealloc(qqfock_d)
 
 
     ! allocate things
@@ -865,9 +914,15 @@ contains
     call array2_free(ypv)
     call array2_free(yhv)
     call array2_free(fock)
+    !transform back to original basis   
+    if(DECinfo%use_singles)then
+      call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt,t1_final%val)
+    else
+      call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt)
+    endif
 
-    call mem_dealloc(yho_f)
-    call mem_dealloc(yhv_f)
+    call mem_dealloc(Uocc)
+    call mem_dealloc(Uvirt)
 
     if(DECinfo%show_time) call array4_print_statistics(DECinfo%output)
 
@@ -2300,18 +2355,7 @@ contains
     call mem_alloc(qqfock_d,nv,nv)
     call mem_alloc(Uocc,no,no)
     call mem_alloc(Uvirt,nv,nv)
-    if(.true.)then
-      call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,ypo_f,ypv_f,&
-                                       & ypo_d,ypv_d,Uocc,Uvirt,focc,fvirt)
-      ppfock_d = 0.0E0_realk
-      qqfock_d = 0.0E0_realk
-      do ii=1,no
-        ppfock_d(ii,ii) = focc(ii)
-      enddo
-      do aa=1,nv
-        qqfock_d(aa,aa) = fvirt(aa)
-      enddo
-    else
+    if(DECinfo%CCSDpreventcanonical)then
       !no diagonalization
       ypo_d   = ypo_f
       ypv_d   = ypv_f
@@ -2324,6 +2368,17 @@ contains
       enddo
       do aa=1,nv
         Uvirt(aa,aa) = 1.0E0_realk
+      enddo
+    else
+      call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,ypo_f,ypv_f,&
+                                       & ypo_d,ypv_d,Uocc,Uvirt,focc,fvirt)
+      ppfock_d = 0.0E0_realk
+      qqfock_d = 0.0E0_realk
+      do ii=1,no
+        ppfock_d(ii,ii) = focc(ii)
+      enddo
+      do aa=1,nv
+        qqfock_d(aa,aa) = fvirt(aa)
       enddo
     endif
     call mem_dealloc(focc)
@@ -2919,22 +2974,20 @@ contains
 
 
     !transform back to original basis   
-    print *,"before",norm2(t2_final%val),norm2(VOVO%val)
     if(DECinfo%use_singles)then
       call ccsolver_can_local_trans(VOVO%val,t2_final%val,no,nv,Uocc,Uvirt,t1_final%val)
     else
       call ccsolver_can_local_trans(VOVO%val,t2_final%val,no,nv,Uocc,Uvirt)
     endif
-    print *,"after",norm2(t2_final%val),norm2(VOVO%val)
 
     call mem_dealloc(Uocc)
     call mem_dealloc(Uvirt)
 
 
-    if(DECinfo%show_time) call array4_print_statistics(DECinfo%output)
-
-
-    call array_print_mem_info(DECinfo%output,.true.,.false.)
+    if(DECinfo%show_time)then
+      call array4_print_statistics(DECinfo%output)
+      call array_print_mem_info(DECinfo%output,.true.,.false.)
+    endif
   end subroutine ccsolver_par
 
   !> \brief: transform ccsd_doubles, ccsdpt_singles and ccsdpt_doubles from canonical to local basis
