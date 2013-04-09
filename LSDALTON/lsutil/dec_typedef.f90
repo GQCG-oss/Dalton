@@ -99,6 +99,8 @@ module dec_typedef_module
      logical :: CCSDsaferun
      !> skip reading the old amplitudes from disk
      logical :: CCSDno_restart
+     !> prevent canonicalization in the ccsolver
+     logical :: CCSDpreventcanonical
      ! --
 
      ! -- Output options 
