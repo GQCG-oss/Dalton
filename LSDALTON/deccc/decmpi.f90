@@ -1498,8 +1498,9 @@ contains
     !> String to print describing job list
     character(*),intent(in) :: string
     real(realk) :: Gflops, avflop, minflop, maxflop,tmp,totflops,tottime_actual,localloss
-    real(realk) :: globalloss, tottime_ideal, slavetime
+    real(realk) :: globalloss, tottime_ideal, slavetime, localuse
     integer :: i, minidx, maxidx,N
+
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -1571,32 +1572,41 @@ contains
 
     end do
 
+
     ! Ideal total time used by all slaves:
     ! Assuming all infpar%nodtot-1 slaves were doing something useful all the time 
     ! while the master were sending out jobs.
     tottime_ideal = (infpar%nodtot-1)*mastertime
+    ! If this time is zero (debugging case of restart case - then don't print summary
 
-    ! Average % loss in local groups
-    localloss = ( 1 - (slavetime / tottime_ideal) )*100.0_realk
+    if(tottime_ideal > 1.0e-6_realk) then
+       ! Average % loss in local groups
+       ! Time lost in local groups is the actual local time minus the effective slave time
+       localloss = ( ( tottime_actual - slavetime ) / tottime_ideal )*100.0_realk
 
-    ! Average % global loss (idle time at the end when some slots wait for others)
-    globalloss = ( 1 - (tottime_actual / tottime_ideal) )*100.0_realk
+       ! Average % global loss (idle time at the end when some slots wait for others)
+       globalloss = ( 1 - (tottime_actual / tottime_ideal) )*100.0_realk
 
-    ! Average flops per node per sec
-    avflop = totflops/tottime_actual
-    write(DECinfo%output,*) '-----------------------------------------------------------------------------'
-    write(DECinfo%output,'(1X,a,i8)') 'Number of jobs done = ', N
-    write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL Gflops  = ', totflops
-    write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL time(s) = ', tottime_actual
-    write(DECinfo%output,'(1X,a,g12.3)') 'AVERAGE Gflops/s per MPI process= ', avflop
-    write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MINIMUM Gflops/s per MPI process = ', &
-         & minflop, ' for job ', minidx
-    write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MAXIMUM Gflops/s per MPI process = ', &
-         & maxflop, ' for job ', maxidx
-    write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)  = ', localloss
-    write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%) = ', globalloss
-    write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)  = ', localloss+globalloss
-    write(DECinfo%output,*) '-----------------------------------------------------------------------------'
+       ! Average flops per node per sec
+       avflop = totflops/tottime_actual
+       write(DECinfo%output,*) '-----------------------------------------------------------------------------'
+       write(DECinfo%output,'(1X,a,i8)')    'Number of jobs done     = ', N
+       write(DECinfo%output,'(1X,a,g12.3)') 'Time-to-solution (s)    = ', mastertime
+       write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL time(s) all nodes = ', tottime_actual
+#ifdef VAR_PAPI
+       write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL Gflops  = ', totflops
+       write(DECinfo%output,'(1X,a,g12.3)') 'AVERAGE Gflops/s per MPI process= ', avflop
+       write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MINIMUM Gflops/s per MPI process = ', &
+            & minflop, ' for job ', minidx
+       write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MAXIMUM Gflops/s per MPI process = ', &
+            & maxflop, ' for job ', maxidx
+#endif
+       write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)  = ', localloss
+       write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%) = ', globalloss
+       write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)  = ', localloss+globalloss
+       write(DECinfo%output,*) '-----------------------------------------------------------------------------'
+
+    end if
     write(DECinfo%output,*)
     write(DECinfo%output,*)
 
