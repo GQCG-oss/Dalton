@@ -2284,109 +2284,114 @@ CONTAINS
         Dsym = .FALSE. !NONsymmetric Density matrix
         ndmat = 1
         IF(present(setting))THEN
-           !This should be changed to a test like the MATSYM function for full matrices
-           call II_get_Fock_mat(lupri,luerr,setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
+           !This should be changed to a test like the MATSYM function
+           ! for full matrices
+           call II_get_Fock_mat(lupri,luerr,setting,Dens,Dsym,&
+                                 & GbDs,ndmat,.FALSE.)
         ELSE
-           call II_get_Fock_mat(lupri,luerr,lsint_fock_data%ls%setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
+           call II_get_Fock_mat(lupri,luerr,lsint_fock_data%ls%setting,Dens,&
+                                & Dsym,GbDs,ndmat,.FALSE.)
         ENDIF
       end subroutine di_GET_GbDsSingle
 
-	!> \brief Determine the G matrix for the 2-e contribution to 
-	!>        sigma vector in RSP,
-	!>        and includes the XC contrib. to linear response
-	!> \author Patrick Merlot
-	!> \date 2013-03-26
-	!> \param GbDs  The 2-e contribution to sigma vector in RSP
-	!> \param Gxc   The xc cont to the linear response
-	!> \param lupri Default print unit
-	!> \param luerr Default error print unit
-	!> \param setting Integral evalualtion settings
-	!> \param Bmat  The b matrix G(b)
-	!> \param nBmat The number of Bmat matrices
-	!> \param nbast The number of basisfunctions
-	!> \param Dmat  The Density matrix
- 	SUBROUTINE di_GET_GbDs_and_XC_linrsp_Array(GbDs,Gxc,lupri,luerr,&
-						& Bmat,nBmat,nbast,Dmat,do_dft,setting)
-		IMPLICIT NONE
-		INTEGER, intent(in)           :: lupri,luerr,nBmat,nbast
-		TYPE(LSsetting),intent(inout), optional :: setting
-		TYPE(Matrix), intent(in)      :: Bmat(nBmat)
-		TYPE(Matrix), intent(in)      :: Dmat
-		TYPE(Matrix), intent(inout)   :: GbDs(nBmat)
-		TYPE(Matrix), intent(inout)   :: Gxc(nBmat)
-		LOGICAL, intent(in)           :: do_dft
-		!
-		INTEGER                       :: iBmat
-		LOGICAL                       :: ADMMexchange  , ADMMGCBASIS    
-		! -- ADMM modifications
-		!	 replace GdBs = J(B) + K(B)
-		!    by      GdBs = J(B) + K(b) + X(B) - X(b) if ADMM
-		IF(present(setting))THEN
-			ADMMexchange = setting%scheme%ADMM_EXCHANGE
-			ADMMGCBASIS  = setting%scheme%ADMM_GCBASIS
-		ELSE
-			ADMMexchange = lsint_fock_data%ls%setting%scheme%ADMM_EXCHANGE 
-			ADMMGCBASIS  = lsint_fock_data%ls%setting%scheme%ADMM_GCBASIS
-		ENDIF
-		IF (ADMMGCBASIS) THEN
-			ADMMexchange = .FALSE.
-			ENDIF
-		IF (ADMMexchange) THEN 
-			! GdBs = J(B) + K(b) + X(B) - X(b)
-			call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,setting)
-		ELSE 
-			! GdBs = J(B) + K(B)
-			call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,setting)
-			!call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
-		ENDIF
-		
-		IF (do_dft) THEN  
-			! Add extra XC contributions to G 
-			IF(present(setting))THEN
-				call II_get_xc_linrsp(lupri,luerr,setting,nbast,Bmat,Dmat,Gxc,nBmat) 
-			ELSE
-				call II_get_xc_linrsp(lupri,luerr,lsint_fock_data%ls%setting,nbast,Bmat,Dmat,Gxc,nBmat) 
-			ENDIF
-			DO iBmat=1,nBmat
-				call mat_daxpy(1E0_realk,Gxc(iBmat),GbDs(iBmat)) 
-			ENDDO
-		ENDIF
-	END SUBROUTINE di_GET_GbDs_and_XC_linrsp_Array
-	
-	
-	SUBROUTINE di_GET_GbDs_and_XC_linrsp_Single(GbDs,Gxc,lupri,luerr,&
-									& Bmat,nbast,Dmat,do_dft, setting)
-		IMPLICIT NONE
-		INTEGER, intent(in)           :: lupri,luerr,nbast
-		TYPE(LSsetting),intent(inout), optional :: setting
-		TYPE(Matrix), intent(in)      :: Bmat
-		TYPE(Matrix), intent(in)      :: Dmat
-		TYPE(Matrix), intent(inout)   :: GbDs
-		TYPE(Matrix), intent(inout)   :: Gxc
-		logical, intent(in)           :: do_dft
-		!
-		type(matrix) :: GbDSArray(1), GxcArray(1), BmatArray(1)
-		!
-		call mat_init(GbDsArray(1),nbast,nbast)
-		call mat_assign(GbDSArray(1),GbDs)
-		call mat_init(BmatArray(1),nbast,nbast)
-		call mat_assign(BmatArray(1),Bmat)
-		IF (do_dft) THEN 
-			call mat_init(GxcArray(1),nbast,nbast)
-			call mat_assign(GxcArray(1),Gxc)
-		ENDIF
-		call di_GET_GbDs_and_XC_linrsp_Array(GbDsArray,GxcArray,lupri,&
-						&luerr,BmatArray,1,nbast,Dmat,do_dft,setting)
-		call mat_assign(GbDs,GbDSArray(1))
-		call mat_free(GbDSArray(1))
-		call mat_free(BmatArray(1))
-		IF (do_dft) THEN 
-			call mat_assign(Gxc,GxcArray(1))
-			call mat_free(GxcArray(1))
-		ENDIF
-	END SUBROUTINE di_GET_GbDs_and_XC_linrsp_Single
-	
-	
+    !> \brief Determine the G matrix for the 2-e contribution to 
+    !>        sigma vector in RSP,
+    !>        and includes the XC contrib. to linear response
+    !> \author Patrick Merlot
+    !> \date 2013-03-26
+    !> \param GbDs  The 2-e contribution to sigma vector in RSP
+    !> \param Gxc   The xc cont to the linear response
+    !> \param lupri Default print unit
+    !> \param luerr Default error print unit
+    !> \param setting Integral evalualtion settings
+    !> \param Bmat  The b matrix G(b)
+    !> \param nBmat The number of Bmat matrices
+    !> \param nbast The number of basisfunctions
+    !> \param Dmat  The Density matrix
+     SUBROUTINE di_GET_GbDs_and_XC_linrsp_Array(GbDs,Gxc,lupri,luerr,&
+                        & Bmat,nBmat,nbast,Dmat,do_dft,setting)
+        IMPLICIT NONE
+        INTEGER, intent(in)           :: lupri,luerr,nBmat,nbast
+        TYPE(LSsetting),intent(inout), optional :: setting
+        TYPE(Matrix), intent(in)      :: Bmat(nBmat)
+        TYPE(Matrix), intent(in)      :: Dmat
+        TYPE(Matrix), intent(inout)   :: GbDs(nBmat)
+        TYPE(Matrix), intent(inout)   :: Gxc(nBmat)
+        LOGICAL, intent(in)           :: do_dft
+        !
+        INTEGER                       :: iBmat
+        LOGICAL                       :: ADMMexchange  , ADMMGCBASIS    
+        ! -- ADMM modifications
+        !     replace GdBs = J(B) + K(B)
+        !    by      GdBs = J(B) + K(b) + X(B) - X(b) if ADMM
+        IF(present(setting))THEN
+            ADMMexchange = setting%scheme%ADMM_EXCHANGE
+            ADMMGCBASIS  = setting%scheme%ADMM_GCBASIS
+        ELSE
+            ADMMexchange = lsint_fock_data%ls%setting%scheme%ADMM_EXCHANGE 
+            ADMMGCBASIS  = lsint_fock_data%ls%setting%scheme%ADMM_GCBASIS
+        ENDIF
+        IF (ADMMGCBASIS) THEN
+            ADMMexchange = .FALSE.
+            ENDIF
+        IF (ADMMexchange) THEN 
+            ! GdBs = J(B) + K(b) + X(B) - X(b)
+            call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,setting)
+        ELSE 
+            ! GdBs = J(B) + K(B)
+            call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,setting)
+            !call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
+        ENDIF
+        
+        IF (do_dft) THEN  
+            ! Add extra XC contributions to G 
+            IF(present(setting))THEN
+                call II_get_xc_linrsp(lupri,luerr,&
+                      & setting,nbast,Bmat,Dmat,Gxc,nBmat) 
+            ELSE
+                call II_get_xc_linrsp(lupri,luerr,&
+                      & lsint_fock_data%ls%setting,nbast,Bmat,Dmat,Gxc,nBmat) 
+            ENDIF
+            DO iBmat=1,nBmat
+                call mat_daxpy(1E0_realk,Gxc(iBmat),GbDs(iBmat)) 
+            ENDDO
+        ENDIF
+    END SUBROUTINE di_GET_GbDs_and_XC_linrsp_Array
+    
+    
+    SUBROUTINE di_GET_GbDs_and_XC_linrsp_Single(GbDs,Gxc,lupri,luerr,&
+                                    & Bmat,nbast,Dmat,do_dft, setting)
+        IMPLICIT NONE
+        INTEGER, intent(in)           :: lupri,luerr,nbast
+        TYPE(LSsetting),intent(inout), optional :: setting
+        TYPE(Matrix), intent(in)      :: Bmat
+        TYPE(Matrix), intent(in)      :: Dmat
+        TYPE(Matrix), intent(inout)   :: GbDs
+        TYPE(Matrix), intent(inout)   :: Gxc
+        logical, intent(in)           :: do_dft
+        !
+        type(matrix) :: GbDSArray(1), GxcArray(1), BmatArray(1)
+        !
+        call mat_init(GbDsArray(1),nbast,nbast)
+        call mat_assign(GbDSArray(1),GbDs)
+        call mat_init(BmatArray(1),nbast,nbast)
+        call mat_assign(BmatArray(1),Bmat)
+        IF (do_dft) THEN 
+            call mat_init(GxcArray(1),nbast,nbast)
+            call mat_assign(GxcArray(1),Gxc)
+        ENDIF
+        call di_GET_GbDs_and_XC_linrsp_Array(GbDsArray,GxcArray,lupri,&
+                        &luerr,BmatArray,1,nbast,Dmat,do_dft,setting)
+        call mat_assign(GbDs,GbDSArray(1))
+        call mat_free(GbDSArray(1))
+        call mat_free(BmatArray(1))
+        IF (do_dft) THEN 
+            call mat_assign(Gxc,GxcArray(1))
+            call mat_free(GxcArray(1))
+        ENDIF
+    END SUBROUTINE di_GET_GbDs_and_XC_linrsp_Single
+    
+    
       subroutine di_GET_GbDsArray(lupri,luerr,Dens,GbDs,nDmat,setting)
         !*********************************************************
         ! Determine the G matrix for the 2-e contribution to sigma
@@ -2404,145 +2409,138 @@ CONTAINS
         !
         logical :: Dsym
 
-		!This should be changed to a test like the MATSYM function for full matrices   
-		Dsym = .FALSE. !NONsymmetric Density matrix
-		IF(present(setting))THEN
-		   call II_get_Fock_mat(lupri,luerr,setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
-		ELSE
-		   call II_get_Fock_mat(lupri,luerr,lsint_fock_data%ls%setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
-		ENDIF
-		write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
-		call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
+        !This should be changed to a test like the MATSYM
+        ! function for full matrices   
+        Dsym = .FALSE. !NONsymmetric Density matrix
+        IF(present(setting))THEN
+           call II_get_Fock_mat(lupri,luerr,&
+              & setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
+        ELSE
+           call II_get_Fock_mat(lupri,luerr,&
+              & lsint_fock_data%ls%setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
+        ENDIF
+        write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
+        call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
 
       end subroutine di_GET_GbDsArray
 
 
-	!*********************************************************
-	! Determine the G matrix for the 2-e contribution to sigma
-	! vector in RSP using the ADMM exchange approximation
-	! GdBs = J(B) + K(b) + X(B) - X(b)
-	! G([b,D]s) = 2-e part of Fock Matrix with a modified
-	!             density [b,D]s (here called Dens)
-	! Patrick, April 2013
-	!*********************************************************
-	SUBROUTINE di_GET_GbDsArray_ADMM(lupri,luerr,Dens,GbDs,nDmat,setting)
-		implicit none
-		integer, intent(in)                      :: lupri,luerr,ndmat
-		type(Matrix), intent(in)                 :: Dens(nDmat)
-		type(Matrix), intent(inout)              :: GbDs(nDmat)  !output
-		type(lssetting), intent(inout), optional :: setting
-		!
-		logical                :: Dsym, copy_IntegralTransformGC
-		type(Matrix)           :: Dens_AO(nDmat), K(nDmat)
-		integer                :: i
-		!
-		IF(present(setting))THEN
-			call di_GET_GbDsArray_ADMM_setting(lupri,luerr,Dens,GbDs,nDmat,setting)
-		ELSE
-			call di_GET_GbDsArray_ADMM_setting(lupri,luerr,Dens,GbDs,nDmat,lsint_fock_data%ls%setting)
-		ENDIF
-		!
-		CONTAINS
-		  SUBROUTINE di_GET_GbDsArray_ADMM_setting(lupri,luerr,Dens,GbDs,nDmat,setting)
-			implicit none
-			integer, intent(in)            :: lupri,luerr,ndmat
-			type(Matrix), intent(in)       :: Dens(nDmat)
-			type(Matrix), intent(inout)    :: GbDs(nDmat)
-			type(lssetting), intent(inout) :: setting
-			!
-			logical                :: Dsym, copy_IntegralTransformGC, inc_scheme, do_inc
-			type(Matrix)           :: Dens_AO(nDmat), K(nDmat)
-			integer                :: i
-			!
-			IF(matrix_type .EQ. mtype_unres_dense) THEN
-				call lsquit('di_GET_GbDsArray_ADMM does not support unrestricted matrices',lupri)
-			ENDIF
-			call get_incremental_settings(inc_scheme,do_inc)
-			IF(inc_scheme .OR. do_inc)THEN
-				write (lupri,*) 'inc_scheme = ', inc_scheme
-				write (lupri,*) 'do_inc = ', do_inc
-				call lsquit('II_get_Fock_mat incremental scheme not allowed in di_GET_GbDsArray_ADMM_setting()',lupri)
-			ENDIF
-			!This should be changed to a test like the MATSYM function for full matrices   
-			Dsym = .FALSE. !NONsymmetric Density matrix
+    !*********************************************************
+    ! Determine the G matrix for the 2-e contribution to sigma
+    ! vector in RSP using the ADMM exchange approximation
+    ! GdBs = J(B) + K(b) + X(B) - X(b)
+    ! G([b,D]s) = 2-e part of Fock Matrix with a modified
+    !             density [b,D]s (here called Dens)
+    ! Patrick, April 2013
+    !*********************************************************
+    SUBROUTINE di_GET_GbDsArray_ADMM(lupri,luerr,Dens,GbDs,nDmat,setting)
+        implicit none
+        integer, intent(in)                      :: lupri,luerr,ndmat
+        type(Matrix), intent(in)                 :: Dens(nDmat)
+        type(Matrix), intent(inout)              :: GbDs(nDmat)  !output
+        type(lssetting), intent(inout), optional :: setting
+        !
+        logical                :: Dsym, copy_IntegralTransformGC
+        type(Matrix)           :: Dens_AO(nDmat), K(nDmat)
+        integer                :: i
+        !
+        IF(present(setting))THEN
+            call di_GET_GbDsArray_ADMM_setting(lupri,luerr,Dens,GbDs,nDmat,&
+                      & setting)
+        ELSE
+            call di_GET_GbDsArray_ADMM_setting(lupri,luerr,Dens,GbDs,nDmat,&
+                      & lsint_fock_data%ls%setting)
+        ENDIF
+        !
+        CONTAINS
+          SUBROUTINE di_GET_GbDsArray_ADMM_setting(lupri,luerr,Dens,&
+                                                    & GbDs,nDmat,setting)
+            implicit none
+            integer, intent(in)            :: lupri,luerr,ndmat
+            type(Matrix), intent(in)       :: Dens(nDmat)
+            type(Matrix), intent(inout)    :: GbDs(nDmat)
+            type(lssetting), intent(inout) :: setting
+            !
+            logical                :: Dsym, copy_IntegralTransformGC, 
+            logical                :: inc_scheme, do_inc
+            type(Matrix)           :: Dens_AO(nDmat), K(nDmat)
+            integer                :: i
+            !
+            IF(matrix_type .EQ. mtype_unres_dense) THEN
+                call lsquit('di_GET_GbDsArray_ADMM does not support &
+                             &unrestricted matrices',lupri)
+            ENDIF
+            call get_incremental_settings(inc_scheme,do_inc)
+            IF(inc_scheme .OR. do_inc)THEN
+                call lsquit('II_get_Fock_mat incremental scheme not &
+                           & allowed in di_GET_GbDsArray_ADMM_setting()',lupri)
+            ENDIF
+            !This should be changed to a test like the MATSYM
+            ! function for full matrices   
+            Dsym = .FALSE. !NONsymmetric Density matrix
 
-			! Get rid of Grand canonical
-			copy_IntegralTransformGC = setting%IntegralTransformGC
-			IF(copy_IntegralTransformGC) THEN
-			write (lupri,*) "copy_IntegralTransformGC = TRUE...ADMM in di_GET_GbDsArray_ADMM_setting()"
-				setting%IntegralTransformGC = .FALSE.
-				! we do this manually in order to get incremental correct
-				! change D to AO basis (currently in GCAO basis)
-				DO i=1,nDmat
-					call mat_init(Dens_AO(i),Dens(1)%nrow,Dens(1)%ncol)
-					call GCAO2AO_transform_matrixD2(Dens(i),Dens_AO(i),setting,lupri)
-				ENDDO
-			ELSE ! no GC transformation
-			write (lupri,*) "copy_IntegralTransformGC = FALSE...ADMM in di_GET_GbDsArray_ADMM_setting()"
-				DO i=1,nDmat
-				  call mat_init(Dens_AO(i),Dens(1)%nrow,Dens(1)%ncol)
-				  call mat_assign(Dens_AO(i),Dens(i))
-				ENDDO			
-			ENDIF
+            ! Get rid of Grand canonical
+            copy_IntegralTransformGC = setting%IntegralTransformGC
+            IF(copy_IntegralTransformGC) THEN
+                setting%IntegralTransformGC = .FALSE.
+                ! we do this manually in order to get incremental correct
+                ! change D to AO basis (currently in GCAO basis)
+                DO i=1,nDmat
+                    call mat_init(Dens_AO(i),Dens(1)%nrow,Dens(1)%ncol)
+                    call GCAO2AO_transform_matrixD2(Dens(i),Dens_AO(i),&
+                                                    & setting,lupri)
+                ENDDO
+            ELSE ! no GC transformation
+                DO i=1,nDmat
+                  call mat_init(Dens_AO(i),Dens(1)%nrow,Dens(1)%ncol)
+                  call mat_assign(Dens_AO(i),Dens(i))
+                ENDDO            
+            ENDIF
 
-			! J(B)
-			DO i=1,nDmat
-				call mat_zero(GbDs(i))
-			ENDDO
-			call II_get_coulomb_mat(LUPRI,LUERR,setting,Dens_AO,GbDs,nDmat)   
-			write (lupri,*) "Coulomb mat in ADMM di_GET_GbDsArray_ADMM_setting()"
-			call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
+            ! J(B)
+            DO i=1,nDmat
+                call mat_zero(GbDs(i))
+            ENDDO
+            call II_get_coulomb_mat(LUPRI,LUERR,setting,Dens_AO,GbDs,nDmat)   
+            !write (lupri,*) "Coulomb mat in di_GET_GbDsArray_ADMM_setting()"
+            !call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
 
-			! K(B)
-			DO i=1,nDmat
-				call mat_init(K(i),GbDs(1)%nrow,GbDs(1)%ncol)
-				call mat_zero(K(i))
-			ENDDO
-			IF(setting%scheme%daLinK) THEN
-				call lsquit('di_GET_GbDsArray_ADMM does not support daLink',lupri)
-			ENDIF
-			call II_get_exchange_mat(LUPRI,LUERR,setting,Dens_AO,nDmat,Dsym,K)
-			write (lupri,*) "Exchange mat in ADMM di_GET_GbDsArray_ADMM_setting()"
-			call mat_print(K(1),1,K(1)%nrow,1,K(1)%ncol,lupri)
-			DO i=1,ndmat
-				call mat_daxpy(1E0_realk,K(i),GbDs(i))
-				call mat_free(K(i))
-			ENDDO
+            ! K(B)
+            DO i=1,nDmat
+                call mat_init(K(i),GbDs(1)%nrow,GbDs(1)%ncol)
+                call mat_zero(K(i))
+            ENDDO
+            IF(setting%scheme%daLinK) THEN
+                call lsquit('di_GET_GbDsArray_ADMM not supported in daLink',lupri)
+            ENDIF
+            call II_get_exchange_mat(LUPRI,LUERR,setting,Dens_AO,nDmat,Dsym,K)
+            !write (lupri,*) "Exchange mat in ADMM di_GET_GbDsArray_ADMM_setting()"
+            !call mat_print(K(1),1,K(1)%nrow,1,K(1)%ncol,lupri)
+            DO i=1,ndmat
+                call mat_daxpy(1E0_realk,K(i),GbDs(i))
+                call mat_free(K(i))
+            ENDDO
 
-					
+            ! Transform back to GCAO basis 
+            IF(copy_IntegralTransformGC) THEN
+                ! Reset to the original value of IntegralTransformGC
+                setting%IntegralTransformGC = copy_IntegralTransformGC 
+                DO i=1,nDmat
+                    call AO2GCAO_transform_matrixF(GbDs(i),setting,lupri)
+                ENDDO
+            ENDIF
+            
+            
+            ! DEBUG PAT START -----------------------------    
+            write (lupri,*) "J+K mat in ADMM di_GET_GbDsArray_ADMM_setting()"
+            call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
 
-		
-!		   call II_get_Fock_mat(lupri,luerr,setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
-	
-!			write (lupri,*) "Fock_mat=J+K mat in di_GET_GbDsArray_ADMM_setting()"
-!			call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
-!			! DEBUG PAT  END -----------------------------
-			
-			! Transform back to GCAO basis 
-			IF(copy_IntegralTransformGC) THEN
-				write (lupri,*) "Transformation to GC required YES...ADMM in di_GET_GbDsArray_ADMM_setting()"
-				! Reset to the original value of IntegralTransformGC
-				setting%IntegralTransformGC = copy_IntegralTransformGC 
-				DO i=1,nDmat
-					call AO2GCAO_transform_matrixF(GbDs(i),setting,lupri)
-				ENDDO
-			ENDIF
-			
-			
-			! DEBUG PAT START -----------------------------	
-			write (lupri,*) "J+K mat in ADMM di_GET_GbDsArray_ADMM_setting()"
-			call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
-!			DO i=1,nDmat
-!				call mat_zero(GbDs(i))
-!			ENDDO
-
-
-			! FREE MEMORY
-			DO I=1,ndmat
-				call mat_free(Dens_AO(I))
-			ENDDO
-		  END SUBROUTINE di_GET_GbDsArray_ADMM_setting
-	  !CONTAINS END
+            ! FREE MEMORY
+            DO I=1,ndmat
+            call mat_free(Dens_AO(I))
+            ENDDO
+          END SUBROUTINE di_GET_GbDsArray_ADMM_setting
+      !CONTAINS END
       END SUBROUTINE di_GET_GbDsArray_ADMM
       
       
