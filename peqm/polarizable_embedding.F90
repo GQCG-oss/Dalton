@@ -7334,7 +7334,7 @@ subroutine Mk_lao_integrals(Mk_ints, Rij, Mk)
 
     k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * size(Mk)) - 1.0d0)) - 1
 
-    nwrk = size(work)
+    nwrk = size(work(3*n2bas+1:))
 
     if (mod(k,2) == 0) then
         taylor = 1.0d0 / factorial(k)
@@ -7345,7 +7345,7 @@ subroutine Mk_lao_integrals(Mk_ints, Rij, Mk)
     ncomps = size(Mk_ints, 3)
     nints = size(Mk_ints, 1)
 
-    call Tk_lao_integrals(Mk_ints, nints, ncomps, Rij, work, nwrk)
+    call Tk_lao_integrals(Mk_ints, nints, ncomps, Rij, work(3*n2bas+1), nwrk)
 
     allocate(factors(ncomps))
     call symmetry_factors(factors)
