@@ -458,8 +458,7 @@ contains
           call lsquit('Calculation of molecular gradient is only implemented for MP2!', DECinfo%output)
        end if
 
-       write(DECinfo%output,*) 'Coupled-cluster beyond MP2 is requested!'
-       write(DECinfo%output,*) 'I turn on the occupied/virtual hybrid partitioning scheme!'
+       ! Turn on the occupied/virtual hybrid scheme
        DECinfo%HybridScheme=.true.
 
     end if BeyondMp2
