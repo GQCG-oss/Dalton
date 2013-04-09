@@ -2690,7 +2690,7 @@ end subroutine atomic_fragment_basis
          & virt_list,occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,.false.)
 
 
-    ! Fragment energies (only for the Lagrangian scheme are all three used)
+    ! Fragment energies 
     read(runit) fragment%energies
 
 

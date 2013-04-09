@@ -4804,7 +4804,7 @@ call mem_TurnOffThread_Memory()
              FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,6) + FragEnergiesAll(i,j,8)
 
              ! Virtual CCSD energies stored in entry 7 + virtual (T) energies stored in entry 9
-             FragEnergiesModel(i,j,2) = FragEnergiesAll(i,j,7) + FragEnergiesAll(i,j,9)
+             FragEnergiesModel(i,j,3) = FragEnergiesAll(i,j,7) + FragEnergiesAll(i,j,9)
 
              ! Lagrangian CCSD(T) energy not implemented, simply use average of occ and virt energies
              FragEnergiesModel(i,j,1) = 0.5_realk*(FragEnergiesModel(i,j,2) + &
