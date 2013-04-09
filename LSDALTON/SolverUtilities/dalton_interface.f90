@@ -2339,8 +2339,7 @@ CONTAINS
             call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,setting)
         ELSE 
             ! GdBs = J(B) + K(B)
-            call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,setting)
-            !call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
+            call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
         ENDIF
         
         IF (do_dft) THEN  
@@ -2461,7 +2460,7 @@ CONTAINS
             type(Matrix), intent(inout)    :: GbDs(nDmat)
             type(lssetting), intent(inout) :: setting
             !
-            logical                :: Dsym, copy_IntegralTransformGC, 
+            logical                :: Dsym, copy_IntegralTransformGC
             logical                :: inc_scheme, do_inc
             type(Matrix)           :: Dens_AO(nDmat), K(nDmat)
             integer                :: i
