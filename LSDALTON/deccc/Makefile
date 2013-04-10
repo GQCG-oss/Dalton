@@ -28,6 +28,7 @@ F90_OBJS = dec_settings.o \
 	array_operations.o \
 	ccsd.o \
 	rpa.o \
+	f12_integrals.o \
 	cc_driver.o \
 	dec_atom.o \
 	mp2_gradient.o \

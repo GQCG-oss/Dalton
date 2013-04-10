@@ -10,32 +10,33 @@ module fragment_energy_module
   use lstiming!, only: lstimer
   use typedeftype!, only: lsitem
   use memory_handling!, only: mem_alloc,mem_dealloc,collect_thread_memory,&
-!       & mem_TurnOffThread_Memory,mem_TurnONThread_Memory,init_threadmemvar
+  !       & mem_TurnOffThread_Memory,mem_TurnONThread_Memory,init_threadmemvar
   use dec_typedef_module
 
 
   ! DEC DEPENDENCIES (within deccc directory)                                                         
   ! ****************************************
+  use f12_integrals_module
   use dec_fragment_utils
   use array2_simple_operations
   use array4_simple_operations
   use orbital_operations
   use ao_contractions !,only: max_batch_dimension,get_vovo_integrals, &
-!       & mp2_integrals_and_amplitudes
+  !       & mp2_integrals_and_amplitudes
   use atomic_fragment_operations!  ,only: atomic_fragment_init_basis_part, &
-!       & get_fragmentt1_AOSAOS_from_full, extract_specific_fragmentt1, &
-!       & update_full_t1_from_atomic_frag,which_pairs, &
-!       & update_full_t1_from_atomic_frag, update_full_t1_from_pair_frag
-  use ccsdpt_module , only:ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
+  !       & get_fragmentt1_AOSAOS_from_full, extract_specific_fragmentt1, &
+  !       & update_full_t1_from_atomic_frag,which_pairs, &
+  !       & update_full_t1_from_atomic_frag, update_full_t1_from_pair_frag
+  use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
        ccsdpt_energy_e4_pair,ccsdpt_energy_e5_pair
   use mp2_gradient_module ,only: single_calculate_mp2gradient_driver,&
        & pair_calculate_mp2gradient_driver
   use ccdriver, only: mp2_solver,fragment_ccsolver
 
-public :: optimize_atomic_fragment, super_pair_lagrangian_driver_singles, single_lagrangian_driver, &
-     & pair_lagrangian_driver,super_single_lagrangian_driver_advanced,dec_energy_control_center,&
-     & Full_DEC_calculation_Lagrangian,estimate_energy_error
-private
+  public :: optimize_atomic_fragment, super_pair_lagrangian_driver_singles, single_lagrangian_driver, &
+       & pair_lagrangian_driver,super_single_lagrangian_driver_advanced,dec_energy_control_center,&
+       & Full_DEC_calculation_Lagrangian,estimate_energy_error
+  private
 
 contains
 
@@ -81,13 +82,10 @@ contains
     real(realk) :: tcpu, twall
     logical :: DoBasis
 
-
     ! **************************************************************
     ! *                       RUN CALCULATION                      *
     ! **************************************************************
     call LSTIMER('START',tcpu,twall,DECinfo%output)
-
-
 
     ! Initialize fragment
     ! *******************
@@ -106,9 +104,7 @@ contains
 
     call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output)
 
-
   end subroutine get_fragment_and_Energy
-
 
 
   !> \brief Construct new fragment based on list of orbitals in OccAOS and UnoccAOS,
@@ -374,7 +370,7 @@ contains
        call array4_extract_eos_indices_both_schemes(VOVO, &
             & VOVOocc, VOVOvirt, MyFragment)
        call array4_free(VOVO)
-       
+
 
        ! Calculate combined single+doubles amplitudes
        ! ********************************************
@@ -424,7 +420,7 @@ contains
 
           ! which occupied orbitals are present in the ccsd aos?
           do i=1,MyFragment%noccAOS
-!          do i=1,occ_max
+             !          do i=1,occ_max
 
              occAOS_ccsd(MyFragment%occAOSidx(i)) = .true.
 
@@ -432,7 +428,7 @@ contains
 
           ! which virtual orbitals are present in the ccsd aos?
           do i=1,MyFragment%nunoccAOS
-!          do i=1,virt_max
+             !          do i=1,virt_max
 
              virtAOS_ccsd(MyFragment%unoccAOSidx(i)) = .true.
 
@@ -440,7 +436,7 @@ contains
 
           ! which occupied orbitals are present in the ccsd(t) aos?
           do i=1,MyFragment%parenthesis_t%noccAOS
-!          do i=1,occ_max
+             !          do i=1,occ_max
 
              occAOS_ccsdpt(MyFragment%parenthesis_t%occAOSidx(i)) = .true.
 
@@ -448,7 +444,7 @@ contains
 
           ! which virtual orbitals are present in the ccsd(t) aos?
           do i=1,MyFragment%parenthesis_t%nunoccAOS
-!          do i=1,virt_max
+             !          do i=1,virt_max
 
              virtAOS_ccsdpt(MyFragment%parenthesis_t%unoccAOSidx(i)) = .true.
 
@@ -467,14 +463,14 @@ contains
           ccsd_t1_ccsdpt = array2_init([nvirt_ccsdpt,nocc_ccsdpt])
           ccsd_t2_ccsdpt = array4_init([nvirt_ccsdpt,nocc_ccsdpt,nvirt_ccsdpt,nocc_ccsdpt])
           call extract_pt_indices_from_ccsd_ampls(occ_max,virt_max,virtAOS_ccsd,occAOS_ccsd,virtAOS_ccsdpt,&
-                                                   & occAOS_ccsdpt,t1tmp,ccsd_t1_ccsdpt,t2tmp,ccsd_t2_ccsdpt)
+               & occAOS_ccsdpt,t1tmp,ccsd_t1_ccsdpt,t2tmp,ccsd_t2_ccsdpt)
 
           ! debug prints 2
           print *,'t1tmp dims 1-2              = ',t1tmp%dims(1),t1tmp%dims(2)
           print *,'ccsd_t1_ccsdpt dims 1-2     = ',ccsd_t1_ccsdpt%dims(1),ccsd_t1_ccsdpt%dims(2)
           print *,'t2tmp dims 1-2-3-4          = ',t2tmp%dims(1),t2tmp%dims(2),t2tmp%dims(3),t2tmp%dims(4)
           print *,'ccsd_t2_ccsdpt dims 1-2-3-4 = ',ccsd_t2_ccsdpt%dims(1),ccsd_t2_ccsdpt%dims(2),&
-                                                 & ccsd_t2_ccsdpt%dims(3),ccsd_t2_ccsdpt%dims(4)
+               & ccsd_t2_ccsdpt%dims(3),ccsd_t2_ccsdpt%dims(4)
 
           ! now deallocate occAOS and virtAOS vectors
           call mem_dealloc(occAOS_ccsd)
@@ -488,12 +484,12 @@ contains
 
           ! call ccsd(t) driver and single fragment evaluation
           call ccsdpt_driver(MyFragment%parenthesis_t%noccAOS,MyFragment%parenthesis_t%nunoccAOS,&
-                             & MyFragment%parenthesis_t%number_basis,MyFragment%parenthesis_t%ppfock,&
-                             & MyFragment%parenthesis_t%qqfock,MyFragment%parenthesis_t%ypo,&
-                             & MyFragment%parenthesis_t%ypv,MyFragment%parenthesis_t%mylsitem,&
-                             & ccsd_t2_ccsdpt,ccsdpt_t1,ccsdpt_t2)
+               & MyFragment%parenthesis_t%number_basis,MyFragment%parenthesis_t%ppfock,&
+               & MyFragment%parenthesis_t%qqfock,MyFragment%parenthesis_t%ypo,&
+               & MyFragment%parenthesis_t%ypv,MyFragment%parenthesis_t%mylsitem,&
+               & ccsd_t2_ccsdpt,ccsdpt_t1,ccsdpt_t2)
           call ccsdpt_energy_e4_frag(MyFragment%parenthesis_t,ccsd_t2_ccsdpt,ccsdpt_t2,&
-                             & MyFragment%parenthesis_t%OccContribs,MyFragment%parenthesis_t%VirtContribs)
+               & MyFragment%parenthesis_t%OccContribs,MyFragment%parenthesis_t%VirtContribs)
           call ccsdpt_energy_e5_frag(MyFragment%parenthesis_t,ccsd_t1_ccsdpt,ccsdpt_t1)
           myfragment%energies(8:13) = myfragment%parenthesis_t%energies(8:13)
 
@@ -547,9 +543,12 @@ contains
     ! which calculates atomic fragment contribution and saves it in myfragment%energies(?),
     ! see dec_readme file.
 
+    if(DECinfo%f12) then    
+       print *, "---------------F12-energy-single-fragment-------------"
+       call f12_single_fragment_energy(MyFragment)
+    endif
 
     call LSTIMER('SINGLE L.ENERGY',tcpu,twall,DECinfo%output)
-
 
     ! First order properties
     ! **********************
@@ -565,9 +564,7 @@ contains
     call array4_free(t2occ)
     call array4_free(t2virt)
 
-
   end subroutine single_lagrangian_energy_and_prop
-
 
 
   !> \brief Contract amplitudes, multipliers, and integrals to calculate atomic fragment Lagrangian energy.
@@ -687,20 +684,20 @@ contains
 
 
 
-call mem_TurnONThread_Memory()
-!$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,e2,j,b,i,a,c,virt_tmp,VirtMat_tmp)
-call init_threadmemvar()
-e1=0E0_realk
-e2=0E0_realk
-! Contributions from each individual virtual orbital
-call mem_alloc(virt_tmp,nvirtAOS)
-virt_tmp = 0.0E0_realk
+    call mem_TurnONThread_Memory()
+    !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,e2,j,b,i,a,c,virt_tmp,VirtMat_tmp)
+    call init_threadmemvar()
+    e1=0E0_realk
+    e2=0E0_realk
+    ! Contributions from each individual virtual orbital
+    call mem_alloc(virt_tmp,nvirtAOS)
+    virt_tmp = 0.0E0_realk
 
-! Virtual correlation density matrix
-call mem_alloc(VirtMat_tmp,nvirtAOS,nvirtAOS)
-VirtMat_tmp = 0.0_realk
+    ! Virtual correlation density matrix
+    call mem_alloc(VirtMat_tmp,nvirtAOS,nvirtAOS)
+    VirtMat_tmp = 0.0_realk
 
-!$OMP DO SCHEDULE(dynamic,1)
+    !$OMP DO SCHEDULE(dynamic,1)
 
 
     ! Calculate e1 and e2
@@ -764,30 +761,30 @@ VirtMat_tmp = 0.0_realk
        end do
     end do
 
-!$OMP END DO NOWAIT
+    !$OMP END DO NOWAIT
 
-! Total e1, e2, and individual virt atomic contributions are found by summing all thread contributions
-!$OMP CRITICAL
-e1_final = e1_final + e1
-e2_final = e2_final + e2
+    ! Total e1, e2, and individual virt atomic contributions are found by summing all thread contributions
+    !$OMP CRITICAL
+    e1_final = e1_final + e1
+    e2_final = e2_final + e2
 
-! Update total virtual contributions to fragment energy
-do a=1,nvirtAOS
-   MyFragment%VirtContribs(a) =MyFragment%VirtContribs(a) + virt_tmp(a)
+    ! Update total virtual contributions to fragment energy
+    do a=1,nvirtAOS
+       MyFragment%VirtContribs(a) =MyFragment%VirtContribs(a) + virt_tmp(a)
 
-   ! Virtual correlation density matrix
-   do b=1,nvirtAOS
-      MyFragment%VirtMat(b,a) = MyFragment%VirtMat(b,a) + VirtMat_tmp(b,a)
-   end do
-end do
+       ! Virtual correlation density matrix
+       do b=1,nvirtAOS
+          MyFragment%VirtMat(b,a) = MyFragment%VirtMat(b,a) + VirtMat_tmp(b,a)
+       end do
+    end do
 
-!$OMP END CRITICAL
+    !$OMP END CRITICAL
 
-call mem_dealloc(virt_tmp)
-call mem_dealloc(VirtMat_tmp)
-call collect_thread_memory()
-!$OMP END PARALLEL
-call mem_TurnOffThread_Memory()
+    call mem_dealloc(virt_tmp)
+    call mem_dealloc(VirtMat_tmp)
+    call collect_thread_memory()
+    !$OMP END PARALLEL
+    call mem_TurnOffThread_Memory()
 
 
 
@@ -795,21 +792,21 @@ call mem_TurnOffThread_Memory()
     ! Calculate e3 and e4
     ! *******************
 
-call mem_TurnONThread_Memory()
-!$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e3,e4,j,b,i,a,k,occ_tmp,OccMat_tmp)
-call init_threadmemvar()
-e3=0E0_realk
-e4=0E0_realk
+    call mem_TurnONThread_Memory()
+    !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e3,e4,j,b,i,a,k,occ_tmp,OccMat_tmp)
+    call init_threadmemvar()
+    e3=0E0_realk
+    e4=0E0_realk
 
-! Contributions from each individual occupied orbital
-call mem_alloc(occ_tmp,noccAOS)
-occ_tmp = 0.0E0_realk
+    ! Contributions from each individual occupied orbital
+    call mem_alloc(occ_tmp,noccAOS)
+    occ_tmp = 0.0E0_realk
 
-! Occupied correlation density matrix
-call mem_alloc(OccMat_tmp,noccAOS,noccAOS)
-OccMat_tmp = 0.0_realk
+    ! Occupied correlation density matrix
+    call mem_alloc(OccMat_tmp,noccAOS,noccAOS)
+    OccMat_tmp = 0.0_realk
 
-!$OMP DO SCHEDULE(dynamic,1)
+    !$OMP DO SCHEDULE(dynamic,1)
 
     do j=1,noccAOS
        do b=1,nvirtEOS
@@ -829,7 +826,7 @@ OccMat_tmp = 0.0_realk
 
                 ! Update total atomic fragment energy contribution 3
                 e3 = e3 + tmp
-                
+
                 ! Update contribution from orbital i
                 occ_tmp(i) = occ_tmp(i) + tmp
                 ! Update contribution from orbital j (only if different from i to avoid double counting)
@@ -871,30 +868,30 @@ OccMat_tmp = 0.0_realk
        end do
     end do
 
-!$OMP END DO NOWAIT
+    !$OMP END DO NOWAIT
 
-! Total e3, e4, and individual occ atomic contributions are found by summing all thread contributions
-!$OMP CRITICAL
-e3_final = e3_final + e3
-e4_final = e4_final + e4
+    ! Total e3, e4, and individual occ atomic contributions are found by summing all thread contributions
+    !$OMP CRITICAL
+    e3_final = e3_final + e3
+    e4_final = e4_final + e4
 
-! Update total occupied contributions to fragment energy
-do i=1,noccAOS
-MyFragment%OccContribs(i) = MyFragment%OccContribs(i) + occ_tmp(i)
+    ! Update total occupied contributions to fragment energy
+    do i=1,noccAOS
+       MyFragment%OccContribs(i) = MyFragment%OccContribs(i) + occ_tmp(i)
 
-! Occupied correlation density matrix
-do j=1,noccAOS
-   MyFragment%OccMat(j,i) = MyFragment%OccMat(j,i) + OccMat_tmp(j,i)
-end do
+       ! Occupied correlation density matrix
+       do j=1,noccAOS
+          MyFragment%OccMat(j,i) = MyFragment%OccMat(j,i) + OccMat_tmp(j,i)
+       end do
 
-end do
-!$OMP END CRITICAL
+    end do
+    !$OMP END CRITICAL
 
-call mem_dealloc(occmat_tmp)
-call mem_dealloc(occ_tmp)
-call collect_thread_memory()
-!$OMP END PARALLEL
-call mem_TurnOffThread_Memory()
+    call mem_dealloc(occmat_tmp)
+    call mem_dealloc(occ_tmp)
+    call collect_thread_memory()
+    !$OMP END PARALLEL
+    call mem_TurnOffThread_Memory()
 
 
 
@@ -934,17 +931,17 @@ call mem_TurnOffThread_Memory()
     write(DECinfo%output,'(1X,a,i7)') 'Energy summary for fragment: ', &
          & MyFragment%atomic_number
     write(DECinfo%output,*) '**********************************************************************'
-if(MyFragment%SF) then
-    write(DECinfo%output,'(1X,a,g20.10)') 'SF: Single occupied energy = ', e1_final
-    write(DECinfo%output,'(1X,a,g20.10)') 'SF: Single virtual  energy = ', e3_final
-    write(DECinfo%output,'(1X,a,g20.10)') 'SF: Single Lagrangian occ term  = ', e2_final
-    write(DECinfo%output,'(1X,a,g20.10)') 'SF: Single Lagrangian virt term = ', e4_final
-else
-    write(DECinfo%output,'(1X,a,g20.10)') 'ST: Single occupied energy = ', e1_final
-    write(DECinfo%output,'(1X,a,g20.10)') 'ST: Single virtual  energy = ', e3_final
-    write(DECinfo%output,'(1X,a,g20.10)') 'ST: Single Lagrangian occ term  = ', e2_final
-    write(DECinfo%output,'(1X,a,g20.10)') 'ST: Single Lagrangian virt term = ', e4_final
-end if
+    if(MyFragment%SF) then
+       write(DECinfo%output,'(1X,a,g20.10)') 'SF: Single occupied energy = ', e1_final
+       write(DECinfo%output,'(1X,a,g20.10)') 'SF: Single virtual  energy = ', e3_final
+       write(DECinfo%output,'(1X,a,g20.10)') 'SF: Single Lagrangian occ term  = ', e2_final
+       write(DECinfo%output,'(1X,a,g20.10)') 'SF: Single Lagrangian virt term = ', e4_final
+    else
+       write(DECinfo%output,'(1X,a,g20.10)') 'ST: Single occupied energy = ', e1_final
+       write(DECinfo%output,'(1X,a,g20.10)') 'ST: Single virtual  energy = ', e3_final
+       write(DECinfo%output,'(1X,a,g20.10)') 'ST: Single Lagrangian occ term  = ', e2_final
+       write(DECinfo%output,'(1X,a,g20.10)') 'ST: Single Lagrangian virt term = ', e4_final
+    end if
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -1185,6 +1182,11 @@ end if
     ! which calculates pair fragment contribution and saves it in pairfragment%energies(?),
     ! see dec_readme file.
 
+    if(DECinfo%f12) then    
+       print *, "---------------F12-energy-pair-fragment-------------"
+       call f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms)
+    endif
+
     call LSTIMER('PAIR L.ENERGY',tcpu,twall,DECinfo%output)
 
 
@@ -1196,7 +1198,7 @@ end if
        call array4_free(VOOO)
        call array4_free(VOVV)
     end if
- 
+
 
     ! calculate ccsd(t) pair interaction energies
     ! *******************************************
@@ -1228,7 +1230,7 @@ end if
 
        ! which occupied orbitals are present in the ccsd aos?
        do i=1,PairFragment%noccAOS
-!       do i=1,occ_max
+          !       do i=1,occ_max
 
           occAOS_ccsd(PairFragment%occAOSidx(i)) = .true.
 
@@ -1236,7 +1238,7 @@ end if
 
        ! which virtual orbitals are present in the ccsd aos?
        do i=1,PairFragment%nunoccAOS
-!       do i=1,virt_max
+          !       do i=1,virt_max
 
           virtAOS_ccsd(PairFragment%unoccAOSidx(i)) = .true.
 
@@ -1244,7 +1246,7 @@ end if
 
        ! which occupied orbitals are present in the ccsd(t) aos?
        do i=1,PairFragment%parenthesis_t%noccAOS
-!       do i=1,occ_max
+          !       do i=1,occ_max
 
           occAOS_ccsdpt(PairFragment%parenthesis_t%occAOSidx(i)) = .true.
 
@@ -1252,7 +1254,7 @@ end if
 
        ! which virtual orbitals are present in the ccsd(t) aos?
        do i=1,PairFragment%parenthesis_t%nunoccAOS
-!       do i=1,virt_max
+          !       do i=1,virt_max
 
           virtAOS_ccsdpt(PairFragment%parenthesis_t%unoccAOSidx(i)) = .true.
 
@@ -1271,14 +1273,14 @@ end if
        ccsd_t1_ccsdpt = array2_init([nvirt_ccsdpt,nocc_ccsdpt])
        ccsd_t2_ccsdpt = array4_init([nvirt_ccsdpt,nocc_ccsdpt,nvirt_ccsdpt,nocc_ccsdpt])
        call extract_pt_indices_from_ccsd_ampls(occ_max,virt_max,virtAOS_ccsd,occAOS_ccsd,virtAOS_ccsdpt,&
-                                                   & occAOS_ccsdpt,t1,ccsd_t1_ccsdpt,t2,ccsd_t2_ccsdpt)
+            & occAOS_ccsdpt,t1,ccsd_t1_ccsdpt,t2,ccsd_t2_ccsdpt)
 
        ! debug prints 2
        print *,'t1 dims 1-2                 = ',t1%dims(1),t1%dims(2)
        print *,'ccsd_t1_ccsdpt dims 1-2     = ',ccsd_t1_ccsdpt%dims(1),ccsd_t1_ccsdpt%dims(2)
        print *,'t2 dims 1-2-3-4             = ',t2%dims(1),t2%dims(2),t2%dims(3),t2%dims(4)
        print *,'ccsd_t2_ccsdpt dims 1-2-3-4 = ',ccsd_t2_ccsdpt%dims(1),ccsd_t2_ccsdpt%dims(2),&
-                                                 & ccsd_t2_ccsdpt%dims(3),ccsd_t2_ccsdpt%dims(4)
+            & ccsd_t2_ccsdpt%dims(3),ccsd_t2_ccsdpt%dims(4)
 
        ! now deallocate occAOS and virtAOS vectors
        call mem_dealloc(occAOS_ccsd)
@@ -1292,14 +1294,14 @@ end if
 
        ! call ccsd(t) driver and pair fragment evaluation
        call ccsdpt_driver(PairFragment%parenthesis_t%noccAOS,PairFragment%parenthesis_t%nunoccAOS,&
-                          & PairFragment%parenthesis_t%number_basis,PairFragment%parenthesis_t%ppfock,&
-                          & PairFragment%parenthesis_t%qqfock,PairFragment%parenthesis_t%ypo,&
-                          & PairFragment%parenthesis_t%ypv,PairFragment%parenthesis_t%mylsitem,&
-                          & ccsd_t2_ccsdpt,ccsdpt_t1,ccsdpt_t2)
+            & PairFragment%parenthesis_t%number_basis,PairFragment%parenthesis_t%ppfock,&
+            & PairFragment%parenthesis_t%qqfock,PairFragment%parenthesis_t%ypo,&
+            & PairFragment%parenthesis_t%ypv,PairFragment%parenthesis_t%mylsitem,&
+            & ccsd_t2_ccsdpt,ccsdpt_t1,ccsdpt_t2)
        call ccsdpt_energy_e4_pair(Fragment1%parenthesis_t,Fragment2%parenthesis_t,&
-                          &PairFragment%parenthesis_t,ccsd_t2_ccsdpt,ccsdpt_t2)
+            &PairFragment%parenthesis_t,ccsd_t2_ccsdpt,ccsdpt_t2)
        call ccsdpt_energy_e5_pair(Fragment1%parenthesis_t,Fragment2%parenthesis_t,&
-                          &PairFragment%parenthesis_t,ccsd_t1_ccsdpt,ccsdpt_t1)
+            &PairFragment%parenthesis_t,ccsd_t1_ccsdpt,ccsdpt_t1)
        pairfragment%energies(8:13) = pairfragment%parenthesis_t%energies(8:13)
 
        ! release ccsd(t) singles and doubles amplitudes
@@ -1393,11 +1395,8 @@ end if
     ! In the calculations below the factor 1/2 in the equations
     ! above is absorbed in the multipliers.
 
-
     call LSTIMER('START',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
-
-
 
     ! Init stuff
     noccEOS = PairFragment%noccEOS
@@ -1418,7 +1417,6 @@ end if
     call mem_alloc(dopair_virt,nvirtEOS,nvirtEOS)
     call which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair_occ)
     call which_pairs_unocc(Fragment1,Fragment2,PairFragment,dopair_virt)
-
 
     ! Sanity checks
     ! *************
@@ -1456,19 +1454,16 @@ end if
             & Input dimensions do not match!',-1)
     end if
 
-
-
-
     ! Calculate e1 and e2
     ! *******************
 
-call mem_TurnONThread_Memory()
-!$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,e2,j,b,i,a,c)
-call init_threadmemvar()
-e1=0E0_realk
-e2=0E0_realk
+    call mem_TurnONThread_Memory()
+    !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e1,e2,j,b,i,a,c)
+    call init_threadmemvar()
+    e1=0E0_realk
+    e2=0E0_realk
 
-!$OMP DO SCHEDULE(dynamic,1)
+    !$OMP DO SCHEDULE(dynamic,1)
 
     do j=1,noccEOS
        do b=1,nvirtAOS
@@ -1483,22 +1478,22 @@ e2=0E0_realk
                    e1 = e1 + t2occ%val(a,i,b,j)*(2.0_realk*gocc%val(a,i,b,j) - gocc%val(b,i,a,j))
 
 
-                ! Skip contribution 2 for hybrid scheme
-                if(.not. DECinfo%HybridScheme) then
+                   ! Skip contribution 2 for hybrid scheme
+                   if(.not. DECinfo%HybridScheme) then
 
-                   ! Multiplier (multiplied by one half)
-                   multaibj = 2.0_realk*t2occ%val(a,i,b,j) - t2occ%val(b,i,a,j)
+                      ! Multiplier (multiplied by one half)
+                      multaibj = 2.0_realk*t2occ%val(a,i,b,j) - t2occ%val(b,i,a,j)
 
-                   tmp = 0E0_realk
-                   do c=1,nvirtAOS
-                      tmp = tmp + t2occ%val(c,i,b,j)*PairFragment%qqfock(c,a) &
-                           & + t2occ%val(a,i,c,j)*PairFragment%qqfock(c,b)
-                   end do
+                      tmp = 0E0_realk
+                      do c=1,nvirtAOS
+                         tmp = tmp + t2occ%val(c,i,b,j)*PairFragment%qqfock(c,a) &
+                              & + t2occ%val(a,i,c,j)*PairFragment%qqfock(c,b)
+                      end do
 
-                   ! Update pair interaction energy contribution 2
-                   e2 = e2 + multaibj*tmp
+                      ! Update pair interaction energy contribution 2
+                      e2 = e2 + multaibj*tmp
 
-                end if
+                   end if
 
 
                 end do
@@ -1509,32 +1504,28 @@ e2=0E0_realk
        end do
     end do
 
-!$OMP END DO NOWAIT
+    !$OMP END DO NOWAIT
 
-! Total e1 and e2 contributions are found by summing all thread contributions
-!$OMP CRITICAL
-e1_final = e1_final + e1
-e2_final = e2_final + e2
-!$OMP END CRITICAL
+    ! Total e1 and e2 contributions are found by summing all thread contributions
+    !$OMP CRITICAL
+    e1_final = e1_final + e1
+    e2_final = e2_final + e2
+    !$OMP END CRITICAL
 
-call collect_thread_memory()
-!$OMP END PARALLEL
-call mem_TurnOffThread_Memory()
-
-
-
-
+    call collect_thread_memory()
+    !$OMP END PARALLEL
+    call mem_TurnOffThread_Memory()
 
     ! Calculate e3 and e4
     ! *******************
 
-call mem_TurnONThread_Memory()
-!$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e3,e4,j,b,i,a,k)
-call init_threadmemvar()
-e3=0e0_realk
-e4=0e0_realk
+    call mem_TurnONThread_Memory()
+    !$OMP PARALLEL DEFAULT(shared) PRIVATE(multaibj,tmp,e3,e4,j,b,i,a,k)
+    call init_threadmemvar()
+    e3=0e0_realk
+    e4=0e0_realk
 
-!$OMP DO SCHEDULE(dynamic,1)
+    !$OMP DO SCHEDULE(dynamic,1)
 
     do j=1,noccAOS
        do b=1,nvirtEOS
@@ -1551,19 +1542,19 @@ e4=0e0_realk
                    e3 = e3 + multaibj*gvirt%val(a,i,b,j)
 
 
-                ! Skip contribution 4 for hybrid scheme
-                if(.not. DECinfo%HybridScheme) then
+                   ! Skip contribution 4 for hybrid scheme
+                   if(.not. DECinfo%HybridScheme) then
 
-                   tmp=0E0_realk
-                   do k=1,noccAOS
-                      tmp = tmp + t2virt%val(a,k,b,j)*PairFragment%ppfock(k,i) &
-                           & + t2virt%val(a,i,b,k)*PairFragment%ppfock(k,j)
-                   end do
+                      tmp=0E0_realk
+                      do k=1,noccAOS
+                         tmp = tmp + t2virt%val(a,k,b,j)*PairFragment%ppfock(k,i) &
+                              & + t2virt%val(a,i,b,k)*PairFragment%ppfock(k,j)
+                      end do
 
-                   ! Update pair interaction energy contribution 4
-                   e4 = e4 - multaibj*tmp
+                      ! Update pair interaction energy contribution 4
+                      e4 = e4 - multaibj*tmp
 
-                end if
+                   end if
 
                 end if
 
@@ -1572,19 +1563,17 @@ e4=0e0_realk
        end do
     end do
 
-!$OMP END DO NOWAIT
+    !$OMP END DO NOWAIT
 
-! Total e3 and e4 contributions are found by summing all thread contributions
-!$OMP CRITICAL
-e3_final = e3_final + e3
-e4_final = e4_final + e4
-!$OMP END CRITICAL
+    ! Total e3 and e4 contributions are found by summing all thread contributions
+    !$OMP CRITICAL
+    e3_final = e3_final + e3
+    e4_final = e4_final + e4
+    !$OMP END CRITICAL
 
-call collect_thread_memory()
-!$OMP END PARALLEL
-call mem_TurnOffThread_Memory()
-
-
+    call collect_thread_memory()
+    !$OMP END PARALLEL
+    call mem_TurnOffThread_Memory()
 
     ! Total pair interaction energy
     ! *****************************
@@ -1612,7 +1601,6 @@ call mem_TurnOffThread_Memory()
     call mem_dealloc(dopair_occ)
     call mem_dealloc(dopair_virt)
 
-
     ! Print out contributions
     ! ***********************
 
@@ -1628,7 +1616,6 @@ call mem_TurnOffThread_Memory()
     write(DECinfo%output,'(1X,a,g20.10)') 'SF: Single Lagrangian occ term  = ', e2_final
     write(DECinfo%output,'(1X,a,g20.10)') 'SF: Single Lagrangian virt term = ', e4_final
 
-
     write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair occ energy  = ', pairdist,e1_final
     write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair virt energy = ', pairdist,e3_final
     write(DECinfo%output,'(1X,a,g16.5,g20.10)') 'Distance(Ang), pair lagr. occ term  = ', pairdist,e2_final
@@ -1636,17 +1623,12 @@ call mem_TurnOffThread_Memory()
     write(DECinfo%output,*)
     write(DECinfo%output,*)
 
-
     call LSTIMER('L.ENERGY CONTR',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
     DECinfo%energy_time_wall = DECinfo%energy_time_wall + (twall2-twall1)
     DECinfo%energy_time_cpu = DECinfo%energy_time_cpu + (tcpu2-tcpu1)
 
-
-
   end subroutine get_pair_fragment_energy
-
-
 
   !> \brief Full DEC calculation where exact single and pair energies are calculated using Lagrangian approach.
   !> Only implemented for MP2.
@@ -1870,16 +1852,16 @@ call mem_TurnOffThread_Memory()
 
        end if
 
-call mem_TurnONThread_Memory()
-!$OMP PARALLEL DEFAULT(shared) PRIVATE(b,atomB,i,atomI,a,atomA,multaibj,multbiaj,&
-!$OMP tmp,tmp2,e1_tmp,e2_tmp,e3_tmp,e4_tmp,k,c)
-call init_threadmemvar()
-e1_tmp=0E0_realk
-e2_tmp=0E0_realk
-e3_tmp=0E0_realk
-e4_tmp=0E0_realk
+       call mem_TurnONThread_Memory()
+       !$OMP PARALLEL DEFAULT(shared) PRIVATE(b,atomB,i,atomI,a,atomA,multaibj,multbiaj,&
+       !$OMP tmp,tmp2,e1_tmp,e2_tmp,e3_tmp,e4_tmp,k,c)
+       call init_threadmemvar()
+       e1_tmp=0E0_realk
+       e2_tmp=0E0_realk
+       e3_tmp=0E0_realk
+       e4_tmp=0E0_realk
 
-!$OMP DO SCHEDULE(dynamic,1)
+       !$OMP DO SCHEDULE(dynamic,1)
 
        do b=1,nunocc
           atomB = UnoccOrbitals(b)%CentralAtom
@@ -1942,19 +1924,19 @@ e4_tmp=0E0_realk
           end do
        end do
 
-!$OMP END DO NOWAIT
+       !$OMP END DO NOWAIT
 
-! Sum up contributions from each thread
-!$OMP CRITICAL
-e1=e1+e1_tmp
-e2=e2+e2_tmp
-e3=e3+e3_tmp
-e4=e4+e4_tmp
-!$OMP END CRITICAL
+       ! Sum up contributions from each thread
+       !$OMP CRITICAL
+       e1=e1+e1_tmp
+       e2=e2+e2_tmp
+       e3=e3+e3_tmp
+       e4=e4+e4_tmp
+       !$OMP END CRITICAL
 
-call collect_thread_memory()
-!$OMP END PARALLEL
-call mem_TurnOffThread_Memory()
+       call collect_thread_memory()
+       !$OMP END PARALLEL
+       call mem_TurnOffThread_Memory()
 
     end do
 
@@ -2934,7 +2916,7 @@ call mem_TurnOffThread_Memory()
     if(Etarget <=0.0E0_realk) then
        call lsquit('determine_new_paircutoff: target energy error must be positive!',-1)
     end if
-    
+
     ! quit if pair distance increment of 40 bohr is not enough (in which case something is very wrong)
     maxexpansion = 40 
     newpaircut = paircut
@@ -2987,7 +2969,7 @@ call mem_TurnOffThread_Memory()
        ! Estimated pair cutoff error using new pair cutoff, i.e.:
        ! E(all missing pairs) - E(pairs between current and new cutoff)
        pairerror = abs(Emiss - Enewpairs)
-       
+
        ! Exit if new estimate is smaller than requested target energy
        if(pairerror < Etarget) then
           conv=.true.
@@ -3022,7 +3004,7 @@ call mem_TurnOffThread_Memory()
   ! ===================================================================!
   !                      FRAGMENT OPTIMIZATION                         !
   ! ===================================================================!
-  
+
 
   !> Routine that optimizes an atomic fragment using the Lagrangian partitioning scheme
   !> and using a reduction scheme based on the individual orbitals.
@@ -3964,7 +3946,7 @@ call mem_TurnOffThread_Memory()
        AtomicFragment%OccMat = OccMat
        AtomicFragment%VirtMat = VirtMat
     end if
-       
+
     call mem_dealloc(OccMat)
     call mem_dealloc(VirtMat)
 
@@ -4827,22 +4809,22 @@ call mem_TurnOffThread_Memory()
     integer,intent(in) :: iter
 
 
-   write(DECinfo%output,*)'FOP'
-   write(DECinfo%output,'(1X,a)') 'FOP========================================================='
+    write(DECinfo%output,*)'FOP'
+    write(DECinfo%output,'(1X,a)') 'FOP========================================================='
     write(DECinfo%output,'(1X,a,i4)') 'FOP              Fragment information, loop', iter
-   write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
-   write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Fragment number                  :', fragment%atomic_number
-   write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in virt total :', Fragment%nunoccAOS
-   write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in occ total  :', Fragment%noccAOS
-   write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian Fragment energy       :', Fragment%LagFOP
-   write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied Fragment energy         :', Fragment%EoccFOP
-   write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual Fragment energy          :', Fragment%EvirtFOP
-   write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian energy diff           :', LagEnergyDiff
-   write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied energy diff             :', OccEnergyDiff
-   write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual energy diff              :', VirtEnergyDiff
-   write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of basis functions        :', Fragment%number_basis
-   write(DECinfo%output,'(1X,a,/)') 'FOP========================================================='
-   write(DECinfo%output,*) 'FOP'
+    write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
+    write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Fragment number                  :', fragment%atomic_number
+    write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in virt total :', Fragment%nunoccAOS
+    write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of orbitals in occ total  :', Fragment%noccAOS
+    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian Fragment energy       :', Fragment%LagFOP
+    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied Fragment energy         :', Fragment%EoccFOP
+    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual Fragment energy          :', Fragment%EvirtFOP
+    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Lagrangian energy diff           :', LagEnergyDiff
+    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Occupied energy diff             :', OccEnergyDiff
+    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Loop: Virtual energy diff              :', VirtEnergyDiff
+    write(DECinfo%output,'(1X,a,i4)')    'FOP Loop: Number of basis functions        :', Fragment%number_basis
+    write(DECinfo%output,'(1X,a,/)') 'FOP========================================================='
+    write(DECinfo%output,*) 'FOP'
 
 
   end subroutine PrintInfo_Lagrangian
@@ -4868,21 +4850,21 @@ call mem_TurnOffThread_Memory()
     write(DECinfo%output,'(1X,a,i4)') 'FOP(T)              Fragment information, loop', iter
     write(DECinfo%output,'(1X,a)') 'FOP(T)---------------------------------------------------------'
     write(DECinfo%output,'(1X,a,i4)')     'FOP(T) Loop: CCSD(T) fragment number                  :', &
-                                            &fragment%atomic_number
+         &fragment%atomic_number
     write(DECinfo%output,'(1X,a,i4)')     'FOP(T) Loop: Number of orbitals in virt total         :', &
-                                            &fragment%nunoccAOS
+         &fragment%nunoccAOS
     write(DECinfo%output,'(1X,a,i4)')     'FOP(T) Loop: Number of orbitals in occ total          :', &
-                                            &fragment%noccAOS
+         &fragment%noccAOS
     write(DECinfo%output,'(1X,a,f16.10)') 'FOP(T) Loop: Occupied CCSD(T) fragment energy         :', &
-                                            &fragment%energies(8)
+         &fragment%energies(8)
     write(DECinfo%output,'(1X,a,f16.10)') 'FOP(T) Loop: Virtual CCSD(T) fragment energy          :', &
-                                            &fragment%energies(9)
+         &fragment%energies(9)
     write(DECinfo%output,'(1X,a,f16.10)') 'FOP(T) Loop: Occupied CCSD(T) energy diff             :', &
-                                            &OccEnergyPT_diff
+         &OccEnergyPT_diff
     write(DECinfo%output,'(1X,a,f16.10)') 'FOP(T) Loop: Virtual CCSD(T) energy diff              :', &
-                                            &VirtEnergyPT_diff
+         &VirtEnergyPT_diff
     write(DECinfo%output,'(1X,a,i4)')     'FOP(T) Loop: Number of basis functions                :', &
-                                            &fragment%number_basis
+         &fragment%number_basis
     write(DECinfo%output,'(1X,a,/)') 'FOP(T)========================================================='
     write(DECinfo%output,*) 'FOP(T)'
 
@@ -4942,7 +4924,7 @@ call mem_TurnOffThread_Memory()
   !> \author Kasper Kristensen
   !> \date December 2011
   subroutine ReduceSpace_orbitalspecific(MyFragment,norb_full,contributions,OccOrVirt,&
-                            &Thresh,OrbAOS,Nafter,ccsdpt_call)
+       &Thresh,OrbAOS,Nafter,ccsdpt_call)
 
     implicit none
     !> Fragment info
@@ -5164,7 +5146,7 @@ call mem_TurnOffThread_Memory()
     end if
 
     call atomic_fragment_init_orbital_specific(myatom,nunocc,nocc,virtAOS_old,&
-       &occAOS_old,occOrbitals,unoccOrbitals,mymolecule,mylsitem,fragment%parenthesis_t,.true.)
+         &occAOS_old,occOrbitals,unoccOrbitals,mymolecule,mylsitem,fragment%parenthesis_t,.true.)
 
     ! determine the number of true entries in ccsd virtual aos and ccsd occupied aos
     n_ccsd_virt = count(virtAOS_old)
@@ -5176,15 +5158,15 @@ call mem_TurnOffThread_Memory()
 
     ! call ccsd(t) driver and single fragment evaluation
     call ccsdpt_driver(fragment%parenthesis_t%noccAOS,fragment%parenthesis_t%nunoccAOS,&
-                       & fragment%parenthesis_t%number_basis,fragment%parenthesis_t%ppfock,&
-                       & fragment%parenthesis_t%qqfock,fragment%parenthesis_t%ypo,&
-                       & fragment%parenthesis_t%ypv,fragment%parenthesis_t%mylsitem,&
-                       & ccsd_t2,ccsdpt_t1,ccsdpt_t2)
+         & fragment%parenthesis_t%number_basis,fragment%parenthesis_t%ppfock,&
+         & fragment%parenthesis_t%qqfock,fragment%parenthesis_t%ypo,&
+         & fragment%parenthesis_t%ypv,fragment%parenthesis_t%mylsitem,&
+         & ccsd_t2,ccsdpt_t1,ccsdpt_t2)
 
     ! calculate fourth-- and fifth--order frag energies
     call ccsdpt_energy_e4_frag(fragment%parenthesis_t,ccsd_t2,ccsdpt_t2,&
-                       & fragment%parenthesis_t%OccContribs,fragment%parenthesis_t%VirtContribs,&
-                       & fragopt_pT=.true.)
+         & fragment%parenthesis_t%OccContribs,fragment%parenthesis_t%VirtContribs,&
+         & fragopt_pT=.true.)
     call ccsdpt_energy_e5_frag(fragment%parenthesis_t,ccsd_t1,ccsdpt_t1)
 
     ! release ccsd(t) singles and doubles amplitudes
@@ -5231,12 +5213,12 @@ call mem_TurnOffThread_Memory()
        call mem_dealloc(VirtAOS_old)
        call mem_dealloc(OccAOS_new)
        call mem_dealloc(VirtAOS_new)
-   
+
        ! release basis info or not?
        if (freebasisinfo) then
           call atomic_fragment_free_basis_info(fragment%parenthesis_t)
        end if
-   
+
        ! MPI fragment statistics
        fragment%parenthesis_t%slavetime = slavetime
        fragment%parenthesis_t%flops_slaves = flops_slaves
@@ -5350,7 +5332,7 @@ call mem_TurnOffThread_Memory()
 
        ! sanity check - are we stuck with the ccsd aos?
        if ((count(occAOS_old) .eq. count(occAOS_new)) .and. &
-                         & (count(virtAOS_old) .eq. count(virtAOS_new))) then
+            & (count(virtAOS_old) .eq. count(virtAOS_new))) then
 
           write(DECinfo%output,*) 'FOP(T) WARNING'
           write(DECinfo%output,*) 'FOP(T) WARNING no orbitals may be excluded from virt. AND occ. CCSD(T) AOS'
@@ -5370,7 +5352,7 @@ call mem_TurnOffThread_Memory()
 
              write(DECinfo%output,*) 'FOP(T) WARNING'
              write(DECinfo%output,*) 'FOP(T) WARNING maximum number of iterations&
-                                 & in optimize_atomic_fragment_pT reached'
+                  & in optimize_atomic_fragment_pT reached'
              write(DECinfo%output,*) 'FOP(T) WARNING no reduction of CCSD(T) fragment possible.'
              write(DECinfo%output,*) 'FOP(T) WARNING'
 
@@ -5410,7 +5392,7 @@ call mem_TurnOffThread_Memory()
        ! extract ccsd(t) indices and store new ccsd amplitudes with new dimensions
        ! in ccsd_t1_tmp and ccsd_t2_tmp 
        call extract_pt_indices_from_ccsd_ampls(nocc,nunocc,virtAOS_old,occAOS_old,virtAOS_new,occAOS_new,&
-                                       &ccsd_t1,ccsd_t1_tmp,ccsd_t2,ccsd_t2_tmp)
+            &ccsd_t1,ccsd_t1_tmp,ccsd_t2,ccsd_t2_tmp)
 
        ! init ccsd(t) singles and ccsd(t) doubles
        ccsdpt_t1 = array2_init_plain([n_ccsdpt_virt,n_ccsdpt_occ])
@@ -5418,15 +5400,15 @@ call mem_TurnOffThread_Memory()
 
        ! call ccsd(t) driver and single fragment evaluation with ccsd_t2_tmp
        call ccsdpt_driver(fragment%parenthesis_t%noccAOS,fragment%parenthesis_t%nunoccAOS,&
-                          & fragment%parenthesis_t%number_basis,fragment%parenthesis_t%ppfock,&
-                          & fragment%parenthesis_t%qqfock,fragment%parenthesis_t%ypo,&
-                          & fragment%parenthesis_t%ypv,fragment%parenthesis_t%mylsitem,&
-                          & ccsd_t2_tmp,ccsdpt_t1,ccsdpt_t2)
+            & fragment%parenthesis_t%number_basis,fragment%parenthesis_t%ppfock,&
+            & fragment%parenthesis_t%qqfock,fragment%parenthesis_t%ypo,&
+            & fragment%parenthesis_t%ypv,fragment%parenthesis_t%mylsitem,&
+            & ccsd_t2_tmp,ccsdpt_t1,ccsdpt_t2)
 
        ! calculate fourth-- and fifth--order frag energies with ccsd_t1_tmp and ccsd_t2_tmp
        call ccsdpt_energy_e4_frag(fragment%parenthesis_t,ccsd_t2_tmp,ccsdpt_t2,&
-                          & fragment%parenthesis_t%OccContribs,fragment%parenthesis_t%VirtContribs,&
-                          & fragopt_pT=.true.)
+            & fragment%parenthesis_t%OccContribs,fragment%parenthesis_t%VirtContribs,&
+            & fragopt_pT=.true.)
        call ccsdpt_energy_e5_frag(fragment%parenthesis_t,ccsd_t1_tmp,ccsdpt_t1)
 
        ! release ccsd(t) singles and doubles amplitudes
@@ -5449,7 +5431,7 @@ call mem_TurnOffThread_Memory()
        test_reduction_occ_pt: if  (OccEnergyPT_diff < FOT) then
 
           write(DECinfo%output,'(1X,a,F14.9)') 'FOP(T): Occupied CCSD(T) reduction&
-                           & converged, energydiff   =', OccEnergyPT_diff
+               & converged, energydiff   =', OccEnergyPT_diff
           occ_pt_converged = .true.
 
        else
@@ -5463,7 +5445,7 @@ call mem_TurnOffThread_Memory()
        test_reduction_virt_pt: if  (VirtEnergyPT_diff < FOT) then
 
           write(DECinfo%output,'(1X,a,F14.9)') 'FOP(T): Virtual CCSD(T) reduction&
-                           & converged, energydiff    =', VirtEnergyPT_diff
+               & converged, energydiff    =', VirtEnergyPT_diff
           virt_pt_converged = .true.
 
        else
@@ -5491,7 +5473,7 @@ call mem_TurnOffThread_Memory()
 
           write(DECinfo%output,*) 'FOP(T) WARNING'
           write(DECinfo%output,*) 'FOP(T) WARNING maximum number of iterations&
-                              &  in optimize_atomic_fragment_pT reached'
+               &  in optimize_atomic_fragment_pT reached'
           write(DECinfo%output,*) 'FOP(T) WARNING no reduction of CCSD(T) fragment possible.'
           write(DECinfo%output,*) 'FOP(T) WARNING'
 
@@ -5535,11 +5517,11 @@ call mem_TurnOffThread_Memory()
        ! return to ccsd fragment
        ! ************************
        call atomic_fragment_free(fragment%parenthesis_t)
-  
+
        ! init ccsd fragment in fragment%parenthesis_t
        call atomic_fragment_init_orbital_specific(myatom,nunocc,nocc,virtAOS_old, &
-         & occAOS_old,OccOrbitals,UnoccOrbitals,mymolecule,mylsitem,fragment%parenthesis_t,.true.)
-  
+            & occAOS_old,OccOrbitals,UnoccOrbitals,mymolecule,mylsitem,fragment%parenthesis_t,.true.)
+
        ! use old energies generated from virtAOS_old and occAOS_old
        fragment%parenthesis_t%energies(8) = OccEnergyPT_old
        fragment%parenthesis_t%energies(12) = OccEnergyPT_e5_old
@@ -5547,7 +5529,7 @@ call mem_TurnOffThread_Memory()
        fragment%parenthesis_t%energies(9) = VirtEnergyPT_old
        fragment%parenthesis_t%energies(13) = VirtEnergyPT_e5_old
        fragment%parenthesis_t%energies(11) = VirtEnergyPT_e4_old
- 
+
        ! MPI fragment statistics
        slavetime = slavetime + fragment%parenthesis_t%slavetime
        flops_slaves = flops_slaves + fragment%parenthesis_t%flops_slaves
@@ -5677,7 +5659,7 @@ call mem_TurnOffThread_Memory()
   !> \author Kasper Kristensen
   !> \date March 2013
   subroutine extract_fragenergies_for_model(natoms,FragEnergiesAll,FragEnergiesModel)
-    
+
     implicit none
 
     !> Number of atoms in molecule

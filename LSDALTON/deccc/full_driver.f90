@@ -177,7 +177,17 @@ contains
     real(realk),pointer :: Taibj(:,:,:,:) !amplitudes not integrals
 
     real(realk),pointer :: Vijij(:,:)
-    real(realk),pointer :: Vjiij(:,:)
+    real(realk),pointer :: Vijij_term1(:,:)
+    real(realk),pointer :: Vijij_term2(:,:)
+    real(realk),pointer :: Vijij_term3(:,:)
+    real(realk),pointer :: Vijij_term4(:,:)
+
+    real(realk),pointer :: Vjiij(:,:)    
+    real(realk),pointer :: Vjiij_term1(:,:)
+    real(realk),pointer :: Vjiij_term2(:,:)
+    real(realk),pointer :: Vjiij_term3(:,:)
+    real(realk),pointer :: Vjiij_term4(:,:)
+
     real(realk),pointer :: Xijkl(:,:,:,:)
     real(realk),pointer :: Xijij(:,:)
     real(realk),pointer :: Xjiij(:,:)
@@ -230,15 +240,44 @@ contains
          & MyMolecule%ypo, MyMolecule%ypv,'aiai',gAO,gMO)
     call mem_dealloc(gao)
 
-
     call get_4Center_F12_integrals(mylsitem,MyMolecule,nbasis,nocc,noccfull,nvirt,ncabsAO,&
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
 
     call mem_alloc(Vijij,nocc,nocc)
+    call mem_alloc(Vijij_term1,nocc,nocc)
+    call mem_alloc(Vijij_term2,nocc,nocc)
+    call mem_alloc(Vijij_term3,nocc,nocc)
+    call mem_alloc(Vijij_term4,nocc,nocc)
+
     call mem_alloc(Vjiij,nocc,nocc)
+    call mem_alloc(Vjiij_term1,nocc,nocc)
+    call mem_alloc(Vjiij_term2,nocc,nocc)
+    call mem_alloc(Vjiij_term3,nocc,nocc)
+    call mem_alloc(Vjiij_term4,nocc,nocc)
+
     call mp2f12_Vijij(Vijij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
     call mp2f12_Vjiij(Vjiij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+
+    call mp2f12_Vijij_term1(Vijij_term1,Fijkl,nocc,noccfull,nbasis,ncabs)
+    call mp2f12_Vijij_term2(Vijij_term2,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
+    call mp2f12_Vijij_term3(Vijij_term3,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+    call mp2f12_Vijij_term4(Vijij_term4,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+
+    call mp2f12_Vjiij_term1(Vjiij_term1,Fijkl,nocc,noccfull,nbasis,ncabs)
+    call mp2f12_Vjiij_term2(Vjiij_term2,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
+    call mp2f12_Vjiij_term3(Vjiij_term3,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+    call mp2f12_Vjiij_term4(Vjiij_term4,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+
+    print *, 'E_21_V_term1: ', 2.0E0_REALK*mp2f12_EV(Vijij_term1,Vjiij_term1,nocc)
+    print *, 'E_21_V_term2: ', 2.0E0_REALK*mp2f12_EV(Vijij_term2,Vjiij_term2,nocc)
+    print *, 'E_21_V_term3: ', 2.0E0_REALK*mp2f12_EV(Vijij_term3,Vjiij_term3,nocc)
+    print *, 'E_21_V_term4: ', 2.0E0_REALK*mp2f12_EV(Vijij_term4,Vjiij_term4,nocc)
+    print *, '----------------------------------------'
+    print *, 'E_21_Vsum: ',  2.0E0_REALK*(mp2f12_EV(Vijij_term1,Vjiij_term1,nocc) + mp2f12_EV(Vijij_term2,Vjiij_term2,nocc) &
+         & + mp2f12_EV(Vijij_term3,Vjiij_term3,nocc) + mp2f12_EV(Vijij_term4,Vjiij_term4,nocc) ) 
+
+    print *, 'E_21_V: ',  2.0E0_REALK*mp2f12_EV(Vijij,Vjiij,nocc)
 
     call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)
  !   call mem_alloc(Cjaib,nocc,nvirt,nocc,nvirt)
@@ -291,6 +330,7 @@ contains
        !Calculate standard MP2 energy (both canonical and noncanonical)
 
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
+
        energy=0.0E0_realk
        do j=1,nocc
           do b=1,nvirt
@@ -308,17 +348,25 @@ contains
        print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
     end if
 
-
     call mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
     call mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
 
     E21 = 2.0E0_REALK*mp2f12_EV(Vijij,Vjiij,nocc)
 !   write(*,*) 'MP2f12 energy term 2 <0|H1|1>',  E21
+
     call mem_dealloc(Vijij)
+    call mem_dealloc(Vijij_term1)
+    call mem_dealloc(Vijij_term2)
+    call mem_dealloc(Vijij_term3)
+    call mem_dealloc(Vijij_term4)
+
     call mem_dealloc(Vjiij)
+    call mem_dealloc(Vjiij_term1)
+    call mem_dealloc(Vjiij_term2)
+    call mem_dealloc(Vjiij_term3)
+    call mem_dealloc(Vjiij_term4)
 
     call mem_dealloc(Taibj)
-
     call mem_dealloc(Ciajb)
 
     if(DECinfo%use_canonical) then
@@ -375,6 +423,7 @@ contains
 
 !    write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
 !    print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+
     write(*,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
     write(DECinfo%output,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
     write(*,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22
@@ -384,6 +433,8 @@ contains
     write(DECinfo%output,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21+E22
 
     ! Total MP2-F12 correlation energy
+    ! Getting this energy 
+
     energy = energy + E21 + E22
     print *, 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', energy
     write(DECinfo%output,*) 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', energy
@@ -870,8 +921,10 @@ contains
     type(matrix) :: Fcp
     type(matrix) :: Fii
     type(matrix) :: Fac
+
+!   F12 specific
     real(realk),pointer :: Vijij(:,:)
-    real(realk),pointer :: Vjiij(:,:)
+    real(realk),pointer :: Vjiij(:,:)    
     real(realk),pointer :: Xijkl(:,:,:,:)
     real(realk),pointer :: Xijij(:,:)
     real(realk),pointer :: Xjiij(:,:)
@@ -1008,13 +1061,17 @@ contains
     call ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj%val,Viajb,Viija,Viajj,Tai%val,nocc,nvirt)
     call ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj%val,Viajb,Vijja,Viaji,Tai%val,nocc,nvirt)
 
+    ! CCSD Specific
     call mem_dealloc(Viija)
     call mem_dealloc(Vijja)
     call mem_dealloc(Viajj)
     call mem_dealloc(Viaji)
     call mem_dealloc(Viajb)
+
     E21 = 2.0E0_realk*mp2f12_EV(Vijij,Vjiij,nocc)
     print*,'E21',E21
+    
+    ! F12 Specific
     call mem_dealloc(Vijij)
     call mem_dealloc(Vjiij)
     call mem_dealloc(Ciajb)

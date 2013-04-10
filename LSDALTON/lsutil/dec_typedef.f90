@@ -14,7 +14,7 @@ module dec_typedef_module
   ! MUST BE UPDATED EVERYTIME SOMEONE ADDS A NEW MODEL TO THE DEC SCHEME!!!!
   ! MODIFY FOR NEW MODEL
   ! MODIFY FOR NEW CORRECTION
-  integer, parameter :: ndecenergies = 13
+  integer, parameter :: ndecenergies = 14
 
   !> \author Kasper Kristensen
   !> \date June 2010
@@ -611,6 +611,8 @@ module dec_typedef_module
      !> 11. Fourth order (T) contribution, virtual partitioning scheme
      !> 12. Fifth order (T) contribution, occupied partitioning scheme
      !> 13. Fifth order (T) contribution, virtual partitioning scheme
+     !> 14. MP2-F12 energy correction
+
      real(realk),dimension(ndecenergies) :: energies
      ! Note 1: Only the energies requested for the model in question are calculated!
      ! Note 2: Obviously you need to change the the global integer "ndecenergies"
