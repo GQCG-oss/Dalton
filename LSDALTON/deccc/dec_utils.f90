@@ -1671,11 +1671,11 @@ contains
     !> Number of columns in op(B) = Number of columns in C
     integer,intent(in) :: n
     !> Input matrix A in matrix product C = op(A) op(B)
-    real(realk),intent(in),dimension(m*k) :: A
+    real(realk),intent(in),dimension(*) :: A
     !> Input matrix B in matrix product C = op(A) op(B)
-    real(realk),intent(in),dimension(k*n) :: B
+    real(realk),intent(in),dimension(*) :: B
     !> Output matrix C in matrix product C = op(A) op(B)
-    real(realk),intent(inout),dimension(m*n) :: C
+    real(realk),intent(inout),dimension(*) :: C
     !> Transpose A [TransA='t' and op(A)=A^T] or not [TransA='n' and op(A)=A]
     character(len=1), intent(in) ::TransA
     !> Transpose B [TransB='t' and op(B)=B^T] or not [TransB='n' and op(B)=B]
@@ -1746,11 +1746,11 @@ contains
     !> Number of columns in op(B) = Number of columns in C
     integer,intent(in) :: n
     !> Input matrix A in matrix product C = op(A) op(B)
-    real(realk),intent(in),dimension(m*k) :: A
+    real(realk),intent(in),dimension(*) :: A
     !> Input matrix B in matrix product C = op(A) op(B)
-    real(realk),intent(in),dimension(k*n) :: B
+    real(realk),intent(in),dimension(*) :: B
     !> Output matrix C in matrix product C = op(A) op(B)
-    real(realk),intent(inout),dimension(m*n) :: C
+    real(realk),intent(inout),dimension(*) :: C
     !> Transpose A [TransA='t' and op(A)=A^T] or not [TransA='n' and op(A)=A]
     character(len=1), intent(in) ::TransA
     !> Transpose B [TransB='t' and op(B)=B^T] or not [TransB='n' and op(B)=B]
