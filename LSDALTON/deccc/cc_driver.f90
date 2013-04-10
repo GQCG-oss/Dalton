@@ -134,7 +134,7 @@ contains
 
 
     call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
-    if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+    if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
     ! Sanity check 1: Number of orbitals
@@ -290,8 +290,8 @@ contains
             'debug :: intermediates done'
     end if
 
-    if(DECinfo%timing) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
-    if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+    if(DECinfo%PL>1) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
+    if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! special MP2 things
     MP2Special : if(DECinfo%ccModel == 1 .or. DECinfo%ccModel == 5) then
@@ -379,7 +379,7 @@ contains
 
     CCIteration : do iter=1,DECinfo%ccMaxIter
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
        call LSTIMER('START',iter_cpu,iter_wall,DECinfo%output)
 
        ! remove old vectors
@@ -400,16 +400,11 @@ contains
        ! get new amplitude vectors
        GetGuessVectors : if(iter == 1) then
           if(DECinfo%use_singles) t1(iter) = array2_init(ampl2_dims)
-          if(DECinfo%t2_restart) then
-             write(DECinfo%output,'(a)') 'restart :: t2 read from file'
-             t2(iter) = t2_restart_text(ampl4_dims)
+          if(DECinfo%array4OnFile) then
+             ! Initialize t2(iter) using storing type 2
+             t2(iter) = array4_init(ampl4_dims,2,.true.)
           else
-             if(DECinfo%array4OnFile) then
-                ! Initialize t2(iter) using storing type 2
-                t2(iter) = array4_init(ampl4_dims,2,.true.)
-             else
-                t2(iter) = array4_init(ampl4_dims)
-             end if
+             t2(iter) = array4_init(ampl4_dims)
           end if
        end if GetGuessVectors
 
@@ -481,8 +476,8 @@ contains
 
        end if T1Related
 
-       if(DECinfo%timing) call LSTIMER('CCIT: INIT',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: INIT',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
        !Write the vectors to file and keep only current in memory
@@ -563,7 +558,7 @@ contains
           call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
        end if SelectCoupledClusterModel
 
-       if(DECinfo%timing) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
 
 
        ForDebug : if(DECinfo%cc_driver_debug) then
@@ -585,7 +580,7 @@ contains
 
        end if ForDebug
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! calculate crop/diis matrix
        B=0.0E0_realk; c=0.0E0_realk
@@ -617,13 +612,13 @@ contains
           end do
        end do
 
-       if(DECinfo%timing) call LSTIMER('CCIT: CROP MAT',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: CROP MAT',tcpu,twall,DECinfo%output)
 
        ! solve crop/diis equation
        call CalculateDIIScoefficients(DECinfo%ccMaxDIIS,DECinfo%ccMaxIter,iter,B,c, &
             DECinfo%cc_driver_debug)
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! mixing to get optimal
        if(DECinfo%use_singles) then
@@ -649,8 +644,8 @@ contains
           call array4_add_to(omega2_opt,c(i),omega2(i))
        end do
 
-       if(DECinfo%timing) call LSTIMER('CCIT: MIXING',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: MIXING',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! if crop, put the optimal in place of trial (not for diis)
        if(DECinfo%use_crop) then
@@ -671,8 +666,8 @@ contains
           end if
        end if
 
-       if(DECinfo%timing) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! check for the convergence
        one_norm1 = 0.0E0_realk
@@ -691,8 +686,8 @@ contains
        end if
        prev_norm=two_norm_total
 
-       if(DECinfo%timing) call LSTIMER('CCIT: CONV',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: CONV',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! calculate the correlation energy and fragment energy
        ! MODIFY FOR NEW MODEL
@@ -711,7 +706,7 @@ contains
        end if EnergyForCCmodel
 
 
-       if(DECinfo%timing) call LSTIMER('CCIT: ENERGY',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: ENERGY',tcpu,twall,DECinfo%output)
 
        ! check if this is the last iteration
        if(iter == DECinfo%ccMaxIter .or. two_norm_total < DECinfo%ccConvergenceThreshold) &
@@ -721,7 +716,7 @@ contains
          if(DECinfo%ccsd_old)call array4_free(iajb)
        end if
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! generate next trial vector if this is not the last iteration
        if(.not.break_iterations) then
@@ -744,7 +739,7 @@ contains
        !msg="t2+1:"
        !call print_norm(t2(iter+1)%val,nocc*nocc*nvirt*nvirt,msg) 
 
-       if(DECinfo%timing) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
 
        ! delete optimals
        if(DECinfo%use_singles) then
@@ -924,7 +919,6 @@ contains
     call mem_dealloc(Uocc)
     call mem_dealloc(Uvirt)
 
-    if(DECinfo%show_time) call array4_print_statistics(DECinfo%output)
 
   end subroutine ccsolver
 
@@ -1352,8 +1346,6 @@ contains
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
-    DECinfo%solver_time_cpu = DECinfo%solver_time_cpu + (tcpu2-tcpu1)
-    DECinfo%solver_time_wall = DECinfo%solver_time_wall + (twall2-twall1)
 
   end subroutine mp2_solver
 
@@ -2184,7 +2176,6 @@ contains
           write(DECinfo%output,'(a,i4)')     'Num. occ. orb.   = ',nocc
           write(DECinfo%output,'(a,i4)')     'Num. unocc. orb. = ',nvirt
           write(DECinfo%output,'(a,e8.1e2)') 'Convergence      = ',DECinfo%ccConvergenceThreshold
-          write(DECinfo%output,'(a,l1)')     'T2 restart       = ',DECinfo%t2_restart
           write(DECinfo%output,'(a,l1)')     'Debug mode       = ',DECinfo%cc_driver_debug
           write(DECinfo%output,'(a,i4)')     'Print level      = ',ccPrintLevel
           write(DECinfo%output,'(a,l1)')     'Use CROP         = ',DECinfo%use_crop
@@ -2192,7 +2183,6 @@ contains
           write(DECinfo%output,'(a,l1)')     'Preconditioner   = ',DECinfo%use_preconditioner
           write(DECinfo%output,'(a,l1)')     'Precond. B       = ',DECinfo%use_preconditioner_in_b
           write(DECinfo%output,'(a,l1)')     'Singles          = ',DECinfo%use_singles
-          write(DECinfo%output,'(a,l1)')     'Timings          = ',DECinfo%show_time
        else
           write(DECinfo%output,'(/,a)') '  Coupled-cluster energy  -> Fragment job '
           write(DECinfo%output,'(a)')   '------------------------------------------'
@@ -2325,7 +2315,7 @@ contains
 #endif
 
     call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
-    if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+    if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
     ! Sanity check 1: Number of orbitals
@@ -2487,8 +2477,8 @@ contains
 !            'debug :: intermediates done'
 !    end if
 
-    if(DECinfo%timing) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
-    if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+    if(DECinfo%PL>1) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
+    if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! get fock matrices for preconditioning
     Preconditioner : if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
@@ -2571,7 +2561,7 @@ contains
 
     CCIteration : do iter=1,DECinfo%ccMaxIter
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
        call LSTIMER('START',iter_cpu,iter_wall,DECinfo%output)
 
        ! remove old vectors
@@ -2630,8 +2620,8 @@ contains
 
 
        end if T1Related
-       if(DECinfo%timing) call LSTIMER('CCIT: INIT',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: INIT',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
        ! readme : get residuals, so far this solver supports only singles and doubles
@@ -2656,10 +2646,10 @@ contains
 
        end if SelectCoupledClusterModel
        
-       if(DECinfo%timing) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
 
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! calculate crop/diis matrix
        B=0.0E0_realk
@@ -2697,14 +2687,14 @@ contains
        !msg="DIIS mat, new"
        !call print_norm(B,DECinfo%ccMaxIter*DECinfo%ccMaxIter,msg)
 
-       if(DECinfo%timing) call LSTIMER('CCIT: CROP MAT',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: CROP MAT',tcpu,twall,DECinfo%output)
        ! solve crop/diis equation
        c=0.0E0_realk
        call CalculateDIIScoefficients(DECinfo%ccMaxDIIS,DECinfo%ccMaxIter,iter,B,c, &
             DECinfo%cc_driver_debug)
 
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
        
@@ -2729,8 +2719,8 @@ contains
        end do
 
 
-       if(DECinfo%timing) call LSTIMER('CCIT: MIXING',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: MIXING',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! if crop, put the optimal in place of trial (not for diis)
        if(DECinfo%use_crop) then
@@ -2742,8 +2732,8 @@ contains
           call array_cp_data(t2_opt,t2(iter))
        end if
 
-       if(DECinfo%timing) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! check for the convergence
        one_norm1 = 0.0E0_realk
@@ -2766,8 +2756,8 @@ contains
             break_iterations=.true.
 
 
-       if(DECinfo%timing) call LSTIMER('CCIT: CONV',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: CONV',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
        ! calculate the correlation energy and fragment energy
@@ -2784,8 +2774,8 @@ contains
           ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
        end if EnergyForCCmodel
 
-       if(DECinfo%timing) call LSTIMER('CCIT: ENERGY',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: ENERGY',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! generate next trial vector if this is not the last iteration
        if(.not.break_iterations) then
@@ -2824,7 +2814,7 @@ contains
           endif
        end if
 
-       if(DECinfo%timing) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
 
 
        ! delete optimals
@@ -2984,10 +2974,9 @@ contains
     call mem_dealloc(Uvirt)
 
 
-    if(DECinfo%show_time)then
-      call array4_print_statistics(DECinfo%output)
-      call array_print_mem_info(DECinfo%output,.true.,.false.)
-    endif
+    call array4_print_statistics(DECinfo%output)
+    call array_print_mem_info(DECinfo%output,.true.,.false.)
+
   end subroutine ccsolver_par
 
   !> \brief: transform ccsd_doubles, ccsdpt_singles and ccsdpt_doubles from canonical to local basis

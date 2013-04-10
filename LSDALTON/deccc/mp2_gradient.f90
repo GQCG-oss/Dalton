@@ -323,8 +323,6 @@ contains
 
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%gradient_time_wall = DECinfo%gradient_time_wall + (twall2-twall1)
-    DECinfo%gradient_time_cpu = DECinfo%gradient_time_cpu + (tcpu2-tcpu1)
     call LSTIMER('SINGLE MP2DENS',tcpu,twall,DECinfo%output)
 
   end subroutine single_calculate_mp2gradient_driver
@@ -613,8 +611,6 @@ contains
     call LSTIMER('START',tKcpu2,tKwall2,DECinfo%output)
 
     ! Timing
-    DECinfo%integral_time_cpu = DECinfo%integral_time_cpu + (tKcpu2-tKcpu1)
-    DECinfo%integral_time_wall = DECinfo%integral_time_wall + (tKwall2-tKwall1)
     call LSTIMER('LTHETA K GRAD',tKcpu1,tKwall1,DECinfo%output)
 
 
@@ -712,8 +708,6 @@ contains
 
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%gradient_time_wall = DECinfo%gradient_time_wall + (twall2-twall1)
-    DECinfo%gradient_time_cpu = DECinfo%gradient_time_cpu + (tcpu2-tcpu1)
     call LSTIMER('PAIR MP2DENS',tcpu,twall,DECinfo%output)
 
   end subroutine pair_calculate_mp2gradient_driver
@@ -1110,8 +1104,6 @@ contains
     call LSTIMER('START',tKcpu2,tKwall2,DECinfo%output)
 
     ! Timing
-    DECinfo%integral_time_cpu = DECinfo%integral_time_cpu + (tKcpu2-tKcpu1)
-    DECinfo%integral_time_wall = DECinfo%integral_time_wall + (tKwall2-tKwall1)
     call LSTIMER('LTHETA K GRAD',tKcpu1,tKwall1,DECinfo%output)
 
 
@@ -1357,8 +1349,6 @@ contains
 
     call LSTIMER('GET MP2GRAD',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%gradient_time_wall = DECinfo%gradient_time_wall + (twall2-twall1)
-    DECinfo%gradient_time_cpu = DECinfo%gradient_time_cpu + (tcpu2-tcpu1)
 
   end subroutine get_mp2gradient_main
 
@@ -1833,7 +1823,6 @@ contains
     type(matrix), target :: Dtot
     type(matrixp) :: Dtotp(1),Dp(1)
     real(realk), dimension(3,natoms) :: CorrGradient_fock2
-    real(realk) :: tcpu1,tcpu2,twall1,twall2
     integer :: nbasis
 
 
@@ -1849,13 +1838,8 @@ contains
     Dp(1)%p => D
 
     ! Coulomb+exchange contributions to MP2 gradient
-    call LSTIMER('START',tcpu1,twall1,DECinfo%output)
     call II_get_twoElectron_gradient(gradient_fock2,natoms,Dp,Dtotp, &
          1,1,MyLsitem%setting,DECinfo%output,DECinfo%output)
-    call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%integral_time_cpu = DECinfo%integral_time_cpu + (tcpu2-tcpu1)
-    DECinfo%integral_time_wall = DECinfo%integral_time_wall + (twall2-twall1)
-
 
     ! Due to conventions in II_get_twoElectron_gradient we have to multiply
     ! the gradient contribution by 4 (only works for closed-shell systems)
@@ -2942,8 +2926,6 @@ call mem_TurnOffThread_Memory()
     end if
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%density_time_wall = DECinfo%density_time_wall + (twall2-twall1)
-    DECinfo%density_time_cpu = DECinfo%density_time_cpu + (tcpu2-tcpu1)
     call LSTIMER('FULL MP2DENS',tcpu,twall,DECinfo%output)
 
   end subroutine get_full_mp2density

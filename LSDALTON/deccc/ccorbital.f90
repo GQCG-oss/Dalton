@@ -59,14 +59,14 @@ contains
           write(DECinfo%output,*) 'Generating occupied DEC orbitals using Boughton-Pulay criteria'
           call GenerateOrbitals_BP(OccOrbitals,nOcc,0,MyMolecule,&
                & DECinfo%mulliken_threshold, DECinfo%simple_mulliken_threshold,&
-               & DECinfo%approximated_norm_threshold,.FALSE.,DECinfo%output,DECinfo%fragmentation_debug)
-          if(DECinfo%dec_driver_debug) call PrintOrbitalsInfo(OccOrbitals,nOcc,DECinfo%output)
+               & DECinfo%approximated_norm_threshold,.FALSE.,DECinfo%output)
+          if(DECinfo%PL>0) call PrintOrbitalsInfo(OccOrbitals,nOcc,DECinfo%output)
 
           write(DECinfo%output,*) 'Generating unoccupied DEC orbitals using Boughton-Pulay criteria'
           call GenerateOrbitals_BP(UnoccOrbitals,nUnocc,nOcc,MyMolecule,&
                & DECinfo%mulliken_threshold, DECinfo%simple_mulliken_threshold,&
-               & DECinfo%approximated_norm_threshold,.FALSE.,DECinfo%output,DECinfo%fragmentation_debug)
-          if(DECinfo%dec_driver_debug) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
+               & DECinfo%approximated_norm_threshold,.FALSE.,DECinfo%output)
+          if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
 
        else ! Simple Lowdin charge procedure to determine atomic extent
 
@@ -74,8 +74,8 @@ contains
 
           call GenerateOrbitals_simple(nocc,nunocc,natoms,DistanceTable, &
                & MyMolecule,MyLsitem,DECinfo%simple_orbital_threshold,OccOrbitals,UnoccOrbitals)
-          if(DECinfo%dec_driver_debug) call PrintOrbitalsInfo(OccOrbitals,nocc,DECinfo%output)
-          if(DECinfo%dec_driver_debug) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
+          if(DECinfo%PL>0) call PrintOrbitalsInfo(OccOrbitals,nocc,DECinfo%output)
+          if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
 
        end if
 
@@ -216,7 +216,7 @@ contains
   !> \brief Generate orbitals for a given set (occ or virt) using Boughton-Pulay criteria
   subroutine GenerateOrbitals_BP(orbital_set,size_of_set,offset,MyMolecule,&
        & mulliken_threshold2,simple_mulliken_threshold2,&
-       & approximated_norm_threshold,modbasis,lu_output,frag_debug)
+       & approximated_norm_threshold,modbasis,lu_output)
 
     implicit none
     integer, intent(in) :: size_of_set,lu_output
@@ -227,7 +227,6 @@ contains
     integer, intent(in) :: offset  ! 0 - for occupied, numocc - for virtual set
     real(realk), intent(in) :: mulliken_threshold2
     logical, intent(in) :: simple_mulliken_threshold2
-    logical, intent(in) :: frag_debug
     real(realk),intent(in) :: approximated_norm_threshold
 
     real(realk), pointer :: CtS(:,:), smallS(:,:)
@@ -313,7 +312,7 @@ contains
           gross_charge = abs(gross_charge)
           call real_inv_sort_with_tracking(gross_charge,atomic_idx,natoms)
 
-          if(frag_debug) then
+          if(DECinfo%PL>0) then
              do n=1,natoms
                 write(lu_output,'(2i4,f16.10)') n,atomic_idx(n),gross_charge(n)
              end do
@@ -376,7 +375,7 @@ contains
 
 
              ! debug info
-             DebugInfo : if(frag_debug) then
+             DebugInfo : if(DECinfo%PL>0) then
                 call mem_alloc(tmp1,selected_nbasis)
                 tmp1 = matmul(smallS,approximated_orbital)
                 write(lu_output,'(a,f16.6)') 'New orbital norm :', approximated_norm
@@ -426,7 +425,7 @@ contains
        endif
 
        ! -- print extended orbital info
-       if(frag_debug) then
+       if(DECinfo%PL>0) then
           write(DECinfo%output,'(/,a,i4)') 'Orbital                 : ',i
           write(DECinfo%output,'(a,i4)')   'Orbital # in full basis : ',offset+i
           write(DECinfo%output,'(a,i4,/)') 'Central atom            : ',central_atom
