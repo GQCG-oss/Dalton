@@ -1017,6 +1017,7 @@ implicit none
 type(RedSpaceItem) :: CFG
 real(realk),pointer :: RedH(:,:),eigvals(:),wrk(:)
 integer :: lwrk,IERR,i,j,n
+IERR=0
 
 n=CFG%it-1
 lwrk=10*n
@@ -1084,6 +1085,7 @@ real(realk),pointer    :: Fmat(:,:)
 real(realk),pointer    :: wrk(:)
 integer :: lwrk,IERR,loc
 integer :: i,j
+IERR=0
 call mem_alloc(Fmat,ndim,ndim)
 call mat_to_full(decomp%FUP,1.0_realk,Fmat)
 call mem_alloc(eigvals,ndim)

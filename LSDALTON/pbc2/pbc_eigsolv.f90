@@ -178,6 +178,7 @@ SUBROUTINE pbc_deigsolve(A,N,M,eig,lupri)
   !LOCAL VARIABLES
   real(realk) :: work(3*n-1)
   INTEGER :: info
+  info=0
   call dsyev('V','U',N,A,N,eig,work,3*N-1,INFO)
 
   if(info .ne. 0) THEN
