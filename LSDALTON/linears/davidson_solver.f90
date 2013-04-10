@@ -789,6 +789,7 @@ implicit none
  real(realk),pointer :: WORK(:),VL(:,:),VR(:,:)
  integer :: LWORK,i,IERR,j,indx(1)
  character(len=1) :: V,L
+ IERR=0
 
  call mem_alloc(A,iter,iter)
  !Set up reduced Hessian and overlap  with correct dimension
