@@ -153,6 +153,7 @@
        character(len=70)             :: MSG
        INTEGER                       :: INFO, LWORK, NB, ILAENV
        double precision, allocatable :: WORK(:)
+       INFO=0
    
        !find out optimal work memory size
        NB = ilaenv(1,'DSYTRD',UPLO,N,N,N,N)

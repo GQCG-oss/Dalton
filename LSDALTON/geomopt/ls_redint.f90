@@ -3371,6 +3371,7 @@ Implicit Real(realk) (A-H,O-Z)
 !      Real(realk), allocatable :: Work(:)
       PARAMETER (IPRMIN = 1, IPRMED = 3, IPRMAX = 5, IPRDBG = 12)
       PARAMETER (D0 = 0.0E0_realk)
+      info=0
 !#ifdef OLD_DIAINT
 !      DO 10 J = 1, optinfo%NIntCoord
 !         DO 12 I = 1, optinfo%NIntCoord

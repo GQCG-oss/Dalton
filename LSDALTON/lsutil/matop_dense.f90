@@ -383,6 +383,7 @@ module matrix_operations_dense
 !
     real(realk),pointer :: work(:)
     integer :: infdiag,lwork
+    infdiag=0
     lwork = -1
     call mem_alloc(work,5)
     ! we inquire the size of lwork
