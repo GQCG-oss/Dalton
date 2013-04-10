@@ -2418,8 +2418,8 @@ CONTAINS
            call II_get_Fock_mat(lupri,luerr,&
               & lsint_fock_data%ls%setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
         ENDIF
-        write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
-        call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
+!        write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
+!        call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
 
       end subroutine di_GET_GbDsArray
 
