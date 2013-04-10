@@ -83,7 +83,7 @@ contains
     !> MOs and unitary transformation matrices
     type(array2) :: C_can_occ, C_can_virt, Uocc, Uvirt
     !> dimensions
-    integer, dimension(2) :: occdims, virtdims, virtoccdims
+    integer, dimension(2) :: occdims, virtdims, virtoccdims,occAO,virtAO
     integer, dimension(3) :: dims_aaa
     integer, dimension(4) :: dims_iaai, dims_aaii
     !> input for the actual triples computation
@@ -93,12 +93,14 @@ contains
     type(array2),intent(inout) :: ccsdpt_singles
 
     ! init dimensions
-    occdims = [nocc,nocc]
-    virtdims = [nvirt,nvirt]
+    occdims     = [nocc,nocc]
+    virtdims    = [nvirt,nvirt]
     virtoccdims = [nvirt,nocc]
-    dims_iaai = [nocc,nvirt,nvirt,nocc]
-    dims_aaii = [nvirt,nvirt,nocc,nocc]
-    dims_aaa = [nvirt,nvirt,nvirt]
+    dims_iaai   = [nocc,nvirt,nvirt,nocc]
+    dims_aaii   = [nvirt,nvirt,nocc,nocc]
+    dims_aaa    = [nvirt,nvirt,nvirt]
+    occAO       = [nbasis,nocc]
+    virtAO      = [nbasis,nvirt]
 
 #ifdef VAR_LSMPI
 
@@ -124,8 +126,12 @@ contains
 
     call mem_alloc(eivalocc,nocc)
     call mem_alloc(eivalvirt,nvirt)
-    call get_ccsdpt_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,&
-                                       & C_can_occ,C_can_virt,Uocc,Uvirt,eivalocc,eivalvirt)
+    Uocc       = array2_init(occdims)
+    Uvirt      = array2_init(virtdims)
+    C_can_occ  = array2_init(occAO)
+    C_can_virt = array2_init(virtAO)
+    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,&
+                         & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
 
     ! ***************************************************
     ! get vo³, v²o², and v³o integrals in proper sequence
@@ -1358,7 +1364,7 @@ contains
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
     real(realk) :: eigenocc(no), eigenvirt(nv)
-    real(realk), dimension(nv,nv,nv), optional, intent(inout) :: trip
+    real(realk), dimension(nv,nv,nv), intent(inout) :: trip
     !> temporary quantities
     integer :: trip_type, a, b, c
     real(realk) :: e_orb, e_orb_occ
@@ -1946,15 +1952,15 @@ contains
                        ! occ in frag # 1, virt in frag # 2
 
                           occ_in_frag_1 = .false.
-                          do idx = 1,Fragment1%SF_nfrags
-                             if (Fragment1%SF_atomlist(idx) .eq. AtomI) then
+                          do idx = 1,Fragment1%nEOSatoms
+                             if (Fragment1%EOSatoms(idx) .eq. AtomI) then
                                 occ_in_frag_1 = .true.
                              end if
                           end do
 
                           virt_in_frag_2 = .false.
-                          do adx = 1,Fragment2%SF_nfrags
-                             if (Fragment2%SF_atomlist(adx) .eq. AtomA) then
+                          do adx = 1,Fragment2%nEOSatoms
+                             if (Fragment2%EOSatoms(adx) .eq. AtomA) then
                                 virt_in_frag_2 = .true.
                              end if
                           end do
@@ -1968,15 +1974,15 @@ contains
                        ! virt in frag # 1, occ in frag # 2
                             
                           occ_in_frag_2 = .false. 
-                          do idx = 1,Fragment2%SF_nfrags
-                             if (Fragment2%SF_atomlist(idx) .eq. AtomI) then
+                          do idx = 1,Fragment2%nEOSatoms
+                             if (Fragment2%EOSatoms(idx) .eq. AtomI) then
                                 occ_in_frag_2 = .true.
                              end if
                           end do 
                              
                           virt_in_frag_1 = .false.
-                          do adx = 1,Fragment1%SF_nfrags
-                             if (Fragment1%SF_atomlist(adx) .eq. AtomA) then
+                          do adx = 1,Fragment1%nEOSatoms
+                             if (Fragment1%EOSatoms(adx) .eq. AtomA) then
                                 virt_in_frag_1 = .true.
                              end if
                           end do

@@ -32,6 +32,12 @@ type trilevel_atominfo
      integer, pointer :: UATOMTYPE(:) !length ND : FOR A GIVEN UNIQUE ATOM THIS IS THE ATOMTYPE IN FULL 
 end type trilevel_atominfo
 
+private
+public :: trilevel_atominfo_init, trilevel_gcbasis, trilevel_atominfo_free,&
+     & trilevel_ATOMS_density, trilevel_full2valence, trilevel_readdens,&
+     & trilevel_cmo_valence2full, trilevel_density_valence2full,&
+     & trilevel_atominfo, freeVbasis
+
 contains
 
 !> \brief diagonalize a angular moment block of the atomic h1 matrix 
@@ -54,6 +60,7 @@ real(realk), pointer    :: bF(:,:), bS(:,:), eig(:), wrk(:)
 integer                 :: i, j, k, istart, info, nb, lwrk
 integer,     pointer    :: indexlist(:) 
  
+ info = 0
  nb =  basis_size(ang+1)
 
  indexlist => trilevel_indexlist(ang,basis_size)
@@ -1305,6 +1312,8 @@ use ecdata
 use opttype
 use precision
 use memory_handling
+use Matrix_Operations, only: matrix_type,mtype_dense,mat_select_type
+use lstiming
 implicit none
 type(optItem), intent(inout) :: opt
 type(optItem)             :: gcopt
@@ -1507,6 +1516,8 @@ use matrix_util
 use Integralparameters
 use IntegralInterfaceMOD
 use diagonalization
+use scfloop_module
+use molecule_module
 implicit none
 TYPE(lsitem),target :: ls
 TYPE(trilevel_atominfo) :: ai

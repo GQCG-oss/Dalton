@@ -500,7 +500,7 @@ C
       IF (NODTOT .GE. 1) THEN
          CALL J1XP(NOSIM,WRK(KVTEX),WRK(KUCMO),WRK(KUBO),UDV,UDVTR,
      &             WRK(KPCMX),WRK(KPCMXT),.FALSE.,TRPLET,JWOPSY,
-     &             WRK(KW49),LW49)
+     &             WRK(KW50),LW50)
       ELSE
 #endif
       DO I = 1, NTSIRR

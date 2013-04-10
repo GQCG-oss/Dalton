@@ -60,11 +60,12 @@ set(DEC_SOURCES
     deccc/array3_memory.f90
     deccc/ccarray3_simple.f90
     deccc/CABS.f90
-    deccc/cc_ao_contractions.f90
+    deccc/mp2.f90
     deccc/ccsdpt.f90
     deccc/cc_crop.f90
     deccc/ccsd.f90
     deccc/rpa.f90
+    deccc/f12_integrals.f90
     deccc/cc_driver.f90
     deccc/cc_integrals.f90
     deccc/manual_reorderings.f90

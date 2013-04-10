@@ -1815,6 +1815,7 @@ end type matrixmembuf
          type(matrix) :: B
          real(realk),pointer :: work(:),S_full(:,:)
          integer :: infdiag,ndim,lwork
+         infdiag=0
 
          select case(matrix_type)
 !         case(mtype_symm_dense)

@@ -700,6 +700,7 @@ DO
       CALL LS_optimization_input(config%optinfo,readword,word,lucmd, &
            & lupri,config%molecule%nAtoms)
    ENDIF
+
 !
 ! Find dynamics input section
 !
@@ -802,6 +803,12 @@ ENDDO
 !   CALL lsQUIT('.LINSCA WAS NOT USED.')
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
+
+! KK: Make sure that DEC geometry optimizations use dynamical optimization procedure
+if(config%dodec .and. config%optinfo%optimize) then
+config%optinfo%dynopt=.true.
+end if
+
 END SUBROUTINE read_dalton_input
 
 subroutine PROFILE_INPUT(profinput,readword,word,lucmd,lupri)

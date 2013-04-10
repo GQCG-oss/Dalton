@@ -308,7 +308,7 @@ if [ $optn -gt 1 ] ; then
    if [ -s "$MPIRUN" -a -x "$MPIRUN" ]; then
       if [ -s "$DALMPI" -a -x "$DALMPI" ]; then
          cp $DALMPI ./dalton_mpi_copy.x
-         if [ -n "$PBS_NODEFILE" -o -n ${opt_nocpex} == 1 ] ; then
+         if [ -n "$PBS_NODEFILE" -a "$opt_nocpex" != "1" ] ; then
 	     echo 'Copying dalton executable from master node: ' ${HOSTNAME}
              # $PBS_NODEFILE is defined, then do the instructions below
              cat $PBS_NODEFILE | sort | uniq

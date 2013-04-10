@@ -1195,6 +1195,7 @@ SUBROUTINE II_get_eigv_square_mat(LUPRI,LUERR,A,W,nbast)
   REAL(REALK),pointer   :: VS(:,:), WI(:)
   INTEGER               :: iNegImagEigV
   REAL(REALK),pointer   :: negImagEigVal(:,:)
+  INFO=0
   !
   !--------------------- DSYEV METHOD -------------------------
   !--------------------- Symmetric matrix A -------------------
