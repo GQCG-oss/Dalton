@@ -276,6 +276,7 @@ subroutine SolveNewton_ReducedSpace(grad,CFG,X,xred,res,iter)
   real(realk),pointer:: A(:,:)
   real(realk)        :: RHS(iter-1)
   integer            :: IPIV(iter-1),IERR
+  IERR=0
 
   call mem_alloc(A,iter-1,iter-1)
   A(1:iter-1,1:iter-1)= CFG%Ared(2:iter,2:iter)
@@ -890,6 +891,7 @@ integer             :: IPIV(ndim),IERR,i,j
 type(matrix)        :: residual_2D
 type(matrix),intent(in) :: grad
 real(realk)         :: resnorm_2D
+IERR=0
 
 call mat_init(residual_2D,grad%nrow,grad%ncol)
 

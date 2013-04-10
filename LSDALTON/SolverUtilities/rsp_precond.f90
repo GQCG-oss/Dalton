@@ -447,6 +447,7 @@ contains
       real(realk), allocatable, dimension(:)  :: RHS, xred
       real(realk),allocatable, dimension(:,:) :: A, S
       logical :: OnMaster
+      IERR=0
       OnMaster = .TRUE.
    matdim = res_in%nrow
 

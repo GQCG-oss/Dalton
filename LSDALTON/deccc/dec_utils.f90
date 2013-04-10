@@ -757,6 +757,7 @@ contains
     integer, dimension(n) :: ipiv
     integer :: infoLAPACK
     external dgesv
+    infoLAPACK = 0
 
     call mem_alloc(tmpA,n,n)  ! dgesv destroyes original A
     tmpA = A

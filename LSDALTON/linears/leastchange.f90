@@ -78,6 +78,7 @@ real(realk) :: T(nbas,nbas), CMO(nbas,nbas)
 integer     :: nval, nvirt,LWORK,INFO
 real(realk),pointer :: U(:,:), S(:), VT(:,:),WORK(:), F(:,:),CB(:,:)
 character*27 :: msg
+INFO=0
 
  nvirt = nbas - nocc
  nval  = nocc - ncore

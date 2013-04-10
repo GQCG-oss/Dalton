@@ -116,6 +116,7 @@
      !
      real(realk),allocatable :: wrk(:)
      integer    :: ierr,lwrk
+     ierr=0
      allocate(wrk(5))
      lwrk = -1
      call DSYGV(1,'V','L',N,A,N,B,N,eigval,wrk,lwrk,ierr)
