@@ -2820,7 +2820,8 @@ call mem_TurnOffThread_Memory()
     logical,intent(in) :: freebasisinfo
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
-    integer :: savemodel,hybridsave
+    integer :: savemodel
+    logical :: hybridsave
 
     ! Save existing model and do fragment optimization with MP2
     if(DECinfo%use_mp2_frag) then
