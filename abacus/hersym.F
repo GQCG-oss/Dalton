@@ -184,12 +184,15 @@ C           CALL PRIGEOLU(LUCOOR,CORD)
          ENDIF
 C
 C
-         CALL SRTATM(MXCENT, ATMARR, .TRUE.)
+C        CALL SRTATM(MXCENT, ATMARR, .TRUE.)
          IF (.NOT. NOMOVE) THEN
 C           Place molecular center of mass at the origin and
 C           with principal axes of inertia along coordinate axes
             CALL CENTER_MOLECULE(ATMARR)
          END IF
+CRF      We have to sort the atoms AFTER we center the molecule
+C        Else errors occur when non-standart isotopes are used
+         CALL SRTATM(MXCENT, ATMARR, .TRUE.)
 C
 C        Determine molecular point group
          CALL FIND_PGROUP(MXCENT, ATMARR, DRTAXS, DIRAXS, DMRPLN,

@@ -53,6 +53,7 @@ CONTAINS
     integer,pointer :: IWORK(:)
     integer     :: lwork,nbast,nnull,luerr
     logical  :: ODSCREEN
+    IERR=0
 
     IF(CMO_CABS_save_created)THEN
        call mat_assign(CMO_cabs,CMO_CABS_save)

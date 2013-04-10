@@ -491,6 +491,7 @@ end subroutine mat_unres_dense_ab_daxpy
     real(realk),pointer :: work(:)
     real(realk), allocatable :: eivala(:), eivalb(:)
     integer :: infdiag,lwork
+    infdiag=0
 
     allocate (eivala(ndim), eivalb(ndim))
 

@@ -1686,6 +1686,7 @@ contains
     real(realk),allocatable :: E2(:,:), S2(:,:), RHS(:) 
     integer,allocatable :: IPIV(:)
     integer :: igd, ierr
+    ierr=0
 
     allocate(E2(2*ndim_red,2*ndim_red), S2(2*ndim_red,2*ndim_red))
     allocate(RHS(2*ndim_red), IPIV(2*ndim_red))
@@ -1791,6 +1792,7 @@ contains
     real(realk),pointer :: SV(:),optwrk(:)
     integer,pointer :: IWORK(:)
     integer :: ibx2,kk,info,lwork,nSVD,MAXnSVD
+    info=0
     DoSVD = molcfg%solver%doSVD
     IF(DoSVD)WRITE(molcfg%lupri,*)'Use SVD for the response solver. TK'
 !for restart
@@ -2997,7 +2999,7 @@ end subroutine verify_conv_prop
     real(realk),allocatable :: E2(:,:), S2(:,:), RHS(:,:)
     integer,allocatable :: IPIV(:)
     integer :: igd, ierr, rdim, nump, i, j, k, l
-
+    ierr=0
     !number of vectors to project out (degeneracy of (de-)excitation(s))
     nump = nmcdvec
     !dimension of redsp. matrices after out-projection of (de-)excitation(s)

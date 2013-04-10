@@ -657,6 +657,7 @@ contains
         integer                  :: IL, IU, neig, Ltemp, INFO, m, ndim
         logical                  :: low_eig_found 
 
+   INFO = 0
    low_eig_found = .false.
    ndim = A%nrow
    Ltemp = 8*ndim 

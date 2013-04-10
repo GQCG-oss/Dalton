@@ -744,6 +744,7 @@ real(realk), intent(out)     :: xout(:)
 integer                      :: INFO, i
 real(realk)                  :: A(iter,iter), b(iter)
 integer                      :: IPIV(iter,iter)
+INFO=0
 
 xout = 0.0E0_realk
 A = Ain(1:iter,1:iter)

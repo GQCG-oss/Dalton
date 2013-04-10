@@ -1190,6 +1190,7 @@ Real(realk) :: Inertia_tensor(3,3)
 Integer :: i,j,Info,LWork
 Real(realk), parameter :: TestLin = 1E-04_realk
 Logical :: Linear
+Info=0
 ! Moving origin to centre of mass
 Call Center_of_Mass(NAtoms,Coordinates,Mass,CMO)
 Call Move_Molecule(NAtoms,Coordinates,-CMO) 
