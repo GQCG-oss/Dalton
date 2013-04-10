@@ -1083,7 +1083,6 @@ contains
     endif
     nelements=A%dims(1)*A%dims(2)*A%dims(3)*A%dims(4)
     res=ddot(nelements,A%val,1,B%val,1)
-    !    res=vector_dotproduct(A%val,B%val,nelements)
 !!$#else
 !!$    do k=1,A%dims(4)
 !!$       do j=1,A%dims(3)
@@ -1264,41 +1263,6 @@ contains
   end subroutine array4_dotproduct_file_type3
 
 
-
-  !> \brief Pack and calculate dot product
-  function vector_dotproduct(vec1,vec2,vector_size) result(val)
-
-    implicit none
-    integer(kind=long) :: vector_size
-    real(realk), dimension(vector_size), intent(in) :: vec1,vec2
-    real(realk), pointer :: small_vec1(:), small_vec2(:)
-    logical, dimension(vector_size) :: mask1,mask2,mask
-    real(realk) :: val
-    real(realk),external :: ddot
-    integer :: reduced_size
-
-    val = 0.0E0_realk
-
-    mask1 = vec1 /= DECinfo%zero_threshold
-    mask2 = vec2 /= DECinfo%zero_threshold
-    mask = mask1 .and. mask2
-    reduced_size = count(mask)
-
-    call mem_alloc(small_vec1,reduced_size)
-    call mem_alloc(small_vec2,reduced_size)
-    small_vec1 = pack(vec1,mask)
-    small_vec2 = pack(vec2,mask)
-    !#ifdef USE_BLAS
-    val = ddot(reduced_size,small_vec1,1,small_vec2,1)
-    !#else
-    !    val = dot_product(small_vec1,small_vec2)
-    !#endif
-    call mem_dealloc(small_vec1)
-    call mem_dealloc(small_vec2)
-
-    return
-  end function vector_dotproduct
-
   !> \brief Square of a 2norm
   function array4_norm(A) result(res)
     implicit none
@@ -1368,8 +1332,6 @@ contains
     end do
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%trans_time_cpu = DECinfo%trans_time_cpu + (tcpu2-tcpu1)
-    DECinfo%trans_time_wall = DECinfo%trans_time_wall + (twall2-twall1)
 
   end subroutine array4_contract1
 
@@ -1421,8 +1383,6 @@ contains
     end select StoringType
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%trans_time_cpu = DECinfo%trans_time_cpu + (tcpu2-tcpu1)
-    DECinfo%trans_time_wall = DECinfo%trans_time_wall + (twall2-twall1)
 
   end subroutine array4_contract1_file
 
@@ -1567,8 +1527,6 @@ contains
          1.0E0_realk,A%val,dim2,B%val,dim2,0.0E0_realk,C%val,dim1)
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%trans_time_cpu = DECinfo%trans_time_cpu + (tcpu2-tcpu1)
-    DECinfo%trans_time_wall = DECinfo%trans_time_wall + (twall2-twall1)
 
   end subroutine array4_contract2_middle
 
@@ -1630,8 +1588,6 @@ contains
 !!$#endif
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%trans_time_cpu = DECinfo%trans_time_cpu + (tcpu2-tcpu1)
-    DECinfo%trans_time_wall = DECinfo%trans_time_wall + (twall2-twall1)
 
   end subroutine array4_contract2
 
@@ -1664,8 +1620,6 @@ contains
     call mat_multiply(A%val,B%val,C%val,dim_con,dim_c1,dim_c2)
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%trans_time_cpu = DECinfo%trans_time_cpu + (tcpu2-tcpu1)
-    DECinfo%trans_time_wall = DECinfo%trans_time_wall + (twall2-twall1)
 
   end subroutine array4_contract_array2
 
@@ -1697,8 +1651,6 @@ contains
     call mat_multiply(A%val,B%val,C%val,dim_con,dim_c1,dim_c2)
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%trans_time_cpu = DECinfo%trans_time_cpu + (tcpu2-tcpu1)
-    DECinfo%trans_time_wall = DECinfo%trans_time_wall + (twall2-twall1)
 
   end subroutine array4_contract3
 
@@ -1809,8 +1761,6 @@ contains
     end if
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%reorder_time_cpu = DECinfo%reorder_time_cpu + (tcpu2-tcpu1)
-    DECinfo%reorder_time_wall = DECinfo%reorder_time_wall + (twall2-twall1)
 
   end subroutine array4_reorder
 
@@ -1861,8 +1811,6 @@ contains
     enddo
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%reorder_time_cpu = DECinfo%reorder_time_cpu + (tcpu2-tcpu1)
-    DECinfo%reorder_time_wall = DECinfo%reorder_time_wall + (twall2-twall1)
 
   end subroutine array_reorder_4d_debug
 
@@ -2103,8 +2051,6 @@ contains
 
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%reorder_time_cpu = DECinfo%reorder_time_cpu + (tcpu2-tcpu1)
-    DECinfo%reorder_time_wall = DECinfo%reorder_time_wall + (twall2-twall1)
   end subroutine array_reorder_4d
 
   !> \brief Transpose data
@@ -2558,33 +2504,6 @@ contains
         go to 170
   end subroutine alg513
 
-  !> \brief Simple routine to read data from coordinate file (should not be used)
-  function t2_restart_text(dims) result(this)
-    implicit none
-    type(array4) :: this
-    integer, dimension(4), intent(in) :: dims
-    integer :: a,i,b,j,p,q,r,s,state,lunit
-    real(realk) :: num
-
-    this = array4_init(dims)
-    lunit=-1
-
-    call lsopen(lunit,'t2.restart','OLD','UNFORMATTED')
-    do p=1,dims(1)
-       do q=1,dims(2)
-          do r=1,dims(3)
-             do s=1,dims(4)
-                read(200,*,IOSTAT=state) a,i,b,j,num
-                if(state /= 0) exit
-                this%val(a,i,b,j) = num
-             end do
-          end do
-       end do
-    end do
-    call lsclose(lunit,'KEEP')
-
-    return
-  end function t2_restart_text
 
   !> \brief Print statistics of array4 objects
   subroutine array4_print_statistics(output)
@@ -4450,119 +4369,6 @@ contains
 
   end subroutine remove_core_orbitals_from_last_index
 
-  !> extract ccsd(t) indices from ccsd indices and copy entries in ccsd singles and doubles amplitudes
-  !  into new amplitude array2 and array4 structures with ccsd(t) dimensions.
-  !> \date January 2013
-  !> \author Janus Eriksen and Kasper Kristensen
-  subroutine extract_pt_indices_from_ccsd_ampls(nocc,nunocc,ccsd_virt_aos,ccsd_occ_aos,ccsdpt_virt_aos,ccsdpt_occ_aos,&
-                                        &ccsd_t1,ccsd_t1_pt,ccsd_t2,ccsd_t2_pt)
-
-    implicit none
-
-    !> size of occ aos arrays
-    integer, intent(in) :: nocc
-    !> size of virt aos arrays
-    integer, intent(in) :: nunocc
-    !> logical vector handling ccsd virtual aos
-    logical,dimension(nunocc),intent(inout) :: ccsd_virt_aos
-    !> logical vector handling ccsd occupied aos
-    logical,dimension(nocc),intent(inout) :: ccsd_occ_aos
-    !> logical vector handling ccsd(t) virtual aos
-    logical,dimension(nunocc),intent(inout) :: ccsdpt_virt_aos
-    !> logical vector handling ccsd(t) occupied aos
-    logical,dimension(nocc),intent(inout) :: ccsdpt_occ_aos
-    !> ccsd t1 amplitudes for ccsd aos
-    type(array2),intent(inout) :: ccsd_t1
-    !> ccsd t1 amplitudes referencing ccsd(t) aos
-    type(array2),intent(inout) :: ccsd_t1_pt
-    !> ccsd t2 amplitudes for ccsd aos 
-    type(array4),intent(inout) :: ccsd_t2
-    !> ccsd t2 amplitudes referencing ccsd(t) aos
-    type(array4),intent(inout) :: ccsd_t2_pt
-    !> count integers
-    integer                    :: n_ccsdpt_virt,n_ccsdpt_occ,ccsd_idx,ccsdpt_idx,i,a,j,b
-    !> integer pointers holding the intersection of the ccsd aos and the ccsd(t) aos for virt and occ
-    integer,pointer            :: ccsdpt_in_ccsd_virt(:),ccsdpt_in_ccsd_occ(:)
-
-    ! determine the number of true entries in ccsdpt_virt_aos and ccsdpt_occ_aos
-    n_ccsdpt_virt = count(ccsdpt_virt_aos)
-    n_ccsdpt_occ = count(ccsdpt_occ_aos)
-
-    call mem_alloc(ccsdpt_in_ccsd_virt,n_ccsdpt_virt)
-    call mem_alloc(ccsdpt_in_ccsd_occ,n_ccsdpt_occ)
-
-    ccsd_idx = 0
-    ccsdpt_idx = 0
-
-    ! determine the intersection of the true entries in ccsd_virt_aos and ccsdpt_virt_aos  
-    do i = 1,nunocc
-
-       ! virtual orbital in ccsd aos?
-       if (ccsd_virt_aos(i)) ccsd_idx = ccsd_idx + 1
-
-       ! virtual orbital in ccsd(t) aos?
-       if (ccsdpt_virt_aos(i)) then
-
-          ccsdpt_idx = ccsdpt_idx + 1
-
-          ! if virt orbital is in ccsd(t) aos, mark the position in the ccsd aos in ccsdpt_in_ccsd_virt
-          ccsdpt_in_ccsd_virt(ccsdpt_idx) = ccsd_idx
-
-       end if
-
-    end do
-
-    ccsd_idx = 0
-    ccsdpt_idx = 0
-
-    ! determine the intersection of the true entries in ccsd_occ_aos and ccsdpt_occ_aos
-    do i = 1,nocc
-
-       ! occupied orbital in ccsd aos?
-       if (ccsd_occ_aos(i)) ccsd_idx = ccsd_idx + 1
-
-       ! occupied orbital in ccsd(t) aos?
-       if (ccsdpt_occ_aos(i)) then
-
-          ccsdpt_idx = ccsdpt_idx + 1
-
-          ! if occ orbital is in ccsd(t) aos, mark the position in the ccsd aos in ccsdpt_in_ccsd_occ 
-          ccsdpt_in_ccsd_occ(ccsdpt_idx) = ccsd_idx
-
-       end if
-
-    end do
-
-    ! copy the orbital entries from ccsd_t1, which are present in the ccsd(t) aos, into ccsd_t1_pt 
-    do i = 1,n_ccsdpt_occ
-       do a = 1,n_ccsdpt_virt
-
-          ccsd_t1_pt%val(a,i) = ccsd_t1%val(ccsdpt_in_ccsd_virt(a),ccsdpt_in_ccsd_occ(i))
-
-       end do
-    end do
-
-    ! copy the orbital entries from ccsd_t2, which are present in the ccsd(t) aos, into ccsd_t2_pt
-    do j = 1,n_ccsdpt_occ
-       do b = 1,n_ccsdpt_virt
-
-          do i = 1,n_ccsdpt_occ
-             do a = 1,n_ccsdpt_virt
-
-                ccsd_t2_pt%val(a,i,b,j) = ccsd_t2%val(ccsdpt_in_ccsd_virt(a),ccsdpt_in_ccsd_occ(i),&
-                                            &ccsdpt_in_ccsd_virt(b),ccsdpt_in_ccsd_occ(j))
-
-             end do
-          end do
-
-       end do
-    end do
-
-    ! release pointers
-    call mem_dealloc(ccsdpt_in_ccsd_virt)
-    call mem_dealloc(ccsdpt_in_ccsd_occ)
-
-  end subroutine extract_pt_indices_from_ccsd_ampls
 
   !> \brief Calculate combined single+double amplitudes:
   !> u(a,i,b,j) = t2(a,i,b,j) + t1(a,i)*t1(b,j)

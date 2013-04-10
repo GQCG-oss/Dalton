@@ -728,6 +728,7 @@ type(prop_molcfg), intent(inout)    :: molcfg
     integer,allocatable      :: IPIV(:)
     integer                  :: igd, ierr, i, j, k,max_red
 
+    ierr=0
 
     max_red= molcfg%solver%rsp_maxred
 

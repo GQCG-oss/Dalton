@@ -84,7 +84,7 @@ Level 3
 ccsd, dec_atom,ccsdpt,mp2_gradient
 
 Level 2 
-array_operations,  fullmolecule, cc_ao_contractions, cc_integrals
+array_operations,  fullmolecule, mp2, cc_integrals
 
 Level 1
 ccorbital, ccarray2_simple, ccarray3_simple, ccarray4_simple, dec_pdm, decmpi

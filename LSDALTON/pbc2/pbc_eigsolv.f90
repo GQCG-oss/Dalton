@@ -178,6 +178,7 @@ SUBROUTINE pbc_deigsolve(A,N,M,eig,lupri)
   !LOCAL VARIABLES
   real(realk) :: work(3*n-1)
   INTEGER :: info
+  info=0
   call dsyev('V','U',N,A,N,eig,work,3*N-1,INFO)
 
   if(info .ne. 0) THEN
@@ -1117,6 +1118,7 @@ SUBROUTINE pbc_diisweights(errdim,error,weight,it,lupri)
   !INTEGER :: solve(it+1)
   INTEGER :: solve(it)
   REAL(realk),pointer :: work(:)
+  info=0
 
   B_mat(:,:)=0d0
   DO i=1,it

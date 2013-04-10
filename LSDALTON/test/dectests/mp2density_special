@@ -69,8 +69,6 @@ $END INFO
 .manual_batchsizes
 6 6 
 .MP2density
-.MaxDistSFAngstrom
-0.1
 .IncludeFullMolecule
 *END OF INPUT
 %EOF%

@@ -189,14 +189,16 @@ real(realk) :: nrm_thresh,stepsize,orig_Eval
   CFG%mu = 0.0_realk
   if (norb < 10) CFG%macro_thresh = CFG%macro_thresh*10.0d0 
   stepsize=0d0
+  CFG%r_denom =1.0_realk
+  CFG%it = 1
   do i=1,200
     CFG%old_mu = CFG%mu
     old_oVal = oVal
     imx  =  idamax(norb,orbspread_input%spread2,1)
-    nrmG = dsqrt(mat_sqnorm2(G))/real(norb)
+    nrmG = sqrt(mat_sqnorm2(G))/real(norb)
 
     write (ls%lupri,'(I3,A,ES9.2,A,f8.3,A,f8.3,A,ES9.2,A,ES9.2,A,I3,A,f6.3,A,f6.3)') &
-         &i, 'Pred=',CFG%r_denom,' max_o=',dsqrt(orbspread_input%spread2(imx)),&
+         &i, 'Pred=',CFG%r_denom,' max_o=',sqrt(orbspread_input%spread2(imx)),&
          &   ' r=',r,' mu=',CFG%mu,' grd=', nrmG, ' it=',CFG%it, ' step',CFG%stepsize,' tot step ', stepsize
     if(nrmG .le. CFG%macro_thresh) exit
 

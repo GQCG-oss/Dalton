@@ -69,6 +69,7 @@ module LINSCA_DIIS
     real(realk) :: Amat(msize+1,msize+1)
     real(realk) :: bvec(msize+1)
     integer :: i,ierr,ipiv(msize+1)
+    ierr=0
 
     Amat(1:msize,1:msize) = queue%DIIS_Amat(1:msize,1:msize)
     do i = 1, msize
