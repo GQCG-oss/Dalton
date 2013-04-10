@@ -90,7 +90,6 @@ contains
     DECinfo%FOT=1.0E-4_realk
     DECinfo%InclFullMolecule = .false.
     DECinfo%PL=0
-    DECinfo%SkipCC=.false.
     DECinfo%PurifyMOs=.false.
     DECinfo%precondition_with_full=.false.
     DECinfo%HybridScheme=.false.
@@ -130,8 +129,6 @@ contains
     DECinfo%use_preconditioner=.true.
     DECinfo%use_preconditioner_in_b=.true.
     DECinfo%use_crop=.true.
-    DECinfo%show_memory=.false.
-    DECinfo%skip_full_ao=.true.
     DECinfo%array4OnFile=.false.
     DECinfo%array4OnFile_specified=.false.
 
@@ -244,7 +241,6 @@ contains
        case('.ccThr') 
           read(input,*) DECinfo%ccConvergenceThreshold
           DECinfo%CCthrSpecified=.true.
-       case('.ShowMemory'); DECinfo%show_memory=.true.
        case('.NotPrec'); DECinfo%use_preconditioner=.false.
        case('.NotBPrec'); DECinfo%use_preconditioner_in_b=.false.
        case('.canonical'); DECinfo%use_canonical=.true.
@@ -292,7 +288,6 @@ contains
           read(input,*) DECinfo%PairMinDist
           DECinfo%PairMinDist = DECinfo%PairMinDist/bohr_to_angstrom
        case('.ccsdExpl'); DECinfo%ccsd_expl=.true.
-       case('.skipCC'); DECinfo%SkipCC=.true. 
        case('.Purification'); DECinfo%PurifyMOs=.true.
        case('.precWithFull'); DECinfo%precondition_with_full=.true.
        case('.SimpleMullikenThresh'); DECinfo%simple_mulliken_threshold=.true.
@@ -325,7 +320,6 @@ contains
        case('.NotkappaBPrec'); DECinfo%kappa_use_preconditioner_in_b=.false.
 
           ! integrals tests
-       case('.UseFullAO'); DECinfo%skip_full_ao=.false.
        case('.CheckLCM'); DECinfo%check_lcm_orbitals=.true.
 
           ! Max memory measured in GB. By default set to 16 GB
@@ -391,20 +385,11 @@ contains
        end if
 
 
-       if(.not. DECinfo%skip_full_ao) then
-          call lsquit('Storing arrays on file not implemented for&
-               & full AO arrays. Suggestion: Remove .array4OnFile keyword!', DECinfo%output)
-       end if
-
     end if ArraysOnFile
 
 
     BeyondMp2: if(DECinfo%ccModel /= 1) then
 
-       !if(DECinfo%skip_full_ao) then
-       !   call lsquit('Coupled cluster beyond MP2 is only implemented for full AO arrays. &
-       !        & Suggestion: Insert .UseFullAO keyword!', DECinfo%output)
-       !end if
 
        if(DECinfo%MP2density) then
           call lsquit('Calculation of density matrix is only implemented for MP2!', DECinfo%output)
@@ -483,79 +468,106 @@ contains
   subroutine DEC_settings_print(DECitem,lupri)
     type(DECsettings) :: DECitem
     integer,intent(in) :: lupri
-    !
-    integer :: I,J,K,L,M
-    WRITE(lupri,'(A)') ' The DEC settings structure'
-    WRITE(lupri,'(A32,L1)')' doDEC ' ,DECitem%doDEC
-    WRITE(lupri,'(A32,L1)')' doHF ' ,DECitem%doHF
-    WRITE(lupri,'(A32,ES18.9)')' memory ' ,DECitem%memory
-    WRITE(lupri,'(A32,L1)')' full_molecular_cc ' ,DECitem%full_molecular_cc
-    WRITE(lupri,'(A32,L1)')' FullDEC ' ,DECitem%FullDEC
-    WRITE(lupri,'(A32,L1)')' simulate_full ' ,DECitem%simulate_full
-    WRITE(lupri,'(A32,I8)')' simulate_natoms ' ,DECitem%simulate_natoms
-    WRITE(lupri,'(A32,L1)')' SkipReadIn ' ,DECitem%SkipReadIn
-    WRITE(lupri,'(A32,L1)')' SinglesPolari ' ,DECitem%SinglesPolari
-    WRITE(lupri,'(A32,ES18.9)')' singlesthr ' ,DECitem%singlesthr
-    WRITE(lupri,'(A32,L1)')' restart ' ,DECitem%restart
-    WRITE(lupri,'(A32,ES18.9)')' TimeBackup ' ,DECitem%TimeBackup
-    WRITE(lupri,'(A32,L1)')' cc_driver_debug ' ,DECitem%cc_driver_debug
-    WRITE(lupri,'(A32,L1)')' ccsd_old, ' ,DECitem%ccsd_old
-    WRITE(lupri,'(A32,L1)')' solver_par, ' ,DECitem%solver_par
-    WRITE(lupri,'(A32,I8)')' ccsdAbatch' ,DECitem%ccsdAbatch
-    WRITE(lupri,'(A32,I8)')' ccsdGbatch' ,DECitem%ccsdGbatch
-    WRITE(lupri,'(A32,L1)')' hack ' ,DECitem%hack
-    WRITE(lupri,'(A32,L1)')' hack2 ' ,DECitem%hack2
-    WRITE(lupri,'(A32,I8)')' output ' ,DECitem%output
-    WRITE(lupri,'(A32,ES18.9)')' mulliken_threshold ' ,DECitem%mulliken_threshold
-    WRITE(lupri,'(A32,L1)')' simple_mulliken_threshold ' ,DECitem%simple_mulliken_threshold
-    WRITE(lupri,'(A32,ES18.9)')' approximated_norm_threshold ' ,DECitem%approximated_norm_threshold
-    WRITE(lupri,'(A32,L1)')' check_lcm_orbitals ' ,DECitem%check_lcm_orbitals
-    WRITE(lupri,'(A32,L1)')' use_canonical ' ,DECitem%use_canonical
-    WRITE(lupri,'(A32,L1)')' ReassignHatoms ' ,DECitem%ReassignHatoms
-    WRITE(lupri,'(A32,L1)')' mulliken ' ,DECitem%mulliken
-    WRITE(lupri,'(A32,L1)')' BoughtonPulay ' ,DECitem%BoughtonPulay
-    WRITE(lupri,'(A32,L1)')' FitOrbitals ' ,DECitem%FitOrbitals
-    WRITE(lupri,'(A32,ES18.9)')' simple_orbital_threshold ' ,DECitem%simple_orbital_threshold
-    WRITE(lupri,'(A32,I8)')' MaxIter ' ,DECitem%MaxIter
-    WRITE(lupri,'(A32,ES18.9)')' FOT ' ,DECitem%FOT
-    WRITE(lupri,'(A32,I8)')' PL ' ,DECitem%PL
-    WRITE(lupri,'(A32,L1)')' SkipCC ' ,DECitem%SkipCC
-    WRITE(lupri,'(A32,L1)')' PurifyMOs ' ,DECitem%PurifyMOs
-    WRITE(lupri,'(A32,L1)')' precondition_with_full ' ,DECitem%precondition_with_full
-    WRITE(lupri,'(A32,L1)')' InclFullMolecule ' ,DECitem%InclFullMolecule
-    WRITE(lupri,'(A32,L1)')' HybridScheme ' ,DECitem%HybridScheme
-    WRITE(lupri,'(A32,I8)')' FragmentExpansionSize ' ,DECitem%FragmentExpansionSize
-    WRITE(lupri,'(A32,ES18.9)')' pair_distance_threshold ' ,DECitem%pair_distance_threshold
-    WRITE(lupri,'(A32,ES18.9)')' PairReductionDistance ' ,DECitem%PairReductionDistance
-    WRITE(lupri,'(A32,ES18.9)')' fullmolecule_memory ' ,DECitem%fullmolecule_memory
-    WRITE(lupri,'(A32,L1)')' ccsd_expl ' ,DECitem%ccsd_expl
-    WRITE(lupri,'(A32,10A)')' cc_models ' ,DECitem%cc_models
-    WRITE(lupri,'(A32,L1)')' simulate_eri ' ,DECitem%simulate_eri
-    WRITE(lupri,'(A32,L1)')' fock_with_ri ' ,DECitem%fock_with_ri
-    WRITE(lupri,'(A32,I8)')' ccMaxIter ' ,DECitem%ccMaxIter
-    WRITE(lupri,'(A32,I8)')' ccMaxDIIS ' ,DECitem%ccMaxDIIS
-    WRITE(lupri,'(A32,I8)')' ccModel ' ,DECitem%ccModel
-    WRITE(lupri,'(A32,L1)')' F12 ' ,DECitem%F12
-    WRITE(lupri,'(A32,ES18.9)')' ccConvergenceThreshold ' ,DECitem%ccConvergenceThreshold
-    WRITE(lupri,'(A32,L1)')' CCthrSpecified ' ,DECitem%CCthrSpecified
-    WRITE(lupri,'(A32,L1)')' use_singles ' ,DECitem%use_singles
-    WRITE(lupri,'(A32,L1)')' use_preconditioner ' ,DECitem%use_preconditioner
-    WRITE(lupri,'(A32,L1)')' use_preconditioner_in_b ' ,DECitem%use_preconditioner_in_b
-    WRITE(lupri,'(A32,L1)')' use_crop ' ,DECitem%use_crop
-    WRITE(lupri,'(A32,L1)')' show_memory ' ,DECitem%show_memory
-    WRITE(lupri,'(A32,L1)')' skip_full_ao ' ,DECitem%skip_full_ao
-    WRITE(lupri,'(A32,L1)')' array4OnFile ' ,DECitem%array4OnFile
-    WRITE(lupri,'(A32,L1)')' array4OnFile_specified ' ,DECitem%array4OnFile_specified
-    WRITE(lupri,'(A31,I8)')' MPIgroupsize ' ,DECitem%MPIgroupsize
-    WRITE(lupri,'(A31,L1)')' first_order ' ,DECitem%first_order
-    WRITE(lupri,'(A31,L1)')' MP2density ' ,DECitem%MP2density
-    WRITE(lupri,'(A31,L1)')' gradient ' ,DECitem%gradient
-    WRITE(lupri,'(A31,L1)')' kappa_use_preconditioner ' ,DECitem%kappa_use_preconditioner
-    WRITE(lupri,'(A31,L1)')' kappa_use_preconditioner_in_b ' ,DECitem%kappa_use_preconditioner_in_b
-    WRITE(lupri,'(A31,I8)')' kappaMaxDIIS ' ,DECitem%kappaMaxDIIS
-    WRITE(lupri,'(A31,I8)')' kappaMaxIter ' ,DECitem%kappaMaxIter
-    WRITE(lupri,'(A31,L1)')' kappa_driver_debug ' ,DECitem%kappa_driver_debug
-    WRITE(lupri,'(A31,ES18.9)')' kappaTHR ' ,DECitem%kappaTHR
+
+    WRITE(lupri,*) ' The DEC settings structure '
+    write(lupri,*) '****************************'
+
+    write(lupri,*) 
+
+    write(lupri,*) 'doDEC ', DECitem%doDEC
+    write(lupri,*) 'doHF ', DECitem%doHF
+    write(lupri,*) 'frozencore ', DECitem%frozencore
+    write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
+    write(lupri,*) 'use_canonical ', DECitem%use_canonical
+    write(lupri,*) 'simulate_full ', DECitem%simulate_full
+    write(lupri,*) 'simulate_natoms ', DECitem%simulate_natoms
+    write(lupri,*) 'InclFullMolecule ', DECitem%InclFullMolecule
+    write(lupri,*) 'cc_models ', DECitem%cc_models
+    write(lupri,*) 'ccModel ', DECitem%ccModel
+    write(lupri,*) 'use_singles ', DECitem%use_singles
+    write(lupri,*) 'restart ', DECitem%restart
+    write(lupri,*) 'TimeBackup ', DECitem%TimeBackup
+    write(lupri,*) 'read_dec_orbitals ', DECitem%read_dec_orbitals
+    write(lupri,*) 'memory ', DECitem%memory
+    write(lupri,*) 'memory_defined ', DECitem%memory_defined
+    write(lupri,*) 'fullmolecule_memory ', DECitem%fullmolecule_memory
+    write(lupri,*) 'array4OnFile ', DECitem%array4OnFile
+    write(lupri,*) 'array4OnFile_specified ', DECitem%array4OnFile_specified
+    write(lupri,*) 'SinglesPolari ', DECitem%SinglesPolari
+    write(lupri,*) 'singlesthr ', DECitem%singlesthr
+    write(lupri,*) 'convert64to32 ', DECitem%convert64to32
+    write(lupri,*) 'convert32to64 ', DECitem%convert32to64
+    write(lupri,*) 'CCSDsaferun ', DECitem%CCSDsaferun
+    write(lupri,*) 'solver_par ', DECitem%solver_par
+    write(lupri,*) 'force_scheme ', DECitem%force_scheme
+    write(lupri,*) 'dyn_load ', DECitem%dyn_load
+    write(lupri,*) 'ccsd_old ', DECitem%ccsd_old
+    write(lupri,*) 'CCSDno_restart ', DECitem%CCSDno_restart
+    write(lupri,*) 'CCSDpreventcanonical ', DECitem%CCSDpreventcanonical
+    write(lupri,*) 'cc_driver_debug ', DECitem%cc_driver_debug
+    write(lupri,*) 'en_mem ', DECitem%en_mem
+    write(lupri,*) 'precondition_with_full ', DECitem%precondition_with_full
+    write(lupri,*) 'ccsd_expl ', DECitem%ccsd_expl
+    write(lupri,*) 'ccMaxIter ', DECitem%ccMaxIter
+    write(lupri,*) 'ccMaxDIIS ', DECitem%ccMaxDIIS
+    write(lupri,*) 'ccConvergenceThreshold ', DECitem%ccConvergenceThreshold
+    write(lupri,*) 'CCthrSpecified ', DECitem%CCthrSpecified
+    write(lupri,*) 'use_preconditioner ', DECitem%use_preconditioner
+    write(lupri,*) 'use_preconditioner_in_b ', DECitem%use_preconditioner_in_b
+    write(lupri,*) 'use_crop ', DECitem%use_crop
+    write(lupri,*) 'simulate_eri ', DECitem%simulate_eri
+    write(lupri,*) 'fock_with_ri ', DECitem%fock_with_ri
+    write(lupri,*) 'F12 ', DECitem%F12
+    write(lupri,*) 'mpisplit ', DECitem%mpisplit
+    write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize
+    write(lupri,*) 'manual_batchsizes ', DECitem%manual_batchsizes
+    write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,ccsdGbatch
+    write(lupri,*) 'hack ', DECitem%hack
+    write(lupri,*) 'hack2 ', DECitem%hack2
+    write(lupri,*) 'FullDEC ', DECitem%FullDEC
+    write(lupri,*) 'SkipReadIn ', DECitem%SkipReadIn
+    write(lupri,*) 'array_test ', DECitem%array_test
+    write(lupri,*) 'reorder_test ', DECitem%reorder_test
+    write(lupri,*) 'check_lcm_orbitals ', DECitem%check_lcm_orbitals
+    write(lupri,*) 'PL ', DECitem%PL
+    write(lupri,*) 'SkipFull ', DECitem%SkipFull
+    write(lupri,*) 'output ', DECitem%output
+    write(lupri,*) 'reassignHatoms ', DECitem%reassignHatoms
+    write(lupri,*) 'FitOrbitals ', DECitem%FitOrbitals
+    write(lupri,*) 'simple_orbital_threshold ', DECitem%simple_orbital_threshold
+    write(lupri,*) 'PurifyMOs ', DECitem%PurifyMOs
+    write(lupri,*) 'FragAdapt ', DECitem%FragAdapt
+    write(lupri,*) 'simple_orbital_threshold_set ', DECitem%simple_orbital_threshold_set
+    write(lupri,*) 'BoughtonPulay ', DECitem%BoughtonPulay
+    write(lupri,*) 'mulliken_threshold ', DECitem%mulliken_threshold
+    write(lupri,*) 'simple_mulliken_threshold ', DECitem%simple_mulliken_threshold
+    write(lupri,*) 'approximated_norm_threshold ', DECitem%approximated_norm_threshold
+    write(lupri,*) 'mulliken ', DECitem%mulliken
+    write(lupri,*) 'FOT ', DECitem%FOT
+    write(lupri,*) 'MaxIter ', DECitem%MaxIter
+    write(lupri,*) 'FOTlevel ', DECitem%FOTlevel
+    write(lupri,*) 'maxFOTlevel ', DECitem%maxFOTlevel
+    write(lupri,*) 'HybridScheme ', DECitem%HybridScheme
+    write(lupri,*) 'FragmentExpansionSize ', DECitem%FragmentExpansionSize
+    write(lupri,*) 'use_mp2_frag ', DECitem%use_mp2_frag
+    write(lupri,*) 'pair_distance_threshold ', DECitem%pair_distance_threshold
+    write(lupri,*) 'paircut_set ', DECitem%paircut_set
+    write(lupri,*) 'PairReductionDistance ', DECitem%PairReductionDistance
+    write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
+    write(lupri,*) 'NoExtraPairs ', DECitem%NoExtraPairs
+    write(lupri,*) 'first_order ', DECitem%first_order
+    write(lupri,*) 'MP2density ', DECitem%MP2density
+    write(lupri,*) 'gradient ', DECitem%gradient
+    write(lupri,*) 'kappa_use_preconditioner ', DECitem%kappa_use_preconditioner
+    write(lupri,*) 'kappa_use_preconditioner_in_b ', DECitem%kappa_use_preconditioner_in_b
+    write(lupri,*) 'kappaMaxDIIS ', DECitem%kappaMaxDIIS
+    write(lupri,*) 'kappaMaxIter ', DECitem%kappaMaxIter
+    write(lupri,*) 'kappa_driver_debug ', DECitem%kappa_driver_debug
+    write(lupri,*) 'kappaTHR ', DECitem%kappaTHR
+    write(lupri,*) 'ncalc ', DECitem%ncalc
+    write(lupri,*) 'EerrFactor ', DECitem%EerrFactor
+    write(lupri,*) 'EerrOLD ', DECitem%EerrOLD
+
   end subroutine DEC_settings_print
 
 

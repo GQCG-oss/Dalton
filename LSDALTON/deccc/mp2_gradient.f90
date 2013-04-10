@@ -3255,7 +3255,7 @@ call mem_TurnOffThread_Memory()
     real(realk), pointer :: B(:,:),c(:), Fockcorecore(:,:), Fockvalval(:,:),precfull(:,:)
     logical :: crop_ok,break_iterations
     real(realk) :: prev_norm, one_norm_total, two_norm_total
-    real(realk) :: convthr, RHS_norm
+    real(realk) :: convthr
     integer :: iter, last_iter, i,j,dim1,dim2,a
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -3303,10 +3303,8 @@ call mem_TurnOffThread_Memory()
     ncore = MyMolecule%ncore
     nval = MyMolecule%nval
 
-    ! The convergence threshold is multiplied by the RHS norm
-    RHS_norm = mat_sqnorm2(RHS)
-    RHS_norm = sqrt(RHS_norm)
-    convthr = DECinfo%kappaTHR*RHS_norm
+    ! The convergence threshold
+    convthr = DECinfo%kappaTHR
     if(fc) then
        write(DECinfo%output,'(a,g16.6)') 'Frozen core kappabar multiplier equation: Conv. thr. set to', convthr
     else

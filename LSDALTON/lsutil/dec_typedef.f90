@@ -21,149 +21,224 @@ module dec_typedef_module
   !> \brief Contains settings for DEC calculation
   type DECsettings
 
+
+
+     !> MAIN SETTINGS DEFINING DEC CALCULATION
+     !> **************************************
+
      !> Run DEC calculation at all?
      logical :: doDEC
      !> Do Hartree-Fock calculation before DEC calculation (default: TRUE)
      logical :: doHF
-     !> Memory available for DEC calculation
-     real(realk) :: memory
-     !> Memory defined by input? (If not, use system call).
-     logical :: memory_defined
      !> Frozen core calculation?
      logical :: frozencore
-     !> Book keeping of the number of DEC calculations for each FOT level
-     !> (only relevant for geometry optimizations)
-     integer,dimension(8) :: ncalc
-
-     ! -- Type of calculation
      !> Full molecular job
      logical :: full_molecular_cc ! full molecular cc
-     logical :: SinglesPolari
-     !> Relative difference between singles amplitudes to accept
-     !> without invoking an additional set of fragment calculations
-     real(realk) :: singlesthr
-     !> DEC files (lcm_orbitals.u, fock.restart, dens.restart, overlapmatrix, DECorbitals.info) 
-     !> are in 64 (or 32) bit integers but the program was compiled with 32 (or 64) 
-     !> bit integers so these files need to be converted during the read-in.
-     logical :: convert64to32
-     logical :: convert32to64
+     !> Enforce canonical orbitals in calculation 
+     !> (only meaningful for full_molecular_cc or simulate_full)
+     logical :: use_canonical
+     !> Simulate full molecular calculation in DEC mode  (debug)
+     logical :: simulate_full
+     !> How many atoms to use in simulation mode   (debug)
+     integer :: simulate_natoms
+     !> Includes the whole molecule in all fragments (debug)
+     logical :: InclFullMolecule
+     !> Label to print CC models
+     character(len=8), dimension(10) :: cc_models
+     !> Requested CC model
+     integer :: ccModel ! 1 - MP2, 2 - CC2, 3 - CCSD, 4 - CCSD(T), 5 - RPA
+     !> Use singles
+     logical :: use_singles
+
+
+     !> Restart options
+     !> ***************
      !> Restart calculation if some of the fragments were calculated in a previous calculation
      logical :: restart
      !> Creating files for restart: Time (in seconds) passing before backing up restart files
      real(realk) :: TimeBackup
      !> Read DEC orbital file DECOrbitals.info from file (default: Existing file is overwritten)
      logical :: read_dec_orbitals
-     ! --
 
+
+     !> Memory stuff
+     !> ************
+     !> Memory available for DEC calculation
+     real(realk) :: memory
+     !> Memory defined by input? (If not, use system call).
+     logical :: memory_defined
+     ! Memory use for full molecule structure
+     real(realk) :: fullmolecule_memory
+     !> Save array4 on file instead of in memory (debug)
+     logical :: array4OnFile
+     logical :: array4OnFile_specified
+
+
+     !> Singles polarization (currenly turned off)
+     !> ******************************************
+     !> Construct full molecular singles amplitudes from fragment calculations?
+     logical :: SinglesPolari
+     !> Relative difference between singles amplitudes to accept
+     !> without invoking an additional set of fragment calculations
+     real(realk) :: singlesthr
+
+
+     !> 32 vs. 64 bit issues
+     !> ********************
+     !> DEC files (lcm_orbitals.u, fock.restart, dens.restart, overlapmatrix, DECorbitals.info) 
+     !> are in 64 (or 32) bit integers but the program was compiled with 32 (or 64) 
+     !> bit integers so these files need to be converted during the read-in.
+     logical :: convert64to32
+     logical :: convert32to64
+
+
+     !> CCSD residual/solver settings
+     !> *****************************
      !> save next guess amplitudes of CCSD in each iteration on disk
      logical :: CCSDsaferun
-
-     !> Enforce canonical orbitals in calculation 
-     !> (only meaningful for full_molecular_cc or simulate_full)
-     logical :: use_canonical
-
-
-     ! -- Debug modes
-     !> Full calculation where individual pair and single energies are calculated in ONE energy calc.
-     !> Only for MP2 and only for debugging purposes.
-     logical :: FullDEC
-     !> Simulate full molecular calculation in DEC mode
-     logical :: simulate_full
-     !> How many atoms to use in simulation mode
-     integer :: simulate_natoms
-     !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u (for testing)
-     logical :: SkipReadIn
-     !> Debug CC driver
-     logical :: cc_driver_debug
-     !> Debug patricks test
-     logical :: ccsd_old, manual_batchsizes
+     !> Use parallel CCSD solver
      logical :: solver_par
-     integer :: ccsdAbatch,ccsdGbatch
-     !> General HACK parameter, to be used for easy debugging
-     logical :: hack
-     logical :: hack2
-     !> Factor determining when MPI groups should split
-     integer :: mpisplit
-     !> forcing ome or the other scheme in get_coubles residual integral_driven
-     logical :: force_scheme,dyn_load
-     !> Integer specifying which scheme to use in CCSD calculations
-     integer :: en_mem
-     !> test the array structure
-     logical :: array_test
-     !> test the array reorderings
-     logical :: reorder_test
+     !> forcing one or the other scheme in get_coubles residual integral_driven
+     logical :: force_scheme
+     logical :: dyn_load
+     !> Use old CCSD solver
+     logical :: ccsd_old
      !> skip reading the old amplitudes from disk
      logical :: CCSDno_restart
      !> prevent canonicalization in the ccsolver
      logical :: CCSDpreventcanonical
+     !> Debug CC driver
+     logical :: cc_driver_debug
+     !> Integer specifying which scheme to use in CCSD calculations (debug)
+     integer :: en_mem
+     !> Use full molecular Fock matrix to precondition
+     logical :: precondition_with_full
+     !> Use devel version of doubles
+     logical :: ccsd_expl
+     !> Max number of iterations in CC driver
+     integer :: ccMaxIter
+     !> Max number of vectors in the subspace
+     integer :: ccMaxDIIS
+     !> CC convergence threshold
+     real(realk) :: ccConvergenceThreshold
+     !> Was CC convergence threshold specified?
+     logical :: CCthrSpecified
+     !> Use preconditioner
+     logical :: use_preconditioner
+     !> Use preconditioner in B matrix
+     logical :: use_preconditioner_in_b
+     !> Use CROP (if false we use DIIS)
+     logical :: use_crop
+     !> Simulate full ERI using RI arrays 
+     !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
+     logical :: simulate_eri
+     !> Construct Fock matrix from RI integrals (obsolete for the moment)
+     !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
+     logical :: fock_with_ri
+
+
+     !> F12 settings
+     !> ************
+     !> Use F12 correction
+     logical :: F12
+
+
+     !> MPI settings
+     !> ************
+     !> Factor determining when MPI groups should split
+     integer :: mpisplit
+     !> Manually set starting group size for local MPI group
+     integer(kind=ls_mpik) :: MPIgroupsize
+
+
+     !> Integral batching
+     !> *****************
+     !> Set integral batch sizes manually
+     logical :: manual_batchsizes
+     !> Sizes of alpha and gamma batches defined manually
+     integer :: ccsdAbatch,ccsdGbatch
+
+
+     !> General debug and simple tests
+     !> ******************************
+     !> General HACK parameters, to be used for easy debugging
+     logical :: hack
+     logical :: hack2
+     !> Full calculation where individual pair and single energies are calculated in ONE energy calc.
+     !> Only implemented for MP2 and only for debugging purposes.
+     logical :: FullDEC
+     !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
+     logical :: SkipReadIn
+     !> test the array structure
+     logical :: array_test
+     !> test the array reorderings
+     logical :: reorder_test
      !> Check that LCM orbitals are correct
      logical :: check_lcm_orbitals
-     !> Fit orbital coefficients in fragment (default: true)
-     logical :: FitOrbitals
      !> Debug print level
      integer :: PL
-     !> Includes the whole molecule in all fragments
-     logical :: InclFullMolecule
-     logical :: SkipFull ! only do fragment part of density or gradient (mostly for debugging)
+     !> only do fragment part of density or gradient calculation 
+     logical :: SkipFull 
      ! --
 
-     ! -- Output options 
+     !> Output options 
+     !> **************
      !> File unit for LSDALTON.OUT
      integer :: output
      ! --
 
-     ! -- Orbital
-     !> Simple Mulliken charge threshold
+     !> DEC Orbital treatment
+     !> *********************
+     !> Assign orbitals also to H atoms (default: do not assign to H)
+     logical :: reassignHatoms
+     !> Fit orbital coefficients in fragment (default: true)
+     logical :: FitOrbitals
+     !> Threshold for simple Lowdin procedure for determining atomic extent
+     real(realk) :: simple_orbital_threshold
+     !> Purify fitted MO coefficients (projection + orthogonalization)
+     logical :: PurifyMOs
+     !> Use fragment-adapted orbitals for fragment calculations
+     logical :: FragAdapt
+     !> Has simple orbital threshold been defined manually in input (true),
+     !> or should simple orbital threshold be adapted to FOT 
+     !> as descripted under FOTlevel (false)?
+     logical :: simple_orbital_threshold_set     
+     !> Use Boughton-Pulay criteria for generating orbitals rather than simple Lowdin charge criteria
+     logical :: BoughtonPulay
+     !> Simple Mulliken charge threshold (only for Boughton-Pulay procedure)
      real(realk) :: mulliken_threshold
      !> Simple Mulliken charge criteria 
      logical :: simple_mulliken_threshold
      !> Norm error in approximated (fitted orbitals)
      real(realk) :: approximated_norm_threshold
-     !> Assign orbitals also to H atoms (default: do not assign to H)
-     logical :: reassignHatoms
-     !> Use Mulliken population analysis to assign orbitals (default: Lowdin)
+     !> Use Mulliken population analysis to assign orbitals (default: Lowdin, only for Boughton-Pulay)
      logical :: mulliken
-     !> Use Boughton-Pulay criteria for generating orbitals rather than simple Lowdin charge criteria
-     logical :: BoughtonPulay
-     !> Threshold for simple Lowdin procedure for determining atomic extent
-     real(realk) :: simple_orbital_threshold
-     !> Has simple orbital threshold been defined manually in input (true),
-     !> or should simple orbital threshold be adapted to FOT 
-     !> as descripted under FOTlevel (false)?
-     logical :: simple_orbital_threshold_set     
      ! --
 
-     ! -- Fragment
-     !> Max iterations for expanding fragment
+
+     !> Fragment optimization
+     !> *********************
+     !> Fragment optimization threshold
+     real(realk) :: FOT
+     !> Max number of iterations for expanding fragment
      integer :: MaxIter
      !> FOT level defining precision of calculation, see set_input_for_fot_level
      integer :: FOTlevel
      !> Max accepted FOT level
      integer :: maxFOTlevel
-
-     !> Fragment optimization threshold
-     real(realk) :: FOT
-     !> Dont dispatch CC jobs for fragments
-     logical :: SkipCC
-     !> Purify fitted MO coefficients (projection + orthogonalization)
-     logical :: PurifyMOs
-     !> Use full molecular Fock matrix to precondition
-     logical :: precondition_with_full
      !> Use occupied/virtual hybrid partitioning scheme
-     !> This is a temporary solution for models where the Lagrangian has not been implemented.
+     !> This is a temporary solution for models where the Lagrangian has not yet been implemented.
      !> The Lagrangian fragment energy is then simply defined as the average value of the two energies
      !> for the occupied and virtual partitioning schemes.
      logical :: HybridScheme
-
      !> Number of atoms to include in fragment expansion
      integer :: FragmentExpansionSize
-     !> Use fragment-adapted orbitals for fragment calculations
-     logical :: FragAdapt
      !> Use MP2 optimized fragments (default)
      logical :: use_mp2_frag
      ! --  
 
-     ! -- Pair fragments
+     !> Pair fragments
+     !> **************
      !> Distance cutoff for pair fragments
      real(realk) :: pair_distance_threshold
      !> Pair cutoff set manually (will overwrite default pair cutoff defined by FOTlevel)
@@ -172,72 +247,24 @@ module dec_typedef_module
      real(realk) :: PairReductionDistance
      !> When pair regression fit is performed, pair distances smaller than PairMinDist are ignored
      real(realk) :: PairMinDist
-     !> Skip pair analysis (only for debugging)
+     !> Skip pair analysis (debug)
      logical :: NoExtraPairs
      ! --
 
-     ! Memory use for full molecule structure
-     real(realk) :: fullmolecule_memory
-
-     ! -- CC solver options
-     !> Use devel version of doubles
-     logical :: ccsd_expl
-     !> Label to print CC models
-     character(len=8), dimension(10) :: cc_models
-     !> Simulate full ERI using RI arrays (obsolete for the moment)
-     logical :: simulate_eri
-     !> Construct Fock matrix from RI integrals (obsolete for the moment)
-     logical :: fock_with_ri
-     !> Max number of iterations in CC driver
-     integer :: ccMaxIter
-     !> Max number of vectors in the subspace
-     integer :: ccMaxDIIS
-     !> Requested CC model
-     integer :: ccModel ! 1 - MP2, 2 - CC2, 3 - CCSD, 4 - CCSD(T), 5 - RPA
-     !> Use F12 correction
-     logical :: F12
-     !> CC convergence threshold
-     real(realk) :: ccConvergenceThreshold
-     !> Was CC convergence threshold specified?
-     logical :: CCthrSpecified
-     !> Use singles
-     logical :: use_singles
-     !> Use preconditioner
-     logical :: use_preconditioner
-     !> Use preconditioner in B matrix
-     logical :: use_preconditioner_in_b
-     !> Use CROP (if false we use DIIS)
-     logical :: use_crop
-     !> Show memory
-     logical :: show_memory
-     !> Skip full ao matrix
-     logical :: skip_full_ao
-     !> Save array4 on file instead of in memory
-     logical :: array4OnFile
-     logical :: array4OnFile_specified
-
-     ! MPI information
-     integer(kind=ls_mpik) :: MPIgroupsize
-
 
      ! First order properties
-     ! *********************
-
+     ! **********************
      !> Do first order properties (MP2 density, electric dipole, mp2 gradient)
      logical :: first_order
-
-     !> MP2 density matrix
-     logical :: MP2density    ! Calculate fragment contributions to MP2 density
-
-
-     ! -- MP2 gradient
-     !> Calculate MP2 gradient
+     !> MP2 density matrix (and not gradient)
+     logical :: MP2density    
+     !> Calculate MP2 gradient  (density is then also calculated as a subset of the calculation)
      logical :: gradient
      !> Use preconditioner for kappa multiplier equation
      logical :: kappa_use_preconditioner
      !> Use preconditioner for kappa multiplier equation
      logical :: kappa_use_preconditioner_in_b
-     !> Number of vector to save in kappa multiplier equation
+     !> Number of vectors to save in kappa multiplier equation
      integer :: kappaMaxDIIS
      !> Maximum number of iteration in kappa multiplier equation
      integer :: kappaMaxIter
@@ -245,13 +272,18 @@ module dec_typedef_module
      logical :: kappa_driver_debug
      !> Residual threshold for kappa orbital rotation multiplier equation
      real(realk) :: kappaTHR
+
+
+     !> Geometry optimization
+     !> *********************
+     !> Book keeping of the number of DEC calculations for each FOT level
+     !> (only relevant for geometry optimizations)
+     integer,dimension(8) :: ncalc
      !> Factor multiply intrinsic energy error by before returning error to geometry optimizer
      real(realk) :: EerrFactor
      !> Old energy error (used only for geometry opt)
      real(realk) :: EerrOLD
 
-     ! Save fragment files (default: do not save)
-     logical :: SaveFragFile
 
   end type DECSETTINGS
 

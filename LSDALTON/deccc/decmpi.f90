@@ -1618,6 +1618,7 @@ contains
     integer(kind=ls_mpik) :: comm
     type(decsettings) :: DECitem
 
+    call lsquit('mpicopy_dec_settings: Needs implementation! ',-1)
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
     call mpicopy_dec_settings1(decitem,comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
@@ -1663,7 +1664,6 @@ contains
     call ls_mpi_buffer(DECitem%MaxIter,Master)
     call ls_mpi_buffer(DECitem%FOT,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
-    call ls_mpi_buffer(DECitem%SkipCC,Master)
     call ls_mpi_buffer(DECitem%purifyMOs,Master)
     call ls_mpi_buffer(DECitem%precondition_with_full,Master)
     call ls_mpi_buffer(DECitem%InclFullMolecule,Master)
@@ -1690,8 +1690,6 @@ contains
     call ls_mpi_buffer(DECitem%use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
-    call ls_mpi_buffer(DECitem%show_memory,Master)
-    call ls_mpi_buffer(DECitem%skip_full_ao,Master)
     call ls_mpi_buffer(DECitem%array4OnFile,Master)
     call ls_mpi_buffer(DECitem%array4OnFile_specified,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
