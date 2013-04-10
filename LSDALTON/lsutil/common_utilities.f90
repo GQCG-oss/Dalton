@@ -66,7 +66,7 @@
         real(realk)              :: VL, VU
         integer                  :: IL, IU, neig, Ltemp, INFO, m
         logical, intent(in)      :: print_eivecs 
-
+   INFO=0
    Ltemp = 8*ndim 
    allocate(eigenval(ndim))
    allocate(eigenvec(ndim,ndim),temp(Ltemp),Itemp(5*ndim),IFAIL(ndim))

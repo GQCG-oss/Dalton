@@ -431,6 +431,7 @@ module matrix_operations_dense
     neig = 1
     VL = 0.0E0_realk
     VU = 0.0E0_realk
+    INFO = 0
     call mem_alloc(work,8)
     call mem_alloc(icholtemp,5*ndim)
     call mem_alloc(ifail,ndim)
