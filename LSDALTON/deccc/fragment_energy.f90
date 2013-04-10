@@ -802,8 +802,6 @@ call mem_TurnOffThread_Memory()
     write(DECinfo%output,*)
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%energy_time_wall = DECinfo%energy_time_wall + (twall2-twall1)
-    DECinfo%energy_time_cpu = DECinfo%energy_time_cpu + (tcpu2-tcpu1)
     call LSTIMER('L.ENERGY CONTR',tcpu,twall,DECinfo%output)
 
 
@@ -1403,8 +1401,6 @@ call mem_TurnOffThread_Memory()
 
     call LSTIMER('L.ENERGY CONTR',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%energy_time_wall = DECinfo%energy_time_wall + (twall2-twall1)
-    DECinfo%energy_time_cpu = DECinfo%energy_time_cpu + (tcpu2-tcpu1)
 
 
 
@@ -4554,7 +4550,7 @@ call mem_TurnOffThread_Memory()
     integer,intent(in)        :: Track(natoms)
     integer                   :: i,indx,counter,step
 
-    step = DECinfo%LagStepSize
+    step = DECinfo%FragmentExpansionSize
 
     !Exand occ space first
     counter = 0

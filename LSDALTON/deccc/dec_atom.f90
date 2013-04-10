@@ -2832,7 +2832,7 @@ end subroutine atomic_fragment_basis
 
     call cpu_time(tend)
     if(DECinfo%PL>0) then
-       if(DECinfo%show_time) write(DECinfo%output,'(1X,a,g18.8)') &
+       write(DECinfo%output,'(1X,a,g18.8)') &
             & 'Time used in get_atom_matrix_from_orbital_matrix', tend-tstart
     end if
 
