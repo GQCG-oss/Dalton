@@ -1117,6 +1117,7 @@ SUBROUTINE pbc_diisweights(errdim,error,weight,it,lupri)
   !INTEGER :: solve(it+1)
   INTEGER :: solve(it)
   REAL(realk),pointer :: work(:)
+  info=0
 
   B_mat(:,:)=0d0
   DO i=1,it
