@@ -3762,8 +3762,8 @@ if(DECinfo%PL>0) then
     !> Job list of fragments listed according to size
     type(joblist),intent(inout) :: jobs
     integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags
-    integer:: maxbasis, avbasis,nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs
-    real(realk) :: avocc,avunocc,tcpu,twall
+    integer:: maxbasis, nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs
+    real(realk) :: avocc,avunocc,tcpu,twall,avbasis
     logical,pointer :: occAOS(:,:),unoccAOS(:,:),REDoccAOS(:,:),REDunoccAOS(:,:),fragbasis(:,:)
     integer,pointer :: fragsize(:),fragtrack(:),occsize(:),unoccsize(:),basissize(:)
 
