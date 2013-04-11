@@ -2419,8 +2419,8 @@ CONTAINS
            call II_get_Fock_mat(lupri,luerr,&
               & lsint_fock_data%ls%setting,Dens,Dsym,GbDs,ndmat,.FALSE.)
         ENDIF
-        write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
-        call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
+!        write (lupri,*) "FOCK mat in noADMM di_GET_GbDsArray()"
+!        call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
 
       end subroutine di_GET_GbDsArray
 
@@ -2441,17 +2441,12 @@ CONTAINS
         type(Matrix), intent(inout)              :: GbDs(nBmat)  !output
         type(lssetting), intent(inout), optional :: setting
         !
-        write(lupri,*) "entering di_GET_GbDsArray_ADMM"
         IF(present(setting))THEN
-        write(lupri,*) "entering di_GET_GbDsArray_ADMM_setting"
             call di_GET_GbDsArray_ADMM_setting(lupri,luerr,Bmat,GbDs,nBmat,&
                       & Dmat,setting)
-                      write(lupri,*) "finihsed di_GET_GbDsArray_ADMM_setting"
         ELSE
-        write(lupri,*) "entering di_GET_GbDsArray_ADMM_setting"
             call di_GET_GbDsArray_ADMM_setting(lupri,luerr,Bmat,GbDs,nBmat,&
                       & Dmat,lsint_fock_data%ls%setting)
-                      write(lupri,*) "finihsed di_GET_GbDsArray_ADMM_setting"
         ENDIF
         !
         CONTAINS
@@ -2510,17 +2505,12 @@ CONTAINS
                                                 & setting,lupri)
             ELSE ! no GC transformation
                 DO i=1,nBmat
-                    write(*,*) "DEBUG PAT 01"
-                           write(*,*) "DEBUG PAT Bmat_AO(1)%nrow Bmat_AO(1)%ncol",Bmat_AO(1)%nrow, Bmat_AO(1)%ncol
-                           write(*,*) "DEBUG PAT Bmat(1)%nrow Bmat(1)%ncol",Bmat(1)%nrow, Bmat(1)%ncol
                     call mat_assign(Bmat_AO(i),Bmat(i))
                 ENDDO            
-                write(*,*) "DEBUG PAT 02"
-                write(*,*) "DEBUG PAT Dmat_AO(1)%nrow Dmat_AO(1)%ncol",Dmat_AO%nrow, Dmat_AO%ncol
-                  write(*,*) "DEBUG PAT Dmat(1)%nrow Dmat(1)%ncol",Dmat%nrow, Dmat%ncol
+
                     call mat_assign(Dmat_AO,Dmat)
             ENDIF
-            write(*,*) "DEBUG PAT 03"
+            
             ! J(B)
             DO i=1,nBmat
                 call mat_zero(GbDs(i))
@@ -2541,7 +2531,7 @@ CONTAINS
             ENDDO
 
             ! REGULAR exchange mat
-            call II_get_exchange_mat(LUPRI,LUERR,setting,Bmat_AO,nBmat,Dsym,K)
+            !!!!!call II_get_exchange_mat(LUPRI,LUERR,setting,Bmat_AO,nBmat,Dsym,K)
             !write (lupri,*) "Exchange mat in ADMM di_GET_GbDsArray_ADMM_setting()"
             !call mat_print(K(1),1,K(1)%nrow,1,K(1)%ncol,lupri)
 
@@ -2582,77 +2572,81 @@ CONTAINS
             call transform_D3_to_D2(Dmat_AO,D2_AO,&
                 & setting,lupri,luerr,nbast2,nbast,&
                 & AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
-!            DO ibmat=1,nBmat
-!                !!We transform the full Density to a level 2 density D2
-!                call mat_init(B2_AO(ibmat),nbast2,nbast2)
-!                call mat_zero(B2_AO(ibmat))
-!                call transform_D3_to_D2(Bmat_AO(ibmat),B2_AO(ibmat),&
-!                    & setting,lupri,luerr,nbast2,nbast,&
-!                    & AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
+            DO ibmat=1,nBmat
+                !!We transform the full Density to a level 2 density D2
+                call mat_init(B2_AO(ibmat),nbast2,nbast2)
+                call mat_zero(B2_AO(ibmat))
+                call transform_D3_to_D2(Bmat_AO(ibmat),B2_AO(ibmat),&
+                    & setting,lupri,luerr,nbast2,nbast,&
+                    & AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
 
-!                 ! K2(b): LEVEL 2 exact exchange matrix
-!                call mat_init(k2(ibmat),nbast2,nbast2)
-!                call mat_zero(k2(ibmat))
-!                ! Take Dsym later on as input!!!!!!!
-!                Dsym = .FALSE.
-!                call II_get_exchange_mat(lupri,luerr,setting,B2_AO(ibmat),&
-!                                            & 1,Dsym,k2(ibmat))
-!                !Transform level 2 exact-exchange matrix to level 3
-!                call transformed_F2_to_F3(TMPF3,k2(ibmat),setting,&
-!                                        & lupri,luerr,&
-!                                        & nbast2,nbast,AO2,AO3,GC2,GC3)
-!                !call mat_daxpy(1E0_realk,TMPF3,K(ibmat))
+                 ! K2(b): LEVEL 2 exact exchange matrix
+                call mat_init(k2(ibmat),nbast2,nbast2)
+                call mat_zero(k2(ibmat))
+                call mat_init(TMPF3,nbast,nbast)
+                call mat_zero(TMPF3)
+                ! Take Dsym later on as input!!!!!!!
+                Dsym = .FALSE.
+                call II_get_exchange_mat(lupri,luerr,setting,B2_AO(ibmat),&
+                                            & 1,Dsym,k2(ibmat))
+                !Transform level 2 exact-exchange matrix to level 3
+                call transformed_F2_to_F3(TMPF3,k2(ibmat),setting,&
+                                        & lupri,luerr,&
+                                        & nbast2,nbast,AO2,AO3,GC2,GC3)
+                call mat_daxpy(1E0_realk,TMPF3,K(ibmat))
                                 
-!                ! X3(B)- X2(b): XC-correction
-!                !****Calculation of Level 2 XC gradient
-!                !     from level 2 Density matrix starts here
-!                WORD = "BX"
-!                !Here hfweight is only used as a dummy variable
-!                call II_DFTsetFunc(WORD(1:80),hfweight) 
+                ! X3(B)- X2(b): XC-correction
+                !****Calculation of Level 2 XC gradient
+                !     from level 2 Density matrix starts here
+                WORD = "BX"
+                !Here hfweight is only used as a dummy variable
+                call II_DFTsetFunc(WORD(1:80),hfweight) 
                 
-!                call get_quadfilename(L3file,nbast,setting%node)
-!                call get_quadfilename(L2file,nbast2,setting%node)
+                call get_quadfilename(L3file,nbast,setting%node)
+                call get_quadfilename(L2file,nbast2,setting%node)
                 
-!                grid_done = setting%scheme%dft%grdone.EQ.1
-!                IF (grid_done) call get_dft_grid(setting%scheme%dft%L2grid,&
-!                                                & L2file,setting%scheme%dft)
+                grid_done = setting%scheme%dft%grdone.EQ.1
+                IF (grid_done) call get_dft_grid(setting%scheme%dft%L2grid,&
+                                                & L2file,setting%scheme%dft)
                      
-!                !!Only test electrons if the D2 density
-!                ! matrix is McWeeny purified
-!                testNelectrons = setting%scheme%dft%testNelectrons
-!                !setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
-!                setting%scheme%dft%testNelectrons = .FALSE. 
+                !!Only test electrons if the D2 density
+                ! matrix is McWeeny purified
+                testNelectrons = setting%scheme%dft%testNelectrons
+                !setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
+                setting%scheme%dft%testNelectrons = .FALSE. 
                 
-!                !Level 2 XC matrix
-!                call mat_init(Gx2(ibmat),nbast2,nbast2)
-!                call mat_zero(Gx2(ibmat))
-!                call II_get_xc_linrsp(lupri,luerr,&
-!                      & setting,nbast2,B2_AO(ibmat),D2_AO,Gx2(ibmat),1) 
-!!                call II_get_xc_linrsp(lupri,luerr,&
-!!                      & setting,nbast2,B2_AO,D2_AO,Gx2,nBmat) 
-!                !Transform level 2 XC matrix to level 3
-!                call transformed_F2_to_F3(TMPF3,Gx2(ibmat),setting,&
-!                                        & lupri,luerr,&
-!                                        & nbast2,nbast,AO2,AO3,GC2,GC3)
-!                !call mat_daxpy(-setting%scheme%exchangeFactor,TMPF3,K(ibmat))
-!                setting%scheme%dft%testNelectrons = testNelectrons
+                !Level 2 XC matrix
+                call mat_init(Gx2(ibmat),nbast2,nbast2)
+                call mat_zero(Gx2(ibmat))
+                call mat_zero(TMPF3)
+                call II_get_xc_linrsp(lupri,luerr,&
+                      & setting,nbast2,B2_AO(ibmat),D2_AO,Gx2(ibmat),1) 
+                !Transform level 2 XC matrix to level 3
+                call transformed_F2_to_F3(TMPF3,Gx2(ibmat),setting,&
+                                        & lupri,luerr,&
+                                        & nbast2,nbast,AO2,AO3,GC2,GC3)
+                call mat_daxpy(-setting%scheme%exchangeFactor,TMPF3,K(ibmat))
+                setting%scheme%dft%testNelectrons = testNelectrons
 
-!                !Re-set to level 3 grid, assuming it is calculated
-!                call get_dft_grid(setting%scheme%dft%L3grid,&
-!                                        & L3file,setting%scheme%dft)
+                !Re-set to level 3 grid, assuming it is calculated
+                call get_dft_grid(setting%scheme%dft%L3grid,&
+                                        & L3file,setting%scheme%dft)
                 
-!                !Level 3 XC matrix
-!                call mat_init(Gx3(ibmat),nbast,nbast)
-!                call mat_zero(Gx3(ibmat))
-!                call II_get_xc_linrsp(lupri,luerr,&
-!                      & setting,nbast,Bmat_AO(ibmat),Dmat_AO,Gx3(ibmat),1) 
-!!                call II_get_xc_linrsp(lupri,luerr,&
-!!                      & setting,nbast,Bmat_AO,Dmat_AO,Gx3,nBmat) 
-!                !Transform level 2 XC matrix to level 3
-!                !call mat_daxpy(setting%scheme%exchangeFactor,&
-!                !                & Gx3(ibmat),K(ibmat))
+                !!Only test electrons if the D2 density
+                ! matrix is McWeeny purified
+                testNelectrons = setting%scheme%dft%testNelectrons
+                !setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
+                setting%scheme%dft%testNelectrons = .FALSE. 
+                
+                !Level 3 XC matrix
+                call mat_init(Gx3(ibmat),nbast,nbast)
+                call mat_zero(Gx3(ibmat))
+                call II_get_xc_linrsp(lupri,luerr,&
+                      & setting,nbast,Bmat_AO(ibmat),Dmat_AO,Gx3(ibmat),1) 
+                call mat_daxpy(setting%scheme%exchangeFactor,&
+                                & Gx3(ibmat),K(ibmat))
                                 
-!            ENDDO
+            ENDDO
 !            ! ---------------------------------------------------------------
 
             DO i=1,nBmat
@@ -2669,19 +2663,20 @@ CONTAINS
             ENDIF
             
             ! DEBUG PAT START -----------------------------    
-            write (lupri,*) "J+K mat in ADMM di_GET_GbDsArray_ADMM_setting()"
-            call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
+            !write (lupri,*) "J+K(...) mat in ADMM di_GET_GbDsArray_ADMM_setting()"
+            !call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
 
             
             ! FREE MEMORY
             DO i=1,nBmat
                 call mat_free(K(i))
                 call mat_free(Bmat_AO(i))
-!                call mat_free(B2_AO(i))
+                call mat_free(B2_AO(i))
 !                call mat_free(k2(i))
 !                call mat_free(Gx2(i))
 !                call mat_free(Gx3(i))
             ENDDO
+            call mat_free(TMPF3)
             call mat_free(Dmat_AO)
 !            call mat_free(D2_AO)
           END SUBROUTINE di_GET_GbDsArray_ADMM_setting
