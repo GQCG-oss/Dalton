@@ -3973,7 +3973,7 @@ contains
   !> \author Ida-Marie Hoeyvik & Kasper Kristensen
   subroutine optimize_atomic_fragment_FO(MyAtom,AtomicFragment,nAtoms, &
        &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
-       &MyMolecule,mylsitem,freebasisinfo,t1,t2,t1full)
+       &MyMolecule,mylsitem,freebasisinfo,t1full)
     implicit none
     !> Number of occupied orbitals in molecule
     integer, intent(in) :: nOcc
@@ -3997,10 +3997,6 @@ contains
     type(lsitem), intent(inout)       :: mylsitem
     !> Delete fragment basis information ("expensive box in ccatom type") at exit?
     logical,intent(in) :: freebasisinfo
-    !> t1 amplitudes for AOS (not full molecule)
-    type(array2),intent(inout),optional :: t1
-    !> t2 amplitudes for AOS (not full molecule)
-    type(array4),intent(inout),optional :: t2
     !> t1 amplitudes for full molecule to be updated (only used when DECinfo%SinglesPolari is set)
     type(array2),intent(inout),optional :: t1full
     real(realk)                    :: LagEnergyDiff, OccEnergyDiff,VirtEnergyDiff
@@ -4429,6 +4425,7 @@ contains
        end do REDUCTION_LOOP
 
     end do OCC_OR_VIRT
+
 
     ! Print out info
     ! **************

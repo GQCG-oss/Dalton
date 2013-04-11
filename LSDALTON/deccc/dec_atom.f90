@@ -2442,12 +2442,17 @@ end subroutine atomic_fragment_basis
 
     ! Correlation density matrices
     write(wunit) fragment%CDset
+    write(wunit) fragment%FATransSet
+    write(wunit) fragment%noccFA
+    write(wunit) fragment%nunoccFA
     if(fragment%CDset) then
        write(wunit) fragment%occmat
        write(wunit) fragment%virtmat
        write(wunit) fragment%RejectThr
-       write(wunit) fragment%noccFA
-       write(wunit) fragment%nunoccFA
+    end if
+    if(fragment%FAtransset) then
+       write(wunit) fragment%CoccFA
+       write(wunit) fragment%CunoccFA
     end if
 
   end subroutine fragment_write_data
@@ -2731,33 +2736,39 @@ end subroutine atomic_fragment_basis
     end if
 
 
-    ! Correlation density matrices
+    ! Correlation density matrices and fragment-adapted orbitals
     if(DECinfo%convert64to32) then
        call read_64bit_to_32bit(runit,fragment%CDset)
+       call read_64bit_to_32bit(runit,fragment%FATransSet)
+       call read_64bit_to_32bit(runit,fragment%noccFA)
+       call read_64bit_to_32bit(runit,fragment%nunoccFA)
     elseif(DECinfo%convert32to64) then
        call read_32bit_to_64bit(runit,fragment%CDset)
+       call read_32bit_to_64bit(runit,fragment%FATransSet)
+       call read_32bit_to_64bit(runit,fragment%noccFA)
+       call read_32bit_to_64bit(runit,fragment%nunoccFA)
     else
        read(runit) fragment%CDset
+       read(runit) fragment%FATransSet
+       read(runit) fragment%noccFA
+       read(runit) fragment%nunoccFA
     end if
 
+    ! Correlation density
     if(fragment%CDset) then
        call mem_alloc(Fragment%OccMat,Fragment%noccAOS,Fragment%noccAOS)
        call mem_alloc(Fragment%VirtMat,Fragment%nunoccAOS,Fragment%nunoccAOS)
        read(runit) fragment%occmat
        read(runit) fragment%virtmat
        read(runit) fragment%RejectThr
+    end if
 
-       if(DECinfo%convert64to32) then
-          call read_64bit_to_32bit(runit,fragment%noccFA)
-          call read_64bit_to_32bit(runit,fragment%nunoccFA)
-       elseif(DECinfo%convert32to64) then
-          call read_32bit_to_64bit(runit,fragment%noccFA)
-          call read_32bit_to_64bit(runit,fragment%nunoccFA)
-       else
-          read(runit) fragment%noccFA
-          read(runit) fragment%nunoccFA
-       end if
-
+    ! Fragment-adapted orbitals
+    if(fragment%FATransSet) then
+       call mem_alloc(Fragment%CoccFA,Fragment%number_basis,Fragment%noccFA)
+       call mem_alloc(Fragment%CunoccFA,Fragment%number_basis,Fragment%nunoccFA)
+       read(runit) fragment%CoccFA
+       read(runit) fragment%CunoccFA
     end if
 
 
