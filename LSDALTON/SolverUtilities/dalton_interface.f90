@@ -35,6 +35,7 @@ MODULE dal_interface
    use IntegralInterfaceMOD
    use II_XC_interfaceModule
    use IIDFTINT, only: II_DFTsetFunc
+   use gridgenerationmodule
 #ifdef BUILD_GEN1INT
    ! debug GEN1INT
    use gen1int_host
@@ -2336,7 +2337,7 @@ CONTAINS
             ENDIF
         IF (ADMMexchange) THEN 
             ! GdBs = J(B) + K(b) + X(B) - X(b)
-            call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,setting)
+            call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
         ELSE 
             ! GdBs = J(B) + K(B)
             call di_GET_GbDsArray(lupri,luerr,Bmat,GbDs,nBmat,setting)
@@ -2430,41 +2431,54 @@ CONTAINS
     ! GdBs = J(B) + K(b) + X(B) - X(b)
     ! G([b,D]s) = 2-e part of Fock Matrix with a modified
     !             density [b,D]s (here called Dens)
-    ! Patrick, April 2013
+    ! Patrick Merlot and Simen Reine, April 2013
     !*********************************************************
-    SUBROUTINE di_GET_GbDsArray_ADMM(lupri,luerr,Dens,GbDs,nDmat,setting)
+    SUBROUTINE di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
         implicit none
-        integer, intent(in)                      :: lupri,luerr,ndmat
-        type(Matrix), intent(in)                 :: Dens(nDmat)
-        type(Matrix), intent(inout)              :: GbDs(nDmat)  !output
+        integer, intent(in)                      :: lupri,luerr,nBmat
+        type(Matrix), intent(in)                 :: Bmat(nBmat)
+        type(Matrix), intent(in)                 :: Dmat
+        type(Matrix), intent(inout)              :: GbDs(nBmat)  !output
         type(lssetting), intent(inout), optional :: setting
         !
-        logical                :: Dsym, copy_IntegralTransformGC
-        type(Matrix)           :: Dens_AO(nDmat), K(nDmat)
-        integer                :: i
-        !
+        write(lupri,*) "entering di_GET_GbDsArray_ADMM"
         IF(present(setting))THEN
-            call di_GET_GbDsArray_ADMM_setting(lupri,luerr,Dens,GbDs,nDmat,&
-                      & setting)
+        write(lupri,*) "entering di_GET_GbDsArray_ADMM_setting"
+            call di_GET_GbDsArray_ADMM_setting(lupri,luerr,Bmat,GbDs,nBmat,&
+                      & Dmat,setting)
+                      write(lupri,*) "finihsed di_GET_GbDsArray_ADMM_setting"
         ELSE
-            call di_GET_GbDsArray_ADMM_setting(lupri,luerr,Dens,GbDs,nDmat,&
-                      & lsint_fock_data%ls%setting)
+        write(lupri,*) "entering di_GET_GbDsArray_ADMM_setting"
+            call di_GET_GbDsArray_ADMM_setting(lupri,luerr,Bmat,GbDs,nBmat,&
+                      & Dmat,lsint_fock_data%ls%setting)
+                      write(lupri,*) "finihsed di_GET_GbDsArray_ADMM_setting"
         ENDIF
         !
         CONTAINS
-          SUBROUTINE di_GET_GbDsArray_ADMM_setting(lupri,luerr,Dens,&
-                                                    & GbDs,nDmat,setting)
+          SUBROUTINE di_GET_GbDsArray_ADMM_setting(lupri,luerr,Bmat,&
+                                                    & GbDs,nBmat,Dmat,setting)
             implicit none
-            integer, intent(in)            :: lupri,luerr,ndmat
-            type(Matrix), intent(in)       :: Dens(nDmat)
-            type(Matrix), intent(inout)    :: GbDs(nDmat)
+            integer, intent(in)            :: lupri,luerr,nBmat
+            type(Matrix), intent(in)       :: Bmat(nBmat) !level 3 matrix input 
+            type(Matrix), intent(inout)    :: GbDs(nBmat)
+            type(Matrix), intent(in)       :: Dmat
             type(lssetting), intent(inout) :: setting
             !
-            logical                :: Dsym, copy_IntegralTransformGC
+            type(Matrix)           :: Bmat_AO(nBmat), K(nBmat), Dmat_AO
+            type(Matrix)           :: B2_AO(nBmat) !level 2 matrix
+            type(Matrix)           :: D2_AO, TMPF3
+            type(Matrix)           :: k2(nBmat),Gx2(nBmat),Gx3(nBmat)
+            type(Matrix)           :: Gx(nBmat)
+            character(len=80)      :: WORD
+            character(21)          :: L2file,L3file
+            real(realk)            :: hfweight
+            integer                :: i,iBmat,nbast,nbast2,AO2,AO3
+            integer                :: AOdfold,AORold
             logical                :: inc_scheme, do_inc
-            type(Matrix)           :: Dens_AO(nDmat), K(nDmat)
-            integer                :: i
+            logical                :: Dsym, copy_IntegralTransformGC
+            logical                :: GC3,GC2,testNelectrons,grid_done
             !
+            nbast  = Bmat(1)%nrow
             IF(matrix_type .EQ. mtype_unres_dense) THEN
                 call lsquit('di_GET_GbDsArray_ADMM does not support &
                              &unrestricted matrices',lupri)
@@ -2480,69 +2494,286 @@ CONTAINS
 
             ! Get rid of Grand canonical
             copy_IntegralTransformGC = setting%IntegralTransformGC
+            call mat_init(Dmat_AO,nbast,nbast)
+            DO i=1,nBmat
+                call mat_init(Bmat_AO(i),nbast,nbast)
+            ENDDO
             IF(copy_IntegralTransformGC) THEN
                 setting%IntegralTransformGC = .FALSE.
                 ! we do this manually in order to get incremental correct
                 ! change D to AO basis (currently in GCAO basis)
-                DO i=1,nDmat
-                    call mat_init(Dens_AO(i),Dens(1)%nrow,Dens(1)%ncol)
-                    call GCAO2AO_transform_matrixD2(Dens(i),Dens_AO(i),&
+                DO i=1,nBmat
+                    call GCAO2AO_transform_matrixD2(Bmat(i),Bmat_AO(i),&
                                                     & setting,lupri)
                 ENDDO
+                call GCAO2AO_transform_matrixD2(Dmat,Dmat_AO,&
+                                                & setting,lupri)
             ELSE ! no GC transformation
-                DO i=1,nDmat
-                  call mat_init(Dens_AO(i),Dens(1)%nrow,Dens(1)%ncol)
-                  call mat_assign(Dens_AO(i),Dens(i))
+                DO i=1,nBmat
+                    write(*,*) "DEBUG PAT 01"
+                           write(*,*) "DEBUG PAT Bmat_AO(1)%nrow Bmat_AO(1)%ncol",Bmat_AO(1)%nrow, Bmat_AO(1)%ncol
+                           write(*,*) "DEBUG PAT Bmat(1)%nrow Bmat(1)%ncol",Bmat(1)%nrow, Bmat(1)%ncol
+                    call mat_assign(Bmat_AO(i),Bmat(i))
                 ENDDO            
+                write(*,*) "DEBUG PAT 02"
+                write(*,*) "DEBUG PAT Dmat_AO(1)%nrow Dmat_AO(1)%ncol",Dmat_AO%nrow, Dmat_AO%ncol
+                  write(*,*) "DEBUG PAT Dmat(1)%nrow Dmat(1)%ncol",Dmat%nrow, Dmat%ncol
+                    call mat_assign(Dmat_AO,Dmat)
             ENDIF
-
+            write(*,*) "DEBUG PAT 03"
             ! J(B)
-            DO i=1,nDmat
+            DO i=1,nBmat
                 call mat_zero(GbDs(i))
             ENDDO
-            call II_get_coulomb_mat(LUPRI,LUERR,setting,Dens_AO,GbDs,nDmat)   
+            call II_get_coulomb_mat(LUPRI,LUERR,setting,Bmat_AO,GbDs,nBmat)   
             !write (lupri,*) "Coulomb mat in di_GET_GbDsArray_ADMM_setting()"
             !call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
 
-            ! K(B)
-            DO i=1,nDmat
-                call mat_init(K(i),GbDs(1)%nrow,GbDs(1)%ncol)
-                call mat_zero(K(i))
-            ENDDO
+
             IF(setting%scheme%daLinK) THEN
                 call lsquit('di_GET_GbDsArray_ADMM not supported in daLink',lupri)
             ENDIF
-            call II_get_exchange_mat(LUPRI,LUERR,setting,Dens_AO,nDmat,Dsym,K)
+
+            ! K(B)
+            DO i=1,nBmat
+                call mat_init(K(i),GbDs(1)%nrow,GbDs(1)%ncol)
+                call mat_zero(K(i))
+            ENDDO
+
+            ! REGULAR exchange mat
+            call II_get_exchange_mat(LUPRI,LUERR,setting,Bmat_AO,nBmat,Dsym,K)
             !write (lupri,*) "Exchange mat in ADMM di_GET_GbDsArray_ADMM_setting()"
             !call mat_print(K(1),1,K(1)%nrow,1,K(1)%ncol,lupri)
-            DO i=1,ndmat
+
+            ! ADMM approx. to exchange mat
+            ! ---------------------------------------------------------------           
+            IF(setting%scheme%ADMM_DFBASIS) THEN
+                AO2 = AOdfAux
+            ELSE IF (setting%scheme%ADMM_JKBASIS) THEN
+                AO2 = AOdfJK
+            ELSE IF (setting%scheme%ADMM_GCBASIS) THEN
+                AO2 = AOVAL
+            ELSE 
+                call lsquit('II_get_ADMM_K_gradient:Auxiliary Density &
+                  & Matrix Calculation requested, but no basis given',-1)
+            ENDIF
+        
+            nbast2=getNbasis(AO2,Contractedinttype,setting%MOLECULE(1)%p,6)
+
+            !ADMM/Level 2 basis is GC basis 
+            ! only if ADMM_GCBASIS option is active and optlevel 3
+            GC3 = setting%IntegralTransformGC
+            GC2 = setting%scheme%ADMM_GCBASIS !  .AND. (optlevel.EQ.3)
+            setting%IntegralTransformGC = GC2
+            
+            !Store original AO-indeces (AOdf will not change,
+            !                            but is still stored)
+            AORold  = AORdefault
+            AOdfold = AODFdefault
+            
+            !!****Calculation of Level 2 exchange gradient from
+            !!     level 2 Density matrix starts here
+            !ADMM (level 2) AO settings 
+            call set_default_AOs(AO2,AOdfold)
+                
+            AO3 = AORdefault ! assuming optlevel.EQ.3
+            call mat_init(D2_AO,nbast2,nbast2)
+            call mat_zero(D2_AO)
+            call transform_D3_to_D2(Dmat_AO,D2_AO,&
+                & setting,lupri,luerr,nbast2,nbast,&
+                & AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
+!            DO ibmat=1,nBmat
+!                !!We transform the full Density to a level 2 density D2
+!                call mat_init(B2_AO(ibmat),nbast2,nbast2)
+!                call mat_zero(B2_AO(ibmat))
+!                call transform_D3_to_D2(Bmat_AO(ibmat),B2_AO(ibmat),&
+!                    & setting,lupri,luerr,nbast2,nbast,&
+!                    & AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
+
+!                 ! K2(b): LEVEL 2 exact exchange matrix
+!                call mat_init(k2(ibmat),nbast2,nbast2)
+!                call mat_zero(k2(ibmat))
+!                ! Take Dsym later on as input!!!!!!!
+!                Dsym = .FALSE.
+!                call II_get_exchange_mat(lupri,luerr,setting,B2_AO(ibmat),&
+!                                            & 1,Dsym,k2(ibmat))
+!                !Transform level 2 exact-exchange matrix to level 3
+!                call transformed_F2_to_F3(TMPF3,k2(ibmat),setting,&
+!                                        & lupri,luerr,&
+!                                        & nbast2,nbast,AO2,AO3,GC2,GC3)
+!                !call mat_daxpy(1E0_realk,TMPF3,K(ibmat))
+                                
+!                ! X3(B)- X2(b): XC-correction
+!                !****Calculation of Level 2 XC gradient
+!                !     from level 2 Density matrix starts here
+!                WORD = "BX"
+!                !Here hfweight is only used as a dummy variable
+!                call II_DFTsetFunc(WORD(1:80),hfweight) 
+                
+!                call get_quadfilename(L3file,nbast,setting%node)
+!                call get_quadfilename(L2file,nbast2,setting%node)
+                
+!                grid_done = setting%scheme%dft%grdone.EQ.1
+!                IF (grid_done) call get_dft_grid(setting%scheme%dft%L2grid,&
+!                                                & L2file,setting%scheme%dft)
+                     
+!                !!Only test electrons if the D2 density
+!                ! matrix is McWeeny purified
+!                testNelectrons = setting%scheme%dft%testNelectrons
+!                !setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
+!                setting%scheme%dft%testNelectrons = .FALSE. 
+                
+!                !Level 2 XC matrix
+!                call mat_init(Gx2(ibmat),nbast2,nbast2)
+!                call mat_zero(Gx2(ibmat))
+!                call II_get_xc_linrsp(lupri,luerr,&
+!                      & setting,nbast2,B2_AO(ibmat),D2_AO,Gx2(ibmat),1) 
+!!                call II_get_xc_linrsp(lupri,luerr,&
+!!                      & setting,nbast2,B2_AO,D2_AO,Gx2,nBmat) 
+!                !Transform level 2 XC matrix to level 3
+!                call transformed_F2_to_F3(TMPF3,Gx2(ibmat),setting,&
+!                                        & lupri,luerr,&
+!                                        & nbast2,nbast,AO2,AO3,GC2,GC3)
+!                !call mat_daxpy(-setting%scheme%exchangeFactor,TMPF3,K(ibmat))
+!                setting%scheme%dft%testNelectrons = testNelectrons
+
+!                !Re-set to level 3 grid, assuming it is calculated
+!                call get_dft_grid(setting%scheme%dft%L3grid,&
+!                                        & L3file,setting%scheme%dft)
+                
+!                !Level 3 XC matrix
+!                call mat_init(Gx3(ibmat),nbast,nbast)
+!                call mat_zero(Gx3(ibmat))
+!                call II_get_xc_linrsp(lupri,luerr,&
+!                      & setting,nbast,Bmat_AO(ibmat),Dmat_AO,Gx3(ibmat),1) 
+!!                call II_get_xc_linrsp(lupri,luerr,&
+!!                      & setting,nbast,Bmat_AO,Dmat_AO,Gx3,nBmat) 
+!                !Transform level 2 XC matrix to level 3
+!                !call mat_daxpy(setting%scheme%exchangeFactor,&
+!                !                & Gx3(ibmat),K(ibmat))
+                                
+!            ENDDO
+!            ! ---------------------------------------------------------------
+
+            DO i=1,nBmat
                 call mat_daxpy(1E0_realk,K(i),GbDs(i))
-                call mat_free(K(i))
             ENDDO
 
             ! Transform back to GCAO basis 
             IF(copy_IntegralTransformGC) THEN
                 ! Reset to the original value of IntegralTransformGC
                 setting%IntegralTransformGC = copy_IntegralTransformGC 
-                DO i=1,nDmat
+                DO i=1,nBmat
                     call AO2GCAO_transform_matrixF(GbDs(i),setting,lupri)
                 ENDDO
             ENDIF
-            
             
             ! DEBUG PAT START -----------------------------    
             write (lupri,*) "J+K mat in ADMM di_GET_GbDsArray_ADMM_setting()"
             call mat_print(GbDs(1),1,GbDs(1)%nrow,1,GbDs(1)%ncol,lupri)
 
+            
             ! FREE MEMORY
-            DO I=1,ndmat
-            call mat_free(Dens_AO(I))
+            DO i=1,nBmat
+                call mat_free(K(i))
+                call mat_free(Bmat_AO(i))
+!                call mat_free(B2_AO(i))
+!                call mat_free(k2(i))
+!                call mat_free(Gx2(i))
+!                call mat_free(Gx3(i))
             ENDDO
+            call mat_free(Dmat_AO)
+!            call mat_free(D2_AO)
           END SUBROUTINE di_GET_GbDsArray_ADMM_setting
+          
+            
+        SUBROUTINE transform_D3_to_D2(D,D2,setting,lupri,&
+                        & luerr,n2,n3,AO2,AO3,McWeeny,GCAO2,GCAO3)
+            implicit none
+            type(matrix),intent(in)    :: D     !level 3 matrix input 
+            type(matrix),intent(inout) :: D2 !level 2 matrix input 
+            type(lssetting) :: setting
+            integer :: n2,n3,AO3,AO2,lupri,luerr
+            logical :: McWeeny,GCAO2,GCAO3
+            !
+            TYPE(MATRIX) :: S22,S23,T23
+            Logical :: purify_failed
+            !
+            call mat_init(T23,n2,n3)
+            call mat_init(S23,n2,n3)
+            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+            call mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,S23)
+            call mat_mul(S23,T23,'n','t',1E0_realk,0E0_realk,D2)
+
+            IF (McWeeny) THEN
+                call mat_init(S22,n2,n3)
+                call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+                call McWeeney_purify(S22,D2,purify_failed)
+                IF (purify_failed) THEN
+                    call LSQUIT('McWeeney_purify failed in transform_D3_to_D2',-1)
+                ENDIF
+                call mat_free(S22)
+            ENDIF
+            call mat_free(T23)
+            call mat_free(S23)
+        END SUBROUTINE TRANSFORM_D3_TO_D2
+        
+        SUBROUTINE get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+            use io
+            implicit none
+            TYPE(lssetting),intent(inout) :: setting
+            TYPE(MATRIX),intent(inout)    :: T23
+            Integer,intent(IN)            :: n2,n3,AO2,AO3,lupri,luerr
+            Logical,intent(IN)            :: GCAO2,GCAO3
+            !
+            TYPE(MATRIX) :: S23,S22,S22inv
+            Character(80) :: Filename = 'ADMM_T23'
+            Logical :: onMaster
+
+            onMaster = .NOT.Setting%scheme%MATRICESINMEMORY
+
+            IF (io_file_exist(Filename,setting%IO)) THEN
+                call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+            ELSE
+                call mat_init(S22,n2,n2)
+                call mat_init(S22inv,n2,n2)
+                call mat_init(S23,n2,n3)
+
+                call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
+                call II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)
+
+                call mat_inv(S22,S22inv)
+                call mat_mul(S22inv,S23,'n','n',1E0_realk,0E0_realk,T23)
+
+                call mat_free(S22inv)
+                call mat_free(S23)
+                call mat_free(S22)
+                call io_add_filename(setting%IO,Filename,LUPRI)
+                call io_write_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
+            ENDIF
+        END SUBROUTINE get_T23
+        
+        SUBROUTINE Transformed_F2_to_F3(F,F2,setting,lupri,luerr,n2,n3,AO2,AO3,GCAO2,GCAO3)
+            implicit none
+            type(matrix),intent(inout) :: F  !level 3 matrix output 
+            type(matrix),intent(in)    :: F2 !level 2 matrix input 
+            type(lssetting) :: setting
+            Integer :: n2,n3,AO2,AO3,lupri,luerr
+            Logical :: GCAO2,GCAO3
+            !
+            type(matrix) :: S23,T23
+            call mat_init(T23,n2,n3)
+            call mat_init(S23,n2,n3)
+            call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
+            call mat_mul(F2,T23,'n','n',1E0_realk,0E0_realk,S23)
+            call mat_mul(T23,S23,'t','n',1E0_realk,0E0_realk,F)
+            call mat_free(T23)
+            call mat_free(S23)
+        END SUBROUTINE TRANSFORMED_F2_TO_F3
       !CONTAINS END
       END SUBROUTINE di_GET_GbDsArray_ADMM
-      
-      
+          
+          
       subroutine di_lowdin(S,S_sqrt,S_minus_sqrt,n,lupri)
         implicit none
         real(realk), target :: S(n*n), S_sqrt(n*n), S_minus_sqrt(n*n)
