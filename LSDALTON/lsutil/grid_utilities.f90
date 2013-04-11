@@ -4,48 +4,100 @@
 Module grid_utilities_module
 Use precision
 use TYPEDEFTYPE, only: lsitem
+use files
 
 contains 
 
 
+  !> \brief Determine gridbox to use for calculation of orbital, density, electrostatic potential etc.
+  !> at given points in space.
+  !> IF a file gridbox.inp exist, then the information defining the gridbox
+  !> is read from the file.
+  !> IF gridbox.inp does not existing the gridbox is initiated to encapsulate the whole
+  !> molecule, including a buffer region (details given inside subroutine).
+  !> \author Kasper Kristensen
+  !> \date 2013
   subroutine DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
        &ATOMXYZ,natoms,nGRIDPOINTS)
     implicit none
+    !> Number of atoms in molecule
     integer, intent(in)          :: natoms
-    integer, intent(out)         :: nX,nY,nZ
+    !> (X,Y,Z) coordinates for all atoms in molecule
     real(4), intent(in)      :: ATOMXYZ(3,natoms)
-    integer, intent(out)         :: nGRIDPOINTS
-    real(4), intent(out)     :: deltax,deltay,deltaz,X1,Y1,Z1
+    !> Number of grid points in X,Y,Z directions
+    integer, intent(inout)         :: nX,nY,nZ
+    !> Total number of gridpoints (nX*nY*nZ)
+    integer, intent(inout)         :: nGRIDPOINTS
+    !> Distance between gridpoints in X,Y, and Z directions
+    real(4), intent(inout)     :: deltax,deltay,deltaz
+    !> Lowest X,Y,Z values in grid box.
+    real(4),intent(inout) :: X1,Y1,Z1
     real(4)                  :: Xn, Yn, Zn,distX,distY,distZ,buffer
-    integer                      :: I
-    ! Minimum and maximum values in the gridbox. 
+    integer                      :: I,funit
+    logical :: file_exist
 
-    Xn = -HUGE(1_4); X1 = HUGE(1_4)
-    Yn = -HUGE(1_4); Y1 = HUGE(1_4)
-    Zn = -HUGE(1_4); Z1 = HUGE(1_4)
-    do I = 1, natoms
-         X1=min(ATOMXYZ(1,I),X1); Xn=max(ATOMXYZ(1,I),Xn)
-         Y1=min(ATOMXYZ(2,I),Y1); Yn=max(ATOMXYZ(2,I),Yn)
-         Z1=min(ATOMXYZ(3,I),Z1); Zn=max(ATOMXYZ(3,I),Zn)
-    enddo
-    
 
-    ! Add/subtract arbitrary "6.0 a.u." to ensure that we get the electron density
-    ! in a box which is larger than then box containing the atoms of interest.
-    buffer = 6.0_4
-    X1 = X1 - buffer; Y1 = Y1 - buffer; Z1 = Z1 - buffer
-    Xn = Xn + buffer; Yn = Yn + buffer; Zn = Zn + buffer
-    distX = Xn-X1
-    distY = Yn-Y1
-    distZ = Zn-Z1
-    !deltax = distX/nX
-    !deltay = distY/nY
-    !deltaz = distZ/nZ
-    deltax = 0.3_4; deltay = 0.3_4; deltaz = 0.3_4
-    nX = nint(distX/deltax) + 1
-    nY = nint(distY/deltay) + 1
-    nZ = nint(distZ/deltaz) + 1
-    ! Number of gridpoints from: X1 to Xn; Y1 to Yn; Z1 to Zn.
+    ! *******************
+    ! *    GRID BOX     *
+    ! *******************
+    ! * The first point in the grid box is (X1,Y1,Z1).
+    ! * The remaining grid points are then defined by going out in the X,Y, and Z directions
+    !   with step sizes deltax,deltay, and deltaz, until there are nX,nY, and nZ points
+    !   in the X,Y, and Z directions (giving a total number of gridpoints: nGRIDPOINTS=nX*nY*nZ).
+
+
+    ! Check whether gridbox file defining grid parameters exists
+    inquire(file='gridbox.inp',exist=file_exist)
+    if(file_exist) then
+
+       print *, 'Reading grid box info from file'
+       ! Open file
+       funit=-1
+       call lsopen(funit,'gridbox.inp','OLD','FORMATTED')
+
+       ! Read info defining grid box.
+       read(funit,*) X1,Y1,Z1
+       read(funit,*) deltax,deltay,deltaz
+       read(funit,*) nX,nY,nZ
+       call lsclose(funit,'KEEP')
+
+    else
+       ! Define grid box parameters such that (i) all atoms in the molecule are within the grid box
+       ! and (ii) there is a buffer zone of 6.0 a.u. around the outermost atoms.
+       ! (The value of 6.0 is currently hardcoded).
+
+       print *, 'Setting grid box based on molecule info'
+
+       ! Minimum and maximum values in the gridbox. 
+       Xn = -HUGE(1_4); X1 = HUGE(1_4)
+       Yn = -HUGE(1_4); Y1 = HUGE(1_4)
+       Zn = -HUGE(1_4); Z1 = HUGE(1_4)
+       do I = 1, natoms
+          X1=min(ATOMXYZ(1,I),X1); Xn=max(ATOMXYZ(1,I),Xn)
+          Y1=min(ATOMXYZ(2,I),Y1); Yn=max(ATOMXYZ(2,I),Yn)
+          Z1=min(ATOMXYZ(3,I),Z1); Zn=max(ATOMXYZ(3,I),Zn)
+       enddo
+
+
+       ! Add "6.0 a.u." buffer
+       buffer = 6.0_4
+       X1 = X1 - buffer; Y1 = Y1 - buffer; Z1 = Z1 - buffer
+       Xn = Xn + buffer; Yn = Yn + buffer; Zn = Zn + buffer
+       distX = Xn-X1
+       distY = Yn-Y1
+       distZ = Zn-Z1
+       deltax = 0.3_4; deltay = 0.3_4; deltaz = 0.3_4
+       nX = nint(distX/deltax) + 1
+       nY = nint(distY/deltay) + 1
+       nZ = nint(distZ/deltaz) + 1
+
+       print *, 'X1,Y1,Z1', X1,Y1,Z1
+       print *, 'deltax,deltay,deltaz', deltax,deltay,deltaz
+       print *, 'nX,nY,nZ', nX,nY,nZ
+
+    end if
+
+    ! Total number of gridpoints
     nGRIDPOINTS = nX*nY*nZ
 
   end subroutine DETERMINE_GRIDBOX
