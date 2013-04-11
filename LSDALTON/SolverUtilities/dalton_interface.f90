@@ -2672,13 +2672,13 @@ CONTAINS
                 call mat_free(K(i))
                 call mat_free(Bmat_AO(i))
                 call mat_free(B2_AO(i))
-!                call mat_free(k2(i))
-!                call mat_free(Gx2(i))
-!                call mat_free(Gx3(i))
+                call mat_free(k2(i))
+                call mat_free(Gx2(i))
+                call mat_free(Gx3(i))
             ENDDO
             call mat_free(TMPF3)
             call mat_free(Dmat_AO)
-!            call mat_free(D2_AO)
+            call mat_free(D2_AO)
           END SUBROUTINE di_GET_GbDsArray_ADMM_setting
           
             
