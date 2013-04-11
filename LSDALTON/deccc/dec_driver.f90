@@ -706,7 +706,6 @@ contains
 
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output)
 
-
   end subroutine main_fragment_driver
 
 
@@ -732,10 +731,8 @@ contains
     write(DECinfo%output,'(a,i4)')     'MaxIter                = ',DECinfo%MaxIter
     write(DECinfo%output,'(a,f9.2)')   'Pair distance thresh.  = ',DECinfo%pair_distance_threshold
     write(DECinfo%output,'(a,f9.2)')   'Pair reduction thresh. = ',DECinfo%PairReductionDistance
-    write(DECinfo%output,'(a,l1)')     'Fragmentation debug    = ',DECinfo%fragmentation_debug
-    write(DECinfo%output,'(a,l1)')     'DEC driver debug       = ',DECinfo%dec_driver_debug
     write(DECinfo%output,'(a,i4)')     'Print level            = ',DECinfo%PL
-    write(DECinfo%output,'(a,i4)')     'Expansion step size    = ',DECinfo%LagStepSize
+    write(DECinfo%output,'(a,i4)')     'Expansion step size    = ',DECinfo%FragmentExpansionSize
 
     ! print cc parameters
     write(DECinfo%output,'(/,a)') '--------------------------'
@@ -954,9 +951,14 @@ contains
 
     ! MODIFY FOR NEW CORRECTION
     ! E.g. for F12:
-    ! if(DECInfo%F12) then
-    !   print F12 contributions
-    ! endif
+    if(DECInfo%F12) then
+       
+       print *, "(DEC_driver) Total energy for MP2-F12: ", energies(14)
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,g20.10)') 'MP2F12-V_gr_term occupied correlation energy : ', energies(14)
+       write(DECinfo%output,*)       
+         
+    endif
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)

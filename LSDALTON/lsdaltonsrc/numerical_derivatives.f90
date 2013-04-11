@@ -432,6 +432,7 @@ real(realk) :: hc_kBT,hc,kB,T,Stot,Gibbs,CmEh,kBT_Hartree
 integer :: i,j,k,LWORK,IERR,DegFree
 character(len=1) :: V,L
 real(realk),allocatable :: WORK(:)
+IERR=0
 
 
 

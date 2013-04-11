@@ -736,8 +736,6 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
             & nbatches,INTSPEC)
 
        call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-       DECinfo%integral_time_cpu = DECinfo%integral_time_cpu + (tcpu2-tcpu1)
-       DECinfo%integral_time_wall = DECinfo%integral_time_wall + (twall2-twall1)
 
        ! Loop over each (alpha,gamma) within the (alphaB,gammaB) batch
        dim3=i8*nbasis*nocc*dimAlpha*dimGamma   ! new dimension of tmp3
@@ -1642,8 +1640,6 @@ if(master) then
  call LSTIMER('MP2-INT FIN',tcpu,twall,DECinfo%output)
  call LSTIMER('MP2-INT TOTAL',tcpuTOT,twallTOT,DECinfo%output)
  call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
- DECinfo%MOintegral_time_wall = DECinfo%MOintegral_time_wall + (twall_end - twall_start)
- DECinfo%MOintegral_time_cpu = DECinfo%MOintegral_time_cpu + (tcpu_end - tcpu_start)
 end if
 
 end subroutine MP2_integrals_and_amplitudes_workhorse

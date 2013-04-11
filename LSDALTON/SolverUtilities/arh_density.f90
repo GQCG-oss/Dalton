@@ -783,6 +783,7 @@ contains
         real(realk), pointer     :: A(:,:)
         integer, pointer         :: IPIV(:)
         integer                  :: INFO
+   INFO=0
 
    if (.true.) then
       call mem_alloc(A,ndens,ndens)
@@ -1423,7 +1424,7 @@ contains
              logical, intent(in)      :: print_eivecs 
            end subroutine dsyevx_interface
         end interface
-
+   IERR=0
    !ndim = G%nrow
    rowdim = G%nrow
    coldim = G%ncol
