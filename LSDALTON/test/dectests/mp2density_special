@@ -67,7 +67,7 @@ $END INFO
 1000
 .manual_batchsizes
 6 6 
-.MP2density
+.DENSITY
 .IncludeFullMolecule
 *END OF INPUT
 %EOF%
