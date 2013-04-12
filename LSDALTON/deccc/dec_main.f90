@@ -58,7 +58,7 @@ contains
     type(matrix),intent(inout) :: C
     type(fullmolecule) :: Molecule
 
-    print *, 'DEC input'
+    print *, 'DEC gets Hartree-Fock info directly from HF calculation...'
 
     ! Get informations about full molecule
     ! ************************************
@@ -97,7 +97,7 @@ contains
     type(matrix) :: D
     type(fullmolecule) :: Molecule
 
-    print *, 'DEC file'
+    print *, 'DEC will read Hartree-Fock info from file...'
 
     ! Minor tests
     ! ***********
