@@ -18,5 +18,7 @@ Doc/Master.idx
 Doc/Master.out
 Doc/Master.pdf
 Doc/Master.toc
+Doc/Master.dvi
+Doc/Master.log
 cmake/argparse.pyc
 *~
