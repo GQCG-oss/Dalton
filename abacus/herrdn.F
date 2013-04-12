@@ -674,6 +674,7 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
+      use pe_variables, only: peqm
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
