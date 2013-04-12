@@ -455,7 +455,8 @@ CRF added
 C
 C     /FCSYM/
 CRF   We initialize the numdiff symmetry to the computational point group  
-      FCLASS(1:3) = GROUP
+C     FCLASS(1:3) = GROUP
+      FCLASS(1:3) = 'C1 '
       FCLASS(4:15) = '            '
       MROTAX = .FALSE.
       VPLANE = .FALSE.
