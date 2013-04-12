@@ -845,7 +845,8 @@ subroutine DEC_meaningful_input(config)
         config%decomp%cfg_lcm=.true.
 
         ! Only necessary to localize for DEC calculation, not for full calculation
-        NotFullCalc: if(.not. DECinfo%full_molecular_cc) then
+        ! or simulated full calculation
+        NotFullCalc: if( .not. (DECinfo%full_molecular_cc .or. DECinfo%simulate_full) ) then
 
            ! Turn on orbital localization
            config%decomp%cfg_mlo = .true.
