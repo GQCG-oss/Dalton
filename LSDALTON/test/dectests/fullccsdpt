@@ -55,7 +55,7 @@ $INFO
 DEBUG_MPI_MEM
 $END INFO
 **DEC
-.ccFull
+.FULL
 .CCSD(T)
 .ccThr
 1.0d-9

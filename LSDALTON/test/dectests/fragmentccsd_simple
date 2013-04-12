@@ -56,7 +56,7 @@ TRILEVEL
 .CONVTHR
 1.0d-5
 **DEC
-.ReassignHatoms
+.ABSORBH
 .CCSD
 .MPIsplit
 0

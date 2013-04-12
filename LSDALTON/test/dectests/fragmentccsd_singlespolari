@@ -63,7 +63,7 @@ TRILEVEL
 .SinglesPolari
 .SinglesThr
 0.1
-.ReassignHatoms
+.ABSORBH
 *END OF INPUT  
 %EOF%
 #######################################################################

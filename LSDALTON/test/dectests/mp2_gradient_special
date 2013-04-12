@@ -67,7 +67,7 @@ $END INFO
 .kappaTHR
 1e-6
 .IncludeFullMolecule
-.ReassignHatoms
+.ABSORBH
 *END OF INPUT  
 %EOF%
 #######################################################################

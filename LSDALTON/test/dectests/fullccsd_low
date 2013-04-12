@@ -62,7 +62,7 @@ $END INFO
 19 19
 .CCSDforce_scheme
 0
-.ccFull
+.FULL
 .ccThr
 1e-9
 *END OF INPUT

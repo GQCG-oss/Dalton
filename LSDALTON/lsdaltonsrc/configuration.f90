@@ -804,6 +804,7 @@ ENDDO
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
 
+! Check that DEC input is consistent with geometry optimization and orbital localization.
 call DEC_meaningful_input(config)
 
 END SUBROUTINE read_dalton_input

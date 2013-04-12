@@ -75,7 +75,7 @@ contains
     DECinfo%approximated_norm_threshold=0.1E0_realk
     DECinfo%check_lcm_orbitals=.false.
     DECinfo%use_canonical=.false.
-    DECinfo%reassignHatoms=.false.  ! reassign H atoms to heavy atom neighbour
+    DECinfo%AbsorpHatoms=.false.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken=.false.
     DECinfo%BoughtonPulay=.false.
     DECinfo%FitOrbitals=.true.
@@ -212,48 +212,54 @@ contains
        ! See explanation of DEC parameters in type DEC_settings
        DEC_INPUT_INFO: SELECT CASE(WORD)
 
-          ! NOTE: By default, we assume that the HF has already been carried out.
-       case('.ccsd_old'); DECinfo%ccsd_old=.true.
-       case('.CCSDsolver_par'); DECinfo%solver_par=.true.
-       case('.CCSDdynamic_load'); DECinfo%dyn_load=.true.
+
+
+          ! ****************************************************************************
+          ! *               Keywords available for the general user                    *
+          ! ****************************************************************************
+          ! These keywords should be properly documented for the release.
+
+          ! GENERAL INFO
+          ! CC model
+       case('.MP2'); DECinfo%ccModel=1; DECinfo%use_singles=.false.  ! both DEC and full calc
+       case('.CC2'); DECinfo%ccModel=2; DECinfo%use_singles=.true.   ! only for full calc
+       case('.CCSD'); DECinfo%ccModel=3; DECinfo%use_singles=.true.  ! only for full calc
+
+
+          ! FULL CALCULATION
+          ! ================
+
+          ! Run full molecular calculation rather than DEC calculation
+       case('.FULL'); DECinfo%full_molecular_cc=.true. 
+
+          ! Save CCSD amplitudes to be able to restart full CCSD calculation
        case('.CCSDsaferun'); DECinfo%CCSDsaferun=.true.
-       case('.CCSDno_restart'); DECinfo%CCSDno_restart=.true.
-       case('.CCSDpreventcanonical'); DECinfo%CCSDpreventcanonical=.true.
-       case('.manual_batchsizes'); DECinfo%manual_batchsizes=.true.;read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
-       case('.SkipHartreeFock'); DECinfo%doHF=.false.
-       case('.hack'); DECinfo%hack=.true.
-       case('.hack2'); DECinfo%hack2=.true.
-       case('.restart'); DECinfo%restart=.true.           
-       case('.TimeBackup'); read(input,*) DECinfo%TimeBackup
-       case('.ReadDECorbitals'); DECinfo%read_dec_orbitals=.true.
-       case('.MPIsplit'); read(input,*) DECinfo%MPIsplit
-       case('.ccFull'); DECinfo%full_molecular_cc=.true. 
-       case('.MP2'); DECinfo%ccModel=1; DECinfo%use_singles=.false.
-       case('.CC2'); DECinfo%ccModel=2; DECinfo%use_singles=.true.
-       case('.CCSD'); DECinfo%ccModel=3; DECinfo%use_singles=.true.
-       case('.CCSD(T)'); DECinfo%ccModel=4; DECinfo%use_singles=.true.
-       case('.RPA'); DECinfo%ccModel=5; DECinfo%use_singles=.false.
-       case('.NotuseMP2frag') 
-          DECinfo%use_mp2_frag=.false.
-       !
+
+          ! Maximum number of CC iterations
        case('.ccMaxIter'); read(input,*) DECinfo%ccMaxIter 
-       case('.F12'); DECinfo%F12=.true.
+
+          ! Residual norm threshold for CC amplitude equation
        case('.ccThr') 
           read(input,*) DECinfo%ccConvergenceThreshold
           DECinfo%CCthrSpecified=.true.
-       case('.NotPrec'); DECinfo%use_preconditioner=.false.
-       case('.NotBPrec'); DECinfo%use_preconditioner_in_b=.false.
+
+          ! Use canonical orbitals (only meaningful for full calculation)
+          ! Perhaps this should be default for full calculation?
        case('.canonical'); DECinfo%use_canonical=.true.
-       case('.ReassignHatoms'); DECinfo%reassignHatoms=.true.
-       case('.Mulliken'); DECinfo%mulliken=.true.
-       case('.BoughtonPulay'); DECinfo%BoughtonPulay=.true.
-       case('.NotFitOrbitals'); DECinfo%FitOrbitals=.false.
-       case('.SimpleOrbitalThresh')
-          read(input,*) DECinfo%simple_orbital_threshold
-          DECinfo%simple_orbital_threshold_set=.true.
-       case('.DIIS'); DECinfo%use_crop=.false.  ! use DIIS instead of CROP
+
+          ! Number of residual vectors to save when solving CC amplitude equation
        case('.SubSize'); read(input,*) DECinfo%ccMaxDIIS
-       case('.MaxIter'); read(input,*) DECinfo%MaxIter
+
+
+
+          ! DEC CALCULATION 
+          ! ===============
+
+          ! Restart DEC calculation (only for single point calculations, not geometry optimization)
+       case('.restart'); DECinfo%restart=.true.           
+
+          ! Absorb H atoms when assigning orbitals
+       case('.ABSORBH'); DECinfo%AbsorpHatoms=.true.
 
           !> See description of FOT level in set_input_for_fot_level.
           !> Note that if one does not use simple orbital threshold, then
@@ -262,8 +268,76 @@ contains
        case('.FOT')  
           read(input,*) FOTlevel
           call set_input_for_fot_level(FOTlevel)
+
+          ! Use frozen core approximation
        case('.FrozenCore') 
           DECinfo%frozencore=.true.
+
+          ! Max memory available on node measured in GB. By default set to 16 GB
+       case('.Memory') 
+          read(input,*) DECinfo%memory           
+          DECinfo%memory_defined=.true.
+
+          ! Pair distance threshold
+       case('.pairsThr') 
+          ! Threshold in a.u.
+          read(input,*) DECinfo%pair_distance_threshold
+          DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
+       case('.pairsThrAngstrom') 
+          ! Input in Angstrom
+          read(input,*) DECinfo%pair_distance_threshold
+          DECinfo%pair_distance_threshold=DECinfo%pair_distance_threshold/bohr_to_angstrom
+          DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
+
+          ! Calculate MP2 gradient (without necessarily doing geometry optimization)
+       case('.gradient') 
+          DECinfo%gradient=.true.
+          DECinfo%first_order=.true.
+
+          !> Carry out MP2 density calculation (subset of gradient calculation)
+       case('.MP2density') 
+          DECinfo%MP2density=.true.
+          DECinfo%first_order=.true.
+
+          ! Threshold for residual norm of kappabar multiplier equation in first-order MP2 calculations
+       case('.kappaTHR') 
+          read(input,*) DECinfo%kappaTHR
+
+
+
+          ! ****************************************************************************
+          ! *               Keywords only available for developers                     *
+          ! ****************************************************************************
+          ! NOTE: By default, we assume that the HF has already been carried out.
+       case('.ccsd_old'); DECinfo%ccsd_old=.true.
+       case('.CCSDsolver_par'); DECinfo%solver_par=.true.
+       case('.CCSDdynamic_load'); DECinfo%dyn_load=.true.
+       case('.CCSDno_restart'); DECinfo%CCSDno_restart=.true.
+       case('.CCSDpreventcanonical'); DECinfo%CCSDpreventcanonical=.true.
+       case('.manual_batchsizes'); DECinfo%manual_batchsizes=.true.;read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
+          ! Skip Hartree-Fock calculation 
+       case('.SkipHartreeFock'); DECinfo%doHF=.false.
+       case('.hack'); DECinfo%hack=.true.
+       case('.hack2'); DECinfo%hack2=.true.
+       case('.TimeBackup'); read(input,*) DECinfo%TimeBackup
+       case('.ReadDECorbitals'); DECinfo%read_dec_orbitals=.true.
+       case('.MPIsplit'); read(input,*) DECinfo%MPIsplit
+       case('.CCSD(T)'); DECinfo%ccModel=4; DECinfo%use_singles=.true.
+       case('.RPA'); DECinfo%ccModel=5; DECinfo%use_singles=.false.
+       case('.NotuseMP2frag') 
+          DECinfo%use_mp2_frag=.false.
+          !
+       case('.F12'); DECinfo%F12=.true.
+       case('.NotPrec'); DECinfo%use_preconditioner=.false.
+       case('.NotBPrec'); DECinfo%use_preconditioner_in_b=.false.
+       case('.Mulliken'); DECinfo%mulliken=.true.
+       case('.BoughtonPulay'); DECinfo%BoughtonPulay=.true.
+       case('.NotFitOrbitals'); DECinfo%FitOrbitals=.false.
+       case('.SimpleOrbitalThresh')
+          read(input,*) DECinfo%simple_orbital_threshold
+          DECinfo%simple_orbital_threshold_set=.true.
+       case('.DIIS'); DECinfo%use_crop=.false.  ! use DIIS instead of CROP
+       case('.MaxIter'); read(input,*) DECinfo%MaxIter
        case('.decPrint'); read(input,*) DECinfo%PL
        case('.mullikenThr'); read(input,*) DECinfo%mulliken_threshold
        case('.skipPairs') 
@@ -276,13 +350,6 @@ contains
        case('.PairRedDistAngstrom') 
           read(input,*) DECinfo%PairReductionDistance 
           DECinfo%PairReductionDistance = DECinfo%PairReductionDistance/bohr_to_angstrom
-       case('.pairsThr') 
-          read(input,*) DECinfo%pair_distance_threshold
-          DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
-       case('.pairsThrAngstrom') ! Input in Angstrom
-          read(input,*) DECinfo%pair_distance_threshold
-          DECinfo%pair_distance_threshold=DECinfo%pair_distance_threshold/bohr_to_angstrom
-          DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
        case('.PairMinDist'); read(input,*) DECinfo%PairMinDist
        case('.PairMinDistAngstrom')
           read(input,*) DECinfo%PairMinDist
@@ -309,10 +376,7 @@ contains
        case('.FragmentExpansionSize'); read(input,*) DECinfo%FragmentExpansionSize
        case('.FragmentAdapted'); DECinfo%fragadapt=.true.
 
-          ! MP2 response
-       case('.gradient') 
-          DECinfo%gradient=.true.
-          DECinfo%first_order=.true.
+          ! kappabar multiplier equation
        case('.kappaMaxIter'); read(input,*) DECinfo%kappaMaxIter 
        case('.kappaMaxDIIS'); read(input,*) DECinfo%kappaMaxDIIS
        case('.kappa_debug'); DECinfo%kappa_driver_debug=.true.
@@ -322,27 +386,17 @@ contains
           ! integrals tests
        case('.CheckLCM'); DECinfo%check_lcm_orbitals=.true.
 
-          ! Max memory measured in GB. By default set to 16 GB
-       case('.Memory') 
-          read(input,*) DECinfo%memory           
-          DECinfo%memory_defined=.true.
        case('.CCSDforce_scheme'); DECinfo%force_scheme=.true.
-               read(input,*) DECinfo%en_mem
+          read(input,*) DECinfo%en_mem
        case('.TESTARRAY'); DECinfo%array_test=.true.
        case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
 
           ! Size of local groups in MPI scheme
        case('.MPIgroupsize'); read(input,*) DECinfo%MPIgroupsize
 
-          !> Carry out MP2 density fragment calculations
-       case('.MP2density') 
-          DECinfo%MP2density=.true.
-          DECinfo%first_order=.true.
           !> Collect fragment contributions to calculate full molecular MP2 density
        case('.SkipFull') 
           DECinfo%SkipFull=.true.
-       case('.kappaTHR') 
-          read(input,*) DECinfo%kappaTHR
        case('.ErrorFactor') 
           read(input,*) DECinfo%EerrFactor
        case('.CCDRIVERDEBUG')
@@ -435,7 +489,7 @@ contains
 
     ! Only full molecular for RPA at this stage
     if(DECinfo%ccmodel==5 .and. .not. DECinfo%full_molecular_cc) then
-       call lsquit('RPA only implemented for full molecule! Insert .ccFull keyword.',-1)
+       call lsquit('RPA only implemented for full molecule! Insert .FULL keyword.',-1)
     end if
 
     ! Never use gradient and density at the same time (density is a subset of gradient)
@@ -532,7 +586,7 @@ contains
     write(lupri,*) 'PL ', DECitem%PL
     write(lupri,*) 'SkipFull ', DECitem%SkipFull
     write(lupri,*) 'output ', DECitem%output
-    write(lupri,*) 'reassignHatoms ', DECitem%reassignHatoms
+    write(lupri,*) 'AbsorpHatoms ', DECitem%AbsorpHatoms
     write(lupri,*) 'FitOrbitals ', DECitem%FitOrbitals
     write(lupri,*) 'simple_orbital_threshold ', DECitem%simple_orbital_threshold
     write(lupri,*) 'PurifyMOs ', DECitem%PurifyMOs

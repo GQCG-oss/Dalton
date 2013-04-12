@@ -71,7 +71,7 @@ $END INFO
 .CCSD(T)
 .ccThr
 1.0d-6
-.ReassignHatoms
+.ABSORBH
 *END OF INPUT
 %EOF%
 #######################################################################

@@ -81,7 +81,7 @@ contains
 
        ! For Boughton-Pulay, reassign orbitals originally assigned to hydrogen
        ! (For all other assigment procedures this reassigning has already been performed above)
-       if(DECinfo%reassignHatoms) then
+       if(DECinfo%AbsorpHatoms) then
           call reassign_orbitals(nocc,OccOrbitals,natoms,DistanceTable,mylsitem)
           call reassign_orbitals(nunocc,UnOccOrbitals,natoms,DistanceTable,mylsitem)
        end if
@@ -593,7 +593,7 @@ contains
 
 
     ! Stop here if we do not want hydrogen fragments
-    if(DECinfo%reassignHatoms) then
+    if(DECinfo%AbsorpHatoms) then
        call mem_dealloc(lowdin_charge)
        call mem_dealloc(atomic_idx)
        return
@@ -817,8 +817,8 @@ contains
              call lsquit('Orbital assignment failed because there are only hydrogen atoms!',-1)
           else 
              write(DECinfo%output,*) 'WARNING: Reassignment procedure failed!'
-             write(DECinfo%output,*) 'Fallback solution: I now turn on .ReassignHatoms'
-             DECinfo%reassignHatoms=.true.
+             write(DECinfo%output,*) 'Fallback solution: I now turn on .ABSORBH'
+             DECinfo%AbsorpHatoms=.true.
              keepon=.false.
           end if
        end if

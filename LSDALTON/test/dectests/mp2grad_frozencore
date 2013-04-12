@@ -65,7 +65,7 @@ $END INFO
 .FOT
 5
 .FrozenCore
-.ReassignHatoms
+.ABSORBH
 *END OF INPUT
 %EOF%
 #######################################################################
