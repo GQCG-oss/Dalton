@@ -584,7 +584,7 @@ C
 C
       NLBTOT = 0
 C
-      IPRINT=IPRLNR
+      IPR1IN=MAX(0,IPRLNR-5)
       IF (ALFA .OR. ROAA .OR. ROAG) THEN
          NCOMP  = 0
          NPATOM = 0
@@ -592,13 +592,13 @@ Clf
          IF(PCM.AND.LOCFLD) THEN
             CALL GET1IN(DUMMY,'DIPLOC ',NCOMP,WORK(KWORK2),LWORK2,
      &           LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &           IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPRINT)
+     &           IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPR1IN)
             NLAB = 3
             CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
          ELSE
             CALL GET1IN(DUMMY,'DIPLEN ',NCOMP,WORK(KWORK2),LWORK2,
      &           LABINT,WORK(KIDSYM),WORK(KIDADR),
-     &           IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPRINT)
+     &           IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,IPR1IN)
             NLAB = 3
             CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
          END IF
@@ -615,7 +615,7 @@ Clf
          CALL GET1IN(DUMMY,'THETA  ',NCOMP,WORK(KWORK2),LWORK2,
      &            LABINT,WORK(KIDSYM),WORK(KIDADR),
      &            IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
-     &            IPRINT)
+     &            IPR1IN)
          DIPORG(1) = DIPTMX
          DIPORG(2) = DIPTMY
          DIPORG(3) = DIPTMZ
@@ -634,7 +634,7 @@ C
          CALL GET1IN(DUMMY,'ANGMOM ',NCOMP,WORK(KWORK2),LWORK2,
      &            LABINT,WORK(KIDSYM),WORK(KIDADR),
      &            IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
-     &            IPRINT)
+     &            IPR1IN)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
 C
@@ -644,7 +644,7 @@ C
             CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
      &                  LABINT,WORK(KIDSYM),WORK(KIDADR),
      &                  IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
-     &                  IPRINT)
+     &                  IPR1IN)
             NLAB = 3
             CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
          END IF
@@ -659,7 +659,7 @@ C
          CALL GET1IN(DUMMY,'DIPVEL ',NCOMP,WORK(KWORK2),LWORK2,
      &               LABINT,WORK(KIDSYM),WORK(KIDADR),
      &               IDUMMY,.TRUE.,NPATOM,.TRUE.,DUMMY,.FALSE.,DUMMY,
-     &               IPRINT)
+     &               IPR1IN)
          NLAB = 3
          CALL LABCOP(NLAB,NLBTOT,LABINT,WORK(KIDSYM),LABAPP,LABSYM)
       END IF
@@ -825,7 +825,7 @@ C
                REWIND LUGDVE
                CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
                IF (IPRLNR.GE.LOCDBG) THEN
-                  WRITE (LUPRI,'(A,A,A,D15.6)')
+                  WRITE (LUPRI,'(/3A,1P,D15.6)')
      &            'GP Vector, label: ',LABEL1,'  Norm: ',
      &            DSQRT(DDOT(2*NVARPT,WORK(KWRKG1),1,WORK(KWRKG1),1))
                   IF (IPRLNR.GT.10) THEN
@@ -880,7 +880,7 @@ C
      &                    WORK(KWRKG1),LWRKG1)
 C
                      IF (IPRLNR.GE.LOCDBG) THEN
-                        WRITE (LUPRI,'(A,A,A,D15.6)')
+                        WRITE (LUPRI,'(/3A,1P,D15.6)')
      &                  'GP Vector, label: ',LABEL2,'  Norm: ',
      &                  DSQRT(DDOT(2*NVARPT,WORK(KGD1),1,WORK(KGD1),1))
                         IF (IPRLNR.GT.10) THEN
@@ -1281,7 +1281,7 @@ C
                      CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
 C
                      IF (IPRLNR.GT.3) THEN
-                        WRITE (LUPRI,'(2A)') 'GP Vector, label: ','d/dR'
+                        WRITE (LUPRI,'(/A)') 'GP Vector, label: d/dR'
                         CALL OUTPUT(WORK(KWRKG1),1,NVARPT,1,2,
      &                              NVARPT,2,1,LUPRI)
                      ENDIF
@@ -1322,8 +1322,8 @@ C
      &                                   WORK(KWRKG1),LWRKG1)
 C
                               IF (IPRLNR.GT.13) THEN
-                                 WRITE (LUPRI,'(2A)') 
-     &                               'GP Vector, label: ','d/dR'
+                                 WRITE (LUPRI,'(/A)') 
+     &                               'GP Vector, label: d/dR'
                                  CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,
      &                                       1,2*NVARPT,1,1,LUPRI)
                               ENDIF
@@ -1409,7 +1409,7 @@ C
      &                                    WORK(KWRKG1),LWRKG1)
 C
                               IF (IPRLNR.GT.3) THEN
-                                 WRITE (LUPRI,'(2A)') 
+                                 WRITE (LUPRI,'(/2A)') 
      &                               'GP Vector, label: ',LABEL2
                                  CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,
      &                                       1,2*NVARPT,1,1,LUPRI)
@@ -1506,7 +1506,7 @@ C
                      CALL WRITT(LUGDVE,2*NVARPT,WORK(KWRKG1))
 C
                      IF (IPRLNR.GT.3) THEN
-                        WRITE (LUPRI,'(2A)') 
+                        WRITE (LUPRI,'(/2A)') 
      &                      'GP Vector, label: ',LABEL1
                         CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,
      &                              1,2*NVARPT,1,1,LUPRI)
@@ -1546,8 +1546,8 @@ C
      &                                   WORK(KWRKG1),LWRKG1)
 C
                               IF (IPRLNR.GT.3) THEN
-                                 WRITE (LUPRI,'(2A)') 
-     &                               'GP Vector, label: ','d/dR'
+                                 WRITE (LUPRI,'(/A)') 
+     &                               'GP Vector, label: d/dR'
                                  CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,
      &                                       1,2*NVARPT,1,1,LUPRI)
                               ENDIF
@@ -1620,7 +1620,7 @@ C
      &                                    WORK(KWRKG1),LWRKG1)
 C
                               IF (IPRLNR.GT.3) THEN
-                                 WRITE (LUPRI,'(2A)') 
+                                 WRITE (LUPRI,'(/2A)') 
      &                               'GP Vector, label: ',LABEL2
                                  CALL OUTPUT(WORK(KWRKG1),1,2*NVARPT,1,
      &                                       1,2*NVARPT,1,1,LUPRI)

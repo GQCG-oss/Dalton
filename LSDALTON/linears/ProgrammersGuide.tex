@@ -1,0 +1,321 @@
+\documentclass[preprint,aps]{revtex4}
+\usepackage{graphicx}
+\usepackage{amsbsy}
+\usepackage{amssymb}
+\usepackage{amsmath}
+
+% 
+\newcommand \progexception[1] {{\bf Exceptions}: {#1}}
+\newcommand \ruleref[1] {\underline{Rule~\ref{#1}}}
+\newcommand \rulesecref[2] {\underline{Rule~\ref{#1} of Sec.~\ref{#2}}}
+
+
+\begin{document}
+
+\title{\Large \bf A beginning of a programmer's guide to LSDALTON} 
+
+\author{Stinne H{\o}st}
+\affiliation{The Lundbeck Foundation Center for Theoretical Chemistry \\
+             Department of Chemistry, University of Aarhus \\
+             DK-8000 {\AA}rhus C,  Denmark}
+\maketitle
+\newpage
+\section{Documentation}
+We use Doxygen (www.doxygen.org) for documenting the LSDALTON program package. This section contains hints and general rules.
+
+\subsection{General rules}
+\begin{itemize}
+\item Most important of all: When you change your already documented code, REMEMBER TO CHANGE ALSO THE DOCUMENTATION! Otherwise
+the documentation will quickly become useless.
+\item Keep names of subroutines and functions in small letters. Doxygen sorts all methods alphabetically, and capitals are 
+always put first. Note that Doxygen is case sensitive (like most programming languages, except fortran!).
+\item Always put intent(in), intent(out), or intent(inout) on all arguments. These attributes are used by Doxygen to create 
+meaningful documentation. However, don't use intent(out) with derived types (e.g. type(matrix)); this will on some platforms 
+make the pointer disassociated entering the routine, and memory already allocated for the matrix will be lost. Instead, use 
+intent(inout) for derived types which should really be intent(out).
+\item All "one-liners", i.e. documentation of files, subroutines, parameters, modules etc. {\bf {are only allowed to span one line
+in the source code!!}}. If necessary, it will broken into several lines in the documentation, but the idea is of course
+that these descriptions should be kept short and concise. If something needs additional documentation, use the syntax described
+under "All subroutines should documented...".
+\item All files should documented with the following syntax on the first lines of the file (example for LSDALTON.f90):
+\begin{verbatim}
+!> @file 
+!> Contains main SCF driver and routines to gather info about keywords etc.
+\end{verbatim}
+If the file contains just one module, you can just put e.g. (example for diag.f90):
+\begin{verbatim}
+!> @file 
+!> Contains diagonalization module.
+\end{verbatim}
+and save the description for the module documentation.
+\item All modules should be documented with the following syntax (example for diag.f90):
+\begin{verbatim}
+!> Standard Roothaan-Hall module. Contains also level shifting...
+!> \author L. Thogersen
+!> \date 2003
+module diagonalization
+...
+!> Smallest accepted overlap when using levelshift = MOchange
+   real(realk),save :: accpr 
+!> Largest accepted Dorth ratio when using levelshift = Dorth
+   real(realk),save :: limit_ratio 
+!> HOMO-LUMO gap
+   real(realk),save :: Ggap 
+!> Overlap between old and new MO coefficients
+   real(realk),save :: Gmochange
+!> Coefficients for idempotent density
+   type(Matrix),save :: Co
+!> Saves input density for debug purposes
+   type(Matrix),save :: Dinp
+!> S*D*S, D = density and S = overlap matrix
+   type(Matrix),save :: SDS
+!> Pointer to current density matrix
+   type(Matrix),pointer,save :: Drecent
+!> Current SCF iteration
+   integer, save :: SCF_iteration
+!> States if acceptable density been found (levelshift)
+   logical,save :: found_density 
+!> States if the matrix SDS been initialized and constructed
+   logical,save :: SDSexists
+
+contains
+....
+end module diagonalization
+\end{verbatim}
+i.e., all global variables should be on separate lines and documented on the previous line. 
+\item All subroutines should documented with the following syntax (example for get\_num\_electrons\_neutral in LSDALTON.f90):
+\begin{verbatim}
+!> \brief This subroutine calculates number of electrons for neutral molecule
+!> \author T. Kjaergaard, S. Reine
+!> \date 2008-10-26
+!> \param dalton_inp Contains information read from DALTON.INP 
+!> \param nel Number of electrons
+subroutine get_num_electrons_neutral(nel,dalton_inp)
+...
+  type(daltoninput), intent(in)  :: dalton_inp
+  integer, intent(out)           :: nel
+...
+...
+end subroutine get_num_electrons_neutral
+\end{verbatim}
+If you prefer, you may instead document your arguments like for a module (example for LSDALTON.f90):
+\begin{verbatim}
+!> \brief Print author list for stand-alone f90 linear scaling SCF to DALTON.OUT
+!> \author T. Kjaergaard, S. Reine
+!> \date 2008-10-26
+subroutine print_intro(lupri)
+implicit none
+!> Logical unit number for file DALTON.OUT
+integer,intent(in)        :: lupri
+\end{verbatim}
+Note that in this way, you don't need the ${\backslash}$param $\langle$argument name$\rangle$ command. This requires that your arguments 
+are on separate lines. If you don't like this, use the ${\backslash}$param $\langle$argument name$\rangle$ command. \\ 
+You don't have to specify in the comment whether an argument is input or output, that is taken care of by using the 'intent'
+attribute. If in addition to the brief description you want (or already have) a more detailed description, it can be included by starting and
+ending with an empty line (example for diag.f90):
+\begin{verbatim}
+!> \brief Branches out and calls the requested routine for the level shift.
+!> \author L. Thogersen
+!> \date October 2005
+!> \param F Fock/Kohn-Sham matrix
+!> \param H1 One-electron Hamiltonian
+!> \param S Overlap matrix
+!> \param D Density matrix
+!> \param queue Contains density and Fock/KS mats from previous SCF its
+!> \param ndia Number of diagonalizations in this SCF iteration
+!> \param mu Levelshift
+!> \param Dnew New density matrix
+!>
+!> This routine branches out and calls the requested routine for obtaining 
+!> the level shift. Currently (October 2005) the options are: No level 
+!> shift, level shift obtained by a line-search in the SCF energy, level 
+!> shift obtained based on restrictions on new information introduced to 
+!> the subspace of densities and level shift obtained based on
+!> restrictions on new information introduced compared to the previous density.
+!>
+   subroutine level_shift(F,H1,S,D,queue,ndia,mu,Dnew)
+....
+   end subroutine level_shift
+\end{verbatim}
+The detailed description may also contain a reference to a paper where relevant theory is described.
+\item Functions are commented like subroutines. In addition to the arguments, you may also
+want to document what the function returns (example for mat-operations.f90):
+\begin{verbatim}
+!> \brief Makes the trace of a type(matrix).
+!> \param A The type(matrix) we want the trace of
+!> \return The trace of A
+!> \author L. Thogersen
+!> \date 2003
+      function mat_tr(A)
+      ....
+      end function mat_tr(A)
+\end{verbatim}
+The documentation of a return value may also be used for subroutines, but because of the intent
+attribute it should be obvious what a subroutine returns.
+\item Interfaces are commented like modules. 
+\end{itemize}
+
+\subsection{Hints}
+\begin{itemize}
+\item Fortran code parsing is broken in Doxygen 1.5.5 (this is the standard version retrieved by Ubuntu 8.04) You need a newer version.
+\item The EXTRACT\_ALL tag in the Doxygen configuration file should be set to YES.
+\item If you want latex syntax directly in the documentation, it can be done with the ${\backslash}$latexonly and 
+${\backslash}$endlatexonly commands:
+\begin{verbatim}
+!> \author \latexonly T. Kj{\ae}rgaard, S. Reine  \endlatexonly
+\end{verbatim}
+These comments will only appear in the latex output. For the other output formats, use e.g. ${\backslash}$htmlonly, 
+${\backslash}$manonly, or ${\backslash}$xmlonly.
+\end{itemize}
+
+\section{Programming practices}
+
+\subsection{Practices that reduce errors and make code partly self-documenting}
+
+\label{secERRSELFDOC}
+
+\begin{enumerate}
+\item Minimize dependencies between different program components.
+
+      \progexception{None.}
+\item All variables/data structures/objects should be declared in the
+      smallest scope possible. For example, if a variable can be made
+      local to a subroutine, rather than coming as input from a
+      higher-level subroutine, this is preferable.
+      
+      \progexception{Sometimes time-critical subroutines/functions may
+    need to reduce the number of local variables. In such cases this
+    should be clearly commented.}
+\item Each subroutine/function should perform a single clearly defined
+      task. In other words, a subroutine/function should do one thing
+      only and do it well.
+
+      \progexception{Subroutines/functions that must read files from
+    the hard-drive and, in the case of parallel programming, receive
+    data from other nodes.  This type of exceptions should be
+    minimized, but cannot be eliminated entirely.}
+\item The behavior of a subroutine/function should depend only on its
+    input arguments. Access to variables that are neither subroutine
+    arguments nor local variables inside a subroutine (e.g. global
+    variables in F77 common blocks or Fortran 90 modules) introduce
+    global data-dependencies which by definition break the modularity
+    and make it harder to ensure the correctness of the program.
+
+      \progexception{Fairly harmless functionality like choice of
+    formatting used by a collection of subroutines for printing could
+    be a case where it makes sense to have dependence on
+    global/module-wide variables. Subroutines/functions that must read
+    files from the hard-drive and, in the case of parallel
+    programming, receive data from other nodes.  This type of
+    exceptions should be minimized, but cannot be eliminated
+    entirely.}
+\item \label{ruleMININPUT} Subroutines/functions should receive as
+    little extraneous data as possible. That is, the input arguments
+    should not contain more that than is necessary to produce the
+    desired output.
+
+    \progexception{See \rulesecref{ruleFEWSTRUCTS}{secDATASTRUCT}.}
+\item When it is easy to do so, subroutines/functions should check that
+    its input is reasonable. Even when a logically airtight test is
+    impractically complicated, it is typically simple to test that the
+    input satisfies some conservative preconditions. When the input
+    data is unreasonable, this should be flagged in the output somehow
+    and checked by the calling subroutine/function.
+
+    \progexception{Time-critical subroutines/functions.  For
+    time-critical subroutine/functions such input testing should be
+    triggered by given precompiler-flag given.}
+\end{enumerate}
+
+\subsection{Guidelines concerning data structures}
+
+\label{secDATASTRUCT}
+
+\begin{enumerate}
+\item Programming of non-trivial functionality should begin by asking
+    and answering the questions: What sort of data structures do I
+    need?  What sort of operations do I need to perform on the
+    data/data structures?
+\item \label{ruleFEWSTRUCTS} A good program or program module is
+    structured around a few data structures.
+
+    \progexception{This rule can sometimes conflict with
+    \ruleref{ruleMININPUT_STR}, in which case a trade-off is necessary.}
+\item \label{ruleMININPUT_STR} Data structures that are sent as input
+    to subroutines/functions should not contain more data than is
+    needed by the subroutines/functions (see
+    \rulesecref{ruleMININPUT}{secERRSELFDOC}). Where necessary, data
+    should be repackaged from data structures with too much data to
+    minimal data structures before passed as input to another
+    subroutine/function/object.
+
+    \progexception{This rule can sometimes conflict with
+    \ruleref{ruleFEWSTRUCTS}, in which case a trade-off is
+    necessary.}
+\item Data structures should ideally represent concepts that are natural
+    from the point of view of problem domain and/or algorithm at hand,
+    and reflect the terms in which the programmer thinks about the
+    functionality.
+
+    \progexception{Time-critical parts of the program and where it
+    would conflict with \ruleref{ruleFEWSTRUCTS} or
+    \ruleref{ruleMININPUT_STR}.}
+\end{enumerate}
+
+\subsection{Object-Oriented Programming}
+
+\label{secOOP}
+
+\begin{enumerate}
+\item Adopting some principles of Object-Oriented Programming is a good
+    idea. For example, Fortran 90 supports some encapsulation and
+    data-hiding through the keyword PRIVATE. Use of PRIVATE whereever
+    reasonable is encouraged as it reduces bugs as well as makes it
+    harder for other programmers to deviate from the intended usage of
+    data structures and/or subroutines.
+\end{enumerate}
+
+\subsection{Other guidelines}
+
+\label{secMISCGUIDE}
+
+\begin{enumerate}
+\item The ideal structure of a program or module is a library-like
+    hierarchy of subroutines/functions/objects. At the lowest level in
+    the hierarchy are ``level 0'' subroutines/functions/objects that
+    are either self-contained or depend only on each other. At the
+    next level are ``level 1'' subroutines/functions/objects that
+    depend on each other and ``level 0''
+    subroutines/functions/objects. ``Level 2''
+    subroutines/functions/objects should ideally depend on each other
+    and ``level 1'' subroutines/functions/objects, and not on ``level
+    0'', and so on. Document what the purpose and intended usage is of
+    the different levels.
+
+    \progexception{It may not always be practical to follow this rule
+    strictly, but exceptions should be rare and minimized.}
+\item Reliance on global constants is OK for things that are truly
+    generic compile-time constants and that are not likely to change
+    even in future versions of the code, but should not be
+    overused. For example, it is fine to declare \texttt{pi =
+    3.141592...} as a global constant and refer to this constant in
+    subroutines/functions that perform mathematical calculations.
+\item A subroutine/function should not be longer than approximately one
+    A4 page. Long subroutines/functions should be broken down into
+    smaller components.
+\item It is usually not harder to make subroutines/functions as general
+    as possible (i.e., producing meaningful output for as many input
+    values as possible). General subroutines/functions are usually
+    also easier to test and to read. For example, if a matrix
+    operation is defined for both square matrices and rectangular
+    matrices, don't restrict the implemention to the former.
+\item Duplicate functionality as little as possible, within the
+    constraints of producing readable, modular code. Functionality
+    that is needed in several places should be implemented in a
+    reusable, library-like way.
+
+    \progexception{Possibly for time-critical operations.}
+\end{enumerate}
+
+\end{document}
+

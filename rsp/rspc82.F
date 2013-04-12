@@ -657,6 +657,10 @@ C    *              XINDX,CMO,WRK,LWRK)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
+C---------------------
+C CBN+JK 03.01.06
+C---------------------
+C     This covers also mm/pcm
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
@@ -1038,6 +1042,7 @@ C
 #include "infdim.h"
 #include "abares.h"
 #include "thrldp.h"
+#include "qm3.h"
 C
       LOGICAL LINEQ,OLSEN1,LMAXIT
       real(8), allocatable :: THCORP(:),EOVAL(:)
@@ -1495,6 +1500,16 @@ C
             ENDIF
  2000    CONTINUE
          NTCONV = NTCONV + NOTCNV
+
+         IF (MMPCM) THEN
+             IF (NSTATES.LE.0) THEN
+              CALL QUIT('NSTATES.LE.0 for MMPCM')
+            ENDIF 
+            DO 3333 KL=1,NBX
+              ICQM3(KL) = KEX(KL)
+ 3333       CONTINUE
+         ENDIF
+
          IF (NTCONV.EQ.0 .OR. NCSIM+NOSIM.EQ.0) GO TO 3999
 C        ... NTCONV is number of non-converged response vectors
 C
@@ -1720,9 +1735,11 @@ C
             ALFAI(I)=ALFAI(I)/BETA(I)
          ELSE
 C           singularities
-            WRITE(LUPRI,1010)I, ALFAR(I),ALFAI(I),BETA(I)
- 1010       FORMAT(/' *** WARNING SINGULARITY IN REDUCED MCRSP,',
-     +             /' I,ALFAR(I),ALFAI(I),BETA(I):',I6,1P,3D13.6)
+            WRITE(LUPRI,1010)KSYMOP,KZYRED,I,ALFAR(I),ALFAI(I),BETA(I)
+ 1010       FORMAT(/' *** WARNING Singularity in reduced',
+     +          ' response eq. of symmetry',I3,
+     +         /' *** WARNING KZYRED,I,ALFAR(I),ALFAI(I),BETA(I):',
+     +          2I4,1P,3D15.6)
          END IF
 C        IF(ABS(ALFAR(I)).GT.ZEROT) THEN
 C    +   .OR.(ABS(ALFAR(I)).LE.ZEROT.AND.ABS(ALFAI(I)).GT.ZCRIT)) THEN
@@ -1730,9 +1747,10 @@ C           complex eigenvalues
 C        RATIO= ABS(ALFAI(I)/ALFAR(I))
 C        IF(RATIO.GT.ZCRIT) WRITE(LUPRI,1020) ALFAR(I),ALFAI(I)
          IF(ABS(ALFAI(I)).GT.D0) THEN
-            WRITE(LUPRI,1020) I,ALFAR(I),ALFAI(I)
- 1020       FORMAT(/' *** WARNING COMPLEX EIGENVALUE IN REDUCED MCRSP,',
-     +          ' REAL AND IMAGINARY PART :',I6,1P,2D13.6)
+            WRITE(LUPRI,1020) KSYMOP,KZYRED,I,ALFAR(I),ALFAI(I)
+ 1020       FORMAT(/' *** WARNING Complex eigenvalue in reduced',
+     +          ' response eq. of symmetry',I3,
+     +         /' *** WARNING real and imaginary part :',2I4,1P,2D15.4)
 C
 C SET EIGENVALUE EQUAL TO COMPLX IN ORDER TO BE ABLE TO SKIP
 C CONTRIBUTIONS FROM THIS ROOT WHEN SUMMING UP TERMS

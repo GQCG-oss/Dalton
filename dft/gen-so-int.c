@@ -139,7 +139,7 @@ FSYM(dftsoi)(real* cmo, real* work, integer *lwork, integer* iprfck)
     outmat_(dens.dmata,&ONEI,&inforb_.nbast,&ONEI,&inforb_.nbast,
             &inforb_.nbast,&inforb_.nbast);
     }
-    electrons = dft_integrate_ao(&dens, work, lwork, 1,0,0, 
+    electrons = dft_integrate_ao(&dens, work, lwork, iprfck, 1,0,0, 
 				 cbdata, ELEMENTS(cbdata));
     for(m=0; m<3; m++) {
         for(i=0; i<inforb_.nbast; i++)

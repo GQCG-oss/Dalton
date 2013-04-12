@@ -534,8 +534,8 @@ C
 C        CALL RSPVAR(UDV,FOCK,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
          IF ( KZVAR.EQ.0) THEN
             NWARN = NWARN + 1
-            WRITE(LUPRI,'(/2A)')'@ ****WARNING******',
-     *         ' NUMBER OF VARIABLES IN THIS SYMMETRY IS ZERO'
+            WRITE(LUPRI,'(/A,I3)')'@ ****WARNING******'//
+     *         ' No variables in symmetry',KSYMOP
             GO TO 100
          END IF
          CALL FLSHFO(LUPRI)
@@ -1309,10 +1309,10 @@ C
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                  GO TO 100
                END IF
-               WRITE (LUPRI,'(/,3A,/)') '@KEYWORD "',WORD,
-     *            '" NOT RECOGNIZED IN RSPPP.'
+               WRITE (LUPRI,'(/4A/)') '@ Keyword "',WORD,
+     *            '" is not recognized in RSPPP for section ',WORD1
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT(' ILLEGAL KEYWORD IN RSPPP ')
+               CALL QUIT(' Illegal KEYWORD in RSPPP ')
  1             CONTINUE
                LPPOP( INDPRP('XDIPLEN ')) = .TRUE.
                LPPOP( INDPRP('YDIPLEN ')) = .TRUE.
@@ -4268,6 +4268,15 @@ C     (i) read solvent t matrix (ii) subtract it from FC
 C     (because the response program requires a FC matrix
 C      without solvent contributions).
 C
+      IF (QM3) THEN
+        IF (OLDTG .OR. (.NOT. LOSPC)) THEN
+          CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
+          CALL READT (LUSIFC,NNORBT,WRK)
+          DO 21 I = 1,NNORBT
+             FC(I) = FC(I) - WRK(I)
+ 21       CONTINUE
+        END IF
+      END IF
       IF (FLAG(16)) THEN
         CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
         CALL READT (LUSIFC,NNORBT,WRK)
@@ -4282,16 +4291,6 @@ C
         ENDDO
       END IF
 C
-      IF (QM3) THEN
-        IF (OLDTG .OR. (.NOT. LOSPC)) THEN
-          CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
-          CALL READT (LUSIFC,NNORBT,WRK)
-          DO 21 I = 1,NNORBT
-             FC(I) = FC(I) - WRK(I)
- 21       CONTINUE
-        END IF
-      END IF
-
       IF (SOPPA) THEN
 C
          IF (CCPPA) THEN

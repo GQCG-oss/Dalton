@@ -1201,7 +1201,7 @@ C
       IF ( RESTLR ) THEN
 C
          IF (RSPSUP .AND. (KSYMOP.EQ.1)) THEN
-            WRITE (LUERR,*)
+            WRITE (LUPRI,*)
      *      'LRST: RSPAVE necessary for RESTLR but not yet implemented'
             CALL QUIT('LRST error: Implement RSPAVE for RESTLR')
          END IF
@@ -2222,7 +2222,7 @@ C
       DIMENSION H2X(NORBT,*),H2XAC(N2ASHX,NNASHX,*),WRK(*)
       IF (SOPPA) THEN
          WRITE(LUPRI,'(/A)') 'ERROR: QONEMU called in SOPPA'
-         CALL QTRACE(LUERR)
+         CALL QTRACE(LUPRI)
          CALL QUIT('ERROR: QONEMU called in SOPPA')
       END IF
       DO 1000 IOSIM = 1,NOSIM
@@ -2574,6 +2574,7 @@ C
 #include "infpri.h"
 #include "inftap.h"
 #include "infsop.h"
+#include "qm3.h"
 C
       LOGICAL BINMEM, LINEQ, OPTSAV, LMAXIT
       CHARACTER*8 LAB123(3),RESTAR, LAB1, LAB2
@@ -2581,18 +2582,19 @@ C
       DATA RESTAR/'RESTART '/
 C
       CALL QENTER('RSPCTL')
+      IF (MMPCM) CALL MMPCMINIT()
       IF (IPRRSP .GE. 2) THEN
-      IF (LINEQ) THEN
-         WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
+         IF (LINEQ) THEN
+            WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
      *   ' <<<  SOLVING SETS OF LINEAR EQUATIONS ',
      *   'FOR LINEAR RESPONSE PROPERTIES >>>',
      &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
-      ELSE
-         WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
+         ELSE
+            WRITE (LUPRI,'(///2A//A,I3,A,L3/)')
      *   ' <<< EXCITATION ENERGIES',
      *   ' AND TRANSITION MOMENT CALCULATION (MCTDHF) >>>',
      &   ' Operator symmetry =',KSYMOP,'; triplet = ',TRPLET
-      END IF
+         END IF
       END IF
 C
 C  DEFINE MAXIMUM NUMBER OF TRIAL VECTORS IN RSPLIN AND RSPNEX
@@ -2655,7 +2657,7 @@ C     SOPCLI reads 2p-2h diagonal (D(0) matrix)
      *     ' MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS:',MAXSIM
 C
       IF (MAXSIM.LE.0) THEN
-         WRITE (LUPRI ,8000) LWRK,(100+KMAXVE-KTOUSE)
+         WRITE (LUPRI,8000) LWRK,(100+KMAXVE-KTOUSE)
          WRITE (LUERR,8000) LWRK,(100+KMAXVE-KTOUSE)
          CALL QTRACE(LUERR)
          CALL QUIT('RSPCTL: INSUFFICIENT MEMORY ALLOCATION')
@@ -2697,7 +2699,7 @@ C RSPNEX reads SOPPA 2p-2h diagonal of length KZCONF
       IF(IPRRSP.GE.10 .OR. NSIM3 .LE. 0)  WRITE(LUPRI,'(/A,I8)')
      *' MAXIMUM NUMBER OF SIMULTANEOUS TRIAL VECTORS IN RSPNEX:',NSIM3
       IF (NSIM3.LE.0) THEN
-         WRITE (LUPRI ,8000) LWRK,(100+KLEFT+KNEX)
+         WRITE (LUPRI,8000) LWRK,(100+KLEFT+KNEX)
          WRITE (LUERR,8000) LWRK,(100+KLEFT+KNEX)
          CALL QTRACE(LUERR)
          CALL QUIT('RSPCTL: INSUFFICIENT SPACE')
@@ -2884,15 +2886,15 @@ C        CALL RSPELI(NCSIM,NOSIM,ZYCVEC,ZYOVEC,
 C    *               CMO,UDV,PV,FC,FV,FCAC,H2AC,
 C    *               XINDX,WRK,LWRK)
 C
-          KEVECS = KWRK1
-          KSOP1  = KEVECS + (NCSIM+NOSIM)*KZYVAR
-          IF (SOPPA) THEN
-             KWRK2 = KSOP1 + KZYWOP
-          ELSE
-             KWRK2 = KSOP1
-          ENDIF
-          LWRK2  = LWRK   - KWRK2
-          IF (LWRK2.LT.0) CALL ERRWRK('RSPCTL 2',KWRK2-1,LWRK)
+         KEVECS = KWRK1
+         KSOP1  = KEVECS + (NCSIM+NOSIM)*KZYVAR
+         IF (SOPPA) THEN
+            KWRK2 = KSOP1 + KZYWOP
+         ELSE
+            KWRK2 = KSOP1
+         ENDIF
+         LWRK2  = LWRK   - KWRK2
+         IF (LWRK2.LT.0) CALL ERRWRK('RSPCTL 2',KWRK2-1,LWRK)
 C
 C        WRITE E(2)*X ON LURSP5
 C
@@ -3041,18 +3043,12 @@ C    *               CMO,UDV,PVX,FC,FV,FCAC,H2AC,XINDX,WRK,LWRK)
          IF (KCONV.EQ.-2) THEN
 C           (MAXIMUM DIMENSION OF REDUCED SPACE EXCEEDED)
             NWARN = NWARN + 1
-            WRITE (LUERR,'(/A/A)')
-     *          ' *** RSPCTL WARNING-MICROITERATIONS STOPPED BECAUSE',
-     *          '     MAXIMUM DIMENSION OF REDUCED SPACE EXCEEDED.'
             WRITE (LUPRI,'(/A/A)')
      *          ' *** RSPCTL WARNING-MICROITERATIONS STOPPED BECAUSE',
      *          '     MAXIMUM DIMENSION OF REDUCED SPACE EXCEEDED.'
          ELSE IF (KCONV.LT.0) THEN
 C           (LINEAR DEPENDENCE BETWEEN NEW TRIAL VECTOR )
             NWARN = NWARN + 1
-            WRITE (LUERR,'(/A/A)')
-     *          ' *** RSPCTL WARNING-MICROITERATIONS STOPPED BECAUSE',
-     *          '     OF LINEAR DEPENDENCE BETWEEN NEW TRIAL VECTORS'
             WRITE (LUPRI,'(/A/A)')
      *          ' *** RSPCTL WARNING-MICROITERATIONS STOPPED BECAUSE',
      *          '     OF LINEAR DEPENDENCE BETWEEN NEW TRIAL VECTORS'
@@ -3065,9 +3061,6 @@ C           (NOT CONVERGED)
             IF (ITMIC.GE.MAXIT) THEN
 C              (MAX NO OF MICROITERATIONS REACHED)
                NWARN = NWARN + 1
-               WRITE(LUERR,'(/A,I4,A)')
-     *         ' *** RSPCTL WARNING-MAXIMUM NUMBER OF MICROITERATIONS,',
-     *         ITMIC,', REACHED'
                WRITE(LUPRI,'(/A,I4,A)')
      *         ' *** RSPCTL WARNING-MAXIMUM NUMBER OF MICROITERATIONS,',
      *         ITMIC,', REACHED'

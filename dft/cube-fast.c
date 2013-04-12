@@ -1208,7 +1208,7 @@ fast_callback(DftGrid* grid, CubeFastData* data)
 #include "infpar.h"
 
 void
-dft_cr_resp_slave(real* work, integer* lwork, const integer* iprint)
+dft_cr_resp_slave(real* work, integer* lwork, integer* iprint)
 {
     real* fi    = calloc(inforb_.n2orbx, sizeof(real));              /* OUT */
     real *cmo = dal_malloc(inforb_.norbt*inforb_.nbast*sizeof(real)); /*IN */
@@ -1220,7 +1220,7 @@ dft_cr_resp_slave(real* work, integer* lwork, const integer* iprint)
              kappaB, &symB,
              kappaC, &symC,
              kappaD, &symD,
-             work,   lwork);
+             work,   lwork, iprint);
     free(kappaB);
     free(kappaC);
     free(kappaD);
@@ -1293,7 +1293,7 @@ FSYM(dftcrcf)(real* fi, real* cmo,
 	      real* kappaB, integer* symB,
 	      real* kappaC, integer* symC,
 	      real* kappaD, integer* symD, 
-	      real* work, integer* lwork)
+	      real* work,   integer* lwork, integer* iprint)
 {
     static int msg_printed = 0;
     integer norbt2 = inforb_.norbt*inforb_.norbt;
@@ -1323,7 +1323,7 @@ FSYM(dftcrcf)(real* fi, real* cmo,
     cbdata[0].callback = (DftCallback)fast_callback;
     cbdata[0].cb_data = data;
 
-    dft_integrate(cmo, work, lwork, cbdata, ELEMENTS(cbdata));
+    dft_integrate(cmo, work, lwork, iprint, cbdata, ELEMENTS(cbdata));
 
     dft_cr_resp_collect_info(data->dftcontr,work,*lwork); /* NO-OP in serial */
     daxpy_(&norbt2, &ONER, data->dftcontr, &ONEI, fi, &ONEI);

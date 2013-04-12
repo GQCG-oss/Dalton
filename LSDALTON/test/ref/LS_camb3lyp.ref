@@ -1,0 +1,678 @@
+
+ Work memory size (LMWORK+2):   123123125 =  939.35 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:28:24 2010
+     Host name              : login-0-1.local                         
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+ *LINSCA specified in old input
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  5 HCN molecules placed 20 atomic units apart                            
+  STRUCTURE IS NOT OPTIMIZED. STO-2G basis                                
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           H           1.007825
+                           N          14.003074
+                           N          14.003074
+                           N          14.003074
+                           N          14.003074
+                           N          14.003074
+                           C          12.000000
+                           C          12.000000
+                           C          12.000000
+                           C          12.000000
+                           C          12.000000
+
+                       Total mass:   135.054495 amu
+                       Natural abundance:  92.812 %
+
+ Center-of-mass coordinates (A):    0.000000   40.000000    0.740323
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     3
+  Total number of atoms:   15
+
+  Basis set used is "STO-2G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H           1       1       2       1      [2s|1s]                                                                          
+  H           1       1       2       1      [2s|1s]                                                                          
+  H           1       1       2       1      [2s|1s]                                                                          
+  H           1       1       2       1      [2s|1s]                                                                          
+  H           1       1       2       1      [2s|1s]                                                                          
+  N           1       7      10       5      [4s2p|2s1p]                                                                      
+  N           1       7      10       5      [4s2p|2s1p]                                                                      
+  N           1       7      10       5      [4s2p|2s1p]                                                                      
+  N           1       7      10       5      [4s2p|2s1p]                                                                      
+  N           1       7      10       5      [4s2p|2s1p]                                                                      
+  C           1       6      10       5      [4s2p|2s1p]                                                                      
+  C           1       6      10       5      [4s2p|2s1p]                                                                      
+  C           1       6      10       5      [4s2p|2s1p]                                                                      
+  C           1       6      10       5      [4s2p|2s1p]                                                                      
+  C           1       6      10       5      [4s2p|2s1p]                                                                      
+  ----------------------------------------------------------------------
+  total:     15      70     110      55
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.02 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in GABGEN is   0.01 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.03 seconds
+ >>>> Total wall time used in HERMIT:   0.03 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:28:24 2010
+     Host name              : login-0-1.local                         
+
+ Title lines from integral program:
+     5 HCN molecules placed 20 atomic units apart                            
+     STRUCTURE IS NOT OPTIMIZED. STO-2G basis                                
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Kohn-Sham calculation.
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         70
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 55
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+ 
+     This is a DFT calculation of type: Camb3lyp
+ CAM-B3LYP functional with alpha=0.190 beta=0.460 mu=0.330
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          55
+     Number of basis functions         55
+
+      ** Automatic occupation of RKS orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals             35
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ This is a CAM functional with
+ config%integral%CAMalpha  0.190000000000000     
+ config%integral%CAMbeta  0.460000000000000     
+ config%integral%CAMmu  0.330000000000000     
+ LSint is requested by *LINSCA under **INTEGRALS 
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           7
+Convergence threshold for gradient:   0.10E-03
+ End of configuration from new input structure!
+ Replace S with S build from new integral driver
+ QQQ New Overlap S1:   84.4196280072003     
+ QQQ Old Overlap S:   84.4196280072003     
+ QQQ DIFF S-S1:  6.378703049266761E-028
+  SUCCESFULLY REPLACED OLD OVERLAP WITH NEW
+ QQQ New H1:   18611.4567615065     
+ QQQ Old H1:   18611.4567615106     
+ QQQ DIFF H-H1:  9.170549257620319E-022
+  SUCCESFULLY REPLACED OLD h1 WITH NEW
+ Take first density from Hueckel guess
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   0.15 seconds
+** Get Fock matrix number   1
+
+ >>> Time used in TWOINT is   0.23 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   10916.2307420470     
+ QQQ Old  F:   10916.2307225651     
+ QQQ DIFF  :  9.119634651003031E-015
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ CALCULATING NEW KOHN-SHAM MATRIX
+ Radial Quadrature : LMG scheme
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Grid pruning: on
+ Atom:    1*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    1*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    2*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    2*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    3*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    3*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    4*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    4*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    5*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    5*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    6*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:    6*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:    7*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:    7*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:    8*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:    8*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:    9*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:    9*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:   10*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:   10*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:   11*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   11*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   12*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   12*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   13*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   13*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   14*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   14*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   15*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   15*1 points= 7992 compressed from  8016 ( 66 radial)
+ Number of grid points:   122305 Grid generation time:       0.3 s
+ Number of grid points:   122305 Grid generation time:       0.3 s
+ >>>  WALL Time used in gridgeneration is     0.36 seconds
+ >>>  CPU  Time used in gridgeneration is     0.36 seconds
+KS electrons/energy:   69.99995197038368  -47.22655868147901 rel.err:-0.69E-06
+ >>>  CPU Time used in xc-Fock         is   1.11 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     1.11 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     1.11 seconds
+ >>>  CPU Time used in DFTNEW          is   1.11 seconds
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    2*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    3*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    4*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    5*1 points= 8695 compressed from  8732 ( 52 radial)
+ Atom:    6*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:    7*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:    8*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:    9*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:   10*1 points= 7774 compressed from  7800 ( 66 radial)
+ Atom:   11*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   12*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   13*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   14*1 points= 7992 compressed from  8016 ( 66 radial)
+ Atom:   15*1 points= 7992 compressed from  8016 ( 66 radial)
+ Number of grid points:   122305 Grid generation time:       0.3 s
+KS electrons/energy:   69.99995197043468  -47.22655868438756 rel.err:-0.69E-06
+ >>>  CPU Time used in DFT_KS          is   1.11 seconds
+  SUCCESFULLY REPLACED Kohn-Sham matrix
+ >>>  CPU Time used in FCK_FO          is   2.68 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   2.36296058643262     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1   -436.6782924345    0.00000000000    0.00      0.00000    0.00    0.0000000    0.24E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+
+ >>> Time used in TWOINT is   0.22 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   11038.8536865406     
+ QQQ Old  F:   11038.8536669328     
+ QQQ DIFF  :  9.138546520769612E-015
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ CALCULATING NEW KOHN-SHAM MATRIX
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   69.99995217122797  -47.39363864512928 rel.err:-0.68E-06
+ >>>  CPU Time used in xc-Fock         is   0.74 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.74 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.74 seconds
+ >>>  CPU Time used in DFTNEW          is   0.74 seconds
+KS electrons/energy:   69.99995217126866  -47.39363864794942 rel.err:-0.68E-06
+ >>>  CPU Time used in DFT_KS          is   0.76 seconds
+  SUCCESFULLY REPLACED Kohn-Sham matrix
+ >>>  CPU Time used in FCK_FO          is   1.84 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.917783711750082     
+  2   -437.9900582333   -1.31176579880    0.00      0.00000    0.00    0.0000000    0.92E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.03 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+
+ >>> Time used in TWOINT is   0.22 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   11053.2215584564     
+ QQQ Old  F:   11053.2215388395     
+ QQQ DIFF  :  9.131370321699966E-015
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ CALCULATING NEW KOHN-SHAM MATRIX
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   69.99995216393064  -47.50139241036989 rel.err:-0.68E-06
+ >>>  CPU Time used in xc-Fock         is   0.74 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.74 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.75 seconds
+ >>>  CPU Time used in DFTNEW          is   0.74 seconds
+KS electrons/energy:   69.99995216397221  -47.50139241337196 rel.err:-0.68E-06
+ >>>  CPU Time used in DFT_KS          is   0.77 seconds
+  SUCCESFULLY REPLACED Kohn-Sham matrix
+ >>>  CPU Time used in FCK_FO          is   1.85 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.565968922589621     
+  3   -438.0216884392   -0.03163020594    0.00      0.00000    0.00    0.0000000    0.57E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.03 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+
+ >>> Time used in TWOINT is   0.22 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   11049.0940419617     
+ QQQ Old  F:   11049.0940223460     
+ QQQ DIFF  :  9.134184181607751E-015
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ CALCULATING NEW KOHN-SHAM MATRIX
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   69.99995217066203  -47.46272889493912 rel.err:-0.68E-06
+ >>>  CPU Time used in xc-Fock         is   0.74 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.74 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.75 seconds
+ >>>  CPU Time used in DFTNEW          is   0.74 seconds
+KS electrons/energy:   69.99995217070290  -47.46272889788170 rel.err:-0.68E-06
+ >>>  CPU Time used in DFT_KS          is   0.76 seconds
+  SUCCESFULLY REPLACED Kohn-Sham matrix
+ >>>  CPU Time used in FCK_FO          is   1.84 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  4.241048028970814E-003
+  4   -438.0401460703   -0.01845763109    0.00      0.00000    0.00    0.0000000    0.42E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.03 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   5
+
+ >>> Time used in TWOINT is   0.22 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   11049.1606155289     
+ QQQ Old  F:   11049.1605959133     
+ QQQ DIFF  :  9.134117490791601E-015
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ CALCULATING NEW KOHN-SHAM MATRIX
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   69.99995217069467  -47.46316334254743 rel.err:-0.68E-06
+ >>>  CPU Time used in xc-Fock         is   0.74 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.74 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.74 seconds
+ >>>  CPU Time used in DFTNEW          is   0.74 seconds
+KS electrons/energy:   69.99995217073598  -47.46316334549248 rel.err:-0.68E-06
+ >>>  CPU Time used in DFT_KS          is   0.76 seconds
+  SUCCESFULLY REPLACED Kohn-Sham matrix
+ >>>  CPU Time used in FCK_FO          is   1.84 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.307189632589964E-004
+  5   -438.0401473609   -0.00000129063    0.00      0.00000    0.00    0.0000000    0.13E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.04 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   6
+
+ >>> Time used in TWOINT is   0.22 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   11049.1611714031     
+ QQQ Old  F:   11049.1611517874     
+ QQQ DIFF  :  9.134117867579106E-015
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ CALCULATING NEW KOHN-SHAM MATRIX
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   69.99995217070018  -47.46316374233340 rel.err:-0.68E-06
+ >>>  CPU Time used in xc-Fock         is   0.75 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.75 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.74 seconds
+ >>>  CPU Time used in DFTNEW          is   0.75 seconds
+KS electrons/energy:   69.99995217074017  -47.46316374527765 rel.err:-0.68E-06
+ >>>  CPU Time used in DFT_KS          is   0.76 seconds
+  SUCCESFULLY REPLACED Kohn-Sham matrix
+ >>>  CPU Time used in FCK_FO          is   1.85 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.016864528129511E-004
+  6   -438.0401473623   -0.00000000137    0.00      0.00000    0.00    0.0000000    0.10E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           6
+ >>>  CPU Time used in AVERAG          is   0.04 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   7
+
+ >>> Time used in TWOINT is   0.22 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   11049.1611831953     
+ QQQ Old  F:   11049.1611635797     
+ QQQ DIFF  :  9.134118013259901E-015
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ CALCULATING NEW KOHN-SHAM MATRIX
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   69.99995217069997  -47.46316369159386 rel.err:-0.68E-06
+ >>>  CPU Time used in xc-Fock         is   0.74 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.74 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.74 seconds
+ >>>  CPU Time used in DFTNEW          is   0.74 seconds
+KS electrons/energy:   69.99995217074151  -47.46316369453810 rel.err:-0.68E-06
+ >>>  CPU Time used in DFT_KS          is   0.76 seconds
+  SUCCESFULLY REPLACED Kohn-Sham matrix
+ >>>  CPU Time used in FCK_FO          is   1.84 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  5.949685549100057E-006
+  7   -438.0401473629   -0.00000000060    0.00      0.00000    0.00    0.0000000    0.59E-05  ###
+ >>>  CPU Time used in **ITER          is  13.91 seconds
+Total no. of matmuls in SCF optimization:        416
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -1.31176579880    0.0000    0.0000    0.0000000
+  3   -0.03163020594    0.0000    0.0000    0.0000000
+  4   -0.01845763109    0.0000    0.0000    0.0000000
+  5   -0.00000129063    0.0000    0.0000    0.0000000
+  6   -0.00000000137    0.0000    0.0000    0.0000000
+  7   -0.00000000060    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1          -436.67829243446658438188      0.236296058643262D+01
+    2          -437.99005823326291420017      0.917783711750082D+00
+    3          -438.02168843920583185536      0.565968922589621D+00
+    4          -438.04014607029466787935      0.424104802897081D-02
+    5          -438.04014736092517523502      0.130718963258996D-03
+    6          -438.04014736229970594650      0.101686452812951D-03
+    7          -438.04014736289769871291      0.594968554910006D-05
+ 
+      SCF converged !!!! 
+ Total no. of matmuls used:         416
+ Total no. of Fock/KS matrix evaluations:           7
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                  52.152 MB
+  Max allocated memory, type(matrix)            1.223 MB
+  Max allocated memory, real(realk)            51.619 MB
+  Max allocated memory, integer                61.211 kB
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand              35.000 kB
+  Max allocated memory, integralitem           51.165 MB
+  Max allocated memory, Overlap               336.656 kB
+  Max allocated memory, ODitem                 19.438 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    14.05686        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final DFT energy:           -438.040147362898
+     Nuclear repulsion:           246.803298150053
+     Electronic energy:          -684.843445512950
+
+     Final gradient norm:           0.000005949686
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:28:39 2010
+     Host name              : login-0-1.local                         
+
+
+
+ >>>> Total CPU  time used in SIRIUS :     14.08 seconds
+ >>>> Total wall time used in SIRIUS :     14.18 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:28:39 2010
+     Host name              : login-0-1.local                         
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:  14.11 seconds
+ >>>> Total wall time used in DALTON:  14.21 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:28:39 2010
+     Host name              : login-0-1.local                         

@@ -1,0 +1,99 @@
+#!/usr/bin/env python
+
+import sys
+import datetime
+
+command_d = {}
+
+command_d['mpif90']   = 'mpif90   --version'
+command_d['gfortran'] = 'gfortran --version'
+command_d['f95']      = 'f95      --version'
+command_d['g95']      = 'g95      --version'
+command_d['ifort']    = 'ifort    --version'
+command_d['pgf90']    = 'pgf90    -V'
+command_d['xlf']      = 'xlf      -qversion'
+
+command_d['mpicc']    = 'mpicc    --version'
+command_d['gcc']      = 'gcc      --version'
+command_d['icc']      = 'icc      --version'
+command_d['pgcc']     = 'pgcc     -V'
+command_d['xlc']      = 'xlc      -qversion'
+
+command_d['g++']      = 'g++      --version'
+command_d['iCC']      = 'iCC      --version'
+command_d['pgCC']     = 'pgCC     -V'
+command_d['xlCC']     = 'xlCC     -qversion'
+    
+def return_compiler_version(compiler):
+    version = 'unknown'
+    compiler_name = compiler.split('/')[-1]
+    if sys.version >= '2.4':
+        import subprocess
+        if compiler_name in command_d:
+            p = subprocess.Popen(command_d[compiler_name], shell=True, \
+                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out = p.communicate()[0]
+            if out != '':
+                # use only first line, not the copyright stuff
+                version = out.split('\n')[0]
+    return version
+    
+fortran_compiler_version = return_compiler_version('@CMAKE_Fortran_COMPILER@')
+c_compiler_version       = return_compiler_version('@CMAKE_C_COMPILER@')
+
+s = []
+s.append(['System'                  , r'@CMAKE_SYSTEM_NAME@'          ])
+s.append(['Internal math'           , r'@ENABLE_INTERNAL_MATH@'       ])
+s.append(['64-bit integers'         , r'@ENABLE_64BIT_INTEGERS@'      ])
+s.append(['CSR'                     , r'@ENABLE_CSR@'                 ])
+s.append(['SCALAPACK'               , r'@ENABLE_SCALAPACK@'           ])
+s.append(['MPI'                     , r'@ENABLE_MPI@'                 ])
+s.append(['MPI32'                   , r'@ENABLE_MPI32@'               ])
+s.append(['OpenMP'                  , r'@ENABLE_OMP@'                 ])
+s.append(['Gen1int'                 , r'@ENABLE_GEN1INT@'             ])
+s.append(['XCFun'                   , r'@ENABLE_XCFUN@'               ])
+s.append(['Bounds Check'            , r'@ENABLE_BOUNDS_CHECK@'        ])
+s.append(['Build type'              , r'@CMAKE_BUILD_TYPE@'           ])
+s.append(['Fortran compiler'        , r'@CMAKE_Fortran_COMPILER@'     ])
+s.append(['Fortran compiler version', fortran_compiler_version        ])
+s.append(['Fortran flags'           , r'@CMAKE_Fortran_FLAGS@'        ])
+s.append(['Fortran flags (debug)'   , r'@CMAKE_Fortran_FLAGS_DEBUG@'  ])
+s.append(['Fortran flags (profile)' , r'@CMAKE_Fortran_FLAGS_PROFILE@'])
+s.append(['Fortran flags (release)' , r'@CMAKE_Fortran_FLAGS_RELEASE@'])
+s.append(['C compiler'              , r'@CMAKE_C_COMPILER@'           ])
+s.append(['C compiler version'      , c_compiler_version              ])
+s.append(['C flags'                 , r'@CMAKE_C_FLAGS@'              ])
+s.append(['C flags (debug)'         , r'@CMAKE_C_FLAGS_DEBUG@'        ])
+s.append(['C flags (profile)'       , r'@CMAKE_C_FLAGS_PROFILE@'      ])
+s.append(['C flags (release)'       , r'@CMAKE_C_FLAGS_RELEASE@'      ])
+s.append(['BLAS'                    , r'@BLAS_LIBRARIES@'             ])
+s.append(['LAPACK'                  , r'@LAPACK_LIBRARIES@'           ])
+s.append(['user-defined math'       , r'@USERDEFINED_MATH@'           ])
+
+print 'module compinfo'
+print 'contains'
+print 'subroutine print_compilation_info(lupri)'
+print 'implicit none'
+print 'integer,intent(in) :: lupri'
+print "    write(lupri, '(a)') '                    '" 
+print "    write(lupri, '(a)') '  Compilation info  '" 
+print "    write(lupri, '(a)') '--------------------'" 
+print "    write(lupri, '(a)') '                    '" 
+
+def chunkify(l, n):
+    return [l[i:i+n] for i in range(0, len(l), n)]
+
+def print_line(l, r):
+    print "    write(lupri, '(a)') ' %s | %s'" % (l.ljust(24), r)
+
+for line in s:
+    chunk_l = chunkify(line[1], 50)
+    for i in range(len(chunk_l)):
+        if i == 0:
+            print_line(line[0], chunk_l[i])
+        else:
+            print_line(' ', chunk_l[i])
+print_line('Configuration time', datetime.datetime.now())
+
+print 'end subroutine'
+print 'end module compinfo'

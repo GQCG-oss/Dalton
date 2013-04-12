@@ -27,37 +27,34 @@ C
       CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',
      *        'UNFORMATTED',IDUMMY,.FALSE.)
       IF (NCSIM .GT. 0) THEN
-Clara         IF (IPRRSP.GT.101) THEN
-         IF (.true.) THEN
-            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+         IF (IPRRSP.GT.101) THEN
+C         IF (.true.) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** BEFORE IEFLNC **** '
             CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
          END IF
-C         write (lupri,*) 'lara bef. IEFLNC'
          CALL IEFLNC(NCSIM,BCVECS,CREF,CMO,INDXCI,
      *               UDV,DV,UDVTR,DVTR,DTV,DTVTR,SCVECS,WRK,LWRK)
-Clara         IF (IPRRSP.GT.101) THEN
-         IF (.true.) THEN
-            WRITE(LUPRI,*)' LINEAR TRANSFIRMED CONFIGURATION VECTOR'
+         IF (IPRRSP.GT.101) THEN
+C         IF (.true.) THEN
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
             WRITE(LUPRI,*)' **** AFTER IEFLNC **** '
             CALL OUTPUT(SCVECS,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
          END IF
       END IF
       IF ( NOSIM .GT.0 ) THEN
          IF (IPRRSP.GT.101) THEN
-             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
-             WRITE(LUPRI,*)' **** BEFORE IEFLNO **** '
-             CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
-          END IF
-C         write (lupri,*) 'lara bef. IEFLNO'
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+            WRITE(LUPRI,*)' **** BEFORE IEFLNO **** ',kzyvar,nosim
+            CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+         END IF
          CALL IEFLNO(NCSIM,NOSIM,BOVECS,CREF,CMO,INDXCI,
      *               UDV,DV,UDVTR,DVTR,SOVECS,WRK,LWRK)
-C         write (lupri,*) 'lara aft. IEFLNO'
          IF (IPRRSP.GT.101) THEN
-             WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
-             WRITE(LUPRI,*)' **** AFTER IEFLNO **** '
-             CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
-          END IF
+            WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+            WRITE(LUPRI,*)' **** AFTER IEFLNO **** '
+            CALL OUTPUT(SOVECS,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
+         END IF
       END IF
       IF (LUPROP .GT. 0) CALL GPCLOSE(LUPROP,'KEEP')
       CALL QEXIT('PCMLTR')
@@ -106,6 +103,7 @@ C
 #include "pcmlog.h"
 
 C
+Clf this is wrong!!! Must be fixed!!!!!11
       DIMENSION VTEX(NTS,NCSIM)
 C
       CALL QENTER('IEFLNC')
@@ -217,28 +215,6 @@ clara
 #ifdef PCM_DEBUG
       write (lupri,*) 'lara kdv='
       call outpak (wrk(kdv),nbast,1,lupri)
-#endif
-clara 
-C      if (abs(wrk(kdv+ 3)-0.00000000d0)<1d-7.and.
-C     &    abs(wrk(kdv+10)+0.12249707d0)<1d-7) wrk(kdv:kdv+21) =
-C     &(/ 0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 1.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0/)
-C      if (abs(wrk(kdv+ 3)-0.12249707d0)<1d-7.and.
-C     &    abs(wrk(kdv+10)+0.12249707d0)<1d-7) wrk(kdv:kdv+21) =
-C     &(/ 0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   1.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 1.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0,
-C     &   0.00000000000000d0, 0.00000000000000d0, 0.00000000000000d0/)
-clara 
-#ifdef PCM_DEBUG
       write (lupri,*) 'lara kdv after='
       call outpak (wrk(kdv),nbast,1,lupri)
 #endif
@@ -306,8 +282,7 @@ clara
          WRK(KEXBAC - 1 + ICSIM) = XBAC
       END DO
 C
-      IF (.true.) THEN 
-clara      IF (IPRRSP.GT.101) THEN
+      IF (IPRRSP.GT.101) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
          WRITE(LUPRI,*)' **** BEFORE SLVSC in IEFLNC **** '
          CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
@@ -318,8 +293,7 @@ C
 C     CALL SLVSC(NCSIM,NOSIM,NNASHX,BCVECS,CREF,SVECS,
 C    *           RXAC,RYAC,TRXAC,TRYAC,INDXCI,WRK,LWRK)
 C
-      IF (.true.) THEN 
-Clara      IF (IPRRSP.GT.101) THEN
+      IF (IPRRSP.GT.101) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
          WRITE(LUPRI,*)' **** AFTER SLVSC in IEFLNC **** '
          CALL OUTPUT(SVEC,1,KZYVAR,1,NCSIM,KZYVAR,NCSIM,1,LUPRI)
@@ -411,8 +385,8 @@ C
 Ckr     VTEX and QTEX should be brought into this subroutine through
 Ckr     the call
       DIMENSION INTREP(9*MXCENT), INTADR(9*MXCENT)
-      DIMENSION VTEX(NTS,NOSIM), QTEX(NTS,NOSIM)
       CHARACTER*8 LABINT(9*MXCENT)
+      LOGICAL FILE_EXIST
 #include "orgcom.h"
 #include "priunit.h"
 #include "infinp.h"
@@ -425,6 +399,7 @@ Ckr     the call
 #include "inftap.h"
 #include "infpri.h"
 #include "infpar.h"
+#include "qm3.h"
 C
 C
 C
@@ -441,14 +416,20 @@ C
          CALL OUTPUT(SVEC,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
       END IF
 C
+      IF (.NOT. MMPCM) LADDMM = .TRUE.
 C
 C     Core allocation
 C
-      KUBO   = 1
-      KW10   = KUBO   + NOSIM*N2ORBX
+      KINTRP = 1
+      KINTAD = KINTRP + (3*MXCOOR + 1)/IRAT
+      KVTEX  = KINTAD + (3*MXCOOR + 1)/IRAT
+      KQTEX  = KVTEX + NTS*NOSIM
+      KUBO   = KQTEX + NTS*NOSIM
+      KW10   = KUBO  + NOSIM*N2ORBX
 C
       KUCMO  = KW10
       KPCMX  = KUCMO  + NORBT*NBAST
+
       IF (TRPLET) THEN
          KPCMXT  = KPCMX  + NOSIM*N2ORBX
          KPCMXA  = KPCMXT + NOSIM*N2ORBX
@@ -491,7 +472,6 @@ C
 C
 C     Calculate unpacked orbital trial vectors in UBO
 C
-C
       IF (NOSIM.GT.0) THEN
          CALL RSPZYM(NOSIM,BOVECS,WRK(KUBO))
          CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)
@@ -504,7 +484,7 @@ C
  210        CONTINUE
          END IF
       END IF
- 2110  FORMAT (/,' Orbital trial vector unpacked to matrix form (no.',
+ 2110 FORMAT (/,'ABC Orbital trial vector unpacked to matrix form (no.',
      *        I3,' of',I3,')')
 C
 C     Contributions from all tesserae are included.
@@ -518,7 +498,7 @@ C
       ZI = DIPORG(3)
 #if defined (VAR_MPI)
       IF (NODTOT .GE. 1) THEN
-         CALL J1XP(NOSIM,VTEX,WRK(KUCMO),WRK(KUBO),UDV,UDVTR,
+         CALL J1XP(NOSIM,WRK(KVTEX),WRK(KUCMO),WRK(KUBO),UDV,UDVTR,
      &             WRK(KPCMX),WRK(KPCMXT),.FALSE.,TRPLET,JWOPSY,
      &             WRK(KW50),LW50)
       ELSE
@@ -535,18 +515,9 @@ C Read AO potential integrals on tesserae
          KPATOM    = 0
          TRIMAT    = .TRUE.
          CALL GET1IN(WRK(KJ1AO),'NPETES ',NCOMP,WRK(KW50),LW50,
-     &               LABINT,INTREP,INTADR,L,TOFILE,KPATOM,TRIMAT,
-     &               DUMMY,EXP1VL,DUMMY,IPRRSP)
+     &               LABINT,WRK(KINTRP),WRK(KINTAD),L,TOFILE,KPATOM,
+     &               TRIMAT,DUMMY,EXP1VL,DUMMY,IPRRSP)
          JJ1AO = KJ1AO
-C
-C     The totally symmetric case is always performed
-C
-Clara
-C         do j=1, nsym 
-C            WRITE (LUPRI,'(/A)') ' JJ1AO before UTHU'
-C            CALL OUTPAK(WRK(JJ1AO+(j-1)*NNBASX),NBAST,1,LUPRI)
-C         end do
-C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
          CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW30),
      *             NBAST,NORBT)
 C Transform V(MO) from triangular to square format
@@ -562,7 +533,7 @@ C
                CALL GETACQ(WRK(JJ1X),WRK(JJ1XAC))
             END IF
             IF (IPRRSP .GE. 15) THEN
-               WRITE (LUPRI,'(/A)') ' J1X_mo matrix:'
+               WRITE (LUPRI,'(/A,I5)') 'J1X_mo matrix: tess',I
                CALL OUTPUT(WRK(JJ1X),1,NORBT,1,NORBT,
      &              NORBT,NORBT,1,LUPRI)
                IF (NASHT .GT. 0) THEN
@@ -581,20 +552,23 @@ C
                ELSE
                   FACTOR = SLVQLM(UDV,WRK(JJ1XAC),WRK(JJ1X),TJ1XAC)
                END IF
-               VTEX(I,IOSIM) = FACTOR
+               WRK(KVTEX + (I-1) + (IOSIM-1)*NTS) = FACTOR
                IF (IPRRSP .GE. 6) THEN
                   WRITE (LUPRI,'(A,F17.8)')
-     *                 ' --- J1X expectation value :',VTEX(I,IOSIM)
+     *                 ' --- J1X expectation value :',
+     &                 WRK(KVTEX + (I-1) + (IOSIM-1)*NTS)
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- active part of J1X    :',TJ1XAC
                END IF
             END IF
          ENDDO
+         QFACTOR = QSN(I)+QSE(I)
+         IF (MMPCM) QFACTOR = QSN(I)+QSE(I)+QSMM(I)
          IF (TRPLET) THEN
-            CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I),WRK(KJ1XSQ),
-     &                 1,WRK(KPCMXT),1)
+            CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),
+     &                1,WRK(KPCMXT),1)
          ELSE
-            CALL DAXPY(NOSIM*N2ORBX,QSN(I)+QSE(I),WRK(KJ1XSQ),
+            CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),
      &                 1,WRK(KPCMX),1)
          ENDIF
 C KPCMX: \tilde{J} + \tilde{X}
@@ -605,7 +579,7 @@ C
             ITS = (KSYMOP - 1)*NTSIRR + I
 C     Transform AO pot. int. into MO basis  V(AO) --> V(MO)
             JJ1AO = KJ1AO + (KSYMOP - 1)*NNBASX
-            CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW30),
+            CALL UTHU(WRK(JJ1AO),WRK(KJ1),WRK(KUCMO),WRK(KW50),
      *                 NBAST,NORBT)
 C Transform V(MO) from triangular to square format
             CALL DSPTSI(NORBT,WRK(KJ1),WRK(KJ1SQ))
@@ -638,10 +612,11 @@ C
                ELSE
                   FACTOR = SLVQLM(UDV,WRK(JJ1XAC),WRK(JJ1X),TJ1XAC)
                END IF
-               VTEX(ITS,IOSIM) = FACTOR
+               WRK(KVTEX + (ITS-1) + (IOSIM-1)*NTS) = FACTOR
                IF (IPRRSP .GE. 6) THEN
                   WRITE (LUPRI,'(A,F17.8)')
-     *                 ' --- J1X expectation value :',VTEX(ITS,IOSIM)
+     *                 ' --- J1X expectation value :',
+     &                 WRK(KVTEX + (ITS-1) + (IOSIM-1)*NTS)
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- active part of J1X    :',TJ1XAC
                END IF
@@ -649,10 +624,10 @@ C
 C KPCMX: \tilde{J} + \tilde{X}
          END IF
       ENDDO
+      
 #if defined (VAR_MPI)
       END IF
 #endif
-C
       IF (IPRRSP .GE. 50) THEN
          DO IOSIM = 1,NOSIM
             JPCMX = KPCMX + (IOSIM-1)*N2ORBX
@@ -663,15 +638,28 @@ C
          END DO
       END IF
       DO IOSIM = 1, NOSIM
-         CALL V2Q(WRK(KW50),VTEX(1,IOSIM),QTEX(1,IOSIM),QTEXS,NEQRSP)
+         CALL V2Q(WRK(KW50),WRK(KVTEX + NTS*(IOSIM-1)),
+     &        WRK(KQTEX + NTS*(IOSIM-1)),
+     &        QTEXS,NEQRSP)
          IF (IPRRSP .GE. 6) THEN
             DO I = 1, NTS
                WRITE (LUPRI,'(A,F17.8)')
-     *              ' --- J2X expectation value :',QTEX(I,IOSIM)
+     *              ' --- J2X expectation value :',
+     &          WRK(KQTEX + NTS*(IOSIM-1) + I - 1)
             END DO
          END IF
       ENDDO
       CALL GPCLOSE(LUPCMD,'KEEP')
+C
+      IF (MMPCM) THEN
+         DO I = 1, NOSIM
+            DO ITS = 1, NTS
+               INDEX = NTS * (I-1) + ITS - 1
+               WRK(KQTEX + INDEX) = 
+     &                 QSMM1(1 + INDEX) + WRK(KQTEX + INDEX)
+            ENDDO
+         ENDDO
+      ENDIF
 C
 C     TRANSFORMED CHARGES MULTIPIED TO POTENTIALS.
 C     There are only one-index-transformed charges for the totally
@@ -680,17 +668,19 @@ C
       CALL DZERO(WRK(KJ1XSQ),NOSIM*NNBASX)
       IF (KSYMOP .GT. 1) THEN
          DO IOSIM = 1, NOSIM
-            CALL DCOPY(NTSIRR,QTEX((KSYMOP - 1)*NTSIRR + 1,IOSIM),1,
-     &                 QTEX(1,IOSIM),1)
-            CALL DZERO(QTEX((KSYMOP - 1)*NTSIRR + 1,IOSIM),NTSIRR)
+            KTSSIM = (IOSIM-1) * NTS
+            KTSSYMOP = (KSYMOP-1) * NTSIRR
+            CALL DCOPY(NTSIRR,WRK(KQTEX + KTSSIM + KTSSYMOP),1,
+     &                 WRK(KQTEX + KTSSIM),1)
+            CALL DZERO(WRK(KQTEX + KTSSIM + KTSSYMOP), NTSIRR)
          END DO
       END IF
-      CALL J1INT(QTEX,.FALSE.,WRK(KJ1XSQ),NOSIM,.FALSE.,'NPETES ',
-     &           KSYMOP,WRK(KW50),LW50)
+      CALL J1INT(WRK(KQTEX),.FALSE.,WRK(KJ1XSQ),NOSIM,.FALSE.,
+     &           'NPETES ',KSYMOP,WRK(KW50),LW50)
       DO IOSIM = 1, NOSIM
          JAOP  = KJ1XSQ + (IOSIM - 1) * NNBASX
          JPCMX = KPCMX  + (IOSIM - 1) * N2ORBX
-         CALL UTHU(WRK(JAOP),WRK(KJ1),WRK(KUCMO),WRK(KW30),
+         CALL UTHU(WRK(JAOP),WRK(KJ1),WRK(KUCMO),WRK(KW50),
      *             NBAST,NORBT)
          CALL DSPTSI(NORBT,WRK(KJ1),WRK(KJ1SQ))
          CALL DAXPY(N2ORBX,-D1,WRK(KJ1SQ),1,
@@ -713,7 +703,7 @@ C
          END DO
       END IF
 C
-Clara add the case of KZCONF.GT.0 
+Clara add the case of KZCONF.GT.0
       IF ((.NOT.TDHF).AND.(KZCONF.GT.0)) THEN
 C
 C        ... CSF part of sigma vectors
@@ -758,6 +748,11 @@ C    *              RXAC,RYAC,TRXAC,TRYAC,INDXCI,WRK,LWRK)
          END IF
       END IF
 C \sigma_{oo} = <0|[q_j,\tilde{Z}]|0> 
+      IF (.NOT. LADDMM) THEN
+         CALL DZERO(WRK(KPCMX),NOSIM*N2ORBX)
+         IF (TRPLET) CALL DZERO(WRK(KPCMXT),NOSIM*N2ORBX)
+      ENDIF
+
       IF(TRPLET) THEN
          CALL SLVSOR(.TRUE.,.FALSE.,NOSIM,UDVTR,SVEC(1,1),WRK(KPCMX))
          CALL SLVSOR(.TRUE.,.TRUE., NOSIM,UDV,  SVEC(1,1),WRK(KPCMXT))
@@ -804,4 +799,306 @@ C
       CALL QEXIT('IEFLNO')
       RETURN
 C     ... end of IEFLNO.
+      END
+
+C  /* Deck pcm_comp_pot */
+      SUBROUTINE PCM_COMP_POT(MOCOEF, DENMAT, DENTRP, BOVECS, 
+     &                        XJSQ, XJSQT, NOSIM, KSYMP, WORK, LWORK)
+#include <implicit.h>
+#include <priunit.h>
+#include <dummy.h>
+#include <thrzer.h>
+#include <iratdef.h>
+#include <mxcent.h>
+#include <pcmdef.h>
+#include <pcm.h>
+#include <pcmlog.h>
+#include <qm3.h>
+#include <orgcom.h>
+#include <dftcom.h>
+#include <inforb.h>
+#include <infrsp.h>
+#include <infvar.h>
+
+      DIMENSION MOCOEF(*), DENMAT(*), DENTRP(*), BOVECS(*),
+     &          XJSQ(*), XJSQT(*), WORK(*)
+      IF (VSNFLG .EQ. -1) THEN
+         CALL DZERO(VSN, NTS)
+         CALL PCM_COMP_NUC_POT(VSN)
+         VSNFLG = 1
+      END IF
+      IF (VSEFLG .EQ. -1) THEN 
+         CALL DZERO(VSE, NTS)
+         CALL PCM_COMP_EL_POT(VSE, DENMAT, NOSIM, NBAS, NSYM, NNBASX, 
+     &                        KSYMP, WORK, LWORK)
+         VSEFLG = 1
+      END IF
+      IF (VSE1FLG .EQ. -1) THEN
+         CALL DZERO(VSE1, NTS*NOSIM)
+         CALL PCM_COMP_EL_POT1(VSE1, NOSIM, DENMAT, DENTRP, JWOPSY, 
+     &                         MOCOEF, BOVECS, XJSQ, XJSQT, TRPLET,
+     &                         WORK, LWORK)
+         VSE1FLG = 1
+      END IF
+      IF (VSMMFLG .EQ. -1) THEN
+         CALL DZERO(VSMM, NTS)
+         CALL PCM_COMP_MM_POT(VSMM)
+         VSMMFLG = 1
+      END IF
+      IF (VSMM1FLG .EQ. -1) THEN
+         CALL DZERO(VSMM1, NTS*NOSIM)
+         CALL PCM_COMP_MM_POT1(VSMM1, NTS, XTSCOR, YTSCOR, ZTSCOR, 
+     &                         WORK, LWORK)
+         VSMM1FLG = 1
+      END IF
+      RETURN
+      END
+
+C  /* Deck pcm_comp_nuc_pot */
+      SUBROUTINE PCM_COMP_NUC_POT(VSN)
+#include <implicit.h>
+      CALL COMP_NUC_POT_CAV(VSN, .TRUE., .FALSE.,.FALSE.)
+      RETURN
+      END
+
+C /* Deck pcm_comp_el_pot */
+      SUBROUTINE PCM_COMP_EL_POT(VSE, DENMAT, NOSIM, NBAS, NSYM, NNBASX,
+     &                           KSYMP, WORK, LWORK)
+#include <implicit.h>
+      DIMENSION WORK(*), DENMAT(*), VSE(*)
+      KDEN = 1
+      KFREE = KDEN + NNBASX
+      LFREE = LWORK - KFREE + 1
+      IF (LFREE .LT. 0) THEN
+         CALL QUIT('Not enough memory in pcm_comp_el_pot')
+      ENDIF
+      
+      CALL PKSYM1(WORK(KDEN),DENMAT,NBAS,NSYM,-1)
+
+      CALL J1INT(VSE, .TRUE., WORK(KDEN), NOSIM, .FALSE., 'NPETES ',
+     &                 KSYMP, WORK(KFREE), LFREE)
+      RETURN
+      END
+
+C /* Deck pcm_comp_el_pot1 */
+      SUBROUTINE PCM_COMP_EL_POT1(VSE1, NOSIM, UDV, UDVTR, JWOPSY, 
+     &                            CMO, BOVECS, XJSQ, XJSQT, TRPLET, 
+     &                            WORK, LWORK)
+#include <implicit.h>
+#include <inforb.h>
+#include <priunit.h>
+      LOGICAL TRPLET, TOFILE
+      DIMENSION BOVECS(*), UDV(*), UDVTR(*), CMO(*), WORK(*)
+
+C      iprrsp = 1
+      KUBO = 1
+      KUCMO = KUBO + NOSIM * N2ORBX
+      KFREE = KUCMO + NORBT * NBAST
+      LFREE = LWORK - KFREE + 1
+      IF (LFREE .LT. 0) THEN 
+         CALL QUIT('PCM_COMP_EL_POT1: insufficient memory')
+      END IF
+      CALL UPKCMO(CMO,WORK(KUCMO))      
+
+      IF (NOSIM.GT.0) THEN
+         CALL RSPZYM(NOSIM,BOVECS,WORK(KUBO))
+         CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WORK(KUBO),1)
+         IF (IPRRSP .GE. 55) THEN
+            DO 210 IOSIM = 1,NOSIM
+               JUBO = KUBO + (IOSIM-1)*N2ORBX
+               WRITE (LUPRI,2110) IOSIM,NOSIM
+               CALL OUTPUT(WORK(JUBO),1,NORBT,1,NORBT,NORBT,NORBT,1,
+     &                     LUPRI)
+ 210        CONTINUE
+         END IF
+      END IF
+ 2110 FORMAT (/,'Orbital trial vector unpacked to matrix form (no.',
+     *        I3,' of',I3,')')
+
+#if defined (VAR_MPI)
+      IF (NODTOT.ge.1) THEN
+         CALL J1XP(NOSIM,VSE1,WORK(KUCMO),WORK(KUBO),UDV,UDVTR,
+     &          XJ1SQ,XJ1SQT,
+     &          .FALSE.,TRPLET,JWOPSY,WORK(KFREE),LFREE)
+      ELSE
+#endif
+      CALL J1X(NOSIM,VSE1,WORK(KUCMO),WORK(KUBO),UDV,UDVTR,
+     &         TOFILE,JWOPSY,WORK(KFREE),LFREE)
+#if defined (VAR_MPI)
+      ENDIF
+#endif
+      RETURN
+      END
+
+C /* Deck pcm_comp_mm_pot */
+      SUBROUTINE PCM_COMP_MM_POT(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM, 
+     &                           ZMM, SOURCE, NSOURCES, TYPE)
+#include <implicit.h>
+      CHARACTER*3 TYPE
+      IF (TYPE .EQ. 'CHG') THEN
+         CALL PCM_COMP_POT_CHG(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
+     &                         ZMM, SOURCE, NSOURCES)
+      ELSE IF (TYPE .EQ. 'DIP') THEN
+         CALL PCM_COMP_POT_DIP(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
+     &                         ZMM, SOURCE, NSOURCES)
+Clf   quadrupole not yet imlemented
+Clf      ELSE IF (TYPE .EQ. 'QDR') THEN
+Clf         PCM_COMP_POT_QDR(VCAV, NTS, COORD, SOURCE, NSOURCES)
+Clf   quadrupole components order xx, xy, xz, yy, yz, zz
+Clf   quadrupole potential: sum_{a,b} 1/2*(3*Ra*Rb-R^2*delta_ab)/R^5 Q_ab
+Clf
+      ELSE
+         CALL QUIT('Wrong type in PCM_COMP_MM_POT')
+      END IF
+      RETURN
+      END
+
+C /* Deck pcm_comp_mm_pot1 */
+      SUBROUTINE PCM_COMP_MM_POT1(VCAV, NTS, XTS, YTS, ZTS,
+     &                            WORK, LWORK)
+#include <implicit.h>
+      CHARACTER*3 TYPE
+      DIMENSION WORK(*), VCAV(*), XTS(*), YTS(*), ZTS(*)
+
+      CALL PCM_READ_MM_INDIP(NOSIMMM, KXMM, KYMM, KZMM, KSOURCES, 
+     &           NSOURCES, WORK, KFREE, LWORK)
+      DO I = 1, NOSIMMM
+         JXMM = KXMM + NSOURCES * (I-1)
+         JYMM = KYMM + NSOURCES * (I-1)
+         JZMM = KZMM + NSOURCES * (I-1)
+         JSOURCES = KSOURCES + 3 * (I-1) * NSOURCES 
+         JPOT = 1 + NTS * (I-1)
+         CALL PCM_COMP_POT_DIP(VCAV(JPOT), NTS, XTS, YTS, ZTS,
+     &                         WORK(JXMM), WORK(JYMM), WORK(JZMM), 
+     &                         WORK(JSOURCES), NSOURCES)
+      END DO
+      RETURN
+      END
+
+C /* Deck pcm_comp_mm_pot */
+      SUBROUTINE PCM_COMP_POT_CHG(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
+     &                            ZMM, SOURCE, NSITES)
+#include <implicit.h>
+      DIMENSION VCAV(*), XTS(*), YTS(*), ZTS(*),XMM(*),YMM(*),ZMM(*),
+     &          SOURCE(*)
+      DO IATOM = 1, NSITES
+         XL = XMM(IATOM)    
+         YL = YMM(IATOM)    
+         ZL = ZMM(IATOM)
+         CHGMM = SOURCE(IATOM)
+         DO ITS = 1, NTS
+            RIL=DSQRT((XTS(ITS)-XL)**2+(YTS(ITS)-YL)**2
+     &           +(ZTS(ITS)-ZL)**2) 
+            VCAV(ITS) = VCAV(ITS) + CHGMM/RIL
+         ENDDO
+      ENDDO
+      RETURN
+      END
+      
+C /* Deck pcm_comp_pot_dip */
+      SUBROUTINE PCM_COMP_POT_DIP(VCAV, NTS, XTS, YTS, ZTS, XMM, YMM,
+     &                            ZMM, SOURCE, NSITES)
+#include <implicit.h>
+      DIMENSION VCAV(*), XTS(*), YTS(*), ZTS(*), 
+     &          XMM(*), YMM(*),ZMM(*),
+     &          SOURCE(*)
+      DO IATOM = 1, NSITES
+         XDIP = SOURCE(3*IATOM-2)
+         YDIP = SOURCE(3*IATOM-1)
+         ZDIP = SOURCE(3*IATOM)
+         DO ITS = 1, NTS
+            XL = XTS(ITS) - XMM(IATOM)
+            YL = YTS(ITS) - YMM(IATOM)
+            ZL = ZTS(ITS) - ZMM(IATOM)
+            SCALAR = XL * XDIP + YL * YDIP + ZL * ZDIP
+            R2 = XL ** 2 + YL ** 2 + ZL ** 2
+            R3 = (DSQRT(R2)) ** 3
+            VCAV(ITS) = VCAV(ITS) + SCALAR/R3
+         ENDDO
+      ENDDO
+      RETURN
+      END
+
+C
+C /* Deck pcm_read_mm_indip */
+C
+      SUBROUTINE PCM_READ_MM_INDIP(NOSIMMM, KXMM, KYMM, KZMM, KSOURCES, 
+     &           NSOURCES, WORK, KFREE, LWORK)
+#include <implicit.h>
+#include <priunit.h>
+      LOGICAL FILE_EXIST
+      DIMENSION WORK(*)
+      INQUIRE(FILE='MYFPCM',EXIST=FILE_EXIST)
+      IF (FILE_EXIST) THEN
+         LQM3PCM = -1
+         CALL GPOPEN(LQM3PCM,'MYFPCM','OLD',' ','FORMATTED ',IDUMMY,
+     &        .FALSE.)
+         REWIND(LQM3PCM)
+         READ(LQM3PCM,*) NOSIMMM,NSOURCES
+      ELSE
+         CALL QUIT('There is no input from QM/MM response 
+     &        to PCM response')
+      ENDIF
+      KXMM = 1
+      KYMM     = KXMM +         NSOURCES * NOSIMMM
+      KZMM     = KYMM +         NSOURCES * NOSIMMM
+      KSOURCES = KZMM +         NSOURCES * NOSIMMM
+      KFREE    = KSOURCES + 3 * NSOURCES * NOSIMMM
+      LFREE    = LWORK - KFREE + 1
+      L = 0
+      DO I = 1, NOSIMMM
+         DO J = 1, NSOURCES
+            L = L + 1
+            READ(LQM3PCM,'(6(E25.15,2x))')
+     &           WORK(KXMM + L - 1),
+     &           WORK(KYMM + L - 1),
+     &           WORK(KZMM + L - 1),
+     &           WORK(KSOURCES + 3 * L - 3 ),
+     &           WORK(KSOURCES + 3 * L - 2 ),
+     &           WORK(KSOURCES + 3 * L - 1 )
+
+         ENDDO
+      ENDDO
+      CALL GPCLOSE(LQM3PCM,'KEEP')
+      LWORK = LFREE
+      RETURN
+      END
+C
+C /* Deck pcm_write_pcm2mm */
+C
+      SUBROUTINE PCM_WRITE_PCM2MM(NOSIMMM,NTS,XTSCOR,YTSCOR,ZTSCOR,
+     &                            QSE1,QSMM1)
+C     Arnfinn Apr. -09
+C     Make the file QFQM3 with induced charges for use 
+C     by QM3 response calculations.
+#include <implicit.h>
+#include <priunit.h>
+C#include <mxcent.h>
+C#include <pcmdef.h>
+C#include <pcm.h>
+
+      LOGICAL FILE_EXIST
+      DIMENSION XTSCOR(*),YTSCOR(*),ZTSCOR(*),QSE1(*),QSMM1(*)
+
+      INQUIRE(FILE='QFQM3',EXIST=FILE_EXIST)
+      IF (FILE_EXIST) THEN
+         LPCMQM3 = -1
+         CALL GPOPEN(LPCMQM3,'QFQM3','OLD',' ','FORMATTED',
+     &               IDUMMY,.FALSE.)
+         CALL GPCLOSE(LPCMQM3,'DELETE')
+      ENDIF
+      LPCMQM3 = -1
+      CALL GPOPEN(LPCMQM3,'QFQM3','NEW',' ','FORMATTED',
+     &            IDUMMY,.FALSE.)
+      WRITE (LPCMQM3,*) NOSIMMM, NTS
+      DO I = 1, NOSIMMM
+         DO ITS = 1, NTS
+            INDEX = NTS * (I-1) + ITS
+            CHG1 = QSE1(INDEX)+QSMM1(INDEX)
+            WRITE (LPCMQM3,'(4(E25.15,2x))') XTSCOR(ITS),YTSCOR(ITS),
+     &             ZTSCOR(ITS), CHG1
+         ENDDO
+      ENDDO
+      CALL GPCLOSE(LPCMQM3,'KEEP')
+      RETURN
       END

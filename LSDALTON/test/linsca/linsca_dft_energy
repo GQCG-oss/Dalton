@@ -1,0 +1,111 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > linsca_dft_energy.info <<'%EOF%'
+   linsca_energy
+   -------------
+   Molecule:         H2O
+   Wave Function:    LDA
+   Test Purpose:     Check Linsca DFT wise
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > linsca_dft_energy.mol <<'%EOF%'
+BASIS
+3-21G
+water R(OH) = 0.95Aa , <HOH = 109 deg.
+Distance in Aangstroms
+   2     0         *
+        8.    1
+O      0.00000   0.00000   0.00000
+        1.    2
+H      0.55168   0.77340   0.00000
+H      0.55168  -0.77340   0.00000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > linsca_dft_energy.dal <<'%EOF%'
+**WAVE FUNCTIONS
+.DFT
+LDA
+*DFT INPUT
+.RADINT
+1e-13
+.ANGINT
+47
+.DFTELS
+1
+*DENSOPT
+.TRSCF
+.NVEC
+8
+.CONVTHR
+1.40D-4
+.CONFSHIFT
+*END OF INPUT
+%EOF%
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >linsca_dft_energy.check
+cat >> linsca_dft_energy.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+CRIT1=`$GREP "Final DFT energy: * -75.406156" $log | wc -l`
+TEST[1]=`expr  $CRIT1`
+CTRL[1]=1
+ERROR[1]="DFT ENERGY NOT CORRECT -"
+
+# Memory test
+CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[2]=`expr  $CRIT1`
+CTRL[2]=1
+ERROR[2]="Memory leak -"
+
+PASSED=1
+for i in 1 2
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+      echo ${ERROR[i]}
+      PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+   echo TEST ENDED PROPERLY
+   exit 0
+else
+   echo THERE IS A PROBLEM
+   exit 1
+fi
+
+%EOF%
+#######################################################################

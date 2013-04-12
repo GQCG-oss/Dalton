@@ -1,0 +1,1982 @@
+
+ Work memory size (LMWORK+2):   100000002 =  762.94 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:02:59 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Integrals are calculated using ERI instead of HERMIT (where possible)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+
+
+  Changes of defaults for ER2INP:
+  -------------------------------
+
+ Input values for exchange screening  0.10E-07  0.10E-10  0.10E-14
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+ Warning: Not enough memory allocated for readin.   101256671
+          needed, but only    100000000  specified.
+          Trying to allocate needed memory.
+
+
+  Title Cards
+  -----------
+
+  H2O                                                                     
+  HF test                                                                 
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           O          15.994915
+                           H           1.007825
+                           H           1.007825
+
+                       Total mass:    18.010565 amu
+                       Natural abundance:  99.730 %
+
+ Center-of-mass coordinates (A):    0.000000   -0.093434    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    3
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  O           1       8      27      14      [10s4p1d|3s2p1d]                                                                 
+  H           1       1       4       2      [4s|2s]                                                                          
+  H           1       1       4       2      [4s|2s]                                                                          
+  ----------------------------------------------------------------------
+  total:      3      10      35      18
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+ 
+ 
+  Auxiliary basis is "Ahlrichs-Coulomb-Fit" from the basis set library.
+
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  9
+
+   1   O        x      0.0000000000
+   2            y     -0.2249000000
+   3            z      0.0000000000
+
+   4   H        x     -1.4523000000
+   5            y      0.8996000000
+   6            z      0.0000000000
+
+   7   H        x      1.4523000000
+   8            y      1.0000000000
+   9            z      0.0000000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            O           H           H     
+            ------      ------      ------
+ O     :    0.000000
+ H     :    0.971970    0.000000
+ H     :    1.005375    1.537966    0.000000
+
+
+  Max interatomic separation is    1.5380 Angstroms
+  between atoms "H     " and "H     ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  H          O            0.971970
+  bond distance:  H          O            1.005375
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     H          O          H            102.105
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.689754          0.996640    0.081902    0.000000
+   IB    1.193884         -0.081902    0.996640    0.000000
+   IC    1.883637          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         732694.9027         423306.7974         268299.5472 MHz
+           24.440071           14.119995            8.949510 cm-1
+
+
+  Nuclear repulsion energy :      8.910364809137
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.01 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ >>> Time used in DIPLEN is   0.00 seconds
+
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ >>> Time used in GABGEN is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total wall time used in HERMIT:   0.04 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ Linear response calculations are carried out.
+ 
+ Response functions/transition moments will be calculated
+ for the following (pairs of) operators:
+ 
+ XDIPLEN XDIPLEN 
+ YDIPLEN YDIPLEN 
+ ZDIPLEN ZDIPLEN 
+ 
+The response functions will be calculated for each of the   1 chosen frequencies.
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:02:59 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ Title lines from integral program:
+     H2O                                                                     
+     HF test                                                                 
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 18
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          18
+     Number of basis functions         18
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              5
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING DIPLEN IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ *ER2INT is not yet implemented in new int driver
+
+ Keyword ".THREXC                                                               " not recognized in LINSCA **INTEGRALS.
+
+ Linear response calculations are carried out.
+
+ Keyword "XDIPLEN XDIPLEN                         " not recognized in config_rsp_input
+
+
+ Keyword "YDIPLEN YDIPLEN                         " not recognized in config_rsp_input
+
+
+ Keyword "ZDIPLEN ZDIPLEN                         " not recognized in config_rsp_input
+
+
+ Keyword "1.d-4                                   " not recognized in config_rsp_input
+
+
+ Keyword "1 0.0 1.3                               " not recognized in config_rsp_input
+
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Direct density optimization        
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           8
+Dynamic convergence threshold for gradient:   0.32E-04
+ 
+ End of configuration from new input structure!
+ Take first density from Hueckel guess
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.01 seconds
+ >>> wall Time used in LWDIAG          is   0.00 seconds
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   0.08 seconds
+ >>> wall Time used in **INIT          is   0.01 seconds
+** Get Fock matrix number   1
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.11 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.12 seconds
+
+
+ >>> Time used in FIT-J  is   0.12 seconds
+
+
+ >>> Time used in JBUILD is   0.40 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in FCK_FO          is   1.23 seconds
+ >>> wall Time used in FCK_FO          is   0.08 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   5.98805594333172     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -75.6707624344    0.00000000000    0.00      0.00000    0.00    0.0000000    0.60E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm   1.29324915636952     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      3.2509695235 (mu =   0.00, xmax = 0.215297E+00, xnorm = 0.828976E+00, THR = 0.129325E-01)
+  Error of red space iteration  2:      1.2983081939 (mu =   0.00, xmax = 0.740044E-01, xnorm = 0.336276E+00, THR = 0.129325E-01)
+  Error of red space iteration  3:      0.5753361064 (mu =   0.00, xmax = 0.689792E-01, xnorm = 0.337093E+00, THR = 0.129325E-01)
+  Error of red space iteration  4:      0.1231923834 (mu =   0.00, xmax = 0.902643E-01, xnorm = 0.386920E+00, THR = 0.129325E-01)
+  Error of red space iteration  5:      0.0550949101 (mu =   0.00, xmax = 0.100783E+00, xnorm = 0.399671E+00, THR = 0.129325E-01)
+  Error of red space iteration  6:      0.0178468880 (mu =   0.00, xmax = 0.103824E+00, xnorm = 0.404264E+00, THR = 0.129325E-01)
+  Error of red space iteration  7:      0.0080783972 (mu =   0.00, xmax = 0.103922E+00, xnorm = 0.404192E+00, THR = 0.129325E-01)
+Newton equations converged in  7 iterations!
+ >>>  CPU Time used in CROP solver     is   0.15 seconds
+ >>> wall Time used in CROP solver     is   0.01 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    73
+ >>>  CPU Time used in G_DENS          is   0.19 seconds
+ >>> wall Time used in G_DENS          is   0.01 seconds
+** Get Fock matrix number   2
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.11 seconds
+
+
+ >>> Time used in JBUILD is   0.23 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in FCK_FO          is   1.07 seconds
+ >>> wall Time used in FCK_FO          is   0.07 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.672585020558891     
+  2    -75.9912163800   -0.32045394557    0.00      0.00000    0.00    0.0000000    0.67E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.03 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  0.166340299257967     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.1085038524 (mu =   0.00, xmax = 0.371003E-01, xnorm = 0.109788E+00, THR = 0.166340E-02)
+  Error of red space iteration  2:      0.0543775842 (mu =   0.00, xmax = 0.371188E-01, xnorm = 0.102417E+00, THR = 0.166340E-02)
+  Error of red space iteration  3:      0.0063662210 (mu =   0.00, xmax = 0.371332E-01, xnorm = 0.100386E+00, THR = 0.166340E-02)
+  Error of red space iteration  4:      0.0015928229 (mu =   0.00, xmax = 0.371358E-01, xnorm = 0.100011E+00, THR = 0.166340E-02)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver     is   0.09 seconds
+ >>> wall Time used in CROP solver     is   0.01 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    50
+ >>>  CPU Time used in G_DENS          is   0.11 seconds
+ >>> wall Time used in G_DENS          is   0.01 seconds
+** Get Fock matrix number   3
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.11 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.82 seconds
+
+ >>>  CPU Time used in FCK_FO          is   1.06 seconds
+ >>> wall Time used in FCK_FO          is   0.07 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.385766652716572     
+  3    -76.0028261075   -0.01160972752    0.00      0.00000    0.00    0.0000000    0.39E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.04 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  6.645073896844479E-002
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0446099489 (mu =   0.00, xmax = 0.135836E-01, xnorm = 0.459488E-01, THR = 0.664507E-03)
+  Error of red space iteration  2:      0.0244155065 (mu =   0.00, xmax = 0.102351E-01, xnorm = 0.402338E-01, THR = 0.664507E-03)
+  Error of red space iteration  3:      0.0056196118 (mu =   0.00, xmax = 0.102328E-01, xnorm = 0.387939E-01, THR = 0.664507E-03)
+  Error of red space iteration  4:      0.0018361978 (mu =   0.00, xmax = 0.102345E-01, xnorm = 0.383681E-01, THR = 0.664507E-03)
+  Error of red space iteration  5:      0.0007481434 (mu =   0.00, xmax = 0.102349E-01, xnorm = 0.381614E-01, THR = 0.664507E-03)
+  Error of red space iteration  6:      0.0001551818 (mu =   0.00, xmax = 0.102348E-01, xnorm = 0.381249E-01, THR = 0.664507E-03)
+Newton equations converged in  6 iterations!
+ >>>  CPU Time used in CROP solver     is   0.12 seconds
+ >>> wall Time used in CROP solver     is   0.01 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    62
+ >>>  CPU Time used in G_DENS          is   0.15 seconds
+ >>> wall Time used in G_DENS          is   0.01 seconds
+** Get Fock matrix number   4
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.11 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in FIT-J  is   0.12 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.82 seconds
+
+ >>>  CPU Time used in FCK_FO          is   1.07 seconds
+ >>> wall Time used in FCK_FO          is   0.07 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  8.864093583533425E-002
+  4    -76.0053659380   -0.00253983048    0.00      0.00000    0.00    0.0000000    0.89E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.06 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.857670269441201E-002
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0073866509 (mu =   0.00, xmax = 0.465877E-02, xnorm = 0.144589E-01, THR = 0.185767E-03)
+  Error of red space iteration  2:      0.0024868643 (mu =   0.00, xmax = 0.450512E-02, xnorm = 0.143722E-01, THR = 0.185767E-03)
+  Error of red space iteration  3:      0.0007520906 (mu =   0.00, xmax = 0.449643E-02, xnorm = 0.143589E-01, THR = 0.185767E-03)
+  Error of red space iteration  4:      0.0001536862 (mu =   0.00, xmax = 0.448458E-02, xnorm = 0.143669E-01, THR = 0.185767E-03)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver     is   0.08 seconds
+ >>> wall Time used in CROP solver     is   0.01 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    48
+ >>>  CPU Time used in G_DENS          is   0.10 seconds
+ >>> wall Time used in G_DENS          is   0.01 seconds
+** Get Fock matrix number   5
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.12 seconds
+
+
+ >>> Time used in FIT-J  is   0.12 seconds
+
+
+ >>> Time used in JBUILD is   0.25 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in FCK_FO          is   1.08 seconds
+ >>> wall Time used in FCK_FO          is   0.07 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.680799204967185E-002
+  5    -76.0056269027   -0.00026096475    0.00      0.00000    0.00    0.0000000    0.17E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.07 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  4.718634435555391E-003
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0026705737 (mu =   0.00, xmax = 0.933087E-03, xnorm = 0.419053E-02, THR = 0.471863E-04)
+  Error of red space iteration  2:      0.0012205327 (mu =   0.00, xmax = 0.105941E-02, xnorm = 0.424939E-02, THR = 0.471863E-04)
+  Error of red space iteration  3:      0.0002427536 (mu =   0.00, xmax = 0.108864E-02, xnorm = 0.429703E-02, THR = 0.471863E-04)
+  Error of red space iteration  4:      0.0000552208 (mu =   0.00, xmax = 0.110504E-02, xnorm = 0.432265E-02, THR = 0.471863E-04)
+  Error of red space iteration  5:      0.0000191704 (mu =   0.00, xmax = 0.111130E-02, xnorm = 0.433475E-02, THR = 0.471863E-04)
+Newton equations converged in  5 iterations!
+ >>>  CPU Time used in CROP solver     is   0.09 seconds
+ >>> wall Time used in CROP solver     is   0.01 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    54
+ >>>  CPU Time used in G_DENS          is   0.11 seconds
+ >>> wall Time used in G_DENS          is   0.01 seconds
+** Get Fock matrix number   6
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.11 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.12 seconds
+
+
+ >>> Time used in JBUILD is   0.25 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.82 seconds
+
+ >>>  CPU Time used in FCK_FO          is   1.07 seconds
+ >>> wall Time used in FCK_FO          is   0.07 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.890748869555680E-003
+  6    -76.0056408027   -0.00001389999    0.00      0.00000    0.00    0.0000000    0.39E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           6
+ >>>  CPU Time used in AVERAG          is   0.09 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ OAO gradnorm  1.046508770151893E-003
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0008893743 (mu =   0.00, xmax = 0.262169E-03, xnorm = 0.885278E-03, THR = 0.104651E-04)
+  Error of red space iteration  2:      0.0005199240 (mu =   0.00, xmax = 0.242847E-03, xnorm = 0.837178E-03, THR = 0.104651E-04)
+  Error of red space iteration  3:      0.0001572738 (mu =   0.00, xmax = 0.250984E-03, xnorm = 0.857275E-03, THR = 0.104651E-04)
+  Error of red space iteration  4:      0.0000379037 (mu =   0.00, xmax = 0.255394E-03, xnorm = 0.875035E-03, THR = 0.104651E-04)
+  Error of red space iteration  5:      0.0000141311 (mu =   0.00, xmax = 0.260052E-03, xnorm = 0.889272E-03, THR = 0.104651E-04)
+  Error of red space iteration  6:      0.0000041695 (mu =   0.00, xmax = 0.262048E-03, xnorm = 0.895119E-03, THR = 0.104651E-04)
+Newton equations converged in  6 iterations!
+ >>>  CPU Time used in CROP solver     is   0.12 seconds
+ >>> wall Time used in CROP solver     is   0.01 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    60
+ >>>  CPU Time used in G_DENS          is   0.14 seconds
+ >>> wall Time used in G_DENS          is   0.01 seconds
+** Get Fock matrix number   7
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in GALPHA is   0.11 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.11 seconds
+
+
+ >>> Time used in JBUILD is   0.25 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.82 seconds
+
+ >>>  CPU Time used in FCK_FO          is   1.07 seconds
+ >>> wall Time used in FCK_FO          is   0.07 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.972374350220822E-004
+  7    -76.0056413266   -0.00000052392    0.00      0.00000    0.00    0.0000000    0.30E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           7
+ >>>  CPU Time used in AVERAG          is   0.08 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  9.621964488170730E-005
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000607175 (mu =   0.00, xmax = 0.237686E-04, xnorm = 0.575787E-04, THR = 0.962196E-06)
+  Error of red space iteration  2:      0.0000175889 (mu =   0.00, xmax = 0.237816E-04, xnorm = 0.571317E-04, THR = 0.962196E-06)
+  Error of red space iteration  3:      0.0000044204 (mu =   0.00, xmax = 0.237865E-04, xnorm = 0.565528E-04, THR = 0.962196E-06)
+  Error of red space iteration  4:      0.0000014145 (mu =   0.00, xmax = 0.237872E-04, xnorm = 0.564709E-04, THR = 0.962196E-06)
+  Error of red space iteration  5:      0.0000002117 (mu =   0.00, xmax = 0.237871E-04, xnorm = 0.564323E-04, THR = 0.962196E-06)
+Newton equations converged in  5 iterations!
+ >>>  CPU Time used in CROP solver     is   0.10 seconds
+ >>> wall Time used in CROP solver     is   0.01 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    52
+ >>>  CPU Time used in G_DENS          is   0.12 seconds
+ >>> wall Time used in G_DENS          is   0.01 seconds
+** Get Fock matrix number   8
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in GALPHA is   0.11 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.11 seconds
+
+
+ >>> Time used in JBUILD is   0.25 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.80 seconds
+
+ >>>  CPU Time used in FCK_FO          is   1.05 seconds
+ >>> wall Time used in FCK_FO          is   0.07 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.176703495639277E-005
+  8    -76.0056413307   -0.00000000409    0.00      0.00000    0.00    0.0000000    0.32E-04  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           8
+ >>>  CPU Time used in AVERAG          is   0.10 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ OAO gradnorm  1.077362714662395E-005
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000079499 (mu =   0.00, xmax = 0.292233E-05, xnorm = 0.706744E-05, THR = 0.107736E-06)
+  Error of red space iteration  2:      0.0000044959 (mu =   0.00, xmax = 0.291792E-05, xnorm = 0.641467E-05, THR = 0.107736E-06)
+  Error of red space iteration  3:      0.0000006859 (mu =   0.00, xmax = 0.291638E-05, xnorm = 0.627569E-05, THR = 0.107736E-06)
+  Error of red space iteration  4:      0.0000001707 (mu =   0.00, xmax = 0.291657E-05, xnorm = 0.625184E-05, THR = 0.107736E-06)
+  Error of red space iteration  5:      0.0000000912 (mu =   0.00, xmax = 0.291665E-05, xnorm = 0.625124E-05, THR = 0.107736E-06)
+Newton equations converged in  5 iterations!
+ >>>  CPU Time used in CROP solver     is   0.10 seconds
+ >>> wall Time used in CROP solver     is   0.01 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    52
+ >>>  CPU Time used in G_DENS          is   0.12 seconds
+ >>> wall Time used in G_DENS          is   0.01 seconds
+** Get Fock matrix number   9
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.11 seconds
+
+
+ >>> Time used in JBUILD is   0.25 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.67 seconds
+
+ >>>  CPU Time used in FCK_FO          is   0.92 seconds
+ >>> wall Time used in FCK_FO          is   0.06 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  6.020182773459896E-006
+  9    -76.0056413107    0.00000002001    0.00      0.00000    0.00    0.0000000    0.60E-05  ###
+ >>>  CPU Time used in **ITER          is  11.14 seconds
+ >>> wall Time used in **ITER          is   0.70 seconds
+Total no. of matmuls in SCF optimization:       1185
+ 
+ Number of occupied orbitals:           5
+ Number of virtual orbitals:          13
+ 
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ 
+    E(LUMO):                         0.206810 au
+   -E(HOMO):                        -0.570149 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.776959 au
+ 
+ >>>  CPU Time used in HL GAP          is   3.79 seconds
+ >>> wall Time used in HL GAP          is   0.99 seconds
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.32045394557    0.0000    0.0000    0.0000000
+  3   -0.01160972752    0.0000    0.0000    0.0000000
+  4   -0.00253983048    0.0000    0.0000    0.0000000
+  5   -0.00026096475    0.0000    0.0000    0.0000000
+  6   -0.00001389999    0.0000    0.0000    0.0000000
+  7   -0.00000052392    0.0000    0.0000    0.0000000
+  8   -0.00000000409    0.0000    0.0000    0.0000000
+  9    0.00000002001    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1           -75.67076243439122151813      0.598805594333172D+01
+    2           -75.99121637996557865335      0.672585020558891D+00
+    3           -76.00282610748271849843      0.385766652716572D+00
+    4           -76.00536593796500994813      0.886409358353343D-01
+    5           -76.00562690271078736259      0.168079920496718D-01
+    6           -76.00564080270436306819      0.389074886955568D-02
+    7           -76.00564132662600513868      0.297237435022082D-03
+    8           -76.00564133071769390426      0.317670349563928D-04
+    9           -76.00564131070495932363      0.602018277345990D-05
+ 
+      SCF converged !!!! 
+ Operator label-indices for requested rsp functions:
+           1           1
+           2           2
+           3           3
+ We will need B operator with label-index           1
+ We will need B operator with label-index           2
+ We will need B operator with label-index           3
+ 
+ Number of different B operators:           3
+ 
+ Number of requested operator pairs:           3
+ 
+   There are   1 frequencies, so   3 unique rsp vectors will be computed
+   to obtain the requested   3 response functions.
+ 
+ Rsp vector NOT on disk, call rsp solver...
+ Enter rsp_solver, freq =  0.000000000000000E+000 ifreq =           1
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+          Preconditioning: Error of red space iteration  1:  0.3063054339E+01
+          Preconditioning: Error of red space iteration  2:  0.9745199767E+00
+          Preconditioning: Error of red space iteration  3:  0.2185140983E+00
+          Preconditioning: Error of red space iteration  4:  0.9863619168E-01
+          Preconditioning: Error of red space iteration  5:  0.1596114174E-01
+     Preconditioning: Linear equations converged in  5 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.11 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.84 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.08 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Response convergence threshold is  1.000000000000000E-004
+Residual norm for vector   1 is:   0.172883E+01    and frequency =     0.000000   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1214552333E+01
+          Preconditioning: Error of red space iteration  2:  0.2639379092E+00
+          Preconditioning: Error of red space iteration  3:  0.1067033810E+00
+          Preconditioning: Error of red space iteration  4:  0.3350571626E-01
+          Preconditioning: Error of red space iteration  5:  0.7410025077E-02
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.19 seconds
+ >>> wall Time used in RSP_IT          is   0.07 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.12 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.07 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.233914E+00    and frequency =     0.000000   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3088952358E+00
+          Preconditioning: Error of red space iteration  2:  0.4901315933E-01
+          Preconditioning: Error of red space iteration  3:  0.1131138578E-01
+          Preconditioning: Error of red space iteration  4:  0.1071954511E-01
+          Preconditioning: Error of red space iteration  5:  0.2085345311E-02
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.17 seconds
+ >>> wall Time used in RSP_IT          is   0.07 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.09 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.12 seconds
+
+
+ >>> Time used in FIT-J  is   0.12 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.09 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.575847E-01    and frequency =     0.000000   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.7559113079E-01
+          Preconditioning: Error of red space iteration  2:  0.1482163139E-01
+          Preconditioning: Error of red space iteration  3:  0.5005734982E-02
+          Preconditioning: Error of red space iteration  4:  0.2256491298E-02
+          Preconditioning: Error of red space iteration  5:  0.6723606325E-03
+          Preconditioning: Error of red space iteration  6:  0.2160717918E-03
+     Preconditioning: Linear equations converged in  6 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.22 seconds
+ >>> wall Time used in RSP_IT          is   0.08 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.11 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.08 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.183579E-01    and frequency =     0.000000   It =   4 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1801538471E-01
+          Preconditioning: Error of red space iteration  2:  0.5340350067E-02
+          Preconditioning: Error of red space iteration  3:  0.1860148877E-02
+          Preconditioning: Error of red space iteration  4:  0.8228825285E-03
+          Preconditioning: Error of red space iteration  5:  0.2222641986E-03
+          Preconditioning: Error of red space iteration  6:  0.5848344327E-04
+     Preconditioning: Linear equations converged in  6 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.21 seconds
+ >>> wall Time used in RSP_IT          is   0.08 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.09 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.12 seconds
+
+
+ >>> Time used in JBUILD is   0.25 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.08 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.331182E-02    and frequency =     0.000000   It =   5 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2020510098E-02
+          Preconditioning: Error of red space iteration  2:  0.7943077688E-03
+          Preconditioning: Error of red space iteration  3:  0.5102020748E-03
+          Preconditioning: Error of red space iteration  4:  0.7248594750E-04
+          Preconditioning: Error of red space iteration  5:  0.3658662344E-04
+          Preconditioning: Error of red space iteration  6:  0.7572375934E-05
+     Preconditioning: Linear equations converged in  6 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.21 seconds
+ >>> wall Time used in RSP_IT          is   0.08 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.11 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.84 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.09 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.564365E-03    and frequency =     0.000000   It =   6 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2073548824E-03
+          Preconditioning: Error of red space iteration  2:  0.8356213792E-04
+          Preconditioning: Error of red space iteration  3:  0.3271985776E-04
+          Preconditioning: Error of red space iteration  4:  0.9823217380E-05
+          Preconditioning: Error of red space iteration  5:  0.3161002724E-05
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.21 seconds
+ >>> wall Time used in RSP_IT          is   0.08 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.11 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.08 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.471991E-04    and frequency =     0.000000   It =   7 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ Number of solutions on disk:           1
+ Now perform calculation of rsp function           1
+ Rsp vector NOT on disk, call rsp solver...
+ Enter rsp_solver, freq =  0.000000000000000E+000 ifreq =           1
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+          Preconditioning: Error of red space iteration  1:  0.2555993349E+01
+          Preconditioning: Error of red space iteration  2:  0.1096530614E+01
+          Preconditioning: Error of red space iteration  3:  0.2817490827E+00
+          Preconditioning: Error of red space iteration  4:  0.1405484081E+00
+          Preconditioning: Error of red space iteration  5:  0.3636659358E-01
+          Preconditioning: Error of red space iteration  6:  0.8724173447E-02
+     Preconditioning: Linear equations converged in  6 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.11 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.84 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.09 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Response convergence threshold is  1.000000000000000E-004
+Residual norm for vector   1 is:   0.135527E+01    and frequency =     0.000000   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1262460044E+01
+          Preconditioning: Error of red space iteration  2:  0.2591446040E+00
+          Preconditioning: Error of red space iteration  3:  0.8462409025E-01
+          Preconditioning: Error of red space iteration  4:  0.4167242281E-01
+          Preconditioning: Error of red space iteration  5:  0.1361282776E-01
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.19 seconds
+ >>> wall Time used in RSP_IT          is   0.07 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.12 seconds
+
+
+ >>> Time used in FIT-J  is   0.12 seconds
+
+
+ >>> Time used in JBUILD is   0.25 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.09 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.552558E+00    and frequency =     0.000000   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.5368034689E+00
+          Preconditioning: Error of red space iteration  2:  0.1014639219E+00
+          Preconditioning: Error of red space iteration  3:  0.4517489429E-01
+          Preconditioning: Error of red space iteration  4:  0.3054768166E-01
+          Preconditioning: Error of red space iteration  5:  0.6185662605E-02
+          Preconditioning: Error of red space iteration  6:  0.1335493023E-02
+     Preconditioning: Linear equations converged in  6 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.21 seconds
+ >>> wall Time used in RSP_IT          is   0.08 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.12 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.84 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.08 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.100171E+00    and frequency =     0.000000   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1310443142E+00
+          Preconditioning: Error of red space iteration  2:  0.2746746391E-01
+          Preconditioning: Error of red space iteration  3:  0.6287750260E-02
+          Preconditioning: Error of red space iteration  4:  0.3983625947E-02
+          Preconditioning: Error of red space iteration  5:  0.1352230887E-02
+          Preconditioning: Error of red space iteration  6:  0.3556605163E-03
+     Preconditioning: Linear equations converged in  6 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.20 seconds
+ >>> wall Time used in RSP_IT          is   0.08 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.09 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.12 seconds
+
+
+ >>> Time used in FIT-J  is   0.12 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.08 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.214471E-01    and frequency =     0.000000   It =   4 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1824173532E-01
+          Preconditioning: Error of red space iteration  2:  0.3233762767E-02
+          Preconditioning: Error of red space iteration  3:  0.9141073022E-03
+          Preconditioning: Error of red space iteration  4:  0.3412210474E-03
+          Preconditioning: Error of red space iteration  5:  0.1977416216E-03
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.18 seconds
+ >>> wall Time used in RSP_IT          is   0.07 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.11 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.11 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.09 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.358111E-02    and frequency =     0.000000   It =   5 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1930617599E-02
+          Preconditioning: Error of red space iteration  2:  0.5379473164E-03
+          Preconditioning: Error of red space iteration  3:  0.1795097987E-03
+          Preconditioning: Error of red space iteration  4:  0.4615275848E-04
+          Preconditioning: Error of red space iteration  5:  0.2084062513E-04
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.20 seconds
+ >>> wall Time used in RSP_IT          is   0.07 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.12 seconds
+
+
+ >>> Time used in JBUILD is   0.25 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.09 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.602085E-03    and frequency =     0.000000   It =   6 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3192025960E-03
+          Preconditioning: Error of red space iteration  2:  0.9276878527E-04
+          Preconditioning: Error of red space iteration  3:  0.4286764648E-04
+          Preconditioning: Error of red space iteration  4:  0.1404787361E-04
+          Preconditioning: Error of red space iteration  5:  0.4591798688E-05
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.20 seconds
+ >>> wall Time used in RSP_IT          is   0.07 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.10 seconds
+
+
+ >>> Time used in GALPHA is   0.10 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.11 seconds
+
+
+ >>> Time used in FIT-J  is   0.11 seconds
+
+
+ >>> Time used in JBUILD is   0.24 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.83 seconds
+
+ >>>  CPU Time used in LINTRA          is   1.08 seconds
+ >>> wall Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.871376E-04    and frequency =     0.000000   It =   7 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ Number of solutions on disk:           2
+ Now perform calculation of rsp function           2
+ Rsp vector NOT on disk, call rsp solver...
+ Enter rsp_solver, freq =  0.000000000000000E+000 ifreq =           1
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+          Preconditioning: Error of red space iteration  1:  0.1569513225E+01
+          Preconditioning: Error of red space iteration  2:  0.4103718788E+00
+          Preconditioning: Error of red space iteration  3:  0.1143817833E+00
+          Preconditioning: Error of red space iteration  4:  0.5694574076E-01
+          Preconditioning: Error of red space iteration  5:  0.6056813229E-02
+     Preconditioning: Linear equations converged in  5 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.07 seconds
+
+
+ >>> Time used in GALPHA is   0.08 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.09 seconds
+
+
+ >>> Time used in FIT-J  is   0.09 seconds
+
+
+ >>> Time used in JBUILD is   0.19 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.70 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.90 seconds
+ >>> wall Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Response convergence threshold is  1.000000000000000E-004
+Residual norm for vector   1 is:   0.762591E+00    and frequency =     0.000000   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.5749530231E+00
+          Preconditioning: Error of red space iteration  2:  0.2714382571E+00
+          Preconditioning: Error of red space iteration  3:  0.4443084278E-01
+          Preconditioning: Error of red space iteration  4:  0.9883393747E-02
+          Preconditioning: Error of red space iteration  5:  0.8111105554E-03
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.00 seconds
+ >>> wall Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.08 seconds
+
+
+ >>> Time used in GALPHA is   0.08 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.09 seconds
+
+
+ >>> Time used in FIT-J  is   0.10 seconds
+
+
+ >>> Time used in JBUILD is   0.20 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.70 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.90 seconds
+ >>> wall Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.174236E+00    and frequency =     0.000000   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2115565875E+00
+          Preconditioning: Error of red space iteration  2:  0.3750722545E-01
+          Preconditioning: Error of red space iteration  3:  0.1444657156E-01
+          Preconditioning: Error of red space iteration  4:  0.2429699147E-02
+          Preconditioning: Error of red space iteration  5:  0.2591927362E-03
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.00 seconds
+ >>> wall Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.08 seconds
+
+
+ >>> Time used in GALPHA is   0.08 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.09 seconds
+
+
+ >>> Time used in FIT-J  is   0.09 seconds
+
+
+ >>> Time used in JBUILD is   0.20 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.69 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.90 seconds
+ >>> wall Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.394801E-01    and frequency =     0.000000   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2460683462E-01
+          Preconditioning: Error of red space iteration  2:  0.2843223014E-02
+          Preconditioning: Error of red space iteration  3:  0.5847950758E-03
+          Preconditioning: Error of red space iteration  4:  0.1872539093E-03
+     Preconditioning: Linear equations converged in  4 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.98 seconds
+ >>> wall Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.07 seconds
+
+
+ >>> Time used in GALPHA is   0.08 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.09 seconds
+
+
+ >>> Time used in FIT-J  is   0.09 seconds
+
+
+ >>> Time used in JBUILD is   0.19 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.69 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.90 seconds
+ >>> wall Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.706673E-02    and frequency =     0.000000   It =   4 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2240760517E-02
+          Preconditioning: Error of red space iteration  2:  0.5209970395E-03
+          Preconditioning: Error of red space iteration  3:  0.1932892685E-03
+          Preconditioning: Error of red space iteration  4:  0.5194224795E-04
+     Preconditioning: Linear equations converged in  4 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.98 seconds
+ >>> wall Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.09 seconds
+
+
+ >>> Time used in GALPHA is   0.09 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.09 seconds
+
+
+ >>> Time used in FIT-J  is   0.09 seconds
+
+
+ >>> Time used in JBUILD is   0.21 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.69 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.91 seconds
+ >>> wall Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.738892E-03    and frequency =     0.000000   It =   5 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.4725093225E-03
+          Preconditioning: Error of red space iteration  2:  0.1442238610E-03
+          Preconditioning: Error of red space iteration  3:  0.4073259899E-04
+          Preconditioning: Error of red space iteration  4:  0.7444141288E-05
+     Preconditioning: Linear equations converged in  4 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.99 seconds
+ >>> wall Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.09 seconds
+
+
+ >>> Time used in GALPHA is   0.09 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.09 seconds
+
+
+ >>> Time used in FIT-J  is   0.09 seconds
+
+
+ >>> Time used in JBUILD is   0.21 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.69 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.91 seconds
+ >>> wall Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.171474E-03    and frequency =     0.000000   It =   6 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1622033665E-03
+          Preconditioning: Error of red space iteration  2:  0.2838135081E-04
+          Preconditioning: Error of red space iteration  3:  0.9683188738E-05
+          Preconditioning: Error of red space iteration  4:  0.2158915571E-05
+          Preconditioning: Error of red space iteration  5:  0.1021010940E-05
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   1.02 seconds
+ >>> wall Time used in RSP_IT          is   0.06 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.08 seconds
+
+
+ >>> Time used in GALPHA is   0.08 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.09 seconds
+
+
+ >>> Time used in FIT-J  is   0.09 seconds
+
+
+ >>> Time used in JBUILD is   0.20 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   0.70 seconds
+
+ >>>  CPU Time used in LINTRA          is   0.91 seconds
+ >>> wall Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.143371E-04    and frequency =     0.000000   It =   7 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ Number of solutions on disk:           3
+ Now perform calculation of rsp function           3
+ 
+ ============================================================
+                     RESPONSE RESULTS                        
+ ============================================================
+ 
+     LINEAR RESPONSE:
+ 
+   <<XDIPLEN ,XDIPLEN >>(  0.00000) =     -7.41618883
+ 
+   <<YDIPLEN ,YDIPLEN >>(  0.00000) =     -5.36064262
+ 
+   <<ZDIPLEN ,ZDIPLEN >>(  0.00000) =     -2.64657213
+ 
+ *****************************************************
+ **    CPU-TIME USED IN new POLARI:    23.9223630000000       **
+ *****************************************************
+ Number of linear transformations performed in LINRSP:          21
+ Total no. of matmuls used:        3281
+ Total no. of Fock/KS matrix evaluations:           9
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                  97.520 MB
+  Max allocated memory, type(matrix)           97.520 MB
+  Max allocated memory, real(realk)             0.000 Byte
+  Max allocated memory, integer                 0.000 Byte
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               0.000 Byte
+  Max allocated memory, integralitem            0.000 Byte
+  Max allocated memory, Overlap                 0.000 Byte
+  Max allocated memory, ODitem                  0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    38.95308        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:             -76.005641310705
+     Nuclear repulsion:             8.910364809137
+     Electronic energy:           -84.916006119842
+
+     Final gradient norm:           0.000006020183
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:03:02 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5
+   1  O   1s     1.0000   0.0000   0.0000   0.0000   0.0000
+   2  O   1s     0.0000   1.0000   0.0000   0.0000   0.0000
+   3  O   1s     0.0000   0.0000   1.0000   0.0000   0.0000
+   4  O   2px    0.0000   0.0000   0.0000   1.0000   0.0000
+   5  O   2py    0.0000   0.0000   0.0000   0.0000   1.0000
+   6  O   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+   7  O   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+   8  O   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+   9  O   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+  10  O   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000
+  11  O   3d1-   0.0000   0.0000   0.0000   0.0000   0.0000
+  12  O   3d0    0.0000   0.0000   0.0000   0.0000   0.0000
+  13  O   3d1+   0.0000   0.0000   0.0000   0.0000   0.0000
+  14  O   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000
+  15  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  16  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  17  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+  18  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :     39.26 seconds
+ >>>> Total wall time used in SIRIUS :      3.23 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:03:02 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:  39.31 seconds
+ >>>> Total wall time used in DALTON:   3.28 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:03:02 2010
+     Host name              : fe2.grendel.cscaa.dk                    

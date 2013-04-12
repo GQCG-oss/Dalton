@@ -1,0 +1,2457 @@
+
+ Work memory size (LMWORK+2):   100000002 =  762.94 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:02:01 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Integrals are calculated using ERI instead of HERMIT (where possible)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+
+
+  Changes of defaults for ER2INP:
+  -------------------------------
+
+ Input values for exchange screening  0.10E-07  0.10E-10  0.10E-14
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+ Warning: Not enough memory allocated for readin.   101256671
+          needed, but only    100000000  specified.
+          Trying to allocate needed memory.
+
+
+  Title Cards
+  -----------
+
+  Methane with -OH, -F, and Cl                                            
+  b3lyp/6-31+g(d,p) optimized geo.                                        
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H           1.007825
+                           H           1.007825
+                           C          12.000000
+                           O          15.994915
+                           F          18.998403
+                           Cl         34.968853
+
+                       Total mass:    83.977821 amu
+                       Natural abundance:  74.734 %
+
+ Center-of-mass coordinates (A):   -0.032707    0.025417   -0.020233
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     5
+  Total number of atoms:    6
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H           1       1       3       2      [3s|2s]                                                                          
+  H           1       1       3       2      [3s|2s]                                                                          
+  C           1       6      15       9      [6s3p|3s2p]                                                                      
+  O           1       8      15       9      [6s3p|3s2p]                                                                      
+  F           1       9      15       9      [6s3p|3s2p]                                                                      
+  Cl          1      17      27      13      [9s6p|4s3p]                                                                      
+  ----------------------------------------------------------------------
+  total:      6      42      78      44
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+ 
+ 
+  Auxiliary basis is "Ahlrichs-Coulomb-Fit" from the basis set library.
+
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates: 18
+
+   1   H        x      0.5208210000
+   2            y      0.0805510000
+   3            z      1.4516750000
+
+   4   H        x      1.9652240000
+   5            y     -1.0972710000
+   6            z      0.0530150000
+
+   7   C        x      0.4304230000
+   8            y      0.0056050000
+   9            z      0.3646870000
+
+  10   O        x      1.0233740000
+  11            y     -1.1015790000
+  12            z     -0.1778070000
+
+  13   F        x      0.9899710000
+  14            y      1.1572500000
+  15            z     -0.1601670000
+
+  16   Cl       x     -1.3038420000
+  17            y     -0.0364430000
+  18            z     -0.0487560000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            H           H           C           O           F           Cl    
+            ------      ------      ------      ------      ------      ------
+ H     :    0.000000
+ H     :    1.233087    0.000000
+ C     :    0.578556    1.013632    0.000000
+ O     :    1.097989    0.513160    0.723977    0.000000
+ F     :    1.055363    1.304766    0.732266    1.195488    0.000000
+ Cl    :    1.251633    1.819516    0.943714    1.356089    1.369628    0.000000
+
+
+  Max interatomic separation is    1.8195 Angstroms
+  between atoms "Cl    " and "H     ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C          H            0.578556
+  bond distance:  C          H            1.013632
+  bond distance:  O          H            1.097989
+  bond distance:  O          H            0.513160
+  bond distance:  O          C            0.723977
+  bond distance:  F          H            1.055363
+  bond distance:  F          C            0.732266
+  bond distance:  F          O            1.195488
+  bond distance:  Cl         H            1.251633
+  bond distance:  Cl         C            0.943714
+  bond distance:  Cl         O            1.356089
+  bond distance:  Cl         F            1.369628
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     C          H          O             36.887
+  bond angle:     C          H          F             41.663
+  bond angle:     C          H          Cl            45.743
+  bond angle:     O          H          F             67.412
+  bond angle:     O          H          Cl            70.152
+  bond angle:     F          H          Cl            72.271
+  bond angle:     C          H          O             42.529
+  bond angle:     H          C          H             97.758
+  bond angle:     H          C          O            114.448
+  bond angle:     H          C          F            106.655
+  bond angle:     H          C          Cl           108.211
+  bond angle:     H          C          O             28.628
+  bond angle:     H          C          F             95.363
+  bond angle:     H          C          Cl           136.711
+  bond angle:     O          C          F            110.357
+  bond angle:     O          C          Cl           108.087
+  bond angle:     F          C          Cl           108.961
+  bond angle:     H          O          H             92.624
+  bond angle:     H          O          C             28.664
+  bond angle:     H          O          F             54.594
+  bond angle:     H          O          Cl            60.244
+  bond angle:     H          O          C            108.842
+  bond angle:     H          O          F             90.462
+  bond angle:     H          O          Cl           150.249
+  bond angle:     C          O          F             35.048
+  bond angle:     C          O          Cl            41.416
+  bond angle:     F          O          Cl            64.570
+  bond angle:     H          F          C             31.682
+  bond angle:     H          F          O             57.994
+  bond angle:     H          F          Cl            60.511
+  bond angle:     C          F          O             34.595
+  bond angle:     C          F          Cl            40.666
+  bond angle:     O          F          Cl            63.404
+  bond angle:     H          Cl         C             26.046
+  bond angle:     H          Cl         O             49.604
+  bond angle:     H          Cl         F             47.219
+  bond angle:     C          Cl         O             30.497
+  bond angle:     C          Cl         F             30.374
+  bond angle:     O          Cl         F             52.026
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA   14.173429          0.998096    0.060777   -0.010512
+   IB   29.706979         -0.060815    0.998143   -0.003357
+   IC   41.218281          0.010288    0.003990    0.999939
+
+
+ Rotational constants
+ --------------------
+
+               A                   B                   C
+
+          35656.7919          17012.1306          12261.0403 MHz
+            1.189383            0.567464            0.408984 cm-1
+
+
+  Nuclear repulsion energy :    316.807555888350
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.06 seconds
+
+
+ >>> Time used in OVERLA is   0.01 seconds
+
+
+ >>> Time used in DIPLEN is   0.01 seconds
+
+
+ >>> Time used in ONEDRV is   0.02 seconds
+
+
+ >>> Time used in GABGEN is   0.05 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.17 seconds
+ >>>> Total wall time used in HERMIT:   0.17 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:02:01 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ Title lines from integral program:
+     Methane with -OH, -F, and Cl                                            
+     b3lyp/6-31+g(d,p) optimized geo.                                        
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         42
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 44
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          44
+     Number of basis functions         44
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals             21
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING DIPLEN IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ *ER2INT is not yet implemented in new int driver
+
+ Keyword ".THREXC                                                               " not recognized in LINSCA **INTEGRALS.
+
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Direct density optimization        
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           8
+Dynamic convergence threshold for gradient:   0.65E-04
+ 
+ End of configuration from new input structure!
+ Take first density from Hueckel guess
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.02 seconds
+ >>> wall Time used in LWDIAG          is   0.00 seconds
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   0.17 seconds
+ >>> wall Time used in **INIT          is   0.01 seconds
+** Get Fock matrix number   1
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.09 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.98 seconds
+
+
+ >>> Time used in FIT-J  is   0.99 seconds
+
+
+ >>> Time used in JBUILD is   2.80 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.45 seconds
+
+ >>>  CPU Time used in FCK_FO          is   6.25 seconds
+ >>> wall Time used in FCK_FO          is   1.70 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   16.9235389262963     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1   -658.3167107796    0.00000000000    0.00      0.00000    0.00    0.0000000    0.17E+02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm   4.56653856267897     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:     63.1808514306 (mu =   0.00, xmax = 0.965266E+00, xnorm = 0.426926E+01, THR = 0.456654E-01)
+  Error of red space iteration  2:     14.1816899796 (mu =   0.00, xmax = 0.292133E+00, xnorm = 0.189491E+01, THR = 0.456654E-01)
+  Error of red space iteration  3:      5.2429180093 (mu =  -0.55, xmax = 0.282807E+00, xnorm = 0.136585E+01, THR = 0.456654E-01)
+  Error of red space iteration  4:      2.2527651282 (mu =  -1.97, xmax = 0.185911E+00, xnorm = 0.875194E+00, THR = 0.456654E-01)
+  Error of red space iteration  5:      1.5762987052 (mu =  -2.38, xmax = 0.120516E+00, xnorm = 0.643024E+00, THR = 0.456654E-01)
+  Error of red space iteration  6:      0.5469771061 (mu =  -2.62, xmax = 0.118670E+00, xnorm = 0.630488E+00, THR = 0.456654E-01)
+  Error of red space iteration  7:      0.2591975492 (mu =  -2.62, xmax = 0.995660E-01, xnorm = 0.579227E+00, THR = 0.456654E-01)
+  Error of red space iteration  8:      0.0780319216 (mu =  -2.62, xmax = 0.102281E+00, xnorm = 0.590860E+00, THR = 0.456654E-01)
+  Error of red space iteration  9:      0.0524453708 (mu =  -2.62, xmax = 0.102312E+00, xnorm = 0.589591E+00, THR = 0.456654E-01)
+  Error of red space iteration 10:      0.0087342492 (mu =  -2.62, xmax = 0.102315E+00, xnorm = 0.589200E+00, THR = 0.456654E-01)
+ mumax =  -2.62500000000000     
+  Error of red space iteration 11:      1.0847280085 (mu =   0.00, xmax = 0.226012E+00, xnorm = 0.113505E+01, THR = 0.456654E-01)
+  Error of red space iteration 12:      0.7436405545 (mu =   0.00, xmax = 0.256632E+00, xnorm = 0.126881E+01, THR = 0.456654E-01)
+  Error of red space iteration 13:      0.5963356238 (mu =  -0.01, xmax = 0.283612E+00, xnorm = 0.140725E+01, THR = 0.456654E-01)
+  Error of red space iteration 14:      0.2516644384 (mu =  -0.12, xmax = 0.320201E+00, xnorm = 0.148074E+01, THR = 0.456654E-01)
+  Error of red space iteration 15:      0.1659229855 (mu =  -0.16, xmax = 0.323023E+00, xnorm = 0.146619E+01, THR = 0.456654E-01)
+  Error of red space iteration 16:      0.0905408750 (mu =  -0.18, xmax = 0.327517E+00, xnorm = 0.145530E+01, THR = 0.456654E-01)
+  Error of red space iteration 17:      0.0578662868 (mu =  -0.19, xmax = 0.335324E+00, xnorm = 0.147550E+01, THR = 0.456654E-01)
+  Error of red space iteration 18:      0.0420416200 (mu =  -0.19, xmax = 0.342046E+00, xnorm = 0.148699E+01, THR = 0.456654E-01)
+Newton equations converged in 18 iterations!
+ >>>  CPU Time used in CROP solver     is   4.99 seconds
+ >>> wall Time used in CROP solver     is   0.31 seconds
+ >>>  CPU Time used in NEW D           is   0.02 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:   153
+ >>>  CPU Time used in G_DENS          is   5.05 seconds
+ >>> wall Time used in G_DENS          is   0.32 seconds
+** Get Fock matrix number   2
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.75 seconds
+
+
+ >>> Time used in GALPHA is   0.76 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.00 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.19 seconds
+
+ >>>  CPU Time used in FCK_FO          is   5.06 seconds
+ >>> wall Time used in FCK_FO          is   1.64 seconds
+ >>>  CPU Time used in G_GRAD          is   0.48 seconds
+ >>> wall Time used in G_GRAD          is   0.03 seconds
+ gradnrm   3.51338491261263     
+  2   -661.4691899803   -3.15247920065    0.00      0.00000    0.19    0.0000000    0.35E+01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.13 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ OAO gradnorm   1.02780319136109     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      7.1710930912 (mu =   0.00, xmax = 0.149732E+00, xnorm = 0.701181E+00, THR = 0.102780E-01)
+  Error of red space iteration  2:      1.6769875719 (mu =   0.00, xmax = 0.120073E+00, xnorm = 0.591083E+00, THR = 0.102780E-01)
+  Error of red space iteration  3:      0.4832940534 (mu =   0.00, xmax = 0.115051E+00, xnorm = 0.560669E+00, THR = 0.102780E-01)
+  Error of red space iteration  4:      0.2042248238 (mu =   0.00, xmax = 0.115668E+00, xnorm = 0.550518E+00, THR = 0.102780E-01)
+  Error of red space iteration  5:      0.0966766670 (mu =   0.00, xmax = 0.113640E+00, xnorm = 0.544704E+00, THR = 0.102780E-01)
+  Error of red space iteration  6:      0.0563323364 (mu =   0.00, xmax = 0.113744E+00, xnorm = 0.544129E+00, THR = 0.102780E-01)
+  Error of red space iteration  7:      0.0349825760 (mu =   0.00, xmax = 0.114492E+00, xnorm = 0.545962E+00, THR = 0.102780E-01)
+  Error of red space iteration  8:      0.0177463150 (mu =   0.00, xmax = 0.115226E+00, xnorm = 0.549791E+00, THR = 0.102780E-01)
+  Error of red space iteration  9:      0.0109311044 (mu =   0.00, xmax = 0.115734E+00, xnorm = 0.552895E+00, THR = 0.102780E-01)
+  Error of red space iteration 10:      0.0064629262 (mu =   0.00, xmax = 0.116171E+00, xnorm = 0.555777E+00, THR = 0.102780E-01)
+Newton equations converged in 10 iterations!
+ >>>  CPU Time used in CROP solver     is   1.17 seconds
+ >>> wall Time used in CROP solver     is   0.07 seconds
+ >>>  CPU Time used in NEW D           is   0.02 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    95
+ >>>  CPU Time used in G_DENS          is   1.22 seconds
+ >>> wall Time used in G_DENS          is   0.08 seconds
+** Get Fock matrix number   3
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.01 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.88 seconds
+
+ >>>  CPU Time used in FCK_FO          is   4.76 seconds
+ >>> wall Time used in FCK_FO          is   1.64 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   1.18986202261325     
+  3   -661.8828240394   -0.41363405909    0.00      0.00000    0.00    0.0000000    0.12E+01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.19 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ OAO gradnorm  0.265146255065640     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.4352296221 (mu =   0.00, xmax = 0.258178E-01, xnorm = 0.152145E+00, THR = 0.265146E-02)
+  Error of red space iteration  2:      0.2349201163 (mu =   0.00, xmax = 0.253948E-01, xnorm = 0.131574E+00, THR = 0.265146E-02)
+  Error of red space iteration  3:      0.0753429750 (mu =   0.00, xmax = 0.232791E-01, xnorm = 0.121238E+00, THR = 0.265146E-02)
+  Error of red space iteration  4:      0.0312185624 (mu =   0.00, xmax = 0.228182E-01, xnorm = 0.117050E+00, THR = 0.265146E-02)
+  Error of red space iteration  5:      0.0149381148 (mu =   0.00, xmax = 0.228415E-01, xnorm = 0.115340E+00, THR = 0.265146E-02)
+  Error of red space iteration  6:      0.0063522100 (mu =   0.00, xmax = 0.228816E-01, xnorm = 0.114706E+00, THR = 0.265146E-02)
+  Error of red space iteration  7:      0.0029791820 (mu =   0.00, xmax = 0.228989E-01, xnorm = 0.114551E+00, THR = 0.265146E-02)
+  Error of red space iteration  8:      0.0015164858 (mu =   0.00, xmax = 0.229095E-01, xnorm = 0.114550E+00, THR = 0.265146E-02)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.83 seconds
+ >>> wall Time used in CROP solver     is   0.05 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    77
+ >>>  CPU Time used in G_DENS          is   0.87 seconds
+ >>> wall Time used in G_DENS          is   0.05 seconds
+** Get Fock matrix number   4
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.99 seconds
+
+
+ >>> Time used in FIT-J  is   1.00 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.27 seconds
+
+ >>>  CPU Time used in FCK_FO          is   5.14 seconds
+ >>> wall Time used in FCK_FO          is   1.64 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.206826633728285     
+  4   -661.9107439490   -0.02791990964    0.00      0.00000    0.00    0.0000000    0.21E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.27 seconds
+ >>> wall Time used in AVERAG          is   0.02 seconds
+** Get new density 
+ OAO gradnorm  5.274679407902359E-002
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0648094192 (mu =   0.00, xmax = 0.491727E-02, xnorm = 0.289175E-01, THR = 0.527468E-03)
+  Error of red space iteration  2:      0.0425484643 (mu =   0.00, xmax = 0.499970E-02, xnorm = 0.256785E-01, THR = 0.527468E-03)
+  Error of red space iteration  3:      0.0172310944 (mu =   0.00, xmax = 0.477064E-02, xnorm = 0.243930E-01, THR = 0.527468E-03)
+  Error of red space iteration  4:      0.0053784781 (mu =   0.00, xmax = 0.468671E-02, xnorm = 0.240090E-01, THR = 0.527468E-03)
+  Error of red space iteration  5:      0.0026415915 (mu =   0.00, xmax = 0.467488E-02, xnorm = 0.238963E-01, THR = 0.527468E-03)
+  Error of red space iteration  6:      0.0011993620 (mu =   0.00, xmax = 0.467390E-02, xnorm = 0.239069E-01, THR = 0.527468E-03)
+  Error of red space iteration  7:      0.0006615576 (mu =   0.00, xmax = 0.467433E-02, xnorm = 0.239622E-01, THR = 0.527468E-03)
+  Error of red space iteration  8:      0.0003745003 (mu =   0.00, xmax = 0.467638E-02, xnorm = 0.240169E-01, THR = 0.527468E-03)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.80 seconds
+ >>> wall Time used in CROP solver     is   0.05 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    76
+ >>>  CPU Time used in G_DENS          is   0.84 seconds
+ >>> wall Time used in G_DENS          is   0.05 seconds
+** Get Fock matrix number   5
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.04 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.00 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.60 seconds
+
+ >>>  CPU Time used in FCK_FO          is   5.47 seconds
+ >>> wall Time used in FCK_FO          is   1.64 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.469761283834805E-002
+  5   -661.9119904914   -0.00124654240    0.00      0.00000    0.00    0.0000000    0.35E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.36 seconds
+ >>> wall Time used in AVERAG          is   0.02 seconds
+** Get new density 
+ OAO gradnorm  1.015686318995569E-002
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0147210668 (mu =   0.00, xmax = 0.110680E-02, xnorm = 0.698939E-02, THR = 0.101569E-03)
+  Error of red space iteration  2:      0.0100460784 (mu =   0.00, xmax = 0.958434E-03, xnorm = 0.638593E-02, THR = 0.101569E-03)
+  Error of red space iteration  3:      0.0037182111 (mu =   0.00, xmax = 0.947733E-03, xnorm = 0.612359E-02, THR = 0.101569E-03)
+  Error of red space iteration  4:      0.0014927315 (mu =   0.00, xmax = 0.928849E-03, xnorm = 0.602352E-02, THR = 0.101569E-03)
+  Error of red space iteration  5:      0.0007350471 (mu =   0.00, xmax = 0.927040E-03, xnorm = 0.598228E-02, THR = 0.101569E-03)
+  Error of red space iteration  6:      0.0003248328 (mu =   0.00, xmax = 0.933424E-03, xnorm = 0.597783E-02, THR = 0.101569E-03)
+  Error of red space iteration  7:      0.0001685819 (mu =   0.00, xmax = 0.939114E-03, xnorm = 0.598902E-02, THR = 0.101569E-03)
+  Error of red space iteration  8:      0.0001073935 (mu =   0.00, xmax = 0.944882E-03, xnorm = 0.600455E-02, THR = 0.101569E-03)
+  Error of red space iteration  9:      0.0000565121 (mu =   0.00, xmax = 0.949051E-03, xnorm = 0.601856E-02, THR = 0.101569E-03)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   1.04 seconds
+ >>> wall Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    82
+ >>>  CPU Time used in G_DENS          is   1.08 seconds
+ >>> wall Time used in G_DENS          is   0.07 seconds
+** Get Fock matrix number   6
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.99 seconds
+
+
+ >>> Time used in FIT-J  is   1.00 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.18 seconds
+
+ >>>  CPU Time used in FCK_FO          is   4.05 seconds
+ >>> wall Time used in FCK_FO          is   1.64 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  7.515890466798691E-003
+  6   -661.9120360144   -0.00004552297    0.00      0.00000    0.00    0.0000000    0.75E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           6
+ >>>  CPU Time used in AVERAG          is   0.47 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+ OAO gradnorm  2.254554034179607E-003
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0028787899 (mu =   0.00, xmax = 0.195701E-03, xnorm = 0.140006E-02, THR = 0.225455E-04)
+  Error of red space iteration  2:      0.0018744659 (mu =   0.00, xmax = 0.187045E-03, xnorm = 0.134626E-02, THR = 0.225455E-04)
+  Error of red space iteration  3:      0.0006990173 (mu =   0.00, xmax = 0.178723E-03, xnorm = 0.133207E-02, THR = 0.225455E-04)
+  Error of red space iteration  4:      0.0002706859 (mu =   0.00, xmax = 0.176676E-03, xnorm = 0.134114E-02, THR = 0.225455E-04)
+  Error of red space iteration  5:      0.0001567168 (mu =   0.00, xmax = 0.180576E-03, xnorm = 0.135707E-02, THR = 0.225455E-04)
+  Error of red space iteration  6:      0.0000779708 (mu =   0.00, xmax = 0.185394E-03, xnorm = 0.137628E-02, THR = 0.225455E-04)
+  Error of red space iteration  7:      0.0000413739 (mu =   0.00, xmax = 0.188624E-03, xnorm = 0.139192E-02, THR = 0.225455E-04)
+  Error of red space iteration  8:      0.0000263291 (mu =   0.00, xmax = 0.190802E-03, xnorm = 0.140361E-02, THR = 0.225455E-04)
+  Error of red space iteration  9:      0.0000147717 (mu =   0.00, xmax = 0.192097E-03, xnorm = 0.141093E-02, THR = 0.225455E-04)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   0.99 seconds
+ >>> wall Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    81
+ >>>  CPU Time used in G_DENS          is   1.02 seconds
+ >>> wall Time used in G_DENS          is   0.06 seconds
+** Get Fock matrix number   7
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.73 seconds
+
+
+ >>> Time used in GALPHA is   0.74 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.01 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.16 seconds
+
+ >>>  CPU Time used in FCK_FO          is   4.03 seconds
+ >>> wall Time used in FCK_FO          is   1.64 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.488332311433108E-003
+  7   -661.9120383162   -0.00000230182    0.00      0.00000    0.00    0.0000000    0.25E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           7
+ >>>  CPU Time used in AVERAG          is   0.39 seconds
+ >>> wall Time used in AVERAG          is   0.02 seconds
+** Get new density 
+ OAO gradnorm  7.338363196838968E-004
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0008317079 (mu =   0.00, xmax = 0.681799E-04, xnorm = 0.577754E-03, THR = 0.733836E-05)
+  Error of red space iteration  2:      0.0005275683 (mu =   0.00, xmax = 0.799087E-04, xnorm = 0.586687E-03, THR = 0.733836E-05)
+  Error of red space iteration  3:      0.0001817328 (mu =   0.00, xmax = 0.825111E-04, xnorm = 0.598681E-03, THR = 0.733836E-05)
+  Error of red space iteration  4:      0.0000861721 (mu =   0.00, xmax = 0.867956E-04, xnorm = 0.613126E-03, THR = 0.733836E-05)
+  Error of red space iteration  5:      0.0000513727 (mu =   0.00, xmax = 0.905149E-04, xnorm = 0.629943E-03, THR = 0.733836E-05)
+  Error of red space iteration  6:      0.0000306115 (mu =   0.00, xmax = 0.934814E-04, xnorm = 0.644837E-03, THR = 0.733836E-05)
+  Error of red space iteration  7:      0.0000177097 (mu =   0.00, xmax = 0.952556E-04, xnorm = 0.654420E-03, THR = 0.733836E-05)
+  Error of red space iteration  8:      0.0000098304 (mu =   0.00, xmax = 0.961354E-04, xnorm = 0.660169E-03, THR = 0.733836E-05)
+  Error of red space iteration  9:      0.0000053969 (mu =   0.00, xmax = 0.965016E-04, xnorm = 0.662866E-03, THR = 0.733836E-05)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   1.01 seconds
+ >>> wall Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    81
+ >>>  CPU Time used in G_DENS          is   1.06 seconds
+ >>> wall Time used in G_DENS          is   0.07 seconds
+** Get Fock matrix number   8
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.99 seconds
+
+
+ >>> Time used in FIT-J  is   1.00 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.18 seconds
+
+ >>>  CPU Time used in FCK_FO          is   4.05 seconds
+ >>> wall Time used in FCK_FO          is   1.64 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  4.352381805984303E-004
+  8   -661.9120386614   -0.00000034525    0.00      0.00000    0.00    0.0000000    0.44E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           8
+ >>>  CPU Time used in AVERAG          is   0.47 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+ OAO gradnorm  1.697270337777049E-004
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0002137271 (mu =   0.00, xmax = 0.218360E-04, xnorm = 0.155254E-03, THR = 0.169727E-05)
+  Error of red space iteration  2:      0.0001104893 (mu =   0.00, xmax = 0.231906E-04, xnorm = 0.159226E-03, THR = 0.169727E-05)
+  Error of red space iteration  3:      0.0000386646 (mu =   0.00, xmax = 0.246504E-04, xnorm = 0.164435E-03, THR = 0.169727E-05)
+  Error of red space iteration  4:      0.0000203076 (mu =   0.00, xmax = 0.259538E-04, xnorm = 0.169715E-03, THR = 0.169727E-05)
+  Error of red space iteration  5:      0.0000142956 (mu =   0.00, xmax = 0.272357E-04, xnorm = 0.176109E-03, THR = 0.169727E-05)
+  Error of red space iteration  6:      0.0000084938 (mu =   0.00, xmax = 0.281380E-04, xnorm = 0.180838E-03, THR = 0.169727E-05)
+  Error of red space iteration  7:      0.0000051439 (mu =   0.00, xmax = 0.285604E-04, xnorm = 0.183601E-03, THR = 0.169727E-05)
+  Error of red space iteration  8:      0.0000026959 (mu =   0.00, xmax = 0.287241E-04, xnorm = 0.185019E-03, THR = 0.169727E-05)
+  Error of red space iteration  9:      0.0000012486 (mu =   0.00, xmax = 0.287597E-04, xnorm = 0.185559E-03, THR = 0.169727E-05)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   1.05 seconds
+ >>> wall Time used in CROP solver     is   0.07 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    81
+ >>>  CPU Time used in G_DENS          is   1.08 seconds
+ >>> wall Time used in G_DENS          is   0.07 seconds
+** Get Fock matrix number   9
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.72 seconds
+
+
+ >>> Time used in GALPHA is   0.88 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.98 seconds
+
+
+ >>> Time used in FIT-J  is   0.98 seconds
+
+
+ >>> Time used in JBUILD is   1.99 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.35 seconds
+
+ >>>  CPU Time used in FCK_FO          is   5.34 seconds
+ >>> wall Time used in FCK_FO          is   1.65 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  7.269875071549143E-005
+  9   -661.9120386804   -0.00000001898    0.00      0.00000    0.00    0.0000000    0.73E-04  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           8
+ >>>  CPU Time used in AVERAG          is   0.47 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+ OAO gradnorm  2.809887735505898E-005
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000396376 (mu =   0.00, xmax = 0.399690E-05, xnorm = 0.242225E-04, THR = 0.280989E-06)
+  Error of red space iteration  2:      0.0000216445 (mu =   0.00, xmax = 0.402345E-05, xnorm = 0.242106E-04, THR = 0.280989E-06)
+  Error of red space iteration  3:      0.0000072471 (mu =   0.00, xmax = 0.410331E-05, xnorm = 0.245151E-04, THR = 0.280989E-06)
+  Error of red space iteration  4:      0.0000038926 (mu =   0.00, xmax = 0.416420E-05, xnorm = 0.249574E-04, THR = 0.280989E-06)
+  Error of red space iteration  5:      0.0000023036 (mu =   0.00, xmax = 0.423559E-05, xnorm = 0.255129E-04, THR = 0.280989E-06)
+  Error of red space iteration  6:      0.0000012322 (mu =   0.00, xmax = 0.430781E-05, xnorm = 0.260514E-04, THR = 0.280989E-06)
+  Error of red space iteration  7:      0.0000007450 (mu =   0.00, xmax = 0.436039E-05, xnorm = 0.264738E-04, THR = 0.280989E-06)
+  Error of red space iteration  8:      0.0000003887 (mu =   0.00, xmax = 0.438711E-05, xnorm = 0.266848E-04, THR = 0.280989E-06)
+  Error of red space iteration  9:      0.0000002192 (mu =   0.00, xmax = 0.440034E-05, xnorm = 0.267954E-04, THR = 0.280989E-06)
+Newton equations converged in  9 iterations!
+ >>>  CPU Time used in CROP solver     is   1.02 seconds
+ >>> wall Time used in CROP solver     is   0.06 seconds
+ >>>  CPU Time used in NEW D           is   0.01 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    80
+ >>>  CPU Time used in G_DENS          is   1.07 seconds
+ >>> wall Time used in G_DENS          is   0.07 seconds
+** Get Fock matrix number  10
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.01 seconds
+
+
+ >>> Time used in JBUILD is   1.88 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.39 seconds
+
+ >>>  CPU Time used in FCK_FO          is   5.27 seconds
+ >>> wall Time used in FCK_FO          is   1.64 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.262694057217079E-005
+ 10   -661.9120386809   -0.00000000047    0.00      0.00000    0.00    0.0000000    0.13E-04  ###
+ >>>  CPU Time used in **ITER          is   0 hours  1 minute   6 seconds
+ >>> wall Time used in **ITER          is  17.51 seconds
+Total no. of matmuls in SCF optimization:       1653
+ 
+ Number of occupied orbitals:          21
+ Number of virtual orbitals:          23
+ 
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ Threshold for iterative determination of orbital energies:
+  1.000000000000000E-006
+    FUP/FUQ eival: Residual for vector   1:  0.1634771438E+02 and mu: 0.1010752132E+03  It =   1  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.1634771438E+02
+          VECTOR   1: Error of PCG iteration  1:  0.1361254022E+02
+          VECTOR   1: Error of PCG iteration  2:  0.1509809453E+02
+          VECTOR   1: Error of PCG iteration  3:  0.1042173254E+02
+          VECTOR   1: Error of PCG iteration  4:  0.2879916630E+01
+          VECTOR   1: Error of PCG iteration  5:  0.1996545197E+01
+          VECTOR   1: Error of PCG iteration  6:  0.1853573201E+01
+          VECTOR   1: Error of PCG iteration  7:  0.5471902996E+00
+          VECTOR   1: Error of PCG iteration  8:  0.1356948132E+00
+          VECTOR   1: PCG converged in   8 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.3211929361E+01 and mu: 0.1862123132E+01  It =   2  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.3211929361E+01
+          VECTOR   1: Error of PCG iteration  1:  0.3318677389E+01
+          VECTOR   1: Error of PCG iteration  2:  0.2347132375E+01
+          VECTOR   1: Error of PCG iteration  3:  0.9123717113E+00
+          VECTOR   1: Error of PCG iteration  4:  0.1155376946E+01
+          VECTOR   1: Error of PCG iteration  5:  0.8827925389E+00
+          VECTOR   1: Error of PCG iteration  6:  0.5558583646E+00
+          VECTOR   1: Error of PCG iteration  7:  0.2169438280E+00
+          VECTOR   1: Error of PCG iteration  8:  0.6110823751E-01
+          VECTOR   1: Error of PCG iteration  9:  0.3019208673E-01
+          VECTOR   1: PCG converged in   9 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.2854677923E+00 and mu: 0.4529500369E+00  It =   3  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.2854677923E+00
+          VECTOR   1: Error of PCG iteration  1:  0.3814893585E+00
+          VECTOR   1: Error of PCG iteration  2:  0.2797945460E+00
+          VECTOR   1: Error of PCG iteration  3:  0.1146864016E+00
+          VECTOR   1: Error of PCG iteration  4:  0.1131439142E+00
+          VECTOR   1: Error of PCG iteration  5:  0.5387899698E-01
+          VECTOR   1: Error of PCG iteration  6:  0.3019541117E-01
+          VECTOR   1: Error of PCG iteration  7:  0.3308833351E-01
+          VECTOR   1: Error of PCG iteration  8:  0.1104512682E-01
+          VECTOR   1: Error of PCG iteration  9:  0.3460099124E-02
+          VECTOR   1: Error of PCG iteration 10:  0.1128464274E-02
+          VECTOR   1: PCG converged in  10 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.5807225979E-01 and mu: 0.3686980104E+00  It =   4  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.5807225979E-01
+          VECTOR   1: Error of PCG iteration  1:  0.7493306545E-01
+          VECTOR   1: Error of PCG iteration  2:  0.4463942318E-01
+          VECTOR   1: Error of PCG iteration  3:  0.2997455182E-01
+          VECTOR   1: Error of PCG iteration  4:  0.1432954464E-01
+          VECTOR   1: Error of PCG iteration  5:  0.7318545336E-02
+          VECTOR   1: Error of PCG iteration  6:  0.5023664793E-02
+          VECTOR   1: Error of PCG iteration  7:  0.3069668913E-02
+          VECTOR   1: Error of PCG iteration  8:  0.2109612196E-02
+          VECTOR   1: Error of PCG iteration  9:  0.1119779700E-02
+          VECTOR   1: Error of PCG iteration 10:  0.2740860695E-03
+          VECTOR   1: PCG converged in  10 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.3676339833E-01 and mu: 0.3626888255E+00  It =   5  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.3676339833E-01
+          VECTOR   1: Error of PCG iteration  1:  0.4963322599E-01
+          VECTOR   1: Error of PCG iteration  2:  0.2469668013E-01
+          VECTOR   1: Error of PCG iteration  3:  0.2685071874E-01
+          VECTOR   1: Error of PCG iteration  4:  0.7069157323E-02
+          VECTOR   1: Error of PCG iteration  5:  0.4591160503E-02
+          VECTOR   1: Error of PCG iteration  6:  0.4310042456E-02
+          VECTOR   1: Error of PCG iteration  7:  0.1496148610E-02
+          VECTOR   1: Error of PCG iteration  8:  0.8185018900E-03
+          VECTOR   1: Error of PCG iteration  9:  0.2549132993E-03
+          VECTOR   1: PCG converged in   9 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.2902957200E-01 and mu: 0.3556215000E+00  It =   6  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.2902957200E-01
+          VECTOR   1: Error of PCG iteration  1:  0.4582379157E-01
+          VECTOR   1: Error of PCG iteration  2:  0.2308442871E-01
+          VECTOR   1: Error of PCG iteration  3:  0.2256150371E-01
+          VECTOR   1: Error of PCG iteration  4:  0.7463476930E-02
+          VECTOR   1: Error of PCG iteration  5:  0.1958404934E-02
+          VECTOR   1: Error of PCG iteration  6:  0.1717674758E-02
+          VECTOR   1: Error of PCG iteration  7:  0.1018121470E-02
+          VECTOR   1: Error of PCG iteration  8:  0.7907151512E-03
+          VECTOR   1: Error of PCG iteration  9:  0.4201764465E-03
+          VECTOR   1: Error of PCG iteration 10:  0.2397472654E-03
+          VECTOR   1: PCG converged in  10 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.6919087934E-01 and mu: 0.3440256477E+00  It =   7  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.6919087934E-01
+          VECTOR   1: Error of PCG iteration  1:  0.1089447247E+00
+          VECTOR   1: Error of PCG iteration  2:  0.5293393164E-01
+          VECTOR   1: Error of PCG iteration  3:  0.3724011410E-01
+          VECTOR   1: Error of PCG iteration  4:  0.1154568720E-01
+          VECTOR   1: Error of PCG iteration  5:  0.8040481011E-02
+          VECTOR   1: Error of PCG iteration  6:  0.4104527706E-02
+          VECTOR   1: Error of PCG iteration  7:  0.3255805915E-02
+          VECTOR   1: Error of PCG iteration  8:  0.1768852275E-02
+          VECTOR   1: Error of PCG iteration  9:  0.7811204585E-03
+          VECTOR   1: Error of PCG iteration 10:  0.2588460961E-03
+          VECTOR   1: PCG converged in  10 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.5628043519E-01 and mu: 0.3228008403E+00  It =   8  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.5628043519E-01
+          VECTOR   1: Error of PCG iteration  1:  0.6380729102E-01
+          VECTOR   1: Error of PCG iteration  2:  0.3865656991E-01
+          VECTOR   1: Error of PCG iteration  3:  0.1656693119E-01
+          VECTOR   1: Error of PCG iteration  4:  0.4651297149E-02
+          VECTOR   1: Error of PCG iteration  5:  0.1779542702E-02
+          VECTOR   1: Error of PCG iteration  6:  0.1226546447E-02
+          VECTOR   1: Error of PCG iteration  7:  0.5800847006E-03
+          VECTOR   1: Error of PCG iteration  8:  0.3286597977E-03
+          VECTOR   1: PCG converged in   8 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.9250239854E-02 and mu: 0.3213672338E+00  It =   9  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.9250239854E-02
+          VECTOR   1: Error of PCG iteration  1:  0.4917027506E-02
+          VECTOR   1: Error of PCG iteration  2:  0.2152014734E-02
+          VECTOR   1: Error of PCG iteration  3:  0.1373025204E-02
+          VECTOR   1: Error of PCG iteration  4:  0.4401336591E-03
+          VECTOR   1: Error of PCG iteration  5:  0.3152817462E-03
+          VECTOR   1: Error of PCG iteration  6:  0.1929060827E-03
+          VECTOR   1: Error of PCG iteration  7:  0.1463206447E-03
+          VECTOR   1: Error of PCG iteration  8:  0.1100400631E-03
+          VECTOR   1: Error of PCG iteration  9:  0.5484751761E-04
+          VECTOR   1: PCG converged in   9 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.1085581210E-02 and mu: 0.3213497371E+00  It =  10  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.1085581210E-02
+          VECTOR   1: Error of PCG iteration  1:  0.7514336914E-03
+          VECTOR   1: Error of PCG iteration  2:  0.3267214274E-03
+          VECTOR   1: Error of PCG iteration  3:  0.1601243103E-03
+          VECTOR   1: Error of PCG iteration  4:  0.5128266994E-04
+          VECTOR   1: Error of PCG iteration  5:  0.2397664085E-04
+          VECTOR   1: Error of PCG iteration  6:  0.1293893640E-04
+          VECTOR   1: Error of PCG iteration  7:  0.3790758342E-05
+          VECTOR   1: PCG converged in   7 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.1208365487E-03 and mu: 0.3213495281E+00  It =  11  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.1208365487E-03
+          VECTOR   1: Error of PCG iteration  1:  0.8942378500E-04
+          VECTOR   1: Error of PCG iteration  2:  0.4599058594E-04
+          VECTOR   1: Error of PCG iteration  3:  0.4734911721E-04
+          VECTOR   1: Error of PCG iteration  4:  0.1641453236E-04
+          VECTOR   1: Error of PCG iteration  5:  0.8517975179E-05
+          VECTOR   1: Error of PCG iteration  6:  0.2537641369E-05
+          VECTOR   1: Error of PCG iteration  7:  0.2365369679E-05
+ Warning: Exit from PCG loops due to denominator = 0!
+    FUP/FUQ eival: Residual for vector   1:  0.3315759197E-04 and mu: 0.3213495184E+00  It =  12  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.3315759197E-04
+          VECTOR   1: Error of PCG iteration  1:  0.1824511543E-04
+          VECTOR   1: Error of PCG iteration  2:  0.6984676769E-05
+          VECTOR   1: Error of PCG iteration  3:  0.3966073596E-05
+          VECTOR   1: Error of PCG iteration  4:  0.2015091025E-05
+          VECTOR   1: Error of PCG iteration  5:  0.1045898615E-05
+          VECTOR   1: Error of PCG iteration  6:  0.9353626277E-06
+ Warning: Exit from PCG loops due to denominator = 0!
+    FUP/FUQ eival: Residual for vector   1:  0.8356249024E-05 and mu: 0.3213495180E+00  It =  13  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.8356249024E-05
+          VECTOR   1: Error of PCG iteration  1:  0.2726013987E-05
+          VECTOR   1: Error of PCG iteration  2:  0.2149150554E-05
+          VECTOR   1: Error of PCG iteration  3:  0.1685582279E-05
+ Warning: Exit from PCG loops due to denominator = 0!
+    FUP/FUQ eival: Residual for vector   1:  0.8836454519E-06 and mu: 0.3213495180E+00  It =  14  Conv =  T
+    Convergence of all vectors!
+   Eigenvalue for vector  1 is:  0.321350E+00
+ Threshold for iterative determination of orbital energies:
+  1.000000000000000E-006
+    FUP/FUQ eival: Residual for vector   1:  0.1632981805E+01 and mu: 0.3744212038E+01  It =   1  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.1632981805E+01
+          VECTOR   1: Error of PCG iteration  1:  0.1462712963E+01
+          VECTOR   1: Error of PCG iteration  2:  0.3937603146E+00
+          VECTOR   1: Error of PCG iteration  3:  0.2573765790E+00
+          VECTOR   1: Error of PCG iteration  4:  0.1675160900E+00
+          VECTOR   1: Error of PCG iteration  5:  0.7642086712E-01
+          VECTOR   1: Error of PCG iteration  6:  0.3601964004E-01
+          VECTOR   1: Error of PCG iteration  7:  0.1746450051E-01
+          VECTOR   1: Error of PCG iteration  8:  0.7788612036E-02
+          VECTOR   1: PCG converged in   8 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.3589592818E+00 and mu: 0.4153741240E+00  It =   2  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.3589592818E+00
+          VECTOR   1: Error of PCG iteration  1:  0.2387484215E+00
+          VECTOR   1: Error of PCG iteration  2:  0.1203289108E+00
+          VECTOR   1: Error of PCG iteration  3:  0.7779540506E-01
+          VECTOR   1: Error of PCG iteration  4:  0.3783298620E-01
+          VECTOR   1: Error of PCG iteration  5:  0.1984529615E-01
+          VECTOR   1: Error of PCG iteration  6:  0.6490969632E-02
+          VECTOR   1: Error of PCG iteration  7:  0.2492509460E-02
+          VECTOR   1: PCG converged in   7 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.8718547739E-01 and mu: 0.2722405455E+00  It =   3  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.8718547739E-01
+          VECTOR   1: Error of PCG iteration  1:  0.5698464039E-01
+          VECTOR   1: Error of PCG iteration  2:  0.3384105799E-01
+          VECTOR   1: Error of PCG iteration  3:  0.1580223221E-01
+          VECTOR   1: Error of PCG iteration  4:  0.7657237174E-02
+          VECTOR   1: Error of PCG iteration  5:  0.5130989659E-02
+          VECTOR   1: Error of PCG iteration  6:  0.2758142918E-02
+          VECTOR   1: Error of PCG iteration  7:  0.1238312518E-02
+          VECTOR   1: Error of PCG iteration  8:  0.5351952337E-03
+          VECTOR   1: PCG converged in   8 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.3837604647E-01 and mu: 0.2487189133E+00  It =   4  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.3837604647E-01
+          VECTOR   1: Error of PCG iteration  1:  0.1883116452E-01
+          VECTOR   1: Error of PCG iteration  2:  0.8960913653E-02
+          VECTOR   1: Error of PCG iteration  3:  0.4690385226E-02
+          VECTOR   1: Error of PCG iteration  4:  0.1671111643E-02
+          VECTOR   1: Error of PCG iteration  5:  0.6948387558E-03
+          VECTOR   1: Error of PCG iteration  6:  0.4565342385E-03
+          VECTOR   1: Error of PCG iteration  7:  0.2241413697E-03
+          VECTOR   1: PCG converged in   7 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.7436906558E-02 and mu: 0.2469694925E+00  It =   5  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.7436906558E-02
+          VECTOR   1: Error of PCG iteration  1:  0.4284114936E-02
+          VECTOR   1: Error of PCG iteration  2:  0.1776313202E-02
+          VECTOR   1: Error of PCG iteration  3:  0.8149106056E-03
+          VECTOR   1: Error of PCG iteration  4:  0.3535872217E-03
+          VECTOR   1: Error of PCG iteration  5:  0.1534680336E-03
+          VECTOR   1: Error of PCG iteration  6:  0.5059434183E-04
+          VECTOR   1: PCG converged in   6 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.1933317142E-02 and mu: 0.2468579630E+00  It =   6  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.1933317142E-02
+          VECTOR   1: Error of PCG iteration  1:  0.9894848401E-03
+          VECTOR   1: Error of PCG iteration  2:  0.4891901134E-03
+          VECTOR   1: Error of PCG iteration  3:  0.1993699295E-03
+          VECTOR   1: Error of PCG iteration  4:  0.8016315841E-04
+          VECTOR   1: Error of PCG iteration  5:  0.3862890615E-04
+          VECTOR   1: Error of PCG iteration  6:  0.2117749144E-04
+          VECTOR   1: Error of PCG iteration  7:  0.1582538515E-04
+          VECTOR   1: PCG converged in   7 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.5645705343E-03 and mu: 0.2468511341E+00  It =   7  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.5645705343E-03
+          VECTOR   1: Error of PCG iteration  1:  0.1961523770E-03
+          VECTOR   1: Error of PCG iteration  2:  0.6791045260E-04
+          VECTOR   1: Error of PCG iteration  3:  0.3259160394E-04
+          VECTOR   1: Error of PCG iteration  4:  0.1383851289E-04
+          VECTOR   1: Error of PCG iteration  5:  0.5304189766E-05
+          VECTOR   1: PCG converged in   5 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.4156874746E-04 and mu: 0.2468509271E+00  It =   8  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.4156874746E-04
+          VECTOR   1: Error of PCG iteration  1:  0.1736848257E-04
+          VECTOR   1: Error of PCG iteration  2:  0.1034088382E-04
+          VECTOR   1: Error of PCG iteration  3:  0.3471285195E-05
+          VECTOR   1: Error of PCG iteration  4:  0.1571864316E-05
+          VECTOR   1: Error of PCG iteration  5:  0.5923951568E-06
+ Warning: Exit from PCG loops due to denominator = 0!
+    FUP/FUQ eival: Residual for vector   1:  0.7432117001E-05 and mu: 0.2468509252E+00  It =   9  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.7432117001E-05
+          VECTOR   1: Error of PCG iteration  1:  0.2243166946E-05
+          VECTOR   1: Error of PCG iteration  2:  0.8695853478E-06
+          VECTOR   1: Error of PCG iteration  3:  0.4436427483E-06
+ Warning: Exit from PCG loops due to denominator = 0!
+    FUP/FUQ eival: Residual for vector   1:  0.5200827103E-06 and mu: 0.2468509252E+00  It =  10  Conv =  T
+    Convergence of all vectors!
+   Eigenvalue for vector  1 is:  0.246851E+00
+ 
+    E(LUMO):                         0.246851 au
+   -E(HOMO):                        -0.321350 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.568200 au
+ 
+ >>>  CPU Time used in HL GAP          is   3.07 seconds
+ >>> wall Time used in HL GAP          is   1.05 seconds
+ 
+Checking stability of solution: Calculation of lowest Hessian eigenvalue
+========================================================================
+ 
+        Occ. orbitals:
+        ==============
+
+               Column   1
+       1      -0.32134952
+ 
+        Virt. orbitals:
+        ===============
+
+               Column   1
+       1       0.24685093
+ 
+   Orbital energy differences  (occ index, virt index):
+ ======================================================
+    1   0.5682004                  1          1
+ 
+     Sorted orbital energy differences:
+ ==========================================
+Root no.   1   0.5682004   Position:   1
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.01 seconds
+
+
+ >>> Time used in JBUILD is   1.88 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.73 seconds
+
+    Hessian eival: Residual for vector   1:  0.7514278289E-01 and eival: 0.3285476645E+00  It =     1  Conv =  F
+                    Error of PCG iteration  1:      0.0635843873 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0243973869 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0139092694 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0068964128 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0036611183 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0019530930 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0011427441 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0005897218 (mu =   0.00)
+                    PCG converged in   8 iterations!
+                    PCG: residual reduced by     99.07%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.70 seconds
+
+
+ >>> Time used in GALPHA is   0.71 seconds
+
+
+ >>> Time used in LINSOL is   0.04 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.94 seconds
+
+
+ >>> Time used in FIT-J  is   0.94 seconds
+
+
+ >>> Time used in JBUILD is   1.76 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.22 seconds
+
+ >>>  CPU Time used in HES IT          is   4.45 seconds
+ >>> wall Time used in HES IT          is   1.66 seconds
+    Hessian eival: Residual for vector   1:  0.4231660153E-01 and eival: 0.3202828423E+00  It =     2  Conv =  F
+                    Error of PCG iteration  1:      0.0620307334 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0212926547 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0105077233 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0050468677 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0027417416 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0012325301 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0007744797 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0004299557 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0002403565 (mu =   0.00)
+                    PCG converged in   9 iterations!
+                    PCG: residual reduced by     99.61%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.68 seconds
+
+
+ >>> Time used in GALPHA is   0.69 seconds
+
+
+ >>> Time used in LINSOL is   0.08 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.94 seconds
+
+
+ >>> Time used in FIT-J  is   0.95 seconds
+
+
+ >>> Time used in JBUILD is   1.78 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.10 seconds
+
+ >>>  CPU Time used in HES IT          is   4.00 seconds
+ >>> wall Time used in HES IT          is   1.64 seconds
+    Hessian eival: Residual for vector   1:  0.3008466326E-01 and eival: 0.3188011278E+00  It =     3  Conv =  F
+                    Error of PCG iteration  1:      0.0414395185 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0157403670 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0079183281 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0039177600 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0023266037 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0012417992 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0006497617 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0003240217 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0001961757 (mu =   0.00)
+                    PCG converged in   9 iterations!
+                    PCG: residual reduced by     99.53%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.73 seconds
+
+
+ >>> Time used in GALPHA is   0.74 seconds
+
+
+ >>> Time used in LINSOL is   0.07 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.93 seconds
+
+
+ >>> Time used in FIT-J  is   0.94 seconds
+
+
+ >>> Time used in JBUILD is   1.82 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.44 seconds
+
+ >>>  CPU Time used in HES IT          is   5.40 seconds
+ >>> wall Time used in HES IT          is   1.64 seconds
+    Hessian eival: Residual for vector   1:  0.2171223996E-01 and eival: 0.3179482305E+00  It =     4  Conv =  F
+                    Error of PCG iteration  1:      0.0391353687 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0132462001 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0062574565 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0035726380 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0019215647 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0013241783 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0007165805 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0003581510 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0001510555 (mu =   0.00)
+                    PCG converged in   9 iterations!
+                    PCG: residual reduced by     99.61%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.73 seconds
+
+
+ >>> Time used in GALPHA is   0.74 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.01 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.43 seconds
+
+ >>>  CPU Time used in HES IT          is   5.43 seconds
+ >>> wall Time used in HES IT          is   1.65 seconds
+    Hessian eival: Residual for vector   1:  0.2147424024E-01 and eival: 0.3172762511E+00  It =     5  Conv =  F
+                    Error of PCG iteration  1:      0.0487456749 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0173365199 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0080714351 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0039449173 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0019603840 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0010354937 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0005962745 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0003470438 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0002015122 (mu =   0.00)
+                    PCG converged in   9 iterations!
+                    PCG: residual reduced by     99.59%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.99 seconds
+
+
+ >>> Time used in FIT-J  is   1.00 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.23 seconds
+
+ >>>  CPU Time used in HES IT          is   5.25 seconds
+ >>> wall Time used in HES IT          is   1.65 seconds
+    Hessian eival: Residual for vector   1:  0.1832127129E-01 and eival: 0.3167251075E+00  It =     6  Conv =  F
+                    Error of PCG iteration  1:      0.0380619983 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0134885779 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0062117578 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0030369348 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0014106225 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0006912013 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0004385102 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0001999078 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0001128529 (mu =   0.00)
+                    PCG converged in   9 iterations!
+                    PCG: residual reduced by     99.70%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.01 seconds
+
+
+ >>> Time used in JBUILD is   1.88 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.89 seconds
+
+ >>>  CPU Time used in HES IT          is   4.92 seconds
+ >>> wall Time used in HES IT          is   1.65 seconds
+    Hessian eival: Residual for vector   1:  0.1212445564E-01 and eival: 0.3164812184E+00  It =     7  Conv =  F
+                    Error of PCG iteration  1:      0.0247465417 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0076382504 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0034064778 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0020781453 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0009476923 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0005433428 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0002749311 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0001399998 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000850819 (mu =   0.00)
+                    PCG converged in   9 iterations!
+                    PCG: residual reduced by     99.66%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.70 seconds
+
+
+ >>> Time used in GALPHA is   0.71 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.97 seconds
+
+
+ >>> Time used in FIT-J  is   0.98 seconds
+
+
+ >>> Time used in JBUILD is   1.81 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.51 seconds
+
+ >>>  CPU Time used in HES IT          is   7.26 seconds
+ >>> wall Time used in HES IT          is   1.83 seconds
+    Hessian eival: Residual for vector   1:  0.9297016033E-02 and eival: 0.3163666313E+00  It =     8  Conv =  F
+                    Error of PCG iteration  1:      0.0219070424 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0075564806 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0035499879 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0017657354 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0008630288 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0003514235 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0001952588 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000951210 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000559772 (mu =   0.00)
+                    PCG converged in   9 iterations!
+                    PCG: residual reduced by     99.74%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.70 seconds
+
+
+ >>> Time used in GALPHA is   0.70 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.94 seconds
+
+
+ >>> Time used in FIT-J  is   0.94 seconds
+
+
+ >>> Time used in JBUILD is   1.76 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.57 seconds
+
+ >>>  CPU Time used in HES IT          is   4.52 seconds
+ >>> wall Time used in HES IT          is   1.65 seconds
+    Hessian eival: Residual for vector   1:  0.5697580457E-02 and eival: 0.3162891729E+00  It =     9  Conv =  F
+                    Error of PCG iteration  1:      0.0137425253 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0047119391 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0021407659 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0010379177 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0005082130 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0002090618 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0001247539 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000523781 (mu =   0.00)
+                    PCG converged in   8 iterations!
+                    PCG: residual reduced by     99.62%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.99 seconds
+
+
+ >>> Time used in FIT-J  is   1.00 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.32 seconds
+
+ >>>  CPU Time used in HES IT          is   4.38 seconds
+ >>> wall Time used in HES IT          is   1.71 seconds
+    Hessian eival: Residual for vector   1:  0.3484800103E-02 and eival: 0.3162543637E+00  It =    10  Conv =  F
+                    Error of PCG iteration  1:      0.0117188521 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0039796167 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0015265305 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0008334430 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0004054841 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0001863308 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0001078865 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000518919 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000324716 (mu =   0.00)
+                    PCG converged in   9 iterations!
+                    PCG: residual reduced by     99.72%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.73 seconds
+
+
+ >>> Time used in GALPHA is   0.74 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.99 seconds
+
+
+ >>> Time used in FIT-J  is   0.99 seconds
+
+
+ >>> Time used in JBUILD is   1.86 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.48 seconds
+
+ >>>  CPU Time used in HES IT          is   4.76 seconds
+ >>> wall Time used in HES IT          is   1.67 seconds
+    Hessian eival: Residual for vector   1:  0.1169302211E-02 and eival: 0.3162489574E+00  It =    11  Conv =  F
+                    Error of PCG iteration  1:      0.0044452568 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0016439741 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0005975348 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0003087258 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0001560529 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0000689515 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0000372063 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000169199 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000105400 (mu =   0.00)
+                    PCG converged in   9 iterations!
+                    PCG: residual reduced by     99.76%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.04 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.01 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.11 seconds
+
+ >>>  CPU Time used in HES IT          is   4.20 seconds
+ >>> wall Time used in HES IT          is   1.66 seconds
+    Hessian eival: Residual for vector   1:  0.4564849158E-03 and eival: 0.3162482597E+00  It =    12  Conv =  F
+                    Error of PCG iteration  1:      0.0016980472 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0006543247 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0002472395 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0001234825 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0000664612 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0000365473 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0000173836 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000091430 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000058040 (mu =   0.00)
+                    Error of PCG iteration 10:      0.0000027387 (mu =   0.00)
+                    PCG converged in  10 iterations!
+                    PCG: residual reduced by     99.84%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.01 seconds
+
+
+ >>> Time used in JBUILD is   1.88 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.25 seconds
+
+ >>>  CPU Time used in HES IT          is   5.37 seconds
+ >>> wall Time used in HES IT          is   1.65 seconds
+    Hessian eival: Residual for vector   1:  0.1650312985E-03 and eival: 0.3162481379E+00  It =    13  Conv =  F
+                    Error of PCG iteration  1:      0.0006198920 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0002177387 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0000873175 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0000501496 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0000289499 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0000143831 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0000050270 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000026369 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000012427 (mu =   0.00)
+                    PCG converged in   9 iterations!
+                    PCG: residual reduced by     99.80%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.98 seconds
+
+
+ >>> Time used in FIT-J  is   0.99 seconds
+
+
+ >>> Time used in JBUILD is   1.86 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.92 seconds
+
+ >>>  CPU Time used in HES IT          is   5.02 seconds
+ >>> wall Time used in HES IT          is   1.66 seconds
+    Hessian eival: Residual for vector   1:  0.1153016540E-03 and eival: 0.3162481129E+00  It =    14  Conv =  F
+                    Error of PCG iteration  1:      0.0005684687 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0002046998 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0000825933 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0000470154 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0000245819 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0000120350 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0000048699 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000020295 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000008985 (mu =   0.00)
+                    PCG converged in   9 iterations!
+                    PCG: residual reduced by     99.84%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.01 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.52 seconds
+
+ >>>  CPU Time used in HES IT          is   4.65 seconds
+ >>> wall Time used in HES IT          is   1.66 seconds
+    Hessian eival: Residual for vector   1:  0.5276337524E-04 and eival: 0.3162481065E+00  It =    15  Conv =  F
+                    Error of PCG iteration  1:      0.0003144354 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0001113276 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0000462431 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0000257708 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0000133766 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0000068583 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0000029421 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000013611 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000006920 (mu =   0.00)
+                    Error of PCG iteration 10:      0.0000003382 (mu =   0.00)
+                    PCG converged in  10 iterations!
+                    PCG: residual reduced by     99.89%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.99 seconds
+
+
+ >>> Time used in FIT-J  is   1.00 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.63 seconds
+
+ >>>  CPU Time used in HES IT          is   5.79 seconds
+ >>> wall Time used in HES IT          is   1.66 seconds
+    Hessian eival: Residual for vector   1:  0.1746030336E-04 and eival: 0.3162481057E+00  It =    16  Conv =  F
+                    Error of PCG iteration  1:      0.0001303931 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0000418699 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0000186254 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0000096654 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0000048659 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0000029914 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0000011436 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000005019 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000002619 (mu =   0.00)
+                    Error of PCG iteration 10:      0.0000001206 (mu =   0.00)
+                    PCG converged in  10 iterations!
+                    PCG: residual reduced by     99.91%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.99 seconds
+
+
+ >>> Time used in FIT-J  is   1.00 seconds
+
+
+ >>> Time used in JBUILD is   1.86 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.15 seconds
+
+ >>>  CPU Time used in HES IT          is   5.34 seconds
+ >>> wall Time used in HES IT          is   1.66 seconds
+    Hessian eival: Residual for vector   1:  0.1133076446E-04 and eival: 0.3162481056E+00  It =    17  Conv =  F
+                    Error of PCG iteration  1:      0.0001069740 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0000308425 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0000149593 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0000072123 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0000035765 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0000025616 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0000008810 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000004029 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000002100 (mu =   0.00)
+                    Error of PCG iteration 10:      0.0000000977 (mu =   0.00)
+                    PCG converged in  10 iterations!
+                    PCG: residual reduced by     99.91%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.75 seconds
+
+
+ >>> Time used in GALPHA is   0.76 seconds
+
+
+ >>> Time used in LINSOL is   0.04 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.01 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.66 seconds
+
+ >>>  CPU Time used in HES IT          is   4.88 seconds
+ >>> wall Time used in HES IT          is   1.66 seconds
+    Hessian eival: Residual for vector   1:  0.7913825970E-05 and eival: 0.3162481055E+00  It =    18  Conv =  F
+                    Error of PCG iteration  1:      0.0000964622 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0000251898 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0000129210 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0000058319 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0000028899 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0000022931 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0000007155 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000003230 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000001608 (mu =   0.00)
+                    Error of PCG iteration 10:      0.0000000731 (mu =   0.00)
+                    PCG converged in  10 iterations!
+                    PCG: residual reduced by     99.92%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.06 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.99 seconds
+
+
+ >>> Time used in FIT-J  is   1.00 seconds
+
+
+ >>> Time used in JBUILD is   1.87 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.21 seconds
+
+ >>>  CPU Time used in HES IT          is   4.44 seconds
+ >>> wall Time used in HES IT          is   1.67 seconds
+    Hessian eival: Residual for vector   1:  0.4652293023E-05 and eival: 0.3162481055E+00  It =    19  Conv =  F
+                    Error of PCG iteration  1:      0.0000670239 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0000167123 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0000086952 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0000038336 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0000019126 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0000015706 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0000004695 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000002184 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000001063 (mu =   0.00)
+                    Error of PCG iteration 10:      0.0000000490 (mu =   0.00)
+                    Preconditioning: Force exit from PCG after  11 iterations
+                    PCG: residual reduced by     99.93%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.73 seconds
+
+
+ >>> Time used in GALPHA is   0.74 seconds
+
+
+ >>> Time used in LINSOL is   0.06 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.99 seconds
+
+
+ >>> Time used in FIT-J  is   1.00 seconds
+
+
+ >>> Time used in JBUILD is   1.88 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   3.19 seconds
+
+ >>>  CPU Time used in HES IT          is   5.44 seconds
+ >>> wall Time used in HES IT          is   1.67 seconds
+    Hessian eival: Residual for vector   1:  0.2511358022E-05 and eival: 0.3162481055E+00  It =    20  Conv =  F
+                    Error of PCG iteration  1:      0.0000383693 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0000094472 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0000048909 (mu =   0.00)
+                    Error of PCG iteration  4:      0.0000021322 (mu =   0.00)
+                    Error of PCG iteration  5:      0.0000010546 (mu =   0.00)
+                    Error of PCG iteration  6:      0.0000008791 (mu =   0.00)
+                    Error of PCG iteration  7:      0.0000002629 (mu =   0.00)
+                    Error of PCG iteration  8:      0.0000001230 (mu =   0.00)
+                    Error of PCG iteration  9:      0.0000000594 (mu =   0.00)
+                    Error of PCG iteration 10:      0.0000000277 (mu =   0.00)
+                    Preconditioning: Force exit from PCG after  11 iterations
+                    PCG: residual reduced by     99.93%  (mu =   0.00)
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.74 seconds
+
+
+ >>> Time used in GALPHA is   0.75 seconds
+
+
+ >>> Time used in LINSOL is   0.05 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   1.00 seconds
+
+
+ >>> Time used in FIT-J  is   1.01 seconds
+
+
+ >>> Time used in JBUILD is   1.88 seconds
+
+  Thresholds for exchange:     0.10E-07    0.10E-10    0.10E-14
+
+ >>> Time used in XBUILD is   2.65 seconds
+
+ >>>  CPU Time used in HES IT          is   4.91 seconds
+ >>> wall Time used in HES IT          is   1.67 seconds
+    Hessian eival: Residual for vector   1:  0.8318679149E-06 and eival: 0.3162481055E+00  It =    21  Conv =  T
+    Convergence of all vectors!
+    Eigenvalue for vector            1  is:   0.316248105487960     
+ 
+*======================================================================*
+                Hessian eigenvalue no.  1:     0.316248      
+*======================================================================*
+ >>>  CPU Time used in HESEIG          is   0 hours  1 minute  45 seconds
+ >>> wall Time used in HESEIG          is  35.02 seconds
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -3.15247920065    0.0000    0.1875    0.0000000
+  3   -0.41363405909    0.0000    0.0000    0.0000000
+  4   -0.02791990964    0.0000    0.0000    0.0000000
+  5   -0.00124654240    0.0000    0.0000    0.0000000
+  6   -0.00004552297    0.0000    0.0000    0.0000000
+  7   -0.00000230182    0.0000    0.0000    0.0000000
+  8   -0.00000034525    0.0000    0.0000    0.0000000
+  9   -0.00000001898    0.0000    0.0000    0.0000000
+ 10   -0.00000000047    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1          -658.31671077962437266251      0.169235389262963D+02
+    2          -661.46918998027615543833      0.351338491261263D+01
+    3          -661.88282403936443643033      0.118986202261325D+01
+    4          -661.91074394900249444618      0.206826633728285D+00
+    5          -661.91199049140016086312      0.346976128383481D-01
+    6          -661.91203601437075576541      0.751589046679869D-02
+    7          -661.91203831619316133583      0.248833231143311D-02
+    8          -661.91203866144712719688      0.435238180598430D-03
+    9          -661.91203868042464364407      0.726987507154914D-04
+   10          -661.91203868089530715224      0.126269405721708D-04
+ 
+      SCF converged !!!! 
+ Total no. of matmuls used:        2521
+ Total no. of Fock/KS matrix evaluations:          10
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                  97.520 MB
+  Max allocated memory, type(matrix)           97.520 MB
+  Max allocated memory, real(realk)             0.000 Byte
+  Max allocated memory, integer                 0.000 Byte
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               0.000 Byte
+  Max allocated memory, integralitem            0.000 Byte
+  Max allocated memory, Overlap                 0.000 Byte
+  Max allocated memory, ODitem                  0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    174.5685        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:            -661.912038680895
+     Nuclear repulsion:           316.807555888350
+     Electronic energy:          -978.719594569245
+
+     Final gradient norm:           0.000012626941
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:02:55 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  H   1s     1.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   2  H   1s     0.0000   1.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   3  H   1s     0.0000   0.0000   1.0000   0.0000   0.0000   0.0000   0.0000
+   4  H   1s     0.0000   0.0000   0.0000   1.0000   0.0000   0.0000   0.0000
+   5  C   1s     0.0000   0.0000   0.0000   0.0000   1.0000   0.0000   0.0000
+   6  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000   1.0000   0.0000
+   7  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   1.0000
+   8  C   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   9  C   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  10  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  11  C   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  12  C   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  13  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  14  O   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  15  O   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  16  O   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  17  O   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  18  O   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  19  O   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  20  O   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  21  O   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  22  O   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  23  F   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  24  F   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  25  F   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  26  F   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  27  F   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  28  F   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  29  F   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  30  F   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  31  F   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  32  Cl  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  33  Cl  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  34  Cl  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  35  Cl  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  36  Cl  2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  37  Cl  2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  38  Cl  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  39  Cl  2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  40  Cl  2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  41  Cl  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  42  Cl  2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  43  Cl  2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  44  Cl  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+
+ Orbital          8        9       10       11       12       13       14
+   1  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   2  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   3  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   4  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   5  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   6  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   7  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   8  C   2px    1.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   9  C   2py    0.0000   1.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  10  C   2pz    0.0000   0.0000   1.0000   0.0000   0.0000   0.0000   0.0000
+  11  C   2px    0.0000   0.0000   0.0000   1.0000   0.0000   0.0000   0.0000
+  12  C   2py    0.0000   0.0000   0.0000   0.0000   1.0000   0.0000   0.0000
+  13  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   1.0000   0.0000
+  14  O   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   1.0000
+  15  O   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  16  O   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  17  O   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  18  O   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  19  O   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  20  O   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  21  O   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  22  O   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  23  F   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  24  F   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  25  F   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  26  F   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  27  F   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  28  F   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  29  F   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  30  F   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  31  F   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  32  Cl  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  33  Cl  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  34  Cl  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  35  Cl  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  36  Cl  2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  37  Cl  2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  38  Cl  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  39  Cl  2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  40  Cl  2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  41  Cl  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  42  Cl  2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  43  Cl  2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  44  Cl  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+
+ Orbital         15       16       17       18       19       20       21
+   1  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   2  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   3  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   4  H   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   5  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   6  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   7  C   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   8  C   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   9  C   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  10  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  11  C   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  12  C   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  13  C   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  14  O   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  15  O   1s     1.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  16  O   1s     0.0000   1.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  17  O   2px    0.0000   0.0000   1.0000   0.0000   0.0000   0.0000   0.0000
+  18  O   2py    0.0000   0.0000   0.0000   1.0000   0.0000   0.0000   0.0000
+  19  O   2pz    0.0000   0.0000   0.0000   0.0000   1.0000   0.0000   0.0000
+  20  O   2px    0.0000   0.0000   0.0000   0.0000   0.0000   1.0000   0.0000
+  21  O   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   1.0000
+  22  O   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  23  F   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  24  F   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  25  F   1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  26  F   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  27  F   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  28  F   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  29  F   2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  30  F   2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  31  F   2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  32  Cl  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  33  Cl  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  34  Cl  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  35  Cl  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  36  Cl  2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  37  Cl  2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  38  Cl  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  39  Cl  2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  40  Cl  2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  41  Cl  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  42  Cl  2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  43  Cl  2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  44  Cl  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :    175.89 seconds
+ >>>> Total wall time used in SIRIUS :     53.71 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:02:55 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:  2 minutes 56 seconds
+ >>>> Total wall time used in DALTON:  53.88 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:02:55 2010
+     Host name              : fe2.grendel.cscaa.dk                    

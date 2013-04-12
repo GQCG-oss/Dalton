@@ -146,7 +146,7 @@
 {$params={
   name         => "qm3ele", 
   type         => 0, 
-  string => "Electrostatic energy:", 
+  string => "Electrostatic energy:",
   pos    => 1};
 }
 ## qm3ele end  #######################################################
@@ -177,6 +177,15 @@
   pos    => 1};
 }
 ## qm3energy end  #######################################################
+
+## qm3pcmene start #######################################################
+{$params={
+  name         => "qm3pcmene", 
+  type         => 0, 
+  string => "QM/MM/PCM energy:", 
+  pos    => 1};
+}
+## qm3pcmene end  #######################################################
 
 ## qmmmq start #######################################################
 {$params={
@@ -608,7 +617,7 @@
   end_string   => "Total CPU  time used in DALTON:",
   start_offset => 0,
   end_offset   => 50,
-  line         => 7,
+  line         => 8,
   pos          => 3,
   thr          => 1.0e-6};
 }
@@ -856,6 +865,18 @@
   remend => 0};
 }
 ## qm3convergence end  #######################################################
+
+## qm3pcmconv start #######################################################
+{$params = {
+  name   => "qm3pcmconv",
+  type   => 4,
+  string => 'QM/MM/PCM calculation converged',
+  maxout => -1,
+  post   => 0,
+  rembeg => 0,
+  remend => 0};
+}
+## qm3pcmconv end  #######################################################
 
 ## qmmmconvergence start #######################################################
 {$params = {

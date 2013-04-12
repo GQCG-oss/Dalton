@@ -386,7 +386,7 @@ strict_callback(DftGrid* grid, QuadStrictData* data)
 void
 dftqrcs_(real* fi, real* cmo, real* kappaY, integer* symY, integer* ispinY,
          real* kappaZ, integer* symZ, integer* ispinZ, integer* addfock, 
-         real* work, integer* lwork)
+         real* work, integer* lwork, integer* iprint)
 {
     integer norbt2 = inforb_.norbt*inforb_.norbt;
     DftCallbackData cbdata[1];
@@ -398,7 +398,7 @@ dftqrcs_(real* fi, real* cmo, real* kappaY, integer* symY, integer* ispinY,
     cbdata[0].callback = (DftCallback)strict_callback;
     cbdata[0].cb_data = data;
 
-    dft_integrate(cmo, work, lwork, cbdata, ELEMENTS(cbdata));
+    dft_integrate(cmo, work, lwork, iprint, cbdata, ELEMENTS(cbdata));
 
     /* data->dftcontr[1] = data->dftcontr[2] = 0.016642368353978; */
     /* Example2: LiH, 1, STO-2G, Example:

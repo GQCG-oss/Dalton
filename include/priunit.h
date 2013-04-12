@@ -9,8 +9,10 @@ extern struct common_priunit priunit_;
       PARAMETER (SEPARATOR = '----------------------------------------' &
      &                     //'----------------------------------------')
       INTEGER LUCMD
-      INTEGER LUPRI, LUERR, LUSTAT, LUW4, LUPOT, NINFO, NWARN, IPRSTAT
+      INTEGER LUPRI, LUERR, LUSTAT, LUW4, LUPOT, NINFO, NWARN, IPRSTAT, &
+     &        LQM3PCM, LPCMQM3
       COMMON /PRIUNIT/ LUCMD,                                           &
-     &        LUPRI, LUERR, LUSTAT, LUW4, LUPOT, NINFO, NWARN, IPRSTAT
+     &        LUPRI, LUERR, LUSTAT, LUW4, LUPOT, NINFO, NWARN, IPRSTAT, &
+     &        LQM3PCM, LPCMQM3
 ! ---  end of priunit.h ---
 #endif

@@ -626,6 +626,12 @@ functions.
 %(ROA)\index{Raman optical activity}\index{ROA}.
 
 \begin{description}
+\item[\Key{ABSLRS}]\verb| |\newline
+If absorption is included in the calculation of the linear response
+functions, the algorithm with symmetrized trial vectors\cite{kauczor:2011}
+is used to solve damped response equations. \Key{ABSLRS} requires that
+\Key{LIFETIME} is specified.
+
 \item[\Key{FREQUE}]\verb| |\newline
 \verb|READ (LUCMD,*) NFRVAL|\newline
 \verb|READ (LUCMD,*) (FRVAL(I), I = 1, NFRVAL)|
