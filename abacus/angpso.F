@@ -28,15 +28,15 @@ C  PARAMETOS :        LEO SIRIUS.RST
 C ------------------------------------------------------
       CHARACTER*8  STARS, B(4)
       PARAMETER (STARS = '********')
-      double precision cmos(1700,1700), xmos(5000000)
+      double precision cmos(NBAST,NBAST), xmos(5000000)
       integer*8 k
 
 C ------------------------------------------------------
 C  PARAMETROS :       MATRICES DE TRABAJO 
 C ------------------------------------------------------
 C
-      double precision A1(1700,1700), A2(1700,1700), ORBC(1700)
-      double precision OVERLP(1700,1700), Av, uno , p(1700,1700), S1
+      double precision A1(NBAST,NBAST), A2(NBAST,NBAST), ORBC(NBAST)
+      double precision OVERLP(NBAST,NBAST), Av, uno , p(NBAST,NBAST), S1
 C
 C
 C ======================================================
@@ -59,7 +59,8 @@ C ------------------------------------------------------
        naos = NBAST 
        nmos= naos
        nelec=10
-c       write(*,*) 'nelec = NOCCT ?. elec. cpa closed:', NOCCT, nelec
+c       write(*,*) 'nelec = NOCCT ?. elec. cpa closed: ', NOCCT, nelec
+c       write(*,*) ' NBAST', NBAST
  
 c      write(lupri,*)
 c      write(lupri,'(/72A1/)')('*',I=1,72)
@@ -109,7 +110,7 @@ c      write(lupri,*) '*******************************************'
 c      write(lupri,*) '***** Ahora deberia venir la cuenta *******' 
 c      write(lupri,*) '*******************************************' 
 c      write(lupri,*) 
-      CALL readaop( OVERLP, naos, 'OVERLAP ')
+      CALL READAOP( OVERLP, naos, 'OVERLAP ')
 c      write(lupri,*) ' ****** OVERLAP *******'
 C      write(lupri,*) ((OVELP(i,j),j=1,naos), i=1,naos)
       IF (B0(1).Eq.'ORBITAL') then
@@ -121,16 +122,16 @@ cjim-dbg       DO k = j, nlab
 C  we keep the general form in case we use it somewhere else.
         j=1
         k=2
-        do i1=1,1700  
+        do i1=1,NBAST
           ORBC(i1) = 0.0
-          do i2=1,1700  
+          do i2=1,NBAST  
             A2(i1,i2) = 0.0
           enddo
         enddo
-        CALL readaop( A1, naos, LABEL(j))
-        CALL readaop( A2, naos, LABEL(k))
+        CALL READAOP( A1, naos, LABEL(j))
+        CALL READAOP( A2, naos, LABEL(k))
 c       write(lupri,*) 'Llamando Cuenta para : ', LABEL(j),'  ', LABEL(k)
-        CALL cuenta(ORBC,A1, A2,Cmos,NOCCT,naos,nmos)
+        CALL cuenta(ORBC,A1, A2,Cmos,NOCCT,naos,nmos,NBAST)
         IF (B0(1).Eq.'ORBITAL') then
             write(lupri,*) '< ',LABEL(j),' >< ',LABEL(k),'>' 
         ENDIF 
@@ -177,8 +178,8 @@ C ----------------------------------------------------------
          write(lupri,*) '********** Chequeo de la Base *************'
          write(lupri,*) '*******************************************' 
          uno = 0.0
-         do i = 1,1700
-            do j = 1,1700
+         do i = 1,NBAST
+            do j = 1,NBAST
             p(i,j) = 0.0
             A2(i,j)= 0.0
             enddo
@@ -253,8 +254,8 @@ C -------------------------------------------------
 C     PARAMETOS DE LEO AOPROPER
 C -------------------------------------------------
       CHARACTER*8  STARS, LABEL, B(4)
-      double precision xx(5000000) , A(1700,1700)
-      integer*4 nelem, n, mu, nu
+      double precision xx(5000000) , A(n,n)
+      integer*4 nelem,  mu, nu
       PARAMETER (STARS = '********')
       PARAMETER (LUINP222 = 222)
 C ===================================================
@@ -336,7 +337,7 @@ C      write(*,*) '*****************************************'
 C
 C ***********************************************************************
 C
-      SUBROUTINE cuenta(ORBC,A1,A2,C,noc,naos,nmos)
+      SUBROUTINE cuenta(ORBC,A1,A2,C,noc,naos,nmos,NBAST)
 C
 C     Melo, azua, giribet, alejandrito, aucar, romero, homero,
 C  bart and lisa
@@ -352,10 +353,10 @@ C      nmos : Numero de obitales moleculares
 C       a   : Ocupados = nelec/2, AHORA 'noc'
 C       i   : Todos  = nmos
 C -------------------------------------------------
-       DIMENSION A1(1700,1700), A2(1700,1700), C(1700,1700)
-       DIMENSION CT(1700,1700),gama(1700,1700)
-       DIMENSION alfa(1700,1700), beta(1700,1700)
-       DIMENSION delta(1700,1700)
+       DIMENSION A1(NBAST,NBAST), A2(NBAST,NBAST), C(NBAST,NBAST)
+       DIMENSION CT(NBAST,NBAST),gama(NBAST,NBAST)
+       DIMENSION alfa(NBAST,NBAST), beta(NBAST,NBAST)
+       DIMENSION delta(NBAST,NBAST)
        double precision A1, A2, C, CT, ORBC(5000000)
        double precision alfa, beta, gama, delta, g1, g2
 C       double precision mat1, mat2
@@ -380,7 +381,7 @@ C
 C       write(*,*) 'alfa'     
        Do mu = 1, naos
           Do i = 1, nmos
-          alfa(mu,i)= g2(mu,i,naos,A1,C)
+          alfa(mu,i)= g2(mu,i,naos,A1,C,NBAST)
 C         write(*,*) alfa(mu,i)
           enddo
        enddo
@@ -388,21 +389,21 @@ C       write(*,*) '****'
 C       write(*,*) 'beta'     
        Do sigma=1, naos
           Do a =1, noc
-          beta(sigma,a)= g2(sigma,a,naos,A2,C)
+          beta(sigma,a)= g2(sigma,a,naos,A2,C,NBAST)
 C         write(*,*) beta(sigma,a)
           enddo
        enddo
 C       write(*,*) 'gama'     
        Do a = 1, noc
           Do i = 1, nmos
-          gama(a,i)= g1(a,i,naos,CT,alfa)
+          gama(a,i)= g1(a,i,naos,CT,alfa,NBAST)
 C          write(*,*) gama(a,i)
           enddo
        enddo
 C       write(*,*) 'delta'     
        Do i = 1, nmos
           Do a = 1, noc
-          delta(i,a)=  g1(i,a,naos,CT,beta)
+          delta(i,a)=  g1(i,a,naos,CT,beta,NBAST)
 C          write(*,*) delta(i,a)
           enddo
        enddo
@@ -414,8 +415,8 @@ C          write(*,*) delta(i,a)
        return
        end
 C ***********************************************************
-       FUNCTION g2(i, mu, lim, mat1, mat2)
-       dimension mat1(1700,1700), mat2(1700,1700)
+       FUNCTION g2(i, mu, lim, mat1, mat2,NBAST)
+       dimension mat1(NBAST,NBAST), mat2(NBAST,NBAST)
        double precision mat1, mat2, S, g2
        integer*4 i, mu, lim, k
        S = 0.0
@@ -430,8 +431,8 @@ C       write(*,*) 'FIN g2 : ', S
        return
        end
 C *********************************************
-       FUNCTION g1(i,mu,lim,mat1,mat2)
-       dimension mat1(1700,1700), mat2(1700,1700)
+       FUNCTION g1(i,mu,lim,mat1,mat2,NBAST)
+       dimension mat1(NBAST,NBAST), mat2(NBAST,NBAST)
        double precision  mat1, mat2, S, g1
        integer*4 i, mu, lim, k
        S = 0.0

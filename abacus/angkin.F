@@ -33,10 +33,10 @@ C ------------------------------------------------------
        integer  naos, nmos, nelec, lineas
        double precision Xmos, Cmos, Vec1, Vec2, Vec3,
      &    Mat1, Mat2, Mat3, MatKin, VecKin
-       dimension xmos(5000000), CCMOS(1700,1700), 
+       dimension xmos(5000000), CCMOS(NBAST,NBAST), 
      &    Vec1(5000000), Vec2(5000000), Vec3(5000000),
-     &    Mat1(1700,1700), Mat2(1700,1700), Mat3(1700,1700),
-     &    MatKin(1700,1700), VecKin(5000000)
+     &    Mat1(NBAST,NBAST), Mat2(NBAST,NBAST), Mat3(NBAST,NBAST),
+     &    MatKin(NBAST,NBAST), VecKin(5000000)
 C ------------------------------------------------------
 C  TITLUOS :
 C ------------------------------------------------------
@@ -233,7 +233,7 @@ C
         CALL Getmatrix(Labl(nlab),RTNLBLb,Vec1,number)
         CALL Matform(Vec1,Mat1,naos,RTNLBLb(2),number,lupri)
 C  Do : A.B
-        CALL CuentaAB(MatKin,Mat1,CCMOS,Mat2,nelec,naos)
+        CALL CuentaAB(MatKin,Mat1,CCMOS,Mat2,nelec,naos,NBAST)
         CALL Vecform(Vec1,Mat2,naos,RTNLBLb(2),number,lupri)
 C
         if (JIMPRT.gt.2) then
@@ -248,7 +248,7 @@ C
 C
 C
 C  Do : B.A
-        CALL CuentaAB(Mat1,MatKin,CCMOS,Mat2,nelec,naos)
+        CALL CuentaAB(Mat1,MatKin,CCMOS,Mat2,nelec,naos,NBAST)
         CALL Vecform(Vec2,Mat2,naos,RTNLBLb(2),number,lupri)
 C
         if (JIMPRT.gt.2) then
@@ -378,7 +378,7 @@ C
 C =================================================================
 C =================================================================
 C
-        SUBROUTINE CuentaAB(A,B,Cmos,Cout,nelec,naos)
+        SUBROUTINE CuentaAB(A,B,Cmos,Cout,nelec,naos,NBAST)
 C
 C ***************************************************
 C       PARAMETROS : A.B  --> A.1.B = Cout
@@ -391,8 +391,8 @@ C   -------------------------------------------------
        double precision A, B, Cmos , aux1, aux2, Cout
        double precision g11, g22, Sum, ge1, ge2
        INTEGER   nelec, naos, mu, n , i, j
-       DIMENSION A(1700,1700),B(1700,1700), Cmos(1700,1700)
-       DIMENSION aux1(1700,1700), aux2(1700,1700), Cout(1700,1700)
+       DIMENSION A(NBAST,NBAST),B(NBAST,NBAST), Cmos(NBAST,NBAST)
+       DIMENSION aux1(NBAST,NBAST), aux2(NBAST,NBAST), Cout(NBAST,NBAST)
 C ***************************************************
 C       write(*,*) '          Empieza la cuenta AB = A.1.B'
 C                                               
@@ -405,8 +405,8 @@ C
        enddo
        Do mu = 1, naos
           Do n = 1, naos
-          aux2(mu,n) = g22(mu,n,naos,A,Cmos)
-          aux1(n,mu) = g11(n,mu,naos,Cmos,B)
+          aux2(mu,n) = g22(mu,n,naos,A,Cmos,NBAST)
+          aux1(n,mu) = g11(n,mu,naos,Cmos,B,NBAST)
           enddo
        enddo
 C    
@@ -433,10 +433,10 @@ cd       write(lupri,*)
        end
                                                
 C ***********************************************************
-       FUNCTION g22(i, mu, lim, mat1, mat2)
+       FUNCTION g22(i, mu, lim, mat1, mat2,nbas)
        integer*4 i, mu, lim, k
        double precision mat1, mat2, S, g22
-       dimension mat1(1700,1700), mat2(1700,1700)
+       dimension mat1(nbas,nbas), mat2(nbas,nbas)
        S = 0.0
        do k=1,lim
           S = S + mat1(i,k)*mat2(mu,k)
@@ -445,10 +445,10 @@ C ***********************************************************
        return
        end
 C *********************************************
-       FUNCTION g11(i,mu,lim,mat1,mat2)
+       FUNCTION g11(i,mu,lim,mat1,mat2,nbas)
        double precision  mat1, mat2, S, g11
        integer*4 i, mu, lim, k
-       dimension mat1(1700,1700), mat2(1700,1700)
+       dimension mat1(nbas,nbas), mat2(nbas,nbas)
 C OJO q estoy usando la mat 2 TRASPUESTA DE como viene !!!!
        S = 0.0
        do k=1,lim

@@ -391,9 +391,11 @@ C
       WRITE(lupri,*)' First and Second order relativistic '// 
      & 'corrections to nuclear shielding constant.'
 
-      WRITE(LUPRI,*)'     (For definitions on terms named ABC, '//
-     &             ' refered to relativistic correction '
-      WRITE(LUPRI,*)'      of sigma, see JCP. 137, 214319(2012))'
+      WRITE(LUPRI,*)'   -  For definitions on terms named ABC,'//
+     &              ' refered to relativistic correction '
+      WRITE(LUPRI,*)'      of sigma, see JCP. 137, 214319(2012). '
+      WRITE(LUPRI,*)'   -  Original LRESC papers at : JCP 118, 2 '//
+     & '(2003), and JCP ....'
 
 
 c      WRITE(LUPRI,*)' Gaugeo placed at : ', GAGORG  
