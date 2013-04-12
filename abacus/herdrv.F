@@ -346,6 +346,7 @@ C
 #include "r12int.h"
 #include "codata.h"
 #include "denfit.h"
+
 C     Keywords for R12 have been added (WK/UniKA/04-11-2002).
 cLig <> added RANGMO and RPSO
       DATA TABDIR /'*END OF', '*READIN', '*ONEINT', '*TWOINT',
@@ -1247,6 +1248,35 @@ c jim-dbg : setting all integrals for LRESC module
             DIPVEL = .TRUE. ! 108.DipVel
             OZKE   = .TRUE. ! 215.Lkin
             PSOKE  = .TRUE. ! 216.PsoKin
+            DNSKE  = .TRUE. ! 217.DiaKin
+Cxx  el problema es que el origen de gauge debe estar en el atomo q elegimos, LRATOM. 
+c       1 - Leer INP file y buscar LRATOM 
+c       2 - hacer que GAGORG = CORD(LRATOM)
+c Por ahora GAGORG = (0.0 0.0 0.0)
+c  ACLARARLO EN OUT FILE !!
+cx            write(lupri,*)' At INTEGRAL SECT to do GAUGEO on LRATOM' 
+cx            write(lupri,*)' Calling lrscinp for SELECT' 
+cx            CALL LRSCINP('.SELECT')
+cx            write(lupri,*)' Despues. LRATOM ', LRATOM 
+            GAGORG(1) = 0.000000
+            GAGORG(2) = 0.000000
+            GAGORG(3) = 0.000000
+c =================================================
+c -------------------------------------------------
+css           x    READ (LUCMD,*) (LRGAUG(IS), IS = 1, 3)
+css           x    DO ICENT = 1, NUCIND
+c             x     NAME =  NAMEX(3*ICENT)(1:4)
+css           x       WRITE (LUPRI,'(2X,A,3X," : ",3(A1,2X,A,F15.10))')
+css     &     x       NAME, '1' , 'x' , CORD(1,ICENT),
+css     &     x             '2' , 'y' , CORD(2,ICENT),
+css     &     x             '3' , 'z' , CORD(3,ICENT)
+css           x    ENDDO
+cs            READ (LUCMD, *, IOSTAT=IOS) (GAGORG(I),I=1,3)
+cs            IF (IOS.NE.0) THEN
+cs              WRITE(LUPRI,*) 'Error in reading (GAGORG(I),I=1,3)!'
+cs              WRITE(LUPRI,*) '(GAGORG(I),I=1,3):', (GAGORG(I),I=1,3)
+cs              CALL QUIT('Error in reading (GAGORG(I),I=1,3)!')
+cs            ENDIF
             GO TO 100 
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 299

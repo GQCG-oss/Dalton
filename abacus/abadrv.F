@@ -508,8 +508,9 @@ C
 C  jim-gesc 1: call to LRSCDRV 
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (RNLRSC) THEN
-       write(lupri,*) ' LRSCDRV is not called yet, still developing' 
-c       CALL LRSCDRV(WORK(KLST2),LWRK2) ! commented till finished
+       CALL LRSCDRV(WORK(KLST2),LWRK2) 
+cx       KLST2 final pointer on mem. LWRK2 the lenght of it
+cx       CALL AQRDRV(WORK(KLST2),LWRK2)
       END IF
 C
 C     ****************************************
@@ -814,7 +815,7 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
-     &             '.VIB_G ', '.LOCALI', '.LRESC '/ 
+     &             '.VIB_G ', '.LOCALI', '.LRESC ' / ! jim May-12 for LRESC
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -1752,24 +1753,29 @@ cLig <<
 C  jim-gesc 1.3:  Print section 'lresc will be done ' 
 Cx jim-dbg :  here we can stop if london or smthg else. 
 cx jim-dbg :  asking to specific logic : ex SOPPA
-       IF ((RNLRSC).AND.(ABASOP)) THEN
-         WRITE(LUPRI,*) ' Unsupported input - calculation of  ', 
-     &   ' corrections for shiledings not implemented for SOPPA yet '
-         CALL QUIT('Inconsistent input in ABAINP')
-       ENDIF
-       IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
-     &    ' Linear Response Elimination of Small Component',
-     &    ' DEVELOPING NOTES :   ' ,
-     &    '                   -uncontracted basis set not checked  ',
-     &    '                   -selected atom not yet #1 set internally',
-     &    '                   -no man pages.. yet ',
-     &    '                   -no test runs .. yet.. ',
-     &    '                   -ONLY 1st order sinlget corrections.',
-     &    '                   -     diam  singlet first order ',
-     &    '                   -     param singlet first order '
-
+      IF (RNLRSC) THEN
+c         IF (.NOT.NOLOND)  WRITE(LUPRI,*)
+c     &     ' Unsupported input - LONDON Orbitals not implemented' //
+c     &     ' for LRESC properties'
+c            CALL QUIT('Not supported input in ABAINP')
+ 
+         IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
+     &      ' Linear Response Elimination of Small Component (LRESC)',
+     &      ' DEVELOPING NOTES :   ' ,
+     &      '     - Uncontracted Basis set should be used ',
+     &      '     - LRESC Corrections : ',
+     &      '        Diamagnetic first and second order ',
+     &      '        Paramagnetic second singlet and triplet order ',
+     &      '     - Remember to set GAUGEO on INTEGRAL SECTION',
+     &      '        GAUGEO Should be placed at selected nucleus'
+      ENDIF
       IF (ABASOP) THEN
          IERR = 0
+         IF (RNLRSC) THEN    ! jim-dbg : soppa not for lresc
+            WRITE(LUPRI,'(A)') ' Incompatible input. LRESC '//
+     &                         'cannot be calculated with SOPPA'
+            IERR = IERR + 1
+         END IF
          IF (MOLGRD) THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. MOLGRD '//
      &                         'cannot be calculated with SOPPA'
@@ -2109,8 +2115,7 @@ C     We need to change the origin to the center of mass when calculating
 C     spin-rotation constants and molecular g-factors.
 C     This is now default for all molecular properties, unless turned off.
 C
-Cx jim-dbg : check GAUGEO origin here ?: not done yet
-      write(lupri,*)' jim looking for gaugeo' 
+Cx jim-dbg : jim looking for gaugeo, check GAUGEO origin here ?: not done yet
       KGEOM = 1
       KMASS = KGEOM + 3*(NATOMS + NFLOAT)
       KNAT  = KMASS + NATOMS + NFLOAT
