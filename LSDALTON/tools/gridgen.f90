@@ -105,6 +105,9 @@ program gridgen
      call getarg(5,arg)
      read(arg,*) jorb
      call print_moorb(trim(outputfile),'CHPLT',CMO,ls,iorb,jorb)
+  case default
+     print *, 'Input: ', trim(frmt)
+     stop 'Gridgen: Input keyword not recognized!'
   end select
 
 
