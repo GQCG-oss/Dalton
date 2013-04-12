@@ -28,72 +28,53 @@ module full_molecule
 
 contains
 
-  !> \brief Initialize informations about full molecule
-  !> Takes scalar values from the dalton input structure and read matrices from
-  !> files, this module contains all informations about HF state
+  !> \brief Initialize informations about full molecule by reading HF info from file.
+  !> NOTE: If this routine is modified, then molecule_init_from_inputs must be modified
+  !> in the same manner!
   !> \author Marcin Ziolkowski
   !> \param molecule Full molecule info
   !> \param mylsitem Integral program input
-  subroutine molecule_init(molecule,mylsitem,lu_output,int_output,int_error)
+  subroutine molecule_init_from_files(molecule,mylsitem)
 
     implicit none
     type(fullmolecule), intent(inout) :: molecule
     type(lsitem), intent(inout) :: mylsitem
-    integer :: natoms,basis,i,lu_output,int_output,int_error
+    integer :: natoms,basis,i
     integer :: r,iset,itype
     logical :: status_info
     real(realk) :: memory_use, tcpu, twall
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-    molecule%natoms = get_num_atoms(mylsitem)
-    molecule%nelectrons = get_num_electrons(mylsitem)
-    molecule%nbasis = get_num_basis_functions(mylsitem)
-    molecule%nauxbasis = get_num_aux_basis_functions(mylsitem)
-    molecule%numocc = molecule%nelectrons/2
-    molecule%numvirt = molecule%nbasis - molecule%numocc
-    molecule%ncore = count_ncore(mylsitem)
-    molecule%nval = molecule%numocc - molecule%ncore
+    ! Init basic info (molecular dimensions etc.)
+    call molecule_init_basics(molecule,mylsitem)
 
-    ! Skip read-in of info for molecule if requested (mainly for testing)
+    ! Skip read-in of info for molecule if requested (only for testing)
     if(DECinfo%SkipReadIn) then
        write(DECinfo%output,*) 'WARNING: I do NOT read in the molecular info files &
             & as requested in the input!'
        return
     end if
 
+    ! Get Fock, overlap, and MO coefficient matrices.
     call molecule_get_reference_state(molecule,mylsitem)
     call molecule_get_overlap(molecule,mylsitem)
-    call molecule_get_atomic_sizes(molecule,mylsitem)
     call molecule_mo_fock(molecule)
 
-    ! Print some info about the molecule
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(/,a)') '-- Full moleculecular info --'
-    write(DECinfo%output,'(/,a,i6)') 'FULL: Overall charge of molecule : ',nint(mylsitem%input%molecule%charge)
-    write(DECinfo%output,'(/,a,i6)') 'FULL: Number of electrons        : ',molecule%nelectrons
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of atoms            : ',molecule%natoms
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of basis func.      : ',molecule%nbasis
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of aux. basis func. : ',molecule%nauxbasis
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of core orbitals    : ',molecule%ncore
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of valence orbitals : ',molecule%nval
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of occ. orbitals    : ',molecule%numocc
-    write(DECinfo%output,'(a,i6)')   'FULL: Number of virt. orbitals   : ',molecule%numvirt
-    write(DECinfo%output,*)
-
-    ! Memory use for full molecule
-    call calculate_fullmolecule_memory(molecule,memory_use)
-    DECinfo%fullmolecule_memory = memory_use
+    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
+       call dec_get_canonical_orbitals(molecule)
+    end if
 
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
 
-  end subroutine molecule_init
+  end subroutine molecule_init_from_files
 
 
 
   !> \brief Initialize informations about full molecule
-  !> using input Fock,MO, and overlap matrix - rather then reading those from file
-  !> (as is done in molecule_init).
+  !> using input Fock,MO, and overlap matrix 
+  !> NOTE: If this routine is modified, then molecule_init_from_files must be modified
+  !> in the same manner!
   !> \author Kasper Kristensen
   !> \date November 2011
   subroutine molecule_init_from_inputs(molecule,mylsitem,F,S,C)
@@ -113,7 +94,42 @@ contains
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
 
-    ! Set number of atoms, orbitals, etc.
+    ! Init basic info (molecular dimensions etc.)
+    call molecule_init_basics(molecule,mylsitem)
+
+    ! Copy Fock, density, MO, and overlap matrices to molecule structure
+    call molecule_copy_FSC_matrices(molecule,F,S,C)
+
+    ! Fock matrix in MO basis
+    call molecule_mo_fock(molecule)
+
+    if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
+       call dec_get_canonical_orbitals(molecule)
+    end if
+
+    call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
+
+  end subroutine molecule_init_from_inputs
+
+
+
+  !> \brief Initialize basic informations about full molecule (number of basis functions,
+  !> number of occipied orbitals etc.).
+  !> \author Marcin Ziolkowski/Kasper Kristensen
+  !> \param molecule Full molecule info
+  !> \param mylsitem Integral program input
+  subroutine molecule_init_basics(molecule,mylsitem)
+
+    implicit none
+    type(fullmolecule), intent(inout) :: molecule
+    type(lsitem), intent(inout) :: mylsitem
+    integer :: natoms,basis,i
+    integer :: r,iset,itype
+    logical :: status_info
+    real(realk) :: memory_use, tcpu, twall
+
+    call LSTIMER('START',tcpu,twall,DECinfo%output)
+
     molecule%natoms = get_num_atoms(mylsitem)
     molecule%nelectrons = get_num_electrons(mylsitem)
     molecule%nbasis = get_num_basis_functions(mylsitem)
@@ -123,14 +139,12 @@ contains
     molecule%ncore = count_ncore(mylsitem)
     molecule%nval = molecule%numocc - molecule%ncore
 
-    ! Copy Fock, density, MO, and overlap matrices to molecule structure
-    call molecule_copy_FSC_matrices(molecule,F,S,C)
-
-    ! Init atomic sizes
+    ! Which basis functions are on which atoms?
     call molecule_get_atomic_sizes(molecule,mylsitem)
 
-    ! Fock matrix in MO basis
-    call molecule_mo_fock(molecule)
+    ! Memory use for full molecule
+    call calculate_fullmolecule_memory(molecule,memory_use)
+    DECinfo%fullmolecule_memory = memory_use
 
     ! Print some info about the molecule
     write(DECinfo%output,*)
@@ -146,14 +160,7 @@ contains
     write(DECinfo%output,'(a,i6)')   'FULL: Number of virt. orbitals   : ',molecule%numvirt
     write(DECinfo%output,*)
 
-    ! Memory use for full molecule
-    call calculate_fullmolecule_memory(molecule,memory_use)
-    DECinfo%fullmolecule_memory = memory_use
-
-    call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
-
-  end subroutine molecule_init_from_inputs
-
+  end subroutine molecule_init_basics
 
 
   !> \brief Copy Fock,density,MO, and overlap matrices in type(matrix) format to molecule structure.
@@ -330,81 +337,60 @@ contains
   end subroutine molecule_get_fock
 
   !> \brief Set orbitals used in DEC to canonical orbitals (only for testing).
-  !> Assumes that Fock matrix is stored in molecule%fock prior to calling this subroutine.
+  !> Assumes that Fock matrix is stored in molecule%fock when this subroutine is called.
+  !> After this call molecule%ypo and molecule%ypv will contain the occupied and virtual MO
+  !> coefficients, respectively, while molecule%ppfock and molecule%qqfock will be the occ-occ
+  !> and virt-virt blocks of the diagonal canonical MO Fock matrix.
   !> \author Kasper Kristensen
   !> \date September 2011
-  subroutine dec_get_canonical_orbitals(molecule,mylsitem)
+  subroutine dec_get_canonical_orbitals(molecule)
 
     implicit none
     !> Full molecule info
     type(fullmolecule), intent(inout) :: molecule
-    !> LSitem
-    type(lsitem), intent(inout) :: mylsitem
-    type(matrix) :: F,S,Ccan
-    integer :: funit
-    integer :: nbasis,i
-    real(realk), pointer :: eival(:)
-    logical :: file_exist,OnMaster
-    real(realk),pointer :: basis(:,:)
+    integer :: nbasis,i,nocc,nunocc
+    real(realk), pointer :: eival(:), C(:,:)
 
     nbasis = molecule%nbasis
-    call mem_alloc(basis,nbasis,nbasis)
+    nocc = molecule%numocc
+    nunocc = molecule%numvirt
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,*) 'Using canonical orbitals as requested in input!'
     write(DECinfo%output,*) 'Warning: This may cause meaningless results when the DEC scheme is used!'
     write(DECinfo%output,*)
-    inquire(file='cmo_orbitals.u',exist=file_exist)
 
-    CanonicalFileExists: if(file_exist) then
-       write(DECinfo%output,*) 'Reading canonical orbitals from cmo_orbitals.u'
-       call dec_read_mat_from_file('cmo_orbitals.u',nbasis,nbasis,basis)
+    ! Canonical MO coefficients
+    call mem_alloc(C,nbasis,nbasis)
 
-    else
-       write(DECinfo%output,*) 'Canonical orbitals do not exist and will be generated...'
+    ! Orbital energies
+    call mem_alloc(eival,nbasis)
 
-       ! Overlap matrix
-       call mat_init(S,nbasis,nbasis)
-       call mat_zero(S)
-       call II_get_overlap(DECinfo%output,DECinfo%output,mylsitem%setting,S)
+    ! Diagonalize Fock matrix
+    call solve_eigenvalue_problem(nbasis,molecule%fock,molecule%overlap,eival,C)
 
-       ! Eigenvalues
-       call mem_alloc(eival,nbasis)
+    ! Set MO coefficients
+    Molecule%ypo = C(:,1:nocc)   ! occupied 
+    Molecule%ypv = C(:,nocc+1:nbasis)   ! unoccupied
 
-       ! Get canonical orbitals
-       call mat_init(F,nbasis,nbasis)
-       call mat_set_from_full(molecule%fock(1:nbasis,1:nbasis), 1E0_realk, F)
-       call mat_init(Ccan,nbasis,nbasis)
-       call mat_diag_f(F,S,eival,Ccan)
-       call mat_to_full(Ccan,1.0E0_realk,basis)
+    ! Set Fock matrix in canonical MO basis 
+    Molecule%ppfock=0.0_realk
+    Molecule%qqfock=0.0_realk
+    do i=1,nocc
+       molecule%ppfock(i,i) = eival(i)
+    end do
+    do i=1,nunocc
+       molecule%qqfock(i,i) = eival(i+nocc)
+    end do
 
-       ! Write to file
-       funit=-1
-       call lsopen(funit,'cmo_orbitals.u','REPLACE','UNFORMATTED')
-       OnMaster=.TRUE.
-       call mat_write_to_disk(funit,Ccan,OnMaster)
-       call lsclose(funit,'KEEP')
+    write(DECinfo%output,*) 'Orbital energies:'
+    do i=1,nbasis
+       write(DECinfo%output,*) i, eival(i)
+    end do
 
-       ! Print orbital energies
-       write(DECinfo%output,*) 'Orbital energies:'
-       do i=1,nbasis
-          write(DECinfo%output,*) i, eival(i)
-       end do
-       write(DECinfo%output,*)
-       write(DECinfo%output,*)
-
-       ! Free stuff
-       call mat_free(F)
-       call mat_free(S)
-       call mat_free(Ccan)
-       call mem_dealloc(eival)
-
-    end if CanonicalFileExists
-
-    ! Get MO coefficients separated into occ and virt orbitals
-    call molecule_generate_basis(molecule,basis)
-    call mem_dealloc(basis)
+    call mem_dealloc(C)
+    call mem_dealloc(eival)
 
   end subroutine dec_get_canonical_orbitals
 
@@ -429,12 +415,8 @@ contains
 
     ! Get orbitals
     call mem_alloc(C,nbasis,nbasis)
-    LCMorCANONICAL: if(DECinfo%use_canonical) then ! Use canonical orbitals if requested in input
-       call dec_get_canonical_orbitals(molecule,mylsitem)
-    else  ! use orbitals stored in lcm_orbitals.u (default)
-       call dec_read_mat_from_file('lcm_orbitals.u',nbasis,nbasis,C)
-       call molecule_generate_basis(molecule,C)
-    end if LCMorCANONICAL
+    call dec_read_mat_from_file('lcm_orbitals.u',nbasis,nbasis,C)
+    call molecule_generate_basis(molecule,C)
     call mem_dealloc(C)
 
   end subroutine molecule_get_reference_state
@@ -705,6 +687,61 @@ contains
 
 
   end subroutine calculate_fullmolecule_memory
+
+
+  !> \brief Get density matrix in type matrix form by reading from file.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine dec_get_density_matrix_from_file(nbasis,D)
+    implicit none
+    !> Number of basis functions in molecule
+    integer,intent(in) :: nbasis
+    !> Density matrix (will be intialized here)
+    type(matrix),intent(inout) :: D
+    integer :: funit,dim1,dim2
+    integer(kind=8) :: longdim1,longdim2
+    integer(kind=4) :: dim1_32,dim2_32
+    real(realk),pointer :: Dfull(:,:)
+
+    ! Open density file
+    funit=-1
+    call lsopen(funit,'dens.restart','OLD','UNFORMATTED')
+
+    ! Allocate real vector to temporarily hold density values
+    call mem_alloc(Dfull,nbasis,nbasis)
+
+
+    ! Safe handling of integers 
+    if(DECinfo%convert64to32) then   ! convert from 64 to 32 bit integers?
+       READ(funit) longdim1,longdim2
+       dim1 = int(longdim1)
+       dim2 = int(longdim2)
+    elseif(DECinfo%convert32to64) then   ! convert from 32 to 64 bit integers?
+       READ(funit) dim1_32,dim2_32
+       dim1 = dim1_32
+       dim2 = dim2_32
+    else
+       READ(funit) dim1,dim2
+    end if
+
+    ! Sanity check
+    if( (dim1/=nbasis) .or. (dim2/=nbasis) ) then
+       print *, 'nbasis: ', nbasis
+       print *, 'dim1,dim2', dim1,dim2
+       call lsquit('dec_get_density_matrix_from_file: Error in density dimensions!',-1)
+    end if
+
+    ! Read density elements
+    read(funit) Dfull
+    call lsclose(funit,'KEEP')
+
+    ! Init density matrix
+    call mat_init(D,nbasis,nbasis)
+
+    call mat_set_from_full(Dfull,1.0_realk,D)
+    call mem_dealloc(Dfull)
+
+  end subroutine dec_get_density_matrix_from_file
 
 
   ! THIS ROUTINE SHOULD BE RECONSIDERED IF WE FIND A GOOD ORBITAL INTERACTION MATRIX TO USE

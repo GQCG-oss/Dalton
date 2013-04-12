@@ -56,9 +56,6 @@ cat > fragmentccsd_singlespolari.dal <<'%EOF%'
 TRILEVEL
 .CONVTHR
 1.0d-5
-.LCM
-.MLO 
-2 2
 **DEC
 .CCSD
 .FOT
@@ -66,7 +63,7 @@ TRILEVEL
 .SinglesPolari
 .SinglesThr
 0.1
-.ReassignHatoms
+.ABSORBH
 *END OF INPUT  
 %EOF%
 #######################################################################
