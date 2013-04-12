@@ -818,6 +818,15 @@ C
      &    NMLINE,MLINE(NMLINE)
         CALL QUIT('Too many atomic types in .mol input')
       END IF
+!     If symmetry and polarizable embedding are specified we quit
+      if (peqm .and. addsym) then
+        write(lupri,'(/a)') 'ERROR: polarizable embedding is not
+     & compatible with symmetry.'
+        write(lupri,'(/a)') 'Please rerun calculation with Nosymmetry
+     & keyword in the molecule input file.'
+            call quit('polarizable embedding is not compatible with
+     & symmetry.')
+      end if
 C***********************************************************************
 C Check integral threshold: THRS must be .gt. 0
 C       ( log(thrs*thrs) taken in oneint) (851005-hjaaj)
