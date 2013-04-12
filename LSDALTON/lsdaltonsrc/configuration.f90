@@ -33,6 +33,7 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_unres_dense, mtype_unres_sparse1, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input
+use dec_typedef_module,only: DECinfo
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 use lattice_vectors, only: pbc_setup_default
@@ -820,7 +821,8 @@ subroutine DEC_meaningful_input(config)
   !> Contains info, settings and data for entire calculation
   type(ConfigItem), intent(inout) :: config
 
-  ! Only make modifications to config for DEC calculation
+  ! Only make modifications to config for DEC calculation AND if it is not
+  ! a full CC calculation
   DECcalculation: if(config%doDEC) then
 
      ! DEC geometry optimization 
@@ -842,20 +844,28 @@ subroutine DEC_meaningful_input(config)
         config%decomp%cfg_lcv = .true.
         config%decomp%cfg_lcm=.true.
 
-        ! Turn on orbital localization
-        config%decomp%cfg_mlo = .true.
+        ! Only necessary to localize for DEC calculation, not for full calculation
+        NotFullCalc: if(.not. DECinfo%full_molecular_cc) then
 
-        ! use orbspread localization function and line search
-        config%davidOrbLoc%orbspread=.true.
-        config%davidOrbLoc%linesearch=.true.
+           ! Turn on orbital localization
+           config%decomp%cfg_mlo = .true.
 
-        ! Exponent 2 for both occ and virt orbitals
-        config%decomp%cfg_mlo_m(1) = 2
-        config%decomp%cfg_mlo_m(2) = 2
+           ! use orbspread localization function and line search
+           config%davidOrbLoc%orbspread=.true.
+           config%davidOrbLoc%linesearch=.true.
+
+           ! Exponent 2 for both occ and virt orbitals
+           config%decomp%cfg_mlo_m(1) = 2
+           config%decomp%cfg_mlo_m(2) = 2
+
+        end if NotFullCalc
 
      end if OrbLocCheck
 
   end if DECcalculation
+
+
+  ! Special case: Restart full calculation fr
 
 
 end subroutine DEC_meaningful_input

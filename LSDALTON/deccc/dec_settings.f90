@@ -466,7 +466,7 @@ contains
     end if BeyondMp2
 
 
-    MP2gradientCalculation: if(DECinfo%gradient) then
+    MP2gradientCalculation: if(DECinfo%first_order) then
 
        if(DECinfo%full_molecular_cc) then
           call lsquit('Full calculation for MP2 gradient is implemented via the &
@@ -486,6 +486,11 @@ contains
        call lsquit('Restart option currently not implemented for CCSD(T)!',DECinfo%output)
     end if
 
+    
+    ! Full molecular MP2 (not using DEC framework) only implemented for canonical
+    if(DECinfo%ccmodel==1 .and. DECinfo%full_molecular_cc) then
+       DECinfo%use_canonical = .true.
+    end if
 
 
     ! Set CC residual threshold to be 0.01*FOT
