@@ -1,0 +1,28 @@
+#!/bin/bash
+TMP_DIR=/gpfshome/kemi/tkjaer/NightlyTestingCdash/tmp/daltonDebug2
+SCRATCH_DIR=/gpfshome/kemi/tkjaer/NightlyTestingCdash/scratch
+rm -rf $TMP_DIR
+rm -rf $SCRATCH_DIR
+mkdir -p $TMP_DIR
+mkdir -p $SCRATCH_DIR
+svn co http://dirac.chem.sdu.dk/svnDalton/dalton/branches/linsca-develop $TMP_DIR
+sleep 2
+svn co http://dirac.chem.sdu.dk/svnDalton/dalton/branches/linsca-develop $TMP_DIR
+svn co http://dirac.chem.sdu.dk/svnDalton/dalton/branches/linsca-develop $TMP_DIR
+sleep 2
+svn co http://dirac.chem.sdu.dk/svnDalton/dalton/branches/linsca-develop $TMP_DIR
+svn co http://dirac.chem.sdu.dk/svnDalton/dalton/branches/linsca-develop $TMP_DIR
+sleep 60
+svn co http://dirac.chem.sdu.dk/svnDalton/dalton/branches/linsca-develop $TMP_DIR
+sleep 60
+svn co http://dirac.chem.sdu.dk/svnDalton/dalton/branches/linsca-develop $TMP_DIR
+svn co http://dirac.chem.sdu.dk/svnDalton/dalton/branches/linsca-develop $TMP_DIR
+cd $TMP_DIR
+mkdir -p $TMP_DIR/buildG
+cd $TMP_DIR/buildG
+cmake -DCMAKE_Fortran_COMPILER=/usr/bin/f90 -DCMAKE_C_COMPILER=/usr/vacpp/bin/cc -DCMAKE_BUILD_TYPE=Debug -DBUILDNAME=Huge-AIX-f90 -DENABLE_INTERNAL_MATH=1 -DSCRATCH_DIR=$SCRATCH_DIR /gpfshome/kemi/tkjaer/NightlyTestingCdash/tmp/daltonDebug2
+#make Experimental
+make Nightly
+#
+rm -rf $TMP_DIR
+rm -rf $SCRATCH_DIR

@@ -1,0 +1,3029 @@
+
+ Work memory size (LMWORK+2):   123123125 =  939.35 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:01 2010
+     Host name              : login-0-1.local                         
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+          - first magnetic derivatives of overlap integrals
+          - electronic angular momentum around the origin
+          - one-electron contribution to magnetic moment
+          - First order magnetic derivative of electric field
+            Electric field applied in X-direction
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Bterm (MCD) components                                                  
+  -----------------------------------                                     
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H           1.007825
+                           F          18.998403
+
+                       Total mass:    20.006228 amu
+                       Natural abundance:  99.985 %
+
+ Center-of-mass coordinates (A):   -0.781732    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  Basis set used is "3-21G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H           1       1       3       2      [3s|2s]                                                                          
+  F           1       9      15       9      [6s3p|3s2p]                                                                      
+  ----------------------------------------------------------------------
+  total:      2      10      18      11
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+   1   H        x      0.0920090000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   F        x     -0.8280820000
+   5            y      0.0000000000
+   6            z      0.0000000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            H           F     
+            ------      ------
+ H     :    0.000000
+ F     :    0.486891    0.000000
+
+
+  Max interatomic separation is    0.4869 Angstroms
+  between atoms "F     " and "H     ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  F          H            0.486891
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.000000          1.000000    0.000000    0.000000
+   IB    0.226882          0.000000    1.000000    0.000000
+   IC    0.226882          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is linear.
+
+               B =      2227493.07 MHz     (   74.301171 cm-1)
+
+
+  Nuclear repulsion energy :      9.781641163754
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ >>> Time used in DIPLEN is   0.00 seconds
+
+
+ >>> Time used in S1MAG  is   0.00 seconds
+
+
+ >>> Time used in ANGMOM is   0.00 seconds
+
+
+ >>> Time used in MAGMOM is   0.00 seconds
+
+
+ >>> Time used in CM1    is   0.00 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ Number of two-electron integrals written:         677 ( 30.6% )
+ Megabytes written:                              0.014
+
+
+
+ >>> Time used in TWOINT is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+
+
+ Settings for DFT calculation:
+ -----------------------------
+
+     Default thresholds:                       0.10D-08    0.10D-09    0.20D-11
+     Default threshold for number of electrons:                        0.10D-02
+     DFT radial quadrature accuracy/ang. expansion order:  0.10E-10  31
+ Pertubation dependent basis set  calculations are carried out
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:01 2010
+     Host name              : login-0-1.local                         
+
+ Title lines from integral program:
+     Bterm (MCD) components                                                  
+     -----------------------------------                                     
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Kohn-Sham calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         10
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 11
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          11
+     Number of basis functions         11
+
+      ** Automatic occupation of RKS orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              5
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ 
+Dynamic response convergence threshold:
+Response residuals will be reduced by a factor   0.10E-02
+ 
+ WARNING DIPLEN IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING CM-1   IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING S1MAG  IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING MAGMOM IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING ANGMOM IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ Pertubation dependent basis set  calculations are carried out
+
+ Keyword "TIGHT                                   " not recognized in config_rsp_input
+
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Direct density optimization        
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           8
+Convergence threshold for gradient:   0.10E-03
+ End of configuration from new input structure!
+ Take first density from Hueckel guess
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.00 seconds
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   0.00 seconds
+** Get Fock matrix number   1
+ Radial Quadrature : LMG scheme
+ Space partitioning: Becke partitioning with atomic radius correction
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 8969 compressed from  8982 ( 57 radial)
+ Atom:    2*1 points= 8451 compressed from  8464 ( 74 radial)
+ Number of grid points:    17420 Grid generation time:       0.0 s
+KS electrons/energy:    9.99999977225518   -8.82424895408883 rel.err:-0.23E-07
+ >>>  CPU Time used in DFT_KS          is   0.11 seconds
+ >>>  CPU Time used in FCK_FO          is   0.11 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   7.75036057030801     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -98.4941999932    0.00000000000    0.00      0.00000    0.00    0.0000000    0.78E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm   1.96735681629148     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      8.4661083143 (mu =   0.00, xmax = 0.495618E+00, xnorm = 0.133756E+01, THR = 0.196736E-01)
+  Error of red space iteration  2:      2.2392456326 (mu =   0.00, xmax = 0.224469E+00, xnorm = 0.741391E+00, THR = 0.196736E-01)
+  Error of red space iteration  3:      1.2738847770 (mu =   0.00, xmax = 0.237888E+00, xnorm = 0.685551E+00, THR = 0.196736E-01)
+  Error of red space iteration  4:      0.4537541634 (mu =   0.00, xmax = 0.263337E+00, xnorm = 0.681414E+00, THR = 0.196736E-01)
+  Error of red space iteration  5:      0.1857602890 (mu =   0.00, xmax = 0.237598E+00, xnorm = 0.650908E+00, THR = 0.196736E-01)
+  Error of red space iteration  6:      0.1013931841 (mu =   0.00, xmax = 0.214059E+00, xnorm = 0.620468E+00, THR = 0.196736E-01)
+  Error of red space iteration  7:      0.0231046695 (mu =   0.00, xmax = 0.182719E+00, xnorm = 0.574677E+00, THR = 0.196736E-01)
+  Error of red space iteration  8:      0.0098141190 (mu =   0.00, xmax = 0.181289E+00, xnorm = 0.569294E+00, THR = 0.196736E-01)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    81
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+KS electrons/energy:    9.99999975419085   -9.22564648478006 rel.err:-0.25E-07
+ >>>  CPU Time used in DFT_KS          is   0.09 seconds
+ >>>  CPU Time used in FCK_FO          is   0.09 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   2.09900432074196     
+  2    -98.9336542779   -0.43945428469    0.00      0.00000    0.00    0.0000000    0.21E+01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ OAO gradnorm  0.415042957114313     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.7585257182 (mu =   0.00, xmax = 0.731141E-01, xnorm = 0.224435E+00, THR = 0.415043E-02)
+  Error of red space iteration  2:      0.2056339346 (mu =   0.00, xmax = 0.695016E-01, xnorm = 0.214406E+00, THR = 0.415043E-02)
+  Error of red space iteration  3:      0.0259256574 (mu =   0.00, xmax = 0.639811E-01, xnorm = 0.205113E+00, THR = 0.415043E-02)
+  Error of red space iteration  4:      0.0189689948 (mu =   0.00, xmax = 0.629879E-01, xnorm = 0.202073E+00, THR = 0.415043E-02)
+  Error of red space iteration  5:      0.0062106024 (mu =   0.00, xmax = 0.627940E-01, xnorm = 0.201460E+00, THR = 0.415043E-02)
+  Error of red space iteration  6:      0.0026647247 (mu =   0.00, xmax = 0.628143E-01, xnorm = 0.201090E+00, THR = 0.415043E-02)
+Newton equations converged in  6 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    65
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+KS electrons/energy:    9.99999977758387   -8.95131154857632 rel.err:-0.22E-07
+ >>>  CPU Time used in DFT_KS          is   0.10 seconds
+ >>>  CPU Time used in FCK_FO          is   0.10 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.828698024318239     
+  3    -98.9914360570   -0.05778177915    0.00      0.00000    0.00    0.0000000    0.83E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  0.137023237773926     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.1083813888 (mu =   0.00, xmax = 0.215774E-01, xnorm = 0.724861E-01, THR = 0.137023E-02)
+  Error of red space iteration  2:      0.0618274576 (mu =   0.00, xmax = 0.215774E-01, xnorm = 0.614748E-01, THR = 0.137023E-02)
+  Error of red space iteration  3:      0.0135233159 (mu =   0.00, xmax = 0.215774E-01, xnorm = 0.590371E-01, THR = 0.137023E-02)
+  Error of red space iteration  4:      0.0088083353 (mu =   0.00, xmax = 0.215774E-01, xnorm = 0.571102E-01, THR = 0.137023E-02)
+  Error of red space iteration  5:      0.0028063393 (mu =   0.00, xmax = 0.215774E-01, xnorm = 0.562227E-01, THR = 0.137023E-02)
+  Error of red space iteration  6:      0.0009403025 (mu =   0.00, xmax = 0.215774E-01, xnorm = 0.560323E-01, THR = 0.137023E-02)
+Newton equations converged in  6 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    63
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+KS electrons/energy:    9.99999977126629   -9.04406530281087 rel.err:-0.23E-07
+ >>>  CPU Time used in DFT_KS          is   0.10 seconds
+ >>>  CPU Time used in FCK_FO          is   0.10 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  9.445067837649636E-002
+  4    -99.0019409988   -0.01050494175    0.00      0.00000    0.00    0.0000000    0.94E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.424232357683203E-002
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0133376579 (mu =   0.00, xmax = 0.229863E-02, xnorm = 0.732823E-02, THR = 0.142423E-03)
+  Error of red space iteration  2:      0.0066251592 (mu =   0.00, xmax = 0.229863E-02, xnorm = 0.633465E-02, THR = 0.142423E-03)
+  Error of red space iteration  3:      0.0021279951 (mu =   0.00, xmax = 0.229863E-02, xnorm = 0.609090E-02, THR = 0.142423E-03)
+  Error of red space iteration  4:      0.0008197485 (mu =   0.00, xmax = 0.229863E-02, xnorm = 0.592632E-02, THR = 0.142423E-03)
+  Error of red space iteration  5:      0.0003960369 (mu =   0.00, xmax = 0.229863E-02, xnorm = 0.585794E-02, THR = 0.142423E-03)
+  Error of red space iteration  6:      0.0001015454 (mu =   0.00, xmax = 0.229863E-02, xnorm = 0.585212E-02, THR = 0.142423E-03)
+Newton equations converged in  6 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    61
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   5
+KS electrons/energy:    9.99999977193114   -9.03438704770021 rel.err:-0.23E-07
+ >>>  CPU Time used in DFT_KS          is   0.09 seconds
+ >>>  CPU Time used in FCK_FO          is   0.09 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  9.458634361425352E-004
+  5    -99.0020829340   -0.00014193524    0.00      0.00000    0.00    0.0000000    0.95E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.948758918496699E-004
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0003732157 (mu =   0.00, xmax = 0.602716E-04, xnorm = 0.169840E-03, THR = 0.194876E-05)
+  Error of red space iteration  2:      0.0001805835 (mu =   0.00, xmax = 0.588485E-04, xnorm = 0.167502E-03, THR = 0.194876E-05)
+  Error of red space iteration  3:      0.0000125288 (mu =   0.00, xmax = 0.624664E-04, xnorm = 0.172624E-03, THR = 0.194876E-05)
+  Error of red space iteration  4:      0.0000037227 (mu =   0.00, xmax = 0.635228E-04, xnorm = 0.175114E-03, THR = 0.194876E-05)
+  Error of red space iteration  5:      0.0000018560 (mu =   0.00, xmax = 0.641949E-04, xnorm = 0.176676E-03, THR = 0.194876E-05)
+Newton equations converged in  5 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    53
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   6
+KS electrons/energy:    9.99999977193184   -9.03446758205388 rel.err:-0.23E-07
+ >>>  CPU Time used in DFT_KS          is   0.10 seconds
+ >>>  CPU Time used in FCK_FO          is   0.10 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.343095484038479E-005
+  6    -99.0020829650   -0.00000003101    0.00      0.00000    0.00    0.0000000    0.23E-04  ###
+ >>>  CPU Time used in **ITER          is   0.60 seconds
+Total no. of matmuls in SCF optimization:        675
+ Postponing calculation of HOMO-LUMO gap to response part...
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.43945428469    0.0000    0.0000    0.0000000
+  3   -0.05778177915    0.0000    0.0000    0.0000000
+  4   -0.01050494175    0.0000    0.0000    0.0000000
+  5   -0.00014193524    0.0000    0.0000    0.0000000
+  6   -0.00000003101    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1           -98.49419999320603835713      0.775036057030801D+01
+    2           -98.93365427789166233197      0.209900432074196D+01
+    3           -98.99143605703702064602      0.828698024318239D+00
+    4           -99.00194099878233089385      0.944506783764964D-01
+    5           -99.00208293402430115293      0.945863436142535D-03
+    6           -99.00208296503797100740      0.234309548403848D-04
+ 
+      SCF converged !!!! 
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (LSTDHF) >>>
+
+
+ 
+ Number of occupied orbitals:           5
+ Number of virtual orbitals:           6
+ 
+ Number of occupied orbital energies to be found:           3
+ Number of virtual orbital energies to be found:           3
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ Threshold for iterative determination of orbital energies:
+  1.000000000000000E-006
+    FUP/FUQ eival: Residual for vector   1:  0.9701919707E-14 and mu: 0.5513174671E+00  It =   1  Conv =  T
+    FUP/FUQ eival: Residual for vector   2:  0.1956662126E-13 and mu: 0.1411625504E+01  It =   1  Conv =  T
+    FUP/FUQ eival: Residual for vector   3:  0.1613947832E-13 and mu: 0.2447943653E+02  It =   1  Conv =  T
+    Convergence of all vectors!
+   Eigenvalue for vector  1 is:  0.551317E+00
+   Eigenvalue for vector  2 is:  0.141163E+01
+   Eigenvalue for vector  3 is:  0.244794E+02
+ Threshold for iterative determination of orbital energies:
+  1.000000000000000E-006
+    FUP/FUQ eival: Residual for vector   1:  0.5078263239E+00 and mu: 0.4177815785E+00  It =   1  Conv =  F
+    FUP/FUQ eival: Residual for vector   2:  0.2642578560E+00 and mu: 0.2104226256E+01  It =   1  Conv =  F
+    FUP/FUQ eival: Residual for vector   3:  0.2776027773E-01 and mu: 0.3515918963E+01  It =   1  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.5078263239E+00
+          VECTOR   1: Error of PCG iteration  1:  0.2101485372E+00
+          VECTOR   1: Error of PCG iteration  2:  0.1198214090E+00
+          VECTOR   1: Error of PCG iteration  3:  0.4152780380E-01
+          VECTOR   1: Error of PCG iteration  4:  0.1019731217E-13
+          VECTOR   1: PCG converged in   4 iterations! 
+          VECTOR   2: Error of PCG iteration  0:  0.2642578560E+00
+          VECTOR   2: Error of PCG iteration  1:  0.1093551068E+00
+          VECTOR   2: Error of PCG iteration  2:  0.6235153076E-01
+          VECTOR   2: Error of PCG iteration  3:  0.2160984549E-01
+          VECTOR   2: Error of PCG iteration  4:  0.8526882563E-14
+          VECTOR   2: PCG converged in   4 iterations! 
+          VECTOR   3: Error of PCG iteration  0:  0.2776027773E-01
+          VECTOR   3: Error of PCG iteration  1:  0.1148774981E-01
+          VECTOR   3: Error of PCG iteration  2:  0.6550025937E-02
+          VECTOR   3: Error of PCG iteration  3:  0.2270113447E-02
+          VECTOR   3: Error of PCG iteration  4:  0.1116327228E-13
+          VECTOR   3: PCG converged in   4 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.3103161807E-14 and mu: 0.2110525851E+00  It =   2  Conv =  T
+    FUP/FUQ eival: Residual for vector   2:  0.3784823355E-13 and mu: 0.1582713043E+01  It =   2  Conv =  T
+    FUP/FUQ eival: Residual for vector   3:  0.2822715738E-13 and mu: 0.2223473016E+01  It =   2  Conv =  T
+    Convergence of all vectors!
+   Eigenvalue for vector  1 is:  0.211053E+00
+   Eigenvalue for vector  2 is:  0.158271E+01
+   Eigenvalue for vector  3 is:  0.222347E+01
+ 
+    E(LUMO):                         0.211053 au
+   -E(HOMO):                        -0.551317 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.762370 au
+ 
+ >>>  CPU Time used in HL GAP          is   0.44 seconds
+ 
+Calculating initial guess(es) for excitation energies from orb. energies
+========================================================================
+ 
+        Occ. orbitals:
+        ==============
+
+               Column   1
+       1      -0.55131747
+       2      -1.41162550
+       3     -24.47943653
+ 
+        Virt. orbitals:
+        ===============
+
+               Column   1
+       1       0.21105259
+       2       1.58271304
+       3       2.22347302
+ 
+   Orbital energy differences  (occ index, virt index):
+ ======================================================
+    1   0.7623701                  1          1
+    2   1.6226781                  2          1
+    3  24.6904891                  3          1
+    4   2.1340305                  1          2
+    5   2.9943385                  2          2
+    6  26.0621496                  3          2
+    7   2.7747905                  1          3
+    8   3.6350985                  2          3
+    9  26.7029095                  3          3
+ 
+     Sorted orbital energy differences:
+ ==========================================
+Root no.   1   0.7623701   Position:   1
+Root no.   2   1.6226781   Position:   2
+Root no.   3   2.1340305   Position:   4
+ >>>  CPU Time used in HESEIG          is   0.00 seconds
+ Exci starting guess:
+
+               Column   1     Column   2     Column   3     Column   4
+       1      -0.01606394    -0.00004910    -0.00578156     0.00487108
+       2       0.51262183     0.00156691     0.18449721    -0.15544278
+       3       0.03351557     0.00010245     0.01206256    -0.01016296
+       4      -0.01752526    -0.00005357    -0.00630750     0.00531420
+       5      -0.33798018    -0.00103309    -0.12164211     0.10248603
+       6      -0.03498676    -0.00010694    -0.01259205     0.01060907
+       7       0.00000000     0.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.00000000     0.00000000
+       9      -0.05346471    -0.00016342    -0.01924243     0.01621215
+      10       0.00000000     0.00000000     0.00000000     0.00000000
+      11       0.00000000     0.00000000     0.00000000     0.00000000
+
+               Column   5     Column   6     Column   7     Column   8
+       1       0.03099857    -0.02368632     0.00000000     0.00000000
+       2      -0.98920587     0.75586236     0.00000000     0.00000000
+       3      -0.06467497     0.04941881     0.00000000     0.00000000
+       4       0.03381847    -0.02584104     0.00000000     0.00000000
+       5       0.65220003    -0.49835274     0.00000000     0.00000000
+       6       0.06751392    -0.05158808     0.00000000     0.00000000
+       7       0.00000000     0.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.00000000     0.00000000
+       9       0.10317080    -0.07883387     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000     0.00000000
+      11       0.00000000     0.00000000     0.00000000     0.00000000
+
+               Column   9     Column  10     Column  11
+       1      -0.01628007     0.00000000     0.00000000
+       2       0.51951884     0.00000000     0.00000000
+       3       0.03396650     0.00000000     0.00000000
+       4      -0.01776105     0.00000000     0.00000000
+       5      -0.34252749     0.00000000     0.00000000
+       6      -0.03545749     0.00000000     0.00000000
+       7       0.00000000     0.00000000     0.00000000
+       8       0.00000000     0.00000000     0.00000000
+       9      -0.05418404     0.00000000     0.00000000
+      10       0.00000000     0.00000000     0.00000000
+      11       0.00000000     0.00000000     0.00000000
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.30 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  2.745155826181517E-004
+Residual norm for vector   1 is:   0.484834E-01    and eigenvalue =   0.69296210   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.5163484213E-01
+          Preconditioning: Error of red space iteration  2:  0.1546575366E-01
+          Preconditioning: Error of red space iteration  3:  0.3435117302E-02
+          Preconditioning: Error of red space iteration  4:  0.1348942071E-02
+          Preconditioning: Error of red space iteration  5:  0.2688221630E-03
+     Preconditioning: Linear equations converged in  5 iterations!
+Residual norm for vector   2 is:   0.280114E+00    and eigenvalue =   1.58623127   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.4175263210E+00
+          Preconditioning: Error of red space iteration  2:  0.2192532706E+00
+          Preconditioning: Error of red space iteration  3:  0.8642633106E-01
+          Preconditioning: Error of red space iteration  4:  0.3514107873E-01
+          Preconditioning: Error of red space iteration  5:  0.2037911325E-01
+          Preconditioning: Error of red space iteration  6:  0.4711182810E-02
+          Preconditioning: Error of red space iteration  7:  0.2448130781E-02
+     Preconditioning: Linear equations converged in  7 iterations!
+Residual norm for vector   3 is:   0.494950E+00    and eigenvalue =   2.15011638   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.8444268635E+00
+          Preconditioning: Error of red space iteration  2:  0.1285590521E+01
+          Preconditioning: Error of red space iteration  3:  0.2395741793E+01
+          Preconditioning: Error of red space iteration  4:  0.1178795533E+01
+          Preconditioning: Error of red space iteration  5:  0.1423032082E+01
+          Preconditioning: Error of red space iteration  6:  0.1443062813E+01
+          Preconditioning: Error of red space iteration  7:  0.8015770962E+00
+          Preconditioning: Error of red space iteration  8:  0.3479726820E+01
+          Preconditioning: Error of red space iteration  9:  0.9790444086E+00
+          Preconditioning: Error of red space iteration 10:  0.2621438419E+00
+          Preconditioning: Error of red space iteration 11:  0.4706651311E-01
+          Preconditioning: Error of red space iteration 12:  0.1190494318E-01
+          Preconditioning: Error of red space iteration 13:  0.1572038055E-06
+     Preconditioning: Linear equations converged in 13 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.31 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.30 seconds
+ omega in build_reduc..   0.692962103576568     
+Residual norm for vector   1 is:   0.152360E-02    and eigenvalue =   0.69259016   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1347464261E-02
+          Preconditioning: Error of red space iteration  2:  0.6903622883E-03
+          Preconditioning: Error of red space iteration  3:  0.1929961603E-03
+          Preconditioning: Error of red space iteration  4:  0.5307478077E-04
+          Preconditioning: Error of red space iteration  5:  0.3396044493E-04
+          Preconditioning: Error of red space iteration  6:  0.1568090213E-04
+     Preconditioning: Linear equations converged in  6 iterations!
+Residual norm for vector   2 is:   0.114317E-01    and eigenvalue =   1.56712444   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1518706364E-01
+          Preconditioning: Error of red space iteration  2:  0.6716828968E-02
+          Preconditioning: Error of red space iteration  3:  0.2305697148E-02
+          Preconditioning: Error of red space iteration  4:  0.1309827967E-02
+          Preconditioning: Error of red space iteration  5:  0.1837885625E-02
+          Preconditioning: Error of red space iteration  6:  0.6680206293E-03
+          Preconditioning: Error of red space iteration  7:  0.4174427740E-03
+          Preconditioning: Error of red space iteration  8:  0.1800565477E-03
+          Preconditioning: Error of red space iteration  9:  0.1318040897E-03
+     Preconditioning: Linear equations converged in  9 iterations!
+Residual norm for vector   3 is:   0.700214E-01    and eigenvalue =   2.04486343   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.6879952438E-01
+          Preconditioning: Error of red space iteration  2:  0.3217102402E-01
+          Preconditioning: Error of red space iteration  3:  0.2244270838E-01
+          Preconditioning: Error of red space iteration  4:  0.1385683189E-01
+          Preconditioning: Error of red space iteration  5:  0.2337175635E+00
+          Preconditioning: Error of red space iteration  6:  0.8370894171E-02
+          Preconditioning: Error of red space iteration  7:  0.3269421153E-02
+          Preconditioning: Error of red space iteration  8:  0.1757307234E-01
+          Preconditioning: Error of red space iteration  9:  0.7643078547E-03
+     Preconditioning: Linear equations converged in  9 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.32 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.30 seconds
+ omega in build_reduc..   0.692590161706118     
+Residual norm for vector   1 is:   0.138490E-04    and eigenvalue =   0.69258986   It =   3 CONV = T
+Residual norm for vector   2 is:   0.183055E-03    and eigenvalue =   1.56709346   It =   3 CONV = T
+Residual norm for vector   3 is:   0.830990E-03    and eigenvalue =   2.04418512   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.7523747030E-03
+          Preconditioning: Error of red space iteration  2:  0.4290340236E-03
+          Preconditioning: Error of red space iteration  3:  0.2365837635E-03
+          Preconditioning: Error of red space iteration  4:  0.1660420300E-03
+          Preconditioning: Error of red space iteration  5:  0.5090361932E-03
+          Preconditioning: Error of red space iteration  6:  0.1596340190E-03
+          Preconditioning: Error of red space iteration  7:  0.1207800261E-02
+          Preconditioning: Error of red space iteration  8:  0.8833619493E-04
+          Preconditioning: Error of red space iteration  9:  0.5689012661E-04
+          Preconditioning: Error of red space iteration 10:  0.9142505047E-04
+          Preconditioning: Error of red space iteration 11:  0.5290253156E-03
+          Preconditioning: Error of red space iteration 12:  0.4715446114E-04
+          Preconditioning: Error of red space iteration 13:  0.2533156967E-04
+          Preconditioning: Error of red space iteration 14:  0.1095177441E-04
+     Preconditioning: Linear equations converged in 14 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.32 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.692589855157810     
+Residual norm for vector   1 is:   0.141784E-04    and eigenvalue =   0.69258986   It =   4 CONV = T
+Residual norm for vector   2 is:   0.125483E-03    and eigenvalue =   1.56709346   It =   4 CONV = T
+Residual norm for vector   3 is:   0.179315E-04    and eigenvalue =   2.04418502   It =   4 CONV = T
+
+ *** THE REQUESTED              3 SOLUTION VECTORS CONVERGED
+ 
+ ============================================================
+                     RESPONSE RESULTS                        
+ ============================================================
+ 
+     LINEAR RESPONSE:
+ 
+  Excitation value:           0.692589855
+  Excitation value:           1.567093461
+  Excitation value:           2.044185022
+ 
+ *****************************************************
+ **     CPU-TIME USED IN POLARI:    1.50077100000000       **
+ *****************************************************
+ Number of linear transformations performed in LINRSP:          10
+ ******************************************************
+ **                                                  **
+ **  PDBS:                                           **
+ **  BTERM CALCULATION                               **
+ **                                                  **
+ ******************************************************
+TRANSITION MOMENTS
+  STATE  Freq(au)         X           Y           Z       ALLOWED?
+    1    0.692590     -0.2329      0.0000      0.0000       YES
+    3    2.044185      0.4724      0.0000      0.0000       YES
+  
+  
+ NUMBER OF ALLOWED EXCITED STATES           2  out of           2
+ PDBS: --------------------------------------------------------------
+ PDBS BTERM or HERZTELL: Load the excitation vector
+ PDBS: --------------------------------------------------------------
+ PDBS: Calculate the A response vector for: XDIPLEN 
+ PDBS: With frequency:   0.692589855149816     
+ BETA  0.232892411811344     
+ mcd_ortho =            1
+ mcd_ortho2 =            0
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ done normaizing
+ assigning
+ done inside orthonormalize
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+          Preconditioning: Error of red space iteration  1:  0.1714976451E+01
+          Preconditioning: Error of red space iteration  2:  0.5313156355E+00
+          Preconditioning: Error of red space iteration  3:  0.1892282289E+00
+          Preconditioning: Error of red space iteration  4:  0.6170518082E-01
+          Preconditioning: Error of red space iteration  5:  0.4696903748E-01
+          Preconditioning: Error of red space iteration  6:  0.1712845715E-01
+     Preconditioning: Linear equations converged in  6 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.692589855149816     
+ Dynamic response convergence threshold set to  1.121986797787293E-004
+Residual norm for vector   1 is:   0.112199E+00    and frequency =     0.692590   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1527902953E+00
+          Preconditioning: Error of red space iteration  2:  0.3841719541E-01
+          Preconditioning: Error of red space iteration  3:  0.1174737075E-01
+          Preconditioning: Error of red space iteration  4:  0.7602960983E-02
+          Preconditioning: Error of red space iteration  5:  0.3798411252E-02
+          Preconditioning: Error of red space iteration  6:  0.1555278911E-02
+          Preconditioning: Error of red space iteration  7:  0.1240988174E-02
+     Preconditioning: Linear equations converged in  7 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.692589855149816     
+Residual norm for vector   1 is:   0.327690E-01    and frequency =     0.692590   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3815120298E-01
+          Preconditioning: Error of red space iteration  2:  0.1284345838E-01
+          Preconditioning: Error of red space iteration  3:  0.6563345218E-02
+          Preconditioning: Error of red space iteration  4:  0.2143455753E-02
+          Preconditioning: Error of red space iteration  5:  0.8542211293E-03
+          Preconditioning: Error of red space iteration  6:  0.2738697958E-03
+     Preconditioning: Linear equations converged in  6 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.692589855149816     
+Residual norm for vector   1 is:   0.213065E-02    and frequency =     0.692590   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1956610008E-02
+          Preconditioning: Error of red space iteration  2:  0.7348909256E-03
+          Preconditioning: Error of red space iteration  3:  0.2053675239E-03
+          Preconditioning: Error of red space iteration  4:  0.8060804076E-04
+          Preconditioning: Error of red space iteration  5:  0.4317765574E-04
+          Preconditioning: Error of red space iteration  6:  0.2508399297E-04
+          Preconditioning: Error of red space iteration  7:  0.2373647551E-04
+     Preconditioning: Linear equations converged in  7 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.692589855149816     
+Residual norm for vector   1 is:   0.712002E-04    and frequency =     0.692590   It =   4 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ Writing to disk
+ vec_on_file           1
+ DISK(vec_on_file)%LabelXDIPLEN 
+ DISK(vec_on_file)%freq  0.692589855149816     
+ DISK(vec_on_file)%A1 T
+ PDBS: vecBdagger: The adjoint vector (B+ or Xf+)
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+ BETA 2:  0.232892411811344      for XDIPLEN 
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+          Preconditioning: Error of red space iteration  1:  0.2666840665E+01
+          Preconditioning: Error of red space iteration  2:  0.1310385640E+01
+          Preconditioning: Error of red space iteration  3:  0.2374323627E+00
+          Preconditioning: Error of red space iteration  4:  0.4211051515E-01
+          Preconditioning: Error of red space iteration  5:  0.2064747240E-01
+     Preconditioning: Linear equations converged in  5 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.11 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  1.347243233733568E-004
+Residual norm for vector   1 is:   0.134724E+00    and frequency =     0.000000   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1230222445E+00
+          Preconditioning: Error of red space iteration  2:  0.3981628582E-01
+          Preconditioning: Error of red space iteration  3:  0.7557519982E-02
+          Preconditioning: Error of red space iteration  4:  0.2199390736E-02
+          Preconditioning: Error of red space iteration  5:  0.1330188396E-02
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.11 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.560494E-02    and frequency =     0.000000   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.8911957136E-02
+          Preconditioning: Error of red space iteration  2:  0.1255023674E-02
+          Preconditioning: Error of red space iteration  3:  0.3892796780E-03
+          Preconditioning: Error of red space iteration  4:  0.2006106867E-03
+          Preconditioning: Error of red space iteration  5:  0.4446795584E-04
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.162516E-02    and frequency =     0.000000   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2527716166E-02
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            3 of reduced residual is   9.251891585108380E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            4 of reduced residual is  -9.126055112059407E-006
+          Preconditioning: Error of red space iteration  2:  0.7056686677E-03
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            5 of reduced residual is  -1.102642540502428E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            6 of reduced residual is   9.245914105264301E-007
+          Preconditioning: Error of red space iteration  3:  0.2185322718E-03
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            8 of reduced residual is  -1.034331036436300E-006
+          Preconditioning: Error of red space iteration  4:  0.1103228412E-03
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            9 of reduced residual is   1.783790882276579E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           10 of reduced residual is   4.537082330966495E-006
+          Preconditioning: Error of red space iteration  5:  0.4991461147E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           11 of reduced residual is  -1.043185180035763E-005
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           12 of reduced residual is  -5.661579656294518E-006
+          Preconditioning: Error of red space iteration  6:  0.3433330020E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           13 of reduced residual is   9.558092843963414E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           14 of reduced residual is  -4.564825134341449E-006
+          Preconditioning: Error of red space iteration  7:  0.3190269224E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           15 of reduced residual is  -8.123441097166957E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           16 of reduced residual is  -9.792864288898006E-006
+          Preconditioning: Error of red space iteration  8:  0.3159637248E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           17 of reduced residual is  -9.289094640040512E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           18 of reduced residual is  -1.057646085498839E-005
+          Preconditioning: Error of red space iteration  9:  0.3209203095E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           19 of reduced residual is  -2.394276639558030E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           20 of reduced residual is   7.853248093436609E-006
+          Preconditioning: Error of red space iteration 10:  0.3300250797E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           21 of reduced residual is  -4.487685257654795E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           22 of reduced residual is  -5.298089902445783E-006
+          Preconditioning: Error of red space iteration 11:  0.3312688736E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           23 of reduced residual is  -9.679824127077172E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           24 of reduced residual is  -2.474419339259563E-006
+          Preconditioning: Error of red space iteration 12:  0.3292942694E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           25 of reduced residual is  -4.170261743596871E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           26 of reduced residual is  -1.305106845228207E-005
+          Preconditioning: Error of red space iteration 13:  0.3352819659E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           27 of reduced residual is  -7.228671567155200E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           28 of reduced residual is   8.995979074905988E-007
+          Preconditioning: Error of red space iteration 14:  0.3353166448E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           29 of reduced residual is   1.940422169697729E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           30 of reduced residual is  -1.494127382178854E-007
+          Preconditioning: Error of red space iteration 15:  0.3353151799E-04
+          Preconditioning: Error of red space iteration 16:  0.3353151821E-04
+          Preconditioning: Error of red space iteration 17:  0.3353152272E-04
+          Preconditioning: Error of red space iteration 18:  0.3353153675E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           37 of reduced residual is   1.954348678384171E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           38 of reduced residual is  -1.953553562532992E-007
+          Preconditioning: Error of red space iteration 19:  0.3353299300E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           39 of reduced residual is   1.719408741624708E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           40 of reduced residual is  -1.719609688551193E-006
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.732960E-04    and frequency =     0.000000   It =   4 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ PDBS: --------------------------------------------------------------
+ PDBS BTERM or HERZTELL: Load the excitation vector
+ PDBS: --------------------------------------------------------------
+ PDBS: Calculate the A response vector for: YDIPLEN 
+ PDBS: With frequency:   0.692589855149816     
+ BETA  1.630629040417137E-008
+ mcd_ortho =            1
+ mcd_ortho2 =            0
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ done normaizing
+ assigning
+ done inside orthonormalize
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+          Preconditioning: Error of red space iteration  1:  0.1884749802E+01
+          Preconditioning: Error of red space iteration  2:  0.1222907603E+01
+          Preconditioning: Error of red space iteration  3:  0.3356459677E+02
+          Preconditioning: Error of red space iteration  4:  0.1373983623E+01
+          Preconditioning: Error of red space iteration  5:  0.2353583681E+00
+          Preconditioning: Error of red space iteration  6:  0.1549130756E-01
+          Preconditioning: Error of red space iteration  7:  0.1603199876E-06
+     Preconditioning: Linear equations converged in  7 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.09 seconds
+ omega in build_reduc..   0.692589855149816     
+ Dynamic response convergence threshold set to  5.581894851882442E-004
+Residual norm for vector   1 is:   0.558189E+00    and frequency =     0.692590   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.5193965111E+00
+          Preconditioning: Error of red space iteration  2:  0.1984265375E+00
+          Preconditioning: Error of red space iteration  3:  0.3311060026E+00
+          Preconditioning: Error of red space iteration  4:  0.9957241850E+00
+          Preconditioning: Error of red space iteration  5:  0.1090899809E+00
+          Preconditioning: Error of red space iteration  6:  0.1721398781E-01
+          Preconditioning: Error of red space iteration  7:  0.2486979263E-05
+     Preconditioning: Linear equations converged in  7 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.11 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.692589855149816     
+Residual norm for vector   1 is:   0.142260E-01    and frequency =     0.692590   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1373187480E-01
+          Preconditioning: Error of red space iteration  2:  0.2509385200E-02
+          Preconditioning: Error of red space iteration  3:  0.3384958204E-03
+          Preconditioning: Error of red space iteration  4:  0.2154724914E-03
+          Preconditioning: Error of red space iteration  5:  0.1411800755E-02
+          Preconditioning: Error of red space iteration  6:  0.1482199348E-03
+     Preconditioning: Linear equations converged in  6 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.692589855149816     
+Residual norm for vector   1 is:   0.618972E-03    and frequency =     0.692590   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3436443475E-03
+          Preconditioning: Error of red space iteration  2:  0.1144564109E-03
+          Preconditioning: Error of red space iteration  3:  0.7642510496E-04
+          Preconditioning: Error of red space iteration  4:  0.6443400247E-04
+          Preconditioning: Error of red space iteration  5:  0.6551181413E-04
+          Preconditioning: Error of red space iteration  6:  0.6314032029E-04
+          Preconditioning: Error of red space iteration  7:  0.4948888426E-04
+          Preconditioning: Error of red space iteration  8:  0.4619542257E-04
+          Preconditioning: Error of red space iteration  9:  0.4298148423E-04
+          Preconditioning: Error of red space iteration 10:  0.3557923103E-04
+          Preconditioning: Error of red space iteration 11:  0.2882484915E-04
+          Preconditioning: Error of red space iteration 12:  0.5386424924E-04
+          Preconditioning: Error of red space iteration 13:  0.6398868104E-03
+          Preconditioning: Error of red space iteration 14:  0.1285416366E-04
+          Preconditioning: Error of red space iteration 15:  0.8158824092E-05
+          Preconditioning: Error of red space iteration 16:  0.2987315538E-05
+     Preconditioning: Linear equations converged in 16 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.09 seconds
+ omega in build_reduc..   0.692589855149816     
+Residual norm for vector   1 is:   0.139939E-04    and frequency =     0.692590   It =   4 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ Writing to disk
+ vec_on_file           2
+ DISK(vec_on_file)%LabelYDIPLEN 
+ DISK(vec_on_file)%freq  0.692589855149816     
+ DISK(vec_on_file)%A1 T
+ PDBS: vecBdagger: The adjoint vector (B+ or Xf+)
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+ BETA 2:  1.630629040417138E-008 for YDIPLEN 
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+          Preconditioning: Error of red space iteration  1:  0.1199502404E+01
+          Preconditioning: Error of red space iteration  2:  0.4282377042E+00
+          Preconditioning: Error of red space iteration  3:  0.9751579269E-01
+          Preconditioning: Error of red space iteration  4:  0.1363025425E-01
+          Preconditioning: Error of red space iteration  5:  0.5563494678E-03
+     Preconditioning: Linear equations converged in  5 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  4.948292692187694E-005
+Residual norm for vector   1 is:   0.494829E-01    and frequency =     0.000000   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.4883657500E-01
+          Preconditioning: Error of red space iteration  2:  0.1147413535E-01
+          Preconditioning: Error of red space iteration  3:  0.4308085769E-02
+          Preconditioning: Error of red space iteration  4:  0.1704189080E-02
+          Preconditioning: Error of red space iteration  5:  0.1332438937E-04
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.11 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.201673E-02    and frequency =     0.000000   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1502092999E-02
+          Preconditioning: Error of red space iteration  2:  0.2480891653E-03
+          Preconditioning: Error of red space iteration  3:  0.1589050949E-03
+          Preconditioning: Error of red space iteration  4:  0.2158708591E-04
+     Preconditioning: Linear equations converged in  4 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.11 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.278655E-04    and frequency =     0.000000   It =   3 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ PDBS: --------------------------------------------------------------
+ PDBS BTERM or HERZTELL: Load the excitation vector
+ PDBS: --------------------------------------------------------------
+ PDBS: Calculate the A response vector for: ZDIPLEN 
+ PDBS: With frequency:   0.692589855149816     
+ BETA  2.002765788468217E-010
+ mcd_ortho =            1
+ mcd_ortho2 =            0
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ done normaizing
+ assigning
+ done inside orthonormalize
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+          Preconditioning: Error of red space iteration  1:  0.1884749802E+01
+          Preconditioning: Error of red space iteration  2:  0.1222907603E+01
+          Preconditioning: Error of red space iteration  3:  0.3356459677E+02
+          Preconditioning: Error of red space iteration  4:  0.1373983623E+01
+          Preconditioning: Error of red space iteration  5:  0.2353583681E+00
+          Preconditioning: Error of red space iteration  6:  0.1549130756E-01
+          Preconditioning: Error of red space iteration  7:  0.1969075683E-08
+     Preconditioning: Linear equations converged in  7 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.692589855149816     
+ Dynamic response convergence threshold set to  5.581894851881986E-004
+Residual norm for vector   1 is:   0.558189E+00    and frequency =     0.692590   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.5193965111E+00
+          Preconditioning: Error of red space iteration  2:  0.1984265375E+00
+          Preconditioning: Error of red space iteration  3:  0.3311060026E+00
+          Preconditioning: Error of red space iteration  4:  0.9957241850E+00
+          Preconditioning: Error of red space iteration  5:  0.1090899808E+00
+          Preconditioning: Error of red space iteration  6:  0.1721398762E-01
+          Preconditioning: Error of red space iteration  7:  0.3016390654E-07
+     Preconditioning: Linear equations converged in  7 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.692589855149816     
+Residual norm for vector   1 is:   0.142260E-01    and frequency =     0.692590   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1373187199E-01
+          Preconditioning: Error of red space iteration  2:  0.2509387891E-02
+          Preconditioning: Error of red space iteration  3:  0.3384931343E-03
+          Preconditioning: Error of red space iteration  4:  0.2154449630E-03
+          Preconditioning: Error of red space iteration  5:  0.1411393828E-02
+          Preconditioning: Error of red space iteration  6:  0.1327072322E-03
+     Preconditioning: Linear equations converged in  6 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.692589855149816     
+Residual norm for vector   1 is:   0.617466E-03    and frequency =     0.692590   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3386972432E-03
+          Preconditioning: Error of red space iteration  2:  0.1155403474E-03
+          Preconditioning: Error of red space iteration  3:  0.8899407811E-04
+          Preconditioning: Error of red space iteration  4:  0.6677550037E-04
+          Preconditioning: Error of red space iteration  5:  0.4965824689E-04
+          Preconditioning: Error of red space iteration  6:  0.3522972883E-04
+          Preconditioning: Error of red space iteration  7:  0.1034986074E-03
+          Preconditioning: Error of red space iteration  8:  0.4316308448E-04
+          Preconditioning: Error of red space iteration  9:  0.2058286548E-04
+          Preconditioning: Error of red space iteration 10:  0.1068486480E-04
+          Preconditioning: Error of red space iteration 11:  0.6537459567E-05
+     Preconditioning: Linear equations converged in 11 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.11 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.692589855149816     
+Residual norm for vector   1 is:   0.144935E-04    and frequency =     0.692590   It =   4 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ Writing to disk
+ vec_on_file           3
+ DISK(vec_on_file)%LabelZDIPLEN 
+ DISK(vec_on_file)%freq  0.692589855149816     
+ DISK(vec_on_file)%A1 T
+ PDBS: vecBdagger: The adjoint vector (B+ or Xf+)
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+ BETA 2:  2.002765788468220E-010 for ZDIPLEN 
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+          Preconditioning: Error of red space iteration  1:  0.1199502407E+01
+          Preconditioning: Error of red space iteration  2:  0.4282377041E+00
+          Preconditioning: Error of red space iteration  3:  0.9751579284E-01
+          Preconditioning: Error of red space iteration  4:  0.1363025421E-01
+          Preconditioning: Error of red space iteration  5:  0.5563494843E-03
+     Preconditioning: Linear equations converged in  5 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  4.948292702983880E-005
+Residual norm for vector   1 is:   0.494829E-01    and frequency =     0.000000   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.4883657508E-01
+          Preconditioning: Error of red space iteration  2:  0.1147413539E-01
+          Preconditioning: Error of red space iteration  3:  0.4308085777E-02
+          Preconditioning: Error of red space iteration  4:  0.1704189080E-02
+          Preconditioning: Error of red space iteration  5:  0.1332440249E-04
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.201673E-02    and frequency =     0.000000   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1502093003E-02
+          Preconditioning: Error of red space iteration  2:  0.2480891670E-03
+          Preconditioning: Error of red space iteration  3:  0.1589050964E-03
+          Preconditioning: Error of red space iteration  4:  0.2158708762E-04
+     Preconditioning: Linear equations converged in  4 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.278655E-04    and frequency =     0.000000   It =   3 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ *******************************
+ Number of unique vectors calculated           3
+ *******************************
+ *******************************
+ PDBS_driver: NOW BUILD PROPERTY
+ *******************************
+ READ VECTORER   vec_on_file           3
+ Label to be read XDIPLEN 
+ SINCE DISK(i)labelXDIPLEN for i=           1
+ SINCE DISK(i)freq  0.692589855149816      for i=           1
+ READ A1
+ READING VECTOR nr           1
+ ****************************************
+ call BUILD PROPERTY for J index :           1
+ PDBS_STACK(i)%LOOP(j)%Alabel    :XDIPLEN 
+ PDBS_STACK(i)%LOOP(j)%Blabel    :XDIPLEN 
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           1
+ CALL BUILD PROPERTY with THOMAS BVEC           1
+ CALL BUILD PROPERTY with THOMAS Xbar           1
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:   0.692589855149816     
+ MAGNETIC DIFFERENTIATION            0
+ ENTER Chose Clist            1
+ LEAVING Chose Clist            1
+ npert           3
+ startpert           2
+ step           1
+ Precompute matrices independent of the pertubation
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ I should now call the test_Xbar routine
+ I am now inside the test Xbar routine
+   XY =   0.000000
+   XZ =   0.000000
+ loop runs over number of perturbations npert:           3
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBY  
+ Sxlabel : dS/dBY  
+ Alabel : XDIPLEN 
+ Axlabel : X-CM1 Y 
+ -------------------------------------
+ Perturbation npert                2
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBZ  
+ Sxlabel : dS/dBZ  
+ Alabel : XDIPLEN 
+ Axlabel : X-CM1 Z 
+ -------------------------------------
+ Perturbation npert                3
+ -------------------------------------
+ gga_is  1 
+
+ ***********************************************************
+ For the given loop index in Build_Property the total GRD is
+             A:X
+ ***********************************************************
+          Bx             By             Bz
+
+               0.00000000     0.00000000    -0.00000001
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ READ VECTORER   vec_on_file           3
+ Label to be read YDIPLEN 
+ SINCE DISK(i)labelYDIPLEN for i=           2
+ SINCE DISK(i)freq  0.692589855149816      for i=           2
+ READ A1
+ READING VECTOR nr           2
+ ****************************************
+ call BUILD PROPERTY for J index :           2
+ PDBS_STACK(i)%LOOP(j)%Alabel    :YDIPLEN 
+ PDBS_STACK(i)%LOOP(j)%Blabel    :YDIPLEN 
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           2
+ CALL BUILD PROPERTY with THOMAS BVEC           2
+ CALL BUILD PROPERTY with THOMAS Xbar           2
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:   0.692589855149816     
+ MAGNETIC DIFFERENTIATION            0
+ ENTER Chose Clist            1
+ LEAVING Chose Clist            1
+ npert           3
+ startpert           1
+ step           2
+ Precompute matrices independent of the pertubation
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ I should now call the test_Xbar routine
+ I am now inside the test Xbar routine
+   YX =   0.000000
+   YZ =   1.862949
+ loop runs over number of perturbations npert:           3
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBX  
+ Sxlabel : dS/dBX  
+ Alabel : YDIPLEN 
+ Axlabel : Y-CM1 X 
+ -------------------------------------
+ Perturbation npert                1
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBZ  
+ Sxlabel : dS/dBZ  
+ Alabel : YDIPLEN 
+ Axlabel : Y-CM1 Z 
+ -------------------------------------
+ Perturbation npert                3
+ -------------------------------------
+ gga_is  1 
+
+ ***********************************************************
+ For the given loop index in Build_Property the total GRD is
+             A:Y
+ ***********************************************************
+          Bx             By             Bz
+
+               0.00000000     0.00000000    -0.80125262
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ READ VECTORER   vec_on_file           3
+ Label to be read ZDIPLEN 
+ SINCE DISK(i)labelZDIPLEN for i=           3
+ SINCE DISK(i)freq  0.692589855149816      for i=           3
+ READ A1
+ READING VECTOR nr           3
+ ****************************************
+ call BUILD PROPERTY for J index :           3
+ PDBS_STACK(i)%LOOP(j)%Alabel    :ZDIPLEN 
+ PDBS_STACK(i)%LOOP(j)%Blabel    :ZDIPLEN 
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           3
+ CALL BUILD PROPERTY with THOMAS BVEC           3
+ CALL BUILD PROPERTY with THOMAS Xbar           3
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:   0.692589855149816     
+ MAGNETIC DIFFERENTIATION            0
+ ENTER Chose Clist            1
+ LEAVING Chose Clist            1
+ npert           2
+ startpert           1
+ step           1
+ Precompute matrices independent of the pertubation
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ I should now call the test_Xbar routine
+ I am now inside the test Xbar routine
+   ZX =   0.000000
+   ZY =  -1.862949
+ loop runs over number of perturbations npert:           2
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBX  
+ Sxlabel : dS/dBX  
+ Alabel : ZDIPLEN 
+ Axlabel : Z-CM1 X 
+ -------------------------------------
+ Perturbation npert                1
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBY  
+ Sxlabel : dS/dBY  
+ Alabel : ZDIPLEN 
+ Axlabel : Z-CM1 Y 
+ -------------------------------------
+ Perturbation npert                2
+ -------------------------------------
+ gga_is  1 
+
+ ***********************************************************
+ For the given loop index in Build_Property the total GRD is
+             A:Z
+ ***********************************************************
+          Bx             By             Bz
+
+               0.00000000     0.80125262     0.00000000
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ PDBS: Call build averages
+ selecting: BTERM 
+ Moment for:XDIPLEN  =  -0.232892411811344     
+ Moment for:YDIPLEN  =  -1.630629040417137E-008
+ Moment for:ZDIPLEN  =  -2.002765788468217E-010
+  
+BTERM-Frequency (au):    0.692590
+BTERM-Frequency (eV):   18.846336
+  
+ ============================================================
+                  LAO B term results                         
+ ============================================================
+ SR-contribution fromXY :     0.000000
+ SR-contribution fromXZ :     0.000000
+ SR-contribution fromYX :     0.000000
+ SR-contribution fromYZ :    -0.801253
+ SR-contribution fromZX :     0.000000
+ SR-contribution fromZY :     0.801253
+  
+BTERM-contribution from XYZ    0.186606
+BTERM-contribution from XZY   -0.186606
+BTERM-contribution from YXZ    0.000000
+BTERM-contribution from YZX    0.000000
+BTERM-contribution from ZXY    0.000000
+BTERM-contribution from ZYX    0.000000
+  
+ LAO BTERM-result  (a.u.) : -0.373211309230561     
+ LAO BTERM-result  (std units) : -2.197333832450430E-005
+ ============================================================
+              NON-LAO B term results                         
+ ============================================================
+ SR-contribution from XY:     0.000000 *(-0.5):     0.000000
+ SR-contribution from XZ:     0.000000 *(-0.5):     0.000000
+ SR-contribution from YX:     0.000000 *(-0.5):     0.000000
+ SR-contribution from YZ:     1.862949 *(-0.5):    -0.931474
+ SR-contribution from ZX:     0.000000 *(-0.5):     0.000000
+ SR-contribution from ZY:    -1.862949 *(-0.5):     0.931474
+  
+BTERM-contribution from XYZ   -0.433867 *(-0.5):     0.216933
+BTERM-contribution from XZY    0.433867 *(-0.5):    -0.216933
+BTERM-contribution from YXZ    0.000000 *(-0.5):     0.000000
+BTERM-contribution from YZX    0.000000 *(-0.5):     0.000000
+BTERM-contribution from ZXY    0.000000 *(-0.5):     0.000000
+BTERM-contribution from ZYX    0.000000 *(-0.5):     0.000000
+  
+ NONLAO BTERM-result (a.u.):  0.867733260068903     
+ NONLAO BTERM-result(scaled by -0.5) (a.u.) -0.433866630034451     
+ NONLAO BTERM-result(scaled by -0.5) (std u) -2.554450525391225E-005
+  
+ PDBS: done build averages
+ PDBS: --------------------------------------------------------------
+ PDBS BTERM or HERZTELL: Load the excitation vector
+ PDBS: --------------------------------------------------------------
+ PDBS: Calculate the A response vector for: XDIPLEN 
+ PDBS: With frequency:    2.04418502155368     
+ BETA -0.472439291351891     
+ mcd_ortho =            3
+ mcd_ortho2 =            0
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ done normaizing
+ assigning
+ done inside orthonormalize
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+          Preconditioning: Error of red space iteration  1:  0.1880004181E+01
+          Preconditioning: Error of red space iteration  2:  0.2385584873E+01
+          Preconditioning: Error of red space iteration  3:  0.6132053065E+01
+          Preconditioning: Error of red space iteration  4:  0.1242669915E+01
+          Preconditioning: Error of red space iteration  5:  0.2490824526E+01
+          Preconditioning: Error of red space iteration  6:  0.7877488074E+02
+          Preconditioning: Error of red space iteration  7:  0.1736180363E+01
+          Preconditioning: Error of red space iteration  8:  0.1044262126E+01
+          Preconditioning: Error of red space iteration  9:  0.9687247019E+00
+          Preconditioning: Error of red space iteration 10:  0.4400883261E+00
+          Preconditioning: Error of red space iteration 11:  0.2852110352E+00
+          Preconditioning: Error of red space iteration 12:  0.2970547375E+00
+          Preconditioning: Error of red space iteration 13:  0.6994667415E-01
+          Preconditioning: Error of red space iteration 14:  0.2911399132E-01
+          Preconditioning: Error of red space iteration 15:  0.5399663970E-02
+     Preconditioning: Linear equations converged in 15 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+ Dynamic response convergence threshold set to  1.457456634225592E-003
+Residual norm for vector   1 is:   0.145746E+01    and frequency =     2.044185   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1795882771E+01
+          Preconditioning: Error of red space iteration  2:  0.2232592976E+01
+          Preconditioning: Error of red space iteration  3:  0.8313296688E+01
+          Preconditioning: Error of red space iteration  4:  0.1859266623E+01
+          Preconditioning: Error of red space iteration  5:  0.7101815725E+01
+          Preconditioning: Error of red space iteration  6:  0.1916779642E+01
+          Preconditioning: Error of red space iteration  7:  0.6406782639E+01
+          Preconditioning: Error of red space iteration  8:  0.1804273294E+01
+          Preconditioning: Error of red space iteration  9:  0.7313713952E+00
+          Preconditioning: Error of red space iteration 10:  0.6021089303E+00
+          Preconditioning: Error of red space iteration 11:  0.5842756259E+00
+          Preconditioning: Error of red space iteration 12:  0.4811052626E+00
+          Preconditioning: Error of red space iteration 13:  0.2539241611E+00
+          Preconditioning: Error of red space iteration 14:  0.8572417435E-01
+          Preconditioning: Error of red space iteration 15:  0.4655701707E-01
+          Preconditioning: Error of red space iteration 16:  0.5478887302E-01
+          Preconditioning: Error of red space iteration 17:  0.4708386553E-01
+          Preconditioning: Error of red space iteration 18:  0.1070414025E+00
+          Preconditioning: Error of red space iteration 19:  0.4172473177E+00
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.13 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.09 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.119306E+00    and frequency =     2.044185   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1973548823E+00
+          Preconditioning: Error of red space iteration  2:  0.2576414124E+00
+          Preconditioning: Error of red space iteration  3:  0.8862166869E+00
+          Preconditioning: Error of red space iteration  4:  0.3462623235E+00
+          Preconditioning: Error of red space iteration  5:  0.1737464635E+00
+          Preconditioning: Error of red space iteration  6:  0.2462917199E+00
+          Preconditioning: Error of red space iteration  7:  0.5978390027E+00
+          Preconditioning: Error of red space iteration  8:  0.1114139748E+00
+          Preconditioning: Error of red space iteration  9:  0.1345246181E+00
+          Preconditioning: Error of red space iteration 10:  0.8143944557E-01
+          Preconditioning: Error of red space iteration 11:  0.2421346240E-01
+          Preconditioning: Error of red space iteration 12:  0.2769486827E-01
+          Preconditioning: Error of red space iteration 13:  0.4579211507E-01
+          Preconditioning: Error of red space iteration 14:  0.9226890937E-01
+          Preconditioning: Error of red space iteration 15:  0.1681105917E+00
+          Preconditioning: Error of red space iteration 16:  0.6030931642E-01
+          Preconditioning: Error of red space iteration 17:  0.2893691872E-01
+          Preconditioning: Error of red space iteration 18:  0.2072018982E-01
+          Preconditioning: Error of red space iteration 19:  0.2449486652E-01
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.870932E-01    and frequency =     2.044185   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1295973105E+00
+          Preconditioning: Error of red space iteration  2:  0.1416271857E+00
+          Preconditioning: Error of red space iteration  3:  0.4000652054E+00
+          Preconditioning: Error of red space iteration  4:  0.6718065614E+00
+          Preconditioning: Error of red space iteration  5:  0.1781524855E+00
+          Preconditioning: Error of red space iteration  6:  0.2013296407E+00
+          Preconditioning: Error of red space iteration  7:  0.2659970208E+01
+          Preconditioning: Error of red space iteration  8:  0.1565412619E+00
+          Preconditioning: Error of red space iteration  9:  0.2038126413E+00
+          Preconditioning: Error of red space iteration 10:  0.2315537768E+00
+          Preconditioning: Error of red space iteration 11:  0.8815103942E+00
+          Preconditioning: Error of red space iteration 12:  0.1794323819E+00
+          Preconditioning: Error of red space iteration 13:  0.6788397084E-01
+          Preconditioning: Error of red space iteration 14:  0.2493849289E-01
+          Preconditioning: Error of red space iteration 15:  0.2596539288E-01
+          Preconditioning: Error of red space iteration 16:  0.1745078638E-01
+          Preconditioning: Error of red space iteration 17:  0.1103837053E-01
+          Preconditioning: Error of red space iteration 18:  0.9618891690E-02
+          Preconditioning: Error of red space iteration 19:  0.4833873276E-02
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.193062E-01    and frequency =     2.044185   It =   4 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2274291152E-01
+          Preconditioning: Error of red space iteration  2:  0.1501467950E-01
+          Preconditioning: Error of red space iteration  3:  0.5546344960E+01
+          Preconditioning: Error of red space iteration  4:  0.3375296749E-01
+          Preconditioning: Error of red space iteration  5:  0.1207204164E+01
+          Preconditioning: Error of red space iteration  6:  0.1673899707E-01
+          Preconditioning: Error of red space iteration  7:  0.1056020364E-01
+          Preconditioning: Error of red space iteration  8:  0.1490808884E-01
+          Preconditioning: Error of red space iteration  9:  0.4025964065E-01
+          Preconditioning: Error of red space iteration 10:  0.1678959940E-01
+          Preconditioning: Error of red space iteration 11:  0.6882731960E-02
+          Preconditioning: Error of red space iteration 12:  0.5754618925E-02
+          Preconditioning: Error of red space iteration 13:  0.1117801129E-01
+          Preconditioning: Error of red space iteration 14:  0.1384984602E+00
+          Preconditioning: Error of red space iteration 15:  0.8066761666E-02
+          Preconditioning: Error of red space iteration 16:  0.4695100227E-02
+          Preconditioning: Error of red space iteration 17:  0.2325323617E-02
+          Preconditioning: Error of red space iteration 18:  0.1338907685E-02
+          Preconditioning: Error of red space iteration 19:  0.1116449232E-02
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.110847E-01    and frequency =     2.044185   It =   5 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1179246021E-01
+          Preconditioning: Error of red space iteration  2:  0.9623999697E-02
+          Preconditioning: Error of red space iteration  3:  0.6035507988E-01
+          Preconditioning: Error of red space iteration  4:  0.4939961541E-01
+          Preconditioning: Error of red space iteration  5:  0.7675831406E+00
+          Preconditioning: Error of red space iteration  6:  0.2061647165E-01
+          Preconditioning: Error of red space iteration  7:  0.2043892446E-01
+          Preconditioning: Error of red space iteration  8:  0.4689716333E-01
+          Preconditioning: Error of red space iteration  9:  0.5154914320E-01
+          Preconditioning: Error of red space iteration 10:  0.4558452555E-01
+          Preconditioning: Error of red space iteration 11:  0.2189490168E+00
+          Preconditioning: Error of red space iteration 12:  0.2705478600E-01
+          Preconditioning: Error of red space iteration 13:  0.9860704275E-02
+          Preconditioning: Error of red space iteration 14:  0.4291470607E-02
+          Preconditioning: Error of red space iteration 15:  0.1956452739E-02
+          Preconditioning: Error of red space iteration 16:  0.1505284043E-02
+          Preconditioning: Error of red space iteration 17:  0.6793558185E-03
+          Preconditioning: Error of red space iteration 18:  0.1141665897E-02
+          Preconditioning: Error of red space iteration 19:  0.2457763873E-02
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.11 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.387726E-02    and frequency =     2.044185   It =   6 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3225953591E-02
+          Preconditioning: Error of red space iteration  2:  0.2615545944E-02
+          Preconditioning: Error of red space iteration  3:  0.8435219078E-02
+          Preconditioning: Error of red space iteration  4:  0.8083693128E-02
+          Preconditioning: Error of red space iteration  5:  0.4600767333E-02
+          Preconditioning: Error of red space iteration  6:  0.3664002759E-02
+          Preconditioning: Error of red space iteration  7:  0.5083546452E-01
+          Preconditioning: Error of red space iteration  8:  0.4891437831E-02
+          Preconditioning: Error of red space iteration  9:  0.2170865849E-02
+          Preconditioning: Error of red space iteration 10:  0.2105390624E-02
+          Preconditioning: Error of red space iteration 11:  0.9014547834E-03
+          Preconditioning: Error of red space iteration 12:  0.4853861063E-03
+          Preconditioning: Error of red space iteration 13:  0.3216927515E-03
+          Preconditioning: Error of red space iteration 14:  0.2425987391E-03
+          Preconditioning: Error of red space iteration 15:  0.1930506557E-03
+          Preconditioning: Error of red space iteration 16:  0.1586337694E-03
+          Preconditioning: Error of red space iteration 17:  0.2592817533E-03
+          Preconditioning: Error of red space iteration 18:  0.3119200342E-03
+          Preconditioning: Error of red space iteration 19:  0.2123506168E-02
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.13 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.221205E-02    and frequency =     2.044185   It =   7 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2161287038E-02
+          Preconditioning: Error of red space iteration  2:  0.2547806858E-02
+          Preconditioning: Error of red space iteration  3:  0.2987399989E-01
+          Preconditioning: Error of red space iteration  4:  0.1386678367E-01
+          Preconditioning: Error of red space iteration  5:  0.4165296939E-02
+          Preconditioning: Error of red space iteration  6:  0.3564490412E-02
+          Preconditioning: Error of red space iteration  7:  0.1285570540E-01
+          Preconditioning: Error of red space iteration  8:  0.2921292420E-02
+          Preconditioning: Error of red space iteration  9:  0.1962340161E-02
+          Preconditioning: Error of red space iteration 10:  0.8306618061E-03
+          Preconditioning: Error of red space iteration 11:  0.8185022930E-03
+          Preconditioning: Error of red space iteration 12:  0.2662043926E-03
+          Preconditioning: Error of red space iteration 13:  0.1664845473E-03
+          Preconditioning: Error of red space iteration 14:  0.2409530473E-03
+          Preconditioning: Error of red space iteration 15:  0.2606064198E-03
+          Preconditioning: Error of red space iteration 16:  0.8450572661E-02
+          Preconditioning: Error of red space iteration 17:  0.3834930708E-03
+          Preconditioning: Error of red space iteration 18:  0.2908812737E-03
+          Preconditioning: Error of red space iteration 19:  0.2012308449E-03
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.334053E-03    and frequency =     2.044185   It =   8 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ Writing to disk
+ vec_on_file           1
+ DISK(vec_on_file)%LabelXDIPLEN 
+ DISK(vec_on_file)%freq   2.04418502155368     
+ DISK(vec_on_file)%A1 T
+ PDBS: vecBdagger: The adjoint vector (B+ or Xf+)
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+ BETA 2: -0.472439291351891      for XDIPLEN 
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+          Preconditioning: Error of red space iteration  1:  0.7071592171E+00
+          Preconditioning: Error of red space iteration  2:  0.3114082283E+00
+          Preconditioning: Error of red space iteration  3:  0.1097933694E+00
+          Preconditioning: Error of red space iteration  4:  0.5610554751E-01
+          Preconditioning: Error of red space iteration  5:  0.2316953123E-01
+          Preconditioning: Error of red space iteration  6:  0.3512692097E-02
+     Preconditioning: Linear equations converged in  6 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  2.415628948830944E-004
+Residual norm for vector   1 is:   0.241563E+00    and frequency =     0.000000   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3010072294E+00
+          Preconditioning: Error of red space iteration  2:  0.5192690166E-01
+          Preconditioning: Error of red space iteration  3:  0.2954311906E-01
+          Preconditioning: Error of red space iteration  4:  0.2433770682E-01
+          Preconditioning: Error of red space iteration  5:  0.5971229567E-02
+          Preconditioning: Error of red space iteration  6:  0.1311926749E-02
+     Preconditioning: Linear equations converged in  6 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.140564E-01    and frequency =     0.000000   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1547513520E-01
+          Preconditioning: Error of red space iteration  2:  0.9564056731E-02
+          Preconditioning: Error of red space iteration  3:  0.3152604815E-02
+          Preconditioning: Error of red space iteration  4:  0.1057769765E-02
+          Preconditioning: Error of red space iteration  5:  0.4169011263E-03
+          Preconditioning: Error of red space iteration  6:  0.1200129167E-03
+     Preconditioning: Linear equations converged in  6 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.11 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.795603E-03    and frequency =     0.000000   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.7944585505E-03
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            3 of reduced residual is   2.726006922842238E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            4 of reduced residual is   1.210421752897130E-005
+          Preconditioning: Error of red space iteration  2:  0.3071250897E-03
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            5 of reduced residual is  -5.438414350510302E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            6 of reduced residual is  -1.107836347941346E-005
+          Preconditioning: Error of red space iteration  3:  0.1877248901E-03
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            7 of reduced residual is   3.865095238227135E-006
+          Preconditioning: Error of red space iteration  4:  0.5470662473E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            9 of reduced residual is  -1.930519104687102E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           10 of reduced residual is  -4.329845707084184E-006
+          Preconditioning: Error of red space iteration  5:  0.3626212681E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           11 of reduced residual is  -1.255455055303476E-005
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           12 of reduced residual is   1.548396971752829E-006
+          Preconditioning: Error of red space iteration  6:  0.2682631066E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           13 of reduced residual is   2.747686264008813E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           14 of reduced residual is  -1.540237539061909E-007
+          Preconditioning: Error of red space iteration  7:  0.2837831700E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           15 of reduced residual is  -6.980318545088700E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           16 of reduced residual is   2.512294957265523E-006
+          Preconditioning: Error of red space iteration  8:  0.2542482911E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           17 of reduced residual is   1.640515817533196E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           18 of reduced residual is   3.423640938822844E-006
+          Preconditioning: Error of red space iteration  9:  0.2518078476E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           19 of reduced residual is  -2.211019359035738E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           20 of reduced residual is   5.222317391127986E-007
+          Preconditioning: Error of red space iteration 10:  0.2476574050E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           21 of reduced residual is  -1.269730254670570E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           22 of reduced residual is   2.217237430602719E-007
+          Preconditioning: Error of red space iteration 11:  0.2459729825E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           23 of reduced residual is  -4.547607746084643E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           24 of reduced residual is  -1.216281668381708E-006
+          Preconditioning: Error of red space iteration 12:  0.2449963355E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           25 of reduced residual is  -1.646785879430628E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           26 of reduced residual is  -1.051415650706211E-006
+          Preconditioning: Error of red space iteration 13:  0.2453124354E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           27 of reduced residual is  -4.534521067588032E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           28 of reduced residual is  -3.824577768137860E-007
+          Preconditioning: Error of red space iteration 14:  0.2453120349E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           29 of reduced residual is   2.676685191459658E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           30 of reduced residual is   1.699524827621051E-007
+          Preconditioning: Error of red space iteration 15:  0.2453073613E-04
+          Preconditioning: Error of red space iteration 16:  0.2453073347E-04
+          Preconditioning: Error of red space iteration 17:  0.2453073342E-04
+          Preconditioning: Error of red space iteration 18:  0.2453073194E-04
+          Preconditioning: Error of red space iteration 19:  0.2453073198E-04
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.367003E-04    and frequency =     0.000000   It =   4 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ PDBS: --------------------------------------------------------------
+ PDBS BTERM or HERZTELL: Load the excitation vector
+ PDBS: --------------------------------------------------------------
+ PDBS: Calculate the A response vector for: YDIPLEN 
+ PDBS: With frequency:    2.04418502155368     
+ BETA -8.235880400547625E-007
+ mcd_ortho =            3
+ mcd_ortho2 =            0
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ done normaizing
+ assigning
+ done inside orthonormalize
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+          Preconditioning: Error of red space iteration  1:  0.2561223210E+01
+          Preconditioning: Error of red space iteration  2:  0.6489149247E+01
+          Preconditioning: Error of red space iteration  3:  0.2383543334E+01
+          Preconditioning: Error of red space iteration  4:  0.1424691427E+01
+          Preconditioning: Error of red space iteration  5:  0.2928903704E+01
+          Preconditioning: Error of red space iteration  6:  0.6922899216E+01
+          Preconditioning: Error of red space iteration  7:  0.6593845204E-04
+     Preconditioning: Linear equations converged in  7 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.11 seconds
+ omega in build_reduc..    2.04418502155368     
+ Dynamic response convergence threshold set to  1.269205797951943E-003
+Residual norm for vector   1 is:   0.126921E+01    and frequency =     2.044185   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2597851646E+01
+          Preconditioning: Error of red space iteration  2:  0.4253607899E+01
+          Preconditioning: Error of red space iteration  3:  0.1643944578E+01
+          Preconditioning: Error of red space iteration  4:  0.1055898057E+01
+          Preconditioning: Error of red space iteration  5:  0.1592336764E+01
+          Preconditioning: Error of red space iteration  6:  0.1523370881E+02
+          Preconditioning: Error of red space iteration  7:  0.2370962490E-01
+          Preconditioning: Error of red space iteration  8:  0.7075079766E-02
+     Preconditioning: Linear equations converged in  8 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.11 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.199846E+00    and frequency =     2.044185   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3930829515E+00
+          Preconditioning: Error of red space iteration  2:  0.3202394022E+00
+          Preconditioning: Error of red space iteration  3:  0.2033558977E+00
+          Preconditioning: Error of red space iteration  4:  0.4811101675E+00
+          Preconditioning: Error of red space iteration  5:  0.1015539235E+00
+          Preconditioning: Error of red space iteration  6:  0.8935867377E-01
+          Preconditioning: Error of red space iteration  7:  0.1259301508E+00
+          Preconditioning: Error of red space iteration  8:  0.3682252823E+00
+          Preconditioning: Error of red space iteration  9:  0.5991912422E-01
+          Preconditioning: Error of red space iteration 10:  0.2543005046E-01
+          Preconditioning: Error of red space iteration 11:  0.1412916697E-01
+          Preconditioning: Error of red space iteration 12:  0.1065806972E-01
+          Preconditioning: Error of red space iteration 13:  0.3629371637E-02
+          Preconditioning: Error of red space iteration 14:  0.2770292792E-02
+          Preconditioning: Error of red space iteration 15:  0.3888701347E-02
+          Preconditioning: Error of red space iteration 16:  0.6447459591E-02
+          Preconditioning: Error of red space iteration 17:  0.6775397017E-02
+          Preconditioning: Error of red space iteration 18:  0.1791762468E-02
+     Preconditioning: Linear equations converged in 18 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.164951E+00    and frequency =     2.044185   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.4205098746E+00
+          Preconditioning: Error of red space iteration  2:  0.1255091401E+00
+          Preconditioning: Error of red space iteration  3:  0.8598910402E-01
+          Preconditioning: Error of red space iteration  4:  0.5242370167E+01
+          Preconditioning: Error of red space iteration  5:  0.4783925925E-01
+          Preconditioning: Error of red space iteration  6:  0.6462722526E-01
+          Preconditioning: Error of red space iteration  7:  0.1209585497E+00
+          Preconditioning: Error of red space iteration  8:  0.3456394821E+00
+          Preconditioning: Error of red space iteration  9:  0.1557979639E+00
+          Preconditioning: Error of red space iteration 10:  0.6226263886E-01
+          Preconditioning: Error of red space iteration 11:  0.3189133662E-01
+          Preconditioning: Error of red space iteration 12:  0.2955346079E-01
+          Preconditioning: Error of red space iteration 13:  0.1457263957E-01
+          Preconditioning: Error of red space iteration 14:  0.1567797906E-01
+          Preconditioning: Error of red space iteration 15:  0.9359291960E-02
+          Preconditioning: Error of red space iteration 16:  0.1396556524E-01
+          Preconditioning: Error of red space iteration 17:  0.1982920925E-01
+          Preconditioning: Error of red space iteration 18:  0.2313371315E-01
+          Preconditioning: Error of red space iteration 19:  0.5944546775E-01
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.163787E+00    and frequency =     2.044185   It =   4 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.4253079825E+00
+          Preconditioning: Error of red space iteration  2:  0.1221978111E+00
+          Preconditioning: Error of red space iteration  3:  0.8398158573E-01
+          Preconditioning: Error of red space iteration  4:  0.7951772941E+02
+          Preconditioning: Error of red space iteration  5:  0.4598056516E-01
+          Preconditioning: Error of red space iteration  6:  0.6145231664E-01
+          Preconditioning: Error of red space iteration  7:  0.1187144523E+00
+          Preconditioning: Error of red space iteration  8:  0.7378914320E+00
+          Preconditioning: Error of red space iteration  9:  0.1064036456E+00
+          Preconditioning: Error of red space iteration 10:  0.5323649965E-01
+          Preconditioning: Error of red space iteration 11:  0.3658976723E-01
+          Preconditioning: Error of red space iteration 12:  0.2874462446E-01
+          Preconditioning: Error of red space iteration 13:  0.1598223628E-01
+          Preconditioning: Error of red space iteration 14:  0.1310669407E-01
+          Preconditioning: Error of red space iteration 15:  0.1060274973E-01
+          Preconditioning: Error of red space iteration 16:  0.1069741672E-01
+          Preconditioning: Error of red space iteration 17:  0.2656309434E-01
+          Preconditioning: Error of red space iteration 18:  0.7043938487E-01
+          Preconditioning: Error of red space iteration 19:  0.2607729213E-01
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.13 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.592884E+00    and frequency =     2.044185   It =   5 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1091513078E+01
+          Preconditioning: Error of red space iteration  2:  0.1620171196E+01
+          Preconditioning: Error of red space iteration  3:  0.2657146963E+00
+          Preconditioning: Error of red space iteration  4:  0.2027295417E+00
+          Preconditioning: Error of red space iteration  5:  0.7886950125E+00
+          Preconditioning: Error of red space iteration  6:  0.5168389992E+00
+          Preconditioning: Error of red space iteration  7:  0.7341863372E+00
+          Preconditioning: Error of red space iteration  8:  0.2385460536E+00
+          Preconditioning: Error of red space iteration  9:  0.2077841087E+00
+          Preconditioning: Error of red space iteration 10:  0.6489556398E+00
+          Preconditioning: Error of red space iteration 11:  0.4112483950E+00
+          Preconditioning: Error of red space iteration 12:  0.2096758038E+00
+          Preconditioning: Error of red space iteration 13:  0.8491849717E-01
+          Preconditioning: Error of red space iteration 14:  0.8544811307E-01
+          Preconditioning: Error of red space iteration 15:  0.9108954801E-01
+          Preconditioning: Error of red space iteration 16:  0.2580102465E+00
+          Preconditioning: Error of red space iteration 17:  0.2172782551E+00
+          Preconditioning: Error of red space iteration 18:  0.1048398987E+00
+          Preconditioning: Error of red space iteration 19:  0.6345122787E-01
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.319808E-01    and frequency =     2.044185   It =   6 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3353428637E-01
+          Preconditioning: Error of red space iteration  2:  0.5440866359E-01
+          Preconditioning: Error of red space iteration  3:  0.2184957005E-01
+          Preconditioning: Error of red space iteration  4:  0.1591936314E-01
+          Preconditioning: Error of red space iteration  5:  0.8854735234E-01
+          Preconditioning: Error of red space iteration  6:  0.2857892180E-01
+          Preconditioning: Error of red space iteration  7:  0.2069289080E+00
+          Preconditioning: Error of red space iteration  8:  0.3713085538E-01
+          Preconditioning: Error of red space iteration  9:  0.4348767707E-01
+          Preconditioning: Error of red space iteration 10:  0.7103641828E+00
+          Preconditioning: Error of red space iteration 11:  0.4363653883E-01
+          Preconditioning: Error of red space iteration 12:  0.1877399425E-01
+          Preconditioning: Error of red space iteration 13:  0.1514867121E-01
+          Preconditioning: Error of red space iteration 14:  0.3670754858E-01
+          Preconditioning: Error of red space iteration 15:  0.1825430353E-01
+          Preconditioning: Error of red space iteration 16:  0.5554781095E-02
+          Preconditioning: Error of red space iteration 17:  0.7372043249E-02
+          Preconditioning: Error of red space iteration 18:  0.9714873623E-02
+          Preconditioning: Error of red space iteration 19:  0.2346047876E-01
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.291545E-01    and frequency =     2.044185   It =   7 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3396642091E-01
+          Preconditioning: Error of red space iteration  2:  0.6860027334E-01
+          Preconditioning: Error of red space iteration  3:  0.2057422250E-01
+          Preconditioning: Error of red space iteration  4:  0.1561405856E-01
+          Preconditioning: Error of red space iteration  5:  0.1047134323E-01
+          Preconditioning: Error of red space iteration  6:  0.2828140633E-01
+          Preconditioning: Error of red space iteration  7:  0.1184775757E-01
+          Preconditioning: Error of red space iteration  8:  0.2608698065E-01
+          Preconditioning: Error of red space iteration  9:  0.1068108455E-01
+          Preconditioning: Error of red space iteration 10:  0.2086423326E-01
+          Preconditioning: Error of red space iteration 11:  0.2979067915E+00
+          Preconditioning: Error of red space iteration 12:  0.2513449517E-01
+          Preconditioning: Error of red space iteration 13:  0.1291865327E-01
+          Preconditioning: Error of red space iteration 14:  0.1672385381E-01
+          Preconditioning: Error of red space iteration 15:  0.5637701768E-01
+          Preconditioning: Error of red space iteration 16:  0.1587288407E-01
+          Preconditioning: Error of red space iteration 17:  0.8739112543E-02
+          Preconditioning: Error of red space iteration 18:  0.3826020201E-02
+          Preconditioning: Error of red space iteration 19:  0.2026919296E-02
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.758024E-02    and frequency =     2.044185   It =   8 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.6732233021E-02
+          Preconditioning: Error of red space iteration  2:  0.2805887562E-01
+          Preconditioning: Error of red space iteration  3:  0.6722601268E-02
+          Preconditioning: Error of red space iteration  4:  0.6530696775E-02
+          Preconditioning: Error of red space iteration  5:  0.2361886850E-02
+          Preconditioning: Error of red space iteration  6:  0.3426799279E-02
+          Preconditioning: Error of red space iteration  7:  0.3966517766E-02
+          Preconditioning: Error of red space iteration  8:  0.2274443873E-02
+          Preconditioning: Error of red space iteration  9:  0.1550100809E-02
+          Preconditioning: Error of red space iteration 10:  0.1711733257E-02
+          Preconditioning: Error of red space iteration 11:  0.2278959251E-02
+          Preconditioning: Error of red space iteration 12:  0.4689184355E-02
+          Preconditioning: Error of red space iteration 13:  0.2025310533E-01
+          Preconditioning: Error of red space iteration 14:  0.3181384499E-02
+          Preconditioning: Error of red space iteration 15:  0.2227992554E-02
+          Preconditioning: Error of red space iteration 16:  0.9220617033E-02
+          Preconditioning: Error of red space iteration 17:  0.1747307876E-02
+          Preconditioning: Error of red space iteration 18:  0.1075738855E-02
+          Preconditioning: Error of red space iteration 19:  0.5732355896E-03
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.880158E-03    and frequency =     2.044185   It =   9 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ Writing to disk
+ vec_on_file           2
+ DISK(vec_on_file)%LabelYDIPLEN 
+ DISK(vec_on_file)%freq   2.04418502155368     
+ DISK(vec_on_file)%A1 T
+ PDBS: vecBdagger: The adjoint vector (B+ or Xf+)
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+ BETA 2: -8.235880400547624E-007 for YDIPLEN 
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+          Preconditioning: Error of red space iteration  1:  0.3955917970E+00
+          Preconditioning: Error of red space iteration  2:  0.2163719578E+00
+          Preconditioning: Error of red space iteration  3:  0.6520761427E-01
+          Preconditioning: Error of red space iteration  4:  0.9998430997E-02
+          Preconditioning: Error of red space iteration  5:  0.6910734594E-03
+     Preconditioning: Linear equations converged in  5 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  1.872427991605319E-005
+Residual norm for vector   1 is:   0.187243E-01    and frequency =     0.000000   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2494035633E-01
+          Preconditioning: Error of red space iteration  2:  0.4864424353E-02
+          Preconditioning: Error of red space iteration  3:  0.1849460697E-02
+          Preconditioning: Error of red space iteration  4:  0.3651554897E-03
+          Preconditioning: Error of red space iteration  5:  0.2515304021E-04
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.11 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.113429E-02    and frequency =     0.000000   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.7883899837E-03
+          Preconditioning: Error of red space iteration  2:  0.1553896948E-03
+          Preconditioning: Error of red space iteration  3:  0.6377811947E-04
+          Preconditioning: Error of red space iteration  4:  0.3087575573E-04
+          Preconditioning: Error of red space iteration  5:  0.9301690085E-05
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.394396E-04    and frequency =     0.000000   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.3742934061E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            3 of reduced residual is  -3.653393880325564E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            4 of reduced residual is   1.074670752652034E-005
+          Preconditioning: Error of red space iteration  2:  0.1748164453E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            5 of reduced residual is  -1.438439878104832E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            6 of reduced residual is   1.658689506710109E-006
+          Preconditioning: Error of red space iteration  3:  0.1636681059E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            7 of reduced residual is  -2.607808447807818E-006
+          Preconditioning: Error of red space iteration  4:  0.1642607949E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            9 of reduced residual is   3.276676769047099E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           10 of reduced residual is   3.307318477836232E-006
+          Preconditioning: Error of red space iteration  5:  0.1663024187E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           11 of reduced residual is   9.050240229567541E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           12 of reduced residual is  -1.576307762496788E-007
+          Preconditioning: Error of red space iteration  6:  0.1637522352E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           13 of reduced residual is  -8.766206910931950E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           14 of reduced residual is  -3.405555817238853E-007
+          Preconditioning: Error of red space iteration  7:  0.1623357202E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           15 of reduced residual is   1.286884508597830E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           16 of reduced residual is   2.309226946718061E-006
+          Preconditioning: Error of red space iteration  8:  0.1597488224E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           18 of reduced residual is  -3.583799915063880E-006
+          Preconditioning: Error of red space iteration  9:  0.1616723977E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           19 of reduced residual is   2.895322045259851E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           20 of reduced residual is   2.290064227259513E-007
+          Preconditioning: Error of red space iteration 10:  0.1591590713E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           21 of reduced residual is  -1.978875790661867E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           22 of reduced residual is  -1.759992339652364E-006
+          Preconditioning: Error of red space iteration 11:  0.1609298028E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           23 of reduced residual is  -3.185932660838602E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           24 of reduced residual is   7.957384514429299E-007
+          Preconditioning: Error of red space iteration 12:  0.1616300067E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           25 of reduced residual is  -7.495770170446453E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           26 of reduced residual is   2.942888165537733E-006
+          Preconditioning: Error of red space iteration 13:  0.1582097090E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           27 of reduced residual is  -1.610900229767987E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           28 of reduced residual is  -3.214993559797207E-007
+          Preconditioning: Error of red space iteration 14:  0.1568308958E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           29 of reduced residual is   5.693989702824460E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           30 of reduced residual is  -2.737754171050171E-007
+          Preconditioning: Error of red space iteration 15:  0.1563529627E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           31 of reduced residual is   1.276684387916775E-007
+          Preconditioning: Error of red space iteration 16:  0.1565687209E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           33 of reduced residual is   2.699147888278745E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           34 of reduced residual is   1.050898580575865E-006
+          Preconditioning: Error of red space iteration 17:  0.1569663714E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           35 of reduced residual is  -1.035630016511673E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           36 of reduced residual is   1.440306963228073E-007
+          Preconditioning: Error of red space iteration 18:  0.1573640035E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           37 of reduced residual is  -2.531854594794711E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           38 of reduced residual is   9.076827347554566E-007
+          Preconditioning: Error of red space iteration 19:  0.1533112249E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           39 of reduced residual is  -1.675232808102678E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           40 of reduced residual is  -5.982301693203654E-007
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.930228E-05    and frequency =     0.000000   It =   4 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ PDBS: --------------------------------------------------------------
+ PDBS BTERM or HERZTELL: Load the excitation vector
+ PDBS: --------------------------------------------------------------
+ PDBS: Calculate the A response vector for: ZDIPLEN 
+ PDBS: With frequency:    2.04418502155368     
+ BETA -3.356735963490003E-008
+ mcd_ortho =            3
+ mcd_ortho2 =            0
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ done normaizing
+ assigning
+ done inside orthonormalize
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+          Preconditioning: Error of red space iteration  1:  0.2561223210E+01
+          Preconditioning: Error of red space iteration  2:  0.6489149247E+01
+          Preconditioning: Error of red space iteration  3:  0.2383543334E+01
+          Preconditioning: Error of red space iteration  4:  0.1424691427E+01
+          Preconditioning: Error of red space iteration  5:  0.2928903704E+01
+          Preconditioning: Error of red space iteration  6:  0.6922899217E+01
+          Preconditioning: Error of red space iteration  7:  0.2687484067E-05
+     Preconditioning: Linear equations converged in  7 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+ Dynamic response convergence threshold set to  1.269205798529276E-003
+Residual norm for vector   1 is:   0.126921E+01    and frequency =     2.044185   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2597851646E+01
+          Preconditioning: Error of red space iteration  2:  0.4253606340E+01
+          Preconditioning: Error of red space iteration  3:  0.1643942854E+01
+          Preconditioning: Error of red space iteration  4:  0.1055894443E+01
+          Preconditioning: Error of red space iteration  5:  0.1592334492E+01
+          Preconditioning: Error of red space iteration  6:  0.1523598186E+02
+          Preconditioning: Error of red space iteration  7:  0.9651998607E-03
+     Preconditioning: Linear equations converged in  7 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.11 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.09 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.196870E+00    and frequency =     2.044185   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.4850632724E+00
+          Preconditioning: Error of red space iteration  2:  0.3280285818E+00
+          Preconditioning: Error of red space iteration  3:  0.1635517946E+00
+          Preconditioning: Error of red space iteration  4:  0.9280443646E-01
+          Preconditioning: Error of red space iteration  5:  0.8027236340E-01
+          Preconditioning: Error of red space iteration  6:  0.1617351816E+00
+          Preconditioning: Error of red space iteration  7:  0.2541635102E+00
+          Preconditioning: Error of red space iteration  8:  0.2811990986E+00
+          Preconditioning: Error of red space iteration  9:  0.7933736667E-01
+          Preconditioning: Error of red space iteration 10:  0.1680192372E-01
+          Preconditioning: Error of red space iteration 11:  0.1102653262E-01
+          Preconditioning: Error of red space iteration 12:  0.7772591893E-02
+          Preconditioning: Error of red space iteration 13:  0.4359362508E-02
+          Preconditioning: Error of red space iteration 14:  0.2386764047E-02
+          Preconditioning: Error of red space iteration 15:  0.1300249713E-02
+     Preconditioning: Linear equations converged in 15 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.11 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.09 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.163383E+00    and frequency =     2.044185   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.6883222684E+00
+          Preconditioning: Error of red space iteration  2:  0.1512937267E+00
+          Preconditioning: Error of red space iteration  3:  0.9192921374E-01
+          Preconditioning: Error of red space iteration  4:  0.3510645523E-01
+          Preconditioning: Error of red space iteration  5:  0.1271773592E-01
+          Preconditioning: Error of red space iteration  6:  0.1620271389E-01
+          Preconditioning: Error of red space iteration  7:  0.2627547062E-01
+          Preconditioning: Error of red space iteration  8:  0.2609346191E-01
+          Preconditioning: Error of red space iteration  9:  0.1002992929E-01
+          Preconditioning: Error of red space iteration 10:  0.1002049397E-01
+          Preconditioning: Error of red space iteration 11:  0.1064300958E+00
+          Preconditioning: Error of red space iteration 12:  0.1142986272E-01
+          Preconditioning: Error of red space iteration 13:  0.5988768543E-02
+          Preconditioning: Error of red space iteration 14:  0.3209821595E-02
+          Preconditioning: Error of red space iteration 15:  0.4295888740E-02
+          Preconditioning: Error of red space iteration 16:  0.1339515330E-01
+          Preconditioning: Error of red space iteration 17:  0.8682098285E-02
+          Preconditioning: Error of red space iteration 18:  0.3369566959E-02
+          Preconditioning: Error of red space iteration 19:  0.3943789954E-02
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.154526E-01    and frequency =     2.044185   It =   4 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2355247015E-01
+          Preconditioning: Error of red space iteration  2:  0.5144247630E-01
+          Preconditioning: Error of red space iteration  3:  0.1101164924E+00
+          Preconditioning: Error of red space iteration  4:  0.3672067642E-01
+          Preconditioning: Error of red space iteration  5:  0.2715779662E-01
+          Preconditioning: Error of red space iteration  6:  0.5708730917E+00
+          Preconditioning: Error of red space iteration  7:  0.6789782097E-01
+          Preconditioning: Error of red space iteration  8:  0.1112573740E+00
+          Preconditioning: Error of red space iteration  9:  0.3125398620E+00
+          Preconditioning: Error of red space iteration 10:  0.2660867006E-01
+          Preconditioning: Error of red space iteration 11:  0.1341243247E-01
+          Preconditioning: Error of red space iteration 12:  0.7613703844E-02
+          Preconditioning: Error of red space iteration 13:  0.8363586026E-02
+          Preconditioning: Error of red space iteration 14:  0.4721844104E-02
+          Preconditioning: Error of red space iteration 15:  0.5200718100E-02
+          Preconditioning: Error of red space iteration 16:  0.8929614459E-02
+          Preconditioning: Error of red space iteration 17:  0.1322593879E-01
+          Preconditioning: Error of red space iteration 18:  0.1412392789E-01
+          Preconditioning: Error of red space iteration 19:  0.1226308034E+01
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.883790E-02    and frequency =     2.044185   It =   5 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.1548874848E-01
+          Preconditioning: Error of red space iteration  2:  0.1838611470E-01
+          Preconditioning: Error of red space iteration  3:  0.4380339954E-02
+          Preconditioning: Error of red space iteration  4:  0.1570715227E-02
+          Preconditioning: Error of red space iteration  5:  0.8663985861E-02
+          Preconditioning: Error of red space iteration  6:  0.1747761545E-02
+          Preconditioning: Error of red space iteration  7:  0.1337831757E-02
+          Preconditioning: Error of red space iteration  8:  0.5676810295E-03
+          Preconditioning: Error of red space iteration  9:  0.9690381620E-03
+          Preconditioning: Error of red space iteration 10:  0.5860622243E-02
+          Preconditioning: Error of red space iteration 11:  0.1934819553E-02
+          Preconditioning: Error of red space iteration 12:  0.5421876598E-02
+          Preconditioning: Error of red space iteration 13:  0.1567233069E-02
+          Preconditioning: Error of red space iteration 14:  0.8689041323E-03
+          Preconditioning: Error of red space iteration 15:  0.2172367209E-02
+          Preconditioning: Error of red space iteration 16:  0.1373796095E-02
+          Preconditioning: Error of red space iteration 17:  0.5279151225E-03
+          Preconditioning: Error of red space iteration 18:  0.3932141377E-03
+          Preconditioning: Error of red space iteration 19:  0.1005594386E-02
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.13 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.09 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.262652E-02    and frequency =     2.044185   It =   6 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2970584958E-02
+          Preconditioning: Error of red space iteration  2:  0.4388077246E-02
+          Preconditioning: Error of red space iteration  3:  0.3074165274E-02
+          Preconditioning: Error of red space iteration  4:  0.2858490984E-02
+          Preconditioning: Error of red space iteration  5:  0.2908403161E-02
+          Preconditioning: Error of red space iteration  6:  0.1016481122E-01
+          Preconditioning: Error of red space iteration  7:  0.1351113108E-01
+          Preconditioning: Error of red space iteration  8:  0.1391928705E-01
+          Preconditioning: Error of red space iteration  9:  0.2324746051E-02
+          Preconditioning: Error of red space iteration 10:  0.4116237636E-02
+          Preconditioning: Error of red space iteration 11:  0.4007730607E-01
+          Preconditioning: Error of red space iteration 12:  0.3274923429E-02
+          Preconditioning: Error of red space iteration 13:  0.2645225940E-02
+          Preconditioning: Error of red space iteration 14:  0.2732362412E-02
+          Preconditioning: Error of red space iteration 15:  0.1060922730E-01
+          Preconditioning: Error of red space iteration 16:  0.1304818713E-02
+          Preconditioning: Error of red space iteration 17:  0.5992759162E-03
+          Preconditioning: Error of red space iteration 18:  0.7200410711E-03
+          Preconditioning: Error of red space iteration 19:  0.6319147500E-03
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.12 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.09 seconds
+ omega in build_reduc..    2.04418502155368     
+Residual norm for vector   1 is:   0.100526E-02    and frequency =     2.044185   It =   7 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ Writing to disk
+ vec_on_file           3
+ DISK(vec_on_file)%LabelZDIPLEN 
+ DISK(vec_on_file)%freq   2.04418502155368     
+ DISK(vec_on_file)%A1 T
+ PDBS: vecBdagger: The adjoint vector (B+ or Xf+)
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+ BETA 2: -3.356735963490004E-008 for ZDIPLEN 
+ Electrons: 10.000000(-2.28e-07): QR-DFT/b evaluation time:       0.1 s
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+          Preconditioning: Error of red space iteration  1:  0.3956043088E+00
+          Preconditioning: Error of red space iteration  2:  0.2163697943E+00
+          Preconditioning: Error of red space iteration  3:  0.6520770822E-01
+          Preconditioning: Error of red space iteration  4:  0.9998818559E-02
+          Preconditioning: Error of red space iteration  5:  0.6910957718E-03
+     Preconditioning: Linear equations converged in  5 iterations!
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Dynamic response convergence threshold set to  1.872410832775971E-005
+Residual norm for vector   1 is:   0.187241E-01    and frequency =     0.000000   It =   1 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.2494038495E-01
+          Preconditioning: Error of red space iteration  2:  0.4864444733E-02
+          Preconditioning: Error of red space iteration  3:  0.1849525071E-02
+          Preconditioning: Error of red space iteration  4:  0.3653954369E-03
+          Preconditioning: Error of red space iteration  5:  0.2580201637E-04
+     Preconditioning: Linear equations converged in  5 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.113489E-02    and frequency =     0.000000   It =   2 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.7900883422E-03
+          Preconditioning: Error of red space iteration  2:  0.1568106833E-03
+          Preconditioning: Error of red space iteration  3:  0.7164179713E-04
+          Preconditioning: Error of red space iteration  4:  0.3450001547E-04
+          Preconditioning: Error of red space iteration  5:  0.1354444956E-04
+          Preconditioning: Error of red space iteration  6:  0.1053206898E-04
+     Preconditioning: Linear equations converged in  6 iterations!
+ >>>  CPU Time used in RSP_IT          is   0.10 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.527479E-04    and frequency =     0.000000   It =   3 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.7425390955E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            3 of reduced residual is   2.398576541532842E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            4 of reduced residual is   3.242462987812070E-006
+          Preconditioning: Error of red space iteration  2:  0.2954664019E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            5 of reduced residual is  -1.805418964816536E-005
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            6 of reduced residual is  -2.964344412170996E-007
+          Preconditioning: Error of red space iteration  3:  0.2812194859E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            7 of reduced residual is   5.516558182546254E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            8 of reduced residual is   2.039808612607230E-007
+          Preconditioning: Error of red space iteration  4:  0.2796719454E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            9 of reduced residual is  -7.789736142238557E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           10 of reduced residual is   1.525497947687927E-006
+          Preconditioning: Error of red space iteration  5:  0.2774630808E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           11 of reduced residual is   2.859966195337832E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           12 of reduced residual is   1.835136252204255E-006
+          Preconditioning: Error of red space iteration  6:  0.2761972020E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           13 of reduced residual is   1.654927929437434E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           14 of reduced residual is  -1.405108409900891E-006
+          Preconditioning: Error of red space iteration  7:  0.2769231743E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           15 of reduced residual is  -1.636516797941215E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           16 of reduced residual is  -6.596327637968694E-006
+          Preconditioning: Error of red space iteration  8:  0.2765640200E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           17 of reduced residual is   2.089479745783972E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           18 of reduced residual is   1.917993406994734E-006
+          Preconditioning: Error of red space iteration  9:  0.2742063659E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           19 of reduced residual is   2.683172256899348E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           20 of reduced residual is  -1.875581576385166E-006
+          Preconditioning: Error of red space iteration 10:  0.2752362909E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           21 of reduced residual is  -1.532325467510472E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           22 of reduced residual is  -3.661862770013964E-007
+          Preconditioning: Error of red space iteration 11:  0.2766873210E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           23 of reduced residual is  -1.680992649727847E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           24 of reduced residual is   8.725918153673317E-007
+          Preconditioning: Error of red space iteration 12:  0.2762769945E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           25 of reduced residual is  -3.384796363848203E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           26 of reduced residual is   4.444444437012483E-006
+          Preconditioning: Error of red space iteration 13:  0.2779797801E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           27 of reduced residual is   2.103905934943119E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           28 of reduced residual is  -8.380023547781603E-006
+          Preconditioning: Error of red space iteration 14:  0.2821130339E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           29 of reduced residual is  -5.565980163045498E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           30 of reduced residual is  -9.340896816575502E-006
+          Preconditioning: Error of red space iteration 15:  0.2811114061E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           31 of reduced residual is   3.105830849648598E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           32 of reduced residual is  -2.031382564069838E-006
+          Preconditioning: Error of red space iteration 16:  0.2838524996E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           33 of reduced residual is   1.409401316443288E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           34 of reduced residual is  -8.274203332921371E-006
+          Preconditioning: Error of red space iteration 17:  0.2873317763E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           35 of reduced residual is  -4.986011722988961E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           36 of reduced residual is  -5.976067928928924E-007
+          Preconditioning: Error of red space iteration 18:  0.2868232739E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           37 of reduced residual is   2.667224629571302E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           38 of reduced residual is  -5.794177350173562E-006
+          Preconditioning: Error of red space iteration 19:  0.2858755790E-04
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           39 of reduced residual is   2.678667924173922E-006
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           40 of reduced residual is   1.343359748368521E-007
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.13 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.09 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.233597E-04    and frequency =     0.000000   It =   4 CONV = F
+          Preconditioning: Error of red space iteration  1:  0.9521126557E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            3 of reduced residual is  -4.918160638682280E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            4 of reduced residual is   3.274455726325271E-006
+          Preconditioning: Error of red space iteration  2:  0.6071828213E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            5 of reduced residual is  -8.951644201487069E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            6 of reduced residual is  -3.434493741101203E-007
+          Preconditioning: Error of red space iteration  3:  0.5822226290E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            7 of reduced residual is  -8.265146789832274E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element            8 of reduced residual is   3.301173655349044E-007
+          Preconditioning: Error of red space iteration  4:  0.5939297682E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           10 of reduced residual is  -1.349945096756753E-007
+          Preconditioning: Error of red space iteration  5:  0.5886488242E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           11 of reduced residual is   1.335582749320034E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           12 of reduced residual is   5.475101516833066E-007
+          Preconditioning: Error of red space iteration  6:  0.5812184060E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           13 of reduced residual is  -5.765774838477869E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           14 of reduced residual is  -1.551683458599819E-006
+          Preconditioning: Error of red space iteration  7:  0.5836938004E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           15 of reduced residual is   4.291897116941570E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           16 of reduced residual is  -1.012641442913316E-006
+          Preconditioning: Error of red space iteration  8:  0.6024697510E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           17 of reduced residual is   1.771360066067017E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           18 of reduced residual is  -1.216085431748661E-006
+          Preconditioning: Error of red space iteration  9:  0.6066352180E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           19 of reduced residual is   9.527267222209637E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           20 of reduced residual is   1.461230968578631E-006
+          Preconditioning: Error of red space iteration 10:  0.5855272805E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           21 of reduced residual is  -9.697506832344438E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           22 of reduced residual is   1.102183659513328E-006
+          Preconditioning: Error of red space iteration 11:  0.5774851142E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           23 of reduced residual is  -4.153310151232914E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           24 of reduced residual is  -3.941879037432007E-007
+          Preconditioning: Error of red space iteration 12:  0.5735186307E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           26 of reduced residual is   3.701989067919604E-007
+          Preconditioning: Error of red space iteration 13:  0.5690535753E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           27 of reduced residual is   3.086660526857313E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           28 of reduced residual is   1.146039163844834E-006
+          Preconditioning: Error of red space iteration 14:  0.5769576718E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           29 of reduced residual is   6.139126391985924E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           30 of reduced residual is   2.892693222025309E-007
+          Preconditioning: Error of red space iteration 15:  0.5754684312E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           31 of reduced residual is   8.037889580892860E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           32 of reduced residual is   1.058805923807858E-006
+          Preconditioning: Error of red space iteration 16:  0.5775492771E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           33 of reduced residual is   6.947292766684076E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           34 of reduced residual is  -1.686091762206480E-006
+          Preconditioning: Error of red space iteration 17:  0.5780863656E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           36 of reduced residual is  -2.164796159047333E-007
+          Preconditioning: Error of red space iteration 18:  0.5788124958E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           37 of reduced residual is   2.286290665399015E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           38 of reduced residual is   1.035705914007455E-007
+          Preconditioning: Error of red space iteration 19:  0.5775868673E-05
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           39 of reduced residual is   1.316362829348679E-007
+ WARNING: Remaining elms of reduced residual should be zero
+ but element           40 of reduced residual is  -1.204255729572914E-007
+ Warning: Max. no of iterations reached, exiting
+ >>>  CPU Time used in RSP_IT          is   0.11 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.10 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.440749E-05    and frequency =     0.000000   It =   5 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ *******************************
+ Number of unique vectors calculated           3
+ *******************************
+ *******************************
+ PDBS_driver: NOW BUILD PROPERTY
+ *******************************
+ READ VECTORER   vec_on_file           3
+ Label to be read XDIPLEN 
+ SINCE DISK(i)labelXDIPLEN for i=           1
+ SINCE DISK(i)freq   2.04418502155368      for i=           1
+ READ A1
+ READING VECTOR nr           1
+ ****************************************
+ call BUILD PROPERTY for J index :           1
+ PDBS_STACK(i)%LOOP(j)%Alabel    :XDIPLEN 
+ PDBS_STACK(i)%LOOP(j)%Blabel    :XDIPLEN 
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           1
+ CALL BUILD PROPERTY with THOMAS BVEC           1
+ CALL BUILD PROPERTY with THOMAS Xbar           1
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:    2.04418502155368     
+ MAGNETIC DIFFERENTIATION            0
+ ENTER Chose Clist            1
+ LEAVING Chose Clist            1
+ npert           3
+ startpert           2
+ step           1
+ Precompute matrices independent of the pertubation
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ I should now call the test_Xbar routine
+ I am now inside the test Xbar routine
+   XY =  -0.000124
+   XZ =   0.000121
+ loop runs over number of perturbations npert:           3
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBY  
+ Sxlabel : dS/dBY  
+ Alabel : XDIPLEN 
+ Axlabel : X-CM1 Y 
+ -------------------------------------
+ Perturbation npert                2
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBZ  
+ Sxlabel : dS/dBZ  
+ Alabel : XDIPLEN 
+ Axlabel : X-CM1 Z 
+ -------------------------------------
+ Perturbation npert                3
+ -------------------------------------
+ gga_is  1 
+
+ ***********************************************************
+ For the given loop index in Build_Property the total GRD is
+             A:X
+ ***********************************************************
+          Bx             By             Bz
+
+               0.00000000     0.00006193    -0.00005959
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ READ VECTORER   vec_on_file           3
+ Label to be read YDIPLEN 
+ SINCE DISK(i)labelYDIPLEN for i=           2
+ SINCE DISK(i)freq   2.04418502155368      for i=           2
+ READ A1
+ READING VECTOR nr           2
+ ****************************************
+ call BUILD PROPERTY for J index :           2
+ PDBS_STACK(i)%LOOP(j)%Alabel    :YDIPLEN 
+ PDBS_STACK(i)%LOOP(j)%Blabel    :YDIPLEN 
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           2
+ CALL BUILD PROPERTY with THOMAS BVEC           2
+ CALL BUILD PROPERTY with THOMAS Xbar           2
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:    2.04418502155368     
+ MAGNETIC DIFFERENTIATION            0
+ ENTER Chose Clist            1
+ LEAVING Chose Clist            1
+ npert           3
+ startpert           1
+ step           2
+ Precompute matrices independent of the pertubation
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ I should now call the test_Xbar routine
+ I am now inside the test Xbar routine
+   YX =   0.000000
+   YZ =   2.335598
+ loop runs over number of perturbations npert:           3
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBX  
+ Sxlabel : dS/dBX  
+ Alabel : YDIPLEN 
+ Axlabel : Y-CM1 X 
+ -------------------------------------
+ Perturbation npert                1
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBZ  
+ Sxlabel : dS/dBZ  
+ Alabel : YDIPLEN 
+ Axlabel : Y-CM1 Z 
+ -------------------------------------
+ Perturbation npert                3
+ -------------------------------------
+ gga_is  1 
+
+ ***********************************************************
+ For the given loop index in Build_Property the total GRD is
+             A:Y
+ ***********************************************************
+          Bx             By             Bz
+
+              -0.00000003     0.00000146    -1.21412518
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ READ VECTORER   vec_on_file           3
+ Label to be read ZDIPLEN 
+ SINCE DISK(i)labelZDIPLEN for i=           3
+ SINCE DISK(i)freq   2.04418502155368      for i=           3
+ READ A1
+ READING VECTOR nr           3
+ ****************************************
+ call BUILD PROPERTY for J index :           3
+ PDBS_STACK(i)%LOOP(j)%Alabel    :ZDIPLEN 
+ PDBS_STACK(i)%LOOP(j)%Blabel    :ZDIPLEN 
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           3
+ CALL BUILD PROPERTY with THOMAS BVEC           3
+ CALL BUILD PROPERTY with THOMAS Xbar           3
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:    2.04418502155368     
+ MAGNETIC DIFFERENTIATION            0
+ ENTER Chose Clist            1
+ LEAVING Chose Clist            1
+ npert           2
+ startpert           1
+ step           1
+ Precompute matrices independent of the pertubation
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 10.000000(-2.28e-07): LR-DFT(AO)*1 eval. time:       0.1 s
+ I should now call the test_Xbar routine
+ I am now inside the test Xbar routine
+   ZX =   0.000005
+   ZY =  -2.335558
+ loop runs over number of perturbations npert:           2
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBX  
+ Sxlabel : dS/dBX  
+ Alabel : ZDIPLEN 
+ Axlabel : Z-CM1 X 
+ -------------------------------------
+ Perturbation npert                1
+ -------------------------------------
+ Build_property: MAGNETIC DIFFERENTIATION
+ Hxlabel : dh/dBY  
+ Sxlabel : dS/dBY  
+ Alabel : ZDIPLEN 
+ Axlabel : Z-CM1 Y 
+ -------------------------------------
+ Perturbation npert                2
+ -------------------------------------
+ gga_is  1 
+
+ ***********************************************************
+ For the given loop index in Build_Property the total GRD is
+             A:Z
+ ***********************************************************
+          Bx             By             Bz
+
+              -0.00000267     1.21410121    -0.00000185
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ PDBS: Call build averages
+ selecting: BTERM 
+ Moment for:XDIPLEN  =   0.472439291351891     
+ Moment for:YDIPLEN  =   8.235880400547635E-007
+ Moment for:ZDIPLEN  =   3.356735963490007E-008
+  
+BTERM-Frequency (au):    2.044185
+BTERM-Frequency (eV):   55.625127
+  
+ ============================================================
+                  LAO B term results                         
+ ============================================================
+ SR-contribution fromXY :     0.000062
+ SR-contribution fromXZ :    -0.000060
+ SR-contribution fromYX :     0.000000
+ SR-contribution fromYZ :    -1.214125
+ SR-contribution fromZX :    -0.000003
+ SR-contribution fromZY :     1.214101
+  
+BTERM-contribution from XYZ   -0.573600
+BTERM-contribution from XZY    0.573589
+BTERM-contribution from YXZ    0.000000
+BTERM-contribution from YZX    0.000000
+BTERM-contribution from ZXY    0.000000
+BTERM-contribution from ZYX    0.000000
+  
+ LAO BTERM-result  (a.u.) :   1.14718955278644     
+ LAO BTERM-result  (std units) :  6.754239097867357E-005
+ ============================================================
+              NON-LAO B term results                         
+ ============================================================
+ SR-contribution from XY:    -0.000124 *(-0.5):     0.000062
+ SR-contribution from XZ:     0.000121 *(-0.5):    -0.000060
+ SR-contribution from YX:     0.000000 *(-0.5):     0.000000
+ SR-contribution from YZ:     2.335598 *(-0.5):    -1.167799
+ SR-contribution from ZX:     0.000005 *(-0.5):    -0.000003
+ SR-contribution from ZY:    -2.335558 *(-0.5):     1.167779
+  
+BTERM-contribution from XYZ    1.103428 *(-0.5):    -0.551714
+BTERM-contribution from XZY   -1.103409 *(-0.5):     0.551705
+BTERM-contribution from YXZ    0.000000 *(-0.5):     0.000000
+BTERM-contribution from YZX    0.000000 *(-0.5):     0.000000
+BTERM-contribution from ZXY    0.000000 *(-0.5):     0.000000
+BTERM-contribution from ZYX    0.000000 *(-0.5):     0.000000
+  
+ NONLAO BTERM-result (a.u.):  -2.20683727056717     
+ NONLAO BTERM-result(scaled by -0.5) (a.u.)   1.10341863528359     
+ NONLAO BTERM-result(scaled by -0.5) (std u)  6.496531693167588E-005
+  
+ PDBS: done build averages
+ Total no. of matmuls used:       12492
+ Total no. of Fock/KS matrix evaluations:           6
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):             46464 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):      46464 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                  72.789 kB
+  Max allocated memory, type(matrix)           72.789 kB
+  Max allocated memory, real(realk)             0.000 Byte
+  Max allocated memory, integer                 0.000 Byte
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               0.000 Byte
+  Max allocated memory, integralitem            0.000 Byte
+  Max allocated memory, Overlap                 0.000 Byte
+  Max allocated memory, ODitem                  0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    20.21193        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final DFT energy:            -99.002082965038
+     Nuclear repulsion:             9.781641163754
+     Electronic energy:          -108.783724128792
+
+     Final gradient norm:           0.000023430955
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:22 2010
+     Host name              : login-0-1.local                         
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5
+   1  H   1s     1.0000   0.0000   0.0000   0.0000   0.0000
+   2  H   1s     0.0000   1.0000   0.0000   0.0000   0.0000
+   3  F   1s     0.0000   0.0000   1.0000   0.0000   0.0000
+   4  F   1s     0.0000   0.0000   0.0000   1.0000   0.0000
+   5  F   1s     0.0000   0.0000   0.0000   0.0000   1.0000
+   6  F   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+   7  F   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+   8  F   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+   9  F   2px    0.0000   0.0000   0.0000   0.0000   0.0000
+  10  F   2py    0.0000   0.0000   0.0000   0.0000   0.0000
+  11  F   2pz    0.0000   0.0000   0.0000   0.0000   0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :     20.22 seconds
+ >>>> Total wall time used in SIRIUS :     20.27 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:22 2010
+     Host name              : login-0-1.local                         
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:  20.23 seconds
+ >>>> Total wall time used in DALTON:  20.29 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:22 2010
+     Host name              : login-0-1.local                         

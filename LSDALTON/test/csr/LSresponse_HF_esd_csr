@@ -1,0 +1,124 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > LSresponse_HF_esd_csr.info <<'%EOF%'
+   LSresponse_HF_esd_csr
+   -----------------
+   Molecule:         HF
+   Wave Function:    HF / 6-31G
+   Test Purpose:     Test excitation energy and excited state dipole (Kasper K)
+                    
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > LSresponse_HF_esd_csr.mol <<'%EOF%'
+BASIS
+6-31G
+-----------test----------
+
+Atomtypes=2 Generators=0
+Charge=1.0 Atoms=1 
+H 0.000000000 0.0000000000   0.000000000000000
+Charge=9.0 Atoms=1 
+F 2.000000000  0.0000000000   0.000000000000000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > LSresponse_HF_esd_csr.dal <<'%EOF%'
+**WAVE FUNCTIONS
+.HF
+*DENSOPT
+.CSR
+.ARH                                                                                       
+.NVEC
+8
+.CONVTHR
+1.0D-6
+**RESPONSE
+.NEXCIT 
+6
+*ESDIPOLE
+.EXSTATES
+2
+3  6
+*END OF INPUT  
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL > LSresponse_HF_esd_csr.check
+cat >> LSresponse_HF_esd_csr.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Energy
+CRIT1=`$GREP "Final * HF energy\: * \-99\.9679" $log | wc -l`
+TEST[1]=`expr   $CRIT1`
+CTRL[1]=1
+ERROR[1]="HF ENERGY NOT CORRECT -"
+
+# Memory test
+CRIT2=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[2]=`expr  $CRIT2`
+CTRL[2]=1
+ERROR[2]="Memory leak -"
+
+# Excitation energy and excited state dipole
+CRIT1=`$GREP "3 * 0\.5367[0-9][0-9][0-9][0-9] * 0\.2866" $log | wc -l`
+CRIT2=`$GREP "6 * 1\.3028[0-9][0-9][0-9] * \-0.6619" $log | wc -l`
+TEST[3]=`expr  $CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="Error in excitation energy / excited state dipole"
+
+
+PASSED=1
+for i in 1 2 3
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################

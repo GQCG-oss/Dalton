@@ -1,0 +1,2302 @@
+
+ Work memory size (LMWORK+2):   123123125 =  939.35 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:39 2010
+     Host name              : login-0-1.local                         
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Wave function sections will be executed
+
+
+ Chosen parameters for *OPTIMI :
+ -------------------------------
+
+ Default 1st order method will be used:   BFGS update.
+ Optimization will be performed in redundant internal coordinates.
+ Model Hessian will be used as initial Hessian.
+ The model Hessian parameters of Roland Lindh will be used.
+ 
+ Current Hessian will not be written out to DALTON.HES.
+
+ 
+ Trust region method will be used to control step (default).
+ 
+
+ New thresholding scheme for geometry convergence will be used
+ -------------------------------------------------------------
+ Root-mean-square gradient threshold set to    :      1.00D-05
+ Maximum gradient element threshold set to     :      5.00D-05
+ Root-mean-square step threshold set to        :      3.00D-05
+ Maximum step element threshold set to         :      1.50D-04
+
+
+          >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+          >>>>>>>>>> 1st Order Geometry Optimization >>>>>>>>>>
+          >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:       -9
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Threshold set dynamically.
+ 
+ 
+  Auxiliary basis is "Ahlrichs-Coulomb-Fit" from the basis set library.
+
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Threshold set dynamically.
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  C2H4                                                                    
+  generated from B3LYP/ccpVDZ C6H8 fragments                              
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           C1         12.000000
+                           C2         12.000000
+                           H1          1.007825
+                           H2          1.007825
+                           H3          1.007825
+                           H4          1.007825
+
+                       Total mass:    28.031300 amu
+                       Natural abundance:  97.753 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    6
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  C1          1       6      22       9      [10s4p|3s2p]                                                                     
+  C2          1       6      22       9      [10s4p|3s2p]                                                                     
+  H1          1       1       4       2      [4s|2s]                                                                          
+  H2          1       1       4       2      [4s|2s]                                                                          
+  H3          1       1       4       2      [4s|2s]                                                                          
+  H4          1       1       4       2      [4s|2s]                                                                          
+  ----------------------------------------------------------------------
+  total:      6      16      60      26
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+ 
+ 
+  Auxiliary basis is "Ahlrichs-Coulomb-Fit" from the basis set library.
+
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates: 18
+
+   1   C1       x      1.2614276729
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   C2       x     -1.2614276729
+   5            y      0.0000000000
+   6            z      0.0000000000
+
+   7   H1       x      2.3580898056
+   8            y      0.0000000000
+   9            z     -1.7607251620
+
+  10   H2       x      2.3580898056
+  11            y      0.0000000000
+  12            z      1.7607251620
+
+  13   H3       x     -2.3580898056
+  14            y      0.0000000000
+  15            z     -1.7607251620
+
+  16   H4       x     -2.3580898056
+  17            y      0.0000000000
+  18            z      1.7607251620
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            C1          C2          H1          H2          H3          H4    
+            ------      ------      ------      ------      ------      ------
+ C1    :    0.000000
+ C2    :    1.335038    0.000000
+ H1    :    1.097685    2.129967    0.000000
+ H2    :    1.097685    2.129967    1.863471    0.000000
+ H3    :    2.129967    1.097685    2.495695    3.114646    0.000000
+ H4    :    2.129967    1.097685    3.114646    2.495695    1.863471    0.000000
+
+
+  Max interatomic separation is    3.1146 Angstroms
+  between atoms "H3    " and "H2    ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C2         C1           1.335038
+  bond distance:  H1         C1           1.097685
+  bond distance:  H2         C1           1.097685
+  bond distance:  H3         C2           1.097685
+  bond distance:  H4         C2           1.097685
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     C2         C1         H1           121.917
+  bond angle:     C2         C1         H2           121.917
+  bond angle:     H1         C1         H2           116.167
+  bond angle:     C1         C2         H3           121.917
+  bond angle:     C1         C2         H4           121.917
+  bond angle:     H3         C2         H4           116.167
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    3.499698          1.000000    0.000000    0.000000
+   IB   16.971182          0.000000    0.000000    1.000000
+   IC   20.470879          0.000000    1.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is planar.
+
+               A                   B                   C
+
+         144406.4777          29778.6572          24687.7037 MHz
+            4.816882            0.993309            0.823493 cm-1
+
+
+  Nuclear repulsion energy :     33.134051112107
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.01 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in GABGEN is   0.01 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.02 seconds
+ >>>> Total wall time used in HERMIT:   0.02 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+
+
+ Settings for DFT calculation:
+ -----------------------------
+
+     Default thresholds:                       0.10D-08    0.10D-09    0.20D-11
+     Default threshold for number of electrons:                        0.10D-02
+     DFT radial quadrature accuracy/ang. expansion order:  0.10E-10  31
+ Ground state molecular gradient calculations are carried out.
+ 
+No frequencies specified in input. Only static properties will be  calculated.
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:39 2010
+     Host name              : login-0-1.local                         
+
+ Title lines from integral program:
+     C2H4                                                                    
+     generated from B3LYP/ccpVDZ C6H8 fragments                              
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Kohn-Sham calculation.
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         16
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 26
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+ 
+     This is a DFT calculation of type: LDA
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          26
+     Number of basis functions         26
+
+      ** Automatic occupation of RKS orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              8
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *DENFIT                                                               
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ Ground state molecular gradient calculations are carried out.
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           7
+Convergence threshold for gradient:   0.10E-03
+ End of configuration from new input structure!
+ Take first density from Hueckel guess
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   0.00 seconds
+** Get Fock matrix number   1
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 9010 compressed from  9048 ( 84 radial)
+ Atom:    2*1 points= 9010 compressed from  9048 ( 84 radial)
+ Atom:    3*1 points= 9088 compressed from  9158 ( 61 radial)
+ Atom:    4*1 points= 9088 compressed from  9158 ( 61 radial)
+ Atom:    5*1 points= 9088 compressed from  9158 ( 61 radial)
+ Atom:    6*1 points= 9088 compressed from  9158 ( 61 radial)
+ Number of grid points:    54372 Grid generation time:       0.1 s
+KS electrons/energy:   16.00000845092224  -11.11584556317808 rel.err: 0.53E-06
+ >>>  CPU Time used in DFT_KS          is   0.36 seconds
+ >>>  CPU Time used in FCK_FO          is   0.39 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   4.94548481981814     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -77.3895326916    0.00000000000    0.00      0.00000    0.00    0.0000000    0.49E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+KS electrons/energy:   16.00000874850264  -11.96113946347172 rel.err: 0.55E-06
+ >>>  CPU Time used in DFT_KS          is   0.30 seconds
+ >>>  CPU Time used in FCK_FO          is   0.32 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm   3.32878400120631     
+  2    -77.5174376822   -0.12790499064    0.00      0.00000    0.00    0.0000000    0.33E+01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+** Get Fock matrix number   3
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+KS electrons/energy:   16.00000999876016  -11.40238687771499 rel.err: 0.62E-06
+ >>>  CPU Time used in DFT_KS          is   0.31 seconds
+ >>>  CPU Time used in FCK_FO          is   0.32 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.838500839418901     
+  3    -77.7857855583   -0.26834787607    0.00      0.00000    0.00    0.0000000    0.84E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+KS electrons/energy:   16.00000969973885  -11.49420005009049 rel.err: 0.61E-06
+ >>>  CPU Time used in DFT_KS          is   0.29 seconds
+ >>>  CPU Time used in FCK_FO          is   0.31 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.947691376717478E-002
+  4    -77.8026757686   -0.01689021029    0.00      0.00000    0.00    0.0000000    0.39E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   5
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+KS electrons/energy:   16.00000971905598  -11.49195297102726 rel.err: 0.61E-06
+ >>>  CPU Time used in DFT_KS          is   0.31 seconds
+ >>>  CPU Time used in FCK_FO          is   0.32 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.831816227321248E-003
+  5    -77.8027195747   -0.00004380618    0.00      0.00000    0.00    0.0000000    0.18E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   6
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+KS electrons/energy:   16.00000971746377  -11.49171804758500 rel.err: 0.61E-06
+ >>>  CPU Time used in DFT_KS          is   0.30 seconds
+ >>>  CPU Time used in FCK_FO          is   0.32 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.853052559163081E-004
+  6    -77.8027197135   -0.00000013874    0.00      0.00000    0.00    0.0000000    0.19E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           6
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   7
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+KS electrons/energy:   16.00000971768338  -11.49172499647403 rel.err: 0.61E-06
+ >>>  CPU Time used in DFT_KS          is   0.29 seconds
+ >>>  CPU Time used in FCK_FO          is   0.31 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.076942093932261E-005
+  7    -77.8027197148   -0.00000000130    0.00      0.00000    0.00    0.0000000    0.11E-04  ###
+ >>>  CPU Time used in **ITER          is   2.31 seconds
+Total no. of matmuls in SCF optimization:        435
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.12790499064    0.0000    0.0000    0.0000000
+  3   -0.26834787607    0.0000    0.0000    0.0000000
+  4   -0.01689021029    0.0000    0.0000    0.0000000
+  5   -0.00004380618    0.0000    0.0000    0.0000000
+  6   -0.00000013874    0.0000    0.0000    0.0000000
+  7   -0.00000000130    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1           -77.38953269157413217272      0.494548481981814D+01
+    2           -77.51743768221599850676      0.332878400120631D+01
+    3           -77.78578555828295293395      0.838500839418901D+00
+    4           -77.80267576857048084094      0.394769137671748D-01
+    5           -77.80271957474576538516      0.183181622732125D-02
+    6           -77.80271971348214776754      0.185305255916308D-03
+    7           -77.80271971478271098022      0.107694209393226D-04
+ 
+      SCF converged !!!! 
+ Total no. of matmuls used:         437
+ Total no. of Fock/KS matrix evaluations:           7
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                 279.906 kB
+  Max allocated memory, type(matrix)          279.906 kB
+  Max allocated memory, real(realk)             0.000 Byte
+  Max allocated memory, integer                 0.000 Byte
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               0.000 Byte
+  Max allocated memory, integralitem            0.000 Byte
+  Max allocated memory, Overlap                 0.000 Byte
+  Max allocated memory, ODitem                  0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    2.321647        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final DFT energy:            -77.802719714783
+     Nuclear repulsion:            33.134051112107
+     Electronic energy:          -110.936770826889
+
+     Final gradient norm:           0.000010769421
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:41 2010
+     Host name              : login-0-1.local                         
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  C1  1s     1.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   2  C1  1s     0.0000   1.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   3  C1  1s     0.0000   0.0000   1.0000   0.0000   0.0000   0.0000   0.0000
+   4  C1  2px    0.0000   0.0000   0.0000   1.0000   0.0000   0.0000   0.0000
+   5  C1  2py    0.0000   0.0000   0.0000   0.0000   1.0000   0.0000   0.0000
+   6  C1  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   1.0000   0.0000
+   7  C1  2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   1.0000
+   8  C1  2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+   9  C1  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  10  C2  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  11  C2  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  12  C2  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  13  C2  2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  14  C2  2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  15  C2  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  16  C2  2px    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  17  C2  2py    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  18  C2  2pz    0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  19  H1  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  20  H1  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  21  H2  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  22  H2  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  23  H3  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  24  H3  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  25  H4  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  26  H4  1s     0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+
+ Orbital          8
+   1  C1  1s     0.0000
+   2  C1  1s     0.0000
+   3  C1  1s     0.0000
+   4  C1  2px    0.0000
+   5  C1  2py    0.0000
+   6  C1  2pz    0.0000
+   7  C1  2px    0.0000
+   8  C1  2py    1.0000
+   9  C1  2pz    0.0000
+  10  C2  1s     0.0000
+  11  C2  1s     0.0000
+  12  C2  1s     0.0000
+  13  C2  2px    0.0000
+  14  C2  2py    0.0000
+  15  C2  2pz    0.0000
+  16  C2  2px    0.0000
+  17  C2  2py    0.0000
+  18  C2  2pz    0.0000
+  19  H1  1s     0.0000
+  20  H1  1s     0.0000
+  21  H2  1s     0.0000
+  22  H2  1s     0.0000
+  23  H3  1s     0.0000
+  24  H3  1s     0.0000
+  25  H4  1s     0.0000
+  26  H4  1s     0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      2.33 seconds
+ >>>> Total wall time used in SIRIUS :      2.34 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:42 2010
+     Host name              : login-0-1.local                         
+
+- End of Wave Function Section
+
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
+
+Starting in Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:42 2010
+     Host name              : login-0-1.local                         
+
+ >>> Time used in DFTGRA is   0.30 seconds
+
+ WARNING:Putting ndmat = 1 in FCK3GRAD
+ WARNING:Putting ndmat = 1 in FCK3GRAD
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FCK3GR is   0.03 seconds
+
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:42 2010
+     Host name              : login-0-1.local                         
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ C1         1.2614276729            0.0000000000            0.0000000000
+ C2        -1.2614276729            0.0000000000            0.0000000000
+ H1         2.3580898056            0.0000000000           -1.7607251620
+ H2         2.3580898056            0.0000000000            1.7607251620
+ H3        -2.3580898056            0.0000000000           -1.7607251620
+ H4        -2.3580898056            0.0000000000            1.7607251620
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -77.8027197148 au (Hartrees)
+                         -2117.11963866 eV
+                           -204271.0113 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.1185634721 au
+     Mass-velocity correction:                  -0.1477754689 au
+
+     Total relativistic correction:             -0.0292119969 au (0.0375%)
+     Non-relativistic + relativistic energy:   -77.8319317117 au
+
+
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+ C1         0.0001260390            0.0000000000            0.0000000000
+ C2        -0.0001260390            0.0000000000            0.0000000000
+ H1         0.0000013748            0.0000000000           -0.0000441499
+ H2         0.0000013748            0.0000000000            0.0000441499
+ H3        -0.0000013748            0.0000000000           -0.0000441499
+ H4        -0.0000013748            0.0000000000            0.0000441499
+
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.000000 au           0.000000 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.00000000      0.00000000
+
+                        1 a.u. =   2.54175 Debye 
+
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            C1          C2          H1          H2          H3          H4    
+            ------      ------      ------      ------      ------      ------
+ C1    :    0.000000
+ C2    :    1.335038    0.000000
+ H1    :    1.097685    2.129967    0.000000
+ H2    :    1.097685    2.129967    1.863471    0.000000
+ H3    :    2.129967    1.097685    2.495695    3.114646    0.000000
+ H4    :    2.129967    1.097685    3.114646    2.495695    1.863471    0.000000
+
+
+  Max interatomic separation is    3.1146 Angstroms
+  between atoms "H3    " and "H2    ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C2         C1           1.335038
+  bond distance:  H1         C1           1.097685
+  bond distance:  H2         C1           1.097685
+  bond distance:  H3         C2           1.097685
+  bond distance:  H4         C2           1.097685
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     C2         C1         H1           121.917
+  bond angle:     C2         C1         H2           121.917
+  bond angle:     H1         C1         H2           116.167
+  bond angle:     C1         C2         H3           121.917
+  bond angle:     C1         C2         H4           121.917
+  bond angle:     H3         C2         H4           116.167
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ TWOTEX     00:00:03     697 %
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.39 seconds
+ >>>> Total wall time used in ABACUS:   0.41 seconds
+
+- End of Static Property Section
+
+
+
+
+ ------------------------------------------------------------+---------------------------
+              RMS grad    Max grad    RMS step    Max step   |  Tr.rad.        Energy
+ ------------------------------------------------------------+---------------------------
+ Curr.val.   0.00002553  0.00004869  0.00010181  0.00016679  |  0.500000     -77.80271971
+ Threshold   0.00001000  0.00005000  0.00003000  0.00015000  |
+ Converged?       F           T           F           F      |
+ ------------------------------------------------------------+---------------------------
+
+
+
+
+
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                            Next geometry (au)
+                            ------------------
+
+ C1         1.2613442784            0.0000000000            0.0000000000
+ C2        -1.2613442784            0.0000000000            0.0000000000
+ H1         2.3581028420            0.0000000000           -1.7605704212
+ H2         2.3581028420            0.0000000000            1.7605704212
+ H3        -2.3581028420            0.0000000000           -1.7605704212
+ H4        -2.3581028420            0.0000000000            1.7605704212
+
+
+
+
+
+                         Optimization information
+                         ------------------------
+
+ Iteration number               :       0
+ End of optimization            :       F 
+ Energy at this geometry is     :     -77.802720
+ Norm of gradient               :       0.000199
+ Norm of step                   :       0.000444
+ Updated trust radius           :       0.500000
+ Total Hessian index            :       0
+
+
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:       -1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Threshold set dynamically.
+ Warning: Not enough memory allocated for readin.   101256671
+          needed, but only     55616903  specified.
+          Trying to allocate needed memory.
+ 
+ 
+  Auxiliary basis is "Ahlrichs-Coulomb-Fit" from the basis set library.
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in GABGEN is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:42 2010
+     Host name              : login-0-1.local                         
+
+ Title lines from integral program:
+     C2H4                                                                    
+     generated from B3LYP/ccpVDZ C6H8 fragments                              
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   3
+
+     Restricted, closed shell Kohn-Sham calculation.
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART NEWORB" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         16
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 26
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+ 
+     This is a DFT calculation of type: LDA
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Occupied SCF orbitals              8
+     Secondary orbitals                18
+     Total number of orbitals          26
+     Number of basis functions         26
+
+     Optimization information
+     ========================
+     Number of configurations              1
+     Number of orbital rotations         144
+     ---------------------------------------
+     Total number of variables           145
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *DENFIT                                                               
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ Ground state molecular gradient calculations are carried out.
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           7
+Convergence threshold for gradient:   0.10E-03
+ End of configuration from new input structure!
+ 
+ *** RESTART FROM DENSITY ON DISK - READ FROM dens.restart  ***
+ 
+ Basis check ok: Using standard basis consistently
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   0.00 seconds
+** Get Fock matrix number   1
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.04 seconds
+
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 9012 compressed from  9048 ( 84 radial)
+ Atom:    2*1 points= 9013 compressed from  9048 ( 84 radial)
+ Atom:    3*1 points= 9088 compressed from  9158 ( 61 radial)
+ Atom:    4*1 points= 9088 compressed from  9158 ( 61 radial)
+ Atom:    5*1 points= 9088 compressed from  9158 ( 61 radial)
+ Atom:    6*1 points= 9088 compressed from  9158 ( 61 radial)
+ Number of grid points:    54377 Grid generation time:       0.1 s
+KS electrons/energy:   16.00015512674607  -11.49187575598333 rel.err: 0.97E-05
+ >>>  CPU Time used in DFT_KS          is   0.36 seconds
+ >>>  CPU Time used in FCK_FO          is   0.40 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.366700945001351E-003
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -77.8028140890    0.00000000000    0.00      0.00000    0.00    0.0000000    0.14E-02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FIT-J  is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+KS electrons/energy:   16.00000971710922  -11.49180883109467 rel.err: 0.61E-06
+ >>>  CPU Time used in DFT_KS          is   0.31 seconds
+ >>>  CPU Time used in FCK_FO          is   0.32 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.540834870414412E-004
+  2    -77.8027197539    0.00009433511    0.00      0.00000    0.00    0.0000000    0.25E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+KS electrons/energy:   16.00000971692612  -11.49188288460384 rel.err: 0.61E-06
+ >>>  CPU Time used in DFT_KS          is   0.29 seconds
+ >>>  CPU Time used in FCK_FO          is   0.31 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.299375611073468E-004
+  3    -77.8027197528    0.00000000103    0.00      0.00000    0.00    0.0000000    0.33E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+KS electrons/energy:   16.00000971702611  -11.49184060853856 rel.err: 0.61E-06
+ >>>  CPU Time used in DFT_KS          is   0.30 seconds
+ >>>  CPU Time used in FCK_FO          is   0.31 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  6.075295766209004E-006
+  4    -77.8027197556   -0.00000000274    0.00      0.00000    0.00    0.0000000    0.61E-05  ###
+ >>>  CPU Time used in **ITER          is   1.35 seconds
+Total no. of matmuls in SCF optimization:        561
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2    0.00009433511    0.0000    0.0000    0.0000000
+  3    0.00000000103    0.0000    0.0000    0.0000000
+  4   -0.00000000274    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1           -77.80281408896865968927      0.136670094500135D-02
+    2           -77.80271975386091298788      0.254083487041441D-03
+    3           -77.80271975283308449889      0.329937561107347D-03
+    4           -77.80271975557440100602      0.607529576620900D-05
+ 
+      SCF converged !!!! 
+ Total no. of matmuls used:         563
+ Total no. of Fock/KS matrix evaluations:          11
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                  97.520 MB
+  Max allocated memory, type(matrix)           97.520 MB
+  Max allocated memory, real(realk)             0.000 Byte
+  Max allocated memory, integer                 0.000 Byte
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               0.000 Byte
+  Max allocated memory, integralitem            0.000 Byte
+  Max allocated memory, Overlap                 0.000 Byte
+  Max allocated memory, ODitem                  0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    1.345796        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final DFT energy:            -77.802719755574
+     Nuclear repulsion:            33.135693852328
+     Electronic energy:          -110.938413607903
+
+     Final gradient norm:           0.000006075296
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:43 2010
+     Host name              : login-0-1.local                         
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.35 seconds
+ >>>> Total wall time used in SIRIUS :      1.35 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:43 2010
+     Host name              : login-0-1.local                         
+
+- End of Wave Function Section
+
+
+
+             StepInfo:Energy difference to previous geometry:
+             ------------------------------------------------
+
+
+      Energy       Old_Energy     Actual_diff  Predicted_diff  Ratio
+      -77.8027197556      -77.8027197148  -0.0000000408  -0.0000000241   1.6898888950
+ 
+ Trust radius increased due to good ratio.
+ Updated trust radius   0.50000
+
+ >>> Time used in Geo-op is   4.12 seconds
+
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
+
+Starting in Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:43 2010
+     Host name              : login-0-1.local                         
+
+ >>> Time used in DFTGRA is   0.30 seconds
+
+ WARNING:Putting ndmat = 1 in FCK3GRAD
+ WARNING:Putting ndmat = 1 in FCK3GRAD
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FCK3GR is   0.04 seconds
+
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:44 2010
+     Host name              : login-0-1.local                         
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ TWOTEX     00:00:04     *** %
+ REST       00:00:01     292 %
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.37 seconds
+ >>>> Total wall time used in ABACUS:   0.37 seconds
+
+- End of Static Property Section
+
+
+
+
+ ------------------------------------------------------------+---------------------------
+              RMS grad    Max grad    RMS step    Max step   |  Tr.rad.        Energy
+ ------------------------------------------------------------+---------------------------
+ Curr.val.   0.00000893  0.00001972  0.00005471  0.00012692  |  0.500000     -77.80271976
+ Threshold   0.00001000  0.00005000  0.00003000  0.00015000  |
+ Converged?       T           T           F           T      |
+ ------------------------------------------------------------+---------------------------
+
+
+
+
+
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                            Next geometry (au)
+                            ------------------
+
+ C1         1.2613110835            0.0000000000            0.0000000000
+ C2        -1.2613110835            0.0000000000            0.0000000000
+ H1         2.3581660853            0.0000000000           -1.7604762802
+ H2         2.3581660853            0.0000000000            1.7604762802
+ H3        -2.3581660853            0.0000000000           -1.7604762802
+ H4        -2.3581660853            0.0000000000            1.7604762802
+
+
+
+
+
+                         Optimization information
+                         ------------------------
+
+ Iteration number               :       1
+ End of optimization            :       F 
+ Energy at this geometry is     :     -77.802720
+ Energy change from last geom.  :       0.000000
+ Norm of gradient               :       0.000066
+ Norm of step                   :       0.000238
+ Updated trust radius           :       0.500000
+ Total Hessian index            :       0
+
+
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:       -1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+
+ Settings for FCK3 calculation:
+ ------------------------------
+
+Threshold set dynamically.
+ Warning: Not enough memory allocated for readin.   101256671
+          needed, but only     55616903  specified.
+          Trying to allocate needed memory.
+ 
+ 
+  Auxiliary basis is "Ahlrichs-Coulomb-Fit" from the basis set library.
+
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ >>> Time used in GABGEN is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.01 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:44 2010
+     Host name              : login-0-1.local                         
+
+ Title lines from integral program:
+     C2H4                                                                    
+     generated from B3LYP/ccpVDZ C6H8 fragments                              
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   3
+
+     Restricted, closed shell Kohn-Sham calculation.
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART NEWORB" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         16
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 26
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+ 
+     This is a DFT calculation of type: LDA
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Occupied SCF orbitals              8
+     Secondary orbitals                18
+     Total number of orbitals          26
+     Number of basis functions         26
+
+     Optimization information
+     ========================
+     Number of configurations              1
+     Number of orbital rotations         144
+     ---------------------------------------
+     Total number of variables           145
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING DOFCK3 IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *DENFIT                                                               
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ Ground state molecular gradient calculations are carried out.
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           7
+Convergence threshold for gradient:   0.10E-03
+ End of configuration from new input structure!
+ 
+ *** RESTART FROM DENSITY ON DISK - READ FROM dens.restart  ***
+ 
+ Basis check ok: Using standard basis consistently
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   0.00 seconds
+** Get Fock matrix number   1
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 9006 compressed from  9048 ( 84 radial)
+ Atom:    2*1 points= 9006 compressed from  9048 ( 84 radial)
+ Atom:    3*1 points= 9088 compressed from  9158 ( 61 radial)
+ Atom:    4*1 points= 9088 compressed from  9158 ( 61 radial)
+ Atom:    5*1 points= 9088 compressed from  9158 ( 61 radial)
+ Atom:    6*1 points= 9088 compressed from  9158 ( 61 radial)
+ Number of grid points:    54364 Grid generation time:       0.1 s
+KS electrons/energy:   16.00006474994414  -11.49189780754378 rel.err: 0.40E-05
+ >>>  CPU Time used in DFT_KS          is   0.36 seconds
+ >>>  CPU Time used in FCK_FO          is   0.39 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  5.464779995632854E-004
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -77.8027564171    0.00000000000    0.00      0.00000    0.00    0.0000000    0.55E-03  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+KS electrons/energy:   16.00000970747729  -11.49186859477606 rel.err: 0.61E-06
+ >>>  CPU Time used in DFT_KS          is   0.29 seconds
+ >>>  CPU Time used in FCK_FO          is   0.31 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.177420245674150E-004
+  2    -77.8027197608    0.00003665628    0.00      0.00000    0.00    0.0000000    0.12E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in GALPHA is   0.00 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+KS electrons/energy:   16.00000970739544  -11.49190245229062 rel.err: 0.61E-06
+ >>>  CPU Time used in DFT_KS          is   0.31 seconds
+ >>>  CPU Time used in FCK_FO          is   0.32 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.514532440355154E-004
+  3    -77.8027197606    0.00000000024    0.00      0.00000    0.00    0.0000000    0.15E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in GALPHA is   0.01 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.02 seconds
+
+KS electrons/energy:   16.00000970744051  -11.49188320877454 rel.err: 0.61E-06
+ >>>  CPU Time used in DFT_KS          is   0.29 seconds
+ >>>  CPU Time used in FCK_FO          is   0.31 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.565468779564266E-006
+  4    -77.8027197612   -0.00000000060    0.00      0.00000    0.00    0.0000000    0.16E-05  ###
+ >>>  CPU Time used in **ITER          is   1.34 seconds
+Total no. of matmuls in SCF optimization:        687
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2    0.00003665628    0.0000    0.0000    0.0000000
+  3    0.00000000024    0.0000    0.0000    0.0000000
+  4   -0.00000000060    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1           -77.80275641708391276552      0.546477999563285D-03
+    2           -77.80271976080585716318      0.117742024567415D-03
+    3           -77.80271976056809535294      0.151453244035515D-03
+    4           -77.80271976117128929218      0.156546877956427D-05
+ 
+      SCF converged !!!! 
+ Total no. of matmuls used:         689
+ Total no. of Fock/KS matrix evaluations:          15
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                  97.520 MB
+  Max allocated memory, type(matrix)           97.520 MB
+  Max allocated memory, real(realk)             0.000 Byte
+  Max allocated memory, integer                 0.000 Byte
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               0.000 Byte
+  Max allocated memory, integralitem            0.000 Byte
+  Max allocated memory, Overlap                 0.000 Byte
+  Max allocated memory, ODitem                  0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    1.342797        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final DFT energy:            -77.802719761171
+     Nuclear repulsion:            33.136271304227
+     Electronic energy:          -110.938991065398
+
+     Final gradient norm:           0.000001565469
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:45 2010
+     Host name              : login-0-1.local                         
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.34 seconds
+ >>>> Total wall time used in SIRIUS :      1.34 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:45 2010
+     Host name              : login-0-1.local                         
+
+- End of Wave Function Section
+
+
+
+             StepInfo:Energy difference to previous geometry:
+             ------------------------------------------------
+
+
+      Energy       Old_Energy     Actual_diff  Predicted_diff  Ratio
+      -77.8027197612      -77.8027197556  -0.0000000056  -0.0000000046   1.2212271604
+ 
+ Trust radius increased due to good ratio.
+ Updated trust radius   0.50000
+
+ >>> Time used in Geo-op is   1.72 seconds
+
+                                   
+     Order of the analytical energy-derivative available:   2
+     This will be the default.
+                                   
+
+Starting in Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:45 2010
+     Host name              : login-0-1.local                         
+
+ >>> Time used in DFTGRA is   0.30 seconds
+
+ WARNING:Putting ndmat = 1 in FCK3GRAD
+ WARNING:Putting ndmat = 1 in FCK3GRAD
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in FCK3GR is   0.03 seconds
+
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:45 2010
+     Host name              : login-0-1.local                         
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ TWOTEX     00:00:06     *** %
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.37 seconds
+ >>>> Total wall time used in ABACUS:   0.37 seconds
+
+- End of Static Property Section
+
+
+
+
+ ------------------------------------------------------------+---------------------------
+              RMS grad    Max grad    RMS step    Max step   |  Tr.rad.        Energy
+ ------------------------------------------------------------+---------------------------
+ Curr.val.   0.00000152  0.00000236  0.00001280  0.00002434  |  0.500000     -77.80271976
+ Threshold   0.00001000  0.00005000  0.00003000  0.00015000  |
+ Converged?       T           T           T           T      |
+ ------------------------------------------------------------+---------------------------
+
+
+
+
+
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+       ::::::::::::::: Optimization Control Center :::::::::::::::
+       :::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
+
+
+
+                           Final geometry (au)
+                           -------------------
+
+ C1         1.2613110835            0.0000000000            0.0000000000
+ C2        -1.2613110835            0.0000000000            0.0000000000
+ H1         2.3581660853            0.0000000000           -1.7604762802
+ H2         2.3581660853            0.0000000000            1.7604762802
+ H3        -2.3581660853            0.0000000000           -1.7604762802
+ H4        -2.3581660853            0.0000000000            1.7604762802
+
+
+
+
+
+                         Optimization information
+                         ------------------------
+
+ Iteration number               :       2
+ End of optimization            :       T 
+ Energy at this geometry is     :     -77.802720
+ Energy change from last geom.  :       0.000000
+ Norm of gradient               :       0.000010
+ Norm of step                   :       0.000056
+ Updated trust radius           :       0.500000
+ Total Hessian index            :       0
+
+
+
+ >>> Time used in Geo-op is   0.37 seconds
+
+
+Starting in Static Property Section -
+
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:45 2010
+     Host name              : login-0-1.local                         
+
+
+ ***************************************************************************
+ ************************ FINAL RESULTS FROM ABACUS ************************
+ ***************************************************************************
+
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:45 2010
+     Host name              : login-0-1.local                         
+
+
+
+                         Molecular geometry (au)
+                         -----------------------
+
+ C1         1.2613110835            0.0000000000            0.0000000000
+ C2        -1.2613110835            0.0000000000            0.0000000000
+ H1         2.3581660853            0.0000000000           -1.7604762802
+ H2         2.3581660853            0.0000000000            1.7604762802
+ H3        -2.3581660853            0.0000000000           -1.7604762802
+ H4        -2.3581660853            0.0000000000            1.7604762802
+
+
+
+
+
+                    Molecular wave function and energy
+                    ----------------------------------
+
+     Spin multiplicity  1     State number       1     Total charge       0
+
+
+     Total energy        -77.8027197612 au (Hartrees)
+                         -2117.11963993 eV
+                           -204271.0114 kJ/mol
+
+
+
+
+                         Relativistic corrections
+                         ------------------------
+
+     Darwin correction:                          0.1185635944 au
+     Mass-velocity correction:                  -0.1477757003 au
+
+     Total relativistic correction:             -0.0292121059 au (0.0375%)
+     Non-relativistic + relativistic energy:   -77.8319318670 au
+
+
+
+
+                              Dipole moment
+                              -------------
+
+                    0.000000 au           0.000000 Debye
+
+
+
+
+                         Dipole moment components
+                         ------------------------
+
+                               au             Debye
+
+                    x      0.00000000      0.00000000
+                    y      0.00000000      0.00000000
+                    z      0.00000000      0.00000000
+
+                        1 a.u. =   2.54175 Debye 
+
+
+
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            C1          C2          H1          H2          H3          H4    
+            ------      ------      ------      ------      ------      ------
+ C1    :    0.000000
+ C2    :    1.334914    0.000000
+ H1    :    1.097627    2.129890    0.000000
+ H2    :    1.097627    2.129890    1.863208    0.000000
+ H3    :    2.129890    1.097627    2.495775    3.114553    0.000000
+ H4    :    2.129890    1.097627    3.114553    2.495775    1.863208    0.000000
+
+
+  Max interatomic separation is    3.1146 Angstroms
+  between atoms "H4    " and "H1    ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C2         C1           1.334914
+  bond distance:  H1         C1           1.097627
+  bond distance:  H2         C1           1.097627
+  bond distance:  H3         C2           1.097627
+  bond distance:  H4         C2           1.097627
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     C2         C1         H1           121.925
+  bond angle:     C2         C1         H2           121.925
+  bond angle:     H1         C1         H2           116.151
+  bond angle:     C1         C2         H3           121.925
+  bond angle:     C1         C2         H4           121.925
+  bond angle:     H3         C2         H4           116.151
+
+
+
+
+ CPU time statistics for ABACUS
+ ------------------------------
+
+ REST       00:00:01     *** %
+
+
+
+
+ >>>> Total CPU  time used in ABACUS:   0.02 seconds
+ >>>> Total wall time used in ABACUS:   0.01 seconds
+
+- End of Static Property Section
+
+
+
+     <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+     <<<<<<<<<<<<<<<<<<<<  End of Optimization  <<<<<<<<<<<<<<<<<<<<
+     <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
+
+                              Final geometry
+                              --------------
+
+ C1         1.2613110835            0.0000000000            0.0000000000
+ C2        -1.2613110835            0.0000000000            0.0000000000
+ H1         2.3581660853            0.0000000000           -1.7604762802
+ H2         2.3581660853            0.0000000000            1.7604762802
+ H3        -2.3581660853            0.0000000000           -1.7604762802
+ H4        -2.3581660853            0.0000000000            1.7604762802
+
+
+
+ Iter      Energy        Change       GradNorm  Index   StepLen    TrustRad #Rej
+ -------------------------------------------------------------------------------
+   0      -77.802720     0.000000     0.000199    0    0.000444*   0.500000   0 
+   1      -77.802720     0.000000     0.000066    0    0.000238*   0.500000   0 
+   2      -77.802720     0.000000     0.000010    0    0.000056*   0.500000   0 
+ 
+ *) Newton step taken.
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            C1          C2          H1          H2          H3          H4    
+            ------      ------      ------      ------      ------      ------
+ C1    :    0.000000
+ C2    :    1.334914    0.000000
+ H1    :    1.097627    2.129890    0.000000
+ H2    :    1.097627    2.129890    1.863208    0.000000
+ H3    :    2.129890    1.097627    2.495775    3.114553    0.000000
+ H4    :    2.129890    1.097627    3.114553    2.495775    1.863208    0.000000
+
+
+  Max interatomic separation is    3.1146 Angstroms
+  between atoms "H4    " and "H1    ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  C2         C1           1.334914
+  bond distance:  H1         C1           1.097627
+  bond distance:  H2         C1           1.097627
+  bond distance:  H3         C2           1.097627
+  bond distance:  H4         C2           1.097627
+
+
+  Bond angles (degrees):
+  ----------------------
+
+                  atom 1     atom 2     atom 3         angle
+                  ------     ------     ------         -----
+  bond angle:     C2         C1         H1           121.925
+  bond angle:     C2         C1         H2           121.925
+  bond angle:     H1         C1         H2           116.151
+  bond angle:     C1         C2         H3           121.925
+  bond angle:     C1         C2         H4           121.925
+  bond angle:     H3         C2         H4           116.151
+
+
+ 
+ Geometry converged in            3  iterations!
+ 
+ Energy at final geometry is       :     -77.802720 a.u.
+ Energy change during optimization :       0.000000 a.u.
+                                              0.000 kJ/mol
+ 
+ >>>> Total CPU  time used in DALTON:   6.24 seconds
+ >>>> Total wall time used in DALTON:   6.28 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:29:45 2010
+     Host name              : login-0-1.local                         

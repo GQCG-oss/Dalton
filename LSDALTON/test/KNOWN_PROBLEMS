@@ -1,0 +1,9 @@
+------------------------------------------------------------------------
+  Code compiled with gfortran and openmp linked to intel mkl library
+  requires libomp5 -liomp5 at link time, otherwise segmentation fault may occur.
+
+  Code compiled with ifort and openmp can crash with segmentation fault
+  due to insufficient stack memory. use the command:
+  ulimit -s unlimited
+------------------------------------------------------------------------
+

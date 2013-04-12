@@ -188,7 +188,6 @@ C To here
         OBKPZ = DIPORG(3)
       END IF
 
-
       DO 520 I = 1, ISYTP
         IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
           DO 521 J = NSYSBG(I), NSYSED(I)
@@ -339,6 +338,8 @@ C     the determination of the induced dipole moments
         CALL INDMOM(EELEC,LOINDM,FFJ)
       END IF
 
+      IF (FIXMOM .AND. MMPCM) CALL MMPCM_FIXMOM()
+
       CALL QM3_OBAR(FFJ)
 
       CALL CC_PUT31('CC_RA',NCOMS,WRK(KRAx),WRK(KRAy),WRK(KRAz))
@@ -458,7 +459,19 @@ C To here
                      ENDIF 
 
                      DFTNS(L) = DDOT(NNBASX,DCAO,1,WRK(KMAT),1)
-
+C                 MM/PCM interface. Coordinates and charges are fixed
+C                 here so in fact on needed on the first call. Leave it
+C                 for now.
+                     IF (MMPCM) THEN
+                        XMMQ(L) = CORD(1,IATNOW)
+                        YMMQ(L) = CORD(2,IATNOW)
+                        ZMMQ(L) = CORD(3,IATNOW)
+                        MMQ(L)  = CHARGE(IATNOW)
+                        IF (L.GT.MXQ) THEN
+                           CALL QUIT('Too many charges in MM.'// 
+     &                               ' Increase MXQ')
+                        ENDIF
+                     ENDIF
                   ELSE
                      CALL READT(LUQM3P,NNBASX,WRK(KNSAO))
                      IF (IPRINT.GT.15) THEN

@@ -1,0 +1,749 @@
+
+ Work memory size (LMWORK+2):   123123125 =  939.35 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:27 2010
+     Host name              : login-0-1.local                         
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+          - Geometrical derivatives of overlap integrals
+          - Geometrical derivatives of one-electron Hamiltonian integrals
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  ------------                                                            
+  ------------------------                                                
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H1          1.007825
+                           H2          1.007825
+
+                       Total mass:     2.015650 amu
+                       Natural abundance:  99.970 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     1
+  Total number of atoms:    2
+
+  Basis set used is "cc-pVDZ" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H1          1       1       7       5      [4s1p|2s1p]                                                                      
+  H2          1       1       7       5      [4s1p|2s1p]                                                                      
+  ----------------------------------------------------------------------
+  total:      2       2      14      10
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+   1   H1       x      0.7247559580
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   H2       x     -0.7247559580
+   5            y      0.0000000000
+   6            z      0.0000000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            H1          H2    
+            ------      ------
+ H1    :    0.000000
+ H2    :    0.767049    0.000000
+
+
+  Max interatomic separation is    0.7670 Angstroms
+  between atoms "H2    " and "H1    ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.000000          1.000000    0.000000    0.000000
+   IB    0.296484          0.000000    1.000000    0.000000
+   IC    0.296484          0.000000    0.000000    1.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is linear.
+
+               B =      1704575.43 MHz     (   56.858516 cm-1)
+
+
+  Nuclear repulsion energy :      0.689887395172
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ >>> Time used in DIPLEN is   0.00 seconds
+
+
+ >>> Time used in DEROVL is   0.00 seconds
+
+
+ >>> Time used in DERHAM is   0.00 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ Number of two-electron integrals written:         512 ( 33.2% )
+ Megabytes written:                              0.007
+
+
+
+ >>> Time used in TWOINT is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+
+
+ Settings for DFT calculation:
+ -----------------------------
+
+     Default thresholds:                       0.10D-08    0.10D-09    0.20D-11
+     Default threshold for number of electrons:                        0.10D-02
+     DFT radial quadrature accuracy/ang. expansion order:  0.10E-10  31
+ Linear response calculations are carried out.
+ Pertubation dependent basis set  calculations are carried out
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:27 2010
+     Host name              : login-0-1.local                         
+
+ Title lines from integral program:
+     ------------                                                            
+     ------------------------                                                
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Kohn-Sham calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons          2
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 10
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+ 
+     This is a DFT calculation of type: LDA
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          10
+     Number of basis functions         10
+
+      ** Automatic occupation of RKS orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              1
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING DIPLEN IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING DEROVL IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING DERHAM IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ Linear response calculations are carried out.
+ Pertubation dependent basis set  calculations are carried out
+
+ Keyword "1                                       " not recognized in config_rsp_input
+
+
+ Keyword "1                                       " not recognized in config_rsp_input
+
+
+ Keyword "1.d-8                                   " not recognized in config_rsp_input
+
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DIIS                    
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           8
+Convergence threshold for gradient:   0.10E-06
+ End of configuration from new input structure!
+ Take first density from Hueckel guess
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.00 seconds
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   0.01 seconds
+** Get Fock matrix number   1
+ Radial Quadrature : LMG scheme
+ Space partitioning: Becke partitioning with atomic radius correction
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points=10355 compressed from 10368 ( 66 radial)
+ Atom:    2*1 points=10355 compressed from 10368 ( 66 radial)
+ Number of grid points:    20710 Grid generation time:       0.0 s
+KS electrons/energy:    1.99999998957249   -0.60185834280751 rel.err:-0.52E-08
+ >>>  CPU Time used in DFT_KS          is   0.07 seconds
+ >>>  CPU Time used in FCK_FO          is   0.07 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.845674246808526     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1     -1.1209069731    0.00000000000    0.00      0.00000    0.00    0.0000000    0.85E+00  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+KS electrons/energy:    1.99999998728735   -0.66081358131339 rel.err:-0.64E-08
+ >>>  CPU Time used in DFT_KS          is   0.05 seconds
+ >>>  CPU Time used in FCK_FO          is   0.05 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.232047938888862     
+  2     -1.1313312386   -0.01042426549    0.00      0.00000    0.00    0.0000000    0.23E+00  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+KS electrons/energy:    1.99999998800644   -0.64621587192997 rel.err:-0.60E-08
+ >>>  CPU Time used in DFT_KS          is   0.05 seconds
+ >>>  CPU Time used in FCK_FO          is   0.05 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  5.373307462889008E-003
+  3     -1.1323951117   -0.00106387304   -1.00      0.00000    0.00    0.0000000    0.54E-02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+KS electrons/energy:    1.99999998799614   -0.64650914935424 rel.err:-0.60E-08
+ >>>  CPU Time used in DFT_KS          is   0.05 seconds
+ >>>  CPU Time used in FCK_FO          is   0.05 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  9.582897142423280E-006
+  4     -1.1323955856   -0.00000047391   -1.00      0.00000    0.00    0.0000000    0.96E-05  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   5
+KS electrons/energy:    1.99999998799612   -0.64650953964186 rel.err:-0.60E-08
+ >>>  CPU Time used in DFT_KS          is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  5.117131217905498E-008
+  5     -1.1323955856    0.00000000000   -1.00      0.00000    0.00    0.0000000    0.51E-07  ###
+ >>>  CPU Time used in **ITER          is   0.26 seconds
+Total no. of matmuls in SCF optimization:         15
+ Postponing calculation of HOMO-LUMO gap to response part...
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.01042426549    0.0000    0.0000    0.0000000
+  3   -0.00106387304   -1.0000    0.0000    0.0000000
+  4   -0.00000047391   -1.0000    0.0000    0.0000000
+  5    0.00000000000   -1.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1            -1.12090697313214748831      0.845674246808526D+00
+    2            -1.13133123862180307029      0.232047938888862D+00
+    3            -1.13239511165689821226      0.537330746288901D-02
+    4            -1.13239558556540664824      0.958289714242328D-05
+    5            -1.13239558556813069146      0.511713121790550D-07
+ 
+      SCF converged !!!! 
+ call util_save_MOinfo
+
+
+
+ <<< EXCITATION ENERGIES AND TRANSITION MOMENT CALCULATION (LSTDHF) >>>
+
+
+ Use MO orbital energy differences to find  first guess for eigenvectors/values
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 2.000000( -1.2e-08): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Response convergence threshold is  1.000000000000000E-008
+Residual norm for vector   1 is:   0.195956E+00    and eigenvalue =   0.49321122   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.07 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 2.000000( -1.2e-08): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.493211220418386     
+Residual norm for vector   1 is:   0.367191E-02    and eigenvalue =   0.47441949   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.07 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ Electrons: 2.000000( -1.2e-08): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.08 seconds
+ omega in build_reduc..   0.474419492687962     
+Residual norm for vector   1 is:   0.192479E-13    and eigenvalue =   0.47441209   It =   3 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ 
+ ============================================================
+                     RESPONSE RESULTS                        
+ ============================================================
+ 
+     LINEAR RESPONSE:
+ 
+  Excitation value:           0.474412087
+ 
+ *****************************************************
+ **     CPU-TIME USED IN POLARI:   0.208968000000000       **
+ *****************************************************
+ Number of linear transformations performed in LINRSP:           3
+ ******************************************************
+ **                                                  **
+ **  PDBS:                                           **
+ **  Exgrad CALCULATION                              **
+ **                                                  **
+ ******************************************************
+ PDBS: calling get natoms=           2
+ Doing Exgrad analysis
+ PDBS: --------------------------------------------------------------
+ PDBS EXCGRAD: Load the excitation vector
+ call LSADDEnergy with :  0.474412086532367     
+ EXCITA2(1)  0.0000000E+00
+ EIVAL  0.4744121    
+ EXCITA2(1)  0.4744121    
+ The excited state w_f (freqency)
+ PDBS GRAD vecBdagger: The adjoint excited state vector
+ PDBS: --------------------------------------------------------------
+ PDBS: build RHS for Xbar vector
+ Electrons: 2.000000( -1.2e-08): QR-DFT/b evaluation time:       0.1 s
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ Electrons: 2.000000( -1.2e-08): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.07 seconds
+ omega in build_reduc..   0.000000000000000E+000
+ Response convergence threshold is  1.000000000000000E-008
+Residual norm for vector   1 is:   0.220009E-01    and frequency =     0.000000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.07 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ Electrons: 2.000000( -1.2e-08): LR-DFT(AO)*1 eval. time:       0.1 s
+ >>>  CPU Time used in LINTRA          is   0.06 seconds
+ omega in build_reduc..   0.000000000000000E+000
+Residual norm for vector   1 is:   0.203894E-08    and frequency =     0.000000   It =   2 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ *******************************
+ Number of unique vectors calculated           0
+ *******************************
+ *******************************
+ PDBS_driver: NOW BUILD PROPERTY
+ *******************************
+ ****************************************
+ call BUILD PROPERTY for J index :           1
+ ****************************************
+ CALL BUILD PROPERTY with THOMAS AVEC           1
+ CALL BUILD PROPERTY with THOMAS BVEC           1
+ CALL BUILD PROPERTY with THOMAS Xbar           1
+ BUILD PROPERTY SUBROUTINE
+ with frequency omega:   0.474412086532367     
+ GEOMETRIC DIFFERENTIATION            2
+ Precompute matrices independent of the pertubation
+ Electrons: 2.000000( -1.2e-08): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 2.000000( -1.2e-08): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 2.000000( -1.2e-08): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 2.000000( -1.2e-08): QR-DFT/b evaluation time:       0.1 s
+ Electrons: 2.000000( -1.2e-08): LR-DFT(AO)*1 eval. time:       0.1 s
+ loop runs over number of perturbations npert:           6
+ Build_property: GEOMETRIC DIFFERENTIATION
+ Hxlabel : 1DHAM001
+ Sxlabel : 1DOVL001
+ -------------------------------------
+ Perturbation npert                1
+ -------------------------------------
+                                     HxD    0.52291172
+                                   2*HxD    1.04582345
+ Build_property: GEOMETRIC DIFFERENTIATION
+ Hxlabel : 1DHAM002
+ Sxlabel : 1DOVL002
+ -------------------------------------
+ Perturbation npert                2
+ -------------------------------------
+                                     HxD    0.00000000
+                                   2*HxD    0.00000000
+ Build_property: GEOMETRIC DIFFERENTIATION
+ Hxlabel : 1DHAM003
+ Sxlabel : 1DOVL003
+ -------------------------------------
+ Perturbation npert                3
+ -------------------------------------
+                                     HxD    0.00000000
+                                   2*HxD    0.00000000
+ Build_property: GEOMETRIC DIFFERENTIATION
+ Hxlabel : 1DHAM004
+ Sxlabel : 1DOVL004
+ -------------------------------------
+ Perturbation npert                4
+ -------------------------------------
+                                     HxD   -0.52291172
+                                   2*HxD   -1.04582345
+ Build_property: GEOMETRIC DIFFERENTIATION
+ Hxlabel : 1DHAM005
+ Sxlabel : 1DOVL005
+ -------------------------------------
+ Perturbation npert                5
+ -------------------------------------
+                                     HxD    0.00000000
+                                   2*HxD    0.00000000
+ Build_property: GEOMETRIC DIFFERENTIATION
+ Hxlabel : 1DHAM006
+ Sxlabel : 1DOVL006
+ -------------------------------------
+ Perturbation npert                6
+ -------------------------------------
+                                     HxD    0.00000000
+                                   2*HxD    0.00000000
+ calling molecular gradient dft
+ Grad from di_get_geomderiv_molgrad_dft 
+
+
+                         Molecular DFTA gradient 
+                         ------------------------
+
+ H1         0.2316585487            0.0000000000            0.0000000000
+ H2        -0.2316585487            0.0000000000            0.0000000000
+ calling di_get_geomderiv_FxD_dft 
+ gradients set to zero
+ gga_is  0 
+
+ Grad from di_get_geomderiv_FxD_dft 
+
+
+                         Molecular DFTB gradient 
+                         ------------------------
+
+ H1        -0.3603646045            0.0000000000            0.0000000000
+ H2         0.3603646046            0.0000000000            0.0000000000
+ Grad from di_get_geomderiv_GxD_dft 
+
+
+                         Molecular DFTC gradient 
+                         ------------------------
+
+ H1        -0.0662795866            0.0000000000            0.0000000000
+ H2         0.0662795866            0.0000000000            0.0000000000
+
+
+                         Molecular ToT! gradient 
+                         ------------------------
+
+ H1         0.3132588230            0.0000000000            0.0000000000
+ H2        -0.3132588230            0.0000000000            0.0000000000
+ THE NUCLEAR PART IS MISSING IN THE EXgrad result
+ Excited state grad stuff
+ : PDBS: compute gradNN nuc rep contr.
+
+
+                        Nuclear repulsion gradient
+                        --------------------------
+
+ H1        -0.4759446180            0.0000000000            0.0000000000
+ H2         0.4759446180            0.0000000000            0.0000000000
+
+
+                         Molecular All  gradient 
+                         ------------------------
+
+ H1        -0.1626857951            0.0000000000            0.0000000000
+ H2         0.1626857951            0.0000000000            0.0000000000
+ *** DONE WITH THIS BUILD PROPERTY J ****
+                                                          
+ PDBS: Call build averages
+ selecting: ExGrad
+ PDBS: done build averages
+ Total no. of matmuls used:         585
+ Total no. of Fock/KS matrix evaluations:           5
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):              6400 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):       6400 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                  32.031 kB
+  Max allocated memory, type(matrix)           32.031 kB
+  Max allocated memory, real(realk)             0.000 Byte
+  Max allocated memory, integer                 0.000 Byte
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               0.000 Byte
+  Max allocated memory, integralitem            0.000 Byte
+  Max allocated memory, Overlap                 0.000 Byte
+  Max allocated memory, ODitem                  0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    1.343796        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final DFT energy:             -1.132395585568
+     Nuclear repulsion:             0.689887395172
+     Electronic energy:            -1.822282980740
+
+     Final gradient norm:           0.000000051171
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:28 2010
+     Host name              : login-0-1.local                         
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1
+   1  H1  1s     1.0000
+   2  H1  1s     0.0000
+   3  H1  2px    0.0000
+   4  H1  2py    0.0000
+   5  H1  2pz    0.0000
+   6  H2  1s     0.0000
+   7  H2  1s     0.0000
+   8  H2  2px    0.0000
+   9  H2  2py    0.0000
+  10  H2  2pz    0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      1.35 seconds
+ >>>> Total wall time used in SIRIUS :      1.42 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:28 2010
+     Host name              : login-0-1.local                         
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:   1.35 seconds
+ >>>> Total wall time used in DALTON:   1.43 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:09:28 2010
+     Host name              : login-0-1.local                         

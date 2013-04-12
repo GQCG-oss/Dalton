@@ -173,6 +173,10 @@
       call kw_read(word, lucita_cfg_max_dav_subspace_dim)
     end if
 
+    if (kw_matches(word, '.FCIDUM')) then
+      lucita_cfg_fci_dump = .true.
+    end if
+
     if (kw_matches(word, '.MAXITR')) then
       call kw_read(word, lucita_cfg_max_nr_dav_ci_iter)
     end if

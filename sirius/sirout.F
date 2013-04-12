@@ -317,7 +317,7 @@ csonia 04/10/95
          IF (INERSF) WRITE (LUPRI,'(/5X,A)')
      *      'This is the final state in a calculation with'//
      *      ' inertial polarization.'
-      ELSE IF (PCM) THEN
+      ELSE IF (PCM .AND. (.NOT.MMPCM)) THEN
          IF (NONEQ) THEN
             WRITE (LUPRI,'(/5X,A,2(/10X,A,F12.6))')
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
@@ -329,7 +329,7 @@ csonia 04/10/95
      *           ,'dielectric constant =',EPS
          END IF
 
-      ELSE IF (QM3) THEN
+      ELSE IF (QM3 .AND. (.NOT.MMPCM)) THEN
         WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QM3" calculation converged :'
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
         WRITE(LUPRI,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
@@ -338,13 +338,19 @@ csonia 04/10/95
       ELSE IF (QMMM) THEN
         WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QMMM" calculation converged :'
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Charge contribution:    ',ECHART
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Dipole contribution:    ',EDIPT 
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Dipole contribution:    ',EDIPT
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Quadrupole contribution:',EQUADT
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Octuple contribution:   ',EOCTUP
-        WRITE(LUPRI,'(5X,A24,F20.12)') 'Electronic Pol. energy: ',EDELD 
+        WRITE(LUPRI,'(5X,A24,F20.12)') 'Electronic Pol. energy: ',EDELD
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Nuclear pol. energy:    ',EDNUC
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Multipole Pol. energy:  ',EDMULT
         WRITE(LUPRI,'(5X,A24,F20.12)') 'Total QM/MM energy:     ',ESOLT
+      ELSE IF (MMPCM) THEN
+         WRITE(LUPRI,'(/5X,A/)') 'QM/MM/PCM calculation converged :'
+         WRITE(LUPRI,'(8X,A22,F20.12)') 'Electrostatic energy: ', ENSQM3
+         WRITE(LUPRI,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
+         WRITE(LUPRI,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
+         WRITE(LUPRI,'(8X,A22,F20.12)') 'QM/MM/PCM energy:     ', ESOLT
       ELSE
         ESOLT = D0
       END IF

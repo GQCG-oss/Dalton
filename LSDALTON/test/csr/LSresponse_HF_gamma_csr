@@ -1,0 +1,139 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > LSresponse_HF_gamma_csr.info <<'%EOF%'
+   LSresponse_HF_gamma_csr
+   -------------------
+   Molecule:         Hydrogen floruide
+   Wave Function:    HF / 6-31G
+   Test Purpose:     Test real and complex 2nd hyperpolarizability in LSDALTON (Kasper K)
+                     
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > LSresponse_HF_gamma_csr.mol <<'%EOF%'
+BASIS
+6-31G
+-----------test----------
+
+Atomtypes=2 Generators=0
+Charge=1.0 Atoms=1 Basis=6-31G
+H 0.000000000 0.0000000000   0.000000000000000
+Charge=9.0 Atoms=1 Basis=6-31G
+F 1.96000000  0.0000000000   0.000000000000000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > LSresponse_HF_gamma_csr.dal <<'%EOF%'
+**WAVE FUNCTIONS
+.HF
+*DENSOPT
+.CSR
+.ARH                                                                                       
+.NVEC
+8
+.CONVTHR
+1.0D-6
+**RESPONS
+*GAMMA
+.BFREQ
+2
+0.05 0.1
+.CFREQ
+2
+0.05 0.1
+.DFREQ
+2
+0.05 0.1
+.IMDFREQ
+2
+0.0 0.1
+*END OF INPUT  
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL > LSresponse_HF_gamma_csr.check
+cat >> LSresponse_HF_gamma_csr.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Energy
+CRIT1=`$GREP "Final * HF energy\: * \-99\.97187" $log | wc -l`
+TEST[1]=`expr   $CRIT1`
+CTRL[1]=1
+ERROR[1]="HF ENERGY NOT CORRECT -"
+
+# Memory test
+CRIT2=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[2]=`expr  $CRIT2`
+CTRL[2]=1
+ERROR[2]="Memory leak -"
+
+# Real 2nd hyperpolarizability tests
+CRIT1=`$GREP "ZZYY *  0\.567[0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "ZZZZ * 1\.701[0-9][0-9[0-9][0-9]" $log | wc -l`
+CRIT3=`$GREP "GammaParallel * \= * 46.981" $log | wc -l`
+TEST[3]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 `
+CTRL[3]=3
+ERROR[3]="Error in real 2nd hyperpolarizability"
+
+# Imaginary part of complex 2nd hyperpolarizability tests
+CRIT1=`$GREP "ZZYY * 0.363[0-9]" $log | wc -l`
+CRIT2=`$GREP "GammaParallel * \= * 35.411" $log | wc -l`
+TEST[4]=`expr  $CRIT1 \+ $CRIT2 `
+CTRL[4]=2
+ERROR[4]="Error in imaginary part of complex 1nd hyperpolarizability"
+
+
+PASSED=1
+for i in 1 2 3 4
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo ${ERROR[i]}
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################

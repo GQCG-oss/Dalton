@@ -46,7 +46,7 @@ C
 #include "qm3.h"
 !#include <qmmm.h>
 C
-      PARAMETER ( NTABLE = 18, D1 = 1.0D0)
+      PARAMETER ( NTABLE = 20, D1 = 1.0D0)
       LOGICAL NEWDEF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER TSTCHA*1,WORD2*6,WORD3*6
@@ -58,7 +58,7 @@ C
      *            '.OLDTG ', '.PRINT ', '.ATMVDW', '.CLONLY',
      *            '.VDWSKP', '.SKIPNC', '.MYSOLV', '.DAMPIN',
      *            '.PRFQM3', '.INTDIR', '.REDCNT', '.LGSPOL',
-     *            '.QMDAMP', '.XXXXXX'/
+     *            '.MMPCM ', '.MXITMP', '.THRSMP', '.QMDAMP'/
 C
       CALL QENTER('QM3INP')
 C
@@ -83,6 +83,9 @@ C
       PRFQM3  = .FALSE.
       INTDIR  = .FALSE.
       REDCNT  = .FALSE.
+      MMPCM   = .FALSE.
+      MXITMP  = 20
+      THRSMP  = 1.0D-05 ! MM/PCM convergence threhold
       LGSPOL  = .FALSE.
       QMDAMP  = .FALSE.
 C
@@ -111,7 +114,8 @@ C
           ICHANG = ICHANG + 1
           DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
-              GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18), I
+              GO TO ( 1, 2, 3, 4, 5, 6, 7, 8, 9,10,
+     *               11,12,13,14,15,16,17,18,19,20), I
             END IF
   200     CONTINUE
           IF (WORD .EQ. '.OPTION') THEN
@@ -265,11 +269,20 @@ C
           GO TO 100
 
    17     CONTINUE
-            QMDAMP = .TRUE.
-            READ(LUCMD,*) ADAMP
+            MMPCM  = .TRUE.
           GO TO 100
 
    18     CONTINUE
+            READ(LUCMD,*) MXITMP
+          GO TO 100
+
+   19     CONTINUE
+            READ(LUCMD,*) THRSMP
+          GO TO 100
+
+   20   CONTINUE
+            QMDAMP = .TRUE.
+            READ(LUCMD,*) ADAMP
           GO TO 100
 C
         ELSE IF (PROMPT .EQ. '*') THEN
@@ -339,6 +352,12 @@ C
         IF (EXPON) THEN
           WRITE(LUPRI,*) ' Exponential Damping is active'
         END IF
+        IF (MMPCM) THEN
+          WRITE(LUPRI,*) ' MM/PCM interface active'
+        END IF
+
+        
+        WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
 
         IF (QMDAMP .AND. (.NOT. INTDIR)) THEN
           CALL QUIT('QM damping only implemented for .INTDIR option')
@@ -1694,6 +1713,7 @@ C
       DIMENSION  ENUC(3,MXQM3), ESITE(3,MXQM3)
       DIMENSION  EQMCLF(3,MXQM3), EELEC(3,MXQM3)
       DIMENSION  EIND(3,MXQM3), MYIND(3,MXQM3)
+      DIMENSION  EFPCM(3,MXQM3)
       PARAMETER  (D0 = 0.0D0)
 C
       LOGICAL    DIPCON, LOEC3L, LOMIND 
@@ -1701,11 +1721,11 @@ C
 #if defined (SYS_CRAY)
       REAL              DIST, DISM1, DISM3, ESITE
       REAL              ENUC, EQMCLF, EIND, MYIND
-      REAL              XDIP1, XDIP2
+      REAL              XDIP1, XDIP2, EFPCM
 #else
       DOUBLE PRECISION  DIST, DISM1, DISM3, ESITE
       DOUBLE PRECISION  ENUC, EQMCLF, EIND, MYIND
-      DOUBLE PRECISION  XDIP1, XDIP2
+      DOUBLE PRECISION  XDIP1, XDIP2, EFPCM
 #endif
 C  
 C-------------------------
@@ -1719,6 +1739,7 @@ C
           EQMCLF(J,I)= D0
           EIND(J,I)  = D0
           MYIND(J,I) = D0
+          EFPCM(J,I) = D0
         END DO
       END DO
 C
@@ -2068,7 +2089,8 @@ C
       ELSE IF (MYMAT) THEN
 
         IMODE = 0
-        CALL MUMATINV(IMODE,KTEMP2,EQMCLF,ESITE,MYIND,EIND,DIPCON)
+        CALL MUMATINV(IMODE,KTEMP2,EQMCLF,ESITE,EFPCM,
+     *                MYIND,EIND,DIPCON)
 
       END IF
 C
@@ -2320,18 +2342,19 @@ C
       DIMENSION  ENUC(3,MXQM3),EQMCLF(3,MXQM3)
       DIMENSION  EELEC(3,MXQM3),QMFIELD(3,MXQM3)
       DIMENSION  FFJ(*)
+      DIMENSION  EFPCM(3,MXQM3)
       PARAMETER  (D0 = 0.0D0)
 C
 #if defined (SYS_CRAY)
       REAL              DIST, DISM1, DISM2, DISM3, DISM5
       REAL              XDIP1, XDIP2, MYIND, EIND
       REAL              TEMPX, TEMPY, TEMPZ
-      REAL              ESITE,ENUC,EQMCLF,QMFIELD
+      REAL              ESITE,ENUC,EQMCLF,QMFIELD,EFPCM
 #else
       DOUBLE PRECISION  DIST, DISM1, DISM2, DISM3, DISM5
       DOUBLE PRECISION  XDIP1, XDIP2, MYIND, EIND1
       DOUBLE PRECISION  TEMPX, TEMPY, TEMPZ
-      DOUBLE PRECISION  ESITE,ENUC,EQMCLF,QMFIELD
+      DOUBLE PRECISION  ESITE,ENUC,EQMCLF,QMFIELD,EFPCM
 #endif
 C
       DO 879 I = 1,MXQM3 
@@ -2342,6 +2365,7 @@ C
            EIND1(J,I) = D0
            MYIND(J,I) = D0
            QMFIELD(J,I) = D0
+           EFPCM(J,I) = D0
   880    CONTINUE
   879 CONTINUE
 C
@@ -2360,6 +2384,11 @@ C
       LUESITE = -1
       LUEIND = -1
 
+C     In case of MM/PCM coupling calculate the PCM electric field at
+C     each polarizable point
+
+      IF (MMPCM .AND. (.NOT.LOSPC)) CALL PCMFIELD(EFPCM)
+
       IF (MYMAT) THEN
 
         CALL QM3_GET3(LUENUC,'ENUCFILE',ENUC,NCOMS)
@@ -2371,8 +2400,13 @@ C
   882     CONTINUE
   881   CONTINUE
 
+C       we always just include the field from potential pcm. if not
+C       present this will just be zero
+ 
         IMODE = 1
-        CALL MUMATINV(IMODE,NCOMS,QMFIELD,ESITE,MYIND,EIND,DIPCON)
+        CALL MUMATINV(IMODE,NCOMS,QMFIELD,ESITE,EFPCM,
+     *                MYIND,EIND,DIPCON)
+
 
       ELSE IF (MYITE) THEN
 
@@ -2397,12 +2431,14 @@ C
                    IF ( (MDLWRD(I) .EQ. 'SPC_E01') .OR. 
      &               (MDLWRD(I) .EQ. 'SPC_EC1') ) THEN 
                      MYIND(M,NUM) = ALPIMM(I,K) * ( EELEC(M,NUM)
-     &              + ENUC(M,NUM) + ESITE(M,NUM) + EIND(M,NUM) + FFJ(M))
+     &              + ENUC(M,NUM) + ESITE(M,NUM) + EFPCM(M,NUM)
+     &              + EIND(M,NUM) + FFJ(M))
                      XDIP2 = XDIP2 + MYIND(M,NUM)**2
                    ELSE IF ( (MDLWRD(I) .EQ. 'SPC_EC3') .AND.
      &               (LOINDM) )THEN
                      MYIND(M,NUM) = ALPIMM(I,K) * ( EELEC(M,NUM)
-     &              + ENUC(M,NUM) + ESITE(M,NUM) + EIND(M,NUM) + FFJ(M))
+     &              + ENUC(M,NUM) + ESITE(M,NUM) + EFPCM(M,NUM) 
+     &              + EIND(M,NUM) + FFJ(M))
                      XDIP2 = XDIP2 + MYIND(M,NUM)**2
                    ELSE IF ( (MDLWRD(I) .EQ. 'SPC_EC3') .AND.
      &               (.NOT. (LOINDM)) )THEN
@@ -2611,10 +2647,13 @@ C
                 WRITE(LUPRI,'(A,I4,A1,I4,7X,
      &          A1,F14.10,A1,F14.10,A1,F14.10,A1)')
      &          ' | Etot  |',J,',',L,
-     &          '|',(EELEC(1,NUM)+ENUC(1,NUM)+ESITE(1,NUM)+EIND(1,NUM)+
+     &          '|',(EELEC(1,NUM)+ENUC(1,NUM)+ESITE(1,NUM)+EFPCM(1,NUM)+
+     &               EIND(1,NUM)+
      &              FFJ(1)),'|',(EELEC(2,NUM)+ENUC(2,NUM)+ESITE(2,NUM)+
+     &              EFPCM(2,NUM)+
      &              EIND(2,NUM)+FFJ(2)),
      &          '|',(EELEC(3,NUM)+ENUC(1,NUM)+ESITE(1,NUM)+
+     &               EFPCM(3,NUM)+
      &              EIND(1,NUM)+FFJ(1)),'|'
   368         CONTINUE
   362       CONTINUE
@@ -2656,6 +2695,9 @@ C
         CALL QM3_PUT3(LUEIND,'EINDFILE',EIND,NCOMS)
         CALL QM3_PUT3(LUMOM,'QMIND   ',MYIND,NCOMS)
 C
+C       if mm/pcm we transfer the induced dipole moments to pcm        
+        IF (MMPCM .AND. (.NOT.LOSPC)) CALL GIVEMY(MYIND)
+
         IF (SLOTH) THEN
           NUM = 0
           TEMMY1 = 0.0D0
@@ -2708,6 +2750,7 @@ C
      &    TEMPX+TEMMY1,'au', TEMPY+TEMMY2,'au', TEMPZ+TEMMY3,'au'
           WRITE(lUPRI,*)
         END IF
+
 C
         IF (RELMOM) THEN
           IF (.NOT.(SLOTH)) CALL QUIT('PUT IN .SLOTH in *CCSLV and do'//
@@ -2981,16 +3024,16 @@ C*******************************************************
 C
       DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
       DIMENSION  ENUC(3,MXQM3)
-      DIMENSION  OBAR(3,MXQM3),ENSA(3,MXQM3)
+      DIMENSION  OBAR(3,MXQM3),ENSA(3,MXQM3),EFPCM(3,MXQM3)
       DIMENSION  FFJ(*)
       PARAMETER  (D0 = 0.0D0)
 C
 #if defined (SYS_CRAY)
       REAL              EIND,ESITE,ENUC
-      REAL              OBAR,ENSA,FFJ
+      REAL              OBAR,ENSA,FFJ,EFPCM
 #else
       DOUBLE PRECISION  EIND,ESITE,ENUC 
-      DOUBLE PRECISION  OBAR,ENSA,FFJ
+      DOUBLE PRECISION  OBAR,ENSA,FFJ,EFPCM
 #endif
 C
 C
@@ -2998,6 +3041,7 @@ C
          DO 20 J = 1, 3
             OBAR(J,I) = D0
             ENSA(J,I)= D0
+            EFPCM(J,I) = D0
    20    CONTINUE
    19 CONTINUE
 C
@@ -3025,6 +3069,11 @@ C
       CALL GPOPEN(LUENSA,'ENSAFILE','UNKNOWN',' ','FORMATTED',IDUMMY,
      &           .FALSE.)
 C
+      IF (MMPCM .AND. (.NOT.LOSPC)) CALL PCMFIELD(EFPCM)
+
+C     we always just include the field from potential pcm. if not
+C     present this will just be zero
+
       NUM = 0
 C
       DO 100 I=1,ISYTP
@@ -3034,7 +3083,7 @@ C
               NUM = NUM + 1
               DO 400 L=1,3
                 OBAR(L,NUM) = 2*ENUC(L,NUM)+ESITE(L,NUM)+
-     &                      EIND(L,NUM) + FFJ(L)
+     &                      EFPCM(L,NUM)+EIND(L,NUM) + FFJ(L)
                 ENSA(L,NUM) = OBAR(L,NUM) + ESITE(L,NUM)+ FFJ(L) 
   400         CONTINUE
               WRITE(LUEOBAR,'(I5,3E25.15)') NUM,
@@ -3069,15 +3118,15 @@ C
 #include "inftap.h"
 C
       DIMENSION  EIND(3,MXQM3),ESITE(3,MXQM3)
-      DIMENSION  ENUC(3,MXQM3),RHS(3,MXQM3)
+      DIMENSION  ENUC(3,MXQM3),RHS(3,MXQM3),EFPCM(3,MXQM3)
       DIMENSION  FFJ(*)
       PARAMETER  (D0 = 0.0D0)
 C
 #if defined (SYS_CRAY)
-      REAL              EIND,ESITE,ENUC,RHS
+      REAL              EIND,ESITE,ENUC,RHS,EFPCM
       REAL              DOTPR,OTILDE,FFJ
 #else
-      DOUBLE PRECISION  EIND,ESITE,ENUC,RHS
+      DOUBLE PRECISION  EIND,ESITE,ENUC,RHS,EFPCM
       DOUBLE PRECISION  DOTPR,OTILDE,FFJ
 #endif
 C
@@ -3085,6 +3134,13 @@ C
       TEMP = D0
       DOTPR = D0
       OTILDE = D0
+
+      DO 19 I = 1, MXQM3
+         DO 20 J = 1, 3
+            EFPCM(J,I) = D0
+   20    CONTINUE
+   19 CONTINUE
+
 C
 C     See if external fields are to be added
 C      IF (RELMOM) THEN
@@ -3102,6 +3158,10 @@ C
       CALL QM3_GET3(LUESITE,'ESITFILE',ESITE,NCOMS)
       CALL QM3_GET3(LUEIND,'EINDFILE',EIND,NCOMS)
 C
+      IF (MMPCM .AND. (.NOT.LOSPC)) CALL PCMFIELD(EFPCM)
+
+C     we always just include the field from potential pcm. if not
+C     present this will just be zero
 C
       NUM = 0
 C
@@ -3113,7 +3173,7 @@ C
               NUM = NUM + 1
               DO 400 L=1,3
                 RHS(L,NUM) = ENUC(L,NUM)+ESITE(L,NUM)+
-     &                       EIND(L,NUM)+FFJ(L)
+     &                       EFPCM(L,NUM)+EIND(L,NUM)+FFJ(L)
                 DOTPR = DOTPR + ENUC(L,NUM)*RHS(L,NUM) 
   400         CONTINUE
               OTILDE = OTILDE -0.5*ALPIMM(I,K)*DOTPR
@@ -3184,15 +3244,15 @@ C
 #include "inftap.h"
 C
       DIMENSION  PIND(3,MXQM3),MYIND(3,MXQM3)
-      DIMENSION  ESITE(3,MXQM3),FFJ(*)
+      DIMENSION  ESITE(3,MXQM3),FFJ(*),EFPCM(3,MXQM3)
       PARAMETER  (D0 = 0.0D0)
 C
 #if defined (SYS_CRAY)
       REAL              PIND,MYIND,DEMMMM
-      REAL              ESITE, TEMPOL,FFJ
+      REAL              ESITE, TEMPOL,FFJ,EFPCM
 #else
       DOUBLE PRECISION  PIND,MYIND,DEMMMM
-      DOUBLE PRECISION  ESITE, TEMPOL,FFJ
+      DOUBLE PRECISION  ESITE, TEMPOL,FFJ,EFPCM
 #endif
 C
 C     See if external fields are to be added
@@ -3213,6 +3273,18 @@ C
 C
       DEMMMM = D0
       TEMPOL = D0
+
+      DO 19 I = 1, MXQM3
+         DO 20 J = 1, 3
+            EFPCM(J,I) = D0
+   20    CONTINUE
+   19 CONTINUE
+
+      IF (MMPCM .AND. (.NOT.LOSPC)) CALL PCMFIELD(EFPCM)
+
+C     we always just include the field from potential pcm. if not
+C     present this will just be zero
+
       NUM = 0
 C
       DO 100 I = 1, ISYTP
@@ -3222,9 +3294,9 @@ C
               NUM = NUM + 1
               DO 130 K = 1, 3
                 DEMMMM = DEMMMM - 0.5D0*(MYIND(K,NUM)-PIND(K,NUM))*
-     *                   ESITE(K,NUM)
+     *                   (ESITE(K,NUM)+EFPCM(K,NUM)+FFJ(K))
                 TEMPOL = TEMPOL - 0.5D0*MYIND(K,NUM)*(ESITE(K,NUM)+
-     *                   FFJ(K))
+     *                   EFPCM(K,NUM)+FFJ(K))
   130         CONTINUE
   120       CONTINUE
   110     CONTINUE
@@ -3959,8 +4031,8 @@ C
       END
 C*********************************************************************
 C  /* Deck mumatinv */
-      SUBROUTINE MUMATINV(IMODE,KTEMP2,EQMCLF,ESITE,MYIND,EIND,
-     &                    DIPCON)
+      SUBROUTINE MUMATINV(IMODE,KTEMP2,EQMCLF,ESITE,EFPCM,MYIND,
+     &                    EIND,DIPCON)
 C**************************************************************
 #include "implicit.h"
 #include "priunit.h"
@@ -3972,11 +4044,11 @@ C**************************************************************
 #if defined (SYS_CRAY)
       REAL              DIST
       REAL              TMAT, TMATI, EQMCLT, TMUM, EINDT
-      REAL              EQMCLF, ESITE, MYIND, EIND
+      REAL              EQMCLF, ESITE, MYIND, EIND, EFPCM
 #else
       DOUBLE PRECISION  DIST
       DOUBLE PRECISION  TMAT, TMATI, EQMCLT, TMUM, EINDT
-      DOUBLE PRECISION  EQMCLF, ESITE, MYIND, EIND
+      DOUBLE PRECISION  EQMCLF, ESITE, MYIND, EIND, EFPCM
 #endif
 
       INTEGER    IMODE, KTEMP2  
@@ -3984,7 +4056,7 @@ C**************************************************************
       DIMENSION  TMAT(3*KTEMP2,3*KTEMP2), TMATI(3*KTEMP2,3*KTEMP2)
       DIMENSION  EQMCLT(3*KTEMP2), TMUM(3*KTEMP2), EINDT(3*KTEMP2)
       DIMENSION  EQMCLF(3,MXQM3), ESITE(3,MXQM3), MYIND(3,MXQM3) 
-      DIMENSION  EIND(3,MXQM3)
+      DIMENSION  EIND(3,MXQM3), EFPCM(3,MXQM3)
 
       PARAMETER  (D0 = 0.0D0)
 
@@ -4111,11 +4183,14 @@ C initialization
 
       CALL DF_MATINV(TMAT,TMATI,3*KTEMP2)    
 
+C       we always just include the field from potential pcm (EFPCM). if not
+C       present this will just be zero
+
       JJ = 1
       DO 557 I=1,KTEMP2
-        EQMCLT(JJ)   = EQMCLF(1,I) + ESITE(1,I)
-        EQMCLT(JJ+1) = EQMCLF(2,I) + ESITE(2,I)
-        EQMCLT(JJ+2) = EQMCLF(3,I) + ESITE(3,I)
+        EQMCLT(JJ)   = EQMCLF(1,I) + ESITE(1,I) + EFPCM(1,I)
+        EQMCLT(JJ+1) = EQMCLF(2,I) + ESITE(2,I) + EFPCM(2,I)
+        EQMCLT(JJ+2) = EQMCLF(3,I) + ESITE(3,I) + EFPCM(3,I)
         JJ=JJ+3
   557 CONTINUE
 
@@ -4339,7 +4414,191 @@ C
         END DO
   26  CONTINUE
       END
-C**** end of herqm3.F **********************************************************
+C***************************************************************************************************************************
+C  /* Deck pcmfield */
+      SUBROUTINE PCMFIELD(EFPCM)
+C
+C     Calculates the electric field from the PCM charges at the
+C     polarizable points
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <qm3.h>
+#include <mxcent.h>
+#include <inftap.h>
+#include <pcmdef.h>
+#include <orgcom.h>
+#include <pcm.h>
+#include <pcmlog.h>
+#include "nuclei.h"
+ 
+      PARAMETER  (D0 = 0.0D0)
+ 
+#if defined (SYS_CRAY)
+      REAL              XCORD, YCORD, ZCORD, PCMCHARGE
+      REAL              DIST, DIST2, DISTM1, DISTM3, EFPCM
+#else
+      DOUBLE PRECISION  XCORD, YCORD, ZCORD, PCMCHARGE
+      DOUBLE PRECISION  DIST, DIST2, DISTM1, DISTM3, EFPCM
+#endif
+ 
+      DIMENSION  EFPCM(3,MXQM3)
+
+      DO 19 I = 1, MXQM3
+         DO 20 J = 1, 3
+            EFPCM(J,I) = D0
+   20    CONTINUE
+   19 CONTINUE
+
+
+
+      LM = 0
+      L = NUSITE + NUALIS(0)
+      ITEST = 0
+
+      DO 520 I = 1, ISYTP
+        IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+          DO 521 J = NSYSBG(I), NSYSED(I)
+            DO 522 K = 1, NUALIS(I)
+              LM = LM + 1
+
+              IATNOW = NUCIND + L + LM
+
+C             This is a MM polarazable site
+              XCORD = CORD(1,IATNOW)
+              YCORD = CORD(2,IATNOW)
+              ZCORD = CORD(3,IATNOW)
+
+C             Loop over the contribution from the PCM tesseras
+              DO 523 M = 1, NTS
+                PCMCHARGE = QSN(M)+QSE(M)+QSMM(M)
+                DIST2 = (XCORD-XTSCOR(M))**2
+     *               + (YCORD-YTSCOR(M))**2
+     *               + (ZCORD-ZTSCOR(M))**2
+                DIST = SQRT(DIST2)
+                DISTM1 = 1.0/DIST
+                DISTM3 = DISTM1**3
+                EFPCM(1,LM) = EFPCM(1,LM) 
+     *                      + PCMCHARGE*(XCORD-XTSCOR(M))*DISTM3
+                EFPCM(2,LM) = EFPCM(2,LM) 
+     *                      + PCMCHARGE*(YCORD-YTSCOR(M))*DISTM3
+                EFPCM(3,LM) = EFPCM(3,LM) 
+     *                      + PCMCHARGE*(ZCORD-ZTSCOR(M))*DISTM3
+  523         CONTINUE
+  522       CONTINUE
+  521     CONTINUE
+        END IF
+  520 CONTINUE
+
+      IF (LM.NE.NCOMS) THEN
+        CALL QUIT('Wrong number of MM pol. sites in PCMFIELD')
+      END IF
+
+      END
+C*********************************************************************************
+C  /* Deck GIVEMY */
+      SUBROUTINE GIVEMY(MYIND)
+C
+C     Transfer the induced dipole moments to pcm
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <qm3.h>
+#include <mxcent.h>
+#include <inftap.h>
+#include <pcmdef.h>
+#include <orgcom.h>
+#include <pcm.h>
+#include <pcmlog.h>
+#include "nuclei.h"
+ 
+      PARAMETER  (D0 = 0.0D0)
+#if defined (SYS_CRAY)
+      REAL              MYIND
+#else
+      DOUBLE PRECISION  MYIND
+#endif
+
+      DIMENSION  MYIND(3,MXQM3)
+
+      LM = 0
+      L = NUSITE + NUALIS(0)
+
+      DO 520 I = 1, ISYTP
+        IF (MDLWRD(I)(1:5) .EQ. 'SPC_E') THEN
+          DO 521 J = NSYSBG(I), NSYSED(I)
+            DO 522 K = 1, NUALIS(I)
+              LM = LM + 1
+
+              IATNOW = NUCIND + L + LM
+
+C             This is a MM polarazable site
+              XMMMY(LM) = CORD(1,IATNOW)
+              YMMMY(LM) = CORD(2,IATNOW)
+              ZMMMY(LM) = CORD(3,IATNOW)
+              MMMYX(LM) = MYIND(1,LM)
+              MMMYY(LM) = MYIND(2,LM)
+              MMMYZ(LM) = MYIND(3,LM)
+             IF (L.GT.MXQ) THEN
+               CALL QUIT('Too many pols.in MM. Increase MXQ')
+             ENDIF
+  522       CONTINUE
+  521     CONTINUE
+        END IF
+  520 CONTINUE
+
+      IF (LM.NE.NCOMS) THEN
+        CALL QUIT('Wrong number of MM pol. sites in PCMFIELD')
+      END IF
+
+      END
+
+C**************************************************************************************
+C  /* Deck MMPCMINIT */
+      SUBROUTINE MMPCMINIT()
+C
+C     Initializes ICQM3 array keeping information on the convergence of
+C     the response vectors
+C
+C     1: initialized 
+C     0: not converged
+C    -1: converged 
+
+#include <implicit.h>
+#include <qm3.h>
+
+      DO 100 I=1,NSTATES
+         ICQM3(I) = 1
+  100 CONTINUE 
+
+      END
+C***************************************************************************************
+
+C*************************************************************
+C  /* Deck MMPCM_FIXMOM */
+      SUBROUTINE MMPCM_FIXMOM()
+C*************************************************************
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <qm3.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <inftap.h>
+C
+      DIMENSION  MYIND(3,MXQM3)
+C
+#if defined (SYS_CRAY)
+      REAL              MYIND
+#else
+      DOUBLE PRECISION  MYIND
+#endif
+C
+      LUMOM = -1
+      CALL QM3_GET3(LUMOM,'QMIND   ',MYIND,NCOMS)
+      CALL GIVEMY(MYIND)
+C
+      END
 C-------------------------------------------------------------------------
 C  /* Deck qmmmin */
       SUBROUTINE QMMMIN(WORD)
@@ -5873,3 +6132,7 @@ C     Output information
       CALL QEXIT('OUTMM')
       END
 C**** end of herqm3.F *****************************************************************
+
+
+
+

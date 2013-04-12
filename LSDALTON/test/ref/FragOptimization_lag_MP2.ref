@@ -1,0 +1,2457 @@
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+      This is output from LSDALTON (Release Dalton2011)
+            Authors:                                  
+      Sonia Coriani,            University of Trieste,        Italy  
+      Trygve Helgaker,          University of Oslo,           Norway 
+      Stinne Hoest,             Aarhus University,            Denmark
+      Branislav Jansik,         Aarhus University,            Denmark
+      Poul Joergensen,          Aarhus University,            Denmark
+      Joanna Kauczor,           Aarhus University,            Denmark
+      Thomas Kjaergaard,        Aarhus University,            Denmark
+      Kasper Kristensen,        Aarhus University,            Denmark
+      Jeppe Olsen,              Aarhus University,            Denmark
+      Simen Reine,              University of Oslo,           Norway 
+      Pawel Salek,              KTH Stockholm,                Sweden 
+      Andreas J. Thorvaldsen,   University of Tromsoe,        Norway 
+      Lea Thoegersen,           Aarhus University,            Denmark
+      Vladimir Rybkin,          University of Oslo,           Norway 
+      Vebjoern Bakken,          University of Oslo,           Norway 
+      Mark Watson,              University of Oslo,           Norway 
+      Andreas Krapp,            University of Oslo,           Norway 
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using SCF wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://daltonprogram.org"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "LSDalton, a molecular electronic structure program, Release 2011,
+      written by <INSERT AUTHOR LIST>"
+
+
+Start simulation
+     Date and time (Linux)  : Sat Nov  3 17:20:08 2012 
+     Host name              : kasper-kristensens-macbook-pro.local    
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  STO-3G                                  
+                                          
+                                          
+  Atomtypes=2 Nosymmetry Angstrom                             
+  Charge=5.0 Atoms=5                                          
+  B          0.000000      0.0000000    0.0000000             
+  B          3.000000      0.0000000    1.0000000             
+  B          6.000000      0.0000000    0.0000000             
+  B          9.000000      0.0000000    1.0000000             
+  B          12.000000     0.0000000    0.0000000             
+  Charge=1.0 Atoms=5                                          
+  H          0.000000      1.0000000    0.0000000             
+  H          3.000000      0.0000000    0.0000000             
+  H          6.000000      1.0000000    0.0000000             
+  H          9.000000      0.0000000    0.0000000             
+  H          12.000000     1.0000000    0.0000000             
+                      
+ -----------------------------------------
+          PRINTING THE DALTON.INP FILE 
+ -----------------------------------------
+                      
+  **WAVE FUNCTIONS                                                                                    
+  .HF                                                                                                 
+  *DENSOPT                                                                                            
+  .ARH                                                                                                
+  .START                                                                                              
+  TRILEVEL                                                                                            
+  .CONVTHR                                                                                            
+  1.0d-5                                                                                              
+  .LCM                                                                                                
+  .MLO                                                                                                
+  2 2                                                                                                 
+  $INFO                                                                                               
+  DEBUG_MPI_MEM                                                                                       
+  $END INFO                                                                                           
+  **DEC                                                                                               
+  .DoHartreeFock                                                                                      
+  .NotSuperFragment                                                                                   
+  .singleFragment                                                                                     
+  1                                                                                                   
+  .LagStepSize                                                                                        
+  1                                                                                                   
+  .FOT                                                                                                
+  6                                                                                                   
+  *END OF INPUT                                                                                       
+  
+  MOLPRINT IS SET TO       0
+  Coordinates are entered in Angstroms and converted to atomic units.
+  Conversion factor : 1 bohr = 0.52917721 A
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates: 30
+   Written in atomic units    
+
+   1   B        x      0.0000000000
+   2            y      0.0000000000
+   3            z      0.0000000000
+
+   4   B        x      5.6691784018
+   5            y      0.0000000000
+   6            z      1.8897261339
+
+   7   B        x     11.3383568035
+   8            y      0.0000000000
+   9            z      0.0000000000
+
+  10   B        x     17.0075352053
+  11            y      0.0000000000
+  12            z      1.8897261339
+
+  13   B        x     22.6767136071
+  14            y      0.0000000000
+  15            z      0.0000000000
+
+  16   H        x      0.0000000000
+  17            y      1.8897261339
+  18            z      0.0000000000
+
+  19   H        x      5.6691784018
+  20            y      0.0000000000
+  21            z      0.0000000000
+
+  22   H        x     11.3383568035
+  23            y      1.8897261339
+  24            z      0.0000000000
+
+  25   H        x     17.0075352053
+  26            y      0.0000000000
+  27            z      0.0000000000
+
+  28   H        x     22.6767136071
+  29            y      1.8897261339
+  30            z      0.0000000000
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR BASIS
+   
+
+ Default basis set library used:
+        /Users/kk/dalton/basis                                                                                                                                                                                  
+ OPENING FILE/Users/kk/dalton/basis/STO-3G
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  STO-3G                                            
+  CHARGES:    5.0000    1.0000
+                      
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+ Molecular Charge                    :    0.0000
+    Regular basisfunctions             :       30
+    Auxiliary basisfunctions           :        0
+    CABS basisfunctions                :        0
+    JK-fit basisfunctions              :        0
+    Valence basisfunctions             :        0
+    Primitive Regular basisfunctions   :       90
+    Primitive Auxiliary basisfunctions :        0
+    Primitive CABS basisfunctions      :        0
+    Primitive JK-fit basisfunctions    :        0
+    Primitive Valence basisfunctions   :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis    Phantom   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   5.000  STO-3G          F             15           5
+     2   5.000  STO-3G          F             15           5
+     3   5.000  STO-3G          F             15           5
+     4   5.000  STO-3G          F             15           5
+     5   5.000  STO-3G          F             15           5
+     6   1.000  STO-3G          F              3           1
+     7   1.000  STO-3G          F              3           1
+     8   1.000  STO-3G          F              3           1
+     9   1.000  STO-3G          F              3           1
+    10   1.000  STO-3G          F              3           1
+                      
+ The cartesian centers in Atomic units. 
+  ATOM  NAME  ISOTOPE            X                 Y                 Z     
+     1  B           1        0.00000000        0.00000000        0.00000000
+     2  B           1        5.66917840        0.00000000        1.88972613
+     3  B           1       11.33835680        0.00000000        0.00000000
+     4  B           1       17.00753521        0.00000000        1.88972613
+     5  B           1       22.67671361        0.00000000        0.00000000
+     6  H           1        0.00000000        1.88972613        0.00000000
+     7  H           1        5.66917840        0.00000000        0.00000000
+     8  H           1       11.33835680        1.88972613        0.00000000
+     9  H           1       17.00753521        0.00000000        0.00000000
+    10  H           1       22.67671361        1.88972613        0.00000000
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :     10
+  THE  REGULAR   is on R =   0
+---------------------------------------------------------------------
+  atom label  charge basisset                prim     cont   basis
+---------------------------------------------------------------------
+      1 B      5.000 STO-3G                    15        5 [6s3p|2s1p]                                  
+      2 B      5.000 STO-3G                    15        5 [6s3p|2s1p]                                  
+      3 B      5.000 STO-3G                    15        5 [6s3p|2s1p]                                  
+      4 B      5.000 STO-3G                    15        5 [6s3p|2s1p]                                  
+      5 B      5.000 STO-3G                    15        5 [6s3p|2s1p]                                  
+      6 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+      7 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+      8 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+      9 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+     10 H      1.000 STO-3G                     3        1 [3s|1s]                                      
+---------------------------------------------------------------------
+total         30                               90       30
+---------------------------------------------------------------------
+                      
+ Configuration:
+ ==============
+
+   You have requested Augmented Roothaan-Hall optimization
+   => explicit averaging is turned off!
+
+Expand trust radius if ratio is larger than:            0.75
+Contract trust radius if ratio is smaller than:         0.25
+On expansion, trust radius is expanded by a factor      1.20
+On contraction, trust radius is contracted by a factor  0.70
+
+ Maximum size of subspace in ARH linear equations:           2
+
+Density subspace min. method    : None                    
+Density optimization : Augmented RH optimization          
+
+ Maximum size of Fock/density queue in averaging:          10
+
+Convergence threshold for gradient:   0.10E-04
+ 
+    The Overall Screening threshold is set to              :1.0000E-08
+    The Screening threshold used for Coulomb               :1.0000E-10
+    The Screening threshold used for Exchange              :1.0000E-08
+    The Screening threshold used for One-electron operators:1.0000E-15
+
+ End of configuration!
+
+ >>>  CPU Time used in *INPUT          is   0.01 seconds
+ >>> wall Time used in *INPUT          is   0.05 seconds
+Matrix type: mtype_dense
+
+ Level 1 atomic calculation on STO-3G Charge   5
+ ================================================
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>> wall Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in NucElec         is   0.00 seconds
+ >>> wall Time used in NucElec         is   0.00 seconds
+ QQQ New  h:   611.73309694600766     
+ >>>  CPU Time used in Kinetic         is   0.00 seconds
+ >>> wall Time used in Kinetic         is   0.00 seconds
+ QQQ New  K:   121.13174681661970     
+ >>>  CPU Time used in reg-Jengine     is   0.00 seconds
+ >>> wall Time used in reg-Jengine     is   0.00 seconds
+ The Coulomb energy contribution    12.639797284164024     
+ SET_SYMMETRY: A single X,Y,Z coordinate
+ >>>  CPU Time used in st-Kbuild       is   0.00 seconds
+ >>> wall Time used in st-Kbuild       is   0.00 seconds
+ The Exchange energy contribution    3.7272329069295385     
+ The Fock energy contribution   -8.9125643772344869     
+*************************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     OAO gradient     ###
+******************************************************************  *******************************###
+  1    -23.9308579816    0.00000000000    0.00      0.00000    0.00    0.00E+00    0.00E+00  ###
+*******************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+*******************************************************************************************%%%
+
+ Level 1 atomic calculation on STO-3G Charge   1
+ ================================================
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>> wall Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in NucElec         is   0.00 seconds
+ >>> wall Time used in NucElec         is   0.00 seconds
+ QQQ New  h:   1.5045811993237843     
+ >>>  CPU Time used in Kinetic         is   0.00 seconds
+ >>> wall Time used in Kinetic         is   0.00 seconds
+ QQQ New  K:  0.57764842464889532     
+ >>>  CPU Time used in reg-Jengine     is   0.00 seconds
+ >>> wall Time used in reg-Jengine     is   0.00 seconds
+ The Coulomb energy contribution   0.38730296535677067     
+ SET_SYMMETRY: A single X,Y,Z coordinate
+ >>>  CPU Time used in st-Kbuild       is   0.00 seconds
+ >>> wall Time used in st-Kbuild       is   0.00 seconds
+ The Exchange energy contribution   0.19365148267838533     
+ The Fock energy contribution  -0.19365148267838533     
+*************************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     OAO gradient     ###
+******************************************************************  *******************************###
+  1     -0.2729303720    0.00000000000    0.00      0.00000    0.00    0.00E+00    0.00E+00  ###
+*******************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+*******************************************************************************************%%%
+Matrix type: mtype_dense
+ >>>  CPU Time used in *ATOM           is   0.01 seconds
+ >>> wall Time used in *ATOM           is   0.02 seconds
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>> wall Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in *S              is   0.10 seconds
+ >>> wall Time used in *S              is   0.10 seconds
+ >>>  CPU Time used in NucElec         is   0.02 seconds
+ >>> wall Time used in NucElec         is   0.02 seconds
+ QQQ New  h:   5026.2901940281672     
+ >>>  CPU Time used in Kinetic         is   0.00 seconds
+ >>> wall Time used in Kinetic         is   0.00 seconds
+ QQQ New  K:   711.89410215204055     
+ >>>  CPU Time used in *H1             is   0.02 seconds
+ >>> wall Time used in *H1             is   0.02 seconds
+
+ First density: Trilevel procedure 
+
+ Level 2 molecular calculation
+ =============================
+  The 2. Level Basis
+  Total number of atoms        :     10
+---------------------------------------------------------------------
+  atom label  charge basisset                cont   basis
+---------------------------------------------------------------------
+      1 B      5.000 GC Minimal Basis           5   [2s1p]                                       
+      2 B      5.000 GC Minimal Basis           5   [2s1p]                                       
+      3 B      5.000 GC Minimal Basis           5   [2s1p]                                       
+      4 B      5.000 GC Minimal Basis           5   [2s1p]                                       
+      5 B      5.000 GC Minimal Basis           5   [2s1p]                                       
+      6 H      1.000 GC Minimal Basis           1   [1s]                                         
+      7 H      1.000 GC Minimal Basis           1   [1s]                                         
+      8 H      1.000 GC Minimal Basis           1   [1s]                                         
+      9 H      1.000 GC Minimal Basis           1   [1s]                                         
+     10 H      1.000 GC Minimal Basis           1   [1s]                                         
+---------------------------------------------------------------------
+total         30                               30
+---------------------------------------------------------------------
+                      
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>> wall Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in NucElec         is   0.02 seconds
+ >>> wall Time used in NucElec         is   0.02 seconds
+ QQQ New  h:   5026.2901940281672     
+ >>>  CPU Time used in Kinetic         is   0.00 seconds
+ >>> wall Time used in Kinetic         is   0.00 seconds
+ QQQ New  K:   711.89410215204055     
+ >>>  CPU Time used in reg-Jengine     is   0.08 seconds
+ >>> wall Time used in reg-Jengine     is   0.08 seconds
+ The Coulomb energy contribution    116.36736244696287     
+ SET_SYMMETRY: No Symmetry
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.13 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.13 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.13 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.13 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.13 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.13 seconds
+ The Exchange energy contribution    20.896326112020045     
+ The Fock energy contribution   -95.471036334942852     
+  Iteration 0 energy:  -122.70799556052543     
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.00 seconds
+ >>> wall Time used in LWDIAG          is   0.00 seconds
+Matrix S     has nnz=       388 sparsity:     43.111 %
+Matrix AO D  has nnz=       890 sparsity:     98.889 %
+ Relative convergence threshold for solver:  1.00000000000000002E-002
+ >>>  CPU Time used in INIT SCF        is   0.00 seconds
+ >>> wall Time used in INIT SCF        is   0.00 seconds
+** Get Fock matrix number   1
+ >>>  CPU Time used in reg-Jengine     is   0.31 seconds
+ >>> wall Time used in reg-Jengine     is   0.31 seconds
+ The Coulomb energy contribution    115.24477104361949     
+ SET_SYMMETRY: No Symmetry
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.44 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.44 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.44 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.44 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.44 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.44 seconds
+ The Exchange energy contribution    21.711367968144032     
+ The Fock energy contribution   -93.533403075475462     
+ >>>  CPU Time used in FCK_FO          is   0.76 seconds
+ >>> wall Time used in FCK_FO          is   0.76 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+*************************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     OAO gradient     ###
+******************************************************************  *******************************###
+  1   -123.5776547879    0.00000000000    0.00      0.00000    0.00    0.00E+00    0.31E+00  ###
+*******************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+*******************************************************************************************%%%
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   1
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                          2.471 MB
+  Max allocated memory, type(matrix)                 151.580 kB
+  Max allocated memory, real                           2.434 MB
+  Max allocated memory, integer                       81.082 kB
+  Max allocated memory, logical                        0.984 kB
+  Max allocated memory, AOBATCH                       14.208 kB
+  Max allocated memory, ODBATCH                       14.136 kB
+  Max allocated memory, LSAOTENSOR                    36.000 kB
+  Max allocated memory, SLSAOTENSOR                   29.744 kB
+  Max allocated memory, ATOMTYPEITEM                 121.320 kB
+  Max allocated memory, ATOM                           4.576 kB
+  Max allocated memory, LSMATRIX                       2.032 kB
+  Max allocated memory, overlapType                  137.256 kB
+  Max allocated memory, linkshell                      4.716 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   1.659 MB
+  Max allocated memory, IntWork                      104.976 kB
+  Max allocated memory, overlap                        1.551 MB
+  Max allocated memory, ODitem                        11.904 kB
+  Max allocated memory, lstensor                      67.056 kB
+
+  Allocated memory,     TOTAL                 276.450 kB
+  Allocated memory,     type(matrix)          122.400 kB
+  Allocated memory,     real                    0.912 kB
+  Allocated memory,     integer                 7.200 kB
+  Allocated memory,     logical                 0.240 kB
+  Allocated memory,     SLSAOTENSOR            10.608 kB
+  Allocated memory,     ATOMTYPEITEM          121.320 kB
+  Allocated memory,     ATOM                    4.160 kB
+  Allocated memory,     lstensor                9.610 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       890 sparsity:     98.889 %
+Matrix AO F  has nnz=       890 sparsity:     98.889 %
+Matrix OAO D has nnz=       890 sparsity:     98.889 %
+Matrix OAO F has nnz=       890 sparsity:     98.889 %
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  0.14353658601349278     
+ Number of densities in queue:           0
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.182832 au
+   -E(HOMO):                     -0.248253 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.431085 au
+
+ >>>  CPU Time used in HOMO-LUMO gap   is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap   is   0.00 seconds
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:      0.0261228887 (mu =       0.00, xmax = 0.253440E-01, xnorm = 0.123465E+00, THR = 0.143537E-02)
+  Error of red space iteration  2:      0.0065911770 (mu =       0.00, xmax = 0.243898E-01, xnorm = 0.122810E+00, THR = 0.143537E-02)
+  Error of red space iteration  3:      0.0011613306 (mu =       0.00, xmax = 0.240800E-01, xnorm = 0.124398E+00, THR = 0.143537E-02)
+Newton equations converged in  3 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>> wall Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    43
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.76 seconds
+ >>> wall Time used in SCF iteration   is   0.76 seconds
+** Get Fock matrix number   2
+ >>>  CPU Time used in reg-Jengine     is   0.31 seconds
+ >>> wall Time used in reg-Jengine     is   0.31 seconds
+ The Coulomb energy contribution    115.36226397487096     
+ SET_SYMMETRY: No Symmetry
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.44 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.44 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.44 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.44 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.44 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.44 seconds
+ The Exchange energy contribution    21.727504016415740     
+ The Fock energy contribution   -93.634759958455192     
+ 0.60000 (xnorm)    0.02408    0.12440   -0.00    1.2178    0.0000         0          1    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO          is   0.76 seconds
+ >>> wall Time used in FCK_FO          is   0.76 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  2   -123.5981308816   -0.02047609367    0.00      0.00000   -0.00    0.00E+00    0.77E-01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   2
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                          2.471 MB
+  Max allocated memory, type(matrix)                 244.800 kB
+  Max allocated memory, real                           2.434 MB
+  Max allocated memory, integer                       81.250 kB
+  Max allocated memory, logical                        0.984 kB
+  Max allocated memory, AOBATCH                       14.208 kB
+  Max allocated memory, ODBATCH                       14.136 kB
+  Max allocated memory, LSAOTENSOR                    36.000 kB
+  Max allocated memory, SLSAOTENSOR                   29.744 kB
+  Max allocated memory, ATOMTYPEITEM                 121.320 kB
+  Max allocated memory, ATOM                           4.576 kB
+  Max allocated memory, LSMATRIX                       2.032 kB
+  Max allocated memory, overlapType                  139.664 kB
+  Max allocated memory, linkshell                      4.716 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   1.659 MB
+  Max allocated memory, IntWork                      104.976 kB
+  Max allocated memory, overlap                        1.551 MB
+  Max allocated memory, ODitem                        11.904 kB
+  Max allocated memory, lstensor                      67.056 kB
+
+  Allocated memory,     TOTAL                 290.850 kB
+  Allocated memory,     type(matrix)          136.800 kB
+  Allocated memory,     real                    0.912 kB
+  Allocated memory,     integer                 7.200 kB
+  Allocated memory,     logical                 0.240 kB
+  Allocated memory,     SLSAOTENSOR            10.608 kB
+  Allocated memory,     ATOMTYPEITEM          121.320 kB
+  Allocated memory,     ATOM                    4.160 kB
+  Allocated memory,     lstensor                9.610 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       890 sparsity:     98.889 %
+Matrix AO F  has nnz=       890 sparsity:     98.889 %
+Matrix OAO D has nnz=       890 sparsity:     98.889 %
+Matrix OAO F has nnz=       890 sparsity:     98.889 %
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  3.30941718581303085E-002
+ Number of densities in queue:           1
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.188357 au
+   -E(HOMO):                     -0.245174 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.433531 au
+
+ >>>  CPU Time used in HOMO-LUMO gap   is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap   is   0.00 seconds
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:      0.0059297057 (mu =       0.00, xmax = 0.731593E-02, xnorm = 0.369784E-01, THR = 0.330942E-03)
+  Error of red space iteration  2:      0.0019534857 (mu =       0.00, xmax = 0.721169E-02, xnorm = 0.385387E-01, THR = 0.330942E-03)
+  Error of red space iteration  3:      0.0007258413 (mu =       0.00, xmax = 0.738912E-02, xnorm = 0.401498E-01, THR = 0.330942E-03)
+  Error of red space iteration  4:      0.0000485999 (mu =       0.00, xmax = 0.746895E-02, xnorm = 0.411653E-01, THR = 0.330942E-03)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>> wall Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    63
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.76 seconds
+ >>> wall Time used in SCF iteration   is   0.76 seconds
+** Get Fock matrix number   3
+ >>>  CPU Time used in reg-Jengine     is   0.31 seconds
+ >>> wall Time used in reg-Jengine     is   0.31 seconds
+ The Coulomb energy contribution    115.37927803946073     
+ SET_SYMMETRY: No Symmetry
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.44 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.44 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.44 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.44 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.44 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.44 seconds
+ The Exchange energy contribution    21.735183692645304     
+ The Fock energy contribution   -93.644094346815422     
+ 0.60000 (xnorm)    0.00747    0.04117   -0.00    1.0467    0.9441         1          2    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO          is   0.75 seconds
+ >>> wall Time used in FCK_FO          is   0.76 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  3   -123.5994311017   -0.00130022016    0.00      0.00000   -0.00    0.00E+00    0.10E-01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   3
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                          2.471 MB
+  Max allocated memory, type(matrix)                 259.200 kB
+  Max allocated memory, real                           2.434 MB
+  Max allocated memory, integer                       81.250 kB
+  Max allocated memory, logical                        0.984 kB
+  Max allocated memory, AOBATCH                       14.208 kB
+  Max allocated memory, ODBATCH                       14.136 kB
+  Max allocated memory, LSAOTENSOR                    36.000 kB
+  Max allocated memory, SLSAOTENSOR                   29.744 kB
+  Max allocated memory, ATOMTYPEITEM                 121.320 kB
+  Max allocated memory, ATOM                           4.576 kB
+  Max allocated memory, LSMATRIX                       2.032 kB
+  Max allocated memory, overlapType                  139.664 kB
+  Max allocated memory, linkshell                      4.716 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   1.659 MB
+  Max allocated memory, IntWork                      104.976 kB
+  Max allocated memory, overlap                        1.551 MB
+  Max allocated memory, ODitem                        11.904 kB
+  Max allocated memory, lstensor                      67.056 kB
+
+  Allocated memory,     TOTAL                 305.250 kB
+  Allocated memory,     type(matrix)          151.200 kB
+  Allocated memory,     real                    0.912 kB
+  Allocated memory,     integer                 7.200 kB
+  Allocated memory,     logical                 0.240 kB
+  Allocated memory,     SLSAOTENSOR            10.608 kB
+  Allocated memory,     ATOMTYPEITEM          121.320 kB
+  Allocated memory,     ATOM                    4.160 kB
+  Allocated memory,     lstensor                9.610 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       890 sparsity:     98.889 %
+Matrix AO F  has nnz=       890 sparsity:     98.889 %
+Matrix OAO D has nnz=       890 sparsity:     98.889 %
+Matrix OAO F has nnz=       890 sparsity:     98.889 %
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  2.89855039724689267E-003
+ Number of densities in queue:           2
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.189412 au
+   -E(HOMO):                     -0.244567 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.433979 au
+
+ >>>  CPU Time used in HOMO-LUMO gap   is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap   is   0.00 seconds
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:      0.0010122950 (mu =       0.00, xmax = 0.104575E-02, xnorm = 0.432254E-02, THR = 0.289855E-04)
+  Error of red space iteration  2:      0.0004674559 (mu =       0.00, xmax = 0.130401E-02, xnorm = 0.522606E-02, THR = 0.289855E-04)
+  Error of red space iteration  3:      0.0001043661 (mu =       0.00, xmax = 0.154689E-02, xnorm = 0.617833E-02, THR = 0.289855E-04)
+  Error of red space iteration  4:      0.0000204016 (mu =       0.00, xmax = 0.158590E-02, xnorm = 0.636140E-02, THR = 0.289855E-04)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>> wall Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    62
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.76 seconds
+ >>> wall Time used in SCF iteration   is   0.76 seconds
+** Get Fock matrix number   4
+ >>>  CPU Time used in reg-Jengine     is   0.31 seconds
+ >>> wall Time used in reg-Jengine     is   0.31 seconds
+ The Coulomb energy contribution    115.37788849303581     
+ SET_SYMMETRY: No Symmetry
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.44 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.44 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.44 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.44 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.44 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.44 seconds
+ The Exchange energy contribution    21.736134536878023     
+ The Fock energy contribution   -93.641753956157643     
+ 0.60000 (xnorm)    0.00159    0.00636   -0.00    1.2465    0.8656         2          3    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO          is   0.75 seconds
+ >>> wall Time used in FCK_FO          is   0.75 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  4   -123.5994516059   -0.00002050411    0.00      0.00000   -0.00    0.00E+00    0.49E-02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   4
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                          2.471 MB
+  Max allocated memory, type(matrix)                 273.600 kB
+  Max allocated memory, real                           2.434 MB
+  Max allocated memory, integer                       81.250 kB
+  Max allocated memory, logical                        0.984 kB
+  Max allocated memory, AOBATCH                       14.208 kB
+  Max allocated memory, ODBATCH                       14.136 kB
+  Max allocated memory, LSAOTENSOR                    36.000 kB
+  Max allocated memory, SLSAOTENSOR                   29.744 kB
+  Max allocated memory, ATOMTYPEITEM                 121.320 kB
+  Max allocated memory, ATOM                           4.576 kB
+  Max allocated memory, LSMATRIX                       2.032 kB
+  Max allocated memory, overlapType                  139.664 kB
+  Max allocated memory, linkshell                      4.716 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   1.659 MB
+  Max allocated memory, IntWork                      104.976 kB
+  Max allocated memory, overlap                        1.551 MB
+  Max allocated memory, ODitem                        11.904 kB
+  Max allocated memory, lstensor                      67.056 kB
+
+  Allocated memory,     TOTAL                 319.650 kB
+  Allocated memory,     type(matrix)          165.600 kB
+  Allocated memory,     real                    0.912 kB
+  Allocated memory,     integer                 7.200 kB
+  Allocated memory,     logical                 0.240 kB
+  Allocated memory,     SLSAOTENSOR            10.608 kB
+  Allocated memory,     ATOMTYPEITEM          121.320 kB
+  Allocated memory,     ATOM                    4.160 kB
+  Allocated memory,     lstensor                9.610 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       890 sparsity:     98.889 %
+Matrix AO F  has nnz=       890 sparsity:     98.889 %
+Matrix OAO D has nnz=       890 sparsity:     98.889 %
+Matrix OAO F has nnz=       890 sparsity:     98.889 %
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.11881548083317579E-003
+ Number of densities in queue:           3
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.189430 au
+   -E(HOMO):                     -0.244685 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.434115 au
+
+ >>>  CPU Time used in HOMO-LUMO gap   is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap   is   0.00 seconds
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:      0.0006038062 (mu =       0.00, xmax = 0.653355E-03, xnorm = 0.197198E-02, THR = 0.111882E-04)
+  Error of red space iteration  2:      0.0003696709 (mu =       0.00, xmax = 0.100695E-02, xnorm = 0.302758E-02, THR = 0.111882E-04)
+  Error of red space iteration  3:      0.0000671808 (mu =       0.00, xmax = 0.154009E-02, xnorm = 0.465773E-02, THR = 0.111882E-04)
+  Error of red space iteration  4:      0.0000152311 (mu =       0.00, xmax = 0.159684E-02, xnorm = 0.483331E-02, THR = 0.111882E-04)
+Error went down by   95.88%
+  Error of red space iteration  5:      0.0000042777 (mu =       0.00, xmax = 0.160054E-02, xnorm = 0.484607E-02, THR = 0.111882E-04)
+Newton equations converged in  5 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>> wall Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    72
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.76 seconds
+ >>> wall Time used in SCF iteration   is   0.76 seconds
+** Get Fock matrix number   5
+ >>>  CPU Time used in reg-Jengine     is   0.31 seconds
+ >>> wall Time used in reg-Jengine     is   0.31 seconds
+ The Coulomb energy contribution    115.37954000438680     
+ SET_SYMMETRY: No Symmetry
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.44 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.44 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.44 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.44 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.44 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.45 seconds
+ The Exchange energy contribution    21.736068841643302     
+ The Fock energy contribution   -93.643471162743424     
+ 0.60000 (xnorm)    0.00160    0.00485   -0.00    1.1122    0.9711         3          4    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO          is   0.76 seconds
+ >>> wall Time used in FCK_FO          is   0.76 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  5   -123.5994571983   -0.00000559242    0.00      0.00000   -0.00    0.00E+00    0.11E-02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   5
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                          2.471 MB
+  Max allocated memory, type(matrix)                 288.000 kB
+  Max allocated memory, real                           2.434 MB
+  Max allocated memory, integer                       81.250 kB
+  Max allocated memory, logical                        0.984 kB
+  Max allocated memory, AOBATCH                       14.208 kB
+  Max allocated memory, ODBATCH                       14.136 kB
+  Max allocated memory, LSAOTENSOR                    36.000 kB
+  Max allocated memory, SLSAOTENSOR                   29.744 kB
+  Max allocated memory, ATOMTYPEITEM                 121.320 kB
+  Max allocated memory, ATOM                           4.576 kB
+  Max allocated memory, LSMATRIX                       2.032 kB
+  Max allocated memory, overlapType                  139.664 kB
+  Max allocated memory, linkshell                      4.716 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   1.659 MB
+  Max allocated memory, IntWork                      104.976 kB
+  Max allocated memory, overlap                        1.551 MB
+  Max allocated memory, ODitem                        11.904 kB
+  Max allocated memory, lstensor                      67.056 kB
+
+  Allocated memory,     TOTAL                 334.050 kB
+  Allocated memory,     type(matrix)          180.000 kB
+  Allocated memory,     real                    0.912 kB
+  Allocated memory,     integer                 7.200 kB
+  Allocated memory,     logical                 0.240 kB
+  Allocated memory,     SLSAOTENSOR            10.608 kB
+  Allocated memory,     ATOMTYPEITEM          121.320 kB
+  Allocated memory,     ATOM                    4.160 kB
+  Allocated memory,     lstensor                9.610 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       890 sparsity:     98.889 %
+Matrix AO F  has nnz=       890 sparsity:     98.889 %
+Matrix OAO D has nnz=       890 sparsity:     98.889 %
+Matrix OAO F has nnz=       890 sparsity:     98.889 %
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  2.78157611811787552E-004
+ Number of densities in queue:           4
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.189506 au
+   -E(HOMO):                     -0.244658 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.434164 au
+
+ >>>  CPU Time used in HOMO-LUMO gap   is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap   is   0.00 seconds
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:      0.0001049237 (mu =       0.00, xmax = 0.944798E-04, xnorm = 0.412752E-03, THR = 0.278158E-05)
+  Error of red space iteration  2:      0.0000758193 (mu =       0.00, xmax = 0.130353E-03, xnorm = 0.515690E-03, THR = 0.278158E-05)
+  Error of red space iteration  3:      0.0000364951 (mu =       0.00, xmax = 0.198560E-03, xnorm = 0.715992E-03, THR = 0.278158E-05)
+  Error of red space iteration  4:      0.0000144479 (mu =       0.00, xmax = 0.244205E-03, xnorm = 0.842017E-03, THR = 0.278158E-05)
+Error went down by   80.94%
+  Error of red space iteration  5:      0.0000036138 (mu =       0.00, xmax = 0.261740E-03, xnorm = 0.881037E-03, THR = 0.278158E-05)
+  Error of red space iteration  6:      0.0000006174 (mu =       0.00, xmax = 0.263842E-03, xnorm = 0.885218E-03, THR = 0.278158E-05)
+Newton equations converged in  6 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>> wall Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    81
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.76 seconds
+ >>> wall Time used in SCF iteration   is   0.76 seconds
+** Get Fock matrix number   6
+ >>>  CPU Time used in reg-Jengine     is   0.31 seconds
+ >>> wall Time used in reg-Jengine     is   0.31 seconds
+ The Coulomb energy contribution    115.37972443670630     
+ SET_SYMMETRY: No Symmetry
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.44 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.44 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.44 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.44 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.44 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.44 seconds
+ The Exchange energy contribution    21.736046976994654     
+ The Fock energy contribution   -93.643677459711782     
+ 0.60000 (xnorm)    0.00026    0.00089   -0.00    1.0342    0.9803         4          5    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO          is   0.76 seconds
+ >>> wall Time used in FCK_FO          is   0.76 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  6   -123.5994573992   -0.00000020090    0.00      0.00000   -0.00    0.00E+00    0.13E-03  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   6
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                          2.471 MB
+  Max allocated memory, type(matrix)                 302.400 kB
+  Max allocated memory, real                           2.434 MB
+  Max allocated memory, integer                       81.250 kB
+  Max allocated memory, logical                        0.984 kB
+  Max allocated memory, AOBATCH                       14.208 kB
+  Max allocated memory, ODBATCH                       14.136 kB
+  Max allocated memory, LSAOTENSOR                    36.000 kB
+  Max allocated memory, SLSAOTENSOR                   29.744 kB
+  Max allocated memory, ATOMTYPEITEM                 121.320 kB
+  Max allocated memory, ATOM                           4.576 kB
+  Max allocated memory, LSMATRIX                       2.032 kB
+  Max allocated memory, overlapType                  139.664 kB
+  Max allocated memory, linkshell                      4.716 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   1.659 MB
+  Max allocated memory, IntWork                      104.976 kB
+  Max allocated memory, overlap                        1.551 MB
+  Max allocated memory, ODitem                        11.904 kB
+  Max allocated memory, lstensor                      67.056 kB
+
+  Allocated memory,     TOTAL                 348.450 kB
+  Allocated memory,     type(matrix)          194.400 kB
+  Allocated memory,     real                    0.912 kB
+  Allocated memory,     integer                 7.200 kB
+  Allocated memory,     logical                 0.240 kB
+  Allocated memory,     SLSAOTENSOR            10.608 kB
+  Allocated memory,     ATOMTYPEITEM          121.320 kB
+  Allocated memory,     ATOM                    4.160 kB
+  Allocated memory,     lstensor                9.610 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+ >>>  CPU Time used in **ITER          is   4.56 seconds
+ >>> wall Time used in **ITER          is   4.57 seconds
+
+Total no. of matmuls in SCF optimization:        370
+
+ Number of occupied orbitals:          15
+ Number of virtual orbitals:          15
+
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+
+
+Calculation of HOMO-LUMO gap
+============================
+
+Calculation of occupied orbital energies converged in     9 iterations!
+
+Calculation of virtual orbital energies converged in    10 iterations!
+
+    E(LUMO):                         0.189512 au
+   -E(HOMO):                        -0.244644 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.434156 au
+
+ >>>  CPU Time used in HL GAP          is   0.52 seconds
+ >>> wall Time used in HL GAP          is   0.52 seconds
+
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.02047609367    0.0000   -0.0000    0.0000000
+  3   -0.00130022016    0.0000   -0.0000    0.0000000
+  4   -0.00002050411    0.0000   -0.0000    0.0000000
+  5   -0.00000559242    0.0000   -0.0000    0.0000000
+  6   -0.00000020090    0.0000   -0.0000    0.0000000
+
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1          -123.57765478791131386060      0.314804330795726D+00
+    2          -123.59813088157926586064      0.774646031218848D-01
+    3          -123.59943110174310731963      0.104679552874783D-01
+    4          -123.59945160585155576882      0.485844640626316D-02
+    5          -123.59945719826995969015      0.105415990729657D-02
+    6          -123.59945739917341711589      0.132602596379950D-03
+
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+
+
+      Final HF energy:                  -123.599457399173
+      Nuclear repulsion:                  52.634539783204
+      Electronic energy:                -176.233997182377
+
+ Level 2 minimization done! Starting Level 3 minimization...
+
+Pred= ***** LEVEL 2 ORBITAL LOCALIZATION ****
+ Localizing core:           30           5
+ Too few orbitals to localize
+ Done localizing core 
+ Localizing valence:           30          10
+Pred= ******* VALENCE LOCALIZATION ******* 
+   1 Pred=  0.00E+00 max_o=    1.988 r=    0.000 mu=  0.00E+00 grd=  8.95E+00 it=   0 step 0.750 tot step  0.000
+iter :  4    mu : -2.38449E+02    ResNorm :  2.15145E+01   2D ResNorm  9.20971E+01
+iter :  5    mu : -2.38577E+02    ResNorm :  2.30521E-01   2D ResNorm  9.20940E+01
+iter : Micro iterations converged in RedSpaceLoop number :   1
+Linesearch number :   0 Original function value:           149.3
+Linesearch number :   1 Change        -42.0982
+Linesearch number :   2 Change        -33.1209
+Linesearch number :   3 Change         -2.9392
+Linesearch number :   4 Change         28.3375
+   2 Pred= -9.97E+01 max_o=    1.742 r=    0.844 mu= -2.39E+02 grd=  3.99E+00 it=   5 step 0.750 tot step  2.250
+iter :  3    mu :  0.00000E+00    ResNorm :  1.59811E+01   2D ResNorm  4.29745E+01
+iter :  4    mu :  0.00000E+00    ResNorm :  5.51345E-02   2D ResNorm  4.29745E+01
+iter : Micro iterations converged in RedSpaceLoop number :   1
+Linesearch number :   0 Original function value:            71.1
+Linesearch number :   1 Change         -2.8229
+Linesearch number :   2 Change          2.9488
+   3 Pred= -5.69E+00 max_o=    1.719 r=    0.992 mu=  0.00E+00 grd=  8.36E-02 it=   4 step 0.750 tot step  0.311
+iter :  3    mu :  0.00000E+00    ResNorm :  8.93666E-03   2D ResNorm  8.36458E-01
+iter :  4    mu :  0.00000E+00    ResNorm :  3.54323E-05   2D ResNorm  8.36458E-01
+iter : Micro iterations converged in RedSpaceLoop number :   1
+Linesearch number :   0 Original function value:            68.3
+Linesearch number :   1 Change         -0.0006
+   4 Pred= -1.11E-03 max_o=    1.719 r=    1.000 mu=  0.00E+00 grd=  1.19E-05 it=   4 step 0.750 tot step  0.004
+ Done localizing valence 
+ Localizing virtual:           15
+Pred= ******* VIRTUAL LOCALIZATION ******* 
+   1 Pred= -1.11E-03 max_o=    1.878 r=    0.000 mu=  0.00E+00 grd=  1.92E+00 it=   4 step 0.750 tot step  0.000
+iter :  4    mu : -1.36157E-01    ResNorm :  3.18377E+00   2D ResNorm  2.89464E+01
+iter :  5    mu : -1.45153E-01    ResNorm :  1.70953E+00   2D ResNorm  2.89470E+01
+iter :  6    mu : -1.47342E-01    ResNorm :  3.52013E-01   2D ResNorm  2.89471E+01
+iter : Micro iterations converged in RedSpaceLoop number :   1
+Linesearch number :   0 Original function value:           162.9
+Linesearch number :   1 Change         -0.2598
+   2 Pred= -5.31E-01 max_o=    1.875 r=    0.978 mu= -1.47E-01 grd=  4.11E-02 it=   6 step 0.750 tot step  0.754
+iter :  4    mu : -1.33632E-01    ResNorm :  2.55852E-01   2D ResNorm  6.65544E-01
+iter :  5    mu : -1.35617E-01    ResNorm :  1.73694E-02   2D ResNorm  6.62512E-01
+iter :  6    mu : -1.35629E-01    ResNorm :  1.34437E-03   2D ResNorm  6.62494E-01
+iter : Micro iterations converged in RedSpaceLoop number :   1
+Linesearch number :   0 Original function value:           162.6
+Linesearch number :   1 Change         -0.0178
+   3 Pred= -5.73E-02 max_o=    1.862 r=    0.620 mu= -1.36E-01 grd=  1.04E-02 it=   6 step 0.750 tot step  0.750
+iter :  4    mu : -4.79005E-04    ResNorm :  1.54820E-01   2D ResNorm  2.18217E-01
+iter :  5    mu : -4.92579E-04    ResNorm :  1.21887E-02   2D ResNorm  2.18198E-01
+iter :  6    mu : -4.92148E-04    ResNorm :  1.22591E-03   2D ResNorm  2.18198E-01
+iter :  7    mu : -4.92150E-04    ResNorm :  1.02856E-04   2D ResNorm  2.18198E-01
+iter : Micro iterations converged in RedSpaceLoop number :   1
+Linesearch number :   0 Original function value:           162.6
+Linesearch number :   1 Change         -0.0015
+   4 Pred= -3.21E-03 max_o=    1.856 r=    0.927 mu= -4.92E-04 grd=  1.57E-03 it=   7 step 0.750 tot step  0.758
+iter :  3    mu :  0.00000E+00    ResNorm :  1.20584E-02   2D ResNorm  2.64472E-02
+iter :  4    mu :  0.00000E+00    ResNorm :  9.58223E-03   2D ResNorm  2.64472E-02
+iter :  5    mu :  0.00000E+00    ResNorm :  7.22527E-04   2D ResNorm  2.64472E-02
+iter :  6    mu :  0.00000E+00    ResNorm :  6.10366E-05   2D ResNorm  2.64472E-02
+iter : Micro iterations converged in RedSpaceLoop number :   1
+Linesearch number :   0 Original function value:           162.6
+Linesearch number :   1 Change         -0.0000
+   5 Pred= -7.43E-05 max_o=    1.856 r=    0.520 mu=  0.00E+00 grd=  7.31E-04 it=   6 step 0.750 tot step  0.654
+iter :  3    mu :  0.00000E+00    ResNorm :  8.63163E-03   2D ResNorm  1.39541E-02
+iter :  4    mu :  0.00000E+00    ResNorm :  4.92027E-04   2D ResNorm  1.39541E-02
+iter :  5    mu :  0.00000E+00    ResNorm :  2.96649E-05   2D ResNorm  1.39541E-02
+iter : Micro iterations converged in RedSpaceLoop number :   1
+Linesearch number :   0 Original function value:           162.6
+Linesearch number :   1 Change         -0.0000
+   6 Pred= -2.12E-05 max_o=    1.856 r=    0.805 mu=  0.00E+00 grd=  1.99E-04 it=   5 step 0.750 tot step  0.335
+iter :  3    mu :  0.00000E+00    ResNorm :  1.63496E-03   2D ResNorm  3.40560E-03
+iter :  4    mu :  0.00000E+00    ResNorm :  1.11200E-04   2D ResNorm  3.40560E-03
+iter :  5    mu :  0.00000E+00    ResNorm :  6.85033E-06   2D ResNorm  3.40560E-03
+iter : Micro iterations converged in RedSpaceLoop number :   1
+Linesearch number :   0 Original function value:           162.6
+Linesearch number :   1 Change         -0.0000
+   7 Pred= -1.10E-06 max_o=    1.856 r=    0.997 mu=  0.00E+00 grd=  7.79E-06 it=   5 step 0.750 tot step  0.065
+**** CORE LOCALITY  ****
+FINAL: orbspread, fourth orbspread :    1          0.379
+FINAL: orbspread, fourth orbspread :    2          0.379
+FINAL: orbspread, fourth orbspread :    3          0.379
+FINAL: orbspread, fourth orbspread :    4          0.379
+FINAL: orbspread, fourth orbspread :    5          0.379
+
+Maximum **************** CORE **********************
+Maximum orbspread and orb.number    :   0.379    3
+Maximum fourth spread and orb.number :   0.506    5
+Maximum *********************************************
+Minimum *********************************************
+Minimum orbspread and orb.number     :   0.379    1
+Minimum fourth spread and orb.number :   0.505    2
+Minimum ********************************************
+**** VALENCE LOCALITY  ****
+FINAL: orbspread, fourth orbspread :    6          1.690          2.117
+FINAL: orbspread, fourth orbspread :    7          1.690          2.117
+FINAL: orbspread, fourth orbspread :    8          1.694          2.137
+FINAL: orbspread, fourth orbspread :    9          1.694          2.137
+FINAL: orbspread, fourth orbspread :   10          1.719          2.236
+FINAL: orbspread, fourth orbspread :   11          1.519          1.874
+FINAL: orbspread, fourth orbspread :   12          1.519          1.874
+FINAL: orbspread, fourth orbspread :   13          1.520          1.879
+FINAL: orbspread, fourth orbspread :   14          1.524          1.911
+FINAL: orbspread, fourth orbspread :   15          1.524          1.911
+
+Maximum *************** VALENCE ********************
+Maximum orbspread and orb.number    :   1.719   10
+Maximum fourth spread and orb.number :   2.236   10
+Maximum *********************************************
+Minimum *********************************************
+Minimum orbspread and orb.number     :   1.519   11
+Minimum fourth spread and orb.number :   1.874   11
+Minimum ********************************************
+
+**** VIRTUAL LOCALITY  ****
+FINAL: orbspread, fourth orbspread :   16          1.836          2.207
+FINAL: orbspread, fourth orbspread :   17          1.835          2.175
+FINAL: orbspread, fourth orbspread :   18          1.856          2.277
+FINAL: orbspread, fourth orbspread :   19          1.855          2.273
+FINAL: orbspread, fourth orbspread :   20          1.844          2.244
+FINAL: orbspread, fourth orbspread :   21          1.856          2.277
+FINAL: orbspread, fourth orbspread :   22          1.855          2.273
+FINAL: orbspread, fourth orbspread :   23          1.836          2.207
+FINAL: orbspread, fourth orbspread :   24          1.844          2.244
+FINAL: orbspread, fourth orbspread :   25          1.835          2.175
+FINAL: orbspread, fourth orbspread :   26          1.748          2.111
+FINAL: orbspread, fourth orbspread :   27          1.748          2.112
+FINAL: orbspread, fourth orbspread :   28          1.748          2.114
+FINAL: orbspread, fourth orbspread :   29          1.748          2.112
+FINAL: orbspread, fourth orbspread :   30          1.748          2.111
+
+Maximum **************** VIRTUAL *******************
+Maximum orbspread and orb.number     :   1.856   21
+Maximum fourth spread and orb.number :   2.277   21
+Maximum *********************************************
+Minimum *********************************************
+Minimum orbspread and orb.number    :   1.748   26
+Minimum fourth spread and orb.number :   2.111   26
+Minimum *********************************************
+
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>> wall Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
+
+ Number of electrons  in molecule =           30
+ Number of occ. orb.  in molecule =           15
+ Number of virt. orb. in molecule =           15
+
+
+ Orbspreads for occupied orbitals:
+ *********************************
+           1  0.37944446002654031     
+           2  0.37944446002857496     
+           3  0.37947369774615169     
+           4  0.37947369774549455     
+           5  0.37946582479047702     
+           6   1.6898301285752781     
+           7   1.6898301285753348     
+           8   1.6942686594574894     
+           9   1.6942686594573879     
+          10   1.7189848703375574     
+          11   1.5191670615331647     
+          12   1.5191670615342505     
+          13   1.5197098696825533     
+          14   1.5243419028697809     
+          15   1.5243419028703218     
+
+
+ Orbspreads for virtual orbitals:
+ ********************************
+          16   1.8359665477486935     
+          17   1.8347774535907106     
+          18   1.8564439844134983     
+          19   1.8551532663075658     
+          20   1.8436158129328515     
+          21   1.8564439848576897     
+          22   1.8551532659211027     
+          23   1.8359665477375351     
+          24   1.8436138024568478     
+          25   1.8347774536151895     
+          26   1.7475167277622845     
+          27   1.7481617721819831     
+          28   1.7476535319088542     
+          29   1.7481617721375207     
+          30   1.7475167277633055     
+
+
+ Maximum orb. spread (MOS) summary
+ *********************************
+ OCCUPIED: (Orbital index, MOS) =           10   1.7189848703375574     
+ VIRTUAL : (Orbital index, MOS) =           21   1.8564439848576897     
+
+
+ >>>  CPU Time used in *START          is   7.53 seconds
+ >>> wall Time used in *START          is   7.55 seconds
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.00 seconds
+ >>> wall Time used in LWDIAG          is   0.00 seconds
+Matrix S     has nnz=       388 sparsity:     43.111 %
+Matrix AO D  has nnz=       890 sparsity:     98.889 %
+ Relative convergence threshold for solver:  1.00000000000000002E-002
+ >>>  CPU Time used in INIT SCF        is   0.00 seconds
+ >>> wall Time used in INIT SCF        is   0.00 seconds
+** Get Fock matrix number   1
+ >>>  CPU Time used in reg-Jengine     is   0.31 seconds
+ >>> wall Time used in reg-Jengine     is   0.31 seconds
+ The Coulomb energy contribution    115.37972443670630     
+ SET_SYMMETRY: No Symmetry
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.44 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.44 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.44 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.44 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.44 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.44 seconds
+ The Exchange energy contribution    21.736046976994654     
+ The Fock energy contribution   -93.643677459711782     
+ >>>  CPU Time used in FCK_FO          is   0.76 seconds
+ >>> wall Time used in FCK_FO          is   0.76 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+*************************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     OAO gradient     ###
+******************************************************************  *******************************###
+  1   -123.5994573992    0.00000000000    0.00      0.00000    0.00    0.00E+00    0.13E-03  ###
+*******************************************************************************************%%%
+ Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
+*******************************************************************************************%%%
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   1
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                          3.563 MB
+  Max allocated memory, type(matrix)                 360.000 kB
+  Max allocated memory, real                           3.561 MB
+  Max allocated memory, integer                       81.250 kB
+  Max allocated memory, logical                        0.984 kB
+  Max allocated memory, AOBATCH                       14.208 kB
+  Max allocated memory, ODBATCH                       14.136 kB
+  Max allocated memory, LSAOTENSOR                    36.000 kB
+  Max allocated memory, SLSAOTENSOR                   29.744 kB
+  Max allocated memory, ATOMTYPEITEM                 121.320 kB
+  Max allocated memory, ATOM                           4.576 kB
+  Max allocated memory, LSMATRIX                       2.032 kB
+  Max allocated memory, overlapType                  139.664 kB
+  Max allocated memory, linkshell                      4.716 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   3.528 MB
+  Max allocated memory, IntWork                      104.976 kB
+  Max allocated memory, overlap                        1.551 MB
+  Max allocated memory, ODitem                        11.904 kB
+  Max allocated memory, lstensor                      87.283 kB
+
+  Allocated memory,     TOTAL                 240.434 kB
+  Allocated memory,     type(matrix)           86.400 kB
+  Allocated memory,     real                    0.912 kB
+  Allocated memory,     integer                 7.184 kB
+  Allocated memory,     logical                 0.240 kB
+  Allocated memory,     SLSAOTENSOR            10.608 kB
+  Allocated memory,     ATOMTYPEITEM          121.320 kB
+  Allocated memory,     ATOM                    4.160 kB
+  Allocated memory,     lstensor                9.610 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       890 sparsity:     98.889 %
+Matrix AO F  has nnz=       890 sparsity:     98.889 %
+Matrix OAO D has nnz=       400 sparsity:     44.556 %
+Matrix OAO F has nnz=       348 sparsity:     38.667 %
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  4.10608466644475390E-005
+ Number of densities in queue:           0
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.189512 au
+   -E(HOMO):                     -0.244644 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.434156 au
+
+ >>>  CPU Time used in HOMO-LUMO gap   is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap   is   0.00 seconds
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:      0.0000021953 (mu =       0.00, xmax = 0.627467E-05, xnorm = 0.384198E-04, THR = 0.410608E-06)
+  Error of red space iteration  2:      0.0000003943 (mu =       0.00, xmax = 0.657720E-05, xnorm = 0.404281E-04, THR = 0.410608E-06)
+Newton equations converged in  2 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>> wall Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    31
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.76 seconds
+ >>> wall Time used in SCF iteration   is   0.76 seconds
+** Get Fock matrix number   2
+ >>>  CPU Time used in reg-Jengine     is   0.31 seconds
+ >>> wall Time used in reg-Jengine     is   0.31 seconds
+ The Coulomb energy contribution    115.37968168141335     
+ SET_SYMMETRY: No Symmetry
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.44 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.44 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.44 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.44 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.44 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.44 seconds
+ The Exchange energy contribution    21.736050883160811     
+ The Fock energy contribution   -93.643630798252772     
+ 0.60000 (xnorm)    0.00001    0.00004   -0.00    1.3187    0.0000         0          1    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO          is   0.76 seconds
+ >>> wall Time used in FCK_FO          is   0.76 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  2   -123.5994574010   -0.00000000185    0.00      0.00000   -0.00    0.00E+00    0.50E-04  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   2
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                          3.563 MB
+  Max allocated memory, type(matrix)                 360.000 kB
+  Max allocated memory, real                           3.561 MB
+  Max allocated memory, integer                       81.250 kB
+  Max allocated memory, logical                        0.984 kB
+  Max allocated memory, AOBATCH                       14.208 kB
+  Max allocated memory, ODBATCH                       14.136 kB
+  Max allocated memory, LSAOTENSOR                    36.000 kB
+  Max allocated memory, SLSAOTENSOR                   29.744 kB
+  Max allocated memory, ATOMTYPEITEM                 121.320 kB
+  Max allocated memory, ATOM                           4.576 kB
+  Max allocated memory, LSMATRIX                       2.032 kB
+  Max allocated memory, overlapType                  139.664 kB
+  Max allocated memory, linkshell                      4.716 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   3.528 MB
+  Max allocated memory, IntWork                      104.976 kB
+  Max allocated memory, overlap                        1.551 MB
+  Max allocated memory, ODitem                        11.904 kB
+  Max allocated memory, lstensor                      87.283 kB
+
+  Allocated memory,     TOTAL                 254.834 kB
+  Allocated memory,     type(matrix)          100.800 kB
+  Allocated memory,     real                    0.912 kB
+  Allocated memory,     integer                 7.184 kB
+  Allocated memory,     logical                 0.240 kB
+  Allocated memory,     SLSAOTENSOR            10.608 kB
+  Allocated memory,     ATOMTYPEITEM          121.320 kB
+  Allocated memory,     ATOM                    4.160 kB
+  Allocated memory,     lstensor                9.610 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       890 sparsity:     98.889 %
+Matrix AO F  has nnz=       890 sparsity:     98.889 %
+Matrix OAO D has nnz=       263 sparsity:     29.222 %
+Matrix OAO F has nnz=       737 sparsity:     82.000 %
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.21868049729210227E-005
+ Number of densities in queue:           1
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.189511 au
+   -E(HOMO):                     -0.244645 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.434156 au
+
+ >>>  CPU Time used in HOMO-LUMO gap   is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap   is   0.00 seconds
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:      0.0000039444 (mu =       0.00, xmax = 0.539576E-05, xnorm = 0.230266E-04, THR = 0.121868E-06)
+  Error of red space iteration  2:      0.0000014176 (mu =       0.00, xmax = 0.690286E-05, xnorm = 0.299733E-04, THR = 0.121868E-06)
+  Error of red space iteration  3:      0.0000001160 (mu =       0.00, xmax = 0.791823E-05, xnorm = 0.342038E-04, THR = 0.121868E-06)
+Newton equations converged in  3 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>> wall Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    50
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.76 seconds
+ >>> wall Time used in SCF iteration   is   0.76 seconds
+** Get Fock matrix number   3
+ >>>  CPU Time used in reg-Jengine     is   0.31 seconds
+ >>> wall Time used in reg-Jengine     is   0.31 seconds
+ The Coulomb energy contribution    115.37968134648465     
+ SET_SYMMETRY: No Symmetry
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.44 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.44 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.44 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.44 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.44 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.44 seconds
+ The Exchange energy contribution    21.736051197775730     
+ The Fock energy contribution   -93.643630148708937     
+ 0.60000 (xnorm)    0.00001    0.00003   -0.00    1.2880    0.8760         1          2    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO          is   0.75 seconds
+ >>> wall Time used in FCK_FO          is   0.76 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  3   -123.5994574015   -0.00000000050    0.00      0.00000   -0.00    0.00E+00    0.21E-04  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   3
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                          3.563 MB
+  Max allocated memory, type(matrix)                 360.000 kB
+  Max allocated memory, real                           3.561 MB
+  Max allocated memory, integer                       81.250 kB
+  Max allocated memory, logical                        0.984 kB
+  Max allocated memory, AOBATCH                       14.208 kB
+  Max allocated memory, ODBATCH                       14.136 kB
+  Max allocated memory, LSAOTENSOR                    36.000 kB
+  Max allocated memory, SLSAOTENSOR                   29.744 kB
+  Max allocated memory, ATOMTYPEITEM                 121.320 kB
+  Max allocated memory, ATOM                           4.576 kB
+  Max allocated memory, LSMATRIX                       2.032 kB
+  Max allocated memory, overlapType                  139.664 kB
+  Max allocated memory, linkshell                      4.716 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   3.528 MB
+  Max allocated memory, IntWork                      104.976 kB
+  Max allocated memory, overlap                        1.551 MB
+  Max allocated memory, ODitem                        11.904 kB
+  Max allocated memory, lstensor                      87.283 kB
+
+  Allocated memory,     TOTAL                 269.234 kB
+  Allocated memory,     type(matrix)          115.200 kB
+  Allocated memory,     real                    0.912 kB
+  Allocated memory,     integer                 7.184 kB
+  Allocated memory,     logical                 0.240 kB
+  Allocated memory,     SLSAOTENSOR            10.608 kB
+  Allocated memory,     ATOMTYPEITEM          121.320 kB
+  Allocated memory,     ATOM                    4.160 kB
+  Allocated memory,     lstensor                9.610 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+Matrix AO D  has nnz=       890 sparsity:     98.889 %
+Matrix AO F  has nnz=       890 sparsity:     98.889 %
+Matrix OAO D has nnz=       353 sparsity:     39.222 %
+Matrix OAO F has nnz=       754 sparsity:     83.778 %
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  5.14260024147845083E-006
+ Number of densities in queue:           2
+CROP scheme, truncated subspace (CORE) - max. no. of vectors is  2
+
+    E(LUMO):                      0.189511 au
+   -E(HOMO):                     -0.244644 au
+   -------------------------------------
+    HOMO-LUMO Gap (by diag.):     0.434155 au
+
+ >>>  CPU Time used in HOMO-LUMO gap   is   0.00 seconds
+ >>> wall Time used in HOMO-LUMO gap   is   0.00 seconds
+ First mu:   0.0000000000000000     
+  Error of red space iteration  1:      0.0000025658 (mu =       0.00, xmax = 0.268832E-05, xnorm = 0.104438E-04, THR = 0.514260E-07)
+  Error of red space iteration  2:      0.0000015734 (mu =       0.00, xmax = 0.387287E-05, xnorm = 0.152155E-04, THR = 0.514260E-07)
+  Error of red space iteration  3:      0.0000001961 (mu =       0.00, xmax = 0.587358E-05, xnorm = 0.229770E-04, THR = 0.514260E-07)
+  Error of red space iteration  4:      0.0000000292 (mu =       0.00, xmax = 0.603708E-05, xnorm = 0.236660E-04, THR = 0.514260E-07)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>> wall Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+ >>> wall Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    60
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.76 seconds
+ >>> wall Time used in SCF iteration   is   0.76 seconds
+** Get Fock matrix number   4
+ >>>  CPU Time used in reg-Jengine     is   0.31 seconds
+ >>> wall Time used in reg-Jengine     is   0.31 seconds
+ The Coulomb energy contribution    115.37969527504869     
+ SET_SYMMETRY: No Symmetry
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.44 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.44 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.44 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.44 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.44 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.44 seconds
+ The Exchange energy contribution    21.736050496518107     
+ The Fock energy contribution   -93.643644778530501     
+ 0.60000 (xnorm)    0.00001    0.00002   -0.00    1.0934    0.9788         2          3    %%%
+ Trust radius based on max norm!
+ Large ratio, double trust-radius
+ Absolute max step allowed is  0.59999999999999998       , resetting trust radius!
+ >>>  CPU Time used in FCK_FO          is   0.75 seconds
+ >>> wall Time used in FCK_FO          is   0.75 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  4   -123.5994574016   -0.00000000012    0.00      0.00000   -0.00    0.00E+00    0.36E-05  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   4
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                          3.563 MB
+  Max allocated memory, type(matrix)                 360.000 kB
+  Max allocated memory, real                           3.561 MB
+  Max allocated memory, integer                       81.250 kB
+  Max allocated memory, logical                        0.984 kB
+  Max allocated memory, AOBATCH                       14.208 kB
+  Max allocated memory, ODBATCH                       14.136 kB
+  Max allocated memory, LSAOTENSOR                    36.000 kB
+  Max allocated memory, SLSAOTENSOR                   29.744 kB
+  Max allocated memory, ATOMTYPEITEM                 121.320 kB
+  Max allocated memory, ATOM                           4.576 kB
+  Max allocated memory, LSMATRIX                       2.032 kB
+  Max allocated memory, overlapType                  139.664 kB
+  Max allocated memory, linkshell                      4.716 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   3.528 MB
+  Max allocated memory, IntWork                      104.976 kB
+  Max allocated memory, overlap                        1.551 MB
+  Max allocated memory, ODitem                        11.904 kB
+  Max allocated memory, lstensor                      87.283 kB
+
+  Allocated memory,     TOTAL                 283.634 kB
+  Allocated memory,     type(matrix)          129.600 kB
+  Allocated memory,     real                    0.912 kB
+  Allocated memory,     integer                 7.184 kB
+  Allocated memory,     logical                 0.240 kB
+  Allocated memory,     SLSAOTENSOR            10.608 kB
+  Allocated memory,     ATOMTYPEITEM          121.320 kB
+  Allocated memory,     ATOM                    4.160 kB
+  Allocated memory,     lstensor                9.610 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+ >>>  CPU Time used in **ITER          is   3.03 seconds
+ >>> wall Time used in **ITER          is   3.04 seconds
+
+Total no. of matmuls in SCF optimization:       1302
+
+ Number of occupied orbitals:          15
+ Number of virtual orbitals:          15
+
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+
+
+Calculation of HOMO-LUMO gap
+============================
+
+Calculation of occupied orbital energies converged in     9 iterations!
+
+Calculation of virtual orbital energies converged in    11 iterations!
+
+    E(LUMO):                         0.189512 au
+   -E(HOMO):                        -0.244643 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.434155 au
+
+ >>>  CPU Time used in HL GAP          is   0.52 seconds
+ >>> wall Time used in HL GAP          is   0.52 seconds
+
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.00000000185    0.0000   -0.0000    0.0000000
+  3   -0.00000000050    0.0000   -0.0000    0.0000000
+  4   -0.00000000012    0.0000   -0.0000    0.0000000
+
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1          -123.59945739917341711589      0.132602596379950D-03
+    2          -123.59945740102014610784      0.503499519106361D-04
+    3          -123.59945740151690074526      0.210372813791506D-04
+    4          -123.59945740163402660983      0.359005962223967D-05
+
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+
+
+      Final HF energy:                  -123.599457401634
+      Nuclear repulsion:                  52.634539783204
+      Electronic energy:                -176.233997184838
+
+ inside leastchange_lcm
+Pred= **** LEVEL 3 ORBITAL LOCALIZATION ****
+ Localizing core:           30           5
+ Too few orbitals to localize
+ Done localizing core 
+ Localizing valence:           30          10
+Pred= ******* VALENCE LOCALIZATION ******* 
+   1 Pred= -1.10E-06 max_o=    1.719 r=    0.000 mu=  0.00E+00 grd=  4.79E-04 it=   5 step 0.750 tot step  0.000
+iter :  3    mu :  0.00000E+00    ResNorm :  1.70545E-05   2D ResNorm  4.78567E-03
+iter : Micro iterations converged in RedSpaceLoop number :   1
+Linesearch number :   0 Original function value:            68.3
+Linesearch number :   1 Change         -0.0000
+   2 Pred= -1.20E-08 max_o=    1.719 r=    1.001 mu=  0.00E+00 grd=  1.71E-06 it=   3 step 0.750 tot step  0.000
+ Done localizing valence 
+ Localizing virtual:           15
+Pred= ******* VIRTUAL LOCALIZATION ******* 
+   1 Pred= -1.20E-08 max_o=    1.856 r=    0.000 mu=  0.00E+00 grd=  2.82E-04 it=   3 step 0.750 tot step  0.000
+iter :  3    mu :  0.00000E+00    ResNorm :  2.57259E-04   2D ResNorm  4.23131E-03
+iter :  4    mu :  0.00000E+00    ResNorm :  2.55044E-05   2D ResNorm  4.23131E-03
+iter : Micro iterations converged in RedSpaceLoop number :   1
+Linesearch number :   0 Original function value:           162.6
+Linesearch number :   1 Change         -0.0000
+   2 Pred= -3.34E-08 max_o=    1.856 r=    1.000 mu=  0.00E+00 grd=  1.70E-06 it=   4 step 0.750 tot step  0.000
+**** CORE LOCALITY  ****
+FINAL: orbspread, fourth orbspread :    1          0.379
+FINAL: orbspread, fourth orbspread :    2          0.379
+FINAL: orbspread, fourth orbspread :    3          0.379
+FINAL: orbspread, fourth orbspread :    4          0.379
+FINAL: orbspread, fourth orbspread :    5          0.379
+
+Maximum **************** CORE **********************
+Maximum orbspread and orb.number    :   0.379    4
+Maximum fourth spread and orb.number :   0.506    5
+Maximum *********************************************
+Minimum *********************************************
+Minimum orbspread and orb.number     :   0.379    2
+Minimum fourth spread and orb.number :   0.505    2
+Minimum ********************************************
+**** VALENCE LOCALITY  ****
+FINAL: orbspread, fourth orbspread :    6          1.690          2.117
+FINAL: orbspread, fourth orbspread :    7          1.690          2.117
+FINAL: orbspread, fourth orbspread :    8          1.694          2.137
+FINAL: orbspread, fourth orbspread :    9          1.694          2.137
+FINAL: orbspread, fourth orbspread :   10          1.719          2.236
+FINAL: orbspread, fourth orbspread :   11          1.519          1.874
+FINAL: orbspread, fourth orbspread :   12          1.519          1.874
+FINAL: orbspread, fourth orbspread :   13          1.520          1.879
+FINAL: orbspread, fourth orbspread :   14          1.524          1.911
+FINAL: orbspread, fourth orbspread :   15          1.524          1.911
+
+Maximum *************** VALENCE ********************
+Maximum orbspread and orb.number    :   1.719   10
+Maximum fourth spread and orb.number :   2.236   10
+Maximum *********************************************
+Minimum *********************************************
+Minimum orbspread and orb.number     :   1.519   12
+Minimum fourth spread and orb.number :   1.874   12
+Minimum ********************************************
+
+**** VIRTUAL LOCALITY  ****
+FINAL: orbspread, fourth orbspread :   16          1.836          2.207
+FINAL: orbspread, fourth orbspread :   17          1.835          2.175
+FINAL: orbspread, fourth orbspread :   18          1.856          2.277
+FINAL: orbspread, fourth orbspread :   19          1.855          2.273
+FINAL: orbspread, fourth orbspread :   20          1.844          2.244
+FINAL: orbspread, fourth orbspread :   21          1.856          2.277
+FINAL: orbspread, fourth orbspread :   22          1.855          2.273
+FINAL: orbspread, fourth orbspread :   23          1.836          2.207
+FINAL: orbspread, fourth orbspread :   24          1.844          2.244
+FINAL: orbspread, fourth orbspread :   25          1.835          2.175
+FINAL: orbspread, fourth orbspread :   26          1.748          2.111
+FINAL: orbspread, fourth orbspread :   27          1.748          2.112
+FINAL: orbspread, fourth orbspread :   28          1.748          2.114
+FINAL: orbspread, fourth orbspread :   29          1.748          2.112
+FINAL: orbspread, fourth orbspread :   30          1.748          2.111
+
+Maximum **************** VIRTUAL *******************
+Maximum orbspread and orb.number     :   1.856   18
+Maximum fourth spread and orb.number :   2.277   18
+Maximum *********************************************
+Minimum *********************************************
+Minimum orbspread and orb.number    :   1.748   26
+Minimum fourth spread and orb.number :   2.111   26
+Minimum *********************************************
+
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>> wall Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in PropInt:DIPLEN  is   0.07 seconds
+ >>> wall Time used in PropInt:DIPLEN  is   0.07 seconds
+
+
+
+                       Permanent dipole moment
+                       -----------------------
+               au              Debye           10**-30 C m
+            1.76443           4.48473           14.9594    
+
+
+                       Dipole moment components
+                       ------------------------
+               au              Debye           10**-30 C m
+ x        -0.170530E-12     -0.433445E-12     -0.144582E-11
+ y          1.42164           3.61346           12.0532    
+ z         -1.04505          -2.65626          -8.86032    
+
+
+
+ >>>  CPU Time used in LSDALTON RSP    is   0.07 seconds
+ >>> wall Time used in LSDALTON RSP    is   0.07 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON RESPONSE:   6.94540000000003488E-002    **
+ *****************************************************
+ >>>  CPU Time used in *SCF            is   5.60 seconds
+ >>> wall Time used in *SCF            is   5.61 seconds
+
+Total no. of matmuls used:                      1587
+Total no. of Fock/KS matrix evaluations:          11
+
+
+=============================================================================
+             -- Divide, Expand & Consolidate Coupled-Cluster -- v: 0.02   
+=============================================================================
+ Authors: Marcin Ziolkowski @ AU 2009,2010
+          Kasper Kristensen (kasperk@chem.au.dk)
+          Ida-Marie Hoeyvik (idamh@chem.au.dk)
+          Patrick Ettenhuber (pett@chem.au.dk)
+          Janus Juul Eriksen (janusje@chem.au.dk)
+
+
+ get_available_memory: System identified to be MAC!
+ Available Memory (GB) =       2.8550    
+ Memory found by system call to be:    2.855     GB
+ Reading Fock matrix from file fock.restart...
+
+ Reading overlap matrix from file overlapmatrix...
+
+
+
+-- Full moleculecular info --
+
+FULL: Overall charge of molecule :      0
+
+FULL: Number of electrons        :     30
+FULL: Number of atoms            :     10
+FULL: Number of basis func.      :     30
+FULL: Number of aux. basis func. :      0
+FULL: Number of occ. orbitals    :     15
+FULL: Number of virt. orbitals   :     15
+
+ >>>  CPU Time used in DEC: MOL INIT   is   0.00 seconds
+ >>> wall Time used in DEC: MOL INIT   is   0.00 seconds
+
+DEC fragment calculation is carried out...
+
+
+ ================================================ 
+                  DEC-CC driver                   
+ ================================================ 
+
+
+--------------------------
+   DEC input parameters   
+--------------------------
+
+Simple orbital thr.    =    0.001
+Mulliken charge thr.   =    0.010
+Lagrangian part.       = T
+Mulliken analysis      = F
+Boughton-Pulay         = F
+FOT                    = 1.00E-06
+MaxIter                =   20
+Pair distance thresh.  =     26.46
+Pair reduction thresh. =      9.45
+Fragmentation debug    = F
+DEC driver debug       = F
+Print level            =    0
+Expansion step size    =    1
+
+--------------------------
+  Coupled-cluster input  
+--------------------------
+
+Wave function          = MP2     
+MaxIter                =  100
+Convergence            =  0.1E-07
+Debug mode             = F
+Use CROP               = T
+CROP subspace          =    3
+Preconditioner         = T
+Precond. B             = T
+
+ Generating occupied DEC orbitals using simple Lowdin charge analysis
+ >>>  CPU Time used in GenerateOrb     is   0.00 seconds
+ >>> wall Time used in GenerateOrb     is   0.00 seconds
+ Generating unoccupied DEC orbitals using simple Lowdin charge analysis
+ >>>  CPU Time used in GenerateOrb     is   0.00 seconds
+ >>> wall Time used in GenerateOrb     is   0.00 seconds
+
+
+ BEFORE REASSIGNING ORBITALS...
+
+
+ ORBITAL DISTRIBUTION INFORMATION
+ ********************************
+
+    Atom type     Occ Orbitals     Unocc Orbitals 
+     1    B            2                3
+     2    B            2                3
+     3    B            2                3
+     4    B            2                3
+     5    B            2                3
+     6    H            1                0
+     7    H            1                0
+     8    H            1                0
+     9    H            1                0
+    10    H            1                0
+ Total:               15               15
+
+
+
+ ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)
+ **********************************************************************
+
+ Maximum occ orbital extent   =      3   -- Atomic index     4
+ Maximum unocc orbital extent =      3   -- Atomic index     4
+ Average occ orbital extent   =       2.3333
+ Average unocc orbital extent =       2.1333
+
+
+
+
+ AFTER REASSIGNING ORBITALS...
+
+
+ ORBITAL DISTRIBUTION INFORMATION
+ ********************************
+
+    Atom type     Occ Orbitals     Unocc Orbitals 
+     1    B            3                3
+     2    B            3                3
+     3    B            3                3
+     4    B            3                3
+     5    B            3                3
+     6    H            0                0
+     7    H            0                0
+     8    H            0                0
+     9    H            0                0
+    10    H            0                0
+ Total:               15               15
+
+
+
+ ORBITAL EXTENT INFORMATION (NUMBER OF ATOMS USED TO SPAN EACH ORBITAL)
+ **********************************************************************
+
+ Maximum occ orbital extent   =      3   -- Atomic index     4
+ Maximum unocc orbital extent =      3   -- Atomic index     4
+ Average occ orbital extent   =       2.3333
+ Average unocc orbital extent =       2.1333
+
+
+
+ -----------------------------------------------
+ -- Calculations just for fragment :    1
+ -----------------------------------------------
+
+ FOP
+ FOP ===============================================
+ FOP  Site fragment generator for fragment,   1
+ FOP ===============================================
+ FOP
+ FOP Radius for initial fragment:  8.00
+ >>>  CPU Time used in FRAGMENT INIT   is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT   is   0.00 seconds
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ To be on the safe side we use only 85% of the estimated available memory
+
+ 85% of available memory (GB)            =  2.43    
+
+ Number of atomic basis functions        =      17
+ Number of occupied orbitals AOS/EOS     =       6       3
+ Number of virtual  orbitals AOS/EOS     =       6       3
+ Maximum alpha batch dimension           =      17
+ Maximum gamma batch dimension           =      17
+ Maximum virtual batch dimension         =       6
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.987E-03
+ Memory required for tmp array 1 (GB)    = 0.668E-03
+ Memory required for tmp array 2 (GB)    = 0.832E-04
+ Memory required for tmp array 3 (GB)    = 0.236E-03
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.553E-04
+ Memory required for tmp array 1 (GB)    = 0.104E-04
+ Memory required for tmp array 2 (GB)    = 0.518E-05
+ Memory required for tmp array 3 (GB)    = 0.104E-04
+ Memory required for tmp array 4 (GB)    = 0.294E-04
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.518E-05
+ Memory required for tmp array 1 (GB)    = 0.259E-05
+ Memory required for tmp array 2 (GB)    = 0.259E-05
+
+ BATCH: Number of Gamma batches   =            1
+ BATCH: Number of Alpha batches   =            1
+ BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in INIT MP2-INT    is   0.08 seconds
+ >>> wall Time used in INIT MP2-INT    is   0.08 seconds
+ >>>  CPU Time used in MP2-INT LOOP    is   0.12 seconds
+ >>> wall Time used in MP2-INT LOOP    is   0.12 seconds
+ >>>  CPU Time used in MP2-INT FIN     is   0.00 seconds
+ >>> wall Time used in MP2-INT FIN     is   0.00 seconds
+ >>>  CPU Time used in MP2-INT TOTAL   is   0.20 seconds
+ >>> wall Time used in MP2-INT TOTAL   is   0.20 seconds
+
+
+ **********************************************************************
+ Lagrangian energy summary for fragment:           1
+ **********************************************************************
+ ST: Single Lagrangian term 1 =    -0.2567664657E-01
+ ST: Single Lagrangian term 2 =     0.1239241705E-01
+ ST: Single Lagrangian term 3 =    -0.2559836831E-01
+ ST: Single Lagrangian term 4 =     0.1323524934E-01
+ ST: Single Fragment energy   =    -0.2564734848E-01
+
+
+ >>>  CPU Time used in L.ENERGY CONTR  is   0.00 seconds
+ >>> wall Time used in L.ENERGY CONTR  is   0.00 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.20 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.20 seconds
+ >>>  CPU Time used in FRAG: L.ENERGY  is   0.20 seconds
+ >>> wall Time used in FRAG: L.ENERGY  is   0.20 seconds
+ FOP
+ FOP=========================================================
+ FOP               Initial fragment information
+ FOP---------------------------------------------------------
+ FOP Init: Fragment number                  :   1
+ FOP Init: Number of orbitals in virt total :   6
+ FOP Init: Number of orbitals in occ total  :   6
+ FOP Init: Lagrangian Fragment energy       :   -0.0256473485
+ FOP Init: Occupied Fragment energy         :   -0.0256766466
+ FOP Init: Virtual Fragment energy          :   -0.0255983683
+ FOP Init: Number of basis functions        :  17
+ FOP=========================================================
+
+ FOP
+ >>>  CPU Time used in FRAGMENT INIT   is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT   is   0.00 seconds
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ To be on the safe side we use only 85% of the estimated available memory
+
+ 85% of available memory (GB)            =  2.43    
+
+ Number of atomic basis functions        =      23
+ Number of occupied orbitals AOS/EOS     =       9       3
+ Number of virtual  orbitals AOS/EOS     =       9       3
+ Maximum alpha batch dimension           =      23
+ Maximum gamma batch dimension           =      23
+ Maximum virtual batch dimension         =       9
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.346E-02
+ Memory required for tmp array 1 (GB)    = 0.224E-02
+ Memory required for tmp array 2 (GB)    = 0.343E-03
+ Memory required for tmp array 3 (GB)    = 0.876E-03
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.257E-03
+ Memory required for tmp array 1 (GB)    = 0.525E-04
+ Memory required for tmp array 2 (GB)    = 0.175E-04
+ Memory required for tmp array 3 (GB)    = 0.525E-04
+ Memory required for tmp array 4 (GB)    = 0.134E-03
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.117E-04
+ Memory required for tmp array 1 (GB)    = 0.583E-05
+ Memory required for tmp array 2 (GB)    = 0.583E-05
+
+ BATCH: Number of Gamma batches   =            1
+ BATCH: Number of Alpha batches   =            1
+ BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in INIT MP2-INT    is   0.13 seconds
+ >>> wall Time used in INIT MP2-INT    is   0.13 seconds
+ >>>  CPU Time used in MP2-INT LOOP    is   0.28 seconds
+ >>> wall Time used in MP2-INT LOOP    is   0.28 seconds
+ >>>  CPU Time used in MP2-INT FIN     is   0.00 seconds
+ >>> wall Time used in MP2-INT FIN     is   0.00 seconds
+ >>>  CPU Time used in MP2-INT TOTAL   is   0.41 seconds
+ >>> wall Time used in MP2-INT TOTAL   is   0.41 seconds
+
+
+ **********************************************************************
+ Lagrangian energy summary for fragment:           1
+ **********************************************************************
+ ST: Single Lagrangian term 1 =    -0.2567816395E-01
+ ST: Single Lagrangian term 2 =     0.1239288296E-01
+ ST: Single Lagrangian term 3 =    -0.2559904241E-01
+ ST: Single Lagrangian term 4 =     0.1323549114E-01
+ ST: Single Fragment energy   =    -0.2564883225E-01
+
+
+ >>>  CPU Time used in L.ENERGY CONTR  is   0.00 seconds
+ >>> wall Time used in L.ENERGY CONTR  is   0.00 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.41 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.41 seconds
+ >>>  CPU Time used in FRAG: L.ENERGY  is   0.41 seconds
+ >>> wall Time used in FRAG: L.ENERGY  is   0.41 seconds
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :   9
+ FOP Loop: Number of orbitals in occ total  :   9
+ FOP Loop: Lagrangian Fragment energy       :   -0.0256488323
+ FOP Loop: Occupied Fragment energy         :   -0.0256781640
+ FOP Loop: Virtual Fragment energy          :   -0.0255990424
+ FOP Loop: Lagrangian energy diff           :    0.0000014838
+ FOP Loop: Occupied energy diff             :    0.0000015174
+ FOP Loop: Virtual energy diff              :    0.0000006741
+ FOP Loop: Number of basis functions        :  23
+ FOP=========================================================
+
+ FOP
+ FOP: Lagrangian energy NOT converged
+ FOP: Occupied energy NOT converged
+ FOP: Virtual energy converged, energydiff    =   0.000000674
+ >>>  CPU Time used in FRAGMENT INIT   is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT   is   0.00 seconds
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ To be on the safe side we use only 85% of the estimated available memory
+
+ 85% of available memory (GB)            =  2.43    
+
+ Number of atomic basis functions        =      29
+ Number of occupied orbitals AOS/EOS     =      12       3
+ Number of virtual  orbitals AOS/EOS     =      12       3
+ Maximum alpha batch dimension           =      29
+ Maximum gamma batch dimension           =      29
+ Maximum virtual batch dimension         =      12
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.897E-02
+ Memory required for tmp array 1 (GB)    = 0.566E-02
+ Memory required for tmp array 2 (GB)    = 0.969E-03
+ Memory required for tmp array 3 (GB)    = 0.234E-02
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.774E-03
+ Memory required for tmp array 1 (GB)    = 0.166E-03
+ Memory required for tmp array 2 (GB)    = 0.415E-04
+ Memory required for tmp array 3 (GB)    = 0.166E-03
+ Memory required for tmp array 4 (GB)    = 0.401E-03
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.207E-04
+ Memory required for tmp array 1 (GB)    = 0.104E-04
+ Memory required for tmp array 2 (GB)    = 0.104E-04
+
+ BATCH: Number of Gamma batches   =            1
+ BATCH: Number of Alpha batches   =            1
+ BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in INIT MP2-INT    is   0.19 seconds
+ >>> wall Time used in INIT MP2-INT    is   0.19 seconds
+ >>>  CPU Time used in MP2-INT LOOP    is   0.50 seconds
+ >>> wall Time used in MP2-INT LOOP    is   0.50 seconds
+ >>>  CPU Time used in MP2-INT FIN     is   0.00 seconds
+ >>> wall Time used in MP2-INT FIN     is   0.00 seconds
+ >>>  CPU Time used in MP2-INT TOTAL   is   0.69 seconds
+ >>> wall Time used in MP2-INT TOTAL   is   0.69 seconds
+
+
+ **********************************************************************
+ Lagrangian energy summary for fragment:           1
+ **********************************************************************
+ ST: Single Lagrangian term 1 =    -0.2567818064E-01
+ ST: Single Lagrangian term 2 =     0.1239288754E-01
+ ST: Single Lagrangian term 3 =    -0.2559904704E-01
+ ST: Single Lagrangian term 4 =     0.1323549289E-01
+ ST: Single Fragment energy   =    -0.2564884725E-01
+
+
+ >>>  CPU Time used in L.ENERGY CONTR  is   0.00 seconds
+ >>> wall Time used in L.ENERGY CONTR  is   0.00 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.69 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.69 seconds
+ >>>  CPU Time used in FRAG: L.ENERGY  is   0.69 seconds
+ >>> wall Time used in FRAG: L.ENERGY  is   0.69 seconds
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   2
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :  12
+ FOP Loop: Number of orbitals in occ total  :  12
+ FOP Loop: Lagrangian Fragment energy       :   -0.0256488472
+ FOP Loop: Occupied Fragment energy         :   -0.0256781806
+ FOP Loop: Virtual Fragment energy          :   -0.0255990470
+ FOP Loop: Lagrangian energy diff           :    0.0000000150
+ FOP Loop: Occupied energy diff             :    0.0000000167
+ FOP Loop: Virtual energy diff              :    0.0000000046
+ FOP Loop: Number of basis functions        :  29
+ FOP=========================================================
+
+ FOP
+ FOP: Lagrangian energy converged, energydiff =   0.000000015
+ FOP: Occupied energy converged, energydiff   =   0.000000017
+ FOP: Virtual energy converged, energydiff    =   0.000000005
+ FOP Fragment expansion converged in iteration            2
+ >>>  CPU Time used in FRAGMENT INIT   is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT   is   0.00 seconds
+  FOP
+  FOP *************************************************
+  FOP ** Expansion has converged. We start reduction **
+  FOP *************************************************
+  FOP
+ FOP Starting reduction step            1
+FOP Rejection threshold  :   1.00000E-06
+  FOP OCC: 
+ FOP Number of orbitals excluded:    4
+  FOP VIRT: 
+ FOP Number of orbitals excluded:    3
+ >>>  CPU Time used in FRAGMENT INIT   is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT   is   0.00 seconds
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ To be on the safe side we use only 85% of the estimated available memory
+
+ 85% of available memory (GB)            =  2.43    
+
+ Number of atomic basis functions        =      17
+ Number of occupied orbitals AOS/EOS     =       5       3
+ Number of virtual  orbitals AOS/EOS     =       6       3
+ Maximum alpha batch dimension           =      17
+ Maximum gamma batch dimension           =      17
+ Maximum virtual batch dimension         =       6
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.934E-03
+ Memory required for tmp array 1 (GB)    = 0.668E-03
+ Memory required for tmp array 2 (GB)    = 0.694E-04
+ Memory required for tmp array 3 (GB)    = 0.197E-03
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.391E-04
+ Memory required for tmp array 1 (GB)    = 0.720E-05
+ Memory required for tmp array 2 (GB)    = 0.432E-05
+ Memory required for tmp array 3 (GB)    = 0.720E-05
+ Memory required for tmp array 4 (GB)    = 0.204E-04
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.518E-05
+ Memory required for tmp array 1 (GB)    = 0.259E-05
+ Memory required for tmp array 2 (GB)    = 0.259E-05
+
+ BATCH: Number of Gamma batches   =            1
+ BATCH: Number of Alpha batches   =            1
+ BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in INIT MP2-INT    is   0.08 seconds
+ >>> wall Time used in INIT MP2-INT    is   0.08 seconds
+ >>>  CPU Time used in MP2-INT LOOP    is   0.12 seconds
+ >>> wall Time used in MP2-INT LOOP    is   0.12 seconds
+ >>>  CPU Time used in MP2-INT FIN     is   0.00 seconds
+ >>> wall Time used in MP2-INT FIN     is   0.00 seconds
+ >>>  CPU Time used in MP2-INT TOTAL   is   0.20 seconds
+ >>> wall Time used in MP2-INT TOTAL   is   0.20 seconds
+
+
+ **********************************************************************
+ Lagrangian energy summary for fragment:           1
+ **********************************************************************
+ ST: Single Lagrangian term 1 =    -0.2567664658E-01
+ ST: Single Lagrangian term 2 =     0.1239241705E-01
+ ST: Single Lagrangian term 3 =    -0.2559836134E-01
+ ST: Single Lagrangian term 4 =     0.1323524289E-01
+ ST: Single Fragment energy   =    -0.2564734797E-01
+
+
+ >>>  CPU Time used in L.ENERGY CONTR  is   0.00 seconds
+ >>> wall Time used in L.ENERGY CONTR  is   0.00 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.20 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.20 seconds
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :   6
+ FOP Loop: Number of orbitals in occ total  :   5
+ FOP Loop: Lagrangian Fragment energy       :   -0.0256473480
+ FOP Loop: Occupied Fragment energy         :   -0.0256766466
+ FOP Loop: Virtual Fragment energy          :   -0.0255983613
+ FOP Loop: Lagrangian energy diff           :    0.0000014843
+ FOP Loop: Occupied energy diff             :    0.0000015174
+ FOP Loop: Virtual energy diff              :    0.0000006811
+ FOP Loop: Number of basis functions        :  17
+ FOP=========================================================
+
+ FOP
+ FOP: Lagrangian reduction NOT converged
+ FOP: Occupied reduction NOT converged
+ FOP: Virtual reduction converged, energydiff    =   0.000000681
+ FOP Lower-accuracy fragment converged in step           1
+ FOP Starting reduction step            2
+FOP Rejection threshold  :   2.00000E-07
+  FOP OCC: 
+ FOP Number of orbitals excluded:    3
+  FOP VIRT: 
+ FOP Number of orbitals excluded:    1
+ >>>  CPU Time used in FRAGMENT INIT   is   0.00 seconds
+ >>> wall Time used in FRAGMENT INIT   is   0.00 seconds
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ To be on the safe side we use only 85% of the estimated available memory
+
+ 85% of available memory (GB)            =  2.43    
+
+ Number of atomic basis functions        =      22
+ Number of occupied orbitals AOS/EOS     =       6       3
+ Number of virtual  orbitals AOS/EOS     =       8       3
+ Maximum alpha batch dimension           =      22
+ Maximum gamma batch dimension           =      22
+ Maximum virtual batch dimension         =       8
+ Number of OMP threads                   =       1
+
+ STEP 1 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.257E-02
+ Memory required for tmp array 1 (GB)    = 0.187E-02
+ Memory required for tmp array 2 (GB)    = 0.186E-03
+ Memory required for tmp array 3 (GB)    = 0.511E-03
+
+ STEP 2 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.968E-04
+ Memory required for tmp array 1 (GB)    = 0.184E-04
+ Memory required for tmp array 2 (GB)    = 0.922E-05
+ Memory required for tmp array 3 (GB)    = 0.184E-04
+ Memory required for tmp array 4 (GB)    = 0.507E-04
+
+ STEP 3 in integral loop
+ -----------------------
+ Tot memory required for tmp arrays (GB) = 0.922E-05
+ Memory required for tmp array 1 (GB)    = 0.461E-05
+ Memory required for tmp array 2 (GB)    = 0.461E-05
+
+ BATCH: Number of Gamma batches   =            1
+ BATCH: Number of Alpha batches   =            1
+ BATCH: Number of virtual batches =           1
+ >>>  CPU Time used in INIT MP2-INT    is   0.13 seconds
+ >>> wall Time used in INIT MP2-INT    is   0.13 seconds
+ >>>  CPU Time used in MP2-INT LOOP    is   0.22 seconds
+ >>> wall Time used in MP2-INT LOOP    is   0.22 seconds
+ >>>  CPU Time used in MP2-INT FIN     is   0.00 seconds
+ >>> wall Time used in MP2-INT FIN     is   0.00 seconds
+ >>>  CPU Time used in MP2-INT TOTAL   is   0.35 seconds
+ >>> wall Time used in MP2-INT TOTAL   is   0.35 seconds
+
+
+ **********************************************************************
+ Lagrangian energy summary for fragment:           1
+ **********************************************************************
+ ST: Single Lagrangian term 1 =    -0.2567814123E-01
+ ST: Single Lagrangian term 2 =     0.1239287528E-01
+ ST: Single Lagrangian term 3 =    -0.2559901836E-01
+ ST: Single Lagrangian term 4 =     0.1323547755E-01
+ ST: Single Fragment energy   =    -0.2564880676E-01
+
+
+ >>>  CPU Time used in L.ENERGY CONTR  is   0.00 seconds
+ >>> wall Time used in L.ENERGY CONTR  is   0.00 seconds
+ >>>  CPU Time used in SINGLE L.ENERGY is   0.35 seconds
+ >>> wall Time used in SINGLE L.ENERGY is   0.35 seconds
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   2
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :   8
+ FOP Loop: Number of orbitals in occ total  :   6
+ FOP Loop: Lagrangian Fragment energy       :   -0.0256488068
+ FOP Loop: Occupied Fragment energy         :   -0.0256781412
+ FOP Loop: Virtual Fragment energy          :   -0.0255990184
+ FOP Loop: Lagrangian energy diff           :    0.0000000255
+ FOP Loop: Occupied energy diff             :    0.0000000227
+ FOP Loop: Virtual energy diff              :    0.0000000240
+ FOP Loop: Number of basis functions        :  22
+ FOP=========================================================
+
+ FOP
+ FOP: Lagrangian reduction converged, energydiff =   0.000000025
+ FOP: Occupied reduction converged, energydiff   =   0.000000023
+ FOP: Virtual reduction converged, energydiff    =   0.000000024
+ FOP Reduction of fragment converged in step           2
+ FOP
+ FOP=========================================================
+ FOP      SITE OPTIMIZATION HAS CONVERGED FOR SITE   1
+ FOP---------------------------------------------------------
+ FOP Done: Fragment number                  :   1
+ FOP Done: Number of orbitals in virt total :   8
+ FOP Done: Number of orbitals in occ total  :   6
+ FOP Done: Lagrangian Fragment energy       :   -0.0256488068
+ FOP Done: Occupied Fragment energy         :   -0.0256781412
+ FOP Done: Virtual Fragment energy          :   -0.0255990184
+ FOP Done: Number of basis functions        :  22
+ FOP=========================================================
+
+ FOP
+ Fragment calculation done, saving atomic fragment to file
+
+ ------------------------------------------------------------
+ SINGLE SUMMARY (atom,energy):     1    -0.2564880676E-01
+ ------------------------------------------------------------
+
+Full molecular data deleted
+
+ DEC memory summary
+ ------------------
+ Allocated memory for array4   :  0.9835E-04 GB
+ Memory in use for array4      :   0.000     GB
+ Max memory in use for array4  :  0.4147E-04 GB
+ ------------------
+ Allocated memory for array3   :   0.000     GB
+ Memory in use for array3      :   0.000     GB
+ Max memory in use for array3  :   0.000     GB
+ ------------------
+
+
+
+------------------------------------------------------
+Total CPU  time used in DEC           :         1.85707     s
+Total Wall time used in DEC           :         1.91900     s
+------------------------------------------------------
+
+
+Hostname       : kasper-kristensens-macbook-pro.local              
+Job finished   : Date: 03/11/2012   Time: 17:20:24
+
+
+
+=============================================================================
+                          -- end of DEC program --                           
+=============================================================================
+
+
+
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                   0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (complex):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (AOBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODBATCH):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSAOTENSOR):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (SLSAOTENSOR):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (GLOBALLSAOTENSOR):        0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOMTYPEITEM):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ATOM):                    0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (LSMATRIX):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (CCORBITAL):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (CCATOM):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlapType):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (BATCHTOORB):              0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MYPOINTER):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY2):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ARRAY4):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2DENS):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (TRACEBACK):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (MP2GRAD):                 0 byte  - Should be zero - otherwise a leakage is present
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Additional Memory information          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (linkshell):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):            0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (intwork):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ETUVoverlap):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FTUVoverlap):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                          3.563 MB
+  Max allocated memory, type(matrix)                 360.000 kB
+  Max allocated memory, real(realk)                    3.561 MB
+  Max allocated memory, complex(complexk)              0.000 Byte
+  Max allocated memory, integer                       81.250 kB
+  Max allocated memory, logical                        1.128 kB
+  Max allocated memory, AOBATCH                       28.416 kB
+  Max allocated memory, CCORBITAL                      1.944 kB
+  Max allocated memory, CCATOM                         0.000 Byte
+  Max allocated memory, BATCHTOORB                    56.000 Byte
+  Max allocated memory, MYPOINTER                      0.192 kB
+  Max allocated memory, ARRAY2                         0.000 Byte
+  Max allocated memory, ARRAY4                         0.000 Byte
+  Max allocated memory, MP2DENS                        0.000 Byte
+  Max allocated memory, TRACEBACK                      0.000 Byte
+  Max allocated memory, MP2GRAD                        0.000 Byte
+  Max allocated memory, ODBATCH                       14.136 kB
+  Max allocated memory, LSAOTENSOR                    36.000 kB
+  Max allocated memory, SLSAOTENSOR                   29.744 kB
+  Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
+  Max allocated memory, ATOMTYPEITEM                 161.760 kB
+  Max allocated memory, ATOM                           4.576 kB
+  Max allocated memory, LSMATRIX                       2.032 kB
+  Max allocated memory, OverlapT                     139.664 kB
+  Max allocated memory, linkshell                      4.716 kB
+  Max allocated memory, integrand                    580.608 kB
+  Max allocated memory, integralitem                   3.528 MB
+  Max allocated memory, IntWork                      104.976 kB
+  Max allocated memory, Overlap                        1.551 MB
+  Max allocated memory, EtuvOverlap                    0.000 Byte
+  Max allocated memory, FtuvOverlap                    0.000 Byte
+  Max allocated memory, ODitem                        11.904 kB
+  Max allocated memory, LStensor                      87.283 kB
+  Max allocated memory, FMM                            0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+ >>>  CPU Time used in LSDALTON        is  15.13 seconds
+ >>> wall Time used in LSDALTON        is  15.26 seconds
+
+End simulation
+     Date and time (Linux)  : Sat Nov  3 17:20:24 2012 
+     Host name              : kasper-kristensens-macbook-pro.local    

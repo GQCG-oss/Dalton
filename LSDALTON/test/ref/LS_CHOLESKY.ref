@@ -1,0 +1,1269 @@
+
+ Work memory size (LMWORK+2):   100000002 =  762.94 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:26:09 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - electronic kinetic energy
+ *LINSCA specified in old input
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - electronic kinetic energy
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+ Warning: Not enough memory allocated for readin.   101256671
+          needed, but only    100000000  specified.
+          Trying to allocate needed memory.
+
+
+  Title Cards
+  -----------
+
+  1 HCN molecules placed 20 atomic units apart                            
+  STRUCTURE IS NOT OPTIMIZED.                                             
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H           1.007825
+                           N          14.003074
+                           C          12.000000
+
+                       Total mass:    27.010899 amu
+                       Natural abundance:  98.519 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.740323
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     3
+  Total number of atoms:    3
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H           1       1       3       2      [3s|2s]                                                                          
+  N           1       7      14       9      [5s3p|3s2p]                                                                      
+  C           1       6      14       9      [5s3p|3s2p]                                                                      
+  ----------------------------------------------------------------------
+  total:      3      14      31      20
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+ 
+ 
+  Auxiliary basis is "pc-1" from the basis set library.
+
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.01 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ >>> Time used in KINENE is   0.01 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ Number of two-electron integrals written:        7062 ( 31.9% )
+ Megabytes written:                              0.082
+
+
+
+ >>> Time used in TWOINT is   0.02 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.06 seconds
+ >>>> Total wall time used in HERMIT:   0.12 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:26:09 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ Title lines from integral program:
+     1 HCN molecules placed 20 atomic units apart                            
+     STRUCTURE IS NOT OPTIMIZED.                                             
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         14
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 20
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          20
+     Number of basis functions         20
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              7
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ LSint is requested by *LINSCA under **INTEGRALS 
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:          10
+Convergence threshold for gradient:   0.10E-03
+ End of configuration from new input structure!
+ Replace S with S build from new integral driver
+ QQQ New Overlap S1:   38.0752600409000     
+ QQQ Old Overlap S:   38.0752600409000     
+ QQQ DIFF S-S1:  2.868054323401814E-030
+  SUCCESFULLY REPLACED OLD OVERLAP WITH NEW
+ QQQ New H1:   7164.47748775320     
+ QQQ Old H1:   7164.47748775462     
+ QQQ DIFF H-H1:  5.770432474824619E-022
+  SUCCESFULLY REPLACED OLD h1 WITH NEW
+ Take first density from Hueckel guess
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   3.87 seconds
+ >>> wall Time used in **INIT          is   0.52 seconds
+** Get Fock matrix number   1
+
+ Precalculated two-electron integrals are transformed to P-supermatrix elements.
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   0.03 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   2760.67967140844     
+ QQQ Old  F:   2760.67967140914     
+ QQQ DIFF  :  8.225428161546570E-023
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   0.81 seconds
+ >>> wall Time used in FCK_FO          is   0.09 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   8.00990636368072     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -90.1468631530    0.00000000000    0.00      0.00000    0.00    0.0000000    0.80E+01  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+ Replace F with F build from new integral driver
+ QQQ New  F:   3093.65257955226     
+ QQQ Old  F:   3093.65257955306     
+ QQQ DIFF  :  1.064648311904555E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   0.75 seconds
+ >>> wall Time used in FCK_FO          is   0.08 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   1.33445461534895     
+  2    -91.1137995681   -0.96693641503    0.00      0.00000    0.00    0.0000000    0.13E+01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.02 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+ Replace F with F build from new integral driver
+ QQQ New  F:   3031.31670979923     
+ QQQ Old  F:   3031.31670980002     
+ QQQ DIFF  :  1.008555668726539E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   0.79 seconds
+ >>> wall Time used in FCK_FO          is   0.08 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.186355840419942     
+  3    -91.1555946536   -0.04179508552    0.00      0.00000    0.00    0.0000000    0.19E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.04 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+ Replace F with F build from new integral driver
+ QQQ New  F:   3032.03071175956     
+ QQQ Old  F:   3032.03071176036     
+ QQQ DIFF  :  1.017484423535141E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   0.71 seconds
+ >>> wall Time used in FCK_FO          is   0.08 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  8.691362493184619E-002
+  4    -91.1571206426   -0.00152598899    0.00      0.00000    0.00    0.0000000    0.87E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.04 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   5
+ Replace F with F build from new integral driver
+ QQQ New  F:   3033.74910463690     
+ QQQ Old  F:   3033.74910463769     
+ QQQ DIFF  :  1.016975718897353E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   0.75 seconds
+ >>> wall Time used in FCK_FO          is   0.08 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.194552613373146E-002
+  5    -91.1572752256   -0.00015458300    0.00      0.00000    0.00    0.0000000    0.22E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.04 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   6
+ Replace F with F build from new integral driver
+ QQQ New  F:   3033.25724127494     
+ QQQ Old  F:   3033.25724127574     
+ QQQ DIFF  :  1.019811608005006E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   2.28 seconds
+ >>> wall Time used in FCK_FO          is   0.19 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.295973922783901E-003
+  6    -91.1572919515   -0.00001672590    0.00      0.00000    0.00    0.0000000    0.13E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           6
+ >>>  CPU Time used in AVERAG          is   0.05 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   7
+ Replace F with F build from new integral driver
+ QQQ New  F:   3033.25296532817     
+ QQQ Old  F:   3033.25296532896     
+ QQQ DIFF  :  1.018336728441892E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   0.71 seconds
+ >>> wall Time used in FCK_FO          is   0.08 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.065737938324350E-004
+  7    -91.1572920863   -0.00000013480    0.00      0.00000    0.00    0.0000000    0.11E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           7
+ >>>  CPU Time used in AVERAG          is   0.06 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   8
+ Replace F with F build from new integral driver
+ QQQ New  F:   3033.25266132338     
+ QQQ Old  F:   3033.25266132418     
+ QQQ DIFF  :  1.018454869115710E-022
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is   0.73 seconds
+ >>> wall Time used in FCK_FO          is   0.08 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.285389521743412E-005
+  8    -91.1572920871   -0.00000000087    0.00      0.00000    0.00    0.0000000    0.13E-04  ###
+ >>>  CPU Time used in **ITER          is   7.82 seconds
+ >>> wall Time used in **ITER          is   0.79 seconds
+Total no. of matmuls in SCF optimization:        548
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.96693641503    0.0000    0.0000    0.0000000
+  3   -0.04179508552    0.0000    0.0000    0.0000000
+  4   -0.00152598899    0.0000    0.0000    0.0000000
+  5   -0.00015458300    0.0000    0.0000    0.0000000
+  6   -0.00001672590    0.0000    0.0000    0.0000000
+  7   -0.00000013480    0.0000    0.0000    0.0000000
+  8   -0.00000000087    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1           -90.14686315302247976433      0.800990636368072D+01
+    2           -91.11379956805419055854      0.133445461534895D+01
+    3           -91.15559465357203805524      0.186355840419942D+00
+    4           -91.15712064256111091254      0.869136249318462D-01
+    5           -91.15727522556353790151      0.219455261337315D-01
+    6           -91.15729195146028018826      0.129597392278390D-02
+    7           -91.15729208626244428615      0.106573793832435D-03
+    8           -91.15729208712951958660      0.128538952174341D-04
+ 
+      SCF converged !!!! 
+ >>>  CPU Time used in reg-J           is   0.51 seconds
+ >>> wall Time used in reg-J           is   0.06 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS1S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.50 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS2S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.49 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS3S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.45 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS4S is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.52 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS5S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.36 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS6S is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.44 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS7S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.46 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS8S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.49 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS9S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.39 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS10 is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.43 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS1S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   2.49 seconds
+ >>> wall Time used in ls_getIntegrals is   0.24 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS2S is   1.57 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.12 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.91 seconds
+ >>> wall Time used in ls_getIntegrals is   0.16 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS3S is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.51 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS4S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.55 seconds
+ >>> wall Time used in ls_getIntegrals is   0.06 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS5S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.45 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS6S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.43 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS7S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.50 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS8S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.49 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS9S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.48 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS10 is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.48 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS1S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.50 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS2S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.49 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS3S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.52 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS4S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.49 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS5S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.52 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS6S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.48 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS7S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.49 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS8S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.48 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS9S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.50 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS10 is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.51 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS1S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.52 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS2S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.50 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS3S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.52 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS4S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.48 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS5S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.53 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS6S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.96 seconds
+ >>> wall Time used in ls_getIntegrals is   0.13 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS7S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.60 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS8S is   0.21 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.67 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS9S is   0.37 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.03 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.79 seconds
+ >>> wall Time used in ls_getIntegrals is   0.06 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS10 is   0.20 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.65 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS1S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.55 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS2S is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.69 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS3S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.55 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS4S is   0.19 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.60 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS5S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.54 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS6S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.54 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS7S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.58 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS8S is   0.21 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.50 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS9S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.38 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS10 is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.38 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS1S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.41 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS2S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.89 seconds
+ >>> wall Time used in ls_getIntegrals is   0.25 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS3S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.41 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS4S is   0.20 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.52 seconds
+ >>> wall Time used in ls_getIntegrals is   0.06 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS5S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.40 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS6S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   3.22 seconds
+ >>> wall Time used in ls_getIntegrals is   0.26 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS7S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.46 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS8S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.41 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS9S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.37 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS10 is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.45 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS1S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.33 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS2S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.30 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS3S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.29 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS4S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.33 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS5S is   0.04 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.32 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS6S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.35 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS7S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.37 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS8S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.32 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS9S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.33 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS10 is   0.05 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.24 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS1S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.28 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS2S is   0.05 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.26 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS3S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.05 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.31 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS4S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.05 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.39 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS5S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.43 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS6S is   0.15 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.42 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS7S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.45 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS8S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.37 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS9S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.72 seconds
+ >>> wall Time used in ls_getIntegrals is   0.22 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS10 is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.47 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS1S is   0.05 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.41 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS2S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.31 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS3S is   0.05 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.05 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.23 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS4S is   0.06 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.39 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS5S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.40 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS6S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.38 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS7S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.36 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS8S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.43 seconds
+ >>> wall Time used in ls_getIntegrals is   0.23 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS9S is   0.07 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.12 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.36 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS10 is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.37 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS1S is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS1S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.44 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS2S is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS2S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.49 seconds
+ >>> wall Time used in ls_getIntegrals is   0.06 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS3S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS3S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.36 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS4S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS4S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.40 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS5S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS5S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.34 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS6S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS6S is   0.02 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.09 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.41 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS7S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS7S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   1.46 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.11 seconds
+ >>>  CPU Time used in ls_getIntegrals is   1.73 seconds
+ >>> wall Time used in ls_getIntegrals is   0.14 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS8S is   0.17 seconds
+ >>> wall Time used in CSConCourrrrS8S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.11 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.54 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS9S is   0.08 seconds
+ >>> wall Time used in CSConCourrrrS9S is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.35 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ WARNING KINENE IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ >>>  CPU Time used in CSConCourrrrS10 is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS10 is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.10 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.44 seconds
+ >>> wall Time used in ls_getIntegrals is   0.05 seconds
+ QQQ DI_DEBUG_4CENTER STD    4357.71783626716     
+ QQQ DI_DEBUG_4CENTER CHOL   4357.71783626716     
+ QQQ SUCCESFUL CHOLESKY TEST
+ Total no. of matmuls used:         548
+ Total no. of Fock/KS matrix evaluations:           8
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                 487.212 MB
+  Max allocated memory, type(matrix)           97.520 MB
+  Max allocated memory, real(realk)           487.080 MB
+  Max allocated memory, integer               112.930 kB
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               8.750 MB
+  Max allocated memory, integralitem          475.981 MB
+  Max allocated memory, Overlap                 2.449 MB
+  Max allocated memory, ODitem                 11.625 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    71.85807        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:             -91.157292087130
+     Nuclear repulsion:            36.800000000000
+     Electronic energy:          -127.957292087130
+
+     Final gradient norm:           0.000012853895
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:26:16 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :     71.99 seconds
+ >>>> Total wall time used in SIRIUS :      7.63 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:26:16 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:  1 minute  12 seconds
+ >>>> Total wall time used in DALTON:   7.75 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:26:16 2010
+     Host name              : fe2.grendel.cscaa.dk                    

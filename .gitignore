@@ -7,7 +7,6 @@ Makefile.config
 bin/
 modules/
 include/compinfo.h
-gp/binary_info.F90
 dalton.setup
 build*
 Doc/*.aux
@@ -19,4 +18,7 @@ Doc/Master.idx
 Doc/Master.out
 Doc/Master.pdf
 Doc/Master.toc
+Doc/Master.dvi
+Doc/Master.log
 cmake/argparse.pyc
+*~

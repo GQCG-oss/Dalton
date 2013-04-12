@@ -1,0 +1,128 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > linsca_rhf_stability_csr.info <<'%EOF%'
+   linsca_rhf_stability_csr
+   --------------------
+   Molecule:         Methane with -OH, -F, and Cl
+   Wave Function:    HF
+   Test Purpose:     Check Linsca HOMO-LUMO gap and lowest Hessian eigenvalue 
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > linsca_rhf_stability_csr.mol <<'%EOF%'
+ATOMBASIS
+Methane with -OH, -F, and Cl
+b3lyp/6-31+g(d,p) optimized geo.
+    5    0  X  Z
+        1.    2      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit
+H     0.520821    0.080551    1.451675
+H     1.965224   -1.097271    0.053015
+        6.    1      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit
+C     0.430423    0.005605    0.364687
+        8.    1      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit
+O     1.023374   -1.101579   -0.177807
+        9.    1      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit
+F     0.989971    1.157250   -0.160167
+       17.    1      Bas=3-21G Aux=Ahlrichs-Coulomb-Fit
+Cl   -1.303842   -0.036443   -0.048756
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > linsca_rhf_stability_csr.dal <<'%EOF%'
+**INTEGRAL
+.DENSFIT
+**WAVE FUNCTIONS
+.HF
+*DENSOPT
+.CSR
+.STABILITY
+.ARH
+!.NOINCREM
+.NVEC
+8
+.CONVDYN
+STANDAR
+$INFO
+INFO_STABILITY
+INFO_STABILITY_REDSPACE
+$END INFO
+*END OF INPUT
+%EOF%
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >linsca_rhf_stability_csr.check
+cat >> linsca_rhf_stability_csr.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Hessian eigenvalue test
+CRIT1=`$GREP "Hessian eigenvalue no.  1:     0.3162" $log | wc -l`
+TEST[1]=`expr	$CRIT1`
+CTRL[1]=1
+ERROR[1]="HESSIAN EIGENVALUE NOT CORRECT -"
+
+# ENERGY test
+CRIT1=`$GREP "Final HF energy: * -661.912038[6-7]" $log | wc -l`
+TEST[2]=`expr	$CRIT1`
+CTRL[2]=1
+ERROR[2]="ENERGY NOT CORRECT -"
+
+# HOMO-LUMO gap test
+CRIT1=`$GREP "HOMO-LUMO Gap \(iteratively\):     0.5682" $log | wc -l`
+TEST[3]=`expr	$CRIT1`
+CTRL[3]=1
+ERROR[3]="HOMO-LUMO GAP NOT CORRECT -"
+
+# Memory test
+CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[4]=`expr  $CRIT1`
+CTRL[4]=1
+ERROR[4]="Memory leak -"
+
+PASSED=1
+for i in 1 2 3 4; do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+      echo ${ERROR[i]}
+      PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+   echo TEST ENDED PROPERLY
+   exit 0
+else
+   echo THERE IS A PROBLEM
+   exit 1
+fi
+
+%EOF%
+#######################################################################

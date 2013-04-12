@@ -1,0 +1,226 @@
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+Starting lslib_test with nbast =      22, natoms =       6 and nelectrons =      28
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ NO AO2GCAO_transform_matrixF
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>> wall Time used in OVERLAP         is   0.00 seconds
+                                   AO overlap matrix: RMS and index-weighted sum      0.2641368729     16.7188793394
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.02 seconds
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
+ NO AO2GCAO_transform_matrixF
+ >>>  CPU Time used in NucElec         is   0.02 seconds
+ >>> wall Time used in NucElec         is   0.02 seconds
+ QQQ New  h:   12430.869563586170     
+ NO AO2GCAO_transform_matrixF
+ >>>  CPU Time used in Kinetic         is   0.00 seconds
+ >>> wall Time used in Kinetic         is   0.00 seconds
+ QQQ New  K:   1418.8868932653677     
+                       One-electron AO-matrix matrix: RMS and index-weighted sum      3.6589055153   -222.9351273602
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ >>>  CPU Time used in CS10_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS10_INPUT-Mole is   0.01 seconds
+ NO AO2GCAO_transform_matrixF
+ >>>  CPU Time used in reg-Jengine     is   0.02 seconds
+ >>> wall Time used in reg-Jengine     is   0.02 seconds
+                   Coulomb AO-matrix matrix number 1: RMS and index-weighted sum      6.4096104748    402.8850988897
+                   Coulomb AO-matrix matrix number 2: RMS and index-weighted sum     12.8192209496    805.7701977795
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ SET_SYMMETRY: YZ planar molecule
+ >>>  CPU Time used in CS08_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS08_INPUT-Mole is   0.01 seconds
+    This is an OpenMP calculation using   4 threads.
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.02 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.02 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.02 seconds
+ NO AO2GCAO_transform_matrixF
+ >>>  CPU Time used in LINK-Kbuild     is   0.03 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.03 seconds
+                  Exchange AO-matrix matrix number 1: RMS and index-weighted sum      0.3939263575    -22.6107390803
+                  Exchange AO-matrix matrix number 2: RMS and index-weighted sum      0.7878527150    -45.2214781606
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+    This is an OpenMP Gridgeneration calculation using  4 threads.
+Total Number of grid points:       36688
+ >>>  CPU  Time used in Boxify is     0.01 seconds
+ >>>  WALL Time used in Boxify is     0.01 seconds
+
+  Max allocated memory, Grid                    2.382 MB
+
+ >>>  CPU  Time used in gridgeneration2 is     0.04 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.05 seconds
+  KS electrons/energy:   67.53578971567680  -43.71122096186502 rel.err: 0.14E+01
+  KS electrons/energy:  135.07157943135360 -110.09181274801827 rel.err: 0.38E+01
+ >>>  CPU Time used in xc-Fock         is   0.50 seconds
+ >>> wall Time used in xc-Fock         is   0.28 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.50 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.28 seconds
+  Max allocated memory, XC                      3.749 MB
+                        XC AO-matrix matrix number 1: RMS and index-weighted sum      0.2596687572    -14.4738275335
+                        XC AO-matrix matrix number 2: RMS and index-weighted sum      0.3249352199    -18.2279254818
+                   Fock/KS AO-matrix matrix number 1: RMS and index-weighted sum      2.5566185949    142.8654049158
+                   Fock/KS AO-matrix matrix number 2: RMS and index-weighted sum      8.3682690585    519.3856667769
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ >>>  CPU Time used in CS10_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS10_INPUT-Mole is   0.01 seconds
+        Coulomb AO-matrix matrix from eri (Mulliken): RMS and index-weighted sum      6.4096104748    402.8850988897
+       Exchange AO-matrix matrix from eri (Mulliken): RMS and index-weighted sum      1.1542957790    -67.6628082896
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ >>>  CPU Time used in CS10_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS10_INPUT-Mole is   0.01 seconds
+           Coulomb AO-matrix matrix from eri (Dirac): RMS and index-weighted sum      6.4096104748    402.8850988897
+          Exchange AO-matrix matrix from eri (Dirac): RMS and index-weighted sum      1.1542957790    -67.6628082896
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+                                         nn gradient: RMS and index-weighted sum      8.1878572548      3.6193420902
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+                                    kinetic gradient: RMS and index-weighted sum      2.2544804833      1.0142932727
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.01 seconds
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
+                                         ne gradient: RMS and index-weighted sum     47.5913853407    -21.1176333738
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.01 seconds
+ >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
+ >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
+                                 1-electron gradient: RMS and index-weighted sum     45.3370387629    -20.1033401011
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ >>>  CPU Time used in CS10_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS10_INPUT-Mole is   0.01 seconds
+                                    Coulomb gradient: RMS and index-weighted sum    267.6950296193     96.6845342300
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ SET_SYMMETRY: YZ planar molecule
+ >>>  CPU Time used in CS08_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS08_INPUT-Mole is   0.01 seconds
+    This is an OpenMP calculation using   4 threads.
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.02 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.06 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.06 seconds
+                                   Exchange gradient: RMS and index-weighted sum     16.0144198818      3.5166126306
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ >>>  CPU Time used in CS10_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS10_INPUT-Mole is   0.01 seconds
+
+
+                     Coulomb contribution to gradient
+                     --------------------------------
+
+   H        0.0000000000            1.8292633025          250.7343222591
+   H        0.0000000000           -1.8292633025          250.7343222591
+   N        0.0000000000            5.9990882403         -650.0405943991
+   N        0.0000000000           -5.9990882403         -650.0405943991
+   C        0.0000000000            6.3522426008          399.3062721400
+   C        0.0000000000           -6.3522426008          399.3062721400
+ SET_SYMMETRY: YZ planar molecule
+ >>>  CPU Time used in CS08_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS08_INPUT-Mole is   0.01 seconds
+    This is an OpenMP calculation using   4 threads.
+ OVERALL WALL TIMINGS in LinkLoop
+ >>>  WALL Time used in LinkLoop is            0.04 seconds
+ OVERALL CPU TIMINGS in LinkLoop
+ >>>  CPU Time used in LinkLoop is            0.06 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.04 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.06 seconds
+
+
+                    exchange contribution to gradient
+                    ---------------------------------
+
+   H        0.0000000000            0.0000000000          -22.1918384046
+   H        0.0000000000            0.0000000000          -22.1918384046
+   N        0.0000000000            0.0000000000           39.1087578634
+   N        0.0000000000            0.0000000000           39.1087578634
+   C        0.0000000000            0.0000000000          -16.9169194587
+   C        0.0000000000           -0.0000000000          -16.9169194587
+                                 2-electron gradient: RMS and index-weighted sum    252.0517317081    100.2011468606
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+    This is an OpenMP Gridgeneration calculation using  4 threads.
+Total Number of grid points:       36688
+ >>>  CPU  Time used in Boxify is     0.01 seconds
+ >>>  WALL Time used in Boxify is     0.01 seconds
+
+  Max allocated memory, Grid                    2.382 MB
+
+ >>>  CPU  Time used in gridgeneration2 is     0.04 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.04 seconds
+ >>>  CPU Time used in geoderiv_molgrd is   0.45 seconds
+ >>> wall Time used in geoderiv_molgrd is   0.27 seconds
+ >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.45 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.27 seconds
+  Max allocated memory, XC                      6.244 MB
+                                         XC gradient: RMS and index-weighted sum      1.7609085555     -0.3970387845
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+                       Reorthonormalization gradient: RMS and index-weighted sum     68.5486043029     16.8459696624
+ This is a CAM functional with
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ >>>  CPU Time used in CS10_INPUT-Mole is   0.01 seconds
+ >>> wall Time used in CS10_INPUT-Mole is   0.01 seconds
+           Coulomb gradient from diff-eri (Mulliken): RMS and index-weighted sum     53.5390059239     19.3369068460
