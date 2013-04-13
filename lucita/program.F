@@ -1217,6 +1217,11 @@ C     Allocate local and global arrays
 C     Read in integrals
       IF(NOINT.EQ.0) THEN
         CALL INTIM(IPRORB)
+        if(lucita_cfg_fci_dump)then
+           write(luwrt,*) ' FCIDUMP activated, LUCITA returns '//
+     &     'with no further CI action.'
+           goto 888
+        end if
       ELSE
         WRITE(luwrt,*) ' No integrals imported '
       END IF
@@ -1393,7 +1398,7 @@ C                  PROP_PERT(LU0,LUN,N,ISM,ISPC)
 *
 *
 *     eliminate scratch units:
-      close(unit=LU91,status='DELETE')
+ 888  close(unit=LU91,status='DELETE')
 C
 #ifdef VAR_MPI
       IF (LUCI_NMPROC .GT. 1) THEN

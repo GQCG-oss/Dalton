@@ -30,7 +30,7 @@ C  /* Deck nmdinp */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
-      PARAMETER (NDIR=3,NTABLE = 21)
+      PARAMETER (NDIR=3,NTABLE = 22)
       CHARACTER PROMPT*1, WORD*7, GRPTMP*15, TABLE(NTABLE)*7,
      &          TABDIR(NDIR)*7, WORD1*7
 #include "numder.h"
@@ -47,7 +47,7 @@ C
      *            '.XXXXXX', '.NORMAL', '.PRECAL', '.REUSE ', '.XXXXXX',
      *            '.VIBANA', '.TEST N', '.DISPLA', '.PROPER', '.PRINT ',
      *            '.MANUAL', '.HARMON', '.SPECTR', '.MIDAS ', '.THRMID',
-     *            '.MINOUT'/
+     *            '.MINOUT', '.C4FORC'/
 C
 C     *** Initializing variables for *VIBANA and *HARMON. ***
       CALL NVBINI
@@ -75,7 +75,7 @@ C
          DO 200 I = 1, NTABLE
             IF (TABLE(I) .EQ. WORD) THEN
                GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,
-     *                20,21),I
+     *                20,21,22),I
             END IF
  200     CONTINUE
          IF (WORD .EQ. '.OPTION') THEN
@@ -86,11 +86,12 @@ C
      *        '" not recognized for '//WORD1
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
          CALL QUIT('Illegal keyword for '//WORD1)
- 1       CONTINUE
+ 1       CONTINUE    ! .DORDR
             READ (LUCMD,'(2I4)') NMORDR, NAORDR
             GOTO 100
- 2       CONTINUE
+ 2       CONTINUE    ! .SYMMET
             READ (LUCMD,'(A)') GRPTMP
+            FCLASS(1:3) = '   ' ! If FCLASS are initialized to a longer group name. 
             IJ = 0
             DO II = 1, 15
                IF (GRPTMP(II:II).NE.' ') THEN
@@ -99,68 +100,71 @@ C
                END IF
             END DO
             GOTO 100
- 3       CONTINUE
+ 3       CONTINUE    ! .SDRTST
             SDRTST = .TRUE.
             GOTO 100
- 4       CONTINUE
+ 4       CONTINUE    ! .RESTRT
             RESTRT = .TRUE.
             GOTO 100
- 5       CONTINUE
+ 5       CONTINUE    ! .DRYRUN
             DRYRUN = .TRUE.
             READ (LUCMD,*)  NMREDU
             READ (LUCMD,*) (KDRYRN(II),II=1,NMREDU)
             GOTO 100
- 6       CONTINUE
+ 6       CONTINUE    ! .XXXXXX
             GOTO 100
- 7       CONTINUE
+ 7       CONTINUE    ! .NORMAL
             NRMCRD = .TRUE.
             GOTO 100
- 8       CONTINUE
+ 8       CONTINUE    ! .PRECAL
             PREHES = .TRUE.
             GOTO 100
- 9       CONTINUE
+ 9       CONTINUE    ! .REUSE
             REUHES = .TRUE.
             GOTO 100
- 10      CONTINUE
+ 10      CONTINUE    ! .XXXXXX
             GOTO 100
- 11      CONTINUE
+ 11      CONTINUE    ! .VIBANA
             NUMVIB = .TRUE.
             GOTO 100
- 12      CONTINUE
+ 12      CONTINUE    ! .TEST N
             NRMCRD = .TRUE.
             HTEST  = .TRUE.
             GOTO 100
- 13      CONTINUE
+ 13      CONTINUE    ! .DISPLA
             READ (LUCMD, *) DISPLC
             GOTO 100
- 14      CONTINUE
+ 14      CONTINUE    ! .PROPER
             NPRPDR = .TRUE.
             READ (LUCMD, *) NMRDRP, NARDRP
             IF (NMORDR.EQ.0) NAORDR = 0
             NMORDR = MAX(NMRDRP,NMORDR)
             GOTO 100
- 15      CONTINUE
+ 15      CONTINUE    ! .PRINT
             READ (LUCMD, *) IDRPRI
             GOTO 100
- 16      CONTINUE
+ 16      CONTINUE    ! .MANUAL
             MANUAL = .TRUE.
-            GOTO 100
- 17      CONTINUE
+            GOTO 100   
+ 17      CONTINUE    ! .HARMON
             HARMON = .TRUE.
             VIB    = .TRUE.
             MAXDIF = 2
             GOTO 100
- 18      CONTINUE
+ 18      CONTINUE    ! .SPECTR
             SPECTR = .TRUE.
             GOTO 100
- 19      CONTINUE
+ 19      CONTINUE    ! .MIDAS
             MIDAS  = .TRUE.
             GOTO 100
- 20      CONTINUE
+ 20      CONTINUE    ! .THRMID
             READ (LUCMD, *) XTHR
             THRMID = ABS(XTHR)
- 21      CONTINUE
+ 21      CONTINUE    ! .MINOUT
             MINOUT = .TRUE.
+            GOTO 100
+ 22      CONTINUE    ! .C4FORC
+            C4FORC = .TRUE.
             GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 300
@@ -180,15 +184,16 @@ C
          IF (NUMVIB) THEN
             WRITE (LUPRI,'(/5X,A)') 'A vibrational analysis is done.'
             WRITE (LUPRI,'(5X,A)')  'Which/how is specified in ' //
-     &           '*VIBANA (and **PROPERTIES).'
+CRF  &           '*VIBANA (and **PROPERTIES).'
+     &           '*VIBANA (and **EACH STEP).'
          ELSE
             WRITE (LUPRI,'(/5X,A,I4/5X,A,I4,A)')
      &         'Numerical derivatives calculated to order', NMORDR,
      &         'using analytical', NAORDR, '. derivatives'
          END IF
 C
-         WRITE (LUPRI,'(5x,A)') 'Group used for force constants ' //
-     &                           GRPTMP
+         WRITE (LUPRI,'(5x,A)') 'Group used for force constants: ' //
+     &                           FCLASS
          WRITE (LUPRI,'(5x,A,F10.4)') 'Step size used: ', DISPLC
          IF (SDRTST) THEN
             WRITE (LUPRI,'(/5X,A)') 'Comparison of numerical Hessian '
@@ -199,8 +204,8 @@ C
      &           'conducted as a dry run.'
             WRITE (LUPRI,'(5X,A)') 'No actual derivatives will be' //
      &           'calculated.'
-            WRITE (LUPRI,'(A,I5)') 'Number of redundant coordinates:',
-     &           NMREDU
+            WRITE (LUPRI,'(5X,A,I5)') 'Number of redundant coordinates:'
+     &           , NMREDU
          END IF
 C
          IF (RESTRT) THEN
@@ -230,7 +235,7 @@ C
          END IF
 C
          IF (MANUAL) THEN
-            WRITE (LUPRI,'(/A)')
+            WRITE (LUPRI,'(/5X,A)')
      &         'The mol file will be printed for geometries.'
          END IF
 C
@@ -276,12 +281,12 @@ C
          CALL PRTAB(NDIR,TABDIR,WORD1//' input keywords',LUPRI)
          CALL QUIT('Program stopped in ABAINP, error in prompt.')
       END IF
- 101  CONTINUE
+ 101  CONTINUE  ! *PROPAV
         CALL NVBINP(WORD)
         GOTO 400
  102  CONTINUE
         GOTO 400
- 103  CONTINUE
+ 103  CONTINUE  ! *VIBANA
         CALL VIBINP(WORD)
         GOTO 400
 C
@@ -402,6 +407,7 @@ C
 #include "implicit.h"
 #include "mxcent.h"
 #include "numder.h"
+#include "pgroup.h"
 #include "fcsym.h"
 #include "cbinum.h"
 #include "abainf.h"
@@ -442,9 +448,16 @@ C     /NUMDER/
       FRSTNM = .FALSE.
       PRPVIB = .FALSE.
       MANUAL = .FALSE.
+CRF added
+      PRPONL = .FALSE.
+      PRPBAS = .FALSE.
+      C4FORC = .FALSE.
 C
 C     /FCSYM/
-      FCLASS = 'C1             '
+CRF   We initialize the numdiff symmetry to the computational point group  
+C     FCLASS(1:3) = GROUP
+      FCLASS(1:3) = 'C1 '
+      FCLASS(4:15) = '            '
       MROTAX = .FALSE.
       VPLANE = .FALSE.
       HPLANE = .FALSE.
@@ -515,7 +528,7 @@ C        if user has asked for higher print level, no change
       IPRUSR = IPRUSR_reduced
       IPREAD = IPREAD_reduced
 C
-C 100  CONTINUE
+ 100  CONTINUE
 C
       MOLECU = .TRUE.
       NCOOR  = 3*NUCDEP
@@ -531,7 +544,9 @@ C
       DO 200 I = 1, J
          MAXADR = MAXADR + 1
  200  CONTINUE
-C
+C     
+C     NDERIV -> number derivatives to save space 
+C               for in WORK
       DO 300 IORDR = 3, NMORDR+NAORDR
          IKDRV = 1
          DO 400 IIORDR =1, IORDR
@@ -539,7 +554,7 @@ C
  400     CONTINUE
          NDERIV = NDERIV + IKDRV
  300  CONTINUE
-      if (nderiv .le. 0) then
+      if (nderiv .le. 0 .AND. .NOT. PRPONL ) then
          write(lupri,*) 'hjaaj: nderiv .le. 0',nderiv
          write(lupri,*) 'hjaaj: nmordr,naordr,ncoor',nmordr,naordr,ncoor
       end if
@@ -603,7 +618,8 @@ C
       IF (NMORDR .GE. 3) THEN
          LDPMTX = LDPMTX + (NCOOR*(NCOOR+1)*(NCOOR+2))/6
       END IF
-      NSTRDR = NMORDR + 1
+CRF
+      NSTRDR = MAX( NMORDR, NMRDRP) + 1
 C     ... hjaaj Dec 07: used for allocation, and NMORDR+1 is sometimes referenced
       IF (NMORDR .GE. 2) THEN
          IFRSTD = 2**NMORDR
@@ -689,8 +705,38 @@ c         END IF
 c      END IF
 c#endif
 C
-C     *** No more numerical derivative. ***
+C 
 C
+CRF 6/12 12  Rerun NUMDR1 with new basis set, to get properties 
+CRF          with a different basis set
+      IF ( PRPBAS .AND. .NOT. PRPONL ) THEN
+C        Resetting variables for property derivatives
+         REUHES = .FALSE.
+         NUMVIB = .FALSE.
+         NPRPDR = .TRUE.
+         PREHES = .TRUE.
+         PRPVIB = .TRUE.
+         FRSTNM = .TRUE.
+         NMRDRP = NMRDBK
+         NARDRP = NARDBK
+         NMORDR = 2 !Still need to keep this
+         NAORDR = 0
+         PRPONL = .TRUE.
+         
+C        Setting basis set line in .mol file to property basis
+         MLINE(2) = PRPBTX 
+
+C        Better tell people, what we are doing 
+         WRITE (LUPRI,'(A)') '                                   ' 
+         CALL TITLER('Calculating property derivatives.','*',124)  
+         CALL TITLER( 'Basis set changed to '//PRPBTX,'*',103)  
+
+C        Rerun NUMDR1 + Preceeding memory allocations
+         GOTO 100
+      END IF
+CRFend      
+C
+C     *** No more numerical derivative. ***
       NMWALK = .FALSE.
       IPRUSR = IPRUSR_orig
       IPREAD = IPREAD_orig
@@ -988,7 +1034,7 @@ C
          END IF
 C
 C
-         IF ((NAORDR+NMORDR).GT.1) THEN
+         IF ( ((NAORDR+NMORDR).GT.1) .OR. PRPONL ) THEN
             IF (.NOT.DRYRUN) THEN
                IF (HARMON) THEN
                   KBKPHS = 2
@@ -1069,7 +1115,8 @@ C
          END IF
       END IF
 C
-      IF (NRMCRD .AND. ((NAORDR+NMORDR).GT.2)) THEN
+CRF   Also need to take this branch if we evaluate property derivatives only
+      IF (NRMCRD .AND. ( ((NAORDR+NMORDR).GT.2) .OR. PRPONL  ) ) THEN
          FRSTNM = .FALSE.
 C
 C        *** Restart ***
@@ -1195,9 +1242,14 @@ C
             KLAST  = KFTMPD + NCOOR**4
             LWRK   = LWORK - KLAST + 1
 C
-            CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
-     &           CSTART,WORK(KTTMPD),WORK(KFTMPD),RNNORM,WORK(KLAST),
-     &           ICRIRP,LWRK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
+CRF      If we calculate only properties in this run,
+CRF      the derivatives will be from a previous run, and thus shouldn't be printed
+            IF (.NOT. PRPONL)
+     &       CALL PRDERV(DERIV(KTDRS),DERIV(KFDRS),TSTGDR,TSTSDR,SYMCOR,
+     &            CSTART,WORK(KTTMPD),WORK(KFTMPD),RNNORM,WORK(KLAST),
+     &            ICRIRP,LWRK,NPRRDR,NDIMT,NDIMF,LTEXT,IPRINT,PRTEXT)
+            
+
 C
 C           *** Isotope analysis. ***
 C
@@ -1367,7 +1419,7 @@ C
 C
 C     *** Order for derivatives ***
 C
-      DO 100 IORDR  = 1, NMORDR
+      DO 100 IORDR  = 1,  NMORDR
          IHORDR = INT((IORDR+1)/2)
 C
 C        *** IHORDR -> The maximum order in one direction for this ***
@@ -1597,8 +1649,8 @@ C
 C        ********************************************
 C        *** Preliminary constants to derivatives ***
 C        ********************************************
-C
-         MXCOEF = INT(NMORDR/2) + 1
+CRF  To posibly allow NMRDRP .le. NMORDR     
+         MXCOEF = INT(MAX(NMORDR,NMRDRP)/2) + 1
 C
 C        ****************************************************
 C        *** Calculating force field. Property derivative ***
@@ -1611,22 +1663,27 @@ C
 C        ***********************************
 C        *** Calculating the derivatives ***
 C        ***********************************
-C
-         NFINNR = 1
-         KCOEF  = 1
-         KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMORDR+1)
-         KIMIN  = KIMAX  +               NMORDR
-         KICNT  = KIMIN  +               NMORDR
-         KNCVAL = KICNT  +               NTYPE
-         KIDDCP = KNCVAL +               NCOOR
-         KLAST  = KIDDCP +               NCOOR
-         LWRK1  = LWORK - KLAST
-         IF (LWRK1.LT.1) CALL QUIT('Memory exceeded in NMNDER')
-         CALL NMNDER(DERIV,WORK(KCOEF),FUVAL,GRIREP,WORK(KLAST),IADRSS,
-     &        KDPMTX,ICRIRP,INDSTP,INDTMP,IDCOMP,WORK(KIMAX),
-     &        WORK(KIMIN),WORK(KICNT),WORK(KNCVAL),WORK(KIDDCP),MXCOEF,
-     &        NMORDR,NDIME,NTYPE,NDERIV,NINTIN,LDPMTX,IFRSTD,NLDPMX,
-     &        LWRK1,.TRUE.)
+C        
+CRF 16/11 We skip calculating new geometrical derivatives
+CRF       if only property derivatives are calculated this run
+         IF ( .NOT. PRPONL) THEN
+           NFINNR = 1
+           KCOEF  = 1
+           KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMORDR+1)
+           KIMIN  = KIMAX  +               NMORDR
+           KICNT  = KIMIN  +               NMORDR
+           KNCVAL = KICNT  +               NTYPE
+           KIDDCP = KNCVAL +               NCOOR
+           KLAST  = KIDDCP +               NCOOR
+           LWRK1  = LWORK - KLAST 
+           IF (LWRK1.LT.1) CALL QUIT('Memory exceeded in NMNDER')
+           CALL NMNDER(DERIV,WORK(KCOEF),FUVAL,GRIREP,WORK(KLAST),
+     &          IADRSS,KDPMTX,ICRIRP,INDSTP,INDTMP,IDCOMP,WORK(KIMAX),
+     &          WORK(KIMIN),WORK(KICNT),WORK(KNCVAL),WORK(KIDDCP),
+     &          MXCOEF,NMORDR,NDIME,NTYPE,NDERIV,NINTIN,LDPMTX,IFRSTD,
+     &          NLDPMX,LWRK1,.TRUE.)
+         END IF
+CRFend
 C
 C        **************************************
 C        *** Resetting property derivative. ***
@@ -1656,7 +1713,11 @@ C
             CALL STPPVR
 C
             KCOEF  = 1
-            KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMORDR+1)
+CRF      Is this an error, second dimension of argument 3 COEFF is
+C        0:NMRDRP in PRPDER, not 0:NMORDR as this surgests
+C           KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMORDR+1)
+            KIMAX  = KCOEF  + (2*MXCOEF+1)*(NMRDRP+1)
+CRFend
             KIMIN  = KIMAX  +               NMRDRP
             KICNT  = KIMIN  +               NMRDRP
             KNCVAL = KICNT  +               NTYPE
@@ -1802,6 +1863,11 @@ C
             CNMPRP = .FALSE.
          END IF
       END IF
+CRF   A crude way of avoiding redudant calculations
+      IF (PRPONL .AND. .NOT. CNMPRP) THEN
+         CALL QEXIT('GTNPNT') 
+         RETURN
+      END IF
 C
 C     *** Making the appropriate step, if any. ***
 C
@@ -1946,7 +2012,10 @@ C
                      WRINDX = .TRUE.
                      LUSUPM = -1
                      WORK(1) = WRKDLM
-                     CALL ABAINP('**PROPE',WORK(2),LWORK)
+CRF 9/11-12  Should be **EACH  to be consistent with NAORDR > 0
+CRF                  CALL ABAINP('**PROPE',WORK(2),LWORK)
+                     CALL ABAINP('**EACH ',WORK(2),LWORK)
+CRFend
                      CALL EXEABA(WORK(1),LWORK-1,WRKDLM)
 C
                      KTRAMT = 1
@@ -2490,7 +2559,7 @@ C
       CALL DZERO(TCOEFF,KDIM2)
       COEFF(0,0) = D1
 C
-C     *** Temporary coeffesients used to generate coefficients ***
+C     *** Temporary coefficients used to generate coefficients ***
 C     ***            for even-numbered derivatives.            ***
 C
       IF (NMNMDR .GT. 1) THEN
@@ -4475,6 +4544,8 @@ C
                      WRITE (LUHES,'(A)') '                            '
  800              CONTINUE
                END IF
+CRF        Shouldn't this file be closed?
+               CALL GPCLOSE(LUHES,'KEEP')
             ELSE
                WRITE (LUPRI,'(//A/A//)')
      &            'Hessian file "DALTON.HES" already exists.' //
@@ -5432,6 +5503,8 @@ C     /* Deck rdfhes */
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
+CRF added
+#include "numder.h"
 C
 #include "taymol.h"
 #include "nuclei.h"
@@ -5439,7 +5512,12 @@ C
       LOGICAL SYMADA, HESEXS
       CHARACTER*5 HSMINF
       DIMENSION WORK(LWORK)
-C
+C     
+      IF (C4FORC) THEN ! We should read a CFOUR style Hessian file
+         CALL RDC4HS(WORK,LWORK,IPRINT)
+         GOTO 300
+      END IF
+
       INQUIRE(FILE='DALTON.HES',EXIST=HESEXS)
 C
 C     *** No hessian specified. ***
@@ -5473,7 +5551,8 @@ C
  100  CONTINUE
 C
       CALL GPCLOSE(LUHES,'KEEP')
-C
+C     
+ 300  CONTINUE
       CALL HEADER ('Molecular Hessian read from file.', 0)
       WRITE (LUPRI,'(A)') '                              '
       CALL HEADER ('Molecular Hessian', -1)
@@ -5664,6 +5743,7 @@ C
      &            WORK(KEXTMP),WORK(KTRTMP),WORK(KEXERF),
      &            WORK(KLAST),WORK(KNREDS),LWRK1,IPRINT,CCPRP)
       IF (NPRPDR) CALL GPCLOSE(LUNDPR,'DELETE')
+
 c      KTRAMA = 1
 c      KLAST  = KTRAMA + NMPCAL*NCOOR**2
 c      LWRK1  = LWORK - KLAST + 1
@@ -5944,7 +6024,7 @@ C
       NTCOL = NDIM1/3 + 1
       IF (MOD(NDIM1,3).EQ.0) NTCOL = NDIM1/3
 C
-C     *** Printing the cntributions. ***
+C     *** Printing the contributions. ***
 C
       DO IDIM3 = 1, 6
          KDIM = 0
@@ -7374,5 +7454,49 @@ C
       CALL GPCLOSE(LMIDAS,'KEEP')
 C
       RETURN
+      END
+C
+C     /* Deck rdc4hs */
+      SUBROUTINE RDC4HS(WORK,LWORK,IPRINT)
+C     ************************************************
+C     *** Routine that reads hessian in the format ***
+C     *** written by the CFOUR program             ***
+C     ************************************************
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "taymol.h"
+#include "nuclei.h"
+#include "trkoor.h"
+      LOGICAL HESEXS
+      DIMENSION WORK(LWORK)
+  
+      INQUIRE (FILE='FCM',EXIST=HESEXS)
+      
+      IF (.NOT. HESEXS ) CALL QUIT('Unable to open file FCM')
+
+      LUC4IF = -1
+      
+C     *** Open FCM file ***
+      CALL GPOPEN(LUC4IF,'FCM','OLD',' ','FORMATTED',IDUMMY,.FALSE.)
+
+C     *** Check that the written dimensions match this calculation ***
+      READ(LUC4IF,*) IDIMEN
+      IF (IDIMEN .NE. NUCDEP) CALL QUIT('Dimensions read in file '//
+     &   'FCM does not match those in the molecule file' )
+
+C     *** We can now read the Hessian ***
+      DO ICOOR1 = 1, NCOOR 
+         DO ICOOR2 = 1, NCOOR, 3 ! Three numbers at each line
+            READ(LUC4IF,*,ERR=901) HESMOL( ICOOR2:ICOOR2+2,ICOOR1)
+         END DO
+      END DO      
+      
+      CALL GPCLOSE (LUC4IF,'KEEP')
+
+      RETURN
+
+ 901  CALL QUIT('An ERROR occured while reading file FCM')
+
       END
 C --- end of abander.F ---

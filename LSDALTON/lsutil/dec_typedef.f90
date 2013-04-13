@@ -14,7 +14,7 @@ module dec_typedef_module
   ! MUST BE UPDATED EVERYTIME SOMEONE ADDS A NEW MODEL TO THE DEC SCHEME!!!!
   ! MODIFY FOR NEW MODEL
   ! MODIFY FOR NEW CORRECTION
-  integer, parameter :: ndecenergies = 13
+  integer, parameter :: ndecenergies = 14
 
   !> \author Kasper Kristensen
   !> \date June 2010
@@ -189,8 +189,8 @@ module dec_typedef_module
 
      !> DEC Orbital treatment
      !> *********************
-     !> Assign orbitals also to H atoms (default: do not assign to H)
-     logical :: reassignHatoms
+     !> Absorb H atoms into heavy atoms during orbital assignment
+     logical :: AbsorbHatoms
      !> Fit orbital coefficients in fragment (default: true)
      logical :: FitOrbitals
      !> Threshold for simple Lowdin procedure for determining atomic extent
@@ -572,6 +572,8 @@ module dec_typedef_module
      !> 11. Fourth order (T) contribution, virtual partitioning scheme
      !> 12. Fifth order (T) contribution, occupied partitioning scheme
      !> 13. Fifth order (T) contribution, virtual partitioning scheme
+     !> 14. MP2-F12 energy correction
+
      real(realk),dimension(ndecenergies) :: energies
      ! Note 1: Only the energies requested for the model in question are calculated!
      ! Note 2: Obviously you need to change the the global integer "ndecenergies"

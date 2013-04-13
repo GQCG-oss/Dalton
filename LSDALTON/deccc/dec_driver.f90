@@ -706,7 +706,6 @@ contains
 
     call LSTIMER('DEC FINAL',tcpu,twall,DECinfo%output)
 
-
   end subroutine main_fragment_driver
 
 
@@ -750,58 +749,6 @@ contains
 
 
   end subroutine print_dec_info
-
-  !> Print short energy summary (both HF and correlation)
-  subroutine print_total_energy_summary(EHF,Ecorr,Eerr)
-    implicit none
-    !> HF energy
-    real(realk),intent(in) :: EHF
-    !> Correlation energy
-    real(realk),intent(in) :: Ecorr
-    !> Estimated intrinsic DEC energy error
-    real(realk),intent(in) :: Eerr
-
-    ! Print summary
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(13X,a)') '**********************************************************'
-    write(DECinfo%output,'(13X,a,19X,a,19X,a)') '*', 'DEC ENERGY SUMMARY', '*'
-    write(DECinfo%output,'(13X,a)') '**********************************************************'
-    write(DECinfo%output,*)
-    if(DECinfo%first_order) then
-       write(DECinfo%output,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
-       write(DECinfo%output,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
-       write(DECinfo%output,'(15X,a,f20.10)') 'G: Estimated DEC error :', Eerr
-       if(DECinfo%ccmodel==1) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==2) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CC2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==3) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CCSD energy   :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==4) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
-       end if
-    else
-       write(DECinfo%output,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
-       write(DECinfo%output,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
-       write(DECinfo%output,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
-       if(DECinfo%ccmodel==1) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total MP2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==2) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==3) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==4) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
-       end if
-    end if
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-
-  end subroutine print_total_energy_summary
 
 
   !> \brief Print all fragment energies for given CC model.
@@ -952,9 +899,14 @@ contains
 
     ! MODIFY FOR NEW CORRECTION
     ! E.g. for F12:
-    ! if(DECInfo%F12) then
-    !   print F12 contributions
-    ! endif
+    if(DECInfo%F12) then
+       
+       print *, "(DEC_driver) Total energy for MP2-F12: ", energies(14)
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,g20.10)') 'MP2F12-V_gr_term occupied correlation energy : ', energies(14)
+       write(DECinfo%output,*)       
+         
+    endif
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)

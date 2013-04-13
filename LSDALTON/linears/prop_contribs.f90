@@ -709,7 +709,7 @@ contains
             ! contract first density to Fock matrix, then trace with last
             do i = 0, de(1)-1
                ! Coulomb and exchange
-               call twofck('  ', D(2+i), A(1:1))
+               call twofck('  ', D(1), D(2+i), A(1:1))
                ! Kohn-Sham exchange-correlation
                call twofck_ks(mol,1, (/D(1),D(2+i)/), A(1))
                ! trace with first density matrix
@@ -1335,7 +1335,7 @@ contains
          do i = 0, pd-1
             if (iszero(D(pd1-pd+1+i))) cycle
             ! Coulomb-exchange
-            call twofck('  ', D(pd1-pd+1+i), A(1:1))
+            call twofck('  ', D(1), D(pd1-pd+1+i), A(1:1))
             F(i+1) = F(i+1) + A(1)
             ! Kohn-Sham exchange-correlation
             call twofck_ks(mol,1, (/D(1),D(pd1-pd+1+i)/), F(1+i))
@@ -1430,7 +1430,7 @@ contains
       A(:) = 0 !delete scratch matrices
     end subroutine twoint
 
-   subroutine twofck(what, D, F, a, b)
+   subroutine twofck(what, Dmat, Bmat, F, a, b)
    ! Add (un)perturbed 2e-contributions to Fock matrices
    ! what='  ' -> unperturbed
    ! what='G ' -> 3 geometry-perturbed wrt. nucleus a
@@ -1439,46 +1439,46 @@ contains
    ! what='MM' -> 6 2nd-order magnetic-field-perturbed (London)
    ! what='GM' -> 9 2nd-order mixed geometry and magnetic
       character*2,       intent(in)    :: what
-      type(matrix),      intent(in)    :: D(1)
+      type(matrix),      intent(in)    :: Dmat
+      type(matrix),      intent(in)    :: Bmat(1)
       type(matrix),      intent(inout) :: F(:)
       integer, optional, intent(in)    :: a, b
       type(matrix) reimF(1)
       integer      nf, i
       type(matrix) :: Gxc(1)
       integer      :: nbast
-      type(Matrix) :: Dmat
-      type(matrix) :: D_part(1)
+      type(matrix) :: D_complex(1)
       nf = size(F)
       !make usre F is properly allocated
       do i = 1, nf
-         if (iszero(F(i)) .or. (D(1)%complex .and. .not.F(i)%complex)) then
-            F(i) = 0*D(1) !will deallocate
+         if (iszero(F(i)) .or. (Bmat(1)%complex .and. .not.F(i)%complex)) then
+            F(i) = 0*Bmat(1) !will deallocate
             call mat_ensure_alloc(F(i))
          end if
       end do
-      !process complex D with two calls
-	  nbast = D(1)%nrow
-	  call mat_init(D_part(1),nbast,nbast)
-      if (D(1)%complex) then
+      !process complex Bmat with two calls
+	  nbast = Bmat(1)%nrow
+	  call mat_init(D_complex(1),nbast,nbast)
+      if (Bmat(1)%complex) then
          ! real part
          reimF(1:1) = (/mat_get_part(F(1), imag=.false.)/)
-         !call di_GET_GbDs(6, 6, mat_get_part(D(1), imag=.false.), reimF(1))
-         call mat_assign(D_part(1), mat_get_part(D(1), imag=.false.))
-         call di_GET_GbDs_and_XC_linrsp(reimF, Gxc, 6, 6, D_part, 1, nbast, Dmat, .false.)
+         !call di_GET_GbDs(6, 6, mat_get_part(Bmat(1), imag=.false.), reimF(1))
+         call mat_assign(D_complex(1), mat_get_part(Bmat(1), imag=.false.))
+         call di_GET_GbDs_and_XC_linrsp(reimF, Gxc, 6, 6, D_complex, 1, nbast, Dmat, .false.)
 
          ! imaginary part
          reimF(1:1) = (/mat_get_part(F(1), imag=.true.)/)
-         !call di_GET_GbDs(6, 6, mat_get_part(D(1), imag=.true.), reimF(1))
-         call mat_assign(D_part(1), mat_get_part(D(1), imag=.true.))
-         call di_GET_GbDs_and_XC_linrsp(reimF, Gxc, 6, 6, D_part, 1, nbast, Dmat, .false.)
+         !call di_GET_GbDs(6, 6, mat_get_part(Bmat(1), imag=.true.), reimF(1))
+         call mat_assign(D_complex(1), mat_get_part(Bmat(1), imag=.true.))
+         call di_GET_GbDs_and_XC_linrsp(reimF, Gxc, 6, 6, D_complex, 1, nbast, Dmat, .false.)
        
          
          reimF(1:1) = 0
       else
          !call di_GET_GbDs(6, 6, D(1), F(1))
-         call di_GET_GbDs_and_XC_linrsp(F, Gxc, 6, 6, D, 1, nbast, Dmat, .false.)
+         call di_GET_GbDs_and_XC_linrsp(F, Gxc, 6, 6, Bmat, 1, nbast, Dmat, .false.)
       end if
-      call mat_free(D_part(1))
+      call mat_free(D_complex(1))
    end subroutine
 
 

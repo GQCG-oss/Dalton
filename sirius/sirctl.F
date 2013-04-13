@@ -86,6 +86,7 @@ C
 #include "pcmlog.h"
 ! dftcom.h: DFT_SPINDNS, DFT_LOCALSPIN
 #include "dftcom.h"
+#include "exeinf.h"
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
@@ -732,6 +733,8 @@ C
                                           ! orbital occupations for TRACTL
          JTRALVL = 0 ! only active orbitals for all four indices
          USEDRC  = .FALSE. ! Dirac format 2-el. integrals not needed
+
+         FTRCTL = .true.
 
 !        integral transformation
          CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)

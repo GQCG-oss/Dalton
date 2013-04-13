@@ -9,8 +9,6 @@
 !    E.g. use fac1=1.0 and fac2=-1.0 to subtract file2 from file1.
 ! 3. Run program: ./AddPltFiles.x fac1 file1.plt fac2 file2.plt output.plt
 ! 
-! IMPORTANT!!! If you are using Ifort, then the two lines "reclen=reclen*4" should be commented out
-! before compiling!!!!
 
 program addplt
 
@@ -36,7 +34,7 @@ program addplt
   ! Determine number of gridpoints
   ! ******************************
   reclen=11+1
-  reclen=reclen*4 ! only for gfortran!!!
+  reclen=reclen*4 
   OPEN (IUNIT,FILE=trim(file1),STATUS='OLD',FORM='UNFORMATTED', &
        & ACCESS='DIRECT',RECL=reclen)
   READ(IUNIT,REC=1) II,TD,nZ,nY,nX,Z1,Zn,Y1,Yn,X1,Xn,tmp
@@ -45,8 +43,7 @@ program addplt
 
   ! Set record length according to number of gridpoints
   reclen=(nGRIDPOINTS + 11)
-  reclen=reclen*4  ! only for gfortran!!!
-  print *, 'If you are using Ifort, then see IMPORTANT NOTE in AddPltFiles.f90 and recompile!'
+  reclen=reclen*4 
 
 
   ! Print input information

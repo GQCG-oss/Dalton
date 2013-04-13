@@ -55,11 +55,8 @@ cat > fragmentccsd_simple.dal <<'%EOF%'
 TRILEVEL
 .CONVTHR
 1.0d-5
-.LCM
-.MLO 
-2 2
 **DEC
-.ReassignHatoms
+.ABSORBH
 .CCSD
 .MPIsplit
 0
