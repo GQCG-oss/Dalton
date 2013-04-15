@@ -797,11 +797,13 @@ contains
 
     output_full = 0.0E0_realk
     output_full = input
+    info=0
     call dgetrf(n,n,output_full,n,ipiv,info)
     if(info /= 0) then
        print *, 'info=', info
        call lsquit('error1 :: invert_matrix',-1)
     end if
+    info=0
     call dgetri(n,output_full,n,ipiv,work,n,info)
     if(info /= 0) then
        print *, 'info=', info
