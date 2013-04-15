@@ -43,8 +43,6 @@ module array4_memory_manager
 !$OMP END CRITICAL
 
       call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-      DECinfo%memallo_time_cpu = DECinfo%memallo_time_cpu + (tcpu2-tcpu1)
-      DECinfo%memallo_time_wall = DECinfo%memallo_time_wall + (twall2-twall1)
 
     end subroutine memory_allocate_4d
 
@@ -76,8 +74,6 @@ module array4_memory_manager
 
       call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
-      DECinfo%memallo_time_cpu = DECinfo%memallo_time_cpu + (tcpu2-tcpu1)
-      DECinfo%memallo_time_wall = DECinfo%memallo_time_wall + (twall2-twall1)
 
     end subroutine memory_deallocate_4d
 
@@ -100,8 +96,6 @@ module array4_memory_manager
 
       write(DECinfo%output,'(a,/,a)') '  Time ', &
            ' ======='
-      write(DECinfo%output,'(a,g18.2)') ' CPU Time (s) :', DECinfo%memallo_time_cpu
-      write(DECinfo%output,'(a,g18.2)') ' Wall Time (s):', DECinfo%memallo_time_wall
 
     end subroutine print_memory_statistics4
   

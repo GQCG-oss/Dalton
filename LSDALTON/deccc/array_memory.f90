@@ -289,8 +289,6 @@ module array_memory_manager
       call assoc_ptr_arr(arr)
 
       call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-      DECinfo%memallo_time_cpu = DECinfo%memallo_time_cpu + (tcpu2-tcpu1)
-      DECinfo%memallo_time_wall = DECinfo%memallo_time_wall + (twall2-twall1)
 
     end subroutine memory_allocate_array_dense
 
@@ -320,8 +318,6 @@ module array_memory_manager
 
       call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
-      DECinfo%memallo_time_cpu = DECinfo%memallo_time_cpu + (tcpu2-tcpu1)
-      DECinfo%memallo_time_wall = DECinfo%memallo_time_wall + (twall2-twall1)
 
     end subroutine memory_deallocate_array_dense
 
@@ -478,8 +474,6 @@ module array_memory_manager
         call lsquit("something went wrong with the numbering of tiles on the nodes",DECinfo%output)
       endif
       call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-      DECinfo%memallo_time_cpu = DECinfo%memallo_time_cpu + (tcpu2-tcpu1)
-      DECinfo%memallo_time_wall = DECinfo%memallo_time_wall + (twall2-twall1)
 
     end subroutine memory_allocate_tiles
 
@@ -529,8 +523,6 @@ module array_memory_manager
       nullify(arr%ti)
       call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
-      DECinfo%memallo_time_cpu = DECinfo%memallo_time_cpu + (tcpu2-tcpu1)
-      DECinfo%memallo_time_wall = DECinfo%memallo_time_wall + (twall2-twall1)
 
     end subroutine memory_deallocate_tile
 
@@ -568,8 +560,6 @@ module array_memory_manager
       arr%dummy=0.0E0_realk
 
       call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-      DECinfo%memallo_time_cpu = DECinfo%memallo_time_cpu + (tcpu2-tcpu1)
-      DECinfo%memallo_time_wall = DECinfo%memallo_time_wall + (twall2-twall1)
 
     end subroutine memory_allocate_dummy
 
@@ -597,8 +587,6 @@ module array_memory_manager
 
       call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
-      DECinfo%memallo_time_cpu = DECinfo%memallo_time_cpu + (tcpu2-tcpu1)
-      DECinfo%memallo_time_wall = DECinfo%memallo_time_wall + (twall2-twall1)
 
     end subroutine memory_deallocate_dummy
 
@@ -627,8 +615,6 @@ module array_memory_manager
 !$OMP END CRITICAL
 
       call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-      DECinfo%memallo_time_cpu = DECinfo%memallo_time_cpu + (tcpu2-tcpu1)
-      DECinfo%memallo_time_wall = DECinfo%memallo_time_wall + (twall2-twall1)
 
     end subroutine memory_allocate_window
 
@@ -661,8 +647,6 @@ module array_memory_manager
       endif
 
       call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-      DECinfo%memallo_time_cpu = DECinfo%memallo_time_cpu + (tcpu2-tcpu1)
-      DECinfo%memallo_time_wall = DECinfo%memallo_time_wall + (twall2-twall1)
 
     end subroutine memory_deallocate_window
 
@@ -728,8 +712,6 @@ module array_memory_manager
 
       write(DECinfo%output,'(a,/,a)') '  Time ', &
            ' ======='
-      write(DECinfo%output,'(a,g18.2)') ' CPU Time (s) :', DECinfo%memallo_time_cpu
-      write(DECinfo%output,'(a,g18.2)') ' Wall Time (s):', DECinfo%memallo_time_wall
 
     end subroutine print_memory_statistics
   

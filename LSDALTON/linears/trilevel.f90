@@ -60,6 +60,7 @@ real(realk), pointer    :: bF(:,:), bS(:,:), eig(:), wrk(:)
 integer                 :: i, j, k, istart, info, nb, lwrk
 integer,     pointer    :: indexlist(:) 
  
+ info = 0
  nb =  basis_size(ang+1)
 
  indexlist => trilevel_indexlist(ang,basis_size)

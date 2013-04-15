@@ -53,6 +53,9 @@ contains
   integer :: i,j,a,b
   real(realk) :: tmp
 
+  ! Setting Ciajb = 0
+  !Ciajb = 0.0E0_realk
+
   do j=1,nocc
    do i=1,nocc
     tmp = 0E0_realk
@@ -77,6 +80,9 @@ contains
   !
   integer :: i,j,a,b
   real(realk) :: tmp
+
+  ! Setting Ciajb = 0
+  !Ciajb = 0.0E0_realk
 
   do j=1,nocc
    do i=1,nocc
@@ -134,99 +140,262 @@ contains
   !> \author Simen Reine
   !> \date May 2012
   subroutine mp2f12_Vijij(Vijij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
-  implicit none
-  Real(realk),intent(OUT) :: Vijij(nocc,nocc)
-  Real(realk),intent(IN)  :: Ripjq(nocc,nbasis,nocc,nbasis)
-  Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
-  Real(realk),intent(IN)  :: Fijkl(nocc,nocc,nocc,nocc)
-  Real(realk),intent(IN)  :: Rimjc(nocc,noccfull,nocc,ncabs)
-  Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
-  Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs
-  !
-  Integer :: i,j,p,q
-
-  DO j=1,nocc
-    DO i=1,nocc
-      Vijij(i,j) = Fijkl(i,i,j,j)
-    ENDDO
-  ENDDO
-  DO q=1,nbasis
-    DO j=1,nocc
-      DO p=1,nbasis
-        DO i=1,nocc
-          Vijij(i,j) = Vijij(i,j) - Ripjq(i,p,j,q)*Gipjq(i,p,j,q)
-        ENDDO
-      ENDDO
-    ENDDO
-  ENDDO
-  DO q=1,ncabs
-    DO j=1,nocc
-      DO p=1,noccfull
-        DO i=1,nocc
-          Vijij(i,j) = Vijij(i,j) - Rimjc(i,p,j,q)*Gimjc(i,p,j,q)
-        ENDDO
-      ENDDO
-    ENDDO
-  ENDDO
-  DO q=1,ncabs
-    DO j=1,nocc
-      DO p=1,noccfull
-        DO i=1,nocc
-          Vijij(i,j) = Vijij(i,j) - Rimjc(j,p,i,q)*Gimjc(j,p,i,q)
-        ENDDO
-      ENDDO
-    ENDDO
-  ENDDO
+    implicit none
+    Real(realk),intent(OUT) :: Vijij(nocc,nocc)
+    Real(realk),intent(in)  :: Ripjq(nocc,nbasis,nocc,nbasis)
+    Real(realk),intent(in)  :: Gipjq(nocc,nbasis,nocc,nbasis)
+    Real(realk),intent(in)  :: Fijkl(nocc,nocc,nocc,nocc)
+    Real(realk),intent(in)  :: Rimjc(nocc,noccfull,nocc,ncabs)
+    Real(realk),intent(in)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+    Integer,intent(in)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    !Vijij = 0.0E0_realk
+    do j=1,nocc
+       do i=1,nocc
+          Vijij(i,j) = Fijkl(i,i,j,j)
+       enddo
+    enddo
+    do q=1,nbasis
+       do j=1,nocc
+          do p=1,nbasis
+             do i=1,nocc
+                Vijij(i,j) = Vijij(i,j) - Ripjq(i,p,j,q)*Gipjq(i,p,j,q)
+             enddo
+          enddo
+       enddo
+    enddo
+    do q=1,ncabs
+       do j=1,nocc
+          do p=1,noccfull
+             do i=1,nocc
+                Vijij(i,j) = Vijij(i,j) - Rimjc(i,p,j,q)*Gimjc(i,p,j,q)
+             enddo
+          enddo
+       enddo
+    enddo
+    do q=1,ncabs
+       do j=1,nocc
+          do p=1,noccfull
+             do i=1,nocc
+                Vijij(i,j) = Vijij(i,j) - Rimjc(j,p,i,q)*Gimjc(j,p,i,q)
+             enddo
+          enddo
+       enddo
+    enddo
   end subroutine mp2f12_Vijij
+
+  !> \brief Vijij term1 contribution for MP2-f12
+  !> \author Yang M. Wang
+  !> \date March 2013
+  subroutine mp2f12_Vijij_term1(Vijij,Fijkl,nocc,noccfull,nbasis,ncabs)
+    implicit none
+    Real(realk),intent(inout) :: Vijij(nocc,nocc)
+    Real(realk),intent(in)  :: Fijkl(nocc,nocc,nocc,nocc)
+    Integer,intent(in)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    Vijij = 0.0E0_realk
+    do j=1,nocc
+       do i=1,nocc
+          Vijij(i,j) = Fijkl(i,i,j,j)
+       enddo
+    enddo
+  end subroutine mp2f12_Vijij_term1
+
+  subroutine mp2f12_Vijij_term2(Vijij,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
+    
+    implicit none
+    Real(realk),intent(inout) :: Vijij(nocc,nocc)
+    Real(realk),intent(in)  :: Ripjq(nocc,nbasis,nocc,nbasis)
+    Real(realk),intent(in)  :: Gipjq(nocc,nbasis,nocc,nbasis)
+
+    Integer,intent(in)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    Vijij = 0.0E0_realk
+    do q=1,nbasis
+       do j=1,nocc
+          do p=1,nbasis
+             do i=1,nocc
+                Vijij(i,j) = Vijij(i,j) - Ripjq(i,p,j,q)*Gipjq(i,p,j,q)
+             enddo
+          enddo
+       enddo
+    enddo
+  end subroutine mp2f12_Vijij_term2
+
+  subroutine mp2f12_Vijij_term3(Vijij,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+    implicit none
+    Real(realk),intent(inout) :: Vijij(nocc,nocc)
+    Real(realk),intent(in)  :: Rimjc(nocc,noccfull,nocc,ncabs)
+    Real(realk),intent(in)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+
+    Integer,intent(in)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    Vijij = 0.0E0_realk
+    do q=1,ncabs
+       do j=1,nocc
+          do p=1,noccfull
+             do i=1,nocc
+                Vijij(i,j) = Vijij(i,j) - Rimjc(i,p,j,q)*Gimjc(i,p,j,q)
+             enddo
+          enddo
+       enddo
+    enddo
+  end subroutine mp2f12_Vijij_term3
+
+  subroutine mp2f12_Vijij_term4(Vijij,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+    implicit none
+    Real(realk),intent(inout) :: Vijij(nocc,nocc)
+    Real(realk),intent(in)  :: Rimjc(nocc,noccfull,nocc,ncabs)
+    Real(realk),intent(in)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+
+    Integer,intent(in)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    Vijij = 0.0E0_realk
+    do q=1,ncabs
+       do j=1,nocc
+          do p=1,noccfull
+             do i=1,nocc
+                Vijij(i,j) = Vijij(i,j) - Rimjc(j,p,i,q)*Gimjc(j,p,i,q)
+             enddo
+          enddo
+       enddo
+    enddo
+  end subroutine mp2f12_Vijij_term4
 
   !> \brief Vjiij contribution for MP2-f12
   !> \author Simen Reine
   !> \date May 2012
   subroutine mp2f12_Vjiij(Vjiij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
-  implicit none
-  Real(realk),intent(OUT) :: Vjiij(nocc,nocc)
-  Real(realk),intent(IN)  :: Ripjq(nocc,nbasis,nocc,nbasis)
-  Real(realk),intent(IN)  :: Gipjq(nocc,nbasis,nocc,nbasis)
-  Real(realk),intent(IN)  :: Fijkl(nocc,nocc,nocc,nocc)
-  Real(realk),intent(IN)  :: Rimjc(nocc,noccfull,nocc,ncabs)
-  Real(realk),intent(IN)  :: Gimjc(nocc,noccfull,nocc,ncabs)
-  Integer,intent(IN)      :: nocc,noccfull,nbasis,ncabs
-  !
-  Integer :: i,j,p,q
-
-  DO j=1,nocc
-    DO i=1,nocc
-      Vjiij(i,j) = Fijkl(i,j,j,i)
-    ENDDO
-  ENDDO
-  DO q=1,nbasis
-    DO j=1,nocc
-      DO p=1,nbasis
-        DO i=1,nocc
-          Vjiij(i,j) = Vjiij(i,j) - Ripjq(i,p,j,q)*Gipjq(j,p,i,q)
-        ENDDO
-      ENDDO
-    ENDDO
-  ENDDO
-  DO q=1,ncabs
-    DO j=1,nocc
-      DO p=1,noccfull
-        DO i=1,nocc
-          Vjiij(i,j) = Vjiij(i,j) - Rimjc(i,p,j,q)*Gimjc(j,p,i,q)
-        ENDDO
-      ENDDO
-    ENDDO
-  ENDDO
-  DO q=1,ncabs
-    DO j=1,nocc
-      DO p=1,noccfull
-        DO i=1,nocc
-          Vjiij(i,j) = Vjiij(i,j) - Rimjc(j,p,i,q)*Gimjc(i,p,j,q)
-        ENDDO
-      ENDDO
-    ENDDO
-  ENDDO
+    implicit none
+    Real(realk),intent(out) :: Vjiij(nocc,nocc)
+    Real(realk),intent(in)  :: Ripjq(nocc,nbasis,nocc,nbasis)
+    Real(realk),intent(in)  :: Gipjq(nocc,nbasis,nocc,nbasis)
+    Real(realk),intent(in)  :: Fijkl(nocc,nocc,nocc,nocc)
+    Real(realk),intent(in)  :: Rimjc(nocc,noccfull,nocc,ncabs)
+    Real(realk),intent(in)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+    Integer,intent(in)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    !Vjiij = 0.0E0_realk
+    do j=1,nocc
+       do i=1,nocc
+          Vjiij(i,j) = Fijkl(i,j,j,i)
+       enddo
+    enddo
+    do q=1,nbasis
+       do j=1,nocc
+          do p=1,nbasis
+             do i=1,nocc
+                Vjiij(i,j) = Vjiij(i,j) - Ripjq(i,p,j,q)*Gipjq(j,p,i,q)
+             enddo
+          enddo
+       enddo
+    enddo
+    do q=1,ncabs
+       do j=1,nocc
+          do p=1,noccfull
+             do i=1,nocc
+                Vjiij(i,j) = Vjiij(i,j) - Rimjc(i,p,j,q)*Gimjc(j,p,i,q)
+             enddo
+          enddo
+       enddo
+    enddo
+    do q=1,ncabs
+       do j=1,nocc
+          do p=1,noccfull
+             do i=1,nocc
+                Vjiij(i,j) = Vjiij(i,j) - Rimjc(j,p,i,q)*Gimjc(i,p,j,q)
+             enddo
+          enddo
+       enddo
+    enddo
   end subroutine mp2f12_Vjiij
+
+  !> \brief Vjiij term1 contribution for MP2-f12
+  !> \author Yang M. Wang
+  !> \date March 2013
+  subroutine mp2f12_Vjiij_term1(Vjiij,Fijkl,nocc,noccfull,nbasis,ncabs)
+    implicit none
+    Real(realk),intent(out) :: Vjiij(nocc,nocc)
+    Real(realk),intent(in)  :: Fijkl(nocc,nocc,nocc,nocc)
+    Integer,intent(in)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    Vjiij = 0.0E0_realk
+    do j=1,nocc
+       do i=1,nocc
+          Vjiij(i,j) = Fijkl(i,j,j,i)
+       enddo
+    enddo
+  end subroutine mp2f12_Vjiij_term1
+
+  subroutine mp2f12_Vjiij_term2(Vjiij,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
+    implicit none
+    Real(realk),intent(inout) :: Vjiij(nocc,nocc)
+    Real(realk),intent(in)  :: Ripjq(nocc,nbasis,nocc,nbasis)
+    Real(realk),intent(in)  :: Gipjq(nocc,nbasis,nocc,nbasis)
+
+    Integer,intent(in)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    Vjiij = 0.0E0_realk
+    do q=1,nbasis
+       do j=1,nocc
+          do p=1,nbasis
+             do i=1,nocc
+                Vjiij(i,j) = Vjiij(i,j) - Ripjq(i,p,j,q)*Gipjq(j,p,i,q)
+             enddo
+          enddo
+       enddo
+    enddo
+  end subroutine mp2f12_Vjiij_term2
+
+  subroutine mp2f12_Vjiij_term3(Vjiij,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+    implicit none
+    Real(realk),intent(inout) :: Vjiij(nocc,nocc)
+    Real(realk),intent(in)  :: Rimjc(nocc,noccfull,nocc,ncabs)
+    Real(realk),intent(in)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+
+    Integer,intent(in)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    Vjiij = 0E0_realk
+    do q=1,ncabs
+       do j=1,nocc
+          do p=1,noccfull
+             do i=1,nocc
+                Vjiij(i,j) = Vjiij(i,j) - Rimjc(i,p,j,q)*Gimjc(j,p,i,q)
+             enddo
+          enddo
+       enddo
+    enddo
+  end subroutine mp2f12_Vjiij_term3
+
+  subroutine mp2f12_Vjiij_term4(Vjiij,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+    implicit none
+    Real(realk),intent(inout) :: Vjiij(nocc,nocc)
+    Real(realk),intent(in)  :: Rimjc(nocc,noccfull,nocc,ncabs)
+    Real(realk),intent(in)  :: Gimjc(nocc,noccfull,nocc,ncabs)
+
+    Integer,intent(in)      :: nocc,noccfull,nbasis,ncabs
+    !
+    Integer :: i,j,p,q
+    Vjiij = 0.0E0_realk
+    do q=1,ncabs
+       do j=1,nocc
+          do p=1,noccfull
+             do i=1,nocc
+                Vjiij(i,j) = Vjiij(i,j) - Rimjc(j,p,i,q)*Gimjc(i,p,j,q)
+             enddo
+          enddo
+       enddo
+    enddo
+  end subroutine mp2f12_Vjiij_term4
 
   !> \brief Xijij contribution for MP2-f12
   !> \author Simen Reine

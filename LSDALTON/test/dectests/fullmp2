@@ -53,12 +53,9 @@ cat > fullmp2.dal <<'%EOF%'
 TRILEVEL
 .CONVTHR
 1.0d-5
-.LCM
 **DEC
-.ccFull
+.FULL
 .MP2
-.ccThr
-1e-9
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -88,7 +85,7 @@ CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # MP2 ENERGY
-CRIT1=`$GREP "Corr. energy *  = * \-0.25824[5-6]" $log | wc -l`
+CRIT1=`$GREP "Correlation energy  : *\-0.25824[5-6]" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="MP2 correlation energy is not correct"

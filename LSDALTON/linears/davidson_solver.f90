@@ -276,6 +276,7 @@ subroutine SolveNewton_ReducedSpace(grad,CFG,X,xred,res,iter)
   real(realk),pointer:: A(:,:)
   real(realk)        :: RHS(iter-1)
   integer            :: IPIV(iter-1),IERR
+  IERR=0
 
   call mem_alloc(A,iter-1,iter-1)
   A(1:iter-1,1:iter-1)= CFG%Ared(2:iter,2:iter)
@@ -788,6 +789,7 @@ implicit none
  real(realk),pointer :: WORK(:),VL(:,:),VR(:,:)
  integer :: LWORK,i,IERR,j,indx(1)
  character(len=1) :: V,L
+ IERR=0
 
  call mem_alloc(A,iter,iter)
  !Set up reduced Hessian and overlap  with correct dimension
@@ -890,6 +892,7 @@ integer             :: IPIV(ndim),IERR,i,j
 type(matrix)        :: residual_2D
 type(matrix),intent(in) :: grad
 real(realk)         :: resnorm_2D
+IERR=0
 
 call mat_init(residual_2D,grad%nrow,grad%ncol)
 
@@ -1015,6 +1018,7 @@ implicit none
 type(RedSpaceItem) :: CFG
 real(realk),pointer :: RedH(:,:),eigvals(:),wrk(:)
 integer :: lwrk,IERR,i,j,n
+IERR=0
 
 n=CFG%it-1
 lwrk=10*n
@@ -1082,6 +1086,7 @@ real(realk),pointer    :: Fmat(:,:)
 real(realk),pointer    :: wrk(:)
 integer :: lwrk,IERR,loc
 integer :: i,j
+IERR=0
 call mem_alloc(Fmat,ndim,ndim)
 call mat_to_full(decomp%FUP,1.0_realk,Fmat)
 call mem_alloc(eigvals,ndim)

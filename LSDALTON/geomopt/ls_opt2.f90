@@ -1083,6 +1083,7 @@ Implicit Real(realk) (A-H,O-Z)
       Real(realk)  OVERLP(NCR)
       Real(realk), pointer :: Work_mem(:) 
       INTEGER :: IPRINT,INFO
+      INFO=0
 !
       IF (IPrint .GT. 5) CALL LSHEADER(lupri,'Output from WLKEI1')
 !

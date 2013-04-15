@@ -472,6 +472,7 @@ C  /* Deck exesir */
 #include "huckel.h"
 #include "gnrinf.h"
 C
+C
 C     Run SIRIUS
 C
       CALL QENTER('SIRIUS')
@@ -512,6 +513,7 @@ C
       IF (LUIT5  .GT. 0) CALL GPCLOSE(LUIT5,'DELETE')
       IF (LUINTM .GT. 0) CALL GPCLOSE(LUINTM,'KEEP')
       CALL TITLER('End of Wave Function Section (SIRIUS)',' ',200)
+
       IF (ICONV .EQ. 0 .AND. .NOT.WLKREJ) THEN
          WRITE(LUPRI, '(/A)')
      &      '@ - DALTON aborted because wave function not converged!'

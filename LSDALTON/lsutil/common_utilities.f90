@@ -66,7 +66,7 @@
         real(realk)              :: VL, VU
         integer                  :: IL, IU, neig, Ltemp, INFO, m
         logical, intent(in)      :: print_eivecs 
-
+   INFO=0
    Ltemp = 8*ndim 
    allocate(eigenval(ndim))
    allocate(eigenvec(ndim,ndim),temp(Ltemp),Itemp(5*ndim),IFAIL(ndim))
@@ -116,6 +116,7 @@
      !
      real(realk),allocatable :: wrk(:)
      integer    :: ierr,lwrk
+     ierr=0
      allocate(wrk(5))
      lwrk = -1
      call DSYGV(1,'V','L',N,A,N,B,N,eigval,wrk,lwrk,ierr)
@@ -152,6 +153,7 @@
        character(len=70)             :: MSG
        INTEGER                       :: INFO, LWORK, NB, ILAENV
        double precision, allocatable :: WORK(:)
+       INFO=0
    
        !find out optimal work memory size
        NB = ilaenv(1,'DSYTRD',UPLO,N,N,N,N)

@@ -379,8 +379,6 @@ contains
     call array4_free(tmp3)
 
     call cpu_time(endtime)
-    if(DECinfo%show_time) write(DECinfo%output,'(a,f16.3,a)') &
-         ' time :: integral transformation : ',endtime-starttime,' s'
 
 #endif
 
@@ -457,67 +455,6 @@ contains
     return
   end function get_exchange_as_oopq
 
-  !> \brief Simple routine to transform integrals to (AI|BJ) for storing all AOs in memory
-  !> \author Marcin Ziolkowski
-  !> \param gao Full matrix with AO integrals
-  !> \param left1 First index transformation (to A)
-  !> \param left2 Second index transformation (to I)
-  !> \param right1 Third index transformation (to B)
-  !> \param right2 Fourth index transformation (to J)
-  !> \return Array4 with intrgrals (AI|BJ)
-  function get_gmo_vovo(gao,left1,left2,right1,right2) result(gmo)
-
-    implicit none
-    type(array4), intent(inout) :: gao
-    type(array4) :: gmo
-    type(array4) :: tmp1,tmp2,tmp3
-    type(array2), intent(inout) :: left1,left2,right1,right2
-    real(realk), pointer :: AA(:,:), BB(:,:), CC(:,:), DD(:,:)
-    real(realk) :: starttime,endtime
-    integer, dimension(4) :: dims,rotate
-    integer :: nbas,nocc,nvirt
-    integer :: a,b,c,d,p,q,r,s
-
-    call cpu_time(starttime)
-
-    nocc  = left2%dims(2)
-    nvirt = left1%dims(2)
-    nbas = left1%dims(1)
-
-    rotate=[2,3,4,1]
-
-    ! transform first index to occupied
-    call array4_read(gao)
-    tmp1 = array4_init([nocc,nbas,nbas,nbas])
-    call array4_contract1(gao,left2,tmp1,.true.) ! gao[MuNu,AlBe] -> tmp1[JNu,AlBe]
-
-    ! deallocate ao integrals
-    call array4_dealloc(gao)
-
-    call array4_reorder(tmp1,[3,4,2,1]) ! tmp1[JNu,AlBe] -> tmp1[AlBe,NuJ]
-    tmp2 = array4_init([nocc,nbas,nbas,nocc])
-    call array4_contract1(tmp1,right2,tmp2,.true.) ! tmp1[AlBe,NuJ] -> tmp2[IBe,NuJ]
-    print *,'half trans :',tmp2*tmp2
-    call array4_free(tmp1)
-
-    call array4_reorder(tmp2,[2,1,3,4]) ! tmp2[IBe,NuJ] -> tmp2[BeI,NuJ]
-    tmp3 = array4_init([nvirt,nocc,nbas,nocc])
-    call array4_contract1(tmp2,right1,tmp3,.true.) ! tmp2[BeI,NuJ] -> tmp3[AI,NuJ]
-    call array4_free(tmp2)
-    print *,'AI,NuJ ',tmp3*tmp3
-
-    call array4_reorder(tmp3,[3,4,1,2]) ! tmp3[AI,NuJ] -> tmp3[NuJ,AI]
-    gmo = array4_init([nvirt,nocc,nvirt,nocc])
-    call array4_contract1(tmp3,left1,gmo,.true.) ! tmp3[NuJ,AI] -> gmo[BJ,AI]
-    call array4_free(tmp3)
-
-    call cpu_time(endtime)
-    if(DECinfo%show_time) write(DECinfo%output,'(a,f16.3,a)') &
-         ' time :: integral transformation : ',endtime-starttime,' s'
-
-    return
-  end function get_gmo_vovo
-
 
   !> \brief Carry out 2-electron Fock transformation on matrix U, i.e.
   !> FockU = 2J(U) - K(U)
@@ -535,10 +472,6 @@ contains
     type(lsitem), intent(inout) :: MyLsItem
     !> Is U symmetric (true) or not (false)?
     logical, intent(in) :: symmetric
-    real(realk) :: tcpu1,twall1,tcpu2,twall2,tcpu,twall
-
-    call LSTIMER('START',tcpu,twall,DECinfo%output)
-    call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
     ! Sanity check
     if(U%nrow /= U%ncol) then
@@ -549,11 +482,6 @@ contains
     ! Carry out Fock transformation on U
     call II_get_Fock_mat(DECinfo%output, DECinfo%output, &
          & MyLsitem%setting,U,symmetric,FockU,1,.FALSE.)
-
-    call LSTIMER('DEC: FOCK TRANS',tcpu,twall,DECinfo%output)
-    call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%integral_time_cpu = DECinfo%integral_time_cpu + (tcpu2-tcpu1)
-    DECinfo%integral_time_wall = DECinfo%integral_time_wall + (twall2-twall1)
 
   end subroutine dec_fock_transformation
 

@@ -1181,7 +1181,7 @@ type(prop_molcfg), intent(inout)    :: molcfg
     integer,allocatable      :: IPIV(:)
     integer                  :: igd, ierr, i, j, k,n_red,max_red
     real(realk)              :: gammma
-
+    ierr=0
     gammma=molcfg%solver%rsp_gamma
     max_red=molcfg%solver%rsp_maxred
     n_red=ndim_red+nm_red+ni_red+nmi_red

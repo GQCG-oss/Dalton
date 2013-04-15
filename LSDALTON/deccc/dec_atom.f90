@@ -213,7 +213,7 @@ contains
     integer :: j,idx,i,listidx,natoms,startidx
     integer :: CentralAtom
     real(realk) :: tcpu, twall
-    logical,pointer :: occ_listEFF(:)
+    logical,pointer :: occ_listEFF(:),occEOS(:),unoccEOS(:)
 
 
     ! Use fragment-adapted orbitals?
@@ -267,6 +267,62 @@ contains
 
 
 
+    ! Size of occupied EOS
+    ! ********************
+
+    ! Occupied EOS orbitals are those assigned to central atom in fragment
+    ! (or central atomS in case of a pair fragment)
+
+    ! Avoid including core orbitals in EOS if frozen core approx. is used
+    if(DECinfo%frozencore) then
+       startidx=MyMolecule%ncore+1 ! loop from first valence orbital
+    else
+       startidx=1 ! loop over all occ orbitals
+    end if
+
+    ! Logical vector keeping track of EOS orbitals
+    call mem_alloc(occEOS,nocc) 
+    occEOS=.false.
+    fragment%noccEOS=0
+    ! loop over occupied orbitals (only valence for frozen core)
+    OccEOSSize: do j=startidx,nOcc  
+       CentralAtom=OccOrbitals(j)%centralatom
+
+       ! Loop over atoms in pair fragment list (just one atom, MyAtom, if it is not a pairfragment)
+       do i=1,fragment%nEOSatoms
+          listidx=fragment%EOSatoms(i)
+          if( CentralAtom==listidx ) then ! Orbital is included in the EOS
+             fragment%noccEOS = fragment%noccEOS + 1
+             occEOS(j)=.true.
+          end if
+       end do
+
+    end do OccEOSSize
+
+
+    ! Size of unoccupied EOS
+    ! **********************
+
+    ! Logical vector keeping track of EOS orbitals
+    call mem_alloc(unoccEOS,nunocc) 
+    unoccEOS=.false.
+    ! Virtual EOS orbitals are those assigned to the central atom
+    fragment%nunoccEOS=0
+    do j=1,nunocc
+       CentralAtom=UnoccOrbitals(j)%centralatom
+
+       ! Loop over atoms in pair fragment list (just one atom, Myatom, if it is not a pairfragment)
+       do i=1,fragment%nEOSatoms
+          listidx=fragment%EOSatoms(i)
+          if( CentralAtom==listidx ) then ! Orbital is included in the EOS
+             fragment%nunoccEOS = fragment%nunoccEOS + 1
+             unoccEOS(j)=.true.
+          end if
+       end do
+
+    end do
+
+
     ! Size of occupied AOS - number of "true" elements in logical occupied vector
     ! ***************************************************************************
     call mem_alloc(occ_listEFF,nocc)
@@ -286,59 +342,32 @@ contains
     fragment%nunoccFA = fragment%nunoccAOS
     
 
-    ! Size of occupied EOS
-    ! ********************
-
-    ! Occupied EOS orbitals are those assigned to central atom in fragment
-    ! (or central atomS in case of a pair fragment)
-
-    ! Avoid including core orbitals in EOS if frozen core approx. is used
-    if(DECinfo%frozencore) then
-       startidx=MyMolecule%ncore+1 ! loop from first valence orbital
-    else
-       startidx=1 ! loop over all occ orbitals
-    end if
-
-    fragment%noccEOS=0
-    ! loop over occupied orbitals (only valence for frozen core)
-    OccEOSSize: do j=startidx,nOcc  
-       CentralAtom=OccOrbitals(j)%centralatom
-
-       ! Loop over atoms in pair fragment list (just one atom, MyAtom, if it is not a pairfragment)
-       do i=1,fragment%nEOSatoms
-          listidx=fragment%EOSatoms(i)
-          if( CentralAtom==listidx ) then ! Orbital is included in the EOS
-             fragment%noccEOS = fragment%noccEOS + 1
-          end if
-       end do
-
-    end do OccEOSSize
 
 
-    ! Size of unoccupied EOS
-    ! **********************
+    ! Occupied orbital indices
+    ! ************************
+    call mem_alloc(fragment%occEOSidx,fragment%noccEOS)
+    call mem_alloc(fragment%occAOSidx,fragment%noccAOS)
+    fragment%occEOSidx=0
+    fragment%occAOSidx=0
 
-    ! Virtual EOS orbitals are those assigned to the central atom
-    fragment%nunoccEOS=0
-    do j=1,nunocc
-       CentralAtom=UnoccOrbitals(j)%centralatom
-
-       ! Loop over atoms in pair fragment list (just one atom, Myatom, if it is not a pairfragment)
-       do i=1,fragment%nEOSatoms
-          listidx=fragment%EOSatoms(i)
-          if( CentralAtom==listidx ) then ! Orbital is included in the EOS
-             fragment%nunoccEOS = fragment%nunoccEOS + 1
-          end if
-       end do
-
+    ! Loop over EOS orbitals
+    idx=0
+    do j=startidx,nOcc   ! no core orbitals in EOS for frozen core approx
+       if(occEOS(j)) then
+          idx=idx+1
+          fragment%occEOSidx(idx)=j
+          fragment%occAOSidx(idx)=j   ! also set 
+       end if
     end do
 
+    if(idx /= fragment%noccEOS) then
+       call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%noccEOS',-1)
+    end if
 
-    ! -- Assign occupied AOS indices
-    call mem_alloc(fragment%occAOSidx,fragment%noccAOS)
-    idx=0
+    ! Loop over remaining AOS orbitals (not EOS because they have already been set)
     do i=1,nocc
-       if(occ_listEFF(i)) then
+       if(occ_listEFF(i) .and. (.not. occEOS(i)) ) then
           idx=idx+1
           fragment%occAOSidx(idx) = i
        end if
@@ -346,72 +375,39 @@ contains
     if(idx /= fragment%noccAOS) &
          & call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%noccAOS',-1)
 
-    ! -- Assign unoccupied AOS indices
+    ! Note that the above procedure ensures that the EOS orbitals are always
+    ! listed before the remaining AOS orbitals
+
+
+    ! Virtual EOS orbital indices
+    ! ***************************
+    call mem_alloc(fragment%unoccEOSidx,fragment%nunoccEOS)
     call mem_alloc(fragment%unoccAOSidx,fragment%nunoccAOS)
+    fragment%unoccEOSidx = 0
+    fragment%unoccAOSidx = 0
+
+    ! Loop over EOS orbitals
     idx=0
+    do j=1,nunocc
+       if(unoccEOS(j)) then
+          idx=idx+1
+          fragment%unoccEOSidx(idx)=j
+          fragment%unoccAOSidx(idx)=j
+       end if
+    end do
+    if(idx /= fragment%nunoccEOS) then
+       call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccEOS',DECinfo%output)
+    end if
+
+    ! Loop over remaining AOS orbitals (not EOS)
     do i=1,nunocc
-       if(unocc_list(i)) then
+       if(unocc_list(i) .and. (.not. unoccEOS(i)) ) then
           idx=idx+1
           fragment%unoccAOSidx(idx) = i
        end if
     end do
     if(idx /= fragment%nunoccAOS) &
          & call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccAOS',-1)
-
-
-    ! Occupied EOS orbital indices
-    ! ****************************
-    call mem_alloc(fragment%occEOSidx,fragment%noccEOS)
-
-    ! Occupied EOS orbitals are those assigned to central atom in fragment
-    ! (or central atomS in case of a pair fragment)
-
-    fragment%occEOSidx = 0
-    idx=0
-    do j=startidx,nOcc   ! no core orbitals in EOS for frozen core approx
-       CentralAtom=OccOrbitals(j)%centralatom
-
-       ! Loop over atoms in pair fragment list (just one atom - MyAtom - if it is not a pairfragment)
-       do i=1,fragment%nEOSatoms
-          listidx=fragment%EOSatoms(i)
-          if( CentralAtom==listidx ) then ! Orbital is included in the EOS
-             idx=idx+1
-             fragment%occEOSidx(idx)=j
-          end if
-       end do
-
-    end do
-    if(idx /= fragment%noccEOS) then
-       call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%noccEOS',-1)
-    end if
-
-
-
-    ! Virtual EOS orbital indices
-    ! ***************************
-    call mem_alloc(fragment%unoccEOSidx,fragment%nunoccEOS)
-
-    ! Virtual EOS orbitals are those assigned to the central atom
-    ! (or central atomS in case of a pair fragment)
-
-    fragment%unoccEOSidx = 0
-    idx=0
-    do j=1,nunocc
-       CentralAtom=UnOccOrbitals(j)%centralatom
-
-       ! Loop over atoms in pair fragment list (just one atom - MyAtom - if it is not a pairfragment)
-       do i=1,fragment%nEOSatoms
-          listidx=fragment%EOSatoms(i)
-          if( CentralAtom==listidx ) then ! Orbital is included in the EOS
-             idx=idx+1
-             fragment%unoccEOSidx(idx)=j
-          end if
-       end do
-
-    end do
-    if(idx /= fragment%nunoccEOS) then
-       call lsquit('atomic_fragment_init_orbital_specific: idx /= fragment%nunoccEOS',DECinfo%output)
-    end if
 
 
 
@@ -484,6 +480,9 @@ contains
 
     ! Free stuff
     call mem_dealloc(occ_listEFF)
+    call mem_dealloc(occEOS)
+    call mem_dealloc(unoccEOS)
+
 
     if(DECinfo%PL>0) then
        write(DECinfo%output,*)
@@ -960,28 +959,23 @@ contains
     end if
 
 
-    ! AOS indices are now ill-defined because the fragment-adapted orbitals
-    ! are not defined in the full molecular local basis!
-    ! We now set the entries to -1 to hopefully detect if someone by mistake tries to use the indices!
-    FOfragment%occAOSidx = -1
-    FOfragment%unoccAOSidx = -1
+    ! AOS indices are now ill-defined, except for the EOS subset
+    ! because the fragment-adapted orbitals are not defined in the full molecular local basis!
+    ! We now set the entries for non-EOS orbitals to -1 
+    ! to hopefully detect if someone by mistake tries to use the indices!
+    FOfragment%occAOSidx(LocalFragment%noccEOS+1:LocalFragment%noccAOS) = -1
+    FOfragment%unoccAOSidx(LocalFragment%nunoccEOS+1:LocalFragment%nunoccAOS) = -1
 
     ! Do the same for reduced space indices. However, these should be removed at some point!
-    FOfragment%REDoccAOSidx = -1
-    FOfragment%REDunoccAOSidx = -1
+    FOfragment%REDoccAOSidx(LocalFragment%noccEOS+1:LocalFragment%noccAOS) = -1
+    FOfragment%REDunoccAOSidx(LocalFragment%nunoccEOS+1:LocalFragment%nunoccAOS) = -1
     
-
-
-    ! EOS orbitals in the AOS list of orbitals
-    ! ----------------------------------------
-    ! Now the orbitals are listed with EOS orbitals before  the remaining AOS orbitals
-    ! (see fragment_adapted_transformation_matrices), so the EOS indices in the total list
-    ! of AOS orbitals are simply the first noccEOS (or nunoccEOS) orbitals.
-    do i=1,FOfragment%noccEOS
-       FOfragment%idxo(i) = i
+    ! Do the same for central atom in AOS orbitals
+    do i=LocalFragment%noccEOS+1,LocalFragment%noccAOS
+       FOfragment%occAOSorb(i)%centralatom = -1
     end do
-    do i=1,FOfragment%nunoccEOS
-      FOfragment%idxu(i) = i
+    do i=LocalFragment%nunoccEOS+1,LocalFragment%nunoccAOS
+       FOfragment%unoccAOSorb(i)%centralatom = -1
     end do
 
 
@@ -2442,12 +2436,17 @@ end subroutine atomic_fragment_basis
 
     ! Correlation density matrices
     write(wunit) fragment%CDset
+    write(wunit) fragment%FATransSet
+    write(wunit) fragment%noccFA
+    write(wunit) fragment%nunoccFA
     if(fragment%CDset) then
        write(wunit) fragment%occmat
        write(wunit) fragment%virtmat
        write(wunit) fragment%RejectThr
-       write(wunit) fragment%noccFA
-       write(wunit) fragment%nunoccFA
+    end if
+    if(fragment%FAtransset) then
+       write(wunit) fragment%CoccFA
+       write(wunit) fragment%CunoccFA
     end if
 
   end subroutine fragment_write_data
@@ -2690,7 +2689,7 @@ end subroutine atomic_fragment_basis
          & virt_list,occ_list,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,fragment,DoBasis,.false.)
 
 
-    ! Fragment energies (only for the Lagrangian scheme are all three used)
+    ! Fragment energies 
     read(runit) fragment%energies
 
 
@@ -2731,33 +2730,39 @@ end subroutine atomic_fragment_basis
     end if
 
 
-    ! Correlation density matrices
+    ! Correlation density matrices and fragment-adapted orbitals
     if(DECinfo%convert64to32) then
        call read_64bit_to_32bit(runit,fragment%CDset)
+       call read_64bit_to_32bit(runit,fragment%FATransSet)
+       call read_64bit_to_32bit(runit,fragment%noccFA)
+       call read_64bit_to_32bit(runit,fragment%nunoccFA)
     elseif(DECinfo%convert32to64) then
        call read_32bit_to_64bit(runit,fragment%CDset)
+       call read_32bit_to_64bit(runit,fragment%FATransSet)
+       call read_32bit_to_64bit(runit,fragment%noccFA)
+       call read_32bit_to_64bit(runit,fragment%nunoccFA)
     else
        read(runit) fragment%CDset
+       read(runit) fragment%FATransSet
+       read(runit) fragment%noccFA
+       read(runit) fragment%nunoccFA
     end if
 
+    ! Correlation density
     if(fragment%CDset) then
        call mem_alloc(Fragment%OccMat,Fragment%noccAOS,Fragment%noccAOS)
        call mem_alloc(Fragment%VirtMat,Fragment%nunoccAOS,Fragment%nunoccAOS)
        read(runit) fragment%occmat
        read(runit) fragment%virtmat
        read(runit) fragment%RejectThr
+    end if
 
-       if(DECinfo%convert64to32) then
-          call read_64bit_to_32bit(runit,fragment%noccFA)
-          call read_64bit_to_32bit(runit,fragment%nunoccFA)
-       elseif(DECinfo%convert32to64) then
-          call read_32bit_to_64bit(runit,fragment%noccFA)
-          call read_32bit_to_64bit(runit,fragment%nunoccFA)
-       else
-          read(runit) fragment%noccFA
-          read(runit) fragment%nunoccFA
-       end if
-
+    ! Fragment-adapted orbitals
+    if(fragment%FATransSet) then
+       call mem_alloc(Fragment%CoccFA,Fragment%number_basis,Fragment%noccFA)
+       call mem_alloc(Fragment%CunoccFA,Fragment%number_basis,Fragment%nunoccFA)
+       read(runit) fragment%CoccFA
+       read(runit) fragment%CunoccFA
     end if
 
 
@@ -2832,7 +2837,7 @@ end subroutine atomic_fragment_basis
 
     call cpu_time(tend)
     if(DECinfo%PL>0) then
-       if(DECinfo%show_time) write(DECinfo%output,'(1X,a,g18.8)') &
+       write(DECinfo%output,'(1X,a,g18.8)') &
             & 'Time used in get_atom_matrix_from_orbital_matrix', tend-tstart
     end if
 
@@ -3757,8 +3762,8 @@ if(DECinfo%PL>0) then
     !> Job list of fragments listed according to size
     type(joblist),intent(inout) :: jobs
     integer :: maxocc,maxunocc,occdim,unoccdim,basisdim,nfrags
-    integer:: maxbasis, avbasis,nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs
-    real(realk) :: avocc,avunocc,tcpu,twall
+    integer:: maxbasis, nbasis,atom,idx,i,j,myatom,nsingle,npair,njobs
+    real(realk) :: avocc,avunocc,tcpu,twall,avbasis
     logical,pointer :: occAOS(:,:),unoccAOS(:,:),REDoccAOS(:,:),REDunoccAOS(:,:),fragbasis(:,:)
     integer,pointer :: fragsize(:),fragtrack(:),occsize(:),unoccsize(:),basissize(:)
 

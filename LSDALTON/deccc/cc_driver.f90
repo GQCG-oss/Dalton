@@ -60,7 +60,8 @@ contains
   !> fragment calculation (depending on the value of fragment_job).
   !> Returns CC energy, converged singles and doubles amplitudes, and
   !> two-electron integrals (a i | b j) stored as (a,i,b,j)
-  !> \author Marcin Ziolkowski (modified by Kasper Kristensen)
+  !> \author Marcin Ziolkowski (modified by Kasper Kristensen and Patrick
+  !  Ettenhuber)
   subroutine ccsolver(ypo_f,ypv_f,fock_f,nbasis,nocc,nvirt, &
        & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
        & t1_final,t2_final,VOVO,longrange_singles)
@@ -103,7 +104,8 @@ contains
     !> IMPORTANT: If this it TRUE, then the singles amplitudes for the fragment
     !> (from previous calculations) must be stored in t1_final at input!
     logical,intent(in) :: longrange_singles
-    real(realk),pointer :: yho_f(:,:), yhv_f(:,:)
+    real(realk),pointer :: yho_d(:,:), yhv_d(:,:),ypo_d(:,:),ypv_d(:,:),focc(:),fvirt(:)
+    real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:), Uocc(:,:), Uvirt(:,:)
 
     integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims
     integer, dimension(4) :: ampl4_dims
@@ -128,10 +130,11 @@ contains
     real(realk) :: iter_cpu,iter_wall, sosex
     character(18) :: save_to,keep
     character(ARR_MSG_LEN) :: msg
+    integer :: ii,aa
 
 
     call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
-    if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+    if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
     ! Sanity check 1: Number of orbitals
@@ -149,12 +152,6 @@ contains
        end if
     end if
 
-    ! Copy MO coeffcients. It is very convenient to store them twice to handle transformation
-    ! (including transposed MO matrices) efficiently.
-    call mem_alloc(yho_f,nbasis,nocc)
-    call mem_alloc(yhv_f,nbasis,nvirt)
-    yho_f = ypo_f
-    yhv_f = ypv_f
 
 
     ! title
@@ -167,12 +164,62 @@ contains
     ampl4_dims = [nvirt,nocc,nvirt,nocc]
     ampl2_dims = [nvirt,nocc]
 
+    ! go to a (pseudo) canonical basis
+    call mem_alloc(focc,nocc)
+    call mem_alloc(fvirt,nvirt)
+    call mem_alloc(ypo_d,nbasis,nocc)
+    call mem_alloc(ypv_d,nbasis,nvirt)
+    call mem_alloc(yho_d,nbasis,nocc)
+    call mem_alloc(yhv_d,nbasis,nvirt)
+    call mem_alloc(ppfock_d,nocc,nocc)
+    call mem_alloc(qqfock_d,nvirt,nvirt)
+    call mem_alloc(Uocc,nocc,nocc)
+    call mem_alloc(Uvirt,nvirt,nvirt)
+    if(DECinfo%CCSDpreventcanonical)then
+      !nocc diagonalization
+      ypo_d   = ypo_f
+      ypv_d   = ypv_f
+      ppfock_d = ppfock_f
+      qqfock_d = qqfock_f
+      Uocc=0.0E0_realk
+      Uvirt=0.0E0_realk
+      do ii=1,nocc
+        Uocc(ii,ii) = 1.0E0_realk
+      enddo
+      do aa=1,nvirt
+        Uvirt(aa,aa) = 1.0E0_realk
+      enddo
+    else
+      call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock_f,&
+           &qqfock_f,ypo_f,ypv_f,ypo_d,ypv_d,Uocc,Uvirt,focc,fvirt)
+      ppfock_d = 0.0E0_realk
+      qqfock_d = 0.0E0_realk
+      do ii=1,nocc
+        ppfock_d(ii,ii) = focc(ii)
+      enddo
+      do aa=1,nvirt
+        qqfock_d(aa,aa) = fvirt(aa)
+      enddo
+    endif
+    call mem_dealloc(focc)
+    call mem_dealloc(fvirt)
+
+    ! Copy MO coeffcients. It is very convenient to store them twice to handle transformation
+    ! (including transposed MO matrices) efficiently. 
+    yho_d = ypo_d
+    yhv_d = ypv_d
+
     ! create transformation matrices in array form
-    ypo = array2_init(occ_dims,ypo_f)
-    ypv = array2_init(virt_dims,ypv_f)
-    yho = array2_init(occ_dims,yho_f)
-    yhv = array2_init(virt_dims,yhv_f)
+    ypo = array2_init(occ_dims,ypo_d)
+    ypv = array2_init(virt_dims,ypv_d)
+    yho = array2_init(occ_dims,yho_d)
+    yhv = array2_init(virt_dims,yhv_d)
     fock = array2_init(ao2_dims,fock_f)
+
+    call mem_dealloc(ypo_d)
+    call mem_dealloc(ypv_d)
+    call mem_dealloc(yho_d)
+    call mem_dealloc(yhv_d)
 
 
 
@@ -243,8 +290,8 @@ contains
             'debug :: intermediates done'
     end if
 
-    if(DECinfo%timing) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
-    if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+    if(DECinfo%PL>1) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
+    if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! special MP2 things
     MP2Special : if(DECinfo%ccModel == 1 .or. DECinfo%ccModel == 5) then
@@ -270,13 +317,15 @@ contains
     ! get fock matrices for preconditioning
     Preconditioner : if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
        if(DECinfo%precondition_with_full) then
-          ppfock_prec = array2_init([nocc,nocc],ppfock_f)
-          qqfock_prec = array2_init([nvirt,nvirt],qqfock_f)
+          ppfock_prec = array2_init([nocc,nocc],ppfock_d)
+          qqfock_prec = array2_init([nvirt,nvirt],qqfock_d)
        else
           ppfock_prec = array2_similarity_transformation(ypo,fock,yho,[nocc,nocc])
           qqfock_prec = array2_similarity_transformation(ypv,fock,yhv,[nvirt,nvirt])
        end if
     end if Preconditioner
+    call mem_dealloc(ppfock_d)
+    call mem_dealloc(qqfock_d)
 
 
     ! allocate things
@@ -330,7 +379,7 @@ contains
 
     CCIteration : do iter=1,DECinfo%ccMaxIter
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
        call LSTIMER('START',iter_cpu,iter_wall,DECinfo%output)
 
        ! remove old vectors
@@ -351,16 +400,11 @@ contains
        ! get new amplitude vectors
        GetGuessVectors : if(iter == 1) then
           if(DECinfo%use_singles) t1(iter) = array2_init(ampl2_dims)
-          if(DECinfo%t2_restart) then
-             write(DECinfo%output,'(a)') 'restart :: t2 read from file'
-             t2(iter) = t2_restart_text(ampl4_dims)
+          if(DECinfo%array4OnFile) then
+             ! Initialize t2(iter) using storing type 2
+             t2(iter) = array4_init(ampl4_dims,2,.true.)
           else
-             if(DECinfo%array4OnFile) then
-                ! Initialize t2(iter) using storing type 2
-                t2(iter) = array4_init(ampl4_dims,2,.true.)
-             else
-                t2(iter) = array4_init(ampl4_dims)
-             end if
+             t2(iter) = array4_init(ampl4_dims)
           end if
        end if GetGuessVectors
 
@@ -432,8 +476,8 @@ contains
 
        end if T1Related
 
-       if(DECinfo%timing) call LSTIMER('CCIT: INIT',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: INIT',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
        !Write the vectors to file and keep only current in memory
@@ -514,7 +558,7 @@ contains
           call RPA_residual(Omega2(iter),t2(iter),gmo,ppfock,qqfock,nocc,nvirt)
        end if SelectCoupledClusterModel
 
-       if(DECinfo%timing) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
 
 
        ForDebug : if(DECinfo%cc_driver_debug) then
@@ -536,7 +580,7 @@ contains
 
        end if ForDebug
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! calculate crop/diis matrix
        B=0.0E0_realk; c=0.0E0_realk
@@ -568,13 +612,13 @@ contains
           end do
        end do
 
-       if(DECinfo%timing) call LSTIMER('CCIT: CROP MAT',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: CROP MAT',tcpu,twall,DECinfo%output)
 
        ! solve crop/diis equation
        call CalculateDIIScoefficients(DECinfo%ccMaxDIIS,DECinfo%ccMaxIter,iter,B,c, &
             DECinfo%cc_driver_debug)
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! mixing to get optimal
        if(DECinfo%use_singles) then
@@ -600,8 +644,8 @@ contains
           call array4_add_to(omega2_opt,c(i),omega2(i))
        end do
 
-       if(DECinfo%timing) call LSTIMER('CCIT: MIXING',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: MIXING',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! if crop, put the optimal in place of trial (not for diis)
        if(DECinfo%use_crop) then
@@ -622,8 +666,8 @@ contains
           end if
        end if
 
-       if(DECinfo%timing) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! check for the convergence
        one_norm1 = 0.0E0_realk
@@ -642,8 +686,8 @@ contains
        end if
        prev_norm=two_norm_total
 
-       if(DECinfo%timing) call LSTIMER('CCIT: CONV',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: CONV',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! calculate the correlation energy and fragment energy
        ! MODIFY FOR NEW MODEL
@@ -662,7 +706,7 @@ contains
        end if EnergyForCCmodel
 
 
-       if(DECinfo%timing) call LSTIMER('CCIT: ENERGY',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: ENERGY',tcpu,twall,DECinfo%output)
 
        ! check if this is the last iteration
        if(iter == DECinfo%ccMaxIter .or. two_norm_total < DECinfo%ccConvergenceThreshold) &
@@ -672,7 +716,7 @@ contains
          if(DECinfo%ccsd_old)call array4_free(iajb)
        end if
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! generate next trial vector if this is not the last iteration
        if(.not.break_iterations) then
@@ -695,7 +739,7 @@ contains
        !msg="t2+1:"
        !call print_norm(t2(iter+1)%val,nocc*nocc*nvirt*nvirt,msg) 
 
-       if(DECinfo%timing) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
 
        ! delete optimals
        if(DECinfo%use_singles) then
@@ -865,11 +909,16 @@ contains
     call array2_free(ypv)
     call array2_free(yhv)
     call array2_free(fock)
+    !transform back to original basis   
+    if(DECinfo%use_singles)then
+      call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt,t1_final%val)
+    else
+      call ccsolver_can_local_trans(VOVO%val,t2_final%val,nocc,nvirt,Uocc,Uvirt)
+    endif
 
-    call mem_dealloc(yho_f)
-    call mem_dealloc(yhv_f)
+    call mem_dealloc(Uocc)
+    call mem_dealloc(Uvirt)
 
-    if(DECinfo%show_time) call array4_print_statistics(DECinfo%output)
 
   end subroutine ccsolver
 
@@ -1297,8 +1346,6 @@ contains
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
 
-    DECinfo%solver_time_cpu = DECinfo%solver_time_cpu + (tcpu2-tcpu1)
-    DECinfo%solver_time_wall = DECinfo%solver_time_wall + (twall2-twall1)
 
   end subroutine mp2_solver
 
@@ -2129,7 +2176,6 @@ contains
           write(DECinfo%output,'(a,i4)')     'Num. occ. orb.   = ',nocc
           write(DECinfo%output,'(a,i4)')     'Num. unocc. orb. = ',nvirt
           write(DECinfo%output,'(a,e8.1e2)') 'Convergence      = ',DECinfo%ccConvergenceThreshold
-          write(DECinfo%output,'(a,l1)')     'T2 restart       = ',DECinfo%t2_restart
           write(DECinfo%output,'(a,l1)')     'Debug mode       = ',DECinfo%cc_driver_debug
           write(DECinfo%output,'(a,i4)')     'Print level      = ',ccPrintLevel
           write(DECinfo%output,'(a,l1)')     'Use CROP         = ',DECinfo%use_crop
@@ -2137,7 +2183,6 @@ contains
           write(DECinfo%output,'(a,l1)')     'Preconditioner   = ',DECinfo%use_preconditioner
           write(DECinfo%output,'(a,l1)')     'Precond. B       = ',DECinfo%use_preconditioner_in_b
           write(DECinfo%output,'(a,l1)')     'Singles          = ',DECinfo%use_singles
-          write(DECinfo%output,'(a,l1)')     'Timings          = ',DECinfo%show_time
        else
           write(DECinfo%output,'(/,a)') '  Coupled-cluster energy  -> Fragment job '
           write(DECinfo%output,'(a)')   '------------------------------------------'
@@ -2224,7 +2269,10 @@ contains
     !> IMPORTANT: If this it TRUE, then the singles amplitudes for the fragment
     !> (from previous calculations) must be stored in t1_final at input!
     logical,intent(in) :: longrange_singles
-    real(realk),pointer :: yho_f(:,:), yhv_f(:,:)
+    !
+    !work stuff
+    real(realk),pointer :: ypo_d(:,:),ypv_d(:,:),yho_d(:,:), yhv_d(:,:),focc(:),fvirt(:)
+    real(realk),pointer :: ppfock_d(:,:),qqfock_d(:,:),Uocc(:,:),Uvirt(:,:)
     integer, dimension(2) :: occ_dims, virt_dims, ao2_dims, ampl2_dims
     integer, dimension(4) :: ampl4_dims
     type(array) :: fock,ypo,ypv,yho,yhv
@@ -2267,7 +2315,7 @@ contains
 #endif
 
     call LSTIMER('START',ttotstart_cpu,ttotstart_wall,DECinfo%output)
-    if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+    if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
     ! Sanity check 1: Number of orbitals
@@ -2286,12 +2334,51 @@ contains
     end if
 
 
+    ! go to a (pseudo) canonical basis
+    call mem_alloc(focc,no)
+    call mem_alloc(fvirt,nv)
+    call mem_alloc(ypo_d,nb,no)
+    call mem_alloc(ypv_d,nb,nv)
+    call mem_alloc(yho_d,nb,no)
+    call mem_alloc(yhv_d,nb,nv)
+    call mem_alloc(ppfock_d,no,no)
+    call mem_alloc(qqfock_d,nv,nv)
+    call mem_alloc(Uocc,no,no)
+    call mem_alloc(Uvirt,nv,nv)
+    if(DECinfo%CCSDpreventcanonical)then
+      !no diagonalization
+      ypo_d   = ypo_f
+      ypv_d   = ypv_f
+      ppfock_d = ppfock_f
+      qqfock_d = qqfock_f
+      Uocc=0.0E0_realk
+      Uvirt=0.0E0_realk
+      do ii=1,no
+        Uocc(ii,ii) = 1.0E0_realk
+      enddo
+      do aa=1,nv
+        Uvirt(aa,aa) = 1.0E0_realk
+      enddo
+    else
+      call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,ypo_f,ypv_f,&
+                                       & ypo_d,ypv_d,Uocc,Uvirt,focc,fvirt)
+      ppfock_d = 0.0E0_realk
+      qqfock_d = 0.0E0_realk
+      do ii=1,no
+        ppfock_d(ii,ii) = focc(ii)
+      enddo
+      do aa=1,nv
+        qqfock_d(aa,aa) = fvirt(aa)
+      enddo
+    endif
+    call mem_dealloc(focc)
+    call mem_dealloc(fvirt)
+
     ! Copy MO coeffcients. It is very convenient to store them twice to handle transformation
-    ! (including transposed MO matrices) efficiently.
-    call mem_alloc(yho_f,nb,no)
-    call mem_alloc(yhv_f,nb,nv)
-    yho_f = ypo_f
-    yhv_f = ypv_f
+    ! (including transposed MO matrices) efficiently. 
+    yho_d = ypo_d
+    yhv_d = ypv_d
+
 
     ! title
     Call print_ccjob_header(ccPrintLevel,fragment_job,nb,no,nv)
@@ -2309,11 +2396,16 @@ contains
     yhv  = array_init(virt_dims,2)
     fock = array_init(ao2_dims,2)
 
-    call array_convert(ypo_f,ypo,nb*no)
-    call array_convert(ypv_f,ypv,nb*nv)
-    call array_convert(yho_f,yho,nb*no)
-    call array_convert(yhv_f,yhv,nb*nv)
+    call array_convert(ypo_d,ypo,nb*no)
+    call array_convert(ypv_d,ypv,nb*nv)
+    call array_convert(yho_d,yho,nb*no)
+    call array_convert(yhv_d,yhv,nb*nv)
     call array_convert(fock_f,fock,nb*nb)
+
+    call mem_dealloc(ypo_d)
+    call mem_dealloc(ypv_d)
+    call mem_dealloc(yho_d)
+    call mem_dealloc(yhv_d)
 
 
     ! Get Fock matrix correction (for fragment and/or frozen core)
@@ -2385,8 +2477,8 @@ contains
 !            'debug :: intermediates done'
 !    end if
 
-    if(DECinfo%timing) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
-    if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+    if(DECinfo%PL>1) call LSTIMER('CCSOL: INIT',tcpu,twall,DECinfo%output)
+    if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
     ! get fock matrices for preconditioning
     Preconditioner : if(DECinfo%use_preconditioner .or. DECinfo%use_preconditioner_in_b) then
@@ -2396,8 +2488,8 @@ contains
        call array_change_atype_to_rep(ppfock_prec)
        call array_change_atype_to_rep(qqfock_prec)
        if(DECinfo%precondition_with_full) then
-          call array_convert(ppfock_f,ppfock_prec,no*no)
-          call array_convert(qqfock_f,qqfock_prec,nv*nv)
+          call array_convert(ppfock_d,ppfock_prec,no*no)
+          call array_convert(qqfock_d,qqfock_prec,nv*nv)
        else
           tmp = array_init([nb,no],2)
           call array_contract_outer_indices_rl(1.0E0_realk,fock,yho,0.0E0_realk,tmp)
@@ -2412,6 +2504,9 @@ contains
        call array_change_atype_to_d(ppfock_prec)
        call array_change_atype_to_d(qqfock_prec)
     end if Preconditioner
+
+    call mem_dealloc(ppfock_d)
+    call mem_dealloc(qqfock_d)
 
     ! allocate things
     if(DECinfo%use_singles) then
@@ -2466,7 +2561,7 @@ contains
 
     CCIteration : do iter=1,DECinfo%ccMaxIter
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
        call LSTIMER('START',iter_cpu,iter_wall,DECinfo%output)
 
        ! remove old vectors
@@ -2525,8 +2620,8 @@ contains
 
 
        end if T1Related
-       if(DECinfo%timing) call LSTIMER('CCIT: INIT',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: INIT',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
        ! readme : get residuals, so far this solver supports only singles and doubles
@@ -2551,10 +2646,10 @@ contains
 
        end if SelectCoupledClusterModel
        
-       if(DECinfo%timing) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: RESIDUAL',tcpu,twall,DECinfo%output)
 
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! calculate crop/diis matrix
        B=0.0E0_realk
@@ -2592,14 +2687,14 @@ contains
        !msg="DIIS mat, new"
        !call print_norm(B,DECinfo%ccMaxIter*DECinfo%ccMaxIter,msg)
 
-       if(DECinfo%timing) call LSTIMER('CCIT: CROP MAT',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: CROP MAT',tcpu,twall,DECinfo%output)
        ! solve crop/diis equation
        c=0.0E0_realk
        call CalculateDIIScoefficients(DECinfo%ccMaxDIIS,DECinfo%ccMaxIter,iter,B,c, &
             DECinfo%cc_driver_debug)
 
 
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
        
@@ -2624,8 +2719,8 @@ contains
        end do
 
 
-       if(DECinfo%timing) call LSTIMER('CCIT: MIXING',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: MIXING',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! if crop, put the optimal in place of trial (not for diis)
        if(DECinfo%use_crop) then
@@ -2637,8 +2732,8 @@ contains
           call array_cp_data(t2_opt,t2(iter))
        end if
 
-       if(DECinfo%timing) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: COPY OPT',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! check for the convergence
        one_norm1 = 0.0E0_realk
@@ -2661,8 +2756,8 @@ contains
             break_iterations=.true.
 
 
-       if(DECinfo%timing) call LSTIMER('CCIT: CONV',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: CONV',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
 
        ! calculate the correlation energy and fragment energy
@@ -2679,8 +2774,8 @@ contains
           ccenergy = get_cc_energy(t1(iter),t2(iter),iajb,no,nv)
        end if EnergyForCCmodel
 
-       if(DECinfo%timing) call LSTIMER('CCIT: ENERGY',tcpu,twall,DECinfo%output)
-       if(DECinfo%timing) call LSTIMER('START',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: ENERGY',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('START',tcpu,twall,DECinfo%output)
 
        ! generate next trial vector if this is not the last iteration
        if(.not.break_iterations) then
@@ -2719,7 +2814,7 @@ contains
           endif
        end if
 
-       if(DECinfo%timing) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
+       if(DECinfo%PL>1) call LSTIMER('CCIT: NEXT VEC',tcpu,twall,DECinfo%output)
 
 
        ! delete optimals
@@ -2867,21 +2962,84 @@ contains
     call array_free(yhv)
     call array_free(fock)
 
-    call mem_dealloc(yho_f)
-    call mem_dealloc(yhv_f)
 
-    if(DECinfo%show_time) call array4_print_statistics(DECinfo%output)
+    !transform back to original basis   
+    if(DECinfo%use_singles)then
+      call ccsolver_can_local_trans(VOVO%val,t2_final%val,no,nv,Uocc,Uvirt,t1_final%val)
+    else
+      call ccsolver_can_local_trans(VOVO%val,t2_final%val,no,nv,Uocc,Uvirt)
+    endif
+
+    call mem_dealloc(Uocc)
+    call mem_dealloc(Uvirt)
 
 
+    call array4_print_statistics(DECinfo%output)
     call array_print_mem_info(DECinfo%output,.true.,.false.)
+
   end subroutine ccsolver_par
+
+  !> \brief: transform ccsd_doubles, ccsdpt_singles and ccsdpt_doubles from canonical to local basis
+  !> \author: Patrick Ettenhuber adapted from Janus Juul Eriksen
+  !> \date: April 2013
+  !> \param: t2, gvovo, t1, no and nv are nocc and nvirt, respectively, 
+  !<         and U_occ and U_virt are unitary matrices from canonical --> local basis
+  subroutine ccsolver_can_local_trans(gvovo,t2,no,nv,Uocc,Uvirt,t1)
+
+    implicit none
+    !> integers
+    integer, intent(in) :: no, nv
+    !> ccsd_doubles and ccsdpt_doubles
+    real(realk), intent(inout) :: t2(nv*nv*no*no), gvovo(nv*nv*no*no)
+    !> unitary transformation matrices
+    real(realk), intent(inout) :: Uocc(no*no), Uvirt(nv*nv)
+    !> ccsdpt_singles
+    real(realk), intent(inout),optional :: t1(nv*no)
+    !> temp array2 and array4 structures
+    real(realk),pointer :: tmp(:)
+
+    call mem_alloc(tmp,nv*nv*no*no)
+
+    ! (a,i,b,j) are local basis indices and (A,I,B,J) refer to the canonical basis.
+    ! on input t2 and gvovo are ordered AIBJ and t1 AI
+
+    call successive_xyxy_trafo(nv,no,t2,Uvirt,Uocc,tmp)
+
+    !successive transformation of gvovo:
+    call successive_xyxy_trafo(nv,no,gvovo,Uvirt,Uocc,tmp)
+
+    !if t1 trafo has to be done as well
+    if(present(t1))then
+      !U(a,A) t(AI)    -> t(aI)
+      call dgemm('n','n',nv,no,nv,1.0E0_realk,Uvirt,nv,t1,nv,0.0E0_realk,tmp,nv)
+      ! tmp(aI) U(i,I)^T   -> t(ai)
+      call dgemm('n','t',nv,no,no,1.0E0_realk,tmp,nv,Uocc,no,0.0E0_realk,t1,nv)
+    endif
+
+    call mem_dealloc(tmp)
+  end subroutine ccsolver_can_local_trans
+
+  subroutine successive_xyxy_trafo(x,y,XYXY,XX,YY,WRKYXYX)
+    implicit none
+    integer, intent(in) :: x,y
+    real(realk), intent(inout) :: XYXY(x*y*x*y),WRKYXYX(y*x*y*x)
+    real(realk), intent(in) :: XX(x,x),YY(y,y)
+    !XYXY(X,YXY)^T XX(x,X)^T   -> WRKYXYX (YXY,x)
+    call dgemm('t','t',x*y*y,x,x,1.0E0_realk,XYXY,x,XX,x,0.0E0_realk,WRKYXYX,x*y*y)
+    ! WRKYXYX(Y,XYx)^T YY(y,Y)^T   -> XYXY (XYx,y)
+    call dgemm('t','t',x*x*y,y,y,1.0E0_realk,WRKYXYX,y,YY,y,0.0E0_realk,XYXY,x*x*y)
+    ! XYXY(X,Yxy)^T XX(x,X)^T   -> WRKYXYX (Yxy,x)
+    call dgemm('t','t',x*y*y,x,x,1.0E0_realk,XYXY,x,XX,x,0.0E0_realk,WRKYXYX,x*y*y)
+    ! WRKYXYX(Y,xyx)^T YY(y,Y)^T   -> XYXY (xyxy)
+    call dgemm('t','t',x*x*y,y,y,1.0E0_realk,WRKYXYX,y,YY,y,0.0E0_realk,XYXY,x*x*y)
+  end subroutine successive_xyxy_trafo
 
   !> \brief should be a general subroutine to get the guess amplitudes when
   !starting up a CCSD or CC2 calculation and checks for files which contain
   !amplitudes of a previous calculation. If none are found the usual zero guess
   !is returned
   !> \author Patrick Ettenhuber
-  !> \date Dezember 2012
+  !> \date December 2012
   subroutine get_guess_vectors(t2,safefilet21,safefilet22,t1,safefilet11,safefilet12)
     implicit none
     !> contains the guess doubles amplitudes on output

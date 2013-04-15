@@ -33,6 +33,7 @@ use matrix_operations, only: mat_select_type, matrix_type, &
      & mtype_unres_dense, mtype_unres_sparse1, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input
+use dec_typedef_module,only: DECinfo
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 use lattice_vectors, only: pbc_setup_default
@@ -804,12 +805,71 @@ ENDDO
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
 
-! KK: Make sure that DEC geometry optimizations use dynamical optimization procedure
-if(config%dodec .and. config%optinfo%optimize) then
-config%optinfo%dynopt=.true.
-end if
+! Check that DEC input is consistent with geometry optimization and orbital localization.
+call DEC_meaningful_input(config)
 
 END SUBROUTINE read_dalton_input
+
+
+!> \brief For DEC calculations, check that DEC input is consistent with input for other parts 
+!> of the code. Specifically, check input for geometry optimization orbital localization.
+!> If necessary, modify config structure to comply with DEC calculation.
+!> \author Kasper Kristensen
+!> \date April 2013
+subroutine DEC_meaningful_input(config)
+  implicit none
+  !> Contains info, settings and data for entire calculation
+  type(ConfigItem), intent(inout) :: config
+
+  ! Only make modifications to config for DEC calculation AND if it is not
+  ! a full CC calculation
+  DECcalculation: if(config%doDEC) then
+
+     ! DEC geometry optimization 
+     ! *************************
+     ! Always use dynamical optimization procedure
+     GeoOptCheck: if(config%optinfo%optimize) then
+        config%optinfo%dynopt=.true.
+     end if GeoOptCheck
+
+     ! Orbital localization must be turned on for DEC calculations
+     ! ***********************************************************
+     ! If LCM and orbital localization has not been set in input, we enforce it here.
+     ! We use the orbital variance localization function with exponent m=2 for
+     ! both occupied and virtual localization.
+     OrbLocCheck: if( (.not. config%decomp%cfg_mlo) .or. (.not. config%decomp%cfg_lcv) &
+          &  .or. (.not. config%decomp%cfg_lcm) ) then
+
+        ! Turn on LCM scheme
+        config%decomp%cfg_lcv = .true.
+        config%decomp%cfg_lcm=.true.
+
+        ! Only necessary to localize for DEC calculation, not for full calculation
+        ! or simulated full calculation
+        NotFullCalc: if( .not. (DECinfo%full_molecular_cc .or. DECinfo%simulate_full) ) then
+
+           ! Turn on orbital localization
+           config%decomp%cfg_mlo = .true.
+
+           ! use orbspread localization function and line search
+           config%davidOrbLoc%orbspread=.true.
+           config%davidOrbLoc%linesearch=.true.
+
+           ! Exponent 2 for both occ and virt orbitals
+           config%decomp%cfg_mlo_m(1) = 2
+           config%decomp%cfg_mlo_m(2) = 2
+
+        end if NotFullCalc
+
+     end if OrbLocCheck
+
+  end if DECcalculation
+
+
+  ! Special case: Restart full calculation fr
+
+
+end subroutine DEC_meaningful_input
 
 subroutine PROFILE_INPUT(profinput,readword,word,lucmd,lupri)
   implicit none

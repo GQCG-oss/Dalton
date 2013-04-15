@@ -308,7 +308,7 @@ if [ $optn -gt 1 ] ; then
    if [ -s "$MPIRUN" -a -x "$MPIRUN" ]; then
       if [ -s "$DALMPI" -a -x "$DALMPI" ]; then
          cp $DALMPI ./dalton_mpi_copy.x
-         if [ -n "$PBS_NODEFILE" -o -n ${opt_nocpex} == 1 ] ; then
+         if [ -n "$PBS_NODEFILE" -a "$opt_nocpex" != "1" ] ; then
 	     echo 'Copying dalton executable from master node: ' ${HOSTNAME}
              # $PBS_NODEFILE is defined, then do the instructions below
              for node in `cat $PBS_NODEFILE | sort | uniq`
@@ -374,7 +374,7 @@ fi
 # for subsequent calculations
 #
 
-filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off pe_density.bin pe_fock.bin"
+filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off pe_density.bin pe_fock.bin FCIDUMP"
 
 if [ -s DALTON.OUT.n001 -a -r DALTON.OUT.n001 ]; then
    tarfilelist="DALTON.OUT.n*"

@@ -1498,8 +1498,9 @@ contains
     !> String to print describing job list
     character(*),intent(in) :: string
     real(realk) :: Gflops, avflop, minflop, maxflop,tmp,totflops,tottime_actual,localloss
-    real(realk) :: globalloss, tottime_ideal, slavetime
+    real(realk) :: globalloss, tottime_ideal, slavetime, localuse
     integer :: i, minidx, maxidx,N
+
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -1571,32 +1572,41 @@ contains
 
     end do
 
+
     ! Ideal total time used by all slaves:
     ! Assuming all infpar%nodtot-1 slaves were doing something useful all the time 
     ! while the master were sending out jobs.
     tottime_ideal = (infpar%nodtot-1)*mastertime
+    ! If this time is zero (debugging case of restart case - then don't print summary
 
-    ! Average % loss in local groups
-    localloss = ( 1 - (slavetime / tottime_ideal) )*100.0_realk
+    if(tottime_ideal > 1.0e-6_realk) then
+       ! Average % loss in local groups
+       ! Time lost in local groups is the actual local time minus the effective slave time
+       localloss = ( ( tottime_actual - slavetime ) / tottime_ideal )*100.0_realk
 
-    ! Average % global loss (idle time at the end when some slots wait for others)
-    globalloss = ( 1 - (tottime_actual / tottime_ideal) )*100.0_realk
+       ! Average % global loss (idle time at the end when some slots wait for others)
+       globalloss = ( 1 - (tottime_actual / tottime_ideal) )*100.0_realk
 
-    ! Average flops per node per sec
-    avflop = totflops/tottime_actual
-    write(DECinfo%output,*) '-----------------------------------------------------------------------------'
-    write(DECinfo%output,'(1X,a,i8)') 'Number of jobs done = ', N
-    write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL Gflops  = ', totflops
-    write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL time(s) = ', tottime_actual
-    write(DECinfo%output,'(1X,a,g12.3)') 'AVERAGE Gflops/s per MPI process= ', avflop
-    write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MINIMUM Gflops/s per MPI process = ', &
-         & minflop, ' for job ', minidx
-    write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MAXIMUM Gflops/s per MPI process = ', &
-         & maxflop, ' for job ', maxidx
-    write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)  = ', localloss
-    write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%) = ', globalloss
-    write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)  = ', localloss+globalloss
-    write(DECinfo%output,*) '-----------------------------------------------------------------------------'
+       ! Average flops per node per sec
+       avflop = totflops/tottime_actual
+       write(DECinfo%output,*) '-----------------------------------------------------------------------------'
+       write(DECinfo%output,'(1X,a,i8)')    'Number of jobs done     = ', N
+       write(DECinfo%output,'(1X,a,g12.3)') 'Time-to-solution (s)    = ', mastertime
+       write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL time(s) all nodes = ', tottime_actual
+#ifdef VAR_PAPI
+       write(DECinfo%output,'(1X,a,g12.3)') 'TOTAL Gflops  = ', totflops
+       write(DECinfo%output,'(1X,a,g12.3)') 'AVERAGE Gflops/s per MPI process= ', avflop
+       write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MINIMUM Gflops/s per MPI process = ', &
+            & minflop, ' for job ', minidx
+       write(DECinfo%output,'(1X,a,g12.3,a,i8)') 'MAXIMUM Gflops/s per MPI process = ', &
+            & maxflop, ' for job ', maxidx
+#endif
+       write(DECinfo%output,'(1X,a,g12.3)') 'Local MPI loss (%)  = ', localloss
+       write(DECinfo%output,'(1X,a,g12.3)') 'Global MPI loss (%) = ', globalloss
+       write(DECinfo%output,'(1X,a,g12.3)') 'Total MPI loss (%)  = ', localloss+globalloss
+       write(DECinfo%output,*) '-----------------------------------------------------------------------------'
+
+    end if
     write(DECinfo%output,*)
     write(DECinfo%output,*)
 
@@ -1608,6 +1618,7 @@ contains
     integer(kind=ls_mpik) :: comm
     type(decsettings) :: DECitem
 
+    call lsquit('mpicopy_dec_settings: Needs implementation! ',-1)
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
     call mpicopy_dec_settings1(decitem,comm)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
@@ -1630,13 +1641,8 @@ contains
     call ls_mpi_buffer(DECitem%SkipReadIn,Master)
     call ls_mpi_buffer(DECitem%SinglesPolari,Master)
     call ls_mpi_buffer(DECitem%singlesthr,Master)
-    call ls_mpi_buffer(DECitem%nsubfrag,Master)
-    call ls_mpi_buffer(DECitem%nsubfrag2,Master)
-    call ls_mpi_buffer(DECitem%subfrag,Master)
     call ls_mpi_buffer(DECitem%restart,Master)
     call ls_mpi_buffer(DECitem%TimeBackup,Master)
-    call ls_mpi_buffer(DECitem%fragmentation_debug,Master)
-    call ls_mpi_buffer(DECitem%dec_driver_debug,Master)
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
     call ls_mpi_buffer(DECitem%ccsd_old,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)
@@ -1644,14 +1650,13 @@ contains
     call ls_mpi_buffer(DECitem%ccsdGbatch,Master)
     call ls_mpi_buffer(DECitem%hack,Master)
     call ls_mpi_buffer(DECitem%hack2,Master)
-    call ls_mpi_buffer(DECitem%mpidebug,Master)
     call ls_mpi_buffer(DECitem%output,Master)
     call ls_mpi_buffer(DECitem%mulliken_threshold,Master)
     call ls_mpi_buffer(DECitem%simple_mulliken_threshold,Master)
     call ls_mpi_buffer(DECitem%approximated_norm_threshold,Master)
     call ls_mpi_buffer(DECitem%check_lcm_orbitals,Master)
     call ls_mpi_buffer(DECitem%use_canonical,Master)
-    call ls_mpi_buffer(DECitem%reassignHatoms,Master)
+    call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%mulliken,Master)
     call ls_mpi_buffer(DECitem%BoughtonPulay,Master)
     call ls_mpi_buffer(DECitem%FitOrbitals,Master)
@@ -1659,24 +1664,20 @@ contains
     call ls_mpi_buffer(DECitem%MaxIter,Master)
     call ls_mpi_buffer(DECitem%FOT,Master)
     call ls_mpi_buffer(DECitem%PL,Master)
-    call ls_mpi_buffer(DECitem%SkipCC,Master)
     call ls_mpi_buffer(DECitem%purifyMOs,Master)
     call ls_mpi_buffer(DECitem%precondition_with_full,Master)
     call ls_mpi_buffer(DECitem%InclFullMolecule,Master)
     call ls_mpi_buffer(DECitem%HybridScheme,Master)
-    call ls_mpi_buffer(DECitem%LagStepSize,Master)
+    call ls_mpi_buffer(DECitem%FragmentExpansionSize,Master)
     call ls_mpi_buffer(DECitem%pair_distance_threshold,Master)
     call ls_mpi_buffer(DECitem%PairReductionDistance,Master)
-    call ls_mpi_buffer(DECitem%fragment_to_do,Master)
-    call ls_mpi_buffer(DECitem%fragment_a_to_pair,Master)
-    call ls_mpi_buffer(DECitem%fragment_b_to_pair,Master)
     call ls_mpi_buffer(DECitem%fullmolecule_memory,Master)
     call ls_mpi_buffer(DECitem%ccsd_expl,Master)
     DECitem%cc_models(1)='MP2     '
     DECitem%cc_models(2)='CC2     '
     DECitem%cc_models(3)='CCSD    '
     DECitem%cc_models(4)='CCSD(T) '
-    call ls_mpi_buffer(DECitem%t2_restart,Master)
+    DECitem%cc_models(5)='RPA     '
     call ls_mpi_buffer(DECitem%simulate_eri,Master)
     call ls_mpi_buffer(DECitem%fock_with_ri,Master)
     call ls_mpi_buffer(DECitem%ccMaxIter,Master)
@@ -1689,32 +1690,8 @@ contains
     call ls_mpi_buffer(DECitem%use_preconditioner,Master)
     call ls_mpi_buffer(DECitem%use_preconditioner_in_b,Master)
     call ls_mpi_buffer(DECitem%use_crop,Master)
-    call ls_mpi_buffer(DECitem%show_time,Master)
-    call ls_mpi_buffer(DECitem%timing,Master)
-    call ls_mpi_buffer(DECitem%show_memory,Master)
-    call ls_mpi_buffer(DECitem%skip_full_ao,Master)
     call ls_mpi_buffer(DECitem%array4OnFile,Master)
     call ls_mpi_buffer(DECitem%array4OnFile_specified,Master)
-    call ls_mpi_buffer(DECitem%AObasedCC,Master)
-    call ls_mpi_buffer(DECitem%zero_threshold,Master)
-    call ls_mpi_buffer(DECitem%integral_time_cpu,Master)
-    call ls_mpi_buffer(DECitem%integral_time_wall,Master)
-    call ls_mpi_buffer(DECitem%MOintegral_time_cpu,Master)
-    call ls_mpi_buffer(DECitem%MOintegral_time_wall,Master)
-    call ls_mpi_buffer(DECitem%solver_time_cpu,Master)
-    call ls_mpi_buffer(DECitem%solver_time_wall,Master)
-    call ls_mpi_buffer(DECitem%energy_time_cpu,Master)
-    call ls_mpi_buffer(DECitem%energy_time_wall,Master)
-    call ls_mpi_buffer(DECitem%density_time_cpu,Master)
-    call ls_mpi_buffer(DECitem%density_time_wall,Master)
-    call ls_mpi_buffer(DECitem%gradient_time_cpu,Master)
-    call ls_mpi_buffer(DECitem%gradient_time_wall,Master)
-    call ls_mpi_buffer(DECitem%trans_time_cpu,Master)
-    call ls_mpi_buffer(DECitem%trans_time_wall,Master)
-    call ls_mpi_buffer(DECitem%reorder_time_cpu,Master)
-    call ls_mpi_buffer(DECitem%reorder_time_wall,Master)
-    call ls_mpi_buffer(DECitem%memallo_time_cpu,Master)
-    call ls_mpi_buffer(DECitem%memallo_time_wall,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%first_order,Master)
     call ls_mpi_buffer(DECitem%MP2density,Master)
@@ -1725,7 +1702,6 @@ contains
     call ls_mpi_buffer(DECitem%kappaMaxIter,Master)
     call ls_mpi_buffer(DECitem%kappa_driver_debug,Master)
     call ls_mpi_buffer(DECitem%kappaTHR,Master)
-    call ls_mpi_buffer(DECitem%SaveFragFile,Master)
   end subroutine mpicopy_dec_settings1
 
 end module decmpi_module

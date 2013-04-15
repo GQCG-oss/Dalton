@@ -401,7 +401,7 @@ cs
       CALL GPOPEN(LUSOVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUGDVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
       CALL GPOPEN(LUREVE,' ','UNKNOWN',' ',' ',IDUMMY,.FALSE.)
-      CALL QUIT('ABARSP call in ABAQR needs to be updated')
+cjim      CALL QUIT('ABARSP call in ABAQR needs to be updated')
 C     hjaaj mar 2004: inserted 'LABEL', then number of arguments fits.
 C      LABEL needs to be defined.
       CALL ABARSP(CICLC,HFCLC,TRIPLE,OOTV,ISYM,EXECLC,

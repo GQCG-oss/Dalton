@@ -285,7 +285,6 @@ C     *****************************
 C     ***** CTOCD-DZ response *****
 C     *****************************
 C
-Cx jim-dbg : leer aca too
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (CTOCD) THEN
         CALL CTOABA(WORK(KLAST),LWRK) 
@@ -506,11 +505,12 @@ C     ******************************************
 C     ***** Lresc Response Properties      *****
 C     ******************************************
 C
-C  jim-gesc : call to LRSCDRV  
+C  jim-gesc 1: call to LRSCDRV 
       CALL GETTIM(TIMSTR,TIMDUM)
       IF (RNLRSC) THEN
-       write(lupri,*) ' LRSCDRV is nt called yet, still developing' 
-c         CALL LRSCDRV(WORK(KLST2),LWRK2) ! commented till finished
+       CALL LRSCDRV(WORK(KLST2),LWRK2) 
+cx       KLST2 final pointer on mem. LWRK2 the lenght of it
+cx       CALL AQRDRV(WORK(KLST2),LWRK2)
       END IF
 C
 C     ****************************************
@@ -764,8 +764,7 @@ CPFP: 27/03-2006: SOS for spin-spin coupling included
 #include "locinf.h"
 Cend-PFP
 
-C  jim-dbg : add LROPTS and .LRESC . check  INTRST gaugeo stuff
-C  jim-gesc 1.0: TABDIR(#17) "*LRESC " and TABLE(60) ".LRESC "
+C  jim-gesc 1.0: TABDIR(#17) ="*LROPTS" , TABLE(60)=".LRESC ". check INTRST for gaugeo
       DATA TABDIR /'*END OF', 'xxxxxxx', '*NUCREP',
      &             '*ONEINT', '*TWOEXP', '*GETSGY',
      &             '*EXCITA', '*REORT ', '*RESPON',
@@ -817,7 +816,7 @@ C                     52         53         54
 C                     55         56         57
      &             '.DISDIP', '.SECMOM', '.THIRDM',
 C                     58         59         60
-     &             '.VIB_G ', '.LOCALI', '.LRESC '/ 
+     &             '.VIB_G ', '.LOCALI', '.LRESC ' / ! jim May-12 for LRESC
       DATA RSTLBL /'ORTREL', 'DIPCTL', 'RESPON', 'RELAX ',
      &             'DIPREL', 'TROINV', 'CCRHS ', 'CCTRES',
      &             'CCRELA', 'QPGCTL'/
@@ -921,8 +920,7 @@ C
       THIRDM = .FALSE.
       ESG    = .FALSE.
       VIB_G  = .FALSE.
-C  jim-gesc 1.1: RNLRSC .FALSE. init 
-      RNLRSC = .FALSE.
+      RNLRSC = .FALSE.   ! jim-gesc 1.1: set RNLRSC FALSE
       CALL DZERO(ORIGIN,3)
       CALL DZERO(CMXYZ,3)
       CALL DZERO(DIPORG,3)
@@ -1222,7 +1220,7 @@ C
   140    CONTINUE
             FCKEXP = .TRUE.
          GO TO 100
-  141    CONTINUE!          .GAUGEO
+  141    CONTINUE!   .GAUGEO
             READ (LUCMD,*) (GAGORG(ICOOR), ICOOR = 1,3)
             GAGORG_SET = .TRUE.
          GOTO 100
@@ -1302,7 +1300,7 @@ C        .LOCALI
             ABALOC = .TRUE.
          GOTO 100
 Cend-PFP
- 160     CONTINUE ! jim-dbg : set RNLRSC true
+ 160     CONTINUE ! jim-gesc 1.2: set RNLRSC true
          RNLRSC = .TRUE.
          GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
@@ -1758,21 +1756,32 @@ cLig >> added the control to right CTOCD input
          CALL QUIT('Not supported input in ABAINP')
       ENDIF
 cLig <<
-C  jim-gesc 1.4: (abainp.1775) Print section 'lresc will be done ' 
-Cx jim-dbg :  aca puedo poner que no se puede london u otras cosas 
-Cx            y hacer un call quit
-Cx    preguntando al logic q sea ejplo if GAUGEO tonces ...  o SOPPA
-       IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
-     &    ' Linear Response Elimination of Small Component scheme will',
-     &    ' DEVELOPING NOTES :   ' ,
-     &    '                   -uncontracted basis set not checked  ',
-     &    '                   -selected atom not yet #1 set internally',
-     &    '                   -no man pages.. yet ',
-     &    '                   -no test runs .. yet.. ',
-     &    '                   -ONLY diam sinlget corrections and ',
-     &    '                   -     param singlet first order '
+C  jim-gesc 1.3:  Print section 'lresc will be done ' 
+Cx jim-dbg :  here we can stop if london or smthg else. 
+cx jim-dbg :  asking to specific logic : ex SOPPA
+      IF (RNLRSC) THEN
+c         IF (.NOT.NOLOND)  WRITE(LUPRI,*)
+c     &     ' Unsupported input - LONDON Orbitals not implemented' //
+c     &     ' for LRESC properties'
+c            CALL QUIT('Not supported input in ABAINP')
+ 
+         IF (RNLRSC) WRITE (LUPRI,'(5X,A)')
+     &      ' Linear Response Elimination of Small Component (LRESC)',
+     &      ' DEVELOPING NOTES :   ' ,
+     &      '     - Uncontracted Basis set should be used ',
+     &      '     - LRESC Corrections : ',
+     &      '        Diamagnetic first and second order ',
+     &      '        Paramagnetic second singlet and triplet order ',
+     &      '     - Remember to set GAUGEO on INTEGRAL SECTION',
+     &      '        GAUGEO Should be placed at selected nucleus'
+      ENDIF
       IF (ABASOP) THEN
          IERR = 0
+         IF (RNLRSC) THEN    ! jim-dbg : soppa not for lresc
+            WRITE(LUPRI,'(A)') ' Incompatible input. LRESC '//
+     &                         'cannot be calculated with SOPPA'
+            IERR = IERR + 1
+         END IF
          IF (MOLGRD) THEN
             WRITE(LUPRI,'(A)') ' Incompatible input. MOLGRD '//
      &                         'cannot be calculated with SOPPA'
@@ -1974,9 +1983,9 @@ cs
       GO TO 200
    16   CALL FLTINP(WORD)
       GO TO 200
-C jim-gesc 1.5 : reading TABDIR call lrscinp
-   17 Write(lupri,*) ' Calling lrsec inp for word', WORD
-      CALL LRSCINP(WORD)  ! *LRESC
+C jim-gesc 1.4 : CALL LRSCINP to read OPTNS @ DAL  file 
+   17 CONTINUE
+         CALL LRSCINP(WORD)
       GO TO 200
    18   CONTINUE
          CALL QPGINP(WORD)
@@ -2112,7 +2121,7 @@ C     We need to change the origin to the center of mass when calculating
 C     spin-rotation constants and molecular g-factors.
 C     This is now default for all molecular properties, unless turned off.
 C
-Cx jim-dbg : check GAUGEO origin here ?: not done yet
+Cx jim-dbg : jim looking for gaugeo, check GAUGEO origin here ?: not done yet
       KGEOM = 1
       KMASS = KGEOM + 3*(NATOMS + NFLOAT)
       KNAT  = KMASS + NATOMS + NFLOAT

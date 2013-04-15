@@ -384,3 +384,4 @@ add_test(rsp_zfs_mc2.tst ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DI
 add_test(shield_spin.tst ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null shield_spin.tst)
 add_test(tpa_pcm_sym.tst ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null tpa_pcm_sym.tst)
 add_test(trp_qr_pcm.tst ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null trp_qr_pcm.tst)
+add_test(soppa_vibavg_twobas ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null soppa_vibavg_twobas)
