@@ -136,26 +136,30 @@ TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7
 CTRL[2]=7
 ERROR[2]="GEOMETRY NOT READ CORRECTLY"
 
-# Energies
-CRIT1=`$GREP "Final HF energy \: * \-95\.78350284251" $log | wc -l`
-TEST[3]=`expr	$CRIT1`
-CTRL[3]=1
-ERROR[3]="ENERGIES NOT CORRECT"
-
 # LRESC setup 
 CRIT1=`$GREP "LRESC Corrections for Shielding"  $log | wc -l`
 CRIT2=`$GREP "Selected Atom *  \: \# 1\: F" $log | wc -l`
 CRIT3=`$GREP "Atom coordinates \:     0\.0000    0\.0000    0\.0000"  $log | wc -l`
-TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[4]=3
-ERROR[4]="LRESC SETUP NOT SET CORRECTLY"
+TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=3
+ERROR[3]="LRESC SETUP NOT SET CORRECTLY"
 
 # Paramagnetic Corrections : Singlet Second Order
 CRIT1=`$GREP "Lkin \: * 0\.46314 * 0\.46314 * 0\.17966 * 0\.36865" $log | wc -l`
 CRIT2=`$GREP "PsoKin \: * 1\.06246 * 1\.06246 * \-0\.00000 * 0\.70831" $log | wc -l`
-TEST[5]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[5]=2
-ERROR[5]="LRESC PARAMAGNETIC Second Order Sinlgets NOT CORRECT"
+TEST[4]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[4]=2
+ERROR[4]="LRESC PARAMAGNETIC Second Order Sinlgets NOT CORRECT"
+
+# Paramagnetic Corrections : Triplet Second Order
+CRIT1=`$GREP "FcKin \: *   9\.96    *   9\.96    *   9\.96    *   9\.96341" $log | wc -l`
+CRIT2=`$GREP "SdKin \: *   0\.10908 *   0\.10908 *   0\.10295 *   0\.10704" $log | wc -l`
+CRIT3=`$GREP "FcBso \: * \-2\.56974 * \-2\.56974 * \-2\.60640 * \-2\.58196" $log | wc -l`
+CRIT4=`$GREP "SdBso \: *   0\.14860 *   0\.14860 *   0\.16864 *   0\.15528" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[5]=4
+ERROR[5]="LRESC PARAMAGNETIC Second Order Triplets NOT CORRECT"
+
 
 # Paramagnetic Corrections : Triplet Second Order
 CRIT1=`$GREP "FcKin \: *   9\.96    *   9\.96    *   9\.96    *   9\.96341" $log | wc -l`
@@ -167,43 +171,34 @@ CTRL[6]=4
 ERROR[6]="LRESC PARAMAGNETIC Second Order Triplets NOT CORRECT"
 
 
-# Paramagnetic Corrections : Triplet Second Order
-CRIT1=`$GREP "FcKin \: *   9\.96    *   9\.96    *   9\.96    *   9\.96341" $log | wc -l`
-CRIT2=`$GREP "SdKin \: *   0\.10908 *   0\.10908 *   0\.10295 *   0\.10704" $log | wc -l`
-CRIT3=`$GREP "FcBso \: * \-2\.56974 * \-2\.56974 * \-2\.60640 * \-2\.58196" $log | wc -l`
-CRIT4=`$GREP "SdBso \: *   0\.14860 *   0\.14860 *   0\.16864 *   0\.15528" $log | wc -l`
-TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[7]=4
-ERROR[7]="LRESC PARAMAGNETIC Second Order Triplets NOT CORRECT"
-
-
 # Diamagnetic Corrections : First Order
 CRIT1=`$GREP "Fc     \: * \-4\.44438 * \-4\.44438 * \-4\.44438 * \-4\.44438" $log | wc -l`
 CRIT2=`$GREP "DiaKin \: * \-0\.85956 * \-0\.85956 * \-0\.86075 * \-0\.85996" $log | wc -l`
 CRIT3=`$GREP "AngPso \: * \-0\.02710 * \-0\.02710 * \-0\.03277 * \-0\.02899" $log | wc -l`
-TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[8]=3
-ERROR[8]="LRESC DIAMAGENTIC First Order NOT CORRECT"
+TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[7]=3
+ERROR[7]="LRESC DIAMAGENTIC First Order NOT CORRECT"
 
 
 # Diamagnetic Corrections : Second Order Singlets
 CRIT1=`$GREP "DiaMv  \: *   3\.56951 *   3\.56951 *   3\.61785 *   3\.58562 " $log | wc -l`
 CRIT2=`$GREP "DiaDw  \: * \-1\.91999 * \-1\.91999 * \-1\.94691 * \-1\.92896 " $log | wc -l`
-TEST[9]=`expr	$CRIT1 \+ $CRIT2`
-CTRL[9]=2
-ERROR[9]="LRESC DIAMAGENTIC Second Order Singlets NOT CORRECT"
+TEST[8]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[8]=2
+ERROR[8]="LRESC DIAMAGENTIC Second Order Singlets NOT CORRECT"
 
 
 # Total LRESC corrections, checked if totals are ok
 CRIT1=`$GREP "Total Paramagnetic Corrections \: *   8\.72072" $log | wc -l`
-CRIT2=`$GREP "Total Diamagnetic Corrections \:  *  \-3\.67667" $log | wc -l`
+CRIT2=`$GREP "Total Diamagnetic Corrections \:  * \-3\.67667" $log | wc -l`
 CRIT3=`$GREP "Sum of corrections \: * 10\.53946" $log | wc -l`
-TEST[10]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[10]=3
-ERROR[10]="LRESC Total contributions NOT CORRECT"
+TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[9]=3
+ERROR[9]="LRESC Total contributions NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4 5 6 7 8 9 10
+
+for i in 1 2 3 4 5 6 7 8 9 
 do
    if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
