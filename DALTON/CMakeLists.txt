@@ -108,7 +108,7 @@ set(SCRATCH_DIR
 message("-- SCRATCH_DIR set to: ${SCRATCH_DIR}")
 
 set(BASIS_DIR
-    "${CMAKE_SOURCE_DIR}/basis"
+    "${CMAKE_SOURCE_DIR}/../basis"
     CACHE STRING
     "Basis set directory"
     FORCE
@@ -185,4 +185,4 @@ add_custom_target(
     )
 
 include(ConfigPackaging)
-execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
+execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})

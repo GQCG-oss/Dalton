@@ -16,7 +16,7 @@ DALTON=$BUILD_DIR/dalton.x
 DALMPI=$BUILD_DIR/dalton.x
 
 MPIRUN=@MPIEXEC@
-INSTALL_BASDIR=$BUILD_DIR/basis
+INSTALL_BASDIR=$BUILD_DIR/../basis
 [ -z "$TMPDIR" ] && TMPDIR=@SCRATCH_DIR@
 WRKDIR=`pwd` ; export WRKDIR
 # always search for basis sets in job work directory
