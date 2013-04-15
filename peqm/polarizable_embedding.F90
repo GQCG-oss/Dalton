@@ -1152,6 +1152,13 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         if (.not. synced) then
             call pe_sync()
         end if
+    else
+        site_start = 1
+        site_finish = nsites
+        surp_start = 1
+        surp_finish = nsurp
+        mep_start = 1
+        mep_finish = npoints
     end if
 #else
     site_start = 1
