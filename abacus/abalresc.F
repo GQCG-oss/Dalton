@@ -391,20 +391,40 @@ C
       WRITE(lupri,*)' First and Second order relativistic '// 
      & 'corrections to nuclear shielding constant.'
 
-      WRITE(LUPRI,*)'   -  For definitions on terms named ABC,'//
-     &              ' refered to relativistic correction '
-      WRITE(LUPRI,*)'      of sigma, see JCP. 137, 214319(2012). '
-      WRITE(LUPRI,*)'   -  Original LRESC papers at : JCP 118, 2 '//
-     & '(2003), and JCP ....'
-
-
+       WRITE(LUPRI,*)
+c      WRITE(LUPRI,*)'   -  For definitions on terms named ABC,'//
+c     &              ' refered to relativistic correction '
+c      WRITE(LUPRI,*)'      of sigma, see JCP. 137, 214319(2012). '
+       WRITE(LUPRI,*)'   -  Original LRESC papers at : JCP 118, 2 '//
+     &               '(2003),' 
+       WRITE(LUPRI,'(33X,A)')' MolPhys 101, 20, 3103-3109 (2003),'
+       WRITE(LUPRI,'(33X,A)')' JCP 125, 064107 (2006)'
+   
 c      WRITE(LUPRI,*)' Gaugeo placed at : ', GAGORG  
+  
       WRITE(LUPRI,*)
-      WRITE(LUPRI,'(A,I2,A,A)')'  Selected Atom   : #',LRATOM,
-     &         ": ",NAMN(LRATOM) 
-      WRITE(LUPRI,'(A,3F10.4)')' Atom coordinates : ', CORD(1,LRATOM),
-     &                CORD(2,LRATOM),CORD(3,LRATOM)
+      WRITE(LUPRI,'(4X,A,I2,A,A)') '-  Selected Atom    : #',LRATOM,
+     &         ": ", NAMN(LRATOM) 
+  
       WRITE(LUPRI,*)
+      WRITE(LUPRI,'(4X,A,3F10.4)') '-  Atom coordinates :',
+     &  CORD(1,LRATOM), CORD(2,LRATOM),CORD(3,LRATOM)
+
+      WRITE(LUPRI,*)
+      WRITE(LUPRI,'(4X,A)')'-  Remember : '
+      WRITE(LUPRI,'(14X,A)')'*  GAUGEO should be placed at selected '//
+     &  'nucleus, on INTEGRALS SECTION' 
+      IF (.NOT. PRTALL) THEN 
+         WRITE(LUPRI,'(14X,A)')'*  For individual contributions, add '//
+     &   '.PRTALL in your input file under *LROPTS'
+      ENDIF
+      WRITE(LUPRI,'(14X,A)')'*  Third Order Singlet and Triplet '// 
+     & 'Corrections must be run in order to get' 
+      WRITE(LUPRI,'(17X,A)')'all relativistic corrections. Not '// 
+     &                      ' yet implemented, but can be done via' 
+      WRITE(LUPRI,'(17X,A)')'RESPONSE calculation (see Manual for'//
+     &                      ' details)'
+
       
 C
 C paramagnetic 1st singlet or triplet
