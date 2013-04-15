@@ -321,10 +321,11 @@ contains
        if(count(dofrag) == count(jobs%jobsdone)) then
           post_fragopt_restart = fragment_restart_file_exist(FO_save)
           if(post_fragopt_restart) then
-             write(DECinfo%output,'(a,2i8)') 'All standard fragments are done, restart fragments'
+             write(DECinfo%output,'(a)') 'Fragment optimization is done, restart remaining fragments'
           else
-             write(DECinfo%output,'(a,2i8)') 'All standard fragments are done, but no fragment file'
-             write(DECinfo%output,'(a,2i8)') '--> We will calculate all fragments from scratch!'
+             write(DECinfo%output,'(a)') 'Fragment optimization is done, but no restart file &
+                  & for remaining fragments'
+             write(DECinfo%output,'(a)') '--> We will calculate remaining fragments from scratch!'
           end if
        end if
 
