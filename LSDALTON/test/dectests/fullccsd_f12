@@ -57,9 +57,8 @@ cat > fullccsd_f12.dal <<'%EOF%'
 TRILEVEL
 .CONVTHR
 1.0d-5
-.LCM
 **DEC
-.ccFull
+.FULL
 .CCSD
 .F12
 .canonical

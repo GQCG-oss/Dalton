@@ -57,9 +57,6 @@ cat > dec_geoopt.dal <<'%EOF%'
 TRILEVEL
 .CONVDYN
 STANDARD
-.LCM
-.MLO
-2 2
 $INFO
 DEBUG_MPI_MEM
 $END INFO

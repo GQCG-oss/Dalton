@@ -32,43 +32,132 @@ module dec_main_mod
   use dec_driver_module,only: dec_wrapper, main_fragment_driver
   use full,only: full_driver
 
-public :: dec_main_prog, get_mp2gradient_and_energy_from_inputs, get_total_mp2energy_from_inputs
+public :: dec_main_prog_input, dec_main_prog_file, &
+     & get_mp2gradient_and_energy_from_inputs, get_total_mp2energy_from_inputs
 private
 
 contains
 
-  !> \brief Main DEC program.
-  !> \author Marcin Ziolkowski (modified for Dalton by Kasper Kristensen)
-  !> \date September 2010
-  subroutine dec_main_prog(MyLsitem)
+
+  !> Wrapper for main DEC program to use when Fock,density,overlap, and MO coefficient
+  !> matrices are available from HF calculation.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine dec_main_prog_input(mylsitem,F,D,S,C)
+    implicit none
+
+    !> Integral info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Fock matrix 
+    type(matrix),intent(inout) :: F
+    !> HF density matrix 
+    type(matrix),intent(in) :: D
+    !> Overlap matrix
+    type(matrix),intent(inout) :: S
+    !> MO coefficients 
+    type(matrix),intent(inout) :: C
+    type(fullmolecule) :: Molecule
+
+    print *, 'DEC gets Hartree-Fock info directly from HF calculation...'
+
+    ! Get informations about full molecule
+    ! ************************************
+    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C)
+
+    ! Fock, overlap, and MO coefficient matrices are now stored
+    ! in Molecule, and there is no reason to store them twice.
+    ! So we delete them now and reset them at the end.
+    call mat_free(F)
+    call mat_free(S)
+    call mat_free(C)
+
+    call dec_main_prog(MyLsitem,molecule,D)
+
+    ! Restore input matrices
+    call molecule_copyback_FSC_matrices(Molecule,F,S,C)
+
+    ! Delete molecule structure
+    call molecule_finalize(molecule)
+
+
+  end subroutine dec_main_prog_input
+
+
+  !> Wrapper for main DEC program to use when Fock,density,overlap, and MO coefficient
+  !> matrices are not directly available from current HF calculation, but rather needs to
+  !> be read in from previous HF calculation.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine dec_main_prog_file(mylsitem)
 
     implicit none
+
+    !> Integral info
     type(lsitem), intent(inout) :: mylsitem
-    type(fullmolecule) :: molecule
-    character(len=10) :: program_version
-    character(len=50) :: MyHostname
-    integer, dimension(8) :: values
-    real(realk) :: tcpu1, twall1, tcpu2, twall2
     type(matrix) :: D
-    integer :: funit,dim1,dim2
-    integer(8) :: longdim1,longdim2
-    integer(kind=4) :: dim132,dim232
-    logical :: onmaster
-    real(realk),pointer :: Dfull(:,:)
+    type(fullmolecule) :: Molecule
 
-    onmaster=.true.
+    print *, 'DEC will read Hartree-Fock info from file...'
 
+    ! Minor tests
+    ! ***********
     !Array test
     if (DECinfo%array_test)then
       print *,"TEST ARRAY MODULE"
       call test_array_struct()
       return
     endif
+    ! Reorder test
     if (DECinfo%reorder_test)then
       print *,"TEST REORDERINGS"
       call test_array_reorderings()
       return
     endif
+
+    ! Get informations about full molecule by reading from file
+    call molecule_init_from_files(molecule,mylsitem)
+
+    ! Get density matrix
+    call dec_get_density_matrix_from_file(Molecule%nbasis,D)
+
+    ! Main DEC program
+    call dec_main_prog(MyLsitem,molecule,D)
+
+    ! Delete molecule structure and density
+    call molecule_finalize(molecule)
+    call mat_free(D)
+
+  end subroutine dec_main_prog_file
+
+
+
+  !> \brief Main DEC program.
+  !> \author Marcin Ziolkowski (modified for Dalton by Kasper Kristensen)
+  !> \date September 2010
+  subroutine dec_main_prog(MyLsitem,molecule,D)
+
+    implicit none
+    !> Integral info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Molecule info
+    type(fullmolecule),intent(inout) :: molecule
+    !> HF density matrix
+    type(matrix),intent(in) :: D
+    character(len=10) :: program_version
+    character(len=50) :: MyHostname
+    integer, dimension(8) :: values
+    real(realk) :: tcpu1, twall1, tcpu2, twall2
+
+
+    ! Sanity check: LCM orbitals span the same space as canonical orbitals 
+    if(DECinfo%check_lcm_orbitals) then
+       call check_lcm_against_canonical(molecule,MyLsitem)
+       return
+    end if
+
+
+    ! Actual DEC calculation
+    ! **********************
 
     call LSTIMER('START',tcpu1,twall1,DECinfo%output)
 
@@ -93,37 +182,6 @@ contains
     ! Set DEC memory
     call get_memory_for_dec_calculation()
 
-    ! Get informations about full molecule
-    call molecule_init(molecule,mylsitem,DECinfo%output,DECinfo%output,DECinfo%output)
-
-    ! Get density matrix in type(matrix) form (more elegant solution is seeked)
-    funit=-1
-    call lsopen(funit,'dens.restart','OLD','UNFORMATTED')
-    call mat_init(D,molecule%nbasis,molecule%nbasis)
-    call mem_alloc(Dfull,D%nrow,D%ncol)
-    if(DECinfo%convert64to32) then
-       READ(funit) longdim1,longdim2
-       dim1 = int(longdim1)
-       dim2 = int(longdim2)
-    elseif(DECinfo%convert32to64) then
-       READ(funit) dim132,dim232
-       dim1 = dim132
-       dim2 = dim232
-    else
-       READ(funit) dim1,dim2
-    end if
-    if(dim1 /= D%nrow) stop 'DEC read dens: dim1 /= A%nrow'
-    if(dim1 /= D%ncol) stop 'DEC read dens: dim2 /= A%ncol'
-    read(funit) Dfull
-    call mat_set_from_full(Dfull,1E0_realk,D)
-    call mem_dealloc(Dfull)
-    call lsclose(funit,'KEEP')
-
-    ! Sanity check: LCM orbitals span the same space as canonical orbitals 
-    if(DECinfo%check_lcm_orbitals) then
-       call check_lcm_against_canonical(molecule,MyLsitem)
-    end if
-
     if(DECinfo%full_molecular_cc) then
        ! -- Call full molecular CC
        write(DECinfo%output,'(/,a,/)') 'Full molecular calculation is carried out...'
@@ -131,18 +189,16 @@ contains
        ! --
     else
        ! -- Initialize DEC driver for energy calculation
-       write(DECinfo%output,'(/,a,/)') 'DEC fragment calculation is carried out...'
+       write(DECinfo%output,'(/,a,/)') 'DEC calculation is carried out...'
        call DEC_wrapper(molecule,mylsitem,D)
        ! --
     end if
 
-    ! Finalize everything
-    call molecule_finalize(molecule)
-    call mat_free(D)
-    write(DECinfo%output,'(a)') 'Full molecular data deleted'
+    ! Update number of DEC calculations for given FOT level
+    DECinfo%ncalc(DECinfo%FOTlevel) = DECinfo%ncalc(DECinfo%FOTlevel) +1
+    call print_calculation_bookkeeping()
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-
 
     ! Print memory summary
     write(DECinfo%output,*)
@@ -152,9 +208,6 @@ contains
     write(DECinfo%output,*) '------------------'
     call print_memory_currents_3d(DECinfo%output)
     write(DECinfo%output,*) '------------------'
-    write(DECinfo%output,*)
-
-
     write(DECinfo%output,*)
     write(DECinfo%output,'(/,a)') '------------------------------------------------------'
     write(DECinfo%output,'(a,g20.6,a)') 'Total CPU  time used in DEC           :',tcpu2-tcpu1,' s'
@@ -178,10 +231,6 @@ contains
     write(DECinfo%output,'(a,/)') '============================================================================='
     write(DECinfo%output,*)
     write(DECinfo%output,*)
-
-    ! Update number of DEC calculations for given FOT level
-    DECinfo%ncalc(DECinfo%FOTlevel) = DECinfo%ncalc(DECinfo%FOTlevel) +1
-    call print_calculation_bookkeeping()
 
   end subroutine dec_main_prog
 
@@ -215,7 +264,7 @@ contains
     !> (zero for single point calculation or first geometry step)
     real(realk),intent(inout) :: Eerr
     real(realk) :: Ecorr,EHF
-    type(fullmolecule) :: MyMolecule
+    type(fullmolecule) :: Molecule
     integer :: nBasis,nOcc,nUnocc
     type(ccorbital), pointer :: OccOrbitals(:)
     type(ccorbital), pointer :: UnoccOrbitals(:)
@@ -239,10 +288,10 @@ contains
 
     ! Get informations about full molecule
     ! ************************************
-    call molecule_init_from_inputs(MyMolecule,mylsitem,F,S,C)
-    nOcc = MyMolecule%numocc
-    nUnocc = MyMolecule%numvirt
-    nBasis = MyMolecule%nbasis
+    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C)
+    nOcc = Molecule%numocc
+    nUnocc = Molecule%numvirt
+    nBasis = Molecule%nbasis
 
     ! No reason to save F,S and C twice. Delete the ones in matrix format and reset at the end
     call mat_free(F)
@@ -261,12 +310,12 @@ contains
     ! *********************************
     call mem_alloc(OccOrbitals,nOcc)
     call mem_alloc(UnoccOrbitals,nUnocc)
-    call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
+    call GenerateOrbitals_driver(Molecule,mylsitem,nocc,nunocc,natoms, &
          & OccOrbitals, UnoccOrbitals, DistanceTable)
 
 
     ! -- Calculate molecular MP2 gradient
-    call main_fragment_driver(MyMolecule,mylsitem,D,&
+    call main_fragment_driver(Molecule,mylsitem,D,&
          & OccOrbitals,UnoccOrbitals, &
          & natoms,nocc,nunocc,DistanceTable,EHF,Ecorr,mp2gradient,Eerr)
 
@@ -274,10 +323,10 @@ contains
     EMP2 = EHF + Ecorr
 
     ! Restore input matrices
-    call molecule_copyback_FSC_matrices(MyMolecule,F,S,C)
+    call molecule_copyback_FSC_matrices(Molecule,F,S,C)
 
     ! Free molecule structure and other stuff
-    call molecule_finalize(MyMolecule)
+    call molecule_finalize(Molecule)
     call mem_dealloc(DistanceTable)
     
     ! Delete orbitals 
@@ -329,7 +378,7 @@ contains
     !> (zero for single point calculation or first geometry step)
     real(realk),intent(inout) :: Eerr
     real(realk) :: Ecorr,EHF
-    type(fullmolecule) :: MyMolecule
+    type(fullmolecule) :: Molecule
     integer :: nBasis,nOcc,nUnocc,natoms
     type(ccorbital), pointer :: OccOrbitals(:)
     type(ccorbital), pointer :: UnoccOrbitals(:)
@@ -351,17 +400,17 @@ contains
 
     ! Get informations about full molecule
     ! ************************************
-    call molecule_init_from_inputs(MyMolecule,mylsitem,F,S,C)
+    call molecule_init_from_inputs(Molecule,mylsitem,F,S,C)
 
     ! No reason to save F,S and C twice. Delete the ones in matrix format and reset at the end
     call mat_free(F)
     call mat_free(S)
     call mat_free(C)
 
-    nOcc = MyMolecule%numocc
-    nUnocc = MyMolecule%numvirt
-    nBasis = MyMolecule%nbasis
-    natoms = MyMolecule%natoms
+    nOcc = Molecule%numocc
+    nUnocc = Molecule%numvirt
+    nBasis = Molecule%nbasis
+    natoms = Molecule%natoms
 
 
     ! Calculate distance matrix 
@@ -375,12 +424,12 @@ contains
     ! *********************************
     call mem_alloc(OccOrbitals,nOcc)
     call mem_alloc(UnoccOrbitals,nUnocc)
-    call GenerateOrbitals_driver(MyMolecule,mylsitem,nocc,nunocc,natoms, &
+    call GenerateOrbitals_driver(Molecule,mylsitem,nocc,nunocc,natoms, &
          & OccOrbitals, UnoccOrbitals, DistanceTable)
 
     ! -- Calculate correlation energy
     call mem_alloc(dummy,3,natoms)
-    call main_fragment_driver(MyMolecule,mylsitem,D,&
+    call main_fragment_driver(Molecule,mylsitem,D,&
          & OccOrbitals,UnoccOrbitals, &
          & natoms,nocc,nunocc,DistanceTable,EHF,Ecorr,dummy,Eerr)
     call mem_dealloc(dummy)
@@ -390,10 +439,10 @@ contains
 
 
     ! Restore input matrices
-    call molecule_copyback_FSC_matrices(MyMolecule,F,S,C)
+    call molecule_copyback_FSC_matrices(Molecule,F,S,C)
 
     ! Free molecule structure and other stuff
-    call molecule_finalize(MyMolecule)
+    call molecule_finalize(Molecule)
     call mem_dealloc(DistanceTable)
 
     ! Delete orbitals 
