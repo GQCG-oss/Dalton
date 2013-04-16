@@ -321,10 +321,11 @@ contains
        if(count(dofrag) == count(jobs%jobsdone)) then
           post_fragopt_restart = fragment_restart_file_exist(FO_save)
           if(post_fragopt_restart) then
-             write(DECinfo%output,'(a,2i8)') 'All standard fragments are done, restart fragments'
+             write(DECinfo%output,'(a)') 'Fragment optimization is done, restart remaining fragments'
           else
-             write(DECinfo%output,'(a,2i8)') 'All standard fragments are done, but no fragment file'
-             write(DECinfo%output,'(a,2i8)') '--> We will calculate all fragments from scratch!'
+             write(DECinfo%output,'(a)') 'Fragment optimization is done, but no restart file &
+                  & for remaining fragments'
+             write(DECinfo%output,'(a)') '--> We will calculate remaining fragments from scratch!'
           end if
        end if
 
@@ -723,16 +724,12 @@ contains
     write(DECinfo%output,'(/,a)') '--------------------------'
     write(DECinfo%output,'(a)')   '   DEC input parameters   '
     write(DECinfo%output,'(a,/)') '--------------------------'
-    write(DECinfo%output,'(a,f8.3)')   'Simple orbital thr.    = ',DECinfo%simple_orbital_threshold
-    write(DECinfo%output,'(a,f8.3)')   'Mulliken charge thr.   = ',DECinfo%mulliken_threshold
-    write(DECinfo%output,'(a,l1)')     'Mulliken analysis      = ',DECinfo%Mulliken
-    write(DECinfo%output,'(a,l1)')     'Boughton-Pulay         = ',DECinfo%BoughtonPulay
-    write(DECinfo%output,'(a,ES8.2)')  'FOT                    = ',DECinfo%FOT
-    write(DECinfo%output,'(a,i4)')     'MaxIter                = ',DECinfo%MaxIter
-    write(DECinfo%output,'(a,f9.2)')   'Pair distance thresh.  = ',DECinfo%pair_distance_threshold
-    write(DECinfo%output,'(a,f9.2)')   'Pair reduction thresh. = ',DECinfo%PairReductionDistance
-    write(DECinfo%output,'(a,i4)')     'Print level            = ',DECinfo%PL
+    write(DECinfo%output,'(a,g15.2)')  'FOT                    = ',DECinfo%FOT
+    write(DECinfo%output,'(a,g15.3)')  'Pair distance thresh.  = ',DECinfo%pair_distance_threshold
+    write(DECinfo%output,'(a,g15.3)')  'Pair reduction thresh. = ',DECinfo%PairReductionDistance
+    write(DECinfo%output,'(a,g15.3)')  'Simple orbital thr.    = ',DECinfo%simple_orbital_threshold
     write(DECinfo%output,'(a,i4)')     'Expansion step size    = ',DECinfo%FragmentExpansionSize
+    write(DECinfo%output,'(a,i4)')     'Print level            = ',DECinfo%PL
 
     ! print cc parameters
     write(DECinfo%output,'(/,a)') '--------------------------'
@@ -740,67 +737,14 @@ contains
     write(DECinfo%output,'(a,/)') '--------------------------'
     write(DECinfo%output,'(a,a)')      'Wave function          = ',DECinfo%cc_models(DECinfo%ccModel)
     write(DECinfo%output,'(a,i4)')     'MaxIter                = ',DECinfo%ccMaxIter
-    write(DECinfo%output,'(a,e8.1e2)') 'Convergence            = ',DECinfo%ccConvergenceThreshold
-    write(DECinfo%output,'(a,l1)')     'Debug mode             = ',DECinfo%cc_driver_debug
+    write(DECinfo%output,'(a,e8.1e2)') 'Convergence thr        = ',DECinfo%ccConvergenceThreshold
     write(DECinfo%output,'(a,l1)')     'Use CROP               = ',DECinfo%use_crop
     write(DECinfo%output,'(a,i4)')     'CROP subspace          = ',DECinfo%ccMaxDIIS
     write(DECinfo%output,'(a,l1)')     'Preconditioner         = ',DECinfo%use_preconditioner
     write(DECinfo%output,'(a,l1)')     'Precond. B             = ',DECinfo%use_preconditioner_in_b
-
+    write(DECinfo%output,'(a,l1)')     'Debug mode             = ',DECinfo%cc_driver_debug
 
   end subroutine print_dec_info
-
-  !> Print short energy summary (both HF and correlation)
-  subroutine print_total_energy_summary(EHF,Ecorr,Eerr)
-    implicit none
-    !> HF energy
-    real(realk),intent(in) :: EHF
-    !> Correlation energy
-    real(realk),intent(in) :: Ecorr
-    !> Estimated intrinsic DEC energy error
-    real(realk),intent(in) :: Eerr
-
-    ! Print summary
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(13X,a)') '**********************************************************'
-    write(DECinfo%output,'(13X,a,19X,a,19X,a)') '*', 'DEC ENERGY SUMMARY', '*'
-    write(DECinfo%output,'(13X,a)') '**********************************************************'
-    write(DECinfo%output,*)
-    if(DECinfo%first_order) then
-       write(DECinfo%output,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
-       write(DECinfo%output,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
-       write(DECinfo%output,'(15X,a,f20.10)') 'G: Estimated DEC error :', Eerr
-       if(DECinfo%ccmodel==1) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==2) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CC2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==3) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CCSD energy   :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==4) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
-       end if
-    else
-       write(DECinfo%output,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
-       write(DECinfo%output,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
-       write(DECinfo%output,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
-       if(DECinfo%ccmodel==1) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total MP2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==2) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==3) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
-       elseif(DECinfo%ccmodel==4) then
-          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
-       end if
-    end if
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-
-
-  end subroutine print_total_energy_summary
 
 
   !> \brief Print all fragment energies for given CC model.
