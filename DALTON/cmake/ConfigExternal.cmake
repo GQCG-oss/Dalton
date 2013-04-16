@@ -21,12 +21,12 @@ macro(add_external _project)
         BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
         STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
         TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
-        INSTALL_DIR ${PROJECT_BINARY_DIR}/../external
+        INSTALL_DIR ${PROJECT_BINARY_DIR}/external
         CMAKE_ARGS ${ExternalProjectCMakeArgs}
         )
-    include_directories(${PROJECT_BINARY_DIR}/../external/${_project}-build)
-    include_directories(${PROJECT_BINARY_DIR}/../external/${_project}-build/modules)
-    link_directories(${PROJECT_BINARY_DIR}/../external/lib)
+    include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build)
+    include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/modules)
+    link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}/external/lib)
     add_dependencies(${_project} git_update)
 
