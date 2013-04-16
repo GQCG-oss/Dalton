@@ -18,7 +18,7 @@ macro(add_external _project)
         DOWNLOAD_DIR ${PROJECT_SOURCE_DIR}/..
         PREFIX ${PROJECT_SOURCE_DIR}/../external
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/../external/${_project}
-        BINARY_DIR ${PROJECT_BINARY_DIR}/../external/${_project}-build
+        BINARY_DIR ${PROJECT_BINARY_DIR}/external/${_project}-build
         STAMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-stamp
         TMP_DIR ${PROJECT_BINARY_DIR}/external/${_project}-tmp
         INSTALL_DIR ${PROJECT_BINARY_DIR}/../external
