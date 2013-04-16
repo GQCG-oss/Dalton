@@ -1979,11 +1979,12 @@ module dec_pdm_module
     integer,intent(in) :: o(mode)
     !> tile output
     real(realk), intent(in) :: tilein(*)
+    real(realk),pointer :: dummy(:)
     integer :: i,nccblcks,nelms,k
     integer :: tmodeidx(mode),rtd(mode)
     integer :: idxintile(mode),glbidx,ro(mode),olddims(mode)
     integer :: ccels,ntimes,el,acttdim(mode),nels,fels(mode)
-    integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode)
+    integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode),dummyidx(mode)
     integer :: simpleorder,bs
     bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
     !bs=5
@@ -2010,7 +2011,7 @@ module dec_pdm_module
     ntimes=1
     !call get_tile_dim(tdim,tnr,arr%dims,arr%tdim,arr%mode)
     do i=1,mode
-      fels(o(i)) = (tmodeidx(i)-1) * tdims(i) + 1
+      fels(i) = (tmodeidx(o(i))-1) * tdims(o(i)) + 1
       if(tmodeidx(i)*tdims(i)>dims(i))then
         acttdim(i)=mod(dims(i),tdims(i))
       else
@@ -2036,7 +2037,44 @@ module dec_pdm_module
       case(1)
         call manual_2143_reordering_tile2full(bs,acttdim,dims,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
       !case(2)
-      !  call manual_1423_reordering_tile2full(bs,acttdim,dims,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
+      !  print *,dims
+      !  print *,tdims
+      !  print *,o
+      !  print *,olddims
+      !  print *,rtd
+      !  print *,ro
+      !  call mem_alloc(dummy,dims(1)*dims(2)*dims(3)*dims(4))
+      !  do i=1,dims(1)*dims(2)*dims(3)*dims(4)
+      !    dummy(i) = fort(i)
+      !  enddo
+      !  call manual_1423_reordering_tile2full(bs,acttdim,dims,fels,1.0E0_realk,tilein,0.0E0_realk,dummy)
+      !  print *,infpar%lg_mynum,norm2(dummy)
+      !  nelms=1
+      !  do i=1,mode
+      !    nelms = nelms * acttdim(i)
+      !  enddo
+      !  do i = 1,nelms
+      !    !get mode index of element in tile
+      !    call get_midx(i,idxintile,acttdim,mode)
+      !    if(i==nelms)print *,idxintile,tmodeidx
+      !    do k=1,mode
+      !      glbmodeidx(o(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
+      !    enddo
+      !    if(i==nelms)print *,glbmodeidx,olddims
+      !    pos1=get_cidx(glbmodeidx,olddims,mode)
+      !    fort(pos1)=tilein(i)
+      !  enddo
+      !  print *,infpar%lg_mynum,norm2(fort(1:dims(1)*dims(2)*dims(3)*dims(4)))
+      !  do i=1,dims(1)*dims(2)*dims(3)*dims(4)
+      !    if(abs(dummy(i)-fort(i)) > 1.0E-12)then
+      !      call get_midx(i,dummyidx,dims,4)
+      !      print *, "firs diff in ",i,"ie",dummyidx
+      !      print *,"orig",fort(i)
+      !      print *,"new ",dummy(i)
+      !      exit
+      !    endif
+      !  enddo
+      !  call mem_dealloc(dummy)
     case default
       print *,"default part reorder put",o
       !count elements in the current tile for loop over elements
