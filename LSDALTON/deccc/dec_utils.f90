@@ -2118,7 +2118,7 @@ retval=0
           write(DECinfo%output,*)
        end if
 
-       if(MyFragment%FATransSet) then
+       if(MyFragment%FAset) then
           write(DECinfo%output,*) 'Occupied FO coefficients (column, elements in column)'
           do i=1,MyFragment%noccFA
              write(DECinfo%output,*) i, MyFragment%CoccFA(:,i)
@@ -2240,10 +2240,10 @@ retval=0
        fragment%CDset=.false.
     end if
 
-    if(fragment%FATransSet) then
+    if(fragment%FAset) then
        call mem_dealloc(fragment%CoccFA)
        call mem_dealloc(fragment%CunoccFA)
-       fragment%FATransSet=.false.
+       fragment%FAset=.false.
     end if
 
     if(associated(fragment%atoms_idx)) then
