@@ -2334,7 +2334,7 @@ CONTAINS
         ENDIF
         IF (ADMMGCBASIS) THEN
             ADMMexchange = .FALSE.
-            ENDIF
+        ENDIF
         IF (ADMMexchange) THEN 
             ! GdBs = J(B) + K(b) + X(B) - X(b)
             call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
@@ -2564,7 +2564,6 @@ CONTAINS
             !!****Calculation of Level 2 exchange gradient from
             !!     level 2 Density matrix starts here
             !ADMM (level 2) AO settings 
-            call set_default_AOs(AO2,AOdfold)
                 
             AO3 = AORdefault ! assuming optlevel.EQ.3
             call mat_init(D2_AO,nbast2,nbast2)
@@ -2587,6 +2586,7 @@ CONTAINS
                 call mat_zero(TMPF3)
                 ! Take Dsym later on as input!!!!!!!
                 Dsym = .FALSE.
+                call set_default_AOs(AO2,AOdfold)
                 call II_get_exchange_mat(lupri,luerr,setting,B2_AO(ibmat),&
                                             & 1,Dsym,k2(ibmat))
                 !Transform level 2 exact-exchange matrix to level 3
@@ -2641,6 +2641,7 @@ CONTAINS
                 !Level 3 XC matrix
                 call mat_init(Gx3(ibmat),nbast,nbast)
                 call mat_zero(Gx3(ibmat))
+                call set_default_AOs(AO3,AOdfold)
                 call II_get_xc_linrsp(lupri,luerr,&
                       & setting,nbast,Bmat_AO(ibmat),Dmat_AO,Gx3(ibmat),1) 
                 call mat_daxpy(setting%scheme%exchangeFactor,&
