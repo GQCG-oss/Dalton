@@ -131,96 +131,74 @@ CRIT3=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
 CRIT4=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`
 CRIT5=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
 CRIT6=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
-CRIT7=`$GREP "6 * z *  3\.2739519969 " $log | wc -l`
-TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
-		$CRIT7`
-CTRL[2]=10
+CRIT7=`$GREP "6 * z * 3\.2739519969" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7`
+CTRL[2]=7
 ERROR[2]="GEOMETRY NOT READ CORRECTLY"
-
-## Symmetry
-##CRIT1=`$GREP "Number of coordinates in each symmetry\: * 3 * 3 * 2 * 1" $log | wc -l`
-##CRIT2=`$GREP "Number of orbitals in each symmetry\: * 25 * 16 * 10 * 4" $log | wc -l`
-##TEST[3]=`expr	$CRIT1 \+ $CRIT2`
-##CTRL[3]=2
-##ERROR[3]="SYMMETRY NOT CORRECT"
-
-# Energies
-CRIT1=`$GREP "Final HF energy \: * \-95\.783502842510" $log | wc -l`
-TEST[4]=`expr	$CRIT1`
-CTRL[4]=3
-ERROR[4]="ENERGIES NOT CORRECT"
 
 # LRESC setup 
 CRIT1=`$GREP "LRESC Corrections for Shielding"  $log | wc -l`
-CRIT2=`$GREP "Selected Atom  \: \# 1\: F" $log | wc -l`
-CRIT3=`$GREP "Atom coordinates\:"  $log | wc -l`
-TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
-CTRL[5]=2
-ERROR[5]="LRESC SETUP NOT SET CORRECTLY"
+CRIT2=`$GREP "Selected Atom *  \: \# 1\: F" $log | wc -l`
+CRIT3=`$GREP "Atom coordinates \:     0\.0000    0\.0000    0\.0000"  $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[3]=3
+ERROR[3]="LRESC SETUP NOT SET CORRECTLY"
 
-# Paramagnetic Corrections
-CRIT1=`$GREP "Lkin \:  * \ 0\.46314 * " $log | wc -l`
-CRIT2=`$GREP "Anisotropic coupling * \: * \-13\.2904 Hz" $log | wc -l`
-CRIT3=`$GREP "Asymmetry * \: * (0| )\.5682" $log | wc -l`
-CRIT4=`$GREP "S parameter * \: * \-13\.9872 Hz" $log | wc -l`
-CRIT5=`$GREP "A parameter * \: * (\-0|\-)\.0366 Hz" $log | wc -l`
-CRIT6=`$GREP "Isotropic DSO contribution\: * (\-0|\-)\.0493 Hz" $log | wc -l`
-CRIT7=`$GREP "Isotropic PSO contribution\: * \-10\.5390 Hz" $log | wc -l`
-CRIT8=`$GREP "Isotropic SD contribution \: * (\-0|\-)\.2594 Hz" $log | wc -l`
-CRIT9=`$GREP "Isotropic FC contribution \: * \-70\.5929 Hz" $log | wc -l`
-CRIT10=`$GREP "Isotropic coupling * \: * \-12\.5016 Hz" $log | wc -l`
-CRIT11=`$GREP "Anisotropic coupling * \: * \-2\.0402 Hz" $log | wc -l`
-CRIT12=`$GREP "Asymmetry * \: * (0| )\.5682" $log | wc -l`
-CRIT13=`$GREP "S parameter * \: * \-2\.1471 Hz" $log | wc -l`
-CRIT14=`$GREP "A parameter * \: * (\-0|\-)\.0056 Hz" $log | wc -l`
-CRIT15=`$GREP "Isotropic DSO contribution\: * (\-0|\-)\.0076 Hz" $log | wc -l`
-CRIT16=`$GREP "Isotropic PSO contribution\: * \-1\.6178 Hz" $log | wc -l`
-CRIT17=`$GREP "Isotropic SD contribution \: * (\-0|\-)\.0398 Hz" $log | wc -l`
-CRIT18=`$GREP "Isotropic FC contribution \: * \-10\.8364 Hz" $log | wc -l`
-TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
-		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
-		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18`
-CTRL[6]=40
-ERROR[6]="LRESC PARAMAGNETIC CORRECTIONS NOT CORRECT"
+# Paramagnetic Corrections : Singlet Second Order
+CRIT1=`$GREP "Lkin \: * 0\.46314 * 0\.46314 * 0\.17966 * 0\.36865" $log | wc -l`
+CRIT2=`$GREP "PsoKin \: * 1\.06246 * 1\.06246 * \-0\.00000 * 0\.70831" $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[4]=2
+ERROR[4]="LRESC PARAMAGNETIC Second Order Sinlgets NOT CORRECT"
 
-# H-H coupling
-CRIT1=`$GREP "Isotropic coupling * \: * \-11\.9277 Hz" $log | wc -l`
-CRIT2=`$GREP "Anisotropic coupling * \: * \-37\.8903 Hz" $log | wc -l`
-CRIT3=`$GREP "Asymmetry * \: * (\-0|\-)\.0676" $log | wc -l`
-CRIT4=`$GREP "S parameter * \: * 37\.9192 Hz" $log | wc -l`
-CRIT5=`$GREP "A parameter * \: * 2\.5137 Hz" $log | wc -l`
-CRIT6=`$GREP "Isotropic DSO contribution\: * \-6\.7673 Hz" $log | wc -l`
-CRIT7=`$GREP "Isotropic PSO contribution\: * 7\.8265 Hz" $log | wc -l`
-CRIT8=`$GREP "Isotropic SD contribution \: * (0| )\.9376 Hz" $log | wc -l`
-CRIT9=`$GREP "Isotropic FC contribution \: * \-13\.9246 Hz" $log | wc -l`
-CRIT10=`$GREP "Isotropic coupling * \: * \-1\.8310 Hz" $log | wc -l`
-CRIT11=`$GREP "Anisotropic coupling * \: * \-5\.8164 Hz" $log | wc -l`
-CRIT12=`$GREP "Asymmetry * \: * (\-0|\-)\.0676" $log | wc -l`
-CRIT13=`$GREP "S parameter * \: * 5\.8208 Hz" $log | wc -l`
-CRIT14=`$GREP "A parameter * \: * (0| )\.3859 Hz" $log | wc -l`
-CRIT15=`$GREP "Isotropic DSO contribution\: * \-1\.0388 Hz" $log | wc -l`
-CRIT16=`$GREP "Isotropic PSO contribution\: * 1\.2014 Hz" $log | wc -l`
-CRIT17=`$GREP "Isotropic SD contribution \: * (0| )\.1439 Hz" $log | wc -l`
-CRIT18=`$GREP "Isotropic FC contribution \: * \-2\.1375 Hz" $log | wc -l`
-CRIT19=`$GREP "Isotropic coupling * \: * (\-0|\-)\.2811 Hz" $log | wc -l`
-CRIT20=`$GREP "Anisotropic coupling * \: * (\-0|\-)\.8929 Hz" $log | wc -l`
-CRIT21=`$GREP "Asymmetry * \: * (\-0|\-)\.0676" $log | wc -l`
-CRIT22=`$GREP "S parameter * \: * (0| )\.8935 Hz" $log | wc -l`
-CRIT23=`$GREP "A parameter * \: * (0| )\.0592 Hz" $log | wc -l`
-CRIT24=`$GREP "Isotropic DSO contribution\: * (\-0|\-)\.1595 Hz" $log | wc -l`
-CRIT25=`$GREP "Isotropic PSO contribution\: * (0| )\.1844 Hz" $log | wc -l`
-CRIT26=`$GREP "Isotropic SD contribution \: * (0| )\.0221 Hz" $log | wc -l`
-CRIT27=`$GREP "Isotropic FC contribution \: * (\-0|\-)\.3281 Hz" $log | wc -l`
-TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
-		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
-		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
-		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ \
-		$CRIT25 \+ $CRIT26 \+ $CRIT27`
-CTRL[7]=44
-ERROR[7]="LRESC DIAMAGNETIC CORRECTIONS NOT CORRECT"
+# Paramagnetic Corrections : Triplet Second Order
+CRIT1=`$GREP "FcKin \: *   9\.96    *   9\.96    *   9\.96    *   9\.96341" $log | wc -l`
+CRIT2=`$GREP "SdKin \: *   0\.10908 *   0\.10908 *   0\.10295 *   0\.10704" $log | wc -l`
+CRIT3=`$GREP "FcBso \: * \-2\.56974 * \-2\.56974 * \-2\.60640 * \-2\.58196" $log | wc -l`
+CRIT4=`$GREP "SdBso \: *   0\.14860 *   0\.14860 *   0\.16864 *   0\.15528" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[5]=4
+ERROR[5]="LRESC PARAMAGNETIC Second Order Triplets NOT CORRECT"
+
+
+# Paramagnetic Corrections : Triplet Second Order
+CRIT1=`$GREP "FcKin \: *   9\.96    *   9\.96    *   9\.96    *   9\.96341" $log | wc -l`
+CRIT2=`$GREP "SdKin \: *   0\.10908 *   0\.10908 *   0\.10295 *   0\.10704" $log | wc -l`
+CRIT3=`$GREP "FcBso \: * \-2\.56974 * \-2\.56974 * \-2\.60640 * \-2\.58196" $log | wc -l`
+CRIT4=`$GREP "SdBso \: *   0\.14860 *   0\.14860 *   0\.16864 *   0\.15528" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[6]=4
+ERROR[6]="LRESC PARAMAGNETIC Second Order Triplets NOT CORRECT"
+
+
+# Diamagnetic Corrections : First Order
+CRIT1=`$GREP "Fc     \: * \-4\.44438 * \-4\.44438 * \-4\.44438 * \-4\.44438" $log | wc -l`
+CRIT2=`$GREP "DiaKin \: * \-0\.85956 * \-0\.85956 * \-0\.86075 * \-0\.85996" $log | wc -l`
+CRIT3=`$GREP "AngPso \: * \-0\.02710 * \-0\.02710 * \-0\.03277 * \-0\.02899" $log | wc -l`
+TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[7]=3
+ERROR[7]="LRESC DIAMAGENTIC First Order NOT CORRECT"
+
+
+# Diamagnetic Corrections : Second Order Singlets
+CRIT1=`$GREP "DiaMv  \: *   3\.56951 *   3\.56951 *   3\.61785 *   3\.58562 " $log | wc -l`
+CRIT2=`$GREP "DiaDw  \: * \-1\.91999 * \-1\.91999 * \-1\.94691 * \-1\.92896 " $log | wc -l`
+TEST[8]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[8]=2
+ERROR[8]="LRESC DIAMAGENTIC Second Order Singlets NOT CORRECT"
+
+
+# Total LRESC corrections, checked if totals are ok
+CRIT1=`$GREP "Total Paramagnetic Corrections \: *   8\.72072" $log | wc -l`
+CRIT2=`$GREP "Total Diamagnetic Corrections \:  * \-3\.67667" $log | wc -l`
+CRIT3=`$GREP "Sum of corrections \: * 10\.53946" $log | wc -l`
+TEST[9]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[9]=3
+ERROR[9]="LRESC Total contributions NOT CORRECT"
 
 PASSED=1
-for i in 1 2 3 4 5 6 7
+
+for i in 1 2 3 4 5 6 7 8 9 
 do
    if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
