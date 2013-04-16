@@ -597,7 +597,7 @@ $ECHO '\n   LSDALTON executable and script will be placed in '$INSTALL_DIR' dire
 #
 # Determine default basis set library location
 #
-INSTALL_BASDIR=$curr/basis
+INSTALL_BASDIR=$curr/../basis
 get_yes_or_no 'Use basis as default basis set directory?' y
 if [ "$answer" = "n" ];  then
     $ECHO 'Please enter antoher default basis set directory (must end with /)\n'

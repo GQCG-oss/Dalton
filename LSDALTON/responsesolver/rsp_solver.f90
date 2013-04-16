@@ -1205,7 +1205,7 @@ contains
     type(Matrix), intent(inout) :: rho_i
     !> If true, construct rho part of linear transformation
     logical, intent(in) :: make_rhos
-    type(matrix) :: prod(1),prod1,prod2(1),GbDs
+    type(matrix) :: prod(1),prod1,prod2(1),GbDs(1)
     integer :: ndim
     logical :: cov
 !Test: declarations used in testing
@@ -1218,7 +1218,7 @@ contains
     call mat_init(prod(1),ndim,ndim)
     call mat_init(prod1,ndim,ndim)
     call mat_init(prod2(1),ndim,ndim)
-    call mat_init(GbDs,ndim,ndim)
+    call mat_init(GbDs(1),ndim,ndim)
 
     call ABCcommutator(ndim,bvecs_i,D,S,prod2(1))
     if (make_rhos) then
@@ -1227,19 +1227,22 @@ contains
     endif
     call ABCcommutator(ndim,F,S,prod2(1),sigma_i)
     
-    call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
-         &prod2(1),GbDs,molcfg%setting)
-    if (molcfg%setting%do_dft) THEN 
-       !Add extra G contributions 
-       call II_get_xc_linrsp(molcfg%lupri,molcfg%luerr,& 
-            &molcfg%setting,ndim,prod2,D,prod,1) 
-       call mat_daxpy(1E0_realk,prod(1),GbDs) 
-    endif
-    call ABCcommutator(ndim,GbDs,S,D,prod(1))
+	call di_GET_GbDs_and_XC_linrsp(GbDs,prod,molcfg%lupri,&
+						& molcfg%luerr,prod2,1,ndim,D,&
+						& molcfg%setting%do_dft,molcfg%setting)
+!    call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
+!         &prod2(1),GbDs(1),molcfg%setting)
+!   	 if (molcfg%setting%do_dft) THEN 
+!       !Add extra G contributions 
+!       call II_get_xc_linrsp(molcfg%lupri,molcfg%luerr,& 
+!            &molcfg%setting,ndim,prod2,D,prod,1) 
+!       call mat_daxpy(1E0_realk,prod(1),GbDs(1)) 
+!    endif
+    
+    call ABCcommutator(ndim,GbDs(1),S,D,prod(1))
     call mat_DAXPY(1E0_realk,prod(1),sigma_i)
     call mat_scal(2.0E0_realk,sigma_i)
     
-    !call mat_free(GbDs)
     ! Project out redundancies
     call util_scriptPx('T',D,S,sigma_i)
     
@@ -1251,7 +1254,7 @@ contains
     call mat_free(prod(1))
     call mat_free(prod1)
     call mat_free(prod2(1))
-    call mat_free(GbDs)
+    call mat_free(GbDs(1))
   end subroutine make_lintran_vecs
 
 !> \brief See make_lintran_vecs - this one is just for many at a time
@@ -1305,15 +1308,19 @@ contains
           call mat_mul(S,prod1,'n','n',2E0_realk,0E0_realk,rho(i)) !Sign changed 15/7-09!
        endif
     enddo
-    call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
-         &prod2,GbDs,nnew,molcfg%setting) 
-    if(molcfg%setting%do_dft)then
-       call II_get_xc_linrsp(molcfg%lupri,molcfg%luerr,& 
-            &molcfg%setting,ndim,prod2,D,sigma,nnew)   !sigma used as temp mat 
-       do i=1,nnew
-          call mat_daxpy(1E0_realk,sigma(i),GbDs(i))
-       enddo
-    endif
+    
+	call di_GET_GbDs_and_XC_linrsp(GbDs,sigma,molcfg%lupri,&
+						& molcfg%luerr,prod2,nnew,ndim,D,&
+						& molcfg%setting%do_dft,molcfg%setting)
+!    call di_GET_GbDs(molcfg%lupri,molcfg%luerr,& 
+!         &prod2,GbDs,nnew,molcfg%setting) 
+!    if(molcfg%setting%do_dft)then
+!       call II_get_xc_linrsp(molcfg%lupri,molcfg%luerr,& 
+!            &molcfg%setting,ndim,prod2,D,sigma,nnew)   !sigma used as temp mat 
+!       do i=1,nnew
+!          call mat_daxpy(1E0_realk,sigma(i),GbDs(i))
+!       enddo
+!    endif
 
     do i=1,nnew
        call ABCcommutator(ndim,F,S,prod2(i),sigma(i))    
@@ -1679,6 +1686,7 @@ contains
     real(realk),allocatable :: E2(:,:), S2(:,:), RHS(:) 
     integer,allocatable :: IPIV(:)
     integer :: igd, ierr
+    ierr=0
 
     allocate(E2(2*ndim_red,2*ndim_red), S2(2*ndim_red,2*ndim_red))
     allocate(RHS(2*ndim_red), IPIV(2*ndim_red))
@@ -1784,6 +1792,7 @@ contains
     real(realk),pointer :: SV(:),optwrk(:)
     integer,pointer :: IWORK(:)
     integer :: ibx2,kk,info,lwork,nSVD,MAXnSVD
+    info=0
     DoSVD = molcfg%solver%doSVD
     IF(DoSVD)WRITE(molcfg%lupri,*)'Use SVD for the response solver. TK'
 !for restart
@@ -2990,7 +2999,7 @@ end subroutine verify_conv_prop
     real(realk),allocatable :: E2(:,:), S2(:,:), RHS(:,:)
     integer,allocatable :: IPIV(:)
     integer :: igd, ierr, rdim, nump, i, j, k, l
-
+    ierr=0
     !number of vectors to project out (degeneracy of (de-)excitation(s))
     nump = nmcdvec
     !dimension of redsp. matrices after out-projection of (de-)excitation(s)

@@ -75,7 +75,7 @@ contains
     integer :: i,j,k,idx,tuple_type
     !> mpi stuff
 #ifdef VAR_LSMPI
-    integer :: mpi_counter_out, mpi_counter_in
+    !> logical determining whether a parallel task should be joined by several procs
     logical :: collab
 #endif
     !> orbital energies
@@ -83,7 +83,7 @@ contains
     !> MOs and unitary transformation matrices
     type(array2) :: C_can_occ, C_can_virt, Uocc, Uvirt
     !> dimensions
-    integer, dimension(2) :: occdims, virtdims, virtoccdims
+    integer, dimension(2) :: occdims, virtdims, virtoccdims,occAO,virtAO
     integer, dimension(3) :: dims_aaa
     integer, dimension(4) :: dims_iaai, dims_aaii
     !> input for the actual triples computation
@@ -93,12 +93,14 @@ contains
     type(array2),intent(inout) :: ccsdpt_singles
 
     ! init dimensions
-    occdims = [nocc,nocc]
-    virtdims = [nvirt,nvirt]
+    occdims     = [nocc,nocc]
+    virtdims    = [nvirt,nvirt]
     virtoccdims = [nvirt,nocc]
-    dims_iaai = [nocc,nvirt,nvirt,nocc]
-    dims_aaii = [nvirt,nvirt,nocc,nocc]
-    dims_aaa = [nvirt,nvirt,nvirt]
+    dims_iaai   = [nocc,nvirt,nvirt,nocc]
+    dims_aaii   = [nvirt,nvirt,nocc,nocc]
+    dims_aaa    = [nvirt,nvirt,nvirt]
+    occAO       = [nbasis,nocc]
+    virtAO      = [nbasis,nvirt]
 
 #ifdef VAR_LSMPI
 
@@ -124,8 +126,12 @@ contains
 
     call mem_alloc(eivalocc,nocc)
     call mem_alloc(eivalvirt,nvirt)
-    call get_ccsdpt_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,&
-                                       & C_can_occ,C_can_virt,Uocc,Uvirt,eivalocc,eivalvirt)
+    Uocc       = array2_init(occdims)
+    Uvirt      = array2_init(virtdims)
+    C_can_occ  = array2_init(occAO)
+    C_can_virt = array2_init(virtAO)
+    call get_canonical_integral_transformation_matrices(nocc,nvirt,nbasis,ppfock,qqfock,ypo,ypv,&
+                         & C_can_occ%val,C_can_virt%val,Uocc%val,Uvirt%val,eivalocc,eivalvirt)
 
     ! ***************************************************
     ! get vo³, v²o², and v³o integrals in proper sequence
@@ -178,14 +184,6 @@ contains
     ! initially, reorder ccsd_doubles
     call array4_reorder(ccsd_doubles,[3,1,4,2]) ! ccsd_doubles(a,i,b,j) --> ccsd_doubles(b,a,j,i)
 
-#ifdef VAR_LSMPI
-
-    ! init mpi counter
-    mpi_counter_out = 0
-    mpi_counter_in = 0
-
-#endif
-
     ! init triples tuples array3 structures
     trip_tmp  = array3_init_standard(dims_aaa)
     trip_ampl = array3_init_standard(dims_aaa)
@@ -209,9 +207,11 @@ contains
     ! remaining notes at the end of the i,j,k nested loop.
     !
     ! a note on the number of mpi_get calls.
-    ! at the irun level, there will be [(nocc - lg_nodtot + 1) + (lg_nodtot - 1) * lg_nodtot] number of calls
-    ! at the jrun level, there will be [(nocc/2) * (1 + nocc)] number of calls
-    ! at the krun level, there will be [(nocc/6) * (nocc + 1) * (nocc + 2)] number of calls
+    !  - at the irun level, there will be [(nocc - lg_nodtot + 1) + (lg_nodtot - 1) * lg_nodtot] number of calls,
+    ! where (nocc - lg_nodtot + 1) is the number of 'collab == .false.' calls,
+    ! and (lg_nodtot - 1) * lg_nodtot is the number of 'collab == .true.' calls
+    !  - at the jrun level, there will be [(nocc/2) * (1 + nocc)] number of calls (minimum number of calls)
+    !  - at the krun level, there will be [(nocc/6) * (nocc + 1) * (nocc + 2)] number of calls (minimum number of calls)
 
  irun: do i=1,nocc
 
@@ -220,12 +220,9 @@ contains
           if ((infpar%lg_nodtot + i - 1) .le. nocc) then
 
              collab = .false.
-
-             ! increment outer mpi counter
-             mpi_counter_out = mpi_counter_out + 1
-   
+ 
              ! determine if this is my job or not
-             if (infpar%lg_mynum .ne. mod(mpi_counter_out,infpar%lg_nodtot)) cycle irun
+             if (infpar%lg_mynum .ne. mod(i,infpar%lg_nodtot)) cycle irun
    
              ! get the i'th v^3 tile
              call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
@@ -256,12 +253,9 @@ contains
 
              else
 
-                ! increment inner mpi counter
-                mpi_counter_in = mpi_counter_in + 1
-   
                 ! determine if this is my job or not
-                if (infpar%lg_mynum .ne. mod(mpi_counter_in,infpar%lg_nodtot)) cycle jrun
-   
+                if (infpar%lg_mynum .ne. mod(j,infpar%lg_nodtot)) cycle jrun
+ 
                 ! get the j'th tile
                 call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
 
@@ -1370,7 +1364,7 @@ contains
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
     real(realk) :: eigenocc(no), eigenvirt(nv)
-    real(realk), dimension(nv,nv,nv), optional, intent(inout) :: trip
+    real(realk), dimension(nv,nv,nv), intent(inout) :: trip
     !> temporary quantities
     integer :: trip_type, a, b, c
     real(realk) :: e_orb, e_orb_occ
@@ -1958,15 +1952,15 @@ contains
                        ! occ in frag # 1, virt in frag # 2
 
                           occ_in_frag_1 = .false.
-                          do idx = 1,Fragment1%SF_nfrags
-                             if (Fragment1%SF_atomlist(idx) .eq. AtomI) then
+                          do idx = 1,Fragment1%nEOSatoms
+                             if (Fragment1%EOSatoms(idx) .eq. AtomI) then
                                 occ_in_frag_1 = .true.
                              end if
                           end do
 
                           virt_in_frag_2 = .false.
-                          do adx = 1,Fragment2%SF_nfrags
-                             if (Fragment2%SF_atomlist(adx) .eq. AtomA) then
+                          do adx = 1,Fragment2%nEOSatoms
+                             if (Fragment2%EOSatoms(adx) .eq. AtomA) then
                                 virt_in_frag_2 = .true.
                              end if
                           end do
@@ -1980,15 +1974,15 @@ contains
                        ! virt in frag # 1, occ in frag # 2
                             
                           occ_in_frag_2 = .false. 
-                          do idx = 1,Fragment2%SF_nfrags
-                             if (Fragment2%SF_atomlist(idx) .eq. AtomI) then
+                          do idx = 1,Fragment2%nEOSatoms
+                             if (Fragment2%EOSatoms(idx) .eq. AtomI) then
                                 occ_in_frag_2 = .true.
                              end if
                           end do 
                              
                           virt_in_frag_1 = .false.
-                          do adx = 1,Fragment1%SF_nfrags
-                             if (Fragment1%SF_atomlist(adx) .eq. AtomA) then
+                          do adx = 1,Fragment1%nEOSatoms
+                             if (Fragment1%EOSatoms(adx) .eq. AtomA) then
                                 virt_in_frag_1 = .true.
                              end if
                           end do

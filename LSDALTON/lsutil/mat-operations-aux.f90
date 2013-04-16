@@ -98,6 +98,7 @@ SUBROUTINE mat_eigenvalues_to_aux(unres,A)
    integer                  :: info, n, n2, lwrk, ilaenv, m
    real(realk)              :: NULLR,Z(1,1),eival
    integer,     allocatable :: NULLI(:)
+   info=0
    NULLR = 0.0E0_realk
    if (.not.associated(A%raux)) allocate(A%raux(2))
    select case(matrix_type)

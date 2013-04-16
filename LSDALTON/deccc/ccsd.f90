@@ -60,7 +60,8 @@ module ccsd_module
          & get_ccsd_residual_integral_driven_oldarray_wrapper, get_ccsd_residual_integral_driven, &
          & getFockCorrection, getInactiveFockFromRI,getInactiveFock_simple, &
          & precondition_singles, precondition_doubles,get_aot1fock, get_fock_matrix_for_dec, &
-         & gett1transformation, getsinglesresidualccsd,fullmolecular_get_aot1fock,calculate_E2_and_permute
+         & gett1transformation, getsinglesresidualccsd,fullmolecular_get_aot1fock,calculate_E2_and_permute, &
+         & get_max_batch_sizes
     private
 
   interface Get_AOt1Fock
@@ -283,9 +284,6 @@ contains
     type(array4) :: tmp
     integer, dimension(4) :: tmp_dims
     integer :: a,b,c,i,j,k
-    real(realk) :: starttime,stoptime
-
-    call cpu_time(starttime)
 
     if(DECinfo%array4OnFile) then
        call getDoublesResidualMP2_OnFile(omega2,&
@@ -295,11 +293,6 @@ contains
             &t2,gmo,pfock,qfock,nocc,nvirt)
     end if
 
-    call cpu_time(stoptime)
-    if(DECinfo%show_time) write(DECinfo%output,'(a,f16.3,a)') &
-         ' time :: MP2 doubles : ',stoptime-starttime,' s'
-
-    return
   end subroutine getDoublesResidualMP2_simple
 
 
@@ -497,7 +490,7 @@ contains
     ! At this point OmegaA and omegaB are stored on file using the ordering:
     ! (b,a,j,i) in (j,i) chunks using storing type 2.
 
-    if (DECinfo%timing) call LSTIMER('RES: STEP 1',tcpu,twall,DECinfo%output)
+    if (DECinfo%PL>1) call LSTIMER('RES: STEP 1',tcpu,twall,DECinfo%output)
 
 
 
@@ -588,7 +581,7 @@ contains
     call array4_close_file(Omega2,'keep')
     call array4_close_file(RHS,'keep')
 
-    if (DECinfo%timing) call LSTIMER('RES: STEP 2',tcpu,twall,DECinfo%output)
+    if (DECinfo%PL>1) call LSTIMER('RES: STEP 2',tcpu,twall,DECinfo%output)
 
 
   end subroutine getDoublesResidualMP2_OnFile
@@ -600,7 +593,7 @@ contains
        ppfock,qqfock,xocc,xvirt,yocc,yvirt)
 
     implicit none
-    real(realk) :: starttime,endtime,aStart,aEnd,bStart,bEnd,cStart,cEnd, &
+    real(realk) :: aStart,aEnd,bStart,bEnd,cStart,cEnd, &
          dStart,dEnd,eStart,eEnd
     type(array4), intent(inout) :: omega2,t2
     type(array4), intent(inout) :: u,gao,aibj,iajb
@@ -617,9 +610,7 @@ contains
     cStart=0.0E0_realk; cEnd=0.0E0_realk
     dStart=0.0E0_realk; dEnd=0.0E0_realk
     eStart=0.0E0_realk; eEnd=0.0E0_realk
-    starttime=0.0E0_realk; endtime=0.0E0_realk
 
-    call cpu_time(starttime)
 
     ! -- A2
     call cpu_time(aStart)
@@ -789,18 +780,6 @@ contains
 
     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: E2 done, norm',omega2*omega2
 
-    call cpu_time(endtime)
-    if(DECinfo%show_time) then
-       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD A2 : ',aEnd-aStart,' s'
-       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD B2 : ',bEnd-bStart,' s'
-       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD C2 : ',cEnd-cStart,' s'
-       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD D2 : ',dEnd-dStart,' s'
-       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD E2 : ',eEnd-eStart,' s'
-       write(DECinfo%output,'(a,f16.3,a)')  &
-            ' time :: CCSD doubles : ',endtime-starttime,' s'
-    end if
-
-    return
   end subroutine getDoublesResidualCCSD_simple
 
   !> \brief Very simple debug version of CCSD residual
@@ -1184,17 +1163,6 @@ contains
     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') ' debug explicit :: C2 done, norm',omega2*omega2
     call cpu_time(eEnd)
 
-    if(DECinfo%show_time) then
-       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD A2 : ',aEnd-aStart,' s'
-       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD B2 : ',bEnd-bStart,' s'
-       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD C2 : ',cEnd-cStart,' s'
-       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD D2 : ',dEnd-dStart,' s'
-       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD E2 : ',eEnd-eStart,' s'
-       write(DECinfo%output,'(a,f16.3,a)')  &
-            ' time :: CCSD doubles : ',endtime-starttime,' s'
-    end if
-
-    return
   end subroutine getDoublesResidual_explicite
 
 
@@ -1242,7 +1210,7 @@ contains
     call array2_transpose(yvirt)
     call array4_reorder(t2_ao,[2,1,3,4]) ! t2[nu mu,ij] -> t2[mu nu,ij]
     call cpu_time(partial_end)
-    if(DECinfo%show_time) &
+    if(DECinfo%PL>1) &
          write(DECinfo%output,'(/,a,f16.3,a)') ' time :: t2[ai,bj] -> t2[mu nu,ij] : ', &
          partial_end-partial_start,' s'
 
@@ -1252,7 +1220,7 @@ contains
     !call array4_reorder(gao,[2,4,1,3]) ! gao[al mu,be nu] -> gao[mu nu, al be]
     call array4_reorder(gao,[1,3,2,4])
     call cpu_time(partial_end)
-    if(DECinfo%show_time) &
+    if(DECinfo%PL>1) &
          write(DECinfo%output,'(a,f16.3,a)') ' time :: sort GAO                  : ', &
          partial_end-partial_start,' s'
 
@@ -1263,7 +1231,7 @@ contains
     call array4_contract2_middle(gao,t2_ao,X_ao)
     call array4_free(t2_ao)
     call cpu_time(partial_end)
-    if(DECinfo%show_time) &
+    if(DECinfo%PL>1) &
          write(DECinfo%output,'(a,f16.3,a)') ' time :: contract with GAO         : ', &
          partial_end-partial_start,' s'
 
@@ -1288,7 +1256,7 @@ contains
     call array4_free(ABe_IJ)
 
     call cpu_time(partial_end)
-    if(DECinfo%show_time) &
+    if(DECinfo%PL>1) &
          write(DECinfo%output,'(a,f16.3,a)') ' time :: omega2 += g[ai,bj]        : ', &
          partial_end-partial_start,' s'
 
@@ -1305,12 +1273,12 @@ contains
     call array4_add_to(omega2,1.0E0_realk,X)
     call array4_free(X)
     call cpu_time(partial_end)
-    if(DECinfo%show_time) &
+    if(DECinfo%PL>1) &
          write(DECinfo%output,'(a,f16.3,a)') ' time :: transform result to MO    : ', &
          partial_end-partial_start,' s'
 
     call cpu_time(aEnd)
-    if(DECinfo%show_time) &
+    if(DECinfo%PL>1) &
          write(DECinfo%output,'(a,f16.3,a,/)') ' time :: total A term              : ', &
          aEnd-aStart,' s'
 
@@ -1468,7 +1436,7 @@ contains
     if(DECinfo%cc_driver_debug) write(DECinfo%output,'(a,f16.10)') 'debug :: E2 done, norm',omega2*omega2
 
     call cpu_time(endtime)
-    if(DECinfo%show_time) then
+    if(DECinfo%PL>1) then
        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD A2 : ',aEnd-aStart,' s'
        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD B2 : ',bEnd-bStart,' s'
        write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD C2 : ',cEnd-cStart,' s'
@@ -2146,7 +2114,7 @@ contains
       
       !check if the current job is to be done by current node
       call check_job(scheme,first_round,dynamic_load,alphaB,gammaB,nbatchesAlpha,&
-        &nbatchesGamma,mpi_task_distribution,win_in_g,.false.)
+        &nbatchesGamma,mpi_task_distribution,win_in_g,.true.)
        !break the loop if alpha become too large, necessary to account for all
        !of the mpi and non mpi schemes, this is accounted for, because static,
        !and dynamic load balancing are enabled
@@ -2187,8 +2155,6 @@ contains
             &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,nbatches,INTSPEC)
        !Mylsitem%setting%scheme%intprint=0
        call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-       DECinfo%integral_time_cpu = DECinfo%integral_time_cpu + (tcpu2-tcpu1)
-       DECinfo%integral_time_wall = DECinfo%integral_time_wall + (twall2-twall1)
       
        !if(master)call LSTIMER('INTEGRAL1',time_start,timewall_start,DECinfo%output)
        call array_reorder_4d(1.0E0_realk,w1,nb,nb,la,lg,[4,2,3,1],0.0E0_realk,w0)
@@ -2659,8 +2625,6 @@ contains
     call LSTIMER('CCSD part C',time_start,timewall_start,DECinfo%output)
     call LSTIMER('CCSD RESIDUAL',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
-    DECinfo%MOintegral_time_wall = DECinfo%MOintegral_time_wall + (twall_end - twall_start)
-    DECinfo%MOintegral_time_cpu = DECinfo%MOintegral_time_cpu + (tcpu_end - tcpu_start)
 
   end subroutine get_ccsd_residual_integral_driven
 
@@ -4676,7 +4640,7 @@ contains
       &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
       &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
       ! allocation of matrices ONLY used outside loop
-      ! w1 + FAO + w2 + w3
+      ! w1 + FO + w2 + w3
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+nb*nb+2*no*no*nv*nv)
       !memrq=memrq+max(memin,memout)
     elseif(memintensive==3)then
@@ -4707,7 +4671,7 @@ contains
       &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
       &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
       ! allocation of matrices ONLY used outside loop
-      ! w1 + FAO + w2 + w3 + govov
+      ! w1 + FO + w2 + w3 + govov
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+max(nb*nb,max(2*tl1,tl2)))
       !memrq=memrq+max(memin,memout)
     elseif(memintensive==2)then
@@ -4743,7 +4707,7 @@ contains
       &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
       &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
       ! allocation of matrices ONLY used outside loop
-      ! w1 + FAO + w2 + w3
+      ! w1 + FO + w2 + w3
       !in cd terms w2 and w3 have tl1, in b2 w2 has tl2
       cd = max(2*tl1,tl2)
       ! in e2 term w2 has max(tl2,tl3) and w3 has max(no2,nv2)
@@ -4777,7 +4741,7 @@ contains
       &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
       &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
       ! allocation of matrices ONLY used outside loop
-      ! w1 + FAO + w2 + w3 + govov
+      ! w1 + FO + w2 + w3 + govov
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+nb*nb+3*no*no*nv*nv)
       !memrq=memrq+max(memin,memout)
     elseif(memintensive==0)then
@@ -4802,7 +4766,7 @@ contains
       &max(max(max(max(max(max(max(nv*no*nba*nbg,no*no*nba*nbg),no*no*nv*nba),&
       &2*nor*nba*nbg),nor*nv*nba),nor*nv*nbg),no*nor*nba),no*nor*nbg)
       ! allocation of matrices ONLY used outside loop
-      ! w1 + FAO 
+      ! w1 + FO 
       memout = 1.0E0_realk*max(nv*nv*no*no,nb*nb)+nb*nb
       !memrq=memrq+max(memin,memout)
     else
@@ -4968,7 +4932,7 @@ contains
 
     call array2_free(tmp)
     call cpu_time(endtime)
-    if(DECinfo%show_time) then
+    if(DECinfo%PL>1) then
       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD A1 : ',aEnd-aStart,' s'
       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD B1 : ',bEnd-bStart,' s'
       write(DECinfo%output,'(a,f16.3,a)') ' time :: CCSD C1 : ',cEnd-cStart,' s'

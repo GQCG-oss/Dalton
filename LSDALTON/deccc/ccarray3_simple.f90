@@ -236,8 +236,6 @@ contains
     end if
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%trans_time_cpu = DECinfo%trans_time_cpu + (tcpu2-tcpu1)
-    DECinfo%trans_time_wall = DECinfo%trans_time_wall + (twall2-twall1)
 
   end subroutine array3_contract1
 
@@ -294,8 +292,6 @@ contains
 !!$#endif
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%trans_time_cpu = DECinfo%trans_time_cpu + (tcpu2-tcpu1)
-    DECinfo%trans_time_wall = DECinfo%trans_time_wall + (twall2-twall1)
 
   end subroutine array3_contract2
 
@@ -355,8 +351,6 @@ contains
     call mem_dealloc(new_data)
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%reorder_time_cpu = DECinfo%reorder_time_cpu + (tcpu2-tcpu1)
-    DECinfo%reorder_time_wall = DECinfo%reorder_time_wall + (twall2-twall1)
 
   end subroutine array3_reorder
 
@@ -475,8 +469,6 @@ contains
     end select TypeOfReordering
 
     call LSTIMER('START',tcpu2,twall2,DECinfo%output)
-    DECinfo%reorder_time_cpu = DECinfo%reorder_time_cpu + (tcpu2-tcpu1)
-    DECinfo%reorder_time_wall = DECinfo%reorder_time_wall + (twall2-twall1)
 
   end subroutine array_reorder_3d
 

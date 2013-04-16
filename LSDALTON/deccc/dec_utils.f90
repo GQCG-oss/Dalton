@@ -757,6 +757,7 @@ contains
     integer, dimension(n) :: ipiv
     integer :: infoLAPACK
     external dgesv
+    infoLAPACK = 0
 
     call mem_alloc(tmpA,n,n)  ! dgesv destroyes original A
     tmpA = A
@@ -779,9 +780,9 @@ contains
   subroutine invert_matrix(input,output,n)
 
     implicit none
+    integer, intent(in) :: n
     real(realk), dimension(n,n), intent(in) :: input
     real(realk), dimension(n,n), intent(out) :: output
-    integer, intent(in) :: n
     real(realk), pointer :: output_full(:,:)
 
     real(realk), pointer :: work(:)
@@ -796,10 +797,18 @@ contains
 
     output_full = 0.0E0_realk
     output_full = input
+    info=0
     call dgetrf(n,n,output_full,n,ipiv,info)
-    if(info /= 0) stop 'error :: invert_matrix'
+    if(info /= 0) then
+       print *, 'info=', info
+       call lsquit('error1 :: invert_matrix',-1)
+    end if
+    info=0
     call dgetri(n,output_full,n,ipiv,work,n,info)
-    if(info /= 0) stop 'error :: invert_matrix'
+    if(info /= 0) then
+       print *, 'info=', info
+       call lsquit('error2 :: invert_matrix',-1)
+    end if
 
     output = 0.0E0_realk
     output = output_full
@@ -1342,45 +1351,6 @@ contains
   end subroutine get_logical_pair_vector
 
 
-  !> \brief Find averaged center for the atoms in atomlist
-  !> whose coordinates are defined by the geometry input.
-  !> \author Kasper Kristensen
-  !> \date August 2011
-  function get_superfragment_center(listsize,atomlist,natoms,geometry) result(SF_center)
-    implicit none
-    !> Averaged center for the atoms in the atomlist; (x,y,z)-coordinates
-    real(realk), dimension(3) :: SF_center
-    !> Number of atoms in atomlist under consideration
-    integer, intent(in) :: listsize
-    !> List of atoms
-    integer, dimension(listsize), intent(in) :: atomlist
-    !> Number of atoms in fulle molecule (natoms => listsize)
-    integer, intent(in) :: natoms
-    !> Geometric coordinates for all atoms in the molecule
-    real(realk), dimension(natoms,3), intent(in) :: geometry
-    integer :: i,j,idx
-
-    SF_center=0E0_realk
-    AtomListLoop: do i=1,listsize
-       idx = atomlist(i)
-
-       xyzLOOP: do j=1,3
-          ! Add up coordinates
-          SF_center(j) = SF_center(j) + geometry(idx,j)
-       end do xyzLOOP
-
-    end do AtomListLoop
-
-    ! Divide by listsize to get averaged coordinates
-    do j=1,3
-       SF_center(j) = SF_center(j)/real(listsize)
-    end do
-
-  end function get_superfragment_center
-
-
-
-
 
   subroutine InitialFragment(MyAtom,EOS,Buffer,DistList,DistTrack,natoms)
     implicit none
@@ -1704,11 +1674,11 @@ contains
     !> Number of columns in op(B) = Number of columns in C
     integer,intent(in) :: n
     !> Input matrix A in matrix product C = op(A) op(B)
-    real(realk),intent(in),dimension(m*k) :: A
+    real(realk),intent(in),dimension(*) :: A
     !> Input matrix B in matrix product C = op(A) op(B)
-    real(realk),intent(in),dimension(k*n) :: B
+    real(realk),intent(in),dimension(*) :: B
     !> Output matrix C in matrix product C = op(A) op(B)
-    real(realk),intent(inout),dimension(m*n) :: C
+    real(realk),intent(inout),dimension(*) :: C
     !> Transpose A [TransA='t' and op(A)=A^T] or not [TransA='n' and op(A)=A]
     character(len=1), intent(in) ::TransA
     !> Transpose B [TransB='t' and op(B)=B^T] or not [TransB='n' and op(B)=B]
@@ -1779,11 +1749,11 @@ contains
     !> Number of columns in op(B) = Number of columns in C
     integer,intent(in) :: n
     !> Input matrix A in matrix product C = op(A) op(B)
-    real(realk),intent(in),dimension(m*k) :: A
+    real(realk),intent(in),dimension(*) :: A
     !> Input matrix B in matrix product C = op(A) op(B)
-    real(realk),intent(in),dimension(k*n) :: B
+    real(realk),intent(in),dimension(*) :: B
     !> Output matrix C in matrix product C = op(A) op(B)
-    real(realk),intent(inout),dimension(m*n) :: C
+    real(realk),intent(inout),dimension(*) :: C
     !> Transpose A [TransA='t' and op(A)=A^T] or not [TransA='n' and op(A)=A]
     character(len=1), intent(in) ::TransA
     !> Transpose B [TransB='t' and op(B)=B^T] or not [TransB='n' and op(B)=B]
@@ -2008,13 +1978,13 @@ retval=0
     write(DECinfo%output,*) '*                    FRAGMENT INFORMATION                   *'
     write(DECinfo%output,*) '*************************************************************'
     write(DECinfo%output,*)
-    if(MyFragment%atomic_number2==0) then
+    if(MyFragment%nEOSatoms==2) then
        pair=.false.
        write(DECinfo%output,'(1X,a,i6)') 'SINGLE FRAGMENT, atomic number:', MyFragment%atomic_number
     else
        pair=.true.
        write(DECinfo%output,'(1X,a,2i6)') 'PAIR FRAGMENT, atomic numbers:', &
-            & MyFragment%atomic_number, MyFragment%atomic_number2
+            & MyFragment%EOSatoms(1),MyFragment%EOSatoms(2)
        write(DECinfo%output,'(1X,a,f12.2)') 'Pair distance = ', MyFragment%pairdist
     end if
     write(DECinfo%output,'(1X,a,i8)') 'Size occ EOS   =', MyFragment%noccEOS
@@ -2031,19 +2001,19 @@ retval=0
     end do
 
     write(DECinfo%output,*)
-    write(DECinfo%output,*) 'Fragment-adapted orbital (FAO) information:'
-    write(DECinfo%output,*) 'Using FAOs: ', MyFragment%fragmentadapted
-    write(DECinfo%output,'(1X,a,i8)') 'Size occ FAOs   = ', MyFragment%noccFA
-    write(DECinfo%output,'(1X,a,i8)') 'Size unocc FAOs = ', MyFragment%nunoccFA
+    write(DECinfo%output,*) 'Fragment-adapted orbital (FO) information:'
+    write(DECinfo%output,*) 'Using FOs: ', MyFragment%fragmentadapted
+    write(DECinfo%output,'(1X,a,i8)') 'Size occ FOs   = ', MyFragment%noccFA
+    write(DECinfo%output,'(1X,a,i8)') 'Size unocc FOs = ', MyFragment%nunoccFA
     write(DECinfo%output,'(1X,a,g12.2)') 'Occ rejection thr   ', MyFragment%RejectThr(2)
     write(DECinfo%output,'(1X,a,g12.2)') 'Unocc rejection thr ', MyFragment%RejectThr(1)
     write(DECinfo%output,*)
 
 
-    if(MyFragment%SF) then
-       write(DECinfo%output,*) 'This is a super fragment!'
-       write(DECinfo%output,*) 'Number of EOS atoms =', MyFragment%SF_nfrags
-       if(printlevel>1) write(DECinfo%output,*) 'List of EOS atoms = ', MyFragment%SF_atomlist
+    if(MyFragment%pairfrag) then
+       write(DECinfo%output,*) 'This is a pair fragment!'
+       write(DECinfo%output,*) 'Number of EOS atoms =', MyFragment%nEOSatoms
+       write(DECinfo%output,*) 'List of EOS atoms = ', MyFragment%EOSatoms
     else
        write(DECinfo%output,*) 'This is a standard fragment!'
     end if
@@ -2149,13 +2119,13 @@ retval=0
        end if
 
        if(MyFragment%FATransSet) then
-          write(DECinfo%output,*) 'Occupied FAO coefficients (column, elements in column)'
+          write(DECinfo%output,*) 'Occupied FO coefficients (column, elements in column)'
           do i=1,MyFragment%noccFA
              write(DECinfo%output,*) i, MyFragment%CoccFA(:,i)
           end do
           write(DECinfo%output,*)
 
-          write(DECinfo%output,*) 'Virtual FAO coefficients (column, elements in column)'
+          write(DECinfo%output,*) 'Virtual FO coefficients (column, elements in column)'
           do i=1,MyFragment%nunoccFA
              write(DECinfo%output,*) i, MyFragment%CunoccFA(:,i)
           end do
@@ -2183,35 +2153,12 @@ retval=0
     !> Atomic fragment to be freed
     type(ccatom),intent(inout) :: fragment
 
-    if (associated(fragment%parenthesis_t)) then
-       call atomic_fragment_pT_free(fragment)
-    end if
-
     ! Free everything in fragment - including basis info (fock matrix, MO coefficients, lsitem etc.)
     call atomic_fragment_free_simple(fragment)
     call atomic_fragment_free_basis_info(fragment)
     call free_fragment_t1(fragment)
 
   end subroutine atomic_fragment_free
-
-  !> \brief Delete atomic fragment (ccsd(t) part)
-  !> \author Janus Juul Eriksen & Kasper Kristensen
-  !> \date January 2013
-  subroutine atomic_fragment_pT_free(fragment)
-
-    implicit none
-    !> Atomic fragment to be freed
-    type(ccatom),intent(inout) :: fragment
-
-    ! Free everything in fragment%parenthesis_t - 
-    ! including basis info (fock matrix, MO coefficients, lsitem etc.)
-    call atomic_fragment_free_simple(fragment%parenthesis_t)
-    call atomic_fragment_free_basis_info(fragment%parenthesis_t)
-    call free_fragment_t1(fragment%parenthesis_t)
-    deallocate(fragment%parenthesis_t)
-    nullify(fragment%parenthesis_t)
-
-  end subroutine atomic_fragment_pT_free
 
 
   !> \brief Delete the "simple" part of the atomic fragment structure, i.e.
@@ -2272,9 +2219,9 @@ retval=0
     end if
 
 
-    if(associated(fragment%SF_atomlist)) then
-       call mem_dealloc(fragment%SF_atomlist)
-       fragment%SF_atomlist => null()
+    if(associated(fragment%EOSatoms)) then
+       call mem_dealloc(fragment%EOSatoms)
+       fragment%EOSatoms => null()
     end if
 
     if(associated(fragment%OccContribs)) then
@@ -2335,6 +2282,9 @@ retval=0
     type(ccatom),intent(inout) :: fragment
     integer :: i
 
+    if(associated(fragment%S)) then
+       call mem_dealloc(fragment%S)
+    end if
 
     ! Transformation matrices
     if(associated(fragment%ypo)) then
@@ -2812,110 +2762,20 @@ retval=0
 
 
 
-  !> \brief Get distance between two super fragments described by two simple
-  !> logical vectors. The super pair distance is the smallest distance between
-  !> any EOS atom in fragment 1 and any EOS atom in fragment 2.
-  !> \author Kasper Kristensen
-  !> \date March 2012
-  function get_superpair_distance_simple(natoms,frag1,frag2,DistanceTable) result(pairdist)
-    implicit none
-
-    !> Pair distance
-    real(realk) :: pairdist
-    !> Number of atoms for full molecule
-    integer, intent(in) :: natoms
-    !> Table with atomic distances
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
-    !> Logical vector describing which EOS atoms are included in fragment 1
-    logical,intent(in) :: frag1(natoms)
-    !> Logical vector describing which EOS atoms are included in fragment 2
-    logical,intent(in) :: frag2(natoms)
-    integer :: i,j
-
-
-    pairdist=huge(1.0)
-
-    ! Sanity check
-    if(count(frag1)==0 .or. count(frag2)==0) then
-       print *, 'frag1 = ', frag1
-       print *, 'frag2 = ', frag2
-       call lsquit('get_superpair_distance_simple: No atoms in super fragment!',-1)
-    end if
-
-    do i=1,natoms
-       do j=1,natoms
-          if( frag1(i) .and. frag2(j) ) then
-             ! Atom "i" is included in fragment 1 AND
-             ! atom "j" is included in fragment 2
-             if(DistanceTable(i,j) < pairdist) pairdist = DistanceTable(i,j)
-          end if
-       end do
-    end do
-
-  end function get_superpair_distance_simple
-
-
-
-  !> \brief Create super distance table with distances between super fragments.
-  !> The super pair distance between super fragments 1 and 2 is the smallest distance between
-  !> any EOS atom in super fragment 1 and any EOS atom in fragment 2.
-  !> Any entries in SuperDistanceTable(P,Q) where either atom P or atom Q
-  !> is NOT the central atom of a super fragment will be set to huge(1.0).
-  !> (In other words, an infinitely large pair distance indicating that a pair
-  !>  should never be calculated).
-  !> \author Kasper Kristensen
-  !> \date October 2012
-  subroutine set_super_distance_table(natoms,dofrag,fragments,DistanceTable,SuperDistanceTable)
-    implicit none
-
-    !> Number of atoms for full molecule
-    integer, intent(in) :: natoms
-    !> dofrag(P) is true if P is the central atom in a super fragment
-    logical,intent(in) :: dofrag(natoms)
-    !> Super fragments
-    type(ccatom),intent(inout) :: fragments(natoms)
-    !> Table with atomic distances for all "normal" atoms
-    real(realk), intent(in) :: DistanceTable(natoms,natoms)
-    !> Table with distances between super fragments
-    real(realk), intent(inout) :: SuperDistanceTable(natoms,natoms)
-    integer :: i,j
-
-    SuperDistanceTable = huge(1.0)
-
-    do i=1,natoms
-       if(.not. dofrag(i)) cycle ! atom "i" is not a super fragment
-       SuperDistanceTable(i,i) = 0.0E0_realk
-       
-       do j=i+1,natoms
-          if(.not. dofrag(j)) cycle ! atom "j" is not a super fragment
-
-          ! Set pair distance for super fragment (i,j)
-          SuperDistanceTable(i,j) = get_distance_between_superfragments(Fragments(i),&
-               & Fragments(j),natoms,DistanceTable)
-
-       end do
-    end do
-
-
-  end subroutine set_super_distance_table
-
-
-
-
-  !> \brief Calculate distance between two superfragments defined as the
-  !> smallest distance between an atom in superfragment 1 and an atom in superfragment 2.
+  !> \brief Calculate distance between two fragments defined as the
+  !> smallest distance between an atom in fragment 1 and an atom in fragment 2.
   !> (Also works for standard fragments).
   !> \author Kasper Kristensen
   !> \date November 2011
-  function get_distance_between_superfragments(Fragment1,Fragment2,natoms,DistanceTable) result(SFdistance)
+  function get_distance_between_fragments(Fragment1,Fragment2,natoms,DistanceTable) result(fragdist)
 
 
     implicit none
-    !> Distance between super fragments
-    real(realk) :: SFdistance
-    !> Super fragment 1
+    !> Distance between fragments
+    real(realk) :: fragdist
+    !>  fragment 1
     type(ccatom),intent(inout) :: Fragment1
-    !> Super fragment 2
+    !>  fragment 2
     type(ccatom),intent(inout) :: Fragment2
     !> Number of atoms for full molecule
     integer, intent(in) :: natoms
@@ -2924,10 +2784,12 @@ retval=0
     integer :: i,j
     real(realk) :: dist
 
-    SFdistance = get_minimum_distance_between_groups_of_atoms(Fragment1%SF_nfrags,&
-         & Fragment2%SF_nfrags, Fragment1%SF_atomlist,  Fragment2%SF_atomlist, natoms,DistanceTable)
+    ! In principle this can also give the "distance" between two pair fragments
+    ! as the maximu distance between an atom in pair1 and an atom in pair2.
+    fragdist = get_minimum_distance_between_groups_of_atoms(Fragment1%nEOSatoms,&
+         & Fragment2%nEOSatoms, Fragment1%EOSatoms,  Fragment2%EOSatoms, natoms,DistanceTable)
 
-  end function get_distance_between_superfragments
+  end function get_distance_between_fragments
 
 
 
@@ -3117,10 +2979,10 @@ retval=0
   end function get_HF_energy_fullmolecule
 
 
-  !> Check whether super fragment restart file exist.
+  !> Check whether fragment restart file exist.
   !> \author Kasper Kristensen
   !> \date December 2012
-  function sf_restart_file_exist(first_order) result(file_exist)
+  function fragment_restart_file_exist(first_order) result(file_exist)
 
     implicit none
     !> First order calculation?
@@ -3129,16 +2991,16 @@ retval=0
     character(len=40) :: FileName
 
     if(first_order) then  ! first order calculation
-       filename = 'supergrad.info'
+       filename = 'mp2grad.info'
 
     else ! energy calculation
-       filename = 'superenergies.info'
+       filename = 'fragenergies.info'
     end if
 
     inquire(file=FileName,exist=file_exist)
 
 
-  end function sf_restart_file_exist
+  end function fragment_restart_file_exist
 
   !> Read 64 bit integer from file and convert to 32 bit integer
   !> \author Kasper Kristensen
@@ -3364,16 +3226,15 @@ retval=0
   !> \brief Construct logical array telling which atomic pair combinations should be
   !> included when calculating pair interaction energies and other pair interaction
   !> properties - to avoid double counting.
-  !> Mainly to be used for super fragments.
   !> It also works for standard fragments but in that case the output is trivial.
   !> \author Kasper Kristensen
   !> \date September 2011
   subroutine which_pairs(Fragment1,Fragment2,natoms,dopair)
 
     implicit none
-    ! (Super) Fragment 1 in pair
+    ! Fragment 1 in pair
     type(ccatom),intent(inout) :: Fragment1
-    ! (Super) Fragment 2 in pair
+    ! Fragment 2 in pair
     type(ccatom),intent(inout) :: Fragment2
     integer, intent(in) :: natoms
     logical,dimension(natoms,natoms),intent(inout) :: dopair
@@ -3384,8 +3245,8 @@ retval=0
     !
     ! Example:
     ! ********
-    ! Super fragment 1 has been constructed from standard atoms 3 and 5
-    ! Super fragment 2 has been constructed from standard atoms 7 and 8.
+    ! fragment 1 has been constructed from standard atoms 3 and 5
+    ! fragment 2 has been constructed from standard atoms 7 and 8.
     ! In this case we should include all pair combinaitons of 3 and 5
     ! with 7 and 8 - and of course not the diagonal elements, since that would
     ! introduce double countings.
@@ -3399,11 +3260,11 @@ retval=0
 
     ! Set which atoms to consider for pair
     dopair=.false.
-    do a=1,fragment1%SF_nfrags  ! Loop over atoms in fragment 1 (just a single atom if not super fragment)
-       do b=1,fragment2%SF_nfrags ! Loop over atoms in fragment 2
+    do a=1,fragment1%nEOSatoms  ! Loop over atoms in fragment 1 
+       do b=1,fragment2%nEOSatoms ! Loop over atoms in fragment 2
 
-          ax=fragment1%SF_atomlist(a) ! Atom index for atom in fragment 1
-          bx=fragment2%SF_atomlist(b) ! Atom index for atom in fragment 2
+          ax=fragment1%EOSatoms(a) ! Atom index for atom in fragment 1
+          bx=fragment2%EOSatoms(b) ! Atom index for atom in fragment 2
           dopair(ax,bx)=.true.
           dopair(bx,ax)=.true.
 
@@ -3430,9 +3291,9 @@ retval=0
   subroutine which_pairs_occ(Fragment1,Fragment2,PairFragment,dopair)
 
     implicit none
-    ! (Super) Fragment 1 in pair
+    ! Fragment 1 in pair
     type(ccatom),intent(inout) :: Fragment1
-    ! (Super) Fragment 2 in pair
+    ! Fragment 2 in pair
     type(ccatom),intent(inout) :: Fragment2
     !> Pair fragment
     type(ccatom),intent(inout) :: PairFragment
@@ -3532,9 +3393,9 @@ retval=0
   subroutine which_pairs_unocc(Fragment1,Fragment2,PairFragment,dopair)
 
     implicit none
-    ! (Super) Fragment 1 in pair
+    ! Fragment 1 in pair
     type(ccatom),intent(inout) :: Fragment1
-    ! (Super) Fragment 2 in pair
+    ! Fragment 2 in pair
     type(ccatom),intent(inout) :: Fragment2
     !> Pair fragment
     type(ccatom),intent(inout) :: PairFragment
@@ -4079,5 +3940,289 @@ retval=0
 
 
   end subroutine add_dec_energies
+
+
+  !> \brief Project orbitals onto MO space defined by input (see details inside subroutine).
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine project_onto_MO_space(nMOC,nMOZ,nAO,C,S,Z)
+    implicit none
+
+    !> MO dimension for C coefficients (see below)
+    integer,intent(in) :: nMOC
+    !> MO dimension for Z coefficients (see below)
+    integer,intent(in) :: nMOZ
+    !> AO dimension 
+    integer,intent(in) :: nAO
+    !> MO coefficients for orbitals {phi} to use in projector (see details below)
+    real(realk),intent(in),dimension(nAO,nMOC) :: C
+    !> AO overlap matrix
+    real(realk),intent(in),dimension(nAO,nAO) :: S
+    !> MO coefficients for orbitals {psi} to be projected (see details below)
+    real(realk),intent(inout),dimension(nAO,nMOZ) :: Z
+    real(realk),pointer :: tmp(:,:),tmp2(:,:),M(:,:),Minv(:,:)
+
+
+    ! The orbitals to be projected |psi_r> are written in terms of AOs {chi}:
+    !
+    ! |psi_r> = sum_{alpha} Z_{alpha r} |chi_alpha>
+    ! 
+    ! The projector is: 
+    ! 
+    ! P = sum_{pq} |phi_p> (M^-1)_pq <phi_q|
+    ! 
+    ! where the MOs to project against {phi} are given in terms of AOs as:
+    !
+    ! |phi_p> = sum_{mu} C_{mu p} |chi_mu> 
+    !
+    ! and M is the MO overlap matrix:
+    !
+    ! M_pq = <phi_p | phi_q>.
+    ! 
+    ! Effectively we do the projection:
+    ! 
+    ! |psi_r> --> P |psi_r> = ( C M^-1 C^T S Z )_{mu r} |chi_mu>
+    !
+    ! where S is the AO overlap matrix: S_{mu nu} = <chi_mu | chi_nu>
+    !
+    ! Thus, the task of this subroutine is to change the input Z to (C M^-1 C^T S Z).
+    
+
+    ! Get inverse overlap for phi orbitals: M^-1 = (C^T S C)^-1
+    ! *********************************************************
+    call mem_alloc(M,nMOC,nMOC)
+    call dec_simple_basis_transform1(nAO,nMOC,C,S,M)
+    ! Minv = M^-1
+    call mem_alloc(Minv,nMOC,nMOC)
+
+    call invert_matrix(M,Minv,nMOC)
+    call mem_dealloc(M)
+
+    ! tmp = S Z
+    call mem_alloc(tmp,nAO,nMOZ)
+    call dec_simple_dgemm(nAO,nAO,nMOZ,S,Z,tmp,'n','n')
+
+    ! tmp2 = C^T S Z
+    call mem_alloc(tmp2,nMOC,nMOZ)
+    call dec_simple_dgemm(nMOC,nAO,nMOZ,C,tmp,tmp2,'t','n')
+    call mem_dealloc(tmp)
+
+    ! tmp = M^-1 C^T S Z
+    call mem_alloc(tmp,nMOC,nMOZ)
+    call dec_simple_dgemm(nMOC,nMOC,nMOZ,Minv,tmp2,tmp,'n','n')
+    call mem_dealloc(tmp2)
+
+    ! Z --> C M^-1 C^T S Z
+    call dec_simple_dgemm(nAO,nMOC,nMOZ,C,tmp,Z,'n','n')
+    call mem_dealloc(tmp)
+    call mem_dealloc(Minv)
+
+  end subroutine project_onto_MO_space
+
+
+
+  !> \brief Project {phi} MO space defined by input out of {psi} MO space (details inside subroutine).
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine project_out_MO_space(nMOC,nMOZ,nAO,C,S,Z)
+    implicit none
+
+    !> MO dimension for C coefficients (see below)
+    integer,intent(in) :: nMOC
+    !> MO dimension for Z coefficients (see below)
+    integer,intent(in) :: nMOZ
+    !> AO dimension 
+    integer,intent(in) :: nAO
+    !> MO coefficients for orbitals {phi} to project out (see details below)
+    real(realk),intent(in),dimension(nAO,nMOC) :: C
+    !> AO overlap matrix
+    real(realk),intent(in),dimension(nAO,nAO) :: S
+    !> MO coefficients for orbitals {psi} to be projected (see details below)
+    real(realk),intent(inout),dimension(nAO,nMOZ) :: Z
+    real(realk),pointer :: PZ(:,:)
+
+    integer :: i,j
+
+    ! The orbitals to be projected |psi_r> are written in terms of AOs {chi}:
+    !
+    ! |psi_r> = sum_{alpha} Z_{alpha r} |chi_alpha>
+    ! 
+    ! The projector is: 
+    ! 
+    ! P = 1 - sum_{pq} |phi_p> (M^-1)_pq <phi_q|
+    ! 
+    ! where the MOs to projected out {phi} are given in terms of AOs as:
+    !
+    ! |phi_p> = sum_{mu} C_{mu p} |chi_mu> 
+    !
+    ! and M is the MO overlap matrix:
+    !
+    ! M_pq = <phi_p | phi_q>.
+    ! 
+    ! Effectively we do the projection:
+    ! 
+    ! |psi_r> --> (1 - P) |psi_r> = (Z  -  C M^-1 C^T S Z )_{mu r} |chi_mu>
+    !
+    ! where S is the AO overlap matrix: S_{mu nu} = <chi_mu | chi_nu>
+    !
+    ! Thus, the task of this subroutine is to change the input Z to:
+    ! Z - PZ = (Z  -  C M^-1 C^T S Z).
+ 
+    ! Copy Z and calculate projection on Z: PZ = (C M^-1 C^T S) Z
+    call mem_alloc(PZ,nAO,nMOZ)
+    PZ = Z 
+    call project_onto_MO_space(nMOC,nMOZ,nAO,C,S,PZ)
+
+    ! Set output Z as: Z - PZ
+    do i=1,nAO
+       do j=1,nMOZ
+          Z(i,j) = Z(i,j) - PZ(i,j)
+       end do
+    end do
+    call mem_dealloc(PZ)
+
+  end subroutine project_out_MO_space
+
+
+  !> \brief Orthogonalize MOs by (i) setting up MO overlap matrix,
+  !> (ii) diagonalizing MO overlap matrix, (iii) writing new orthogonalized MOs
+  !> in terms of eigenvalues and eigenvalues of MO overlap matrix.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine orthogonalize_MOs(nMO,nAO,S,C)
+    implicit none
+
+    !> MO dimension 
+    integer,intent(in) :: nMO
+    !> AO dimension 
+    integer,intent(in) :: nAO
+    !> AO overlap matrix
+    real(realk),intent(in),dimension(nAO,nAO) :: S
+    !> MO coefficients to be orthogonalized
+    real(realk),intent(inout),dimension(nAO,nMO) :: C
+    real(realk),pointer :: M(:,:), lambda(:), T(:,:), CT(:,:)
+    integer :: mu,p
+    real(realk) :: lambdascale
+
+    ! The MOs are orthogonalized as follows:
+    !
+    ! (i) Setup MO overlap matrix:  M = C^T S C
+    !
+    ! (ii) Diagonalize M:  lambda = T^T M T    (lambda is diagonal matrix, T is unitary)
+    !
+    ! (iii) Labelling the input MOs as {phi} and the AOs as {chi}, we may write {phi} as
+    !
+    ! phi_p = sum_{mu} C_{mu p} |chi_mu>
+    ! 
+    ! and the orthogonalized MOs {psi} are given as:
+    !
+    ! psi_p = sum_mu lambda_p^{-1/2} (C T)_{mu p} |chi_mu>
+    !
+    ! Thus, the task of this subroutine is to change the input C_{mu p} 
+    ! to lambda_p^{-1/2} (C T)_{mu p}.
+
+
+    ! (i) M = C^T S C
+    ! ***************
+    call mem_alloc(M,nMO,nMO)
+    call dec_simple_basis_transform1(nAO,nMO,C,S,M)
+
+
+    ! (ii) Diagonalize MO overlap matrix: lambda = T^T M T
+    ! ****************************************************
+    call mem_alloc(lambda,nMO)
+    call mem_alloc(T,nMO,nMO)
+    call solve_eigenvalue_problem_unitoverlap(nMO,M,lambda,T)
+
+    ! All lambda's should be positive. However, to be complete sure we do not do something
+    ! dirty with square roots and negative numbers, we take the absolute value...
+    lambda=abs(lambda)
+
+    
+    ! (iii) Get final orthogonalized MOs
+    ! **********************************
+
+    ! C T
+    call mem_alloc(CT,nAO,nMO)
+    call dec_simple_dgemm(nAO,nMO,nMO,C,T,CT,'n','n')
+
+    ! C_{mu p} --> lambda_p^{-1/2} (C T)_{mu p}
+    do p=1,nMO
+       lambdascale = 1.0_realk/sqrt(lambda(p)) ! Lambda scaling factor: lambda_p^{-1/2}
+       do mu=1,nAO
+          C(mu,p) = CT(mu,p)*lambdascale
+       end do
+    end do
+
+
+    call mem_dealloc(M)
+    call mem_dealloc(lambda)
+    call mem_dealloc(T)
+    call mem_dealloc(CT)
+
+  end subroutine orthogonalize_MOs
+
+
+  !> \brief Print short energy summary (both HF and correlation)
+  !> (Necessary to place here because it is used both for DEC and for full calculation).
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine print_total_energy_summary(EHF,Ecorr,Eerr)
+    implicit none
+    !> HF energy
+    real(realk),intent(in) :: EHF
+    !> Correlation energy
+    real(realk),intent(in) :: Ecorr
+    !> Estimated intrinsic DEC energy error
+    real(realk),intent(in) :: Eerr
+
+    ! Print summary
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+    write(DECinfo%output,'(13X,a)') '**********************************************************'
+    write(DECinfo%output,'(13X,a,19X,a,19X,a)') '*', 'DEC ENERGY SUMMARY', '*'
+    write(DECinfo%output,'(13X,a)') '**********************************************************'
+    write(DECinfo%output,*)
+    if(DECinfo%first_order) then
+       write(DECinfo%output,'(15X,a,f20.10)') 'G: Hartree-Fock energy :', Ehf
+       write(DECinfo%output,'(15X,a,f20.10)') 'G: Correlation energy  :', Ecorr
+       ! skip error print for full calculation (0 by definition)
+       if(.not. DECinfo%full_molecular_cc) then  
+          write(DECinfo%output,'(15X,a,f20.10)') 'G: Estimated DEC error :', Eerr
+       end if
+       if(DECinfo%ccmodel==1) then
+          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total MP2 energy    :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==2) then
+          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CC2 energy    :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==3) then
+          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CCSD energy   :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==4) then
+          write(DECinfo%output,'(15X,a,f20.10)') 'G: Total CCSD(T) energy:', Ehf+Ecorr
+       end if
+    else
+       write(DECinfo%output,'(15X,a,f20.10)') 'E: Hartree-Fock energy :', Ehf
+       write(DECinfo%output,'(15X,a,f20.10)') 'E: Correlation energy  :', Ecorr
+       ! skip error print for full calculation (0 by definition)
+       if(.not. DECinfo%full_molecular_cc) then  
+          write(DECinfo%output,'(15X,a,f20.10)') 'E: Estimated DEC error :', Eerr
+       end if
+       if(DECinfo%ccmodel==1) then
+          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total MP2 energy    :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==2) then
+          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CC2 energy    :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==3) then
+          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CCSD energy   :', Ehf+Ecorr
+       elseif(DECinfo%ccmodel==4) then
+          write(DECinfo%output,'(15X,a,f20.10)') 'E: Total CCSD(T) energy:', Ehf+Ecorr
+       end if
+    end if
+    write(DECinfo%output,*)
+    write(DECinfo%output,*)
+
+
+  end subroutine print_total_energy_summary
+
 
 end module dec_fragment_utils

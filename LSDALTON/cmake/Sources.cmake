@@ -60,11 +60,12 @@ set(DEC_SOURCES
     deccc/array3_memory.f90
     deccc/ccarray3_simple.f90
     deccc/CABS.f90
-    deccc/cc_ao_contractions.f90
+    deccc/mp2.f90
     deccc/ccsdpt.f90
     deccc/cc_crop.f90
     deccc/ccsd.f90
     deccc/rpa.f90
+    deccc/f12_integrals.f90
     deccc/cc_driver.f90
     deccc/cc_integrals.f90
     deccc/manual_reorderings.f90
@@ -278,7 +279,6 @@ set(LSUTIL_COMMON_SOURCES
     lsutil/ls_IOType.f90
     lsutil/AOType.f90
     lsutil/dec_typedef.f90
-    lsutil/grid_utilities.f90
     lsutil/MoleculeType.f90
     lsutil/ODType.f90
     lsutil/lstensorType.f90
@@ -299,6 +299,7 @@ set(LSUTIL_COMMON_SOURCES
     lsutil/LSmatrixType.f90
     lsutil/lsmatop_dense.f90
     lsutil/file-operations.f90
+    lsutil/grid_utilities.f90
     lsutil/mat3dim.f90
     lsutil/papi.f90
     lsutil/ls_math.f90

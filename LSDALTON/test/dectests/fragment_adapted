@@ -57,9 +57,6 @@ cat > fragment_adapted.dal <<'%EOF%'
 TRILEVEL
 .CONVDYN
 STANDARD
-.LCM
-.MLO
-2 2
 **DEC
 .FrozenCore
 .FragmentAdapted

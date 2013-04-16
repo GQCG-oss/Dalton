@@ -245,6 +245,7 @@ contains
      character*70                 :: msg
      integer                      :: lwork
      real(realk), dimension(:), allocatable :: work
+     infdiag=0
 
      allocate(T1(n,n),T2(n,n))
      allocate(eigen_sqrt(n),eigen_minus_sqrt(n))

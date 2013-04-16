@@ -463,6 +463,7 @@ CONTAINS
       real(realk) :: Amat(msize-1,msize-1),bvec(msize-1),xstep,&
            &         S2x(msize-1),S2xS2xT(msize-1,msize-1)
       integer :: error, i,j,i1,j1,piv(msize-1)
+      error=0
       !
       !** Construct system of linear equations;
       !   xlambda*S[2] = damping of Hessian

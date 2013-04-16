@@ -313,6 +313,7 @@ contains
         logical                     :: firstwrong,OnMaster
         real(realk),external :: DNRM2
         OnMaster = .TRUE.
+        IERR=0
    !if (extradim) then
    !   nsize = reddim-1
    !else

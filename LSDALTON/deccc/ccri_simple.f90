@@ -247,6 +247,7 @@ contains
     real(realk), dimension(n) :: eval
     real(realk), dimension(128*n+64*n*n) :: work
     external dsyev
+    ifail=0
 
     !    liwork=128*n
     lwork = 128*n+64*n*n

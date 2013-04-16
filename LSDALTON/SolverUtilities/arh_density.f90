@@ -783,6 +783,7 @@ contains
         real(realk), pointer     :: A(:,:)
         integer, pointer         :: IPIV(:)
         integer                  :: INFO
+   INFO=0
 
    if (.true.) then
       call mem_alloc(A,ndens,ndens)
@@ -1008,10 +1009,10 @@ contains
          TYPE(matrix)              :: AX !Intent(out)
          !> Contains Fock/KS and density matrices from previous SCF iterations
          TYPE(modFIFO),intent(inout),optional  :: fifoqueue
-         integer                   :: i, j, k, ndens
+         integer                   :: i, j, k, ndens, nbast
          TYPE(matrix)              :: scr1, scr2, D_AO, Gxc(1)
          real(realk)               :: err, testnorm, norm1, norm2
-         TYPE(matrix)              :: FX, XF(1)
+         TYPE(matrix)              :: FX, XF(1), G_xc, Dmat, scr1_mat(1)
 
 
       if (.not. present(fifoqueue) .and. arh%set_arhterms .and. &
@@ -1078,7 +1079,16 @@ contains
            call x_from_oao_basis(decomp, scr1, XF(1)) !XF is XD_AO
          endif
          if (decomp%nocca+decomp%noccb /= 1) then !if only 1 electron -> 2 el part = 0
-            call di_GET_GbDs(decomp%lupri,decomp%lupri,XF(1),scr1) !scr1 is G_AO without DFT
+         
+            !call di_GET_GbDs(decomp%lupri,decomp%lupri,XF(1),scr1) !scr1 is G_AO without DFT
+            nbast = scr1%nrow
+			!call mat_init(G_xc,nbast,nbast)
+			!call mat_init(Dmat,nbast,nbast)
+			call di_GET_GbDs_and_XC_linrsp(scr1, G_xc, decomp%lupri, decomp%lupri, XF(1), nbast, Dmat, .false.)
+			!call mat_free(G_xc)
+			!call mat_free(Dmat)
+			!-------------------------------------------
+			
          else
             call mat_zero(scr1)
          endif
@@ -1414,7 +1424,7 @@ contains
              logical, intent(in)      :: print_eivecs 
            end subroutine dsyevx_interface
         end interface
-
+   IERR=0
    !ndim = G%nrow
    rowdim = G%nrow
    coldim = G%ncol

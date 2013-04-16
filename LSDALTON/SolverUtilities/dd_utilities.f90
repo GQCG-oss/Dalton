@@ -2188,7 +2188,8 @@ contains
         integer, allocatable     :: itemp(:), IFAIL(:)
         real(realk)              :: VL, VU !, HOMO, LUMO
         integer                  :: IL, IU, neig, ltemp, INFO, m 
-
+   
+   INFO=0
    ndim = decomp%FUP%nrow
    fulldim = ndim*2
    VL = 0.0E0_realk

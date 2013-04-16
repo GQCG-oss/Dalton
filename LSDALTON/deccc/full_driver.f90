@@ -14,12 +14,13 @@ module full
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
-!  use dec_fragment_utils
+  use dec_fragment_utils
   use CABS_operations
   use full_f12contractions
   use array4_simple_operations
   use array3_simple_operations
   use array2_simple_operations
+  use mp2_module
 !  use orbital_operations
   use full_molecule
   use ccintegrals!,only: get_full_AO_integrals,get_AO_hJ,get_AO_K,get_AO_Fock
@@ -40,7 +41,7 @@ contains
     type(lsitem), intent(inout) :: mylsitem
     !> HF density matrix
     type(matrix),intent(in) :: D
-    real(realk) :: energy
+    real(realk) :: Ecorr,EHF,Eerr
 
     write(DECinfo%output,'(/,a)') ' ================================================ '
     write(DECinfo%output,'(a)')   '              Full molecular driver               '
@@ -49,29 +50,42 @@ contains
     ! run cc program
     if(DECinfo%F12) then ! F12 correction
        if(DECinfo%ccModel==1) then
-          call full_canonical_mp2(MyMolecule,MyLsitem,D,energy)
+          call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
        else
-          call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,energy)
+          call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
        end if
     else
-       call full_cc_dispatch(MyMolecule,mylsitem)
+       if(DECinfo%ccModel==1) then
+          call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
+       else
+          call full_cc_dispatch(MyMolecule,mylsitem,Ecorr)          
+       end if
     end if
+
+    ! Get HF energy
+    Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D)
+
+    ! Print summary
+    Eerr = 0.0_realk   ! zero error for full calculation by definition
+    call print_total_energy_summary(EHF,Ecorr,Eerr)
 
   end subroutine full_driver
 
   !> \brief Dispatch cc job for full molecule
-  subroutine full_cc_dispatch(MyMolecule,mylsitem)
-
+  subroutine full_cc_dispatch(MyMolecule,mylsitem,Ecorr)
 
     implicit none
+    !> FUll molecule info
     type(fullmolecule), intent(inout) :: MyMolecule
+    !> Integral info
     type(lsitem), intent(inout) :: mylsitem
-    real(realk) :: full_energy
+    !> Correlation energy
+    real(realk),intent(inout) :: Ecorr
     integer :: nocc,nunocc,nbasis,print_level,i,j
     logical :: fragment_job
     real(realk),pointer :: ppfock_fc(:,:), ypo_fc(:,:)
 
-    full_energy = 0.0E0_realk
+    Ecorr = 0.0E0_realk
 
     if(DECinfo%FrozenCore) then
        nocc = MyMolecule%nval
@@ -103,10 +117,10 @@ contains
 
        if (DECinfo%ccModel .eq. 4) then
           ! ccsd(t) correction
-          full_energy = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
+          Ecorr = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
                & mylsitem,print_level,fragment_job,ypo_fc=ypo_fc,ppfock_fc=ppfock_fc)
        else
-          full_energy = ccsolver_justenergy(ypo_fc,&
+          Ecorr = ccsolver_justenergy(ypo_fc,&
                & MyMolecule%ypv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
                & print_level,fragment_job,ppfock_fc,MyMolecule%qqfock)
        end if
@@ -118,12 +132,12 @@ contains
 
        if (Decinfo%ccModel .eq. 4) then
 
-          full_energy = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
+          Ecorr = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
                & mylsitem,print_level,fragment_job)
 
        else
 
-          full_energy = ccsolver_justenergy(MyMolecule%ypo,MyMolecule%ypv,&
+          Ecorr = ccsolver_justenergy(MyMolecule%ypo,MyMolecule%ypv,&
                & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
                & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock)
 
@@ -137,7 +151,7 @@ contains
   !> keeping full AO integrals in memory. Only for testing.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine full_canonical_mp2(MyMolecule,MyLsitem,Dmat,energy)
+  subroutine full_canonical_mp2_f12(MyMolecule,MyLsitem,Dmat,energy)
 
 
     implicit none
@@ -177,7 +191,17 @@ contains
     real(realk),pointer :: Taibj(:,:,:,:) !amplitudes not integrals
 
     real(realk),pointer :: Vijij(:,:)
-    real(realk),pointer :: Vjiij(:,:)
+    real(realk),pointer :: Vijij_term1(:,:)
+    real(realk),pointer :: Vijij_term2(:,:)
+    real(realk),pointer :: Vijij_term3(:,:)
+    real(realk),pointer :: Vijij_term4(:,:)
+
+    real(realk),pointer :: Vjiij(:,:)    
+    real(realk),pointer :: Vjiij_term1(:,:)
+    real(realk),pointer :: Vjiij_term2(:,:)
+    real(realk),pointer :: Vjiij_term3(:,:)
+    real(realk),pointer :: Vjiij_term4(:,:)
+
     real(realk),pointer :: Xijkl(:,:,:,:)
     real(realk),pointer :: Xijij(:,:)
     real(realk),pointer :: Xjiij(:,:)
@@ -230,15 +254,44 @@ contains
          & MyMolecule%ypo, MyMolecule%ypv,'aiai',gAO,gMO)
     call mem_dealloc(gao)
 
-
     call get_4Center_F12_integrals(mylsitem,MyMolecule,nbasis,nocc,noccfull,nvirt,ncabsAO,&
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
 
     call mem_alloc(Vijij,nocc,nocc)
+    call mem_alloc(Vijij_term1,nocc,nocc)
+    call mem_alloc(Vijij_term2,nocc,nocc)
+    call mem_alloc(Vijij_term3,nocc,nocc)
+    call mem_alloc(Vijij_term4,nocc,nocc)
+
     call mem_alloc(Vjiij,nocc,nocc)
+    call mem_alloc(Vjiij_term1,nocc,nocc)
+    call mem_alloc(Vjiij_term2,nocc,nocc)
+    call mem_alloc(Vjiij_term3,nocc,nocc)
+    call mem_alloc(Vjiij_term4,nocc,nocc)
+
     call mp2f12_Vijij(Vijij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
     call mp2f12_Vjiij(Vjiij,Ripjq,Gipjq,Fijkl,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+
+    call mp2f12_Vijij_term1(Vijij_term1,Fijkl,nocc,noccfull,nbasis,ncabs)
+    call mp2f12_Vijij_term2(Vijij_term2,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
+    call mp2f12_Vijij_term3(Vijij_term3,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+    call mp2f12_Vijij_term4(Vijij_term4,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+
+    call mp2f12_Vjiij_term1(Vjiij_term1,Fijkl,nocc,noccfull,nbasis,ncabs)
+    call mp2f12_Vjiij_term2(Vjiij_term2,Ripjq,Gipjq,nocc,noccfull,nbasis,ncabs)
+    call mp2f12_Vjiij_term3(Vjiij_term3,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+    call mp2f12_Vjiij_term4(Vjiij_term4,Rimjc,Gimjc,nocc,noccfull,nbasis,ncabs)
+
+    print *, 'E_21_V_term1: ', 2.0E0_REALK*mp2f12_EV(Vijij_term1,Vjiij_term1,nocc)
+    print *, 'E_21_V_term2: ', 2.0E0_REALK*mp2f12_EV(Vijij_term2,Vjiij_term2,nocc)
+    print *, 'E_21_V_term3: ', 2.0E0_REALK*mp2f12_EV(Vijij_term3,Vjiij_term3,nocc)
+    print *, 'E_21_V_term4: ', 2.0E0_REALK*mp2f12_EV(Vijij_term4,Vjiij_term4,nocc)
+    print *, '----------------------------------------'
+    print *, 'E_21_Vsum: ',  2.0E0_REALK*(mp2f12_EV(Vijij_term1,Vjiij_term1,nocc) + mp2f12_EV(Vijij_term2,Vjiij_term2,nocc) &
+         & + mp2f12_EV(Vijij_term3,Vjiij_term3,nocc) + mp2f12_EV(Vijij_term4,Vjiij_term4,nocc) ) 
+
+    print *, 'E_21_V: ',  2.0E0_REALK*mp2f12_EV(Vijij,Vjiij,nocc)
 
     call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)
  !   call mem_alloc(Cjaib,nocc,nvirt,nocc,nvirt)
@@ -291,6 +344,7 @@ contains
        !Calculate standard MP2 energy (both canonical and noncanonical)
 
        call mem_alloc(Taibj,nvirt,nocc,nvirt,nocc)
+
        energy=0.0E0_realk
        do j=1,nocc
           do b=1,nvirt
@@ -308,17 +362,25 @@ contains
        print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
     end if
 
-
     call mp2f12_Vijij_coupling(Vijij,Ciajb,Taibj,nocc,nvirt)
     call mp2f12_Vjiij_coupling(Vjiij,Ciajb,Taibj,nocc,nvirt)
 
     E21 = 2.0E0_REALK*mp2f12_EV(Vijij,Vjiij,nocc)
 !   write(*,*) 'MP2f12 energy term 2 <0|H1|1>',  E21
+
     call mem_dealloc(Vijij)
+    call mem_dealloc(Vijij_term1)
+    call mem_dealloc(Vijij_term2)
+    call mem_dealloc(Vijij_term3)
+    call mem_dealloc(Vijij_term4)
+
     call mem_dealloc(Vjiij)
+    call mem_dealloc(Vjiij_term1)
+    call mem_dealloc(Vjiij_term2)
+    call mem_dealloc(Vjiij_term3)
+    call mem_dealloc(Vjiij_term4)
 
     call mem_dealloc(Taibj)
-
     call mem_dealloc(Ciajb)
 
     if(DECinfo%use_canonical) then
@@ -375,6 +437,7 @@ contains
 
 !    write(DECinfo%output,*) 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
 !    print *, 'TOYCODE: MP2 CORRELATION ENERGY = ', energy
+
     write(*,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
     write(DECinfo%output,*) 'TOYCODE: F12 E21 CORRECTION TO ENERGY = ',E21
     write(*,*) 'TOYCODE: F12 E22 CORRECTION TO ENERGY = ',E22
@@ -384,6 +447,8 @@ contains
     write(DECinfo%output,*) 'TOYCODE: F12 CORRECTION TO ENERGY = ',E21+E22
 
     ! Total MP2-F12 correlation energy
+    ! Getting this energy 
+
     energy = energy + E21 + E22
     print *, 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', energy
     write(DECinfo%output,*) 'TOYCODE: MP2-F12 CORRELATION ENERGY = ', energy
@@ -392,7 +457,7 @@ contains
     call array2_free(array2Tai)
     call mem_dealloc(gmo)
 
-  end subroutine full_canonical_mp2
+  end subroutine full_canonical_mp2_f12
 
 
   !> \brief Memory check for full_canonical_mp2 subroutine
@@ -870,8 +935,10 @@ contains
     type(matrix) :: Fcp
     type(matrix) :: Fii
     type(matrix) :: Fac
+
+!   F12 specific
     real(realk),pointer :: Vijij(:,:)
-    real(realk),pointer :: Vjiij(:,:)
+    real(realk),pointer :: Vjiij(:,:)    
     real(realk),pointer :: Xijkl(:,:,:,:)
     real(realk),pointer :: Xijij(:,:)
     real(realk),pointer :: Xjiij(:,:)
@@ -1008,13 +1075,17 @@ contains
     call ccsdf12_Vijij_coupling(Vijij,Ciajb,Taibj%val,Viajb,Viija,Viajj,Tai%val,nocc,nvirt)
     call ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj%val,Viajb,Vijja,Viaji,Tai%val,nocc,nvirt)
 
+    ! CCSD Specific
     call mem_dealloc(Viija)
     call mem_dealloc(Vijja)
     call mem_dealloc(Viajj)
     call mem_dealloc(Viaji)
     call mem_dealloc(Viajb)
+
     E21 = 2.0E0_realk*mp2f12_EV(Vijij,Vjiij,nocc)
     print*,'E21',E21
+    
+    ! F12 Specific
     call mem_dealloc(Vijij)
     call mem_dealloc(Vjiij)
     call mem_dealloc(Ciajb)
@@ -1469,5 +1540,106 @@ contains
       call mat_free(Fcp)
 
   end subroutine free_F12_mixed_MO_Matrices
+
+
+
+
+  !> \brief Full canonical MP2 calculation, not particularly efficient, mainly to be used for
+  !> testing.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
+
+    implicit none
+    !> Molecule info
+    type(fullmolecule), intent(in) :: MyMolecule
+    !> LS Dalton info
+    type(lsitem), intent(inout) :: mylsitem
+    !> Canonical MP2 correlation energy
+    real(realk),intent(inout) :: Ecorr
+    type(array2) :: Cocc, Cunocc
+    type(array4) :: g
+    integer :: nbasis,i,j,a,b,ncore,offset,nocc,nunocc
+    integer, dimension(2) :: occ_dims,unocc_dims
+    real(realk) :: eps
+    real(realk), pointer :: ppfock(:,:)
+
+    ! Sanity check
+    if(.not. DECinfo%use_canonical) then
+       call lsquit('full_canonical_mp2_correlation_energy requires canonical orbitals!',-1)
+    end if
+
+
+    ! Initialize stuff
+    ! ****************
+
+    if(DECinfo%frozencore) then
+       ! Frozen core: Only valence orbitals
+       nocc = MyMolecule%nval
+    else
+       nocc = MyMolecule%numocc
+    end if
+
+    nunocc = MyMolecule%numvirt
+    ncore = MyMolecule%ncore
+    nbasis=MyMolecule%nbasis
+    occ_dims = [nbasis,nocc]
+    unocc_dims = [nbasis,nunocc]
+    call mem_alloc(ppfock,nocc,nocc)
+    if(DECinfo%frozencore) then
+       ! Only copy valence orbitals into array2 structure
+       Cocc=array2_init(occ_dims)
+       do i=1,nocc
+          Cocc%val(:,i) = MyMolecule%ypo(:,i+Ncore)
+       end do
+
+       ! Fock valence
+       do j=1,nocc
+          do i=1,nocc
+             ppfock(i,j) = MyMolecule%ppfock(i+Ncore,j+Ncore)
+          end do
+       end do
+       offset = ncore
+    else
+       ! No frozen core, simply copy elements for all occupied orbitals
+       Cocc=array2_init(occ_dims,MyMolecule%ypo)
+       ppfock = MyMolecule%ppfock
+       offset=0
+    end if
+    Cunocc=array2_init(unocc_dims,MyMolecule%ypv)
+
+
+
+    ! Get (AI|BJ) integrals stored in the order (A,I,B,J)
+    ! ***************************************************
+    call get_VOVO_integrals(mylsitem,nbasis,nocc,nunocc,Cunocc,Cocc,g)
+    call array2_free(Cocc)
+    call array2_free(Cunocc)
+
+
+
+    ! Calculate canonical MP2 energy
+    ! ******************************
+    Ecorr = 0.0_realk
+    do J=1,nocc
+       do B=1,nunocc
+          do I=1,nocc
+             do A=1,nunocc
+                ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
+                eps = MyMolecule%ppfock(I,I) + MyMolecule%ppfock(J,J) &
+                     & - MyMolecule%qqfock(A,A) - MyMolecule%qqfock(B,B)
+
+                ! Ecorr = sum_{IJAB} (AI|BJ) * [ 2*(AI|BJ) - (BI|AJ) ] / [eps(I)+eps(J)-eps(A)-eps(B)]
+                Ecorr = Ecorr + g%val(A,I,B,J)*(2E0_realk*g%val(A,I,B,J)-g%val(B,I,A,J))/eps
+             enddo
+          enddo
+       enddo
+    enddo
+
+    call mem_dealloc(ppfock)
+    call array4_free(g)
+
+  end subroutine Full_canonical_mp2_correlation_energy
+
 
 end module full

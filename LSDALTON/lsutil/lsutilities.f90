@@ -271,5 +271,30 @@ SUBROUTINE DGEMM_TS(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
 
 end SUBROUTINE DGEMM_TS
 
+!> \brief Change all lower case letters in a string to capital letters
+!> \author Kasper Kristensen
+!> \date April 2013
+subroutine capitalize_string(mystring)
+  implicit none
+  character(*) :: mystring
+  integer :: length,gap,i
+
+  ! Gap between lower case "a" and capital "A"
+  gap=ICHAR('a')-ICHAR('A')
+
+  length=len(mystring)
+
+  if(length>0) then  ! only do something if string is not empty
+
+     do i=1,length
+        ! consider characters between "a" and "z"
+        if(mystring(i:i) .le. 'z' .and. mystring(i:i) .ge. 'a') then
+           mystring(i:i)=CHAR(ICHAR(mystring(i:i))-gap)
+        end if
+     end do
+
+  end if
+
+end subroutine capitalize_string
 
 END MODULE LS_UTIL

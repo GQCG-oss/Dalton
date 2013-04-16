@@ -454,12 +454,12 @@ Integer :: iA,iB
 DO iB=1,nB
    DO iA=1,nA
 #ifdef VAR_DEBUGINT
-      IF(Gabint(iA,iB,iA,iB).LT. 0.0E0_realk)THEN
+      IF(Gabint(iA,iB,iA,iB).LT. -1.0E-12_realk)THEN
          print*, 'Error in buildGab. Negative screening int',Gabint(iA,iB,iA,iB)
          call lsquit('Error in buildGab. Negative screening int',-1)
       ENDIF
 #endif
-      OutputMatrix(sA+iA,sB+iB) = sqrt(Gabint(iA,iB,iA,iB))      
+      OutputMatrix(sA+iA,sB+iB) = sqrt(abs(Gabint(iA,iB,iA,iB)))      
    ENDDO
 ENDDO
 END SUBROUTINE BuildGab
@@ -474,12 +474,12 @@ Integer :: iA,iB
 DO iB=1,nB
    DO iA=1,nA
 #ifdef VAR_DEBUGINT
-      IF(Gabint(iA,iB,iA,iB).LT. 0.0E0_realk)THEN
+      IF(Gabint(iA,iB,iA,iB).LT. -1.0E-12_realk)THEN
          print*, 'Error in buildGab. Negative screening int',Gabint(iA,iB,iA,iB)
          call lsquit('Error in buildGab. Negative screening int',-1)
       ENDIF
 #endif
-      OutputMatrix(sB+iB,sA+iA) = sqrt(Gabint(iA,iB,iA,iB))
+      OutputMatrix(sB+iB,sA+iA) = sqrt(abs(Gabint(iA,iB,iA,iB)))
    ENDDO
 ENDDO
 END SUBROUTINE BuildGabPermute
