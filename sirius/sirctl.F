@@ -95,7 +95,7 @@ C
 #include "dftcom.h"
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
-      LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
+      LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE,dftadd_s,addsri_s
       DIMENSION NASHSV(8), NISHSV(8), NFROSV(8)
       real(8), allocatable :: tmp_space(:)
       integer              :: xctype1, xctype2
@@ -740,11 +740,22 @@ C
          WRITE (LUPRI,'(//A)') '@ WARNING: '//
      &      'LUCITA skipped because requested HF/MCSCF not converged.'
        ELSE
+         addsri_s      = addsri
+         dftadd_s      = dftadd
+         DOHFSRDFT     = .FALSE.
+         ADDSRI        = .FALSE.
+C        ... Dont risk adding DFT contributions in later call of FCKMAT
+C            The SR-DFT terms needed in CI-DFT is handled by SRFMAT.
+C            Maybe this should be added to the generel code and not 
+C            just the CIDFT code if one wants to run a CI with KS orbitals !
+C            (if the CISRDFT was specified together with a presceding
+C             HFSRDFT call, we assume the HFSRDFT is done by now!)
+         DFTADD        = .FALSE.
          kfirst_lucita = 1
-         JRDMO  = 9
-         KFRSAV = 1
-         KFREE  = KFRSAV
-         LFREE  = LWORK
+         JRDMO         = 9
+         KFRSAV        = 1
+         KFREE         = KFRSAV
+         LFREE         = LWORK
          CALL MEMGET('REAL',KCMO,NCMOT,WORK,KFREE,LFREE)
          CALL READMO(WORK(KCMO),JRDMO,WORK(KFREE),LFREE)
 
@@ -835,6 +846,8 @@ C
          CALL FLSHFO(LUSTAT)
 
          CALL SET_INFORB_LUCITA('RESET ')
+         addsri        = addsri_s
+         dftadd        = dftadd_s
        END IF
       END IF
 
