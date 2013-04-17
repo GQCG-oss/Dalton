@@ -336,14 +336,14 @@ AO%ntype = itype
 AO%nCC=UNIQUEMATRIXES
 AO%nExp=UNIQUEEXPONENTS
 AO%nbast = orbitalindex-1
-IF(IPRINT .GT. 20) THEN
-   WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH  UNCONTRACTED',UNCONTRACTED
-   CALL PRINT_AO(LUPRI,AO)
-ENDIF
 
 call set_redtype(AO,lupri)
 call set_maxJ(AO,lupri)
 !CALL DETERMINE_AOBATCH_MEM(AO)
+IF(IPRINT .GT. 20) THEN
+   WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL AO BATCH  UNCONTRACTED',UNCONTRACTED
+   CALL PRINT_AO(LUPRI,AO)
+ENDIF
 
 END SUBROUTINE BUILD_AO
 
@@ -791,6 +791,7 @@ TYPE(AOITEM)              :: AOfull
 INTEGER :: I,A,iexp,nrow,ncol,Ifull,IATOMfullold,IATOM,norbitals,iATOMfull
 INTEGER :: nPrimOrbitals,nprim,ntype,unique,itest,itype,batch
 INTEGER :: K
+integer,pointer :: uniquetypes(:)
 real(realk)               :: SUM
 REAL(REALK),PARAMETER     :: NULL=0.0E0_realk
 
@@ -886,13 +887,16 @@ DO I=1,AO_output%nbatches
    ENDDO
    AO_output%ATOMICnBatch(IATOM) = AO_output%ATOMICnBatch(IATOM)+1
 ENDDO
+
+
+call mem_alloc(uniquetypes,AOfull%ntype)
 ntype = 0
 DO I=1,AO_output%nbatches
    Ifull = RequestedBatchIndex+I-1
    itest = AOfull%BATCH(Ifull)%itype
    unique = 0
    do itype = 1,ntype
-      if(itest.EQ.itype) unique = itype !not unique
+      if(itest.EQ.uniquetypes(itype)) unique = itype !not unique
    enddo
    IF(unique.NE.0)THEN
       !not unique
@@ -901,8 +905,10 @@ DO I=1,AO_output%nbatches
       !unique
       ntype = ntype + 1
       AO_output%BATCH(I)%itype = ntype
+      uniquetypes(ntype) = itest
    endif
 ENDDO
+call mem_dealloc(uniquetypes)
 AO_output%ntype = ntype
 call set_redtype(AO_output,lupri)
 call set_maxJ(AO_output,lupri)
@@ -915,6 +921,10 @@ DO I=1,AO_output%nbatches
       call lsquit('error in BUILD_SHELLBATCH_AO',-1)
    ENDIF
 ENDDO
+IF(IPRINT .GT. 20) THEN
+   WRITE(LUPRI,*)'BUILD_AOBATCH:  PRINTING FINAL SHELLBATCH AO'
+   CALL PRINT_AO(LUPRI,AO_output)
+ENDIF
 
 call free_aoitem(lupri,AOfull)
 END SUBROUTINE BUILD_SHELLBATCH_AO
