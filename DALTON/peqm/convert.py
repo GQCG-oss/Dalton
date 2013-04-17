@@ -126,7 +126,7 @@ if mulorder >= 3:
     body += 'octopoles\n'
     body += '{}\n'.format(nsites)
     for i, Q3 in enumerate(Q3s):
-        body += '{0:{1}d} {2[0]:12.6f} {2[1]:12.6f} {2[2]:12.6f} {2[3]:12.6f} {2[4]:12.6f} {2[5]:12.6f} {2[6]:12.6f} {2[7]:12.6f} {2[8]:12.6f}\n'.format(i+1, ndec, Q3)
+        body += '{0:{1}d} {2[0]:12.6f} {2[1]:12.6f} {2[2]:12.6f} {2[3]:12.6f} {2[4]:12.6f} {2[5]:12.6f} {2[6]:12.6f} {2[7]:12.6f} {2[8]:12.6f} {2[9]:12.6f}\n'.format(i+1, ndec, Q3)
 
 if polorder == 1:
     body += 'isoalphas\n'
