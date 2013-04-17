@@ -494,16 +494,18 @@ DO
                                  config%davidOrbLoc%PM=.true.
                                  config%decomp%cfg_mlo = .true.
                                  READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-            CASE('.PML');        config%davidOrbLoc%PM_input%PipekMezeyLowdin=.true.
+            CASE('.PipekMezey'); config%davidOrbLoc%PM_input%PipekMezeyLowdin=.true.
                                  config%davidOrbLoc%PM=.true.
                                  config%decomp%cfg_mlo = .true.
 				 config%davidOrbLoc%NOL2OPT = .true.
-                                 READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-            CASE('.PMM');        config%davidOrbLoc%PM_input%PipekMezeyMull=.true.
+                                 config%decomp%cfg_mlo_m(1)=2
+				 config%decomp%cfg_mlo_m(2)=2
+            CASE('.PipekM(Mull)');config%davidOrbLoc%PM_input%PipekMezeyMull=.true.
                                  config%davidOrbLoc%PM=.true.
                                  config%decomp%cfg_mlo = .true.
 				 config%davidOrbLoc%NOL2OPT = .true.
-                                 READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2) 
+                                 config%decomp%cfg_mlo_m(1) = 2
+				 config%decomp%cfg_mlo_m(2) = 2 
             CASE('.PFM');        config%decomp%cfg_mlo = .true.
 	                         config%davidOrbLoc%PFM = .true.
                                  config%davidOrbLoc%PM =.false.

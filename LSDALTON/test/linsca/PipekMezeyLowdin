@@ -59,8 +59,7 @@ cat > PipekMezeyLowdin.dal <<'%EOF%'
 .START
 TRILEVEL
 .LCM
-.PML
-2 2
+.PipekMezey
 .NO L2OPT
 *END OF INPUT  
 %EOF%

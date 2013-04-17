@@ -215,6 +215,7 @@ add_test(linsca/linsca_atoms                            ${CMAKE_SOURCE_DIR}/test
 add_test(linsca/linsca_trilevel                         ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton linsca/linsca_trilevel                        )
 add_test(linsca/linsca_arh                              ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton linsca/linsca_arh                             )
 add_test(linsca/linsca_arh_davidson                     ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton linsca/linsca_arh_davidson                    )
+add_test(linsca/linsca_arh_ls_davidson                  ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton linsca/linsca_arh_ls_davidson                 )
 add_test(linsca/lsdalton_dft_ssfgrid                    ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton linsca/lsdalton_dft_ssfgrid                   )
 add_test(linsca/lsdalton_dft_olddefaultgrid             ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton linsca/lsdalton_dft_olddefaultgrid            )
 add_test(linsca/test_kurtosis                           ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton linsca/test_kurtosis                          )
