@@ -239,18 +239,18 @@ subroutine LinearTransformations(CFG,X,HX,G)
        return
  end if
 
-if (CFG%kurtosis) then
-       call compute_lintrans(CFG%KURT,X,G,HX)
+if (CFG%PFM) then
+       call compute_lintrans(CFG%PFM_input,X,G,HX)
        return
  end if
 
  
- if (CFG%OrbLoc%PipekMezeyLowdin) then
-      call PMLowdin_LinTra(G,HX,X,CFG%OrbLoc)
- elseif (CFG%OrbLoc%PipekMezeyMull) then
-      call PMMull_LinTra(G,HX,X,CFG%OrbLoc) 
- elseif (CFG%OrbLoc%ChargeLocMulliken .or. CFG%OrbLoc%ChargeLocLowdin) then
-      call CLLinearTrans(G,HX,X,CFG%OrbLoc)
+ if (CFG%PM_input%PipekMezeyLowdin) then
+      call PMLowdin_LinTra(G,HX,X,CFG%PM_input)
+ elseif (CFG%PM_input%PipekMezeyMull) then
+      call PMMull_LinTra(G,HX,X,CFG%PM_input) 
+ elseif (CFG%PM_input%ChargeLocMulliken .or. CFG%PM_input%ChargeLocLowdin) then
+      call CLLinearTrans(G,HX,X,CFG%PM_input)
  end if
 
 
@@ -354,62 +354,62 @@ if (CFG%arh_davidson .and. CFG%arh_precond) then
     return
 end if
 
-if (CFG%Kurtosis) then 
-   call kurtosis_precond(b_current,res,CFG%mu,CFG%KURT)
+if (CFG%PFM) then 
+   call kurtosis_precond(b_current,res,CFG%mu,CFG%PFM_input)
    return
 end if
 
 if (CFG%orbspread) then
    call orbspread_precond(b_current,res,CFG%mu,CFG%orbspread_input)
-elseif (CFG%ChargeLoc) then
-   call charge_precond(b_current,res,CFG%mu,CFG%OrbLoc)
+elseif (CFG%PM) then
+   call charge_precond(b_current,res,CFG%mu,CFG%PM_input)
 end if
 
 end subroutine Precondition
 
-! Compute preconditioner for arh
-subroutine arh_precondmatrix_david(FUQ,FUP,mu,P)
-implicit none
-type(matrix) :: FUQ,FUP,P
-real(realk) :: mu
-integer :: ndim,i,j
-call mat_zero(P)
+!! Compute preconditioner for arh
+!subroutine arh_precondmatrix_david(FUQ,FUP,mu,P)
+!implicit none
+!type(matrix) :: FUQ,FUP,P
+!real(realk) :: mu
+!integer :: ndim,i,j
+!call mat_zero(P)
+!
+!ndim = FUP%nrow
+!do j = 1,ndim   !columns
+!  do i = 1,ndim  !rows
+!    P%elms((j-1)*ndim+i) = FUQ%elms((j-1)*ndim+j) + FUQ%elms((i-1)*ndim+i)  &
+!         &- FUP%elms((i-1)*ndim+i) - FUP%elms((j-1)*ndim+j) 
+!  enddo
+!enddo
+!
+!
+!end subroutine arh_precondmatrix_david
 
-ndim = FUP%nrow
-do j = 1,ndim   !columns
-  do i = 1,ndim  !rows
-    P%elms((j-1)*ndim+i) = FUQ%elms((j-1)*ndim+j) + FUQ%elms((i-1)*ndim+i)  &
-         &- FUP%elms((i-1)*ndim+i) - FUP%elms((j-1)*ndim+j) 
-  enddo
-enddo
-
-
-end subroutine arh_precondmatrix_david
-
-subroutine arh_precond_david(CFG,mu,res_prec)
-implicit none
-type(RedSpaceItem) :: CFG
-type(matrix) :: res_prec,res
-integer :: ndim, i,j
-real(realk) :: mu
-
-ndim= res_prec%nrow
-call mat_init(res,res_prec%nrow,res_prec%ncol)
-res = res_prec
-
-if (.not. CFG%arh%cfg_noprec) then
-     do j=1,ndim
-        do i=1,ndim
-           if (ABS(CFG%P%elms((j-1)*ndim+i)-mu) > 1.0E-10_realk) then
-                 res%elms((j-1)*ndim+i) = res%elms((j-1)*ndim+i)/(CFG%P%elms((j-1)*ndim+i)-mu)
-           endif
-        end do
-     end do
-end if
-call project_oao_basis(CFG%decomp, res, CFG%symm, res_prec)
-
-call mat_free(res)
-end subroutine arh_precond_david
+!subroutine arh_precond_david(CFG,mu,res_prec)
+!implicit none
+!type(RedSpaceItem) :: CFG
+!type(matrix) :: res_prec,res
+!integer :: ndim, i,j
+!real(realk) :: mu
+!
+!ndim= res_prec%nrow
+!call mat_init(res,res_prec%nrow,res_prec%ncol)
+!res = res_prec
+!
+!if (.not. CFG%arh%cfg_noprec) then
+!     do j=1,ndim
+!        do i=1,ndim
+!           if (ABS(CFG%P%elms((j-1)*ndim+i)-mu) > 1.0E-10_realk) then
+!                 res%elms((j-1)*ndim+i) = res%elms((j-1)*ndim+i)/(CFG%P%elms((j-1)*ndim+i)-mu)
+!           endif
+!        end do
+!     end do
+!end if
+!call project_oao_basis(CFG%decomp, res, CFG%symm, res_prec)
+!
+!call mat_free(res)
+!end subroutine arh_precond_david
 
 
 !> \brief Subroutine that takes V and projects out U component.

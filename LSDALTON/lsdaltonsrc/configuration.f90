@@ -475,40 +475,40 @@ DO
             CASE('.LCMBF');      config%decomp%cfg_lcv = .true. ; config%decomp%cfg_lcvbf=.true.; config%decomp%cfg_lcm=.true.
             CASE('.NO L2OPT');   config%decomp%cfg_mlo = .true.; config%davidOrbLoc%NOL2OPT = .true. 
 	    CASE('.ONLY LOC');   config%davidOrbLoc%OnlyLocalize=.true.
-            CASE('.MLO');        config%decomp%cfg_mlo = .true.
+            CASE('.PSM');        config%decomp%cfg_mlo = .true.
                                  config%davidOrbLoc%orbspread=.true.
 				 config%davidOrbLoc%linesearch=.true.
                                  READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-            CASE('.CLM');        config%davidOrbLoc%OrbLoc%ChargeLocMulliken=.true.
-                                 config%davidOrbLoc%ChargeLoc=.true.
+            CASE('.CLM');        config%davidOrbLoc%PM_input%ChargeLocMulliken=.true.
+                                 config%davidOrbLoc%PM=.true.
                                  config%decomp%cfg_mlo = .true.
                                  READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-            CASE('.CLL');        config%davidOrbLoc%OrbLoc%ChargeLocLowdin=.true.
-                                 config%davidOrbLoc%ChargeLoc=.true.
+            CASE('.CLL');        config%davidOrbLoc%PM_input%ChargeLocLowdin=.true.
+                                 config%davidOrbLoc%PM=.true.
                                  config%decomp%cfg_mlo = .true.
                                  READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-            CASE('.PML');        config%davidOrbLoc%OrbLoc%PipekMezeyLowdin=.true.
-                                 config%davidOrbLoc%ChargeLoc=.true.
+            CASE('.PML');        config%davidOrbLoc%PM_input%PipekMezeyLowdin=.true.
+                                 config%davidOrbLoc%PM=.true.
                                  config%decomp%cfg_mlo = .true.
 				 config%davidOrbLoc%NOL2OPT = .true.
                                  READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-            CASE('.PMM');        config%davidOrbLoc%OrbLoc%PipekMezeyMull=.true.
-                                 config%davidOrbLoc%ChargeLoc=.true.
+            CASE('.PMM');        config%davidOrbLoc%PM_input%PipekMezeyMull=.true.
+                                 config%davidOrbLoc%PM=.true.
                                  config%decomp%cfg_mlo = .true.
 				 config%davidOrbLoc%NOL2OPT = .true.
                                  READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2) 
-            CASE('.KURTOSIS');   config%decomp%cfg_mlo = .true.
-	                         config%davidOrbLoc%kurtosis = .true.
-                                 config%davidOrbLoc%ChargeLoc=.false.
+            CASE('.PFM');        config%decomp%cfg_mlo = .true.
+	                         config%davidOrbLoc%PFM = .true.
+                                 config%davidOrbLoc%PM =.false.
                                  config%davidOrbLoc%orbspread=.false.
                                  READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-                                 config%davidOrbLoc%KURT%crossterms=.true.
+                                 config%davidOrbLoc%PFM_input%crossterms=.true.
                                  config%davidOrbLoc%precond=.true.
-            CASE('.TEST KURT');  config%davidOrbLoc%KURT%TESTCASE = .true.
+            CASE('.TEST PFM');   config%davidOrbLoc%PFM_input%TESTCASE = .true.
                                  config%decomp%cfg_mlo = .true.
 	    CASE('.NoPrecond');  config%davidOrbLoc%precond=.false.
 	                         config%davidSCF%precond=.false.
-                                 config%davidOrbLoc%OrbLoc%precond=.false.
+                                 config%davidOrbLoc%PM_input%precond=.false.
 	    CASE('.OrbLinesearch'); config%davidOrbLoc%linesearch=.true.
             CASE('.LEVELSH');    ALLOCATE(config%diag%cfg_levelshifts(100)) ; config%diag%cfg_levelshifts = 0.0E0_realk
                                  READ(LUCMD,*) config%diag%cfg_nshifts,(config%diag%cfg_levelshifts(i),i=1,config%diag%cfg_nshifts)
