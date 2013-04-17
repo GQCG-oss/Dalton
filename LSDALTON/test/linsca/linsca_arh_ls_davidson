@@ -17,18 +17,18 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > linsca_arh_davidson.info <<'%EOF%'
-   linsca_arh_davidson
+cat > linsca_arh_ls_davidson.info <<'%EOF%'
+   linsca_arh_ls_davidson
    ---------------
    Molecule:         C4H2 
    Wave Function:    BLYP/6-31G
-   Test Purpose:     Check scf opt using davidson solver
+   Test Purpose:     Check scf opt using davidson solver and linesearch
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > linsca_arh_davidson.mol <<'%EOF%'
+cat > linsca_arh_ls_davidson.mol <<'%EOF%'
 BASIS
 6-31G
 
@@ -47,12 +47,12 @@ H                        -9.61800     0.00000     0.00000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > linsca_arh_davidson.dal <<'%EOF%'
+cat > linsca_arh_ls_davidson.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .DFT
 BLYP
 *DENSOPT
-.ARH DAVID
+.ARH(LS) DAVID
 .START
 TRILEVEL
 .CONVDYN
@@ -64,8 +64,8 @@ STANDARD
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >linsca_arh_davidson.check
-cat >> linsca_arh_davidson.check <<'%EOF%'
+echo $CHECK_SHELL >linsca_arh_ls_davidson.check
+cat >> linsca_arh_ls_davidson.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then

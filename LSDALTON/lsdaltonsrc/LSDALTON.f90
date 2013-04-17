@@ -347,12 +347,13 @@ SUBROUTINE lsdalton
               write(ls%lupri,'(a)')'Pred= **** LEVEL 3 ORBITAL LOCALIZATION ****'
               call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
            end if
-
+print*, " ***** KOMT HER *******"
            ! write LCM orbitals
            lun = -1
            CALL LSOPEN(lun,'lcm_orbitals.u','unknown','UNFORMATTED')
            call mat_write_to_disk(lun,Cmo,OnMaster)
            call LSclose(LUN,'KEEP')
+print*, " ***** KOMT HER  2*******  "
 
            if (.not. config%decomp%cfg_mlo) then
               call leastchangeOrbspreadStandalone(mx,ls,Cmo,config%decomp%lupri,config%decomp%luerr)

@@ -1818,7 +1818,7 @@ end interface
       nocc = config%decomp%nocc
       ls%setting%integraltransformGC = .false.
       call leastchange_lcv(config%decomp,Cmo,nocc,ls)
-      if (config%decomp%cfg_mlo .and. (.not. config%davidOrbLoc%KURT%TESTCASE) .and. (.not. config%davidOrbLoc%NOL2OPT)) then
+      if (config%decomp%cfg_mlo .and. (.not. config%davidOrbLoc%PFM_input%TESTCASE) .and. (.not. config%davidOrbLoc%NOL2OPT)) then
           write(ls%lupri,'(a)') 'Pred= ***** LEVEL 2 ORBITAL LOCALIZATION ****'
           call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
       endif
