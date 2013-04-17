@@ -4675,6 +4675,16 @@ ELSE
 ENDIF
 
 nbast2 = getNbasis(AO2,Contractedinttype,setting%MOLECULE(1)%p,6)
+IF (nbast .EQ. nbast2) THEN
+   ! This avoids a simple issue when basis sets have the same size:
+   ! the filename to store the grid will be the same, overwritting the 
+   ! content of the ADMM basis with the regular basis and vice versa.
+   ! this should be fixed by using the actual name of the basis set into the 
+   ! filename storing the grid infos. 
+      call lsquit('II_get_admm_exchange_mat: special forbidden case where the &
+             &regular and ADMM auxiliary basis function &
+             &have the same number of basis function',-1)
+ENDIF
 
 call mat_init(D2(1),nbast2,nbast2)
 call mat_init(F2(1),nbast2,nbast2)
