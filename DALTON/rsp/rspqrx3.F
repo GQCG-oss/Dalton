@@ -381,20 +381,20 @@ C
          END IF
       END IF
 
-      if (peqm .and. tdhf) then
-         if (nasht > 0) then
-            call quit('PE quadratic response not implemented for
-     & open shell systems.')
-         else if (trplet) then
-            call quit('Triplets not implemented for PE quadratic
-     & response.')
-         endif
-         call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
-     &              udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
-     &              isyma, isymb, isymc, cmo, mjwop)
-!         call pe_rspqro(vecc, vecb, etrs, xindx, wrk(kzymc), wrk(kzymb),
-!     &              udv, wrk(kfree), lfree, kzyva, kzyvc, kzyvb,
-!     &              isyma, isymc, isymb, cmo, mjwop) 
+      if (peqm) then
+        if (.not. tdhf) then
+            call quit('Quadratic response not implemented for
+     & PE-MC-SCF.')
+        else if (nasht > 0) then
+            call quit('Quadratic response not implemented for
+     & open shell systems with PE model.')
+        else if (trplet) then
+            call quit('Triplets not implemented for quadratic
+     & response with PE model.')
+        endif
+        call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
+     &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
+     &                 isyma, isymb, isymc, cmo, mjwop)
       end if
 
       IF (QM3) THEN

@@ -464,7 +464,7 @@
 
         call qenter('pe_rsplin')
 
-        if (kzconf >  0) then
+        if (.not. tdhf) then
             stop 'ERROR: PE-MCSCF response not implemented.'
         end if
 
