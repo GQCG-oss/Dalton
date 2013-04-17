@@ -25,7 +25,7 @@ use matrix_module
 use typedef
 use typedeftype
 
-TYPE OrbitalLoc
+TYPE PMitem
 ! ******************************************
 ! *         Essential Settings              *
 ! ******************************************
@@ -95,7 +95,7 @@ type(matrix),pointer :: P
 real(realk),pointer :: SortedLow(:,:)
 
 
-END TYPE OrbitalLoc
+END TYPE PMitem
 
 end module loc_types
 
@@ -114,7 +114,7 @@ CONTAINS
 
 subroutine Gradient_ChargeLoc(Grad,OrbLoc)
 implicit none
-type(OrbitalLoc) :: OrbLoc
+type(PMitem) :: OrbLoc
 type(matrix) :: Grad
 !!##### TESTING ########
 !type(matrix) :: kappa
@@ -172,7 +172,7 @@ end subroutine Gradient_ChargeLoc
 !> \param P Matrix with diagonal elements (output)
 subroutine Precond_ChargeLoc(P,OrbLoc)
 implicit none
-type(OrbitalLoc) :: OrbLoc
+type(PMitem) :: OrbLoc
 type(matrix) :: P
 
 
@@ -191,7 +191,7 @@ end subroutine Precond_ChargeLoc
 !> \param Grad gradient (output)
 subroutine ComputeGrad_ChargeLoc(OrbLoc,Grad)
 implicit none
-type(OrbitalLoc)      :: OrbLoc
+type(PMitem)      :: OrbLoc
 type(matrix)            :: Grad
 type(matrix)            :: lA,rA,lAd,rAd
 real(realk),pointer :: temp(:,:) 
@@ -262,7 +262,7 @@ end subroutine ComputeGrad_ChargeLoc
 !> \param Grad  gradient (output)
 subroutine ComputeGrad_PipekMezey(OrbLoc,Grad)
 implicit none
-type(OrbitalLoc)      :: OrbLoc
+type(PMitem)      :: OrbLoc
 type(matrix)            :: Grad
 type(matrix)            :: lA,lAd
 real(realk),pointer :: temp(:,:) 
@@ -333,7 +333,7 @@ end subroutine ComputeGrad_PipekMezey
 subroutine CL_precond(OrbLoc,diaH)
 use matrix_operations_aux
 implicit none
-type(OrbitalLoc) :: OrbLoc
+type(PMitem) :: OrbLoc
 type(matrix) :: diaH
 real(realk),pointer :: x(:)
 integer             :: natoms,norb
@@ -424,7 +424,7 @@ end subroutine CL_precond
 subroutine PMLowdin_precond(OrbLoc,diaH)
 use matrix_operations_aux
 implicit none
-type(OrbitalLoc) :: Orbloc
+type(PMitem) :: Orbloc
 type(matrix)     :: diaH
 real(realk),pointer :: x(:)
 integer             :: natoms,norb
@@ -473,7 +473,7 @@ end subroutine PMLowdin_precond
 subroutine PMMull_precond(OrbLoc,diaH)
 use matrix_operations_aux
 implicit none
-type(OrbitalLoc) :: Orbloc
+type(PMitem) :: Orbloc
 type(matrix)     :: diaH
 real(realk),pointer :: x(:)
 integer             :: natoms,norb
@@ -531,7 +531,7 @@ end subroutine PMMull_precond
 subroutine get_information(ls,OrbLoc)
 implicit none
 type(lsitem) :: ls
-type(OrbitalLoc) :: OrbLoc
+type(PMitem) :: OrbLoc
 integer :: A
 
 do A=1,OrbLoc%natoms
@@ -546,7 +546,7 @@ end subroutine get_information
 !> \param Orbloc%Q(i,A) Q_ii^A (orb i, atomic center A) 
 subroutine get_dm_and_Qii(CMO,OrbLoc)
 implicit none
-type(OrbitalLoc)      :: OrbLoc
+type(PMitem)      :: OrbLoc
 type(matrix)            :: CMO
 real(realk),pointer :: lA(:,:),rA(:,:)
 integer     :: A,i,norb,natoms
@@ -631,7 +631,7 @@ end subroutine get_dm_and_Qii
 
 subroutine compute_loc_degree(OrbLoc)
 implicit none
-type(OrbitalLoc) :: OrbLoc
+type(PMitem) :: OrbLoc
 real(realk) :: max_i(OrbLoc%norb)
 real(realk) :: func(OrbLoc%natoms)
 real(realk) :: temp(Orbloc%norb,Orbloc%natoms)
@@ -661,7 +661,7 @@ end subroutine
 
 subroutine update_Orbloc(Orbloc,CMO,ls)
 implicit none
-type(OrbitalLoc) :: OrbLoc
+type(PMitem) :: OrbLoc
 type(lsitem)     :: ls
 type(matrix)     :: CMO
 integer :: i
@@ -678,7 +678,7 @@ end subroutine update_OrbLoc
 
 subroutine initialize_OrbLoc(CMO,OrbLoc,ls,m)
 implicit none
-type(OrbitalLoc) :: OrbLoc
+type(PMitem) :: OrbLoc
 type(lsitem)     :: ls
 type(matrix)     :: CMO
 real(realk)      :: m
@@ -710,7 +710,7 @@ end subroutine initialize_OrbLoc
 
 subroutine FreeOrbLoc(OrbLoc)
 implicit none
-type(OrbitalLoc) :: OrbLoc
+type(PMitem) :: OrbLoc
 
 call mem_dealloc(OrbLoc%Pos)
 call mem_dealloc(OrbLoc%nbasA)
@@ -730,7 +730,7 @@ end subroutine
 
 subroutine compute_fVal(OrbLoc)
 implicit none
-type(OrbitalLoc) :: OrbLoc
+type(PMitem) :: OrbLoc
 real(realk) :: sum_Q
 integer :: A
 
@@ -755,7 +755,7 @@ end subroutine compute_fVal
 !Additional result:  Qkappa
 subroutine CL_add_terms_1_4L(OrbLoc,kappa,Hkappa) 
 implicit none
-type(OrbitalLoc)  :: OrbLoc
+type(PMitem)  :: OrbLoc
 integer       :: natoms,norb,m
 type(matrix)  :: kappa,Hkappa !Hkappa: result
 type(matrix)  :: lA,lAd,lAk
@@ -817,7 +817,7 @@ end subroutine CL_add_terms_1_4L
 !Additional result:  Qkappa
 subroutine CL_add_terms_1_4M(OrbLoc,kappa,Hkappa) 
 implicit none
-type(OrbitalLoc)  :: OrbLoc
+type(PMitem)  :: OrbLoc
 integer       :: natoms,norb,m
 type(matrix)  :: kappa,Hkappa !Hkappa: result
 type(matrix)  :: lA,rA,lAd,rAd,lAk,rAk
@@ -899,7 +899,7 @@ end subroutine CL_add_terms_1_4M
 
 subroutine CL_add_terms_7_8L(OrbLoc,Hkappa)
 implicit none
-type(OrbitalLoc)      :: OrbLoc
+type(PMitem)      :: OrbLoc
 integer                 :: natoms,norb
 type(matrix)            :: Hkappa
 type(matrix)            :: lA,lAd
@@ -933,7 +933,7 @@ end subroutine CL_add_terms_7_8L
 
 subroutine CL_add_terms_7_8M(OrbLoc,Hkappa)
 implicit none
-type(OrbitalLoc)      :: OrbLoc
+type(PMitem)      :: OrbLoc
 integer                 :: natoms,norb
 type(matrix)            :: Hkappa
 type(matrix)            :: lA,rA,lAd,rAd
@@ -975,7 +975,7 @@ end subroutine CL_add_terms_7_8M
 
 subroutine CL_add_terms_9_10L(OrbLoc,Hkappa)
 implicit none
-type(OrbitalLoc)      :: OrbLoc
+type(PMitem)      :: OrbLoc
 integer                 :: natoms,norb
 type(matrix)            :: Hkappa
 type(matrix)            :: lA,lAd
@@ -1017,7 +1017,7 @@ end subroutine CL_add_terms_9_10L
 
 subroutine CL_add_terms_9_10M(OrbLoc,Hkappa)
 implicit none
-type(OrbitalLoc)      :: OrbLoc
+type(PMitem)      :: OrbLoc
 integer                 :: natoms,norb
 type(matrix)            :: Hkappa
 type(matrix)            :: lA,rA,lAd,rAd
@@ -1067,7 +1067,7 @@ end subroutine CL_add_terms_9_10M
 
 subroutine Lowdin_add_terms_1_4(OrbLoc,kappa,Hkappa)
 implicit none
-type(OrbitalLoc)  :: OrbLoc
+type(PMitem)  :: OrbLoc
 integer             :: natoms,norb,m
 type(matrix)        :: kappa,Hkappa !Hkappa: result
 type(matrix)        :: lA,lAd,lAk
@@ -1147,7 +1147,7 @@ end subroutine add_grad_terms
 
 subroutine Lowdin_add_terms_7_8(OrbLoc,Hkappa)
 implicit none
-type(OrbitalLoc)      :: OrbLoc
+type(PMitem)      :: OrbLoc
 integer                 :: natoms,norb
 type(matrix)            :: Hkappa
 type(matrix)            :: lA,lAd,lAk
@@ -1196,7 +1196,7 @@ implicit none
 type(Matrix), intent(inout) :: Xout
 type(Matrix), intent(in) :: X
 real(realk),  intent(in) :: mu
-type(OrbitalLoc), intent(in) :: inp
+type(PMitem), intent(in) :: inp
 real(realk),pointer   :: tmp(:), tmpP(:)
 integer                   :: i, ne
 
@@ -1240,7 +1240,7 @@ subroutine CLLinearTrans(Grad,HKappa,kappa,OrbLoc)
 use loc_types
 use Pipek
 implicit none
-type(OrbitalLoc)   :: OrbLoc
+type(PMitem)   :: OrbLoc
 type(matrix)   :: S,SC
 type(matrix)   :: Hkappa
 type(matrix)   :: kappa
@@ -1271,7 +1271,7 @@ subroutine PMMull_LinTra(Grad,HKappa,kappa,OrbLoc)
 use loc_types
 use Pipek
 implicit none
-type(OrbitalLoc)  :: OrbLoc
+type(PMitem)  :: OrbLoc
 type(matrix)      :: Hkappa
 type(matrix)      :: kappa
 type(matrix)      :: Grad
@@ -1365,7 +1365,7 @@ subroutine PMLowdin_LinTra(Grad,HKappa,kappa,OrbLoc)
 use loc_types
 use Pipek
 implicit none
-type(OrbitalLoc)  :: OrbLoc
+type(PMitem)  :: OrbLoc
 type(matrix)      :: Hkappa
 type(matrix)      :: kappa
 type(matrix)      :: Grad
