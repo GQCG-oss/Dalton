@@ -382,12 +382,9 @@ C
       END IF
 
       if (peqm .and. tdhf) then
-         if (ncsim > 0) then
+         if (nasht > 0) then
             call quit('PE quadratic response not implemented for
-     & ncsim > 0.')
-         else if (nasht > 0) then
-            call quit('PE quadratic response not implemented for
-     & open shell.')
+     & open shell systems.')
          else if (trplet) then
             call quit('Triplets not implemented for PE quadratic
      & response.')
