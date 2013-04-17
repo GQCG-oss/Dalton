@@ -1986,7 +1986,9 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
                   do j = 1, max_number_of_ptg_irreps
                     if(ngsh_lucita_tmp(i,j) /= ngsh_lucita(i,j))then
                     write(lupri,*) '*** error in intim: active spaces'//
-     &              ' in integral CI and present CI run do not match.'
+     &              ' in integral run and present CI run do not match.'
+                    write(lupri,*) 'integral run ',ngsh_lucita_tmp(:,:)
+                    write(lupri,*) 'actual CI    ',ngsh_lucita(:,:)
                     call quit('inconsistency in active spaces for the'//
      &              ' integral CI-run and the present CI-run.')
                     end if
@@ -2003,6 +2005,10 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
      &        '*** master   ',luci_myproc,'reports 2-ints:',
      &                        nint2
               call wrtmatmn(work(kint2),1,nint2,1,nint2,lupri)
+              write(lupri,*) 
+     &        '*** master   ',luci_myproc,'reports ecore  ',
+     &                        ecore, ecore_orig, einact_mc2lu
+#undef LUCI_DEBUG
 #endif
             end if ! luci_master only
 #ifdef VAR_MPI
