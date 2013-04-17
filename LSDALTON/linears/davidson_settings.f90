@@ -107,8 +107,10 @@ logical :: arh_precond
 logical :: arh_davidson
 !> Gradient norm, used for conver
 real(realk) :: arh_gradnorm
-!> linesearch on or off
+!> linesearch on or off at given point in calc
 logical :: arh_linesearch
+!> linesearch on or off
+logical :: arh_inp_linesearch
 
 !> debug 
 logical :: arh_debug_linesearch
@@ -169,6 +171,7 @@ CFG%arh_davidson   = .false.
 CFG%arh_precond    = .true.
 CFG%arh_lintrans   = .false.
 CFG%arh_linesearch = .false.
+CFG%arh_inp_linesearch = .false.
 CFG%arh_extravecs  = .false.
 CFG%arh_debug_linesearch = .false.
 CFG%precond=.true.
