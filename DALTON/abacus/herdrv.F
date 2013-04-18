@@ -1258,9 +1258,9 @@ cx            write(lupri,*)' At INTEGRAL SECT to do GAUGEO on LRATOM'
 cx            write(lupri,*)' Calling lrscinp for SELECT' 
 cx            CALL LRSCINP('.SELECT')
 cx            write(lupri,*)' Despues. LRATOM ', LRATOM 
-            GAGORG(1) = 0.000000
-            GAGORG(2) = 0.000000
-            GAGORG(3) = 0.000000
+cx            GAGORG(1) = 0.000000
+cx            GAGORG(2) = 0.000000
+cx            GAGORG(3) = 0.000000
 c =================================================
 c -------------------------------------------------
 css           x    READ (LUCMD,*) (LRGAUG(IS), IS = 1, 3)
