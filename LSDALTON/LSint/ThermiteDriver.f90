@@ -6308,9 +6308,7 @@ maxTUVdim=0
 maxPrim=0
 maxOrb=0
 do iPassType=1,nPassTypes
-   ! Tempory fix. TK: Please make proper fix!
-   maxTUVdimTEMP = Alloc%maxPrimTUVLHSA(iAlloc)*Alloc%maxPrimTUVRHSA(iPassType)*65
-!MaxPassesForType(iPassType)
+   maxTUVdimTEMP = Alloc%maxPrimTUVLHSA(iAlloc)*Alloc%maxPrimTUVRHSA(iPassType)*MaxPassesForType(iPassType)
    maxTUVdim = MAX(maxTUVdim,maxTUVdimTEMP)
    maxPrimTEMP = Alloc%maxPrimLHSA(iAlloc)*Alloc%maxPrimRHSA(iPassType)*MaxPassesForType(iPassType)
    maxPrim   = MAX(maxPRim,maxPrimTEMP)

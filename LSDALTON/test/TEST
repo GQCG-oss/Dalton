@@ -35,6 +35,7 @@ LINSCA="linsca/linsca_energy
   linsca/linsca_direct_dens
   linsca/linsca_arh
   linsca/linsca_arh_davidson
+  linsca_arh_ls_davidson
   linsca/linsca_lcm_nongc
   linsca/linsca_trilevel 
   linsca/linsca_atoms
@@ -45,6 +46,8 @@ LINSCA="linsca/linsca_energy
   linsca/test_soeo"
 ARH="linsca/linsca_atoms
   linsca/linsca_trilevel
+  linsca/linsca_arh_davidson
+  linsca_arh_ls_davidson
   linsca/linsca_arh"
 LSDALTON="linsca/lsdalton_dft_ssfgrid
   LSint/LSDALTON_screen1

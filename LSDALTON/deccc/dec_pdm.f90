@@ -26,12 +26,8 @@ module dec_pdm_module
   use dec_fragment_utils
 
 
-!  interface ls_sum2d
-!    module procedure ls_sum2d_real,&
-!                    &ls_sum2d_real4d,&
-!                    &ls_sum2d_integer
-!  end interface
-
+  !INTERFACES
+  !**********
   interface array_get_tile                                                                                        
     module procedure array_gettile_combidx4,&                                                                     
                     &array_gettile_combidx8,&
@@ -50,20 +46,35 @@ module dec_pdm_module
   end interface array_accumulate_tile 
 
 
+  !Persistent array type definition
+  !--------------------------------
+  !> \brief the persistent array is a collection of n=500 arrays on each node
+  !with some additional information. Here the storage fort tiled distributed and
+  !replicated arrays is allocated, if 500  is not enough, please change here
+  !> amount of arrays which are storable in the persistent array
+  integer, parameter :: n_arrays = 500
+  !> persistent array type-def
   type persistent_array
-    integer :: n_arrays = 500
-    type(array) :: a(500)
+    !> collection of arrays
+    type(array) :: a(n_arrays)
+    !> current address on node
     integer :: curr_addr_on_node=1
+    !> counter for how many arrays were allocated in the persisten array
     integer :: arrays_allocated = 0
+    !> counter for how many arrays were deallocated
     integer :: arrays_deallocated = 0
+    !> conter for the arrays currently in use
     integer :: arrays_in_use = 0
+    !> offset for the first tile allocation to get a better load distribution
     integer :: new_offset = 0
-    logical :: free_addr_on_node(500)=.true.
+    !> list of n logicals as indicator wheter an adress is free to allocate a
+    !new array
+    logical :: free_addr_on_node(n_arrays)=.true.
   endtype persistent_array
 
   save
   
-  ! job parameters
+  ! job parameters for pdm jobs
   integer,parameter :: JOB_INIT_ARR_TILED      =  4
   integer,parameter :: JOB_FREE_ARR_PDM        =  5
   integer,parameter :: JOB_INIT_ARR_REPLICATED =  6
@@ -83,10 +94,8 @@ module dec_pdm_module
   integer,parameter :: JOB_GET_CC_ENERGY       = 20
   integer,parameter :: JOB_GET_FRAG_CC_ENERGY  = 21
   integer,parameter :: JOB_CHANGE_INIT_TYPE    = 22
-  ! other global parameters
-  integer,parameter :: NO_CONTEXT=977
 
-  
+  !> definition of the persistent array 
   type(persistent_array) :: p_arr
 
 
@@ -97,7 +106,11 @@ module dec_pdm_module
   !> \date May 2012
   subroutine pdm_array_sync(job,a,b,c,d)
     implicit none
+    !> job is input for master and output for slaves, the arguments have to be
+    !in the job paramenters list in top of this file
     integer :: job
+    !the array(s) to be passed to the slaves for which the operation is
+    !performed
     type(array),optional :: a,b,c,d
     integer,pointer ::   TMPI(:), dims(:)
     !character :: TMPC(12)
@@ -108,11 +121,11 @@ module dec_pdm_module
 
     basic = 12
 
-    !**************************************************************************************
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!code for MASTER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !**************************************************************************************
 
-    IF(infpar%lg_mynum.eq.infpar%master) then !code for master                              
+    IF(infpar%lg_mynum.eq.infpar%master) then
+      !**************************************************************************************
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!code for MASTER!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !**************************************************************************************
       !Wake up slaves
       call ls_mpibcast(PDMA4SLV,infpar%master,infpar%lg_comm)
       !1     = JOB
@@ -199,11 +212,12 @@ module dec_pdm_module
       enddo
       call mem_dealloc(TMPI)
 
-    !**************************************************************************************
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!code for SLAVES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !**************************************************************************************
 
     else  
+
+      !**************************************************************************************
+      !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!code for SLAVES!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      !**************************************************************************************
       call ls_mpibcast(counter,infpar%master,infpar%lg_comm)
       call mem_alloc(TMPI,counter)
       call ls_mpisendrecv(TMPI,counter,infpar%lg_comm,infpar%master,infpar%lg_mynum)
@@ -271,117 +285,39 @@ module dec_pdm_module
 #endif
   end subroutine pdm_array_sync
 
-  function associate_to_p_arr(addr) result(arr)
-  implicit none
-  type(array) :: arr
-  integer,intent(in) :: addr
-  integer :: i
-  arr%mode = p_arr%a(addr)%mode
-  arr%nelms = p_arr%a(addr)%nelms
-  arr%atype = p_arr%a(addr)%atype
-  arr%dims => p_arr%a(addr)%dims
-  arr%elm1 => p_arr%a(addr)%elm1
-  arr%elm2 => p_arr%a(addr)%elm2
-  arr%elm3 => p_arr%a(addr)%elm3
-  arr%elm4 => p_arr%a(addr)%elm4
-  arr%elm5 => p_arr%a(addr)%elm5
-  arr%elm6 => p_arr%a(addr)%elm6
-  arr%elm7 => p_arr%a(addr)%elm7
-
-  arr%ntiles = p_arr%a(addr)%ntiles
-  arr%tsize = p_arr%a(addr)%tsize
-  arr%nlti = p_arr%a(addr)%nlti
-  arr%offset = p_arr%a(addr)%offset
-  arr%init_type = p_arr%a(addr)%init_type
-  arr%zeros = p_arr%a(addr)%zeros
-  arr%tdim => p_arr%a(addr)%tdim
-  arr%ntpm => p_arr%a(addr)%ntpm
-  arr%wi => p_arr%a(addr)%wi
-  arr%ti => p_arr%a(addr)%ti
-  arr%addr_p_arr => p_arr%a(addr)%addr_p_arr
-  do i=1,p_arr%a(addr)%nlti
-    arr%ti(i)%e = p_arr%a(addr)%ti(i)%e
-    arr%ti(i)%t => p_arr%a(addr)%ti(i)%t
-    arr%ti(i)%d => p_arr%a(addr)%ti(i)%d
-  enddo
-  !print *,infpar%lg_mynum,"check",associated(arr%wi),associated(p_arr%a(addr)%wi)
-  end function associate_to_p_arr
+  !> \author Patrick Ettenhuber
+  !> \date December 2012
+  !> \brief get an array from the persistent array by specifying its address
   function get_arr_from_parr(addr) result(arr)
     implicit none
+    !> the address of the array to extract
     integer,intent(in) :: addr
+    !> array extracted from persisten array 
     type(array) :: arr
     arr=p_arr%a(addr)
   end function get_arr_from_parr
 
-  !> \author Patrick Ettenhuber
-  !> \date December 2012
-  !> \brief convert an array to tiled_pdm type
-  subroutine array_convert2pdm(arr,tdim,init_type)
-    implicit none
-    type(array), intent(inout) :: arr
-    integer, optional,intent(in) :: tdim(arr%mode)
-    integer, optional,intent(in) :: init_type
-    integer :: addr,default_td(arr%mode)
-    real(realk) :: MemFree,tilemem
-#ifdef VAR_LSMPI
-    if(.not.arr%atype==DENSE.and..not.arr%atype==TILED)then
-      call lsquit("ERROR(array_convert2pdm):type of array not&
-      & suitable",DECinfo%output)
-    endif
-    p_arr%curr_addr_on_node=get_free_address(.false.)
-    addr=p_arr%curr_addr_on_node
-    p_arr%arrays_in_use = p_arr%arrays_in_use + 1
-    default_td=0
-    if(present(init_type))then
-      arr%init_type=init_type
-    else
-      arr%init_type=MASTER_INIT
-    endif
-    !print *,"ATYPE",arr%atype,p_arr%a(addr)%atype
-    select case(arr%atype)
-      case(DENSE)
-        if(present(tdim))then
-          call arr_set_tdims(arr,tdim,arr%mode)
-        else
-          default_td=0
-          call arr_set_tdims(arr,default_td,arr%mode)
-        endif
-        call copy_array(arr,p_arr%a(addr))
-        call array_free_basic(arr)
-        arr = array_init_tiled(p_arr%a(addr)%dims,p_arr%a(addr)%mode,&
-        &p_arr%a(addr)%init_type,p_arr%a(addr)%tdim,.false.)
-        tilemem=arr%tsize*8.0E0_realk/(1024.0E0_realk**3)
-        call get_currently_available_memory(MemFree)
-        if(MemFree-tilemem<0.1E0_realk*tilemem)then
-          call cp_data2tiled_lowmem(arr,arr%elm1,arr%dims,arr%mode)
-        else
-          call cp_data2tiled_intiles(arr,arr%elm1,arr%dims,arr%mode)
-        endif
-        call memory_deallocate_array_dense(arr)
-        !print *,"ATYPE",arr%atype,p_arr%a(addr)%atype
-      case(TILED)
-        call lsquit("ERROR(array_convert2pdm): not yet implemented",DECinfo%output)
-        if(present(tdim))then
-          default_td=tdim
-        endif
-    end select
-#else
-    call lsquit("ERROR(array_convert2pdm):only for use with MPI",DECinfo%output)
-#endif
-  end subroutine array_convert2pdm
 
   !> \author Patrick Ettenhuber
   !> \date December 2012
-  !> \brief calculate cc energy in parallel (PDM)
+  !> \brief calculate fragment eos cc energy in parallel (PDM)
   function get_fragment_cc_energy_parallel(t1,t2,gmo,occ_num,virt_num,occ_idx,virt_idx) result(fEc)
     implicit none
+    !> singles amplitudes
     type(array), intent(inout) :: t1
+    !> two electron integrals in the mo-basis
     type(array), intent(inout) :: gmo
+    !> doubles amplitudes
     type(array), intent(in) :: t2
+    !> number of occupied indices
     integer, intent(in) :: occ_num
+    !> number of virtual indices
     integer, intent(in) :: virt_num
+    !> referencing the occupied indices of the fragment to the full basis
     integer, intent(in) :: occ_idx(occ_num)
+    !> referencing the virtueal indices of the fragment to the full basis
     integer, intent(in) :: virt_idx(virt_num)
+    !> return-calue fEc contains the fragment correlation energy
     real(realk) :: Evirt,Eocc,fEc
     real(realk),pointer :: t(:,:,:,:)
     integer :: lt,i,j,a,b,o(t2%mode),fr_i,fr_j,fr_a,fr_b
@@ -486,12 +422,16 @@ module dec_pdm_module
 
   !> \author Patrick Ettenhuber
   !> \date December 2012
-  !> \brief calculate cc energy in parallel (PDM)
+  !> \brief calculate aos cc energy in parallel (PDM)
   function get_cc_energy_parallel(t1,t2,gmo) result(Ec)
     implicit none
+    !> singles amplitudes
     type(array), intent(inout) :: t1
+    !> two electron integrals in the mo-basis
     type(array), intent(inout) :: gmo
+    !> doubles amplitudes
     type(array), intent(in) :: t2
+    !> on return Ec contains the correlation energy
     real(realk) :: E1,E2,Ec
     real(realk),pointer :: t(:,:,:,:)
     integer :: lt,i,j,a,b,o(t2%mode)
@@ -544,15 +484,23 @@ module dec_pdm_module
 #endif
   end function get_cc_energy_parallel
 
+  !> \brief doubles preconditionning routine for pdm distributed doubles
+  !amplitudes
+  !> \author Patrick Ettenhuber
+  !> \date december 2012
   subroutine precondition_doubles_parallel(omega2,ppfock,qqfock,prec)
     implicit none
+    !> doubles residual, occupied and virtual blocks of the fock matrix
     type(array), intent(in) :: omega2,ppfock,qqfock
+    !> output is the preconditioned doubles residual
     type(array), intent(inout) :: prec
     integer :: lt,a, b, i, j, dims(4)
     real(realk),pointer :: om(:,:,:,:),pp(:,:),qq(:,:),p(:,:,:,:)
     real(realk) :: nrm
     integer :: t(4)
+
 #ifdef VAR_LSMPI
+
     !CHECK if the distributions are the same, if it becomes necessary, that they
     !are not, then this routine has to be rewritten
     if(omega2%tdim(1)/=prec%tdim(1).or.omega2%tdim(2)/=prec%tdim(2).or.&
@@ -564,15 +512,13 @@ module dec_pdm_module
     if(infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(JOB_PREC_DOUBLES_PAR,omega2,ppfock,qqfock,prec)
     endif
-    !print *,infpar%lg_mynum,"preconditioning",prec%nlti
+
     dims=prec%dims
+
+    
+    !do a loop over the local tiles of the preconditioned matrix and get the
+    !corresponding tiles of the residual to form the preconditioned residual
     do lt=1,prec%nlti
-      !call get_tile_dim(t,omega2,prec%ti(lt)%gt)
-      !do i=1,4
-      !  if(t(i)/=prec%ti(lt)%d(i))then
-      !    print *,infpar%lg_mynum,"dims in tile wrong",lt,i,t(i),prec%ti(lt)%d(i)
-      !  endif
-      !enddo
       call array_get_tile(omega2,prec%ti(lt)%gt,prec%ti(lt)%t,prec%ti(lt)%e)
       call ass_D1to4(prec%ti(lt)%t,om,prec%ti(lt)%d)
       
@@ -599,44 +545,61 @@ module dec_pdm_module
       nullify(om)
     enddo
     
+    !crucial barrier, wait for all slaves to finish their jobs
     call lsmpi_barrier(infpar%lg_comm)
 #endif
   end subroutine precondition_doubles_parallel
 
+  !> \brief calculate the dot product of two parallel distributed arrays. the
+  !arrays must have the same tiling parameters, otherwise it is not implemented
+  !> \author Patrick Ettenhuber
+  !> \date december 2012
   function array_ddot_par(arr1,arr2,dest) result(res)
     implicit none
+    !> the two arrays to calculate the dot-product from
     type(array),intent(in) :: arr1, arr2
+    !> rank of the node to collect the result, -1 means all
     integer, intent(in) :: dest
+    !> result
     real(realk) :: res
     real(realk),pointer :: buffer(:)
     integer :: lt,rem_els
     real(realk), external :: ddot
     integer(kind=ls_mpik) :: dest_mpi
+
 #ifdef VAR_LSMPI
+    !check if the init-types are the same
     if(arr1%init_type/=arr2%init_type)then
       call lsquit("ERROR(array_ddot_par):different init types of the&
       & arrays is not possible",DECinfo%output)
     endif
 
+    !check if the destination to collet the resut makes sense in connection with
+    !the init_type
     if(arr1%init_type==MASTER_INIT.and.dest/=0)then
       call lsquit("ERROR(array_ddot_par): the choice of destnation is&
       & useless",DECinfo%output)
     endif
 
+    !get the slaves to this routine
     if(arr1%init_type==MASTER_INIT.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(JOB_DDOT_PAR,arr1,arr2)
     endif
     
+    !zeroing the result
     res=0.0E0_realk
+    
+    !check for the same distribution of the arrays
     if(arr1%tdim(1)==arr2%tdim(1).and.arr1%tdim(2)==arr2%tdim(2).and.&
       &arr1%tdim(3)==arr2%tdim(3).and.arr1%tdim(4)==arr2%tdim(4))then
+  
+      !allocate buffer for the tiles
       call mem_alloc(buffer,arr1%tsize)
       buffer=0.0E0_realk
+ 
+      !loop over local tiles of array2  and get the corresponding tiles of
+      !array1
       do lt=1,arr2%nlti
-        !call get_tile_dim(rem_els,arr1,arr2%ti(lt)%gt)
-        !if(rem_els/=arr2%ti(lt)%e)then
-        !        print*,"nels of the tiles do not match, what is up?"
-        !endif
         call array_get_tile(arr1,arr2%ti(lt)%gt,buffer,arr2%ti(lt)%e)
         res = res + ddot(arr2%ti(lt)%e,arr2%ti(lt)%t,1,buffer,1)
       enddo
@@ -663,8 +626,9 @@ module dec_pdm_module
   !> \date January 2013
   subroutine array_add_par(x,b,y)
     implicit none
+    !> array to collect the result in
     type(array), intent(inout) :: x
-    !>
+    !> array to add to x
     type(array), intent(in) :: y
     !> scale factor without intent, because it might be overwiritten for the slaves
     real(realk) :: b
@@ -672,11 +636,14 @@ module dec_pdm_module
     integer :: lt
 #ifdef VAR_LSMPI
 
+    !check if the init_types are the same
     if(x%init_type/=y%init_type)then
       call lsquit("ERROR(array_add_par):different init types&
       & impossible",DECinfo%output)
     endif
-    !IF NOT MASTER_INIT all processes should know b on call-time
+
+    !IF NOT MASTER_INIT all processes should know b on call-time, else b is
+    !broadcasted here
     if(x%init_type==MASTER_INIT.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(JOB_ADD_PAR,x,y)
       call ls_mpibcast(b,infpar%master,infpar%lg_comm)
@@ -684,45 +651,56 @@ module dec_pdm_module
       call ls_mpibcast(b,infpar%master,infpar%lg_comm)
     endif
 
+    !check for the same distribution of the arrays
     if(x%tdim(1)==y%tdim(1).and.x%tdim(2)==y%tdim(2).and.&
       &x%tdim(3)==y%tdim(3).and.y%tdim(4)==y%tdim(4))then
+      
+      !allocate buffer for the tiles
       call mem_alloc(buffer,x%tsize)
+  
+      !lsoop over local tiles of array x
       do lt=1,x%nlti
         call array_get_tile(y,x%ti(lt)%gt,buffer,x%ti(lt)%e)
         call daxpy(x%ti(lt)%e,b,buffer,1,x%ti(lt)%t,1)
       enddo
+
       call mem_dealloc(buffer)
     else
       call lsquit("ERROR(array_add_par):NOT YET IMPLEMENTED, if the arrays have&
       & different distributions",DECinfo%output)
     endif
+
+    !crucial barrier, because direct memory access is used
     call lsmpi_barrier(infpar%lg_comm)
 #endif
   end subroutine array_add_par
+
 
   !> \brief array copying routine for TILED_DIST arrays
   !> \author Patrick Ettenhuber
   !> \date January 2013
   subroutine array_cp_tiled(from,to_ar)
     implicit none
+    !> source, array to copy
     type(array), intent(in) :: from
-    !>
+    !> drain, the copied array
     type(array), intent(inout) :: to_ar
-    !> scale facto_arr without intent, because it might be overwiritten for the slaves
-    real(realk) :: b
     real(realk),pointer :: buffer(:)
     integer :: lt
 #ifdef VAR_LSMPI
 
+    !check for the same init_types
     if(from%init_type/=to_ar%init_type)then
       call lsquit("ERROR(array_cp_tiled):different init types&
       & impossible",DECinfo%output)
     endif
-    !IF NOT MASTER_INIT all processes should know b on call-time
+
+    !get the slaves
     if(from%init_type==MASTER_INIT.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(JOB_CP_ARR,from,to_ar)
     endif
 
+    !check for the same distributions
     if(from%tdim(1)==to_ar%tdim(1).and.from%tdim(2)==to_ar%tdim(2).and.&
       &from%tdim(3)==to_ar%tdim(3).and.to_ar%tdim(4)==to_ar%tdim(4))then
       do lt=1,to_ar%nlti
@@ -732,18 +710,28 @@ module dec_pdm_module
       call lsquit("ERROR(array_cp_tiled):NOT YET IMPLEMENTED, if the arrato_ars have&
       & different distributions",DECinfo%output)
     endif
+
+    !crucial barrier as remote direct memory access is used
     call lsmpi_barrier(infpar%lg_comm)
 #endif
   end subroutine array_cp_tiled
 
+
+  !> \brief zeroing routine for tiled distributed arrays
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
   subroutine array_zero_tiled_dist(a)
     implicit none
+    !> array to zero
     type(array),intent(inout) :: a
     integer :: lt
 #ifdef VAR_LSMPI
+    !get the slaves here
     if(a%init_type==MASTER_INIT.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(JOB_ARRAY_ZERO,a)
     endif
+
+    !loop over local tiles and zero them individually
     do lt=1,a%nlti
       a%ti(lt)%t=0.0E0_realk
     enddo
@@ -756,8 +744,11 @@ module dec_pdm_module
   !> \brief initialized a replicated matrix on each node
   function array_init_replicated(dims,nmodes,pdm)result(arr)
     implicit none
+    !> array to be initialilzed
     type(array) :: arr
+    !> number of modes and the dimensions of the array
     integer,intent(in) :: nmodes,dims(nmodes)
+    !> integer specifying the init_type of the array
     integer,intent(in) :: pdm
     integer(kind=long) :: i,j
     integer :: rnk,stat,help,addr,tdimdummy(nmodes)
@@ -765,18 +756,24 @@ module dec_pdm_module
     integer(kind=ls_mpik) :: nlocalnodes,ierr
     integer, pointer :: buf(:)
     logical :: master
-    !allocate all tiled arrays in p_arr, get free
+
+    !allocate all pdm in p_arr therefore get free address and associate it with
+    !the array, and increment the array counter
     p_arr%curr_addr_on_node=get_free_address(.true.)
     addr=p_arr%curr_addr_on_node
     p_arr%arrays_in_use = p_arr%arrays_in_use + 1
+
+    !set the initial values and overwrite them later
     nlocalnodes=1
     master=.true.
-
     p_arr%a(addr)%init_type=pdm
+
 #ifdef VAR_LSMPI
+    !assign if master and the number of nodes in the local group
     if(.not.infpar%lg_mynum==infpar%master)master=.false.
     nlocalnodes=infpar%lg_nodtot
 #endif
+
     !SET MODE
     p_arr%a(addr)%mode=nmodes
     !SET DIMS
@@ -789,6 +786,7 @@ module dec_pdm_module
       nelms=nelms*dims(i)
     enddo
     p_arr%a(addr)%nelms=nelms
+
     !put 0 in tdim, since for the replicated array it is not important
     tdimdummy=0
     call arr_set_tdims(p_arr%a(addr),tdimdummy,nmodes)
@@ -809,32 +807,48 @@ module dec_pdm_module
 #endif
     endif
 
-    !if all_init only all have to have the addresses allocated
+    !if all_init all have to have the addresses allocated
     if(p_arr%a(addr)%init_type==ALL_INIT)call arr_set_addr(p_arr%a(addr),buf,nlocalnodes)
 
 #ifdef VAR_LSMPI
+    !SET THE ADDRESSES ON ALL NODES     
     buf(infpar%lg_mynum+1)=addr 
     call lsmpi_local_allreduce(buf,nlocalnodes)
     call arr_set_addr(p_arr%a(addr),buf,nlocalnodes)
 #endif
+  
+    !ALLOCATE STORAGE SPACE FOR THE ARRAY
     call memory_allocate_array_dense(p_arr%a(addr))
+
+    !RETURN THE CURRENLY ALLOCATE ARRAY
     arr=p_arr%a(addr)
+
     if(arr%init_type>=1) call mem_dealloc(buf)
   end function array_init_replicated
 
+
+  !> \brief print the norm of a replicated array from each node, just a
+  !debugging routine
+  !> \author Patrick Ettenhuber
+  !> \date January 2012
   function array_print_norm_repl(arr) result(nrm)
     implicit none
+    !> replicated array to print the norm from
     type(array), intent(in) :: arr
+    !return-value is the norm
     real(realk) :: nrm
     integer :: i
 #ifdef VAR_LSMPI
 
+    !get the slaves
     if(infpar%lg_mynum==infpar%master.and.arr%init_type==MASTER_INIT)then
       call pdm_array_sync(JOB_GET_NORM_REPLICATED,arr)
     endif
+
+    !zero the norm an calculate it
     nrm =0.0E0_realk
     do i=1,arr%nelms
-      nrm=nrm+arr%elm1(i)*arr%elm1(1)
+      nrm=nrm+arr%elm1(i)*arr%elm1(i)
     enddo
     print *,"on nodes",infpar%lg_mynum,sqrt(nrm)
 #else
@@ -843,64 +857,106 @@ module dec_pdm_module
   end function array_print_norm_repl
 
 
+  !> \brief synchronize a replicated array from a source
+  !> \author Patrick Ettenhuber
+  !> \date cannot remember, 2012
   subroutine array_sync_replicated(arr,fromnode)
     implicit none
+    !> array to synchronize
     type(array), intent(inout) :: arr
+    !> specify the node which holds the original data that should be
+    !synchronized to all nodes
     integer,optional, intent(in) :: fromnode
     integer(kind=ls_mpik) :: source
 #ifdef VAR_LSMPI
+
+    !give meaningful quit statement for useless input
     if(present(fromnode).and.arr%init_type==MASTER_INIT)then
       call lsquit("ERROR(array_sync_replicated): This combintion of input&
       &elements does not give sense",DECinfo%output)
+      ! why would you want to collect the data on a node you cannot direcly
+      ! access, or if you can access the data in the calling subroutine on the
+      ! specified node, why is the init_tyep MASTER_INIT?
     endif
+
+    ! get slaves
     if(infpar%lg_mynum==infpar%master.and.arr%init_type==MASTER_INIT)then
       call pdm_array_sync(JOB_SYNC_REPLICATED,arr)
     endif
+
+
+    !specify the source of the data, by default master
     source = infpar%master
     if(present(fromnode))source=fromnode
+
+    !do the synchronization
     call ls_mpibcast(arr%elm1,arr%nelms,source,infpar%lg_comm)
+
 #endif    
   end subroutine array_sync_replicated
 
 
+  !> \brief calculate the default tile-dimensions for the tiled dirtributed
+  !array. default tile dimensions are currently a compromize between data
+  !distribution and communication cost, it is cheaper to communicate large
+  !chunks than many of them
+  !> \author Patrick Ettenhuber
+  !> \date march 2013
   subroutine array_default_batches(dims,nmodes,tdim,div)
     implicit none
+    !> mode of the array
     integer :: nmodes
+    !> dimensions in the modes
     integer :: dims(nmodes)
+    !> divisor the last dimension whic is slict
     integer,intent(out) :: div
+    !> tdim output 
+    integer :: tdim(nmodes)
     integer :: i,j
     integer :: nlocalnodes
-    integer :: tdim(nmodes)
     integer :: cdims
+
     nlocalnodes=1
 #ifdef VAR_LSMPI
     nlocalnodes=infpar%lg_nodtot
 #endif    
+
+
+    !calculate how many of the last modes have to be combined to get at least
+    !the number of nodes tiles
     cdims=1
     do i=nmodes,1,-1
       if(cdims*dims(i)>nlocalnodes) exit
       cdims = cdims * dims(i)
     enddo
-    !print *,nlocalnodes,cdims
+
+    !assing tiling dimensions
     do j=1,nmodes
       if(j<i)  tdim(j)=dims(j)
       if(j==i)then
         do div=1,dims(j)
           if(cdims*div>=nlocalnodes)exit
         enddo
-        !print *,nlocalnodes,div*cdims
         tdim(j)=(dims(j))/div
       endif
       if(j>i)  tdim(j)=1
     enddo
+
   end subroutine array_default_batches
   
+  !> \brief calculate the number of tiles per mode
+  !> \author Patrick Ettenhuber
+  !> \date march 2013
   subroutine array_get_ntpm(dims,tdim,mode,ntpm,ntiles)
     implicit none
+    !> number of modes and number of tiles
     integer :: mode,ntiles
+    !> full dimensions, tile dimensinos, number of tiles per mode
     integer :: dims(mode),tdim(mode),ntpm(mode)
     integer :: i
+
     ntiles = 1
+
     do i=1,mode
       ntpm(i)= dims(i)/tdim(i)
       if(mod(dims(i),tdim(i))>0)then
@@ -908,6 +964,7 @@ module dec_pdm_module
       endif
       ntiles = ntiles * ntpm(i)
     enddo
+
   end subroutine array_get_ntpm
 
   !> \author Patrick Ettenhuber
@@ -915,7 +972,7 @@ module dec_pdm_module
   !> \brief initialized a distributed tiled array
   function array_init_tiled(dims,nmodes,pdm,tdims,zeros_in_tiles)result(arr)
     implicit none
-    type(array) :: arr,internalarr
+    type(array) :: arr
     integer,intent(in) :: nmodes,dims(nmodes)
     integer,optional :: tdims(nmodes),pdm
     logical, optional :: zeros_in_tiles
@@ -927,11 +984,15 @@ module dec_pdm_module
     logical :: master,defdims
     !allocate all tiled arrays in p_arr, get free
     p_arr%curr_addr_on_node=get_free_address(.true.)
+
     addr=p_arr%curr_addr_on_node
+
     p_arr%arrays_in_use = p_arr%arrays_in_use + 1
+
     nlocalnodes=1
     master=.true.
     !call array_free_basic(arr)
+
     if(present(pdm))then
       p_arr%a(addr)%init_type=pdm
     else
@@ -942,18 +1003,23 @@ module dec_pdm_module
     !if(p_arr%a(addr)%init_type==ALL_INIT)call lsmpi_barrier(infpar%lg_comm)
     nlocalnodes=infpar%lg_nodtot
 #endif
-!INITIALIZE TILE STRUCTURE, if master from basics, if slave most is already
-!there
+
+    !INITIALIZE TILE STRUCTURE, if master from basics, if slave most is already
+    !there
     defdims=.false.
     if(present(zeros_in_tiles)) p_arr%a(addr)%zeros=zeros_in_tiles
+
     p_arr%a(addr)%mode=nmodes
+
     call arr_set_dims(p_arr%a(addr),dims,nmodes)
+
     if(present(tdims))then
       dflt=tdims
     else
       defdims=.true.
       !insert a routine for estimation of ts according to mem here
     endif
+
     !check if invalid numbers occur and fall back to default if so
     if(.not.defdims.and.present(tdims))then
       do i=1,nmodes
@@ -970,25 +1036,6 @@ module dec_pdm_module
     !-> lots of consecutive !elements, big tiles, enough tiles
     if(defdims)then
       call array_default_batches(dims,nmodes,dflt,div)
-      !cdims=1
-      !do i=nmodes,1,-1
-      !  if(cdims*dims(i)>nlocalnodes) exit
-      !  cdims = cdims * dims(i)
-      !enddo
-      !print *,nlocalnodes,cdims
-      !do j=1,nmodes
-      !  if(j<i)  dflt(j)=dims(j)
-      !  if(j==i)then
-      !    do div=1,dims(j)
-      !      if(cdims*div>=nlocalnodes)exit
-      !    enddo
-      !    !print *,nlocalnodes,div*cdims
-      !    dflt(j)=(dims(j))/div
-      !  endif
-      !  if(j>i)  dflt(j)=1
-      !enddo
-      !print *,dims
-      !print *,dflt
     endif
     call arr_set_tdims(p_arr%a(addr),dflt,p_arr%a(addr)%mode)
     if(p_arr%a(addr)%init_type>=1) p_arr%a(addr)%atype=TILED_DIST
@@ -1030,14 +1077,15 @@ module dec_pdm_module
       call arr_set_addr(p_arr%a(addr),buf,nlocalnodes)
       call pdm_array_sync(JOB_INIT_ARR_TILED,p_arr%a(addr))
     endif
+
     !if all_init only all have to know the addresses
     if(p_arr%a(addr)%init_type==ALL_INIT)call arr_set_addr(p_arr%a(addr),buf,nlocalnodes)
     !print *,infpar%mynum,"set things now entering tile alloc",arr%init_type
 
+
     if(p_arr%a(addr)%init_type>=1)then
 #ifdef VAR_LSMPI
       call get_distribution_info(p_arr%a(addr))
-      !print *,infpar%lg_mynum,"still has",
       buf(infpar%lg_mynum+1)=addr 
       buf(nlocalnodes+infpar%lg_mynum+1)=p_arr%a(addr)%offset
       call lsmpi_local_allreduce(buf,2*nlocalnodes)
@@ -1052,36 +1100,49 @@ module dec_pdm_module
 #endif
     else
       p_arr%a(addr)%nlti=p_arr%a(addr)%ntiles
-      !call memory_allocate_tiles(arr)
     endif
+
     call memory_allocate_tiles(p_arr%a(addr))
+
     arr=p_arr%a(addr)
     !print *,infpar%lg_mynum,associated(arr%wi),"peristent",associated(p_arr%a(addr)%wi)
+
     if(arr%init_type>=1) call mem_dealloc(buf)
     !print *,infpar%lg_mynum,"init done returning"
   end function array_init_tiled
   
-
+  !> \brief add tiled distributed data to a basic fortran type array
+  !> \author Patrick Ettenhuber
+  !> date march 2013
   subroutine add_tileddata2fort(arr,b,fort,nelms,pdm,order)
     implicit none
+    !> array to add to the input
     type(array),intent(in) :: arr
+    !> basic fotran type array to which arr is added
     real(realk),intent(inout) :: fort(*)
+    !> scaling factor for arr
     real(realk),intent(in) :: b
+    !> nuber of elements in the array
     integer, intent(in) :: nelms
+    !> logical specifying whether the tiles are in pdm
     logical, intent(in) :: pdm
+    !> reorder if the array is reorder with respect to the fortran array
     integer, intent(in), optional :: order(arr%mode)
-    integer :: i,j,k,tmdidx(arr%mode),minimode(arr%mode)
-    integer :: glbmodeidx(arr%mode),glbidx,l,nelintile,tdim(arr%mode)
+    integer :: i,j,k,tmdidx(arr%mode)
+    integer :: l,nelintile,tdim(arr%mode)
     real(realk), pointer :: tmp(:)
+
+    !check nelms
     if(nelms/=arr%nelms)call lsquit("ERROR(cp_tileddate2fort):array&
         &dimensions are not the same",DECinfo%output)
+
+    !allocate space 
     if(pdm)then
       call mem_alloc(tmp,arr%tsize)
     endif
 
     do i=1,arr%ntiles
       call get_midx(i,tmdidx,arr%ntpm,arr%mode)
-      call get_tile_dim(l,i,arr%dims,arr%tdim,arr%mode,2)
       call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
       if(pdm)then
         call array_get_tile(arr,i,tmp,nelintile)
@@ -1098,6 +1159,7 @@ module dec_pdm_module
       nullify(tmp)
     endif
   end subroutine add_tileddata2fort
+
   subroutine cp_tileddata2fort(arr,fort,nelms,pdm,order)
     implicit none
     type(array),intent(in) :: arr
@@ -1136,6 +1198,8 @@ module dec_pdm_module
       nullify(tmp)
     endif
   end subroutine cp_tileddata2fort
+
+
 
   subroutine array_scatteradd_densetotiled(arr,sc,A,nelms,nod,optorder)
     implicit none
@@ -1189,6 +1253,9 @@ module dec_pdm_module
     call lsquit("ERROR(array_scatteradd_densetotiled):this routine is MPI only",-1)
 #endif
   end subroutine array_scatteradd_densetotiled
+
+
+
   subroutine array_gatheradd_tilestofort(arr,sc,fort,nelms,nod,optorder)
     implicit none
     type(array),intent(in) :: arr
@@ -1239,6 +1306,9 @@ module dec_pdm_module
     call lsquit("ERROR(array_gatheradd_tilestofort):this routine is MPI only",-1)
 #endif
   end subroutine array_gatheradd_tilestofort
+
+
+
   subroutine array_gather_tilesinfort(arr,fort,nelms,nod,optorder)
     implicit none
     type(array),intent(in) :: arr
@@ -1725,6 +1795,7 @@ module dec_pdm_module
     call mem_dealloc(buf)
   end subroutine cp_data2tiled_intiles
 
+
   subroutine array_scatter_densetotiled(arr,A,nelms,nod,optorder)
     implicit none
     type(array),intent(inout) :: arr
@@ -1773,7 +1844,10 @@ module dec_pdm_module
 #else
     call lsquit("ERROR(array_scatter_densetotiled):this routine is MPI only",-1)
 #endif
+
   end subroutine array_scatter_densetotiled
+
+
 
   subroutine pn(a,n)
     implicit none
@@ -1788,6 +1862,7 @@ module dec_pdm_module
     nrm = sqrt(nrm)
     print *,"NORM:",nrm
   end subroutine
+
 
   !> \autor Patrick Ettenhuber
   !> \brief Subroutine to put a specific tile in a general matrix
@@ -1904,11 +1979,12 @@ module dec_pdm_module
     integer,intent(in) :: o(mode)
     !> tile output
     real(realk), intent(in) :: tilein(*)
+    real(realk),pointer :: dummy(:)
     integer :: i,nccblcks,nelms,k
     integer :: tmodeidx(mode),rtd(mode)
     integer :: idxintile(mode),glbidx,ro(mode),olddims(mode)
     integer :: ccels,ntimes,el,acttdim(mode),nels,fels(mode)
-    integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode)
+    integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode),dummyidx(mode)
     integer :: simpleorder,bs
     bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
     !bs=5
@@ -1935,7 +2011,7 @@ module dec_pdm_module
     ntimes=1
     !call get_tile_dim(tdim,tnr,arr%dims,arr%tdim,arr%mode)
     do i=1,mode
-      fels(o(i)) = (tmodeidx(i)-1) * tdims(i) + 1
+      fels(i) = (tmodeidx(o(i))-1) * tdims(o(i)) + 1
       if(tmodeidx(i)*tdims(i)>dims(i))then
         acttdim(i)=mod(dims(i),tdims(i))
       else
@@ -1961,7 +2037,44 @@ module dec_pdm_module
       case(1)
         call manual_2143_reordering_tile2full(bs,acttdim,dims,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
       !case(2)
-      !  call manual_1423_reordering_tile2full(bs,acttdim,dims,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
+      !  print *,dims
+      !  print *,tdims
+      !  print *,o
+      !  print *,olddims
+      !  print *,rtd
+      !  print *,ro
+      !  call mem_alloc(dummy,dims(1)*dims(2)*dims(3)*dims(4))
+      !  do i=1,dims(1)*dims(2)*dims(3)*dims(4)
+      !    dummy(i) = fort(i)
+      !  enddo
+      !  call manual_1423_reordering_tile2full(bs,acttdim,dims,fels,1.0E0_realk,tilein,0.0E0_realk,dummy)
+      !  print *,infpar%lg_mynum,norm2(dummy)
+      !  nelms=1
+      !  do i=1,mode
+      !    nelms = nelms * acttdim(i)
+      !  enddo
+      !  do i = 1,nelms
+      !    !get mode index of element in tile
+      !    call get_midx(i,idxintile,acttdim,mode)
+      !    if(i==nelms)print *,idxintile,tmodeidx
+      !    do k=1,mode
+      !      glbmodeidx(o(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
+      !    enddo
+      !    if(i==nelms)print *,glbmodeidx,olddims
+      !    pos1=get_cidx(glbmodeidx,olddims,mode)
+      !    fort(pos1)=tilein(i)
+      !  enddo
+      !  print *,infpar%lg_mynum,norm2(fort(1:dims(1)*dims(2)*dims(3)*dims(4)))
+      !  do i=1,dims(1)*dims(2)*dims(3)*dims(4)
+      !    if(abs(dummy(i)-fort(i)) > 1.0E-12)then
+      !      call get_midx(i,dummyidx,dims,4)
+      !      print *, "firs diff in ",i,"ie",dummyidx
+      !      print *,"orig",fort(i)
+      !      print *,"new ",dummy(i)
+      !      exit
+      !    endif
+      !  enddo
+      !  call mem_dealloc(dummy)
     case default
       print *,"default part reorder put",o
       !count elements in the current tile for loop over elements
@@ -2083,6 +2196,8 @@ module dec_pdm_module
     endif
     
   end subroutine extract_tile_from_fort_add
+
+
   !> \autor Patrick Ettenhuber
   !> \brief Subroutine to extract a specific tile from a general matrix
   !> \date November 2012
@@ -2199,14 +2314,15 @@ module dec_pdm_module
           tileout(i)=fort(pos1)
         enddo
     end select
+
     call mem_dealloc(dummy)
+
   end subroutine extract_tile_from_fort
 
   subroutine array_free_pdm(arr)
     implicit none
     type(array) :: arr
 #ifdef VAR_LSMPI
-    !print *,infpar%lg_mynum,"CHECK IN FREE",associated(arr%wi),associated(p_arr%a(arr%addr_p_arr(infpar%lg_mynum+1))%wi)
     if(arr%init_type==MASTER_INIT.and.&
     &infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(JOB_FREE_ARR_PDM,arr)

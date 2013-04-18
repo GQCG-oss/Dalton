@@ -42,32 +42,32 @@ character*(80) :: loctype1
     if (loctype .eq. 'PRINTINFO') then
         CFG%PRINT_INFO=.true. 
     elseif (loctype .eq. 'CLL') then
-        CFG%OrbLoc%ChargeLocLowdin=.true.
-        CFG%ChargeLoc=.true.
+        CFG%PM_input%ChargeLocLowdin=.true.
+        CFG%PM=.true.
     elseif (loctype .eq. 'KURT' ) then
-        CFG%kurtosis=.true.
+        CFG%PFM=.true.
 	CFG%precond=.true.
-        CFG%KURT%crossterms=.false.
+        CFG%PFM_input%crossterms=.false.
 	if (m(1) .ne. 0) then
-  	  CFG%KURT%m=m(1)
+  	  CFG%PFM_input%m=m(1)
 	elseif(m(2).ne. 0) then
-	  CFG%KURT%m=m(2)
+	  CFG%PFM_input%m=m(2)
 	end if
-	CFG%ChargeLoc=.false.
+	CFG%PM=.false.
 	CFG%orbspread=.false.
     elseif (loctype .eq. 'PML') then
-        CFG%OrbLoc%PipekMezeyLowdin=.true.
-        CFG%ChargeLoc=.true.   
-	CFG%OrbLoc%Precond = .true.
+        CFG%PM_input%PipekMezeyLowdin=.true.
+        CFG%PM=.true.   
+	CFG%PM_input%Precond = .true.
 	CFG%Precond= .true.
     elseif (loctype .eq. 'PMM') then
-        CFG%OrbLoc%PipekMezeyMull=.true.
-        CFG%ChargeLoc=.true.   
-	CFG%OrbLoc%Precond = .false.
+        CFG%PM_input%PipekMezeyMull=.true.
+        CFG%PM=.true.   
+	CFG%PM_input%Precond = .false.
 	CFG%Precond= .false.
     elseif (loctype .eq. 'CLM') then
-        CFG%OrbLoc%ChargeLocMulliken=.true.
-        CFG%ChargeLoc=.true.   
+        CFG%PM_input%ChargeLocMulliken=.true.
+        CFG%PM=.true.   
     elseif (loctype .eq. 'MLO') then
         CFG%orbspread =.true.
     end if

@@ -32,28 +32,6 @@ module array_operations
 
 
   !> Overloaded operator for adding arrays
-!  interface operator(+)
-!     module procedure array4_add_simple
-!  end interface
-
-  !> Overloaded operator for dot-product
-!  interface operator(*)
-!     module procedure array4_dotproduct
-!  end interface
-
-  !> Write array4 elements to file
-!  interface array4_write_file
-!     module procedure array4_write_file_type1
-!     module procedure array4_write_file_type2
-!     module procedure array4_write_file_type3
-!  end interface
-
-  !> Read array4 elements from file
-!  interface array4_read_file
-!     module procedure array4_read_file_type1
-!     module procedure array4_read_file_type2
-!     module procedure array4_read_file_type3
-!  end interface
 
 
 !> convert arrays, the idea is for a general conversion only the interface
@@ -87,74 +65,56 @@ module array_operations
     module procedure array_add_normal, array_add_arr2fullfort,array_add_fullfort2arr
   end interface array_add
 
-  interface array_contract
-    module procedure array_contract_pref
-  end interface array_contract
-
-  ! for timing
-  real(realk) :: time_array_init = 0.0E0_realk
-  real(realk) :: time_array_free = 0.0E0_realk
-  real(realk) :: time_array_duplicate = 0.0E0_realk
-  real(realk) :: time_array_alloc = 0.0E0_realk
-  real(realk) :: time_array_dealloc = 0.0E0_realk
-  real(realk) :: time_array_write_data = 0.0E0_realk
-  real(realk) :: time_array_read_data = 0.0E0_realk
-  real(realk) :: time_array_write = 0.0E0_realk
-  real(realk) :: time_array_read = 0.0E0_realk
-  real(realk) :: time_array_add = 0.0E0_realk
-  real(realk) :: time_array_add_to = 0.0E0_realk
-  real(realk) :: time_array_scale = 0.0E0_realk
-  real(realk) :: time_array_dotproduct = 0.0E0_realk
-  real(realk) :: time_array_norm = 0.0E0_realk
-  real(realk) :: time_array_contract1 = 0.0E0_realk
-  real(realk) :: time_array_contract2 = 0.0E0_realk
-  real(realk) :: time_array_contract2_middle = 0.0E0_realk
-  real(realk) :: time_array_contract_array2 = 0.0E0_realk
-  real(realk) :: time_array_contract3 = 0.0E0_realk
-  real(realk) :: time_array_mat_multiply = 0.0E0_realk
-  real(realk) :: time_array_reorder = 0.0E0_realk
-  real(realk) :: time_array_mat_transpose = 0.0E0_realk
-  real(realk) :: time_array_contract_with_ao = 0.0E0_realk
+  !interface array_contract
+  !  module procedure array_contract_pref
+  !end interface array_contract
 
 
 contains
 
-  subroutine array_contract_pref(pre1,A,B,cmA,cmB,NM2C,pre2,C,order)
-    implicit none
-    real(realk), intent(in) :: pre1,pre2
-    type(array), intent(in) :: A, B
-    type(array), intent(inout) :: C
-    integer, intent(in) :: NM2C
-    integer, intent(in) :: cmA(NM2C),cmB(NM2C)
-    integer, optional, intent(in) :: order(C%mode)
-    integer :: i,j,car,cad,cbr,cbd,k
-    integer :: cmA_o(NM2C)!,cmB_o(NM2C)
-    integer, pointer :: ar(:),ad(:),br(:),bd(:)
-
-    !Categorize contractions
-    car=0;cad=0;cbr=0;cbd=0
-    do i=1,NM2C
-      do j=i+1,NM2C
-        if(cmA(i)<cmA(j))then
-          cmA_o(i)=cmA(j)
-        else
-          cmA_o(i)=cmA(i)
-        endif
-      enddo
-    enddo
-    print *,cmA_o,cmA
-!    print *,cmB_o,cmB
-    print *,"not yet further implemented"
-    stop 0
-
-
-  end subroutine array_contract_pref
+!  subroutine array_contract_pref(pre1,A,B,cmA,cmB,NM2C,pre2,C,order)
+!    implicit none
+!    real(realk), intent(in) :: pre1,pre2
+!    type(array), intent(in) :: A, B
+!    type(array), intent(inout) :: C
+!    integer, intent(in) :: NM2C
+!    integer, intent(in) :: cmA(NM2C),cmB(NM2C)
+!    integer, optional, intent(in) :: order(C%mode)
+!    integer :: i,j,car,cad,cbr,cbd,k
+!    integer :: cmA_o(NM2C)!,cmB_o(NM2C)
+!    integer, pointer :: ar(:),ad(:),br(:),bd(:)
+!
+!    !Categorize contractions
+!    car=0;cad=0;cbr=0;cbd=0
+!    do i=1,NM2C
+!      do j=i+1,NM2C
+!        if(cmA(i)<cmA(j))then
+!          cmA_o(i)=cmA(j)
+!        else
+!          cmA_o(i)=cmA(i)
+!        endif
+!      enddo
+!    enddo
+!    print *,cmA_o,cmA
+!!    print *,cmB_o,cmB
+!    print *,"not yet further implemented"
+!    stop 0
+!
+!
+!  end subroutine array_contract_pref
 
   ! x = x + b * y
+  !> \brief add a scaled array to another array. The data may have different
+  !distributions in the two arrays to be added
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
   subroutine array_add_normal(x,b,y)
     implicit none
+    !> array input, this is the result array with overwritten data
     type(array),intent(inout) :: x
+    !> array to add
     type(array),intent(in) :: y
+    !> scaling factor for array y
     real(realk),intent(in) :: b
     real(realk),pointer :: buffer(:)
     integer :: ti,nel
@@ -214,12 +174,23 @@ contains
   end subroutine array_add_normal
 
   ! x = x + b * y
+  !> \brief add a scaled fortran-array to an array. The data may have arbitrary
+  !distribution for the array
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
   subroutine array_add_fullfort2arr(arrx,b,fortarry,nelms,order,checkmem)
     implicit none
-    real(realk), intent(in) :: fortarry(*),b
+    !> full fortan arra´y, this corresponds to y
+    real(realk), intent(in) :: fortarry(*)
+    !> scaling factor for fortran array
+    real(realk), intent(in) :: b
+    !> array which is overwritten
     type(array), intent(inout) :: arrx
+    !> number of elements in the fortran array
     integer, intent(in) :: nelms
+    !> order of the fortran array with respect to the array
     integer, intent(in),optional :: order(arrx%mode)
+    !> check if there is enough memory to send a full tile, this will die out
     logical,optional::checkmem
     logical :: check
     integer :: i
@@ -249,13 +220,25 @@ contains
           endif
     end select
   end subroutine array_add_fullfort2arr
+
+  ! x = x + b * y
+  !> \brief add a scaled array to a fortran- array. The data may have arbitrary
+  !distribution for the array
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
   subroutine array_add_arr2fullfort(fortarrx,b,arry,nelms,order,checkmem)
     implicit none
+    !> full fortan arra´y, this corresponds to x and is overwritten
     real(realk), intent(inout) :: fortarrx(*)
+    !> scaling factor for the array y
     real(realk), intent(in) :: b
+    !> array to add --> y
     type(array), intent(in) :: arry
+    !> number of elements in the fortran array
     integer, intent(in) :: nelms
+    !> order of the fortran array with respect to the array
     integer, intent(in),optional :: order(arry%mode)
+    !> check if there is enough memory to send a full tile, this will die out
     logical,optional::checkmem
     logical :: check
     integer :: i
@@ -275,13 +258,21 @@ contains
     end select
   end subroutine array_add_arr2fullfort
 
-  subroutine array_contract_outer_indices_rl(pre1,left,right,pre2,res)
+
+  !> \brief perform a contraction of the outer indices of two arrays, r means
+  !the right-most index for the first array, l means the left-most index for the
+  !sectond array, p1 * left * right + p2 * res = res 
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
+  subroutine array_contract_outer_indices_rl(p1,left,right,p2,res)
     implicit none
-    real(realk),optional :: pre1,pre2
+    !> prefactors for the left*right part and the res part
+    real(realk),intent(in) :: p1,p2
+    !> the resulting array
     type(array),intent(inout) :: res
+    !> the arrays to be multiplied
     type(array),intent(in) :: left,right
     integer :: i,m,n,k
-    real(realk) :: p1,p2
     if(left%dims(left%mode)/=right%dims(1))then
       call lsquit("ERROR(array_contract_outer_indices_rl):wrong&
       &contraction dimensions!!",DECinfo%output)
@@ -304,10 +295,6 @@ contains
     if(left%atype==TILED.or.left%atype==TILED_DIST.or.right%atype==TILED&
     &.or.right%atype==TILED_DIST)call lsquit("ERROR(array_contract_outer_&
     &indices_rl):not yet implemented for tiled/PDM",DECinfo%output)
-    p1=1.0E0_realk
-    p2=0.0E0_realk
-    if(present(pre1))p1=pre1
-    if(present(pre2))p2=pre2
 
     !do that only if type dense --> the other routines are to come
     select case(res%atype)
@@ -344,13 +331,20 @@ contains
     
   end subroutine array_contract_outer_indices_rl
 
-  subroutine array_contract_outer_indices_ll(pre1,left,right,pre2,res)
+  !> \brief perform a contraction of the outer indices of two arrays, the first l means
+  !the leftt-most index for the first array, l means the left-most index for the
+  !sectond array, p1 * left^T * right + p2 * res = res 
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
+  subroutine array_contract_outer_indices_ll(p1,left,right,p2,res)
     implicit none
-    real(realk),optional :: pre1,pre2
+    !> prefactors for the left*right part and the res part
+    real(realk),intent(in) :: p1,p2
+    !> the resulting array
     type(array),intent(inout) :: res
+    !> the arrays to be multiplied
     type(array),intent(in) :: left,right
     integer :: i,m,n,k
-    real(realk) :: p1,p2
     if(left%dims(1)/=right%dims(1))then
       call lsquit("ERROR(array_contract_outer_indices_ll):wrong&
       &dimensions!!",DECinfo%output)
@@ -373,10 +367,6 @@ contains
     if(left%atype==TILED.or.left%atype==TILED_DIST.or.right%atype==TILED&
     &.or.right%atype==TILED_DIST)call lsquit("ERROR(array_contract_outer_&
     &indices_ll):not yet implemented for tiled/PDM",DECinfo%output)
-    p1=1.0E0_realk
-    p2=0.0E0_realk
-    if(present(pre1))p1=pre1
-    if(present(pre2))p2=pre2
 
     !do that only if type dense --> the other routines are to come
     select case(res%atype)
@@ -413,13 +403,20 @@ contains
     
   end subroutine array_contract_outer_indices_ll
 
-  subroutine array_contract_outer_indices_lr(pre1,left,right,pre2,res)
+  !> \brief perform a contraction of the outer indices of two arrays, the first l means
+  !the leftt-most index for the first array, r means the r-most index for the
+  !sectond array, p1 * left^T * right^T + p2 * res = res 
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
+  subroutine array_contract_outer_indices_lr(p1,left,right,p2,res)
     implicit none
-    real(realk),optional :: pre1,pre2
+    !> prefactors for the left*right part and the res part
+    real(realk),intent(in) :: p1,p2
+    !> the resulting array
     type(array),intent(inout) :: res
+    !> the arrays to be multiplied
     type(array),intent(in) :: left,right
     integer :: i,m,n,k
-    real(realk) :: p1,p2
     if(left%dims(1)/=right%dims(right%mode))then
       call lsquit("ERROR(array_contract_outer_indices_lr):wrong&
       &contraction dimensions!!",DECinfo%output)
@@ -443,10 +440,6 @@ contains
     &.or.right%atype==TILED_DIST)call lsquit("ERROR(array_contract_outer_&
     &indices_lr):not yet implemented for tiled/PDM",DECinfo%output)
 
-    p1=1.0E0_realk
-    p2=0.0E0_realk
-    if(present(pre1))p1=pre1
-    if(present(pre2))p2=pre2
     !do that only if type dense --> the other routines are to come
     select case(res%atype)
       case(DENSE)
@@ -490,13 +483,20 @@ contains
     
   end subroutine array_contract_outer_indices_lr
 
-  subroutine array_contract_outer_indices_rr(pre1,left,right,pre2,res)
+  !> \brief perform a contraction of the outer indices of two arrays, the first r means
+  !the right-most index for the first array, r means the r-most index for the
+  !sectond array, p1 * left * right^T + p2 * res = res 
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
+  subroutine array_contract_outer_indices_rr(p1,left,right,p2,res)
     implicit none
-    real(realk),optional :: pre1,pre2
+    !> prefactors for the left*right part and the res part
+    real(realk),intent(in) :: p1,p2
+    !> the resulting array
     type(array),intent(inout) :: res
+    !> the arrays to be multiplied
     type(array),intent(in) :: left,right
     integer :: i,m,n,k
-    real(realk) :: p1,p2
     if(left%dims(left%mode)/=right%dims(right%mode))then
       call lsquit("ERROR(array_contract_outer_indices_rr):wrong&
       &dimensions!!",DECinfo%output)
@@ -519,11 +519,6 @@ contains
     if(left%atype==TILED.or.left%atype==TILED_DIST.or.right%atype==TILED&
     &.or.right%atype==TILED_DIST)call lsquit("ERROR(array_contract_outer_&
     &indices_rr):not yet implemented for tiled/PDM",DECinfo%output)
-
-    p1=1.0E0_realk
-    p2=0.0E0_realk
-    if(present(pre1))p1=pre1
-    if(present(pre2))p2=pre2
 
     select case(res%atype)
       case(DENSE)
@@ -559,9 +554,14 @@ contains
     
   end subroutine array_contract_outer_indices_rr
 
+  !> \brief array dotprduct, the arrays may have different distributions
+  !> \author Patrick Ettenhuber
+  !> \date some time at the end 2012
   function array_ddot(arr1,arr2,opt_par) result(res)
     implicit none
+    !> the two arrays to calculate the dotproduct from
     type(array),intent(in) :: arr1,arr2
+    !> optional integer specifying on which node the result should be stored
     integer,optional,intent(in) :: opt_par
     real(realk) :: res
     integer :: dest
@@ -760,7 +760,6 @@ contains
     integer(kind=long) :: nelms
     real(realk) :: t0,t1
 
-    call cpu_time(t0)
     arr%mode=nmodes
     call arr_set_dims(arr,dims,nmodes)
     nelms=1
@@ -782,16 +781,18 @@ contains
     arr%nelements=0
     nullify(arr%address)
 
-    call cpu_time(t1)
-    time_array_init = time_array_init + (t1-t0)
 
   end function array_init_standard
 
+  !> \brief array freeing routine, give an arbitrary array and all allocated
+  !memory associated with the array will be freed
+  !> \author Patrick Ettenhuber
+  !> \Date probably september 2012
   subroutine array_free(arr)
     implicit none
+    !> array to free
     type(array),intent(inout) :: arr
     real(realk) :: t0,t1
-    call cpu_time(t0)
     ArraysDestroyed = ArraysDestroyed + 1
     select case(arr%atype)
       case(DENSE)
@@ -807,8 +808,6 @@ contains
       case(SCALAPACK)
         call lsquit("SCALAPACK FOR ARRAY NOT YET IMPLEMENTED",DECinfo%output)
     end select
-    call cpu_time(t1)
-    time_array_free  = time_array_free + (t1-t0)
     !call print_memory_currents(DECinfo%output)
   end subroutine array_free
 
@@ -816,8 +815,15 @@ contains
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!   ARRAY CONVERSION ROUTINES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+  !> \brief deallocate the dense part of an array and change the type to tiled
+  !distributed array. in the case of non mpi builds, this routine does nothing,
+  !so that implementations still run
+  !> \author Patrick Ettenhuber
+  !> \date January 2013
   subroutine array_change_atype_to_td(arr)
     implicit none
+    !> array to change the array type
     type(array),intent(inout) :: arr
 #ifdef VAR_LSMPI
     arr%atype=TILED_DIST
@@ -828,8 +834,14 @@ contains
     return
 #endif
   end subroutine array_change_atype_to_td
+
+  !> \brief change the array type to replicated, no action in case of
+  !non-mpi-build
+  !> \author Patrick Ettenhuber
+  !> \date January 2012
   subroutine array_change_atype_to_rep(arr)
     implicit none
+    !> array to change the array type
     type(array),intent(inout) :: arr
 #ifdef VAR_LSMPI
     arr%atype=REPLICATED
@@ -837,8 +849,14 @@ contains
     return
 #endif
   end subroutine array_change_atype_to_rep
+
+  !> \brief change the array type to replicated, no action in case of
+  !non-mpi-build
+  !> \author Patrick Ettenhuber
+  !> \date January 2012
   subroutine array_change_atype_to_d(arr)
     implicit none
+    !> array to change the array type
     type(array),intent(inout) :: arr
 #ifdef VAR_LSMPI
     arr%atype=DENSE
@@ -847,10 +865,19 @@ contains
 #endif
   end subroutine array_change_atype_to_d
 
+  !> \brief copy the tiled data of an array to its dense part, if change is
+  !true, also change the %atype to DENSE, but NO deallocation of the tiled
+  !distributed part
+  !> \author Patrick Ettenhuber
+  !> \date January 2012
   subroutine array_cp_tiled2dense(arr,change,order)
     implicit none
+    !> array to copy data from the tiled to its dense part
     type(array),intent(inout) :: arr
+    !> logical to specify whether to change the atype
     logical :: change
+    !> if order is given the dense part will be reordered with respect to the
+    !tiled distributed part
     integer,intent(in),optional:: order(arr%mode)
     logical :: pdm
     pdm=.false.
@@ -867,8 +894,15 @@ contains
       if(change)arr%atype=DENSE
     endif
   end subroutine array_cp_tiled2dense
+
+  !> \brief copy the dense part of an array to its tiled distributed part and
+  !delallocate the dense part afterwards, if desired change the atype. no
+  !action if non-mpi build.
+  !> \author Patrick Ettenhuber
+  !> \date January 2012
   subroutine array_mv_dense2tiled(arr,change)
     implicit none
+    !> array to copy dense to tiled and deallocate dense part
     type(array),intent(inout) :: arr
     logical, intent(in) :: change
     logical :: pdm
@@ -887,70 +921,73 @@ contains
 #endif
   end subroutine array_mv_dense2tiled
 
-  subroutine array_convert_atype(arr,atype,usertdim,pdm)
-    implicit none
-    type(array), intent(inout) :: arr
-    integer, intent(in) :: atype
-    integer, intent(in), optional::usertdim(arr%mode)
-    integer, intent(in),optional :: pdm
-    integer :: tdim(arr%mode)
-    real(realk),pointer :: tmp(:)
-    tdim=DEFAULT_TDIM
-    if(present(usertdim))tdim=usertdim
-    if(atype==TILED_DIST.and.arr%atype==DENSE.and..not.present(pdm))then
-      call lsquit("ERROR(array_convert_atype): in a conversion from DENSE to&
-      & TILED_DIST the arguments usertdim and pdm need to be given",DECinfo%output)
-    endif
+!  subroutine array_convert_atype(arr,atype,usertdim,pdm)
+!    implicit none
+!    type(array), intent(inout) :: arr
+!    integer, intent(in) :: atype
+!    integer, intent(in), optional::usertdim(arr%mode)
+!    integer, intent(in),optional :: pdm
+!    integer :: tdim(arr%mode)
+!    real(realk),pointer :: tmp(:)
+!    tdim=DEFAULT_TDIM
+!    if(present(usertdim))tdim=usertdim
+!    if(atype==TILED_DIST.and.arr%atype==DENSE.and..not.present(pdm))then
+!      call lsquit("ERROR(array_convert_atype): in a conversion from DENSE to&
+!      & TILED_DIST the arguments usertdim and pdm need to be given",DECinfo%output)
+!    endif
+!
+!    select case(arr%atype)
+!    case(DENSE)
+!      select case(atype)
+!      case(DENSE)
+!        call lsquit("ERROR(array_convert_atype):cowardly refusing to convert&
+!        & from DENSE to DENSE",DECinfo%output)
+!      case(TILED)
+!        !arr=array_init_tiled(arr%dims,arr%mode,NO_PDM,.false.,arr%tdim)
+!        arr%atype=TILED
+!        call array_convert_fort2arr(arr%elm1,arr,arr%nelms)
+!        call memory_deallocate_array_dense(arr)
+!        stop 0
+!      case(TILED_DIST)
+!        call array_convert2pdm(arr,tdim,pdm)
+!      end select
+!    case(TILED)
+!      select case(arr%atype)
+!      case(DENSE)
+!        call memory_allocate_array_dense(arr)
+!        call array_convert_arr2fort(arr,arr%elm1,arr%nelms)
+!        call memory_deallocate_tile(arr)
+!          stop 0
+!      case(TILED)
+!        call lsquit("ERROR(array_convert_atype):cowardly refusing to convert&
+!        & from TILED to TILED",DECinfo%output)
+!      case(TILED_DIST)
+!        print *,"should be simple, just try"
+!        if(.not.present(pdm))call lsquit("ERROR(array_convert_atype):&
+!        & pdm access type should be given",-1)
+!              stop 0
+!      end select
+!    case(TILED_DIST)
+!      select case(arr%atype)
+!      case(DENSE)
+!              print *,"easy to implement, but did not yet have time"
+!              stop 0
+!      case(TILED)
+!              print *,"not yet implemented, somehow the order of the tiles on&
+!              & the local node has to be handled"
+!              stop 0
+!      case(TILED_DIST)
+!        print *,"if you want to change the distribution think of a clever&
+!        & routine and implement it here, else contract and redistribute"
+!        call lsquit("ERROR(array_convert_atype):cowardly refusing to convert&
+!        & from TILED_DIST to TILED_DIST",DECinfo%output)
+!      end select
+!    end select
+!  end subroutine array_convert_atype
 
-    select case(arr%atype)
-    case(DENSE)
-      select case(atype)
-      case(DENSE)
-        call lsquit("ERROR(array_convert_atype):cowardly refusing to convert&
-        & from DENSE to DENSE",DECinfo%output)
-      case(TILED)
-        !arr=array_init_tiled(arr%dims,arr%mode,NO_PDM,.false.,arr%tdim)
-        arr%atype=TILED
-        call array_convert_fort2arr(arr%elm1,arr,arr%nelms)
-        call memory_deallocate_array_dense(arr)
-        stop 0
-      case(TILED_DIST)
-        call array_convert2pdm(arr,tdim,pdm)
-      end select
-    case(TILED)
-      select case(arr%atype)
-      case(DENSE)
-        call memory_allocate_array_dense(arr)
-        call array_convert_arr2fort(arr,arr%elm1,arr%nelms)
-        call memory_deallocate_tile(arr)
-          stop 0
-      case(TILED)
-        call lsquit("ERROR(array_convert_atype):cowardly refusing to convert&
-        & from TILED to TILED",DECinfo%output)
-      case(TILED_DIST)
-        print *,"should be simple, just try"
-        if(.not.present(pdm))call lsquit("ERROR(array_convert_atype):&
-        & pdm access type should be given",-1)
-              stop 0
-      end select
-    case(TILED_DIST)
-      select case(arr%atype)
-      case(DENSE)
-              print *,"easy to implement, but did not yet have time"
-              stop 0
-      case(TILED)
-              print *,"not yet implemented, somehow the order of the tiles on&
-              & the local node has to be handled"
-              stop 0
-      case(TILED_DIST)
-        print *,"if you want to change the distribution think of a clever&
-        & routine and implement it here, else contract and redistribute"
-        call lsquit("ERROR(array_convert_atype):cowardly refusing to convert&
-        & from TILED_DIST to TILED_DIST",DECinfo%output)
-      end select
-    end select
-  end subroutine array_convert_atype
-  
+
+  !\brief all the following wrappers are necessary to use the conversion routine
+  !in an interface for different shapes of the fortran array  
   subroutine array_convert_arr2fort_wrapper1(arr,fort,nelms,order)
     implicit none
     type(array), intent(inout) :: arr
@@ -988,7 +1025,8 @@ contains
     if(.not.present(order))call array_convert_arr2fort(arr,fort,nelms)
   end subroutine array_convert_arr2fort_wrapper4
 
-  !Wrappers for the conversion routine
+  !\brief all the following wrappers are necessary to use the conversion routine
+  !in an interface for different shapes of the fortran array  
   subroutine array_convert_fort2arr_wrapper1(fortarr,arr,nelms,order)
     implicit none
     real(realk), intent(in) :: fortarr(:)
@@ -1027,15 +1065,23 @@ contains
   end subroutine array_convert_fort2arr_wrapper4
 
 
-
+  !> \brief put data of a fortan array into an arbitrary array
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
   subroutine array_convert_fort2arr(fortarr,arr,nelms,order,checkmem)
     implicit none
+    !> the fortran array with the data
     real(realk), intent(in) :: fortarr(*)
+    !> the array which should contain the data after the operation
     type(array), intent(inout) :: arr
+    !> number of elements to copy from the fortan array to the array
     integer, intent(in) :: nelms
+    !> if the array should have a different ordering than the fortran array,
+    ! this can be specified with order
     integer, intent(in),optional :: order(arr%mode)
-    real(realk) :: tilemem,MemFree
+    !> checkmem is outdated
     logical, optional :: checkmem
+    real(realk) :: tilemem,MemFree
     logical :: check
     integer :: i,o(arr%mode)
     real(realk) :: nrm
@@ -1073,11 +1119,18 @@ contains
           if(present(order))call cp_data2tiled_intiles(arr,fortarr,arr%dims,arr%mode,order)
           if(.not.present(order))call cp_data2tiled_intiles(arr,fortarr,arr%dims,arr%mode)
         endif
+      case default
+        call lsquit("ERROR(array_convert_fort2arr) the array type is not implemented",-1)
     end select
   end subroutine array_convert_fort2arr
+  !> \brief change the init type for a fortan array
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
   subroutine change_init_type(arr,totype)
     implicit none
+    !> array to chage the init type
     type(array),intent(inout) :: arr
+    !> type to change it to
     integer,intent(in) :: totype
     if(arr%atype==TILED_DIST.or.arr%atype==REPLICATED.or.&
          &totype==TILED_DIST.or.totype==REPLICATED)then
@@ -1088,12 +1141,21 @@ contains
     endif
   end subroutine change_init_type
 
+  
+  !> \brief put data of an arbitrary array into a basic fortan type array
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
   subroutine array_convert_arr2fort(arr,fort,nelms,order)
     implicit none
+    !> array with the data at the beginning
     type(array), intent(inout) :: arr
+    !> fortan array to contain the data in the end
     real(realk), intent(inout) :: fort(*)
-    integer, intent(in), optional :: order(arr%mode)
+    !> number of elements to convert, must be the same as elements in the array
     integer, intent(in) :: nelms
+    !> if the fortan array has a different order than the array this specifies
+    !the reordering
+    integer, intent(in), optional :: order(arr%mode)
     if(nelms/=arr%nelms)call lsquit("ERROR(array_convert_arr2fort):array&
     &dimensions are not the same",DECinfo%output)
     select case(arr%atype)
@@ -1109,10 +1171,15 @@ contains
   end subroutine array_convert_arr2fort
 
 
-
+  
+  !> \brief convert an old array2 structure to an array structure
+  !> \author Patrick Ettenhuber
+  !> \date late 2012
   subroutine array_convert_array22array(arraytwo,arr)
     implicit none
+    !> array2 input
     type(array2),intent(in) :: arraytwo
+    !> array output
     type(array), intent(inout) :: arr
     integer :: nel
     if(arr%mode/=2)then

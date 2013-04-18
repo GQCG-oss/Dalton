@@ -7,8 +7,12 @@ import sys
 import os
 import subprocess
 
+version = 'unknown'
+
 if len(sys.argv) == 1:
-    sys.exit('call script with argument')
+    # print unknown version and exit otherwise this does not work on non-cxx projects
+    print(version)
+    sys.exit()
 
 compiler_name = os.path.split(sys.argv[1])[-1]
 
@@ -43,8 +47,6 @@ command_d['iCC']          = 'iCC          --version'
 command_d['icpc']         = 'icpc         --version'
 command_d['pgCC']         = 'pgCC         -V'
 command_d['xlCC']         = 'xlCC         -qversion'
-
-version = 'unknown'
 
 if sys.version >= '2.4':
     if compiler_name in command_d:
