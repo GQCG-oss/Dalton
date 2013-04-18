@@ -77,7 +77,7 @@ TRILEVEL
 .CONVDYN
 STANDARD
 .LCM
-.TEST KURT
+.TEST PFM
 *END OF INPUT
 %EOF%
 #######################################################################

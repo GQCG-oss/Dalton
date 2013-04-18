@@ -124,6 +124,9 @@ module lsmpi_type
           & lsmpi_local_allreduce_int4V,lsmpi_local_allreduce_int4V_wrapper8, &
           & lsmpi_local_allreduce_int8V,lsmpi_local_allreduce_int8V_wrapper8
   END INTERFACE lsmpi_local_allreduce
+  interface lsmpi_local_allgatherv
+    module procedure lsmpi_localallgatherv_realk4,lsmpi_localallgatherv_realk8
+  end interface lsmpi_local_allgatherv
 
   interface lsmpi_win_create
     module procedure lsmpi_win_create_int4,lsmpi_win_create_int8,lsmpi_win_create_realk
@@ -160,6 +163,7 @@ module lsmpi_type
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
   integer,parameter :: SPLIT_MPI_MSG=2147483640
+  !FOR DEBUGGING USE THE FOLLOWING LINE
   !integer,parameter :: SPLIT_MPI_MSG=24
 #ifdef VAR_INT64
 #ifdef VAR_LSMPI_32
@@ -4491,7 +4495,7 @@ contains
     integer(kind=ls_mpik) :: ierr,ngroups,worldgroup,localgroup
     integer(kind=ls_mpik) :: mygroup,hstatus
     type(mpigroup),allocatable :: lg(:)
-    CHARACTER*80 ::  hname
+    CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  hname
     integer(kind=ls_mpik) :: gmsize
     integer(kind=ls_mpik),pointer :: gmranks(:)
     IERR=0
@@ -5058,7 +5062,7 @@ contains
     real(realk),intent(in) :: darr(nel)
     integer(kind=ls_mpik),intent(inout) :: win,comm
     integer, intent(in) :: nel
-    integer(kind=ls_mpik) :: ierr,info
+    integer(kind=ls_mpik) :: ierr,info,rk_len
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
     IERR=0
@@ -5067,8 +5071,9 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_localwin_create_realk)",ierr)
     endif
-    bytes = nel*mpi_realk
-    call MPI_WIN_CREATE(darr,bytes,mpi_realk,info,comm,win,ierr)
+    bytes  = nel*mpi_realk
+    rk_len = int(mpi_realk,kind=ls_mpik)
+    call MPI_WIN_CREATE(darr,bytes,rk_len,info,comm,win,ierr)
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_localwin_create_realk)",ierr)
     endif
@@ -5079,7 +5084,7 @@ contains
     integer(kind=8),intent(in) :: iarr(nel)
     integer(kind=ls_mpik),intent(inout) :: win
     integer, intent(in) :: nel
-    integer(kind=ls_mpik) :: ierr,info,comm
+    integer(kind=ls_mpik) :: ierr,info,comm,intlen
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
     IERR=0
@@ -5089,8 +5094,9 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_localwin_create_int8)",ierr)
     endif
-    bytes = nel*mpi_intlen
-    call MPI_WIN_CREATE(iarr,bytes,mpi_intlen,info,comm,win,ierr)
+    bytes  = nel*mpi_intlen
+    intlen = int(mpi_intlen,kind=ls_mpik)
+    call MPI_WIN_CREATE(iarr,bytes,intlen,info,comm,win,ierr)
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_localwin_create_int8)",ierr)
     endif
@@ -5101,7 +5107,7 @@ contains
     integer(kind=4),intent(in) :: iarr(nel)
     integer(kind=ls_mpik),intent(inout) :: win
     integer, intent(in) :: nel
-    integer(kind=ls_mpik) :: ierr,info,comm
+    integer(kind=ls_mpik) :: ierr,info,comm,intlen
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
     IERR=0
@@ -5111,8 +5117,9 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_localwin_create_int4)",ierr)
     endif
-    bytes = nel*mpi_intlen
-    call MPI_WIN_CREATE(iarr,bytes,mpi_intlen,info,comm,win,ierr)
+    bytes  = nel*mpi_intlen
+    intlen = int(mpi_intlen,kind=ls_mpik)
+    call MPI_WIN_CREATE(iarr,bytes,intlen,info,comm,win,ierr)
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_localwin_create_int4)",ierr)
     endif
@@ -5540,6 +5547,92 @@ contains
     enddo
 #endif
   end subroutine lsmpi_acc_realkV_parts
+  
+  subroutine lsmpi_localallgatherv_realk8(sendbuf,recbuf,reccounts,disps)
+    implicit none
+    real(realk), intent(in) :: sendbuf(:)
+    real(realk), intent(inout) :: recbuf(:)
+    integer(kind=8),intent(in) :: reccounts(:)
+    integer(kind=8),intent(in) :: disps(:)
+    integer(kind=ls_mpik) :: ierr, dtype,n
+#ifdef VAR_LSMPI
+    integer(kind=4) :: rc(infpar%lg_nodtot),dp(infpar%lg_nodtot)
+    integer(kind=4) :: oldrc(infpar%lg_nodtot),i,k,n4,j
+    integer :: node,nelms
+    ierr = 0
+    if(ls_mpik==4)then
+      
+      !get the maximum number of elements to loop over
+      nelms=0
+      do node=1,infpar%lg_nodtot
+        nelms = max(nelms,reccounts(node))
+      enddo
+
+
+      k=SPLIT_MPI_MSG
+      dp = disps
+      oldrc = 0
+
+      !loop over elements
+      do i=1,nelms,k
+    
+        !get the displacements and number of elements to transfer 
+        do node=0,infpar%lg_nodtot-1
+          n4=k
+          if(((reccounts(node+1)-i)<k).and.(mod(reccounts(node+1)-i+1,k)/=0))&
+              &n4=mod(reccounts(node+1),k)
+          if((reccounts(node+1)-i)<0)n4=0
+          rc(node+1) = n4
+          dp(node+1) = dp(node+1) + oldrc(node+1)
+          oldrc(node+1) = rc(node+1)
+        enddo
+        
+        !get the first element and number of elements on the current node
+        if(i<reccounts(infpar%lg_mynum+1))then
+          j=i
+          n=rc(infpar%lg_mynum+1)
+        else
+          j=1
+          n=0
+        endif
+        
+        !do all gather
+        call lsmpi_localallgatherv_realk4(sendbuf(j:j+n-1),recbuf,rc,dp)
+      enddo
+    else
+      dtype = MPI_DOUBLE_PRECISION
+      n = reccounts(infpar%lg_mynum+1)
+     
+      call MPI_ALLGATHERV(sendbuf,n,dtype,recbuf,reccounts,&
+                          &disps,dtype,infpar%lg_comm,ierr)
+     
+      if(ierr/=0)then
+        call lsquit("ERROR(lsmpi_localallgatherv_realk4):mpi is wrong",-1)
+      endif
+    endif
+#endif
+  end subroutine lsmpi_localallgatherv_realk8
+  subroutine lsmpi_localallgatherv_realk4(sendbuf,recbuf,reccounts,disps)
+    implicit none
+    real(realk), intent(in) :: sendbuf(:)
+    real(realk), intent(inout) :: recbuf(:)
+    integer(kind=4),intent(in) :: reccounts(:)
+    integer(kind=4),intent(in) :: disps(:)
+    integer(kind=ls_mpik) :: ierr, dtype,n
+    ierr = 0
+#ifdef VAR_LSMPI
+    dtype = MPI_DOUBLE_PRECISION
+    n = reccounts(infpar%lg_mynum+1)
+
+    call MPI_ALLGATHERV(sendbuf,n,dtype,recbuf,reccounts,&
+                        &disps,dtype,infpar%lg_comm,ierr)
+
+    if(ierr/=0)then
+      call lsquit("ERROR(lsmpi_localallgatherv_realk4):mpi is wrong",-1)
+    endif
+#endif
+  end subroutine lsmpi_localallgatherv_realk4
+
 end module lsmpi_type
 
 

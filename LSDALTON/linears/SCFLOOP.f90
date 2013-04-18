@@ -95,7 +95,6 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
   call mat_init(grad,nbast,nbast)
 
 
-!if (config%davidSCF%arh_davidson) then
   ! attach pointers for RedSpaceItem to make use of davidson solver possible
   if (.not. config%solver%set_arhterms) write(config%lupri,*) ' ARH PART OF LINEAR TRANSFORMATIONS IS TURNED OFF ' 
   nullify(config%davidSCF%fifoqueue)
@@ -104,8 +103,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
   config%davidSCF%fifoqueue => fifoqueue
   config%davidSCF%lupri = config%lupri
   config%davidSCF%stepsize=config%davidSCF%max_stepsize
-  config%davidSCF%arh_linesearch=.true.
-!end if
+  config%davidSCF%arh_linesearch=config%davidSCF%arh_inp_linesearch
 
   IF(config%opt%cfg_saveF0andD0)THEN
      call ks_init_linesearch_fock(nbast)

@@ -1579,7 +1579,7 @@ contains
     type(matrix) :: Dens,iFock
     ! Variables for mpi
     logical :: master
-    integer :: fintel,nintel
+    integer :: fintel,nintel,fe,ne
     integer(kind=ls_mpik) :: nnod
     real(realk) :: startt, stopp
     
@@ -1593,8 +1593,9 @@ contains
     ! stuff for direct communication
     type(c_ptr) :: gvvoo_c,gvoov_c,sio4_c,gvvoo_p,gvoov_p
     integer(kind=ls_mpik) :: gvvoo_w, gvoov_w, sio4_w
-    integer(kind=ls_mpik) :: ierr, hstatus
-    character*80 :: hname
+    integer(kind=ls_mpik) :: ierr, hstatus, nctr
+    integer :: rcnt(infpar%lg_nodtot),dsp(infpar%lg_nodtot)
+    character*(MPI_MAX_PROCESSOR_NAME) :: hname
     real(realk),pointer :: mpi_stuff(:)
     type(c_ptr) :: mpi_ctasks
     !integer(kind=ls_mpik),pointer :: win_in_g(:)
@@ -2376,12 +2377,22 @@ contains
            call lsmpi_local_allreduce(gvvoo,no2*nv2,double_2G_nel)
            call lsmpi_local_allreduce(gvoov,no2*nv2,double_2G_nel)
          elseif(scheme==3)then
+#ifdef VAR_MPIWIN
            call lsmpi_win_fence(gvoov_w,.true.)
            call collect_int_contributions_f(gvoov,no2*nv2,gvoov_w)
            call lsmpi_win_fence(gvoov_w,.false.)
            call lsmpi_win_fence(gvvoo_w,.true.)
            call collect_int_contributions_f(gvvoo,no2*nv2,gvvoo_w)
            call lsmpi_win_fence(gvvoo_w,.false.)
+#else
+           do nctr = 0,infpar%lg_nodtot-1
+             call get_int_dist_info(o2v2,fe,ne,nctr)
+             rcnt(nctr+1) = ne
+             dsp(nctr+1)  = fe - 1
+           enddo
+           call lsmpi_local_allgatherv(gvvoo_r,gvvoo,rcnt,dsp)
+           call lsmpi_local_allgatherv(gvoov_r,gvoov,rcnt,dsp)
+#endif
          endif
        endif
     end if

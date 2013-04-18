@@ -619,7 +619,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%BasisInfoIsSet,master)
     CALL ls_mpi_buffer(MyFragment%t1_stored,master)
     CALL ls_mpi_buffer(MyFragment%CDset,master)
-    CALL ls_mpi_buffer(MyFragment%FAtransSet,master)
+    CALL ls_mpi_buffer(MyFragment%FAset,master)
     CALL ls_mpi_buffer(MyFragment%fragmentadapted,master)
     CALL ls_mpi_buffer(MyFragment%pairfrag,master)
 
@@ -714,7 +714,7 @@ contains
           call mem_alloc(MyFragment%VirtMat,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
        end if
 
-       if(MyFragment%FAtransSet) then
+       if(MyFragment%FAset) then
           nullify(MyFragment%CoccFA)
           call mem_alloc(MyFragment%CoccFA,MyFragment%number_basis,MyFragment%noccFA)
           nullify(MyFragment%CunoccFA)
@@ -733,7 +733,7 @@ contains
        call ls_mpi_buffer(MyFragment%OccMat,MyFragment%noccAOS,MyFragment%noccAOS,master)
        call ls_mpi_buffer(MyFragment%VirtMat,MyFragment%nunoccAOS,MyFragment%nunoccAOS,master)
     end if
-    if(MyFragment%FAtransSet) then
+    if(MyFragment%FAset) then
        call ls_mpi_buffer(MyFragment%CoccFA,MyFragment%number_basis,MyFragment%noccFA,master)
        call ls_mpi_buffer(MyFragment%CunoccFA,MyFragment%number_basis,MyFragment%nunoccFA,master)
     end if
