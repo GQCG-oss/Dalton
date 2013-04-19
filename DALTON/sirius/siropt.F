@@ -2932,17 +2932,14 @@ C Write qm/mm solvent part of the Fock matrix to interface file
       END IF
 
       if (peqm) then
-         write(lupri,*)'Writing PE matrix to SIRIUS interface file'
-!         
          allocate(pefckmo(nnorbx))
-         call pe_fckmo(cmo, pefckmo,peenergy, dv, wrk(wrk1), 
+         call pe_fckmo(cmo, pefckmo, peenergy, dv, wrk(kwrk1), 
      &                 lfree - kwrk1 + 1)
+         write(lupri,*) 'pefckmo write'
+         call outpak(pefckmo, norbt, 1, lupri)
 
-         write(lupri,*) 'PE-interfacefile'
-         call outpak(pefckmo,norbt,1,lupri)
- 
-         write (lusifc) lab123,table(11)
-         call writt (lusifc,mmorbt,wrk(kmatmo))
+         write (lusifc) lab123, table(11)
+         call writt(lusifc, mmorbt, pefckmo)
          deallocate(pefckmo)
       end if
 C

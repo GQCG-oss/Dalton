@@ -569,12 +569,7 @@
         if (.not. tdhf) then
 !           ==== Read Fg from file ====
             allocate(fpemo(nnorbx))
-            inquire(file='SIRIFC', exist=lexist)
-            if (.not. lexist) stop 'ERROR: SIRIFC does not exist'
-            inquire(file='SIRIFC', opened=lopen)
-            if (lopen) then
-                continue
-            else if (.not. lopen) then
+            if (lusifc <= 0) then
                 call gpopen(lusifc, 'SIRIFC', 'OLD', ' ', 'UNFORMATTED',
      &                      idummy, .false.)
             end if
