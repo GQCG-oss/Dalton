@@ -660,7 +660,9 @@ step(13)=1.50
 step(14)=1.50
 step(15)=1.50
     old_funcval = CFG%PFM_input%kurt_val
-    write(CFG%lupri,'(a,I4,a,ES13.3)') 'Linesearch number :', 0, ' Original function value: ', CFG%PFM_input%kurt_val
+    
+    if (CFG%orb_debug) write(CFG%lupri,'(a,I4,a,ES13.3)') &
+    &'Linesearch number :', 0, ' Original function value: ', CFG%PFM_input%kurt_val
 do i=1,numb
     call mat_init(Xtemp(i),X%nrow,X%ncol)
     call mat_assign(Xtemp(i),X)
@@ -671,7 +673,8 @@ do i=1,numb
     call updatecmo(CMOtemp(i),Xtemp(i))      
     call kurt_updateAO(CFG%PFM_input,CMOtemp(i))
     call kurt_value(CFG%PFM_input)
-    write(CFG%lupri,'(a,I4,a,ES13.3)') 'Linesearch number :', i, ' Change ', CFG%PFM_input%kurt_val-old_funcval
+    if (CFG%orb_debug) write(CFG%lupri,'(a,I4,a,ES13.3)') &
+    &'Linesearch number :', i, ' Change ', CFG%PFM_input%kurt_val-old_funcval
     if (i==1) oVal= CFG%PFM_input%kurt_val
     if ((CFG%PFM_input%kurt_val > old_funcVal) .and. i>1) then
            call mat_assign(cmo,cmotemp(i-1))
@@ -718,7 +721,8 @@ step(12)=1.50
 step(13)=1.50
 step(14)=1.50
 step(15)=1.50
-write(CFG%lupri,'(a,I4,a,f15.1)') 'Linesearch number :', 0, ' Original function value: ', old_funcval
+if (CFG%orb_debug) write(CFG%lupri,'(a,I4,a,f15.1)') &
+&'Linesearch number :', 0, ' Original function value: ', old_funcval
 do i=1,numb
     call mat_init(Xtemp(i),X%nrow,X%ncol)
     call mat_copy(1.0d0,X,Xtemp(i))
@@ -730,7 +734,8 @@ do i=1,numb
     call orbspread_update(CFG%orbspread_input,CMOtemp(i))
     call orbspread_value(oVal,CFG%orbspread_input)
     if (i==1) orig_eival = oval
-    write(CFG%lupri,'(a,I4,a,f15.4)') 'Linesearch number :', i, ' Change ', oVal-old_funcval
+    if (CFG%orb_debug) write(CFG%lupri,'(a,I4,a,f15.4)') &
+    &'Linesearch number :', i, ' Change ', oVal-old_funcval
     if (i==1 .and. oVal > old_funcVal) then
        nmats=i
        exit

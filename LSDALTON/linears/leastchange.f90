@@ -561,23 +561,23 @@ integer, external        :: idamax
  write(lupri,*)
  write(lupri,*)
 
- write(lupri,*) 'Orbspreads for occupied orbitals:'
- write(lupri,*) '*********************************'
- do i=1,nocc
-    write(lupri,*) i, spread(i)
- end do
+ !write(lupri,*) 'Orbspreads for occupied orbitals:'
+ !write(lupri,*) '*********************************'
+ !do i=1,nocc
+ !   write(lupri,*) i, spread(i)
+ !end do
 
- write(lupri,*)
- write(lupri,*)
- write(lupri,*) 'Orbspreads for virtual orbitals:'
- write(lupri,*) '********************************'
- do i=nocc+1,n
-    write(lupri,*) i, spread(i)
- end do
- write(lupri,*)
- write(lupri,*)
- write(lupri,*) 'Maximum orb. spread (MOS) summary'
- write(lupri,*) '*********************************'
+ !write(lupri,*)
+ !write(lupri,*)
+ !write(lupri,*) 'Orbspreads for virtual orbitals:'
+ !write(lupri,*) '********************************'
+ !do i=nocc+1,n
+ !   write(lupri,*) i, spread(i)
+ !end do
+ !write(lupri,*)
+ !write(lupri,*)
+ !write(lupri,*) 'Maximum orb. spread (MOS) summary'
+ !write(lupri,*) '*********************************'
 
  write(lupri,*) 'OCCUPIED: (Orbital index, MOS) = ', occidx, maxocc
  write(lupri,*) 'VIRTUAL : (Orbital index, MOS) = ', virtidx, maxvirt
