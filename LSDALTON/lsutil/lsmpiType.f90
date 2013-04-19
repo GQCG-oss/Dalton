@@ -5003,6 +5003,11 @@ contains
      if (infpar%mynum.ne.infpar%master) call lsdaltonjumpout(99)
 #else
      call MPI_FINALIZE(ierr)
+     if(ierr/=0)then
+       write (*,*), "mpi_finalize returned",ierr
+       call LSMPI_MYFAIL(ierr)
+       call lsquit("ERROR(MPI_FINALIZE):non zero exit)",-1)
+     endif
      !stop all slaves
      if (infpar%mynum.ne.infpar%master) STOP
 #endif 
