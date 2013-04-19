@@ -475,6 +475,9 @@ C
 C
 #include "infvar.h"
 #include "wrkrsp.h"
+#include "rspprp.h"
+#include "infrank.h"
+#include "infrsp.h"
 C
       CALL QENTER('GETGPV')
       IF (WORD(3:8).EQ.'SPNORB' .OR. WORD(3:8) .EQ. 'MNF-SO' .OR. 
@@ -489,6 +492,11 @@ C
          ANTSYM_GP = -1.0D0 ! real operator, GP_Z = ANTSYM_GP * GP_Y
       ELSE IF (WORD(2:7).EQ.'LONMAG') THEN
          CALL PRPABA(WORD,WRK,LWRK)
+      ELSE IF (OPRANK(INDPRP(WORD)).EQ.1 .AND. .NOT.SOPPA) THEN 
+         KGP = 1
+         KWRK1 = KGP + KZYVAR 
+         LWRK1 = LWRK + 1 - KWRK1
+         CALL QRGP(WORD,WRK(KGP),CMO,XINDX,ANTSYM,WRK(KWRK1),LWRK1)
       ELSE
          KGP   = 1
          KWRK1 = KGP + KZYVAR
@@ -923,5 +931,36 @@ C
             PRPMO(IORBI+I,IORBJ+J)=DDOT(NBASJ,WRK(1),1,V(1,J),1)
  300     CONTINUE
  100  CONTINUE
+      RETURN
+      END
+      INTEGER FUNCTION MYRANK(LABEL)
+      CHARACTER*8 LABEL
+C
+C Lookup table of spin-dependent properties
+C should provide reasonable defaults
+C
+C OV
+C
+#include <priunit.h>
+      IF (LABEL(3:8).EQ.'SPNORB') THEN
+         MYRANK = 1
+      ELSE IF (LABEL(3:8).EQ.'MNF-SO') THEN
+         MYRANK = 1
+      ELSE IF (LABEL(3:8).EQ.'SPNSCA') THEN
+         MYRANK = 1
+      ELSE IF (LABEL(1:6).EQ.'SOMF  ') THEN
+         MYRANK = 1
+      ELSE IF (LABEL(1:2).EQ.'FC') THEN
+         MYRANK = 1
+      ELSE IF (LABEL(1:2).EQ.'SD') THEN
+         MYRANK = 1
+      ELSE IF (LABEL(1:8).EQ.'KINENERG') THEN
+         MYRANK = 1
+      ELSE
+         MYRANK = 0
+      END IF
+#if defined VAR_DEBUG
+         WRITE(LUPRI,*)'MYRANK:'//LABEL,MYRANK
+#endif
       RETURN
       END

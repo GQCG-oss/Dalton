@@ -63,12 +63,6 @@ C
          CALL QUIT(
      &   'QRCALC ERROR: quadratic response not implemented for SOPPA')
       END IF
-      IF (DODFT .AND. NASHT.GT.0) THEN
-         WRITE (LUPRI,*) 'QRCALC ERROR: '//
-     &      'quadratic response not implemented for open shell DFT'
-         CALL QUIT('QRCALC ERROR: '//
-     &      ' quadratic response not implemented for open shell DFT')
-      END IF
 C
 C DETERMINE SOLUTION VECTORS FOR EIGENVALUE AND LINEAR EQUATIONS
 C WHICH ARE USED IN QUADRATIC RESPONSE
@@ -953,6 +947,7 @@ C
 #include "infhso.h"
 #include "inftap.h"
 #include "inflr.h"
+#include <infrank.h>
 C
 C     Local variables:
 C
@@ -1364,11 +1359,12 @@ C
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
                               CALL QUIT('X2EXPL TEST')
                            END IF
+                           IRANKB = OPRANK(INDPRP(BQRLB(MSYMB,IBOP)))
                            CALL X2INIT(1,MZYVAR(MSYMA),MZYVAR(MSYMC),
      *                              MSYMA,ISPINA,MSYMC,ISPINC,
      *                              WRK(KAVEC),VECC,WRK(KB2C),XINDX,
      *                              UDV,PV,
-     *                              BQRLB(MSYMB,IBOP),MSYMB,ISPINB,
+     *                              BQRLB(MSYMB,IBOP),MSYMB,IRANKB,
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
                            DO 920 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
@@ -1469,11 +1465,12 @@ C
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
                               CALL QUIT('X2EXPL TEST')
                            END IF
+                           IRANKC = OPRANK(INDPRP(CQRLB(MSYMC,ICOP)))
                            CALL X2INIT(1,MZYVAR(MSYMA),MZYVAR(MSYMB),
      *                           MSYMA,ISPINA,MSYMB,ISPINB,
      *                           WRK(KAVEC),VECB,WRK(KC2B),XINDX,
      *                           UDV,PV,
-     *                           CQRLB(MSYMC,ICOP),MSYMC,ISPINC,
+     *                           CQRLB(MSYMC,ICOP),MSYMC,IRANKC,
      *                           CMO,MJWOP,WRK(KFREE),LFREE)
                            DO 930 IAOP = 1,NAQROP(MSYMA)
                               IF ( ISPINA.EQ.0 ) THEN
@@ -1535,12 +1532,13 @@ C
                               LFREE = LWRK - KFREE + 1
                               IF (LFREE.LT.0)
      *                           CALL ERRWRK('QRHYP A2B',KFREE-1,LWRK)
+                              IRANKA = OPRANK(INDPRP(AQRLB(MSYMA,IAOP)))
                               CALL A2INIT(1,MZYVAR(MSYMC),
      *                              MZYVAR(MSYMB),
      *                              MSYMC,ISPINC,MSYMB,ISPINB,
      *                              VECC,VECB,WRK(KA2B),XINDX,
      *                              UDV,PV,
-     *                              AQRLB(MSYMA,IAOP),MSYMA,ISPINA,
+     *                              AQRLB(MSYMA,IAOP),MSYMA,IRANKA,
      *                              CMO,MJWOP,WRK(KFREE),LFREE)
                               VAL = DDOT(MZYVAR(MSYMC),
      *                                   WRK(KA2B),1,VECC,1)

@@ -267,7 +267,7 @@ C
       LFREE  = LWRK
       CALL MEMGET('REAL',KINDX,LCINDX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMO ,NCMOT ,WRK,KFREE,LFREE)
-      LUDV   = NACTT*NACTT
+      LUDV   = NACTT*NACTT*2
       CALL MEMGET('REAL',KUDV ,LUDV  ,WRK,KFREE,LFREE)
       IF (RSPCI) THEN
          CALL MEMGET('REAL',KPVX ,0     ,WRK,KFREE,LFREE)
@@ -383,12 +383,22 @@ C
      *                 WRK(KINDX),WRK(KTOT),KFREE_KTOT,LFREE)
 C
          END IF
+C
+C Include triplet one-electron density 
+C
+            CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
+     *                 WRK(KUDV+N2ASHX),WRK(KFREE),
+     *                 1,0,.FALSE.,.TRUE.,
+     *                 WRK(KINDX),WRK(KTOT),KFREE,LFREE)
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')' ** ONE BODY DENSITY MATRIX FROM RSPDM'
             CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
+            KUDV2=KUDV+N2ASHX
+            CALL OUTPUT(WRK(KUDV2),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
          END IF
       ELSE IF ( TDHF .AND. NASHT .EQ. 1 ) THEN
          WRK(KUDV) = D1
+         WRK(KUDV+1) = D1
          WRK(KPVX) = D0
          IF (TRPLET) WRK(KPVX+1) = D0
       ELSE IF ( TDHF .AND. HSROHF ) THEN
@@ -1803,6 +1813,7 @@ C
 #include "gnrinf.h"
 #include "chrnos.h"
 #include "elweak.h"
+#include "infrank.h"
 #include "channel.h"
 C--------------------
 C
@@ -2174,6 +2185,7 @@ C
       IF (ICHANG .GT. 0) THEN
          DO 500 I = 1,NPRLBL
             IF (LLROP(I)) NLRTOT = NLRTOT + 1
+            OPRANK(I) = MYRANK(PRPLBL(I))
  500     CONTINUE
          IF (NLRTOT .EQ. 0) THEN
             NINFO = NINFO + 1
