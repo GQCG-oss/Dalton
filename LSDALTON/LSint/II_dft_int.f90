@@ -1385,7 +1385,7 @@ REAL(REALK)    :: PRICCFVAL,PRIEXPVAL
 INTEGER        :: I,J,TEMPI,LVALJ, MVALJ, NVALJ, LVALI, MVALI, NVALI,K
 INTEGER        :: ISTART1,ISTART2,ISTART3,ISTART4,ISTART5,ISTART6,ISTART
 LOGICAl        :: SPHRA
-REAL(REALK),pointer  :: GA(:),CINT(:)
+REAL(REALK),pointer  :: GA(:),CINT(:),CINT2(:,:)
 
 call mem_dft_alloc(GA,NVCLEN)
 
@@ -1447,20 +1447,12 @@ ELSEIF (SHELLANGMOMA .EQ. 3) THEN !d orbitals
    IF (SPHRA) THEN
       IF (GMAX .GT. DFTHRI) THEN
          DO K = 1, NVCLEN
-            PA_1 = PA(1,K)
-            PA_2 = PA(2,K)
-            PA_3 = PA(3,K)
-            GAX  = PA_1*GA(K)
-            GAY  = PA_2*GA(K)
-            GAZ  = PA_3*GA(K)
-            GAXX = PA_1*GAX
-            GAYY = PA_2*GAY
-            GAO(K,ISTART1,1) = CSP(1,2)*PA_2*GAX
-            GAO(K,ISTART2,1) = CSP(2,5)*PA_2*GAZ
-            GAO(K,ISTART3,1) = CSP(3,1)*GAXX + CSP(3,4)*GAYY&
-            &                  + CSP(3,6)*PA_3*GAZ
-            GAO(K,ISTART4,1) = CSP(4,3)*PA_1*GAZ
-            GAO(K,ISTART5,1) = CSP(5,1)*GAXX + CSP(5,4)*GAYY
+            GAO(K,ISTART1,1) = PA(2,K)*PA(1,K)*GA(K)
+            GAO(K,ISTART2,1) = PA(2,K)*PA(3,K)*GA(K)
+            GAO(K,ISTART3,1) = -0.288675134594813E0_realk*(PA(1,K)*PA(1,K) + PA(2,K)*PA(2,K))*GA(K)&
+            &                  + 0.577350269189626E0_realk*PA(3,K)*PA(3,K)*GA(K)
+            GAO(K,ISTART4,1) = PA(1,K)*PA(3,K)*GA(K)
+            GAO(K,ISTART5,1) = 0.5E0_realk*(PA(1,K)*PA(1,K) - PA(2,K)*PA(2,K))*GA(K)
          END DO
       ELSE 
          CALL LS_DZERO(GAO(1,ISTART1,1),NVCLEN)
@@ -1494,7 +1486,69 @@ ELSEIF (SHELLANGMOMA .EQ. 3) THEN !d orbitals
          CALL LS_DZERO(GAO(1,ISTART6,1),NVCLEN)
       END IF
    END IF
-ELSE !higher than d orbitals
+ELSEIF (SHELLANGMOMA .EQ. 4) THEN !f orbitals
+   IF (SPHRA) THEN
+      !KCKTA=10
+      IF (GMAX .GT. DFTHRI) THEN
+         call mem_dft_alloc(CINT2,NVCLEN,KCKTA)
+         DO J = 1, KCKTA
+            LVALJ = LVALUE(J)
+            MVALJ = MVALUE(J)
+            NVALJ = NVALUE(J)
+            DO K = 1, NVCLEN
+               CINT2(K,J) = (PA(1,K)**LVALJ)*(PA(2,K)**MVALJ)&
+                    &                 *(PA(3,K)**NVALJ)*GA(K)
+            END DO
+         ENDDO
+         DO K = 1, NVCLEN
+            GAO(K,ISTART+1,1) = &
+                 & + 0.612372435695794E0_realk*CINT2(K,2) &
+                 & - 0.204124145231932E0_realk*CINT2(K,7) 
+         ENDDO
+         DO K = 1, NVCLEN
+            GAO(K,ISTART+2,1) = CINT2(K,5)
+         ENDDO
+         DO K = 1, NVCLEN
+            GAO(K,ISTART+3,1) = &
+                 & -0.158113883008419E0_realk*(CINT2(K,2)+CINT2(K,7))&
+                 & +0.632455532033676E0_realk*CINT2(K,9)
+         ENDDO
+         DO K = 1, NVCLEN
+            GAO(K,ISTART+4,1) = &
+                 & -0.387298334620742E0_realk*(CINT2(K,3)+CINT2(K,8))&
+                 & +0.258198889747161E0_realk*CINT2(K,10)
+         ENDDO
+         DO K = 1, NVCLEN
+            GAO(K,ISTART+5,1) = &
+                 & -0.158113883008419E0_realk*(CINT2(K,1)+CINT2(K,4))&
+                 & +0.632455532033676E0_realk*CINT2(K,6)
+         END DO
+         DO K = 1, NVCLEN
+            GAO(K,ISTART+6,1) = &
+                 & 0.5E0_realk*(CINT2(K,3)-CINT2(K,8))
+         END DO
+         DO K = 1, NVCLEN
+            GAO(K,ISTART+7,1) = &
+                 & +0.204124145231932E0_realk*CINT2(K,1)&
+                 & -0.612372435695794E0_realk*CINT2(K,4)
+         END DO
+         call mem_dft_dealloc(CINT2)
+      END IF
+   ELSE
+      IF (GMAX .GT. DFTHRI) THEN
+         DO I = 1, KHKTA
+            LVALI = LVALUE(I)
+            MVALI = MVALUE(I)
+            NVALI = NVALUE(I)
+            TEMPI=ISTART+I
+            DO K = 1, NVCLEN
+               GAO(K,TEMPI,1) = (PA(1,K)**LVALI)*(PA(2,K)**MVALI)&
+                    &                 *(PA(3,K)**NVALI)*GA(K)
+            END DO
+         END DO
+      END IF
+   ENDIF
+ELSE !higher than f orbitals
    IF (SPHRA) THEN
       call mem_dft_alloc(CINT,NVCLEN)
       DO I = 1, KHKTA
@@ -1509,7 +1563,6 @@ ELSE !higher than d orbitals
                CINT(K) = (PA(1,K)**LVALJ)*(PA(2,K)**MVALJ)&
                     &                 *(PA(3,K)**NVALJ)*GA(K)
             END DO
-            !              do a dgemm here?
             DO I = 1, KHKTA
                TEMPI=ISTART+I
                DO K = 1, NVCLEN

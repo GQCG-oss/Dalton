@@ -7,6 +7,7 @@ module print_moorb_grid_mod
   use typedef
   use typedefTYPE
   use grid_utilities_module
+  use davidson_settings
 contains
   subroutine print_moorb(filename,frmt,CMO,ls,iorb,jorb)
     implicit none
@@ -1122,6 +1123,76 @@ contains
 
   end subroutine calculate_density2
 
+
+  subroutine make_orbitalplot_file(CMO,CFG,ls)
+  implicit none
+  !> file containing localized orbitals
+  type(matrix) :: CMO 
+  type(RedSpaceItem) :: CFG
+  type(lsitem) :: ls
+  integer :: indx1,indx2,nocc
+
+
+    IF(ls%setting%integraltransformGC)THEN
+      call transform_basis_to_GCAO(ls%input%basis)
+      ls%setting%integraltransformGC = .FALSE.
+    ENDIF
+  
+  nocc=int(ls%input%molecule%nelectrons/2)
+
+  select case (trim(CFG%plt_orbital))
+  case('HOMO')
+     indx1 = nocc
+     write(ls%lupri,*) 'Writing plt file for HOMO...'
+     call print_moorb('HOMO.plt','PLT',CMO,ls,indx1,-1)
+  case('LUMO')
+     indx1 = nocc+1
+     write(ls%lupri,*) 'Writing plt file for LUMO...'
+     call print_moorb('LUMO.plt','PLT',CMO,ls,indx1,-1)
+  case('LEASTL')
+     write(ls%lupri,*) 'Writing plt file for the least local occupied and virtual orbitals...'
+     indx1=CFG%leastl_occ
+     indx2=CFG%leastl_virt
+     if (indx1>0) call print_moorb('LeastLocal_occ.plt','PLT',CMO,ls,indx1,-1)
+     if (indx2>0) call print_moorb('Leastlocal_virt.plt','PLT',CMO,ls,indx2,-1)
+  case('MOSTL')
+     write(ls%lupri,*) 'Writing plt file for the most local occupied and virtual orbitals...'
+     indx1=CFG%mostl_occ
+     indx2=CFG%mostl_virt
+     if (indx1>0) call print_moorb('MostLocal_occ.plt','PLT',CMO,ls,indx1,-1)
+     if (indx2>0) call print_moorb('Mostlocal_virt.plt','PLT',CMO,ls,indx2,-1)
+  case('ALL')
+     write(ls%lupri,*) 'Writing plt file for the least local occupied and virtual orbitals...'
+     indx1=CFG%leastl_occ
+     indx2=CFG%leastl_virt
+     if (indx1>0) call print_moorb('LeastLocal_occ.plt','PLT',CMO,ls,indx1,-1)
+     if (indx2>0) call print_moorb('Leastlocal_virt.plt','PLT',CMO,ls,indx2,-1)
+     write(ls%lupri,*) 'Writing plt file for the most local occupied and virtual orbitals...'
+     indx1=CFG%mostl_occ
+     indx2=CFG%mostl_virt
+     if (indx1>0) call print_moorb('MostLocal_occ.plt','PLT',CMO,ls,indx1,-1)
+     if (indx2>0) call print_moorb('Mostlocal_virt.plt','PLT',CMO,ls,indx2,-1)
+  case default
+     write(ls%lupri,*) '========== SOMETHING WRONG WHEN MAKING .plt FILE ================'
+     write(ls%lupri,*) 'None of the valid options chosen. Use the options'
+     write(ls%lupri,*) ' HOMO,LUMO,MOSTL,LEASTL or ALL below keyword .ORBITAL PLOT'
+     write(ls%lupri,*) ' If you want to plot other than the above orbitals, consider using'
+     write(ls%lupri,*) ' gridgen.x from gridgen.f90 as found in the tools directory.'
+     write(ls%lupri,*) ' With gridgen.x you may specify any orbital index.'
+     write(ls%lupri,*) '================================================================='
+
+     write(*,*) '========== SOMETHING WRONG WHEN MAKING .plt FILE ================'
+     write(*,*) 'None of the valid options chosen. Use the options'
+     write(*,*) ' HOMO,LUMO,MOSTL,LEASTL or ALL below keyword .ORBITAL PLOT'
+     write(*,*) ' If you want to plot other than the above orbitals, consider using'
+     write(*,*) ' gridgen.x from gridgen.f90 as found in the tools directory.'
+     write(*,*) ' With gridgen.x you may specify any orbital index.'
+     write(*,*) '================================================================='
+  end select
+
+
+
+  end subroutine make_orbitalplot_file
 
 
 end module print_moorb_grid_mod

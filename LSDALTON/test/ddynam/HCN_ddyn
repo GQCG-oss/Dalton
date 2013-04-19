@@ -17,51 +17,56 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > PipekMezeyLowdin.info <<'%EOF%'
-   Localize orbitals using Pipek-Mezey 
-   --------------------------------------
-   Molecule:         5 BH molecules
+cat > HCN_ddyn.info <<'%EOF%'
+   HCN_ddyn
+   -------------
+   Molecule:         HCN
    Wave Function:    HF / STO-3G
-   Test Purpose:     Test Pipek-Mezey localization function 
-                     using Lowdin population analysis (Ida-Marie Hoeyvik)
+   Test Purpose:     Test direct dynamics of HCN reactive trajectory 
+   with basic input
+                     
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > PipekMezeyLowdin.mol <<'%EOF%'
-BASIS                                                   
+cat > HCN_ddyn.mol <<'%EOF%'
+BASIS
 STO-3G
-                                                        
-                                                        
-Atomtypes=2 Nosymmetry Angstrom
-Charge=5.0 Atoms=5
-B          0.000000      0.0000000    0.0000000
-B          3.000000      0.0000000    1.0000000
-B          6.000000      0.0000000    0.0000000
-B          9.000000      0.0000000    1.0000000
-B          12.000000     0.0000000    0.0000000
-Charge=1.0 Atoms=5
-H          0.000000      1.0000000    0.0000000
-H          3.000000      0.0000000    0.0000000
-H          6.000000      1.0000000    0.0000000
-H          9.000000      0.0000000    0.0000000
-H          12.000000     1.0000000    0.0000000
+HCN trajectory
+Coordinates and velocities obtained from sampling at 298K
+    3    0
+        1.    1
+H   -1.940417034197    0.545763720338    0.000000000000
+        6.    1
+C    0.072376937428    1.193815751086    0.000000000000
+        7.    1
+N    0.077631355767   -1.062325554101    0.000000000000
 %EOF%
+
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > PipekMezeyLowdin.dal <<'%EOF%'
+cat > HCN_ddyn.dal <<'%EOF%'
+**DYNAMI
+.NUMTRA
+1
+.VERLET
+.TIMESTEP
+0.1
+.MAX ITER
+10
+.MWVEL
+.VELOCI
+3
+-6.608362194660D-2   -3.062517636631D-3    4.547762402073D-2
+-1.933563923674D-2    5.775468947979D-2   -2.503355504136D-2
+ 3.562796972853D-2   -5.264298483819D-2    1.097349580796D-2
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.ARH
-.START
-TRILEVEL
-.LCM
-.PipekMezey
-.NO L2OPT
-*END OF INPUT  
+.RESTART
+*END OF INPUT
 %EOF%
 #######################################################################
 
@@ -72,9 +77,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >PipekMezeyLowdin.check
-cat >>PipekMezeyLowdin.check <<'%EOF%'
-
+echo $CHECK_SHELL > HCN_ddyn.check
+cat >> HCN_ddyn.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -83,24 +87,23 @@ else
    GREP="egrep"
 fi
 
-# HF ENERGY 
-CRIT1=`$GREP "Final HF energy\: * \-123\.59945" $log | wc -l`
+# Energy
+CRIT1=`$GREP "Final * HF energy\: * \-91\.5638493" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
-CTRL[1]=2
+CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# KURTOSIS
-CRIT1=`$GREP "Max\. sigma_4 and orb\.number\:    2\.3" $log | wc -l`
+# Energy
+CRIT1=`$GREP "Energy drift, mHartree/ps  :  \-4509\.091" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="Kurtosis is not correct"
+ERROR[2]="Energy drift -"
 
-# Memory test for matrices
+# Memory test
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
-ERROR[3]="Memory leak for matrices -"
-
+ERROR[3]="Memory leak -"
 
 PASSED=1
 for i in 1 2 3
@@ -121,7 +124,4 @@ else
 fi
 
 %EOF%
-
-
-
-
+#######################################################################

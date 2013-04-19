@@ -20,16 +20,13 @@ use typedeftype
 use matrix_module, only: matrix
 use matrix_operations 
 use matrix_util, only: matrix_exponential
-!use matrix_module
-!use matrix_operations
-!use matrix_operations_aux
 use memory_handling
 implicit none
 type(RedSpaceItem) :: CFG
 type(orbspread_data)  :: orbspread_input
 type(lsitem) :: ls
 type(matrix) :: cmo,CMOblock
-integer :: i,ncore,nval,nvirt,nbas 
+integer :: i,ncore,nval,nvirt,nbas,indx(1) 
 real(realk), pointer :: kurtvec(:),tmp(:)
 
 nbas = cmo%nrow
@@ -51,33 +48,14 @@ if (ncore > 0) then
   call kurt_initMO(CFG%PFM_input,CMOblock)
   call orbspread_init(orbspread_input,1,ncore)
   call orbspread_update(orbspread_input,CMOblock)
-  write(ls%lupri,'(a)') '**** CORE LOCALITY  ****'
-  do i=1,ncore
-     write(ls%lupri, '(a,i5,f15.3,f15.3)') 'FINAL: orbspread, fourth orbspread :'&
-     &, i,dsqrt(orbspread_input%spread2(i))
-  end do
   write(CFG%lupri,*)
-  write(CFG%lupri,'(a)') 'Maximum **************** CORE **********************'
-  write(CFG%lupri,'(a,f7.3,i5)') 'Maximum orbspread and orb.number    : ',&
-  &dsqrt(maxval(orbspread_input%spread2))&
-  &,maxloc(orbspread_input%spread2)
-  call mem_alloc(kurtvec,ncore)
-  kurtvec= dsqrt(dsqrt(CFG%PFM_input%omega))
-  write(ls%lupri,'(a,f7.3,i5)') 'Maximum fourth spread and orb.number : ',&
-  &maxval(kurtvec),maxloc(kurtvec)
-  write(CFG%lupri,'(a)') 'Maximum *********************************************'
-  write(CFG%lupri,'(a)') 'Minimum *********************************************'
-  write(CFG%lupri,'(a,f7.3,i5)') 'Minimum orbspread and orb.number     : ',&
-  &dsqrt(minval(orbspread_input%spread2))&
-  &,minloc(orbspread_input%spread2)
-  kurtvec= dsqrt(dsqrt(CFG%PFM_input%omega))
-  write(ls%lupri,'(a,f7.3,i5)') 'Minimum fourth spread and orb.number : ',&
-  &minval(kurtvec),minloc(kurtvec)
-  write(CFG%lupri,'(a)') 'Minimum ********************************************'
-  call mem_dealloc(kurtvec)
+  write(ls%lupri,'(a)') '%%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%'
+  call LocalityMeasure_print(CFG,orbspread_input,ncore,0)
+  write(ls%lupri,'(a)') '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
+  write(CFG%lupri,*)
   call kurt_freeMO(CFG%PFM_input)
   call orbspread_free(orbspread_input)
-  call mat_free(CMOblock)
+  call  mat_free(CMOblock)
 end if
 !######### VALENCE #############
 if (nval > 0) then
@@ -90,32 +68,15 @@ if (nval > 0) then
   call kurt_initMO(CFG%PFM_input,CMOblock)
   call orbspread_init(orbspread_input,1,nval)
   call orbspread_update(orbspread_input,CMOblock)
-  write(CFG%lupri,'(a)') '**** VALENCE LOCALITY  ****'
-  do i=1,nval
-     write(CFG%lupri, '(a,i5,f15.3,f15.3)') 'FINAL: orbspread, fourth orbspread :'&
-     &, i+ncore,dsqrt(orbspread_input%spread2(i)),&
-     &dsqrt(dsqrt(CFG%PFM_input%omega(i)))
-  end do
+  indx=maxloc(orbspread_input%spread2)
+  CFG%leastl_occ  = indx(1)+ncore
+  indx=minloc(orbspread_input%spread2)
+  CFG%mostl_occ = indx(1)+ncore
   write(CFG%lupri,*)
-  write(CFG%lupri,'(a)') 'Maximum *************** VALENCE ********************'
-  write(CFG%lupri,'(a,f7.3,i5)') 'Maximum orbspread and orb.number    : ',&
-  &dsqrt(maxval(orbspread_input%spread2))&
-  &,maxloc(orbspread_input%spread2)+ncore
-  call mem_alloc(kurtvec,nval)
-  kurtvec= dsqrt(dsqrt(CFG%PFM_input%omega))
-  write(ls%lupri,'(a,f7.3,i5)') 'Maximum fourth spread and orb.number : ',&
-  &maxval(kurtvec),maxloc(kurtvec)+ncore
-  write(CFG%lupri,'(a)') 'Maximum *********************************************'
-  write(CFG%lupri,'(a)') 'Minimum *********************************************'
-  write(CFG%lupri,'(a,f7.3,i5)') 'Minimum orbspread and orb.number     : ',&
-  &dsqrt(minval(orbspread_input%spread2))&
-  &,minloc(orbspread_input%spread2)+ncore
-  kurtvec= dsqrt(dsqrt(CFG%PFM_input%omega))
-  write(ls%lupri,'(a,f7.3,i5)') 'Minimum fourth spread and orb.number : ',&
-  &(minval(kurtvec)),minloc(kurtvec)+ncore
-  write(CFG%lupri,'(a)') 'Minimum ********************************************'
+  write(CFG%lupri,'(a)') '%%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%'
+  call LocalityMeasure_print(CFG,orbspread_input,nval,ncore)
+  write(CFG%lupri,'(a)') '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
   write(CFG%lupri,*)
-  call mem_dealloc(kurtvec)
   call kurt_freeMO(CFG%PFM_input)
   call orbspread_free(orbspread_input)
   call  mat_free(CMOblock)
@@ -132,32 +93,15 @@ if (nvirt > 0) then
   call kurt_initMO(CFG%PFM_input,CMOblock)
   call orbspread_init(orbspread_input,1,nvirt)
   call orbspread_update(orbspread_input,CMOblock)
-  write(CFG%lupri,'(a)') '**** VIRTUAL LOCALITY  ****'
-  do i=1,nvirt
-     write(CFG%lupri, '(a,i5,f15.3,f15.3)') 'FINAL: orbspread, fourth orbspread :'&
-     &, i+ncore+nval,dsqrt(orbspread_input%spread2(i)),&
-     &dsqrt(dsqrt(CFG%PFM_input%omega(i)))
-  end do
+  indx=maxloc(orbspread_input%spread2)
+  CFG%leastl_virt = indx(1)+ncore+nval
+  indx=minloc(orbspread_input%spread2)
+  CFG%mostl_virt  = indx(1)+ncore+nval
   write(CFG%lupri,*)
-  write(CFG%lupri,'(a)') 'Maximum **************** VIRTUAL *******************'
-  write(CFG%lupri,'(a,f7.3,i5)') 'Maximum orbspread and orb.number     : ',&
-  &dsqrt(maxval(orbspread_input%spread2))&
-  &,maxloc(orbspread_input%spread2)+ncore+nval
-  call mem_alloc(kurtvec,nvirt)
-  kurtvec= dsqrt(dsqrt(CFG%PFM_input%omega))
-  write(ls%lupri,'(a,f7.3,i5)') 'Maximum fourth spread and orb.number : ',&
-  &maxval(kurtvec),maxloc(kurtvec)+ncore+nval
-  write(CFG%lupri,'(a)') 'Maximum *********************************************'
-  write(CFG%lupri,'(a)') 'Minimum *********************************************'
-  write(CFG%lupri,'(a,f7.3,i5)') 'Minimum orbspread and orb.number    : ',&
-  &dsqrt(minval(orbspread_input%spread2))&
-  &,minloc(orbspread_input%spread2)+ncore+nval
-  kurtvec= dsqrt(dsqrt(CFG%PFM_input%omega))
-  write(ls%lupri,'(a,f7.3,i5)') 'Minimum fourth spread and orb.number : ',&
-  &minval(kurtvec),minloc(kurtvec)+ncore+nval
-  write(CFG%lupri,'(a)') 'Minimum *********************************************'
+  write(CFG%lupri,'(a)') '%%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%'
+  call LocalityMeasure_print(CFG,orbspread_input,nvirt,ncore+nval)
+  write(CFG%lupri,'(a)') '%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%'
   write(CFG%lupri,*)
-  call mem_dealloc(kurtvec)
   call kurt_freeMO(CFG%PFM_input)
   call orbspread_free(orbspread_input)
   call  mat_free(CMOblock)
@@ -169,6 +113,43 @@ end if
 
 end subroutine LocalityMeasure
 
+subroutine LocalityMeasure_print(CFG,inp,ndim,offset)
+use orbspread_module
+use davidson_settings
+use typedeftype
+use memory_handling
+implicit none
+type(RedSpaceItem) :: CFG
+type(orbspread_data) :: inp
+integer, intent(in) :: ndim,offset
+real(realk),pointer :: kurtvec(:)  
+integer :: i
+
+  call mem_alloc(kurtvec,ndim)
+  if (CFG%orb_debug .or. CFG%all_orb_locality) then
+  do i=1,ndim
+     write(CFG%lupri, '(a,i5,f15.3,f15.3)') 'Orbital number: sigma_2,   sigma_4 :'&
+     &, i+offset,dsqrt(inp%spread2(i)),&
+     &dsqrt(dsqrt(CFG%PFM_input%omega(i)))
+  end do
+  write(CFG%lupri,*)
+  write(CFG%lupri,*) '--------------------------------------------------'
+  write(CFG%lupri,*)
+  end if
+  write(CFG%lupri,'(a,f7.2,i5)') 'Max. sigma_2 and orb.number: ',&
+  &dsqrt(maxval(inp%spread2)),maxloc(inp%spread2)+offset
+  kurtvec= dsqrt(dsqrt(CFG%PFM_input%omega))
+  write(CFG%lupri,'(a,f7.2,i5)') 'Max. sigma_4 and orb.number: ',&
+  &maxval(kurtvec),maxloc(kurtvec)+offset
+  write(CFG%lupri,'(a,f7.2,i5)') 'Min. sigma_2 and orb.number: ',&
+  &dsqrt(minval(inp%spread2)),minloc(inp%spread2)+offset
+  kurtvec= dsqrt(dsqrt(CFG%PFM_input%omega))
+  write(CFG%lupri,'(a,f7.2,i5)') 'Min. sigma_4 and orb.number: ',&
+  &minval(kurtvec),minloc(kurtvec)+offset
+  call mem_dealloc(kurtvec)
+
+end subroutine LocalityMeasure_print
+
 subroutine optimloc(CMO,nocc,m,ls,CFG)
 use precision
 use Pipek
@@ -178,12 +159,8 @@ use davidson_settings
 use matrix_module, only: matrix
 use matrix_operations 
 use matrix_util, only: matrix_exponential
-!use matrix_module
-!use matrix_operations
-!use matrix_operations_aux
 use matrix_util
 use loc_utils
-!use typedef
 use typedeftype
 use LSTIMING
 implicit none
@@ -254,8 +231,6 @@ CFG%PFM_input%m=m(1)
      write(ls%lupri,'(a)') 'Pred= ******* CORE LOCALIZATION ******* '
      call localize_davidson(CMOc,m_core,inp,ls,CFG)
  end if
-  write(ls%lupri,*) 'Done localizing core '
-  !set occupied block in CMO
   call mem_alloc(tmp,nbas*ncore)
   call mat_to_full(CMOc,1d0,tmp)
   call mat_free(CMOc)
@@ -279,7 +254,6 @@ if (nval < 6) then
 else
    write(ls%lupri,'(a)') 'Pred= ******* VALENCE LOCALIZATION ******* '
    call localize_davidson(CMOo,m(1),inp,ls,CFG)
-   write(ls%lupri,*) 'Done localizing valence '
 end if  
 
   !set occupied block in CMO
