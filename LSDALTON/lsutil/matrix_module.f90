@@ -54,10 +54,6 @@ MODULE Matrix_module
       type(SMAT1),pointer :: selm1(:)
       !pointer to storage scheme 2 for sparse matrices
       !type(SMAT2),pointer :: selm2
-      !> If only blocks of the matrix are to be stored: array of pointers to the matrix-blocks
-      type(Matrix),pointer :: block(:)
-      !> the indexes where the blocks start
-      integer,dimension(:,:), pointer :: blockpos!(2,:)
       !> room for any integer auxiliary information
       integer, pointer     :: iaux(:)
       !> room for any real auxiliary information
@@ -107,8 +103,6 @@ MODULE Matrix_module
        nullify(MAT%celms)
        nullify(MAT%celmsb)
        nullify(MAT%selm1)
-       nullify(MAT%block)
-       nullify(MAT%blockpos)
        nullify(MAT%iaux)
        nullify(MAT%raux)
        nullify(MAT%val)

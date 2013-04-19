@@ -258,6 +258,10 @@ end type matrixmembuf
          TYPE(Matrix), TARGET :: a 
          INTEGER, INTENT(IN)  :: nrow, ncol
          LOGICAL, INTENT(IN), OPTIONAL :: complex
+
+         ! Always start by nullifying matrix components
+         call mat_nullify(a)
+
          !if 'a' has init tag AND self pointer, it means that it is already initialized
          !and in its original location. Re-initializing would leak memory, so err
 !         if (a%init_magic_tag.EQ.mat_init_magic_value &
@@ -932,7 +936,6 @@ end type matrixmembuf
             dest%permutation => src%permutation
             dest%elmsb=>src%elmsb; dest%celms=>src%celms
             dest%celmsb=>src%celmsb; dest%selm1=>src%selm1
-            dest%block => src%block; dest%blockpos=>src%blockpos
             dest%iaux => src%iaux; dest%raux => src%raux
             dest%complex = src%complex
             dest%val => src%val; dest%col => src%col
