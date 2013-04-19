@@ -88,6 +88,11 @@ logical :: PM
 logical :: orbspread
 ! true if using PFM localization scheme
 logical :: PFM
+! enable debug print outs for orbital localization
+logical :: orb_debug
+! print locality measures for all orbitals
+logical :: all_orb_locality
+
 !**************************
 !* ARH specific settings  *
 !**************************
@@ -111,6 +116,10 @@ real(realk) :: arh_gradnorm
 logical :: arh_linesearch
 !> linesearch on or off
 logical :: arh_inp_linesearch
+!> enable debug printouts
+logical :: arh_davidson_debug
+
+
 
 !> debug 
 logical :: arh_debug_linesearch
@@ -168,6 +177,7 @@ CFG%max_it = 20
 
 CFG%debug_info     = .false.
 CFG%arh_davidson   = .false.
+CFG%arh_davidson_debug  = .false.
 CFG%arh_precond    = .true.
 CFG%arh_lintrans   = .false.
 CFG%arh_linesearch = .false.
@@ -186,6 +196,7 @@ CFG%PM_input%ChargeLocMulliken = .false.
 CFG%PM_input%ChargeLocLowdin   = .false.
 CFG%PM_input%PipekMezeyLowdin  = .false.
 CFG%PM_input%linesearch        = .false.
+CFG%all_orb_locality = .false.
 
 end subroutine davidson_default_SCF
 
@@ -208,6 +219,7 @@ CFG%PM_input%ChargeLocLowdin   = .false.
 CFG%PM_input%PipekMezeyLowdin  = .false.
 CFG%PM_input%linesearch        = .false.
 CFG%PM_input%precond           = .true.
+CFG%PM_input%orb_debug  = .false.
 CFG%arh_davidson   = .false.
 CFG%arh_precond    = .true.
 CFG%arh_lintrans   = .false.
@@ -215,7 +227,10 @@ CFG%arh_linesearch = .false.
 CFG%arh_extravecs  = .false.
 CFG%arh_debug_linesearch = .false.
 CFG%debug_info = .false.
+CFG%orb_debug = .false.
+CFG%arh_davidson_debug =.false.
 CFG%max_it = 25
+CFG%all_orb_locality = .false.
 
 end subroutine davidson_default_OrbLoc
 

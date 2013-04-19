@@ -4495,7 +4495,7 @@ contains
     integer(kind=ls_mpik) :: ierr,ngroups,worldgroup,localgroup
     integer(kind=ls_mpik) :: mygroup,hstatus
     type(mpigroup),allocatable :: lg(:)
-    CHARACTER*80 ::  hname
+    CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  hname
     integer(kind=ls_mpik) :: gmsize
     integer(kind=ls_mpik),pointer :: gmranks(:)
     IERR=0
@@ -5062,7 +5062,7 @@ contains
     real(realk),intent(in) :: darr(nel)
     integer(kind=ls_mpik),intent(inout) :: win,comm
     integer, intent(in) :: nel
-    integer(kind=ls_mpik) :: ierr,info
+    integer(kind=ls_mpik) :: ierr,info,rk_len
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
     IERR=0
@@ -5071,8 +5071,9 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_localwin_create_realk)",ierr)
     endif
-    bytes = nel*mpi_realk
-    call MPI_WIN_CREATE(darr,bytes,mpi_realk,info,comm,win,ierr)
+    bytes  = nel*mpi_realk
+    rk_len = int(mpi_realk,kind=ls_mpik)
+    call MPI_WIN_CREATE(darr,bytes,rk_len,info,comm,win,ierr)
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_localwin_create_realk)",ierr)
     endif
@@ -5083,7 +5084,7 @@ contains
     integer(kind=8),intent(in) :: iarr(nel)
     integer(kind=ls_mpik),intent(inout) :: win
     integer, intent(in) :: nel
-    integer(kind=ls_mpik) :: ierr,info,comm
+    integer(kind=ls_mpik) :: ierr,info,comm,intlen
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
     IERR=0
@@ -5093,8 +5094,9 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_localwin_create_int8)",ierr)
     endif
-    bytes = nel*mpi_intlen
-    call MPI_WIN_CREATE(iarr,bytes,mpi_intlen,info,comm,win,ierr)
+    bytes  = nel*mpi_intlen
+    intlen = int(mpi_intlen,kind=ls_mpik)
+    call MPI_WIN_CREATE(iarr,bytes,intlen,info,comm,win,ierr)
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_localwin_create_int8)",ierr)
     endif
@@ -5105,7 +5107,7 @@ contains
     integer(kind=4),intent(in) :: iarr(nel)
     integer(kind=ls_mpik),intent(inout) :: win
     integer, intent(in) :: nel
-    integer(kind=ls_mpik) :: ierr,info,comm
+    integer(kind=ls_mpik) :: ierr,info,comm,intlen
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
     IERR=0
@@ -5115,8 +5117,9 @@ contains
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_localwin_create_int4)",ierr)
     endif
-    bytes = nel*mpi_intlen
-    call MPI_WIN_CREATE(iarr,bytes,mpi_intlen,info,comm,win,ierr)
+    bytes  = nel*mpi_intlen
+    intlen = int(mpi_intlen,kind=ls_mpik)
+    call MPI_WIN_CREATE(iarr,bytes,intlen,info,comm,win,ierr)
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_localwin_create_int4)",ierr)
     endif

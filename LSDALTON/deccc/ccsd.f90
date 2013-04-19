@@ -1595,7 +1595,7 @@ contains
     integer(kind=ls_mpik) :: gvvoo_w, gvoov_w, sio4_w
     integer(kind=ls_mpik) :: ierr, hstatus, nctr
     integer :: rcnt(infpar%lg_nodtot),dsp(infpar%lg_nodtot)
-    character*80 :: hname
+    character*(MPI_MAX_PROCESSOR_NAME) :: hname
     real(realk),pointer :: mpi_stuff(:)
     type(c_ptr) :: mpi_ctasks
     !integer(kind=ls_mpik),pointer :: win_in_g(:)

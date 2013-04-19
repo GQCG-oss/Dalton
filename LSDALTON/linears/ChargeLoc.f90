@@ -93,7 +93,8 @@ type(matrix),pointer :: P
 ! ******************************************
 ! Array that stores sorted lowdin charges
 real(realk),pointer :: SortedLow(:,:)
-
+! extra print statements (debug purposes)
+logical :: orb_debug
 
 END TYPE PMitem
 
