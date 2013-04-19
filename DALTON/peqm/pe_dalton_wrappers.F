@@ -538,6 +538,7 @@
 
 
         integer :: i, j
+        integer :: mmorbt
         real*8, dimension(:), allocatable :: dcao, dvao
 !        real*8, dimension(:), allocatable :: dcaotr, dvaotr
         real*8, dimension(:), allocatable :: daos, fckaos
@@ -545,13 +546,8 @@
         real*8, dimension(:), allocatable :: evec
         real*8, dimension(:,:), allocatable :: ubovecs, evecs, eacs
 !        real*8, dimension(:,:), allocatable :: evectrs, eactrs
-
-        real*8, dimension(:), allocatable :: kfpemo
-
-!       LOGICAL LOPEN, FNDLAB
-!       INTEGER MMORBT
-!       LOPEN = .FALSE.
-
+        real*8, dimension(:), allocatable :: fpemo
+        logical :: lexist, lopen
 
         ! return if no polarization and not MCSCF
         if ((kzconf == 0) .and. .not. pe_polar) then
@@ -569,42 +565,27 @@
         end if
 
         call qenter('pe_rsplno')
-!         
-         allocate(kfpemo(nnorbx))
-         call pe_fckmo(cmo, kfpemo, peenergy, dv, wrk, nwrk)
+         
+        if (.not. tdhf) then
+!           ==== Read Fg from file ====
+            allocate(fpemo(nnorbx))
+            inquire(file='SIRIFC', exist=lexist)
+            if (.not. lexist) stop 'ERROR: SIRIFC does not exist'
+            inquire(file='SIRIFC', opened=lopen)
+            if (lopen) then
+                continue
+            else if (.not. lopen) then
+                call gpopen(lusifc, 'SIRIFC', 'OLD', ' ', 'UNFORMATTED',
+     &                      idummy, .false.)
+            end if
+            rewind(lusifc)
+            call mollab('PETMAT  ', lusifc, lupri)
+            call readt(lusifc, nnorbx, fpemo)
+            call gpclose(lusifc, 'KEEP')
 
-         write(lupri,*) 'kfpemo in rsp_pelnp'
-         call outpak(kfpemo,norbt,1,lupri)
-         deallocate(kfpemo)
-!     ==== Read Fg from file ====
-!     allocate(kfpemo(nnorbx))
-!     IF (LUSIFC .LE. 0) THEN
-!        CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
-!    &               IDUMMY,.FALSE.)
-!        LOPEN = .TRUE.
-!     END IF
-
-!     REWIND(LUSIFC)
-
-!     MMORBT = MAX(4,NNORBT)
-!     IF (MMORBT .NE. NNORBX) THEN
-!        CALL QUIT('ERROR IN DIMENSION OF QM/MM FOCK CONTR. IN QMMMLNO')
-!     END IF
-
-!     write(lupri,*)'MMORBT', MMORBT
-!     write(lupri,*)'LUSIFC', LUSIFC
-
-!     CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI)
-!     CALL READT (LUSIFC,NNORBX,kfpemo)
-
-!     IF (LOPEN) THEN
-!        CALL GPCLOSE(LUSIFC,'KEEP')
-!     END IF
-!     ==========================
-!      write(lupri,*) 'kfpemo rsp_pelno'
-!      CALL OUTPAK(kfpemo,NORBT,1,LUPRI)
-!      deallocate(kfpemo)
-
+            write(lupri,*) 'kfpemo rsp_pelno'
+            call outpak(fpemo, norbt, 1, lupri)
+        end if
 
         allocate(ubovecs(n2orbx,nosim))
         call rspzym(nosim, bovecs, ubovecs)
