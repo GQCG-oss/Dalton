@@ -190,6 +190,60 @@ call time_II_operations2(JOB_II_get_xc_Fock_mat)
 
 END SUBROUTINE II_get_xc_Fock_mat_array
 
+SUBROUTINE II_get_AbsoluteValue_overlap(LUPRI,LUERR,SETTING,nbast,CMO,S)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in)    :: LUPRI
+!> the logical unit number for the error file
+INTEGER,intent(in)    :: LUERR
+!> info about molecule,basis and dft parameters
+TYPE(LSSETTING)       :: SETTING
+!> number of basisfunctions
+INTEGER,intent(in)    :: nbast
+!> The density matrix
+TYPE(MATRIX),intent(in) :: CMO
+!> The Absolute Valued overlap  matrix
+TYPE(MATRIX),intent(inout) :: S
+!
+REAL(REALK),pointer   :: Cmat(:,:),ABSVALOVERLAP(:,:)
+REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2,CPUTIME,WALLTIME
+LOGICAL               :: UNRES
+!call time_II_operations1
+UNRES=.FALSE.
+IF(matrix_type .EQ. mtype_unres_dense)UNRES=.TRUE.
+call init_dftmemvar
+CALL LS_GETTIM(CPU1,WALL1)
+call mem_dft_alloc(Cmat,nbast,nbast)
+call mem_dft_alloc(ABSVALOVERLAP,nbast,nbast)
+CALL LS_DZERO(ABSVALOVERLAP,nbast*nbast)
+
+IF(UNRES)THEN
+   call lsquit('not implemeted',-1)
+ELSE !CLOSED_SHELL
+   call mat_to_full(CMO,1E0_realk,Cmat)
+ENDIF
+
+IF(setting%IntegralTransformGC)THEN
+   call lsquit('IntegralTransformGC must be false in II_get_AbsoluteValue_overlap',-1)
+ENDIF
+
+CALL LSTIMER('START',TS,TE,LUPRI)
+CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,CMAT,ABSVALOVERLAP)
+CALL LSTIMER('ABSVAL-Overlap',TS,TE,LUPRI)
+
+call mem_dft_dealloc(Cmat)
+CALL mat_set_from_full(ABSVALOVERLAP,1E0_realk,S,'ABSVAL')
+call mem_dft_dealloc(ABSVALOVERLAP)
+
+CALL LS_GETTIM(CPU2,WALL2)
+CPUTIME = CPU2-CPU1
+WALLTIME = WALL2-WALL1
+CALL ls_TIMTXT('>>> CPU  Time used II_get_AbsoluteValue_overlap',CPUTIME,LUPRI)
+CALL ls_TIMTXT('>>> WALL Time used II_get_AbsoluteValue_overlap',WALLTIME,LUPRI)
+call stats_dft_mem(lupri)
+!call time_II_operations2(JOB_II_get_xc_Fock_mat)
+END SUBROUTINE II_get_AbsoluteValue_overlap
+
 !> \brief Calculates the xc contribution to the Kohn-Sham energy
 !> \author T. Kjaergaard
 !> \date 2008

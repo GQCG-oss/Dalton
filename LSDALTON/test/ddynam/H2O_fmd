@@ -17,51 +17,62 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > PipekMezeyLowdin.info <<'%EOF%'
-   Localize orbitals using Pipek-Mezey 
-   --------------------------------------
-   Molecule:         5 BH molecules
-   Wave Function:    HF / STO-3G
-   Test Purpose:     Test Pipek-Mezey localization function 
-                     using Lowdin population analysis (Ida-Marie Hoeyvik)
+cat > H2O_fmd.info <<'%EOF%'
+   H2O_fmd
+   -------------
+   Molecule:         H2O
+   Wave Function:    BLYP / STO-3G
+
+   Test Purpose:     Test direct dynamics of H2O with
+   Fock-matrix dynamics
+                     
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > PipekMezeyLowdin.mol <<'%EOF%'
-BASIS                                                   
+cat > H2O_fmd.mol <<'%EOF%'
+BASIS
 STO-3G
-                                                        
-                                                        
-Atomtypes=2 Nosymmetry Angstrom
-Charge=5.0 Atoms=5
-B          0.000000      0.0000000    0.0000000
-B          3.000000      0.0000000    1.0000000
-B          6.000000      0.0000000    0.0000000
-B          9.000000      0.0000000    1.0000000
-B          12.000000     0.0000000    0.0000000
-Charge=1.0 Atoms=5
-H          0.000000      1.0000000    0.0000000
-H          3.000000      0.0000000    0.0000000
-H          6.000000      1.0000000    0.0000000
-H          9.000000      0.0000000    0.0000000
-H          12.000000     1.0000000    0.0000000
+H20 trajectory
+
+Atomtypes=2
+Charge=8.0 Atoms=1 
+O  2.611850679414D-03   1.390169353183D-01   0.000000000000D+00
+Charge=1.0 Atoms=2 
+H   1.267233393399D+00  -1.086700743158D+00   0.000000000000D+00
+H  -1.308685358905D+00  -1.119598894475D+00   0.000000000000D+00
 %EOF%
+
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > PipekMezeyLowdin.dal <<'%EOF%'
+cat > H2O_fmd.dal <<'%EOF%'
 **WAVE FUNCTIONS
-.HF
+.DFT
+ BLYP
 *DENSOPT
-.ARH
-.START
-TRILEVEL
-.LCM
-.PipekMezey
-.NO L2OPT
-*END OF INPUT  
+.RESTART
+.RH
+.DIIS
+**DYNAMI
+.FOCKMD
+8
+4
+.NUMTRA
+1
+.VERLET
+.TIMESTEP
+0.25
+.MAX ITER
+20
+.MWVEL
+.VELOCI
+3
+-6.608362194660D-2   -3.062517636631D-3    4.547762402073D-2
+-1.933563923674D-2    5.775468947979D-2   -2.503355504136D-2
+ 3.562796972853D-2   -5.264298483819D-2    1.097349580796D-2
+*END OF INPUT
 %EOF%
 #######################################################################
 
@@ -72,9 +83,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >PipekMezeyLowdin.check
-cat >>PipekMezeyLowdin.check <<'%EOF%'
-
+echo $CHECK_SHELL > H2O_fmd.check
+cat >> H2O_fmd.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -83,24 +93,23 @@ else
    GREP="egrep"
 fi
 
-# HF ENERGY 
-CRIT1=`$GREP "Final HF energy\: * \-123\.59945" $log | wc -l`
+# Energy
+CRIT1=`$GREP "Final * DFT energy\: * \-75\.2704359" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
-CTRL[1]=2
-ERROR[1]="HF ENERGY NOT CORRECT -"
+CTRL[1]=1
+ERROR[1]="DFT ENERGY NOT CORRECT -"
 
-# KURTOSIS
-CRIT1=`$GREP "Max\. sigma_4 and orb\.number\:    2\.3" $log | wc -l`
+# Energy
+CRIT1=`$GREP "Energy drift, mHartree/ps  :  \-2519\.377" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="Kurtosis is not correct"
+ERROR[2]="Energy drift -"
 
-# Memory test for matrices
+# Memory test
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
-ERROR[3]="Memory leak for matrices -"
-
+ERROR[3]="Memory leak -"
 
 PASSED=1
 for i in 1 2 3
@@ -121,7 +130,4 @@ else
 fi
 
 %EOF%
-
-
-
-
+#######################################################################

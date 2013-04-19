@@ -6,6 +6,7 @@ use IIDFTINT, only: II_DFTINT, II_DFTDISP, TEST_NELECTRONS
 use dft_type
 use dft_memory_handling
 use IIDFTKSMWORK
+use IIABSVALINT
 !WARNING you must not add memory_handling, all memory goes through 
 !grid_memory_handling  module so as to determine the memory used in this module.
 #ifdef VAR_LSMPI
@@ -191,6 +192,59 @@ ENDIF
 #endif
 
 END SUBROUTINE II_DFT_KSM
+
+!> \brief main kohn-sham matrix driver
+!> \author T. Kjaergaard
+!> \date 2008
+!>
+!> Main kohn-sham matrix driver - calls the nummerical integrater with the 
+!> name of a worker routine (II_DFT_KSMGGA,II_DFT_KSMLDA,II_DFT_KSMGGAUNRES,
+!> II_DFT_KSMLDAUNRES) which does the work for each grid point
+!>
+SUBROUTINE II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,IPRINT,nbast,CMAT,ABSVALOVERLAP)
+  IMPLICIT NONE
+!> contains info about the molecule,basis and dft grid parameters
+TYPE(LSSETTING),intent(inout)  :: SETTING
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the printlevel integer, determining how much output should be generated
+INTEGER,intent(in) :: IPRINT
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> MO coef matrix
+REAL(REALK),intent(in) :: CMAT(NBAST,NBAST)
+!> absolute valued Overlap matrix
+REAL(REALK),intent(inout) :: ABSVALOVERLAP(NBAST,NBAST)
+!
+LOGICAL          :: USE_MPI
+REAL(REALK)      :: DFTHRI,RHOTHR
+USE_MPI = .FALSE.!.TRUE.
+IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
+#ifdef VAR_LSMPI
+!MPI Specific
+IF (setting%node.EQ.infpar%master) THEN
+!   IF(USE_MPI)call ls_mpibcast(LSMPI_IIDFTABSVALOVERLAP,infpar%master,setting%comm)
+!   IF(USE_MPI)call lsmpi_XCgeneric_masterToSlave(SETTING,LUPRI,IPRINT,nbast,&
+!        & ndmat,DMAT,DFTDATA,UNRES,setting%comm)
+ENDIF
+#endif
+
+DFTHRI = 1.0E-16_realk
+RHOTHR = 1.0E-16_realk 
+
+call II_ABSVALINT(LUPRI,IPRINT,SETTING,CMAT,NBAST,ABSVALOVERLAP,USE_MPI,&
+     & DFTHRI,RHOTHR)
+
+#ifdef VAR_LSMPI
+!=================MPI Specific================================
+IF(USE_MPI)THEN
+!   call lsmpi_barrier(setting%comm)    
+!   CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,MPI_COMM_LSDALTON)
+ENDIF
+!=============================================================
+#endif
+
+END SUBROUTINE II_DFT_ABSVAL_OVERLAP
 
 !> \brief main kohn-sham matrix driver
 !> \author T. Kjaergaard
@@ -1056,6 +1110,29 @@ call typedef_free_setting(SETTING)
 call free_dftdata(dftdata)
 
 end subroutine lsmpi_II_DFT_KSM_Slave
+!LSMPI_IIDFTABSVALOVERLAP
+!!$subroutine lsmpi_II_DFT_ABSVALOVERLAP_Slave(comm)
+!!$use lsmpi_mod
+!!$use infpar_module
+!!$use typedef
+!!$use IIDFTKSM
+!!$implicit none
+!!$INTEGER :: LUPRI,IPRINT,Nbast,NDMAT
+!!$integer(kind=ls_mpik) :: comm
+!!$TYPE(LSSETTING)  :: SETTING
+!!$REAL(REALK),pointer :: DMAT(:,:,:)
+!!$TYPE(DFTDATATYPE) :: DFTDATA
+!!$LOGICAL :: UNRES
+!!$UNRES=.FALSE.
+!!$CALL lsmpi_bufferDFTessentials1(LUPRI,IPRINT,NBAST,NDMAT,UNRES,comm)
+!!$call mem_dft_alloc(DMAT,NBAST,NBAST,NDMAT)
+!!$CALL lsmpi_bufferDFTessentials2(SETTING,LUPRI,IPRINT,NBAST,NDMAT,DMAT,DFTdata,comm)
+!!$!CALL FUNCTION
+!!$call II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,IPRINT,nbast,ndmat,DMAT,DFTDATA)
+!!$call mem_dft_dealloc(DMAT)
+!!$call typedef_free_setting(SETTING)
+!!$call free_dftdata(dftdata)
+!!$end subroutine lsmpi_II_DFT_ABSVALOVERLAP_Slave
 
 subroutine lsmpi_II_DFT_KSME_Slave(comm)
 use lsmpi_mod

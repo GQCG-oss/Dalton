@@ -75,7 +75,7 @@ integer     :: nel
 real(realk) :: minel
 integer     :: minel_pos(2)
 
-!**** PRINT INFO ****
+if (CFG%orb_debug) then
 write(ls%lupri,*)
 write(ls%lupri,'(a)')    '====================================='
 write(ls%lupri,'(a,l3)') 'INFO Pipek-Mezey, Lowdin   :', CFG%PM_input%PipekMezeyLowdin
@@ -85,7 +85,7 @@ write(ls%lupri,'(a,l3)') 'INFO Charge loc., Mulliken :', CFG%PM_input%ChargeLocM
 write(ls%lupri,'(a,i3)') 'INFO Power, m              :', m
 write(ls%lupri,'(a)')    '====================================='
 write(ls%lupri,*)
-!end print info
+end if
 
   CFG%PM_input%cmo=>CMO
   r=0.d0
@@ -196,7 +196,8 @@ step(12)=1.50
 step(13)=1.50
 step(14)=1.50
 step(15)=1.50
-write(ls%lupri,'(a,I4,a,f15.1)') 'Linesearch number :', 0, ' Original function value: ', old_funcval
+if (OrbLoc%orb_debug) write(ls%lupri,'(a,I4,a,f15.1)') &
+&'Linesearch number :', 0, ' Original function value: ', old_funcval
 do i=1,numb
     call mat_init(Xtemp(i),X%nrow,X%ncol)
     call mat_copy(1.0d0,X,Xtemp(i))
@@ -210,7 +211,8 @@ do i=1,numb
     call update_OrbLoc(OrbLoc,CMOtemp(i),ls)
     oVal = OrbLoc%funcVal
     if (i==1) orig_eival = oval
-    write(ls%lupri,'(a,I4,a,f15.4)') 'Linesearch number :', i, ' Change ', oVal-old_funcval
+    if (OrbLoc%orb_debug) write(ls%lupri,'(a,I4,a,f15.4)')&
+    &'Linesearch number :', i, ' Change ', oVal-old_funcval
     if (i==1 .and. oVal > old_funcVal) then
        nmats=i
        stepsize = sqrt(mat_sqnorm2(Xtemp(i)))

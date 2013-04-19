@@ -17,51 +17,55 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > PipekMezeyLowdin.info <<'%EOF%'
-   Localize orbitals using Pipek-Mezey 
-   --------------------------------------
-   Molecule:         5 BH molecules
+cat > HF_vib.info <<'%EOF%'
+   HF_vib 
+   -------------
+   Molecule:         HF
    Wave Function:    HF / STO-3G
-   Test Purpose:     Test Pipek-Mezey localization function 
-                     using Lowdin population analysis (Ida-Marie Hoeyvik)
+
+   Test Purpose:     Test direct dynamics of vibrating HF with
+   time-reversible density propagation
+                     
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > PipekMezeyLowdin.mol <<'%EOF%'
-BASIS                                                   
+cat > HF_vib.mol <<'%EOF%'
+BASIS                                                                           
 STO-3G
-                                                        
-                                                        
-Atomtypes=2 Nosymmetry Angstrom
-Charge=5.0 Atoms=5
-B          0.000000      0.0000000    0.0000000
-B          3.000000      0.0000000    1.0000000
-B          6.000000      0.0000000    0.0000000
-B          9.000000      0.0000000    1.0000000
-B          12.000000     0.0000000    0.0000000
-Charge=1.0 Atoms=5
-H          0.000000      1.0000000    0.0000000
-H          3.000000      0.0000000    0.0000000
-H          6.000000      1.0000000    0.0000000
-H          9.000000      0.0000000    0.0000000
-H          12.000000     1.0000000    0.0000000
+Direct dynamics calculation of vibrating HF molecule
+No rotation
+    2    0
+        9.    1                                                                 
+F     0.1   -0.7    0.1
+        1.    1                                                                 
+H     1.7    0.3   -0.2
 %EOF%
+
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > PipekMezeyLowdin.dal <<'%EOF%'
+cat > HF_vib.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.ARH
-.START
-TRILEVEL
-.LCM
-.PipekMezey
-.NO L2OPT
-*END OF INPUT  
+.RH
+ DIIS
+.RESTART
+**DYNAMI
+.TIMREV
+2
+.NUMTRA
+1
+.VERLET
+.MAX ITER
+20
+.TIMESTEP
+0.5D0
+.VELOCI
+0
+*END OF INPUT
 %EOF%
 #######################################################################
 
@@ -72,9 +76,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >PipekMezeyLowdin.check
-cat >>PipekMezeyLowdin.check <<'%EOF%'
-
+echo $CHECK_SHELL > HF_vib.check
+cat >> HF_vib.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -83,24 +86,23 @@ else
    GREP="egrep"
 fi
 
-# HF ENERGY 
-CRIT1=`$GREP "Final HF energy\: * \-123\.59945" $log | wc -l`
+# Energy
+CRIT1=`$GREP "Final * HF energy\: * \-98\.5719851" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
-CTRL[1]=2
+CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# KURTOSIS
-CRIT1=`$GREP "Max\. sigma_4 and orb\.number\:    2\.3" $log | wc -l`
+# Energy
+CRIT1=`$GREP "Energy drift, mHartree/ps  :  \-3946\.234" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="Kurtosis is not correct"
+ERROR[2]="Energy drift -"
 
-# Memory test for matrices
+# Memory test
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
-ERROR[3]="Memory leak for matrices -"
-
+ERROR[3]="Memory leak -"
 
 PASSED=1
 for i in 1 2 3
@@ -121,7 +123,4 @@ else
 fi
 
 %EOF%
-
-
-
-
+#######################################################################

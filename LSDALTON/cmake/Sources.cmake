@@ -221,6 +221,7 @@ set(LSINT_SOURCES
     LSint/gridgeneration.f90
     LSint/gridgeneration_boxify.f90
     LSint/II_XC_interface.f90
+    LSint/II_absval_int.f90
     LSint/II_dft_int.f90
     LSint/II_dft_ksm.f90
     LSint/II_dft_ksm_worker.f90

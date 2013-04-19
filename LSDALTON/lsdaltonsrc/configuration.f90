@@ -166,7 +166,6 @@ implicit none
    call av_shutdown(config%av)
    call free_Moleculeinfo(config%Molecule)
    call free_MCDinputitem(config%response%MCDinput)
-
 end subroutine config_shutdown
 
 subroutine config_free(config)
@@ -403,6 +402,7 @@ DO
 				 config%davidSCF%stepsize=0.5
 				 config%davidSCF%arh_inp_linesearch=.false.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
+            CASE('.ARH DEBUG');  config%davidSCF%arh_davidson_debug=.true.
             CASE('.ARH(LS) DAVID');  config%davidSCF%arh_davidson=.true.
                                  config%davidSCF%arh_lintrans = .true.
 				 config%davidSCF%precond=.true.
@@ -515,6 +515,11 @@ DO
                                  config%davidOrbLoc%precond=.true.
             CASE('.TEST PFM');   config%davidOrbLoc%PFM_input%TESTCASE = .true.
                                  config%decomp%cfg_mlo = .true.
+            CASE('.ORBITAL LOCALITY'); config%davidOrbLoc%all_orb_locality=.true.
+	    CASE('.ORBITAL PLOT'); config%davidOrbLoc%make_orb_plot=.true.
+	                          READ(LUCMD,*) config%davidOrbLoc%plt_orbital
+            CASE('.ORBLOC DEBUG');config%davidOrbLoc%orb_debug = .true.
+	                         config%davidOrbLoc%PM_input%orb_debug = .true.
 	    CASE('.NoPrecond');  config%davidOrbLoc%precond=.false.
 	                         config%davidSCF%precond=.false.
                                  config%davidOrbLoc%PM_input%precond=.false.
