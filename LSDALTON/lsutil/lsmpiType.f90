@@ -4942,7 +4942,7 @@ contains
     IF(doprint)then
        if (infpar%mynum.eq.infpar%master) THEN
           !wake up slaves
-          call MPI_BCAST(LSMPIQUITINFO,o,MPI_INTEGER,n,MPI_COMM_LSDALTON,ierr)
+          call ls_mpibcast(LSMPIQUITINFO,infpar%master,MPI_COMM_LSDALTON)
        ENDIF
        count = 1
        root = 0
@@ -4996,7 +4996,7 @@ contains
     ENDIF
 
     if (infpar%mynum.eq.infpar%master) &
-    &    call MPI_BCAST(LSMPIQUIT,1,MPI_INTEGER,0,MPI_COMM_LSDALTON,ierr)
+       &call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 
 #ifdef VAR_CHEMSHELL
      ! jump out of LSDALTON if a slave (instead of STOP)
