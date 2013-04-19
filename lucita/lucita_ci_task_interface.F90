@@ -80,7 +80,8 @@ contains
 
       select case(ci_task_list(ci_task_ticket+1))
 
-        case ('return CIdia', 'perform Davi', 'return sigma', 'return rotVC', 'return densM', 'ijkl resort ')
+        case ('return CIdia', 'perform Davi', 'return sigma', 'return rotVC', 'return densM', 'ijkl resort ', &
+              'fci dump    ')
 
 !         fill integral indices pointers and possibly read in integrals
 !         -------------------------------------------------------------
@@ -218,6 +219,9 @@ contains
 
         case('ijkl resort ') ! resort integrals to lucita format (prior to a large-scale CI)
           ci_task_list(ci_task_ticket) = 'ijkl resort '
+
+        case('fci dump    ') ! resort integrals to lucita format (prior to a large-scale CI)
+          ci_task_list(ci_task_ticket) = 'fci dump    '
 
         case default
          call quit('error in create_CI_task_list: undefined CI run id.')

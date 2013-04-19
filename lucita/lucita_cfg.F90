@@ -37,6 +37,7 @@ module lucita_cfg
   logical, public :: lucita_cfg_analyze_cvec         =  .false.
   logical, public :: lucita_cfg_timing_par           =  .false.
   logical, public :: lucita_cfg_natural_orb_occ_nr   =  .false.
+  logical, public :: lucita_cfg_fci_dump             =  .false.
   logical, public :: lucita_cfg_transition_densm     =  .false.
   logical, public :: lucita_cfg_initialize_cb        =  .true.
 

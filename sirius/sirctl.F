@@ -93,6 +93,7 @@ C
 #include "pcmlog.h"
 ! dftcom.h: DFT_SPINDNS, DFT_LOCALSPIN
 #include "dftcom.h"
+#include "exeinf.h"
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE,dftadd_s,addsri_s
@@ -797,6 +798,7 @@ C             HFSRDFT call, we assume the HFSRDFT is done by now!)
          JTRALVL = 0 ! only active orbitals for all four indices
          USEDRC  = .FALSE. ! Dirac format 2-el. integrals not needed
 
+         FTRCTL = .true.
          if(.not.gasci_input_skip_4index_trafo)then
 !          integral transformation
            CALL TRACTL(JTRALVL,WORK(KCMO),WORK(KFREE),LFREE)
@@ -811,26 +813,32 @@ C             HFSRDFT call, we assume the HFSRDFT is done by now!)
 !        ---------------------------------------------------
 
          CALL GETTIM(TSTART,WSTART)
-!        a1. calculate dimensions of vector and resolution matrices
-         call mcscf_lucita_interface(dummy2,dummy2,dummy2,dummy2,
+
+
+!        if FCI dump active - nothing else to do...
+!        ------------------------------------------
+         if(.not.gasci_input_fci_dump)then
+!          a1. calculate dimensions of vector and resolution matrices
+           call mcscf_lucita_interface(dummy2,dummy2,dummy2,dummy2,
      &                               'return CIdim',work,lfree,iprsir)
-!        a2. calculate dimensions of vector and resolution matrices
-         call setup_lucita_mcci_wrkspc_dimensions('ijkl resort ',0)
-         call mcscf_lucita_interface(dummy2,dummy2,dummy2,dummy2,
-     &                               'ijkl resort ',work,lfree,iprsir)
+!          a2. calculate dimensions of vector and resolution matrices
+           call setup_lucita_mcci_wrkspc_dimensions('ijkl resort ',0)
+           call mcscf_lucita_interface(dummy2,dummy2,dummy2,dummy2,
+     &                                 'ijkl resort ',work,lfree,iprsir)
+ 
+!          b. set vector, resolution matrices and integral array length in common MC/CI module
+           call setup_lucita_mcci_wrkspc_dimensions('standard ci ',0)
+!          c. allocate vectors (dimensions are provided by the module lucita_mcscf_ci_cfg)
+           call memget('REAL',K_VEC1,len_cref_mc2lu,WORK,KFREE,LFREE)
+           call memget('REAL',K_VEC2,  len_hc_mc2lu,WORK,KFREE,LFREE)
 
-!        b. set vector, resolution matrices and integral array length in common MC/CI module
-         call setup_lucita_mcci_wrkspc_dimensions('standard ci ',0)
-!        c. allocate vectors (dimensions are provided by the module lucita_mcscf_ci_cfg)
-         call memget('REAL',K_VEC1,len_cref_mc2lu,WORK,KFREE,LFREE)
-         call memget('REAL',K_VEC2,  len_hc_mc2lu,WORK,KFREE,LFREE)
+!          d. ------------------- start of LUCITA machinery ---------------------
+           CALL LUCITA('standard ci ',work(k_vec1),work(k_vec2),dummy2,
+     &                 dummy2,work(kfree),lfree)
+!          ---------------------- end of LUCITA machinery -----------------------
 
-!        d. ------------------- start of LUCITA machinery ---------------------
-         CALL LUCITA('standard ci ',work(k_vec1),work(k_vec2),dummy2,
-     &               dummy2,work(kfree),lfree)
-!        ---------------------- end of LUCITA machinery -----------------------
-
-         CALL MEMREL('lucita-ci.done',work,kfrsav,kfrsav,kfree,lfree)
+           CALL MEMREL('lucita-ci.done',work,kfrsav,kfrsav,kfree,lfree)
+         end if
          CALL GETTIM(TEND,WEND)
 
 !        timing statistics
