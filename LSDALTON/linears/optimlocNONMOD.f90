@@ -26,7 +26,7 @@ type(RedSpaceItem) :: CFG
 type(orbspread_data)  :: orbspread_input
 type(lsitem) :: ls
 type(matrix) :: cmo,CMOblock
-integer :: i,ncore,nval,nvirt,nbas 
+integer :: i,ncore,nval,nvirt,nbas,indx(1) 
 real(realk), pointer :: kurtvec(:),tmp(:)
 
 nbas = cmo%nrow
@@ -68,6 +68,10 @@ if (nval > 0) then
   call kurt_initMO(CFG%PFM_input,CMOblock)
   call orbspread_init(orbspread_input,1,nval)
   call orbspread_update(orbspread_input,CMOblock)
+  indx=maxloc(orbspread_input%spread2)
+  CFG%leastl_occ  = indx(1)+ncore
+  indx=minloc(orbspread_input%spread2)
+  CFG%mostl_occ = indx(1)+ncore
   write(CFG%lupri,*)
   write(CFG%lupri,'(a)') '%%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%'
   call LocalityMeasure_print(CFG,orbspread_input,nval,ncore)
@@ -89,6 +93,10 @@ if (nvirt > 0) then
   call kurt_initMO(CFG%PFM_input,CMOblock)
   call orbspread_init(orbspread_input,1,nvirt)
   call orbspread_update(orbspread_input,CMOblock)
+  indx=maxloc(orbspread_input%spread2)
+  CFG%leastl_virt = indx(1)+ncore+nval
+  indx=minloc(orbspread_input%spread2)
+  CFG%mostl_virt  = indx(1)+ncore+nval
   write(CFG%lupri,*)
   write(CFG%lupri,'(a)') '%%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%'
   call LocalityMeasure_print(CFG,orbspread_input,nvirt,ncore+nval)

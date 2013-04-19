@@ -517,6 +517,8 @@ DO
             CASE('.TEST PFM');   config%davidOrbLoc%PFM_input%TESTCASE = .true.
                                  config%decomp%cfg_mlo = .true.
             CASE('.ORBITAL LOCALITY'); config%davidOrbLoc%all_orb_locality=.true.
+	    CASE('.ORBITAL PLOT'); config%davidOrbLoc%make_orb_plot=.true.
+	                          READ(LUCMD,*) config%davidOrbLoc%plt_orbital
             CASE('.ORBLOC DEBUG');config%davidOrbLoc%orb_debug = .true.
 	                         config%davidOrbLoc%PM_input%orb_debug = .true.
 	    CASE('.NoPrecond');  config%davidOrbLoc%precond=.false.
