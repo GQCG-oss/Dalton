@@ -92,6 +92,15 @@ logical :: PFM
 logical :: orb_debug
 ! print locality measures for all orbitals
 logical :: all_orb_locality
+! Specifies which orbital should be plotted
+character*(10) :: plt_orbital
+! set to true if orbital plt file should be made
+logical   :: make_orb_plot
+! which orbital indices reference the least/most local occ/virt
+integer :: mostl_occ
+integer :: mostl_virt
+integer :: leastl_occ
+integer :: leastl_virt
 
 !**************************
 !* ARH specific settings  *
@@ -197,6 +206,7 @@ CFG%PM_input%ChargeLocLowdin   = .false.
 CFG%PM_input%PipekMezeyLowdin  = .false.
 CFG%PM_input%linesearch        = .false.
 CFG%all_orb_locality = .false.
+CFG%make_orb_plot = .false.
 
 end subroutine davidson_default_SCF
 
@@ -231,6 +241,11 @@ CFG%orb_debug = .false.
 CFG%arh_davidson_debug =.false.
 CFG%max_it = 25
 CFG%all_orb_locality = .false.
+CFG%make_orb_plot = .false.
+CFG%leastl_occ=0
+CFG%leastl_virt=0
+CFG%mostl_occ=0
+CFG%mostl_virt=0
 
 end subroutine davidson_default_OrbLoc
 
