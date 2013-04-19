@@ -414,8 +414,9 @@ SUBROUTINE lsdalton
            if (config%decomp%cfg_lcm) then
               ! free Cmo
               call mat_free(Cmo)
-           Endif
+           Endif           
         endif
+
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
 
         ! Numerical Derivatives

@@ -20,16 +20,16 @@ Logical :: Start
 Integer :: i
 ! Fill in Fock_array
 If (StepNum .LT. (NPoints)) then
-   traj%Fock_array(StepNum+1) = F
+   call mat_assign(traj%Fock_array(StepNum+1),F)
 Else
 !   Do circular shift
 !
 !   For some reason EOSHIFT does not work here for the pointer of type(matrix)!
 !   traj%Fock_array = EOSHIFT(traj%Fock_array,shift=1,boundary = F,dim=1)
     Do i = 1, (NPoints-1) 
-       traj%Fock_array(i) = traj%Fock_array(i+1)
+       call mat_assign(traj%Fock_array(i),traj%Fock_array(i+1))
     Enddo
-    traj%Fock_array(NPoints) = F 
+    call mat_assign(traj%Fock_array(NPoints),F) 
 Endif 
 ! Determine FMD coefficients
 If (StepNum .EQ. NPoints-1) Call Calc_FMD_coef(NPoints,PolyOrd,traj%FMD_coef)

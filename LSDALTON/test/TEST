@@ -143,6 +143,9 @@ GEO="geomopt/cartes_bfgs_min
      geomopt/cartes_trilevel_newconv
      geomopt/cartes_psb_min
      geomopt/ethane_dec_mp2"
+DDYN="ddynam/HCN_ddyn
+      ddynam/HF_vib
+      ddynam/H2O_fmd"
 DEC="dectests/arraytest
      dectests/reordertest
      dectests/fullmp2
@@ -165,7 +168,7 @@ DEC="dectests/arraytest
      dectests/fragmentccsd_simple
      dectests/dec_geoopt
      geomopt/ethane_dec_mp2"
-ALL="$LSDALTON $LINSCA $RSP $GEO $DEC"
+ALL="$LSDALTON $LINSCA $RSP $GEO $DDYN $DEC"
 # used to be $LINSCA and $LSINT but not anymore 
 # Test code compiled with 64 bit integers
 # These are the only test cases that MUST work for 64-bit integers
@@ -359,7 +362,8 @@ else
       int64)       testcase=$INT64;;
       dft)         testcase=$DFT;;
       geo)         testcase=$GEO;;
-	  pbc)         testcase=$PBC;;
+      ddyn)        testcase=$DDYN;;
+      pbc)         testcase=$PBC;;
   esac
 fi
 

@@ -166,7 +166,6 @@ implicit none
    call av_shutdown(config%av)
    call free_Moleculeinfo(config%Molecule)
    call free_MCDinputitem(config%response%MCDinput)
-
 end subroutine config_shutdown
 
 subroutine config_free(config)

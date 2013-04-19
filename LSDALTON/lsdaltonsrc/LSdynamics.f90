@@ -108,7 +108,7 @@ Call LSClose(config%dynamics%Phase,'KEEP')
 Call Final_Analysis(NAtoms,traj%StepNum,config%Dynamics%NumTra,&
          &lupri,config%dynamics%Phase,config%dynamics%PrintLevel)
 Call Deallocate_traj(traj,config%dynamics%TimRev,config%Dynamics%FockMD)
-Deallocate (Config%dynamics%Initial_velocities)
+call mem_dealloc(Config%dynamics%Initial_velocities)
 !
 End subroutine LS_dyn_run
 !======================!
