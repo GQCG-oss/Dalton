@@ -5,8 +5,16 @@ MODULE dft_typetype
 use precision
 integer,save      :: GRIDITERATIONS
 ! choose reasonably large. Exceeding this limit means that boxes are too large.
-Integer, parameter :: MXBLLEN=128
+Integer, parameter :: MXBLLEN=128  
+!DFT%NBUFLEN=1024 or maxNBUFLEN inside GenerateGrid is maximum number of 
+!gridpoints in a box, these are read in and processed in chunks of MXBLLEN.
+
 Integer,save :: BoxMemRequirement
+!MIN(MXBLLEN,GridBox%npoints)*NactBast should be less then BoxMemRequirement
+!otherwise the memory requirements are too big and the boxes are subdevided
+
+!NactBast = number of active basis functions
+
 ! Structure for different dft grid (example in II_get_admm_exchange_mat)
 TYPE dft_grid
   logical                :: isset
