@@ -35,7 +35,7 @@ LINSCA="linsca/linsca_energy
   linsca/linsca_direct_dens
   linsca/linsca_arh
   linsca/linsca_arh_davidson
-  linsca_arh_ls_davidson
+  linsca/linsca_arh_ls_davidson
   linsca/linsca_lcm_nongc
   linsca/linsca_trilevel 
   linsca/linsca_atoms

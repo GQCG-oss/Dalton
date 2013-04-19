@@ -403,6 +403,7 @@ DO
 				 config%davidSCF%stepsize=0.5
 				 config%davidSCF%arh_inp_linesearch=.false.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
+            CASE('.ARH DEBUG');  config%davidSCF%arh_davidson_debug=.true.
             CASE('.ARH(LS) DAVID');  config%davidSCF%arh_davidson=.true.
                                  config%davidSCF%arh_lintrans = .true.
 				 config%davidSCF%precond=.true.
@@ -515,6 +516,9 @@ DO
                                  config%davidOrbLoc%precond=.true.
             CASE('.TEST PFM');   config%davidOrbLoc%PFM_input%TESTCASE = .true.
                                  config%decomp%cfg_mlo = .true.
+            CASE('.ORBITAL LOCALITY'); config%davidOrbLoc%all_orb_locality=.true.
+            CASE('.ORBLOC DEBUG');config%davidOrbLoc%orb_debug = .true.
+	                         config%davidOrbLoc%PM_input%orb_debug = .true.
 	    CASE('.NoPrecond');  config%davidOrbLoc%precond=.false.
 	                         config%davidSCF%precond=.false.
                                  config%davidOrbLoc%PM_input%precond=.false.

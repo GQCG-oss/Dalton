@@ -80,7 +80,7 @@ subroutine solver(CFG,grad,x)
   !*             Start Reduced Space Loop                     *
   !************************************************************
   converged =.false.
-  do MoreRed=1,10
+  do MoreRed=1,5
   resnorm_2D =0_realk
   ReducedSpaceLoop: do iter=start_it,CFG%max_it-1
       call mem_alloc(xred,iter-1)
@@ -100,19 +100,21 @@ subroutine solver(CFG,grad,x)
 
      CurrentResNorm = sqrt(mat_dotproduct(res,res))
      ! PRINT INFO FOR MICRO ITERATION
-     if (CFG%arh_davidson) then
+     if (CFG%arh_davidson .and. CFG%arh_davidson_debug) then
         write(CFG%lupri,'(a,i3,a,ES13.5,a,ES13.5,a,ES13.5)') "iter :",iter, "    mu :",&
         &CFG%mu,  "    ResNorm :",CurrentResNorm,&
         &" Gradient norm",CFG%arh_gradnorm
-     else
+     elseif (.not. CFG%arh_davidson) then
         call test_convergence(CFG,grad,resnorm_2d)
+	if (CFG%orb_debug) then
         write(CFG%lupri,'(a,i3,a,ES13.5,a,ES13.5,a,ES13.5)') "iter :",iter, "    mu :",&
         &CFG%mu,  "    ResNorm :",CurrentResNorm,&
         &"   2D ResNorm",resnorm_2d
+	end if
      end if
     
     !TEST CONVERGENCE
-    if (CFG%arh_davidson .and. CurrentResNorm < arh_thresh*CFG%arh_gradnorm) then
+    if (CFG%arh_davidson .and. (CurrentResNorm < arh_thresh*CFG%arh_gradnorm .or. CurrentResNorm<1.0E-8_realk)) then
        call mem_dealloc(xred)
        CFG%it =iter
        converged =.true.
@@ -148,19 +150,24 @@ subroutine solver(CFG,grad,x)
   end do ReducedSpaceLoop
   ! Check if micro iterations have converged
   if (converged) then
-      write(CFG%lupri,'(a,i4)') 'iter : Micro iterations converged in RedSpaceLoop number :', MoreRed
+      if (CFG%orb_debug) write(CFG%lupri,'(a,i4)') &
+      & 'iter : Micro iterations converged in RedSpaceLoop number :', MoreRed
       exit
-  elseif ((.not. converged) .and. CFG%stepsize > 0.0009_realk .and. (MoreRed .ne. 10)) then 
+  elseif ((.not. converged) .and. CFG%stepsize > 0.0009_realk .and. (MoreRed .ne. 5)) then 
       CFG%stepsize = 0.5_realk*CFG%stepsize
-      write(CFG%lupri,'(a,i4,a,f9.4)') 'iter : Micro iterations not converged for RedSpaceLoop:', MoreRed, &
+      if (CFG%orb_debug) write(CFG%lupri,'(a,i4,a,f9.4)') &
+      &'iter : Micro iterations not converged for RedSpaceLoop:', MoreRed, &
       & " new stepsize : ",CFG%stepsize
       do i=start_it,CFG%it
          call mat_free(CFG%AllSigma(i))
          call mat_free(CFG%Allb(i))
       end do
-  elseif ((CFG%stepsize <0.0009_realk).or. (MoreRed==10)) then
+  elseif ((CFG%stepsize <0.0009_realk).or. (MoreRed==5)) then
       if (CFg%arh_davidson) resnorm_2d=CFG%arh_gradnorm
-      write(CFG%lupri,*) 'iter : Did not converge, resnorm reduction is ', CurrentresNorm/resnorm_2d
+      write(CFG%lupri,*) 
+      write(CFG%lupri,*) 'WARNING!  Did not converge micro iterations. Residual norm reduction is ',&
+      &CurrentresNorm/resnorm_2d
+      write(CFG%lupri,*) 
       exit
   end if
   end do
@@ -169,7 +176,7 @@ subroutine solver(CFG,grad,x)
   ! ********************************
  
   !Compute RedHessian eigenvalues and print
-  if (CFG%arh_davidson) call RedHessian_eigvals(CFG) 
+  if (CFG%arh_davidson .and. CFG%arh_davidson_debug) call RedHessian_eigvals(CFG) 
 
   call predicted_change(CFG,grad,x)
   
