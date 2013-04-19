@@ -17,59 +17,55 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > ethane_dec_mp2.info <<'%EOF%'
-   ethane_dec_mp2 
+cat > HCN_ddyn.info <<'%EOF%'
+   HCN_ddyn
    -------------
-   Molecule:         Ethane
-   Wave Function:    dec-MP2 / 6-31G 
-   Test Purpose:     Test geometry optimizer in redundant internal
-   coordinates with full dec-MP2
+   Molecule:         HCN
+   Wave Function:    HF / STO-3G
+   Test Purpose:     Test direct dynamics of HCN reactive trajectory 
+   with basic input
                      
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > ethane_dec_mp2.mol <<'%EOF%'
+cat > HCN_ddyn.mol <<'%EOF%'
 BASIS
-6-31G
-Ethane
-
-Atomtypes=2 Charge=0 Nosymmetry Angstrom
-Charge=1.0 Atoms=4
-H          1.16103        0.06607        1.02388
-H          1.33519       -0.08301       -0.78143
-H         -1.33549        0.08301        0.78127
-H         -1.16080       -0.06606       -1.02386
-Charge=6.0 Atoms=2
-C          0.65790       -0.00446        0.06398
-C         -0.65783        0.00446       -0.06385
+STO-3G
+HCN trajectory
+Coordinates and velocities obtained from sampling at 298K
+    3    0
+        1.    1
+H   -1.940417034197    0.545763720338    0.000000000000
+        6.    1
+C    0.072376937428    1.193815751086    0.000000000000
+        7.    1
+N    0.077631355767   -1.062325554101    0.000000000000
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > ethane_dec_mp2.dal <<'%EOF%'
-**OPTIMI
-.BAKER
-.LOOSE
+cat > HCN_ddyn.dal <<'%EOF%'
+**DYNAMI
+.NUMTRA
+1
+.VERLET
+.TIMESTEP
+0.1
+.MAX ITER
+10
+.MWVEL
+.VELOCI
+3
+-6.608362194660D-2   -3.062517636631D-3    4.547762402073D-2
+-1.933563923674D-2    5.775468947979D-2   -2.503355504136D-2
+ 3.562796972853D-2   -5.264298483819D-2    1.097349580796D-2
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.NOGCBASIS
-.ARH
-.START
-TRILEVEL
-.CONVDYN
-STANDARD
-.LCM
-.PSM
-2 2
-$INFO
-DEBUG_MPI_MEM
-$END INFO
-**DEC
-.SimulateFull
+.RESTART
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -81,8 +77,8 @@ $END INFO
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > ethane_dec_mp2.check
-cat >> ethane_dec_mp2.check <<'%EOF%'
+echo $CHECK_SHELL > HCN_ddyn.check
+cat >> HCN_ddyn.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -92,31 +88,25 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Energy at final geometry is * \: * \-78\.186750" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-91\.5638493" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
-ERROR[1]="MP2 ENERGY NOT CORRECT -"
+ERROR[1]="HF ENERGY NOT CORRECT -"
+
+# Energy
+CRIT1=`$GREP "Energy drift, mHartree/ps  :  \-4509\.091" $log | wc -l`
+TEST[2]=`expr   $CRIT1`
+CTRL[2]=1
+ERROR[2]="Energy drift -"
 
 # Memory test
-CRIT2=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
-TEST[2]=`expr  $CRIT2`
-CTRL[2]=1
-ERROR[2]="Memory leak -"
-
-# Number of gradient calculations
-CRIT3=`$GREP "G\: Total * MP2 energy" $log | wc -l` 
-TEST[3]=`expr   $CRIT3`
-CTRL[3]=6
-ERROR[3]="Wrong number of geometry steps"
-
-# MPI Memory test
-CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
-TEST[4]=`expr  $CRIT1`
-CTRL[4]=0
-ERROR[4]="MPI Memory leak -"
+CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[3]=`expr  $CRIT1`
+CTRL[3]=1
+ERROR[3]="Memory leak -"
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}

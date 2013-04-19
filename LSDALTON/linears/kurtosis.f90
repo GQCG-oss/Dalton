@@ -15,7 +15,7 @@ use matrix_operations
 use matrix_operations_aux
 use IntegralInterfaceMOD
 
-TYPE KurtosisItem 
+TYPE PFMitem 
 
 ! General settings
 !**********************************
@@ -49,7 +49,7 @@ type(matrix) :: carmomAO(24)
 !***********************************
 real(realk),pointer :: omega(:)
 
-ENDTYPE KurtosisItem
+ENDTYPE PFMitem
 
 contains
 
@@ -57,7 +57,7 @@ contains
 !> \param cmo input matrix of coefficients
 subroutine kurtosis_test(ls,cmo,nbas,norb)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(matrix) :: HK,kappa
 type(lsitem) :: ls
 type(matrix) :: cmo,G,Prec
@@ -119,7 +119,7 @@ end subroutine kurtosis_test
 !> \brief  Do only once per calculation (incl.core/valence/virt)
 subroutine kurt_initAO(KURT,ls,nbas)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(lsitem)       :: ls
 integer :: i,nbas
 
@@ -137,7 +137,7 @@ end subroutine kurt_initAO
 !> \brief Do once for each core, valence and virtual
 subroutine kurt_initMO(KURT,cmo)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(matrix) :: cmo
 type(lsitem) :: ls
 integer :: i
@@ -158,7 +158,7 @@ end subroutine kurt_initMO
 !> \brief Free cartesian matrices in AO basis. Once per calculation
 subroutine kurt_freeAO(KURT)
 implicit none
-type(KurtosisItem) :: kurt
+type(PFMitem) :: kurt
 integer :: i
 
 do i=1,24
@@ -170,7 +170,7 @@ end subroutine kurt_freeAO
 !> \brief Free cartesian matrices in MO basis. Done for both core/valence/virtual
 subroutine kurt_freeMO(KURT)
 implicit none
-type(KurtosisItem) :: kurt
+type(PFMitem) :: kurt
 integer :: i
 
 call mem_dealloc(KURT%omega)
@@ -184,7 +184,7 @@ end subroutine kurt_freeMO
 !> \brief Update CM matrices with current CMO: Mnew = CMO^T M_AO CMO
 subroutine kurt_updateAO(KURT,cmo)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(matrix) :: temp,cmo
 integer :: i
 
@@ -202,7 +202,7 @@ end subroutine kurt_updateAO
 !> \brief Update CM matrices in MO basis with exp. M_MO = expX^T M_MP expX 
 subroutine kurt_update(KURT,expX)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(matrix) :: temp,expX
 integer :: i
 
@@ -220,7 +220,7 @@ end subroutine kurt_update
 !> \brief Compute function value sum_i = FM_i^m
 subroutine kurt_value(KURT)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 integer :: i
 real(realk) ::temp(KURT%norb)
 
@@ -238,7 +238,7 @@ end subroutine kurt_value
 !> \param G gradient (output)
 subroutine compute_gradient(KURT,G,norb)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 integer :: norb
 integer ::x,y,z,xx,xy,xz,yy,yz,zz,xxx,xxy,xxz,&
 &xyy,xzz,yyy,yyz,yzz,zzz,xxxx,xxyy,xxzz,yyyy,&
@@ -445,7 +445,7 @@ end subroutine compute_gradient
 
 subroutine GradTerm_xj(KURT,factor,xj,xi,xixi,xixj,xixixj,G,norb)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(matrix) :: G
 integer :: norb,xi,xj,xixi,xixj,xixixj
 real(realk),intent(in) :: factor(norb) 
@@ -472,7 +472,7 @@ end subroutine GradTerm_xj
 !> \brief Compute carmom in AO basis
 subroutine compute_carmom(KURT,ls)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(lsitem) :: ls
 type(matrix) :: cmo
 integer :: nderiv,nmat
@@ -677,7 +677,7 @@ end subroutine compute_omega
 !> \param Hkappa linear transformations (output)
 subroutine compute_LinTrans(KURT,kappa,G,HK)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(matrix) :: kappa
 type(matrix) :: HK,G
 type(matrix) :: temp,tempT
@@ -1063,7 +1063,7 @@ end subroutine xx_KF
 
 subroutine KX_lintrans(k,KURT,omen,m,HK,logx,logy,logz,KF)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(matrix) :: K,HK
 real(realk)  :: omen(k%ncol),KF(k%ncol)
 real(realk)  :: dia(k%ncol)
@@ -1243,7 +1243,7 @@ end subroutine KX_lintrans
 
 subroutine KXX_lintrans(k,KURT,omen,m,HK,logx,logy,logz,KF)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(matrix) :: K,HK
 type(matrix) :: temp,tempT,temp1
 real(realk)  :: omen(K%ncol),KF(K%ncol)
@@ -1408,7 +1408,7 @@ end subroutine KXXXX_lintrans
 !> \param P diagonal elements (output)
 subroutine kurtosis_precond_matrix(KURT,P)
 implicit none
-type(KurtosisItem),intent(in) :: KURT
+type(PFMitem),intent(in) :: KURT
 type(matrix) :: P
 real(realk),pointer ::  dia(:,:) 
 type(matrix):: R(24),temp
@@ -1737,7 +1737,7 @@ end subroutine kurtosis_precond_matrix
 
 subroutine kurtosis_precond(Xout,X,mu,KURT)
 implicit none
-type(KurtosisItem),intent(in) :: KURT
+type(PFMitem),intent(in) :: KURT
 type(matrix) :: Xout
 type(matrix) :: X,Xtemp
 real(realk),intent(in) :: mu
@@ -1778,7 +1778,7 @@ end subroutine kurtosis_precond
 
 subroutine dia_KF_kl2(KURT,KF,dia)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 integer :: m 
 type(matrix) :: KF, R(24)
 real(realk)  :: dia(KURT%norb,24)
@@ -1900,7 +1900,7 @@ end subroutine dia_KF_kl2
 ! Make (f^[1])_kl
 subroutine dia_KF_kl(KURT,KF)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 integer :: m 
 real(realk),pointer :: KF(:,:) 
 real(realk),pointer :: temp(:,:)
@@ -2290,7 +2290,7 @@ end subroutine dia_crossKF_xxyy
 
 subroutine FiniteDiff_gradient(KURT,cmo,Gpq)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(matrix) :: carmomMOp(24),carmomMOm(24)
 type(matrix) :: expXm,expXp
 type(matrix) :: x
@@ -2346,7 +2346,7 @@ end subroutine FiniteDiff_gradient
 
 subroutine FiniteDiff_HK(KURT,cmo,HKpq)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(matrix) :: carmomMOpp(24),carmomMOmm(24)
 type(matrix) :: carmomMOpm(24),carmomMOmp(24)
 type(matrix) :: expXmm,expXpp
@@ -2454,7 +2454,7 @@ end subroutine expX_eps
 
 subroutine debug_lintra(KURT,kappa,G,HK)
 implicit none
-type(KurtosisItem) :: KURT
+type(PFMitem) :: KURT
 type(matrix) :: kappa
 type(matrix) :: HK,G
 type(matrix) :: temp,tempT

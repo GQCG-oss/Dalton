@@ -433,7 +433,7 @@ contains
     ! correlation density matrices not set
     fragment%CDset=.false.  
     ! Transformation matrices between local/fragment-adapted bases not set
-    fragment%FAtransSet=.false.
+    fragment%FAset=.false.
 
     ! Set atomic fragment extent info
     call init_atomic_fragment_extent(OccOrbitals,UnoccOrbitals,MyMolecule,fragment)
@@ -832,7 +832,7 @@ contains
     ! (MO fragment-adapted basis)    =     (MO local basis)      *      OUred
     !     (nbasis,noccFA)            (nbasis,noccLOCAL)      (noccLOCAL,noccFA)
     !
-    if(LocalFragment%FAtransSet) then
+    if(LocalFragment%FAset) then
        call mem_dealloc(LocalFragment%CoccFA)
        call mem_dealloc(LocalFragment%CunoccFA)
     end if
@@ -845,7 +845,7 @@ contains
     call mem_alloc(LocalFragment%CunoccFA,LocalFragment%number_basis,LocalFragment%nunoccFA)
     call dec_simple_dgemm(LocalFragment%number_basis,LocalFragment%nunoccAOS,&
          & LocalFragment%nunoccFA,LocalFragment%ypv,VUred,LocalFragment%CunoccFA,'n','n')
-    LocalFragment%FAtransSet=.true.
+    LocalFragment%FAset=.true.
 
     call mem_dealloc(OccOrbs)
     call mem_dealloc(VirtOrbs)
@@ -983,7 +983,7 @@ contains
     ! ------------------------------------
 
     ! These should be stored in LocalFragment, quit if this is not the case
-    if(.not. LocalFragment%FAtransSet) then
+    if(.not. LocalFragment%FAset) then
        call lsquit('init_fragment_adapted: Fragment-adapted MO coefficients &
             & have not been set!',-1)
     end if
@@ -1533,7 +1533,7 @@ contains
     nbasisPQ = fragmentPQ%number_basis
 
     ! Sanity checks
-    if( (.not. fragmentP%FAtransSet) .or. (.not. fragmentQ%FAtransSet) ) then
+    if( (.not. fragmentP%FAset) .or. (.not. fragmentQ%FAset) ) then
        call lsquit('pair_fragment_adapted_transformation_matrices: Transformation &
             & matrices for atomic fragments are not set!',-1)
     end if
@@ -1864,7 +1864,7 @@ contains
 
 
     ! Transformation matrices have been set!
-    fragmentPQ%FAtransSet=.true.
+    fragmentPQ%FAset=.true.
 
   end subroutine pair_fragment_adapted_transformation_matrices
 
@@ -1905,7 +1905,7 @@ contains
     call mem_alloc(fragmentPQ%CunoccFA,fragmentPQ%number_basis,fragmentPQ%nunoccFA)
     fragmentPQ%CunoccFA = fragmentPQ%ypv
 
-    fragmentPQ%FAtransSet=.true.
+    fragmentPQ%FAset=.true.
 
   end subroutine pair_fragment_adapted_transformation_matrices_justEOS
 
@@ -2436,7 +2436,7 @@ end subroutine atomic_fragment_basis
 
     ! Correlation density matrices
     write(wunit) fragment%CDset
-    write(wunit) fragment%FATransSet
+    write(wunit) fragment%FAset
     write(wunit) fragment%noccFA
     write(wunit) fragment%nunoccFA
     if(fragment%CDset) then
@@ -2444,7 +2444,7 @@ end subroutine atomic_fragment_basis
        write(wunit) fragment%virtmat
        write(wunit) fragment%RejectThr
     end if
-    if(fragment%FAtransset) then
+    if(fragment%FAset) then
        write(wunit) fragment%CoccFA
        write(wunit) fragment%CunoccFA
     end if
@@ -2733,17 +2733,17 @@ end subroutine atomic_fragment_basis
     ! Correlation density matrices and fragment-adapted orbitals
     if(DECinfo%convert64to32) then
        call read_64bit_to_32bit(runit,fragment%CDset)
-       call read_64bit_to_32bit(runit,fragment%FATransSet)
+       call read_64bit_to_32bit(runit,fragment%FAset)
        call read_64bit_to_32bit(runit,fragment%noccFA)
        call read_64bit_to_32bit(runit,fragment%nunoccFA)
     elseif(DECinfo%convert32to64) then
        call read_32bit_to_64bit(runit,fragment%CDset)
-       call read_32bit_to_64bit(runit,fragment%FATransSet)
+       call read_32bit_to_64bit(runit,fragment%FAset)
        call read_32bit_to_64bit(runit,fragment%noccFA)
        call read_32bit_to_64bit(runit,fragment%nunoccFA)
     else
        read(runit) fragment%CDset
-       read(runit) fragment%FATransSet
+       read(runit) fragment%FAset
        read(runit) fragment%noccFA
        read(runit) fragment%nunoccFA
     end if
@@ -2758,7 +2758,7 @@ end subroutine atomic_fragment_basis
     end if
 
     ! Fragment-adapted orbitals
-    if(fragment%FATransSet) then
+    if(fragment%FAset) then
        call mem_alloc(Fragment%CoccFA,Fragment%number_basis,Fragment%noccFA)
        call mem_alloc(Fragment%CunoccFA,Fragment%number_basis,Fragment%nunoccFA)
        read(runit) fragment%CoccFA

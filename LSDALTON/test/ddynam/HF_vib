@@ -17,59 +17,54 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > ethane_dec_mp2.info <<'%EOF%'
-   ethane_dec_mp2 
+cat > HF_vib.info <<'%EOF%'
+   HF_vib 
    -------------
-   Molecule:         Ethane
-   Wave Function:    dec-MP2 / 6-31G 
-   Test Purpose:     Test geometry optimizer in redundant internal
-   coordinates with full dec-MP2
+   Molecule:         HF
+   Wave Function:    HF / STO-3G
+
+   Test Purpose:     Test direct dynamics of vibrating HF with
+   time-reversible density propagation
                      
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > ethane_dec_mp2.mol <<'%EOF%'
-BASIS
-6-31G
-Ethane
-
-Atomtypes=2 Charge=0 Nosymmetry Angstrom
-Charge=1.0 Atoms=4
-H          1.16103        0.06607        1.02388
-H          1.33519       -0.08301       -0.78143
-H         -1.33549        0.08301        0.78127
-H         -1.16080       -0.06606       -1.02386
-Charge=6.0 Atoms=2
-C          0.65790       -0.00446        0.06398
-C         -0.65783        0.00446       -0.06385
+cat > HF_vib.mol <<'%EOF%'
+BASIS                                                                           
+STO-3G
+Direct dynamics calculation of vibrating HF molecule
+No rotation
+    2    0
+        9.    1                                                                 
+F     0.1   -0.7    0.1
+        1.    1                                                                 
+H     1.7    0.3   -0.2
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > ethane_dec_mp2.dal <<'%EOF%'
-**OPTIMI
-.BAKER
-.LOOSE
+cat > HF_vib.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.NOGCBASIS
-.ARH
-.START
-TRILEVEL
-.CONVDYN
-STANDARD
-.LCM
-.PSM
-2 2
-$INFO
-DEBUG_MPI_MEM
-$END INFO
-**DEC
-.SimulateFull
+.RH
+ DIIS
+.RESTART
+**DYNAMI
+.TIMREV
+2
+.NUMTRA
+1
+.VERLET
+.MAX ITER
+20
+.TIMESTEP
+0.5D0
+.VELOCI
+0
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -81,8 +76,8 @@ $END INFO
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > ethane_dec_mp2.check
-cat >> ethane_dec_mp2.check <<'%EOF%'
+echo $CHECK_SHELL > HF_vib.check
+cat >> HF_vib.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -92,31 +87,25 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Energy at final geometry is * \: * \-78\.186750" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-98\.5719851" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
-ERROR[1]="MP2 ENERGY NOT CORRECT -"
+ERROR[1]="HF ENERGY NOT CORRECT -"
+
+# Energy
+CRIT1=`$GREP "Energy drift, mHartree/ps  :  \-3946\.234" $log | wc -l`
+TEST[2]=`expr   $CRIT1`
+CTRL[2]=1
+ERROR[2]="Energy drift -"
 
 # Memory test
-CRIT2=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
-TEST[2]=`expr  $CRIT2`
-CTRL[2]=1
-ERROR[2]="Memory leak -"
-
-# Number of gradient calculations
-CRIT3=`$GREP "G\: Total * MP2 energy" $log | wc -l` 
-TEST[3]=`expr   $CRIT3`
-CTRL[3]=6
-ERROR[3]="Wrong number of geometry steps"
-
-# MPI Memory test
-CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
-TEST[4]=`expr  $CRIT1`
-CTRL[4]=0
-ERROR[4]="MPI Memory leak -"
+CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[3]=`expr  $CRIT1`
+CTRL[3]=1
+ERROR[3]="Memory leak -"
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}

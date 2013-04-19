@@ -27,6 +27,8 @@ SUBROUTINE lsdalton
   use decompMod, only: decomp_init, decomp_shutdown, decomposition, get_oao_transformed_matrices
   use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2
   use daltoninfo, only: ls_free 
+  !For making orbital .plt files
+  use print_moorb_grid_mod
   ! Debug and Testing
   use dal_interface, only: di_debug_general, di_debug_general2
   use extra_output, only: print_orbital_info2
@@ -346,8 +348,10 @@ SUBROUTINE lsdalton
            if (config%decomp%cfg_mlo ) then
               write(ls%lupri,'(a)')'Pred= **** LEVEL 3 ORBITAL LOCALIZATION ****'
               call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
+	      if (config%davidOrbLoc%make_orb_plot) then
+                 call make_orbitalplot_file(CMO,config%davidOrbLoc,ls)
+	      end if
            end if
-
            ! write LCM orbitals
            lun = -1
            CALL LSOPEN(lun,'lcm_orbitals.u','unknown','UNFORMATTED')
@@ -415,8 +419,9 @@ SUBROUTINE lsdalton
            if (config%decomp%cfg_lcm) then
               ! free Cmo
               call mat_free(Cmo)
-           Endif
+           Endif           
         endif
+
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
 
         ! Numerical Derivatives
