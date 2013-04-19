@@ -724,13 +724,18 @@ C    *** Read the solvent contributions from PEFCMO from file ***
       CALL QUIT('ERROR IN DIMENSION OF QM/MM FOCK CONTR. IN QMMMLNO')
       END IF
 
+      write(lupri,*)'MMORBT', MMORBT
+      write(lupri,*)'LUSIFC', LUSIFC
+
       CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI)
       CALL READT (LUSIFC,NNORBX,WRK(KFPEMO))
 
       IF (LOPEN) THEN
       CALL GPCLOSE(LUSIFC,'KEEP')
       END IF
-
+      WRITE(LUPRI,*)'KFPEMO in QMMMLNO'
+      CALL OUTPAK(WRK(KFPEMO),NORBT,1,LUPRI)
+      
 C     *************************************************************
 
       CALL UPKCMO(CMO,WRK(KUCMO))

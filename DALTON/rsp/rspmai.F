@@ -4032,6 +4032,9 @@ C
 C   We assume that either the SIRIUS module or the SETSIR
 C   subroutine has been called before RSPMC.
 C
+
+      use pe_variables, only: peqm
+
 #include "implicit.h"
 #include "infdim.h"
 C
@@ -4082,6 +4085,8 @@ C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if
 C     CSF's were used in SIRIUS. /hjaaj May 2001
 C
+      WRITE(LUPRI,*)'EDH RESPONSE START'
+
       MCONRF = NCONRF
       IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
          FLAG(27) = .TRUE.
@@ -4300,13 +4305,27 @@ C
            FC(I) = FC(I) + WRK(I)
         ENDDO
       END IF
-      IF ((NCONRF .GT. 1) .AND. QMMM) THEN
+      IF ((NCONRF .GT. 1) .AND. QMMM ) THEN
+         write(lupri,*) 'MCSCF detected (NCONRF > 1) in PE calc.'
+         write(lupri,*) 'NCONRF...........................', NCONRF
+         write(lupri,*) '=> Subtracting PE Fock matrix (PCM-like)'
          CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI) 
          CALL READT (LUSIFC,NNORBT,WRK)
          DO I = 1,NNORBT
              FC(I) = FC(I) - WRK(I)
          ENDDO
       END IF
+           
+      if ((nconrf .gt. 1) .and. peqm) then
+         write(lupri,*) 'MCSCF detected (NCONRF > 1) in PE calc.'
+         write(lupri,*) 'NCONRF...........................', NCONRF
+         write(lupri,*) '=> Subtracting PE Fock matrix (PCM-like)'
+         call mollab('PETMAT  ',lusifc,lupri)
+         call readt (lusifc,nnorbt,wrk)
+         do i = 1,nnorbt
+            fc(i) = fc(i) - wrk(i)
+         enddo
+       endif
 
       IF (SOPPA) THEN
 C

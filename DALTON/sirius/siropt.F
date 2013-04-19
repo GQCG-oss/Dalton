@@ -2512,6 +2512,7 @@ C    *) FCDIA, ISMO
 C    *) CMO
 C
       use pe_variables, only: peqm
+
 #include "implicit.h"
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)
       DIMENSION ERLM(NLMSOL,2),GORB(*),CREF(*),FCAC(*),H2AC(*),WRK(*)
@@ -2567,6 +2568,10 @@ C
       DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
 C
+C     edh: For pe-module
+      real*8, dimension(:), allocatable :: pefckmo
+      real*8 :: peenergy
+
       CALL QENTER('WR_SIRIFC')
       LGLOCAL = BOYORB.OR.PIPORB
       CALL GETDAT(LAB123(2),LAB123(3))
@@ -2889,7 +2894,6 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          KMAT   = KDENSF + NNBASX
          KUCMO  = KMAT   + NNBASX  
          KMATMO = KUCMO  + NORBT*NBAST
-         KMATMO = KMAT   + NNBASX
          KWRK2  = KMATMO + NNORBT
          LWRK2  = LFREE  - KWRK2 + 1
 
@@ -2916,16 +2920,31 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          CALL UTHU(WRK(KMAT),WRK(KMATMO),WRK(KUCMO),WRK(KWRK2),
      &               NBAST,NORBT)
 
-         IF (IPQMMM .GE. 15) THEN
-           WRITE (LUPRI,'(/A)') ' PE_ao matrix from WR_SIRIFC:'
-           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
+!         IF (IPQMMM .GE. 15) THEN
+!           WRITE (LUPRI,'(/A)') ' PE_ao matrix from WR_SIRIFC:'
+!           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
            WRITE (LUPRI,'(/A)') ' PE_mo matrix from WR_SIRIFC'
            CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
-         ENDIF
+!         ENDIF
 
          WRITE (LUSIFC) LAB123,TABLE(11)
          CALL WRITT (LUSIFC,MMORBT,WRK(KMATMO))
       END IF
+
+      if (peqm) then
+         write(lupri,*)'Writing PE matrix to SIRIUS interface file'
+!         
+         allocate(pefckmo(nnorbx))
+         call pe_fckmo(cmo, pefckmo,peenergy, dv, wrk(wrk1), 
+     &                 lfree - kwrk1 + 1)
+
+         write(lupri,*) 'PE-interfacefile'
+         call outpak(pefckmo,norbt,1,lupri)
+ 
+         write (lusifc) lab123,table(11)
+         call writt (lusifc,mmorbt,wrk(kmatmo))
+         deallocate(pefckmo)
+      end if
 C
 C     Revision 2000/05/24 12:43:25  hjj
 C     Write CREF in determinants here, if NCDETS .gt. NCONF

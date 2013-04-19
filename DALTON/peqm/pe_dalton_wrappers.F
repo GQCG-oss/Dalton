@@ -361,6 +361,10 @@
           end do
       end if
 
+!---------------------------------------------------
+! 1. Calculation of Fxo = R*<0|Fe(k)|O>Fe 
+!    Store in fxos
+!---------------------------------------------------      
       if (pe_polar) then
         allocate(ubodcao(n2basx), ubodvao(n2basx))
         allocate(bodtaos(nosim*nnbasx))
@@ -378,6 +382,7 @@
      &                 fckmats=fxoaos, nmats=nosim, dalwrk=wrk(1:nwrk))
         deallocate(bodtaos)
 
+        
         allocate(fxos(nnorbx,nosim)) 
         do i = 1, nosim
             j = (i - 1) * nnbasx + 1
@@ -386,6 +391,10 @@
         deallocate(fxoaos)
       end if
 
+!---------------------------------------------------
+! 2. Calculation of Fyo = V(k) + R<0|F|0>Fe(k)          
+!    Store in fyos 
+!---------------------------------------------------
       allocate(fckmo(nnorbx))
       call pe_fckmo(cmo, fckmo, energy, dv, wrk, nwrk)
 
@@ -407,7 +416,10 @@
         end if
         txyo = solelm(dv, fxyoacs(:,i), fxyos(:,i), txyoacs(i))
       end do
-
+!---------------------------------------------------
+! 3.   /        <0[Epq,Fxo + Fyo]|0>      \  orbital part
+!      \ 2<0|Fyo + Fxo|mu> - <0|Fyo|0>*c0 /  CSF part
+!---------------------------------------------------
 !     ... CSF part of sigma vectors
       if (lsymrf == lsymst) then
         ncolim = 1
@@ -464,9 +476,10 @@
 
         call qenter('pe_rsplin')
 
-        if (.not. tdhf) then
-            stop 'ERROR: PE-MCSCF response not implemented.'
-        end if
+!       if (.not. tdhf) then
+!            write(lupri,*) 'ERROR: PE-MCSCF response not implemented.'
+!           stop 'ERROR: PE-MCSCF response not implemented.'
+!       end if
 
 !        if (ncsim > 0) then
 !            call pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,
@@ -514,13 +527,15 @@
 #include "wrkrsp.h"
 #include "inforb.h"
 #include "infrsp.h"
-!#include "inftap.h"
+#include "inftap.h"
 
         integer :: nosim, nwrk
         real*8, dimension(*) :: bovecs
         real*8, dimension(kzyvar,*) :: sovecs
         real*8, dimension(*) :: cref, cmo, cindx, udv, dv, udvtr, dvtr
         real*8, dimension(nwrk) :: wrk
+        real*8 :: peenergy
+
 
         integer :: i, j
         real*8, dimension(:), allocatable :: dcao, dvao
@@ -530,6 +545,13 @@
         real*8, dimension(:), allocatable :: evec
         real*8, dimension(:,:), allocatable :: ubovecs, evecs, eacs
 !        real*8, dimension(:,:), allocatable :: evectrs, eactrs
+
+        real*8, dimension(:), allocatable :: kfpemo
+
+!       LOGICAL LOPEN, FNDLAB
+!       INTEGER MMORBT
+!       LOPEN = .FALSE.
+
 
         ! return if no polarization and not MCSCF
         if ((kzconf == 0) .and. .not. pe_polar) then
@@ -547,17 +569,62 @@
         end if
 
         call qenter('pe_rsplno')
+!         
+         allocate(kfpemo(nnorbx))
+         call pe_fckmo(cmo, kfpemo, peenergy, dv, wrk, nwrk)
+
+         write(lupri,*) 'kfpemo in rsp_pelnp'
+         call outpak(kfpemo,norbt,1,lupri)
+         deallocate(kfpemo)
+!     ==== Read Fg from file ====
+!     allocate(kfpemo(nnorbx))
+!     IF (LUSIFC .LE. 0) THEN
+!        CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+!    &               IDUMMY,.FALSE.)
+!        LOPEN = .TRUE.
+!     END IF
+
+!     REWIND(LUSIFC)
+
+!     MMORBT = MAX(4,NNORBT)
+!     IF (MMORBT .NE. NNORBX) THEN
+!        CALL QUIT('ERROR IN DIMENSION OF QM/MM FOCK CONTR. IN QMMMLNO')
+!     END IF
+
+!     write(lupri,*)'MMORBT', MMORBT
+!     write(lupri,*)'LUSIFC', LUSIFC
+
+!     CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI)
+!     CALL READT (LUSIFC,NNORBX,kfpemo)
+
+!     IF (LOPEN) THEN
+!        CALL GPCLOSE(LUSIFC,'KEEP')
+!     END IF
+!     ==========================
+!      write(lupri,*) 'kfpemo rsp_pelno'
+!      CALL OUTPAK(kfpemo,NORBT,1,LUPRI)
+!      deallocate(kfpemo)
+
 
         allocate(ubovecs(n2orbx,nosim))
         call rspzym(nosim, bovecs, ubovecs)
 
-        ubovecs = - 2.0d0 * ubovecs
+        ubovecs = - 2.0d0 * ubovecs  ! edh: we scale with -1 in MCSCF
 
         allocate(dcao(n2basx), dvao(n2basx), daos(nosim*nnbasx))
 !        if (trplet) then
 !            allocate(dcaotr(n2basx), dvaotr(n2basx),
 !     &               daotrs(nosim*nnbasx))
 !        end if
+!-----------------------------------------------
+! 1. Calculate Fyo = Fg(k) = V(k) - <0|F|0>Fe(k)
+!-----------------------------------------------
+
+
+
+!-----------------------------------------------
+! 2. Calculate Fxo = <0|Fe(k)|0>Fe in fckaos
+!----------------------------------------------- 
         do i = 1, nosim
             j = 1 + (i - 1) * nnbasx
             call deq27(cmo, ubovecs(:,i), udv, dcao, dvao, wrk, nwrk)
@@ -600,6 +667,7 @@
 !        if (trplet) then
 !            allocate(evectrs(n2orbx,nosim), eactrs(n2ashx,nosim))
 !        end if
+
         do i = 1, nosim
             j = 1 + (i - 1) * nnbasx
             call uthu(fckaos(j), evec, cmo, wrk, nbast, norbt)
