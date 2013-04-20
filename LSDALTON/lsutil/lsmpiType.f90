@@ -162,9 +162,13 @@ module lsmpi_type
   integer,parameter :: LSMPISENDRECV=4
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
-  integer,parameter :: SPLIT_MPI_MSG=2147483640
+#ifdef VAR_DEBUG
   !FOR DEBUGGING USE THE FOLLOWING LINE
-  !integer,parameter :: SPLIT_MPI_MSG=24
+  integer,parameter :: SPLIT_MPI_MSG=24
+#else
+  integer,parameter :: SPLIT_MPI_MSG=2147483640
+#endif
+  !integer conversion factor
 #ifdef VAR_INT64
 #ifdef VAR_LSMPI_32
   integer,parameter :: int_to_short=4

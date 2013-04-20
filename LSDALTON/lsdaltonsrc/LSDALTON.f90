@@ -96,7 +96,14 @@ SUBROUTINE lsdalton
   luerr=0
   lupri=0
 
+
   call lsinit_all()
+
+#if VAR_DEBUG
+  print *,        "THIS IS A DEBUG BUILD"
+  write (LUPRI,*),"THIS IS A DEBUG BUILD"
+  write (LUERR,*),"THIS IS A DEBUG BUILD"
+#endif
 
   ! Open output files LSDALTON.OUT and LSDALTON.ERR
   call open_lsdalton_files(lupri,luerr)
@@ -205,7 +212,7 @@ SUBROUTINE lsdalton
 
           if (do_decomp) then
              call decomp_shutdown(config%decomp)
-	  endif
+          endif
 
         endif
 
@@ -311,6 +318,13 @@ SUBROUTINE lsdalton
               call scfloop(H1,F,D,S,E,ls,config)
            endif
         endif
+
+        IF(config%decomp%cfg_DumpDensRestart)THEN !default true
+           ! Kasper K, save Fock and overlap matrices to file for future use
+           call save_fock_matrix_to_file(F)
+           call save_overlap_matrix_to_file(S)
+        ENDIF
+
         if (config%opt%cfg_incremental) call ks_free_incremental_fock()
 
         if (config%opt%print_final_cmo) then
@@ -472,12 +486,6 @@ SUBROUTINE lsdalton
            !  CALL trilevel_shutdown
            !DEALLOCATE(ls)
         endif
-
-        IF(config%decomp%cfg_DumpDensRestart)THEN !default true
-           ! Kasper K, save Fock and overlap matrices to file for future use
-           call save_fock_matrix_to_file(F)
-           call save_overlap_matrix_to_file(S)
-        ENDIF
 
      endif do_pbc
   end if SkipHF
