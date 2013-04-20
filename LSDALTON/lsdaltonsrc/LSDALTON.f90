@@ -96,7 +96,14 @@ SUBROUTINE lsdalton
   luerr=0
   lupri=0
 
+
   call lsinit_all()
+
+#if VAR_DEBUG
+  print *,        "THIS IS A DEBUG BUILD"
+  write (LUPRI,*),"THIS IS A DEBUG BUILD"
+  write (LUERR,*),"THIS IS A DEBUG BUILD"
+#endif
 
   ! Open output files LSDALTON.OUT and LSDALTON.ERR
   call open_lsdalton_files(lupri,luerr)
@@ -205,7 +212,7 @@ SUBROUTINE lsdalton
 
           if (do_decomp) then
              call decomp_shutdown(config%decomp)
-	  endif
+          endif
 
         endif
 
