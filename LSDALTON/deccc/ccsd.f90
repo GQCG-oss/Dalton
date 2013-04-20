@@ -4372,7 +4372,7 @@ contains
     logical,intent(in)     :: manual,first
     integer :: nnod,magic
 
-    frac_of_total_mem=0.85E0_realk
+    frac_of_total_mem=0.80E0_realk
     nba=minbsize
     nbg=minbsize
     nnod=1
