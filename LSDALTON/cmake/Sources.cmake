@@ -312,7 +312,6 @@ set(LSUTIL_MATRIXO_SOURCES
     lsutil/matop_csr.f90
     lsutil/matop_dense.f90
     lsutil/matop_dense_unrest.f90
-    lsutil/matop_sparse1.f90
     lsutil/matop_scalapack.f90    
     )
 set(LSUTIL_MATRIXO_C_SOURCES

@@ -27,9 +27,6 @@ MODULE matrix_operations_aux
 !   Use matrix_operations_symm_dense
    use matrix_operations_dense
    use matrix_operations_scalapack
-#ifndef UNITTEST
-   Use matrix_operations_sparse1
-#endif
    use matrix_operations_csr
 !   Use matrix_operations_unres_symm_dense
    use matrix_operations_unres_dense
@@ -281,16 +278,10 @@ FUNCTION mat_dE_dmu(Fnew,Fdamp,SDS,Cmo,nocc)
      !             mat_dE_dmu = mat_symm_dense_dE_dmu(Fnew,Fdamp,SDS,Cmo,nocc)
   case(mtype_dense)
      mat_dE_dmu = mat_dense_dE_dmu(Fnew,Fdamp,SDS,Cmo,nocc)
-#ifndef UNITTEST
-  case(mtype_sparse1)
-             mat_dE_dmu = mat_sparse1_dE_dmu(Fnew,Fdamp,SDS,Cmo,nocc)
-#endif
 !         case(mtype_unres_symm_dense)
 !             mat_dE_dmu = mat_unres_symm_dense_dE_dmu(Fnew,Fdamp,SDS,Cmo,nocc)
 !         case(mtype_unres_dense)
 !             mat_dE_dmu = mat_unres_dense_dE_dmu(Fnew,Fdamp,SDS,Cmo,nocc)
-!         case(mtype_unres_sparse1)
-!             mat_dE_dmu = mat_unres_sparse1_dE_dmu(Fnew,Fdamp,SDS,Cmo,nocc)
          case default
               call lsquit("mat_dE_dmu not implemented for this type of matrix",-1)
          end select
@@ -320,16 +311,10 @@ FUNCTION mat_dE_dmu(Fnew,Fdamp,SDS,Cmo,nocc)
 !             mat_column_norm = mat_symm_dense_column_norm(Mat,ncol,from_row,to_row)
          case(mtype_dense)
              mat_column_norm = mat_dense_column_norm(Mat,ncol,from_row,to_row)
-#ifndef UNITTEST
-         case(mtype_sparse1)
-             mat_column_norm = mat_sparse1_column_norm(Mat,ncol,from_row,to_row)
-#endif
 !         case(mtype_unres_symm_dense)
 !             mat_column_norm = mat_unres_symm_dense_column_norm(Mat,ncol,from_row,to_row)
          case(mtype_unres_dense)
              mat_column_norm = mat_unres_dense_column_norm(Mat,ncol,from_row,to_row)
-!         case(mtype_unres_sparse1)
-!             mat_column_norm = mat_unres_sparse1_column_norm(Mat,ncol,from_row,to_row)
          case default
               call lsquit("mat_column_norm not implemented for this type of matrix",-1)
          end select
@@ -364,14 +349,10 @@ FUNCTION mat_dE_dmu(Fnew,Fdamp,SDS,Cmo,nocc)
 !             call mat_symm_dense_section(A,from_row,to_row,from_col,to_col,Asec)
          case(mtype_dense)
              call mat_dense_section2(A,from_row,to_row,from_col,to_col,B)
-!         case(mtype_sparse1)
-!             call mat_sparse1_section(A,from_row,to_row,from_col,to_col,Asec)
 !         case(mtype_unres_symm_dense)
 !             call mat_unres_symm_dense_section(A,from_row,to_row,from_col,to_col,Asec)
 !         case(mtype_unres_dense)
 !             call mat_unres_dense_section(A,from_row,to_row,from_col,to_col,Asec)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_section(A,from_row,to_row,from_col,to_col,Asec)
          case default
               call lsquit("mat_section2 not implemented for this type of matrix",-1)
          end select
@@ -448,14 +429,10 @@ end subroutine mat_mix_homolumo
          case(mtype_sparse_block)
             call bsm_precond(M,x,xprec)
 #endif /* HAVE_BSM */
-!         case(mtype_sparse1)
-!             call mat_sparse1_precond(M,x,xprec)
 !         case(mtype_unres_symm_dense)
 !             call mat_unres_symm_dense_precond(M,x,xprec)
          case(mtype_unres_dense)
              call mat_unres_dense_precond(M,x,xprec)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_precond(M,x,xprec)
          case default
             call lsquit("mat_precond not implemented for this type of matrix",-1)
          end select
@@ -484,16 +461,10 @@ end subroutine mat_mix_homolumo
 !             call mat_symm_dense_mo_precond(nocc,omega,Eorb_final,X_MO)
          case(mtype_dense)
              call mat_dense_mo_precond(nocc,omega,Eorb_final,X_MO)
-#ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_mo_precond(nocc,omega,Eorb_final,X_MO)
-#endif
 !         case(mtype_unres_symm_dense)
 !             call mat_unres_symm_dense_mo_precond(nocc,omega,Eorb_final,X_MO)
          case(mtype_unres_dense)
              call mat_unres_dense_mo_precond(nocc,omega,Eorb_final,X_MO)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_mo_precond(nocc,omega,Eorb_final,X_MO)
          case default
             print *, "FALLBACK mo_precond"
             ! see mat_dense_mo_precond
@@ -873,16 +844,10 @@ end subroutine mat_mix_homolumo
 !             call mat_symm_dense_create_elm(i,j,val,A)
          case(mtype_dense)
              call mat_dense_create_elm(i,j,val,A)
-#ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_create_elm(i,j,val,A)
-#endif
 !         case(mtype_unres_symm_dense)
 !             call mat_unres_symm_dense_create_elm(i,j,val,A)
          case(mtype_unres_dense)
              call mat_unres_dense_create_elm(i,j,val,A)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_create_elm(i,j,val,A)
          case default
               call lsquit("mat_create_elm not implemented for this type of matrix",-1)
          end select
@@ -1017,15 +982,11 @@ subroutine mat_zerohalf(part,A)
   CASE(mtype_sparse_block)
      CALL bsm_zerohalf(part, A)
 #endif
-  case(mtype_sparse1)
-     call mat_sparse1_zerohalf(part,A)
 #endif
      !         case(mtype_unres_symm_dense)
      !             call mat_unres_symm_dense_zerohalf(part,A)
   case(mtype_unres_dense)
      call mat_unres_dense_zerohalf(part,A)
-     !         case(mtype_unres_sparse1)
-     !             call mat_unres_sparse1_zerohalf(part,A)
   case default
      PRINT *, "FALLBACK zerohalf ", part
      allocate(afull(a%nrow, a%ncol))
@@ -1070,8 +1031,6 @@ subroutine mat_write_to_disk2(iunit,A)
   case(mtype_dense)
      call mat_dense_write_to_disk2(iunit,A)
 #ifndef UNITTEST
-  case(mtype_sparse1)
-     call mat_sparse1_write_to_disk(iunit,A)
 #ifdef HAVE_BSM
   case(mtype_sparse_block)
      call bsm_write_to_unit(iunit,A,mat_write_int2,mat_write_real2)
@@ -1081,8 +1040,6 @@ subroutine mat_write_to_disk2(iunit,A)
      !             call mat_unres_symm_dense_write_to_disk(iunit,A)
   case(mtype_unres_dense)
      call mat_unres_dense_write_to_disk(iunit,A)
-     !         case(mtype_unres_sparse1)
-     !             call mat_unres_sparse1_write_to_disk(iunit,A)
   case default
      !print *, "FALLBACK: mat_write_to_disk"
      allocate(afull(a%nrow, a%ncol))
@@ -1119,8 +1076,6 @@ subroutine mat_read_from_disk2(iunit,A)
          case(mtype_dense)
              call mat_dense_read_from_disk2(iunit,A)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_read_from_disk(iunit,A)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
             call bsm_read_from_unit(iunit,A,mat_read_int2,mat_read_real2)
@@ -1130,8 +1085,6 @@ subroutine mat_read_from_disk2(iunit,A)
 !             call mat_unres_symm_dense_read_from_disk(iunit,A)
          case(mtype_unres_dense)
              call mat_unres_dense_read_from_disk(iunit,A)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_read_from_disk(iunit,A)
          case default
             !print *, "FALLBACK: mat_read_from_disk"
             allocate(afull(a%nrow, a%ncol))
@@ -1191,15 +1144,11 @@ subroutine mat_read_from_disk2(iunit,A)
           case(mtype_dense)
               call mat_dense_vec_to_mat(symmetry, VEC, MAT)
 #ifndef UNITTEST
-          case(mtype_sparse1)
-              call mat_sparse1_vec_to_mat(symmetry, VEC, MAT)
 #endif
  !         case(mtype_unres_symm_dense)
  !             call mat_unres_symm_dense_vec_to_mat()
           case(mtype_unres_dense)
               call mat_unres_dense_vec_to_mat(symmetry, VEC, MAT)
- !         case(mtype_unres_sparse1)
- !             call mat_unres_sparse1_vec_to_mat()
           case default
                CALL LSQUIT("mat_VEC_TO_MAT not implemented for this type of matrix",-1)
           end select
@@ -1250,15 +1199,11 @@ subroutine mat_read_from_disk2(iunit,A)
           case(mtype_dense)
               call mat_dense_mat_to_vec(symmetry, MAT, VEC)
 #ifndef UNITTEST
-          case(mtype_sparse1)
-              call mat_sparse1_mat_to_vec(symmetry, MAT, VEC)
 #endif
  !         case(mtype_unres_symm_dense)
  !             call mat_unres_symm_dense_mat_to_vec()
           case(mtype_unres_dense)
               call mat_unres_dense_mat_to_vec(symmetry, MAT, VEC)
- !         case(mtype_unres_sparse1)
- !             call mat_unres_sparse1_mat_to_vec()
           case default
                CALL LSQUIT("MAT_TO_VEC not implemented for this type of matrix",-1)
           end select
@@ -1289,8 +1234,6 @@ subroutine mat_read_from_disk2(iunit,A)
       CASE(mtype_csr)
          CALL mat_csr_report_sparsity(A,sparsity)
 #ifndef UNITTEST
-      CASE(mtype_sparse1)
-         call mat_sparse1_report_sparsity(A,sparsity)
 #ifdef HAVE_BSM
       CASE(mtype_sparse_block)
          CALL bsm_get_sparsity(A, sparsity)
@@ -1322,15 +1265,11 @@ subroutine mat_read_from_disk2(iunit,A)
         case(mtype_dense)
             mat_sum=mat_dense_sum(A)
 #ifndef UNITTEST
-        case(mtype_sparse1)
-            mat_sum=mat_sparse1_sum(A)
 #endif
 !       case(mtype_unres_symm_dense_cholseky)
 !           mat_sum=mat_unres_symm_dense_sum(A)
        case(mtype_unres_dense)
            mat_sum=mat_unres_dense_sum(A)
-!       case(mtype_unres_sparse1_sum)
-!           mat_sum=mat_unres_sparse1_sum(A)
         case default
             call lsquit("mat_sum not implemented for this type of matrix",-1)
       end select
@@ -1339,10 +1278,10 @@ subroutine mat_read_from_disk2(iunit,A)
     end function mat_sum
 
 #ifndef UNITTEST
-!> \brief Inquire zero cutoff - for sparse1 and csr matrices only!! 
+!> \brief Inquire zero cutoff - for csr matrices only!! 
 !> \author S. Host
 !> \date 2009
-!> \param cutoff The zero cutoff for sparse1 matrices
+!> \param cutoff The zero cutoff forcsr  matrices
     subroutine mat_inquire_cutoff(cutoff)
       implicit none
       real(realk), intent(out) :: cutoff
@@ -1352,14 +1291,10 @@ subroutine mat_read_from_disk2(iunit,A)
 !           call mat_symm_dense_zero_cutoff(cutoff)
 !       case(mtype_dense)
 !           call mat_dense_zero_cutoff(cutoff)
-       case(mtype_sparse1)
-           call mat_sparse1_inquire_cutoff(cutoff)
 !       case(mtype_unres_symm_dense_cholseky)
 !           call mat_unres_symm_dense_zero_cutoff(cutoff)
 !       case(mtype_unres_dense_zero_cutoff)
 !           call mat_unres_dense_zero_cutoff(cutoff)
-!       case(mtype_unres_sparse1_zero_cutoff)
-!           call mat_unres_sparse1_zero_cutoff(cutoff)
         case(mtype_csr)
              call mat_csr_inquire_cutoff(cutoff)
         case default
@@ -1515,10 +1450,10 @@ end subroutine mat_dhmul
 
 
 #ifndef UNITTEST
-!> \brief Set zero cutoff - for sparse1 and CSR matrices only!! 
+!> \brief Set zero cutoff - for CSR matrices only!! 
 !> \author S. Host
 !> \date 2009
-!> \param zero The desired zero cutoff for sparse1 or CSR matrices
+!> \param zero The desired zero cutoff for CSR matrices
     subroutine mat_zero_cutoff(zero)
       implicit none
       real(realk), intent(in) :: zero
@@ -1528,14 +1463,10 @@ end subroutine mat_dhmul
 !           call mat_symm_dense_zero_cutoff(zero)
 !       case(mtype_dense)
 !           call mat_dense_zero_cutoff(zero)
-       case(mtype_sparse1)
-           call mat_sparse1_zero_cutoff(zero)
 !       case(mtype_unres_symm_dense_cholseky)
 !           call mat_unres_symm_dense_zero_cutoff(zero)
 !       case(mtype_unres_dense_zero_cutoff)
 !           call mat_unres_dense_zero_cutoff(zero)
-!       case(mtype_unres_sparse1_zero_cutoff)
-!           call mat_unres_sparse1_zero_cutoff(zero)
         case(mtype_csr)
              call mat_csr_zero_cutoff(zero)
         case default

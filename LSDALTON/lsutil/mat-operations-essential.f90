@@ -25,16 +25,12 @@ MODULE matrix_operations
    use matrix_operations_dense
    use matrix_operations_scalapack
    use LSTIMING
-#ifndef UNITTEST
-   Use matrix_operations_sparse1
-#endif
 #ifdef VAR_LSMPI
    use lsmpi_type, only: MATRIXTY
 #endif
    use matrix_operations_csr
 !   Use matrix_operations_unres_symm_dense
    use matrix_operations_unres_dense
-!   use matrix_operations_unres_sparse1
 
 !FrameWork to write to memory - usefull for scalapack 
 !and when disk space is limited
@@ -65,12 +61,8 @@ end type matrixmembuf
    integer, parameter :: mtype_dense = 2
 !> Matrices are block sparse (BSM)
    integer, parameter ::  mtype_sparse_block = 3
-!> Matrices are compressed sparse row (CSR) sparse
-   integer, parameter ::  mtype_sparse1 = 4
 !> Matrices are dense and have both alpha and beta part (default for open shell)
    integer, parameter ::  mtype_unres_dense = 5
-!> Matrices are CSR sparse and have both alpha and beta part (not implemented)
-   integer, parameter ::  mtype_unres_sparse1 = 6
 !> Matrices are compressed sparse row (CSR) 
    integer, parameter ::  mtype_csr = 7
 !> Matrices are MPI memory distributed using scalapack
@@ -80,10 +72,10 @@ end type matrixmembuf
 !(Exploiting symmetry when operating sparse matrices is probably a vaste of effort - 
 !therefore these combinations are removed)
 !******************
-!mtype_dense, mtype_sparse1, mtype_sparse2
-!mtype_cplx_dense, mtype_cplx_sparse1, mtype_cplx_sparse2
-!mtype_unres_dense, mtype_unres_sparse1, mtype_unres_sparse2
-!mtype_cplx_unres_dense, mtype_cplx_unres_sparse1, mtype_cplx_unres_sparse2
+!mtype_dense, matop_sparse2
+!mtype_cplx_dense, mtype_cplx_sparse2
+!mtype_unres_dense, mtype_unres_sparse2
+!mtype_cplx_unres_dense, mtype_cplx_unres_sparse2
 !mtype_symm_dense
 !mtype_cplx_symm_dense
 !mtype_unres_symm_dense
@@ -152,12 +144,8 @@ end type matrixmembuf
              WRITE(lupri,'(A)') 'Matrix type: mtype_dense'
           case(mtype_sparse_block)
              WRITE(lupri,'(A)') 'Matrix type: mtype_sparse_block'
-          case(mtype_sparse1)
-             WRITE(lupri,'(A)') 'Matrix type: mtype_sparse1'
           case(mtype_unres_dense)
              WRITE(lupri,'(A)') 'Matrix type: mtype_unres_dense'
-          case(mtype_unres_sparse1)
-             WRITE(lupri,'(A)') 'Matrix type: mtype_unres_sparse1'
           case(mtype_csr)
              WRITE(lupri,'(A)') 'Matrix type: mtype_csr'
           case(mtype_scalapack)
@@ -297,8 +285,6 @@ end type matrixmembuf
          case(mtype_dense)
              call mat_dense_init(a,nrow,ncol)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_init(a,nrow,ncol)
          case(mtype_sparse_block)
 #ifdef HAVE_BSM
            CALL bsm_init(a,nrow,ncol)
@@ -310,8 +296,6 @@ end type matrixmembuf
 !             call mat_unres_symm_dense_init(a)
          case(mtype_unres_dense)
              call mat_unres_dense_init(a,nrow,ncol)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_init(a)
          case(mtype_csr)
              call mat_csr_init(a,nrow,ncol)            
          case(mtype_scalapack)
@@ -353,8 +337,6 @@ end type matrixmembuf
          case(mtype_dense)
              call mat_dense_free(a)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_free(a)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
              call bsm_free(a)
@@ -368,8 +350,6 @@ end type matrixmembuf
              call mat_csr_free(a)
          case(mtype_scalapack)
              call mat_scalapack_free(a)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_free(a)
          case default
               call lsquit("mat_free not implemented for this type of matrix",-1)
          end select
@@ -398,8 +378,6 @@ end type matrixmembuf
             nsize2 = nsize
             call mem_allocated_mem_type_matrix(nsize2)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call sp1_stat_allocated_memory(nsize)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
 !             call bsm_stat_allocated_memory(nsize)
@@ -409,8 +387,6 @@ end type matrixmembuf
 !             call mat_unres_symm_dense_free(nsize)
          case(mtype_unres_dense)
              call unres_dens_stat_allocated_mem(nsize)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_stat_allocated_memory(nsize)
          case default
               call lsquit("stat_allocated_memory not implemented for this type of matrix",-1)
          end select
@@ -433,8 +409,6 @@ end type matrixmembuf
             nsize2 = nsize
             call mem_deallocated_mem_type_matrix(nsize2)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call sp1_stat_deallocated_memory(nsize)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
 !             call bsm_stat_deallocated_memory(nsize)
@@ -444,8 +418,6 @@ end type matrixmembuf
 !             call mat_unres_symm_dense_free(nsize)
          case(mtype_unres_dense)
              call unres_dens_stat_deallocated_mem(nsize)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_stat_deallocated_memory(nsize)
          case default
               call lsquit("stat_deallocated_memory not implemented for this type of matrix",-1)
          end select
@@ -493,8 +465,6 @@ end type matrixmembuf
          case(mtype_scalapack)
             call mat_scalapack_set_from_full(afull,alpha,a)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_set_from_full(afull,alpha,a)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
             IF(ALPHA.NE. 1E0_realk)CALL DSCAL(a%nrow*a%ncol,ALPHA,afull,1)
@@ -519,8 +489,6 @@ end type matrixmembuf
             else
                call mat_unres_dense_set_from_full(afull,alpha,a)
             endif
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_set_from_full(afull,alpha,a)
          case default
               call lsquit("mat_set_from_full not implemented for this type of matrix",-1)
          end select
@@ -569,8 +537,6 @@ end type matrixmembuf
          case(mtype_scalapack)
             call mat_scalapack_to_full(a, alpha, afull)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_to_full(a, alpha, afull)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
             call bsm_to_full(a, afull, sparsity)
@@ -585,8 +551,6 @@ end type matrixmembuf
 !             call mat_unres_symm_dense_to_full(a, alpha, afull)
          case(mtype_unres_dense)
              call mat_unres_dense_to_full(a, alpha, afull)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_to_full(a, alpha, afull)
          case default
               call lsquit("mat_to_full not implemented for this type of matrix",-1)
          end select
@@ -621,8 +585,6 @@ end type matrixmembuf
          case(mtype_dense)
              call mat_dense_print(a, i_row1, i_rown, j_col1, j_coln, lu)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_print(a, i_row1, i_rown, j_col1, j_coln, lu)
          case(mtype_scalapack)
             print*,'FALLBACK scalapack print'
             ALLOCATE (afull(a%nrow,a%ncol))
@@ -645,8 +607,6 @@ end type matrixmembuf
              call mat_unres_dense_print(a, i_row1, i_rown, j_col1, j_coln, lu)
          case(mtype_csr)
              call mat_csr_print(a, lu)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_print(a, i_row1, i_rown, j_col1, j_coln, lu)
          case default
               call lsquit("mat_print not implemented for this type of matrix",-1)
          end select
@@ -686,8 +646,6 @@ end type matrixmembuf
          case(mtype_scalapack)
              call mat_scalapack_trans(a,b)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_trans(a,b)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
 #if 0
@@ -707,8 +665,6 @@ end type matrixmembuf
 !             call mat_unres_symm_dense_trans(a,b)
          case(mtype_unres_dense)
              call mat_unres_dense_trans(a,b)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_trans(a,b)
          case default
               call lsquit("mat_trans not implemented for this type of matrix",-1)
          end select
@@ -935,7 +891,7 @@ end type matrixmembuf
             dest%elms=>src%elms; dest%idata=>src%idata
             dest%permutation => src%permutation
             dest%elmsb=>src%elmsb; dest%celms=>src%celms
-            dest%celmsb=>src%celmsb; dest%selm1=>src%selm1
+            dest%celmsb=>src%celmsb
             dest%iaux => src%iaux; dest%raux => src%raux
             dest%complex = src%complex
             dest%val => src%val; dest%col => src%col
@@ -972,8 +928,6 @@ end type matrixmembuf
           case(mtype_scalapack)
              call mat_scalapack_assign(a,b)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_assign(a,b)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
              call bsm_assign(a,b)
@@ -983,8 +937,6 @@ end type matrixmembuf
 !             call mat_unres_symm_dense_assign(a,b)
          case(mtype_unres_dense)
              call mat_unres_dense_assign(a,b)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_assign(a,b)
          case default
               call lsquit("mat_assign not implemented for this type of matrix",-1)
          end select
@@ -1012,8 +964,6 @@ end type matrixmembuf
          case(mtype_scalapack)
             call lsquit('mat_mpicopy scalapack error',-1)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_mpicopy(a,slave, master)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
              call mat_bsm_mpicopy_fallback(a,slave, master)
@@ -1077,8 +1027,6 @@ end type matrixmembuf
          case(mtype_scalapack)
              call mat_scalapack_copy(alpha,a,b)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_copy(alpha,a,b)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
              call bsm_copy(alpha,a,b)
@@ -1088,8 +1036,6 @@ end type matrixmembuf
 !             call mat_unres_symm_dense_copy(alpha,a,b)
          case(mtype_unres_dense)
              call mat_unres_dense_copy(alpha,a,b)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_copy(alpha,a,b)
          case default
               call lsquit("mat_copy not implemented for this type of matrix",-1)
          end select
@@ -1127,8 +1073,6 @@ end type matrixmembuf
          case(mtype_scalapack)
             mat_tr = mat_scalapack_Tr(a)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             mat_Tr = mat_sparse1_Tr(a)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
              mat_Tr = bsm_tr(a)
@@ -1138,8 +1082,6 @@ end type matrixmembuf
 !             mat_Tr = mat_unres_symm_dense_Tr(a)
          case(mtype_unres_dense)
              mat_Tr = mat_unres_dense_Tr(a)
-!         case(mtype_unres_sparse1)
-!             mat_Tr = mat_unres_sparse1_Tr(a)
          case default
               call lsquit("mat_Tr not implemented for this type of matrix",-1)
          end select
@@ -1179,8 +1121,6 @@ end type matrixmembuf
          case(mtype_scalapack)
              mat_TrAB = mat_scalapack_TrAB(a,b)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             mat_TrAB = mat_sparse1_TrAB(a,b)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
              mat_TrAB = bsm_trAB(a,b)
@@ -1190,8 +1130,6 @@ end type matrixmembuf
 !             mat_TrAB = mat_unres_symm_dense_TrAB(a,b)
          case(mtype_unres_dense)
              mat_TrAB = mat_unres_dense_TrAB(a,b)
-!         case(mtype_unres_sparse1)
-!             mat_TrAB = mat_unres_sparse1_TrAB(a,b)
          case default
               call lsquit("mat_TrAB not implemented for this type of matrix",-1)
          end select
@@ -1251,8 +1189,6 @@ end type matrixmembuf
          case(mtype_dense)
             call mat_dense_mul(a,b,transa, transb,alpha,beta,c)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-            call mat_sparse1_mul(a,b,transa, transb,alpha,beta,c)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
              call bsm_mul(a,b,transa, transb,alpha,beta,c)
@@ -1262,8 +1198,6 @@ end type matrixmembuf
 !             call mat_unres_symm_dense_mul(a,b,transa, transb,alpha,beta,c)
          case(mtype_unres_dense)
              call mat_unres_dense_mul(a,b,transa, transb,alpha,beta,c)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_mul(a,b,transa, transb,alpha,beta,c)
          case(mtype_csr)
              call mat_csr_mul(a,b,transa, transb,alpha,beta,c)
          case(mtype_scalapack)
@@ -1309,8 +1243,6 @@ end type matrixmembuf
              call mat_csr_add(alpha,a,beta,b,c)
          case(mtype_scalapack)
              call mat_scalapack_add(alpha,a,beta,b,c)
-         case(mtype_sparse1)
-             call mat_sparse1_add(alpha,a,beta,b,c)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
              call bsm_add(alpha,a,beta,b,c)
@@ -1320,8 +1252,6 @@ end type matrixmembuf
 !             call mat_unres_symm_dense_add(alpha,a,beta,b,c)
          case(mtype_unres_dense)
              call mat_unres_dense_add(alpha,a,beta,b,c)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_add(alpha,a,beta,b,c)
          case default
               call lsquit("mat_add not implemented for this type of matrix",-1)
          end select
@@ -1359,8 +1289,6 @@ end type matrixmembuf
          case(mtype_scalapack)
              call mat_scalapack_daxpy(alpha,x,y)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_daxpy(alpha,x,y)
 #ifdef HAVE_BSM
           case(mtype_sparse_block)
              call bsm_daxpy(alpha,x,y)
@@ -1370,8 +1298,6 @@ end type matrixmembuf
 !             call mat_unres_symm_dense_daxpy(alpha,x,y)
          case(mtype_unres_dense)
              call mat_unres_dense_daxpy(alpha,x,y)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_daxpy(alpha,x,y)
          case default
               call lsquit("mat_daxpy not implemented for this type of matrix",-1)
          end select
@@ -1468,8 +1394,6 @@ end type matrixmembuf
          case(mtype_scalapack)
             mat_dotproduct = mat_scalapack_dotproduct(a,b)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             mat_dotproduct = mat_sparse1_dotproduct(a,b)
 #ifdef HAVE_BSM
           case(mtype_sparse_block)
              mat_dotproduct = bsm_trAtransB(a,b)
@@ -1479,8 +1403,6 @@ end type matrixmembuf
 !             mat_dotproduct = mat_unres_symm_dense_dotproduct(a,b)
          case(mtype_unres_dense)
              mat_dotproduct = mat_unres_dense_dotproduct(a,b)
-!         case(mtype_unres_sparse1)
-!             mat_dotproduct = mat_unres_sparse1_dotproduct(a,b)
          case default
               call lsquit("mat_dotproduct not implemented for this type of matrix",-1)
          end select
@@ -1515,8 +1437,6 @@ end type matrixmembuf
          case(mtype_scalapack)
             mat_sqnorm2 = mat_scalapack_sqnorm2(a)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-            mat_sqnorm2 = mat_sparse1_sqnorm2(a)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
             mat_sqnorm2 = bsm_frob(a)**2
@@ -1526,8 +1446,6 @@ end type matrixmembuf
 !             mat_sqnorm2 = mat_unres_symm_dense_sqnorm2(a)
          case(mtype_unres_dense)
              mat_sqnorm2 = mat_unres_dense_sqnorm2(a)
-!         case(mtype_unres_sparse1)
-!             mat_sqnorm2 = mat_unres_sparse1_sqnorm2(a)
          case default
               call lsquit("mat_sqnorm2 not implemented for this type of matrix",-1)
          end select
@@ -1560,10 +1478,6 @@ end type matrixmembuf
              call mat_csr_abs_max_elm(a,val)
           case(mtype_scalapack)
              call mat_scalapack_abs_max_elm(a,val)
-         case(mtype_sparse1)
-             val = mat_sparse1_max_elm(A)
-!            FIXME make
-!            val = mat_sparse1_abs_max_elm(a)
 !#ifdef HAVE_BSM
 !         case(mtype_sparse_block)
 !            val = bsm_abs_max(a)
@@ -1572,7 +1486,6 @@ end type matrixmembuf
 !             call mat_unres_symm_dense_abs_max_elm(a,val)
          case(mtype_unres_dense)
              call mat_unres_dense_abs_max_elm(a,val)
-!         case(mtype_unres_sparse1)
          case default
               call lsquit("mat_abs_max_elm not implemented for this type of matrix",-1)
          end select
@@ -1608,9 +1521,6 @@ end type matrixmembuf
           case(mtype_scalapack)
              call mat_scalapack_max_elm(a,val,tmp)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             if (present(pos)) call lsquit('mat_max_elm(): position parameter not implemented!',-1)
-            val = mat_sparse1_max_elm(a)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
              if (present(pos)) call lsquit('mat_max_elm(): position parameter not implemented!',-1)
@@ -1622,8 +1532,6 @@ end type matrixmembuf
          case(mtype_unres_dense)
              if (present(pos)) call lsquit('mat_max_elm(): position parameter not implemented!',-1)
              call mat_unres_dense_max_elm(a,val)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_max_elm(a,val)
          case default
               call lsquit('mat_max_elm not implemented for this type of matrix',-1)
          end select
@@ -1687,8 +1595,6 @@ end type matrixmembuf
 !             print*,'but the position is more complicated and '
 !             print*,'not implemented.'
              call lsquit('mat_max_diag_elm not fully implemented for scalapack type matrix',-1)
-!         case(mtype_sparse1)
-!             call mat_sparse1_max_diag_elm(a,pos,val)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
             CALL bsm_max_diag(a,pos,val)
@@ -1697,8 +1603,6 @@ end type matrixmembuf
 !             call mat_unres_symm_dense_max_diag_elm(a,pos,val)
          case(mtype_unres_dense)
              call mat_unres_dense_max_diag_elm(a,pos,val)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_max_diag_elm(a,pos,val)
          case default
               call lsquit("mat_max_diag_elm not implemented for this type of matrix",-1)
          end select
@@ -1727,8 +1631,6 @@ end type matrixmembuf
          case(mtype_scalapack)
              mat_outdia_sqnorm2 = mat_scalapack_outdia_sqnorm2(a)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             mat_outdia_sqnorm2 = mat_sparse1_outdia_sqnorm2(a)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
              mat_outdia_sqnorm2 = bsm_outdia_sqnorm2(a)
@@ -1738,8 +1640,6 @@ end type matrixmembuf
 !             mat_outdia_sqnorm2 = mat_unres_symm_dense_outdia_sqnorm2(a)
          case(mtype_unres_dense)
              mat_outdia_sqnorm2 = mat_unres_dense_outdia_sqnorm2(a)
-!         case(mtype_unres_sparse1)
-!             mat_outdia_sqnorm2 = mat_unres_sparse1_outdia_sqnorm2(a)
          case default
               call lsquit("mat_outdia_sqnorm2 not implemented for this type of matrix",-1)
          end select
@@ -1782,15 +1682,11 @@ end type matrixmembuf
             call mat_free(A)
             call mat_free(B)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_diag_f(F,S,eival,Cmo)
 #endif
 !         case(mtype_unres_symm_dense)
 !             call mat_unres_symm_dense_diag_f(F,S,eival,Cmo)
          case(mtype_unres_dense)
              call mat_unres_dense_diag_f(F,S,eival,Cmo)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_diag_f(F,S,eival,Cmo)
          case default
             print *, "FALLBACK diag_f...", S%nrow
             ndim = s%nrow
@@ -1836,7 +1732,6 @@ end type matrixmembuf
          case(mtype_unres_dense)
             call mat_unres_dense_dsyev(S,eival,ndim)
 !            call lsquit('mat_dsyev not implemented for unres',-1)
-!         case(mtype_unres_sparse1)
          case default
             call mem_alloc(S_full,ndim,ndim)
             call mat_to_full(S,1.0E0_realk,S_full)
@@ -1934,15 +1829,11 @@ end type matrixmembuf
       case(mtype_dense)
          call mat_dense_section(A,from_row,to_row,from_col,to_col,Asec)
 #ifndef UNITTEST
-      case(mtype_sparse1)
-         call mat_sparse1_section(A,from_row,to_row,from_col,to_col,Asec)
 #endif
          !         case(mtype_unres_symm_dense)
          !             call mat_unres_symm_dense_section(A,from_row,to_row,from_col,to_col,Asec)
       case(mtype_unres_dense)
          call mat_unres_dense_section(A,from_row,to_row,from_col,to_col,Asec)
-         !         case(mtype_unres_sparse1)
-         !             call mat_unres_sparse1_section(A,from_row,to_row,from_col,to_col,Asec)
       case default
          call lsquit("mat_section not implemented for this type of matrix",-1)
       end select
@@ -2023,10 +1914,6 @@ end subroutine mat_insert_section
             call mat_scalapack_add_identity(1E0_realk,0E0_realk,TMP,I)
              call time_mat_operations2(JOB_mat_identity)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call time_mat_operations1
-             call mat_sparse1_identity(I)
-             call time_mat_operations2(JOB_mat_identity)
 #if defined(HAVE_BSM)
          case(mtype_sparse_block)
              call time_mat_operations1
@@ -2040,8 +1927,6 @@ end subroutine mat_insert_section
              call time_mat_operations1
              call mat_unres_dense_identity(I)
              call time_mat_operations2(JOB_mat_identity)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_identity(I)
          case default
             call time_mat_operations1
             print *, "FALLBACK: mat_identity"
@@ -2089,11 +1974,6 @@ end subroutine mat_insert_section
          case(mtype_scalapack)
             call mat_scalapack_add_identity(alpha, beta, B, C)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-            call mat_init(I, b%nrow, b%ncol)
-            call mat_sparse1_identity(I)
-            call mat_sparse1_add(alpha,I,beta,b,c)
-            call mat_free(I)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
             c = B
@@ -2108,8 +1988,6 @@ end subroutine mat_insert_section
             call mat_unres_dense_identity(I)
             call mat_unres_dense_add(alpha,I,beta,b,c)
             call mat_free(I)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_add(alpha,a,beta,b,c)
          case default
               call lsquit("mat_add_identity not implemented for this type of matrix",-1)
          end select
@@ -2147,8 +2025,6 @@ end subroutine mat_insert_section
          case(mtype_dense)
              call mat_dense_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
             print *, "FALLBACK: mat_create_block converts to full for Block Sparse Matrices"
@@ -2159,8 +2035,6 @@ end subroutine mat_insert_section
 !             call mat_unres_symm_dense_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_unres_dense)
              call mat_unres_dense_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_scalapack)
               call mat_scalapack_create_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case default
@@ -2224,8 +2098,6 @@ end subroutine mat_insert_section
          case(mtype_dense)
              call mat_dense_add_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_add_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
             print *, "FALLBACK: mat_add_block converts to full for Block Sparse Matrices"
@@ -2303,8 +2175,6 @@ end subroutine mat_insert_section
          case(mtype_scalapack)
             call mat_scalapack_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
             print *, "FALLBACK: mat_retrieve_block converts to full for Block Sparse Matrices"
@@ -2315,8 +2185,6 @@ end subroutine mat_insert_section
 !             call mat_unres_symm_dense_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case(mtype_unres_dense)
              call mat_unres_dense_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_retrieve_block(A,fullmat,fullrow,fullcol,insertrow,insertcol)
          case default
               call lsquit("mat_retrieve_block not implemented for this type of matrix",-1)
          end select
@@ -2369,8 +2237,6 @@ end subroutine mat_insert_section
          case(mtype_scalapack)
              call mat_scalapack_scal(alpha, A)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_scal(alpha,A)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
             call bsm_scal(alpha, A)
@@ -2380,8 +2246,6 @@ end subroutine mat_insert_section
 !             call mat_unres_symm_dense_scal(alpha,A)
          case(mtype_unres_dense)
              call mat_unres_dense_scal(alpha,A)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_scal(alpha,A)
          case default
               call lsquit("mat_scal not implemented for this type of matrix",-1)
          end select
@@ -2417,8 +2281,6 @@ end subroutine mat_insert_section
          case(mtype_sparse_block)
             CALL bsm_scal_dia(alpha, A)
 #endif
-         case(mtype_sparse1)
-             call mat_sparse1_scal_dia(alpha,A)
 #endif
          case(mtype_unres_dense)
              call mat_unres_dense_scal_dia(alpha,A)
@@ -2495,8 +2357,6 @@ end subroutine mat_insert_section
          case(mtype_scalapack)
              call mat_scalapack_zero(A)
 #ifndef UNITTEST
-         case(mtype_sparse1)
-             call mat_sparse1_zero(A)
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
             call bsm_scal(0E0_realk, A)
@@ -2508,8 +2368,6 @@ end subroutine mat_insert_section
              call mat_unres_dense_zero(A)
          case(mtype_csr)
              call mat_csr_zero(A)
-!         case(mtype_unres_sparse1)
-!             call mat_unres_sparse1_zero(A)
          case default
               call lsquit("mat_zero not implemented for this type of matrix",-1)
          end select
@@ -2593,8 +2451,6 @@ end subroutine set_lowertriangular_zero
             case(mtype_csr)
                call mat_csr_write_to_disk(iunit,A)
 #ifndef UNITTEST
-            case(mtype_sparse1)
-               call mat_sparse1_write_to_disk(iunit,A)
 #ifdef HAVE_BSM
             case(mtype_sparse_block)
                call bsm_write_to_unit(iunit,A,mat_write_int,mat_write_real)
@@ -2611,8 +2467,6 @@ end subroutine set_lowertriangular_zero
                !             call mat_unres_symm_dense_write_to_disk(iunit,A)
             case(mtype_unres_dense)
                call mat_unres_dense_write_to_disk(iunit,A)
-               !         case(mtype_unres_sparse1)
-               !             call mat_unres_sparse1_write_to_disk(iunit,A)
             case default
                print *, "FALLBACK: mat_write_to_disk"
                allocate(afull(a%nrow, a%ncol))
@@ -2685,8 +2539,6 @@ end subroutine set_lowertriangular_zero
             case(mtype_csr)
                call mat_csr_read_from_disk(iunit,A)
 #ifndef UNITTEST
-            case(mtype_sparse1)
-               call mat_sparse1_read_from_disk(iunit,A)
 #ifdef HAVE_BSM
             case(mtype_sparse_block)
                call bsm_read_from_unit(iunit,A,mat_read_int,mat_read_real)
@@ -2706,8 +2558,6 @@ end subroutine set_lowertriangular_zero
                !             call mat_unres_symm_dense_read_from_disk(iunit,A)
             case(mtype_unres_dense)
                call mat_unres_dense_read_from_disk(iunit,A)
-               !         case(mtype_unres_sparse1)
-               !             call mat_unres_sparse1_read_from_disk(iunit,A)
             case default
                print *, "FALLBACK: mat_read_from_disk"
                allocate(afull(a%nrow, a%ncol))

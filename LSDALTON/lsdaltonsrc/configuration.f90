@@ -29,8 +29,8 @@ use diagonalization, only: diag_lshift_dorth, &
 use decompMod, only: decomp_set_default_config
 use files, only: lsopen,lsclose
 use matrix_operations, only: mat_select_type, matrix_type, &
-     & mtype_symm_dense, mtype_dense, mtype_sparse_block, mtype_sparse1, &
-     & mtype_unres_dense, mtype_unres_sparse1, mtype_csr, mtype_scalapack
+     & mtype_symm_dense, mtype_dense, mtype_sparse_block, &
+     & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input
 use dec_typedef_module,only: DECinfo
@@ -628,7 +628,6 @@ DO
             CASE('.SOEOGC');     config%soeoinp%cfg_grandcan = .true.
             CASE('.SOEODIPOLE'); config%soeoinp%cfg_dipole = .true.
             !END SOEO keywords
-            CASE('.SPARSE');     CALL mat_select_type(mtype_sparse1,lupri)
             CASE('.SPARSETEST'); config%sparsetest = .true.
             CASE('.SPIN');       READ(LUCMD,*) config%decomp%spin
             CASE('.STABILITY');  config%decomp%cfg_check_converged_solution = .true.
