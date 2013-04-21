@@ -47,6 +47,7 @@ endif()
 
 if(cmake_build_type_tolower STREQUAL "debug")
 	add_definitions(-DVAR_DEBUGINT)
+	add_definitions(-DVAR_DEBUG)
 endif()
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
