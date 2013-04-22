@@ -14,7 +14,7 @@ MODULE DEC_settings_mod
 
 contains
 
-  !> \brief Set default settings for DEC test cases (default: run no test cases)
+  !> \brief Set default DEC settings.
   !> See explanation of parameters in type DEC_settings.
   !> \author Kasper Kristensen
   !> \date June 2010
