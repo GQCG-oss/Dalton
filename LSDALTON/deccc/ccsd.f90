@@ -1520,7 +1520,7 @@ contains
   !> \author Patrick Ettenhuber
   !> \date December 2012
   subroutine get_ccsd_residual_integral_driven(deltafock,omega2,t2,fock,govov,no,nv,&
-       ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter)
+       ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,rest)
 #ifdef VAR_OMP
     use omp_lib,only:omp_get_wtime
 #endif
@@ -1570,6 +1570,8 @@ contains
     integer,intent(in) :: iter
     !real(realk),intent(inout) :: govov(nv*no*nv*no)
     type(array),intent(inout) :: govov
+    !logical that specifies whether the amplitudes were read
+    logical, optional, intent(inout) :: rest
 
     ! elementary types needed for the calculation
     real(realk), pointer :: w0(:), w1(:), w2(:), w3(:),Had(:),t2_d(:,:,:,:),&
@@ -1629,7 +1631,7 @@ contains
     integer :: nb2,nb3,nb4,nv2,no2,b2v,o2v,v2o,no3,no4,o2v2
     integer :: tlen,tred,nor,nvr,goffs,aoffs
     integer :: prev_alphaB,mpi_buf
-    logical :: jobtodo,first_round,dynamic_load
+    logical :: jobtodo,first_round,dynamic_load,restart
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !TEST AND DEVELOPMENT VARIABLES!!!!!
     real(realk) :: op_start,op_stop
@@ -1644,7 +1646,8 @@ contains
     integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
 #endif
     TYPE(DECscreenITEM)    :: DecScreen
-    
+    restart=.false.
+    if(present(rest))restart=rest
     master = .true.
     def_atype = DENSE
     scheme = 0
@@ -1781,6 +1784,7 @@ contains
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(scheme,infpar%master)
     call ls_mpi_buffer(dynamic_load,infpar%master)
+    call ls_mpi_buffer(restart,infpar%master)
     call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
     call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -2085,9 +2089,10 @@ contains
 
        !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
        if(scheme==2.or.scheme==1)then
-         call array_cp_tiled2dense(u2,.false.)
-         call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,u2%elm1,nv,0.0E0_realk,w1,lg)
-         call memory_deallocate_array_dense(u2)
+         !call array_cp_tiled2dense(u2,.false.)
+         call array_convert(u2,w2,no2*nv2)
+         call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,w2,nv,0.0E0_realk,w1,lg)
+         !call memory_deallocate_array_dense(u2)
        else
          call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,u2%elm1,nv,0.0E0_realk,w1,lg)
        endif
@@ -2208,18 +2213,20 @@ contains
          !I [alpha  j b gamma] * Lambda^h [gamma a]          = I [alpha j b a]
          call dgemm('n','n',la*no*nv,nv,lg,1.0E0_realk,w2,la*no*nv,yv(fg),nb,0.0E0_realk,w1,la*no*nv)
          !Lambda^p [alpha i]^T * I [alpha j b a]             =+ govov [i j b a]
-         ! i a j b
-         !call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,1.0E0_realk,govov%elm1,no)
-         call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,0.0E0_realk,w2,no)
          if(scheme==4)then
-           call array_add(govov,1.0E0_realk,w2,no2*nv2)
+           call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,1.0E0_realk,govov%elm1,no)
+           !call array_add(govov,1.0E0_realk,w2,no2*nv2)
          else
+           ! i a j b
+           call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,0.0E0_realk,w2,no)
            call array_add(govov,1.0E0_realk,w2,no2*nv2,[1,4,2,3])
          endif
        endif
 
        !VOOV
-       if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2).and.iter/=1) then
+       if((restart.and.iter==1).and..not.scheme==4)&
+         &call array_reorder_4d(1.0E0_realk,w3,la,no,lg,nv,[1,2,4,3],0.0E0_realk,w2)
+       if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2).and.(iter/=1.or.restart)) then
         ! gvoov = (vo|ov) constructed from w2               = I [alpha j b  gamma]
         !I [alpha  j b gamma] * Lambda^h [gamma i]          = I [alpha j b i]
         call dgemm('n','n',la*no*nv,no,lg,1.0E0_realk,w2,la*no*nv,yo(fg),nb,0.0E0_realk,w1,la*no*nv)
