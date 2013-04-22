@@ -2303,6 +2303,9 @@ contains
     type(array) :: tmp
     character(ARR_MSG_LEN) :: msg
     integer :: ii,jj,aa,bb
+    logical :: restart
+
+    restart = .false.
     
     safefilet11='t11'
     safefilet12='t12'
@@ -2586,10 +2589,10 @@ contains
           if(DECinfo%use_singles)then
             t1(iter) = array_minit_rpseudo_dense(ampl2_dims,2)
             t2(iter) = array_minit_tdpseudo_dense(ampl4_dims,4)
-            call get_guess_vectors(t2(iter),safefilet21,safefilet22,t1(iter),safefilet11,safefilet12)
+            call get_guess_vectors(restart,t2(iter),safefilet21,safefilet22,t1(iter),safefilet11,safefilet12)
           else
             t2(iter) = array_minit_tdpseudo_dense(ampl4_dims,4)
-            call get_guess_vectors(t2(iter),safefilet21,safefilet22)
+            call get_guess_vectors(restart,t2(iter),safefilet21,safefilet22)
          endif
        end if GetGuessVectors
 
@@ -2643,7 +2646,7 @@ contains
 
           call get_ccsd_residual_integral_driven(delta_fock%elm1,omega2(iter),t2(iter),&
              & fock%elm1,iajb,no,nv,ppfock%elm1,qqfock%elm1,pqfock%elm1,qpfock%elm1,xo%elm1,&
-             & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem, omega1(iter)%elm1,iter)
+             & xv%elm1,yo%elm1,yv%elm1,nb,MyLsItem,omega1(iter)%elm1,iter,rest=restart)
 
        end if SelectCoupledClusterModel
        
@@ -3041,8 +3044,9 @@ contains
   !is returned
   !> \author Patrick Ettenhuber
   !> \date December 2012
-  subroutine get_guess_vectors(t2,safefilet21,safefilet22,t1,safefilet11,safefilet12)
+  subroutine get_guess_vectors(restart,t2,safefilet21,safefilet22,t1,safefilet11,safefilet12)
     implicit none
+    logical,intent(out) :: restart
     !> contains the guess doubles amplitudes on output
     type(array),intent(inout) :: t2
     !> the filenames to check for valid doubles amplitudes
@@ -3191,12 +3195,14 @@ contains
     if(readfile1)then
       READ(fu_t1),t1%elm1
       CLOSE(fu_t1)
+      restart = .true.
     else
       call array_zero(t1)
     endif
     if(readfile2)then
       READ(fu_t2), t2%elm1
       CLOSE(fu_t2)
+      restart = .true.
     else
       call array_zero(t2)
     endif
