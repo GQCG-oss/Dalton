@@ -2137,7 +2137,8 @@ contains
        !u[k gamma  c j] * Lambda^p [alpha j] ^T = u [k gamma c alpha]
        call dgemm('n','t',no*nv*lg,la,no,1.0E0_realk,uigcj,no*nv*lg,xo(fa),nb,0.0E0_realk,w1,nv*no*lg)
        !Transpose u[k gamma c alpha]^T -> u[c alpha k gamma]
-       call mat_transpose(w1,no*lg, nv*la,w3)
+       !call mat_transpose(w1,no*lg, nv*la,w3)
+       call array_reorder_4d(1.0E0_realk,w1,no,lg, nv,la,[3,4,1,2],0.0E0_realk,w3)
 
        !print*,"GAMMA:",fg,nbatchesGamma,"ALPHA:",fa,nbatchesAlpha
        !print*,"--------------------------------------------------"
@@ -2168,7 +2169,8 @@ contains
        ! I [gamma delta alpha beta] * Lambda^p [beta l] = I[gamma delta alpha l]
        call dgemm('n','n',lg*la*nb,no,nb,1.0E0_realk,w0,lg*nb*la,xo,nb,0.0E0_realk,w2,lg*nb*la)
        !Transpose I [gamma delta alpha l]^T -> I [alpha l gamma delta]
-       call mat_transpose(w2,lg*nb,la*no,w1)
+       !call mat_transpose(w2,lg*nb,la*no,w1)
+       call array_reorder_4d(1.0E0_realk,w2,lg,nb,la,no,[3,4,1,2],0.0E0_realk,w1)
 
 
        !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
@@ -3144,9 +3146,11 @@ contains
 
         !Transpose u [d a i l] -> u [a i l d]
         if(s==4)then
-          call mat_transpose(u2%elm1,nv,no*no*nv,w3)
+          !call mat_transpose(u2%elm1,nv,no*no*nv,w3)
+          call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w3)
         elseif(s==3)then
-          call mat_transpose(u2%elm1,nv,no*no*nv,w1)
+          !call mat_transpose(u2%elm1,nv,no*no*nv,w1)
+          call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
           do i=1,tl
             call dcopy(no*nv,w1(fai+i-1),no*nv,w3(i),tl)
           enddo
@@ -3200,7 +3204,8 @@ contains
           call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w3,nv*no,0.0E0_realk,w1(fai),nv*no)
           !call print_norm(w1,lead*no*nv)
         elseif(s==3)then
-          call mat_transpose(u2%elm1,nv,no*no*nv,w1)
+          !call mat_transpose(u2%elm1,nv,no*no*nv,w1)
+          call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
           call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w1,nv*no,0.0E0_realk,w3,lead)
           !write (msg,*),infpar%lg_mynum,"has 2:"
           !call print_norm(w3,lead*no*nv,msg)
