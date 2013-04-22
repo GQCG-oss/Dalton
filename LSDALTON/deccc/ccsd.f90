@@ -2213,18 +2213,18 @@ contains
          !I [alpha  j b gamma] * Lambda^h [gamma a]          = I [alpha j b a]
          call dgemm('n','n',la*no*nv,nv,lg,1.0E0_realk,w2,la*no*nv,yv(fg),nb,0.0E0_realk,w1,la*no*nv)
          !Lambda^p [alpha i]^T * I [alpha j b a]             =+ govov [i j b a]
-         ! i a j b
-         !call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,1.0E0_realk,govov%elm1,no)
-         call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,0.0E0_realk,w2,no)
          if(scheme==4)then
-           call array_add(govov,1.0E0_realk,w2,no2*nv2)
+           call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,1.0E0_realk,govov%elm1,no)
+           !call array_add(govov,1.0E0_realk,w2,no2*nv2)
          else
+           ! i a j b
+           call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,0.0E0_realk,w2,no)
            call array_add(govov,1.0E0_realk,w2,no2*nv2,[1,4,2,3])
          endif
        endif
 
        !VOOV
-       if(restart.and.iter==1)&
+       if((restart.and.iter==1).and..not.scheme==4)&
          &call array_reorder_4d(1.0E0_realk,w3,la,no,lg,nv,[1,2,4,3],0.0E0_realk,w2)
        if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2).and.(iter/=1.or.restart)) then
         ! gvoov = (vo|ov) constructed from w2               = I [alpha j b  gamma]
