@@ -1631,7 +1631,7 @@ contains
     integer :: nb2,nb3,nb4,nv2,no2,b2v,o2v,v2o,no3,no4,o2v2
     integer :: tlen,tred,nor,nvr,goffs,aoffs
     integer :: prev_alphaB,mpi_buf
-    logical :: jobtodo,first_round,dynamic_load,restart
+    logical :: jobtodo,first_round,dynamic_load,restart,print_debug
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !TEST AND DEVELOPMENT VARIABLES!!!!!
     real(realk) :: op_start,op_stop
@@ -1656,6 +1656,13 @@ contains
     stopp=0.0E0_realk
     !double_2G_nel=250000000
     double_2G_nel=170000000
+    print_debug = .false.
+
+#ifdef VAR_DEBUG
+    double_2G_nel=20
+    print_debug = .true.
+#endif
+    
 
     ! Set integral info
     ! *****************
@@ -2120,7 +2127,7 @@ contains
       
       !check if the current job is to be done by current node
       call check_job(scheme,first_round,dynamic_load,alphaB,gammaB,nbatchesAlpha,&
-        &nbatchesGamma,mpi_task_distribution,win_in_g,.true.)
+        &nbatchesGamma,mpi_task_distribution,win_in_g,print_debug)
        !break the loop if alpha become too large, necessary to account for all
        !of the mpi and non mpi schemes, this is accounted for, because static,
        !and dynamic load balancing are enabled
@@ -5598,102 +5605,6 @@ contains
   end subroutine get_fock_matrix_for_dec_oa
 
 
-  subroutine get_int_dist_info(o2v2,firstintel,nintel,remoterank)
-    implicit none
-    integer, intent(in) :: o2v2
-    integer, intent(out) :: firstintel,nintel
-    integer(kind=ls_mpik), intent(in), optional :: remoterank
-    integer(kind=ls_mpik) :: nnod, me
-    nnod = 1
-    me   = 0
-#ifdef VAR_LSMPI
-    nnod = infpar%lg_nodtot
-    if(.not.present(remoterank))then
-      me = infpar%lg_mynum
-    else
-      me = remoterank
-    endif
-#endif
-    nintel = o2v2/nnod
-    firstintel = me*nintel + 1
-    if(me<mod(o2v2,nnod))then
-      nintel = nintel + 1
-      firstintel = firstintel + me 
-    elseif(me>=mod(o2v2,nnod))then
-      firstintel = firstintel + mod(o2v2,nnod) 
-    endif
-  end subroutine get_int_dist_info
-
-  subroutine dist_int_contributions(g,o2v2,win)
-    implicit none
-    integer,intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
-    integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik) :: nnod,node,me
-    integer :: fe,ne,msg_len_mpi
-    fe=1
-    ne=0
-    nnod = 1
-    msg_len_mpi=170000000
-#ifdef VAR_LSMPI
-    nnod = infpar%lg_nodtot
-    me   = infpar%lg_mynum
-    do node=0,nnod-1
-      call get_int_dist_info(o2v2,fe,ne,node)
-      !print *,infpar%lg_mynum,"distributing",fe,fe+ne-1,ne,o2v2,node
-      call lsmpi_win_lock(node,win,'e')
-      call lsmpi_acc(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
-      call lsmpi_win_unlock(node,win)
-    enddo
-#endif
-  end subroutine dist_int_contributions
-
-  subroutine collect_int_contributions(g,o2v2,win)
-    implicit none
-    integer,intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
-    integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik) :: nnod,node,me
-    integer :: fe,ne,msg_len_mpi
-    fe=1
-    ne=0
-    nnod = 1
-    !msg_len_mpi=17
-    msg_len_mpi=170000000
-#ifdef VAR_LSMPI
-    nnod = infpar%lg_nodtot
-    me   = infpar%lg_mynum
-    do node=0,nnod-1
-      !print *,infpar%lg_mynum,"collecting",fe,fe+ne-1,ne,o2v2,node
-      call get_int_dist_info(o2v2,fe,ne,node)
-      call lsmpi_win_lock(node,win,'s')
-      call lsmpi_get(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
-      call lsmpi_win_unlock(node,win)
-    enddo
-#endif
-  end subroutine collect_int_contributions
-  subroutine collect_int_contributions_f(g,o2v2,win)
-    implicit none
-    integer,intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
-    integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik) :: nnod,node,me
-    integer :: fe,ne,msg_len_mpi
-    fe=1
-    ne=0
-    nnod = 1
-    !msg_len_mpi=17
-    msg_len_mpi=170000000
-#ifdef VAR_LSMPI
-    nnod = infpar%lg_nodtot
-    me   = infpar%lg_mynum
-    do node=0,nnod-1
-      !print *,infpar%lg_mynum,"collecting f",fe,fe+ne-1,ne,o2v2,node
-      call get_int_dist_info(o2v2,fe,ne,node)
-      call lsmpi_get(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
-    enddo
-#endif
-  end subroutine collect_int_contributions_f
 
 end module ccsd_module
 
