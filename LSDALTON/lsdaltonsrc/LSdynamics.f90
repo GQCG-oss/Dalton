@@ -31,9 +31,9 @@ Contains
 Subroutine LS_dyn_run(E,config,H1,F,D,S,CMO,ls)
 !Use LSTiming
 IMPLICIT NONE
-Real(realk) :: E
+Real(realk) :: E(1)
 Type(lsitem), intent(inout) :: ls
-Type(Matrix), intent(inout) :: F,D,S,H1
+Type(Matrix), intent(inout) :: F(1),D(1),S,H1
 Type(ConfigItem), intent(inout) :: Config
 Type(Matrix), intent(inout) :: CMO       ! Orbitals
 Type(trajtype) :: Traj
@@ -54,16 +54,16 @@ luerr = config%luerr
 Finished = .FALSE.
 NAtoms = ls%input%Molecule%NAtoms
 ! Electronic energy is now potential for the nuclei
-traj%CurrPotential = E
+traj%CurrPotential = E(1)
 ! Energy and phase space information will be written to a separate file
 ! called DALTON.PHS. This file can be used to restart trajectory calculations
 config%dynamics%Phase = -1
 Call LSOpen(config%dynamics%Phase,'DALTON.PHS','NEW','FORMATTED')
-Call Prepare_Integration(NAtoms,ls,config,traj,config%dynamics,D%nrow,lupri) 
+Call Prepare_Integration(NAtoms,ls,config,traj,config%dynamics,D(1)%nrow,lupri) 
 !
 ! Get first gradient
 !
-Call Calc_gradient(lupri,NAtoms,S,F,D,ls,config,CMO,traj)
+Call Calc_gradient(lupri,NAtoms,S,F(1),D(1),ls,config,CMO,traj)
 ! Getting accelerations
 If (.NOT. config%dynamics%Mass_Weight) then
    Do i = 1,NAtoms
@@ -85,7 +85,7 @@ Do
   !
   Call Verlet_step(F,D,S,H1,CMO,ls,config,luerr,lupri,NAtoms,traj,config%dynamics)
   ! Get properties
-  Call lsdalton_response(ls,config,F,D,S)
+  Call lsdalton_response(ls,config,F(1),D(1),S)
   ! Thermostatting if requested
   If (Config%Dynamics%Andersen) then
      Call Andersen_thermostat(NAtoms,Traj%Velocities,Traj%Mass,config%dynamics%Temp,&
@@ -218,7 +218,7 @@ Type(lsitem), intent(inout) :: ls
 Type(ConfigItem), intent(inout) :: Config
 Type(Dyntype), intent(inout) :: dyn
 Type(trajtype), intent(inout) :: Traj
-Type(Matrix), intent(inout) :: F,D,S,H1  
+Type(Matrix), intent(inout) :: F(1),D(1),S,H1  
 Type(Matrix), intent(inout) :: CMO       ! Orbitals
 Real(realk) :: Initial_Potential
 !
@@ -362,12 +362,12 @@ Type(lsitem), intent(inout) :: ls
 Type(ConfigItem), intent(inout) :: Config
 Type(Dyntype), intent(inout) :: dyn
 Type(trajtype), intent(inout) :: Traj
-Type(Matrix), intent(inout) :: F,D,S,H1
+Type(Matrix), intent(inout) :: F(1),D(1),S,H1
 Type(Matrix), intent(inout) :: CMO       ! Orbitals
 Real(realk) :: CPUTime,WallTime
 Real(realk), parameter :: fs2au = 41.3413733365613E0_realk
 Real(realk), pointer :: MW_Gradient(:)
-real(realk) :: Eerr
+real(realk) :: Eerr,Etmp(1)
 ! If mass-weighted coordinates are used
 If (dyn%Mass_Weight) then
    Call mem_alloc(MW_Gradient,3*NAtoms)
@@ -396,14 +396,14 @@ Endif
 ! Propagate density matrix if requested
 !
 If (dyn%TimRev) then
-  Call Propagation(dyn%Filter_order,D%nrow,traj%StepNum,&
-  & D,traj%Darr,traj%Daux,dyn%Start_propagation)
+  Call Propagation(dyn%Filter_order,D(1)%nrow,traj%StepNum,&
+  & D(1),traj%Darr,traj%Daux,dyn%Start_propagation)
 Endif
 !
 ! Extrapolate Fock matrix if requested
 !
 If (dyn%FockMD) then
-   Call FMD_run(traj,F,traj%StepNum,dyn%NPoints,dyn%PolyOrd,dyn%Start_propagation)
+   Call FMD_run(traj,F(1),traj%StepNum,dyn%NPoints,dyn%PolyOrd,dyn%Start_propagation)
 Endif
 !
 ! New energy
@@ -414,13 +414,14 @@ Endif
 Call LSTimer('*START',CPUTime,WallTime,lupri)
 !
 Call Pack_coordinates(ls%input%Molecule,Traj%Coordinates,NAtoms)
-Call Get_Energy(traj%CurrPotential,Eerr,config,H1,F,D,S,ls,CMO,NAtoms,lupri,luerr)
+Call Get_Energy(Etmp,Eerr,config,H1,F,D,S,ls,CMO,NAtoms,lupri,luerr)
+traj%CurrPotential = Etmp(1)
 Call LSTimer('Energy calc.',CPUTime,WallTime,lupri)
 !
 ! New gradient
 !
 Call LSTimer('*START',CPUTime,WallTime,lupri)
-Call Calc_gradient(lupri,NAtoms,S,F,D,ls,config,CMO,traj)
+Call Calc_gradient(lupri,NAtoms,S,F(1),D(1),ls,config,CMO,traj)
 Call LSTimer('Forces calc.',CPUTime,WallTime,lupri)
 ! Mass-weight if needed
 If (dyn%Mass_Weight) then

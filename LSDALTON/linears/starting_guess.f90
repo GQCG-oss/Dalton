@@ -40,7 +40,7 @@ subroutine get_initial_dens(H1,S,D,ls,config)
    !> Overlap matrix
    type(Matrix),intent(inout),target :: S
    !> Density matrix (output)
-   type(Matrix),intent(inout)     :: D 
+   type(Matrix),intent(inout)     :: D(1)
    !> Contains setting for integrals
    type(lsitem) :: ls
    !> Contains all info about configuration/settings for SCF calculation
@@ -99,7 +99,7 @@ subroutine get_initial_dens(H1,S,D,ls,config)
      restart_lun = -1  !initialization
      call lsopen(restart_lun,'dens.restart','OLD','UNFORMATTED')
      rewind restart_lun
-     call mat_read_from_disk(restart_lun,D,OnMaster)
+     call mat_read_from_disk(restart_lun,D(1),OnMaster)
      call mat_read_info_from_disk(restart_lun,gcbasis)
      call lsclose(restart_lun,'KEEP')
      IF (.NOT.(config%optinfo%optimize.AND.(config%optinfo%ItrNmr.GT. 0))) THEN
@@ -123,7 +123,7 @@ subroutine get_initial_dens(H1,S,D,ls,config)
 
         !Load in saved lcv basis
         !Allocate space and make decomposition aware of the basis
-        call mat_init(config%decomp%lcv_CMO,D%nrow,D%ncol)
+        call mat_init(config%decomp%lcv_CMO,D(1)%nrow,D(1)%ncol)
         config%decomp%decompMatInit_lcv_CMO = .TRUE.
         config%decomp%lcv_basis = .true.
  
@@ -152,7 +152,7 @@ subroutine get_initial_dens(H1,S,D,ls,config)
         IF(config%decomp%cfg_transformrestart)THEN
            WRITE(config%lupri,*) 'Your dens.restart was constructed using the standard basis'
            WRITE(config%lupri,*) 'We transform to the grand-canonical (GC) basis.'
-           call AO2GCAO_transform_matrixD(D,ls%setting,config%lupri)
+           call AO2GCAO_transform_matrixD(D(1),ls%setting,config%lupri)
         ELSE
            WRITE(config%lupri,*) 'Your dens.restart was constructed using the standard basis, while your'
            WRITE(config%lupri,*) 'DALTON.INP uses the grand-canonical (GC) basis. The GC basis is default'
@@ -180,7 +180,7 @@ subroutine get_initial_dens(H1,S,D,ls,config)
         !FIXME:It might require some changes for the open-shell systems!!!
         write(config%lupri,*)'Performing McWeeny purification for molecular gradient run.'
 
-        call McWeeney_purify(S,D,purify_failed)
+        call McWeeney_purify(S,D(1),purify_failed)
         !If purification failed, fall back to a default initial guess!
         if (purify_failed) then
          write(config%lupri,*) 'Warning:McWeeny purification failed. We fall back to an initial guess!'
@@ -191,7 +191,7 @@ subroutine get_initial_dens(H1,S,D,ls,config)
            ! Tr(DS) and compare with the number of electrons. If the difference is large 
            ! we instead start from a new initial guess
            Nelectrons = FLOAT(2*config%decomp%nocc + config%decomp%nactive)
-           trace =  mat_dotproduct(D,S)
+           trace =  mat_dotproduct(D(1),S)
            if ( abs(2.0*trace-Nelectrons) .gt. THRNEL*Nelectrons) then
              write(config%lupri,*)'Warning: Descrepancy between 2.0*Tr(DS) after purification and Nelectrons '
              write(config%lupri,*)'2.0*Tr(DS) = ',2.0*trace,' Nelectrons = ', Nelectrons
@@ -204,9 +204,9 @@ subroutine get_initial_dens(H1,S,D,ls,config)
      restart_lun = -1  !initialization
      call lsopen(restart_lun,'cmo.restart','OLD','UNFORMATTED')
      rewind restart_lun
-     call mat_init(C,D%nrow,D%ncol)
+     call mat_init(C,D(1)%nrow,D(1)%ncol)
      call mat_read_from_disk(restart_lun,C,OnMaster)
-     call mat_density_from_orbs(C,D,config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
+     call mat_density_from_orbs(C,D(1),config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
      call mat_free(C)
      call lsclose(restart_lun,'KEEP')
      WRITE(config%lupri,*)
@@ -218,7 +218,7 @@ subroutine get_initial_dens(H1,S,D,ls,config)
    config%decomp%S => S !For TRILEVEL to work
 
    if (config%opt%DEBUG_CONVERT) then
-      call debug_convert_density(config%opt,D)
+      call debug_convert_density(config%opt,D(1))
    endif
 
 end subroutine get_initial_dens
@@ -231,7 +231,7 @@ end subroutine get_initial_dens
     !> One-electron Hamiltonian
     type(matrix),intent(inout)     :: H1,S
     !> Initial density matrix (output)
-    type(matrix),intent(inout)     :: D
+    type(matrix),intent(inout)     :: D(1)
     !> Contains info about integrals (?)
     type(lsitem),intent(inout)     :: ls
     !> Contains all info about configuration/settings for SCF calculation
@@ -244,7 +244,7 @@ end subroutine get_initial_dens
          use matrix_module
          use configurationType
          TYPE(lsitem),target :: ls
-         Type(Matrix) :: D
+         Type(Matrix) :: D(1)
          type(ConfigItem) :: config
        end subroutine trilevel_start
     end interface
@@ -256,7 +256,7 @@ end subroutine get_initial_dens
          type(ConfigItem),intent(in) :: config
          TYPE(lsitem),intent(inout) :: ls
          Type(Matrix),target        :: H1
-         Type(Matrix),intent(inout) :: D,S
+         Type(Matrix),intent(inout) :: D(1),S
        end subroutine atoms_start
     end interface
     !Huckel doesn't work for unrestricted - not sure why! /Stinne
@@ -272,7 +272,7 @@ end subroutine get_initial_dens
        write(*,*) 'Optimize first density for H1 operator'
        write(config%lupri,*) 'Optimize first density for H1 operator'
        write(config%lupri,*)
-       call starting_guess_h1(config,H1,D)
+       call starting_guess_h1(config,H1,D(1))
     else if (config%opt%cfg_start_guess=='HUCKEL') then
         call lsquit('Huckel guess not implemented',config%lupri)
     !   write(*,*) 'Take first density from Hueckel guess'
@@ -285,7 +285,7 @@ end subroutine get_initial_dens
     else if (config%opt%cfg_start_guess=='H1OAO') then
        write(config%lupri,*) 'Take first density from H1DIAG in OAO basis'
        write(config%lupri,*)
-       call starting_guess_h1oao(config%decomp,H1,D)
+       call starting_guess_h1oao(config%decomp,H1,D(1))
     else if (config%opt%cfg_start_guess=='ATOMS') then
        write(config%lupri,*) 'First density: Atoms in molecule guess'
        write(config%lupri,*)
@@ -297,12 +297,12 @@ end subroutine get_initial_dens
     else if (config%opt%cfg_start_guess=='LINCOMB') then
        write(config%lupri,*) 'Starting guess is linear combination of densities on disk'
        write(config%lupri,*)
-       call starting_guess_lincomb(D,config%opt)
+       call starting_guess_lincomb(D(1),config%opt)
     else
        write(*,*) 'Optimize first density for H1 operator'
        write(config%lupri,*) 'Optimize first density for H1 operator'
        write(config%lupri,*)
-       call starting_guess_h1(config,H1,D)
+       call starting_guess_h1(config,H1,D(1))
     !ELSE
     !   ! Option to start from the fitted density. Works only in Coulomb,
     !   ! i.e. the Hartree approximation. Could prove useful for projecting

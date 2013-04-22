@@ -4659,7 +4659,7 @@ logical             :: ADMMexchange,testNelectrons,unres,grid_done
 real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3
 character(21)       :: L2file,L3file
-
+IF(ndmat.GT.1)call lsquit('II_get_admm_exchange_mat ndmat.GT.1',-1)
 nbast = F%nrow
 unres = matrix_type .EQ. mtype_unres_dense
 
