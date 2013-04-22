@@ -1471,6 +1471,38 @@ end subroutine collect_thread_memory
 !WRITE(*,'(3X,A10,A14,A40)') id,' memory usage:',memory_string
 !END SUBROUTINE print_mem
 
+  !> \brief When memory allocation fails, this subroutine should be called.
+  !> It prints a memory statistics summary and quits LSDALTON.
+  !> \author Kasper Kristensen
+  !> \date April 2013
+subroutine memory_error_quit(mylabel,lupri)
+implicit none
+!> Label for routine where memory allocation failed
+character(*),intent(in) :: mylabel
+!> Unit number for lsquit output 
+integer,intent(in) :: lupri
+integer :: myoutput
+
+if(lupri==-1) then
+! Print memory statistics to screen
+myoutput=6
+else
+! Print memory statistics to output file
+myoutput=lupri
+end if
+
+! Memory statistics
+write(myoutput,*) 
+write(myoutput,*) 'Printing memory statistics before quitting LSDALTON...'
+write(myoutput,*) 
+call stats_mem(myoutput)
+
+! Quit
+call lsquit(mylabel,lupri)
+
+end subroutine memory_error_quit
+
+
 !----- ALLOCATE REAL POINTERS -----!
 
 SUBROUTINE real_allocate_1dim(A,n)
@@ -1485,7 +1517,7 @@ integer (kind=long) :: nsize
 !$OMP END CRITICAL
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_1dim',IERR,n
-     CALL lsQUIT('Error in real_allocate_1dim',-1)
+     CALL memory_error_quit('Error in real_allocate_1dim',-1)
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1501,7 +1533,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_1dim_sp',IERR,n
-     CALL lsQUIT('Error in real_allocate_1dim_sp',-1)
+     CALL memory_error_quit('Error in real_allocate_1dim_sp',-1)
    ENDIF
    nsize = size(A,KIND=long)*4
    call mem_allocated_mem_real(nsize)
@@ -1518,7 +1550,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_1dim_int64',IERR,n
-     CALL lsQUIT('Error in real_allocate_1dim_int64',-1)
+     CALL memory_error_quit('Error in real_allocate_1dim_int64',-1)
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1765,7 +1797,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in real_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in real_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -1784,7 +1816,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in real_deallocate_1dim_sp - memory previously released',-1)
+      call memory_error_quit('Error in real_deallocate_1dim_sp - memory previously released',-1)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -1804,7 +1836,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in real_deallocate_2dim - memory previously released',-1)
+      call memory_error_quit('Error in real_deallocate_2dim - memory previously released',-1)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -1823,7 +1855,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in real_deallocate_2dim_sp - memory previously released',-1)
+      call memory_error_quit('Error in real_deallocate_2dim_sp - memory previously released',-1)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -1843,7 +1875,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in real_deallocate_3dim - memory previously released',-1)
+      call memory_error_quit('Error in real_deallocate_3dim - memory previously released',-1)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -1862,7 +1894,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in real_deallocate_3dim_sp - memory previously released',-1)
+      call memory_error_quit('Error in real_deallocate_3dim_sp - memory previously released',-1)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -1881,7 +1913,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in real_deallocate_4dim - memory previously released',-1)
+      call memory_error_quit('Error in real_deallocate_4dim - memory previously released',-1)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -1900,7 +1932,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_real(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in real_deallocate_5dim - memory previously released',-1)
+      call memory_error_quit('Error in real_deallocate_5dim - memory previously released',-1)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -1919,7 +1951,7 @@ nsize = size(A,KIND=long)*mem_realsize
 call mem_deallocated_mem_real(nsize)
 if (.not.ASSOCIATED(A)) then
    print *,'Memory previously released!!'
-   call lsQUIT('Error in real_deallocate_5dim - memory previously released',-1)
+   call memory_error_quit('Error in real_deallocate_5dim - memory previously released',-1)
 endif
 DEALLOCATE(A,STAT = IERR)
 IF (IERR.NE. 0) THEN
@@ -1944,14 +1976,14 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
 
    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_realk,IERR)
 
-   if(IERR/=0)call lsquit("ERROR(mpi_allocate_dV):error in&
+   if(IERR/=0)call memory_error_quit("ERROR(mpi_allocate_dV):error in&
    &mpi_type_get_extent",IERR)
 
    bytes =n*mpi_realk
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     CALL lsQUIT("ERROR(mpi_allocate_dV):error in alloc",IERR)
+     CALL memory_error_quit("ERROR(mpi_allocate_dV):error in alloc",IERR)
    ENDIF
 
    call c_f_pointer(cip,A,[n])
@@ -1979,14 +2011,14 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    info = MPI_INFO_NULL
 
    call MPI_TYPE_GET_EXTENT(MPI_INTEGER,lb,mpi_intlen,IERR)
-   if(IERR/=0)call lsquit("ERROR(mpi_allocate_iV):error in&
+   if(IERR/=0)call memory_error_quit("ERROR(mpi_allocate_iV):error in&
    &mpi_type_get_extent",IERR)
 
    bytes =n*mpi_intlen
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     CALL lsQUIT("ERROR(mpi_allocate_iV):error in alloc",IERR)
+     CALL memory_error_quit("ERROR(mpi_allocate_iV):error in alloc",IERR)
    ENDIF
    call c_f_pointer(cip,A,[n])
 
@@ -2011,7 +2043,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    info = MPI_INFO_NULL
 
    call MPI_TYPE_GET_EXTENT(MPI_INTEGER,lb,mpi_intlen,IERR)
-   if(IERR/=0)call lsquit("ERROR(mpi_deallocate_iV):error in&
+   if(IERR/=0)call memory_error_quit("ERROR(mpi_deallocate_iV):error in&
    &mpi_type_get_extent",IERR)
 
    nsize = size(A)*mpi_intlen
@@ -2019,12 +2051,12 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
 
    if (.not.ASSOCIATED(A).or..not.c_associated(cip)) then
       print *,'Memory previously released!!'
-      call lsQUIT('ERROR(mpi_deallocate_iV): memory previously released',-1)
+      call memory_error_quit('ERROR(mpi_deallocate_iV): memory previously released',-1)
    endif
 
    call MPI_FREE_MEM(A,IERR)
    IF (IERR.NE. 0) THEN
-     call lsquit("ERROR(mpi_deallocate_iV)",-1)
+     call memory_error_quit("ERROR(mpi_deallocate_iV)",-1)
    ENDIF
 
    nullify(A)
@@ -2046,7 +2078,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    info = MPI_INFO_NULL
 
    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_realk,IERR)
-   if(IERR/=0)call lsquit("ERROR(mpi_deallocate_dV):error in&
+   if(IERR/=0)call memory_error_quit("ERROR(mpi_deallocate_dV):error in&
    &mpi_type_get_extent",IERR)
 
    nsize = size(A)*mpi_realk
@@ -2054,13 +2086,13 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
 
    if (.not.ASSOCIATED(A).or..not.c_associated(cip)) then
       print *,'Memory previously released!!'
-      call lsQUIT('ERROR(mpi_deallocate_dV): memory previously released',-1)
+      call memory_error_quit('ERROR(mpi_deallocate_dV): memory previously released',-1)
    endif
 
    call MPI_FREE_MEM(A,IERR)
 
    IF (IERR.NE. 0) THEN
-     call lsquit("ERROR(mpi_deallocate_dV)",-1)
+     call memory_error_quit("ERROR(mpi_deallocate_dV)",-1)
    ENDIF
 
    nullify(A)
@@ -2081,8 +2113,8 @@ integer (kind=long) :: nsize
    nullify(A)
    ALLOCATE(A(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_allocate_1dim',IERR,n
-     CALL lsQUIT('Error in real_allocate_1dim',-1)
+     write(*,*) 'Error in complex_allocate_1dim',IERR,n
+     CALL memory_error_quit('Error in complex_allocate_1dim',-1)
    ENDIF
    nsize = size(A,KIND=long)*mem_complexsize
    call mem_allocated_mem_complex(nsize)
@@ -2115,11 +2147,11 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_complex(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in real_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in complex_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_deallocate_1dim',IERR
+     write(*,*) 'Error in complex_deallocate_1dim',IERR
      STOP
    ENDIF
    nullify(A)
@@ -2134,7 +2166,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_complex(nsize)
    if (.not.ASSOCIATED(A)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in complex_deallocate_2dim - memory previously released',-1)
+      call memory_error_quit('Error in complex_deallocate_2dim - memory previously released',-1)
    endif
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2163,7 +2195,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int64_allocate_1dim',IERR,n
-     call lsquit('Error in int64_allocate_1dim',-1)
+     call memory_error_quit('Error in int64_allocate_1dim',-1)
    ENDIF
    nsize = size(I,KIND=long)*mem_int8size
    call mem_allocated_mem_integer(nsize)
@@ -2187,7 +2219,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int64_allocate_1dim',IERR,n
-     call lsquit('Error in int64_allocate_1dim',-1)
+     call memory_error_quit('Error in int64_allocate_1dim',-1)
    ENDIF
    nsize = size(I,KIND=long)*mem_int4size
    call mem_allocated_mem_integer(nsize)
@@ -2213,7 +2245,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int32_allocateS_1dim',IERR,n
-     call lsquit('Error in int32_allocateS_1dim',-1)
+     call memory_error_quit('Error in int32_allocateS_1dim',-1)
    ENDIF
    nsize = size(I,KIND=long)*mem_shortintsize
    call mem_allocated_mem_integer(nsize)
@@ -2241,7 +2273,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int4_allocate_2dim',IERR,n1,n2
-     call lsquit('Error in int4_allocate_2dim',-1)
+     call memory_error_quit('Error in int4_allocate_2dim',-1)
    ENDIF
    nsize = size(I,KIND=long)*mem_int4size
    call mem_allocated_mem_integer(nsize)
@@ -2267,7 +2299,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int8_allocate_2dim',IERR,n1,n2
-     call lsquit('Error in int8_allocate_2dim',-1)
+     call memory_error_quit('Error in int8_allocate_2dim',-1)
    ENDIF
    nsize = size(I,KIND=long)*mem_int8size
    call mem_allocated_mem_integer(nsize)
@@ -2283,7 +2315,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in shortint_allocate_2dim',IERR,n1,n2
-     call lsquit('Error in shortint_allocate_2dim',-1)
+     call memory_error_quit('Error in shortint_allocate_2dim',-1)
    ENDIF
    nsize = size(I,KIND=long)*mem_shortintsize
    call mem_allocated_mem_integer(nsize)
@@ -2299,7 +2331,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n1,n2,n3),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int_allocate_3dim',IERR,n1,n2,n3
-     call lsquit('Error in int_allocate_3dim',-1)
+     call memory_error_quit('Error in int_allocate_3dim',-1)
    ENDIF
    nsize = size(I,KIND=long)*mem_intsize
    call mem_allocated_mem_integer(nsize)
@@ -2325,7 +2357,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n1,n2,n3,n4),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int8_allocate_4dim',IERR,n1,n2,n3,n4
-     call lsquit('Error in int8_allocate_4dim',-1)
+     call memory_error_quit('Error in int8_allocate_4dim',-1)
    ENDIF
    nsize = size(I,KIND=long)*mem_int8size
    call mem_allocated_mem_integer(nsize)
@@ -2349,7 +2381,7 @@ integer (kind=long) :: nsize
    ALLOCATE(I(n1,n2,n3,n4),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int4_allocate_4dim',IERR,n1,n2,n3,n4
-     call lsquit('Error in int4_allocate_4dim',-1)
+     call memory_error_quit('Error in int4_allocate_4dim',-1)
    ENDIF
    nsize = size(I,KIND=long)*mem_int4size
    call mem_allocated_mem_integer(nsize)
@@ -2370,7 +2402,7 @@ nullify(I)
 ALLOCATE(I(i1:n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in int_allocate_1dim',IERR,n
-   call lsquit('Error in int_allocate_1dim',-1)
+   call memory_error_quit('Error in int_allocate_1dim',-1)
 ENDIF
 nsize = size(I,KIND=long)*mem_intsize
 call mem_allocated_mem_integer(nsize)
@@ -2391,7 +2423,7 @@ nullify(I)
 ALLOCATE(I(i1:n1,i2:n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in int_allocate_2dim',IERR,n1,n2
-     call lsquit('Error in int_allocate_2dim',-1)
+     call memory_error_quit('Error in int_allocate_2dim',-1)
    ENDIF
    nsize = size(I,KIND=long)*mem_intsize
    call mem_allocated_mem_integer(nsize)
@@ -2414,7 +2446,7 @@ nullify(I)
 ALLOCATE(I(i1:n1,i2:n2,i3:n3),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in int_allocate_3dim',IERR,n1,n2,n3
-   call lsquit('Error in int_allocate_3dim',-1)
+   call memory_error_quit('Error in int_allocate_3dim',-1)
 ENDIF
 nsize = size(I,KIND=long)*mem_intsize
 call mem_allocated_mem_integer(nsize)
@@ -2439,7 +2471,7 @@ nullify(I)
 ALLOCATE(I(i1:n1,i2:n2,i3:n3,i4:n4),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in int_allocate_4dim_zero',IERR,n1,n2,n3,n4
-   call lsquit('Error in int_allocate_4dim_zero',-1)
+   call memory_error_quit('Error in int_allocate_4dim_zero',-1)
 ENDIF
 nsize = size(I,KIND=long)*mem_intsize
 call mem_allocated_mem_integer(nsize)
@@ -2455,7 +2487,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in int8_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in int8_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2474,7 +2506,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in int4_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in int4_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2493,7 +2525,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in int4_deallocate_2dim - memory previously released',-1)
+      call memory_error_quit('Error in int4_deallocate_2dim - memory previously released',-1)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2511,7 +2543,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in int8_deallocate_2dim - memory previously released',-1)
+      call memory_error_quit('Error in int8_deallocate_2dim - memory previously released',-1)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2530,7 +2562,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in shortint_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in shortint_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2549,7 +2581,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in shortint_deallocate_2dim - memory previously released',-1)
+      call memory_error_quit('Error in shortint_deallocate_2dim - memory previously released',-1)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2568,7 +2600,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in int4_deallocate_3dim - memory previously released',-1)
+      call memory_error_quit('Error in int4_deallocate_3dim - memory previously released',-1)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2586,7 +2618,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in int8_deallocate_3dim - memory previously released',-1)
+      call memory_error_quit('Error in int8_deallocate_3dim - memory previously released',-1)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2605,7 +2637,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in int4_deallocate_4dim - memory previously released',-1)
+      call memory_error_quit('Error in int4_deallocate_4dim - memory previously released',-1)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2623,7 +2655,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_integer(nsize)
    if (.not.ASSOCIATED(I)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in int8_deallocate_4dim - memory previously released',-1)
+      call memory_error_quit('Error in int8_deallocate_4dim - memory previously released',-1)
    endif
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2671,7 +2703,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_character(nsize)
    if (.not.ASSOCIATED(C)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in char_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in char_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(C,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2843,7 +2875,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_logical(nsize)
    if (.not.ASSOCIATED(L)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in logic_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in logic_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2862,7 +2894,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_logical(nsize)
    if (.not.ASSOCIATED(L)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in logic_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in logic_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2881,7 +2913,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_logical(nsize)
    if (.not.ASSOCIATED(L)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in logic_deallocate_2dim - memory previously released',-1)
+      call memory_error_quit('Error in logic_deallocate_2dim - memory previously released',-1)
    endif
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2900,7 +2932,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_logical(nsize)
    if (.not.ASSOCIATED(L)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in logic_deallocate_2dim - memory previously released',-1)
+      call memory_error_quit('Error in logic_deallocate_2dim - memory previously released',-1)
    endif
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2919,7 +2951,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_logical(nsize)
    if (.not.ASSOCIATED(L)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in logic_deallocate_3dim - memory previously released',-1)
+      call memory_error_quit('Error in logic_deallocate_3dim - memory previously released',-1)
    endif
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2938,7 +2970,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_logical(nsize)
    if (.not.ASSOCIATED(L)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in logic_deallocate_3dim - memory previously released',-1)
+      call memory_error_quit('Error in logic_deallocate_3dim - memory previously released',-1)
    endif
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -2976,7 +3008,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_AOBATCH(nsize)
    if (.not.ASSOCIATED(AOBATCHITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in AOBATCH_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in AOBATCH_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(AOBATCHITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3013,7 +3045,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_OVERLAPT(nsize)
    if (.not.ASSOCIATED(OVERLAPITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in OVERLAP_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in OVERLAP_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(OVERLAPITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3050,7 +3082,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_CCORBITAL(nsize)
    if (.not.ASSOCIATED(CCORBITALITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in CCORBITAL_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in CCORBITAL_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(CCORBITALITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3088,7 +3120,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_CCATOM(nsize)
    if (.not.ASSOCIATED(CCATOMITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in CCATOM_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in CCATOM_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(CCATOMITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3126,7 +3158,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_BATCHTOORB(nsize)
    if (.not.ASSOCIATED(BATCHTOORBITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in BATCHTOORB_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in BATCHTOORB_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(BATCHTOORBITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3163,7 +3195,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_MYPOINTER(nsize)
    if (.not.ASSOCIATED(MYPOINTERITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in MYPOINTER_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in MYPOINTER_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(MYPOINTERITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3199,7 +3231,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_MYPOINTER(nsize)
    if (.not.ASSOCIATED(MYPOINTERITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in MYPOINTER_deallocate_2dim - memory previously released',-1)
+      call memory_error_quit('Error in MYPOINTER_deallocate_2dim - memory previously released',-1)
    endif
    DEALLOCATE(MYPOINTERITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3237,7 +3269,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_ARRAY2(nsize)
    if (.not.ASSOCIATED(ARRAY2ITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in ARRAY2_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in ARRAY2_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(ARRAY2ITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3274,7 +3306,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_ARRAY4(nsize)
    if (.not.ASSOCIATED(ARRAY4ITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in ARRAY4_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in ARRAY4_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(ARRAY4ITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3311,7 +3343,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_ARRAY(nsize)
    if (.not.ASSOCIATED(ARRAYITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in ARRAY_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in ARRAY_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(ARRAYITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3348,7 +3380,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_MP2DENS(nsize)
    if (.not.ASSOCIATED(MP2DENSITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in MP2DENS_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in MP2DENS_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(MP2DENSITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3385,7 +3417,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_TRACEBACK(nsize)
    if (.not.ASSOCIATED(TRACEBACKITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in TRACEBACK_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in TRACEBACK_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(TRACEBACKITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3422,7 +3454,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_MP2GRAD(nsize)
    if (.not.ASSOCIATED(MP2GRADITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in MP2GRAD_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in MP2GRAD_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(MP2GRADITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3461,7 +3493,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_ODBATCH(nsize)
    if (.not.ASSOCIATED(ODBATCHITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in ODBATCH_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in ODBATCH_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(ODBATCHITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3498,7 +3530,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_LSAOTENSOR(nsize)
    if (.not.ASSOCIATED(LSAOTENSORITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in LSAOTENSOR_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in LSAOTENSOR_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(LSAOTENSORITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3535,7 +3567,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_SLSAOTENSOR(nsize)
    if (.not.ASSOCIATED(SLSAOTENSORITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in SLSAOTENSOR_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in SLSAOTENSOR_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(SLSAOTENSORITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3572,7 +3604,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_GLOBALLSAOTENSOR(nsize)
    if (.not.ASSOCIATED(GLOBALLSAOTENSORITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in GLOBALLSAOTENSOR_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in GLOBALLSAOTENSOR_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(GLOBALLSAOTENSORITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3609,7 +3641,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_ATOMTYPEITEM(nsize)
    if (.not.ASSOCIATED(ATOMTYPEITEMITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in ATOMTYPEITEM_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in ATOMTYPEITEM_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(ATOMTYPEITEMITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3646,7 +3678,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_ATOM(nsize)
    if (.not.ASSOCIATED(ATOMITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in ATOM_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in ATOM_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(ATOMITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3683,7 +3715,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_LSMATRIX(nsize)
    if (.not.ASSOCIATED(LSMATRIXITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in LSMATRIX_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in LSMATRIX_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(LSMATRIXITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3718,7 +3750,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_LSMATRIX(nsize)
    if (.not.ASSOCIATED(LSMATRIXITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in LSMATRIX_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in LSMATRIX_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(LSMATRIXITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3755,7 +3787,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_type_matrix(nsize)
    if (.not.ASSOCIATED(MATRIXITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in MATRIX_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in MATRIX_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(MATRIXITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3790,7 +3822,7 @@ integer (kind=long) :: nsize
    call mem_deallocated_mem_type_matrix(nsize)
    if (.not.ASSOCIATED(MATRIXITEM)) then
       print *,'Memory previously released!!'
-      call lsQUIT('Error in MATRIX_deallocate_1dim - memory previously released',-1)
+      call memory_error_quit('Error in MATRIX_deallocate_1dim - memory previously released',-1)
    endif
    DEALLOCATE(MATRIXITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
@@ -3810,14 +3842,14 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         if (mem_tp_allocated_real < 0) then
            write(*,*) 'Real memory negative! mem_tp_allocated_real =', mem_tp_allocated_real
            write(*,*) 'Real memory negative! nsize =', nsize
-           call lsQUIT('Error in mem_allocated_mem_real - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',-1)
         endif
         max_mem_tp_used_real = MAX(max_mem_tp_used_real,mem_tp_allocated_real)
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call lsQUIT('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',-1)
         endif
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      else
@@ -3825,14 +3857,14 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         if (mem_allocated_real < 0) then
            write(*,*) 'Real memory negative! mem_allocated_real =', mem_allocated_real
            write(*,*) 'Real memory negative! nsize =', nsize
-           call lsQUIT('Error in mem_allocated_mem_real - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',-1)
         endif
         max_mem_used_real = MAX(max_mem_used_real,mem_allocated_real)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call lsQUIT('Error in mem_allocated_mem_real - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',-1)
         endif
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      endif
@@ -3846,25 +3878,25 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         mem_tp_allocated_real = mem_tp_allocated_real - nsize
         if (mem_tp_allocated_real < 0) then
            write(*,*) 'Real memory negative! mem_tp_allocated_real =', mem_tp_allocated_real
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_real - something wrong with deallocation!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_real - something wrong with deallocation!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_real - something wrong with deallocation!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_real - something wrong with deallocation!',-1)
         endif
      ELSE
         mem_allocated_real = mem_allocated_real - nsize
         if (mem_allocated_real < 0) then
            write(*,*) 'Real memory negative! mem_allocated_real =', mem_allocated_real
-           call lsQUIT('Error in mem_deallocated_mem_real - something wrong with deallocation!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_real - something wrong with deallocation!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call lsQUIT('Error in mem_deallocated_mem_real - something wrong with deallocation!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_real - something wrong with deallocation!',-1)
         endif
      ENDIF
 
@@ -3878,14 +3910,14 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         if (mem_tp_allocated_mpi < 0) then
            write(*,*) 'Real memory negative! mem_tp_allocated_mpi =', mem_tp_allocated_mpi
            write(*,*) 'Real memory negative! nsize =', nsize
-           call lsQUIT('Error in mem_allocated_mem_mpi - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_allocated_mem_mpi - probably integer overflow!',-1)
         endif
         max_mem_tp_used_mpi = MAX(max_mem_tp_used_mpi,mem_tp_allocated_mpi)
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call lsQUIT('Error in mem_tp_allocated_mem_tp_mpi - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_allocated_mem_tp_mpi - probably integer overflow!',-1)
         endif
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      else
@@ -3893,14 +3925,14 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         if (mem_allocated_mpi < 0) then
            write(*,*) 'Real memory negative! mem_allocated_mpi =', mem_allocated_mpi
            write(*,*) 'Real memory negative! nsize =', nsize
-           call lsQUIT('Error in mem_allocated_mem_mpi - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_allocated_mem_mpi - probably integer overflow!',-1)
         endif
         max_mem_used_mpi = MAX(max_mem_used_mpi,mem_allocated_mpi)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call lsQUIT('Error in mem_allocated_mem_mpi - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_allocated_mem_mpi - probably integer overflow!',-1)
         endif
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      endif
@@ -3914,25 +3946,25 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         mem_tp_allocated_mpi = mem_tp_allocated_mpi - nsize
         if (mem_tp_allocated_mpi < 0) then
            write(*,*) 'Real memory negative! mem_tp_allocated_mpi =', mem_tp_allocated_mpi
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_mpi - something wrong with deallocation!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_mpi - something wrong with deallocation!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_mpi - something wrong with deallocation!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_mpi - something wrong with deallocation!',-1)
         endif
      ELSE
         mem_allocated_mpi = mem_allocated_mpi - nsize
         if (mem_allocated_mpi < 0) then
            write(*,*) 'Real memory negative! mem_allocated_mpi =', mem_allocated_mpi
-           call lsQUIT('Error in mem_deallocated_mem_mpi - something wrong with deallocation!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_mpi - something wrong with deallocation!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call lsQUIT('Error in mem_deallocated_mem_mpi - something wrong with deallocation!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_mpi - something wrong with deallocation!',-1)
         endif
      ENDIF
 
@@ -3947,14 +3979,14 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         if (mem_tp_allocated_complex < 0) then
            write(*,*) 'Complex memory negative! mem_tp_allocated_complex =', mem_tp_allocated_complex
            write(*,*) 'Complex memory negative! nsize =', nsize
-           call lsQUIT('Error in mem_allocated_mem_complex - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_allocated_mem_complex - probably integer overflow!',-1)
         endif
         max_mem_tp_used_complex = MAX(max_mem_tp_used_complex,mem_tp_allocated_complex)
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call lsQUIT('Error in mem_tp_allocated_mem_tp_complex - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_allocated_mem_tp_complex - probably integer overflow!',-1)
         endif
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      else
@@ -3962,14 +3994,14 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         if (mem_allocated_complex < 0) then
            write(*,*) 'Complex memory negative! mem_allocated_Complex =', mem_allocated_complex
            write(*,*) 'Complex memory negative! nsize =', nsize
-           call lsQUIT('Error in mem_allocated_mem_Complex - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_allocated_mem_Complex - probably integer overflow!',-1)
         endif
         max_mem_used_Complex = MAX(max_mem_used_Complex,mem_allocated_Complex)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call lsQUIT('Error in mem_allocated_mem_Complex - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_allocated_mem_Complex - probably integer overflow!',-1)
         endif
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      endif
@@ -3983,25 +4015,25 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         mem_tp_allocated_complex = mem_tp_allocated_complex - nsize
         if (mem_tp_allocated_complex < 0) then
            write(*,*) 'Complex memory negative! mem_tp_allocated_complex =', mem_tp_allocated_complex
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_complex - something wrong with deallocation!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_complex - something wrong with deallocation!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_complex - something wrong with deallocation!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_complex - something wrong with deallocation!',-1)
         endif
      ELSE
         mem_allocated_complex = mem_allocated_complex - nsize
         if (mem_allocated_complex < 0) then
            write(*,*) 'Real memory negative! mem_allocated_complex =', mem_allocated_complex
-           call lsQUIT('Error in mem_deallocated_mem_complex - something wrong with deallocation!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_complex - something wrong with deallocation!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call lsQUIT('Error in mem_deallocated_mem_complex - something wrong with deallocation!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_complex - something wrong with deallocation!',-1)
         endif
      ENDIF
 
@@ -4038,7 +4070,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
 #ifdef VAR_OMP
            print*,'Local: OMP THREAD ID:',OMP_GET_THREAD_NUM()
 #endif
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_integer - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_integer - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
@@ -4046,17 +4078,17 @@ END SUBROUTINE MATRIXP_deallocate_1dim
 #ifdef VAR_OMP
            print*,'Global: OMP THREAD ID:',OMP_GET_THREAD_NUM()
 #endif
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_integer - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_integer - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_integer = mem_allocated_integer - nsize
         if (mem_allocated_integer < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_integer1 - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_integer1 - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_integer2 - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_integer2 - probably integer overflow!',-1)
         endif
      ENDIF
   end subroutine mem_deallocated_mem_integer
@@ -4085,22 +4117,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN !we add to thread private variables
         mem_tp_allocated_character = mem_tp_allocated_character - nsize
         if (mem_tp_allocated_character < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_character - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_character - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_character - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_character - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_character = mem_allocated_character - nsize
         if (mem_allocated_character < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_character - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_character - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_character - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_character - probably integer overflow!',-1)
         endif
      ENDIF
   end subroutine mem_deallocated_mem_character
@@ -4129,22 +4161,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_logical = mem_tp_allocated_logical - nsize
         if (mem_tp_allocated_logical < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_logical = mem_allocated_logical - nsize
         if (mem_allocated_logical < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_logical - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_logical - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_logical
@@ -4173,22 +4205,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_AOBATCH = mem_tp_allocated_AOBATCH - nsize
         if (mem_tp_allocated_AOBATCH < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_AOBATCH - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_AOBATCH - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_AOBATCH - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_AOBATCH - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_AOBATCH = mem_allocated_AOBATCH - nsize
         if (mem_allocated_AOBATCH < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_AOBATCH - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_AOBATCH - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_AOBATCH - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_AOBATCH - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_AOBATCH
@@ -4217,22 +4249,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_OVERLAPT = mem_tp_allocated_OVERLAPT - nsize
         if (mem_tp_allocated_OVERLAPT < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_OVERLAPT - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_OVERLAPT - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_OVERLAPT - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_OVERLAPT - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_OVERLAPT = mem_allocated_OVERLAPT - nsize
         if (mem_allocated_OVERLAPT < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_OVERLAPT - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_OVERLAPT - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_OVERLAPT - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_OVERLAPT - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_OVERLAPT
@@ -4261,22 +4293,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_CCORBITAL = mem_tp_allocated_CCORBITAL - nsize
         if (mem_tp_allocated_CCORBITAL < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_CCORBITAL - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_CCORBITAL - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_CCORBITAL - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_CCORBITAL - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_CCORBITAL = mem_allocated_CCORBITAL - nsize
         if (mem_allocated_CCORBITAL < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_CCORBITAL - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_CCORBITAL - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_CCORBITAL - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_CCORBITAL - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_CCORBITAL
@@ -4309,22 +4341,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_CCATOM = mem_tp_allocated_CCATOM - nsize
         if (mem_tp_allocated_CCATOM < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_CCATOM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_CCATOM - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_CCATOM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_CCATOM - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_CCATOM = mem_allocated_CCATOM - nsize
         if (mem_allocated_CCATOM < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_CCATOM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_CCATOM - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_CCATOM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_CCATOM - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_CCATOM
@@ -4354,22 +4386,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_BATCHTOORB = mem_tp_allocated_BATCHTOORB - nsize
         if (mem_tp_allocated_BATCHTOORB < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_BATCHTOORB - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_BATCHTOORB - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_BATCHTOORB - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_BATCHTOORB - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_BATCHTOORB = mem_allocated_BATCHTOORB - nsize
         if (mem_allocated_BATCHTOORB < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_BATCHTOORB - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_BATCHTOORB - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_BATCHTOORB - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_BATCHTOORB - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_BATCHTOORB
@@ -4399,22 +4431,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_MYPOINTER = mem_tp_allocated_MYPOINTER - nsize
         if (mem_tp_allocated_MYPOINTER < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_MYPOINTER - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MYPOINTER - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_MYPOINTER - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MYPOINTER - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_MYPOINTER = mem_allocated_MYPOINTER - nsize
         if (mem_allocated_MYPOINTER < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_MYPOINTER - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_MYPOINTER - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_MYPOINTER - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_MYPOINTER - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_MYPOINTER
@@ -4444,22 +4476,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ARRAY2 = mem_tp_allocated_ARRAY2 - nsize
         if (mem_tp_allocated_ARRAY2 < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ARRAY2 - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY2 - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ARRAY2 - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY2 - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_ARRAY2 = mem_allocated_ARRAY2 - nsize
         if (mem_allocated_ARRAY2 < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ARRAY2 - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ARRAY2 - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ARRAY2 - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ARRAY2 - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ARRAY2
@@ -4489,22 +4521,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ARRAY4 = mem_tp_allocated_ARRAY4 - nsize
         if (mem_tp_allocated_ARRAY4 < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ARRAY4 - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY4 - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ARRAY4 - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY4 - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_ARRAY4 = mem_allocated_ARRAY4 - nsize
         if (mem_allocated_ARRAY4 < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ARRAY4 - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ARRAY4 - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ARRAY4 - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ARRAY4 - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ARRAY4
@@ -4533,22 +4565,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ARRAY = mem_tp_allocated_ARRAY - nsize
         if (mem_tp_allocated_ARRAY < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ARRAY - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ARRAY - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ARRAY - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_ARRAY = mem_allocated_ARRAY - nsize
         if (mem_allocated_ARRAY < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ARRAY - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ARRAY - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ARRAY - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ARRAY - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ARRAY
@@ -4577,22 +4609,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_MP2DENS = mem_tp_allocated_MP2DENS - nsize
         if (mem_tp_allocated_MP2DENS < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_MP2DENS - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2DENS - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_MP2DENS - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2DENS - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_MP2DENS = mem_allocated_MP2DENS - nsize
         if (mem_allocated_MP2DENS < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_MP2DENS - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_MP2DENS - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_MP2DENS - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_MP2DENS - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_MP2DENS
@@ -4623,22 +4655,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_TRACEBACK = mem_tp_allocated_TRACEBACK - nsize
         if (mem_tp_allocated_TRACEBACK < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_TRACEBACK - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_TRACEBACK - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_TRACEBACK - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_TRACEBACK - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_TRACEBACK = mem_allocated_TRACEBACK - nsize
         if (mem_allocated_TRACEBACK < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_TRACEBACK - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_TRACEBACK - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_TRACEBACK - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_TRACEBACK - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_TRACEBACK
@@ -4668,22 +4700,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_MP2GRAD = mem_tp_allocated_MP2GRAD - nsize
         if (mem_tp_allocated_MP2GRAD < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_MP2GRAD - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2GRAD - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_MP2GRAD - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_MP2GRAD - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_MP2GRAD = mem_allocated_MP2GRAD - nsize
         if (mem_allocated_MP2GRAD < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_MP2GRAD - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_MP2GRAD - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_MP2GRAD - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_MP2GRAD - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_MP2GRAD
@@ -4714,22 +4746,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ODBATCH = mem_tp_allocated_ODBATCH - nsize
         if (mem_tp_allocated_ODBATCH < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ODBATCH - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ODBATCH - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ODBATCH - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ODBATCH - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_ODBATCH = mem_allocated_ODBATCH - nsize
         if (mem_allocated_ODBATCH < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ODBATCH - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ODBATCH - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ODBATCH - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ODBATCH - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ODBATCH
@@ -4758,22 +4790,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_LSAOTENSOR = mem_tp_allocated_LSAOTENSOR - nsize
         if (mem_tp_allocated_LSAOTENSOR < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_LSAOTENSOR - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSAOTENSOR - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_LSAOTENSOR - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSAOTENSOR - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_LSAOTENSOR = mem_allocated_LSAOTENSOR - nsize
         if (mem_allocated_LSAOTENSOR < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_LSAOTENSOR - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_LSAOTENSOR - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_LSAOTENSOR - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_LSAOTENSOR - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_LSAOTENSOR
@@ -4802,22 +4834,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_SLSAOTENSOR = mem_tp_allocated_SLSAOTENSOR - nsize
         if (mem_tp_allocated_SLSAOTENSOR < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_SLSAOTENSOR - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_SLSAOTENSOR - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_SLSAOTENSOR - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_SLSAOTENSOR - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_SLSAOTENSOR = mem_allocated_SLSAOTENSOR - nsize
         if (mem_allocated_SLSAOTENSOR < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_SLSAOTENSOR - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_SLSAOTENSOR - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_SLSAOTENSOR - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_SLSAOTENSOR - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_SLSAOTENSOR
@@ -4846,22 +4878,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_GLOBALLSAOTENSOR = mem_tp_allocated_GLOBALLSAOTENSOR - nsize
         if (mem_tp_allocated_GLOBALLSAOTENSOR < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_GLOBALLSAOTENSOR - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_GLOBALLSAOTENSOR - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_GLOBALLSAOTENSOR - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_GLOBALLSAOTENSOR - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_GLOBALLSAOTENSOR = mem_allocated_GLOBALLSAOTENSOR - nsize
         if (mem_allocated_GLOBALLSAOTENSOR < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_GLOBALLSAOTENSOR - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_GLOBALLSAOTENSOR - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_GLOBALLSAOTENSOR - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_GLOBALLSAOTENSOR - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_GLOBALLSAOTENSOR
@@ -4890,22 +4922,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ATOMTYPEITEM = mem_tp_allocated_ATOMTYPEITEM - nsize
         if (mem_tp_allocated_ATOMTYPEITEM < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ATOMTYPEITEM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMTYPEITEM - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ATOMTYPEITEM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMTYPEITEM - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_ATOMTYPEITEM = mem_allocated_ATOMTYPEITEM - nsize
         if (mem_allocated_ATOMTYPEITEM < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ATOMTYPEITEM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ATOMTYPEITEM - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ATOMTYPEITEM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ATOMTYPEITEM - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ATOMTYPEITEM
@@ -4934,22 +4966,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ATOM = mem_tp_allocated_ATOM - nsize
         if (mem_tp_allocated_ATOM < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ATOM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOM - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ATOM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOM - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_ATOM = mem_allocated_ATOM - nsize
         if (mem_allocated_ATOM < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ATOM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ATOM - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ATOM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ATOM - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ATOM
@@ -4978,22 +5010,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_LSMATRIX = mem_tp_allocated_LSMATRIX - nsize
         if (mem_tp_allocated_LSMATRIX < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_LSMATRIX - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSMATRIX - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_LSMATRIX - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_LSMATRIX - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_LSMATRIX = mem_allocated_LSMATRIX - nsize
         if (mem_allocated_LSMATRIX < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_LSMATRIX - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_LSMATRIX - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_LSMATRIX - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_LSMATRIX - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_LSMATRIX
@@ -5024,12 +5056,12 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_overlap = mem_tp_allocated_overlap - nsize
         if (mem_tp_allocated_overlap < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_overlap - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_overlap - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_overlap = mem_allocated_overlap - nsize
         if (mem_allocated_overlap < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_overlap - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_overlap - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_overlap
@@ -5054,12 +5086,12 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_IntWork = mem_tp_allocated_IntWork - nsize
         if (mem_tp_allocated_IntWork < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_IntWork - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_IntWork - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_IntWork = mem_allocated_IntWork - nsize
         if (mem_allocated_IntWork < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_IntWork - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_IntWork - probably integer overflow!',-1)
         endif
      ENDIF
      call mem_deallocated_mem_real(nsize)
@@ -5084,12 +5116,12 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_linkshell = mem_tp_allocated_linkshell - nsize
         if (mem_tp_allocated_linkshell < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_linkshell - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_linkshell - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_linkshell = mem_allocated_linkshell - nsize
         if (mem_allocated_linkshell < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_linkshell - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_linkshell - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_linkshell
@@ -5113,12 +5145,12 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_integralitem = mem_tp_allocated_integralitem - nsize
         if (mem_tp_allocated_integralitem < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_integralitem - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_integralitem - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_integralitem = mem_allocated_integralitem - nsize
         if (mem_allocated_integralitem < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_integralitem - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_integralitem - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_integralitem
@@ -5141,12 +5173,12 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_integrand = mem_tp_allocated_integrand - nsize
         if (mem_tp_allocated_integrand < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_integrand - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_integrand - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_integrand = mem_allocated_integrand - nsize
         if (mem_allocated_integrand < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_integrand - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_integrand - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_integrand
@@ -5169,12 +5201,12 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_etuvoverlap = mem_tp_allocated_etuvoverlap - nsize
         if (mem_tp_allocated_etuvoverlap < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_etuvoverlap - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_etuvoverlap - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_etuvoverlap = mem_allocated_etuvoverlap - nsize
         if (mem_allocated_etuvoverlap < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_etuvoverlap - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_etuvoverlap - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_etuvoverlap
@@ -5198,12 +5230,12 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ftuvoverlap = mem_tp_allocated_ftuvoverlap - nsize
         if (mem_tp_allocated_ftuvoverlap < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ftuvoverlap - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ftuvoverlap - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_ftuvoverlap = mem_allocated_ftuvoverlap - nsize
         if (mem_allocated_ftuvoverlap < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ftuvoverlap - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ftuvoverlap - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ftuvoverlap
@@ -5226,12 +5258,12 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_ODitem = mem_tp_allocated_ODitem - nsize
         if (mem_tp_allocated_ODitem < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_ODitem - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ODitem - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_ODitem = mem_allocated_ODitem - nsize
         if (mem_allocated_ODitem < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_ODitem - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_ODitem - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_ODitem
@@ -5248,7 +5280,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
            mem_tp_allocated_global = mem_tp_allocated_global  + nsize
            if (mem_tp_allocated_global < 0) then
               write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-              call lsQUIT('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',-1)
+              call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',-1)
            endif
            max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
         ENDIF
@@ -5260,7 +5292,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
            mem_allocated_global = mem_allocated_global  + nsize
            if (mem_allocated_global < 0) then
               write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-              call lsQUIT('Error in mem_allocated_mem_real - probably integer overflow!',-1)
+              call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',-1)
            endif
            max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
         ENDIF
@@ -5274,25 +5306,25 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_FMM = mem_tp_allocated_FMM - nsize
         if (mem_tp_allocated_FMM < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_FMM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_FMM - probably integer overflow!',-1)
         endif
         IF(global)THEN
            !Count also the total memory:
            mem_tp_allocated_global = mem_tp_allocated_global - nsize
            if (mem_tp_allocated_global < 0) then
-              call lsQUIT('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',-1)
+              call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',-1)
            endif
         ENDIF
      ELSE
         mem_allocated_FMM = mem_allocated_FMM - nsize
         if (mem_allocated_FMM < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_FMM - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_FMM - probably integer overflow!',-1)
         endif
         IF(global)THEN
            !Count also the total memory:
            mem_allocated_global = mem_allocated_global - nsize
            if (mem_allocated_global < 0) then
-              call lsQUIT('Error in mem_deallocated_mem_logical - probably integer overflow!',-1)
+              call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',-1)
            endif
         ENDIF
      ENDIF
@@ -5309,7 +5341,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call lsQUIT('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_allocated_mem_tp_real - probably integer overflow!',-1)
         endif
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      ELSE
@@ -5320,7 +5352,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         mem_allocated_global = mem_allocated_global  + nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call lsQUIT('Error in mem_allocated_mem_real - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_allocated_mem_real - probably integer overflow!',-1)
         endif
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
@@ -5332,22 +5364,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_lstensor = mem_tp_allocated_lstensor - nsize
         if (mem_tp_allocated_lstensor < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_lstensor - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_lstensor - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_logical - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_lstensor = mem_allocated_lstensor - nsize
         if (mem_allocated_lstensor < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_lstensor - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_lstensor - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_logical - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',-1)
         endif
      ENDIF
    end subroutine mem_deallocated_mem_lstensor
@@ -5364,7 +5396,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         if (mem_tp_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_tp_allocated_global =', mem_tp_allocated_global
-           call lsQUIT('Error in mem_tp_allocated_mem_type_matrix - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_allocated_mem_type_matrix - probably integer overflow!',-1)
         endif
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      ELSE
@@ -5374,7 +5406,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         mem_allocated_global = mem_allocated_global  + nsize
         if (mem_allocated_global < 0) then
            write(*,*) 'Total memory negative! mem_allocated_global =', mem_allocated_global
-           call lsQUIT('Error in mem_allocated_mem_type_matrix - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_allocated_mem_type_matrix - probably integer overflow!',-1)
         endif
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
@@ -5398,22 +5430,22 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
         mem_tp_allocated_type_matrix = mem_tp_allocated_type_matrix - nsize
         if (mem_tp_allocated_type_matrix < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_tp_type_matrix - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_type_matrix - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call lsQUIT('Error in mem_tp_deallocated_mem_type_matrix - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_tp_deallocated_mem_type_matrix - probably integer overflow!',-1)
         endif
      ELSE
         mem_allocated_type_matrix = mem_allocated_type_matrix - nsize
         if (mem_allocated_type_matrix < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_type_matrix - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_type_matrix - probably integer overflow!',-1)
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call lsQUIT('Error in mem_deallocated_mem_logical - probably integer overflow!',-1)
+           call memory_error_quit('Error in mem_deallocated_mem_logical - probably integer overflow!',-1)
         endif
      ENDIF
      IF(present(nsizeFULL))THEN

@@ -263,7 +263,7 @@ end if
   call mat_create_block(CMO,tmp,nbas,nval,1,ncore+1)
   call mem_dealloc(tmp)
 endif
-if (.not. m(2) == 0) then
+if (.not. m(2) == 0 .and. (nvirt>0) ) then
 CFG%PFM_input%m=m(2)
 !!!!!!!!!!!!!!!!! virtual
   !init

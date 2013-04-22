@@ -476,7 +476,6 @@ end subroutine linesearch_thresholds
       integer                     :: maxvec
 !New levelshift
       type(Matrix)                :: xF, sigmaF
-!Sparse1 matrices:
       real(realk)                 :: cutoff
 !Queue on disk:
 !      integer                     :: queue_lu
@@ -505,13 +504,6 @@ end subroutine linesearch_thresholds
    thresh = arh%cfg_micro_thresh*sqrt(mat_sqnorm2(Grad))
    if (sqrt(mat_sqnorm2(Grad)) < 1.0E-3_realk) thresh=thresh*0.1_realk
    !if (sqrt(mat_sqnorm2(Grad)) < 1.0E-5_realk) thresh=thresh*0.1_realk
-   if (matrix_type == mtype_sparse1) then
-      call mat_inquire_cutoff(cutoff)
-      if (thresh < 10.0E0_realk*cutoff) then
-      thresh = 10.0E0_realk*thresh
-      write(arh%lupri,*) 'Sparse matrices: Convergence threshold reset to:', thresh 
-      endif
-   endif
 
    if (arh%cfg_arh_truncate) then
       maxvec = arh%cfg_arh_microvecs
