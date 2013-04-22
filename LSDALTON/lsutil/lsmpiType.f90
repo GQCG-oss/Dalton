@@ -195,12 +195,15 @@ module lsmpi_type
      integer(kind=ls_mpik),pointer :: ranks(:)
   end type mpigroup
 #endif
+  real(realk) :: poketime=0.0E0_realk
+  integer(kind=long) :: poketimes = 0
 
 !$OMP THREADPRIVATE(AddToBuffer,iLog,iDP,iInt,iSho,iCha,&
 !$OMP nLog,nDP,nInteger,nShort,nCha,lsmpibufferDP,lsmpibufferInt,&
 !$OMP lsmpibufferSho,lsmpibufferLog,lsmpibufferCha)
 
 contains
+
 !var_lsmpi_32
 !############################################################
 !#
@@ -4931,6 +4934,7 @@ contains
 #ifdef VAR_LSMPI
     integer(kind=ls_mpik) :: o,n,ierr,I,t(1),tag_meminfo,count,dest,tag,from,root
     integer(kind=long) :: recvbuffer
+    real(realk) :: recvbuffer_real
     integer(kind=long),pointer :: longintbufferInt(:) 
 #ifdef VAR_INT64
     integer, parameter :: i2l = 1
@@ -5006,6 +5010,21 @@ contains
      ! jump out of LSDALTON if a slave (instead of STOP)
      if (infpar%mynum.ne.infpar%master) call lsdaltonjumpout(99)
 #else
+
+#ifdef VAR_DEBUG
+     count=1
+     root = infpar%master
+     recvbuffer = 0
+     recvbuffer_real = 0.0E0_realk
+     CALL MPI_REDUCE(poketime,recvbuffer_real,&
+            & count,MPI_DOUBLE_PRECISION,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
+     CALL MPI_REDUCE(poketimes,recvbuffer,&
+            & count,MPI_INTEGER8,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
+     if(infpar%mynum==infpar%master)then
+       print *,"CUMULATIVE MPI POKETIME",recvbuffer_real,recvbuffer,recvbuffer_real/(recvbuffer*1.0E0_realk)
+     endif
+#endif     
+
      call MPI_FINALIZE(ierr)
      if(ierr/=0)then
        write (*,*), "mpi_finalize returned",ierr
@@ -5641,6 +5660,21 @@ contains
     endif
 #endif
   end subroutine lsmpi_localallgatherv_realk4
+
+  subroutine lsmpi_poke()
+    implicit none
+    logical(kind=ls_mpik) :: flag
+    integer(kind=ls_mpik) :: ierr
+    real(realk) :: sta, sto
+#ifdef VAR_LSMPI
+    ierr = 0
+    sta=MPI_WTIME()
+    call mpi_iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,infpar%lg_comm,flag,status,ierr)
+    sto=MPI_WTIME()
+    poketime=poketime+sto-sta
+    poketimes = poketimes + 1
+#endif
+  end subroutine lsmpi_poke
 
 end module lsmpi_type
 
