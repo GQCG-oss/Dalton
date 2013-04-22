@@ -2368,17 +2368,11 @@ contains
       call mem_alloc(gvoov,gvoov_c,no2*nv2)
     endif
     ! Finish the MPI part of the Residual calculation
-#ifdef VAR_OMP
-    startt=omp_get_wtime()
-#endif
+    startt=MPI_wtime()
     call lsmpi_barrier(infpar%lg_comm)
-#ifdef VAR_OMP
-    stopp=omp_get_wtime()
-#endif
+    stopp=MPI_wtime()
     write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,stopp-startt
-#ifdef VAR_OMP
-    startt=omp_get_wtime()
-#endif
+    startt=MPI_wtime()
     if(infpar%lg_nodtot>1.or.scheme==3) then
        if(iter==1.and.scheme==4.or.scheme==0)then
          call lsmpi_local_allreduce(govov%elm1,no2*nv2,double_2G_nel)
@@ -2418,9 +2412,7 @@ contains
       call lsmpi_win_free(win_in_g)
       call mem_dealloc(mpi_stuff,mpi_ctasks)
     endif
-#ifdef VAR_OMP
-    stopp=omp_get_wtime()
-#endif
+    stopp=MPI_wtime()
     if(master) print*,"MPI part of the calculation finished, comm-time",stopp-startt
     !print *,infpar%lg_mynum,norm2(omega2%elm1),norm2(govov%elm1),norm2(gvvoo),norm2(gvoov)
     
@@ -2473,6 +2465,8 @@ contains
         !*****************************************************
 #ifdef VAR_OMP
         startt=omp_get_wtime()
+#elif VAR_LSMPI
+        startt=MPI_wtime()
 #endif
         call get_cnd_terms_mo(w1,w2,w3,t2,u2,govov,gvoov,gvvoo,no,nv,omega2,gvvooa,gvoova,scheme)
         if(scheme==4.or.scheme==3)then
@@ -2489,6 +2483,8 @@ contains
         endif
 #ifdef VAR_OMP
         stopp=omp_get_wtime()
+#elif VAR_LSMPI
+        stopp=MPI_wtime()
 #endif
 
 !OUTPUT
@@ -2561,6 +2557,8 @@ contains
     call daxpy(nb2,1.0E0_realk,deltafock,1,iFock%elms,1)
 #ifdef VAR_OMP
     startt=omp_get_wtime()
+#elif VAR_LSMPI
+    startt=MPI_wtime()
 #endif
     !Transform inactive Fock matrix into the different mo subspaces
     if (DECinfo%ccModel>2) then
@@ -2595,10 +2593,14 @@ contains
 
 #ifdef VAR_OMP
     stopp=omp_get_wtime()
+#elif VAR_LSMPI
+    stopp=MPI_wtime()
 #endif
     write(DECinfo%output,'("Fock trafo:",f15.4)'),stopp-startt
 #ifdef VAR_OMP
     startt=omp_get_wtime()
+#elif VAR_LSMPI
+    startt=MPI_wtime()
 #endif
 
 
@@ -2636,6 +2638,8 @@ contains
 
 #ifdef VAR_OMP
     stopp=omp_get_wtime()
+#elif VAR_LSMPI
+    stopp=MPI_wtime()
 #endif
     write(DECinfo%output,'("S and E   :",f15.4)'),stopp-startt
 
