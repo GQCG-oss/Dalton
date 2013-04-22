@@ -42,17 +42,18 @@ CONTAINS
 SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    implicit none   
    type(matrix),intent(in)         :: H1
-   type(matrix),intent(inout)      :: D, F, S
+   type(matrix),intent(inout)      :: D(1), F(1), S
    type(configItem),intent(inout)  :: config
    type(lsitem) :: ls
-   real(realk)                     :: E
+   real(realk)                     :: E(1)
 !
    integer                         :: nbast
    TYPE(util_HistoryStore)         :: queue
    TYPE(modFIFO),target             :: fifoqueue
    TYPE(Matrix)                    :: grad,tempm1,tempm2,tempm3,tempm4,tempm5 
    real(realk)                     :: gradnrm, hessian_eigenval, ehomo, elumo
-   integer                         :: iteration, matmul1, matmul2, matmultot,number_atoms, queuesize,nnz,denslun
+   integer                         :: iteration, matmul1, matmul2, matmultot
+   integer                         :: number_atoms, queuesize,nnz,denslun,ndmat
    REAL                            :: tstart, tend, t0, MFLOPS, norm
    logical                         :: energy_converged
    logical     :: file_exists 
@@ -62,7 +63,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    type(matrix), pointer :: Dpointer, Fpointer
    LOGICAL :: dalink, incremental,onmaster,cs00,NotLastSCFLevel
    real(realk) :: acceptratio, limitratio
-  
+   ndmat = 1
    OnMaster=.true.
    NotLastSCFLevel = config%opt%purescf.OR.config%integral%LOW_ACCURACY_START
 
@@ -85,7 +86,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
   call scf_stats_init(config%opt)
 
   call mat_report_sparsity(S,'S    ',nnz,config%lupri)
-  call mat_report_sparsity(D,'AO D ',nnz,config%lupri)
+  call mat_report_sparsity(D(1),'AO D ',nnz,config%lupri)
 !    call mat_report_sparsity(F,'AO F ',nnz,config%lupri) not build yet
   write(config%lupri,*)' Relative convergence threshold for solver:', config%solver%cfg_micro_thresh
   WRITE(config%lupri,*)' SCF Convergence criteria for gradient norm:',config%opt%set_convergence_threshold
@@ -124,8 +125,8 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
             dalink = .false.
          else
             !We cannot use DaLink in the 1st iteration - this gives the right energy, but the Fock matrix
-            ! is so bad that ARH cannot converge. If DaLink is requested, turn it off and then back on after
-            ! the 1st iteration. /Stinne, Thomas, Brano 23/11-2009
+            !is so bad that ARH cannot converge. If DaLink is requested, turn it off and then back on after
+            !the 1st iteration. /Stinne, Thomas, Brano 23/11-2009
             dalink = .false.
             if (ls%setting%scheme%DALINK) then
                ls%setting%scheme%DALINK = .FALSE.
@@ -141,7 +142,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
 
       WRITE(config%LUPRI,'("** Get Fock matrix number ",i3)') iteration
       CALL LSTIMER('START ',TIMSTR,TIMEND,config%lupri)
-      CALL get_fock(config, fifoqueue, queue, iteration, D, H1, F, E,ls,gradnrm)
+      CALL get_fock(config, fifoqueue, queue, iteration, D, H1, F, ndmat,E,ls,gradnrm)
       if (iteration == 1) then
          !Turn DaLink back on, if requested:
          if (dalink) ls%setting%scheme%DALINK = .true.
@@ -149,7 +150,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
       endif
       CALL LSTIMER('FCK_FO ',TIMSTR,TIMEND,config%LUPRI)
 
-      if (config%solver%step_accepted) CALL get_AO_gradient(F, D, S, grad)
+      if (config%solver%step_accepted) CALL get_AO_gradient(F(1), D(1), S, grad)
 
       CALL LSTIMER('G_GRAD',TIMSTR,TIMEND,config%LUPRI)
 
@@ -160,7 +161,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
          gradnrm = sqrt(mat_sqnorm2(grad))
       endif
       ! Statistic stuff
-      call scf_stats_update(iteration,gradnrm,E,config%opt)
+      call scf_stats_update(iteration,gradnrm,E(1),config%opt)
       call scf_stats_debug_mem(config%lupri,iteration)
       !if (DEBUG_DCHANGE) call debug_dchange_update(D,S)
 
@@ -172,7 +173,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
             denslun = -1
             call lsopen(denslun,'dens.restart','UNKNOWN','UNFORMATTED')
             rewind denslun
-            call mat_write_to_disk(denslun,D,OnMaster)
+            call mat_write_to_disk(denslun,D(1),OnMaster)
             call mat_write_info_to_disk(denslun,config%decomp%cfg_gcbasis)
             call lsclose(denslun,'KEEP')
          endif
@@ -187,12 +188,12 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
       ENDIF
 
       WRITE(config%LUPRI,'("** Make average of the last F and D matrices")')
-      CALL Density_subspace_minimization(config, fifoqueue, queue, E, S, H1, grad, F, D, iteration)
+      CALL Density_subspace_minimization(config, fifoqueue, queue, E(1), S, H1, grad, F(1), D(1), iteration)
       CALL LSTIMER('AVERAG',TIMSTR,TIMEND,config%LUPRI)
 
       WRITE(config%LUPRI,'("** Get new density ")')
       call mat_no_of_matmuls(matmul1)
-      CALL DOPT_get_density(config, fifoqueue, queue, F, H1, D, iteration,ls)
+      CALL DOPT_get_density(config, fifoqueue, queue, F(1), H1, D(1), iteration,ls)
       call mat_no_of_matmuls(matmul2)
       WRITE(config%LUPRI,'("No. of matmuls in get_density: ",I5)') matmul2-matmul1
       CALL LSTIMER('G_DENS',TIMSTR,TIMEND,config%LUPRI)
@@ -215,7 +216,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    call mat_no_of_matmuls(matmultot)
    write(config%lupri,*)
    WRITE(config%LUPRI,'("Total no. of matmuls in SCF optimization: ",I10)') matmultot
-   call scf_afterplay(config,H1,S,D,E,gradnrm,F)
+   call scf_afterplay(config,H1,S,D(1),E(1),gradnrm,F(1))
 
    if (config%solver%cfg_2nd_order_all) then
       config%solver%set_do_2nd_order = config%solver%cfg_do_2nd_order
@@ -257,7 +258,7 @@ END SUBROUTINE scfloop
 !> Get the new fock-matrix F(D). If we already evaluated one in densopt because
 !> of a configuration-shift test, this one is used.
 !>
-subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,Etotal,ls,gradnrm)
+subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,ndmat,Etotal,ls,gradnrm)
    IMPLICIT NONE
    !> Contains all info about configuration/settings for SCF calculation
    type(configItem),intent(inout)         :: config
@@ -267,14 +268,16 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,Etotal,ls,gradnrm)
    type(util_HistoryStore), intent(inout) :: queue
    !> Current SCF iteration
    integer, intent(in)                    :: iteration
+   !> number of density matrices
+   integer, intent(in)                    :: ndmat
    !> Current density matrix
-   TYPE(Matrix),intent(inout),target      :: D
+   TYPE(Matrix),intent(inout),target      :: D(ndmat)
    !> One-electron Hamiltonian
    TYPE(Matrix),intent(in)                :: H1
    !> Fock/KS matrix
-   TYPE(Matrix),intent(inout)             :: F
+   TYPE(Matrix),intent(inout)             :: F(ndmat)
    !> SCF energy corresponding to constructed Fock/KS matrix 
-   real(realk), INTENT(OUT)               :: Etotal
+   real(realk), INTENT(OUT)               :: Etotal(ndmat)
    !> Contains settings for integral code
    type(lsitem),intent(inout)             :: ls
    !> SCF gradient norm
@@ -285,10 +288,8 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,Etotal,ls,gradnrm)
    integer :: previous
    real(realk) :: r  ! ratio for quadraticity of trust region
    ls%setting%scheme%DFT%CS00eHOMO = config%diag%eHOMO
-   ndim = F%nrow
+   ndim = F(1)%nrow
    if (config%diag%cfg_no_confs_checked_in_rh) then 
-      !       Incremental scheme - build KS-matrix based on density-difference rather
-      !       than the density
       if (config%opt%cfg_queue_on_disk) then
          !Possibility to dump queue to disk while contruction Fock matrix for saving memory
          if (config%opt%cfg_density_method == config%opt%cfg_f2d_arh) then
@@ -297,7 +298,7 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,Etotal,ls,gradnrm)
             call queue_on_disk(queue,queue_lu,ndim)
          endif
       endif
-      CALL di_get_fock_LSDALTON(D,h1,F,Etotal,config%lupri,config%luerr,ls)
+      CALL di_get_fock_LSDALTON(D,h1,F,ndmat,Etotal,config%lupri,config%luerr,ls)
       if (config%opt%cfg_queue_on_disk) then
          !Restore queue if it has been dumped to disk
          if (config%opt%cfg_density_method == config%opt%cfg_f2d_arh) then
@@ -309,9 +310,9 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,Etotal,ls,gradnrm)
       if ((config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
            config%solver%cfg_do_2nd_order) .and. iteration > 1) then
          if (config%davidSCF%arh_davidson) then
-            if (Etotal - config%solver%old_energy < 0) then
+            if (Etotal(ndmat) - config%solver%old_energy < 0) then
                if (config%davidSCF%arh_linesearch) then
-                  config%davidSCF%ActualEnergyDiff = ABS(Etotal-config%davidSCF%arh_linesE)
+                  config%davidSCF%ActualEnergyDiff = ABS(Etotal(ndmat)-config%davidSCF%arh_linesE)
                   config%davidSCF%EnergyDiffset = .TRUE.
                   IF(config%davidSCF%arh%xnorm < 9.0E-5_realk) then 
                      !maybe test on gradnrm < XFACTOR*config%opt%set_convergence_threshold
@@ -327,16 +328,16 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,Etotal,ls,gradnrm)
 !                     write(config%lupri,*)'ARHLS: gradnrm',gradnrm
 !                     write(config%lupri,*)'ARHLS: config%opt%set_convergence_threshold',config%opt%set_convergence_threshold
                   ELSE !default not close to convergence
-                     if (config%davidSCF%MaxLineSearchEnergyDiff > ABS(Etotal-config%davidSCF%arh_linesE)) then
+                     if (config%davidSCF%MaxLineSearchEnergyDiff > ABS(Etotal(ndmat)-config%davidSCF%arh_linesE)) then
                         !default no error in linesearch
                         config%solver%step_accepted=.true.
                         config%davidSCF%stepsize=min(2.5_realk*config%davidSCF%stepsize,&
                              &config%davidSCF%max_stepsize)
 !                        write(config%lupri,*)'ARHLS: xnorm',config%davidSCF%arh%xnorm
-!                        WRITE(config%lupri,'(A,ES22.13)')'ARHLS: actual Etotal from Fock Matrix  ',Etotal
+!                        WRITE(config%lupri,'(A,ES22.13)')'ARHLS: actual Etotal from Fock Matrix  ',Etotal(ndmat)
 !                        WRITE(config%lupri,'(A,ES22.13)')'ARHLS: linesearch Energy Estimate      ',config%davidSCF%arh_linesE
                         WRITE(config%lupri,'(A,ES22.13)')'ARHLS: Energy difference between estimate and actual Energy',&
-                             & ABS(Etotal-config%davidSCF%arh_linesE)
+                             & ABS(Etotal(ndmat)-config%davidSCF%arh_linesE)
                         WRITE(config%lupri,'(A,ES22.13)')'ARHLS: Maximum difference in linesearch energies',&
                              & config%davidSCF%MaxLineSearchEnergyDiff
                         IF(ABS(config%davidSCF%MaxLineSearchEnergyDiff) < 1.0E-10_realk)THEN
@@ -354,9 +355,9 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,Etotal,ls,gradnrm)
                         IF(ABS(config%davidSCF%MaxLineSearchEnergyDiff).LT.ls%setting%scheme%THRESHOLD)THEN
                            config%solver%step_accepted=.TRUE.
                            config%davidSCF%arh_linesearch=.false.
-!                           write(config%lupri,'(A,ES24.12)')'ARHLS: actual Etotal   ',Etotal
+!                           write(config%lupri,'(A,ES24.12)')'ARHLS: actual Etotal   ',Etotal(ndmat)
 !                           write(config%lupri,'(A,ES24.12)')'ARHLS: linesearch E    ',config%davidSCF%arh_linesE
-                           write(config%lupri,'(A,ES24.12)')'ARHLS: actual Ediff    ',ABS(Etotal-config%davidSCF%arh_linesE)
+                           write(config%lupri,'(A,ES24.12)')'ARHLS: actual Ediff    ',ABS(Etotal(ndmat)-config%davidSCF%arh_linesE)
                            write(config%lupri,'(A,ES24.12)')'ARHLS: Ediff linesearch',config%davidSCF%MaxLineSearchEnergyDiff
                            write(config%lupri,*)'ARHLS: differences between linesearch energies are too small'
                            write(config%lupri,*)'ARHLS: ARH LINESEARCH TURNED OFF!!'
@@ -364,16 +365,16 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,Etotal,ls,gradnrm)
                            print*,'ARHLS: warning possible error in linesearch'
                            write(config%lupri,'(A)')'ARHLS: warning possible error in linesearch'
                            
-                           print*,'ARHLS: actual Etotal   ',Etotal
+                           print*,'ARHLS: actual Etotal   ',Etotal(ndmat)
                            print*,'ARHLS: linesearch E    ',config%davidSCF%arh_linesE
-                           print*,'ARHLS: actual Ediff    ',ABS(Etotal-config%davidSCF%arh_linesE)
+                           print*,'ARHLS: actual Ediff    ',ABS(Etotal(ndmat)-config%davidSCF%arh_linesE)
                            print*,'ARHLS: Ediff linesearch',config%davidSCF%MaxLineSearchEnergyDiff
-                           write(config%lupri,'(A,ES24.12)')'ARHLS: actual Etotal   ',Etotal
+                           write(config%lupri,'(A,ES24.12)')'ARHLS: actual Etotal   ',Etotal(ndmat)
                            write(config%lupri,'(A,ES24.12)')'ARHLS: linesearch E    ',config%davidSCF%arh_linesE
-                           write(config%lupri,'(A,ES24.12)')'ARHLS: actual Ediff    ',ABS(Etotal-config%davidSCF%arh_linesE)
+                           write(config%lupri,'(A,ES24.12)')'ARHLS: actual Ediff    ',ABS(Etotal(ndmat)-config%davidSCF%arh_linesE)
                            write(config%lupri,'(A,ES24.12)')'ARHLS: Ediff linesearch',config%davidSCF%MaxLineSearchEnergyDiff
                            write(config%lupri,'(a,ES13.4,ES13.4)') 'ARHLS: ARH LINESEARCH: Ediff linesearch vs. actual Ediff :', &
-                                &config%davidSCF%MaxLineSearchEnergyDiff,  ABS(Etotal-config%davidSCF%arh_linesE)
+                                &config%davidSCF%MaxLineSearchEnergyDiff,  ABS(Etotal(ndmat)-config%davidSCF%arh_linesE)
 !                           WRITE(config%lupri,*)'ARHLS: If the energy changes are very small you may face an issue '
 !                           WRITE(config%lupri,*)'ARHLS: with accuracy and we suggest to use the .NOECONTINCREM keyword'
 !                           WRITE(config%lupri,*)'ARHLS: and possible the .NLSDASCREENO keyword'
@@ -410,16 +411,17 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,Etotal,ls,gradnrm)
             endif !Etotal - config%solver%old_energy < 0
          else
             !not davidson
-            call update_trustradius(config%solver, ls, iteration, Etotal, fifoqueue%offset)
+            call update_trustradius(config%solver, ls, iteration, Etotal(ndmat), fifoqueue%offset)
          end if
-         if (.not. config%solver%step_accepted) Etotal = config%solver%old_energy
+         if (.not. config%solver%step_accepted) Etotal(ndmat) = config%solver%old_energy
       endif
    else
+      IF(ndmat.GT.1)call lsquit('Error in get_fock: ndmat.gt.1 special case',-1)
       WRITE(config%lupri,'("** Fock matrix was already found in RH-step '// &
            & 'exploring a configuration shift ")')
-      call mat_assign(F,queue%F(queue%current_position))
-      call mat_assign(D,queue%D(queue%current_position))
-      Etotal = queue%Energy(queue%current_position)
+      call mat_assign(F(1),queue%F(queue%current_position))
+      call mat_assign(D(1),queue%D(queue%current_position))
+      Etotal(1) = queue%Energy(queue%current_position)
    endif
    !WRITE(LUPRI,*) 'E_SCF right after evaluation: ',Etotal
    !endif

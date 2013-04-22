@@ -62,12 +62,12 @@ SUBROUTINE lsdalton
   TYPE(lsitem),target :: ls
   type(configItem),target  :: config
   real(realk)         :: t1,t2,TIMSTR,TIMEND
-  TYPE(Matrix)         :: F,D, CMO
+  TYPE(Matrix)         :: F(1),D(1), CMO
   Type(Matrix), target :: H1,S
   integer             :: matmultot, lun
   REAL(REALK)         :: mx
   ! Energy
-  REAL(REALK)         :: E,ExcitE
+  REAL(REALK)         :: E(1),ExcitE
   logical             :: mem_monitor,do_decomp
   real(realk), allocatable :: eival(:)
   real(realk),pointer :: GGem(:,:,:,:,:)
@@ -171,9 +171,9 @@ SUBROUTINE lsdalton
         CALL mat_init(S,nbast,nbast)
 
         CALL II_get_overlap(lupri,luerr,ls%setting,S)
-        CALL mat_init(D,nbast,nbast)
+        CALL mat_init(D(1),nbast,nbast)
         CALL mat_init(H1,nbast,nbast)
-        CALL mat_init(F,nbast,nbast)
+        CALL mat_init(F(1),nbast,nbast)
         CALL II_get_h1(lupri,luerr,ls%setting,H1)
         call get_initial_dens(H1,S,D,ls,config)
 
@@ -217,7 +217,7 @@ SUBROUTINE lsdalton
         endif
 
         Call set_pbc_molecules(ls%input,ls%setting,lupri,luerr,nbast,&
-        D,config%latt_config)!,config%lib)
+        D(1),config%latt_config)!,config%lib)
         call config_shutdown(config)
 
      else
@@ -237,8 +237,8 @@ SUBROUTINE lsdalton
            call mem_dealloc(GGem) 
         ENDIF
 
-        CALL mat_init(D,nbast,nbast)
-        CALL mat_init(F,nbast,nbast)
+        CALL mat_init(D(1),nbast,nbast)
+        CALL mat_init(F(1),nbast,nbast)
         CALL mat_init(H1,nbast,nbast)
 
         ! write(lupri,*) 'QQQ New  S:',mat_trab(S,S)
@@ -256,7 +256,7 @@ SUBROUTINE lsdalton
         !this pointer is sometimes deassociated
 
         !debug integral routines
-        call di_debug_general(lupri,luerr,ls,nbast,S,D,config%integral%debugProp)
+        call di_debug_general(lupri,luerr,ls,nbast,S,D(1),config%integral%debugProp)
         if (mem_monitor) then
            write(lupri,*)
            WRITE(LUPRI,'("Max no. of matrices allocated in Level 2 / get_initial_dens: ",I10)') max_no_of_matrices
@@ -289,7 +289,7 @@ SUBROUTINE lsdalton
 
         inquire (file="soeosave.out", exist=soeosaveexist)
         if (config%soeoinp%cfg_restart .and. soeosaveexist) then
-          call soeo_restart (config%soeoinp%cfg_unres, config%lupri, S, F, D)
+          call soeo_restart (config%soeoinp%cfg_unres, config%lupri, S, F(1), D(1))
         else
            if (config%soeoinp%cfg_restart) then
               write (config%lupri, *) 'WARNING: .SOEORST specified but soeosave.out does not exist'
@@ -321,14 +321,14 @@ SUBROUTINE lsdalton
 
         IF(config%decomp%cfg_DumpDensRestart)THEN !default true
            ! Kasper K, save Fock and overlap matrices to file for future use
-           call save_fock_matrix_to_file(F)
+           call save_fock_matrix_to_file(F(1))
            call save_overlap_matrix_to_file(S)
         ENDIF
 
         if (config%opt%cfg_incremental) call ks_free_incremental_fock()
 
         if (config%opt%print_final_cmo) then
-           call print_orbital_info2(D, F, S, 'cmo.out', config%decomp%cfg_unres, .true., config%lupri)
+           call print_orbital_info2(D(1), F(1), S, 'cmo.out', config%decomp%cfg_unres, .true., config%lupri)
         endif
 
         !SOEO
@@ -336,7 +336,7 @@ SUBROUTINE lsdalton
            write (config%lupri, *) 'Second Order Ensemble Optimization (SOEO) chosen'
            write (config%lupri, *) 'Starting SOEO section:'
            write (config%lupri, *) '================================================'
-           call soeoloop (F, S, D, config%soeoinp)
+           call soeoloop (F(1), S, D(1), config%soeoinp)
            write (config%lupri, *) 'SOEO section done'
            write (config%lupri, *) '================================================'
         endif
@@ -347,7 +347,7 @@ SUBROUTINE lsdalton
            ! get orbitals
            call mat_init(Cmo,nbast,nbast)
            allocate(eival(nbast))
-           call mat_diag_f(F,S,eival,Cmo)
+           call mat_diag_f(F(1),S,eival,Cmo)
            deallocate(eival)
 
            ! write CMO orbitals
@@ -386,7 +386,7 @@ SUBROUTINE lsdalton
 
               ! Single point DEC calculation using current HF files
               DECcalculation: IF(DECinfo%doDEC) then
-                 call dec_main_prog_input(ls,F,D,S,CMO)
+                 call dec_main_prog_input(ls,F(1),D(1),S,CMO)
               endif DECcalculation
               ! free Cmo
               call mat_free(Cmo)
@@ -396,20 +396,20 @@ SUBROUTINE lsdalton
         !
         !  Debug integrals 
         !
-        call di_debug_general2(lupri,luerr,ls,nbast,S,D)
+        call di_debug_general2(lupri,luerr,ls,nbast,S,D(1))
 
         !
         ! Optimization
         !
         if (config%optinfo%optimize) then
            if(config%doESGopt)then
-              call get_excitation_energy(ls,config,F,D,S,ExcitE,&
+              call get_excitation_energy(ls,config,F(1),D(1),S,ExcitE,&
             & config%decomp%cfg_rsp_nexcit)
-              Write(lupri,'(A,ES20.9)')'Ground state SCF Energy:',E
+              Write(lupri,'(A,ES20.9)')'Ground state SCF Energy:',E(1)
               Write(lupri,'(A,ES20.9)')'Excitation Energy      :',ExcitE
-              E = E + ExcitE
+              E(1) = E(1) + ExcitE
               Write(lupri,*)'==============================================='
-              Write(lupri,'(A,ES20.9)')'Exicted state Energy   :',E
+              Write(lupri,'(A,ES20.9)')'Exicted state Energy   :',E(1)
               Write(lupri,*)'==============================================='
            endif
            CALL LS_runopt(E,config,H1,F,D,S,CMO,ls)
@@ -420,7 +420,7 @@ SUBROUTINE lsdalton
            Endif
         endif
 
-        call lsdalton_response(ls,config,F,D,S)
+        call lsdalton_response(ls,config,F(1),D(1),S)
         
         call config_shutdown(config)
 
@@ -442,7 +442,7 @@ SUBROUTINE lsdalton
         if(config%response%tasks%doNumHess .or. &
              & config%response%tasks%doNumGrad .or. &
              & config%response%tasks%doNumGradHess)then 
-           nbast=D%nrow
+           nbast=D(1)%nrow
            call get_numerical_hessian(lupri,luerr,ls,nbast,config,config%response%tasks%doNumHess,&
                 & config%response%tasks%doNumGrad,config%response%tasks%doNumGradHess)
         endif
@@ -452,13 +452,13 @@ SUBROUTINE lsdalton
         IF (config%geoHessian%testContrib) THEN
            write (*,*)     'Test the Hessian contributions'
            write (lupri,*) 'Test the Hessian contributions'
-           call test_Hessian_contributions(F,D,Natoms,1,ls%setting,lupri,luerr)
+           call test_Hessian_contributions(F(1),D(1),Natoms,1,ls%setting,lupri,luerr)
         ENDIF
         IF (config%geoHessian%do_geoHessian) THEN
            call mem_alloc(geomHessian,3*Natoms,3*Natoms)
            write (lupri,*) 'Calculate the Hessian'
            write (*,*)     'Calculate the Hessian'
-           call get_molecular_hessian(geomHessian,Natoms,F,D,ls%setting,config%geoHessian,lupri,luerr)   
+           call get_molecular_hessian(geomHessian,Natoms,F(1),D(1),ls%setting,config%geoHessian,lupri,luerr)   
            call mem_dealloc(geomHessian)
         ENDIF
 
@@ -467,7 +467,7 @@ SUBROUTINE lsdalton
         if (config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. & 
              & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
              & config%decomp%cfg_check_converged_solution .or. config%decomp%cfg_rsp_nexcit > 0) then   
-           call get_oao_transformed_matrices(config%decomp,F,D)
+           call get_oao_transformed_matrices(config%decomp,F(1),D(1))
         endif
         if (do_decomp) then
            call decomp_shutdown(config%decomp)
@@ -512,8 +512,8 @@ SUBROUTINE lsdalton
   !
   if(HFdone) then  ! only if HF calculation was carried out 
      CALL mat_free(H1)
-     CALL mat_free(F)
-     CALL mat_free(D)
+     CALL mat_free(F(1))
+     CALL mat_free(D(1))
      CALL mat_free(S)
   end if
 
