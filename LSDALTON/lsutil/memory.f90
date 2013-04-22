@@ -361,6 +361,10 @@ INTERFACE mem_dealloc
      &             OVERLAPT_deallocate_1dim,ARRAY_deallocate_1dim,&
      &             mpi_deallocate_iV,mpi_deallocate_dV
 END INTERFACE
+INTERFACE memory_error_quit
+  module procedure memory_error_quit64,memory_error_quit32
+END INTERFACE memory_error_quit
+
 
 CONTAINS
 
@@ -1475,20 +1479,21 @@ end subroutine collect_thread_memory
   !> It prints a memory statistics summary and quits LSDALTON.
   !> \author Kasper Kristensen
   !> \date April 2013
-subroutine memory_error_quit(mylabel,lupri)
+subroutine memory_error_quit64(mylabel,lupri)
 implicit none
 !> Label for routine where memory allocation failed
 character(*),intent(in) :: mylabel
 !> Unit number for lsquit output 
-integer,intent(in) :: lupri
-integer :: myoutput
+integer(kind=8),intent(in) :: lupri
+integer :: myoutput,intlupri
+intlupri = lupri
 
-if(lupri==-1) then
+if(intlupri==-1) then
 ! Print memory statistics to screen
 myoutput=6
 else
 ! Print memory statistics to output file
-myoutput=lupri
+myoutput=intlupri
 end if
 
 ! Memory statistics
@@ -1498,9 +1503,35 @@ write(myoutput,*)
 call stats_mem(myoutput)
 
 ! Quit
-call lsquit(mylabel,lupri)
+call lsquit(mylabel,intlupri)
 
-end subroutine memory_error_quit
+end subroutine memory_error_quit64
+subroutine memory_error_quit32(mylabel,lupri)
+implicit none
+!> Label for routine where memory allocation failed
+character(*),intent(in) :: mylabel
+!> Unit number for lsquit output 
+integer(kind=4),intent(in) :: lupri
+integer :: myoutput,intlupri
+intlupri = lupri
+if(intlupri==-1) then
+! Print memory statistics to screen
+myoutput=6
+else
+! Print memory statistics to output file
+myoutput=intlupri
+end if
+
+! Memory statistics
+write(myoutput,*) 
+write(myoutput,*) 'Printing memory statistics before quitting LSDALTON...'
+write(myoutput,*) 
+call stats_mem(myoutput)
+
+! Quit
+call lsquit(mylabel,intlupri)
+
+end subroutine memory_error_quit32
 
 
 !----- ALLOCATE REAL POINTERS -----!
@@ -1976,8 +2007,8 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
 
    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_realk,IERR)
 
-   if(IERR/=0)call memory_error_quit("ERROR(mpi_allocate_dV):error in&
-   &mpi_type_get_extent",IERR)
+   if(IERR/=0) call memory_error_quit("ERROR(mpi_allocate_dV):error in&
+     &mpi_type_get_extent",IERR)
 
    bytes =n*mpi_realk
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
