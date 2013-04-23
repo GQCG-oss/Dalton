@@ -2,6 +2,7 @@
 #ifdef VAR_LSMPI
     use lsmpi_type
     use infpar_module
+    use ls_env
     implicit none
     integer(kind=ls_mpik) :: ierr
 #ifdef VAR_CHEMSHELL
@@ -20,6 +21,10 @@
 #else
     call MPI_INIT( ierr )
     MPI_COMM_LSDALTON = MPI_COMM_WORLD
+    !asynchronous progress is off åer default, might be switched on with an
+    !environment variable
+    LSMPIASYNCP = .false.
+    call ls_getenv(varname="LSMPI_ASYNC_PROGRESS",leng=20,output_bool=LSMPIASYNCP)
 #endif
 
     call MPI_COMM_RANK( MPI_COMM_LSDALTON, infpar%mynum, ierr )
@@ -39,7 +44,6 @@
     endif
 #endif
     end subroutine lsmpi_init 
-
 #ifdef VAR_LSMPI
 
     subroutine lsmpi_slave(comm)
