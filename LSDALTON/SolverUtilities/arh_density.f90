@@ -20,6 +20,7 @@ use matrix_util
 use typedeftype
 use II_XC_interfaceModule
 use lsdalton_fock_module
+use dal_interface
          !> Used to pass info about symmetry of trial vectors/matrices
          integer, parameter :: symmetric = 1
          !> Used to pass info about symmetry of trial vectors/matrices
@@ -992,8 +993,6 @@ contains
    !> \callgraph
    !>
    subroutine arh_lintrans(arh,decomp,x_in,symm,mu,AX,fifoqueue)
-   use decompMod
-   use dal_interface
    implicit none  
          !> Contains solver info (ARH/TrFD)
          type(solverItem)          :: arh

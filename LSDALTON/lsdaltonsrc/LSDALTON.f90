@@ -328,6 +328,15 @@ SUBROUTINE lsdalton
         endif
         !END SOEO
 
+        !debug
+!        call mat_init(Cmo,nbast,nbast)
+!        allocate(eival(nbast))
+!        call mat_diag_f(F,S,eival,Cmo)
+!        deallocate(eival)
+!        call II_get_AbsoluteValue_overlap(LUPRI,LUERR,ls%SETTING,nbast,CMO,S)
+!        call mat_print(S,1,S%nrow,1,S%ncol,lupri)
+!        call lsquit('test done',-1)
+
         !lcm basis
         if (config%decomp%cfg_lcm ) then
            ! get orbitals

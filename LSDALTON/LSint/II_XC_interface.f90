@@ -227,9 +227,19 @@ IF(setting%IntegralTransformGC)THEN
    call lsquit('IntegralTransformGC must be false in II_get_AbsoluteValue_overlap',-1)
 ENDIF
 
+!chose ABSVAL grid
+SETTING%scheme%DFT%igrid = Grid_ABSVAL
+
+!default for fine
+SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%RADINT = 2.15443E-17_realk
+SETTING%scheme%DFT%GridObject(Grid_ABSVAL)%ANGINT = 47
+
 CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,1,nbast,CMAT,ABSVALOVERLAP)
 CALL LSTIMER('ABSVAL-Overlap',TS,TE,LUPRI)
+
+!revert to default grid
+SETTING%scheme%DFT%igrid = Grid_Default
 
 call mem_dft_dealloc(Cmat)
 CALL mat_set_from_full(ABSVALOVERLAP,1E0_realk,S,'ABSVAL')

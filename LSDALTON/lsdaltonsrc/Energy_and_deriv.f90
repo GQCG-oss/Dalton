@@ -85,14 +85,14 @@ contains
        ! Empirical dispersion correction in case of dft
        !CALL II_DFTDISP(LS%SETTING,DUMMY,1,1,0,LUPRI,1)
 
-       call typedef_set_default_setting(ls%setting,ls%input)
        !
        !   Setting DFT grid equal to zero in order to recalculate
        !   it at new geometry
        !
        If (ls%input%do_dft) then
-          ls%input%dalton%DFT%grdone = 0
+          ls%input%dalton%DFT%griddone = 0
        Endif
+       call typedef_set_default_setting(ls%setting,ls%input)
 
        if ((config%opt%cfg_start_guess == 'TRILEVEL')&
             &.or.(config%opt%cfg_start_guess == 'ATOMS')&

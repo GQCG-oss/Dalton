@@ -44,15 +44,17 @@ LOGICAL         :: USE_MPI !use MPI ?
 !
 TYPE(BASINF)  :: BAS
 LOGICAL       :: DFT_ISGGA,DOGGA
-INTEGER       :: NDER,NTYPSO,IGEODRV,NSOB
+INTEGER       :: NDER,NTYPSO,IGEODRV,NSOB,igrid,GRIDDONE
 REAL(REALK),parameter :: D0=0E0_realk
 LOGICAL :: REDUCE_MAXNACTBAST
 EXTERNAL DFT_ISGGA
 
+igrid = SETTING%scheme%DFT%igrid
+GRIDDONE = SETTING%scheme%DFT%GridObject(igrid)%GRIDDONE
 IF (SETTING%SCHEME%CONTANG) CALL LSQUIT('Error in II_DFTINT. ContAng option not implemented!',-1)
 
 ELECTRONS=d0
-CALL BUILD_BASINF(LUPRI,IPRINT,BAS,SETTING,SETTING%scheme%DFT%GRDONE,.FALSE.)
+CALL BUILD_BASINF(LUPRI,IPRINT,BAS,SETTING,GRIDDONE,.FALSE.)
 
 DOGGA = DFT_ISGGA() ! C code
 IGEODRV = NGEODRV
@@ -60,18 +62,20 @@ IF (DOGGA) IGEODRV = IGEODRV + 1
 CALL II_SETUPSOS(IGEODRV,DOLND,NBAST,NDER,NTYPSO,NSOB)
 REDUCE_MAXNACTBAST=.FALSE.
 #ifdef VAR_LSMPI
-IF(SETTING%SCHEME%DFT%GRDONE .EQ. 0)REDUCE_MAXNACTBAST=.TRUE.
+IF(GRIDDONE .EQ. 0)REDUCE_MAXNACTBAST=.TRUE.
 #endif
 CALL II_DFTINT1(LUPRI,IPRINT,DMAT,NBAST,SETTING%SCHEME%DFT,BAS,&
-     &NDMAT,NGEODRV,DOLND,CB,DFTDATA,ELECTRONS,NDER,NTYPSO,NSOB,DOGGA,&
-     &SETTING%MOLECULE(1)%p%nELECTRONS,SETTING%SCHEME%noOMP,&
-     &UNRES,USE_MPI,setting%numnodes,setting%node)
+     & NDMAT,NGEODRV,DOLND,CB,DFTDATA,ELECTRONS,NDER,NTYPSO,NSOB,DOGGA,&
+     & SETTING%MOLECULE(1)%p%nELECTRONS,SETTING%SCHEME%noOMP,&
+     & UNRES,USE_MPI,setting%numnodes,setting%node,&
+     & SETTING%scheme%DFT%GridObject(igrid))
 CALL FREE_BASINF(BAS)
 
 #ifdef VAR_LSMPI
 IF(REDUCE_MAXNACTBAST)THEN
    IF(USE_MPI)call lsmpi_barrier(setting%comm)    
-   IF(USE_MPI)call lsmpi_max_int_reduction(SETTING%SCHEME%DFT%maxNactbast,infpar%master,setting%comm)
+   IF(USE_MPI)call lsmpi_max_int_reduction(&
+        & SETTING%scheme%DFT%GridObject(igrid)%maxNactbast,infpar%master,setting%comm)
 ENDIF
 #endif
 
@@ -113,7 +117,8 @@ END SUBROUTINE II_DFTINT
 !>  'worker' routines are for now in the II_dft_ksm.f90 file. 
 SUBROUTINE II_DFTINT1(LUPRI,IPRINT,DMAT,NBAST,DFT,BAS,&
      &NDMAT,NGEODRV,DOLND,CB,DFTDATA,ELECTRONS,&
-     &NDER,NTYPSO,NSOB,DOGGA,NELECTRONS,noOMP,UNRES,USE_MPI,numnodes,node) 
+     &NDER,NTYPSO,NSOB,DOGGA,NELECTRONS,noOMP,UNRES,&
+     &USE_MPI,numnodes,node,GridObject) 
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -157,6 +162,7 @@ LOGICAL,intent(in)  :: noOMP
 LOGICAL,intent(in) :: USE_MPI
 !> MPI info
 INTEGER(kind=ls_mpik),intent(in) :: numnodes,node
+type(Griditem) :: GridObject
 !
 integer :: NPOINTS,NLEN,NSHELLBLOCKS,NROW,NCOL
 INTEGER :: iprune,L_prev,L_curr,IPT,spSIZE,L,NCURLEN,I,J
@@ -169,34 +175,42 @@ REAL(REALK),pointer :: SPHMAT(:)
 LOGICAL     :: CHECKELS,SETIT,LDUM,PRINTTIM
 integer,pointer :: LVALUE(:,:),MVALUE(:,:),NVALUE(:,:)
 integer :: GC2,mmm
-IF(DFT%RADIALGRID.EQ. 1)THEN
-   GC2=1
-ELSE
-   GC2=0
-ENDIF
+
 TELECTRONS(1:ndmat) = 0E0_realk
 IT=0
 SETIT=.FALSE.
-IF(DFT%GRDONE .EQ. 0)THEN
-   GRIDITERATIONS=0
+IF(GridObject%GRIDDONE .EQ. 0)THEN
+   GridObject%GRIDITERATIONS=0
    SETIT=.TRUE.
-   DFT%NBUFLEN=0
-   DFT%maxNactBAST = 0
+   GridObject%NBUFLEN=0
+   GridObject%maxNactBAST = 0
 ENDIF
 !pruning: per default on
 IPRUNE = 1
-IF (DFT%NOPRUN) IPRUNE = 0
-IF(DFT%GRDONE.EQ. 0)THEN
+IF (GridObject%NOPRUN) IPRUNE = 0
+IF(GridObject%GRIDDONE.EQ. 0)THEN
    PRINTTIM=.TRUE.
 ELSE
    PRINTTIM=.FALSE.
 ENDIF
-IF(.NOT.DFT%newgrid)then
+
+IF(.NOT.GridObject%newgrid)then
+   !OLD GRID BUILD
+   IF(GridObject%RADIALGRID.EQ. 1)THEN
+      GC2=1
+   ELSE
+      GC2=0
+   ENDIF
    CALL LS_GETTIM(CPU1,WALL1)
-   CALL II_OPNQUA(NBAST,dft%radint,DFT%angmin,DFT%angint,DFT%HRDNES,iprune,BAS%natoms,& 
-        &BAS%X,BAS%Y,BAS%Z,BAS%Charge,DFT%GRDONE,BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,&
-        &BAS%MAXANGMOM,BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,    & 
-        &BAS%PRIEXPSTART,BAS%RSHEL,IT,DFT%NBUFLEN,DFT%TURBO,GC2,LUPRI) ! C code in grid-gen.c
+   ! C code in grid-gen.c
+   print*,'GridObject%NBUFLEN',GridObject%NBUFLEN,'turbo',GridObject%TURBO
+   CALL II_OPNQUA(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,&
+        & GridObject%HRDNES,iprune,BAS%natoms,BAS%X,BAS%Y,BAS%Z,BAS%Charge,&
+        & GridObject%GRIDDONE,BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,&
+        & BAS%MAXANGMOM,BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,    & 
+        & BAS%PRIEXPSTART,BAS%RSHEL,IT,GridObject%NBUFLEN,GridObject%TURBO,GC2,LUPRI) 
+   print*,'after GridObject%NBUFLEN',GridObject%NBUFLEN
+   print*,'GridObject%GRIDDONE',GridObject%GRIDDONE,'setit',setit,'it',it
    IF(PRINTTIM)THEN
       CALL LS_GETTIM(CPU2,WALL2)
       CPUTIME = CPU2-CPU1
@@ -204,21 +218,41 @@ IF(.NOT.DFT%newgrid)then
 #ifdef VAR_LSMPI
       IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
-      CALL LS_TIMTXT('>>>  CPU  Time used in gridgeneration is  ',CPUTIME,LUPRI)
-      CALL LS_TIMTXT('>>>  WALL Time used in gridgeneration is  ',WALLTIME,LUPRI)
+         CALL LS_TIMTXT('>>>  CPU  Time used in gridgeneration is  ',CPUTIME,LUPRI)
+         CALL LS_TIMTXT('>>>  WALL Time used in gridgeneration is  ',WALLTIME,LUPRI)
 #ifdef VAR_LSMPI
       ENDIF
 #endif
    ENDIF
+   IF(SETIT)THEN 
+      !set global variable concerning how many time we should read from disk
+      GridObject%GRIDITERATIONS=IT
+   ELSE
+      !set local variable from global variable
+      IT=GridObject%GRIDITERATIONS
+   ENDIF
+   IF(GridObject%maxNactBAST .EQ. 0)THEN
+      CALL DETERMINE_maxNactBAST(GridObject%maxNactBAST,IT,GridObject%NBUFLEN,BAS%MAXNSHELL,BAS%NSTART,NBAST,lupri)
+      CALL CLSQUA 
+      CALL II_OPNQUA(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,&
+           & GridObject%HRDNES,iprune,BAS%natoms,BAS%X,BAS%Y,BAS%Z,BAS%Charge,&
+           & GridObject%GRIDDONE,BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,&
+           & BAS%MAXANGMOM,BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,    & 
+           & BAS%PRIEXPSTART,BAS%RSHEL,IT,GridObject%NBUFLEN,GridObject%TURBO,GC2,LUPRI) 
+   ENDIF
 ELSE
+   !NEW GRID BUILD
    CALL LS_GETTIM(CPU1,WALL1)
-   DFT%NBUFLEN=1024
+   GridObject%NBUFLEN=1024
    BoxMemRequirement = NBAST*NBAST
-   CALL GenerateGrid(NBAST,dft%radint,DFT%angmin,DFT%angint,DFT%HRDNES,iprune,BAS%natoms,& 
-        & BAS%X,BAS%Y,BAS%Z,BAS%Charge,DFT%GRDONE,BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
-        & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,IT,DFT%TURBO,DFT%nbuflen,&
-        & DFT%RADIALGRID,DFT%ZdependenMaxAng,DFT%PARTITIONING,BAS%nstart,DFT%MaxNactBast,LUPRI,&
-        & IPRINT,USE_MPI,numnodes,node)
+
+   CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,&
+        & GridObject%HRDNES,iprune,BAS%natoms,BAS%X,BAS%Y,BAS%Z,BAS%Charge,GridObject%GRIDDONE,&
+        & BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
+        & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,IT,GridObject%TURBO,&
+        & GridObject%nbuflen,GridObject%RADIALGRID,GridObject%ZdependenMaxAng,&
+        & GridObject%PARTITIONING,BAS%nstart,GridObject%MaxNactBast,LUPRI,&
+        & IPRINT,USE_MPI,numnodes,node,GridObject%Id)
    IF(PRINTTIM)THEN
       CALL LS_GETTIM(CPU2,WALL2)
       CPUTIME = CPU2-CPU1
@@ -232,16 +266,16 @@ ELSE
       ENDIF
 #endif
    ENDIF
+   IF(SETIT)THEN 
+      !set global variable concerning how many time we should read from disk
+      GridObject%GRIDITERATIONS=IT
+   ELSE
+      !set local variable from global variable
+      IT=GridObject%GRIDITERATIONS
+   ENDIF
 ENDIF
 
-IF(SETIT)THEN 
-!set global variable concerning how many time we should read from disk
-   GRIDITERATIONS=IT
-ELSE
-!set local variable from global variable
-   IT=GRIDITERATIONS
-ENDIF
-
+! Setting spherical transformation quantities
 IF(BAS%MAXANGMOM .GE. 3)THEN
    spSIZE=0
    DO L=2,BAS%MAXANGMOM-1
@@ -280,28 +314,22 @@ DO SHELLANGMOMA=1,BAS%MAXANGMOM
    ENDDO
 ENDDO
 
-IF(DFT%maxNactBAST .EQ. 0 .AND. (.NOT.DFT%newgrid))THEN
-   CALL DETERMINE_maxNactBAST(DFT%maxNactBAST,IT,DFT%NBUFLEN,BAS%MAXNSHELL,BAS%NSTART,NBAST,lupri)
-   CALL CLSQUA 
-   CALL II_OPNQUA(NBAST,dft%radint,DFT%angmin,DFT%angint,DFT%HRDNES,iprune,BAS%natoms,& 
-        &BAS%X,BAS%Y,BAS%Z,BAS%Charge,DFT%GRDONE,BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,&
-        &BAS%MAXANGMOM,BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,    & 
-        &BAS%PRIEXPSTART,BAS%RSHEL,IT,DFT%NBUFLEN,DFT%TURBO,GC2,LUPRI) ! C code in grid-gen.c
-ENDIF
-BoxMemRequirement = MXBLLEN*DFT%MaxNactBast
-CALL II_XC_GRID_LOOP(NDMAT,DFT%NBUFLEN,IT,nbast,DFT%maxNactbast,BAS%maxnshell,&
+BoxMemRequirement = MXBLLEN*GridObject%MaxNactBast
+CALL II_XC_GRID_LOOP(NDMAT,GridObject%NBUFLEN,IT,nbast,GridObject%maxNactbast,BAS%maxnshell,&
      & BAS%CC,BAS%ushells,BAS%CCSTART,BAS%CCINDEX,TELECTRONS,BAS%CENT,DFTdata,&
      & DFT%DFThri,DMAT,dogga,dolnd,ntypso,BAS%PRIEXPSTART,lupri,&
      & BAS%mxprim,nder,BAS%shellangmom,MMM,BAS%maxangmom,nsob,BAS%nstart,BAS%priexp,&
      & DFT%rhothr,spsize,&
-     & sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,CB,DFT%newgrid,unres,node)
+     & sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,CB,GridObject%newgrid,unres,node,&
+     & GridObject%Id)
+
 call mem_dft_dealloc(SPHMAT)
 call mem_dft_dealloc(SPINDEX)
 call mem_dft_dealloc(LVALUE)
 call mem_dft_dealloc(MVALUE)
 call mem_dft_dealloc(NVALUE)
 
-IF(.NOT.DFT%newgrid)THEN
+IF(.NOT.GridObject%newgrid)THEN
    CALL CLSQUA 
 ENDIF
 !
@@ -356,7 +384,9 @@ call mem_dft_alloc(SHELLBLOCKS,2,MAXNSHELL)
 call mem_dft_alloc(BLOCKS,2,MAXNSHELL)
 call mem_dft_alloc(WEIGHT,NBUFLEN)
 call mem_dft_alloc(COOR,3,NBUFLEN)
+print*,'IT',IT
 DO XX=1,IT
+   print*,'XX',XX
    CALL REAQUA(NSHELLBLOCKS,SHELLBLOCKS,NBUFLEN,COOR,WEIGHT,NLEN)
    CALL SHELL_TO_ORB(LUPRI,NSHELLBLOCKS,SHELLBLOCKS,BLOCKS,NSTART,MAXNSHELL,NBAST)
    CALL DETERMINE_NACTIVEORB(NactBAS,NSHELLBLOCKS,BLOCKS,MAXNSHELL)
@@ -375,10 +405,10 @@ SUBROUTINE II_XC_GRID_LOOP(NDMAT,NBUFLEN,IT,nbast,maxNactbast,maxnshell,&
      & CC,ushells,CCSTART,CCINDEX,TELECTRONS,CENT,DFTdata,&
      & DFThri,DMAT,dogga,dolnd,ntypso,PRIEXPSTART,lupri,&
      & mxprim,nder,shellangmom,MMM,maxangmom,nsob,nstart,priexp,rhothr,spsize,&
-     &sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,CB,newgrid,unres,node)
+     &sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,CB,newgrid,unres,node,GridId)
 use IIDFTKSMWORK
 implicit none
-integer,intent(in) :: NDMAT,LUPRI,MAXNSHELL,nbast,NBUFLEN
+integer,intent(in) :: NDMAT,LUPRI,MAXNSHELL,nbast,NBUFLEN,gridid
 integer :: IT
 !> Largest number of active orbitals
 integer,intent(inout) ::  maxNactbast
@@ -462,14 +492,14 @@ integer :: W1,W2,W3,W4,W5,W6,W7,W8,nthreads,tid,lugrid,idmat1,idmat2
 integer :: myBoxMemRequirement
 integer,pointer :: INXACT(:)
 TYPE(DFTDATATYPE) :: myDFTDATA
-character(len=21) :: filename
+character(len=22) :: filename
 logical :: grid_exists
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
 IF(newgrid)THEN
    LUGRID=-1
-   call get_quadfilename(filename,nbast,node)
+   call get_quadfilename(filename,nbast,node,GridId)
    INQUIRE(file=filename,EXIST=grid_exists)
    IF(grid_exists)THEN 
       CALL LSOPEN(LUGRID,filename,'OLD','UNFORMATTED')

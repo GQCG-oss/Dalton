@@ -12,11 +12,12 @@ subroutine DFT_set_default_config(DFT)
 implicit none
 type(DFTparam) :: DFT
 integer :: i
+DFT%IGRID = Grid_Default
 DFT%RADIALGRID = 3   !(default TURBO) (1=GC2,2=LMG,3=TURBO) (olddefault LMG)
 DFT%PARTITIONING = 5 !(default BLOCKSSF)                    (olddefault becke-original)
 !(1=SSF, 2=Becke, 3=Becke-original, 4=block, 5=blockssf, 6=cartesian)
 DFT%ZdependenMaxAng = .TRUE.  !default on                   (olddefault off)
-DFT%GRDONE = 0 !FALSE = GRID NOT DONE YET  
+DFT%GRIDDONE = 0 !FALSE = GRID NOT DONE YET  
 DFT%RADINT = 5.01187E-14_realk                                   !(olddefault 1.0E-11_realk)
 DFT%ANGMIN = 5                                             
 DFT%ANGINT = 35                                            !(olddefault 31)
@@ -52,52 +53,16 @@ DFT%CS00ZND2=0.315E0_realk
 !DFT%CS00ZND2=0.0116E0_realk
 DFT%HFexchangeFac=0.0E0_realk
 DFT%XCFUN=.FALSE.
+call init_gridObject(dft,DFT%gridObject)
+call init_DFTfunc(dft)
 end subroutine DFT_set_default_config
 
-#if 0
-subroutine WRITE_DFT_PARAM(LUN,DFT)
-implicit none
-integer :: LUN
-type(DFTparam) :: DFT
+subroutine dft_setIntegralSchemeFromInput(schemeDFT,dalton_inpDFT)
+type(DFTparam) :: schemeDFT,dalton_inpDFT
 
-WRITE(LUN) DFT%RADIALGRID 
-WRITE(LUN) DFT%PARTITIONING
-WRITE(LUN) DFT%ZdependenMaxAng
-WRITE(LUN) DFT%GRDONE 
-WRITE(LUN) DFT%RADINT
-WRITE(LUN) DFT%ANGMIN
-WRITE(LUN) DFT%ANGINT
-WRITE(LUN) DFT%HRDNES 
-WRITE(LUN) DFT%DFTELS 
-WRITE(LUN) DFT%DFTHR0 
-WRITE(LUN) DFT%DFTHRI 
-WRITE(LUN) DFT%DFTHRL 
-WRITE(LUN) DFT%RHOTHR 
-WRITE(LUN) DFT%NOPRUN
-WRITE(LUN) DFT%DFTASC
-WRITE(LUN) DFT%DFTPOT
-WRITE(LUN) DFT%DODISP
-WRITE(LUN) DFT%DFTIPT 
-WRITE(LUN) DFT%DFTBR1 
-WRITE(LUN) DFT%DFTBR2 
-WRITE(LUN) DFT%DFTADD
-WRITE(LUN) DFT%DISPDONE
-WRITE(LUN) DFT%TURBO
-WRITE(LUN) DFT%NBUFLEN
-WRITE(LUN) DFT%maxNactBAST
-WRITE(LUN) DFT%newgrid
-WRITE(LUN) DFT%dftfunc
-WRITE(LUN) DFT%testNelectrons
-WRITE(LUN) DFT%LB94
-WRITE(LUN) DFT%CS00
-WRITE(LUN) DFT%CS00shift
-WRITE(LUN) DFT%CS00eHOMO
-WRITE(LUN) DFT%CS00ZND1
-WRITE(LUN) DFT%CS00ZND2
-WRITE(LUN) DFT%HFexchangeFac
-WRITE(LUN) DFT%XCFUN
-end subroutine WRITE_DFT_PARAM
-#endif
+schemeDFT=dalton_inpDFT
+
+end subroutine dft_setIntegralSchemeFromInput
 
 subroutine WRITE_FORMATTET_DFT_PARAM(LUPRI,DFT)
 implicit none
@@ -124,7 +89,7 @@ CASE DEFAULT
    CALL lsQUIT('Illegal value of DFT%PARTITIONING',lupri)
 END SELECT
 WRITE(LUPRI,'(2X,A35,L1)') 'ZdependenMaxAng', DFT%ZdependenMaxAng
-WRITE(LUPRI,'(2X,A35,I8)')'GRDONE',DFT%GRDONE 
+WRITE(LUPRI,'(2X,A35,I8)')'GRDONE',DFT%GRIDDONE 
 WRITE(LUPRI,'(2X,A35,F16.8)') 'RADINT',DFT%RADINT
 WRITE(LUPRI,'(2X,A35,I8)')'ANGMIN',DFT%ANGMIN
 WRITE(LUPRI,'(2X,A35,I8)')'ANGINT',DFT%ANGINT
@@ -201,60 +166,17 @@ IF (associated(DFTdata%grad))THEN
 ENDIF
 end subroutine free_DFTdata
 
-#if 0
-subroutine READ_DFT_PARAM(LUN,DFT)
-implicit none
-integer :: LUN
-type(DFTparam) :: DFT
-
-READ(LUN) DFT%RADIALGRID 
-READ(LUN) DFT%PARTITIONING
-READ(LUN) DFT%ZdependenMaxAng
-READ(LUN) DFT%GRDONE 
-READ(LUN) DFT%RADINT
-READ(LUN) DFT%ANGMIN
-READ(LUN) DFT%ANGINT
-READ(LUN) DFT%HRDNES 
-READ(LUN) DFT%DFTELS 
-READ(LUN) DFT%DFTHR0 
-READ(LUN) DFT%DFTHRI
-READ(LUN) DFT%DFTHRL 
-READ(LUN) DFT%RHOTHR 
-READ(LUN) DFT%NOPRUN
-READ(LUN) DFT%DFTASC
-READ(LUN) DFT%DFTPOT
-READ(LUN) DFT%DODISP
-READ(LUN) DFT%DFTIPT 
-READ(LUN) DFT%DFTBR1 
-READ(LUN) DFT%DFTBR2 
-READ(LUN) DFT%DFTADD
-READ(LUN) DFT%DISPDONE
-READ(LUN) DFT%TURBO
-READ(LUN) DFT%NBUFLEN
-READ(LUN) DFT%maxNactBAST
-READ(LUN) DFT%newgrid
-READ(LUN) DFT%dftfunc
-READ(LUN) DFT%testNelectrons
-READ(LUN) DFT%LB94
-READ(LUN) DFT%CS00
-READ(LUN) DFT%CS00shift
-READ(LUN) DFT%CS00ehomo
-READ(LUN) DFT%CS00ZND1
-READ(LUN) DFT%CS00ZND2
-READ(LUN) DFT%HFexchangeFac
-READ(LUN) DFT%XCFUN
-end subroutine READ_DFT_PARAM
-#endif
 
 #ifdef VAR_LSMPI
 subroutine mpicopy_DFTparam(DFT,master)
 implicit none
 integer(kind=ls_mpik) :: master
 type(DFTparam) :: DFT
+integer :: i
 call LS_MPI_BUFFER(DFT%RADIALGRID,Master)
 call LS_MPI_BUFFER(DFT%PARTITIONING,Master)
 call LS_MPI_BUFFER(DFT%ZdependenMaxAng,Master)
-call LS_MPI_BUFFER(DFT%GRDONE,Master)
+call LS_MPI_BUFFER(DFT%GRIDDONE,Master)
 call LS_MPI_BUFFER(DFT%RADINT,Master)
 call LS_MPI_BUFFER(DFT%ANGMIN,Master)
 call LS_MPI_BUFFER(DFT%ANGINT,Master)
@@ -287,6 +209,28 @@ call LS_MPI_BUFFER(DFT%CS00ZND1,Master)
 call LS_MPI_BUFFER(DFT%CS00ZND2,Master)
 call LS_MPI_BUFFER(DFT%HFexchangeFac,Master)
 call LS_MPI_BUFFER(DFT%XCFUN,Master)
+do i=1,size(DFT%dftfuncObject)
+   call LS_MPI_BUFFER(DFT%dftfuncObject(i),Master)
+enddo
+do i=1,size(DFT%GridObject)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%RADIALGRID,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%PARTITIONING,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%ZdependenMaxAng,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%GRIDDONE,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%RADINT,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%ANGMIN,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%ANGINT,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%HRDNES,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%NOPRUN,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%TURBO,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%NBUFLEN,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%maxNactBAST,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%newgrid,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%GRIDITERATIONS,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%Id,Master)
+   call LS_MPI_BUFFER(DFT%GridObject(i)%NBAST,Master)
+enddo
+
 end subroutine mpicopy_DFTparam
 #endif
 

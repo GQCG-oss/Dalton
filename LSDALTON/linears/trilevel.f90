@@ -945,7 +945,7 @@ do i=1, ai%ND
    atomicSetting%scheme%LINK = .FALSE.
    atomicSetting%scheme%DFT%CS00 = .FALSE.
    atomicSetting%scheme%DFT%LB94 = .FALSE.
-   atomicSetting%scheme%DFT%grdone = 0 !the DFT grid should be made for all unique atoms
+   atomicSetting%scheme%DFT%griddone = 0 !the DFT grid should be made for all unique atoms
 
    !build atomic overlap
    CALL II_get_overlap(lupri,luerr,atomicSetting,S)
