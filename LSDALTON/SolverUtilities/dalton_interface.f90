@@ -2127,24 +2127,25 @@ CONTAINS
 
    END SUBROUTINE di_get_overlap_and_H1
 
-   SUBROUTINE di_get_fock_LSDALTON(D,h1,F,Etotal,lupri,luerr,ls)
+   SUBROUTINE di_get_fock_LSDALTON(D,h1,F,ndmat,Etotal,lupri,luerr,ls)
    ! ===================================================================
    ! di_get_fock obtains total fock matrix and corresponding energy.
    ! WE have to go through the interface to dalton before the fock
    ! evaluator learns how to handle arbitrary-type arrays.
    ! ===================================================================
       IMPLICIT NONE
-      TYPE(Matrix), INTENT(IN)    :: H1, D
-      TYPE(Matrix), INTENT(INOUT) :: F
+      integer, INTENT(IN)         :: ndmat
+      TYPE(Matrix), INTENT(IN)    :: H1, D(ndmat)
+      TYPE(Matrix), INTENT(INOUT) :: F(ndmat)
       type(lsitem) :: ls
-      real(realk), INTENT(INOUT) :: Etotal
+      real(realk), INTENT(INOUT) :: Etotal(ndmat)
       !
-      real(realk)   :: edfty(1),fac,hfweight,EdXC
-      integer nbast, lupri,luerr,ndmat
+      real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat)
+      integer nbast, lupri,luerr,idmat
       logical :: Dsym,ADMMexchange
-      TYPE(Matrix) :: K,dXC
+      TYPE(Matrix) :: K(ndmat),dXC(ndmat)
 
-      nbast = D%nrow
+      nbast = D(1)%nrow
       fac = 2E0_realk
       IF(matrix_type .EQ. mtype_unres_dense)fac = 1E0_realk
       Dsym = .TRUE. !symmetric Density matrix
@@ -2170,43 +2171,47 @@ CONTAINS
 
 
          !We do the full Coulomb part with Full density
-         call mat_zero(F)
-         ndmat = 1
+         do idmat=1,ndmat
+            call mat_zero(F(idmat))
+         enddo
          call II_get_coulomb_mat(LUPRI,LUERR,ls%SETTING,D,F,ndmat)  
-         WRITE(lupri,*)'The Coulomb energy contribution ',fac*0.5E0_realk*mat_dotproduct(D,F)
-
+         do idmat=1,ndmat
+            WRITE(lupri,*)'The Coulomb energy contribution ',fac*0.5E0_realk*mat_dotproduct(D(idmat),F(idmat))
+         enddo
 
          !Then we build the ADMM exact exchange matrix K and the XC correction dXC
-         call mat_init(K,nbast,nbast)
-         call mat_init(dXC,nbast,nbast)
-
-         call mat_zero(K)
-         call mat_zero(dXC)
-
-         CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D,K,dXC,ndmat,EdXC,dsym)
-         call mat_daxpy(1.E0_realk,K,F)
-         Etotal = fockenergy_f(F,D,H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC
-         call mat_daxpy(1.E0_realk,dXC,F)
-
-         call mat_free(K)
-         call mat_free(dXC)
-
+         do idmat=1,ndmat
+            call mat_init(K(idmat),nbast,nbast)
+            call mat_init(dXC(idmat),nbast,nbast)
+            call mat_zero(K(idmat))
+            call mat_zero(dXC(idmat))
+            CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
+            call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
+            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat)
+            call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
+            call mat_free(K(idmat))
+            call mat_free(dXC(idmat))
+         enddo
 ! *********************************************************************************
 ! *                              Regular case          
 ! *********************************************************************************
       ELSE
-         ndmat = 1
          call II_get_Fock_mat(lupri,luerr,ls%setting,D,Dsym,F,ndmat,incremental_scheme)      
-         Etotal = fockenergy_f(F,D,H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+         do idmat=1,ndmat
+            Etotal = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+         enddo
       ENDIF
       IF(ls%setting%do_dft) THEN
-         ndmat = 1
-         nbast = D%nrow
+         nbast = D(1)%nrow
          call II_get_xc_fock_mat(lupri,luerr,ls%setting,nbast,D,F,Edfty,ndmat)
-         Etotal = Etotal + Edfty(1)
+         do idmat=1,ndmat
+            Etotal(idmat) = Etotal(idmat) + Edfty(idmat)
+         enddo
       ENDIF
       !** F = h + G
-      call mat_daxpy(1E0_realk,H1,F)
+      do idmat=1,ndmat
+         call mat_daxpy(1E0_realk,H1,F(idmat))
+      enddo
    END SUBROUTINE di_get_fock_LSDALTON
 
    real(realk) function fockenergy_F(F,D,H1,unres,pot_nuc,lupri)

@@ -29,8 +29,8 @@ type(lsitem) :: ls
 type(configItem)    :: config
 !
 integer :: i, j, k, m, DegFree,nAtoms
-Type(Matrix) :: H1,S,D,F,C
-real(realk) :: E, x, h,EigValues(3*ls%INPUT%MOLECULE%nAtoms)
+Type(Matrix) :: H1,S,D(1),F(1),C
+real(realk) :: E(1), x, h,EigValues(3*ls%INPUT%MOLECULE%nAtoms)
 real(realk),pointer :: gradient_min(:,:),gradient_plus(:,:),symmetric_hessian(:,:),Emin(:,:),Eplus(:,:),gradient(:,:), & 
      & analytical_gradient(:,:),analytical_gradient_min(:,:),analytical_gradient_plus(:,:), &
      & numerical_gradient(:,:),numerical_gradient_min(:,:),numerical_gradient_plus(:,:), &
@@ -44,8 +44,8 @@ real(realk) :: Eerr
 
 CALL mat_init(H1,nbast,nbast)
 CALL mat_init(S,nbast,nbast)
-CALL mat_init(D,nbast,nbast)
-CALL mat_init(F,nbast,nbast)
+CALL mat_init(D(1),nbast,nbast)
+CALL mat_init(F(1),nbast,nbast)
 CALL mat_init(C,nbast,nbast)
 
 nullify(unperturbed_molecule)
@@ -80,7 +80,7 @@ call mem_alloc(numerical_gradient,ls%INPUT%MOLECULE%nAtoms,3)
 
 
 if(doNumGrad) then
-   call get_numerical_gradient(h,E,lupri,luerr,nbast,ls,H1,S,F,D,C,config,unperturbed_molecule,numerical_gradient)
+   call get_numerical_gradient(h,E(1),lupri,luerr,nbast,ls,H1,S,F(1),D(1),C,config,unperturbed_molecule,numerical_gradient)
    call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,TRANSPOSE(numerical_gradient),ls%SETTING%MOLECULE(1)%p%nAtoms,'NUMGR')
 endif
 
@@ -116,7 +116,7 @@ if (doNumHess) then
    call get_hessian_from_analytical_gradient(ls,H1,S,D,F,C,E,ls%INPUT%MOLECULE%nAtoms,nbast,lupri,luerr,config, &   
         & unperturbed_molecule,analytical_gradient_min,analytical_gradient_plus,semi_analytical_hessian,h,symmetric_hessian)
    CALL get_energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-   call print_hessian_and_vibrations(E,ls,symmetric_hessian,EigValues,DegFree,nAtoms,WORK,LWORK,IERR,lupri,luerr)
+   call print_hessian_and_vibrations(E(1),ls,symmetric_hessian,EigValues,DegFree,nAtoms,WORK,LWORK,IERR,lupri,luerr)
 endif
 
 !Numerical gradient used to calculated Hessian
@@ -125,7 +125,7 @@ if (doNumGradHess) then
      & config,unperturbed_molecule,numerical_gradient_min,numerical_gradient_plus,numerical_hessian,symmetric_hessian,h,&
      & analytical_gradient_min,analytical_gradient_plus)
    CALL get_energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-   call print_hessian_and_vibrations(E,ls,symmetric_hessian,EigValues,DegFree,nAtoms,WORK,LWORK,IERR,lupri,luerr)
+   call print_hessian_and_vibrations(E(1),ls,symmetric_hessian,EigValues,DegFree,nAtoms,WORK,LWORK,IERR,lupri,luerr)
 endif
 
 
@@ -134,8 +134,8 @@ endif
 call free_Moleculeinfo(unperturbed_molecule)
 CALL mat_free(H1)
 CALL mat_free(S)
-CALL mat_free(D)
-CALL mat_free(F)
+CALL mat_free(D(1))
+CALL mat_free(F(1))
 CALL mat_free(C)
 deallocate(unperturbed_molecule)
 !nullify(unperturbed_molecule)
@@ -169,10 +169,10 @@ subroutine get_numerical_gradient(h,E,lupri,luerr,nbast,ls,H1,S,F,D,C,config,unp
 implicit none
 integer, intent(in)     :: lupri,nbast,luerr
 type(lsitem)        :: ls
-Type(Matrix)        :: H1,S,D,F,C
+Type(Matrix)        :: H1,S,D(1),F(1),C
 type(configItem)    :: config
 real(realk), pointer :: numerical_gradient(:,:)
-real(realk) :: E,Emin,Eplus,h
+real(realk) :: E(1),Emin,Eplus,h
 integer :: i, j
 Type(moleculeinfo),pointer :: unperturbed_molecule
 real(realk) :: Eerr
@@ -181,13 +181,13 @@ do i=1,ls%INPUT%MOLECULE%nAtoms
    do j=1, 3
       ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)-h 
       CALL get_energy(E,Eerr,config,H1,F,D,S,ls,C,ls%INPUT%MOLECULE%nAtoms,lupri,luerr)
-      Emin=E
+      Emin=E(1)
       !call copy_molecule(unperturbed_molecule,ls%INPUT%MOLECULE,lupri)
       !call copy_molecule(unperturbed_molecule,Config%Molecule,lupri)
       
       ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)+(2*h)
       CALL get_energy(E,Eerr,config,H1,F,D,S,ls,C,ls%INPUT%MOLECULE%nAtoms,lupri,luerr)
-      Eplus=E
+      Eplus=E(1)
       ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)-h
       
       !call copy_molecule(unperturbed_molecule,ls%INPUT%MOLECULE,lupri)
@@ -218,11 +218,11 @@ subroutine get_hessian_from_analytical_gradient(ls,H1,S,D,F,C,E,nAtoms,nbast,lup
 implicit none
 integer, intent(in)     :: lupri,nbast,nAtoms,luerr
 type(lsitem)        :: ls
-Type(Matrix)        :: H1,S,D,F,C
+Type(Matrix)        :: H1,S,D(1),F(1),C
 type(configItem)    :: config
 real(realk), pointer :: semi_analytical_hessian(:,:),analytical_gradient_min(:,:),analytical_gradient_plus(:,:),&
      &symmetric_hessian(:,:)
-real(realk) :: E,Eplus,Emin,h
+real(realk) :: E(1),Eplus,Emin,h
 integer :: i,j,k,l,m
 Type(moleculeinfo),pointer :: unperturbed_molecule
 real(realk) :: Eerr
@@ -234,7 +234,7 @@ do i=1,nAtoms
             ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)-h 
             
             CALL get_energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-            CALL get_gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,analytical_gradient_min)
+            CALL get_gradient(E(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,analytical_gradient_min)
             call copy_molecule(ls%INPUT%MOLECULE,Config%Molecule,lupri)
             !Removing the perturbation
             call copy_molecule(unperturbed_molecule,ls%INPUT%MOLECULE,lupri)
@@ -244,7 +244,7 @@ do i=1,nAtoms
             ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)+h
             call copy_molecule(ls%INPUT%MOLECULE,Config%Molecule,lupri)
             CALL get_energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-            CALL get_gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,analytical_gradient_plus)
+            CALL get_gradient(E(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,analytical_gradient_plus)
             !Removing the perturbation
             call copy_molecule(unperturbed_molecule,ls%INPUT%MOLECULE,lupri)
             call copy_molecule(unperturbed_molecule,Config%Molecule,lupri)
@@ -311,11 +311,11 @@ subroutine get_hessian_from_numerical_gradient(ls,H1,S,D,F,C,E,nAtoms,nbast,lupr
 implicit none
 integer, intent(in)     :: lupri,nbast,nAtoms,luerr
 type(lsitem)        :: ls
-Type(Matrix)        :: H1,S,D,F,C
+Type(Matrix)        :: H1,S,D(1),F(1),C
 type(configItem)    :: config
 real(realk), pointer :: numerical_hessian(:,:),numerical_gradient_min(:,:), numerical_gradient_plus(:,:),symmetric_hessian(:,:), &
      & analytical_gradient_min(:,:),analytical_gradient_plus(:,:)
-real(realk) :: E,Eplus,Emin,h
+real(realk) :: E(1),Eplus,Emin,h
 integer :: i,j,k,l,m
 Type(moleculeinfo),pointer :: unperturbed_molecule
 real(realk) :: Eerr
@@ -329,7 +329,7 @@ do i=1,nAtoms
             call get_numerical_gradient(h,E,lupri,luerr,nbast,ls,H1,S,F,D,C,config,&
                        & unperturbed_molecule,numerical_gradient_min)
             CALL get_energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-            CALL get_gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,analytical_gradient_plus)
+            CALL get_gradient(E(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,analytical_gradient_plus)
             
             !Removing the perturbation
             call copy_molecule(unperturbed_molecule,ls%INPUT%MOLECULE,lupri)
@@ -341,7 +341,7 @@ do i=1,nAtoms
                        &unperturbed_molecule,numerical_gradient_plus)
             CALL get_energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
             
-            CALL get_gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,analytical_gradient_plus)
+            CALL get_gradient(E(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,analytical_gradient_plus)
             !Removing the perturbation
             call copy_molecule(unperturbed_molecule,ls%INPUT%MOLECULE,lupri)
             call copy_molecule(unperturbed_molecule,Config%Molecule,lupri)

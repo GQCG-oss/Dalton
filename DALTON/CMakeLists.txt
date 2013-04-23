@@ -172,6 +172,7 @@ add_executable(
     ${CMAKE_SOURCE_DIR}/abacus/dalton.F
     )
 
+set_property(TARGET dalton.x PROPERTY LINKER_LANGUAGE Fortran)
 target_link_libraries(
     dalton.x
     dalton

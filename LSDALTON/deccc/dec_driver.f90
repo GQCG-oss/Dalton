@@ -93,9 +93,9 @@ contains
     ! * Simulate full calculation and use full molecule for all fragments
     ! * Calculate all atomic fragment and pairs to get total correlation energy
 
-    CalculationType: if(DECinfo%FullDEC) then
+    CalculationType: if(DECinfo%mp2energydebug) then
        ! DEC calculation for full molecule where exact single and pair energies are calculated.
-       ! Mostly for debug/testing.
+       ! Only for testing and only for MP2
        call Full_DEC_calculation(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
             & natoms,nocc,nunocc,DistanceTable,Ecorr)
        Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D) 
@@ -248,66 +248,6 @@ contains
     end if
 
 
-
-
-    ! ************************************************************************
-    ! *                         MPI intialization                            *
-    ! ************************************************************************
-
-
-#ifdef VAR_LSMPI
-
-    ! Number of workers (slaves) = Number of nodes minus master itself
-    nworkers = infpar%nodtot -1
-    if(nworkers<1) then
-       call lsquit('DEC MPI requires at least two nodes!',-1)
-    end if
-
-    ! MPI local group size
-    if(DECinfo%MPIgroupsize>0) then ! group size was defined explicitly in input
-       groupsize=DECinfo%MPIgroupsize
-    else ! At least two slaves per MPI slot.
-       ! If nworkers > njobs, then half the atomic fragments will start immediately
-       groupsize = ceiling(real(nworkers)/real(njobs))
-       groupsize = min(2*groupsize,nworkers)
-    end if
-
-    write(DECinfo%output,*) '*** MPI GROUPSIZE SET TO ', groupsize
-
-    ! Initialize local groups 
-    call init_mpi_groups(groupsize,DECinfo%output)
-
-    ! Wake up local masters for fragment jobs
-    call ls_mpibcast(DECDRIVER,master,MPI_COMM_LSDALTON)
-
-    ! Send DEC input information to slaves
-    siz=sizeof(DECinfo)
-    call MPI_BCAST(DECinfo,siz,MPI_CHARACTER,master,MPI_COMM_LSDALTON,ierr)
-
-    ! Pass very basic information on dimensions to local masters (necessary to allocate arrays)
-    call ls_mpibcast(natoms,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(nocc,master,MPI_COMM_LSDALTON)
-    call ls_mpibcast(nunocc,master,MPI_COMM_LSDALTON)
-
-    ! Pass remaining full molecular info to local masters
-    call mpi_dec_fullinfo_master_to_slaves(natoms,nocc,nunocc,DistanceTable,&
-         & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
-
-#else
-    nworkers=0   ! master node does all jobs
-#endif
-
-
-
-    ! Internal control of first order property keywords
-    ! (Necessary because these must be false during fragment optimization.)
-    dens_save = DECinfo%MP2density
-    FO_save = DECinfo%first_order
-    grad_save = DECinfo%gradient
-    DECinfo%MP2density=.false.
-    DECinfo%first_order=.false.
-    DECinfo%gradient=.false.
-
     ! Restart option: In case some fragments are already done and stored in atomicfragments.info.
     fragdone=.false.
     post_fragopt_restart=.false.
@@ -358,6 +298,69 @@ contains
        call init_joblist(njobs,jobs)
        jobidx=0
     end if
+
+
+    ! ************************************************************************
+    ! *                         MPI intialization                            *
+    ! ************************************************************************
+
+
+#ifdef VAR_LSMPI
+
+    ! Number of workers (slaves) = Number of nodes minus master itself
+    nworkers = infpar%nodtot -1
+    if(nworkers<1) then
+       call lsquit('DEC MPI requires at least two nodes!',-1)
+    end if
+
+    ! MPI local group size
+    if(DECinfo%MPIgroupsize>0) then ! group size was defined explicitly in input
+       groupsize=DECinfo%MPIgroupsize
+    else 
+       ! If nworkers > njobs, then half the atomic fragments will start immediately
+       if(njobs>0) then
+          groupsize = ceiling(real(nworkers)/real(njobs))
+          groupsize = min(2*groupsize,nworkers)
+       else  ! sanity precaution to not divide by zero
+          groupsize=nworkers
+       end if
+    end if
+
+    write(DECinfo%output,*) '*** MPI GROUPSIZE SET TO ', groupsize
+
+    ! Initialize local groups 
+    call init_mpi_groups(groupsize,DECinfo%output)
+
+    ! Wake up local masters for fragment jobs
+    call ls_mpibcast(DECDRIVER,master,MPI_COMM_LSDALTON)
+
+    ! Send DEC input information to slaves
+    siz=sizeof(DECinfo)
+    call MPI_BCAST(DECinfo,siz,MPI_CHARACTER,master,MPI_COMM_LSDALTON,ierr)
+
+    ! Pass very basic information on dimensions to local masters (necessary to allocate arrays)
+    call ls_mpibcast(natoms,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(nocc,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(nunocc,master,MPI_COMM_LSDALTON)
+
+    ! Pass remaining full molecular info to local masters
+    call mpi_dec_fullinfo_master_to_slaves(natoms,nocc,nunocc,DistanceTable,&
+         & OccOrbitals, UnoccOrbitals, MyMolecule, MyLsitem)
+
+#else
+    nworkers=0   ! master node does all jobs
+#endif
+
+
+    ! Internal control of first order property keywords
+    ! (Necessary because these must be false during fragment optimization.)
+    dens_save = DECinfo%MP2density
+    FO_save = DECinfo%first_order
+    grad_save = DECinfo%gradient
+    DECinfo%MP2density=.false.
+    DECinfo%first_order=.false.
+    DECinfo%gradient=.false.
+
 
     ! Sort atomic fragments according to estimated size
     call estimate_atomic_fragment_sizes(natoms,nocc,nunocc,DistanceTable,&

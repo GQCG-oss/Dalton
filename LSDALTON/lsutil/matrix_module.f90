@@ -23,15 +23,6 @@ MODULE Matrix_module
    logical, save :: mat_info
    !> True if number of allocated matrices should be monitored
    logical, save :: mat_mem_monitor
-   !> A simple type of sparse matrix used inside sparse1 module
-   TYPE SMAT1
-      !> Row index
-      integer :: i
-      !> Column index
-      integer :: j
-      !> Value of element
-      real(realk) :: val
-   END TYPE SMAT1
    !> The general matrix type that is used throughout LSDALTON
    TYPE Matrix
       !> number of rows
@@ -50,14 +41,6 @@ MODULE Matrix_module
       complex(realk), pointer :: celms(:)
       !> pointer to complex matrix element storage for beta part
       complex(realk), pointer :: celmsb(:)
-      !> pointer to storage scheme 1 for sparse matrices
-      type(SMAT1),pointer :: selm1(:)
-      !pointer to storage scheme 2 for sparse matrices
-      !type(SMAT2),pointer :: selm2
-      !> If only blocks of the matrix are to be stored: array of pointers to the matrix-blocks
-      type(Matrix),pointer :: block(:)
-      !> the indexes where the blocks start
-      integer,dimension(:,:), pointer :: blockpos!(2,:)
       !> room for any integer auxiliary information
       integer, pointer     :: iaux(:)
       !> room for any real auxiliary information
@@ -106,9 +89,6 @@ MODULE Matrix_module
        nullify(MAT%elmsb)
        nullify(MAT%celms)
        nullify(MAT%celmsb)
-       nullify(MAT%selm1)
-       nullify(MAT%block)
-       nullify(MAT%blockpos)
        nullify(MAT%iaux)
        nullify(MAT%raux)
        nullify(MAT%val)

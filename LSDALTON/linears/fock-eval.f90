@@ -18,26 +18,23 @@ CONTAINS
       TYPE(Matrix), intent(in)    :: D
       type(matrix), intent(inout) :: F  !output 
       real(realk), INTENT(OUT) :: Etotal
-
+      type(matrix) :: Dtmp(1),Fock(1)
+      real(realk) :: E(1)
+      integer :: ndmat
+      ndmat = 1
+      call mat_init(Dtmp(1),D%nrow,D%ncol)
+      call mat_init(Fock(1),F%nrow,F%ncol)
+      call mat_assign(Dtmp(1),D)
+      call mat_assign(Fock(1),F)
       !cfg_nfock = cfg_nfock + 1
-
-      CALL di_get_fock_LSDALTON(D,lsint_fock_data%H1,F,Etotal, &
+      CALL di_get_fock_LSDALTON(Dtmp,lsint_fock_data%H1,Fock,ndmat,E, &
            & lsint_fock_data%lupri,lsint_fock_data%luerr,  &
            & lsint_fock_data%ls)
+      Etotal = E(1)
+      call mat_assign(F,Fock(1))
+      call mat_free(Dtmp(1))
+      call mat_free(Fock(1))
    END SUBROUTINE FCK_get_fock
-
-   SUBROUTINE FCK_get_fock_LSINT(D,h1,F,Etotal,LSint,newlupri,newluerr,ls)
-      IMPLICIT NONE
-      TYPE(Matrix), intent(in)    :: D, h1
-      type(matrix), intent(inout) :: F  !output 
-      real(realk), INTENT(OUT) :: Etotal
-      LOGICAL                  :: LSint
-      INTEGER                  :: newlupri,newluerr
-      type(lsitem) :: ls
-
-      !cfg_nfock = cfg_nfock + 1
-      CALL di_get_fock_LSDALTON(D,h1,F,Etotal,newlupri,newluerr,ls)
-    END SUBROUTINE FCK_get_fock_LSINT
 
    subroutine fck_scale_virt_fock(S,H1,F,D)
      !to create a N-1 potential for the virtual orbitals

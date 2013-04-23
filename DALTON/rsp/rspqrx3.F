@@ -259,6 +259,7 @@ C
 #include "infhyp.h"
 #include "esg.h"
 #include "absorp.h"
+#include "abslrs.h"
 #include "gnrinf.h"
 #include "infpar.h"
 C
@@ -308,11 +309,14 @@ C
       IF (TDHF) THEN
          IF (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) THEN
             CALL C3FOCK(IBEQC,WRK(KFC),VECB,VECC,
-     *                 WRK(KZYMB),WRK(KZYMC),
-     *                 KZYVB,KZYVC,
-     *                 ISYMA,ISYMB,ISYMC,
-     *                 CMO,FC,MJWOP,WRK(KFREE),LFREE)
-         ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM.OR.ABS_BETA.OR.ABS_MCD) THEN
+     &                 WRK(KZYMB),WRK(KZYMC),
+     &                 KZYVB,KZYVC,
+     &                 ISYMA,ISYMB,ISYMC,
+     &                 CMO,FC,MJWOP,WRK(KFREE),LFREE)
+         ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM.OR.ABS_BETA
+     &             .OR.ABS_MCD.OR.ABSLRS_MCD.OR.ABSLRS_MCHD 
+     &             .OR. ABSLRS_NSCD) THEN
+
             DFTSAV=DODFT
             DODFT=.FALSE.
             CALL Q3FOCK(

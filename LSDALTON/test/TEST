@@ -27,7 +27,6 @@ fi
 # branch
 LINSCA="linsca/linsca_energy  
   linsca/linsca_dft_energy
-  linsca/linsca_sp        
   linsca/linsca_unrest_energy
   linsca/linsca_unrest_dft_energy
   linsca/linsca_rhf_stability
@@ -100,7 +99,6 @@ LSDALTON="linsca/lsdalton_dft_ssfgrid
   LSint/LSDALTON_ethane_pari_b3lyp_unconstrained
   LSint/LSDALTON_ethane_pari_b3lyp_ChgConst
   LSint/LSDALTON_ethane_pari_b3lyp_ChgDipConst
-  LSint/LSDALTON_sparse
   LSint/LSDALTON_UDFT
   LSint/LSDALTON_UHF_DEFAULT
   LSint/LSDALTON_UHF_excit
