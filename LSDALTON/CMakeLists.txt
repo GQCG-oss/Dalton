@@ -106,7 +106,8 @@ endif()
 include(Archs)
 include(Sources)
 include(Compilers)
-include(ConfigExternal)
+#this does not always work. TK
+#include(ConfigExternal)
 
 #add_subdirectory(LSint)
 set(LIBS)
