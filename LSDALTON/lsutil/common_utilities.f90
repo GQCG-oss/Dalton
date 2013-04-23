@@ -1148,3 +1148,64 @@ use precision
 
       end subroutine ls_transpose
 
+
+  module ls_env
+    use precision
+
+    contains
+    subroutine ls_getenv(varname,leng,output_string,output_int,output_real,output_bool)
+      implicit none
+      integer, intent(in) :: leng
+      character(leng),intent(in) :: varname
+      character(*),intent(inout), optional :: output_string
+      integer,intent(inout), optional      :: output_int
+      real(realk),intent(inout),optional   :: output_real
+      logical,intent(inout),optional       :: output_bool
+      character(120) :: val
+      integer :: stat,reqlen
+      logical :: trim_var 
+      stat = 0
+      trim_var = .true.
+      
+      !this call is fortran 2003 standard and might not be present everywhere
+      call GET_ENVIRONMENT_VARIABLE(varname,VALUE=val,LENGTH=reqlen,STATUS=stat,TRIM_NAME=trim_var)
+
+      if(stat/=0.and.stat/=1)then
+        if(stat==-1)then
+          print *,"ERROR(ls_getenv): the internal val is too short to hold the&
+          & value of the variable, please adjust the length and recompile"
+          stop -1
+        else
+          print *,"ERROR(ls_getenv):error in GET_ENVIRONMENT_VARIABLE, status:",stat
+          stop -2
+        endif
+      endif
+
+      !if stat==1 then the variable is just not set and we skip overwriting the
+      !value, if stat==0 then we can read it and overwrite
+      if(stat==0)then 
+        if(present(output_string))then
+          output_string=TRIM(val)
+        endif
+        if(present(output_int))then
+          read(val,*),output_int
+        endif
+        if(present(output_real))then
+          read(val,*),output_real
+        endif
+        if(present(output_bool))then
+          read(val,*),stat
+          if(stat==1)then
+            output_bool=.true.
+          elseif(stat==0)then
+            output_bool=.false.
+          else
+            print *,"ERROR(ls_getenv):the value of the variable you try to read&
+            & is clearly not of boolean(logical) character, value:",stat,val
+            stop 0
+          endif
+        endif
+      endif
+  
+    end subroutine ls_getenv
+  end module ls_env
