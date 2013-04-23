@@ -3971,7 +3971,7 @@ contains
   !> generate fragment-adapted orbitals which describe AOS with as few orbitals as possible.
   !> \date February 2013
   !> \author Ida-Marie Hoeyvik & Kasper Kristensen
-  subroutine optimize_atomic_fragment_FO(MyAtom,AtomicFragment,nAtoms, &
+  subroutine optimize_atomic_fragment_FO_old(MyAtom,AtomicFragment,nAtoms, &
        &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
        &MyMolecule,mylsitem,freebasisinfo,t1full)
     implicit none
@@ -4471,7 +4471,7 @@ contains
     ! Ensure that energies in fragment are set consistently
     call set_energies_ccatom_structure_fragopt(AtomicFragment)
 
-  end subroutine optimize_atomic_fragment_FO
+  end subroutine optimize_atomic_fragment_FO_old
 
 
 
@@ -4486,7 +4486,7 @@ contains
   !> is smaller than the FOT.
   !> \date April 2013
   !> \author Ida-Marie Hoeyvik & Kasper Kristensen
-  subroutine optimize_atomic_fragment_FO_new(MyAtom,AtomicFragment,nAtoms, &
+  subroutine optimize_atomic_fragment_FO(MyAtom,AtomicFragment,nAtoms, &
        &OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
        &MyMolecule,mylsitem,freebasisinfo)
     implicit none
@@ -4764,8 +4764,8 @@ contains
 
              ! New AOS dimension for reduced fragment
              natomsAOS_new = natomsAOS_new + increment
-             write(DECinfo%output,'(1X,a,2i5)') ' FOP reduction - new AOS dim / increment', &
-                  & natomsAOS_new,increment
+             write(DECinfo%output,'(a,2i5)') ' FOP reduction - expanded/reduced AOS dim', &
+                  & natomsAOS_old, natomsAOS_new
 
              ! Set AOS for reduced fragment
              call set_reduced_fragmentAOS(MyAtom,natomsAOS_old,natoms,natomsAOS_new,atomlist,&
@@ -4773,7 +4773,8 @@ contains
 
           else
              ! (for iter=1 initial AOS info was set outside loop)
-             write(DECinfo%output,'(1X,a,i5)') ' FOP reduction - initial AOS dim', natomsAOS_new
+             write(DECinfo%output,'(a,2i5)') ' FOP reduction - expanded/reduced AOS dim', &
+                  & natomsAOS_old,natomsAOS_new
           end if
 
 
@@ -4792,10 +4793,10 @@ contains
           if( (LagEnergyDiff<FOT) .and. (OccEnergyDiff<FOT) .and. (VirtEnergyDiff<FOT) ) then
              write(DECinfo%output,*) ' FOP'
              write(DECinfo%output,'(a,i5)') ' FOP Local reduction converged in step ', iter
+             write(DECinfo%output,'(a,2i6)') 'Number of AOS atoms in old/reduced fragment ', &
+                  & natomsAOS_old, natomsAOS_new
              write(DECinfo%output,*) ' FOP'
              converged=.true.
-             write(DECinfo%output,'(1X,a,2i6)') 'Number of AOS atoms in old/reduced fragment ', &
-                  & natomsAOS_old, natomsAOS_new
           else
              ! We reduced too much, try to reduce less in next step
              write(DECinfo%output,'(a,i5)') ' FOP Local reduction did not converge in step ', iter
@@ -4832,7 +4833,13 @@ contains
     LagEnergyOld = AtomicFragment%LagFOP
     OccEnergyOld = AtomicFragment%EoccFOP
     VirtEnergyOld = AtomicFragment%EvirtFOP
-    
+
+
+    write(DECinfo%output,*) ' FOP'
+    write(DECinfo%output,*) ' FOP ***********************************************************'
+    write(DECinfo%output,*) ' FOP **  Local reduction step converged. Start FO reduction!  **'
+    write(DECinfo%output,*) ' FOP ***********************************************************'
+    write(DECinfo%output,*) ' FOP'    
 
 
     ! ======================================================================
@@ -4937,10 +4944,10 @@ contains
           ! Lagrangian
           TEST_REDUCTION_LAG: if  (LagEnergyDiff < FOT) then
              if(ov==1) then
-                write(DECinfo%output,'(1X,a,F14.9)') &
+                write(DECinfo%output,'(a,F14.9)') &
                      & 'FOP: Lagrangian energy converged (occ reduction), diff =', LagEnergyDiff
              else
-                write(DECinfo%output,'(1X,a,F14.9)') &
+                write(DECinfo%output,'(a,F14.9)') &
                      & 'FOP: Lagrangian energy converged (virt reduction), diff =', LagEnergyDiff
              end if
              lag_converged=.true.
@@ -4956,10 +4963,10 @@ contains
           ! Occupied
           TEST_REDUCTION_OCC: if  (OccEnergyDiff < FOT) then
              if(ov==1) then
-                write(DECinfo%output,'(1X,a,F14.9)') &
+                write(DECinfo%output,'(a,F14.9)') &
                      & 'FOP: Occupied energy converged (occ reduction), diff =', OccEnergyDiff
              else
-                write(DECinfo%output,'(1X,a,F14.9)') &
+                write(DECinfo%output,'(a,F14.9)') &
                      & 'FOP: Occupied energy converged (virt reduction), diff =', OccEnergyDiff
              end if
              occ_converged=.true.
@@ -4975,10 +4982,10 @@ contains
           ! Virtual
           TEST_REDUCTION_VIRT: if  (VirtEnergyDiff < FOT) then
              if(ov==1) then
-                write(DECinfo%output,'(1X,a,F14.9)') &
+                write(DECinfo%output,'(a,F14.9)') &
                      & 'FOP: Virtual energy converged (occ reduction), diff =', VirtEnergyDiff
              else
-                write(DECinfo%output,'(1X,a,F14.9)') &
+                write(DECinfo%output,'(a,F14.9)') &
                      & 'FOP: Virtual energy converged (virt reduction), diff =', VirtEnergyDiff
              end if
              virt_converged=.true.
@@ -5051,42 +5058,42 @@ contains
     ! Print out info
     ! **************
     write(DECinfo%output,*)'FOP'
-    write(DECinfo%output,'(1X,a)') 'FOP========================================================='
-    write(DECinfo%output,'(1X,a,i4)') 'FOP      SITE OPTIMIZATION HAS CONVERGED FOR SITE',MyAtom
-    write(DECinfo%output,'(1X,a)') 'FOP---------------------------------------------------------'
-    write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Fragment number                  :', MyAtom
-    write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of orbitals in virt total :', &
+    write(DECinfo%output,'(a)') 'FOP========================================================='
+    write(DECinfo%output,'(a,i4)') 'FOP      SITE OPTIMIZATION HAS CONVERGED FOR SITE',MyAtom
+    write(DECinfo%output,'(a)') 'FOP---------------------------------------------------------'
+    write(DECinfo%output,'(a,i4)')    'FOP Done: Fragment number                  :', MyAtom
+    write(DECinfo%output,'(a,i4)')    'FOP Done: Number of orbitals in virt total :', &
          & AtomicFragment%nunoccFA
-    write(DECinfo%output,'(1X,a,i4)')    'FOP Done: Number of orbitals in occ total  :', &
+    write(DECinfo%output,'(a,i4)')    'FOP Done: Number of orbitals in occ total  :', &
          & AtomicFragment%noccFA
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :', &
+    write(DECinfo%output,'(a,f16.10)') 'FOP Done: Lagrangian Fragment energy       :', &
          & AtomicFragment%LagFOP
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
+    write(DECinfo%output,'(a,f16.10)') 'FOP Done: Occupied Fragment energy         :', &
          & AtomicFragment%EoccFOP
-    write(DECinfo%output,'(1X,a,f16.10)') 'FOP Done: Virtual Fragment energy          :', &
+    write(DECinfo%output,'(a,f16.10)') 'FOP Done: Virtual Fragment energy          :', &
          & AtomicFragment%EvirtFOP
-    write(DECinfo%output,'(1X,a,i4)')     'FOP Done: Number of basis functions        :', &
+    write(DECinfo%output,'(a,i4)')     'FOP Done: Number of basis functions        :', &
          & AtomicFragment%number_basis
-    write(DECinfo%output,'(1X,a,g14.2)')  'FOP Done: Occupied reduction threshold     :', &
+    write(DECinfo%output,'(a,g14.2)')  'FOP Done: Occupied reduction threshold     :', &
          & AtomicFragment%RejectThr(1)
-    write(DECinfo%output,'(1X,a,g14.2)')  'FOP Done: Virtual  reduction threshold     :', &
+    write(DECinfo%output,'(a,g14.2)')  'FOP Done: Virtual  reduction threshold     :', &
          & AtomicFragment%RejectThr(2)
-    write(DECinfo%output,'(1X,a,i6,a,i6,a,f5.2,a)')  'FOP Done: Occupied reduction 1 removed ', &
+    write(DECinfo%output,'(a,i6,a,i6,a,f5.2,a)')  'FOP Done: Occupied reduction 1 removed ', &
          & nocc_exp-nocc_red1, ' of ', nocc_exp, ' MOs ( ', &
          & (nocc_exp - nocc_red1)*100.0_realk/nocc_exp, ' %)'
-    write(DECinfo%output,'(1X,a,i6,a,i6,a,f5.2,a)')  'FOP Done: Unoccupied reduction 1 removed ', &
+    write(DECinfo%output,'(a,i6,a,i6,a,f5.2,a)')  'FOP Done: Unoccupied reduction 1 removed ', &
          & nunocc_exp-nunocc_red1, ' of ', nunocc_exp, ' MOs ( ', &
          & (nunocc_exp - nunocc_red1)*100.0_realk/nunocc_exp, ' %)'
-    write(DECinfo%output,'(1X,a,i6,a,i6,a,f5.2,a)')  'FOP Done: Atomic extent reduction 1 removed ', &
+    write(DECinfo%output,'(a,i6,a,i6,a,f5.2,a)')  'FOP Done: Atomic extent reduction 1 removed ', &
          & nbasis_exp-nbasis_red1, ' of ', nbasis_exp, ' AOs ( ', &
          & (nbasis_exp - nbasis_red1)*100.0_realk/nbasis_exp, ' %)'
-    write(DECinfo%output,'(1X,a,i6,a,i6,a,f5.2,a)')  'FOP Done: Occupied reduction 2 removed ', &
+    write(DECinfo%output,'(a,i6,a,i6,a,f5.2,a)')  'FOP Done: Occupied reduction 2 removed ', &
          & nocc_red1-nocc_red2, ' of ', nocc_red1, ' MOs ( ', &
          & (nocc_red1 - nocc_red2)*100.0_realk/nocc_red1, ' %)'
-    write(DECinfo%output,'(1X,a,i6,a,i6,a,f5.2,a)')  'FOP Done: Unoccupied reduction 2 removed ', &
+    write(DECinfo%output,'(a,i6,a,i6,a,f5.2,a)')  'FOP Done: Unoccupied reduction 2 removed ', &
          & nunocc_red1-nunocc_red2, ' of ', nunocc_red1, ' MOs ( ', &
          & (nunocc_red1 - nunocc_red2)*100.0_realk/nunocc_red1, ' %)'
-    write(DECinfo%output,'(1X,a,/)') 'FOP========================================================='
+    write(DECinfo%output,'(a,/)') 'FOP========================================================='
     write(DECinfo%output,*) 'FOP'
     call atomic_fragment_free(FOfragment)
 
@@ -5101,7 +5108,7 @@ contains
     ! Ensure that energies in fragment are set consistently
     call set_energies_ccatom_structure_fragopt(AtomicFragment)
 
-  end subroutine optimize_atomic_fragment_FO_new
+  end subroutine optimize_atomic_fragment_FO
 
 
 
