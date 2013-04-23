@@ -724,8 +724,8 @@ C    *** Read the solvent contributions from PEFCMO from file ***
       CALL QUIT('ERROR IN DIMENSION OF QM/MM FOCK CONTR. IN QMMMLNO')
       END IF
 
-      write(lupri,*)'MMORBT', MMORBT
-      write(lupri,*)'LUSIFC', LUSIFC
+!      write(lupri,*)'MMORBT', MMORBT
+!      write(lupri,*)'LUSIFC', LUSIFC
 
       CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI)
       CALL READT (LUSIFC,NNORBX,WRK(KFPEMO))
@@ -733,8 +733,6 @@ C    *** Read the solvent contributions from PEFCMO from file ***
       IF (LOPEN) THEN
       CALL GPCLOSE(LUSIFC,'KEEP')
       END IF
-      WRITE(LUPRI,*)'KFPEMO in QMMMLNO'
-      CALL OUTPAK(WRK(KFPEMO),NORBT,1,LUPRI)
       
 C     *************************************************************
 
@@ -742,6 +740,8 @@ C     *************************************************************
 
       CALL DSPTSI(NORBT,WRK(KFPEMO),WRK(KUFPE))
 
+!      WRITE(LUPRI,*)'KUFPE QMMMLNO'
+!      CALL OUTPUT(WRK(KUFPE),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       IF (NOSIM.GT.0) THEN
         CALL RSPZYM(NOSIM,BOVECS,WRK(KUBO))
         CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)   
@@ -754,8 +754,8 @@ C     Add this explicitly only for MCSCF.
 C
       DO 200 IOSIM = 1,NOSIM
 
-      JRXYO = KRXYO + (IOSIM-1)*N2ORBX                ! edh: Arrange Fxo (KRXYO in memory)
-      IF (TRPLET) JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX  ! edh: Arrange Fxo triplet (KRXYOT in memory) 
+      JRXYO = KRXYO + (IOSIM-1)*N2ORBX                ! edh: Arrange Fyo (KRXYO in memory)
+      IF (TRPLET) JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX  ! edh: Arrange Fyo triplet (KRXYOT in memory) 
       JUBO  = KUBO  + (IOSIM-1)*N2ORBX                ! edh: Unpack orbital response trial vectors 
 C                                                       k(t) = sum(u)k(t)q + k*(t)q(dagger)
 C        Calculate one-index transformed integrals
@@ -764,6 +764,9 @@ C
 
         CALL DZERO(WRK(KUFPEX),N2ORBX)                        
         CALL ONEXH1(WRK(JUBO),WRK(KUFPE),WRK(KUFPEX))
+
+!       WRITE(LUPRI,*)'KUFPEX QMMMLNO'
+!       CALL OUTPUT(WRK(KUFPEX),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
 
 C      WRITE(LUPRI,*) 'EDH TRIPLET TEST' , TRPLET 
 
@@ -835,7 +838,7 @@ C       Now we need the integrals again transformed to the MO basis.
         ELSE
         LRXYO = JRXYO
         ENDIF
-
+        ! Make Fxo (add to Fyo and store in KRXYO) 
         IF ((NODTOT .GE. 1) .AND. TDHF) THEN
         CALL QMMMLNO_M2(WRK(LRXYO),WRK(KUCMO),WRK(KINDMOM),
      *                      WRK(KWRK2),LWRK2)
@@ -863,9 +866,9 @@ C     Calculate Fxo (Rxo) and Fyo (Ryo)
 C     contributions to SVEC(NSVEC,NOSIM)
 C--------------------------------------------
 
-      DO IOSIM = 1,NOSIM
-         JRXYO  = KRXYO  + (IOSIM-1)*N2ORBX ! edh: Inactive part of F(xo) (?) 
-         JRXYOA = KRXYOA + (IOSIM-1)*N2ASHX ! edh: Active part of F(xo)
+      DO IOSIM = 1,NOSIM         
+         JRXYO  = KRXYO  + (IOSIM-1)*N2ORBX
+         JRXYOA = KRXYOA + (IOSIM-1)*N2ASHX 
          IF (TRPLET) THEN
             JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX
             JRXYAT = KRXYAT + (IOSIM-1)*N2ASHX
@@ -875,9 +878,16 @@ C--------------------------------------------
          ELSE
             WRK(KOVLP-1+IOSIM) = D0
          END IF
+  
+            WRITE (LUPRI,*)'KRXYO QMMMLNO'
+            CALL OUTPUT(WRK(KRXYO),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
+
             CALL GETACQ(WRK(JRXYO),WRK(JRXYOA))
             TXYO   = SLVQLM(UDV,WRK(JRXYOA),WRK(JRXYO),TXYOAC)  !edh: F(xo) = KRXYO ?
             WRK(KTXYOA-1+IOSIM) = TXYOAC
+ 
+            WRITE (LUPRI,*)'TXYOAC', TXYOAC
+
          IF (TRPLET) THEN
               CALL GETACQ(WRK(JRXYOT),WRK(JRXYAT))
               TXYOT  = SLVQLM(UDVTR,WRK(JRXYAT),WRK(JRXYOT),TXYACT)

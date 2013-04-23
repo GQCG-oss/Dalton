@@ -487,8 +487,8 @@
 !        end if
 
         if (nosim > 0) then
-            call pe_rsplno(nosim, bovecs, cref, cmo, cindx, udv, dv,
-     &                     udvtr, dvtr, sovecs, wrk, nwrk)
+            call pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx, 
+     &                     udv, dv, udvtr, dvtr, sovecs, wrk, nwrk)
         end if
 
         call qexit('pe_rsplin')
@@ -514,8 +514,8 @@
 !
 !------------------------------------------------------------------------------
 
-      subroutine pe_rsplno(nosim, bovecs, cref, cmo, cindx, udv, dv,
-     &                     udvtr, dvtr, sovecs, wrk, nwrk)
+      subroutine pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx, 
+     &                     udv, dv, udvtr, dvtr, sovecs, wrk, nwrk)
 
         use pe_variables, only: pe_polar, pe_gspol
         use polarizable_embedding, only: pe_master
@@ -529,13 +529,15 @@
 #include "infrsp.h"
 #include "inftap.h"
 
-        integer :: nosim, nwrk
+        integer :: nosim, ncsim, nwrk
         real*8, dimension(*) :: bovecs
         real*8, dimension(kzyvar,*) :: sovecs
         real*8, dimension(*) :: cref, cmo, cindx, udv, dv, udvtr, dvtr
         real*8, dimension(nwrk) :: wrk
         real*8 :: peenergy
-
+        real*8 :: fyo
+        real*8 :: ddot
+        real*8 :: slvqlm 
 
         integer :: i, j
         integer :: mmorbt
@@ -546,7 +548,9 @@
         real*8, dimension(:), allocatable :: evec
         real*8, dimension(:,:), allocatable :: ubovecs, evecs, eacs
 !        real*8, dimension(:,:), allocatable :: evectrs, eactrs
-        real*8, dimension(:), allocatable :: fpemo
+        real*8, dimension(:), allocatable :: fpemo,fupemo
+        real*8, dimension(:), allocatable :: fxyos, fyoa, fyoat
+        real*8, dimension(:), allocatable :: ovlp
         logical :: lexist, lopen
 
         ! return if no polarization and not MCSCF
@@ -572,14 +576,12 @@
             if (lusifc <= 0) then
                 call gpopen(lusifc, 'SIRIFC', 'OLD', ' ', 'UNFORMATTED',
      &                      idummy, .false.)
+                lopen = .true.
             end if
             rewind(lusifc)
             call mollab('PETMAT  ', lusifc, lupri)
-            call readt(lusifc, nnorbx, fpemo)
-            call gpclose(lusifc, 'KEEP')
-
-            write(lupri,*) 'kfpemo rsp_pelno'
-            call outpak(fpemo, norbt, 1, lupri)
+            call readt(lusifc, nnorbx, fpemo)            
+            if (lopen) call gpclose(lusifc, 'KEEP')
         end if
 
         allocate(ubovecs(n2orbx,nosim))
@@ -593,13 +595,12 @@
 !     &               daotrs(nosim*nnbasx))
 !        end if
 !-----------------------------------------------
-! 1. Calculate Fyo = Fg(k) = V(k) - <0|F|0>Fe(k)
+! 1. Calculate Fg = V - <0|F|0>Fe   :  in fupemo
 !-----------------------------------------------
-
-
-
+         allocate(fupemo(n2orbx))
+         call dsptsi(norbt,fpemo,fupemo)
 !-----------------------------------------------
-! 2. Calculate Fxo = <0|Fe(k)|0>Fe in fckaos
+! 2. Calculate Fxo = <0|Fe(k)|0>Fe  :  in fckaos
 !----------------------------------------------- 
         do i = 1, nosim
             j = 1 + (i - 1) * nnbasx
@@ -619,6 +620,7 @@
 !            if (trplet) then
 !                call dgefsp(nbast, dcaotr, daotrs(j))
 !            end if
+   
         end do
         deallocate(dcao, dvao)
 !        if (trplet) then
@@ -644,10 +646,73 @@
 !            allocate(evectrs(n2orbx,nosim), eactrs(n2ashx,nosim))
 !        end if
 
+       allocate(fxyos(n2orbx*nosim))
+       fxyos = 0.0d0
         do i = 1, nosim
             j = 1 + (i - 1) * nnbasx
             call uthu(fckaos(j), evec, cmo, wrk, nbast, norbt)
             call dsptsi(norbt, evec, evecs(:,i))
+!            if (trplet) then
+!                uthu(fckaotrs(j), evectrs, cmo, wrk, nbast, norbt) 
+!                call dsptsi(norbt, evectrs, evecstrs(:,i))
+!            end if
+
+!-----------------------------------------------
+! 3. Calc. Fyo = V(k) - <0|F|0>Fe(k)  : in evecs
+!-----------------------------------------------
+            if (.not. tdhf) then
+                 call onexh1(ubovecs(:,i),fupemo, fxyos(i))
+                 evecs(:,i) = evecs(:,i) + fxyos(i)
+!                 write(lupri,*)'fxyos'
+!                 call output(fxyos,1,nnorbt,1,norbt,norbt,norbt,1,lupri)
+                  write(lupri,*)'evecs pe'                  
+                  call output(evecs,1,norbt,1,norbt,norbt,norbt,1,lupri)
+                 deallocate(fupemo)                 
+            end if
+
+            if (irefsy .eq. ksymst) then 
+                allocate(ovlp(nosim))
+                ovlp = ddot(kzconf,cref,1,sovecs(1,i),1)
+                else 
+                ovlp = 0.0d0
+                deallocate(ovlp)
+            end if
+            call getacq(evecs,eacs)
+            allocate(fyoa(nosim))
+            fyo   = slvqlm(udv,eacs,evecs,fyoa(i))
+            write(lupri,*)'fyoa', fyoa(i) 
+!           if (trplet) then
+!               call getacq(evecstrs, eacstrs)
+               allocate(fyoat(nosim))
+!               txyot  = slvqlm(udvtr, eacstrs, evecstrs, fyoat(i))
+!               if (ipqmmm .ge. 15) then
+!                   write (lupri,*) ' triplet calculation'
+!                   write (lupri,'(/A,I5,3F15.10)')
+!    *             ' iosim, c_ovlp, txyoac, txyo :',
+!    *             iosim,wrk(ovlp-1+iosim),txyoac,txyo
+!                  write (lupri,'(/A,I5,3F15.10)')
+!    *             ' iosim, c_ovlp, txyact, txyot :',
+!    *             iosim,wrk(ovlp-1+iosim),txyact,txyot
+!            end if
+!            else
+!            if (ipqmmm .ge. 15) then
+!                 write (lupri,'(/A,I5,3F15.10)')
+!    *            ' iosim, c_ovlp, txyoac, txyo :',
+!    *              iosim,wrk(ovlp-1+iosim),txyoac,txyo
+!             end if
+!           end if
+!        enddo
+        call slvsc(0,nosim, n2ashx, dummy, cref, sovecs, eacs,
+     *              fyoat, fyoa, dummy, cindx, wrk, nwrk)
+         deallocate(fyoa)
+         deallocate(fyoat)
+
+!        if (ipqmmm.gt.15) then
+!           write(lupri,*)' linear transformed orbital vector'
+!           write(lupri,*)' **** after slvsc in qmmmlno **** '
+!           call output(svec,1,kzyvar,1,nosim,kzyvar,nosim,1,lupri)
+!        end if
+
 !            if (trplet) then
 !                call uthu(fckaotrs(j), evec, cmo, wrk, nbast, norbt)
 !                call dsptsi(norbt, evec, evectrs(:,i))
@@ -660,7 +725,8 @@
 !            end if
 !            tr = solelm(dv, fxyoacs(:,i), fxyos(:,i), txyoacs(i))
         end do
-        deallocate(evec)
+        deallocate(fxyos)
+!        deallocate(evec)
 
 !        if (trplet) then
 !            call slvsor(.true., .false., nosim, udvtr, sovecs, evectrs)
