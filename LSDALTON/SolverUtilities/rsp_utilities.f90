@@ -74,6 +74,9 @@ CONTAINS
       IF(.NOT.Cmo_final_saved)call lsquit('Cmo_final have not been saved (util_save_MOinfo)',-1)
       ndim = Cmo_final%nrow
       allocate(iniguess_full(ndim,ndim))
+      IF(NROOTS.GT.(Cmo_final%nrow-NOCC)*NOCC)THEN
+       Call lsquit("Error in get_rsp_trials_from_MO: (Cmo_final%nrow-NOCC)*NOCC .LT. NEXCIT",-1)
+      ENDIF
       write(6,*) 'get_rsp_trials_from_MO, ndim = ', ndim,'nocc = ',nocc
       n = 0
       !Find the DeltaE_ai orbital energy differences as a first guess of 
