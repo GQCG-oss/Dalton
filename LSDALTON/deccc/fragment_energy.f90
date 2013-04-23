@@ -2015,6 +2015,10 @@ contains
        end do
     end do
 
+    ! Estimate error as largest different between these energies
+    ! **********************************************************
+    Eerr = max(L,Eocc,Evirt) - min(L,Eocc,Evirt)
+
 
 
     ! SANITY CHECKS
@@ -2071,10 +2075,6 @@ contains
        return
     end if
 
-
-    ! Estimate error as largest different between these energies
-    ! **********************************************************
-    Eerr = max(L,Eocc,Evirt) - min(L,Eocc,Evirt)
 
 
     ! Estimate contributions from neglected pairs
@@ -5187,11 +5187,11 @@ contains
     counter = 1  ! Central atom has already been include
 
     IncludeLoop: do i=1,natomsAOS_old
+       if(counter==natomsAOS_new) exit IncludeLoop
        idx = atomlist(i)
        if(.not. occ_atoms(idx)) then
           occ_atoms(idx) = .true.
           counter = counter +1
-          if(counter==natomsAOS_new) exit IncludeLoop
        end if
     end do IncludeLoop
 
