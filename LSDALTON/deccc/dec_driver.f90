@@ -93,9 +93,9 @@ contains
     ! * Simulate full calculation and use full molecule for all fragments
     ! * Calculate all atomic fragment and pairs to get total correlation energy
 
-    CalculationType: if(DECinfo%FullDEC) then
+    CalculationType: if(DECinfo%mp2energydebug) then
        ! DEC calculation for full molecule where exact single and pair energies are calculated.
-       ! Mostly for debug/testing.
+       ! Only for testing and only for MP2
        call Full_DEC_calculation(MyMolecule,mylsitem,OccOrbitals,UnoccOrbitals, &
             & natoms,nocc,nunocc,DistanceTable,Ecorr)
        Ehf = get_HF_energy_fullmolecule(MyMolecule,Mylsitem,D) 

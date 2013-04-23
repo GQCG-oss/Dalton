@@ -92,7 +92,7 @@ contains
 
     ! Calculate fragment energies
     ! ***************************
-    call single_lagrangian_energy_and_prop(MyFragment)
+    call atomic_fragment_energy_and_prop(MyFragment)
 
     call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output)
 
@@ -141,7 +141,7 @@ contains
 
 
     ! Calculate fragment energies
-    call single_lagrangian_energy_and_prop(MyFragment)
+    call atomic_fragment_energy_and_prop(MyFragment)
 
     call LSTIMER('FRAG: L.ENERGY',tcpu,twall,DECinfo%output)
 
@@ -254,9 +254,9 @@ contains
 
        ! Run calculation using fragment with fragment-adapted orbitals
        if(DECinfo%first_order) then
-          call single_lagrangian_energy_and_prop(FOfragment,grad=grad)
+          call atomic_fragment_energy_and_prop(FOfragment,grad=grad)
        else
-          call single_lagrangian_energy_and_prop(FOfragment)
+          call atomic_fragment_energy_and_prop(FOfragment)
        end if
 
        ! Copy stuff from FA fragment to original fragment
@@ -271,9 +271,9 @@ contains
 
        ! Run calculation with input fragment
        if(DECinfo%first_order) then
-          call single_lagrangian_energy_and_prop(MyFragment,grad=grad)
+          call atomic_fragment_energy_and_prop(MyFragment,grad=grad)
        else
-          call single_lagrangian_energy_and_prop(MyFragment)
+          call atomic_fragment_energy_and_prop(MyFragment)
        end if
 
     end if
@@ -285,7 +285,7 @@ contains
   !> \brief Driver for calculating atomic fragment energy for a given fragment using the Lagrangian approach.
   !> If requested, first order properties (MP2 density or gradient) are also calculated and saved.
   !> \author Kasper Kristensen
-  subroutine single_lagrangian_energy_and_prop(MyFragment,grad)
+  subroutine atomic_fragment_energy_and_prop(MyFragment,grad)
 
     implicit none
     !> Atomic fragment
@@ -422,7 +422,7 @@ contains
     call array4_free(t2occ)
     call array4_free(t2virt)
 
-  end subroutine single_lagrangian_energy_and_prop
+  end subroutine atomic_fragment_energy_and_prop
 
 
   !> \brief Contract amplitudes, multipliers, and integrals to calculate atomic fragment Lagrangian energy.
@@ -912,7 +912,7 @@ contains
             & PairFragment,FOfragment)
 
        ! Run calculation using fragment with fragment-adapted orbitals
-       call pair_lagrangian_energy_and_prop(Fragment1,Fragment2, &
+       call pair_fragment_energy_and_prop(Fragment1,Fragment2, &
             & natoms, DistanceTable, FOfragment,grad)
 
        ! Copy stuff from FO fragment to original fragment
@@ -922,7 +922,7 @@ contains
     else
 
        ! Run calculation using input fragment
-       call pair_lagrangian_energy_and_prop(Fragment1,Fragment2, &
+       call pair_fragment_energy_and_prop(Fragment1,Fragment2, &
             & natoms, DistanceTable, PairFragment,grad)       
     end if
 
@@ -933,7 +933,7 @@ contains
   !> \brief Driver for calculating pair interaction energy for a given
   !> pair fragment using the Lagrangian approach.
   !> \author Kasper Kristensen
-  subroutine pair_lagrangian_energy_and_prop(Fragment1,Fragment2, &
+  subroutine pair_fragment_energy_and_prop(Fragment1,Fragment2, &
        & natoms, DistanceTable, PairFragment,grad)
 
     implicit none
@@ -1089,7 +1089,7 @@ contains
     call array4_free(t2occ)
     call array4_free(t2virt)
 
-  end subroutine pair_lagrangian_energy_and_prop
+  end subroutine pair_fragment_energy_and_prop
 
 
 
@@ -2935,7 +2935,7 @@ contains
        write(DECinfo%output,*) 'FOP Fragment includes all orbitals and fragment optimization is skipped'
        call fragment_init_simulate_full(MyAtom,nunocc, nocc, OccOrbitals,UnoccOrbitals,&
             & MyMolecule,mylsitem,AtomicFragment,.true.)
-       call PrintInfo_Lagrangian(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
+       call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
        if(freebasisinfo) then
           call atomic_fragment_free_basis_info(AtomicFragment)
        end if
@@ -2998,7 +2998,7 @@ contains
        LagEnergyDiff=abs(LagEnergyOld-AtomicFragment%LagFOP)
        OccEnergyDiff=abs(OccEnergyOld-AtomicFragment%EoccFOP)
        VirtEnergyDiff=abs(VirtEnergyOld-AtomicFragment%EvirtFOP)
-       call PrintInfo_Lagrangian(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+       call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
        ! Test convergence for both Lagrangian, occupied, and virtual energies
        ! ********************************************************************
@@ -3187,7 +3187,7 @@ contains
        call atomic_fragment_init_orbital_specific(MyAtom,nunocc, nocc, VirtAOS_new, &
             & OccAOS_new,OccOrbitals,UnoccOrbitals,MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
 
-       call single_lagrangian_energy_and_prop(AtomicFragment)
+       call atomic_fragment_energy_and_prop(AtomicFragment)
 
        ! MPI fragment statistics
        slavetime = slavetime +  AtomicFragment%slavetime
@@ -3196,7 +3196,7 @@ contains
        LagEnergyDiff=abs(AtomicFragment%LagFOP-LagEnergyOld)
        OccEnergyDiff=abs(AtomicFragment%EoccFOP-OccEnergyOld)
        VirtEnergyDiff=abs(AtomicFragment%EvirtFOP-VirtEnergyOld)
-       call PrintInfo_Lagrangian(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+       call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
 
        ! Test convergence for both Lagrangian, occupied, and virtual energies
@@ -3472,10 +3472,10 @@ contains
 !!$
 !!$       if(DECinfo%fragadapt) then
 !!$          write(DECinfo%output,*) 'WARNING! For fragment-adapted orbitals we cannot skip energy calculation! '
-!!$          call single_lagrangian_energy_and_prop(AtomicFragment)
+!!$          call atomic_fragment_energy_and_prop(AtomicFragment)
 !!$       end if
 !!$
-!!$       call PrintInfo_Lagrangian(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
+!!$       call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
 !!$       if(freebasisinfo) then
 !!$          call atomic_fragment_free_basis_info(AtomicFragment)
 !!$       end if
@@ -3578,7 +3578,7 @@ contains
 !!$       LagEnergyDiff=abs(LagEnergyOld-AtomicFragment%LagFOP)
 !!$       OccEnergyDiff=abs(OccEnergyOld-AtomicFragment%EoccFOP)
 !!$       VirtEnergyDiff=abs(VirtEnergyOld-AtomicFragment%EvirtFOP)
-!!$       call PrintInfo_Lagrangian(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+!!$       call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 !!$
 !!$       ! Test convergence for both Lagrangian, occupied, and virtual energies
 !!$       ! ********************************************************************
@@ -3764,10 +3764,10 @@ contains
 !!$                call array2_free(t1)
 !!$                call array4_free(t2)
 !!$             end if
-!!$             call single_lagrangian_energy_and_prop(FOfragment,t1=t1,t2=t2)
+!!$             call atomic_fragment_energy_and_prop(FOfragment,t1=t1,t2=t2)
 !!$             ampset=.true.
 !!$          else
-!!$             call single_lagrangian_energy_and_prop(FOfragment)
+!!$             call atomic_fragment_energy_and_prop(FOfragment)
 !!$          end if
 !!$
 !!$
@@ -3778,7 +3778,7 @@ contains
 !!$          LagEnergyDiff=abs(FOfragment%LagFOP-LagEnergyOld)
 !!$          OccEnergyDiff=abs(FOfragment%EoccFOP-OccEnergyOld)
 !!$          VirtEnergyDiff=abs(FOfragment%EvirtFOP-VirtEnergyOld)
-!!$          call PrintInfo_Lagrangian(FOfragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+!!$          call fragopt_print_info(FOfragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 !!$
 !!$
 !!$          ! Test convergence for both Lagrangian, occupied, and virtual energies
@@ -4064,11 +4064,11 @@ contains
 
        if(DECinfo%fragadapt) then
           write(DECinfo%output,*) 'WARNING! For fragment-adapted orbitals we cannot skip energy calculation! '
-          call single_lagrangian_energy_and_prop(AtomicFragment)
+          call atomic_fragment_energy_and_prop(AtomicFragment)
        end if
        call fragment_adapted_transformation_matrices(AtomicFragment)
 
-       call PrintInfo_Lagrangian(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
+       call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
        if(freebasisinfo) then
           call atomic_fragment_free_basis_info(AtomicFragment)
        end if
@@ -4137,7 +4137,7 @@ contains
        LagEnergyDiff=abs(LagEnergyOld-AtomicFragment%LagFOP)
        OccEnergyDiff=abs(OccEnergyOld-AtomicFragment%EoccFOP)
        VirtEnergyDiff=abs(VirtEnergyOld-AtomicFragment%EvirtFOP)
-       call PrintInfo_Lagrangian(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+       call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
        ! Test convergence for both Lagrangian, occupied, and virtual energies
        ! ********************************************************************
@@ -4302,7 +4302,7 @@ contains
                 cycle REDUCTION_LOOP
              end if
           end if
-          call single_lagrangian_energy_and_prop(FOfragment)
+          call atomic_fragment_energy_and_prop(FOfragment)
 
 
           ! MPI fragment statistics
@@ -4312,7 +4312,7 @@ contains
           LagEnergyDiff=abs(FOfragment%LagFOP-LagEnergyOld)
           OccEnergyDiff=abs(FOfragment%EoccFOP-OccEnergyOld)
           VirtEnergyDiff=abs(FOfragment%EvirtFOP-VirtEnergyOld)
-          call PrintInfo_Lagrangian(FOfragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+          call fragopt_print_info(FOfragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
 
           ! Test convergence for both Lagrangian, occupied, and virtual energies
@@ -4572,11 +4572,11 @@ contains
 
        if(DECinfo%fragadapt) then
           write(DECinfo%output,*) 'For fragment-adapted orbitals we cannot skip energy calculation! '
-          call single_lagrangian_energy_and_prop(AtomicFragment)
+          call atomic_fragment_energy_and_prop(AtomicFragment)
        end if
        call fragment_adapted_transformation_matrices(AtomicFragment)
 
-       call PrintInfo_Lagrangian(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
+       call fragopt_print_info(AtomicFragment,0.0E0_realk,0.0E0_realk,0.0E0_realk,0)
        if(freebasisinfo) then
           call atomic_fragment_free_basis_info(AtomicFragment)
        end if
@@ -4646,7 +4646,7 @@ contains
        LagEnergyDiff=abs(LagEnergyOld-AtomicFragment%LagFOP)
        OccEnergyDiff=abs(OccEnergyOld-AtomicFragment%EoccFOP)
        VirtEnergyDiff=abs(VirtEnergyOld-AtomicFragment%EvirtFOP)
-       call PrintInfo_Lagrangian(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+       call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
 
        ! Test convergence for both Lagrangian, occupied, and virtual energies
@@ -4802,7 +4802,7 @@ contains
              write(DECinfo%output,'(a,i5)') ' FOP Local reduction did not converge in step ', iter
              converged=.false.
           end if
-          call PrintInfo_Lagrangian(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+          call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
           ! Quick reduction loop of we are converged
           if(converged) exit REDUCTION_LOOP1
@@ -4925,7 +4925,7 @@ contains
                 cycle REDUCTION_LOOP
              end if
           end if
-          call single_lagrangian_energy_and_prop(FOfragment)
+          call atomic_fragment_energy_and_prop(FOfragment)
 
 
           ! MPI fragment statistics
@@ -4935,7 +4935,7 @@ contains
           LagEnergyDiff=abs(FOfragment%LagFOP-LagEnergyOld)
           OccEnergyDiff=abs(FOfragment%EoccFOP-OccEnergyOld)
           VirtEnergyDiff=abs(FOfragment%EvirtFOP-VirtEnergyOld)
-          call PrintInfo_Lagrangian(FOfragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+          call fragopt_print_info(FOfragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
 
           ! Test convergence for both Lagrangian, occupied, and virtual energies
@@ -5116,7 +5116,7 @@ contains
   !> using the Lagrangian partitioning scheme.
   !> \date: august-2011
   !> \author: Ida-Marie Hoeyvik
-  subroutine PrintInfo_Lagrangian(Fragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
+  subroutine fragopt_print_info(Fragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
     implicit none
     !> Atomic fragment
     type(ccatom),intent(inout) :: Fragment
@@ -5148,7 +5148,7 @@ contains
    write(DECinfo%output,*) 'FOP'
 
 
-  end subroutine PrintInfo_Lagrangian
+  end subroutine fragopt_print_info
 
 
 
