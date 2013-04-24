@@ -1174,10 +1174,10 @@ use precision
         if(stat==-1)then
           print *,"ERROR(ls_getenv): the internal val is too short to hold the&
           & value of the variable, please adjust the length and recompile"
-          stop -1
+          stop 0
         else
           print *,"ERROR(ls_getenv):error in GET_ENVIRONMENT_VARIABLE, status:",stat
-          stop -2
+          stop 0
         endif
       endif
 
