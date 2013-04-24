@@ -37,6 +37,10 @@ module dec_typedef_module
      !> Enforce canonical orbitals in calculation 
      !> (only meaningful for full_molecular_cc or simulate_full)
      logical :: use_canonical
+     !> Default: Full calculation uses canonical orbitals, while DEC calculation uses local orbitals.
+     !> This can be overruled by inpiut keywords (see config_dec_input).
+     !> If the default choice was overruled "user_defined_orbitals" is set to true.
+     logical :: user_defined_orbitals
      !> Simulate full molecular calculation in DEC mode  (debug)
      logical :: simulate_full
      !> How many atoms to use in simulation mode   (debug)
