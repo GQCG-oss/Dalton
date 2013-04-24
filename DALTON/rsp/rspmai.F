@@ -1676,7 +1676,9 @@ C
          ENDIF
 
          if (peqm) then
-            write(lupri,'(a)') ' PE-QM response calculation'
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
+            if (soppa) stop 'Not sure if SOPPA works with PE module yet'
          end if
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
@@ -2233,7 +2235,8 @@ C
          ENDIF
 
          if (peqm) then
-            write(lupri,'(a)') ' PE-QM response calculation'
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
          end if
 
          IF (CHANNEL_CALC) THEN
@@ -4032,9 +4035,7 @@ C
 C   We assume that either the SIRIUS module or the SETSIR
 C   subroutine has been called before RSPMC.
 C
-
       use pe_variables, only: peqm
-
 #include "implicit.h"
 #include "infdim.h"
 C
@@ -4085,8 +4086,6 @@ C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if
 C     CSF's were used in SIRIUS. /hjaaj May 2001
 C
-      WRITE(LUPRI,*)'EDH RESPONSE START'
-
       MCONRF = NCONRF
       IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
          FLAG(27) = .TRUE.
@@ -4305,6 +4304,7 @@ C
            FC(I) = FC(I) + WRK(I)
         ENDDO
       END IF
+
       IF ((NCONRF .GT. 1) .AND. QMMM ) THEN
          write(lupri,*) 'MCSCF detected (NCONRF > 1) in PE calc.'
          write(lupri,*) 'NCONRF...........................', NCONRF
@@ -4316,15 +4316,12 @@ C
          ENDDO
       END IF
            
-      if ((nconrf .gt. 1) .and. peqm) then
-         write(lupri,*) 'MCSCF detected (NCONRF > 1) in PE calc.'
-         write(lupri,*) 'NCONRF...........................', NCONRF
-         write(lupri,*) '=> Subtracting PE Fock matrix (PCM-like)'
-         call mollab('PETMAT  ',lusifc,lupri)
-         call readt (lusifc,nnorbt,wrk)
-         do i = 1,nnorbt
-            fc(i) = fc(i) - wrk(i)
-         enddo
+      if (peqm .and. .not. tdhf) then
+        write(lupri,*) 'Running PE-MCSCF response calculation.'
+        write(lupri,*) '=> Subtracting PE Fock matrix'
+        call mollab('PETMAT  ', lusifc, lupri)
+        call readt (lusifc, nnorbt, wrk)
+        fc(1:nnorbt) = fc(1:nnorbt) - wrk(1:nnorbt)
        endif
 
       IF (SOPPA) THEN
@@ -4695,7 +4692,6 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
-
       use pe_variables, only: peqm
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
@@ -4846,7 +4842,8 @@ C
          ENDIF
 
          if (peqm) then
-            write(lupri,'(a)') ' PE-QM response calculation'
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
          end if
 
          WRITE(LUPRI,'(A,I4)')
