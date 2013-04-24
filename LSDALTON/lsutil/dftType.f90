@@ -3,7 +3,7 @@
 !> \date 2010-02-21
 MODULE dft_typetype
 use precision
-integer,save      :: GRIDITERATIONS
+
 ! choose reasonably large. Exceeding this limit means that boxes are too large.
 Integer, parameter :: MXBLLEN=128  
 !DFT%NBUFLEN=1024 or maxNBUFLEN inside GenerateGrid is maximum number of 
@@ -18,6 +18,10 @@ Integer,save :: BoxMemRequirement
 Integer,parameter :: Grid_Default = 1
 Integer,parameter :: Grid_ADMML2 = 2
 Integer,parameter :: Grid_ABSVAL = 3
+!MPI node specific and grid specific 
+integer,save      :: dft_GRIDITERATIONS(3)
+INTEGER,save      :: dft_maxNactBAST(3)   
+
 !integers to determine the different functionals in use
 Integer,parameter :: dftfunc_Default = 1
 Integer,parameter :: dftfunc_ADMML2 = 2
@@ -37,9 +41,7 @@ INTEGER           :: HRDNES ! hardness of the partition function in the becke sc
 LOGICAL           :: NOPRUN                  !.TRUE.
 INTEGER           :: TURBO
 INTEGER           :: NBUFLEN                 !0
-INTEGER           :: maxNactBAST             !0
 LOGICAL           :: NEWGRID                 !.FALSE.
-integer           :: GRIDITERATIONS
 integer           :: Id !1,2 or 3 corresponds to (Grid_Default,Grid_ADMML2,..)
 integer           :: NBAST
 END TYPE GridItem
@@ -78,7 +80,6 @@ LOGICAL           :: DFTADD !                .TRUE.
 LOGICAL           :: DISPDONE !              .FALSE.
 INTEGER           :: TURBO
 INTEGER           :: NBUFLEN                 !0
-INTEGER           :: maxNactBAST             !0
 LOGICAL           :: NEWGRID                 !.FALSE.
 Logical           :: testNelectrons          !.TRUE.
 Logical           :: LB94      !van Leeuwen-Baerends correction
@@ -141,11 +142,12 @@ do iGrid=1,size(gridObject)
    GridObject(iGrid)%NOPRUN = dft%NOPRUN
    GridObject(iGrid)%TURBO = dft%TURBO
    GridObject(iGrid)%nbuflen = dft%nbuflen
-   GridObject(iGrid)%MaxNactBast = 0
    GridObject(iGrid)%NewGrid = dft%NewGrid
-   GridObject(iGrid)%GRIDITERATIONS = 0
    GridObject(iGrid)%Id = iGrid
    GridObject(iGrid)%NBAST = 0
+   !module parameters
+   DFT_GRIDITERATIONS(iGrid) = 0
+   DFT_MaxNactBast(iGrid) = 0
 enddo
 end subroutine init_gridObject
 

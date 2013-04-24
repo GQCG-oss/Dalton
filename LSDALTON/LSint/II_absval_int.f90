@@ -48,29 +48,24 @@ LOGICAL         :: USE_MPI !use MPI ?
 TYPE(BASINF)  :: BAS
 integer :: igrid,GRIDDONE
 REAL(REALK),parameter :: D0=0E0_realk
-LOGICAL :: REDUCE_MAXNACTBAST
+INTEGER       :: maxNactbast,GRIDITERATIONS
 igrid = SETTING%scheme%DFT%igrid
 GRIDDONE = SETTING%scheme%DFT%GridObject(igrid)%GRIDDONE
+maxNactbast = dft_maxNactbast(igrid)
+GRIDITERATIONS = dft_GRIDITERATIONS(igrid)
 CALL BUILD_BASINF(LUPRI,IPRINT,BAS,SETTING,GRIDDONE,.FALSE.)
-REDUCE_MAXNACTBAST=.FALSE.
-#ifdef VAR_LSMPI
-IF(GRIDDONE .EQ. 0)REDUCE_MAXNACTBAST=.TRUE.
-#endif
 CALL II_ABSVALINT1(LUPRI,IPRINT,CMAT,NBAST,BAS,&
      &ABSVALOVERLAP,SETTING%SCHEME%noOMP,USE_MPI,setting%numnodes,setting%node,&
-     &DFTHRI,SETTING%scheme%DFT%GridObject(igrid))
+     &DFTHRI,SETTING%scheme%DFT%GridObject(igrid),maxNactbast,&
+     &GRIDITERATIONS)
 CALL FREE_BASINF(BAS)
-#ifdef VAR_LSMPI
-IF(REDUCE_MAXNACTBAST)THEN
-   IF(USE_MPI)call lsmpi_barrier(setting%comm)    
-   IF(USE_MPI)call lsmpi_max_int_reduction(SETTING%scheme%DFT%GridObject(igrid)%maxNactbast,&
-        & infpar%master,setting%comm)
-ENDIF
-#endif
+dft_maxNactbast(igrid) = maxNactbast
+dft_GRIDITERATIONS(igrid) = GRIDITERATIONS
 END SUBROUTINE II_ABSVALINT
 
 SUBROUTINE II_ABSVALINT1(LUPRI,IPRINT,CMAT,NBAST,BAS,&
-     &ABSVALOVERLAP,noOMP,USE_MPI,numnodes,node,DFTHRI,GridObject) 
+     &ABSVALOVERLAP,noOMP,USE_MPI,numnodes,node,DFTHRI,GridObject,&
+     &maxNactbast,GRIDITERATIONS) 
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -94,6 +89,7 @@ LOGICAL,intent(in) :: USE_MPI
 INTEGER(kind=ls_mpik),intent(in) :: numnodes,node
 !> Grid parameters
 type(Griditem),intent(INOUT) :: GridObject
+integer :: maxNactBAST,GRIDITERATIONS
 !
 integer :: NPOINTS,NLEN,NSHELLBLOCKS,NROW,NCOL
 INTEGER :: iprune,L_prev,L_curr,IPT,spSIZE,L,NCURLEN,I,J
@@ -114,7 +110,7 @@ IF(GridObject%GRIDDONE .EQ. 0)THEN
    GRIDITERATIONS=0
    SETIT=.TRUE.
    GridObject%NBUFLEN=0
-   GridObject%maxNactBAST = 0
+   maxNactBAST = 0
 ENDIF
 !pruning: per default on
 IPRUNE = 1
@@ -135,7 +131,7 @@ BoxMemRequirement = 5*NBAST*NBAST
 CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,GridObject%HRDNES,iprune,BAS%natoms,& 
      & BAS%X,BAS%Y,BAS%Z,BAS%Charge,GridObject%GRIDDONE,BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
      & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,IT,GridObject%TURBO,GridObject%nbuflen,&
-     & GridObject%RADIALGRID,GridObject%ZdependenMaxAng,GridObject%PARTITIONING,BAS%nstart,GridObject%MaxNactBast,LUPRI,&
+     & GridObject%RADIALGRID,GridObject%ZdependenMaxAng,GridObject%PARTITIONING,BAS%nstart,MaxNactBast,LUPRI,&
      & IPRINT,USE_MPI,numnodes,node,GridObject%Id)
 IF(PRINTTIM)THEN
    CALL LS_GETTIM(CPU2,WALL2)
@@ -197,8 +193,8 @@ DO SHELLANGMOMA=1,BAS%MAXANGMOM
    ENDDO
 ENDDO
 
-BoxMemRequirement = ABSVAL_MXBLLEN*GridObject%MaxNactBast
-CALL II_ABSVAL_GRID_LOOP(GridObject%NBUFLEN,IT,nbast,GridObject%maxNactbast,BAS%maxnshell,&
+BoxMemRequirement = ABSVAL_MXBLLEN*MaxNactBast
+CALL II_ABSVAL_GRID_LOOP(GridObject%NBUFLEN,IT,nbast,maxNactbast,BAS%maxnshell,&
      & BAS%CC,BAS%ushells,BAS%CCSTART,BAS%CCINDEX,BAS%CENT,ABSVALOVERLAP,&
      & DFThri,CMAT,BAS%PRIEXPSTART,lupri,&
      & BAS%mxprim,BAS%shellangmom,MMM,BAS%maxangmom,BAS%nstart,BAS%priexp,&

@@ -934,7 +934,6 @@ INTEGER,intent(inout) :: SHELLBLOCKS(2,MAXNSHELL)
 REAL(REALK),intent(inout) :: COOR(3,NBUFLEN),WEIGHT(NBUFLEN)
 !
 INTEGER :: I,layer
-
 READ(LUGRID) NLEN
 READ(LUGRID) COOR(1:3,1:NLEN)
 READ(LUGRID) WEIGHT(1:NLEN)
@@ -2278,7 +2277,6 @@ filename(17:21)=Char(nbast/10000+48)//Char(mod(nbast,10000)/1000+48)&
    &//Char(mod(mod(mod(nbast,10000),1000),100)/10+48)&
    &//Char(mod(mod(mod(mod(nbast,10000),1000),100),10)+48)
 filename(22:22)=Char(GridId+48)
-print*,'filename(22:22)',filename(22:22)
 end subroutine get_quadfilename
 
 SUBROUTINE GRID_RADGC2(CHARGE,RADIALPOINTS,RADIALWEIGHT,nRadialPoints,RADINT,NRADPT,MAXANGMOM,IPRINT,LUPRI)

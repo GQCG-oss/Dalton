@@ -7,10 +7,6 @@ use dft_memory_handling
 !WARNING you must not add memory_handling, all memory goes through 
 !grid_memory_handling  module so as to determine the memory used in this module.
 use xcfun_host
-#ifdef VAR_LSMPI
-  use infpar_module
-  use lsmpi_mod
-#endif
 CONTAINS
 !==============================================================================
 !

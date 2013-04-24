@@ -38,7 +38,6 @@ DFT%DFTADD = .TRUE.  !disable DFT D
 DFT%DISPDONE = .FALSE.
 DFT%TURBO = 1 !TURBOMOLE grid                               (olddefault 0)
 DFT%NBUFLEN=0
-DFT%maxNactBAST=0
 DFT%NEWGRID=.TRUE.                                         !(olddefault FALSE)
 do i=1,80
    DFT%dftfunc(i:i)=' '
@@ -110,7 +109,6 @@ WRITE(LUPRI,'(2X,A35,L1)') 'DFTADD', DFT%DFTADD
 WRITE(LUPRI,'(2X,A35,L1)') 'DISPDONE',DFT%DISPDONE
 WRITE(LUPRI,'(2X,A35,I8)')'TURBO',DFT%TURBO
 WRITE(LUPRI,'(2X,A35,I8)')'NBUFLEN',DFT%NBUFLEN
-WRITE(LUPRI,'(2X,A35,I8)')'maxNactBAST',DFT%maxNactBAST
 WRITE(LUPRI,'(2X,A35,L1)')'newGrid',DFT%newgrid
 WRITE(LUPRI,'(2X,A75,A)')'dftfunc',DFT%dftfunc
 WRITE(LUPRI,'(2X,A35,L1)')'testNelectrons',DFT%testNelectrons
@@ -173,6 +171,8 @@ implicit none
 integer(kind=ls_mpik) :: master
 type(DFTparam) :: DFT
 integer :: i
+call LS_MPI_BUFFER(DFT%IGRID,Master)
+call LS_MPI_BUFFER(DFT%IDFTtype,Master)
 call LS_MPI_BUFFER(DFT%RADIALGRID,Master)
 call LS_MPI_BUFFER(DFT%PARTITIONING,Master)
 call LS_MPI_BUFFER(DFT%ZdependenMaxAng,Master)
@@ -197,7 +197,6 @@ call LS_MPI_BUFFER(DFT%DFTADD,Master)
 call LS_MPI_BUFFER(DFT%DISPDONE,Master)
 call LS_MPI_BUFFER(DFT%TURBO,Master)
 call LS_MPI_BUFFER(DFT%NBUFLEN,Master)
-call LS_MPI_BUFFER(DFT%maxNactBAST,Master)
 call LS_MPI_BUFFER(DFT%newgrid,Master)
 call LS_MPI_BUFFER(DFT%dftfunc,Master)
 call LS_MPI_BUFFER(DFT%testNelectrons,Master)
@@ -224,9 +223,7 @@ do i=1,size(DFT%GridObject)
    call LS_MPI_BUFFER(DFT%GridObject(i)%NOPRUN,Master)
    call LS_MPI_BUFFER(DFT%GridObject(i)%TURBO,Master)
    call LS_MPI_BUFFER(DFT%GridObject(i)%NBUFLEN,Master)
-   call LS_MPI_BUFFER(DFT%GridObject(i)%maxNactBAST,Master)
    call LS_MPI_BUFFER(DFT%GridObject(i)%newgrid,Master)
-   call LS_MPI_BUFFER(DFT%GridObject(i)%GRIDITERATIONS,Master)
    call LS_MPI_BUFFER(DFT%GridObject(i)%Id,Master)
    call LS_MPI_BUFFER(DFT%GridObject(i)%NBAST,Master)
 enddo
