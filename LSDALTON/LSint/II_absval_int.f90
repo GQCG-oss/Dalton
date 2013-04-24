@@ -394,11 +394,11 @@ CALL DGEMM('N','N',NBLEN,NBAST,NACTBAST,1.0E0_realk,&
      &             TMP,NBLEN)
 
 ! First half-contraction of MO's with grid point weight
-!DO J=1,NBAST
-!   DO K=1, NBLEN
-!      TMP(K,J) =  ABS(TMP(K,J))
-!   ENDDO
-!ENDDO
+DO J=1,NBAST
+   DO K=1, NBLEN
+      TMP(K,J) =  ABS(TMP(K,J))
+   ENDDO
+ENDDO
 DO J=1,NBAST
    DO K=1, NBLEN
       TMP2(K,J) =  WEIGHT(K)*TMP(K,J)
