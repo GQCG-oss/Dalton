@@ -1,5 +1,6 @@
 MODULE KS_settings
 use matrix_module
+use matrix_operations
 ! This module evaluates the Fock/Kohn-Sham matrix using chosen
 ! algorithm, matrix representation, etc.
 !
@@ -11,7 +12,6 @@ SAVE
 CONTAINS
 
 subroutine ks_free_incremental_fock
-use matrix_operations
 implicit none
   incremental_scheme = .false.
   SaveF0andD0 = .false.
@@ -22,7 +22,6 @@ implicit none
 end subroutine ks_free_incremental_fock
 
 subroutine ks_init_incremental_fock(nbast)
-use matrix_operations
 implicit none
 integer :: nbast
   incremental_scheme = .true.
@@ -35,7 +34,6 @@ integer :: nbast
 end subroutine ks_init_incremental_fock
 
 subroutine ks_init_linesearch_fock(nbast)
-use matrix_operations
 implicit none
 integer :: nbast
 SaveF0andD0 = .true.
@@ -48,7 +46,6 @@ ENDIF
 end subroutine ks_init_linesearch_fock
 
 subroutine ks_free_linesearch_fock()
-use matrix_operations
 implicit none
 integer :: nbast
   SaveF0andD0 = .false.
@@ -60,7 +57,6 @@ integer :: nbast
 end subroutine ks_free_linesearch_fock
 
 subroutine activate_incremental(lupri)
-use matrix_operations
 implicit none
 integer,intent(in) :: lupri
 real(realk) :: maxelm

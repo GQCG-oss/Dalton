@@ -6,6 +6,10 @@
 !> \date 2007
 module decompMod
 use matrix_module
+use precision
+use matrix_operations
+use lowdin_module
+use lstiming
 
 type orbspread_data
  integer :: norb
@@ -248,7 +252,6 @@ contains
    !> \author B. Jansik
    !> \date 2008
    subroutine save_decomposition(decomp)
-   use matrix_operations
    implicit none
        !> Contains settings for decomposition and OAO decomposed overlap
         type(DecompItem)    :: decomp
@@ -267,7 +270,6 @@ contains
    !> \author B. Jansik
    !> \date 2008
    subroutine restore_decomposition(decomp)
-   use matrix_operations
    implicit none
        !> Contains settings for decomposition and OAO decomposed overlap
         type(DecompItem)    :: decomp
@@ -290,7 +292,6 @@ contains
    !> \author S. Host
    !> \date March 2010
    subroutine decomp_init(ndim,decomp)
-   use matrix_operations
      implicit none
      !> Number of basis functions
      integer, intent(in) :: ndim
@@ -318,7 +319,6 @@ contains
    !> \author S. Host
    !> \date March 2010
    subroutine decomp_shutdown(decomp)
-   use matrix_operations
    implicit none
      !> Contains settings for decomposition and OAO decomposed overlap
      type(DecompItem)    :: decomp
@@ -352,9 +352,6 @@ contains
    !> - Lowdin by iterative scheme in quadruple precision
    !>
    subroutine decomposition(decomp)
-   use matrix_operations
-   use lowdin_module
-   use lstiming
    implicit none
          !> Contains settings for decomposition and OAO decomposed overlap
          type(DecompItem)                          :: decomp
@@ -472,7 +469,6 @@ contains
    !> \author S. Host
    !> \date 2005
    subroutine res_to_oao_basis(decomp, res, resU)
-   use matrix_operations
    implicit none
         !> Contains settings for decomposition and OAO decomposed overlap
         type(decompItem),intent(in)  :: decomp
@@ -495,7 +491,6 @@ contains
    !> \author S. Host
    !> \date 2005
    subroutine res_from_oao_basis(decomp, resU, res)
-   use matrix_operations
    implicit none
         !> Contains settings for decomposition and OAO decomposed overlap
         type(decompItem),intent(in)  :: decomp
@@ -518,7 +513,6 @@ contains
    !> \author S. Host
    !> \date 2005
    subroutine x_to_oao_basis(decomp, x, xU)  !Used for arh
-   use matrix_operations
    implicit none
         !> Contains settings for decomposition and OAO decomposed overlap
         type(decompItem),intent(in)  :: decomp
@@ -539,7 +533,6 @@ contains
    !> \author S. Host
    !> \date 2005
    subroutine x_from_oao_basis(decomp, xU, x)
-   use matrix_operations
    implicit none
         !> Contains settings for decomposition and OAO decomposed overlap
         type(decompItem),intent(in)  :: decomp
@@ -560,7 +553,6 @@ contains
    !> \author S. Host
    !> \date 2005
    subroutine get_oao_transformed_matrices(decomp,F,D)
-   use matrix_operations
    implicit none
         !> Contains settings for decomposition and OAO decomposed overlap
         type(decompItem),intent(inout)          :: decomp
@@ -621,7 +613,6 @@ contains
    !> \author S. Host
    !> \date 2005
    subroutine project_oao_basis(decomp, X, symm, X_proj)
-   use matrix_operations
    implicit none
        !> Contains settings for decomposition and OAO decomposed overlap
        type(decompItem),intent(in) :: decomp       

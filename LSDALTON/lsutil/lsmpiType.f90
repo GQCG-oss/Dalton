@@ -156,6 +156,7 @@ module lsmpi_type
   save
 #ifdef VAR_LSMPI
   integer(kind=ls_mpik) :: MPI_COMM_LSDALTON
+  logical :: LSMPIASYNCP
   integer,parameter :: LSMPIBROADCAST=1
   integer,parameter :: LSMPIREDUCTION=2
   integer,parameter :: LSMPIREDUCTIONmaster=3

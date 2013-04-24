@@ -22,7 +22,7 @@ cat > dec_ccsdpt.info <<'%EOF%'
    --------------------------------------------------
    Molecule:         Ethane
    Wave Function:    CCSD(T) / 6-31G
-   Test Purpose:     Test simulated superfragment DEC-CCSD(T) energy (Janus J. Eriksen)
+   Test Purpose:     Test DEC-CCSD(T) energy (Janus J. Eriksen)
 %EOF%
 
 #######################################################################

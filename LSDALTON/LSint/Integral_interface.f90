@@ -4726,13 +4726,8 @@ call DFTREPORT(lupri)
 !use this call to add a functional instead of replacing it. 
 !call II_DFTaddFunc(setting%scheme%dft%dftfunc,hfweight)
 
-call get_quadfilename(L3file,nbast,setting%node)
-call get_quadfilename(L2file,nbast2,setting%node)
-
-! The structure here assumes that neighter L2grid or L3grid has been set the first time the
-! II_get_admm_exchange_mat is called
-grid_done = setting%scheme%dft%grdone.EQ.1
-IF (grid_done) call get_dft_grid(setting%scheme%dft%L2grid,L2file,setting%scheme%dft)
+!choose the ADMM Level 2 grid
+setting%scheme%dft%igrid = Grid_ADMML2
   
 !Only test electrons if the D2 density matrix is McWeeny purified
 testNelectrons = setting%scheme%dft%testNelectrons
@@ -4745,14 +4740,8 @@ call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC
 call mat_daxpy(-setting%scheme%exchangeFactor,TMPF,dXC)
 setting%scheme%dft%testNelectrons = testNelectrons
 
-!Store level 2 grid if this is the first time it has been set
-IF (.NOT.grid_done)  call store_dft_grid(setting%scheme%dft%L2grid,L2file,setting%scheme%dft)
-!Re-set to level 3 grid if already calculated, or indicate that it should be calculated
-IF (grid_done) THEN
-  call get_dft_grid(setting%scheme%dft%L3grid,L3file,setting%scheme%dft)
-ELSE
-  setting%scheme%dft%grdone = 0
-ENDIF
+!Re-set to default (level 3) grid
+setting%scheme%dft%igrid = Grid_Default
 
 call mat_free(TMPF)
 call mat_free(F2(1))
@@ -4769,9 +4758,6 @@ CALL mat_daxpy(setting%scheme%exchangeFactor,F3(1),dXC)
 CALL mat_free(F3(1))
 
 EdXC = (EX3(1)-EX2(1))*setting%scheme%exchangeFactor
-
-!Store level 3 grid if this is the first time it has been set
-IF (.NOT.grid_done) call store_dft_grid(setting%scheme%dft%L3grid,L3file,setting%scheme%dft)
 
 !Restore dft functional to original
 IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%dftfunc,hfweight)
@@ -4974,13 +4960,11 @@ DO idmat=1,ndrhs
    WORD = "BX"
    call II_DFTsetFunc(WORD(1:80),hfweight) !Here hfweight is only used as a dummy variable
    
-   call get_quadfilename(L3file,nbast,setting%node)
-   call get_quadfilename(L2file,nbast2,setting%node)
-   
-   grid_done = setting%scheme%dft%grdone.EQ.1
-   IF (grid_done) call get_dft_grid(setting%scheme%dft%L2grid,L2file,setting%scheme%dft)
-     
-   !!Only test electrons if the D2 density matrix is McWeeny purified
+   !choose the ADMM Level 2 grid
+   setting%scheme%dft%igrid = Grid_ADMML2
+
+   !Only test electrons if the D2 density matrix is McWeeny purified
+
    testNelectrons = setting%scheme%dft%testNelectrons
    setting%scheme%dft%testNelectrons = .FALSE. !setting%scheme%ADMM_MCWEENY
    
@@ -4996,14 +4980,9 @@ DO idmat=1,ndrhs
    call DAXPY(3*nAtoms,-setting%scheme%exchangeFactor,grad_xc2,1,admm_Kgrad,1)
    call mem_dealloc(grad_xc2)
    
-   !Re-set to level 3 grid, assuming it is calculated
-   IF (grid_done) THEN
-     call get_dft_grid(setting%scheme%dft%L3grid,L3file,setting%scheme%dft)
-   ELSE
-     call store_dft_grid(setting%scheme%dft%L2grid,L2file,setting%scheme%dft)
-     setting%scheme%dft%grdone = 0
-   ENDIF
-  
+
+   !Re-set to level 3 grid
+   setting%scheme%dft%igrid = Grid_Default
    
    !****Calculation of Level 3 XC gradient
    call set_default_AOs(AORold,AOdfold)  !Revert back to original settings and free stuff 
@@ -5019,30 +4998,27 @@ DO idmat=1,ndrhs
    ! set back the default choice for testing the nb. of electrons
    setting%scheme%dft%testNelectrons = testNelectrons
    
-   IF (.NOT.grid_done) call store_dft_grid(setting%scheme%dft%L3grid,L3file,setting%scheme%dft)
+   ! Additional (reorthonormalisation like) projection terms coming from the derivative of the small d2 Density matrix
+   call mem_alloc(ADMM_proj,3,nAtoms)
+   ADMM_proj = 0E0_realk
+   call mat_init(zeromat,nbast2,nbast2)
+   call mat_zero(zeromat)
+
+   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,zeromat,DmatLHS(idmat)%p,D2,&
+        &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
+
+   call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
+   call get_ADMM_K_gradient_projection_term(ADMM_proj,zeromat,xc2,DmatLHS(idmat)%p,D2,&
+        &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
+   call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
 
 
-! Additional (reorthonormalisation like) projection terms coming from the derivative of the small d2 Density matrix
-call mem_alloc(ADMM_proj,3,nAtoms)
-ADMM_proj = 0E0_realk
-call mat_init(zeromat,nbast2,nbast2)
-call mat_zero(zeromat)
-
-call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,zeromat,DmatLHS(idmat)%p,D2,&
-    &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
-
-call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
-call get_ADMM_K_gradient_projection_term(ADMM_proj,zeromat,xc2,DmatLHS(idmat)%p,D2,&
-    &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
-call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
-
-
- !FREE MEMORY
-call mat_free(zeromat)
-call mem_dealloc(ADMM_proj)
-call mat_free(k2)
-call mat_free(xc2)
-call mat_free(D2)
+   !FREE MEMORY
+   call mat_free(zeromat)
+   call mem_dealloc(ADMM_proj)
+   call mat_free(k2)
+   call mat_free(xc2)
+   call mat_free(D2)
 ENDDO !idmat
 
 call DSCAL(3*nAtoms,0.25_realk,admm_Kgrad,1)

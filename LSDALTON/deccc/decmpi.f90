@@ -1635,7 +1635,7 @@ contains
     call ls_mpi_buffer(DECitem%doHF,Master)
     call ls_mpi_buffer(DECitem%memory,Master)
     call ls_mpi_buffer(DECitem%full_molecular_cc,Master)
-    call ls_mpi_buffer(DECitem%FullDEC,Master)
+    call ls_mpi_buffer(DECitem%mp2energydebug,Master)
     call ls_mpi_buffer(DECitem%simulate_full,Master)
     call ls_mpi_buffer(DECitem%simulate_natoms,Master)
     call ls_mpi_buffer(DECitem%SkipReadIn,Master)
