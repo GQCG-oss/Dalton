@@ -2463,7 +2463,6 @@ CONTAINS
             type(Matrix)           :: B2_AO(nBmat) !level 2 matrix
             type(Matrix)           :: D2_AO, TMPF3
             type(Matrix)           :: k2(nBmat),Gx2(nBmat),Gx3(nBmat)
-            type(Matrix)           :: Gx(nBmat)
             character(len=80)      :: WORD
             character(21)          :: L2file,L3file
             real(realk)            :: hfweight
@@ -2571,6 +2570,7 @@ CONTAINS
             call transform_D3_to_D2(Dmat_AO,D2_AO,&
                 & setting,lupri,luerr,nbast2,nbast,&
                 & AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
+            call mat_init(TMPF3,nbast,nbast)
             DO ibmat=1,nBmat
                 !!We transform the full Density to a level 2 density D2
                 call mat_init(B2_AO(ibmat),nbast2,nbast2)
@@ -2582,7 +2582,7 @@ CONTAINS
                  ! K2(b): LEVEL 2 exact exchange matrix
                 call mat_init(k2(ibmat),nbast2,nbast2)
                 call mat_zero(k2(ibmat))
-                call mat_init(TMPF3,nbast,nbast)
+
                 call mat_zero(TMPF3)
                 ! Take Dsym later on as input!!!!!!!
                 Dsym = .FALSE.
