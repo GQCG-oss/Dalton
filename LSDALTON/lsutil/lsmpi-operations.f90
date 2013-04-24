@@ -29,8 +29,8 @@ module lsmpi_op
        & lsmpi_print, lsmpi_default_mpi_group, lsmpi_finalize, lsmpi_barrier,&
        & LSMPIREDUCTION, LSMPIREDUCTIONmaster
   use infpar_module
-! use mpi
-  include 'mpif.h'
+  use mpi
+!  include 'mpif.h'
 #endif
   !*****************************************
   !*

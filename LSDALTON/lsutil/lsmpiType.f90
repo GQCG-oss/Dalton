@@ -12,8 +12,8 @@ module lsmpi_type
        & init_globalmemvar, stats_mpi_mem, copy_to_mem_stats
 #ifdef VAR_LSMPI
   use infpar_module
-  include 'mpif.h'
-! use mpi
+!  include 'mpif.h'
+  use mpi
 #endif
   INTERFACE ls_mpibcast_chunks
     MODULE PROCEDURE ls_mpibcast_realkV_parts44,ls_mpibcast_realkV_parts48,&
