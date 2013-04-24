@@ -75,7 +75,7 @@
       case(LSMPI_IIDFTKSM);
          call lsmpi_II_DFT_KSM_Slave(comm)
       case(LSMPI_IIDFTABSVALOVERLAP);
-!         call lsmpi_II_DFT_ABSVALOVERLAP_Slave(comm)
+         call lsmpi_II_DFT_ABSVALOVERLAP_Slave(comm)
       case(LSMPI_IIDFTKSME);
          call lsmpi_II_DFT_KSME_Slave(comm)
       case(IIDFTGEO);
