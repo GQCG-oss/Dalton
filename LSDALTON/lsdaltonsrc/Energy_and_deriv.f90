@@ -36,13 +36,13 @@ contains
     !
     Implicit none
     Type(lsitem),target :: ls   ! General information,used only to get E and gradient
-    Type(Matrix), intent(inout) :: F,D       ! Fock,density
+    Type(Matrix), intent(inout) :: F(1),D(1)       ! Fock,density
     Type(Matrix), intent(inout),target :: S  ! overlap matrices
     Type(Matrix), intent(inout),target :: H1 ! One electron matrix
     Type(Matrix), intent(inout) :: C       ! Orbitals
     Type(Matrix) :: CMO       ! Orbitals for Fock matrix dynamics
     Type(ConfigItem), intent(inout) :: Config ! General information
-    Real(realk) :: E, PotNuc   ! Electronic energy and nuclear potential
+    Real(realk) :: E(1), PotNuc   ! Electronic energy and nuclear potential
     Real(realk) :: Eerr ! For DEC: Estimated intrinsic energy error
     Real(realk), allocatable :: eival(:)
 !    Real(realk), pointer :: ExcitE(:)
@@ -65,7 +65,7 @@ contains
 
 
        Eerr = 0E0_realk
-       nbast = D%nrow
+       nbast = D(1)%nrow
        do_decomp =(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. &
             & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
             & config%decomp%cfg_check_converged_solution .or. &
@@ -85,14 +85,14 @@ contains
        ! Empirical dispersion correction in case of dft
        !CALL II_DFTDISP(LS%SETTING,DUMMY,1,1,0,LUPRI,1)
 
-       call typedef_set_default_setting(ls%setting,ls%input)
        !
        !   Setting DFT grid equal to zero in order to recalculate
        !   it at new geometry
        !
        If (ls%input%do_dft) then
-          ls%input%dalton%DFT%grdone = 0
+          ls%input%dalton%DFT%griddone = 0
        Endif
+       call typedef_set_default_setting(ls%setting,ls%input)
 
        if ((config%opt%cfg_start_guess == 'TRILEVEL')&
             &.or.(config%opt%cfg_start_guess == 'ATOMS')&
@@ -134,11 +134,11 @@ contains
            ! For Fock matrix dynamics we diagonalize extrapolated Fock matrix
            Write(*,*)'FMD is done'
            If (config%dynamics%FockMD) then
-              Call mat_init(CMO,D%nrow,D%ncol)
-              allocate(eival(D%nrow))
-              Call mat_diag_f(F,S,eival,CMO)
+              Call mat_init(CMO,D(1)%nrow,D(1)%ncol)
+              allocate(eival(D(1)%nrow))
+              Call mat_diag_f(F(1),S,eival,CMO)
               deallocate(eival)
-              Call mat_density_from_orbs(CMO,D,config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
+              Call mat_density_from_orbs(CMO,D(1),config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
               Call mat_free(CMO)
            Endif
        Endif
@@ -168,7 +168,7 @@ contains
        if (config%decomp%cfg_lcm) then
           ! get orbitals
           allocate(eival(nbast))
-          call mat_diag_f(F,S,eival,C)
+          call mat_diag_f(F(1),S,eival,C)
           deallocate(eival)
 
          ! localize orbitals
@@ -180,15 +180,15 @@ contains
 
        If (config%doDEC.AND.(.NOT.config%noDecEnergy)) then
           ! Get dec energy
-          call get_total_mp2energy_from_inputs(ls,F,D,S,C,E,Eerr)
+          call get_total_mp2energy_from_inputs(ls,F(1),D(1),S,C,E(1),Eerr)
        elseif(config%doESGopt)then
-          call get_excitation_energy(ls,config,F,D,S,ExcitE,&
+          call get_excitation_energy(ls,config,F(1),D(1),S,ExcitE,&
                & config%decomp%cfg_rsp_nexcit)       
-          Write(lupri,'(A,ES20.9)')'Ground state SCF Energy:',E
+          Write(lupri,'(A,ES20.9)')'Ground state SCF Energy:',E(1)
           Write(lupri,'(A,ES20.9)')'Excitation Energy      :',ExcitE
-          E = E + ExcitE
+          E(1) = E(1) + ExcitE
           Write(lupri,*)'==============================================='
-          Write(lupri,'(A,ES20.9)')'Exicted state Energy   :',E
+          Write(lupri,'(A,ES20.9)')'Exicted state Energy   :',E(1)
           Write(lupri,*)'==============================================='
        Endif
        !

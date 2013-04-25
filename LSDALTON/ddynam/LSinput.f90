@@ -106,6 +106,7 @@ Subroutine Deallocate_traj(Trajectory,TimRev,FMD)
 Implicit none
 Logical :: TimRev, FMD
 Type(trajtype) :: Trajectory
+integer :: i
    Call mem_dealloc (Trajectory%Velocities)
    Call mem_dealloc (Trajectory%Coordinates)
    Call mem_dealloc (Trajectory%Gradient)
@@ -119,6 +120,9 @@ Type(trajtype) :: Trajectory
    Endif            
 !
    If (FMD) then
+      Do i = 1, size(Trajectory%Fock_array)
+         Call mat_free(Trajectory%Fock_array(i))
+      Enddo
       Deallocate(Trajectory%Fock_array)
       Call mem_dealloc(Trajectory%fmd_coef)
    Endif

@@ -12,8 +12,8 @@ module lsmpi_type
        & init_globalmemvar, stats_mpi_mem, copy_to_mem_stats
 #ifdef VAR_LSMPI
   use infpar_module
-!  include 'mpif.h'
-  use mpi
+  include 'mpif.h'
+!  use mpi
 #endif
   INTERFACE ls_mpibcast_chunks
     MODULE PROCEDURE ls_mpibcast_realkV_parts44,ls_mpibcast_realkV_parts48,&
@@ -156,15 +156,20 @@ module lsmpi_type
   save
 #ifdef VAR_LSMPI
   integer(kind=ls_mpik) :: MPI_COMM_LSDALTON
+  logical :: LSMPIASYNCP
   integer,parameter :: LSMPIBROADCAST=1
   integer,parameter :: LSMPIREDUCTION=2
   integer,parameter :: LSMPIREDUCTIONmaster=3
   integer,parameter :: LSMPISENDRECV=4
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
-  integer,parameter :: SPLIT_MPI_MSG=2147483640
+#ifdef VAR_DEBUG
   !FOR DEBUGGING USE THE FOLLOWING LINE
-  !integer,parameter :: SPLIT_MPI_MSG=24
+  integer,parameter :: SPLIT_MPI_MSG=24
+#else
+  integer,parameter :: SPLIT_MPI_MSG=2147483640
+#endif
+  !integer conversion factor
 #ifdef VAR_INT64
 #ifdef VAR_LSMPI_32
   integer,parameter :: int_to_short=4
@@ -191,12 +196,15 @@ module lsmpi_type
      integer(kind=ls_mpik),pointer :: ranks(:)
   end type mpigroup
 #endif
+  real(realk) :: poketime=0.0E0_realk
+  integer(kind=long) :: poketimes = 0
 
 !$OMP THREADPRIVATE(AddToBuffer,iLog,iDP,iInt,iSho,iCha,&
 !$OMP nLog,nDP,nInteger,nShort,nCha,lsmpibufferDP,lsmpibufferInt,&
 !$OMP lsmpibufferSho,lsmpibufferLog,lsmpibufferCha)
 
 contains
+
 !var_lsmpi_32
 !############################################################
 !#
@@ -4927,6 +4935,7 @@ contains
 #ifdef VAR_LSMPI
     integer(kind=ls_mpik) :: o,n,ierr,I,t(1),tag_meminfo,count,dest,tag,from,root
     integer(kind=long) :: recvbuffer
+    real(realk) :: recvbuffer_real
     integer(kind=long),pointer :: longintbufferInt(:) 
 #ifdef VAR_INT64
     integer, parameter :: i2l = 1
@@ -4942,7 +4951,7 @@ contains
     IF(doprint)then
        if (infpar%mynum.eq.infpar%master) THEN
           !wake up slaves
-          call MPI_BCAST(LSMPIQUITINFO,o,MPI_INTEGER,n,MPI_COMM_LSDALTON,ierr)
+          call ls_mpibcast(LSMPIQUITINFO,infpar%master,MPI_COMM_LSDALTON)
        ENDIF
        count = 1
        root = 0
@@ -4996,13 +5005,33 @@ contains
     ENDIF
 
     if (infpar%mynum.eq.infpar%master) &
-    &    call MPI_BCAST(LSMPIQUIT,1,MPI_INTEGER,0,MPI_COMM_LSDALTON,ierr)
+       &call ls_mpibcast(LSMPIQUIT,infpar%master,MPI_COMM_LSDALTON)
 
 #ifdef VAR_CHEMSHELL
      ! jump out of LSDALTON if a slave (instead of STOP)
      if (infpar%mynum.ne.infpar%master) call lsdaltonjumpout(99)
 #else
+
+#ifdef VAR_DEBUG
+     count=1
+     root = infpar%master
+     recvbuffer = 0
+     recvbuffer_real = 0.0E0_realk
+     CALL MPI_REDUCE(poketime,recvbuffer_real,&
+            & count,MPI_DOUBLE_PRECISION,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
+     CALL MPI_REDUCE(poketimes,recvbuffer,&
+            & count,MPI_INTEGER8,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
+     if(infpar%mynum==infpar%master)then
+       print *,"CUMULATIVE MPI POKETIME",recvbuffer_real,recvbuffer,recvbuffer_real/(recvbuffer*1.0E0_realk)
+     endif
+#endif     
+
      call MPI_FINALIZE(ierr)
+     if(ierr/=0)then
+       write (*,*), "mpi_finalize returned",ierr
+       call LSMPI_MYFAIL(ierr)
+       call lsquit("ERROR(MPI_FINALIZE):non zero exit)",-1)
+     endif
      !stop all slaves
      if (infpar%mynum.ne.infpar%master) STOP
 #endif 
@@ -5632,6 +5661,21 @@ contains
     endif
 #endif
   end subroutine lsmpi_localallgatherv_realk4
+
+  subroutine lsmpi_poke()
+    implicit none
+    logical(kind=ls_mpik) :: flag
+    integer(kind=ls_mpik) :: ierr
+    real(realk) :: sta, sto
+#ifdef VAR_LSMPI
+    ierr = 0
+    sta=MPI_WTIME()
+    call mpi_iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,infpar%lg_comm,flag,status,ierr)
+    sto=MPI_WTIME()
+    poketime=poketime+sto-sta
+    poketimes = poketimes + 1
+#endif
+  end subroutine lsmpi_poke
 
 end module lsmpi_type
 

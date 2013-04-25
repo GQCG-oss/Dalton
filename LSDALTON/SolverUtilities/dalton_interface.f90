@@ -2127,24 +2127,25 @@ CONTAINS
 
    END SUBROUTINE di_get_overlap_and_H1
 
-   SUBROUTINE di_get_fock_LSDALTON(D,h1,F,Etotal,lupri,luerr,ls)
+   SUBROUTINE di_get_fock_LSDALTON(D,h1,F,ndmat,Etotal,lupri,luerr,ls)
    ! ===================================================================
    ! di_get_fock obtains total fock matrix and corresponding energy.
    ! WE have to go through the interface to dalton before the fock
    ! evaluator learns how to handle arbitrary-type arrays.
    ! ===================================================================
       IMPLICIT NONE
-      TYPE(Matrix), INTENT(IN)    :: H1, D
-      TYPE(Matrix), INTENT(INOUT) :: F
+      integer, INTENT(IN)         :: ndmat
+      TYPE(Matrix), INTENT(IN)    :: H1, D(ndmat)
+      TYPE(Matrix), INTENT(INOUT) :: F(ndmat)
       type(lsitem) :: ls
-      real(realk), INTENT(INOUT) :: Etotal
+      real(realk), INTENT(INOUT) :: Etotal(ndmat)
       !
-      real(realk)   :: edfty(1),fac,hfweight,EdXC
-      integer nbast, lupri,luerr,ndmat
+      real(realk)   :: edfty(ndmat),fac,hfweight,EdXC(ndmat)
+      integer nbast, lupri,luerr,idmat
       logical :: Dsym,ADMMexchange
-      TYPE(Matrix) :: K,dXC
+      TYPE(Matrix) :: K(ndmat),dXC(ndmat)
 
-      nbast = D%nrow
+      nbast = D(1)%nrow
       fac = 2E0_realk
       IF(matrix_type .EQ. mtype_unres_dense)fac = 1E0_realk
       Dsym = .TRUE. !symmetric Density matrix
@@ -2170,43 +2171,47 @@ CONTAINS
 
 
          !We do the full Coulomb part with Full density
-         call mat_zero(F)
-         ndmat = 1
+         do idmat=1,ndmat
+            call mat_zero(F(idmat))
+         enddo
          call II_get_coulomb_mat(LUPRI,LUERR,ls%SETTING,D,F,ndmat)  
-         WRITE(lupri,*)'The Coulomb energy contribution ',fac*0.5E0_realk*mat_dotproduct(D,F)
-
+         do idmat=1,ndmat
+            WRITE(lupri,*)'The Coulomb energy contribution ',fac*0.5E0_realk*mat_dotproduct(D(idmat),F(idmat))
+         enddo
 
          !Then we build the ADMM exact exchange matrix K and the XC correction dXC
-         call mat_init(K,nbast,nbast)
-         call mat_init(dXC,nbast,nbast)
-
-         call mat_zero(K)
-         call mat_zero(dXC)
-
-         CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D,K,dXC,ndmat,EdXC,dsym)
-         call mat_daxpy(1.E0_realk,K,F)
-         Etotal = fockenergy_f(F,D,H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC
-         call mat_daxpy(1.E0_realk,dXC,F)
-
-         call mat_free(K)
-         call mat_free(dXC)
-
+         do idmat=1,ndmat
+            call mat_init(K(idmat),nbast,nbast)
+            call mat_init(dXC(idmat),nbast,nbast)
+            call mat_zero(K(idmat))
+            call mat_zero(dXC(idmat))
+            CALL II_get_admm_exchange_mat(LUPRI,LUERR,ls%SETTING,ls%optlevel,D(idmat),K(idmat),dXC(idmat),1,EdXC(idmat),dsym)
+            call mat_daxpy(1.E0_realk,K(idmat),F(idmat))
+            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)+EdXC(idmat)
+            call mat_daxpy(1.E0_realk,dXC(idmat),F(idmat))
+            call mat_free(K(idmat))
+            call mat_free(dXC(idmat))
+         enddo
 ! *********************************************************************************
 ! *                              Regular case          
 ! *********************************************************************************
       ELSE
-         ndmat = 1
-         call II_get_Fock_mat(lupri,luerr,ls%setting,D,Dsym,F,ndmat,incremental_scheme)      
-         Etotal = fockenergy_f(F,D,H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+         call II_get_Fock_mat(lupri,luerr,ls%setting,D,Dsym,F,ndmat,ls%setting%scheme%incremental)
+         do idmat=1,ndmat
+            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+         enddo
       ENDIF
       IF(ls%setting%do_dft) THEN
-         ndmat = 1
-         nbast = D%nrow
+         nbast = D(1)%nrow
          call II_get_xc_fock_mat(lupri,luerr,ls%setting,nbast,D,F,Edfty,ndmat)
-         Etotal = Etotal + Edfty(1)
+         do idmat=1,ndmat
+            Etotal(idmat) = Etotal(idmat) + Edfty(idmat)
+         enddo
       ENDIF
       !** F = h + G
-      call mat_daxpy(1E0_realk,H1,F)
+      do idmat=1,ndmat
+         call mat_daxpy(1E0_realk,H1,F(idmat))
+      enddo
    END SUBROUTINE di_get_fock_LSDALTON
 
    real(realk) function fockenergy_F(F,D,H1,unres,pot_nuc,lupri)
@@ -2334,7 +2339,7 @@ CONTAINS
         ENDIF
         IF (ADMMGCBASIS) THEN
             ADMMexchange = .FALSE.
-            ENDIF
+        ENDIF
         IF (ADMMexchange) THEN 
             ! GdBs = J(B) + K(b) + X(B) - X(b)
             call di_GET_GbDsArray_ADMM(lupri,luerr,Bmat,GbDs,nBmat,Dmat,setting)
@@ -2463,7 +2468,6 @@ CONTAINS
             type(Matrix)           :: B2_AO(nBmat) !level 2 matrix
             type(Matrix)           :: D2_AO, TMPF3
             type(Matrix)           :: k2(nBmat),Gx2(nBmat),Gx3(nBmat)
-            type(Matrix)           :: Gx(nBmat)
             character(len=80)      :: WORD
             character(21)          :: L2file,L3file
             real(realk)            :: hfweight
@@ -2564,7 +2568,6 @@ CONTAINS
             !!****Calculation of Level 2 exchange gradient from
             !!     level 2 Density matrix starts here
             !ADMM (level 2) AO settings 
-            call set_default_AOs(AO2,AOdfold)
                 
             AO3 = AORdefault ! assuming optlevel.EQ.3
             call mat_init(D2_AO,nbast2,nbast2)
@@ -2572,6 +2575,7 @@ CONTAINS
             call transform_D3_to_D2(Dmat_AO,D2_AO,&
                 & setting,lupri,luerr,nbast2,nbast,&
                 & AO2,AO3,setting%scheme%ADMM_MCWEENY,GC2,GC3)
+            call mat_init(TMPF3,nbast,nbast)
             DO ibmat=1,nBmat
                 !!We transform the full Density to a level 2 density D2
                 call mat_init(B2_AO(ibmat),nbast2,nbast2)
@@ -2583,10 +2587,11 @@ CONTAINS
                  ! K2(b): LEVEL 2 exact exchange matrix
                 call mat_init(k2(ibmat),nbast2,nbast2)
                 call mat_zero(k2(ibmat))
-                call mat_init(TMPF3,nbast,nbast)
+
                 call mat_zero(TMPF3)
                 ! Take Dsym later on as input!!!!!!!
                 Dsym = .FALSE.
+                call set_default_AOs(AO2,AOdfold)
                 call II_get_exchange_mat(lupri,luerr,setting,B2_AO(ibmat),&
                                             & 1,Dsym,k2(ibmat))
                 !Transform level 2 exact-exchange matrix to level 3
@@ -2601,13 +2606,8 @@ CONTAINS
                 WORD = "BX"
                 !Here hfweight is only used as a dummy variable
                 call II_DFTsetFunc(WORD(1:80),hfweight) 
-                
-                call get_quadfilename(L3file,nbast,setting%node)
-                call get_quadfilename(L2file,nbast2,setting%node)
-                
-                grid_done = setting%scheme%dft%grdone.EQ.1
-                IF (grid_done) call get_dft_grid(setting%scheme%dft%L2grid,&
-                                                & L2file,setting%scheme%dft)
+                !choose the ADMM Level 2 grid
+                setting%scheme%dft%igrid = Grid_ADMML2
                      
                 !!Only test electrons if the D2 density
                 ! matrix is McWeeny purified
@@ -2628,10 +2628,9 @@ CONTAINS
                 call mat_daxpy(-setting%scheme%exchangeFactor,TMPF3,K(ibmat))
                 setting%scheme%dft%testNelectrons = testNelectrons
 
-                !Re-set to level 3 grid, assuming it is calculated
-                call get_dft_grid(setting%scheme%dft%L3grid,&
-                                        & L3file,setting%scheme%dft)
-                
+                !Re-set to level 3 grid
+                setting%scheme%dft%igrid = Grid_Default
+
                 !!Only test electrons if the D2 density
                 ! matrix is McWeeny purified
                 testNelectrons = setting%scheme%dft%testNelectrons
@@ -2641,6 +2640,7 @@ CONTAINS
                 !Level 3 XC matrix
                 call mat_init(Gx3(ibmat),nbast,nbast)
                 call mat_zero(Gx3(ibmat))
+                call set_default_AOs(AO3,AOdfold)
                 call II_get_xc_linrsp(lupri,luerr,&
                       & setting,nbast,Bmat_AO(ibmat),Dmat_AO,Gx3(ibmat),1) 
                 call mat_daxpy(setting%scheme%exchangeFactor,&

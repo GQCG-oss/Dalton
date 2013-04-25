@@ -595,7 +595,7 @@ cx      WRITE(LUPRI,*)'                  MASSVELO   !(or DARWIN)'
 
        RETURN
       END
-     RETURN
+!     RETURN
 C...
 c    ---------------------------------------
 c    ---------------------------------------

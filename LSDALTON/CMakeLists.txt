@@ -47,6 +47,7 @@ endif()
 
 if(cmake_build_type_tolower STREQUAL "debug")
 	add_definitions(-DVAR_DEBUGINT)
+	add_definitions(-DVAR_DEBUG)
 endif()
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
@@ -106,7 +107,8 @@ endif()
 include(Archs)
 include(Sources)
 include(Compilers)
-include(ConfigExternal)
+#this does not always work. TK
+#include(ConfigExternal)
 
 #add_subdirectory(LSint)
 set(LIBS)

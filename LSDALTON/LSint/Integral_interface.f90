@@ -4659,7 +4659,7 @@ logical             :: ADMMexchange,testNelectrons,unres,grid_done
 real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3
 character(21)       :: L2file,L3file
-
+IF(ndmat.GT.1)call lsquit('II_get_admm_exchange_mat ndmat.GT.1',-1)
 nbast = F%nrow
 unres = matrix_type .EQ. mtype_unres_dense
 
@@ -4675,6 +4675,16 @@ ELSE
 ENDIF
 
 nbast2 = getNbasis(AO2,Contractedinttype,setting%MOLECULE(1)%p,6)
+IF (nbast .EQ. nbast2) THEN
+   ! This avoids a simple issue when basis sets have the same size:
+   ! the filename to store the grid will be the same, overwritting the 
+   ! content of the ADMM basis with the regular basis and vice versa.
+   ! this should be fixed by using the actual name of the basis set into the 
+   ! filename storing the grid infos. 
+      call lsquit('II_get_admm_exchange_mat: special forbidden case where the &
+             &regular and ADMM auxiliary basis function &
+             &have the same number of basis function',-1)
+ENDIF
 
 call mat_init(D2(1),nbast2,nbast2)
 call mat_init(F2(1),nbast2,nbast2)
@@ -4726,13 +4736,8 @@ call DFTREPORT(lupri)
 !use this call to add a functional instead of replacing it. 
 !call II_DFTaddFunc(setting%scheme%dft%dftfunc,hfweight)
 
-call get_quadfilename(L3file,nbast,setting%node)
-call get_quadfilename(L2file,nbast2,setting%node)
-
-! The structure here assumes that neighter L2grid or L3grid has been set the first time the
-! II_get_admm_exchange_mat is called
-grid_done = setting%scheme%dft%grdone.EQ.1
-IF (grid_done) call get_dft_grid(setting%scheme%dft%L2grid,L2file,setting%scheme%dft)
+!choose the ADMM Level 2 grid
+setting%scheme%dft%igrid = Grid_ADMML2
   
 !Only test electrons if the D2 density matrix is McWeeny purified
 testNelectrons = setting%scheme%dft%testNelectrons
@@ -4745,14 +4750,8 @@ call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC
 call mat_daxpy(-setting%scheme%exchangeFactor,TMPF,dXC)
 setting%scheme%dft%testNelectrons = testNelectrons
 
-!Store level 2 grid if this is the first time it has been set
-IF (.NOT.grid_done)  call store_dft_grid(setting%scheme%dft%L2grid,L2file,setting%scheme%dft)
-!Re-set to level 3 grid if already calculated, or indicate that it should be calculated
-IF (grid_done) THEN
-  call get_dft_grid(setting%scheme%dft%L3grid,L3file,setting%scheme%dft)
-ELSE
-  setting%scheme%dft%grdone = 0
-ENDIF
+!Re-set to default (level 3) grid
+setting%scheme%dft%igrid = Grid_Default
 
 call mat_free(TMPF)
 call mat_free(F2(1))
@@ -4769,9 +4768,6 @@ CALL mat_daxpy(setting%scheme%exchangeFactor,F3(1),dXC)
 CALL mat_free(F3(1))
 
 EdXC = (EX3(1)-EX2(1))*setting%scheme%exchangeFactor
-
-!Store level 3 grid if this is the first time it has been set
-IF (.NOT.grid_done) call store_dft_grid(setting%scheme%dft%L3grid,L3file,setting%scheme%dft)
 
 !Restore dft functional to original
 IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%dftfunc,hfweight)
@@ -4974,13 +4970,11 @@ DO idmat=1,ndrhs
    WORD = "BX"
    call II_DFTsetFunc(WORD(1:80),hfweight) !Here hfweight is only used as a dummy variable
    
-   call get_quadfilename(L3file,nbast,setting%node)
-   call get_quadfilename(L2file,nbast2,setting%node)
-   
-   grid_done = setting%scheme%dft%grdone.EQ.1
-   IF (grid_done) call get_dft_grid(setting%scheme%dft%L2grid,L2file,setting%scheme%dft)
-     
-   !!Only test electrons if the D2 density matrix is McWeeny purified
+   !choose the ADMM Level 2 grid
+   setting%scheme%dft%igrid = Grid_ADMML2
+
+   !Only test electrons if the D2 density matrix is McWeeny purified
+
    testNelectrons = setting%scheme%dft%testNelectrons
    setting%scheme%dft%testNelectrons = .FALSE. !setting%scheme%ADMM_MCWEENY
    
@@ -4996,14 +4990,9 @@ DO idmat=1,ndrhs
    call DAXPY(3*nAtoms,-setting%scheme%exchangeFactor,grad_xc2,1,admm_Kgrad,1)
    call mem_dealloc(grad_xc2)
    
-   !Re-set to level 3 grid, assuming it is calculated
-   IF (grid_done) THEN
-     call get_dft_grid(setting%scheme%dft%L3grid,L3file,setting%scheme%dft)
-   ELSE
-     call store_dft_grid(setting%scheme%dft%L2grid,L2file,setting%scheme%dft)
-     setting%scheme%dft%grdone = 0
-   ENDIF
-  
+
+   !Re-set to level 3 grid
+   setting%scheme%dft%igrid = Grid_Default
    
    !****Calculation of Level 3 XC gradient
    call set_default_AOs(AORold,AOdfold)  !Revert back to original settings and free stuff 
@@ -5019,30 +5008,27 @@ DO idmat=1,ndrhs
    ! set back the default choice for testing the nb. of electrons
    setting%scheme%dft%testNelectrons = testNelectrons
    
-   IF (.NOT.grid_done) call store_dft_grid(setting%scheme%dft%L3grid,L3file,setting%scheme%dft)
+   ! Additional (reorthonormalisation like) projection terms coming from the derivative of the small d2 Density matrix
+   call mem_alloc(ADMM_proj,3,nAtoms)
+   ADMM_proj = 0E0_realk
+   call mat_init(zeromat,nbast2,nbast2)
+   call mat_zero(zeromat)
+
+   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,zeromat,DmatLHS(idmat)%p,D2,&
+        &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
+
+   call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
+   call get_ADMM_K_gradient_projection_term(ADMM_proj,zeromat,xc2,DmatLHS(idmat)%p,D2,&
+        &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
+   call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
 
 
-! Additional (reorthonormalisation like) projection terms coming from the derivative of the small d2 Density matrix
-call mem_alloc(ADMM_proj,3,nAtoms)
-ADMM_proj = 0E0_realk
-call mat_init(zeromat,nbast2,nbast2)
-call mat_zero(zeromat)
-
-call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,zeromat,DmatLHS(idmat)%p,D2,&
-    &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
-
-call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
-call get_ADMM_K_gradient_projection_term(ADMM_proj,zeromat,xc2,DmatLHS(idmat)%p,D2,&
-    &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
-call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
-
-
- !FREE MEMORY
-call mat_free(zeromat)
-call mem_dealloc(ADMM_proj)
-call mat_free(k2)
-call mat_free(xc2)
-call mat_free(D2)
+   !FREE MEMORY
+   call mat_free(zeromat)
+   call mem_dealloc(ADMM_proj)
+   call mat_free(k2)
+   call mat_free(xc2)
+   call mat_free(D2)
 ENDDO !idmat
 
 call DSCAL(3*nAtoms,0.25_realk,admm_Kgrad,1)
@@ -5841,20 +5827,19 @@ END SUBROUTINE II_get_coulomb_and_exchange_mat_single
 !> \param Dsym is the density symmetric
 !> \param F the exchange matrix
 !> \param ndmat the number of density matrices
-SUBROUTINE II_get_Fock_mat_array(LUPRI,LUERR,SETTING,D,Dsym,F,ndmat,do_incremental_scheme)
+SUBROUTINE II_get_Fock_mat_array(LUPRI,LUERR,SETTING,D,Dsym,F,ndmat,setting_incremental_scheme)
 IMPLICIT NONE
 integer,intent(in)          :: ndmat
 TYPE(MATRIX),intent(in)     :: D(ndmat)
 TYPE(MATRIX),intent(inout)  :: F(ndmat)
 TYPE(LSSETTING),intent(inout)  :: SETTING
 INTEGER,intent(in)    :: LUPRI,LUERR
-LOGICAL,intent(in)    :: Dsym,do_incremental_scheme
+LOGICAL,intent(in)    :: Dsym,setting_incremental_scheme
 !
 TYPE(MATRIX)          :: D_AO(ndmat),K(ndmat)
 logical               :: default,inc_scheme,do_inc
 real(realk)           :: TS,TE,fac,maxelm
 integer               :: i
-
 default = SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J.OR.SETTING%SCHEME%JENGINE &
      &      .OR. SETTING%SCHEME%LinK .OR. (matrix_type .EQ. mtype_unres_dense).OR. &
      &      SETTING%SCHEME%CAM
@@ -5862,10 +5847,13 @@ default = SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J.OR.SETTING%SCHEME%JENG
 fac = 2E0_realk
 IF(matrix_type .EQ. mtype_unres_dense)fac = 1E0_realk
 call get_incremental_settings(inc_scheme,do_inc)
-IF(do_incremental_scheme.AND..NOT.inc_scheme)THEN
+!setting_incremental_scheme   from setting 
+!incremental_scheme = inc_scheme = input keyword .INCREM activated
+!do_increment       = do_inc     = increm activated 
+IF(setting_incremental_scheme.AND..NOT.inc_scheme)THEN
    call lsquit('II_get_Fock_mat incremental scheme inconsistensy',lupri)
 ENDIF
-IF(do_incremental_scheme.AND.(ndmat.GT.1.AND.(matrix_type .NE. mtype_unres_dense)))THEN
+IF(setting_incremental_scheme.AND.(ndmat.GT.1.AND.(matrix_type .NE. mtype_unres_dense)))THEN
    call lsquit('II_get_Fock_mat incremental scheme inconsistensy2',lupri)
 ENDIF
 
@@ -5877,24 +5865,23 @@ IF(setting%IntegralTransformGC)THEN
       CALL mat_init(D_AO(I),D(1)%nrow,D(1)%ncol)
       call GCAO2AO_transform_matrixD2(D(I),D_AO(I),setting,lupri)
    ENDDO
-   IF(do_incremental_scheme)THEN
+   IF(setting_incremental_scheme)THEN
       call mat_assign(incrDdiff(1),D_AO(1))
       IF(do_inc)THEN !do increment
          call mat_daxpy(-1E0_realk,incrD0(1),incrDdiff(1)) !incrDdiff is now the difference density
       ELSE
-         !test is we should activate increm
+         !test if we should activate increm
          call mat_daxpy(-1E0_realk,incrD0(1),incrDdiff(1)) !incrDdiff is now the difference density 
-         call activate_incremental(lupri)
+         call activate_incremental(lupri,do_inc)
          IF(.NOT.do_inc)THEN
             !we should not activate increm so we set incrDdiff = D_AO
             call mat_assign(incrDdiff(1),D_AO(1))
          ENDIF
       ENDIF
-      setting%scheme%incremental = do_inc
       IF (default) THEN
          call II_get_coulomb_mat(LUPRI,LUERR,SETTING,incrDdiff,F,ndmat)   
          DO I=1,ndmat
-            IF(do_inc.AND.do_incremental_scheme)THEN ! dot(D_AO * J_AO(incrDdiff))
+            IF(do_inc.AND.setting_incremental_scheme)THEN ! dot(D_AO * J_AO(incrDdiff))
                WRITE(lupri,*)'The increment Coulomb energy contribution ',&
                     & fac*0.5E0_realk*mat_dotproduct(D_AO(I),F(I))
             ELSE           ! dot(D_AO * J_AO(D_AO))
@@ -5912,7 +5899,7 @@ IF(setting%IntegralTransformGC)THEN
          ENDIF
          call II_get_exchange_mat(LUPRI,LUERR,SETTING,incrDdiff,ndmat,Dsym,K)
          DO i=1,ndmat
-            IF(do_inc.AND.do_incremental_scheme)THEN ! dot(D_AO * K_AO(incrDdiff))
+            IF(do_inc.AND.setting_incremental_scheme)THEN ! dot(D_AO * K_AO(incrDdiff))
                WRITE(lupri,*)'The increment Exchange energy contribution ',&
                     & mat_dotproduct(D_AO(i),K(i))
             ELSE           ! dot(D_AO * K_AO(D_AO)) 
@@ -5925,7 +5912,7 @@ IF(setting%IntegralTransformGC)THEN
       ELSE 
          call II_get_coulomb_and_exchange_mat(LUPRI,LUERR,SETTING,incrDdiff,F,ndmat)
          DO i=1,ndmat
-            IF(do_inc.AND.do_incremental_scheme)THEN ! dot(D_AO * F_AO(incrDdiff))
+            IF(do_inc.AND.setting_incremental_scheme)THEN ! dot(D_AO * F_AO(incrDdiff))
                WRITE(lupri,*)'The increment J+K energy contribution ',&
                     &-mat_dotproduct(D_AO(i),F(i))
             ELSE           ! dot(D_AO * F_AO(D_AO))
@@ -5937,7 +5924,6 @@ IF(setting%IntegralTransformGC)THEN
       IF(do_inc)THEN !obtain full AO fock matric F = incrF0 + incremental F 
          call mat_daxpy(1E0_realk,incrF0(1),F(1))
       ENDIF
-      setting%scheme%incremental=.FALSE.
    ELSE
       IF (default) THEN
          call II_get_coulomb_mat(LUPRI,LUERR,SETTING,D_AO,F,ndmat)   
@@ -5980,24 +5966,23 @@ IF(setting%IntegralTransformGC)THEN
    ENDDO
    setting%IntegralTransformGC = .TRUE. !back to original value
 ELSE
-   IF(do_incremental_scheme)THEN
+   IF(setting_incremental_scheme)THEN
       call mat_assign(incrDdiff(1),D(1))
       IF(do_inc)THEN !do increment
          call mat_daxpy(-1E0_realk,incrD0(1),incrDdiff(1)) !incrDdiff is now the difference density 
       ELSE
          !test is we should activate increm
          call mat_daxpy(-1E0_realk,incrD0(1),incrDdiff(1)) !incrDdiff is now the difference density 
-         call activate_incremental(lupri)
+         call activate_incremental(lupri,do_inc)
          IF(.NOT.do_inc)THEN
             !we should not activate increm so we set incrDdiff = D_AO
             call mat_assign(incrDdiff(1),D(1))
          ENDIF
       ENDIF
-      setting%scheme%incremental = do_inc
       IF (default) THEN
          call II_get_coulomb_mat(LUPRI,LUERR,SETTING,incrDdiff,F,ndmat)   
          DO I=1,ndmat
-            IF(do_inc.AND.do_incremental_scheme)THEN ! dot(D * J(incrDdiff))
+            IF(do_inc.AND.setting_incremental_scheme)THEN ! dot(D * J(incrDdiff))
                WRITE(lupri,*)'The increment Coulomb energy contribution ',&
                     &fac*0.5E0_realk*mat_dotproduct(D(I),F(I))
             ELSE           ! dot(D * J(D))
@@ -6014,7 +5999,7 @@ ELSE
          ENDIF
          call II_get_exchange_mat(LUPRI,LUERR,SETTING,incrDdiff,ndmat,Dsym,K)
          DO i=1,ndmat
-            IF(do_inc.AND.do_incremental_scheme)THEN ! dot(D * K(incrDdiff))
+            IF(do_inc.AND.setting_incremental_scheme)THEN ! dot(D * K(incrDdiff))
                WRITE(lupri,*)'The increment Exchange energy contribution ',-mat_dotproduct(D(i),K(i))
             ELSE           ! dot(D * K(D))
                WRITE(lupri,*)'The Exchange energy contribution ',-mat_dotproduct(D(i),K(i))
@@ -6025,7 +6010,7 @@ ELSE
       ELSE 
          call II_get_coulomb_and_exchange_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
          DO i=1,ndmat
-            IF(do_inc.AND.do_incremental_scheme)THEN ! dot(D * F(incrDdiff))
+            IF(do_inc.AND.setting_incremental_scheme)THEN ! dot(D * F(incrDdiff))
                WRITE(lupri,*)'The increment J+K energy contribution ',-mat_dotproduct(D(i),F(i))
             ELSE           ! dot(D * F(D))
                WRITE(lupri,*)'The J+K energy contribution ',-mat_dotproduct(D(i),F(i))
@@ -6035,7 +6020,6 @@ ELSE
       IF(do_inc)THEN !obtain full AO fock matric F = incrF0 + incremental F 
          call mat_daxpy(1E0_realk,incrF0(1),F(1))
       ENDIF
-      setting%scheme%incremental=.FALSE.
    ELSE
       IF (default) THEN
          call II_get_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)   
@@ -6087,18 +6071,18 @@ END SUBROUTINE II_get_Fock_mat_array
 !> \param Dsym is the density symmetric
 !> \param F the exchange matrix
 !> \param ndmat the number of density matrices
-SUBROUTINE II_get_Fock_mat_single(LUPRI,LUERR,SETTING,D,Dsym,F,ndmat,do_incremental_scheme)
+SUBROUTINE II_get_Fock_mat_single(LUPRI,LUERR,SETTING,D,Dsym,F,ndmat,setting_incremental_scheme)
 IMPLICIT NONE
 integer,intent(in)          :: ndmat
 TYPE(MATRIX),intent(in)     :: D
 TYPE(MATRIX),intent(inout)  :: F
 TYPE(LSSETTING),intent(inout)  :: SETTING
 INTEGER,intent(in)    :: LUPRI,LUERR
-LOGICAL,intent(in)    :: Dsym,do_incremental_scheme
+LOGICAL,intent(in)    :: Dsym,setting_incremental_scheme
 TYPE(MATRIX)  :: Farray(ndmat)
 !NOT OPTIMAL USE OF MEMORY OR ANYTHING
 call mat_init(Farray(1),F%nrow,F%ncol)
-call II_get_Fock_mat_array(LUPRI,LUERR,SETTING,(/D/),Dsym,Farray,ndmat,do_incremental_scheme)
+call II_get_Fock_mat_array(LUPRI,LUERR,SETTING,(/D/),Dsym,Farray,ndmat,setting_incremental_scheme)
 call mat_assign(F,Farray(1))
 call mat_free(Farray(1))
 END SUBROUTINE II_get_Fock_mat_single

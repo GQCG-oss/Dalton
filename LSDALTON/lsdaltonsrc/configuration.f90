@@ -29,8 +29,8 @@ use diagonalization, only: diag_lshift_dorth, &
 use decompMod, only: decomp_set_default_config
 use files, only: lsopen,lsclose
 use matrix_operations, only: mat_select_type, matrix_type, &
-     & mtype_symm_dense, mtype_dense, mtype_sparse_block, mtype_sparse1, &
-     & mtype_unres_dense, mtype_unres_sparse1, mtype_csr, mtype_scalapack
+     & mtype_symm_dense, mtype_dense, mtype_sparse_block, &
+     & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input
 use dec_typedef_module,only: DECinfo
@@ -43,6 +43,7 @@ use readmolefile, only: read_molfile_and_build_molecule
 use IntegralInterfaceMOD, only: ii_get_nucpot
 use ks_settings, only: ks_free_incremental_fock
 use memory_handling, only: mem_alloc,mem_dealloc
+use dft_typetype
 #ifdef VAR_LSMPI
 use infpar_module
 use lsmpi_mod
@@ -166,7 +167,6 @@ implicit none
    call av_shutdown(config%av)
    call free_Moleculeinfo(config%Molecule)
    call free_MCDinputitem(config%response%MCDinput)
-
 end subroutine config_shutdown
 
 subroutine config_free(config)
@@ -403,6 +403,7 @@ DO
 				 config%davidSCF%stepsize=0.5
 				 config%davidSCF%arh_inp_linesearch=.false.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
+            CASE('.ARH DEBUG');  config%davidSCF%arh_davidson_debug=.true.
             CASE('.ARH(LS) DAVID');  config%davidSCF%arh_davidson=.true.
                                  config%davidSCF%arh_lintrans = .true.
 				 config%davidSCF%precond=.true.
@@ -515,6 +516,11 @@ DO
                                  config%davidOrbLoc%precond=.true.
             CASE('.TEST PFM');   config%davidOrbLoc%PFM_input%TESTCASE = .true.
                                  config%decomp%cfg_mlo = .true.
+            CASE('.ORBITAL LOCALITY'); config%davidOrbLoc%all_orb_locality=.true.
+	    CASE('.ORBITAL PLOT'); config%davidOrbLoc%make_orb_plot=.true.
+	                          READ(LUCMD,*) config%davidOrbLoc%plt_orbital
+            CASE('.ORBLOC DEBUG');config%davidOrbLoc%orb_debug = .true.
+	                         config%davidOrbLoc%PM_input%orb_debug = .true.
 	    CASE('.NoPrecond');  config%davidOrbLoc%precond=.false.
 	                         config%davidSCF%precond=.false.
                                  config%davidOrbLoc%PM_input%precond=.false.
@@ -623,7 +629,6 @@ DO
             CASE('.SOEOGC');     config%soeoinp%cfg_grandcan = .true.
             CASE('.SOEODIPOLE'); config%soeoinp%cfg_dipole = .true.
             !END SOEO keywords
-            CASE('.SPARSE');     CALL mat_select_type(mtype_sparse1,lupri)
             CASE('.SPARSETEST'); config%sparsetest = .true.
             CASE('.SPIN');       READ(LUCMD,*) config%decomp%spin
             CASE('.STABILITY');  config%decomp%cfg_check_converged_solution = .true.
@@ -631,6 +636,7 @@ DO
             CASE('.STAB MAXIT'); READ(LUCMD,*) config%decomp%cfg_check_maxit
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
+            CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
             CASE('.TRSCF');      config%opt%CFG_density_method = config%opt%CFG_F2D_ROOTHAAN
                                  config%diag%cfg_lshift = diag_lshift_dorth
                                  config%av%cfg_lshift = diag_lshift_dorth
@@ -814,6 +820,10 @@ ENDDO
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
 
+if(config%solver%do_dft)THEN
+   call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
+   call init_dftfunc(config%integral%DFT)
+endif
 ! Check that DEC input is consistent with geometry optimization and orbital localization.
 call DEC_meaningful_input(config)
 
@@ -3349,6 +3359,20 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    config%opt%potnuc = POTNUC
    ls%input%potnuc = POTNUC
 
+   IF(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens)THEN
+      config%opt%cfg_oao_gradnrm = .TRUE.
+   ELSEIF(config%opt%cfg_density_method == config%opt%cfg_f2d_roothaan)THEN
+      config%opt%cfg_oao_gradnrm = .FALSE.
+   ELSEIF(config%opt%cfg_density_method == config%opt%cfg_f2d_arh)THEN
+      config%opt%cfg_oao_gradnrm = .TRUE.
+   ELSE
+      config%opt%cfg_oao_gradnrm = .TRUE.
+   ENDIF
+   IF(config%opt%cfg_oao_gradnrm)THEN
+      Write(config%lupri,*)'The SCF Convergence Criteria is applied to the gradnorm in OAO basis'
+   ELSE
+      Write(config%lupri,*)'The SCF Convergence Criteria is applied to the gradnorm in AO basis'
+   ENDIF
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)

@@ -129,19 +129,20 @@ end subroutine trilevel_diag_per_ang
       TYPE(Matrix),intent(in)  :: H1
       integer,intent(in) :: newlupri,newluerr
       real(realk)   :: edfty(1), edfty_a, edfty_b
-      integer nbast
+      integer nbast,ndmat
       logical  :: Dsym
 
 !     Two-electron part: G(D)
 !
 !     Coulomb and exchange
       Dsym = .TRUE.!symmetric Density matrix
-      call II_get_Fock_mat(newlupri,newluerr,setting,D,Dsym,F,1,.FALSE.)
+      ndmat = 1
+      call II_get_Fock_mat(newlupri,newluerr,setting,D,Dsym,F,ndmat,.FALSE.)
       Etotal = trilevel_fockenergy_f(opt%cfg_unres,F,D,H1)
 !     Exchange-correlation
       if (opt%calctype == opt%dftcalc) then
          nbast = D%nrow
-         call II_get_xc_fock_mat(newlupri,newluerr,setting,nbast,D,F,Edfty,1)
+         call II_get_xc_fock_mat(newlupri,newluerr,setting,nbast,D,F,Edfty,ndmat)
          Etotal = Etotal + Edfty(1)
       ENDIF
 
@@ -193,7 +194,7 @@ SUBROUTINE trilevel_gcscfloop(opt,D,CMO,H1,F,S,ai,setting,molecule,basis,iatom,n
   use linsca_diis 
 
    implicit none
-   type(optItem),intent(in) :: opt
+   type(optItem) :: opt
    type(trilevel_atominfo),intent(in) :: ai
    integer,intent(in) :: iatom
    type(lssetting),intent(inout) :: setting
@@ -206,14 +207,15 @@ SUBROUTINE trilevel_gcscfloop(opt,D,CMO,H1,F,S,ai,setting,molecule,basis,iatom,n
    TYPE(util_HistoryStore) :: queue
    real(realk) :: E, gradnrm
    integer     :: iteration
-   logical :: energy_converged,firsttime
+   logical :: energy_converged,firsttime,cfg_oao_gradnrm
    integer :: itype,nbast,iAO
    type(avItem) :: av
    type(moleculeinfo),target :: atomicmolecule
 
    itype = ai%UATOMTYPE(iatom)
    nbast = molecule%atom(ai%NATOM(iatom))%nContOrbREG
-
+   cfg_oao_gradnrm = opt%cfg_oao_gradnrm
+   opt%cfg_oao_gradnrm = .FALSE.
    call av_set_default_config(av)
    av%lupri = opt%lupri
    av%CFG_averaging = av%CFG_AVG_DIIS
@@ -265,6 +267,7 @@ SUBROUTINE trilevel_gcscfloop(opt,D,CMO,H1,F,S,ai,setting,molecule,basis,iatom,n
   CALL mat_free(grad)
   call scf_stats_shutdown
   call free_moleculeinfo(atomicmolecule)
+  opt%cfg_oao_gradnrm = cfg_oao_gradnrm
 
 END SUBROUTINE trilevel_gcscfloop
 
@@ -881,7 +884,7 @@ use typedeftype, only: lssetting, lsitem
 use molecule_type, only: moleculeinfo
 use basis_type, only: basisinfo, basissetinfo
 IMPLICIT NONE
-type(optItem),intent(in) :: opt
+type(optItem)       :: opt
 INTEGER             :: I,LUPRI,LUERR,IPRINT
 TYPE(lsitem),intent(inout) :: ls
 type(trilevel_atominfo) :: ai
@@ -945,7 +948,7 @@ do i=1, ai%ND
    atomicSetting%scheme%LINK = .FALSE.
    atomicSetting%scheme%DFT%CS00 = .FALSE.
    atomicSetting%scheme%DFT%LB94 = .FALSE.
-   atomicSetting%scheme%DFT%grdone = 0 !the DFT grid should be made for all unique atoms
+   atomicSetting%scheme%DFT%griddone = 0 !the DFT grid should be made for all unique atoms
 
    !build atomic overlap
    CALL II_get_overlap(lupri,luerr,atomicSetting,S)
@@ -1369,7 +1372,7 @@ END SUBROUTINE trilevel_basis
 !> \param D density matrix 
 !> \param H1 one electron contribution to the fock matrix
 !> \param ls lsitem structure containing all info about integrals,basis,..
-SUBROUTINE atoms_start(config,D,H1,S,ls)
+SUBROUTINE atoms_start(config,D,H1,S,ls,ndmatalloc)
 use configurationType
 use trilevel_module
 use typedeftype, only: lssetting, lsitem
@@ -1385,105 +1388,86 @@ implicit none
 type(ConfigItem),intent(in) :: config
 TYPE(lsitem),intent(inout) :: ls
 Type(Matrix),target        :: H1
-Type(Matrix),intent(inout) :: D,S
+Type(Matrix),intent(inout) :: D(ndmatalloc),S
+integer,intent(in)         :: ndmatalloc
 !
-Type(Matrix) :: Dval,F,Cmo,Dpure
+Type(Matrix) :: Dval,F(1),Cmo,Dpure
 TYPE(trilevel_atominfo) :: ai
-real(realk)         :: E,trace
+real(realk)         :: E(1),trace
 real(realk),pointer :: eival(:) 
-integer      :: nbast,Nelectrons,sz
+integer      :: nbast,Nelectrons,sz,ndmat
 logical      :: dalink,DiagFmat,McWeeny,purify_failed,CS00
 real(realk),parameter :: THRNEL=1E-3_realk
 real(realk),external :: HOMO_energy
-  !a diagonal matrix with occupation numbers on the diagonal
-  call trilevel_ATOMS_density(D,ls,ls%input%basis%regular)
+ndmat = 1
+!a diagonal matrix with occupation numbers on the diagonal
+call trilevel_ATOMS_density(D(1),ls,ls%input%basis%regular)
 
-  nbast = ls%input%BASIS%REGULAR%nbast
+nbast = ls%input%BASIS%REGULAR%nbast
 
-  CALL mat_init(F,nbast,nbast)
-  CALL mat_init(Cmo,nbast,nbast)
+CALL mat_init(F(1),nbast,nbast)
+CALL mat_init(Cmo,nbast,nbast)
 
-  DiagFmat = .FALSE.
-  McWeeny = .FALSE.
-  IF(McWeeny)THEN
-     call mat_init(Dpure,D%nrow,D%ncol)
-     call mat_assign(Dpure,D)
-     call McWeeney_purify(S,Dpure,purify_failed)     
-     DiagFmat = purify_failed
-     if (.not.purify_failed) then
-        Nelectrons = 2*config%decomp%nocc + config%decomp%nactive
-        trace = mat_dotproduct(D,S)-Nelectrons
-        if ( abs(2.0*trace) .gt. THRNEL*Nelectrons)then
-           write(config%lupri,*)'Warning: Descrepancy between 2.0*Tr(DS) after purification and Nelectrons '
-           write(config%lupri,*)'2.0*Tr(DS) = ',2.0*trace,' Nelectrons = ', Nelectrons
-           write(config%lupri,*)'We fall back to a diagonalization'
-           DiagFmat = .TRUE.
-        else
-           call mat_assign(D,Dpure)
-        endif
-     endif
-     call mat_free(Dpure)
-  ELSE
-     DiagFmat = .TRUE.
-  ENDIF
+!we could do McWeeny purification and avoid a Fock matrix build
+!and a diagonalization, but in most cases the Density is too bad
+!that the McWeeny purification works. A call to McWeeney_purify
+!simply do not converge. But if a better scheme is devised/implemented
+!it could be an option.
 
-  IF(DiagFmat)THEN
-     !We cannot use DaLink in the 0'th iteration - this gives a diagonal Fock matrix
-     ! => bad starting guess. If DaLink is requested, turn it off and then back on after
-     ! the 0'th iteration. /Stinne, Thomas, Brano 19/11-2009
-     dalink = .false.
-     if (ls%setting%scheme%DALINK) then
-        ls%setting%scheme%DALINK = .FALSE.
-        dalink = .true.
-     endif
-     CS00 = .false.
-     if (ls%setting%scheme%DFT%CS00) then
-        ls%setting%scheme%DFT%CS00 = .FALSE.
-        CS00 = .true.
-     endif
-     ls%setting%scheme%DFT%CS00eHOMO = config%diag%eHOMO
-     ls%setting%scheme%DFT%DFTELS = 1E0_realk !the density is not idempotent so it would giv e a wrong number of electrons
-     ! Iteration 0 : The density matrix is not idempotent; a diagonalization gives a proper 
-     ! idempotent density matrix  
-     call di_get_fock_LSDALTON(D,H1,F,E,config%decomp%lupri,config%decomp%luerr,ls)
-     write(*,*) ' Iteration 0 energy:', E
-     write(config%decomp%lupri,*) ' Iteration 0 energy:', E
-     
-     if (config%decomp%cfg_unres) then
-        call mem_alloc(eival,2*nbast)
-     else
-        call mem_alloc(eival,nbast)
-     endif     
+!We cannot use DaLink in the 0'th iteration - this gives a diagonal Fock matrix
+! => bad starting guess. If DaLink is requested, turn it off and then back on after
+! the 0'th iteration. /Stinne, Thomas, Brano 19/11-2009
+dalink = .false.
+if (ls%setting%scheme%DALINK) then
+   ls%setting%scheme%DALINK = .FALSE.
+   dalink = .true.
+endif
+CS00 = .false.
+if (ls%setting%scheme%DFT%CS00) then
+   ls%setting%scheme%DFT%CS00 = .FALSE.
+   CS00 = .true.
+endif
+ls%setting%scheme%DFT%CS00eHOMO = config%diag%eHOMO
+ls%setting%scheme%DFT%DFTELS = 1E0_realk !the density is not idempotent so it would giv e a wrong number of electrons
+! Iteration 0 : The density matrix is not idempotent; a diagonalization gives a proper 
+! idempotent density matrix  
+call di_get_fock_LSDALTON(D,H1,F,ndmat,E,config%decomp%lupri,config%decomp%luerr,ls)
+write(*,*) ' Iteration 0 energy:', E(1)
+write(config%decomp%lupri,*) ' Iteration 0 energy:', E(1)
 
-     call mat_diag_f(F,config%decomp%S,eival,Cmo)
-     !Asymetrizing starting guess if .ASYM is in input
-     ! 21.04.2010 C. Nygaard
-     !Only works if HOMO and LUMO are of different symmetry
-     if (config%decomp%cfg_unres .and. config%opt%cfg_asym) then
-        call asymmetrize_starting_guess (Cmo, config%decomp)
-     endif
-     
-     call mat_density_from_orbs(Cmo,D,config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
+if (config%decomp%cfg_unres) then
+   call mem_alloc(eival,2*nbast)
+else
+   call mem_alloc(eival,nbast)
+endif
 
-     if (config%decomp%cfg_unres) then
-        sz = 2*CMO%nrow
-     else
-        sz = CMO%nrow
-     endif
-     ls%setting%scheme%DFT%CS00eHOMO = HOMO_energy(config%decomp%cfg_unres,&
-          & config%decomp%nocc,config%decomp%nocca,config%decomp%noccb,eival,sz)
+call mat_diag_f(F(1),config%decomp%S,eival,Cmo)
+!Asymetrizing starting guess if .ASYM is in input
+! 21.04.2010 C. Nygaard
+!Only works if HOMO and LUMO are of different symmetry
+if (config%decomp%cfg_unres .and. config%opt%cfg_asym) then
+   call asymmetrize_starting_guess (Cmo, config%decomp)
+endif
 
-     call mem_dealloc(eival)
-     
-     !Turn DaLink back on, if requested:
-     if (dalink) ls%setting%scheme%DALINK = .true.
-     if (CS00) ls%setting%scheme%DFT%CS00 = .true.
-     ls%setting%scheme%DFT%DFTELS = ls%input%dalton%DFT%DFTELS      
-  ENDIF
+call mat_density_from_orbs(Cmo,D(1),config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
 
+if (config%decomp%cfg_unres) then
+   sz = 2*CMO%nrow
+else
+   sz = CMO%nrow
+endif
+ls%setting%scheme%DFT%CS00eHOMO = HOMO_energy(config%decomp%cfg_unres,&
+     & config%decomp%nocc,config%decomp%nocca,config%decomp%noccb,eival,sz)
 
-  CALL mat_free(F)
-  CALL mat_free(Cmo)
+call mem_dealloc(eival)
+
+!Turn DaLink back on, if requested:
+if (dalink) ls%setting%scheme%DALINK = .true.
+if (CS00) ls%setting%scheme%DFT%CS00 = .true.
+ls%setting%scheme%DFT%DFTELS = ls%input%dalton%DFT%DFTELS      
+
+CALL mat_free(F(1))
+CALL mat_free(Cmo)
 
 END SUBROUTINE ATOMS_START
 
@@ -1521,15 +1505,15 @@ use molecule_module
 implicit none
 TYPE(lsitem),target :: ls
 TYPE(trilevel_atominfo) :: ai
-Type(Matrix) :: Dval,F,D,Cmo, fCmo,Dpure
+Type(Matrix) :: Dval(1),F(1),D(1),Cmo, fCmo,Dpure
 Type(Matrix),target :: H1,S
 Type(lsint_fock_data_type) :: lsint_fock_data_sav
-real(realk)         :: E, mx, Nelectrons
+real(realk)         :: E(1), mx, Nelectrons
 real(realk)         :: maxelm_save, maxstep_save,thr_save,trace
 real(realk),pointer :: eival(:) 
 integer      :: nbast, len, nocc
 integer, pointer :: vlist(:,:), list(:,:)
-integer :: lun, idum, ldum,iAO,sz
+integer :: lun, idum, ldum,iAO,sz,ndmat
 integer(8) :: fperm, vperm
 logical :: restart_from_dens, no_rhdiis, dalink, vdens_exists
 logical :: OnMaster,DiagFmat,McWeeny,purify_failed,CS00,integraltransformGC
@@ -1550,7 +1534,7 @@ interface
      integer,       intent(in)    :: m(2)
    end subroutine optimloc
 end interface
-
+  ndmat = 1
   OnMaster = .TRUE.
   !initialise the IO so that old screening matrices are not used 
   call io_free(ls%setting%IO)
@@ -1595,7 +1579,7 @@ end interface
 
   nbast = ls%input%basis%VALENCE%nbast !nbast for valence basis
   call set_matop_timer_optlevel(2)
-  call mat_init(Dval,nbast,nbast)
+  call mat_init(Dval(1),nbast,nbast)
 
   !select starting from atoms or from file
   INQUIRE(file='vdens.restart',EXIST=vdens_exists) 
@@ -1609,13 +1593,13 @@ end interface
   if (restart_from_dens) then
      !.RESTART specified in input and if a density 
      !have been written to file
-     call trilevel_readdens(Dval,config%lupri)
+     call trilevel_readdens(Dval(1),config%lupri)
   else
      !default option
-     call trilevel_ATOMS_density(Dval,ls,ls%input%BASIS%VALENCE)
+     call trilevel_ATOMS_density(Dval(1),ls,ls%input%BASIS%VALENCE)
   endif
 
-  CALL mat_init(F,nbast,nbast)
+  CALL mat_init(F(1),nbast,nbast)
   CALL mat_init(H1,nbast,nbast)
   CALL mat_init(S,nbast,nbast)
   CALL mat_init(Cmo,nbast,nbast)
@@ -1640,69 +1624,49 @@ end interface
   config%opt%set_convergence_threshold = config%opt%cfg_convergence_threshold*config%opt%cfg_level2_convfactor
 
 
-  DiagFmat = .FALSE.
-  McWeeny = .FALSE.
-  IF(McWeeny)THEN
-     call mat_init(Dpure,Dval%nrow,Dval%ncol)
-     call mat_assign(Dpure,Dval)
-     call McWeeney_purify(S,Dpure,purify_failed)     
-     DiagFmat = purify_failed
-     if (.not.purify_failed) then
-        Nelectrons = 2*config%decomp%nocc + config%decomp%nactive
-        trace = mat_dotproduct(Dval,S)-Nelectrons
-        if ( abs(2.0*trace) .gt. THRNEL*Nelectrons)then
-           write(config%lupri,*)'Warning: Descrepancy between 2.0*Tr(DS) after purification and Nelectrons '
-           write(config%lupri,*)'2.0*Tr(DS) = ',2.0*trace,' Nelectrons = ', Nelectrons
-           write(config%lupri,*)'We fall back to a diagonalization'
-           DiagFmat = .TRUE.
-        else
-           call mat_assign(Dval,Dpure)
-        endif
-     endif
-     call mat_free(Dpure)
-  ELSE
-     DiagFmat = .TRUE.
-  ENDIF
+  !we could do McWeeny purification and avoid a Fock matrix build
+  !and a diagonalization, but in most cases the Density is too bad
+  !that the McWeeny purification works. A call to McWeeney_purify
+  !simply do not converge. But if a better scheme is devised/implemented
+  !it could be an option.
 
-  IF(DiagFmat)THEN
-     !We cannot use DaLink in the 0'th iteration - this gives a diagonal Fock matrix
-     ! => bad starting guess. If DaLink is requested, turn it off and then back on after
-     ! the 0'th iteration. /Stinne, Thomas, Brano 19/11-2009
-     dalink = .false.
-     if (ls%setting%scheme%DALINK) then
-        ls%setting%scheme%DALINK = .FALSE.
-        dalink = .true.
+  !We cannot use DaLink in the 0'th iteration - this gives a diagonal Fock matrix
+  ! => bad starting guess. If DaLink is requested, turn it off and then back on after
+  ! the 0'th iteration. /Stinne, Thomas, Brano 19/11-2009
+  dalink = .false.
+  if (ls%setting%scheme%DALINK) then
+     ls%setting%scheme%DALINK = .FALSE.
+     dalink = .true.
+  endif
+  CS00 = .false.
+  if (ls%setting%scheme%DFT%CS00) then
+     ls%setting%scheme%DFT%CS00 = .FALSE.
+     CS00 = .true.
+  endif
+  ls%setting%scheme%DFT%CS00eHOMO = config%diag%eHOMO
+  ! Iteration 0
+  ls%setting%scheme%DFT%DFTELS = 1E0_realk !the density is not idempotent so it would give a wrong number of electrons
+  if (.not.restart_from_dens) then
+     call di_get_fock_LSDALTON(Dval,H1,F,ndmat,E,config%lupri,config%decomp%luerr,ls)
+     write(*,*) ' Iteration 0 energy:', E(1)
+     write(config%lupri,*) ' Iteration 0 energy:', E(1)
+     call mem_alloc(eival,nbast)
+     call mat_diag_f(F(1),S,eival,Cmo)
+     call mat_density_from_orbs(Cmo,Dval(1),config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
+     if (config%decomp%cfg_unres) then
+        sz = 2*CMO%nrow
+     else
+        sz = CMO%nrow
      endif
-     CS00 = .false.
-     if (ls%setting%scheme%DFT%CS00) then
-        ls%setting%scheme%DFT%CS00 = .FALSE.
-        CS00 = .true.
-     endif
-     ls%setting%scheme%DFT%CS00eHOMO = config%diag%eHOMO
-     ! Iteration 0
-     ls%setting%scheme%DFT%DFTELS = 1E0_realk !the density is not idempotent so it would give a wrong number of electrons
-     if (.not.restart_from_dens) then
-        call di_get_fock_LSDALTON(Dval,H1,F,E,config%lupri,config%decomp%luerr,ls)
-        write(*,*) ' Iteration 0 energy:', E
-        write(config%lupri,*) ' Iteration 0 energy:', E
-        call mem_alloc(eival,nbast)
-        call mat_diag_f(F,S,eival,Cmo)
-        call mat_density_from_orbs(Cmo,Dval,config%decomp%nocc,config%decomp%nocca,config%decomp%noccb)
-        if (config%decomp%cfg_unres) then
-           sz = 2*CMO%nrow
-        else
-           sz = CMO%nrow
-        endif
-        ls%setting%scheme%DFT%CS00eHOMO = HOMO_energy(config%decomp%cfg_unres,&
-             & config%decomp%nocc,config%decomp%nocca,config%decomp%noccb,eival,sz)
-
-        call mem_dealloc(eival)
-     endif
-     ls%setting%scheme%DFT%DFTELS = ls%input%dalton%DFT%DFTELS
-     !Turn DaLink back on, if requested:
-     if (dalink) ls%setting%scheme%DALINK = .true.
-     if (CS00) ls%setting%scheme%DFT%CS00 = .true.
-  ENDIF
+     ls%setting%scheme%DFT%CS00eHOMO = HOMO_energy(config%decomp%cfg_unres,&
+          & config%decomp%nocc,config%decomp%nocca,config%decomp%noccb,eival,sz)
+     
+     call mem_dealloc(eival)
+  endif
+  ls%setting%scheme%DFT%DFTELS = ls%input%dalton%DFT%DFTELS
+  !Turn DaLink back on, if requested:
+  if (dalink) ls%setting%scheme%DALINK = .true.
+  if (CS00) ls%setting%scheme%DFT%CS00 = .true.
   !initialize incremental scheme
   if (config%opt%cfg_incremental) call ks_init_incremental_fock(nbast)
   
@@ -1799,12 +1763,12 @@ end interface
 
   ! get Valence Cmo
   call mem_alloc(eival,nbast)
-  call mat_diag_f(F,S,eival,Cmo)
+  call mat_diag_f(F(1),S,eival,Cmo)
   call mem_dealloc(eival)
 
 
   CALL mat_free(H1)
-  CALL mat_free(F)
+  CALL mat_free(F(1))
   CALL mat_free(S)
 
 #if 0
@@ -1866,9 +1830,9 @@ end interface
 
   call mat_free(Cmo)
   ! convert valence Dval to full D
-  call trilevel_density_valence2full(D,Dval,list,vlist,len)
+  call trilevel_density_valence2full(D(1),Dval(1),list,vlist,len)
   call set_matop_timer_optlevel(2)
-  CALL mat_free(Dval)
+  CALL mat_free(Dval(1))
   call mem_dealloc(list)
   call mem_dealloc(vlist)
   call set_matop_timer_optlevel(3)

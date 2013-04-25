@@ -100,6 +100,7 @@ MODULE Integralparameters
   integer,parameter :: CCSDPTSLAVE    = 33
   integer,parameter :: CCSDSLV4E2     = 34
   integer,parameter :: DFTADDFU       = 35
+  integer,parameter :: LSMPI_IIDFTABSVALOVERLAP = 36
 ! postprocess specifiers
   integer,parameter :: SymFromTriangularPostprocess=1
   integer,parameter :: SymmetricPostprocess=2

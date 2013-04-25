@@ -726,21 +726,21 @@ module array_memory_manager
     real(realk),intent(inout),optional :: retour(8)
     
     if(.not.present(retour))then
-      write(DECinfo%output,'(a,g12.4,a)') ' Allocated memory for dense array   :',&
+      write(*,'(a,g12.4,a)') ' Allocated memory for dense array   :',&
            & array_dense_allocd_mem/(1.0E9_realk),' GB'
-      write(DECinfo%output,'(a,g12.4,a)') ' Deallocated memory for dense array :',&
+      write(*,'(a,g12.4,a)') ' Deallocated memory for dense array :',&
            & array_dense_deallocd_mem/(1.0E9_realk),' GB'
-      write(DECinfo%output,'(a,g12.4,a)') ' Allocated memory for tiled array   :',&
+      write(*,'(a,g12.4,a)') ' Allocated memory for tiled array   :',&
            & array_tiled_allocd_mem/(1.0E9_realk),' GB'
-      write(DECinfo%output,'(a,g12.4,a)') ' Deallocated memory for tiled array :',&
+      write(*,'(a,g12.4,a)') ' Deallocated memory for tiled array :',&
            & array_tiled_deallocd_mem/(1.0E9_realk),' GB'
-      write(DECinfo%output,'(a,g12.4,a)') ' Allocated aux memory for array     :',&
+      write(*,'(a,g12.4,a)') ' Allocated aux memory for array     :',&
            & array_aux_allocd_mem/(1.0E9_realk),' GB'
-      write(DECinfo%output,'(a,g12.4,a)') ' Dellocated aux memory for array    :',&
+      write(*,'(a,g12.4,a)') ' Dellocated aux memory for array    :',&
            & array_aux_deallocd_mem/(1.0E9_realk),' GB'
-      write(DECinfo%output,'(a,g12.4,a)') ' Memory in use for array      :',&
+      write(*,'(a,g12.4,a)') ' Memory in use for array      :',&
            & array_memory_in_use/(1.0E9_realk),' GB'
-      write(DECinfo%output,'(a,g12.4,a)') ' Max memory in use for array  :',&
+      write(*,'(a,g12.4,a)') ' Max memory in use for array  :',&
            & array_max_memory/(1.0E9_realk),' GB'
     else
       retour(1)=array_dense_allocd_mem

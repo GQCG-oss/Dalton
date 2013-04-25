@@ -60,7 +60,8 @@ CONTAINS
 SUBROUTINE GenerateGrid(NBAST,radint,angmin,angint,ihardness,iprune,natoms,& 
      & X,Y,Z,Charge,GRIDDONE,SHELL2ATOM,SHELLANGMOM,SHELLNPRIM,MAXANGMOM,&
      & MAXNSHELL,MXPRIM,PRIEXP,PRIEXPSTART,RSHEL,ITERATIONS,TURBO,MaxNbuflen,&
-     & RADIALGRID,ZdependenMaxAng,PARTITIONING,nstart,MaxNactBast,LUPRI,IPRINT,USE_MPI,numnodes,node)
+     & RADIALGRID,ZdependenMaxAng,PARTITIONING,nstart,MaxNactBast,LUPRI,&
+     & IPRINT,USE_MPI,numnodes,node,GridId)
 IMPLICIT NONE
 !> How many times do we write (and should we read)  from disk 
 INTEGER  :: ITERATIONS
@@ -127,6 +128,8 @@ INTEGER,intent(in)    :: NSTART(MAXNSHELL)
 !> should we use MPI
 LOGICAL,intent(in)    :: USE_MPI
 integer(kind=ls_mpik),intent(in)    :: numnodes,node
+!> if the grid id
+INTEGER :: GRIDID
 !
 !REAL(REALK),pointer :: AA(:,:,:)
 INTEGER,pointer     :: nRadialPoints(:),GRIDANG(:,:)
@@ -161,7 +164,7 @@ CALL SET_ANGULAR(gridang,radint,angmin,angint,CHARGE,natoms,NRADPT,nRadialPoints
 ! Build Atomic and Molecular grids + partitioning
 CALL ComputeCoords(totalpoints,nRadialPoints,natoms,RADIALPOINTS,RADIALWEIGHT,NRADPT,GRIDANG,&
      & X,Y,Z,ihardness,MAXNSHELL,RSHEL,SHELL2ATOM,NBAST,maxNBUFLEN,ITERATIONS,&
-     & PARTITIONING,Charge,nstart,MaxNactBast,iprint,lupri,USE_MPI,numnodes,node)
+     & PARTITIONING,Charge,nstart,MaxNactBast,iprint,lupri,USE_MPI,numnodes,node,GridId)
 
 call mem_grid_dealloc(RADIALPOINTS)
 call mem_grid_dealloc(RADIALWEIGHT)
@@ -180,9 +183,9 @@ END SUBROUTINE GENERATEGRID
 
 SUBROUTINE Computecoords(totalpoints,nRadialPoints,Natoms,RADIALPOINTS,RADIALWEIGHT,NRADPT,GRIDANG,&
      & atomcenterX,atomcenterY,atomcenterZ,ihardness,MAXNSHELL,RSHEL,SHELL2ATOM,NBAST,&
-     & maxNBUFLEN,ITERATIONS,PARTITIONING,Charge,nstart,MaxNactBast,iprint,lupri,USE_MPI,numnodes,node)
+     & maxNBUFLEN,ITERATIONS,PARTITIONING,Charge,nstart,MaxNactBast,iprint,lupri,USE_MPI,numnodes,node,GridId)
 implicit none
-integer,intent(in) :: Natoms,NRADPT,ihardness,iprint,lupri,nbast,maxnbuflen
+integer,intent(in) :: Natoms,NRADPT,ihardness,iprint,lupri,nbast,maxnbuflen,GridId
 !> X coordinate for each atom
 REAL(REALK),intent(in):: atomcenterX(natoms)
 !> Y coordinate for each atom
@@ -233,7 +236,7 @@ integer :: nx,ny,nz,nkey,mykeysNumber,IMykey,privatetotalpoints
 !integer(kind=long),pointer :: key(:),uniquekey(:)
 type(bunchpoints),pointer :: keypointer(:)
 logical :: unique,postprocess
-character(len=21) :: filename
+character(len=22) :: filename
 integer,pointer :: npoints(:,:,:),mykeys(:)
 logical,pointer :: skip(:),skip2(:)
 #ifdef VAR_OMP
@@ -292,7 +295,7 @@ call mem_grid_TurnONThread_Memory()
 !$OMP ATOMIDX,postprocess,skip2,SSF_ATOMIC_CUTOFF,nx,ny,nz,npoints,GridBox,&
 !$OMP nkey,keypointer,LUGRID,ITERATIONS,filename,nprocessors,numnodes,node,mynum,mykeys,&
 !$OMP mykeysnumber,MAXNSHELL,RSHEL,SHELL2ATOM,NBAST,GlobalmaxGridpoints,&
-!$OMP NATOMS,nRadialPoints,maxNBUFLEN,nstart,infpar) REDUCTION(+:MaxNactBast)
+!$OMP NATOMS,nRadialPoints,maxNBUFLEN,nstart,infpar,GridId) REDUCTION(+:MaxNactBast)
 call init_grid_threadmemvar()
 #ifdef VAR_OMP
 nthreads=OMP_GET_NUM_THREADS()
@@ -525,7 +528,7 @@ ENDIF
 !We now write the gridpoints to file(s)
 !In case of MPI we use one file for each processor with a unique name
 LUGRID=-1
-call get_quadfilename(filename,nbast,node)
+call get_quadfilename(filename,nbast,node,GridId)
 CALL LSOPEN(LUGRID,filename,'NEW','UNFORMATTED')
 
 #ifdef VAR_LSMPI
@@ -931,7 +934,6 @@ INTEGER,intent(inout) :: SHELLBLOCKS(2,MAXNSHELL)
 REAL(REALK),intent(inout) :: COOR(3,NBUFLEN),WEIGHT(NBUFLEN)
 !
 INTEGER :: I,layer
-
 READ(LUGRID) NLEN
 READ(LUGRID) COOR(1:3,1:NLEN)
 READ(LUGRID) WEIGHT(1:NLEN)
@@ -2256,11 +2258,11 @@ subroutine GRID_TURBO_RADIALPOINTS(Z,thrl,nRadialPoints)
   nRadialPoints = MIN_RAD_PT + accuracy_correction + z_correction
 end subroutine GRID_TURBO_RADIALPOINTS
 
-subroutine get_quadfilename(filename,nbast,node)
+subroutine get_quadfilename(filename,nbast,node,gridid)
 implicit none
-character(len=21) :: filename
-integer :: nbast
-integer(kind=ls_mpik) :: node
+character(len=22) :: filename
+integer,intent(in) :: nbast,gridid
+integer(kind=ls_mpik),intent(in) :: node
 filename(1:11)='DALTON.QUAD'
 #ifdef VAR_LSMPI 
 filename(12:16)=Char(node/10000+48)//Char(mod(node,10000)/1000+48)&
@@ -2274,6 +2276,7 @@ filename(17:21)=Char(nbast/10000+48)//Char(mod(nbast,10000)/1000+48)&
    &//Char(mod(mod(nbast,10000),1000)/100+48)&
    &//Char(mod(mod(mod(nbast,10000),1000),100)/10+48)&
    &//Char(mod(mod(mod(mod(nbast,10000),1000),100),10)+48)
+filename(22:22)=Char(GridId+48)
 end subroutine get_quadfilename
 
 SUBROUTINE GRID_RADGC2(CHARGE,RADIALPOINTS,RADIALWEIGHT,nRadialPoints,RADINT,NRADPT,MAXANGMOM,IPRINT,LUPRI)
