@@ -395,10 +395,12 @@ C
 c      WRITE(LUPRI,*)'   -  For definitions on terms named ABC,'//
 c     &              ' refered to relativistic correction '
 c      WRITE(LUPRI,*)'      of sigma, see JCP. 137, 214319(2012). '
-       WRITE(LUPRI,*)'   -  Original LRESC papers at : JCP 118, 2 '//
-     &               '(2003),' 
-       WRITE(LUPRI,'(33X,A)')' MolPhys 101, 20, 3103-3109 (2003),'
-       WRITE(LUPRI,'(33X,A)')' JCP 125, 064107 (2006)'
+       WRITE(LUPRI,*)'   -  Original LRESC papers at : J. Chem. Phys.'//
+     &               ' 118, 2 (2003), doi:10.1063/1.1525808' 
+       WRITE(LUPRI,'(33X,A)')' Mol. Phys. 101, 20, 3103-3109 (2003) '
+c     &                       ' DOI: 10.1080/00268970310001617784'
+       WRITE(LUPRI,'(33X,A)')' J. Chem. Phys. 125, 064107 (2006), '//
+     & 'doi:10.1063/1.2244572'
    
 c      WRITE(LUPRI,*)' Gaugeo placed at : ', GAGORG  
   
