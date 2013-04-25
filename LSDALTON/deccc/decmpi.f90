@@ -1656,6 +1656,7 @@ contains
     call ls_mpi_buffer(DECitem%approximated_norm_threshold,Master)
     call ls_mpi_buffer(DECitem%check_lcm_orbitals,Master)
     call ls_mpi_buffer(DECitem%use_canonical,Master)
+    call ls_mpi_buffer(DECitem%user_defined_orbitals,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%mulliken,Master)
     call ls_mpi_buffer(DECitem%BoughtonPulay,Master)

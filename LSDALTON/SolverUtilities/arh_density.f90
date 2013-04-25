@@ -1084,12 +1084,12 @@ contains
          
             !call di_GET_GbDs(decomp%lupri,decomp%lupri,XF(1),scr1) !scr1 is G_AO without DFT
             nbast = scr1%nrow
-			!call mat_init(G_xc,nbast,nbast)
-			!call mat_init(Dmat,nbast,nbast)
-			call di_GET_GbDs_and_XC_linrsp(scr1, G_xc, decomp%lupri, decomp%lupri, XF(1), nbast, Dmat, .false.)
-			!call mat_free(G_xc)
-			!call mat_free(Dmat)
-			!-------------------------------------------
+            !call mat_init(G_xc,nbast,nbast)
+            !call mat_init(Dmat,nbast,nbast)
+            call di_GET_GbDs_and_XC_linrsp(scr1, G_xc, decomp%lupri, decomp%lupri, XF(1), nbast, Dmat, .false.)
+            !call mat_free(G_xc)
+            !call mat_free(Dmat)
+            !-------------------------------------------
 			
          else
             call mat_zero(scr1)

@@ -56,9 +56,10 @@ integer :: nbast
   ENDIF
 end subroutine ks_free_linesearch_fock
 
-subroutine activate_incremental(lupri)
+subroutine activate_incremental(lupri,do_inc)
 implicit none
 integer,intent(in) :: lupri
+logical :: do_inc
 real(realk) :: maxelm
 
 IF(.NOT.do_increment)THEN
@@ -77,6 +78,7 @@ IF(.NOT.do_increment)THEN
       do_increment = .true. 
    ENDIF
 ENDIF
+do_inc = do_increment
 end subroutine activate_incremental
 
 END MODULE KS_settings

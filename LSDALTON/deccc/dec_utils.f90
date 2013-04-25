@@ -459,70 +459,6 @@ contains
 
   end subroutine count_atoms
 
-  !> Subroutine to find initial fragment based on a radius around MyAtom
-  !> author: Ida-Marie Hoeyvik
-  !> EOSvector:logical vector that controls EOS space
-  !> BufferVector: logical vector that controls buffer space
-  subroutine initial_fragment(MyAtom, SortedDistTable,TrackVec,&
-       &EOSvector,BufferVector, natoms,counter)
-    implicit none
-    integer, intent(in) 	:: MyAtom, natoms
-    logical, intent(inout)	:: EOSvector(natoms)
-    logical                     :: BufferVector(natoms)
-    real(realk)			:: SortedDistTable(natoms,natoms)
-    integer			:: i
-    integer			:: counter(natoms)
-    real(realk)         	:: init_radius
-    integer, intent(in)		:: TrackVec(natoms,natoms)
-
-    if (DECinfo%FOT > 5E-3_realk) then
-       init_radius = 5.0
-    else
-       init_radius = 7.0
-    end if
-
-    !>initialize counter
-    do i=1,natoms
-       counter(i)=1
-    end do
-
-    !>initialize logical vectors
-    EOSvector(:)=.false.
-    BufferVector(:)=.false.
-
-    BufferVector(MyAtom)=.true.
-    EOSvector(MyAtom) = .true.
-
-    counter(MyAtom) = 0
-    do i=1, natoms
-       if (SortedDistTable(i,MyAtom) .le. init_radius) then
-          EOSvector(TrackVec(i,MyAtom)) = .true.
-          counter(MyAtom) = counter(MyAtom) + 1
-       end if
-    end do
-
-  end subroutine initial_fragment
-
-  !>Subroutine that takes the logicalvector containg information on what atoms
-  !>are included and make a compressedlist of these
-  !>Author: Ida-Marie Hoeyvik
-  subroutine atoms_included(UnoccEOS_atoms,atoms_in_vec, list_of_atoms, natoms)
-    implicit none
-    integer, intent(in) :: natoms, atoms_in_vec
-    logical, intent(in) :: UnoccEOS_atoms(natoms)
-    integer, intent(out):: list_of_atoms(atoms_in_vec)
-    integer		::i,j
-
-    j=0
-    do i=1,natoms
-       If (UnoccEOS_atoms(i)) then
-          j=j+1
-          list_of_atoms(j)=i
-       end if
-    end do
-
-  end subroutine atoms_included
-
 
 
   !> \brief Sort with keeping track of the origial indices
@@ -1352,199 +1288,48 @@ contains
 
 
 
-  subroutine InitialFragment(MyAtom,EOS,Buffer,DistList,DistTrack,natoms)
+  !> \brief Subroutine that creates initial fragment
+  !> \date august 2011
+  !> \author Ida-Marie Hoyvik
+  subroutine InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,Occ,Virt)
     implicit none
-    integer,intent(in)     :: natoms,MyAtom
-    logical,intent(inout)  :: EOS(natoms),Buffer(natoms)
-    real(realk),intent(in) :: DistList(natoms)
-    integer,intent(in)     :: DistTrack(natoms)
-    real(realk)            :: init_radius
-    integer                :: i,counter,indx
-
-    EOS = .false.
-    Buffer =.false.
-    counter = 0
-    ! Radius for EOS
-    if (DECinfo%FOT < 5.0E-4_realk) then
-       init_radius=8.0
-    else
-       init_radius=6.0 !Smaller start for loose threshold
-    end if
-
-    do i=1,natoms
-       if (DistList(i) .le. init_radius) then
-          indx = DistTrack(i)
-          EOS(indx) = .true.
-       end if
-    end do
-
-    ! Reduce radius for buffer
-    init_radius = 4.0
-    do i=1,natoms
-       if (DistList(i) .le. init_radius) then
-          indx = DistTrack(i)
-          Buffer(indx) = .true.
-       end if
-    end do
-
-
-  end subroutine InitialFragment
-
-  !> Subroutine used to expand target space in fragment optimization
-  !> \author Ida-Marie Hoeyvik
-  subroutine ExpandEOS(EOS,Track,natoms)
-    implicit none
-    logical, intent(inout) :: EOS(natoms)
-    logical		:: TempEOS(natoms)
-    integer, intent(in) 	:: natoms
-    integer, intent(in)	:: Track(natoms)
-    integer               :: counter
-    integer 		:: i,increase,AtomsOut,indx
-
-    !Number of atoms to increase EOS
-    increase = 10
-    counter = 0
-
-    TempEOS= EOS
-    do i=1,natoms
-       indx=track(i)
-       if (.not. EOS(indx)) then
-          TempEOS(indx) = .true.
-          counter = counter + 1
-          if (counter == increase) exit
-       end if
-    end do
-
-    EOS = TempEOS
-
-  end subroutine ExpandEOS
-
-
-  !>
-  !> Author: Ida-Marie Hoeyvik
-  !> Date: august-2011
-  subroutine ExpandBuffer(Buffer,Track,natoms)
-    implicit none
-    integer,intent(in)    :: natoms
-    logical,intent(inout) :: Buffer(natoms)
-    integer,intent(in)    :: Track(natoms)
-    integer               :: counter,i,increase,indx
-
-    increase=5
-    counter=0
-
-    do i=1,natoms
-       indx = Track(i)
-       if (.not. Buffer(indx)) then
-          Buffer(indx)=.true.
-          counter = counter+1
-          if (counter == increase) exit
-       end if
-    end do
-
-  end subroutine ExpandBuffer
-
-  subroutine RejectAtomsNEW(EOS,EnergyContributions,RejectThresh,Nexcl,natoms)
-    implicit none
-    integer,intent(in)     :: natoms
-    logical,intent(inout)  :: EOS(natoms)
-    real(realk),intent(in) :: EnergyContributions(natoms)
-    real(realk),intent(in) :: RejectThresh
-    integer                :: Nexcl,Nbefore,i
-
-    Nbefore = count(EOS)
-
-    do i=1,natoms
-       if (abs(EnergyContributions(i)) < RejectThresh)  EOS(i) = .false.
-    end do
-
-    Nexcl=Nbefore-count(EOS)
-
-  end subroutine RejectAtomsNEW
-
-  !> Subroutine that creates initial fragment
-  !> Suited for Lagrangian type atomic site fragment
-  !> natoms: number of atoms in MOLECULE
-  !> Occ: entry i is T if occ orbitals on atom i is included
-  !> Virt: entry i is T if virt orbitals in atom i is included
-  !> DistMyAtom: list of distances from MyAtom to all other atoms in mol.
-  !> date: august 2011
-  !> author: Ida-Marie Hoyvik
-  subroutine InitialFragment_L(Occ,Virt,DistMyAtom,nAtoms)
-    implicit none
-    integer, intent(in)    :: natoms
-    logical,intent(inout)  :: Occ(natoms),Virt(natoms)
+    !> number of atoms in MOLECULE
+    Integer, intent(in)    :: natoms
+    !> Number of occupied / unoccupied orbitals per atom
+    integer,intent(in), dimension(natoms) :: nocc_per_atom, nunocc_per_atom
+    !> Distances from central atom to other atoms
     real(realk),intent(in) :: DistMyAtom(natoms)
+    !> Which AOS atoms to include for occ and virt spaces
+    !> (entry i is T if orbitals on atom i is included)
+    !> (In practice occ and virt will be identical but we keep it general)
+    logical,intent(inout)  :: Occ(natoms),Virt(natoms)
     real(realk)            :: init_radius
     integer                :: i
     real(realk)            :: FOT
 
-    Occ=.false.
-    Virt=.false.
-
     FOT=DECinfo%FOT
 
-    if (FOT > 5.0e-3) then
-       init_radius = 4.0 !Larger initial fragment if low thresh
-    elseif (FOT > 5.0e-5 .and. FOT< 5.0e-3) then
-       init_radius = 6.0
-    elseif (FOT < 5.0e-5) then
-       init_radius = 8.0
-    end if
+    ! Initial radius set to 6 a.u.
+    init_radius = 6.0 
 
     write(DECinfo%output,'(a,f5.2)') " FOP Radius for initial fragment: ",init_radius
 
+    ! Include atoms within init_radius
+    Occ=.false.
+    Virt=.false.
     do i=1,natoms
+
+       ! Skip if no orbitals are assigned - do NOT modify this line.
+       if(nocc_per_atom(i)==0 .or. nunocc_per_atom(i)==0) cycle
+
        if (DistMyAtom(i) .le. init_radius) then
           Occ(i) = .true.
           Virt(i) = .true.
        end if
+
     end do
 
-  end subroutine InitialFragment_L
-
-
-  subroutine ReduceSpace(atoms,contributions,Thresh,natoms,MyAtom,Nafter)
-    implicit none
-    integer,intent(in)        :: natoms,MyAtom
-    logical,intent(inout)     :: atoms(natoms)
-    real(realk),intent(in)    :: contributions(natoms)
-    real(realk),intent(in)    :: Thresh
-    integer,intent(inout) :: Nafter
-    integer :: i,Nbefore,Nexcl
-
-    Nbefore = count(atoms)
-
-
-    do i=1,natoms
-       if (abs(contributions(i)) < Thresh) atoms(i)=.false.
-    end do
-
-    atoms(MyAtom) =.true. !Central atom
-
-    Nafter = count(atoms)
-    Nexcl = Nbefore-Nafter
-
-    write(DECinfo%output,'(a,i4)') ' FOP Number of atoms excluded: ', Nexcl
-
-  end subroutine ReduceSpace
-
-
-  subroutine GetRejectThresh(iter,thresh,FOT)
-    implicit none
-    integer     :: iter
-    real(realk) :: thresh
-    real(realk),intent(in) :: FOT
-
-    if (iter == 1) thresh=0.1E0_realk*FOT
-    if (iter == 2) thresh=0.05E0_realk*FOT
-    if (iter == 3) thresh=0.01E0_realk*FOT
-    if (iter == 4) thresh=0.005E0_realk*FOT
-    if (iter == 5) thresh=0.001E0_realk*FOT
-
-    write(DECinfo%output,'(a,ES13.5)') 'FOP Rejection threshold  : ',thresh
-
-  end subroutine GetRejectThresh
+  end subroutine InitialFragment
 
 
 
@@ -4223,43 +4008,6 @@ retval=0
 
 
   end subroutine print_total_energy_summary
-
-
-  !> \brief Get number of atoms in AOS for fragment
-  !> \author Kasper Kristensen
-  !> \date April 2013
-  subroutine get_number_of_atoms_in_fragment_AOS(natomsfull, myfragment, natomsAOS)
-    implicit none
-    !> Number of atoms in full molecule
-    integer,intent(in) :: natomsfull
-    !> Fragment under consideration
-    type(ccatom),intent(in) :: myfragment
-    !> Number of atoms in fragment AOS
-    integer,intent(inout) :: natomsAOS
-    integer :: i
-    logical,pointer :: which_atoms(:)
-
-
-    ! Which atoms are in fragment AOS
-    call mem_alloc(which_atoms,natomsfull)
-    which_atoms=.false.
-
-    ! Check occupied AOS
-    do i=1,myfragment%noccAOS
-       which_atoms(myfragment%occAOSorb(i)%centralatom) = .true.
-    end do
-
-    ! Check unoccupied AOS
-    do i=1,myfragment%nunoccAOS
-       which_atoms(myfragment%unoccAOSorb(i)%centralatom) = .true.
-    end do
-
-    ! Number of atoms in occ+unocc AOS
-    natomsAOS = count(which_atoms)
-    
-    call mem_dealloc(which_atoms)
-
-  end subroutine get_number_of_atoms_in_fragment_AOS
 
 
 end module dec_fragment_utils

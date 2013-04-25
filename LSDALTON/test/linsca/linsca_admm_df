@@ -56,8 +56,11 @@ cat > linsca_admm_df.dal <<'%EOF%'
 .NOGCBASIS
 .START
 TRILEVEL
+.NOATOMSTART
 .RH
 .DIIS
+#.CONVTHR
+#1.5d-5
 **RESPONS
 *MOLGRA
 *END OF INPUT

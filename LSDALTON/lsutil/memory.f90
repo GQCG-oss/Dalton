@@ -11,8 +11,8 @@ MODULE memory_handling
    use dec_typedef_module
    use OverlapType
 #ifdef VAR_LSMPI
-!  include 'mpif.h'
-   use mpi
+  include 'mpif.h'
+!   use mpi
 #endif
    private
    public get_available_memory

@@ -94,13 +94,13 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-75\.2704359" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * \-75\.2704364" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
 
 # Energy
-CRIT1=`$GREP "Energy drift, mHartree/ps  :  \-2519\.377" $log | wc -l`
+CRIT1=`$GREP "Energy drift, mHartree/ps  :  \-2652\.935" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="Energy drift -"

@@ -884,12 +884,12 @@ end subroutine linesearch_thresholds
                & CFG%MaxLineSearchEnergyDiff
           WRITE(arh%lupri,'(A,ES22.13)')'Maximum difference in actual energies',&
                & arh_Ediff_actual
-          IF(ABS(CFG%MaxLineSearchEnergyDiff) < 1.0E-10_realk)THEN
-             !turn off incremental build in linesearch, to improve accuracy
-             !              IF(config%opt%cfg_saveF0andD0)THEN
-             WRITE(arh%lupri,*)'Turn off incremental linesearch energy estimates to improve accuracy if cfg_saveF0andD0'
-             !              ENDIF
-          ENDIF
+!          IF(ABS(CFG%MaxLineSearchEnergyDiff) < 1.0E-10_realk)THEN
+!             !turn off incremental build in linesearch, to improve accuracy
+!             !              IF(config%opt%cfg_saveF0andD0)THEN
+!             WRITE(arh%lupri,*)'Turn off incremental linesearch energy estimates to improve accuracy if cfg_saveF0andD0'
+!             !              ENDIF
+!          ENDIF
           IF(CFG%MaxLineSearchEnergyDiff < & 
                & 5.0E+2_realk*LS%SETTING%SCHEME%THRESHOLD*LS%SETTING%SCHEME%J_THR.OR.&
                & CFG%MaxLineSearchEnergyDiff < &
@@ -950,12 +950,12 @@ end subroutine linesearch_thresholds
                & CFG%MaxLineSearchEnergyDiff
           WRITE(arh%lupri,'(A,ES22.13)')'Maximum difference in actual energies',&
                & arh_Ediff_actual
-          IF(ABS(CFG%MaxLineSearchEnergyDiff) < 1.0E-10_realk)THEN
-             !turn off incremental build in linesearch, to improve accuracy
-             !              IF(config%opt%cfg_saveF0andD0)THEN
-             WRITE(arh%lupri,*)'Turn off incremental linesearch energy estimates to improve accuracy if cfg_saveF0andD0'
-             !              ENDIF
-          ENDIF
+!          IF(ABS(CFG%MaxLineSearchEnergyDiff) < 1.0E-10_realk)THEN
+!             !turn off incremental build in linesearch, to improve accuracy
+!             !              IF(config%opt%cfg_saveF0andD0)THEN
+!             WRITE(arh%lupri,*)'Turn off incremental linesearch energy estimates to improve accuracy if cfg_saveF0andD0'
+!             !              ENDIF
+!          ENDIF
           IF(CFG%MaxLineSearchEnergyDiff < & 
                & 5.0E+2_realk*LS%SETTING%SCHEME%THRESHOLD*LS%SETTING%SCHEME%J_THR.OR.&
                & CFG%MaxLineSearchEnergyDiff < &

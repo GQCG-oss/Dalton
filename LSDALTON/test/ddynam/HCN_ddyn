@@ -66,6 +66,8 @@ cat > HCN_ddyn.dal <<'%EOF%'
 .HF
 *DENSOPT
 .RESTART
+.CONVTHR
+1.0d-5
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -94,7 +96,8 @@ CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # Energy
-CRIT1=`$GREP "Energy drift, mHartree/ps  :  \-4509\.091" $log | wc -l`
+#CRIT1=`$GREP "Energy drift, mHartree/ps  :  \-4509\.091" $log | wc -l`
+CRIT1=`$GREP "Energy drift, mHartree/ps  :  \-4478\.182" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="Energy drift -"
