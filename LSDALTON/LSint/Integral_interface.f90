@@ -2280,9 +2280,9 @@ ENDIF
 
 IF (dogeoderiv) THEN
   IF (geoderiv.GE.1) THEN
-!   intSpec = GeoDerivLHSSpec
+    intSpec = GeoDerivLHSSpec
 !   intSpec = GeoDerivRHSSpec
-    intSpec = GeoDerivSpec
+!   intSpec = GeoDerivSpec
   ELSE
      call lsquit('Error in II_get_4center_eri_diff - only first order geometrical derivative integrals implemented',lupri)
   ENDIF

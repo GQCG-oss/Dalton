@@ -1957,7 +1957,7 @@ DO icent=1,ncent
   ENDIF
 ! Set up prefactors that include the (2a)^derA * (2b)^derB
   IF (der.GT. 0) THEN
-    DO iPrimP=1,P%nPrimitives
+    DO iPrimP=1,nprim
       iPrim1 = P%iprim1(iPrimP)
       iPrim2 = P%iprim2(iPrimP)
       pref(iPrimP+offset) = P%preExpFac(iPrimP+offset)*(2E0_realk*P%orbital1%exponents(iPrim1))**increment(1)*&

@@ -2993,7 +2993,10 @@ integer :: i
  PQ%minAngmom      = P%minAngmom     + Q%minAngmom
  PQ%maxAngmom      = P%maxAngmom     + Q%maxAngmom
  PQ%startAngmom    = P%startAngmom   + Q%startAngmom 
- PQ%endAngmom      = P%endAngmom     + Q%endAngmom 
+ PQ%endAngmom      = PQ%maxAngmom    + INPUT%geoDerivOrder + input%CMorder &
+     &               + INPUT%magderOrderP + INPUT%magderOrderQ
+ IF (INPUT%operator.EQ.KineticOperator) PQ%endAngmom = PQ%endAngmom + 2
+
  PQ%samePQ         = INPUT%sameODs .AND. (ILHS .EQ. IRHS)
  PQ%nAngmom        = P%nAngmom       * Q%nAngmom 
  IF (PQ%samePQ) THEN
@@ -3867,17 +3870,13 @@ nP       = PQ%P%p%nPrimitives
 ioffP    = startP*(startP+1)*(startP+2)/6
 fullOP   = fullSP*(fullSP+1)*(fullSP+2)/6
 ntuvP    = (endP+1)*(endP+2)*(endP+3)/6 - ioffP
-nOrbQ    = PQ%Q%p%totOrbitals(integral%rhsGeoORder+1)
 
-!IF (IPRINT.EQ. 999) THEN
-! Changed because there is a mismatch between the Q%totOrbitals and the 
-! orb1%totOrbitals*orb2%totOrbitals when old code would do a triangular
-! angmom-loop (new does not).
-  nOrbQ = PQ%Q%p%orbital1%totOrbitals*PQ%Q%p%orbital2%totOrbitals
-  IF (.NOT.PQ%Q%p%type_ftuv) nOrbQ = nOrbQ*PQ%Q%p%nPasses*PQ%Q%p%ngeoderivcomp*PQ%Q%p%nCartesianMomentComp
-  IF (INPUT%DO_MULMOM) nOrbQ = Input%nMultipoleMomentComp
-!  IPRINT = 0
-!ENDIF
+nOrbQ = PQ%Q%p%orbital1%totOrbitals*PQ%Q%p%orbital2%totOrbitals
+IF (.NOT.PQ%Q%p%type_ftuv) nOrbQ = nOrbQ*PQ%Q%p%nPasses*PQ%Q%p%ngeoderivcomp*PQ%Q%p%nCartesianMomentComp
+IF (INPUT%DO_MULMOM) nOrbQ = Input%nMultipoleMomentComp
+!Fix because of the stange PQ%Q%p%orbital1%totOrbitals*PQ%Q%p%orbital2%totOrbitals - Simen:does this work for sameAO?
+IF (integral%rhsGeoORder.GT.0) nOrbQ    = PQ%Q%p%totOrbitals(integral%rhsGeoORder+1)
+
 
 Integral%nAng  = ntuvP
 Integral%nPrim = np
@@ -5340,6 +5339,10 @@ IF(nP*nC*nD*nPassQ*nOrder.GT.allocIntmaxTUVdim)THEN
    call lsquit('AddToTUVQ1 alloc error1',lupri)
 ENDIF
 IF(nContQ*nP*nCompQ.GT.allocIntmaxTUVdim)THEN
+   writE(*,*) 'nContQ            = ',nContQ
+   writE(*,*) 'nP                = ',nP    
+   writE(*,*) 'nCompQ            = ',nCompQ
+   writE(*,*) 'allocIntmaxTUVdim = ',allocIntmaxTUVdim
    call lsquit('AddToTUVQ1 alloc error2',lupri)
 ENDIF
 #endif
