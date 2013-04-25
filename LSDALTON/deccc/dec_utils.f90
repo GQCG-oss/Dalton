@@ -459,70 +459,6 @@ contains
 
   end subroutine count_atoms
 
-  !> Subroutine to find initial fragment based on a radius around MyAtom
-  !> author: Ida-Marie Hoeyvik
-  !> EOSvector:logical vector that controls EOS space
-  !> BufferVector: logical vector that controls buffer space
-  subroutine initial_fragment(MyAtom, SortedDistTable,TrackVec,&
-       &EOSvector,BufferVector, natoms,counter)
-    implicit none
-    integer, intent(in) 	:: MyAtom, natoms
-    logical, intent(inout)	:: EOSvector(natoms)
-    logical                     :: BufferVector(natoms)
-    real(realk)			:: SortedDistTable(natoms,natoms)
-    integer			:: i
-    integer			:: counter(natoms)
-    real(realk)         	:: init_radius
-    integer, intent(in)		:: TrackVec(natoms,natoms)
-
-    if (DECinfo%FOT > 5E-3_realk) then
-       init_radius = 5.0
-    else
-       init_radius = 7.0
-    end if
-
-    !>initialize counter
-    do i=1,natoms
-       counter(i)=1
-    end do
-
-    !>initialize logical vectors
-    EOSvector(:)=.false.
-    BufferVector(:)=.false.
-
-    BufferVector(MyAtom)=.true.
-    EOSvector(MyAtom) = .true.
-
-    counter(MyAtom) = 0
-    do i=1, natoms
-       if (SortedDistTable(i,MyAtom) .le. init_radius) then
-          EOSvector(TrackVec(i,MyAtom)) = .true.
-          counter(MyAtom) = counter(MyAtom) + 1
-       end if
-    end do
-
-  end subroutine initial_fragment
-
-  !>Subroutine that takes the logicalvector containg information on what atoms
-  !>are included and make a compressedlist of these
-  !>Author: Ida-Marie Hoeyvik
-  subroutine atoms_included(UnoccEOS_atoms,atoms_in_vec, list_of_atoms, natoms)
-    implicit none
-    integer, intent(in) :: natoms, atoms_in_vec
-    logical, intent(in) :: UnoccEOS_atoms(natoms)
-    integer, intent(out):: list_of_atoms(atoms_in_vec)
-    integer		::i,j
-
-    j=0
-    do i=1,natoms
-       If (UnoccEOS_atoms(i)) then
-          j=j+1
-          list_of_atoms(j)=i
-       end if
-    end do
-
-  end subroutine atoms_included
-
 
 
   !> \brief Sort with keeping track of the origial indices
@@ -1373,12 +1309,8 @@ contains
 
     FOT=DECinfo%FOT
 
-    ! Larger init radius for tighter FOT
-    if (FOT > 5.0e-4) then
-       init_radius = 6.0 
-    else
-       init_radius = 8.0 
-    end if
+    ! Initial radius set to 6 a.u.
+    init_radius = 6.0 
 
     write(DECinfo%output,'(a,f5.2)') " FOP Radius for initial fragment: ",init_radius
 
