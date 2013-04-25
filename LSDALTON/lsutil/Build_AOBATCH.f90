@@ -1773,7 +1773,7 @@ IF(UNCONTRACTED)THEN
       ! fitting coefficient etc.)
       AOmodel%BATCH(nbatches)%startOrbital(A) = orbitalIndex
       AOmodel%BATCH(nbatches)%startprimOrbital(A) = primorbitalIndex
-      AOmodel%BATCH(nbatches)%nPrimOrbComp(A) = B*(B+1)/2
+      AOmodel%BATCH(nbatches)%nPrimOrbComp(A) = B*(B+1)/2 
       IF (AOmodel%BATCH(nbatches)%spherical) THEN
          AOmodel%BATCH(nbatches)%nOrbComp(A) = 2*B-1
       ELSE
@@ -2170,7 +2170,7 @@ INTEGER,pointer :: MODELTYPES(:)
 LOGICAL           :: NEWATOM
 REAL(REALK)       :: FACL(10),R2,THLOG,EXP,LOGVAL
 REAL(REALK),PARAMETER     :: DMIN=1E-13_realk
-INTEGER           :: irow,nrow2,nrow3,NRSIZE,ICHARGE,J
+INTEGER           :: irow,nrow2,nrow3,NRSIZE,ICHARGE,J,nOrbComp
 LOGICAL           :: END
 INTEGER,pointer   :: NSHELLINDEX(:),USHELLINDEX(:)
 INTEGER,pointer   :: UATOM(:)
@@ -2219,6 +2219,7 @@ ENDDO
 
 MAXNSHELL=0
 MXPRIM=0
+BAS%spherical = SETTING%BASIS(1)%p%REGULAR%spherical
 R = SETTING%BASIS(1)%p%REGULAR%Labelindex
 IF(R.EQ. 0)THEN
    I=0
@@ -2271,16 +2272,21 @@ DO J=1,SETTING%MOLECULE(1)%p%nAtoms
       norb=BASIS%ATOMTYPE(type)%SHELL(K)%norb
       nprim=BASIS%ATOMTYPE(type)%SHELL(K)%nprim
       DO L=1,norb
-      BAS%SHELL2ATOM(SHELL) = I
-      BAS%CENT(1,SHELL) = SETTING%MOLECULE(1)%p%ATOM(J)%CENTER(1) 
-      BAS%CENT(2,SHELL) = SETTING%MOLECULE(1)%p%ATOM(J)%CENTER(2) 
-      BAS%CENT(3,SHELL) = SETTING%MOLECULE(1)%p%ATOM(J)%CENTER(3) 
-      BAS%NSTART(SHELL) = orbitalindex
-      BAS%PRIEXPSTART(SHELL) = TOTPRIM !the accumulated number of primitives
-      BAS%SHELLANGMOM(SHELL) = K
-      BAS%SHELLNPRIM(SHELL) = nprim
-      orbitalindex=orbitalindex+(2*(K-1)+1)
-      SHELL = SHELL+1
+         BAS%SHELL2ATOM(SHELL) = I
+         BAS%CENT(1,SHELL) = SETTING%MOLECULE(1)%p%ATOM(J)%CENTER(1) 
+         BAS%CENT(2,SHELL) = SETTING%MOLECULE(1)%p%ATOM(J)%CENTER(2) 
+         BAS%CENT(3,SHELL) = SETTING%MOLECULE(1)%p%ATOM(J)%CENTER(3) 
+         BAS%NSTART(SHELL) = orbitalindex
+         BAS%PRIEXPSTART(SHELL) = TOTPRIM !the accumulated number of primitives
+         BAS%SHELLANGMOM(SHELL) = K
+         BAS%SHELLNPRIM(SHELL) = nprim
+         IF(BAS%spherical)THEN
+            nOrbComp = 2*K-1
+         ELSE
+            nOrbComp = K*(K+1)/2
+         ENDIF
+         orbitalindex=orbitalindex+nOrbComp
+         SHELL = SHELL+1
       ENDDO
       TOTPRIM=TOTPRIM+nprim
       MAXANGMOM = MAX(K,MAXANGMOM)

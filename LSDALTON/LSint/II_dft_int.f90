@@ -312,7 +312,7 @@ CALL II_XC_GRID_LOOP(NDMAT,GridObject%NBUFLEN,IT,nbast,maxNactbast,BAS%maxnshell
      & BAS%mxprim,nder,BAS%shellangmom,MMM,BAS%maxangmom,nsob,BAS%nstart,BAS%priexp,&
      & DFT%rhothr,spsize,&
      & sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,CB,GridObject%newgrid,unres,node,&
-     & GridObject%Id)
+     & GridObject%Id,BAS%Spherical)
 
 call mem_dft_dealloc(SPHMAT)
 call mem_dft_dealloc(SPINDEX)
@@ -394,7 +394,8 @@ SUBROUTINE II_XC_GRID_LOOP(NDMAT,NBUFLEN,IT,nbast,maxNactbast,maxnshell,&
      & CC,ushells,CCSTART,CCINDEX,TELECTRONS,CENT,DFTdata,&
      & DFThri,DMAT,dogga,dolnd,ntypso,PRIEXPSTART,lupri,&
      & mxprim,nder,shellangmom,MMM,maxangmom,nsob,nstart,priexp,rhothr,spsize,&
-     &sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,CB,newgrid,unres,node,GridId)
+     &sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,CB,newgrid,unres,node,&
+     &GridId,Spherical)
 use IIDFTKSMWORK
 implicit none
 integer,intent(in) :: NDMAT,LUPRI,MAXNSHELL,nbast,NBUFLEN,gridid
@@ -454,7 +455,7 @@ real(realk),intent(in) :: sphmat(spsize)
 !> use the new grid?
 logical,intent(in) :: newgrid
 !> unrestricted calc
-logical,intent(in) :: unres
+logical,intent(in) :: unres,Spherical
 integer,intent(in) :: spindex(spsize2)
 integer,intent(in) :: LVALUE(MMM,MAXANGMOM),MVALUE(MMM,MAXANGMOM),NVALUE(MMM,MAXANGMOM)
 integer(kind=ls_mpik),intent(in) ::  node
@@ -505,7 +506,7 @@ IF(.NOT.noOMP) call mem_dft_TurnONThread_Memory()
 !$OMP PARALLEL IF(.NOT.noOMP) PRIVATE(XX,NSHELLBLOCKS,SHELLBLOCKS,COOR,COOR_pt,WEIGHT,IPT,NCURLEN,&
 !$OMP ACTIVE_DMAT,BLOCKS,RHOA,GRADA,TAU,GAO,NLEN,NactBAS,INXACT,I,IDMAT,myDFTdata,WORK,WORKLENGTH,W1,&
 !$OMP W2,W3,W4,W5,W6,W7,W8,tid,nthreads,IDMAT1,IDMAT2,WORKLENGTH2) FIRSTPRIVATE(myBoxMemRequirement)& 
-!$OMP SHARED(ushells,CC,CCSTART,CCINDEX,CENT,Dmat,&
+!$OMP SHARED(ushells,CC,CCSTART,CCINDEX,CENT,Dmat,Spherical,&
 !$OMP dogga,PRIEXPSTART,nsob,shellangmom,MMM,maxangmom,nstart,priexp,rhothr,spsize,spsize2,sphmat,&
 !$OMP spindex,DFTdata,noOMP,NBUFLEN,it,lupri,nbast,maxnshell,ndmat,nder,mxprim,unres,newgrid,&
 !$OMP ntypso,dfthri,dolnd,LVALUE,MVALUE,NVALUE,MaxNactBast,lugrid) REDUCTION(+:TELECTRONS)
@@ -590,7 +591,7 @@ DO XX=1+tid,IT,nthreads
       &                NSHELLBLOCKS,SHELLBLOCKS,NactBAS,DOLND,DOGGA,DFTHRI,0,&
       &                NTYPSO,NSOB,MMM,MAXANGMOM,spSIZE,SPHMAT,SPINDEX,MAXNSHELL,NSTART,SHELLANGMOM&
       &                ,CENT,PRIEXPSTART,CC,ushells,CCSTART,CCINDEX,MXPRIM,&
-      &                PRIEXP,NDER,LVALUE,MVALUE,NVALUE,WORK(1:NactBAS))
+      &                PRIEXP,NDER,LVALUE,MVALUE,NVALUE,WORK(1:NactBAS),Spherical)
       ! RETURNS: GAO: evaluated orbitals for a batch of grid points.
       !     GAO(:,:,1) contains orbital values.
       !     GAO(:,:,2:4) contains first geom. derivatives. - if requested.
@@ -806,7 +807,7 @@ SUBROUTINE II_BLGETSOS(LUPRI,NVCLEN,GAO,COOR,NBLCNT,IBLCKS,&
      &        NactBAS,DOLND,DOGGA,DFTHRI,IPRINT,NTYPSO,NSOB,MMM,MAXANGMOM,SIZE,&
      &        SPHMAT,SPINDEX,MAXNSHELL,NSTART,SHELLANGMOM,CENT,&
      &        PRIEXPSTART,CC,ushells,CCSTART,CCINDEX,MXPRIM,PRIEXP,NDER,&
-     &        LVALUE,MVALUE,NVALUE,GAOMAX)
+     &        LVALUE,MVALUE,NVALUE,GAOMAX,Spherical)
 IMPLICIT NONE
 INTEGER,intent(in) :: LUPRI,NVCLEN,NBLCNT,NactBAS,IPRINT,NTYPSO,NSOB,SIZE,MAXANGMOM,MAXNSHELL
 INTEGER,intent(in) :: IBLCKS(2,MAXNSHELL),SPINDEX(MAXANGMOM),NSTART(MAXNSHELL),SHELLANGMOM(MAXNSHELL),ushells
@@ -815,7 +816,7 @@ integer,intent(in) :: LVALUE(MMM,MAXANGMOM),MVALUE(MMM,MAXANGMOM)
 integer,intent(in) :: NVALUE(MMM,MAXANGMOM)
 INTEGER,intent(in)     :: CCINDEX(MAXNSHELL)
 REAL(REALK),intent(in) :: PRIEXP(MXPRIM)
-LOGICAL,intent(in)     :: DOLND, DOGGA
+LOGICAL,intent(in)     :: DOLND, DOGGA,Spherical
 real(realk),intent(in) :: CENT(3,MAXNSHELL), COOR(3,NVCLEN)
 REAL(REALK),intent(inout) :: GAO(NVCLEN,NactBAS,NTYPSO)
 REAL(REALK),intent(inout) :: GAOMAX(NactBAS)
@@ -887,13 +888,13 @@ DO IBL = 1, NBLCNT
               & SPHMAT(SPINDEX(SHELLANGMOMA):SPINDEX(SHELLANGMOMA)+KHKTA*KCKTA-1),&
               & GAO,IADR,PA,PA2,DFTHRI,CC(CCINDEX(ISHELA)),&
               & CCSTART(CCINDEX(ISHELA)),PRIEXP,LVALUE(1:SPVAL,SHELLANGMOMA),&
-              & MVALUE(1:SPVAL,SHELLANGMOMA),NVALUE(1:SPVAL,SHELLANGMOMA),SPVAL,.TRUE.)
+              & MVALUE(1:SPVAL,SHELLANGMOMA),NVALUE(1:SPVAL,SHELLANGMOMA),SPVAL,Spherical)
       ELSE IF (NDER.GT. 0) THEN
          CALL II_BLGETGA1(LUPRI,NVCLEN,NactBAS,NTYPSO,SHELLANGMOMA,KHKTA,KCKTA,MXPRIM,JSTA,&
               & SPHMAT(SPINDEX(SHELLANGMOMA):SPINDEX(SHELLANGMOMA)+KHKTA*KCKTA-1),&
               & GAO,IADR,PA,PA2,DFTHRI,CC(CCINDEX(ISHELA)),&
               & CCSTART(CCINDEX(ISHELA)),PRIEXP,LVALUE(1:SPVAL,SHELLANGMOMA),&
-              & MVALUE(1:SPVAL,SHELLANGMOMA),NVALUE(1:SPVAL,SHELLANGMOMA),SPVAL,.TRUE.)
+              & MVALUE(1:SPVAL,SHELLANGMOMA),NVALUE(1:SPVAL,SHELLANGMOMA),SPVAL,Spherical)
          IF (NDER.GT. 1) THEN
             CALL II_BLGETGA2(LUPRI,NVCLEN,NactBAS,SHELLANGMOMA,KHKTA,KCKTA,MXPRIM,JSTA,&
               & SPHMAT(SPINDEX(SHELLANGMOMA):SPINDEX(SHELLANGMOMA)+KHKTA*KCKTA-1),&
@@ -902,7 +903,7 @@ DO IBL = 1, NBLCNT
               & GAO(:,:,9),GAO(:,:,10),IADR,&
               & PA,PA2,DFTHRI,CC(CCINDEX(ISHELA)),CCSTART(CCINDEX(ISHELA)),PRIEXP,&
               & LVALUE(1:SPVAL,SHELLANGMOMA),MVALUE(1:SPVAL,SHELLANGMOMA),&
-              & NVALUE(1:SPVAL,SHELLANGMOMA),SPVAL,.TRUE.)
+              & NVALUE(1:SPVAL,SHELLANGMOMA),SPVAL,Spherical)
             IF (NDER.GT. 2) THEN
 !               CALL II_BLGETGA3(NVCLEN,&
 !               &       GAO(1,IADR,11),GAO(1,IADR,12),GAO(1,IADR,13),&
@@ -934,21 +935,24 @@ DO IBL = 1, NBLCNT
 !!$         MVALUE(1)=0E0_realk
 !!$         NVALUE(1)=0E0_realk
 !!$      ENDIF
-      IADR = IADR + KHKTA !UPDATE ACTIVEORBITALINDEX
+      IF(Spherical)THEN
+         IADR = IADR + KHKTA !UPDATE ACTIVEORBITALINDEX
+      ELSE
+         IADR = IADR + KCKTA !UPDATE ACTIVEORBITALINDEX
+      ENDIF
    END DO
 END DO
-
 !call mem_dft_dealloc(LVALUE)
 !call mem_dft_dealloc(MVALUE)
 !call mem_dft_dealloc(NVALUE)
 
-!write (lupri,*) 'integrals from BLDFTAOS '
-!call output(gao(1,1,1),1,nvclen,1,nbast,nvclen,NactBAS,1,lupri)
-!write (lupri,*) 'x integrals from BLDFTAOS '
+!write (lupri,*) 'integrals from II_BLGETSOS',nvclen,NactBAS
+!call output(gao(1,1,1),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
+!write (lupri,*) 'x integrals from II_BLGETSOS'
 !call output(gao(1,1,2),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
-!write (lupri,*) 'y integrals from BLDFTAOS '
+!write (lupri,*) 'y integrals from II_BLGETSOS'
 !call output(gao(1,1,3),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
-!write (lupri,*) 'z integrals from BLDFTAOS '
+!write (lupri,*) 'z integrals from II_BLGETSOS'
 !call output(gao(1,1,4),1,nvclen,1,NactBAS,nvclen,NactBAS,1,lupri)
 !if (nder.eq. 2) then
 !   WRITE(lupri,*)'COOR(1,:)',(COOR(1,i),I=1,NVCLEN)
@@ -1387,7 +1391,7 @@ END SUBROUTINE II_GETRHO_BLOCKED_META
 !> \date 2010
 SUBROUTINE II_BLGETGAO(LUPRI,NVCLEN,NactBAS,NTYPSO,SHELLANGMOMA,KHKTA,KCKTA,MXPRIM,JSTA,&
                      & CSP,GAO,IADR,PA,PA2,DFTHRI,CC,CCSTART,PRIEXP,LVALUE,MVALUE,&
-                     &NVALUE,SPVAL,SPHRA)
+                     &NVALUE,SPVAL,Spherical)
 IMPLICIT NONE
 INTEGER,intent(in)        :: NVCLEN,NactBAS,MXPRIM,KHKTA,JSTA,KCKTA,LUPRI,SHELLANGMOMA
 INTEGER,intent(in)        :: SPVAL,CCSTART,IADR,NTYPSO,LVALUE(SPVAL),MVALUE(SPVAL)
@@ -1402,7 +1406,7 @@ REAL(REALK)    :: GAZ,GAXX,GAX,GAY,GAYY,GMAX,PA_1,PA_2,PA_3
 REAL(REALK)    :: PRICCFVAL,PRIEXPVAL
 INTEGER        :: I,J,TEMPI,LVALJ, MVALJ, NVALJ, LVALI, MVALI, NVALI,K
 INTEGER        :: ISTART1,ISTART2,ISTART3,ISTART4,ISTART5,ISTART6,ISTART
-LOGICAl        :: SPHRA
+LOGICAl        :: Spherical
 REAL(REALK),pointer  :: GA(:),CINT(:),CINT2(:,:)
 
 call mem_dft_alloc(GA,NVCLEN)
@@ -1462,7 +1466,7 @@ ELSEIF (SHELLANGMOMA .EQ. 2) THEN !p orbitals
       CALL LS_DZERO(GAO(1,ISTART3,1),NVCLEN)
    END IF
 ELSEIF (SHELLANGMOMA .EQ. 3) THEN !d orbitals
-   IF (SPHRA) THEN
+   IF (Spherical) THEN
       IF (GMAX .GT. DFTHRI) THEN
          DO K = 1, NVCLEN
             GAO(K,ISTART1,1) = PA(2,K)*PA(1,K)*GA(K)
@@ -1505,7 +1509,7 @@ ELSEIF (SHELLANGMOMA .EQ. 3) THEN !d orbitals
       END IF
    END IF
 ELSEIF (SHELLANGMOMA .EQ. 4) THEN !f orbitals
-   IF (SPHRA) THEN
+   IF (Spherical) THEN
       !KCKTA=10
       IF (GMAX .GT. DFTHRI) THEN
          call mem_dft_alloc(CINT2,NVCLEN,KCKTA)
@@ -1554,7 +1558,7 @@ ELSEIF (SHELLANGMOMA .EQ. 4) THEN !f orbitals
       END IF
    ELSE
       IF (GMAX .GT. DFTHRI) THEN
-         DO I = 1, KHKTA
+         DO I = 1, KCKTA
             LVALI = LVALUE(I)
             MVALI = MVALUE(I)
             NVALI = NVALUE(I)
@@ -1567,7 +1571,7 @@ ELSEIF (SHELLANGMOMA .EQ. 4) THEN !f orbitals
       END IF
    ENDIF
 ELSE !higher than f orbitals
-   IF (SPHRA) THEN
+   IF (Spherical) THEN
       call mem_dft_alloc(CINT,NVCLEN)
       DO I = 1, KHKTA
          CALL LS_DZERO(GAO(1,ISTART+I,1),NVCLEN)
@@ -1592,7 +1596,7 @@ ELSE !higher than f orbitals
       call mem_dft_dealloc(CINT)
    ELSE
       IF (GMAX .GT. DFTHRI) THEN
-         DO I = 1, KHKTA
+         DO I = 1, KCKTA
             LVALI = LVALUE(I)
             MVALI = MVALUE(I)
             NVALI = NVALUE(I)
@@ -1614,7 +1618,7 @@ END SUBROUTINE II_BLGETGAO
 !> \date 2010
 SUBROUTINE II_BLGETGA1(LUPRI,NVCLEN,NactBAS,NTYPSO,SHELLANGMOMA,KHKTA,KCKTA,MXPRIM,JSTA,&
                      & CSP,GAO,IADR,PA,PA2,DFTHRI,CC,CCSTART,PRIEXP,LVALUE,MVALUE,&
-                     & NVALUE,SPVAL,SPHRA)
+                     & NVALUE,SPVAL,Spherical)
  
 IMPLICIT NONE
 INTEGER,intent(in)        :: NVCLEN,NactBAS,MXPRIM,KHKTA,JSTA,KCKTA,LUPRI,SHELLANGMOMA
@@ -1623,7 +1627,7 @@ REAL(REALK),PARAMETER     :: D0 = 0.0E0_realk, D1 = 1.0E0_realk,D2 = 2.0E0_realk
 REAL(REALK),intent(inout) :: GAO(NVCLEN,NactBAS,NTYPSO) !NTYPSO=4
 REAL(REALK),intent(in)    :: PA(3,NVCLEN),PA2(NVCLEN),DFTHRI
 REAL(REALK),intent(in)    :: CSP(KHKTA,KCKTA),PRIEXP(MXPRIM)
-LOGICAL,intent(in)        :: SPHRA
+LOGICAL,intent(in)        :: Spherical
 TYPE(LSMATRIX),intent(in) :: CC
 !
 INTEGER                   :: I,J,K
@@ -1666,7 +1670,7 @@ DO I = 2,CC%nrow
    END DO
 END DO
 
-IF (SPHRA) THEN
+IF (Spherical) THEN
    call mem_dft_alloc(CAO,NVCLEN,KCKTA)
    call mem_dft_alloc(CAOX,NVCLEN,KCKTA)
    call mem_dft_alloc(CAOY,NVCLEN,KCKTA)
@@ -1749,7 +1753,7 @@ ELSE
       call mem_dft_alloc(FY,NVCLEN)
       call mem_dft_alloc(FZ,NVCLEN)
       DO K = 1, NVCLEN
-         FX(K) = PA(1,K)*GU(K)!CHANGE TO PA(K,1-3)
+         FX(K) = PA(1,K)*GU(K)
          FY(K) = PA(2,K)*GU(K)
          FZ(K) = PA(3,K)*GU(K)
       END DO
@@ -1781,7 +1785,7 @@ ELSE
                     &  (PA_3**(N-1))*GAVAL
             ENDIF
          END DO
-         IF (SPHRA) THEN
+         IF (Spherical) THEN
             DO K = 1, NVCLEN
                CAO (K, ICOMPA) = GA(K)*P0(K)
                CAOX(K, ICOMPA) = GAX(K)
@@ -1790,7 +1794,7 @@ ELSE
             END DO
          ELSE
             TEMPI = ISTART+ICOMPA
-            DO K = 1, NVCLEN
+            DO K = 1, NVCLEN            
                GAO(K,TEMPI,I0) = GA(K)*P0(K)
             END DO
             DO K = 1, NVCLEN
@@ -1807,7 +1811,7 @@ ELSE
       call mem_dft_dealloc(GAX)
       call mem_dft_dealloc(GAY)
       call mem_dft_dealloc(GAZ)
-      IF(SPHRA) THEN
+      IF(Spherical) THEN
          IF (SHELLANGMOMA.EQ. 3) THEN !d orbitals
             DO K = 1, NVCLEN
                GAO(K,ISTART1,I0) = CSP(1,2)*CAO(K,2)
@@ -1869,7 +1873,7 @@ ELSE
       call mem_dft_dealloc(FY)
       call mem_dft_dealloc(FZ)
    ELSE
-     IF (.NOT.SPHRA) THEN
+      IF (.NOT.Spherical) THEN
          DO I = 1, KCKTA
             TEMPI = ISTART+I
             CALL LS_DZERO(GAO(1,TEMPI,I0),NVCLEN)
@@ -1912,7 +1916,7 @@ ELSE
    END IF
 END IF
 
-IF (SPHRA) THEN
+IF (Spherical) THEN
    call mem_dft_dealloc(CAO)
    call mem_dft_dealloc(CAOX)
    call mem_dft_dealloc(CAOY)
@@ -1928,7 +1932,7 @@ END SUBROUTINE II_BLGETGA1
 !> \date 2010
 SUBROUTINE II_BLGETGA2(LUPRI,NVCLEN,NactBAS,SHELLANGMOMA,KHKTA,KCKTA,MXPRIM,JSTA,&
                      & CSP,GAOXX,GAOXY,GAOXZ,GAOYY,GAOYZ,GAOZZ,IADR,PA,PA2,&
-                     &DFTHRI,CC,CCSTART,PRIEXP,LVALUETK,MVALUETK,NVALUETK,SPVAL,SPHRA)
+                     &DFTHRI,CC,CCSTART,PRIEXP,LVALUETK,MVALUETK,NVALUETK,SPVAL,Spherical)
 IMPLICIT NONE
 INTEGER,intent(in)        :: NVCLEN,MXPRIM,KHKTA,JSTA,KCKTA,LUPRI,SHELLANGMOMA,NactBAS
 INTEGER,intent(in)        :: SPVAL,CCSTART,IADR
@@ -1937,7 +1941,7 @@ REAL(REALK),intent(inout) :: GAOXZ(NVCLEN,NactBAS), GAOYY(NVCLEN,NactBAS)
 REAL(REALK),intent(inout) :: GAOYZ(NVCLEN,NactBAS), GAOZZ(NVCLEN,NactBAS)
 REAL(REALK),intent(in)    :: PA(3,NVCLEN),PA2(NVCLEN),CSP(KHKTA,KCKTA),PRIEXP(MXPRIM),DFTHRI
 INTEGER,intent(in)        :: LVALUETK(SPVAL),MVALUETK(SPVAL),NVALUETK(SPVAL)
-LOGICAL,intent(in)        :: SPHRA
+LOGICAL,intent(in)        :: Spherical
 TYPE(LSMATRIX),intent(in) :: CC
 !
 INTEGER,PARAMETER         :: I0=1, IX=2, IY=3, IZ=4
@@ -1956,7 +1960,7 @@ DO IV = 1, NVCLEN
    PA_2=PA(2,IV)
    PA_3=PA(3,IV)
    PA2_B=PA2(IV)
-   IF (SPHRA) THEN
+   IF (Spherical) THEN
       DO I=1,KCKTA
          CAOXX(I) = D0
          CAOXY(I) = D0
@@ -2024,7 +2028,7 @@ DO IV = 1, NVCLEN
                GAXZ = TAPAX*TAPAZ*P000 + (PXP*PZM+PXM*PZP+PXM*PZM)*PY0
                GAYZ = TAPAY*TAPAZ*P000 + (PYP*PZM+PYM*PZP+PYM*PZM)*PX0
             END IF
-            IF (SPHRA.AND.SHELLANGMOMA.GT. 2) THEN
+            IF (Spherical.AND.SHELLANGMOMA.GT. 2) THEN
                CAOXX(ICOMPA) = CAOXX(ICOMPA) + GAXX*GA 
                CAOXY(ICOMPA) = CAOXY(ICOMPA) + GAXY*GA 
                CAOXZ(ICOMPA) = CAOXZ(ICOMPA) + GAXZ*GA
@@ -2043,7 +2047,7 @@ DO IV = 1, NVCLEN
          END DO
       END IF
    END DO
-   IF (SPHRA.AND.SHELLANGMOMA.GT. 2) THEN
+   IF (Spherical.AND.SHELLANGMOMA.GT. 2) THEN
       DO I = 1,KHKTA
          SPHXX = D0 
          SPHXY = D0 
