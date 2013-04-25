@@ -4225,41 +4225,4 @@ retval=0
   end subroutine print_total_energy_summary
 
 
-  !> \brief Get number of atoms in AOS for fragment
-  !> \author Kasper Kristensen
-  !> \date April 2013
-  subroutine get_number_of_atoms_in_fragment_AOS(natomsfull, myfragment, natomsAOS)
-    implicit none
-    !> Number of atoms in full molecule
-    integer,intent(in) :: natomsfull
-    !> Fragment under consideration
-    type(ccatom),intent(in) :: myfragment
-    !> Number of atoms in fragment AOS
-    integer,intent(inout) :: natomsAOS
-    integer :: i
-    logical,pointer :: which_atoms(:)
-
-
-    ! Which atoms are in fragment AOS
-    call mem_alloc(which_atoms,natomsfull)
-    which_atoms=.false.
-
-    ! Check occupied AOS
-    do i=1,myfragment%noccAOS
-       which_atoms(myfragment%occAOSorb(i)%centralatom) = .true.
-    end do
-
-    ! Check unoccupied AOS
-    do i=1,myfragment%nunoccAOS
-       which_atoms(myfragment%unoccAOSorb(i)%centralatom) = .true.
-    end do
-
-    ! Number of atoms in occ+unocc AOS
-    natomsAOS = count(which_atoms)
-    
-    call mem_dealloc(which_atoms)
-
-  end subroutine get_number_of_atoms_in_fragment_AOS
-
-
 end module dec_fragment_utils
