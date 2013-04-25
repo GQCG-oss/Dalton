@@ -44,7 +44,7 @@
 
 
 Start simulation
-     Date and time (Linux)  : Tue Apr 23 14:33:44 2013 
+     Date and time (Linux)  : Tue Apr 23 14:34:06 2013 
      Host name              : kasper-kristensens-macbook-pro.local    
                       
  -----------------------------------------
@@ -78,14 +78,19 @@ Start simulation
   DEBUG_MPI_MEM                                                                                       
   $END INFO                                                                                           
   **DEC                                                                                               
+  .FrozenCore                                                                                         
   .MPIsplit                                                                                           
   0                                                                                                   
   .manual_batchsizes                                                                                  
   19 19                                                                                               
-  .CC2                                                                                                
-  .ccThr                                                                                              
-  1e-9                                                                                                
+  .CCSDforce_scheme                                                                                   
+  2                                                                                                   
+  .CCSDsolver_par                                                                                     
+  .CCSDdynamic_load                                                                                   
   .SimulateFull                                                                                       
+  .CCSD                                                                                               
+  .ccThr                                                                                              
+  1e-7                                                                                                
   *END OF INPUT                                                                                       
   
   MOLPRINT IS SET TO       0
@@ -1388,8 +1393,8 @@ FULL: Number of virt. orbitals   :     14
 
 
  get_available_memory: System identified to be MAC!
- Available Memory (GB) =       2.1250    
- Memory found by system call to be:    2.125     GB
+ Available Memory (GB) =       2.1300    
+ Memory found by system call to be:    2.130     GB
 
 DEC calculation is carried out...
 
@@ -1414,9 +1419,9 @@ Print level            =    0
   Coupled-cluster input  
 --------------------------
 
-Wave function          = CC2     
+Wave function          = CCSD    
 MaxIter                =  100
-Convergence thr        =  0.1E-08
+Convergence thr        =  0.1E-06
 Use CROP               = T
 CROP subspace          =    3
 Preconditioner         = T
@@ -1477,7 +1482,7 @@ Debug mode             = F
  FOP---------------------------------------------------------
  FOP Loop: Fragment number                  :   1
  FOP Loop: Number of orbitals in virt total :  14
- FOP Loop: Number of orbitals in occ total  :   5
+ FOP Loop: Number of orbitals in occ total  :   4
  FOP Loop: Lagrangian Fragment energy       :    0.0000000000
  FOP Loop: Occupied Fragment energy         :    0.0000000000
  FOP Loop: Virtual Fragment energy          :    0.0000000000
@@ -1496,12 +1501,12 @@ Debug mode             = F
               Atomic fragments listed according to total size
  *******************************************************************************
     Index     Occupied (no. orb)      Virtual (no. orb)   Basis funcs.
-      1               5                     14              19
+      1               4                     14              19
 
- FRAGANALYSIS: Max occ          5
+ FRAGANALYSIS: Max occ          4
  FRAGANALYSIS: Max unocc       14
  FRAGANALYSIS: Max basis       19
- FRAGANALYSIS: Ave occ        5.0000    
+ FRAGANALYSIS: Ave occ        4.0000    
  FRAGANALYSIS: Ave unocc      14.000    
  FRAGANALYSIS: Ave basis      19.000    
 
@@ -1513,7 +1518,7 @@ Debug mode             = F
  Number of jobs =            1
 
  JobIndex            Jobsize         Atom(s) involved 
-        1               1330              1
+        1               1064              1
 
 
  DEC JOB SUMMARY: Number of single jobs =          1
@@ -1524,9 +1529,9 @@ Debug mode             = F
 
  *** Calculating single and pair interaction energies ***
 
- The Coulomb energy contribution    56.106819800572119     
- The Exchange energy contribution    10.480096600031985     
- The Fock energy contribution   -45.626723200540113     
+ The Coulomb energy contribution    26.241057349835877     
+ The Exchange energy contribution    4.7395346147852528     
+ The Fock energy contribution   -21.501522735050607     
  QQQ New  h:   8873.1410351435934     
  QQQ New  K:   2159.9149568239877     
 
@@ -1535,186 +1540,158 @@ Debug mode             = F
  ###  Iteration     Residual norm          CC energy
  BATCH: Number of Gamma batches   =            1 with maximum size          19
  BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
+Using memory saving scheme (NON-PDM), this is only for non-MPI
+Using  0.1500% of available Memory in part B on master
+Using  0.0035% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.106819800572119     
- The Exchange energy contribution    10.480096600031985     
- The Fock energy contribution   -45.626723200540113     
+ The Coulomb energy contribution    26.241057349835877     
+ The Exchange energy contribution    4.7395346147852528     
+ The Fock energy contribution   -21.501522735050607     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###      1         0.966051568             0.00000000    
+ ###      1         0.938757545             0.00000000    
  BATCH: Number of Gamma batches   =            1 with maximum size          19
  BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
+Using memory saving scheme (NON-PDM), this is only for non-MPI
+Using  0.1500% of available Memory in part B on master
+Using  0.0035% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.106819800572097     
- The Exchange energy contribution    10.480096600031985     
- The Fock energy contribution   -45.626723200540098     
+ The Coulomb energy contribution    26.241057349835888     
+ The Exchange energy contribution    4.7395346147852582     
+ The Fock energy contribution   -21.501522735050600     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###      2         0.268908400E-01       -0.201793444    
+ ###      2         0.859690132E-01       -0.206797017    
  BATCH: Number of Gamma batches   =            1 with maximum size          19
  BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
+Using memory saving scheme (NON-PDM), this is only for non-MPI
+Using  0.1500% of available Memory in part B on master
+Using  0.0035% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.038238853899927     
- The Exchange energy contribution    10.470947253509086     
- The Fock energy contribution   -45.567291600390860     
+ The Coulomb energy contribution    26.197212828863734     
+ The Exchange energy contribution    4.7313189041588162     
+ The Fock energy contribution   -21.465893924704922     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###      3         0.102244702E-01       -0.202749618    
+ ###      3         0.219560932E-01       -0.206097362    
  BATCH: Number of Gamma batches   =            1 with maximum size          19
  BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
+Using memory saving scheme (NON-PDM), this is only for non-MPI
+Using  0.1500% of available Memory in part B on master
+Using  0.0035% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.040890265201263     
- The Exchange energy contribution    10.471192176317935     
- The Fock energy contribution   -45.569698088883342     
+ The Coulomb energy contribution    26.201560055871514     
+ The Exchange energy contribution    4.7320695961798878     
+ The Fock energy contribution   -21.469490459691613     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###      4         0.107507000E-02       -0.202814245    
+ ###      4         0.503271026E-02       -0.204661784    
  BATCH: Number of Gamma batches   =            1 with maximum size          19
  BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
+Using memory saving scheme (NON-PDM), this is only for non-MPI
+Using  0.1500% of available Memory in part B on master
+Using  0.0035% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.037565295625093     
- The Exchange energy contribution    10.470778842973298     
- The Fock energy contribution   -45.566786452651783     
+ The Coulomb energy contribution    26.198538112035003     
+ The Exchange energy contribution    4.7315585015477355     
+ The Fock energy contribution   -21.466979610487254     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###      5         0.513282832E-03       -0.202853240    
+ ###      5         0.904680712E-03       -0.205212110    
  BATCH: Number of Gamma batches   =            1 with maximum size          19
  BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
+Using memory saving scheme (NON-PDM), this is only for non-MPI
+Using  0.1500% of available Memory in part B on master
+Using  0.0035% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.037450444534805     
- The Exchange energy contribution    10.470776251063620     
- The Fock energy contribution   -45.566674193471172     
+ The Coulomb energy contribution    26.198543682779910     
+ The Exchange energy contribution    4.7315669250572112     
+ The Fock energy contribution   -21.466976757722687     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###      6         0.837667929E-04       -0.202849249    
+ ###      6         0.176016204E-03       -0.205282040    
  BATCH: Number of Gamma batches   =            1 with maximum size          19
  BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
+Using memory saving scheme (NON-PDM), this is only for non-MPI
+Using  0.1500% of available Memory in part B on master
+Using  0.0035% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.037366057972825     
- The Exchange energy contribution    10.470770865757844     
- The Fock energy contribution   -45.566595192215004     
+ The Coulomb energy contribution    26.198508234262441     
+ The Exchange energy contribution    4.7315632570855417     
+ The Fock energy contribution   -21.466944977176883     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###      7         0.211519194E-04       -0.202845931    
+ ###      7         0.469742538E-04       -0.205262979    
  BATCH: Number of Gamma batches   =            1 with maximum size          19
  BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
+Using memory saving scheme (NON-PDM), this is only for non-MPI
+Using  0.1500% of available Memory in part B on master
+Using  0.0035% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.037352660595509     
- The Exchange energy contribution    10.470769410728845     
- The Fock energy contribution   -45.566583249866675     
+ The Coulomb energy contribution    26.198486617588191     
+ The Exchange energy contribution    4.7315604021139910     
+ The Fock energy contribution   -21.466926215474196     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###      8         0.264841425E-05       -0.202846434    
+ ###      8         0.115327909E-04       -0.205263221    
  BATCH: Number of Gamma batches   =            1 with maximum size          19
  BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
+Using memory saving scheme (NON-PDM), this is only for non-MPI
+Using  0.1500% of available Memory in part B on master
+Using  0.0035% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.037352117524350     
- The Exchange energy contribution    10.470769323500773     
- The Fock energy contribution   -45.566582794023574     
+ The Coulomb energy contribution    26.198481402191177     
+ The Exchange energy contribution    4.7315596863045100     
+ The Fock energy contribution   -21.466921715886649     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###      9         0.373262965E-06       -0.202846550    
+ ###      9         0.211149152E-05       -0.205264069    
  BATCH: Number of Gamma batches   =            1 with maximum size          19
  BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
+Using memory saving scheme (NON-PDM), this is only for non-MPI
+Using  0.1500% of available Memory in part B on master
+Using  0.0035% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.037352210871518     
- The Exchange energy contribution    10.470769335805326     
- The Fock energy contribution   -45.566582875066182     
+ The Coulomb energy contribution    26.198480672747472     
+ The Exchange energy contribution    4.7315595941845441     
+ The Fock energy contribution   -21.466921078562933     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###     10         0.833385370E-07       -0.202846544    
+ ###     10         0.370493630E-06       -0.205263928    
  BATCH: Number of Gamma batches   =            1 with maximum size          19
  BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
+Using memory saving scheme (NON-PDM), this is only for non-MPI
+Using  0.1500% of available Memory in part B on master
+Using  0.0035% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
  Since the full 4 dim is used we call the more efficient
  II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.037352200247014     
- The Exchange energy contribution    10.470769335764732     
- The Fock energy contribution   -45.566582864482250     
+ The Coulomb energy contribution    26.198480398228956     
+ The Exchange energy contribution    4.7315595506166561     
+ The Fock energy contribution   -21.466920847612307     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###     11         0.161172505E-07       -0.202846543    
- BATCH: Number of Gamma batches   =            1 with maximum size          19
- BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
- Starting DEC-CCSD integral/amplitudes - NO OMP!
- Since the full 4 dim is used we call the more efficient
- II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.037352197010463     
- The Exchange energy contribution    10.470769335758947     
- The Fock energy contribution   -45.566582861251518     
-Fock trafo:         0.0000
-S and E   :         0.0000
- ###     12         0.408255782E-08       -0.202846544    
- BATCH: Number of Gamma batches   =            1 with maximum size          19
- BATCH: Number of Alpha batches   =            1 with maximum size          19
-Using memory intensive scheme (NON-PDM)
-Using  0.1583% of available Memory in part B on master
-Using  0.0140% of available Memory in part C on master
- Starting DEC-CCSD integral/amplitudes - NO OMP!
- Since the full 4 dim is used we call the more efficient
- II_GET_DECPACKED4CENTER_J_ERI to calc the full 4 dim int
- The Coulomb energy contribution    56.037352193110159     
- The Exchange energy contribution    10.470769335368272     
- The Fock energy contribution   -45.566582857741878     
-Fock trafo:         0.0000
-S and E   :         0.0000
- ###     13         0.805105934E-09       -0.202846544    
+ ###     11         0.755650242E-07       -0.205263901    
 
 
 -------------------------------
@@ -1722,17 +1699,48 @@ S and E   :         0.0000
 -------------------------------
 
 Hooray! CC equation is solved!
-CCSOL: Total cpu time    =            4.240 s
-CCSOL: Total wall time   =            4.251 s
-Frag. corr. energy =    -0.2028465440
-Number of CC iterations =   13
+CCSOL: Total cpu time    =            3.905 s
+CCSOL: Total wall time   =            3.889 s
+Frag. corr. energy =    -0.2052639007
+Number of CC iterations =   11
+
+  Array4 statistics       
+ ==================================================
+ Number of created arrays   :        2
+ Number of destroyed arrays :        0
+ Orphaned arrays            :        2
+
+  Array4 time statistics     
+ ==================================================
+ array4_init              :                  0.00s 
+ array4_free              :                  0.00s 
+ array4_duplicate         :                  0.00s 
+ array4_alloc          :                  0.00s 
+ array4_dealloc        :                  0.00s 
+ array4_write_data        :                  0.00s 
+ array4_read_data         :                  0.00s 
+ array4_write             :                  0.00s 
+ array4_read              :                  0.00s 
+ array4_add               :                  0.00s 
+ array4_add_to            :                  0.00s 
+ array4_scale             :                  0.00s 
+ array4_dotproduct        :                  0.00s 
+ array4_norm              :                  0.00s 
+ array4_contract1         :                  0.00s 
+ array4_contract2         :                  0.00s 
+ array4_contract2_middle  :                  0.00s 
+ array4_contract3         :                  0.00s 
+ array4_contract_array2   :                  0.00s 
+ array4_mat_multiply      :                  0.00s 
+ array4_reorder           :                  0.00s 
+ array4_contract_with_ao  :                  0.00s 
 
 
  **********************************************************************
  Energy summary for fragment:       1
  **********************************************************************
- Single occupied energy =    -0.2028465440    
- Single virtual  energy =    -0.2028465440    
+ Single occupied energy =    -0.2052639007    
+ Single virtual  energy =    -0.2052639007    
  Single Lagrangian occ term  =      0.000000000    
  Single Lagrangian virt term =      0.000000000    
 
@@ -1744,36 +1752,36 @@ Number of CC iterations =   13
 
 
  =================================================================
- CC2 occupied single energies
+ CCSD occupied single energies
  =================================================================
 
  Fragment       Energy
-     1      -0.2028465440    
+     1      -0.2052639007    
 
 
  =================================================================
- CC2 virtual single energies
+ CCSD virtual single energies
  =================================================================
 
  Fragment       Energy
-     1      -0.2028465440    
+     1      -0.2052639007    
 
 
  =================================================================
- CC2 occupied pair energies
+ CCSD occupied pair energies
  =================================================================
 
   Frag1  Frag2     Dist(Ang)        Energy
 
 
  =================================================================
- CC2 virtual pair energies
+ CCSD virtual pair energies
  =================================================================
 
   Frag1  Frag2     Dist(Ang)        Energy
 
- CC2 occupied   correlation energy :    -0.2028465440    
- CC2 virtual    correlation energy :    -0.2028465440    
+ CCSD occupied   correlation energy :    -0.2052639007    
+ CCSD virtual    correlation energy :    -0.2052639007    
 
 
 
@@ -1789,9 +1797,9 @@ Number of CC iterations =   13
              **********************************************************
 
                E: Hartree-Fock energy :     -100.0190860355
-               E: Correlation energy  :       -0.2028465440
+               E: Correlation energy  :       -0.2052639007
                E: Estimated DEC error :        0.0000000000
-               E: Total CC2 energy    :     -100.2219325795
+               E: Total CCSD energy   :     -100.2243499362
 
 
 
@@ -1809,9 +1817,9 @@ Number of CC iterations =   13
 
  DEC memory summary
  ------------------
- Allocated memory for array4   :  0.8663E-02 GB
+ Allocated memory for array4   :  0.2007E-03 GB
  Memory in use for array4      :   0.000     GB
- Max memory in use for array4  :  0.4312E-03 GB
+ Max memory in use for array4  :  0.1505E-03 GB
  ------------------
  Allocated memory for array3   :   0.000     GB
  Memory in use for array3      :   0.000     GB
@@ -1820,13 +1828,13 @@ Number of CC iterations =   13
 
 
 ------------------------------------------------------
-Total CPU  time used in DEC           :         4.28902     s
-Total Wall time used in DEC           :         4.39100     s
+Total CPU  time used in DEC           :         3.95324     s
+Total Wall time used in DEC           :         4.03000     s
 ------------------------------------------------------
 
 
 Hostname       : kasper-kristensens-macbook-pro.local              
-Job finished   : Date: 23/04/2013   Time: 14:33:51
+Job finished   : Date: 23/04/2013   Time: 14:34:12
 
 
 
@@ -1855,7 +1863,7 @@ Job finished   : Date: 23/04/2013   Time: 14:33:51
 
 
  *****************************************************
- **     CPU-TIME USED IN LSDALTON RESPONSE:   1.11720000000001818E-002    **
+ **     CPU-TIME USED IN LSDALTON RESPONSE:   1.10839999999994276E-002    **
  *****************************************************
 
 Total no. of matmuls used:                      1027
@@ -1912,13 +1920,13 @@ Total no. of Fock/KS matrix evaluations:          15
   Max allocated memory, logical                        1.380 kB
   Max allocated memory, character                      3.440 kB
   Max allocated memory, AOBATCH                       10.212 kB
-  Max allocated memory, CCORBITAL                      1.368 kB
+  Max allocated memory, CCORBITAL                      1.332 kB
   Max allocated memory, CCATOM                        10.384 kB
   Max allocated memory, BATCHTOORB                    56.000 Byte
   Max allocated memory, MYPOINTER                      0.000 Byte
-  Max allocated memory, ARRAY2                         8.800 kB
-  Max allocated memory, ARRAY4                        51.200 kB
-  Max allocated memory, ARRAY                          0.000 Byte
+  Max allocated memory, ARRAY2                         0.000 Byte
+  Max allocated memory, ARRAY4                         0.000 Byte
+  Max allocated memory, ARRAY                        316.800 kB
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
@@ -1944,5 +1952,5 @@ Total no. of Fock/KS matrix evaluations:          15
 
 
 End simulation
-     Date and time (Linux)  : Tue Apr 23 14:33:51 2013 
+     Date and time (Linux)  : Tue Apr 23 14:34:12 2013 
      Host name              : kasper-kristensens-macbook-pro.local    

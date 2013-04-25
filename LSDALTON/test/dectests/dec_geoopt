@@ -55,6 +55,7 @@ cat > dec_geoopt.dal <<'%EOF%'
 .ARH DAVID
 .START
 TRILEVEL
+.NOATOMSTART
 .CONVTHR
 1.0d-6
 $INFO

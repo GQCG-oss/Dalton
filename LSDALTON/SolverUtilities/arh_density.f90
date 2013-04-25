@@ -11,19 +11,23 @@
 !> Direct density: P. Sałek, S. Høst, L. Thøgersen et al. JCP 126, 114110 (2007)
 !>
 module arhDensity
-use matrix_operations_aux
-use dal_interface
+use precision
+use matrix_module
 use decompMod
-use files
 use queue_ops
+use queue_module
+use lsdalton_fock_module
+use memory_handling
+use dal_interface
+use matrix_operations_aux
+use files
 use matrix_util
 use typedeftype
 use II_XC_interfaceModule
-use lsdalton_fock_module
-         !> Used to pass info about symmetry of trial vectors/matrices
-         integer, parameter :: symmetric = 1
-         !> Used to pass info about symmetry of trial vectors/matrices
-         integer, parameter :: antisymmetric = 2
+!> Used to pass info about symmetry of trial vectors/matrices
+integer, parameter :: symmetric = 1
+!> Used to pass info about symmetry of trial vectors/matrices
+integer, parameter :: antisymmetric = 2
 
 !> \author S. Host
 !> \date March 2010
@@ -992,8 +996,6 @@ contains
    !> \callgraph
    !>
    subroutine arh_lintrans(arh,decomp,x_in,symm,mu,AX,fifoqueue)
-   use decompMod
-   use dal_interface
    implicit none  
          !> Contains solver info (ARH/TrFD)
          type(solverItem)          :: arh

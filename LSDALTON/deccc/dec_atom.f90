@@ -1522,7 +1522,11 @@ contains
     logical :: debugprint,keepon  ! temporary debug prints
     real(realk) :: diagdev, nondiagdev
 
-    debugprint=.true.
+    if(DECinfo%PL>0) then
+       debugprint=.true.
+    else
+       debugprint=.false.
+    end if
     lambdathr_default = 1.0e-3_realk
 
     ! Initial dimensions for FA space (remove EOS)
@@ -3789,9 +3793,9 @@ if(DECinfo%PL>0) then
     call mem_alloc(REDunoccAOS,nunocc,natoms)
     call mem_alloc(Fragbasis,nbasis,natoms)
     call mem_alloc(fragsize,natoms)
-    call mem_alloc(occsize,nocc)
-    call mem_alloc(unoccsize,nunocc)
-    call mem_alloc(basissize,nbasis)
+    call mem_alloc(occsize,natoms)
+    call mem_alloc(unoccsize,natoms)
+    call mem_alloc(basissize,natoms)
     occAOS=.false.
     unoccAOS=.false.
     REDoccAOS=.false.
@@ -3801,6 +3805,7 @@ if(DECinfo%PL>0) then
     occsize=0
     unoccsize=0
     basissize=0
+
 
     GetStandardFrag: do atom=1,natoms
 

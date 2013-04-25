@@ -2606,13 +2606,8 @@ CONTAINS
                 WORD = "BX"
                 !Here hfweight is only used as a dummy variable
                 call II_DFTsetFunc(WORD(1:80),hfweight) 
-                
-                call get_quadfilename(L3file,nbast,setting%node)
-                call get_quadfilename(L2file,nbast2,setting%node)
-                
-                grid_done = setting%scheme%dft%grdone.EQ.1
-                IF (grid_done) call get_dft_grid(setting%scheme%dft%L2grid,&
-                                                & L2file,setting%scheme%dft)
+                !choose the ADMM Level 2 grid
+                setting%scheme%dft%igrid = Grid_ADMML2
                      
                 !!Only test electrons if the D2 density
                 ! matrix is McWeeny purified
@@ -2633,10 +2628,9 @@ CONTAINS
                 call mat_daxpy(-setting%scheme%exchangeFactor,TMPF3,K(ibmat))
                 setting%scheme%dft%testNelectrons = testNelectrons
 
-                !Re-set to level 3 grid, assuming it is calculated
-                call get_dft_grid(setting%scheme%dft%L3grid,&
-                                        & L3file,setting%scheme%dft)
-                
+                !Re-set to level 3 grid
+                setting%scheme%dft%igrid = Grid_Default
+
                 !!Only test electrons if the D2 density
                 ! matrix is McWeeny purified
                 testNelectrons = setting%scheme%dft%testNelectrons

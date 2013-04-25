@@ -43,6 +43,7 @@ C  codata.h : XTKAYS
 C  gnrinf.h : THR_REDFAC
 C  symmet.h : ISYMAX
 C  infvar.h : NCONF
+C  inftab.h : LUPROP
 #include "implicit.h"
 #include "priunit.h"
 #include "codata.h" 
@@ -55,19 +56,22 @@ C  infvar.h : NCONF
 #include "abslrs.h"
 #include "absorp.h"
 #include "inforb.h"
+#include "inftap.h"
 C
-      LOGICAL NEWDEF, ALLCOMP
-      PARAMETER ( NTABLE = 17 )
+      LOGICAL NEWDEF, ALLCOMP, NXTLAB
+      PARAMETER ( NTABLE = 19 )
       PARAMETER ( THRFRQ=1.0D-14, THD=1.0D-6 )
       CHARACTER PROMPT*1, WORD*7, WORD1*7, TABLE(NTABLE)*7
-      CHARACTER*8 DIPLEN(3),ANGMOM(3)
+      CHARACTER*8 DIPLEN(3),ANGMOM(3),THETA(6),RTNLBL(2),LABFND
 C
       DATA DIPLEN/'XDIPLEN','YDIPLEN','ZDIPLEN'/
       DATA ANGMOM/'XANGMOM','YANGMOM','ZANGMOM'/
+      DATA THETA/'XXTHETA','XYTHETA','XZTHETA','YYTHETA','YZTHETA',
+     &           'ZZTHETA'/
       DATA TABLE /'.ALPHA ','.FREQUE','.THCLR ','.MAXIT ','.MAXRM ',
      &            '.PRINT ','.DAMPIN','.ANALYZ','.FREQ I','.MCD   ',
-     &            '.BFREQ ','.BFREQI','.XXCOMP','.YYCOMP','.ZZCOMP',
-     &            '.IMAG F','.NBATCH'/
+     &            '.MCHD  ','.NSCD  ','.BFREQ ','.BFREQI','.XXCOMP',
+     &            '.YYCOMP','.ZZCOMP','.IMAG F','.NBATCH'/
 C
       NEWDEF = (WORD .EQ. '*ABSLRS')
       ICHANG = 0
@@ -76,6 +80,8 @@ C
       ICOMP=0
       ABSLRS=.TRUE.
       ABSLRS_MCD=.FALSE.
+      ABSLRS_MCHD=.FALSE.
+      ABSLRS_NSCD=.FALSE.
 C
 C     Set default values
 C
@@ -95,7 +101,8 @@ C
                ICHANG = ICHANG + 1
                DO I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) 
-     &                GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17),I
+     &                GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,
+     &                     16,17,18,19),I
                END DO
                IF (WORD .EQ. '.OPTION') THEN
                  CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
@@ -161,7 +168,15 @@ c               ABS_REDUCE = .TRUE.
                ABSLRS_MCD  =.TRUE.
                GOTO 100
  11            CONTINUE
-               IF (ABSLRS_MCD) THEN
+               ABSLRS_ALPHA=.FALSE.
+               ABSLRS_MCHD  =.TRUE.
+               GOTO 100
+ 12            CONTINUE
+                ABSLRS_ALPHA=.FALSE.
+                ABSLRS_NSCD  =.TRUE.
+                GOTO 100
+ 13            CONTINUE
+               IF (ABSLRS_MCD .OR. ABSLRS_MCHD .OR. ABSLRS_NSCD) THEN
                   READ (LUCMD,*) ABS_NFREQ_BETA_B
                   IF (ABS_NFREQ_BETA_B.LE.NMXFREQ) THEN
                      READ (LUCMD,*) (ABS_FREQ_BETA_B(J),
@@ -182,28 +197,28 @@ c               ABS_REDUCE = .TRUE.
                   READ(LUCMD,*)
                END IF
                GOTO 100
- 12            CONTINUE
+ 14            CONTINUE
                ABSQRS_INTERVAL = .TRUE.
 c               ABS_REDUCE = .TRUE.
                READ(LUCMD,*) (ABS_BFREQ_INTERVAL(I), I=1,3)
                GOTO 100
- 13            CONTINUE      
+ 15            CONTINUE      
                ALLCOMP=.FALSE.
                ICOMP=1
                GOTO 100
- 14            CONTINUE
+ 16            CONTINUE
                ALLCOMP=.FALSE.
                ICOMP=2
                GOTO 100
- 15            CONTINUE
+ 17            CONTINUE
                ALLCOMP=.FALSE.
                ICOMP=3
                GOTO 100
- 16            CONTINUE
+ 18            CONTINUE
                ABS_IMFREQ=.TRUE.
                ABS_DAMP=0.0d0
                GOTO 100
- 17            CONTINUE
+ 19            CONTINUE
                ABS_BATCH=.TRUE.
                READ(LUCMD,*) ABS_NBATCHMAX
                GOTO 100
@@ -226,7 +241,8 @@ c               ABS_REDUCE = .TRUE.
 C
 C     Process user input
 C
-      ABSLRS = ABSLRS_ALPHA .OR. ABSLRS_MCD
+      ABSLRS = ABSLRS_ALPHA .OR. ABSLRS_MCD .OR. ABSLRS_MCHD
+     &         .OR. ABSLRS_NSCD
       IF (.NOT.ABSLRS) THEN
          WRITE(LUPRI,'(/A)') ' Absorption input ignored because:'
          WRITE(LUPRI,'(A,L2)')' No process requested:',
@@ -238,21 +254,57 @@ C
          CALL IZERO(ABS_NOPER,8)
          CALL IZERO(NOPER,8)
          DO ILABEL=1,3
-            IF (ALLCOMP .OR. ICOMP.EQ.ILABEL) THEN
-               ISYM = ISYMAX(ILABEL,1)+1
-               ABS_NOPER(ISYM) = ABS_NOPER(ISYM) + 1
-               ABS_LABOP(ABS_NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
-               IF (ABSLRS_MCD) THEN
-                 NOPER(ISYM) = NOPER(ISYM) + 1
-                 LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
-                 ISYM = ISYMAX(ILABEL,2)+1
-                 ABS_NOPER(ISYM) = ABS_NOPER(ISYM) + 1
-                 NOPER(ISYM) = NOPER(ISYM) + 1
-                 ABS_LABOP(ABS_NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
-                 LABOP(NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
-               END IF
-            END IF
+           IF (ALLCOMP .OR. ICOMP.EQ.ILABEL) THEN
+             ISYM = ISYMAX(ILABEL,1)+1
+             ABS_NOPER(ISYM) = ABS_NOPER(ISYM) + 1
+             ABS_LABOP(ABS_NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
+             IF (ABSLRS_MCD) THEN
+                NOPER(ISYM) = NOPER(ISYM) + 1
+                LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
+                ISYM = ISYMAX(ILABEL,2)+1
+                ABS_NOPER(ISYM) = ABS_NOPER(ISYM) + 1
+                NOPER(ISYM) = NOPER(ISYM) + 1
+                ABS_LABOP(ABS_NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
+                LABOP(NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
+             ELSE IF (ABSLRS_MCHD) THEN
+               ISYM2 = ISYMAX(ILABEL,2)+1
+               ABS_NOPER(ISYM2) = ABS_NOPER(ISYM2) + 1
+               ABS_LABOP(ABS_NOPER(ISYM2),ISYM2) = ANGMOM(ILABEL)
+               NOPER(ISYM2) = NOPER(ISYM2) + 1
+               LABOP(NOPER(ISYM2),ISYM2) = ANGMOM(ILABEL)
+               DO JLABEL=ILABEL,3
+                  ISYM3 = ISYMAX(JLABEL,1)+1
+                  ISYM4 = MULD2H(ISYM,ISYM3)
+                  ABS_NOPER(ISYM4) = ABS_NOPER(ISYM4) + 1
+                  NOPER(ISYM4) = NOPER(ISYM4) + 1
+                  IF (ILABEL .EQ.1) THEN
+                     KLABEL=JLABEL
+                  ELSE
+                     KLABEL=JLABEL+ILABEL
+                  ENDIF
+                  ABS_LABOP(ABS_NOPER(ISYM4),ISYM4) = THETA(KLABEL)
+                  LABOP(NOPER(ISYM4),ISYM4) = THETA(KLABEL)
+                ENDDO
+             END IF
+           END IF
          END DO
+         IF (ABSLRS_NSCD) THEN
+           CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',' ',
+     &                   'UNFORMATTED',IDUMMY,.FALSE.)
+ 333      CONTINUE
+           IF (NXTLAB(LABFND,RTNLBL,LUPROP)) THEN
+             IF (LABFND(1:3) .EQ. 'PSO') THEN
+               !IND is symmetry of operator, resumed from file. Sonia
+               IND = (ICHAR(RTNLBL(1)(1:1))-ICHAR('0'))
+               ABS_NOPER(IND) = ABS_NOPER(IND) + 1
+               NOPER(IND) = NOPER(IND) + 1
+               ABS_LABOP(ABS_NOPER(IND),IND) = LABFND
+               LABOP(NOPER(IND),IND) = LABFND
+             ENDIF
+             GO TO 333
+           END IF
+           CALL GPCLOSE(LUPROP,'KEEP')
+         END IF
 C
          CALL AROUND('Variable settings for absorption calculation')
 C
@@ -279,7 +331,7 @@ cC
      &        (ABS_BFREQ_INTERVAL(2)-ABS_BFREQ_INTERVAL(1)).LT.
      &         ABS_BFREQ_INTERVAL(3)
      &        .OR. ABS_BFREQ_INTERVAL(3).LE.0.0D0 ) THEN
-              CALL QUIT('.BFREQI not specify correctly')
+              CALL QUIT('.BFREQI not specified correctly')
            END IF
            DSMALL=1.0000001
            ABS_NFREQ_BETA_B = 1 +
@@ -292,13 +344,30 @@ cC
          ENDIF
          IF (ABSLRS_MCD) THEN
             WRITE (LUPRI,'(A,L4)')
-     &     ' Magnetic circular dichroism requested    : ABS_MCD      =',
+     &     ' Magnetic circular dichroism requested : ABSLRS_MCD     = ',
      &           ABSLRS_MCD
             WRITE(LUPRI,'(A,5(4F12.8))')
      &           ' at frequencies:',(ABS_FREQ_BETA_B(I),
      &              I=1,ABS_NFREQ_BETA_B)
          END IF
+         IF (ABSLRS_MCHD) THEN
+            WRITE (LUPRI,'(A,L4)')
+     &     ' Magneto-chiral circular dichroism requested: ABSLRS_MCHD=',
+     &           ABSLRS_MCHD
+            WRITE(LUPRI,'(A,5(4F12.8))')
+     &           ' at frequencies:',(ABS_FREQ_BETA_B(I),
+     &            I=1,ABS_NFREQ_BETA_B)
+         END IF
 cC
+         IF (ABSLRS_NSCD) THEN
+            WRITE (LUPRI,'(A,L4)')
+     &    ' Nuclear-spin circular dichroism/OR requested: ABSLRS_NSCD=',
+     &           ABSLRS_NSCD
+            WRITE(LUPRI,'(A,5(4F12.8))')
+     &           ' at frequencies:',(ABS_FREQ_BETA_B(I),
+     &            I=1,ABS_NFREQ_BETA_B)
+         END IF
+!
          WRITE(LUPRI,'(A,L4)')
      &      ' Absorption calc over frequency interval  : 
      &           ABSLRS_INTERVAL =', ABSLRS_INTERVAL
@@ -393,7 +462,7 @@ C
       CALL MEMGET('REAL',KMJWOP,(2*8*MAXWOP + 1)/IRAT,WRK,
      &     KFREE,LFREE)
 C
-      IF (ABSLRS_MCD) THEN
+      IF (ABSLRS_MCD .OR. ABSLRS_MCHD .OR. ABSLRS_NSCD) THEN
          CALL ABS_BETA_SETUP
       END IF
 C
@@ -419,7 +488,7 @@ C     default: Use the new SCF solver (see Reference C)
       CALL ABS_LRS(NSYM,CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      &        XINDX,WRK(KMJWOP),WRK(KRES),WRK(KFREE),LFREE)
 C
-      IF (ABSLRS_MCD) THEN
+      IF (ABSLRS_MCD .OR. ABSLRS_MCHD .OR. ABSLRS_NSCD) THEN
          CALL AROUND('Evaluate Quadratic Response Functions')
          CALL ABSQRF(CMO,UDV,PV,FOCK,FC,FV,FCAC,H2AC,
      &               XINDX,WRK(KMJWOP),WRK(KFREE),LFREE)
@@ -475,7 +544,6 @@ C
 C
             ABS_KLRED(1)=0
             ABS_KLRED(2)=0
-C
 C
             LUSB = -1
             LUAB = -1
@@ -1265,11 +1333,29 @@ C   infdim.h: NVARMA (when ABS_ANALYZE)
 #include "infvar.h"
 #include "infdim.h"
 #include "absorp.h"
+!Information on nuclei/nuclear moments required for NSCD/NSOR. Sonia
+#include "mxcent.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "chrnos.h"
+#include "nuclei.h"
+#include "symmet.h"
+#include "cbiher.h"
+#include "spnout.h"
+
 C
       LOGICAL FOUND, CONV
 C
       DIMENSION MJWOP(2,MAXWOP,8),RESLRF(2,ABS_NFREQ_INTERVAL,3,3,2)
       DIMENSION WRK(LWRK),ISRCORBR(5),ISRCORBI(5)
+      !Magneto-chiral dichroism averages. Janusz
+      DIMENSION AREAABB(NFREQ_BETA_B),AREABBA(NFREQ_BETA_B)
+      DIMENSION AIMAABB(NFREQ_BETA_B),AIMABBA(NFREQ_BETA_B)
+      DIMENSION GREABG(NFREQ_BETA_B),GIMABG(NFREQ_BETA_B)
+      DIMENSION BIREFR(NFREQ_BETA_B),DICHRO(NFREQ_BETA_B)
+      !Nuclear spin CD/OR averages. Sonia
+      CHARACTER*8 LABINT, LABX, LABY, LABZ
+      DOUBLE PRECISION XNSCD(NPATOM), XNSOR(NPATOM)
 C
       KFREE = 1
       LFREE = LWRK
@@ -1315,7 +1401,9 @@ C
      &     ABS_DAMP,' au =',
      &     ABS_DAMP*XTEV,' eV =',
      &     ABS_DAMP*XTKAYS,' cm-1'
-C
+!-------------------------------------------------------------------!
+!     Magneto Optical Activity (CD and OR)                          !
+!-------------------------------------------------------------------!
       IF (ABSLRS_MCD) THEN
          CALL AROUND('Magnetic circular dichroism'//
      &        ' with damping')
@@ -1390,7 +1478,456 @@ C
      &        DAMPING*XTEV,' eV =',
      &        DAMPING*XTKAYS,' cm-1'
       END IF
-c
+!-------------------------------------------------------------------!
+!     Nuclear Spin Optical Activity (CD and OR) - S. Coriani, 2013  !
+!-------------------------------------------------------------------!
+      IF (ABSLRS_NSCD) THEN
+
+        write(lupri,*)'NPATOM=', NPATOM
+        write(lupri,*) (IPATOM(I),I = 1, NPATOM)
+
+        CALL AROUND('Nuclear Spin optical rotation/circular dichroism'//
+     &        ' with damping')
+         CALL PRSYMB(LUPRI,'-',95,1)
+         WRITE(LUPRI,'(A3,6A10,2A16)')
+     &        ' No','A-oper','B-oper','C-oper','A-freq',
+     &        'B-freq','C-freq','Real part','Imag part'
+         CALL PRSYMB(LUPRI,'-',95,1)
+         BTMP = 99.9D9
+         CTMP = 99.9D9
+         !NPATOM is the number of nuclei requested in input for which
+         !PSO has been computed
+         CALL DZERO(XNSCD,NPATOM)
+         CALL DZERO(XNSOR,NPATOM)
+         !Sonia: note that RES_BETA has opposite sign than std
+         !code since scaled by -1. I change the sign again 
+         !here to adapt  to old output
+         DO IQRF=1,NQRF
+            WRITE(LUPRI,'(I3,3A10,3F10.6,2F16.6)') IQRF,
+     &            (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
+     &            -RES_BETA(IQRF,2),-RES_BETA(IQRF,1)
+         END DO
+
+         CALL PRSYMB(LUPRI,'=',97,1)
+         WRITE(LUPRI,'(A10,2X,3A10,2X,2A14,2X,2A17)')
+     &        ' Averages ','  A-freq  ','  B-freq  ','  C-freq  ',
+     &        ' 6*Re<<A,B,C>> ',' 6*Im<<A,B,C>> ',' CD(mu rad/M cm) ',
+     &        ' OR(mu rad/M cm) ' 
+         CALL PRSYMB(LUPRI,'=',97,1)
+
+         DO IDX=1,NPATOM
+           IWHICH=IPATOM(IDX)
+           !quick fix to resume the info on Gval of atom
+           do ii=1,6
+              xmmom = DISOTP(IZATOM(IWHICH),ii,'MMOM')
+              xspin = DISOTP(IZATOM(IWHICH),ii,'SPIN')
+              if (ABS(xmmom).gt.1.0D-4) exit
+           end do
+           Unit_Factor = xmmom*(1.8687D0)   !(micro rad / (M cm))
+           !---------------------------------------------------
+
+         DO IQRF=1,NQRF
+            IF (BTMP.NE.QRFFRQ(IQRF,1).OR.CTMP.NE.QRFFRQ(IQRF,2)) THEN
+               IF (.NOT.IQRF.EQ.1) THEN
+                  WRITE(LUPRI,'(1X,A5,A2,A1,1X,3F10.6,4F16.6)')
+     &                 'Atom(',NAMN(IWHICH),')',
+     &                 (QRFFRQ(IQRF-1,I),I=1,3),
+     &                 XNSCD(IDX),XNSOR(IDX),
+     &                 XNSCD(IDX)*Unit_Factor*QRFFRQ(IQRF-1,2),
+     &                 XNSOR(IDX)*Unit_Factor*QRFFRQ(IQRF-1,2)
+                  XNSCD(IDX) = 0.0D0
+                  XNSOR(IDX) = 0.0D0
+               END IF
+               WRITE(LUPRI,'(A)') ' '
+               BTMP = QRFFRQ(IQRF,1)
+               CTMP = QRFFRQ(IQRF,2)
+            END IF
+C           Add contribution to orientational average
+            !write (lupri,*)'Name of nucleus is ', NAMN(IDX)
+            !WARNING: FOLLOWING ONLY TESTED FOR NO SYMMETRY CASE
+             KSYMOP = 1
+             !ISCORX = IPTCNT(3*(IDX-1)+1,KSYMOP-1,2)
+             !ISCORY = IPTCNT(3*(IDX-1)+2,KSYMOP-1,2)
+             !ISCORZ = IPTCNT(3*(IDX-1)+3,KSYMOP-1,2)
+             ISCORX = IPTCNT(3*(IWHICH-1)+1,KSYMOP-1,2)
+             ISCORY = IPTCNT(3*(IWHICH-1)+2,KSYMOP-1,2)
+             ISCORZ = IPTCNT(3*(IWHICH-1)+3,KSYMOP-1,2)
+             IF (ISCORX .GT. O) THEN
+               IFIRST = ISCORX/100
+               ISECND = MOD(ISCORX,100)/10
+               ITHIRD = MOD(MOD(ISCORX,100),10)
+               LABX = 'PSO '//CHRNOS(IFIRST)//
+     &                          CHRNOS(ISECND)//
+     &                          CHRNOS(ITHIRD)//' '
+!               write(lupri,*)'Test label PSO X:', LABX
+             END IF
+             IF (ISCORY .GT. O) THEN
+               IFIRST = ISCORY/100
+               ISECND = MOD(ISCORY,100)/10
+               ITHIRD = MOD(MOD(ISCORY,100),10)
+               LABY = 'PSO '//CHRNOS(IFIRST)//
+     &                          CHRNOS(ISECND)//
+     &                          CHRNOS(ITHIRD)//' '
+               !write(lupri,*)'Test label PSO Y:', LABY
+             END IF
+             IF (ISCORZ .GT. O) THEN
+               IFIRST = ISCORZ/100
+               ISECND = MOD(ISCORZ,100)/10
+               ITHIRD = MOD(MOD(ISCORZ,100),10)
+               LABZ = 'PSO '//CHRNOS(IFIRST)//
+     &                          CHRNOS(ISECND)//
+     &                          CHRNOS(ITHIRD)//' '
+               !write(lupri,*)'Test label PSO Z:', LABZ
+             END IF
+
+!             write(lupri,*)' QRFLAB(IQRF,3)(1:8)',
+!     &                       QRFLAB(IQRF,3)(1:8)
+
+             IF ((QRFLAB(IQRF,1)(:1).EQ.'X')
+     &              .AND.(QRFLAB(IQRF,2)(:1).EQ.'Y')
+     &              .AND.(QRFLAB(IQRF,3)(1:8).EQ.LABZ)) THEN
+
+!                  write(lupri,*)' XYZ '
+                  XNSCD(IDX) = XNSCD(IDX) - RES_BETA(IQRF,2)
+                  XNSOR(IDX) = XNSOR(IDX) - RES_BETA(IQRF,1)
+
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
+     &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,3)(1:8).EQ.LABX)) THEN
+!                  write(lupri,*)' YZX '
+                  XNSCD(IDX) = XNSCD(IDX) - RES_BETA(IQRF,2)
+                  XNSOR(IDX) = XNSOR(IDX) - RES_BETA(IQRF,1)
+
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'X')
+     &                 .AND.(QRFLAB(IQRF,3)(1:8).EQ.LABY)) THEN
+!                  write(lupri,*)' ZXY '
+                  XNSCD(IDX) = XNSCD(IDX) - RES_BETA(IQRF,2)
+                  XNSOR(IDX) = XNSOR(IDX) - RES_BETA(IQRF,1)
+
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'Y')
+     &                 .AND.(QRFLAB(IQRF,3)(1:8).EQ.LABX)) THEN
+!                  write(lupri,*)' ZYX '
+                  XNSCD(IDX) = XNSCD(IDX) + RES_BETA(IQRF,2)
+                  XNSOR(IDX) = XNSOR(IDX) + RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'X')
+     &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,3)(1:8).EQ.LABY)) THEN
+!                  write(lupri,*)' XZY '
+                  XNSCD(IDX) = XNSCD(IDX) + RES_BETA(IQRF,2)
+                  XNSOR(IDX) = XNSOR(IDX) + RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
+     &                 .AND.(QRFLAB(IQRF,2)(:1).EQ.'X')
+     &                 .AND.(QRFLAB(IQRF,3)(1:8).EQ.LABZ)) THEN
+!                  write(lupri,*)' YXZ '
+                  XNSCD(IDX) = XNSCD(IDX) + RES_BETA(IQRF,2)
+                  XNSOR(IDX) = XNSOR(IDX) + RES_BETA(IQRF,1)
+               END IF
+         END DO
+         WRITE(LUPRI,'(1X,A5,A2,A1,1X,3F10.6,4F16.6)')
+     &                 'Atom(',NAMN(IWHICH),')',
+     &                  (QRFFRQ(NQRF,I), I=1,3),
+     &                 XNSCD(IDX),XNSOR(IDX),
+     &                 XNSCD(IDX)*Unit_Factor*QRFFRQ(NQRF,2),
+     &                 XNSOR(IDX)*Unit_Factor*QRFFRQ(NQRF,2)
+         END DO
+         WRITE(LUPRI,'(A)')' '
+         CALL PRSYMB(LUPRI,'-',94,1)
+         WRITE (LUPRI,'(A,F10.6,A,F7.4,A,F7.1,A)')
+     &        ' Damping parameter equals',
+     &        DAMPING,' au =',
+     &        DAMPING*XTEV,' eV =',
+     &        DAMPING*XTKAYS,' cm-1'
+      END IF
+! -------------------------------------------------------------------
+!     Magneto-Chiral Dichroism and Birefringence (J. Cukras, 2013)
+! -------------------------------------------------------------------
+
+      IF ( ABSLRS_MCHD ) THEN
+         LUFU=-1
+         CALL GPOPEN(LUFU,'MCHD_QRF.list','NEW',' ','FORMATTED',
+     &   IDUMMY,.FALSE.)
+         CALL AROUND('Magneto-chiral circular dichroism'//
+     &        ' with damping')
+         CALL PRSYMB(LUFU,'-',94,1)
+         WRITE(LUFU,'(A3,6A10,2A16)')
+     &        ' No','A-oper','B-oper','C-oper','A-freq',
+     &        'B-freq','C-freq','G Real part','G Imag part'
+         CALL PRSYMB(LUFU,'-',94,1)
+         BTMP = 99.9D9
+         CTMP = 99.9D9
+         GTERMRE = 0.0
+         GTERMIM = 0.0
+         A1TERMRE = 0.0
+         A1TERMIM = 0.0
+         A2TERMRE = 0.0
+         A2TERMIM = 0.0
+         IFREQ=0
+C Loop for G         
+         DO IQRF=1,NQRF
+            IF (BTMP.NE.QRFFRQ(IQRF,1).OR.CTMP.NE.QRFFRQ(IQRF,2)) THEN
+               IF (.NOT.IQRF.EQ.1) THEN
+                  WRITE(LUFU,'(5X,A21,7X,3F10.6,2F16.6)')
+     &          'G_abg orientational average',(QRFFRQ(IQRF-1,I),I=1,3),
+     &           GTERMRE,GTERMIM
+                IFREQ=IFREQ+1
+                GREABG(IFREQ) = GTERMRE
+                GIMABG(IFREQ) = GTERMIM
+                GTERMRE = 0.0
+                GTERMIM = 0.0
+               END IF
+               WRITE(LUFU,'(A)') ' '
+               BTMP = QRFFRQ(IQRF,1)
+               CTMP = QRFFRQ(IQRF,2)
+            END IF
+            WRITE(LUFU,'(I5,3A10,3F10.6,2F16.6)') IQRF,
+     &              (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
+     &              RES_BETA(IQRF,1),RES_BETA(IQRF,2)
+
+C Contribution to orientational avarage for
+C G_{\alpha,\beta,\gamma}
+
+               IF ((QRFLAB(IQRF,1)(:1).EQ.'X')
+     &              .AND.(QRFLAB(IQRF,2)(:2).EQ.'YA')
+     &              .AND.(QRFLAB(IQRF,3)(:1).EQ.'Z')) THEN
+                  GTERMRE = GTERMRE - RES_BETA(IQRF,1)
+                  GTERMIM = GTERMIM - RES_BETA(IQRF,2)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'ZA')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
+                  GTERMRE = GTERMRE - RES_BETA(IQRF,1)
+                  GTERMIM = GTERMIM - RES_BETA(IQRF,2)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'XA')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Y')) THEN
+                  GTERMRE = GTERMRE - RES_BETA(IQRF,1)
+                  GTERMIM = GTERMIM - RES_BETA(IQRF,2)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'YA')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
+                  GTERMRE = GTERMRE + RES_BETA(IQRF,1)
+                  GTERMIM = GTERMIM + RES_BETA(IQRF,2)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'X')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'ZA')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Y')) THEN
+                  GTERMRE = GTERMRE + RES_BETA(IQRF,1)
+                  GTERMIM = GTERMIM + RES_BETA(IQRF,2)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'XA')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Z')) THEN
+                  GTERMRE = GTERMRE + RES_BETA(IQRF,1)
+                  GTERMIM = GTERMIM + RES_BETA(IQRF,2)
+               END IF
+
+         END DO
+         WRITE(LUFU,'(5X,A21,7X,3F10.6,2F16.6)')
+     &          'G_abg orientational average',(QRFFRQ(NQRF,I), I=1,3),
+     &           GTERMRE,GTERMIM
+              IFREQ=IFREQ+1
+              GREABG(IFREQ) = GTERMRE
+              GIMABG(IFREQ) = GTERMIM
+
+!         CALL PRSYMB(LUPRI,'-',94,1)
+!         WRITE(LUPRI,'(A3,6A10,2A16)') 
+!     &        ' No','A-oper','B-oper','C-oper','A-freq',
+!     &        'B-freq','C-freq','A Real part','A Imag part'
+!         CALL PRSYMB(LUPRI,'-',94,1)
+         BTMP = 99.9D9
+         CTMP = 99.9D9
+         IFREQ=0
+C Loop for A
+         DO IQRF=1,NQRF
+            IF (BTMP.NE.QRFFRQ(IQRF,1).OR.CTMP.NE.QRFFRQ(IQRF,2)) THEN
+               IF (.NOT.IQRF.EQ.1) THEN
+                WRITE(LUFU,'(5X,A21,7X,3F10.6,2F16.6)')
+     &        'A_aabb orientational average',(QRFFRQ(IQRF-1,I),I=1,3),
+     &         A1TERMRE,A1TERMIM
+               WRITE(LUFU,'(5X,A21,7X,3F10.6,2F16.6)')
+     &         'A_abba orientational average',(QRFFRQ(IQRF-1,I),I=1,3),
+     &         A2TERMRE,A2TERMIM
+                  IFREQ=IFREQ+1
+                  AREAABB(IFREQ) = A1TERMRE
+                  AIMAABB(IFREQ) = A1TERMIM
+                  AREABBA(IFREQ) = A2TERMRE
+                  AIMABBA(IFREQ) = A2TERMIM
+                  A1TERMRE = 0.0
+                  A1TERMIM = 0.0
+                  A2TERMRE = 0.0
+                  A2TERMIM = 0.0
+               END IF
+!               WRITE(LUPRI,'(A)') ' '
+               BTMP = QRFFRQ(IQRF,1)
+               CTMP = QRFFRQ(IQRF,2)
+            END IF
+            WRITE(LUFU,'(I5,3A10,3F10.6,2F16.6)') IQRF,
+     &              (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
+     &              RES_BETA(IQRF,2),RES_BETA(IQRF,1)
+! Orientational avarage form
+! A_{\alpha,\alpha\beta,\beta}         
+               IF ((QRFLAB(IQRF,1)(:1).EQ.'X')
+     &              .AND.(QRFLAB(IQRF,2)(:2).EQ.'XX')
+     &              .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
+                  A1TERMRE = A1TERMRE - RES_BETA(IQRF,2)
+                  A1TERMIM = A1TERMIM - RES_BETA(IQRF,1)
+C Part of the abba                  
+                  A2TERMRE = A2TERMRE - RES_BETA(IQRF,2)
+                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'YY')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Y')) THEN
+                  A1TERMRE = A1TERMRE - RES_BETA(IQRF,2)
+                  A1TERMIM = A1TERMIM - RES_BETA(IQRF,1)
+C Part of the abba                                    
+                  A2TERMRE = A2TERMRE - RES_BETA(IQRF,2)
+                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'ZZ')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Z')) THEN
+                  A1TERMRE = A1TERMRE - RES_BETA(IQRF,2)
+                  A1TERMIM = A1TERMIM - RES_BETA(IQRF,1)
+C Part of the abba                  
+                  A2TERMRE = A2TERMRE - RES_BETA(IQRF,2)
+                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'X')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'XY')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Y')) THEN
+                  A1TERMRE = A1TERMRE - RES_BETA(IQRF,2)
+                  A1TERMIM = A1TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'YZ')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Z')) THEN
+                  A1TERMRE = A1TERMRE - RES_BETA(IQRF,2)
+                  A1TERMIM = A1TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'X')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'XZ')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Z')) THEN
+                  A1TERMRE = A1TERMRE - RES_BETA(IQRF,2)
+                  A1TERMIM = A1TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'XY')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
+                  A1TERMRE = A1TERMRE - RES_BETA(IQRF,2)
+                  A1TERMIM = A1TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'YZ')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Y')) THEN
+                  A1TERMRE = A1TERMRE - RES_BETA(IQRF,2)
+                  A1TERMIM = A1TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'XZ')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
+                  A1TERMRE = A1TERMRE - RES_BETA(IQRF,2)
+                  A1TERMIM = A1TERMIM - RES_BETA(IQRF,1)
+C Orientational avarage form
+C A_{\alpha,\beta\beta,\alpha}         
+C               ELSE IF ((QRFLAB(IQRF,1)(:1).EQ.'X')
+C     &              .AND.(QRFLAB(IQRF,2)(:2).EQ.'XX')
+C     &              .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
+C                  A2TERMRE = A2TERMRE - RES_BETA(IQRF,2)
+C                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
+C               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
+C     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'YY')
+C     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Y')) THEN
+C                  A2TERMRE = A2TERMRE - RES_BETA(IQRF,2)
+C                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
+C               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
+C     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'ZZ')
+C     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Z')) THEN
+C                  A2TERMRE = A2TERMRE - RES_BETA(IQRF,2)
+C                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'X')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'YY')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
+                  A2TERMRE = A2TERMRE - RES_BETA(IQRF,2)
+                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'ZZ')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Y')) THEN
+                  A2TERMRE = A2TERMRE - RES_BETA(IQRF,2)
+                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'X')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'ZZ')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'X')) THEN
+                  A2TERMRE = A2TERMRE - RES_BETA(IQRF,2)
+                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Y')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'XX')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Y')) THEN
+                  A2TERMRE = A2TERMRE - RES_BETA(IQRF,2)
+                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'YY')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Z')) THEN
+                  A2TERMRE = A2TERMRE - RES_BETA(IQRF,2)
+                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
+               ELSE IF((QRFLAB(IQRF,1)(:1).EQ.'Z')
+     &                 .AND.(QRFLAB(IQRF,2)(:2).EQ.'XX')
+     &                 .AND.(QRFLAB(IQRF,3)(:1).EQ.'Z')) THEN
+                  A2TERMRE = A2TERMRE - RES_BETA(IQRF,2)
+                  A2TERMIM = A2TERMIM - RES_BETA(IQRF,1)
+               END IF
+         END DO
+
+            WRITE(LUFU,'(5X,A21,7X,3F10.6,2F16.6)')
+     &           'A_aabb orientational average',(QRFFRQ(NQRF,I),I=1,3),
+     &            A1TERMRE,A1TERMIM
+            WRITE(LUFU,'(5X,A21,7X,3F10.6,2F16.6)')
+     &           'A_abba orientational average',(QRFFRQ(NQRF,I),I=1,3),
+     &            A2TERMRE,A2TERMIM
+                  IFREQ=IFREQ+1
+                  AREAABB(IFREQ) = A1TERMRE
+                  AIMAABB(IFREQ) = A1TERMIM
+                  AREABBA(IFREQ) = A2TERMRE
+                  AIMABBA(IFREQ) = A2TERMIM
+
+         WRITE(LUFU,'(A)')' '
+         CALL PRSYMB(LUFU,'-',94,1)
+         WRITE (LUPRI,'(A,F10.6,A,F7.4,A,F7.1,A)')
+     &        ' Damping parameter equals',
+     &        DAMPING,' au =',
+     &        DAMPING*XTEV,' eV =',
+     &        DAMPING*XTKAYS,' cm-1'
+         WRITE(LUPRI,*) ''
+         CALL PRSYMB(LUPRI,'-',94,1)
+!          WRITE(LUPRI,'(A13,A13,A13,A13,A13,A13,A13)') 'FREQ',
+!      &   'Re(G_abg)','Im(G_abg)','Re(A_aabb)','Im(A_aabb)',
+!      &   "B(A')+B(G)",'Dichro'
+         WRITE(LUPRI,'(A5,A10,A13,A13,A13,A13,A13,A13,A13)') '',
+     &   'DAMPING','FREQ',
+     &   'Re(G_abg)','Im(G_abg)',
+     &   'Re(A_aabb)','Im(A_aabb)',
+     &   "B(A')+B(G)",'Dichro'
+         CALL PRSYMB(LUPRI,'-',94,1)
+         DO IFREQ=1,NFREQ_BETA_B
+         BIREFR(IFREQ)=(FREQ_BETA_B(IFREQ)/5)*AIMAABB(IFREQ)*
+     &   0.5+
+     &   GREABG(IFREQ)*0.25
+         DICHRO(IFREQ)=(FREQ_BETA_B(IFREQ)/5)*AREAABB(IFREQ)*0.5+
+     &   GIMABG(IFREQ)*0.25
+!          WRITE(LUPRI,'(F13.6,F13.6,F13.6,F13.6,F13.6,F13.6,F13.6)')
+!      &   FREQ_BETA_B(IFREQ),0.25*GREABG(IFREQ),
+!      &   0.25*GIMABG(IFREQ),0.5*AREAABB(IFREQ),0.5*AIMAABB(IFREQ),
+!      &   BIREFR(IFREQ),
+!      &   DICHRO(IFREQ)
+!          WRITE(LUPRI,'(A15,F13.6)') "DBGJC B(A')=",
+!      &   0.5*AIMAABB(IFREQ)*
+!      &   FREQ_BETA_B(IFREQ)/5
+         WRITE(LUPRI,'(A5,F10.6,F13.6,F13.6,
+     &   F13.6,F13.6,F13.6,F13.6,F13.6)')
+     &   "DBGJC",DAMPING,FREQ_BETA_B(IFREQ),0.25*GREABG(IFREQ),
+     &   0.25*GIMABG(IFREQ),0.5*AREAABB(IFREQ),0.5*AIMAABB(IFREQ),
+     &   BIREFR(IFREQ),
+     &   DICHRO(IFREQ)
+         WRITE(LUPRI,'(A15,F13.6)') "DBGJC B(A')=",
+     &   0.5*AIMAABB(IFREQ)*
+     &   FREQ_BETA_B(IFREQ)/5
+         END DO
+         CALL GPCLOSE(LUFU,'KEEP')
+      END IF
+
+C ------------------------------------------------------------------
+
       IF (ABSLRS_ANALYZE) THEN
          MZYVMX = 2*NVARMA
          CALL MEMGET('REAL',KVEC,2*MZYVMX,WRK,KFREE,LFREE)
@@ -1444,15 +1981,19 @@ C
                  WRITE(LUPRI,'(/A,2F14.8)') 
      &              ' Norm of vector (real and imag):',
      &              DNORM_RE, DNORM_IM
+C
 C     Sum occupied orbital contributions into aggregates
-               MAXOCC=0
+C     Sonia 2 Joanna: I changed MAXOCC to MAXOCCU because MAXOCC is
+C     a constant in one of the new common blocks I had to include for NSCD
+C
+               MAXOCCU=0
                DO I=1,KZYVAR/2
-                  MAXOCC = MAX(MAXOCC,MJWOP(1,I,ISYM))
+                  MAXOCCU = MAX(MAXOCCU,MJWOP(1,I,ISYM))
                ENDDO
-               CALL MEMGET('REAL',KORBWR,MAXOCC,WRK,KFREE,LFREE)
-               CALL MEMGET('REAL',KORBWI,MAXOCC,WRK,KFREE,LFREE)
+               CALL MEMGET('REAL',KORBWR,MAXOCCU,WRK,KFREE,LFREE)
+               CALL MEMGET('REAL',KORBWI,MAXOCCU,WRK,KFREE,LFREE)
 c     real part
-               DO I=1,MAXOCC
+               DO I=1,MAXOCCU
                   WRK(KORBWR+I-1) = 0.0D0
                ENDDO
                DO I=1,KZYVAR/2
@@ -1461,7 +2002,7 @@ c     real part
      &                 WRK(KVEC-1+I)**2 + WRK(KVEC+KZYVAR/2-1+I)**2
                ENDDO
 c     imag part
-               DO I=1,MAXOCC
+               DO I=1,MAXOCCU
                   WRK(KORBWI+I-1) = 0.0D0
                ENDDO
                DO I=1,KZYVAR/2
@@ -1471,9 +2012,9 @@ c     imag part
      &                 WRK(KVEC+3*KZYVAR/2-1+I)**2
                ENDDO
                NSRC=5
-               CALL FINDMAXN(WRK(KORBWR),MAXOCC,ISRCORBR,NSRC)
+               CALL FINDMAXN(WRK(KORBWR),MAXOCCU,ISRCORBR,NSRC)
                NSRC=5
-               CALL FINDMAXN(WRK(KORBWI),MAXOCC,ISRCORBI,NSRC)
+               CALL FINDMAXN(WRK(KORBWI),MAXOCCU,ISRCORBI,NSRC)
                WRITE (LUPRI,*)
      &          'Important occupied orbital contributions (normalized)'
                WRITE (LUPRI,*)
@@ -1512,6 +2053,8 @@ C
          ITYPE = 1
       ELSE IF (LABEL(2:8).EQ.'ANGMOM') THEN
          ITYPE = 2
+      ELSE IF (LABEL(3:7).EQ.'THETA') THEN
+         ITYPE = 3
       ELSE
          WRITE(LUPRI,'(A)') ' Warning: Unknown operator!'
          RETURN
@@ -1689,50 +2232,50 @@ C
       DAMPING=ABS_DAMP
 C
       DO ICFR=1,NFREQ_BETA_C
-      DO IBFR=1,NFREQ_BETA_B
-         FREQB = FREQ_BETA_B(IBFR)
-         FREQC = FREQ_BETA_C(ICFR)
-         FREQA = -(FREQB+FREQC)
-         DO ISYMA=1,NSYM
-         DO ISYMB=1,NSYM
-            ISYMC = MULD2H(ISYMA,ISYMB)
-            IF (NOPER(ISYMA).GT.0 .AND. NOPER(ISYMB).GT.0 .AND.
-     &           NOPER(ISYMC).GT.0) THEN
-               DO IAOP=1,NOPER(ISYMA)
-               DO IBOP=1,NOPER(ISYMB)
-               DO ICOP=1,NOPER(ISYMC)
-                  ALAB = LABOP(IAOP,ISYMA)
-                  BLAB = LABOP(IBOP,ISYMB)
-                  CLAB = LABOP(ICOP,ISYMC)
-                  CALL QRCHK(DOHYP,ALAB,BLAB,CLAB,
-     &                 ISYMA,ISYMB,ISYMC,FREQA,FREQB,FREQC)
-                       IF (DOHYP) THEN
-                     NQRF = NQRF +1
-                     QRFLAB(NQRF,1) = ALAB
-                     QRFLAB(NQRF,2) = BLAB
-                     QRFLAB(NQRF,3) = CLAB
-                     QRFSYM(NQRF,1) = ISYMA
-                     QRFSYM(NQRF,2) = ISYMB
-                     QRFSYM(NQRF,3) = ISYMC
-                     QRFFRQ(NQRF,1) = FREQA
-                     QRFFRQ(NQRF,2) = FREQB
-                     QRFFRQ(NQRF,3) = FREQC
-                  END IF
-               END DO
-               END DO
-               END DO
-            END IF
-         END DO
-         END DO
-      END DO
+        DO IBFR=1,ABS_NFREQ_BETA_B
+          FREQB = ABS_FREQ_BETA_B(IBFR)
+          FREQC = FREQ_BETA_C(ICFR)
+          FREQA = -(FREQB+FREQC)
+          DO ISYMA=1,NSYM
+            DO ISYMB=1,NSYM
+              ISYMC = MULD2H(ISYMA,ISYMB)
+              IF (ABS_NOPER(ISYMA).GT.0 .AND. ABS_NOPER(ISYMB).GT.0 
+     &          .AND. ABS_NOPER(ISYMC).GT.0) THEN
+                DO IAOP=1,ABS_NOPER(ISYMA)
+                  DO IBOP=1,ABS_NOPER(ISYMB)
+                    DO ICOP=1,ABS_NOPER(ISYMC)
+                      ALAB = ABS_LABOP(IAOP,ISYMA)
+                      BLAB = ABS_LABOP(IBOP,ISYMB)
+                      CLAB = ABS_LABOP(ICOP,ISYMC)
+                      CALL ABS_QRCHK(DOHYP,ALAB,BLAB,CLAB,
+     &                  ISYMA,ISYMB,ISYMC,FREQA,FREQB,FREQC)
+                      IF (DOHYP) THEN
+                        NQRF = NQRF +1
+                        QRFLAB(NQRF,1) = ALAB
+                        QRFLAB(NQRF,2) = BLAB
+                        QRFLAB(NQRF,3) = CLAB
+                        QRFSYM(NQRF,1) = ISYMA
+                        QRFSYM(NQRF,2) = ISYMB
+                        QRFSYM(NQRF,3) = ISYMC
+                        QRFFRQ(NQRF,1) = FREQA
+                        QRFFRQ(NQRF,2) = FREQB
+                        QRFFRQ(NQRF,3) = FREQC
+                      END IF
+                    END DO
+                  END DO
+                END DO
+              END IF
+            END DO
+          END DO
+        END DO
       END DO
 C
       CALL GPDSRT(NFREQ_ALPHA,FREQ_ALPHA,THRZERO)
-      ABS_NFREQ_ALPHA = NFREQ_ALPHA
-      DO I=1,ABS_NFREQ_ALPHA
-        ABS_FREQ_ALPHA(I)=FREQ_ALPHA(I)
-      ENDDO
-      IF (IPRABS.GE.0) THEN
+!      ABS_NFREQ_ALPHA = NFREQ_ALPHA
+!      DO I=1,ABS_NFREQ_ALPHA
+!        ABS_FREQ_ALPHA(I)=FREQ_ALPHA(I)
+!      ENDDO
+!      IF (IPRABS.GE.0) THEN
          CALL AROUND('Setup of Hyperpolarizability Calculation')
          WRITE (LUPRI,'(2(/A),I4,A)')
      & ' This calculations requires the solution of linear response',
@@ -1756,9 +2299,125 @@ C
          WRITE(LUPRI,'(2A)')
      &        '--------------------------------------',
      &        '-------------------------------------'
-      END IF
+!      END IF
 C
 C     End of BETA_SETUP
 C
       RETURN
       END
+      SUBROUTINE ABS_QRCHK(DOHYP,ALAB,BLAB,CLAB,ISYMA,ISYMB,ISYMC,
+     &                 FREQA,FREQB,FREQC)
+#include "implicit.h"
+#include "priunit.h"
+#include "absorp.h"
+#include "abslrs.h"
+C
+      PARAMETER (THRZERO = 1.0D-6)
+      LOGICAL DOHYP,NEWFRQ
+      CHARACTER*8 ALAB,BLAB,CLAB,LAB(3)
+      DIMENSION FREQ(3),ISYM(3)
+C
+      DOHYP = .TRUE.
+C
+C     Operator requirement for magnetic circular dichroism
+C
+      IF (ABS_MCD .OR. ABSLRS_MCD) THEN
+         IF (ALAB(2:8).NE.'DIPLEN' .OR. BLAB(2:8).NE.'DIPLEN' .OR.
+     &       CLAB(2:8).NE.'ANGMOM') DOHYP = .FALSE.
+      END IF
+C
+C     Operator requirement for MCHD
+C
+      IF (ABSLRS_MCHD) THEN
+         IF (ALAB(2:8).NE.'DIPLEN' .OR.
+     &       (BLAB(2:8).NE.('ANGMOM') .AND. BLAB(3:8).NE.'THETA') .OR.
+     &       CLAB(2:8).NE.'ANGMOM') DOHYP = .FALSE.
+      END IF
+C
+C     Operator requirement for NSCD
+C
+      IF (ABSLRS_NSCD) THEN
+         IF (ALAB(2:8).NE.'DIPLEN' .OR. BLAB(2:8).NE.('DIPLEN') .OR.
+     &       CLAB(1:3).NE.'PSO') DOHYP = .FALSE.
+      END IF
+c
+C     Check if equivalent QRF is in the list already.
+c
+      IF (DAMPING .EQ. 0.0D0) THEN
+C     Overall permutational symmetry.
+         JCTR=3
+         KCTR=1
+         LCTR=1
+      ELSE
+C     Only intrinsic permutational symmetry, so A operator has to match 
+C     first operator in list of response functions.
+         JCTR=1
+         KCTR=2
+         LCTR=2
+      END IF
+      DO IQRF = 1,NQRF
+        DO J = 1,JCTR
+          DO K = KCTR,3
+            IF (K.NE.J) THEN
+              DO L = LCTR,3
+                IF (L.NE.K .AND. L.NE.J) THEN
+C
+                  IF ( ALAB.EQ.QRFLAB(IQRF,J) .AND.
+     &              BLAB.EQ.QRFLAB(IQRF,K) .AND.
+     &              CLAB.EQ.QRFLAB(IQRF,L) .AND.
+     &              ISYMA.EQ.QRFSYM(IQRF,J) .AND.
+     &              ISYMB.EQ.QRFSYM(IQRF,K) .AND.
+     &              ISYMC.EQ.QRFSYM(IQRF,L) .AND.
+     &              ABS( FREQA-QRFFRQ(IQRF,J)).LT.THRZERO .AND.
+     &              ABS( FREQB-QRFFRQ(IQRF,K)).LT.THRZERO .AND.
+     &              ABS( FREQC-QRFFRQ(IQRF,L)).LT.THRZERO ) THEN
+                    DOHYP = .FALSE.
+                  END IF
+C
+                END IF
+              END DO
+            END IF
+          END DO
+        END DO
+      END DO
+C
+      IF (DOHYP) THEN
+C
+C     Check if this QRF will inflict new LR solver frequencies.
+C
+         FREQ(1) = FREQA
+         FREQ(2) = FREQB
+         FREQ(3) = FREQC
+         DO I=1,3
+            NEWFRQ = .TRUE.
+            DO IFR=1,ABS_NFREQ_ALPHA
+              IF (ABS(ABS_FREQ_ALPHA(IFR)-ABS(FREQ(I))).LT.THRZERO) THEN
+                  NEWFRQ = .FALSE.
+              END IF
+            END DO
+            IF (NEWFRQ) THEN
+               IF (ABS_NFREQ_ALPHA.GE.NMXFREQ) THEN
+                  WRITE(LUPRI,'(2(/A),I4,A,/A)')
+     & ' The specified calculation requires more than the allowed',
+     & ' number of frequencies in the LR solver NMXFREQ=',NMXFREQ,'.',
+     & ' The program will stop.'
+                  CALL QUIT('Too many frequencies in LR solver.')
+               END IF
+               ABS_NFREQ_ALPHA = ABS_NFREQ_ALPHA + 1
+               ABS_FREQ_ALPHA(ABS_NFREQ_ALPHA) = ABS(FREQ(I))
+            END IF
+         END DO
+C
+      END IF
+C
+      IF (NQRF.GE.MXQRF .AND. DOHYP) THEN
+         WRITE(LUPRI,'(2(/A),I4,A,/A)')
+     & ' The specified calculation requires more than the allowed',
+     & ' number of quadratic response functions MXQRF=',MXQRF,'.',
+     & ' The program will stop'
+         CALL QUIT('Too many quadratic response functions specified.')
+      END IF
+C
+      RETURN
+      END
+

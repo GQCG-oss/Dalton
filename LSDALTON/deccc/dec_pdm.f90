@@ -98,7 +98,15 @@ module dec_pdm_module
   !> definition of the persistent array 
   type(persistent_array) :: p_arr
 
-
+  real(realk) :: time_pdm_acc          = 0.0E0_realk
+  integer(kind=long) :: bytes_transferred_acc = 0
+  integer(kind=long) :: nmsg_acc = 0
+  real(realk) :: time_pdm_put          = 0.0E0_realk
+  integer(kind=long) :: bytes_transferred_put = 0
+  integer(kind=long) :: nmsg_put = 0
+  real(realk) :: time_pdm_get          = 0.0E0_realk
+  integer(kind=long) :: bytes_transferred_get = 0
+  integer(kind=long) :: nmsg_get = 0
   contains
 
   !> \brief main subroutine for the communication of nodes on grid handling arr structures
@@ -1507,7 +1515,21 @@ module dec_pdm_module
     integer(kind=ls_mpik) :: i
     integer :: allallocd
     logical :: master
+    real(realk) :: mb_acc,mb_put,mb_get,total(9),speed_acc,speed_get,speed_put
 #ifdef VAR_LSMPI
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !NODE SPECIFIC ONE-SIDED INFO!!!!!!!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    mb_acc = (bytes_transferred_acc*1.0E0_realk)/(1024.0**2)
+    mb_put = (bytes_transferred_put*1.0E0_realk)/(1024.0**2) 
+    mb_get = (bytes_transferred_get*1.0E0_realk)/(1024.0**2)
+    speed_acc=0.0E0_realk
+    speed_put=0.0E0_realk
+    speed_get=0.0E0_realk
+    if(time_pdm_acc/=0.0E0_realk)speed_acc=mb_acc/time_pdm_acc
+    if(time_pdm_put/=0.0E0_realk)speed_put=mb_put/time_pdm_put
+    if(time_pdm_get/=0.0E0_realk)speed_get=mb_get/time_pdm_get
+    
     master = .true.
     if(infpar%lg_mynum/=infpar%master)master=.false.
 
@@ -1517,11 +1539,21 @@ module dec_pdm_module
       endif
       do i=1,infpar%lg_nodtot
         if(infpar%lg_mynum+1==i)then
-          write(output,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
-          write(output,'("Printing memory information for rank",I3)'),infpar%lg_mynum
-          write(output,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
+          write(*,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
+          write(*,'("Printing memory information for rank",I3)'),infpar%lg_mynum
+          write(*,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
           call array_print_memory_currents(output)
-          write(output,'("currently",I4," arrays allocated")')p_arr%arrays_in_use
+          write(*,'("")')
+          write(*,'(" Printing one-sided transfer information for rank",I3)'),infpar%lg_mynum
+          write(*,'(" ***************************************************")')
+          write(*,'(I6," acc: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.4," MB/s")'),&
+          &nmsg_acc,mb_acc,time_pdm_acc,speed_acc
+          write(*,'(I6," put: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.4," MB/s")'),&
+          &nmsg_put,mb_put,time_pdm_put,speed_put
+          write(*,'(I6," get: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.4," MB/s")'),&
+          &nmsg_get,mb_get,time_pdm_get,speed_get
+          write(*,'(" currently",I4," arrays allocated")')p_arr%arrays_in_use
+          write(*,'("")')
         endif
         call lsmpi_barrier(infpar%lg_comm)
       enddo
@@ -1550,6 +1582,42 @@ module dec_pdm_module
         ! if no memory leaks are present infooonmaster is zero
         infoonmaster(1) =infoonmaster(1) + 1.0E0_realk*allallocd
         !write (output,'("SUM OF CURRENTLY ALLOCATED ARRAYS:",I5)'),allallocd
+      endif
+    endif
+
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !TOTAL ONE-SIDED INFO!!!!!!!!!!!!!!!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+    total(1) = mb_acc
+    total(2) = mb_put
+    total(3) = mb_get
+    total(4) = time_pdm_acc
+    total(5) = time_pdm_put
+    total(6) = time_pdm_get
+    total(7) = nmsg_acc*1.0E0_realk
+    total(8) = nmsg_put*1.0E0_realk
+    total(9) = nmsg_get*1.0E0_realk
+    call lsmpi_local_reduction(total,9,infpar%master)
+    if(master)then
+      speed_acc=0.0E0_realk
+      speed_put=0.0E0_realk
+      speed_get=0.0E0_realk
+      if(total(4)/=0.0E0_realk)speed_acc=total(1)/total(4)
+      if(total(5)/=0.0E0_realk)speed_put=total(2)/total(5)
+      if(total(6)/=0.0E0_realk)speed_get=total(3)/total(6)
+      if(.not.present(infoonmaster))then
+        write(*,'("")')
+        write(*,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
+        write(*,'("Printing one-sided transfer information summary")')
+        write(*,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
+        write(*,'(I9," Total acc: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.8," MB/s")'),&
+        &int(total(7)),total(1),total(4),speed_acc
+        write(*,'(I9," Total put: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.8," MB/s")'),&
+        &int(total(8)),total(2),total(5),speed_put
+        write(*,'(I9," Total get: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.8," MB/s")'),&
+        &int(total(9)),total(3),total(6),speed_get
       endif
     endif
 #endif
@@ -2478,15 +2546,21 @@ module dec_pdm_module
     !> input the fortan array which should be transferred to the tile
     real(realk),intent(inout) :: fort(nelms)
     integer(kind=ls_mpik) :: assert,dest, ierr,n
+    real(realk) :: sta,sto
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
     assert=0
     offset=0
     n=nelms
     dest=get_residence_of_tile(globtilenr,arr)
-    call lsmpi_win_lock(dest,arr%wi(globtilenr),'e')
+    sta=MPI_WTIME()
+    call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
     call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
     CALL lsmpi_win_unlock(dest, arr%wi(globtilenr))
+    sto = MPI_WTIME()
+    time_pdm_acc = time_pdm_acc + sto - sta
+    bytes_transferred_acc = bytes_transferred_acc + n * 8_long
+    nmsg_acc = nmsg_acc + 1
 #endif
   end subroutine array_accumulate_tile_combidx4
   subroutine array_accumulate_tile_combidx8(arr,globtilenr,fort,nelms)
@@ -2497,15 +2571,21 @@ module dec_pdm_module
     !> input the fortan array which should be transferred to the tile
     real(realk),intent(inout) :: fort(nelms)
     integer(kind=ls_mpik) :: assert,dest, ierr,n
+    real(realk) :: sta,sto
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
     assert=0
     offset=0
     n=nelms
     dest=get_residence_of_tile(globtilenr,arr)
-    call lsmpi_win_lock(dest,arr%wi(globtilenr),'e')
+    sta=MPI_WTIME()
+    call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
     call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
     call lsmpi_win_unlock(dest,arr%wi(globtilenr))
+    sto = MPI_WTIME()
+    time_pdm_acc = time_pdm_acc + sto - sta
+    bytes_transferred_acc = bytes_transferred_acc + n * 8_long
+    nmsg_acc = nmsg_acc + 1
 #endif
   end subroutine array_accumulate_tile_combidx8
   subroutine array_puttile_modeidx(arr,modidx,fort,nelms)
@@ -2525,15 +2605,21 @@ module dec_pdm_module
     integer(kind=8),intent(in) :: nelms
     real(realk),intent(inout) :: fort(nelms)
     integer(kind=ls_mpik) :: assert,dest, ierr,n
+    real(realk) :: sta,sto
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
     assert=0
     offset=0
     n=nelms
     dest=get_residence_of_tile(globtilenr,arr)
-    call lsmpi_win_lock(dest,arr%wi(globtilenr),'e')
+    sta=MPI_WTIME()
+    call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
     call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr))
     call lsmpi_win_unlock(dest,arr%wi(globtilenr))
+    sto = MPI_WTIME()
+    time_pdm_put = time_pdm_put + sto - sta
+    bytes_transferred_put = bytes_transferred_put + n * 8_long
+    nmsg_put = nmsg_put + 1
 #endif
   end subroutine array_puttile_combidx8
   subroutine array_puttile_combidx4(arr,globtilenr,fort,nelms)
@@ -2543,15 +2629,21 @@ module dec_pdm_module
     integer(kind=4),intent(in) :: nelms
     real(realk),intent(inout) :: fort(nelms)
     integer(kind=ls_mpik) :: assert,dest, ierr,n
+    real(realk) :: sta,sto
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
     assert=0
     offset=0
     n=nelms
     dest=get_residence_of_tile(globtilenr,arr)
-    call lsmpi_win_lock(dest,arr%wi(globtilenr),'e')
+    sta=MPI_WTIME()
+    call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
     call lsmpi_put(fort,nelms,1,dest,arr%wi(globtilenr))
     call lsmpi_win_unlock(dest,arr%wi(globtilenr))
+    sto = MPI_WTIME()
+    time_pdm_put = time_pdm_put + sto - sta
+    bytes_transferred_put = bytes_transferred_put + n * 8_long
+    nmsg_put = nmsg_put + 1
 #endif
   end subroutine array_puttile_combidx4
 
@@ -2573,15 +2665,21 @@ module dec_pdm_module
     integer(kind=8),intent(in) :: nelms
     real(realk),intent(inout) :: fort(nelms)
     integer(kind=ls_mpik) :: assert,source, ierr,n
+    real(realk) :: sta,sto
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
     assert=0
     offset=0
     n=nelms
     source=get_residence_of_tile(globtilenr,arr)
-    call lsmpi_win_lock(source,arr%wi(globtilenr),'e')
+    sta=MPI_WTIME()
+    call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
     call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))
     call lsmpi_win_unlock(source,arr%wi(globtilenr))
+    sto = MPI_WTIME()
+    time_pdm_get = time_pdm_get + sto - sta
+    bytes_transferred_get = bytes_transferred_get + n * 8_long
+    nmsg_get = nmsg_get + 1
 #endif
   end subroutine array_gettile_combidx8
   subroutine array_gettile_combidx4(arr,globtilenr,fort,nelms)
@@ -2591,17 +2689,151 @@ module dec_pdm_module
     integer(kind=4),intent(in) :: nelms
     real(realk),intent(inout) :: fort(nelms)
     integer(kind=ls_mpik) :: assert,source, ierr,n
+    real(realk) :: sta,sto
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
     assert=0
     offset=0
     n=nelms
     source=get_residence_of_tile(globtilenr,arr)
+    sta=MPI_WTIME()
     call lsmpi_win_lock(source,arr%wi(globtilenr),'s')
     call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))
     call lsmpi_win_unlock(source,arr%wi(globtilenr))
+    sto = MPI_WTIME()
+    time_pdm_get = time_pdm_get + sto - sta
+    bytes_transferred_get = bytes_transferred_get + n * 8_long
+    nmsg_get = nmsg_get + 1
 #endif
   end subroutine array_gettile_combidx4
+
+  subroutine get_int_dist_info(o2v2,firstintel,nintel,remoterank)
+    implicit none
+    integer, intent(in) :: o2v2
+    integer, intent(out) :: firstintel,nintel
+    integer(kind=ls_mpik), intent(in), optional :: remoterank
+    integer(kind=ls_mpik) :: nnod, me
+    nnod = 1
+    me   = 0
+#ifdef VAR_LSMPI
+    nnod = infpar%lg_nodtot
+    if(.not.present(remoterank))then
+      me = infpar%lg_mynum
+    else
+      me = remoterank
+    endif
+#endif
+    nintel = o2v2/nnod
+    firstintel = me*nintel + 1
+    if(me<mod(o2v2,nnod))then
+      nintel = nintel + 1
+      firstintel = firstintel + me 
+    elseif(me>=mod(o2v2,nnod))then
+      firstintel = firstintel + mod(o2v2,nnod) 
+    endif
+  end subroutine get_int_dist_info
+
+  subroutine dist_int_contributions(g,o2v2,win)
+    implicit none
+    integer,intent(in) :: o2v2
+    real(realk),intent(in) :: g(o2v2)
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik) :: nnod,node,me
+    integer :: fe,ne,msg_len_mpi
+    real(realk) :: sta,sto
+    fe=1
+    ne=0
+    nnod = 1
+#ifdef VAR_DEBUG
+    msg_len_mpi=24
+#else
+    msg_len_mpi=170000000
+#endif
+#ifdef VAR_LSMPI
+    nnod = infpar%lg_nodtot
+    me   = infpar%lg_mynum
+    do node=0,nnod-1
+      call get_int_dist_info(o2v2,fe,ne,node)
+      sta=MPI_WTIME()
+      !print *,infpar%lg_mynum,"distributing",fe,fe+ne-1,ne,o2v2,node
+      call lsmpi_win_lock(node,win,'s')
+      call lsmpi_acc(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
+      call lsmpi_win_unlock(node,win)
+      sto = MPI_WTIME()
+      time_pdm_acc = time_pdm_acc + sto - sta
+      bytes_transferred_acc = bytes_transferred_acc + ne * 8_long
+      nmsg_acc = nmsg_acc + 1
+    enddo
+#endif
+  end subroutine dist_int_contributions
+
+  subroutine collect_int_contributions(g,o2v2,win)
+    implicit none
+    integer,intent(in) :: o2v2
+    real(realk),intent(in) :: g(o2v2)
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik) :: nnod,node,me
+    integer :: fe,ne,msg_len_mpi
+    real(realk) :: sta,sto
+    fe=1
+    ne=0
+    nnod = 1
+#ifdef VAR_DEBUG
+    msg_len_mpi=24
+#else
+    msg_len_mpi=170000000
+#endif
+#ifdef VAR_LSMPI
+    nnod = infpar%lg_nodtot
+    me   = infpar%lg_mynum
+    do node=0,nnod-1
+      !print *,infpar%lg_mynum,"collecting",fe,fe+ne-1,ne,o2v2,node
+      call get_int_dist_info(o2v2,fe,ne,node)
+      sta=MPI_WTIME()
+      call lsmpi_win_lock(node,win,'s')
+      call lsmpi_get(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
+      call lsmpi_win_unlock(node,win)
+      sto = MPI_WTIME()
+      time_pdm_get = time_pdm_get + sto - sta
+      bytes_transferred_get = bytes_transferred_get + ne * 8_long
+      nmsg_get = nmsg_get + 1
+    enddo
+#endif
+  end subroutine collect_int_contributions
+
+  !fenced routine does not need locks, but rewuires fences around call
+  subroutine collect_int_contributions_f(g,o2v2,win)
+    implicit none
+    integer,intent(in) :: o2v2
+    real(realk),intent(in) :: g(o2v2)
+    integer(kind=ls_mpik),intent(in) :: win
+    integer(kind=ls_mpik) :: nnod,node,me
+    integer :: fe,ne,msg_len_mpi
+    real(realk) :: sta,sto
+    fe=1
+    ne=0
+    nnod = 1
+    !msg_len_mpi=17
+#ifdef VAR_DEBUG
+    msg_len_mpi=24
+#else
+    msg_len_mpi=170000000
+#endif
+#ifdef VAR_LSMPI
+    nnod = infpar%lg_nodtot
+    me   = infpar%lg_mynum
+    do node=0,nnod-1
+      !print *,infpar%lg_mynum,"collecting f",fe,fe+ne-1,ne,o2v2,node
+      sta=MPI_WTIME()
+      call get_int_dist_info(o2v2,fe,ne,node)
+      call lsmpi_get(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
+      sto = MPI_WTIME()
+      time_pdm_get = time_pdm_get + sto - sta
+      bytes_transferred_get = bytes_transferred_get + ne * 8_long
+      nmsg_get = nmsg_get + 1
+    enddo
+#endif
+  end subroutine collect_int_contributions_f
 
 
 

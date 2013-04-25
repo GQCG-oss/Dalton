@@ -3019,7 +3019,7 @@ scheme%CAMmu                 = dalton_inp%CAMmu
 scheme%exchangeFactor        = dalton_inp%exchangeFactor
 
 !DFT parameters 
-scheme%DFT  = dalton_inp%DFT
+call dft_setIntegralSchemeFromInput(scheme%DFT,dalton_inp%DFT)
 
 scheme%INCREMENTAL  = .FALSE.
 scheme%DO_PROP      = .FALSE.

@@ -2363,7 +2363,6 @@ contains
         Uvirt(aa,aa) = 1.0E0_realk
       enddo
     else
-      print *,"DO CANONICALIZATION"
       call get_canonical_integral_transformation_matrices(no,nv,nb,ppfock_f,qqfock_f,ypo_f,ypv_f,&
                                        & ypo_d,ypv_d,Uocc,Uvirt,focc,fvirt)
       ppfock_d = 0.0E0_realk

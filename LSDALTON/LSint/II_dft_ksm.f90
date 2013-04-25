@@ -217,29 +217,28 @@ REAL(REALK),intent(in) :: CMAT(NBAST,NBAST)
 REAL(REALK),intent(inout) :: ABSVALOVERLAP(NBAST,NBAST)
 !
 LOGICAL          :: USE_MPI
-REAL(REALK)      :: DFTHRI,RHOTHR
-USE_MPI = .FALSE.!.TRUE.
+REAL(REALK)      :: DFTHRI
+USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_LSMPI
 !MPI Specific
 IF (setting%node.EQ.infpar%master) THEN
-!   IF(USE_MPI)call ls_mpibcast(LSMPI_IIDFTABSVALOVERLAP,infpar%master,setting%comm)
-!   IF(USE_MPI)call lsmpi_XCgeneric_masterToSlave(SETTING,LUPRI,IPRINT,nbast,&
-!        & ndmat,DMAT,DFTDATA,UNRES,setting%comm)
+   IF(USE_MPI)call ls_mpibcast(LSMPI_IIDFTABSVALOVERLAP,infpar%master,setting%comm)
+   IF(USE_MPI)call lsmpi_ABSVAL_masterToSlave(SETTING,LUPRI,IPRINT,nbast,&
+        & CMAT,ABSVALOVERLAP,setting%comm)
 ENDIF
 #endif
 
 DFTHRI = 1.0E-16_realk
-RHOTHR = 1.0E-16_realk 
 
 call II_ABSVALINT(LUPRI,IPRINT,SETTING,CMAT,NBAST,ABSVALOVERLAP,USE_MPI,&
-     & DFTHRI,RHOTHR)
+     & DFTHRI)
 
 #ifdef VAR_LSMPI
 !=================MPI Specific================================
 IF(USE_MPI)THEN
-!   call lsmpi_barrier(setting%comm)    
-!   CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,MPI_COMM_LSDALTON)
+   call lsmpi_barrier(setting%comm)    
+   CALL lsmpi_reduction(ABSVALOVERLAP,NBAST,NBAST,infpar%master,MPI_COMM_LSDALTON)
 ENDIF
 !=============================================================
 #endif
@@ -1081,6 +1080,28 @@ TYPE(DFTDATATYPE) :: DFTDATA
 CALL lsmpi_bufferDFTessentials1(LUPRI,IPRINT,NBAST,NDMAT,UNRES,comm)
 CALL lsmpi_bufferDFTessentials2(SETTING,LUPRI,IPRINT,NBAST,NDMAT,DMAT,DFTdata,comm)
 end subroutine lsmpi_XCgeneric_masterToSlave
+
+subroutine lsmpi_ABSVAL_masterToSlave(SETTING,LUPRI,IPRINT,nbast,&
+        & CMAT,ABSVALOVERLAP,comm)
+use lsmpi_mod
+use infpar_module
+use typedef
+implicit none
+INTEGER :: LUPRI,IPRINT,Nbast
+integer(kind=ls_mpik) :: comm
+TYPE(LSSETTING)  :: SETTING
+REAL(REALK)      :: CMAT(NBAST,NBAST),ABSVALOVERLAP(NBAST,NBAST)
+call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
+CALL ls_mpi_buffer(LUPRI,infpar%master)
+CALL ls_mpi_buffer(IPRINT,infpar%master)
+CALL ls_mpi_buffer(NBAST,infpar%master)
+CALL ls_mpi_buffer(CMAT,NBAST,NBAST,infpar%master)
+CALL ls_mpi_buffer(ABSVALOVERLAP,NBAST,NBAST,infpar%master)
+!SETTING
+CALL mpicopy_setting(setting,comm)
+call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
+end subroutine lsmpi_ABSVAL_masterToSlave
+
 !===========================================================
 ! MPI II_DFT_KSM Slave
 !==========================================================
@@ -1111,28 +1132,33 @@ call free_dftdata(dftdata)
 
 end subroutine lsmpi_II_DFT_KSM_Slave
 !LSMPI_IIDFTABSVALOVERLAP
-!!$subroutine lsmpi_II_DFT_ABSVALOVERLAP_Slave(comm)
-!!$use lsmpi_mod
-!!$use infpar_module
-!!$use typedef
-!!$use IIDFTKSM
-!!$implicit none
-!!$INTEGER :: LUPRI,IPRINT,Nbast,NDMAT
-!!$integer(kind=ls_mpik) :: comm
-!!$TYPE(LSSETTING)  :: SETTING
-!!$REAL(REALK),pointer :: DMAT(:,:,:)
-!!$TYPE(DFTDATATYPE) :: DFTDATA
-!!$LOGICAL :: UNRES
-!!$UNRES=.FALSE.
-!!$CALL lsmpi_bufferDFTessentials1(LUPRI,IPRINT,NBAST,NDMAT,UNRES,comm)
-!!$call mem_dft_alloc(DMAT,NBAST,NBAST,NDMAT)
-!!$CALL lsmpi_bufferDFTessentials2(SETTING,LUPRI,IPRINT,NBAST,NDMAT,DMAT,DFTdata,comm)
-!!$!CALL FUNCTION
-!!$call II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,IPRINT,nbast,ndmat,DMAT,DFTDATA)
-!!$call mem_dft_dealloc(DMAT)
-!!$call typedef_free_setting(SETTING)
-!!$call free_dftdata(dftdata)
-!!$end subroutine lsmpi_II_DFT_ABSVALOVERLAP_Slave
+subroutine lsmpi_II_DFT_ABSVALOVERLAP_Slave(comm)
+use lsmpi_mod
+use infpar_module
+use typedef
+use IIDFTKSM
+implicit none
+INTEGER :: LUPRI,IPRINT,Nbast,NDMAT
+integer(kind=ls_mpik) :: comm
+TYPE(LSSETTING)  :: SETTING
+REAL(REALK),pointer :: CMAT(:,:),ABSVALOVERLAP(:,:)
+call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,comm)
+CALL ls_mpi_buffer(LUPRI,infpar%master)
+CALL ls_mpi_buffer(IPRINT,infpar%master)
+CALL ls_mpi_buffer(NBAST,infpar%master)
+call mem_dft_alloc(CMAT,NBAST,NBAST)
+CALL ls_mpi_buffer(CMAT,NBAST,NBAST,infpar%master)
+call mem_dft_alloc(ABSVALOVERLAP,NBAST,NBAST)
+CALL ls_mpi_buffer(ABSVALOVERLAP,NBAST,NBAST,infpar%master)
+CALL mpicopy_setting(setting,comm)
+call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,comm)
+
+call II_DFT_ABSVAL_OVERLAP(SETTING,LUPRI,IPRINT,nbast,CMAT,ABSVALOVERLAP)
+
+call mem_dft_dealloc(CMAT)
+call mem_dft_dealloc(ABSVALOVERLAP)
+call typedef_free_setting(SETTING)
+end subroutine lsmpi_II_DFT_ABSVALOVERLAP_Slave
 
 subroutine lsmpi_II_DFT_KSME_Slave(comm)
 use lsmpi_mod

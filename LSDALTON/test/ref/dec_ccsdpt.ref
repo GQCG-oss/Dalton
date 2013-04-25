@@ -44,7 +44,7 @@
 
 
 Start simulation
-     Date and time (Linux)  : Tue Apr  9 22:07:00 2013 
+     Date and time (Linux)  : Tue Apr 23 14:34:31 2013 
      Host name              : kasper-kristensens-macbook-pro.local    
                       
  -----------------------------------------
@@ -77,9 +77,6 @@ Start simulation
   TRILEVEL                                                                                            
   .CONVTHR                                                                                            
   1.0d-5                                                                                              
-  .LCM                                                                                                
-  .MLO                                                                                                
-  2 2                                                                                                 
   $INFO                                                                                               
   DEBUG_MPI_MEM                                                                                       
   $END INFO                                                                                           
@@ -95,7 +92,7 @@ Start simulation
   .CCSD(T)                                                                                            
   .ccThr                                                                                              
   1.0d-6                                                                                              
-  .ReassignHatoms                                                                                     
+  .ABSORBH                                                                                            
   *END OF INPUT                                                                                       
   
   MOLPRINT IS SET TO       0
@@ -338,9 +335,9 @@ Matrix AO D  has nnz=       196 sparsity:    100.000 %
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   1
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         67.305 MB
-  Max allocated memory, type(matrix)                  50.236 kB
-  Max allocated memory, real                          67.285 MB
+  Max allocated memory, TOTAL                          6.570 MB
+  Max allocated memory, type(matrix)                  48.584 kB
+  Max allocated memory, real                           6.467 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -354,7 +351,7 @@ Matrix AO D  has nnz=       196 sparsity:    100.000 %
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                  66.560 MB
+  Max allocated memory, integralitem                   2.048 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -405,9 +402,9 @@ No. of matmuls in get_density:    42
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   2
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         67.305 MB
+  Max allocated memory, TOTAL                          6.570 MB
   Max allocated memory, type(matrix)                  68.672 kB
-  Max allocated memory, real                          67.285 MB
+  Max allocated memory, real                           6.467 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -421,7 +418,7 @@ No. of matmuls in get_density:    42
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                  66.560 MB
+  Max allocated memory, integralitem                   2.048 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -471,9 +468,9 @@ No. of matmuls in get_density:    43
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   3
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         67.305 MB
+  Max allocated memory, TOTAL                          6.570 MB
   Max allocated memory, type(matrix)                  68.672 kB
-  Max allocated memory, real                          67.285 MB
+  Max allocated memory, real                           6.467 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -487,7 +484,7 @@ No. of matmuls in get_density:    43
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                  66.560 MB
+  Max allocated memory, integralitem                   2.048 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -538,9 +535,9 @@ No. of matmuls in get_density:    51
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   4
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         67.305 MB
+  Max allocated memory, TOTAL                          6.570 MB
   Max allocated memory, type(matrix)                  74.944 kB
-  Max allocated memory, real                          67.285 MB
+  Max allocated memory, real                           6.467 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -554,7 +551,7 @@ No. of matmuls in get_density:    51
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                  66.560 MB
+  Max allocated memory, integralitem                   2.048 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -606,9 +603,9 @@ No. of matmuls in get_density:    61
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   5
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         67.305 MB
+  Max allocated memory, TOTAL                          6.570 MB
   Max allocated memory, type(matrix)                  78.080 kB
-  Max allocated memory, real                          67.285 MB
+  Max allocated memory, real                           6.467 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -622,7 +619,7 @@ No. of matmuls in get_density:    61
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                  66.560 MB
+  Max allocated memory, integralitem                   2.048 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -676,9 +673,9 @@ No. of matmuls in get_density:    70
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   6
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                         67.305 MB
+  Max allocated memory, TOTAL                          6.570 MB
   Max allocated memory, type(matrix)                  81.216 kB
-  Max allocated memory, real                          67.285 MB
+  Max allocated memory, real                           6.467 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -692,7 +689,7 @@ No. of matmuls in get_density:    70
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                  66.560 MB
+  Max allocated memory, integralitem                   2.048 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -767,110 +764,41 @@ Calculation of virtual orbital energies converged in     6 iterations!
 Pred= ***** LEVEL 2 ORBITAL LOCALIZATION ****
  Localizing core:           14           2
  Too few orbitals to localize
- Done localizing core 
  Localizing valence:           14           6
 Pred= ******* VALENCE LOCALIZATION ******* 
-  1Pred= 0.00E+00 max_o=   2.350 r=   0.000 mu= 0.00E+00 grd= 5.71E+00 it=  0 step 0.750 tot step  0.000
-iter :  4    mu : -2.22737E+02    ResNorm :  2.62365E+01   2D ResNorm  2.03506E+01
-iter :  5    mu : -2.24110E+02    ResNorm :  1.26096E+01   2D ResNorm  2.01607E+01
-iter :  6    mu : -2.23378E+02    ResNorm :  6.95827E+00   2D ResNorm  2.02613E+01
-iter :  7    mu : -2.24877E+02    ResNorm :  6.53165E+00   2D ResNorm  2.00564E+01
-iter :  8    mu : -2.25347E+02    ResNorm :  2.09863E+00   2D ResNorm  1.99932E+01
-iter :  9    mu : -2.25376E+02    ResNorm :  5.50017E-01   2D ResNorm  1.99892E+01
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:           155.6
-Linesearch number :   1 Change        -28.5033
-Linesearch number :   2 Change        -33.6007
-Linesearch number :   3 Change          4.0924
+  1Pred= 1.00E+00 max_o=   2.350 r=   0.000 mu= 0.00E+00 grd= 5.71E+00 it=  1 step 0.750 tot step  0.000
   2Pred=-6.91E+01 max_o=   2.161 r=   0.825 mu=-2.25E+02 grd= 1.45E+01 it=  9 step 0.750 tot step  1.519
-iter :  3    mu : -8.93260E+01    ResNorm :  2.29215E+01   2D ResNorm  2.29215E+01
-iter :  4    mu : -9.32146E+01    ResNorm :  2.35961E+00   2D ResNorm  2.20616E+01
-iter :  5    mu : -9.33126E+01    ResNorm :  3.59965E-01   2D ResNorm  2.20409E+01
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:            93.5
-Linesearch number :   1 Change        -20.7722
-Linesearch number :   2 Change         11.1567
   3Pred=-5.67E+01 max_o=   1.951 r=   0.732 mu=-9.33E+01 grd= 4.03E+00 it=  5 step 0.750 tot step  0.750
-iter :  3    mu :  0.00000E+00    ResNorm :  4.59689E+00   2D ResNorm  4.59689E+00
-iter :  4    mu :  0.00000E+00    ResNorm :  8.33392E-01   2D ResNorm  4.59689E+00
-iter :  5    mu :  0.00000E+00    ResNorm :  1.69046E-01   2D ResNorm  4.59689E+00
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:            72.7
-Linesearch number :   1 Change         -1.3343
-Linesearch number :   2 Change          1.3520
   4Pred=-2.69E+00 max_o=   1.907 r=   0.993 mu= 0.00E+00 grd= 1.68E-01 it=  5 step 0.750 tot step  0.231
-iter :  3    mu :  0.00000E+00    ResNorm :  2.45692E-01   2D ResNorm  2.45692E-01
-iter :  4    mu :  0.00000E+00    ResNorm :  4.14014E-02   2D ResNorm  2.45692E-01
-iter :  5    mu :  0.00000E+00    ResNorm :  9.17692E-03   2D ResNorm  2.45692E-01
-iter :  6    mu :  0.00000E+00    ResNorm :  1.60437E-03   2D ResNorm  2.45692E-01
-iter :  7    mu :  0.00000E+00    ResNorm :  3.90994E-04   2D ResNorm  2.45692E-01
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:            71.4
-Linesearch number :   1 Change         -0.0016
   5Pred=-3.16E-03 max_o=   1.906 r=   1.000 mu= 0.00E+00 grd= 1.74E-04 it=  7 step 0.750 tot step  0.007
- Done localizing valence 
  Localizing virtual:            6
 Pred= ******* VIRTUAL LOCALIZATION ******* 
-  1Pred=-3.16E-03 max_o=   2.193 r=   0.000 mu= 0.00E+00 grd= 7.17E+00 it=  7 step 0.750 tot step  0.000
-iter :  3    mu :  0.00000E+00    ResNorm :  2.47242E+00   2D ResNorm  2.47242E+00
-iter :  4    mu :  0.00000E+00    ResNorm :  3.05174E-02   2D ResNorm  2.47242E+00
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:           123.5
-Linesearch number :   1 Change         -1.8898
-Linesearch number :   2 Change          1.8886
+  1Pred= 1.00E+00 max_o=   2.193 r=   0.000 mu= 0.00E+00 grd= 7.17E+00 it=  1 step 0.750 tot step  0.000
   2Pred=-3.78E+00 max_o=   2.178 r=   1.001 mu= 0.00E+00 grd= 8.70E-02 it=  4 step 0.750 tot step  0.176
-iter :  3    mu :  0.00000E+00    ResNorm :  3.43327E-02   2D ResNorm  3.43327E-02
-iter :  4    mu :  0.00000E+00    ResNorm :  1.20782E-03   2D ResNorm  3.43327E-02
-iter :  5    mu :  0.00000E+00    ResNorm :  7.09778E-05   2D ResNorm  3.43327E-02
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:           121.6
-Linesearch number :   1 Change         -0.0003
   3Pred=-5.40E-04 max_o=   2.178 r=   1.000 mu= 0.00E+00 grd= 2.07E-05 it=  5 step 0.750 tot step  0.002
-**** CORE LOCALITY  ****
-FINAL: orbspread, fourth orbspread :    1          0.312
-FINAL: orbspread, fourth orbspread :    2          0.312
 
-Maximum **************** CORE **********************
-Maximum orbspread and orb.number    :   0.312    2
-Maximum fourth spread and orb.number :   0.398    2
-Maximum *********************************************
-Minimum *********************************************
-Minimum orbspread and orb.number     :   0.312    1
-Minimum fourth spread and orb.number :   0.398    1
-Minimum ********************************************
-**** VALENCE LOCALITY  ****
-FINAL: orbspread, fourth orbspread :    3          1.831          2.343
-FINAL: orbspread, fourth orbspread :    4          1.831          2.343
-FINAL: orbspread, fourth orbspread :    5          1.831          2.343
-FINAL: orbspread, fourth orbspread :    6          1.906          2.418
-FINAL: orbspread, fourth orbspread :    7          1.831          2.343
-FINAL: orbspread, fourth orbspread :    8          1.906          2.418
+%%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
+Max. sigma_2 and orb.number:    0.31    2
+Max. sigma_4 and orb.number:    0.40    2
+Min. sigma_2 and orb.number:    0.31    1
+Min. sigma_4 and orb.number:    0.40    1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Maximum *************** VALENCE ********************
-Maximum orbspread and orb.number    :   1.906    8
-Maximum fourth spread and orb.number :   2.418    8
-Maximum *********************************************
-Minimum *********************************************
-Minimum orbspread and orb.number     :   1.831    3
-Minimum fourth spread and orb.number :   2.343    3
-Minimum ********************************************
 
-**** VIRTUAL LOCALITY  ****
-FINAL: orbspread, fourth orbspread :    9          2.178          2.640
-FINAL: orbspread, fourth orbspread :   10          2.178          2.640
-FINAL: orbspread, fourth orbspread :   11          2.092          2.581
-FINAL: orbspread, fourth orbspread :   12          2.092          2.581
-FINAL: orbspread, fourth orbspread :   13          2.092          2.581
-FINAL: orbspread, fourth orbspread :   14          2.092          2.581
+%%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
+Max. sigma_2 and orb.number:    1.91    8
+Max. sigma_4 and orb.number:    2.42    8
+Min. sigma_2 and orb.number:    1.83    3
+Min. sigma_4 and orb.number:    2.34    3
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-Maximum **************** VIRTUAL *******************
-Maximum orbspread and orb.number     :   2.178   10
-Maximum fourth spread and orb.number :   2.640   10
-Maximum *********************************************
-Minimum *********************************************
-Minimum orbspread and orb.number    :   2.092   11
-Minimum fourth spread and orb.number :   2.581   11
-Minimum *********************************************
+
+%%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
+Max. sigma_2 and orb.number:    2.18   10
+Max. sigma_4 and orb.number:    2.64   10
+Min. sigma_2 and orb.number:    2.09   11
+Min. sigma_4 and orb.number:    2.58   11
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
  Number of electrons  in molecule =           16
@@ -878,42 +806,6 @@ Minimum *********************************************
  Number of virt. orb. in molecule =           18
 
 
- Orbspreads for occupied orbitals:
- *********************************
-           1  0.31189323149173975     
-           2  0.31189324608290958     
-           3   1.8310746034055516     
-           4   1.8311054687557553     
-           5   1.8310891116555985     
-           6   1.9061558584320428     
-           7   1.8311097590494358     
-           8   1.9061589342150405     
-
-
- Orbspreads for virtual orbitals:
- ********************************
-           9   2.1784431859973679     
-          10   2.1784435523188836     
-          11   2.0915220577011064     
-          12   2.0915755736575026     
-          13   2.0915479742367014     
-          14   2.0915976311145514     
-          15   2.4977881393084878     
-          16   2.4842465392220601     
-          17   2.4842465392220601     
-          18   2.4842465392220596     
-          19   2.4977881393084873     
-          20   2.4842465392220596     
-          21   2.4842465392220601     
-          22   2.4842465392220601     
-          23   1.9634255128191132     
-          24   1.9634255128191145     
-          25   1.9634255128191136     
-          26   1.9634255128191149     
-
-
- Maximum orb. spread (MOS) summary
- *********************************
  OCCUPIED: (Orbital index, MOS) =            8   1.9061589342150405     
  VIRTUAL : (Orbital index, MOS) =           15   2.4977881393084878     
 
@@ -938,9 +830,9 @@ Matrix AO D  has nnz=       196 sparsity:     28.994 %
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   1
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                        509.664 MB
-  Max allocated memory, type(matrix)                  92.316 kB
-  Max allocated memory, real                         509.662 MB
+  Max allocated memory, TOTAL                          7.904 MB
+  Max allocated memory, type(matrix)                  90.208 kB
+  Max allocated memory, real                           7.902 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -954,7 +846,7 @@ Matrix AO D  has nnz=       196 sparsity:     28.994 %
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                 509.600 MB
+  Max allocated memory, integralitem                   7.840 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -1005,9 +897,9 @@ No. of matmuls in get_density:    45
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   2
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                        509.664 MB
+  Max allocated memory, TOTAL                          7.904 MB
   Max allocated memory, type(matrix)                 156.832 kB
-  Max allocated memory, real                         509.662 MB
+  Max allocated memory, real                           7.902 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -1021,7 +913,7 @@ No. of matmuls in get_density:    45
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                 509.600 MB
+  Max allocated memory, integralitem                   7.840 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -1072,9 +964,9 @@ No. of matmuls in get_density:    55
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   3
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                        509.664 MB
+  Max allocated memory, TOTAL                          7.904 MB
   Max allocated memory, type(matrix)                 167.648 kB
-  Max allocated memory, real                         509.662 MB
+  Max allocated memory, real                           7.902 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -1088,7 +980,7 @@ No. of matmuls in get_density:    55
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                 509.600 MB
+  Max allocated memory, integralitem                   7.840 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -1139,9 +1031,9 @@ No. of matmuls in get_density:    53
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   4
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                        509.664 MB
+  Max allocated memory, TOTAL                          7.904 MB
   Max allocated memory, type(matrix)                 178.464 kB
-  Max allocated memory, real                         509.662 MB
+  Max allocated memory, real                           7.902 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -1155,7 +1047,7 @@ No. of matmuls in get_density:    53
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                 509.600 MB
+  Max allocated memory, integralitem                   7.840 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -1207,9 +1099,9 @@ No. of matmuls in get_density:    62
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   5
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                        509.664 MB
+  Max allocated memory, TOTAL                          7.904 MB
   Max allocated memory, type(matrix)                 189.280 kB
-  Max allocated memory, real                         509.662 MB
+  Max allocated memory, real                           7.902 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -1223,7 +1115,7 @@ No. of matmuls in get_density:    62
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                 509.600 MB
+  Max allocated memory, integralitem                   7.840 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -1278,9 +1170,9 @@ No. of matmuls in get_density:    81
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   6
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                        509.664 MB
+  Max allocated memory, TOTAL                          7.904 MB
   Max allocated memory, type(matrix)                 200.096 kB
-  Max allocated memory, real                         509.662 MB
+  Max allocated memory, real                           7.902 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -1294,7 +1186,7 @@ No. of matmuls in get_density:    81
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                 509.600 MB
+  Max allocated memory, integralitem                   7.840 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -1349,9 +1241,9 @@ No. of matmuls in get_density:    80
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   7
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                        509.664 MB
+  Max allocated memory, TOTAL                          7.904 MB
   Max allocated memory, type(matrix)                 210.912 kB
-  Max allocated memory, real                         509.662 MB
+  Max allocated memory, real                           7.902 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -1365,7 +1257,7 @@ No. of matmuls in get_density:    80
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                 509.600 MB
+  Max allocated memory, integralitem                   7.840 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -1420,9 +1312,9 @@ No. of matmuls in get_density:    80
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   8
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                        509.664 MB
+  Max allocated memory, TOTAL                          7.904 MB
   Max allocated memory, type(matrix)                 221.728 kB
-  Max allocated memory, real                         509.662 MB
+  Max allocated memory, real                           7.902 MB
   Max allocated memory, integer                      103.492 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
@@ -1436,7 +1328,7 @@ No. of matmuls in get_density:    80
   Max allocated memory, overlapType                   62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                 509.600 MB
+  Max allocated memory, integralitem                   7.840 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, overlap                        4.308 MB
   Max allocated memory, ODitem                         4.608 kB
@@ -1514,202 +1406,43 @@ Calculation of virtual orbital energies converged in    13 iterations!
 Pred= **** LEVEL 3 ORBITAL LOCALIZATION ****
  Localizing core:           26           2
  Too few orbitals to localize
- Done localizing core 
  Localizing valence:           26           6
 Pred= ******* VALENCE LOCALIZATION ******* 
-  1Pred=-5.40E-04 max_o=   1.770 r=   0.000 mu= 0.00E+00 grd= 2.09E-01 it=  5 step 0.750 tot step  0.000
-iter :  3    mu :  0.00000E+00    ResNorm :  8.31742E-04   2D ResNorm  8.31742E-04
-iter :  4    mu :  0.00000E+00    ResNorm :  4.13986E-05   2D ResNorm  8.31742E-04
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:            43.3
-Linesearch number :   1 Change         -0.0029
+  1Pred= 1.00E+00 max_o=   1.770 r=   0.000 mu= 0.00E+00 grd= 2.09E-01 it=  1 step 0.750 tot step  0.000
   2Pred=-5.77E-03 max_o=   1.772 r=   1.000 mu= 0.00E+00 grd= 1.35E-04 it=  4 step 0.750 tot step  0.009
- Done localizing valence 
  Localizing virtual:           18
 Pred= ******* VIRTUAL LOCALIZATION ******* 
-  1Pred=-5.77E-03 max_o=   2.800 r=   0.000 mu= 0.00E+00 grd= 2.88E+01 it=  4 step 0.750 tot step  0.000
-iter :  4    mu : -2.76755E+02    ResNorm :  2.38578E+02   2D ResNorm  2.27808E+02
-iter :  5    mu : -3.57940E+02    ResNorm :  9.60901E+01   2D ResNorm  2.16091E+02
-iter :  6    mu : -3.58781E+02    ResNorm :  4.07972E+01   2D ResNorm  2.15971E+02
-iter :  7    mu : -3.62337E+02    ResNorm :  1.56296E+01   2D ResNorm  2.15464E+02
-iter :  8    mu : -3.62082E+02    ResNorm :  5.31323E+00   2D ResNorm  2.15500E+02
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:           702.0
-Linesearch number :   1 Change       -121.9056
-Linesearch number :   2 Change        -36.3253
-Linesearch number :   3 Change         54.0706
+  1Pred= 1.00E+00 max_o=   2.800 r=   0.000 mu= 0.00E+00 grd= 2.88E+01 it=  1 step 0.750 tot step  0.000
   2Pred=-2.58E+02 max_o=   2.560 r=   0.945 mu=-3.62E+02 grd= 1.49E+01 it=  8 step 0.750 tot step  1.500
-iter :  4    mu : -3.54967E+02    ResNorm :  4.45349E+01   2D ResNorm  4.44788E+01
-iter :  5    mu : -3.63453E+02    ResNorm :  8.31535E+00   2D ResNorm  4.17551E+01
-iter :  6    mu : -3.63804E+02    ResNorm :  2.31076E+00   2D ResNorm  4.16630E+01
-iter :  7    mu : -3.63815E+02    ResNorm :  4.44686E-01   2D ResNorm  4.16602E+01
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:           543.7
-Linesearch number :   1 Change        -66.5977
-Linesearch number :   2 Change        -36.0041
-Linesearch number :   3 Change         28.4456
   3Pred=-1.59E+02 max_o=   2.442 r=   0.840 mu=-3.64E+02 grd= 7.07E+00 it=  7 step 0.750 tot step  1.500
-iter :  4    mu : -8.05138E+01    ResNorm :  9.23280E+01   2D ResNorm  7.24672E+01
-iter :  5    mu : -1.58034E+02    ResNorm :  3.38847E+01   2D ResNorm  4.23283E+01
-iter :  6    mu : -1.65479E+02    ResNorm :  8.64562E+00   2D ResNorm  4.05051E+01
-iter :  7    mu : -1.65962E+02    ResNorm :  5.28035E+00   2D ResNorm  4.03912E+01
-iter :  8    mu : -1.66054E+02    ResNorm :  2.26847E+00   2D ResNorm  4.03696E+01
-iter :  9    mu : -1.66063E+02    ResNorm :  6.13659E-01   2D ResNorm  4.03673E+01
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:           441.1
-Linesearch number :   1 Change        -26.2610
-Linesearch number :   2 Change          9.6108
   4Pred=-7.11E+01 max_o=   2.279 r=   0.739 mu=-1.66E+02 grd= 3.49E+00 it=  9 step 0.750 tot step  0.750
-iter :  3    mu :  0.00000E+00    ResNorm :  3.05788E+01   2D ResNorm  3.05788E+01
-iter :  4    mu :  0.00000E+00    ResNorm :  2.03237E+01   2D ResNorm  3.05788E+01
-iter :  5    mu : -5.28356E+00    ResNorm :  8.47736E+00   2D ResNorm  2.90291E+01
-iter :  6    mu : -6.73176E+00    ResNorm :  3.99442E+00   2D ResNorm  2.86303E+01
-iter :  7    mu : -7.37487E+00    ResNorm :  2.73502E+00   2D ResNorm  2.84565E+01
-iter :  8    mu : -7.83781E+00    ResNorm :  2.41161E+00   2D ResNorm  2.83327E+01
-iter :  9    mu : -8.02920E+00    ResNorm :  1.48970E+00   2D ResNorm  2.82818E+01
-iter : 10    mu : -8.10724E+00    ResNorm :  5.20747E-01   2D ResNorm  2.82611E+01
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:           414.9
-Linesearch number :   1 Change         -9.5940
-Linesearch number :   2 Change         13.1842
   5Pred=-2.13E+01 max_o=   2.327 r=   0.900 mu=-8.11E+00 grd= 1.03E+00 it= 10 step 0.750 tot step  0.750
-iter :  3    mu :  0.00000E+00    ResNorm :  8.77192E+00   2D ResNorm  8.77192E+00
-iter :  4    mu :  0.00000E+00    ResNorm :  4.80528E+00   2D ResNorm  8.77192E+00
-iter :  5    mu :  0.00000E+00    ResNorm :  2.23762E+00   2D ResNorm  8.77192E+00
-iter :  6    mu :  0.00000E+00    ResNorm :  9.08246E-01   2D ResNorm  8.77192E+00
-iter :  7    mu :  0.00000E+00    ResNorm :  2.53894E-01   2D ResNorm  8.77192E+00
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:           405.3
-Linesearch number :   1 Change         -0.5954
   6Pred=-1.21E+00 max_o=   2.334 r=   0.984 mu= 0.00E+00 grd= 6.45E-02 it=  7 step 0.750 tot step  0.194
-iter :  3    mu :  0.00000E+00    ResNorm :  5.91296E-01   2D ResNorm  5.91296E-01
-iter :  4    mu :  0.00000E+00    ResNorm :  2.88548E-01   2D ResNorm  5.91296E-01
-iter :  5    mu :  0.00000E+00    ResNorm :  1.37159E-01   2D ResNorm  5.91296E-01
-iter :  6    mu :  0.00000E+00    ResNorm :  8.14876E-02   2D ResNorm  5.91296E-01
-iter :  7    mu :  0.00000E+00    ResNorm :  7.96651E-02   2D ResNorm  5.91296E-01
-iter :  8    mu :  0.00000E+00    ResNorm :  4.50566E-02   2D ResNorm  5.91296E-01
-iter :  9    mu :  0.00000E+00    ResNorm :  1.70717E-02   2D ResNorm  5.91296E-01
-iter : 10    mu :  0.00000E+00    ResNorm :  6.61524E-03   2D ResNorm  5.91296E-01
-iter : 11    mu :  0.00000E+00    ResNorm :  3.72474E-03   2D ResNorm  5.91296E-01
-iter : 12    mu :  0.00000E+00    ResNorm :  1.60611E-03   2D ResNorm  5.91296E-01
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:           404.7
-Linesearch number :   1 Change         -0.0033
   7Pred=-6.62E-03 max_o=   2.334 r=   1.006 mu= 0.00E+00 grd= 6.19E-04 it= 12 step 0.750 tot step  0.016
-iter :  3    mu :  0.00000E+00    ResNorm :  7.15743E-03   2D ResNorm  7.15743E-03
-iter :  4    mu :  0.00000E+00    ResNorm :  3.70609E-03   2D ResNorm  7.15743E-03
-iter :  5    mu :  0.00000E+00    ResNorm :  1.31978E-03   2D ResNorm  7.15743E-03
-iter :  6    mu :  0.00000E+00    ResNorm :  6.28380E-04   2D ResNorm  7.15743E-03
-iter :  7    mu :  0.00000E+00    ResNorm :  6.49887E-04   2D ResNorm  7.15743E-03
-iter :  8    mu :  0.00000E+00    ResNorm :  3.71397E-04   2D ResNorm  7.15743E-03
-iter :  9    mu :  0.00000E+00    ResNorm :  1.81238E-04   2D ResNorm  7.15743E-03
-iter : 10    mu :  0.00000E+00    ResNorm :  1.06156E-04   2D ResNorm  7.15743E-03
-iter : 11    mu :  0.00000E+00    ResNorm :  4.03446E-05   2D ResNorm  7.15743E-03
-iter : 12    mu :  0.00000E+00    ResNorm :  1.62810E-05   2D ResNorm  7.15743E-03
-iter : Micro iterations converged in RedSpaceLoop number :   1
-Linesearch number :   0 Original function value:           404.7
-Linesearch number :   1 Change         -0.0000
   8Pred=-7.26E-07 max_o=   2.334 r=   1.000 mu= 0.00E+00 grd= 9.06E-07 it= 12 step 0.750 tot step  0.000
-**** CORE LOCALITY  ****
-FINAL: orbspread, fourth orbspread :    1          0.313
-FINAL: orbspread, fourth orbspread :    2          0.313
 
-Maximum **************** CORE **********************
-Maximum orbspread and orb.number    :   0.313    2
-Maximum fourth spread and orb.number :   0.401    2
-Maximum *********************************************
-Minimum *********************************************
-Minimum orbspread and orb.number     :   0.313    1
-Minimum fourth spread and orb.number :   0.401    1
-Minimum ********************************************
-**** VALENCE LOCALITY  ****
-FINAL: orbspread, fourth orbspread :    3          1.557          2.011
-FINAL: orbspread, fourth orbspread :    4          1.557          2.011
-FINAL: orbspread, fourth orbspread :    5          1.557          2.011
-FINAL: orbspread, fourth orbspread :    6          1.772          2.249
-FINAL: orbspread, fourth orbspread :    7          1.557          2.011
-FINAL: orbspread, fourth orbspread :    8          1.772          2.249
-
-Maximum *************** VALENCE ********************
-Maximum orbspread and orb.number    :   1.772    6
-Maximum fourth spread and orb.number :   2.249    8
-Maximum *********************************************
-Minimum *********************************************
-Minimum orbspread and orb.number     :   1.557    3
-Minimum fourth spread and orb.number :   2.011    3
-Minimum ********************************************
-
-**** VIRTUAL LOCALITY  ****
-FINAL: orbspread, fourth orbspread :    9          1.955          2.340
-FINAL: orbspread, fourth orbspread :   10          1.945          2.347
-FINAL: orbspread, fourth orbspread :   11          1.966          2.572
-FINAL: orbspread, fourth orbspread :   12          1.966          2.572
-FINAL: orbspread, fourth orbspread :   13          1.966          2.572
-FINAL: orbspread, fourth orbspread :   14          1.966          2.572
-FINAL: orbspread, fourth orbspread :   15          2.182          2.784
-FINAL: orbspread, fourth orbspread :   16          2.320          2.862
-FINAL: orbspread, fourth orbspread :   17          2.222          2.777
-FINAL: orbspread, fourth orbspread :   18          2.182          2.784
-FINAL: orbspread, fourth orbspread :   19          2.182          2.784
-FINAL: orbspread, fourth orbspread :   20          2.320          2.862
-FINAL: orbspread, fourth orbspread :   21          2.222          2.777
-FINAL: orbspread, fourth orbspread :   22          2.182          2.784
-FINAL: orbspread, fourth orbspread :   23          2.334          2.844
-FINAL: orbspread, fourth orbspread :   24          2.334          2.844
-FINAL: orbspread, fourth orbspread :   25          2.334          2.844
-FINAL: orbspread, fourth orbspread :   26          2.334          2.844
-
-Maximum **************** VIRTUAL *******************
-Maximum orbspread and orb.number     :   2.334   24
-Maximum fourth spread and orb.number :   2.862   20
-Maximum *********************************************
-Minimum *********************************************
-Minimum orbspread and orb.number    :   1.945   10
-Minimum fourth spread and orb.number :   2.340    9
-Minimum *********************************************
+%%%%%%%%%%%%%%% CORE LOCALITY  %%%%%%%%%%%%%%%
+Max. sigma_2 and orb.number:    0.31    2
+Max. sigma_4 and orb.number:    0.40    2
+Min. sigma_2 and orb.number:    0.31    1
+Min. sigma_4 and orb.number:    0.40    1
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
+%%%%%%%%%%%%%% VALENCE LOCALITY  %%%%%%%%%%%%%%
+Max. sigma_2 and orb.number:    1.77    6
+Max. sigma_4 and orb.number:    2.25    8
+Min. sigma_2 and orb.number:    1.56    3
+Min. sigma_4 and orb.number:    2.01    3
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-                       Permanent dipole moment
-                       -----------------------
-               au              Debye           10**-30 C m
-           0.305873E-04      0.777453E-04      0.259330E-03
-
-
-                       Dipole moment components
-                       ------------------------
-               au              Debye           10**-30 C m
- x        -0.173546E-04     -0.441111E-04     -0.147138E-03
- y         0.113034E-04      0.287305E-04      0.958346E-04
- z        -0.225085E-04     -0.572110E-04     -0.190835E-03
-
-
-
- *****************************************************
- **     CPU-TIME USED IN LSDALTON RESPONSE:   4.62410000000001986E-002    **
- *****************************************************
-
-Total no. of matmuls used:                      2355
-Total no. of Fock/KS matrix evaluations:          15
-
-
-=============================================================================
-             -- Divide, Expand & Consolidate Coupled-Cluster -- v: 0.02   
-=============================================================================
- Authors: Marcin Ziolkowski @ AU 2009,2010
-          Kasper Kristensen (kasperk@chem.au.dk)
-          Ida-Marie Hoeyvik (idamh@chem.au.dk)
-          Patrick Ettenhuber (pett@chem.au.dk)
-          Janus Juul Eriksen (janusje@chem.au.dk)
-
-
- get_available_memory: System identified to be MAC!
- Available Memory (GB) =       3.0080    
- Memory found by system call to be:    3.008     GB
- Reading Fock matrix from file fock.restart...
-
- Reading overlap matrix from file overlapmatrix...
+%%%%%%%%%%%%%% VIRTUAL LOCALITY  %%%%%%%%%%%%%%
+Max. sigma_2 and orb.number:    2.33   24
+Max. sigma_4 and orb.number:    2.86   20
+Min. sigma_2 and orb.number:    1.94   10
+Min. sigma_4 and orb.number:    2.34    9
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
 
@@ -1727,7 +1460,22 @@ FULL: Number of occ. orbitals    :      8
 FULL: Number of virt. orbitals   :     18
 
 
-DEC fragment calculation is carried out...
+
+=============================================================================
+             -- Divide, Expand & Consolidate Coupled-Cluster -- v: 0.02   
+=============================================================================
+ Authors: Marcin Ziolkowski @ AU 2009,2010
+          Kasper Kristensen (kasperk@chem.au.dk)
+          Ida-Marie Hoeyvik (idamh@chem.au.dk)
+          Patrick Ettenhuber (pett@chem.au.dk)
+          Janus Juul Eriksen (janusje@chem.au.dk)
+
+
+ get_available_memory: System identified to be MAC!
+ Available Memory (GB) =       2.1280    
+ Memory found by system call to be:    2.128     GB
+
+DEC calculation is carried out...
 
 
  ================================================ 
@@ -1739,18 +1487,12 @@ DEC fragment calculation is carried out...
    DEC input parameters   
 --------------------------
 
-Simple orbital thr.    =    0.010
-Mulliken charge thr.   =    0.010
-Mulliken analysis      = F
-Boughton-Pulay         = F
-FOT                    = 1.00E-04
-MaxIter                =   20
-Pair distance thresh.  =     18.90
-Pair reduction thresh. = *********
-Fragmentation debug    = F
-DEC driver debug       = F
-Print level            =    0
+FOT                    =        0.10E-03
+Pair distance thresh.  =        18.9    
+Pair reduction thresh. =       0.100E+07
+Simple orbital thr.    =       0.100E-01
 Expansion step size    =    5
+Print level            =    0
 
 --------------------------
   Coupled-cluster input  
@@ -1758,12 +1500,12 @@ Expansion step size    =    5
 
 Wave function          = CCSD(T) 
 MaxIter                =  100
-Convergence            =  0.1E-05
-Debug mode             = F
+Convergence thr        =  0.1E-05
 Use CROP               = T
 CROP subspace          =    3
 Preconditioner         = T
 Precond. B             = T
+Debug mode             = F
  Generating DEC orbitals using simple Lowdin charge analysis
 
 
@@ -1827,7 +1569,7 @@ Precond. B             = T
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals AOS/EOS     =       8       4
@@ -1872,7 +1614,7 @@ Precond. B             = T
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals AOS/EOS     =       8       4
@@ -1918,9 +1660,117 @@ Precond. B             = T
  FOP: Virtual energy converged, energydiff    =   0.000000000
  FOP Fragment expansion converged in iteration            1
   FOP
-  FOP *************************************************
-  FOP ** Expansion has converged. We start reduction **
-  FOP *************************************************
+  FOP *******************************************************
+  FOP ** Expansion has converged. We start local reduction **
+  FOP *******************************************************
+  FOP
+ FOP reduction - expanded/reduced AOS dim    2    1
+#SINGLEDIMS# basis,occ,virt       24       4       9
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.81    
+
+ Number of atomic basis functions        =      24
+ Number of occupied orbitals AOS/EOS     =       4       4
+ Number of virtual  orbitals AOS/EOS     =       9       9
+ Maximum alpha batch dimension           =      18
+ Maximum gamma batch dimension           =      18
+ Maximum virtual batch dimension         =       9
+ Number of OMP threads                   =       1
+
+ BATCH: Number of Gamma batches   =            2
+ BATCH: Number of Alpha batches   =            2
+ BATCH: Number of virtual batches =           1
+
+
+ **********************************************************************
+ Energy summary for fragment:       1
+ **********************************************************************
+ Single occupied energy =    -0.4149019394E-01
+ Single virtual  energy =    -0.4149019394E-01
+ Single Lagrangian occ term  =     0.2194699760E-01
+ Single Lagrangian virt term =     0.1954319634E-01
+
+
+ FOP Local reduction did not converge in step     1
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :   9
+ FOP Loop: Number of orbitals in occ total  :   4
+ FOP Loop: Lagrangian Fragment energy       :   -0.0414901939
+ FOP Loop: Occupied Fragment energy         :   -0.0414901939
+ FOP Loop: Virtual Fragment energy          :   -0.0414901939
+ FOP Loop: Lagrangian energy diff           :    0.0267619827
+ FOP Loop: Occupied energy diff             :    0.0238445782
+ FOP Loop: Virtual energy diff              :    0.0274958204
+ FOP Loop: Number of basis functions        :  24
+ FOP=========================================================
+
+ FOP
+ FOP reduction - expanded/reduced AOS dim    2    2
+#SINGLEDIMS# basis,occ,virt       26       8      18
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.81    
+
+ Number of atomic basis functions        =      26
+ Number of occupied orbitals AOS/EOS     =       8       4
+ Number of virtual  orbitals AOS/EOS     =      18       9
+ Maximum alpha batch dimension           =      18
+ Maximum gamma batch dimension           =      18
+ Maximum virtual batch dimension         =      18
+ Number of OMP threads                   =       1
+
+ BATCH: Number of Gamma batches   =            2
+ BATCH: Number of Alpha batches   =            2
+ BATCH: Number of virtual batches =           1
+
+
+ **********************************************************************
+ Energy summary for fragment:       1
+ **********************************************************************
+ Single occupied energy =    -0.6533477216E-01
+ Single virtual  energy =    -0.6898601437E-01
+ Single Lagrangian occ term  =     0.3351423996E-01
+ Single Lagrangian virt term =     0.3255436988E-01
+
+
+  FOP
+ FOP Local reduction converged in step     2
+Number of AOS atoms in old/reduced fragment      2     2
+  FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   2
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   1
+ FOP Loop: Number of orbitals in virt total :  18
+ FOP Loop: Number of orbitals in occ total  :   8
+ FOP Loop: Lagrangian Fragment energy       :   -0.0682521767
+ FOP Loop: Occupied Fragment energy         :   -0.0653347722
+ FOP Loop: Virtual Fragment energy          :   -0.0689860144
+ FOP Loop: Lagrangian energy diff           :    0.0000000000
+ FOP Loop: Occupied energy diff             :    0.0000000000
+ FOP Loop: Virtual energy diff              :    0.0000000000
+ FOP Loop: Number of basis functions        :  26
+ FOP=========================================================
+
+ FOP
+  FOP
+  FOP ***********************************************************
+  FOP **  Local reduction step converged. Start FO reduction!  **
+  FOP ***********************************************************
   FOP
  FOP Starting virt reduction step            1
 FOP virt rejection threshold  :   1.00000E-04
@@ -1933,7 +1783,7 @@ FOP virt rejection threshold  :   1.00000E-04
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals AOS/EOS     =       8       4
@@ -1988,7 +1838,7 @@ FOP virt rejection threshold  :   1.00000E-05
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals AOS/EOS     =       8       4
@@ -2029,9 +1879,9 @@ FOP virt rejection threshold  :   1.00000E-05
  FOP=========================================================
 
  FOP
- FOP: Lagrangian energy converged (virt reduction), diff =   0.000010753
- FOP: Occupied energy converged (virt reduction), diff =   0.000019686
- FOP: Virtual energy converged (virt reduction), diff =   0.000030843
+FOP: Lagrangian energy converged (virt reduction), diff =   0.000010753
+FOP: Occupied energy converged (virt reduction), diff =   0.000019686
+FOP: Virtual energy converged (virt reduction), diff =   0.000030843
  FOP Virt reduction of fragment converged in step           2
  FOP Starting occ reduction step            1
 FOP occ rejection threshold  :   1.00000E-04
@@ -2044,7 +1894,7 @@ FOP occ rejection threshold  :   1.00000E-04
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals AOS/EOS     =       7       4
@@ -2085,26 +1935,29 @@ FOP occ rejection threshold  :   1.00000E-04
  FOP=========================================================
 
  FOP
- FOP: Lagrangian energy converged (occ reduction), diff =   0.000014933
- FOP: Occupied energy converged (occ reduction), diff =   0.000024083
- FOP: Virtual energy converged (occ reduction), diff =   0.000070323
+FOP: Lagrangian energy converged (occ reduction), diff =   0.000014933
+FOP: Occupied energy converged (occ reduction), diff =   0.000024083
+FOP: Virtual energy converged (occ reduction), diff =   0.000070323
  FOP Occ  reduction of fragment converged in step           1
  FOP
- FOP=========================================================
- FOP      SITE OPTIMIZATION HAS CONVERGED FOR SITE   1
- FOP---------------------------------------------------------
- FOP Done: Fragment number                  :   1
- FOP Done: Number of orbitals in virt total :  16
- FOP Done: Number of orbitals in occ total  :   7
- FOP Done: Lagrangian Fragment energy       :   -0.0682372437
- FOP Done: Occupied Fragment energy         :   -0.0653106893
- FOP Done: Virtual Fragment energy          :   -0.0689156914
- FOP Done: Number of basis functions        :  26
- FOP Done: Occupied reduction threshold     :      0.10E-03
- FOP Done: Virtual  reduction threshold     :      0.10E-04
- FOP Done: Occupied reduction removed      1 of      8 orbitals ( 12.50 %)
- FOP Done: Virtual  reduction removed      2 of     18 orbitals ( 11.11 %)
- FOP=========================================================
+FOP=========================================================
+FOP      SITE OPTIMIZATION HAS CONVERGED FOR SITE   1
+FOP---------------------------------------------------------
+FOP Done: Fragment number                  :   1
+FOP Done: Number of orbitals in virt total :  16
+FOP Done: Number of orbitals in occ total  :   7
+FOP Done: Lagrangian Fragment energy       :   -0.0682372437
+FOP Done: Occupied Fragment energy         :   -0.0653106893
+FOP Done: Virtual Fragment energy          :   -0.0689156914
+FOP Done: Number of basis functions        :  26
+FOP Done: Occupied reduction threshold     :      0.10E-03
+FOP Done: Virtual  reduction threshold     :      0.10E-04
+FOP Done: Occupied reduction 1 removed      0 of      8 MOs (  0.00 %)
+FOP Done: Unoccupied reduction 1 removed      0 of     18 MOs (  0.00 %)
+FOP Done: Atomic extent reduction 1 removed      0 of     26 AOs (  0.00 %)
+FOP Done: Occupied reduction 2 removed      1 of      8 MOs ( 12.50 %)
+FOP Done: Unoccupied reduction 2 removed      2 of     18 MOs ( 11.11 %)
+FOP=========================================================
 
  FOP
  FOP
@@ -2120,7 +1973,7 @@ FOP occ rejection threshold  :   1.00000E-04
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals AOS/EOS     =       8       4
@@ -2165,7 +2018,7 @@ FOP occ rejection threshold  :   1.00000E-04
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals AOS/EOS     =       8       4
@@ -2211,9 +2064,117 @@ FOP occ rejection threshold  :   1.00000E-04
  FOP: Virtual energy converged, energydiff    =   0.000000000
  FOP Fragment expansion converged in iteration            1
   FOP
-  FOP *************************************************
-  FOP ** Expansion has converged. We start reduction **
-  FOP *************************************************
+  FOP *******************************************************
+  FOP ** Expansion has converged. We start local reduction **
+  FOP *******************************************************
+  FOP
+ FOP reduction - expanded/reduced AOS dim    2    1
+#SINGLEDIMS# basis,occ,virt       24       4       9
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.81    
+
+ Number of atomic basis functions        =      24
+ Number of occupied orbitals AOS/EOS     =       4       4
+ Number of virtual  orbitals AOS/EOS     =       9       9
+ Maximum alpha batch dimension           =      18
+ Maximum gamma batch dimension           =      18
+ Maximum virtual batch dimension         =       9
+ Number of OMP threads                   =       1
+
+ BATCH: Number of Gamma batches   =            2
+ BATCH: Number of Alpha batches   =            2
+ BATCH: Number of virtual batches =           1
+
+
+ **********************************************************************
+ Energy summary for fragment:       2
+ **********************************************************************
+ Single occupied energy =    -0.4149712934E-01
+ Single virtual  energy =    -0.4149712934E-01
+ Single Lagrangian occ term  =     0.2194423128E-01
+ Single Lagrangian virt term =     0.1955289807E-01
+
+
+ FOP Local reduction did not converge in step     1
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   1
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :   9
+ FOP Loop: Number of orbitals in occ total  :   4
+ FOP Loop: Lagrangian Fragment energy       :   -0.0414971293
+ FOP Loop: Occupied Fragment energy         :   -0.0414971293
+ FOP Loop: Virtual Fragment energy          :   -0.0414971293
+ FOP Loop: Lagrangian energy diff           :    0.0266764241
+ FOP Loop: Occupied energy diff             :    0.0238383761
+ FOP Loop: Virtual energy diff              :    0.0271911717
+ FOP Loop: Number of basis functions        :  24
+ FOP=========================================================
+
+ FOP
+ FOP reduction - expanded/reduced AOS dim    2    2
+#SINGLEDIMS# basis,occ,virt       26       8      18
+
+
+ =======================================================================
+                   MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
+ =======================================================================
+
+ 85% of available memory (GB)            =  1.81    
+
+ Number of atomic basis functions        =      26
+ Number of occupied orbitals AOS/EOS     =       8       4
+ Number of virtual  orbitals AOS/EOS     =      18       9
+ Maximum alpha batch dimension           =      18
+ Maximum gamma batch dimension           =      18
+ Maximum virtual batch dimension         =      18
+ Number of OMP threads                   =       1
+
+ BATCH: Number of Gamma batches   =            2
+ BATCH: Number of Alpha batches   =            2
+ BATCH: Number of virtual batches =           1
+
+
+ **********************************************************************
+ Energy summary for fragment:       2
+ **********************************************************************
+ Single occupied energy =    -0.6533550540E-01
+ Single virtual  energy =    -0.6868830101E-01
+ Single Lagrangian occ term  =     0.3351469487E-01
+ Single Lagrangian virt term =     0.3233555810E-01
+
+
+  FOP
+ FOP Local reduction converged in step     2
+Number of AOS atoms in old/reduced fragment      2     2
+  FOP
+ FOP
+ FOP=========================================================
+ FOP              Fragment information, loop   2
+ FOP---------------------------------------------------------
+ FOP Loop: Fragment number                  :   2
+ FOP Loop: Number of orbitals in virt total :  18
+ FOP Loop: Number of orbitals in occ total  :   8
+ FOP Loop: Lagrangian Fragment energy       :   -0.0681735534
+ FOP Loop: Occupied Fragment energy         :   -0.0653355054
+ FOP Loop: Virtual Fragment energy          :   -0.0686883010
+ FOP Loop: Lagrangian energy diff           :    0.0000000000
+ FOP Loop: Occupied energy diff             :    0.0000000000
+ FOP Loop: Virtual energy diff              :    0.0000000000
+ FOP Loop: Number of basis functions        :  26
+ FOP=========================================================
+
+ FOP
+  FOP
+  FOP ***********************************************************
+  FOP **  Local reduction step converged. Start FO reduction!  **
+  FOP ***********************************************************
   FOP
  FOP Starting virt reduction step            1
 FOP virt rejection threshold  :   1.00000E-04
@@ -2226,7 +2187,7 @@ FOP virt rejection threshold  :   1.00000E-04
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals AOS/EOS     =       8       4
@@ -2281,7 +2242,7 @@ FOP virt rejection threshold  :   1.00000E-05
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals AOS/EOS     =       8       4
@@ -2322,9 +2283,9 @@ FOP virt rejection threshold  :   1.00000E-05
  FOP=========================================================
 
  FOP
- FOP: Lagrangian energy converged (virt reduction), diff =   0.000011405
- FOP: Occupied energy converged (virt reduction), diff =   0.000019416
- FOP: Virtual energy converged (virt reduction), diff =   0.000027986
+FOP: Lagrangian energy converged (virt reduction), diff =   0.000011405
+FOP: Occupied energy converged (virt reduction), diff =   0.000019416
+FOP: Virtual energy converged (virt reduction), diff =   0.000027986
  FOP Virt reduction of fragment converged in step           2
  FOP Starting occ reduction step            1
 FOP occ rejection threshold  :   1.00000E-04
@@ -2337,7 +2298,7 @@ FOP occ rejection threshold  :   1.00000E-04
                    MP2 INTEGRALS/AMPLITUDES: MEMORY SUMMARY             
  =======================================================================
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals AOS/EOS     =       7       4
@@ -2378,26 +2339,29 @@ FOP occ rejection threshold  :   1.00000E-04
  FOP=========================================================
 
  FOP
- FOP: Lagrangian energy converged (occ reduction), diff =   0.000015762
- FOP: Occupied energy converged (occ reduction), diff =   0.000023592
- FOP: Virtual energy converged (occ reduction), diff =   0.000069135
+FOP: Lagrangian energy converged (occ reduction), diff =   0.000015762
+FOP: Occupied energy converged (occ reduction), diff =   0.000023592
+FOP: Virtual energy converged (occ reduction), diff =   0.000069135
  FOP Occ  reduction of fragment converged in step           1
  FOP
- FOP=========================================================
- FOP      SITE OPTIMIZATION HAS CONVERGED FOR SITE   2
- FOP---------------------------------------------------------
- FOP Done: Fragment number                  :   2
- FOP Done: Number of orbitals in virt total :  16
- FOP Done: Number of orbitals in occ total  :   7
- FOP Done: Lagrangian Fragment energy       :   -0.0681577910
- FOP Done: Occupied Fragment energy         :   -0.0653119139
- FOP Done: Virtual Fragment energy          :   -0.0686191657
- FOP Done: Number of basis functions        :  26
- FOP Done: Occupied reduction threshold     :      0.10E-03
- FOP Done: Virtual  reduction threshold     :      0.10E-04
- FOP Done: Occupied reduction removed      1 of      8 orbitals ( 12.50 %)
- FOP Done: Virtual  reduction removed      2 of     18 orbitals ( 11.11 %)
- FOP=========================================================
+FOP=========================================================
+FOP      SITE OPTIMIZATION HAS CONVERGED FOR SITE   2
+FOP---------------------------------------------------------
+FOP Done: Fragment number                  :   2
+FOP Done: Number of orbitals in virt total :  16
+FOP Done: Number of orbitals in occ total  :   7
+FOP Done: Lagrangian Fragment energy       :   -0.0681577910
+FOP Done: Occupied Fragment energy         :   -0.0653119139
+FOP Done: Virtual Fragment energy          :   -0.0686191657
+FOP Done: Number of basis functions        :  26
+FOP Done: Occupied reduction threshold     :      0.10E-03
+FOP Done: Virtual  reduction threshold     :      0.10E-04
+FOP Done: Occupied reduction 1 removed      0 of      8 MOs (  0.00 %)
+FOP Done: Unoccupied reduction 1 removed      0 of     18 MOs (  0.00 %)
+FOP Done: Atomic extent reduction 1 removed      0 of     26 AOs (  0.00 %)
+FOP Done: Occupied reduction 2 removed      1 of      8 MOs ( 12.50 %)
+FOP Done: Unoccupied reduction 2 removed      2 of     18 MOs ( 11.11 %)
+FOP=========================================================
 
  FOP
  Preparing job list...
@@ -2416,7 +2380,7 @@ FOP occ rejection threshold  :   1.00000E-04
  FRAGANALYSIS: Max basis       26
  FRAGANALYSIS: Ave occ        7.0000    
  FRAGANALYSIS: Ave unocc      16.000    
- FRAGANALYSIS: Ave basis              26
+ FRAGANALYSIS: Ave basis      26.000    
 
 
 
@@ -2440,8 +2404,8 @@ FOP occ rejection threshold  :   1.00000E-04
  *** Calculating single and pair interaction energies ***
 
  The Coulomb energy contribution    49.091608378100858     
- The Exchange energy contribution    8.0730562366430743     
- The Fock energy contribution   -41.018552141457825     
+ The Exchange energy contribution    8.0730562366430672     
+ The Fock energy contribution   -41.018552141457782     
  QQQ New  h:   5226.1923702248869     
  QQQ New  K:   719.61849166423337     
 
@@ -2451,143 +2415,143 @@ FOP occ rejection threshold  :   1.00000E-04
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
  The Coulomb energy contribution    49.091608378100858     
- The Exchange energy contribution    8.0730562366430743     
- The Fock energy contribution   -41.018552141457825     
+ The Exchange energy contribution    8.0730562366430672     
+ The Fock energy contribution   -41.018552141457782     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      1         0.606517627             0.00000000    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.091608378100858     
- The Exchange energy contribution    8.0730562366430547     
- The Fock energy contribution   -41.018552141457860     
+ The Coulomb energy contribution    49.091608378100823     
+ The Exchange energy contribution    8.0730562366430654     
+ The Fock energy contribution   -41.018552141457796     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      2         0.100902375           -0.191520679    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.164053193521269     
- The Exchange energy contribution    8.0793225160171875     
- The Fock energy contribution   -41.084730677503984     
+ The Coulomb energy contribution    49.164053193521205     
+ The Exchange energy contribution    8.0793225160171751     
+ The Fock energy contribution   -41.084730677503977     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      3         0.293879072E-01       -0.197347480    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.159459669735568     
- The Exchange energy contribution    8.0794704822895120     
- The Fock energy contribution   -41.079989187446017     
+ The Coulomb energy contribution    49.159459669735497     
+ The Exchange energy contribution    8.0794704822895067     
+ The Fock energy contribution   -41.079989187445982     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      4         0.949143611E-02       -0.196213416    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.162170885593497     
- The Exchange energy contribution    8.0800280345411757     
- The Fock energy contribution   -41.082142851052190     
+ The Coulomb energy contribution    49.162170885593447     
+ The Exchange energy contribution    8.0800280345411739     
+ The Fock energy contribution   -41.082142851052218     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      5         0.254960096E-02       -0.197839605    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.162896651099551     
- The Exchange energy contribution    8.0801400259252958     
- The Fock energy contribution   -41.082756625174227     
+ The Coulomb energy contribution    49.162896651099530     
+ The Exchange energy contribution    8.0801400259252905     
+ The Fock energy contribution   -41.082756625174163     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      6         0.591491760E-03       -0.197951500    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.162960798094794     
+ The Coulomb energy contribution    49.162960798094751     
  The Exchange energy contribution    8.0801316114130906     
- The Fock energy contribution   -41.082829186681735     
+ The Fock energy contribution   -41.082829186681757     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      7         0.134373571E-03       -0.197902132    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.162975400735981     
- The Exchange energy contribution    8.0801304179562514     
- The Fock energy contribution   -41.082844982779683     
+ The Coulomb energy contribution    49.162975400735910     
+ The Exchange energy contribution    8.0801304179562461     
+ The Fock energy contribution   -41.082844982779719     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      8         0.295161101E-04       -0.197898635    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.162972862824311     
- The Exchange energy contribution    8.0801301009615809     
- The Fock energy contribution   -41.082842761862779     
+ The Coulomb energy contribution    49.162972862824269     
+ The Exchange energy contribution    8.0801301009615791     
+ The Fock energy contribution   -41.082842761862679     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###      9         0.848868557E-05       -0.197900756    
+ ###      9         0.848868558E-05       -0.197900756    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.162974606564859     
- The Exchange energy contribution    8.0801303300757148     
- The Fock energy contribution   -41.082844276489162     
+ The Coulomb energy contribution    49.162974606564809     
+ The Exchange energy contribution    8.0801303300757024     
+ The Fock energy contribution   -41.082844276489119     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###     10         0.240427084E-05       -0.197901316    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.162975780516959     
- The Exchange energy contribution    8.0801304774762528     
- The Fock energy contribution   -41.082845303040777     
+ The Coulomb energy contribution    49.162975780516952     
+ The Exchange energy contribution    8.0801304774762439     
+ The Fock energy contribution   -41.082845303040742     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###     11         0.629582388E-06       -0.197901376    
@@ -2598,10 +2562,41 @@ S and E   :         0.0000
 -------------------------------
 
 Hooray! CC equation is solved!
-CCSOL: Total cpu time    =           44.400 s
-CCSOL: Total wall time   =           48.224 s
+CCSOL: Total cpu time    =           43.322 s
+CCSOL: Total wall time   =           43.372 s
 Frag. corr. energy =    -0.1979013761
 Number of CC iterations =   11
+
+  Array4 statistics       
+ ==================================================
+ Number of created arrays   :       58
+ Number of destroyed arrays :       56
+ Orphaned arrays            :        2
+
+  Array4 time statistics     
+ ==================================================
+ array4_init              :                  0.00s 
+ array4_free              :                  0.00s 
+ array4_duplicate         :                  0.00s 
+ array4_alloc          :                  0.00s 
+ array4_dealloc        :                  0.00s 
+ array4_write_data        :                  0.00s 
+ array4_read_data         :                  0.00s 
+ array4_write             :                  0.00s 
+ array4_read              :                  0.00s 
+ array4_add               :                  0.00s 
+ array4_add_to            :                  0.00s 
+ array4_scale             :                  0.00s 
+ array4_dotproduct        :                  0.00s 
+ array4_norm              :                  0.00s 
+ array4_contract1         :                  0.00s 
+ array4_contract2         :                  0.00s 
+ array4_contract2_middle  :                  0.00s 
+ array4_contract3         :                  0.00s 
+ array4_contract_array2   :                  0.00s 
+ array4_mat_multiply      :                  0.00s 
+ array4_reorder           :                  0.00s 
+ array4_contract_with_ao  :                  0.00s 
  Gamma batch size was set manually, use that value instead!
  Alpha batch size was set manually, use that value instead!
 
@@ -2612,7 +2607,7 @@ Number of CC iterations =   11
 
  To be on the safe side we use only 85% of the estimated available memory
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals             =       7
@@ -2648,8 +2643,8 @@ Number of CC iterations =   11
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.2090% of available Memory in part B on master
-Using  0.0414% of available Memory in part C on master
+Using  0.2955% of available Memory in part B on master
+Using  0.0586% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
  The Coulomb energy contribution    70.385353271488810     
@@ -2661,8 +2656,8 @@ S and E   :         0.0000
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.2090% of available Memory in part B on master
-Using  0.0414% of available Memory in part C on master
+Using  0.2955% of available Memory in part B on master
+Using  0.0586% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
  The Coulomb energy contribution    70.385353271488867     
@@ -2674,8 +2669,8 @@ S and E   :         0.0000
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.2090% of available Memory in part B on master
-Using  0.0415% of available Memory in part C on master
+Using  0.2956% of available Memory in part B on master
+Using  0.0586% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
  The Coulomb energy contribution    70.466857824204894     
@@ -2687,11 +2682,11 @@ S and E   :         0.0000
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.2090% of available Memory in part B on master
-Using  0.0415% of available Memory in part C on master
+Using  0.2956% of available Memory in part B on master
+Using  0.0586% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    70.459471685144479     
+ The Coulomb energy contribution    70.459471685144464     
  The Exchange energy contribution    11.721053266507148     
  The Fock energy contribution   -58.738418418637437     
 Fock trafo:         0.0000
@@ -2700,51 +2695,51 @@ S and E   :         0.0000
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.2090% of available Memory in part B on master
-Using  0.0415% of available Memory in part C on master
+Using  0.2956% of available Memory in part B on master
+Using  0.0586% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    70.463323276584831     
- The Exchange energy contribution    11.721731418833599     
- The Fock energy contribution   -58.741591857751260     
+ The Coulomb energy contribution    70.463323276584774     
+ The Exchange energy contribution    11.721731418833592     
+ The Fock energy contribution   -58.741591857751224     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      5         0.277140717E-02       -0.209004964    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.2090% of available Memory in part B on master
-Using  0.0415% of available Memory in part C on master
+Using  0.2956% of available Memory in part B on master
+Using  0.0586% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    70.464256428284685     
- The Exchange energy contribution    11.721821066147847     
- The Fock energy contribution   -58.742435362136732     
+ The Coulomb energy contribution    70.464256428284600     
+ The Exchange energy contribution    11.721821066147848     
+ The Fock energy contribution   -58.742435362136781     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      6         0.672124794E-03       -0.209162568    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.2090% of available Memory in part B on master
-Using  0.0415% of available Memory in part C on master
+Using  0.2956% of available Memory in part B on master
+Using  0.0586% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    70.464312316264625     
- The Exchange energy contribution    11.721801557582403     
- The Fock energy contribution   -58.742510758682251     
+ The Coulomb energy contribution    70.464312316264653     
+ The Exchange energy contribution    11.721801557582399     
+ The Fock energy contribution   -58.742510758682357     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      7         0.158350906E-03       -0.209100098    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.2090% of available Memory in part B on master
-Using  0.0415% of available Memory in part C on master
+Using  0.2956% of available Memory in part B on master
+Using  0.0586% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    70.464330841148708     
- The Exchange energy contribution    11.721800693984541     
+ The Coulomb energy contribution    70.464330841148737     
+ The Exchange energy contribution    11.721800693984546     
  The Fock energy contribution   -58.742530147164153     
 Fock trafo:         0.0000
 S and E   :         0.0000
@@ -2752,42 +2747,42 @@ S and E   :         0.0000
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.2090% of available Memory in part B on master
-Using  0.0415% of available Memory in part C on master
+Using  0.2956% of available Memory in part B on master
+Using  0.0586% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    70.464326492190466     
- The Exchange energy contribution    11.721800818040300     
- The Fock energy contribution   -58.742525674150350     
+ The Coulomb energy contribution    70.464326492190409     
+ The Exchange energy contribution    11.721800818040293     
+ The Fock energy contribution   -58.742525674150315     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      9         0.984601748E-05       -0.209097171    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.2090% of available Memory in part B on master
-Using  0.0415% of available Memory in part C on master
+Using  0.2956% of available Memory in part B on master
+Using  0.0586% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    70.464329407302856     
- The Exchange energy contribution    11.721801183013072     
- The Fock energy contribution   -58.742528224289842     
+ The Coulomb energy contribution    70.464329407302884     
+ The Exchange energy contribution    11.721801183013049     
+ The Fock energy contribution   -58.742528224289792     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###     10         0.286321777E-05       -0.209097843    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.2090% of available Memory in part B on master
-Using  0.0415% of available Memory in part C on master
+Using  0.2956% of available Memory in part B on master
+Using  0.0586% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    70.464331166546302     
- The Exchange energy contribution    11.721801349588338     
- The Fock energy contribution   -58.742529816957969     
+ The Coulomb energy contribution    70.464331166546259     
+ The Exchange energy contribution    11.721801349588322     
+ The Fock energy contribution   -58.742529816957934     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###     11         0.738603868E-06       -0.209097907    
+ ###     11         0.738603866E-06       -0.209097907    
 
 
 -------------------------------
@@ -2795,10 +2790,41 @@ S and E   :         0.0000
 -------------------------------
 
 Hooray! CC equation is solved!
-CCSOL: Total cpu time    =           45.062 s
-CCSOL: Total wall time   =           50.243 s
+CCSOL: Total cpu time    =           43.565 s
+CCSOL: Total wall time   =           43.732 s
 Frag. corr. energy =    -0.2090979073
 Number of CC iterations =   11
+
+  Array4 statistics       
+ ==================================================
+ Number of created arrays   :       82
+ Number of destroyed arrays :       80
+ Orphaned arrays            :        2
+
+  Array4 time statistics     
+ ==================================================
+ array4_init              :                  0.01s 
+ array4_free              :                  0.00s 
+ array4_duplicate         :                  0.00s 
+ array4_alloc          :                  0.00s 
+ array4_dealloc        :                  0.00s 
+ array4_write_data        :                  0.00s 
+ array4_read_data         :                  0.00s 
+ array4_write             :                  0.00s 
+ array4_read              :                  0.00s 
+ array4_add               :                  0.00s 
+ array4_add_to            :                  0.00s 
+ array4_scale             :                  0.00s 
+ array4_dotproduct        :                  0.00s 
+ array4_norm              :                  0.00s 
+ array4_contract1         :                  0.00s 
+ array4_contract2         :                  0.00s 
+ array4_contract2_middle  :                  0.00s 
+ array4_contract3         :                  0.00s 
+ array4_contract_array2   :                  0.00s 
+ array4_mat_multiply      :                  0.00s 
+ array4_reorder           :                  0.00s 
+ array4_contract_with_ao  :                  0.00s 
 
 
  *****************************************************************************
@@ -2824,7 +2850,7 @@ Number of CC iterations =   11
 
  To be on the safe side we use only 85% of the estimated available memory
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals             =       8
@@ -2838,8 +2864,8 @@ Number of CC iterations =   11
  BATCH: Number of Gamma batches   =            2
  BATCH: Number of Alpha batches   =            2
  The Coulomb energy contribution    49.091479005041144     
- The Exchange energy contribution    8.0729293734278027     
- The Fock energy contribution   -41.018549631613425     
+ The Exchange energy contribution    8.0729293734277991     
+ The Fock energy contribution   -41.018549631613460     
  QQQ New  h:   5226.1923702248869     
  QQQ New  K:   719.61849166423337     
 
@@ -2849,146 +2875,146 @@ Number of CC iterations =   11
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
  The Coulomb energy contribution    49.091479005041144     
- The Exchange energy contribution    8.0729293734278027     
- The Fock energy contribution   -41.018549631613425     
+ The Exchange energy contribution    8.0729293734277991     
+ The Fock energy contribution   -41.018549631613460     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      1         0.606257153             0.00000000    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
  The Coulomb energy contribution    49.091479005041123     
- The Exchange energy contribution    8.0729293734277991     
- The Fock energy contribution   -41.018549631613475     
+ The Exchange energy contribution    8.0729293734278009     
+ The Fock energy contribution   -41.018549631613489     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      2         0.100858219           -0.191455761    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.163395280256907     
+ The Coulomb energy contribution    49.163395280256964     
  The Exchange energy contribution    8.0791245788591510     
- The Fock energy contribution   -41.084270701397749     
+ The Fock energy contribution   -41.084270701397763     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      3         0.293843522E-01       -0.197282537    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.158750711312059     
- The Exchange energy contribution    8.0792657185616381     
- The Fock energy contribution   -41.079484992750366     
+ The Coulomb energy contribution    49.158750711312038     
+ The Exchange energy contribution    8.0792657185616328     
+ The Fock energy contribution   -41.079484992750395     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      4         0.949492278E-02       -0.196150418    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.161481067791549     
- The Exchange energy contribution    8.0798253823078081     
- The Fock energy contribution   -41.081655685483717     
+ The Coulomb energy contribution    49.161481067791570     
+ The Exchange energy contribution    8.0798253823078117     
+ The Fock energy contribution   -41.081655685483739     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      5         0.254976723E-02       -0.197775742    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
  The Coulomb energy contribution    49.162202612557024     
- The Exchange energy contribution    8.0799372039548079     
- The Fock energy contribution   -41.082265408602325     
+ The Exchange energy contribution    8.0799372039548043     
+ The Fock energy contribution   -41.082265408602339     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      6         0.591455496E-03       -0.197888831    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.162266782320536     
- The Exchange energy contribution    8.0799286557731875     
- The Fock energy contribution   -41.082338126547434     
+ The Coulomb energy contribution    49.162266782320621     
+ The Exchange energy contribution    8.0799286557731893     
+ The Fock energy contribution   -41.082338126547391     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      7         0.134465701E-03       -0.197839491    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
  The Coulomb energy contribution    49.162281108285562     
- The Exchange energy contribution    8.0799274210396259     
- The Fock energy contribution   -41.082353687245956     
+ The Exchange energy contribution    8.0799274210396312     
+ The Fock energy contribution   -41.082353687245991     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      8         0.295768048E-04       -0.197836002    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.162278567955738     
+ The Coulomb energy contribution    49.162278567955752     
  The Exchange energy contribution    8.0799271075002093     
- The Fock energy contribution   -41.082351460455541     
+ The Fock energy contribution   -41.082351460455520     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###      9         0.850703619E-05       -0.197838133    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.162280350192091     
- The Exchange energy contribution    8.0799273413013246     
- The Fock energy contribution   -41.082353008890763     
+ The Coulomb energy contribution    49.162280350192184     
+ The Exchange energy contribution    8.0799273413013299     
+ The Fock energy contribution   -41.082353008890792     
 Fock trafo:         0.0000
 S and E   :         0.0000
  ###     10         0.240960415E-05       -0.197838691    
  BATCH: Number of Gamma batches   =            2 with maximum size          18
  BATCH: Number of Alpha batches   =            2 with maximum size          18
 Using memory intensive scheme (NON-PDM)
-Using  0.1932% of available Memory in part B on master
-Using  0.0252% of available Memory in part C on master
+Using  0.2732% of available Memory in part B on master
+Using  0.0356% of available Memory in part C on master
  Starting DEC-CCSD integral/amplitudes - NO OMP!
 C and D   :         0.0000
- The Coulomb energy contribution    49.162281524745779     
- The Exchange energy contribution    8.0799274891848452     
+ The Coulomb energy contribution    49.162281524745786     
+ The Exchange energy contribution    8.0799274891848434     
  The Fock energy contribution   -41.082354035560911     
 Fock trafo:         0.0000
 S and E   :         0.0000
- ###     11         0.631254085E-06       -0.197838753    
+ ###     11         0.631254084E-06       -0.197838753    
 
 
 -------------------------------
@@ -2996,10 +3022,41 @@ S and E   :         0.0000
 -------------------------------
 
 Hooray! CC equation is solved!
-CCSOL: Total cpu time    =           44.685 s
-CCSOL: Total wall time   =           50.185 s
+CCSOL: Total cpu time    =           43.481 s
+CCSOL: Total wall time   =           43.577 s
 Frag. corr. energy =    -0.1978387530
 Number of CC iterations =   11
+
+  Array4 statistics       
+ ==================================================
+ Number of created arrays   :      106
+ Number of destroyed arrays :      104
+ Orphaned arrays            :        2
+
+  Array4 time statistics     
+ ==================================================
+ array4_init              :                  0.01s 
+ array4_free              :                  0.00s 
+ array4_duplicate         :                  0.00s 
+ array4_alloc          :                  0.00s 
+ array4_dealloc        :                  0.00s 
+ array4_write_data        :                  0.00s 
+ array4_read_data         :                  0.00s 
+ array4_write             :                  0.00s 
+ array4_read              :                  0.00s 
+ array4_add               :                  0.00s 
+ array4_add_to            :                  0.00s 
+ array4_scale             :                  0.00s 
+ array4_dotproduct        :                  0.00s 
+ array4_norm              :                  0.00s 
+ array4_contract1         :                  0.00s 
+ array4_contract2         :                  0.00s 
+ array4_contract2_middle  :                  0.00s 
+ array4_contract3         :                  0.00s 
+ array4_contract_array2   :                  0.00s 
+ array4_mat_multiply      :                  0.00s 
+ array4_reorder           :                  0.00s 
+ array4_contract_with_ao  :                  0.00s 
  Gamma batch size was set manually, use that value instead!
  Alpha batch size was set manually, use that value instead!
 
@@ -3010,7 +3067,7 @@ Number of CC iterations =   11
 
  To be on the safe side we use only 85% of the estimated available memory
 
- 85% of available memory (GB)            =  2.56    
+ 85% of available memory (GB)            =  1.81    
 
  Number of atomic basis functions        =      26
  Number of occupied orbitals             =       7
@@ -3204,40 +3261,8 @@ Number of CC iterations =   11
 
                E: Hartree-Fock energy :      -78.0037482713
                E: Correlation energy  :       -0.2143109913
-               E: Estimated DEC error :        0.0000000000
+               E: Estimated DEC error :        0.0000118644
                E: Total CCSD(T) energy:      -78.2180592626
-
-
-Full molecular data deleted
-
- DEC memory summary
- ------------------
- Allocated memory for array4   :  0.1575E-01 GB
- Memory in use for array4      :   0.000     GB
- Max memory in use for array4  :  0.1567E-02 GB
- ------------------
- Allocated memory for array3   :  0.3309     GB
- Memory in use for array3      :   0.000     GB
- Max memory in use for array3  :  0.1400E-03 GB
- ------------------
-
-
-
-------------------------------------------------------
-Total CPU  time used in DEC           :         155.259     s
-Total Wall time used in DEC           :         171.160     s
-------------------------------------------------------
-
-
-Hostname       : kasper-kristensens-macbook-pro.local              
-Job finished   : Date: 09/04/2013   Time: 22:10:05
-
-
-
-=============================================================================
-                          -- end of DEC program --                           
-=============================================================================
-
 
 
 
@@ -3252,6 +3277,60 @@ Job finished   : Date: 09/04/2013   Time: 22:10:05
  # calculations done for FOTlevel      6 is      0
  # calculations done for FOTlevel      7 is      0
 
+
+ DEC memory summary
+ ------------------
+ Allocated memory for array4   :  0.1617E-01 GB
+ Memory in use for array4      :   0.000     GB
+ Max memory in use for array4  :  0.1567E-02 GB
+ ------------------
+ Allocated memory for array3   :  0.3309     GB
+ Memory in use for array3      :   0.000     GB
+ Max memory in use for array3  :  0.1400E-03 GB
+ ------------------
+
+
+------------------------------------------------------
+Total CPU  time used in DEC           :         156.026     s
+Total Wall time used in DEC           :         156.464     s
+------------------------------------------------------
+
+
+Hostname       : kasper-kristensens-macbook-pro.local              
+Job finished   : Date: 23/04/2013   Time: 14:37:19
+
+
+
+=============================================================================
+                          -- end of DEC program --                           
+=============================================================================
+
+
+
+
+
+
+                       Permanent dipole moment
+                       -----------------------
+               au              Debye           10**-30 C m
+           0.305873E-04      0.777453E-04      0.259330E-03
+
+
+                       Dipole moment components
+                       ------------------------
+               au              Debye           10**-30 C m
+ x        -0.173546E-04     -0.441111E-04     -0.147138E-03
+ y         0.113034E-04      0.287305E-04      0.958346E-04
+ z        -0.225085E-04     -0.572110E-04     -0.190835E-03
+
+
+
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON RESPONSE:   3.90399999999999636E-002    **
+ *****************************************************
+
+Total no. of matmuls used:                      2355
+Total no. of Fock/KS matrix evaluations:          15
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -3295,9 +3374,9 @@ Job finished   : Date: 09/04/2013   Time: 22:10:05
   Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                        509.665 MB
+  Max allocated memory, TOTAL                          8.921 MB
   Max allocated memory, type(matrix)                 306.752 kB
-  Max allocated memory, real(realk)                  509.663 MB
+  Max allocated memory, real(realk)                    8.217 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
   Max allocated memory, integer                      103.492 kB
@@ -3305,7 +3384,7 @@ Job finished   : Date: 09/04/2013   Time: 22:10:05
   Max allocated memory, character                      5.376 kB
   Max allocated memory, AOBATCH                       15.984 kB
   Max allocated memory, CCORBITAL                      4.680 kB
-  Max allocated memory, CCATOM                        31.128 kB
+  Max allocated memory, CCATOM                        31.152 kB
   Max allocated memory, BATCHTOORB                     0.112 kB
   Max allocated memory, MYPOINTER                      0.240 kB
   Max allocated memory, ARRAY2                         0.000 Byte
@@ -3319,12 +3398,12 @@ Job finished   : Date: 09/04/2013   Time: 22:10:05
   Max allocated memory, SLSAOTENSOR                   26.832 kB
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
   Max allocated memory, ATOMTYPEITEM                 202.200 kB
-  Max allocated memory, ATOM                           3.744 kB
+  Max allocated memory, ATOM                           4.992 kB
   Max allocated memory, LSMATRIX                       1.408 kB
   Max allocated memory, OverlapT                      62.628 kB
   Max allocated memory, linkshell                      1.632 kB
   Max allocated memory, integrand                    896.000 kB
-  Max allocated memory, integralitem                 509.600 MB
+  Max allocated memory, integralitem                   7.840 MB
   Max allocated memory, IntWork                      161.608 kB
   Max allocated memory, Overlap                        4.308 MB
   Max allocated memory, EtuvOverlap                    0.000 Byte
@@ -3336,5 +3415,5 @@ Job finished   : Date: 09/04/2013   Time: 22:10:05
 
 
 End simulation
-     Date and time (Linux)  : Tue Apr  9 22:10:05 2013 
+     Date and time (Linux)  : Tue Apr 23 14:37:19 2013 
      Host name              : kasper-kristensens-macbook-pro.local    

@@ -36,37 +36,36 @@ END SUBROUTINE SET_ABSVAL_MXBLLEN
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_ABSVALINT(LUPRI,IPRINT,SETTING,CMAT,NBAST,ABSVALOVERLAP,USE_MPI,&
-     & DFTHRI,RHOTHR)
+     & DFTHRI)
 use BUILDAOBATCH
 IMPLICIT NONE
 INTEGER,intent(in)     :: LUPRI,IPRINT,NBAST
-REAL(REALK),intent(in) :: CMAT(NBAST,NBAST),DFTHRI,RHOTHR
+REAL(REALK),intent(in) :: CMAT(NBAST,NBAST),DFTHRI
 REAL(REALK),intent(inout) :: ABSVALOVERLAP(NBAST,NBAST)
 TYPE(LSSETTING) :: SETTING
 LOGICAL         :: USE_MPI !use MPI ?
 !
 TYPE(BASINF)  :: BAS
+integer :: igrid,GRIDDONE
 REAL(REALK),parameter :: D0=0E0_realk
-LOGICAL :: REDUCE_MAXNACTBAST
-CALL BUILD_BASINF(LUPRI,IPRINT,BAS,SETTING,SETTING%scheme%DFT%GRDONE,.FALSE.)
-REDUCE_MAXNACTBAST=.FALSE.
-#ifdef VAR_LSMPI
-IF(SETTING%SCHEME%DFT%GRDONE .EQ. 0)REDUCE_MAXNACTBAST=.TRUE.
-#endif
-CALL II_ABSVALINT1(LUPRI,IPRINT,CMAT,NBAST,SETTING%SCHEME%DFT,BAS,&
+INTEGER       :: maxNactbast,GRIDITERATIONS
+igrid = SETTING%scheme%DFT%igrid
+GRIDDONE = SETTING%scheme%DFT%GridObject(igrid)%GRIDDONE
+maxNactbast = dft_maxNactbast(igrid)
+GRIDITERATIONS = dft_GRIDITERATIONS(igrid)
+CALL BUILD_BASINF(LUPRI,IPRINT,BAS,SETTING,GRIDDONE,.FALSE.)
+CALL II_ABSVALINT1(LUPRI,IPRINT,CMAT,NBAST,BAS,&
      &ABSVALOVERLAP,SETTING%SCHEME%noOMP,USE_MPI,setting%numnodes,setting%node,&
-     &DFTHRI,RHOTHR)
+     &DFTHRI,SETTING%scheme%DFT%GridObject(igrid),maxNactbast,&
+     &GRIDITERATIONS)
 CALL FREE_BASINF(BAS)
-#ifdef VAR_LSMPI
-IF(REDUCE_MAXNACTBAST)THEN
-   IF(USE_MPI)call lsmpi_barrier(setting%comm)    
-   IF(USE_MPI)call lsmpi_max_int_reduction(SETTING%SCHEME%DFT%maxNactbast,infpar%master,setting%comm)
-ENDIF
-#endif
+dft_maxNactbast(igrid) = maxNactbast
+dft_GRIDITERATIONS(igrid) = GRIDITERATIONS
 END SUBROUTINE II_ABSVALINT
 
-SUBROUTINE II_ABSVALINT1(LUPRI,IPRINT,CMAT,NBAST,DFT,BAS,&
-     &ABSVALOVERLAP,noOMP,USE_MPI,numnodes,node,DFTHRI,RHOTHR) 
+SUBROUTINE II_ABSVALINT1(LUPRI,IPRINT,CMAT,NBAST,BAS,&
+     &ABSVALOVERLAP,noOMP,USE_MPI,numnodes,node,DFTHRI,GridObject,&
+     &maxNactbast,GRIDITERATIONS) 
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -76,12 +75,10 @@ INTEGER,intent(in)  :: IPRINT
 INTEGER,intent(in)  :: NBAST
 !> the MO coeff matrix
 REAL(REALK),intent(in) :: CMAT(NBAST,NBAST) !ao,mo
-!> DFT parameters
-type(DFTparam),intent(INOUT) :: DFT
 !> Basis-set information
 TYPE(BASINF),intent(INOUT)  :: BAS
 !> thresholds
-REAL(REALK),intent(in) :: DFTHRI,RHOTHR
+REAL(REALK),intent(in) :: DFTHRI
 !> 
 real(realk),intent(inout) :: ABSVALOVERLAP(NBAST,NBAST)
 !> shoould OpenMP be deactivated
@@ -90,6 +87,9 @@ LOGICAL,intent(in)  :: noOMP
 LOGICAL,intent(in) :: USE_MPI
 !> MPI info
 INTEGER(kind=ls_mpik),intent(in) :: numnodes,node
+!> Grid parameters
+type(Griditem),intent(INOUT) :: GridObject
+integer :: maxNactBAST,GRIDITERATIONS
 !
 integer :: NPOINTS,NLEN,NSHELLBLOCKS,NROW,NCOL
 INTEGER :: iprune,L_prev,L_curr,IPT,spSIZE,L,NCURLEN,I,J
@@ -101,42 +101,38 @@ REAL(REALK) :: WALLTIME,WALL2,WALL1
 REAL(REALK),pointer :: SPHMAT(:)
 LOGICAL     :: CHECKELS,SETIT,LDUM,PRINTTIM
 integer,pointer :: LVALUE(:,:),MVALUE(:,:),NVALUE(:,:)
-integer :: GC2,mmm
-IF(DFT%RADIALGRID.EQ. 1)THEN
-   GC2=1
-ELSE
-   GC2=0
-ENDIF
+integer :: mmm
+
+IF(.NOT.GridObject%newgrid)call lsquit(' requires newgrid',-1)
 IT=0
 SETIT=.FALSE.
-IF(DFT%GRDONE .EQ. 0)THEN
+IF(GridObject%GRIDDONE .EQ. 0)THEN
    GRIDITERATIONS=0
    SETIT=.TRUE.
-   DFT%NBUFLEN=0
-   DFT%maxNactBAST = 0
+   GridObject%NBUFLEN=0
+   maxNactBAST = 0
 ENDIF
 !pruning: per default on
 IPRUNE = 1
-IF (DFT%NOPRUN) IPRUNE = 0
-IF(DFT%GRDONE.EQ. 0)THEN
+IF (GridObject%NOPRUN) IPRUNE = 0
+IF(GridObject%GRIDDONE.EQ. 0)THEN
    PRINTTIM=.TRUE.
 ELSE
    PRINTTIM=.FALSE.
 ENDIF
-IF(.NOT.DFT%newgrid)call lsquit(' requires newgrid',-1)
 
 CALL LS_GETTIM(CPU1,WALL1)
-DFT%NBUFLEN=1024
+GridObject%NBUFLEN=1024
 
 !call SET_ABSVAL_MXBLLEN(NBAST)
 call SET_ABSVAL_MXBLLEN(128)
-!DFT%NBUFLEN=NBAST
+!GridObject%NBUFLEN=NBAST
 BoxMemRequirement = 5*NBAST*NBAST
-CALL GenerateGrid(NBAST,dft%radint,DFT%angmin,DFT%angint,DFT%HRDNES,iprune,BAS%natoms,& 
-     & BAS%X,BAS%Y,BAS%Z,BAS%Charge,DFT%GRDONE,BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
-     & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,IT,DFT%TURBO,DFT%nbuflen,&
-     & DFT%RADIALGRID,DFT%ZdependenMaxAng,DFT%PARTITIONING,BAS%nstart,DFT%MaxNactBast,LUPRI,&
-     & IPRINT,USE_MPI,numnodes,node)
+CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,GridObject%HRDNES,iprune,BAS%natoms,& 
+     & BAS%X,BAS%Y,BAS%Z,BAS%Charge,GridObject%GRIDDONE,BAS%SHELL2ATOM,BAS%SHELLANGMOM,BAS%SHELLNPRIM,BAS%MAXANGMOM,&
+     & BAS%MAXNSHELL,BAS%MXPRIM,BAS%PRIEXP,BAS%PRIEXPSTART,BAS%RSHEL,IT,GridObject%TURBO,GridObject%nbuflen,&
+     & GridObject%RADIALGRID,GridObject%ZdependenMaxAng,GridObject%PARTITIONING,BAS%nstart,MaxNactBast,LUPRI,&
+     & IPRINT,USE_MPI,numnodes,node,GridObject%Id)
 IF(PRINTTIM)THEN
    CALL LS_GETTIM(CPU2,WALL2)
    CPUTIME = CPU2-CPU1
@@ -197,13 +193,13 @@ DO SHELLANGMOMA=1,BAS%MAXANGMOM
    ENDDO
 ENDDO
 
-BoxMemRequirement = ABSVAL_MXBLLEN*DFT%MaxNactBast
-CALL II_ABSVAL_GRID_LOOP(DFT%NBUFLEN,IT,nbast,DFT%maxNactbast,BAS%maxnshell,&
+BoxMemRequirement = ABSVAL_MXBLLEN*MaxNactBast
+CALL II_ABSVAL_GRID_LOOP(GridObject%NBUFLEN,IT,nbast,maxNactbast,BAS%maxnshell,&
      & BAS%CC,BAS%ushells,BAS%CCSTART,BAS%CCINDEX,BAS%CENT,ABSVALOVERLAP,&
      & DFThri,CMAT,BAS%PRIEXPSTART,lupri,&
      & BAS%mxprim,BAS%shellangmom,MMM,BAS%maxangmom,BAS%nstart,BAS%priexp,&
-     & rhothr,spsize,&
-     & sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,DFT%newgrid,node)
+     & spsize,sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,&
+     & GridObject%newgrid,node,GridObject%Id)
 call mem_dft_dealloc(SPHMAT)
 call mem_dft_dealloc(SPINDEX)
 call mem_dft_dealloc(LVALUE)
@@ -214,10 +210,10 @@ END SUBROUTINE II_ABSVALINT1
 SUBROUTINE II_ABSVAL_GRID_LOOP(NBUFLEN,IT,nbast,maxNactbast,maxnshell,&
      & CC,ushells,CCSTART,CCINDEX,CENT,ABSVALOVERLAP,&
      & DFThri,CMAT,PRIEXPSTART,lupri,&
-     & mxprim,shellangmom,MMM,maxangmom,nstart,priexp,rhothr,spsize,&
-     &sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,newgrid,node)
+     & mxprim,shellangmom,MMM,maxangmom,nstart,priexp,spsize,&
+     &sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,newgrid,node,GridId)
 implicit none
-integer,intent(in) :: LUPRI,MAXNSHELL,nbast,NBUFLEN
+integer,intent(in) :: LUPRI,MAXNSHELL,nbast,NBUFLEN,gridid
 integer :: IT
 !> Largest number of active orbitals
 integer,intent(inout) ::  maxNactbast
@@ -251,8 +247,6 @@ INTEGER,intent(in) :: PRIEXPSTART(MAXNSHELL)
 INTEGER,intent(in)    :: NSTART(MAXNSHELL)
 !> the unique primitve exponents
 REAL(REALK),intent(in) :: PRIEXP(MXPRIM)
-!> threshold for value of RHO
-REAL(REALK),intent(in) :: RHOTHR
 !> size of sphmat
 integer,intent(in) :: spsize
 !> size of spindex
@@ -266,7 +260,7 @@ integer,intent(in) :: LVALUE(MMM,MAXANGMOM),MVALUE(MMM,MAXANGMOM),NVALUE(MMM,MAX
 integer(kind=ls_mpik),intent(in) ::  node
 !
 INTEGER :: NactBAS
-INTEGER,pointer :: SHELLBLOCKS(:,:),BLOCKS(:,:),INXACT(:)
+INTEGER,pointer :: SHELLBLOCKS(:,:),BLOCKS(:,:)
 real(realk),pointer :: WEIGHT(:)
 real(realk),pointer :: COOR(:,:)
 real(realk),pointer :: ACTIVE_CMAT(:)
@@ -276,14 +270,14 @@ integer :: XX,NSHELLBLOCKS,NLEN,IPT,NCURLEN,I
 integer :: W1,W2,W3,W4,W5,W6,W7,W8,nthreads,tid,lugrid,idmat1,idmat2
 integer :: myBoxMemRequirement
 real(realk),pointer :: myABSVALOVERLAP(:,:)
-character(len=21) :: filename
+character(len=22) :: filename
 logical :: grid_exists
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
 
 LUGRID=-1
-call get_quadfilename(filename,nbast,node)
+call get_quadfilename(filename,nbast,node,GridId)
 INQUIRE(file=filename,EXIST=grid_exists)
 IF(grid_exists)THEN 
    CALL LSOPEN(LUGRID,filename,'OLD','UNFORMATTED')
@@ -292,13 +286,11 @@ ELSE
    print*,'but it should exist'
    call lsquit('missing file in XC integration',-1)
 ENDIF
-myBoxMemRequirement = BoxMemRequirement
 IF(.NOT.noOMP) call mem_dft_TurnONThread_Memory()
 !$OMP PARALLEL IF(.NOT.noOMP) PRIVATE(XX,NSHELLBLOCKS,SHELLBLOCKS,COOR,COOR_pt,WEIGHT,IPT,NCURLEN,&
 !$OMP ACTIVE_CMAT,BLOCKS,GAO,NLEN,NactBAS,I,myABSVALOVERLAP,&
-!$OMP tid,nthreads,TMP,TMP2,INXACT) FIRSTPRIVATE(myBoxMemRequirement)& 
-!$OMP SHARED(ushells,CC,CCSTART,CCINDEX,CENT,Cmat,&
-!$OMP PRIEXPSTART,shellangmom,MMM,maxangmom,nstart,priexp,rhothr,spsize,spsize2,sphmat,&
+!$OMP tid,nthreads,TMP,TMP2) SHARED(ushells,CC,CCSTART,CCINDEX,CENT,Cmat,&
+!$OMP PRIEXPSTART,shellangmom,MMM,maxangmom,nstart,priexp,spsize,spsize2,sphmat,&
 !$OMP spindex,ABSVALOVERLAP,noOMP,NBUFLEN,it,lupri,nbast,maxnshell,mxprim,newgrid,&
 !$OMP dfthri,LVALUE,MVALUE,NVALUE,MaxNactBast,lugrid)
 IF(.NOT.noOMP) call init_dft_threadmemvar()

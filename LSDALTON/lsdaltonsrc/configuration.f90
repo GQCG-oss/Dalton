@@ -43,6 +43,7 @@ use readmolefile, only: read_molfile_and_build_molecule
 use IntegralInterfaceMOD, only: ii_get_nucpot
 use ks_settings, only: ks_free_incremental_fock
 use memory_handling, only: mem_alloc,mem_dealloc
+use dft_typetype
 #ifdef VAR_LSMPI
 use infpar_module
 use lsmpi_mod
@@ -819,6 +820,10 @@ ENDDO
 !ENDIF
 CALL lsCLOSE(LUCMD,'KEEP')
 
+if(config%solver%do_dft)THEN
+   call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
+   call init_dftfunc(config%integral%DFT)
+endif
 ! Check that DEC input is consistent with geometry optimization and orbital localization.
 call DEC_meaningful_input(config)
 
