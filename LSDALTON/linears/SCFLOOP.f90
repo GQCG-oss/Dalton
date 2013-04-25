@@ -54,10 +54,12 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    real(realk)                     :: gradnrm, hessian_eigenval, ehomo, elumo
    integer                         :: iteration, matmul1, matmul2, matmultot
    integer                         :: number_atoms, queuesize,nnz,denslun,ndmat
+   integer                         :: istart,ndmat2
    REAL                            :: tstart, tend, t0, MFLOPS, norm
    logical                         :: energy_converged
    logical     :: file_exists 
-   real(realk) :: TSTR, TEN, TIMSTR, TIMEND, t1, t2
+   real(realk) :: TSTR, TEN, TIMSTR, TIMEND, t1, t2,E2(2),gradnrm2
+   type(matrix) :: D2(2), F2(2),grad2,tmpgrad
    type(matrix) :: x, Dchol !For debug
    type(matrix) :: unitmat
    type(matrix), pointer :: Dpointer, Fpointer
@@ -68,98 +70,177 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    NotLastSCFLevel = config%opt%purescf.OR.config%integral%LOW_ACCURACY_START
 
    CALL LSTIMER('START',TSTR,TEN,config%LUPRI)
-  !INITIALISE SCF CYCLE THINGS 
-  nbast = H1%nrow
-  acceptratio = config%av%cfg_settings(config%av%CFG_set_type)%min_density_overlap
-  limitratio = config%av%cfg_settings(config%av%CFG_set_type)%max_dorth_ratio
-  call DOPT_get_density_init(nbast,acceptratio,limitratio,config%diag)
-  !call direct_dens_init
-  if (config%opt%cfg_density_method == config%opt%cfg_f2d_arh) then
-     queuesize = config%av%cfg_settings(config%av%cfg_set_type)%max_history_size
-     !FIXME: this queue cannot be put on disk, get_from_modFIFO_disk won't work! 
-     call modfifo_init(fifoqueue,queuesize,nbast,nbast,.false.)
-  else
-     call queue_init(config%av,queue)
-  endif
-  !if (DEBUG_DCHANGE) call debug_dchange_init
+   !INITIALISE SCF CYCLE THINGS 
+   nbast = H1%nrow
+   acceptratio = config%av%cfg_settings(config%av%CFG_set_type)%min_density_overlap
+   limitratio = config%av%cfg_settings(config%av%CFG_set_type)%max_dorth_ratio
+   call DOPT_get_density_init(nbast,acceptratio,limitratio,config%diag)
+   !call direct_dens_init
+   if (config%opt%cfg_density_method == config%opt%cfg_f2d_arh) then
+      queuesize = config%av%cfg_settings(config%av%cfg_set_type)%max_history_size
+      !FIXME: this queue cannot be put on disk, get_from_modFIFO_disk won't work! 
+      call modfifo_init(fifoqueue,queuesize,nbast,nbast,.false.)
+   else
+      call queue_init(config%av,queue)
+   endif
+   !if (DEBUG_DCHANGE) call debug_dchange_init
+   
+   call scf_stats_init(config%opt)
+   
+   call mat_report_sparsity(S,'S    ',nnz,config%lupri)
+   call mat_report_sparsity(D(1),'AO D ',nnz,config%lupri)
+   !    call mat_report_sparsity(F,'AO F ',nnz,config%lupri) not build yet
+   write(config%lupri,*)' Relative convergence threshold for solver:', config%solver%cfg_micro_thresh
+   WRITE(config%lupri,*)' SCF Convergence criteria for gradient norm:',config%opt%set_convergence_threshold
+   
+   CALL LSTIMER('INIT SCF',TSTR,TEN,config%LUPRI)
+   
+   call mat_init(grad,nbast,nbast)
+   
+   ! attach pointers for RedSpaceItem to make use of davidson solver possible
+   if (.not. config%solver%set_arhterms) write(config%lupri,*) ' ARH PART OF LINEAR TRANSFORMATIONS IS TURNED OFF ' 
+   nullify(config%davidSCF%fifoqueue)
+   config%davidSCF%arh => config%solver
+   config%davidSCF%decomp => config%decomp
+   config%davidSCF%fifoqueue => fifoqueue
+   config%davidSCF%lupri = config%lupri
+   config%davidSCF%stepsize=config%davidSCF%max_stepsize
+   config%davidSCF%arh_linesearch=config%davidSCF%arh_inp_linesearch
+   
+   IF(config%opt%cfg_saveF0andD0)THEN
+      call ks_init_linesearch_fock(nbast)
+   ENDIF
+   config%solver%OAO_gradnrm_exist=.false. ! reset
+   gradnrm = 10000.0E0_realk
+      
+   istart = 1
+   if(config%opt%cfg_start_guess=='TRILEVEL') then
+      IF(ls%optlevel.EQ.3.AND.config%opt%add_atoms_start)THEN
+         dalink = ls%setting%scheme%DALINK
+         ls%setting%scheme%DALINK = .false.
+         cs00 = ls%setting%scheme%DFT%CS00
+         ls%setting%scheme%DFT%CS00 = .FALSE.
+         call mat_init(D2(1),D(1)%nrow,D(1)%ncol)
+         call mat_init(D2(2),D(1)%nrow,D(1)%ncol)
+         
+         ndmat2 = 2
+         call atoms_start(config,D2,H1,S,ls,ndmat2)
+         call mat_assign(D2(2),D(1))
 
-  call scf_stats_init(config%opt)
+         call mat_init(F2(1),F(1)%nrow,F(1)%ncol)
+         call mat_init(F2(2),F(1)%nrow,F(1)%ncol)
+         iteration = 1
+         incremental = .FALSE. !config%opt%cfg_incremental .AND. iteration.NE. 1
+         call II_setIncremental(ls%setting%scheme,incremental)
+         CALL get_fock(config, fifoqueue, queue, iteration, D2, H1, F2, ndmat2,E2,ls)
+         IF(config%opt%cfg_oao_gradnrm)THEN
+            call get_oao_transformed_matrices(config%decomp,F2(1),D2(1))
+            call get_OAO_gradient(config%decomp%FU, config%decomp%DU, grad) !wrk = gradient
+            call mat_scal(0.25E0_realk,grad) !To match linear transformation, also divided by 4!
+            call get_oao_transformed_matrices(config%decomp,F2(2),D2(2))
+            call mat_init(grad2,nbast,nbast)
+            call get_OAO_gradient(config%decomp%FU, config%decomp%DU, grad2) !wrk = gradient
+            call mat_scal(0.25E0_realk,grad2) !To match linear transformation, also divided by 4!
+            gradnrm = sqrt(mat_sqnorm2(grad))
+            gradnrm2 = sqrt(mat_sqnorm2(grad2))
 
-  call mat_report_sparsity(S,'S    ',nnz,config%lupri)
-  call mat_report_sparsity(D(1),'AO D ',nnz,config%lupri)
-!    call mat_report_sparsity(F,'AO F ',nnz,config%lupri) not build yet
-  write(config%lupri,*)' Relative convergence threshold for solver:', config%solver%cfg_micro_thresh
-  WRITE(config%lupri,*)' SCF Convergence criteria for gradient norm:',config%opt%set_convergence_threshold
+            iteration = 0
+            call scf_stats_update(iteration,gradnrm,E2(1),config%opt)
+            call scf_stats_debug_mem(config%lupri,iteration)
+            iteration = 1
+            call scf_stats_update(iteration,gradnrm2,E2(2),config%opt)
+            call scf_stats_debug_mem(config%lupri,iteration)
+            
+            !grad is now AO grad
+            CALL get_AO_gradient(F2(1), D2(1), S, grad)
+            CALL get_AO_gradient(F2(2), D2(2), S, grad2)
 
-  CALL LSTIMER('INIT SCF',TSTR,TEN,config%LUPRI)
+         ELSE
+            CALL get_AO_gradient(F2(1), D2(1), S, grad)
+            call mat_init(grad2,nbast,nbast)
+            CALL get_AO_gradient(F2(2), D2(2), S, grad2)
+            gradnrm = sqrt(mat_sqnorm2(grad))
+            gradnrm2 = sqrt(mat_sqnorm2(grad2))
 
-  call mat_init(grad,nbast,nbast)
+            iteration = 0
+            call scf_stats_update(iteration,gradnrm,E2(1),config%opt)
+            call scf_stats_debug_mem(config%lupri,iteration)
+            iteration = 1
+            call scf_stats_update(iteration,gradnrm2,E2(2),config%opt)
+            call scf_stats_debug_mem(config%lupri,iteration)
+         ENDIF
+         iteration = 0
+         config%solver%step_accepted = .TRUE.
+         CALL Density_subspace_minimization(config, fifoqueue, queue, E2(1),S,H1, grad, F2(1), D2(1),iteration)
+         iteration = 1
+         config%solver%step_accepted = .TRUE.
+         CALL Density_subspace_minimization(config, fifoqueue, queue, E2(2),S,H1, grad2, F2(2), D2(2),iteration)
+         call mat_free(grad2)
+         call mat_assign(D(1),D2(2))
+         call mat_assign(F(1),F2(2))
+         gradnrm = gradnrm2
+         E(1) = E2(2)
+         istart = 2
 
+         call mat_free(D2(1))
+         call mat_free(D2(2))
+         call mat_free(F2(1))
+         call mat_free(F2(2))
+         
+         call mat_no_of_matmuls(matmul1)
+         CALL DOPT_get_density(config, fifoqueue, queue, F(1), H1, D(1), iteration,ls)
+         call mat_no_of_matmuls(matmul2)
+         WRITE(config%LUPRI,'("No. of matmuls in get_density: ",I5)') matmul2-matmul1
+         CALL LSTIMER('G_DENS',TIMSTR,TIMEND,config%LUPRI)
+         
+         ls%setting%scheme%DALINK = dalink     !Turn DaLink back on, if requested:
+         ls%setting%scheme%DFT%CS00 = CS00
+      endif
+   endif
 
-  ! attach pointers for RedSpaceItem to make use of davidson solver possible
-  if (.not. config%solver%set_arhterms) write(config%lupri,*) ' ARH PART OF LINEAR TRANSFORMATIONS IS TURNED OFF ' 
-  nullify(config%davidSCF%fifoqueue)
-  config%davidSCF%arh => config%solver
-  config%davidSCF%decomp => config%decomp
-  config%davidSCF%fifoqueue => fifoqueue
-  config%davidSCF%lupri = config%lupri
-  config%davidSCF%stepsize=config%davidSCF%max_stepsize
-  config%davidSCF%arh_linesearch=config%davidSCF%arh_inp_linesearch
-
-  IF(config%opt%cfg_saveF0andD0)THEN
-     call ks_init_linesearch_fock(nbast)
-  ENDIF
-  config%solver%OAO_gradnrm_exist=.false. ! reset
-  gradnrm = 10000.0E0_realk
 !
 ! SCF iterations
 !
-   DO iteration = 1, config%opt%cfg_max_linscf_iterations
+  
+   DO iteration = istart, config%opt%cfg_max_linscf_iterations
       CALL LSTIMER('START ',t1,t2,config%lupri)
 !     Incremental scheme set for the density-fitting gradient contribution. /SR 2010-10-19
       incremental = config%opt%cfg_incremental .AND. iteration.NE. 1
       call II_setIncremental(ls%setting%scheme,incremental)
-      if (iteration == 1) then
-         if (config%opt%cfg_start_guess=='H1DIAG') then
-            !do nothing
-            dalink = .false.
-         else
-            !We cannot use DaLink in the 1st iteration - this gives the right energy, but the Fock matrix
-            !is so bad that ARH cannot converge. If DaLink is requested, turn it off and then back on after
-            !the 1st iteration. /Stinne, Thomas, Brano 23/11-2009
-            dalink = .false.
-            if (ls%setting%scheme%DALINK) then
-               ls%setting%scheme%DALINK = .FALSE.
-               dalink = .true.
-            endif
-         endif
-         cs00 = .false.
-         if (ls%setting%scheme%DFT%CS00) then
-            ls%setting%scheme%DFT%CS00 = .FALSE.
-            cs00 = .true.
-         endif
-      endif
-
       WRITE(config%LUPRI,'("** Get Fock matrix number ",i3)') iteration
       CALL LSTIMER('START ',TIMSTR,TIMEND,config%lupri)
-      CALL get_fock(config, fifoqueue, queue, iteration, D, H1, F, ndmat,E,ls,gradnrm)
       if (iteration == 1) then
-         !Turn DaLink back on, if requested:
-         if (dalink) ls%setting%scheme%DALINK = .true.
-         if (CS00) ls%setting%scheme%DFT%CS00 = .true.
+         dalink = ls%setting%scheme%DALINK
+         ls%setting%scheme%DALINK = .false.
+         cs00 = ls%setting%scheme%DFT%CS00
+         ls%setting%scheme%DFT%CS00 = .FALSE.
+         CALL get_fock(config, fifoqueue, queue, iteration,D,H1,F,ndmat,E,ls)         
+         ls%setting%scheme%DALINK = dalink     !Turn DaLink back on, if requested:
+         ls%setting%scheme%DFT%CS00 = CS00
+      else
+         CALL get_fock(config, fifoqueue, queue, iteration,D,H1,F,ndmat,E,ls)
       endif
       CALL LSTIMER('FCK_FO ',TIMSTR,TIMEND,config%LUPRI)
 
-      if (config%solver%step_accepted) CALL get_AO_gradient(F(1), D(1), S, grad)
-
+      if (config%solver%step_accepted)Then
+         IF(config%opt%cfg_oao_gradnrm)THEN
+            call get_oao_transformed_matrices(config%decomp,F(1),D(1))
+            call get_OAO_gradient(config%decomp%FU, config%decomp%DU, grad) !wrk = gradient
+            call mat_scal(0.25E0_realk,grad) !To match linear transformation, also divided by 4!
+            gradnrm = sqrt(mat_sqnorm2(grad))         !gradnrm in OAO
+            CALL get_AO_gradient(F(1), D(1), S, grad) !grad in AO grad
+         ELSE
+            CALL get_AO_gradient(F(1), D(1), S, grad) !grad in AO grad
+            gradnrm = sqrt(mat_sqnorm2(grad))         !gradnrm in OAO
+         ENDIF
+      else
+         !in principel the printet gradient norm is wrong
+         !but the calculation of the gradient would modify
+         !config%decomp%FU and config%decomp%DU which 
+         !is not desirerable when we want to revert back to old D
+      endif
       CALL LSTIMER('G_GRAD',TIMSTR,TIMEND,config%LUPRI)
 
-      if (config%solver%OAO_gradnrm_exist) then
-         gradnrm=config%solver%OAO_gradnrm
-      else
-         write(config%lupri,'(" Gradient norm is computed in AO basis ")')
-         gradnrm = sqrt(mat_sqnorm2(grad))
-      endif
       ! Statistic stuff
       call scf_stats_update(iteration,gradnrm,E(1),config%opt)
       call scf_stats_debug_mem(config%lupri,iteration)
@@ -186,14 +267,16 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
          write(config%lupri,*) '- now moving on to calculate lowest Hessian eigenvalue for this point.'
          exit
       ENDIF
-
+      write(config%lupri,*)'general fifoqueue%offset',fifoqueue%offset
       WRITE(config%LUPRI,'("** Make average of the last F and D matrices")')
       CALL Density_subspace_minimization(config, fifoqueue, queue, E(1), S, H1, grad, F(1), D(1), iteration)
+      write(config%lupri,*)'after general fifoqueue%offset',fifoqueue%offset
       CALL LSTIMER('AVERAG',TIMSTR,TIMEND,config%LUPRI)
 
       WRITE(config%LUPRI,'("** Get new density ")')
       call mat_no_of_matmuls(matmul1)
       CALL DOPT_get_density(config, fifoqueue, queue, F(1), H1, D(1), iteration,ls)
+      write(config%lupri,*)'after DOPT_get_density fifoqueue%offset',fifoqueue%offset
       call mat_no_of_matmuls(matmul2)
       WRITE(config%LUPRI,'("No. of matmuls in get_density: ",I5)') matmul2-matmul1
       CALL LSTIMER('G_DENS',TIMSTR,TIMEND,config%LUPRI)
@@ -216,7 +299,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    call mat_no_of_matmuls(matmultot)
    write(config%lupri,*)
    WRITE(config%LUPRI,'("Total no. of matmuls in SCF optimization: ",I10)') matmultot
-   call scf_afterplay(config,H1,S,D(1),E(1),gradnrm,F(1))
+   call scf_afterplay(config,H1,S,D(1),E(1),F(1))
 
    if (config%solver%cfg_2nd_order_all) then
       config%solver%set_do_2nd_order = config%solver%cfg_do_2nd_order
@@ -258,7 +341,7 @@ END SUBROUTINE scfloop
 !> Get the new fock-matrix F(D). If we already evaluated one in densopt because
 !> of a configuration-shift test, this one is used.
 !>
-subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,ndmat,Etotal,ls,gradnrm)
+subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,ndmat,Etotal,ls)
    IMPLICIT NONE
    !> Contains all info about configuration/settings for SCF calculation
    type(configItem),intent(inout)         :: config
@@ -280,8 +363,6 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,ndmat,Etotal,ls,grad
    real(realk), INTENT(OUT)               :: Etotal(ndmat)
    !> Contains settings for integral code
    type(lsitem),intent(inout)             :: ls
-   !> SCF gradient norm
-   real(realk), INTENT(IN)                :: gradnrm
    type(matrix)                :: wrk
    integer :: queue_lu, ndim
    logical, external :: do_dft
@@ -325,7 +406,6 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,ndmat,Etotal,ls,grad
                      config%davidSCF%arh_linesearch=.false.
                      write(config%lupri,*)'ARHLS: ARH LINESEARCH TURNED OFF!!'
 !                     write(config%lupri,*)'ARHLS: xnorm',config%davidSCF%arh%xnorm
-!                     write(config%lupri,*)'ARHLS: gradnrm',gradnrm
 !                     write(config%lupri,*)'ARHLS: config%opt%set_convergence_threshold',config%opt%set_convergence_threshold
                   ELSE !default not close to convergence
                      if (config%davidSCF%MaxLineSearchEnergyDiff > ABS(Etotal(ndmat)-config%davidSCF%arh_linesE)) then
@@ -413,7 +493,9 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,ndmat,Etotal,ls,grad
             !not davidson
             call update_trustradius(config%solver, ls, iteration, Etotal(ndmat), fifoqueue%offset)
          end if
-         if (.not. config%solver%step_accepted) Etotal(ndmat) = config%solver%old_energy
+         if (.not. config%solver%step_accepted)then
+            Etotal(ndmat) = config%solver%old_energy
+         endif
       endif
    else
       IF(ndmat.GT.1)call lsquit('Error in get_fock: ndmat.gt.1 special case',-1)
@@ -435,7 +517,7 @@ end subroutine get_fock
 !> \brief After SCF opt., calculate HOMO-LUMO gap, lowest Hes. eigenvalue, print statistic 'n'stuff.
 !> \author L. Thogersen
 !> \date 2003
-subroutine scf_afterplay(config,H1,S,D,E,gradnrm,F)
+subroutine scf_afterplay(config,H1,S,D,E,F)
    implicit none
    !> Contains all info about configuration/settings for SCF calculation
    type(configItem), intent(inout) :: config
@@ -447,8 +529,6 @@ subroutine scf_afterplay(config,H1,S,D,E,gradnrm,F)
    type(matrix), intent(in) :: D
    !> Converged SCF energy
    real(realk), intent(in) :: E
-   !> Final SCF gradient norm
-   real(realk), intent(in) :: gradnrm
    !> Converged Fock/KS matrix. Output only if config%opt%cfg_scale_virt = .true.
    type(Matrix), intent(inout) :: F
    type(debugItem) :: debug

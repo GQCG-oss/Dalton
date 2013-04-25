@@ -4842,12 +4842,14 @@ nbast=TENSOR%nbast
 !print*,'nbast',nbast
 !print*,'MAT%nrow,MAT%ncol',MAT%nrow,MAT%ncol
 IF(TENSOR%ndim5 .NE. 1)CALL lsQUIT('ERROR: Build_single_dense_mat_from_lst nmat > 1',-1)
+DIMI = 0
 DO I=1,4
    IF(nrow2 .EQ.nbast(I))THEN
       DIMI = I
       EXIT
    ENDIF
 ENDDO
+DIMJ=0
 DO J=1,4
    IF(J.NE.DIMI)THEN
       IF(ncol2 .EQ.nbast(J))THEN

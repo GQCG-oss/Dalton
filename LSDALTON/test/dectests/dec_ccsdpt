@@ -53,8 +53,9 @@ cat > dec_ccsdpt.dal <<'%EOF%'
 .ARH
 .START
 TRILEVEL
+.NOATOMSTART
 .CONVTHR
-1.0d-5
+1.0d-6
 # LOCALIZE USING ORBITAL VARIANCE, m=2 for occ and virt
 $INFO
 DEBUG_MPI_MEM

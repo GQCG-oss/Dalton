@@ -636,6 +636,7 @@ DO
             CASE('.STAB MAXIT'); READ(LUCMD,*) config%decomp%cfg_check_maxit
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
+            CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
             CASE('.TRSCF');      config%opt%CFG_density_method = config%opt%CFG_F2D_ROOTHAAN
                                  config%diag%cfg_lshift = diag_lshift_dorth
                                  config%av%cfg_lshift = diag_lshift_dorth
@@ -3358,6 +3359,20 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    config%opt%potnuc = POTNUC
    ls%input%potnuc = POTNUC
 
+   IF(config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens)THEN
+      config%opt%cfg_oao_gradnrm = .TRUE.
+   ELSEIF(config%opt%cfg_density_method == config%opt%cfg_f2d_roothaan)THEN
+      config%opt%cfg_oao_gradnrm = .FALSE.
+   ELSEIF(config%opt%cfg_density_method == config%opt%cfg_f2d_arh)THEN
+      config%opt%cfg_oao_gradnrm = .TRUE.
+   ELSE
+      config%opt%cfg_oao_gradnrm = .TRUE.
+   ENDIF
+   IF(config%opt%cfg_oao_gradnrm)THEN
+      Write(config%lupri,*)'The SCF Convergence Criteria is applied to the gradnorm in OAO basis'
+   ELSE
+      Write(config%lupri,*)'The SCF Convergence Criteria is applied to the gradnorm in AO basis'
+   ENDIF
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)
