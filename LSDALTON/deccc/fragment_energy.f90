@@ -2941,7 +2941,8 @@ contains
        end if
        return
     else
-       call InitialFragment_L(Occ_atoms,Virt_atoms,DistMyAtom,nAtoms)
+
+       call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,Occ_atoms,Virt_atoms)
        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,AtomicFragment)
        ! MPI fragment statistics
@@ -3472,7 +3473,7 @@ contains
        end if
        return
     else
-       call InitialFragment_L(Occ_atoms,Virt_atoms,DistMyAtom,nAtoms)
+       call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,Occ_atoms,Virt_atoms)
        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
             & AtomicFragment)
@@ -3984,7 +3985,7 @@ contains
        end if
        return
     else
-       call InitialFragment_L(Occ_atoms,Virt_atoms,DistMyAtom,nAtoms)
+       call InitialFragment(natoms,nocc_per_atom,nunocc_per_atom,DistMyatom,Occ_atoms,Virt_atoms)
        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
             & AtomicFragment)
@@ -4139,7 +4140,7 @@ contains
           exit FineTuning          
        end if
 
-       write(DECinfo%output,'(a,i6)') 'FOP fine-tuning, # AOS atoms: ', natomsAOS
+       write(DECinfo%output,'(a,i6)') 'FOP fine-tuning, #AOS atoms: ', natomsAOS
 
        ! Include natomsAOS atoms from list based on distance from central atom
        call Set_fragment_fixed_AOSatoms(natomsAOS,natoms,&
@@ -4642,7 +4643,7 @@ contains
     ! Sanity check
     if(natomsAOS>natoms) then
        print *, 'natoms,natomsAOS',natoms,natomsAOS
-       call lsquit('Set_fragment_fixed_AOSatoms: # AOS atoms larger than # atoms in molecule!',-1)
+       call lsquit('Set_fragment_fixed_AOSatoms: #AOS atoms larger than # atoms in molecule!',-1)
     end if
 
     ! Include natomsAOS atoms for occ space
