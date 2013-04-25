@@ -39,6 +39,8 @@ type OptItem
       !integer :: cfg_F2D_purification ! = 3
       !> Augmented Roothaan-Hall optimization
       integer :: cfg_F2D_arh          ! = 4               
+      !> Augmented Roothaan-Hall optimization
+      logical :: cfg_oao_gradnrm      ! = .TRUE.               
       !> Which purification method? (1=TCP, 2=TRS, 3=MCW, 4=PM)
       !integer :: cfg_purification_method - NO LONGER SUPPORTED! /Stinne 16-08-2010
       !> Convergence threshold on the gradient norm
@@ -108,6 +110,8 @@ type OptItem
       logical     :: debug_diag_hessian
       !whteher calling lsquit if convergence is not reached
       logical     :: opt_quit
+      !if Atoms start density should be disregarded for trilevel
+      logical     :: add_atoms_start
 end type OptItem
 
 contains
@@ -127,6 +131,7 @@ implicit none
    !opt%cfg_F2D_purification = 3
    opt%cfg_F2D_arh          = 4
 
+   opt%cfg_oao_gradnrm           =.true.
    opt%cfg_start_guess           ='ATOMS'
    opt%cfg_asym                  =.false.
    opt%cfg_unres                 =.false.
@@ -167,7 +172,7 @@ implicit none
    opt%debug_convert             = .false.
    opt%debug_diag_hessian        = .false.
    opt%opt_quit                  = .true.
-
+   opt%add_atoms_start           = .true.
 end subroutine opt_set_default_config
 
 end module opttype

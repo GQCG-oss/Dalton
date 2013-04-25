@@ -5841,20 +5841,19 @@ END SUBROUTINE II_get_coulomb_and_exchange_mat_single
 !> \param Dsym is the density symmetric
 !> \param F the exchange matrix
 !> \param ndmat the number of density matrices
-SUBROUTINE II_get_Fock_mat_array(LUPRI,LUERR,SETTING,D,Dsym,F,ndmat,do_incremental_scheme)
+SUBROUTINE II_get_Fock_mat_array(LUPRI,LUERR,SETTING,D,Dsym,F,ndmat,setting_incremental_scheme)
 IMPLICIT NONE
 integer,intent(in)          :: ndmat
 TYPE(MATRIX),intent(in)     :: D(ndmat)
 TYPE(MATRIX),intent(inout)  :: F(ndmat)
 TYPE(LSSETTING),intent(inout)  :: SETTING
 INTEGER,intent(in)    :: LUPRI,LUERR
-LOGICAL,intent(in)    :: Dsym,do_incremental_scheme
+LOGICAL,intent(in)    :: Dsym,setting_incremental_scheme
 !
 TYPE(MATRIX)          :: D_AO(ndmat),K(ndmat)
 logical               :: default,inc_scheme,do_inc
 real(realk)           :: TS,TE,fac,maxelm
 integer               :: i
-
 default = SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J.OR.SETTING%SCHEME%JENGINE &
      &      .OR. SETTING%SCHEME%LinK .OR. (matrix_type .EQ. mtype_unres_dense).OR. &
      &      SETTING%SCHEME%CAM
@@ -5862,10 +5861,13 @@ default = SETTING%SCHEME%DENSFIT.OR.SETTING%SCHEME%PARI_J.OR.SETTING%SCHEME%JENG
 fac = 2E0_realk
 IF(matrix_type .EQ. mtype_unres_dense)fac = 1E0_realk
 call get_incremental_settings(inc_scheme,do_inc)
-IF(do_incremental_scheme.AND..NOT.inc_scheme)THEN
+!setting_incremental_scheme   from setting 
+!incremental_scheme = inc_scheme = input keyword .INCREM activated
+!do_increment       = do_inc     = increm activated 
+IF(setting_incremental_scheme.AND..NOT.inc_scheme)THEN
    call lsquit('II_get_Fock_mat incremental scheme inconsistensy',lupri)
 ENDIF
-IF(do_incremental_scheme.AND.(ndmat.GT.1.AND.(matrix_type .NE. mtype_unres_dense)))THEN
+IF(setting_incremental_scheme.AND.(ndmat.GT.1.AND.(matrix_type .NE. mtype_unres_dense)))THEN
    call lsquit('II_get_Fock_mat incremental scheme inconsistensy2',lupri)
 ENDIF
 
@@ -5877,24 +5879,23 @@ IF(setting%IntegralTransformGC)THEN
       CALL mat_init(D_AO(I),D(1)%nrow,D(1)%ncol)
       call GCAO2AO_transform_matrixD2(D(I),D_AO(I),setting,lupri)
    ENDDO
-   IF(do_incremental_scheme)THEN
+   IF(setting_incremental_scheme)THEN
       call mat_assign(incrDdiff(1),D_AO(1))
       IF(do_inc)THEN !do increment
          call mat_daxpy(-1E0_realk,incrD0(1),incrDdiff(1)) !incrDdiff is now the difference density
       ELSE
-         !test is we should activate increm
+         !test if we should activate increm
          call mat_daxpy(-1E0_realk,incrD0(1),incrDdiff(1)) !incrDdiff is now the difference density 
-         call activate_incremental(lupri)
+         call activate_incremental(lupri,do_inc)
          IF(.NOT.do_inc)THEN
             !we should not activate increm so we set incrDdiff = D_AO
             call mat_assign(incrDdiff(1),D_AO(1))
          ENDIF
       ENDIF
-      setting%scheme%incremental = do_inc
       IF (default) THEN
          call II_get_coulomb_mat(LUPRI,LUERR,SETTING,incrDdiff,F,ndmat)   
          DO I=1,ndmat
-            IF(do_inc.AND.do_incremental_scheme)THEN ! dot(D_AO * J_AO(incrDdiff))
+            IF(do_inc.AND.setting_incremental_scheme)THEN ! dot(D_AO * J_AO(incrDdiff))
                WRITE(lupri,*)'The increment Coulomb energy contribution ',&
                     & fac*0.5E0_realk*mat_dotproduct(D_AO(I),F(I))
             ELSE           ! dot(D_AO * J_AO(D_AO))
@@ -5912,7 +5913,7 @@ IF(setting%IntegralTransformGC)THEN
          ENDIF
          call II_get_exchange_mat(LUPRI,LUERR,SETTING,incrDdiff,ndmat,Dsym,K)
          DO i=1,ndmat
-            IF(do_inc.AND.do_incremental_scheme)THEN ! dot(D_AO * K_AO(incrDdiff))
+            IF(do_inc.AND.setting_incremental_scheme)THEN ! dot(D_AO * K_AO(incrDdiff))
                WRITE(lupri,*)'The increment Exchange energy contribution ',&
                     & mat_dotproduct(D_AO(i),K(i))
             ELSE           ! dot(D_AO * K_AO(D_AO)) 
@@ -5925,7 +5926,7 @@ IF(setting%IntegralTransformGC)THEN
       ELSE 
          call II_get_coulomb_and_exchange_mat(LUPRI,LUERR,SETTING,incrDdiff,F,ndmat)
          DO i=1,ndmat
-            IF(do_inc.AND.do_incremental_scheme)THEN ! dot(D_AO * F_AO(incrDdiff))
+            IF(do_inc.AND.setting_incremental_scheme)THEN ! dot(D_AO * F_AO(incrDdiff))
                WRITE(lupri,*)'The increment J+K energy contribution ',&
                     &-mat_dotproduct(D_AO(i),F(i))
             ELSE           ! dot(D_AO * F_AO(D_AO))
@@ -5937,7 +5938,6 @@ IF(setting%IntegralTransformGC)THEN
       IF(do_inc)THEN !obtain full AO fock matric F = incrF0 + incremental F 
          call mat_daxpy(1E0_realk,incrF0(1),F(1))
       ENDIF
-      setting%scheme%incremental=.FALSE.
    ELSE
       IF (default) THEN
          call II_get_coulomb_mat(LUPRI,LUERR,SETTING,D_AO,F,ndmat)   
@@ -5980,24 +5980,23 @@ IF(setting%IntegralTransformGC)THEN
    ENDDO
    setting%IntegralTransformGC = .TRUE. !back to original value
 ELSE
-   IF(do_incremental_scheme)THEN
+   IF(setting_incremental_scheme)THEN
       call mat_assign(incrDdiff(1),D(1))
       IF(do_inc)THEN !do increment
          call mat_daxpy(-1E0_realk,incrD0(1),incrDdiff(1)) !incrDdiff is now the difference density 
       ELSE
          !test is we should activate increm
          call mat_daxpy(-1E0_realk,incrD0(1),incrDdiff(1)) !incrDdiff is now the difference density 
-         call activate_incremental(lupri)
+         call activate_incremental(lupri,do_inc)
          IF(.NOT.do_inc)THEN
             !we should not activate increm so we set incrDdiff = D_AO
             call mat_assign(incrDdiff(1),D(1))
          ENDIF
       ENDIF
-      setting%scheme%incremental = do_inc
       IF (default) THEN
          call II_get_coulomb_mat(LUPRI,LUERR,SETTING,incrDdiff,F,ndmat)   
          DO I=1,ndmat
-            IF(do_inc.AND.do_incremental_scheme)THEN ! dot(D * J(incrDdiff))
+            IF(do_inc.AND.setting_incremental_scheme)THEN ! dot(D * J(incrDdiff))
                WRITE(lupri,*)'The increment Coulomb energy contribution ',&
                     &fac*0.5E0_realk*mat_dotproduct(D(I),F(I))
             ELSE           ! dot(D * J(D))
@@ -6014,7 +6013,7 @@ ELSE
          ENDIF
          call II_get_exchange_mat(LUPRI,LUERR,SETTING,incrDdiff,ndmat,Dsym,K)
          DO i=1,ndmat
-            IF(do_inc.AND.do_incremental_scheme)THEN ! dot(D * K(incrDdiff))
+            IF(do_inc.AND.setting_incremental_scheme)THEN ! dot(D * K(incrDdiff))
                WRITE(lupri,*)'The increment Exchange energy contribution ',-mat_dotproduct(D(i),K(i))
             ELSE           ! dot(D * K(D))
                WRITE(lupri,*)'The Exchange energy contribution ',-mat_dotproduct(D(i),K(i))
@@ -6025,7 +6024,7 @@ ELSE
       ELSE 
          call II_get_coulomb_and_exchange_mat(LUPRI,LUERR,SETTING,D,F,ndmat)
          DO i=1,ndmat
-            IF(do_inc.AND.do_incremental_scheme)THEN ! dot(D * F(incrDdiff))
+            IF(do_inc.AND.setting_incremental_scheme)THEN ! dot(D * F(incrDdiff))
                WRITE(lupri,*)'The increment J+K energy contribution ',-mat_dotproduct(D(i),F(i))
             ELSE           ! dot(D * F(D))
                WRITE(lupri,*)'The J+K energy contribution ',-mat_dotproduct(D(i),F(i))
@@ -6035,7 +6034,6 @@ ELSE
       IF(do_inc)THEN !obtain full AO fock matric F = incrF0 + incremental F 
          call mat_daxpy(1E0_realk,incrF0(1),F(1))
       ENDIF
-      setting%scheme%incremental=.FALSE.
    ELSE
       IF (default) THEN
          call II_get_coulomb_mat(LUPRI,LUERR,SETTING,D,F,ndmat)   
@@ -6087,18 +6085,18 @@ END SUBROUTINE II_get_Fock_mat_array
 !> \param Dsym is the density symmetric
 !> \param F the exchange matrix
 !> \param ndmat the number of density matrices
-SUBROUTINE II_get_Fock_mat_single(LUPRI,LUERR,SETTING,D,Dsym,F,ndmat,do_incremental_scheme)
+SUBROUTINE II_get_Fock_mat_single(LUPRI,LUERR,SETTING,D,Dsym,F,ndmat,setting_incremental_scheme)
 IMPLICIT NONE
 integer,intent(in)          :: ndmat
 TYPE(MATRIX),intent(in)     :: D
 TYPE(MATRIX),intent(inout)  :: F
 TYPE(LSSETTING),intent(inout)  :: SETTING
 INTEGER,intent(in)    :: LUPRI,LUERR
-LOGICAL,intent(in)    :: Dsym,do_incremental_scheme
+LOGICAL,intent(in)    :: Dsym,setting_incremental_scheme
 TYPE(MATRIX)  :: Farray(ndmat)
 !NOT OPTIMAL USE OF MEMORY OR ANYTHING
 call mat_init(Farray(1),F%nrow,F%ncol)
-call II_get_Fock_mat_array(LUPRI,LUERR,SETTING,(/D/),Dsym,Farray,ndmat,do_incremental_scheme)
+call II_get_Fock_mat_array(LUPRI,LUERR,SETTING,(/D/),Dsym,Farray,ndmat,setting_incremental_scheme)
 call mat_assign(F,Farray(1))
 call mat_free(Farray(1))
 END SUBROUTINE II_get_Fock_mat_single

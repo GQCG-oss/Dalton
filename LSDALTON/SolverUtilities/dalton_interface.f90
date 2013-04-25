@@ -2196,9 +2196,9 @@ CONTAINS
 ! *                              Regular case          
 ! *********************************************************************************
       ELSE
-         call II_get_Fock_mat(lupri,luerr,ls%setting,D,Dsym,F,ndmat,incremental_scheme)      
+         call II_get_Fock_mat(lupri,luerr,ls%setting,D,Dsym,F,ndmat,ls%setting%scheme%incremental)
          do idmat=1,ndmat
-            Etotal = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
+            Etotal(idmat) = fockenergy_f(F(idmat),D(idmat),H1,ls%input%dalton%unres,ls%input%potnuc,lupri)
          enddo
       ENDIF
       IF(ls%setting%do_dft) THEN
