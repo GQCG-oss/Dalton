@@ -316,26 +316,14 @@ C
          IF (INDEX(G_LINE,"X").GT.0) THEN
             LLROP(INDPRP(ANGLBL(1))) = .FALSE.
             OPRANK(INDPRP(ANGLBL(1))) = 0
-            DO J=1,NSO
-C              LLROP( INDPRP(SOLBL(1,J))) = .FALSE.
-C              LRRANK( INDPRP(SOLBL(1,J))) = 0
-            END DO
          END IF
          IF (INDEX(G_LINE,"Y").GT.0) THEN
             LLROP(INDPRP(ANGLBL(2))) = .FALSE.
             OPRANK(INDPRP(ANGLBL(2))) = 0
-            DO J=1,NSO
-C              LLROP( INDPRP(SOLBL(2,J))) = .FALSE.
-C              LRRANK( INDPRP(SOLBL(2,J))) = 0
-            END DO
          END IF
          IF (INDEX(G_LINE,"Z").GT.0) THEN
             LLROP(INDPRP(ANGLBL(3))) = .FALSE.
             OPRANK(INDPRP(ANGLBL(3))) = 0
-            DO J=1,NSO
-C              LLROP( INDPRP(SOLBL(3,J))) = .FALSE.
-C              LRRANK( INDPRP(SOLBL(3,J))) = 0
-            END DO
          END IF
       END IF
       RETURN
