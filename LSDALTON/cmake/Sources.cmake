@@ -221,6 +221,7 @@ set(LSINT_SOURCES
     LSint/gridgeneration.f90
     LSint/gridgeneration_boxify.f90
     LSint/II_XC_interface.f90
+    LSint/II_absval_int.f90
     LSint/II_dft_int.f90
     LSint/II_dft_ksm.f90
     LSint/II_dft_ksm_worker.f90
@@ -311,7 +312,6 @@ set(LSUTIL_MATRIXO_SOURCES
     lsutil/matop_csr.f90
     lsutil/matop_dense.f90
     lsutil/matop_dense_unrest.f90
-    lsutil/matop_sparse1.f90
     lsutil/matop_scalapack.f90    
     )
 set(LSUTIL_MATRIXO_C_SOURCES

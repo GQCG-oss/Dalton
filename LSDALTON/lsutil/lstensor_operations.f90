@@ -4797,12 +4797,6 @@ integer              :: I,nbast(4)
 select case(matrix_type)
 case(mtype_dense)
    call Build_single_dense_mat_from_lst(TENSOR,MAT)
-case(mtype_sparse1)
-   call mem_alloc(fullMAT,TENSOR%nbast(1),TENSOR%nbast(2),TENSOR%nbast(3),TENSOR%nbast(4),1)
-   call Build_full_5dim_from_lstensor(TENSOR,fullMAT,TENSOR%nbast(1),TENSOR%nbast(2),TENSOR%nbast(3),TENSOR%nbast(4),1)
-   IF(TENSOR%nbast(2) .EQ. 1) call mat_set_from_full(fullmat(:,1,:,1,1),1E0_realk, MAT)
-   IF(TENSOR%nbast(3) .EQ. 1) call mat_set_from_full(fullmat(:,:,1,1,1),1E0_realk, MAT)
-   call mem_dealloc(fullMAT)
 case(mtype_unres_dense)
    call Build_single_unres_mat_from_lst(TENSOR,MAT)
 case(mtype_sparse_block)
@@ -4848,12 +4842,14 @@ nbast=TENSOR%nbast
 !print*,'nbast',nbast
 !print*,'MAT%nrow,MAT%ncol',MAT%nrow,MAT%ncol
 IF(TENSOR%ndim5 .NE. 1)CALL lsQUIT('ERROR: Build_single_dense_mat_from_lst nmat > 1',-1)
+DIMI = 0
 DO I=1,4
    IF(nrow2 .EQ.nbast(I))THEN
       DIMI = I
       EXIT
    ENDIF
 ENDDO
+DIMJ=0
 DO J=1,4
    IF(J.NE.DIMI)THEN
       IF(ncol2 .EQ.nbast(J))THEN
@@ -5330,20 +5326,6 @@ integer              :: I
 select case(matrix_type)
 case(mtype_dense)
    call Build_dense_matarray_from_lst(TENSOR,MAT)
-case(mtype_sparse1)
-   call mem_alloc(fullMAT,TENSOR%nbast(1),TENSOR%nbast(2),TENSOR%nbast(3),TENSOR%nbast(4),TENSOR%ndim5)
-   call Build_full_5dim_from_lstensor(TENSOR,fullMAT,TENSOR%nbast(1),TENSOR%nbast(2),TENSOR%nbast(3),TENSOR%nbast(4),TENSOR%ndim5)
-   IF(TENSOR%nbast(2) .EQ. 1) THEN
-      do I=1,TENSOR%ndim5
-         call mat_set_from_full(fullmat(:,1,:,1,I),1E0_realk, MAT(I))
-      enddo
-   ENDIF
-   IF(TENSOR%nbast(3) .EQ. 1) THEN
-      do I=1,TENSOR%ndim5
-         call mat_set_from_full(fullmat(:,:,1,1,I),1E0_realk, MAT(I))
-      enddo
-   ENDIF
-   call mem_dealloc(fullMAT)
 case(mtype_scalapack)
    call mem_alloc(fullMAT,TENSOR%nbast(1),TENSOR%nbast(2),TENSOR%nbast(3),TENSOR%nbast(4),TENSOR%ndim5)
    call Build_full_5dim_from_lstensor(TENSOR,fullMAT,TENSOR%nbast(1),TENSOR%nbast(2),TENSOR%nbast(3),TENSOR%nbast(4),TENSOR%ndim5)

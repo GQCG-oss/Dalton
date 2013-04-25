@@ -3304,7 +3304,7 @@ C
 C allocate work space for (oriented) electronic CD and
 C for reduced E(2) and reduced S(2)
 !     DOMO2 = DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT
-      DOMO2 = DODFT
+      DOMO2 = DODFT .AND. NASHT.EQ.0
       IF (RSPOCD) THEN
          IF (LMXFR .LT. NPPCNV(KSYMOP)) THEN
             NINFO = NINFO + 1

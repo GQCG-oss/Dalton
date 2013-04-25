@@ -68,6 +68,12 @@ contains
                & DECinfo%approximated_norm_threshold,.FALSE.,DECinfo%output)
           if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
 
+          ! For Boughton-Pulay, reassign orbitals originally assigned to hydrogen
+          if(DECinfo%AbsorbHatoms) then
+             call reassign_orbitals(nocc,OccOrbitals,natoms,DistanceTable,mylsitem)
+             call reassign_orbitals(nunocc,UnOccOrbitals,natoms,DistanceTable,mylsitem)
+          end if
+
        else ! Simple Lowdin charge procedure to determine atomic extent
 
           write(DECinfo%output,*) 'Generating DEC orbitals using simple Lowdin charge analysis'
@@ -77,13 +83,6 @@ contains
           if(DECinfo%PL>0) call PrintOrbitalsInfo(OccOrbitals,nocc,DECinfo%output)
           if(DECinfo%PL>0) call PrintOrbitalsInfo(UnoccOrbitals,nUnocc,DECinfo%output)
 
-       end if
-
-       ! For Boughton-Pulay, reassign orbitals originally assigned to hydrogen
-       ! (For all other assigment procedures this reassigning has already been performed above)
-       if(DECinfo%AbsorbHatoms) then
-          call reassign_orbitals(nocc,OccOrbitals,natoms,DistanceTable,mylsitem)
-          call reassign_orbitals(nunocc,UnOccOrbitals,natoms,DistanceTable,mylsitem)
        end if
 
     end if OrbitalGeneration
@@ -592,21 +591,12 @@ contains
     end do OrbitalLoop
 
 
-    ! Stop here if we do not want hydrogen fragments
-    if(DECinfo%AbsorbHatoms) then
-       call mem_dealloc(lowdin_charge)
-       call mem_dealloc(atomic_idx)
-       return
-    end if
-
 
 
     ! *******************************************************************************
     ! *                   Assign each hydrogen atom to a heavy atom                 *
     ! *******************************************************************************
     ! Note: "Heavy atom" is anything that is not hydrogen
-
-
 
     ! Which atoms are hydrogens?
     call mem_alloc(which_hydrogens,natoms)
@@ -633,70 +623,82 @@ contains
     centralHydrogen=0
 
 
-    ! Very special case: Only hydrogen atoms in molecule
-    OnlyHydrogen: if(count(which_hydrogens)==natoms) then
 
-       write(DECinfo%output,*) 'WARNING: DEC is not recommended for systems with only hydrogen atoms!'
-       write(DECinfo%output,*) '--> we try to make a meaningful orbital assignment anyway.'
 
-    else
+    AbsorbHydrogenAtoms: if(DECinfo%AbsorbHatoms) then 
+       ! Reassign orbitals originally assigned to hydrogen
+       call reassign_orbitals(nocc,OccOrbitals,natoms,DistanceTable,mylsitem)
+       call reassign_orbitals(nunocc,UnOccOrbitals,natoms,DistanceTable,mylsitem)
 
-       do i=1,natoms
-          mindist = 100000.0_realk
-          heavyatom=0
+    else ! we want fragments of hydrogen atoms
 
-          if(which_hydrogens(i)) then  ! atom "i" is hydrogen
 
-             ! Find nearest heavy atom for hydrogen atom "i"
-             do j=1,natoms
-                if(.not. which_hydrogens(j)) then ! atom "j" is a heavy atom
+       ! Very special case: Only hydrogen atoms in molecule
+       OnlyHydrogen: if(count(which_hydrogens)==natoms) then
 
-                   if(DistanceTable(i,j) < mindist) then
-                      mindist = DistanceTable(i,j)
-                      heavyatom = j
+          write(DECinfo%output,*) 'WARNING: DEC is not recommended for systems with only hydrogen atoms!'
+          write(DECinfo%output,*) '--> we try to make a meaningful orbital assignment anyway.'
+
+       else
+
+          do i=1,natoms
+             mindist = 100000.0_realk
+             heavyatom=0
+
+             if(which_hydrogens(i)) then  ! atom "i" is hydrogen
+
+                ! Find nearest heavy atom for hydrogen atom "i"
+                do j=1,natoms
+                   if(.not. which_hydrogens(j)) then ! atom "j" is a heavy atom
+
+                      if(DistanceTable(i,j) < mindist) then
+                         mindist = DistanceTable(i,j)
+                         heavyatom = j
+                      end if
+
                    end if
+                end do
 
+                ! Set heavy atom and increase counter for heavy atom
+                if(heavyatom>0) then
+                   MyHeavyAtom(i) = heavyatom
+                   nhydrogens(heavyatom) = nhydrogens(heavyatom)+1
+
+                   ! Choose (arbitrary) hydrogen to be the central hydrogen atom
+                   ! in the list of hydrogen atoms assigned to heavy atom
+                   ! (We simply choose the first hydrogen we encounter)
+                   if(centralHydrogen(heavyatom)==0) centralHydrogen(heavyatom)=i
                 end if
-             end do
 
-             ! Set heavy atom and increase counter for heavy atom
-             if(heavyatom>0) then
-                MyHeavyAtom(i) = heavyatom
-                nhydrogens(heavyatom) = nhydrogens(heavyatom)+1
-
-                ! Choose (arbitrary) hydrogen to be the central hydrogen atom
-                ! in the list of hydrogen atoms assigned to heavy atom
-                ! (We simply choose the first hydrogen we encounter)
-                if(centralHydrogen(heavyatom)==0) centralHydrogen(heavyatom)=i
              end if
-
-          end if
-       end do
+          end do
 
 
 
-       ! ******************************************************************************************
-       !    Reassign orbital assigned to hydrogen to the central hydrogen in hydrogen fragments   *
-       ! ******************************************************************************************
+          ! ******************************************************************************************
+          !    Reassign orbital assigned to hydrogen to the central hydrogen in hydrogen fragments   *
+          ! ******************************************************************************************
 
-       ! Occupied orbital
-       do i=1,nocc
-          central_atom = OccOrbitals(i)%centralatom ! current central atom for orbital "i"
-          if(which_hydrogens(central_atom)) then  ! only reassign for hydrogens
-             ! Set central atom = central hydrogen for "hydrogen fragment"
-             OccOrbitals(i)%centralatom = centralHydrogen(MyHeavyAtom(central_atom))
-          end if
-       end do
+          ! Occupied orbital
+          do i=1,nocc
+             central_atom = OccOrbitals(i)%centralatom ! current central atom for orbital "i"
+             if(which_hydrogens(central_atom)) then  ! only reassign for hydrogens
+                ! Set central atom = central hydrogen for "hydrogen fragment"
+                OccOrbitals(i)%centralatom = centralHydrogen(MyHeavyAtom(central_atom))
+             end if
+          end do
 
-       ! Unoccupied orbital
-       do i=1,nunocc
-          central_atom = UnoccOrbitals(i)%centralatom
-          if(which_hydrogens(central_atom)) then
-             UnoccOrbitals(i)%centralatom = centralHydrogen(MyHeavyAtom(central_atom))
-          end if
-       end do
+          ! Unoccupied orbital
+          do i=1,nunocc
+             central_atom = UnoccOrbitals(i)%centralatom
+             if(which_hydrogens(central_atom)) then
+                UnoccOrbitals(i)%centralatom = centralHydrogen(MyHeavyAtom(central_atom))
+             end if
+          end do
 
-    end if OnlyHydrogen
+       end if OnlyHydrogen
+
+    end if AbsorbHydrogenAtoms
 
 
     ! ******************************************************************************************

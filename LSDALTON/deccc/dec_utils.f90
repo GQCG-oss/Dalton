@@ -2118,7 +2118,7 @@ retval=0
           write(DECinfo%output,*)
        end if
 
-       if(MyFragment%FATransSet) then
+       if(MyFragment%FAset) then
           write(DECinfo%output,*) 'Occupied FO coefficients (column, elements in column)'
           do i=1,MyFragment%noccFA
              write(DECinfo%output,*) i, MyFragment%CoccFA(:,i)
@@ -2240,10 +2240,10 @@ retval=0
        fragment%CDset=.false.
     end if
 
-    if(fragment%FATransSet) then
+    if(fragment%FAset) then
        call mem_dealloc(fragment%CoccFA)
        call mem_dealloc(fragment%CunoccFA)
-       fragment%FATransSet=.false.
+       fragment%FAset=.false.
     end if
 
     if(associated(fragment%atoms_idx)) then
@@ -4223,6 +4223,43 @@ retval=0
 
 
   end subroutine print_total_energy_summary
+
+
+  !> \brief Get number of atoms in AOS for fragment
+  !> \author Kasper Kristensen
+  !> \date April 2013
+  subroutine get_number_of_atoms_in_fragment_AOS(natomsfull, myfragment, natomsAOS)
+    implicit none
+    !> Number of atoms in full molecule
+    integer,intent(in) :: natomsfull
+    !> Fragment under consideration
+    type(ccatom),intent(in) :: myfragment
+    !> Number of atoms in fragment AOS
+    integer,intent(inout) :: natomsAOS
+    integer :: i
+    logical,pointer :: which_atoms(:)
+
+
+    ! Which atoms are in fragment AOS
+    call mem_alloc(which_atoms,natomsfull)
+    which_atoms=.false.
+
+    ! Check occupied AOS
+    do i=1,myfragment%noccAOS
+       which_atoms(myfragment%occAOSorb(i)%centralatom) = .true.
+    end do
+
+    ! Check unoccupied AOS
+    do i=1,myfragment%nunoccAOS
+       which_atoms(myfragment%unoccAOSorb(i)%centralatom) = .true.
+    end do
+
+    ! Number of atoms in occ+unocc AOS
+    natomsAOS = count(which_atoms)
+    
+    call mem_dealloc(which_atoms)
+
+  end subroutine get_number_of_atoms_in_fragment_AOS
 
 
 end module dec_fragment_utils

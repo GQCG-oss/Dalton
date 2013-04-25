@@ -287,6 +287,95 @@ Linesearch: if (CFG%arh_linesearch) then
      call x_from_oao_basis(decomp,wrk2, densmat(i)) 
   end do
 
+  call linesearch_thresholds(CFG,ls,SCF_iteration,TightLineSearchEsitmatesThresholds)
+
+  call di_SCF_EnergyCont(densmat,H1,energy_array,ndensmat,&
+       & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
+  CALL LSTIMER('NEW D ',t1,t2,CFG%lupri)
+  CFG%MaxLineSearchEnergyDiff = 10000.0E0_realk
+  indx = MINLOC(energy_array) 
+  
+  if (indx(1) ==  1)THEN
+     CFG%MaxLineSearchEnergyDiff=ABS(energy_array(indx(1))-energy_array(indx(1)+1))               
+  elseif (indx(1) <  ndensmat)THEN
+     CFG%MaxLineSearchEnergyDiff=ABS(energy_array(indx(1))-energy_array(indx(1)+1))
+     CFG%MaxLineSearchEnergyDiff=MIN(CFG%MaxLineSearchEnergyDiff,&
+     &ABS(energy_array(indx(1))-energy_array(indx(1)-1)))
+  elseif (indx(1) == ndensmat)then
+     CFG%MaxLineSearchEnergyDiff=ABS(energy_array(indx(1))-energy_array(indx(1)-1))
+  endif
+
+  ! If energy obtained is larger than old energy, reduce stepsize and call solver
+  if (energy_array(indx(1)) > arh%old_energy) then
+     CFG%stepsize = (2.0_realk/3.0_realk)*CFG%stepsize
+     do i=1,ndensmat
+        call mat_free(densmat(i))
+     end do
+     cycle
+  end if
+
+  write(arh%lupri,*)
+  write(arh%lupri,'(a)') '***** LINESEARCH INFORMATION *****'
+  write(arh%lupri,*)
+  if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') 'Old energy',arh%old_energy
+  xnorm=dsqrt(mat_dotproduct(x,x))
+  if (CFG%arh_davidson_debug) then
+    do i=1,ndensmat
+       write(arh%lupri,'(a,ES20.11,a,f10.4)') 'Energy', energy_array(i), &
+       &' Tot. stepsize:', alpha(i)*xnorm 
+    end do
+  endif
+  call mat_scal(alpha(indx(1)),X)
+  arh%xnorm = sqrt(mat_sqnorm2(x))
+  write(arh%lupri,'(a,i4,a,ES14.7)') 'ARHLS: Minimum function value for ', indx(1),&
+  &' using step size ', arh%xnorm
+  CFG%arh_linesE=energy_array(indx(1))
+  if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') &
+  &'ARHLS: Energy From Linesearch   ',CFG%arh_linesE 
+  if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') &
+  &'ARHLS: Maximum Energy difference', CFG%MaxLineSearchEnergyDiff
+  write(arh%lupri,*)
+  write(arh%lupri,'(a)') '***** END  LINESEARCH INFORMATION *****'
+  write(arh%lupri,*)
+
+  call x_to_oao_basis(decomp,densmat(indx(1)),wrk2)
+  do i=1,ndensmat
+     call mat_free(densmat(i))
+  end do
+  EXIT
+else
+  CALL LSTIMER('START ',t1,t2,decomp%lupri)
+  call solver(CFG,G,X)
+  CALL LSTIMER('DAVID. SOLVER ',t1,t2,arh%lupri)
+  arh%xnorm=dsqrt(mat_sqnorm2(X))
+  !Now we construct the new density from X:
+  CALL LSTIMER('START ',t1,t2,decomp%lupri)
+  call oao_density_param(x,decomp%DU,wrk) !wrk = new D(X)
+  call oao_purify(wrk,wrk2) !wrk2 = new purified density in oao basis
+  CALL LSTIMER('NEW D ',t1,t2,arh%lupri)
+  EXIT
+end if Linesearch 
+end do WHILELOOP
+
+!print info 
+call print_info_davidson(CFG,arh%xnorm,SCF_iteration)
+call mat_free(G)
+call mat_free(ax)
+
+
+
+end subroutine arh_davidson_solver
+
+
+
+subroutine linesearch_thresholds(CFG,ls,SCF_iteration,TightLineSearchEsitmatesThresholds)
+implicit none
+type(RedSpaceItem)  :: CFG
+type(lsitem)        :: ls
+integer, intent(in) :: SCF_iteration
+logical             :: TightLineSearchEsitmatesThresholds
+
+
   IF(SCF_iteration.EQ.1)THEN
      CFG%EnergyDiffset = .FALSE.
      CFG%LSmodthresh = 1000.0E0_realk     
@@ -322,11 +411,11 @@ Linesearch: if (CFG%arh_linesearch) then
 !        WRITE(CFG%lupri,*)'We tighten LS thresholds due to bad ration'
         WRITE(CFG%lupri,*)CFG%MaxLineSearchEnergyDiff/CFG%ActualEnergyDiff,' .LT. 100'
      ENDIF
-     IF(ls%SETTING%SCHEME%THRESHOLD*CFG%LSmodthresh.GT.0.1E0_realk*arh%xnorm*arh%xnorm)THEN
+     IF(ls%SETTING%SCHEME%THRESHOLD*CFG%LSmodthresh.GT.0.1E0_realk*CFG%arh%xnorm*CFG%arh%xnorm)THEN
         TightLineSearchEsitmatesThresholds = .TRUE.
 !        WRITE(CFG%lupri,*)'We tighten LS thresholds due to small xnorm'
      ENDIF
-     IF(CFG%MaxLineSearchEnergyDiff .LT. ABS(arh%old_energy-CFG%arh_linesE)) then
+     IF(CFG%MaxLineSearchEnergyDiff .LT. ABS(CFG%arh%old_energy-CFG%arh_linesE)) then
         TightLineSearchEsitmatesThresholds = .TRUE.
 !        WRITE(CFG%lupri,*)'We tighten LS thresholds due possible wrong linesearch'
      ENDIF
@@ -336,94 +425,13 @@ Linesearch: if (CFG%arh_linesearch) then
      CFG%LSmodthresh = MAX(0.1E0_realk*CFG%LSmodthresh,1.0E0_realk)
      !CFG%LSmodthresh = 1 means that the Fock matrix and energy have same thresholds
   ENDIF
-!  Write(CFG%lupri,*)'Etotal',arh%old_energy
-!  Write(CFG%lupri,*)'xnorm',arh%xnorm,'arh%xnorm*arh%xnorm',arh%xnorm*arh%xnorm     
-!  Write(CFG%lupri,*)'xnorm',arh%xnorm,'0.1*arh%xnorm*arh%xnorm',0.1E0_realk*arh%xnorm*arh%xnorm     
-!  do i=1,ndensmat
-!     Write(CFG%lupri,*)'xnorm(',i,')=',sqrt(mat_sqnorm2(Xmat(i)))
-!  enddo
-  IF(CFG%arh_debug_linesearch)THEN
-     call debug_arh_LineSearch(CFG,arh,ls,H1,densmat)
-  ENDIF
 
-!  WRITE(CFG%lupri,*)''
-!  WRITE(CFG%lupri,*)'ARHLS: ls%setting%scheme%LSDASCREEN_THRLOG',ls%setting%scheme%LSDASCREEN_THRLOG
-!  WRITE(CFG%lupri,*)'ARHLS: CFG%LSmodthresh',CFG%LSmodthresh
-!  WRITE(CFG%lupri,*)'ARHLS: ls%SETTING%SCHEME%THRESHOLD',ls%SETTING%SCHEME%THRESHOLD
-!  WRITE(CFG%lupri,*)''
-  call di_SCF_EnergyCont(densmat,H1,energy_array,ndensmat,&
-       & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
-  CALL LSTIMER('NEW D ',t1,t2,CFG%lupri)
-  CFG%MaxLineSearchEnergyDiff = 10000.0E0_realk
-  indx = MINLOC(energy_array) 
-  
-  if (indx(1) ==  1)THEN
-     CFG%MaxLineSearchEnergyDiff=ABS(energy_array(indx(1))-energy_array(indx(1)+1))               
-  elseif (indx(1) <  ndensmat)THEN
-     CFG%MaxLineSearchEnergyDiff=ABS(energy_array(indx(1))-energy_array(indx(1)+1))
-     CFG%MaxLineSearchEnergyDiff=MIN(CFG%MaxLineSearchEnergyDiff,ABS(energy_array(indx(1))-energy_array(indx(1)-1)))
-  elseif (indx(1) == ndensmat)then
-     CFG%MaxLineSearchEnergyDiff=ABS(energy_array(indx(1))-energy_array(indx(1)-1))
-  endif
 
-  ! If energy obtained is larger than old energy, reduce stepsize and call solver
-  if (energy_array(indx(1)) > arh%old_energy) then
-     CFG%stepsize = (2.0_realk/3.0_realk)*CFG%stepsize
-     do i=1,ndensmat
-        call mat_free(densmat(i))
-     end do
-     cycle
-  end if
-
-  write(arh%lupri,*)
-  write(arh%lupri,'(a)') '***** LINESEARCH INFORMATION *****'
-  write(arh%lupri,*)
-  write(arh%lupri,'(a,ES20.11)') 'Old energy',arh%old_energy
-  !if Old energy + change is not equal to Energy_array it is the first time the
-  !linesearch is performed and it would be cunfusing to have the energy change printed
-  xnorm=dsqrt(mat_dotproduct(x,x))
-  do i=1,ndensmat
-     write(arh%lupri,'(a,ES20.11,a,f10.4)') 'Energy', energy_array(i), ' Tot. stepsize:', &
-          & alpha(i)*xnorm 
-  end do
-  call mat_scal(alpha(indx(1)),X)
-  arh%xnorm = sqrt(mat_sqnorm2(x))
-  write(arh%lupri,'(a,i4,a,ES14.7)') 'ARHLS: Minimum function value for ', indx(1),&
-  &' using step size ', arh%xnorm
-  CFG%arh_linesE=energy_array(indx(1))
-  write(arh%lupri,'(a,ES20.11)') 'ARHLS: Energy From Linesearch   ', CFG%arh_linesE 
-  write(arh%lupri,'(a,ES20.11)') 'ARHLS: Maximum Energy difference', CFG%MaxLineSearchEnergyDiff
-  write(arh%lupri,*)
-  write(arh%lupri,'(a)') '***** END  LINESEARCH INFORMATION *****'
-  write(arh%lupri,*)
-
-  call x_to_oao_basis(decomp,densmat(indx(1)),wrk2)
-  do i=1,ndensmat
-     call mat_free(densmat(i))
-  end do
-  EXIT
-else
-  CALL LSTIMER('START ',t1,t2,decomp%lupri)
-  call solver(CFG,G,X)
-  CALL LSTIMER('DAVID. SOLVER ',t1,t2,arh%lupri)
-  arh%xnorm=dsqrt(mat_sqnorm2(X))
-  !Now we construct the new density from X:
-  CALL LSTIMER('START ',t1,t2,decomp%lupri)
-  call oao_density_param(x,decomp%DU,wrk) !wrk = new D(X)
-  call oao_purify(wrk,wrk2) !wrk2 = new purified density in oao basis
-  CALL LSTIMER('NEW D ',t1,t2,arh%lupri)
-  EXIT
-end if Linesearch 
-end do WHILELOOP
-
-!print info 
-call print_info_davidson(CFG,arh%xnorm,SCF_iteration)
-call mat_free(G)
-call mat_free(ax)
+end subroutine linesearch_thresholds
 
 
 
-end subroutine arh_davidson_solver
+
 
 !> \brief Reduced space solver used for solving Augmented Roothaan-Hall equations
 !> \author S. Host
@@ -468,7 +476,6 @@ end subroutine arh_davidson_solver
       integer                     :: maxvec
 !New levelshift
       type(Matrix)                :: xF, sigmaF
-!Sparse1 matrices:
       real(realk)                 :: cutoff
 !Queue on disk:
 !      integer                     :: queue_lu
@@ -497,13 +504,6 @@ end subroutine arh_davidson_solver
    thresh = arh%cfg_micro_thresh*sqrt(mat_sqnorm2(Grad))
    if (sqrt(mat_sqnorm2(Grad)) < 1.0E-3_realk) thresh=thresh*0.1_realk
    !if (sqrt(mat_sqnorm2(Grad)) < 1.0E-5_realk) thresh=thresh*0.1_realk
-   if (matrix_type == mtype_sparse1) then
-      call mat_inquire_cutoff(cutoff)
-      if (thresh < 10.0E0_realk*cutoff) then
-      thresh = 10.0E0_realk*thresh
-      write(arh%lupri,*) 'Sparse matrices: Convergence threshold reset to:', thresh 
-      endif
-   endif
 
    if (arh%cfg_arh_truncate) then
       maxvec = arh%cfg_arh_microvecs
@@ -884,12 +884,12 @@ end subroutine arh_davidson_solver
                & CFG%MaxLineSearchEnergyDiff
           WRITE(arh%lupri,'(A,ES22.13)')'Maximum difference in actual energies',&
                & arh_Ediff_actual
-          IF(ABS(CFG%MaxLineSearchEnergyDiff) < 1.0E-10_realk)THEN
-             !turn off incremental build in linesearch, to improve accuracy
-             !              IF(config%opt%cfg_saveF0andD0)THEN
-             WRITE(arh%lupri,*)'Turn off incremental linesearch energy estimates to improve accuracy if cfg_saveF0andD0'
-             !              ENDIF
-          ENDIF
+!          IF(ABS(CFG%MaxLineSearchEnergyDiff) < 1.0E-10_realk)THEN
+!             !turn off incremental build in linesearch, to improve accuracy
+!             !              IF(config%opt%cfg_saveF0andD0)THEN
+!             WRITE(arh%lupri,*)'Turn off incremental linesearch energy estimates to improve accuracy if cfg_saveF0andD0'
+!             !              ENDIF
+!          ENDIF
           IF(CFG%MaxLineSearchEnergyDiff < & 
                & 5.0E+2_realk*LS%SETTING%SCHEME%THRESHOLD*LS%SETTING%SCHEME%J_THR.OR.&
                & CFG%MaxLineSearchEnergyDiff < &
@@ -950,12 +950,12 @@ end subroutine arh_davidson_solver
                & CFG%MaxLineSearchEnergyDiff
           WRITE(arh%lupri,'(A,ES22.13)')'Maximum difference in actual energies',&
                & arh_Ediff_actual
-          IF(ABS(CFG%MaxLineSearchEnergyDiff) < 1.0E-10_realk)THEN
-             !turn off incremental build in linesearch, to improve accuracy
-             !              IF(config%opt%cfg_saveF0andD0)THEN
-             WRITE(arh%lupri,*)'Turn off incremental linesearch energy estimates to improve accuracy if cfg_saveF0andD0'
-             !              ENDIF
-          ENDIF
+!          IF(ABS(CFG%MaxLineSearchEnergyDiff) < 1.0E-10_realk)THEN
+!             !turn off incremental build in linesearch, to improve accuracy
+!             !              IF(config%opt%cfg_saveF0andD0)THEN
+!             WRITE(arh%lupri,*)'Turn off incremental linesearch energy estimates to improve accuracy if cfg_saveF0andD0'
+!             !              ENDIF
+!          ENDIF
           IF(CFG%MaxLineSearchEnergyDiff < & 
                & 5.0E+2_realk*LS%SETTING%SCHEME%THRESHOLD*LS%SETTING%SCHEME%J_THR.OR.&
                & CFG%MaxLineSearchEnergyDiff < &

@@ -25,11 +25,11 @@ CONTAINS
     Implicit none
     !  All these general entities needed to get energy and gradient
     Type(lsitem)                    :: ls   ! General information,used only to get E and gradient
-    Type(Matrix), intent(inout)     :: F,D,S ! Fock,density,overlap matrices
+    Type(Matrix), intent(inout)     :: F(1),D(1),S ! Fock,density,overlap matrices
     Type(Matrix), intent(inout)     :: H1   ! One electron matrix
     Type(Matrix), intent(inout)     :: CMO       ! Orbitals
     Type(ConfigItem), intent(inout) :: Config ! General information
-    Real(realk),intent(inout)       :: E   ! Energy
+    Real(realk),intent(inout)       :: E(1)   ! Energy
     !
     INTEGER :: iOpt,iPre, fotLevelSave, fotLevel
     Real(realk) :: GradThr, ThrStep, ThGradMax, ThStepMax, trsave
@@ -89,7 +89,7 @@ CONTAINS
     Implicit none
     !  All these general entities needed to get energy and gradient
     Type(lsitem) :: ls   ! General information,used only to get E and gradient
-    Type(Matrix), intent(inout) :: F,D,S ! Fock,density,overlap matrices
+    Type(Matrix), intent(inout) :: F(1),D(1),S ! Fock,density,overlap matrices
     Type(Matrix), intent(inout) :: H1   ! One electron matrix
     Type(Matrix), intent(inout) :: CMO       ! Orbitals
     Type(ConfigItem), intent(inout) :: Config ! General information
@@ -98,7 +98,7 @@ CONTAINS
     LOGICAL REJGEO, TRU, FAL, TMPLOG, NEWSTP, NEWBMT
     CHARACTER TMPLIN*80, WRDRSP*7
     Integer :: lupri, luerr   ! File units
-    Real(realk) :: E,Eerr   ! Energy
+    Real(realk) :: E(1),Eerr   ! Energy
     Real(realk), pointer ::  EGRAD(:), CSTEP(:)
     Real(realk), pointer ::  GRDOLD(:), GRDMAT(:,:)
     Real(realk), pointer ::  STPMAT(:,:), HESOLD(:,:)
@@ -155,7 +155,7 @@ CONTAINS
     config%optinfo%ICartCoord = 3*NAtoms
     config%optinfo%NTempMat = 6*config%optinfo%ICartCoord
     config%optinfo%NCoordTot = config%optinfo%ICartCoord
-    config%optinfo%energy = E
+    config%optinfo%energy = E(1)
     ! Knowing number of cartesians,allocating cartesian coordinates vector
     Call mem_alloc(config%optinfo%Coordinates,3,MXCENT)
     Call ls_dzero(config%optinfo%Coordinates,3*MXCENT)
@@ -263,8 +263,8 @@ CONTAINS
        !
        !     First order methods only require the energy and the gradient.
        !
-       call Obtain_Gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,CMO,config%optinfo)
-       config%optinfo%energy = E
+       call Obtain_Gradient(E(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,CMO,config%optinfo)
+       config%optinfo%energy = E(1)
     Endif
     !
     !     Make config%optinfo%VRLM-file of initial geometry if requested.
@@ -442,7 +442,7 @@ If (.NOT. config%optinfo%simple_scan) then
     END IF
 !
 ENDIF  ! If not simple scan
-    GEINFO(0,1) = E
+    GEINFO(0,1) = E(1)
     GEINFO(0,3) = config%optinfo%IndHes*1.0E0_realk
 !!!!!! Vladimir:: currently disabled
     !     Write Hessian to file (for 1st order restarts).
@@ -587,7 +587,7 @@ Endif
        !         ELSE
        !            call Get_Energy(E,config,config%optinfo,H1,F,D,S,ls,NAtoms,lupri,luerr)
           IF (.not.DECinfo%doDEC) &
-       &  call Obtain_Gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,CMO,config%optinfo)
+       &  call Obtain_Gradient(E(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,CMO,config%optinfo)
 
        ENDIF  ! Simple scan
 
@@ -1068,7 +1068,7 @@ Endif ! Optimization
     !
     Type(ConfigItem), intent(inout) :: Config ! General information
     Type(lsitem) :: ls   ! General information,used only to get E and gradient
-    Type(Matrix), intent(inout) :: F,D,S ! Fock,density,overlap matrices
+    Type(Matrix), intent(inout) :: F(1),D(1),S ! Fock,density,overlap matrices
     Type(Matrix), intent(inout) :: H1   ! One electron matrix
     Type(Matrix), intent(inout) :: C       ! Orbitals
     !
@@ -1078,7 +1078,7 @@ Endif ! Optimization
     Real(realk) :: COONEW(3,MXCENT), COOOLD(3,MXCENT)
     Integer     :: ICRD(3)
     Real(realk) :: GEINFO(0:optinfo%MaxIter+1,6)
-    Real(realk) :: E
+    Real(realk) :: E(1)
     Real(realk) :: Eerr, Egeodiff, Eerrsave
     CHARACTER*10 FILENM
     CHARACTER*12 molname
@@ -1159,10 +1159,10 @@ Endif ! Optimization
        optinfo%Coordinates = COONEW
        Call Update_coordinates(ls,config,optinfo,NAtoms)
        Call Get_Energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-       IF (DECinfo%dodec) call Obtain_Gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,config%optinfo)
+       IF (DECinfo%dodec) call Obtain_Gradient(E(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,config%optinfo)
 
-       optinfo%energy = E
-       GEINFO(optinfo%ItrNmr+1,1) = E
+       optinfo%energy = E(1)
+       GEINFO(optinfo%ItrNmr+1,1) = E(1)
        IF (IREJ .EQ. 0) THEN
           call ls_UPTRAD(REJGEO,lupri,optinfo)
           IF (.NOT. REJGEO) THEN
@@ -1176,9 +1176,9 @@ Endif ! Optimization
           ! Special case for dec and dynamical thresholding
           if( DECinfo%dodec) then
              write(lupri,'(a,i4,2g16.6,g22.12)') '1. DEC STAT: FOT level, Eerr, Ediff, E', &
-                  & DECinfo%FOTlevel,Eerr,abs(optinfo%energyOld-E),E
-             if( Eerr.GT.abs(optinfo%energyOld-E) ) then
-                Egeodiff = abs(optinfo%energyOld-E)
+                  & DECinfo%FOTlevel,Eerr,abs(optinfo%energyOld-E),E(1)
+             if( Eerr.GT.abs(optinfo%energyOld-E(1)) ) then
+                Egeodiff = abs(optinfo%energyOld-E(1))
                 Eerrsave = Eerr
                 optinfo%dynamicChange = .TRUE.
              end if
@@ -1209,9 +1209,9 @@ Endif ! Optimization
           ! Special case for dec and dynamical thresholding
           if( DECinfo%dodec) then
              write(lupri,'(a,i4,2g16.6,g22.12)') '2. DEC STAT: FOT level, Eerr, Ediff, E', &
-                  & DECinfo%FOTlevel,Eerr,abs(optinfo%energyOld-E),E
-             if( Eerr.GT.abs(optinfo%energyOld-E) ) then
-                Egeodiff = abs(optinfo%energyOld-E)
+                  & DECinfo%FOTlevel,Eerr,abs(optinfo%energyOld-E),E(1)
+             if( Eerr.GT.abs(optinfo%energyOld-E(1)) ) then
+                Egeodiff = abs(optinfo%energyOld-E(1))
                 Eerrsave = Eerr
                 optinfo%dynamicChange = .TRUE.
              end if
@@ -1388,7 +1388,7 @@ Endif ! Optimization
        NIntCoord,MaxCoor,NAtoms,B_Inv,B,lupri,luerr)
     Implicit none
     Integer :: Hess_dim, NIntCoord,NAtoms,MaxCoor
-    Real(realk) :: Aux_Energy
+    Real(realk) :: Aux_Energy(1)
     Type(Opt_Setting) :: optinfo
     Real(realk) Red_Hess(Hess_dim,Hess_dim)
     Real(realk), pointer :: Aux_Int_Grad(:), Aux_Int_Grad_2(:)
@@ -1397,7 +1397,7 @@ Endif ! Optimization
     Real(realk) :: B_Inv(NIntCoord,MaxCoor)
     Real(realk) :: B(NIntCoord,MaxCoor)
     Type(lsitem),target :: ls   ! General information,used only to get E and gradient
-    Type(Matrix), intent(inout) :: F,D,S     ! Fock,density,overlap matrices
+    Type(Matrix), intent(inout) :: F(1),D(1),S     ! Fock,density,overlap matrices
     Type(Matrix), intent(inout),target :: H1 ! One electron matrix
     Type(Matrix), intent(inout) :: C       ! Orbitals
     Type(ConfigItem), intent(inout) :: Config ! General information
@@ -1426,7 +1426,7 @@ Endif ! Optimization
        ! Calculate energy and gradient
        Call Update_coordinates(ls,config,optinfo,NAtoms)
        Call Get_Energy(Aux_Energy,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-       Call obtain_Gradient(Aux_Energy,Eerr,lupri,NAtoms,S,F,D,ls,config,C,optinfo)
+       Call obtain_Gradient(Aux_Energy(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,optinfo)
        ! Transform Cartesian gradient to internal coordinates
        Call LS_GX2GQ(NIntCoord,optinfo%GradMol,Aux_Int_Grad,B_Inv,optinfo)
        !
@@ -1443,7 +1443,7 @@ Endif ! Optimization
           ! Calculate energy and gradient
           Call Update_coordinates(ls,config,optinfo,NAtoms)
           Call Get_Energy(Aux_Energy,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-          Call Obtain_Gradient(Aux_Energy,Eerr,lupri,NAtoms,S,F,D,ls,config,C,optinfo)
+          Call Obtain_Gradient(Aux_Energy(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,optinfo)
           ! Transform Cartesian gradient to internal coordinates
           Call LS_GX2GQ(NIntCoord,optinfo%GradMol,Aux_Int_Grad_2,B_Inv,optinfo)
        Endif
@@ -1494,11 +1494,11 @@ Endif ! Optimization
   Subroutine Num_Cart_Hess(ls,config,F,D,S,H1,C,Red_Atoms,NAtoms,Red_Cart_Hess,optinfo,lupri,luerr)
     Implicit none
     Integer :: Red_Atoms, NAtoms ! Number of atoms in the reduced space and total number of atoms
-    Real(realk) :: Aux_Energy
+    Real(realk) :: Aux_Energy(1)
     Type(Opt_Setting) :: optinfo
     Real(realk) Red_Cart_Hess(3*Red_Atoms,3*Red_Atoms)
     Type(lsitem),target :: ls   ! General information,used only to get E and gradient
-    Type(Matrix), intent(inout) :: F,D,S     ! Fock,density,overlap matrices
+    Type(Matrix), intent(inout) :: F(1),D(1),S     ! Fock,density,overlap matrices
     Type(Matrix), intent(inout),target :: H1 ! One electron matrix
     Type(Matrix), intent(inout) :: C       ! Orbitals
     Type(ConfigItem), intent(inout) :: Config ! General information
@@ -1528,7 +1528,7 @@ Endif ! Optimization
           ! Calculate energy and gradient
           Call Update_coordinates(ls,config,optinfo,NAtoms)
           Call Get_Energy(Aux_Energy,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-          Call Obtain_Gradient(Aux_Energy,Eerr,lupri,NAtoms,S,F,D,ls,config,C,optinfo)
+          Call Obtain_Gradient(Aux_Energy(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,optinfo)
           ! For central FD
           If (optinfo%ForBac) Aux_Cart_Grad = optinfo%GradMol 
           ! Central FD
@@ -1540,7 +1540,7 @@ Endif ! Optimization
              ! Calculate energy and gradient
              Call Update_coordinates(ls,config,optinfo,NAtoms)
              Call Get_Energy(Aux_Energy,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-             Call Obtain_Gradient(Aux_Energy,Eerr,lupri,NAtoms,S,F,D,ls,config,C,optinfo)
+             Call Obtain_Gradient(Aux_Energy(1),Eerr,lupri,NAtoms,S,F(1),D(1),ls,config,C,optinfo)
           Endif
           ! Forward FD Hessian
           If (.NOT. optinfo%ForBac) then
@@ -1596,12 +1596,12 @@ Endif ! Optimization
 !
 Subroutine PES_scan(ls,config,optinfo,H1,F,D,S,C,E,NAtoms,lupri,luerr)
 Implicit none
-Real(realk) :: E
+Real(realk) :: E(1)
 Type(opt_setting) :: optinfo
 Integer :: Active_atom, Origin_atom,i,j,NAtoms,lupri,luerr
 Real(realk), pointer :: Atom_array(:,:)
 Type(lsitem),target :: ls   ! General information,used only to get E and gradient
-Type(Matrix), intent(inout) :: F,D,S     ! Fock,density,overlap matrices
+Type(Matrix), intent(inout) :: F(1),D(1),S     ! Fock,density,overlap matrices
 Type(Matrix), intent(inout),target :: H1 ! One electron matrix
     Type(Matrix), intent(inout) :: C       ! Orbitals
 Type(ConfigItem), intent(inout) :: Config ! General information
@@ -1613,7 +1613,7 @@ Origin_atom = optinfo%Atoms_to_move(1,1)
 Active_atom = optinfo%Atoms_to_move(2,1)
 ! Reference initial data
 optinfo%Scan_info(1,1) = optinfo%coordinates(1,Active_atom)
-optinfo%Scan_info(1,2) = E
+optinfo%Scan_info(1,2) = E(1)
 ! Loop over all steps
 Do i = 2, optinfo%MaxIter+1
    ! Displace the fragment connected to active atom
@@ -1630,9 +1630,9 @@ Do i = 2, optinfo%MaxIter+1
    call lsheader(lupri,'New internal coordinates') 
    call output(optinfo%CoordInt,1,1,1,optinfo%NIntCoord,1,optinfo%NIntCoord,1,LUPRI)
    ! Reference the data
-   optinfo%energy = E
+   optinfo%energy = E(1)
    optinfo%Scan_info(i,1) = optinfo%coordinates(1,Active_atom)
-   optinfo%Scan_info(i,2) = E
+   optinfo%Scan_info(i,2) = E(1)
 Enddo
 ! Deallocate Atoms_array
 Call mem_dealloc(Atom_array)

@@ -74,10 +74,11 @@ cat > test_kurtosis.dal <<'%EOF%'
 .ARH
 .START
 TRILEVEL
-.CONVDYN
-STANDARD
+.NOATOMSTART
+.CONVTHR
+1.0d-5
 .LCM
-.TEST KURT
+.TEST PFM
 *END OF INPUT
 %EOF%
 #######################################################################

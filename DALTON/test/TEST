@@ -49,7 +49,7 @@ ESSENTIAL=""
 #
 GEN1INT="gen1int_fluorobenzene_cart gen1int_water_cart gen1int_fluorobenzene_spher \
 gen1int_water_spher"
-SHORT_ENERGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart \
+SHORT_ENERGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart energy_restart_scf \
 energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc \
 energy_lucita_gasci"
 SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe dft_open_b3lyp dft_qr_sym dft_rspexci_sym dft_rspexci_nosym \

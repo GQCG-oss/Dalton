@@ -27,7 +27,6 @@ fi
 # branch
 LINSCA="linsca/linsca_energy  
   linsca/linsca_dft_energy
-  linsca/linsca_sp        
   linsca/linsca_unrest_energy
   linsca/linsca_unrest_dft_energy
   linsca/linsca_rhf_stability
@@ -35,6 +34,7 @@ LINSCA="linsca/linsca_energy
   linsca/linsca_direct_dens
   linsca/linsca_arh
   linsca/linsca_arh_davidson
+  linsca/linsca_arh_ls_davidson
   linsca/linsca_lcm_nongc
   linsca/linsca_trilevel 
   linsca/linsca_atoms
@@ -45,6 +45,8 @@ LINSCA="linsca/linsca_energy
   linsca/test_soeo"
 ARH="linsca/linsca_atoms
   linsca/linsca_trilevel
+  linsca/linsca_arh_davidson
+  linsca_arh_ls_davidson
   linsca/linsca_arh"
 LSDALTON="linsca/lsdalton_dft_ssfgrid
   LSint/LSDALTON_screen1
@@ -97,7 +99,6 @@ LSDALTON="linsca/lsdalton_dft_ssfgrid
   LSint/LSDALTON_ethane_pari_b3lyp_unconstrained
   LSint/LSDALTON_ethane_pari_b3lyp_ChgConst
   LSint/LSDALTON_ethane_pari_b3lyp_ChgDipConst
-  LSint/LSDALTON_sparse
   LSint/LSDALTON_UDFT
   LSint/LSDALTON_UHF_DEFAULT
   LSint/LSDALTON_UHF_excit
@@ -140,6 +141,9 @@ GEO="geomopt/cartes_bfgs_min
      geomopt/cartes_trilevel_newconv
      geomopt/cartes_psb_min
      geomopt/ethane_dec_mp2"
+DDYN="ddynam/HCN_ddyn
+      ddynam/HF_vib
+      ddynam/H2O_fmd"
 DEC="dectests/arraytest
      dectests/reordertest
      dectests/fullmp2
@@ -162,7 +166,7 @@ DEC="dectests/arraytest
      dectests/fragmentccsd_simple
      dectests/dec_geoopt
      geomopt/ethane_dec_mp2"
-ALL="$LSDALTON $LINSCA $RSP $GEO $DEC"
+ALL="$LSDALTON $LINSCA $RSP $GEO $DDYN $DEC"
 # used to be $LINSCA and $LSINT but not anymore 
 # Test code compiled with 64 bit integers
 # These are the only test cases that MUST work for 64-bit integers
@@ -356,7 +360,8 @@ else
       int64)       testcase=$INT64;;
       dft)         testcase=$DFT;;
       geo)         testcase=$GEO;;
-	  pbc)         testcase=$PBC;;
+      ddyn)        testcase=$DDYN;;
+      pbc)         testcase=$PBC;;
   esac
 fi
 

@@ -1521,7 +1521,7 @@ contains
              arh%set_arhterms     = .false.
              arh%lupri            = decomp%lupri
           endif
-          call arh_lintrans(arh,decomp,x,2,shift,MX,fifoqueue=fifoqueue)
+          call arh_lintrans(arh,decomp,x,2,shift,MX,fifoqueue)
 
    end subroutine DD_lintrans
 
