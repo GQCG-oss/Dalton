@@ -36,6 +36,7 @@
 
 #define _BSD_SOURCE 1
 
+#include <general.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdio.h>
