@@ -67,6 +67,12 @@ C
      &               DFTMOLGRD,WORK(KDMAT),ELE)
       END IF  
       CALL GRADSLAVE_COLLECT(GRADFT,WORK(KLAST),LWRK)
+CAMT  Add Grimme empirical dispersion correction  
+      IF (DODFTD) THEN
+         NDERIV=1
+         CALL DFT_D_DAL_IFC(EDISP,NDERIV,WORK(KLAST),LWRK)
+      ENDIF
+
       RETURN
       END
 C
