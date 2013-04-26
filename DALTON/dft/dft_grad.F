@@ -32,6 +32,7 @@ C
 #include "inforb.h"
 #include "priunit.h"
 #include "dftmolgrad.h"
+#include "dftcom.h"
       DIMENSION WORK(LWORK)
 #include "energy.h"
       EXTERNAL DFTMOLGRD
