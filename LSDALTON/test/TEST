@@ -243,7 +243,6 @@ Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
        -reftest             : test reference file(s); do not run any calculations
        -benchmark           : print CPU time for each testcase as part of the summary
        -param "option list" : pass "option list" to lsdalton-script
-       -externloc           : use externloc
        -gridgen             : use gridgen
        -lsdalton script     : use script instead of the default
                               lsdalton-script "$LSDALTON_script"
@@ -287,7 +286,6 @@ myprint(){
 TESTparams="$0 $*"
 help=""
 geotest="false"
-externloctest="false"
 gridgentest="false"
 keep="false"
 paramlist=""
@@ -309,7 +307,6 @@ while echo $1 | egrep -q '^-'; do
      "-lsdalton" )  shift; LSDALTON_script=$1; shift;;
      "-log" ) shift; listing=$1; shift;;
      "-geotest" ) geotest="true"; shift;;
-     "-externloc" ) externloctest="true"; shift;;
      "-gridgen" ) gridgentest="true"; shift;;
      "-keep" ) keep="true"; shift;;
      -param* ) shift; paramlist="$1"; shift;;
@@ -509,14 +506,10 @@ do
           myprint ""
           myprint "evaluate output file $logfile:"
           myprint "-----------------------------------------------------------"
-	  if [ "$externloctest" = "true" ]; then
-	      checkout=`$checkfile $extlogfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
+	  if [ "$gridgentest" = "true" ]; then
+	      checkout=`$checkfile $gridlogfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
 	  else
-	      if [ "$gridgentest" = "true" ]; then
-		  checkout=`$checkfile $gridlogfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
-	      else
-		  checkout=`$checkfile $logfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
-	      fi
+	      checkout=`$checkfile $logfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
 	  fi
           if [ "$benchmark" = "true" ]; then
               if [ `$GREP "CPU Time used in LSDALTON  *is" $logfile | wc -l` = 1 ]; then

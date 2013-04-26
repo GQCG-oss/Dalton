@@ -358,6 +358,5 @@ add_test(LSint/LSDALTON_LSlib                           ${CMAKE_SOURCE_DIR}/test
 add_test(pbc2/pbc2_h2fock                               ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton pbc2/pbc2_h2fock                              )
 add_test(pbc2/pbc2_h2SCF_iter1                          ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton pbc2/pbc2_h2SCF_iter1                         )
 add_test(pbc2/pbc2_h2STO6G                              ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton pbc2/pbc2_h2STO6G                             )
-add_test(externloc/externloctest                        ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton -externloc -param "-externloc" externloc/externloctest)
 add_test(gridgen/gridgentest                            ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton -gridgen -param "-gridgen" gridgen/gridgentest)
 endif()
