@@ -9,7 +9,7 @@ use orbspread_module
 use memory_handling
 use TYPEDEF
 use TYPEDEFTYPE
-use driver
+use davidson_solv_mod
 use LSTIMING
 use loc_types
 !use linesearch
@@ -120,7 +120,7 @@ end if
 
    if( nrmG .le. CFG%macro_thresh) exit
    
-   call solver(CFG,G,X)
+   call davidson_solver(CFG,G,X)
    if (CFG%PM_input%PipekMezeyMull) call mat_scal(-1d0,X)
    if (CFG%PM_input%PipekMezeyLowdin) call mat_scal(-1d0,X)
    if (CFG%PM_input%ChargeLocMulliken) call mat_scal(-1d0,X)

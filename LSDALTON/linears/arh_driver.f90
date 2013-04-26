@@ -18,7 +18,7 @@ MODULE ARHmodule
    use dal_interface
    use KS_settings, only: SaveF0andD0
    use davidson_settings
-   use driver
+   use davidson_solv_mod
    use II_XC_interfaceModule
    use IntegralInterfaceMOD
 contains
@@ -263,7 +263,7 @@ Linesearch: if (CFG%arh_linesearch) then
    counter = counter+1
    !Scale gradient since davdison solver is made for (H-mu)X= -G
    CALL LSTIMER('START ',t1,t2,decomp%lupri)
-   call solver(CFG,G,X)
+   call davidson_solver(CFG,G,X)
    CALL LSTIMER('DAVID. SOLVER ',t1,t2,arh%lupri)
 
     !Now we construct the new density from X:
@@ -345,7 +345,7 @@ Linesearch: if (CFG%arh_linesearch) then
   EXIT
 else
   CALL LSTIMER('START ',t1,t2,decomp%lupri)
-  call solver(CFG,G,X)
+  call davidson_solver(CFG,G,X)
   CALL LSTIMER('DAVID. SOLVER ',t1,t2,arh%lupri)
   arh%xnorm=dsqrt(mat_sqnorm2(X))
   !Now we construct the new density from X:
