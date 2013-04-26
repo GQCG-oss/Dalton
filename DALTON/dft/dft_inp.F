@@ -32,6 +32,9 @@
       PARAMETER ( NTABLE = 25 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, LINE*80
       LOGICAL ALLOPT
+      ! Checks if the parameters for DFT-D are defined
+      EXTERNAL DFT_D2_CHECK, DFT_D3_CHECK, DFT_D3BJ_CHECK
+      INTEGER DFT_D2_CHECK, DFT_D3_CHECK, DFT_D3BJ_CHECK
       DATA TABLE /'.PRINT ','.DFTELS','.DFTTHR','.RADINT','.ANGINT',
      &            '.ANGMIN','.NOPRUN','.GRID T','.DFTAC ','.CARPAR',
      &            '.COARSE','.NORMAL','.FINE  ','.ULTRAF','.GRID1 ',
