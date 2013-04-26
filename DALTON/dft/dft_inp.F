@@ -27,6 +27,7 @@
 #include "dftinf.h"
 #include "dftcom.h"
 #include "priunit.h"
+#include "mxcent.h"
 #include "dftd.h"
       PARAMETER ( NTABLE = 25 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, LINE*80
