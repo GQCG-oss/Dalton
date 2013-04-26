@@ -227,6 +227,7 @@ C   INFDIM : MAXPHP,?
 C   INFTRA : THRP,USEDRC,IPRTRA
 C   SCBRHF : IOPRHF, NFRRHF(8), MXHFMA, MXHFMI, RHFCAN, MAXCK, MXDIIS, THRRHF
 C   INFMP2 : NFRMP2(*), SRMP2_SELFCONSISTENT
+C   INFPOP : IPOPTYP; depends on mxcent.h
 C   PCMLOG : PCM
 C   HUCKEL : DOHUCKEL
 C   CBIHRS : RUNSUP
@@ -236,6 +237,7 @@ C
 #include "maxash.h"
 #include "maxorb.h"
 #include "maxaqn.h"
+#include "mxcent.h"
 
 #include "ccom.h"
 #include "infinp.h"
@@ -249,6 +251,7 @@ C
 #include "inftra.h"
 #include "scbrhf.h"
 #include "infmp2.h"
+#include "infpop.h"
 #include "pcmlog.h"
 #include "siripc.h"
 #include "huckel.h"
@@ -491,6 +494,10 @@ C
       SRMP2_SELFCONSISTENT = .FALSE.
       SRMP2_SRINTS = .FALSE.
       DCPT2        = .FALSE.
+C
+C********** Default values section POPINP *****
+C
+      IPOPTYP = -1
 C
 C
 C********** Default values section OPTINP *****
@@ -4325,7 +4332,6 @@ C External flags
       FLAG(72) = .TRUE.
       FLAG(73) = .TRUE.
       FLAG(74) = .TRUE.
-      IPOPTYP  = 1
 C
 C     ***** PROCESS INPUT FOR POPINP *****
 C
@@ -4386,6 +4392,7 @@ C *** Option 4 >GROSSM<  Gross MO population analysis
 C
 C *** Option 5 >MULLIK<  Mulliken population analysis
   105 FLAG(73) = .FALSE.
+      IPOPTYP  = 1
       GO TO 100
 C
 C *** Option 6 >NETALL<  All net population analysis

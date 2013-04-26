@@ -217,8 +217,8 @@ C
                   WORK(KWRK + I - 1) = 0D0
                END DO
             ELSE
-               CALL JACO(WORK(ISTF),WORK(ISTC),NAUXI,NAUXI,NBASI,
-     *                   WORK(KWRK),WORK(KWRK+NAUXI))
+               CALL JACO_THR(WORK(ISTF),WORK(ISTC),
+     &                       NAUXI,NAUXI,NBASI,0.0D0)
                DO I=1,NAUXI
                   WORK(KWRK + I - 1) = WORK(ISTF + I*(I+1)/2 - 1)
                END DO

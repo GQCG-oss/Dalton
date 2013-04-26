@@ -884,9 +884,9 @@ C
          IIORBI = IIORB(ISYM)
          ICSYM  = ICMO(ISYM)
 C
-         CALL JACO(WRK(KDMAT+IIORBI),CMO(1+ICSYM),
-     &             NORBI,NORBI,NBASI,WRK(KWRK1),WRK(KWRK1+NORBI))
-C        CALL JACO(F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(WRK(KDMAT+IIORBI),CMO(1+ICSYM),
+     &                 NORBI,NORBI,NBASI,0.0D0)
+C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
          OCCSUM = D0
          DO 175 I=1,NORBI
@@ -1523,12 +1523,13 @@ C           zero active-secondary block
          END IF
 
 C        generate canonical orbitals
+C        hjaaj: THR_JACO=1.D-8 means max off-diag element 1.D-8
+C               => orb.en. error < 1.D-16*NORBT/DIF and
+C                  orbital error < 1.D-8*NORBT/DIF
+C               (which is usually sharper than convergence threshold for RHF)
 
-         KBIG  = 1
-         KJBIG = KBIG + NORBI
-         CALL JACO(FC(JFC),CMO(JCMO),NORBI,NORBI,NBASI,
-     *             SCRA(KBIG),SCRA(KJBIG))
-C        CALL JACO (F,VEC,NB,NMAX,NROWV,BIG,JBIG)
+         CALL JACO_THR(FC(JFC),CMO(JCMO),NORBI,NORBI,NBASI,1.0D-8)
+C        CALL JACO_THR(F,VEC,NB,NMAX,NROWV,THR_JACO)
 C
          NOCCI = NRHFI + NASH(ISYM)
          DO I = 1,NORBI
