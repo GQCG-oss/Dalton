@@ -565,10 +565,13 @@ ELSE
    CALL Build_Integrand(PQ,P,Q,INPUT,ILHS,IRHS,LUPRI,IPRINT)
    !   Hermite 2-electron integral over general operator w
    CALL Build_HermiteTUV(INTEGRAL,INPUT,PQ,LUPRI,IPRINT)
+   Integral%startDerivativeIndex = 0
+   Integral%nDerivComp = input%NGEODERIVCOMP
    DO iDerLHS = endDer,startDer,-1
      call setIntegralDerivativOrders(Integral,iDerLHS,derOrder,P%single,Q%single)
      CALL Contract_Q(INTEGRAL,PQ,Input,LUPRI,IPRINT)
      CALL Contract_P(INTEGRAL,PQ,input,LUPRI,IPRINT)
+     Integral%startDerivativeIndex = Integral%startDerivativeIndex + Integral%lhsGeoComp*Integral%rhsGeoComp
    ENDDO
 ENDIF
 
@@ -1495,6 +1498,8 @@ DO ILHS = 1,OD_LHS%nbatches
         CALL JengineInnerCont(PQ,P,PassF,INTEGRAL,INPUT,ILHS,IRHS, &
              &                     INPUT%NDMAT_RHS,LUPRI,IPRINT)
      ENDIF
+     Integral%startDerivativeIndex = 0
+     Integral%nDerivComp = input%NGEODERIVCOMP
      CALL setIntegralDerivativOrders(Integral,input%GEODERIVORDER,input%GEODERIVORDER,P%single,PassF%single)
      CALL Contract_P(INTEGRAL,PQ,input,LUPRI,IPRINT)
      CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,OUTPUT,LUPRI,IPRINT)
@@ -3512,9 +3517,9 @@ TYPE(Integrand)    :: PQ
 Integer            :: iAngmom,nMultipoleMomentComp,LUPRI,IPRINT
 logical,intent(IN) :: contAng
 !
-Integer :: nQ,nAng,nCont,ndim5P
+Integer :: nQ,nAng,nCont,ndim5P,startDer
 Integer :: angA,angB,nA,nB,nContA,nContB,nCompA,nCompB,startA,startB,nPassP
-Integer :: nC,nD,nPassQ,ndim5Q
+Integer :: nC,nD,nPassQ,ndim5Q,nDer
 TYPE(Overlap),pointer :: Q,P
 Logical :: permute
 
@@ -3525,12 +3530,18 @@ nC      = Q%orbital1%totOrbitals  *nMultipoleMomentComp
 nD      = Q%orbital2%totOrbitals
 nPassQ  = Q%nPasses
 IF (PQ%Q%p%TYPE_FTUV) nPassQ = 1
-ndim5Q = Q%ngeoDerivComp*Q%nCartesianMomentComp
+
+startDer = Integral%startDerivativeIndex
+ndim5Q   = integral%rhsGeoComp*Q%nCartesianMomentComp
+ndim5P   = integral%lhsGeoComp*P%nCartesianMomentComp
+
+write(*,*) 'debug:',integral%lhsGeoComp,integral%rhsGeoComp
+
+IF(P%magderiv.EQ.1)ndim5P = ndim5P*3
+nDer     = Integral%nDerivComp*Q%nCartesianMomentComp*P%nCartesianMomentComp
 
 nAng    = P%nOrbComp(iAngmom)
 nCont   = P%nContracted(iAngmom)*P%nPasses
-ndim5P = P%ngeoDerivComp*P%nCartesianMomentComp
-IF(P%magderiv.EQ.1)ndim5P = ndim5P*3
 
 angA    = P%indexAng1(iAngmom)
 angB    = P%indexAng2(iAngmom)
@@ -3565,7 +3576,7 @@ IF (.NOT.contAng) THEN !Default AO ordering: angular,contracted
   ENDIF
 #endif
     CALL AddToPQ1(Integral%integralsABCD,Integral%IN,nA,nB,nCompA,nCompB,&
-         &        nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,LUPRI,IPRINT)
+         &        nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
   ELSE
 #ifdef VAR_DEBUGINT
   IF(nC*nD*nA*nB*ndim5Q*ndim5P*nPassP*nPassQ.GT.allocIntmaxTUVdim)THEN
@@ -3593,16 +3604,16 @@ IF (.NOT.contAng) THEN !Default AO ordering: angular,contracted
   ENDIF
 #endif
     CALL AddToPQgen(Integral%integralsABCD,Integral%IN,nC*nD,nPassQ,ndim5Q,nA,nB,nCompA,nCompB,&
-         &        nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,LUPRI,IPRINT)
+         &        nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
   ENDIF
 ELSE !Optional AO ordering: contracted first then angular components (only applicable to generally
      !contracted basis sets)
   CALL AddToPQgen_ca(Integral%integralsABCD,Integral%IN,nC*nD,nPassQ,ndim5Q,nA,nB,nCompA,nCompB,&
-         &           nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,LUPRI,IPRINT)
+         &           nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
 ENDIF
 
 IF (IPRINT.GT. 10) THEN
-  CALL PrintPQ(Integral%integralsABCD,nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,LUPRI,IPRINT)
+  CALL PrintPQ(Integral%integralsABCD,nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,nDer,LUPRI,IPRINT)
 ENDIF
 
 END SUBROUTINE AddToPQ
@@ -3629,12 +3640,12 @@ END SUBROUTINE AddToPQ
 !> \param LUPRI the logical unit number for the output file
 !> \param IPRINT the printlevel, determining how much output should be generated
 SUBROUTINE AddToPQ1(CDAB,AddPQ,nA,nB,nCompA,nCompB,nContA,nContB,&
-     &              startA,startB,nAng,nCont,nPassP,ndim5P,permute,LUPRI,IPRINT)
+     &              startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
 implicit none
 Integer,intent(IN)        :: nA,nB,nCompA,nCompB,nContA,nContB,startA,startB
-Integer,intent(IN)        :: nAng,nCont,nPassP,ndim5P,LUPRI,IPRINT
+Integer,intent(IN)        :: nAng,nCont,nPassP,ndim5P,startDer,nDer,LUPRI,IPRINT
 Logical,intent(IN)        :: permute
-Real(realk),intent(INOUT) :: CDAB(nA,nB,ndim5P,nPassP)
+Real(realk),intent(INOUT) :: CDAB(nA,nB,nDer,nPassP)
 Real(realk),intent(IN)    :: AddPQ(nCont,ndim5P,nAng)
 !
 Integer :: iAng,iContP,iDerivP,iPassP,iContA,iContB,iA,iB,iCompA,iCompB
@@ -3651,11 +3662,11 @@ DO iDerivP=1,ndim5P
           iB=iB+1
           iA = startA + (iContA-1)*nCompA - 1
           DO iCompA=1,nCompA
-            CDAB(iA+iCompA,iB,iDerivP,iPassP) = AddPQ(iContP,iDerivP,iAng+iCompA)
+            CDAB(iA+iCompA,iB,startDer+iDerivP,iPassP) = AddPQ(iContP,iDerivP,iAng+iCompA)
           ENDDO !iContA
           IF (permute) THEN
             DO iCompA=1,nCompA
-              CDAB(iB,iA+iCompA,iDerivP,iPassP) = AddPQ(iContP,iDerivP,iAng+iCompA)
+              CDAB(iB,iA+iCompA,startDer+iDerivP,iPassP) = AddPQ(iContP,iDerivP,iAng+iCompA)
             ENDDO !iContA
           ENDIF !permute
           iA   = iA  +  nCompA
@@ -3686,19 +3697,21 @@ END SUBROUTINE AddToPQ1
 !> \param nCont the number of contracted functions on P
 !> \param nPassP the number of passes for LHS overlap P
 !> \param ndim5P the number of derivatives for LHS overlap P
+!> \param startDer the derivative offset
+!> \param nDer the total number of derivative components
 !> \param LUPRI the logical unit number for the output file
 !> \param IPRINT the printlevel, determining how much output should be generated
 SUBROUTINE AddToPQgen(CDAB,AddPQ,nQ,nPassQ,ndim5Q,nA,nB,nCompA,nCompB,nContA,nContB,&
-     &              startA,startB,nAng,nCont,nPassP,ndim5P,permute,LUPRI,IPRINT)
+     &              startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
 implicit none
 Integer,intent(IN)        :: nQ,nPassQ,ndim5Q,nA,nB,nCompA,nCompB,nContA,nContB,startA,startB
-Integer,intent(IN)        :: nAng,nCont,nPassP,ndim5P,LUPRI,IPRINT
+Integer,intent(IN)        :: nAng,nCont,nPassP,ndim5P,startDer,nDer,LUPRI,IPRINT
 Logical,intent(IN)        :: permute
-Real(realk),intent(INOUT) :: CDAB(nQ,nA,nB,ndim5Q,ndim5P,nPassQ,nPassP)
+Real(realk),intent(INOUT) :: CDAB(nQ,nA,nB,nDer,nPassQ,nPassP)
 Real(realk),intent(IN)    :: AddPQ(nCont,nQ,nPassQ*ndim5Q,ndim5P,nAng)
 !
 Integer :: iQ,iAng,iContP,iDerivP,iPassP,iContA,iContB,iA,iB,iCompA,iCompB
-Integer :: iDerivQ,iPassQ,iQpd
+Integer :: iDerivQ,iPassQ,iQpd,iDeriv
 !
 DO iDerivP=1,ndim5P
   iContP=0
@@ -3715,14 +3728,18 @@ DO iDerivP=1,ndim5P
             iA=iA+1
             iAng = iAng+1
             DO iPassQ=1,nPassQ
+             iDeriv = startDer + ndim5Q*(iDerivP-1)
              DO iDerivQ=1,ndim5Q
+              iDeriv = iDeriv + 1
               iQpd = iPassQ + (iDerivQ-1)*nPassQ
               DO iQ=1,nQ
-               CDAB(iQ,iA,iB,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
+               CDAB(iQ,iA,iB,iDeriv,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
+!              CDAB(iQ,iA,iB,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
               ENDDO !iQ
               IF (permute) THEN
                 DO iQ=1,nQ
-                 CDAB(iQ,iB,iA,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
+                 CDAB(iQ,iB,iA,iDeriv,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
+!                CDAB(iQ,iB,iA,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
                 ENDDO !iQ
               ENDIF
              ENDDO !iDerivQ
@@ -3757,16 +3774,16 @@ END SUBROUTINE AddToPQgen
 !> \param LUPRI the logical unit number for the output file
 !> \param IPRINT the printlevel, determining how much output should be generated
 SUBROUTINE AddToPQgen_ca(CDAB,AddPQ,nQ,nPassQ,ndim5Q,nA,nB,nCompA,nCompB,nContA,nContB,&
-     &                   startA,startB,nAng,nCont,nPassP,ndim5P,permute,LUPRI,IPRINT)
+     &                   startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
 implicit none
 Integer,intent(IN)        :: nQ,nPassQ,ndim5Q,nA,nB,nCompA,nCompB,nContA,nContB,startA,startB
-Integer,intent(IN)        :: nAng,nCont,nPassP,ndim5P,LUPRI,IPRINT
+Integer,intent(IN)        :: nAng,nCont,nPassP,ndim5P,startDer,nDer,LUPRI,IPRINT
 Logical,intent(IN)        :: permute
-Real(realk),intent(INOUT) :: CDAB(nQ,nA,nB,ndim5Q,ndim5P,nPassQ,nPassP)
+Real(realk),intent(INOUT) :: CDAB(nQ,nA,nB,nDer,nPassQ,nPassP)
 Real(realk),intent(IN)    :: AddPQ(nCont,nQ,nPassQ*ndim5Q,ndim5P,nAng)
 !
 Integer :: iQ,iAng,iContP,iDerivP,iPassP,iContA,iContB,iA,iB,iCompA,iCompB
-Integer :: iDerivQ,iPassQ,iQpd
+Integer :: iDerivQ,iPassQ,iQpd,iDeriv
 !
 DO iDerivP=1,ndim5P
   iAng=0
@@ -3783,14 +3800,16 @@ DO iDerivP=1,ndim5P
             iA=iA+1
             iContP = iContP + 1
             DO iPassQ=1,nPassQ
+             iDeriv = startDer + ndim5Q*(iDerivP-1)
              DO iDerivQ=1,ndim5Q
+              iDeriv = iDeriv + 1
               iQpd = iPassQ + (iDerivQ-1)*nPassQ
               DO iQ=1,nQ
-               CDAB(iQ,iA,iB,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
+               CDAB(iQ,iA,iB,iDeriv,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
               ENDDO !iQ
               IF (permute) THEN
                 DO iQ=1,nQ
-                 CDAB(iQ,iB,iA,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
+                 CDAB(iQ,iB,iA,iDeriv,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
                 ENDDO !iQ
               ENDIF
              ENDDO !iDerivQ
@@ -3804,10 +3823,10 @@ ENDDO !iDerivP
 
 END SUBROUTINE AddToPQgen_ca
 
-SUBROUTINE PrintPQ(CDAB,nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,LUPRI,IPRINT)
+SUBROUTINE PrintPQ(CDAB,nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,nDer,LUPRI,IPRINT)
 implicit none
-Integer,intent(IN)     :: nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,LUPRI,IPRINT
-Real(realk),intent(IN) :: CDAB(nC,nD,nA,nB,ndim5Q*ndim5P,nPassQ*nPassP)
+Integer,intent(IN)     :: nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,nDer,LUPRI,IPRINT
+Real(realk),intent(IN) :: CDAB(nC,nD,nA,nB,nDer,nPassQ*nPassP)
 !
 Integer :: iA,iB,iC,iD,iDerivQ,iPassQ,iDerivP,iPassP,iDeriv,iPass
 
@@ -3817,11 +3836,8 @@ DO iPassP=1,nPassP
  DO iPassQ=1,nPassQ
   iPass=iPass+1
   WRITE(LUPRI,'(3X,A,I2,A,I2,A)') 'Pass numbers (iPassP,iPassQ)=(',iPassP,',',iPassQ,')'
-  iDeriv = 0
-  DO iDerivP=1,ndim5P
-   DO iDerivQ=1,ndim5Q
-    iDeriv = iDeriv+1
-    WRITE(LUPRI,'(3X,A,I2,A,I2,A)') 'Derivative components (iDerivP,iDerivQ)=(',iDerivP,',',iDerivQ,')'
+  DO iDeriv=1,nDer
+    WRITE(LUPRI,'(3X,A,I2,A)') 'Derivative components (iDeriv)=(',iDeriv,')'
     DO iB=1,nB
      DO iA=1,nA
       DO iD=1,nD
@@ -3830,8 +3846,7 @@ DO iPassP=1,nPassP
       ENDDO !iC
      ENDDO !iA
     ENDDO !iB
-   ENDDO !iDerivQ
-  ENDDO !iDerivP
+  ENDDO !iDeriv
  ENDDO !iPassQ
 ENDDO !iPassP
 END SUBROUTINE PrintPQ
@@ -3875,7 +3890,7 @@ nOrbQ = PQ%Q%p%orbital1%totOrbitals*PQ%Q%p%orbital2%totOrbitals
 IF (.NOT.PQ%Q%p%type_ftuv) nOrbQ = nOrbQ*PQ%Q%p%nPasses*PQ%Q%p%ngeoderivcomp*PQ%Q%p%nCartesianMomentComp
 IF (INPUT%DO_MULMOM) nOrbQ = Input%nMultipoleMomentComp
 !Fix because of the stange PQ%Q%p%orbital1%totOrbitals*PQ%Q%p%orbital2%totOrbitals - Simen:does this work for sameAO?
-IF (integral%rhsGeoORder.GT.0) nOrbQ    = PQ%Q%p%totOrbitals(integral%rhsGeoORder+1)
+IF (integral%rhsGeoORder.GT.0.OR.integral%lhsGeoORder.GT.0) nOrbQ = PQ%Q%p%totOrbitals(integral%rhsGeoORder+1)
 
 
 Integral%nAng  = ntuvP
@@ -3905,14 +3920,14 @@ ENDIF
 #endif
    IF(nP.GT. 2)THEN !General case
       CALL DistributeHermiteP_regularGen(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-           &                             startP,endP,nP,ioffP,fullOP,PQ%P%p%nTUV,ntuvP,nOrbQ,LUPRI,IPRINT)
+           &                             startP,endP,nP,ioffP,fullOP,ntuvP,ntuvP,nOrbQ,LUPRI,IPRINT)
    ELSEIF(nP.EQ. 1)THEN !Special case for nPrim=1
       CALL DistributeHermiteP_regular1(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-           &                             startP,endP,nP,ioffP,fullOP,PQ%P%p%nTUV,ntuvP,nOrbQ,LUPRI,IPRINT)
+           &                             startP,endP,nP,ioffP,fullOP,ntuvP,ntuvP,nOrbQ,LUPRI,IPRINT)
 
    ELSE !Special case for nPrim=2
       CALL DistributeHermiteP_regular2(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-           &                             startP,endP,nP,ioffP,fullOP,PQ%P%p%nTUV,ntuvP,nOrbQ,LUPRI,IPRINT)
+           &                             startP,endP,nP,ioffP,fullOP,ntuvP,ntuvP,nOrbQ,LUPRI,IPRINT)
 
    ENDIF
 ENDIF
@@ -5309,13 +5324,17 @@ logical,intent(IN) :: contAng
 Integer :: nPrimP,nTUVP,nP,nCompQ,nContQ,nContC,nContD,nCompC,nCompD
 !
 Integer :: nC,nD,startC,startD,nPassQ,angC,AngD,nDer,nDerTUV,startDer,endDer
+Integer :: startP,endP
 Integer,target  :: iDer,iOne=1
 Integer,pointer :: jDer
 TYPE(Overlap),pointer :: Q
 Logical :: permute
 
 nPrimP  = PQ%P%p%nPrimitives*PQ%P%p%nPasses
-nTUVP   = PQ%P%p%nTUV
+startP  = PQ%P%p%startAngmom
+endP    = PQ%P%p%endAngmom - PQ%P%p%endGeoOrder + Integral%lhsGeoOrder
+nTUVP   = (endP+1)*(endP+2)*(endP+3)/6 - startP*(startP+1)*(startP+2)/6
+
 nP      = nPrimP*nTUVP
 Q => PQ%Q%p
 

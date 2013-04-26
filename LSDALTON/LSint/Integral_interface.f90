@@ -2280,9 +2280,9 @@ ENDIF
 
 IF (dogeoderiv) THEN
   IF (geoderiv.GE.1) THEN
-    intSpec = GeoDerivLHSSpec
+!   intSpec = GeoDerivLHSSpec
 !   intSpec = GeoDerivRHSSpec
-!   intSpec = GeoDerivSpec
+    intSpec = GeoDerivSpec
   ELSE
      call lsquit('Error in II_get_4center_eri_diff - only first order geometrical derivative integrals implemented',lupri)
   ENDIF
@@ -2302,7 +2302,7 @@ IF (dirac_format) THEN
   call ls_dzero(integrals,dim1*dim2*dim3*dim4*dim5)
 ELSE
   call initIntegralOutputDims(setting%output,dim1,dim2,dim3,dim4,dim5)
-  IF (dogeoderiv) THEN
+  IF (dogeoderiv.AND.(intSpec.NE.GeoDerivSpec)) THEN
     call mem_alloc(integrals,dim1,dim2,dim3,dim4,dim5)
     call ls_dzero(integrals,dim1*dim2*dim3*dim4*dim5)
   ELSE
@@ -2318,7 +2318,7 @@ IF(setting%IntegralTransformGC)THEN
 ELSE
   CALL retrieve_Output(lupri,setting,integrals,setting%IntegralTransformGC)
   IF (dogeoderiv) THEN
-    IF (geoderiv.EQ.1) THEN
+    IF ((geoderiv.EQ.1).AND.(intSpec.NE.GeoDerivSpec)) THEN
      DO n=1,dim5
       DO l=1,dim4
        DO k=1,dim3
