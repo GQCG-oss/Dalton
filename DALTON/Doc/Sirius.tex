@@ -803,11 +803,17 @@ functional properties and reflect the original literature sources.
 \item[B97-2] Modification of B97 functional in 2001 by Wilson, Bradley and Tozer 
   \cite{dft:b97-2}.\index{B97}\index{B97-2}
 
+\item[B97-D] Grimme's re-parameterization of the B97-1 functional for use with 
+empirical dispersion correction~\cite{dft:b97-d}.\index{B97}\index{B97-D}
+
 \item[B97-K] Boese and Martin 2004 re-parameterization of the 
   B97-1 functional for kinetics~\cite{dft:b97-1}.\index{B97}\index{B97-K}
 
 \item[HCTH] is a synonym for the HCTH407 functional (detailed below).
   \cite{dft:hcth407}.\index{HCTH}\index{HCTH407}
+
+\item[1-4] The ``quarter'' functional of Menconi, Wilson and Tozer 
+  \cite{dft:14}.\index{1-4}\index{1-4}
 
 \item[HCTH93] Original 1998 HCTH functional, parameterized on a set of 
   93 training systems~\cite{dft:hcth93}.\index{HCTH}\index{HCTH93}
@@ -958,6 +964,12 @@ factor $\mu$. This input can be specified as follows:
  CAMB3LYP alpha=0.190 beta=0.460 mu=0.330
 \end{verbatim}
 \index{CAMB3LYP}
+
+
+\item[rCAMB3LYP] Revised version of the CAMB3LYP Functional \cite{dft:rcamb3lyp} 
+designed to give near piecewise linear behaviour of the energy vs. particle number. 
+This functional accepts additional arguments \verb|alpha|, \verb|beta| and \verb|mu| 
+with the same meanings and syntax as for the CAMB3LYP functional.\index{rCAMB3LYP}
 
 \item[DBLYP] is a sum of the Double-Becke exchange functional and
   the LYP correlation functional 
