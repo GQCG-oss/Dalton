@@ -1683,6 +1683,10 @@ DO iPassP=1,P%nPasses
         DCBA => res%LSAO(indDCBA)%elms
      ENDIF
      DO iDeriv = 1,ndim5
+!    iDeriv = 0
+!    DO iDerivP=1,ndim5P
+!     DO iDerivQ=1,ndim5Q
+!      iDeriv = iDeriv + 1
        IF(CMimat.EQ.0)THEN
           iDim5=ideriv
        ELSE
@@ -1690,9 +1694,14 @@ DO iPassP=1,P%nPasses
           iDim5=1
        ENDIF
        IF (nderiv.GT. 1)THEN
+!       IF (nderivQ.GT.1) THEN
           iDer = derivInfo%dirComp(iDeriv)
           iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
-          iDim5 = 3*(iAtom-1)+ider
+!       ELSE
+!         iDer = derivInfo%dirComp(iDeriv)
+!         iAtom = derivInfo%Atom(derivInfo%AO(1,iDerivP))
+!       ENDIF
+        iDim5 = 3*(iAtom-1)+ider
        ENDIF
        IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
           CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&

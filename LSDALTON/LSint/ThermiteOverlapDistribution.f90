@@ -86,8 +86,6 @@ INTEGER                :: rhsGeoOrder
 INTEGER                :: lhsGeoComp
 INTEGER                :: rhsGeoComp
 INTEGER                :: nMagDeriv
-INTEGER                :: startDerivativeIndex
-INTEGER                :: nDerivComp
 INTEGER                :: nOperatorComp
 LOGICAL                :: Jengine
 TYPE(TUVitem),pointer  :: TUV
