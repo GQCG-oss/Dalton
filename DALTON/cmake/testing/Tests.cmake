@@ -370,3 +370,6 @@ add_test(shield_spin.tst ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DI
 add_test(tpa_pcm_sym.tst ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null tpa_pcm_sym.tst)
 add_test(trp_qr_pcm.tst ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null trp_qr_pcm.tst)
 add_test(soppa_vibavg_twobas ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null soppa_vibavg_twobas)
+add_test(dft_disp_d2 ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dft_disp_d2)
+add_test(dft_disp_d3 ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dft_disp_d3)
+add_test(dft_disp_d3bj ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dft_disp_d3bj)
