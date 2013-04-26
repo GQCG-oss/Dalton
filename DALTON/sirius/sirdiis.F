@@ -354,6 +354,13 @@ C
 C     Get one-electron Hamiltonian
 C
       CALL SIRH1(H1AO,WRK(KFREE),LFREE)
+
+CAMT  If requested calculate the DFT-D energy correction
+      IF(DODFT .AND. DODFTD) THEN
+         NDERIV=0
+         CALL DFT_D_DAL_IFC(EDISP,NDERIV,WRK(KFREE),LFREE)
+      END IF
+
 C
       IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM) THEN
@@ -677,6 +684,13 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
          IF (DODFT) CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPR_DIIS)
+
+CAMT If calculated add the empirical dispersion energy correction
+         IF (DODFTD) THEN
+           EMY = EMY + EDISP
+         END IF
+
+
 C
 c        we need to divide the solvent calls into mmpcm and not mmpcm
 c        since we in the latter iterate between the mm and pcm for a given QM
