@@ -786,8 +786,10 @@ end subroutine linesearch_thresholds
   integer :: it
   
 
-  write(davidCFG%lupri,'(f10.4,f12.1,5X,f10.4,f11.2,f8.1,f7.1,f14.1,6X,i5,a)') davidCFG%stepsize, 0.0,step, davidCFG%mu,&
-  &0.0,0.0,0.0,it+1,'  %%'
+
+  write(davidCFG%lupri,'(i5,a,f9.3,a,f9.3,a,f9.2,a)') it+1,' total step norm =',step,' trust radius = '&
+  &,davidCFG%stepsize,' mu = ',davidCFG%mu, '  %#%' 
+
  
 
   end subroutine print_info_davidson

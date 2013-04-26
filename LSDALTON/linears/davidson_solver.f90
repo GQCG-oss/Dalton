@@ -175,6 +175,8 @@ subroutine davidson_solver(CFG,grad,x)
   !    END OF REDUCED SPACE LOOP   *
   ! ********************************
  
+   
+
   !Compute RedHessian eigenvalues and print
   if (CFG%arh_davidson .and. CFG%arh_davidson_debug) call RedHessian_eigvals(CFG) 
 
