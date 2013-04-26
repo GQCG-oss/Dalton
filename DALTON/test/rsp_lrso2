@@ -67,6 +67,7 @@ cat > rsp_lrso2.dal <<'%EOF%'
 .SPIN MULT
  1
 **RESPONS
+.TRPFLG
 *LINEAR
 .SPIN-ORBIT
 **END OF DALTON INPUT

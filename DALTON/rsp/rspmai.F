@@ -1950,35 +1950,34 @@ C
                   LLROP( INDPRP('X SPNORB')) = .TRUE.
                   LLROP( INDPRP('Y SPNORB')) = .TRUE.
                   LLROP( INDPRP('Z SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('X SPNORB')) = 1
+                  OPRANK( INDPRP('Y SPNORB')) = 1
+                  OPRANK( INDPRP('Z SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  21            CONTINUE
                   LLROP( INDPRP('X SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('X SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  22            CONTINUE
                   LLROP( INDPRP('Y SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('Y SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  23            CONTINUE
                   LLROP( INDPRP('Z SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('Z SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  24            CONTINUE
                   READ(LUCMD,'(BN,A,I8)')LABEL,IRANK
                   LLROP( INDPRP(LABEL)) = .TRUE.
+                  OPRANK(INDPRP(LABEL)) = IRANK
                GO TO 100
  25            CONTINUE
                   READ (LUCMD,*) MAXITL
@@ -2185,7 +2184,6 @@ C
       IF (ICHANG .GT. 0) THEN
          DO 500 I = 1,NPRLBL
             IF (LLROP(I)) NLRTOT = NLRTOT + 1
-            OPRANK(I) = MYRANK(PRPLBL(I))
  500     CONTINUE
          IF (NLRTOT .EQ. 0) THEN
             NINFO = NINFO + 1

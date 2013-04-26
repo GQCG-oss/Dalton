@@ -933,34 +933,3 @@ C
  100  CONTINUE
       RETURN
       END
-      INTEGER FUNCTION MYRANK(LABEL)
-      CHARACTER*8 LABEL
-C
-C Lookup table of spin-dependent properties
-C should provide reasonable defaults
-C
-C OV
-C
-#include <priunit.h>
-      IF (LABEL(3:8).EQ.'SPNORB') THEN
-         MYRANK = 1
-      ELSE IF (LABEL(3:8).EQ.'MNF-SO') THEN
-         MYRANK = 1
-      ELSE IF (LABEL(3:8).EQ.'SPNSCA') THEN
-         MYRANK = 1
-      ELSE IF (LABEL(1:6).EQ.'SOMF  ') THEN
-         MYRANK = 1
-      ELSE IF (LABEL(1:2).EQ.'FC') THEN
-         MYRANK = 1
-      ELSE IF (LABEL(1:2).EQ.'SD') THEN
-         MYRANK = 1
-      ELSE IF (LABEL(1:8).EQ.'KINENERG') THEN
-         MYRANK = 1
-      ELSE
-         MYRANK = 0
-      END IF
-#if defined VAR_DEBUG
-         WRITE(LUPRI,*)'MYRANK:'//LABEL,MYRANK
-#endif
-      RETURN
-      END
