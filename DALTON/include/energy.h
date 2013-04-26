@@ -12,4 +12,5 @@
      &                ENEREE, GRADEE(MXCOOR),
      &                ENERNN, GRADNN(MXCOOR),
      &                        GRADFS(MXCOOR),
-     &                        GRADFT(MXCOOR)
+     &                        GRADFT(MXCOOR),
+     &                        GRADFTD(MXCOOR)
