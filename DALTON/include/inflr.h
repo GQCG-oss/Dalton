@@ -1,6 +1,6 @@
       INTEGER MAXLLR
       PARAMETER ( MAXLLR = MAXLBL )
-      LOGICAL LLROP, SOPRSY, LQRGP
+      LOGICAL LLROP, SOPRSY
       CHARACTER*8 LBLLR
 #if defined (SYS_CRAY) || defined (SYS_T3D) || defined (VAR_REAL) || defined (SYS_T90)
       REAL THCLR, THRNRM
@@ -9,5 +9,5 @@
 #endif
       INTEGER IPRLR, MAXITL, NGPLR
       COMMON /INFLR/  THCLR, THRNRM,  IPRLR,  MAXITL, NGPLR(8),
-     *                LLROP(MAXLLR), SOPRSY, LQRGP
+     *                LLROP(MAXLLR), SOPRSY
       COMMON /CHRLR/  LBLLR(8,MAXLLR)

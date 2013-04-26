@@ -226,7 +226,6 @@ C /* Deck ginit */
 #include "infrank.h"
       LOGICAL FNDLB2
       EXTERNAL FNDLB2
-      LQRGP = .TRUE.
       REFSPIN=DBLE(ISPIN-1)/2
       IF (.NOT.(ADDSO.OR.DOOZSO1.OR.DOOZSO2)) RETURN
 C
