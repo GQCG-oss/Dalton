@@ -106,6 +106,7 @@ C
       IF (CCR3)  MODEL = 'CCSDR(3)  '
       IF (CCR1A) MODEL = 'CCSDR(1A) '
       IF (CCR1B) MODEL = 'CCSDR(1B) '
+      IF (DCPT2) MODEL = 'DCPT2     '
       MOPRPC = MODEL
       ! set model for CCR12
       CALL CCSD_MODEL(MODELR12,LENMOD,24,MODEL,10,APROXR12)
@@ -545,7 +546,7 @@ C          a MP2 calculation, construct MP2 amplitude vector from
 C          the integrals, which we have in memory
 C----------------------------------------------------------------------
 C
-      IF (CCRSTR.AND.(.NOT.MP2)) THEN
+      IF (CCRSTR.AND.(.NOT.MP2).AND.(.NOT.DCPT2)) THEN
          ETY1   = 'RSTAR'
          IOPT   = 33
          CALL CC_RDRSP('R0',0,1,IOPT,MODELR,WORK(KT1AM),WORK(KT2AM))
@@ -565,7 +566,7 @@ C
          END IF
       ENDIF
    
-      IF  ( (.NOT.CCRSTR) .OR. MP2 .OR. (IOPT.EQ.33) ) THEN
+      IF  ( (.NOT.CCRSTR) .OR. MP2 .OR. (IOPT.EQ.33) .OR. DCPT2) THEN
          IF (CCPAIR) THEN
 C           Print MP2 pair energies (WK/UniKA/21-11-2002).
             CALL CCSD_CBS1(WORK(KT2AM),WORK(KFOCKD),
@@ -584,7 +585,11 @@ C           Print MP2 pair energies (WK/UniKA/21-11-2002).
             CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KOMEG1+NT1AMX),1)
             CALL CC_PRAM(WORK(KOMEG1),PT1,1,.FALSE.)
          ENDIF
-         ETY1 = 'MP2  '
+         IF (DCPT2) THEN
+           ETY1 = 'DCPT2'
+         ELSE
+           ETY1 = 'MP2  '
+         ENDIF
  
       ENDIF
 C
@@ -629,10 +634,18 @@ C       read R12 amplitudes
 C
       IT1 = 0
       IF ( ETY1.EQ.'RSTAR' ) IT1 = 1
-      CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
+
+      IF (DCPT2) THEN
+         CALL DCPT2_EN(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
      *                WORK(KTAMP12),
      *                WORK(KEND1),LWRK1,EN2,POTNUC,ESCF,
      *                ETY1,ER12,LMULBS,IT1,ITER,APROXR12)
+      ELSE
+         CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
+     *                WORK(KTAMP12),
+     *                WORK(KEND1),LWRK1,EN2,POTNUC,ESCF,
+     *                ETY1,ER12,LMULBS,IT1,ITER,APROXR12)
+      ENDIF
 C
       EINI = EN2
 C
@@ -656,7 +669,7 @@ C----------------------------------------
 C     If MP2 or NOCCIT do not enter loop.
 C----------------------------------------
 C
-      IF (MP2 .OR. NOCCIT) GOTO 500
+      IF (MP2 .OR. NOCCIT .OR. DCPT2) GOTO 500
 C
       IF (CCPT .OR. CCP3) THEN
          CCSAV = CCSDT
@@ -808,6 +821,7 @@ C
          IF (CC1B)  ETY2 = 'CC-1b'
          IF (CC1A)  ETY2 = 'CC-1a'
          IF (CC2)   ETY2 = 'CC2  '
+         IF (DCPT2) ETY2 = 'DCPT2'
 C
          IT1 = 1
          CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
@@ -1209,7 +1223,7 @@ C
      &    ' energy: ',BLANKS(1:12-LENET),EINI
       WRITE(LURES,'(12X,A,A,A,A,F25.10)')   'Total ',ETYPE(1:LENET),
      &    ' energy: ',BLANKS(1:12-LENET),EINI
-      IF (.NOT. (MP2 .OR. NOCCIT)) THEN
+      IF (.NOT. (MP2 .OR. NOCCIT .OR. DCPT2)) THEN
         CALL CCSD_MODEL(ETYPE,LENET,24,ETY2,5,APROXR12)
         WRITE(LUPRI,'(12X,A,A,A,A,F25.10)') 'Total ',ETYPE(1:LENET),
      &     ' energy: ',BLANKS(1:12-LENET),EN2
@@ -5852,3 +5866,280 @@ C
 
       RETURN
       END
+
+      SUBROUTINE DCPT2_EN(T1AM,T2AM,FCDIAG,TAMR12,
+     *                      WORK,LWORK,XECCSD,POTNUC,
+     *                      ESCF,ETY,ER12,LR12,IT1,ITER,
+     *                      APROXR12)
+C    
+C
+C
+#include "implicit.h"
+#include "priunit.h"
+#include "dummy.h"
+      PARAMETER (ZERO = 0.0D0, ONE = 1.0D0, TWO = 2.0D0)
+#include "iratdef.h"
+      DIMENSION FCDIAG(*)
+      DIMENSION T1AM(*),T2AM(*),TAMR12(*),WORK(*)
+      CHARACTER ETY*5, ETYPE*24, MODEL*10
+      CHARACTER*(*) APROXR12
+      LOGICAL LEXIST, LR12, LOCDBG
+      PARAMETER (LOCDBG = .FALSE.)
+      INTEGER ICMO(8,8), NCMO(8), IGLMRHS(8,8), IGLMVIS(8,8), NGLMDS(8)
+#include "ccorb.h"
+#include "ccsdsym.h"
+#include "ccsdinp.h"
+#include "ccfield.h"
+#include "ccinftap.h"
+#include "r12int.h"
+#include "ccr12int.h"
+#include "dftcom.h"
+
+C
+      INDEX(I,J) = MAX(I,J)*(MAX(I,J) - 3)/2 + I + J
+C     
+      CALL QENTER('DCPT2_EN')
+
+C     
+      XECCSD = ESCF
+C     
+C---------------------------------
+C     Dynamic allocation of space.
+C---------------------------------
+C
+      KIAJB  = 1
+      KEND1  = KIAJB + NT2AMX
+      LWRK1  = LWORK - KEND1
+C
+      IF (LWRK1 .LT. 0) THEN
+      ENDIF
+C
+      REWIND(LUIAJB)
+      CALL READI(LUIAJB,IRAT*NT2AMX,WORK)
+      EDCPT2A=0.0d0
+      EDCPT2B=0.0d0
+C
+      DO 100 ISYMJ = 1,NSYM
+         DO 110 ISYMB = 1,NSYM
+            ISYMBJ = MULD2H(ISYMB,ISYMJ)
+            ISYMAI = ISYMBJ
+            DO 120 ISYMI = 1,NSYM
+               ISYMBI = MULD2H(ISYMB,ISYMI)
+               ISYMA  = MULD2H(ISYMI,ISYMAI)
+               ISYMAJ = ISYMBI
+C
+               DO 130 J = 1,NRHF(ISYMJ)
+                  KOFFJ = IRHF(ISYMJ)+J
+                  DO 140 B = 1,NVIR(ISYMB)
+C
+                     KOFFB=IVIR(ISYMB)+B
+                     KBJ = IT1AM(ISYMB,ISYMJ)
+                     NBJ = KBJ + NVIR(ISYMB)*(J-1) + B
+C
+                     DO 150 I = 1,NRHF(ISYMI)
+C
+                        KOFFI=IRHF(ISYMI)+I
+                        KBI = IT1AM(ISYMB,ISYMI)
+                        NBI = KBI + NVIR(ISYMB)*(I-1) + B
+C
+                        DO 160 A = 1,NVIR(ISYMA)
+C
+                           KOFFA=IVIR(ISYMA)+A
+                           KAI = IT1AM(ISYMA,ISYMI)
+                           NAI = KAI + NVIR(ISYMA)*(I-1) + A
+                           KAJ = IT1AM(ISYMA,ISYMJ)
+                           NAJ = KAJ + NVIR(ISYMA)*(J-1) + A
+C
+                           NAIBJ = IT2AM(ISYMAI,ISYMBJ) + INDEX(NAI,NBJ)
+                           NAJBI = IT2AM(ISYMAJ,ISYMBI) + INDEX(NAJ,NBI)
+
+CAMT Compute second part of DCPT2 Energy
+CAMT ie. 1/4 (DABIJ - DSQRT(DABIJ^2 + 4(<ij|ab>-<ij|ba>)^2)
+                           DABIJ=FCDIAG(KOFFA)
+     *                                + FCDIAG(KOFFB)
+     *                                - FCDIAG(KOFFI) - FCDIAG(KOFFJ)
+
+                           FAC=1.0d0
+                           FAC1=1.0d0
+
+                           CEINT=FAC*(WORK(NAIBJ) - WORK(NAJBI))
+                           CINT=FAC*WORK(NAIBJ)
+                           EDCPTA=FAC1*0.5d0*(DABIJ - DSQRT(DABIJ**2
+     *                        +4.0d0*(CINT**2)))
+
+                            EDCPT2A=EDCPT2A+ FAC1*0.5d0*(DABIJ - 
+     *                        DSQRT(DABIJ**2+4.0d0*(CINT**2)))
+
+                            EDCPTB=FAC1*0.25d0*(DABIJ - 
+     *                        DSQRT(DABIJ**2
+     *                        +4.0d0*(CEINT**2)))
+
+                            EDCPT2B=EDCPT2B+ FAC1*0.25d0*(
+     *                        DABIJ - DSQRT(DABIJ**2
+     *                        +4.0d0*(CEINT**2)))
+C
+  160                   CONTINUE
+  150                CONTINUE
+  140             CONTINUE
+  130          CONTINUE
+  120       CONTINUE
+  110    CONTINUE
+  100 CONTINUE
+
+      EDDCPT2=EDCPT2A+EDCPT2B
+
+C      WRITE(LUPRI,'(A40,F20.12)')
+C     &        'DCPT2 Total Energy',XECCSD+EDDCPT2
+
+      XECCSD=XECCSD+EDCPT2A+EDCPT2B
+
+C
+C-------------------------------------------------------------------
+C     Add field dependent energy in case of finite field ONEelectron
+C     Perturbation. The AO integral from ONEP is already scaled with
+C     the fieldstrengths!!!
+C-------------------------------------------------------------------
+C
+      DO 13 IF = 1, NFIELD
+        IF (NONHF) THEN
+C
+         DO ISYM = 1, NSYM
+            ICOUNT = 0
+            ICOUNT3 = 0
+            DO ISYM2 = 1, NSYM
+               ISYM1 = MULD2H(ISYM,ISYM2)
+               ICMO(ISYM1,ISYM2)    = ICOUNT
+               ICOUNT  = ICOUNT  + NBAS(ISYM1)*NORBS(ISYM2)
+               ICOUNT3 = ICOUNT3 + NBAS(ISYM1)*NRHFS(ISYM2)
+            END DO
+            NCMO(ISYM)   = ICOUNT
+            NGLMDS(ISYM) = ICOUNT
+
+            ICOUNT2 = 0
+            DO ISYM2 = 1, NSYM
+               ISYM1 = MULD2H(ISYM,ISYM2)
+               IGLMRHS(ISYM1,ISYM2) = ICOUNT2
+               IGLMVIS(ISYM1,ISYM2) = ICOUNT3
+               ICOUNT2 = ICOUNT2 + NBAS(ISYM1)*NRHFS(ISYM2)
+               ICOUNT3 = ICOUNT3 + NBAS(ISYM1)*NVIRS(ISYM2)
+            END DO
+         END DO
+C
+         KONEP  = 1
+         KT1AM  = KONEP  + N2BST(ISYMOP)
+         KLAMDPS= KT1AM  + NT1AMX
+         KLAMDHS= KLAMDPS+ NGLMDS(1)
+         KEND1  = KLAMDHS+ NGLMDS(1)
+         LWRK1  = LWORK  - KEND1
+         IF ( LWRK1 .LT. 0 )
+     *     CALL QUIT(' Too little workspace in ccsd_eccsd-2')
+C
+         CALL DZERO(WORK(KONEP),N2BST(ISYMOP))
+         FF = EFIELD(IF)
+         CALL CC_ONEP(WORK(KONEP),WORK(KEND1),LWRK1,FF,1,LFIELD(IF))
+C
+         IF (.NOT.(CCS.OR.CCP2)) THEN
+C
+            IF ( IT1 .EQ. 1 ) THEN
+               IOPT = 1
+               CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
+            ELSE IF (IT1 .EQ. 0) THEN
+               CALL DZERO(WORK(KT1AM),NT1AMX)
+            ELSE
+               CALL QUIT('IT1 should be 0 or 1 in ccsd_eccsd')
+            ENDIF
+         ENDIF
+         CALL LAMMATS(WORK(KLAMDPS),WORK(KLAMDHS),WORK(KT1AM),
+     &                1,.FALSE.,.FALSE.,
+     &                NGLMDS,IGLMRHS,IGLMVIS,ICMO,WORK(KEND1),LWRK1)
+
+         DO ISYM = 1, NSYM
+
+           KSCR1 = KEND1
+           KEND2 = KSCR1 + NBAS(ISYM) * NRHFS(ISYM)
+           LWRK2 = LWORK  - KEND2
+           IF ( LWRK2 .LT. 0 )
+     *       CALL QUIT(' Too little workspace in ccsd_eccsd-3')
+
+           NBAS1 = MAX(NBAS(ISYM),1)
+           KOFF1 = KONEP   + IAODIS(ISYM,ISYM)
+           KOFF2 = KLAMDHS + IGLMRHS(ISYM,ISYM)
+
+           CALL DGEMM('N','N',NBAS(ISYM),NRHFS(ISYM),NBAS(ISYM),
+     *                ONE,WORK(KOFF1),NBAS1,WORK(KOFF2),NBAS1,
+     *                ZERO,WORK(KSCR1),NBAS1)
+
+           KOFF2 = KLAMDPS + IGLMRHS(ISYM,ISYM)
+
+           TRACE = DDOT(NBAS(ISYM)*NRHFS(ISYM),
+     &                    WORK(KOFF2),1,WORK(KSCR1),1)
+           XECCSD = XECCSD + TWO * TRACE
+           XDRCCD = XDRCCD + TWO * TRACE
+         END DO
+
+        ENDIF
+  13  CONTINUE
+C
+      XCORR = XECCSD - ESCF
+      XDRCCD_CORR = XDRCCD - ESCF
+
+      ETYPE(1:5) = ETY(1:5)
+      LENET = 5
+
+      IF (LR12) THEN
+        KVR12 = 1
+        KEND1  = KVR12 + NTR12AM(1)
+        LWRK1  = LWORK - KEND1
+        IF ( LWRK1 .LT. 0 )
+     *    CALL QUIT(' Too little workspace in ccsd_eccsd-3')
+C
+C       read V matrices
+        LUNIT = -1
+        CALL GPOPEN(LUNIT,FCCR12V,'UNKNOWN',' ','UNFORMATTED',
+     &              IDUM,LDUM)
+6666    READ(LUNIT) IAN
+        READ(LUNIT) (WORK(KVR12-1+I), I=1, NTR12AM(1))
+        IF (IAN.NE.IANR12) GOTO 6666
+        CALL GPCLOSE(LUNIT,'KEEP')
+        CALL CC_R12TCMEPK(WORK(KVR12),1,.FALSE.)
+        CALL CCLR_DIASCLR12(WORK(KVR12),0.5D0,1)
+
+        ER12 = 2.0D0*DDOT(NTR12AM(1),TAMR12,1,WORK(KVR12),1)
+
+        XECCSD = XECCSD + ER12
+
+        CALL CCSD_MODEL(ETYPE,LENET,24,ETY,5,APROXR12)
+      END IF
+C
+      WRITE(LUPRI,'(1X,A,I3,A,A,A,F23.16)')
+     *  'Iter.',ITER,': Coupled cluster ',ETYPE(1:LENET),
+     *  ' energy :  ',XECCSD
+
+C
+      IF (IPRINT .GE. 2) THEN
+        WRITE(LUPRI,'(5X,A,F23.16)')
+     &    'Conventional correlation energy:',XCORR
+        IF (LR12) THEN
+          WRITE(LUPRI,'(3(5X,A,F23.16,/))')
+C    &    'Singlet R12 correlation energy :',ER12S,
+C    &    'Triplet R12 correlation energy :',ER12T,
+     &    'R12 correlation energy         :',ER12,
+     &    'Total correlation energy       :',XCORR+ER12
+        END IF
+      END IF
+
+      IF (LOCDBG) THEN
+        CALL AROUND('Amplitudes at this iteration:')
+        CALL CC_PRP(T1AM,T2AM,1,1,1)
+        IF (CCR12) CALL CC_PRPR12(TAMR12,1,1,.TRUE.)
+      END IF
+C
+      CALL FLSHFO(LUPRI)
+C
+      CALL QEXIT('DCPT2_EN')
+C
+      RETURN
+      END                                 
+
+
+
