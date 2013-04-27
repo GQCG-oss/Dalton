@@ -1476,7 +1476,9 @@ subroutine pe_sync()
         call mpi_bcast(M5s, 21 * nsites, rmpi, 0, comm, ierr)
     end if
 
-    if (mep) then
+    call mpi_bcast(pe_mep, 1, lmpi, 0, comm, ierr)
+
+    if (pe_mep) then
         call mpi_bcast(mep_field, 1, lmpi, 0, comm, ierr)
         call mpi_bcast(mep_fldnrm, 1, lmpi, 0, comm, ierr)
         call mpi_bcast(mep_extfld, 1, lmpi, 0, comm, ierr)
