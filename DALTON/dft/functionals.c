@@ -100,6 +100,12 @@ Functional* available_functionals[] = {
     &WL90cFunctional,
     /* mixed functionals */
     &B2PLYPFunctional,
+    &B2TPLYPFunctional,
+    &MPW2PLYPFunctional,
+    &MPW2KPLYPFunctional,
+    &B2GPPLYPFunctional,
+    &B2PIPLYPFunctional,
+    &PBE0DHFunctional,
     &B3LYPFunctional,
     &B3LYPgFunctional,
     &B3LYPGaussFunctional,
