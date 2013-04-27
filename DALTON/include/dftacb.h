@@ -1,3 +1,12 @@
-      COMMON /DFTACB/ DFTIPT, DFTHMO, DFTBR1, DFTBR2, EHOMO,
-     &                DFTCH0(MXCENT), DFTCH1(MXCENT), DFTDST(MXCENT),
-     &                IDFTAT(MXCENT)
+      LOGICAL LDFTVXC, LLIN, LTAN, LGRAC,DOLB94,DOMPOLE
+      INTEGER LUFA, ITSCF, IDFTAT
+      DOUBLE PRECISION DFTIPTA, DFTIPTB, DFTHMO, DFTBR1, DFTBR2, EHOMO, &
+     &                DISTMIN,DISTMAX,BRAG1,BRAG2,                      &
+     &                DFTCH0, DFTCH1, DFTDST,SHF
+
+      COMMON /DFTACB/ DFTIPTA, DFTIPTB, DFTHMO, DFTBR1, DFTBR2, EHOMO,  &
+     &                DISTMIN,DISTMAX,BRAG1,BRAG2,                      &
+     &                DFTCH0(MXCENT), DFTCH1(MXCENT), DFTDST(MXCENT),   &
+     &                IDFTAT(MXCENT),  SHF, LDFTVXC, LUFA,              &
+     &                LLIN,LTAN,LGRAC,DOLB94,DOMPOLE,ITSCF
+

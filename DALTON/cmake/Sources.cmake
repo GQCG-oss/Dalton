@@ -419,6 +419,7 @@ densfit/denfit_noddy.F
 densfit/df_dirac.F
 densfit/dposv.F
 dft/dft_aos.F
+dft/dft_ac.F 
 dft/dft_aux.F
 dft/dft_den.F
 dft/dft_exp.F

@@ -111,6 +111,14 @@ C JT 17-08-09 end
       DOSRMULO = .FALSE.
       DOSRLYPT = .FALSE.
 
+C DFTVXC Init
+      LDFTVXC = .FALSE.
+C DFTAC Init
+      LGRAC = .FALSE.
+      LLIN = .FALSE.
+      LTAN = .FALSE.
+      DOLB94 = .FALSE.
+
       RETURN
       END
 c
