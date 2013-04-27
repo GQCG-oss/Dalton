@@ -3874,9 +3874,10 @@ Integer             :: LUPRI,IPRINT,iAngmom
 Integer :: ntuvP,ntuvPfull,nP,nOrbQ,startOrbQ,endOrbQ
 Integer :: startP,fullSP,endP,ioffP,fullOP,jP,tP,uP,vP,ituvP,ifullP,iOrbQ,iPrimP
 Integer :: ifullp1,ifullp2,ifullp3,end2P,der
-Logical :: dogeoder
+Logical :: dohodi
 !
 der = integral%lhsGeoOrder + PQ%P%p%magderiv
+dohodi = (input%geoderOrderP.GT.0).AND.(input%geoderOrderQ.GT.0)
 
 startP = 0
 IF (PQ%P%p%type_hermite_single) startP = PQ%P%p%angmom(iAngmom) + der
@@ -3888,16 +3889,12 @@ ioffP    = startP*(startP+1)*(startP+2)/6
 fullOP   = fullSP*(fullSP+1)*(fullSP+2)/6
 ntuvP    = (endP+1)*(endP+2)*(endP+3)/6 - ioffP
 ntuvPfull = PQ%P%p%nTUV
+IF (dohodi.AND.(.NOT.PQ%kinetic)) ntuvPfull = ntuvP !Special case for HODI
 
 nOrbQ = PQ%Q%p%orbital1%totOrbitals*PQ%Q%p%orbital2%totOrbitals
-IF (.NOT.PQ%Q%p%type_ftuv) nOrbQ = nOrbQ*PQ%Q%p%nPasses*PQ%Q%p%ngeoderivcomp*PQ%Q%p%nCartesianMomentComp
+IF (.NOT.PQ%Q%p%type_ftuv) nOrbQ = nOrbQ*PQ%Q%p%nPasses*integral%rhsGeoComp*PQ%Q%p%nCartesianMomentComp
 IF (INPUT%DO_MULMOM) nOrbQ = Input%nMultipoleMomentComp
 
-dogeoder = (integral%rhsGeoORder.GT.0).OR.(integral%lhsGeoORder.GT.0)
-IF (dogeoder.AND.(.NOT.PQ%kinetic)) THEN
-  nOrbQ = PQ%Q%p%totOrbitals(integral%rhsGeoORder+1)
-  ntuvPfull = ntuvP
-ENDIF
 
 Integral%nAng  = ntuvP
 Integral%nPrim = np
