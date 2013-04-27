@@ -66,6 +66,7 @@ dft/integrator.c
 dft/prop-eval.c
 dft/quad-fast.c
 dft/quad-faster.c
+dft/quad-open.c
 dft/quad-strict.c
 pdpack/scatter-io.c
     )

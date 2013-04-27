@@ -9,7 +9,7 @@ use orbspread_module
 use memory_handling
 use TYPEDEF
 use TYPEDEFTYPE
-use driver
+use davidson_solv_mod
 use LSTIMING
 use loc_types
 !use linesearch
@@ -40,14 +40,14 @@ call mat_to_full(S,1.0_realk,Smat)
 call lowdin_diag(nbas,Smat,Smat_sqrt,Smat_minussqrt,6)
 
 
-if (CFG%OrbLoc%ChargeLocMulliken) then
-     CFG%OrbLoc%SU=S
-elseif(CFG%OrbLoc%ChargeLocLowdin) then
-     call mat_set_from_full(Smat_sqrt,1d0,CFG%OrbLoc%SU)
-elseif (CFG%OrbLoc%PipekMezeyLowdin) then
-     call mat_set_from_full(Smat_sqrt,1.0_realk,CFG%OrbLoc%SU)
-elseif (CFG%OrbLoc%PipekMezeyMull) then
-     call mat_copy(1d0,S,CFG%OrbLoc%SU)
+if (CFG%PM_input%ChargeLocMulliken) then
+     CFG%PM_input%SU=S
+elseif(CFG%PM_input%ChargeLocLowdin) then
+     call mat_set_from_full(Smat_sqrt,1d0,CFG%PM_input%SU)
+elseif (CFG%PM_input%PipekMezeyLowdin) then
+     call mat_set_from_full(Smat_sqrt,1.0_realk,CFG%PM_input%SU)
+elseif (CFG%PM_input%PipekMezeyMull) then
+     call mat_copy(1d0,S,CFG%PM_input%SU)
 end if    
 
 call mat_free(S)
@@ -75,19 +75,19 @@ integer     :: nel
 real(realk) :: minel
 integer     :: minel_pos(2)
 
-!**** PRINT INFO ****
+if (CFG%orb_debug) then
 write(ls%lupri,*)
 write(ls%lupri,'(a)')    '====================================='
-write(ls%lupri,'(a,l3)') 'INFO Pipek-Mezey, Lowdin   :', CFG%OrbLoc%PipekMezeyLowdin
-write(ls%lupri,'(a,l3)') 'INFO Pipek-Mezey, Mulliken :', CFG%OrbLoc%PipekMezeyMull
-write(ls%lupri,'(a,l3)') 'INFO Charge loc., Lowdin   :', CFG%OrbLoc%ChargeLocLowdin
-write(ls%lupri,'(a,l3)') 'INFO Charge loc., Mulliken :', CFG%OrbLoc%ChargeLocMulliken
+write(ls%lupri,'(a,l3)') 'INFO Pipek-Mezey, Lowdin   :', CFG%PM_input%PipekMezeyLowdin
+write(ls%lupri,'(a,l3)') 'INFO Pipek-Mezey, Mulliken :', CFG%PM_input%PipekMezeyMull
+write(ls%lupri,'(a,l3)') 'INFO Charge loc., Lowdin   :', CFG%PM_input%ChargeLocLowdin
+write(ls%lupri,'(a,l3)') 'INFO Charge loc., Mulliken :', CFG%PM_input%ChargeLocMulliken
 write(ls%lupri,'(a,i3)') 'INFO Power, m              :', m
 write(ls%lupri,'(a)')    '====================================='
 write(ls%lupri,*)
-!end print info
+end if
 
-  CFG%OrbLoc%cmo=>CMO
+  CFG%PM_input%cmo=>CMO
   r=0.d0
   norb=CMO%ncol
   call mat_init(X,norb,norb)
@@ -95,14 +95,14 @@ write(ls%lupri,*)
   call mat_init(G,norb,norb)
   call mat_init(P,norb,norb)
   call mat_init(CMOsav,CMO%nrow,CMO%ncol)
-  call initialize_OrbLoc(CMO,CFG%OrbLoc,ls,dble(m))
-  call update_OrbLoc(CFG%Orbloc,CMO,ls)
-  call Gradient_ChargeLoc(G,CFG%OrbLoc)
-  call Precond_ChargeLoc(P,CFG%OrbLoc)
-  CFG%OrbLoc%P => P
-  CFG%P=>CFG%OrbLoc%P
+  call initialize_OrbLoc(CMO,CFG%PM_input,ls,dble(m))
+  call update_OrbLoc(CFG%PM_input,CMO,ls)
+  call Gradient_ChargeLoc(G,CFG%PM_input)
+  call Precond_ChargeLoc(P,CFG%PM_input)
+  CFG%PM_input%P => P
+  CFG%P=>CFG%PM_input%P
   
-  fVal=CFG%OrbLoc%funcVal
+  fVal=CFG%PM_input%funcVal
   CFG%mu = 0.0_realk
   stepsize = CFG%stepsize
   if (norb < 10) CFG%macro_thresh=CFG%macro_thresh*10.0d0
@@ -114,16 +114,16 @@ write(ls%lupri,*)
     max_loc = fVal/real(norb)
 
   write (ls%lupri,'(1X,I3,A,ES10.3,A,ES10.2,f5.2,A,f6.2,A,ES10.2,A,ES10.2,A,I3,A,f8.3)') &
- &i, 'Pred=',CFG%r_denom,' max_loc=',max_loc, CFG%OrbLoc%loc_degree,&
+ &i, 'Pred=',CFG%r_denom,' max_loc=',max_loc, CFG%PM_input%loc_degree,&
  &   ' r=',r,' mu=',CFG%mu,' grd=', nrmG, ' Nit=',CFG%it, '  step ', stepsize
 
 
    if( nrmG .le. CFG%macro_thresh) exit
    
-   call solver(CFG,G,X)
-   if (CFG%OrbLoc%PipekMezeyMull) call mat_scal(-1d0,X)
-   if (CFG%OrbLoc%PipekMezeyLowdin) call mat_scal(-1d0,X)
-   if (CFG%OrbLoc%ChargeLocMulliken) call mat_scal(-1d0,X)
+   call davidson_solver(CFG,G,X)
+   if (CFG%PM_input%PipekMezeyMull) call mat_scal(-1d0,X)
+   if (CFG%PM_input%PipekMezeyLowdin) call mat_scal(-1d0,X)
+   if (CFG%PM_input%ChargeLocMulliken) call mat_scal(-1d0,X)
 
    !Dynamic convergence thresh
    if (dabs(CFG%mu)> 1.0) CFG%conv_thresh=CFG%global_conv_thresh
@@ -132,21 +132,21 @@ write(ls%lupri,*)
 
    call mat_copy(1d0,CMO,CMOsav)
 
-   call linesearch_charge(CFG%OrbLoc,cmo,X,stepsize,orig_eval,ls)
-   nullify(CFG%OrbLoc%CMO)
-   CFG%OrbLoc%CMO=>CMO
+   call linesearch_charge(CFG%PM_input,cmo,X,stepsize,orig_eval,ls)
+   nullify(CFG%PM_input%CMO)
+   CFG%PM_input%CMO=>CMO
   ! Compute r
   !call updatecmo(CMO,X)
-  call update_OrbLoc(CFG%OrbLoc,CMO,ls)
-  write(ls%lupri,*) 'CHECK: Qii =', sum(CFG%OrbLoc%Q(:,:))
-  fval = CFG%OrbLoc%funcVal
+  call update_OrbLoc(CFG%PM_input,CMO,ls)
+  write(ls%lupri,*) 'CHECK: Qii =', sum(CFG%PM_input%Q(:,:))
+  fval = CFG%PM_input%funcVal
   r=2.0d0*(orig_eval-old_fVal)/CFG%r_denom
 
   if (r<0) then
        write(ls%lupri,*) 'Step not accepted. Go back'
        call mat_copy(1.0d0,CMOsav,CMO)
-       call update_OrbLoc(CFG%OrbLoc,CMO,ls)
-       fval = CFG%OrbLoc%funcVal
+       call update_OrbLoc(CFG%PM_input,CMO,ls)
+       fval = CFG%PM_input%funcVal
        CFG%stepsize = CFG%stepsize/2.0
    else
        CFG%stepsize = min(CFG%stepsize*1.2,CFG%max_stepsize)
@@ -158,15 +158,15 @@ write(ls%lupri,*)
     end if
 
     !new gradient
-    call Gradient_ChargeLoc(G,CFG%OrbLoc)
-    call Precond_ChargeLoc(P,CFG%OrbLoc)
-    CFG%OrbLoc%P => P
-    CFG%P=>CFG%OrbLoc%P
+    call Gradient_ChargeLoc(G,CFG%PM_input)
+    call Precond_ChargeLoc(P,CFG%PM_input)
+    CFG%PM_input%P => P
+    CFG%P=>CFG%PM_input%P
 
   !END OF LOCALIZATION LOOP
   enddo
 
-  call FreeOrbLoc(CFG%OrbLoc)
+  call FreeOrbLoc(CFG%PM_input)
   call mat_free(X)
   call mat_free(G)
   call mat_free(P)
@@ -176,7 +176,7 @@ end subroutine charge_localize_davidson
 
 subroutine linesearch_charge(OrbLoc,cmo,X,stepsize,orig_eival,ls)
 implicit none
-type(OrbitalLoc) :: OrbLoc
+type(PMitem) :: OrbLoc
 type(lsitem) :: ls
 type(matrix)  :: cmo,X
 integer :: i,nmats,numb
@@ -196,7 +196,8 @@ step(12)=1.50
 step(13)=1.50
 step(14)=1.50
 step(15)=1.50
-write(ls%lupri,'(a,I4,a,f15.1)') 'Linesearch number :', 0, ' Original function value: ', old_funcval
+if (OrbLoc%orb_debug) write(ls%lupri,'(a,I4,a,f15.1)') &
+&'Linesearch number :', 0, ' Original function value: ', old_funcval
 do i=1,numb
     call mat_init(Xtemp(i),X%nrow,X%ncol)
     call mat_copy(1.0d0,X,Xtemp(i))
@@ -210,7 +211,8 @@ do i=1,numb
     call update_OrbLoc(OrbLoc,CMOtemp(i),ls)
     oVal = OrbLoc%funcVal
     if (i==1) orig_eival = oval
-    write(ls%lupri,'(a,I4,a,f15.4)') 'Linesearch number :', i, ' Change ', oVal-old_funcval
+    if (OrbLoc%orb_debug) write(ls%lupri,'(a,I4,a,f15.4)')&
+    &'Linesearch number :', i, ' Change ', oVal-old_funcval
     if (i==1 .and. oVal > old_funcVal) then
        nmats=i
        stepsize = sqrt(mat_sqnorm2(Xtemp(i)))

@@ -91,6 +91,9 @@ C
      &        'MXOSIM; NOSIM,MXOSIM =',NOSIM,MXOSIM
          CALL QUIT('error: NOSIM .gt. MXOSIM in QFOCK')
       END IF
+      IF (NASHT.GT.0) THEN
+         CALL QUIT('ERROR:QFOCK not implemented for open shells')
+      END IF
 C
 C ALLOCATE WORK SPACE
 C

@@ -52,21 +52,6 @@ real(realk)  :: global_conv_thresh
 ! Thresh for converging macro iterations
 real(realk)  :: macro_thresh
 
-!**********************
-!* Specific settings  *
-!**********************
-! Info used when localizing orbitals using orbspread
- type(orbspread_data),pointer :: orbspread_input
-! Info used when localizing orbitals with Pipek/Lowdin
-type(OrbitalLoc)  :: OrbLoc
-!
-type(KurtosisItem) :: KURT
-! true if using charge localiztion scheme
-logical :: ChargeLoc
-! true if orbital variance localization scheme
-logical :: orbspread
-!
-logical :: kurtosis
 
 
 !*******************
@@ -84,13 +69,38 @@ type(matrix), pointer :: Allb(:),AllSigma(:)
 type(matrix),pointer :: P
 !previous levelshift.
 real(realk) :: old_mu
-!If fixing mu
-logical :: fix_mu
-! value of fixed mu
-real(realk) :: mu_fixed
 ! Preconditioner in realk
 real(realk),pointer :: Pmat(:,:)
 
+
+!**********************************
+!* Orbital localization settings  *
+!**********************************
+! Info used when localizing orbitals using PSM
+ type(orbspread_data),pointer :: orbspread_input
+! Info used when localizing orbitals with Pipek/Lowdin
+ type(PMitem)  :: PM_input
+! Info used when localizing orbitals using PFM
+ type(PFMitem) :: PFM_input
+! true if using charge localiztion scheme
+logical :: PM
+! true if orbital variance localization scheme
+logical :: orbspread
+! true if using PFM localization scheme
+logical :: PFM
+! enable debug print outs for orbital localization
+logical :: orb_debug
+! print locality measures for all orbitals
+logical :: all_orb_locality
+! Specifies which orbital should be plotted
+character*(10) :: plt_orbital
+! set to true if orbital plt file should be made
+logical   :: make_orb_plot
+! which orbital indices reference the least/most local occ/virt
+integer :: mostl_occ
+integer :: mostl_virt
+integer :: leastl_occ
+integer :: leastl_virt
 
 !**************************
 !* ARH specific settings  *
@@ -111,8 +121,14 @@ logical :: arh_precond
 logical :: arh_davidson
 !> Gradient norm, used for conver
 real(realk) :: arh_gradnorm
-!> linesearch on or off
+!> linesearch on or off at given point in calc
 logical :: arh_linesearch
+!> linesearch on or off
+logical :: arh_inp_linesearch
+!> enable debug printouts
+logical :: arh_davidson_debug
+
+
 
 !> debug 
 logical :: arh_debug_linesearch
@@ -170,23 +186,27 @@ CFG%max_it = 20
 
 CFG%debug_info     = .false.
 CFG%arh_davidson   = .false.
+CFG%arh_davidson_debug  = .false.
 CFG%arh_precond    = .true.
 CFG%arh_lintrans   = .false.
 CFG%arh_linesearch = .false.
+CFG%arh_inp_linesearch = .false.
 CFG%arh_extravecs  = .false.
 CFG%arh_debug_linesearch = .false.
 CFG%precond=.true.
 CFG%PRINT_INFO = .false.
-CFG%ChargeLoc = .false.
+CFG%PM = .false.
 CFG%orbspread = .false.
-CFG%kurtosis  = .false.
+CFG%PFM  = .false.
 CFG%NOL2OPT   = .false.
 CFG%OnlyLocalize   = .false.
-CFG%KURT%TESTCASE = .false.
-CFG%OrbLoc%ChargeLocMulliken = .false.
-CFG%OrbLoc%ChargeLocLowdin   = .false.
-CFG%OrbLoc%PipekMezeyLowdin  = .false.
-CFG%OrbLoc%linesearch        = .false.
+CFG%PFM_input%TESTCASE = .false.
+CFG%PM_input%ChargeLocMulliken = .false.
+CFG%PM_input%ChargeLocLowdin   = .false.
+CFG%PM_input%PipekMezeyLowdin  = .false.
+CFG%PM_input%linesearch        = .false.
+CFG%all_orb_locality = .false.
+CFG%make_orb_plot = .false.
 
 end subroutine davidson_default_SCF
 
@@ -198,17 +218,18 @@ call davidson_reset(CFG)
 
 CFG%precond=.true.
 CFG%PRINT_INFO = .false.
-CFG%ChargeLoc = .false.
+CFG%PM = .false.
 CFG%orbspread = .false.
-CFG%kurtosis  = .false.
+CFG%PFM  = .false.
 CFG%NOL2OPT   = .false.
 CFG%OnlyLocalize   = .false.
-CFG%KURT%TESTCASE = .false.
-CFG%OrbLoc%ChargeLocMulliken = .false.
-CFG%OrbLoc%ChargeLocLowdin   = .false.
-CFG%OrbLoc%PipekMezeyLowdin  = .false.
-CFG%OrbLoc%linesearch        = .false.
-CFG%OrbLoc%precond           = .true.
+CFG%PFM_input%TESTCASE = .false.
+CFG%PM_input%ChargeLocMulliken = .false.
+CFG%PM_input%ChargeLocLowdin   = .false.
+CFG%PM_input%PipekMezeyLowdin  = .false.
+CFG%PM_input%linesearch        = .false.
+CFG%PM_input%precond           = .true.
+CFG%PM_input%orb_debug  = .false.
 CFG%arh_davidson   = .false.
 CFG%arh_precond    = .true.
 CFG%arh_lintrans   = .false.
@@ -216,7 +237,15 @@ CFG%arh_linesearch = .false.
 CFG%arh_extravecs  = .false.
 CFG%arh_debug_linesearch = .false.
 CFG%debug_info = .false.
+CFG%orb_debug = .false.
+CFG%arh_davidson_debug =.false.
 CFG%max_it = 25
+CFG%all_orb_locality = .false.
+CFG%make_orb_plot = .false.
+CFG%leastl_occ=0
+CFG%leastl_virt=0
+CFG%mostl_occ=0
+CFG%mostl_virt=0
 
 end subroutine davidson_default_OrbLoc
 
@@ -243,10 +272,6 @@ CFG%macro_thresh = 0.0001_realk
 CFG%stepsize =0.75_realk
 ! maximum stepsize
 CFG%max_stepsize =0.75_realk
-! Keep mu fixed, linesearch for spec. mu
-CFG%fix_mu=.false.
-! The fixed mu
-CFG%mu_fixed = 0.0_realk
 ! Initialize mu
 CFG%mu = 0d0
 end subroutine davidson_reset

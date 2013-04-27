@@ -1169,7 +1169,7 @@ C                 ... 081205 hjaaj: for INIOCC .lt. 0, we
 C                     may restart with old orbitals, but new charge.
                      NRHFEL_test = 0
                      DO I = 1, NSYM_i4
-                        NRHFEL_test = NRHFEL_test + NRHF_i4(I)
+                        NRHFEL_test = NRHFEL_test + 2*NRHF_i4(I)
                      END DO
                      IF (IOPRHF_i4 .GT. 0) NRHFEL_test = NRHFEL_test + 1
                      IF (NRHFEL_test .eq. NRHFEL) THEN

@@ -53,6 +53,7 @@ cat > linsca_trilevel_2nd_local_csr.dal <<'%EOF%'
 .DSM
 .START
  TRILEVEL
+.NOATOMSTART
 .CONVDYN
  STANDARD
 .2ND_LOC

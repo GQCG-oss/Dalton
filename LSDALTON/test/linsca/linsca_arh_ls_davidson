@@ -17,46 +17,45 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > externloctest.info <<'%EOF%'
-   externloctest
+cat > linsca_arh_ls_davidson.info <<'%EOF%'
+   linsca_arh_ls_davidson
    ---------------
-   Molecule:         
-   Wave Function:    
-   Test Purpose:     
+   Molecule:         C4H2 
+   Wave Function:    BLYP/6-31G
+   Test Purpose:     Check scf opt using davidson solver and linesearch
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > externloctest.mol <<'%EOF%'
+cat > linsca_arh_ls_davidson.mol <<'%EOF%'
 BASIS
 6-31G
-C8H2 molecule based on an optimized C40H2 
-structur using b3lyp/6-311+g(d,p)
-Atomtypes=2 Nosymmetry Angstrom
-Charge=6. Atoms=7
-C         0.00000000      0.00000000      1.08290700
-C         0.00000000      0.00000000      2.29461600
-C         0.00000000      0.00000000      3.64429100
-C         0.00000000      0.00000000      4.86890900
-C         0.00000000      0.00000000      6.20522000
-C         0.00000000      0.00000000      7.43493100
-C         0.00000000      0.00000000      8.76635300
-Charge=1. Atoms=2
-H         0.00000000      0.00000000      0.00000000
-H         0.00000000      0.00000000      9.84926000
+
+
+AtomTypes=2 Angstrom Generators=0
+Charge=6.0 Atoms=4
+C                       -14.35700     0.00000     0.00000
+C                       -13.15400     0.00000     0.00000
+C                       -11.61900     0.00000     0.00000
+C                       -10.41600     0.00000     0.00000
+Charge=1.0 Atoms=2
+H                       -15.000     0.00000     0.00000
+H                        -9.61800     0.00000     0.00000
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > externloctest.dal <<'%EOF%'
+cat > linsca_arh_ls_davidson.dal <<'%EOF%'
 **WAVE FUNCTIONS
-.HF
+.DFT
+BLYP
 *DENSOPT
-.ARH
-#.START
-#TRILEVEL
+.ARH(LS) DAVID
+.START
+TRILEVEL
+.NOATOMSTART
 .CONVDYN
 STANDARD
 .LCM
@@ -66,8 +65,8 @@ STANDARD
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >externloctest.check
-cat >> externloctest.check <<'%EOF%'
+echo $CHECK_SHELL >linsca_arh_ls_davidson.check
+cat >> linsca_arh_ls_davidson.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -77,19 +76,26 @@ else
 fi
 
 # test energy
-CRIT1=`$GREP "Maximum orbspread and orb\.number * \: * 2\.587 * 36" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy: * -152.9418" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
-ERROR[1]="Maximum orbspread and orb. number NOT CORRECT -"
+ERROR[1]="DFT ENERGY NOT CORRECT -"
 
-# test energy
-CRIT1=`$GREP "Maximum fourth spread and orb\.number \: * 3\.69" $log | wc -l`
+
+# Test individual iterations
+CRIT1=`$GREP " 2   -0\.568263" $log | wc -l`
 TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
-ERROR[2]="Maximum kurtosis and orb. number NOT CORRECT -"
+ERROR[2]="2nd energy shift not correct -"
+
+# Memory test
+CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
+TEST[3]=`expr  $CRIT1`
+CTRL[3]=1
+ERROR[3]="Memory leak -"
 
 PASSED=1
-for i in 1 2
+for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
       echo ${ERROR[i]}

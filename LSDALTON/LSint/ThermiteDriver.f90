@@ -1656,10 +1656,10 @@ integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 integer :: MPIINDEX(0:0)
 #endif
 CALL LS_GETTIM(CPUTIMESTART,WALLTIMESTART)
-IF(.NOT. INPUT%CS_SCREEN)THEN
-   WRITE(LUPRI,*)'Link requires screening, but you have turned off screening'
-   CALL LSQUIT('Link requires screening, but you have turned off screening',lupri)
-ENDIF
+!IF(.NOT. INPUT%CS_SCREEN)THEN
+!   WRITE(LUPRI,*)'Link requires screening, but you have turned off screening'
+!   CALL LSQUIT('Link requires screening, but you have turned off screening',lupri)
+!ENDIF
 
 dalink = INPUT%DO_DALINK
 DRHS_SYM = INPUT%DRHS_SYM
@@ -1737,42 +1737,71 @@ dim2=INPUT%AO(2)%p%nbatches
 dim3=INPUT%AO(3)%p%nbatches
 dim4=INPUT%AO(4)%p%nbatches
 
-call mem_alloc(RED_GAB_RHS,nRHSoverlaps)
-pGAB => input%LST_GAB_RHS
-DO IRHS=1,nRHSoverlaps
-   RED_GAB_RHS(IRHS) = OD_RHS%BATCH(IRHS)%maxgab
-ENDDO
-call mem_alloc(maxRHSGAB,dim4)
-maxRHSGAB = shortzero
-DO IRHS=1,nRHSoverlaps
-   D = OD_RHS%BATCH(IRHS)%IB
-   maxRHSGAB(D) = MAX(maxRHSGAB(D),RED_GAB_RHS(IRHS))
-ENDDO
-maxRHSELM = shortzero
-DO D=1,dim4
-   maxRHSELM = MAX(maxRHSELM,maxRHSGAB(D))
-ENDDO
+IF(INPUT%CS_SCREEN)THEN
+   call mem_alloc(RED_GAB_RHS,nRHSoverlaps)
+   pGAB => input%LST_GAB_RHS
+   DO IRHS=1,nRHSoverlaps
+      RED_GAB_RHS(IRHS) = OD_RHS%BATCH(IRHS)%maxgab
+   ENDDO
+   call mem_alloc(maxRHSGAB,dim4)
+   maxRHSGAB = shortzero
+   DO IRHS=1,nRHSoverlaps
+      D = OD_RHS%BATCH(IRHS)%IB
+      maxRHSGAB(D) = MAX(maxRHSGAB(D),RED_GAB_RHS(IRHS))
+   ENDDO
+   maxRHSELM = shortzero
+   DO D=1,dim4
+      maxRHSELM = MAX(maxRHSELM,maxRHSGAB(D))
+   ENDDO
 
-IF(sameODs)THEN
-   RED_GAB_LHS => RED_GAB_RHS
-   maxLHSELM = maxRHSELM
-   maxLHSGAB => maxRHSGAB 
+   IF(sameODs)THEN
+      RED_GAB_LHS => RED_GAB_RHS
+      maxLHSELM = maxRHSELM
+      maxLHSGAB => maxRHSGAB 
+   ELSE
+      pGAB => input%LST_GAB_LHS
+      call mem_alloc(RED_GAB_LHS,nLHSoverlaps)
+      DO ILHS=1,nLHSoverlaps
+         RED_GAB_LHS(ILHS) = OD_LHS%BATCH(ILHS)%maxgab
+      ENDDO
+      call mem_alloc(maxLHSGAB,dim2)
+      maxLHSGAB = shortzero
+      DO ILHS=1,nLHSoverlaps
+         B = OD_LHS%BATCH(ILHS)%IB
+         maxLHSGAB(B) = MAX(maxLHSGAB(B),RED_GAB_LHS(ILHS))
+      ENDDO
+      maxLHSELM = shortzero
+      DO B=1,dim2
+         maxLHSELM = MAX(maxLHSELM,maxLHSGAB(B))
+      ENDDO
+   ENDIF
 ELSE
-   pGAB => input%LST_GAB_LHS
-   call mem_alloc(RED_GAB_LHS,nLHSoverlaps)
-   DO ILHS=1,nLHSoverlaps
-      RED_GAB_LHS(ILHS) = OD_LHS%BATCH(ILHS)%maxgab
+   !no screening so we manual set all screening quantities to 1000
+   call mem_alloc(RED_GAB_RHS,nRHSoverlaps)
+   DO IRHS=1,nRHSoverlaps
+      RED_GAB_RHS(IRHS) = 3
    ENDDO
-   call mem_alloc(maxLHSGAB,dim2)
-   maxLHSGAB = shortzero
-   DO ILHS=1,nLHSoverlaps
-      B = OD_LHS%BATCH(ILHS)%IB
-      maxLHSGAB(B) = MAX(maxLHSGAB(B),RED_GAB_LHS(ILHS))
+   call mem_alloc(maxRHSGAB,dim4)
+   DO D=1,dim4
+      maxRHSGAB(D) = 3
    ENDDO
-   maxLHSELM = shortzero
-   DO B=1,dim2
-      maxLHSELM = MAX(maxLHSELM,maxLHSGAB(B))
-   ENDDO
+   maxRHSELM = 3
+
+   IF(sameODs)THEN
+      RED_GAB_LHS => RED_GAB_RHS
+      maxLHSELM = maxRHSELM
+      maxLHSGAB => maxRHSGAB 
+   ELSE
+      call mem_alloc(RED_GAB_LHS,nLHSoverlaps)
+      DO ILHS=1,nLHSoverlaps
+         RED_GAB_LHS(ILHS) = 3
+      ENDDO
+      call mem_alloc(maxLHSGAB,dim2)
+      DO ILHS=1,dim2
+         maxLHSGAB(B) = 3
+      ENDDO
+      maxLHSELM = 3
+   ENDIF
 ENDIF
 
 ! determine significant ket shell pairs
@@ -1805,18 +1834,36 @@ CALL DETERMINE_SHELL_PAIRS_LHS(dim1,dim2,RED_GAB_LHS,CS_THRLOG,&
      &nLHSoverlaps,lupri)
 call mem_dealloc(SORTING)
 ! build reduced density matrix
-call mem_alloc(RED_DMAT_RHS,dim2,dim4)
-call Build_full_shortint2dim_from_lstensor(input%LST_DRHS,RED_DMAT_RHS,dim2,dim4,lupri)
-IF (input%sameODs) call symmetrize_SDMAT(RED_DMAT_RHS,dim2,dim4)
-!WRITE(lupri,*)'The Dmat output'
-!call shortint_output(RED_DMAT_RHS,dim1,dim3,lupri)
+IF(INPUT%CS_SCREEN)THEN
+   call mem_alloc(RED_DMAT_RHS,dim2,dim4)
+   call Build_full_shortint2dim_from_lstensor(input%LST_DRHS,RED_DMAT_RHS,dim2,dim4,lupri)
+   IF (input%sameODs) call symmetrize_SDMAT(RED_DMAT_RHS,dim2,dim4)
+   !WRITE(lupri,*)'The Dmat output'
+   !call shortint_output(RED_DMAT_RHS,dim1,dim3,lupri)
+ELSE
+   !no screening so we set the screening Dmat quantity to 1000
+   call mem_alloc(RED_DMAT_RHS,dim2,dim4)
+   DO D=1,dim4
+      DO C=1,dim2
+         RED_DMAT_RHS(C,D) = 3
+      ENDDO
+   ENDDO
+ENDIF
 
 IF(DALINK)THEN
    IF(SameODs)THEN
       RED_DMAT_LHS => RED_DMAT_RHS 
    ELSE
       call mem_alloc(RED_DMAT_LHS,dim1,dim3)
-      call Build_full_shortint2dim_from_lstensor(input%LST_DLHS,RED_DMAT_LHS,dim1,dim3,lupri)
+      IF(INPUT%CS_SCREEN)THEN
+         call Build_full_shortint2dim_from_lstensor(input%LST_DLHS,RED_DMAT_LHS,dim1,dim3,lupri)
+      ELSE
+         DO D=1,dim3
+            DO C=1,dim1
+               RED_DMAT_LHS(C,D) = 3
+            ENDDO
+         ENDDO
+      ENDIF
    ENDIF
    call mem_alloc(batchindex1,nRHSoverlaps)
    call mem_alloc(batchindex2,nRHSoverlaps)
@@ -6308,9 +6355,7 @@ maxTUVdim=0
 maxPrim=0
 maxOrb=0
 do iPassType=1,nPassTypes
-   ! Tempory fix. TK: Please make proper fix!
-   maxTUVdimTEMP = Alloc%maxPrimTUVLHSA(iAlloc)*Alloc%maxPrimTUVRHSA(iPassType)*65
-!MaxPassesForType(iPassType)
+   maxTUVdimTEMP = Alloc%maxPrimTUVLHSA(iAlloc)*Alloc%maxPrimTUVRHSA(iPassType)*MaxPassesForType(iPassType)
    maxTUVdim = MAX(maxTUVdim,maxTUVdimTEMP)
    maxPrimTEMP = Alloc%maxPrimLHSA(iAlloc)*Alloc%maxPrimRHSA(iPassType)*MaxPassesForType(iPassType)
    maxPrim   = MAX(maxPRim,maxPrimTEMP)

@@ -11,19 +11,23 @@
 !> Direct density: P. Sałek, S. Høst, L. Thøgersen et al. JCP 126, 114110 (2007)
 !>
 module arhDensity
-use matrix_operations_aux
-use dal_interface
+use precision
+use matrix_module
 use decompMod
-use files
 use queue_ops
+use queue_module
+use lsdalton_fock_module
+use memory_handling
+use dal_interface
+use matrix_operations_aux
+use files
 use matrix_util
 use typedeftype
 use II_XC_interfaceModule
-use lsdalton_fock_module
-         !> Used to pass info about symmetry of trial vectors/matrices
-         integer, parameter :: symmetric = 1
-         !> Used to pass info about symmetry of trial vectors/matrices
-         integer, parameter :: antisymmetric = 2
+!> Used to pass info about symmetry of trial vectors/matrices
+integer, parameter :: symmetric = 1
+!> Used to pass info about symmetry of trial vectors/matrices
+integer, parameter :: antisymmetric = 2
 
 !> \author S. Host
 !> \date March 2010
@@ -992,8 +996,6 @@ contains
    !> \callgraph
    !>
    subroutine arh_lintrans(arh,decomp,x_in,symm,mu,AX,fifoqueue)
-   use decompMod
-   use dal_interface
    implicit none  
          !> Contains solver info (ARH/TrFD)
          type(solverItem)          :: arh
@@ -1082,12 +1084,12 @@ contains
          
             !call di_GET_GbDs(decomp%lupri,decomp%lupri,XF(1),scr1) !scr1 is G_AO without DFT
             nbast = scr1%nrow
-			!call mat_init(G_xc,nbast,nbast)
-			!call mat_init(Dmat,nbast,nbast)
-			call di_GET_GbDs_and_XC_linrsp(scr1, G_xc, decomp%lupri, decomp%lupri, XF(1), nbast, Dmat, .false.)
-			!call mat_free(G_xc)
-			!call mat_free(Dmat)
-			!-------------------------------------------
+            !call mat_init(G_xc,nbast,nbast)
+            !call mat_init(Dmat,nbast,nbast)
+            call di_GET_GbDs_and_XC_linrsp(scr1, G_xc, decomp%lupri, decomp%lupri, XF(1), nbast, Dmat, .false.)
+            !call mat_free(G_xc)
+            !call mat_free(Dmat)
+            !-------------------------------------------
 			
          else
             call mat_zero(scr1)

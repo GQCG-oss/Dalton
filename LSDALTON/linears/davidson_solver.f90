@@ -1,5 +1,5 @@
 
-MODULE  driver
+MODULE  davidson_solv_mod
 use precision
 use pipek
 use matrix_module
@@ -19,7 +19,7 @@ CONTAINS
 !> \param CFG  contains information needed to call correct linear transforms etc.
 !> \param grad Gradient (type(matrix)) 
 !> \param X solution to (H-muI)X = -G as found from reduced space solver
-subroutine solver(CFG,grad,x) 
+subroutine davidson_solver(CFG,grad,x) 
   implicit none
    type(matrix),intent(in)  :: grad
    real(realk), pointer :: xred(:)
@@ -80,7 +80,7 @@ subroutine solver(CFG,grad,x)
   !*             Start Reduced Space Loop                     *
   !************************************************************
   converged =.false.
-  do MoreRed=1,10
+  do MoreRed=1,5
   resnorm_2D =0_realk
   ReducedSpaceLoop: do iter=start_it,CFG%max_it-1
       call mem_alloc(xred,iter-1)
@@ -100,19 +100,21 @@ subroutine solver(CFG,grad,x)
 
      CurrentResNorm = sqrt(mat_dotproduct(res,res))
      ! PRINT INFO FOR MICRO ITERATION
-     if (CFG%arh_davidson) then
+     if (CFG%arh_davidson .and. CFG%arh_davidson_debug) then
         write(CFG%lupri,'(a,i3,a,ES13.5,a,ES13.5,a,ES13.5)') "iter :",iter, "    mu :",&
         &CFG%mu,  "    ResNorm :",CurrentResNorm,&
         &" Gradient norm",CFG%arh_gradnorm
-     else
+     elseif (.not. CFG%arh_davidson) then
         call test_convergence(CFG,grad,resnorm_2d)
+	if (CFG%orb_debug) then
         write(CFG%lupri,'(a,i3,a,ES13.5,a,ES13.5,a,ES13.5)') "iter :",iter, "    mu :",&
         &CFG%mu,  "    ResNorm :",CurrentResNorm,&
         &"   2D ResNorm",resnorm_2d
+	end if
      end if
     
     !TEST CONVERGENCE
-    if (CFG%arh_davidson .and. CurrentResNorm < arh_thresh*CFG%arh_gradnorm) then
+    if (CFG%arh_davidson .and. (CurrentResNorm < arh_thresh*CFG%arh_gradnorm .or. CurrentResNorm<1.0E-8_realk)) then
        call mem_dealloc(xred)
        CFG%it =iter
        converged =.true.
@@ -148,19 +150,24 @@ subroutine solver(CFG,grad,x)
   end do ReducedSpaceLoop
   ! Check if micro iterations have converged
   if (converged) then
-      write(CFG%lupri,'(a,i4)') 'iter : Micro iterations converged in RedSpaceLoop number :', MoreRed
+      if (CFG%orb_debug) write(CFG%lupri,'(a,i4)') &
+      & 'iter : Micro iterations converged in RedSpaceLoop number :', MoreRed
       exit
-  elseif ((.not. converged) .and. CFG%stepsize > 0.0009_realk .and. (MoreRed .ne. 10)) then 
+  elseif ((.not. converged) .and. CFG%stepsize > 0.0009_realk .and. (MoreRed .ne. 5)) then 
       CFG%stepsize = 0.5_realk*CFG%stepsize
-      write(CFG%lupri,'(a,i4,a,f9.4)') 'iter : Micro iterations not converged for RedSpaceLoop:', MoreRed, &
+      if (CFG%orb_debug) write(CFG%lupri,'(a,i4,a,f9.4)') &
+      &'iter : Micro iterations not converged for RedSpaceLoop:', MoreRed, &
       & " new stepsize : ",CFG%stepsize
       do i=start_it,CFG%it
          call mat_free(CFG%AllSigma(i))
          call mat_free(CFG%Allb(i))
       end do
-  elseif ((CFG%stepsize <0.0009_realk).or. (MoreRed==10)) then
+  elseif ((CFG%stepsize <0.0009_realk).or. (MoreRed==5)) then
       if (CFg%arh_davidson) resnorm_2d=CFG%arh_gradnorm
-      write(CFG%lupri,*) 'iter : Did not converge, resnorm reduction is ', CurrentresNorm/resnorm_2d
+      write(CFG%lupri,*) 
+      write(CFG%lupri,*) 'WARNING!  Did not converge micro iterations. Residual norm reduction is ',&
+      &CurrentresNorm/resnorm_2d
+      write(CFG%lupri,*) 
       exit
   end if
   end do
@@ -168,8 +175,10 @@ subroutine solver(CFG,grad,x)
   !    END OF REDUCED SPACE LOOP   *
   ! ********************************
  
+   
+
   !Compute RedHessian eigenvalues and print
-  if (CFG%arh_davidson) call RedHessian_eigvals(CFG) 
+  if (CFG%arh_davidson .and. CFG%arh_davidson_debug) call RedHessian_eigvals(CFG) 
 
   call predicted_change(CFG,grad,x)
   
@@ -186,7 +195,7 @@ subroutine solver(CFG,grad,x)
   call mem_dealloc(CFG%AllSigma)
 
 
-end subroutine solver 
+end subroutine davidson_solver 
 
 
 !> \brief Subroutine that takes in type(Matrix) and normalize_mats it
@@ -239,18 +248,18 @@ subroutine LinearTransformations(CFG,X,HX,G)
        return
  end if
 
-if (CFG%kurtosis) then
-       call compute_lintrans(CFG%KURT,X,G,HX)
+if (CFG%PFM) then
+       call compute_lintrans(CFG%PFM_input,X,G,HX)
        return
  end if
 
  
- if (CFG%OrbLoc%PipekMezeyLowdin) then
-      call PMLowdin_LinTra(G,HX,X,CFG%OrbLoc)
- elseif (CFG%OrbLoc%PipekMezeyMull) then
-      call PMMull_LinTra(G,HX,X,CFG%OrbLoc) 
- elseif (CFG%OrbLoc%ChargeLocMulliken .or. CFG%OrbLoc%ChargeLocLowdin) then
-      call CLLinearTrans(G,HX,X,CFG%OrbLoc)
+ if (CFG%PM_input%PipekMezeyLowdin) then
+      call PMLowdin_LinTra(G,HX,X,CFG%PM_input)
+ elseif (CFG%PM_input%PipekMezeyMull) then
+      call PMMull_LinTra(G,HX,X,CFG%PM_input) 
+ elseif (CFG%PM_input%ChargeLocMulliken .or. CFG%PM_input%ChargeLocLowdin) then
+      call CLLinearTrans(G,HX,X,CFG%PM_input)
  end if
 
 
@@ -354,62 +363,62 @@ if (CFG%arh_davidson .and. CFG%arh_precond) then
     return
 end if
 
-if (CFG%Kurtosis) then 
-   call kurtosis_precond(b_current,res,CFG%mu,CFG%KURT)
+if (CFG%PFM) then 
+   call kurtosis_precond(b_current,res,CFG%mu,CFG%PFM_input)
    return
 end if
 
 if (CFG%orbspread) then
    call orbspread_precond(b_current,res,CFG%mu,CFG%orbspread_input)
-elseif (CFG%ChargeLoc) then
-   call charge_precond(b_current,res,CFG%mu,CFG%OrbLoc)
+elseif (CFG%PM) then
+   call charge_precond(b_current,res,CFG%mu,CFG%PM_input)
 end if
 
 end subroutine Precondition
 
-! Compute preconditioner for arh
-subroutine arh_precondmatrix_david(FUQ,FUP,mu,P)
-implicit none
-type(matrix) :: FUQ,FUP,P
-real(realk) :: mu
-integer :: ndim,i,j
-call mat_zero(P)
+!! Compute preconditioner for arh
+!subroutine arh_precondmatrix_david(FUQ,FUP,mu,P)
+!implicit none
+!type(matrix) :: FUQ,FUP,P
+!real(realk) :: mu
+!integer :: ndim,i,j
+!call mat_zero(P)
+!
+!ndim = FUP%nrow
+!do j = 1,ndim   !columns
+!  do i = 1,ndim  !rows
+!    P%elms((j-1)*ndim+i) = FUQ%elms((j-1)*ndim+j) + FUQ%elms((i-1)*ndim+i)  &
+!         &- FUP%elms((i-1)*ndim+i) - FUP%elms((j-1)*ndim+j) 
+!  enddo
+!enddo
+!
+!
+!end subroutine arh_precondmatrix_david
 
-ndim = FUP%nrow
-do j = 1,ndim   !columns
-  do i = 1,ndim  !rows
-    P%elms((j-1)*ndim+i) = FUQ%elms((j-1)*ndim+j) + FUQ%elms((i-1)*ndim+i)  &
-         &- FUP%elms((i-1)*ndim+i) - FUP%elms((j-1)*ndim+j) 
-  enddo
-enddo
-
-
-end subroutine arh_precondmatrix_david
-
-subroutine arh_precond_david(CFG,mu,res_prec)
-implicit none
-type(RedSpaceItem) :: CFG
-type(matrix) :: res_prec,res
-integer :: ndim, i,j
-real(realk) :: mu
-
-ndim= res_prec%nrow
-call mat_init(res,res_prec%nrow,res_prec%ncol)
-res = res_prec
-
-if (.not. CFG%arh%cfg_noprec) then
-     do j=1,ndim
-        do i=1,ndim
-           if (ABS(CFG%P%elms((j-1)*ndim+i)-mu) > 1.0E-10_realk) then
-                 res%elms((j-1)*ndim+i) = res%elms((j-1)*ndim+i)/(CFG%P%elms((j-1)*ndim+i)-mu)
-           endif
-        end do
-     end do
-end if
-call project_oao_basis(CFG%decomp, res, CFG%symm, res_prec)
-
-call mat_free(res)
-end subroutine arh_precond_david
+!subroutine arh_precond_david(CFG,mu,res_prec)
+!implicit none
+!type(RedSpaceItem) :: CFG
+!type(matrix) :: res_prec,res
+!integer :: ndim, i,j
+!real(realk) :: mu
+!
+!ndim= res_prec%nrow
+!call mat_init(res,res_prec%nrow,res_prec%ncol)
+!res = res_prec
+!
+!if (.not. CFG%arh%cfg_noprec) then
+!     do j=1,ndim
+!        do i=1,ndim
+!           if (ABS(CFG%P%elms((j-1)*ndim+i)-mu) > 1.0E-10_realk) then
+!                 res%elms((j-1)*ndim+i) = res%elms((j-1)*ndim+i)/(CFG%P%elms((j-1)*ndim+i)-mu)
+!           endif
+!        end do
+!     end do
+!end if
+!call project_oao_basis(CFG%decomp, res, CFG%symm, res_prec)
+!
+!call mat_free(res)
+!end subroutine arh_precond_david
 
 
 !> \brief Subroutine that takes V and projects out U component.
@@ -1139,4 +1148,4 @@ call mem_dealloc(eigvals)
 end subroutine ComputeFock_eigvecs
 
 
-END MODULE driver 
+END MODULE davidson_solv_mod

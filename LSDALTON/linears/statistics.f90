@@ -8,7 +8,7 @@ MODULE scf_stats
    !FIXME:       Without the stat_tab information, the computation crashes
    use opttype
    public
-   private :: scf_stats_print_table_header!,scf_stats_print_table !Stinne comment
+   private :: scf_stats_print_table_header,stat_ao_grad,stat_oao_grad!,scf_stats_print_table !Stinne comment
    ! we do not try to collect data from more than 100 iterations.
    !INTEGER, PARAMETER :: max_iterations = 100
    INTEGER,parameter :: trilevel_max_linscf_iterations=100
@@ -20,6 +20,7 @@ MODULE scf_stats
    real(realk),dimension(:,:),pointer,save :: stat_gradnorm
    !> SCF energy for each SCF iteration
    real(realk),dimension(:),pointer,save   :: stat_energy
+   integer,parameter :: stat_ao_grad=2,stat_oao_grad=1
    contains
 
    !> \brief Initialize statistics tables.
@@ -34,15 +35,16 @@ MODULE scf_stats
       maxit = MAX(trilevel_max_linscf_iterations,opt%cfg_max_linscf_iterations)
 
       NULLIFY(stat_tab,stat_gradnorm,stat_energy)
-      ALLOCATE(stat_tab(maxit+1,11),stat_gradnorm(maxit+1,2),stat_energy(maxit+1))
+      ALLOCATE(stat_tab(0:maxit+1,11),stat_gradnorm(0:maxit+1,2),stat_energy(0:maxit+1))
 
       do j = 1,11
-        do i = 1,maxit+1
+        do i = 0,maxit+1
           stat_tab(i,j) = 0.0E0_realk
         enddo
       enddo
 
-      do i = 1, maxit+1
+      do i = 0, maxit+1
+         stat_gradnorm(i,1) = 0.0E0_realk
          stat_gradnorm(i,2) = 0.0E0_realk
       enddo
    end subroutine scf_stats_init
@@ -50,16 +52,16 @@ MODULE scf_stats
    !> \brief For debug. When doing ARH (in OAO basis), use this routine to print also AO gradient norm.
    !> \author S. Host
    !> \date February 2010
-   subroutine scf_stats_ao_gradnorm(iteration,gradnrm)
-      implicit none
-      !> Current SCF iteration
-      integer, intent(in) :: iteration
-      !> Gradient norm in AO basis
-      real(realk), intent(in) :: gradnrm
-
-      stat_current_iteration = iteration
-      stat_gradnorm(stat_current_iteration,2) = gradnrm
-   end subroutine scf_stats_ao_gradnorm
+!!$   subroutine scf_stats_ao_gradnorm(iteration,gradnrm)
+!!$      implicit none
+!!$      !> Current SCF iteration
+!!$      integer, intent(in) :: iteration
+!!$      !> Gradient norm in AO basis
+!!$      real(realk), intent(in) :: gradnrm
+!!$
+!!$      stat_current_iteration = iteration
+!!$      stat_gradnorm(stat_current_iteration,stat_ao_grad) = gradnrm
+!!$   end subroutine scf_stats_ao_gradnorm
 
    !> \brief Fills statistics tables for current SCF iteration. 
    !> \author L. Thogersen
@@ -78,7 +80,11 @@ MODULE scf_stats
 
       stat_current_iteration = iteration
       stat_energy(stat_current_iteration) = E
-      stat_gradnorm(stat_current_iteration,1) = gradnrm
+      IF(opt%cfg_oao_gradnrm)THEN
+         stat_gradnorm(stat_current_iteration,stat_oao_grad) = gradnrm
+      ELSE
+         stat_gradnorm(stat_current_iteration,stat_ao_grad) = gradnrm
+      ENDIF
       stat_tab(stat_current_iteration,1) = E
       if (iteration > 1) then
         stat_tab(iteration,2) = stat_tab(iteration,1)-stat_tab(iteration-1,1)
@@ -109,7 +115,7 @@ MODULE scf_stats
       !         &*****************************')"
       !  print"(' it        E(HF)           dEHF(RH)         dEHF(DSM)    DSMexit  DSM_alpha  RHshift  RHove&
       !         &rlap    gradient    ###')"
-      !  print"('********************************************************************************&
+      !  print"('*******************************************************************************&
       !         &*****************************')"
       !  WRITE(config%LUPRI,"('********************************************************************************&
       !       &*****************************###')")
@@ -118,21 +124,38 @@ MODULE scf_stats
       !  WRITE(config%LUPRI,"('********************************************************************************&
       !         &*****************************###')")
       if (opt%cfg_density_method == opt%cfg_f2d_arh) then
-        print*,'("************************************************************************************************")'
-        print*,'(" it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift  AO gradient    OAO gradient")'
-        print*,'("************************************************************************************************")'
-        WRITE(opt%LUPRI,'("*************************************************************************************************###")')
-        WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift &
-                         &   AO gradient     OAO gradient     ###")')
+        print*,'("************************************************************************************")'
+        IF(opt%cfg_oao_gradnrm)THEN
+           print*,'it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift     OAO gradient'
+        ELSE
+           print*,' it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift     AO gradient'
+        ENDIF
+        print*,'("************************************************************************************")'
+        WRITE(opt%LUPRI,'("**************************************************************************************###")')
+        IF(opt%cfg_oao_gradnrm)THEN
+           WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift &
+                &   OAO gradient     ###")')
+        ELSE
+           WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift &
+                &   AO gradient     ###")')
+        ENDIF
         WRITE(opt%LUPRI,'("****************************************************************** &
-                         & *******************************###")')
+                         & ********************###")')
       else
-        print*,'("*******************************************************************************************")'
-        print*,'(" it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift  RHinfo     gradient")'
-        print*,'("*******************************************************************************************")'
-        WRITE(opt%LUPRI,'("*********************************************************************************************###")')
-        WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###")')
-        WRITE(opt%LUPRI,'("*********************************************************************************************###")')
+        print*,'("*****************************************************************************************")'
+        IF(opt%cfg_oao_gradnrm)THEN
+           print*,' it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift  RHinfo  OAO gradient'
+        ELSE
+           print*,' it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift  RHinfo  AO gradient'
+        ENDIF
+        print*,'("*****************************************************************************************")'
+        WRITE(opt%LUPRI,'("*******************************************************************************************###")')
+        IF(opt%cfg_oao_gradnrm)THEN
+           WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo  OAO gradient    ###")')
+        ELSE
+           WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo  AO gradient     ###")')
+        ENDIF
+        WRITE(opt%LUPRI,'("*******************************************************************************************###")')
       endif
    end subroutine scf_stats_print_table_header
 
@@ -171,7 +194,7 @@ MODULE scf_stats
       type(optItem), intent(in) :: opt
       !> Print statistics for this iteration
       integer, intent(in) :: iteration
-      integer :: j
+      integer :: j,igrad
 
       !if (config%diag%DEBUG_RH_DSM_ECHANGE) then
       !  print"(i3,f18.10,2f17.11,f8.2,f13.5,f8.2,f13.7,e12.2)", iteration-1,stat_tab(iteration-1,1),&
@@ -182,20 +205,43 @@ MODULE scf_stats
       !         &stat_tab(iteration-1,9),stat_tab(iteration-1,10),stat_tab(iteration-1,6),&
       !         &stat_tab(iteration-1,11),(stat_tab(iteration-1,j),j=7,8),&
       !         &stat_gradnorm(iteration-1,1)
+      IF(opt%cfg_oao_gradnrm)THEN
+         igrad = stat_oao_grad
+      ELSE
+         igrad = stat_ao_grad
+      ENDIF
       if (opt%cfg_density_method == opt%cfg_f2d_arh) then
-        print '(i3,f18.10,f17.11,f8.2,f13.5,f8.2,2es12.2)', iteration,stat_tab(iteration,1),&
-             &stat_tab(iteration,2),stat_tab(iteration,6),stat_tab(iteration,11),stat_tab(iteration,7),&
-             &stat_gradnorm(stat_current_iteration,2),stat_gradnorm(iteration,1)
-        WRITE(opt%LUPRI,'(i3,f18.10,f17.11,f8.2,f13.5,f8.2,2es12.2,"  ###")') iteration,stat_tab(iteration,1),&
-             &stat_tab(iteration,2),stat_tab(iteration,6),stat_tab(iteration,11),stat_tab(iteration,7),&
-             &stat_gradnorm(stat_current_iteration,2),stat_gradnorm(iteration,1)
+        IF(iteration.EQ.0)THEN
+           print '(A5,f18.10,f17.11,f8.2,f13.5,f8.2,1es12.2)', 'Atoms',stat_tab(iteration,1),&
+                &stat_tab(iteration,2),stat_tab(iteration,6),stat_tab(iteration,11),stat_tab(iteration,7),&
+                &stat_gradnorm(iteration,igrad)
+           WRITE(opt%LUPRI,'(A5,f18.10,f17.11,f8.2,f13.5,f8.2,1es12.2,"  ###")') 'Atoms',stat_tab(iteration,1),&
+                &stat_tab(iteration,2),stat_tab(iteration,6),stat_tab(iteration,11),stat_tab(iteration,7),&
+                &stat_gradnorm(iteration,igrad)
+        ELSE
+           print '(i3,f18.10,f17.11,f8.2,f13.5,f8.2,1es12.2)', iteration,stat_tab(iteration,1),&
+                &stat_tab(iteration,2),stat_tab(iteration,6),stat_tab(iteration,11),stat_tab(iteration,7),&
+                &stat_gradnorm(iteration,igrad)
+           WRITE(opt%LUPRI,'(i3,f18.10,f17.11,f8.2,f13.5,f8.2,1es12.2,"  ###")') iteration,stat_tab(iteration,1),&
+                &stat_tab(iteration,2),stat_tab(iteration,6),stat_tab(iteration,11),stat_tab(iteration,7),&
+                &stat_gradnorm(iteration,igrad)
+        ENDIF
       else
-        print '(i3,f18.10,f17.11,f8.2,f13.5,f8.2,f13.7,es12.2)', iteration,stat_tab(iteration,1),&
-             &stat_tab(iteration,2),stat_tab(iteration,6),stat_tab(iteration,11),(stat_tab(iteration,j),j=7,8),&
-             &stat_gradnorm(iteration,1)
-        WRITE(opt%LUPRI,'(i3,f18.10,f17.11,f8.2,f13.5,f8.2,f13.7,es12.2,"  ###")') iteration,stat_tab(iteration,1),&
-             &stat_tab(iteration,2),stat_tab(iteration,6),stat_tab(iteration,11),(stat_tab(iteration,j),j=7,8),&
-             &stat_gradnorm(iteration,1)
+        IF(iteration.EQ.0)THEN
+           print '(A5,f18.10,f17.11,f8.2,f13.5,f8.2,f13.7,es12.2)', 'Atoms',stat_tab(iteration,1),&
+                &stat_tab(iteration,2),stat_tab(iteration,6),stat_tab(iteration,11),(stat_tab(iteration,j),j=7,8),&
+                &stat_gradnorm(iteration,igrad)
+           WRITE(opt%LUPRI,'(A5,f18.10,f17.11,f8.2,f13.5,f8.2,f13.7,es12.2,"  ###")') 'Atoms',stat_tab(iteration,1),&
+                &stat_tab(iteration,2),stat_tab(iteration,6),stat_tab(iteration,11),(stat_tab(iteration,j),j=7,8),&
+                &stat_gradnorm(iteration,igrad)
+        ELSE
+           print '(i3,f18.10,f17.11,f8.2,f13.5,f8.2,f13.7,es12.2)', iteration,stat_tab(iteration,1),&
+                &stat_tab(iteration,2),stat_tab(iteration,6),stat_tab(iteration,11),(stat_tab(iteration,j),j=7,8),&
+                &stat_gradnorm(iteration,igrad)
+           WRITE(opt%LUPRI,'(i3,f18.10,f17.11,f8.2,f13.5,f8.2,f13.7,es12.2,"  ###")') iteration,stat_tab(iteration,1),&
+                &stat_tab(iteration,2),stat_tab(iteration,6),stat_tab(iteration,11),(stat_tab(iteration,j),j=7,8),&
+                &stat_gradnorm(iteration,igrad)
+        ENDIF
       endif
       !  print '(i3,f18.10,f17.11,f8.2,f13.5,f8.2,f13.7,e12.2)', iteration-1,stat_tab(iteration-1,1),&
       !       &stat_tab(iteration-1,2),stat_tab(iteration-1,6),stat_tab(iteration-1,11),(stat_tab(iteration-1,j),j=7,8),&
@@ -212,7 +258,7 @@ MODULE scf_stats
       implicit none
       !> Contains general settings for SCF optimization
       type(optItem), intent(in)  :: opt
-      integer :: i,j
+      integer :: i,j,igrad
 
       if (stat_current_iteration>=opt%cfg_max_linscf_iterations) then
          stat_current_iteration = opt%cfg_max_linscf_iterations
@@ -243,14 +289,25 @@ MODULE scf_stats
          WRITE(opt%LUPRI,"(i3,f17.11,2f10.4,f13.7)") i,stat_tab(i,2),(stat_tab(i,j),j=6,8)
       enddo
 
+      IF(opt%cfg_oao_gradnrm)THEN
+         igrad = stat_oao_grad
+      ELSE
+         igrad = stat_ao_grad
+      ENDIF
       WRITE(opt%LUPRI,*)
       WRITE(opt%LUPRI,'("======================================================================")')
       WRITE(opt%LUPRI,'("                   LINSCF ITERATIONS:")')
-      WRITE(opt%LUPRI,'("  It.nr.               Energy                    Gradient norm")')
+      IF(opt%cfg_oao_gradnrm)THEN
+         WRITE(opt%LUPRI,'("  It.nr.               Energy                 OAO Gradient norm")')
+      ELSE
+         WRITE(opt%LUPRI,'("  It.nr.               Energy                 AO Gradient norm")')
+      ENDIF
       WRITE(opt%LUPRI,'("======================================================================")')
-
+      IF(stat_energy(0).LT.-1.0E-16_realk)THEN
+         WRITE(opt%LUPRI,'(2x,A5,3x,f30.20,5x,d22.15)') 'Atoms',stat_energy(0),stat_gradnorm(0,igrad)
+      ENDIF
       do i=1,stat_current_iteration
-         WRITE(opt%LUPRI,'(2x,i3,5x,f30.20,5x,d22.15)') i,stat_energy(i),stat_gradnorm(i,1)
+         WRITE(opt%LUPRI,'(2x,i3,5x,f30.20,5x,d22.15)') i,stat_energy(i),stat_gradnorm(i,igrad)
       enddo
       WRITE(opt%LUPRI,*)
       if (stat_current_iteration < opt%cfg_max_linscf_iterations) then

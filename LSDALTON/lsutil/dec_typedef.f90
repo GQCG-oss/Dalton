@@ -37,6 +37,10 @@ module dec_typedef_module
      !> Enforce canonical orbitals in calculation 
      !> (only meaningful for full_molecular_cc or simulate_full)
      logical :: use_canonical
+     !> Default: Full calculation uses canonical orbitals, while DEC calculation uses local orbitals.
+     !> This can be overruled by inpiut keywords (see config_dec_input).
+     !> If the default choice was overruled "user_defined_orbitals" is set to true.
+     logical :: user_defined_orbitals
      !> Simulate full molecular calculation in DEC mode  (debug)
      logical :: simulate_full
      !> How many atoms to use in simulation mode   (debug)
@@ -166,7 +170,7 @@ module dec_typedef_module
      logical :: hack2
      !> Full calculation where individual pair and single energies are calculated in ONE energy calc.
      !> Only implemented for MP2 and only for debugging purposes.
-     logical :: FullDEC
+     logical :: mp2energydebug
      !> Skip the read-in of molecular info files dens.restart, fock.restart, lcm_orbitals.u
      logical :: SkipReadIn
      !> test the array structure
@@ -605,8 +609,6 @@ module dec_typedef_module
 
      !> Information used only when the ccatom is a pair fragment
      !> ********************************************************
-     !> Atomic number of second atom (first atom is atom_number)
-     integer :: atomic_number2
      !> Distance between single fragments used to generate pair
      real(realk) :: pairdist
 
@@ -682,8 +684,8 @@ module dec_typedef_module
      integer :: nunoccFA
      !> Transformation between AO basis and fragment-adapted basis
      !> Index 1: Local,   Index 2: Fragment-adapted
-     !> Has transformation matrices been set (not done by default fragment initialization).
-     logical :: FATransSet
+     !> Has fragment-adapted MO coeff been set (not done by default fragment initialization)?
+     logical :: FAset
      real(realk),pointer :: CoccFA(:,:) => null()     ! dimension: number_basis,noccFA
      real(realk),pointer :: CunoccFA(:,:) => null()   ! dimension: number_basis,nunoccFA
 
