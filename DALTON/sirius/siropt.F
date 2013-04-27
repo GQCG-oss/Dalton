@@ -2567,11 +2567,9 @@ C
      *            'PCMINFO ','PCMJXMAT','PETMAT  '/
       DATA LABEOD, LABCC  /'EODATA  ', 'TRCCINT '/
       DATA LABUNI, LABAUX /'FULLBAS ', 'AUXILBAS'/
-C
-C     edh: For pe-module
       real*8, dimension(:), allocatable :: pefckmo
       real*8 :: peenergy
-
+C
       CALL QENTER('WR_SIRIFC')
       LGLOCAL = BOYORB.OR.PIPORB
       CALL GETDAT(LAB123(2),LAB123(3))
@@ -2860,7 +2858,9 @@ Ckr
          WRITE (LUSIFC) (WRK(KPOT + I - 1), I = 1, NTS)
          IF (NEQRSP) CALL V2Q(WRK(KWRK2),WRK(KPOT),QSENEQ,QETNEQ,NEQRSP)
       END IF
-
+C--------------
+C CBN+JK, 03.01.06
+C-------------------
 C Write qm3 solvent part of the Fock matrix to interface file
 
       IF (QM3) THEN
@@ -2935,9 +2935,6 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          allocate(pefckmo(nnorbx))
          call pe_fckmo(cmo, pefckmo, peenergy, dv, wrk(kwrk1), 
      &                 lfree - kwrk1 + 1)
-         write(lupri,*) 'pefckmo write'
-         call outpak(pefckmo, norbt, 1, lupri)
-
          write (lusifc) lab123, table(11)
          call writt(lusifc, mmorbt, pefckmo)
          deallocate(pefckmo)
