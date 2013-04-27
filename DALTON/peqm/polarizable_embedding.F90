@@ -1125,6 +1125,15 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
     if (.not. allocated(Esol)) allocate(Esol(3,ndens))
     Esol = 0.0d0
 
+    if (nprocs == 1) then
+        site_start = 1
+        site_finish = nsites
+        surp_start = 1
+        surp_finish = nsurp
+        mep_start = 1
+        mep_finish = npoints
+    end if
+
 #if defined(VAR_MPI)
     if (myid == 0 .and. nprocs > 1) then
         call mpi_bcast(44, 1, impi, 0, comm, ierr)
@@ -1152,21 +1161,7 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         if (.not. synced) then
             call pe_sync()
         end if
-    else
-        site_start = 1
-        site_finish = nsites
-        surp_start = 1
-        surp_finish = nsurp
-        mep_start = 1
-        mep_finish = npoints
     end if
-#else
-    site_start = 1
-    site_finish = nsites
-    surp_start = 1
-    surp_finish = nsurp
-    mep_start = 1
-    mep_finish = npoints
 #endif
 
     if (fock) then
@@ -1502,6 +1497,8 @@ subroutine pe_sync()
         end if
         call mpi_bcast(mepdists, nprocs, impi, 0, comm, ierr)
         call mpi_bcast(npoints, nprocs + 1, impi, 0, comm, ierr)
+        mep_start = meploops(myid) + 1
+        mep_finish = meploops(myid+1)
         if (myid == 0) then
             displs(0) = 0
             do i = 1, nprocs
@@ -4774,7 +4771,7 @@ subroutine pe_compute_mep(denmats)
         allocate(Vqm(1,npoints))
         allocate(Tk_ints(nnbas,1))
         i = 1
-        do point = site_start, site_finish
+        do point = mep_start, mep_finish
             call Tk_integrals('es', Tk_ints(:,1), nnbas, 1, mepgrid(:,i))
             Vqm(1,i) = dot(denmats, Tk_ints(:,1))
             do j = 1, qmnucs
@@ -4824,7 +4821,7 @@ subroutine pe_compute_mep(denmats)
         allocate(Vpe(0:mulorder,npoints))
         Vpe = 0.0d0
         i = 1
-        do point = site_start, site_finish
+        do point = mep_start, mep_finish
             do j = 1, nsites
                 Rsp = mepgrid(:,i) - Rs(:,j)
                 if (lmul(0)) then
@@ -5085,7 +5082,7 @@ subroutine pe_compute_mep(denmats)
         call symmetry_factors(factors)
         taylor = - 1.0d0 / factorial(1)
         i = 1
-        do point = site_start, site_finish
+        do point = mep_start, mep_finish
             l = 0
             do j = 1, nsites
                 if (zeroalphas(j)) cycle
@@ -5143,7 +5140,7 @@ subroutine pe_compute_mep(denmats)
             allocate(Fqm(3,npoints))
             allocate(Tk_ints(nnbas,3))
             i = 1
-            do point = site_start, site_finish
+            do point = mep_start, mep_finish
                 call Tk_integrals('es', Tk_ints, nnbas, 3, mepgrid(:,i))
                 do j = 1, 3
                     Fqm(j,i) = dot(denmats, Tk_ints(:,j))
@@ -5224,7 +5221,7 @@ subroutine pe_compute_mep(denmats)
             allocate(Fpe(3,0:mulorder,npoints))
             Fpe = 0.0d0
             i = 1
-            do point = site_start, site_finish
+            do point = mep_start, mep_finish
                 do j = 1, nsites
                     Rsp = mepgrid(:,i) - Rs(:,j)
                     if (lmul(0)) then
@@ -5566,7 +5563,7 @@ subroutine pe_compute_mep(denmats)
             allocate(Find(3,npoints))
             Find = 0.0d0
             i = 1
-            do point = site_start, site_finish
+            do point = mep_start, mep_finish
                 l = 1
                 do j = 1, nsites
                     if (zeroalphas(j)) cycle
