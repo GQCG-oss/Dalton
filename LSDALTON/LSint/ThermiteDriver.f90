@@ -3535,10 +3535,10 @@ startDer = Integral%startDerivativeIndex
 ndim5Q   = integral%rhsGeoComp*Q%nCartesianMomentComp
 ndim5P   = integral%lhsGeoComp*P%nCartesianMomentComp
 
-write(*,*) 'debug:',integral%lhsGeoComp,integral%rhsGeoComp
+nDer     = Integral%nDerivComp*Q%nCartesianMomentComp*P%nCartesianMomentComp
 
 IF(P%magderiv.EQ.1)ndim5P = ndim5P*3
-nDer     = Integral%nDerivComp*Q%nCartesianMomentComp*P%nCartesianMomentComp
+IF(P%magderiv.EQ.1) nDer = nDer*3
 
 nAng    = P%nOrbComp(iAngmom)
 nCont   = P%nContracted(iAngmom)*P%nPasses
@@ -3575,6 +3575,7 @@ IF (.NOT.contAng) THEN !Default AO ordering: angular,contracted
      call lsquit('AddToPQ1 alloc error nCont*nAng*ndim5P > allocIntmaxTUVdim',lupri)
   ENDIF
 #endif
+
     CALL AddToPQ1(Integral%integralsABCD,Integral%IN,nA,nB,nCompA,nCompB,&
          &        nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
   ELSE
@@ -3870,9 +3871,10 @@ TYPE(Integrand)      :: PQ
 TYPE(integralInput) :: input
 Integer             :: LUPRI,IPRINT,iAngmom
 !
-Integer :: ntuvP,nP,nOrbQ,startOrbQ,endOrbQ
+Integer :: ntuvP,ntuvPfull,nP,nOrbQ,startOrbQ,endOrbQ
 Integer :: startP,fullSP,endP,ioffP,fullOP,jP,tP,uP,vP,ituvP,ifullP,iOrbQ,iPrimP
 Integer :: ifullp1,ifullp2,ifullp3,end2P,der
+Logical :: dogeoder
 !
 der = integral%lhsGeoOrder + PQ%P%p%magderiv
 
@@ -3885,13 +3887,17 @@ nP       = PQ%P%p%nPrimitives
 ioffP    = startP*(startP+1)*(startP+2)/6
 fullOP   = fullSP*(fullSP+1)*(fullSP+2)/6
 ntuvP    = (endP+1)*(endP+2)*(endP+3)/6 - ioffP
+ntuvPfull = PQ%P%p%nTUV
 
 nOrbQ = PQ%Q%p%orbital1%totOrbitals*PQ%Q%p%orbital2%totOrbitals
 IF (.NOT.PQ%Q%p%type_ftuv) nOrbQ = nOrbQ*PQ%Q%p%nPasses*PQ%Q%p%ngeoderivcomp*PQ%Q%p%nCartesianMomentComp
 IF (INPUT%DO_MULMOM) nOrbQ = Input%nMultipoleMomentComp
-!Fix because of the stange PQ%Q%p%orbital1%totOrbitals*PQ%Q%p%orbital2%totOrbitals - Simen:does this work for sameAO?
-IF (integral%rhsGeoORder.GT.0.OR.integral%lhsGeoORder.GT.0) nOrbQ = PQ%Q%p%totOrbitals(integral%rhsGeoORder+1)
 
+dogeoder = (integral%rhsGeoORder.GT.0).OR.(integral%lhsGeoORder.GT.0)
+IF (dogeoder.AND.(.NOT.PQ%kinetic)) THEN
+  nOrbQ = PQ%Q%p%totOrbitals(integral%rhsGeoORder+1)
+  ntuvPfull = ntuvP
+ENDIF
 
 Integral%nAng  = ntuvP
 Integral%nPrim = np
@@ -3908,7 +3914,7 @@ IF(nP*PQ%P%p%nTUV*nOrbQ.GT.allocIntmaxTUVdim)THEN
 ENDIF
 #endif
    CALL DistributeHermiteP_kinetic(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-     &                             startP,endP,nP,ioffP,fullOP,PQ%P%p%nTUV,ntuvP,nOrbQ,der.EQ. 1,LUPRI,IPRINT)
+     &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,der.EQ. 1,LUPRI,IPRINT)
 ELSE
 #ifdef VAR_DEBUGINT
 IF(nP*nOrbQ*ntuvP.GT.allocIntmaxTUVdim)THEN
@@ -3920,14 +3926,14 @@ ENDIF
 #endif
    IF(nP.GT. 2)THEN !General case
       CALL DistributeHermiteP_regularGen(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-           &                             startP,endP,nP,ioffP,fullOP,ntuvP,ntuvP,nOrbQ,LUPRI,IPRINT)
+           &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,LUPRI,IPRINT)
    ELSEIF(nP.EQ. 1)THEN !Special case for nPrim=1
       CALL DistributeHermiteP_regular1(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-           &                             startP,endP,nP,ioffP,fullOP,ntuvP,ntuvP,nOrbQ,LUPRI,IPRINT)
+           &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,LUPRI,IPRINT)
 
    ELSE !Special case for nPrim=2
       CALL DistributeHermiteP_regular2(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-           &                             startP,endP,nP,ioffP,fullOP,ntuvP,ntuvP,nOrbQ,LUPRI,IPRINT)
+           &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,LUPRI,IPRINT)
 
    ENDIF
 ENDIF
@@ -6332,6 +6338,9 @@ nsize2 = mem_realsize*size(Integral%IN)  + mem_realsize*size(Integral%OUT) + &
         & mem_realsize*size(Integral%RTUV) + mem_realsize*size(Integral%RTUV) + &
         & mem_realsize*size(Integral%integralsABCD)
 call mem_allocated_mem_integralitem(nsize2)
+
+Integral%startDerivativeIndex = 0
+Integral%nDerivComp = 1
 
 END SUBROUTINE allocIntegrals
 
