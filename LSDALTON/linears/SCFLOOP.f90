@@ -116,6 +116,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    istart = 1
    if(config%opt%cfg_start_guess=='TRILEVEL') then
       IF(ls%optlevel.EQ.3.AND.config%opt%add_atoms_start)THEN
+         CALL LSTIMER('START',TIMSTR,TIMEND,config%LUPRI)
          dalink = ls%setting%scheme%DALINK
          ls%setting%scheme%DALINK = .false.
          cs00 = ls%setting%scheme%DFT%CS00
