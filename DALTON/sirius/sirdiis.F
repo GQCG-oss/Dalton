@@ -1949,9 +1949,9 @@ C
 #include "scbrhf.h"
 #include "infind.h"
 #include "infpri.h"
-#ifdef MOD_DFTASC
+#include "mxcent.h"
+#include "dftcom.h"
 #include "dftacb.h"
-#endif
 C
       LOGICAL LSAVE4,LSAVE6
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -2051,9 +2051,9 @@ C
       KSAO  = KLAST
       KSCR1 = KSAO + NNBAST
       LSCR1 = LSCRA - KSCR1
-#ifdef MOD_DFTASC
-      IF (DFTASC) CALL DFTASC_GETHOMO(FC)
-#endif
+
+      IF (DFTASC) CALL GETHOMOAC(FC,SCRA(KSCR1),LSCR1)
+
       CALL ORTHO(CMO,SCRA(KSAO),SCRA(KSCR1),LSCR1)
       IF (SUPSYM) THEN
          KFREE = 1
@@ -2225,3 +2225,58 @@ C
       CALL MEMREL('FVCORR',WRK,KS,KS,KFREE,LFREE)
       CALL QEXIT('FVCORR')
       END
+
+
+      SUBROUTINE GETHOMOAC(FD,SCRA,LSCRA)
+
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION FD(*),SCRA(*)
+      PARAMETER (DBIG = 1.D+12)
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infind.h"
+#include "dftacb.h"
+#include "dftcom.h"
+
+      logical   exchanged
+C
+      KORBEN = 1
+      LNEED  = KORBEN + NORBT
+      IF (LNEED .GT. LSCRA) CALL ERRWRK('GETHOMOAC',LNEED,LSCRA)
+      CALL DZERO(SCRA,NORBT)
+
+      call dcopy(NORBT,FD,1,SCRA,1)
+100   continue
+      exchanged=.false.
+      do i=1,norbt-1
+        if (scra(i+1) .lt. scra(i) ) then
+          tmp=scra(i+1)
+          scra(i+1)=scra(i)
+          scra(i)=tmp
+          exchanged=.true.
+        end if
+      end do
+      if (exchanged) goto 100
+
+      EhomoA =  scra(NOCCT)
+      ehomo  =  ehomoa
+      ehomob =  scra(NishT)
+
+      ElumoA =  scra(NOCCT+1)
+      ElumoB =  scra(NishT+1)
+
+      SHIFA = DFTIPTA + EHOMOA - SHF
+
+      write(LUPRI,10)' E_HOMO Alpha ',EhomoA,' E_HOMO Beta ',
+     &                EhomoB, 'v_xc(inf)', SHIFA
+      write(LUPRI,10)' E_LUMO Alpha ',ElumoA,' E_LUMO Beta ',
+     &                ElumoB
+10    format(5x,A14,F20.12,A14,F20.12,A14,F20.12)
+
+      RETURN
+      END
+

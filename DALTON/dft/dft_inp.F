@@ -25,11 +25,13 @@
 #include "implicit.h"
 #include "gnrinf.h"
 #include "dftinf.h"
+#include "mxcent.h"
 #include "dftcom.h"
 #include "priunit.h"
 #include "mxcent.h"
 #include "dftd.h"
-      PARAMETER ( NTABLE = 25 )
+      PARAMETER ( NTABLE = 26 )
+#include "dftacb.h"
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, LINE*80
       LOGICAL ALLOPT
       ! Checks if the parameters for DFT-D are defined
@@ -39,7 +41,8 @@
      &            '.ANGMIN','.NOPRUN','.GRID T','.DFTAC ','.CARPAR',
      &            '.COARSE','.NORMAL','.FINE  ','.ULTRAF','.GRID1 ',
      &            '.GRID2 ','.GRID3 ','.GRID4 ','.GRID5 ','.DFTD2 ',
-     &            '.D2PAR ','.DFTD3 ','.DFD3BJ','.3BODY ','.D3PAR '/
+     &            '.D2PAR ','.DFTD3 ','.DFD3BJ','.3BODY ','.D3PAR ',
+     &            '.DFTVXC'/
 C
       WORD1 = WORD
 C
@@ -54,7 +57,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
-     &                      17,18,19,20,21,22,23,24,25), I
+     &                      17,18,19,20,21,22,23,24,25,26), I
                   END IF
  200           CONTINUE
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -107,10 +110,8 @@ c     >.GRID T< grid type keyword
       GO TO 100  
 c     >.DFTAC < asymptotic correction keyword
  9    CONTINUE
-         DFTASC = .TRUE.
-         DFTPOT = .TRUE.
-         READ (LUCMD,*) DFTIPT, DFTBR1, DFTBR2
-      GO TO 100  
+      CALL ACINP
+      GO TO 100
 c     >.CARPAR< cartesian grid parameters.
  10   CONTINUE
          READ(LUCMD,'(A80)') LINE
@@ -192,6 +193,10 @@ c   >.D3PAR < Read in custom DFT-D3 parameters
       READ(LUCMD,*) D3_s6_inp, D3_alp_inp, D3_rs6_inp,
      &              D3_rs18_inp, D3_s18_inp
       GO TO 100
+CAMT >.DFTVXC< Consruct V_xc Explicitly and Use in KS Matrix for SCF
+ 26   CONTINUE
+      LDFTVXC = .TRUE.
+      GO TO 100
 
  300  CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
@@ -263,3 +268,88 @@ c     code goes here
       end if
 
       END
+
+
+      SUBROUTINE ACINP
+#include "implicit.h"
+#include "priunit.h"
+#include "mxcent.h"
+#include "dftcom.h"
+#include "dftacb.h"
+      CHARACTER*8 RTYPE, CTYPE
+      DFTASC = .TRUE.
+      DFTPOT = .TRUE.
+      LDFTVXC = .TRUE.
+C Initialize
+      LGRAC = .FALSE.
+      LLIN = .FALSE.
+      LTAN = .FALSE.
+      DOLB94 = .FALSE.
+      DOMPOLE = .FALSE.
+
+      READ (LUCMD,*) RTYPE
+      CALL UPCASE(RTYPE)
+      READ (LUCMD,*) CTYPE
+      CALL UPCASE(CTYPE)
+
+      IF (CTYPE.EQ.'GRAC    ') THEN
+        LGRAC = .TRUE.
+      ELSE IF (CTYPE.EQ.'LINEAR  ') THEN
+        LLIN = .TRUE.
+      ELSE IF (CTYPE.EQ.'TANH    ') THEN
+        LTAN = .TRUE.
+      ELSE
+        CALL QUIT('ERROR: Unrecognised AC Interp')
+      ENDIF
+
+      IF (RTYPE.EQ.'LB94    ') THEN
+        DOLB94 = .TRUE.
+      ELSE IF (RTYPE.EQ.'MULTPOLE') THEN
+        DOMPOLE = .TRUE.
+      ELSE
+        CALL QUIT('ERROR: Unrecognised AC potential')
+      ENDIF
+
+      READ (LUCMD,*) DFTIPTA, DFTIPTB, DFTBR1, DFTBR2
+
+      CALL AROUND('Asymptotically Corrected XC Potential')
+
+      CALL HEADER('Interpolation Scheme',0)
+      IF (LGRAC) THEN
+      WRITE(LUPRI,'(4X,A35)')' Gradient Regulated Connection    '
+      ENDIF
+      IF (LLIN) THEN
+      WRITE(LUPRI,'(4X,A35)')' Linear Interpolation             '
+      ENDIF
+      IF (LTAN) THEN
+      WRITE(LUPRI,'(4X,A35)')' tanh Interpolation               '
+      ENDIF
+      WRITE(LUPRI,'(4X,A35)')'                                  '
+      CALL HEADER('Asymptotic Potential',0)
+      IF (DOLB94) THEN
+      WRITE(LUPRI,'(4X,A35)')' LB94 Exchange-Correlation Form   '
+      ENDIF
+      IF (DOMPOLE) THEN
+      WRITE(LUPRI,'(4X,A35)')' Asymp. Pot. From Multipole Exp.  '
+      ENDIF
+      CALL HEADER('Input Ionization Potentials',0)
+      WRITE(LUPRI,5)' Alpha IP         :',  DFTIPTA
+      WRITE(LUPRI,5)' Beta IP          :',  DFTIPTA
+5     FORMAT (5x,a18,f6.3)
+      IF (.NOT. LGRAC) THEN
+      CALL HEADER('Interpolation Region Definition',0)
+      WRITE(LUPRI,5)' Bragg Radius 1   :',DFTBR1
+      WRITE(LUPRI,5)' Bragg Radius 2   :',DFTBR2
+      ENDIF
+      IF (LGRAC) THEN
+      CALL HEADER('Interpolation Region Definition',0)
+      WRITE(LUPRI,5)' Alpha Parameter  :',DFTBR1
+      WRITE(LUPRI,5)' Beta Parameter   :',DFTBR2
+      ENDIF
+      IF (LGRAC .AND.DOMPOLE) THEN
+        CALL QUIT('ERROR: Multipole AC not permitted with GRAC')
+      ENDIF
+      RETURN
+      END
+
+

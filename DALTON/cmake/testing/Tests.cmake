@@ -373,3 +373,5 @@ add_test(soppa_vibavg_twobas ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINAR
 add_test(dft_disp_d2 ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dft_disp_d2)
 add_test(dft_disp_d3 ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dft_disp_d3)
 add_test(dft_disp_d3bj ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dft_disp_d3bj)
+add_test(dft_ac_grac ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dft_ac_grac)
+add_test(dft_ac_th ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dft_ac_th)

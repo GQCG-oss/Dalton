@@ -129,6 +129,13 @@ CAMT --- DFT-D correction initialize
       D3_rs18_inp=0.0d0
       D3_s18_inp=0.0d0
 
+C DFTVXC Init
+      LDFTVXC = .FALSE.
+C DFTAC Init
+      LGRAC = .FALSE.
+      LLIN = .FALSE.
+      LTAN = .FALSE.
+      DOLB94 = .FALSE.
 
       RETURN
       END

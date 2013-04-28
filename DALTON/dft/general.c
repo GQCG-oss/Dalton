@@ -169,6 +169,62 @@ dftptf0_(real *rho, real *grad, real *wght, real *vx)
     vx[1] = drvs.df0010 + 0.5*drvs.df00001* (*grad);
 }
 
+/* Calculates v_xc using Hessians of the denstity */
+void
+dftptfh_(real *rho, real *grada, real *hes,real *wght, real *vx)
+{
+     FunSecondFuncDrv drvs;
+     FunDensProp dp;
+
+    real fR,fZ,fRZ,fZZ,fG,fRG,fGG,fZG;
+
+    real vv1,vv2,vv3,vv4;
+
+    real ngrad;
+    real hesgrad[3];
+
+    real lap,ngradhesgrad;
+
+    ngrad=sqrt(grada[0]*grada[0]+grada[1]*grada[1]+grada[2]*grada[2]);
+    if (ngrad<1e-20) ngrad=1e-20;
+    dp.rhoa  = dp.rhob  = *rho *0.5;
+    dp.grada = dp.gradb = ngrad*0.5;
+    dp.gradab = dp.grada*dp.gradb;
+
+    lap = hes[0]+hes[3]+hes[5];
+
+    hesgrad[0]=hes[0]*grada[0]+hes[1]*grada[1]+hes[2]*grada[2];
+    hesgrad[1]=hes[1]*grada[0]+hes[3]*grada[1]+hes[4]*grada[2];
+    hesgrad[2]=hes[2]*grada[0]+hes[4]*grada[1]+hes[5]*grada[2];
+
+    ngradhesgrad=grada[0]*hesgrad[0]+grada[1]*hesgrad[1]+grada[2]*hesgrad[2];
+
+    drv2_clear(&drvs);
+    if(dp.rhoa<1e-20) dp.rhoa = dp.rhob = 1e-20;
+    if(dp.grada<1e-20) dp.grada = dp.gradb = 1e-20;
+
+
+    if((dp.rhoa + dp.rhob)>1e-20)
+      selected_func->second(&drvs, *wght, &dp);
+
+
+    fR  = drvs.df0100;
+    fZ  = drvs.df0010;
+    fG  = 0.5*drvs.df00001;
+    fRZ = 0.5*(drvs.df1010 + drvs.df1001);
+    fRG = 0.5*drvs.df10001;
+    fZZ = 0.5*(drvs.df0020 + drvs.df0011);
+    fZG = 0.5*drvs.df00101;
+    fGG = 0.25*drvs.df00002;
+
+    vv1 = fR;
+    vv2 = -ngrad * (fRZ+fRG*ngrad);
+    vv3 = - fZ*lap/ngrad -fG*lap;
+    vv4 = - (ngradhesgrad/(ngrad*ngrad))*(fZZ+fZG*2*ngrad+fGG*ngrad*ngrad-fZ/ngrad);
+    vx[0] = vv1 + vv2 + vv3 + vv4;
+    vx[1] = 0;
+}
+
 void
 dftpot0_(FirstDrv *ds, const real* weight, const FunDensProp* dp)
 {
