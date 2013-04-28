@@ -3261,7 +3261,7 @@ DO iAngmom=1,PQ%P%p%nAngmom
    !Output(nPrimP,nOrbQ,ijkP)
    CALL ContractBasis(Integral,PQ%P%p,iAngmom,LUPRI,IPRINT)
    !Output(nContP,nOrbQ,ijkP)
-   CALL extractDifferentiated(Integral,PQ%P%p,iAngmom,integral%lhsGeoOrder,LUPRI,IPRINT)
+   CALL extractDifferentiated(Integral,PQ%P%p,iAngmom,integral%lhsGeoOrder,Integral%lhsGeoComp,LUPRI,IPRINT)
    IF (PQ%P%p%magderiv.EQ.1)CALL extractMagDifferentiated(Integral,PQ%P%p,iAngmom,LUPRI,IPRINT)
    CALL SphericalTransform(Integral,PQ%P%p,iAngmom,LUPRI,IPRINT)
    !Output(nContP,nOrbQ,lmP,nderivP)
@@ -3277,13 +3277,14 @@ END SUBROUTINE Contract_P
 !> \param integral Contains the information about the integrals
 !> \param P Contains the information about the product overlap 
 !> \param iAngmom The angular component of the overlap
+!> \param nComp The number of derivative components
 !> \param LUPRI Default output pint unit
 !> \param IPRINT Print level (0 no output - high lots of output)
-SUBROUTINE extractDifferentiated(Integral,P,iAngmom,iOrder,LUPRI,IPRINT)
+SUBROUTINE extractDifferentiated(Integral,P,iAngmom,iOrder,nComp,LUPRI,IPRINT)
 implicit none
 TYPE(Integralitem),intent(INOUT) :: INTEGRAL
 TYPE(Overlap),intent(IN)         :: P
-Integer,intent(IN)               :: iAngmom,iOrder,LUPRI,IPRINT
+Integer,intent(IN)               :: iAngmom,iOrder,nComp,LUPRI,IPRINT
 !
 Integer :: iA1,iA2,l1,l2,ijk,lm,ijkdiff,ijkcart,dim1,ijk1,ijk2
 Real(realk),dimension(:),pointer :: ptemp
@@ -3316,7 +3317,7 @@ ENDIF
 #endif
 
 CALL extractDifferentiated_PA(Integral%IN,INTEGRAL%OUT,l1,l2,ijkdiff,ijk,dim1,&
-     & P%ngeoDerivComp*P%nCartesianMomentComp,iOrder,P%single,P%orbital1%TYPE_empty,P%orbital2%TYPE_empty,&
+     & nComp*P%nCartesianMomentComp,iOrder,P%single,P%orbital1%TYPE_empty,P%orbital2%TYPE_empty,&
      & LUPRI,IPRINT)
 !
 Integral%nAng = ijk
@@ -4177,7 +4178,7 @@ DO iOrder=1,ndim5Comp
       !Output(nPrimQ,nPrimP,ntuvP,ijkQ)
       CALL ContractBasis(Integral,PQ%Q%p,iAngmom,LUPRI,IPRINT)
       !Output(nContQ,nPrimP,ntuvP,nDerivQ,ijkQ)
-      CALL extractDifferentiated(Integral,PQ%Q%p,iAngmom,Integral%rhsGeoOrder,LUPRI,IPRINT)
+      CALL extractDifferentiated(Integral,PQ%Q%p,iAngmom,Integral%rhsGeoOrder,Integral%rhsGeoComp,LUPRI,IPRINT)
 !     IF (PQ%Q%p%magderiv.EQ.1)CALL extractMagDifferentiated(Integral,PQ%Q%p,iAngmom,LUPRI,IPRINT)
       !Output(nContQ,nPrimP,ntuvP,ijkQ)
       CALL SphericalTransform(Integral,PQ%Q%p,iAngmom,LUPRI,IPRINT)
