@@ -385,6 +385,12 @@ extern Functional WL90cFunctional;
 
 /* sorted list of mixed functionals */
 extern Functional B2PLYPFunctional;
+extern Functional B2TPLYPFunctional;
+extern Functional MPW2PLYPFunctional;
+extern Functional MPW2KPLYPFunctional;
+extern Functional B2GPPLYPFunctional;
+extern Functional B2PIPLYPFunctional;
+extern Functional PBE0DHFunctional;
 extern Functional B3LYPFunctional;
 extern Functional B3LYPgFunctional;
 extern Functional B3LYPGaussFunctional;
