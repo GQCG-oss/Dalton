@@ -890,7 +890,7 @@ TYPE(lsitem),intent(inout) :: ls
 type(trilevel_atominfo) :: ai
 TYPE(lsitem),pointer :: atomic_ls
 Type(Matrix)         :: F, H1, S , D, CMO
-integer              :: nbast, len,iAO,itype
+integer              :: nbast, len,iAO,itype,igrid
 type(moleculeinfo),target :: atomicmolecule
 TYPE(lssetting)           :: atomicSetting
 logical :: integraltransformGC
@@ -949,6 +949,8 @@ do i=1, ai%ND
    atomicSetting%scheme%DFT%CS00 = .FALSE.
    atomicSetting%scheme%DFT%LB94 = .FALSE.
    atomicSetting%scheme%DFT%griddone = 0 !the DFT grid should be made for all unique atoms
+   igrid = atomicSetting%scheme%DFT%igrid
+   atomicSetting%scheme%DFT%GridObject(igrid)%griddone = 0
 
    !build atomic overlap
    CALL II_get_overlap(lupri,luerr,atomicSetting,S)

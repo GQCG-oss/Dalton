@@ -1609,6 +1609,7 @@ SUBROUTINE mpicopy_basissetinfo(BAS,slave,master)
      call LS_MPI_BUFFER(BAS%label,len(BAS%label),Master)
      call LS_MPI_BUFFER(BAS%DunningsBasis,Master)
      call LS_MPI_BUFFER(BAS%GCbasis,Master)
+     call LS_MPI_BUFFER(BAS%Spherical,Master)
      call LS_MPI_BUFFER(BAS%Gcont,Master)
      
      IF(slave)THEN
