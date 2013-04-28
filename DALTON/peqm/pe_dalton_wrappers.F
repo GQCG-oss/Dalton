@@ -564,8 +564,9 @@
             return
         ! triplet response for open shell systems not ready yet
         else if ((nasht > 0) .and. trplet) then
-            stop 'ERROR: triplet response for open shell systems not
-     & ready yet'
+!            stop 'ERROR: triplet response for open shell systems not
+!     & ready yet'
+        write(lupri,*)'WARNING: Triplet response open shell'
         end if
 
         call qenter('pe_rsplno')
