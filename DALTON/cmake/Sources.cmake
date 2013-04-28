@@ -8,6 +8,7 @@ dft/fun-b86mx.c
 dft/fun-b97-1.c
 dft/fun-b97-2.c
 dft/fun-b97-3.c
+dft/fun-b97-d.c
 dft/fun-b97-k.c
 dft/fun-b97.c
 dft/fun-becke.c
@@ -23,6 +24,7 @@ dft/fun-example6.c
 dft/fun-example7.c
 dft/fun-example8.c
 dft/fun-example9.c
+dft/fun-1-4.c
 dft/fun-g96.c
 dft/fun-gga.c
 dft/fun-hcth120.c
@@ -51,6 +53,7 @@ dft/fun-pw91x2.c
 dft/fun-pw92ac.c
 dft/fun-pw92c.c
 dft/fun-pz81.c
+dft/fun-rcam-b3lyp.c
 dft/fun-revpbex.c
 dft/fun-rpbex.c
 dft/fun-slater.c
