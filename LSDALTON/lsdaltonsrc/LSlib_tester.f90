@@ -682,7 +682,7 @@ write(lupri,'(A80,2F18.10)') 'Coulomb gradient from diff-eri (Dirac): RMS and in
 !******                             Coulomb Hessian from differentiated 4-center ERI (Mulliken)
 !*****************************************************************************
 
-#if 1
+#if 0
 deallocate(eri)
 nullify(eri)
 allocate(eri(nbast,nbast,nbast,nbast,9*nAtoms*nAtoms))
