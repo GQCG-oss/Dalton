@@ -132,7 +132,7 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
      &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V ','.ONLYMO',
      &            '.THRVEC','.MTRIP ','.SOPPA2','.AO-SOP','.NOSORT',
      &            '.KEPAOI','*CHO(T)','*CHOCC2','*CHOMP2','*CHODBG',
-     &            '.D01SKI','*ACTIVE','.CHO(T)','.XXXXXX','.XXXXXX'/
+     &            '.D01SKI','*ACTIVE','.CHO(T)','.DCPT2 ','.XXXXXX'/
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -146,6 +146,7 @@ C
       CCSDT  = .FALSE.
       CC2    = .FALSE.
       MP2    = .FALSE.
+      DCPT2  = .FALSE.
       CIS    = .FALSE.
       CCS    = .FALSE.
       CCD    = .FALSE.
@@ -887,6 +888,11 @@ C                '.CHO(T)'
                   CCPT  = .TRUE.
                GO TO 1000
  119           CONTINUE 
+                  DCPT2   = .TRUE.
+                  write(lupri,*)'DCPT2 Calculation.'
+                  WRITE(LUPRI,*)'See Assfeld, Almlof and Truhlar, '
+                  WRITE(LUPRI,*)'CPL 241, 438 (1995)'
+                  GO TO 1000
  120           CONTINUE 
                GO TO 1000
             ELSE
