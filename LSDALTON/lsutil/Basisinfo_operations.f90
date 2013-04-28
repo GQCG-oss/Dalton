@@ -80,6 +80,7 @@ INTEGER :: I
 write(lun)BASISSET%natomtypes
 write(lun)BASISSET%DunningsBasis
 write(lun)BASISSET%GCbasis
+write(lun)BASISSET%Spherical
 write(lun)BASISSET%GCont
 DO I=1,BASISSET%natomtypes
    call write_atomtypeitem_to_disk(lun,BASISSET%ATOMTYPE(I))
@@ -271,6 +272,7 @@ read(lun)BASISSET%natomtypes
 IF(BASISSET%natomtypes.GT. 0)THEN
    read(lun)BASISSET%DunningsBasis
    read(lun)BASISSET%GCbasis
+   read(lun)BASISSET%Spherical
    read(lun)BASISSET%GCont
    CALL MEM_ALLOC(BASISSET%ATOMTYPE,BASISSET%natomtypes)
    DO I=1,BASISSET%natomtypes
@@ -414,6 +416,7 @@ SUBROUTINE alloc_and_take_subbasissetinfo(OLDBAS,itype,NEWBAS)
   NEWBAS%Gcont = OLDBAS%Gcont
   NEWBAS%DunningsBasis = OLDBAS%DunningsBasis
   NEWBAS%GCbasis = OLDBAS%GCbasis
+  NEWBAS%Spherical = OLDBAS%Spherical
   NEWBAS%labelindex = OLDBAS%labelindex
   CALL MEM_ALLOC(NEWBAS%ATOMTYPE,1)
   NEWBAS%ATOMTYPE(1)%name = OLDBAS%ATOMTYPE(itype)%name
@@ -471,6 +474,7 @@ SUBROUTINE copy_basissetinfo(OLDBAS,NEWBAS)
   NEWBAS%Gcont = OLDBAS%Gcont
   NEWBAS%DunningsBasis = OLDBAS%DunningsBasis
   NEWBAS%Gcbasis = OLDBAS%GCbasis
+  NEWBAS%Spherical = OLDBAS%Spherical
   NEWBAS%labelindex = OLDBAS%labelindex
   NEWBAS%nChargeindex = OLDBAS%nChargeindex
   NEWBAS%nbast = OLDBAS%nbast
