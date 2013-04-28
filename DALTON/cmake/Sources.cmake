@@ -2,6 +2,7 @@ set(C_SOURCES
 cc/crayio.c
 dft/basisinfo.c
 dft/cube-fast.c
+dft/dft_dftd.F
 dft/eval-dso.c
 dft/fun-b86.c
 dft/fun-b86mx.c

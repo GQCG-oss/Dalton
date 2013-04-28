@@ -27,13 +27,19 @@
 #include "dftinf.h"
 #include "dftcom.h"
 #include "priunit.h"
-      PARAMETER ( NTABLE = 19 )
+#include "mxcent.h"
+#include "dftd.h"
+      PARAMETER ( NTABLE = 25 )
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7, LINE*80
       LOGICAL ALLOPT
+      ! Checks if the parameters for DFT-D are defined
+      EXTERNAL DFT_D2_CHECK, DFT_D3_CHECK, DFT_D3BJ_CHECK
+      INTEGER DFT_D2_CHECK, DFT_D3_CHECK, DFT_D3BJ_CHECK
       DATA TABLE /'.PRINT ','.DFTELS','.DFTTHR','.RADINT','.ANGINT',
      &            '.ANGMIN','.NOPRUN','.GRID T','.DFTAC ','.CARPAR',
      &            '.COARSE','.NORMAL','.FINE  ','.ULTRAF','.GRID1 ',
-     &            '.GRID2 ','.GRID3 ','.GRID4 ','.GRID5 '/
+     &            '.GRID2 ','.GRID3 ','.GRID4 ','.GRID5 ','.DFTD2 ',
+     &            '.D2PAR ','.DFTD3 ','.DFD3BJ','.3BODY ','.D3PAR '/
 C
       WORD1 = WORD
 C
@@ -48,7 +54,7 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,
-     &                      17,18,19), I
+     &                      17,18,19,20,21,22,23,24,25), I
                   END IF
  200           CONTINUE
                WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,
@@ -160,6 +166,33 @@ c     >.GRID5 < grid parameters.
          RADINT = 1D-9
          ANGINT = 47
       GO TO 100 
+c    >.DFTD2 < turns empirical dispersion DFTD2 correction on
+ 20   DODFTD = .TRUE.
+      DO_DFTD2=.TRUE.
+      GO TO 100
+c    >.D2PAR < Read in custom DFT-D2 parameters
+ 21   L_INP_D2PAR = .TRUE.
+      READ(LUCMD,*) D2_s6_inp, D2_alp_inp, D2_rs6_inp
+      GO TO 100
+c    >.DFTD3 < turns empirical dispersion DFT-D3 correction on
+ 22   DODFTD = .TRUE.
+      DO_DFTD3 = .TRUE.
+      GO TO 100
+c    >.DFD3BJ< turns empirical dispersion DFT-D3 correction with
+c              Becke-Johnson damping
+ 23   DODFTD = .TRUE.
+      DO_DFTD3 = .TRUE.
+      DO_BJDAMP = .TRUE.
+      GO TO 100
+c   >.3BODY < turns empirical dispersion 3-body terms 
+ 24   DO_3BODY = .TRUE.
+      GO TO 100
+c   >.D3PAR < Read in custom DFT-D3 parameters
+ 25   L_INP_D3PAR = .TRUE.
+      READ(LUCMD,*) D3_s6_inp, D3_alp_inp, D3_rs6_inp,
+     &              D3_rs18_inp, D3_s18_inp
+      GO TO 100
+
  300  CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
          ICHANG = ICHANG + 1
@@ -172,6 +205,29 @@ c     >.GRID5 < grid parameters.
          DFTELS = DFTELS*THR_REDFAC
          DFTHRS = .TRUE.
       END IF
+
+      IF (DO_DFTD2.AND.(.NOT.L_INP_D2PAR)) THEN
+C        empirical disperision DFT-D2 correction only defined for a
+C        number of functionals 
+C        check this here and quit if not defined  
+         ICHK=DFT_D2_CHECK()
+         IF (ICHK.NE.1)
+     &       CALL QUIT('ERROR: DFT-D2 Func. Dep. Paras. Unknown')
+      END IF
+
+      IF (DO_DFTD3.AND.(.NOT.L_INP_D3PAR)) THEN
+C        empirical disperision DFT-D3 correction only defined for a
+C        number of functionals 
+C        check this here and quit if not defined  
+         ICHK=DFT_D3_CHECK()
+         IF (ICHK.NE.1)
+     &       CALL QUIT('ERROR: DFT-D3 Func. Dep. Paras. Unknown')
+      END IF
+
+      IF (DO_3BODY.AND.(.NOT.DO_DFTD3)) THEN
+         CALL QUIT('ERROR: 3-BODY CORR. APPLY ONLY FOR DFT-D3')
+      ENDIF
+
 
       CALL HEADER('Settings for DFT calculation:',0)
 c     code goes here
