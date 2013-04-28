@@ -630,7 +630,6 @@ DO j=1,natoms
     tmp1=tmp1+TempGrad(i,j,1)*TempGrad(i,j,1)
     tmp2=tmp2+TempGrad(i,j,1)*ij
   ENDDO
-write(*,*) 'Coulomb gradient components',j,(TempGrad(i,j,1),i=1,3)
 ENDDO
 write(lupri,'(A80,2F18.10)') 'Coulomb gradient from diff-eri (Mulliken): RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/3),tmp2/natoms/3
@@ -683,7 +682,7 @@ write(lupri,'(A80,2F18.10)') 'Coulomb gradient from diff-eri (Dirac): RMS and in
 !******                             Coulomb Hessian from differentiated 4-center ERI (Mulliken)
 !*****************************************************************************
 
-#if 0
+#if 1
 deallocate(eri)
 nullify(eri)
 allocate(eri(nbast,nbast,nbast,nbast,9*nAtoms*nAtoms))
@@ -693,7 +692,7 @@ CALL LSlib_get_4center_eri_geoderiv(eri,nbast,2,9*nAtoms*nAtoms,.FALSE.,lupri,lu
 
 nullify(TempHess)
 allocate(TempHess(3,nAtoms,3,nAtoms,1))
-call ls_dzero(TempHess,natoms*3,nAtoms*3)
+call ls_dzero(TempHess,natoms*3*nAtoms*3)
 
 iHess = 0
 DO n=1,nAtoms
