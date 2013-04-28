@@ -55,6 +55,7 @@ BLYP
 .ARH DAVID
 .START
 TRILEVEL
+.NOATOMSTART
 .CONVDYN
 STANDARD
 .LCM
@@ -82,7 +83,7 @@ ERROR[1]="DFT ENERGY NOT CORRECT -"
 
 
 # Test individual iterations
-CRIT1=`$GREP " 2   -0\.568263" $log | wc -l`
+CRIT1=`$GREP " 2   -0\.568266" $log | wc -l`
 TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
 ERROR[2]="2nd energy shift not correct -"

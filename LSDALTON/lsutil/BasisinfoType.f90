@@ -39,6 +39,7 @@ END TYPE ATOMTYPEITEM
 
 TYPE BASISSETINFO
 LOGICAL                    :: DunningsBasis
+LOGICAL                    :: SPHERICAL
 LOGICAL                    :: GCbasis
 LOGICAL                    :: GCONT
 INTEGER                    :: natomtypes
@@ -86,6 +87,7 @@ TYPE(BASISINFO),pointer :: p
 END TYPE BASIS_PT
 
 TYPE BASINF
+LOGICAL             :: spherical
 INTEGER             :: maxnshell !number of shells for regular basis
 ! so an atom with 10s8p5d1f1g would have 25 shells (75 basisfunctions)
 INTEGER,pointer     :: shellangmom(:) !size kmax, angmom +1 for this shell

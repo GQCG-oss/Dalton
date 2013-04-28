@@ -22,7 +22,7 @@ cat > dec_ccsdpt.info <<'%EOF%'
    --------------------------------------------------
    Molecule:         Ethane
    Wave Function:    CCSD(T) / 6-31G
-   Test Purpose:     Test simulated superfragment DEC-CCSD(T) energy (Janus J. Eriksen)
+   Test Purpose:     Test DEC-CCSD(T) energy (Janus J. Eriksen)
 %EOF%
 
 #######################################################################
@@ -53,8 +53,9 @@ cat > dec_ccsdpt.dal <<'%EOF%'
 .ARH
 .START
 TRILEVEL
+.NOATOMSTART
 .CONVTHR
-1.0d-5
+1.0d-6
 # LOCALIZE USING ORBITAL VARIANCE, m=2 for occ and virt
 $INFO
 DEBUG_MPI_MEM

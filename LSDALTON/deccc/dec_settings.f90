@@ -34,7 +34,7 @@ contains
 
     ! -- Type of calculation
     DECinfo%full_molecular_cc=.false. ! full molecular cc
-    DECinfo%FullDEC=.false.
+    DECinfo%mp2energydebug=.false.
     DECinfo%simulate_full=.false.
     DECinfo%simulate_natoms=1
     DECinfo%SkipReadIn=.false.
@@ -76,6 +76,7 @@ contains
     DECinfo%approximated_norm_threshold=0.1E0_realk
     DECinfo%check_lcm_orbitals=.false.
     DECinfo%use_canonical=.false.
+    DECinfo%user_defined_orbitals=.false.
     DECinfo%AbsorbHatoms=.false.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken=.false.
     DECinfo%BoughtonPulay=.false.
@@ -222,17 +223,19 @@ contains
           ! These keywords should be properly documented for the release.
 
           ! GENERAL INFO
+          ! ============
+
           ! CC model
        case('.MP2'); DECinfo%ccModel=1; DECinfo%use_singles=.false.  ! both DEC and full calc
        case('.CC2'); DECinfo%ccModel=2; DECinfo%use_singles=.true.   ! only for full calc
        case('.CCSD'); DECinfo%ccModel=3; DECinfo%use_singles=.true.  ! only for full calc
 
-
-          ! FULL CALCULATION
-          ! ================
-
           ! Run full molecular calculation rather than DEC calculation
        case('.FULL'); DECinfo%full_molecular_cc=.true. 
+
+
+          ! CC SOLVER INFO
+          ! ==============
 
           ! Save CCSD amplitudes to be able to restart full CCSD calculation
        case('.CCSDSAFE'); DECinfo%CCSDsaferun=.true.
@@ -244,13 +247,25 @@ contains
        case('.CCTHR') 
           read(input,*) DECinfo%ccConvergenceThreshold
           DECinfo%CCthrSpecified=.true.
-
-          ! Use canonical orbitals (only meaningful for full calculation)
-          ! Perhaps this should be default for full calculation?
-       case('.CANONICAL'); DECinfo%use_canonical=.true.
-
           ! Number of residual vectors to save when solving CC amplitude equation
        case('.SUBSIZE'); read(input,*) DECinfo%ccMaxDIIS
+
+
+          ! CHOICE OF ORBITALS
+          ! ==================
+          ! By default canonical orbitals are used for full molecular calculation, 
+          ! while local orbitals are used for DEC calculation.
+          ! These default choices can be overruled by these keywords:
+
+          ! Use canonical orbitals 
+       case('.CANONICAL') 
+          DECinfo%use_canonical=.true.
+          DECinfo%user_defined_orbitals=.true.
+
+          ! Do not use canonical orbitals
+       case('.NOTCANONICAL') 
+          DECinfo%use_canonical=.false.
+          DECinfo%user_defined_orbitals=.true.
 
 
 
@@ -366,7 +381,7 @@ contains
        case('.PRECWITHFULL'); DECinfo%precondition_with_full=.true.
        case('.SIMPLEMULLIKENTHRESH'); DECinfo%simple_mulliken_threshold=.true.
        case('.NORMTHRESH'); read(input,*) DECinfo%approximated_norm_threshold
-       case('.FullDEC'); DECinfo%FullDEC=.true.
+       case('.MP2DEBUG'); DECinfo%mp2energydebug=.true.
        case('.SIMULATEFULL'); DECinfo%simulate_full=.true.
        case('.SIMULATE_NATOMS'); read(input,*) DECinfo%simulate_natoms
        case('.SKIPREADIN'); DECinfo%SkipReadIn=.true.
@@ -486,9 +501,23 @@ contains
        call lsquit('Restart option currently not implemented for CCSD(T)!',DECinfo%output)
     end if
 
-    
-    ! Full molecular MP2 (not using DEC framework) only implemented for canonical
-    if(DECinfo%ccmodel==1 .and. DECinfo%full_molecular_cc) then
+    ! Which orbitals to use?
+    ! Default full calculation: Canonical orbitals
+    ! Default DEC calculation : Local orbitals
+    ! --> unless user has manually specified otherwise!
+    if(.not. DECinfo%user_defined_orbitals) then  
+       if(DECinfo%full_molecular_cc) then
+          DECinfo%use_canonical = .true.
+       else
+          DECinfo%use_canonical = .false.
+       end if
+    end if
+
+    ! For special case of full MP2, we simply only accept canonical orbitals!
+    if(DECinfo%user_defined_orbitals .and. DECinfo%ccmodel==1 .and. DECinfo%full_molecular_cc) then
+       write(DECinfo%output,*) 'WARNING! You have requested a full molecular MP2 calculation using'
+       write(DECinfo%output,*) 'local orbitals. This option is currently not available so I will'
+       write(DECinfo%output,*) 'use canonical orbitals instead!'
        DECinfo%use_canonical = .true.
     end if
 
@@ -545,6 +574,7 @@ contains
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
     write(lupri,*) 'use_canonical ', DECitem%use_canonical
+    write(lupri,*) 'user_defined_orbitals ', DECitem%user_defined_orbitals
     write(lupri,*) 'simulate_full ', DECitem%simulate_full
     write(lupri,*) 'simulate_natoms ', DECitem%simulate_natoms
     write(lupri,*) 'InclFullMolecule ', DECitem%InclFullMolecule
@@ -590,7 +620,7 @@ contains
     write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,ccsdGbatch
     write(lupri,*) 'hack ', DECitem%hack
     write(lupri,*) 'hack2 ', DECitem%hack2
-    write(lupri,*) 'FullDEC ', DECitem%FullDEC
+    write(lupri,*) 'mp2energydebug ', DECitem%mp2energydebug
     write(lupri,*) 'SkipReadIn ', DECitem%SkipReadIn
     write(lupri,*) 'array_test ', DECitem%array_test
     write(lupri,*) 'reorder_test ', DECitem%reorder_test

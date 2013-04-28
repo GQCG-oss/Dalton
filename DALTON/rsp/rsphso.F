@@ -85,6 +85,7 @@ C-- common blocks:
 #include "cbihr2.h"
 #include "infesr.h"
 #include "dftcom.h"
+#include "infrank.h"
 C
       CALL QENTER('HSOCTL')
 C
@@ -94,11 +95,8 @@ C
       CALL DZERO(GP,KZYVAR)
       HSOFAC=ALPHAC**2/4
       IF (WORD(2:2).EQ.'1') THEN
-         IF (LQRGP) THEN
-            CALL QRGP(WORD,GP,CMO,XINDX,ANTSYM,WRK,LWRK)
-         ELSE
-            CALL PRPCTL(WORD,GP,CMO,UDV,PV,XINDX,ANTSYM,WRK,LWRK)
-         END IF
+         OPRANK(INDPRP(WORD)) =1
+         CALL QRGP(WORD,GP,CMO,XINDX,ANTSYM,WRK,LWRK)
          CALL DSCAL(KZYVAR,HSOFAC,GP,1)
          GO TO 9999
       END IF

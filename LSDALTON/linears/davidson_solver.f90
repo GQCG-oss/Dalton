@@ -1,5 +1,5 @@
 
-MODULE  driver
+MODULE  davidson_solv_mod
 use precision
 use pipek
 use matrix_module
@@ -19,7 +19,7 @@ CONTAINS
 !> \param CFG  contains information needed to call correct linear transforms etc.
 !> \param grad Gradient (type(matrix)) 
 !> \param X solution to (H-muI)X = -G as found from reduced space solver
-subroutine solver(CFG,grad,x) 
+subroutine davidson_solver(CFG,grad,x) 
   implicit none
    type(matrix),intent(in)  :: grad
    real(realk), pointer :: xred(:)
@@ -175,6 +175,8 @@ subroutine solver(CFG,grad,x)
   !    END OF REDUCED SPACE LOOP   *
   ! ********************************
  
+   
+
   !Compute RedHessian eigenvalues and print
   if (CFG%arh_davidson .and. CFG%arh_davidson_debug) call RedHessian_eigvals(CFG) 
 
@@ -193,7 +195,7 @@ subroutine solver(CFG,grad,x)
   call mem_dealloc(CFG%AllSigma)
 
 
-end subroutine solver 
+end subroutine davidson_solver 
 
 
 !> \brief Subroutine that takes in type(Matrix) and normalize_mats it
@@ -1146,4 +1148,4 @@ call mem_dealloc(eigvals)
 end subroutine ComputeFock_eigvecs
 
 
-END MODULE driver 
+END MODULE davidson_solv_mod

@@ -556,7 +556,6 @@ READ (LUINFO, '(a80)') LINE
     DoSpherical = .TRUE.
     IPOS = INDEX(LINE,'Car')
     IF (IPOS .NE. 0) DoSpherical = .FALSE.
-
 !    DOSPHERICAL = .TRUE.
 !    IPOS = INDEX(LINE,'NoSph')
 !    IF (IPOS .EQ. 0) THEN

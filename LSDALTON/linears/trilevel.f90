@@ -194,7 +194,7 @@ SUBROUTINE trilevel_gcscfloop(opt,D,CMO,H1,F,S,ai,setting,molecule,basis,iatom,n
   use linsca_diis 
 
    implicit none
-   type(optItem),intent(in) :: opt
+   type(optItem) :: opt
    type(trilevel_atominfo),intent(in) :: ai
    integer,intent(in) :: iatom
    type(lssetting),intent(inout) :: setting
@@ -207,14 +207,15 @@ SUBROUTINE trilevel_gcscfloop(opt,D,CMO,H1,F,S,ai,setting,molecule,basis,iatom,n
    TYPE(util_HistoryStore) :: queue
    real(realk) :: E, gradnrm
    integer     :: iteration
-   logical :: energy_converged,firsttime
+   logical :: energy_converged,firsttime,cfg_oao_gradnrm
    integer :: itype,nbast,iAO
    type(avItem) :: av
    type(moleculeinfo),target :: atomicmolecule
 
    itype = ai%UATOMTYPE(iatom)
    nbast = molecule%atom(ai%NATOM(iatom))%nContOrbREG
-
+   cfg_oao_gradnrm = opt%cfg_oao_gradnrm
+   opt%cfg_oao_gradnrm = .FALSE.
    call av_set_default_config(av)
    av%lupri = opt%lupri
    av%CFG_averaging = av%CFG_AVG_DIIS
@@ -266,6 +267,7 @@ SUBROUTINE trilevel_gcscfloop(opt,D,CMO,H1,F,S,ai,setting,molecule,basis,iatom,n
   CALL mat_free(grad)
   call scf_stats_shutdown
   call free_moleculeinfo(atomicmolecule)
+  opt%cfg_oao_gradnrm = cfg_oao_gradnrm
 
 END SUBROUTINE trilevel_gcscfloop
 
@@ -882,7 +884,7 @@ use typedeftype, only: lssetting, lsitem
 use molecule_type, only: moleculeinfo
 use basis_type, only: basisinfo, basissetinfo
 IMPLICIT NONE
-type(optItem),intent(in) :: opt
+type(optItem)       :: opt
 INTEGER             :: I,LUPRI,LUERR,IPRINT
 TYPE(lsitem),intent(inout) :: ls
 type(trilevel_atominfo) :: ai
@@ -946,7 +948,7 @@ do i=1, ai%ND
    atomicSetting%scheme%LINK = .FALSE.
    atomicSetting%scheme%DFT%CS00 = .FALSE.
    atomicSetting%scheme%DFT%LB94 = .FALSE.
-   atomicSetting%scheme%DFT%grdone = 0 !the DFT grid should be made for all unique atoms
+   atomicSetting%scheme%DFT%griddone = 0 !the DFT grid should be made for all unique atoms
 
    !build atomic overlap
    CALL II_get_overlap(lupri,luerr,atomicSetting,S)
@@ -1370,7 +1372,7 @@ END SUBROUTINE trilevel_basis
 !> \param D density matrix 
 !> \param H1 one electron contribution to the fock matrix
 !> \param ls lsitem structure containing all info about integrals,basis,..
-SUBROUTINE atoms_start(config,D,H1,S,ls)
+SUBROUTINE atoms_start(config,D,H1,S,ls,ndmatalloc)
 use configurationType
 use trilevel_module
 use typedeftype, only: lssetting, lsitem
@@ -1386,7 +1388,8 @@ implicit none
 type(ConfigItem),intent(in) :: config
 TYPE(lsitem),intent(inout) :: ls
 Type(Matrix),target        :: H1
-Type(Matrix),intent(inout) :: D(1),S
+Type(Matrix),intent(inout) :: D(ndmatalloc),S
+integer,intent(in)         :: ndmatalloc
 !
 Type(Matrix) :: Dval,F(1),Cmo,Dpure
 TYPE(trilevel_atominfo) :: ai

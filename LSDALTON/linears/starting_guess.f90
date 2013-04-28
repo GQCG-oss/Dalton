@@ -237,6 +237,7 @@ end subroutine get_initial_dens
     !> Contains all info about configuration/settings for SCF calculation
     type(ConfigItem),intent(inout) :: config
     integer, parameter :: sguess_h1=1, sguess_hueck=2, sguess_atden=3
+    integer :: ndmat
     logical :: do_huckel
     interface
        subroutine trilevel_start(D,ls,config)
@@ -249,14 +250,15 @@ end subroutine get_initial_dens
        end subroutine trilevel_start
     end interface
     interface
-       subroutine atoms_start(config,D,H1,S,ls)
+       subroutine atoms_start(config,D,H1,S,ls,ndmatalloc)
          use typedeftype
          use matrix_module
          use configurationType
          type(ConfigItem),intent(in) :: config
          TYPE(lsitem),intent(inout) :: ls
          Type(Matrix),target        :: H1
-         Type(Matrix),intent(inout) :: D(1),S
+         Type(Matrix),intent(inout) :: D(ndmatalloc),S
+         integer,intent(in)         :: ndmatalloc
        end subroutine atoms_start
     end interface
     !Huckel doesn't work for unrestricted - not sure why! /Stinne
@@ -289,7 +291,8 @@ end subroutine get_initial_dens
     else if (config%opt%cfg_start_guess=='ATOMS') then
        write(config%lupri,*) 'First density: Atoms in molecule guess'
        write(config%lupri,*)
-       call atoms_start(config,D,H1,S,ls)
+       ndmat = 1
+       call atoms_start(config,D,H1,S,ls,ndmat)
     else if (config%opt%cfg_start_guess=='TRILEVEL') then
        write(config%lupri,*) 'First density: Trilevel procedure '
        write(config%lupri,*)
