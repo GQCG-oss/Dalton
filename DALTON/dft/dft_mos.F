@@ -101,10 +101,11 @@ C
       END
 C /* Deck dftmo2 */
       SUBROUTINE DFTMO2(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
-     &                  RHOA,GRADA,COORD,WGHT,WORK)
+     &                  RHOA,GRADA,DST,VFA,XCPOT,COORD,WGHT,WORK)
 #include "implicit.h"
 #include "inforb.h"
       DIMENSION NBLCNT(*), NBLOCKS(*), GAO(*), WGHT(*), WORK(*)
+      DIMENSION DST(*), VFA(*), XCPOT(*)
       KCMOS = 1
       KCMO2 = KCMOS + N2BASX ! must be same off-set as in DFTMOMO
       CALL DFTMOX(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,WGHT,

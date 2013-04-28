@@ -36,12 +36,17 @@ C
 #include "dftbrhs.h"
       DIMENSION FD(N2BASX,3), WORK(LWORK)
 #include "dftcom.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "dftacb.h"
       EXTERNAL DFTBRHS1
       LOGICAL DFT_ISGGA
       EXTERNAL DFT_ISGGA
 C
-      DOVB = DFT_ISGGA() .AND. .NOT.DFTPOT
+C      DOVB = DFT_ISGGA() .AND. .NOT.DFTPOT
 C
+      DOVB = DFT_ISGGA() 
+
       KDMAT = 1
       KFMAT = KDMAT +   N2BASX 
       KLAST = KFMAT + 3*N2BASX 
@@ -54,6 +59,7 @@ C
       ELSE
          NGEODRV = 0
       END IF
+      IF (LDFTVXC) NGEODRV = 2
       CALL KICK_SLAVES_BRHS(NGEODRV,DOVB,NBAST,WORK(KDMAT),IPRINT)
       CALL DFTINT(WORK(KDMAT),1,NGEODRV,.TRUE.,WORK(KLAST),LWRK,
      &            DFTBRHS1,WORK(KFMAT),ELE)
@@ -88,14 +94,17 @@ C
       END
 C
       SUBROUTINE DFTBRHS1(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,RHOA,GRADA,
-     &                    COORD,WGHT,FMAT)
+     &                    DST,VFA,XCPOT,COORD,WGHT,FMAT)
 #include "implicit.h"
 #include "priunit.h"
 #include "inforb.h"
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8),NBLOCKS(2,LDAIB,8),
-     &          FMAT(NBAST,NBAST,3)
+     &          FMAT(NBAST,NBAST,3), DST(NATOMS), VFA(NBLEN),
+     &          XCPOT(NBLEN)
 #include "dftinf.h"
 C
       CALL DFTBRHS2(NBLEN,NBLCNT,NBLOCKS,LDAIB,
@@ -406,16 +415,19 @@ C
 C
 C /* Deck dftbhes1 */
       SUBROUTINE DFTBHES1(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,RHOA,GRADA,
-     &                    COORD,WGHT,BDATA)
+     &                    DST,VFA,XCPOT,COORD,WGHT,BDATA)
 C
 C     D.J.Wilson May 04
 C
 #include "implicit.h"
 #include "inforb.h"
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN), WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8), NBLOCKS(2,LDAIB,8),
-     &          BDATA(9 + N2BASX)
+     &          BDATA(9 + N2BASX), DST(NATOMS), VFA(NBLEN),
+     &          XCPOT(NBLEN)
 #include "dftinf.h"
       KDMAT  = 1
       KSUSDF = KDMAT  + N2BASX
