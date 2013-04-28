@@ -72,6 +72,7 @@ rsp_soppapolar rsp_soppapolarnosymm rsp_soppapolarsymm rsp_sreslrso \
 rsp_sresqr rsp_ctocdhyper prop_spinspin5 prop_nolondon_soppacc rsp_soppaccexci \
 rsp_soppaccpolar rsp_g_rohf rsp_g_rohf_dir rsp_g_cas \
 rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_zfs_mc rsp_absorp rsp_prop_file tddft_tda rpa_cis \
+rsp_g_rohfx rsp_g_ldax rsp_g_b3lypx \
 rsp_abslrs rsp_cpp_mcd"
 SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibave2"
 SHORTREST="r12_sym dpt_h2s"

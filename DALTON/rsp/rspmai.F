@@ -267,7 +267,7 @@ C
       LFREE  = LWRK
       CALL MEMGET('REAL',KINDX,LCINDX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMO ,NCMOT ,WRK,KFREE,LFREE)
-      LUDV   = NACTT*NACTT
+      LUDV   = NACTT*NACTT*2
       CALL MEMGET('REAL',KUDV ,LUDV  ,WRK,KFREE,LFREE)
       IF (RSPCI) THEN
          CALL MEMGET('REAL',KPVX ,0     ,WRK,KFREE,LFREE)
@@ -383,12 +383,22 @@ C
      *                 WRK(KINDX),WRK(KTOT),KFREE_KTOT,LFREE)
 C
          END IF
+C
+C Include triplet one-electron density 
+C
+            CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
+     *                 WRK(KUDV+N2ASHX),WRK(KFREE),
+     *                 1,0,.FALSE.,.TRUE.,
+     *                 WRK(KINDX),WRK(KTOT),KFREE,LFREE)
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')' ** ONE BODY DENSITY MATRIX FROM RSPDM'
             CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
+            KUDV2=KUDV+N2ASHX
+            CALL OUTPUT(WRK(KUDV2),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
          END IF
       ELSE IF ( TDHF .AND. NASHT .EQ. 1 ) THEN
          WRK(KUDV) = D1
+         WRK(KUDV+1) = D1
          WRK(KPVX) = D0
          IF (TRPLET) WRK(KPVX+1) = D0
       ELSE IF ( TDHF .AND. HSROHF ) THEN
@@ -1803,6 +1813,7 @@ C
 #include "gnrinf.h"
 #include "chrnos.h"
 #include "elweak.h"
+#include "infrank.h"
 #include "channel.h"
 C--------------------
 C
@@ -1939,35 +1950,34 @@ C
                   LLROP( INDPRP('X SPNORB')) = .TRUE.
                   LLROP( INDPRP('Y SPNORB')) = .TRUE.
                   LLROP( INDPRP('Z SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('X SPNORB')) = 1
+                  OPRANK( INDPRP('Y SPNORB')) = 1
+                  OPRANK( INDPRP('Z SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  21            CONTINUE
                   LLROP( INDPRP('X SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('X SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  22            CONTINUE
                   LLROP( INDPRP('Y SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('Y SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  23            CONTINUE
                   LLROP( INDPRP('Z SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('Z SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  24            CONTINUE
                   READ(LUCMD,'(BN,A,I8)')LABEL,IRANK
                   LLROP( INDPRP(LABEL)) = .TRUE.
+                  OPRANK(INDPRP(LABEL)) = IRANK
                GO TO 100
  25            CONTINUE
                   READ (LUCMD,*) MAXITL

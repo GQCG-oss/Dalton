@@ -1146,8 +1146,8 @@ C           ... e.g. triplet, non-symmetric (general) density matrix
             ELSE IF (IFCTYP(I) .EQ. 1) THEN
 C           ... Non-symmetric, Only Coulomb
               CALL FCKD01(FMAT(1,I),DMAT(1,I),WRK(KINT),WRK(KIIN4),NINT)
-            ELSE IF (IFCTYP(I) .EQ. 0 .OR. IFCTYP(I) .EQ. 21) THEN
-C              00:  nothing
+           ELSE IF (MOD(IFCTYP(I),10).EQ. 0 .OR. IFCTYP(I) .EQ. 21) THEN
+C              *0:  nothing
 C              21:  antisymmetric, only Coulomb gives a zero matrix
                GOTO 200
             ELSE

@@ -475,6 +475,9 @@ C
 C
 #include "infvar.h"
 #include "wrkrsp.h"
+#include "rspprp.h"
+#include "infrank.h"
+#include "infrsp.h"
 C
       CALL QENTER('GETGPV')
       IF (WORD(3:8).EQ.'SPNORB' .OR. WORD(3:8) .EQ. 'MNF-SO' .OR. 
@@ -489,6 +492,11 @@ C
          ANTSYM_GP = -1.0D0 ! real operator, GP_Z = ANTSYM_GP * GP_Y
       ELSE IF (WORD(2:7).EQ.'LONMAG') THEN
          CALL PRPABA(WORD,WRK,LWRK)
+      ELSE IF (OPRANK(INDPRP(WORD)).EQ.1 .AND. .NOT.SOPPA) THEN 
+         KGP = 1
+         KWRK1 = KGP + KZYVAR 
+         LWRK1 = LWRK + 1 - KWRK1
+         CALL QRGP(WORD,WRK(KGP),CMO,XINDX,ANTSYM,WRK(KWRK1),LWRK1)
       ELSE
          KGP   = 1
          KWRK1 = KGP + KZYVAR
