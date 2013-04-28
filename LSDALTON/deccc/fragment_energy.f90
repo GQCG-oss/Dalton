@@ -4214,6 +4214,11 @@ contains
     VirtEnergyDiff=abs(VirtEnergyExp-AtomicFragment%EvirtFOP)
     call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
 
+    ! Reference energies for FO reduction are the ones for converged fragment using local orbs.
+    LagEnergyOld = AtomicFragment%LagFOP
+    OccEnergyOld = AtomicFragment%EoccFOP 
+    VirtEnergyOld =  AtomicFragment%EvirtFOP
+
 
     write(DECinfo%output,*) ' FOP'
     write(DECinfo%output,*) ' FOP *************************************************'
