@@ -1520,7 +1520,7 @@ contains
   !> \author Patrick Ettenhuber
   !> \date December 2012
   subroutine get_ccsd_residual_integral_driven(deltafock,omega2,t2,fock,govov,no,nv,&
-       ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter)
+       ppfock,qqfock,pqfock,qpfock,xo,xv,yo,yv,nb,MyLsItem, omega1,iter,rest)
 #ifdef VAR_OMP
     use omp_lib,only:omp_get_wtime
 #endif
@@ -1570,6 +1570,8 @@ contains
     integer,intent(in) :: iter
     !real(realk),intent(inout) :: govov(nv*no*nv*no)
     type(array),intent(inout) :: govov
+    !logical that specifies whether the amplitudes were read
+    logical, optional, intent(inout) :: rest
 
     ! elementary types needed for the calculation
     real(realk), pointer :: w0(:), w1(:), w2(:), w3(:),Had(:),t2_d(:,:,:,:),&
@@ -1595,7 +1597,7 @@ contains
     integer(kind=ls_mpik) :: gvvoo_w, gvoov_w, sio4_w
     integer(kind=ls_mpik) :: ierr, hstatus, nctr
     integer :: rcnt(infpar%lg_nodtot),dsp(infpar%lg_nodtot)
-    character*80 :: hname
+    character*(MPI_MAX_PROCESSOR_NAME) :: hname
     real(realk),pointer :: mpi_stuff(:)
     type(c_ptr) :: mpi_ctasks
     !integer(kind=ls_mpik),pointer :: win_in_g(:)
@@ -1629,7 +1631,7 @@ contains
     integer :: nb2,nb3,nb4,nv2,no2,b2v,o2v,v2o,no3,no4,o2v2
     integer :: tlen,tred,nor,nvr,goffs,aoffs
     integer :: prev_alphaB,mpi_buf
-    logical :: jobtodo,first_round,dynamic_load
+    logical :: jobtodo,first_round,dynamic_load,restart,print_debug
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !TEST AND DEVELOPMENT VARIABLES!!!!!
     real(realk) :: op_start,op_stop
@@ -1644,7 +1646,8 @@ contains
     integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
 #endif
     TYPE(DECscreenITEM)    :: DecScreen
-    
+    restart=.false.
+    if(present(rest))restart=rest
     master = .true.
     def_atype = DENSE
     scheme = 0
@@ -1653,6 +1656,13 @@ contains
     stopp=0.0E0_realk
     !double_2G_nel=250000000
     double_2G_nel=170000000
+    print_debug = .false.
+
+#ifdef VAR_DEBUG
+    double_2G_nel=20
+    print_debug = .true.
+#endif
+    
 
     ! Set integral info
     ! *****************
@@ -1781,6 +1791,7 @@ contains
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(scheme,infpar%master)
     call ls_mpi_buffer(dynamic_load,infpar%master)
+    call ls_mpi_buffer(restart,infpar%master)
     call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
     call ls_mpi_buffer(MaxAllowedDimGamma,infpar%master)
     call ls_mpiFinalizeBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
@@ -2085,9 +2096,10 @@ contains
 
        !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
        if(scheme==2.or.scheme==1)then
-         call array_cp_tiled2dense(u2,.false.)
-         call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,u2%elm1,nv,0.0E0_realk,w1,lg)
-         call memory_deallocate_array_dense(u2)
+         !call array_cp_tiled2dense(u2,.false.)
+         call array_convert(u2,w2,no2*nv2)
+         call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,w2,nv,0.0E0_realk,w1,lg)
+         !call memory_deallocate_array_dense(u2)
        else
          call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,u2%elm1,nv,0.0E0_realk,w1,lg)
        endif
@@ -2115,7 +2127,7 @@ contains
       
       !check if the current job is to be done by current node
       call check_job(scheme,first_round,dynamic_load,alphaB,gammaB,nbatchesAlpha,&
-        &nbatchesGamma,mpi_task_distribution,win_in_g,.true.)
+        &nbatchesGamma,mpi_task_distribution,win_in_g,print_debug)
        !break the loop if alpha become too large, necessary to account for all
        !of the mpi and non mpi schemes, this is accounted for, because static,
        !and dynamic load balancing are enabled
@@ -2131,8 +2143,11 @@ contains
        myload=myload+la*lg
        !u[k gamma  c j] * Lambda^p [alpha j] ^T = u [k gamma c alpha]
        call dgemm('n','t',no*nv*lg,la,no,1.0E0_realk,uigcj,no*nv*lg,xo(fa),nb,0.0E0_realk,w1,nv*no*lg)
+       call lsmpi_poke()
        !Transpose u[k gamma c alpha]^T -> u[c alpha k gamma]
-       call mat_transpose(w1,no*lg, nv*la,w3)
+       !call mat_transpose(w1,no*lg, nv*la,w3)
+       call array_reorder_4d(1.0E0_realk,w1,no,lg, nv,la,[3,4,1,2],0.0E0_realk,w3)
+       call lsmpi_poke()
 
        !print*,"GAMMA:",fg,nbatchesGamma,"ALPHA:",fa,nbatchesAlpha
        !print*,"--------------------------------------------------"
@@ -2154,29 +2169,38 @@ contains
        call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, Mylsitem%setting, w1,batchindexAlpha(alphaB),&
             &batchindexGamma(gammaB),&
             &batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nb,nb,dimAlpha,dimGamma,fullRHS,nbatches,INTSPEC)
+       call lsmpi_poke()
        !Mylsitem%setting%scheme%intprint=0
        call LSTIMER('START',tcpu2,twall2,DECinfo%output)
       
        !if(master)call LSTIMER('INTEGRAL1',time_start,timewall_start,DECinfo%output)
        call array_reorder_4d(1.0E0_realk,w1,nb,nb,la,lg,[4,2,3,1],0.0E0_realk,w0)
+       call lsmpi_poke()
 
        ! I [gamma delta alpha beta] * Lambda^p [beta l] = I[gamma delta alpha l]
        call dgemm('n','n',lg*la*nb,no,nb,1.0E0_realk,w0,lg*nb*la,xo,nb,0.0E0_realk,w2,lg*nb*la)
+       call lsmpi_poke()
        !Transpose I [gamma delta alpha l]^T -> I [alpha l gamma delta]
-       call mat_transpose(w2,lg*nb,la*no,w1)
+       !call mat_transpose(w2,lg*nb,la*no,w1)
+       call array_reorder_4d(1.0E0_realk,w2,lg,nb,la,no,[3,4,1,2],0.0E0_realk,w1)
+       call lsmpi_poke()
 
 
        !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
        call dgemm('n','n',nv,nb,lg*la*no,1.0E0_realk,w3,nv,w1,lg*la*no,1.0E0_realk,Had,nv)
+       call lsmpi_poke()
 
        !VVOO
        if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2)) then
         !I [alpha  i gamma delta] * Lambda^h [delta j]          = I [alpha i gamma j]
         call dgemm('n','n',la*no*lg,no,nb,1.0E0_realk,w1,la*no*lg,yo,nb,0.0E0_realk,w3,la*no*lg)
+        call lsmpi_poke()
         ! gvvoo = (vv|oo) constructed from w2                 = I [alpha i j  gamma]
         call array_reorder_4d(1.0E0_realk,w3,la,no,lg,no,[1,2,4,3],0.0E0_realk,w2)
+        call lsmpi_poke()
         !I [alpha  i j gamma] * Lambda^h [gamma b]            = I [alpha i j b]
         call dgemm('n','n',la*no2,nv,lg,1.0E0_realk,w2,la*no2,yv(fg),nb,0.0E0_realk,w3,la*no2)
+        call lsmpi_poke()
         !Lambda^p [alpha a]^T * I [alpha i j b]             =+ gvvoo [a i j b]
         if(scheme==4)then
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,1.0E0_realk,gvvoo,nv)
@@ -2191,12 +2215,15 @@ contains
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,0.0E0_realk,w2,nv)
           call array_add(gvvooa,1.0E0_realk,w2,gvvooa%nelms)
         endif
+        call lsmpi_poke()
        endif
 
        ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
        call dgemm('n','n',lg*la*no,nv,nb,1.0E0_realk,w1,la*no*lg,yv,nb,0.0E0_realk,w3,la*no*lg)
+       call lsmpi_poke()
        !I [alpha l gamma c] * u [l gamma c j]  =+ Gbi [alpha j]
        call dgemm('n','n',la,no,nv*no*lg,1.0E0_realk,w3,la,uigcj,nv*no*lg,1.0E0_realk,Gbi(fa),nb)
+       call lsmpi_poke()
        
        
        !CALCULATE govov FOR ENERGY
@@ -2207,22 +2234,27 @@ contains
        if(iter==1)then
          !I [alpha  j b gamma] * Lambda^h [gamma a]          = I [alpha j b a]
          call dgemm('n','n',la*no*nv,nv,lg,1.0E0_realk,w2,la*no*nv,yv(fg),nb,0.0E0_realk,w1,la*no*nv)
+         call lsmpi_poke()
          !Lambda^p [alpha i]^T * I [alpha j b a]             =+ govov [i j b a]
-         ! i a j b
-         !call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,1.0E0_realk,govov%elm1,no)
-         call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,0.0E0_realk,w2,no)
          if(scheme==4)then
-           call array_add(govov,1.0E0_realk,w2,no2*nv2)
+           call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,1.0E0_realk,govov%elm1,no)
+           !call array_add(govov,1.0E0_realk,w2,no2*nv2)
          else
+           ! i a j b
+           call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,0.0E0_realk,w2,no)
            call array_add(govov,1.0E0_realk,w2,no2*nv2,[1,4,2,3])
          endif
+         call lsmpi_poke()
        endif
 
        !VOOV
-       if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2).and.iter/=1) then
+       if((restart.and.iter==1).and..not.scheme==4)&
+         &call array_reorder_4d(1.0E0_realk,w3,la,no,lg,nv,[1,2,4,3],0.0E0_realk,w2)
+       if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2).and.(iter/=1.or.restart)) then
         ! gvoov = (vo|ov) constructed from w2               = I [alpha j b  gamma]
         !I [alpha  j b gamma] * Lambda^h [gamma i]          = I [alpha j b i]
         call dgemm('n','n',la*no*nv,no,lg,1.0E0_realk,w2,la*no*nv,yo(fg),nb,0.0E0_realk,w1,la*no*nv)
+        call lsmpi_poke()
         !Lambda^p [alpha a]^T * I [alpha j b i]             =+ gvoov [a j b i]
         if(scheme==4)then
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1,la,1.0E0_realk,gvoov,nv)
@@ -2237,6 +2269,7 @@ contains
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1,la,0.0E0_realk,w2,nv)
           call array_add(gvoova,1.0E0_realk,w2,gvoova%nelms)
         endif
+        call lsmpi_poke()
        endif
 
        !prepare w0 to contain L
@@ -2249,6 +2282,7 @@ contains
        call II_GET_DECPACKED4CENTER_K_ERI(DECinfo%output,DECinfo%output, &
             & Mylsitem%setting,w1,batchindexAlpha(alphaB),batchindexGamma(gammaB),&
             & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,nbatches,INTSPEC,fullRHS)
+       call lsmpi_poke()
        !Mylsitem%setting%scheme%intprint=0
 
 
@@ -2256,6 +2290,7 @@ contains
         if(scheme==0.or.scheme==1)then
           call get_d_term_int_direct(w0,w1,w2,w3,no,nv,nb,fa,fg,la,lg,&
           &xo,yo,xv,yv,u2,uigcj,omega2,u2kcjb,scheme)
+          call lsmpi_poke()
         endif
 
         if(fa<=fg+lg-1)then
@@ -2266,6 +2301,7 @@ contains
         !of gamma batch
         call get_a22_and_prepb22_terms_ex(w0,w1,w2,w3,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
              &xo,yo,xv,yv,omega2,sio4,scheme)       
+        call lsmpi_poke()
 
         endif
       endif
@@ -2273,18 +2309,24 @@ contains
 
       !(w0):I[ delta gamma alpha beta] <- (w1):I[ alpha beta gamma delta ]
       call array_reorder_4d(1.0E0_realk,w1,la,nb,lg,nb,[2,3,1,4],0.0E0_realk,w0)
+      call lsmpi_poke()
       ! (w3):I[i gamma alpha beta] = Lambda^h[delta i] I[delta gamma alpha beta]
       call dgemm('t','n',no,lg*la*nb,nb,1.0E0_realk,yo,nb,w0,nb,0.0E0_realk,w2,no)
+      call lsmpi_poke()
       ! (w0):I[i gamma alpha j] = (w3):I[i gamma alpha beta] Lambda^h[beta j]
       call dgemm('n','n',no*lg*la,no,nb,1.0E0_realk,w2,no*lg*la,yo,nb,0.0E0_realk,w0,no*lg*la)
+      call lsmpi_poke()
       ! (w3):I[alpha gamma i j] <- (w0):I[i gamma alpha j]
       if(DECinfo%ccModel>2)call add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
+      call lsmpi_poke()
 
 
       ! (w2):I[gamma i j alpha] <- (w0):I[i gamma alpha j]
       call array_reorder_4d(1.0E0_realk,w0,no,lg,la,no,[2,1,4,3],0.0E0_realk,w2)
+      call lsmpi_poke()
       ! (w3):I[b i j alpha] = Lamda^p[gamma b] (w2):I[gamma i j alpha]
       call dgemm('t','n',nv,no2*la,lg,1.0E0_realk,xv(fg),nb,w2,lg,0.0E0_realk,w3,nv)
+      call lsmpi_poke()
       ! Omega += Lambda^p[alpha a]^T (w3):I[b i j alpha]^T
       if(scheme==1.or.scheme==2)then
         call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3,o2v,0.0E0_realk,w2,nv)
@@ -2292,10 +2334,12 @@ contains
       else
         call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3,o2v,1.0E0_realk,omega2%elm1,nv)
       endif
+      call lsmpi_poke()
 
       if(DECinfo%ccmodel>2.and.(scheme==0.or.scheme==1))then
-          call get_c_term_int_direct(w0,w1,w2,w3,no,nv,nb,fa,fg,la,lg,xo,&
+        call get_c_term_int_direct(w0,w1,w2,w3,no,nv,nb,fa,fg,la,lg,xo,&
              &yo,xv,yv,t2,tGammadij,omega2,t2jabi,scheme)
+        call lsmpi_poke()
       endif
 
     end do BatchAlpha
@@ -2352,17 +2396,11 @@ contains
       call mem_alloc(gvoov,gvoov_c,no2*nv2)
     endif
     ! Finish the MPI part of the Residual calculation
-#ifdef VAR_OMP
-    startt=omp_get_wtime()
-#endif
+    startt=MPI_wtime()
     call lsmpi_barrier(infpar%lg_comm)
-#ifdef VAR_OMP
-    stopp=omp_get_wtime()
-#endif
+    stopp=MPI_wtime()
     write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,stopp-startt
-#ifdef VAR_OMP
-    startt=omp_get_wtime()
-#endif
+    startt=MPI_wtime()
     if(infpar%lg_nodtot>1.or.scheme==3) then
        if(iter==1.and.scheme==4.or.scheme==0)then
          call lsmpi_local_allreduce(govov%elm1,no2*nv2,double_2G_nel)
@@ -2402,9 +2440,7 @@ contains
       call lsmpi_win_free(win_in_g)
       call mem_dealloc(mpi_stuff,mpi_ctasks)
     endif
-#ifdef VAR_OMP
-    stopp=omp_get_wtime()
-#endif
+    stopp=MPI_wtime()
     if(master) print*,"MPI part of the calculation finished, comm-time",stopp-startt
     !print *,infpar%lg_mynum,norm2(omega2%elm1),norm2(govov%elm1),norm2(gvvoo),norm2(gvoov)
     
@@ -2457,6 +2493,8 @@ contains
         !*****************************************************
 #ifdef VAR_OMP
         startt=omp_get_wtime()
+#elif VAR_LSMPI
+        startt=MPI_wtime()
 #endif
         call get_cnd_terms_mo(w1,w2,w3,t2,u2,govov,gvoov,gvvoo,no,nv,omega2,gvvooa,gvoova,scheme)
         if(scheme==4.or.scheme==3)then
@@ -2473,6 +2511,8 @@ contains
         endif
 #ifdef VAR_OMP
         stopp=omp_get_wtime()
+#elif VAR_LSMPI
+        stopp=MPI_wtime()
 #endif
 
 !OUTPUT
@@ -2545,6 +2585,8 @@ contains
     call daxpy(nb2,1.0E0_realk,deltafock,1,iFock%elms,1)
 #ifdef VAR_OMP
     startt=omp_get_wtime()
+#elif VAR_LSMPI
+    startt=MPI_wtime()
 #endif
     !Transform inactive Fock matrix into the different mo subspaces
     if (DECinfo%ccModel>2) then
@@ -2579,10 +2621,14 @@ contains
 
 #ifdef VAR_OMP
     stopp=omp_get_wtime()
+#elif VAR_LSMPI
+    stopp=MPI_wtime()
 #endif
     write(DECinfo%output,'("Fock trafo:",f15.4)'),stopp-startt
 #ifdef VAR_OMP
     startt=omp_get_wtime()
+#elif VAR_LSMPI
+    startt=MPI_wtime()
 #endif
 
 
@@ -2620,6 +2666,8 @@ contains
 
 #ifdef VAR_OMP
     stopp=omp_get_wtime()
+#elif VAR_LSMPI
+    stopp=MPI_wtime()
 #endif
     write(DECinfo%output,'("S and E   :",f15.4)'),stopp-startt
 
@@ -2859,6 +2907,7 @@ contains
        write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")'),a,&
        &na,g,ng
 #endif
+       call lsmpi_poke()
   end subroutine check_job
   
   subroutine mo_work_dist(m,fai,tl,nod)
@@ -3137,9 +3186,11 @@ contains
 
         !Transpose u [d a i l] -> u [a i l d]
         if(s==4)then
-          call mat_transpose(u2%elm1,nv,no*no*nv,w3)
+          !call mat_transpose(u2%elm1,nv,no*no*nv,w3)
+          call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w3)
         elseif(s==3)then
-          call mat_transpose(u2%elm1,nv,no*no*nv,w1)
+          !call mat_transpose(u2%elm1,nv,no*no*nv,w1)
+          call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
           do i=1,tl
             call dcopy(no*nv,w1(fai+i-1),no*nv,w3(i),tl)
           enddo
@@ -3193,7 +3244,8 @@ contains
           call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w3,nv*no,0.0E0_realk,w1(fai),nv*no)
           !call print_norm(w1,lead*no*nv)
         elseif(s==3)then
-          call mat_transpose(u2%elm1,nv,no*no*nv,w1)
+          !call mat_transpose(u2%elm1,nv,no*no*nv,w1)
+          call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
           call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w1,nv*no,0.0E0_realk,w3,lead)
           !write (msg,*),infpar%lg_mynum,"has 2:"
           !call print_norm(w3,lead*no*nv,msg)
@@ -3602,27 +3654,37 @@ contains
     !!SYMMETRIC COMBINATION
     !(w0):I+ [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
     call get_I_plusminus_le(w0,w1,w2,'p',fa,fg,la,lg,nb,tlen,tred,goffs)
+    call lsmpi_poke()
     !(w2):I+ [delta alpha<=gamma c] = (w0):I+ [delta alpha<=gamma beta] * Lambda^h[beta c]
     call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
+    call lsmpi_poke()
     !(w0):I+ [alpha<=gamma c d] = (w2):I+ [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
     call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
+    call lsmpi_poke()
     !(w2):I+ [alpha<=gamma c>=d] <= (w0):I+ [alpha<=gamma c d] 
     call get_I_cged(w2,w0,tred,nv)
+    call lsmpi_poke()
     !(w3.1):sigma+ [alpha<=gamma i>=j] = (w2):I+ [alpha<=gamma c>=d] * (w0):t+ [c>=d i>=j]
     call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tpl,nvr,0.0E0_realk,w3,tred)
+    call lsmpi_poke()
     
     
     !!ANTI-SYMMETRIC COMBINATION
     !(w0):I- [delta alpha<=gamma beta] <= (w1):I [alpha beta gamma delta] + (w1):I[alpha delta gamma beta]
     call get_I_plusminus_le(w0,w1,w2,'m',fa,fg,la,lg,nb,tlen,tred,goffs)
+    call lsmpi_poke()
     !(w2):I- [delta alpha<=gamma c] = (w0):I- [delta alpha<=gamma beta] * Lambda^h[beta c]
     call dgemm('n','n',nb*tred,nv,nb,1.0E0_realk,w0,nb*tred,yv,nb,0.0E0_realk,w2,nb*tred)
+    call lsmpi_poke()
     !(w0):I- [alpha<=gamma c d] = (w2):I- [delta, alpha<=gamma c] ^T * Lambda^h[delta d]
     call dgemm('t','n',tred*nv,nv,nb,1.0E0_realk,w2,nb,yv,nb,0.0E0_realk,w0,nv*tred)
+    call lsmpi_poke()
     !(w2):I- [alpha<=gamma c<=d] <= (w0):I- [alpha<=gamma c d] 
     call get_I_cged(w2,w0,tred,nv)
+    call lsmpi_poke()
     !(w3.2):sigma- [alpha<=gamma i<=j] = (w2):I- [alpha<=gamma c>=d] * (w0):t- [c>=d i>=j]
     call dgemm('n','n',tred,nor,nvr,0.5E0_realk,w2,tred,tmi,nvr,0.0E0_realk,w3(tred*nor+1),tred)
+    call lsmpi_poke()
     
     !COMBINE THE TWO SIGMAS OF W3 IN W2
     !(w2):sigma[alpha<=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] + 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
@@ -3874,6 +3936,7 @@ contains
     enddo
     !$OMP END DO
     !$OMP END PARALLEL
+    call lsmpi_poke()
 
 
     !Print the individual contributions
@@ -3902,10 +3965,13 @@ contains
     !add up the contributions for the sigma [ alpha gamma ] contributions
     ! get the order sigma[ gamma i j alpha ]
     call mat_transpose_pl(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
+    call lsmpi_poke()
     !transform gamma -> b
     call dgemm('t','n',nv,nor*full1,full2,1.0E0_realk,xvirt(fg+goffs),nb,w2,full2,0.0E0_realk,w3,nv)
+    call lsmpi_poke()
     !transform alpha -> a , order is now sigma [ a b i j]
     call dgemm('t','t',nv,nv*nor,full1,1.0E0_realk,xvirt(fa),nb,w3,nor*nv,0.0E0_realk,w2,nv)
+    call lsmpi_poke()
 
 
     ! add up contributions in the residual with keeping track of i<j
@@ -3949,6 +4015,7 @@ contains
     endif
     !OMP END DO
     !OMP END PARALLEL
+    call lsmpi_poke()
 
     !If the contributions are split in terms of the sigma matrix this adds the
     !sigma [gamma alpha] contributions
@@ -3963,10 +4030,13 @@ contains
         l2=fg+goffs+tlen
       endif
       call mat_transpose_pl(full1T,full2T*nor,1.0E0_realk,w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
+      call lsmpi_poke()
       !transform gamma -> a
       call dgemm('t','n',nv,nor*full1T,full2T,1.0E0_realk,xvirt(l1),nb,w2,full2T,0.0E0_realk,w3,nv)
+      call lsmpi_poke()
       !transform alpha -> , order is now sigma[b a i j]
       call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
+      call lsmpi_poke()
       ! add up contributions in the residual with a and b interchanged compared
       ! to the previous contribution
       !OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,omega,nv,scaleitby)&
@@ -4008,6 +4078,7 @@ contains
       endif
       !OMP END DO
       !OMP END PARALLEL
+      call lsmpi_poke()
     endif
 
 
@@ -4017,10 +4088,13 @@ contains
     !add up the contributions for the sigma [ alpha gamma ] contributions
     ! get the order sigma[ gamma i j alpha ]
     call mat_transpose_pl(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
+    call lsmpi_poke()
     !transform gamma -> l
     call dgemm('t','n',no,nor*full1,full2,1.0E0_realk,xocc(fg+goffs),nb,w2,full2,0.0E0_realk,w3,no)
+    call lsmpi_poke()
     !transform alpha -> a , order is now sigma [ k l i j]
     call dgemm('t','t',no,no*nor,full1,1.0E0_realk,xocc(fa),nb,w3,nor*no,1.0E0_realk,sio4,no)
+    call lsmpi_poke()
 
 
 
@@ -4037,10 +4111,13 @@ contains
         l2=fg+goffs+tlen
       endif
       call mat_transpose_pl(full1T,full2T*nor,1.0E0_realk,w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
+      call lsmpi_poke()
       !transform gamma -> l
       call dgemm('t','n',no,nor*full1T,full2T,1.0E0_realk,xocc(l1),nb,w2,full2T,0.0E0_realk,w3,no)
+      call lsmpi_poke()
       !transform alpha -> k, order is now sigma[k l i j]
       call dgemm('t','t',no,no*nor,full1T,1.0E0_realk,xocc(l2),nb,w3,nor*no,1.0E0_realk,sio4,no)
+      call lsmpi_poke()
     endif
 
 
@@ -4372,7 +4449,7 @@ contains
     logical,intent(in)     :: manual,first
     integer :: nnod,magic
 
-    frac_of_total_mem=0.9E0_realk
+    frac_of_total_mem=0.80E0_realk
     nba=minbsize
     nbg=minbsize
     nnod=1
@@ -5586,102 +5663,6 @@ contains
   end subroutine get_fock_matrix_for_dec_oa
 
 
-  subroutine get_int_dist_info(o2v2,firstintel,nintel,remoterank)
-    implicit none
-    integer, intent(in) :: o2v2
-    integer, intent(out) :: firstintel,nintel
-    integer(kind=ls_mpik), intent(in), optional :: remoterank
-    integer(kind=ls_mpik) :: nnod, me
-    nnod = 1
-    me   = 0
-#ifdef VAR_LSMPI
-    nnod = infpar%lg_nodtot
-    if(.not.present(remoterank))then
-      me = infpar%lg_mynum
-    else
-      me = remoterank
-    endif
-#endif
-    nintel = o2v2/nnod
-    firstintel = me*nintel + 1
-    if(me<mod(o2v2,nnod))then
-      nintel = nintel + 1
-      firstintel = firstintel + me 
-    elseif(me>=mod(o2v2,nnod))then
-      firstintel = firstintel + mod(o2v2,nnod) 
-    endif
-  end subroutine get_int_dist_info
-
-  subroutine dist_int_contributions(g,o2v2,win)
-    implicit none
-    integer,intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
-    integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik) :: nnod,node,me
-    integer :: fe,ne,msg_len_mpi
-    fe=1
-    ne=0
-    nnod = 1
-    msg_len_mpi=170000000
-#ifdef VAR_LSMPI
-    nnod = infpar%lg_nodtot
-    me   = infpar%lg_mynum
-    do node=0,nnod-1
-      call get_int_dist_info(o2v2,fe,ne,node)
-      !print *,infpar%lg_mynum,"distributing",fe,fe+ne-1,ne,o2v2,node
-      call lsmpi_win_lock(node,win,'e')
-      call lsmpi_acc(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
-      call lsmpi_win_unlock(node,win)
-    enddo
-#endif
-  end subroutine dist_int_contributions
-
-  subroutine collect_int_contributions(g,o2v2,win)
-    implicit none
-    integer,intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
-    integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik) :: nnod,node,me
-    integer :: fe,ne,msg_len_mpi
-    fe=1
-    ne=0
-    nnod = 1
-    !msg_len_mpi=17
-    msg_len_mpi=170000000
-#ifdef VAR_LSMPI
-    nnod = infpar%lg_nodtot
-    me   = infpar%lg_mynum
-    do node=0,nnod-1
-      !print *,infpar%lg_mynum,"collecting",fe,fe+ne-1,ne,o2v2,node
-      call get_int_dist_info(o2v2,fe,ne,node)
-      call lsmpi_win_lock(node,win,'s')
-      call lsmpi_get(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
-      call lsmpi_win_unlock(node,win)
-    enddo
-#endif
-  end subroutine collect_int_contributions
-  subroutine collect_int_contributions_f(g,o2v2,win)
-    implicit none
-    integer,intent(in) :: o2v2
-    real(realk),intent(in) :: g(o2v2)
-    integer(kind=ls_mpik),intent(in) :: win
-    integer(kind=ls_mpik) :: nnod,node,me
-    integer :: fe,ne,msg_len_mpi
-    fe=1
-    ne=0
-    nnod = 1
-    !msg_len_mpi=17
-    msg_len_mpi=170000000
-#ifdef VAR_LSMPI
-    nnod = infpar%lg_nodtot
-    me   = infpar%lg_mynum
-    do node=0,nnod-1
-      !print *,infpar%lg_mynum,"collecting f",fe,fe+ne-1,ne,o2v2,node
-      call get_int_dist_info(o2v2,fe,ne,node)
-      call lsmpi_get(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
-    enddo
-#endif
-  end subroutine collect_int_contributions_f
 
 end module ccsd_module
 

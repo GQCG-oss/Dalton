@@ -63,7 +63,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * HF energy\: * \-3\.35339415" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-3\.3533941[4-5]" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"

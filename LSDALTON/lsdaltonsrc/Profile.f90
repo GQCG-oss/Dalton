@@ -20,8 +20,8 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
   type(configItem)    :: config
   integer             :: lupri,nbast
 !
-  Type(Matrix) :: H1,S,K,J,F,CMO
-  Type(Matrix),target :: D,TMP
+  Type(Matrix) :: H1,S,K(1),J(1),F(1),CMO
+  Type(Matrix),target :: D(1),TMP
   Type(matrix),pointer :: Karray(:),Dvec(:)
   Type(matrixp),pointer :: Dvecp(:)
   integer             :: dens_lun,I,natoms,ndmat
@@ -58,7 +58,7 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
 
   INQUIRE(file='dens.restart',EXIST=dens_exsist) 
   restart_from_dens = dens_exsist
-  call mat_init(D,nbast,nbast)
+  call mat_init(D(1),nbast,nbast)
   if(restart_from_dens)then
      !read and use density matrix
      restartTMP = config%diag%cfg_restart
@@ -74,12 +74,12 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      CALL II_get_h1(lupri,6,ls%setting,H1)
      write(lupri,*) 'QQQ h:',mat_trab(H1,H1)
      call get_initial_dens(H1,S,D,ls,config)
-     write(lupri,*) 'QQQ D:',mat_trab(D,D)
+     write(lupri,*) 'QQQ D:',mat_trab(D(1),D(1))
      !** Write density to disk for possible restart
      dens_lun = -1
      call lsopen(dens_lun,'dens.restart','UNKNOWN','UNFORMATTED')
      rewind dens_lun
-     call mat_write_to_disk(dens_lun,D,OnMaster)
+     call mat_write_to_disk(dens_lun,D(1),OnMaster)
      call mat_write_info_to_disk(dens_lun,config%decomp%cfg_gcbasis)
      call lsclose(dens_lun,'KEEP')
      WRITE(lupri,*)'Succesfully wrote valid Density Matrix to Disk'
@@ -109,10 +109,10 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
   CALL LSTIMER('START',TIMSTR,TIMEND,lupri)
   CALL LSTIMER('START',ts,te,lupri)
   IF(config%prof%Coulomb)THEN
-     call mat_init(J,nbast,nbast)
+     call mat_init(J(1),nbast,nbast)
      call II_get_coulomb_mat(LUPRI,6,ls%SETTING,D,J,1)
-     WRITE(lupri,*)'Coulomb energy, mat_dotproduct(D,J)=',mat_dotproduct(D,J)
-     call mat_free(J)
+     WRITE(lupri,*)'Coulomb energy, mat_dotproduct(D,J)=',mat_dotproduct(D(1),J(1))
+     call mat_free(J(1))
      CALL LSTIMER('J-PROF ',ts,te,lupri)
   ENDIF
   IF(config%prof%CoulombEcont)THEN
@@ -120,7 +120,7 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      call mem_alloc(Evec,10)
      do I = 1,10
         call mat_init(Dvec(I),nbast,nbast)
-        call mat_assign(Dvec(I),D)
+        call mat_assign(Dvec(I),D(1))
      enddo
      ls%SETTING%SCHEME%intTHRESHOLD = &
           & ls%SETTING%SCHEME%THRESHOLD*ls%SETTING%SCHEME%J_THR!*modThresh
@@ -135,13 +135,13 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      call mem_dealloc(Evec)
   ENDIF
   IF(config%prof%Exchange)THEN
-     call mat_init(K,nbast,nbast)
-     call mat_zero(K)
+     call mat_init(K(1),nbast,nbast)
+     call mat_zero(K(1))
      ndmat = 1
      CALL II_get_exchange_mat(lupri,6,ls%setting,D,ndmat,.TRUE.,K)
-     WRITE(lupri,*)'Exchange energy, mat_dotproduct(D,K)=',mat_dotproduct(D,K)
-     WRITE(6,*)'Exchange energy, mat_dotproduct(D,K)=',mat_dotproduct(D,K)
-     call mat_free(K)
+     WRITE(lupri,*)'Exchange energy, mat_dotproduct(D,K)=',mat_dotproduct(D(1),K(1))
+     WRITE(6,*)'Exchange energy, mat_dotproduct(D,K)=',mat_dotproduct(D(1),K(1))
+     call mat_free(K(1))
      CALL LSTIMER('K-PROF ',ts,te,lupri)
   ENDIF
   IF(config%prof%ExchangeEcont)THEN
@@ -149,7 +149,7 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      call mem_alloc(Evec,30)
      do I = 1,30
         call mat_init(Dvec(I),nbast,nbast)
-        call mat_assign(Dvec(I),D)
+        call mat_assign(Dvec(I),D(1))
      enddo
      Kfac = ls%SETTING%SCHEME%exchangeFactor
      ls%SETTING%SCHEME%intTHRESHOLD = &
@@ -169,7 +169,7 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      call mem_alloc(GRAD,3,natoms)
      call mem_alloc(Dvecp,30)
      call mat_init(TMP,nbast,nbast)
-     call mat_assign(TMP,D)
+     call mat_assign(TMP,D(1))
      !we need a nonsym matrix
      TMP%elms(2) = TMP%elms(2)+0.7654E0_realk
      TMP%elms(nbast) = TMP%elms(nbast)-0.7654E0_realk
@@ -197,7 +197,7 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
         call mat_init(Karray(I),nbast,nbast)
         call mat_zero(Karray(I))
         call mat_init(Dvec(I),nbast,nbast)
-        call mat_assign(Dvec(I),D)
+        call mat_assign(Dvec(I),D(1))
      enddo
      CALL II_get_exchange_mat(lupri,6,ls%setting,Dvec,30,.TRUE.,Karray)
      WRITE(lupri,*)'Exchange energy, mat_dotproduct(D1,K1)=',mat_dotproduct(Dvec(1),Karray(1))
@@ -216,17 +216,17 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      CALL LSTIMER('K-PROF ',ts,te,lupri)
   ENDIF
   IF(config%prof%XC)THEN
-     call mat_init(F,nbast,nbast)
-     call mat_zero(F)
+     call mat_init(F(1),nbast,nbast)
+     call mat_zero(F(1))
      CALL II_get_xc_Fock_mat(LUPRI,6,LS%SETTING,nbast,D,F,EDFT,1)
-     WRITE(lupri,*)'Exchange Correlation mat_dotproduct(D,F)=',mat_dotproduct(D,F)
+     WRITE(lupri,*)'Exchange Correlation mat_dotproduct(D,F)=',mat_dotproduct(D(1),F(1))
      WRITE(lupri,*)'Exchange Correlation energy =',EDFT(1)
      CALL LSTIMER('XC1-PROF ',ts,te,lupri)
-     call mat_zero(F)
+     call mat_zero(F(1))
      CALL II_get_xc_Fock_mat(LUPRI,6,LS%SETTING,nbast,D,F,EDFT,1)
-     WRITE(lupri,*)'Exchange Correlation mat_dotproduct(D,F)=',mat_dotproduct(D,F)
+     WRITE(lupri,*)'Exchange Correlation mat_dotproduct(D,F)=',mat_dotproduct(D(1),F(1))
      WRITE(lupri,*)'Exchange Correlation energy =',EDFT(1)
-     call mat_free(F)
+     call mat_free(F(1))
      CALL LSTIMER('XC2-PROF ',ts,te,lupri)
   ENDIF
   IF(config%prof%XCLINRSP)THEN
@@ -236,9 +236,9 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
         call mat_init(Karray(I),nbast,nbast)
         call mat_zero(Karray(I))
         call mat_init(Dvec(I),nbast,nbast)
-        call mat_assign(Dvec(I),D)
+        call mat_assign(Dvec(I),D(1))
      enddo
-     CALL II_get_xc_linrsp(LUPRI,6,LS%SETTING,nbast,Dvec,D,Karray,30)
+     CALL II_get_xc_linrsp(LUPRI,6,LS%SETTING,nbast,Dvec,D(1),Karray,30)
      WRITE(lupri,*)'Exchange Correlation linrsp =',mat_dotproduct(Dvec(1),Karray(1))
      WRITE(lupri,*)'Exchange Correlation linrsp =',mat_dotproduct(Dvec(2),Karray(2))
      WRITE(lupri,*)'Exchange Correlation linrsp =',mat_dotproduct(Dvec(3),Karray(3))
@@ -251,7 +251,7 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      do I = 1,30
         call mat_zero(Karray(I))
      enddo
-     CALL II_get_xc_linrsp(LUPRI,6,LS%SETTING,nbast,Dvec,D,Karray,30)
+     CALL II_get_xc_linrsp(LUPRI,6,LS%SETTING,nbast,Dvec,D(1),Karray,30)
      WRITE(lupri,*)'Exchange Correlation linrsp =',mat_dotproduct(Dvec(1),Karray(1))
      WRITE(lupri,*)'Exchange Correlation linrsp =',mat_dotproduct(Dvec(2),Karray(2))
      WRITE(lupri,*)'Exchange Correlation linrsp =',mat_dotproduct(Dvec(3),Karray(3))
@@ -270,12 +270,12 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
   ENDIF
   IF(config%prof%XCFGRAD)THEN
      call mem_alloc(GRAD,3,natoms)
-     CALL II_get_xc_geoderiv_FxDgrad(LUPRI,6,LS%SETTING,nbast,D,D,grad,natoms)
+     CALL II_get_xc_geoderiv_FxDgrad(LUPRI,6,LS%SETTING,nbast,D(1),D(1),grad,natoms)
      WRITE(lupri,*)'Exchange Correlation gradX =',grad(1,1)
      WRITE(lupri,*)'Exchange Correlation gradY =',grad(2,1)
      WRITE(lupri,*)'Exchange Correlation gradZ =',grad(3,1)
      CALL LSTIMER('XC5-PROF ',ts,te,lupri)
-     CALL II_get_xc_geoderiv_FxDgrad(LUPRI,6,LS%SETTING,nbast,D,D,grad,natoms)
+     CALL II_get_xc_geoderiv_FxDgrad(LUPRI,6,LS%SETTING,nbast,D(1),D(1),grad,natoms)
      WRITE(lupri,*)'Exchange Correlation gradX =',grad(1,1)
      WRITE(lupri,*)'Exchange Correlation gradY =',grad(2,1)
      WRITE(lupri,*)'Exchange Correlation gradZ =',grad(3,1)
@@ -286,7 +286,7 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      call mem_alloc(Dvec,30)
      do I = 1,30
         call mat_init(Dvec(I),nbast,nbast)
-        call mat_assign(Dvec(I),D)
+        call mat_assign(Dvec(I),D(1))
      enddo
      CALL II_get_xc_energy(LUPRI,6,LS%SETTING,nbast,Dvec,EDFTvec,30)
      WRITE(lupri,*)'Exchange Correlation energy =',EDFT(1)
@@ -300,10 +300,10 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      call mem_dealloc(Dvec)
   ENDIF
   IF(config%prof%Fock)THEN
-     call mat_init(F,nbast,nbast)
+     call mat_init(F(1),nbast,nbast)
      call II_get_Fock_mat(LUPRI,6,ls%SETTING,D,.true.,F,1,.FALSE.)
-     WRITE(lupri,*)'Fock energy, mat_dotproduct(D,F)=',mat_dotproduct(D,F)
-     call mat_free(F)
+     WRITE(lupri,*)'Fock energy, mat_dotproduct(D,F)=',mat_dotproduct(D(1),F(1))
+     call mat_free(F(1))
      CALL LSTIMER('Fock-PROF ',ts,te,lupri)
   ENDIF
   IF(I.EQ. 2)THEN
@@ -314,7 +314,7 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
 !#ifdef VAR_OMP
 !  ENDDO
 !#endif
-  call mat_free(D)
+  call mat_free(D(1))
   call stats_mem(lupri)
      
 END SUBROUTINE DI_PROFILE_LSINT

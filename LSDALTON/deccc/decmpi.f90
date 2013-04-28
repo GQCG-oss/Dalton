@@ -619,7 +619,7 @@ contains
     CALL ls_mpi_buffer(MyFragment%BasisInfoIsSet,master)
     CALL ls_mpi_buffer(MyFragment%t1_stored,master)
     CALL ls_mpi_buffer(MyFragment%CDset,master)
-    CALL ls_mpi_buffer(MyFragment%FAtransSet,master)
+    CALL ls_mpi_buffer(MyFragment%FAset,master)
     CALL ls_mpi_buffer(MyFragment%fragmentadapted,master)
     CALL ls_mpi_buffer(MyFragment%pairfrag,master)
 
@@ -714,7 +714,7 @@ contains
           call mem_alloc(MyFragment%VirtMat,MyFragment%nunoccAOS,MyFragment%nunoccAOS)
        end if
 
-       if(MyFragment%FAtransSet) then
+       if(MyFragment%FAset) then
           nullify(MyFragment%CoccFA)
           call mem_alloc(MyFragment%CoccFA,MyFragment%number_basis,MyFragment%noccFA)
           nullify(MyFragment%CunoccFA)
@@ -733,7 +733,7 @@ contains
        call ls_mpi_buffer(MyFragment%OccMat,MyFragment%noccAOS,MyFragment%noccAOS,master)
        call ls_mpi_buffer(MyFragment%VirtMat,MyFragment%nunoccAOS,MyFragment%nunoccAOS,master)
     end if
-    if(MyFragment%FAtransSet) then
+    if(MyFragment%FAset) then
        call ls_mpi_buffer(MyFragment%CoccFA,MyFragment%number_basis,MyFragment%noccFA,master)
        call ls_mpi_buffer(MyFragment%CunoccFA,MyFragment%number_basis,MyFragment%nunoccFA,master)
     end if
@@ -1635,7 +1635,7 @@ contains
     call ls_mpi_buffer(DECitem%doHF,Master)
     call ls_mpi_buffer(DECitem%memory,Master)
     call ls_mpi_buffer(DECitem%full_molecular_cc,Master)
-    call ls_mpi_buffer(DECitem%FullDEC,Master)
+    call ls_mpi_buffer(DECitem%mp2energydebug,Master)
     call ls_mpi_buffer(DECitem%simulate_full,Master)
     call ls_mpi_buffer(DECitem%simulate_natoms,Master)
     call ls_mpi_buffer(DECitem%SkipReadIn,Master)
@@ -1656,6 +1656,7 @@ contains
     call ls_mpi_buffer(DECitem%approximated_norm_threshold,Master)
     call ls_mpi_buffer(DECitem%check_lcm_orbitals,Master)
     call ls_mpi_buffer(DECitem%use_canonical,Master)
+    call ls_mpi_buffer(DECitem%user_defined_orbitals,Master)
     call ls_mpi_buffer(DECitem%AbsorbHatoms,Master)
     call ls_mpi_buffer(DECitem%mulliken,Master)
     call ls_mpi_buffer(DECitem%BoughtonPulay,Master)

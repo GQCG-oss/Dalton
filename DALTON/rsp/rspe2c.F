@@ -3304,7 +3304,7 @@ C
 C allocate work space for (oriented) electronic CD and
 C for reduced E(2) and reduced S(2)
 !     DOMO2 = DODFT .OR. DOHFSRDFT .OR. DOMCSRDFT
-      DOMO2 = DODFT
+      DOMO2 = DODFT .AND. NASHT.EQ.0
       IF (RSPOCD) THEN
          IF (LMXFR .LT. NPPCNV(KSYMOP)) THEN
             NINFO = NINFO + 1
@@ -4182,6 +4182,7 @@ C
 #include "inflr.h"
 #include "infdim.h"
 #include "inforb.h"
+#include "infrank.h"
 C
 C Local variables
 C
@@ -4249,9 +4250,10 @@ C
 C     Call RSPCTL to solve linear set of response equations
 C
       DO 600 IOP = 1,NGPLR(KSYMOP)
-         WRITE (LUPRI,'(//A,I3,/2A,/A,(T25,5F10.6))')
+         WRITE (LUPRI,'(//A,I3,/2A,/A,I3,/A,(T25,5F10.6))') 
      &   ' RSPLR -- linear response calculation for symmetry',KSYMOP,
      &   ' RSPLR -- operator label : ',LBLLR(KSYMOP,IOP),
+     &  ' RSPLR -- operator spin  : ',OPRANK(INDPRP(LBLLR(KSYMOP,IOP))),
      &   ' RSPLR -- frequencies :',(FREQ(I),I=1,NFREQ)
          CALL GETGPV(LBLLR(KSYMOP,IOP),FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      *               WRK(KGD),LWRK1)

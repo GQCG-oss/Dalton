@@ -17,57 +17,67 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > linsca_sp.info <<'%EOF%'
-   linsca_sp
+cat > HF_vib.info <<'%EOF%'
+   HF_vib 
    -------------
-   Molecule:         H2O
-   Wave Function:    HF
-   Test Purpose:     Check response and wavefunction part with sparse matrices
+   Molecule:         HF
+   Wave Function:    HF / STO-3G
+
+   Test Purpose:     Test direct dynamics of vibrating HF with
+   time-reversible density propagation
+                     
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > linsca_sp.mol <<'%EOF%'
-BASIS
+cat > HF_vib.mol <<'%EOF%'
+BASIS                                                                           
 STO-3G
-Geometry taken from test-dir soppa-stuff
-Distance in Bohr
+Direct dynamics calculation of vibrating HF molecule
+No rotation
     2    0
-        8.    1
-O     0.0 -0.2249058930 0.0
-        1.    2
-H     1.45235 0.899623 0.0
-H    -1.45235 0.899623 0.0
+        9.    1                                                                 
+F     0.1   -0.7    0.1
+        1.    1                                                                 
+H     1.7    0.3   -0.2
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > linsca_sp.dal <<'%EOF%'
+cat > HF_vib.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.START
- H1DIAG
-.SPARSE
 .RH
-.DIIS
-.NVEC
-8
-.CONVTHR
-5.D-5
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+ DIIS
+.RESTART
+**DYNAMI
+.TIMREV
+2
+.NUMTRA
+1
+.VERLET
+.MAX ITER
+20
+.TIMESTEP
+0.5D0
+.VELOCI
+0
 *END OF INPUT
 %EOF%
+#######################################################################
+
+ 
+
+#######################################################################
 
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >linsca_sp.check
-cat >> linsca_sp.check <<'%EOF%'
+echo $CHECK_SHELL > HF_vib.check
+cat >> HF_vib.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -76,39 +86,40 @@ else
    GREP="egrep"
 fi
 
-# ENERGY test
-CRIT1=`$GREP "Final HF energy: * -74.964514" $log | wc -l`
-TEST[1]=`expr  $CRIT1`
+# Energy
+CRIT1=`$GREP "Final * HF energy\: * \-98\.5719851" $log | wc -l`
+TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
-ERROR[1]="ENERGY NOT CORRECT -"
+ERROR[1]="HF ENERGY NOT CORRECT -"
+
+# Energy
+CRIT1=`$GREP "Energy drift, mHartree/ps  :  \-3946\.234" $log | wc -l`
+TEST[2]=`expr   $CRIT1`
+CTRL[2]=1
+ERROR[2]="Energy drift -"
 
 # Memory test
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
-TEST[2]=`expr  $CRIT1`
-CTRL[2]=1
-ERROR[2]="Memory leak -"
-
-# MPI Memory test
-CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
-CTRL[3]=0
-ERROR[3]="MPI Memory leak -"
+CTRL[3]=1
+ERROR[3]="Memory leak -"
 
 PASSED=1
-for i in 1 2 3; do
+for i in 1 2 3
+do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
-      echo ${ERROR[i]}
-      PASSED=0
+     echo ${ERROR[i]}
+     PASSED=0
    fi
 done
 
 if [ $PASSED -eq 1 ]
 then
-   echo TEST ENDED PROPERLY
-   exit 0
+  echo TEST ENDED PROPERLY
+  exit 0
 else
-   echo THERE IS A PROBLEM
-   exit 1
+  echo THERE IS A PROBLEM
+  exit 1
 fi
 
 %EOF%

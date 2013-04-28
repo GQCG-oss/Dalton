@@ -433,7 +433,7 @@ contains
     ! correlation density matrices not set
     fragment%CDset=.false.  
     ! Transformation matrices between local/fragment-adapted bases not set
-    fragment%FAtransSet=.false.
+    fragment%FAset=.false.
 
     ! Set atomic fragment extent info
     call init_atomic_fragment_extent(OccOrbitals,UnoccOrbitals,MyMolecule,fragment)
@@ -832,7 +832,7 @@ contains
     ! (MO fragment-adapted basis)    =     (MO local basis)      *      OUred
     !     (nbasis,noccFA)            (nbasis,noccLOCAL)      (noccLOCAL,noccFA)
     !
-    if(LocalFragment%FAtransSet) then
+    if(LocalFragment%FAset) then
        call mem_dealloc(LocalFragment%CoccFA)
        call mem_dealloc(LocalFragment%CunoccFA)
     end if
@@ -845,7 +845,7 @@ contains
     call mem_alloc(LocalFragment%CunoccFA,LocalFragment%number_basis,LocalFragment%nunoccFA)
     call dec_simple_dgemm(LocalFragment%number_basis,LocalFragment%nunoccAOS,&
          & LocalFragment%nunoccFA,LocalFragment%ypv,VUred,LocalFragment%CunoccFA,'n','n')
-    LocalFragment%FAtransSet=.true.
+    LocalFragment%FAset=.true.
 
     call mem_dealloc(OccOrbs)
     call mem_dealloc(VirtOrbs)
@@ -983,7 +983,7 @@ contains
     ! ------------------------------------
 
     ! These should be stored in LocalFragment, quit if this is not the case
-    if(.not. LocalFragment%FAtransSet) then
+    if(.not. LocalFragment%FAset) then
        call lsquit('init_fragment_adapted: Fragment-adapted MO coefficients &
             & have not been set!',-1)
     end if
@@ -1522,7 +1522,11 @@ contains
     logical :: debugprint,keepon  ! temporary debug prints
     real(realk) :: diagdev, nondiagdev
 
-    debugprint=.true.
+    if(DECinfo%PL>0) then
+       debugprint=.true.
+    else
+       debugprint=.false.
+    end if
     lambdathr_default = 1.0e-3_realk
 
     ! Initial dimensions for FA space (remove EOS)
@@ -1533,7 +1537,7 @@ contains
     nbasisPQ = fragmentPQ%number_basis
 
     ! Sanity checks
-    if( (.not. fragmentP%FAtransSet) .or. (.not. fragmentQ%FAtransSet) ) then
+    if( (.not. fragmentP%FAset) .or. (.not. fragmentQ%FAset) ) then
        call lsquit('pair_fragment_adapted_transformation_matrices: Transformation &
             & matrices for atomic fragments are not set!',-1)
     end if
@@ -1864,7 +1868,7 @@ contains
 
 
     ! Transformation matrices have been set!
-    fragmentPQ%FAtransSet=.true.
+    fragmentPQ%FAset=.true.
 
   end subroutine pair_fragment_adapted_transformation_matrices
 
@@ -1905,7 +1909,7 @@ contains
     call mem_alloc(fragmentPQ%CunoccFA,fragmentPQ%number_basis,fragmentPQ%nunoccFA)
     fragmentPQ%CunoccFA = fragmentPQ%ypv
 
-    fragmentPQ%FAtransSet=.true.
+    fragmentPQ%FAset=.true.
 
   end subroutine pair_fragment_adapted_transformation_matrices_justEOS
 
@@ -2436,7 +2440,7 @@ end subroutine atomic_fragment_basis
 
     ! Correlation density matrices
     write(wunit) fragment%CDset
-    write(wunit) fragment%FATransSet
+    write(wunit) fragment%FAset
     write(wunit) fragment%noccFA
     write(wunit) fragment%nunoccFA
     if(fragment%CDset) then
@@ -2444,7 +2448,7 @@ end subroutine atomic_fragment_basis
        write(wunit) fragment%virtmat
        write(wunit) fragment%RejectThr
     end if
-    if(fragment%FAtransset) then
+    if(fragment%FAset) then
        write(wunit) fragment%CoccFA
        write(wunit) fragment%CunoccFA
     end if
@@ -2733,17 +2737,17 @@ end subroutine atomic_fragment_basis
     ! Correlation density matrices and fragment-adapted orbitals
     if(DECinfo%convert64to32) then
        call read_64bit_to_32bit(runit,fragment%CDset)
-       call read_64bit_to_32bit(runit,fragment%FATransSet)
+       call read_64bit_to_32bit(runit,fragment%FAset)
        call read_64bit_to_32bit(runit,fragment%noccFA)
        call read_64bit_to_32bit(runit,fragment%nunoccFA)
     elseif(DECinfo%convert32to64) then
        call read_32bit_to_64bit(runit,fragment%CDset)
-       call read_32bit_to_64bit(runit,fragment%FATransSet)
+       call read_32bit_to_64bit(runit,fragment%FAset)
        call read_32bit_to_64bit(runit,fragment%noccFA)
        call read_32bit_to_64bit(runit,fragment%nunoccFA)
     else
        read(runit) fragment%CDset
-       read(runit) fragment%FATransSet
+       read(runit) fragment%FAset
        read(runit) fragment%noccFA
        read(runit) fragment%nunoccFA
     end if
@@ -2758,7 +2762,7 @@ end subroutine atomic_fragment_basis
     end if
 
     ! Fragment-adapted orbitals
-    if(fragment%FATransSet) then
+    if(fragment%FAset) then
        call mem_alloc(Fragment%CoccFA,Fragment%number_basis,Fragment%noccFA)
        call mem_alloc(Fragment%CunoccFA,Fragment%number_basis,Fragment%nunoccFA)
        read(runit) fragment%CoccFA
@@ -3789,9 +3793,9 @@ if(DECinfo%PL>0) then
     call mem_alloc(REDunoccAOS,nunocc,natoms)
     call mem_alloc(Fragbasis,nbasis,natoms)
     call mem_alloc(fragsize,natoms)
-    call mem_alloc(occsize,nocc)
-    call mem_alloc(unoccsize,nunocc)
-    call mem_alloc(basissize,nbasis)
+    call mem_alloc(occsize,natoms)
+    call mem_alloc(unoccsize,natoms)
+    call mem_alloc(basissize,natoms)
     occAOS=.false.
     unoccAOS=.false.
     REDoccAOS=.false.
@@ -3801,6 +3805,7 @@ if(DECinfo%PL>0) then
     occsize=0
     unoccsize=0
     basissize=0
+
 
     GetStandardFrag: do atom=1,natoms
 
@@ -5250,282 +5255,6 @@ if(DECinfo%PL>0) then
 
   end subroutine put_XOS_orbitals_unocc
 
-
-
-
-  ! ROUTINES TO BE RECONSIDERED IF WE FIND A GOOD ORBITAL INTERACTION MATRIX TO USE
-  ! FOR FRAGMENT EXPANSION:
-
-!!$  !> \brief Prioriterize orbitals based on orbital interaction matrix (MyMolecule%orbint),
-!!$  !> such that all orbitals are sorted according to accumulated interaction with orbitals 
-!!$  !> assigned to central atom in fragment. (Largest elements first).
-!!$  !> \author Kasper Kristensen
-!!$  !> \date March 2013
-!!$  subroutine prioritize_orbitals_based_on_atom(P,MyMolecule,OccOrbitals,UnoccOrbitals,&
-!!$       & occidx,unoccidx,occval,unoccval)
-!!$    implicit none
-!!$
-!!$    !> Central atom in atomic fragment
-!!$    integer,intent(in) :: P
-!!$    !> Full molecule info
-!!$    type(fullmolecule),intent(in) :: MyMolecule
-!!$    !> All occupied orbitals
-!!$    type(ccorbital), dimension(MyMolecule%numocc), intent(in)      :: OccOrbitals
-!!$    !> All unoccupied orbitals
-!!$    type(ccorbital), dimension(MyMolecule%numvirt), intent(in)    :: UnoccOrbitals
-!!$    !> Occupied orbital indices listed in order of decreasing interaction with unocc EOS orbitals
-!!$    integer,intent(inout),dimension(MyMolecule%numocc) :: occidx
-!!$    !> Unocc orbital indices listed in order of decreasing interaction with occupied EOS orbitals
-!!$    integer,intent(inout),dimension(MyMolecule%numvirt) :: unoccidx
-!!$    !> Sorted values of accumulated occ interaction 
-!!$    !> (e.g. value of index occidx(i) is given by occval(i))
-!!$    real(realk),intent(inout),dimension(MyMolecule%numocc) :: occval
-!!$    !> Sorted values of accumulated unocc interaction 
-!!$    !> (e.g. value of index unoccidx(i) is given by unoccval(i))
-!!$    real(realk),intent(inout),dimension(MyMolecule%numvirt) :: unoccval
-!!$    integer :: nocc,nunocc,i,j
-!!$    
-!!$    ! Full molecular dimensions
-!!$    nocc = MyMolecule%numocc
-!!$    nunocc = MyMolecule%numvirt
-!!$
-!!$
-!!$    ! Prioritize unocc orbitals based on interaction with occ EOS
-!!$    ! ***********************************************************
-!!$    ! For each unocc orbital "j" we add all interaction contributions
-!!$    ! with occ orbitals "i" in the occupied EOS.
-!!$    ! Note: MyMolecule%orbint has dimensions: (nocc,nunocc)
-!!$
-!!$    unoccval = 0.0_realk
-!!$    OccEOSLoop: do i=1,nocc
-!!$       if(OccOrbitals(i)%centralatom==P) then   
-!!$          ! orbital "i" is occ EOS orbital, consider interactions with all unocc orbitals
-!!$          do j=1,nunocc  ! loop over all unocc orbitals
-!!$             unoccval(j) = unoccval(j) + MyMolecule%orbint(i,j)
-!!$          end do
-!!$       end if
-!!$    end do OccEOSLoop
-!!$
-!!$    ! Sort interaction vector and set indices (largest elements first)
-!!$    call real_inv_sort_with_tracking(unoccval,unoccidx,nunocc)
-!!$
-!!$
-!!$
-!!$    ! Prioritize occ orbitals based on interaction with unocc EOS
-!!$    ! ***********************************************************
-!!$    ! For each occ orbital "j" we add all interaction contributions
-!!$    ! with unocc orbitals "i" in the unoccupied EOS.
-!!$
-!!$    occval = 0.0_realk
-!!$    UnoccEOSLoop: do i=1,nunocc
-!!$       if(UnoccOrbitals(i)%centralatom==P) then   
-!!$          ! orbital "i" is unocc EOS orbital, consider interactions with all occ orbitals
-!!$          do j=1,nocc  ! loop over all occ orbitals
-!!$             occval(j) = occval(j) + MyMolecule%orbint(j,i)
-!!$          end do
-!!$       end if
-!!$    end do UnoccEOSLoop
-!!$
-!!$    ! Sort interaction vector and set indices (largest elements first)
-!!$    call real_inv_sort_with_tracking(occval,occidx,nocc)
-!!$
-!!$
-!!$  end subroutine prioritize_orbitals_based_on_atom
-!!$
-!!$
-!!$  !> \date Init logical vectors describing fragment AOS based on orbital
-!!$  !> interaction vectors (previously determined in prioritize_orbitals_based_on_atom).
-!!$  !> \author Kasper Kristensen
-!!$  !> \date March 2013
-!!$  subroutine init_fragment_logical_vectors_from_orbital_interactions(P,nocc,nunocc,&
-!!$       & OccOrbitals,UnoccOrbitals,occidx,unoccidx,MyMolecule,occsize,unoccsize,occAOS,unoccAOS)
-!!$    implicit none
-!!$
-!!$    !> Central atom in atomic fragment
-!!$    integer,intent(in) :: P
-!!$    !> Number of occupied/unoccupied orbitals in full molecule
-!!$    integer,intent(in) :: nocc,nunocc
-!!$    !> All occupied orbitals
-!!$    type(ccorbital), dimension(nOcc), intent(in)      :: OccOrbitals
-!!$    !> All unoccupied orbitals
-!!$    type(ccorbital), dimension(nUnocc), intent(in)    :: UnoccOrbitals
-!!$    !> Occupied orbital indices listed in order of decreasing interaction with unocc EOS orbitals
-!!$    integer,intent(in),dimension(nocc) :: occidx
-!!$    !> Unocc orbital indices listed in order of decreasing interaction with occupied EOS orbitals
-!!$    integer,intent(in),dimension(nunocc) :: unoccidx
-!!$    !> Full molecule information 
-!!$    type(fullmolecule), intent(in) :: MyMolecule
-!!$    !> Number of occupied orbitals to include IN ADDITION to the EOS orbitals
-!!$    integer,intent(in) :: occsize
-!!$    !> Number of unoccupied orbitals to include IN ADDITION to the EOS orbitals
-!!$    integer,intent(in) :: unoccsize
-!!$    !> Which orbitals to include in occ AOS?
-!!$    logical,intent(inout),dimension(nocc) :: occAOS
-!!$    !> Which orbitals to include in unocc AOS?
-!!$    logical,intent(inout),dimension(nunocc) :: unoccAOS
-!!$    integer :: startidx,i
-!!$
-!!$    ! Init logical vectors describing AOS
-!!$    occAOS = .false.
-!!$    unoccAOS = .false.
-!!$
-!!$    if(DECinfo%frozencore) then
-!!$       ! start counting from the first valence orbital (never include core orbitals in occ AOS)
-!!$       startidx = MyMolecule%ncore+1  
-!!$    else
-!!$       ! Consider all occcupied orbitals
-!!$       startidx=1
-!!$    end if
-!!$
-!!$    ! Obviously, all orbitals assigned to P should be included
-!!$    do i=startidx,nocc
-!!$       if(OccOrbitals(i)%centralatom == P) occAOS(i)=.true.
-!!$    end do
-!!$    do i=1,nunocc
-!!$       if(UnoccOrbitals(i)%centralatom == P) unoccAOS(i)=.true.
-!!$    end do
-!!$
-!!$
-!!$    ! Include addition orbitals for occ and unocc AOS until the number
-!!$    ! occ/unocc AOS orbitals equals the number of EOS orbitals included above
-!!$    ! PLUS occsize/unoccsize.
-!!$    call expand_fragment_logical_vectors_from_orbital_interactions(nocc,nunocc,&
-!!$         & occidx,unoccidx,MyMolecule,occsize,unoccsize,occAOS,unoccAOS)
-!!$
-!!$
-!!$  end subroutine init_fragment_logical_vectors_from_orbital_interactions
-!!$
-!!$
-!!$
-!!$  !> \date Expand fragment AOS using orbital
-!!$  !> interaction vectors (previously determined in prioritize_orbitals_based_on_atom).
-!!$  !> \author Kasper Kristensen
-!!$  !> \date March 2013
-!!$  subroutine expand_fragment_logical_vectors_from_orbital_interactions(nocc,nunocc,&
-!!$       & occidx,unoccidx,MyMolecule,occsize,unoccsize,occAOS,unoccAOS)
-!!$    implicit none
-!!$
-!!$    !> Number of occupied/unoccupied orbitals in full molecule
-!!$    integer,intent(in) :: nocc,nunocc
-!!$    !> Occupied orbital indices listed in order of decreasing interaction with unocc EOS orbitals
-!!$    integer,intent(in),dimension(nocc) :: occidx
-!!$    !> Unocc orbital indices listed in order of decreasing interaction with occupied EOS orbitals
-!!$    integer,intent(in),dimension(nunocc) :: unoccidx
-!!$    !> Full molecule information 
-!!$    type(fullmolecule), intent(in) :: MyMolecule
-!!$    !> Number of occupied orbitals to include IN ADDITION to the EOS orbitals
-!!$    integer,intent(in) :: occsize
-!!$    !> Number of unoccupied orbitals to include IN ADDITION to the EOS orbitals
-!!$    integer,intent(in) :: unoccsize
-!!$    !> Which orbitals to include in occ AOS?
-!!$    logical,intent(inout),dimension(nocc) :: occAOS
-!!$    !> Which orbitals to include in unocc AOS?
-!!$    logical,intent(inout),dimension(nunocc) :: unoccAOS
-!!$    integer :: i,counter
-!!$
-!!$
-!!$    ! Include occ AOS orbitals
-!!$    ! ************************
-!!$    ! Continue including from occidx list until "occsize" orbitals have been included
-!!$    ! in ADDITION to the orbitals already included at input.
-!!$
-!!$    counter = 0
-!!$    IncludeOccOrbitals: do i=1,nocc
-!!$       
-!!$       ! For frozen core: Do not include core orbitals
-!!$       if(DECinfo%frozencore .and. (occidx(i) .le. MyMolecule%ncore) ) then
-!!$          cycle IncludeOccOrbitals
-!!$       end if
-!!$
-!!$       ! Include orbital if it has not already been included
-!!$       if(.not. occAOS(occidx(i))) then
-!!$          occAOS(occidx(i))=.true.
-!!$          counter = counter+1
-!!$          ! Exit when "occsize" orbitals have been included 
-!!$          if(counter==occsize) exit IncludeOccOrbitals  
-!!$       end if
-!!$
-!!$    end do IncludeOccOrbitals
-!!$    ! Note: In the special case where counter < occsize here, we have included all occupied
-!!$    ! orbitals in the molecule. This will work fine - but of course will only happen for 
-!!$    ! small test molecules.
-!!$
-!!$
-!!$    ! Include unocc AOS orbitals
-!!$    ! **************************
-!!$    ! Same procedure as for occ space above.
-!!$
-!!$    counter = 0
-!!$    IncludeUnoccOrbitals: do i=1,nunocc
-!!$       
-!!$       ! Include orbital in unoccidx list if it has not already been included
-!!$       if(.not. unoccAOS(unoccidx(i)) ) then
-!!$          unoccAOS(unoccidx(i))=.true.
-!!$          counter = counter+1
-!!$          ! Exit when "unoccsize" orbitals have been included 
-!!$          if(counter==unoccsize) exit IncludeUnoccOrbitals  
-!!$       end if
-!!$
-!!$    end do IncludeUnoccOrbitals
-!!$
-!!$
-!!$    ! Sanity check: If the whole molecule is included for eith occ or unocc,
-!!$    ! we might as well include the whole molecule for the other orbital space as well.
-!!$    ! (Only relevant for small test systems).
-!!$    if(all(occAOS) .or. all(unoccAOS)) then
-!!$       occAOS=.true.
-!!$       unoccAOS=.true.
-!!$    end if
-!!$
-!!$    write(DECinfo%output,'(1X,a,2i7)') 'FOP Expanded fragment, new occ/unocc dims: ', &
-!!$         & count(occAOS),count(unoccAOS)
-!!$
-!!$
-!!$  end subroutine expand_fragment_logical_vectors_from_orbital_interactions
-!!$
-!!$
-!!$  !> \brief Get expansion parameters for fragment optimization based on
-!!$  !> orbital interaction matrix (see expand_fragment_logical_vectors_from_orbital_interactions).
-!!$  !> Specifically, we set the number of additional occ and unocc orbitals to include
-!!$  !> in fragment AOS when the fragment is expanded.
-!!$  !> UNDER INVESTIGATION...!
-!!$  !> \author Kasper Kristensen
-!!$  !> \date March 2013
-!!$  subroutine get_expansion_parameters_for_fragopt(MyMolecule,noccEOS,&
-!!$       & nunoccEOS,occsize,unoccsize)
-!!$    implicit none
-!!$    !> Full molecule info
-!!$    type(fullmolecule),intent(in) :: MyMolecule
-!!$    !> Number of occupied orbitals assigned to central atom
-!!$    !> (can be found by get_number_of_orbitals_per_atom function).
-!!$    integer,intent(in) :: noccEOS
-!!$    !> Number of unoccupied orbitals assigned to central atom
-!!$    !> (can be found by get_number_of_orbitals_per_atom function).
-!!$    integer,intent(in) :: nunoccEOS
-!!$    !> Number of additional occupied orbitals to include when fragment is expanded
-!!$    integer,intent(inout) :: occsize
-!!$    !> Number of additional unoccupied orbitals to include when fragment is expanded
-!!$    integer,intent(inout) :: unoccsize
-!!$    integer :: noccmax,nunoccmax
-!!$
-!!$    ! Maximum possible number of occupied orbitals to add:
-!!$    ! Total number of occupied orbitals - occupied EOS    
-!!$    ! (EOS orbitals are included by definition so they will never be added)
-!!$    noccmax = MyMolecule%numocc - noccEOS
-!!$    ! Same for unocc orbitals
-!!$    nunoccmax = MyMolecule%numvirt - nunoccEOS
-!!$
-!!$    ! Set number of unoccupied orbitals to 100, then set the number of occupied
-!!$    ! orbitals to include by scaling with the ratio between occ and unocc orbitals
-!!$    unoccsize = 100
-!!$    occsize = int( real(unoccsize) * (real(noccmax)/real(nunoccmax)) )
-!!$
-!!$    ! Sanity check for small molecules - 
-!!$    ! we should not include more orbitals than there actually are....
-!!$    if(unoccsize > nunoccmax) unoccsize = nunoccmax  ! just include all unocc orbitals
-!!$    if(occsize > noccmax) occsize = noccmax  ! just include all occ orbitals
-!!$
-!!$  end subroutine get_expansion_parameters_for_fragopt
 
 
 end module atomic_fragment_operations

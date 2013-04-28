@@ -267,7 +267,7 @@ C
       LFREE  = LWRK
       CALL MEMGET('REAL',KINDX,LCINDX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMO ,NCMOT ,WRK,KFREE,LFREE)
-      LUDV   = NACTT*NACTT
+      LUDV   = NACTT*NACTT*2
       CALL MEMGET('REAL',KUDV ,LUDV  ,WRK,KFREE,LFREE)
       IF (RSPCI) THEN
          CALL MEMGET('REAL',KPVX ,0     ,WRK,KFREE,LFREE)
@@ -383,12 +383,22 @@ C
      *                 WRK(KINDX),WRK(KTOT),KFREE_KTOT,LFREE)
 C
          END IF
+C
+C Include triplet one-electron density 
+C
+            CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
+     *                 WRK(KUDV+N2ASHX),WRK(KFREE),
+     *                 1,0,.FALSE.,.TRUE.,
+     *                 WRK(KINDX),WRK(KTOT),KFREE,LFREE)
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')' ** ONE BODY DENSITY MATRIX FROM RSPDM'
             CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
+            KUDV2=KUDV+N2ASHX
+            CALL OUTPUT(WRK(KUDV2),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
          END IF
       ELSE IF ( TDHF .AND. NASHT .EQ. 1 ) THEN
          WRK(KUDV) = D1
+         WRK(KUDV+1) = D1
          WRK(KPVX) = D0
          IF (TRPLET) WRK(KPVX+1) = D0
       ELSE IF ( TDHF .AND. HSROHF ) THEN
@@ -1676,7 +1686,9 @@ C
          ENDIF
 
          if (peqm) then
-            write(lupri,'(a)') ' PE-QM response calculation'
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
+            if (soppa) stop 'Not sure if SOPPA works with PE module yet'
          end if
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
@@ -1809,6 +1821,7 @@ C
 #include "gnrinf.h"
 #include "chrnos.h"
 #include "elweak.h"
+#include "infrank.h"
 #include "channel.h"
 C--------------------
 C
@@ -1945,35 +1958,34 @@ C
                   LLROP( INDPRP('X SPNORB')) = .TRUE.
                   LLROP( INDPRP('Y SPNORB')) = .TRUE.
                   LLROP( INDPRP('Z SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('X SPNORB')) = 1
+                  OPRANK( INDPRP('Y SPNORB')) = 1
+                  OPRANK( INDPRP('Z SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  21            CONTINUE
                   LLROP( INDPRP('X SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('X SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  22            CONTINUE
                   LLROP( INDPRP('Y SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('Y SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  23            CONTINUE
                   LLROP( INDPRP('Z SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('Z SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  24            CONTINUE
                   READ(LUCMD,'(BN,A,I8)')LABEL,IRANK
                   LLROP( INDPRP(LABEL)) = .TRUE.
+                  OPRANK(INDPRP(LABEL)) = IRANK
                GO TO 100
  25            CONTINUE
                   READ (LUCMD,*) MAXITL
@@ -2233,7 +2245,8 @@ C
          ENDIF
 
          if (peqm) then
-            write(lupri,'(a)') ' PE-QM response calculation'
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
          end if
 
          IF (CHANNEL_CALC) THEN
@@ -4032,9 +4045,7 @@ C
 C   We assume that either the SIRIUS module or the SETSIR
 C   subroutine has been called before RSPMC.
 C
-
       use pe_variables, only: peqm
-
 #include "implicit.h"
 #include "infdim.h"
 C
@@ -4085,8 +4096,6 @@ C     If any triplet operators, then we must use determinants
 C     in RESPONSE also for the reference symmetry, even if
 C     CSF's were used in SIRIUS. /hjaaj May 2001
 C
-      WRITE(LUPRI,*)'EDH RESPONSE START'
-
       MCONRF = NCONRF
       IF (TRPFLG .AND. .NOT.FLAG(27) .AND. .NOT.TDHF) THEN
          FLAG(27) = .TRUE.
@@ -4305,6 +4314,7 @@ C
            FC(I) = FC(I) + WRK(I)
         ENDDO
       END IF
+
       IF ((NCONRF .GT. 1) .AND. QMMM ) THEN
          write(lupri,*) 'MCSCF detected (NCONRF > 1) in PE calc.'
          write(lupri,*) 'NCONRF...........................', NCONRF
@@ -4316,15 +4326,12 @@ C
          ENDDO
       END IF
            
-      if ((nconrf .gt. 1) .and. peqm) then
-         write(lupri,*) 'MCSCF detected (NCONRF > 1) in PE calc.'
-         write(lupri,*) 'NCONRF...........................', NCONRF
-         write(lupri,*) '=> Subtracting PE Fock matrix (PCM-like)'
-         call mollab('PETMAT  ',lusifc,lupri)
-         call readt (lusifc,nnorbt,wrk)
-         do i = 1,nnorbt
-            fc(i) = fc(i) - wrk(i)
-         enddo
+      if (peqm .and. .not. tdhf) then
+        write(lupri,*) 'Running PE-MCSCF response calculation.'
+        write(lupri,*) '=> Subtracting PE Fock matrix'
+        call mollab('PETMAT  ', lusifc, lupri)
+        call readt (lusifc, nnorbt, wrk)
+        fc(1:nnorbt) = fc(1:nnorbt) - wrk(1:nnorbt)
        endif
 
       IF (SOPPA) THEN
@@ -4695,7 +4702,6 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
-
       use pe_variables, only: peqm
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
@@ -4846,7 +4852,8 @@ C
          ENDIF
 
          if (peqm) then
-            write(lupri,'(a)') ' PE-QM response calculation'
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
          end if
 
          WRITE(LUPRI,'(A,I4)')

@@ -179,7 +179,7 @@ contains
     real(realk) :: twmpi1,twmpi2, tcmpi1, tcmpi2, tmpidiff
 #ifdef VAR_LSMPI
     INTEGER(kind=ls_mpik) :: HSTATUS
-    CHARACTER*80 ::  HNAME
+    CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
 !    this really should be
 !    character*(MPI_MAX_PROCESSOR_NAME) :: HNAME
     integer,pointer :: decmpitasks(:)

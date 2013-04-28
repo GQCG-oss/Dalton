@@ -18,6 +18,7 @@ F90_OBJS = \
 	Integral_interface.o\
 	Integral_interfaceDF.o\
 	Integral_interface_test.o\
+        II_absval_int.o \
 	II_dft_int.o \
 	II_dft_ksm.o \
 	II_dft_ksm_worker.o \
