@@ -18,7 +18,7 @@ MODULE ARHmodule
    use dal_interface
    use KS_settings, only: SaveF0andD0
    use davidson_settings
-   use driver
+   use davidson_solv_mod
    use II_XC_interfaceModule
    use IntegralInterfaceMOD
 contains
@@ -263,7 +263,7 @@ Linesearch: if (CFG%arh_linesearch) then
    counter = counter+1
    !Scale gradient since davdison solver is made for (H-mu)X= -G
    CALL LSTIMER('START ',t1,t2,decomp%lupri)
-   call solver(CFG,G,X)
+   call davidson_solver(CFG,G,X)
    CALL LSTIMER('DAVID. SOLVER ',t1,t2,arh%lupri)
 
     !Now we construct the new density from X:
@@ -345,7 +345,7 @@ Linesearch: if (CFG%arh_linesearch) then
   EXIT
 else
   CALL LSTIMER('START ',t1,t2,decomp%lupri)
-  call solver(CFG,G,X)
+  call davidson_solver(CFG,G,X)
   CALL LSTIMER('DAVID. SOLVER ',t1,t2,arh%lupri)
   arh%xnorm=dsqrt(mat_sqnorm2(X))
   !Now we construct the new density from X:
@@ -786,8 +786,10 @@ end subroutine linesearch_thresholds
   integer :: it
   
 
-  write(davidCFG%lupri,'(f10.4,f12.1,5X,f10.4,f11.2,f8.1,f7.1,f14.1,6X,i5,a)') davidCFG%stepsize, 0.0,step, davidCFG%mu,&
-  &0.0,0.0,0.0,it+1,'  %%'
+
+  write(davidCFG%lupri,'(i5,a,f9.3,a,f9.3,a,f9.2,a)') it+1,' total step norm =',step,' trust radius = '&
+  &,davidCFG%stepsize,' mu = ',davidCFG%mu, '  %#%' 
+
  
 
   end subroutine print_info_davidson

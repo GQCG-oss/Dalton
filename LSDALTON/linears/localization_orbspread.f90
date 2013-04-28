@@ -17,7 +17,7 @@ use matrix_operations_aux
 use arhDensity
 use kurtosis
 use davidson_settings
-use driver
+use davidson_solv_mod
 use LSTIMING
 use ARHmodule
 use trustradius_mod, only: update_trustradius
@@ -87,7 +87,7 @@ write(ls%lupri,'(I3,A,ES10.2,A,ES10.3,A,ES10.2,A,ES10.2,A,ES10.3,A,I3,A,f10.3,A,
        exit
     end if
    
-   call solver(CFG,G,X)
+   call davidson_solver(CFG,G,X)
 
    ! global and local thresholds defined in CFG settings
    if (dabs(CFG%mu)> 1.0) CFG%conv_thresh=CFG%global_conv_thresh
@@ -203,7 +203,7 @@ real(realk) :: nrm_thresh,stepsize,orig_Eval
     if(nrmG .le. CFG%macro_thresh) exit
 
    
-   call solver(CFG,G,X)
+   call davidson_solver(CFG,G,X)
 
    ! global and local thresholds defined in CFG settings
    if (dabs(CFG%mu)> 1.0) CFG%conv_thresh=CFG%global_conv_thresh

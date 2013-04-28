@@ -524,11 +524,6 @@ add_executable(
     ${LINK_FLAGS}
     )
 
-add_executable(
-    externloc.x
-    ${CMAKE_SOURCE_DIR}/tools/externloc.f90
-    ${LINK_FLAGS}
-    )
 
 add_executable(
     lslib_tester.x
@@ -540,7 +535,6 @@ if(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX)
   SET_TARGET_PROPERTIES(lsdalton.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
   SET_TARGET_PROPERTIES(lslib_tester.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
   SET_TARGET_PROPERTIES(gridgen.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
-  SET_TARGET_PROPERTIES(externloc.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
 endif()
 
 if(ENABLE_OPENRSP)
@@ -609,11 +603,6 @@ target_link_libraries(
    ${LIBS}
    ) 
 
-target_link_libraries(
-   externloc.x
-   lsdalton
-   ${LIBS}
-   ) 
 
 target_link_libraries(
    lslib_tester.x
