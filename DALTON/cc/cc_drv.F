@@ -123,7 +123,7 @@ Cholesky
 #include "ccdeco.h"
 Cholesky
 C
-      PARAMETER(NMODEL = 18)
+      PARAMETER(NMODEL = 21)
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
       LOGICAL   MOLGRD, LHTF, NOAUXBSAVE
@@ -303,6 +303,11 @@ C
       LCCSAV(16) = CC3
       LCCSAV(17) = CC1A
       LCCSAV(18) = CC1B
+!     FRAN/SONIA
+      LCCSAV(19) = RCCD
+      LCCSAV(20) = DRCCD
+      LCCSAV(21) = RTCCD
+
       APROXR12   = '   '
 C
       LTCEXC = .FALSE.
@@ -496,6 +501,10 @@ C
          IF (I.EQ.16) CC3    = LCCSAV(16)
          IF (I.EQ.17) CC1A   = LCCSAV(17)
          IF (I.EQ.18) CC1B   = LCCSAV(18)
+!FRAN/SONIA
+         IF (I.EQ.19) RCCD   = LCCSAV(19)
+         IF (I.EQ.20) DRCCD  = LCCSAV(20)
+         IF (I.EQ.21) RTCCD  = LCCSAV(21)
 C
          IF (CCS  .AND. LCCSAV(3)) GOTO 100
          IF (MP2  .AND. LCCSAV(3)) GOTO 100
@@ -525,7 +534,10 @@ C        -----------------------------------------------------------
 
          IF (I .GT. 9) INTTR = .TRUE.
 C
-         IF ((I.GT.15).AND.(.NOT.CCSD)) THEN
+         !IF ((I.GT.15).AND.(.NOT.CCSD)) THEN
+         !FRAN/SONIA, 19,20 and 21 are not CCSDT methods!
+         IF (((I.GT.15).AND.(I.LT.19)).AND.(.NOT.CCSD)) THEN
+
             CCSDT  =  .TRUE.
          ENDIF
 C
@@ -1133,6 +1145,10 @@ C
       CC3    = LCCSAV(16)
       CC1A   = LCCSAV(17)
       CC1B   = LCCSAV(18)
+!     FRAN/SONIA
+      RCCD   = LCCSAV(19)
+      DRCCD  = LCCSAV(20)
+      RTCCD  = LCCSAV(21)
 C
 C     Close files.
 C
@@ -1424,6 +1440,11 @@ C
 C
       CCT    = .FALSE.
       STCCS  = .FALSE.
+CSonia
+      RCCD = .false.
+      DRCCD = .false.
+      RTCCD = .false.
+      SOSEX = .false.
 C
       CALL QEXIT('CC_FALSE')
 C
