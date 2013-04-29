@@ -281,6 +281,7 @@ cc/cc_mofcon2.F
 cc/cc_mofconr12.F
 cc/cc_nuccon.F
 cc/cc_opa.F
+cc/cc_omega2_rccd.F
 cc/cc_pckutil.F
 cc/cc_pqi.F
 cc/cc_qaos.F

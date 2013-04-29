@@ -32,6 +32,8 @@ C
 C     Ove juli-sept. 1995: RSP intermediates
 C                          noccit
 C     Ove februar    1997: CCS, FD gradient hacks and restart.
+C     Sonia/FRAN: rCCD, drCCD 3/9-2009
+C     Sonia: rTCCD, 8/11-2010
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -80,6 +82,7 @@ Cholesky
       DATA BLANKS /'                        '/
       INTEGER LENMOD
       CHARACTER*8 LABEL1
+      LOGICAL DRPA_ISSTABILIZINGSOLUTION
 C
       CALL QENTER('CCSD_ENERGY')
 celena
@@ -97,6 +100,11 @@ C
       IF (CC2)   MODEL = 'CC2       '
       IF (CCD)   MODEL = 'CCD       '
       IF (CCSD)  MODEL = 'CCSD      '
+!SONIA/FRAN
+      IF (RCCD)  MODEL = 'RCCD      '
+      IF (DRCCD) MODEL = 'DRCCD     '
+      IF (RTCCD) MODEL = 'RTCCD     '
+!
       IF (CC3)   MODEL = 'CC3       '
       IF (CC1A)  MODEL = 'CCSDT-1a  '
       IF (CC1B)  MODEL = 'CCSDT-1b  '
@@ -309,7 +317,7 @@ C
 C----------------------------------------------------------------
 C     If CCS then no the wavefunction optimization.
 C     CCS energy is equal to HF energy -> find and put in ECCGRS.
-C     For polarizabilities and oscillatro strengths,
+C     For polarizabilities and oscillator strengths,
 C     we need the (ia|jb) integrals.
 C----------------------------------------------------------------
 C
@@ -441,7 +449,8 @@ C     Dynamic allocation.
 C------------------------
 C
       NTAMR12 = 0 
-      IF (CCD) THEN
+      !SONIA IF (CCD) THEN
+      IF ((CCD).or.(RCCD).or.(DRCCD).or.(RTCCD)) THEN
         NTAMP = NT2AMX
       ELSE
         NTAMP = NT1AMX  + NT2AMX
@@ -577,14 +586,68 @@ C           Print MP2 pair energies (WK/UniKA/21-11-2002).
            CALL CCRHS_EPPP(WORK(KT2AM),WORK(KEND1),LWRK1,APROXR12,
      &                     LRES,IDUMMY,CDUMMY,IDUMMY,1)
          END IF
-         CALL CCSD_GUESS(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),IPRINT)
-         IF (IPRINT .GT. 4) THEN
-            CALL AROUND('Largest amplitudes in MP2 guess')
-            CALL DCOPY(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
-            CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KOMEG1+NT1AMX),1)
-            CALL CC_PRAM(WORK(KOMEG1),PT1,1,.FALSE.)
-         ENDIF
-         ETY1 = 'MP2  '
+!
+!Sonia/Fran/TBP RCCD related stuff
+!
+         IF ((RCCD.OR.DRCCD) .AND.
+     *            ((IT2START.EQ.-1).OR.(IT2START.EQ.1))) THEN
+           WRITE(LUPRI,*)'AMT: HERE IT2START IS',IT2START
+           IF (IT2START.EQ.-1) THEN
+              ! zero amplitudes (DEC-style initial guess)
+              CALL DZERO(WORK(KT1AM),NT1AMX)
+              CALL DZERO(WORK(KT2AM),NT2AMX)
+           ELSE IF (IT2START.EQ.1) THEN
+              ! Generate DRCCD start guess (also for RCCD)
+              KG=KEND1
+              KEND1=KG+NT2AMX
+              LWRK1=LWORK-KEND1+1
+              IF (LWRK1.LT.0) THEN
+                 CALL QUIT(
+     *                  'Insufficient memory in CCSD_ENERGY [RPA strt]')
+              END IF
+              CALL DSCAL(NT2AMX,2.0d0,WORK(KT2AM),1)
+              CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KG),1)
+              CALL DZERO(WORK(KOMEG2),NT2AMX)
+              CALL DRPA_NXTAM(WORK(KOMEG2),WORK(KT2AM),WORK(KFOCKD),
+     &                        WORK(KG),1.0d0,WORK(KT1AM),NT1AMX,
+     &                        NRHF(1),NVIR(1))
+              CALL DZERO(WORK(KT1AM),NT1AMX)
+              KEND1=KG
+              LWRK1=LWORK-KEND1+1
+           ELSE
+              CALL QUIT('Ooops, logical error in CCSD_ENERGY [IG]')
+           END IF
+           IF (RCCD) THEN
+              ETY1 = 'RCCD '
+           ELSE
+              IF (SOSEX) THEN
+                 ETY1 = 'SOSEX'
+              ELSE
+                 ETY1 = 'DRCCD'
+              END IF
+           END IF
+           IF (IPRINT .GT. 4) THEN
+              IF (IT2START.EQ.-1) THEN
+                 CALL AROUND('Largest amplitudes in DEC-style guess')
+              ELSE IF (IT2START.EQ.1) THEN
+                 CALL AROUND('Largest amplitudes in DRCCD guess')
+              ELSE
+                 CALL QUIT('Ooops, logical error in CCSD_ENERGY [IGP]')
+              END IF
+              CALL DCOPY(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
+              CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KOMEG1+NT1AMX),1)
+              CALL CC_PRAM(WORK(KOMEG1),PT1,1,.FALSE.)
+           ENDIF
+         ELSE
+           CALL CCSD_GUESS(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),IPRINT)
+           IF (IPRINT .GT. 4) THEN
+              CALL AROUND('Largest amplitudes in MP2 guess')
+              CALL DCOPY(NT1AMX,WORK(KT1AM),1,WORK(KOMEG1),1)
+              CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KOMEG1+NT1AMX),1)
+              CALL CC_PRAM(WORK(KOMEG1),PT1,1,.FALSE.)
+           ENDIF
+           ETY1 = 'MP2  '
+         END IF
  
       ENDIF
 C
@@ -610,7 +673,9 @@ C
 C
       ENDIF
 C
-      IF (CCD) THEN
+      !IF (CCD) THEN
+      !SONIA/FRAN
+      IF ((CCD).or.(RCCD).or.(DRCCD).or.(RTCCD)) THEN
          CALL DZERO(WORK(KT1AM),NT1AMX)
       ENDIF
       IF (CCSTST) THEN
@@ -629,6 +694,7 @@ C       read R12 amplitudes
 C
       IT1 = 0
       IF ( ETY1.EQ.'RSTAR' ) IT1 = 1
+      !Sonia/FRAN: compute energy (from current_IT -amplitudes)
       CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
      *                WORK(KTAMP12),
      *                WORK(KEND1),LWRK1,EN2,POTNUC,ESCF,
@@ -687,10 +753,16 @@ C
             WRITE(LUPRI,*)'      -----------------'
             WRITE(LUPRI,*)
          ENDIF
-
-         CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),WORK(KT2AM),
-     *               WORK(KEND1),LWRK1,APROXR12)
-
+         !compute RHS of Newton, Omega_ai, Omega_aibj
+         !Sonia
+         IF ((RCCD).or.(DRCCD).or.(RTCCD)) THEN
+           call flshfo(lupri)
+           call CC_OMEGA2_RCCD(MODEL,WORK(KOMEG1),WORK(KOMEG2),
+     &                         WORK(KEND1),LWRK1)
+         else
+           CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),
+     &                 WORK(KT2AM),WORK(KEND1),LWRK1,APROXR12)
+         end if
 C
   240    CONTINUE
 C
@@ -700,7 +772,9 @@ C
          IF (CCSTST) THEN
             CALL DZERO(WORK(KOMEG2),NT2AMX)
          ENDIF
-         IF (CCD) THEN
+         !IF (CCD) THEN
+         IF ((CCD).or.(RCCD).or.(DRCCD).or.(RTCCD)) THEN
+            !Sonia & FRAN
             CALL DZERO(WORK(KOMEG1),NT1AMX)
          ENDIF
 C
@@ -737,9 +811,33 @@ C
 C
   529    FORMAT(7X,A,D24.10)
 C
-         CALL CCSD_NXTAM(WORK(KT1AM),WORK(KT2AM),DUMMY,WORK(KOMEG1),
-     *                   WORK(KOMEG2),DUMMY,WORK(KFOCKD),.FALSE.,
-     *                   ISYMOP,0.0D0)
+         IF (NSYM.EQ.1 .AND. (RCCD.OR.DRCCD) .AND. IT2UPD.EQ.1) THEN
+            WRITE(LUPRI,'(A)')
+     &      'Using Henderson and Scuseria''s DRCCD amplitude update'
+            KG=KEND1
+            KUPDSCR=KG+NT2AMX
+            KEND1=KUPDSCR+NT1AMX
+            LWRK1=LWORK-KEND1+1
+            IF (LWRK1.LT.0) THEN
+               CALL QUIT('Insufficient memory for amplitude update')
+            END IF
+            REWIND(LUIAJB)
+            CALL READI(LUIAJB,IRAT*NT2AMX,WORK(KG))
+            CALL DSCAL(NT2AMX,2.0d0,WORK(KG),1)
+            CALL DRPA_NXTAM(WORK(KT2AM),WORK(KOMEG2),WORK(KFOCKD),
+     *                      WORK(KG),1.0d0,WORK(KUPDSCR),NT1AMX,
+     *                      NRHF(1),NVIR(1))
+            KEND1=KG
+            LWRK1=LWORK-KEND1+1
+         ELSE
+            IF (RCCD.OR.DRCCD) THEN
+               WRITE(LUPRI,'(A)')
+     &         'Using standard MP2-like amplitude update'
+            END IF
+            CALL CCSD_NXTAM(WORK(KT1AM),WORK(KT2AM),DUMMY,WORK(KOMEG1),
+     *                      WORK(KOMEG2),DUMMY,WORK(KFOCKD),.FALSE.,
+     *                      ISYMOP,0.0D0)
+         END IF
 C        IF (IPRINT .GE. 5) THEN
 C           WRITE(LUPRI,529) 'Norm^2 of t1am   after NXTAM:',
 C    *               DDOT(NT1AMX,WORK(KT1AM),1,WORK(KT1AM),1)
@@ -789,7 +887,8 @@ C            ENDIF
          IF (CCSTST) THEN
             CALL DZERO(WORK(KT2AM),NT2AMX)
          ENDIF
-         IF (CCD) THEN
+         !SONIA/FRAN IF (CCD) THEN
+         IF ((CCD).or.(RCCD).or.(DRCCD).or.(RTCCD)) THEN
             CALL CCSD_DIIS(WORK(KOMEG2),WORK(KT2AM),NTAMP,ITER)
          ELSE
             CALL DCOPY(NT1AMX,WORK(KT1AM),1,WORK(KTAMP1),1)
@@ -808,6 +907,10 @@ C
          IF (CC1B)  ETY2 = 'CC-1b'
          IF (CC1A)  ETY2 = 'CC-1a'
          IF (CC2)   ETY2 = 'CC2  '
+         IF (RCCD)  ETY2 = 'RCCD '
+         IF (DRCCD) ETY2 = 'DRCCD'
+         IF (SOSEX) ETY2 = 'SOSEX'
+         IF (RTCCD) ETY2 = 'RTCCD'
 C
          IT1 = 1
          CALL CCSD_ECCSD(WORK(KT1AM),WORK(KT2AM),WORK(KFOCKD),
@@ -883,6 +986,24 @@ C        Print CC pair energies (WK/UniKA/21-11-2002).
          CALL CCSD_CBS2(WORK(KT1AM),WORK(KT2AM),WORK(KEND1),LWRK1,
      *                  WORK(KT1S),WORK(KT1T),WORK(KT2S),WORK(KT2T),
      *                  ETY2)
+      END IF
+C
+C For drCCD=dRPA: check that solution is stabilizing
+      IF (NSYM.EQ.1 .AND. DRCCD .AND. HURWITZ_CHECK) THEN
+         REWIND(LUIAJB)
+         CALL READI(LUIAJB,IRAT*NT2AMX,WORK(KOMEG2))
+         CALL DSCAL(NT2AMX,2.0d0,WORK(KOMEG2),1)
+         IF (DRPA_ISSTABILIZINGSOLUTION(WORK(KT2AM),WORK(KOMEG2),
+     *                                  WORK(KFOCKD),WORK(KEND1),LWRK1,
+     *                                  NRHF(1),NVIR(1)))
+     *   THEN
+            WRITE(LUPRI,'(/,1X,A,/)')
+     *      '====> Solution is stabilizing <===='
+         ELSE
+            WRITE(LUPRI,'(/,1X,A,/)')
+     *      '====> WARNING: Solution is not stabilizing <===='
+         END IF
+         CALL FLSHFO(LUPRI)
       END IF
 C
 C-----------------
@@ -1276,6 +1397,19 @@ C
 C
       CCP3 = CCP3SV
       CCPT = CCPTSV
+!---
+!      IF (DRCCD.AND.(.NOT.LSOSEX)) THEN
+!        ECCLAM=ETMP
+!      ELSE IF (MP2) THEN
+!        ECCLAM=EMP2
+!      ELSE
+!        ECCLAM=EN2
+!      ENDIF
+! Probably assumes we run in order RCCD then RTCCD...
+!      IF (RTCCD) THEN
+!        ECCLAM=ECCGRS
+!      ENDIF
+
 C
 C=======================================================
 C     Calculate Intermediates for response calculations:
@@ -1474,6 +1608,83 @@ C
 C
       RETURN
       END
+!-----------
+C  /* Deck drpa_nxtam */
+      Subroutine dRPA_NxtAm(T2Am,Omega2,OrbEn,g,alpha,Work,lWork,o,v)
+C
+C     Thomas Bondo Pedersen, May 2011.
+C
+C     Compute updated doubles amplitudes according to the appendix of
+C        Henderson and Scuseria, Mol. Phys. 108, 2511-2517 (2010)
+C     Intended for drCCD (=dRPA):
+C        Omega2(ai,bj) <-- T2Am(ai,bj)
+C                      - alpha/2 * Omega2(ai,bj)/(G(ai,ai)-G(bj,bj))
+C        G(ai,ai)=OrbEn(o+a)-OrbEn(i)
+C                +g(ai,ai) + 2*sum_bj T2Am(ai,bj)*g(ai,bj)
+C
+C     On input,
+C        T2Am: current doubles amplitudes (packed, LT storage)
+C        Omega2: omega vector computed with T2Am (packed, LT storage)
+C        OrbEn: orbital energies (occupied then virtual)
+C        g: 2*(ai|bj) integrals (packed, LT storage)
+C        alpha: scaling constant
+C        Work(lWork): work space (lWork >= v*o)
+C        o: number of occupied orbitals
+C        v: number of virtual orbitals
+C     On exit, only Omega2 has changed:
+C        Omega2: updated doubles amplitudes
+C
+C     NOTE: symmetry is not treated in this routine (but can be handled
+C           by calling it for each symmetry block).
+C
+      Implicit None
+      Integer lWork, o, v
+      Real*8  T2Am(*), Omega2(*)
+      Real*8  OrbEn(o+v)
+      Real*8  g(*)
+      Real*8  alpha
+      Real*8  Work(lWork)
+
+      Integer vo
+      Integer ai, bj, aibj
+
+      Integer m, n
+      Integer iTri, Occ, Vir
+      Real*8  del
+      iTri(m,n) = max(m,n)*(max(m,n)-3)/2+m+n
+      Vir(m)=mod(m-1,v)+1
+      Occ(m)=(m-Vir(m))/v+1
+      del(m)=OrbEn(o+Vir(m))-OrbEn(Occ(m))
+
+      ! Check memory
+      vo=v*o
+      If (vo.lt.1) Return
+      If (lWork.lt.vo) Then
+         Call Quit('Insufficient memory in dRPA_NxtAm')
+      End If
+
+      ! Compute 2*G(ai,ai)
+      Do ai=1,vo
+         Work(ai)=0.0d0
+         Do bj=1,vo
+            aibj=iTri(ai,bj)
+            Work(ai)=Work(ai)+T2Am(aibj)*g(aibj)
+         End Do
+         Work(ai)=2.0d0*(del(ai)+g(iTri(ai,ai))+2.0d0*Work(ai))
+      End Do
+
+      ! Compute updated amplitudes
+      aibj=0
+      Do ai=1,vo
+         Do bj=1,ai
+            aibj=aibj+1
+            Omega2(aibj)=T2Am(aibj)
+     &                  -alpha*Omega2(aibj)/(Work(ai)+Work(bj))
+         End Do
+      End Do
+
+      End
+!-----------
 C  /* Deck ccsd_nxtam */
       SUBROUTINE CCSD_NXTAM(T1AM,T2AM,T2AM2,OMEGA1,OMEGA2,OMEGA22,
      *                      FCDIAG,TRIPLET,ISYMT,FREQ)
@@ -5852,3 +6063,153 @@ C
 
       RETURN
       END
+C  /* Deck drpa_checkstability */
+      Logical Function dRPA_isStabilizingSolution(T2Am,g,OrbEn,
+     &                                            Work,lWork,o,v)
+C
+C     Thomas Bondo Pedersen, May 2011.
+C     Check if T2Am is a stabilizing solution of the dRPA=drCCD
+C     equations. I.e. check that -A+2BT is Hurwitz (i.e. all eigenvalues
+C     have negative real part).
+C     A_aibj = (e_a-e_i)delta(ab)delta(ij)
+C            + 2(ai|bj)
+C     B_aibj = -2(ai|bj)
+C     On entry,
+C        T2Am        --- amplitudes (solution vector), packed LT storage
+C        g           --- 2(ai|bj), packed LT storage
+C        OrbEn       --- orbital energies, occupied then virtual
+C        Work(lWork) --- work space
+C        o           --- number of occupied orbs
+C        v           --- number of occupied orbs
+C     Unchanged on exit.
+C
+C     NOTE: symmetry not implemented!
+      Implicit None
+      Integer lWork, o, v
+      Real*8  T2Am(*)
+      Real*8  g(*)
+      Real*8  OrbEn(*)
+      Real*8  Work(lWork)
+
+      Logical isHurwitz
+
+      Integer vo, vo1
+      Integer kM, kNext, lWrk
+      Integer ai, bj, ck, kM0, kM1, kT, kg
+
+      Integer m, n
+      Integer iTri, Occ, Vir
+      Real*8  del
+      iTri(m,n) = max(m,n)*(max(m,n)-3)/2+m+n
+      Vir(m)=mod(m-1,v)+1
+      Occ(m)=(m-Vir(m))/v+1
+      del(m)=OrbEn(o+Vir(m))-OrbEn(Occ(m))
+
+      ! Check memory
+      vo=v*o
+      If (vo.lt.1) Then
+         dRPA_isStabilizingSolution=.True.
+         Return
+      End If
+      kM=1
+      kNext=kM+vo**2
+      lWrk=lWork-kNext+1
+      If (lWrk.lt.0) Then
+         Call Quit('Insufficient memory in dRPA_isStabilizingSolution')
+      End If
+
+      ! Compute M
+      If (lWrk.gt.2*vo**2) Then
+         kT=kNext
+         kg=kT+vo**2
+         Call CC_T2Sq(T2Am,Work(kT),1)
+         Call CC_T2Sq(g,Work(kg),1)
+         Call dCopy(vo**2,Work(kg),1,Work(kM),1)
+         Call dGeMM('N','N',vo,vo,vo,
+     &              2.0d0,Work(kg),vo,Work(kT),vo,
+     &              1.0d0,Work(kM),vo)
+         kM1=kM
+         vo1=vo+1
+         Do ai=1,vo
+            Work(kM1)=Work(kM1)+del(ai)
+            kM1=kM1+vo1
+         End Do
+      Else
+         Do bj=1,vo
+            kM0=kM-1+vo*(bj-1)
+            Do ai=1,vo
+               kM1=kM0+ai
+               Work(kM1)=0.0d0
+               Do ck=1,vo
+                  Work(kM1)=Work(kM1)+g(iTri(ai,ck))*T2Am(iTri(ck,bj))
+               End Do
+            End Do
+         End Do
+         Call dScal(vo**2,2.0d0,Work(kM),1)
+         Do bj=1,vo
+            kM0=kM-1+vo*(bj-1)
+            Do ai=1,bj-1
+               Work(kM0+ai)=Work(kM0+ai)+g(iTri(ai,bj))
+            End Do
+            Work(kM0+bj)=Work(kM0+bj)+del(bj)+g(iTri(bj,bj))
+            Do ai=bj+1,vo
+               Work(kM0+ai)=Work(kM0+ai)+g(iTri(ai,bj))
+            End Do
+         End Do
+      End If
+      Call dScal(vo**2,-1.0d0,Work(kM),1)
+
+      ! Check that M is Hurwitz
+      dRPA_isStabilizingSolution=isHurwitz(Work(kM),vo,Work(kNext),lWrk)
+
+      End
+C  /* Deck isHurwitz */
+      Logical Function isHurwitz(X,n,Work,lWork)
+C
+C     Thomas Bondo Pedersen, May 2011.
+C
+C     Returns .True. if X(n,n) is Hurwitz.
+C
+C     Version 1: check by brute force diagonalization that the real part
+C                of all eigenvalues is negative.
+C
+      Implicit None
+      Integer n
+      Real*8  X(n,n)
+      Integer lWork
+      Real*8  Work(lWork)
+
+      Real*8  Tol
+      Parameter (Tol=-1.0d-16)
+
+      Character*53 Str
+      Integer kwr, kwi, kduml, kdumr, kNext, lWrk, irc, i
+
+      isHurwitz=.True.
+      If (n.gt.0) Then
+         kwr=1
+         kwi=kwr+n
+         kduml=kwi+n
+         kdumr=kduml+1
+         kNext=kdumr+1
+         lWrk=lWork-kNext+1
+         If (lWrk.lt.4*n) Then
+            Call Quit('Insufficient memory in isHurwitz')
+         End If
+         Call dGeEV('N','N',n,X,n,Work(kwr),Work(kwi),
+     &              Work(kduml),1,Work(kdumr),1,
+     &              Work(kNext),lWrk,irc)
+         If (irc.ne.0) Then
+            Write(Str,'(A,I9)')
+     &      'diagonalization failed, dGeEV returned code ',irc
+            Call Quit('isHurwitz: '//Str)
+         Else
+            i=0
+            Do While (i.lt.n .and. isHurwitz)
+               isHurwitz=Work(kwr+i).lt.Tol
+               i=i+1
+            End Do
+         End If
+      End If
+      End
+
