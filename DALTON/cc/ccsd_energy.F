@@ -1436,8 +1436,13 @@ C
          CCSAV = CCSDT
          CCSDT = .FALSE.
   
-         CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),WORK(KT2AM),
+         if ((RCCD).or.(DRCCD).or.(RTCCD)) then 
+           write(lupri,*)'RCCD/RPA: Skip RHSN to compute intermediates'
+         else
+          CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),WORK(KT2AM),
      *               WORK(KEND1),LWRK1,APROXR12)
+         end if
+
          CCSDT = CCSAV
 C
          IF (IPRINT .GT. 1) WRITE(LUPRI,'(/)')
