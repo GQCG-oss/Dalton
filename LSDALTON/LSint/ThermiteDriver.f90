@@ -18,7 +18,7 @@ MODULE integraldriver
   use thermite_OD
   use ls_util
   use Thermite_prop
-  use Thermite_Mem
+  use ThermiteMem_module
   use Integralparameters
   use Fundamental
   use OverlapType

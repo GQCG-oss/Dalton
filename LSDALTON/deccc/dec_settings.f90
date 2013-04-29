@@ -178,7 +178,7 @@ contains
     !> Logical unit number for DALTON.OUT
     integer,intent(in) :: output
     character(len=70) :: word
-    integer :: fotlevel,one_force_not_enough
+    integer :: fotlevel
 
     ! Just to be sure, we set the default values before
     ! applying input values.
