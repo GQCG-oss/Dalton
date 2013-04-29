@@ -1491,6 +1491,7 @@ Real(realk)  :: factor,center(3,1)
 logical :: antiAB,antiCD,AntipermuteAB,AntipermuteCD,translate
 Type(derivativeInfo) :: derivInfo
 integer :: n1,n2,n3,n4,sA,sB,sC,sD,CMimat,maxBat,maxAng,itrans,nDerivQ
+integer :: dim5(4),iAtom1,iAtom2,i1,i2,iPermute,nPermute,nAtoms
 
 antiAB=.FALSE.
 antiCD=.FALSE.
@@ -1559,11 +1560,12 @@ nDerivQ        = ngeoderivcompQ
 ndim5output    = Lsoutput%ndim(5)
 nPasses = P%nPasses*Q%nPasses
 
-if(nderiv.GT.1)then
+if(input%geoDerivOrder.GE.1)then
    CALL initDerivativeOverlapInfo(derivInfo,PQ,Input)
    IF (IPRINT.GT. 50) THEN
       CALL printDerivativeOverlapInfo(derivInfo,lupri)
    ENDIF
+   IF (input%geoDerivOrder.GT.2) nAtoms = res%nAtom(1)
 endif
 if(Input%LinComCarmomType.GT.0)then 
    !magnetic derivative overlaps and other integrals are a 
@@ -1607,7 +1609,7 @@ DO iPassP=1,P%nPasses
   batchA = P%orb1batch(iPassP)
   atomB  = P%orb2atom(iPassP)
   batchB = P%orb2batch(iPassP)
-  IF(nderiv.GT.1)then
+  IF(input%geoDerivOrder.GE.1)then
     derivInfo%Atom(1)=atomA
     derivInfo%Atom(2)=atomB
   ELSE
@@ -1625,7 +1627,7 @@ DO iPassP=1,P%nPasses
     batchC = Q%orb1batch(iPassQ)
     atomD  = Q%orb2atom(iPassQ)
     batchD = Q%orb2batch(iPassQ)
-    IF(nderiv.GT.1)then
+    IF(input%geoDerivOrder.GE.1)then
        derivInfo%Atom(3)=atomC
        derivInfo%Atom(4)=atomD
     ELSE
@@ -1683,26 +1685,47 @@ DO iPassP=1,P%nPasses
         DCBA => res%LSAO(indDCBA)%elms
      ENDIF
      DO iDeriv = 1,ndim5
-!    iDeriv = 0
-!    DO iDerivP=1,ndim5P
-!     DO iDerivQ=1,ndim5Q
-!      iDeriv = iDeriv + 1
        IF(CMimat.EQ.0)THEN
           iDim5=ideriv
        ELSE
           IF(iDeriv .NE. CMimat)CYCLE
           iDim5=1
        ENDIF
-       IF (nderiv.GT. 1)THEN
-!       IF (nderivQ.GT.1) THEN
+       Dim5(1) = iDim5
+       nPermute = 1
+       IF (input%geoDerivOrder.EQ. 1)THEN
           iDer = derivInfo%dirComp(iDeriv)
           iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
-!       ELSE
-!         iDer = derivInfo%dirComp(iDeriv)
-!         iAtom = derivInfo%Atom(derivInfo%AO(1,iDerivP))
-!       ENDIF
-        iDim5 = 3*(iAtom-1)+ider
+          Dim5(1) = 3*(iAtom-1)+ider
+       ELSEIF (input%geoDerivOrder.EQ. 2)THEN
+          iDer = derivInfo%dirComp(iDeriv)
+          iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
+          iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
+          IF (derivInfo%AO(1,iDeriv).NE.derivInfo%AO(2,iDeriv)) nPermute=2
+          IF (iDer.EQ.1) THEN
+            i1 = 1
+            i2 = 1
+          ELSE IF (iDer.EQ.2) THEN
+            i1 = 1  
+            i2 = 2
+          ELSE IF (iDer.EQ.3) THEN
+            i1 = 1  
+            i2 = 3
+          ELSE IF (iDer.EQ.4) THEN
+            i1 = 2  
+            i2 = 2
+          ELSE IF (iDer.EQ.5) THEN
+            i1 = 2  
+            i2 = 3
+          ELSE IF (iDer.EQ.6) THEN
+            i1 = 3  
+            i2 = 3
+          ENDIF
+          Dim5(1) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom1-1)+i1
+          Dim5(2) = 3*nAtoms*(3*(iAtom1-1)+i2-1) + 3*(iAtom2-1)+i2
        ENDIF
+       DO iPermute=1,nPermute
+       iDim5 = Dim5(iPermute)
        IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
           CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
@@ -1897,6 +1920,61 @@ DO iPassP=1,P%nPasses
           ENDIF
           call mem_workpointer_dealloc(QPmat5)
        ENDIF !translate
+       ENDDO
+       IF (IPRINT.GT.40) THEN
+          IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
+             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+             CALL printInt(BADC,'BADC',n2,n1,n4,n3,ndim5output,lupri)
+             CALL printInt(CDAB,'CDAB',n3,n4,n1,n2,ndim5output,lupri)
+             CALL printInt(CDBA,'CDBA',n3,n4,n2,n1,ndim5output,lupri)
+             CALL printInt(DCAB,'DCAB',n4,n3,n1,n2,ndim5output,lupri)
+             CALL printInt(DCBA,'DCBA',n4,n3,n2,n1,ndim5output,lupri)
+          ELSE IF (permuteOD.AND.permuteCD) THEN
+             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+             CALL printInt(CDAB,'CDAB',n3,n4,n1,n2,ndim5output,lupri)
+             CALL printInt(DCAB,'DCAB',n4,n3,n1,n2,ndim5output,lupri)
+          ELSE IF (permuteOD.AND.permuteAB) THEN
+             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+             CALL printInt(CDAB,'CDAB',n3,n4,n1,n2,ndim5output,lupri)
+             CALL printInt(CDBA,'CDBA',n3,n4,n2,n1,ndim5output,lupri)
+          ELSE IF (antipermuteAB.AND.permuteCD) THEN
+             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+             CALL printInt(BADC,'BADC',n2,n1,n4,n3,ndim5output,lupri)
+          ELSE IF (permuteAB.AND.antipermuteCD) THEN
+             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+             CALL printInt(BADC,'BADC',n2,n1,n4,n3,ndim5output,lupri)
+          ELSE IF (permuteAB.AND.permuteCD) THEN
+             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+             CALL printInt(BADC,'BADC',n2,n1,n4,n3,ndim5output,lupri)
+          ELSE IF (antipermuteAB) THEN
+             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+          ELSE IF (permuteAB) THEN
+             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+          ELSE IF (antipermuteCD) THEN
+             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+          ELSE IF (permuteCD) THEN
+             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+          ELSE IF (permuteOD) THEN
+             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL printInt(CDAB,'CDAB',n3,n4,n1,n2,ndim5output,lupri)
+          ELSE
+             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+          ENDIF
+       ENDIF !IPRINT
 !     ENDDO !iDerivQ
 !    ENDDO !iDerivP
      ENDDO !iDeriv
@@ -1910,7 +1988,28 @@ ELSEIF(PQ%reverseOrder)THEN
    call mem_workpointer_dealloc(QPmat4)
 ENDIF
 
+
 CONTAINS
+  SUBROUTINE printInt(ABCD,text,n1,n2,n3,n4,n5,lupri)
+  implicit none
+  Integer,intent(IN)          :: n1,n2,n3,n4,n5,lupri
+  Character(len=4),intent(IN) :: text
+  Real(realk),intent(IN)      :: ABCD(n1,n2,n3,n4,n5)
+  !
+  Integer :: i1,i2,i3,i4,i5
+  WRITE(lupri,'(A,A,5I3)') 'Integrals from generalDistributePQ ',text,n1,n2,n3,n4,n5
+  DO i5=1,n5
+  DO i4=1,n1
+  DO i3=1,n3
+  DO i2=1,n2
+    write(lupri,'(A,4I3)') '  --integrals',i1,i3,i4,i5
+    write(lupri,'(4X,10F17.12)') (ABCD(i1,i2,i3,i4,i5),i1=1,n1)
+  ENDDO
+  ENDDO
+  ENDDO
+  ENDDO
+  END SUBROUTINE printInt
+
   SUBROUTINE intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
     implicit none
     Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri

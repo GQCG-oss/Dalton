@@ -574,9 +574,58 @@ calculation. One of them {\em must} be specified.
 
 {\bf Purpose:}
 
-To specify the parameters of the DFT integration.
+To specify the parameters of the DFT integration and the optional use of empirical corrections.
 
 \begin{description}
+
+\item[\Key{DFTAC}]
+  \kw{READ (LUINP,*) RTYPE} \\
+  \kw{READ (LUINP,*) CTYPE} \\
+  \kw{READ (LUINP,*) DFTIPTA, DFTIPTB, DFTBR1, DFTBR2} \\
+  Switches on the asymptotic correction of the exchange correlation potential. This correction is a pointwise manipulation of the 
+  exchange--correlation potential. This implies activation of the .DFTVXC keyword in the SCF stage. RTYPE defines the
+  potential to be used to replace the asymptotic GGA potential, possible options are MULTPOLE (a simple multipole model)
+  and LB94 (the potential from the LB94 model potential~\cite{dft:lb94}). CTYPE defines how the potential of the parent
+  functional is connected to the asymptotic model, possible options are LINEAR (as used in the Tozer-Handy correction~\cite{dft:th}), 
+  TANH (a modified connection by Tozer~\cite{dft:tanh}, which removes discontinuities associated with linear interpolation) and 
+  GRAC (the gradient-regulated asymptotic correction of Gr\"uning \emph{et. al.}~\cite{dft:grac}). 
+  
+  Four numerical input parameters are then input
+  the first two are the $\alpha$ and $\beta$ ionization potentials (either calculated or experimental). If GRAC is chosen for the 
+  connection type then the last two value specify the parameters $\alpha$ and $\beta$ (see Ref.~\cite{dft:grac} for details). 
+  Recommended values are 0.5 and 40.0. Otherwise the last two parameters specify multiples of the 
+  Bragg Radii and are used to define the core, interpolation and asymptotic regions. For grid points within DFTBR1 Bragg Radii of 
+  each atom the potential is unmodified, for points outside DFTBR2 Bragg Radii the potential is replaced with its asymptotic model.
+  In between the interpolation model is used. Recommended values in this case are 3.5 and 4.7. Care should be taken when 
+  choosing alternative values for the final two parameters in each scheme, inappropriate values can make SCF convergence difficult.
+
+
+\item[\Key{DFTD2}]
+  switches on Grimmes DFT-D2 empirical dispersion correction~\cite{dft:dftd2}. The code will attempt to assign the correct functional dependent 
+  parameters based on the chosen DFT functional. Analytic gradient contributions are available.
+ 
+\item[\Key{D2PAR}]
+  \kw{READ (LUINP,*) D2\_s6\_inp, D2\_alp\_inp, D2\_rs6\_inp} \\
+  using this keyword user input values of the $s_6$, $\alpha$ and $s_{r,6}$ DFT-D2 parameters may be specified. If supplied these values override
+  any values defined within the code.
+
+\item[\Key{DFTD3}]
+  switches on Grimmes DFT-D3 empirical dispersion correction~\cite{dft:dftd3}. The code will attempt to assign the correct functional dependent 
+  parameters based on the chosen DFT functional. Analytic gradient contributions are available.
+  
+\item[\Key{DFD3BJ}]
+  switches on Grimmes DFT-D3 empirical dispersion correction with Becke-Johnson damping~\cite{dft:dftd3bj}. 
+  The code will attempt to assign the correct functional dependent parameters based on the chosen DFT functional. 
+  Analytic gradient contributions are available. This is the presently recommended version.
+  
+\item[\Key{3BODY}]
+  keyword for adding 3-body terms to the DFT-D3 dispersion energy. Note that gradients are not implemented for these corrections 
+
+\item[\Key{D3PAR}]
+  \kw{READ (LUINP,*) D3\_s6\_inp, D3\_alp\_inp, D3\_rs6\_inp, D3\_rs18\_inp, D3\_s18\_inp} \\
+  keyword for specifying the $s_6$, $\alpha$, $s_{r,6}$, $s_{r,8}$ and $s_8$ parameters of the DFT-D3 methods. Note, take care to 
+  match the parameter values to the correct version of the DFT-D3 correction.
+
 \item[\Key{DFTELS}]
   \kw{READ (LUINP,*) DFTELS} \\
   safety threshold -- stop if the charge integration gives too large
@@ -590,6 +639,11 @@ To specify the parameters of the DFT integration.
   be skipped) and the second one -- orbital threshold (orbitals are
   assumed to be exactly 0 if they are below the threshold). The
   default value for DFTHR0 is $1.0D-9$ and for DFTRHI is $1.0D-13$.
+
+\item[\Key{DFTVXC}]
+  keyword to specify explicit construction of the exchange--correlation 
+  potential for GGA forms. This is automatically invoked when .DFTAC is selected 
+  and not recommended for use otherwise.
 
 \item[\Key{RADINT}]
   \kw{READ (LUINP,*) RADINT} \\
@@ -641,6 +695,8 @@ generic ones. There are a large number of combined functionals defined below,
 however the user can also create their own combined functionals with 
 the \verb|Combine| keyword. 
 A number of standalone functionals are also included within \dalton. 
+In addition a number of double-hybrid functionals (energies only) are availble,
+which include a post-SCF second-order perturbation theory contribution. 
 
 It should be noted that the input is not case sensitive, although the notation
 employed in this manual makes use of case to exphasise exchange or correlation 
@@ -1153,6 +1209,23 @@ combines the VWN local and P86 non-local correlation functionals.
 Linear combinations of all exchange and correlation functionals listed above
 are possible with the \verb|Combine| keyword.
 
+\subsubsection{Double-hybrid functionals}
+\begin{description}
+\item[B2PLYP] is the double hybrid of Ref.~\cite{dft:b2plyp}
+
+\item[B2TPLYP] is a modification of the B2PLYP functional for theromdynamics~\cite{dft:b2tplyp}
+
+\item[mPW2PLYP] a double hybrid using an alternative GGA exchange contribution and tested on the G3/05 benchmark dataset~\cite{dft:mpw2plyp}
+
+\item[B2GPLYP] is a modification of the B2PLYP functional for general purpose calculations~\cite{dft:b2tplyp}
+
+\item[B2PIPLYP] is a form related to B2PLYP but designed to give better performance for sterically crowed or stacked aromatic ring systems~\cite{dft:b2piplyp}
+
+\item[PBE0DH] a theoretically derived double-hybrid parameterization~\cite{dft:pbe0dh}
+
+\end{description}
+
+Note that at present double-hybrid functionals are implemented for energies only, analytic gradient contributions are not implemented.
 
 \pagebreak[3]
 \subsection{\label{ref-haminp}\Sec{HAMILTONIAN}}

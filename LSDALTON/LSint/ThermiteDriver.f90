@@ -565,10 +565,13 @@ ELSE
    CALL Build_Integrand(PQ,P,Q,INPUT,ILHS,IRHS,LUPRI,IPRINT)
    !   Hermite 2-electron integral over general operator w
    CALL Build_HermiteTUV(INTEGRAL,INPUT,PQ,LUPRI,IPRINT)
+   Integral%startDerivativeIndex = 0
+   Integral%nDerivComp = input%NGEODERIVCOMP
    DO iDerLHS = endDer,startDer,-1
      call setIntegralDerivativOrders(Integral,iDerLHS,derOrder,P%single,Q%single)
      CALL Contract_Q(INTEGRAL,PQ,Input,LUPRI,IPRINT)
      CALL Contract_P(INTEGRAL,PQ,input,LUPRI,IPRINT)
+     Integral%startDerivativeIndex = Integral%startDerivativeIndex + Integral%lhsGeoComp*Integral%rhsGeoComp
    ENDDO
 ENDIF
 
@@ -1495,6 +1498,8 @@ DO ILHS = 1,OD_LHS%nbatches
         CALL JengineInnerCont(PQ,P,PassF,INTEGRAL,INPUT,ILHS,IRHS, &
              &                     INPUT%NDMAT_RHS,LUPRI,IPRINT)
      ENDIF
+     Integral%startDerivativeIndex = 0
+     Integral%nDerivComp = input%NGEODERIVCOMP
      CALL setIntegralDerivativOrders(Integral,input%GEODERIVORDER,input%GEODERIVORDER,P%single,PassF%single)
      CALL Contract_P(INTEGRAL,PQ,input,LUPRI,IPRINT)
      CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,OUTPUT,LUPRI,IPRINT)
@@ -2993,7 +2998,10 @@ integer :: i
  PQ%minAngmom      = P%minAngmom     + Q%minAngmom
  PQ%maxAngmom      = P%maxAngmom     + Q%maxAngmom
  PQ%startAngmom    = P%startAngmom   + Q%startAngmom 
- PQ%endAngmom      = P%endAngmom     + Q%endAngmom 
+ PQ%endAngmom      = PQ%maxAngmom    + INPUT%geoDerivOrder + input%CMorder &
+     &               + INPUT%magderOrderP + INPUT%magderOrderQ
+ IF (INPUT%operator.EQ.KineticOperator) PQ%endAngmom = PQ%endAngmom + 2
+
  PQ%samePQ         = INPUT%sameODs .AND. (ILHS .EQ. IRHS)
  PQ%nAngmom        = P%nAngmom       * Q%nAngmom 
  IF (PQ%samePQ) THEN
@@ -3253,7 +3261,7 @@ DO iAngmom=1,PQ%P%p%nAngmom
    !Output(nPrimP,nOrbQ,ijkP)
    CALL ContractBasis(Integral,PQ%P%p,iAngmom,LUPRI,IPRINT)
    !Output(nContP,nOrbQ,ijkP)
-   CALL extractDifferentiated(Integral,PQ%P%p,iAngmom,integral%lhsGeoOrder,LUPRI,IPRINT)
+   CALL extractDifferentiated(Integral,PQ%P%p,iAngmom,integral%lhsGeoOrder,Integral%lhsGeoComp,LUPRI,IPRINT)
    IF (PQ%P%p%magderiv.EQ.1)CALL extractMagDifferentiated(Integral,PQ%P%p,iAngmom,LUPRI,IPRINT)
    CALL SphericalTransform(Integral,PQ%P%p,iAngmom,LUPRI,IPRINT)
    !Output(nContP,nOrbQ,lmP,nderivP)
@@ -3269,13 +3277,14 @@ END SUBROUTINE Contract_P
 !> \param integral Contains the information about the integrals
 !> \param P Contains the information about the product overlap 
 !> \param iAngmom The angular component of the overlap
+!> \param nComp The number of derivative components
 !> \param LUPRI Default output pint unit
 !> \param IPRINT Print level (0 no output - high lots of output)
-SUBROUTINE extractDifferentiated(Integral,P,iAngmom,iOrder,LUPRI,IPRINT)
+SUBROUTINE extractDifferentiated(Integral,P,iAngmom,iOrder,nComp,LUPRI,IPRINT)
 implicit none
 TYPE(Integralitem),intent(INOUT) :: INTEGRAL
 TYPE(Overlap),intent(IN)         :: P
-Integer,intent(IN)               :: iAngmom,iOrder,LUPRI,IPRINT
+Integer,intent(IN)               :: iAngmom,iOrder,nComp,LUPRI,IPRINT
 !
 Integer :: iA1,iA2,l1,l2,ijk,lm,ijkdiff,ijkcart,dim1,ijk1,ijk2
 Real(realk),dimension(:),pointer :: ptemp
@@ -3308,7 +3317,7 @@ ENDIF
 #endif
 
 CALL extractDifferentiated_PA(Integral%IN,INTEGRAL%OUT,l1,l2,ijkdiff,ijk,dim1,&
-     & P%ngeoDerivComp*P%nCartesianMomentComp,iOrder,P%single,P%orbital1%TYPE_empty,P%orbital2%TYPE_empty,&
+     & nComp*P%nCartesianMomentComp,iOrder,P%single,P%orbital1%TYPE_empty,P%orbital2%TYPE_empty,&
      & LUPRI,IPRINT)
 !
 Integral%nAng = ijk
@@ -3509,9 +3518,9 @@ TYPE(Integrand)    :: PQ
 Integer            :: iAngmom,nMultipoleMomentComp,LUPRI,IPRINT
 logical,intent(IN) :: contAng
 !
-Integer :: nQ,nAng,nCont,ndim5P
+Integer :: nQ,nAng,nCont,ndim5P,startDer
 Integer :: angA,angB,nA,nB,nContA,nContB,nCompA,nCompB,startA,startB,nPassP
-Integer :: nC,nD,nPassQ,ndim5Q
+Integer :: nC,nD,nPassQ,ndim5Q,nDer
 TYPE(Overlap),pointer :: Q,P
 Logical :: permute
 
@@ -3522,12 +3531,18 @@ nC      = Q%orbital1%totOrbitals  *nMultipoleMomentComp
 nD      = Q%orbital2%totOrbitals
 nPassQ  = Q%nPasses
 IF (PQ%Q%p%TYPE_FTUV) nPassQ = 1
-ndim5Q = Q%ngeoDerivComp*Q%nCartesianMomentComp
+
+startDer = Integral%startDerivativeIndex
+ndim5Q   = integral%rhsGeoComp*Q%nCartesianMomentComp
+ndim5P   = integral%lhsGeoComp*P%nCartesianMomentComp
+
+nDer     = Integral%nDerivComp*Q%nCartesianMomentComp*P%nCartesianMomentComp
+
+IF(P%magderiv.EQ.1)ndim5P = ndim5P*3
+IF(P%magderiv.EQ.1) nDer = nDer*3
 
 nAng    = P%nOrbComp(iAngmom)
 nCont   = P%nContracted(iAngmom)*P%nPasses
-ndim5P = P%ngeoDerivComp*P%nCartesianMomentComp
-IF(P%magderiv.EQ.1)ndim5P = ndim5P*3
 
 angA    = P%indexAng1(iAngmom)
 angB    = P%indexAng2(iAngmom)
@@ -3561,8 +3576,9 @@ IF (.NOT.contAng) THEN !Default AO ordering: angular,contracted
      call lsquit('AddToPQ1 alloc error nCont*nAng*ndim5P > allocIntmaxTUVdim',lupri)
   ENDIF
 #endif
+
     CALL AddToPQ1(Integral%integralsABCD,Integral%IN,nA,nB,nCompA,nCompB,&
-         &        nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,LUPRI,IPRINT)
+         &        nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
   ELSE
 #ifdef VAR_DEBUGINT
   IF(nC*nD*nA*nB*ndim5Q*ndim5P*nPassP*nPassQ.GT.allocIntmaxTUVdim)THEN
@@ -3590,16 +3606,16 @@ IF (.NOT.contAng) THEN !Default AO ordering: angular,contracted
   ENDIF
 #endif
     CALL AddToPQgen(Integral%integralsABCD,Integral%IN,nC*nD,nPassQ,ndim5Q,nA,nB,nCompA,nCompB,&
-         &        nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,LUPRI,IPRINT)
+         &        nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
   ENDIF
 ELSE !Optional AO ordering: contracted first then angular components (only applicable to generally
      !contracted basis sets)
   CALL AddToPQgen_ca(Integral%integralsABCD,Integral%IN,nC*nD,nPassQ,ndim5Q,nA,nB,nCompA,nCompB,&
-         &           nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,LUPRI,IPRINT)
+         &           nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
 ENDIF
 
 IF (IPRINT.GT. 10) THEN
-  CALL PrintPQ(Integral%integralsABCD,nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,LUPRI,IPRINT)
+  CALL PrintPQ(Integral%integralsABCD,nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,nDer,LUPRI,IPRINT)
 ENDIF
 
 END SUBROUTINE AddToPQ
@@ -3626,12 +3642,12 @@ END SUBROUTINE AddToPQ
 !> \param LUPRI the logical unit number for the output file
 !> \param IPRINT the printlevel, determining how much output should be generated
 SUBROUTINE AddToPQ1(CDAB,AddPQ,nA,nB,nCompA,nCompB,nContA,nContB,&
-     &              startA,startB,nAng,nCont,nPassP,ndim5P,permute,LUPRI,IPRINT)
+     &              startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
 implicit none
 Integer,intent(IN)        :: nA,nB,nCompA,nCompB,nContA,nContB,startA,startB
-Integer,intent(IN)        :: nAng,nCont,nPassP,ndim5P,LUPRI,IPRINT
+Integer,intent(IN)        :: nAng,nCont,nPassP,ndim5P,startDer,nDer,LUPRI,IPRINT
 Logical,intent(IN)        :: permute
-Real(realk),intent(INOUT) :: CDAB(nA,nB,ndim5P,nPassP)
+Real(realk),intent(INOUT) :: CDAB(nA,nB,nDer,nPassP)
 Real(realk),intent(IN)    :: AddPQ(nCont,ndim5P,nAng)
 !
 Integer :: iAng,iContP,iDerivP,iPassP,iContA,iContB,iA,iB,iCompA,iCompB
@@ -3648,11 +3664,11 @@ DO iDerivP=1,ndim5P
           iB=iB+1
           iA = startA + (iContA-1)*nCompA - 1
           DO iCompA=1,nCompA
-            CDAB(iA+iCompA,iB,iDerivP,iPassP) = AddPQ(iContP,iDerivP,iAng+iCompA)
+            CDAB(iA+iCompA,iB,startDer+iDerivP,iPassP) = AddPQ(iContP,iDerivP,iAng+iCompA)
           ENDDO !iContA
           IF (permute) THEN
             DO iCompA=1,nCompA
-              CDAB(iB,iA+iCompA,iDerivP,iPassP) = AddPQ(iContP,iDerivP,iAng+iCompA)
+              CDAB(iB,iA+iCompA,startDer+iDerivP,iPassP) = AddPQ(iContP,iDerivP,iAng+iCompA)
             ENDDO !iContA
           ENDIF !permute
           iA   = iA  +  nCompA
@@ -3683,19 +3699,21 @@ END SUBROUTINE AddToPQ1
 !> \param nCont the number of contracted functions on P
 !> \param nPassP the number of passes for LHS overlap P
 !> \param ndim5P the number of derivatives for LHS overlap P
+!> \param startDer the derivative offset
+!> \param nDer the total number of derivative components
 !> \param LUPRI the logical unit number for the output file
 !> \param IPRINT the printlevel, determining how much output should be generated
 SUBROUTINE AddToPQgen(CDAB,AddPQ,nQ,nPassQ,ndim5Q,nA,nB,nCompA,nCompB,nContA,nContB,&
-     &              startA,startB,nAng,nCont,nPassP,ndim5P,permute,LUPRI,IPRINT)
+     &              startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
 implicit none
 Integer,intent(IN)        :: nQ,nPassQ,ndim5Q,nA,nB,nCompA,nCompB,nContA,nContB,startA,startB
-Integer,intent(IN)        :: nAng,nCont,nPassP,ndim5P,LUPRI,IPRINT
+Integer,intent(IN)        :: nAng,nCont,nPassP,ndim5P,startDer,nDer,LUPRI,IPRINT
 Logical,intent(IN)        :: permute
-Real(realk),intent(INOUT) :: CDAB(nQ,nA,nB,ndim5Q,ndim5P,nPassQ,nPassP)
+Real(realk),intent(INOUT) :: CDAB(nQ,nA,nB,nDer,nPassQ,nPassP)
 Real(realk),intent(IN)    :: AddPQ(nCont,nQ,nPassQ*ndim5Q,ndim5P,nAng)
 !
 Integer :: iQ,iAng,iContP,iDerivP,iPassP,iContA,iContB,iA,iB,iCompA,iCompB
-Integer :: iDerivQ,iPassQ,iQpd
+Integer :: iDerivQ,iPassQ,iQpd,iDeriv
 !
 DO iDerivP=1,ndim5P
   iContP=0
@@ -3712,14 +3730,18 @@ DO iDerivP=1,ndim5P
             iA=iA+1
             iAng = iAng+1
             DO iPassQ=1,nPassQ
+             iDeriv = startDer + ndim5Q*(iDerivP-1)
              DO iDerivQ=1,ndim5Q
+              iDeriv = iDeriv + 1
               iQpd = iPassQ + (iDerivQ-1)*nPassQ
               DO iQ=1,nQ
-               CDAB(iQ,iA,iB,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
+               CDAB(iQ,iA,iB,iDeriv,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
+!              CDAB(iQ,iA,iB,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
               ENDDO !iQ
               IF (permute) THEN
                 DO iQ=1,nQ
-                 CDAB(iQ,iB,iA,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
+                 CDAB(iQ,iB,iA,iDeriv,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
+!                CDAB(iQ,iB,iA,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
                 ENDDO !iQ
               ENDIF
              ENDDO !iDerivQ
@@ -3754,16 +3776,16 @@ END SUBROUTINE AddToPQgen
 !> \param LUPRI the logical unit number for the output file
 !> \param IPRINT the printlevel, determining how much output should be generated
 SUBROUTINE AddToPQgen_ca(CDAB,AddPQ,nQ,nPassQ,ndim5Q,nA,nB,nCompA,nCompB,nContA,nContB,&
-     &                   startA,startB,nAng,nCont,nPassP,ndim5P,permute,LUPRI,IPRINT)
+     &                   startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
 implicit none
 Integer,intent(IN)        :: nQ,nPassQ,ndim5Q,nA,nB,nCompA,nCompB,nContA,nContB,startA,startB
-Integer,intent(IN)        :: nAng,nCont,nPassP,ndim5P,LUPRI,IPRINT
+Integer,intent(IN)        :: nAng,nCont,nPassP,ndim5P,startDer,nDer,LUPRI,IPRINT
 Logical,intent(IN)        :: permute
-Real(realk),intent(INOUT) :: CDAB(nQ,nA,nB,ndim5Q,ndim5P,nPassQ,nPassP)
+Real(realk),intent(INOUT) :: CDAB(nQ,nA,nB,nDer,nPassQ,nPassP)
 Real(realk),intent(IN)    :: AddPQ(nCont,nQ,nPassQ*ndim5Q,ndim5P,nAng)
 !
 Integer :: iQ,iAng,iContP,iDerivP,iPassP,iContA,iContB,iA,iB,iCompA,iCompB
-Integer :: iDerivQ,iPassQ,iQpd
+Integer :: iDerivQ,iPassQ,iQpd,iDeriv
 !
 DO iDerivP=1,ndim5P
   iAng=0
@@ -3780,14 +3802,16 @@ DO iDerivP=1,ndim5P
             iA=iA+1
             iContP = iContP + 1
             DO iPassQ=1,nPassQ
+             iDeriv = startDer + ndim5Q*(iDerivP-1)
              DO iDerivQ=1,ndim5Q
+              iDeriv = iDeriv + 1
               iQpd = iPassQ + (iDerivQ-1)*nPassQ
               DO iQ=1,nQ
-               CDAB(iQ,iA,iB,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
+               CDAB(iQ,iA,iB,iDeriv,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
               ENDDO !iQ
               IF (permute) THEN
                 DO iQ=1,nQ
-                 CDAB(iQ,iB,iA,iDerivQ,iDerivP,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
+                 CDAB(iQ,iB,iA,iDeriv,iPassQ,iPassP) = AddPQ(iContP,iQ,iQpd,iDerivP,iAng)
                 ENDDO !iQ
               ENDIF
              ENDDO !iDerivQ
@@ -3801,10 +3825,10 @@ ENDDO !iDerivP
 
 END SUBROUTINE AddToPQgen_ca
 
-SUBROUTINE PrintPQ(CDAB,nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,LUPRI,IPRINT)
+SUBROUTINE PrintPQ(CDAB,nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,nDer,LUPRI,IPRINT)
 implicit none
-Integer,intent(IN)     :: nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,LUPRI,IPRINT
-Real(realk),intent(IN) :: CDAB(nC,nD,nA,nB,ndim5Q*ndim5P,nPassQ*nPassP)
+Integer,intent(IN)     :: nA,nB,nC,nD,ndim5P,ndim5Q,nPassP,nPassQ,nDer,LUPRI,IPRINT
+Real(realk),intent(IN) :: CDAB(nC,nD,nA,nB,nDer,nPassQ*nPassP)
 !
 Integer :: iA,iB,iC,iD,iDerivQ,iPassQ,iDerivP,iPassP,iDeriv,iPass
 
@@ -3814,11 +3838,8 @@ DO iPassP=1,nPassP
  DO iPassQ=1,nPassQ
   iPass=iPass+1
   WRITE(LUPRI,'(3X,A,I2,A,I2,A)') 'Pass numbers (iPassP,iPassQ)=(',iPassP,',',iPassQ,')'
-  iDeriv = 0
-  DO iDerivP=1,ndim5P
-   DO iDerivQ=1,ndim5Q
-    iDeriv = iDeriv+1
-    WRITE(LUPRI,'(3X,A,I2,A,I2,A)') 'Derivative components (iDerivP,iDerivQ)=(',iDerivP,',',iDerivQ,')'
+  DO iDeriv=1,nDer
+    WRITE(LUPRI,'(3X,A,I2,A)') 'Derivative components (iDeriv)=(',iDeriv,')'
     DO iB=1,nB
      DO iA=1,nA
       DO iD=1,nD
@@ -3827,8 +3848,7 @@ DO iPassP=1,nPassP
       ENDDO !iC
      ENDDO !iA
     ENDDO !iB
-   ENDDO !iDerivQ
-  ENDDO !iDerivP
+  ENDDO !iDeriv
  ENDDO !iPassQ
 ENDDO !iPassP
 END SUBROUTINE PrintPQ
@@ -3852,11 +3872,13 @@ TYPE(Integrand)      :: PQ
 TYPE(integralInput) :: input
 Integer             :: LUPRI,IPRINT,iAngmom
 !
-Integer :: ntuvP,nP,nOrbQ,startOrbQ,endOrbQ
+Integer :: ntuvP,ntuvPfull,nP,nOrbQ,startOrbQ,endOrbQ
 Integer :: startP,fullSP,endP,ioffP,fullOP,jP,tP,uP,vP,ituvP,ifullP,iOrbQ,iPrimP
 Integer :: ifullp1,ifullp2,ifullp3,end2P,der
+Logical :: dohodi
 !
 der = integral%lhsGeoOrder + PQ%P%p%magderiv
+dohodi = (input%geoderOrderP.GT.0).AND.(input%geoderOrderQ.GT.0)
 
 startP = 0
 IF (PQ%P%p%type_hermite_single) startP = PQ%P%p%angmom(iAngmom) + der
@@ -3867,17 +3889,13 @@ nP       = PQ%P%p%nPrimitives
 ioffP    = startP*(startP+1)*(startP+2)/6
 fullOP   = fullSP*(fullSP+1)*(fullSP+2)/6
 ntuvP    = (endP+1)*(endP+2)*(endP+3)/6 - ioffP
-nOrbQ    = PQ%Q%p%totOrbitals(integral%rhsGeoORder+1)
+ntuvPfull = PQ%P%p%nTUV
+IF (dohodi.AND.(.NOT.PQ%kinetic)) ntuvPfull = ntuvP !Special case for HODI
 
-!IF (IPRINT.EQ. 999) THEN
-! Changed because there is a mismatch between the Q%totOrbitals and the 
-! orb1%totOrbitals*orb2%totOrbitals when old code would do a triangular
-! angmom-loop (new does not).
-  nOrbQ = PQ%Q%p%orbital1%totOrbitals*PQ%Q%p%orbital2%totOrbitals
-  IF (.NOT.PQ%Q%p%type_ftuv) nOrbQ = nOrbQ*PQ%Q%p%nPasses*PQ%Q%p%ngeoderivcomp*PQ%Q%p%nCartesianMomentComp
-  IF (INPUT%DO_MULMOM) nOrbQ = Input%nMultipoleMomentComp
-!  IPRINT = 0
-!ENDIF
+nOrbQ = PQ%Q%p%orbital1%totOrbitals*PQ%Q%p%orbital2%totOrbitals
+IF (.NOT.PQ%Q%p%type_ftuv) nOrbQ = nOrbQ*PQ%Q%p%nPasses*integral%rhsGeoComp*PQ%Q%p%nCartesianMomentComp
+IF (INPUT%DO_MULMOM) nOrbQ = Input%nMultipoleMomentComp
+
 
 Integral%nAng  = ntuvP
 Integral%nPrim = np
@@ -3894,7 +3912,7 @@ IF(nP*PQ%P%p%nTUV*nOrbQ.GT.allocIntmaxTUVdim)THEN
 ENDIF
 #endif
    CALL DistributeHermiteP_kinetic(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-     &                             startP,endP,nP,ioffP,fullOP,PQ%P%p%nTUV,ntuvP,nOrbQ,der.EQ. 1,LUPRI,IPRINT)
+     &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,der.EQ. 1,LUPRI,IPRINT)
 ELSE
 #ifdef VAR_DEBUGINT
 IF(nP*nOrbQ*ntuvP.GT.allocIntmaxTUVdim)THEN
@@ -3906,14 +3924,14 @@ ENDIF
 #endif
    IF(nP.GT. 2)THEN !General case
       CALL DistributeHermiteP_regularGen(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-           &                             startP,endP,nP,ioffP,fullOP,PQ%P%p%nTUV,ntuvP,nOrbQ,LUPRI,IPRINT)
+           &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,LUPRI,IPRINT)
    ELSEIF(nP.EQ. 1)THEN !Special case for nPrim=1
       CALL DistributeHermiteP_regular1(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-           &                             startP,endP,nP,ioffP,fullOP,PQ%P%p%nTUV,ntuvP,nOrbQ,LUPRI,IPRINT)
+           &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,LUPRI,IPRINT)
 
    ELSE !Special case for nPrim=2
       CALL DistributeHermiteP_regular2(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-           &                             startP,endP,nP,ioffP,fullOP,PQ%P%p%nTUV,ntuvP,nOrbQ,LUPRI,IPRINT)
+           &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,LUPRI,IPRINT)
 
    ENDIF
 ENDIF
@@ -4160,7 +4178,7 @@ DO iOrder=1,ndim5Comp
       !Output(nPrimQ,nPrimP,ntuvP,ijkQ)
       CALL ContractBasis(Integral,PQ%Q%p,iAngmom,LUPRI,IPRINT)
       !Output(nContQ,nPrimP,ntuvP,nDerivQ,ijkQ)
-      CALL extractDifferentiated(Integral,PQ%Q%p,iAngmom,Integral%rhsGeoOrder,LUPRI,IPRINT)
+      CALL extractDifferentiated(Integral,PQ%Q%p,iAngmom,Integral%rhsGeoOrder,Integral%rhsGeoComp,LUPRI,IPRINT)
 !     IF (PQ%Q%p%magderiv.EQ.1)CALL extractMagDifferentiated(Integral,PQ%Q%p,iAngmom,LUPRI,IPRINT)
       !Output(nContQ,nPrimP,ntuvP,ijkQ)
       CALL SphericalTransform(Integral,PQ%Q%p,iAngmom,LUPRI,IPRINT)
@@ -5310,13 +5328,17 @@ logical,intent(IN) :: contAng
 Integer :: nPrimP,nTUVP,nP,nCompQ,nContQ,nContC,nContD,nCompC,nCompD
 !
 Integer :: nC,nD,startC,startD,nPassQ,angC,AngD,nDer,nDerTUV,startDer,endDer
+Integer :: startP,endP
 Integer,target  :: iDer,iOne=1
 Integer,pointer :: jDer
 TYPE(Overlap),pointer :: Q
 Logical :: permute
 
 nPrimP  = PQ%P%p%nPrimitives*PQ%P%p%nPasses
-nTUVP   = PQ%P%p%nTUV
+startP  = PQ%P%p%startAngmom
+endP    = PQ%P%p%endAngmom - PQ%P%p%endGeoOrder + Integral%lhsGeoOrder
+nTUVP   = (endP+1)*(endP+2)*(endP+3)/6 - startP*(startP+1)*(startP+2)/6
+
 nP      = nPrimP*nTUVP
 Q => PQ%Q%p
 
@@ -5340,6 +5362,10 @@ IF(nP*nC*nD*nPassQ*nOrder.GT.allocIntmaxTUVdim)THEN
    call lsquit('AddToTUVQ1 alloc error1',lupri)
 ENDIF
 IF(nContQ*nP*nCompQ.GT.allocIntmaxTUVdim)THEN
+   writE(*,*) 'nContQ            = ',nContQ
+   writE(*,*) 'nP                = ',nP    
+   writE(*,*) 'nCompQ            = ',nCompQ
+   writE(*,*) 'allocIntmaxTUVdim = ',allocIntmaxTUVdim
    call lsquit('AddToTUVQ1 alloc error2',lupri)
 ENDIF
 #endif
@@ -6310,6 +6336,9 @@ nsize2 = mem_realsize*size(Integral%IN)  + mem_realsize*size(Integral%OUT) + &
         & mem_realsize*size(Integral%RTUV) + mem_realsize*size(Integral%RTUV) + &
         & mem_realsize*size(Integral%integralsABCD)
 call mem_allocated_mem_integralitem(nsize2)
+
+Integral%startDerivativeIndex = 0
+Integral%nDerivComp = 1
 
 END SUBROUTINE allocIntegrals
 
