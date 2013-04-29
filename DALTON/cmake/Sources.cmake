@@ -395,6 +395,7 @@ cc/iroper2.F
 cc/cc_lanczos_lrinp.F
 cc/cc_lanczos_drv.F
 cc/cc_lanczos_lrextras.F
+cc/rpa_grad.F
 choles/cc_caa.F
 choles/cc_choatr.F
 choles/cc_chocc2.F
