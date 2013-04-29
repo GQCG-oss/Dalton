@@ -353,7 +353,7 @@ csonia 04/10/95
          WRITE(LUPRI,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
          WRITE(LUPRI,'(8X,A22,F20.12)') 'QM/MM/PCM energy:     ', ESOLT
       else if (peqm) then
-         continue
+         write(lupri,'(8x,a22,f20.12)') 'Total PE energy:      ', esolt
       ELSE
         ESOLT = D0
       END IF
