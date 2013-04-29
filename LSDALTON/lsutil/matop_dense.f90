@@ -1642,6 +1642,41 @@ end subroutine mat_dense_insert_section
 
     end subroutine mat_dense_mat_to_vec
 
+    SUBROUTINE mat_dense_dposv(A,b,lupri)
+      implicit none
+      TYPE(Matrix), intent(INOUT)  :: A
+      TYPE(Matrix), intent(INOUT)  :: b
+      INTEGER,INTENT(IN)           :: lupri
+      Real(Realk),pointer          :: Af(:,:)
+      Real(Realk),pointer          :: bf(:,:)
+      INTEGER                      :: dim1,dim2,dim3,dim4
+      INTEGER                      :: info
+      
+      dim1=A%nrow
+      dim2=A%ncol
+      dim3=b%nrow
+      dim4=b%ncol
+      if(dim3 .ne. A%nrow) then
+         call lsquit('mat_dense_dposv, Reason: Wrong dim3',lupri)
+      endif
+      call mem_alloc(Af,dim1,dim2)
+      call mem_alloc(bf,dim3,dim4)
+      call mat_dense_to_full(A,1D0,Af)
+      call mat_dense_to_full(b,1D0,bf)
+
+      call dposv('U',dim1,dim4,Af,dim1,bf,dim3,info)
+      
+      if(info .ne. 0) then
+         call lsquit('mat_dense_dposv, Reason: info not 0',lupri)
+      endif
+      
+      call mat_dense_set_from_full(Af,1D0,A)
+      call mat_dense_set_from_full(bf,1D0,b)
+      call mem_dealloc(Af)
+      call mem_dealloc(bf)
+      
+    END SUBROUTINE mat_dense_dposv
+
 !Routines needed for purification
 ! - commented out because purification is not documented and no one really knows
 ! if purification works!

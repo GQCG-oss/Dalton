@@ -343,6 +343,8 @@ C
      &  '(MC-SCRF)',
      *'Peter R. Taylor,','VLSCI/Univ. of Melbourne,','Australia',
      &  '(Symmetry handling ABACUS, integral transformation)',
+     *'Andrew M. Teale,','University of Nottingham,','England',
+     &  '(DFT-AC, DFT-D)',
      *'David P. Tew,','University of Bristol,','England',
      &  '(CCSD(R12))',
      *'Olav Vahtras,','KTH Stockholm,','Sweden',

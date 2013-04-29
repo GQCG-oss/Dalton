@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import sys
-import subprocess
 
 if len(sys.argv) == 1:
     sys.exit('call script with argument')
@@ -31,6 +30,7 @@ command_d['xlCC']     = 'xlCC     -qversion'
 
 version = 'unknown'
 if sys.version >= '2.4':
+    import subprocess
     if compiler_name in command_d:
         p = subprocess.Popen(command_d[compiler_name], shell=True, \
                              stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

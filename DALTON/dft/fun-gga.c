@@ -69,6 +69,12 @@ static int  bvwn_read(const char* conf_line);
 static int  blyp_read(const char* conf_line);
 static int  b1lyp_read(const char* conf_line);
 static int  b2plyp_read(const char* conf_line);
+static int  b2tplyp_read(const char* conf_line);
+static int  mpw2plyp_read(const char* conf_line);
+static int  mpw2kplyp_read(const char* conf_line);
+static int  b2gpplyp_read(const char* conf_line);
+static int  b2piplyp_read(const char* conf_line);
+static int  pbe0dh_read(const char* conf_line);
 static int  b3lyp_read(const char* conf_line);
 static int  b3lypg_read(const char* conf_line);
 static int  bp86_read(const char* conf_line);
@@ -140,6 +146,12 @@ static void gga_fourth(FunFourthFuncDrv *ds, real fac, const FunDensProp* dp);
     gga_isgga, (resp_order), (read), gga_report, gga_energy, gga_first, gga_second, \
     gga_third, gga_fourth }
 
+Functional B2TPLYPFunctional    = GGA_FUNCTIONAL("B2TPLYP",    1, b2tplyp_read);
+Functional MPW2PLYPFunctional   = GGA_FUNCTIONAL("mPW2PLYP",   1, mpw2plyp_read);
+Functional MPW2KPLYPFunctional  = GGA_FUNCTIONAL("mPW2KPLYP",  1, mpw2kplyp_read);
+Functional B2GPPLYPFunctional   = GGA_FUNCTIONAL("B2GPPLYP",   1, b2gpplyp_read);
+Functional B2PIPLYPFunctional   = GGA_FUNCTIONAL("B2PIPLYP",   1, b2piplyp_read);
+Functional PBE0DHFunctional     = GGA_FUNCTIONAL("PBE0DH",     1, pbe0dh_read);
 Functional XAlphaFunctional     = GGA_FUNCTIONAL("XAlpha",     3, xalpha_read);
 Functional LDAFunctional        = LDA_FUNCTIONAL("LDA",        3, lda_read);
 Functional SVWN5Functional      = LDA_FUNCTIONAL("SVWN5",      3, lda_read);       // SVWN5 aliases LDA
@@ -386,6 +398,76 @@ b2plyp_read(const char* conf_line)
     gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
     fun_set_hf_weight(1-dirw);
     fun_set_mp2_weight(0.27);
+    return 1;
+}
+
+
+static int
+b2tplyp_read(const char* conf_line)
+{
+    static const real lypw = 0.69, dirw = 0.40;
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   0.40);
+    gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     lypw);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
+    fun_set_hf_weight(1-dirw);
+    fun_set_mp2_weight(0.31);
+    return 1;
+}
+
+static int
+mpw2plyp_read(const char* conf_line)
+{
+    static const real lypw = 0.75, mpwxw = 0.45;
+    gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     lypw);
+    gga_fun_list = add_functional(gga_fun_list, &mPWxFunctional,  mpwxw);
+    fun_set_hf_weight(1-mpwxw);
+    fun_set_mp2_weight(0.25);
+    return 1;
+}
+
+static int
+mpw2kplyp_read(const char* conf_line)
+{
+    static const real lypw = 0.58, mpwxw = 0.28;
+    gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     lypw);
+    gga_fun_list = add_functional(gga_fun_list, &mPWxFunctional,  mpwxw);
+    fun_set_hf_weight(1-mpwxw);
+    fun_set_mp2_weight(0.42);
+    return 1;
+}
+
+static int
+b2gpplyp_read(const char* conf_line)
+{
+    static const real lypw = 0.64, dirw = 0.35;
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   0.35);
+    gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     lypw);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
+    fun_set_hf_weight(1-dirw);
+    fun_set_mp2_weight(0.36);
+    return 1;
+}
+
+static int
+b2piplyp_read(const char* conf_line)
+{
+    static const real lypw = 0.727, dirw = 0.398;
+    gga_fun_list = add_functional(gga_fun_list, &BeckeFunctional,   0.398);
+    gga_fun_list = add_functional(gga_fun_list, &LYPFunctional,     lypw);
+    gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional,  dirw);
+    fun_set_hf_weight(1-dirw);
+    fun_set_mp2_weight(0.273);
+    return 1;
+}
+
+static int
+pbe0dh_read(const char* conf_line)
+{
+    static const real pbecw = 0.875, pbexw = 0.50;
+    gga_fun_list = add_functional(gga_fun_list, &PBEcFunctional,    pbecw);
+    gga_fun_list = add_functional(gga_fun_list, &PBExFunctional,    pbexw);
+    fun_set_hf_weight(1-pbexw);
+    fun_set_mp2_weight(0.125);
     return 1;
 }
 

@@ -8,7 +8,7 @@ use OD_type
 use ls_util
 use precision
 use Integralparameters
-use Thermite_Mem
+use ThermiteMem_module
 use OverlapType
 TYPE Allocitem
 Integer        :: maxPrimAngmomLHS(20)    !used for Rtuv-tensor

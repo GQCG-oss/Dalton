@@ -1188,13 +1188,13 @@ use precision
           output_string=TRIM(val)
         endif
         if(present(output_int))then
-          read(val,*),output_int
+          read(val,*) output_int
         endif
         if(present(output_real))then
-          read(val,*),output_real
+          read(val,*) output_real
         endif
         if(present(output_bool))then
-          read(val,*),stat
+          read(val,*) stat
           if(stat==1)then
             output_bool=.true.
           elseif(stat==0)then
