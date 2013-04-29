@@ -935,19 +935,20 @@ C                '.CHO(T)'
 C                  write(lupri,*)'FRAN: activated ring CCD'
                GO TO 1000
  121           CONTINUE 
-!                 '.DRCCD'
-                  DRCCD   = .TRUE.
-C                  write(lupri,*)'FRAN: activated direct-ring CCD'
-               GO TO 1000
- 122           CONTINUE 
 !                 '.RTCCD' 
                   RTCCD   = .TRUE.
 C                  write(lupri,*)'SONIA: activated triplet-ring CCD'
+               GO TO 1000
+ 122           CONTINUE 
+!                 '.DRCCD'
+                  DRCCD   = .TRUE.
+C                  write(lupri,*)'FRAN: activated direct-ring CCD'
                GO TO 1000
  123           CONTINUE 
 !                '.SOSEX '
                   DRCCD=.TRUE.
                   SOSEX=.TRUE.
+C                  write(lupri,*)'SONIA: activated SOSEX (DRCCD)'
                GO TO 1000
  124           CONTINUE
 !                 '.T2START'
@@ -968,6 +969,7 @@ C                  write(lupri,*)'SONIA: activated triplet-ring CCD'
  125           CONTINUE 
 !                 '.HURWITZ'
                   HURWITZ_CHECK=.TRUE.
+                  WRITE(LUPRI,*)'HURWITZ_CHECK activated in input'
                GO TO 1000
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,

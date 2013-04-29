@@ -272,6 +272,7 @@ cc/cc_landf2.F
 cc/cc_landf3.F
 cc/cc_lhtr.F
 cc/cc_lhtr_noddy.F
+cc/cc_lhtr_rccd.F
 cc/cc_lr.F
 cc/cc_maomao.F
 cc/cc_mcdny.F
