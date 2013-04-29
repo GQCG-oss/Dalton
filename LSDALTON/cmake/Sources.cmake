@@ -208,6 +208,7 @@ set(FMM_SOURCES
     mm/mm_sort.f90
     mm/mm_stats.f90
     mm/mm_tree_T_buffer.f90
+    mm/cbifmm_f90.f90
     )   
 set(INTERESTLIB_SOURCES
     interest/src/module_interest.f90

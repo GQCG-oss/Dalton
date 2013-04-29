@@ -1,8 +1,6 @@
 ! Notes: traditional dalton's WORK memory is used for some of the
 ! larger allocations before memory allocation in dalton is "fixed".
 !
-#define ALLOCATION_WITHOUT_WORK 1
-
 MODULE mm_interface_mod
 
    use files
@@ -42,10 +40,6 @@ CONTAINS
       REAL(REALK),        INTENT(INOUT) :: WORK(LWORK)
       
       LOGICAL :: do_center
-#if defined(VAR_MPI)
-      INCLUDE 'mpif.h'
-      INTEGER ierr
-#endif
      
       NULLIFY (dens, raw_qlm, raw_paras, J_indices,dens_in,densf_in)
       IF ( stat_do_grad ) THEN   
@@ -55,28 +49,9 @@ CONTAINS
 
       IF ( .NOT. MM_STANDALONE ) LUPRI = 6 ! Stinne 27/10-2010 CALL mm_GTUNIT(LUPRI)
       CALL mm_init_moments(scheme%raw_LMAX,WORK,KWRK,LWORK)
-#if defined(VAR_MPI)
-      IF ( stat_do_grad) call lsquit('mpi not tested with fmm gradients',-1)
-      if(mynum==0) CALL mm_read_in_raw_data(stat_do_grad)
-      CALL mm_raw_data_sync
-#else
       CALL mm_read_in_raw_data(stat_do_grad)
-#endif
 !      CALL mm_check_moms(scheme%raw_LMAX,raw_qlm)
-#if 1
       CALL mm_translate_centres(scheme%system_size)
-#else
-! this uses a modified routine which should reduce numerical noise 
-! since it is not completely tested for all possible FMM settings we make it not default
-      IF (scheme%dynamic_levels) THEN
-      ! we want to center the system so that no atom is on the border, 
-      ! but only if grain_input is used /Andreas Krapp 
-         do_center = .true.
-      ELSE
-         do_center = .false.
-      END IF
-      CALL mm_translate_centres(scheme%system_size,scheme%grain_input,do_center)
-#endif
 
    END SUBROUTINE mm_connect_interface
 
@@ -103,15 +78,7 @@ CONTAINS
       INTEGER, INTENT(INOUT) :: KWRK
       REAL(REALK),   INTENT(INOUT) :: WORK(LWORK)
 
-#ifdef VAR_MPI
-      INCLUDE 'mpif.h'
-      INTEGER ierr
-      if(mynum==0) CALL mm_get_n_mms_from_file(LMAX)
-      CALL MPI_Bcast(n_mms%nuc, 1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
-      CALL MPI_Bcast(n_mms%elec,1,MPI_INTEGER,0,MPI_COMM_WORLD,IERR)
-#else
       CALL mm_get_n_mms_from_file(LMAX)
-#endif
       IF(stat_do_grad) THEN 
         CALL mm_allocate_mms_arrays(LMAX,WORK,LWORK/(LMAX+1)**2/(6+1),6)
         KWRK = KWRK + ((LMAX+1)**2)*n_mms%tot*(6 + 1)
@@ -220,32 +187,10 @@ CONTAINS
       CALL mm_allocate(MEM_RAW_QLM,dens_in,n_mms%nbast*(n_mms%nbast-1)/2+n_mms%nbast)
       CALL mm_allocate(MEM_RAW_QLM,densf_in,n_mms%nauxbas)
       ! use work for the stuff below:
-#ifdef ALLOCATION_WITHOUT_WORK
       CALL mm_allocate(MEM_RAW_QLM,raw_qlm,(LMAX+1)**2,n_mms%tot)
       IF ( stat_do_grad ) THEN
          CALL mm_allocate(MEM_RAW_QLM,raw_qlm_der,(LMAX+1)**2,n_mms%tot,nucder)
       ENDIF
-#else
-      IF(maxmom<n_mms%tot) THEN
-         WRITE(LUPRI,*)'WORK Memory needed for ',n_mms%tot,' moments.'
-         WRITE(LUPRI,*)'require ',n_mms%tot*(LMAX+1)**2,' words.'
-         CALL lsQUIT('Not enough memory for moments',lupri)
-      END IF
-      IF( stat_do_grad) THEN
-         IF(maxmom < n_mms%tot*(nucder+1)) THEN
-            WRITE(LUPRI,*)'WORK Memory needed for ',n_mms%tot*nucder,' moment derivatives '
-            WRITE(LUPRI,*)'                   and ',n_mms%tot,' moments' 
-            WRITE(LUPRI,*)'require ',n_mms%tot*(nucder+1)*(LMAX+1)**2,' words.' 
-            WRITE(LUPRI,*)'Have ',maxmom*((LMAX+1)**2),'words.'
-            CALL lsQUIT('Not enough memory for moments and derivatives',lupri)
-         END IF
-      END IF
-      raw_qlm => WORK(1:(LMAX+1)**2,1:n_mms%tot,1)
-
-      IF ( stat_do_grad ) THEN
-         raw_qlm_der => WORK(1:(LMAX+1)**2,1:n_mms%tot,2:(nucder+1))
-      END IF
-#endif
 
       IF ( stat_do_grad ) THEN
          CALL mm_allocate(MEM_RAW_QLM,mom2atom,n_mms%tot,2)
@@ -273,7 +218,6 @@ CONTAINS
          IF (.NOT.ASSOCIATED(raw_qlm_der))   STOP "raw_qlm_der should be allocated!"
          IF (.NOT.ASSOCIATED(mom2atom))      STOP "mom2atom should be allocated!"
       END IF
-#ifdef ALLOCATION_WITHOUT_WORK
       IF (ASSOCIATED(raw_qlm))THEN
          call mm_deallocate(raw_qlm)
       ENDIF
@@ -282,7 +226,6 @@ CONTAINS
             call mm_deallocate(raw_qlm_der)
          ENDIF
       END IF
-#endif
       IF (stat_do_grad) THEN
          IF (ASSOCIATED(mom2atom))THEN
             call mm_deallocate(mom2atom)
@@ -436,10 +379,8 @@ CONTAINS
       RHS_mms%paras     => raw_paras(lo:hi)
       RHS_mms%J_indices => J_indices(lo:hi)
 
-#if 1 
 !ANDREAS: do we every need the RHS_mms%qlm_der??
 !     IF (stat_do_grad) RHS_mms%qlm_der => raw_qlm_der(:,lo:hi,:)
-#endif
 
    END SUBROUTINE mm_get_raw_data
 
@@ -866,51 +807,6 @@ CONTAINS
 
   END SUBROUTINE mm_read_in_raw_data
 
-!-------------------------------------------------------------------------------
-#ifdef VAR_MPI
-   ! broadcast MM input data to all the involved nodes.
-   SUBROUTINE mm_raw_data_sync
-
-      IMPLICIT NONE
-      INCLUDE 'mpif.h'
-      INTEGER master,ierr,RAW_PARAS_TYPE
-
-      master = 0
-      ! pass raw_paras
-      CALL get_raw_paras_type(RAW_PARAS_TYPE)
-      CALL MPI_Bcast(raw_paras, SIZE(raw_paras), RAW_PARAS_TYPE,&
-           &         master,MPI_COMM_WORLD,IERR)
-      CALL mpi_type_free(RAW_PARAS_TYPE)
-
-      ! pass density
-      CALL MPI_Bcast(dens,SIZE(dens),MPI_DOUBLE_PRECISION,&
-           &         master,MPI_COMM_WORLD,IERR)
-
-      ! pass nuclear moment data
-      CALL MPI_Bcast(raw_qlm,SIZE(raw_qlm),MPI_DOUBLE_PRECISION,&
-           &         master,MPI_COMM_WORLD,IERR)
-   END SUBROUTINE mm_raw_data_sync
-
-      ! fixme: This definition should go along TYPE(raw_mm_paras)
-   SUBROUTINE get_raw_paras_type(tp)
-      IMPLICIT NONE
-      INCLUDE 'mpif.h'
-      INTEGER, INTENT(OUT) :: tp
-
-      INTEGER intEx, doubleEx, ierr
-      INTEGER, DIMENSION(3) :: bllen, types, disps
-      CALL MPI_TYPE_EXTENT(MPI_INTEGER,intex,ierr)
-      CALL MPI_TYPE_EXTENT(MPI_DOUBLE_PRECISION,doubleEX,ierr)
-      bllen = (/ 4, 9, 3 /)
-      types = (/ MPI_DOUBLE_PRECISION, MPI_INTEGER, MPI_DOUBLE_PRECISION /)
-      disps(1) = 0; 
-      disps(2) = disps(1) + bllen(1)*doubleEx
-      disps(3) = disps(2) + bllen(2)*intEx
-
-      CALL MPI_Type_Struct(SIZE(bllen),bllen,disps,types,tp, ierr)
-      CALL MPI_TYPE_COMMIT(tp,ierr)
-   END SUBROUTINE get_raw_paras_type
-#endif   
 !-------------------------------------------------------------------------------
 ! Routine to translate co-ordinates so all centres are at x,y,z >= 0
 ! Hence all box indices will be positive integers
