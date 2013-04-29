@@ -449,7 +449,6 @@ C     Dynamic allocation.
 C------------------------
 C
       NTAMR12 = 0 
-      !SONIA IF (CCD) THEN
       IF ((CCD).or.(RCCD).or.(DRCCD).or.(RTCCD)) THEN
         NTAMP = NT2AMX
       ELSE
@@ -673,7 +672,6 @@ C
 C
       ENDIF
 C
-      !IF (CCD) THEN
       !SONIA/FRAN
       IF ((CCD).or.(RCCD).or.(DRCCD).or.(RTCCD)) THEN
          CALL DZERO(WORK(KT1AM),NT1AMX)
@@ -756,7 +754,7 @@ C
          !compute RHS of Newton, Omega_ai, Omega_aibj
          !Sonia
          IF ((RCCD).or.(DRCCD).or.(RTCCD)) THEN
-           call flshfo(lupri)
+           CALL FLSHFO(LUPRI)
            call CC_OMEGA2_RCCD(MODEL,WORK(KOMEG1),WORK(KOMEG2),
      &                         WORK(KEND1),LWRK1)
          else
@@ -772,7 +770,6 @@ C
          IF (CCSTST) THEN
             CALL DZERO(WORK(KOMEG2),NT2AMX)
          ENDIF
-         !IF (CCD) THEN
          IF ((CCD).or.(RCCD).or.(DRCCD).or.(RTCCD)) THEN
             !Sonia & FRAN
             CALL DZERO(WORK(KOMEG1),NT1AMX)
@@ -1330,14 +1327,60 @@ C
      &    ' energy: ',BLANKS(1:12-LENET),EINI
       WRITE(LURES,'(12X,A,A,A,A,F25.10)')   'Total ',ETYPE(1:LENET),
      &    ' energy: ',BLANKS(1:12-LENET),EINI
+C
       IF (.NOT. (MP2 .OR. NOCCIT)) THEN
         CALL CCSD_MODEL(ETYPE,LENET,24,ETY2,5,APROXR12)
-        WRITE(LUPRI,'(12X,A,A,A,A,F25.10)') 'Total ',ETYPE(1:LENET),
+
+
+        IF (.NOT. (DRCCD.OR.RCCD.OR.RTCCD)) THEN
+         WRITE(LUPRI,'(12X,A,A,A,A,F25.10)') 'Total ',ETYPE(1:LENET),
      &     ' energy: ',BLANKS(1:12-LENET),EN2
-        WRITE(LURES,'(12X,A,A,A,A,F25.10)') 'Total ',ETYPE(1:LENET),
+         WRITE(LURES,'(12X,A,A,A,A,F25.10)') 'Total ',ETYPE(1:LENET),
      &     ' energy: ',BLANKS(1:12-LENET),EN2
+        END IF
+!      END IF
+C
+      IF (DRCCD) THEN
+       IF (SOSEX) THEN
+        WRITE(LUPRI,'(12X,A,F25.10)')'SOSEX Correlation Energy:  ',
+     &  EN2-ESCF
+        WRITE(LUPRI,'(12X,A,F25.10)')'Total SOSEX Energy:        ',
+     &  EN2
+        WRITE(LUPRI,'(12X,A,F25.10)')'DRCCD Correlation Energy:  ',
+     &  ETMP-ESCF
+        WRITE(LUPRI,'(12X,A,F25.10)')'Total DRCCD Energy:        ',
+     &  ETMP
+        WRITE(LURES,'(12X,A,F25.10)')'SOSEX Correlation Energy:  ',
+     &  EN2-ESCF
+        WRITE(LURES,'(12X,A,F25.10)')'Total SOSEX Energy:        ',
+     &  EN2
+        WRITE(LURES,'(12X,A,F25.10)')'DRCCD Correlation Energy:  ',
+     &  ETMP-ESCF
+        WRITE(LURES,'(12X,A,F25.10)')'Total DRCCD Energy:        ',
+     &  ETMP
+       ELSE
+        WRITE(LUPRI,'(12X,A,F25.10)')'SOSEX Correlation Energy:  ',
+     &  ETMP-ESCF
+        WRITE(LUPRI,'(12X,A,F25.10)')'Total SOSEX Energy:        ',
+     &  ETMP
+        WRITE(LUPRI,'(12X,A,F25.10)')'DRCCD Correlation Energy:  ',
+     &  EN2-ESCF
+        WRITE(LUPRI,'(12X,A,F25.10)')'Total DRCCD Energy:        ',
+     &  EN2
+        WRITE(LURES,'(12X,A,F25.10)')'SOSEX Correlation Energy:  ',
+     &  ETMP-ESCF
+        WRITE(LURES,'(12X,A,F25.10)')'Total SOSEX Energy:        ',
+     &  ETMP
+        WRITE(LURES,'(12X,A,F25.10)')'DRCCD Correlation Energy:  ',
+     &  EN2-ESCF
+        WRITE(LURES,'(12X,A,F25.10)')'Total DRCCD Energy:        ',
+     &  EN2
+       END IF  !sosex
+      END IF   !drccd
+C----------------------
       END IF
-      END IF
+      END IF  !(.NOT.QM3)
+!-----------
       ECCGRS = EN2
       IF ( (.NOT.CCSLV) .OR. (ICCSLIT.EQ.0)) THEN
          LABEL1 = 'ENERGY  '
@@ -1397,19 +1440,27 @@ C
 C
       CCP3 = CCP3SV
       CCPT = CCPTSV
-!---
-!      IF (DRCCD.AND.(.NOT.LSOSEX)) THEN
-!        ECCLAM=ETMP
-!      ELSE IF (MP2) THEN
-!        ECCLAM=EMP2
-!      ELSE
-!        ECCLAM=EN2
-!      ENDIF
-! Probably assumes we run in order RCCD then RTCCD...
-!      IF (RTCCD) THEN
-!        ECCLAM=ECCGRS
-!      ENDIF
 
+      IF (RCCD) THEN
+         ECRCCD=(EN2-ESCF)
+      END IF
+      IF (RTCCD) THEN
+C       IF (WDFTMP.NE.0.0d0) THEN
+C         ECRTCCD=WDFTMP*ECRTCCD
+C       ELSE
+C         ECRTCCD=XRTCCD_CORR
+C       ENDIF
+C       WRITE(LUPRI,*)'AMT: Scaled ? RTCCD E',
+C     &   ECRTCCD
+C       WRITE(LUPRI,*)'SCF Energy:',ESCF
+C       WRITE(LUPRI,*)'RCCD Corr. Energy:',ECRCCD
+C       WRITE(LUPRI,*)'RTCCD Corr. Energy:',ECRTCCD
+C       WRITE(LUPRI,*)'Total RPA Corr. Energy:',
+C     &   (ECRCCD+3.0d0*ECRTCCD)/2.0d0
+       ECCGRS = ESCF + (ECRCCD + 3.0d0*ECRTCCD)/2.0d0
+C       WRITE(LUPRI,*)'RPA SCF+(RCCD+3*RTCCD)/2 Energy:',
+C     &   ECCGRS
+      ENDIF
 C
 C=======================================================
 C     Calculate Intermediates for response calculations:
@@ -1881,6 +1932,10 @@ C
       CALL QENTER('CCSD_ECCSD')
 C
       XECCSD = ESCF
+      !SONIA TO FRAN
+      XDRCCD = ESCF
+      XRTCCD = ESCF
+
 C
 C---------------------------------
 C     Dynamic allocation of space.
@@ -1931,9 +1986,31 @@ C
                               XECCSD = XECCSD
      *                            + (TWO*WORK(NAIBJ) - WORK(NAJBI))*
      *                              (T2AM(NAIBJ) + T1AM(NAI)*T1AM(NBJ))
+                              !SONIA TO FRAN
+                              !DRCCD energy is 2Coulomb*T^drccd
+                            if (DRCCD) then
+                              XDRCCD = XDRCCD
+     *                        + (TWO*WORK(NAIBJ))*
+     *                          (T2AM(NAIBJ) + T1AM(NAI)*T1AM(NBJ))
+                            end if
+                            if (RTCCD) then
+                              !RTCCD energy is -Exchange*T^rtccd
+                              XRTCCD = XRTCCD
+     *                        + (-WORK(NAJBI))*
+     *                          (T2AM(NAIBJ) + T1AM(NAI)*T1AM(NBJ))
+                            end if
                            ELSE
                               XECCSD = XECCSD
      *                    + (TWO*WORK(NAIBJ) - WORK(NAJBI))*T2AM(NAIBJ)
+                              !SONIA TO FRAN
+                             if (DRCCD) then
+                              XDRCCD = XDRCCD
+     *                         + (TWO*WORK(NAIBJ))*T2AM(NAIBJ)
+                             end if
+                             if (RTCCD) then
+                              XRTCCD = XRTCCD
+     *                         + (-WORK(NAJBI))*T2AM(NAIBJ)
+                             end if
                            ENDIF
 C
   160                   CONTINUE
@@ -2023,12 +2100,33 @@ C
 
            TRACE = DDOT(NBAS(ISYM)*NRHFS(ISYM),
      &                    WORK(KOFF2),1,WORK(KSCR1),1)
+C
            XECCSD = XECCSD + TWO * TRACE
+CSonia
+           XDRCCD = XDRCCD + TWO * TRACE
+           XRTCCD = XRTCCD + TWO * TRACE
+C
          END DO
  
         ENDIF
   13  CONTINUE
 C
+C Thomas Bondo Pedersen: set XECCSD to be the energy of the model used.
+      ETMP = XECCSD
+      IF (ETY.NE.'MP2  ') THEN
+         IF (DRCCD) THEN
+            IF (SOSEX) THEN
+               ETMP=XDRCCD
+            ELSE
+               XECCSD=XDRCCD
+            END IF
+         END IF
+         IF (RTCCD) THEN
+            XECCSD=XRTCCD
+            ECRTCCD=XECCSD-ESCF
+         END IF
+      END IF
+
       XCORR = XECCSD - ESCF
 
       ETYPE(1:5) = ETY(1:5)
