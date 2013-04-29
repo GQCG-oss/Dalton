@@ -212,6 +212,7 @@ cc/cc_d1ao.F
 cc/cc_den.F
 cc/cc_den2_pt.F
 cc/cc_den_pt2.F
+cc/cc_den_rccd.F
 cc/cc_dhfao.F
 cc/cc_dmat.F
 cc/cc_drv.F
