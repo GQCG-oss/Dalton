@@ -3242,7 +3242,7 @@ INT_INPUT%CS_SCREEN = .FALSE.
 INT_INPUT%PS_SCREEN = .FALSE.
 IPRINT = SETTING%SCHEME%INTPRINT
 MBIE_INT = MBIE_SCREEN
-IF ((AO1.EQ.AOEmpty).OR.(AO2.EQ.AOEmpty))THEN
+IF (MBIE_INT.AND.((AO1.EQ.AOEmpty).OR.(AO2.EQ.AOEmpty))) THEN
    WRITE(lupri,*)'WARNING: MBIE not working for densfit basis (Aux Empty|Aux Empty) but maybe it should'
    MBIE_INT = .FALSE.   
 ENDIF

@@ -51,8 +51,13 @@ EXTERNAL DFT_ISGGA
 
 igrid = SETTING%scheme%DFT%igrid
 GRIDDONE = SETTING%scheme%DFT%GridObject(igrid)%GRIDDONE
-maxNactbast = dft_maxNactbast(igrid)
-GRIDITERATIONS = dft_GRIDITERATIONS(igrid)
+IF(GRIDDONE.EQ.0)THEN
+   maxNactbast = 0
+   GRIDITERATIONS = 0
+ELSE
+   maxNactbast = dft_maxNactbast(igrid)
+   GRIDITERATIONS = dft_GRIDITERATIONS(igrid)
+ENDIF
 IF (SETTING%SCHEME%CONTANG) CALL LSQUIT('Error in II_DFTINT. ContAng option not implemented!',-1)
 
 ELECTRONS=d0
@@ -174,14 +179,14 @@ integer :: GC2,mmm
 
 TELECTRONS(1:ndmat) = 0E0_realk
 IT=0
-SETIT=.FALSE.
 IF(GridObject%GRIDDONE .EQ. 0)THEN
    GRIDITERATIONS=0
-   SETIT=.TRUE.
    GridObject%NBUFLEN=0
    maxNactBAST = 0
+   SETIT=.TRUE.
    PRINTTIM=.TRUE.
 ELSE
+   SETIT=.FALSE.
    PRINTTIM=.FALSE.
 ENDIF
 !pruning: per default on

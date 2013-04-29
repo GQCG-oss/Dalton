@@ -26,11 +26,11 @@ STRINGS[16]="                                   Exchange gradient: RMS and index
 STRINGS[17]="                                         XC gradient: RMS and index-weighted sum"
 STRINGS[18]="                                 2-electron gradient: RMS and index-weighted sum"
 STRINGS[19]="                       Reorthonormalization gradient: RMS and index-weighted sum"
-STRINGS[20]="        Coulomb AO-matrix matrix from eri (Mulliken): RMS and index-weighted sum"
-STRINGS[21]="       Exchange AO-matrix matrix from eri (Mulliken): RMS and index-weighted sum"
-STRINGS[22]="           Coulomb AO-matrix matrix from eri (Dirac): RMS and index-weighted sum"
-STRINGS[23]="          Exchange AO-matrix matrix from eri (Dirac): RMS and index-weighted sum"
-STRINGS[24]="           Coulomb gradient from diff-eri (Mulliken): RMS and index-weighted sum"
+STRINGS[20]="        Coulomb AO-matrix matrix from eri .Mulliken.: RMS and index-weighted sum"
+STRINGS[21]="       Exchange AO-matrix matrix from eri .Mulliken.: RMS and index-weighted sum"
+STRINGS[22]="           Coulomb AO-matrix matrix from eri .Dirac.: RMS and index-weighted sum"
+STRINGS[23]="          Exchange AO-matrix matrix from eri .Dirac.: RMS and index-weighted sum"
+STRINGS[24]="           Coulomb gradient from diff-eri .Mulliken.: RMS and index-weighted sum"
 
 
 typeset -a TOLERANCES
@@ -71,6 +71,20 @@ do
    LOGIWS=`echo $LOGSTR | awk '{printf("%25.15f",$2)}'`
    REFRMS=`echo $REFSTR | awk '{printf("%25.15f",$1)}'`
    REFIWS=`echo $REFSTR | awk '{printf("%25.15f",$2)}'`
+
+   #Test for NaN
+   isnan=`echo $LOGRMS | awk '{print ( $1 == "nan" ? 1 : 0 )}'`
+   if [ $isnan -eq 1 ]
+   then
+     echo "RSM error in, NaN in" $STRING
+     passed=0
+   fi
+   isnan=`echo $LOGIWS | awk '{print ( $1 == "nan" ? 1 : 0 )}'`
+   if [ $isnan -eq 1 ]
+   then
+     echo "IWS error in, NaN in" $STRING
+     passed=0
+   fi
 
    ABSDIFFRMS=`echo $LOGRMS $REFRMS | awk '{printf("%25.15f",( $1-$2 >=0 ? $1-$2 : $2-$1 ))}'`
    ABSDIFFIWS=`echo $LOGIWS $REFIWS | awk '{printf("%25.15f",( $1-$2 >=0 ? $1-$2 : $2-$1 ))}'`
