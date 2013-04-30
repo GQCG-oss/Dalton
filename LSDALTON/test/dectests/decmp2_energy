@@ -17,36 +17,37 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > fragmentccsd_simple.info <<'%EOF%'
-   DEC-CCSD energy using fragment calculations without long-range t1
-   -----------------------------------------------------------------
-   Molecule:         3 BH molecules with stretched bonds
-   Wave Function:    CCSD / STO-3G
-   Test Purpose:     Test DEC fragmentation for CCSD
+cat > decmp2_energy.info <<'%EOF%'
+   DEC-MP2 energies for full DEC
+   -----------------------------
+   Molecule:         HCOOH
+   Wave Function:    MP2 / 6-31G
+   Test Purpose:     Test total DEC calculation (all fragments) 
+                     using frozen core and NO reassigning for hydrogens (Kasper K)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > fragmentccsd_simple.mol <<'%EOF%'
-BASIS                                                   
-STO-3G
-                                                        
-                                                        
-Atomtypes=2 Nosymmetry Angstrom
-Charge=5.0 Atoms=3
-B          0.000000      0.0000000    0.0000000
-B          3.000000      0.0000000    1.4500000
-B          6.000000      0.0000000    0.0000000
-Charge=1.0 Atoms=3
-H          0.000000      1.4500000    0.0000000
-H          3.000000      0.0000000    0.0000000
-H          6.000000      0.0000000    1.4500000
+cat > decmp2_energy.mol <<'%EOF%'
+BASIS
+6-31G
+
+
+Atomtypes=3 Nosymmetry Angstrom
+Charge=6.0 Atoms=1
+C          0.41977       -0.05971        0.16752
+Charge=8.0 Atoms=2
+O          0.90317       -0.15439       -0.93920
+O         -0.90756        0.14113        0.24096
+Charge=1.0 Atoms=2
+H          0.88996       -0.11071        1.15515
+H         -1.30534        0.18370       -0.62443
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > fragmentccsd_simple.dal <<'%EOF%'
+cat > decmp2_energy.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -55,16 +56,15 @@ cat > fragmentccsd_simple.dal <<'%EOF%'
 TRILEVEL
 .CONVTHR
 1.0d-5
+$INFO
+DEBUG_MPI_MEM
+$END INFO
 **DEC
-.ABSORBH
-.CCSD
-.MPIsplit
-0
-!.CCSDsolver_par
-!.ccsd_old
+.MP2
 .FOT
 4
-*END OF INPUT  
+.FROZENCORE
+*END OF INPUT
 %EOF%
 #######################################################################
 
@@ -75,8 +75,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >fragmentccsd_simple.check
-cat >>fragmentccsd_simple.check <<'%EOF%'
+echo $CHECK_SHELL >decmp2_energy.check
+cat >>decmp2_energy.check <<'%EOF%'
 
 log=$1
 
@@ -87,31 +87,37 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Final HF energy: * \-74\.1900454" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-188\.6610339" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
-CTRL[1]=2
+CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# CCSD ENERGY
-CRIT1=`$GREP "Correlation energy  : * \-0\.199" $log | wc -l`
+# Total correlation energy
+CRIT1=`$GREP "Correlation energy  \: * \-0.3374" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="CCSD correlation energy is not correct"
+ERROR[2]="Total correlation energy is not correct"
 
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
 TEST[3]=`expr  $CRIT1`                                                    
 CTRL[3]=1                                                                 
 ERROR[3]="Memory leak -"
-
+                                                                          
 # Memory test for array4                                                  
 CRIT1=`$GREP "Memory in use for array4 * \: * 0.000 * GB" $log | wc -l`   
 TEST[4]=`expr  $CRIT1`                                                    
 CTRL[4]=1                                                                 
 ERROR[4]="Memory leak for array4 -" 
 
+# MPI Memory test
+CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
+TEST[5]=`expr  $CRIT1`
+CTRL[5]=0
+ERROR[5]="MPI Memory leak -"
+
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3 4 5
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}

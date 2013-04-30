@@ -17,47 +17,54 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > fullmp2_local_f12.info <<'%EOF%'
-   MP2-F12 energy for full molecule
-   --------------------------------
-   Molecule:         H2O
-   Wave Function:    MP2-F12 / 6-31G
-   Test Purpose:     Test MP2-F12 energy using toy code (Kasper K)
+cat > decccsd_singles.info <<'%EOF%'
+   DEC-CCSD energy using fragment calculations and long-range t1
+   -------------------------------------------------------------
+   Molecule:         3 BH molecules with stretched bonds
+   Wave Function:    CCSD / STO-3G
+   Test Purpose:     Test DEC fragmentation for CCSD using 
+                     long-range t1 correction.
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > fullmp2_local_f12.mol <<'%EOF%'
-BASIS
-6-31G Aux=cc-pVDZ CABS=aug-cc-pVDZ
-
-
-Atomtypes=2 Charge=0 Nosymmetry Angstrom
-Charge=8.0 Atoms=1
-O    0.0000     0.0000  0.1173
-Charge=1.0 Atoms=2
-H    0.0000     0.7572  -0.4692
-H    0.0000     -0.7572 -0.4692
+cat > decccsd_singles.mol <<'%EOF%'
+BASIS                                                   
+STO-3G
+                                                        
+                                                        
+Atomtypes=2 Nosymmetry Angstrom
+Charge=5.0 Atoms=3
+B          0.000000      0.0000000    0.0000000
+B          3.000000      0.0000000    1.4500000
+B          6.000000      0.0000000    0.0000000
+Charge=1.0 Atoms=3
+H          0.000000      1.4500000    0.0000000
+H          3.000000      0.0000000    0.0000000
+H          6.000000      0.0000000    1.4500000
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > fullmp2_local_f12.dal <<'%EOF%'
+cat > decccsd_singles.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
 .ARH
-.NOGCBASIS
 .START
 TRILEVEL
 .CONVTHR
 1.0d-5
-**CC
-.MP2
-.F12
-!.canonical
-*END OF INPUT
+**DEC
+.CCSD
+.FOT
+4
+.SinglesPolari
+.SinglesThr
+0.1
+.ABSORBH
+*END OF INPUT  
 %EOF%
 #######################################################################
 
@@ -68,8 +75,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >fullmp2_local_f12.check
-cat >>fullmp2_local_f12.check <<'%EOF%'
+echo $CHECK_SHELL >decccsd_singles.check
+cat >>decccsd_singles.check <<'%EOF%'
 
 log=$1
 
@@ -80,37 +87,31 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Final HF energy: * \-75.983974" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-74\.1900454" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
-CTRL[1]=1
+CTRL[1]=2
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# STANDARD MP2 CORRELATION ENERGY
-CRIT1=`$GREP "TOYCODE: MP2 CORRELATION ENERGY = * \-0.12885[0-1]" $log | wc -l`
+# CCSD ENERGY
+CRIT1=`$GREP "Correlation energy  : * \-0\.199" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="MP2 correlation energy is not correct"
-
-# F12 CONTRIBUTION TO CORRELATION ENERGY
-CRIT1=`$GREP "TOYCODE: F12 CORRECTION TO ENERGY = * \-0.323156" $log | wc -l`
-TEST[3]=`expr   $CRIT1`
-CTRL[3]=1
-ERROR[3]="F12 correlation energy is not correct"
-
-# MP2-F12 CORRELATION ENERGY
-CRIT1=`$GREP "TOYCODE: MP2-F12 CORRELATION ENERGY = *\-0.452007" $log | wc -l`
-TEST[4]=`expr   $CRIT1`
-CTRL[4]=1
-ERROR[4]="MP2-F12 corrected correlation energy is not correct"
+ERROR[2]="CCSD correlation energy is not correct"
 
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
-TEST[5]=`expr  $CRIT1`                                                    
-CTRL[5]=1                                                                 
-ERROR[5]="Memory leak -"
+TEST[3]=`expr  $CRIT1`                                                    
+CTRL[3]=1                                                                 
+ERROR[3]="Memory leak -"
                                                                           
+# Memory test for array4                                                  
+CRIT1=`$GREP "Memory in use for array4 * \: * 0.000 * GB" $log | wc -l`   
+TEST[4]=`expr  $CRIT1`                                                    
+CTRL[4]=1                                                                 
+ERROR[4]="Memory leak for array4 -" 
+
 PASSED=1
-for i in 1 2 3 4 5
+for i in 1 2 3 4
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}

@@ -17,7 +17,7 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > dec_geoopt.info <<'%EOF%'
+cat > decmp2_geoopt.info <<'%EOF%'
    DEC-MP2 energy for full molecule
    --------------------------------
    Molecule:         C2H4
@@ -28,7 +28,7 @@ cat > dec_geoopt.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > dec_geoopt.mol <<'%EOF%'
+cat > decmp2_geoopt.mol <<'%EOF%'
 BASIS
 STO-3G
 
@@ -46,7 +46,7 @@ H         -1.16080       -0.06606       -1.02386
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > dec_geoopt.dal <<'%EOF%'
+cat > decmp2_geoopt.dal <<'%EOF%'
 **OPTIMIZE
 .LOOSE
 **WAVE FUNCTIONS
@@ -55,15 +55,13 @@ cat > dec_geoopt.dal <<'%EOF%'
 .ARH DAVID
 .START
 TRILEVEL
-.NOATOMSTART
-.CONVTHR
-1.0d-6
+.CONVDYN
+TIGHT
 $INFO
 DEBUG_MPI_MEM
 $END INFO
 **DEC
-.FrozenCore
-.FragmentAdapted
+.FROZENCORE
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -75,8 +73,8 @@ $END INFO
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >dec_geoopt.check
-cat >>dec_geoopt.check <<'%EOF%'
+echo $CHECK_SHELL >decmp2_geoopt.check
+cat >>decmp2_geoopt.check <<'%EOF%'
 
 log=$1
 
