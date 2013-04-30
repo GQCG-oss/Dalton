@@ -261,6 +261,9 @@
         end do
         deallocate(udtvao)
 
+        !---------------------------------------
+        ! Fxc = -R<0|Fe|B>Fe in fxcaos
+        !--------------------------------------
         allocate(fxcaos(ncsim*nnbasx))
         call pe_master(runtype='response', denmats=fdtvaos,
      &                 fckmats=fxcaos, nmats=ncsim, dalwrk=wrk(1:nwrk))
@@ -275,6 +278,9 @@
         deallocate(fxcaos)
       end if
 
+      !--------------------------------------- 
+      ! Fg = Vmul -R<0|Fe|0>Fe in fyc
+      !---------------------------------------
       allocate(fyc(nnorbx), fycac(nnashx))
       call pe_fckmo(cmo, fyc, energy, dv, wrk, nwrk)
       if (nasht > 0) call getac2(fyc, fycac)
@@ -416,18 +422,18 @@
         end if
         txyo = solelm(dv, fxyoacs(:,i), fxyos(:,i), txyoacs(i))
       end do
-!---------------------------------------------------
-! 3.   /        <0[Epq,Fxo + Fyo]|0>      \  orbital part
-!      \ 2<0|Fyo + Fxo|mu> - <0|Fyo|0>*c0 /  CSF part
-!---------------------------------------------------
-!     ... CSF part of sigma vectors
+      !---------------------------------------------------
+      ! 3.   /        <0[Epq,Fxo + Fyo]|0>      \  orbital part
+      !      \ 2<0|Fyo + Fxo|mu> - <0|Fyo|0>*c0 /  CSF part
+      !---------------------------------------------------
+      !     ... CSF part of sigma vectors
       if (lsymrf == lsymst) then
         ncolim = 1
       else
         ncolim = 0
       end if
 
-!     Determine if full Hessian or only orbital Hessian
+      ! Determine if full Hessian or only orbital Hessian
       fulhes = (nso == nvarpt)
       if (fulhes) then
         jsovec = 1 + nconst
@@ -440,10 +446,10 @@
      &             txyoacs, dummy, cindx, wrk, nwrk)
       end if
 
-!     ... orbital part of sigma vectors
+      ! ... orbital part of sigma vectors
       mwoph = nwoph
       nwoph = nwoppt
-!    ... tell SOLGO only to use the NWOPPT first JWOP entries
+      ! ... tell SOLGO only to use the NWOPPT first JWOP entries
       do i = 1, nosim
         call solgo(2.0d0, dv, fxyos(:,i), sovecs(jsovec,i))
       end do
@@ -493,24 +499,58 @@
 
         call qexit('pe_rsplin')
 
-
-
       end subroutine pe_rsplin
 
 !------------------------------------------------------------------------------
 !
-!      subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,
-!     &                     udvtr, dvtr, dtv, dtvtr, scvecs, wrk, nwrk)
+       subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,
+     &                      udvtr, dvtr, dtv, dtvtr, scvecs, wrk, nwrk)
+ 
+         implicit none
 !
-!        implicit none
+#include "priunit.h"
+#include "dummy.h"
+#include "infrsp.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+#include "inforb.h"
 !
-!#include "priunit.h"
-!#include "dummy.h"
-!#include "infrsp.h"
-!#include "inftap.h"
-!
-!
-!      end subroutine pe_rsplnc
+! Used from common: kzyvar n2ashx
+      integer :: ncsim, nwrk
+      real*8, dimension(*) :: bcvecs, cref, cmo, cindx, udv, dv 
+      real*8, dimension(*) :: udvtr, dvtr
+      real*8, dimension(n2ashx,*) ::  dtv
+      real*8, dimension(n2ashx,*) :: dtvtr
+      real*8, dimension(kzyvar,*) :: scvecs
+      real*8, dimension(nwrk) :: wrk
+
+      real*8, dimension(:), allocatable :: fpemo, fupemo
+
+      logical :: lexist, lopen
+      logical :: fndlab
+
+      !---------------------------------------
+      ! Fg = V - <0|F|0>Fe from file
+      !---------------------------------------
+      if (.not. tdhf) then          
+          allocate(fpemo(nnorbx))
+          if (lusifc <= 0) then
+              call gpopen(lusifc, 'SIRIFC', 'OLD', ' ', 'UNFORMATTED',
+     &                    idummy, .false.)
+              lopen = .true.
+          end if
+          rewind(lusifc)
+          call mollab('PETMAT  ', lusifc, lupri)
+          call readt(lusifc, nnorbx, fpemo)
+          if (lopen) call gpclose(lusifc, 'KEEP')
+          allocate(fupemo(n2orbx))
+          call dsptsi(norbt, fpemo, fupemo)
+          deallocate(fpemo)
+        end if
+
+
+ 
+      end subroutine pe_rsplnc
 !
 !------------------------------------------------------------------------------
 
@@ -561,10 +601,12 @@
             return
         ! triplet response for open shell systems not ready yet
         else if ((nasht > 0) .and. trplet) then
-!            stop 'ERROR: triplet response for open shell systems not
-!     & ready yet'
+            stop 'ERROR: triplet response for open shell systems not
+     & ready yet'
         write(lupri,*)'WARNING: Triplet response open shell'
         end if
+
+        lopen = .false.
 
         call qenter('pe_rsplno')
          
