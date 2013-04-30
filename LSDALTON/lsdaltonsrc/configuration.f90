@@ -54,7 +54,9 @@ use cgto_diff_eri_host_interface, only: cgto_diff_eri_xfac_general
 #endif
 use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
+#ifdef VAR_XCFUN
 use xcfun_host,only: xcfun_host_init, USEXCFUN
+#endif
 contains
 
 !> \brief Call routines to set default values for different structures.
@@ -64,7 +66,9 @@ subroutine config_set_default_config(config)
 implicit none
    !> Contains info, settings and data for entire calculation
    type(ConfigItem), intent(inout) :: config
+#ifdef VAR_XCFUN
   USEXCFUN = .FALSE.  
+#endif
   nullify(config%solver)
   allocate(config%solver)
   call arh_set_default_config(config%solver)
@@ -330,14 +334,16 @@ DO
                      !different from zero. 
                      !note the 40 is harcoded in DFTsetFunc routine in general.c 
                      config%integral%dft%dftfunc = WORD
-                     IF(.NOT.USEXCFUN)THEN
-                        CALL II_DFTsetFunc(WORD,hfweight)
-                     ELSE
 #ifdef VAR_XCFUN
+                     IF(.NOT.USEXCFUN)THEN
+#endif
+                        CALL II_DFTsetFunc(WORD,hfweight)
+#ifdef VAR_XCFUN
+                     ELSE
                         CALL II_DFTsetFunc(WORD,hfweight)
                         call xcfun_host_init(WORD,hfweight,lupri)
-#endif
                      ENDIF
+#endif
                      config%integral%exchangeFactor = hfweight
                      config%integral%dft%HFexchangeFac = hfweight
 #ifdef BUILD_CGTODIFF
@@ -968,7 +974,12 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
-        CASE ('.XCFUN'); USEXCFUN=.TRUE. 
+        CASE ('.XCFUN')
+#ifdef VAR_XCFUN
+           USEXCFUN = .TRUE. 
+#else
+           call lsquit('.XCFUN requires ENABLE_XCFUN', -1)
+#endif
         CASE ('.CONTANG'); INTEGRAL%CONTANG=.TRUE. ! Specifies that the AO-shell ordering is contracted first then 
                                                    ! angular components (for genereally contracted functions)
         CASE ('.NOGCINTEGRALTRANSFORM'); INTEGRAL%NOGCINTEGRALTRANSFORM=.TRUE.
@@ -2419,7 +2430,9 @@ DO
          ENDDO
          deallocate(GRIDspec)
          CALL DFTGRIDINPUT(LINE,DALTON%DFT%TURBO)
+#ifdef VAR_XCFUN
          IF(USEXCFUN) DALTON%DFT%XCFUN = .TRUE.
+#endif
       CASE ('.OLDGRID'); DALTON%DFT%NEWGRID = .FALSE.
       CASE ('.NOPRUN'); DALTON%DFT%NOPRUN = .TRUE.
       CASE ('.RADINT'); READ(LUCMD,*) DALTON%DFT%RADINT

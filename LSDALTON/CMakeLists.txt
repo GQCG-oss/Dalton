@@ -374,10 +374,12 @@ target_link_libraries(lsutillib lsutiltypelib_common)
 add_dependencies(lsutillib generate_revinfo)
 add_dependencies(lsutillib generate_compinfo)
 
+if(ENABLE_XCFUN)
 add_library(
     xcfun_interface
     xcfun_host/xcfun_host.F90
     )
+endif(ENABLE_XCFUN)
 
 set(PARENT_DEFINITIONS "-DVAR_LSDALTON")
 
@@ -391,8 +393,8 @@ set(ExternalProjectCMakeArgs
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
 
-target_link_libraries(xcfun_interface lsutillib)
 if(ENABLE_XCFUN)
+target_link_libraries(xcfun_interface lsutillib)
 	add_external(xcfun)
 	add_dependencies(xcfun_interface xcfun)
 endif()
@@ -403,7 +405,9 @@ if(ENABLE_INTEREST)
 		interestlib
     		${INTERESTLIB_SOURCES}
 		)
+                if(ENABLE_XCFUN)
 		target_link_libraries(interestlib xcfun_interface)
+                endif()
 endif()
 
 add_library(
@@ -411,7 +415,9 @@ add_library(
     ${FMM_SOURCES}
     ${FMM_C_SOURCES}
     )
+        if(ENABLE_XCFUN)
 	target_link_libraries(fmmlib xcfun_interface)
+        endif()
 if(ENABLE_INTEREST)
 target_link_libraries(fmmlib interestlib)
 endif()
@@ -579,7 +585,6 @@ MERGE_STATIC_LIBS(
     lsutiltypelib_common
     lsutillib
     fmmlib
-    xcfun_interface
     dftfunclib
     lsint
     pbclib
@@ -592,6 +597,7 @@ MERGE_STATIC_LIBS(
     geooptlib
     lsdaltonmain 
     )
+#   xcfun_interface
 target_link_libraries(lsdalton lsdaltonmain)
 
 target_link_libraries(

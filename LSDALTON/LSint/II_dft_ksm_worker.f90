@@ -6,7 +6,9 @@ use dft_type
 use dft_memory_handling
 !WARNING you must not add memory_handling, all memory goes through 
 !grid_memory_handling  module so as to determine the memory used in this module.
+#ifdef VAR_XCFUN
 use xcfun_host
+#endif
 CONTAINS
 !==============================================================================
 !
@@ -78,24 +80,24 @@ call mem_dft_alloc(VXC,NBLEN,NDMAT)
 DO IDMAT = 1, NDMAT
  DO IPNT = 1, NBLEN
    IF(RHO(IPNT,IDMAT) .GT. RHOTHR)THEN
+#ifdef VAR_XCFUN
       IF(.NOT.USEXCFUN)THEN
+#endif
          !get the functional derivatives 
          !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}}
          CALL dft_funcderiv1(RHO(IPNT,IDMAT),DUMMY,WGHT(IPNT),VX)
          DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + DFTENE(RHO(IPNT,IDMAT),DUMMY)*WGHT(IPNT)
          !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
          VXC(IPNT,IDMAT) = D2*VX(1) 
-      ELSE
 #ifdef VAR_XCFUN
+      ELSE
          XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
          call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
          DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
          VXC(IPNT,IDMAT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
          call lsquit('xcfun II_DFT_KSMLDA not testet',-1)
-#else
-         call lsquit('xcfun inconsitensy',-1)
-#endif
       ENDIF
+#endif
    ELSE
       VXC(IPNT,IDMAT) = 0.0E0_realk
    ENDIF
@@ -193,13 +195,15 @@ DO IDMAT = 1, NDMAT/2
       !get the functional derivatives 
       !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}} 
       !and same for beta
+#ifdef VAR_XCFUN
       IF(.NOT.USEXCFUN)THEN
+#endif
          CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY,WGHT(IPNT),VX)
          DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY)*WGHT(IPNT)
          VXC(IPNT,IDMAT1) = VX(1)
          VXC(IPNT,IDMAT2) = VX(2)
-      ELSE
 #ifdef VAR_XCFUN
+      ELSE
          XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
          XCFUNINPUT(2,1) = RHO(IPNT,IDMAT)
          call xcfun_lda_unres_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
@@ -207,10 +211,8 @@ DO IDMAT = 1, NDMAT/2
          VXC(IPNT,IDMAT1) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
          VXC(IPNT,IDMAT2) = D2*XCFUNOUTPUT(3,1)*WGHT(IPNT)
          call lsquit('xcfun II_DFT_KSMLDAUNRES not testet',-1)
-#else         
-         call lsquit('XCFUN inconsistency')
-#endif
       ENDIF
+#endif
    ELSE
       VXC(IPNT,IDMAT1) = 0.0E0_realk
       VXC(IPNT,IDMAT2) = 0.0E0_realk
@@ -408,7 +410,9 @@ DO IDMAT=1,NDMAT
       !vx(1) = drvs.df1000 = \frac{\partial f}{\partial \rho_{\alpha}}        
       !vx(2) = drvs.df0010 = \frac{\partial f}{\partial |\nabla \rho_{\alpha}|^{2}}
       !vx(3) = drvs.df00001= \frac{\partial f}{\partial \nabla \rho_{\alpha} \nabla \rho_{\beta}}  
+#ifdef VAR_XCFUN
       IF(.NOT.USEXCFUN)THEN
+#endif
          CALL dft_funcderiv1(RHO(IPNT,IDMAT),GRD,WGHT(IPNT),VX)
          IF(DFTDATA%LB94)THEN
             CALL LB94correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
@@ -434,8 +438,8 @@ DO IDMAT=1,NDMAT
             VXC(3,IPNT,IDMAT) = 0E0_realk
             VXC(4,IPNT,IDMAT) = 0E0_realk
          ENDIF
-      ELSE
 #ifdef VAR_XCFUN
+      ELSE
          XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
          XCFUNINPUT(2,1) = GRAD(1,IPNT,IDMAT)*GRAD(1,IPNT,IDMAT)&
               &+GRAD(2,IPNT,IDMAT)*GRAD(2,IPNT,IDMAT)&
@@ -453,10 +457,8 @@ DO IDMAT=1,NDMAT
          VXC(2,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(1,IPNT,IDMAT)
          VXC(3,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
          VXC(4,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
-#else
-         call lsquit('ERROR XCFUN inconsistency',-1)
-#endif
       ENDIF
+#endif
    ELSE
       VXC(1,IPNT,IDMAT) = 0E0_realk
       VXC(2,IPNT,IDMAT) = 0E0_realk
@@ -552,8 +554,11 @@ DO IDMAT=1,NDMAT
       !vx(1) = drvs.df1000 = \frac{\partial f}{\partial \rho_{\alpha}}        
       !vx(2) = drvs.df0010 = \frac{\partial f}{\partial |\nabla \rho_{\alpha}|^{2}}
       !vx(3) = drvs.df00001= \frac{\partial f}{\partial \nabla \rho_{\alpha} \nabla \rho_{\beta}}  
+#ifdef VAR_XCFUN
       IF(.NOT.USEXCFUN)THEN
+#endif
          CALL LSQUIT('meta-GGA only implemented using XC-fun',-1)
+#ifdef VAR_XCFUN
       ELSE
          XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
          XCFUNINPUT(2,1) = GRAD(1,IPNT,IDMAT)*GRAD(1,IPNT,IDMAT)&
@@ -578,6 +583,7 @@ DO IDMAT=1,NDMAT
          VXC(4,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
          VXC(5,IPNT,IDMAT) = 0E0_realk!D2*XCFUNOUTPUT(4,1)*WGHT(IPNT) 
       ENDIF
+#endif
    ELSE
       VXC(1,IPNT,IDMAT) = 0E0_realk
       VXC(2,IPNT,IDMAT) = 0E0_realk
@@ -735,7 +741,9 @@ DO IDMAT = 1,NDMAT/2
       !vx(5) = drvs.df00001= \frac{\partial f}{\partial \nabla \rho_{\alpha} \nabla \rho_{\beta}}  
       IF(GRDA.LT. 1E-40_realk) GRDA = 1E-40_realk
       IF(GRDB.LT. 1E-40_realk) GRDB = 1E-40_realk
+#ifdef VAR_XCFUN
       IF(.NOT.USEXCFUN)THEN
+#endif
          CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB,WGHT(IPNT),VX)
          DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB)*WGHT(IPNT)
          VXC(IPNT,1,1) = VX(1)
@@ -745,8 +753,8 @@ DO IDMAT = 1,NDMAT/2
          VXC(IPNT,2,1) = D2*VX(3)/GRDA  
          VXC(IPNT,2,2) = D2*VX(4)/GRDB
          VXM(IPNT) = D2*VX(5) !mixed derivate
-      ELSE
 #ifdef VAR_XCFUN
+      ELSE
          XCFUNINPUT(1,1) = RHO(IPNT,IDMAT1)
          XCFUNINPUT(2,1) = RHO(IPNT,IDMAT2)
          XCFUNINPUT(3,1) = GRAD(1,IPNT,IDMAT1)*GRAD(1,IPNT,IDMAT1)&
@@ -768,10 +776,8 @@ DO IDMAT = 1,NDMAT/2
 !         VXC(3,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
 !         VXC(4,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
          call lsquit('XCFUN II_DFT_KSMGGAUNRES not testet',-1)
-#else
-         call lsquit('XCFUN inconsistency',-1)
-#endif
       ENDIF
+#endif
    ELSE
       VXC(IPNT,1,1) = 0E0_realk
       VXC(IPNT,2,1) = 0E0_realk
@@ -1202,7 +1208,9 @@ IF (DOGGA) THEN
            &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
       IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
          !get the functional derivatives 
+#ifdef VAR_XCFUN
          IF(.NOT.USEXCFUN)THEN
+#endif
             CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
             IF(DFTDATA%LB94)THEN
                CALL LB94correction(rho(IPNT,1),GRD,DFTDATA%HFexchangeFac,&
@@ -1218,8 +1226,8 @@ IF (DOGGA) THEN
             ELSE
                VXC(2,IPNT) = 0E0_realk
             ENDIF
-         ELSE
 #ifdef VAR_XCFUN
+         ELSE
             XCFUNINPUT(1,1) = RHO(IPNT,1)
             XCFUNINPUT(2,1) = GRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
                  &+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
@@ -1235,10 +1243,8 @@ IF (DOGGA) THEN
             VXC(1,IPNT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
             VXC(2,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8
             call lsquit('xcfun II_GEODERIV_MOLGRAD_WORKER gga not testet',-1)
-#else
-            call lsquit('xcfun inconsistency',-1)
-#endif
          ENDIF
+#endif
       ELSE
          VXC(1,IPNT) = 0E0_realk
          VXC(2,IPNT) = 0E0_realk
@@ -1250,11 +1256,13 @@ ELSE
       IF(RHO(IPNT,1).GT.RHOTHR) THEN
          !get the functional derivatives 
          !vx(1) = drvs.df1000 = \frac{\partial f}{\partial \rho_{\alpha}}        
+#ifdef VAR_XCFUN
          IF(.NOT.USEXCFUN)THEN
+#endif
             CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
             VXC(1,IPNT) = D2*VX(1) 
+#ifdef VAR_XCFUN
          ELSE
-#ifdef VAR_LSMPI
             XCFUNINPUTUNRES(1,1) = RHO(IPNT,1)
             call xcfun_gga_unres_xc_single_eval(XCFUNINPUTUNRES,XCFUNOUTPUTUNRES)
             IF(DFTDATA%LB94)THEN
@@ -1264,10 +1272,8 @@ ELSE
             ENDIF            
             VXC(1,IPNT) = D2*XCFUNOUTPUTUNRES(2,1)*WGHT(IPNT)
             call lsquit('xcfun II_GEODERIV_MOLGRAD_WORKER note testet ',-1)
-#else
-            call lsquit('xcfun inconsistency',-1)
-#endif
          ENDIF
+#endif
       ELSE
          VXC(1,IPNT) = 0E0_realk
       END IF
@@ -1495,7 +1501,9 @@ IF(DOCALC)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
     !get the functional derivatives 
+#ifdef VAR_XCFUN
       IF(.NOT.USEXCFUN)THEN
+#endif
          CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
          !fRR = 0.5*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
          fRR = VX(6) + VX(7)     
@@ -1509,9 +1517,11 @@ IF(DOCALC)THEN
             ! G_{\rho \sigma} &=& 4 \int \frac{\partial^{2} f }{\partial \rho^{2}_{\alpha}} \Omega_{\rho \sigma}
             ! \Omega_{\mu \nu} \kappa^{\alpha}_{\mu \nu} d\textbf{r}
          ENDDO
+#ifdef VAR_XCFUN
       ELSE
          call lsquit('XCFUN',-1)
       ENDIF
+#endif
    ELSE
          VXC(IPNT,:) = 0.0E0_realk
    ENDIF
@@ -1810,7 +1820,9 @@ IF(DOCALC)THEN
    GRDA = D05*GRD
    IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
     !get the functional derivatives 
+#ifdef VAR_XCFUN
     IF(.NOT.USEXCFUN)THEN
+#endif
        CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
        fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
        fZ  = VX(3)                    !drvs.df0010;
@@ -1835,8 +1847,8 @@ IF(DOCALC)THEN
           VXC(3,IPNT,IBMAT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,IBMAT)
           VXC(4,IPNT,IBMAT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,IBMAT)
        ENDDO
-    ELSE
 #ifdef VAR_XCFUN
+    ELSE
        CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
        WRITE(lupri,*)'VX(1) ',VX(1)
        WRITE(lupri,*)'VX(2) ',VX(2)
@@ -1935,10 +1947,8 @@ IF(DOCALC)THEN
 
 
 !       call lsquit('XCFUN  II_DFT_LINRSPGGA',-1)
-#else
-       call lsquit('XCFUN inconsistency',-1)
-#endif
     ENDIF
+#endif
    ELSE
     VXC(:,IPNT,:) = 0.0E0_realk
    ENDIF
@@ -2251,7 +2261,9 @@ IF(DOCALC)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
     !get the functional derivatives 
+#ifdef VAR_XCFUN
     IF(.NOT.USEXCFUN)THEN
+#endif
        CALL dft_funcderiv3(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
        !    fR  = VX(1)              !drvs.df1000;
        !radovan: factor 0.5 "missing" here compared to "true" derivative wrt RR i'm 
@@ -2265,9 +2277,11 @@ IF(DOCALC)THEN
        !    VXCB(IPNT) = fRR*EXPVALB(IPNT) 
        !    VXCC(IPNT) = fRR*EXPVALC(IPNT) 
        VXC(IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)  
+#ifdef VAR_XCFUN
     ELSE
        call lsquit('funcderiv xcfun',-1)
     ENDIF
+#endif
    ELSE
     VXC(IPNT) = 0.0E0_realk
    ENDIF
@@ -2381,7 +2395,9 @@ IF(DOCALC)THEN
     GRD2 = GRD*GRD
     GRDA2 = GRDA*GRDA
     GRDA3 = GRDA2*GRDA
+#ifdef VAR_XCFUN
     IF(.NOT.USEXCFUN)THEN
+#endif
        CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
        fRZ = (VX(8)+VX(9))/GRD              !(drvs.df1010 + drvs.df1001)/(2*grada)
        fRG = D2*VX(10)                      !2*drvs.df10001   
@@ -2421,8 +2437,8 @@ IF(DOCALC)THEN
        VXC(2,IPNT) = D2*A*GRAD(1,IPNT,1) + D2*B*EXPGRAD(1,IPNT,2) + D2*C*EXPGRAD(1,IPNT,1)
        VXC(3,IPNT) = D2*A*GRAD(2,IPNT,1) + D2*B*EXPGRAD(2,IPNT,2) + D2*C*EXPGRAD(2,IPNT,1)
        VXC(4,IPNT) = D2*A*GRAD(3,IPNT,1) + D2*B*EXPGRAD(3,IPNT,2) + D2*C*EXPGRAD(3,IPNT,1)
-    ELSE
 #ifdef VAR_XCFUN
+    ELSE
        CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
        fRZ = (VX(8)+VX(9))/GRD              !(drvs.df1010 + drvs.df1001)/(2*grada)
        fRG = D2*VX(10)                      !2*drvs.df10001   
@@ -2505,10 +2521,8 @@ IF(DOCALC)THEN
        !9 = 
 
        IF(RHO(IPNT,1).GT.1.0E-1_realk) call lsquit('test done QRSP',-1)
-#else
-       call lsquit('XCFUN 3 ',-1)
-#endif
     ENDIF
+#endif
    ELSE
     VXC(:,IPNT) = 0.0E0_realk
    ENDIF
@@ -2596,21 +2610,21 @@ DO IPNT = 1, NBLEN
 !   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
       !get the functional derivatives 
       !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}}
+#ifdef VAR_XCFUN
    IF(.NOT.USEXCFUN)THEN
+#endif
       CALL dft_funcderiv1(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
       !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
       VXC(IPNT) = VX(1)*D4 
-   ELSE
 #ifdef VAR_XCFUN
+   ELSE
       XCFUNINPUT(1,1) = RHO(IPNT,1)
       call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
       !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
       VXC(IPNT) = D4*XCFUNOUTPUT(2,1)*WGHT(IPNT)
       call lsquit('xcfun inconsistency',-1)
-#else
-      call lsquit('xcfun inconsistency',-1)
-#endif
    ENDIF
+#endif
 !   ELSE
 !      VXC(IPNT) = 0.0E0_realk
 !   ENDIF
@@ -2793,7 +2807,9 @@ DO IPNT = 1, NBLEN
    GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
         &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
    IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
+#ifdef VAR_XCFUN
       IF(.NOT.USEXCFUN)THEN
+#endif
          CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
          IF(DFTDATA%LB94)THEN
             CALL LB94correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
@@ -2814,8 +2830,8 @@ DO IPNT = 1, NBLEN
             VXC(3,IPNT) = 0E0_realk
             VXC(4,IPNT) = 0E0_realk
          ENDIF
-      ELSE
 #ifdef VAR_XCFUN
+      ELSE
          XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
          XCFUNINPUT(2,1) = GRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
               &+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
@@ -2833,10 +2849,8 @@ DO IPNT = 1, NBLEN
          VXC(3,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
          VXC(4,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
          call lsquit('XCFUN',-1)
-#else
-         call lsquit('XCFUN inconsistency',-1)
-#endif
       ENDIF
+#endif
    ELSE
       VXC(:,IPNT) = 0E0_realk
    END IF
@@ -3073,7 +3087,9 @@ IF(DOCALC)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
     !get the functional derivatives 
+#ifdef VAR_XCFUN
      IF(.NOT.USEXCFUN)THEN
+#endif
         CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
         !fRR = 0.5*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
         fRR = VX(6) + VX(7)     
@@ -3086,9 +3102,11 @@ IF(DOCALC)THEN
               VXC2(IPNT,IBMAT,N)=D2*fRR*EXPGRAD(IPNT,N,IBMAT)
            ENDDO
         ENDDO
+#ifdef VAR_XCFUN
      ELSE
         call lsquit('XCFUN 2',-1)
      ENDIF
+#endif
    ELSE
     VXC(IPNT,:) = 0.0E0_realk
    ENDIF
@@ -3536,7 +3554,9 @@ IF(DOCALC)THEN
     IF(GRD.LT. 1E-40_realk) GRD = 1E-40_realk
     GRDA = D05*GRD
     !get the functional derivatives 
+#ifdef VAR_XCFUN
     IF(.NOT.USEXCFUN)THEN
+#endif
        CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
        fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
        fZ  = VX(3)                    !drvs.df0010;
@@ -3578,9 +3598,11 @@ IF(DOCALC)THEN
              VXC2MAG(IPNT,IBMAT,3,N)=AMAG(N)*GRAD(3,IPNT,1)+B*EXPGRAD(IPNT,4,1+N,IBMAT)
           ENDDO
        ENDDO
+#ifdef VAR_XCFUN
     ELSE
        call lsquit('funcderiv xcfun',-1)
     ENDIF
+#endif
    ELSE
     VXC1(IPNT,:) = 0.0E0_realk
     VXC1MAG(IPNT,:,:) = 0.0E0_realk
@@ -4128,13 +4150,17 @@ IF(DOCALC)THEN
  IF(NRED.GT. 0)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+#ifdef VAR_XCFUN
     IF(.NOT.USEXCFUN)THEN
+#endif
       CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
       fR(IPNT) = VX(1)*D4 
       fRR(IPNT) = D2*(VX(6) + VX(7))*EXPVAL(IPNT,1) 
+#ifdef VAR_XCFUN
     ELSE
        call lsquit('xcfun2',-1)
     ENDIF
+#endif
    ELSE
       VXC(IPNT) = 0.0E0_realk
    ENDIF
@@ -4400,7 +4426,9 @@ IF(DOCALC)THEN
           &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
      GRDA = D05*GRD
      IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
+#ifdef VAR_XCFUN
       IF(.NOT.USEXCFUN)THEN
+#endif
        CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
        fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
        fZ  = VX(3)                    !drvs.df0010;
@@ -4429,9 +4457,11 @@ IF(DOCALC)THEN
        VXC4(1,IPNT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,1)
        VXC4(2,IPNT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,1)
        VXC4(3,IPNT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,1)
+#ifdef VAR_XCFUN
       ELSE
          call lsquit('xcfun',-1)
       ENDIF
+#endif
     ELSE
        VXC1(IPNT) = 0.0E0_realk
        VXC2(:,IPNT) = 0.0E0_realk
@@ -4742,16 +4772,20 @@ IF(DOCALC)THEN
  IF(NRED.GT. 0)THEN
   DO IPNT = 1, NBLEN
    IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+#ifdef VAR_XCFUN
      IF(.NOT.USEXCFUN)THEN
+#endif
       CALL dft_funcderiv3(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
       A = D4*(VX(6) + VX(7))
       fRR(1,IPNT) = A*EXPVAL(IPNT,1) 
       fRR(2,IPNT) = A*EXPVAL(IPNT,2) 
       A = D2*(VX(15) + D3*VX(16))
       fRRR(IPNT) = A*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)
+#ifdef VAR_XCFUN
      ELSE
         call lsquit('xcfun3',-1)
      ENDIF
+#endif
    ELSE
       VXC(IPNT) = 0.0E0_realk
    ENDIF
@@ -5055,7 +5089,9 @@ IF(DOCALC)THEN
     GRD2 = GRD*GRD
     GRDA2 = GRDA*GRDA
     GRDA3 = GRDA2*GRDA
+#ifdef VAR_XCFUN
     IF(.NOT.USEXCFUN)THEN
+#endif
        CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
        !THE NON DIFFERENTIATED PART
        fR  = D05*(VX(1) + VX(2))    !0.5*(drvs.df1000 + drvs.df0100);
@@ -5108,9 +5144,11 @@ IF(DOCALC)THEN
        VXC3(2,IPNT) = A*GRAD(1,IPNT,1) + B*EXPGRAD(1,IPNT,2) + C*EXPGRAD(1,IPNT,1)
        VXC3(3,IPNT) = A*GRAD(2,IPNT,1) + B*EXPGRAD(2,IPNT,2) + C*EXPGRAD(2,IPNT,1)
        VXC3(4,IPNT) = A*GRAD(3,IPNT,1) + B*EXPGRAD(3,IPNT,2) + C*EXPGRAD(3,IPNT,1)
+#ifdef VAR_XCFUN
     ELSE
        call lsquit('XCFUNgeoderiv_linrsp',-1)
     ENDIF
+#endif
    ELSE
       VXC1(:,IPNT) = 0.0E0_realk
       VXC2(:,IPNT,:) = 0.0E0_realk
@@ -5419,18 +5457,18 @@ DO IDMAT = 1, NDMAT
  Econt = 0.0E0_realk
  DO IPNT = 1, NBLEN
    IF(RHO(IPNT,IDMAT) .GT. RHOTHR)THEN
-     IF(.NOT.USEXCFUN)THEN
-        Econt = Econt + DFTENE(RHO(IPNT,IDMAT),DUMMY)*WGHT(IPNT)
-     ELSE
 #ifdef VAR_XCFUN        
+     IF(.NOT.USEXCFUN)THEN
+#endif
+        Econt = Econt + DFTENE(RHO(IPNT,IDMAT),DUMMY)*WGHT(IPNT)
+#ifdef VAR_XCFUN        
+     ELSE
         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
         call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
         call lsquit('xcfun II_DFT_KSMLDA not testet',-1)
-#else
-        call lsquit('xcfun II_DFT_KSMLDA not testet incons',-1)
-#endif
      ENDIF
+#endif
    ENDIF
  END DO
  DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + Econt
@@ -5505,12 +5543,16 @@ DO IDMAT = 1, NDMAT/2
       !get the functional derivatives 
       !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}} 
       !and same for beta
+#ifdef VAR_XCFUN
      IF(.NOT.USEXCFUN)THEN
+#endif
         !      CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY,WGHT(IPNT),VX)
         DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY)*WGHT(IPNT)
+#ifdef VAR_XCFUN
      ELSE
         call lsquit('xcfun0',-1)
      ENDIF
+#endif
    ENDIF
  END DO
 ENDDO
@@ -5655,12 +5697,16 @@ DO IDMAT = 1,NDMAT
         &(GRDB .GT. RHOTHR .OR. RHO(IPNT,IDMAT2).GT.RHOTHR))then 
       IF(GRDA.LT. 1E-40_realk) GRDA = 1E-40_realk
       IF(GRDB.LT. 1E-40_realk) GRDB = 1E-40_realk
+#ifdef VAR_XCFUN
       IF(.NOT.USEXCFUN)THEN
+#endif
          !      CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB,WGHT(IPNT),VX)
          DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB)*WGHT(IPNT)
+#ifdef VAR_XCFUN
       ELSE
          call lsquit('xcfun',-1)
       ENDIF
+#endif
    END IF
  END DO
 ENDDO
