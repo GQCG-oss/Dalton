@@ -202,22 +202,16 @@ C
          MODELPRI = ' CCD'
       ENDIF
       IF (RCCD) THEN
-!         IF (LPRNCC)
-!     &    
          CALL AROUND('Coupled Cluster model is: RCCD = RPA')
          MODEL = 'RCCD'
          MODELPRI = 'RCCD'
       ENDIF
       IF (DRCCD) THEN
          IF (SOSEX) THEN
-!            IF (LPRNCC)
-!     &       
             CALL AROUND('Coupled Cluster model is: SOSEX')
             MODEL = 'SOSEX'
             MODELPRI = 'SOSX'
          ELSE
-!            IF (LPRNCC)
-!     &       
             CALL AROUND('Coupled Cluster model is: DRCCD = direct RPA')
             MODEL = 'DRCCD'
             MODELPRI = 'DRPA'
@@ -2880,7 +2874,6 @@ C
 #include "ccsdinp.h"
 #include "ccinftap.h"
 #include "r12int.h"
-C
 !
 !SONIA SONIA SONIA
 !
@@ -2888,7 +2881,7 @@ C
 C
       LOGICAL LOCDBG
       PARAMETER(LOCDBG = .FALSE.)
-      PARAMETER( TWO = 2.0D00 )
+      PARAMETER(ONE=1.0d0, TWO = 2.0D00 )
       CHARACTER*5 FN3FOP
       CHARACTER*6 FN3VI, FN3FOP2
       CHARACTER*8 FNTOC, FN3VI2
@@ -2917,7 +2910,7 @@ C
 !SONIA SONIA SONIA
 !
 
-      IF ( IPRINT .GT. 10 ) THEN
+!      IF ( IPRINT .GT. 10 ) THEN
          IF (ETADSC .AND. FIRST) THEN
             CALL AROUND( 'CC_ETA: Constructing Eta vector '//
      *                   'and write it to disc' )
@@ -2926,7 +2919,7 @@ C
          ELSE
             CALL AROUND( 'CC_ETA: Constructing Eta vector ')
          ENDIF
-      ENDIF
+!      ENDIF
 C
       IF ( CCS ) THEN
          CALL DZERO(ETA,NT1AM(ISYMOP))
@@ -2948,10 +2941,10 @@ C
          READ(LUETA) (ETA(I), I=1,NT1AMX+NT2AMX)
          CALL GPCLOSE(LUETA,'KEEP')
 C
-         IF (IPRINT .GT. 40 ) THEN
+!         IF (IPRINT .GT. 40 ) THEN
             CALL AROUND( 'In CC_ETA:  Eta vector read ' )
             CALL CC_PRP(ETA(1),ETA(1+NT1AMX),1,1,1)
-         ENDIF
+!         ENDIF
 C
          IF ( IPRINT .GT. 10 ) THEN
             ETA1 = DDOT(NT1AMX,ETA(1),1,ETA(1),1)
@@ -2978,9 +2971,11 @@ C
       ENDIF
 C
 C Thomas Bondo Pedersen: SOSEX eta must be as in rCCD.
+C
       if (DRCCD .AND. .NOT.SOSEX) then
          CALL DSCAL(NT2AMX,TWO,ETA(1+NT1AMX),1)
       else
+         call flshfo(lupri)
          IOPTTCME = 1
          CALL CCSD_TCMEPK(ETA(1+NT1AMX),1.0D0,ISYMOP,IOPTTCME)
       end if
@@ -2996,7 +2991,7 @@ C----------------------------------------------------
 C     Make eta(ai) from AO fock matrix store on disk.
 C----------------------------------------------------
 C
-      IF ( RSPIM ) THEN
+      IF ( (RSPIM).and.(.not.(RCCD.or.DRCCD)) ) THEN
 C
          LUFCK = -1
          CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,

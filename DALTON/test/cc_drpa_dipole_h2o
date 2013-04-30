@@ -60,11 +60,11 @@ cat > cc_drpa_dipole_h2o.dal <<'%EOF%'
 8
 .HURWITZ
 .THRENR
-1.0D-12
+1.0D-10
 .THRLEQ
-1.0D-12
+1.0D-10
 .THRVEC
-1.0D-12
+1.0D-10
 *CCFOP
 .DIPMOM
 !.NONREL
