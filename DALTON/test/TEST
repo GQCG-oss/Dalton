@@ -129,11 +129,10 @@ dft_parallell_properties parallel_lucita_gasci parallel_spin_local"
 #
 QMMM="qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
 #
-SHORTPEQM="pehf_small_iter pehf_small_direct pehf_small_redthr pehf_small_gspol \
+SHORTPEQM="pehf_small_iter pehf_small_direct pehf_small_gspol \
 pehf_small_alpha pehf_small_1pa pehf_small_beta pehf_small_2pa"
 #
-LONGPEQM="pehf_large_iter pehf_large_direct pehf_large_redthr pehf_large_gspol \
-pehf_large_damp"
+LONGPEQM="pehf_large_iter pehf_large_direct pehf_large_gspol pehf_large_damp"
 #
 PEQM="$SHORTPEQM $LONGPEQM"
 #
