@@ -22,7 +22,7 @@ cat > decmp2_gradient.info <<'%EOF%'
    ---------------------------------------
    Molecule:         3 LiH molecules
    Wave Function:    MP2 / STO-3G
-   Test Purpose:     Test MP2 gradient/frozen core using full machinery of the DEC scheme (KK)
+   Test Purpose:     DEC-MP2 gradient using frozen core (Kasper K)
 %EOF%
 
 #######################################################################

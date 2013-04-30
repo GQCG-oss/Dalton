@@ -22,8 +22,7 @@ cat > decmp2_energy.info <<'%EOF%'
    -----------------------------
    Molecule:         HCOOH
    Wave Function:    MP2 / 6-31G
-   Test Purpose:     Test total DEC calculation (all fragments) 
-                     using frozen core and NO reassigning for hydrogens (Kasper K)
+   Test Purpose:     DEC-MP2 energy calculation using frozen core (Kasper K)
 %EOF%
 
 #######################################################################

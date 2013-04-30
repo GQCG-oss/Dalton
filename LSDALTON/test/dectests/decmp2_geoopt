@@ -22,7 +22,7 @@ cat > decmp2_geoopt.info <<'%EOF%'
    --------------------------------
    Molecule:         C2H4
    Wave Function:    MP2 / STO-3G
-   Test Purpose:     Test DEC-MP2 geometry optimization using frozen core and fragment-adapted orbitals.
+   Test Purpose:     Test DEC-MP2 geometry optimization using frozen core (Kasper K).
 %EOF%
 
 #######################################################################

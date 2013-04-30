@@ -22,7 +22,7 @@ cat > decmp2_density.info <<'%EOF%'
    --------------------------------------------------------------------------------
    Molecule:         C2H4
    Wave Function:    MP2 / 6-31G
-   Test Purpose:     Test MP2 density matrix (Kasper K)
+   Test Purpose:     Calculate DEC-MP2 energy and density matrix (Kasper K)
 %EOF%
 
 #######################################################################

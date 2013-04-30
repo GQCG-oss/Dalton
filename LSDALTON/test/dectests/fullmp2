@@ -22,7 +22,7 @@ cat > fullmp2.info <<'%EOF%'
    --------------------------------
    Molecule:         C2H2
    Wave Function:    MP2 / cc-pVDZ
-   Test Purpose:     Test full molecule MP2 energy using DEC program (Kasper K)
+   Test Purpose:     Test full molecule MP2 energy (Kasper K)
 %EOF%
 
 #######################################################################
