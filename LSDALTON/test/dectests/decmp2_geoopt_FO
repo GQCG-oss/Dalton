@@ -63,6 +63,7 @@ $END INFO
 **DEC
 .FROZENCORE
 .FRAGMENTADAPTED
+.NOTABSORBH
 *END OF INPUT
 %EOF%
 #######################################################################

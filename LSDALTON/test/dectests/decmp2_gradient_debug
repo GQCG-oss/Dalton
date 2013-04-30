@@ -67,7 +67,6 @@ $END INFO
 .kappaTHR
 1e-6
 .IncludeFullMolecule
-.ABSORBH
 .manual_batchsizes
 3  3
 *END OF INPUT  

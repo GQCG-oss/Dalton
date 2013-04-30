@@ -63,7 +63,6 @@ TRILEVEL
 .SinglesPolari
 .SinglesThr
 0.1
-.ABSORBH
 *END OF INPUT  
 %EOF%
 #######################################################################

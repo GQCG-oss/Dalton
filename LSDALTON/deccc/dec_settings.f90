@@ -288,7 +288,7 @@ contains
           ! Restart DEC calculation (only for single point calculations, not geometry optimization)
        case('.RESTART'); DECinfo%restart=.true.           
 
-          ! Absorb H atoms when assigning orbitals
+          ! Do not absorb H atoms when assigning orbitals
        case('.NOTABSORBH'); DECinfo%AbsorbHatoms=.false.
 
           !> See description of FOT level in set_input_for_fot_level.

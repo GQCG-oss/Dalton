@@ -139,8 +139,7 @@ RSP="LSresponse/LSresponse_HF_alpha
 GEO="geomopt/cartes_bfgs_min
      geomopt/redint_bfgs
      geomopt/cartes_trilevel_newconv
-     geomopt/cartes_psb_min
-     geomopt/ethane_dec_mp2"
+     geomopt/cartes_psb_min"
 DDYN="ddynam/HCN_ddyn
       ddynam/HF_vib
       ddynam/H2O_fmd"
