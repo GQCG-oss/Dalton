@@ -5288,11 +5288,18 @@ C     Small modifications for CC2 by A. Halkier & S. Coriani
 C     14/01-2000. Introduce factor FACT to control antisymmetrization
 C     of eta_ij and eta_ab.
 C
+C     Additional numerical stability, Thomas Bondo Pedersen, Jan. 2013.
+C        - if numerator is zero, then kappa-bar-0 is set to zero.
+C        - if numerator is non-zero and denominator is zero, the
+C          equation system is singular and we have to quit.
+C        - in addition, redundant zeroing eliminated.
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRDEM = 1.0D-12)
+      PARAMETER (EPSN = 1.0D-12, EPSD = 1.0D-12)
       DIMENSION ZKDIA(*), XMAT(*), YMAT(*), WORK(LWORK)
 #include "maxorb.h"
 #include "ccorb.h"
@@ -5302,6 +5309,9 @@ C
 #include "ccsdsym.h"
 #include "ccsdio.h"
 #include "ccsdinp.h"
+C
+      REAL*8   CC_PROTECTED_DIVISION
+      EXTERNAL CC_PROTECTED_DIVISION
 C
       CALL QENTER('MP2_ZKBLO')
 C
@@ -5365,13 +5375,17 @@ C
             DO 120 I = J+1,NRHF(ISYMI)
                KOFFI = KFOCKD + IRHF(ISYMI) + I - 1
                DENOM = WORK(KOFFJ) - WORK(KOFFI)
-               IF (ABS(DENOM) .GT. THRDEM) THEN
-                 NIJ   = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J - 1) + I
-                 NJI   = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I - 1) + J
-C
-                 ZKDIA(NIJ) = HALF*(XMAT(NIJ) - FACT*XMAT(NJI))/DENOM
-                 ZKDIA(NJI) = ZKDIA(NIJ)
-               ENDIF
+               NIJ   = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J - 1) + I
+               NJI   = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I - 1) + J
+               XNOMI = HALF*(XMAT(NIJ) - FACT*XMAT(NJI))
+               ZKDIA(NIJ) = CC_PROTECTED_DIVISION(XNOMI,DENOM,EPSN,EPSD)
+               ZKDIA(NJI) = ZKDIA(NIJ)
+!               IF (ABS(DENOM) .GT. THRDEM) THEN
+!                 NIJ   = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J - 1) + I
+!                 NJI   = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I - 1) + J
+!                 ZKDIA(NIJ) = HALF*(XMAT(NIJ) - FACT*XMAT(NJI))/DENOM
+!                 ZKDIA(NJI) = ZKDIA(NIJ)
+!               ENDIF
 C
   120       CONTINUE
   110    CONTINUE
@@ -5388,14 +5402,20 @@ C
             DO 150 A = B+1,NVIR(ISYMA)
                KOFFA = KFOCKD + IVIR(ISYMA) + A - 1
                DENOM = WORK(KOFFB) - WORK(KOFFA)
-               IF (ABS(DENOM) .GT. THRDEM) THEN
-                 NAB   = IMATAB(ISYMA,ISYMB) + NVIR(ISYMA)*(B - 1) + A
-                 NBA   = IMATAB(ISYMB,ISYMA) + NVIR(ISYMB)*(A - 1) + B
-C
-                 ZKDIA(NMATIJ(1) + NAB) =
-     *                       HALF*(YMAT(NAB) - FACT*YMAT(NBA))/DENOM
-                 ZKDIA(NMATIJ(1) + NBA) = ZKDIA(NMATIJ(1) + NAB)
-               ENDIF
+               NAB   = IMATAB(ISYMA,ISYMB) + NVIR(ISYMA)*(B - 1) + A
+               NBA   = IMATAB(ISYMB,ISYMA) + NVIR(ISYMB)*(A - 1) + B
+               XNOMI = HALF*(YMAT(NAB) - FACT*YMAT(NBA))
+               ZKDIA(NMATIJ(1)+NAB) = CC_PROTECTED_DIVISION(XNOMI,DENOM,
+     &                                                      EPSN,EPSD)
+               ZKDIA(NMATIJ(1)+NBA) = ZKDIA(NMATIJ(1)+NAB)
+!               IF (ABS(DENOM) .GT. THRDEM) THEN
+!                 NAB   = IMATAB(ISYMA,ISYMB) + NVIR(ISYMA)*(B - 1) + A
+!                 NBA   = IMATAB(ISYMB,ISYMA) + NVIR(ISYMB)*(A - 1) + B
+!C
+!                 ZKDIA(NMATIJ(1) + NAB) =
+!     *                       HALF*(YMAT(NAB) - FACT*YMAT(NBA))/DENOM
+!                 ZKDIA(NMATIJ(1) + NBA) = ZKDIA(NMATIJ(1) + NAB)
+!               ENDIF
 C
   150       CONTINUE
   140    CONTINUE
