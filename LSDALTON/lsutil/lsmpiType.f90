@@ -5012,19 +5012,19 @@ contains
      if (infpar%mynum.ne.infpar%master) call lsdaltonjumpout(99)
 #else
 
-#ifdef VAR_DEBUG
-     count=1
-     root = infpar%master
-     recvbuffer = 0
-     recvbuffer_real = 0.0E0_realk
-     CALL MPI_REDUCE(poketime,recvbuffer_real,&
-            & count,MPI_DOUBLE_PRECISION,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
-     CALL MPI_REDUCE(poketimes,recvbuffer,&
-            & count,MPI_INTEGER8,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
-     if(infpar%mynum==infpar%master)then
-       print *,"CUMULATIVE MPI POKETIME",recvbuffer_real,recvbuffer,recvbuffer_real/(recvbuffer*1.0E0_realk)
-     endif
-#endif     
+!!$#ifdef VAR_DEBUG
+!!$     count=1
+!!$     root = infpar%master
+!!$     recvbuffer = 0
+!!$     recvbuffer_real = 0.0E0_realk
+!!$     CALL MPI_REDUCE(poketime,recvbuffer_real,&
+!!$            & count,MPI_DOUBLE_PRECISION,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
+!!$     CALL MPI_REDUCE(poketimes,recvbuffer,&
+!!$            & count,MPI_INTEGER8,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
+!!$     if(infpar%mynum==infpar%master)then
+!!$       print *,"CUMULATIVE MPI POKETIME",recvbuffer_real,recvbuffer,recvbuffer_real/(recvbuffer*1.0E0_realk)
+!!$     endif
+!!$#endif     
 
      call MPI_FINALIZE(ierr)
      if(ierr/=0)then
