@@ -42,9 +42,16 @@
      "LSDalton, a molecular electronic structure program, Release 2011,
       written by <INSERT AUTHOR LIST>"
 
+                    
+  Revision info     
+--------------------
+                    
+ Last commit rev          | 930f05c3a2d1b467be5cb473b02cd7a132278874
+ Last commit author       | Merge: 47a6705 a60d540
+ Last commit time         | Author: Kasper Kristensen <kasperk@chem.au.dk>
 
 Start simulation
-     Date and time (Linux)  : Tue Apr 23 14:32:47 2013 
+     Date and time (Linux)  : Tue Apr 30 11:08:41 2013
      Host name              : kasper-kristensens-macbook-pro.local    
                       
  -----------------------------------------
@@ -117,8 +124,8 @@ Start simulation
    
 
  Default basis set library used:
-        /Users/kk/dalton/basis                                                                                                                                                                                  
- OPENING FILE/Users/kk/dalton/basis/6-31G
+        /Users/kk/dalton3/LSDALTON/../basis                                                                                                                                                                     
+ OPENING FILE/Users/kk/dalton3/LSDALTON/../basis/6-31G
    
 BASISSETLIBRARY
  Number of Basisset           1
@@ -211,6 +218,7 @@ basis and perform integral evaluation using this basis
     The Screening threshold used for Coulomb               :1.0000E-10
     The Screening threshold used for Exchange              :1.0000E-08
     The Screening threshold used for One-electron operators:1.0000E-15
+ The SCF Convergence Criteria is applied to the gradnorm in OAO basis
 
  End of configuration!
 
@@ -220,66 +228,71 @@ Matrix type: mtype_dense
  ================================================
  QQQ New  h:   1453.4201223302161     
  QQQ New  K:   282.55582341996438     
- The Coulomb energy contribution    21.726141548067744     
+ The Coulomb energy contribution    21.726141548067766     
  The Exchange energy contribution   -0.0000000000000000     
- The Fock energy contribution   -21.726141548067744     
-*************************************************************************************************###
- it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     OAO gradient     ###
-******************************************************************  *******************************###
-  1    -30.9437925733    0.00000000000    0.00      0.00000    0.00    0.00E+00    2.18E+00  ###
+ The Fock energy contribution   -21.726141548067766     
+**************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     ###
+******************************************************************  ********************###
+  1    -30.9437925733    0.00000000000    0.00      0.00000    0.00    2.18E+00  ###
 *******************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 *******************************************************************************************%%%
- The Coulomb energy contribution    13.801942818824140     
+ The Coulomb energy contribution    13.801942818824134     
  The Exchange energy contribution   -0.0000000000000000     
- The Fock energy contribution   -13.801942818824140     
-  2    -32.1250931891   -1.18130061579    0.00      0.00000    0.00    0.00E+00    1.78E+00  ###
- The Coulomb energy contribution    16.017404492789602     
+ The Fock energy contribution   -13.801942818824134     
+  2    -32.1250931891   -1.18130061579    0.00      0.00000    0.00    1.78E+00  ###
+ The Coulomb energy contribution    16.017404492789598     
  The Exchange energy contribution   -0.0000000000000000     
- The Fock energy contribution   -16.017404492789602     
-  3    -32.7408650905   -0.61577190141   -1.00      0.00000    0.00    0.00E+00    2.68E-01  ###
- The Coulomb energy contribution    16.353671645789927     
+ The Fock energy contribution   -16.017404492789598     
+  3    -32.7408650905   -0.61577190141   -1.00      0.00000    0.00    2.68E-01  ###
+ The Coulomb energy contribution    16.353671645789916     
  The Exchange energy contribution   -0.0000000000000000     
- The Fock energy contribution   -16.353671645789927     
-  4    -32.7524018994   -0.01153680884   -1.00      0.00000    0.00    0.00E+00    4.88E-02  ###
- The Coulomb energy contribution    16.429301793773760     
+ The Fock energy contribution   -16.353671645789916     
+  4    -32.7524018994   -0.01153680884   -1.00      0.00000    0.00    4.88E-02  ###
+ The Coulomb energy contribution    16.429301793773767     
  The Exchange energy contribution   -0.0000000000000000     
- The Fock energy contribution   -16.429301793773760     
-  5    -32.7527936550   -0.00039175561   -1.00      0.00000    0.00    0.00E+00    1.60E-04  ###
+ The Fock energy contribution   -16.429301793773767     
+  5    -32.7527936550   -0.00039175561   -1.00      0.00000    0.00    1.60E-04  ###
 
  Level 1 atomic calculation on 6-31G Charge   1
  ================================================
  QQQ New  h:   4.2459146168740753     
  QQQ New  K:   2.1413661810249121     
- The Coulomb energy contribution   0.31435582677568175     
+ The Coulomb energy contribution   0.31435582677568180     
  The Exchange energy contribution   -0.0000000000000000     
- The Fock energy contribution  -0.31435582677568175     
-*************************************************************************************************###
- it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     OAO gradient     ###
-******************************************************************  *******************************###
-  1     -0.1838770840    0.00000000000    0.00      0.00000    0.00    0.00E+00    3.96E-01  ###
+ The Fock energy contribution  -0.31435582677568180     
+**************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     ###
+******************************************************************  ********************###
+  1     -0.1838770840    0.00000000000    0.00      0.00000    0.00    3.96E-01  ###
 *******************************************************************************************%%%
  Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
 *******************************************************************************************%%%
- The Coulomb energy contribution   0.25554354699120208     
+ The Coulomb energy contribution   0.25554354699120191     
  The Exchange energy contribution   -0.0000000000000000     
- The Fock energy contribution  -0.25554354699120208     
-  2     -0.2091195180   -0.02524243400    0.00      0.00000    0.00    0.00E+00    1.08E-01  ###
- The Coulomb energy contribution   0.26635366462813848     
+ The Fock energy contribution  -0.25554354699120191     
+  2     -0.2091195180   -0.02524243400    0.00      0.00000    0.00    1.08E-01  ###
+ The Coulomb energy contribution   0.26635366462813836     
  The Exchange energy contribution   -0.0000000000000000     
- The Fock energy contribution  -0.26635366462813848     
-  3     -0.2112208627   -0.00210134479   -1.00      0.00000    0.00    0.00E+00    7.62E-04  ###
+ The Fock energy contribution  -0.26635366462813836     
+  3     -0.2112208627   -0.00210134479   -1.00      0.00000    0.00    7.62E-04  ###
+ The Coulomb energy contribution   0.26635366462813836     
+ The Exchange energy contribution   -0.0000000000000000     
+ The Fock energy contribution  -0.26635366462813836     
+  4     -0.2112208627    0.00000000000   -1.00      0.00000    0.00    7.62E-04  ###
  GCSCF mode: DIIS failed and is skipped
- The Coulomb energy contribution   0.26645546428868755     
+ The Coulomb energy contribution   0.26645546428868783     
  The Exchange energy contribution   -0.0000000000000000     
- The Fock energy contribution  -0.26645546428868755     
-  4     -0.2112209573   -0.00000009452   -1.00      0.00000    0.00    0.00E+00    2.12E-04  ###
+ The Fock energy contribution  -0.26645546428868783     
+  5     -0.2112209573   -0.00000009452   -1.00      0.00000    0.00    2.12E-04  ###
 Matrix type: mtype_dense
 
  Initital Hartree-Fock calculation is skipped!
 
-Total no. of matmuls used:                        27
+Total no. of matmuls used:                        30
 Total no. of Fock/KS matrix evaluations:           0
+Max no. of matrices allocated in Level 3:         21
  Using   0.008 GB of mem for the testarray
 REFERENCE NORM1:     420.7739943772
 REFERENCE NORM2:     210.3869971886
@@ -471,7 +484,7 @@ sra4321:      368.4404268647 : SUCCESS
   Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                         26.589 MB
+  Max allocated memory, TOTAL                         26.661 MB
   Max allocated memory, type(matrix)                  13.616 kB
   Max allocated memory, real(realk)                   26.503 MB
   Max allocated memory, MPI                            0.000 Byte
@@ -479,7 +492,7 @@ sra4321:      368.4404268647 : SUCCESS
   Max allocated memory, integer                       37.348 kB
   Max allocated memory, logical                        1.092 kB
   Max allocated memory, character                      2.640 kB
-  Max allocated memory, AOBATCH                        6.660 kB
+  Max allocated memory, AOBATCH                        7.440 kB
   Max allocated memory, CCORBITAL                      0.000 Byte
   Max allocated memory, CCATOM                         0.000 Byte
   Max allocated memory, BATCHTOORB                     0.000 Byte
@@ -490,14 +503,14 @@ sra4321:      368.4404268647 : SUCCESS
   Max allocated memory, MP2DENS                        0.000 Byte
   Max allocated memory, TRACEBACK                      0.000 Byte
   Max allocated memory, MP2GRAD                        0.000 Byte
-  Max allocated memory, ODBATCH                        2.280 kB
-  Max allocated memory, LSAOTENSOR                     0.360 kB
+  Max allocated memory, ODBATCH                        2.640 kB
+  Max allocated memory, LSAOTENSOR                     0.608 kB
   Max allocated memory, SLSAOTENSOR                    0.000 Byte
   Max allocated memory, GLOBALLSAOTENSOR               0.000 Byte
-  Max allocated memory, ATOMTYPEITEM                  80.880 kB
-  Max allocated memory, ATOM                           2.912 kB
-  Max allocated memory, LSMATRIX                       1.024 kB
-  Max allocated memory, OverlapT                      22.104 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOM                           3.024 kB
+  Max allocated memory, LSMATRIX                       1.792 kB
+  Max allocated memory, OverlapT                      38.016 kB
   Max allocated memory, linkshell                      0.000 Byte
   Max allocated memory, integrand                    258.048 kB
   Max allocated memory, integralitem                 460.800 kB
@@ -512,5 +525,5 @@ sra4321:      368.4404268647 : SUCCESS
 
 
 End simulation
-     Date and time (Linux)  : Tue Apr 23 14:32:56 2013 
+     Date and time (Linux)  : Tue Apr 30 11:08:49 2013
      Host name              : kasper-kristensens-macbook-pro.local    

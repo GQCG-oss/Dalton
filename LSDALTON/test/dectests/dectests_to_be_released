@@ -1,6 +1,0 @@
-The following test cases should be included in the release:
-decmp2_energy
-decmp2_density
-decmp2_gradient
-decmp2_geoopt
-fullmp2
