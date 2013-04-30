@@ -827,7 +827,7 @@ C
             KEND1=KG
             LWRK1=LWORK-KEND1+1
          ELSE
-            IF (RCCD.OR.DRCCD) THEN
+            IF ((NSYM.EQ.1.).AND.(RCCD.OR.DRCCD)) THEN
                WRITE(LUPRI,'(A)')
      &         'Using standard MP2-like amplitude update'
             END IF
@@ -972,7 +972,7 @@ C
       WRITE(LUPRI,250) ETYPE(1:LENET),THRENR,EN2
       WRITE(LUPRI,'(1X,A,1P,D15.8)')
      & 'Final 2-norm of the CC vector function: ',OMNM
- 250  FORMAT(/,1x,A,' energy converged to within ',D10.2,' is ',F16.9)
+ 250  FORMAT(/,1x,A,' energy converged to within ',D10.2,' is ',F25.12)
       IF (CCR12) THEN
         WRITE(LUPRI,'(A,D10.2,a,F16.9)') 
      &  ' R12       energy converged to within ',THRENR,' is ',ER12
@@ -1309,7 +1309,7 @@ C
             GOTO 240
          ENDIF
 C
-      ENDIF
+      ENDIF  !triples
 C
 C------------------------------------------------------------
 C     Print and save (in ECCGRS) final ground state energies.
@@ -1320,35 +1320,41 @@ C
       CALL AROUND
      * ('Final results from the Coupled Cluster energy program')
       WRITE(LUPRI,'(//12X,A,A,A,F32.10,/)')
-     &   'Total ',ETY0,' energy: ',ESCF
-      WRITE(LURES,'(//12X,A,A,A,F32.10)') 'Total ',ETY0,' energy: ',ESCF
-      CALL CCSD_MODEL(ETYPE,LENET,24,ETY1,5,APROXR12)
-      WRITE(LUPRI,'(12X,A,A,A,A,F25.10,/)') 'Total ',ETYPE(1:LENET),
+     &   '@Total ',ETY0,' energy: ',ESCF
+      WRITE(LURES,'(//12X,A,A,A,F32.10)') 
+     &   '@Total ',ETY0,' energy: ',ESCF
+      IF (ETY1.EQ.'RSTAR' .OR. ETY1.EQ.'MP2  ') THEN
+         CALL CCSD_MODEL(ETYPE,LENET,24,ETY1,5,APROXR12)
+         WRITE(LUPRI,'(12X,A,A,A,A,F25.10,/)') '@Total ',ETYPE(1:LENET),
      &    ' energy: ',BLANKS(1:12-LENET),EINI
-      WRITE(LURES,'(12X,A,A,A,A,F25.10)')   'Total ',ETYPE(1:LENET),
+         WRITE(LURES,'(12X,A,A,A,A,F25.10)')   '@Total ',ETYPE(1:LENET),
      &    ' energy: ',BLANKS(1:12-LENET),EINI
+      END IF
 C
+      IF (RCCD) THEN
+         !Sonia: is this needed?
+         EMP2=EINI-ESCF
+      ENDIF
       IF (.NOT. (MP2 .OR. NOCCIT)) THEN
         CALL CCSD_MODEL(ETYPE,LENET,24,ETY2,5,APROXR12)
 
-
         IF (.NOT. (DRCCD.OR.RCCD.OR.RTCCD)) THEN
-         WRITE(LUPRI,'(12X,A,A,A,A,F25.10)') 'Total ',ETYPE(1:LENET),
+         WRITE(LUPRI,'(12X,A,A,A,A,F25.10)') '*Total ',ETYPE(1:LENET),
      &     ' energy: ',BLANKS(1:12-LENET),EN2
-         WRITE(LURES,'(12X,A,A,A,A,F25.10)') 'Total ',ETYPE(1:LENET),
+         WRITE(LURES,'(12X,A,A,A,A,F25.10)') '*Total ',ETYPE(1:LENET),
      &     ' energy: ',BLANKS(1:12-LENET),EN2
         END IF
 !      END IF
 C
       IF (DRCCD) THEN
        IF (SOSEX) THEN
-        WRITE(LUPRI,'(12X,A,F25.10)')'SOSEX Correlation Energy:  ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'1.SOSEX Correlation Energy:  ',
      &  EN2-ESCF
-        WRITE(LUPRI,'(12X,A,F25.10)')'Total SOSEX Energy:        ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'1.Total SOSEX Energy:        ',
      &  EN2
-        WRITE(LUPRI,'(12X,A,F25.10)')'DRCCD Correlation Energy:  ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'1.DRCCD Correlation Energy:  ',
      &  ETMP-ESCF
-        WRITE(LUPRI,'(12X,A,F25.10)')'Total DRCCD Energy:        ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'1.Total DRCCD Energy:        ',
      &  ETMP
         WRITE(LURES,'(12X,A,F25.10)')'SOSEX Correlation Energy:  ',
      &  EN2-ESCF
@@ -1359,21 +1365,21 @@ C
         WRITE(LURES,'(12X,A,F25.10)')'Total DRCCD Energy:        ',
      &  ETMP
        ELSE
-        WRITE(LUPRI,'(12X,A,F25.10)')'SOSEX Correlation Energy:  ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'2.SOSEX Correlation Energy:  ',
      &  ETMP-ESCF
-        WRITE(LUPRI,'(12X,A,F25.10)')'Total SOSEX Energy:        ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'2.Total SOSEX Energy:        ',
      &  ETMP
-        WRITE(LUPRI,'(12X,A,F25.10)')'DRCCD Correlation Energy:  ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'2.DRCCD Correlation Energy:  ',
      &  EN2-ESCF
-        WRITE(LUPRI,'(12X,A,F25.10)')'Total DRCCD Energy:        ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'2.Total DRCCD Energy:        ',
      &  EN2
-        WRITE(LURES,'(12X,A,F25.10)')'SOSEX Correlation Energy:  ',
+        WRITE(LURES,'(12X,A,F25.10)')'2.SOSEX Correlation Energy:  ',
      &  ETMP-ESCF
-        WRITE(LURES,'(12X,A,F25.10)')'Total SOSEX Energy:        ',
+        WRITE(LURES,'(12X,A,F25.10)')'2.Total SOSEX Energy:        ',
      &  ETMP
-        WRITE(LURES,'(12X,A,F25.10)')'DRCCD Correlation Energy:  ',
+        WRITE(LURES,'(12X,A,F25.10)')'2.DRCCD Correlation Energy:  ',
      &  EN2-ESCF
-        WRITE(LURES,'(12X,A,F25.10)')'Total DRCCD Energy:        ',
+        WRITE(LURES,'(12X,A,F25.10)')'2.Total DRCCD Energy:        ',
      &  EN2
        END IF  !sosex
       END IF   !drccd
@@ -1381,7 +1387,9 @@ C----------------------
       END IF
       END IF  !(.NOT.QM3)
 !-----------
+
       ECCGRS = EN2
+
       IF ( (.NOT.CCSLV) .OR. (ICCSLIT.EQ.0)) THEN
          LABEL1 = 'ENERGY  '
          MODREF = 'SCF       '
@@ -1461,6 +1469,12 @@ C     &   (ECRCCD+3.0d0*ECRTCCD)/2.0d0
 C       WRITE(LUPRI,*)'RPA SCF+(RCCD+3*RTCCD)/2 Energy:',
 C     &   ECCGRS
       ENDIF
+
+
+      WRITE(LUPRI,*)'ETMP IS NOW',ETMP
+      WRITE(LUPRI,*)'EN2 IS NOW',EN2
+      WRITE(LUPRI,*)'EMP2 IS NOW',EMP2
+
 C
 C=======================================================
 C     Calculate Intermediates for response calculations:
@@ -1492,9 +1506,6 @@ C
          else
           CALL CCRHSN(WORK(KOMEG1),WORK(KOMEG2),WORK(KT1AM),WORK(KT2AM),
      *               WORK(KEND1),LWRK1,APROXR12)
-         end if
-
-         CCSDT = CCSAV
 C
          IF (IPRINT .GT. 1) WRITE(LUPRI,'(/)')
          WRITE(LUPRI,'(12X,A)') 'E-intermediates calculated '
@@ -1508,6 +1519,10 @@ C
             WRITE(LUPRI,'(12X,A)') 'D-intermediate calculated '
 C
          ENDIF
+         end if
+
+         CCSDT = CCSAV
+
          WRITE(LUPRI,'(/)')
 C
       ELSE IF (RSPIM2.AND.IMSKIP) THEN
@@ -2112,6 +2127,7 @@ C
   13  CONTINUE
 C
 C Thomas Bondo Pedersen: set XECCSD to be the energy of the model used.
+C
       ETMP = XECCSD
       IF (ETY.NE.'MP2  ') THEN
          IF (DRCCD) THEN
