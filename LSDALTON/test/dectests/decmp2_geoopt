@@ -85,31 +85,25 @@ else
 fi
 
 # Final DEC-MP2 energy
-CRIT1=`$GREP "Energy at final geometry is *: *\-77.19542" $log | wc -l`
+CRIT1=`$GREP "Energy at final geometry is *: *\-77.1954" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="Final DEC-MP2 ENERGY NOT CORRECT -"
 
-# Geometry convergence on final FOT level
-CRIT1=`$GREP "Geometry converged in *6  iterations" $log | wc -l`
-TEST[2]=`expr   $CRIT1`
-CTRL[2]=1
-ERROR[2]="Number of geometry steps on final FOT level is not correct"
-
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
-TEST[3]=`expr  $CRIT1`                                                    
-CTRL[3]=1                                                                 
-ERROR[3]="Memory leak -"
+TEST[2]=`expr  $CRIT1`                                                    
+CTRL[2]=1                                                                 
+ERROR[2]="Memory leak -"
 
 # MPI Memory test
 CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
-TEST[4]=`expr  $CRIT1`
-CTRL[4]=0
-ERROR[4]="MPI Memory leak -"
+TEST[3]=`expr  $CRIT1`
+CTRL[3]=0
+ERROR[3]="MPI Memory leak -"
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
