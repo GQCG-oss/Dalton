@@ -338,7 +338,7 @@ contains
           ! ****************************************************************************
           ! *               Keywords only available for developers                     *
           ! ****************************************************************************
-#ifdef FEATURE_NOT_TO_INCLUDE
+#ifndef RELEASE
           ! NOTE: By default, we assume that the HF has already been carried out.
        case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
        case('.CCSDSOLVER_PAR'); DECinfo%solver_par=.true.
