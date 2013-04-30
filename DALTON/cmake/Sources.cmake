@@ -614,6 +614,7 @@ sirius/sirsav.F
 sirius/sirset.F
 sirius/sirsol.F
 sirius/sirsolpcm.F
+sirius/sirstex.F
 sirius/sirtest.F
 sirius/sirtr1.F
 sirius/sirtra.F

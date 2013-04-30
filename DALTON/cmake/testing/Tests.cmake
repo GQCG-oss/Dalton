@@ -8,6 +8,7 @@ add_test(energy_douglaskroll ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINAR
 add_test(energy_nosymm ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null energy_nosymm)
 add_test(energy_restart ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null energy_restart)
 add_test(energy_symm ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null energy_symm)
+add_test(energy_stex ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null energy_stex)
 add_test(energy_zmat ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null energy_zmat)
 add_test(energy_nevpt2_gs ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null energy_nevpt2_gs)
 add_test(energy_nevpt2_ex ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null energy_nevpt2_ex)

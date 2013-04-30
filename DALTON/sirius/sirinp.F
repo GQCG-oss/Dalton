@@ -255,6 +255,7 @@ C
 #include "spinfo.h"
 #include "dftcom.h"
 #include "dfterg.h"
+#include "stex.h"
 
 C
       INTEGER*4   NSYM_i4, NBAS_i4(8),NORB_i4(8), NRHF_i4(8), IOPRHF_i4
@@ -471,6 +472,10 @@ C
       NELMX3 = 0
       MULTS  = -2     ! MULTS .lt. 0 is code for not set yet
       MS2    = -12345 ! -12345 is code for not set by .MS2 option
+C
+C********** Default values section STEX *****
+C
+      DOSTEX=.FALSE.
 C
 C********** Default values section MP2INP *****
 C
@@ -1898,6 +1903,7 @@ C  *SOLVENT CALCULATION
 C  *PRINT LEVELS
 C  *AUXILIARY INPUT
 C  *LUCITA CALCULATION     ! large-scale CI
+C  *STEX INPUT
 C  *END OF (marks end of keyword input)
 C
 C******************************************
@@ -2005,9 +2011,9 @@ C
 C -- local variables and constants
 C
 #if defined(BUILD_GEN1INT)
-      PARAMETER (NTBMOD = 24)
+      PARAMETER (NTBMOD = 25)
 #else
-      PARAMETER (NTBMOD = 23)
+      PARAMETER (NTBMOD = 24)
 #endif
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO, lucita_input_provided
@@ -2024,9 +2030,9 @@ C
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
 #if defined(BUILD_GEN1INT)
-     *            '*AUXILL','*LUCITA','*CUBE  ','*END OF'/
+     *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*END OF'/
 #else
-     *            '*AUXILL','*LUCITA','*END OF'/
+     *            '*AUXILL','*LUCITA','*STEX  ','*END OF'/
 #endif
 C
 C
@@ -2048,9 +2054,9 @@ C
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
 #if defined(BUILD_GEN1INT)
-     *                2900,3000,2400,3200,3600,8000), I
+     *                2900,3000,2400,3200,3300,3600,8000), I
 #else
-     *                2900,3000,2400,3200,8000), I
+     *                2900,3000,2400,3200,3300,8000), I
 #endif
             END IF
  920     CONTINUE
@@ -2126,6 +2132,8 @@ C *AUXILIARY (and misspelled *AUXILLIARY for backwards compatibility)
 !      processed via the new input reader module.
  3200  lucita_input_provided = .true.
        call move_to_next_star(word,lucmd)
+       GO TO 910
+ 3300  CALL STXINP(WORD,INPERR,ALLOPT)
        GO TO 910
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, to generate cube files to visualize the results
@@ -2208,6 +2216,7 @@ C
 #include "gnrinf.h"
 #include "inftra.h"
 #include "dftcom.h"
+#include "stex.h"
 C
 #if !defined (VAR_NONAMELIST)
       NAMELIST /NMLSIR/ NPATH, MAXMIC
@@ -2218,7 +2227,7 @@ C
      *            '.SCF   ','.DFT   ','.NEVPT2','.IFCSTA','.IT1STA',
      *            '.KSPT2 ','.GASCI ','xXXXXXX','xXXXXXX','xXXXXXX',
      *            '.CISRDF','.HFSRDF','.MCSRDF','.SRLDA ','.SRFUN ',
-     *            '.SRHYBR','.COPFAC','xXXXXXX','xXXXXXX','xXXXXXX'/
+     *            '.SRHYBR','.COPFAC','.STEX  ','xXXXXXX','xXXXXXX'/
 C
 C
 C
@@ -2573,6 +2582,8 @@ C     .COPFAC (for some srDFT testing)
       GO TO 100
 C
   133 CONTINUE
+      DOSTEX = .TRUE.
+      GO TO 100
   134 CONTINUE
   135 CONTINUE
       GO TO 100
