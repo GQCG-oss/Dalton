@@ -6,6 +6,8 @@ MODULE BUILDBASISSET
   use LSMatrix_Operations_dense
   use lstiming
   use memory_handling
+  use AO_TypeType, only: ExpThr
+  use molecule_type
 contains
 !> \brief builds the basis structure
 !> \author T. Kjaergaard
@@ -266,7 +268,6 @@ END SUBROUTINE Build_BASIS
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE DETERMINE_FAMILYTYPEBASISSET(LUPRI,IPRINT,BASINFO)
-use AO_Type, only: ExpThr
 !> the logical unit number for the output file
 INTEGER :: LUPRI
 !> the printlevel integer, determining how much output should be generated
@@ -312,7 +313,6 @@ END SUBROUTINE DETERMINE_FAMILYTYPEBASISSET
 !> \author T. Kjaergaard
 !> \date 2011
 SUBROUTINE DETERMINE_GENERALCONTRACTED(LUPRI,IPRINT,BASINFO,GCONT)
-use AO_Type, only: ExpThr
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
 !> the printlevel integer, determining how much output should be generated
@@ -355,7 +355,6 @@ END SUBROUTINE DETERMINE_GENERALCONTRACTED
 !> This is the case when ATOMBASIS is used in MOLECULE.INP
 !>
 SUBROUTINE ATTACH_Chargeindex_IDTYPE(MOLECULE,BASINFO,BASISSETLIBRARY)
-use molecule_type
 implicit none
 !> contains all info about the molecule (atoms, charge,...)
 TYPE(MOLECULEINFO)        :: MOLECULE

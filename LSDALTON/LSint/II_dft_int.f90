@@ -14,6 +14,8 @@ use precision
 use TYPEDEF
 use dft_type
 use dft_typetype
+private
+public :: II_DFTINT, TEST_NELECTRONS, II_DFTDISP, II_DFTsetFunc, II_DFTaddFunc
 ! Notes 
 ! OLD NOTATION !   NEW NOTATION
 !==========================================================

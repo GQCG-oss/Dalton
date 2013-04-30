@@ -15,6 +15,8 @@ MODULE ODbatches
  !>  iii) an empty batch (used for debugging purposes only -
  !>       useful when testing contruction of E-coefficients).
  !>
+ private
+ public :: Create_ODbatches
 CONTAINS
 !> \brief Creates OD-batches from two sets of AO-batches
 !> \author S. Reine and T. Kjaergaard

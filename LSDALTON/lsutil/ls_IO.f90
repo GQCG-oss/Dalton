@@ -8,6 +8,11 @@ use Integralparameters
 use matrix_operations
 use memory_handling
 use mat3d_mod, only: read_mat3d_from_disk, mat3d
+use molecule_type
+use molecule_typetype
+use LSTENSOR_OPERATIONSMOD, only: write_lstensor_to_disk, LSTENSOR, &
+     & read_lstensor_from_disk
+use mat3d_mod, only: write_mat3d_to_disk, mat3d
 CONTAINS
 !> \brief initialise the IOitem
 !> \author S. Reine and T. Kjaergaard
@@ -299,7 +304,6 @@ IO%IUNIT(iFile)  = -1
 END SUBROUTINE io_close
 
 SUBROUTINE io_get_CSidentifier(identifier,THR,mol1,mol2,CS,PS)
-use molecule_type
 implicit none
 Character(53)              :: identifier
 Integer,intent(IN)         :: THR
@@ -491,7 +495,6 @@ END SUBROUTINE io_get_filename
 !> \param LUPRI the logical unit number for the output file
 !> \param LUERR the logical unit number for the error file
 SUBROUTINE io_write_mat(Mat,Filename,IO,OnMaster,LUPRI,LUERR)
-use matrix_operations
 implicit none
 Character(80) :: Filename
 Integer       :: LUPRI,LUERR,n1,n2,n3,n4,n5
@@ -567,7 +570,6 @@ END SUBROUTINE io_write_tensor
 !> \param LUPRI the logical unit number for the output file
 !> \param LUERR the logical unit number for the error file
 SUBROUTINE io_write_lstensor(tensor,Filename,IO,LUPRI,LUERR)
-use LSTENSOR_OPERATIONSMOD, only: write_lstensor_to_disk, LSTENSOR
 implicit none
 Character(80) :: Filename
 Integer       :: LUPRI,LUERR
@@ -587,7 +589,6 @@ END SUBROUTINE io_write_lstensor
 !> \param LUPRI the logical unit number for the output file
 !> \param LUERR the logical unit number for the error file
 SUBROUTINE io_read_mat(Mat,Filename,IO,OnMaster,LUPRI,LUERR)
-use matrix_operations
 implicit none
 Character(80) :: Filename
 Integer       :: LUPRI,LUERR,n1,n2,n3,n4,n5
@@ -665,7 +666,6 @@ END SUBROUTINE io_read_tensor
 !> \param LUPRI the logical unit number for the output file
 !> \param LUERR the logical unit number for the error file
 SUBROUTINE io_read_lstensor(tensor,Filename,IO,LUPRI,LUERR)
-use LSTENSOR_OPERATIONSMOD, only: read_lstensor_from_disk, LSTENSOR
 implicit none
 Character(80) :: Filename
 Integer       :: LUPRI,LUERR
@@ -717,7 +717,6 @@ END SUBROUTINE io_read_mat3d
 !> \param LUPRI the logical unit number for the output file
 !> \param LUERR the logical unit number for the error file
 SUBROUTINE io_write_mat3d(mat,nmat,Filename,IO,LUPRI,LUERR)
-use mat3d_mod, only: write_mat3d_to_disk, mat3d
 implicit none
 Character(80)  :: Filename
 Integer        :: LUPRI,LUERR,nmat
