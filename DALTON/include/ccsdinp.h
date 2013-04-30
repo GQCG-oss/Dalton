@@ -41,3 +41,11 @@ CKeinSPASmehr
      &                  rCCD, drCCD,SOSEX,rTCCD,
      &                  CCSDT,CCR12,MTRIP, CHOPT
 
+C For the RPA models we can calcualte several energies using the 
+C same set of amplitudes -- this temporary variable is used to store
+C one of the energies, the usual variables are reserved for use with
+C the choice that could be used in subsequent response or gradient
+C calculations
+      DOUBLE PRECISION  ETMP
+      COMMON/ETMP/ETMP
+
