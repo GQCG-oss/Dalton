@@ -1840,8 +1840,7 @@ Contains
   !> Damped TPA is obtained from the complex cubic response function but with some terms omitted.
   !> Therefore we do not use the general response driver, but instead calls the solver
   !> explicitly inside the DTPAresponse_driver.
-  !> More details are given inside the subroutine, 
-  !> and in paper that will hopefully be submitted soon...
+  !> More details are given inside the subroutine and in JCP, 214104 (2011).
   !> \author Kasper Kristensen                                                                
   !> \date 2010-09
   subroutine DTPAresponse_driver(molcfg,F,D,S,dtpainput)
@@ -2421,6 +2420,13 @@ Contains
          &**********************'
     write(lupri,*)
     write(lupri,*) 
+    write(lupri,*) '*** See Kristensen et al., J. Chem. Phys. 134, 214104 (2011) ***'
+    write(lupri,*) 'In particular, the damped TPA components given below correspond to Eq. (108).'
+    write(lupri,*) 'See also Eq. (48) for the corresponding expression in exact theory along with'
+    write(lupri,*) 'a physical interpretation of damped TPA spectra.'
+    write(lupri,*)
+    write(lupri,*) 
+
 
     write(lupri,*) 'Isotropically averaged TPA'
     write(lupri,*) '**************************'
