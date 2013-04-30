@@ -1320,14 +1320,14 @@ C
       CALL AROUND
      * ('Final results from the Coupled Cluster energy program')
       WRITE(LUPRI,'(//12X,A,A,A,F32.10,/)')
-     &   '@Total ',ETY0,' energy: ',ESCF
+     &   'Total ',ETY0,' energy: ',ESCF
       WRITE(LURES,'(//12X,A,A,A,F32.10)') 
-     &   '@Total ',ETY0,' energy: ',ESCF
+     &   'Total ',ETY0,' energy: ',ESCF
       IF (ETY1.EQ.'RSTAR' .OR. ETY1.EQ.'MP2  ') THEN
          CALL CCSD_MODEL(ETYPE,LENET,24,ETY1,5,APROXR12)
-         WRITE(LUPRI,'(12X,A,A,A,A,F25.10,/)') '@Total ',ETYPE(1:LENET),
+         WRITE(LUPRI,'(12X,A,A,A,A,F25.10,/)') 'Total ',ETYPE(1:LENET),
      &    ' energy: ',BLANKS(1:12-LENET),EINI
-         WRITE(LURES,'(12X,A,A,A,A,F25.10)')   '@Total ',ETYPE(1:LENET),
+         WRITE(LURES,'(12X,A,A,A,A,F25.10)')   'Total ',ETYPE(1:LENET),
      &    ' energy: ',BLANKS(1:12-LENET),EINI
       END IF
 C
@@ -1339,22 +1339,22 @@ C
         CALL CCSD_MODEL(ETYPE,LENET,24,ETY2,5,APROXR12)
 
         IF (.NOT. (DRCCD.OR.RCCD.OR.RTCCD)) THEN
-         WRITE(LUPRI,'(12X,A,A,A,A,F25.10)') '*Total ',ETYPE(1:LENET),
+         WRITE(LUPRI,'(12X,A,A,A,A,F25.10)') 'Total ',ETYPE(1:LENET),
      &     ' energy: ',BLANKS(1:12-LENET),EN2
-         WRITE(LURES,'(12X,A,A,A,A,F25.10)') '*Total ',ETYPE(1:LENET),
+         WRITE(LURES,'(12X,A,A,A,A,F25.10)') 'Total ',ETYPE(1:LENET),
      &     ' energy: ',BLANKS(1:12-LENET),EN2
         END IF
 !      END IF
 C
       IF (DRCCD) THEN
        IF (SOSEX) THEN
-        WRITE(LUPRI,'(12X,A,F25.10)')'1.SOSEX Correlation Energy:  ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'SOSEX Correlation Energy:  ',
      &  EN2-ESCF
-        WRITE(LUPRI,'(12X,A,F25.10)')'1.Total SOSEX Energy:        ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'Total SOSEX Energy:        ',
      &  EN2
-        WRITE(LUPRI,'(12X,A,F25.10)')'1.DRCCD Correlation Energy:  ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'DRCCD Correlation Energy:  ',
      &  ETMP-ESCF
-        WRITE(LUPRI,'(12X,A,F25.10)')'1.Total DRCCD Energy:        ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'Total DRCCD Energy:        ',
      &  ETMP
         WRITE(LURES,'(12X,A,F25.10)')'SOSEX Correlation Energy:  ',
      &  EN2-ESCF
@@ -1365,21 +1365,21 @@ C
         WRITE(LURES,'(12X,A,F25.10)')'Total DRCCD Energy:        ',
      &  ETMP
        ELSE
-        WRITE(LUPRI,'(12X,A,F25.10)')'2.SOSEX Correlation Energy:  ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'SOSEX Correlation Energy:  ',
      &  ETMP-ESCF
-        WRITE(LUPRI,'(12X,A,F25.10)')'2.Total SOSEX Energy:        ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'Total SOSEX Energy:        ',
      &  ETMP
-        WRITE(LUPRI,'(12X,A,F25.10)')'2.DRCCD Correlation Energy:  ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'DRCCD Correlation Energy:  ',
      &  EN2-ESCF
-        WRITE(LUPRI,'(12X,A,F25.10)')'2.Total DRCCD Energy:        ',
+        WRITE(LUPRI,'(12X,A,F25.10)')'Total DRCCD Energy:        ',
      &  EN2
-        WRITE(LURES,'(12X,A,F25.10)')'2.SOSEX Correlation Energy:  ',
+        WRITE(LURES,'(12X,A,F25.10)')'SOSEX Correlation Energy:  ',
      &  ETMP-ESCF
-        WRITE(LURES,'(12X,A,F25.10)')'2.Total SOSEX Energy:        ',
+        WRITE(LURES,'(12X,A,F25.10)')'Total SOSEX Energy:        ',
      &  ETMP
-        WRITE(LURES,'(12X,A,F25.10)')'2.DRCCD Correlation Energy:  ',
+        WRITE(LURES,'(12X,A,F25.10)')'DRCCD Correlation Energy:  ',
      &  EN2-ESCF
-        WRITE(LURES,'(12X,A,F25.10)')'2.Total DRCCD Energy:        ',
+        WRITE(LURES,'(12X,A,F25.10)')'Total DRCCD Energy:        ',
      &  EN2
        END IF  !sosex
       END IF   !drccd
