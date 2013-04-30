@@ -24,26 +24,26 @@
 #include "single.h"
 C
 #ifdef UNDEF
-===========================================================================
-Revision 1.2  2000/05/12 14:01:56  hjj
-changed NFACTR to PTFACT to be sure integer truncation implied by NFACTR
-will not give erroneous results (potential problem found with ftnchek).
-
-961004 - tsaue INTFCK has undergone major surgery:
-               - Inner loop now over integrals, prevents cache misses
-               - Redefinition of IFCTYP
-               - Possibility of screening on Coulomb/exchange
-               - Indices unpacked in buffers
-               - Deletetion of all "zero" integrals
-941019-hjaaj
-changed ISYMDM, IFCTYP to ISYMDM(NDMAT), IFCTYP(NDMAT)
-implemented all six IFCTYPes (two was already implemented)
-improved efficiency of INTFCK by moving GINT outside and
- moving common factors to SKLFC1
-halved no. of  operations for IFCTYP=2 in INTFCK
-===========================================================================
+!===========================================================================
+!Revision 1.2  2000/05/12 14:01:56  hjj
+!changed NFACTR to PTFACT to be sure integer truncation implied by NFACTR
+!will not give erroneous results (potential problem found with ftnchek).
+!
+!961004 - tsaue INTFCK has undergone major surgery:
+!               - Inner loop now over integrals, prevents cache misses
+!               - Redefinition of IFCTYP
+!               - Possibility of screening on Coulomb/exchange
+!               - Indices unpacked in buffers
+!               - Deletetion of all "zero" integrals
+!941019-hjaaj
+!changed ISYMDM, IFCTYP to ISYMDM(NDMAT), IFCTYP(NDMAT)
+!implemented all six IFCTYPes (two was already implemented)
+!improved efficiency of INTFCK by moving GINT outside and
+! moving common factors to SKLFC1
+!halved no. of  operations for IFCTYP=2 in INTFCK
+!===========================================================================
 #endif
-C  /* Deck intfck */
+!C  /* Deck intfck */
       SUBROUTINE INTFCK(FMAT,AOINT,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,SYMFAC,
      &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
@@ -58,8 +58,13 @@ C  All IFCTYP's added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
+!     module dependencies
+      use rma_windows
+
 #include "implicit.h"
 #include "priunit.h"
+#include "maxorb.h"
+#include "infpar.h"
 #include "mxcent.h"
 #include "nuclei.h"
       PARAMETER(D0 = 0.0D0)
@@ -101,10 +106,19 @@ C
 Cef begin
       CALL MEMGET('REAL',KAOINT,(NCCINT*NINTYP),WORK,KFREE,LFREE)
 Cef end
+      if(rma_model .and. rma_win_info%nmat_max_wo_win < ndmat)then
+        CALL MEMGET('REAL',kdmat_tmp  ,nbasis**2,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',kfckmat_tmp,nbasis**2,WORK,KFREE,LFREE)
+      else
+        CALL MEMGET('REAL',kdmat_tmp  ,        0,WORK,KFREE,LFREE)
+        CALL MEMGET('REAL',kfckmat_tmp,        0,WORK,KFREE,LFREE)
+      end if
+
       CALL INTFC1(FMAT,AOINT,WORK(KAOINT),DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
      &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
-     &                  DNSBUF,DINTSKP,WORK(KIND),NBUF)
+     &                  DNSBUF,DINTSKP,WORK(KIND),NBUF,
+     &                  work(kdmat_tmp),work(kfckmat_tmp))
 C
       CALL MEMREL('INTFCK',WORK,KWORK,KWORK,KFREE,LFREE)
  999  CONTINUE
@@ -120,7 +134,7 @@ Cef end
       SUBROUTINE INTFC1(FMAT,AOINT,AOINT2,DMAT,NDMAT,NCCINT,NINTYP,
      &                  ICORBA,ICORBB,ICORBC,ICORBD,FCKTOL,SYMFAC,
      &                  IPRINT,NODV,NINDAB,NINDCD,SUSCEP,IFCTYP,
-     &                  DNSBUF,DINTSKP,IND,NNBUF)
+     &                  DNSBUF,DINTSKP,IND,NNBUF,dmat_tmp,fmat_tmp)
 C*****************************************************************************
 C
 C  Revised Aug 26 1996 by T.Saue
@@ -131,12 +145,29 @@ C  All IFCTYP's added and partly optimized Nov. 1994 by
 C  Hans Joergen Aa. Jensen
 C
 C*****************************************************************************
+
+!       module dependencies
+        use parallel_communication_models_mpi
+        use one_sided_communication_wrappers
+        use rma_windows
+
+#ifdef VAR_MPI
+#ifndef VAR_USE_MPIF
+        use mpi
 #include "implicit.h"
-#include "priunit.h"
+#else
+#include "implicit.h"
+#include "mpif.h"
+#endif
+#else
+#include "implicit.h"
+#endif
+
 #include "maxaqn.h"
 #include "aovec.h"
 #include "maxorb.h"
 #include "mxcent.h"
+#include "infpar.h"
 #include "nuclei.h"
 #include "r12int.h"
       PARAMETER (DP25=0.25D0,DP5=0.5D0,D1=1.0D0,D2=2.0D0,D0=0.0D0)
@@ -144,14 +175,21 @@ C*****************************************************************************
       LOGICAL NODV, SUSCEP, NOTEST,LBIT,DOC,DOE
       DIMENSION ICORBA(NORBA),ICORBB(NORBB),ICORBC(NORBC),ICORBD(NORBD),
      &          AOINT(NCCINT), AOINT2(NCCINT),
-     &          FMAT(NBASIS,NBASIS,NDMAT,*),
+     &          FMAT(NBASIS,NBASIS,NDMAT),
      &          NINDAB(NORBA*NORBB,2), NINDCD(NORBC*NORBD,2),
      &          DMAT(NBASIS,NBASIS,NDMAT), IFCTYP(NDMAT),
      &          DNSBUF(2,NDMAT),IND(NNBUF,4),DINTSKP(2,4)
+       real(8), intent(inout)         :: dmat_tmp(nbasis**2)
+       real(8), intent(inout)         :: fmat_tmp(nbasis**2)
+#ifdef VAR_MPI
+       integer (kind=mpi_offset_kind) :: offset_mat
+       integer                        :: status_read(mpi_status_size)
+#endif
 #include "twocom.h"
 #include "expcom.h"
 #include "dftcom.h"
 #include "symmet.h"
+#include "priunit.h"
 #include "ibtfun.h"
 C
       IF (IPRINT .GT. 9) THEN
@@ -432,22 +470,62 @@ C       Screening on exchange contributions
 C
 C   FAC is a factor to account for different definiton of
 C   integrals in twoint and eri. Here always 1.0
+      FAC    = +D1
       IF (R12TRA) THEN
 C        Compute exchange operator for auxiliary basis set
 C        in R12 calculations (WK/UniKA/04-11-2002).
          FAC = -D1
-         IY = 2
-      ELSE
-         FAC = D1
+         IY  =   2
       END IF
-Cef begin
-      CALL FCKCON(FMAT,DMAT,NDMAT,I,AOINT2,IND,
-     &            NCCINT,NBUF,NBUF,IX,IY,FAC)
-Cef end
+
+
+
+!     get density matrix from node/numa master
+!     print *, 'shmem_id, offset, copy',
+!    &          communication_info_mpi%my_shmem_node_id,offset_mat
+      if(rma_model .and. i > rma_win_info%nmat_max_wo_win )then
+
+        offset_mat = (i-1)*nbasis**2
+        call dzero(dmat_tmp,nbasis**2)
+        call dzero(fmat_tmp,nbasis**2)
+
+#ifdef VAR_MPI
+        call mpi_file_read_at(
+     &                        rma_win_info%dmat_fh,
+     &                        offset_mat,
+     &                        dmat_tmp,
+     &                        nbasis**2,
+     &                        mpi_real8,
+     &                        status_read,    
+     &                        ierr
+     &                       )
+#endif
+
+        call fckcon(fmat_tmp,dmat_tmp,i,aoint2,ind,
+     &              nccint,nbuf,nbuf,ix,iy,fac)
+
+#ifdef VAR_MPI
+!       print *, 'shmem_id, offset accum',
+!    &            communication_info_mpi%my_shmem_node_id,offset_mat
+!       accumulate fock matrix on node/numa master
+        call mpixaccum(fmat_tmp,
+     &                 nbasis**2,
+     &                 0, ! node/numa master
+     &                 offset_mat,
+     &                 nbasis**2,
+     &                 communication_info_mpi%my_shmem_node_id,
+     &                 MPI_LOCK_SHARED,
+     &                 rma_win_info%fmat_win,
+     &                 rma_win_info%lock_win
+     &                )
+#endif
+
+      else
+        CALL FCKCON(FMAT(1,1,I),DMAT(1,1,I),I,AOINT2,IND,
+     &              NCCINT,NBUF,NBUF,IX,IY,FAC)
+      end if
 C
  400  CONTINUE
-C
-      RETURN
 C
       END
 C  /* Deck dsotao */

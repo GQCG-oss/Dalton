@@ -112,6 +112,7 @@ C
 C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
+      use pe_variables, only: peqm
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -366,6 +367,16 @@ C
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          FIRST1 = .FALSE.
       ENDIF
+      if (peqm) then
+        if (.not. tdhf) then
+            call quit('ERROR: MCSCF linear response not implemented'//
+     &                ' with PE module.')
+        endif
+        call pe_rsplin(ncsim, nosim, bcvecs, bovecs, wrk(kcref), cmo,
+     &                 indxci, udv, wrk(kdv), wrk(kudvtr), wrk(kdvtr),
+     &                 wrk(kvdt), wrk(kdvttr), evecs,
+     &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
+      end if
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)

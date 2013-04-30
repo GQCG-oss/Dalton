@@ -503,6 +503,7 @@ pdpack/jacobi.F
 pdpack/linextra.F
 pdpack/linpack.F
 pdpack/printpkg.F
+peqm/pe_dalton_wrappers.F
 rsp/absorp.F
 rsp/abscomplex.F
 rsp/complexpp.F
@@ -617,6 +618,7 @@ sirius/sirsav.F
 sirius/sirset.F
 sirius/sirsol.F
 sirius/sirsolpcm.F
+sirius/sirstex.F
 sirius/sirtest.F
 sirius/sirtr1.F
 sirius/sirtra.F
@@ -741,6 +743,17 @@ lucita/par_communication_model.F90
 lucita/par_io.F90
 lucita/par_io_fh.F90
 lucita/par_sync_cw.F90
+peqm/pe_gen1int_wrapper.F90
+peqm/pe_precision.F90
+peqm/pe_blas_wrappers.F90
+peqm/pe_lapack_wrappers.F90
+peqm/pe_variables.F90
+peqm/polarizable_embedding.F90
+abacus/parallel_models_mpi.F90
+abacus/parallel_communication_models_mpi.F90
+gp/one_sided_communication_wrappers.F90
+gp/memory_parallel.F90
+abacus/rma_windows.F90
     )
 set(OWN_BLAS_SOURCES
     pdpack/gp_dblas1.F

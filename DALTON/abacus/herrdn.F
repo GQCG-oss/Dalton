@@ -674,6 +674,7 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
+      use pe_variables, only: peqm
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -818,6 +819,15 @@ C
      &    NMLINE,MLINE(NMLINE)
         CALL QUIT('Too many atomic types in .mol input')
       END IF
+!     If symmetry and polarizable embedding are specified we quit
+      if (peqm .and. addsym) then
+        write(lupri,'(/a)') 'ERROR: polarizable embedding is not'//
+     &                      ' compatible with symmetry.'
+        write(lupri,'(/a)') 'Please rerun calculation with Nosymmetry'//
+     &                      ' keyword in the molecule input file.'
+            call quit('polarizable embedding is not compatible with'//
+     &                ' symmetry.')
+      end if
 C***********************************************************************
 C Check integral threshold: THRS must be .gt. 0
 C       ( log(thrs*thrs) taken in oneint) (851005-hjaaj)
@@ -4403,6 +4413,8 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use pe_variables, only: peqm, pe_mep
+      use polarizable_embedding, only: pe_init
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -4577,6 +4589,12 @@ C
       IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
+
+      if (peqm .or. pe_mep) then
+        call pe_init(lupri, cord(:,1:natoms), charge(1:natoms),
+     &               work(1:lwork))
+      end if
+
       RETURN
       END
 C  /* Deck priord */

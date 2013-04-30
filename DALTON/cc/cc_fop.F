@@ -2910,7 +2910,7 @@ C
 !SONIA SONIA SONIA
 !
 
-!      IF ( IPRINT .GT. 10 ) THEN
+      IF ( IPRINT .GT. 10 ) THEN
          IF (ETADSC .AND. FIRST) THEN
             CALL AROUND( 'CC_ETA: Constructing Eta vector '//
      *                   'and write it to disc' )
@@ -2919,7 +2919,7 @@ C
          ELSE
             CALL AROUND( 'CC_ETA: Constructing Eta vector ')
          ENDIF
-!      ENDIF
+      ENDIF
 C
       IF ( CCS ) THEN
          CALL DZERO(ETA,NT1AM(ISYMOP))
@@ -2941,10 +2941,10 @@ C
          READ(LUETA) (ETA(I), I=1,NT1AMX+NT2AMX)
          CALL GPCLOSE(LUETA,'KEEP')
 C
-!         IF (IPRINT .GT. 40 ) THEN
+         IF (IPRINT .GT. 40 ) THEN
             CALL AROUND( 'In CC_ETA:  Eta vector read ' )
             CALL CC_PRP(ETA(1),ETA(1+NT1AMX),1,1,1)
-!         ENDIF
+         ENDIF
 C
          IF ( IPRINT .GT. 10 ) THEN
             ETA1 = DDOT(NT1AMX,ETA(1),1,ETA(1),1)
@@ -2975,7 +2975,6 @@ C
       if (DRCCD .AND. .NOT.SOSEX) then
          CALL DSCAL(NT2AMX,TWO,ETA(1+NT1AMX),1)
       else
-         call flshfo(lupri)
          IOPTTCME = 1
          CALL CCSD_TCMEPK(ETA(1+NT1AMX),1.0D0,ISYMOP,IOPTTCME)
       end if

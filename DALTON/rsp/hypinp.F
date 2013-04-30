@@ -26,6 +26,7 @@ C
 C  /* Deck hypinp */
       SUBROUTINE HYPINP(WORD)
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -534,6 +535,11 @@ C
           WRITE(LUPRI,*) 'QM/MM response calculation'
          END IF
 
+         if (peqm) then
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
+         end if
+
          IF (QRSHG) THEN
             WRITE (LUPRI,'(A,L2)')
      *      ' Second harmonic generation                     : SHG='
@@ -581,6 +587,7 @@ C  /* Deck smoinp */
 C
 C Sonia: added MCDBTE section (1999)
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -999,6 +1006,11 @@ C
          IF (QM3 .OR. QMMM) THEN
           WRITE(LUPRI,*) 'QM/MM response calculation'
          END IF
+
+         if (peqm) then
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
+         end if
 
          IF (MCDCAL) THEN
             WRITE (LUPRI,'(A,L1)')

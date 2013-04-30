@@ -241,6 +241,7 @@ C  /* Deck e3init */
      *                  ETRS,XINDX,UDV,PV,WRK,LWRK,KZYVA,KZYVB,KZYVC,
      *                  ISYMA,ISYMB,ISYMC,ISPINA,ISPINB,ISPINC,CMO,FC,
      *                  FV,MJWOP)
+      use pe_variables, only: peqm
 C
 C
 #include "implicit.h"
@@ -391,6 +392,22 @@ C
      *         '   DFT CONTRIBUTION TO HYPVAL',E3DFT,E3TOT
          END IF
       END IF
+
+      if (peqm) then
+        if (.not. tdhf) then 
+            call quit('ERROR: MCSCF quadratic response not'//
+     &                ' implemented with PE module.')
+        else if (nasht > 0) then
+            call quit('ERROR: quadratic response not implemented for'//
+     &                ' open shell systems with PE module.')
+        else if (trplet) then
+            call quit('ERROR: triplets not implemented for quadratic'//
+     &                ' response with PE module.')
+        endif
+        call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
+     &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
+     &                 isyma, isymb, isymc, cmo, mjwop)
+      end if
 
       IF (QM3) THEN
          IF (TDHF) THEN

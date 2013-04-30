@@ -4673,6 +4673,8 @@ C
       DO ISYMI = 1,NSYM
          ISYMJ = ISYMI
          DO J = 1,NRHF(ISYMJ)
+            NJJ = IMATIJ(ISYMJ,ISYMJ) + NRHF(ISYMJ)*(J - 1) + J
+            ZKDIA(NJJ) = 0.0D0
             KOFFJ = KFOCKD + IRHF(ISYMJ) + J - 1
             DO I = J+1,NRHF(ISYMI)
                KOFFI = KFOCKD + IRHF(ISYMI) + I - 1
@@ -4699,6 +4701,8 @@ C
       DO ISYMA = 1,NSYM
          ISYMB = ISYMA
          DO B = 1,NVIR(ISYMB)
+            NBB = NMATIJ(1)+IMATAB(ISYMB,ISYMB)+NVIR(ISYMB)*(B-1)+B
+            ZKDIA(NBB) = 0.0D0
             KOFFB = KFOCKD + IVIR(ISYMB) + B - 1
             DO A = B+1,NVIR(ISYMA)
                KOFFA = KFOCKD + IVIR(ISYMA) + A - 1

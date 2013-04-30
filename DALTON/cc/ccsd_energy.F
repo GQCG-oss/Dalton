@@ -1336,7 +1336,8 @@ C
      &   'Total ',ETY0,' energy: ',ESCF
       WRITE(LURES,'(//12X,A,A,A,F32.10)') 
      &   'Total ',ETY0,' energy: ',ESCF
-      IF (ETY1.EQ.'RSTAR' .OR. ETY1.EQ.'MP2  ') THEN
+      IF (ETY1.EQ.'RSTAR' .OR. ETY1.EQ.'MP2  '
+     &    .OR. ETY1.EQ.'DCPT2') THEN 
          CALL CCSD_MODEL(ETYPE,LENET,24,ETY1,5,APROXR12)
          WRITE(LUPRI,'(12X,A,A,A,A,F25.10,/)') 'Total ',ETYPE(1:LENET),
      &    ' energy: ',BLANKS(1:12-LENET),EINI
@@ -1348,6 +1349,7 @@ C
          !Sonia: is this needed?
          EMP2=EINI-ESCF
       ENDIF
+
       IF (.NOT. (MP2 .OR. NOCCIT .OR. DCPT2)) THEN
         CALL CCSD_MODEL(ETYPE,LENET,24,ETY2,5,APROXR12)
 

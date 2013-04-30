@@ -23,7 +23,7 @@
 !
 #include "single.h"
 C
-!  #undef SIRFCK_DEBUG
+!#define SIRFCK_DEBUG
 C  /* Deck sirfck */
       SUBROUTINE SIRFCK(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,DIRECT,
      &                  WRK,LWORK)
@@ -329,8 +329,8 @@ C           this is e.g. PREHF, i.e. standard HF
          write(lupri,*) 'SIRFCK: calling HERFCK with HFXFAC ',HFXFAC
          write(lupri,*) 'SIRFCK: ISYMDM ',(ISYMDM(I),I=1,NDMAT)
          write(lupri,*) 'SIRFCK: IFCTYP ',(IFCTYP(I),I=1,NDMAT)
-!        write(lupri,*) 'SIRFCK: first DMAT'
-!        call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+         write(lupri,*) 'SIRFCK: first DMAT'
+         call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
 C
        IF (CHIVAL .ne. D0) THEN
@@ -349,8 +349,8 @@ C          hjaaj mar 2006: dens_fit not for short range integrals (yet)
 
        END IF ! (CHIVAL .ne. D0)
 #ifdef SIRFCK_DEBUG
-!        write(lupri,*) 'SIRFCK: first FMAT'
-!        call output(FMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+         write(lupri,*) 'SIRFCK: first FMAT'
+         call output(FMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
          HFXFAC = HFXFACSAVE
          CHIVAL = CHIVALSAVE
@@ -559,6 +559,7 @@ C                 ... restore DC(I) = DTOT(I) -  DV(I)
             ISYMDM(I) = ISYMDM(I) + 1
          END DO
 #ifdef SIRFCK_DEBUG
+         if(addsri)then
            do i = 1,nsr_dmat
               write(lupri,*)
      &        'SIRFCK: direct short-range contribution to FMAT no.', i
@@ -567,6 +568,7 @@ C                 ... restore DC(I) = DTOT(I) -  DV(I)
            end do
            write(lupri,*) 'SIRFCK: FMAT (lr + sr)'
            call output(FMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
+         end if
 #endif
 C
       ELSE ! not Cholesky and not AO-direct
@@ -604,8 +606,6 @@ C              ... make sure the "do exchange" bit is set in IFCTYP
          write(lupri,*)'SIRFCK: calling SIRFCK2 "AOTWOINT" with'
          write(lupri,*)'SIRFCK: NDMAT=',NDMAT
          write(lupri,*)'SIRFCK: IFCTYP=',(IFCTYP(I),I=1,NDMAT)
-!        write(lupri,*)'SIRFCK: first DMAT'
-!        call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
          IF (CHIVAL .ne. D0) THEN
 C        ... no long-range integrals if chival .eq. 0
@@ -660,8 +660,6 @@ C              remove any "do exchange" bits
             write(lupri,*)'SIRFCK: calling SIRFCK2 "AOSR2INT" with'
             write(lupri,*)'SIRFCK: NSR_DMAT,NDMAT=',NSR_DMAT,NDMAT
             write(lupri,*)'SIRFCK: IFCTYP=',(IFCTYP(I),I=1,NDMAT)
-!           write(lupri,*)'SIRFCK: first DMAT'
-!           call output(DMAT,1,nbast,1,nbast,nbast,nbast,-1,lupri)
 #endif
             CALL DZERO(WRK(KFSRAO),NSR_DMAT*N2BASX)
             CALL SIRFCK2(LUSRINT,'AOSR2INT',WRK(KFSRAO),
