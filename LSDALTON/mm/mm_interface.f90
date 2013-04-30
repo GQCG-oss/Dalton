@@ -811,7 +811,6 @@ CONTAINS
 ! Routine to translate co-ordinates so all centres are at x,y,z >= 0
 ! Hence all box indices will be positive integers
 !FIXME; is there an issue when we have ZERO SYSTEM SIZE???
-#if 1 
    SUBROUTINE mm_translate_centres(system_size)
 
       IMPLICIT NONE
@@ -834,51 +833,49 @@ CONTAINS
       END DO
 
    END SUBROUTINE mm_translate_centres
-#else
 ! this modified version centers the molecule in the boxes, so nothing is on the border, 
 ! this should reduce noise
-   SUBROUTINE mm_translate_centres(system_size,grain,do_center)
+!   SUBROUTINE mm_translate_centres(system_size,grain,do_center)
+!
+!      IMPLICIT NONE
+!      REAL(REALK), INTENT(OUT) :: system_size
+!      REAL(REALK), INTENT(IN)  :: grain
+!
+!      REAL(REALK)   :: sys_min(3), sys_max(3), rest(3)
+!      INTEGER :: i, nbox(3)
+!      LOGICAL       :: do_center
 
-      IMPLICIT NONE
-      REAL(REALK), INTENT(OUT) :: system_size
-      REAL(REALK), INTENT(IN)  :: grain
+!      ! determine system size
+!      sys_min = raw_paras(1)%cntr
+!      sys_max = raw_paras(1)%cntr
+!      DO i = 1, SIZE(raw_paras)
+!         sys_min(:) = MIN(sys_min(:),raw_paras(i)%cntr(:))
+!         sys_max(:) = MAX(sys_max(:),raw_paras(i)%cntr(:))
+!      END DO
+!      system_size = MAXVAL(sys_max - sys_min)
 
-      REAL(REALK)   :: sys_min(3), sys_max(3), rest(3)
-      INTEGER :: i, nbox(3)
-      LOGICAL       :: do_center
-
-      ! determine system size
-      sys_min = raw_paras(1)%cntr
-      sys_max = raw_paras(1)%cntr
-      DO i = 1, SIZE(raw_paras)
-         sys_min(:) = MIN(sys_min(:),raw_paras(i)%cntr(:))
-         sys_max(:) = MAX(sys_max(:),raw_paras(i)%cntr(:))
-      END DO
-      system_size = MAXVAL(sys_max - sys_min)
-
-      IF (do_center) THEN
-         ! center the system in the boxes, so that the border of the boxes is not in the atoms,
-         ! this should reduce noise in case of planar systems /Andreas Krapp 
-         DO i=1, 3
-            nbox(i) = ceiling((sys_max(i) - sys_min(i))/grain)
-            IF( nbox(i)*grain .eq. (sys_max(i) - sys_min(i))) THEN
-               ! if the systems length is exactly a multiple of the box sizes, we need one box more.
-               ! FIXME: some numerical issues here?
-               nbox(i) = nbox(i) + 1
-            END IF
-            rest(i) = nbox(i) * grain - (sys_max(i) - sys_min(i))
-         END DO
-         DO i = 1, SIZE(raw_paras)
-            raw_paras(i)%cntr = raw_paras(i)%cntr - sys_min + rest/2.0
-         END DO
-     ELSE
-         DO i = 1, SIZE(raw_paras)
-            raw_paras(i)%cntr = raw_paras(i)%cntr - sys_min 
-         END DO
-     END IF
-
-   END SUBROUTINE mm_translate_centres
-#endif
+!      IF (do_center) THEN
+!         ! center the system in the boxes, so that the border of the boxes is not in the atoms,
+!         ! this should reduce noise in case of planar systems /Andreas Krapp 
+!         DO i=1, 3
+!            nbox(i) = ceiling((sys_max(i) - sys_min(i))/grain)
+!            IF( nbox(i)*grain .eq. (sys_max(i) - sys_min(i))) THEN
+!               ! if the systems length is exactly a multiple of the box sizes, we need one box more.
+!               ! FIXME: some numerical issues here?
+!               nbox(i) = nbox(i) + 1
+!            END IF
+!            rest(i) = nbox(i) * grain - (sys_max(i) - sys_min(i))
+!         END DO
+!         DO i = 1, SIZE(raw_paras)
+!            raw_paras(i)%cntr = raw_paras(i)%cntr - sys_min + rest/2.0
+!         END DO
+!     ELSE
+!         DO i = 1, SIZE(raw_paras)
+!            raw_paras(i)%cntr = raw_paras(i)%cntr - sys_min 
+!         END DO
+!     END IF
+!
+!   END SUBROUTINE mm_translate_centres
 
 !-------------------------------------------------------------------------------
 
