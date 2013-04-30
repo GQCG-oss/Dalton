@@ -2682,7 +2682,7 @@ Contains
   !> \date 2010-08
   subroutine ESGresponse_driver(molcfg,F,D,S,ESGinput,ESGgrad)
     use decompMod, only: decompItem
-    use molecule_type, only: molecule_PT, moleculeinfo, atom
+!    use molecule_typetype, only: molecule_PT, moleculeinfo, atomitem
     implicit none
     !> Info on molecule needed by solver and integral programs
     type(prop_molcfg),intent(inout)   :: molcfg

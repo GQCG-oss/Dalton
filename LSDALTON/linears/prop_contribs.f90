@@ -21,6 +21,7 @@ module prop_contribs
   use RSPsolver, only: prop_molcfg
   use dal_interface , only: di_GET_GbDs, di_GET_GbDs_and_XC_linrsp
   use matrix_module, only: Matrixp, matrix
+  use matrix_operations, only: mat_init, mat_assign, mat_free
   use integralinterfaceMod
   use II_XC_interfaceModule
    implicit none

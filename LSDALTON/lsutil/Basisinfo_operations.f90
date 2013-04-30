@@ -9,6 +9,23 @@ MODULE basis_type
  use memory_handling
  use AO_type
  use basis_typetype
+ private
+ public :: write_atomtypeitem_to_disk,& 
+      & write_basissetinfo_to_disk, &
+      & transform_basis_to_GCAO, &
+      & write_basisinfo_to_disk, &
+      & read_atomtypeitem_from_disk, &
+      & read_basissetinfo_from_disk, &
+      & read_basisinfo_from_disk, &
+      & init_basissetinfo_types, &
+      & init_basissetinfo_ContractionM, &
+      & init_basissetinfo_elms, &
+      & alloc_and_take_subbasissetinfo, &
+      & copy_basissetinfo, &
+      & free_basissetinfo, &
+      & lsmpi_alloc_basissetinfo, &
+      & print_basissetinfo
+
 CONTAINS
 !#################################################################
 !#
