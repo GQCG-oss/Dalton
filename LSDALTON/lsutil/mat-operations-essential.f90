@@ -703,17 +703,15 @@ end type matrixmembuf
         end select
 
         select case(matrix_type)
-!        case(mtype_dense)
-!           call mat_dense_chol(a,b)
-!        case(mtype_scalapack)
+        case(mtype_dense)
+           call mat_dense_chol(a,b)
+        case(mtype_scalapack)
 !           call mat_scalapack_chol(a,b)
-!         case(mtype_unres_dense)
-!             call mat_unres_dense_inv(a,b)
-        case default
+           print*,'mat_chol FALLBACK scalapack'
            call mem_alloc(U_full,fulldim,fulldim) 
            call mem_alloc(work1,fulldim)
            call mem_alloc(IPVT,fulldim)
-           call mat_to_full(A,1.0E0_realk,U_full)
+           call mat_scalapack_to_full(A,1.0E0_realk,U_full)
            !Set lower half of U = 0:
            do i = 1, fulldim
               do j = 1, i-1
@@ -721,10 +719,63 @@ end type matrixmembuf
               enddo
            enddo           
            call dchdc(U_full,fulldim,fulldim,work1,0,0,IERR)           
-           call mat_set_from_full(U_full,1.0E0_realk,B)
+           call mat_scalapack_set_from_full(U_full,1.0E0_realk,B)
            call mem_dealloc(U_full) 
            call mem_dealloc(work1)
            call mem_dealloc(IPVT)
+        case(mtype_csr)
+!           call mat_scalapack_chol(a,b)
+           print*,'mat_chol FALLBACK csr'
+           call mem_alloc(U_full,fulldim,fulldim) 
+           call mem_alloc(work1,fulldim)
+           call mem_alloc(IPVT,fulldim)
+           call mat_csr_to_full(A,1.0E0_realk,U_full)
+           !Set lower half of U = 0:
+           do i = 1, fulldim
+              do j = 1, i-1
+                 U_full(i,j) = 0.0E0_realk
+              enddo
+           enddo           
+           call dchdc(U_full,fulldim,fulldim,work1,0,0,IERR)           
+           call mat_csr_set_from_full(U_full,1.0E0_realk,B)
+           call mem_dealloc(U_full) 
+           call mem_dealloc(work1)
+           call mem_dealloc(IPVT)
+         case(mtype_unres_dense)
+!             call mat_unres_dense_inv(a,b)
+           print*,'mat_chol FALLBACK unres dense'
+           call mem_alloc(U_full,fulldim,fulldim) 
+           call mem_alloc(work1,fulldim)
+           call mem_alloc(IPVT,fulldim)
+           call mat_unres_dense_to_full(A,1.0E0_realk,U_full)
+           !Set lower half of U = 0:
+           do i = 1, fulldim
+              do j = 1, i-1
+                 U_full(i,j) = 0.0E0_realk
+              enddo
+           enddo           
+           call dchdc(U_full,fulldim,fulldim,work1,0,0,IERR)           
+           call mat_unres_dense_set_from_full(U_full,1.0E0_realk,B)
+           call mem_dealloc(U_full) 
+           call mem_dealloc(work1)
+           call mem_dealloc(IPVT)
+        case default
+           call lsquit('error mat_chol not implemented',-1)
+!!$           call mem_alloc(U_full,fulldim,fulldim) 
+!!$           call mem_alloc(work1,fulldim)
+!!$           call mem_alloc(IPVT,fulldim)
+!!$           call mat_to_full(A,1.0E0_realk,U_full)
+!!$           !Set lower half of U = 0:
+!!$           do i = 1, fulldim
+!!$              do j = 1, i-1
+!!$                 U_full(i,j) = 0.0E0_realk
+!!$              enddo
+!!$           enddo           
+!!$           call dchdc(U_full,fulldim,fulldim,work1,0,0,IERR)           
+!!$           call mat_set_from_full(U_full,1.0E0_realk,B)
+!!$           call mem_dealloc(U_full) 
+!!$           call mem_dealloc(work1)
+!!$           call mem_dealloc(IPVT)
          end select
          if (info_memory) write(mat_lu,*) 'After mat_trans: mem_allocated_global =', mem_allocated_global
          call time_mat_operations2(JOB_mat_chol)
@@ -848,26 +899,55 @@ end type matrixmembuf
 
          if (info_memory) write(mat_lu,*) 'Before mat_inv: mem_allocated_global =', mem_allocated_global
          select case(matrix_type)
-!         case(mtype_dense)
-!             call mat_dense_inv(a,b)
-!         case(mtype_scalapack)
+         case(mtype_dense)
+             call mat_dense_inv(a,a_inv)
+         case(mtype_scalapack)
 !             call mat_scalapack_inv(a,b)
-!         case(mtype_unres_dense)
-!             call mat_unres_dense_inv(a,b)
-         case default
             call mem_alloc(A_inv_full,fulldim,fulldim) 
             call mem_alloc(work1,fulldim)
             call mem_alloc(IPVT,fulldim)
             !Invert U and Ut:
             IPVT = 0 ; RCOND = 0.0E0_realk  
-            call mat_to_full(A,1.0E0_realk,A_inv_full)
+            call mat_scalapack_to_full(A,1.0E0_realk,A_inv_full)
             call DGECO(A_inv_full,fulldim,fulldim,IPVT,RCOND,work1)
             call DGEDI(A_inv_full,fulldim,fulldim,IPVT,dummy,work1,01)
             !Convert framework:
-            call mat_set_from_full(A_inv_full,1.0E0_realk,A_inv)
+            call mat_scalapack_set_from_full(A_inv_full,1.0E0_realk,A_inv)
             call mem_dealloc(A_inv_full) 
             call mem_dealloc(work1)
             call mem_dealloc(IPVT)
+         case(mtype_csr)
+!             call mat_csr_inv(a,b)
+            call mem_alloc(A_inv_full,fulldim,fulldim) 
+            call mem_alloc(work1,fulldim)
+            call mem_alloc(IPVT,fulldim)
+            !Invert U and Ut:
+            IPVT = 0 ; RCOND = 0.0E0_realk  
+            call mat_csr_to_full(A,1.0E0_realk,A_inv_full)
+            call DGECO(A_inv_full,fulldim,fulldim,IPVT,RCOND,work1)
+            call DGEDI(A_inv_full,fulldim,fulldim,IPVT,dummy,work1,01)
+            !Convert framework:
+            call mat_csr_set_from_full(A_inv_full,1.0E0_realk,A_inv)
+            call mem_dealloc(A_inv_full) 
+            call mem_dealloc(work1)
+            call mem_dealloc(IPVT)
+         case(mtype_unres_dense)
+             call mat_unres_dense_inv(a,a_inv)
+         case default
+            call lsquit('mat_inv not implemented',-1)
+!!$            call mem_alloc(A_inv_full,fulldim,fulldim) 
+!!$            call mem_alloc(work1,fulldim)
+!!$            call mem_alloc(IPVT,fulldim)
+!!$            !Invert U and Ut:
+!!$            IPVT = 0 ; RCOND = 0.0E0_realk  
+!!$            call mat_to_full(A,1.0E0_realk,A_inv_full)
+!!$            call DGECO(A_inv_full,fulldim,fulldim,IPVT,RCOND,work1)
+!!$            call DGEDI(A_inv_full,fulldim,fulldim,IPVT,dummy,work1,01)
+!!$            !Convert framework:
+!!$            call mat_set_from_full(A_inv_full,1.0E0_realk,A_inv)
+!!$            call mem_dealloc(A_inv_full) 
+!!$            call mem_dealloc(work1)
+!!$            call mem_dealloc(IPVT)
          end select
          if (info_memory) write(mat_lu,*) 'After mat_trans: mem_allocated_global =', mem_allocated_global
          call time_mat_operations2(JOB_mat_inv)
@@ -1329,41 +1409,6 @@ end type matrixmembuf
 
       END SUBROUTINE mat_dposv
 
-      SUBROUTINE mat_dense_dposv(A,b,lupri)
-         implicit none
-         TYPE(Matrix), intent(INOUT)  :: A
-         TYPE(Matrix), intent(INOUT)  :: b
-         INTEGER,INTENT(IN)           :: lupri
-         Real(Realk),pointer          :: Af(:,:)
-         Real(Realk),pointer          :: bf(:,:)
-         INTEGER                      :: dim1,dim2,dim3,dim4
-         INTEGER                      :: info
-
-         dim1=A%nrow
-         dim2=A%ncol
-         dim3=b%nrow
-         dim4=b%ncol
-         if(dim3 .ne. A%nrow) then
-           call lsquit('mat_dense_dposv, Reason: Wrong dim3',lupri)
-         endif
-         call mem_alloc(Af,dim1,dim2)
-         call mem_alloc(bf,dim3,dim4)
-         call mat_to_full(A,1D0,Af)
-         call mat_to_full(b,1D0,bf)
-
-         call dposv('U',dim1,dim4,Af,dim1,bf,dim3,info)
-
-         if(info .ne. 0) then
-           call lsquit('mat_dense_dposv, Reason: info not 0',lupri)
-         endif
-
-         call mat_set_from_full(Af,1D0,A)
-         call mat_set_from_full(bf,1D0,b)
-         call mem_dealloc(Af)
-         call mem_dealloc(bf)
-
-      END SUBROUTINE mat_dense_dposv
-
 !> \brief Make the dot product of type(matrix) a and b.
 !> \author L. Thogersen
 !> \date 2003
@@ -1729,12 +1774,9 @@ end type matrixmembuf
             call time_mat_operations2(JOB_mat_dsyev)
             call mat_assign(S,B)
             call mat_free(B)
-         case(mtype_unres_dense)
-            call mat_unres_dense_dsyev(S,eival,ndim)
-!            call lsquit('mat_dsyev not implemented for unres',-1)
-         case default
+         case(mtype_csr)
             call mem_alloc(S_full,ndim,ndim)
-            call mat_to_full(S,1.0E0_realk,S_full)
+            call mat_csr_to_full(S,1.0E0_realk,S_full)
             !============================================================
             ! we inquire the size of lwork
             lwork = -1
@@ -1749,12 +1791,38 @@ end type matrixmembuf
             call dsyev('V','U',ndim,S_FULL,ndim,eival,work,lwork,infdiag)
             call time_mat_operations2(JOB_mat_dsyev)
             call mem_dealloc(work)
-            call mat_set_from_full(S_FULL, 1E0_realk,S)
+            call mat_csr_set_from_full(S_FULL, 1E0_realk,S)
             call mem_dealloc(S_full)
             if(infdiag.ne. 0) then
                print*,'lowdin_diag: dsyev failed, info=',infdiag
                call lsquit('lowdin_diag: diagonalization failed.',-1)
             end if
+         case(mtype_unres_dense)
+            call mat_unres_dense_dsyev(S,eival,ndim)
+         case default
+            call lsquit('mat_dsyev not implemented for this type',-1)
+!            call mem_alloc(S_full,ndim,ndim)
+!            call mat_to_full(S,1.0E0_realk,S_full)
+!            !============================================================
+!            ! we inquire the size of lwork
+!            lwork = -1
+!            call mem_alloc(work,5)
+!            call time_mat_operations1
+!            call dsyev('V','U',ndim,S_FULL,ndim,eival,work,lwork,infdiag)
+!            lwork = NINT(work(1))
+!            call mem_dealloc(work)
+!            !=============================================================     
+!            call mem_alloc(work,lwork)
+!            !diagonalization
+!            call dsyev('V','U',ndim,S_FULL,ndim,eival,work,lwork,infdiag)
+!            call time_mat_operations2(JOB_mat_dsyev)
+!            call mem_dealloc(work)
+!            call mat_set_from_full(S_FULL, 1E0_realk,S)
+!            call mem_dealloc(S_full)
+!            if(infdiag.ne. 0) then
+!               print*,'lowdin_diag: dsyev failed, info=',infdiag
+!               call lsquit('lowdin_diag: diagonalization failed.',-1)
+!            end if
          end select
        END SUBROUTINE mat_dsyev
  
@@ -1775,22 +1843,40 @@ end type matrixmembuf
 !
     select case(matrix_type)
     case(mtype_dense)
-    call time_mat_operations1           
-    CALL mat_dense_dsyevx(S,eival,ieig)
-    call time_mat_operations2(JOB_mat_dsyevx)
+       call time_mat_operations1           
+       CALL mat_dense_dsyevx(S,eival,ieig)
+       call time_mat_operations2(JOB_mat_dsyevx)
     case(mtype_scalapack)
-    call time_mat_operations1           
-      CALL mat_scalapack_dsyevx(S,eival,ieig)
-    call time_mat_operations2(JOB_mat_dsyevx)
+       call time_mat_operations1           
+       CALL mat_scalapack_dsyevx(S,eival,ieig)
+       call time_mat_operations2(JOB_mat_dsyevx)
+    case(mtype_unres_dense)
+       call lsquit('mat_dsyevx mtype_unres_dense not implemented',-1)
+       call time_mat_operations1           
+       ndim = S%nrow
+       call mem_alloc(Sfull,ndim,ndim)
+       call mat_unres_dense_to_full(S,1.0E0_realk,Sfull)
+       CALL mat_dense_dsyevx_aux(Sfull,eival,ndim,ieig)
+       call mem_dealloc(Sfull)
+       call time_mat_operations2(JOB_mat_dsyevx)
+    case(mtype_csr)
+       ndim = S%nrow
+       call mem_alloc(Sfull,ndim,ndim)
+       call mat_csr_to_full(S,1.0E0_realk,Sfull)
+       call time_mat_operations1           
+       CALL mat_dense_dsyevx_aux(Sfull,eival,ndim,ieig)
+       call time_mat_operations2(JOB_mat_dsyevx)
+       call mem_dealloc(Sfull)
     case default
-      write(*,*) 'FALLBACK: mat_dsyevx'
-      ndim = S%nrow
-      call mem_alloc(Sfull,ndim,ndim)
-      call mat_to_full(S,1.0E0_realk,Sfull)
-      call time_mat_operations1           
-      CALL mat_dense_dsyevx_aux(Sfull,eival,ndim,ieig)
-      call time_mat_operations2(JOB_mat_dsyevx)
-      call mem_dealloc(Sfull)
+       call lsquit('mat_dsyevx not implemented',-1)
+!      write(*,*) 'FALLBACK: mat_dsyevx'
+!      ndim = S%nrow
+!      call mem_alloc(Sfull,ndim,ndim)
+!      call mat_to_full(S,1.0E0_realk,Sfull)
+!      call time_mat_operations1           
+!      CALL mat_dense_dsyevx_aux(Sfull,eival,ndim,ieig)
+!      call time_mat_operations2(JOB_mat_dsyevx)
+!      call mem_dealloc(Sfull)
     end select
   END SUBROUTINE mat_dsyevx
 
@@ -2398,12 +2484,19 @@ subroutine mat_setlowertriangular_zero(A)
      call set_lowertriangular_zero(A%elmsb,A%nrow,A%ncol)
   case(mtype_scalapack)
      call mat_scalapack_setlowertriangular_zero(A)
-  case default
-     print*,'Fallback mat_setlowertriangular_zero'
+  case(mtype_csr)
      allocate(afull(a%nrow, a%ncol))
-     call mat_to_full(a,1E0_realk,afull)     
+     call mat_csr_to_full(a,1E0_realk,afull)     
      call set_lowertriangular_zero(Afull,A%nrow,A%ncol)
+     call mat_csr_set_from_full(afull, 1E0_realk, a)
      deallocate(afull)
+  case default
+     call lsquit('Fallback mat_setlowertriangular_zero not impl',-1)
+!     print*,'Fallback mat_setlowertriangular_zero'
+!     allocate(afull(a%nrow, a%ncol))
+!     call mat_to_full(a,1E0_realk,afull)     
+!     call set_lowertriangular_zero(Afull,A%nrow,A%ncol)
+!     deallocate(afull)
   end select
   if (info_memory) write(mat_lu,*) 'After mat_zero: mem_allocated_global =',&
        & mem_allocated_global

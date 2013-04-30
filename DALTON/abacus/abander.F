@@ -349,6 +349,8 @@ C
       ELSE
          NAORDR = 2
       END IF
+CAMT Only gradients for empirical disp correction so far
+      IF (DODFTD) NAORDR = 1
 C
       WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
      &          'energy-derivatives available:', NAORDR

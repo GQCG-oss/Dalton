@@ -14,7 +14,7 @@ use lsmpi_type, only: lsmpi_finalize
   use memory_handling
 #endif
 implicit none
-Integer             :: nbast,natoms,nelectrons,lupri,luerr,i,j,k,l,n,x,iGrad,ij
+Integer             :: nbast,natoms,nelectrons,lupri,luerr,i,j,k,l,n,m,x,y,iGrad,iHess,ij
 #ifdef LSLIB_RESTART
   type(matrix) :: D
   logical :: dens_exsist, OnMaster=.true., gcbasis
@@ -23,6 +23,7 @@ Integer             :: nbast,natoms,nelectrons,lupri,luerr,i,j,k,l,n,x,iGrad,ij
 Integer,parameter   :: realk = 8
 #endif
 Real(realk),pointer :: Smat(:,:),Dmat(:,:,:),TempMat(:,:,:),TempGrad(:,:,:),DFD(:,:,:),h1(:,:),Fmat(:,:,:)
+Real(realk),pointer :: TempHess(:,:,:,:,:)
 Real(realk)         :: tmp1,tmp2,EXC(2),constant
 Real(realk),pointer :: eri(:,:,:,:,:)
 Integer,external    :: LSlib_get_nbasis
@@ -598,6 +599,7 @@ write(lupri,'(A80,2F18.10)') 'Reorthonormalization gradient: RMS and index-weigh
 deallocate(eri)
 nullify(eri)
 allocate(eri(nbast,nbast,nbast,nbast,3*nAtoms))
+call ls_dzero(eri,nbast*nbast*nbast*nbast*3*nAtoms)
 
 CALL LSlib_get_4center_eri_geoderiv(eri,nbast,1,3*nAtoms,.FALSE.,lupri,luerr)
 
@@ -628,7 +630,6 @@ DO j=1,natoms
     tmp1=tmp1+TempGrad(i,j,1)*TempGrad(i,j,1)
     tmp2=tmp2+TempGrad(i,j,1)*ij
   ENDDO
-!write(*,*) 'Coulomb gradient components',j,(TempGrad(i,j,1),i=1,3)
 ENDDO
 write(lupri,'(A80,2F18.10)') 'Coulomb gradient from diff-eri (Mulliken): RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/3),tmp2/natoms/3
@@ -676,6 +677,64 @@ ENDDO
 write(lupri,'(A80,2F18.10)') 'Coulomb gradient from diff-eri (Dirac): RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/3),tmp2/natoms/3
 #endif
+
+!*****************************************************************************
+!******                             Coulomb Hessian from differentiated 4-center ERI (Mulliken)
+!*****************************************************************************
+
+#if 0
+deallocate(eri)
+nullify(eri)
+allocate(eri(nbast,nbast,nbast,nbast,9*nAtoms*nAtoms))
+call ls_dzero(eri,nbast*nbast*nbast*nbast*9*nAtoms*nAtoms)
+
+CALL LSlib_get_4center_eri_geoderiv(eri,nbast,2,9*nAtoms*nAtoms,.FALSE.,lupri,luerr)
+
+nullify(TempHess)
+allocate(TempHess(3,nAtoms,3,nAtoms,1))
+call ls_dzero(TempHess,natoms*3*nAtoms*3)
+
+iHess = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        iHess = iHess+1
+        DO l=1,nbast
+         DO k=1,nbast
+          DO j=1,nbast
+           DO i=1,nbast
+            TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + &
+     &         2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iHess)*Dmat(k,l,1)
+           ENDDO
+          ENDDO
+         ENDDO
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+   
+tmp1 = 0.0_realk
+tmp2 = 0.0_realk
+iHess = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        iHess = iHess+1
+        tmp1=tmp1+TempHess(y,m,x,n,1)*TempHess(y,m,x,n,1)
+        tmp2=tmp2+TempHess(y,m,x,n,1)*iHess
+write(*,*) 'Hessian components:',y,m,x,n,TempHess(y,m,x,n,1)
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+write(lupri,'(A80,2F18.10)') 'Coulomb Hessian from diff-eri (Mulliken): RMS and index-weighted sum',&
+     &                     sqrt(tmp1/natoms/natoms/9),tmp2/natoms/natoms/9
+deallocate(TempHess)
+#endif
+
 
 deallocate(eri)
 deallocate(TempGrad)

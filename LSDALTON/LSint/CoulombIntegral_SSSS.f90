@@ -7,7 +7,7 @@
 !> \date 2008 
 MODULE CoulombintegralMod
 use precision
-use Thermite_Mem
+use ThermiteMem_module
 CONTAINS
   subroutine CoulombIntegral_SSSS(nPrimA,nPrimB,nPrimC,nPrimD,nPrimP,nPrimQ,nPasses,&
        & nContA,nContB,nContC,nContD,nContP,nContQ,pexp,qexp,ACC,BCC,CCC,DCC,&

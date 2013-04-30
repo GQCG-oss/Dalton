@@ -2263,7 +2263,7 @@ REAL(REALK),target,intent(inout) :: outputintegral(:,:,:,:,:) !dim1,dim2,dim3,di
 Logical,optional      :: dirac
 Integer,optional      :: geoderiv
 !
-Logical             :: dirac_format,dogeoderiv
+Logical             :: dirac_format,dogeoderiv,nofamily
 REAL(REALK),pointer :: integrals(:,:,:,:,:)
 integer             :: i,j,k,l,n,intSpec,geoOrder
 
@@ -2286,9 +2286,14 @@ IF (dogeoderiv) THEN
   ELSE
      call lsquit('Error in II_get_4center_eri_diff - only first order geometrical derivative integrals implemented',lupri)
   ENDIF
+
+  !Simen Hack - GeoDerivSpec currently not working with family-type basis sets
+  nofamily = setting%scheme%nofamily
+  setting%scheme%nofamily = .TRUE.
 ELSE
   intSpec = RegularSpec
 ENDIF
+
 
 !Specify Dirac or Mulliken integral format
 dirac_format = .FALSE.
@@ -2302,7 +2307,7 @@ IF (dirac_format) THEN
   call ls_dzero(integrals,dim1*dim2*dim3*dim4*dim5)
 ELSE
   call initIntegralOutputDims(setting%output,dim1,dim2,dim3,dim4,dim5)
-  IF (dogeoderiv) THEN
+  IF (dogeoderiv.AND.(intSpec.NE.GeoDerivSpec)) THEN
     call mem_alloc(integrals,dim1,dim2,dim3,dim4,dim5)
     call ls_dzero(integrals,dim1*dim2*dim3*dim4*dim5)
   ELSE
@@ -2318,7 +2323,7 @@ IF(setting%IntegralTransformGC)THEN
 ELSE
   CALL retrieve_Output(lupri,setting,integrals,setting%IntegralTransformGC)
   IF (dogeoderiv) THEN
-    IF (geoderiv.EQ.1) THEN
+    IF ((geoderiv.EQ.1).AND.(intSpec.NE.GeoDerivSpec)) THEN
      DO n=1,dim5
       DO l=1,dim4
        DO k=1,dim3
@@ -2336,6 +2341,7 @@ ELSE
        call mem_dealloc(integrals)
      ENDIF
     ENDIF
+    setting%scheme%nofamily = nofamily
   ENDIF
   IF (dirac_format) THEN
    DO n=1,dim5

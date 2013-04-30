@@ -190,7 +190,7 @@ module pe_variables
     ! create multipole cubes
     logical, save :: mep_mulcube = .true.
     ! external electric field
-    logical, save :: mep_extfld = .true.
+    logical, save :: mep_extfld = .false.
     real(dp), dimension(3), save :: extfld = 0.0d0
     ! calculate electric field
     logical, save :: mep_field = .false.

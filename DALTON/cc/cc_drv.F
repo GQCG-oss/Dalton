@@ -123,7 +123,7 @@ Cholesky
 #include "ccdeco.h"
 Cholesky
 C
-      PARAMETER(NMODEL = 18)
+      PARAMETER(NMODEL = 19)
       LOGICAL   LCCSAV(0:NMODEL), LTCEXC, LPTEXC
       LOGICAL   LTBAR0, LRSPSYM, LLEFTEIG
       LOGICAL   MOLGRD, LHTF, NOAUXBSAVE
@@ -303,6 +303,7 @@ C
       LCCSAV(16) = CC3
       LCCSAV(17) = CC1A
       LCCSAV(18) = CC1B
+      LCCSAV(19) = DCPT2
       APROXR12   = '   '
 C
       LTCEXC = .FALSE.
@@ -496,6 +497,7 @@ C
          IF (I.EQ.16) CC3    = LCCSAV(16)
          IF (I.EQ.17) CC1A   = LCCSAV(17)
          IF (I.EQ.18) CC1B   = LCCSAV(18)
+         IF (I.EQ.19) DCPT2   = LCCSAV(19)
 C
          IF (CCS  .AND. LCCSAV(3)) GOTO 100
          IF (MP2  .AND. LCCSAV(3)) GOTO 100

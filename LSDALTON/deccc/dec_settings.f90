@@ -77,11 +77,11 @@ contains
     DECinfo%check_lcm_orbitals=.false.
     DECinfo%use_canonical=.false.
     DECinfo%user_defined_orbitals=.false.
-    DECinfo%AbsorbHatoms=.false.  ! reassign H atoms to heavy atom neighbour
+    DECinfo%AbsorbHatoms=.true.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken=.false.
     DECinfo%BoughtonPulay=.false.
     DECinfo%FitOrbitals=.true.
-    DECinfo%simple_orbital_threshold=0.01E0_realk
+    DECinfo%simple_orbital_threshold=0.05E0_realk
     DECinfo%simple_orbital_threshold_set=.false.
 
 
@@ -149,7 +149,7 @@ contains
     DECinfo%kappaMaxDIIS=3
     DECinfo%kappaMaxIter=100
     DECinfo%kappa_driver_debug=.false.
-    DECinfo%kappaTHR=1e-5
+    DECinfo%kappaTHR=1e-4
     DECinfo%EerrFactor = 1.0_realk
     DECinfo%EerrOLD = 0.0_realk
 
@@ -165,11 +165,11 @@ contains
   end subroutine dec_set_default_config
 
 
-  !> \brief Read the **DEC (Divide-expand-consolidate coupled cluster) section in 
-  !> input file DALTON.INP and set configuration structure accordingly.
+  !> \brief Read the **DEC or **CC input section in DALTON.INP and set 
+  !> configuration structure accordingly.
   !> \author Kasper Kristensen
   !> \date September 2010
-  SUBROUTINE config_dec_input(input,output,readword,word)
+  SUBROUTINE config_dec_input(input,output,readword,word,fullcalc)
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
@@ -177,12 +177,28 @@ contains
     integer,intent(in) :: input
     !> Logical unit number for DALTON.OUT
     integer,intent(in) :: output
+    !> Is this a full calculation (fullcalc=true, input **CC) 
+    !> or a DEC calculation (fullcalc=false, input=**DEC)
+    logical,intent(in) :: fullcalc
+    logical,save :: already_called = .false.
     character(len=70) :: word
-    integer :: fotlevel,one_force_not_enough
+    integer :: fotlevel
+
+    ! Sanity check that this routine is only called once for either **DEC OR **CC
+    if(already_called) then
+       call lsquit('Error: DALTON.INP must contain EITHER **DEC for DEC calculation OR &
+            & **CC for full molecular calculation!',-1)
+    else
+       ! First call to this routine
+       already_called=.true.
+    end if
 
     ! Just to be sure, we set the default values before
     ! applying input values.
     call dec_set_default_config(output)
+
+    ! Is this a DEC or a full calculation?
+    DECinfo%full_molecular_cc = fullcalc
 
     ! Do DEC calculation
     DECinfo%doDEC=.true.
@@ -230,9 +246,6 @@ contains
        case('.CC2'); DECinfo%ccModel=2; DECinfo%use_singles=.true.   ! only for full calc
        case('.CCSD'); DECinfo%ccModel=3; DECinfo%use_singles=.true.  ! only for full calc
 
-          ! Run full molecular calculation rather than DEC calculation
-       case('.FULL'); DECinfo%full_molecular_cc=.true. 
-
 
           ! CC SOLVER INFO
           ! ==============
@@ -275,8 +288,8 @@ contains
           ! Restart DEC calculation (only for single point calculations, not geometry optimization)
        case('.RESTART'); DECinfo%restart=.true.           
 
-          ! Absorb H atoms when assigning orbitals
-       case('.ABSORBH'); DECinfo%AbsorbHatoms=.true.
+          ! Do not absorb H atoms when assigning orbitals
+       case('.NOTABSORBH'); DECinfo%AbsorbHatoms=.false.
 
           !> See description of FOT level in set_input_for_fot_level.
           !> Note that if one does not use simple orbital threshold, then
@@ -325,6 +338,7 @@ contains
           ! ****************************************************************************
           ! *               Keywords only available for developers                     *
           ! ****************************************************************************
+#ifndef RELEASE
           ! NOTE: By default, we assume that the HF has already been carried out.
        case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
        case('.CCSDSOLVER_PAR'); DECinfo%solver_par=.true.
@@ -332,9 +346,6 @@ contains
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
        case('.MANUAL_BATCHSIZES') 
-
-
-
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
           ! Skip Hartree-Fock calculation 
@@ -423,6 +434,8 @@ contains
           read(input,*) DECinfo%EerrFactor
        case('.CCDRIVERDEBUG')
           DECinfo%cc_driver_debug=.true.
+#endif
+
        CASE DEFAULT
           WRITE (output,'(/,3A,/)') ' Keyword "',WORD,&
                & '" not recognized in config_dec_input'
@@ -530,7 +543,7 @@ contains
 
     ! Only full molecular for RPA at this stage
     if(DECinfo%ccmodel==5 .and. .not. DECinfo%full_molecular_cc) then
-       call lsquit('RPA only implemented for full molecule! Insert .FULL keyword.',-1)
+       call lsquit('RPA only implemented for full molecule! Use **CC rather than **DEC.',-1)
     end if
 
     ! Never use gradient and density at the same time (density is a subset of gradient)
@@ -725,56 +738,56 @@ contains
        ! only if these were not set set manually
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=4.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.01E0_realk
+          DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(2)
        DECinfo%FOT = 1.0E-2_realk
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=6.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.01E0_realk
+          DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(3)
        DECinfo%FOT = 1.0E-3_realk
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=8.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.01E0_realk
+          DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(4)
        DECinfo%FOT = 1.0E-4_realk
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.01E0_realk
+          DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(5)
        DECinfo%FOT = 1.0E-5_realk
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=12.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.01E0_realk
+          DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(6)
        DECinfo%FOT = 1.0E-6_realk
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=14.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.01E0_realk
+          DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(7)
        DECinfo%FOT = 1.0E-7_realk
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=16.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.01E0_realk
+          DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case(8)
        DECinfo%FOT = 1.0E-8_realk
        if(.not. DECinfo%paircut_set) DECinfo%pair_distance_threshold=18.0E0_realk/bohr_to_angstrom
        if(.not. DECinfo%simple_orbital_threshold_set) then
-          DECinfo%simple_orbital_threshold = 0.01E0_realk
+          DECinfo%simple_orbital_threshold = 0.05E0_realk
        end if
 
     case default

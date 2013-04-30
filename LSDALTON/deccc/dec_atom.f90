@@ -3998,7 +3998,7 @@ if(DECinfo%PL>0) then
   !> \author Kasper Kristensen
   !> \date March 2012
   subroutine get_main_pair_info(nocc,nunocc,occAOS1,unoccAOS1,occEOS1,unoccEOS1,&
-       & occAOS2,unoccAOS2,occEOS2,unoccEOS2,noccAOS,nunoccAOS,noccEOS,nunoccEOS,mem)
+       & occAOS2,unoccAOS2,occEOS2,unoccEOS2,noccAOS,nunoccAOS,noccEOS,nunoccEOS)
 
     implicit none
     !> Number of occupied orbitals for full molecule
@@ -4029,8 +4029,6 @@ if(DECinfo%PL>0) then
     integer,intent(inout) :: noccEOS
     !> Number of unoccupied EOS orbitals in pair fragment
     integer,intent(inout) :: nunoccEOS
-    !> KK fix me: Currently returns zero, will soon be redundant!
-    real(realk),intent(inout) :: mem
     logical, dimension(nocc) :: occpairAOS, occpairEOS
     logical, dimension(nunocc) :: unoccpairAOS, unoccpairEOS
 
@@ -4051,8 +4049,6 @@ if(DECinfo%PL>0) then
     call get_logical_pair_vector(nunocc,unoccEOS1,unoccEOS2,unoccpairEOS)
     nunoccEOS = count(unoccpairEOS)
 
-    ! Memory used (fix me - generalize to CC2 and CCSD)
-    mem=0E0_realk
 
   end subroutine get_main_pair_info
 

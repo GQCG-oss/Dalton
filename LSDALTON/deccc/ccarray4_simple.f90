@@ -1720,10 +1720,10 @@ contains
 
     ! get new order
     do i=1,4
-#ifdef VERBOSE
-       print *, array%order(i),'(',array%dims(i), &
-            ') => ',array%order(order(i)),' (',array%dims(order(i)),')'
-#endif
+!!$#ifdef VERBOSE
+!!$       print *, array%order(i),'(',array%dims(i), &
+!!$            ') => ',array%order(order(i)),' (',array%dims(order(i)),')'
+!!$#endif
        new_order(i) = array%order(order(i))
        new_dims(i) = array%dims(order(i))
     end do

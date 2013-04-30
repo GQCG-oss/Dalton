@@ -567,7 +567,7 @@ END SUBROUTINE mm_enable_stats
 !===============================================================================
 
       SUBROUTINE GETMMBUFINFO(LUSEBUFMM,NBUFLEN,NBUFI,NBUFR,NBUFN)
-#include <cbifmm_f90.h>
+        use cbifmm
       INTEGER NBUFLEN, NBUFI, NBUFR, NBUFN
       LOGICAL LUSEBUFMM
       LUSEBUFMM = USEBUFMM
@@ -579,7 +579,7 @@ END SUBROUTINE mm_enable_stats
       END
 
       SUBROUTINE SETMMBUFINFO(LUSEBUFMM,NBUFLEN,NBUFI,NBUFR,NBUFN)
-#include <cbifmm_f90.h>
+        use cbifmm
       INTEGER NBUFLEN, NBUFI, NBUFR, NBUFN 
       LOGICAL LUSEBUFMM
       USEBUFMM = LUSEBUFMM

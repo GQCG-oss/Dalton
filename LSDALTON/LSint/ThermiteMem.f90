@@ -1,6 +1,6 @@
 !> @file
 !> Contains the orbital and overlap types, and subroutines to set these up
-MODULE Thermite_Mem
+MODULE ThermiteMem_module
 use precision
 use memory_handling
 integer(kind=long) :: allocIntmaxTUVdim
@@ -472,4 +472,4 @@ IF(LINTWORKALLOC.EQ.0)LINTWORK=1
 nullify(A)
 end subroutine mem_workpointer_dealloc
 
-END MODULE Thermite_Mem
+END MODULE ThermiteMem_module
