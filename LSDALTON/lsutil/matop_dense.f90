@@ -1642,6 +1642,104 @@ end subroutine mat_dense_insert_section
 
     end subroutine mat_dense_mat_to_vec
 
+    SUBROUTINE mat_dense_dposv(A,b,lupri)
+      implicit none
+      TYPE(Matrix), intent(INOUT)  :: A
+      TYPE(Matrix), intent(INOUT)  :: b
+      INTEGER,INTENT(IN)           :: lupri
+      Real(Realk),pointer          :: Af(:,:)
+      Real(Realk),pointer          :: bf(:,:)
+      INTEGER                      :: dim1,dim2,dim3,dim4
+      INTEGER                      :: info
+      
+      dim1=A%nrow
+      dim2=A%ncol
+      dim3=b%nrow
+      dim4=b%ncol
+      if(dim3 .ne. A%nrow) then
+         call lsquit('mat_dense_dposv, Reason: Wrong dim3',lupri)
+      endif
+      call mem_alloc(Af,dim1,dim2)
+      call mem_alloc(bf,dim3,dim4)
+      call mat_dense_to_full(A,1D0,Af)
+      call mat_dense_to_full(b,1D0,bf)
+
+      call dposv('U',dim1,dim4,Af,dim1,bf,dim3,info)
+      
+      if(info .ne. 0) then
+         call lsquit('mat_dense_dposv, Reason: info not 0',lupri)
+      endif
+      
+      call mat_dense_set_from_full(Af,1D0,A)
+      call mat_dense_set_from_full(bf,1D0,b)
+      call mem_dealloc(Af)
+      call mem_dealloc(bf)
+      
+    END SUBROUTINE mat_dense_dposv
+
+    !> \brief creates the inverse matrix of type(matrix). mat_inv
+    !> \author T. Kjærgaard
+    !> \date 2012
+    !> \param a The type(matrix) that should be inversed
+    !> \param chol The type(matrix) that contains cholesky factors (from mat_chol)
+    !> \param c The inverse output type(matrix).
+    SUBROUTINE mat_dense_inv(A, A_inv) 
+      implicit none
+      TYPE(Matrix),intent(in)     :: A
+      TYPE(Matrix)                :: A_inv !output
+      real(realk), pointer   :: work1(:)
+      real(realk), pointer   :: A_inv_full(:,:) 
+      integer,pointer    :: IPVT(:)
+      real(realk)            :: RCOND, dummy(2), tmstart, tmend
+      integer                :: IERR, i, j, fulldim, ndim
+      fulldim = a%nrow
+      call mem_alloc(A_inv_full,fulldim,fulldim) 
+      call mem_alloc(work1,fulldim)
+      call mem_alloc(IPVT,fulldim)
+      !Invert U and Ut:
+      IPVT = 0 ; RCOND = 0.0E0_realk  
+      call mat_dense_to_full(A,1.0E0_realk,A_inv_full)
+      call DGECO(A_inv_full,fulldim,fulldim,IPVT,RCOND,work1)
+      call DGEDI(A_inv_full,fulldim,fulldim,IPVT,dummy,work1,01)
+      !Convert framework:
+      call mat_dense_set_from_full(A_inv_full,1.0E0_realk,A_inv)
+      call mem_dealloc(A_inv_full) 
+      call mem_dealloc(work1)
+      call mem_dealloc(IPVT)
+    END SUBROUTINE mat_dense_inv
+
+!> \brief Compute the Cholesky decomposition factors of a positive definite matrix
+!> \author T. Kjærgaard
+!> \date 2012
+!> \param a The type(matrix) that should be decomposed
+!> \param b The output type(matrix) that contains the cholesky factors.
+      SUBROUTINE mat_dense_chol(a, b) 
+        implicit none
+        TYPE(Matrix),intent(in)     :: a
+        TYPE(Matrix),intent(inout)  :: b !output
+        real(realk), pointer   :: work1(:)
+        real(realk), pointer   :: U_full(:,:)
+        integer,pointer    :: IPVT(:)
+        real(realk)            :: RCOND, dummy(2), tmstart, tmend
+        integer                :: IERR, i, j, fulldim, ndim
+        fulldim = a%nrow
+        call mem_alloc(U_full,fulldim,fulldim) 
+        call mem_alloc(work1,fulldim)
+        call mem_alloc(IPVT,fulldim)
+        call mat_dense_to_full(A,1.0E0_realk,U_full)
+           !Set lower half of U = 0:
+        do i = 1, fulldim
+           do j = 1, i-1
+              U_full(i,j) = 0.0E0_realk
+           enddo
+        enddo
+        call dchdc(U_full,fulldim,fulldim,work1,0,0,IERR)           
+        call mat_dense_set_from_full(U_full,1.0E0_realk,B)
+        call mem_dealloc(U_full) 
+        call mem_dealloc(work1)
+        call mem_dealloc(IPVT)
+      end SUBROUTINE mat_dense_chol
+
 !Routines needed for purification
 ! - commented out because purification is not documented and no one really knows
 ! if purification works!

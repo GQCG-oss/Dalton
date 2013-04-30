@@ -1565,7 +1565,7 @@ if(input%geoDerivOrder.GE.1)then
    IF (IPRINT.GT. 50) THEN
       CALL printDerivativeOverlapInfo(derivInfo,lupri)
    ENDIF
-   IF (input%geoDerivOrder.GT.2) nAtoms = res%nAtom(1)
+   IF (input%geoDerivOrder.GE.2) nAtoms = res%nAtom(1)
 endif
 if(Input%LinComCarmomType.GT.0)then 
    !magnetic derivative overlaps and other integrals are a 
@@ -1722,7 +1722,7 @@ DO iPassP=1,P%nPasses
             i2 = 3
           ENDIF
           Dim5(1) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom1-1)+i1
-          Dim5(2) = 3*nAtoms*(3*(iAtom1-1)+i2-1) + 3*(iAtom2-1)+i2
+          Dim5(2) = 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom2-1)+i2
        ENDIF
        DO iPermute=1,nPermute
        iDim5 = Dim5(iPermute)
@@ -1999,7 +1999,7 @@ CONTAINS
   Integer :: i1,i2,i3,i4,i5
   WRITE(lupri,'(A,A,5I3)') 'Integrals from generalDistributePQ ',text,n1,n2,n3,n4,n5
   DO i5=1,n5
-  DO i4=1,n1
+  DO i4=1,n4
   DO i3=1,n3
   DO i2=1,n2
     write(lupri,'(A,4I3)') '  --integrals',i1,i3,i4,i5

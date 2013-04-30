@@ -502,6 +502,7 @@ SUBROUTINE integral_set_default_config(DALTON)
 IMPLICIT NONE
 TYPE(integralconfig)   :: DALTON
 
+DALTON%exchangefactor = 1.0_realk
 DALTON%CONTANG=.FALSE. !Default order is angular components first, contracted functions second
 DALTON%NOGCINTEGRALTRANSFORM=.FALSE. !we do trans if segmentet basis
 DALTON%FORCEGCBASIS=.FALSE. !we do trans if segmentet basis

@@ -189,7 +189,7 @@ DO IDMAT = 1, NDMAT/2
          VXC(IPNT,IDMAT1) = VX(1)
          VXC(IPNT,IDMAT2) = VX(2)
       ELSE
-         call lsquit('XCFUN')
+         call lsquit('XCFUN',-1)
       ENDIF
    ELSE
       VXC(IPNT,IDMAT1) = 0.0E0_realk

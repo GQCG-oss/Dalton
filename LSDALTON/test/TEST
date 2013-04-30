@@ -139,8 +139,7 @@ RSP="LSresponse/LSresponse_HF_alpha
 GEO="geomopt/cartes_bfgs_min
      geomopt/redint_bfgs
      geomopt/cartes_trilevel_newconv
-     geomopt/cartes_psb_min
-     geomopt/ethane_dec_mp2"
+     geomopt/cartes_psb_min"
 DDYN="ddynam/HCN_ddyn
       ddynam/HF_vib
       ddynam/H2O_fmd"
@@ -148,6 +147,7 @@ DEC="dectests/arraytest
      dectests/reordertest
      dectests/fullmp2
      dectests/fullmp2_f12
+     dectests/fullmp2_local_f12
      dectests/fullccsd_f12
      dectests/fullcc2 
      dectests/fullccsd_low
@@ -156,16 +156,16 @@ DEC="dectests/arraytest
      dectests/fullccsd_3
      dectests/fullccsd_high
      dectests/fullccsdpt
-     dectests/dec_ccsdpt
-     dectests/fulldec 
-     dectests/fragment_adapted
-     dectests/mp2density_special
-     dectests/mp2_gradient_diatomic
-     dectests/mp2_gradient_special
-     dectests/mp2grad_frozencore
-     dectests/fragmentccsd_simple
-     dectests/dec_geoopt
-     geomopt/ethane_dec_mp2"
+     dectests/decccsdpt
+     dectests/decmp2_energy
+     dectests/decmp2_energy_FO
+     dectests/decmp2_density
+     dectests/decmp2_gradient
+     dectests/decmp2_geoopt
+     dectests/decmp2_gradient_debug
+     dectests/decmp2_gradient_debug2
+     dectests/decmp2_geoopt_FO
+     dectests/decccsd"
 ALL="$LSDALTON $LINSCA $RSP $GEO $DDYN $DEC"
 # used to be $LINSCA and $LSINT but not anymore 
 # Test code compiled with 64 bit integers

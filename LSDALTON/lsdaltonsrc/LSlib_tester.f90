@@ -725,6 +725,7 @@ DO n=1,nAtoms
         iHess = iHess+1
         tmp1=tmp1+TempHess(y,m,x,n,1)*TempHess(y,m,x,n,1)
         tmp2=tmp2+TempHess(y,m,x,n,1)*iHess
+write(*,*) 'Hessian components:',y,m,x,n,TempHess(y,m,x,n,1)
       ENDDO
     ENDDO
   ENDDO
