@@ -414,6 +414,10 @@ add_library(
         if(ENABLE_XCFUN)
 	target_link_libraries(fmmlib xcfun_interface)
         endif()
+add_dependencies(fmmlib lsutillib_precision)
+add_dependencies(fmmlib lsutillib_common)
+add_dependencies(fmmlib lsutiltypelib_common)
+
 if(ENABLE_INTEREST)
 target_link_libraries(fmmlib interestlib)
 endif()
