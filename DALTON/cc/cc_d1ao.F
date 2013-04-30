@@ -35,7 +35,8 @@ C     Purpose: To calculate the one electron Coupled Cluster
 C              density matrix and returning it backtransformed
 C              to AO-basis in AODEN!
 C
-C     Current models: MP2, CCD, CCSD, CCSD(T), CC3
+C     Current models: 
+C     MP2, CCD, CCSD, CCSD(T), CC3, DRCCD (DRPA), RCCD (singlet RPA)
 C
 C     NO = .true.  compute natural occupation numbers
 C
@@ -44,6 +45,7 @@ C
 C     May 1998: MP2 Frozen core density by Asger Halkier.
 C
 C     Spring 2002 : CC3 section by K. Hald.
+C     Summer 2010 : CCD + RCCD/DRCCD (RPA) session by Sonia Coriani
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -225,7 +227,7 @@ C
 C
          ENDIF
 C
-      ELSE IF ((CCSD .OR. CCPT .OR. CC3) 
+      ELSE IF ((CCSD .OR. CCPT .OR. CC3 .OR. CCD) 
      *          .OR. ((CC2) .AND. (.NOT. RELORB))) THEN
 C
 C-------------------------------------------------------
@@ -470,6 +472,229 @@ C
             ENDIF
          ENDIF
 C
+C
+      ELSE IF ((RCCD).or.(DRCCD)) THEN
+C
+C-------------------------------------------------------
+C        Both zeta- and t-vectors are totally symmetric.
+C-------------------------------------------------------
+C
+         ISYMTR = 1
+         ISYMOP = 1
+C
+C--------------------------------------
+C        Initial work space allocation.
+C--------------------------------------
+C
+         NHELP = NT2AMX
+C
+         KZ2AM  = 1
+         KT2AM  = KZ2AM  + NT2SQ(1)
+         KT2AMT = KT2AM  + NT2AMX
+         KLAMDP = KT2AMT + NHELP
+         KLAMDH = KLAMDP + NLAMDT
+         KT1AM  = KLAMDH + NLAMDT
+         KZ1AM  = KT1AM  + NT1AMX
+         KEND1  = KZ1AM  + NT1AMX
+         LWRK1  = LWORK  - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'Available:', LWORK, 'Needed:', KEND1
+            CALL QUIT('Insufficient core for initial '//
+     &           'allocation in CC_D1AO')
+         ENDIF
+C
+C-------------------------------------------
+C        Read zero'th order zeta amplitudes.
+C-------------------------------------------
+C
+         ISYML = 1
+         IOPT = 2
+         CALL CC_RDRSP(LLIST,ILLNR,ISYML,IOPT,MODDUM,
+     *                 WORK(KZ1AM),WORK(KT2AM))
+!         IF ( IPRINT .GT. 10 ) THEN
+!            RHO1N = DDOT(NT1AM(ISYML),WORK(KZ1AM),1,WORK(KZ1AM),1)
+!            RHO2N = DDOT(NT2AM(ISYML),WORK(KT2AM),1,WORK(KT2AM),1)
+!            WRITE(LUPRI,*) 'CC_D1AO: Norm of L. vector :',RHO1N
+!            WRITE(LUPRI,*) 'CC_D1AO: Norm of L. vector :',RHO2N
+!         ENDIF
+
+C
+C-----------------------------------
+C        Square up zeta2 amplitudes.
+C-----------------------------------
+C
+         CALL CC_T2SQ(WORK(KT2AM),WORK(KZ2AM),1)
+C
+C----------------------------------------------
+C        Read zero'th order cluster amplitudes.
+C----------------------------------------------
+C
+         IOPT = 2
+         CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),WORK(KT2AM))
+C
+C---------------------------------------------------
+C        Zero out single vectors (do no exist)
+C---------------------------------------------------
+C
+         CALL DZERO(WORK(KT1AM),NT1AMX)
+         CALL DZERO(WORK(KZ1AM),NT1AMX)
+C
+C-------------------------------------------------
+C        Calculate the lambda matrices.
+C        FIXME Useless (since T1=0) but I am lazy. Sonia
+C-------------------------------------------------
+C
+         CALL LAMMAT(WORK(KLAMDP),WORK(KLAMDH),WORK(KT1AM),WORK(KEND1),
+     *               LWRK1)
+C
+C------------------------------------------
+C        Set up 2C-E of cluster amplitudes.
+C------------------------------------------
+C
+         CALL DCOPY(NT2AMX,WORK(KT2AM),1,WORK(KT2AMT),1)
+         ISYOPE = 1
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(WORK(KT2AMT),1.0D0,ISYOPE,IOPTTCME)
+C
+C----------------------------------
+C        Work space allocation one.
+C        Note that D(ai)=ZETA(ai) &
+C        D(ia) is stored transposed
+C----------------------------------
+C
+         KONEAI = KZ1AM
+         KONEAB = KONEAI + NT1AMX
+         KONEIJ = KONEAB + NMATAB(1)
+         KONEIA = KONEIJ + NMATIJ(1)
+         KXMAT  = KONEIA + NT1AMX
+         KYMAT  = KXMAT  + NMATIJ(1)
+         KCMO   = KYMAT  + NMATAB(1)
+         KEND1  = KCMO   + NLAMDS
+         LWRK1  = LWORK  - KEND1
+C
+         IF (LWRK1 .LT. 0) THEN
+            WRITE(LUPRI,*) 'CC_D1AO; Available:',LWORK, 'Needed:',KEND1
+            CALL QUIT(
+     &           'Insufficient memory for first allocation in CC_D1AO')
+         ENDIF
+C
+C---------------------------------------------------------
+C        Initialize remaining one electron density arrays.
+C---------------------------------------------------------
+C
+         CALL DZERO(WORK(KONEAB),NMATAB(1))
+         CALL DZERO(WORK(KONEIJ),NMATIJ(1))
+         CALL DZERO(WORK(KONEIA),NT1AMX)
+         CALL DZERO(WORK(KONEAI),NT1AMX)
+C
+C-----------------------------------------------------------
+C        Calculate X-intermediate of zeta- and t-amplitudes.
+C-----------------------------------------------------------
+C
+         CALL CC_XI(WORK(KXMAT),WORK(KZ2AM),ISYMTR,WORK(KT2AM),ISYMOP,
+     *              WORK(KEND1),LWRK1)
+         CALL DSCAL(NMATIJ(1),TWO,WORK(KXMAT),1)
+C
+C-----------------------------------------------------------
+C        Calculate Y-intermediate of zeta- and t-amplitudes.
+C-----------------------------------------------------------
+C
+         CALL CC_YI(WORK(KYMAT),WORK(KZ2AM),ISYMTR,WORK(KT2AM),ISYMOP,
+     *              WORK(KEND1),LWRK1)
+         CALL DSCAL(NMATAB(1),TWO,WORK(KYMAT),1)
+C
+C-----------------------------------------------------------------
+C        Construct nonzero blocks of one electron density.
+C-----------------------------------------------------------------
+C
+         CALL DCOPY(NMATAB(1),WORK(KYMAT),1,WORK(KONEAB),1)
+         CALL CC_EITR(WORK(KONEAB),WORK(KONEIJ),WORK(KEND1),LWRK1,1)
+         !pure Hartree-Fock contribution to the density is added inside DIJGEN
+         CALL DIJGEN(WORK(KONEIJ),WORK(KXMAT))
+C
+C-----------------------------------------------------------
+C        Backtransform the one electron density to AO-basis.
+C-----------------------------------------------------------
+C
+         CALL DZERO(AODEN,N2BST(1))
+C
+         ISDEN = 1
+         CALL CC_DENAO(AODEN,1,WORK(KONEAI),WORK(KONEAB),
+     *                 WORK(KONEIJ),WORK(KONEIA),ISDEN,WORK(KLAMDP),1,
+     *                 WORK(KLAMDH),1,WORK(KEND1),LWRK1)
+C
+         IF (RELORB) THEN
+C
+C----------------------------------------------------------------
+C           Read MO-coefficients from interface file and reorder.
+C----------------------------------------------------------------
+C
+            LUSIFC = -1
+            CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
+     &                  .FALSE.)
+            REWIND LUSIFC
+            CALL MOLLAB('TRCCINT ',LUSIFC,LUPRI)
+            READ (LUSIFC)
+            READ (LUSIFC)
+            READ (LUSIFC) (WORK(KCMO+I-1), I=1,NLAMDS)
+            CALL GPCLOSE(LUSIFC,'KEEP')
+C
+            CALL CMO_REORDER(WORK(KCMO),WORK(KEND1),LWRK1)
+C
+C-------------------------------------
+C        Add orbital relaxation terms.
+C        (backtransform kappabar_pq passed from outside)
+C-------------------------------------
+C
+c           CALL CC_D1ORRE(AODEN,ZKAM(NMATIJ(1)+NMATAB(1)+1),
+c    *                     WORK(KEND1),LWRK1)
+            KOFDIJ = 1
+            KOFDAB = KOFDIJ + NMATIJ(1)
+            KOFDAI = KOFDAB + NMATAB(1)
+            KOFDIA = KOFDAI + NT1AMX
+C
+!            write(lupri,*)'The IJ kappabar of ', MODEL(1:5)
+!         CALL OUTPUT(ZKAM(KOFDIJ),1,NRHF(1),1,NRHF(1),
+!     *                  NRHF(1),NRHF(1),1,LUPRI)
+!         write(lupri,*)'The AI kappabar of ', MODEL(1:5)
+!         CALL OUTPUT(ZKAM(KOFDAI),1,NVIR(1),1,NRHF(1),
+!     *                  NVIR(1),NRHF(1),1,LUPRI)
+!         
+!!         CALL DSCAL(NT1AMX,-ONE,ZKAM(KOFDIA),1)
+!         write(lupri,*)'The IA kappabar of ', MODEL(1:5)
+!         CALL OUTPUT(ZKAM(KOFDIA),1,NVIR(1),1,NRHF(1),
+!     *                  NVIR(1),NRHF(1),1,LUPRI)
+!          
+!         write(lupri,*)'The AB kappabar of ', MODEL(1:5)
+!         CALL OUTPUT(ZKAM(KOFDAB),1,NVIR(1),1,NVIR(1),
+!     *                  NVIR(1),NVIR(1),1,LUPRI)
+
+            ISDEN = 1
+            CALL CC_DENAO(AODEN,1,ZKAM(KOFDAI),ZKAM(KOFDAB),
+     *                    ZKAM(KOFDIJ),ZKAM(KOFDIA),ISDEN,WORK(KCMO),1,
+     *                    WORK(KCMO),1,WORK(KEND1),LWRK1)
+C
+C-------------------------------------------------------
+C           Add frozen core contributions to AO density.
+C-------------------------------------------------------
+C
+!            IF (FROIMP) THEN
+C
+!               KOFFAI = NMATIJ(1) + NMATAB(1) + 2*NT1AMX + 1
+!               KOFFIA = KOFFAI    + NT1FRO(1)
+!               KOFFIJ = KOFFIA    + NT1FRO(1)
+!               KOFFJI = KOFFIJ    + NCOFRO(1)
+C
+!               ISDEN = 1
+!               ICON  = 2
+!               CALL CC_D1FCB(AODEN,ZKAM(KOFFIJ),ZKAM(KOFFJI),
+!     *                       ZKAM(KOFFAI),ZKAM(KOFFIA),WORK(KEND1),
+!     *                       LWRK1,ISDEN,ICON)
+C
+!            ENDIF
+         ENDIF
+C
       ENDIF
 C
       IF (FROIMP) THEN
@@ -480,7 +705,7 @@ C
 C-----------------------------------------------------------------
 C     Calculate additional terms to the one electron density
 C     needed for the evaluation of the natural occupation numbers.
-C     Only if NO else skip.
+C     Only if NO, else skip.
 C-----------------------------------------------------------------
 C
       IF (.NOT. NO) THEN

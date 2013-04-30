@@ -190,14 +190,25 @@ C
       ELSE
         IF (CCS)  MODEL = 'CCS       '
         IF (CC2)  MODEL = 'CC2       '
+        IF (CCD)  MODEL = 'CCD       '
+        IF (RCCD) MODEL = 'RCCD=RPA  '
+        IF (DRCCD) THEN
+           IF (SOSEX) THEN
+                  MODEL = 'SOSEX     '
+           ELSE
+                  MODEL = 'DRCCD     '
+           END IF
+        END IF
         IF (CCSD) MODEL = 'CCSD      '
         IF (CC3)  MODEL = 'CC3       '
       END IF
 C
-      IF (.NOT.(CCS.OR.CC2.OR.CCSD.OR.CC3)) THEN
-         WRITE(LUPRI,'(A)') ' CC_SOLRSP: Do not want to calculate '
-     *           //'anything else than CCS, CC2 and CCSD properties '
-         CALL QUIT('Model not CCS or CC2 or CCSD or CC3 in CC_SOLRSP')
+C      IF (.NOT.(CCS.OR.CC2.OR.CCSD.OR.CC3)) THEN
+      IF (.NOT.(CCS.OR.CC2.OR.CCD.OR.CCSD.OR.RCCD.OR.DRCCD.OR.CC3)) THEN
+         WRITE(LUPRI,'(A)') ' CC_SOLDRV: Do not want to calculate '
+     *           //'anything else than CCS, CC2 '
+     *           //'CCD, RCCD, DRCCD, CCSD and CC3 properties '
+         CALL QUIT('Model not CCS,CC2,(RD)CCD,CCSD,CC3 in CC_SOLRSP')
       ENDIF
  
 C     Cholesky Check Section.
@@ -627,11 +638,14 @@ C--------------------------------
 C           Create start vectors.
 C--------------------------------
 C
+            write(lupri,*)'RPA: call cceq_str'
+            call flshfo(lupri)
             CALL CCEQ_STR(FC1AM,LUFC1,FC2AM,LUFC2,FC12AM,LUFC12,
      *                    FS12AM,LUFS12,FS2AM,LUFS2,LPROJECT,ISTATPRJ,
      *                    TRIPLET,ISIDE,IRST,NSIMR,NUPVEC,
      *                    NREDH,WORK(KEIVAL),WORK(KIPLAC),
      *                    WORK(KWRK1),LWRK1,LIST)
+            write(lupri,*)'RPA: exit cceq_str'
 C
             CALL FLSHFO(LUPRI)
 C

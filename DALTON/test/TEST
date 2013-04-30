@@ -51,7 +51,7 @@ GEN1INT="gen1int_fluorobenzene_cart gen1int_water_cart gen1int_fluorobenzene_sph
 gen1int_water_spher"
 SHORT_ENERGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart energy_restart_scf \
 energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc \
-energy_lucita_gasci"
+energy_lucita_gasci energy_stex"
 SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe dft_open_b3lyp dft_qr_sym dft_rspexci_sym dft_rspexci_nosym \
 tddft_tda"
 SHORTGOPT="geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a \
@@ -622,6 +622,10 @@ do
           myprint "---------------------------------------------------------------------"
           myprint "  Start $item step $step of $numsteps :"
           myprint "---------------------------------------------------------------------"
+          # use unique molfile for this step if available
+          if [ -r $item'__'$step.mol ]; then
+              cp -v $item'__'$step'.mol' $item'.mol'
+          fi
           molfile=$item
           if [ -r $item.pot ]; then potfile=$item ; fi
           cp $item'__'$step'.dal' $item'.dal'

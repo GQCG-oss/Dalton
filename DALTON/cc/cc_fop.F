@@ -35,6 +35,8 @@ C              CCS(CIS/HF), MP2, CCD, CCSD, CC3, CCSD(T)
 C
 C              CCSDT-1a, CCSDT-1b
 C
+C              RCCD,DRCC (=closed shell RPA and DRPA) and SOSEX
+C
 C              and calculates modified triples corrections MCCSD(T), MCC(3)
 C
 C     Solves for CC t-bar amplitudes = Lagrangian multipliers.
@@ -57,7 +59,9 @@ C
 C     CCSD(T) introduced by Kasper Hald and Sonia Coriani in 2001/2002 
 C
 C     CC-R12 introduced by Christian Neiss 2005
-C
+C     CCD reactivated by Sonia, 2009
+C     RCCD and DRCCD, Sonia & Maria Francesca Iozzi (Fran), 2010
+C     SOSEX, Thomas Bondo Pedersen 2011
 C-----------------------------------------------------------------------------
 C
 #include "implicit.h"
@@ -196,6 +200,22 @@ C
          CALL AROUND('Coupled Cluster model is: CCD')
          MODEL = 'CCD'
          MODELPRI = ' CCD'
+      ENDIF
+      IF (RCCD) THEN
+         CALL AROUND('Coupled Cluster model is: RCCD = RPA')
+         MODEL = 'RCCD'
+         MODELPRI = 'RCCD'
+      ENDIF
+      IF (DRCCD) THEN
+         IF (SOSEX) THEN
+            CALL AROUND('Coupled Cluster model is: SOSEX')
+            MODEL = 'SOSEX'
+            MODELPRI = 'SOSX'
+         ELSE
+            CALL AROUND('Coupled Cluster model is: DRCCD = direct RPA')
+            MODEL = 'DRCCD'
+            MODELPRI = 'DRPA'
+         ENDIF
       ENDIF
       IF (CC3  ) THEN
          CALL AROUND('Coupled Cluster model is: CC3')
@@ -354,6 +374,7 @@ C--------------------------------
             !
          END IF
 
+         !call driver for solving (tbar A = eta)
          CALL CC_SOLDRV(LIST,NSTAT,ORDER,ISIDE,APROXR12,
      *                  IDUM,IDUM,RDUM,LDUM,
      *                  IDUM,CDUM,RDUM,IDUM,
@@ -952,7 +973,7 @@ C     Calculate the coupled cluster energy using density matrices,
 C     in order to check the unrelaxed CC-density.
 C-----------------------------------------------------------------
 C
-      IF ((TSTDEN) .AND. (CCSD)) THEN
+      IF ((TSTDEN) .AND. (CCSD .or. CCD)) THEN
 C
          CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',IDUMMY,
      &               .FALSE.)
@@ -977,6 +998,8 @@ C
 C
          LENDEN = 2*NT1AMX    + NMATIJ(1)   + NMATAB(1)
      *          + 2*NCOFRO(1) + 2*NT1FRO(1) 
+
+!@@@@@@@@@@@@@@@@@@@
 
       IF (RELORB) THEN
 C
@@ -1094,11 +1117,50 @@ cElena
             CALL DZERO(WORK(KETAAI),NALLAI(1))
             CALL CC2_DEN(WORK(KETAAI),WORK(KZKAM),WORK(KWRK2),LWRK2,
      *                   IOPT)
-         ELSE IF (CCSD) THEN
+         ELSE IF (CCSD .or. CCD) THEN
             IOPT = 1
             CALL CC_DEN(DUMMY,WORK(KETAAI),WORK(KZKAM),WORK(KWRK2),
      *                  LWRK2,IOPT)
 C
+         ELSE IF (RCCD.or.DRCCD) THEN
+            !Warning: RCCD/DRCCD/SOSEX CODE IS HIGHLY EXPERIMENTAL
+            !NOT OPTIMIZED IN ANY WAY AND SHOULD BE USED WITH CARE. 
+            !NO SYMMETRY IS IMPLEMENTED
+            !USE IT AT YOUR OWN RISK!!! SONIA
+            IF (RCCD) THEN
+               !IF (LPRNCC) 
+               WRITE(LUPRI,*) "CCFOP: COMPUTE KBAR FOR RCCD"
+            ELSE
+               IF (SOSEX) THEN
+                  !IF (LPRNCC)
+                  WRITE(LUPRI,*) "CCFOP: COMPUTE KBAR FOR SOSEX"
+               ELSE
+                  !IF (LPRNCC)
+                   WRITE(LUPRI,*) "CCFOP: COMPUTE KBAR FOR DRCCD"
+               END IF
+            END IF
+            CALL FLSHFO(LUPRI)
+            IOPT = 2
+            IMODEL = 1
+            LTESTE = .true.
+            POTNUC = DUMMY
+            IF (LTESTE) THEN
+               CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     &                     IDUMMY,.FALSE.)
+               REWIND LUSIFC
+C
+               CALL MOLLAB('SIR IPH ',LUSIFC,LUPRI)
+               READ (LUSIFC) POTNUC
+               CALL GPCLOSE(LUSIFC,'KEEP')
+            END IF
+            CALL DZERO(WORK(KETAAI),NALLAI(1))
+            !IF (LPRNCC)
+             write(lupri,*) "CCFOP:RCCD density-based build of eta-RHS"
+            CALL FLSHFO(LUPRI)
+            CALL CC_DEN_RCCD(POTNUC,WORK(KETAAI),WORK(KZKAM),
+     *              WORK(KWRK2),LWRK2,IOPT,IMODEL,LTESTE)
+            CALL FLSHFO(LUPRI)
+
          ELSE IF (CCPT) THEN
 C
             IOPT = 2
@@ -1195,7 +1257,10 @@ C
          NEXVAL = 1
          NABATY = 1
          NABAOP = 1
-         MXRM   = 40
+C-tbp: put max dimension of reduced space equal to maxiter
+C-tbp    MXRM   = 40
+         MXRM   = maxite
+
          MXPHP  = 1
 C
          FABRHS = .TRUE.
@@ -1325,9 +1390,17 @@ C
 C
 C----------------------------------------------------------
 C     Calculate one electron AO-density and CC nat.occ.num.
+C     One electron densities are now recalculated for all 
+C     in order to get FOPs. Relaxation contributions are 
+C     passed via KZKAM
 C----------------------------------------------------------
 C
       ILSTNR = 1
+      !Sonia
+      write(lupri,*)'CCFOP: call CC_D1AO to recalc the 1e Density'
+      call flshfo(lupri)
+      natocc=.false.
+      !
       CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
      &             LWRK3,MODEL, LIST,ILSTNR,.TRUE.,
      &             FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ)
@@ -1443,6 +1516,14 @@ Cholesky
 C
       MODELPRI2 = '  Relaxed '//MODELPRI
       IF (.NOT. RELORB) MODELPRI2 = 'Unrelaxed '//MODELPRI
+      IF (SOSEX) THEN
+         IF (.NOT. RELORB) THEN
+            MODELPRI2 = 'Unrelaxed SOSEX'
+         ELSE
+            MODELPRI2 = '  Relaxed SOSEX'
+         ENDIF
+      END IF
+
       IF (CCPT) THEN
          IF (.NOT. RELORB) THEN
             MODELPRI2 = 'Unrelaxed CCSD(T)'
@@ -2793,7 +2874,6 @@ C
 #include "ccsdinp.h"
 #include "ccinftap.h"
 #include "r12int.h"
-C
 !
 !SONIA SONIA SONIA
 !
@@ -2801,7 +2881,7 @@ C
 C
       LOGICAL LOCDBG
       PARAMETER(LOCDBG = .FALSE.)
-      PARAMETER( TWO = 2.0D00 )
+      PARAMETER(ONE=1.0d0, TWO = 2.0D00 )
       CHARACTER*5 FN3FOP
       CHARACTER*6 FN3VI, FN3FOP2
       CHARACTER*8 FNTOC, FN3VI2
@@ -2890,8 +2970,14 @@ C
          CALL CC_PRP(DUM,ETA(1+NT1AMX),1,0,1)
       ENDIF
 C
-      IOPTTCME = 1
-      CALL CCSD_TCMEPK(ETA(1+NT1AMX),1.0D0,ISYMOP,IOPTTCME)
+C Thomas Bondo Pedersen: SOSEX eta must be as in rCCD.
+C
+      if (DRCCD .AND. .NOT.SOSEX) then
+         CALL DSCAL(NT2AMX,TWO,ETA(1+NT1AMX),1)
+      else
+         IOPTTCME = 1
+         CALL CCSD_TCMEPK(ETA(1+NT1AMX),1.0D0,ISYMOP,IOPTTCME)
+      end if
 C
       KFOCK  = 1
       KT1AM  = KFOCK  + N2BST(ISYMOP)
@@ -2904,7 +2990,7 @@ C----------------------------------------------------
 C     Make eta(ai) from AO fock matrix store on disk.
 C----------------------------------------------------
 C
-      IF ( RSPIM ) THEN
+      IF ( (RSPIM).and.(.not.(RCCD.or.DRCCD)) ) THEN
 C
          LUFCK = -1
          CALL GPOPEN(LUFCK,'CC_FCKH','UNKNOWN',' ','UNFORMATTED',IDUMMY,
@@ -2922,7 +3008,8 @@ C
       ENDIF
 C
       CALL DZERO(WORK(KT1AM),NT1AM(1))
-      IF (.NOT.(CCS.OR.CCP2)) THEN
+      !SONIA: CCD/RCCD ADDED
+      IF (.NOT.(CCS.OR.CCP2.or.CCD.or.RCCD.or.DRCCD)) THEN
          IOPT = 1
          CALL CC_RDRSP('R0',0,1,IOPT,MODEL,WORK(KT1AM),DUMMY)
       ENDIF
@@ -2942,7 +3029,10 @@ C
          CALL CC_PRFCKMO(WORK(KFOCK),ISYMOP)
       ENDIF
 C
-      DO 100 ISYMI = 1,NSYM
+      if ((CCD).or.(RCCD).or.(DRCCD)) then
+         CALL DZERO(ETA,NT1AM(ISYMOP))
+      else
+       DO 100 ISYMI = 1,NSYM
 C
          ISYMA = MULD2H(ISYMI,ISYMOP)
 C
@@ -2958,7 +3048,8 @@ C
   120       CONTINUE
   110    CONTINUE
 C
-  100 CONTINUE
+  100  CONTINUE
+      end if !CCD, RCCD, DRCCD (SONIA, FRAN)
 C
 C-------------------------------------------
 C     Scale the non-triples contributions
@@ -5196,11 +5287,18 @@ C     Small modifications for CC2 by A. Halkier & S. Coriani
 C     14/01-2000. Introduce factor FACT to control antisymmetrization
 C     of eta_ij and eta_ab.
 C
+C     Additional numerical stability, Thomas Bondo Pedersen, Jan. 2013.
+C        - if numerator is zero, then kappa-bar-0 is set to zero.
+C        - if numerator is non-zero and denominator is zero, the
+C          equation system is singular and we have to quit.
+C        - in addition, redundant zeroing eliminated.
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
       PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
       PARAMETER (THRDEM = 1.0D-12)
+      PARAMETER (EPSN = 1.0D-12, EPSD = 1.0D-12)
       DIMENSION ZKDIA(*), XMAT(*), YMAT(*), WORK(LWORK)
 #include "maxorb.h"
 #include "ccorb.h"
@@ -5210,6 +5308,9 @@ C
 #include "ccsdsym.h"
 #include "ccsdio.h"
 #include "ccsdinp.h"
+C
+      REAL*8   CC_PROTECTED_DIVISION
+      EXTERNAL CC_PROTECTED_DIVISION
 C
       CALL QENTER('MP2_ZKBLO')
 C
@@ -5273,13 +5374,17 @@ C
             DO 120 I = J+1,NRHF(ISYMI)
                KOFFI = KFOCKD + IRHF(ISYMI) + I - 1
                DENOM = WORK(KOFFJ) - WORK(KOFFI)
-               IF (ABS(DENOM) .GT. THRDEM) THEN
-                 NIJ   = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J - 1) + I
-                 NJI   = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I - 1) + J
-C
-                 ZKDIA(NIJ) = HALF*(XMAT(NIJ) - FACT*XMAT(NJI))/DENOM
-                 ZKDIA(NJI) = ZKDIA(NIJ)
-               ENDIF
+               NIJ   = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J - 1) + I
+               NJI   = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I - 1) + J
+               XNOMI = HALF*(XMAT(NIJ) - FACT*XMAT(NJI))
+               ZKDIA(NIJ) = CC_PROTECTED_DIVISION(XNOMI,DENOM,EPSN,EPSD)
+               ZKDIA(NJI) = ZKDIA(NIJ)
+!               IF (ABS(DENOM) .GT. THRDEM) THEN
+!                 NIJ   = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J - 1) + I
+!                 NJI   = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I - 1) + J
+!                 ZKDIA(NIJ) = HALF*(XMAT(NIJ) - FACT*XMAT(NJI))/DENOM
+!                 ZKDIA(NJI) = ZKDIA(NIJ)
+!               ENDIF
 C
   120       CONTINUE
   110    CONTINUE
@@ -5296,14 +5401,20 @@ C
             DO 150 A = B+1,NVIR(ISYMA)
                KOFFA = KFOCKD + IVIR(ISYMA) + A - 1
                DENOM = WORK(KOFFB) - WORK(KOFFA)
-               IF (ABS(DENOM) .GT. THRDEM) THEN
-                 NAB   = IMATAB(ISYMA,ISYMB) + NVIR(ISYMA)*(B - 1) + A
-                 NBA   = IMATAB(ISYMB,ISYMA) + NVIR(ISYMB)*(A - 1) + B
-C
-                 ZKDIA(NMATIJ(1) + NAB) =
-     *                       HALF*(YMAT(NAB) - FACT*YMAT(NBA))/DENOM
-                 ZKDIA(NMATIJ(1) + NBA) = ZKDIA(NMATIJ(1) + NAB)
-               ENDIF
+               NAB   = IMATAB(ISYMA,ISYMB) + NVIR(ISYMA)*(B - 1) + A
+               NBA   = IMATAB(ISYMB,ISYMA) + NVIR(ISYMB)*(A - 1) + B
+               XNOMI = HALF*(YMAT(NAB) - FACT*YMAT(NBA))
+               ZKDIA(NMATIJ(1)+NAB) = CC_PROTECTED_DIVISION(XNOMI,DENOM,
+     &                                                      EPSN,EPSD)
+               ZKDIA(NMATIJ(1)+NBA) = ZKDIA(NMATIJ(1)+NAB)
+!               IF (ABS(DENOM) .GT. THRDEM) THEN
+!                 NAB   = IMATAB(ISYMA,ISYMB) + NVIR(ISYMA)*(B - 1) + A
+!                 NBA   = IMATAB(ISYMB,ISYMA) + NVIR(ISYMB)*(A - 1) + B
+!C
+!                 ZKDIA(NMATIJ(1) + NAB) =
+!     *                       HALF*(YMAT(NAB) - FACT*YMAT(NBA))/DENOM
+!                 ZKDIA(NMATIJ(1) + NBA) = ZKDIA(NMATIJ(1) + NAB)
+!               ENDIF
 C
   150       CONTINUE
   140    CONTINUE
