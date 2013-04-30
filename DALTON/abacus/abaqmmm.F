@@ -94,7 +94,7 @@ C     1. Construct the charge contribution for all MM centers
 
         IF (LWRK .LT. 0) CALL ERRWRK('QMMMFIRST',-KLAST,LWORK)
 
-        CALL DZERO(WORK(KMAT),3*NNBASX)
+        CALL DZERO(WORK(KMAT),3*N2BASX)
 
         DO 100 I = 1,MMCENT
 
@@ -109,7 +109,7 @@ C     1. Construct the charge contribution for all MM centers
            DIPORG(2) = MMCORD(2,I)
            DIPORG(3) = MMCORD(3,I)
 
-           CALL DZERO(WORK(KMAT),3*NNBASX)
+           CALL DZERO(WORK(KMAT),3*N2BASX)
 
            CALL GET1IN(WORK(KMAT),'PCMBSOL',NOSIM,WORK(KLAST),
      &                 LWRK,LABINT,INTREP,INTADR,I,TOFILE,

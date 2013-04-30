@@ -2182,6 +2182,7 @@ C  /* Deck sir_geninp */
 C
 C 1-Oct 1987 Hans Agren
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
@@ -2577,6 +2578,8 @@ C
       GO TO 100
 C
  8000 CONTINUE
+!     No QC if PE module is used
+      if (peqm) flag(21) = .false.
 C     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
@@ -5067,6 +5070,7 @@ C             using at most 72 characters per row
 C
 C  CALLED FROM SIRRDI
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
 C Used from common blocks:
@@ -5457,6 +5461,11 @@ C
          WRITE(IWUNIT,'(/5X,A/)')
      &   'For the specification of the GAS CI in LUCITA: see later.'
       END IF
+      if (peqm) then
+        write(iwunit,'(/5x,a)') 'Wave function environment is modeled'
+        write(iwunit,'(5x,a/)') 'using the polarizable embedding model.'
+        WFTYPE = 'PE-'//WFTYPE
+      end if
 C     for SIRIUS (not LUCITA) :
       NINEL = 2*NISHT
       CALL MOLCHR(ICHARG)

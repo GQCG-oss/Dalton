@@ -1824,7 +1824,7 @@ C
          IF ((SOLVNT .OR. PCM) .AND. (KEY .EQ. 'HMAT')
      &                         .AND. (.NOT. NOLOND)) THEN
             KTMAT = KWRK
-	    MWRK  = KTMAT + 3*N2BASX
+            MWRK  = KTMAT + 3*N2BASX
             IF (MWRK .GT. LWRK) CALL STOPIT('ONEDRL','MAGSOL',MWRK,
      &                                      LWRK)
             LLEFT = LWRK - MWRK + 1

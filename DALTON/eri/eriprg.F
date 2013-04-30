@@ -30,8 +30,11 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
+!     wow thats dangerous... who has used the PVM code the last time??? sknecht - feb 2013
       PARAMETER (MWORK = 10 000 000)
-      DIMENSION WORK(MWORK)
+      real(8), allocatable :: work(:)
+!     memory-id tags for field 1 and 2+LMWORK in work (allocated in main driver routines)
+      DATA WRKDLM/12345678D0/
 C
 C     Join PVM and return my name to master
 C
@@ -48,9 +51,15 @@ C
          CALL PVMXUNPACK(IPRINT,1,'INTEGER')
 C
          IF (IPRTYP.EQ.1) THEN
-            CALL HER_NODSTR(WORK,MWORK,IPRINT)
+            CALL HER_NODSTR(MWORK,wrkldm,IPRINT)
          ELSE IF (IPRTYP.EQ.2) THEN
-            CALL ERI_NODSTR(WORK,MWORK,IPRINT)
+           ! allocate memory using f90 utilities
+           allocate(work(mwork+2),stat=i)
+!          Set memory traps
+           work(0)       = wrkdlm
+           work(1+mwork) = wrkdlm
+           CALL ERI_NODSTR(WORK(1),MWORK,IPRINT)
+           deallocate(work)
 C         ELSE IF (IPRTYP.EQ.3) THEN
 C            CALL GEMNOD(WORK,MWORK,MASTER,MYTID,MYNUM,IPRINT)
          END IF

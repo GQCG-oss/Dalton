@@ -950,8 +950,9 @@ C
       END
 C  /* Deck nodedriver */
 #if defined (VAR_MPI)
-      SUBROUTINE NODEDRIVER(WORK,MWORK,WRKDLM)
+      SUBROUTINE NODEDRIVER(MWORK,WRKDLM)
 C
+      use polarizable_embedding, only: pe_mpi
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
@@ -960,8 +961,7 @@ C infpar.h: MASTER,MYNUM
 #include "infpar.h"
 C defined parallel calculation types
 #include "iprtyp.h"
-!     DIMENSION WORK(MWORK)
-      DIMENSION WORK(0:MWORK)
+      real(8), allocatable :: work(:)
 C
       CALL QENTER('NODEDRIVER')
 C
@@ -970,10 +970,33 @@ C
   100 CALL MPIXBCAST(IPRTYP,1,'INTEGER',MASTER)
 C
       IF (IPRTYP.GT.0) THEN
+
+!        allocate memory here if we don't call hermit (more to follow...).
+!        idea: move allocation down to main driver routines of modules as we might want to use 
+!              dynamic memory allocation down there (for MPI performance/MPI standard compliance reasons) 
+!              which is severely hampered by a "static" WORK for everything.
+!              sknecht - feb 2013.
+         if(iprtyp /= her_work .and. .not.(allocated(work)))then
+!          allocate memory using f90 utilities
+           allocate(work(0:mwork+1),stat=i)
+!          Set memory traps
+           work(0)       = wrkdlm
+           work(1+mwork) = wrkdlm
+
+           if(i /= 0)then
+             write (luerr,*) mynum,
+     &           ': ALLOCATE command failed to allocate'//
+     &           ' the requested memory. Error code:',i
+             write (luerr,*) 
+     &           'Reduce the memory demands and be welcome back'
+             call quit('Failed to allocate memory')
+           end if
+         end if
+
          CALL MPIXBCAST(IPRINT,1,'INTEGER',MASTER)
 C  new calculation type needs to be added in include/iprtyp.h
          IF      (IPRTYP.EQ.HER_WORK) THEN
-            CALL HER_NODSTR(WORK(1),MWORK,IPRINT)
+            CALL HER_NODSTR(MWORK,wrkdlm,IPRINT)
          ELSE IF (IPRTYP.EQ.ERI_WORK) THEN
             CALL ERI_NODSTR(WORK(1),MWORK,IPRINT)
 C        ELSE IF (IPRTYP.EQ.GEM_WORK) THEN
@@ -1053,6 +1076,8 @@ C           CALL GEMNOD(WORK(1),MWORK,MASTER,MYTID,MYNUM,IPRINT)
             call lucita_coworker_main(work(1),mwork)
          ELSE IF (IPRTYP.EQ.MEP_WORK) THEN
             CALL MEP_SLAVE(WORK(1),MWORK)
+         else if (iprtyp == PE) then
+            call pe_mpi(work(1:mwork), iprint)
 #if defined(BUILD_GEN1INT)
 C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_INIT) THEN
@@ -1073,6 +1098,9 @@ C added by Bin Gao, May 12, 2012
 C
          GO TO 100
       END IF
+
+!     release memory
+      if(allocated(work)) deallocate(work)
 C
       CALL QEXIT('NODEDRIVER')
       RETURN

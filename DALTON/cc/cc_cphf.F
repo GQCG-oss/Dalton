@@ -39,8 +39,6 @@ c /* deck cc_cphf */
 *=====================================================================*
 #if defined (IMPLICIT_NONE)
       IMPLICIT NONE  
-      INTEGER IPRLIN, LSYMRF, LSYMPT, LSYMST,
-     &        NCONRF, NCONST, NWOPPT, NVARPT
 #else
 #include "implicit.h"
 #endif
