@@ -2,14 +2,15 @@
 \chapter{List of \lsdalton\ keywords}\label{ch:keywords}
 
 In this chapter, we describe all keywords for the different sections
-of the DALTON.INP file. In general, DALTON.INP is divided in four different sections under
+of the DALTON.INP file. In general, DALTON.INP is divided into the following sections under
 the headlines:
 \begin{itemize}
 \item **INTEGRAL contain settings for the calculation of integrals (optional)
 \item **WAVE FUNCTIONS contains info about the wave function (e.g. HF/DFT) and settings
 for optimization of the wave function (mandatory)
 \item **OPTIMIZE contains settings for geometry optimization (optional)
-\item **RESPONS contains info about requested properties (optional)
+\item **RESPONS contains info about requested molecular properties for HF and DFT (optional)
+\item **DEC \emph{or} **CC contains info about MP2 and coupled-cluster calculations (optional)
 \end{itemize}
 Each of these sections may contain subsections, indicated by a single asterisk. DALTON.INP
 should always end with *END OF INPUT. 
