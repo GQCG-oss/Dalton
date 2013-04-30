@@ -106,8 +106,8 @@ CTRL[5]=1
 ERROR[5]="1st L3 energy not correct -"
 
 # Test second order convergence
-CRIT1=`$GREP "0.0000000    1.17E-04" $log | wc -l`
-CRIT2=`$GREP "0.0000000    5.0[0-3]E-08" $log | wc -l`
+CRIT1=`$GREP "0.0000000    1.28E-04" $log | wc -l`
+CRIT2=`$GREP "0.0000000    5.72E-08" $log | wc -l`
 TEST[6]=`expr $CRIT1 + $CRIT2`
 CTRL[6]=2
 ERROR[6]="Not second order convergence -"

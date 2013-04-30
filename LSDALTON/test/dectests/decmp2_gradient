@@ -17,18 +17,18 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > mp2grad_frozencore.info <<'%EOF%'
+cat > decmp2_gradient.info <<'%EOF%'
    DEC-MP2 gradient for frozen core approx
    ---------------------------------------
    Molecule:         3 LiH molecules
    Wave Function:    MP2 / STO-3G
-   Test Purpose:     Test MP2 gradient/frozen core using full machinery of the DEC scheme (KK)
+   Test Purpose:     DEC-MP2 gradient using frozen core (Kasper K)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > mp2grad_frozencore.mol <<'%EOF%'
+cat > decmp2_gradient.mol <<'%EOF%'
 BASIS                                                   
 STO-3G
                                                         
@@ -46,26 +46,23 @@ H          12.000000     0.0000000    2.0000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > mp2grad_frozencore.dal <<'%EOF%'
+cat > decmp2_gradient.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
 .ARH
 .START
 TRILEVEL
-.CONVTHR
-1.0d-6
+.CONVDYN
+TIGHT
 $INFO
 DEBUG_MPI_MEM
 $END INFO
 **DEC
-.gradient
-.kappaTHR
-1e-8
+.GRADIENT
 .FOT
 5
-.FrozenCore
-.ABSORBH
+.FROZENCORE
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -77,8 +74,8 @@ $END INFO
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >mp2grad_frozencore.check
-cat >>mp2grad_frozencore.check <<'%EOF%'
+echo $CHECK_SHELL >decmp2_gradient.check
+cat >>decmp2_gradient.check <<'%EOF%'
 
 log=$1
 

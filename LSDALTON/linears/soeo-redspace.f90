@@ -616,7 +616,7 @@ do
       tmp = Ared(i,j) - Ared(j,i)
       if (tmp < -1.0E-5_realk .or. tmp > 1.0E-5_realk) then
         write (soeo%lupri, '("------------------------------")')
-        write (soeo%lupri, '("Ared(", i3, "," i3, ") - Ared(", i3, "," i3, ") =", es15.5)') i, j, j, i, tmp
+        write (soeo%lupri, '("Ared(", i3, ",", i3, ") - Ared(", i3, ",", i3, ") =", es15.5)') i, j, j, i, tmp
         write (soeo%lupri, '("------------------------------")')
         call lsquit ('Ared is not symmetric!', soeo%lupri)
       endif

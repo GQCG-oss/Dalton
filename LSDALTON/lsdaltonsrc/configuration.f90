@@ -709,12 +709,20 @@ DO
       call config_rsp_input(config,lucmd,readword)
    END IF ResponseInput
 
-   ! KK: DEC Coupled Cluster input
+   ! Input for DEC calculation
    DECInput: IF (WORD(1:5) == '**DEC') THEN
       READWORD=.TRUE.
       config%doDEC = .true.
-      call config_dec_input(lucmd,config%lupri,readword,word)
+      call config_dec_input(lucmd,config%lupri,readword,word,.false.)
    END IF DECInput
+
+   ! Input for full molecular CC calculation
+   ! (uses same setup as DEC calculation)
+   CCinput: IF (WORD(1:4) == '**CC') THEN
+      READWORD=.TRUE.
+      config%doDEC = .true.
+      call config_dec_input(lucmd,config%lupri,readword,word,.true.)
+   END IF CCinput
 
 
 !   

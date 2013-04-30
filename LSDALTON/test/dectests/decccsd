@@ -17,19 +17,18 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > fragmentccsd_singlespolari.info <<'%EOF%'
-   DEC-CCSD energy using fragment calculations and long-range t1
-   -------------------------------------------------------------
+cat > decccsd.info <<'%EOF%'
+   DEC-CCSD energy using fragment calculations without long-range t1
+   -----------------------------------------------------------------
    Molecule:         3 BH molecules with stretched bonds
    Wave Function:    CCSD / STO-3G
-   Test Purpose:     Test DEC fragmentation for CCSD using 
-                     long-range t1 correction.
+   Test Purpose:     Test DEC fragmentation for CCSD
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > fragmentccsd_singlespolari.mol <<'%EOF%'
+cat > decccsd.mol <<'%EOF%'
 BASIS                                                   
 STO-3G
                                                         
@@ -47,7 +46,7 @@ H          6.000000      0.0000000    1.4500000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > fragmentccsd_singlespolari.dal <<'%EOF%'
+cat > decccsd.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -58,12 +57,12 @@ TRILEVEL
 1.0d-5
 **DEC
 .CCSD
+.MPIsplit
+0
+!.CCSDsolver_par
+!.ccsd_old
 .FOT
 4
-.SinglesPolari
-.SinglesThr
-0.1
-.ABSORBH
 *END OF INPUT  
 %EOF%
 #######################################################################
@@ -75,8 +74,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >fragmentccsd_singlespolari.check
-cat >>fragmentccsd_singlespolari.check <<'%EOF%'
+echo $CHECK_SHELL >decccsd.check
+cat >>decccsd.check <<'%EOF%'
 
 log=$1
 
@@ -103,7 +102,7 @@ CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
 TEST[3]=`expr  $CRIT1`                                                    
 CTRL[3]=1                                                                 
 ERROR[3]="Memory leak -"
-                                                                          
+
 # Memory test for array4                                                  
 CRIT1=`$GREP "Memory in use for array4 * \: * 0.000 * GB" $log | wc -l`   
 TEST[4]=`expr  $CRIT1`                                                    
