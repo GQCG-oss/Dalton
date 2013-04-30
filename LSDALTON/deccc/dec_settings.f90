@@ -543,7 +543,7 @@ contains
 
     ! Only full molecular for RPA at this stage
     if(DECinfo%ccmodel==5 .and. .not. DECinfo%full_molecular_cc) then
-       call lsquit('RPA only implemented for full molecule! Insert .FULL keyword.',-1)
+       call lsquit('RPA only implemented for full molecule! Use **CC rather than **DEC.',-1)
     end if
 
     ! Never use gradient and density at the same time (density is a subset of gradient)
