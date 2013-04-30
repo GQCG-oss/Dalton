@@ -17,59 +17,51 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > ethane_dec_mp2.info <<'%EOF%'
-   ethane_dec_mp2 
-   -------------
-   Molecule:         Ethane
-   Wave Function:    dec-MP2 / 6-31G 
-   Test Purpose:     Test geometry optimizer in redundant internal
-   coordinates with full dec-MP2
-                     
+cat > decmp2_geoopt.info <<'%EOF%'
+   DEC-MP2 energy for full molecule
+   --------------------------------
+   Molecule:         C2H4
+   Wave Function:    MP2 / STO-3G
+   Test Purpose:     Test DEC-MP2 geometry optimization using frozen core and fragment-adapted orbitals.
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > ethane_dec_mp2.mol <<'%EOF%'
+cat > decmp2_geoopt.mol <<'%EOF%'
 BASIS
-6-31G
-Ethane
+STO-3G
+
 
 Atomtypes=2 Charge=0 Nosymmetry Angstrom
+Charge=6.0 Atoms=2
+C          0.65790       -0.00446        0.06398
+C         -0.65783        0.00446       -0.06385
 Charge=1.0 Atoms=4
 H          1.16103        0.06607        1.02388
 H          1.33519       -0.08301       -0.78143
 H         -1.33549        0.08301        0.78127
 H         -1.16080       -0.06606       -1.02386
-Charge=6.0 Atoms=2
-C          0.65790       -0.00446        0.06398
-C         -0.65783        0.00446       -0.06385
 %EOF%
-
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > ethane_dec_mp2.dal <<'%EOF%'
-**OPTIMI
-.BAKER
+cat > decmp2_geoopt.dal <<'%EOF%'
+**OPTIMIZE
 .LOOSE
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.NOGCBASIS
-.ARH
+.ARH DAVID
 .START
 TRILEVEL
 .CONVDYN
-STANDARD
-.LCM
-.PSM
-2 2
+TIGHT
 $INFO
 DEBUG_MPI_MEM
 $END INFO
 **DEC
-.SimulateFull
+.FROZENCORE
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -81,8 +73,9 @@ $END INFO
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > ethane_dec_mp2.check
-cat >> ethane_dec_mp2.check <<'%EOF%'
+echo $CHECK_SHELL >decmp2_geoopt.check
+cat >>decmp2_geoopt.check <<'%EOF%'
+
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -91,32 +84,26 @@ else
    GREP="egrep"
 fi
 
-# Energy
-CRIT1=`$GREP "Energy at final geometry is * \: * \-78\.186750" $log | wc -l`
+# Final DEC-MP2 energy
+CRIT1=`$GREP "Energy at final geometry is *: *\-77.1954" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
-ERROR[1]="MP2 ENERGY NOT CORRECT -"
+ERROR[1]="Final DEC-MP2 ENERGY NOT CORRECT -"
 
-# Memory test
-CRIT2=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
-TEST[2]=`expr  $CRIT2`
-CTRL[2]=1
+# Memory test for total memory                                             
+CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
+TEST[2]=`expr  $CRIT1`                                                    
+CTRL[2]=1                                                                 
 ERROR[2]="Memory leak -"
-
-# Number of gradient calculations
-CRIT3=`$GREP "G\: Total * MP2 energy" $log | wc -l` 
-TEST[3]=`expr   $CRIT3`
-CTRL[3]=6
-ERROR[3]="Wrong number of geometry steps"
 
 # MPI Memory test
 CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
-TEST[4]=`expr  $CRIT1`
-CTRL[4]=0
-ERROR[4]="MPI Memory leak -"
+TEST[3]=`expr  $CRIT1`
+CTRL[3]=0
+ERROR[3]="MPI Memory leak -"
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
@@ -134,4 +121,7 @@ else
 fi
 
 %EOF%
-#######################################################################
+
+
+
+

@@ -17,7 +17,7 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > mp2_gradient_diatomic.info <<'%EOF%'
+cat > decmp2_gradient_debug2.info <<'%EOF%'
    DEC-MP2 gradient diatomic
    --------------------------------
    Molecule:         LiF
@@ -29,7 +29,7 @@ cat > mp2_gradient_diatomic.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > mp2_gradient_diatomic.mol <<'%EOF%'
+cat > decmp2_gradient_debug2.mol <<'%EOF%'
 BASIS                                                   
 cc-pVDZ
 
@@ -43,7 +43,7 @@ F   1.563900    0.000000    0.000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > mp2_gradient_diatomic.dal <<'%EOF%'
+cat > decmp2_gradient_debug2.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -68,8 +68,8 @@ TRILEVEL
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >mp2_gradient_diatomic.check
-cat >>mp2_gradient_diatomic.check <<'%EOF%'
+echo $CHECK_SHELL >decmp2_gradient_debug2.check
+cat >>decmp2_gradient_debug2.check <<'%EOF%'
 
 log=$1
 

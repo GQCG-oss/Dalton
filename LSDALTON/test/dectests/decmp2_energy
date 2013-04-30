@@ -17,38 +17,37 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > fragment_adapted.info <<'%EOF%'
+cat > decmp2_energy.info <<'%EOF%'
    DEC-MP2 energies for full DEC
    -----------------------------
-   Molecule:         ethane
-   Wave Function:    MP2 / 3-21G
-   Test Purpose:     Test DEC calculation using fragment adapted orbitals (Kasper K)
+   Molecule:         HCOOH
+   Wave Function:    MP2 / 6-31G
+   Test Purpose:     Test total DEC calculation (all fragments) 
+                     using frozen core and NO reassigning for hydrogens (Kasper K)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > fragment_adapted.mol <<'%EOF%'
+cat > decmp2_energy.mol <<'%EOF%'
 BASIS
-3-21G
-Ethane
+6-31G
 
-Atomtypes=2 Charge=0 Nosymmetry Angstrom
-Charge=1.0 Atoms=6
-H         -4.76577        1.91343        0.96555
-H         -4.76581        0.14249        0.45690
-H         -4.76577        1.12214       -1.02239
-H         -2.48498        0.99665        1.02239
-H         -2.48495        1.97630       -0.45690
-H         -2.48498        0.20536       -0.56555
-Charge=6.0 Atoms=2
-C         -4.38136        1.05954       -0.00007
-C         -2.86939        1.05925        0.00007
+
+Atomtypes=3 Nosymmetry Angstrom
+Charge=6.0 Atoms=1
+C          0.41977       -0.05971        0.16752
+Charge=8.0 Atoms=2
+O          0.90317       -0.15439       -0.93920
+O         -0.90756        0.14113        0.24096
+Charge=1.0 Atoms=2
+H          0.88996       -0.11071        1.15515
+H         -1.30534        0.18370       -0.62443
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > fragment_adapted.dal <<'%EOF%'
+cat > decmp2_energy.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -56,10 +55,15 @@ cat > fragment_adapted.dal <<'%EOF%'
 .START
 TRILEVEL
 .CONVDYN
-STANDARD
+TIGHT
+$INFO
+DEBUG_MPI_MEM
+$END INFO
 **DEC
-.FrozenCore
-.FragmentAdapted
+.MP2
+.FOT
+4
+.FROZENCORE
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -71,8 +75,8 @@ STANDARD
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >fragment_adapted.check
-cat >>fragment_adapted.check <<'%EOF%'
+echo $CHECK_SHELL >decmp2_energy.check
+cat >>decmp2_energy.check <<'%EOF%'
 
 log=$1
 
@@ -83,13 +87,13 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Final HF energy: * \-78\.75744888" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-188\.6610339" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # Total correlation energy
-CRIT1=`$GREP "Correlation energy  \: * \-0\.1923" $log | wc -l`
+CRIT1=`$GREP "Correlation energy  \: * \-0.3374" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="Total correlation energy is not correct"
@@ -100,14 +104,20 @@ TEST[3]=`expr  $CRIT1`
 CTRL[3]=1                                                                 
 ERROR[3]="Memory leak -"
                                                                           
+# Memory test for array4                                                  
+CRIT1=`$GREP "Memory in use for array4 * \: * 0.000 * GB" $log | wc -l`   
+TEST[4]=`expr  $CRIT1`                                                    
+CTRL[4]=1                                                                 
+ERROR[4]="Memory leak for array4 -" 
+
 # MPI Memory test
 CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
-TEST[4]=`expr  $CRIT1`
-CTRL[4]=0
-ERROR[4]="MPI Memory leak -"
+TEST[5]=`expr  $CRIT1`
+CTRL[5]=0
+ERROR[5]="MPI Memory leak -"
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3 4 5
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}

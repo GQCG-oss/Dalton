@@ -17,7 +17,7 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > mp2_gradient_special.info <<'%EOF%'
+cat > decmp2_gradient_debug.info <<'%EOF%'
    DEC-MP2 gradient
    --------------------------------
    Molecule:         3 BH molecules
@@ -28,7 +28,7 @@ cat > mp2_gradient_special.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > mp2_gradient_special.mol <<'%EOF%'
+cat > decmp2_gradient_debug.mol <<'%EOF%'
 BASIS                                                   
 STO-3G
                                                         
@@ -46,15 +46,15 @@ H          6.000000      0.0000000    1.0000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > mp2_gradient_special.dal <<'%EOF%'
+cat > decmp2_gradient_debug.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
 .ARH
 .START
 TRILEVEL
-.CONVTHR
-1.0d-5
+.CONVDYN
+TIGHT
 $INFO
 DEBUG_MPI_MEM
 $END INFO
@@ -67,7 +67,8 @@ $END INFO
 .kappaTHR
 1e-6
 .IncludeFullMolecule
-.ABSORBH
+.manual_batchsizes
+3  3
 *END OF INPUT  
 %EOF%
 #######################################################################
@@ -79,8 +80,8 @@ $END INFO
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >mp2_gradient_special.check
-cat >>mp2_gradient_special.check <<'%EOF%'
+echo $CHECK_SHELL >decmp2_gradient_debug.check
+cat >>decmp2_gradient_debug.check <<'%EOF%'
 
 log=$1
 

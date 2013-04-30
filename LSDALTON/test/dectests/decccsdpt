@@ -17,7 +17,7 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > dec_ccsdpt.info <<'%EOF%'
+cat > decccsdpt.info <<'%EOF%'
    DEC-CCSD(T) energy using fragment-adapted orbitals
    --------------------------------------------------
    Molecule:         Ethane
@@ -28,7 +28,7 @@ cat > dec_ccsdpt.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > dec_ccsdpt.mol <<'%EOF%'
+cat > decccsdpt.mol <<'%EOF%'
 BASIS
 6-31G
 
@@ -46,7 +46,7 @@ H         -1.16080       -0.06606       -1.02386
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > dec_ccsdpt.dal <<'%EOF%'
+cat > decccsdpt.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -72,7 +72,6 @@ $END INFO
 .CCSD(T)
 .ccThr
 1.0d-6
-.ABSORBH
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -84,8 +83,8 @@ $END INFO
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > dec_ccsdpt.check
-cat >> dec_ccsdpt.check <<'%EOF%'
+echo $CHECK_SHELL > decccsdpt.check
+cat >> decccsdpt.check <<'%EOF%'
 
 log=$1
 
