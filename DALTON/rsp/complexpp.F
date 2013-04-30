@@ -186,6 +186,8 @@ C
           ITYPE = 1
         ELSE IF (LABEL(2:8).EQ.'ANGMOM') THEN
           ITYPE = 2
+        ELSE IF (LABEL(3:7).EQ.'THETA') THEN
+          ITYPE = 3
         ELSE
           WRITE(LUABSPRI,'(2A)') ' Warning : Unknown operator! ',LABEL
           RETURN
