@@ -57,22 +57,17 @@
         real*8, dimension(nwrk) :: wrk
 
         integer :: i, j
-        real*8 :: txyo
-        real*8 :: ddot, slvqlm
         real*8, dimension(:), allocatable :: dcao, dvao
 !        real*8, dimension(:), allocatable :: dcaotr, dvaotr
         real*8, dimension(:), allocatable :: daos, fckaos
 !        real*8, dimension(:), allocatable :: daotrs, fckaotrs
         real*8, dimension(:), allocatable :: evec
-        real*8, dimension(:,:), allocatable :: ubovecs, evecs, eacs
+        real*8, dimension(:,:), allocatable :: ubovecs, evecs
 !        real*8, dimension(:,:), allocatable :: evectrs, eactrs
-        real*8, dimension(:), allocatable :: fpemo,fupemo
-        real*8, dimension(:), allocatable :: txyoacs
-        real*8, dimension(:), allocatable :: ovlp
-        logical :: lexist, lopen
+        logical :: lexist
 
         ! return if no polarization
-        if (pe_polar) then
+        if (.not. pe_polar) then
             return
         ! no polarization for triplet excitations in closed shell
         else if ((nasht == 0) .and. trplet) then
