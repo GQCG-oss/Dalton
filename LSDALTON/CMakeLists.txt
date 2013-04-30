@@ -111,11 +111,6 @@ include(ConfigExternal)
 
 #add_subdirectory(LSint)
 set(LIBS)
-if(ENABLE_XCFUN)
-	set(LIBS ${LIBS} ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a)
-	add_subdirectory(xcfun_host)
-	add_definitions(-DVAR_XCFUN)
-endif()
 
 if(ENABLE_OPENRSP)
 	set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
@@ -370,13 +365,6 @@ target_link_libraries(lsutillib lsutiltypelib_common)
 add_dependencies(lsutillib generate_revinfo)
 add_dependencies(lsutillib generate_compinfo)
 
-if(ENABLE_XCFUN)
-add_library(
-    xcfun_interface
-    xcfun_host/xcfun_host.F90
-    )
-endif(ENABLE_XCFUN)
-
 set(PARENT_DEFINITIONS "-DVAR_LSDALTON")
 
 set(ExternalProjectCMakeArgs
@@ -390,9 +378,23 @@ set(ExternalProjectCMakeArgs
     )
 
 if(ENABLE_XCFUN)
-target_link_libraries(xcfun_interface lsutillib)
-	add_external(xcfun)
-	add_dependencies(xcfun_interface xcfun)
+    add_external(xcfun)
+    add_subdirectory(xcfun_host)
+    add_library(
+        xcfun_interface
+        xcfun_host/xcfun_host.F90
+        )
+    add_dependencies(xcfun_interface xcfun)
+    target_link_libraries(
+        xcfun_interface
+        lsutillib
+        )
+    add_definitions(-DVAR_XCFUN)
+    set(LIBS
+        ${PROJECT_BINARY_DIR}/external/lib/libxcfun_f90_bindings.a
+        ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a
+        ${LIBS}
+        )
 endif()
 
 if(ENABLE_INTEREST)
@@ -597,26 +599,26 @@ MERGE_STATIC_LIBS(
     geooptlib
     lsdaltonmain 
     )
-#   xcfun_interface
-target_link_libraries(lsdalton lsdaltonmain)
+
+target_link_libraries(
+    lsdalton
+    lsdaltonmain
+    ${LIBS}
+    )
 
 target_link_libraries(
    lsdalton.x
    lsdalton
-   ${LIBS}
    ) 
 
 target_link_libraries(
    gridgen.x
    lsdalton
-   ${LIBS}
    ) 
-
 
 target_link_libraries(
    lslib_tester.x
    lsdalton
-   ${LIBS}
    ) 
 
 include(CompilationInfo)
