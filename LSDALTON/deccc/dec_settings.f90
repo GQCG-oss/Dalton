@@ -552,6 +552,11 @@ contains
             & Note that density is a subset of a gradient calculation',DECinfo%output)
     end if
 
+    ! Always skip Hartree-Fock when restarting DEC
+    if(DECinfo%restart) then
+       DECinfo%doHF=.false.
+    end if
+
 #ifndef VAR_LSMPI
     if(DECinfo%restart) then
        call lsquit('DEC Restart option only possible using MPI!',DECinfo%output)
@@ -570,6 +575,12 @@ contains
        DECinfo%PairReductionDistance = 1.0e6_realk
        DECinfo%purifyMOs=.true.
     end if
+
+#ifdef RELEASE
+if(.not. DECinfo%full_molecular_cc .and. DECinfo%ccmodel/=1) then
+   call lsquit('Error in input: DEC scheme only implemented for MP2 model!',-1)
+end if
+#endif
 
   end subroutine check_dec_input
   
