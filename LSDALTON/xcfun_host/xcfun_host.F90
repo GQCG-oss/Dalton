@@ -1,10 +1,14 @@
 module xcfun_host
   use precision
-!  use xcfun
+  use xcfun
   implicit none
   integer :: XCFunFunctional
   logical :: USEXCFUN
-  public :: xcfun_host_init, xcfun_host_free, xcfun_gga_xc_single_eval,USEXCFUN
+  public :: xcfun_host_init, xcfun_host_free, USEXCFUN, &
+       & xcfun_gga_xc_single_eval, xcfun2_gga_xc_single_eval, &
+       & xcfun_lda_xc_single_eval, xcfun_gga_unres_xc_single_eval, &
+       & xcfun_lda_unres_xc_single_eval, xcfun3_gga_xc_single_eval,&
+       & xcfun_meta_xc_single_eval
   private
   contains
   subroutine xcfun_host_init(DFTfuncString,hfweight,lupri)
@@ -39,9 +43,9 @@ module xcfun_host
             & DFTfuncStringSingle,WeightSingle)
        WeightSingle(1) = 1.0E0_realk
     ENDIF
-!    XCFUNfunctional = xc_new_functional()
+    XCFUNfunctional = xc_new_functional()
     do I=1,nStrings
-!       ierr = xc_set(XCFUNfunctional,DFTfuncStringSingle(I),WeightSingle(I))
+       ierr = xc_set(XCFUNfunctional,DFTfuncStringSingle(I),WeightSingle(I))
        IF(ierr.NE.0)THEN
           print*,'The functional name:',DFTfuncStringSingle(I),'was not recognized'
           print*,' by the XCFUN program '
@@ -64,14 +68,14 @@ module xcfun_host
     ! \frac{\partial f}{\partial |\nabla \rho|^{2}}
     ! \frac{\partial f}{\partial \tau}
     !Test if this is a LDA type
-!    ierrLDA = xc_eval_setup(XCFUNfunctional,XC_N,XC_PARTIAL_DERIVATIVES,1)
+    ierrLDA = xc_eval_setup(XCFUNfunctional,XC_N,XC_PARTIAL_DERIVATIVES,1)
     ierrLDA=2
     IF(ierrLDA.NE.0)THEN
        !Test if this is a GGA type
-!       ierrGGA = xc_eval_setup(XCFUNfunctional,XC_N_GNN,XC_PARTIAL_DERIVATIVES,1)
+       ierrGGA = xc_eval_setup(XCFUNfunctional,XC_N_GNN,XC_PARTIAL_DERIVATIVES,1)
        IF(ierrGGA.NE.0)THEN
        !Test if this is a Meta type
-!          ierrMETA = xc_eval_setup(XCFUNfunctional,XC_N_GNN_TAUN,XC_PARTIAL_DERIVATIVES,1)
+          ierrMETA = xc_eval_setup(XCFUNfunctional,XC_N_GNN_TAUN,XC_PARTIAL_DERIVATIVES,1)
           IF(ierrMETA.NE.0)THEN
              call lsquit('Error determining the correct XC type.',lupri)
           ELSE
@@ -83,7 +87,7 @@ module xcfun_host
     ELSE
        WRITE(lupri,*)'The Functional chosen is a LDA type functional'
     ENDIF
-!    ierrHF = xc_get(XCFUNfunctional,'EXX',hfweight)
+    ierrHF = xc_get(XCFUNfunctional,'EXX',hfweight)
     IF(ierrHF.NE.0)THEN
        call lsquit('Error determining exact (HF) exchange weight.',lupri)
     ENDIF
@@ -102,12 +106,85 @@ module xcfun_host
     implicit none
     REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
     REAL(REALK),intent(inout) :: XCFUNOUTPUT(3,1)
-!    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    !rho = XCFUNINPUT(1,1) 
+    !|grad|^2 = XCFUNINPUT(2,1) 
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
   end subroutine xcfun_gga_xc_single_eval
+
+  subroutine xcfun_meta_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+    implicit none
+    REAL(REALK),intent(in) :: XCFUNINPUT(3,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(4,1)
+    !rho = XCFUNINPUT(1,1)   = \sum_{\mu \nu} D_{\mu \nu} chi_{mu} \times chi_{nu}
+    !|grad|^2 = XCFUNINPUT(2,1) = \sum_{\mu \nu} D_{\mu \nu} (\nabla chi_{mu} \times chi_{nu} + chi_{mu} \times \nabla chi_{nu})
+    !tau = XCFUNINPUT(3,1)  = \sum_{\mu \nu} D_{\mu \nu} half nabla chi_{mu} \times \nabla chi_{nu}
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    !last is derivative wrt tau
+  end subroutine xcfun_meta_xc_single_eval
+
+  subroutine xcfun2_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+    implicit none
+    REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(6,1)
+    !
+    integer :: ierrGGA
+    !rho = XCFUNINPUT(1,1) 
+    !|grad|^2 = XCFUNINPUT(2,1) 
+    ierrGGA = xc_eval_setup(XCFUNfunctional,XC_N_GNN,XC_PARTIAL_DERIVATIVES,2)
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    ierrGGA = xc_eval_setup(XCFUNfunctional,XC_N_GNN,XC_PARTIAL_DERIVATIVES,1)
+  end subroutine xcfun2_gga_xc_single_eval
+
+  subroutine xcfun3_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+    implicit none
+    REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(10,1)
+    !
+    integer :: ierrGGA
+    !rho = XCFUNINPUT(1,1) 
+    !|grad|^2 = XCFUNINPUT(2,1) 
+    ierrGGA = xc_eval_setup(XCFUNfunctional,XC_N_GNN,XC_PARTIAL_DERIVATIVES,3)
+    IF(ierrGGA.NE.0) then
+       print*,'ierrGGA',ierrGGA
+       call lsquit('fun3 too large1',-1)
+    endif
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    ierrGGA = xc_eval_setup(XCFUNfunctional,XC_N_GNN,XC_PARTIAL_DERIVATIVES,1)
+    IF(ierrGGA.NE.0) call lsquit('fun3 too large2',-1)
+  end subroutine xcfun3_gga_xc_single_eval
+
+  subroutine xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+    implicit none
+    REAL(REALK),intent(in) :: XCFUNINPUT(1,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(2,1)
+    !rho = XCFUNINPUT(1,1) 
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+  end subroutine xcfun_lda_xc_single_eval
+
+  subroutine xcfun_gga_unres_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+    implicit none
+    REAL(REALK),intent(in) :: XCFUNINPUT(5,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(6,1)
+    !rho_alpha = XCFUNINPUT(1,1) 
+    !rho_beta = XCFUNINPUT(2,1) 
+    !|grad_alpha|^2 = XCFUNINPUT(3,1) 
+    !grad_alpha*grad_beta = XCFUNINPUT(4,1) 
+    !|grad_beta|^2 = XCFUNINPUT(5,1) 
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)    
+  end subroutine xcfun_gga_unres_xc_single_eval
+
+  subroutine xcfun_lda_unres_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+    implicit none
+    REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(3,1)
+    !rho_alpha = XCFUNINPUT(1,1) 
+    !rho_beta = XCFUNINPUT(2,1) 
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+  end subroutine xcfun_lda_unres_xc_single_eval
 
   subroutine xcfun_host_free()
     implicit none
-!    call xc_free_functional(XCFUNfunctional)
+    call xc_free_functional(XCFUNfunctional)
   end subroutine xcfun_host_free
 
   SUBROUTINE determine_nStrings(string,n)

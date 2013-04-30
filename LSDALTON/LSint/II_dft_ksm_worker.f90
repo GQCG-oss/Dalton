@@ -71,6 +71,7 @@ REAL(REALK) :: VX(5),DFTENE
 INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
 REAL(REALK),pointer :: VXC(:,:)
+REAL(REALK) :: XCFUNINPUT(1,1),XCFUNOUTPUT(2,1)
 EXTERNAL DFTENE
 call mem_dft_alloc(VXC,NBLEN,NDMAT)
 ! LDA Exchange-correlation contribution to Kohn-Sham energy
@@ -85,7 +86,15 @@ DO IDMAT = 1, NDMAT
          !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
          VXC(IPNT,IDMAT) = D2*VX(1) 
       ELSE
-         call lsquit('xcfun II_DFT_KSMLDA',-1)
+#ifdef VAR_XCFUN
+         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
+         call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
+         VXC(IPNT,IDMAT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+         call lsquit('xcfun II_DFT_KSMLDA not testet',-1)
+#else
+         call lsquit('xcfun inconsitensy',-1)
+#endif
       ENDIF
    ELSE
       VXC(IPNT,IDMAT) = 0.0E0_realk
@@ -171,6 +180,7 @@ Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
 INTEGER     :: IPNT,I,J,IDMAT,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT1,IDMAT2
 REAL(REALK) :: VX(5),DFTENEUNRES
 REAL(REALK),pointer :: VXC(:,:)
+REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
 EXTERNAL DFTENEUNRES
 call mem_dft_alloc(VXC,NBLEN,NDMAT)
 
@@ -189,7 +199,17 @@ DO IDMAT = 1, NDMAT/2
          VXC(IPNT,IDMAT1) = VX(1)
          VXC(IPNT,IDMAT2) = VX(2)
       ELSE
-         call lsquit('XCFUN')
+#ifdef VAR_XCFUN
+         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
+         XCFUNINPUT(2,1) = RHO(IPNT,IDMAT)
+         call xcfun_lda_unres_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
+         VXC(IPNT,IDMAT1) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+         VXC(IPNT,IDMAT2) = D2*XCFUNOUTPUT(3,1)*WGHT(IPNT)
+         call lsquit('xcfun II_DFT_KSMLDAUNRES not testet',-1)
+#else         
+         call lsquit('XCFUN inconsistency')
+#endif
       ENDIF
    ELSE
       VXC(IPNT,IDMAT1) = 0.0E0_realk
@@ -415,6 +435,7 @@ DO IDMAT=1,NDMAT
             VXC(4,IPNT,IDMAT) = 0E0_realk
          ENDIF
       ELSE
+#ifdef VAR_XCFUN
          XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
          XCFUNINPUT(2,1) = GRAD(1,IPNT,IDMAT)*GRAD(1,IPNT,IDMAT)&
               &+GRAD(2,IPNT,IDMAT)*GRAD(2,IPNT,IDMAT)&
@@ -432,6 +453,9 @@ DO IDMAT=1,NDMAT
          VXC(2,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(1,IPNT,IDMAT)
          VXC(3,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
          VXC(4,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
+#else
+         call lsquit('ERROR XCFUN inconsistency',-1)
+#endif
       ENDIF
    ELSE
       VXC(1,IPNT,IDMAT) = 0E0_realk
@@ -515,7 +539,7 @@ Real(realk), parameter :: D8 = 8.0E0_realk
 INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
 REAL(REALK) :: VX(3),DFTENE,GRD,GRDA,A
 REAL(REALK),pointer :: VXC(:,:,:)
-REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
+REAL(REALK) :: XCFUNINPUT(3,1),XCFUNOUTPUT(4,1)
 EXTERNAL DFTENE
 call mem_dft_alloc(VXC,5,NBLEN,NDMAT)
 !     GGA Exchange-correlation contribution to Kohn-Sham matrix
@@ -535,7 +559,12 @@ DO IDMAT=1,NDMAT
          XCFUNINPUT(2,1) = GRAD(1,IPNT,IDMAT)*GRAD(1,IPNT,IDMAT)&
               &+GRAD(2,IPNT,IDMAT)*GRAD(2,IPNT,IDMAT)&
               &+GRAD(3,IPNT,IDMAT)*GRAD(3,IPNT,IDMAT)
-         call xcfun_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+         XCFUNINPUT(3,1) = 0.5E0_realk*TAU(IPNT,IDMAT)
+         WRITE(lupri,*)'XCFUNINPUT(1,1)',XCFUNINPUT(1,1)
+         WRITE(lupri,*)'XCFUNINPUT(2,1)',XCFUNINPUT(2,1)
+         WRITE(lupri,*)'XCFUNINPUT(3,1)',XCFUNINPUT(3,1)
+
+         call xcfun_meta_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
          DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
 
          IF(DFTDATA%LB94)THEN
@@ -543,12 +572,11 @@ DO IDMAT=1,NDMAT
          ELSEIF(DFTDATA%CS00)THEN
             call lsquit('error cs00 xcfun',-1)
          ENDIF
-
          VXC(1,IPNT,IDMAT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
          VXC(2,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(1,IPNT,IDMAT)
          VXC(3,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
          VXC(4,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
-!        VXC(4,IPNT,IDMAT) = D2*XCFUNOUTPUT(4,1)*WGHT(IPNT) !?
+         VXC(5,IPNT,IDMAT) = 0E0_realk!D2*XCFUNOUTPUT(4,1)*WGHT(IPNT) 
       ENDIF
    ELSE
       VXC(1,IPNT,IDMAT) = 0E0_realk
@@ -685,6 +713,7 @@ REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
 INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT,IDMAT1,IDMAT2
 REAL(REALK) :: VXC(NBLEN,2,2),VXM(NBLEN),VX(5),DFTENEUNRES,GRDA,GRDB
+REAL(REALK) :: XCFUNINPUT(5,1),XCFUNOUTPUT(6,1)
 EXTERNAL DFTENEUNRES
 
 !     GGA Exchange-correlation contribution to Kohn-Sham matrix
@@ -717,7 +746,31 @@ DO IDMAT = 1,NDMAT/2
          VXC(IPNT,2,2) = D2*VX(4)/GRDB
          VXM(IPNT) = D2*VX(5) !mixed derivate
       ELSE
-         call lsquit('XCFUN',-1)
+#ifdef VAR_XCFUN
+         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT1)
+         XCFUNINPUT(2,1) = RHO(IPNT,IDMAT2)
+         XCFUNINPUT(3,1) = GRAD(1,IPNT,IDMAT1)*GRAD(1,IPNT,IDMAT1)&
+              &+GRAD(2,IPNT,IDMAT1)*GRAD(2,IPNT,IDMAT1)&
+              &+GRAD(3,IPNT,IDMAT1)*GRAD(3,IPNT,IDMAT1)
+         XCFUNINPUT(4,1) = GRAD(1,IPNT,IDMAT2)*GRAD(1,IPNT,IDMAT2)&
+              &+GRAD(2,IPNT,IDMAT2)*GRAD(2,IPNT,IDMAT2)&
+              &+GRAD(3,IPNT,IDMAT2)*GRAD(3,IPNT,IDMAT2)
+         call xcfun_gga_unres_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
+
+         IF(DFTDATA%LB94)THEN
+            call lsquit('error lb94 xcfun',-1)
+         ELSEIF(DFTDATA%CS00)THEN
+            call lsquit('error cs00 xcfun',-1)
+         ENDIF
+!         VXC(1,IPNT,IDMAT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+!         VXC(2,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(1,IPNT,IDMAT)
+!         VXC(3,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
+!         VXC(4,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
+         call lsquit('XCFUN II_DFT_KSMGGAUNRES not testet',-1)
+#else
+         call lsquit('XCFUN inconsistency',-1)
+#endif
       ENDIF
    ELSE
       VXC(IPNT,1,1) = 0E0_realk
@@ -1124,6 +1177,7 @@ integer,intent(in)        :: WORKLENGTH
 REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
 !
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D05 = 0.5E0_realk
+Real(realk), parameter :: D8 = 8.0E0_realk
 REAL(REALK) :: VXC(2,NBLEN),VX(5),GRDA,GRD,GAOMAX,DMAX
 INTEGER  :: IPNT,I,J,JBL,IBL,K
 LOGICAL,EXTERNAL :: DFT_ISGGA
@@ -1134,7 +1188,8 @@ REAL(REALK),pointer :: GAORED(:,:,:),GDRED(:,:,:)
 REAL(REALK),pointer :: DRED(:,:)
 INTEGER     :: INXRED(NACTBAST),IRED,JRED,NRED,orb2atom(nbast)
 INTEGER     :: atom(NACTBAST),iatom,IX,K1,K2,K3,KA,ik,jk
-REAL(REALK) :: FRC,GA,GA2,GFS
+REAL(REALK) :: FRC,GA,GA2,GFS,XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
+REAL(REALK) :: XCFUNINPUTUNRES(5,1),XCFUNOUTPUTUNRES(6,1)
 
 orb2atom = DFTDATA%orb2atom
 KVALS(1:3,1) = (/1, 2, 3/)
@@ -1164,7 +1219,25 @@ IF (DOGGA) THEN
                VXC(2,IPNT) = 0E0_realk
             ENDIF
          ELSE
-            call lsquit('xcfun',-1)
+#ifdef VAR_XCFUN
+            XCFUNINPUT(1,1) = RHO(IPNT,1)
+            XCFUNINPUT(2,1) = GRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
+                 &+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+                 &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1)
+            call xcfun_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+            
+            IF(DFTDATA%LB94)THEN
+               call lsquit('error lb94 xcfun',-1)
+            ELSEIF(DFTDATA%CS00)THEN
+               call lsquit('error cs00 xcfun',-1)
+            ENDIF
+            
+            VXC(1,IPNT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+            VXC(2,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8
+            call lsquit('xcfun II_GEODERIV_MOLGRAD_WORKER gga not testet',-1)
+#else
+            call lsquit('xcfun inconsistency',-1)
+#endif
          ENDIF
       ELSE
          VXC(1,IPNT) = 0E0_realk
@@ -1181,7 +1254,19 @@ ELSE
             CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
             VXC(1,IPNT) = D2*VX(1) 
          ELSE
-            call lsquit('xcfun',-1)
+#ifdef VAR_LSMPI
+            XCFUNINPUTUNRES(1,1) = RHO(IPNT,1)
+            call xcfun_gga_unres_xc_single_eval(XCFUNINPUTUNRES,XCFUNOUTPUTUNRES)
+            IF(DFTDATA%LB94)THEN
+               call lsquit('error lb94 xcfun',-1)
+            ELSEIF(DFTDATA%CS00)THEN
+               call lsquit('error cs00 xcfun',-1)
+            ENDIF            
+            VXC(1,IPNT) = D2*XCFUNOUTPUTUNRES(2,1)*WGHT(IPNT)
+            call lsquit('xcfun II_GEODERIV_MOLGRAD_WORKER note testet ',-1)
+#else
+            call lsquit('xcfun inconsistency',-1)
+#endif
          ENDIF
       ELSE
          VXC(1,IPNT) = 0E0_realk
@@ -1684,6 +1769,7 @@ LOGICAL     :: DOCALC
 Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk
 Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
 REAL(REALK) :: fR,fZ,fRR,fRZ,fZZ,fRG,fZG,fGG,fG,A,B
+REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(6,1)
 NBMAT = DFTDATA%NBMAT
 call mem_dft_alloc(EXPVAL,NBLEN,NBMAT)
 call mem_dft_alloc(EXPGRAD,3,NBLEN,NBMAT)
@@ -1750,7 +1836,108 @@ IF(DOCALC)THEN
           VXC(4,IPNT,IBMAT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,IBMAT)
        ENDDO
     ELSE
-       call lsquit('XCFUN',-1)
+#ifdef VAR_XCFUN
+       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+       WRITE(lupri,*)'VX(1) ',VX(1)
+       WRITE(lupri,*)'VX(2) ',VX(2)
+       WRITE(lupri,*)'VX(3) ',VX(3)
+       WRITE(lupri,*)'VX(5) ',VX(5)
+       WRITE(lupri,*)'VX(6) ',VX(6)
+       WRITE(lupri,*)'VX(7) ',VX(7)
+       WRITE(lupri,*)'VX(8) ',VX(8)
+       WRITE(lupri,*)'VX(9) ',VX(9)
+       WRITE(lupri,*)'VX(10)',VX(10)
+       WRITE(lupri,*)'VX(11)',VX(11)
+       WRITE(lupri,*)'VX(12)',VX(12)
+       WRITE(lupri,*)'VX(13)',VX(13)
+       WRITE(lupri,*)'VX(14)',VX(14)
+       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
+       fZ  = VX(3)                    !drvs.df0010;
+       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
+       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
+       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
+       fRG = D05*VX(10)             !0.5*drvs.df10001;   
+       fZG = D05*VX(13)             !0.5*drvs.df00101; 
+       fGG = D025*VX(14)            !0.25*drvs.df00002; 
+       fG  = D05*VX(5)               !0.5*drvs.df00001;  
+       WRITE(lupri,*)' '
+       WRITE(lupri,*)' '
+       WRITE(lupri,*)'fR ',fR
+       WRITE(lupri,*)'fZ ',fZ
+       WRITE(lupri,*)'fG ',fG
+       WRITE(lupri,*)'fRR',fRR
+       WRITE(lupri,*)'fRZ',fRZ
+       WRITE(lupri,*)'fZZ',fZZ
+       WRITE(lupri,*)'fRG',fRG
+       WRITE(lupri,*)'fZG',fZG
+       WRITE(lupri,*)'fGG',fGG
+       WRITE(lupri,*)' '
+       WRITE(lupri,*)' '
+       WRITE(lupri,*)'D4*fRR            ',D4*fRR
+       WRITE(lupri,*)'D4*(fRZ/GRD+fRG)  ',D4*(fRZ/GRD+fRG)
+       WRITE(lupri,*)'D8*(fRZ/GRD + fRG)',D8*(fRZ/GRD+fRG)
+       WRITE(lupri,*)'D8*(fZ/GRD + fG)',D8*(fZ/GRD + fG)
+       WRITE(lupri,*)' '
+
+       WRITE(lupri,*)'D8*(((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)',&
+            & D8*(((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)
+       WRITE(lupri,*)' '
+
+       WRITE(lupri,*)'((-fZ/GRD+fZZ)/GRD )',((-fZ/GRD+fZZ)/GRD )
+
+       WRITE(lupri,*)'-fZ/GRD/GRD/GRD',-fZ/GRD/GRD/GRD
+       WRITE(lupri,*)'fZZ/GRD/GRD',fZZ/GRD/GRD
+       WRITE(lupri,*)'D2*fZG/GRD',D2*fZG/GRD
+       WRITE(lupri,*)'fGG',fGG
+       WRITE(lupri,*)' '
+
+       DO IBMAT = 1,NBMAT
+          MIXEDGRDA = (EXPGRAD(1,IPNT,IBMAT)*GRAD(1,IPNT,1)&
+               &+EXPGRAD(2,IPNT,IBMAT)*GRAD(2,IPNT,1)&
+               &+EXPGRAD(3,IPNT,IBMAT)*GRAD(3,IPNT,1))
+          !the LDA part
+          VXC(1,IPNT,IBMAT) =D4*fRR*EXPVAL(IPNT,IBMAT)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
+          !the non LDA parts
+          A = D8*((fRZ/GRD + fRG)*EXPVAL(IPNT,IBMAT)&
+               & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
+          B= D8*(fZ/GRD + fG)
+          VXC(2,IPNT,IBMAT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,IBMAT)
+          VXC(3,IPNT,IBMAT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,IBMAT)
+          VXC(4,IPNT,IBMAT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,IBMAT)
+       ENDDO
+       
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       XCFUNINPUT(2,1) = GRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
+            &+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+            &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1)
+       call xcfun2_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+       WRITE(lupri,*)'XCFUNOUTPUT',XCFUNOUTPUT
+
+       WRITE(lupri,*)'XCFUNOUTPUT*W(1)',XCFUNOUTPUT(1,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(2)',XCFUNOUTPUT(2,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(3)',XCFUNOUTPUT(3,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(4)',XCFUNOUTPUT(4,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(5)',XCFUNOUTPUT(5,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(6)',XCFUNOUTPUT(6,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(combi)',2*XCFUNOUTPUT(3,1)*WGHT(IPNT)+4*XCFUNINPUT(2,1)*XCFUNOUTPUT(6,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(combi2)',2*XCFUNOUTPUT(3,1)*WGHT(IPNT)+XCFUNINPUT(2,1)*XCFUNOUTPUT(6,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(combi2T1)',2*XCFUNOUTPUT(3,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(combi2T2)',2*XCFUNINPUT(2,1)*XCFUNOUTPUT(6,1)*WGHT(IPNT)
+       !1 = E
+       !2 = fR
+       !3 = D05*(fZ/GRD + fG)
+       !4 = fRR
+       !5 = D05*(fRZ/GRD + fRG)
+       !6 = D025*(((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)
+       
+!       IF(RHO(IPNT,1).GT.1.0E-3_realk) call lsquit('test done',-1)
+!       IF(ABS(fZG).GT.0.0E0_realk) call lsquit('test done',-1)
+
+
+!       call lsquit('XCFUN  II_DFT_LINRSPGGA',-1)
+#else
+       call lsquit('XCFUN inconsistency',-1)
+#endif
     ENDIF
    ELSE
     VXC(:,IPNT,:) = 0.0E0_realk
@@ -2154,6 +2341,7 @@ Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk,
 Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
 REAL(REALK) :: GRD2,GRDA2,GRDA3
 REAL(REALK) :: fRZ,fRG,fZZ,fRRR,fRRZ,fRRG,fRRGX,fRZZ,fZZZ,gradY,gradZ,gradYZ,A,B,C
+REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(10,1)
 NBMAT = DFTDATA%NBMAT
 IF(NBMAT.NE. 2)call lsquit('QRSP XC error',lupri)
 call mem_dft_alloc(EXPVAL,NBLEN,NBMAT)
@@ -2234,7 +2422,92 @@ IF(DOCALC)THEN
        VXC(3,IPNT) = D2*A*GRAD(2,IPNT,1) + D2*B*EXPGRAD(2,IPNT,2) + D2*C*EXPGRAD(2,IPNT,1)
        VXC(4,IPNT) = D2*A*GRAD(3,IPNT,1) + D2*B*EXPGRAD(3,IPNT,2) + D2*C*EXPGRAD(3,IPNT,1)
     ELSE
+#ifdef VAR_XCFUN
+       CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+       fRZ = (VX(8)+VX(9))/GRD              !(drvs.df1010 + drvs.df1001)/(2*grada)
+       fRG = D2*VX(10)                      !2*drvs.df10001   
+       fZZ = (VX(11)+VX(12))/GRD2-VX(3)/(GRD2*GRDA) !(drvs.df0020 + drvs.df0011)/(4*grada2)-drvs.df0010/(4*grada3)
+       fRRR = VX(15)+D3*VX(16)              !(drvs.df3000 + 3*drvs.df2100) 
+       fRRZ = (VX(17)+VX(18)+D2*VX(20))/GRD !(drvs.df2010+drvs.df2001+2*drvs.df1110)/(2*grada)
+       fRRG = VX(19)+VX(21)                 !drvs.df20001+drvs.df11001
+       fRRGX = D2*(VX(19)+VX(21))           !2*(drvs.df20001+drvs.df11001)
+       fRZZ = (VX(22)+VX(24)+D2*VX(23))/GRD2 - (VX(8)+VX(9))/(GRD2*GRDA)  !(drvs.df1020+drvs.df0120+2*drvs.df1011)/(4*grada2)-(drvs.df1010+drvs.df1001)/(4*grada3)
+       fZZZ = ((VX(25)+D3*VX(26))/(GRDA3)-D3*(VX(11)+VX(12))/(GRDA2*GRDA2)+D3*VX(3)/(GRDA3*GRDA2))/D8
+       !((drvs.df0030 + 3*drvs.df0021)/grada3& 
+       !         &-3*(drvs.df0020 + drvs.df0011)/(grada2*grada2)&
+       !         &+3*drvs.df0010/(grada3*grada2))/8.0
+       gradY = D05*(EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+       gradZ = D05*(EXPGRAD(1,IPNT,2)*GRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,2)*GRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,2)*GRAD(3,IPNT,1))
+       gradYZ = (EXPGRAD(1,IPNT,2)*EXPGRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,2)*EXPGRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,2)*EXPGRAD(3,IPNT,1))
+       VXC(1,IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &!OK
+            &+D4*(fRRZ*EXPVAL(IPNT,1)*gradZ+fRRZ*EXPVAL(IPNT,2)*gradY) & !OK
+            &+D8*gradZ*gradY*fRZZ &! OK
+            &+D4*gradYZ*fRZ &! OK  
+            &+D4*fRRG*EXPVAL(IPNT,1)*gradZ &! OK
+            &+D4*fRRG*EXPVAL(IPNT,2)*gradY+D2*fRG*gradYZ !OK
+       
+       A = D8*fZZZ*gradY*gradZ &
+            & + D4*(fRZZ*EXPVAL(IPNT,1)*gradZ + fRZZ*EXPVAL(IPNT,2)*gradY) &
+            & + D2*fRRZ*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &
+            & + fRRGX*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) + D4*fZZ*gradYZ
+       B = D8*fZZ*gradY + D4*fRZ*EXPVAL(IPNT,1) + D2*fRG*EXPVAL(IPNT,1)
+       C = D8*fZZ*gradZ + D4*fRZ*EXPVAL(IPNT,2) + D2*fRG*EXPVAL(IPNT,2)
+       
+       VXC(2,IPNT) = D2*A*GRAD(1,IPNT,1) + D2*B*EXPGRAD(1,IPNT,2) + D2*C*EXPGRAD(1,IPNT,1)
+       VXC(3,IPNT) = D2*A*GRAD(2,IPNT,1) + D2*B*EXPGRAD(2,IPNT,2) + D2*C*EXPGRAD(2,IPNT,1)
+       VXC(4,IPNT) = D2*A*GRAD(3,IPNT,1) + D2*B*EXPGRAD(3,IPNT,2) + D2*C*EXPGRAD(3,IPNT,1)
+
+       WRITE(lupri,*)'fRZ',fRZ
+       WRITE(lupri,*)'fRG',fRG
+       WRITE(lupri,*)'fZZ',fZZ
+       WRITE(lupri,*)'fRRR',fRRR
+       WRITE(lupri,*)'fRRZ',fRRZ
+       WRITE(lupri,*)'fRRG',fRRG
+       WRITE(lupri,*)'fRRGX',fRRGX
+       WRITE(lupri,*)'fRZZ',fRZZ
+       WRITE(lupri,*)'fZZZ',fZZZ
+
+
+
+
+       XCFUNINPUT(1,1) = RHO(IPNT,1)
+       XCFUNINPUT(2,1) = GRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
+            &+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+            &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1)
+       call xcfun3_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+       WRITE(lupri,*)'XCFUNOUTPUT',XCFUNOUTPUT
+
+       WRITE(lupri,*)'XCFUNOUTPUT*W(1)',XCFUNOUTPUT(1,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(2)',XCFUNOUTPUT(2,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(3)',XCFUNOUTPUT(3,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(4)',XCFUNOUTPUT(4,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(5)',XCFUNOUTPUT(5,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(6)',XCFUNOUTPUT(6,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(7)',XCFUNOUTPUT(7,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(8)',XCFUNOUTPUT(8,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(9)',XCFUNOUTPUT(9,1)*WGHT(IPNT)
+       WRITE(lupri,*)'XCFUNOUTPUT*W(10)',XCFUNOUTPUT(10,1)*WGHT(IPNT)
+       !1 = E
+       !2 = fR
+       !3 = D05*(fZ/GRD + fG)
+       !4 = fRR
+       !5 = D05*(fRZ/GRD + fRG)
+       !6 = D025*(((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)
+       !==================================================
+       !7 = 
+       !8 = 
+       !9 = 
+
+       IF(RHO(IPNT,1).GT.1.0E-1_realk) call lsquit('test done QRSP',-1)
+#else
        call lsquit('XCFUN 3 ',-1)
+#endif
     ENDIF
    ELSE
     VXC(:,IPNT) = 0.0E0_realk
@@ -2316,6 +2589,7 @@ REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
 Real(realk), parameter :: D4 = 4.0E0_realk,DUMMY = 0E0_realk
 REAL(REALK) :: VXC(NBLEN),VX(5),DFTENE
 INTEGER     :: I,J,IPNT
+REAL(REALK) :: XCFUNINPUT(1,1),XCFUNOUTPUT(2,1)
 
 ! LDA Exchange-correlation contribution to Kohn-Sham energy
 DO IPNT = 1, NBLEN
@@ -2327,7 +2601,15 @@ DO IPNT = 1, NBLEN
       !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
       VXC(IPNT) = VX(1)*D4 
    ELSE
-      call lsquit('xcfun',-1)
+#ifdef VAR_XCFUN
+      XCFUNINPUT(1,1) = RHO(IPNT,1)
+      call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+      !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
+      VXC(IPNT) = D4*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+      call lsquit('xcfun inconsistency',-1)
+#else
+      call lsquit('xcfun inconsistency',-1)
+#endif
    ENDIF
 !   ELSE
 !      VXC(IPNT) = 0.0E0_realk
@@ -2501,7 +2783,7 @@ integer,intent(in)        :: WORKLENGTH
 REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
 !
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D3 = 3.0E0_realk,D05 = 0.5E0_realk
-REAL(REALK) :: VX(5),DFTENE,GRD,GRDA,A
+REAL(REALK) :: VX(5),DFTENE,GRD,GRDA,A,XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
 REAL(REALK),pointer :: VXC(:,:)
 INTEGER     :: I,J
 IDMAT = 1
@@ -2533,7 +2815,27 @@ DO IPNT = 1, NBLEN
             VXC(4,IPNT) = 0E0_realk
          ENDIF
       ELSE
+#ifdef VAR_XCFUN
+         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
+         XCFUNINPUT(2,1) = GRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
+              &+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+              &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1)
+         call xcfun_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+
+         IF(DFTDATA%LB94)THEN
+            call lsquit('error lb94 xcfun',-1)
+         ELSEIF(DFTDATA%CS00)THEN
+            call lsquit('error cs00 xcfun',-1)
+         ENDIF
+
+         VXC(1,IPNT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+         VXC(2,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(1,IPNT,IDMAT)
+         VXC(3,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
+         VXC(4,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
          call lsquit('XCFUN',-1)
+#else
+         call lsquit('XCFUN inconsistency',-1)
+#endif
       ENDIF
    ELSE
       VXC(:,IPNT) = 0E0_realk
@@ -5108,7 +5410,7 @@ integer,intent(in)        :: WORKLENGTH
 !> tmp array to avoid allocation and deallocation of mem
 REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
 !
-REAL(REALK) :: VX(5),DFTENE, Econt
+REAL(REALK) :: VX(5),DFTENE, Econt,XCFUNINPUT(1,1),XCFUNOUTPUT(2,1)
 INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
 EXTERNAL DFTENE
@@ -5117,7 +5419,18 @@ DO IDMAT = 1, NDMAT
  Econt = 0.0E0_realk
  DO IPNT = 1, NBLEN
    IF(RHO(IPNT,IDMAT) .GT. RHOTHR)THEN
-      Econt = Econt + DFTENE(RHO(IPNT,IDMAT),DUMMY)*WGHT(IPNT)
+     IF(.NOT.USEXCFUN)THEN
+        Econt = Econt + DFTENE(RHO(IPNT,IDMAT),DUMMY)*WGHT(IPNT)
+     ELSE
+#ifdef VAR_XCFUN        
+        XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
+        call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+        DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
+        call lsquit('xcfun II_DFT_KSMLDA not testet',-1)
+#else
+        call lsquit('xcfun II_DFT_KSMLDA not testet incons',-1)
+#endif
+     ENDIF
    ENDIF
  END DO
  DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + Econt
