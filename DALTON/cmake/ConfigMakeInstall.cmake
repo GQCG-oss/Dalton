@@ -33,7 +33,7 @@ install(
 
 install(
     DIRECTORY
-    ${PROJECT_SOURCE_DIR}/basis
+    ${PROJECT_SOURCE_DIR}/../basis
     DESTINATION
     ${INSTALL_DIRECTORY}
     PATTERN .git EXCLUDE
