@@ -3399,12 +3399,12 @@ DO icent=1,ncent
   ENDDO
 
 ! Loop over the three Cartesian directions for both orbitals
-  DO jX=increment(2),0,-1
-    DO jY=increment(2)-jX,0,-1
-      jZ=increment(2)-jX-jY
       DO iX=increment(1),0,-1
         DO iY=increment(1)-iX,0,-1
           iZ = increment(1)-iX-iY
+  DO jX=increment(2),0,-1
+    DO jY=increment(2)-jX,0,-1
+      jZ=increment(2)-jX-jY
           iComp = iComp+1
 !         Regular ijk-loop
           i = 0

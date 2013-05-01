@@ -623,7 +623,7 @@ DO iPassP=1,P%nPasses
     DO iDeriv=1,ndim5
       iDim5 = iDeriv
       IF (nderiv.GT. 1)THEN
-         iDer = derivInfo%dirComp(iDeriv)
+         iDer = derivInfo%dirComp(1,iDeriv)
          iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
          iDim5 = 3*(iAtom-1)+ider
       ENDIF
@@ -1737,7 +1737,7 @@ DO iPassP=1,P%nPasses
 
       tmp = gtheta(ltheta,CDAB,nA,nB,nC,nD,iPass,iDeriv,nPasses,nDeriv,lupri)
 
-      iDer  = derivInfo%dirComp(iDeriv)
+      iDer  = derivInfo%dirComp(1,iDeriv)
       iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
 !The structure of the lstensor when used to store the molecular gradient
 !is maybe not the most logical and we refer to discussion in the subroutine

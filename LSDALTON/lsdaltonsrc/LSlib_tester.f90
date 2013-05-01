@@ -27,6 +27,7 @@ Real(realk),pointer :: TempHess(:,:,:,:,:)
 Real(realk)         :: tmp1,tmp2,EXC(2),constant
 Real(realk),pointer :: eri(:,:,:,:,:)
 Integer,external    :: LSlib_get_nbasis
+logical :: diff,i1,j1,k1,l1
 
 call lsinit_all()
 
@@ -630,6 +631,7 @@ DO j=1,natoms
     tmp1=tmp1+TempGrad(i,j,1)*TempGrad(i,j,1)
     tmp2=tmp2+TempGrad(i,j,1)*ij
   ENDDO
+!write(*,*) 'Coulomb gradient contribution',j,(TempGrad(i,j,1),i=1,3)
 ENDDO
 write(lupri,'(A80,2F18.10)') 'Coulomb gradient from diff-eri (Mulliken): RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/3),tmp2/natoms/3
@@ -706,6 +708,7 @@ DO n=1,nAtoms
            DO i=1,nbast
             TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + &
      &         2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iHess)*Dmat(k,l,1)
+!           TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + 0.25_realk*eri(i,j,k,l,iHess)
            ENDDO
           ENDDO
          ENDDO
@@ -725,7 +728,7 @@ DO n=1,nAtoms
         iHess = iHess+1
         tmp1=tmp1+TempHess(y,m,x,n,1)*TempHess(y,m,x,n,1)
         tmp2=tmp2+TempHess(y,m,x,n,1)*iHess
-write(*,*) 'Hessian components:',y,m,x,n,TempHess(y,m,x,n,1)
+!write(*,'(A,I4,F21.9)') 'Hessian components:',iHess,TempHess(y,m,x,n,1)
       ENDDO
     ENDDO
   ENDDO
