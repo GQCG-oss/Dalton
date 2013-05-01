@@ -19,6 +19,7 @@ option(ENABLE_UTILITIES      "Enable utilities"                OFF)
 option(ENABLE_LOCAL_DISKS    "Enable local disks"              OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking" OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"          ON)
+option(ENABLE_TEST_RELEASE_MODE "Test release mode which undefines MOD_UNRELEASED" OFF)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
@@ -28,12 +29,13 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/math
     ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
     ${CMAKE_SOURCE_DIR}/cmake/testing
+    ${CMAKE_BINARY_DIR}
     )
 
 set(LIBS)
 
+include(ConfigVersion)
 include(Sources)
-
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
@@ -61,6 +63,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     )
 
 # set definitions
+
+if(DEVELOPMENT_CODE AND NOT ENABLE_TEST_RELEASE_MODE)
+    add_definitions(-DMOD_UNRELEASED)
+endif()
 
 if(ENABLE_GEN1INT)
     add_definitions(-DBUILD_GEN1INT)
@@ -150,11 +156,15 @@ add_custom_target(dalton_interfaces
     ${GENERATED_FILES}
 )
 
-add_library(
-    dalton
+set(DALTON_SOURCES
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
+    )
+
+add_library(
+    dalton
+    ${DALTON_SOURCES}
     ${GENERATED_FILES}
     )
 
@@ -185,5 +195,11 @@ add_custom_target(
     COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py dalton.x
     )
 
-include(ConfigPackaging)
+# copy basis/ to build directory
 execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})
+
+# this controlls "make install" target
+include(ConfigMakeInstall)
+
+# this controlls "make release" target
+include(ConfigMakeRelease)
