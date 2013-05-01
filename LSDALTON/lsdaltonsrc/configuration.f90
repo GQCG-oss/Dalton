@@ -3512,6 +3512,7 @@ end module configuration
 #ifdef VAR_LSMPI
 subroutine lsmpi_setmasterToSlaveFunc(WORD)
 use infpar_module
+use xcfun_host,only: USEXCFUN
 use lsmpi_mod
   implicit none
   character(len=80)  :: WORD
@@ -3522,6 +3523,7 @@ end subroutine lsmpi_setmasterToSlaveFunc
 subroutine lsmpi_setSlaveFunc()
 use infpar_module
 use lsmpi_mod
+use xcfun_host,only: xcfun_host_init, USEXCFUN
 use typedef
   implicit none
   character(len=80)  :: WORD
@@ -3543,6 +3545,7 @@ end subroutine lsmpi_setSlaveFunc
 subroutine lsmpi_addSlaveFunc()
 use infpar_module
 use lsmpi_mod
+use xcfun_host,only: USEXCFUN
 use typedef
   implicit none
   character(len=80)  :: WORD
