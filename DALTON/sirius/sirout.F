@@ -61,6 +61,7 @@ C
 C MOTECC-90: This module, SIROUT, is described in the input/ouput
 C            Documentation of MOTECC-90.
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -351,6 +352,8 @@ csonia 04/10/95
          WRITE(LUPRI,'(8X,A22,F20.12)') 'Polarization energy:  ', EPOQM3
          WRITE(LUPRI,'(8X,A22,F20.12)') 'van der Waals energy: ', ECLVDW
          WRITE(LUPRI,'(8X,A22,F20.12)') 'QM/MM/PCM energy:     ', ESOLT
+      else if (peqm) then
+         continue
       ELSE
         ESOLT = D0
       END IF
@@ -400,6 +403,7 @@ C        ... DIIS-DFT or QC-DFT optimization
      *                  0.0D0,0.0D0,0.0D0,LSYM,0,ISPIN,0)
          END IF
          IF (FLAG(16)) WRITE (LUPRI,5025) ESOLT
+         if (peqm) write(lupri,5026) esolt
          WRITE (LUPRI,5030) GRDNRM
       END IF
 
@@ -430,6 +434,7 @@ C        ... DIIS-DFT or QC-DFT optimization
      *       /'@    Nuclear repulsion:',T31,F20.12,
      *       /'@    Electronic energy:',T31,F20.12)
  5025 FORMAT( '@    Solvation  energy:',T31,F20.12)
+ 5026 FORMAT( '@    Embedding energy:',T31,F20.12)
  5030 FORMAT(/'@    Final gradient norm:',T31,F20.12)
 C
 C       stamp date, time, and hostname to LUPRI

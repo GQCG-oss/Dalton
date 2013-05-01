@@ -124,6 +124,7 @@ C
          DATATYPE = MPI_CHARACTER
       ELSE
          WRITE(LUPRI,*) ' TYPE :',TYPE,' does not exist!'
+         WRITE(*,*) ' TYPE :',TYPE,' does not exist!'
          CALL QUIT('ERROR in MPIXBCAST: Nonexisting DATATYPE')
       END IF
       CALL MPI_BCAST(BUFFER,COUNT,DATATYPE,ROOT,MPI_COMM_WORLD,IERR)
