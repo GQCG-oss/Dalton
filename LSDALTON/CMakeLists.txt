@@ -377,18 +377,19 @@ set(ExternalProjectCMakeArgs
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
 
+add_library(
+    xcfun_interface
+    xcfun_host/xcfun_host.F90
+    )
+target_link_libraries(
+	xcfun_interface
+        lsutillib
+	)
+
 if(ENABLE_XCFUN)
     add_external(xcfun)
-    add_subdirectory(xcfun_host)
-    add_library(
-        xcfun_interface
-        xcfun_host/xcfun_host.F90
-        )
+#    add_subdirectory(xcfun_host)
     add_dependencies(xcfun_interface xcfun)
-    target_link_libraries(
-        xcfun_interface
-        lsutillib
-        )
     add_definitions(-DVAR_XCFUN)
     set(LIBS
         ${PROJECT_BINARY_DIR}/external/lib/libxcfun_f90_bindings.a

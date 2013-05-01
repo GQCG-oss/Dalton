@@ -54,9 +54,7 @@ use cgto_diff_eri_host_interface, only: cgto_diff_eri_xfac_general
 #endif
 use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
-#ifdef VAR_XCFUN
 use xcfun_host,only: xcfun_host_init, USEXCFUN
-#endif
 contains
 
 !> \brief Call routines to set default values for different structures.
