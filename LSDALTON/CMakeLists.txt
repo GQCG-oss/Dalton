@@ -436,6 +436,7 @@ add_library(
     ${LSINT_SOURCES}
     )
 target_link_libraries(lsintlib dftfunclib)
+add_dependencies(lsintlib lsutillib)
 
 add_library(
     pbclib
