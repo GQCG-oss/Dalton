@@ -367,10 +367,10 @@
           end do
       end if
 
-!---------------------------------------------------
-! 1. Calculation of Fxo = R*<0|Fe(k)|O>Fe 
-!    Store in fxos
-!---------------------------------------------------      
+      !---------------------------------------------------
+      ! 1. Calculation of Fxo = R*<0|Fe(k)|O>Fe 
+      !    Store in fxos
+      !---------------------------------------------------      
       if (pe_polar) then
         allocate(ubodcao(n2basx), ubodvao(n2basx))
         allocate(bodtaos(nosim*nnbasx))
@@ -397,10 +397,10 @@
         deallocate(fxoaos)
       end if
 
-!---------------------------------------------------
-! 2. Calculation of Fyo = V(k) + R<0|F|0>Fe(k)          
-!    Store in fyos 
-!---------------------------------------------------
+      !---------------------------------------------------
+      ! 2. Calculation of Fyo = V(k) + R<0|F|0>Fe(k)          
+      !    Store in fyos 
+      !---------------------------------------------------
       allocate(fckmo(nnorbx))
       call pe_fckmo(cmo, fckmo, energy, dv, wrk, nwrk)
 
