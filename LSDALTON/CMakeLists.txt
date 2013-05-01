@@ -321,12 +321,14 @@ add_library(
     ${LSUTIL_MATRIXM_SOURCES}
     )
 target_link_libraries(matrixmlib lsutillib_precision)
+add_dependencies(matrixmlib lsutillib_precision)
 
 add_library(
     lsutillib_common
     ${LSUTIL_COMMON_SOURCES}
     )
 target_link_libraries(lsutillib_common matrixmlib)
+add_dependencies(lsutillib_common matrixmlib)
 
 add_library(
     matrixolib
@@ -334,27 +336,28 @@ add_library(
     ${LSUTIL_MATRIXO_C_SOURCES}
     )
 target_link_libraries(matrixolib lsutillib_common)
+add_dependencies(matrixolib lsutillib_common)
 
 add_library(
     matrixulib
     ${LSUTIL_MATRIXU_SOURCES}
     )
-
 target_link_libraries(matrixulib matrixolib)
+add_dependencies(matrixulib matrixolib)
 
 add_library(
     pdpacklib
     ${FIXED_FORTRAN_SOURCES}
     )
-
 target_link_libraries(pdpacklib matrixulib)
+add_dependencies(pdpacklib matrixulib)
 
 add_library(
     lsutiltypelib_common
     ${LSUTIL_TYPE_SOURCES}
     )
-
 target_link_libraries(lsutiltypelib_common pdpacklib)
+add_dependencies(lsutiltypelib_common pdpacklib)
 
 add_library(
     lsutillib
@@ -401,9 +404,10 @@ if(ENABLE_INTEREST)
 		interestlib
     		${INTERESTLIB_SOURCES}
 		)
-                if(ENABLE_XCFUN)
-		target_link_libraries(interestlib xcfun_interface)
-                endif()
+        if(ENABLE_XCFUN)
+	    target_link_libraries(interestlib xcfun_interface)
+	    add_dependencies(interestlib xcfun_interface)
+        endif()
 endif()
 
 add_library(
@@ -411,15 +415,17 @@ add_library(
     ${FMM_SOURCES}
     ${FMM_C_SOURCES}
     )
-        if(ENABLE_XCFUN)
-	target_link_libraries(fmmlib xcfun_interface)
-        endif()
+if(ENABLE_XCFUN)
+    target_link_libraries(fmmlib xcfun_interface)
+    add_dependencies(fmmlib xcfun_interface)
+endif()
 add_dependencies(fmmlib lsutillib_precision)
 add_dependencies(fmmlib lsutillib_common)
 add_dependencies(fmmlib lsutiltypelib_common)
 
 if(ENABLE_INTEREST)
-target_link_libraries(fmmlib interestlib)
+    target_link_libraries(fmmlib interestlib)
+    add_dependencies(fmmlib interestlib)
 endif()
 
 add_library(
@@ -428,77 +434,78 @@ add_library(
     ${DFTFUNC_F_SOURCES}
     )
 target_link_libraries(dftfunclib fmmlib)
+add_dependencies(dftfunclib fmmlib)
 
 add_library(
     lsintlib
     ${LSINT_SOURCES}
     )
 target_link_libraries(lsintlib dftfunclib)
+add_dependencies(lsintlib dftfunclib)
 add_dependencies(lsintlib lsutillib)
 add_dependencies(lsintlib xcfun_interface)
+
 add_library(
     pbclib
     ${PBC_FORTRAN_SOURCES}
     )
-
 target_link_libraries(pbclib lsintlib)
+add_dependencies(pbclib lsintlib)
 
 add_library(
     ddynamlib
     ${DDYNAM_SOURCES}
     )
-
 target_link_libraries(ddynamlib lsintlib)
+add_dependencies(ddynamlib lsintlib)
 
 add_library(
     declib
     ${DEC_SOURCES}
     ${DEC_C_SOURCES}
     )
-
 target_link_libraries(declib lsintlib)
+add_dependencies(declib lsintlib)
 
 add_library(
     solverutillib
     ${SOLVERUTIL_SOURCES}
     )
-
 target_link_libraries(solverutillib lsintlib)
+add_dependencies(solverutillib lsintlib)
 
 add_library(
     rspsolverlib
     ${RSPSOLVER_SOURCES}
     )
-
 target_link_libraries(rspsolverlib solverutillib)
+add_dependencies(rspsolverlib solverutillib)
 
 add_library(
     linearslib
     ${LINEARS_SOURCES}
     )
-
 target_link_libraries(linearslib rspsolverlib)
+add_dependencies(linearslib rspsolverlib)
 
 add_library(
     rsp_propertieslib
     ${RSP_PROPERTIES_SOURCES}
     )
-
 target_link_libraries(rsp_propertieslib lsintlib)
-
+add_dependencies(rsp_propertieslib lsintlib)
 
 add_library(
     geooptlib
     ${GEOOPT_SOURCES}
     )
-
 target_link_libraries(geooptlib lsintlib)
+add_dependencies(geooptlib lsintlib)
 
 add_library(
     lsdaltonmain 
     ${LSDALTONMAIN_FORTRAN_SOURCES}
     )
-
 target_link_libraries(lsdaltonmain pbclib)
 target_link_libraries(lsdaltonmain geooptlib)
 target_link_libraries(lsdaltonmain linearslib)
