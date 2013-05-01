@@ -4607,8 +4607,7 @@ C        - in addition, redundant copying and zeroing eliminated.
 C
 #include "implicit.h"
 #include "dummy.h"
-      PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      PARAMETER (THRDNM = 1.0D-12)
+      PARAMETER(HALF = 0.5D0)
       PARAMETER (EPSN = 1.0D-12, EPSD=1.0d-12)
       DIMENSION ZKDIA(*), WORK(LWORK)
 #include "priunit.h"
@@ -4627,20 +4626,13 @@ C     Work space allocation.
 C---------------------------
 C
       KFOCKD = 1
-      KETAIJ = KFOCKD + NORBTS
-      KETAAB = KETAIJ + NMATIJ(1)
-      KEND1  = KETAAB + NMATAB(1)
+      KEND1  = KFOCKD + NORBTS
       LWRK1  = LWORK  - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Need:', KEND1, 'Available:', LWORK
          CALL QUIT('Insufficient memory for allocation in CCSD_ZKBLO')
       ENDIF
-C
-      CALL DZERO(WORK,KEND1)
-      CALL DCOPY(NMATIJ(1),ZKDIA(1),1,WORK(KETAIJ),1)
-      CALL DCOPY(NMATAB(1),ZKDIA(NMATIJ(1)+1),1,WORK(KETAAB),1)
-      CALL DZERO(ZKDIA,NMATIJ(1)+NMATAB(1))
 C
 C-------------------------------------
 C     Read canonical orbital energies.
@@ -4684,12 +4676,6 @@ C
                ZKDIA(NIJ) = CC_PROTECTED_DIVISION(ETAIJ,DENOM,EPSN,EPSD)
                NJI = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I - 1) + J
                ZKDIA(NJI) = ZKDIA(NIJ)
-!               IF (ABS(DENOM) .GT. THRDNM) THEN
-!                  NIJ = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J - 1) + I
-!                  NJI = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I - 1) + J
-!                  ZKDIA(NIJ) = HALF*WORK(KETAIJ+NIJ-1)/DENOM
-!                  ZKDIA(NJI) = ZKDIA(NIJ)
-!               END IF
             END DO  
          END DO
       END DO  
@@ -4712,14 +4698,6 @@ C
                ZKDIA(NAB) = CC_PROTECTED_DIVISION(ETAAB,DENOM,EPSN,EPSD)
                NBA = NMATIJ(1)+IMATAB(ISYMB,ISYMA)+NVIR(ISYMB)*(A-1)+B
                ZKDIA(NBA) = ZKDIA(NAB)
-!               IF (ABS(DENOM) .GT. THRDNM) THEN
-!                  NAB = IMATAB(ISYMA,ISYMB) + NVIR(ISYMA)*(B - 1) + A
-!                  NBA = IMATAB(ISYMB,ISYMA) + NVIR(ISYMB)*(A - 1) + B
-!                  ZKDIA(NMATIJ(1) + NAB) = HALF*WORK(KETAAB+NAB-1)/
-!     *                                     DENOM
-!                  ZKDIA(NMATIJ(1) + NBA) = ZKDIA(NMATIJ(1) + NAB)
-!               END IF
-C
             END DO
          END DO
       END DO
