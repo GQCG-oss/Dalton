@@ -505,6 +505,7 @@ target_link_libraries(lsdaltonmain declib)
 target_link_libraries(lsdaltonmain ddynamlib)
 target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
+target_link_libraries(lsdaltonmain xcfun_interface)
 
 if(ENABLE_OPENRSP)
 	add_dependencies(gen1int_interface lsutillib_precision)
