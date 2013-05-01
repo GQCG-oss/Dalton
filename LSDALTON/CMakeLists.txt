@@ -107,16 +107,10 @@ endif()
 include(Archs)
 include(Sources)
 include(Compilers)
-#this does not always work. TK
-#include(ConfigExternal)
+include(ConfigExternal)
 
 #add_subdirectory(LSint)
 set(LIBS)
-if(ENABLE_XCFUN)
-	set(LIBS ${LIBS} ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a)
-#	add_subdirectory(xcfun_host)
-	add_definitions(-DVAR_XCFUN)
-endif()
 
 if(ENABLE_OPENRSP)
 	set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
@@ -371,11 +365,6 @@ target_link_libraries(lsutillib lsutiltypelib_common)
 add_dependencies(lsutillib generate_revinfo)
 add_dependencies(lsutillib generate_compinfo)
 
-add_library(
-    xcfun_interface
-    xcfun_host/xcfun_host.F90
-    )
-
 set(PARENT_DEFINITIONS "-DVAR_LSDALTON")
 
 set(ExternalProjectCMakeArgs
@@ -388,10 +377,24 @@ set(ExternalProjectCMakeArgs
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
 
-target_link_libraries(xcfun_interface lsutillib)
 if(ENABLE_XCFUN)
-	add_external(xcfun)
-	add_dependencies(xcfun_interface xcfun)
+    add_external(xcfun)
+    add_subdirectory(xcfun_host)
+    add_library(
+        xcfun_interface
+        xcfun_host/xcfun_host.F90
+        )
+    add_dependencies(xcfun_interface xcfun)
+    target_link_libraries(
+        xcfun_interface
+        lsutillib
+        )
+    add_definitions(-DVAR_XCFUN)
+    set(LIBS
+        ${PROJECT_BINARY_DIR}/external/lib/libxcfun_f90_bindings.a
+        ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a
+        ${LIBS}
+        )
 endif()
 
 if(ENABLE_INTEREST)
@@ -400,7 +403,9 @@ if(ENABLE_INTEREST)
 		interestlib
     		${INTERESTLIB_SOURCES}
 		)
+                if(ENABLE_XCFUN)
 		target_link_libraries(interestlib xcfun_interface)
+                endif()
 endif()
 
 add_library(
@@ -408,7 +413,13 @@ add_library(
     ${FMM_SOURCES}
     ${FMM_C_SOURCES}
     )
+        if(ENABLE_XCFUN)
 	target_link_libraries(fmmlib xcfun_interface)
+        endif()
+add_dependencies(fmmlib lsutillib_precision)
+add_dependencies(fmmlib lsutillib_common)
+add_dependencies(fmmlib lsutiltypelib_common)
+
 if(ENABLE_INTEREST)
 target_link_libraries(fmmlib interestlib)
 endif()
@@ -425,6 +436,7 @@ add_library(
     ${LSINT_SOURCES}
     )
 target_link_libraries(lsintlib dftfunclib)
+add_dependencies(lsintlib lsutillib)
 
 add_library(
     pbclib
@@ -576,7 +588,6 @@ MERGE_STATIC_LIBS(
     lsutiltypelib_common
     lsutillib
     fmmlib
-    xcfun_interface
     dftfunclib
     lsint
     pbclib
@@ -589,25 +600,26 @@ MERGE_STATIC_LIBS(
     geooptlib
     lsdaltonmain 
     )
-target_link_libraries(lsdalton lsdaltonmain)
+
+target_link_libraries(
+    lsdalton
+    lsdaltonmain
+    ${LIBS}
+    )
 
 target_link_libraries(
    lsdalton.x
    lsdalton
-   ${LIBS}
    ) 
 
 target_link_libraries(
    gridgen.x
    lsdalton
-   ${LIBS}
    ) 
-
 
 target_link_libraries(
    lslib_tester.x
    lsdalton
-   ${LIBS}
    ) 
 
 include(CompilationInfo)
