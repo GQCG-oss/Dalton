@@ -381,6 +381,7 @@ add_library(
     xcfun_interface
     xcfun_host/xcfun_host.F90
     )
+add_dependencies(xcfun_interface lsutillib_precision)
 
 if(ENABLE_XCFUN)
     add_external(xcfun)
