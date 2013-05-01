@@ -32,8 +32,8 @@ set(CMAKE_MODULE_PATH
 
 set(LIBS)
 
+include(ConfigVersion)
 include(Sources)
-
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
