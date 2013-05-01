@@ -10,7 +10,7 @@ module xcfun_host
        & xcfun_gga_xc_single_eval, xcfun2_gga_xc_single_eval, &
        & xcfun_lda_xc_single_eval, xcfun_gga_unres_xc_single_eval, &
        & xcfun_lda_unres_xc_single_eval, xcfun3_gga_xc_single_eval,&
-       & xcfun_meta_xc_single_eval
+       & xcfun_meta_xc_single_eval, xcfun2_lda_xc_single_eval
   private
   contains
   subroutine xcfun_host_init(DFTfuncString,hfweight,lupri)
@@ -189,6 +189,22 @@ module xcfun_host
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
   end subroutine xcfun_lda_xc_single_eval
+
+  subroutine xcfun2_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+    implicit none
+    REAL(REALK),intent(in) :: XCFUNINPUT(1,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(4,1)
+    !
+    integer :: ierrLDA
+#ifdef VAR_XCFUN
+    !rho = XCFUNINPUT(1,1) 
+    ierrLDA = xc_eval_setup(XCFUNfunctional,XC_N,XC_PARTIAL_DERIVATIVES,2)
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    ierrLDA = xc_eval_setup(XCFUNfunctional,XC_N,XC_PARTIAL_DERIVATIVES,1)
+#else
+    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
+#endif
+  end subroutine xcfun2_lda_xc_single_eval
 
   subroutine xcfun_gga_unres_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
     implicit none
