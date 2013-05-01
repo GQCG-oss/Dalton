@@ -39,6 +39,7 @@ INTEGER           :: nContOrbJK !# contracted orbitals
 INTEGER           :: nPrimOrbJK !# primitives orbitals
 INTEGER           :: nContOrbVAL !# contracted orbitals for valence basis
 INTEGER           :: nPrimOrbVAL !# primitives orbitals for valence basis
+INTEGER           :: molecularIndex !# consecutive atomic index (for full the molecule)
 END TYPE ATOMITEM
 
 TYPE MOLECULEINFO

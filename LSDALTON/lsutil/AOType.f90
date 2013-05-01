@@ -26,6 +26,7 @@ Logical                 :: spherical
 real(realk)             :: CENTER(3)
 INTEGER                 :: nPrimitives
 INTEGER                 :: atom
+INTEGER                 :: molecularIndex
 INTEGER                 :: batch
 INTEGER                 :: maxContracted
 integer                 :: maxAngmom

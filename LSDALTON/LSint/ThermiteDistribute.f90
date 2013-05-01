@@ -99,8 +99,8 @@ SUBROUTINE distributeJengine(RES,PQ,QPmat2,dimQ,dimP,Input,Lsoutput,Jcont,LUPRI,
     dopermutation = SameLHSaos .AND.((batchA.NE.batchB).OR.(atoma.NE.atomb))
     doAntipermutation = dopermutation.AND.antiAB
     IF (dograd) THEN
-      derivInfo%Atom(1)=atomA
-      derivInfo%Atom(2)=atomB
+      derivInfo%Atom(1)=P%orb1mol(iPassP)
+      derivInfo%Atom(2)=P%orb2mol(iPassP)
       AB    = Input%LST_DLHS%INDEX(atomA,atomB,1,1)
       DAB   => Input%LST_DLHS%LSAO(AB)%elms
       n1 = Input%LST_DLHS%LSAO(AB)%nLocal(1)
@@ -1088,8 +1088,8 @@ DO iPassP=1,P%nPasses
   atomB  = P%orb2atom(iPassP)
   batchB = P%orb2batch(iPassP)
   IF(nderiv.GT.1)then
-     derivInfo%Atom(1)=atomA
-     derivInfo%Atom(2)=atomB
+     derivInfo%Atom(1)=P%orb1mol(iPassP)
+     derivInfo%Atom(2)=P%orb2mol(iPassP)
   ENDIF
   IF (nucleiP) THEN
     atomA = 1
@@ -1104,8 +1104,8 @@ DO iPassP=1,P%nPasses
     atomD  = Q%orb2atom(iPassQ)
     batchD = Q%orb2batch(iPassQ)
     IF(nderiv.GT.1)then
-       derivInfo%Atom(3)=atomC
-       derivInfo%Atom(4)=atomD
+       derivInfo%Atom(3)=Q%orb1mol(iPassQ)
+       derivInfo%Atom(4)=Q%orb2mol(iPassQ)
     ENDIF
     IF (nucleiQ) THEN
       atomC = 1
@@ -1647,8 +1647,8 @@ DO iPassP=1,P%nPasses
   atomB  = P%orb2atom(iPassP)
   batchB = P%orb2batch(iPassP)
   IF(input%geoDerivOrder.GE.1)then
-    derivInfo%Atom(1)=atomA
-    derivInfo%Atom(2)=atomB
+    derivInfo%Atom(1)=P%orb1mol(iPassP)
+    derivInfo%Atom(2)=P%orb2mol(iPassP)
   ELSE
     iDer  = 1
   ENDIF
@@ -1665,8 +1665,8 @@ DO iPassP=1,P%nPasses
     atomD  = Q%orb2atom(iPassQ)
     batchD = Q%orb2batch(iPassQ)
     IF(input%geoDerivOrder.GE.1)then
-       derivInfo%Atom(3)=atomC
-       derivInfo%Atom(4)=atomD
+       derivInfo%Atom(3)=Q%orb1mol(iPassQ)
+       derivInfo%Atom(4)=Q%orb2mol(iPassQ)
     ELSE
        iDer  = 1
     ENDIF
@@ -3023,12 +3023,8 @@ DO iPassP = 1, P%nPasses
   dotriangular  = INPUT%SameLHSaos .AND. ((batchA.EQ.batchB).AND.(atoma.EQ.atomb))
     
   IF (geoderivorder.GT. 0) THEN
-    atomA  = P%orb1atom(iPassP)
-    atomB  = P%orb2atom(iPassP)
-    if (P%orbital1%TYPE_empty) atomA = 0
-    if (P%orbital2%TYPE_empty) atomB = 0
-    derivInfo%Atom(1)=atomA
-    derivInfo%Atom(2)=atomB
+    derivInfo%Atom(1)=P%orb1mol(iPassP)
+    derivInfo%Atom(2)=P%orb2mol(iPassP)
   ELSE
     iDer  = 0
     iAtom = -1

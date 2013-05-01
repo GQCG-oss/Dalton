@@ -1124,6 +1124,8 @@ PassP%orb1atom(numPass)  = P%orb1atom(1)
 PassP%orb2atom(numPass)  = P%orb2atom(1)
 PassP%orb1batch(numPass) = P%orb1batch(1)
 PassP%orb2batch(numPass) = P%orb2batch(1)
+PassP%orb1mol(numPass)   = P%orb1mol(1)
+PassP%orb2mol(numPass)   = P%orb2mol(1)
 !   startPrim  = 1+(numPass-1)*nprim
 !   endOrbital = numPass*nPrim
 PassP%distance12(1+(numpass-1)*3) = P%distance12(1)
@@ -1166,7 +1168,7 @@ END SUBROUTINE ADDOVERLAPTOPASS
 !> \param LUPRI the logical unit number for the output file
 !> \param IPRINT the printlevel, determining how much output should be generated
 SUBROUTINE modifyOverlapCenter(PassQ,nprim,overlaplist,work,numPass,maxpasses,&
-     & atom1,atom2,batch1,batch2,X1,Y1,Z1,X2,Y2,Z2,&
+     & atom1,atom2,atomIndex1,atomIndex2,batch1,batch2,X1,Y1,Z1,X2,Y2,Z2,&
      & nRHSoverlaps,natoms1,natoms2,LUPRI,IPRINT)
 Implicit none
 TYPE(Overlap),intent(inout) :: PassQ
@@ -1176,12 +1178,13 @@ integer,intent(in)          :: overlaplist(numpass),nRHSoverlaps,natoms1,natoms2
 real(realk),intent(inout)   :: work(5*nprim)
 integer,intent(in)     :: atom1(nRHSoverlaps),atom2(nRHSoverlaps)
 integer,intent(in)     :: batch1(nRHSoverlaps),batch2(nRHSoverlaps)
+integer,intent(in)     :: atomIndex1(nRHSoverlaps),atomIndex2(nRHSoverlaps)
 real(realk),intent(in) :: X1(natoms1),Y1(natoms1),Z1(natoms1)
 real(realk),intent(in) :: X2(natoms2),Y2(natoms2),Z2(natoms2)
 !
 integer :: nang,nang1,nang2,startPrim,ipass,i1,i2,ia12
 integer :: ip,irhs,work2,work3,work4,work5,nprim1,nprim2,ia1,ia2,startA2
-integer :: atomC,atomD,batchC,batchD,offset,nprimAlloc
+integer :: atomC,atomD,batchC,batchD,atomIndexC,atomIndexD,offset,nprimAlloc
 real(realk) :: e1,e2,XC,YC,ZC,XD,YD,ZD,XX,YY,ZZ,d2,tmp,tmp2,tmp1
 real(realk),parameter :: D1 = 1E0_realk 
 real(realk),pointer :: preexpfac(:),center(:)
@@ -1219,10 +1222,14 @@ DO IPass = 1,numPass
    atomD = atom2(IRHS) 
    batchC = batch1(IRHS) 
    batchD = batch2(IRHS) 
+   atomIndexC = atomIndex1(IRHS)
+   atomIndexD = atomIndex2(IRHS)
    PassQ%orb1atom(IPass)  = atomC
    PassQ%orb1batch(IPass) = batchC
    PassQ%orb2atom(IPass)  = atomD
    PassQ%orb2batch(IPass) = batchD
+   PassQ%orb1mol(iPass) = atomIndexC
+   PassQ%orb2mol(iPass) = atomIndexD
    XC = X1(atomC)
    YC = Y1(atomC)
    ZC = Z1(atomC)
@@ -1646,7 +1653,7 @@ Integer,pointer       :: maxPassesFortypes(:)
 integer :: atomA,atomB,batchA,batchB,Gindex,IP,currentODtype,ILHSCOUNT,iODtype2
 integer,pointer :: OverlapList(:,:),ILHSCOUNTINDEX(:)
 
-integer,pointer     :: atomC(:),atomD(:),batchC(:),batchD(:)
+integer,pointer     :: atomC(:),atomD(:),batchC(:),batchD(:),atomIndexC(:),atomIndexD(:)
 real(realk),pointer :: X3(:),Y3(:),Z3(:),X4(:),Y4(:),Z4(:)
 real(realk) :: TMP,factor,CS_THRESHOLD
 integer :: IRHSI(1),nLHSbatches,nA,node,numnodes
@@ -1937,7 +1944,7 @@ IF(.NOT.INPUT%noOMP) call mem_TurnONThread_Memory()
 !$OMP NOELEMENTSADDED,DMATELM1,DMATELM2,MAXDMAT,iPasstype,numpasses,PassQ,Q,&
 !$OMP mbieP,rab,SIZEOFDOINT,STATICSIZEOFDOINT,MAXpassesForTypes,dopasses,P,&
 !$OMP totmaxpasses,screen,overlaplist,REDGABLHS,REDDMATRHSAD,REDDMATRHSBD,&
-!$OMP TMP_short,atomC,atomD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,IRHSI,localKmat,&
+!$OMP TMP_short,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,IRHSI,localKmat,&
 !$OMP iODType,currentODtype,tid,nthreads,WORKLENGTH2,WORKLENGTH3,WORKEST1,IODelms,&
 !$OMP Belms,RED_GAB_TMP,node,numnodes,natoms3,natoms4) SHARED(MPIINDEX,Input,&
 !$OMP nPassTypes,nLHSODtypes,CS_THRESHOLD,nonSR_EXCHANGE,&
@@ -1979,8 +1986,8 @@ IF(INPUT%LHSSameAsRHSDmat)THEN
    INPUT%LST_DLHS => INPUT%LST_DRHS
 ENDIF
 
-call buildRHS_centerinfo(nAtoms3,nAtoms4,nRHSoverlaps,atomC,atomD,batchC,batchD,&
-     & X3,Y3,Z3,X4,Y4,Z4,INPUT,OD_RHS,IPRINT,LUPRI)
+call buildRHS_centerinfo(nAtoms3,nAtoms4,nRHSoverlaps,atomC,atomD,atomIndexC,atomIndexD,&
+     & batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,INPUT,OD_RHS,IPRINT,LUPRI)
 
 call mem_alloc(Q,nPassTypes)
 !RHS OVERLAP MEMORY CALCULATION
@@ -2219,7 +2226,7 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
          call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
          CALL modifyOverlapCenter(Q(iPassType),Q(iPassType)%nPrimitives,&
               & IRHSI,TMPWORK,&
-              & 1,1,atomC,atomD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
+              & 1,1,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
               & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
          call mem_workpointer_dealloc(TMPWORK)
          CALL ExplicitIntegrals(Integral,PQ,P,Q(ipasstype),INPUT,LSOUTPUT,&
@@ -2263,7 +2270,7 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
                     & overlaplist(1:numPasses(iPassType),iPasstype),&
                     & TMPWORK,&
                     & numPasses(iPassType),maxPassesForTypes(iPassType),&
-                    & atomC,atomD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
+                    & atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
                     & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
                call mem_workpointer_dealloc(TMPWORK)
                IRHS = overlaplist(1,iPassType)
@@ -2285,7 +2292,7 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
             call mem_workpointer_alloc(TMPWORK,5*Q(iPassType)%nPrimitives)
             CALL modifyOverlapCenter(Q(iPassType),Q(iPassType)%nPrimitives,&
                  & IRHSI,TMPWORK,&
-                 & 1,1,atomC,atomD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
+                 & 1,1,atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
                  & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
             call mem_workpointer_dealloc(TMPWORK)
             CALL ExplicitIntegrals(Integral,PQ,P,Q(Ipasstype),INPUT,LSOUTPUT,&
@@ -2307,7 +2314,7 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
                  & overlaplist(1:numPasses(iPassType),iPasstype),&
                  & TMPWORK,&
                  & numPasses(iPassType),maxPassesForTypes(iPassType),&
-                 & atomC,atomD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
+                 & atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,&
                  & nRHSoverlaps,natoms3,natoms4,LUPRI,IPRINT)
             call mem_workpointer_dealloc(TMPWORK)
             IRHS = overlaplist(1,iPassType)
@@ -2364,7 +2371,7 @@ ENDDO
 call mem_dealloc(Q)
 
 
-call freeRHS_centerinfo(atomC,atomD,batchC,batchD,&
+call freeRHS_centerinfo(atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,&
      & X3,Y3,Z3,X4,Y4,Z4,INPUT%sameRHSaos)
 !IF(nograd)then
 !!$OMP CRITICAL
@@ -2489,21 +2496,23 @@ subroutine symmetrize_SDMAT(MAT2,dim1,dim2)
   ENDDO
 end subroutine symmetrize_SDMAT
 
-subroutine buildRHS_centerinfo(nAtoms3,nAtoms4,nRHSoverlaps,&
-     & atomC,atomD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,input,OD_RHS,IPRINT,LUPRI)
+subroutine buildRHS_centerinfo(nAtoms3,nAtoms4,nRHSoverlaps,atomC,atomD,&
+    &atomIndexC,atomIndexD,batchC,batchD,X3,Y3,Z3,X4,Y4,Z4,input,OD_RHS,IPRINT,LUPRI)
 implicit none
 TYPE(INTEGRALINPUT),intent(in)  :: INPUT
 TYPE(ODITEM),intent(in)         :: OD_RHS
 integer,intent(inout) :: natoms3,natoms4
 integer :: iprint,lupri,nRHSoverlaps,IRHS
 logical :: sameRHSaos
-integer,pointer :: atomC(:),atomD(:),batchC(:),batchD(:)
+integer,pointer :: atomC(:),atomD(:),batchC(:),batchD(:),atomIndexC(:),atomIndexD(:)
 real(realk),pointer :: X3(:),Y3(:),Z3(:),X4(:),Y4(:),Z4(:)
 
 nAtoms3 = INPUT%AO(3)%p%natoms
 nAtoms4 = INPUT%AO(4)%p%natoms
 call mem_alloc(atomC,nRHSoverlaps)
 call mem_alloc(atomD,nRHSoverlaps)
+call mem_alloc(atomIndexC,nRHSoverlaps)
+call mem_alloc(atomIndexD,nRHSoverlaps)
 call mem_alloc(batchC,nRHSoverlaps)
 call mem_alloc(batchD,nRHSoverlaps)
 call mem_alloc(X3,nAtoms3)
@@ -2511,8 +2520,10 @@ call mem_alloc(Y3,nAtoms3)
 call mem_alloc(Z3,nAtoms3)
 DO IRHS=1,nRHSoverlaps
    atomC(IRHS)     = OD_RHS%BATCH(IRHS)%AO(1)%p%atom
+   atomIndexC(IRHS)= OD_RHS%BATCH(IRHS)%AO(1)%p%molecularIndex
    batchC(IRHS)    = OD_RHS%BATCH(IRHS)%AO(1)%p%batch
    atomD(IRHS)     = OD_RHS%BATCH(IRHS)%AO(2)%p%atom
+   atomIndexD(IRHS)= OD_RHS%BATCH(IRHS)%AO(1)%p%molecularIndex
    batchD(IRHS)    = OD_RHS%BATCH(IRHS)%AO(2)%p%batch
    X3(atomC(IRHS)) = OD_RHS%BATCH(IRHS)%AO(1)%p%center(1)
    Y3(atomC(IRHS)) = OD_RHS%BATCH(IRHS)%AO(1)%p%center(2)
@@ -2535,16 +2546,18 @@ ENDIF
 
 end subroutine buildRHS_centerinfo
 
-subroutine freeRHS_centerinfo(atomC,atomD,batchC,batchD,&
+subroutine freeRHS_centerinfo(atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,&
      & X3,Y3,Z3,X4,Y4,Z4,sameRHSaos)
 implicit none
 logical :: sameRHSaos
-integer,pointer :: atomC(:),atomD(:),batchC(:),batchD(:)
+integer,pointer :: atomC(:),atomD(:),batchC(:),batchD(:),atomIndexC(:),atomIndexD(:)
 real(realk),pointer :: X3(:),Y3(:),Z3(:),X4(:),Y4(:),Z4(:)
 
 call mem_dealloc(atomC)
+call mem_dealloc(atomIndexC)
 call mem_dealloc(batchC)
 call mem_dealloc(atomD)
+call mem_dealloc(atomIndexD)
 call mem_dealloc(batchD)
 call mem_dealloc(X3)
 call mem_dealloc(Y3)

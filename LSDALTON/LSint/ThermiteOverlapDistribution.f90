@@ -211,14 +211,18 @@ IF(DoAlloc)THEN
  CALL ALLOC_ORBITAL(P%orbital2,ODB%AO(2)%p%nprimitives,1,ODB%AO(2)%p%nAngmom,ODB%AO(2)%p%maxAngmom,.FALSE.,IELECTRON)
  call mem_ODpointer_alloc(P%Orb1atom,1,IELECTRON)
  call mem_ODpointer_alloc(P%Orb1batch,1,IELECTRON)
+ call mem_ODpointer_alloc(P%Orb1mol,1,IELECTRON)
  call mem_ODpointer_alloc(P%Orb2atom,1,IELECTRON)
  call mem_ODpointer_alloc(P%Orb2batch,1,IELECTRON)
+ call mem_ODpointer_alloc(P%Orb2mol,1,IELECTRON)
 ENDIF
 
 CALL SET_ORBITAL(P%orbital1,ODB%AO(1)%p,integral,input%HermiteEcoeff,LUPRI)
 CALL SET_ORBITAL(P%orbital2,ODB%AO(2)%p,integral,input%HermiteEcoeff,LUPRI)
 P%Orb1atom(1) = ODB%AO(1)%p%atom
 P%Orb2atom(1) = ODB%AO(2)%p%atom
+P%Orb1mol(1) = ODB%AO(1)%p%molecularIndex
+P%Orb2mol(1) = ODB%AO(2)%p%molecularIndex
 IF(.NOT.(Input%CS_int).OR.Input%RealGabMatrix)THEN !default
    P%Orb1batch(1) = ODB%AO(1)%p%batch
    P%Orb2batch(1) = ODB%AO(2)%p%batch
@@ -650,7 +654,7 @@ DO IRHS=1,OD%nbatches
         & OD%BATCH(IRHS)%AO(1)%p%maxAngmom,.FALSE.,nrealk,nint)
    CALL MEM_ORBITAL(np2,1,OD%BATCH(IRHS)%AO(2)%p%nAngmom,&
         & OD%BATCH(IRHS)%AO(2)%p%maxAngmom,.FALSE.,nrealk,nint)
-   nint = nint + 4
+   nint = nint + 6
    maxangmom = OD%BATCH(IRHS)%AO(1)%p%maxAngmom + OD%BATCH(IRHS)%AO(2)%p%maxAngmom + extraAngmom
    nTUV = (maxAngmom+1)*(maxAngmom+2)*(maxAngmom+3)/6
    maxAngmom = OD%BATCH(IRHS)%nAngmom
@@ -696,7 +700,7 @@ CALL MEM_ORBITAL(np1,1,OD%BATCH(IRHS)%AO(1)%p%nAngmom,&
      & OD%BATCH(IRHS)%AO(1)%p%maxAngmom,.FALSE.,nrealk,nint)
 CALL MEM_ORBITAL(np2,1,OD%BATCH(IRHS)%AO(2)%p%nAngmom,&
      & OD%BATCH(IRHS)%AO(2)%p%maxAngmom,.FALSE.,nrealk,nint)
-nint = nint + 4
+nint = nint + 6
 maxangmom = OD%BATCH(IRHS)%AO(1)%p%maxAngmom + OD%BATCH(IRHS)%AO(2)%p%maxAngmom + extraAngmom
 nTUV = (maxAngmom+1)*(maxAngmom+2)*(maxAngmom+3)/6
 nAngmom = OD%BATCH(IRHS)%nAngmom
@@ -834,8 +838,10 @@ ENDIF
 CALL ALLOC_ORBITAL(P%orbital1,maxprim,1,maxnangmom,maxA,.FALSE.,IELECTRON)
 CALL ALLOC_ORBITAL(P%orbital2,maxprim,1,maxnangmom,maxA,.FALSE.,IELECTRON)
 call mem_ODpointer_alloc(P%Orb1atom,1,ielectron)
+call mem_ODpointer_alloc(P%Orb1mol,1,ielectron)
 call mem_ODpointer_alloc(P%Orb1batch,1,ielectron)
 call mem_ODpointer_alloc(P%Orb2atom,1,ielectron)
+call mem_ODpointer_alloc(P%Orb2mol,1,ielectron)
 call mem_ODpointer_alloc(P%Orb2batch,1,ielectron)
 
 ! hermiteSingle = input%hermiteEcoeff.AND.&
@@ -915,7 +921,7 @@ ENDIF
 
 CALL MEM_ORBITAL(maxprim,1,maxnangmom,maxA,.FALSE.,nrealk,nint)
 CALL MEM_ORBITAL(maxprim,1,maxnangmom,maxA,.FALSE.,nrealk,nint)
-nint = nint + 4
+nint = nint + 6
 useFTUV = INPUT%DO_JENGINE .AND. IELECTRON.EQ. 2
 CALL MEM_OVERLAP1(maxprim,1,maxnAngmom,useFTUV,maxTUV,maxgeoorder,Input%NDMAT_RHS,nrealk,nint)
 call MAX_BUFCOUNTERS(ielectron,nint,nrealk)
@@ -3305,8 +3311,10 @@ Integer       :: nPrim,minAng,maxAng,nTUV,ndmat,iPassType,ielec
 CALL ALLOC_ORBITAL(F%orbital1,1,1,1,1,.TRUE.,ielec)
 CALL ALLOC_ORBITAL(F%orbital2,1,1,1,1,.TRUE.,ielec)
 call mem_ODpointer_alloc(F%Orb1atom,1,ielec)
+call mem_ODpointer_alloc(F%Orb1mol,1,ielec)
 call mem_ODpointer_alloc(F%Orb1batch,1,ielec)
 call mem_ODpointer_alloc(F%Orb2atom,1,ielec)
+call mem_ODpointer_alloc(F%Orb2mol,1,ielec)
 call mem_ODpointer_alloc(F%Orb2batch,1,ielec)
 CALL ALLOC_OVERLAP(F,nprim,1,1,.TRUE.,nTUV,0,ndmat,ielec)
 
@@ -3374,7 +3382,7 @@ nrealk=0
 nint=0
 CALL MEM_ORBITAL(1,1,1,1,.TRUE.,nrealk,nint)
 CALL MEM_ORBITAL(1,1,1,1,.TRUE.,nrealk,nint)
-nint = nint + 4
+nint = nint + 6
 CALL MEM_OVERLAP1(nprim,1,1,.TRUE.,nTUV,0,ndmat,nrealk,nint)
 call ADD_BUFCOUNTERS(ielec,nint,nrealk)
 END SUBROUTINE MemFTUVbatches
@@ -3801,8 +3809,10 @@ END SELECT
 CALL ALLOC_ORBITAL(PassP%Orbital1,np,maxpasses,na,ma,.FALSE.,ielectron)
 CALL ALLOC_ORBITAL(PassP%Orbital2,np,maxpasses,na,ma,.FALSE.,ielectron)
 call mem_ODpointer_alloc(PassP%Orb1atom,maxpasses,ielectron)
+call mem_ODpointer_alloc(PassP%Orb1mol,maxpasses,ielectron)
 call mem_ODpointer_alloc(PassP%Orb1batch,maxpasses,ielectron)
 call mem_ODpointer_alloc(PassP%Orb2atom,maxpasses,ielectron)
+call mem_ODpointer_alloc(PassP%Orb2mol,maxpasses,ielectron)
 call mem_ODpointer_alloc(PassP%Orb2batch,maxpasses,ielectron)
   
 IF(LHS)THEN !OVERLAP
@@ -4547,8 +4557,10 @@ na = Q%Orbital2%nAngmom
 ma = Q%Orbital2%maxAngmom
 CALL ALLOC_ORBITAL(PassQ%orbital2,np,maxpasses,na,ma,.FALSE.,3)
 call mem_ODpointer_alloc(PassQ%Orb1atom,maxpasses,3)
+call mem_ODpointer_alloc(PassQ%Orb1mol,maxpasses,3)
 call mem_ODpointer_alloc(PassQ%Orb1batch,maxpasses,3)
 call mem_ODpointer_alloc(PassQ%Orb2atom,maxpasses,3)
+call mem_ODpointer_alloc(PassQ%Orb2mol,maxpasses,3)
 call mem_ODpointer_alloc(PassQ%Orb2batch,maxpasses,3)
 np = Q%nPrimitives
 mp = np*maxpasses
@@ -4587,7 +4599,7 @@ np = Q%Orbital2%nPrimitives
 na = Q%Orbital2%nAngmom
 ma = Q%Orbital2%maxAngmom
 CALL MEM_ORBITAL(np,maxpasses,na,ma,.FALSE.,nrealk,nint)
-nint = nint + 4*maxpasses
+nint = nint + 6*maxpasses
 np = Q%nPrimitives
 mp = np*maxpasses
 na = Q%nAngmom
