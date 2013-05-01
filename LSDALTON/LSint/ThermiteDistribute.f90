@@ -99,8 +99,8 @@ SUBROUTINE distributeJengine(RES,PQ,QPmat2,dimQ,dimP,Input,Lsoutput,Jcont,LUPRI,
     dopermutation = SameLHSaos .AND.((batchA.NE.batchB).OR.(atoma.NE.atomb))
     doAntipermutation = dopermutation.AND.antiAB
     IF (dograd) THEN
-      derivInfo%Atom(1)=P%orb1mol(iPassP)
-      derivInfo%Atom(2)=P%orb2mol(iPassP)
+      derivInfo%Atom(1)=atomA
+      derivInfo%Atom(2)=atomB
       AB    = Input%LST_DLHS%INDEX(atomA,atomB,1,1)
       DAB   => Input%LST_DLHS%LSAO(AB)%elms
       n1 = Input%LST_DLHS%LSAO(AB)%nLocal(1)
