@@ -722,13 +722,13 @@ C           Calculate the two electron density d(pq,gamma;delta).
 C----------------------------------------------------------------
 C
 !            IF (RCCD.or.DRCCD) THEN
-               IF (USE_DEN2_NODDY) THEN
-                  call drpa_den2_gd_noddy(WORK(KD2IJG),WORK(KD2AIG),
-     &                                    WORK(KD2IAG),WORK(KD2ABG),
-     &                                    WORK(KLAMDP),WORK(KEND2),
-     &                                    LWRK2,IDEL,
-     &                                    SYMMETRIZE_DEN2_NODDY)
-               ELSE
+!               IF (USE_DEN2_NODDY) THEN
+!                  call drpa_den2_gd_noddy(WORK(KD2IJG),WORK(KD2AIG),
+!     &                                    WORK(KD2IAG),WORK(KD2ABG),
+!     &                                    WORK(KLAMDP),WORK(KEND2),
+!     &                                    LWRK2,IDEL,
+!     &                                    SYMMETRIZE_DEN2_NODDY)
+!               ELSE
                   CALL CC_DEN2_RCCD(WORK(KD2IJG),WORK(KD2AIG),
      &                         WORK(KD2IAG),WORK(KD2ABG),
      &                         WORK(KZ2PCK),WORK(KZ2AM),
@@ -738,7 +738,7 @@ C
      &                         WORK(KONEIA),WORK(KLAMDH),1,
      &                         WORK(KLAMDP),1,WORK(KEND2),LWRK2,IDEL,
      &                         ISYMD)
-               END IF
+!               END IF
 !            ELSE
 !               CALL QUIT('RPA_GRAD: only RCCD or DRCCD')
 !            ENDIF
