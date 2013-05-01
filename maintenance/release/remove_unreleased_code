@@ -1,0 +1,30 @@
+#!/bin/bash
+
+# radovan: wrapping script around cppp.py
+
+SCRIPT_DIR="${0%/*}"
+# if the script was started from the base directory, then the
+# expansion returns a period
+if test "$SCRIPT_DIR" == "." ; then
+    SCRIPT_DIR="$PWD"
+#   if the script was not called with an absolute path, then we need to add the
+#   current working directory to the relative path of the script
+elif test "${SCRIPT_DIR:0:1}" != "/" ; then
+    SCRIPT_DIR="$PWD/$SCRIPT_DIR"
+fi
+
+if [ "$1" = "" ]; then
+    echo "usage: remove_unreleased_code /path/to/be/filtered"
+    exit 1
+fi
+
+delete_flags=`cat $SCRIPT_DIR/delete_flags`
+
+for file in `find $1 -type f -name "*.f"`   \
+            `find $1 -type f -name "*.F"`   \
+            `find $1 -type f -name "*.f90"` \
+            `find $1 -type f -name "*.F90"` \
+            `find $1 -type f -name "*.c"`
+do
+    $SCRIPT_DIR/cppp.py $delete_flags $file
+done

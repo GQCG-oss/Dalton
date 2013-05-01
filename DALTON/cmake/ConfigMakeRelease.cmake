@@ -52,6 +52,7 @@ add_custom_target(
     COMMAND cp -r  ${CMAKE_SOURCE_DIR}/test_cc           ${EXPORT_DIR}/DALTON
     COMMAND cp -r  ${CMAKE_SOURCE_DIR}/tools             ${EXPORT_DIR}/DALTON
     COMMAND cp -r  ${CMAKE_SOURCE_DIR}/gen1int           ${EXPORT_DIR}/DALTON
+    COMMAND ${CMAKE_SOURCE_DIR}/../maintenance/release/remove_unreleased_code ${EXPORT_DIR}
     COMMAND cp -r  ${CMAKE_SOURCE_DIR}/../external       ${EXPORT_DIR}
     COMMAND rm -rf ${EXPORT_DIR}/external/gen1int/.git
     COMMAND rm -rf ${EXPORT_DIR}/external/xcfun/.git
