@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# radovan: wrapping script around cppp.py
+# radovan: script to remove sources from final tarball
 
 SCRIPT_DIR="${0%/*}"
 # if the script was started from the base directory, then the
@@ -14,7 +14,7 @@ elif test "${SCRIPT_DIR:0:1}" != "/" ; then
 fi
 
 if [ "$1" = "" ]; then
-    echo "usage: remove_unreleased_code /path/to/be/filtered"
+    echo "usage: $0 /path/to/be/filtered"
     exit 1
 fi
 
@@ -27,4 +27,8 @@ for file in `find $1 -type f -name "*.f"`   \
             `find $1 -type f -name "*.c"`
 do
     $SCRIPT_DIR/cppp.py $delete_flags $file
+done
+
+for file in `cat $SCRIPT_DIR/source_files_to_exclude`; do
+    rm -f $1/$file
 done
