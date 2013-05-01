@@ -28,6 +28,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/math
     ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
     ${CMAKE_SOURCE_DIR}/cmake/testing
+    ${CMAKE_BINARY_DIR}
     )
 
 set(LIBS)
@@ -196,4 +197,4 @@ execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})
 include(ConfigMakeInstall)
 
 # this controlls "make release" target
-# include(ConfigMakeRelease)
+include(ConfigMakeRelease)
