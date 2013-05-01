@@ -150,11 +150,15 @@ add_custom_target(dalton_interfaces
     ${GENERATED_FILES}
 )
 
-add_library(
-    dalton
+set(DALTON_SOURCES
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
+    )
+
+add_library(
+    dalton
+    ${DALTON_SOURCES}
     ${GENERATED_FILES}
     )
 
@@ -190,3 +194,6 @@ execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})
 
 # this controlls "make install" target
 include(ConfigMakeInstall)
+
+# this controlls "make release" target
+# include(ConfigMakeRelease)
