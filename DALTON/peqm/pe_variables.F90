@@ -151,7 +151,7 @@ module pe_variables
     ! core fragment nuclear coordinates
     real(dp), dimension(:,:), allocatable, save :: Rm
     ! surface point coordinates
-    real(dp), dimension(:,:), allocatable, save :: Sp
+    real(dp), dimension(:,:), allocatable, save :: Rsp
     ! site elements
     character(len=2), dimension(:), allocatable, save :: elems
     ! exclusion list

@@ -971,45 +971,45 @@ subroutine read_surface(filename)
     read(lusurf,*) nsurp
     read(lusurf,*) auoraa
 
-    allocate(Sp(3,nsurp))
+    allocate(Rsp(3,nsurp))
     allocate(Sa(nsurp))
 
     do i = 1, nsurp
-        read(lusurf,*) (Sp(j,i), j = 1, 3), Sa(i)
+        read(lusurf,*) (Rsp(j,i), j = 1, 3), Sa(i)
     end do
 
     close(lusurf)
 
     call chcase(auoraa)
     if (auoraa == 'AA') then
-        Sp = Sp * aa2au
+        Rsp = Rsp * aa2au
         Sa = Sa * aa2au2
     end if
 
     do i = 1, nsurp
        do j = 1, nsites
-          Rji = Rs(:,j) - Sp(:,i)
+          Rji = Rs(:,j) - Rsp(:,i)
           if (nrm2(Rji) < 1.2d0 ) then
               write(luout,'(a,f12.8)') 'WARNING: Cavity to close to classical&
                                        & site:', nrm2(Rji)
-              write(luout,'(a,f12.8)') 'Surface point:', Sp(:,i)
+              write(luout,'(a,f12.8)') 'Surface point:', Rsp(:,i)
               write(luout,'(a,f12.8)') 'Classical site:', Rs(:,j)
           end if
        end do
     end do
 
 !    if (pe_debug) then
-!       write(luout,*) 'Sp in read_surface, number of surface points:',nsurp
+!       write(luout,*) 'Rsp in read_surface, number of surface points:',nsurp
 !       do i=1,nsurp
-!              write (luout,*) i, Sp(:,i)
+!              write (luout,*) i, Rsp(:,i)
 !       end do
 !       write(luout,*) 'Sa in read_surface'
 !       do i=1,nsurp
 !          write (luout,*) i, Sa(i)
 !       end do
-!       write(luout,*) 'Sp in read_surface in AU'
+!       write(luout,*) 'Rsp in read_surface in AU'
 !       do i=1,nsurp
-!              write (luout,*) Sp(:,i)
+!              write (luout,*) Rsp(:,i)
 !       end do
 !       write(luout,*) 'Sa in read_surface in AU'
 !       do i=1,nsurp
@@ -1422,8 +1422,8 @@ subroutine pe_sync()
             call mpi_bcast(surploops, nprocs + 1, impi, 0, comm, ierr)
             surp_start = surploops(myid) + 1
             surp_finish = surploops(myid+1)
-            if (myid /= 0) allocate(Sp(3,nsurp))
-            call mpi_bcast(Sp, 3 * nsurp, rmpi, 0, comm, ierr)
+            if (myid /= 0) allocate(Rsp(3,nsurp))
+            call mpi_bcast(Rsp, 3 * nsurp, rmpi, 0, comm, ierr)
             if (myid /= 0) allocate(Sa(nsurp))
             call mpi_bcast(Sa, nsurp, rmpi, 0, comm, ierr)
             call mpi_bcast(eps, 1, rmpi, 0, comm, ierr)
@@ -2097,7 +2097,7 @@ subroutine pe_polarization(denmats, fckmats)
             i = 1
             allocate(Vel_ints(nnbas,1))
             do site = surp_start, surp_finish
-                call Tk_integrals('es', Vel_ints, nnbas, 1, Sp(:,site))
+                call Tk_integrals('es', Vel_ints, nnbas, 1, Rsp(:,site))
                 do k = 1, ndens
                     l = (k - 1) * nnbas + 1
                     m = k * nnbas
@@ -2131,7 +2131,7 @@ subroutine pe_polarization(denmats, fckmats)
                     write(lunoneq) fckmats(l:m)
                 end do
                 close(lunoneq)
-                call Tk_integrals('es', Vel_ints, nnbas, 1, Sp(:,site))
+                call Tk_integrals('es', Vel_ints, nnbas, 1, Rsp(:,site))
                 do k = 1, ndens
                     l = (k - 1) * nnbas + 1
                     m = k * nnbas
@@ -2813,7 +2813,7 @@ subroutine electron_potentials(Vels, denmats)
 
     i = 1
     do site = surp_start, surp_finish 
-        call Tk_integrals('es', Vel_ints, nnbas, 1, Sp(:,site))
+        call Tk_integrals('es', Vel_ints, nnbas, 1, Rsp(:,site))
         do k = 1, ndens
             l = (k - 1) * nnbas + 1
             m = k * nnbas
@@ -2942,7 +2942,7 @@ subroutine nuclear_potentials(Vnucs)
         i = 1
         do site = surp_start, surp_finish
             do j = 1, qmnucs
-                Rmsp = Sp(:,site) - Rm(:,j)
+                Rmsp = Rsp(:,site) - Rm(:,j)
                 call Tk_tensor(Tmsp, Rmsp)
                 Vnucs(i) = Vnucs(i) + Zm(1,j) * Tmsp(1)
             end do
@@ -3114,7 +3114,7 @@ subroutine multipole_potentials(Vmuls)
         k = 1
         do i = 1, nsurp
             do j = site_start, site_finish
-                Rji = Sp(:,i) - Rs(:,j)
+                Rji = Rsp(:,i) - Rs(:,j)
                 if (lmul(0)) then
                     if (abs(maxval(M0s(:,j))) >= zero) then
                         call multipole_potential(Vmuls(k), Rji, M0s(:,j))
@@ -3486,7 +3486,7 @@ subroutine response_matrix(B)
             end do  ! do j = i, nsites
             if (pe_sol) then
                 do j = 1, nsurp
-                    Rij = Sp(:,j) - Rs(:,i)
+                    Rij = Rsp(:,j) - Rs(:,i)
                     R3 = nrm2(Rij)**3
                     if (l == 3) then
                         B(m+1) = - Rij(1) / R3
@@ -3505,7 +3505,7 @@ subroutine response_matrix(B)
             B(m+1) = 1.07d0 * sqrt(fourpi / Sa(i))
             m = m + 1
             do j = i + 1, nsurp
-                Rij = Sp(:,j) - Sp(:,i)
+                Rij = Rsp(:,j) - Rsp(:,i)
                 R = nrm2(Rij)
                 if (fixpva) then
                    if ( R .le. dism0 ) then
@@ -3655,7 +3655,7 @@ subroutine response_matrix_block(B, start, finish)
             end do  ! do j = i, nsites
 !            if (pe_sol) then
 !                do j = 1, nsurp
-!                    Rij = Sp(:,j) - Rs(:,i)
+!                    Rij = Rsp(:,j) - Rs(:,i)
 !                    R3 = nrm2(Rij)**3
 !                    if (l == 3) then
 !                        B(m+1) = - Rij(1) / R3
@@ -3674,7 +3674,7 @@ subroutine response_matrix_block(B, start, finish)
 !            B(m+1) = 1.07d0 * eps_fac * sqrt((4.0d0 * pi) / Sa(i))
 !            m = m + 1
 !            do j = i + 1, nsurp
-!                Rij = Sp(:,j) - Sp(:,i)
+!                Rij = Rsp(:,j) - Rsp(:,i)
 !                R = nrm2(Rij)
 !                B(m+1) = eps_fac / R
 !                m = m + 1
@@ -5917,9 +5917,9 @@ subroutine pe_diis_solver_charges(Mkinds, Fs)
               if(Sa(i) ==  0.0d0) cycle   
               do j = i+1, nsurp
                  if(Sa(j) ==  0.0d0) cycle   
-                 X   = Sp(1,i) - Sp(1,j)
-                 Y   = Sp(2,i) - Sp(2,j)
-                 Z   = Sp(3,i) - Sp(3,j)
+                 X   = Rsp(1,i) - Rsp(1,j)
+                 Y   = Rsp(2,i) - Rsp(2,j)
+                 Z   = Rsp(3,i) - Rsp(3,j)
                  R2  = X*X+Y*Y+Z*Z
                  R   = SQRT(R2)
                  IF(R.GT.DISM0) THEN
@@ -5942,9 +5942,9 @@ subroutine pe_diis_solver_charges(Mkinds, Fs)
                    yi = Rs(2,i)
                    zi = Rs(3,i)
                    do j = 1, nsurp
-                       xj = Sp(1,j)
-                       yj = Sp(2,j)
-                       zj = Sp(3,j)
+                       xj = Rsp(1,j)
+                       yj = Rsp(2,j)
+                       zj = Rsp(3,j)
                        qj = qfix(j)*dscale
                        x = xi - xj
                        y = yi - yj
@@ -5966,9 +5966,9 @@ subroutine pe_diis_solver_charges(Mkinds, Fs)
 
 ! Potential at surface charge due to mm pol's
                do i = 1, nsurp
-                    xi = Sp(1,i)
-                    yi = Sp(2,i)
-                    zi = Sp(3,i)
+                    xi = Rsp(1,i)
+                    yi = Rsp(2,i)
+                    zi = Rsp(3,i)
                     m = 1
                     do j = 1, nsites
                         xj = Rs(1,j)
@@ -6444,14 +6444,14 @@ subroutine fixtes(all_centers, all_z)
 !     do i = 1, nffts
 !         write(surf,'(4f12.6)') XTS(I), YTS(I), ZTS(I), AFIX(I)
 !     end do
-      allocate(Sp(3,nffts))
+      allocate(Rsp(3,nffts))
       allocate(Sa(nffts))
       nsurp = nffts
       do i = 1, nffts
          Sa(i) = AFIX(i)
-         Sp(1,i) = XTS(i)
-         Sp(2,i) = YTS(i)
-         Sp(3,i) = ZTS(i)
+         Rsp(1,i) = XTS(i)
+         Rsp(2,i) = YTS(i)
+         Rsp(3,i) = ZTS(i)
       end do
  
 !     close(lu)

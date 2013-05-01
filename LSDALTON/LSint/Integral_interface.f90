@@ -4,7 +4,7 @@ MODULE IntegralInterfaceMOD
   use Matrix_module, only: MATRIX, MATRIXP
   use Integralparameters
   use LSTIMING
-  use molecule_typetype, only: MOLECULE_PT, ATOM
+  use molecule_typetype, only: MOLECULE_PT, ATOMITEM
   use molecule_type, only: build_pointmolecule, DETERMINE_MAXCOOR, &
        & free_moleculeinfo
   use integral_type, only: INTEGRALINPUT
@@ -1681,7 +1681,7 @@ IMPLICIT NONE
 TYPE(LSSETTING),intent(in) :: setting
 REAL(realk),intent(inout)    :: nucdip(3)
 INTEGER            :: i
-TYPE(ATOM),pointer :: mol(:)
+TYPE(ATOMITEM),pointer :: mol(:)
 nucdip = 0
 mol => setting%MOLECULE(1)%p%ATOM
 DO i=1,setting%MOLECULE(1)%p%Natoms

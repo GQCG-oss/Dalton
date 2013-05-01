@@ -7,6 +7,10 @@ use precision
 use LSmatrix_type
 use lsmatrix_operations_dense
 use memory_handling
+private 
+public :: SET_EMPTY_AO, FREE_EMPTY_AO, copy_aobatch, copy_aobatch2,&
+     & PRINT_AO, PRINT_AOBATCH, FREE_AOITEM, initBatchOrbitalInfo,&
+     & setBatchOrbitalInfo, freeBatchOrbitalInfo, SET_MAXJ
 Contains
 !> \brief make an empty AOITEM
 !> \author T. Kjaergaard

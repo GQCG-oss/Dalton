@@ -971,6 +971,12 @@ c         CALL ORBEX(ISYMB,ISYMB,KZYVAR,WRK(KFMMO(I)),DUMMY,
 c     &        DUMMY,DUMMY,XTMP(1,I),1.0D0,UDV,MJWOP)
       ENDIF
 C
+c     FLAG(16) MEANS SOLVENT CALCULATION
+C
+C      IF (FLAG(16) .OR. PCM .OR. QM3) THEN
+C         CALL RSPSLV(0,NNMAX,DUMMY,ZYMB,CMO,XINDX,UDV,
+C     &               XTMP,WRK(KFREE),LFREE)
+C      ENDIF
 c
       CALL QEXIT('ABS_LINE2')
       RETURN
@@ -981,7 +987,7 @@ c
 C
 C PURPOSE:
 C
-      use pe_variables, only: peqm, pe_polar
+      use pe_variables, only: peqm
 #include "implicit.h"
 #include "abslrs.h"
 #include "thrzer.h"
@@ -1079,10 +1085,10 @@ c
      &                 ISYMB,KNTOT,CMO,FC,FCAC,FV,
      &                 UDV,XINDX,MJWOP,WRK(KFREE),LFREE)
        ENDDO
+C
 C     FLAG(16) MEANS SOLVENT CALCULATION
 C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or.
-     &    (peqm .and. pe_polar)) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. peqm) THEN
          CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
      &               XTMP,WRK(KFREE),LFREE)
       ENDIF

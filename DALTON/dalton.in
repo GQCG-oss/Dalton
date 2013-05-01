@@ -34,8 +34,8 @@ POTEXT="pot"
 GET_FILES=''
 PUT_FILES=''
 
-SSH=rsh
-SCP=rcp
+SSH=ssh
+SCP=scp
 export OMP_NUM_THREADS=1
 
 #default values for options
@@ -85,10 +85,9 @@ usage (){
         echo ' -f dalmol  : extract dalmol.tar.gz archive from WRKDIR into TMPDIR before calculation starts'
         echo ' -get "file1 file2" : get files back from TMPDIR after calculation stops'
         echo ' -put "file1 file2" : put files to TMPDIR before calculation starts'
-	echo ' -nocpex    : force to not copy dalton executable from master node to slave nodes (for global work)'
+	    echo ' -nocpex    : force to not copy dalton executable from master node to slave nodes (for global work)'
         echo ' -valgrind  : run with valgrind'
-        echo ' -rsh       : use rsh/rcp instead of ssh/scp'
-        echo ' -ssh       : use ssh/scp instead of rsh/rcp'
+        echo ' -rsh       : use rsh/rcp (default: ssh/scp)'
         echo
          }
 #
@@ -130,7 +129,6 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
       -rsh ) SCP=rcp; SSH=rsh; shift;;
-      -ssh ) SCP=scp; SSH=ssh; shift;;
       -f ) optf=$2; shift;;
       -N ) optn=$2; shift;;
       -omp ) export OMP_NUM_THREADS=$2; shift;;
@@ -311,6 +309,8 @@ if [ $optn -gt 1 ] ; then
          if [ -n "$PBS_NODEFILE" -a "$opt_nocpex" != "1" ] ; then
 	     echo 'Copying dalton executable from master node: ' ${HOSTNAME}
              # $PBS_NODEFILE is defined, then do the instructions below
+			 echo 'Nodelist:'
+             cat $PBS_NODEFILE | sort | uniq
              for node in `cat $PBS_NODEFILE | sort | uniq`
              do
                 if [ ${node} == $HOSTNAME ]
@@ -404,11 +404,6 @@ if [ -s $outnam.tar.gz ] ; then
    echo "$outnam.tar.gz has been copied to $WRKDIR"
 else
     echo "$outnam.tar.gz has not been created and has thus not been copied to $WRKDIR"
-fi
-
-if [ -s MEP.OUT ] ; then
-  tar -zcf mep.tar.gz MEP.OUT
-  cp mep.tar.gz $WRKDIR
 fi
 
 # copy files listed under -get back from scratch directory

@@ -30,7 +30,8 @@ C
 #include "implicit.h"
 #include "priunit.h"
 #include "mtags.h"
-      PARAMETER (MWORK = 10 000 000) ! wow thats dangerous... who has used the PVM code the last time??? sknecht - feb 2013
+!     wow thats dangerous... who has used the PVM code the last time??? sknecht - feb 2013
+      PARAMETER (MWORK = 10 000 000)
       real(8), allocatable :: work(:)
 !     memory-id tags for field 1 and 2+LMWORK in work (allocated in main driver routines)
       DATA WRKDLM/12345678D0/

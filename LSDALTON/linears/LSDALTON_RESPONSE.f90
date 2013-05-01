@@ -24,7 +24,7 @@ use rspsolver,     only: prop_molcfg, init_prop_molcfg
 use rsp_equations, only: rsp_eq_sol_empty
 use rsp_util,      only: util_save_MOinfo,util_free_MOstuff
 use TYPEDEFTYPE,   only: LSSETTING,lsitem
-use molecule_type, only: MOLECULE_PT,MOLECULEINFO
+!use molecule_type, only: MOLECULE_PT,MOLECULEINFO
 !use matrix_defop,  only: operator(*)
 use matrix_module, only: matrix
 use memory_handling, only: mem_alloc,mem_dealloc

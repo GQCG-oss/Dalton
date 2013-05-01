@@ -881,8 +881,8 @@ use opttype
 use precision
 use memory_handling
 use typedeftype, only: lssetting, lsitem
-use molecule_type, only: moleculeinfo
-use basis_type, only: basisinfo, basissetinfo
+use molecule_typetype, only: moleculeinfo
+use basis_typetype, only: basisinfo, basissetinfo
 IMPLICIT NONE
 type(optItem)       :: opt
 INTEGER             :: I,LUPRI,LUERR,IPRINT

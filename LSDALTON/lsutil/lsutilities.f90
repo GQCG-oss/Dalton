@@ -1,4 +1,7 @@
 MODULE ls_util
+  use molecule_typetype
+  use molecule_type
+  use precision  
 Integer,save :: LSIUNIT = 6
 
 CONTAINS
@@ -17,8 +20,6 @@ IMPLICIT NONE
 END SUBROUTINE LSHEADER
 
 SUBROUTINE LS_PRINT_GRADIENT(lupri,molecule,GRDMOL,natoms,TEXT)
-  use molecule_type
-  use precision  
   implicit none
   integer :: lupri,natoms
   type(moleculeinfo) :: molecule
@@ -61,7 +62,6 @@ end SUBROUTINE LS_PRINT_GRADIENT
 !> \date 12-05-2010
 !> \param diff The 'almost' RMS norm of the difference between A and B (almost, since divided by sqrt(nrow*ncol) and not by nrow*ncol) 
 SUBROUTINE rms_Diff(A, B, nrow,ncol,diff)
-  use precision
   implicit none
   INTEGER, intent(IN)      :: nrow,ncol
   REAL(realk), intent(IN)  :: A(nrow,ncol), B(nrow,ncol)
@@ -84,9 +84,6 @@ END SUBROUTINE rms_Diff
 !> See pdpack/gp_blas3.F for further details.
 !> \author F90'ed by Kasper Kristensen
 SUBROUTINE DGEMM_TS(TRANSA,TRANSB,M,N,K,ALPHA,A,LDA,B,LDB,BETA,C,LDC)
-
-  use precision  
-
   implicit none
   !> Scaling coefficients
   real(realk),intent(in) :: ALPHA,BETA

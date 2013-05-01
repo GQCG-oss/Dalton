@@ -45,6 +45,7 @@ use ls_util
 use optimization_input 
 use files
 use molecule_type
+use molecule_typetype
 use precision
 !
 !     Initializes everything that has to do with redundant internal
@@ -97,6 +98,7 @@ use precision
 use optimization_input 
 use files
 use molecule_type
+use molecule_typetype
 use memory_handling
 !
 !     Finds natural redundant internal coordinates.
@@ -1333,6 +1335,7 @@ use optimization_input
 use files
 use Fundamental
 use molecule_type
+use molecule_typetype
 !
 !     Constructs the Wilson B matrix used for transformations between
 !     Cartesian and redundant natural internal coordinates.
@@ -1696,6 +1699,7 @@ use ls_util
 use files
 use optimization_input 
 use molecule_type
+use molecule_typetype
 !
 !     Constructs the derivative of the Wilson B matrix used for transformations
 !     between Cartesian and redundant natural internal coordinates.
@@ -2014,6 +2018,7 @@ use optimization_input
 use files
 use memory_handling
 use molecule_type
+use molecule_typetype
 use precision
 !
 !     Ths subroutine determines the coordinate system in work, and
@@ -2052,6 +2057,7 @@ use ls_util
 use files
 use optimization_input 
 use molecule_type
+use molecule_typetype
 !
 !     Ths subroutine acts as a buffer for the subroutine GTDWLM when
 !     delocalized internal coordinates are used.
@@ -2111,6 +2117,7 @@ use ls_util
 use files
 use optimization_input 
 use molecule_type
+use molecule_typetype
 !
 !     Returns the derivative of the Wilson B matrix for _one_
 !     redundant internal coordinate (IC).
@@ -2990,6 +2997,7 @@ use precision
 use optimization_input 
 use files
 use molecule_type
+use molecule_typetype
 !
 !     Transforms the Hessian in redundant internal coordinates to
 !     Cartesian coordinates:
@@ -3048,6 +3056,7 @@ use ls_util
 use optimization_input 
 use files
 use molecule_type
+use molecule_typetype
 !
 !     Transforms the Hessian in Cartesian coordinates to redundant
 !     internal coordinates:
@@ -3116,6 +3125,7 @@ use files
 use optimization_input 
 use precision
 use molecule_type
+use molecule_typetype
 !
 !     Transforms Cartesian gradient and Hessian to redundant internal
 !     coordinates.
@@ -3507,6 +3517,7 @@ use optimization_input
 use files
 use Fundamental
 use molecule_type
+use molecule_typetype
 use memory_handling
 use precision
 !
@@ -4045,6 +4056,7 @@ use optimization_input
 use files
 use Fundamental
 use molecule_type
+use molecule_typetype
 !
 !     Transforms internal step to Cartesian step iteratively.
 !     The logical parameter CORREC indicates if the internal step
@@ -4751,6 +4763,7 @@ use ls_util
 use optimization_input 
 use files
 use molecule_type
+use molecule_typetype
 !
 !     Builds a simple model Hessian in redundant internal coordinates.
 !     As described by Roland Lindh.

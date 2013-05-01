@@ -536,8 +536,8 @@ C
          END IF
 
          if (peqm) then
-            write(lupri,'(a)')
-     &                      'PE-QM response calculation'
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
          end if
 
          IF (QRSHG) THEN
@@ -1008,8 +1008,8 @@ C
          END IF
 
          if (peqm) then
-            write(lupri,'(a)')
-     &                      'PE-QM response calculation'
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
          end if
 
          IF (MCDCAL) THEN
