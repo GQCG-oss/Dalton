@@ -3321,6 +3321,9 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          call lsquit('.CSR requires MKL library and -DVAR_MKL precompiler flag',config%lupri)
 #endif
       endif
+      if(config%integral%densfit)then
+         call lsquit('currently .CSR do not work in combination with .DENSFIT',-1)
+      endif
    endif
 
    if (matrix_type == mtype_csr) then
@@ -3345,10 +3348,23 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
          WRITE(lupri,'(4X,A)')'with SCALAPACK for memory distribution and parallelization.'
          CALL mat_select_type(mtype_scalapack,lupri,nbast)
+
+#ifdef VAR_INT64
+#ifdef VAR_LSMPI_32
+         print*,'you cannot compile using a 64 bit integers, when linking to a 32 bit integer library and'
+         print*,'use the 64 bit integer BLACS/SCALAPACK provided by MKL/intel'
+         write(config%lupri,*)'you cannot compile using a 64 bit integers, when linking to a 32 bit integer library and'
+         write(config%lupri,*)'use the 64 bit integer BLACS/SCALAPACK provided by MKL/intel'
+         call lsquit('you cannot compile with VAR_INT64 and SCALAPACK and VAR_LSMPI32',-1)
+#endif 
+#endif
+
 #else
+         !VAR_SCALAPACK but no VAR_LSMPI
          CALL LSQUIT('SCALAPACK requires MPI - recompile using MPI and the -DVAR_LSMPI flag',config%lupri)
 #endif
 #else
+         !no VAR_SCALAPACK
 #ifdef VAR_LSMPI
          WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors.'
          call lsquit('.SCALAPACK requires -DVAR_SCALAPACK precompiler flag',config%lupri)

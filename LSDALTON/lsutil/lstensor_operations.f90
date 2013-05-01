@@ -2188,6 +2188,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
     integer(kind=ls_mpik) :: comm,mynum,numnodes
     TYPE(MATRIX),optional,target  :: MAT
     !
+    integer(kind=ls_mpik) :: sender,reciever
     TYPE(MATRIX),pointer  :: MAT2
     INTEGER    :: I,Ibat,Jbat,Kbat,Lbat,Iangmom,Jangmom,Kangmom,Langmom,nOrbA
     INTEGER    :: sA,nOrbB,sB,nOrbC,sC,J,DIMI,DIMJ,SUM1,SUM2
@@ -2368,13 +2369,17 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
           DO Iproc2=0,numnodes-1
              IF(Iproc2.EQ.mynum)CYCLE
              IF(CommunicationNodesGlobalRecv(Iproc2))THEN
-                call ls_mpisendrecv(ARecvbuffer(Iproc2)%elms,nsizeRecv(Iproc2),comm,Iproc2,mynum) !sender=Iproc2 reciever=mynum
+!                call ls_mpisendrecv(ARecvbuffer(Iproc2)%elms,nsizeRecv(Iproc2),comm,Iproc2,mynum) !sender=Iproc2 reciever=mynum
+                sender = Iproc2
+                call ls_mpisendrecv(ARecvbuffer(Iproc2)%elms,nsizeRecv(Iproc2),comm,sender,mynum) !sender=Iproc2 reciever=mynum
              ENDIF
           ENDDO
        else
           !send to Iproc
           IF(CommunicationNodesGlobalSend(Iproc))THEN
-             call ls_mpisendrecv(ASendbuffer(Iproc)%elms,nsizeSend(Iproc),comm,mynum,Iproc) !sender=mynum reciever=Iproc
+!             call ls_mpisendrecv(ASendbuffer(Iproc)%elms,nsizeSend(Iproc),comm,mynum,Iproc) !sender=mynum reciever=Iproc
+             reciever = Iproc
+             call ls_mpisendrecv(ASendbuffer(Iproc)%elms,nsizeSend(Iproc),comm,mynum,reciever) !sender=mynum reciever=Iproc
           ENDIF
        endif
     ENDDO
@@ -2499,6 +2504,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
     integer(kind=ls_mpik) :: comm,mynum,numnodes
     TYPE(MATRIX),optional,target  :: MAT
     !
+    integer(kind=ls_mpik) :: sender,reciever
     TYPE(MATRIX),pointer  :: MAT2
     INTEGER    :: I,Ibat,Jbat,Kbat,Lbat,Iangmom,Jangmom,Kangmom,Langmom,nOrbA
     INTEGER    :: sA,nOrbB,sB,nOrbC,sC,J,DIMI,DIMJ,SUM1,SUM2
@@ -2738,7 +2744,10 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
              IF(Iproc2.EQ.mynum)CYCLE
              IF(CommunicationNodesGlobalRecv(Iproc2))THEN
 !                print*,'Iproc',Iproc,'recieves from',Iproc2
-                call ls_mpisendrecv(ARecvbuffer(Iproc2)%elms,nsizeRecv(Iproc2),comm,Iproc2,mynum) !sender=Iproc2 reciever=mynum
+!                call ls_mpisendrecv(ARecvbuffer(Iproc2)%elms,nsizeRecv(Iproc2),comm,Iproc2,mynum) !sender=Iproc2 reciever=mynum
+                Sender = Iproc2
+                call ls_mpisendrecv(ARecvbuffer(Iproc2)%elms,nsizeRecv(Iproc2),comm,sender,mynum) !sender=Iproc2 reciever=mynum
+
 !                print*,'ARecvbuffer(Iproc2)%elms',ARecvbuffer(Iproc2)%elms
              ENDIF
           ENDDO
@@ -2746,7 +2755,9 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
           !send to Iproc
           IF(CommunicationNodesGlobalSend(Iproc))THEN
 !             print*,'Iproc',mynum,'sends to',Iproc
-             call ls_mpisendrecv(ASendbuffer(Iproc)%elms,nsizeSend(Iproc),comm,mynum,Iproc) !sender=mynum reciever=Iproc
+!             call ls_mpisendrecv(ASendbuffer(Iproc)%elms,nsizeSend(Iproc),comm,mynum,Iproc) !sender=mynum reciever=Iproc
+             reciever = Iproc
+             call ls_mpisendrecv(ASendbuffer(Iproc)%elms,nsizeSend(Iproc),comm,mynum,Reciever) !sender=mynum reciever=Iproc
 !             print*,'ASendbuffer(Iproc)%elms',ASendbuffer(Iproc)%elms
           ENDIF
        endif
@@ -7173,230 +7184,230 @@ SUBROUTINE build_SingleSingleBatchGab(AOfull,AO1,AO2,ibatch,jbatch,dim1,dim2,TEN
   TENSOR_RHS%maxprimgabelm = TENSOR_RHS%maxprimgab(1,1) 
 end SUBROUTINE build_SingleSingleBatchGab
 
-Subroutine cleanup_gabmatrix(GAB,CS_THRLOG,CS_SCREEN,PS_SCREEN,lupri)
-  implicit none
-  TYPE(LSTENSOR),intent(inout) :: GAB
-  integer :: lupri
-  integer(kind=short) :: CS_THRLOG
-  logical  :: cs_screen,ps_screen
-  !
-  TYPE(LSTENSOR) :: TENSOR
-  integer,pointer :: nbat1(:),nbat2(:)
-  integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
-  logical, pointer :: nonscreenAB(:,:)
-  integer :: IATOM,JATOM,I,Ibatch,Jbatch,Ibat,Jbat,nbatJ,n1,n2,J,lstmem_index
-  integer :: nbatI,JbatchG,AOTbatch2,AOTbatch1,GABI2,maxbat,dim,I2
-  logical :: screen
-  TYPE(SLSAOTENSOR),pointer    :: slsao
-  call lstensor_nullify(TENSOR)
-!  print*,'GAB ',GAB%natom(1),GAB%natom(2),'nSLSAO',GAB%nSLSAO
-!  call lstensor_print(GAB,6)
-  IF(ps_screen.AND.cs_screen)THEN
-     call mem_alloc(nonscreenAB,GAB%natom(1),GAB%natom(2))
-     I = 0
-     DO JATOM = 1,GAB%nAtom(2)
-        nbatJ = GAB%nAObatch(JATOM,2)
-        DO IATOM = 1,GAB%nAtom(1)
-           screen = .TRUE. ! assume that we can screen away this contrib
-           I2 = GAB%INDEX(IATOM,JATOM,1,1)
-           IF(I2.NE.0)THEN
-              nbatI = GAB%nAObatch(IATOM,1)
-
-              Ibatch = GAB%SLSAO(I2)%AObatch(1)
-              Jbatch = GAB%SLSAO(I2)%AObatch(2)
-              screen = .TRUE.
-              loopJ: DO Jbat = 1,nbatJ
-                 JbatchG = Jbatch+Jbat
-                 DO Ibat = 1,nbatI
-                    IF(GAB%maxgab(Ibatch+Ibat,JbatchG).GE. CS_THRLOG)THEN
-                       screen = .FALSE.
-                       EXIT LoopJ
-                    ENDIF
-                 ENDDO
-              ENDDO loopJ
-              nonscreenAB(IATOM,JATOM) = .NOT. SCREEN
-              IF(nonscreenAB(IATOM,JATOM)) I = I + 1
-           ELSE
-              nonscreenAB(IATOM,JATOM) = .FALSE.
-           ENDIF
-        ENDDO
-     ENDDO
-
-
-     IF(I.NE.GAB%nSLSAO)THEN
-        TENSOR%nSLSAO = I
-        NULLIFY(TENSOR%SLSAO)
-        CALL MEM_ALLOC(TENSOR%SLSAO,I)
-        NULLIFY(TENSOR%INDEX)
-        CALL MEM_ALLOC(TENSOR%INDEX,GAB%nAtom(1),GAB%nAtom(2),1,1)
-        DO Jatom = 1,GAB%nAtom(2)
-           DO Iatom = 1,GAB%nAtom(1)
-              TENSOR%INDEX(Iatom,Jatom,1,1) = 0 !if 0 lsaotensor not call mem_allocd
-           ENDDO
-        ENDDO
-
-        NULLIFY(TENSOR%nAOBATCH)
-        CALL MEM_ALLOC(TENSOR%nAOBATCH,size(GAB%nAOBATCH,1),size(GAB%nAOBATCH,2))
-        TENSOR%nAOBATCH = GAB%nAOBATCH
-        !memory estimate
-        AllocInt = 0
-        AllocIntS = 0
-        AllocRealk = 0
-        DO JATOM = 1,GAB%nAtom(2)
-           nBatJ = GAB%nAOBATCH(Jatom,2)
-           DO IATOM = 1,GAB%nAtom(1)
-              IF(nonscreenAB(Iatom,Jatom))THEN
-                 GABI2 = GAB%INDEX(IATOM,JATOM,1,1)
-                 nBatI = GAB%nAOBATCH(Iatom,1)
-                 maxBat = MAX(nbatI,nbatJ)
-                 AllocInt = AllocInt + 4*maxBat
-                 DIM = GAB%SLSAO(GABI2)%nelms
-                 IF(associated(GAB%SLSAO(GABI2)%selms))THEN
-                    AllocIntS = AllocIntS + DIM
-                 ENDIF
-              ENDIF
-           ENDDO
-        ENDDO
-        call init_lstensorMem(AllocInt,AllocRealk,AllocInts,lstmem_index)
-        call zero_lstensorMem
-        TENSOR%lstmem_index = lstmem_index
-
-        I = 0
-        DO JATOM = 1,GAB%nAtom(2)
-           nBatJ = TENSOR%nAOBATCH(Jatom,2)
-           DO IATOM = 1,GAB%nAtom(1)
-              IF(nonscreenAB(Iatom,Jatom))THEN
-                 I=I+1
-                 TENSOR%INDEX(IATOM,JATOM,1,1) = I
-                 GABI2 = GAB%INDEX(IATOM,JATOM,1,1)
-                 slsao => TENSOR%SLSAO(I)
-                 slsao%ATOM(1) = Iatom
-                 slsao%ATOM(2) = Jatom
-                 nBatI = TENSOR%nAOBATCH(Iatom,1)
-                 slsao%AOBATCH = GAB%SLSAO(GABI2)%AOBATCH
-                 maxBat = MAX(nbatI,nbatJ)
-                 slsao%maxBat = maxBat
-                 NULLIFY(slsao%nOrb)
-                 NULLIFY(slsao%startLocalOrb)
-                 CALL MEM_LSTPOINTER_ALLOC(slsao%nOrb,maxBat*2)
-                 CALL MEM_LSTPOINTER_ALLOC(slsao%startLocalOrb,maxBat*2)
-                 slsao%nOrb = GAB%SLSAO(GABI2)%nOrb
-                 slsao%startLocalOrb = GAB%SLSAO(GABI2)%startLocalOrb
-                 slsao%nLocal = GAB%SLSAO(GABI2)%nLocal
-                 DIM = GAB%SLSAO(GABI2)%nelms
-                 slsao%nelms = DIM
-                 NULLIFY(slsao%selms)
-                 IF(associated(GAB%SLSAO(GABI2)%selms))THEN
-                    CALL MEM_LSTPOINTER_ALLOC(slsao%selms,DIM)
-                    DO J=1,DIM
-                       slsao%selms(J) = GAB%SLSAO(GABI2)%selms(J)
-                    ENDDO
-                 ENDIF
-              ENDIF
-           ENDDO
-        ENDDO
-        IF(I.NE.TENSOR%nSLSAO)call lsquit('cleanup_gabmatrix',-1)
-        NULLIFY(TENSOR%LSAO)
-        DO I=1,4
-           TENSOR%nAtom(I) = GAB%nAtom(I)
-        ENDDO
-        DO I=1,4
-           TENSOR%nbast(I) = GAB%nbast(I)
-        ENDDO
-        TENSOR%ndim5= GAB%ndim5
-        DO I=1,4
-           TENSOR%nbatches(I) = GAB%nbatches(I)
-        ENDDO
-        TENSOR%nLSAO= GAB%nLSAO
-        TENSOR%magGradienttensor= GAB%magGradienttensor
-        TENSOR%Gradienttensor= GAB%Gradienttensor
-        TENSOR%pChargetensor= GAB%pChargetensor
-        TENSOR%Econtrib= GAB%Econtrib
-        TENSOR%Screentensor= GAB%Screentensor
-        IF(ASSOCIATED(GAB%maxgab))THEN
-           n1 = size(GAB%maxgab,1)
-           n2 = size(GAB%maxgab,2)
-           call mem_alloc(TENSOR%maxgab,n1,n2)
-           DO J=1,n2
-              DO I=1,n1
-                 TENSOR%maxgab(I,J) = GAB%maxgab(I,J)
-              ENDDO
-           ENDDO
-        ELSE
-           NULLIFY(TENSOR%maxgab)
-        ENDIF
-        IF(ASSOCIATED(GAB%maxprimgab))THEN
-           n1 = size(GAB%maxprimgab,1)
-           n2 = size(GAB%maxprimgab,2)
-           call mem_alloc(TENSOR%maxprimgab,n1,n2)
-           DO J=1,n2
-              DO I=1,n1
-                 TENSOR%maxprimgab(I,J) = GAB%maxprimgab(I,J)
-              ENDDO
-           ENDDO
-        ELSE
-           NULLIFY(TENSOR%maxprimgab)
-        ENDIF
-        TENSOR%maxgabelm = GAB%maxgabelm
-        TENSOR%maxprimgabelm = GAB%maxprimgabelm
-        call lstensor_free(GAB)
-        call LSTENSOR_copy(TENSOR,GAB,lupri)
-        call LSTENSOR_mem_est(TENSOR,nmemsize)
-        call add_mem_to_global(nmemsize)
-        call lstensor_free(TENSOR)
-     ENDIF
-     call mem_dealloc(nonscreenAB)
-  ENDIF
-!  print*,'THE CLEANUP'
-!  call lstensor_print(GAB,6)
-
-End Subroutine Cleanup_gabmatrix
-
-Subroutine verify_gabmatrix(GAB,CS_THRLOG,lupri)
-  implicit none
-  TYPE(LSTENSOR),intent(inout) :: GAB
-  integer(kind=short) :: CS_THRLOG
-  integer :: lupri
-  !
-  TYPE(LSTENSOR) :: TENSOR
-  integer,pointer :: nbat1(:),nbat2(:)
-  integer(kind=long) :: nmemsize
-  integer :: IATOM,JATOM,I,Ibatch,Jbatch,Ibat,Jbat,nbatJ,n1,n2,J,Ibatch2
-  integer :: nbatI,JbatchG,AOTbatch2,AOTbatch1,GABI2,maxbat,dim,I2,Jbatch2
-  logical :: screen
-  TYPE(SLSAOTENSOR),pointer    :: slsao
-!  print*,'GAB ',GAB%natom(1),GAB%natom(2),'nSLSAO',GAB%nSLSAO
-!  call lstensor_print(GAB,6)
-  Jbatch = 0
-  DO JATOM = 1,GAB%nAtom(2)
-     nbatJ = GAB%nAObatch(JATOM,2)
-     Ibatch = 0
-     DO IATOM = 1,GAB%nAtom(1)
-        nbatI = GAB%nAObatch(IATOM,1)
-        I2 = GAB%INDEX(IATOM,JATOM,1,1)
-        IF(I2.EQ.0)THEN
-!           WRITE(lupri,*)'THIS BLOCK SHOULD BE ZERO  I=',I2,'IATOM,JATOM',IATOM
-           DO Jbat = 1,nbatJ
-              JbatchG = Jbatch+Jbat
-              DO Ibat = 1,nbatI
-                 IF(GAB%maxgab(Ibatch+Ibat,JbatchG).GE.CS_THRLOG)&
-                      &call lsquit('ERROR in verification',-1)
-              ENDDO
-           ENDDO
-           DO Jbat = 1,nbatJ
-              JbatchG = Jbatch+Jbat
-              DO Ibat = 1,nbatI
-                 IF(GAB%maxprimgab(Ibatch+Ibat,JbatchG).GE.CS_THRLOG)&
-                      &call lsquit('ERROR in verification',-1)
-              ENDDO
-           ENDDO
-        ENDIF
-        Ibatch = Ibatch + nbatI 
-     ENDDO
-     Jbatch = Jbatch + nbatJ 
-  ENDDO
-End Subroutine Verify_gabmatrix
-
+!!$Subroutine cleanup_gabmatrix(GAB,CS_THRLOG,CS_SCREEN,PS_SCREEN,lupri)
+!!$  implicit none
+!!$  TYPE(LSTENSOR),intent(inout) :: GAB
+!!$  integer :: lupri
+!!$  integer(kind=short) :: CS_THRLOG
+!!$  logical  :: cs_screen,ps_screen
+!!$  !
+!!$  TYPE(LSTENSOR) :: TENSOR
+!!$  integer,pointer :: nbat1(:),nbat2(:)
+!!$  integer(kind=long) :: nmemsize,AllocInt,AllocRealk,AllocIntS
+!!$  logical, pointer :: nonscreenAB(:,:)
+!!$  integer :: IATOM,JATOM,I,Ibatch,Jbatch,Ibat,Jbat,nbatJ,n1,n2,J,lstmem_index
+!!$  integer :: nbatI,JbatchG,AOTbatch2,AOTbatch1,GABI2,maxbat,dim,I2
+!!$  logical :: screen
+!!$  TYPE(SLSAOTENSOR),pointer    :: slsao
+!!$  call lstensor_nullify(TENSOR)
+!!$!  print*,'GAB ',GAB%natom(1),GAB%natom(2),'nSLSAO',GAB%nSLSAO
+!!$!  call lstensor_print(GAB,6)
+!!$  IF(ps_screen.AND.cs_screen)THEN
+!!$     call mem_alloc(nonscreenAB,GAB%natom(1),GAB%natom(2))
+!!$     I = 0
+!!$     DO JATOM = 1,GAB%nAtom(2)
+!!$        nbatJ = GAB%nAObatch(JATOM,2)
+!!$        DO IATOM = 1,GAB%nAtom(1)
+!!$           screen = .TRUE. ! assume that we can screen away this contrib
+!!$           I2 = GAB%INDEX(IATOM,JATOM,1,1)
+!!$           IF(I2.NE.0)THEN
+!!$              nbatI = GAB%nAObatch(IATOM,1)
+!!$
+!!$              Ibatch = GAB%SLSAO(I2)%AObatch(1)
+!!$              Jbatch = GAB%SLSAO(I2)%AObatch(2)
+!!$              screen = .TRUE.
+!!$              loopJ: DO Jbat = 1,nbatJ
+!!$                 JbatchG = Jbatch+Jbat
+!!$                 DO Ibat = 1,nbatI
+!!$                    IF(GAB%maxgab(Ibatch+Ibat,JbatchG).GE. CS_THRLOG)THEN
+!!$                       screen = .FALSE.
+!!$                       EXIT LoopJ
+!!$                    ENDIF
+!!$                 ENDDO
+!!$              ENDDO loopJ
+!!$              nonscreenAB(IATOM,JATOM) = .NOT. SCREEN
+!!$              IF(nonscreenAB(IATOM,JATOM)) I = I + 1
+!!$           ELSE
+!!$              nonscreenAB(IATOM,JATOM) = .FALSE.
+!!$           ENDIF
+!!$        ENDDO
+!!$     ENDDO
+!!$
+!!$
+!!$     IF(I.NE.GAB%nSLSAO)THEN
+!!$        TENSOR%nSLSAO = I
+!!$        NULLIFY(TENSOR%SLSAO)
+!!$        CALL MEM_ALLOC(TENSOR%SLSAO,I)
+!!$        NULLIFY(TENSOR%INDEX)
+!!$        CALL MEM_ALLOC(TENSOR%INDEX,GAB%nAtom(1),GAB%nAtom(2),1,1)
+!!$        DO Jatom = 1,GAB%nAtom(2)
+!!$           DO Iatom = 1,GAB%nAtom(1)
+!!$              TENSOR%INDEX(Iatom,Jatom,1,1) = 0 !if 0 lsaotensor not call mem_allocd
+!!$           ENDDO
+!!$        ENDDO
+!!$
+!!$        NULLIFY(TENSOR%nAOBATCH)
+!!$        CALL MEM_ALLOC(TENSOR%nAOBATCH,size(GAB%nAOBATCH,1),size(GAB%nAOBATCH,2))
+!!$        TENSOR%nAOBATCH = GAB%nAOBATCH
+!!$        !memory estimate
+!!$        AllocInt = 0
+!!$        AllocIntS = 0
+!!$        AllocRealk = 0
+!!$        DO JATOM = 1,GAB%nAtom(2)
+!!$           nBatJ = GAB%nAOBATCH(Jatom,2)
+!!$           DO IATOM = 1,GAB%nAtom(1)
+!!$              IF(nonscreenAB(Iatom,Jatom))THEN
+!!$                 GABI2 = GAB%INDEX(IATOM,JATOM,1,1)
+!!$                 nBatI = GAB%nAOBATCH(Iatom,1)
+!!$                 maxBat = MAX(nbatI,nbatJ)
+!!$                 AllocInt = AllocInt + 4*maxBat
+!!$                 DIM = GAB%SLSAO(GABI2)%nelms
+!!$                 IF(associated(GAB%SLSAO(GABI2)%selms))THEN
+!!$                    AllocIntS = AllocIntS + DIM
+!!$                 ENDIF
+!!$              ENDIF
+!!$           ENDDO
+!!$        ENDDO
+!!$        call init_lstensorMem(AllocInt,AllocRealk,AllocInts,lstmem_index)
+!!$        call zero_lstensorMem
+!!$        TENSOR%lstmem_index = lstmem_index
+!!$
+!!$        I = 0
+!!$        DO JATOM = 1,GAB%nAtom(2)
+!!$           nBatJ = TENSOR%nAOBATCH(Jatom,2)
+!!$           DO IATOM = 1,GAB%nAtom(1)
+!!$              IF(nonscreenAB(Iatom,Jatom))THEN
+!!$                 I=I+1
+!!$                 TENSOR%INDEX(IATOM,JATOM,1,1) = I
+!!$                 GABI2 = GAB%INDEX(IATOM,JATOM,1,1)
+!!$                 slsao => TENSOR%SLSAO(I)
+!!$                 slsao%ATOM(1) = Iatom
+!!$                 slsao%ATOM(2) = Jatom
+!!$                 nBatI = TENSOR%nAOBATCH(Iatom,1)
+!!$                 slsao%AOBATCH = GAB%SLSAO(GABI2)%AOBATCH
+!!$                 maxBat = MAX(nbatI,nbatJ)
+!!$                 slsao%maxBat = maxBat
+!!$                 NULLIFY(slsao%nOrb)
+!!$                 NULLIFY(slsao%startLocalOrb)
+!!$                 CALL MEM_LSTPOINTER_ALLOC(slsao%nOrb,maxBat*2)
+!!$                 CALL MEM_LSTPOINTER_ALLOC(slsao%startLocalOrb,maxBat*2)
+!!$                 slsao%nOrb = GAB%SLSAO(GABI2)%nOrb
+!!$                 slsao%startLocalOrb = GAB%SLSAO(GABI2)%startLocalOrb
+!!$                 slsao%nLocal = GAB%SLSAO(GABI2)%nLocal
+!!$                 DIM = GAB%SLSAO(GABI2)%nelms
+!!$                 slsao%nelms = DIM
+!!$                 NULLIFY(slsao%selms)
+!!$                 IF(associated(GAB%SLSAO(GABI2)%selms))THEN
+!!$                    CALL MEM_LSTPOINTER_ALLOC(slsao%selms,DIM)
+!!$                    DO J=1,DIM
+!!$                       slsao%selms(J) = GAB%SLSAO(GABI2)%selms(J)
+!!$                    ENDDO
+!!$                 ENDIF
+!!$              ENDIF
+!!$           ENDDO
+!!$        ENDDO
+!!$        IF(I.NE.TENSOR%nSLSAO)call lsquit('cleanup_gabmatrix',-1)
+!!$        NULLIFY(TENSOR%LSAO)
+!!$        DO I=1,4
+!!$           TENSOR%nAtom(I) = GAB%nAtom(I)
+!!$        ENDDO
+!!$        DO I=1,4
+!!$           TENSOR%nbast(I) = GAB%nbast(I)
+!!$        ENDDO
+!!$        TENSOR%ndim5= GAB%ndim5
+!!$        DO I=1,4
+!!$           TENSOR%nbatches(I) = GAB%nbatches(I)
+!!$        ENDDO
+!!$        TENSOR%nLSAO= GAB%nLSAO
+!!$        TENSOR%magGradienttensor= GAB%magGradienttensor
+!!$        TENSOR%Gradienttensor= GAB%Gradienttensor
+!!$        TENSOR%pChargetensor= GAB%pChargetensor
+!!$        TENSOR%Econtrib= GAB%Econtrib
+!!$        TENSOR%Screentensor= GAB%Screentensor
+!!$        IF(ASSOCIATED(GAB%maxgab))THEN
+!!$           n1 = size(GAB%maxgab,1)
+!!$           n2 = size(GAB%maxgab,2)
+!!$           call mem_alloc(TENSOR%maxgab,n1,n2)
+!!$           DO J=1,n2
+!!$              DO I=1,n1
+!!$                 TENSOR%maxgab(I,J) = GAB%maxgab(I,J)
+!!$              ENDDO
+!!$           ENDDO
+!!$        ELSE
+!!$           NULLIFY(TENSOR%maxgab)
+!!$        ENDIF
+!!$        IF(ASSOCIATED(GAB%maxprimgab))THEN
+!!$           n1 = size(GAB%maxprimgab,1)
+!!$           n2 = size(GAB%maxprimgab,2)
+!!$           call mem_alloc(TENSOR%maxprimgab,n1,n2)
+!!$           DO J=1,n2
+!!$              DO I=1,n1
+!!$                 TENSOR%maxprimgab(I,J) = GAB%maxprimgab(I,J)
+!!$              ENDDO
+!!$           ENDDO
+!!$        ELSE
+!!$           NULLIFY(TENSOR%maxprimgab)
+!!$        ENDIF
+!!$        TENSOR%maxgabelm = GAB%maxgabelm
+!!$        TENSOR%maxprimgabelm = GAB%maxprimgabelm
+!!$        call lstensor_free(GAB)
+!!$        call LSTENSOR_copy(TENSOR,GAB,lupri)
+!!$        call LSTENSOR_mem_est(TENSOR,nmemsize)
+!!$        call add_mem_to_global(nmemsize)
+!!$        call lstensor_free(TENSOR)
+!!$     ENDIF
+!!$     call mem_dealloc(nonscreenAB)
+!!$  ENDIF
+!!$!  print*,'THE CLEANUP'
+!!$!  call lstensor_print(GAB,6)
+!!$
+!!$End Subroutine Cleanup_gabmatrix
+!!$
+!!$Subroutine verify_gabmatrix(GAB,CS_THRLOG,lupri)
+!!$  implicit none
+!!$  TYPE(LSTENSOR),intent(inout) :: GAB
+!!$  integer(kind=short) :: CS_THRLOG
+!!$  integer :: lupri
+!!$  !
+!!$  TYPE(LSTENSOR) :: TENSOR
+!!$  integer,pointer :: nbat1(:),nbat2(:)
+!!$  integer(kind=long) :: nmemsize
+!!$  integer :: IATOM,JATOM,I,Ibatch,Jbatch,Ibat,Jbat,nbatJ,n1,n2,J,Ibatch2
+!!$  integer :: nbatI,JbatchG,AOTbatch2,AOTbatch1,GABI2,maxbat,dim,I2,Jbatch2
+!!$  logical :: screen
+!!$  TYPE(SLSAOTENSOR),pointer    :: slsao
+!!$!  print*,'GAB ',GAB%natom(1),GAB%natom(2),'nSLSAO',GAB%nSLSAO
+!!$!  call lstensor_print(GAB,6)
+!!$  Jbatch = 0
+!!$  DO JATOM = 1,GAB%nAtom(2)
+!!$     nbatJ = GAB%nAObatch(JATOM,2)
+!!$     Ibatch = 0
+!!$     DO IATOM = 1,GAB%nAtom(1)
+!!$        nbatI = GAB%nAObatch(IATOM,1)
+!!$        I2 = GAB%INDEX(IATOM,JATOM,1,1)
+!!$        IF(I2.EQ.0)THEN
+!!$!           WRITE(lupri,*)'THIS BLOCK SHOULD BE ZERO  I=',I2,'IATOM,JATOM',IATOM
+!!$           DO Jbat = 1,nbatJ
+!!$              JbatchG = Jbatch+Jbat
+!!$              DO Ibat = 1,nbatI
+!!$                 IF(GAB%maxgab(Ibatch+Ibat,JbatchG).GE.CS_THRLOG)&
+!!$                      &call lsquit('ERROR in verification',-1)
+!!$              ENDDO
+!!$           ENDDO
+!!$           DO Jbat = 1,nbatJ
+!!$              JbatchG = Jbatch+Jbat
+!!$              DO Ibat = 1,nbatI
+!!$                 IF(GAB%maxprimgab(Ibatch+Ibat,JbatchG).GE.CS_THRLOG)&
+!!$                      &call lsquit('ERROR in verification',-1)
+!!$              ENDDO
+!!$           ENDDO
+!!$        ENDIF
+!!$        Ibatch = Ibatch + nbatI 
+!!$     ENDDO
+!!$     Jbatch = Jbatch + nbatJ 
+!!$  ENDDO
+!!$End Subroutine Verify_gabmatrix
+!!$
 
 subroutine build_atomicODScreen(AO1,AO2,nonscreenAB,natoms1,natoms2)
   implicit none
