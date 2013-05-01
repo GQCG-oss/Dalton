@@ -990,7 +990,6 @@ IF (allocFTUV) THEN
    P%FTUVisAlloc = .TRUE.
 !   nsize = mem_realsize*size(P%FTUV)
 !   call mem_allocated_mem_overlap(nsize)
-!   call mem_allocated_mem_ftuvoverlap(nsize)
 ENDIF
 
 END SUBROUTINE ALLOC_OVERLAP

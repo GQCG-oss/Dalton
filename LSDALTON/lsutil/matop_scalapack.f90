@@ -2042,7 +2042,7 @@ module matrix_operations_scalapack
      CALL DGEBS2D(SLGrid%ictxt,'A','I',2,1,AB,2)
      CALL SGEBS2D(SLGrid%ictxt,'A','I',2,1,T,2)
      !CALL DGEBS2D(SLGrid%ictxt,'A','I',B%nrow,1,a,B%nrow)
-     call ls_mpibcast(a,B%nrow,0,SLGrid%comm)    
+     call ls_mpibcast(a,B%nrow,infpar%master,SLGrid%comm)    
  
      !scale c if needed
      if ((C%localnrow*C%localncol.NE. 0) .and. (AB(2)/= 1.0E0_realk))THEN
@@ -3227,7 +3227,7 @@ module matrix_operations_scalapack
       allocate(diag(B%nrow))
       !CALL DGEBR2D(SLGrid%ictxt,'A','I',B%nrow,1,diag,B%nrow,&
       !   &SLGrid%myrow,SLGrid%mycol)
-      call ls_mpibcast(diag,B%nrow,0,SLGrid%comm)
+      call ls_mpibcast(diag,B%nrow,infpar%master,SLGrid%comm)
       if (B%localnrow*B%localncol.NE. 0 .and. (AB(2) /= 1.0E0_realk))THEN
         CALL DSCAL(B%localnrow*B%localncol,AB(2),B%p,1)
       endif

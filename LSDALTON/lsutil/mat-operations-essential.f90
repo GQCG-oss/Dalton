@@ -1046,16 +1046,18 @@ end type matrixmembuf
 #ifndef UNITTEST
 #ifdef HAVE_BSM
          case(mtype_sparse_block)
-             call mat_bsm_mpicopy_fallback(a,slave, master)
+             call mat_mpicopy_fallback(a,slave, master)
 #endif
 #endif
+          case(mtype_csr)
+             call mat_mpicopy_fallback(a,slave, master)
          case(mtype_unres_dense)
              call mat_unres_dense_mpicopy(a,slave, master)
          case default
               call lsquit("mpicopy_typematrix not implemented for this type of matrix",-1)
          end select
        contains
-         subroutine mat_bsm_mpicopy_fallback(A,slave,master)
+         subroutine mat_mpicopy_fallback(A,slave,master)
            use lsmpi_type
           implicit none
           type(Matrix), intent(inout) :: A
@@ -1077,7 +1079,7 @@ end type matrixmembuf
           ENDIF
           deallocate(Afull)
           
-         end subroutine mat_bsm_mpicopy_fallback
+        end subroutine mat_mpicopy_fallback
        END SUBROUTINE mat_mpicopy
 #endif
 
