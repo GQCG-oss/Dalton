@@ -34,6 +34,10 @@ POTEXT="pot"
 GET_FILES=''
 PUT_FILES=''
 
+SSH=ssh
+SCP=scp
+export OMP_NUM_THREADS=1
+
 #default values for options
 optd=0
 optD=1
@@ -70,7 +74,8 @@ usage (){
         echo ' -mw mem    : set dalton max usable work memory to mem double precision words'
         echo ' -nb mb     : set node max usable work memory to mb Megabytes'
         echo ' -nw mem    : set node max usable work memory to mem double precision words'
-        echo ' -N num     : use MPI version with num nodes'
+        echo ' -N num     : use MPI version with num nodes (default: 1)'
+        echo ' -omp num   : set the number of OpenMP threads (default: 1)'
         echo ' -hostfile file : use hostfile "file" for start with mpirun'
         #echo ' -lam file  : call "lamboot file" and "wipe file" before and after mpirun'
         # Jan 2013: lammpi is not an active mpi implementation any more
@@ -80,10 +85,9 @@ usage (){
         echo ' -f dalmol  : extract dalmol.tar.gz archive from WRKDIR into TMPDIR before calculation starts'
         echo ' -get "file1 file2" : get files back from TMPDIR after calculation stops'
         echo ' -put "file1 file2" : put files to TMPDIR before calculation starts'
-        echo ' -mmsv file : copy MM relay matrix from TMPDIR to WRKDIR/file'
-        echo ' -mmcp file : copy MM relay matrix from WRKDIR/file to TMPDIR'
-	echo ' -nocpex    : force to not copy dalton executable from master node to slave nodes (for global work)'
+	    echo ' -nocpex    : force to not copy dalton executable from master node to slave nodes (for global work)'
         echo ' -valgrind  : run with valgrind'
+        echo ' -rsh       : use rsh/rcp (default: ssh/scp)'
         echo
          }
 #
@@ -124,8 +128,10 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -ext ) OUTEXT=$2; shift;;
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
+      -rsh ) SCP=rcp; SSH=rsh; shift;;
       -f ) optf=$2; shift;;
       -N ) optn=$2; shift;;
+      -omp ) export OMP_NUM_THREADS=$2; shift;;
       -lam* ) optlam=$2; shift;;
       -m|-mw ) WRKMEM=$2; export WRKMEM; shift;;
       -M|-mb ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
@@ -135,8 +141,6 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
       -t ) optt=1; TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
-      -mmcp ) optqmmm=copy; relay=$2; shift;;
-      -mmsv ) optqmmm=save; relay=$2; shift;;
        * ) usage; exit 1;;
    esac
    shift
@@ -256,10 +260,6 @@ ierr=0
      fi
    fi
 
-   if [ -s $WRKDIR/mep.inp ] ; then
-     cp $WRKDIR/mep.inp MEP.INP
-   fi
-
    # put files listed under -put to scratch directory
    if [ "$PUT_FILES" != "" ]; then
       for file in $PUT_FILES; do
@@ -268,19 +268,6 @@ ierr=0
       done
    fi
 
-   if [ "$optqmmm" = "copy" -o "$optqmmm" = "both" ]; then
-     if [ -s $WRKDIR/$relay -a -r $WRKDIR/$relay ]; then
-       echo "Copying the relay matrix to scratch directory..."
-       cp $WRKDIR/$relay QMMMIM
-       if [ ! -s QMMMIM -a ! -r QMMMIM ] ; then
-         echo "Relay matrix not present in scratch directory. Continuing anyway..."
-       else
-         echo "Done" 
-       fi
-     else
-       echo "Cannot copy relay matrix because it does not exist or is not readable"
-     fi
-   fi
    if [ "$optf" != "0" ] ; then
       if [ -s $WRKDIR/$optf.tar.gz -a -r $WRKDIR/$optf.tar.gz ] ; then
          echo "====================="
@@ -311,6 +298,7 @@ if [ $optn -gt 1 ] ; then
          if [ -n "$PBS_NODEFILE" -a "$opt_nocpex" != "1" ] ; then
 	     echo 'Copying dalton executable from master node: ' ${HOSTNAME}
              # $PBS_NODEFILE is defined, then do the instructions below
+			 echo 'Nodelist:'
              cat $PBS_NODEFILE | sort | uniq
              for node in `cat $PBS_NODEFILE | sort | uniq`
              do
@@ -318,9 +306,9 @@ if [ $optn -gt 1 ] ; then
                 then
                     continue
                 else
-#                   If your cluster setup requires rcp, then you must change the following line.
-                    scp dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
-                    echo 'Succesfully copied executable to: ' ${node}
+                    $SSH ${node} "mkdir -p $SCRATCHDIR"
+                    $SCP dalton_mpi_copy.x ${node}:$SCRATCHDIR/dalton_mpi_copy.x
+                    echo 'Copying executable to: ' ${node}
                 fi
              done
          fi
@@ -375,7 +363,7 @@ fi
 # for subsequent calculations
 #
 
-filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off FCIDUMP"
+filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off FCIDUMP"
 
 if [ -s DALTON.OUT.n001 -a -r DALTON.OUT.n001 ]; then
    tarfilelist="DALTON.OUT.n*"
@@ -407,26 +395,12 @@ else
     echo "$outnam.tar.gz has not been created and has thus not been copied to $WRKDIR"
 fi
 
-if [ -s MEP.OUT ] ; then
-  tar -zcf mep.tar.gz MEP.OUT
-  cp mep.tar.gz $WRKDIR
-fi
-
 # copy files listed under -get back from scratch directory
 if [ "$GET_FILES" != "" ]; then
    for file in $GET_FILES; do
        echo copying $file back from scratch directory
        cp $file $WRKDIR/$outnam.$file
    done
-fi
-
-if [ "$optqmmm" = "save" -o "$optqmmm" = "both" ]; then
-  if [ -s QMMMIM -a -r QMMMIM ]; then
-    echo "Saving the relay matrix in $WRKDIR/$relay"
-    cp QMMMIM $WRKDIR/$relay
-  else
-    echo "Could not save the relay matrix because it does not exist or is not readable"
-  fi
 fi
 
 if [ $opto -eq 1 ] ; then

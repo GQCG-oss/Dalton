@@ -31,6 +31,8 @@ C  /* Deck intexp */
      &                  IPRINT,NOPMAT,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,
      &                  ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
 #include "implicit.h"
+#include "maxorb.h"
+#include "infpar.h"
 #include "priunit.h"
 #include "maxaqn.h"
       LOGICAL NOPMAT, NODV, LONDON, SUSCEP, DDFOCK, EXPECT, DIA2SO,
@@ -41,6 +43,14 @@ C  /* Deck intexp */
      &          HESSEE(*), IXPAB(*), IXPCD(*), IFCTYP(*)
 #include "twocom.h"
 #include "twosta.h"
+
+!     check for rma-model parallelization (not yet working for this
+!     routine yet - sknecht jan 2013)
+      if(rma_model)then
+        write(lupri,*) ' RMA-model parallelization of hermit does '//
+     &  'not work yet with INTEXP - sorry'
+        call quit('quit in INTEXP - RMA model active')
+      end if
 C
 C     Allocations
 C

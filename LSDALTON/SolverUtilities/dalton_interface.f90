@@ -15,7 +15,8 @@ MODULE dal_interface
   use matrix_util,only: mat_get_isym, mcweeney_purify
    use TYPEDEFTYPE, only: lsitem, lssetting
    use TYPEDEF, only: typedef_setlist_valence2full,getNbasis, &
-		& GCAO2AO_transform_matrixD2
+		& GCAO2AO_transform_matrixD2,&
+                & ao2gcao_transform_matrixf
    use dec_typedef_module, only: batchTOorb
    use Integralparameters
    use AO_TypeType, only: AOITEM

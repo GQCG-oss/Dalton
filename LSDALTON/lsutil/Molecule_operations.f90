@@ -6,6 +6,23 @@ MODULE molecule_type
 use molecule_typetype
 use precision
 use memory_handling
+private
+public ::  DETERMINE_MAXCOOR, PRINT_MOL, &
+     & write_atom_to_disk, &
+     & read_atom_from_disk, &
+     & write_moleculeinfo_to_disk, &
+     & read_moleculeinfo_from_disk, &
+     & init_Moleculeinfo, &
+     & free_Moleculeinfo, &
+     & build_atomicmolecule, &
+     & build_empty_molecule, &
+     & build_pointmolecule, &
+     & build_molecule_from_coordlist, &
+     & copy_molecule,copy_atom, &
+     & molecule_get_num_atoms, &
+     & molecule_get_atom_coord, &
+     & molecule_get_atom_charge
+
 CONTAINS
 !#################################################################
 !#
@@ -96,7 +113,7 @@ END SUBROUTINE PRINT_MOL
 !> \param lun logic unit number of file to write to
 SUBROUTINE write_atom_to_disk(lun,IATOM)
 implicit none
-TYPE(ATOM),intent(in)  :: IATOM
+TYPE(ATOMITEM),intent(in)  :: IATOM
 INTEGER,intent(in)             :: lun
 
 write(lun)IATOM%Isotope
@@ -134,7 +151,7 @@ END SUBROUTINE write_atom_to_disk
 !> \param lun logic unit number of file to read from
 SUBROUTINE read_atom_from_disk(lun,IATOM)
 implicit none
-TYPE(ATOM),intent(inout)  :: IATOM
+TYPE(ATOMITEM),intent(inout)  :: IATOM
 INTEGER,intent(in)             :: lun
 
 read(lun)IATOM%Isotope

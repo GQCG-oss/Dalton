@@ -409,6 +409,38 @@ end subroutine mat_unres_dense_TrAB_ab
 
   end subroutine mat_unres_dense_daxpy
 
+  !> \brief creates the inverse matrix of type(matrix). mat_inv
+  !> \author T. Kjærgaard
+  !> \date 2012
+  !> \param a The type(matrix) that should be inversed
+  !> \param chol The type(matrix) that contains cholesky factors (from mat_chol)
+  !> \param c The inverse output type(matrix).
+  SUBROUTINE mat_unres_dense_inv(A, A_inv) 
+    implicit none
+    TYPE(Matrix),intent(in)     :: A
+    TYPE(Matrix)                :: A_inv !output
+    real(realk), pointer   :: work1(:)
+    real(realk), pointer   :: A_inv_full(:,:) 
+    integer,pointer    :: IPVT(:)
+    real(realk)            :: RCOND, dummy(2), tmstart, tmend
+    integer                :: IERR, i, j, fulldim, ndim
+    fulldim = 2*a%nrow
+    call mem_alloc(A_inv_full,fulldim,fulldim) 
+    call mem_alloc(work1,fulldim)
+    call mem_alloc(IPVT,fulldim)
+    !Invert U and Ut:
+    IPVT = 0 ; RCOND = 0.0E0_realk  
+    call mat_unres_dense_to_full(A,1.0E0_realk,A_inv_full)
+    call DGECO(A_inv_full,fulldim,fulldim,IPVT,RCOND,work1)
+    call DGEDI(A_inv_full,fulldim,fulldim,IPVT,dummy,work1,01)
+    !Convert framework:
+    call mat_unres_dense_set_from_full(A_inv_full,1.0E0_realk,A_inv)
+    call mem_dealloc(A_inv_full) 
+    call mem_dealloc(work1)
+    call mem_dealloc(IPVT)
+  END SUBROUTINE mat_unres_dense_inv
+  
+
 !> \brief See mat_ab_daxpy in mat-operations.f90
 !=======================================================================
 subroutine mat_unres_dense_ab_daxpy (alpha, X, Y)

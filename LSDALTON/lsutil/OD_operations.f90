@@ -5,6 +5,8 @@ MODULE OD_Type
  use OD_TypeType
  use AO_type
  use memory_handling
+ private
+ public :: getODscreening, FREE_ODitem, PRINT_OD, PRINT_ODBATCH
 ! use ls_util
  !************************************************
  !*

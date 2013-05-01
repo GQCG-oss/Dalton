@@ -1,0 +1,69 @@
+\chapter{Recommendations }\label{recommendations}
+
+In this chapter we give an few recommendations to keywords that is advantages to use 
+
+\section{Small Molecular systems}
+
+the {\lsdalton} program have been design to treat large molecular systems and as such the performance for small molecules is not expected to be competative.   
+
+\section{Large Molecular systems}
+
+the {\lsdalton} program have been designed to treat large molecular systems and the default 
+settings, will mostly likely work well. However, large molecular systems present a number of 
+challengens and we suggest to use the following Keywords.
+
+
+\subsection{Starting Guess}
+The Trilevel \cite{trilevel1, trilevel2} starting guess usually provide a good starting guess
+for the HF/KS calculation, especially for large molecular systems. 
+\begin{verbatim}
+.START
+TRILEVEL
+\end{verbatim}
+
+\section{Large MPI Jobs}
+
+
+\section{Response Calculations}
+
+
+\section{Accuracy}
+
+In order to debug other programs against the {\lsdalton} program, it may be advantages to remove screening and other approximation that reduce the accuarcy of the calculation, at the expense of speed.
+
+\begin{verbatim}
+.THRESH
+1.d-20
+\end{verbatim}
+sets the main integral screening threshold which sets all other thresholds in the integral code. 
+\begin{verbatim}
+.NO SCREEN
+\end{verbatim}
+removes all screening. 
+\begin{verbatim}
+.NO OMP 
+\end{verbatim}
+Deactivats the use of OpenMP which makes the code non deterministic. Alternative the 
+\begin{verbatim}
+export OMP_NUM_THREADS=1
+\end{verbatim}
+sets the number of OpenMP threads to 1.
+
+\section{Comparison}
+
+In order to compare the {\lsdalton} program
+we suggest to deactivate the so called grand canonical basis. 
+\begin{verbatim}
+.NOGCBASIS
+\end{verbatim}
+This keyword deactivates the use of the grand canonical basis and uses the input basis instead. 
+\begin{verbatim}
+.NOFAMILY
+\end{verbatim}
+Deactivates the exploitation of family basis sets where s and p functions share the same exponents. 
+
+
+
+
+
+

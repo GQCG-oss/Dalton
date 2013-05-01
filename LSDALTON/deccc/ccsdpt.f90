@@ -20,7 +20,7 @@ module ccsdpt_module
   use IntegralInterfaceDEC!, only: II_precalc_DECScreenMat,&
 !       & II_getBatchOrbitalScreen, II_GET_DECPACKED4CENTER_J_ERI
   use IntegralInterfaceMOD
-
+  use Fundamental, only: bohr_to_angstrom
 
 
   ! DEC DEPENDENCIES (within deccc directory)  
@@ -2575,7 +2575,8 @@ contains
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
     integer :: i,j
-    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
+!    use the one in lsutil/fundamental.f90
+!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
 
     ! print out fragment energies
 
@@ -2752,7 +2753,7 @@ contains
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
     integer :: i,j
-    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
+!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
 
     ! print out fragment energies
 
@@ -2878,7 +2879,7 @@ contains
     logical, dimension(natoms), intent(inout) :: orbitals_assigned
     !> loop counters
     integer :: i,a
-    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
+!    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
 
     ! print out fragment energies
 

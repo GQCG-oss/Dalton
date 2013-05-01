@@ -509,11 +509,10 @@ contains
 
     ! Init stuff
     nbasis = MyMolecule%nbasis
-    if(DECinfo%frozencore) then
-       offset = MyMolecule%ncore  ! only consider valence orbitals in bookkeping below
-    else
-       offset=0 ! consider both core and valence orbitals in bookkeping below
-    end if
+
+    ! For orbital assignment bookkeeping, only consider valence orbitals
+    offset = MyMolecule%ncore  
+
     call mem_alloc(lowdin_charge,natoms,nbasis)
     call mem_alloc(ShalfC,nbasis,nbasis)
     call mem_alloc(atomic_idx,natoms,nbasis)
@@ -710,10 +709,8 @@ contains
     call mem_alloc(countUnocc,natoms)
     countOcc=0
     countUnocc=0
-    do i=1,nocc
-       if(i>offset) then ! only count valence atoms for frozen core approximation
-          countocc(OccOrbitals(i)%centralatom) = countocc(OccOrbitals(i)%centralatom)+1
-       end if
+    do i=offset+1,nocc
+       countocc(OccOrbitals(i)%centralatom) = countocc(OccOrbitals(i)%centralatom)+1
     end do
 
     do i=1,nunocc
@@ -753,6 +750,7 @@ contains
                 ! Only consider reassigning if:
                 ! (i)   Atom under consideration is number 2 in Lowdin list
                 ! (ii)  Lowdin charge for atom is larger than current max value
+                ! (iii) Orbital is not a core orbital
                 if(atomic_idx(2,j)==atom .and. lowdin_charge(2,j) > maxlowdin ) then
                    maxlowdin = lowdin_charge(2,j)
                    maxidx = j
@@ -1919,22 +1917,22 @@ contains
     integer, intent(in) :: natoms
     !> Not consider orbitals with indices 1:offset (default: consider all orbitals)
     integer,intent(in),optional :: offset
-    integer :: i,j,OtherAtom,MyAtom,norb_calc,start
+    integer :: i,j,OtherAtom,MyAtom,norb_calc,startidx
 
     norb_per_atom=0
     norb_calc=0
 
     if(present(offset)) then
-       start = offset+1  ! not consider orbital 1:offset
+       startidx = offset+1  ! not consider orbital 1:offset
     else
-       start=1 ! consider all orbitals
+       startidx=1 ! consider all orbitals
     end if
 
     Atom_loop: do i=1,natoms
        MyAtom=i
 
        ! Count number of orbitals assigned to each atom
-       orbital_loop: do j=start,norb
+       orbital_loop: do j=startidx,norb
           OtherAtom=Orbitals(j)%centralatom
 
           if( MyAtom == OtherAtom ) then
@@ -2133,12 +2131,8 @@ contains
     ! ***************************
 
     ! Occupied
-    if(DECinfo%frozencore) then  ! only consider valence orbitals
-       nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,&
-            & offset=MyMolecule%ncore)
-    else
-       nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms)
-    end if
+    nocc_per_atom =  get_number_of_orbitals_per_atom(OccOrbitals,nocc,natoms,&
+         & offset=MyMolecule%ncore)
 
     ! Unoccupied
     nunocc_per_atom =  get_number_of_orbitals_per_atom(UnoccOrbitals,nunocc,natoms)

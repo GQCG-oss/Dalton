@@ -9,7 +9,7 @@ use precision
 !* OBJECT CONTAINING INFORMATION ABOUT THE MOLECULE
 !*
 !*****************************************
-TYPE ATOM
+TYPE ATOMITEM
 Integer           :: Isotope !Isotope number acc.to abundancy 
 Character(len=4)  :: Name    !Name of atom
 real(realk)       :: Mass    !Atomic mass 
@@ -39,11 +39,11 @@ INTEGER           :: nContOrbJK !# contracted orbitals
 INTEGER           :: nPrimOrbJK !# primitives orbitals
 INTEGER           :: nContOrbVAL !# contracted orbitals for valence basis
 INTEGER           :: nPrimOrbVAL !# primitives orbitals for valence basis
-END TYPE ATOM
+END TYPE ATOMITEM
 
 TYPE MOLECULEINFO
 Character(len=22)    :: label
-TYPE(ATOM), pointer  :: ATOM(:) !length = nAtomtypes
+TYPE(ATOMITEM), pointer  :: ATOM(:) !length = nAtomtypes
 INTEGER              :: nAtoms
 INTEGER              :: nAtomsNPC !nAtoms NOT including pointcharges
 INTEGER              :: nelectrons

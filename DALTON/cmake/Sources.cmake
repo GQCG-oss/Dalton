@@ -216,6 +216,7 @@ cc/cc_d1ao.F
 cc/cc_den.F
 cc/cc_den2_pt.F
 cc/cc_den_pt2.F
+cc/cc_den_rccd.F
 cc/cc_dhfao.F
 cc/cc_dmat.F
 cc/cc_drv.F
@@ -275,6 +276,7 @@ cc/cc_landf2.F
 cc/cc_landf3.F
 cc/cc_lhtr.F
 cc/cc_lhtr_noddy.F
+cc/cc_lhtr_rccd.F
 cc/cc_lr.F
 cc/cc_maomao.F
 cc/cc_mcdny.F
@@ -284,6 +286,7 @@ cc/cc_mofcon2.F
 cc/cc_mofconr12.F
 cc/cc_nuccon.F
 cc/cc_opa.F
+cc/cc_omega2_rccd.F
 cc/cc_pckutil.F
 cc/cc_pqi.F
 cc/cc_qaos.F
@@ -397,6 +400,7 @@ cc/iroper2.F
 cc/cc_lanczos_lrinp.F
 cc/cc_lanczos_drv.F
 cc/cc_lanczos_lrextras.F
+cc/rpa_grad.F
 choles/cc_caa.F
 choles/cc_choatr.F
 choles/cc_chocc2.F
@@ -499,6 +503,7 @@ pdpack/jacobi.F
 pdpack/linextra.F
 pdpack/linpack.F
 pdpack/printpkg.F
+peqm/pe_dalton_wrappers.F
 rsp/absorp.F
 rsp/abscomplex.F
 rsp/complexpp.F
@@ -613,6 +618,7 @@ sirius/sirsav.F
 sirius/sirset.F
 sirius/sirsol.F
 sirius/sirsolpcm.F
+sirius/sirstex.F
 sirius/sirtest.F
 sirius/sirtr1.F
 sirius/sirtra.F
@@ -737,6 +743,17 @@ lucita/par_communication_model.F90
 lucita/par_io.F90
 lucita/par_io_fh.F90
 lucita/par_sync_cw.F90
+peqm/pe_gen1int_wrapper.F90
+peqm/pe_precision.F90
+peqm/pe_blas_wrappers.F90
+peqm/pe_lapack_wrappers.F90
+peqm/pe_variables.F90
+peqm/polarizable_embedding.F90
+abacus/parallel_models_mpi.F90
+abacus/parallel_communication_models_mpi.F90
+gp/one_sided_communication_wrappers.F90
+gp/memory_parallel.F90
+abacus/rma_windows.F90
     )
 set(OWN_BLAS_SOURCES
     pdpack/gp_dblas1.F

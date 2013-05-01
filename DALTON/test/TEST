@@ -51,7 +51,7 @@ GEN1INT="gen1int_fluorobenzene_cart gen1int_water_cart gen1int_fluorobenzene_sph
 gen1int_water_spher"
 SHORT_ENERGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart energy_restart_scf \
 energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc \
-energy_lucita_gasci"
+energy_lucita_gasci energy_stex"
 SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe dft_open_b3lyp dft_qr_sym dft_rspexci_sym dft_rspexci_nosym \
 tddft_tda"
 SHORTGOPT="geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a \
@@ -96,7 +96,7 @@ cc_grad_ccpt_hf cc_geopt_ccpt_hf cc_geopt_ccpt_h2o cc_prop_file"
 SHORT_CHOLESKY="choles_b3lyp_polar choles_cc2_fop \
 choles_hf_magnet choles_kt3_ctocd choles_lda_prop"
 #
-SHORT="$GEN1INT $SHORTNOCC $SHORTCC $SHORT_CHOLESKY $SHORTQM3"
+SHORT="$GEN1INT $SHORTNOCC $SHORTCC $SHORT_CHOLESKY $SHORTPEQM $SHORTQM3"
 #
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
@@ -122,12 +122,19 @@ LONGCC="cc_geoopt2"
 #
 LONG_CHOLESKY="choles_ccsdpt_energy"
 #
-LONG="$LONG $LONGCC $LONG_CHOLESKY"
+LONG="$LONG $LONGCC $LONG_CHOLESKY $LONGPEQM"
 #
 PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel \
 dft_parallell_properties parallel_lucita_gasci parallel_spin_local"
 #
 QMMM="qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
+#
+SHORTPEQM="pehf_small_iter pehf_small_direct pehf_small_gspol \
+pehf_small_alpha pehf_small_1pa pehf_small_beta pehf_small_2pa"
+#
+LONGPEQM="pehf_large_iter pehf_large_direct pehf_large_gspol pehf_large_damp"
+#
+PEQM="$SHORTPEQM $LONGPEQM"
 #
 PARQM3="par_hfmm_1 par_dftmm_1 par_dftmm_3 par_dftmm_4 par_dftmm_5 \
 par_dftmm_6 par_dftmm_7 dftmm_8 dftmm_9"
@@ -244,6 +251,7 @@ Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
           geoopt               -- run all OPTIMIZE testcases
           numder               -- run all numerical derivatives testcases
           pcm                  -- run all pcm testcases
+          peqm                 -- run all peqm testcases
           <case1 [case2] ...>  -- run only the specified testcase(s)
 %EOF%
 exit 1
@@ -416,6 +424,9 @@ while [ -n "$1" ]; do
    shift ;;
   "qmmm" )
    testcase="$testcase $QMMM";
+   shift ;;
+  "peqm" )
+   testcase="$testcase $PEQM";
    shift ;;
   "longpar" )
    if [ "$paramlist" = "" ]; then
@@ -611,6 +622,10 @@ do
           myprint "---------------------------------------------------------------------"
           myprint "  Start $item step $step of $numsteps :"
           myprint "---------------------------------------------------------------------"
+          # use unique molfile for this step if available
+          if [ -r $item'__'$step.mol ]; then
+              cp -v $item'__'$step'.mol' $item'.mol'
+          fi
           molfile=$item
           if [ -r $item.pot ]; then potfile=$item ; fi
           cp $item'__'$step'.dal' $item'.dal'

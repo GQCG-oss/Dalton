@@ -2,7 +2,7 @@ all: liblsdaltonsrc.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../rsp_properties -I../SolverUtilities
+INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../linears -I../geomopt -I../ddynam -I../deccc -I../pbc2 -I../rsp_properties -I../SolverUtilities -I../xcfun_host
 
 # Keep the file lists sorted for easier modification.
 # PLEASE KEEP THEM SORTED ALPHABETICALLY!!!
@@ -35,7 +35,7 @@ clean :
 
 
 Makefile.depend depend: $(F90_OBJS:.o=.f90)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../linears -M../geomopt -M../deccc -M../SolverUtilities -- $(F90_OBJS:.o=.f90) > Makefile.depend
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../linears -M../geomopt -M../deccc -M../SolverUtilities -M../xcfun_host -- $(F90_OBJS:.o=.f90) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

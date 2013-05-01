@@ -90,8 +90,7 @@ C
         RETURN
       ENDIF
 
-      IF  ( ((NASHT.EQ.0) .AND. (TRPLET))  ) THEN ! no pol. contr.
-C                                                   can arrise in that case
+      IF  ( ((NASHT.EQ.0) .AND. (TRPLET))  ) THEN
         CALL QEXIT('QMMMLNO')
         RETURN
       ENDIF
@@ -1455,7 +1454,7 @@ C     y-component
       IF (ISYMT.EQ.ISYMV1) THEN
          CALL DZERO(WRK(KTLMA),N2ORBX)
          CALL OITH1(ISYMV1,ZYM1,WRK(KUTR),WRK(KTLMA),ISYMT)
-         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QM3MMRO')
+         CALL MELONE(WRK(KTLMA),1,UDV,ONE,F1,200,'QMMMQRO')
          EF1(2) = F1
       ELSE
          EF1(2) = ZERO

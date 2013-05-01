@@ -7,6 +7,7 @@
 !> (Developed for the PARI scheme - but can be extended for other purposes)
 MODULE AtomSparse
 use molecule_type
+use molecule_typetype
 use memory_handling
 use precision
 
@@ -246,7 +247,7 @@ SUBROUTINE init_abblock(pairBlock,Atom2,AO2,primitive,iAtom2,nextBlock,nA,nMat,l
 use molecule_type
 implicit none
 TYPE(ABblock),intent(inout) :: pairBlock
-type(atom),intent(in)       :: Atom2
+type(atomitem),intent(in)       :: Atom2
 character*(*),intent(in)    :: AO2
 logical,intent(in)          :: primitive
 Integer,intent(in)          :: iAtom2,lupri,nA,nMat

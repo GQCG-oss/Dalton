@@ -54,7 +54,7 @@ use cgto_diff_eri_host_interface, only: cgto_diff_eri_xfac_general
 #endif
 use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
-!use xcfun_host,only: xcfun_host_init, USEXCFUN
+use xcfun_host,only: xcfun_host_init, USEXCFUN
 contains
 
 !> \brief Call routines to set default values for different structures.
@@ -64,7 +64,7 @@ subroutine config_set_default_config(config)
 implicit none
    !> Contains info, settings and data for entire calculation
    type(ConfigItem), intent(inout) :: config
-!  USEXCFUN = .FALSE.  
+  USEXCFUN = .FALSE.  
   nullify(config%solver)
   allocate(config%solver)
   call arh_set_default_config(config%solver)
@@ -330,11 +330,14 @@ DO
                      !different from zero. 
                      !note the 40 is harcoded in DFTsetFunc routine in general.c 
                      config%integral%dft%dftfunc = WORD
-!                     IF(.NOT.USEXCFUN)THEN
+                     IF(.NOT.USEXCFUN)THEN
                         CALL II_DFTsetFunc(WORD,hfweight)
-!                     ELSE
-!                        call xcfun_host_init(WORD,hfweight,lupri)
-!                     ENDIF
+                     ELSE
+                        print*,'II_DFTsetFunc'
+                        CALL II_DFTsetFunc(WORD,hfweight)
+                        print*,'xcfun_host_init'
+                        call xcfun_host_init(WORD,hfweight,lupri)
+                     ENDIF
                      config%integral%exchangeFactor = hfweight
                      config%integral%dft%HFexchangeFac = hfweight
 #ifdef BUILD_CGTODIFF
@@ -700,12 +703,20 @@ DO
       call config_rsp_input(config,lucmd,readword)
    END IF ResponseInput
 
-   ! KK: DEC Coupled Cluster input
+   ! Input for DEC calculation
    DECInput: IF (WORD(1:5) == '**DEC') THEN
       READWORD=.TRUE.
       config%doDEC = .true.
-      call config_dec_input(lucmd,config%lupri,readword,word)
+      call config_dec_input(lucmd,config%lupri,readword,word,.false.)
    END IF DECInput
+
+   ! Input for full molecular CC calculation
+   ! (uses same setup as DEC calculation)
+   CCinput: IF (WORD(1:4) == '**CC') THEN
+      READWORD=.TRUE.
+      config%doDEC = .true.
+      call config_dec_input(lucmd,config%lupri,readword,word,.true.)
+   END IF CCinput
 
 
 !   
@@ -965,7 +976,14 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
      ENDIF
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
-!        CASE ('.XCFUN'); USEXCFUN=.TRUE. 
+        CASE ('.XCFUN')
+#ifdef VAR_XCFUN
+           USEXCFUN = .TRUE. 
+           INTEGRAL%DFT%XCFUN = .TRUE.
+           print*,'USEXCFUN',USEXCFUN
+#else
+           call lsquit('.XCFUN requires ENABLE_XCFUN', -1)
+#endif
         CASE ('.CONTANG'); INTEGRAL%CONTANG=.TRUE. ! Specifies that the AO-shell ordering is contracted first then 
                                                    ! angular components (for genereally contracted functions)
         CASE ('.NOGCINTEGRALTRANSFORM'); INTEGRAL%NOGCINTEGRALTRANSFORM=.TRUE.
@@ -2416,7 +2434,6 @@ DO
          ENDDO
          deallocate(GRIDspec)
          CALL DFTGRIDINPUT(LINE,DALTON%DFT%TURBO)
-!         IF(USEXCFUN) DALTON%DFT%XCFUN = .TRUE.
       CASE ('.OLDGRID'); DALTON%DFT%NEWGRID = .FALSE.
       CASE ('.NOPRUN'); DALTON%DFT%NOPRUN = .TRUE.
       CASE ('.RADINT'); READ(LUCMD,*) DALTON%DFT%RADINT
@@ -3490,44 +3507,55 @@ end module configuration
 #ifdef VAR_LSMPI
 subroutine lsmpi_setmasterToSlaveFunc(WORD)
 use infpar_module
+use xcfun_host,only: USEXCFUN
 use lsmpi_mod
   implicit none
   character(len=80)  :: WORD
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
-!  call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
+  call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
 end subroutine lsmpi_setmasterToSlaveFunc
 
 subroutine lsmpi_setSlaveFunc()
 use infpar_module
 use lsmpi_mod
+use xcfun_host,only: xcfun_host_init, USEXCFUN
 use typedef
   implicit none
   character(len=80)  :: WORD
   real(realk) :: hfweight
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
-!  call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
+  call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
   hfweight=0E0_realk   
-!  IF(.NOT.USEXCFUN)THEN
+  IF(.NOT.USEXCFUN)THEN
      CALL DFTsetFunc(WORD(1:80),hfweight)
-!  ELSE
-!     call xcfun_host_init(WORD,hfweight,lupri)
-!  ENDIF
+  ELSE
+#ifdef VAR_XCFUN
+     call xcfun_host_init(WORD,hfweight,6)
+#else
+     call lsquit('XCFUN mismatch ',-1)
+#endif
+  ENDIF
 end subroutine lsmpi_setSlaveFunc
 
 subroutine lsmpi_addSlaveFunc()
 use infpar_module
 use lsmpi_mod
+use xcfun_host,only: USEXCFUN
 use typedef
   implicit none
   character(len=80)  :: WORD
   real(realk) :: hfweight
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
-!  call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
+  call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
   hfweight=0E0_realk 
-!  IF(.NOT.USEXCFUN)THEN
+  IF(.NOT.USEXCFUN)THEN
      CALL DFTaddFunc(WORD(1:80),hfweight)
-!  ELSE
-!     call lsquit('not implemented',-1)
-!  ENDIF
+  ELSE
+#ifdef VAR_XCFUN
+     call lsquit('DFTaddFunc not implemented',-1)
+#else
+     call lsquit('XCFUN mismatch ',-1)
+#endif
+  ENDIF
 end subroutine lsmpi_addSlaveFunc
 #endif

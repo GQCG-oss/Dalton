@@ -93,7 +93,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_allocated_SLSAOTENSOR, max_mem_used_SLSAOTENSOR       !Count 'SLSAOTENSOR' memory, integral code
    integer(KIND=long),save :: mem_allocated_GLOBALLSAOTENSOR, max_mem_used_GLOBALLSAOTENSOR       !Count 'GLOBALLSAOTENSOR' memory, integral code
    integer(KIND=long),save :: mem_allocated_ATOMTYPEITEM, max_mem_used_ATOMTYPEITEM       !Count 'ATOMTYPEITEM' memory, integral code
-   integer(KIND=long),save :: mem_allocated_ATOM, max_mem_used_ATOM       !Count 'ATOM' memory, integral code
+   integer(KIND=long),save :: mem_allocated_ATOMITEM, max_mem_used_ATOMITEM       !Count 'ATOMITEM' memory, integral code
    integer(KIND=long),save :: mem_allocated_LSMATRIX, max_mem_used_LSMATRIX       !Count 'LSMATRIX' memory, integral code
 
 !Memory distributed on types:
@@ -141,7 +141,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_tp_allocated_SLSAOTENSOR, max_mem_tp_used_SLSAOTENSOR       !Count 'SLSAOTENSOR' memory, integral code
    integer(KIND=long),save :: mem_tp_allocated_GLOBALLSAOTENSOR, max_mem_tp_used_GLOBALLSAOTENSOR       !Count 'GLOBALLSAOTENSOR' memory, integral code
    integer(KIND=long),save :: mem_tp_allocated_ATOMTYPEITEM, max_mem_tp_used_ATOMTYPEITEM       !Count 'ATOMTYPEITEM' memory, integral code
-   integer(KIND=long),save :: mem_tp_allocated_ATOM, max_mem_tp_used_ATOM       !Count 'ATOM' memory, integral code
+   integer(KIND=long),save :: mem_tp_allocated_ATOMITEM, max_mem_tp_used_ATOMITEM       !Count 'ATOMITEM' memory, integral code
    integer(KIND=long),save :: mem_tp_allocated_LSMATRIX, max_mem_tp_used_LSMATRIX       !Count 'LSMATRIX' memory, integral code
 ! used for checkpoint
    integer(KIND=long),save :: mem_check_allocated_global,mem_check_allocated_type_matrix
@@ -163,7 +163,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_check_allocated_MP2GRAD
    integer(KIND=long),save :: mem_check_allocated_LSAOTENSOR,mem_check_allocated_SLSAOTENSOR
    integer(KIND=long),save :: mem_check_allocated_GLOBALLSAOTENSOR,mem_check_allocated_ATOMTYPEITEM
-   integer(KIND=long),save :: mem_check_allocated_ATOM,mem_check_allocated_LSMATRIX
+   integer(KIND=long),save :: mem_check_allocated_ATOMITEM,mem_check_allocated_LSMATRIX
 !Memory distributed on types:
    integer(KIND=long),save :: mem_tp_allocated_linkshell, max_mem_tp_used_linkshell         !Count memory, type linkshell
    integer(KIND=long),save :: mem_tp_allocated_integralitem, max_mem_tp_used_integralitem   !Count memory, type integralitem
@@ -197,7 +197,7 @@ MODULE memory_handling
    integer(KIND=long),save :: max_mem_used_MP2GRAD_tmp
    integer(KIND=long),save :: max_mem_used_LSAOTENSOR_tmp,max_mem_used_SLSAOTENSOR_tmp
    integer(KIND=long),save :: max_mem_used_GLOBALLSAOTENSOR_tmp,max_mem_used_ATOMTYPEITEM_tmp
-   integer(KIND=long),save :: max_mem_used_ATOM_tmp,max_mem_used_LSMATRIX_tmp
+   integer(KIND=long),save :: max_mem_used_ATOMITEM_tmp,max_mem_used_LSMATRIX_tmp
 
    integer(KIND=long),save :: max_mem_used_integralitem_tmp,max_mem_used_integrand_tmp
    integer(KIND=long),save :: max_mem_used_overlap_tmp,max_mem_used_etuvoverlap_tmp
@@ -225,7 +225,7 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_SLSAOTENSORsize
    integer(KIND=long),save :: mem_GLOBALLSAOTENSORsize
    integer(KIND=long),save :: mem_ATOMTYPEITEMsize
-   integer(KIND=long),save :: mem_ATOMsize
+   integer(KIND=long),save :: mem_ATOMITEMsize
    integer(KIND=long),save :: mem_LSMATRIXsize
    integer(KIND=long),save :: mem_MATRIXsize
    integer(KIND=long),parameter :: mem_realsize=8
@@ -267,7 +267,7 @@ MODULE memory_handling
 !$OMP mem_tp_allocated_SLSAOTENSOR, max_mem_tp_used_SLSAOTENSOR,&
 !$OMP mem_tp_allocated_GLOBALLSAOTENSOR, max_mem_tp_used_GLOBALLSAOTENSOR,&
 !$OMP mem_tp_allocated_ATOMTYPEITEM, max_mem_tp_used_ATOMTYPEITEM,&
-!$OMP mem_tp_allocated_ATOM, max_mem_tp_used_ATOM,&
+!$OMP mem_tp_allocated_ATOMITEM, max_mem_tp_used_ATOMITEM,&
 !$OMP mem_tp_allocated_LSMATRIX, max_mem_tp_used_LSMATRIX,&
 !$OMP mem_tp_allocated_linkshell, max_mem_tp_used_linkshell,&
 !$OMP mem_tp_allocated_integralitem, max_mem_tp_used_integralitem,&
@@ -297,7 +297,7 @@ MODULE memory_handling
 !$OMP mem_check_allocated_MP2GRAD,&
 !$OMP mem_check_allocated_LSAOTENSOR,mem_check_allocated_SLSAOTENSOR,&
 !$OMP mem_check_allocated_GLOBALLSAOTENSOR,mem_check_allocated_ATOMTYPEITEM,&
-!$OMP mem_check_allocated_ATOM,mem_check_allocated_LSMATRIX)
+!$OMP mem_check_allocated_ATOMITEM,mem_check_allocated_LSMATRIX)
 
 !Interfaces for allocating/deallocating pointers
 INTERFACE mem_alloc
@@ -327,7 +327,7 @@ INTERFACE mem_alloc
      &             AOBATCH_allocate_1dim, ODBATCH_allocate_1dim, CCORBITAL_allocate_1dim, &
      &             LSAOTENSOR_allocate_1dim, SLSAOTENSOR_allocate_1dim, &
      &             GLOBALLSAOTENSOR_allocate_1dim, ATOMTYPEITEM_allocate_1dim, &
-     &             ATOM_allocate_1dim, LSMATRIX_allocate_1dim, LSMATRIXP_allocate_1dim, &
+     &             ATOMITEM_allocate_1dim, LSMATRIX_allocate_1dim, LSMATRIXP_allocate_1dim, &
      &             MATRIX_allocate_1dim, MATRIXP_allocate_1dim, CCATOM_allocate_1dim, &
      &             BATCHTOORB_allocate_1dim,MYPOINTER_allocate_1dim, MYPOINTER_allocate_2dim, &
      &             ARRAY2_allocate_1dim,ARRAY4_allocate_1dim,MP2DENS_allocate_1dim, &
@@ -353,7 +353,7 @@ INTERFACE mem_dealloc
      &             AOBATCH_deallocate_1dim, ODBATCH_deallocate_1dim, CCORBITAL_deallocate_1dim, &
      &             LSAOTENSOR_deallocate_1dim, SLSAOTENSOR_deallocate_1dim, &
      &             GLOBALLSAOTENSOR_deallocate_1dim, ATOMTYPEITEM_deallocate_1dim, &
-     &             ATOM_deallocate_1dim, LSMATRIX_deallocate_1dim, LSMATRIXP_deallocate_1dim, &
+     &             ATOMITEM_deallocate_1dim, LSMATRIX_deallocate_1dim, LSMATRIXP_deallocate_1dim, &
      &             MATRIX_deallocate_1dim, MATRIXP_deallocate_1dim,CCATOM_deallocate_1dim, &
      &             BATCHTOORB_deallocate_1dim,MYPOINTER_deallocate_1dim,MYPOINTER_deallocate_2dim, &
      &             ARRAY2_deallocate_1dim,ARRAY4_deallocate_1dim,MP2DENS_deallocate_1dim, &
@@ -384,7 +384,7 @@ TYPE(LSAOTENSOR) :: LSAOTENSORitem
 TYPE(SLSAOTENSOR) :: SLSAOTENSORitem
 TYPE(GLOBALLSAOTENSOR) :: GLOBALLSAOTENSORitem
 TYPE(ATOMTYPEITEM) :: ATOMTYPEITEMitem
-TYPE(ATOM) :: ATOMitem
+TYPE(ATOMITEM) :: ATOMITEMitem
 TYPE(LSMATRIX) :: LSMATRIXitem
 TYPE(MATRIX) :: MATRIXitem
 ! Size of buffer handling for long integer buffer
@@ -409,7 +409,7 @@ mem_LSAOTENSORsize=432
 mem_SLSAOTENSORsize=256
 mem_GLOBALLSAOTENSORsize=20
 mem_ATOMTYPEITEMsize=56264
-mem_ATOMsize=216
+mem_ATOMITEMsize=216
 mem_LSMATRIXsize=80
 mem_MATRIXsize=1264
 mem_OVERLAPsize=2904
@@ -432,7 +432,7 @@ mem_LSAOTENSORsize=sizeof(LSAOTENSORitem)
 mem_SLSAOTENSORsize=sizeof(SLSAOTENSORitem)
 mem_GLOBALLSAOTENSORsize=sizeof(GLOBALLSAOTENSORitem)
 mem_ATOMTYPEITEMsize=sizeof(ATOMTYPEITEMitem)
-mem_ATOMsize=sizeof(ATOMitem)
+mem_ATOMITEMsize=sizeof(ATOMITEMitem)
 mem_LSMATRIXsize=sizeof(LSMATRIXitem)
 mem_MATRIXsize=sizeof(MATRIXitem)
 mem_OVERLAPsize=sizeof(OVERLAPitem)
@@ -468,7 +468,7 @@ max_mem_used_LSAOTENSOR = MAX(max_mem_used_LSAOTENSOR,max_mem_used_LSAOTENSOR_tm
 max_mem_used_SLSAOTENSOR = MAX(max_mem_used_SLSAOTENSOR,max_mem_used_SLSAOTENSOR_tmp)
 max_mem_used_GLOBALLSAOTENSOR = MAX(max_mem_used_GLOBALLSAOTENSOR,max_mem_used_GLOBALLSAOTENSOR_tmp)
 max_mem_used_ATOMTYPEITEM = MAX(max_mem_used_ATOMTYPEITEM,max_mem_used_ATOMTYPEITEM_tmp)
-max_mem_used_ATOM = MAX(max_mem_used_ATOM,max_mem_used_ATOM_tmp)
+max_mem_used_ATOMITEM = MAX(max_mem_used_ATOMITEM,max_mem_used_ATOMITEM_tmp)
 max_mem_used_LSMATRIX = MAX(max_mem_used_LSMATRIX,max_mem_used_LSMATRIX_tmp)
 
 max_mem_used_linkshell = MAX(max_mem_used_linkshell,max_mem_used_linkshell_tmp)
@@ -513,7 +513,7 @@ max_mem_used_LSAOTENSOR_tmp = 0
 max_mem_used_SLSAOTENSOR_tmp = 0
 max_mem_used_GLOBALLSAOTENSOR_tmp = 0
 max_mem_used_ATOMTYPEITEM_tmp = 0
-max_mem_used_ATOM_tmp = 0
+max_mem_used_ATOMITEM_tmp = 0
 max_mem_used_LSMATRIX_tmp = 0
 max_mem_used_overlapT_tmp = 0
 
@@ -583,8 +583,8 @@ mem_allocated_GLOBALLSAOTENSOR = 0
 max_mem_used_GLOBALLSAOTENSOR = 0
 mem_allocated_ATOMTYPEITEM = 0
 max_mem_used_ATOMTYPEITEM = 0
-mem_allocated_ATOM = 0
-max_mem_used_ATOM = 0
+mem_allocated_ATOMITEM = 0
+max_mem_used_ATOMITEM = 0
 mem_allocated_LSMATRIX = 0
 max_mem_used_LSMATRIX = 0
 
@@ -666,8 +666,8 @@ mem_tp_allocated_GLOBALLSAOTENSOR = 0
 max_mem_tp_used_GLOBALLSAOTENSOR = 0
 mem_tp_allocated_ATOMTYPEITEM = 0
 max_mem_tp_used_ATOMTYPEITEM = 0
-mem_tp_allocated_ATOM = 0
-max_mem_tp_used_ATOM = 0
+mem_tp_allocated_ATOMITEM = 0
+max_mem_tp_used_ATOMITEM = 0
 mem_tp_allocated_LSMATRIX = 0
 max_mem_tp_used_LSMATRIX = 0
 
@@ -748,8 +748,8 @@ subroutine collect_thread_memory()
     max_mem_used_GLOBALLSAOTENSOR_tmp = max_mem_used_GLOBALLSAOTENSOR_tmp+max_mem_tp_used_GLOBALLSAOTENSOR
     mem_allocated_ATOMTYPEITEM = mem_allocated_ATOMTYPEITEM+mem_tp_allocated_ATOMTYPEITEM
     max_mem_used_ATOMTYPEITEM_tmp = max_mem_used_ATOMTYPEITEM_tmp+max_mem_tp_used_ATOMTYPEITEM
-    mem_allocated_ATOM = mem_allocated_ATOM+mem_tp_allocated_ATOM
-    max_mem_used_ATOM_tmp = max_mem_used_ATOM_tmp+max_mem_tp_used_ATOM
+    mem_allocated_ATOMITEM = mem_allocated_ATOMITEM+mem_tp_allocated_ATOMITEM
+    max_mem_used_ATOMITEM_tmp = max_mem_used_ATOMITEM_tmp+max_mem_tp_used_ATOMITEM
     mem_allocated_LSMATRIX = mem_allocated_LSMATRIX+mem_tp_allocated_LSMATRIX
     max_mem_used_LSMATRIX_tmp = max_mem_used_LSMATRIX_tmp+max_mem_tp_used_LSMATRIX
 
@@ -817,8 +817,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_GLOBALLSAOTENSOR
     WRITE(LUPRI,'("  Allocated memory (ATOMTYPEITEM):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ATOMTYPEITEM
-    WRITE(LUPRI,'("  Allocated memory (ATOM):            ",i9," byte  &
-         &- Should be zero - otherwise a leakage is present")') mem_allocated_ATOM
+    WRITE(LUPRI,'("  Allocated memory (ATOMITEM):        ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_allocated_ATOMITEM
     WRITE(LUPRI,'("  Allocated memory (LSMATRIX):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_LSMATRIX
     WRITE(LUPRI,'("  Allocated memory (CCORBITAL):       ",i9," byte  &
@@ -896,7 +896,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_used_SLSAOTENSOR,'SLSAOTENSOR')
     CALL print_maxmem(lupri,max_mem_used_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
     CALL print_maxmem(lupri,max_mem_used_ATOMTYPEITEM,'ATOMTYPEITEM')
-    CALL print_maxmem(lupri,max_mem_used_ATOM,'ATOM')
+    CALL print_maxmem(lupri,max_mem_used_ATOMITEM,'ATOMITEM')
     CALL print_maxmem(lupri,max_mem_used_LSMATRIX,'LSMATRIX')
     CALL print_maxmem(lupri,max_mem_used_overlapT,'OverlapT')
 
@@ -955,8 +955,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_GLOBALLSAOTENSOR
     WRITE(LUPRI,'("  Allocated MPI memory (ATOMTYPEITEM):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ATOMTYPEITEM
-    WRITE(LUPRI,'("  Allocated MPI memory (ATOM):            ",i9," byte  &
-         &- Should be zero - otherwise a leakage is present")') mem_allocated_ATOM
+    WRITE(LUPRI,'("  Allocated MPI memory (ATOMITEM):        ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_allocated_ATOMITEM
     WRITE(LUPRI,'("  Allocated MPI memory (LSMATRIX):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_LSMATRIX
     WRITE(LUPRI,'("  Allocated MPI memory (CCORBITAL):       ",i9," byte  &
@@ -1034,7 +1034,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_used_SLSAOTENSOR,'SLSAOTENSOR')
     CALL print_maxmem(lupri,max_mem_used_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
     CALL print_maxmem(lupri,max_mem_used_ATOMTYPEITEM,'ATOMTYPEITEM')
-    CALL print_maxmem(lupri,max_mem_used_ATOM,'ATOM')
+    CALL print_maxmem(lupri,max_mem_used_ATOMITEM,'ATOMITEM')
     CALL print_maxmem(lupri,max_mem_used_LSMATRIX,'LSMATRIX')
     CALL print_maxmem(lupri,max_mem_used_overlapT,'OverlapType')
 
@@ -1093,8 +1093,8 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_GLOBALLSAOTENSOR
     WRITE(LUPRI,'("  Allocated memory (ATOMTYPEITEM):    ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ATOMTYPEITEM
-    WRITE(LUPRI,'("  Allocated memory (ATOM):            ",i9," byte  &
-         &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ATOM
+    WRITE(LUPRI,'("  Allocated memory (ATOMITEM):        ",i9," byte  &
+         &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ATOMITEM
     WRITE(LUPRI,'("  Allocated memory (LSMATRIX):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_LSMATRIX
     WRITE(LUPRI,'("  Allocated memory (CCORBITAL):       ",i9," byte  &
@@ -1172,7 +1172,7 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_tp_used_SLSAOTENSOR,'SLSAOTENSOR')
     CALL print_maxmem(lupri,max_mem_tp_used_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
     CALL print_maxmem(lupri,max_mem_tp_used_ATOMTYPEITEM,'ATOMTYPEITEM')
-    CALL print_maxmem(lupri,max_mem_tp_used_ATOM,'ATOM')
+    CALL print_maxmem(lupri,max_mem_tp_used_ATOMITEM,'ATOMITEM')
     CALL print_maxmem(lupri,max_mem_tp_used_LSMATRIX,'LSMATRIX')
     CALL print_maxmem(lupri,max_mem_tp_used_overlapT,'OverlapType')
 
@@ -1232,7 +1232,7 @@ end subroutine collect_thread_memory
     if (max_mem_used_SLSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_SLSAOTENSOR,'SLSAOTENSOR')
     if (max_mem_used_GLOBALLSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
     if (max_mem_used_ATOMTYPEITEM > 0_long) call print_maxmem(lupri,max_mem_used_ATOMTYPEITEM,'ATOMTYPEITEM')
-    if (max_mem_used_ATOM > 0_long) call print_maxmem(lupri,max_mem_used_ATOM,'ATOM')
+    if (max_mem_used_ATOMITEM > 0_long) call print_maxmem(lupri,max_mem_used_ATOMITEM,'ATOMITEM')
     if (max_mem_used_LSMATRIX > 0_long) call print_maxmem(lupri,max_mem_used_LSMATRIX,'LSMATRIX')
     if (max_mem_used_overlapT > 0_long) call print_maxmem(lupri,max_mem_used_overlapT,'overlapType')
 
@@ -1272,7 +1272,7 @@ end subroutine collect_thread_memory
     if (mem_allocated_SLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_SLSAOTENSOR,'SLSAOTENSOR')
     if (mem_allocated_GLOBALLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
     if (mem_allocated_ATOMTYPEITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMTYPEITEM,'ATOMTYPEITEM')
-    if (mem_allocated_ATOM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOM,'ATOM')
+    if (mem_allocated_ATOMITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMITEM,'ATOMITEM')
     if (mem_allocated_LSMATRIX > 0_long) call print_mem_alloc(lupri,mem_allocated_LSMATRIX,'LSMATRIX')
     if (mem_allocated_overlapT > 0_long) call print_mem_alloc(lupri,mem_allocated_overlapT,'overlapType')
 
@@ -1326,7 +1326,7 @@ end subroutine collect_thread_memory
     if (max_mem_used_SLSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_SLSAOTENSOR,'SLSAOTENSOR')
     if (max_mem_used_GLOBALLSAOTENSOR > 0_long) call print_maxmem(lupri,max_mem_used_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
     if (max_mem_used_ATOMTYPEITEM > 0_long) call print_maxmem(lupri,max_mem_used_ATOMTYPEITEM,'ATOMTYPEITEM')
-    if (max_mem_used_ATOM > 0_long) call print_maxmem(lupri,max_mem_used_ATOM,'ATOM')
+    if (max_mem_used_ATOMITEM > 0_long) call print_maxmem(lupri,max_mem_used_ATOMITEM,'ATOMITEM')
     if (max_mem_used_LSMATRIX > 0_long) call print_maxmem(lupri,max_mem_used_LSMATRIX,'LSMATRIX')
     if (max_mem_used_overlapT > 0_long) call print_maxmem(lupri,max_mem_used_overlapT,'overlapType')
 
@@ -1365,7 +1365,7 @@ end subroutine collect_thread_memory
     if (mem_allocated_SLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_SLSAOTENSOR,'SLSAOTENSOR')
     if (mem_allocated_GLOBALLSAOTENSOR > 0_long) call print_mem_alloc(lupri,mem_allocated_GLOBALLSAOTENSOR,'GLOBALLSAOTENSOR')
     if (mem_allocated_ATOMTYPEITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMTYPEITEM,'ATOMTYPEITEM')
-    if (mem_allocated_ATOM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOM,'ATOM')
+    if (mem_allocated_ATOMITEM > 0_long) call print_mem_alloc(lupri,mem_allocated_ATOMITEM,'ATOMITEM')
     if (mem_allocated_LSMATRIX > 0_long) call print_mem_alloc(lupri,mem_allocated_LSMATRIX,'LSMATRIX')
     if (mem_allocated_overlapT > 0_long) call print_mem_alloc(lupri,mem_allocated_overlapT,'overlapType')
 
@@ -3666,40 +3666,40 @@ END SUBROUTINE ATOMTYPEITEM_deallocate_1dim
 
 !----- ALLOCATE ATOMTYPEITEM POINTERS -----!
 
-SUBROUTINE ATOM_allocate_1dim(ATOMITEM,n)
+SUBROUTINE ATOMITEM_allocate_1dim(ATOMITEMITEM,n)
 implicit none
 integer,intent(in) :: n
-TYPE(ATOM),pointer    :: ATOMITEM(:)
+TYPE(ATOMITEM),pointer    :: ATOMITEMITEM(:)
 integer :: IERR
 integer (kind=long) :: nsize
-nullify(ATOMITEM)
-ALLOCATE(ATOMITEM(n),STAT = IERR)
+nullify(ATOMITEMITEM)
+ALLOCATE(ATOMITEMITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in ATOM_allocate_1dim',IERR,n
+   write(*,*) 'Error in ATOMITEM_allocate_1dim',IERR,n
    STOP
 ENDIF
-nsize = size(ATOMITEM,KIND=long)*mem_ATOMsize
-call mem_allocated_mem_ATOM(nsize)
-END SUBROUTINE ATOM_allocate_1dim
+nsize = size(ATOMITEMITEM,KIND=long)*mem_ATOMITEMsize
+call mem_allocated_mem_ATOMITEM(nsize)
+END SUBROUTINE ATOMITEM_allocate_1dim
 
-SUBROUTINE ATOM_deallocate_1dim(ATOMITEM)
+SUBROUTINE ATOMITEM_deallocate_1dim(ATOMITEMITEM)
 implicit none
-TYPE(ATOM),pointer :: ATOMITEM(:)
+TYPE(ATOMITEM),pointer :: ATOMITEMITEM(:)
 integer :: IERR
 integer (kind=long) :: nsize
-   nsize = size(ATOMITEM,KIND=long)*mem_ATOMsize
-   call mem_deallocated_mem_ATOM(nsize)
-   if (.not.ASSOCIATED(ATOMITEM)) then
+   nsize = size(ATOMITEMITEM,KIND=long)*mem_ATOMITEMsize
+   call mem_deallocated_mem_ATOMITEM(nsize)
+   if (.not.ASSOCIATED(ATOMITEMITEM)) then
       print *,'Memory previously released!!'
-      call memory_error_quit('Error in ATOM_deallocate_1dim - memory previously released')
+      call memory_error_quit('Error in ATOMITEM_deallocate_1dim - memory previously released')
    endif
-   DEALLOCATE(ATOMITEM,STAT = IERR)
+   DEALLOCATE(ATOMITEMITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
-      write(*,*) 'Error in ATOM_deallocate_1dim',IERR
+      write(*,*) 'Error in ATOMITEM_deallocate_1dim',IERR
       STOP
    ENDIF
-   NULLIFY(ATOMITEM)
-END SUBROUTINE ATOM_deallocate_1dim
+   NULLIFY(ATOMITEMITEM)
+END SUBROUTINE ATOMITEM_deallocate_1dim
 
 !----- ALLOCATE LSMATRIX POINTERS -----!
 
@@ -4955,49 +4955,49 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      ENDIF
    end subroutine mem_deallocated_mem_ATOMTYPEITEM
 
-  subroutine mem_allocated_mem_ATOM(nsize)
+  subroutine mem_allocated_mem_ATOMITEM(nsize)
      implicit none
      integer (kind=long), intent(in) :: nsize
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
-        mem_tp_allocated_ATOM = mem_tp_allocated_ATOM + nsize
-        max_mem_tp_used_ATOM = MAX(max_mem_tp_used_ATOM,mem_tp_allocated_ATOM)
+        mem_tp_allocated_ATOMITEM = mem_tp_allocated_ATOMITEM + nsize
+        max_mem_tp_used_ATOMITEM = MAX(max_mem_tp_used_ATOMITEM,mem_tp_allocated_ATOMITEM)
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global  + nsize
         max_mem_tp_used_global = MAX(max_mem_tp_used_global,mem_tp_allocated_global)
      ELSE
-        mem_allocated_ATOM = mem_allocated_ATOM + nsize
-        max_mem_used_ATOM = MAX(max_mem_used_ATOM,mem_allocated_ATOM)
+        mem_allocated_ATOMITEM = mem_allocated_ATOMITEM + nsize
+        max_mem_used_ATOMITEM = MAX(max_mem_used_ATOMITEM,mem_allocated_ATOMITEM)
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global  + nsize
         max_mem_used_global = MAX(max_mem_used_global,mem_allocated_global)
      ENDIF
-   end subroutine mem_allocated_mem_ATOM
+   end subroutine mem_allocated_mem_ATOMITEM
 
-   subroutine mem_deallocated_mem_ATOM(nsize)
+   subroutine mem_deallocated_mem_ATOMITEM(nsize)
      implicit none
      integer (kind=long), intent(in) :: nsize
      IF(mem_InsideOMPsection)THEN!we add to thread private variables
-        mem_tp_allocated_ATOM = mem_tp_allocated_ATOM - nsize
-        if (mem_tp_allocated_ATOM < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOM - probably integer overflow!')
+        mem_tp_allocated_ATOMITEM = mem_tp_allocated_ATOMITEM - nsize
+        if (mem_tp_allocated_ATOMITEM < 0) then
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMITEM - probably integer overflow!')
         endif
         !Count also the total memory:
         mem_tp_allocated_global = mem_tp_allocated_global - nsize
         if (mem_tp_allocated_global < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOM - probably integer overflow!')
+           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ATOMITEM - probably integer overflow!')
         endif
      ELSE
-        mem_allocated_ATOM = mem_allocated_ATOM - nsize
-        if (mem_allocated_ATOM < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ATOM - probably integer overflow!')
+        mem_allocated_ATOMITEM = mem_allocated_ATOMITEM - nsize
+        if (mem_allocated_ATOMITEM < 0) then
+           call memory_error_quit('Error in mem_deallocated_mem_ATOMITEM - probably integer overflow!')
         endif
         !Count also the total memory:
         mem_allocated_global = mem_allocated_global - nsize
         if (mem_allocated_global < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ATOM - probably integer overflow!')
+           call memory_error_quit('Error in mem_deallocated_mem_ATOMITEM - probably integer overflow!')
         endif
      ENDIF
-   end subroutine mem_deallocated_mem_ATOM
+   end subroutine mem_deallocated_mem_ATOMITEM
 
   subroutine mem_allocated_mem_LSMATRIX(nsize)
      implicit none
@@ -5790,7 +5790,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      longintbufferInt(18) = mem_allocated_SLSAOTENSOR
      longintbufferInt(19) = mem_allocated_GLOBALLSAOTENSOR
      longintbufferInt(20) = mem_allocated_ATOMTYPEITEM
-     longintbufferInt(21) = mem_allocated_ATOM
+     longintbufferInt(21) = mem_allocated_ATOMITEM
      longintbufferInt(22) = mem_allocated_LSMATRIX
      longintbufferInt(23) = max_mem_used_global
      longintbufferInt(24) = max_mem_used_type_matrix
@@ -5812,7 +5812,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      longintbufferInt(40) = max_mem_used_SLSAOTENSOR
      longintbufferInt(41) = max_mem_used_GLOBALLSAOTENSOR
      longintbufferInt(42) = max_mem_used_ATOMTYPEITEM
-     longintbufferInt(43) = max_mem_used_ATOM
+     longintbufferInt(43) = max_mem_used_ATOMITEM
      longintbufferInt(44) = max_mem_used_LSMATRIX
      longintbufferInt(45) = mem_allocated_CCORBITAL
      longintbufferInt(46) = max_mem_used_CCORBITAL
@@ -5871,7 +5871,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      mem_allocated_SLSAOTENSOR = longintbufferInt(18)
      mem_allocated_GLOBALLSAOTENSOR = longintbufferInt(19)
      mem_allocated_ATOMTYPEITEM = longintbufferInt(20)
-     mem_allocated_ATOM = longintbufferInt(21)
+     mem_allocated_ATOMITEM = longintbufferInt(21)
      mem_allocated_LSMATRIX = longintbufferInt(22)
      max_mem_used_global = longintbufferInt(23)
      max_mem_used_type_matrix = longintbufferInt(24)
@@ -5893,7 +5893,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      max_mem_used_SLSAOTENSOR = longintbufferInt(40)
      max_mem_used_GLOBALLSAOTENSOR = longintbufferInt(41)
      max_mem_used_ATOMTYPEITEM = longintbufferInt(42)
-     max_mem_used_ATOM = longintbufferInt(43)
+     max_mem_used_ATOMITEM = longintbufferInt(43)
      max_mem_used_LSMATRIX = longintbufferInt(44)
      mem_allocated_CCORBITAL = longintbufferInt(45)
      max_mem_used_CCORBITAL = longintbufferInt(46)
