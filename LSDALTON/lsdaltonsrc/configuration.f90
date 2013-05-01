@@ -3535,7 +3535,7 @@ use typedef
      CALL DFTsetFunc(WORD(1:80),hfweight)
   ELSE
 #ifdef VAR_XCFUN
-     call xcfun_host_init(WORD,hfweight,lupri)
+     call xcfun_host_init(WORD,hfweight,6)
 #else
      call lsquit('XCFUN mismatch ',-1)
 #endif
