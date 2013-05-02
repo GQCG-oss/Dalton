@@ -308,69 +308,6 @@ module dec_typedef_module
   endtype scalapack_block_info
 
 
-  type array
-     !mode=number of modes of the array or order of the corresponding tensor,
-     !nelms=number of elements in the array
-     !atype= format or distribution in which the array is stored --> dense, distributed --> see parameters in array_operations.f90
-     integer :: mode,nelms
-     integer :: atype
-     !> Dimensions
-     integer, pointer :: dims(:)     => null ()
-     !> Data, only allocate the first for the elements and use the others just
-     !to reference the data in the first pointer
-     real(realk), pointer :: elm1(:) => null()
-     ! the following should just point to elm1
-     real(realk), pointer :: elm2(:,:) => null()
-     real(realk), pointer :: elm3(:,:,:) => null()
-     real(realk), pointer :: elm4(:,:,:,:) => null()
-     real(realk), pointer :: elm5(:,:,:,:,:) => null()
-     real(realk), pointer :: elm6(:,:,:,:,:,:) => null()
-     real(realk), pointer :: elm7(:,:,:,:,:,:,:) => null()
-
-
-     !in order to have only one array type the tile information is always there
-     type(c_ptr)        :: dummyc
-     real(realk),pointer:: dummy(:)  => null()       !for the creation of mpi windows a dummy is required
-     type(tile),pointer :: ti(:)     => null()       !tiles, if matrix should be distributed
-     integer(kind=ls_mpik),pointer    :: wi(:)     => null()       !windows for tiles, if matrix should be distributed, there are ntiles windows to be inited
-     integer,pointer    :: ntpm(:)   => null()       !dimensions in the modes, number of tiles per mode, 
-     integer,pointer    :: tdim(:)   => null()       !dimension of the tiles per mode(per def symmetric, but needed)
-     integer,pointer    :: addr_p_arr(:)   => null() !address of array in persistent array "p_arr" on each node
-     !global tile information
-     integer :: ntiles,tsize                         !batching of tiles in one mode, number of tiles, tilesize (ts^mode), amount of modes of the array
-     integer :: nlti                                 !number of local tiles
-     integer :: offset                               !use offset in nodes for the distribution of arrays
-     integer :: init_type                            !type of initializtation
-     logical :: zeros=.false.                        !use zeros in tiles --> it is at the moment not recommended to use .true. here
-
-!#ifdef VAR_SCALAPACK
-!     !> PE add PDM for 4idx arrays
-!     ! when using parallel distributed memory the following parameter defines uniquely
-!     ! the distribution of the array, but there are restrictions on the distribution
-!     ! of the 4 idx quantities since only 2D cyclic distribution makes sense with the
-!     ! scalapack routines. The integers at different postions have special meanings
-!     ! read it in the following way [row node that contains fist element of array, how many dimensions are spread over rows, column node that contains first element of array, how many dimensions are spread over cols]
-!     ! or [ frn , rdim , fcn , cdim ]
-!     ! so if both rdim and cdim /= 0 then obligatory rdim+cdim=4
-!     ! to account for load balancing  
-!     integer, pointer :: distribution(:) => null()
-!     ! the array4 parts on the nodes are allocated in the DARRAY which was implemented
-!     ! for the matrix type but has general functionality, to identify the parts, the
-!     ! address is saved for the nodes rows and cols on master in addr_on_grid
-!     integer,pointer :: addr_on_grid(:,:) => null()
-!     integer :: localnrow,localncol,nrow,ncol,grid_nr
-!     type(scalapack_block_info) :: block(2)  !1=row block info , 2=col block info
-!#endif
-
-     !Dragging along all the old array4 stuff to stay compatible
-     integer :: FUnit
-     character(len=80) :: FileName
-     integer(kind=long) :: address_counter
-     integer :: storing_type
-     integer(kind=long) :: nelements
-     integer(kind=long), pointer :: address(:,:,:,:) => null()
-
-  end type array
 
   type array2
 

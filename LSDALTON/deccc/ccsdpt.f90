@@ -21,6 +21,7 @@ module ccsdpt_module
 !       & II_getBatchOrbitalScreen, II_GET_DECPACKED4CENTER_J_ERI
   use IntegralInterfaceMOD
   use Fundamental, only: bohr_to_angstrom
+  use tensor_interface_module
 
 
   ! DEC DEPENDENCIES (within deccc directory)  
@@ -32,8 +33,6 @@ module ccsdpt_module
   use array2_simple_operations
   use array3_simple_operations
   use array4_simple_operations
-  use dec_pdm_module
-  use array_operations
   
   public :: ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
        & ccsdpt_energy_e4_pair, ccsdpt_energy_e5_pair,&

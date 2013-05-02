@@ -17,6 +17,7 @@ module dec_main_mod
   use memory_handling!,only: mem_alloc, mem_dealloc
   use dec_typedef_module
   use files !,only:lsopen,lsclose
+  use tensor_interface_module
 
 
   ! DEC DEPENDENCIES (within deccc directory) 
@@ -26,7 +27,6 @@ module dec_main_mod
   use array4_memory_manager!,only: print_memory_currents4
   use full_molecule!,only: molecule_init, molecule_finalize,molecule_init_from_inputs
   use orbital_operations!,only: check_lcm_against_canonical
-  use array_operations!,only:test_array_struct,test_array_reorderings
   use full_molecule!,only: molecule_copyback_FSC_matrices
   use mp2_gradient_module!,only: dec_get_error_difference
   use dec_driver_module,only: dec_wrapper, main_fragment_driver
