@@ -345,6 +345,8 @@ set(LSUTIL_TYPE_SOURCES
     lsutil/tensor_basic.f90
     lsutil/lspdm_slave.f90
     lsutil/lspdm_tensor_operations.f90
+    lsutil/manual_reorderings.f90
+    lsutil/manual_utils.f90
     )
 
 set(LSUTILLIB_SOURCES
