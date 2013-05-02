@@ -38,8 +38,7 @@ FUNFILES = \
 CFILES =\
 	$(FUNFILES)	\
 	functionals.c	\
-	general.c	\
-	grid-gen.c	
+	general.c	
 
 EXTRA_FILES = fun-tester.c
 

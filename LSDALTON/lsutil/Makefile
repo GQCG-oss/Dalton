@@ -29,6 +29,14 @@ F90_OBJS = \
 	OverlapDistributionType.o\
 	ls_screenMPI.o\
 	lstensor_operations.o\
+        manual_utils.o\
+        manual_reorderings.o\
+        tensor_type_def.o\
+        tensor_interface.o\
+        lspdm_tensor_operations.o\
+        lspdm_slave.o\
+        tensor_basic.o\
+        lspdm_basic.o\
 	lstensorType.o\
 	lstensor_Mem.o\
 	LSoptType.o\

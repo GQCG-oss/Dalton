@@ -32,10 +32,6 @@ module rpa_module
   use decmpi_module!, only: mpi_communicate_ccsd_calcdata,distribute_mpi_jobs
 #endif
     use dec_fragment_utils
-    use array_memory_manager!, only: DENSE,TILED,TILED_DIST,SCALAPACK,&
-!         & NO_PDM,MASTER_INIT,REPLICATED,ALL_INIT,ass_1to3,ass_1to2,&
-!         & ass_1to4,ass_2to1,&
-!         & ass_4to1,ARR_MSG_LEN
     use ri_simple_operations
     use array2_simple_operations!, only: array2_init, array2_add,&
 !         & array2_transpose, array2_free, array2_add_to
@@ -48,9 +44,6 @@ module rpa_module
 !         & array4_read_file_type2, array4_write_file_type2,&
 !         & array4_open_file, array4_read_file, array4_close_file,&
 !         & array4_write_file
-    use dec_pdm_module!, only: precondition_doubles_parallel
-    use array_operations!, only: array_init, array_change_atype_to_rep,&
-!         & array_change_atype_to_d,print_norm
     use ccintegrals!, only: get_gmo_simple,getL,dec_fock_transformation
     use ccsd_module
 
