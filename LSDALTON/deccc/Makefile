@@ -46,8 +46,8 @@ clean :
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
 
 
-Makefile.depend depend: $(F90_OBJS:.o=.f90) $(C_OBJS:.o=.c) 
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../LSint -M../lsutil -- $(F90_OBJS:.o=.f90) > Makefile.depend
+Makefile.depend depend: $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c) 
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../LSint -M../lsutil -- $(F90_OBJS:.o=.F90) > Makefile.depend
 
 include Makefile.depend
 ######################################################################
