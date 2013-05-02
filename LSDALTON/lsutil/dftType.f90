@@ -41,7 +41,6 @@ INTEGER           :: HRDNES ! hardness of the partition function in the becke sc
 LOGICAL           :: NOPRUN                  !.TRUE.
 INTEGER           :: TURBO
 INTEGER           :: NBUFLEN                 !0
-LOGICAL           :: NEWGRID                 !.FALSE.
 integer           :: Id !1,2 or 3 corresponds to (Grid_Default,Grid_ADMML2,..)
 integer           :: NBAST
 END TYPE GridItem
@@ -80,7 +79,6 @@ LOGICAL           :: DFTADD !                .TRUE.
 LOGICAL           :: DISPDONE !              .FALSE.
 INTEGER           :: TURBO
 INTEGER           :: NBUFLEN                 !0
-LOGICAL           :: NEWGRID                 !.FALSE.
 Logical           :: testNelectrons          !.TRUE.
 Logical           :: LB94      !van Leeuwen-Baerends correction
 Logical           :: CS00      !Casida-Salahub asymptotic correction
@@ -142,7 +140,6 @@ do iGrid=1,size(gridObject)
    GridObject(iGrid)%NOPRUN = dft%NOPRUN
    GridObject(iGrid)%TURBO = dft%TURBO
    GridObject(iGrid)%nbuflen = dft%nbuflen
-   GridObject(iGrid)%NewGrid = dft%NewGrid
    GridObject(iGrid)%Id = iGrid
    GridObject(iGrid)%NBAST = 0
    !module parameters
