@@ -343,7 +343,6 @@ set(LSUTIL_TYPE_SOURCES
     lsutil/Build_AOBATCH.f90
     lsutil/lspdm_basic.f90
     lsutil/tensor_basic.f90
-    lsutil/lspdm_slave.f90
     lsutil/lspdm_tensor_operations.f90
     lsutil/manual_reorderings.f90
     lsutil/manual_utils.f90
@@ -364,6 +363,7 @@ set(LSUTILLIB_SOURCES
     lsutil/ProfileType.f90
     lsutil/pbc_lattice_vectors.f90
     lsutil/tensor_interface.f90
+    lsutil/lspdm_slave.f90
     )   
 
 set(LSLIB_SOURCES
