@@ -25,7 +25,8 @@ use dft_typetype
 ! JSTRT        !   PRIEXPSTART  !index to start in PRIEXP for shell
 !========================================================== 
 integer :: ABSVAL_MXBLLEN 
-
+private 
+public :: II_ABSVALINT
 CONTAINS
 SUBROUTINE SET_ABSVAL_MXBLLEN(NBAST)
 implicit none
@@ -103,7 +104,6 @@ LOGICAL     :: CHECKELS,SETIT,LDUM,PRINTTIM
 integer,pointer :: LVALUE(:,:),MVALUE(:,:),NVALUE(:,:)
 integer :: mmm
 
-IF(.NOT.GridObject%newgrid)call lsquit(' requires newgrid',-1)
 IT=0
 SETIT=.FALSE.
 IF(GridObject%GRIDDONE .EQ. 0)THEN
@@ -199,7 +199,7 @@ CALL II_ABSVAL_GRID_LOOP(GridObject%NBUFLEN,IT,nbast,maxNactbast,BAS%maxnshell,&
      & DFThri,CMAT,BAS%PRIEXPSTART,lupri,&
      & BAS%mxprim,BAS%shellangmom,MMM,BAS%maxangmom,BAS%nstart,BAS%priexp,&
      & spsize,sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,&
-     & GridObject%newgrid,node,GridObject%Id)
+     & node,GridObject%Id)
 call mem_dft_dealloc(SPHMAT)
 call mem_dft_dealloc(SPINDEX)
 call mem_dft_dealloc(LVALUE)
@@ -211,7 +211,7 @@ SUBROUTINE II_ABSVAL_GRID_LOOP(NBUFLEN,IT,nbast,maxNactbast,maxnshell,&
      & CC,ushells,CCSTART,CCINDEX,CENT,ABSVALOVERLAP,&
      & DFThri,CMAT,PRIEXPSTART,lupri,&
      & mxprim,shellangmom,MMM,maxangmom,nstart,priexp,spsize,&
-     &sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,newgrid,node,GridId)
+     &sphmat,spsize2,spindex,LVALUE,MVALUE,NVALUE,noOMP,node,GridId)
 implicit none
 integer,intent(in) :: LUPRI,MAXNSHELL,nbast,NBUFLEN,gridid
 integer :: IT
@@ -254,7 +254,6 @@ integer,intent(in) :: spsize2
 !> size of spherical transformation matrices
 real(realk),intent(in) :: sphmat(spsize)
 !> use the new grid?
-logical,intent(in) :: newgrid
 integer,intent(in) :: spindex(spsize2)
 integer,intent(in) :: LVALUE(MMM,MAXANGMOM),MVALUE(MMM,MAXANGMOM),NVALUE(MMM,MAXANGMOM)
 integer(kind=ls_mpik),intent(in) ::  node
@@ -291,7 +290,7 @@ IF(.NOT.noOMP) call mem_dft_TurnONThread_Memory()
 !$OMP ACTIVE_CMAT,BLOCKS,GAO,NLEN,NactBAS,I,myABSVALOVERLAP,&
 !$OMP tid,nthreads,TMP,TMP2) SHARED(ushells,CC,CCSTART,CCINDEX,CENT,Cmat,&
 !$OMP PRIEXPSTART,shellangmom,MMM,maxangmom,nstart,priexp,spsize,spsize2,sphmat,&
-!$OMP spindex,ABSVALOVERLAP,noOMP,NBUFLEN,it,lupri,nbast,maxnshell,mxprim,newgrid,&
+!$OMP spindex,ABSVALOVERLAP,noOMP,NBUFLEN,it,lupri,nbast,maxnshell,mxprim,&
 !$OMP dfthri,LVALUE,MVALUE,NVALUE,MaxNactBast,lugrid)
 IF(.NOT.noOMP) call init_dft_threadmemvar()
 #ifdef VAR_OMP

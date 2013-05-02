@@ -25,7 +25,6 @@ set(DFTFUNC_SOURCES
     dft/fun-vwn.c
     dft/functionals.c
     dft/general.c
-    dft/grid-gen.c
     )
 set(DFTFUNC_F_SOURCES
     dft/II_util.f90
