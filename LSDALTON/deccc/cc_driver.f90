@@ -2403,11 +2403,11 @@ contains
     call array_convert(yho_d,yho)
     call array_convert(yhv_d,yhv)
     call array_convert(fock_f,fock)
-    call print_norm(ypo_d,int(nb*no,kind=8))
-    call print_norm(ypv_d,int(nb*nv,kind=8))
-    call print_norm(yho_d,int(nb*no,kind=8))
-    call print_norm(yhv_d,int(nb*nv,kind=8))
 
+    call mem_dealloc(ypo_d)
+    call mem_dealloc(ypv_d)
+    call mem_dealloc(yho_d)
+    call mem_dealloc(yhv_d)
     ! Get Fock matrix correction (for fragment and/or frozen core)
     ! ************************************************************
     ! Full molecule/frozen core: The correction corresponds to difference between actual Fock matrix

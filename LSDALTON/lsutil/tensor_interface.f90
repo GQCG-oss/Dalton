@@ -1043,7 +1043,6 @@ contains
     real(realk), intent(in) :: fortarr(:,:)
     type(array), intent(inout) :: arr
     integer, intent(in),optional :: order(arr%mode)
-    print *,"converting",arr%nelms
     if(present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms,order)
     if(.not.present(order))call array_convert_fort2arr(fortarr,arr,arr%nelms)
   end subroutine array_convert_fort2arr_wrapper2
@@ -2484,7 +2483,7 @@ contains
       call array_free(test2)
       call array_print_mem_info(DECinfo%output,.true.,.false.,succ)
       if(succ/=0)teststatus=" FAILED"
-      test2=array_init([nb,no,nv,no+1],4,TILED_DIST,MASTER_INIT,[1,2,3,4])
+      test2=array_init([nb,no,nv,no+1],4,TILED_DIST,MASTER_INIT,[3,2,3,4])
       write (DECinfo%output,'(" ALLOC-DEALLOC TESTS: ",A7)'),teststatus  
 
       !ALLOCATING A FULL MATRIX AND PUT IT TO DISTRIBUTED MEMORY
@@ -2646,7 +2645,7 @@ contains
     call array_free(test2)
     call array_print_mem_info(DECinfo%output,.true.,.true.,succ)
     if(succ/=0)teststatus=" FAILED"
-    test2=array_init([nb,no,nv,no+1],4,TILED_DIST,ALL_INIT,[1,2,3,4])
+    test2=array_init([nb,no,nv,no+1],4,TILED_DIST,ALL_INIT,[3,2,3,4])
     if(master) write (DECinfo%output,'(" ALLOC-DEALLOC TESTS: ",A7)'),teststatus  
     if(master) write (DECinfo%output,*),"DONE -- NOW COMMUNICATION"
     if(master) write(DECinfo%output,*),""
