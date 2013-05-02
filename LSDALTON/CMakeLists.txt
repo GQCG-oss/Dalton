@@ -597,6 +597,7 @@ MERGE_STATIC_LIBS(
     linearslib
     rsp_prop
     geooptlib
+    xcfun_interface
     lsdaltonmain 
     )
 

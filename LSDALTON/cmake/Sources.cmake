@@ -25,7 +25,6 @@ set(DFTFUNC_SOURCES
     dft/fun-vwn.c
     dft/functionals.c
     dft/general.c
-    dft/grid-gen.c
     )
 set(DFTFUNC_F_SOURCES
     dft/II_util.f90
@@ -55,8 +54,6 @@ set(DDYNAM_SOURCES
     )
 set(DEC_SOURCES
     deccc/array4_memory.f90
-    deccc/array_operations.f90
-    deccc/array_memory.f90
     deccc/array3_memory.f90
     deccc/ccarray3_simple.f90
     deccc/CABS.f90
@@ -68,8 +65,6 @@ set(DEC_SOURCES
     deccc/f12_integrals.f90
     deccc/cc_driver.f90
     deccc/cc_integrals.f90
-    deccc/manual_reorderings.f90
-    deccc/manual_utils.f90
     deccc/ccarray2_simple.f90
     deccc/ccarray4_simple.f90
     deccc/ccorbital.f90
@@ -87,7 +82,6 @@ set(DEC_SOURCES
     deccc/full_driver.f90
     deccc/decmpi.f90
     deccc/decmpiSlave.f90
-    deccc/dec_pdm.f90
     )	
 set(GEOOPT_SOURCES
     geomopt/LSopt-input.f90
@@ -277,6 +271,7 @@ set(LSUTIL_MATRIXM_SOURCES
 
 set(LSUTIL_COMMON_SOURCES
     lsutil/rsp-typedef.f90
+    lsutil/tensor_type_def.f90
     lsutil/response_prop_type.f90
     lsutil/ls_IOType.f90
     lsutil/AOType.f90
@@ -345,6 +340,11 @@ set(LSUTIL_TYPE_SOURCES
     lsutil/TYPE-OP.f90
     lsutil/pbc_lattice_type.f90
     lsutil/Build_AOBATCH.f90
+    lsutil/lspdm_basic.f90
+    lsutil/tensor_basic.f90
+    lsutil/lspdm_tensor_operations.f90
+    lsutil/manual_reorderings.f90
+    lsutil/manual_utils.f90
     )
 
 set(LSUTILLIB_SOURCES
@@ -361,6 +361,8 @@ set(LSUTILLIB_SOURCES
     lsutil/ddynType.f90
     lsutil/ProfileType.f90
     lsutil/pbc_lattice_vectors.f90
+    lsutil/tensor_interface.f90
+    lsutil/lspdm_slave.f90
     )   
 
 set(LSLIB_SOURCES

@@ -20,16 +20,15 @@ module ccdriver
 #ifdef VAR_LSMPI
   use infpar_module
 #endif
+  use tensor_interface_module
 
 
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use dec_fragment_utils!,only: get_density_from_occ_orbitals
-  use array_memory_manager
   use crop
   use array2_simple_operations
   use array4_simple_operations
-  use array_operations
   use ri_simple_operations!,only: get_ao_ri_intermediate, ri_reset,ri_init, ri_free
   use mp2_module!,only: get_VOVO_integrals
   use ccintegrals!,only:get_full_eri,getL_simple_from_gmo,&
@@ -2399,17 +2398,15 @@ contains
     yhv  = array_init(virt_dims,2)
     fock = array_init(ao2_dims,2)
 
-    call array_convert(ypo_d,ypo,nb*no)
-    call array_convert(ypv_d,ypv,nb*nv)
-    call array_convert(yho_d,yho,nb*no)
-    call array_convert(yhv_d,yhv,nb*nv)
-    call array_convert(fock_f,fock,nb*nb)
-
-    call mem_dealloc(ypo_d)
-    call mem_dealloc(ypv_d)
-    call mem_dealloc(yho_d)
-    call mem_dealloc(yhv_d)
-
+    call array_convert(ypo_d,ypo)
+    call array_convert(ypv_d,ypv)
+    call array_convert(yho_d,yho)
+    call array_convert(yhv_d,yhv)
+    call array_convert(fock_f,fock)
+    call print_norm(ypo_d,int(nb*no,kind=8))
+    call print_norm(ypv_d,int(nb*nv,kind=8))
+    call print_norm(yho_d,int(nb*no,kind=8))
+    call print_norm(yhv_d,int(nb*nv,kind=8))
 
     ! Get Fock matrix correction (for fragment and/or frozen core)
     ! ************************************************************
@@ -2449,7 +2446,6 @@ contains
     else 
        ! Full molecule: deltaF = F(Dcore) for frozen core (0 otherwise)
        if(DECinfo%frozencore) then
-          print *,"ATTENZIONE: frozencore"
           ! Fock matrix from input MOs
           ifock=array_init(ao2_dims,2)
           call get_fock_matrix_for_dec(nb,dens,mylsitem,ifock,.true.)
@@ -2491,8 +2487,8 @@ contains
        call array_change_atype_to_rep(ppfock_prec)
        call array_change_atype_to_rep(qqfock_prec)
        if(DECinfo%precondition_with_full) then
-          call array_convert(ppfock_d,ppfock_prec,no*no)
-          call array_convert(qqfock_d,qqfock_prec,nv*nv)
+          call array_convert(ppfock_d,ppfock_prec)
+          call array_convert(qqfock_d,qqfock_prec)
        else
           tmp = array_init([nb,no],2)
           call array_contract_outer_indices_rl(1.0E0_realk,fock,yho,0.0E0_realk,tmp)
@@ -2745,7 +2741,9 @@ contains
        call print_norm(omega2(iter),one_norm2,.true.)
        one_norm_total = one_norm1 + one_norm2
        two_norm_total = sqrt(one_norm_total)
-       !print*,"SETTING TWONORM TO QUIT";two_norm_total=0.9E-5_realk
+       !if(iter==3)then
+       !  print*,"SETTING TWONORM TO QUIT";two_norm_total=0.9E-5_realk
+       !endif
        ! simple crop diagnostics
        if(two_norm_total < prev_norm) then
           crop_ok=.true.
@@ -2878,7 +2876,7 @@ contains
              if(.not.longrange_singles) then ! just copy
                 t1_final = array2_init(ampl2_dims)
              end if
-             call dcopy(t1(i)%nelms,t1(last_iter)%elm1,1,t1_final%val,1)
+             call dcopy(int(t1(i)%nelms),t1(last_iter)%elm1,1,t1_final%val,1)
           end if
 
           ! Free singles amplitudes and residuals
@@ -2913,7 +2911,7 @@ contains
        !call array4_free(gmo)
     else
        VOVO = array4_init([no,nv,no,nv])
-       call array_convert(iajb,VOVO%val,iajb%nelms)
+       call array_convert(iajb,VOVO%val)
        call array_free(iajb)
        call array4_reorder(VOVO,[2,1,4,3])
     end if
