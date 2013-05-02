@@ -112,127 +112,411 @@ module xcfun_host
   end subroutine xcfun_host_init
 
 
-  subroutine xcfun3_gga_components_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+  subroutine xcfun_metagga_unres_components_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT, ORDER)
     implicit none
-    REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
-    REAL(REALK),intent(inout) :: XCFUNOUTPUT(35,1)
+    REAL(REALK),intent(in) :: XCFUNINPUT(10,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(286,1)
+    integer, intent(in) :: order
+! Input:
+    !rho_a   = XCFUNINPUT(1,1) 
+    !rho_b   = XCFUNINPUT(2,1) 
+    !agrad_x = XCFUNINPUT(3,1) 
+    !agrad_y = XCFUNINPUT(4,1) 
+    !agrad_z = XCFUNINPUT(5,1) 
+    !bgrad_x = XCFUNINPUT(6,1) 
+    !bgrad_y = XCFUNINPUT(7,1) 
+    !bgrad_z = XCFUNINPUT(8,1) 
+    !taua    = XCFUNINPUT(9,1) 
+    !taub    = XCFUNINPUT(10,1) 
+! Output
+    ! Order 0
+    ! out(1,1) Exc
+    ! Order 1
+    ! out(2,1) d^1 Exc / d na
+    ! out(3,1) d^1 Exc / d nb
+    ! out(4,1) d^1 Exc / d ax
+    ! out(5,1) d^1 Exc / d ay
+    ! out(6,1) d^1 Exc / d az
+    ! out(7,1) d^1 Exc / d bx
+    ! out(8,1) d^1 Exc / d by
+    ! out(9,1) d^1 Exc / d bz
+    ! out(10,1) d^1 Exc / d taua
+    ! out(11,1) d^1 Exc / d taub
+    ! Order 2
+    ! out(12,1) d^2 Exc / d na na
+    ! out(13,1) d^2 Exc / d na nb
+    ! out(14,1) d^2 Exc / d na ax
+    ! out(15,1) d^2 Exc / d na ay
+    ! out(16,1) d^2 Exc / d na az
+    ! out(17,1) d^2 Exc / d na bx
+    ! out(18,1) d^2 Exc / d na by
+    ! out(19,1) d^2 Exc / d na bz
+    ! out(20,1) d^2 Exc / d na taua
+    ! out(21,1) d^2 Exc / d na taub
+    ! out(22,1) d^2 Exc / d nb nb
+    ! out(23,1) d^2 Exc / d nb ax
+    ! out(24,1) d^2 Exc / d nb ay
+    ! out(25,1) d^2 Exc / d nb az
+    ! out(26,1) d^2 Exc / d nb bx
+    ! out(27,1) d^2 Exc / d nb by
+    ! out(28,1) d^2 Exc / d nb bz
+    ! out(29,1) d^2 Exc / d nb taua
+    ! out(30,1) d^2 Exc / d nb taub
+    ! out(31,1) d^2 Exc / d ax ax
+    ! out(32,1) d^2 Exc / d ax ay
+    ! out(33,1) d^2 Exc / d ax az
+    ! out(34,1) d^2 Exc / d ax bx
+    ! out(35,1) d^2 Exc / d ax by
+    ! out(36,1) d^2 Exc / d ax bz
+    ! out(37,1) d^2 Exc / d ax taua
+    ! out(38,1) d^2 Exc / d ax taub
+    ! out(39,1) d^2 Exc / d ay ay
+    ! out(40,1) d^2 Exc / d ay az
+    ! out(41,1) d^2 Exc / d ay bx
+    ! out(42,1) d^2 Exc / d ay by
+    ! out(43,1) d^2 Exc / d ay bz
+    ! out(44,1) d^2 Exc / d ay taua
+    ! out(45,1) d^2 Exc / d ay taub
+    ! out(46,1) d^2 Exc / d az az
+    ! out(47,1) d^2 Exc / d az bx
+    ! out(48,1) d^2 Exc / d az by
+    ! out(49,1) d^2 Exc / d az bz
+    ! out(50,1) d^2 Exc / d az taua
+    ! out(51,1) d^2 Exc / d az taub
+    ! out(52,1) d^2 Exc / d bx bx
+    ! out(53,1) d^2 Exc / d bx by
+    ! out(54,1) d^2 Exc / d bx bz
+    ! out(55,1) d^2 Exc / d bx taua
+    ! out(56,1) d^2 Exc / d bx taub
+    ! out(57,1) d^2 Exc / d by by
+    ! out(58,1) d^2 Exc / d by bz
+    ! out(59,1) d^2 Exc / d by taua
+    ! out(60,1) d^2 Exc / d by taub
+    ! out(61,1) d^2 Exc / d bz bz
+    ! out(62,1) d^2 Exc / d bz taua
+    ! out(63,1) d^2 Exc / d bz taub
+    ! out(64,1) d^2 Exc / d taua taua
+    ! out(65,1) d^2 Exc / d taua taub
+    ! out(66,1) d^2 Exc / d taub taub
+    ! Order 3
+    ! out(67,1) d^3 Exc / d na na na
+    ! out(68,1) d^3 Exc / d na na nb
+    ! out(69,1) d^3 Exc / d na na ax
+    ! out(70,1) d^3 Exc / d na na ay
+    ! out(71,1) d^3 Exc / d na na az
+    ! out(72,1) d^3 Exc / d na na bx
+    ! out(73,1) d^3 Exc / d na na by
+    ! out(74,1) d^3 Exc / d na na bz
+    ! out(75,1) d^3 Exc / d na na taua
+    ! out(76,1) d^3 Exc / d na na taub
+    ! out(77,1) d^3 Exc / d na nb nb
+    ! out(78,1) d^3 Exc / d na nb ax
+    ! out(79,1) d^3 Exc / d na nb ay
+    ! out(80,1) d^3 Exc / d na nb az
+    ! out(81,1) d^3 Exc / d na nb bx
+    ! out(82,1) d^3 Exc / d na nb by
+    ! out(83,1) d^3 Exc / d na nb bz
+    ! out(84,1) d^3 Exc / d na nb taua
+    ! out(85,1) d^3 Exc / d na nb taub
+    ! out(86,1) d^3 Exc / d na ax ax
+    ! out(87,1) d^3 Exc / d na ax ay
+    ! out(88,1) d^3 Exc / d na ax az
+    ! out(89,1) d^3 Exc / d na ax bx
+    ! out(90,1) d^3 Exc / d na ax by
+    ! out(91,1) d^3 Exc / d na ax bz
+    ! out(92,1) d^3 Exc / d na ax taua
+    ! out(93,1) d^3 Exc / d na ax taub
+    ! out(94,1) d^3 Exc / d na ay ay
+    ! out(95,1) d^3 Exc / d na ay az
+    ! out(96,1) d^3 Exc / d na ay bx
+    ! out(97,1) d^3 Exc / d na ay by
+    ! out(98,1) d^3 Exc / d na ay bz
+    ! out(99,1) d^3 Exc / d na ay taua
+    ! out(100,1) d^3 Exc / d na ay taub
+    ! out(101,1) d^3 Exc / d na az az
+    ! out(102,1) d^3 Exc / d na az bx
+    ! out(103,1) d^3 Exc / d na az by
+    ! out(104,1) d^3 Exc / d na az bz
+    ! out(105,1) d^3 Exc / d na az taua
+    ! out(106,1) d^3 Exc / d na az taub
+    ! out(107,1) d^3 Exc / d na bx bx
+    ! out(108,1) d^3 Exc / d na bx by
+    ! out(109,1) d^3 Exc / d na bx bz
+    ! out(110,1) d^3 Exc / d na bx taua
+    ! out(111,1) d^3 Exc / d na bx taub
+    ! out(112,1) d^3 Exc / d na by by
+    ! out(113,1) d^3 Exc / d na by bz
+    ! out(114,1) d^3 Exc / d na by taua
+    ! out(115,1) d^3 Exc / d na by taub
+    ! out(116,1) d^3 Exc / d na bz bz
+    ! out(117,1) d^3 Exc / d na bz taua
+    ! out(118,1) d^3 Exc / d na bz taub
+    ! out(119,1) d^3 Exc / d na taua taua
+    ! out(120,1) d^3 Exc / d na taua taub
+    ! out(121,1) d^3 Exc / d na taub taub
+    ! out(122,1) d^3 Exc / d nb nb nb
+    ! out(123,1) d^3 Exc / d nb nb ax
+    ! out(124,1) d^3 Exc / d nb nb ay
+    ! out(125,1) d^3 Exc / d nb nb az
+    ! out(126,1) d^3 Exc / d nb nb bx
+    ! out(127,1) d^3 Exc / d nb nb by
+    ! out(128,1) d^3 Exc / d nb nb bz
+    ! out(129,1) d^3 Exc / d nb nb taua
+    ! out(130,1) d^3 Exc / d nb nb taub
+    ! out(131,1) d^3 Exc / d nb ax ax
+    ! out(132,1) d^3 Exc / d nb ax ay
+    ! out(133,1) d^3 Exc / d nb ax az
+    ! out(134,1) d^3 Exc / d nb ax bx
+    ! out(135,1) d^3 Exc / d nb ax by
+    ! out(136,1) d^3 Exc / d nb ax bz
+    ! out(137,1) d^3 Exc / d nb ax taua
+    ! out(138,1) d^3 Exc / d nb ax taub
+    ! out(139,1) d^3 Exc / d nb ay ay
+    ! out(140,1) d^3 Exc / d nb ay az
+    ! out(141,1) d^3 Exc / d nb ay bx
+    ! out(142,1) d^3 Exc / d nb ay by
+    ! out(143,1) d^3 Exc / d nb ay bz
+    ! out(144,1) d^3 Exc / d nb ay taua
+    ! out(145,1) d^3 Exc / d nb ay taub
+    ! out(146,1) d^3 Exc / d nb az az
+    ! out(147,1) d^3 Exc / d nb az bx
+    ! out(148,1) d^3 Exc / d nb az by
+    ! out(149,1) d^3 Exc / d nb az bz
+    ! out(150,1) d^3 Exc / d nb az taua
+    ! out(151,1) d^3 Exc / d nb az taub
+    ! out(152,1) d^3 Exc / d nb bx bx
+    ! out(153,1) d^3 Exc / d nb bx by
+    ! out(154,1) d^3 Exc / d nb bx bz
+    ! out(155,1) d^3 Exc / d nb bx taua
+    ! out(156,1) d^3 Exc / d nb bx taub
+    ! out(157,1) d^3 Exc / d nb by by
+    ! out(158,1) d^3 Exc / d nb by bz
+    ! out(159,1) d^3 Exc / d nb by taua
+    ! out(160,1) d^3 Exc / d nb by taub
+    ! out(161,1) d^3 Exc / d nb bz bz
+    ! out(162,1) d^3 Exc / d nb bz taua
+    ! out(163,1) d^3 Exc / d nb bz taub
+    ! out(164,1) d^3 Exc / d nb taua taua
+    ! out(165,1) d^3 Exc / d nb taua taub
+    ! out(166,1) d^3 Exc / d nb taub taub
+    ! out(167,1) d^3 Exc / d ax ax ax
+    ! out(168,1) d^3 Exc / d ax ax ay
+    ! out(169,1) d^3 Exc / d ax ax az
+    ! out(170,1) d^3 Exc / d ax ax bx
+    ! out(171,1) d^3 Exc / d ax ax by
+    ! out(172,1) d^3 Exc / d ax ax bz
+    ! out(173,1) d^3 Exc / d ax ax taua
+    ! out(174,1) d^3 Exc / d ax ax taub
+    ! out(175,1) d^3 Exc / d ax ay ay
+    ! out(176,1) d^3 Exc / d ax ay az
+    ! out(177,1) d^3 Exc / d ax ay bx
+    ! out(178,1) d^3 Exc / d ax ay by
+    ! out(179,1) d^3 Exc / d ax ay bz
+    ! out(180,1) d^3 Exc / d ax ay taua
+    ! out(181,1) d^3 Exc / d ax ay taub
+    ! out(182,1) d^3 Exc / d ax az az
+    ! out(183,1) d^3 Exc / d ax az bx
+    ! out(184,1) d^3 Exc / d ax az by
+    ! out(185,1) d^3 Exc / d ax az bz
+    ! out(186,1) d^3 Exc / d ax az taua
+    ! out(187,1) d^3 Exc / d ax az taub
+    ! out(188,1) d^3 Exc / d ax bx bx
+    ! out(189,1) d^3 Exc / d ax bx by
+    ! out(190,1) d^3 Exc / d ax bx bz
+    ! out(191,1) d^3 Exc / d ax bx taua
+    ! out(192,1) d^3 Exc / d ax bx taub
+    ! out(193,1) d^3 Exc / d ax by by
+    ! out(194,1) d^3 Exc / d ax by bz
+    ! out(195,1) d^3 Exc / d ax by taua
+    ! out(196,1) d^3 Exc / d ax by taub
+    ! out(197,1) d^3 Exc / d ax bz bz
+    ! out(198,1) d^3 Exc / d ax bz taua
+    ! out(199,1) d^3 Exc / d ax bz taub
+    ! out(200,1) d^3 Exc / d ax taua taua
+    ! out(201,1) d^3 Exc / d ax taua taub
+    ! out(202,1) d^3 Exc / d ax taub taub
+    ! out(203,1) d^3 Exc / d ay ay ay
+    ! out(204,1) d^3 Exc / d ay ay az
+    ! out(205,1) d^3 Exc / d ay ay bx
+    ! out(206,1) d^3 Exc / d ay ay by
+    ! out(207,1) d^3 Exc / d ay ay bz
+    ! out(208,1) d^3 Exc / d ay ay taua
+    ! out(209,1) d^3 Exc / d ay ay taub
+    ! out(210,1) d^3 Exc / d ay az az
+    ! out(211,1) d^3 Exc / d ay az bx
+    ! out(212,1) d^3 Exc / d ay az by
+    ! out(213,1) d^3 Exc / d ay az bz
+    ! out(214,1) d^3 Exc / d ay az taua
+    ! out(215,1) d^3 Exc / d ay az taub
+    ! out(216,1) d^3 Exc / d ay bx bx
+    ! out(217,1) d^3 Exc / d ay bx by
+    ! out(218,1) d^3 Exc / d ay bx bz
+    ! out(219,1) d^3 Exc / d ay bx taua
+    ! out(220,1) d^3 Exc / d ay bx taub
+    ! out(221,1) d^3 Exc / d ay by by
+    ! out(222,1) d^3 Exc / d ay by bz
+    ! out(223,1) d^3 Exc / d ay by taua
+    ! out(224,1) d^3 Exc / d ay by taub
+    ! out(225,1) d^3 Exc / d ay bz bz
+    ! out(226,1) d^3 Exc / d ay bz taua
+    ! out(227,1) d^3 Exc / d ay bz taub
+    ! out(228,1) d^3 Exc / d ay taua taua
+    ! out(229,1) d^3 Exc / d ay taua taub
+    ! out(230,1) d^3 Exc / d ay taub taub
+    ! out(231,1) d^3 Exc / d az az az
+    ! out(232,1) d^3 Exc / d az az bx
+    ! out(233,1) d^3 Exc / d az az by
+    ! out(234,1) d^3 Exc / d az az bz
+    ! out(235,1) d^3 Exc / d az az taua
+    ! out(236,1) d^3 Exc / d az az taub
+    ! out(237,1) d^3 Exc / d az bx bx
+    ! out(238,1) d^3 Exc / d az bx by
+    ! out(239,1) d^3 Exc / d az bx bz
+    ! out(240,1) d^3 Exc / d az bx taua
+    ! out(241,1) d^3 Exc / d az bx taub
+    ! out(242,1) d^3 Exc / d az by by
+    ! out(243,1) d^3 Exc / d az by bz
+    ! out(244,1) d^3 Exc / d az by taua
+    ! out(245,1) d^3 Exc / d az by taub
+    ! out(246,1) d^3 Exc / d az bz bz
+    ! out(247,1) d^3 Exc / d az bz taua
+    ! out(248,1) d^3 Exc / d az bz taub
+    ! out(249,1) d^3 Exc / d az taua taua
+    ! out(250,1) d^3 Exc / d az taua taub
+    ! out(251,1) d^3 Exc / d az taub taub
+    ! out(252,1) d^3 Exc / d bx bx bx
+    ! out(253,1) d^3 Exc / d bx bx by
+    ! out(254,1) d^3 Exc / d bx bx bz
+    ! out(255,1) d^3 Exc / d bx bx taua
+    ! out(256,1) d^3 Exc / d bx bx taub
+    ! out(257,1) d^3 Exc / d bx by by
+    ! out(258,1) d^3 Exc / d bx by bz
+    ! out(259,1) d^3 Exc / d bx by taua
+    ! out(260,1) d^3 Exc / d bx by taub
+    ! out(261,1) d^3 Exc / d bx bz bz
+    ! out(262,1) d^3 Exc / d bx bz taua
+    ! out(263,1) d^3 Exc / d bx bz taub
+    ! out(264,1) d^3 Exc / d bx taua taua
+    ! out(265,1) d^3 Exc / d bx taua taub
+    ! out(266,1) d^3 Exc / d bx taub taub
+    ! out(267,1) d^3 Exc / d by by by
+    ! out(268,1) d^3 Exc / d by by bz
+    ! out(269,1) d^3 Exc / d by by taua
+    ! out(270,1) d^3 Exc / d by by taub
+    ! out(271,1) d^3 Exc / d by bz bz
+    ! out(272,1) d^3 Exc / d by bz taua
+    ! out(273,1) d^3 Exc / d by bz taub
+    ! out(274,1) d^3 Exc / d by taua taua
+    ! out(275,1) d^3 Exc / d by taua taub
+    ! out(276,1) d^3 Exc / d by taub taub
+    ! out(277,1) d^3 Exc / d bz bz bz
+    ! out(278,1) d^3 Exc / d bz bz taua
+    ! out(279,1) d^3 Exc / d bz bz taub
+    ! out(280,1) d^3 Exc / d bz taua taua
+    ! out(281,1) d^3 Exc / d bz taua taub
+    ! out(282,1) d^3 Exc / d bz taub taub
+    ! out(283,1) d^3 Exc / d taua taua taua
+    ! out(284,1) d^3 Exc / d taua taua taub
+    ! out(285,1) d^3 Exc / d taua taub taub
+    ! out(286,1) d^3 Exc / d taub taub taub
     integer :: ierr
 #ifdef VAR_XCFUN
-    !rho    = XCFUNINPUT(1,1) 
-    !grad_x = XCFUNINPUT(2,1) 
-    !grad_y = XCFUNINPUT(3,1) 
-    !grad_z = XCFUNINPUT(4,1) 
-    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ,XC_PARTIAL_DERIVATIVES,3)
+    ierr = xc_eval_setup(XCFUNfunctional,XC_A_B_AX_AY_AZ_BX_BY_BZ_TAUA_TAUB,XC_PARTIAL_DERIVATIVES,order)
     IF(ierr.NE.0) then
        print*,'ierr from xcfun',ierr
        call lsquit('Unexpected error from xcfun',-1)
     endif
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
-    ! XCFUNOUTPUT(1,1) - Exc
-    ! XCFUNOUTPUT(2,1) - d Exc/d rho
-    ! XCFUNOUTPUT(3,1) - d Exc/d gx
-    ! XCFUNOUTPUT(4,1) - d Exc/d gy
-    ! XCFUNOUTPUT(5,1) - d Exc/d gz
-
-    ! XCFUNOUTPUT(6,1) - d^2 Exc/d rho d rho
-    ! XCFUNOUTPUT(7,1) - d^2 Exc/d rho d gx
-    ! XCFUNOUTPUT(8,1) - d^2 Exc/d rho d gy
-    ! XCFUNOUTPUT(9,1) - d^2 Exc/d rho d gz
-    ! XCFUNOUTPUT(10,1) - d^2 Exc/d gx d gx
-    ! XCFUNOUTPUT(11,1) - d^2 Exc/d gx d gy
-    ! XCFUNOUTPUT(12,1) - d^2 Exc/d gx d gz
-    ! XCFUNOUTPUT(13,1) - d^2 Exc/d gy d gy
-    ! XCFUNOUTPUT(14,1) - d^2 Exc/d gy d gz
-    ! XCFUNOUTPUT(15,1) - d^2 Exc/d gz d gz
-
-    ! XCFUNOUTPUT(16,1) - d^3 Exc/d rho d rho d rho
-    ! XCFUNOUTPUT(17,1) - d^3 Exc/d rho d rho d gx
-    ! XCFUNOUTPUT(18,1) - d^3 Exc/d rho d rho d gy
-    ! XCFUNOUTPUT(19,1) - d^3 Exc/d rho d rho d gz
-    ! XCFUNOUTPUT(20,1) - d^3 Exc/d rho d gx d gx
-    ! XCFUNOUTPUT(21,1) - d^3 Exc/d rho d gx d gy
-    ! XCFUNOUTPUT(22,1) - d^3 Exc/d rho d gx d gz
-    ! XCFUNOUTPUT(23,1) - d^3 Exc/d rho d gy d gy
-    ! XCFUNOUTPUT(24,1) - d^3 Exc/d rho d gy d gz
-    ! XCFUNOUTPUT(25,1) - d^3 Exc/d rho d gz d gz
-    ! XCFUNOUTPUT(26,1) - d^3 Exc/d gx d gx d gx
-    ! XCFUNOUTPUT(27,1) - d^3 Exc/d gx d gx d gy
-    ! XCFUNOUTPUT(28,1) - d^3 Exc/d gx d gx d gz
-    ! XCFUNOUTPUT(29,1) - d^3 Exc/d gx d gy d gy
-    ! XCFUNOUTPUT(30,1) - d^3 Exc/d gx d gy d gz
-    ! XCFUNOUTPUT(31,1) - d^3 Exc/d gx d gz d gz
-    ! XCFUNOUTPUT(32,1) - d^3 Exc/d gy d gy d gy
-    ! XCFUNOUTPUT(33,1) - d^3 Exc/d gy d gy d gz
-    ! XCFUNOUTPUT(34,1) - d^3 Exc/d gy d gz d gz
-    ! XCFUNOUTPUT(35,1) - d^3 Exc/d gz d gz d gz
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
-  end subroutine xcfun3_gga_components_xc_single_eval
+  end subroutine xcfun_metagga_unres_components_xc_single_eval
 
-
-  subroutine xcfun2_gga_components_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+  subroutine xcfun_metagga_components_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT,order)
     implicit none
-    REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
-    REAL(REALK),intent(inout) :: XCFUNOUTPUT(15,1)
-    integer :: ierr
-#ifdef VAR_XCFUN
+    REAL(REALK),intent(in) :: XCFUNINPUT(5,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(56,1)
+    integer, intent(in) :: order
+! Input
     !rho    = XCFUNINPUT(1,1) 
     !grad_x = XCFUNINPUT(2,1) 
     !grad_y = XCFUNINPUT(3,1) 
     !grad_z = XCFUNINPUT(4,1) 
-    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ,XC_PARTIAL_DERIVATIVES,3)
+    !tau    = XCFUNINPUT(5,1)
+! Output
+    ! Order 0
+    ! out(1,1) Exc
+    ! Order 1
+    ! out(2,1) d^1 Exc / d n
+    ! out(3,1) d^1 Exc / d nx
+    ! out(4,1) d^1 Exc / d ny
+    ! out(5,1) d^1 Exc / d nz
+    ! out(6,1) d^1 Exc / d tau
+    ! Order 2
+    ! out(7,1) d^2 Exc / d n n
+    ! out(8,1) d^2 Exc / d n nx
+    ! out(9,1) d^2 Exc / d n ny
+    ! out(10,1) d^2 Exc / d n nz
+    ! out(11,1) d^2 Exc / d n tau
+    ! out(12,1) d^2 Exc / d nx nx
+    ! out(13,1) d^2 Exc / d nx ny
+    ! out(14,1) d^2 Exc / d nx nz
+    ! out(15,1) d^2 Exc / d nx tau
+    ! out(16,1) d^2 Exc / d ny ny
+    ! out(17,1) d^2 Exc / d ny nz
+    ! out(18,1) d^2 Exc / d ny tau
+    ! out(19,1) d^2 Exc / d nz nz
+    ! out(20,1) d^2 Exc / d nz tau
+    ! out(21,1) d^2 Exc / d tau tau
+    ! Order 3
+    ! out(22,1) d^3 Exc / d n n n
+    ! out(23,1) d^3 Exc / d n n nx
+    ! out(24,1) d^3 Exc / d n n ny
+    ! out(25,1) d^3 Exc / d n n nz
+    ! out(26,1) d^3 Exc / d n n tau
+    ! out(27,1) d^3 Exc / d n nx nx
+    ! out(28,1) d^3 Exc / d n nx ny
+    ! out(29,1) d^3 Exc / d n nx nz
+    ! out(30,1) d^3 Exc / d n nx tau
+    ! out(31,1) d^3 Exc / d n ny ny
+    ! out(32,1) d^3 Exc / d n ny nz
+    ! out(33,1) d^3 Exc / d n ny tau
+    ! out(34,1) d^3 Exc / d n nz nz
+    ! out(35,1) d^3 Exc / d n nz tau
+    ! out(36,1) d^3 Exc / d n tau tau
+    ! out(37,1) d^3 Exc / d nx nx nx
+    ! out(38,1) d^3 Exc / d nx nx ny
+    ! out(39,1) d^3 Exc / d nx nx nz
+    ! out(40,1) d^3 Exc / d nx nx tau
+    ! out(41,1) d^3 Exc / d nx ny ny
+    ! out(42,1) d^3 Exc / d nx ny nz
+    ! out(43,1) d^3 Exc / d nx ny tau
+    ! out(44,1) d^3 Exc / d nx nz nz
+    ! out(45,1) d^3 Exc / d nx nz tau
+    ! out(46,1) d^3 Exc / d nx tau tau
+    ! out(47,1) d^3 Exc / d ny ny ny
+    ! out(48,1) d^3 Exc / d ny ny nz
+    ! out(49,1) d^3 Exc / d ny ny tau
+    ! out(50,1) d^3 Exc / d ny nz nz
+    ! out(51,1) d^3 Exc / d ny nz tau
+    ! out(52,1) d^3 Exc / d ny tau tau
+    ! out(53,1) d^3 Exc / d nz nz nz
+    ! out(54,1) d^3 Exc / d nz nz tau
+    ! out(55,1) d^3 Exc / d nz tau tau
+    ! out(56,1) d^3 Exc / d tau tau tau
+    integer :: ierr
+#ifdef VAR_XCFUN
+    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ_TAUN,XC_PARTIAL_DERIVATIVES,order)
     IF(ierr.NE.0) then
        print*,'ierr from xcfun',ierr
        call lsquit('Unexpected error from xcfun',-1)
     endif
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
-    ! XCFUNOUTPUT(1,1) - Exc
-    ! XCFUNOUTPUT(2,1) - d Exc/d rho
-    ! XCFUNOUTPUT(3,1) - d Exc/d gx
-    ! XCFUNOUTPUT(4,1) - d Exc/d gy
-    ! XCFUNOUTPUT(5,1) - d Exc/d gz
-
-    ! XCFUNOUTPUT(6,1) - d^2 Exc/d rho d rho
-    ! XCFUNOUTPUT(7,1) - d^2 Exc/d rho d gx
-    ! XCFUNOUTPUT(8,1) - d^2 Exc/d rho d gy
-    ! XCFUNOUTPUT(9,1) - d^2 Exc/d rho d gz
-    ! XCFUNOUTPUT(10,1) - d^2 Exc/d gx d gx
-    ! XCFUNOUTPUT(11,1) - d^2 Exc/d gx d gy
-    ! XCFUNOUTPUT(12,1) - d^2 Exc/d gx d gz
-    ! XCFUNOUTPUT(13,1) - d^2 Exc/d gy d gy
-    ! XCFUNOUTPUT(14,1) - d^2 Exc/d gy d gz
-    ! XCFUNOUTPUT(15,1) - d^2 Exc/d gz d gz
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
-  end subroutine xcfun2_gga_components_xc_single_eval
+  end subroutine xcfun_metagga_components_xc_single_eval
 
-  subroutine xcfun1_gga_components_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
-    implicit none
-    REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
-    REAL(REALK),intent(inout) :: XCFUNOUTPUT(5,1)
-    integer :: ierr
-#ifdef VAR_XCFUN
-    !rho    = XCFUNINPUT(1,1) 
-    !grad_x = XCFUNINPUT(2,1) 
-    !grad_y = XCFUNINPUT(3,1) 
-    !grad_z = XCFUNINPUT(4,1) 
-    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ,XC_PARTIAL_DERIVATIVES,3)
-    IF(ierr.NE.0) then
-       print*,'ierr from xcfun',ierr
-       call lsquit('Unexpected error from xcfun',-1)
-    endif
-    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
-    ! XCFUNOUTPUT(1,1) - Exc
-    ! XCFUNOUTPUT(2,1) - d Exc/d rho
-    ! XCFUNOUTPUT(3,1) - d Exc/d gx
-    ! XCFUNOUTPUT(4,1) - d Exc/d gy
-    ! XCFUNOUTPUT(5,1) - d Exc/d gz
-#else
-    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
-#endif
-  end subroutine xcfun1_gga_components_xc_single_eval
 
   subroutine xcfun2_gga_unres_components_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
     implicit none
@@ -254,60 +538,6 @@ module xcfun_host
        call lsquit('Unexpected error from xcfun',-1)
     endif
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
-    ! XCFUNOUTPUT(1,1) - Exc
-
-    ! XCFUNOUTPUT(2,1) - d Exc/d rho_a
-    ! XCFUNOUTPUT(3,1) - d Exc/d rho_b
-    ! XCFUNOUTPUT(4,1) - d Exc/d gax
-    ! XCFUNOUTPUT(5,1) - d Exc/d gay
-    ! XCFUNOUTPUT(6,1) - d Exc/d gaz
-    ! XCFUNOUTPUT(7,1) - d Exc/d gbx
-    ! XCFUNOUTPUT(8,1) - d Exc/d gby
-    ! XCFUNOUTPUT(9,1) - d Exc/d gbz
-
-    ! XCFUNOUTPUT(10,1) - d^2 Exc/d rho_a d rho_a
-    ! XCFUNOUTPUT(11,1) - d^2 Exc/d rho_a d rho_b
-    ! XCFUNOUTPUT(12,1) - d^2 Exc/d rho_a d gax
-    ! XCFUNOUTPUT(13,1) - d^2 Exc/d rho_a d gay
-    ! XCFUNOUTPUT(14,1) - d^2 Exc/d rho_a d gaz
-    ! XCFUNOUTPUT(15,1) - d^2 Exc/d rho_a d gbx
-    ! XCFUNOUTPUT(16,1) - d^2 Exc/d rho_a d gby
-    ! XCFUNOUTPUT(17,1) - d^2 Exc/d rho_a d gbz
-
-    ! XCFUNOUTPUT(18,1) - d^2 Exc/d rho_b d rho_b
-    ! XCFUNOUTPUT(19,1) - d^2 Exc/d rho_b d gax
-    ! XCFUNOUTPUT(20,1) - d^2 Exc/d rho_b d gay
-    ! XCFUNOUTPUT(21,1) - d^2 Exc/d rho_b d gaz
-    ! XCFUNOUTPUT(22,1) - d^2 Exc/d rho_b d gbx
-    ! XCFUNOUTPUT(23,1) - d^2 Exc/d rho_b d gby
-    ! XCFUNOUTPUT(24,1) - d^2 Exc/d rho_b d gbz
-
-    ! XCFUNOUTPUT(25,1) - d^2 Exc/d gax d gax
-    ! XCFUNOUTPUT(26,1) - d^2 Exc/d gax d gay
-    ! XCFUNOUTPUT(27,1) - d^2 Exc/d gax d gaz
-    ! XCFUNOUTPUT(28,1) - d^2 Exc/d gax d gbx
-    ! XCFUNOUTPUT(29,1) - d^2 Exc/d gax d gby
-    ! XCFUNOUTPUT(30,1) - d^2 Exc/d gax d gbz
-
-    ! XCFUNOUTPUT(31,1) - d^2 Exc/d gay d gay
-    ! XCFUNOUTPUT(32,1) - d^2 Exc/d gay d gaz
-    ! XCFUNOUTPUT(33,1) - d^2 Exc/d gay d gbx
-    ! XCFUNOUTPUT(34,1) - d^2 Exc/d gay d gby
-    ! XCFUNOUTPUT(35,1) - d^2 Exc/d gay d gbz
-
-    ! XCFUNOUTPUT(36,1) - d^2 Exc/d gaz d gaz
-    ! XCFUNOUTPUT(37,1) - d^2 Exc/d gaz d gbx
-    ! XCFUNOUTPUT(38,1) - d^2 Exc/d gaz d gby
-    ! XCFUNOUTPUT(39,1) - d^2 Exc/d gaz d gbz
-
-    ! XCFUNOUTPUT(40,1) - d^2 Exc/d gbx d gbx
-    ! XCFUNOUTPUT(41,1) - d^2 Exc/d gbx d gby
-    ! XCFUNOUTPUT(42,1) - d^2 Exc/d gbx d gbz
-
-    ! XCFUNOUTPUT(43,1) - d^2 Exc/d gby d gby
-    ! XCFUNOUTPUT(44,1) - d^2 Exc/d gby d gbz
-
-    ! XCFUNOUTPUT(45,1) - d^2 Exc/d gbz d gbz
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
