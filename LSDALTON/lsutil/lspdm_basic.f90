@@ -6,6 +6,7 @@
 module lspdm_basic_module
   use precision
   use LSTIMING!,only:lstimer
+  use memory_handling
 #ifdef VAR_LSMPI
   use infpar_module
   use lsmpi_type
