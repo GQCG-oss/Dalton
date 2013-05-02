@@ -40,6 +40,7 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     lsdaltonsrc/Energy_and_deriv.f90
     lsdaltonsrc/lsmpiSlave.f90
     lsdaltonsrc/init_lsdalton.f90
+    lsdaltonsrc/plt_driver.f90
     lsdaltonsrc/configuration.f90
     lsdaltonsrc/LSlib.f90
     lsdaltonsrc/Profile.f90

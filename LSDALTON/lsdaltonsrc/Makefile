@@ -18,6 +18,7 @@ F90_OBJS = \
 	configuration.o \
 	LSlib.o \
 	Profile.o\
+        plt_driver.o \
 	LSDALTON.o
 
 F_CPPS = $(F_OBJS:.o=.i)
