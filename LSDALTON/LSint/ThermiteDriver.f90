@@ -674,19 +674,27 @@ IF(INPUT%PropRequireBoys.GT.-1)THEN
     ENDIF
     IF(Input%addtointegral.AND.Q%orbital1%TYPE_Nucleus)THEN
        ! We sum all the charges in Overlap PassQ (all same charge)
+       call mem_alloc(ptemp,nPrimPQ*Integral%nTUV )
        Z = -Q%orbital1%CC(1)%p%elms(1) !Charge
+       DO TUV = 1,Integral%nTUV 
+          offsetTUV=(TUV-1)*nPrimPQ
+          DO I=1,NPrimPQ
+             ptemp(I+offsetTUV)= Z*INTEGRAL%Rtuv(I+offsetTUV)
+          ENDDO
+       ENDDO
        DO TUV = 1,Integral%nTUV 
           offsetTUV=(TUV-1)*nPrimP
           DO I=1,NPrimP
-             INTEGRAL%Rtuv(I+offsetTUV)= Z*INTEGRAL%Rtuv(I+offsetTUV)
-          ENDDO
-          DO iPassQ=2,Q%nPasses
-             offsetTUV2=(iPassQ-1)*nPrimP + (TUV-1)*nPrimPQ
-             DO I=1,NPrimP
-                INTEGRAL%Rtuv(I+offsetTUV)= INTEGRAL%Rtuv(I+offsetTUV)+Z*INTEGRAL%Rtuv(I + offsetTUV2) 
+             iPassQ=1
+             offsetTUV2=(I-1)*Q%nPasses + (TUV-1)*nPrimPQ
+             INTEGRAL%Rtuv(I+offsetTUV)= ptemp(iPassQ + offsetTUV2) 
+             DO iPassQ=2,Q%nPasses
+                INTEGRAL%Rtuv(I+offsetTUV)= INTEGRAL%Rtuv(I+offsetTUV)+ptemp(iPassQ + offsetTUV2) 
              ENDDO
           ENDDO
        ENDDO
+       call mem_dealloc(ptemp)
+       Q%nPasses = 1
     ENDIF
  ENDIF
 ENDIF
@@ -6595,11 +6603,11 @@ integer                 :: Operatorlabel
 TYPE(Integrand)         :: PQ
 TYPE(Integralitem)      :: integral
 TYPE(Integralinput)     :: input
-!real(realk),pointer :: SJ000(:,:)
-real(realk),pointer :: SJ0002(:,:)
+real(realk),pointer     :: SJ0002(:,:)
+real(realk),pointer     :: temp(:)
 INTEGER                 :: LUPRI,SUM,J,K,T,U,V,TUV,IOFF
-INTEGER                 :: nPrim,IPRINT,ntuv,L,I
-INTEGER                 :: zeroX,zeroY,zeroZ,Jmax,Jstart
+INTEGER                 :: nPrim,IPRINT,ntuv,L,I,offsetTUV,offset,offset2
+INTEGER                 :: zeroX,zeroY,zeroZ,Jmax,Jstart,nPrimP,nPassQ,iPass
 real(realk)             :: X0,Y0,Z0
 !
 NPrim=PQ%nPrimitives
@@ -6699,6 +6707,40 @@ IF (IPRINT .GE. 10) THEN
 END IF
 
 Integral%nPrim=nPrim
+
+IF((Input%addtointegral.AND.PQ%Q%p%orbital1%TYPE_Nucleus).AND.&
+     &(OPERATORLABEL.EQ.NucpotOperator.AND.PQ%Q%p%nPasses.GT.1))THEN
+   IF(INPUT%geoderOrderP.EQ.0)THEN
+      ! We sum all the Passes in Overlap PassQ (all same charge)
+      ! it is more efficient to do the sum here 
+      call mem_alloc(temp,nPrim*Integral%nTUV)
+      DO TUV = 1,Integral%nTUV 
+         offsetTUV=(TUV-1)*nPrim
+         DO I=1,NPrim
+            temp(I+offsetTUV)= INTEGRAL%Rtuv(I+offsetTUV)
+         ENDDO
+      ENDDO
+      nPrimP = PQ%P%p%nPrimitives
+      nPassQ = PQ%Q%p%nPasses
+      !temp(nPassQ,nPrimP,nTUV) => Rtuv(nPrimP,nTUV) 
+      DO TUV = 1,Integral%nTUV 
+         offset=(TUV-1)*nPrimP
+         DO I=1,NPrimP
+            iPass=1         
+            offset2=(I-1)*NPassQ+(TUV-1)*nPrim
+            INTEGRAL%Rtuv(I+offset)= temp(iPass + offset2)
+            DO iPass=2,nPassQ
+               INTEGRAL%Rtuv(I+offset)= INTEGRAL%Rtuv(I+offset)+temp(iPass + offset2) 
+            ENDDO
+         ENDDO
+      ENDDO
+      call mem_dealloc(temp)
+
+      PQ%Q%p%nPasses = 1
+      Integral%nPrim = nPrimP
+      nPrim = nPrimP
+   ENDIF
+ENDIF
 
 END SUBROUTINE GET_WTUV
 
