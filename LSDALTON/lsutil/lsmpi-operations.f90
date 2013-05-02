@@ -1552,6 +1552,7 @@ call LS_MPI_BUFFER(MOLECULE%ATOM(I)%CovRad,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Frag,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%CENTER,3,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Atomic_number,Master)
+call LS_MPI_BUFFER(MOLECULE%ATOM(I)%molecularIndex,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%Charge,Master)
 call LS_MPI_BUFFER(MOLECULE%ATOM(I)%nbasis,Master)
 do K = 1,MOLECULE%ATOM(I)%nbasis

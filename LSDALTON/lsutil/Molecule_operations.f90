@@ -131,6 +131,7 @@ write(lun)IATOM%IDtype(1)
 write(lun)IATOM%IDtype(2) 
 write(lun)IATOM%phantom
 write(lun)IATOM%PointCharge
+write(lun)IATOM%molecularIndex
 write(lun)IATOM%nContOrbREG
 write(lun)IATOM%nPrimOrbREG
 write(lun)IATOM%nContOrbAUX
@@ -169,6 +170,7 @@ read(lun)IATOM%IDtype(1)
 read(lun)IATOM%IDtype(2) 
 read(lun)IATOM%phantom
 read(lun)IATOM%Pointcharge
+read(lun)IATOM%molecularIndex
 read(lun)IATOM%nContOrbREG
 read(lun)IATOM%nPrimOrbREG
 read(lun)IATOM%nContOrbAUX
@@ -385,6 +387,7 @@ molecule%ATOM(1)%IDtype(1)=0
 molecule%ATOM(1)%IDtype(2)=0
 molecule%ATOM(1)%phantom=.FALSE.
 molecule%ATOM(1)%Pointcharge=.FALSE.
+molecule%ATOM(1)%molecularIndex=0
 molecule%ATOM(1)%nContOrbREG=0
 molecule%ATOM(1)%nPrimOrbREG=0
 molecule%ATOM(1)%nContOrbAUX=0
@@ -451,6 +454,7 @@ DO I=1,N
    pointmolecule%ATOM(I)%IDtype(2)=0
    pointmolecule%ATOM(I)%phantom=.FALSE.
    pointmolecule%ATOM(I)%Pointcharge=.FALSE.
+   pointmolecule%ATOM(I)%molecularIndex=1
    pointmolecule%ATOM(I)%nContOrbREG=0
    pointmolecule%ATOM(I)%nPrimOrbREG=0
    pointmolecule%ATOM(I)%nContOrbAUX=0
@@ -504,6 +508,7 @@ DO I=1,N
    molecule%ATOM(I)%IDtype(2)=0
    molecule%ATOM(I)%phantom=.FALSE.
    molecule%ATOM(I)%Pointcharge=.FALSE.
+   molecule%ATOM(I)%molecularIndex=I
    molecule%ATOM(I)%nContOrbREG=0
    molecule%ATOM(I)%nPrimOrbREG=0
    molecule%ATOM(I)%nContOrbAUX=0
@@ -599,6 +604,7 @@ do K = 1,MOLECULE%ATOM(I)%nbasis
 enddo
 FRAGMENT%ATOM(J)%phantom=MOLECULE%ATOM(I)%phantom
 FRAGMENT%ATOM(J)%PointCharge=MOLECULE%ATOM(I)%PointCharge
+FRAGMENT%ATOM(J)%molecularIndex=MOLECULE%ATOM(I)%molecularIndex
 FRAGMENT%ATOM(J)%nContOrbREG=MOLECULE%ATOM(I)%nContOrbREG
 FRAGMENT%ATOM(J)%nPrimOrbREG=MOLECULE%ATOM(I)%nPrimOrbREG
 FRAGMENT%ATOM(J)%nContOrbAUX=MOLECULE%ATOM(I)%nContOrbAUX

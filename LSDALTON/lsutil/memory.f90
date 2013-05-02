@@ -10,6 +10,7 @@ MODULE memory_handling
    use basis_typetype
    use dec_typedef_module
    use OverlapType
+   use tensor_type_def_module
 #ifdef VAR_LSMPI
   include 'mpif.h'
 !   use mpi
@@ -47,10 +48,6 @@ MODULE memory_handling
    public mem_deallocated_mem_integralitem
    public mem_allocated_mem_integrand
    public mem_deallocated_mem_integrand
-   public mem_allocated_mem_etuvoverlap
-   public mem_deallocated_mem_etuvoverlap
-   public mem_allocated_mem_ftuvoverlap
-   public mem_deallocated_mem_ftuvoverlap
    public mem_allocated_mem_ODitem
    public mem_deallocated_mem_ODitem
    public mem_allocated_mem_FMM
@@ -103,8 +100,6 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_allocated_overlap, max_mem_used_overlap             !Count memory, type Overlap
    integer(KIND=long),save :: mem_allocated_overlapT, max_mem_used_overlapT           !Count memory, type Overlap
    integer(KIND=long),save :: mem_allocated_intwork, max_mem_used_intwork             !Count memory, integral work array
-   integer(KIND=long),save :: mem_allocated_etuvoverlap, max_mem_used_etuvoverlap             !Count memory, in ETUV in type Overlap
-   integer(KIND=long),save :: mem_allocated_ftuvoverlap, max_mem_used_ftuvoverlap             !Count memory, in FTUV in type Overlap
    integer(KIND=long),save :: mem_allocated_ODitem, max_mem_used_ODitem               !Count memory, type ODitem
    integer(KIND=long),save :: mem_allocated_FMM, max_mem_used_FMM
               !Count memory, type FMM
@@ -171,8 +166,6 @@ MODULE memory_handling
    integer(KIND=long),save :: mem_tp_allocated_overlap, max_mem_tp_used_overlap             !Count memory, type Overlap
    integer(KIND=long),save :: mem_tp_allocated_overlapT, max_mem_tp_used_overlapT           !Count memory, type OverlapT
    integer(KIND=long),save :: mem_tp_allocated_intwork, max_mem_tp_used_intwork             !Count memory, type Overlap
-   integer(KIND=long),save :: mem_tp_allocated_etuvoverlap, max_mem_tp_used_etuvoverlap             !Count memory, in ETUV in type Overlap
-   integer(KIND=long),save :: mem_tp_allocated_ftuvoverlap, max_mem_tp_used_ftuvoverlap             !Count memory, in FTUV in type Overlap
    integer(KIND=long),save :: mem_tp_allocated_ODitem, max_mem_tp_used_ODitem               !Count memory, type ODitem
               !Count memory, type FMM
    integer(KIND=long),save :: mem_tp_allocated_FMM, max_mem_tp_used_FMM
@@ -200,8 +193,7 @@ MODULE memory_handling
    integer(KIND=long),save :: max_mem_used_ATOMITEM_tmp,max_mem_used_LSMATRIX_tmp
 
    integer(KIND=long),save :: max_mem_used_integralitem_tmp,max_mem_used_integrand_tmp
-   integer(KIND=long),save :: max_mem_used_overlap_tmp,max_mem_used_etuvoverlap_tmp
-   integer(KIND=long),save :: max_mem_used_ftuvoverlap_tmp,max_mem_used_ODitem_tmp
+   integer(KIND=long),save :: max_mem_used_overlap_tmp,max_mem_used_ODitem_tmp
    integer(KIND=long),save :: max_mem_used_FMM_tmp,max_mem_used_lstensor_tmp
    integer(KIND=long),save :: max_mem_used_intwork_tmp,max_mem_used_overlapT_tmp
 !Memory PARAMETERS
@@ -275,8 +267,6 @@ MODULE memory_handling
 !$OMP mem_tp_allocated_intwork, max_mem_tp_used_intwork,&
 !$OMP mem_tp_allocated_overlap, max_mem_tp_used_overlap,&
 !$OMP mem_tp_allocated_overlapT, max_mem_tp_used_overlapT,&  
-!$OMP mem_tp_allocated_etuvoverlap, max_mem_tp_used_etuvoverlap,&
-!$OMP mem_tp_allocated_ftuvoverlap, max_mem_tp_used_ftuvoverlap,&
 !$OMP mem_tp_allocated_ODitem, max_mem_tp_used_ODitem,&
 !$OMP mem_tp_allocated_FMM, max_mem_tp_used_FMM,&
 !$OMP mem_tp_allocated_lstensor, max_mem_tp_used_lstensor,&
@@ -333,7 +323,7 @@ INTERFACE mem_alloc
      &             ARRAY2_allocate_1dim,ARRAY4_allocate_1dim,MP2DENS_allocate_1dim, &
      &             TRACEBACK_allocate_1dim,MP2GRAD_allocate_1dim,&
      &             OVERLAPT_allocate_1dim,ARRAY_allocate_1dim, mpi_allocate_iV,&
-     &             mpi_allocate_dV
+     &             mpi_allocate_dV4,mpi_allocate_dV8
 END INTERFACE
 !
 INTERFACE mem_dealloc
@@ -477,8 +467,6 @@ max_mem_used_integrand = MAX(max_mem_used_integrand,max_mem_used_integrand_tmp)
 max_mem_used_intwork = MAX(max_mem_used_intwork,max_mem_used_intwork_tmp)
 max_mem_used_overlap = MAX(max_mem_used_overlap,max_mem_used_overlap_tmp)
 max_mem_used_overlapT = MAX(max_mem_used_overlapT,max_mem_used_overlapT_tmp)
-max_mem_used_etuvoverlap = MAX(max_mem_used_etuvoverlap,max_mem_used_etuvoverlap_tmp)
-max_mem_used_ftuvoverlap = MAX(max_mem_used_ftuvoverlap,max_mem_used_ftuvoverlap_tmp)
 max_mem_used_ODitem = MAX(max_mem_used_ODitem,max_mem_used_ODitem_tmp)
 max_mem_used_FMM = MAX(max_mem_used_FMM,max_mem_used_FMM_tmp)
 max_mem_used_lstensor = MAX(max_mem_used_lstensor,max_mem_used_lstensor_tmp)
@@ -522,8 +510,6 @@ max_mem_used_integralitem_tmp = 0
 max_mem_used_integrand_tmp = 0
 max_mem_used_intwork_tmp = 0
 max_mem_used_overlap_tmp = 0
-max_mem_used_etuvoverlap_tmp = 0
-max_mem_used_ftuvoverlap_tmp = 0
 max_mem_used_ODitem_tmp = 0
 max_mem_used_FMM_tmp = 0
 max_mem_used_lstensor_tmp = 0
@@ -600,10 +586,6 @@ mem_allocated_overlap = 0
 max_mem_used_overlap = 0
 mem_allocated_overlapT = 0
 max_mem_used_overlapT = 0
-mem_allocated_etuvoverlap = 0
-max_mem_used_etuvoverlap = 0
-mem_allocated_ftuvoverlap = 0
-max_mem_used_ftuvoverlap = 0
 mem_allocated_ODitem = 0
 max_mem_used_ODitem = 0
 mem_allocated_FMM = 0
@@ -683,10 +665,6 @@ mem_tp_allocated_overlap = 0
 max_mem_tp_used_overlap = 0
 mem_tp_allocated_overlapT = 0
 max_mem_tp_used_overlapT = 0
-mem_tp_allocated_etuvoverlap = 0
-max_mem_tp_used_etuvoverlap = 0
-mem_tp_allocated_ftuvoverlap = 0
-max_mem_tp_used_ftuvoverlap = 0
 mem_tp_allocated_ODitem = 0
 max_mem_tp_used_ODitem = 0
 mem_tp_allocated_FMM = 0
@@ -765,10 +743,6 @@ subroutine collect_thread_memory()
     max_mem_used_overlap_tmp = max_mem_used_overlap_tmp+max_mem_tp_used_overlap
     mem_allocated_overlapT = mem_allocated_overlapT+mem_tp_allocated_overlapT
     max_mem_used_overlapT_tmp = max_mem_used_overlapT_tmp+max_mem_tp_used_overlapT
-    mem_allocated_etuvoverlap = mem_allocated_etuvoverlap+mem_tp_allocated_etuvoverlap
-    max_mem_used_etuvoverlap_tmp = max_mem_used_etuvoverlap_tmp+max_mem_tp_used_etuvoverlap
-    mem_allocated_ftuvoverlap = mem_allocated_ftuvoverlap+mem_tp_allocated_ftuvoverlap
-    max_mem_used_ftuvoverlap_tmp = max_mem_used_ftuvoverlap_tmp+max_mem_tp_used_ftuvoverlap
     mem_allocated_ODitem = mem_allocated_ODitem+mem_tp_allocated_ODitem
     max_mem_used_ODitem_tmp = max_mem_used_ODitem_tmp+max_mem_tp_used_ODitem
     mem_allocated_FMM = mem_allocated_FMM+mem_tp_allocated_FMM
@@ -856,10 +830,6 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_intwork
     WRITE(LUPRI,'("  Allocated memory (overlap):         ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_overlap
-    WRITE(LUPRI,'("  Allocated memory (ETUVoverlap):     ",i9," byte  &
-         &- Should be zero - otherwise a leakage is present")') mem_allocated_etuvoverlap
-    WRITE(LUPRI,'("  Allocated memory (FTUVoverlap):     ",i9," byte  &
-         &- Should be zero - otherwise a leakage is present")') mem_allocated_ftuvoverlap
     WRITE(LUPRI,'("  Allocated memory (ODitem):          ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ODitem
     WRITE(LUPRI,'("  Allocated memory (lstensor):        ",i9," byte  &
@@ -906,8 +876,6 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_used_integralitem,'integralitem')
     CALL print_maxmem(lupri,max_mem_used_intwork,'IntWork')
     CALL print_maxmem(lupri,max_mem_used_overlap,'Overlap')
-    CALL print_maxmem(lupri,max_mem_used_ETUVoverlap,'EtuvOverlap')
-    CALL print_maxmem(lupri,max_mem_used_FTUVoverlap,'FtuvOverlap')
     CALL print_maxmem(lupri,max_mem_used_ODitem,'ODitem')
     CALL print_maxmem(lupri,max_mem_used_lstensor,'LStensor')
     CALL print_maxmem(lupri,max_mem_used_FMM,'FMM')
@@ -994,10 +962,6 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_allocated_IntWork
     WRITE(LUPRI,'("  Allocated MPI memory (overlap):     ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_overlap
-    WRITE(LUPRI,'("  Allocated MPI memory (ETUVoverlap): ",i9," byte  &
-         &- Should be zero - otherwise a leakage is present")') mem_allocated_etuvoverlap
-    WRITE(LUPRI,'("  Allocated MPI memory (FTUVoverlap): ",i9," byte  &
-         &- Should be zero - otherwise a leakage is present")') mem_allocated_ftuvoverlap
     WRITE(LUPRI,'("  Allocated MPI memory (ODitem):      ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_allocated_ODitem
     WRITE(LUPRI,'("  Allocated MPI memory (lstensor):    ",i9," byte  &
@@ -1044,8 +1008,6 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_used_integralitem,'integralitem')
     CALL print_maxmem(lupri,max_mem_used_IntWork,'IntWork')
     CALL print_maxmem(lupri,max_mem_used_overlap,'Overlap')
-    CALL print_maxmem(lupri,max_mem_used_ETUVoverlap,'EtuvOverlap')
-    CALL print_maxmem(lupri,max_mem_used_FTUVoverlap,'FtuvOverlap')
     CALL print_maxmem(lupri,max_mem_used_ODitem,'ODitem')
     CALL print_maxmem(lupri,max_mem_used_lstensor,'LStensor')
     CALL print_maxmem(lupri,max_mem_used_FMM,'FMM')
@@ -1132,10 +1094,6 @@ end subroutine collect_thread_memory
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_IntWork
     WRITE(LUPRI,'("  Allocated memory (overlap):       ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_overlap
-    WRITE(LUPRI,'("  Allocated memory (ETUVoverlap):   ",i9," byte  &
-         &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_etuvoverlap
-    WRITE(LUPRI,'("  Allocated memory (FTUVoverlap):   ",i9," byte  &
-         &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ftuvoverlap
     WRITE(LUPRI,'("  Allocated memory (ODitem):        ",i9," byte  &
          &- Should be zero - otherwise a leakage is present")') mem_tp_allocated_ODitem
     WRITE(LUPRI,'("  Allocated memory (lstensor):      ",i9," byte  &
@@ -1182,8 +1140,6 @@ end subroutine collect_thread_memory
     CALL print_maxmem(lupri,max_mem_tp_used_integralitem,'integralitem')
     CALL print_maxmem(lupri,max_mem_tp_used_intwork,'IntWork')
     CALL print_maxmem(lupri,max_mem_tp_used_overlap,'Overlap')
-    CALL print_maxmem(lupri,max_mem_tp_used_ETUVoverlap,'EtuvOverlap')
-    CALL print_maxmem(lupri,max_mem_tp_used_FTUVoverlap,'FtuvOverlap')
     CALL print_maxmem(lupri,max_mem_tp_used_ODitem,'ODitem')
     CALL print_maxmem(lupri,max_mem_tp_used_lstensor,'LStensor')
     CALL print_maxmem(lupri,max_mem_tp_used_FMM,'FMM')
@@ -1242,8 +1198,6 @@ end subroutine collect_thread_memory
     if (max_mem_used_integralitem > 0_long) call print_maxmem(lupri,max_mem_used_integralitem,'integralitem')
     if (max_mem_used_IntWork > 0_long) call print_maxmem(lupri,max_mem_used_IntWork,'IntWork')
     if (max_mem_used_overlap > 0_long) call print_maxmem(lupri,max_mem_used_overlap,'overlap')
-    if (max_mem_used_ETUVoverlap > 0_long) call print_maxmem(lupri,max_mem_used_ETUVoverlap,'ETUVoverlap')
-    if (max_mem_used_FTUVoverlap > 0_long) call print_maxmem(lupri,max_mem_used_FTUVoverlap,'FTUVoverlap')
     if (max_mem_used_ODitem > 0_long) call print_maxmem(lupri,max_mem_used_ODitem,'ODitem')
     if (max_mem_used_lstensor > 0_long) call print_maxmem(lupri,max_mem_used_lstensor,'lstensor')
     if (max_mem_used_FMM > 0_long) call print_maxmem(lupri,max_mem_used_FMM,'FMM    ')
@@ -1282,8 +1236,6 @@ end subroutine collect_thread_memory
     if (mem_allocated_integralitem > 0_long) call print_mem_alloc(lupri,mem_allocated_integralitem,'integralitem')
     if (mem_allocated_IntWork > 0_long) call print_mem_alloc(lupri,mem_allocated_IntWork,'IntWork')
     if (mem_allocated_overlap > 0_long) call print_mem_alloc(lupri,mem_allocated_overlap,'overlap')
-    if (mem_allocated_ETUVoverlap > 0_long) call print_mem_alloc(lupri,mem_allocated_ETUVoverlap,'ETUVoverlap')
-    if (mem_allocated_FTUVoverlap > 0_long) call print_mem_alloc(lupri,mem_allocated_FTUVoverlap,'FTUVoverlap')
     if (mem_allocated_ODitem > 0_long) call print_mem_alloc(lupri,mem_allocated_ODitem,'ODitem')
     if (mem_allocated_lstensor > 0_long) call print_mem_alloc(lupri,mem_allocated_lstensor,'lstensor')
     if (mem_allocated_FMM > 0_long) call print_mem_alloc(lupri,mem_allocated_FMM,'FMM   ')
@@ -1335,8 +1287,6 @@ end subroutine collect_thread_memory
     if (max_mem_used_integralitem > 0_long) call print_maxmem(lupri,max_mem_used_integralitem,'integralitem')
     if (max_mem_used_IntWork > 0_long) call print_maxmem(lupri,max_mem_used_IntWork,'IntWork')
     if (max_mem_used_overlap > 0_long) call print_maxmem(lupri,max_mem_used_overlap,'overlap')
-    if (max_mem_used_ETUVoverlap > 0_long) call print_maxmem(lupri,max_mem_used_ETUVoverlap,'ETUVoverlap')
-    if (max_mem_used_FTUVoverlap > 0_long) call print_maxmem(lupri,max_mem_used_FTUVoverlap,'FTUVoverlap')
     if (max_mem_used_ODitem > 0_long) call print_maxmem(lupri,max_mem_used_ODitem,'ODitem')
     if (max_mem_used_lstensor > 0_long) call print_maxmem(lupri,max_mem_used_lstensor,'lstensor')
     if (max_mem_used_FMM > 0_long) call print_maxmem(lupri,max_mem_used_FMM,'FMM    ')
@@ -1375,8 +1325,6 @@ end subroutine collect_thread_memory
     if (mem_allocated_integralitem > 0_long) call print_mem_alloc(lupri,mem_allocated_integralitem,'integralitem')
     if (mem_allocated_IntWork > 0_long) call print_mem_alloc(lupri,mem_allocated_IntWork,'IntWork')
     if (mem_allocated_overlap > 0_long) call print_mem_alloc(lupri,mem_allocated_overlap,'overlap')
-    if (mem_allocated_ETUVoverlap > 0_long) call print_mem_alloc(lupri,mem_allocated_ETUVoverlap,'ETUVoverlap')
-    if (mem_allocated_FTUVoverlap > 0_long) call print_mem_alloc(lupri,mem_allocated_FTUVoverlap,'FTUVoverlap')
     if (mem_allocated_ODitem > 0_long) call print_mem_alloc(lupri,mem_allocated_ODitem,'ODitem')
     if (mem_allocated_lstensor > 0_long) call print_mem_alloc(lupri,mem_allocated_lstensor,'lstensor')
     if (mem_allocated_FMM > 0_long) call print_mem_alloc(lupri,mem_allocated_FMM,'FMM   ')
@@ -1953,11 +1901,9 @@ IF (IERR.NE. 0) THEN
 ENDIF
 nullify(A)
 END SUBROUTINE real_deallocate_7dim
-
-!allocate MPI memory
-SUBROUTINE mpi_allocate_dV(A,cip,n)  ! single precision
+SUBROUTINE mpi_allocate_dV8(A,cip,n) 
 implicit none
-integer,intent(in)  :: n
+integer(kind=8),intent(in)  :: n
 real(realk),pointer :: A(:)
 type(c_ptr), intent(inout) :: cip
 integer (kind=ls_mpik) :: IERR,info
@@ -1971,7 +1917,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_realk,IERR)
 
    if(IERR/=0)then
-     write (errmsg,'("ERROR(mpi_allocate_dV):error in&
+     write (errmsg,'("ERROR(mpi_allocate_dV8):error in&
           & mpi_type_get_extent",I5)'), IERR
      call memory_error_quit(errmsg)
     endif
@@ -1980,7 +1926,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_dV):error in alloc",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_dV8):error in alloc",I5)'), IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
@@ -1990,10 +1936,50 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call mem_allocated_mem_mpi(nsize)
 
 #else
-  call lsquit("ERROR(mpi_allocate_dV):compiled without MPI, this is not&
+  call lsquit("ERROR(mpi_allocate_dV8):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_allocate_dV
+END SUBROUTINE mpi_allocate_dV8
+!allocate MPI memory
+SUBROUTINE mpi_allocate_dV4(A,cip,n) 
+implicit none
+integer(kind=4),intent(in)  :: n
+real(realk),pointer :: A(:)
+type(c_ptr), intent(inout) :: cip
+integer (kind=ls_mpik) :: IERR,info
+integer (kind=long) :: nsize
+character(120) :: errmsg
+#ifdef VAR_LSMPI
+integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
+   nullify(A)
+   info = MPI_INFO_NULL
+
+   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_realk,IERR)
+
+   if(IERR/=0)then
+     write (errmsg,'("ERROR(mpi_allocate_dV4):error in&
+          & mpi_type_get_extent",I5)'), IERR
+     call memory_error_quit(errmsg)
+    endif
+
+   bytes =n*mpi_realk
+   call MPI_ALLOC_MEM(bytes,info,cip,IERR)
+
+   IF (IERR.NE. 0) THEN
+     write (errmsg,'("ERROR(mpi_allocate_dV4):error in alloc",I5)'), IERR
+     CALL memory_error_quit(errmsg)
+   ENDIF
+
+   call c_f_pointer(cip,A,[n])
+
+   nsize = bytes
+   call mem_allocated_mem_mpi(nsize)
+
+#else
+  call lsquit("ERROR(mpi_allocate_dV4):compiled without MPI, this is not&
+  &available",-1)
+#endif
+END SUBROUTINE mpi_allocate_dV4
 
 SUBROUTINE mpi_allocate_iV(A,cip,n)  ! single precision
 implicit none
@@ -2357,7 +2343,10 @@ implicit none
 integer(kind=4),intent(in) :: n1,n2,n3,n4
 INTEGER(kind=8),pointer    :: I(:,:,:,:)
 integer(kind=8)            :: n18,n28,n38,n48
-n18=n1;n28=n2;n38=n3;n48=n4
+n18=int(n1,kind=8)
+n28=int(n2,kind=8)
+n38=int(n3,kind=8)
+n48=int(n4,kind=8)
 call int8_allocate_4dim(I,n18,n28,n38,n48)
 END SUBROUTINE int8_allocate_4dim_wrapper4
 SUBROUTINE int8_allocate_4dim(I,n1,n2,n3,n4)
@@ -5195,63 +5184,6 @@ END SUBROUTINE MATRIXP_deallocate_1dim
         endif
      ENDIF
    end subroutine mem_deallocated_mem_integrand
-!5 to keep track of memory used in the etuvoverlap structure
-  subroutine mem_allocated_mem_etuvoverlap(nsize)
-     implicit none
-     integer (kind=long), intent(in) :: nsize
-     IF(mem_InsideOMPsection)THEN!we add to thread private variables
-        mem_tp_allocated_etuvoverlap = mem_tp_allocated_etuvoverlap + nsize
-        max_mem_tp_used_etuvoverlap = MAX(max_mem_tp_used_etuvoverlap,mem_tp_allocated_etuvoverlap)
-     ELSE
-        mem_allocated_etuvoverlap = mem_allocated_etuvoverlap + nsize
-        max_mem_used_etuvoverlap = MAX(max_mem_used_etuvoverlap,mem_allocated_etuvoverlap)
-     ENDIF
-   end subroutine mem_allocated_mem_etuvoverlap
-
-   subroutine mem_deallocated_mem_etuvoverlap(nsize)
-     implicit none
-     integer (kind=long), intent(in) :: nsize
-     IF(mem_InsideOMPsection)THEN!we add to thread private variables
-        mem_tp_allocated_etuvoverlap = mem_tp_allocated_etuvoverlap - nsize
-        if (mem_tp_allocated_etuvoverlap < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_etuvoverlap - probably integer overflow!')
-        endif
-     ELSE
-        mem_allocated_etuvoverlap = mem_allocated_etuvoverlap - nsize
-        if (mem_allocated_etuvoverlap < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_etuvoverlap - probably integer overflow!')
-        endif
-     ENDIF
-   end subroutine mem_deallocated_mem_etuvoverlap
-
-!6 to keep track of memory used in the ftuvoverlap structure
-  subroutine mem_allocated_mem_ftuvoverlap(nsize)
-     implicit none
-     integer (kind=long), intent(in) :: nsize
-     IF(mem_InsideOMPsection)THEN!we add to thread private variables
-        mem_tp_allocated_ftuvoverlap = mem_tp_allocated_ftuvoverlap + nsize
-        max_mem_tp_used_ftuvoverlap = MAX(max_mem_tp_used_ftuvoverlap,mem_tp_allocated_ftuvoverlap)
-     ELSE
-        mem_allocated_ftuvoverlap = mem_allocated_ftuvoverlap + nsize
-        max_mem_used_ftuvoverlap = MAX(max_mem_used_ftuvoverlap,mem_allocated_ftuvoverlap)
-     ENDIF
-   end subroutine mem_allocated_mem_ftuvoverlap
-
-   subroutine mem_deallocated_mem_ftuvoverlap(nsize)
-     implicit none
-     integer (kind=long), intent(in) :: nsize
-     IF(mem_InsideOMPsection)THEN!we add to thread private variables
-        mem_tp_allocated_ftuvoverlap = mem_tp_allocated_ftuvoverlap - nsize
-        if (mem_tp_allocated_ftuvoverlap < 0) then
-           call memory_error_quit('Error in mem_tp_deallocated_mem_tp_ftuvoverlap - probably integer overflow!')
-        endif
-     ELSE
-        mem_allocated_ftuvoverlap = mem_allocated_ftuvoverlap - nsize
-        if (mem_allocated_ftuvoverlap < 0) then
-           call memory_error_quit('Error in mem_deallocated_mem_ftuvoverlap - probably integer overflow!')
-        endif
-     ENDIF
-   end subroutine mem_deallocated_mem_ftuvoverlap
 !7 to keep track of memory used in the ODitem structure
   subroutine mem_allocated_mem_ODitem(nsize)
      implicit none
@@ -5779,8 +5711,6 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      longintbufferInt(7) = mem_allocated_integrand
      longintbufferInt(8) = mem_allocated_integralitem
      longintbufferInt(9) = mem_allocated_overlap
-     longintbufferInt(10) = mem_allocated_etuvoverlap
-     longintbufferInt(11) = mem_allocated_ftuvoverlap
      longintbufferInt(12) = mem_allocated_ODitem
      longintbufferInt(13) = mem_allocated_lstensor
      longintbufferInt(14) = mem_allocated_FMM
@@ -5801,8 +5731,6 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      longintbufferInt(29) = max_mem_used_integrand
      longintbufferInt(30) = max_mem_used_integralitem
      longintbufferInt(31) = max_mem_used_overlap
-     longintbufferInt(32) = max_mem_used_ETUVoverlap
-     longintbufferInt(33) = max_mem_used_FTUVoverlap
      longintbufferInt(34) = max_mem_used_ODitem
      longintbufferInt(35) = max_mem_used_lstensor
      longintbufferInt(36) = max_mem_used_FMM
@@ -5860,8 +5788,6 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      mem_allocated_integrand = longintbufferInt(7)
      mem_allocated_integralitem = longintbufferInt(8)
      mem_allocated_overlap = longintbufferInt(9)
-     mem_allocated_etuvoverlap = longintbufferInt(10)
-     mem_allocated_ftuvoverlap = longintbufferInt(11)
      mem_allocated_ODitem = longintbufferInt(12)
      mem_allocated_lstensor = longintbufferInt(13)
      mem_allocated_FMM = longintbufferInt(14)
@@ -5882,8 +5808,6 @@ END SUBROUTINE MATRIXP_deallocate_1dim
      max_mem_used_integrand = longintbufferInt(29)
      max_mem_used_integralitem = longintbufferInt(30)
      max_mem_used_overlap = longintbufferInt(31)
-     max_mem_used_ETUVoverlap = longintbufferInt(32)
-     max_mem_used_FTUVoverlap = longintbufferInt(33)
      max_mem_used_ODitem = longintbufferInt(34)
      max_mem_used_lstensor = longintbufferInt(35)
      max_mem_used_FMM = longintbufferInt(36)

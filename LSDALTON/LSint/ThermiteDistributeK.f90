@@ -100,8 +100,8 @@ DO iPassP=1,P%nPasses
   atomB  = P%orb2atom(iPassP)
   batchB = P%orb2batch(iPassP)
   IF(nderiv.GT.1)then
-     derivInfo%Atom(1)=atomA
-     derivInfo%Atom(2)=atomB
+     derivInfo%Atom(1)=P%orb1mol(iPassP)
+     derivInfo%Atom(2)=P%orb2mol(iPassP)
   ENDIF
   nB     = P%orbital2%totOrbitals
   IF (nucleiP) THEN
@@ -120,8 +120,8 @@ DO iPassP=1,P%nPasses
     batchD = Q%orb2batch(iPassQ)
     nD     = Q%orbital2%totOrbitals
     IF(nderiv.GT.1)then
-       derivInfo%Atom(3)=atomC
-       derivInfo%Atom(4)=atomD
+       derivInfo%Atom(3)=Q%orb1mol(iPassQ)
+       derivInfo%Atom(4)=Q%orb2mol(iPassQ)
     ENDIF
     IF (nucleiQ) THEN
       atomC = 1
@@ -623,7 +623,7 @@ DO iPassP=1,P%nPasses
     DO iDeriv=1,ndim5
       iDim5 = iDeriv
       IF (nderiv.GT. 1)THEN
-         iDer = derivInfo%dirComp(iDeriv)
+         iDer = derivInfo%dirComp(1,iDeriv)
          iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
          iDim5 = 3*(iAtom-1)+ider
       ENDIF
@@ -1565,8 +1565,8 @@ DO iPassP=1,P%nPasses
   atomB  = P%orb2atom(iPassP)
   batchB = P%orb2batch(iPassP)
   nB     = P%orbital2%totOrbitals
-  derivInfo%Atom(1)=atomA
-  derivInfo%Atom(2)=atomB
+  derivInfo%Atom(1)=P%orb1mol(iPassP)
+  derivInfo%Atom(2)=P%orb2mol(iPassP)
 
   permuteAB  = SameLHSaos.AND.((batchA.NE.batchB).OR.(atomA.NE.atomB))
   DO iPassQ=1,Q%nPasses
@@ -1578,8 +1578,8 @@ DO iPassP=1,P%nPasses
     atomD  = Q%orb2atom(iPassQ)
     batchD = Q%orb2batch(iPassQ)
     nD     = Q%orbital2%totOrbitals
-    derivInfo%Atom(3)=atomC
-    derivInfo%Atom(4)=atomD
+    derivInfo%Atom(3)=Q%orb1mol(iPassQ)
+    derivInfo%Atom(4)=Q%orb2mol(iPassQ)
     permuteCD = SameRHSaos.AND.((batchC.NE.batchD).OR.(atomC.NE.atomD))
     permuteOD = SameODs.AND.( ((batchA.NE.batchC).OR.(atomA.NE.atomC)).OR.&
    &                          ((batchB.NE.batchD).OR.(atomB.NE.atomD)) )
@@ -1737,7 +1737,7 @@ DO iPassP=1,P%nPasses
 
       tmp = gtheta(ltheta,CDAB,nA,nB,nC,nD,iPass,iDeriv,nPasses,nDeriv,lupri)
 
-      iDer  = derivInfo%dirComp(iDeriv)
+      iDer  = derivInfo%dirComp(1,iDeriv)
       iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
 !The structure of the lstensor when used to store the molecular gradient
 !is maybe not the most logical and we refer to discussion in the subroutine

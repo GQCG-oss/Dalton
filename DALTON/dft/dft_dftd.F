@@ -1338,7 +1338,7 @@ C Coord No.s in common block
       INTEGER MX_CORD,N_ELEM,MXCi(N_ELEM),NLINES
       REAL*8  C6AB(N_ELEM,N_ELEM,MX_CORD,MX_CORD,3)
       INTEGER IAT,JAT,L,J,K,IL,IADR,JADR,NN,KK
-#include "dft_dftd_pars.F"
+#include "dft_dftd_pars.h"
       !nlines set in the above file
       C6AB=-1
       MXCi=0

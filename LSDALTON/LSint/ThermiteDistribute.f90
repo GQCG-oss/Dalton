@@ -21,7 +21,7 @@ Integer :: Atom(4)
 !For each ngeoDerivcompP this returns the directional component (grad x,y,z=1,2,3, hessian xx,xy,xz,yy,yz,zz=1,2,3,4,5,6, etc.)
 Integer :: ngeoderivcomp
 Integer :: derivComp
-Integer, pointer :: dirComp(:) 
+Integer, pointer :: dirComp(:,:) 
 !For each ngeoDerivcomp this returns the AO the contribution is added to (1-4 mean A,B,C,D, 1,4 means AD, etc.)
 Integer, pointer :: AO(:,:)
 Integer :: translate      !0 if no translational symmetry, n to translate other contibutions to n
@@ -114,7 +114,7 @@ SUBROUTINE distributeJengine(RES,PQ,QPmat2,dimQ,dimP,Input,Lsoutput,Jcont,LUPRI,
         DBA => Input%LST_DLHS%LSAO(BA)%elms
       ENDIF !dopermutation
       DO iDerivP=1,NgeoderivcompP
-        iDer  = derivInfo%dirComp(iDerivP)
+        iDer  = derivInfo%dirComp(1,iDerivP)
         iAtom = derivInfo%Atom(derivInfo%AO(1,iDerivP))
 !The structure of the lstensor when used to store the molecular gradient
 !is maybe not the most logical and we refer to discussion in the subroutine
@@ -712,7 +712,7 @@ nDer = Input%geoderivorder
 n    = getTotalGeoComp(nDer,derP.GT.0,derQ.GT.0,singleP,singleQ)
 derivInfo%ngeoderivcomp = nDer
 derivInfo%derivComp     = n
-call mem_alloc(derivInfo%dirComp,n)
+call mem_alloc(derivInfo%dirComp,nDer,n)
 call mem_alloc(derivInfo%AO,nDer,n)
 
 iDeriv = 0
@@ -747,6 +747,7 @@ TYPE(derivativeInfo), intent(IN) :: derivInfo
 Integer,intent(IN)               :: LUPRI
 !
 Integer :: iDer,ngeoderivcomp,derComp
+character(len=80) :: printformat
 
 CALL LSHEADER(LUPRI,'Derivative Info')
 IF (derivInfo%atom(1).EQ. 0) THEN
@@ -764,9 +765,11 @@ ENDIF
 ngeoderivcomp = derivInfo%ngeoderivcomp
 derComp = derivInfo%derivComp
 WRITE(LUPRI,'(3X,A,I1,A,I4)') 'Derivative order ',ngeoderivcomp,', number of derivative components', derComp
-WRITE(LUPRI,'(5X,A)') 'Derivative index   directional component   AO derivatives'
+WRITE(LUPRI,'(5X,A)') 'Derivative index     Directional componants      AO index'
+write(printformat,'(A,I2,A,I1,A,I2,A,I1,A)') "(5X,I10,",25-4*ngeoderivcomp,"X,",ngeoderivcomp,"I4,",&
+     &                                         25-4*ngeoderivcomp,"X,",ngeoderivcomp,"I4)"
 DO iDer=1,derComp
-  WRITE(LUPRI,'(5X,I10,I20,15X,9I2)') iDer,derivInfo%dirComp(iDer),derivInfo%AO(:,iDer)
+  WRITE(LUPRI,printformat) iDer,derivInfo%dirComp(:,iDer),derivInfo%AO(:,iDer)
 ENDDO
 
 END SUBROUTINE printDerivativeOverlapInfo
@@ -886,34 +889,47 @@ DO xC=derC,0,-1
         nX = xA+xB+xC+xD
         nY = yA+yB+yC+yD
         nZ = zA+zB+zC+zD
-        derivInfo%dirComp(iDeriv) = direction(nX,nY,nZ)
         iAO = 0
         CALL setDerivAO(derivInfo%AO,iAO,xA,iDeriv,1)
-        CALL setDerivAO(derivInfo%AO,iAO,xB,iDeriv,2)
-        CALL setDerivAO(derivInfo%AO,iAO,xC,iDeriv,3)
-        CALL setDerivAO(derivInfo%AO,iAO,xD,iDeriv,4)
         CALL setDerivAO(derivInfo%AO,iAO,yA,iDeriv,1)
-        CALL setDerivAO(derivInfo%AO,iAO,yB,iDeriv,2)
-        CALL setDerivAO(derivInfo%AO,iAO,yC,iDeriv,3)
-        CALL setDerivAO(derivInfo%AO,iAO,yD,iDeriv,4)
         CALL setDerivAO(derivInfo%AO,iAO,zA,iDeriv,1)
+        CALL setDerivAO(derivInfo%AO,iAO,xB,iDeriv,2)
+        CALL setDerivAO(derivInfo%AO,iAO,yB,iDeriv,2)
         CALL setDerivAO(derivInfo%AO,iAO,zB,iDeriv,2)
+        CALL setDerivAO(derivInfo%AO,iAO,xC,iDeriv,3)
+        CALL setDerivAO(derivInfo%AO,iAO,yC,iDeriv,3)
         CALL setDerivAO(derivInfo%AO,iAO,zC,iDeriv,3)
+        CALL setDerivAO(derivInfo%AO,iAO,xD,iDeriv,4)
+        CALL setDerivAO(derivInfo%AO,iAO,yD,iDeriv,4)
         CALL setDerivAO(derivInfo%AO,iAO,zD,iDeriv,4)
+        iAO = 0
+        CALL setDirComp(derivInfo%dirComp,iAO,xA,iDeriv,1)
+        CALL setDirComp(derivInfo%dirComp,iAO,yA,iDeriv,2)
+        CALL setDirComp(derivInfo%dirComp,iAO,zA,iDeriv,3)
+        CALL setDirComp(derivInfo%dirComp,iAO,xB,iDeriv,1)
+        CALL setDirComp(derivInfo%dirComp,iAO,yB,iDeriv,2)
+        CALL setDirComp(derivInfo%dirComp,iAO,zB,iDeriv,3)
+        CALL setDirComp(derivInfo%dirComp,iAO,xC,iDeriv,1)
+        CALL setDirComp(derivInfo%dirComp,iAO,yC,iDeriv,2)
+        CALL setDirComp(derivInfo%dirComp,iAO,zC,iDeriv,3)
+        CALL setDirComp(derivInfo%dirComp,iAO,xD,iDeriv,1)
+        CALL setDirComp(derivInfo%dirComp,iAO,yD,iDeriv,2)
+        CALL setDirComp(derivInfo%dirComp,iAO,zD,iDeriv,3)
       ENDDO
     ENDDO
   ENDDO
 ENDDO
 END SUBROUTINE setDerivComp2
 
-!> \brief Sets up information about the directional cartesian components for given deriviative index
+!> \brief Sets up information about the AO-indices for a given deriviative index
 !> \author S. Reine
 !> \date 2010-03-23
-!> \param AO The AO index (1-4) of each directional derivative cartesian component and deriviative index
+!> \param AO The AO index (1-4) of each deriviative index
 !> \param iAO The directional derivative component (1 for gradients, 2 for Hessians, etc.)
 !> \param order The cartesian component derivative order
 !> \param iDeriv The (full) derivative index
 !> \param AOindex The AO index
+!> \param AOindex The directional derivative index (x=1,y=2,z=3)
 SUBROUTINE setDerivAO(AO,iAO,order,iDeriv,AOindex)
 implicit none
 Integer,pointer       :: AO(:,:)
@@ -923,9 +939,30 @@ Integer,intent(IN)    :: order,iDeriv,AOindex
 Integer :: i
 DO i=1,order
   iAO=iAO+1
-  AO(iAO,iDeriv) = AOindex
+  AO(iAO,iDeriv)      = AOindex
 ENDDO
 END SUBROUTINE setDerivAO
+
+!> \brief Sets up information about the directional cartesian components for given deriviative index
+!> \author S. Reine
+!> \date 2010-03-23
+!> \param dirComp The dirComp index (1-4) of each directional derivative cartesian component and deriviative index
+!> \param iAO The directional derivative component (1 for gradients, 2 for Hessians, etc.)
+!> \param order The cartesian component derivative order
+!> \param iDeriv The (full) derivative index
+!> \param dir The directional derivative index (x=1,y=2,z=3)
+SUBROUTINE setDirComp(dirComp,iAO,order,iDeriv,dir)
+implicit none
+Integer,pointer       :: dirComp(:,:)
+Integer,intent(INOUT) :: iAO
+Integer,intent(IN)    :: order,iDeriv,dir
+!
+Integer :: i
+DO i=1,order
+  iAO=iAO+1
+  dirComp(iAO,iDeriv) = dir
+ENDDO
+END SUBROUTINE setDirComp
 
 !> \brief Frees the derivative info
 !> \author S. Reine
@@ -1051,8 +1088,8 @@ DO iPassP=1,P%nPasses
   atomB  = P%orb2atom(iPassP)
   batchB = P%orb2batch(iPassP)
   IF(nderiv.GT.1)then
-     derivInfo%Atom(1)=atomA
-     derivInfo%Atom(2)=atomB
+     derivInfo%Atom(1)=P%orb1mol(iPassP)
+     derivInfo%Atom(2)=P%orb2mol(iPassP)
   ENDIF
   IF (nucleiP) THEN
     atomA = 1
@@ -1067,8 +1104,8 @@ DO iPassP=1,P%nPasses
     atomD  = Q%orb2atom(iPassQ)
     batchD = Q%orb2batch(iPassQ)
     IF(nderiv.GT.1)then
-       derivInfo%Atom(3)=atomC
-       derivInfo%Atom(4)=atomD
+       derivInfo%Atom(3)=Q%orb1mol(iPassQ)
+       derivInfo%Atom(4)=Q%orb2mol(iPassQ)
     ENDIF
     IF (nucleiQ) THEN
       atomC = 1
@@ -1148,7 +1185,7 @@ DO iPassP=1,P%nPasses
       iDeriv = iDeriv + 1
       iDim5=ideriv
       IF (nderiv.GT. 1)THEN
-         iDer = derivInfo%dirComp(iDerivP)
+         iDer = derivInfo%dirComp(1,iDerivP)
          iAtom = derivInfo%Atom(derivInfo%AO(1,iDerivP))
          iDim5 = 3*(iAtom-1)+ider
       ENDIF
@@ -1610,8 +1647,8 @@ DO iPassP=1,P%nPasses
   atomB  = P%orb2atom(iPassP)
   batchB = P%orb2batch(iPassP)
   IF(input%geoDerivOrder.GE.1)then
-    derivInfo%Atom(1)=atomA
-    derivInfo%Atom(2)=atomB
+    derivInfo%Atom(1)=P%orb1mol(iPassP)
+    derivInfo%Atom(2)=P%orb2mol(iPassP)
   ELSE
     iDer  = 1
   ENDIF
@@ -1628,8 +1665,8 @@ DO iPassP=1,P%nPasses
     atomD  = Q%orb2atom(iPassQ)
     batchD = Q%orb2batch(iPassQ)
     IF(input%geoDerivOrder.GE.1)then
-       derivInfo%Atom(3)=atomC
-       derivInfo%Atom(4)=atomD
+       derivInfo%Atom(3)=Q%orb1mol(iPassQ)
+       derivInfo%Atom(4)=Q%orb2mol(iPassQ)
     ELSE
        iDer  = 1
     ENDIF
@@ -1694,35 +1731,18 @@ DO iPassP=1,P%nPasses
        Dim5(1) = iDim5
        nPermute = 1
        IF (input%geoDerivOrder.EQ. 1)THEN
-          iDer = derivInfo%dirComp(iDeriv)
+          iDer = derivInfo%dirComp(1,iDeriv)
           iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
           Dim5(1) = 3*(iAtom-1)+ider
        ELSEIF (input%geoDerivOrder.EQ. 2)THEN
-          iDer = derivInfo%dirComp(iDeriv)
           iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
           iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
-          IF (derivInfo%AO(1,iDeriv).NE.derivInfo%AO(2,iDeriv)) nPermute=2
-          IF (iDer.EQ.1) THEN
-            i1 = 1
-            i2 = 1
-          ELSE IF (iDer.EQ.2) THEN
-            i1 = 1  
-            i2 = 2
-          ELSE IF (iDer.EQ.3) THEN
-            i1 = 1  
-            i2 = 3
-          ELSE IF (iDer.EQ.4) THEN
-            i1 = 2  
-            i2 = 2
-          ELSE IF (iDer.EQ.5) THEN
-            i1 = 2  
-            i2 = 3
-          ELSE IF (iDer.EQ.6) THEN
-            i1 = 3  
-            i2 = 3
-          ENDIF
+          i1 = derivInfo%dirComp(1,iDeriv)
+          i2 = derivInfo%dirComp(2,iDeriv)
           Dim5(1) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom1-1)+i1
           Dim5(2) = 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom2-1)+i2
+          nPermute=2
+          IF ((Dim5(1).EQ.Dim5(2)).AND.(derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))) nPermute=1
        ENDIF
        DO iPermute=1,nPermute
        iDim5 = Dim5(iPermute)
@@ -1920,7 +1940,7 @@ DO iPassP=1,P%nPasses
           ENDIF
           call mem_workpointer_dealloc(QPmat5)
        ENDIF !translate
-       ENDDO
+       ENDDO !Permute
        IF (IPRINT.GT.40) THEN
           IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
              CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
@@ -2002,7 +2022,7 @@ CONTAINS
   DO i4=1,n4
   DO i3=1,n3
   DO i2=1,n2
-    write(lupri,'(A,4I3)') '  --integrals',i1,i3,i4,i5
+    write(lupri,'(A,4I3)') '  --integrals',i2,i3,i4,i5
     write(lupri,'(4X,10F17.12)') (ABCD(i1,i2,i3,i4,i5),i1=1,n1)
   ENDDO
   ENDDO
@@ -2646,7 +2666,7 @@ DO iPassP=1,P%nPasses
           CALL LSQUIT('Error in use of gradientlstensor distributePQgrad',lupri)
        ENDIF
 #endif
-       iDer  = derivInfo%dirComp(iDeriv)
+       iDer  = derivInfo%dirComp(1,iDeriv)
        grad => RES%LSAO(iLSAO)%elms
        translate = derivInfo%translate.GT. 0
        IF (translate) THEN
@@ -3003,12 +3023,8 @@ DO iPassP = 1, P%nPasses
   dotriangular  = INPUT%SameLHSaos .AND. ((batchA.EQ.batchB).AND.(atoma.EQ.atomb))
     
   IF (geoderivorder.GT. 0) THEN
-    atomA  = P%orb1atom(iPassP)
-    atomB  = P%orb2atom(iPassP)
-    if (P%orbital1%TYPE_empty) atomA = 0
-    if (P%orbital2%TYPE_empty) atomB = 0
-    derivInfo%Atom(1)=atomA
-    derivInfo%Atom(2)=atomB
+    derivInfo%Atom(1)=P%orb1mol(iPassP)
+    derivInfo%Atom(2)=P%orb2mol(iPassP)
   ELSE
     iDer  = 0
     iAtom = -1
@@ -3019,7 +3035,7 @@ DO iPassP = 1, P%nPasses
   DO iDerivP=1,ngeoderivcompP
    IF (geoderivorder.GT. 0) THEN
      iAtom = derivInfo%Atom(derivInfo%AO(1,iDerivP))
-     iDer  = derivInfo%dirComp(iDerivP)
+     iDer  = derivInfo%dirComp(1,iDerivP)
    ENDIF
    DO iB=1,nB
     endA = nA

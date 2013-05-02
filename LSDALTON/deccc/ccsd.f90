@@ -26,6 +26,12 @@ module ccsd_module
   use lsmpi_type
 #endif
   use integralparameters!, only: AORdefault
+  use tensor_interface_module!, only: precondition_doubles_parallel
+  use lspdm_tensor_operations_module!, only: array_init, array_change_atype_to_rep,&
+  use tensor_basic_module!, only: DENSE,TILED,TILED_DIST,SCALAPACK,&
+!         & NO_PDM,MASTER_INIT,REPLICATED,ALL_INIT,ass_1to3,ass_1to2,&
+!         & ass_1to4,ass_2to1,&
+!         & ass_4to1,ARR_MSG_LEN
 
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************
@@ -33,10 +39,6 @@ module ccsd_module
   use decmpi_module!, only: mpi_communicate_ccsd_calcdata,distribute_mpi_jobs
 #endif
     use dec_fragment_utils
-    use array_memory_manager!, only: DENSE,TILED,TILED_DIST,SCALAPACK,&
-!         & NO_PDM,MASTER_INIT,REPLICATED,ALL_INIT,ass_1to3,ass_1to2,&
-!         & ass_1to4,ass_2to1,&
-!         & ass_4to1,ARR_MSG_LEN
     use ri_simple_operations
     use array2_simple_operations!, only: array2_init, array2_add,&
 !         & array2_transpose, array2_free, array2_add_to
@@ -49,8 +51,6 @@ module ccsd_module
 !         & array4_read_file_type2, array4_write_file_type2,&
 !         & array4_open_file, array4_read_file, array4_close_file,&
 !         & array4_write_file
-    use dec_pdm_module!, only: precondition_doubles_parallel
-    use array_operations!, only: array_init, array_change_atype_to_rep,&
 !         & array_change_atype_to_d,print_norm
     use ccintegrals!, only: get_gmo_simple,getL,dec_fock_transformation
 
@@ -1604,11 +1604,11 @@ contains
 #endif
 
     ! CHECKING and MEASURING variables
-    integer(kind=long) :: maxsize64
+    integer(kind=long) :: maxsize64,dummy64
     integer :: myload,double_2G_nel,nelms,n4
     real(realk) :: tcpu, twall,tcpu1,twall1,tcpu2,twall2, deb1,deb2,MemFree,ActuallyUsed
     real(realk) :: tcpu_start,twall_start, tcpu_end,twall_end,time_a, time_c, time_d,time_singles
-    real(realk) :: time_doubles,time_start,timewall_start
+    real(realk) :: time_doubles,time_start,timewall_start,wait_time,max_wait_time
     integer     :: scheme
 
     ! variables used for BATCH construction and INTEGRAL calculation
@@ -1628,7 +1628,8 @@ contains
     integer, pointer :: orb2batchAlpha(:), batchdimAlpha(:), batchsizeAlpha(:), batchindexAlpha(:)
     integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
     integer :: a,b,i,j,l,m,n,c,d,fa,fg,la,lg,worksize
-    integer :: nb2,nb3,nb4,nv2,no2,b2v,o2v,v2o,no3,no4,o2v2
+    integer :: nb2,nb3,nv2,no2,b2v,o2v,v2o,no3
+    integer(kind=8) :: nb4,o2v2,no4
     integer :: tlen,tred,nor,nvr,goffs,aoffs
     integer :: prev_alphaB,mpi_buf
     logical :: jobtodo,first_round,dynamic_load,restart,print_debug
@@ -1656,7 +1657,17 @@ contains
     stopp=0.0E0_realk
     !double_2G_nel=250000000
     double_2G_nel=170000000
-    print_debug = .false.
+    print_debug = (DECinfo%PL>1)
+
+
+
+!HACK
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    print_debug = .true.
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
 
 #ifdef VAR_DEBUG
     double_2G_nel=20
@@ -1674,7 +1685,7 @@ contains
 #ifdef VAR_LSMPI
     master=(infpar%lg_mynum == 0)
     nnod=infpar%lg_nodtot
-    call get_int_dist_info(no*no*nv*nv,fintel,nintel)
+    call get_int_dist_info(int(no*no*nv*nv,kind=8),fintel,nintel)
     def_atype=TILED_DIST
 #endif
 
@@ -1689,15 +1700,15 @@ contains
     ! Set some shorthand notations
     nb2 = nb*nb
     nb3 = nb2*nb
-    nb4 = nb3*nb
+    nb4 = int(nb3*nb,kind=long)
     nv2 = nv*nv
     no2 = no*no
     no3 = no2*no
-    no4 = no3*no
+    no4 = int(no3*no,kind=long)
     b2v = nb2*nv
     o2v = no2*nv
     v2o = nv2*no
-    o2v2 = nv2*no2
+    o2v2 = int(nv2*no2,kind=long)
     nor=no*(no+1)/2
     nvr=nv*(nv+1)/2
 !print*,"HACK:random t"
@@ -1798,6 +1809,7 @@ contains
 
     hstatus = 80
     CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
+    print *,infpar%lg_mynum,"got scheme",scheme
 
     !dense part was allocated in the communicate subroutine
     if(scheme==4.or.scheme==0)then
@@ -1903,21 +1915,21 @@ contains
     
 
     !get everything that needs to be gained before t2 is put into pdm
-    call mem_alloc(tpl,nor*nvr)
-    call mem_alloc(tmi,nor*nvr)
+    call mem_alloc(tpl,int(nor*nvr,kind=long))
+    call mem_alloc(tmi,int(nor*nvr,kind=long))
     call get_tpl_and_tmi(t2%elm1,nv,no,tpl,tmi)
     !call mem_alloc(u2,no2*nv2)
     if(scheme==2.or.scheme==1)then
       u2=array_init([nv,nv,no,no],4,TILED_DIST,ALL_INIT)
       call array_zero(u2)
       if(master)then 
-        call array_add(u2,2.0E0_realk,t2%elm1,t2%nelms,[2,1,3,4])
-        call array_add(u2,-1.0E0_realk,t2%elm1,t2%nelms,[2,1,4,3])
+        call array_add(u2,2.0E0_realk,t2%elm1,[2,1,3,4])
+        call array_add(u2,-1.0E0_realk,t2%elm1,[2,1,4,3])
       endif
       if(scheme==1)then
         !fill the reordered amplitude, t2  abij -> jabi [4,1,2,3]
         t2jabi=array_init([no,nv,nv,no],4,TILED_DIST,ALL_INIT)
-        call array_convert(t2%elm1,t2jabi,t2%nelms,[4,1,2,3])
+        call array_convert(t2%elm1,t2jabi,[4,1,2,3])
       endif
       call array_mv_dense2tiled(t2,.true.)
       if(scheme==1)then
@@ -1925,7 +1937,7 @@ contains
         u2kcjb=array_init([no,nv,no,nv],4,TILED_DIST,ALL_INIT)
         call array_cp_tiled2dense(u2,.false.)
         !dcij -> jdic [4,1,3,2]
-        call array_convert(u2%elm1,u2kcjb,u2%nelms,[4,1,3,2])
+        call array_convert(u2%elm1,u2kcjb,[4,1,3,2])
         call memory_deallocate_array_dense(u2)
       endif
     else
@@ -1939,17 +1951,17 @@ contains
     call mem_alloc(Gbi,nb*no)
     if(DECinfo%ccModel>2)then
 #ifdef VAR_LSMPI
-      call mem_alloc(sio4,sio4_c,nor*no2)
-      call lsmpi_win_create(sio4,sio4_w,nor*no2,infpar%lg_comm)
+      call mem_alloc(sio4,sio4_c,int(nor*no2,kind=long))
+      call lsmpi_win_create(sio4,sio4_w,int(nor*no2,kind=long),infpar%lg_comm)
 #else
       call mem_alloc(sio4,nor*no2)
 #endif
       if(scheme==4)then
 #ifdef VAR_LSMPI
-        call mem_alloc(gvoov,gvoov_c,no2*nv2)
-        call mem_alloc(gvvoo,gvvoo_c,no2*nv2)
-        call lsmpi_win_create(gvoov,gvoov_w,no2*nv2,infpar%lg_comm)
-        call lsmpi_win_create(gvvoo,gvvoo_w,no2*nv2,infpar%lg_comm)
+        call mem_alloc(gvoov,gvoov_c,int(no2*nv2,kind=long))
+        call mem_alloc(gvvoo,gvvoo_c,int(no2*nv2,kind=long))
+        call lsmpi_win_create(gvoov,gvoov_w,int(no2*nv2,kind=long),infpar%lg_comm)
+        call lsmpi_win_create(gvvoo,gvvoo_w,int(no2*nv2,kind=long),infpar%lg_comm)
 #else
         call mem_alloc(gvoov,no2*nv2)
         call mem_alloc(gvvoo,no2*nv2)
@@ -1958,15 +1970,15 @@ contains
         gvvoo=0.0E0_realk
       elseif(scheme==3)then
 #ifdef VAR_LSMPI
-        call mem_alloc(gvoov_r,gvoov_p,nintel)
-        call mem_alloc(gvvoo_r,gvvoo_p,nintel)
+        call mem_alloc(gvoov_r,gvoov_p,int(nintel,kind=long))
+        call mem_alloc(gvvoo_r,gvvoo_p,int(nintel,kind=long))
         gvvoo_r=0.0E0_realk
         gvoov_r=0.0E0_realk
-        call lsmpi_win_create(gvoov_r,gvoov_w,nintel,infpar%lg_comm)
-        call lsmpi_win_create(gvvoo_r,gvvoo_w,nintel,infpar%lg_comm)
+        call lsmpi_win_create(gvoov_r,gvoov_w,int(nintel,kind=long),infpar%lg_comm)
+        call lsmpi_win_create(gvvoo_r,gvvoo_w,int(nintel,kind=long),infpar%lg_comm)
 #else
-        call mem_alloc(gvoov,no2*nv2)
-        call mem_alloc(gvvoo,no2*nv2)
+        call mem_alloc(gvoov,int(no2*nv2,kind=long))
+        call mem_alloc(gvvoo,int(no2*nv2,kind=long))
         gvvoo=0.0E0_realk
         gvoov=0.0E0_realk
 #endif
@@ -2097,7 +2109,7 @@ contains
        !Lambda^h [gamma d] u[d c i j] = u [gamma c i j]
        if(scheme==2.or.scheme==1)then
          !call array_cp_tiled2dense(u2,.false.)
-         call array_convert(u2,w2,no2*nv2)
+         call array_convert(u2,w2)
          call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,w2,nv,0.0E0_realk,w1,lg)
          !call memory_deallocate_array_dense(u2)
        else
@@ -2109,7 +2121,7 @@ contains
        !Lambda^h [gamma c] * t [c d i j] = t [gamma d i j]
        if(DECinfo%ccModel>2.and.(scheme==0.or.scheme==1)) then
          if(scheme==1)then
-           call array_convert(t2,w2,t2%nelms)
+           call array_convert(t2,w2)
            call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,w2,nv,0.0E0_realk,tGammadij,lg)
          else
            call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,t2%elm1,nv,0.0E0_realk,tGammadij,lg)
@@ -2207,13 +2219,13 @@ contains
         elseif(scheme==3)then
 #ifdef VAR_LSMPI
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,0.0E0_realk,w2,nv)
-          call dist_int_contributions(w2,no2*nv2,gvvoo_w)
+          call dist_int_contributions(w2,int(no2*nv2,kind=long),gvvoo_w)
 #else
           call lsquit("ERROR(ccsd_integral_driven):this should never appear gvvoo_w",-1)
 #endif
         elseif(scheme==2)then
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,0.0E0_realk,w2,nv)
-          call array_add(gvvooa,1.0E0_realk,w2,gvvooa%nelms)
+          call array_add(gvvooa,1.0E0_realk,w2)
         endif
         call lsmpi_poke()
        endif
@@ -2242,7 +2254,7 @@ contains
          else
            ! i a j b
            call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,0.0E0_realk,w2,no)
-           call array_add(govov,1.0E0_realk,w2,no2*nv2,[1,4,2,3])
+           call array_add(govov,1.0E0_realk,w2,[1,4,2,3])
          endif
          call lsmpi_poke()
        endif
@@ -2261,19 +2273,19 @@ contains
         elseif(scheme==3)then
 #ifdef VAR_LSMPI
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1,la,0.0E0_realk,w2,nv)
-          call dist_int_contributions(w2,no2*nv2,gvoov_w)
+          call dist_int_contributions(w2,int(no2*nv2,kind=long),gvoov_w)
 #else
           call lsquit("ERROR(ccsd_integral_driven):this should never appear gvoov_w",-1)
 #endif
         elseif(scheme==2)then
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1,la,0.0E0_realk,w2,nv)
-          call array_add(gvoova,1.0E0_realk,w2,gvoova%nelms)
+          call array_add(gvoova,1.0E0_realk,w2)
         endif
         call lsmpi_poke()
        endif
 
        !prepare w0 to contain L
-       if(DECinfo%ccModel>2.and.(scheme==0.or.scheme==1)) call dscal(lg*la*nb2,2.0E0_realk,w0,1)
+       if(DECinfo%ccModel>2.and.(scheme==0.or.scheme==1)) call dscal(int(lg*la*nb2),2.0E0_realk,w0,1)
 
        IF(doscreen)Mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGabKLHS(alphaB)%p
        IF(doscreen)Mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGabKRHS(gammaB)%p
@@ -2330,9 +2342,10 @@ contains
       ! Omega += Lambda^p[alpha a]^T (w3):I[b i j alpha]^T
       if(scheme==1.or.scheme==2)then
         call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3,o2v,0.0E0_realk,w2,nv)
-        call array_add(omega2,1.0E0_realk,w2,omega2%nelms)
+        call array_add(omega2,1.0E0_realk,w2)
       else
         call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3,o2v,1.0E0_realk,omega2%elm1,nv)
+        call print_norm(omega2%elm1,o2v2)
       endif
       call lsmpi_poke()
 
@@ -2392,35 +2405,57 @@ contains
     
 #ifdef VAR_LSMPI
     if(scheme==3)then
-      call mem_alloc(gvvoo,gvvoo_c,no2*nv2)
-      call mem_alloc(gvoov,gvoov_c,no2*nv2)
+      call mem_alloc(gvvoo,gvvoo_c,int(no2*nv2,kind=long))
+      call mem_alloc(gvoov,gvoov_c,int(no2*nv2,kind=long))
     endif
     ! Finish the MPI part of the Residual calculation
     startt=MPI_wtime()
     call lsmpi_barrier(infpar%lg_comm)
     stopp=MPI_wtime()
-    write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,stopp-startt
+    wait_time = stopp - startt
+    max_wait_time = wait_time
+
+
+#ifdef VAR_DEBUG
+    write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
+    call lsmpi_local_reduction(wait_time,infpar%master)
+    call lsmpi_local_max(max_wait_time,infpar%master)
+    if(master)then
+      write(*,'("----------------------------------------------------------")')
+      write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)'),wait_time,wait_time/(infpar%nodtot*1.0E0_realk),max_wait_time
+    endif
+#endif
+    if (master) call LSTIMER('CCSD part B',time_start,timewall_start,DECinfo%output)
     startt=MPI_wtime()
     if(infpar%lg_nodtot>1.or.scheme==3) then
        if(iter==1.and.scheme==4.or.scheme==0)then
-         call lsmpi_local_allreduce(govov%elm1,no2*nv2,double_2G_nel)
+         dummy64 = int(no2*nv2,kind=long)
+         call lsmpi_local_allreduce_chunks(govov%elm1,dummy64,double_2G_nel)
+         call lsmpi_barrier(infpar%lg_comm)
        elseif(scheme==3)then
          call array_cp_tiled2dense(govov,.false.)
        endif
        ! The following block is structured like this due to performance reasons
        !***********************************************************************
        if(DECinfo%ccModel>2)then
-         call lsmpi_local_allreduce(sio4,nor*no*no,double_2G_nel)
+         call lsmpi_barrier(infpar%lg_comm)
+         !print *,"calling allreduce",nor*no*no,double_2G_nel
+         dummy64 = int(nor*no*no,kind=long)
+         call lsmpi_local_allreduce_chunks(sio4,dummy64,double_2G_nel)
+         !print *,"second allred done"
+         call lsmpi_barrier(infpar%lg_comm)
          if(scheme==4)then
-           call lsmpi_local_allreduce(gvvoo,no2*nv2,double_2G_nel)
-           call lsmpi_local_allreduce(gvoov,no2*nv2,double_2G_nel)
+           dummy64 = int(no2*nv2,kind=long)
+           call lsmpi_local_allreduce_chunks(gvvoo,dummy64,double_2G_nel)
+           call lsmpi_local_allreduce_chunks(gvoov,dummy64,double_2G_nel)
          elseif(scheme==3)then
 #ifdef VAR_MPIWIN
+           dummy64 = int(no2*nv2,kind=long)
            call lsmpi_win_fence(gvoov_w,.true.)
-           call collect_int_contributions_f(gvoov,no2*nv2,gvoov_w)
+           call collect_int_contributions_f(gvoov,dummy64,gvoov_w)
            call lsmpi_win_fence(gvoov_w,.false.)
            call lsmpi_win_fence(gvvoo_w,.true.)
-           call collect_int_contributions_f(gvvoo,no2*nv2,gvvoo_w)
+           call collect_int_contributions_f(gvvoo,dummy64,gvvoo_w)
            call lsmpi_win_fence(gvvoo_w,.false.)
 #else
            do nctr = 0,infpar%lg_nodtot-1
@@ -2441,9 +2476,9 @@ contains
       call mem_dealloc(mpi_stuff,mpi_ctasks)
     endif
     stopp=MPI_wtime()
+#ifdef VAR_DEBUG
     if(master) print*,"MPI part of the calculation finished, comm-time",stopp-startt
-    !print *,infpar%lg_mynum,norm2(omega2%elm1),norm2(govov%elm1),norm2(gvvoo),norm2(gvoov)
-    
+#endif    
     !free windows and deallocate partial int matrices in scheme 1
     if(DECinfo%ccModel>2.and.(scheme==3.or.scheme==4))then
       call lsmpi_win_free(gvoov_w)
@@ -2454,7 +2489,6 @@ contains
       endif
     endif
 #endif
-    if (master) call LSTIMER('CCSD part B',time_start,timewall_start,DECinfo%output)
 
 
     ! Reallocate 1 temporary array
@@ -2470,7 +2504,7 @@ contains
 #ifdef VAR_LSMPI
       if(DECinfo%solver_par)then
         govov%atype     = TILED_DIST
-        call array_convert(govov%elm1,govov,govov%nelms)
+        call array_convert(govov%elm1,govov)
         if(scheme==4)govov%atype = DENSE
       endif
 #endif
@@ -2529,7 +2563,8 @@ contains
     !*****************************************************
 #ifdef VAR_LSMPI
     if(infpar%lg_nodtot>1) then
-      if(scheme==4.or.scheme==3.or.scheme==0)call lsmpi_local_reduction(omega2%elm1,no2*nv2,infpar%master,double_2G_nel)
+      if(scheme==4.or.scheme==3.or.scheme==0)&
+       &call lsmpi_local_reduction(omega2%elm1,int(no2*nv2,kind=long),infpar%master,double_2G_nel)
       call lsmpi_local_reduction(Gbi,nb*no,infpar%master,double_2G_nel)
       call lsmpi_local_reduction(Had,nb*nv,infpar%master,double_2G_nel)
     endif
@@ -2556,6 +2591,7 @@ contains
       if(scheme==4.or.scheme==3.or.scheme==0)call array_free(u2)
       return
     endif
+
 
     !allocate the density matrix
     call mat_init(iFock,nb,nb)
@@ -2644,7 +2680,7 @@ contains
     if(scheme==4.or.scheme==3.or.scheme==0)then
       call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
     elseif(scheme==2.or.scheme==1)then
-      call array_convert(u2,w1,u2%nelms,[4,1,2,3])
+      call array_convert(u2,w1,[4,1,2,3])
     endif
     ! u [a i k c] * F[k c] =+ Omega [a i]
     call dgemv('n',nv*no,nv*no,1.0E0_realk,w1,nv*no,pqfock,1,1.0E0_realk,omega1,1)
@@ -2768,7 +2804,7 @@ contains
       if (DECinfo%ccModel>2) call dgemm('t','n',no,no,nb,1.0E0_realk,xo,nb,Gbi,nb,1.0E0_realk,w2,no)
       ! (-1) t [a b i k] * G' [k j] =+ Omega [a b i j]
       !if(me==0) call array_convert(t2,w1,t2%nelms)
-      call array_gather_tilesinfort(t2,w1,nv*nv*no*no,infpar%master)
+      call array_gather_tilesinfort(t2,w1,int(nv*nv*no*no,kind=long),infpar%master)
       do nod=1,nnod-1
         call mo_work_dist(nv*nv*no,fri,tri,nod)
         if(me==0)then
@@ -2777,7 +2813,7 @@ contains
           enddo
         endif
         if(me==0.or.me==nod)then
-          call ls_mpisendrecv(w3,no*tri,infpar%lg_comm,infpar%master,nod)
+          call ls_mpisendrecv(w3,int(no*tri,kind=long),infpar%lg_comm,infpar%master,nod)
         endif
       enddo
       if(me==0)then
@@ -2787,8 +2823,8 @@ contains
       endif
       w1=0.0E0_realk
       call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1(fai1),v2o)
-      call lsmpi_local_reduction(w1,nv*nv*no*no,infpar%master)
-      call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,nv*nv*no*no,infpar%master)
+      call lsmpi_local_reduction(w1,int(nv*nv*no*no,kind=long),infpar%master)
+      call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,int(nv*nv*no*no,kind=long),infpar%master)
       !if(me==0)then
       !  call array_add(omega2,1.0E0_realk,w1,omega2%nelms)
       !endif
@@ -2802,7 +2838,7 @@ contains
       if (DECinfo%ccModel>2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w2,nv)
       ! H'[a c] * t [c b i j] =+ Omega [a b i j]
       !if(me==0) call array_convert(t2,w1,t2%nelms)
-      call array_gather_tilesinfort(t2,w1,nv*nv*no*no,infpar%master)
+      call array_gather_tilesinfort(t2,w1,int(nv*nv*no*no,kind=long),infpar%master)
       do nod=1,nnod-1
         call mo_work_dist(nv*no*no,fri,tri,nod)
         if(me==0)then
@@ -2811,7 +2847,7 @@ contains
           enddo
         endif
         if(me==0.or.me==nod)then
-          call ls_mpisendrecv(w3,nv*tri,infpar%lg_comm,infpar%master,nod)
+          call ls_mpisendrecv(w3,int(nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
         endif
       enddo
       if(me==0)then
@@ -2821,8 +2857,8 @@ contains
       endif
       w1=0.0E0_realk
       call dgemm('n','n',nv,tl2,nv,1.0E0_realk,w2,nv,w3,nv,0.0E0_realk,w1(1+(fai2-1)*nv),nv)
-      call lsmpi_local_reduction(w1,nv*nv*no*no,infpar%master)
-      call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,nv*nv*no*no,infpar%master)
+      call lsmpi_local_reduction(w1,int(nv*nv*no*no,kind=long),infpar%master)
+      call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,int(nv*nv*no*no,kind=long),infpar%master)
       !if(me==0)then
       !  call array_add(omega2,1.0E0_realk,w1,omega2%nelms)
       !endif
@@ -2843,10 +2879,10 @@ contains
       !  call array_convert(w1,omega2,omega2%nelms)
       !endif
       !call lsmpi_barrier(infpar%lg_comm)
-      call array_gather_tilesinfort(omega2,w1,nv*nv*no*no,infpar%master)
-      call array_gatheradd_tilestofort(omega2,1.0E0_realk,w1,nv*nv*no*no,&
+      call array_gather_tilesinfort(omega2,w1,int(nv*nv*no*no,kind=long),infpar%master)
+      call array_gatheradd_tilestofort(omega2,1.0E0_realk,w1,int(nv*nv*no*no,kind=long),&
                           &infpar%master,[2,1,4,3])
-      call array_scatter_densetotiled(omega2,w1,omega2%nelms,infpar%master)
+      call array_scatter_densetotiled(omega2,w1,int(no*no*nv*nv,kind=long),infpar%master)
 #endif
     endif
     
@@ -2996,13 +3032,13 @@ contains
       if(s==4)then
         faif = fai
         lead = no * nv
-        call mem_alloc(w2,no*no*nv*nv)
-        call mem_alloc(w3,no*no*nv*nv)
+        call mem_alloc(w2,int(no*no*nv*nv,kind=long))
+        call mem_alloc(w3,int(no*no*nv*nv,kind=long))
       elseif(s==3.or.s==2)then
         faif = 1
         lead = tl
-        call mem_alloc(w2,tl*no*nv)
-        call mem_alloc(w3,tl*no*nv)
+        call mem_alloc(w2,int(tl*no*nv,kind=long))
+        call mem_alloc(w3,int(tl*no*nv,kind=long))
       else
         call lsquit("ERROR(get_cnd_terms_mo):no valid scheme",-1)
       endif
@@ -3026,7 +3062,7 @@ contains
           !for a conversion from tiled to dense the reverse order has to be
           !given
           !if(me==0) call array_convert(gvvooa,w1,gvvooa%nelms,[1,4,2,3])
-          call array_gather_tilesinfort(gvvooa,w1,gvvooa%nelms,infpar%master,[1,4,2,3])
+          call array_gather_tilesinfort(gvvooa,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,4,2,3])
           do nod=1,nnod-1
             call mo_work_dist(no*nv,fri,tri,nod)
             if(me==0)then
@@ -3035,7 +3071,7 @@ contains
               enddo
             endif
             if(me==0.or.me==nod)then
-              call ls_mpisendrecv(w2,no*nv*tri,infpar%lg_comm,infpar%master,nod)
+              call ls_mpisendrecv(w2,int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
             endif
           enddo
           if(me==0)then
@@ -3058,7 +3094,7 @@ contains
         elseif(s==2)then
 #ifdef VAR_LSMPI
           !if(me==0) call array_convert(t2,w1,t2%nelms,[1,3,4,2])
-          call array_gather_tilesinfort(t2,w1,t2%nelms,infpar%master,[1,3,4,2])
+          call array_gather_tilesinfort(t2,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
           do nod=1,nnod-1
             call mo_work_dist(no*nv,fri,tri,nod)
             if(me==0)then
@@ -3067,7 +3103,7 @@ contains
               enddo
             endif
             if(me==0.or.me==nod)then
-              call ls_mpisendrecv(w3,no*nv*tri,infpar%lg_comm,infpar%master,nod)
+              call ls_mpisendrecv(w3,int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
             endif
           enddo
           if(me==0)then
@@ -3085,8 +3121,8 @@ contains
         elseif(s==2)then
 #ifdef VAR_LSMPI
           !if(me==0)call array_convert(govov,w1,govov%nelms,[4,1,2,3])
-          call array_gather_tilesinfort(govov,w1,govov%nelms,infpar%master,[4,1,2,3])
-          call ls_mpibcast(w1,no*no*nv*nv,infpar%master,infpar%lg_comm)
+          call array_gather_tilesinfort(govov,w1,int(no*no*nv*nv,kind=long),infpar%master,[4,1,2,3])
+          call ls_mpibcast(w1,int(no*no*nv*nv,kind=long),infpar%master,infpar%lg_comm)
 #endif
         endif
        
@@ -3106,8 +3142,8 @@ contains
         elseif(s==2)then
 #ifdef VAR_LSMPI
           !call array_convert(t2,w1,t2%nelms,[1,3,4,2])
-          call array_gather_tilesinfort(t2,w1,t2%nelms,infpar%master,[1,3,4,2])
-          call ls_mpibcast(w1,no*no*nv*nv,infpar%master,infpar%lg_comm)
+          call array_gather_tilesinfort(t2,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
+          call ls_mpibcast(w1,int(no*no*nv*nv,kind=long),infpar%master,infpar%lg_comm)
           call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w1,no*nv,0.0E0_realk,w3,lead)
           w1=0.0E0_realk
           do i=1,tl
@@ -3123,8 +3159,8 @@ contains
         elseif(s==2)then
 #ifdef VAR_LSMPI
           call lsmpi_local_reduction(w1,nv*nv*no*no,infpar%master)
-          call array_scatteradd_densetotiled(omega2,0.5E0_realk,w1,omega2%nelms,infpar%master,[1,3,2,4])
-          call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,omega2%nelms,infpar%master,[1,3,4,2])
+          call array_scatteradd_densetotiled(omega2,0.5E0_realk,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,2,4])
+          call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
           !if(me==0)then
           !  call array_add(omega2,0.5E0_realk,w1,omega2%nelms,[1,3,2,4])
           !  call array_add(omega2,1.0E0_realk,w1,omega2%nelms,[1,3,4,2])
@@ -3158,13 +3194,13 @@ contains
         elseif(s==2)then
 #ifdef VAR_LSMPI
           !call print_norm(gvoova,msg)
-          call array_gather_tilesinfort(gvoova,w1,gvoova%nelms,infpar%master,[1,3,4,2])
+          call array_gather_tilesinfort(gvoova,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
           if(me==0)then
             !call array_convert(gvoova,w1,gvoova%nelms,[1,3,4,2])
-            call dscal(gvoova%nelms,2.0E0_realk,w1,1)
+            call dscal(int(gvoova%nelms),2.0E0_realk,w1,1)
             !call array_add(w1,-1.0E0_realk,gvvooa,gvvooa%nelms,[1,3,2,4])
           endif
-          call array_gatheradd_tilestofort(gvvooa,-1.0E0_realk,w1,gvvooa%nelms,infpar%master,[1,3,2,4])
+          call array_gatheradd_tilestofort(gvvooa,-1.0E0_realk,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,2,4])
           do nod=1,nnod-1
             call mo_work_dist(no*nv,fri,tri,nod)
             if(me==0)then
@@ -3173,7 +3209,7 @@ contains
               enddo
             endif
             if(me==0.or.me==nod)then
-              call ls_mpisendrecv(w2,no*nv*tri,infpar%lg_comm,infpar%master,nod)
+              call ls_mpisendrecv(w2,int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
             endif
           enddo
           if(me==0)then
@@ -3197,7 +3233,7 @@ contains
         elseif(s==2)then
 #ifdef VAR_LSMPI
           !if(me==0)call array_convert(u2,w1,u2%nelms,[4,1,2,3])
-          call array_gather_tilesinfort(u2,w1,u2%nelms,infpar%master,[4,1,2,3])
+          call array_gather_tilesinfort(u2,w1,int(no*no*nv*nv,kind=long),infpar%master,[4,1,2,3])
           do nod=1,nnod-1
             call mo_work_dist(no*nv,fri,tri,nod)
             if(me==0)then
@@ -3206,7 +3242,7 @@ contains
               enddo
             endif
             if(me==0.or.me==nod)then
-              call ls_mpisendrecv(w3,no*nv*tri,infpar%lg_comm,infpar%master,nod)
+              call ls_mpisendrecv(w3,int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
             endif
           enddo
           if(me==0)then
@@ -3224,14 +3260,14 @@ contains
           call array_reorder_4d(-1.0E0_realk,govov%elm1,no,nv,no,nv,[1,4,3,2],1.0E0_realk,w1)
         elseif(s==2)then
 #ifdef VAR_LSMPI
-          call array_gather_tilesinfort(govov,w1,nv*nv*no*no,infpar%master)
+          call array_gather_tilesinfort(govov,w1,int(nv*nv*no*no,kind=long),infpar%master)
           if(me==0)then
             !call array_convert(govov,w1,govov%nelms)
-            call dscal(govov%nelms,2.0E0_realk,w1,1)
+            call dscal(int(govov%nelms),2.0E0_realk,w1,1)
             !call array_add(w1,-1.0E0_realk,govov,govov%nelms,[1,4,3,2])
           endif
-          call array_gatheradd_tilestofort(govov,-1.0E0_realk,w1,govov%nelms,infpar%master,[1,4,3,2])
-          call ls_mpibcast(w1,nv*nv*no*no,infpar%master,infpar%lg_comm)
+          call array_gatheradd_tilestofort(govov,-1.0E0_realk,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,4,3,2])
+          call ls_mpibcast(w1,int(nv*nv*no*no,kind=long),infpar%master,infpar%lg_comm)
 #endif
         endif
 
@@ -3255,8 +3291,8 @@ contains
           enddo
         elseif(s==2)then
 #ifdef VAR_LSMPI
-          call array_gather_tilesinfort(u2,w1,u2%nelms,infpar%master,[4,1,2,3])
-          call ls_mpibcast(w1,nv*nv*no*no,infpar%master,infpar%lg_comm)
+          call array_gather_tilesinfort(u2,w1,int(no*no*nv*nv,kind=long),infpar%master,[4,1,2,3])
+          call ls_mpibcast(w1,int(nv*nv*no*no,kind=long),infpar%master,infpar%lg_comm)
           call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w1,nv*no,0.0E0_realk,w3,lead)
           w1=0.0E0_realk
           do i=1,tl
@@ -3271,7 +3307,7 @@ contains
         elseif(s==2)then
 #ifdef VAR_LSMPI
           call lsmpi_local_reduction(w1,nv*nv*no*no,infpar%master)
-          call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,omega2%nelms,infpar%master,[1,3,2,4])
+          call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,2,4])
           !if(me==0)then
           !  call array_add(omega2,1.0E0_realk,w1,omega2%nelms,[1,3,2,4])
           !endif
@@ -3335,7 +3371,7 @@ contains
 #ifdef VAR_LSMPI
       call mem_alloc(w2,tl*no*no)
       !if(me==0)call array_convert(t2,w1,t2%nelms)
-      call array_gather_tilesinfort(t2,w1,nv*nv*no*no,massa)
+      call array_gather_tilesinfort(t2,w1,int(nv*nv*no*no,kind=long),massa)
       do nod=1,nnod-1
         call mo_work_dist(nv*nv,fri,tri,nod)
         if(me==0)then
@@ -3344,7 +3380,7 @@ contains
           enddo
         endif
         if(me==0.or.me==nod)then
-          call ls_mpisendrecv(w2,no*no*tri,infpar%lg_comm,infpar%master,nod)
+          call ls_mpisendrecv(w2,int(no*no*tri,kind=long),infpar%lg_comm,infpar%master,nod)
         endif
       enddo
       if(me==0)then
@@ -3375,11 +3411,11 @@ contains
       enddo
     enddo
     if(s==4.or.s==3.or.s==0)then
-      call daxpy(no*no*nv*nv,1.0E0_realk,w1,1,om2%elm1,1)
+      call daxpy(int(no*no*nv*nv),1.0E0_realk,w1,1,om2%elm1,1)
     elseif(s==2.or.s==1)then
 #ifdef VAR_LSMPI
-      call lsmpi_local_reduction(w1,nv*nv*no*no,infpar%master)
-      call array_scatteradd_densetotiled(om2,1.0E0_realk,w1,om2%nelms,infpar%master)
+      call lsmpi_local_reduction(w1,int(nv*nv*no*no,kind=long),infpar%master)
+      call array_scatteradd_densetotiled(om2,1.0E0_realk,w1,int(no*no*nv*nv,kind=long),infpar%master)
       !if(me==0)then
       !  call array_add(om2,1.0E0_realk,w1,om2%nelms)
       !endif
@@ -3472,7 +3508,7 @@ contains
     call dgemm('t','t',nv,no*la*lg,nb,1.0E0_realk,yv,nb,w2,no*la*lg,0.0E0_realk,w0,nv)
     !(w3): t[ j a d l] <- t[a d l, j]^T
     if(s==1)then
-      call array_convert(t2,w2,t2%nelms,[2,3,4,1])
+      call array_convert(t2,w2,[2,3,4,1])
       !call array_convert(t2jabi,w2,t2jabi%nelms)
     else
       call array_reorder_4d(1.0E0_realk,t2%elm1,nv,nv,no,no,[4,1,2,3],0.0E0_realk,w2)
@@ -3490,8 +3526,8 @@ contains
     call dgemm('n','n',no*nv,no*nv,la*lg,-1.0E0_realk,w3,no*nv,w1,la*lg,0.0E0_realk,w2,no*nv)
     
     if(s==1)then
-      call array_add(omega2,1.0E0_realk,w2,omega2%nelms,[2,3,4,1])
-      call array_add(omega2,0.5E0_realk,w2,omega2%nelms,[2,3,1,4])
+      call array_add(omega2,1.0E0_realk,w2,[2,3,4,1])
+      call array_add(omega2,0.5E0_realk,w2,[2,3,1,4])
     else 
       call array_reorder_4d(1.0E0_realk,w2,no,nv,nv,no,[2,3,4,1],1.0E0_realk,omega2%elm1)
       call array_reorder_4d(0.5E0_realk,w2,no,nv,nv,no,[2,3,1,4],1.0E0_realk,omega2%elm1)
@@ -3547,7 +3583,7 @@ contains
     !(w2):u[k c j b] <- u[b c j k]
     if(s==1)then
       !call array_convert(u2kcjb,w2,u2kcjb%nelms)
-      call array_convert(u2,w2,u2%nelms,[2,4,3,1])
+      call array_convert(u2,w2,[2,4,3,1])
     else
       call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[4,1,3,2],0.0E0_realk,w2)
     endif
@@ -3560,7 +3596,7 @@ contains
     !Omega^D += Lambda^p[alpha a]^T * (w3):D'[alpha b i j]    <---------TO COME
     if(s==1)then
       call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,0.0E0_realk,w2,nv) 
-      call array_add(omega2,1.0E0_realk,w2,omega2%nelms)
+      call array_add(omega2,1.0E0_realk,w2)
     else
       call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,1.0E0_realk,omega2%elm1,nv) 
     endif
@@ -3572,7 +3608,7 @@ contains
     !(w2)D''[iajb] = 0.5 * (w3):u[i a gamma alpha] * (w0):D[gamma alpha j b]
     call dgemm('n','n',no*nv,no*nv,la*lg,0.5E0_realk,w3,no*nv,w0,la*lg,0.0E0_realk,w2,no*nv)
     if(s==1)then
-      call array_add(omega2,1.0E0_realk,w2,omega2%nelms,[2,4,1,3])
+      call array_add(omega2,1.0E0_realk,w2,[2,4,1,3])
     else
       call array_reorder_4d(1.0E0_realk,w2,no,nv,no,nv,[2,4,1,3],1.0E0_realk,omega2%elm1)
     endif
@@ -4009,9 +4045,9 @@ contains
       enddo
     enddo
     if(s==4.or.s==3.or.s==0)then
-      call daxpy(no*no*nv*nv,scaleitby,w2,1,omega%elm1,1)
+      call daxpy(int(no*no*nv*nv),scaleitby,w2,1,omega%elm1,1)
     elseif(s==2.or.s==1)then
-      call array_add(omega,scaleitby,w2,omega%nelms)
+      call array_add(omega,scaleitby,w2)
     endif
     !OMP END DO
     !OMP END PARALLEL
@@ -4074,7 +4110,7 @@ contains
       if(s==4.or.s==3.or.s==0)then
         call daxpy(no*no*nv*nv,scaleitby,w2,1,omega%elm1,1)
       elseif(s==2.or.s==1)then
-        call array_add(omega,scaleitby,w2,omega%nelms)
+        call array_add(omega,scaleitby,w2)
       endif
       !OMP END DO
       !OMP END PARALLEL
@@ -4453,7 +4489,7 @@ contains
     nba=minbsize
     nbg=minbsize
     nnod=1
-    magic = 1
+    magic = DECinfo%MPIsplit/5
 #ifdef VAR_LSMPI
     nnod=infpar%lg_nodtot
 #endif
@@ -4600,6 +4636,10 @@ contains
     !if(first)write(DECinfo%output,*)"will use:",mem_used,"GB of ",MemFree, "GB available"
     !if(first)write(DECinfo%output,*)"------>",mem_used/MemFree * 100, "%"
     !divide the work if more nodes than jobs are available
+
+
+    !if much more slaves than jobs are available, split the jobs to get at least
+    !one for all the slaves
     if((nb/nba)*(nb/nbg)<magic*nnod.and.(nba>minbsize).and.nnod>1)then
       nba=(nb/(magic*nnod))
       if(nba<minbsize)nba=minbsize
@@ -4734,7 +4774,7 @@ contains
     elseif(memintensive==3)then
       !govov stays in pdm and is dense in second part
       ! u 2 + omega2 + H +G  + keep space for one update batch
-      call get_int_dist_info(nv*nv*no*no,fe,ne,master)
+      call get_int_dist_info(int(nv*nv*no*no,kind=8),fe,ne,master)
       memrq = 1.0E0_realk*(2*no*no*nv*nv+ nb*nv+nb*no) + ne
       !gvoov gvvoo (govov, allocd outside)
       memrq=memrq+ 2.0E0_realk*ne 
@@ -4808,7 +4848,7 @@ contains
       ! u 2 + H +G  
       memrq = 1.0E0_realk*(no*no*nv*nv+ nb*nv+nb*no)
       !gvoov gvvoo
-      call get_int_dist_info(nv*nv*no*no,fe,ne,master)
+      call get_int_dist_info(int(nv*nv*no*no,kind=long),fe,ne,master)
       memrq=memrq+ 2.0E0_realk*ne
       !allocation of matries ONLY used inside the loop
       !uigcj sio4
@@ -5673,18 +5713,20 @@ end module ccsd_module
 #ifdef VAR_LSMPI
 subroutine ccsd_data_preparation()
     use precision
+    !use tensor_def_module
     use dec_typedef_module
-    use typedeftype,only:lsitem
+    use typedeftype,only:lsitem,array
     use infpar_module
-    use lsmpi_type, only:ls_mpibcast
+    use lsmpi_type, only:ls_mpibcast,ls_mpibcast_chunks
     use daltoninfo, only:ls_free
     use memory_handling, only: mem_alloc, mem_dealloc
+    use tensor_interface_module, only: array_init,array_free,&
+        &memory_allocate_array_dense,memory_deallocate_array_dense,memory_deallocate_window
     ! DEC DEPENDENCIES (within deccc directory) 
     ! *****************************************
     use decmpi_module, only: mpi_communicate_ccsd_calcdata
     use array2_simple_operations,only: array2_free,array2_init
     use array4_simple_operations,only: array4_free,array4_init
-    use array_operations
     use ccsd_module, only:get_ccsd_residual_integral_driven
     implicit none
     !type(mp2_batch_construction) :: bat
@@ -5741,7 +5783,7 @@ subroutine ccsd_data_preparation()
     call ls_mpibcast_chunks(yvdata,nelms,infpar%master,infpar%lg_comm,k)
     
 
-    nelms = nvirt*nvirt*nocc*nocc
+    nelms = int(nvirt*nvirt*nocc*nocc,kind=8)
     call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
     if(iter/=1.and.(scheme==0.or.scheme==4))then
       call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
@@ -5800,7 +5842,7 @@ end subroutine ccsd_data_preparation
 subroutine calculate_E2_and_permute_slave()
     use precision
     use dec_typedef_module
-    use typedeftype,only:lsitem
+    use typedeftype,only:lsitem,array
     use infpar_module
     use lsmpi_type, only:ls_mpibcast
     use daltoninfo, only:ls_free
@@ -5820,7 +5862,7 @@ subroutine calculate_E2_and_permute_slave()
     call mem_alloc(qqf,nv*nv)
     call ls_mpibcast(ppf,no*no,infpar%master,infpar%lg_comm)
     call ls_mpibcast(qqf,nv*nv,infpar%master,infpar%lg_comm)
-    call mem_alloc(w1,no*no*nv*nv)
+    call mem_alloc(w1,int(no*no*nv*nv,kind=8))
     call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s)
 
     call mem_dealloc(ppf)

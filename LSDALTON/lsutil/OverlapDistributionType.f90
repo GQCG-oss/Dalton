@@ -58,6 +58,8 @@ integer,pointer     :: Orb1atom(:)
 integer,pointer     :: Orb2atom(:)
 integer,pointer     :: Orb1batch(:)
 integer,pointer     :: Orb2batch(:)
+integer,pointer     :: Orb1mol(:)
+integer,pointer     :: Orb2mol(:)
 Integer             :: nAngmom
 Integer             :: nPrimitives
 Logical             :: ContractBasis 

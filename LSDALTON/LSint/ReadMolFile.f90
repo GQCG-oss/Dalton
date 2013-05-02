@@ -907,6 +907,7 @@ DO I=1,Atomtypes
     MOLECULE%ATOM(atomnumber)%Mass = &
     Isotopes(MOLECULE%ATOM(Atomnumber)%Atomic_number, &
     MOLECULE%ATOM(AtomNumber)%Isotope,'MASS',LUPRI)
+    MOLECULE%ATOM(AtomNumber)%molecularIndex = AtomNumber
     !READ_ATOMCOORD 
 
     READ (LUINFO, '(a80)') LINE

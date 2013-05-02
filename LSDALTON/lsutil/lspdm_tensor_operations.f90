@@ -1,29 +1,25 @@
 !> @file
-!> Subroutines used in scalapack related context within dec
-!> the scalapack within dec is thought to adopt most of the
-!> properties already defined in matop_scalapack.f90
+!> This is the file where all higher order pdm operations should go, especially,
+!everything that has to do with arrays, allocating, feeing and so on, the one
+!sided wrappers should go to lspdm_base_module
 !> \author Patrick Ettenhuber
-!> \date May 2012
-module dec_pdm_module
+!> \date April 2013
+module lspdm_tensor_operations_module
 
 
   ! Outside DEC directory
   use precision
   use ptr_assoc_module, only: ass_D1to4
   use dec_typedef_module
-  use matrix_operations_scalapack!, only:SLGrid,BLOCK_SIZE
-  use matrix_operations!, only:matrix_type,mtype_scalapack
-  use memory_handling!, only: mem_alloc, mem_dealloc
+  use memory_handling
 #ifdef VAR_LSMPI
   use infpar_module
   use lsmpi_type
 #endif
 
-  ! DEC DEPENDENCIES (within deccc directory) 
-  ! *****************************************
   use manual_utils_module
-  use array_memory_manager
-  use dec_fragment_utils
+  use tensor_basic_module
+  use lspdm_basic_module
 
 
   !INTERFACES
@@ -304,6 +300,21 @@ module dec_pdm_module
     type(array) :: arr
     arr=p_arr%a(addr)
   end function get_arr_from_parr
+
+  function get_residence_of_tile(globaltilenumber,arr) result(rankofnode)
+    implicit none
+    type(array), intent(in) :: arr
+    integer,intent(in) :: globaltilenumber
+    integer :: rankofnode,nnod
+    nnod=1
+#ifdef VAR_LSMPI
+    nnod=infpar%lg_nodtot
+#endif      
+    rankofnode=mod(globaltilenumber-1+arr%offset,nnod)
+  end function get_residence_of_tile
+
+
+
 
 
   !> \author Patrick Ettenhuber
@@ -1131,7 +1142,7 @@ module dec_pdm_module
     !> scaling factor for arr
     real(realk),intent(in) :: b
     !> nuber of elements in the array
-    integer, intent(in) :: nelms
+    integer(kind=8), intent(in) :: nelms
     !> logical specifying whether the tiles are in pdm
     logical, intent(in) :: pdm
     !> reorder if the array is reorder with respect to the fortran array
@@ -1172,7 +1183,7 @@ module dec_pdm_module
     implicit none
     type(array),intent(in) :: arr
     real(realk),intent(inout) :: fort(*)
-    integer, intent(in) :: nelms
+    integer(kind=8), intent(in) :: nelms
     logical, intent(in) :: pdm
     integer, intent(in), optional :: order(arr%mode)
     integer :: i,j,k,tmdidx(arr%mode),minimode(arr%mode),o(arr%mode)
@@ -1214,7 +1225,7 @@ module dec_pdm_module
     type(array),intent(inout) :: arr
     real(realk),intent(in) :: A(*)
     real(realk),intent(in) :: sc
-    integer,intent(in) :: nelms
+    integer(kind=long),intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: nod
     integer,intent(in),optional :: optorder(arr%mode)
     real(realk),pointer :: buf(:)
@@ -1269,7 +1280,7 @@ module dec_pdm_module
     type(array),intent(in) :: arr
     real(realk),intent(in) :: sc
     real(realk),intent(inout) :: fort(*)
-    integer, intent(in) :: nelms
+    integer(kind=long), intent(in) :: nelms
     integer(kind=ls_mpik) :: nod
     integer, intent(in), optional :: optorder(arr%mode)
     integer(kind=ls_mpik) :: src,me,nnod
@@ -1321,7 +1332,7 @@ module dec_pdm_module
     implicit none
     type(array),intent(in) :: arr
     real(realk),intent(inout) :: fort(*)
-    integer, intent(in) :: nelms
+    integer(kind=long), intent(in) :: nelms
     integer(kind=ls_mpik) :: nod
     integer, intent(in), optional :: optorder(arr%mode)
     integer(kind=ls_mpik) :: src,me,nnod
@@ -1868,7 +1879,7 @@ module dec_pdm_module
     implicit none
     type(array),intent(inout) :: arr
     real(realk),intent(in) :: A(*)
-    integer,intent(in) :: nelms
+    integer(kind=long),intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: nod
     integer,intent(in),optional :: optorder(arr%mode)
     real(realk),pointer :: buf(:)
@@ -2709,7 +2720,7 @@ module dec_pdm_module
 
   subroutine get_int_dist_info(o2v2,firstintel,nintel,remoterank)
     implicit none
-    integer, intent(in) :: o2v2
+    integer(kind=long), intent(in) :: o2v2
     integer, intent(out) :: firstintel,nintel
     integer(kind=ls_mpik), intent(in), optional :: remoterank
     integer(kind=ls_mpik) :: nnod, me
@@ -2735,7 +2746,7 @@ module dec_pdm_module
 
   subroutine dist_int_contributions(g,o2v2,win)
     implicit none
-    integer,intent(in) :: o2v2
+    integer(kind=long),intent(in) :: o2v2
     real(realk),intent(in) :: g(o2v2)
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
@@ -2769,7 +2780,7 @@ module dec_pdm_module
 
   subroutine collect_int_contributions(g,o2v2,win)
     implicit none
-    integer,intent(in) :: o2v2
+    integer(kind=long),intent(in) :: o2v2
     real(realk),intent(in) :: g(o2v2)
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
@@ -2804,7 +2815,7 @@ module dec_pdm_module
   !fenced routine does not need locks, but rewuires fences around call
   subroutine collect_int_contributions_f(g,o2v2,win)
     implicit none
-    integer,intent(in) :: o2v2
+    integer(kind=long),intent(in) :: o2v2
     real(realk),intent(in) :: g(o2v2)
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
@@ -2837,117 +2848,8 @@ module dec_pdm_module
 
 
 
-end module dec_pdm_module
+end module lspdm_tensor_operations_module
 
 
 
 
-subroutine pdm_array_slave()
-  use precision
-  use matrix_operations_scalapack, only: BLOCK_SIZE, SLGrid, DLEN_
-  use memory_handling, only: mem_alloc,mem_dealloc
-  use matrix_operations, only: mtype_scalapack, matrix_type
-  use dec_typedef_module
-#ifdef VAR_LSMPI
-  use infpar_module
-  use lsmpi_type
-#endif
-
-  ! DEC DEPENDENCIES (within deccc directory)
-  ! *****************************************
-  use dec_pdm_module
-  use array_memory_manager, only: MASTER_INIT,&
-       & arr_free_aux
-
-   IMPLICIT NONE
-   TYPE(array) :: A, B, C, D, AUX
-   CHARACTER    :: T(2)
-   INTEGER      :: JOB, i, j
-   INTEGER      :: DESC_A(DLEN_), DESC_B(DLEN_), DESC_C(DLEN_), DESC_AF(DLEN_),dist(2)
-   real(REALK)  :: AF, AB(2)
-   real(REALK),pointer :: dummy(:)
-   integer, pointer    :: idiag(:)
-   logical :: logi
-   integer, external :: numroc
-   integer, pointer :: dims(:),dims2(:)
-#ifdef VAR_LSMPI
-   CALL PDM_ARRAY_SYNC(JOB,A,B,C,D) !Job is output
-   !print *,"slave in pdm-> job is",JOB
-   !print *,"array1_dims",A%dims
-   !print *,"array2_dims",B%dims
-   !print *,"array3_dims",C%dims
-
-   SELECT CASE(JOB)
-     CASE(JOB_INIT_ARR_TILED)
-       call mem_alloc(idiag,A%mode)
-       call mem_alloc(dims,A%mode)
-       idiag=A%tdim
-       dims =A%dims
-       call arr_free_aux(A)
-       A=array_init_tiled(dims,A%mode,MASTER_INIT,idiag,A%zeros) 
-       call mem_dealloc(idiag)
-       call mem_dealloc(dims)
-     CASE(JOB_FREE_ARR_PDM)
-       call array_free_pdm(A) 
-     CASE(JOB_INIT_ARR_REPLICATED)
-       call mem_alloc(dims,A%mode)
-       dims =A%dims
-       call arr_free_aux(A)
-       A=array_init_replicated(dims,A%mode,MASTER_INIT) 
-       call mem_dealloc(dims)
-     CASE(JOB_PRINT_MEM_INFO1)
-       call print_mem_per_node(DECinfo%output,.false.)
-     CASE(JOB_PRINT_MEM_INFO2)
-       call mem_alloc(dummy,1)
-       call print_mem_per_node(DECinfo%output,.false.,dummy)
-       call mem_dealloc(dummy)
-     CASE(JOB_GET_NRM2_TILED)
-       AF=array_tiled_pdm_get_nrm2(A)
-     CASE(JOB_DATA2TILED_DIST)
-       !dummy has to be allocated, otherwise seg faults might occur with 
-       !some compilers
-       call mem_alloc(dummy,1)
-       !call cp_data2tiled(A,dummy,A%dims,A%mode,.true.)
-       print *,"not necessary"
-       call mem_dealloc(dummy)
-     CASE(JOB_GET_TILE_SEND)
-       !i,dummy and j are just dummy arguments
-       call array_get_tile(A,i,dummy,j)
-     CASE(JOB_PRINT_TI_NRM)
-       call array_tiled_pdm_print_ti_nrm(A,0)
-     CASE(JOB_SYNC_REPLICATED)
-       call array_sync_replicated(A)
-     CASE(JOB_GET_NORM_REPLICATED)
-       AF=array_print_norm_repl(A)
-     CASE(JOB_PREC_DOUBLES_PAR)
-       call precondition_doubles_parallel(A,B,C,D)
-     CASE(JOB_DDOT_PAR)
-       AF=array_ddot_par(A,B,0)
-     CASE(JOB_ADD_PAR)
-       call array_add_par(A,AF,B)
-     CASE(JOB_CP_ARR)
-       call array_cp_tiled(A,B)
-     CASE(JOB_ARRAY_ZERO)
-       call array_zero_tiled_dist(A)
-     CASE(JOB_GET_CC_ENERGY)
-       AF = get_cc_energy_parallel(A,B,C)
-     CASE(JOB_GET_FRAG_CC_ENERGY)
-       !the counterpart to this buffer is in get_fragment_cc_energy
-       call ls_mpiinitbuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-       call ls_mpi_buffer(i,infpar%master)
-       call mem_alloc(dims,i)
-       call ls_mpi_buffer(dims,i,infpar%master)
-       call ls_mpi_buffer(j,infpar%master)
-       call mem_alloc(dims2,j)
-       call ls_mpi_buffer(dims2,j,infpar%master)
-       call ls_mpifinalizebuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
-
-       AF = get_fragment_cc_energy_parallel(A,B,C,i,j,dims,dims2)
-
-       call mem_dealloc(dims)
-       call mem_dealloc(dims2)
-     CASE(JOB_CHANGE_INIT_TYPE)
-       call change_init_type_td(A,i)
-   END SELECT
-#endif
-end subroutine pdm_array_slave

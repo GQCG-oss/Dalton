@@ -2433,8 +2433,6 @@ DO
             END SELECT
          ENDDO
          deallocate(GRIDspec)
-         CALL DFTGRIDINPUT(LINE,DALTON%DFT%TURBO)
-      CASE ('.OLDGRID'); DALTON%DFT%NEWGRID = .FALSE.
       CASE ('.NOPRUN'); DALTON%DFT%NOPRUN = .TRUE.
       CASE ('.RADINT'); READ(LUCMD,*) DALTON%DFT%RADINT
 !===================================================================
@@ -2450,19 +2448,15 @@ DO
          DALTON%DFT%RADINT = 1E-5_realk; DALTON%DFT%ANGINT = 17; DALTON%DFT%ZdependenMaxAng=.TRUE.
          DALTON%DFT%TURBO = 1; DALTON%DFT%RADIALGRID = 3; DALTON%DFT%PARTITIONING = 4
       CASE ('.GRID2' ) 
-         CALL DFTGRIDINPUT("TURBO BLOCK",DALTON%DFT%TURBO);
          DALTON%DFT%RADINT = 2.15447E-7_realk; DALTON%DFT%ANGINT = 23; DALTON%DFT%ZdependenMaxAng=.TRUE.
          DALTON%DFT%TURBO = 1; DALTON%DFT%RADIALGRID = 3; DALTON%DFT%PARTITIONING = 4
       CASE ('.GRID3' ) 
-         CALL DFTGRIDINPUT("TURBO BLOCK",DALTON%DFT%TURBO);
          DALTON%DFT%RADINT = 4.64159E-9_realk; DALTON%DFT%ANGINT = 29; DALTON%DFT%ZdependenMaxAng=.TRUE.
          DALTON%DFT%TURBO = 1; DALTON%DFT%RADIALGRID = 3; DALTON%DFT%PARTITIONING = 4
       CASE ('.GRID4' ) 
-         CALL DFTGRIDINPUT("TURBO BLOCK",DALTON%DFT%TURBO);
          DALTON%DFT%RADINT = 5.01187E-14_realk; DALTON%DFT%ANGINT = 35; DALTON%DFT%ZdependenMaxAng=.TRUE.
          DALTON%DFT%TURBO = 1; DALTON%DFT%RADIALGRID = 3; DALTON%DFT%PARTITIONING = 4
       CASE ('.GRID5' ) 
-         CALL DFTGRIDINPUT("TURBO BLOCK",DALTON%DFT%TURBO);
          DALTON%DFT%RADINT = 2.15443E-17_realk; DALTON%DFT%ANGINT = 47; DALTON%DFT%ZdependenMaxAng=.TRUE.
          DALTON%DFT%TURBO = 1; DALTON%DFT%RADIALGRID = 3; DALTON%DFT%PARTITIONING = 4
       CASE ('.AOSAVE' ) 
@@ -3321,6 +3315,9 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          call lsquit('.CSR requires MKL library and -DVAR_MKL precompiler flag',config%lupri)
 #endif
       endif
+      if(config%integral%densfit)then
+         call lsquit('currently .CSR do not work in combination with .DENSFIT',-1)
+      endif
    endif
 
    if (matrix_type == mtype_csr) then
@@ -3345,10 +3342,23 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
          WRITE(lupri,'(4X,A)')'with SCALAPACK for memory distribution and parallelization.'
          CALL mat_select_type(mtype_scalapack,lupri,nbast)
+
+#ifdef VAR_INT64
+#ifdef VAR_LSMPI_32
+         print*,'you cannot compile using a 64 bit integers, when linking to a 32 bit integer library and'
+         print*,'use the 64 bit integer BLACS/SCALAPACK provided by MKL/intel'
+         write(config%lupri,*)'you cannot compile using a 64 bit integers, when linking to a 32 bit integer library and'
+         write(config%lupri,*)'use the 64 bit integer BLACS/SCALAPACK provided by MKL/intel'
+         call lsquit('you cannot compile with VAR_INT64 and SCALAPACK and VAR_LSMPI32',-1)
+#endif 
+#endif
+
 #else
+         !VAR_SCALAPACK but no VAR_LSMPI
          CALL LSQUIT('SCALAPACK requires MPI - recompile using MPI and the -DVAR_LSMPI flag',config%lupri)
 #endif
 #else
+         !no VAR_SCALAPACK
 #ifdef VAR_LSMPI
          WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors.'
          call lsquit('.SCALAPACK requires -DVAR_SCALAPACK precompiler flag',config%lupri)

@@ -492,6 +492,7 @@ AO%BATCH(1)%type_Nucleus = .FALSE.
 AO%BATCH(1)%type_pCharge = .FALSE.
 AO%BATCH(1)%spherical=.false.
 AO%BATCH(1)%atom=1
+AO%BATCH(1)%molecularIndex=1
 AO%BATCH(1)%batch=1
 AO%BATCH(1)%CENTER(1)=0E0_realk
 AO%BATCH(1)%CENTER(2)=0E0_realk
@@ -615,6 +616,7 @@ DO J=1,MOLECULE%natoms
    AO%BATCH(I)%TYPE_Empty = .FALSE.
    AO%BATCH(I)%spherical=.false.
    AO%BATCH(I)%atom=J
+   AO%BATCH(I)%molecularIndex=MOLECULE%ATOM(J)%molecularIndex
    AO%BATCH(I)%batch=1
    AO%BATCH(I)%CENTER(1)=MOLECULE%ATOM(J)%CENTER(1)
    AO%BATCH(I)%CENTER(2)=MOLECULE%ATOM(J)%CENTER(2)
@@ -725,6 +727,7 @@ DO I=1,MOLECULE%natoms
    AO%BATCH(I)%TYPE_Empty = .FALSE.
    AO%BATCH(I)%spherical=.false.
    AO%BATCH(I)%atom=I
+   AO%BATCH(I)%molecularIndex = MOLECULE%ATOM(I)%molecularIndex
    AO%BATCH(I)%batch=1
    AO%BATCH(I)%CENTER(1)=MOLECULE%ATOM(I)%CENTER(1)
    AO%BATCH(I)%CENTER(2)=MOLECULE%ATOM(I)%CENTER(2)
@@ -1326,6 +1329,7 @@ IF(UNCONTRACTED)THEN
       AOorganize%ORG(nbatches)%atom=iATOM
       AO%BATCH(nbatches)%itype = itype
       AO%BATCH(nbatches)%nAngmom = 1
+      AO%BATCH(nbatches)%molecularIndex = MOLECULE%ATOM(iATOM)%molecularIndex
       AO%BATCH(nbatches)%type_Empty  = .FALSE. 
       AO%BATCH(nbatches)%type_Nucleus  = .FALSE.
       AO%BATCH(nbatches)%type_pCharge = .FALSE.
@@ -1350,6 +1354,7 @@ ELSE !DEFAULT
    AOorganize%ORG(nbatches)%atom=iATOM
    AO%BATCH(nbatches)%itype = itype
    AO%BATCH(nbatches)%nAngmom = 1
+   AO%BATCH(nbatches)%molecularIndex = MOLECULE%ATOM(iATOM)%molecularIndex
    AO%BATCH(nbatches)%type_Empty  = .FALSE. 
    AO%BATCH(nbatches)%type_Nucleus  = .FALSE.
    AO%BATCH(nbatches)%type_pCharge  = .FALSE.
@@ -2102,6 +2107,7 @@ DO I=1,AOmodel%nbatches
    bat=AO%nbatches+1
    AO%nbatches = bat
    AO%BATCH(bat)%atom = IATOM
+   AO%BATCH(bat)%molecularIndex = MOLECULE%ATOM(iATOM)%molecularIndex
    AO%BATCH(bat)%batch = I
    AO%BATCH(bat)%itype = AOmodel%BATCH(I)%itype
    AO%BATCH(bat)%type_empty = AOmodel%BATCH(I)%type_empty
@@ -2712,6 +2718,7 @@ SUBROUTINE BUILD_S_1Prim1ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
   AO%BATCH(1)%type_pCharge = .FALSE.
   AO%BATCH(1)%spherical=.false.
   AO%BATCH(1)%atom=1
+  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
   AO%BATCH(1)%batch=1
   ! Center
   AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
@@ -2792,6 +2799,7 @@ SUBROUTINE BUILD_S_2Prim1ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
   AO%BATCH(1)%type_pCharge = .FALSE.
   AO%BATCH(1)%spherical=.false.
   AO%BATCH(1)%atom=1
+  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
   AO%BATCH(1)%batch=1
   ! Center
   AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
@@ -2873,6 +2881,7 @@ SUBROUTINE BUILD_S_2Prim2ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
   AO%BATCH(1)%type_pCharge = .FALSE.
   AO%BATCH(1)%spherical=.false.
   AO%BATCH(1)%atom=1
+  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
   AO%BATCH(1)%batch=1
   ! Center
   AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
@@ -2954,6 +2963,7 @@ SUBROUTINE BUILD_S_2Prim2ContGen_AO(AO,SCHEME,MOLECULE,LUPRI)
   AO%BATCH(1)%type_pCharge = .FALSE.
   AO%BATCH(1)%spherical=.false.
   AO%BATCH(1)%atom=1
+  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
   AO%BATCH(1)%batch=1
   ! Center
   AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
@@ -3031,6 +3041,7 @@ SUBROUTINE BUILD_P_1Prim1ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
   AO%BATCH(1)%type_pCharge = .FALSE.
   AO%BATCH(1)%spherical=.true.
   AO%BATCH(1)%atom=1
+  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
   AO%BATCH(1)%batch=1
   ! Center
   AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
@@ -3110,6 +3121,7 @@ SUBROUTINE BUILD_P_2Prim1ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
   AO%BATCH(1)%type_pCharge = .FALSE.
   AO%BATCH(1)%spherical=.false.
   AO%BATCH(1)%atom=1
+  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
   AO%BATCH(1)%batch=1
   ! Center
   AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
@@ -3191,6 +3203,7 @@ SUBROUTINE BUILD_P_2Prim2ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
   AO%BATCH(1)%type_pCharge = .FALSE.
   AO%BATCH(1)%spherical=.false.
   AO%BATCH(1)%atom=1
+  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
   AO%BATCH(1)%batch=1
   ! Center
   AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
@@ -3272,6 +3285,7 @@ SUBROUTINE BUILD_P_2Prim2ContGen_AO(AO,SCHEME,MOLECULE,LUPRI)
   AO%BATCH(1)%type_pCharge = .FALSE.
   AO%BATCH(1)%spherical=.false.
   AO%BATCH(1)%atom=1
+  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
   AO%BATCH(1)%batch=1
   ! Center
   AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
@@ -3349,6 +3363,7 @@ SUBROUTINE BUILD_D_1Prim1ContSeg_AO(AO,SCHEME,MOLECULE,LUPRI)
   AO%BATCH(1)%type_pCharge = .FALSE.
   AO%BATCH(1)%spherical=.true.
   AO%BATCH(1)%atom=1
+  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
   AO%BATCH(1)%batch=1
   ! Center
   AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
@@ -3431,6 +3446,7 @@ SUBROUTINE BUILD_D_2Prim2ContGen_AO(AO,SCHEME,MOLECULE,LUPRI)
   AO%BATCH(1)%type_pCharge = .FALSE.
   AO%BATCH(1)%spherical=.false.
   AO%BATCH(1)%atom=1
+  AO%BATCH(1)%molecularIndex = MOLECULE%ATOM(1)%molecularIndex
   AO%BATCH(1)%batch=1
   ! Center
   AO%BATCH(1)%CENTER(1)=MOLECULE%ATOM(1)%CENTER(1)
