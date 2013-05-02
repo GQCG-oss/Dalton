@@ -117,8 +117,11 @@ module xcfun_host
     REAL(REALK),intent(inout) :: XCFUNOUTPUT(3,1)
 #ifdef VAR_XCFUN
     !rho = XCFUNINPUT(1,1) 
-    !|grad|^2 = XCFUNINPUT(2,1) 
+    !gg = |grad|^2 = XCFUNINPUT(2,1) 
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    ! XCFUNOUTPUT(1,1) - Exc
+    ! XCFUNOUTPUT(2,1) - d Exc/d rho
+    ! XCFUNOUTPUT(3,1) - d Exc/d gg
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
@@ -130,10 +133,13 @@ module xcfun_host
     REAL(REALK),intent(inout) :: XCFUNOUTPUT(4,1)
 #ifdef VAR_XCFUN
     !rho = XCFUNINPUT(1,1)   = \sum_{\mu \nu} D_{\mu \nu} chi_{mu} \times chi_{nu}
-    !|grad|^2 = XCFUNINPUT(2,1) = \sum_{\mu \nu} D_{\mu \nu} (\nabla chi_{mu} \times chi_{nu} + chi_{mu} \times \nabla chi_{nu})
+    !gg = |grad|^2 = XCFUNINPUT(2,1) = \sum_{\mu \nu} D_{\mu \nu} (\nabla chi_{mu} \times chi_{nu} + chi_{mu} \times \nabla chi_{nu})
     !tau = XCFUNINPUT(3,1)  = \sum_{\mu \nu} D_{\mu \nu} half nabla chi_{mu} \times \nabla chi_{nu}
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
-    !last is derivative wrt tau
+    ! XCFUNOUTPUT(1,1) - Exc
+    ! XCFUNOUTPUT(2,1) - d Exc/d rho
+    ! XCFUNOUTPUT(3,1) - d Exc/d gg
+    ! XCFUNOUTPUT(4,1) - d Exc/d tau
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
@@ -147,10 +153,16 @@ module xcfun_host
     integer :: ierrGGA
 #ifdef VAR_XCFUN
     !rho = XCFUNINPUT(1,1) 
-    !|grad|^2 = XCFUNINPUT(2,1) 
+    !gg = |grad|^2 = XCFUNINPUT(2,1) 
     ierrGGA = xc_eval_setup(XCFUNfunctional,XC_N_GNN,XC_PARTIAL_DERIVATIVES,2)
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
     ierrGGA = xc_eval_setup(XCFUNfunctional,XC_N_GNN,XC_PARTIAL_DERIVATIVES,1)
+    ! XCFUNOUTPUT(1,1) - Exc
+    ! XCFUNOUTPUT(2,1) - d Exc/d rho
+    ! XCFUNOUTPUT(3,1) - d Exc/d gg
+    ! XCFUNOUTPUT(4,1) - d^2 Exc/d rho^2
+    ! XCFUNOUTPUT(5,1) - d^2 Exc/d rho d gg
+    ! XCFUNOUTPUT(6,1) - d^2 Exc/d gg^2
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
@@ -164,7 +176,7 @@ module xcfun_host
     integer :: ierrGGA
 #ifdef VAR_XCFUN
     !rho = XCFUNINPUT(1,1) 
-    !|grad|^2 = XCFUNINPUT(2,1) 
+    !|grad|^2 = gg = XCFUNINPUT(2,1) 
     ierrGGA = xc_eval_setup(XCFUNfunctional,XC_N_GNN,XC_PARTIAL_DERIVATIVES,3)
     IF(ierrGGA.NE.0) then
        print*,'ierrGGA',ierrGGA
@@ -173,6 +185,16 @@ module xcfun_host
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
     ierrGGA = xc_eval_setup(XCFUNfunctional,XC_N_GNN,XC_PARTIAL_DERIVATIVES,1)
     IF(ierrGGA.NE.0) call lsquit('fun3 too large2',-1)
+    ! XCFUNOUTPUT(1,1) - Exc
+    ! XCFUNOUTPUT(2,1) - d Exc/d rho
+    ! XCFUNOUTPUT(3,1) - d Exc/d gg
+    ! XCFUNOUTPUT(4,1) - d^2 Exc/d rho^2
+    ! XCFUNOUTPUT(5,1) - d^2 Exc/d rho d gg
+    ! XCFUNOUTPUT(6,1) - d^2 Exc/d gg^2
+    ! XCFUNOUTPUT(7,1) - d^3 Exc/d rho^3
+    ! XCFUNOUTPUT(8,1) - d^3 Exc/d rho^2 d gg
+    ! XCFUNOUTPUT(9,1) - d^3 Exc/d rho gg^2
+    ! XCFUNOUTPUT(10,1) -d^3 Exc/d gg^3
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
@@ -185,6 +207,8 @@ module xcfun_host
 #ifdef VAR_XCFUN
     !rho = XCFUNINPUT(1,1) 
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    ! XCFUNOUTPUT(1,1) - Exc
+    ! XCFUNOUTPUT(2,1) - d Exc/d rho
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
@@ -193,14 +217,16 @@ module xcfun_host
   subroutine xcfun2_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
     implicit none
     REAL(REALK),intent(in) :: XCFUNINPUT(1,1)
-    REAL(REALK),intent(inout) :: XCFUNOUTPUT(4,1)
-    !
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(3,1)
     integer :: ierrLDA
 #ifdef VAR_XCFUN
     !rho = XCFUNINPUT(1,1) 
     ierrLDA = xc_eval_setup(XCFUNfunctional,XC_N,XC_PARTIAL_DERIVATIVES,2)
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
     ierrLDA = xc_eval_setup(XCFUNfunctional,XC_N,XC_PARTIAL_DERIVATIVES,1)
+    ! XCFUNOUTPUT(1,1) - Exc
+    ! XCFUNOUTPUT(2,1) - d Exc/d rho
+    ! XCFUNOUTPUT(3,1) - d^2 Exc/d rho^2
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
@@ -211,12 +237,18 @@ module xcfun_host
     REAL(REALK),intent(in) :: XCFUNINPUT(5,1)
     REAL(REALK),intent(inout) :: XCFUNOUTPUT(6,1)
 #ifdef VAR_XCFUN
-    !rho_alpha = XCFUNINPUT(1,1) 
-    !rho_beta = XCFUNINPUT(2,1) 
-    !|grad_alpha|^2 = XCFUNINPUT(3,1) 
-    !grad_alpha*grad_beta = XCFUNINPUT(4,1) 
-    !|grad_beta|^2 = XCFUNINPUT(5,1) 
-    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)    
+    !na = rho_alpha = XCFUNINPUT(1,1) 
+    !nb = rho_beta = XCFUNINPUT(2,1) 
+    !gaa = |grad_alpha|^2 = XCFUNINPUT(3,1) 
+    !gab = grad_alpha*grad_beta = XCFUNINPUT(4,1) 
+    !gbb = |grad_beta|^2 = XCFUNINPUT(5,1) 
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    ! XCFUNOUTPUT(1,1) - Exc
+    ! XCFUNOUTPUT(2,1) - d Exc/d na
+    ! XCFUNOUTPUT(3,1) - d Exc/d nb
+    ! XCFUNOUTPUT(4,1) - d Exc/d gaa
+    ! XCFUNOUTPUT(5,1) - d Exc/d gab
+    ! XCFUNOUTPUT(6,1) - d Exc/d gbb
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
@@ -227,12 +259,15 @@ module xcfun_host
     REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
     REAL(REALK),intent(inout) :: XCFUNOUTPUT(3,1)
 #ifdef VAR_XCFUN
-    !rho_alpha = XCFUNINPUT(1,1) 
-    !rho_beta = XCFUNINPUT(2,1) 
+    !na = rho_alpha = XCFUNINPUT(1,1) 
+    !nb = rho_beta = XCFUNINPUT(2,1) 
     call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
 #else
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
+    ! XCFUNOUTPUT(1,1) - Exc
+    ! XCFUNOUTPUT(2,1) - d Exc/d na
+    ! XCFUNOUTPUT(3,1) - d Exc/d nb
   end subroutine xcfun_lda_unres_xc_single_eval
 
   subroutine xcfun_host_free()
