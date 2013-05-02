@@ -66,8 +66,6 @@ set(DEC_SOURCES
     deccc/f12_integrals.f90
     deccc/cc_driver.f90
     deccc/cc_integrals.f90
-    deccc/manual_reorderings.f90
-    deccc/manual_utils.f90
     deccc/ccarray2_simple.f90
     deccc/ccarray4_simple.f90
     deccc/ccorbital.f90
