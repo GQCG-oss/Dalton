@@ -10,6 +10,7 @@ MODULE memory_handling
    use basis_typetype
    use dec_typedef_module
    use OverlapType
+   use tensor_type_def_module
 #ifdef VAR_LSMPI
   include 'mpif.h'
 !   use mpi
