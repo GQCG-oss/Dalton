@@ -606,6 +606,36 @@ TYPE geoHessianConfig
 END TYPE geoHessianConfig
 
 
+!*****************************************************************************
+!*                                                                           *
+!*        OBJECT CONTAINING INFORMATION ABOUT GENERATION OF PLT FILES        *
+!*                                                                           *
+!*****************************************************************************
+type pltinfo
+   ! This is tightly connected with contruct_plt_file_driver
+  
+   ! Note: If you change the character length 80 here, remember to change it accordingly 
+   !       in pltinfo_set_default_config.
+ 
+   !> Input file from which orbitals or density is read
+   character(len=80) :: inputfile
+   !> Output PLT file where information about orbitals,density at grid points are written
+   character(len=80) :: outputfile
+   !> What to calculate:
+   !> frmt = 'DENS': Calculate electron density at grid points (inputfile=density matrix)
+   !> frmt = 'EP'  : Calculate electrostatic potential at grid points (inputfile=density matrix)
+   !> frmt = 'ORB' : Calculate specific molecular orbitals at grid points (inputfile=orbital matrix)
+   !> frmt = 'CHARGEDIST': Calculate charge distribution between two orbitals (inputfile=orbital mat)
+   character(len=80) :: frmt
+   !> Index for which orbital to plot (frmt=ORB) or first orbital in charge distr. (frmt=CHARGEDIST)
+   integer :: iorb
+   !> Index for second orbital in charge distribution (only used for CHARGEDIST)
+   integer :: jorb
+
+end type pltinfo
+
+
+
 contains
 
 !Added to avoid "has no symbols" linking warning

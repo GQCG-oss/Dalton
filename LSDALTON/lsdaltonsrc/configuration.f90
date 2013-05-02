@@ -44,6 +44,7 @@ use IntegralInterfaceMOD, only: ii_get_nucpot
 use ks_settings, only: ks_free_incremental_fock
 use memory_handling, only: mem_alloc,mem_dealloc
 use dft_typetype
+use plt_driver_module
 #ifdef VAR_LSMPI
 use infpar_module
 use lsmpi_mod
@@ -116,6 +117,10 @@ implicit none
   config%noDecEnergy = .false.
   call prof_set_default_config(config%prof)
   call pbc_setup_default(config%latt_config)
+  ! PLT info
+  call pltinfo_set_default_config(config%Plt)
+  config%doplt=.false.
+  
 #ifdef VAR_LSMPI
   infpar%inputBLOCKSIZE = 0
 #endif
@@ -717,6 +722,16 @@ DO
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.true.)
    END IF CCinput
+
+
+   ! Input for PLT plotting: Calculate density, orbital, etc. at grid points in space based on
+   ! density or orbital matrix file from previous LSDALTON calculation.
+   ! This will overrule all other inputs and an LSDALTON calculation as such will not be carried out!
+   PLTinput: IF (WORD(1:6) == '**PLOT') THEN
+      READWORD=.TRUE.
+      config%doPLT = .true.
+      call config_plt_input(lucmd,config%lupri,readword,word,config%plt)
+   END IF PLTinput
 
 
 !   

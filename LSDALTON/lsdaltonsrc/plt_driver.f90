@@ -5,33 +5,26 @@
 
 module plt_driver_module
 
-contains
-
-!> Driver for creating PLT files of orbitals, densities, electrostatic potentials etc.
-!> which may be plotted e.g. using the Chimera program.
-  subroutine contruct_plt_file_driver(ls,inputfile,outputfile,frmt,iorb,jorb)
-
+    use TYPEDEFTYPE
+    use ls_util
     use print_moorb_grid_mod
     use matrix_operations
-    use init_lsdalton_mod
     use IntegralInterfaceMOD,only:II_Get_overlap
 
+contains
+
+  !> \brief Driver for creating PLT files of orbitals, densities, electrostatic potentials etc.
+  !> which may be plotted e.g. using the Chimera program.
+  !> \author Kasper Kristensen
+  !> \date May 2013
+  subroutine contruct_plt_file_driver(ls,MyPlt)
+
+    implicit none
+
     !> Integral info
-    type(LsItem) :: ls
-    !> Input file containing orbitals (e.g. lcm_orbitals.u) or density (e.g. dens.restart)
-    character*(80) :: inputfile
-    !> PLT output file to which information is written
-    character*(80) :: outputfile
-    !> What to calculate:
-    !> frmt = 'DENS': Calculate electron density at grid points (inputfile=density matrix)
-    !> frmt = 'EP'  : Calculate electrostatic potential at grid points (inputfile=density matrix)
-    !> frmt = 'ORB' : Calculate specific molecular orbitals at grid points (inputfile=orbital matrix)
-    !> frmt = 'CHARGEDIST': Calculate charge distribution between two orbitals (input file=orbital mat)
-    character*(80) :: frmt
-    !> Index for which orbital to plot (only used for ORB and CHARGEDIST)
-    integer,intent(in) :: iorb
-    !> Index for second orbital in charge distribution (only used for CHARGEDIST)
-    integer,intent(in) :: jorb
+    type(LsItem),intent(inout) :: ls
+    !> Information about which PLT information to calculation (see type pltinfo)
+    type(pltinfo),intent(in) :: MyPlt
     integer :: nocc,nrow,ncol,funit, IOS,I,J,natoms
     Type(Matrix) :: InputMat,S,tmpMat,tmpMat2
     real(4), allocatable       :: ATOMXYZ(:,:)
@@ -68,7 +61,7 @@ contains
     ! *********************
     write(6,*) 'PLT driver reads input file...'
     funit = 33
-    OPEN(UNIT=funit,FILE=trim(inputfile),STATUS='OLD', &
+    OPEN(UNIT=funit,FILE=trim(MyPlt%inputfile),STATUS='OLD', &
          & FORM='UNFORMATTED',IOSTAT=IOS)
     READ (funit) nrow,ncol
     write(6,*) 'Matrix size: ', nrow, ncol
@@ -87,17 +80,17 @@ contains
     ! Which calculation?
     ! ******************
 
-    select case (trim(frmt))
+    select case (trim(MyPlt%frmt))
 
        ! Density
     case('DENS')
        write(ls%lupri,*) 'Writing density distribution plt file...'
-       call calculate_density2(trim(outputfile),InputMat,ls,natoms,ATOMXYZ)
+       call calculate_density2(trim(MyPlt%outputfile),InputMat,ls,natoms,ATOMXYZ)
 
        ! Electrostatic potential
     case('EP')
        write(ls%lupri,*) 'Writing electrostatic potential plt file...'
-       call calculate_ep3(trim(outputfile),InputMat,ls,natoms,ATOMXYZ)
+       call calculate_ep3(trim(MyPlt%outputfile),InputMat,ls,natoms,ATOMXYZ)
 
        ! Orbital 
     case('ORB')
@@ -129,15 +122,15 @@ contains
        call mat_free(tmpMat2)
 
        write(6,*) 'Writing orbital plt file...'
-       call calculate_pplt(trim(outputfile),iorb,InputMat,ls,natoms,ATOMXYZ)
+       call calculate_pplt(trim(MyPlt%outputfile),MyPlt%iorb,InputMat,ls,natoms,ATOMXYZ)
 
        ! Charge distribution
-    case('CHPLT')
+    case('CHARGEDIST')
        write(6,*) 'Writing charge distribution plt file...'
-       call calculate_charge(trim(outputfile),iorb,jorb,InputMat,ls,natoms,ATOMXYZ)
+       call calculate_charge(trim(MyPlt%outputfile),MyPlt%iorb,MyPlt%jorb,InputMat,ls,natoms,ATOMXYZ)
 
     case default
-       write(ls%lupri,*) 'PLT driver unknown input format: ', frmt
+       write(ls%lupri,*) 'PLT driver unknown input format: ', MyPlt%frmt
        call lsquit('PLT driver unknown input format',-1)
     end select
 
@@ -146,6 +139,150 @@ contains
     deallocate(ATOMXYZ)
 
   end subroutine contruct_plt_file_driver
+
+
+  !> \brief Set default configurations for pltinfo type.
+  !> \author Kasper Kristensen
+  !> \date May 2013
+  subroutine pltinfo_set_default_config(MyPlt)
+    implicit none
+    !> Information about which PLT information to calculation (see type pltinfo)
+    type(pltinfo),intent(inout) :: MyPlt
+    integer :: l,i
+
+    ! Length characters hardcoded to 80 (see type pltinfo)
+    l=80
+
+    ! Make characters blank (just in case)
+    do i=1,l
+       MyPlt%inputfile(i:i) = ' '
+       MyPlt%outputfile(i:i) = ' '
+       MyPlt%frmt(i:i) = ' '
+    end do
+
+    ! Zero orbital indices
+    MyPlt%iorb = 0
+    MyPlt%jorb = 0
+
+  end subroutine pltinfo_set_default_config
+
+
+
+  !> \brief Read the **DEC or **CC input section in DALTON.INP and set 
+  !> configuration structure accordingly.
+  !> \author Kasper Kristensen
+  !> \date September 2010
+  SUBROUTINE config_plt_input(input,output,readword,word,myplt)
+    implicit none
+    !> Logical for keeping track of when to read
+    LOGICAL,intent(inout)                :: READWORD
+    !> Logical unit number for DALTON.INP
+    integer,intent(in) :: input
+    !> Logical unit number for LSDALTON.OUT
+    integer,intent(in) :: output
+    !> Word read from input
+    character(len=80),intent(inout) :: word
+    !> PLT info
+    type(pltinfo),intent(inout) :: myplt
+    logical :: prop_spec, input_spec, output_spec
+
+    ! Check that everything has been set
+    prop_spec=.false.
+    input_spec = .false.
+    output_spec = .false.
+
+
+    DO
+
+       IF(READWORD) THEN
+          READ (input, '(A80)') WORD
+          call capitalize_string(word)
+          READWORD=.TRUE.
+       ENDIF
+
+       IF ((WORD(1:1) .EQ. '!') .OR. (WORD(1:1) .EQ. '#')) CYCLE
+
+       IF(WORD(1:2) .EQ. '**') THEN
+          READWORD=.FALSE.
+          goto 100
+       ENDIF
+
+       IF(WORD(1:13) == '*END OF INPUT') THEN
+          goto 100
+       END IF
+
+
+
+       PLT_INPUT_INFO: SELECT CASE(trim(WORD))
+
+
+          ! POSSIBLE PROPERTIES TO CALCULATE
+          ! ================================
+          ! See type pltinfo
+
+          ! Density
+       case('.DENS')
+          myplt%frmt='DENS'
+          prop_spec=.true.
+
+          ! Electrostatic potentian
+       case('.EP')
+          myplt%frmt='EP'
+          prop_spec=.true.
+
+          ! Single orbital
+       case('.ORB')
+          myplt%frmt='ORB'
+          read(input,*) myplt%iorb
+          prop_spec=.true.
+
+          ! Charge distribution between two orbitals
+       case('.CHARGEDIST')
+          myplt%frmt='CHARGEDIST'
+          read(input,*) myplt%iorb, myplt%jorb
+          prop_spec=.true.
+
+
+          ! Input file
+          ! ==========
+       case('.INPUT')
+          read(input,*) myplt%inputfile
+          input_spec=.true.
+
+
+          ! Output file
+          ! ==========
+       case('.OUTPUT')
+          read(output,*) myplt%outputfile
+          output_spec=.true.
+
+
+       CASE DEFAULT
+          WRITE (output,'(/,3A,/)') ' Keyword "',WORD,&
+               & '" not recognized in config_plt_input'
+          CALL lsQUIT('Illegal keyword in config_dec_input',output)
+
+       END SELECT PLT_INPUT_INFO
+
+    ENDDO
+
+
+    100 continue
+    ! Sanity checks
+    if(.not. prop_spec) then
+       call lsquit('Error in **PLOT input: Property not specified! Possible inputs: &
+            & .DENS  .EP  .ORB  .CHARGEDIST ',-1) 
+    end if
+    if(.not. input_spec) then
+       call lsquit('Error in **PLOT input: Input file not specified using .INPUT',-1)
+    end if
+    if(.not. output_spec) then
+       call lsquit('Error in **PLOT input: Output file not specified using .OUTPUT',-1)
+    end if
+
+
+  END SUBROUTINE config_plt_input
+
 
 
 end module plt_driver_module
