@@ -14,12 +14,8 @@ module decmpi_module
   use lsmpi_op,only: mpicopy_lsitem
   use io!, only: io_init
   use Matrix_module!,only: matrix
-
-
-  ! DEC DEPENDENCIES (within deccc directory)  
-  ! *****************************************
-  use array_memory_manager!, only: arr_msg_len
-  use dec_pdm_module
+  use tensor_basic_module
+  use tensor_interface_module
 
 contains
 
@@ -931,7 +927,7 @@ contains
       call ls_mpibcast_chunks(xv,nelms,infpar%master,infpar%lg_comm,k)
       call ls_mpibcast_chunks(yv,nelms,infpar%master,infpar%lg_comm,k)
 
-      nelms = nvirt*nvirt*nocc*nocc
+      nelms = int(nvirt*nvirt*nocc*nocc,kind=8)
       call ls_mpibcast_chunks(t2%elm1,nelms,infpar%master,infpar%lg_comm,k)
       if(iter/=1.and.(s==0.or.s==4))then
         call ls_mpibcast_chunks(govov%elm1,nelms,infpar%master,infpar%lg_comm,k)
@@ -998,12 +994,12 @@ contains
     integer,intent(in),optional :: ccsdscheme,no,nv,nb
     type(batchtoorb),intent(in),optional :: b2oa(nbA),b2og(nbG)
     integer(kind=8),pointer :: workloads(:),jobsize_per_node(:)
-    integer(kind=8) :: myload64
+    integer(kind=8) :: myload64,swap
     integer(kind=8),pointer :: node_rank_by_job(:),easytrace(:)
     logical,pointer :: touched(:)
     logical :: all_touched
     type(traceback), pointer::trace(:)
-    integer :: i,j,k,l,swap,counter,ialpha,igamma,actual_node
+    integer :: i,j,k,l,counter,ialpha,igamma,actual_node
     integer(kind=8) :: fa,fg,la,lg
 
     myload64=0
@@ -1038,7 +1034,7 @@ contains
         do j=1,nbA
           actual_node=MODULO(j-1+(i-1)*MODULO(nbA,infpar%lg_nodtot),infpar%lg_nodtot)
           mpi_task_distribution((j-1)*nbG+i)=actual_node
-          jobsize_per_node(actual_node+1)=jobsize_per_node(actual_node+1) + batchdimGamma(i)*batchdimAlpha(j)
+          jobsize_per_node(actual_node+1)=jobsize_per_node(actual_node+1) + int(batchdimGamma(i)*batchdimAlpha(j),kind=8)
           touched((j-1)*nbg+i) = .true.
         enddo
       enddo
@@ -1056,7 +1052,7 @@ contains
         do i=1,nbG
          la=batchdimAlpha(j)
          lg=batchdimGamma(i)
-         workloads((j-1)*nbG+i)   = la*lg
+         workloads((j-1)*nbG+i)   = int(la*lg,kind=8)
 
          !in CCSD the workloads are not equally distributed, and a more accurate
          !estimation of the work has to be done
@@ -1067,7 +1063,7 @@ contains
            workloads((j-1)*nbG+i) = workloads((j-1)*nbG+i) * nb * nb * 2
            !account for Kobayashi-Term
            if(fa<=fg+lg-1 )then
-             workloads((j-1)*nbG+i) = workloads((j-1)*nbG+i) + (nv**2*no**2*la*lg)/4
+             workloads((j-1)*nbG+i) = workloads((j-1)*nbG+i) + int((nv**2*no**2*la*lg)/4,kind=8)
            endif
          endif
 
@@ -1187,10 +1183,12 @@ contains
       write(DECinfo%output,*) jobsize_per_node
       write(DECinfo%output,*) mpi_task_distribution
       print *, 'workloads per node:'
+      print *,workloads
       print *, node_rank_by_job
       print *, jobsize_per_node
       print *, mpi_task_distribution
       print *, touched
+      print *, infpar%lg_mynum,kind(infpar%lg_mynum),kind(jobsize_per_node(infpar%lg_mynum+1)),kind(myload64)
       call LSQUIT('Problem in distribute_mpi_jobs (64bit 32bit??), (jobsize or unused elements)',-1)
     endif
     myload=myload64

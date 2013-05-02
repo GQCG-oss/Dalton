@@ -323,7 +323,7 @@ INTERFACE mem_alloc
      &             ARRAY2_allocate_1dim,ARRAY4_allocate_1dim,MP2DENS_allocate_1dim, &
      &             TRACEBACK_allocate_1dim,MP2GRAD_allocate_1dim,&
      &             OVERLAPT_allocate_1dim,ARRAY_allocate_1dim, mpi_allocate_iV,&
-     &             mpi_allocate_dV
+     &             mpi_allocate_dV4,mpi_allocate_dV8
 END INTERFACE
 !
 INTERFACE mem_dealloc
@@ -1901,11 +1901,9 @@ IF (IERR.NE. 0) THEN
 ENDIF
 nullify(A)
 END SUBROUTINE real_deallocate_7dim
-
-!allocate MPI memory
-SUBROUTINE mpi_allocate_dV(A,cip,n)  ! single precision
+SUBROUTINE mpi_allocate_dV8(A,cip,n) 
 implicit none
-integer,intent(in)  :: n
+integer(kind=8),intent(in)  :: n
 real(realk),pointer :: A(:)
 type(c_ptr), intent(inout) :: cip
 integer (kind=ls_mpik) :: IERR,info
@@ -1919,7 +1917,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_realk,IERR)
 
    if(IERR/=0)then
-     write (errmsg,'("ERROR(mpi_allocate_dV):error in&
+     write (errmsg,'("ERROR(mpi_allocate_dV8):error in&
           & mpi_type_get_extent",I5)'), IERR
      call memory_error_quit(errmsg)
     endif
@@ -1928,7 +1926,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_dV):error in alloc",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_dV8):error in alloc",I5)'), IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
@@ -1938,10 +1936,50 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call mem_allocated_mem_mpi(nsize)
 
 #else
-  call lsquit("ERROR(mpi_allocate_dV):compiled without MPI, this is not&
+  call lsquit("ERROR(mpi_allocate_dV8):compiled without MPI, this is not&
   &available",-1)
 #endif
-END SUBROUTINE mpi_allocate_dV
+END SUBROUTINE mpi_allocate_dV8
+!allocate MPI memory
+SUBROUTINE mpi_allocate_dV4(A,cip,n) 
+implicit none
+integer(kind=4),intent(in)  :: n
+real(realk),pointer :: A(:)
+type(c_ptr), intent(inout) :: cip
+integer (kind=ls_mpik) :: IERR,info
+integer (kind=long) :: nsize
+character(120) :: errmsg
+#ifdef VAR_LSMPI
+integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
+   nullify(A)
+   info = MPI_INFO_NULL
+
+   call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_realk,IERR)
+
+   if(IERR/=0)then
+     write (errmsg,'("ERROR(mpi_allocate_dV4):error in&
+          & mpi_type_get_extent",I5)'), IERR
+     call memory_error_quit(errmsg)
+    endif
+
+   bytes =n*mpi_realk
+   call MPI_ALLOC_MEM(bytes,info,cip,IERR)
+
+   IF (IERR.NE. 0) THEN
+     write (errmsg,'("ERROR(mpi_allocate_dV4):error in alloc",I5)'), IERR
+     CALL memory_error_quit(errmsg)
+   ENDIF
+
+   call c_f_pointer(cip,A,[n])
+
+   nsize = bytes
+   call mem_allocated_mem_mpi(nsize)
+
+#else
+  call lsquit("ERROR(mpi_allocate_dV4):compiled without MPI, this is not&
+  &available",-1)
+#endif
+END SUBROUTINE mpi_allocate_dV4
 
 SUBROUTINE mpi_allocate_iV(A,cip,n)  ! single precision
 implicit none
@@ -2305,7 +2343,10 @@ implicit none
 integer(kind=4),intent(in) :: n1,n2,n3,n4
 INTEGER(kind=8),pointer    :: I(:,:,:,:)
 integer(kind=8)            :: n18,n28,n38,n48
-n18=n1;n28=n2;n38=n3;n48=n4
+n18=int(n1,kind=8)
+n28=int(n2,kind=8)
+n38=int(n3,kind=8)
+n48=int(n4,kind=8)
 call int8_allocate_4dim(I,n18,n28,n38,n48)
 END SUBROUTINE int8_allocate_4dim_wrapper4
 SUBROUTINE int8_allocate_4dim(I,n1,n2,n3,n4)
