@@ -111,6 +111,245 @@ module xcfun_host
 
   end subroutine xcfun_host_init
 
+
+  subroutine xcfun3_gga_components_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+    implicit none
+    REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(35,1)
+    integer :: ierr
+#ifdef VAR_XCFUN
+    !rho    = XCFUNINPUT(1,1) 
+    !grad_x = XCFUNINPUT(2,1) 
+    !grad_y = XCFUNINPUT(3,1) 
+    !grad_z = XCFUNINPUT(4,1) 
+    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ,XC_PARTIAL_DERIVATIVES,3)
+    IF(ierr.NE.0) then
+       print*,'ierr from xcfun',ierr
+       call lsquit('Unexpected error from xcfun',-1)
+    endif
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    ! XCFUNOUTPUT(1,1) - Exc
+    ! XCFUNOUTPUT(2,1) - d Exc/d rho
+    ! XCFUNOUTPUT(3,1) - d Exc/d gx
+    ! XCFUNOUTPUT(4,1) - d Exc/d gy
+    ! XCFUNOUTPUT(5,1) - d Exc/d gz
+
+    ! XCFUNOUTPUT(6,1) - d^2 Exc/d rho d rho
+    ! XCFUNOUTPUT(7,1) - d^2 Exc/d rho d gx
+    ! XCFUNOUTPUT(8,1) - d^2 Exc/d rho d gy
+    ! XCFUNOUTPUT(9,1) - d^2 Exc/d rho d gz
+    ! XCFUNOUTPUT(10,1) - d^2 Exc/d gx d gx
+    ! XCFUNOUTPUT(11,1) - d^2 Exc/d gx d gy
+    ! XCFUNOUTPUT(12,1) - d^2 Exc/d gx d gz
+    ! XCFUNOUTPUT(13,1) - d^2 Exc/d gy d gy
+    ! XCFUNOUTPUT(14,1) - d^2 Exc/d gy d gz
+    ! XCFUNOUTPUT(15,1) - d^2 Exc/d gz d gz
+
+    ! XCFUNOUTPUT(16,1) - d^3 Exc/d rho d rho d rho
+    ! XCFUNOUTPUT(17,1) - d^3 Exc/d rho d rho d gx
+    ! XCFUNOUTPUT(18,1) - d^3 Exc/d rho d rho d gy
+    ! XCFUNOUTPUT(19,1) - d^3 Exc/d rho d rho d gz
+    ! XCFUNOUTPUT(20,1) - d^3 Exc/d rho d gx d gx
+    ! XCFUNOUTPUT(21,1) - d^3 Exc/d rho d gx d gy
+    ! XCFUNOUTPUT(22,1) - d^3 Exc/d rho d gx d gz
+    ! XCFUNOUTPUT(23,1) - d^3 Exc/d rho d gy d gy
+    ! XCFUNOUTPUT(24,1) - d^3 Exc/d rho d gy d gz
+    ! XCFUNOUTPUT(25,1) - d^3 Exc/d rho d gz d gz
+    ! XCFUNOUTPUT(26,1) - d^3 Exc/d gx d gx d gx
+    ! XCFUNOUTPUT(27,1) - d^3 Exc/d gx d gx d gy
+    ! XCFUNOUTPUT(28,1) - d^3 Exc/d gx d gx d gz
+    ! XCFUNOUTPUT(29,1) - d^3 Exc/d gx d gy d gy
+    ! XCFUNOUTPUT(30,1) - d^3 Exc/d gx d gy d gz
+    ! XCFUNOUTPUT(31,1) - d^3 Exc/d gx d gz d gz
+    ! XCFUNOUTPUT(32,1) - d^3 Exc/d gy d gy d gy
+    ! XCFUNOUTPUT(33,1) - d^3 Exc/d gy d gy d gz
+    ! XCFUNOUTPUT(34,1) - d^3 Exc/d gy d gz d gz
+    ! XCFUNOUTPUT(35,1) - d^3 Exc/d gz d gz d gz
+#else
+    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
+#endif
+  end subroutine xcfun3_gga_components_xc_single_eval
+
+
+  subroutine xcfun2_gga_components_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+    implicit none
+    REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(15,1)
+    integer :: ierr
+#ifdef VAR_XCFUN
+    !rho    = XCFUNINPUT(1,1) 
+    !grad_x = XCFUNINPUT(2,1) 
+    !grad_y = XCFUNINPUT(3,1) 
+    !grad_z = XCFUNINPUT(4,1) 
+    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ,XC_PARTIAL_DERIVATIVES,3)
+    IF(ierr.NE.0) then
+       print*,'ierr from xcfun',ierr
+       call lsquit('Unexpected error from xcfun',-1)
+    endif
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    ! XCFUNOUTPUT(1,1) - Exc
+    ! XCFUNOUTPUT(2,1) - d Exc/d rho
+    ! XCFUNOUTPUT(3,1) - d Exc/d gx
+    ! XCFUNOUTPUT(4,1) - d Exc/d gy
+    ! XCFUNOUTPUT(5,1) - d Exc/d gz
+
+    ! XCFUNOUTPUT(6,1) - d^2 Exc/d rho d rho
+    ! XCFUNOUTPUT(7,1) - d^2 Exc/d rho d gx
+    ! XCFUNOUTPUT(8,1) - d^2 Exc/d rho d gy
+    ! XCFUNOUTPUT(9,1) - d^2 Exc/d rho d gz
+    ! XCFUNOUTPUT(10,1) - d^2 Exc/d gx d gx
+    ! XCFUNOUTPUT(11,1) - d^2 Exc/d gx d gy
+    ! XCFUNOUTPUT(12,1) - d^2 Exc/d gx d gz
+    ! XCFUNOUTPUT(13,1) - d^2 Exc/d gy d gy
+    ! XCFUNOUTPUT(14,1) - d^2 Exc/d gy d gz
+    ! XCFUNOUTPUT(15,1) - d^2 Exc/d gz d gz
+#else
+    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
+#endif
+  end subroutine xcfun2_gga_components_xc_single_eval
+
+  subroutine xcfun1_gga_components_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+    implicit none
+    REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(5,1)
+    integer :: ierr
+#ifdef VAR_XCFUN
+    !rho    = XCFUNINPUT(1,1) 
+    !grad_x = XCFUNINPUT(2,1) 
+    !grad_y = XCFUNINPUT(3,1) 
+    !grad_z = XCFUNINPUT(4,1) 
+    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ,XC_PARTIAL_DERIVATIVES,3)
+    IF(ierr.NE.0) then
+       print*,'ierr from xcfun',ierr
+       call lsquit('Unexpected error from xcfun',-1)
+    endif
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    ! XCFUNOUTPUT(1,1) - Exc
+    ! XCFUNOUTPUT(2,1) - d Exc/d rho
+    ! XCFUNOUTPUT(3,1) - d Exc/d gx
+    ! XCFUNOUTPUT(4,1) - d Exc/d gy
+    ! XCFUNOUTPUT(5,1) - d Exc/d gz
+#else
+    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
+#endif
+  end subroutine xcfun1_gga_components_xc_single_eval
+
+  subroutine xcfun2_gga_unres_components_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+    implicit none
+    REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(45,1)
+    integer :: ierr
+#ifdef VAR_XCFUN
+    !rho_a   = XCFUNINPUT(1,1) 
+    !rho_b   = XCFUNINPUT(2,1) 
+    !grada_x = XCFUNINPUT(3,1) 
+    !grada_y = XCFUNINPUT(4,1) 
+    !grada_z = XCFUNINPUT(5,1) 
+    !gradb_x = XCFUNINPUT(6,1) 
+    !gradb_y = XCFUNINPUT(7,1) 
+    !gradb_z = XCFUNINPUT(8,1) 
+    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ,XC_PARTIAL_DERIVATIVES,3)
+    IF(ierr.NE.0) then
+       print*,'ierr from xcfun',ierr
+       call lsquit('Unexpected error from xcfun',-1)
+    endif
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    ! XCFUNOUTPUT(1,1) - Exc
+
+    ! XCFUNOUTPUT(2,1) - d Exc/d rho_a
+    ! XCFUNOUTPUT(3,1) - d Exc/d rho_b
+    ! XCFUNOUTPUT(4,1) - d Exc/d gax
+    ! XCFUNOUTPUT(5,1) - d Exc/d gay
+    ! XCFUNOUTPUT(6,1) - d Exc/d gaz
+    ! XCFUNOUTPUT(7,1) - d Exc/d gbx
+    ! XCFUNOUTPUT(8,1) - d Exc/d gby
+    ! XCFUNOUTPUT(9,1) - d Exc/d gbz
+
+    ! XCFUNOUTPUT(10,1) - d^2 Exc/d rho_a d rho_a
+    ! XCFUNOUTPUT(11,1) - d^2 Exc/d rho_a d rho_b
+    ! XCFUNOUTPUT(12,1) - d^2 Exc/d rho_a d gax
+    ! XCFUNOUTPUT(13,1) - d^2 Exc/d rho_a d gay
+    ! XCFUNOUTPUT(14,1) - d^2 Exc/d rho_a d gaz
+    ! XCFUNOUTPUT(15,1) - d^2 Exc/d rho_a d gbx
+    ! XCFUNOUTPUT(16,1) - d^2 Exc/d rho_a d gby
+    ! XCFUNOUTPUT(17,1) - d^2 Exc/d rho_a d gbz
+
+    ! XCFUNOUTPUT(18,1) - d^2 Exc/d rho_b d rho_b
+    ! XCFUNOUTPUT(19,1) - d^2 Exc/d rho_b d gax
+    ! XCFUNOUTPUT(20,1) - d^2 Exc/d rho_b d gay
+    ! XCFUNOUTPUT(21,1) - d^2 Exc/d rho_b d gaz
+    ! XCFUNOUTPUT(22,1) - d^2 Exc/d rho_b d gbx
+    ! XCFUNOUTPUT(23,1) - d^2 Exc/d rho_b d gby
+    ! XCFUNOUTPUT(24,1) - d^2 Exc/d rho_b d gbz
+
+    ! XCFUNOUTPUT(25,1) - d^2 Exc/d gax d gax
+    ! XCFUNOUTPUT(26,1) - d^2 Exc/d gax d gay
+    ! XCFUNOUTPUT(27,1) - d^2 Exc/d gax d gaz
+    ! XCFUNOUTPUT(28,1) - d^2 Exc/d gax d gbx
+    ! XCFUNOUTPUT(29,1) - d^2 Exc/d gax d gby
+    ! XCFUNOUTPUT(30,1) - d^2 Exc/d gax d gbz
+
+    ! XCFUNOUTPUT(31,1) - d^2 Exc/d gay d gay
+    ! XCFUNOUTPUT(32,1) - d^2 Exc/d gay d gaz
+    ! XCFUNOUTPUT(33,1) - d^2 Exc/d gay d gbx
+    ! XCFUNOUTPUT(34,1) - d^2 Exc/d gay d gby
+    ! XCFUNOUTPUT(35,1) - d^2 Exc/d gay d gbz
+
+    ! XCFUNOUTPUT(36,1) - d^2 Exc/d gaz d gaz
+    ! XCFUNOUTPUT(37,1) - d^2 Exc/d gaz d gbx
+    ! XCFUNOUTPUT(38,1) - d^2 Exc/d gaz d gby
+    ! XCFUNOUTPUT(39,1) - d^2 Exc/d gaz d gbz
+
+    ! XCFUNOUTPUT(40,1) - d^2 Exc/d gbx d gbx
+    ! XCFUNOUTPUT(41,1) - d^2 Exc/d gbx d gby
+    ! XCFUNOUTPUT(42,1) - d^2 Exc/d gbx d gbz
+
+    ! XCFUNOUTPUT(43,1) - d^2 Exc/d gby d gby
+    ! XCFUNOUTPUT(44,1) - d^2 Exc/d gby d gbz
+
+    ! XCFUNOUTPUT(45,1) - d^2 Exc/d gbz d gbz
+#else
+    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
+#endif
+  end subroutine xcfun2_gga_unres_components_xc_single_eval
+
+
+  subroutine xcfun1_gga_unres_components_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+    implicit none
+    REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
+    REAL(REALK),intent(inout) :: XCFUNOUTPUT(9,1)
+    integer :: ierr
+#ifdef VAR_XCFUN
+    !rho_a   = XCFUNINPUT(1,1) 
+    !rho_b   = XCFUNINPUT(2,1) 
+    !grada_x = XCFUNINPUT(3,1) 
+    !grada_y = XCFUNINPUT(4,1) 
+    !grada_z = XCFUNINPUT(5,1) 
+    !gradb_x = XCFUNINPUT(6,1) 
+    !gradb_y = XCFUNINPUT(7,1) 
+    !gradb_z = XCFUNINPUT(8,1) 
+    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ,XC_PARTIAL_DERIVATIVES,3)
+    IF(ierr.NE.0) then
+       print*,'ierr from xcfun',ierr
+       call lsquit('Unexpected error from xcfun',-1)
+    endif
+    call xc_eval(XCFUNfunctional,1,XCFUNINPUT,XCFUNOUTPUT)
+    ! XCFUNOUTPUT(1,1) - Exc
+
+    ! XCFUNOUTPUT(2,1) - d Exc/d rho_a
+    ! XCFUNOUTPUT(3,1) - d Exc/d rho_b
+    ! XCFUNOUTPUT(4,1) - d Exc/d gax
+    ! XCFUNOUTPUT(5,1) - d Exc/d gay
+    ! XCFUNOUTPUT(6,1) - d Exc/d gaz
+    ! XCFUNOUTPUT(7,1) - d Exc/d gbx
+    ! XCFUNOUTPUT(8,1) - d Exc/d gby
+    ! XCFUNOUTPUT(9,1) - d Exc/d gbz
+#else
+    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
+#endif
+  end subroutine xcfun1_gga_unres_components_xc_single_eval
+
+
   subroutine xcfun_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
     implicit none
     REAL(REALK),intent(in) :: XCFUNINPUT(2,1)
@@ -126,6 +365,8 @@ module xcfun_host
     call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
 #endif
   end subroutine xcfun_gga_xc_single_eval
+
+
 
   subroutine xcfun_meta_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
     implicit none
