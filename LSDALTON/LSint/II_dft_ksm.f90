@@ -59,7 +59,6 @@ NGEODRV=0
 DOLND=.FALSE.
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-IF(.NOT.SETTING%SCHEME%DFT%newgrid) USE_MPI = .FALSE.
 #ifdef VAR_LSMPI
 !MPI Specific
 IF (setting%node.EQ.infpar%master) THEN
@@ -221,7 +220,6 @@ LOGICAL          :: USE_MPI
 REAL(REALK)      :: DFTHRI
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-IF(.NOT.SETTING%SCHEME%DFT%newgrid) USE_MPI = .FALSE.
 #ifdef VAR_LSMPI
 !MPI Specific
 IF (setting%node.EQ.infpar%master) THEN
@@ -291,7 +289,6 @@ DOLND=.FALSE.
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-IF(.NOT.SETTING%SCHEME%DFT%newgrid) USE_MPI = .FALSE.
 #ifdef VAR_LSMPI
 !MPI Specific
 IF (setting%node.EQ.infpar%master) THEN
@@ -443,7 +440,6 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-IF(.NOT.SETTING%SCHEME%DFT%newgrid) USE_MPI = .FALSE.
 #ifdef VAR_LSMPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTGEO,infpar%master,setting%comm)
@@ -519,7 +515,6 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-IF(.NOT.SETTING%SCHEME%DFT%newgrid) USE_MPI = .FALSE.
 #ifdef VAR_LSMPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTLIN,infpar%master,setting%comm)
@@ -619,7 +614,6 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-IF(.NOT.SETTING%SCHEME%DFT%newgrid) USE_MPI = .FALSE.
 #ifdef VAR_LSMPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTQRS,infpar%master,setting%comm)
@@ -718,7 +712,6 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-IF(.NOT.SETTING%SCHEME%DFT%newgrid) USE_MPI = .FALSE.
 #ifdef VAR_LSMPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTMAG,infpar%master,setting%comm)
@@ -805,7 +798,6 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-IF(.NOT.SETTING%SCHEME%DFT%newgrid) USE_MPI = .FALSE.
 #ifdef VAR_LSMPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTMAL,infpar%master,setting%comm)
@@ -911,7 +903,6 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-IF(.NOT.SETTING%SCHEME%DFT%newgrid) USE_MPI = .FALSE.
 #ifdef VAR_LSMPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTGKS,infpar%master,setting%comm)
@@ -990,7 +981,6 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-IF(.NOT.SETTING%SCHEME%DFT%newgrid) USE_MPI = .FALSE.
 #ifdef VAR_LSMPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTGLR,infpar%master,setting%comm)
