@@ -13,6 +13,7 @@ MODULE TYPEDEFTYPE
  use matrix_module
  use Integralparameters
  use integralOutput_typetype
+ use tensor_type_def_module,only:array
 #ifdef VAR_LSMPI
  use infpar_module
 #endif

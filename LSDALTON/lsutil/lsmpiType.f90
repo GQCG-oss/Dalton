@@ -109,27 +109,35 @@ module lsmpi_type
 
   INTERFACE lsmpi_local_reduction
      MODULE PROCEDURE lsmpi_local_reduction_realkVN4,&
-          & lsmpi_local_reduction_realkVN8,lsmpi_local_reduction_realkVN8_parts, &
+          & lsmpi_local_reduction_realkVN8,&
           & lsmpi_local_reduction_realkM,lsmpi_local_reduction_realkT,&
           & lsmpi_local_reduction_realkQ,lsmpi_local_reduction_intV,&
-          & lsmpi_local_reduction_realk,lsmpi_local_reduction_int
+          & lsmpi_local_reduction_realk,lsmpi_local_reduction_int, &
+          & lsmpi_local_reduction_realkVN8_parts, &
+          & lsmpi_local_reduction_realkVN4_parts
   END INTERFACE lsmpi_local_reduction
+
 
   INTERFACE lsmpi_local_allreduce
      MODULE PROCEDURE lsmpi_local_allreduce_D,&
           & lsmpi_local_allreduce_D1N4,lsmpi_local_allreduce_D1N8,&
-          & lsmpi_local_allreduce_D1N8_parts,&
           & lsmpi_local_allreduce_D2,&
           & lsmpi_local_allreduce_D3,lsmpi_local_allreduce_D4,&
           & lsmpi_local_allreduce_int4V,lsmpi_local_allreduce_int4V_wrapper8, &
           & lsmpi_local_allreduce_int8V,lsmpi_local_allreduce_int8V_wrapper8
   END INTERFACE lsmpi_local_allreduce
+  INTERFACE lsmpi_local_allreduce_chunks
+    MODULE PROCEDURE lsmpi_local_allreduce_D1N8_parts,&
+          & lsmpi_local_allreduce_D1N4_parts
+  END INTERFACE lsmpi_local_allreduce_chunks
+
   interface lsmpi_local_allgatherv
     module procedure lsmpi_localallgatherv_realk4,lsmpi_localallgatherv_realk8
   end interface lsmpi_local_allgatherv
 
   interface lsmpi_win_create
-    module procedure lsmpi_win_create_int4,lsmpi_win_create_int8,lsmpi_win_create_realk
+    module procedure lsmpi_win_create_int4,lsmpi_win_create_int8,&
+                   & lsmpi_win_create_realk8,lsmpi_win_create_realk4
   end interface lsmpi_win_create
 
   interface lsmpi_win_fence
@@ -153,7 +161,7 @@ module lsmpi_type
                  &   lsmpi_acc_int4,lsmpi_acc_int8
   end interface lsmpi_acc
 
-  save
+  !save
 #ifdef VAR_LSMPI
   integer(kind=ls_mpik) :: MPI_COMM_LSDALTON
   logical :: LSMPIASYNCP
@@ -163,12 +171,12 @@ module lsmpi_type
   integer,parameter :: LSMPISENDRECV=4
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
-#ifdef VAR_DEBUG
+!#ifdef VAR_DEBUG
   !FOR DEBUGGING USE THE FOLLOWING LINE
-  integer,parameter :: SPLIT_MPI_MSG=24
-#else
+!  integer,parameter :: SPLIT_MPI_MSG=24
+!#else
   integer,parameter :: SPLIT_MPI_MSG=2147483640
-#endif
+!#endif
   !integer conversion factor
 #ifdef VAR_INT64
 #ifdef VAR_LSMPI_32
@@ -4014,12 +4022,12 @@ contains
   end subroutine lsmpi_local_allreduce_D1N4
   subroutine lsmpi_local_allreduce_D1N8_parts(rbuffer,nelms,split)
     implicit none
-    integer,intent(in) :: nelms
+    integer(kind=8),intent(in) :: nelms
     real(realk) :: rbuffer(nelms)
     integer,intent(in) :: split
     integer(kind=8) :: n,i
     integer(kind=8) :: n1,n2
-    n2 = split
+    n2 = int(split,kind=8)
     do i=1,nelms,split
       n=split
       n1 = nelms-i+1
@@ -4027,6 +4035,21 @@ contains
       call lsmpi_local_allreduce_D1N8(rbuffer(i:i+n-1),n)
     enddo
   end subroutine lsmpi_local_allreduce_D1N8_parts
+  subroutine lsmpi_local_allreduce_D1N4_parts(rbuffer,nelms,split)
+    implicit none
+    integer(kind=4),intent(in) :: nelms
+    real(realk) :: rbuffer(nelms)
+    integer,intent(in) :: split
+    integer(kind=8) :: n,i
+    integer(kind=8) :: n1,n2
+    n2 = int(split,kind=8)
+    do i=1,nelms,split
+      n=split
+      n1 = nelms-i+1
+      if(((nelms-i)<split).and.(mod(n1,n2)/=0))n=mod(nelms,split)
+      call lsmpi_local_allreduce_D1N8(rbuffer(i:i+n-1),n)
+    enddo
+  end subroutine lsmpi_local_allreduce_D1N4_parts
   subroutine lsmpi_local_allreduce_D1N8(rbuffer,n)
     implicit none
     integer(kind=8) :: n
@@ -4087,6 +4110,26 @@ contains
   end subroutine lsmpi_local_allreduce_D4
 
   ! MPI reduction within local group (infpar%lg_comm communicator)
+  subroutine lsmpi_local_max(buffer,master)
+    implicit none
+    integer(kind=ls_mpik) :: master
+    real(realk) :: buffer
+#ifdef VAR_LSMPI
+    integer(kind=ls_mpik) :: ierr,n1
+    real(realk) :: null
+    IERR=0
+    n1=1
+    IF(infpar%lg_mynum.EQ.master) THEN
+      CALL MPI_REDUCE(MPI_IN_PLACE,BUFFER,n1,MPI_DOUBLE_PRECISION,MPI_MAX,&
+           &master,infpar%lg_comm,IERR)
+      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+    ELSE
+      CALL MPI_REDUCE(BUFFER,NULL,n1,MPI_DOUBLE_PRECISION,MPI_MAX,&
+           &master,infpar%lg_comm,IERR)
+      IF (IERR.GT. 0) CALL LSMPI_MYFAIL(IERR)
+    ENDIF
+#endif
+  end subroutine lsmpi_local_max
   subroutine lsmpi_local_reduction_int(buffer,master)
     implicit none
     integer(kind=ls_mpik) :: master
@@ -4154,7 +4197,7 @@ contains
 
   subroutine lsmpi_local_reduction_realkVN8_parts(rbuffer,nelms,master,split)
     implicit none
-    integer,intent(in) :: nelms
+    integer(kind=8),intent(in) :: nelms
     real(realk) :: rbuffer(nelms)
     integer(kind=ls_mpik) :: master
     integer,intent(in) :: split
@@ -4168,6 +4211,22 @@ contains
       call lsmpi_local_reduction_realkVN8(rbuffer(i:i+n-1),n,master)
     enddo
   end subroutine lsmpi_local_reduction_realkVN8_parts
+  subroutine lsmpi_local_reduction_realkVN4_parts(rbuffer,nelms,master,split)
+    implicit none
+    integer(kind=4),intent(in) :: nelms
+    real(realk) :: rbuffer(nelms)
+    integer(kind=ls_mpik) :: master
+    integer,intent(in) :: split
+    integer(kind=8) :: n,i,n1,n2
+    n2 = split
+    do i=1,nelms,split
+      n=split
+      n1 = nelms-i+1
+      if(((nelms-i)<split).and.&
+        &(mod(n1,n2)/=0))n=mod(nelms,split)
+      call lsmpi_local_reduction_realkVN8(rbuffer(i:i+n-1),n,master)
+    enddo
+  end subroutine lsmpi_local_reduction_realkVN4_parts
   ! MPI reduction within local group (infpar%lg_comm communicator)
   subroutine lsmpi_local_reduction_realkVN8(buffer,n,master)
     implicit none
@@ -5086,11 +5145,11 @@ contains
   !> \brief simple mpi_win creation
   !> \author Patrick Ettenhuber
   !> \date September 2012
-  subroutine lsmpi_win_create_realk(darr,win,nel,comm)
+  subroutine lsmpi_win_create_realk8(darr,win,nel,comm)
     implicit none
+    integer(kind=8), intent(in) :: nel
     real(realk),intent(in) :: darr(nel)
     integer(kind=ls_mpik),intent(inout) :: win,comm
-    integer, intent(in) :: nel
     integer(kind=ls_mpik) :: ierr,info,rk_len
 #ifdef VAR_LSMPI
     integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
@@ -5107,7 +5166,32 @@ contains
       call lsquit("Error(lsmpi_localwin_create_realk)",ierr)
     endif
 #endif
-  end subroutine lsmpi_win_create_realk
+  end subroutine lsmpi_win_create_realk8
+  !> \brief simple mpi_win creation
+  !> \author Patrick Ettenhuber
+  !> \date September 2012
+  subroutine lsmpi_win_create_realk4(darr,win,nel,comm)
+    implicit none
+    integer(kind=4), intent(in) :: nel
+    real(realk),intent(in) :: darr(nel)
+    integer(kind=ls_mpik),intent(inout) :: win,comm
+    integer(kind=ls_mpik) :: ierr,info,rk_len
+#ifdef VAR_LSMPI
+    integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
+    IERR=0
+    info = MPI_INFO_NULL
+    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_realk,ierr)
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_localwin_create_realk)",ierr)
+    endif
+    bytes  = nel*mpi_realk
+    rk_len = int(mpi_realk,kind=ls_mpik)
+    call MPI_WIN_CREATE(darr,bytes,rk_len,info,comm,win,ierr)
+    if(ierr.ne.0)then
+      call lsquit("Error(lsmpi_localwin_create_realk)",ierr)
+    endif
+#endif
+  end subroutine lsmpi_win_create_realk4
   subroutine lsmpi_win_create_int8(iarr,win,nel,comm)
     implicit none
     integer(kind=8),intent(in) :: iarr(nel)
@@ -5669,11 +5753,13 @@ contains
     real(realk) :: sta, sto
 #ifdef VAR_LSMPI
     ierr = 0
-    sta=MPI_WTIME()
-    call mpi_iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,infpar%lg_comm,flag,status,ierr)
-    sto=MPI_WTIME()
-    poketime=poketime+sto-sta
-    poketimes = poketimes + 1
+    if(.not.LSMPIASYNCP)then
+      sta=MPI_WTIME()
+      call mpi_iprobe(MPI_ANY_SOURCE,MPI_ANY_TAG,infpar%lg_comm,flag,status,ierr)
+      sto=MPI_WTIME()
+      poketime=poketime+sto-sta
+      poketimes = poketimes + 1
+    endif
 #endif
   end subroutine lsmpi_poke
 
