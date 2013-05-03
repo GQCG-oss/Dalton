@@ -177,11 +177,12 @@ contains
     integer,intent(in) :: input
     !> Logical unit number for DALTON.OUT
     integer,intent(in) :: output
+    !> Word read from input
+    character(len=80),intent(inout) :: word
     !> Is this a full calculation (fullcalc=true, input **CC) 
     !> or a DEC calculation (fullcalc=false, input=**DEC)
     logical,intent(in) :: fullcalc
     logical,save :: already_called = .false.
-    character(len=70) :: word
     integer :: fotlevel
 
     ! Sanity check that this routine is only called once for either **DEC OR **CC
@@ -207,7 +208,7 @@ contains
     DO
 
        IF(READWORD) THEN
-          READ (input, '(A70)') WORD
+          READ (input, '(A80)') WORD
           call capitalize_string(word)
           READWORD=.TRUE.
        ENDIF

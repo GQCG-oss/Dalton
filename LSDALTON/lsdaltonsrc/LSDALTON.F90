@@ -51,6 +51,7 @@ SUBROUTINE lsdalton
   use molecular_hessian_mod, only: get_molecular_hessian
   use test_molecular_hessian_mod, only: test_Hessian_contributions
   use rsp_util, only: init_rsp_util
+  use plt_driver_module
 #ifdef VAR_PAPI
   use papi_module
 #endif
@@ -72,7 +73,7 @@ SUBROUTINE lsdalton
   real(realk), allocatable :: eival(:)
   real(realk),pointer :: GGem(:,:,:,:,:)
   integer     :: lusoeo,funit
-  logical     :: soeosaveexist, HFdone,OnMaster,scfpurify
+  logical     :: soeosaveexist, HFdone,OnMaster,scfpurify,skipHFpart
   type(matrix) :: Dmo, tmp
   integer             :: nelec
   Integer             :: Natoms
@@ -132,6 +133,18 @@ SUBROUTINE lsdalton
      DECinfo%doHF = .TRUE.
   endif
 
+
+  ! Skip Hartree Fock part? Done when a HF calculation has already been carried out and we want to:
+  ! (i)   localize orbitals
+  ! (ii)  carry out DEC calculation 
+  ! (iii) Construct PLT file
+  if(config%davidOrbLoc%OnlyLocalize .or. (DECinfo%doDEC .and. .not. DECinfo%doHF) &
+       & .or. config%doplt) then
+     skipHFpart=.true.
+  else
+     skipHFpart=.false.
+  end if
+
   ! Read in already optimized HF orbitals, and localize
   OnlyLoc:  if (config%davidOrbLoc%OnlyLocalize) then
            ! read orbitals
@@ -155,14 +168,25 @@ SUBROUTINE lsdalton
 	   call mat_free(cmo)
   end if OnlyLoc
 
-  ! Kasper K, skip Hartree-Fock related calculations for DEC calculation if requested
-  ! Also skip, if we only want to localize orbitals
-  SkipHF: if( (DECinfo%doDEC .and. .not. DECinfo%doHF) .or. config%davidOrbLoc%OnlyLocalize) then
+  ! Construct PLT file
+  ConstructPLT: if(config%doplt) then
+     call contruct_plt_file_driver(ls,config%plt)
+  end if ConstructPLT
+
+
+  ! Single point DEC calculation using HF restart files
+  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. .not. DECinfo%doHF) ) then
+     call dec_main_prog_file(ls)
+  endif DECcalculationHFrestart
+
+
+  SkipHF: if(skipHFpart) then   ! Skip Hartree-Fock related calculations
      write(lupri,*)
-     write(lupri,*) 'Initital Hartree-Fock calculation is skipped!'
+     write(lupri,*) 'Hartree-Fock calculation is skipped!'
      write(lupri,*)
      HFdone=.false.
-  else
+
+  else 
      HFdone=.true.
 
      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
@@ -531,15 +555,9 @@ SUBROUTINE lsdalton
   WRITE(LUPRI,'("Total no. of Fock/KS matrix evaluations:  ",I10)') ls%input%nfock
   if (mem_monitor) WRITE(LUPRI,'("Max no. of matrices allocated in Level 3: ",I10)') max_no_of_matrices
 
-
-  ! Single point DEC calculation using HF restart files
-  ! ***************************************************
-  DECcalculationHFrestart: if (.not. HFdone) then
-     IF(DECinfo%doDEC) then
-        call dec_main_prog_file(ls)
-     ENDIF
+  if(.not. HFdone) then  ! ensure there's no memory leak when HF calc was skipped
      call config_shutdown(config)
-  endif DECcalculationHFrestart
+  end if
   call config_free(config)
 
   call ls_free(ls)

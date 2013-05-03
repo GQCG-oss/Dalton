@@ -43,6 +43,7 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     lsdaltonsrc/configuration.F90
     lsdaltonsrc/LSlib.F90
     lsdaltonsrc/Profile.F90
+    lsdaltonsrc/plt_driver.F90
     )
 set(DDYNAM_SOURCES
     ddynam/LSinput.F90
