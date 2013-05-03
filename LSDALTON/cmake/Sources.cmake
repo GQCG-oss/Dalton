@@ -43,7 +43,6 @@ set(LSDALTONMAIN_FORTRAN_SOURCES
     lsdaltonsrc/configuration.F90
     lsdaltonsrc/LSlib.F90
     lsdaltonsrc/Profile.F90
-    lsdaltonsrc/plt_driver.F90
     )
 set(DDYNAM_SOURCES
     ddynam/LSinput.F90
@@ -120,7 +119,6 @@ set(LINEARS_SOURCES
     linears/localization_util.F90
     linears/localization_orbspread.F90
     linears/localization_charge.F90
-    linears/print_MO.F90
     linears/prop_contribs.F90
     linears/response_driver.F90
     linears/response_prop.F90
@@ -135,6 +133,7 @@ set(LINEARS_SOURCES
     linears/starting_guess.F90
     linears/statistics.F90
     linears/trilevel.F90
+    linears/plt_driver.F90
     )
 
 set(RSPSOLVER_SOURCES	
