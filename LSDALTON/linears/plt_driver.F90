@@ -395,9 +395,7 @@ contains
 
     IUNIT=111
     reclen=(nGRIDPOINTS + 11)
-#ifdef GFORTRAN
     reclen=reclen*4
-#endif
 
     OPEN (IUNIT,FILE=trim(filename),STATUS='REPLACE',FORM='UNFORMATTED',&
          & ACCESS='DIRECT',RECL=reclen)
@@ -605,9 +603,7 @@ contains
 
     IUNIT=111
     reclen=(nGRIDPOINTS + 11)
-#ifdef GFORTRAN
     reclen=reclen*4
-#endif
 
     OPEN (IUNIT,FILE=trim(filename),STATUS='REPLACE',FORM='UNFORMATTED',&
          & ACCESS='DIRECT',RECL=reclen)
@@ -760,7 +756,6 @@ contains
 
     IUNIT=111
     reclen=(nGRIDPOINTS + 11)
-    !removed the #ifdef VAR_GFORTRAN as this is also needed for ifort. 
     reclen=reclen*4
 
     OPEN (IUNIT,FILE=trim(filename),STATUS='REPLACE',FORM='UNFORMATTED',&
