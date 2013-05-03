@@ -257,6 +257,7 @@ contains
     integer                        :: I, J, nATOMS,nrow,ncol
     real(4), allocatable       :: ATOMXYZ(:,:)
     type(matrix) :: S,tmpMat,tmpMat2
+    real(4) :: deltax,deltay,deltaz,mybuffer
 
     nrow = InputMat%nrow
     ncol=InputMat%ncol
@@ -272,6 +273,18 @@ contains
     ENDDO
 
 
+    ! Grid box: If it has not been explicitly defined, use default box
+    ! ****************************************************************
+    if(.not. MyPLt%gridbox_defined) then
+       ! Distance of 0.3 a.u. between grid points
+       deltax = 0.3_4
+       deltay = deltax
+       deltaz = deltax
+       ! Buffer zone of 6 a.u. around molecule (see details in DETERMINE_GRIDBOX)
+       mybuffer = 6.0_4
+       call DETERMINE_GRIDBOX(natoms,ATOMXYZ,deltax,deltay,deltaz,mybuffer,MyPlt)
+    end if
+
 
     ! Which calculation?
     ! ******************
@@ -281,12 +294,12 @@ contains
        ! Density
     case('DENS')
        write(ls%lupri,*) 'Writing density distribution plt file...'
-       call calculate_density(trim(MyPlt%outputfile),InputMat,ls,natoms,ATOMXYZ)
+       call calculate_density(trim(MyPlt%outputfile),InputMat,ls,natoms,ATOMXYZ,myplt)
 
        ! Electrostatic potential
     case('EP')
        write(ls%lupri,*) 'Writing electrostatic potential plt file...'
-       call calculate_ep(trim(MyPlt%outputfile),InputMat,ls,natoms,ATOMXYZ)
+       call calculate_ep(trim(MyPlt%outputfile),InputMat,ls,natoms,ATOMXYZ,myplt)
 
        ! Orbital 
     case('ORB')
@@ -318,12 +331,13 @@ contains
        call mat_free(tmpMat2)
 
        write(6,*) 'Writing orbital plt file...'
-       call calculate_pplt(trim(MyPlt%outputfile),MyPlt%iorb,InputMat,ls,natoms,ATOMXYZ)
+       call calculate_pplt(trim(MyPlt%outputfile),MyPlt%iorb,InputMat,ls,natoms,ATOMXYZ,myplt)
 
        ! Charge distribution
     case('CHARGEDIST')
        write(6,*) 'Writing charge distribution plt file...'
-       call calculate_charge(trim(MyPlt%outputfile),Myplt%iorb,myplt%jorb,InputMat,ls,natoms,ATOMXYZ)
+       call calculate_charge(trim(MyPlt%outputfile),Myplt%iorb,myplt%jorb,InputMat,&
+            & ls,natoms,ATOMXYZ,myplt)
 
     case default
        write(ls%lupri,*) 'PLT driver unknown input format: ', myplt%frmt
@@ -336,7 +350,7 @@ contains
 
   !> \brief Calculates charge distribution between two orbitals at grid points.
   !> KK: Whoever is responsible, please document this properly!
-  subroutine calculate_charge(filename,iorb,jorb,dCMO,ls,natoms,ATOMXYZ)
+  subroutine calculate_charge(filename,iorb,jorb,dCMO,ls,natoms,ATOMXYZ,MyPlt)
     implicit none
     type(matrix)                   :: dCMO
     type(lsitem)                   :: ls
@@ -344,6 +358,8 @@ contains
     integer,intent(in)             :: natoms
     integer                        :: nX,nY,nZ
     real(4), intent(in)            :: ATOMXYZ(3,nATOMS)
+    !> PLT info, including grid box info
+    type(pltinfo),intent(in) :: MyPlt
     !Local
     integer                        :: I,J,P,Q,Xg,Yg,Zg,nGRIDPOINTS
     integer                        :: orbnr, nORBITALS,nBASIS,iorb,jorb,iunit,ig
@@ -357,13 +373,18 @@ contains
 
     nORBITALS = dCMO%ncol
     nBASIS    = dCMO%nrow
-    ! Determine grid-box. It extends from
-    ! X1/Y1/Z1 to Xn/Yn/Zn in the x-/y-/z-directions,
-    ! and the number of gridpoints in these directions are nX/nY/nZ.
-    ! Thus, the total number of gridpoints is nGRIDPOINT=nX*nY*nZ.
-!    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-!         &ATOMXYZ,natoms,nGRIDPOINTS)
-stop 'KK fixme'
+
+    ! Copy grid box info from MyPlt structure for easier overview
+    nX = MyPlt%nX
+    nY = MyPlt%nY
+    nZ = MyPlt%nZ
+    deltax = MyPlt%deltax
+    deltay = MyPlt%deltay
+    deltaz = MyPlt%deltaz
+    X1 = MyPlt%X1
+    Y1 = MyPlt%Y1
+    Z1 = MyPlt%Z1
+    nGRIDPOINTS = MyPlt%nGRIDPOINTS
 
     allocate(moorb(nGRIDPOINTS), GAO(nBASIS),CMO(nBASIS,nORBITALS),tmp(nBASIS*nORBITALS)) !MO orbitals
     moorb = 0.0; ijk = 0
@@ -430,7 +451,7 @@ stop 'KK fixme'
 
   !> \brief Calculates orbital value at gridpoints.
   !> KK: Whoever is responsible, please document this properly!
-  subroutine calculate_pplt(filename,iorb,dCMO,ls,natoms,ATOMXYZ)
+  subroutine calculate_pplt(filename,iorb,dCMO,ls,natoms,ATOMXYZ,myplt)
     implicit none
     type(matrix)                   :: dCMO
     type(lsitem)                   :: ls
@@ -438,6 +459,9 @@ stop 'KK fixme'
     integer,intent(in)             :: natoms
     integer                        :: nX,nY,nZ
     real(4), intent(in)            :: ATOMXYZ(3,nATOMS)
+    !> PLT info, including grid box info
+    type(pltinfo),intent(in) :: MyPlt
+
     !Local
     integer                        :: I,J,P,Q,Xg,Yg,Zg,nGRIDPOINTS
     integer                        :: orbnr, nORBITALS,nBASIS,iorb,iunit,ig
@@ -452,13 +476,18 @@ stop 'KK fixme'
 
     nORBITALS = dCMO%ncol
     nBASIS    = dCMO%nrow
-    ! Determine grid-box. It extends from
-    ! X1/Y1/Z1 to Xn/Yn/Zn in the x-/y-/z-directions,
-    ! and the number of gridpoints in these directions are nX/nY/nZ.
-    ! Thus, the total number of gridpoints is nGRIDPOINT=nX*nY*nZ.
-!    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-!         &ATOMXYZ,natoms,nGRIDPOINTS)
-stop 'KK fixme'
+
+    ! Copy grid box info from MyPlt structure for easier overview
+    nX = MyPlt%nX
+    nY = MyPlt%nY
+    nZ = MyPlt%nZ
+    deltax = MyPlt%deltax
+    deltay = MyPlt%deltay
+    deltaz = MyPlt%deltaz
+    X1 = MyPlt%X1
+    Y1 = MyPlt%Y1
+    Z1 = MyPlt%Z1
+    nGRIDPOINTS = MyPlt%nGRIDPOINTS
 
     allocate(moorb(nGRIDPOINTS),CMO(nBASIS)) !MO orbitals
     moorb = 0; ijk = 0
@@ -531,7 +560,7 @@ stop 'KK fixme'
 
   !> \brief Calculates electrostatic potential at gridpoints.
   !> KK: Whoever is responsible, please document this properly!
-  subroutine calculate_ep(filename,D,ls,natoms,ATOMXYZ)
+  subroutine calculate_ep(filename,D,ls,natoms,ATOMXYZ,MyPlt)
     implicit none
     type(matrix)                   :: D
     type(matrix)                   :: dEPint
@@ -541,6 +570,8 @@ stop 'KK fixme'
     integer,intent(in)             :: natoms
     integer                        :: nX,nY,nZ
     real(4), intent(in)            :: ATOMXYZ(3,nATOMS)
+    !> PLT info, including grid box info
+    type(pltinfo),intent(in) :: MyPlt
     !Local
     real(realk), allocatable       :: R(:,:), emoorb(:)
     integer                        :: I,Q,Xg,Yg,Zg,nGRIDPOINTS
@@ -555,13 +586,18 @@ stop 'KK fixme'
 
     nORBITALS = D%ncol
     nBASIS    = D%nrow
-    ! Determine grid-box. It extends from
-    ! X1/Y1/Z1 to Xn/Yn/Zn in the x-/y-/z-directions,
-    ! and the number of gridpoints in these directions are nX/nY/nZ.
-    ! Thus, the total number of gridpoints is nGRIDPOINT=nX*nY*nZ.
-!    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-!         &ATOMXYZ,natoms,nGRIDPOINTS)
-stop 'KK fixme'
+
+    ! Copy grid box info from MyPlt structure for easier overview
+    nX = MyPlt%nX
+    nY = MyPlt%nY
+    nZ = MyPlt%nZ
+    deltax = MyPlt%deltax
+    deltay = MyPlt%deltay
+    deltaz = MyPlt%deltaz
+    X1 = MyPlt%X1
+    Y1 = MyPlt%Y1
+    Z1 = MyPlt%Z1
+    nGRIDPOINTS = MyPlt%nGRIDPOINTS
 
     allocate(moorb(nGRIDPOINTS),emoorb(nGRIDPOINTS),R(3,nGRIDPOINTS)) !MO orbitals
     moorb = 0_4; emoorb = 0_realk;
@@ -641,7 +677,7 @@ stop 'KK fixme'
 
   !> \brief Calculates electron density at gridpoints.
   !> KK: Whoever is responsible, please document this properly!
-  subroutine calculate_density(filename,dD,ls,natoms,ATOMXYZ)
+  subroutine calculate_density(filename,dD,ls,natoms,ATOMXYZ,myplt)
     implicit none
     type(matrix)                   :: dD
     type(lsitem)                   :: ls
@@ -649,6 +685,8 @@ stop 'KK fixme'
     integer,intent(in)             :: natoms
     integer                        :: nX,nY,nZ
     real(4), intent(in)            :: ATOMXYZ(3,nATOMS)
+    !> PLT info, including grid box info
+    type(pltinfo),intent(in) :: MyPlt
     !Local
     integer                        :: I,J,P,Q,Xg,Yg,Zg,nGRIDPOINTS
     integer                        :: orbnr,nBASIS,iorb,iunit,ig
@@ -662,13 +700,18 @@ stop 'KK fixme'
     br=real(bohr_to_angstrom,4)
 
     nBASIS    = dD%nrow
-    ! Determine grid-box. It extends from
-    ! X1/Y1/Z1 to Xn/Yn/Zn in the x-/y-/z-directions,
-    ! and the number of gridpoints in these directions are nX/nY/nZ.
-    ! Thus, the total number of gridpoints is nGRIDPOINT=nX*nY*nZ.
-stop 'KK fixme'
-!    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-!         &ATOMXYZ,natoms,nGRIDPOINTS)
+
+    ! Copy grid box info from MyPlt structure for easier overview
+    nX = MyPlt%nX
+    nY = MyPlt%nY
+    nZ = MyPlt%nZ
+    deltax = MyPlt%deltax
+    deltay = MyPlt%deltay
+    deltaz = MyPlt%deltaz
+    X1 = MyPlt%X1
+    Y1 = MyPlt%Y1
+    Z1 = MyPlt%Z1
+    nGRIDPOINTS = MyPlt%nGRIDPOINTS
 
     write(*,*)  'calculate_density2 computing',nGRIDPOINTS, ' gridpoints' 
 
