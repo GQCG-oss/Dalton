@@ -25,234 +25,233 @@ set(DFTFUNC_SOURCES
     dft/fun-vwn.c
     dft/functionals.c
     dft/general.c
-    dft/grid-gen.c
     )
 set(DFTFUNC_F_SOURCES
-    dft/II_util.f90
+    dft/II_util.F90
     )
 set(FMM_C_SOURCES
     mm/mm_proc_selector.c
     )
 set(LSDALTONMAIN_FORTRAN_SOURCES
-    lsdaltonsrc/numerical_derivatives.f90
-    lsdaltonsrc/LSDALTON.f90
-    lsdaltonsrc/LS_optimizer.f90
-    lsdaltonsrc/LSdynamics.f90
-    lsdaltonsrc/Energy_and_deriv.f90
-    lsdaltonsrc/lsmpiSlave.f90
-    lsdaltonsrc/init_lsdalton.f90
-    lsdaltonsrc/configuration.f90
-    lsdaltonsrc/LSlib.f90
-    lsdaltonsrc/Profile.f90
+    lsdaltonsrc/numerical_derivatives.F90
+    lsdaltonsrc/LSDALTON.F90
+    lsdaltonsrc/LS_optimizer.F90
+    lsdaltonsrc/LSdynamics.F90
+    lsdaltonsrc/Energy_and_deriv.F90
+    lsdaltonsrc/lsmpiSlave.F90
+    lsdaltonsrc/init_lsdalton.F90
+    lsdaltonsrc/configuration.F90
+    lsdaltonsrc/LSlib.F90
+    lsdaltonsrc/Profile.F90
     )
 set(DDYNAM_SOURCES
-    ddynam/LSinput.f90
-    ddynam/Fock_mat_dyn.f90
-    ddynam/Modules.f90
-    ddynam/Temperature.f90
-    ddynam/TimeRev_prop.f90
-    ddynam/dyn_utilities.f90
+    ddynam/LSinput.F90
+    ddynam/Fock_mat_dyn.F90
+    ddynam/Modules.F90
+    ddynam/Temperature.F90
+    ddynam/TimeRev_prop.F90
+    ddynam/dyn_utilities.F90
     )
 set(DEC_SOURCES
-    deccc/array4_memory.f90
-    deccc/array3_memory.f90
-    deccc/ccarray3_simple.f90
-    deccc/CABS.f90
-    deccc/mp2.f90
-    deccc/ccsdpt.f90
-    deccc/cc_crop.f90
-    deccc/ccsd.f90
-    deccc/rpa.f90
-    deccc/f12_integrals.f90
-    deccc/cc_driver.f90
-    deccc/cc_integrals.f90
-    deccc/ccarray2_simple.f90
-    deccc/ccarray4_simple.f90
-    deccc/ccorbital.f90
-    deccc/ccri_simple.f90
-    deccc/dec_atom.f90
-    deccc/dec_driver.f90
-    deccc/dec_driver_slave.f90
-    deccc/dec_main.f90
-    deccc/dec_settings.f90
-    deccc/dec_utils.f90
-    deccc/full_driver_f12contractions.f90
-    deccc/fullmolecule.f90
-    deccc/mp2_gradient.f90
-    deccc/fragment_energy.f90
-    deccc/full_driver.f90
-    deccc/decmpi.f90
-    deccc/decmpiSlave.f90
+    deccc/array4_memory.F90
+    deccc/array3_memory.F90
+    deccc/ccarray3_simple.F90
+    deccc/CABS.F90
+    deccc/mp2.F90
+    deccc/ccsdpt.F90
+    deccc/cc_crop.F90
+    deccc/ccsd.F90
+    deccc/rpa.F90
+    deccc/f12_integrals.F90
+    deccc/cc_driver.F90
+    deccc/cc_integrals.F90
+    deccc/ccarray2_simple.F90
+    deccc/ccarray4_simple.F90
+    deccc/ccorbital.F90
+    deccc/ccri_simple.F90
+    deccc/dec_atom.F90
+    deccc/dec_driver.F90
+    deccc/dec_driver_slave.F90
+    deccc/dec_main.F90
+    deccc/dec_settings.F90
+    deccc/dec_utils.F90
+    deccc/full_driver_f12contractions.F90
+    deccc/fullmolecule.F90
+    deccc/mp2_gradient.F90
+    deccc/fragment_energy.F90
+    deccc/full_driver.F90
+    deccc/decmpi.F90
+    deccc/decmpiSlave.F90
     )	
 set(GEOOPT_SOURCES
-    geomopt/LSopt-input.f90
-    geomopt/ls_opt.f90
-    geomopt/ls_opt2.f90
-    geomopt/ls_redint.f90
+    geomopt/LSopt-input.F90
+    geomopt/ls_opt.F90
+    geomopt/ls_opt2.F90
+    geomopt/ls_redint.F90
     )
 set(LINEARS_SOURCES	
-    linears/configurationType.f90
-    linears/ChargeLoc.f90
-    linears/SCFLOOP.f90
-    linears/trustradius.f90
-    linears/LSDALTON_RESPONSE.f90
-    linears/LSDALTON_RESPONSE_type.f90
-    linears/arh_debug.f90
-    linears/arh_driver.f90
-    linears/average_util.f90
-    linears/davidson_settings.f90
-    linears/davidson_solver.f90
-    linears/debug.f90
-    linears/dens_subspace.f90
-    linears/densopt.f90
-    linears/diag.f90
-    linears/diis.f90
-    linears/dsm.f90
-    linears/dsm_xterm.f90
-    linears/ecdata_module.f90
-    linears/extra-output.f90
-    linears/fock-eval.f90
-    linears/kurtosis.f90
-    linears/leastchange.f90
-    linears/levelshift.f90
-    linears/minimize.f90
-    linears/optimlocNONMOD.f90
-    linears/localization_util.f90
-    linears/localization_orbspread.f90
-    linears/localization_charge.f90
-    linears/print_MO.f90
-    linears/prop_contribs.f90
-    linears/response_driver.f90
-    linears/response_prop.f90
-    linears/rsp_equations.f90
-    linears/scfopt-typedef.f90
-    linears/soeo-redspace.f90
-    linears/soeo-loop.f90
-    linears/soeo-debug.f90
-    linears/soeo-matop.f90
-    linears/soeo-typedef.f90
-    linears/soeo-util.f90
-    linears/starting_guess.f90
-    linears/statistics.f90
-    linears/trilevel.f90
+    linears/configurationType.F90
+    linears/ChargeLoc.F90
+    linears/SCFLOOP.F90
+    linears/trustradius.F90
+    linears/LSDALTON_RESPONSE.F90
+    linears/LSDALTON_RESPONSE_type.F90
+    linears/arh_debug.F90
+    linears/arh_driver.F90
+    linears/average_util.F90
+    linears/davidson_settings.F90
+    linears/davidson_solver.F90
+    linears/debug.F90
+    linears/dens_subspace.F90
+    linears/densopt.F90
+    linears/diag.F90
+    linears/diis.F90
+    linears/dsm.F90
+    linears/dsm_xterm.F90
+    linears/ecdata_module.F90
+    linears/extra-output.F90
+    linears/fock-eval.F90
+    linears/kurtosis.F90
+    linears/leastchange.F90
+    linears/levelshift.F90
+    linears/minimize.F90
+    linears/optimlocNONMOD.F90
+    linears/localization_util.F90
+    linears/localization_orbspread.F90
+    linears/localization_charge.F90
+    linears/print_MO.F90
+    linears/prop_contribs.F90
+    linears/response_driver.F90
+    linears/response_prop.F90
+    linears/rsp_equations.F90
+    linears/scfopt-typedef.F90
+    linears/soeo-redspace.F90
+    linears/soeo-loop.F90
+    linears/soeo-debug.F90
+    linears/soeo-matop.F90
+    linears/soeo-typedef.F90
+    linears/soeo-util.F90
+    linears/starting_guess.F90
+    linears/statistics.F90
+    linears/trilevel.F90
     )
 
 set(RSPSOLVER_SOURCES	
-    responsesolver/rsp_cmplx_sym.f90
-    responsesolver/rsp_complex.f90
-    responsesolver/rsp_solver.f90
-    responsesolver/rsp_std_sym.f90
+    responsesolver/rsp_cmplx_sym.F90
+    responsesolver/rsp_complex.F90
+    responsesolver/rsp_solver.F90
+    responsesolver/rsp_std_sym.F90
     )
 
 set(SOLVERUTIL_SOURCES	
-    SolverUtilities/arh_density.f90
-    SolverUtilities/dalton_interface.f90
-    SolverUtilities/dd_utilities.f90
-    SolverUtilities/dd_utilities_unres.f90
-    SolverUtilities/decomp.f90
-    SolverUtilities/lsdalton_modules.f90
-    SolverUtilities/queue-operations.f90
-    SolverUtilities/queue-typedef.f90
-    SolverUtilities/rsp_precond.f90
-    SolverUtilities/rsp_utilities.f90
+    SolverUtilities/arh_density.F90
+    SolverUtilities/dalton_interface.F90
+    SolverUtilities/dd_utilities.F90
+    SolverUtilities/dd_utilities_unres.F90
+    SolverUtilities/decomp.F90
+    SolverUtilities/lsdalton_modules.F90
+    SolverUtilities/queue-operations.F90
+    SolverUtilities/queue-typedef.F90
+    SolverUtilities/rsp_precond.F90
+    SolverUtilities/rsp_utilities.F90
     )
 
 set(RSP_PROPERTIES_SOURCES	
-    rsp_properties/molecular_hessian.f90
-    rsp_properties/test_molHessian.f90
+    rsp_properties/molecular_hessian.F90
+    rsp_properties/test_molHessian.F90
     )
 
 set(PBC_FORTRAN_SOURCES
-    pbc2/pbc_compare.f90
-    pbc2/pbc-multipole.f90
-    pbc2/pbc-matop.f90
-    pbc2/pbc-harmonics.f90
-    pbc2/pbc-msc.f90
-    pbc2/pbc-krsp-op.f90
-    pbc2/pbc_kscf.f90
-    pbc2/pbc_mmit.f90
-    pbc2/pbc_eigsolv.f90
-    pbc2/pbc-data.f90
-    pbc2/pbc-ffdata.f90
-    pbc2/pbc_int.f90
+    pbc2/pbc_compare.F90
+    pbc2/pbc-multipole.F90
+    pbc2/pbc-matop.F90
+    pbc2/pbc-harmonics.F90
+    pbc2/pbc-msc.F90
+    pbc2/pbc-krsp-op.F90
+    pbc2/pbc_kscf.F90
+    pbc2/pbc_mmit.F90
+    pbc2/pbc_eigsolv.F90
+    pbc2/pbc-data.F90
+    pbc2/pbc-ffdata.F90
+    pbc2/pbc_int.F90
     )
 
 set(FMM_SOURCES
-    mm/mm_T_contractors.f90
-    mm/mm_T_pair_builder.f90
-    mm/mm_T_pair_tests.f90
-    mm/mm_T_worker.f90
-    mm/mm_Vff_driver.f90
-    mm/mm_Vff_processor.f90
-    mm/mm_W_contractors.f90
-    mm/mm_W_pair_builder.f90
-    mm/mm_W_worker.f90
-    mm/mm_box_builder.f90
-    mm/mm_box_processor.f90
-    mm/mm_buffers.f90
-    mm/mm_densfit.f90
-    mm/mm_driver.f90
-    mm/mm_global_paras.f90
-    mm/mm_grid_searcher.f90
-    mm/mm_input.f90
-    mm/mm_interface.f90
-    mm/mm_map_builder.f90
-    mm/mm_memory.f90
-    mm/mm_memory_manager.f90
-    mm/mm_overlap_tree.f90
-    mm/mm_sort.f90
-    mm/mm_stats.f90
-    mm/mm_tree_T_buffer.f90
-    mm/cbifmm_f90.f90
+    mm/mm_T_contractors.F90
+    mm/mm_T_pair_builder.F90
+    mm/mm_T_pair_tests.F90
+    mm/mm_T_worker.F90
+    mm/mm_Vff_driver.F90
+    mm/mm_Vff_processor.F90
+    mm/mm_W_contractors.F90
+    mm/mm_W_pair_builder.F90
+    mm/mm_W_worker.F90
+    mm/mm_box_builder.F90
+    mm/mm_box_processor.F90
+    mm/mm_buffers.F90
+    mm/mm_densfit.F90
+    mm/mm_driver.F90
+    mm/mm_global_paras.F90
+    mm/mm_grid_searcher.F90
+    mm/mm_input.F90
+    mm/mm_interface.F90
+    mm/mm_map_builder.F90
+    mm/mm_memory.F90
+    mm/mm_memory_manager.F90
+    mm/mm_overlap_tree.F90
+    mm/mm_sort.F90
+    mm/mm_stats.F90
+    mm/mm_tree_T_buffer.F90
+    mm/cbifmm_f90.F90
     )   
 set(INTERESTLIB_SOURCES
-    interest/src/module_interest.f90
-    interest/src/module_interest_hrr.f90
-    interest/src/module_interest_osr.f90
+    interest/src/module_interest.F90
+    interest/src/module_interest_hrr.F90
+    interest/src/module_interest_osr.F90
     )
 set(LSINT_SOURCES
-    LSint/BuildBasis.f90
-    LSint/BuildMolFile.f90
-    LSint/II_Fragment.f90
-    LSint/gridgeneration.f90
-    LSint/gridgeneration_boxify.f90
-    LSint/II_XC_interface.f90
-    LSint/II_absval_int.f90
-    LSint/II_dft_int.f90
-    LSint/II_dft_ksm.f90
-    LSint/II_dft_ksm_worker.f90
-    LSint/Integral_interface.f90
-    LSint/Integral_interfaceDEC.f90
-    LSint/Integral_interfaceDF.f90
-    LSint/Integral_interface_test.f90
-    LSint/MBIE.f90
-    LSint/Molecule.f90
-    LSint/ODbatches.f90
-    LSint/ReadMolFile.f90
-    LSint/ThermiteDistribute.f90
-    LSint/ThermiteDistributeK.f90
-    LSint/ThermiteDistributeDEC.f90
-    LSint/ThermiteDriver.f90
-    LSint/ThermiteIntegrals.f90
-    LSint/ThermiteOverlapDistribution.f90
-    LSint/ThermiteProp.f90
-    LSint/ThermiteMem.f90
-    LSint/dalton-input.f90
-    LSint/linsolv_df.f90
-    LSint/ls_IntegralInterface.f90
-    LSint/pari.f90
-    LSint/lsmpi.f90
+    LSint/BuildBasis.F90
+    LSint/BuildMolFile.F90
+    LSint/II_Fragment.F90
+    LSint/gridgeneration.F90
+    LSint/gridgeneration_boxify.F90
+    LSint/II_XC_interface.F90
+    LSint/II_absval_int.F90
+    LSint/II_dft_int.F90
+    LSint/II_dft_ksm.F90
+    LSint/II_dft_ksm_worker.F90
+    LSint/Integral_interface.F90
+    LSint/Integral_interfaceDEC.F90
+    LSint/Integral_interfaceDF.F90
+    LSint/Integral_interface_test.F90
+    LSint/MBIE.F90
+    LSint/Molecule.F90
+    LSint/ODbatches.F90
+    LSint/ReadMolFile.F90
+    LSint/ThermiteDistribute.F90
+    LSint/ThermiteDistributeK.F90
+    LSint/ThermiteDistributeDEC.F90
+    LSint/ThermiteDriver.F90
+    LSint/ThermiteIntegrals.F90
+    LSint/ThermiteOverlapDistribution.F90
+    LSint/ThermiteProp.F90
+    LSint/ThermiteMem.F90
+    LSint/dalton-input.F90
+    LSint/linsolv_df.F90
+    LSint/ls_IntegralInterface.F90
+    LSint/pari.F90
+    LSint/lsmpi.F90
     )
 #####################################################
 #WARNING: READ ME BEFORE ADDING FILES TO LSUTIL
 # lsutil is split into several bunches
 # The LSUTIL_PRECISION_SOURCES is the first to be compiled
-# and contains only lsutil/ls_precision.f90
+# and contains only lsutil/ls_precision.F90
 # the next be compiled is LSUTIL_MATRIXM_SOURCES
 # which contains the matrix type definition. 
 # then LSUTIL_COMMON_SOURCES which should only contain 
 # type definitions and files which only depend on 
-# lsutil/ls_precision.f90 and lsutil/matrix_module.f90
+# lsutil/ls_precision.F90 and lsutil/matrix_module.F90
 # then LSUTIL_MATRIXO_SOURCES and LSUTIL_MATRIXO_C_SOURCES and
 # LSUTIL_MATRIXU_SOURCES is compiled. Then
 # LSUTIL_TYPE_SOURCES which despite the name
@@ -262,54 +261,54 @@ set(LSINT_SOURCES
 ############################################################
 
 set(LSUTIL_PRECISION_SOURCES
-    lsutil/ls_precision.f90
-    lsutil/ptr_assoc.f90
+    lsutil/ls_precision.F90
+    lsutil/ptr_assoc.F90
     )
 
 set(LSUTIL_MATRIXM_SOURCES
-    lsutil/matrix_module.f90    
+    lsutil/matrix_module.F90    
     )
 
 set(LSUTIL_COMMON_SOURCES
-    lsutil/rsp-typedef.f90
-    lsutil/tensor_type_def.f90
-    lsutil/response_prop_type.f90
-    lsutil/ls_IOType.f90
-    lsutil/AOType.f90
-    lsutil/dec_typedef.f90
-    lsutil/MoleculeType.f90
-    lsutil/ODType.f90
-    lsutil/lstensorType.f90
-    lsutil/dftType.f90
-    lsutil/BasisinfoType.f90
-    lsutil/IntegralOutputType.f90 
-    lsutil/f12.f90
-    lsutil/IntegralType.f90
-    lsutil/TYPE-DEF.f90
-    lsutil/memory.f90
-    lsutil/gridgeneration_memory.f90
-    lsutil/Time.f90
-    lsutil/common_utilities.f90
-    lsutil/ls_parameters.f90
-    lsutil/par_mod.f90
-    lsutil/lsmpiType.f90
-    lsutil/TestMPI.f90
-    lsutil/LSmatrixType.f90
-    lsutil/lsmatop_dense.f90
-    lsutil/file-operations.f90
-    lsutil/grid_utilities.f90
-    lsutil/mat3dim.f90
-    lsutil/papi.f90
-    lsutil/ls_math.f90
-    lsutil/SphCartMatrices.f90
-    lsutil/OverlapDistributionType.f90
+    lsutil/rsp-typedef.F90
+    lsutil/tensor_type_def.F90
+    lsutil/response_prop_type.F90
+    lsutil/ls_IOType.F90
+    lsutil/AOType.F90
+    lsutil/dec_typedef.F90
+    lsutil/MoleculeType.F90
+    lsutil/ODType.F90
+    lsutil/lstensorType.F90
+    lsutil/dftType.F90
+    lsutil/BasisinfoType.F90
+    lsutil/IntegralOutputType.F90 
+    lsutil/f12.F90
+    lsutil/IntegralType.F90
+    lsutil/TYPE-DEF.F90
+    lsutil/memory.F90
+    lsutil/gridgeneration_memory.F90
+    lsutil/Time.F90
+    lsutil/common_utilities.F90
+    lsutil/ls_parameters.F90
+    lsutil/par_mod.F90
+    lsutil/lsmpiType.F90
+    lsutil/TestMPI.F90
+    lsutil/LSmatrixType.F90
+    lsutil/lsmatop_dense.F90
+    lsutil/file-operations.F90
+    lsutil/grid_utilities.F90
+    lsutil/mat3dim.F90
+    lsutil/papi.F90
+    lsutil/ls_math.F90
+    lsutil/SphCartMatrices.F90
+    lsutil/OverlapDistributionType.F90
     )
 
 set(LSUTIL_MATRIXO_SOURCES
-    lsutil/matop_csr.f90
-    lsutil/matop_dense.f90
-    lsutil/matop_dense_unrest.f90
-    lsutil/matop_scalapack.f90    
+    lsutil/matop_csr.F90
+    lsutil/matop_dense.F90
+    lsutil/matop_dense_unrest.F90
+    lsutil/matop_scalapack.F90    
     )
 set(LSUTIL_MATRIXO_C_SOURCES
     lsutil/matop_csr_aux.c
@@ -317,58 +316,58 @@ set(LSUTIL_MATRIXO_C_SOURCES
     )
 
 set(LSUTIL_MATRIXU_SOURCES
-    lsutil/mat-operations-aux.f90
-    lsutil/mat-operations-essential.f90
-    lsutil/matrix_utilities.f90
-    lsutil/matrix_defop_backend.f90
-    lsutil/matrix_defop_lowlevel.f90
-    lsutil/matrix_defop.f90
+    lsutil/mat-operations-aux.F90
+    lsutil/mat-operations-essential.F90
+    lsutil/matrix_utilities.F90
+    lsutil/matrix_defop_backend.F90
+    lsutil/matrix_defop_lowlevel.F90
+    lsutil/matrix_defop.F90
     )
 
 set(LSUTIL_TYPE_SOURCES
-    lsutil/AO_operations.f90
-    lsutil/Molecule_operations.f90
-    lsutil/OD_operations.f90
-    lsutil/lstensor_Mem.f90
-    lsutil/lstensor_operations.f90
-    lsutil/Integral_input.f90
-    lsutil/ls_IO.f90
-    lsutil/ls_screen.f90
-    lsutil/dft_operations.f90
-    lsutil/dftMem.f90
-    lsutil/Basisinfo_operations.f90
-    lsutil/IntegralOutput_operations.f90 
-    lsutil/TYPE-OP.f90
-    lsutil/pbc_lattice_type.f90
-    lsutil/Build_AOBATCH.f90
-    lsutil/lspdm_basic.f90
-    lsutil/tensor_basic.f90
-    lsutil/lspdm_tensor_operations.f90
-    lsutil/manual_reorderings.f90
-    lsutil/manual_utils.f90
+    lsutil/AO_operations.F90
+    lsutil/Molecule_operations.F90
+    lsutil/OD_operations.F90
+    lsutil/lstensor_Mem.F90
+    lsutil/lstensor_operations.F90
+    lsutil/Integral_input.F90
+    lsutil/ls_IO.F90
+    lsutil/ls_screen.F90
+    lsutil/dft_operations.F90
+    lsutil/dftMem.F90
+    lsutil/Basisinfo_operations.F90
+    lsutil/IntegralOutput_operations.F90 
+    lsutil/TYPE-OP.F90
+    lsutil/pbc_lattice_type.F90
+    lsutil/Build_AOBATCH.F90
+    lsutil/lspdm_basic.F90
+    lsutil/tensor_basic.F90
+    lsutil/lspdm_tensor_operations.F90
+    lsutil/manual_reorderings.F90
+    lsutil/manual_utils.F90
     )
 
 set(LSUTILLIB_SOURCES
-    lsutil/lowdin.f90
-    lsutil/AtomicSparse.f90
+    lsutil/lowdin.F90
+    lsutil/AtomicSparse.F90
     lsutil/compilation_info.f90
     lsutil/git_revision_info.f90
-    lsutil/fundamental.f90
-    lsutil/ks-settings.f90
-    lsutil/lsmpi-operations.f90
-    lsutil/lsutilities.f90
-    lsutil/ls_screenMPI.f90
-    lsutil/LSoptType.f90
-    lsutil/ddynType.f90
-    lsutil/ProfileType.f90
-    lsutil/pbc_lattice_vectors.f90
-    lsutil/tensor_interface.f90
-    lsutil/lspdm_slave.f90
+    lsutil/fundamental.F90
+    lsutil/ks-settings.F90
+    lsutil/lsmpi-operations.F90
+    lsutil/lsutilities.F90
+    lsutil/ls_screenMPI.F90
+    lsutil/LSoptType.F90
+    lsutil/ddynType.F90
+    lsutil/ProfileType.F90
+    lsutil/pbc_lattice_vectors.F90
+    lsutil/tensor_interface.F90
+    lsutil/lspdm_slave.F90
     )   
 
 set(LSLIB_SOURCES
-    lsdaltonsrc/LSlib.f90
-    lsdaltonsrc/LSlib_tester.f90
+    lsdaltonsrc/LSlib.F90
+    lsdaltonsrc/LSlib_tester.F90
     )
 
 set(FIXED_FORTRAN_SOURCES

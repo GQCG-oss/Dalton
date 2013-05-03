@@ -30,7 +30,7 @@ libpbc2.a : $(F_OBJS) $(F90_OBJS)
 clean: 
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod
 
-Makefile.depend depend:  $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -- $(F90_OBJS:.o=.f90) > Makefile.depend
+Makefile.depend depend:  $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -- $(F90_OBJS:.o=.F90) > Makefile.depend
 
 include Makefile.depend
