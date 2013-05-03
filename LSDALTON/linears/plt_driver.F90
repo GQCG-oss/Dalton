@@ -32,7 +32,7 @@ contains
     !> Integral info
     type(LsItem),intent(inout) :: ls
     !> Information about which PLT information to calculation (see type pltinfo)
-    type(pltinfo),intent(in) :: MyPlt
+    type(pltinfo),intent(inout) :: MyPlt
     integer :: nocc,nrow,ncol,funit, IOS
     Type(Matrix) :: InputMat
     logical :: file_exist
@@ -57,6 +57,7 @@ contains
     end if
 
 
+
     ! read density/orbitals
     ! *********************
 
@@ -77,8 +78,7 @@ contains
     ENDIF
 
     ! Which calculation?
-    call construct_plt_file_driver(trim(MyPlt%outputfile),trim(MyPlt%frmt),InputMat,&
-         & ls,MyPlt%iorb,MyPlt%jorb)
+    call construct_plt_file_driver(MyPlt,InputMat,ls)
 
 
     call mat_free(InputMat)
@@ -108,6 +108,19 @@ contains
     ! Zero orbital indices
     MyPlt%iorb = 0
     MyPlt%jorb = 0
+
+    ! Zero gridbox info
+    MyPlt%nX=0
+    MyPlt%nY=0
+    MyPlt%nZ=0
+    MyPlt%nGRIDPOINTS=0
+    MyPlt%deltax=0.0
+    MyPlt%deltay=0.0
+    MyPlt%deltaz=0.0
+    MyPlt%X1=0.0
+    MyPlt%Y1=0.0
+    MyPlt%Z1=0.0
+    MyPlt%gridbox_defined=.false.
 
   end subroutine pltinfo_set_default_config
 
@@ -233,20 +246,14 @@ contains
   !> which may be plotted e.g. using the Chimera program.
   !> \author Kasper Kristensen
   !> \date May 2013
-  subroutine construct_plt_file_driver(filename,frmt,InputMat,ls,iorb,jorb)
+  subroutine construct_plt_file_driver(MyPlt,InputMat,ls)
     implicit none
+    !> Information about which PLT information to calculate (see type pltinfo)
+    type(pltinfo),intent(inout) :: MyPlt
     !> Matrix containing orbitals or density
     type(matrix),intent(in)        :: InputMat
     !> Integral info
     type(lsitem),intent(inout)     :: ls
-    !> Filename for output PLT file
-    Character*(*),intent(in)       :: filename
-    !> What do we want to calculate (see type pltinfo)
-    Character*(*),intent(in)       :: frmt
-    !> Orbital index to plot or first index in charge distribution (see type pltinfo)
-    integer,intent(in)              :: iorb
-    !> Second index in charge distribution (see type pltinfo)
-    integer,intent(in)              :: jorb
     integer                        :: I, J, nATOMS,nrow,ncol
     real(4), allocatable       :: ATOMXYZ(:,:)
     type(matrix) :: S,tmpMat,tmpMat2
@@ -265,20 +272,21 @@ contains
     ENDDO
 
 
+
     ! Which calculation?
     ! ******************
 
-    select case (frmt)
+    select case (myplt%frmt)
 
        ! Density
     case('DENS')
        write(ls%lupri,*) 'Writing density distribution plt file...'
-       call calculate_density(trim(filename),InputMat,ls,natoms,ATOMXYZ)
+       call calculate_density(trim(MyPlt%outputfile),InputMat,ls,natoms,ATOMXYZ)
 
        ! Electrostatic potential
     case('EP')
        write(ls%lupri,*) 'Writing electrostatic potential plt file...'
-       call calculate_ep(trim(filename),InputMat,ls,natoms,ATOMXYZ)
+       call calculate_ep(trim(MyPlt%outputfile),InputMat,ls,natoms,ATOMXYZ)
 
        ! Orbital 
     case('ORB')
@@ -310,15 +318,15 @@ contains
        call mat_free(tmpMat2)
 
        write(6,*) 'Writing orbital plt file...'
-       call calculate_pplt(trim(filename),iorb,InputMat,ls,natoms,ATOMXYZ)
+       call calculate_pplt(trim(MyPlt%outputfile),MyPlt%iorb,InputMat,ls,natoms,ATOMXYZ)
 
        ! Charge distribution
     case('CHARGEDIST')
        write(6,*) 'Writing charge distribution plt file...'
-       call calculate_charge(trim(filename),iorb,jorb,InputMat,ls,natoms,ATOMXYZ)
+       call calculate_charge(trim(MyPlt%outputfile),Myplt%iorb,myplt%jorb,InputMat,ls,natoms,ATOMXYZ)
 
     case default
-       write(ls%lupri,*) 'PLT driver unknown input format: ', frmt
+       write(ls%lupri,*) 'PLT driver unknown input format: ', myplt%frmt
        call lsquit('PLT driver unknown input format',-1)
     end select
 
@@ -353,8 +361,9 @@ contains
     ! X1/Y1/Z1 to Xn/Yn/Zn in the x-/y-/z-directions,
     ! and the number of gridpoints in these directions are nX/nY/nZ.
     ! Thus, the total number of gridpoints is nGRIDPOINT=nX*nY*nZ.
-    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-         &ATOMXYZ,natoms,nGRIDPOINTS)
+!    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
+!         &ATOMXYZ,natoms,nGRIDPOINTS)
+stop 'KK fixme'
 
     allocate(moorb(nGRIDPOINTS), GAO(nBASIS),CMO(nBASIS,nORBITALS),tmp(nBASIS*nORBITALS)) !MO orbitals
     moorb = 0.0; ijk = 0
@@ -447,8 +456,9 @@ contains
     ! X1/Y1/Z1 to Xn/Yn/Zn in the x-/y-/z-directions,
     ! and the number of gridpoints in these directions are nX/nY/nZ.
     ! Thus, the total number of gridpoints is nGRIDPOINT=nX*nY*nZ.
-    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-         &ATOMXYZ,natoms,nGRIDPOINTS)
+!    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
+!         &ATOMXYZ,natoms,nGRIDPOINTS)
+stop 'KK fixme'
 
     allocate(moorb(nGRIDPOINTS),CMO(nBASIS)) !MO orbitals
     moorb = 0; ijk = 0
@@ -549,8 +559,9 @@ contains
     ! X1/Y1/Z1 to Xn/Yn/Zn in the x-/y-/z-directions,
     ! and the number of gridpoints in these directions are nX/nY/nZ.
     ! Thus, the total number of gridpoints is nGRIDPOINT=nX*nY*nZ.
-    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-         &ATOMXYZ,natoms,nGRIDPOINTS)
+!    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
+!         &ATOMXYZ,natoms,nGRIDPOINTS)
+stop 'KK fixme'
 
     allocate(moorb(nGRIDPOINTS),emoorb(nGRIDPOINTS),R(3,nGRIDPOINTS)) !MO orbitals
     moorb = 0_4; emoorb = 0_realk;
@@ -655,8 +666,9 @@ contains
     ! X1/Y1/Z1 to Xn/Yn/Zn in the x-/y-/z-directions,
     ! and the number of gridpoints in these directions are nX/nY/nZ.
     ! Thus, the total number of gridpoints is nGRIDPOINT=nX*nY*nZ.
-    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-         &ATOMXYZ,natoms,nGRIDPOINTS)
+stop 'KK fixme'
+!    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
+!         &ATOMXYZ,natoms,nGRIDPOINTS)
 
     write(*,*)  'calculate_density2 computing',nGRIDPOINTS, ' gridpoints' 
 
@@ -782,13 +794,15 @@ contains
 
   !> \brief Make PLT files for specific orbitals
   !> Ida, please document properly!
-  subroutine make_orbitalplot_file(CMO,CFG,ls)
+  subroutine make_orbitalplot_file(CMO,CFG,ls,MyPlt)
     implicit none
     !> file containing localized orbitals
     type(matrix) :: CMO 
     type(RedSpaceItem) :: CFG
     type(lsitem) :: ls
-    integer :: indx1,indx2,nocc
+    !> Info for PLT generation
+    type(pltinfo),intent(inout) :: MyPlt
+    integer :: nocc
 
 
     IF(ls%setting%integraltransformGC)THEN
@@ -797,39 +811,56 @@ contains
     ENDIF
 
     nocc=int(ls%input%molecule%nelectrons/2)
+    MyPlt%frmt = 'ORB'
 
     select case (trim(CFG%plt_orbital))
     case('HOMO')
-       indx1 = nocc
+       MyPLt%iorb = nocc
+       Myplt%outputfile = 'HOMO.plt'
        write(ls%lupri,*) 'Writing plt file for HOMO...'
-       call construct_plt_file_driver('HOMO.plt','ORB',CMO,ls,indx1,-1)
+       call construct_plt_file_driver(MyPlt,CMO,ls)
     case('LUMO')
-       indx1 = nocc+1
+       MyPlt%iorb = nocc+1
+       Myplt%outputfile = 'LUMO.plt'
        write(ls%lupri,*) 'Writing plt file for LUMO...'
-       call construct_plt_file_driver('LUMO.plt','ORB',CMO,ls,indx1,-1)
+       call construct_plt_file_driver(MyPlt,CMO,ls)
     case('LEASTL')
        write(ls%lupri,*) 'Writing plt file for the least local occupied and virtual orbitals...'
-       indx1=CFG%leastl_occ
-       indx2=CFG%leastl_virt
-       if (indx1>0) call construct_plt_file_driver('LeastLocal_occ.plt','ORB',CMO,ls,indx1,-1)
-       if (indx2>0) call construct_plt_file_driver('Leastlocal_virt.plt','ORB',CMO,ls,indx2,-1)
+       MyPlt%iorb=CFG%leastl_occ
+       Myplt%outputfile = 'LeastLocal_occ.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
+
+       MyPlt%iorb=CFG%leastl_virt
+       Myplt%outputfile = 'LeastLocal_virt.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
     case('MOSTL')
        write(ls%lupri,*) 'Writing plt file for the most local occupied and virtual orbitals...'
-       indx1=CFG%mostl_occ
-       indx2=CFG%mostl_virt
-       if (indx1>0) call construct_plt_file_driver('MostLocal_occ.plt','ORB',CMO,ls,indx1,-1)
-       if (indx2>0) call construct_plt_file_driver('Mostlocal_virt.plt','ORB',CMO,ls,indx2,-1)
+       MyPlt%iorb=CFG%mostl_occ
+       Myplt%outputfile = 'MostLocal_occ.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
+
+       Myplt%outputfile = 'MostLocal_virt.plt'
+       MyPlt%iorb=CFG%mostl_virt
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
     case('ALL')
        write(ls%lupri,*) 'Writing plt file for the least local occupied and virtual orbitals...'
-       indx1=CFG%leastl_occ
-       indx2=CFG%leastl_virt
-       if (indx1>0) call construct_plt_file_driver('LeastLocal_occ.plt','ORB',CMO,ls,indx1,-1)
-       if (indx2>0) call construct_plt_file_driver('Leastlocal_virt.plt','ORB',CMO,ls,indx2,-1)
+       MyPlt%iorb=CFG%leastl_occ
+       Myplt%outputfile = 'LeastLocal_occ.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
+
+       MyPlt%iorb=CFG%leastl_virt
+       Myplt%outputfile = 'LeastLocal_virt.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
+
        write(ls%lupri,*) 'Writing plt file for the most local occupied and virtual orbitals...'
-       indx1=CFG%mostl_occ
-       indx2=CFG%mostl_virt
-       if (indx1>0) call construct_plt_file_driver('MostLocal_occ.plt','ORB',CMO,ls,indx1,-1)
-       if (indx2>0) call construct_plt_file_driver('Mostlocal_virt.plt','ORB',CMO,ls,indx2,-1)
+       MyPlt%iorb=CFG%mostl_occ
+       Myplt%outputfile = 'MostLocal_occ.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
+
+       MyPlt%iorb=CFG%mostl_virt
+       Myplt%outputfile = 'MostLocal_virt.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
+
     case default
        write(ls%lupri,*) '========== SOMETHING WRONG WHEN MAKING .plt FILE ================'
        write(ls%lupri,*) 'None of the valid options chosen. Use the options'
