@@ -35,6 +35,7 @@ contains
     type(pltinfo),intent(in) :: MyPlt
     integer :: nocc,nrow,ncol,funit, IOS
     Type(Matrix) :: InputMat
+    logical :: file_exist
 
 
     ! Sanity check 1: Even number of electrons
@@ -48,9 +49,17 @@ contains
        call lsquit('PLT DRIVER only implemented for dense matrices!',-1)
     end if
 
+    ! Sanity check 3: Input file exists
+    inquire(file=trim(MyPlt%inputfile),exist=file_exist)
+    if(.not. file_exist) then
+       write(*,*) 'Input filename: ', trim(MyPlt%inputfile)
+       call lsquit('PLT DRIVER: Input file does not exist!',-1)
+    end if
+
 
     ! read density/orbitals
     ! *********************
+
     write(ls%lupri,*) 'PLT driver reads input file...'
     funit = 33
     OPEN(UNIT=funit,FILE=trim(MyPlt%inputfile),STATUS='OLD', &
