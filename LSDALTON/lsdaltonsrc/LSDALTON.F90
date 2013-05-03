@@ -27,8 +27,6 @@ SUBROUTINE lsdalton
   use decompMod, only: decomp_init, decomp_shutdown, decomposition, get_oao_transformed_matrices
   use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2
   use daltoninfo, only: ls_free 
-  !For making orbital .plt files
-  use print_moorb_grid_mod
   ! Debug and Testing
   use dal_interface, only: di_debug_general, di_debug_general2
   use extra_output, only: print_orbital_info2
@@ -170,7 +168,7 @@ SUBROUTINE lsdalton
 
   ! Construct PLT file
   ConstructPLT: if(config%doplt) then
-     call contruct_plt_file_driver(ls,config%plt)
+     call plt_wrapper(ls,config%plt)
   end if ConstructPLT
 
 
