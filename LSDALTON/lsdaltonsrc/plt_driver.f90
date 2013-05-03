@@ -253,7 +253,7 @@ contains
           ! Output file
           ! ==========
        case('.OUTPUT')
-          read(output,*) myplt%outputfile
+          read(input,*) myplt%outputfile
           output_spec=.true.
 
 
@@ -266,8 +266,8 @@ contains
 
     ENDDO
 
-
     100 continue
+
     ! Sanity checks
     if(.not. prop_spec) then
        call lsquit('Error in **PLOT input: Property not specified! Possible inputs: &
