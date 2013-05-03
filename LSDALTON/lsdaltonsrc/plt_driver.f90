@@ -59,12 +59,12 @@ contains
 
     ! read density/orbitals
     ! *********************
-    write(6,*) 'PLT driver reads input file...'
+    write(ls%lupri,*) 'PLT driver reads input file...'
     funit = 33
     OPEN(UNIT=funit,FILE=trim(MyPlt%inputfile),STATUS='OLD', &
          & FORM='UNFORMATTED',IOSTAT=IOS)
     READ (funit) nrow,ncol
-    write(6,*) 'Matrix size: ', nrow, ncol
+    write(ls%lupri,*) 'Matrix size: ', nrow, ncol
     call mat_init(InputMat,nrow,ncol)
     READ(funit) InputMat%elms
     CLOSE(funit,STATUS='KEEP',IOSTAT=IOS)

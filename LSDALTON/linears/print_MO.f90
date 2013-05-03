@@ -280,7 +280,7 @@ contains
     reclen=reclen*4
 #endif
 
-      OPEN (IUNIT,FILE=trim(filename),STATUS='NEW',FORM='UNFORMATTED',&
+      OPEN (IUNIT,FILE=trim(filename),STATUS='REPLACE',FORM='UNFORMATTED',&
           & ACCESS='DIRECT',RECL=reclen)
 
       WRITE(IUNIT,REC=1) int(II,4),int(TD,4),int(nZ,4),int(nY,4),int(nX,4),fZ1,fZn,fY1,fYn,fX1,fXn,moorb
@@ -378,7 +378,7 @@ contains
     reclen=(nGRIDPOINTS + 11)
     reclen=reclen*4
 
-      OPEN (IUNIT,FILE=trim(filename),STATUS='NEW',FORM='UNFORMATTED',&
+      OPEN (IUNIT,FILE=trim(filename),STATUS='REPLACE',FORM='UNFORMATTED',&
           & ACCESS='DIRECT',RECL=reclen)
 
       WRITE(IUNIT,REC=1) int(II,4),int(TD,4),int(nZ,4),int(nY,4),int(nX,4),fZ1,fZn,fY1,fYn,fX1,fXn,moorb
@@ -509,7 +509,7 @@ contains
     reclen=reclen*4
 #endif
 
-      OPEN (IUNIT,FILE=trim(filename),STATUS='NEW',FORM='UNFORMATTED',&
+      OPEN (IUNIT,FILE=trim(filename),STATUS='REPLACE',FORM='UNFORMATTED',&
           & ACCESS='DIRECT',RECL=reclen)
 
       WRITE(IUNIT,REC=1) int(II,4),int(TD,4),int(nZ,4),int(nY,4),int(nX,4),fZ1,fZn,fY1,fYn,fX1,fXn,moorb
@@ -617,7 +617,7 @@ contains
     reclen=reclen*4
 #endif
 
-      OPEN (IUNIT,FILE=trim(filename),STATUS='NEW',FORM='UNFORMATTED',&
+      OPEN (IUNIT,FILE=trim(filename),STATUS='REPLACE',FORM='UNFORMATTED',&
           & ACCESS='DIRECT',RECL=reclen)
 
 
@@ -770,7 +770,7 @@ contains
 !removed the #ifdef VAR_GFORTRAN as this is also needed for ifort. 
     reclen=reclen*4
 
-      OPEN (IUNIT,FILE=trim(filename),STATUS='NEW',FORM='UNFORMATTED',&
+      OPEN (IUNIT,FILE=trim(filename),STATUS='REPLACE',FORM='UNFORMATTED',&
           & ACCESS='DIRECT',RECL=reclen)
 
       WRITE(IUNIT,REC=1) int(II,4),int(TD,4),int(nZ,4),int(nY,4),int(nX,4),fZ1,fZn,fY1,fYn,fX1,fXn,moorb

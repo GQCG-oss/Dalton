@@ -169,13 +169,20 @@ SUBROUTINE lsdalton
   end if OnlyLoc
 
   ! Construct PLT file
-  if(config%doplt) then
+  ConstructPLT: if(config%doplt) then
      call contruct_plt_file_driver(ls,config%plt)
-  end if
+  end if ConstructPLT
+
+
+  ! Single point DEC calculation using HF restart files
+  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. .not. DECinfo%doHF) ) then
+     call dec_main_prog_file(ls)
+  endif DECcalculationHFrestart
+
 
   SkipHF: if(skipHFpart) then   ! Skip Hartree-Fock related calculations
      write(lupri,*)
-     write(lupri,*) 'Initital Hartree-Fock calculation is skipped!'
+     write(lupri,*) 'Hartree-Fock calculation is skipped!'
      write(lupri,*)
      HFdone=.false.
 
@@ -548,15 +555,9 @@ SUBROUTINE lsdalton
   WRITE(LUPRI,'("Total no. of Fock/KS matrix evaluations:  ",I10)') ls%input%nfock
   if (mem_monitor) WRITE(LUPRI,'("Max no. of matrices allocated in Level 3: ",I10)') max_no_of_matrices
 
-
-  ! Single point DEC calculation using HF restart files
-  ! ***************************************************
-  DECcalculationHFrestart: if (.not. HFdone) then
-     IF(DECinfo%doDEC) then
-        call dec_main_prog_file(ls)
-     ENDIF
+  if(.not. HFdone) then  ! ensure there's no memory leak when HF calc was skipped
      call config_shutdown(config)
-  endif DECcalculationHFrestart
+  end if
   call config_free(config)
 
   call ls_free(ls)
