@@ -69,13 +69,13 @@ program gridgen
      call getarg(4,arg)
      read(arg,*) iorb
      call print_moorb(trim(outputfile),'DPLT',CMO,ls,iorb,-1)
-  case('DEPLT')
+  case('DENS')
      write(6,*) 'Writing density distribution plt file...'
-     call print_moorb(trim(outputfile),'DEPLT',CMO,ls,-1,-1)
+     call print_moorb(trim(outputfile),'DENS',CMO,ls,-1,-1)
   case('EP')
      write(6,*) 'Writing electrostatic potential plt file...'
      call print_moorb(trim(outputfile),'EP',CMO,ls,-1,-1)
-  case('PLT')
+  case('ORB')
 
      call mat_init(S,nrow,ncol)
      CALL II_get_overlap(ls%lupri,ls%luerr,ls%setting,S)
@@ -97,14 +97,14 @@ program gridgen
      write(6,*) 'Writing plt file...'
      call getarg(4,arg)
      read(arg,*) iorb
-     call print_moorb(trim(outputfile),'PLT',CMO,ls,iorb,-1)
-  case('CHPLT')
+     call print_moorb(trim(outputfile),'ORB',CMO,ls,iorb,-1)
+  case('CHARGEDIST')
      write(6,*) 'Writing charge distribution plt file...'
      call getarg(4,arg)
      read(arg,*) iorb
      call getarg(5,arg)
      read(arg,*) jorb
-     call print_moorb(trim(outputfile),'CHPLT',CMO,ls,iorb,jorb)
+     call print_moorb(trim(outputfile),'CHARGEDIST',CMO,ls,iorb,jorb)
   case default
      print *, 'Input: ', trim(frmt)
      stop 'Gridgen: Input keyword not recognized!'

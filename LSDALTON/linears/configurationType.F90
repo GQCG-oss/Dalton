@@ -5,7 +5,7 @@
 !> \author S. Host and T. Kjaergaard
 !> \date March 2010
 module configurationType
-use TYPEDEFTYPE, only: lsitem
+use TYPEDEFTYPE
 use profile_type, only: profileinput
 use av_utilities, only: AVitem
 use diagonalization, only: DiagItem
@@ -101,6 +101,11 @@ type ConfigItem
    type(geoHessianconfig) :: geoHessian
    !> Should a excited state geometry optimization be performed 
    logical              :: doESGopt
+   !> Skip LSDALTON calculation and calculate PLT file from existing density
+   !> or orbital file (see type pltinfo)
+   logical  :: DoPLT
+   !> Information about PLT calculation (only used if doPLT=true)
+   type(pltinfo) :: PLT
 end type ConfigItem
 
 type LowAccuracyStartType
