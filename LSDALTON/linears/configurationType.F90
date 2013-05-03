@@ -9,7 +9,7 @@ use TYPEDEFTYPE
 use profile_type, only: profileinput
 use av_utilities, only: AVitem
 use diagonalization, only: DiagItem
-use typedeftype, only: moleculeinfo, integralconfig, basissetlibraryitem, geoHessianConfig
+use typedeftype
 use opttype, only: OptItem
 use response_wrapper_type_module, only: MCDinputitem, ALPHAinputitem, BETAinputitem, &
      & GAMMAinputitem, TPAinputitem, DTPAinputitem, ESGinputitem, ESDinputitem, &
