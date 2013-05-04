@@ -394,7 +394,7 @@ SUBROUTINE lsdalton
               write(ls%lupri,'(a)')'Pred= **** LEVEL 3 ORBITAL LOCALIZATION ****'
               call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
 	      if (config%davidOrbLoc%make_orb_plot) then
-                 call make_orbitalplot_file(CMO,config%davidOrbLoc,ls)
+                 call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
 	      end if
            end if
            ! write LCM orbitals
