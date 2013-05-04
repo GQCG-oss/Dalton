@@ -1429,7 +1429,7 @@ C
                BTMP = QRFFRQ(IQRF,1)
                CTMP = QRFFRQ(IQRF,2)
             END IF
-            WRITE(LUPRI,'(I3,3A10,3F10.6,2F16.6)') IQRF,
+            WRITE(LUPRI,'(I4,3A10,3F10.6,2F16.6)') IQRF,
      &            (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3),
      &            RES_BETA(IQRF,2),RES_BETA(IQRF,1)
 C
@@ -2283,7 +2283,7 @@ C
      & ' frequencies:'
          WRITE(LUPRI,'(/A,5(4F12.8,/,9X))')
      &        ' LR FREQ:',(ABS_FREQ_ALPHA(I),I=1,ABS_NFREQ_ALPHA)
-         WRITE (LUPRI,'(/A,I4,A)')
+         WRITE (LUPRI,'(/A,I5,A)')
      & ' and the evaluation of',NQRF,' quadratic response functions:'
          WRITE(LUPRI,'(/2A,/A3,6A12,/2A)')
      &        '--------------------------------------',
@@ -2293,7 +2293,7 @@ C
      &        '--------------------------------------',
      &        '-------------------------------------'
          DO IQRF=1,NQRF
-            WRITE(LUPRI,'(I3,3A12,3F12.8)') IQRF,
+            WRITE(LUPRI,'(I4,3A12,3F12.8)') IQRF,
      &           (QRFLAB(IQRF,I), I=1,3),(QRFFRQ(IQRF,I), I=1,3)
          END DO
          WRITE(LUPRI,'(2A)')
