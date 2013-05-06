@@ -341,7 +341,6 @@ contains
     integer                        :: I, J, nATOMS,nrow,ncol
     real(4), allocatable       :: ATOMXYZ(:,:)
     type(matrix) :: S,tmpMat,tmpMat2
-    real(4) :: deltax,deltay,deltaz,mybuffer
 
     nrow = InputMat%nrow
     ncol=InputMat%ncol
@@ -356,9 +355,7 @@ contains
        ENDDO
     ENDDO
 
-    MyPlt%gridbox_defined=.true.
 
-    
     ! CHOICE OF GRIDBOX
     ! ******************
     if(MyPLt%gridbox_defined) then ! gridbox was defined by input
@@ -378,8 +375,8 @@ contains
        write(ls%lupri,*) 'Using molecule-specific PLT gridbox with default parameters'
        ! Distance of 0.3 a.u. between grid points
        MyPlt%deltax = 0.3_4
-       MyPlt%deltay = deltax
-       MyPlt%deltaz = deltax
+       MyPlt%deltay = MyPlt%deltax
+       MyPlt%deltaz = MyPlt%deltax
        ! Buffer zone of 6 a.u. around molecule (see details in DETERMINE_GRIDBOX)
        MyPlt%buffer = 6.0_4
        call DETERMINE_GRIDBOX(natoms,ATOMXYZ,MyPlt)
@@ -389,6 +386,12 @@ contains
     write(ls%lupri,'(a,3g20.10)') 'deltax,deltay,deltaz: ', MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
     write(ls%lupri,'(a,3i16)') 'nX,nY,nZ: ', MyPlt%nX, MyPlt%nY, MyPlt%nZ 
     write(ls%lupri,'(a,i16)') 'Number of gridpoints: ', MyPlt%nGRIDPOINTS
+
+
+    ! Sanity check
+    if(MyPlt%nGRIDPOINTS==0) then
+       call lsquit('Zero gridpoints: Cannot construct PLT file!',-1)
+    end if
 
     ! Which calculation?
     ! ******************
