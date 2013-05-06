@@ -630,6 +630,9 @@ type pltinfo
    integer :: iorb
    !> Index for second orbital in charge distribution (only used for CHARGEDIST)
    integer :: jorb
+   !> Run test case (in this special case the HF calculation is run before PLT driver
+   !> so there is something to be tested...)
+   logical :: test
 
    !> Information for gridbox
    !> ***********************
