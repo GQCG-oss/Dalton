@@ -120,16 +120,19 @@ contains
     MyPlt%X1=0.0
     MyPlt%Y1=0.0
     MyPlt%Z1=0.0
+    MyPlt%buffer=0.0
     MyPlt%gridbox_defined=.false.
+    MyPlt%manual_gridbox=.false.
+    MyPlt%test=.false.
 
   end subroutine pltinfo_set_default_config
 
 
 
-  !> \brief Read the **DEC or **CC input section in DALTON.INP and set 
-  !> configuration structure accordingly.
+  !> \brief Read the **PLT section and set the PLT structure accordingly.
+  !> Note: The gridbox information of the plt structure is not set here but in config_pltgrid_input.
   !> \author Kasper Kristensen
-  !> \date September 2010
+  !> \date May 2013
   SUBROUTINE config_plt_input(input,output,readword,word,myplt)
     implicit none
     !> Logical for keeping track of when to read
@@ -214,6 +217,11 @@ contains
           read(input,*) myplt%outputfile
           output_spec=.true.
 
+          ! Run test case
+          ! =============
+       case('.TESTPLT')
+          myplt%test=.true.
+
 
        CASE DEFAULT
           WRITE (output,'(/,3A,/)') ' Keyword "',WORD,&
@@ -228,18 +236,94 @@ contains
 
     ! Sanity checks
     if(.not. prop_spec) then
-       call lsquit('Error in **PLOT input: Property not specified! Possible inputs: &
+       call lsquit('Error in **PLT input: Property not specified! Possible inputs: &
             & .DENS  .EP  .ORB  .CHARGEDIST ',-1) 
     end if
     if(.not. input_spec) then
-       call lsquit('Error in **PLOT input: Input file not specified using .INPUT',-1)
+       call lsquit('Error in **PLT input: Input file not specified using .INPUT',-1)
     end if
     if(.not. output_spec) then
-       call lsquit('Error in **PLOT input: Output file not specified using .OUTPUT',-1)
+       call lsquit('Error in **PLT input: Output file not specified using .OUTPUT',-1)
     end if
 
 
   END SUBROUTINE config_plt_input
+
+
+
+  !> \brief Read the **PLTGRID section and set gridbox related information of the PLT structure
+  !> (nX,nY,nZ,nGRIDPOINTS,deltax,deltay,deltaz,X1,Y1,Z1,gridbox_defined) accordingly.
+  !> \author Kasper Kristensen
+  !> \date May 2013
+  SUBROUTINE config_pltgrid_input(input,output,readword,word,myplt)
+    implicit none
+    !> Logical for keeping track of when to read
+    LOGICAL,intent(inout)                :: READWORD
+    !> Logical unit number for DALTON.INP
+    integer,intent(in) :: input
+    !> Logical unit number for LSDALTON.OUT
+    integer,intent(in) :: output
+    !> Word read from input
+    character(len=80),intent(inout) :: word
+    !> PLT info
+    type(pltinfo),intent(inout) :: myplt
+
+    ! Grid box has been defined by input
+    MyPlt%gridbox_defined=.true.
+
+    ! There are two possible allowed input forms:
+    !
+    ! 1. Manually defined gridbox (see type pltinfo for definition of these quantities):
+    ! **PLTGRID
+    ! .MANUAL
+    ! X1 Y1 Z1
+    ! deltax deltay deltaz
+    ! nX nY nZ
+    !
+    ! 2. Molecule-adapted gridbox (see DETERMINE_GRIDBOX)
+    ! **PLTGRID
+    ! .MOLECULE
+    ! buffer 
+    ! deltax deltay deltaz
+
+    ! First word should be either .MANUAL or .MOLECULE
+    READ (input, '(A80)') WORD
+    if(trim(word)=='.MANUAL') then
+       MyPlt%manual_gridbox=.true.   ! manually defined gridbox
+    elseif(trim(word)=='.MOLECULE') then
+       MyPlt%manual_gridbox=.false.
+    else
+       call lsquit('Line following **PLTGRID must be either .MANUAL or .MOLECULE. Please&
+            & consult manual!',-1)
+    end if
+
+    if(MyPlt%manual_gridbox) then
+       read(input,*) MyPlt%X1, MyPlt%Y1, MyPlt%Z1
+       read(input,*) MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
+       read(input,*) MyPlt%nX, MyPlt%nY, MyPlt%nZ
+       ! Number of gridpoints
+       MyPlt%nGRIDPOINTS=MyPlt%nX*MyPlt%nY*MyPlt%nZ
+
+       write(output,*) 
+       write(output,*) 'Manual gridbox parameters are:'
+       write(output,'(a,3g16.5)') 'X1,Y1,Z1: ', MyPlt%X1, MyPlt%Y1, MyPlt%Z1
+       write(output,'(a,3g16.5)') 'deltax,deltay,deltaz: ', MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
+       write(output,'(a,3i16)') 'nX,nY,nZ: ', MyPlt%nX, MyPlt%nY, MyPlt%nZ 
+       write(output,'(a,i16)') 'Number of gridpoints: ', MyPlt%nGRIDPOINTS
+       write(output,*) 
+    else
+       read(input,*) MyPlt%buffer
+       read(input,*) MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
+       write(output,*) 
+       write(output,*) 'Molecule specific gridbox parameters are:'
+       write(output,'(a,g16.5)') 'buffer: ', MyPlt%buffer
+       write(output,'(a,3g16.5)') 'deltax,deltay,deltaz: ', MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
+       write(output,*) 
+
+    end if
+
+  END SUBROUTINE config_pltgrid_input
+
 
 
   !> \brief Driver for creating PLT files of orbitals, densities, electrostatic potentials etc.
@@ -257,7 +341,6 @@ contains
     integer                        :: I, J, nATOMS,nrow,ncol
     real(4), allocatable       :: ATOMXYZ(:,:)
     type(matrix) :: S,tmpMat,tmpMat2
-    real(4) :: deltax,deltay,deltaz,mybuffer
 
     nrow = InputMat%nrow
     ncol=InputMat%ncol
@@ -273,18 +356,42 @@ contains
     ENDDO
 
 
-    ! Grid box: If it has not been explicitly defined, use default box
-    ! ****************************************************************
-    if(.not. MyPLt%gridbox_defined) then
-       ! Distance of 0.3 a.u. between grid points
-       deltax = 0.3_4
-       deltay = deltax
-       deltaz = deltax
-       ! Buffer zone of 6 a.u. around molecule (see details in DETERMINE_GRIDBOX)
-       mybuffer = 6.0_4
-       call DETERMINE_GRIDBOX(natoms,ATOMXYZ,deltax,deltay,deltaz,mybuffer,MyPlt)
-    end if
+    ! CHOICE OF GRIDBOX
+    ! ******************
+    if(MyPLt%gridbox_defined) then ! gridbox was defined by input
 
+       if(MyPlt%manual_gridbox) then
+          ! Manually defined gridbox, all parameters were set by input
+          write(ls%lupri,*) 'Using PLT gridbox defined manually by input'
+       else
+          ! Molecule-specific gridbox
+          ! deltax,deltay,deltaz, and buffer defined by input.
+          write(ls%lupri,*) 'Using molecule-specific PLT gridbox defined by input'
+          call DETERMINE_GRIDBOX(natoms,ATOMXYZ,MyPlt)
+       end if
+
+    else ! gridbox not defined by input, use default molecule-specific gridbox
+
+       write(ls%lupri,*) 'Using molecule-specific PLT gridbox with default parameters'
+       ! Distance of 0.3 a.u. between grid points
+       MyPlt%deltax = 0.3_4
+       MyPlt%deltay = MyPlt%deltax
+       MyPlt%deltaz = MyPlt%deltax
+       ! Buffer zone of 6 a.u. around molecule (see details in DETERMINE_GRIDBOX)
+       MyPlt%buffer = 6.0_4
+       call DETERMINE_GRIDBOX(natoms,ATOMXYZ,MyPlt)
+    end if
+    write(ls%lupri,*) 'Gridbox parameters are:'
+    write(ls%lupri,'(a,3g20.10)') 'X1,Y1,Z1: ', MyPlt%X1, MyPlt%Y1, MyPlt%Z1
+    write(ls%lupri,'(a,3g20.10)') 'deltax,deltay,deltaz: ', MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
+    write(ls%lupri,'(a,3i16)') 'nX,nY,nZ: ', MyPlt%nX, MyPlt%nY, MyPlt%nZ 
+    write(ls%lupri,'(a,i16)') 'Number of gridpoints: ', MyPlt%nGRIDPOINTS
+
+
+    ! Sanity check
+    if(MyPlt%nGRIDPOINTS==0) then
+       call lsquit('Zero gridpoints: Cannot construct PLT file!',-1)
+    end if
 
     ! Which calculation?
     ! ******************
@@ -345,8 +452,57 @@ contains
     end select
 
     deallocate(ATOMXYZ)
+
+    ! Tets calculate grid points
+    if(MyPlt%test) then
+       call plt_test_suite(MyPlt,ls%lupri)
+    end if
+
   end subroutine construct_plt_file_driver
 
+  
+  !> \brief Test PLT driver.
+  !> \author Kasper Kristensen
+  !> \date May 2013
+  subroutine plt_test_suite(MyPlt,lupri)
+    implicit none
+    !> Information about which PLT information to calculation (see type pltinfo)
+    type(pltinfo),intent(inout) :: MyPlt
+    !> LSDALTON.OUT unit number
+    integer,intent(in) :: lupri
+    integer :: iunit
+    integer(4) :: II,TD,reclen,nX,nY,nZ,i
+    real(4) :: Z1,Zn,Y1,Yn,X1,Xn
+    real(4),pointer :: values(:)
+
+    write(lupri,*) 'Testing PLT driver...'
+
+    !> Read in file generated by PLT driver
+    IUNIT=111
+    reclen=(MyPlt%nGRIDPOINTS + 11)
+    reclen=reclen*4
+    allocate(values(MyPlt%ngridpoints))
+
+    OPEN (IUNIT,FILE=trim(MyPlt%outputfile),STATUS='OLD',FORM='UNFORMATTED',&
+         & ACCESS='DIRECT',RECL=reclen)
+    READ(IUNIT,REC=1) II,TD,nZ,nY,nX,Z1,Zn,Y1,Yn,X1,Xn,values
+    CLOSE(IUNIT,STATUS='KEEP')
+
+    ! Check that number of points in X,Y,Z directions are consistent with PLT structure
+    if(MyPlt%nX/=nX .or. MyPlt%nY/=nY .or. MyPlt%nZ/=nZ) then
+       print *, 'Plt structure : ', MyPlt%nX, MyPlt%nY, MyPlt%nZ
+       print *, 'Read from file: ', nX, nY, nZ
+       call lsquit('plt_test_suite: Something wrong number of grid points!',-1)
+    end if
+
+    ! Calculate sum of values and min/max values
+    write(lupri,*) 'PLT TEST: Sum of values = ', sum(values)
+    write(lupri,*) 'PLT TEST: Minimum value = ', minval(values)
+    write(lupri,*) 'PLT TEST: Maximum value = ', maxval(values)
+    deallocate(values)
+
+
+  end subroutine plt_test_suite
 
   !> \brief Calculates charge distribution between two orbitals at grid points.
   !> KK: Whoever is responsible, please document this properly!
@@ -909,14 +1065,14 @@ contains
        write(ls%lupri,*) 'None of the valid options chosen. Use the options'
        write(ls%lupri,*) ' HOMO,LUMO,MOSTL,LEASTL or ALL below keyword .ORBITAL PLOT'
        write(ls%lupri,*) ' If you want to plot other than the above orbitals, consider using'
-       write(ls%lupri,*) ' **PLOT option where you may specify any orbital index.'
+       write(ls%lupri,*) ' **PLT option where you may specify any orbital index.'
        write(ls%lupri,*) '================================================================='
 
        write(*,*) '========== SOMETHING WRONG WHEN MAKING .plt FILE ================'
        write(*,*) 'None of the valid options chosen. Use the options'
        write(*,*) ' HOMO,LUMO,MOSTL,LEASTL or ALL below keyword .ORBITAL PLOT'
        write(*,*) ' If you want to plot other than the above orbitals, consider using'
-       write(*,*) ' **PLOT option where you may specify any orbital index.'
+       write(*,*) ' **PLT option where you may specify any orbital index.'
        write(*,*) '================================================================='
     end select
 
