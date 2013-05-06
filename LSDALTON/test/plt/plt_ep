@@ -17,58 +17,48 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > fullccsd_high.info <<'%EOF%'
-   DEC-CCSD energy for full molecule
-   --------------------------------
-   Molecule:         HF
-   Wave Function:    CCSD / cc-pVDZ
-   Test Purpose:     Test full molecule CCSD energy using DEC program (Kasper K)
+cat > plt_ep.info <<'%EOF%'
+   Electrostatic potential using PLT driver
+   ----------------------------------------
+   Molecule:         H2O
+   Wave Function:    HF / 3-21G
+   Test Purpose:     Test construction of PLT file for electrostatic potential (KK)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > fullccsd_high.mol <<'%EOF%'
+cat > plt_ep.mol <<'%EOF%'
 BASIS
-cc-pVDZ
+3-21G
 
 
-Atomtypes=2  Angstrom Nosymmetry
-Charge=9.0 Atoms=1
-F         -0.17632        0.11634       -1.09866
-Charge=1.0 Atoms=1
-H          0.70368        0.11634       -1.09866
+Atomtypes=2    Charge=0   Nosymmetry
+Charge=1.00   Atoms=2    
+H          0.09976190      1.47254919     -0.88247375
+H          0.20473356     -1.47539463     -0.88479802
+Charge=8.00   Atoms=1    
+O          0.29550454      0.00284544      0.18457177
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > fullccsd_high.dal <<'%EOF%'
+cat > plt_ep.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.FORCEGCBASIS
-.ARH
+.ARH DAVID
 .START
 TRILEVEL
-.CONVTHR
-1.0d-5
-$INFO
-DEBUG_MPI_MEM
-$END INFO
-**DEC
-!.mixedCCSD
-.FrozenCore
-.MPIsplit
-0
-.manual_batchsizes
-19 19
-.CCSDforce_scheme
-4
-.SimulateFull
-.CCSD
-.CCSDsovler_serial
-.ccThr
-1e-9
+.CONVDYN
+TIGHT
+**PLT
+.TESTPLT
+.EP
+.INPUT
+dens.restart
+.OUTPUT
+ep.plt
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -80,8 +70,8 @@ $END INFO
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >fullccsd_high.check
-cat >>fullccsd_high.check <<'%EOF%'
+echo $CHECK_SHELL >plt_ep.check
+cat >>plt_ep.check <<'%EOF%'
 
 log=$1
 
@@ -92,32 +82,43 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Final HF energy: * \-99\.893559" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-75\.5859597" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# CCSD ENERGY
-CRIT1=`$GREP "Correlation energy  : * \-0\.20526[3-4]" $log | wc -l`
+# Sum of calculated PLT grid points
+CRIT1=`$GREP "PLT TEST: Sum of values = * 1025\.9" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="CCSD correlation energy is not correct"
+ERROR[2]="Sum of electrostatic gridpoints is not correct"
 
+# Minimum grid point value
+CRIT1=`$GREP "PLT TEST: Minimum value = *\-0\.1415" $log | wc -l`
+TEST[3]=`expr   $CRIT1`
+CTRL[3]=1
+ERROR[3]="Min electrostatic gridpoint value is not correct"
+
+# Maximum grid point value
+CRIT1=`$GREP "PLT TEST: Maximum value = *30\.86" $log | wc -l`
+TEST[4]=`expr   $CRIT1`
+CTRL[4]=1
+ERROR[4]="Max electrostatic gridpoint value is not correct"
 
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
-TEST[3]=`expr  $CRIT1`                                                    
-CTRL[3]=1                                                                 
-ERROR[3]="Memory leak -"
-                                                                          
-# Memory test for array4                                                  
-CRIT1=`$GREP "Memory in use for array4 * \: * 0.000 * GB" $log | wc -l`   
-TEST[4]=`expr  $CRIT1`                                                    
-CTRL[4]=1                                                                 
-ERROR[4]="Memory leak for array4 -" 
+TEST[5]=`expr  $CRIT1`                                                    
+CTRL[5]=1                                                                 
+ERROR[5]="Memory leak -"
+
+# MPI Memory test
+CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
+TEST[6]=`expr  $CRIT1`
+CTRL[6]=0
+ERROR[6]="MPI Memory leak -"
 
 PASSED=1
-for i in 1 2 3 4
+for i in 1 2 3 4 5 6
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
