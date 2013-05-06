@@ -44,6 +44,7 @@ use IntegralInterfaceMOD, only: ii_get_nucpot
 use ks_settings, only: ks_free_incremental_fock
 use memory_handling, only: mem_alloc,mem_dealloc
 use dft_typetype
+use plt_driver_module
 #ifdef VAR_LSMPI
 use infpar_module
 use lsmpi_mod
@@ -116,6 +117,10 @@ implicit none
   config%noDecEnergy = .false.
   call prof_set_default_config(config%prof)
   call pbc_setup_default(config%latt_config)
+  ! PLT info
+  call pltinfo_set_default_config(config%Plt)
+  config%doplt=.false.
+  
 #ifdef VAR_LSMPI
   infpar%inputBLOCKSIZE = 0
 #endif
@@ -193,7 +198,7 @@ INTEGER            :: LUPRI
 type(ConfigItem), intent(inout) :: config
 INTEGER            :: LUCMD !Logical unit number for the daltoninput
 INTEGER            :: IDUMMY,IPOS,IPOS2,COUNTER
-character(len=80)  :: WORD
+character(len=80)  :: WORD,TMPWORD
 character(len=2)   :: PROMPT
 LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS
 !LINSCA variables:
@@ -333,9 +338,7 @@ DO
                      IF(.NOT.USEXCFUN)THEN
                         CALL II_DFTsetFunc(WORD,hfweight)
                      ELSE
-                        print*,'II_DFTsetFunc'
                         CALL II_DFTsetFunc(WORD,hfweight)
-                        print*,'xcfun_host_init'
                         call xcfun_host_init(WORD,hfweight,lupri)
                      ENDIF
                      config%integral%exchangeFactor = hfweight
@@ -717,6 +720,24 @@ DO
       config%doDEC = .true.
       call config_dec_input(lucmd,config%lupri,readword,word,.true.)
    END IF CCinput
+
+
+   ! Input for PLT plotting: Calculate density, orbital, etc. at grid points in space based on
+   ! density or orbital matrix file from previous LSDALTON calculation.
+   ! This will overrule all other inputs and an LSDALTON calculation as such will not be carried out!
+   ! Note: The gridbox information of the plt structure is not set here but in the **GRID section.
+   PLTinput: IF (WORD(1:5) == '**PLT') THEN
+      READWORD=.TRUE.
+      config%doPLT = .true.
+      call config_plt_input(lucmd,config%lupri,readword,word,config%plt)
+   END IF PLTinput
+
+   ! Input for PLT gridbox: Set gridbox related info for PLT structure 
+   ! (nX,nY,nZ,nGRIDPOINTS,deltax,deltay,deltaz,X1,Y1,Z1,gridbox_defined)
+   PLTGRIDinput: IF (WORD(1:9) == '**PLTGRID') THEN
+      READWORD=.TRUE.
+      call config_pltgrid_input(lucmd,config%lupri,readword,word,config%plt)
+   END IF PLTGRIDinput
 
 
 !   

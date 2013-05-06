@@ -4025,6 +4025,7 @@ contains
     integer(kind=8),intent(in) :: nelms
     real(realk) :: rbuffer(nelms)
     integer,intent(in) :: split
+#ifdef VAR_LSMPI
     integer(kind=8) :: n,i
     integer(kind=8) :: n1,n2
     n2 = int(split,kind=8)
@@ -4034,12 +4035,14 @@ contains
       if(((nelms-i)<split).and.(mod(n1,n2)/=0))n=mod(nelms,split)
       call lsmpi_local_allreduce_D1N8(rbuffer(i:i+n-1),n)
     enddo
+#endif
   end subroutine lsmpi_local_allreduce_D1N8_parts
   subroutine lsmpi_local_allreduce_D1N4_parts(rbuffer,nelms,split)
     implicit none
     integer(kind=4),intent(in) :: nelms
     real(realk) :: rbuffer(nelms)
     integer,intent(in) :: split
+#ifdef VAR_LSMPI
     integer(kind=8) :: n,i
     integer(kind=8) :: n1,n2
     n2 = int(split,kind=8)
@@ -4049,6 +4052,7 @@ contains
       if(((nelms-i)<split).and.(mod(n1,n2)/=0))n=mod(nelms,split)
       call lsmpi_local_allreduce_D1N8(rbuffer(i:i+n-1),n)
     enddo
+#endif
   end subroutine lsmpi_local_allreduce_D1N4_parts
   subroutine lsmpi_local_allreduce_D1N8(rbuffer,n)
     implicit none
@@ -4201,6 +4205,7 @@ contains
     real(realk) :: rbuffer(nelms)
     integer(kind=ls_mpik) :: master
     integer,intent(in) :: split
+#ifdef VAR_LSMPI
     integer(kind=8) :: n,i,n1,n2
     n2 = split
     do i=1,nelms,split
@@ -4210,6 +4215,7 @@ contains
         &(mod(n1,n2)/=0))n=mod(nelms,split)
       call lsmpi_local_reduction_realkVN8(rbuffer(i:i+n-1),n,master)
     enddo
+#endif
   end subroutine lsmpi_local_reduction_realkVN8_parts
   subroutine lsmpi_local_reduction_realkVN4_parts(rbuffer,nelms,master,split)
     implicit none
@@ -4217,6 +4223,7 @@ contains
     real(realk) :: rbuffer(nelms)
     integer(kind=ls_mpik) :: master
     integer,intent(in) :: split
+#ifdef VAR_LSMPI
     integer(kind=8) :: n,i,n1,n2
     n2 = split
     do i=1,nelms,split
@@ -4226,6 +4233,7 @@ contains
         &(mod(n1,n2)/=0))n=mod(nelms,split)
       call lsmpi_local_reduction_realkVN8(rbuffer(i:i+n-1),n,master)
     enddo
+#endif
   end subroutine lsmpi_local_reduction_realkVN4_parts
   ! MPI reduction within local group (infpar%lg_comm communicator)
   subroutine lsmpi_local_reduction_realkVN8(buffer,n,master)

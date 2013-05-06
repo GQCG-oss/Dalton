@@ -114,12 +114,26 @@
      !> Should contain name of routine from which my_DSYGV is called
      character(20),     INTENT(IN)    :: desc
      !
+#ifdef VAR_LSESSL
+     integer :: ifail(N),iwrk(5*N),nfound
+     real(realk) :: no_ref,tol
+     real(realk), external :: DLAMCH
+     real(realk) :: Z(N,N)
+#endif
      real(realk),allocatable :: wrk(:)
      integer    :: ierr,lwrk
      ierr=0
      allocate(wrk(5))
      lwrk = -1
+#ifdef VAR_LSESSL
+     no_ref=0.0E0_realk
+     tol = 2*DLAMCH('S')
+     call DSYGVX( 1,'V','A','L', N, A, N, B, N, no_ref,no_ref,no_ref,&
+      &no_ref,tol,nfound,eigval, Z, N, wrk, lwrk, iwrk, ifail, ierr)
+     A=Z
+#else
      call DSYGV(1,'V','L',N,A,N,B,N,eigval,wrk,lwrk,ierr)
+#endif 
      if(ierr.ne. 0) THEN
         print *, "DSYGV failed, N = ",N," ierr=", ierr," IN ", DESC
         stop "programming error in my_DSYGV input. workarray inquiry"
@@ -127,7 +141,13 @@
      lwrk = NINT(wrk(1))
      deallocate(wrk)
      allocate(wrk(lwrk))
+#ifdef VAR_LSESSL
+     call DSYGVX( 1,'V','A','L', N, A, N, B, N, no_ref,no_ref,no_ref,&
+      &no_ref,tol,nfound,eigval, Z, N, wrk, lwrk, iwrk, ifail, ierr)
+     A=Z
+#else
      call DSYGV(1,'V','L',N,A,N,B,N,eigval,wrk,lwrk,ierr)
+#endif 
      if(ierr.ne. 0) THEN
         print *, "DSYGV failed, N = ",N," ierr=", ierr," IN ", DESC
         stop "programming error in my_DSYGV input."

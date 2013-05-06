@@ -17,52 +17,48 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > decmp2_density.info <<'%EOF%'
-   DEC-MP2 density matrix using frozen core
+cat > plt_ep.info <<'%EOF%'
+   Electrostatic potential using PLT driver
    ----------------------------------------
-   Molecule:         C2H4
-   Wave Function:    MP2 / 6-31G
-   Test Purpose:     Calculate DEC-MP2 energy and density matrix (Kasper K)
+   Molecule:         H2O
+   Wave Function:    HF / 3-21G
+   Test Purpose:     Test construction of PLT file for electrostatic potential (KK)
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > decmp2_density.mol <<'%EOF%'
+cat > plt_ep.mol <<'%EOF%'
 BASIS
 3-21G
 
 
-Atomtypes=2 Charge=0 Nosymmetry Angstrom 
-Charge=6.0 Atoms=2
-C          0.65790       -0.00446        0.06398
-C         -0.65783        0.00446       -0.06385
-Charge=1.0 Atoms=4
-H          1.16103        0.06607        1.02388
-H          1.33519       -0.08301       -0.78143
-H         -1.33549        0.08301        0.78127
-H         -1.16080       -0.06606       -1.02386
+Atomtypes=2    Charge=0   Nosymmetry
+Charge=1.00   Atoms=2    
+H          0.09976190      1.47254919     -0.88247375
+H          0.20473356     -1.47539463     -0.88479802
+Charge=8.00   Atoms=1    
+O          0.29550454      0.00284544      0.18457177
 %EOF%
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > decmp2_density.dal <<'%EOF%'
+cat > plt_ep.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.ARH
+.ARH DAVID
 .START
 TRILEVEL
 .CONVDYN
 TIGHT
-$INFO
-DEBUG_MPI_MEM
-$END INFO
-**DEC
-.FROZENCORE
-.DENSITY
-.FOT
-5
+**PLT
+.TESTPLT
+.EP
+.INPUT
+dens.restart
+.OUTPUT
+ep.plt
 *END OF INPUT
 %EOF%
 #######################################################################
@@ -74,8 +70,8 @@ $END INFO
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >decmp2_density.check
-cat >>decmp2_density.check <<'%EOF%'
+echo $CHECK_SHELL >plt_ep.check
+cat >>plt_ep.check <<'%EOF%'
 
 log=$1
 
@@ -86,28 +82,28 @@ else
 fi
 
 # HF ENERGY 
-CRIT1=`$GREP "Final HF energy: * \-77\.60012314" $log | wc -l`
+CRIT1=`$GREP "Final HF energy: * \-75\.5859597" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
-# Total correlation energy 
-CRIT1=`$GREP "Correlation energy  \: * \-0.1805" $log | wc -l`
+# Sum of calculated PLT grid points
+CRIT1=`$GREP "PLT TEST: Sum of values = * 1025\.9" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
-ERROR[2]="Total MP2 Lagrangian correlation energy is not correct"
+ERROR[2]="Sum of electrostatic gridpoints is not correct"
 
-# Number of electrons for Hartree-Fock state
-CRIT1=`$GREP "HF state \: Number of electrons = * 16.000000" $log | wc -l`
+# Minimum grid point value
+CRIT1=`$GREP "PLT TEST: Minimum value = *\-0\.1415" $log | wc -l`
 TEST[3]=`expr   $CRIT1`
 CTRL[3]=1
-ERROR[3]="Total number of electrons for Hartree-Fock state is not correct"
+ERROR[3]="Min electrostatic gridpoint value is not correct"
 
-# Number of electrons for MP2 state
-CRIT1=`$GREP "MP2 state\: Number of electrons = * 1[5-6].[0-9]" $log | wc -l`
+# Maximum grid point value
+CRIT1=`$GREP "PLT TEST: Maximum value = *30\.86" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
-ERROR[4]="Total number of electrons for MP2 state is not correct"
+ERROR[4]="Max electrostatic gridpoint value is not correct"
 
 # Memory test for total memory                                             
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`         
@@ -115,20 +111,14 @@ TEST[5]=`expr  $CRIT1`
 CTRL[5]=1                                                                 
 ERROR[5]="Memory leak -"
 
-# Memory test for array4                                                  
-CRIT1=`$GREP "Memory in use for array4 * \: * 0.000 * GB" $log | wc -l`   
-TEST[6]=`expr  $CRIT1`                                                    
-CTRL[6]=1                                                                 
-ERROR[6]="Memory leak for array4 -" 
-
 # MPI Memory test
 CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
-TEST[7]=`expr  $CRIT1`
-CTRL[7]=0
-ERROR[7]="MPI Memory leak -"
+TEST[6]=`expr  $CRIT1`
+CTRL[6]=0
+ERROR[6]="MPI Memory leak -"
 
 PASSED=1
-for i in 1 2 3 4 5 6 7
+for i in 1 2 3 4 5 6
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}

@@ -20,6 +20,7 @@ option(ENABLE_LOCAL_DISKS    "Enable local disks"              OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking" OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"          ON)
 option(ENABLE_TEST_RELEASE_MODE "Test release mode which undefines MOD_UNRELEASED" OFF)
+option(ENABLE_ALWAYS_RESET_EXTERNAL_BUILDS "Always remove builds stamps of external projects" OFF)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}

@@ -15,6 +15,8 @@ use IIABSVALINT
   use Integralparameters,only: LSMPI_IIDFTKSM,IIDFTGEO,IIDFTLIN,IIDFTQRS,&
        & IIDFTMAG,IIDFTMAL,IIDFTGKS,IIDFTGLR,LSMPI_IIDFTKSME
 #endif
+  use xcfun_host,only: xcfun_type_gga,xcfun_type_lda,xcfun_type_metagga,&
+       & xcfun_host_set_order, USEXCFUN
 CONTAINS
 !> \brief main kohn-sham matrix driver
 !> \author T. Kjaergaard
@@ -47,14 +49,13 @@ LOGICAL :: UNRES
 !
 INTEGER          :: I,J,KMAX,natoms,MXPRIM
 REAL(REALK)      :: AVERAG,ELE
-LOGICAL,EXTERNAL :: DFT_ISGGA
-LOGICAL          :: DOGGA,DOLND,USE_MPI
+LOGICAL          :: DOGGA,DOLND,USE_MPI,DOMETA
 INTEGER          :: GRDONE,NHTYP,IDMAT,NGEODRV,IDMAT1
 REAL(REALK)      :: SUM,NELE,ERROR,DFTELS,valMPI(2*ndmat)
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-DOGGA = DFT_ISGGA()
+call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 NGEODRV=0
 DOLND=.FALSE.
 USE_MPI = .TRUE.
@@ -70,19 +71,17 @@ ENDIF
 call mem_dft_alloc(DFTDATA%ENERGY,ndmat)
 DFTDATA%ENERGY = 0E0_realk
 IF(DOGGA) THEN
+   IF(USEXCFUN)call xcfun_host_set_order(1,UNRES,xcfun_type_gga)
+   DFTDATA%nWorkNactBastNblen = 5
+   DFTDATA%nWorkNactBast = 1
+   DFTDATA%nWorkNactBastNactBast = 1
    IF(UNRES)THEN !UNRESTRICTED
       IF(DFTDATA%LB94.OR.DFTDATA%CS00)THEN
          CALL LSQUIT('LB94 and CS00 does currently not work with unrestricted',-1)
       ENDIF
-      DFTDATA%nWorkNactBastNblen = 5
-      DFTDATA%nWorkNactBast = 1
-      DFTDATA%nWorkNactBastNactBast = 1
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODRV,DOLND,&
            & II_DFT_KSMGGAUNRES,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ELSE
-      DFTDATA%nWorkNactBastNblen = 5
-      DFTDATA%nWorkNactBast = 1
-      DFTDATA%nWorkNactBastNactBast = 1
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODRV,DOLND,&
            & II_DFT_KSMGGA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ENDIF
@@ -120,19 +119,14 @@ ELSE
    IF(DFTDATA%LB94.OR.DFTDATA%CS00)THEN
       CALL LSQUIT('LB94 and CS00 does not work with a pure LDA functional',-1)
    ENDIF
+   IF(USEXCFUN)call xcfun_host_set_order(1,UNRES,xcfun_type_lda)
+   DFTDATA%nWorkNactBastNblen = 2
+   DFTDATA%nWorkNactBast = 1
+   DFTDATA%nWorkNactBastNactBast = 1
    IF(UNRES)THEN !UNRESTRICTED
-      DFTDATA%nWorkNactBastNblen = 2
-      DFTDATA%nWorkNactBast = 1
-      DFTDATA%nWorkNactBastNactBast = 1
-      print*,'II_DFT_KSMLDAUNRES',DFTDATA%nWorkNactBastNblen
-      print*,'II_DFT_KSMLDAUNRES',DFTDATA%nWorkNactBast
-      print*,'II_DFT_KSMLDAUNRES',DFTDATA%nWorkNactBastNactBast
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODRV,DOLND,&
            & II_DFT_KSMLDAUNRES,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ELSE !DEFAULT (RESTRICTED)
-      DFTDATA%nWorkNactBastNblen = 2
-      DFTDATA%nWorkNactBast = 1
-      DFTDATA%nWorkNactBastNactBast = 1
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODRV,DOLND,&
            & II_DFT_KSMLDA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    END IF
@@ -277,13 +271,13 @@ LOGICAL :: UNRES
 INTEGER          :: I,J,KMAX,natoms,MXPRIM
 REAL(REALK)      :: AVERAG,ELE
 LOGICAL,EXTERNAL :: DFT_ISGGA
-LOGICAL          :: DOGGA,DOLND,USE_MPI
+LOGICAL          :: DOGGA,DOLND,USE_MPI,DOMETA
 INTEGER          :: GRDONE,NHTYP,IDMAT,NGEODRV,IDMAT1
 REAL(REALK)      :: SUM,NELE,ERROR,DFTELS,valMPI(2*ndmat)
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 
-DOGGA = DFT_ISGGA()
+call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 NGEODRV=0
 DOLND=.FALSE.
 
@@ -300,16 +294,14 @@ ENDIF
 call mem_dft_alloc(DFTDATA%ENERGY,ndmat)
 DFTDATA%ENERGY = 0E0_realk
 IF(DOGGA) THEN
+   IF(USEXCFUN)call xcfun_host_set_order(0,UNRES,xcfun_type_gga)
+   DFTDATA%nWorkNactBastNblen = 0
+   DFTDATA%nWorkNactBast = 0
+   DFTDATA%nWorkNactBastNactBast = 0
    IF(UNRES)THEN !UNRESTRICTED
-      DFTDATA%nWorkNactBastNblen = 0
-      DFTDATA%nWorkNactBast = 0
-      DFTDATA%nWorkNactBastNactBast = 0
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODRV,DOLND,&
            & II_DFT_KSMEGGAUNRES,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ELSE
-      DFTDATA%nWorkNactBastNblen = 0
-      DFTDATA%nWorkNactBast = 0
-      DFTDATA%nWorkNactBastNactBast = 0
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODRV,DOLND,&
            & II_DFT_KSMEGGA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ENDIF
@@ -334,16 +326,14 @@ IF(DOGGA) THEN
 !=============================================================
 #endif
 ELSE 
+   IF(USEXCFUN)call xcfun_host_set_order(0,UNRES,xcfun_type_gga)
+   DFTDATA%nWorkNactBastNblen = 0
+   DFTDATA%nWorkNactBast = 0
+   DFTDATA%nWorkNactBastNactBast = 0
    IF(UNRES)THEN !UNRESTRICTED
-      DFTDATA%nWorkNactBastNblen = 0
-      DFTDATA%nWorkNactBast = 0
-      DFTDATA%nWorkNactBastNactBast = 0
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODRV,DOLND,&
            & II_DFT_KSMELDAUNRES,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ELSE !DEFAULT (RESTRICTED)
-      DFTDATA%nWorkNactBastNblen = 0
-      DFTDATA%nWorkNactBast = 0
-      DFTDATA%nWorkNactBastNactBast = 0
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODRV,DOLND,&
            & II_DFT_KSMELDA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    END IF
@@ -432,12 +422,11 @@ LOGICAL :: UNRES
 REAL(REALK)      :: ELE
 INTEGER          :: I,J,KMAX,MXPRIM
 LOGICAL,EXTERNAL :: DFT_ISGGA
-LOGICAL          :: DOGGA,USE_MPI
+LOGICAL          :: DOGGA,USE_MPI,DOMETA
 INTEGER          :: GRDONE,NHTYP
 REAL(REALK)      :: SUM,NELE
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
-
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
 #ifdef VAR_LSMPI
@@ -452,11 +441,13 @@ DFTDATA%nWorkNactBastNblen = 0
 DFTDATA%nWorkNactBast = 0
 DFTDATA%nWorkNactBastNactBast = 0
 
-DOGGA = DFT_ISGGA()
+call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 IF(DOGGA) THEN
+   IF(USEXCFUN)call xcfun_host_set_order(1,UNRES,xcfun_type_gga)
    CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,1,.FALSE.,&
         & II_geoderiv_molgrad_worker_gga,DFTDATA,UNRES,ELECTRONS,USE_MPI)
 ELSE
+   IF(USEXCFUN)call xcfun_host_set_order(1,UNRES,xcfun_type_lda)
    CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,1,.FALSE.,&
         & II_geoderiv_molgrad_worker_lda,DFTDATA,UNRES,ELECTRONS,USE_MPI)
 ENDIF
@@ -508,7 +499,7 @@ LOGICAL :: UNRES
 INTEGER          :: I,J,KMAX,natoms,MXPRIM
 REAL(REALK)      :: AVERAG,ELE,SUM,NELE
 LOGICAL,EXTERNAL :: DFT_ISGGA
-LOGICAL          :: DOGGA,USE_MPI
+LOGICAL          :: DOGGA,USE_MPI,DOMETA
 INTEGER          :: GRDONE,NHTYP,IDMAT,IBMAT
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
@@ -523,8 +514,9 @@ IF (setting%node.EQ.infpar%master) THEN
 ENDIF
 #endif
 
-DOGGA = DFT_ISGGA()
+call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 IF(DOGGA) THEN
+   IF(USEXCFUN)call xcfun_host_set_order(2,UNRES,xcfun_type_gga)
    IF(UNRES)THEN !UNRESTRICTED
       DFTDATA%nWorkNactBastNblen = 0
       DFTDATA%nWorkNactBast = 0
@@ -554,6 +546,7 @@ IF(DOGGA) THEN
       END DO
    END DO
 ELSE 
+   IF(USEXCFUN)call xcfun_host_set_order(2,UNRES,xcfun_type_lda)
    IF(UNRES)THEN !UNRESTRICTED
       DFTDATA%nWorkNactBastNblen = 0
       DFTDATA%nWorkNactBast = 0
@@ -607,7 +600,7 @@ LOGICAL :: UNRES
 INTEGER          :: I,J,KMAX,natoms,MXPRIM
 REAL(REALK)      :: AVERAG,ELE,SUM,NELE
 LOGICAL,EXTERNAL :: DFT_ISGGA
-LOGICAL          :: DOGGA,USE_MPI
+LOGICAL          :: DOGGA,USE_MPI,DOMETA
 INTEGER          :: GRDONE,NHTYP,IDMAT,IBMAT
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
@@ -622,7 +615,7 @@ IF (setting%node.EQ.infpar%master) THEN
 ENDIF
 #endif
 
-DOGGA = DFT_ISGGA()
+call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 IF(DOGGA) THEN
    IF(UNRES)THEN !UNRESTRICTED
       !        CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,0,.FALSE.,&
@@ -632,6 +625,7 @@ IF(DOGGA) THEN
       DFTDATA%nWorkNactBastNblen = 5
       DFTDATA%nWorkNactBast = 1
       DFTDATA%nWorkNactBastNactBast = 1
+      IF(USEXCFUN)call xcfun_host_set_order(3,UNRES,xcfun_type_gga)
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,0,.FALSE.,&
            & II_DFT_QUADRSPGGA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
       !        CALL LSQUIT('II_DFT_QUADRSPGGA NOT DONE YET',lupri)
@@ -660,6 +654,7 @@ ELSE
       DFTDATA%nWorkNactBastNblen = 2
       DFTDATA%nWorkNactBast = 1
       DFTDATA%nWorkNactBastNactBast = 1
+      IF(USEXCFUN)call xcfun_host_set_order(3,UNRES,xcfun_type_lda)
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,0,.FALSE.,&
            & II_DFT_QUADRSPLDA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    END IF
@@ -705,7 +700,7 @@ LOGICAL :: UNRES
 INTEGER          :: I,J,KMAX,natoms,MXPRIM
 REAL(REALK)      :: AVERAG,ELE,SUM,NELE
 LOGICAL,EXTERNAL :: DFT_ISGGA
-LOGICAL          :: DOGGA,DOLONDON,USE_MPI
+LOGICAL          :: DOGGA,DOLONDON,USE_MPI,DOMETA
 INTEGER          :: GRDONE,NHTYP,IDMAT
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
@@ -720,9 +715,10 @@ IF (setting%node.EQ.infpar%master) THEN
 ENDIF
 #endif
 
-DOGGA = DFT_ISGGA()
+call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 DOLONDON = .TRUE.
 IF(DOGGA) THEN
+   IF(USEXCFUN)call xcfun_host_set_order(1,UNRES,xcfun_type_gga)
    IF(UNRES)THEN !UNRESTRICTED
       CALL LSQUIT('II_DFT_magderiv_kohnshamGGAUNRES not implemented',lupri)
       !        CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,0,DOLONDON,&
@@ -735,6 +731,7 @@ IF(DOGGA) THEN
            & II_DFT_magderiv_kohnshamGGA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ENDIF
 ELSE 
+   IF(USEXCFUN)call xcfun_host_set_order(1,UNRES,xcfun_type_lda)
    IF(UNRES)THEN !UNRESTRICTED
       CALL LSQUIT('II_DFT_magderiv_kohnshamLDAUNRES not implemented',lupri)
       !        CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,0,DOLONDON,&
@@ -791,7 +788,7 @@ LOGICAL :: UNRES
 INTEGER          :: I,J,KMAX,natoms,MXPRIM
 REAL(REALK)      :: AVERAG,ELE,SUM,NELE
 LOGICAL,EXTERNAL :: DFT_ISGGA
-LOGICAL          :: DOGGA,DOLONDON,USE_MPI
+LOGICAL          :: DOGGA,DOLONDON,USE_MPI,DOMETA
 INTEGER          :: GRDONE,NHTYP,IDMAT,IBMAT,nbmat
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
@@ -807,9 +804,10 @@ ENDIF
 #endif
 
 NBMAT = DFTDATA%NBMAT
-DOGGA = DFT_ISGGA()
+call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 DOLONDON = .TRUE.
 IF(DOGGA) THEN
+   IF(USEXCFUN)call xcfun_host_set_order(2,UNRES,xcfun_type_gga)
    IF(UNRES)THEN !UNRESTRICTED
       CALL LSQUIT('II_DFT_MAGDERIV_LINRSPGGAUNRES not implemented',lupri)
       !        CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,0,DOLONDON,&
@@ -822,6 +820,7 @@ IF(DOGGA) THEN
            & II_DFT_MAGDERIV_LINRSPGGA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ENDIF
 ELSE 
+   IF(USEXCFUN)call xcfun_host_set_order(2,UNRES,xcfun_type_lda)
    IF(UNRES)THEN !UNRESTRICTED
       CALL LSQUIT('II_DFT_MAGDERIV_LINRSPLDAUNRES not implemented',lupri)
       !        CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,0,DOLONDON,&
@@ -896,7 +895,7 @@ LOGICAL :: UNRES
 INTEGER          :: I,J,KMAX,MXPRIM
 REAL(REALK)      :: AVERAG,ELE,SUM,NELE
 LOGICAL,EXTERNAL :: DFT_ISGGA
-LOGICAL          :: DOGGA,DOLONDON,USE_MPI
+LOGICAL          :: DOGGA,DOLONDON,USE_MPI,DOMETA
 INTEGER          :: GRDONE,NHTYP,IDMAT,NGEODERIV
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
@@ -911,10 +910,11 @@ IF (setting%node.EQ.infpar%master) THEN
 ENDIF
 #endif
 
-DOGGA = DFT_ISGGA()
+call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 DOLONDON = .FALSE.
 NGEODERIV = 1
 IF(DOGGA) THEN
+   IF(USEXCFUN)call xcfun_host_set_order(2,UNRES,xcfun_type_gga)
    IF(UNRES)THEN !UNRESTRICTED
       CALL LSQUIT('II_DFT_geoderiv_kohnshamGGAUNRES not implemented',lupri)
       !        CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODERIV,DOLONDON,&
@@ -928,6 +928,7 @@ IF(DOGGA) THEN
            & II_DFT_geoderiv_kohnshamGGA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ENDIF
 ELSE 
+   IF(USEXCFUN)call xcfun_host_set_order(2,UNRES,xcfun_type_lda)
    IF(UNRES)THEN !UNRESTRICTED
       CALL LSQUIT('II_DFT_geoderiv_kohnshamLDAUNRES not implemented',lupri)
       !        CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODERIV,DOLONDON,&
@@ -974,7 +975,7 @@ LOGICAL :: UNRES
 INTEGER          :: I,J,KMAX,MXPRIM
 REAL(REALK)      :: AVERAG,ELE,SUM,NELE
 LOGICAL,EXTERNAL :: DFT_ISGGA
-LOGICAL          :: DOGGA,DOLONDON,USE_MPI
+LOGICAL          :: DOGGA,DOLONDON,USE_MPI,DOMETA
 INTEGER          :: GRDONE,NHTYP,IDMAT,NGEODERIV
 REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
@@ -989,10 +990,11 @@ IF (setting%node.EQ.infpar%master) THEN
 ENDIF
 #endif
 
-DOGGA = DFT_ISGGA()
+call DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 DOLONDON = .FALSE.
 NGEODERIV = 1
 IF(DOGGA) THEN
+   IF(USEXCFUN)call xcfun_host_set_order(3,UNRES,xcfun_type_gga)
    IF(UNRES)THEN !UNRESTRICTED
       CALL LSQUIT('II_DFT_geoderiv_linrspGGAUNRES not implemented',lupri)
       !        CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODERIV,DOLONDON,&
@@ -1006,6 +1008,7 @@ IF(DOGGA) THEN
            & II_DFT_geoderiv_linrspGGA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ENDIF
 ELSE 
+   IF(USEXCFUN)call xcfun_host_set_order(3,UNRES,xcfun_type_lda)
    IF(UNRES)THEN !UNRESTRICTED
       CALL LSQUIT('II_DFT_geoderiv_linrspLDAUNRES not implemented',lupri)
       !        CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODERIV,DOLONDON,&
