@@ -757,14 +757,10 @@ gp/memory_parallel.F90
 abacus/rma_windows.F90
     )
 set(OWN_BLAS_SOURCES
-    pdpack/gp_dblas1.F
-    pdpack/gp_dblas2.F
-    pdpack/gp_dblas3.F
-    pdpack/gp_zblas.F
+    pdpack/gp_blas.F
     )
 set(OWN_LAPACK_SOURCES
-    pdpack/gp_dlapack.F
-    pdpack/gp_zlapack.F
+    pdpack/gp_lapack.F
     )
 if(NOT ENABLE_MPI)
     set(C_SOURCES
