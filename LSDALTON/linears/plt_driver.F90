@@ -295,11 +295,15 @@ contains
        read(input,*) MyPlt%X1, MyPlt%Y1, MyPlt%Z1
        read(input,*) MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
        read(input,*) MyPlt%nX, MyPlt%nY, MyPlt%nZ
+       ! Number of gridpoints
+       MyPlt%nGRIDPOINTS=MyPlt%nX*MyPlt%nY*MyPlt%nZ
+
        write(output,*) 
        write(output,*) 'Manual gridbox parameters are:'
        write(output,'(a,3g16.5)') 'X1,Y1,Z1: ', MyPlt%X1, MyPlt%Y1, MyPlt%Z1
        write(output,'(a,3g16.5)') 'deltax,deltay,deltaz: ', MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
        write(output,'(a,3i16)') 'nX,nY,nZ: ', MyPlt%nX, MyPlt%nY, MyPlt%nZ 
+       write(output,'(a,i16)') 'Number of gridpoints: ', MyPlt%nGRIDPOINTS
        write(output,*) 
     else
        read(input,*) MyPlt%buffer
@@ -311,7 +315,6 @@ contains
        write(output,*) 
 
     end if
-
 
   END SUBROUTINE config_pltgrid_input
 
@@ -375,7 +378,11 @@ contains
        MyPlt%buffer = 6.0_4
        call DETERMINE_GRIDBOX(natoms,ATOMXYZ,MyPlt)
     end if
-
+    write(ls%lupri,*) 'Gridbox parameters are:'
+    write(ls%lupri,'(a,3g20.10)') 'X1,Y1,Z1: ', MyPlt%X1, MyPlt%Y1, MyPlt%Z1
+    write(ls%lupri,'(a,3g20.10)') 'deltax,deltay,deltaz: ', MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
+    write(ls%lupri,'(a,3i16)') 'nX,nY,nZ: ', MyPlt%nX, MyPlt%nY, MyPlt%nZ 
+    write(ls%lupri,'(a,i16)') 'Number of gridpoints: ', MyPlt%nGRIDPOINTS
 
     ! Which calculation?
     ! ******************
