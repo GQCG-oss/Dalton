@@ -9,26 +9,21 @@ use files
 contains 
 
 
-  !> \brief Determine gridbox to use for calculation of orbital, density, electrostatic potential etc.
-  !> at given points in space.
+  !> \brief Determine molecule-specific gridbox to use for calculation of 
+  !> orbital, density, electrostatic potential etc. at given points in space.
   !> \author Kasper Kristensen
   !> \date 2013
-  subroutine DETERMINE_GRIDBOX(natoms,ATOMXYZ,deltax,deltay,deltaz,mybuffer,MyPlt)
+  subroutine DETERMINE_GRIDBOX(natoms,ATOMXYZ,MyPlt)
     implicit none
     !> Number of atoms in molecule
     integer, intent(in)          :: natoms
     !> (X,Y,Z) coordinates for all atoms in molecule
     real(4), intent(in)      :: ATOMXYZ(3,natoms)
-    !> Distance between gridpoints in X,Y, and Z directions
-    real(4), intent(in)     :: deltax,deltay,deltaz
-    !> Buffer zone around molecule (see details inside subroutine)
-    real(4),intent(in) :: mybuffer
     !> PLT info where gridbox is set
     type(pltinfo),intent(inout) :: MyPlt
+    real(4)  :: deltax,deltay,deltaz,mybuffer
     real(4)                  :: Xn, Yn, Zn,distX,distY,distZ
-    integer                      :: I,funit
-    logical :: file_exist
-    character(len=6) :: scheme
+    integer                      :: I
 
 
     ! *******************
@@ -41,12 +36,14 @@ contains
     !
     ! We define the grid box parameters such that (i) all atoms in the molecule are contained
     ! within the grid box, and (ii) there is a buffer zone (mybuffer) of around the outermost atoms.
-    print *, 'Setting grid box based on molecule info' 
 
     ! Set distances between gridpoints from input
-    MyPlt%deltax = deltax
-    MyPlt%deltay = deltay
-    MyPlt%deltaz = deltaz
+    deltax = MyPlt%deltax
+    deltay = MyPlt%deltay
+    deltaz = MyPlt%deltaz
+
+    ! Set buffer zone from input
+    mybuffer = MyPlt%buffer
 
     ! Minimum and maximum values in the gridbox. 
     Xn = -HUGE(1_4); MyPlt%X1 = HUGE(1_4)

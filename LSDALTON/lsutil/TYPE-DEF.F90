@@ -638,6 +638,8 @@ type pltinfo
    !> with step sizes deltax,deltay, and deltaz, until there are nX, nY, and nZ points
    !> in the X,Y, and Z directions (giving a total number of gridpoints: nGRIDPOINTS=nX*nY*nZ). 
 
+   !> Was gridbox defined in input
+   logical :: gridbox_defined
     !> Number of grid points in X,Y,Z directions 
    integer     :: nX,nY,nZ
     !> Total number of gridpoints (nX*nY*nZ)
@@ -646,8 +648,11 @@ type pltinfo
    real(4)    :: deltax,deltay,deltaz
    !> Lowest X,Y,Z values in grid box
    real(4) :: X1,Y1,Z1
-   !> Was gridbox defined in input
-   logical :: gridbox_defined
+   !> Buffer zone around molecular structure (see DETERMINE_GRIDBOX)
+   !> This is only used for molecule-specific gridbox (see config_pltgrid_input)
+   real(4) :: buffer
+   !> Manual gridbox rather than molecule specific gridbox  (see DETERMINE_GRIDBOX)
+   logical :: manual_gridbox
 
 end type pltinfo
 
