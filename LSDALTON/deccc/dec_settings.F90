@@ -64,6 +64,7 @@ contains
     DECinfo%reorder_test=.false.
     DECinfo%CCSDno_restart=.false.
     DECinfo%CCSDsaferun=.false.
+    DECinfo%solver_par=.false.
     DECinfo%CCSDpreventcanonical=.false.
 
     ! -- Output options 
@@ -245,7 +246,7 @@ contains
           ! CC model
        case('.MP2'); DECinfo%ccModel=1; DECinfo%use_singles=.false.  ! both DEC and full calc
        case('.CC2'); DECinfo%ccModel=2; DECinfo%use_singles=.true.   ! only for full calc
-       case('.CCSD'); DECinfo%ccModel=3; DECinfo%use_singles=.true.  ! only for full calc
+       case('.CCSD'); DECinfo%ccModel=3; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.  ! only for full calc
 
 
           ! CC SOLVER INFO
@@ -342,7 +343,7 @@ contains
 #ifndef RELEASE
           ! NOTE: By default, we assume that the HF has already been carried out.
        case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
-       case('.CCSDSOLVER_PAR'); DECinfo%solver_par=.true.
+       case('.CCSDSOLVER_SERIAL'); DECinfo%solver_par=.false.
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
@@ -356,7 +357,7 @@ contains
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
        case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
-       case('.CCSD(T)'); DECinfo%ccModel=4; DECinfo%use_singles=.true.
+       case('.CCSD(T)'); DECinfo%ccModel=4; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.RPA'); DECinfo%ccModel=5; DECinfo%use_singles=.false.
        case('.NOTUSEMP2FRAG') 
           DECinfo%use_mp2_frag=.false.

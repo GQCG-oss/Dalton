@@ -3,38 +3,27 @@
 
 Module grid_utilities_module
 Use precision
-use TYPEDEFTYPE, only: lsitem
+use TYPEDEFTYPE
 use files
 
 contains 
 
 
-  !> \brief Determine gridbox to use for calculation of orbital, density, electrostatic potential etc.
-  !> at given points in space.
-  !> IF a file gridbox.inp exist, then the information defining the gridbox is read
-  !> from that file. In gridbox.inp does not exist we use a default molecule-specific gridbox 
-  !> with hardcoded buffer size (see details inside subroutine).
+  !> \brief Determine molecule-specific gridbox to use for calculation of 
+  !> orbital, density, electrostatic potential etc. at given points in space.
   !> \author Kasper Kristensen
   !> \date 2013
-  subroutine DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-       &ATOMXYZ,natoms,nGRIDPOINTS)
+  subroutine DETERMINE_GRIDBOX(natoms,ATOMXYZ,MyPlt)
     implicit none
     !> Number of atoms in molecule
     integer, intent(in)          :: natoms
     !> (X,Y,Z) coordinates for all atoms in molecule
     real(4), intent(in)      :: ATOMXYZ(3,natoms)
-    !> Number of grid points in X,Y,Z directions
-    integer, intent(inout)         :: nX,nY,nZ
-    !> Total number of gridpoints (nX*nY*nZ)
-    integer, intent(inout)         :: nGRIDPOINTS
-    !> Distance between gridpoints in X,Y, and Z directions
-    real(4), intent(inout)     :: deltax,deltay,deltaz
-    !> Lowest X,Y,Z values in grid box.
-    real(4),intent(inout) :: X1,Y1,Z1
-    real(4)                  :: Xn, Yn, Zn,distX,distY,distZ,mybuffer
-    integer                      :: I,funit
-    logical :: file_exist
-    character(len=6) :: scheme
+    !> PLT info where gridbox is set
+    type(pltinfo),intent(inout) :: MyPlt
+    real(4)  :: deltax,deltay,deltaz,mybuffer
+    real(4)                  :: Xn, Yn, Zn,distX,distY,distZ
+    integer                      :: I
 
 
     ! *******************
@@ -44,95 +33,44 @@ contains
     ! * The remaining grid points are then defined by going out in the X,Y, and Z directions
     !   with step sizes deltax,deltay, and deltaz, until there are nX,nY, and nZ points
     !   in the X,Y, and Z directions (giving a total number of gridpoints: nGRIDPOINTS=nX*nY*nZ).
-
-    ! The gridbox file gridbox.inp must have one of two structures:
     !
-    ! 1. Manual definition of gridbox, gridbox.inp looks like:
-    !
-    ! MANUAL
-    ! X1   Y1   Z1
-    ! deltax   deltay   deltaz
-    ! nX    nY   nZ
-    !
-    !
-    ! 2. Molecule-specific definition of gridbox using buffer defined by gridbox.inp:
-    !
-    ! BUFFER
-    ! mybuffer
-    ! deltax   deltay   deltaz
-    !
-    ! In case (2) we define grid box parameters such that (i) all atoms in the molecule are contained
-    ! within the grid box, and (ii) there is a buffer zone of "mybuffer a.u." around the outermost 
-    ! atoms. If gridbox.inp does not exist we effectively use option (2) with mybuffer=6.0 a.u.
-    ! and deltax=deltay=deltaz=0.3 a.u.
+    ! We define the grid box parameters such that (i) all atoms in the molecule are contained
+    ! within the grid box, and (ii) there is a buffer zone (mybuffer) around the outermost atoms.
 
+    ! Set distances between gridpoints from input
+    deltax = MyPlt%deltax
+    deltay = MyPlt%deltay
+    deltaz = MyPlt%deltaz
 
-    ! Check whether gridbox file defining grid parameters exists
-    inquire(file='gridbox.inp',exist=file_exist)
-    GridboxFileExist: if(file_exist) then
-
-       print *, 'Reading grid box info from file'
-       ! Open file
-       funit=-1
-       call lsopen(funit,'gridbox.inp','OLD','FORMATTED')
-
-       read(funit,'(a)') scheme
-
-       WhichScheme: if(scheme=='MANUAL') then   ! scheme (1) above
-          ! Read info defining grid box.
-          read(funit,*) X1,Y1,Z1
-          read(funit,*) deltax,deltay,deltaz
-          read(funit,*) nX,nY,nZ
-          call lsclose(funit,'KEEP')
-          ! Total number of gridpoints
-          nGRIDPOINTS = nX*nY*nZ
-          return
-
-       elseif(scheme=='BUFFER') then   ! scheme (2) above
-          read(funit,*) mybuffer
-          read(funit,*) deltax,deltay,deltaz
-
-       else   ! error in gridbox.inp
-
-          call lsquit('Error: First line in gridbox.inp must be MANUAL or BUFFER!',-1)
-       end if WhichScheme
-
-
-    else
-
-       ! Default value of buffer is 6.0 a.u.
-       mybuffer = 6.0_4
-       ! Default delta values is 0.3 a.u.
-       deltax = 0.3_4; deltay = 0.3_4; deltaz = 0.3_4
-    
-    end if GridboxFileExist
-
-
-
-    print *, 'Setting grid box based on molecule info'
+    ! Set buffer zone from input
+    mybuffer = MyPlt%buffer
 
     ! Minimum and maximum values in the gridbox. 
-    Xn = -HUGE(1_4); X1 = HUGE(1_4)
-    Yn = -HUGE(1_4); Y1 = HUGE(1_4)
-    Zn = -HUGE(1_4); Z1 = HUGE(1_4)
+    Xn = -HUGE(1_4); MyPlt%X1 = HUGE(1_4)
+    Yn = -HUGE(1_4); MyPlt%Y1 = HUGE(1_4)
+    Zn = -HUGE(1_4); MyPlt%Z1 = HUGE(1_4)
     do I = 1, natoms
-       X1=min(ATOMXYZ(1,I),X1); Xn=max(ATOMXYZ(1,I),Xn)
-       Y1=min(ATOMXYZ(2,I),Y1); Yn=max(ATOMXYZ(2,I),Yn)
-       Z1=min(ATOMXYZ(3,I),Z1); Zn=max(ATOMXYZ(3,I),Zn)
+       MyPlt%X1=min(ATOMXYZ(1,I),MyPlt%X1); Xn=max(ATOMXYZ(1,I),Xn)
+       MyPlt%Y1=min(ATOMXYZ(2,I),MyPlt%Y1); Yn=max(ATOMXYZ(2,I),Yn)
+       MyPlt%Z1=min(ATOMXYZ(3,I),MyPlt%Z1); Zn=max(ATOMXYZ(3,I),Zn)
     enddo
 
     ! Subtract/add buffer from minimum/maximum X,Y,Z values
-    X1 = X1 - mybuffer; Y1 = Y1 - mybuffer; Z1 = Z1 - mybuffer
+    MyPlt%X1 = MyPlt%X1 - mybuffer; MyPlt%Y1 = MyPlt%Y1 - mybuffer; MyPlt%Z1 = MyPlt%Z1 - mybuffer
     Xn = Xn + mybuffer; Yn = Yn + mybuffer; Zn = Zn + mybuffer
-    distX = Xn-X1
-    distY = Yn-Y1
-    distZ = Zn-Z1
-    nX = nint(distX/deltax) + 1
-    nY = nint(distY/deltay) + 1
-    nZ = nint(distZ/deltaz) + 1
+
+    ! Distances from min to max values
+    distX = Xn-MyPlt%X1
+    distY = Yn-MyPlt%Y1
+    distZ = Zn-MyPlt%Z1
+
+    ! Number of points
+    MyPlt%nX = nint(distX/deltax) + 1
+    MyPlt%nY = nint(distY/deltay) + 1
+    MyPlt%nZ = nint(distZ/deltaz) + 1
 
     ! Total number of gridpoints
-    nGRIDPOINTS = nX*nY*nZ
+    MyPlt%ngridpoints = MyPlt%nX*MyPlt%nY*MyPlt%nZ
 
   end subroutine DETERMINE_GRIDBOX
 

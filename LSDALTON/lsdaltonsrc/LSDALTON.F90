@@ -142,40 +142,10 @@ SUBROUTINE lsdalton
   else
      skipHFpart=.false.
   end if
-
-  ! Read in already optimized HF orbitals, and localize
-  OnlyLoc:  if (config%davidOrbLoc%OnlyLocalize) then
-           ! read orbitals
-           lun = -1
-	   call mat_init(CMO,nbast,nbast)
-           CALL LSOPEN(lun,'orbitals_in.u','unknown','UNFORMATTED')
-	   call mat_read_from_disk(LUN,cmo,OnMaster)
-           call LSclose(LUN,'KEEP')
-           if (config%decomp%cfg_mlo) then
-	      write(ls%lupri,*)
-	      write(ls%lupri,'(a)') '*** LOCALIZING ORBITALS ***'
-              call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
-           else
-               call lsquit('No localization type was requested',ls%lupri) 
-	   end if
-           ! write localized orbitals
-           lun = -1
-           CALL LSOPEN(lun,'orbitals_out.u','unknown','UNFORMATTED')
-           call mat_write_to_disk(lun,Cmo,OnMaster)
-           call LSclose(LUN,'KEEP')
-	   call mat_free(cmo)
-  end if OnlyLoc
-
-  ! Construct PLT file
-  ConstructPLT: if(config%doplt) then
-     call plt_wrapper(ls,config%plt)
-  end if ConstructPLT
-
-
-  ! Single point DEC calculation using HF restart files
-  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. .not. DECinfo%doHF) ) then
-     call dec_main_prog_file(ls)
-  endif DECcalculationHFrestart
+  ! Special case, if we run PLT test cases then we do need to run HF calculation first.
+  if(config%plt%test) then
+     skipHFpart=.false.
+  end if
 
 
   SkipHF: if(skipHFpart) then   ! Skip Hartree-Fock related calculations
@@ -394,7 +364,7 @@ SUBROUTINE lsdalton
               write(ls%lupri,'(a)')'Pred= **** LEVEL 3 ORBITAL LOCALIZATION ****'
               call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
 	      if (config%davidOrbLoc%make_orb_plot) then
-                 call make_orbitalplot_file(CMO,config%davidOrbLoc,ls)
+                 call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
 	      end if
            end if
            ! write LCM orbitals
@@ -520,6 +490,41 @@ SUBROUTINE lsdalton
 
      endif do_pbc
   end if SkipHF
+
+
+  ! Read in already optimized HF orbitals, and localize
+  OnlyLoc:  if (config%davidOrbLoc%OnlyLocalize) then
+           ! read orbitals
+           lun = -1
+	   call mat_init(CMO,nbast,nbast)
+           CALL LSOPEN(lun,'orbitals_in.u','unknown','UNFORMATTED')
+	   call mat_read_from_disk(LUN,cmo,OnMaster)
+           call LSclose(LUN,'KEEP')
+           if (config%decomp%cfg_mlo) then
+	      write(ls%lupri,*)
+	      write(ls%lupri,'(a)') '*** LOCALIZING ORBITALS ***'
+              call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
+           else
+               call lsquit('No localization type was requested',ls%lupri) 
+	   end if
+           ! write localized orbitals
+           lun = -1
+           CALL LSOPEN(lun,'orbitals_out.u','unknown','UNFORMATTED')
+           call mat_write_to_disk(lun,Cmo,OnMaster)
+           call LSclose(LUN,'KEEP')
+	   call mat_free(cmo)
+  end if OnlyLoc
+
+  ! Construct PLT file
+  ConstructPLT: if(config%doplt) then
+     call plt_wrapper(ls,config%plt)
+  end if ConstructPLT
+
+
+  ! Single point DEC calculation using HF restart files
+  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. .not. DECinfo%doHF) ) then
+     call dec_main_prog_file(ls)
+  endif DECcalculationHFrestart
 
 
   ! Kasper K, calculate orbital spread for projected atomic orbitals

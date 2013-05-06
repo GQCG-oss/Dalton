@@ -725,11 +725,19 @@ DO
    ! Input for PLT plotting: Calculate density, orbital, etc. at grid points in space based on
    ! density or orbital matrix file from previous LSDALTON calculation.
    ! This will overrule all other inputs and an LSDALTON calculation as such will not be carried out!
-   PLTinput: IF (WORD(1:6) == '**PLOT') THEN
+   ! Note: The gridbox information of the plt structure is not set here but in the **GRID section.
+   PLTinput: IF (WORD(1:5) == '**PLT') THEN
       READWORD=.TRUE.
       config%doPLT = .true.
       call config_plt_input(lucmd,config%lupri,readword,word,config%plt)
    END IF PLTinput
+
+   ! Input for PLT gridbox: Set gridbox related info for PLT structure 
+   ! (nX,nY,nZ,nGRIDPOINTS,deltax,deltay,deltaz,X1,Y1,Z1,gridbox_defined)
+   PLTGRIDinput: IF (WORD(1:9) == '**PLTGRID') THEN
+      READWORD=.TRUE.
+      call config_pltgrid_input(lucmd,config%lupri,readword,word,config%plt)
+   END IF PLTGRIDinput
 
 
 !   

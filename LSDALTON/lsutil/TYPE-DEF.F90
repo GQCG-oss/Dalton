@@ -612,7 +612,6 @@ END TYPE geoHessianConfig
 !*                                                                           *
 !*****************************************************************************
 type pltinfo
-   ! This is tightly connected with contruct_plt_file_driver
   
    ! Note: If you change the character length 80 here, remember to change it accordingly 
    !       in pltinfo_set_default_config.
@@ -631,6 +630,32 @@ type pltinfo
    integer :: iorb
    !> Index for second orbital in charge distribution (only used for CHARGEDIST)
    integer :: jorb
+   !> Run test case (in this special case the HF calculation is run before PLT driver
+   !> so there is something to be tested...)
+   logical :: test
+
+   !> Information for gridbox
+   !> ***********************
+   !> The first point in the grid box is (X1,Y1,Z1).
+   !> The remaining grid points are then defined by going out in the X,Y, and Z directions
+   !> with step sizes deltax,deltay, and deltaz, until there are nX, nY, and nZ points
+   !> in the X,Y, and Z directions (giving a total number of gridpoints: nGRIDPOINTS=nX*nY*nZ). 
+
+   !> Was gridbox defined in input
+   logical :: gridbox_defined
+    !> Number of grid points in X,Y,Z directions 
+   integer     :: nX,nY,nZ
+    !> Total number of gridpoints (nX*nY*nZ)
+   integer     :: nGRIDPOINTS
+   !> Distance between gridpoints in X,Y, and Z directions
+   real(4)    :: deltax,deltay,deltaz
+   !> Lowest X,Y,Z values in grid box
+   real(4) :: X1,Y1,Z1
+   !> Buffer zone around molecular structure (see DETERMINE_GRIDBOX)
+   !> This is only used for molecule-specific gridbox (see config_pltgrid_input)
+   real(4) :: buffer
+   !> Manual gridbox rather than molecule specific gridbox  (see DETERMINE_GRIDBOX)
+   logical :: manual_gridbox
 
 end type pltinfo
 

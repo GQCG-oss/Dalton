@@ -32,9 +32,10 @@ contains
     !> Integral info
     type(LsItem),intent(inout) :: ls
     !> Information about which PLT information to calculation (see type pltinfo)
-    type(pltinfo),intent(in) :: MyPlt
+    type(pltinfo),intent(inout) :: MyPlt
     integer :: nocc,nrow,ncol,funit, IOS
     Type(Matrix) :: InputMat
+    logical :: file_exist
 
 
     ! Sanity check 1: Even number of electrons
@@ -48,9 +49,18 @@ contains
        call lsquit('PLT DRIVER only implemented for dense matrices!',-1)
     end if
 
+    ! Sanity check 3: Input file exists
+    inquire(file=trim(MyPlt%inputfile),exist=file_exist)
+    if(.not. file_exist) then
+       write(*,*) 'Input filename: ', trim(MyPlt%inputfile)
+       call lsquit('PLT DRIVER: Input file does not exist!',-1)
+    end if
+
+
 
     ! read density/orbitals
     ! *********************
+
     write(ls%lupri,*) 'PLT driver reads input file...'
     funit = 33
     OPEN(UNIT=funit,FILE=trim(MyPlt%inputfile),STATUS='OLD', &
@@ -68,8 +78,7 @@ contains
     ENDIF
 
     ! Which calculation?
-    call construct_plt_file_driver(trim(MyPlt%outputfile),trim(MyPlt%frmt),InputMat,&
-         & ls,MyPlt%iorb,MyPlt%jorb)
+    call construct_plt_file_driver(MyPlt,InputMat,ls)
 
 
     call mat_free(InputMat)
@@ -100,14 +109,30 @@ contains
     MyPlt%iorb = 0
     MyPlt%jorb = 0
 
+    ! Zero gridbox info
+    MyPlt%nX=0
+    MyPlt%nY=0
+    MyPlt%nZ=0
+    MyPlt%nGRIDPOINTS=0
+    MyPlt%deltax=0.0
+    MyPlt%deltay=0.0
+    MyPlt%deltaz=0.0
+    MyPlt%X1=0.0
+    MyPlt%Y1=0.0
+    MyPlt%Z1=0.0
+    MyPlt%buffer=0.0
+    MyPlt%gridbox_defined=.false.
+    MyPlt%manual_gridbox=.false.
+    MyPlt%test=.false.
+
   end subroutine pltinfo_set_default_config
 
 
 
-  !> \brief Read the **DEC or **CC input section in DALTON.INP and set 
-  !> configuration structure accordingly.
+  !> \brief Read the **PLT section and set the PLT structure accordingly.
+  !> Note: The gridbox information of the plt structure is not set here but in config_pltgrid_input.
   !> \author Kasper Kristensen
-  !> \date September 2010
+  !> \date May 2013
   SUBROUTINE config_plt_input(input,output,readword,word,myplt)
     implicit none
     !> Logical for keeping track of when to read
@@ -192,6 +217,11 @@ contains
           read(input,*) myplt%outputfile
           output_spec=.true.
 
+          ! Run test case
+          ! =============
+       case('.TESTPLT')
+          myplt%test=.true.
+
 
        CASE DEFAULT
           WRITE (output,'(/,3A,/)') ' Keyword "',WORD,&
@@ -206,38 +236,108 @@ contains
 
     ! Sanity checks
     if(.not. prop_spec) then
-       call lsquit('Error in **PLOT input: Property not specified! Possible inputs: &
+       call lsquit('Error in **PLT input: Property not specified! Possible inputs: &
             & .DENS  .EP  .ORB  .CHARGEDIST ',-1) 
     end if
     if(.not. input_spec) then
-       call lsquit('Error in **PLOT input: Input file not specified using .INPUT',-1)
+       call lsquit('Error in **PLT input: Input file not specified using .INPUT',-1)
     end if
     if(.not. output_spec) then
-       call lsquit('Error in **PLOT input: Output file not specified using .OUTPUT',-1)
+       call lsquit('Error in **PLT input: Output file not specified using .OUTPUT',-1)
     end if
 
 
   END SUBROUTINE config_plt_input
 
 
+
+  !> \brief Read the **PLTGRID section and set gridbox related information of the PLT structure
+  !> (nX,nY,nZ,nGRIDPOINTS,deltax,deltay,deltaz,X1,Y1,Z1,gridbox_defined) accordingly.
+  !> \author Kasper Kristensen
+  !> \date May 2013
+  SUBROUTINE config_pltgrid_input(input,output,readword,word,myplt)
+    implicit none
+    !> Logical for keeping track of when to read
+    LOGICAL,intent(inout)                :: READWORD
+    !> Logical unit number for DALTON.INP
+    integer,intent(in) :: input
+    !> Logical unit number for LSDALTON.OUT
+    integer,intent(in) :: output
+    !> Word read from input
+    character(len=80),intent(inout) :: word
+    !> PLT info
+    type(pltinfo),intent(inout) :: myplt
+
+    ! Grid box has been defined by input
+    MyPlt%gridbox_defined=.true.
+
+    ! There are two possible allowed input forms:
+    !
+    ! 1. Manually defined gridbox (see type pltinfo for definition of these quantities):
+    ! **PLTGRID
+    ! .MANUAL
+    ! X1 Y1 Z1
+    ! deltax deltay deltaz
+    ! nX nY nZ
+    !
+    ! 2. Molecule-adapted gridbox (see DETERMINE_GRIDBOX)
+    ! **PLTGRID
+    ! .MOLECULE
+    ! buffer 
+    ! deltax deltay deltaz
+
+    ! First word should be either .MANUAL or .MOLECULE
+    READ (input, '(A80)') WORD
+    if(trim(word)=='.MANUAL') then
+       MyPlt%manual_gridbox=.true.   ! manually defined gridbox
+    elseif(trim(word)=='.MOLECULE') then
+       MyPlt%manual_gridbox=.false.
+    else
+       call lsquit('Line following **PLTGRID must be either .MANUAL or .MOLECULE. Please&
+            & consult manual!',-1)
+    end if
+
+    if(MyPlt%manual_gridbox) then
+       read(input,*) MyPlt%X1, MyPlt%Y1, MyPlt%Z1
+       read(input,*) MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
+       read(input,*) MyPlt%nX, MyPlt%nY, MyPlt%nZ
+       ! Number of gridpoints
+       MyPlt%nGRIDPOINTS=MyPlt%nX*MyPlt%nY*MyPlt%nZ
+
+       write(output,*) 
+       write(output,*) 'Manual gridbox parameters are:'
+       write(output,'(a,3g16.5)') 'X1,Y1,Z1: ', MyPlt%X1, MyPlt%Y1, MyPlt%Z1
+       write(output,'(a,3g16.5)') 'deltax,deltay,deltaz: ', MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
+       write(output,'(a,3i16)') 'nX,nY,nZ: ', MyPlt%nX, MyPlt%nY, MyPlt%nZ 
+       write(output,'(a,i16)') 'Number of gridpoints: ', MyPlt%nGRIDPOINTS
+       write(output,*) 
+    else
+       read(input,*) MyPlt%buffer
+       read(input,*) MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
+       write(output,*) 
+       write(output,*) 'Molecule specific gridbox parameters are:'
+       write(output,'(a,g16.5)') 'buffer: ', MyPlt%buffer
+       write(output,'(a,3g16.5)') 'deltax,deltay,deltaz: ', MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
+       write(output,*) 
+
+    end if
+
+  END SUBROUTINE config_pltgrid_input
+
+
+
   !> \brief Driver for creating PLT files of orbitals, densities, electrostatic potentials etc.
   !> which may be plotted e.g. using the Chimera program.
   !> \author Kasper Kristensen
   !> \date May 2013
-  subroutine construct_plt_file_driver(filename,frmt,InputMat,ls,iorb,jorb)
+  subroutine construct_plt_file_driver(MyPlt,InputMat,ls)
     implicit none
+    !> Information about which PLT information to calculate (see type pltinfo)
+    type(pltinfo),intent(inout) :: MyPlt
     !> Matrix containing orbitals or density
     type(matrix),intent(in)        :: InputMat
     !> Integral info
     type(lsitem),intent(inout)     :: ls
-    !> Filename for output PLT file
-    Character*(*),intent(in)       :: filename
-    !> What do we want to calculate (see type pltinfo)
-    Character*(*),intent(in)       :: frmt
-    !> Orbital index to plot or first index in charge distribution (see type pltinfo)
-    integer,intent(in)              :: iorb
-    !> Second index in charge distribution (see type pltinfo)
-    integer,intent(in)              :: jorb
     integer                        :: I, J, nATOMS,nrow,ncol
     real(4), allocatable       :: ATOMXYZ(:,:)
     type(matrix) :: S,tmpMat,tmpMat2
@@ -256,20 +356,57 @@ contains
     ENDDO
 
 
+    ! CHOICE OF GRIDBOX
+    ! ******************
+    if(MyPLt%gridbox_defined) then ! gridbox was defined by input
+
+       if(MyPlt%manual_gridbox) then
+          ! Manually defined gridbox, all parameters were set by input
+          write(ls%lupri,*) 'Using PLT gridbox defined manually by input'
+       else
+          ! Molecule-specific gridbox
+          ! deltax,deltay,deltaz, and buffer defined by input.
+          write(ls%lupri,*) 'Using molecule-specific PLT gridbox defined by input'
+          call DETERMINE_GRIDBOX(natoms,ATOMXYZ,MyPlt)
+       end if
+
+    else ! gridbox not defined by input, use default molecule-specific gridbox
+
+       write(ls%lupri,*) 'Using molecule-specific PLT gridbox with default parameters'
+       ! Distance of 0.3 a.u. between grid points
+       MyPlt%deltax = 0.3_4
+       MyPlt%deltay = MyPlt%deltax
+       MyPlt%deltaz = MyPlt%deltax
+       ! Buffer zone of 6 a.u. around molecule (see details in DETERMINE_GRIDBOX)
+       MyPlt%buffer = 6.0_4
+       call DETERMINE_GRIDBOX(natoms,ATOMXYZ,MyPlt)
+    end if
+    write(ls%lupri,*) 'Gridbox parameters are:'
+    write(ls%lupri,'(a,3g20.10)') 'X1,Y1,Z1: ', MyPlt%X1, MyPlt%Y1, MyPlt%Z1
+    write(ls%lupri,'(a,3g20.10)') 'deltax,deltay,deltaz: ', MyPlt%deltax, MyPlt%deltay, MyPlt%deltaz
+    write(ls%lupri,'(a,3i16)') 'nX,nY,nZ: ', MyPlt%nX, MyPlt%nY, MyPlt%nZ 
+    write(ls%lupri,'(a,i16)') 'Number of gridpoints: ', MyPlt%nGRIDPOINTS
+
+
+    ! Sanity check
+    if(MyPlt%nGRIDPOINTS==0) then
+       call lsquit('Zero gridpoints: Cannot construct PLT file!',-1)
+    end if
+
     ! Which calculation?
     ! ******************
 
-    select case (frmt)
+    select case (myplt%frmt)
 
        ! Density
     case('DENS')
        write(ls%lupri,*) 'Writing density distribution plt file...'
-       call calculate_density(trim(filename),InputMat,ls,natoms,ATOMXYZ)
+       call calculate_density(trim(MyPlt%outputfile),InputMat,ls,natoms,ATOMXYZ,myplt)
 
        ! Electrostatic potential
     case('EP')
        write(ls%lupri,*) 'Writing electrostatic potential plt file...'
-       call calculate_ep(trim(filename),InputMat,ls,natoms,ATOMXYZ)
+       call calculate_ep(trim(MyPlt%outputfile),InputMat,ls,natoms,ATOMXYZ,myplt)
 
        ! Orbital 
     case('ORB')
@@ -301,25 +438,75 @@ contains
        call mat_free(tmpMat2)
 
        write(6,*) 'Writing orbital plt file...'
-       call calculate_pplt(trim(filename),iorb,InputMat,ls,natoms,ATOMXYZ)
+       call calculate_pplt(trim(MyPlt%outputfile),MyPlt%iorb,InputMat,ls,natoms,ATOMXYZ,myplt)
 
        ! Charge distribution
     case('CHARGEDIST')
        write(6,*) 'Writing charge distribution plt file...'
-       call calculate_charge(trim(filename),iorb,jorb,InputMat,ls,natoms,ATOMXYZ)
+       call calculate_charge(trim(MyPlt%outputfile),Myplt%iorb,myplt%jorb,InputMat,&
+            & ls,natoms,ATOMXYZ,myplt)
 
     case default
-       write(ls%lupri,*) 'PLT driver unknown input format: ', frmt
+       write(ls%lupri,*) 'PLT driver unknown input format: ', myplt%frmt
        call lsquit('PLT driver unknown input format',-1)
     end select
 
     deallocate(ATOMXYZ)
+
+    ! Tets calculate grid points
+    if(MyPlt%test) then
+       call plt_test_suite(MyPlt,ls%lupri)
+    end if
+
   end subroutine construct_plt_file_driver
 
+  
+  !> \brief Test PLT driver.
+  !> \author Kasper Kristensen
+  !> \date May 2013
+  subroutine plt_test_suite(MyPlt,lupri)
+    implicit none
+    !> Information about which PLT information to calculation (see type pltinfo)
+    type(pltinfo),intent(inout) :: MyPlt
+    !> LSDALTON.OUT unit number
+    integer,intent(in) :: lupri
+    integer :: iunit
+    integer(4) :: II,TD,reclen,nX,nY,nZ,i
+    real(4) :: Z1,Zn,Y1,Yn,X1,Xn
+    real(4),pointer :: values(:)
+
+    write(lupri,*) 'Testing PLT driver...'
+
+    !> Read in file generated by PLT driver
+    IUNIT=111
+    reclen=(MyPlt%nGRIDPOINTS + 11)
+    reclen=reclen*4
+    allocate(values(MyPlt%ngridpoints))
+
+    OPEN (IUNIT,FILE=trim(MyPlt%outputfile),STATUS='OLD',FORM='UNFORMATTED',&
+         & ACCESS='DIRECT',RECL=reclen)
+    READ(IUNIT,REC=1) II,TD,nZ,nY,nX,Z1,Zn,Y1,Yn,X1,Xn,values
+    CLOSE(IUNIT,STATUS='KEEP')
+
+    ! Check that number of points in X,Y,Z directions are consistent with PLT structure
+    if(MyPlt%nX/=nX .or. MyPlt%nY/=nY .or. MyPlt%nZ/=nZ) then
+       print *, 'Plt structure : ', MyPlt%nX, MyPlt%nY, MyPlt%nZ
+       print *, 'Read from file: ', nX, nY, nZ
+       call lsquit('plt_test_suite: Something wrong number of grid points!',-1)
+    end if
+
+    ! Calculate sum of values and min/max values
+    write(lupri,*) 'PLT TEST: Sum of values = ', sum(values)
+    write(lupri,*) 'PLT TEST: Minimum value = ', minval(values)
+    write(lupri,*) 'PLT TEST: Maximum value = ', maxval(values)
+    deallocate(values)
+
+
+  end subroutine plt_test_suite
 
   !> \brief Calculates charge distribution between two orbitals at grid points.
   !> KK: Whoever is responsible, please document this properly!
-  subroutine calculate_charge(filename,iorb,jorb,dCMO,ls,natoms,ATOMXYZ)
+  subroutine calculate_charge(filename,iorb,jorb,dCMO,ls,natoms,ATOMXYZ,MyPlt)
     implicit none
     type(matrix)                   :: dCMO
     type(lsitem)                   :: ls
@@ -327,6 +514,8 @@ contains
     integer,intent(in)             :: natoms
     integer                        :: nX,nY,nZ
     real(4), intent(in)            :: ATOMXYZ(3,nATOMS)
+    !> PLT info, including grid box info
+    type(pltinfo),intent(in) :: MyPlt
     !Local
     integer                        :: I,J,P,Q,Xg,Yg,Zg,nGRIDPOINTS
     integer                        :: orbnr, nORBITALS,nBASIS,iorb,jorb,iunit,ig
@@ -340,12 +529,18 @@ contains
 
     nORBITALS = dCMO%ncol
     nBASIS    = dCMO%nrow
-    ! Determine grid-box. It extends from
-    ! X1/Y1/Z1 to Xn/Yn/Zn in the x-/y-/z-directions,
-    ! and the number of gridpoints in these directions are nX/nY/nZ.
-    ! Thus, the total number of gridpoints is nGRIDPOINT=nX*nY*nZ.
-    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-         &ATOMXYZ,natoms,nGRIDPOINTS)
+
+    ! Copy grid box info from MyPlt structure for easier overview
+    nX = MyPlt%nX
+    nY = MyPlt%nY
+    nZ = MyPlt%nZ
+    deltax = MyPlt%deltax
+    deltay = MyPlt%deltay
+    deltaz = MyPlt%deltaz
+    X1 = MyPlt%X1
+    Y1 = MyPlt%Y1
+    Z1 = MyPlt%Z1
+    nGRIDPOINTS = MyPlt%nGRIDPOINTS
 
     allocate(moorb(nGRIDPOINTS), GAO(nBASIS),CMO(nBASIS,nORBITALS),tmp(nBASIS*nORBITALS)) !MO orbitals
     moorb = 0.0; ijk = 0
@@ -412,7 +607,7 @@ contains
 
   !> \brief Calculates orbital value at gridpoints.
   !> KK: Whoever is responsible, please document this properly!
-  subroutine calculate_pplt(filename,iorb,dCMO,ls,natoms,ATOMXYZ)
+  subroutine calculate_pplt(filename,iorb,dCMO,ls,natoms,ATOMXYZ,myplt)
     implicit none
     type(matrix)                   :: dCMO
     type(lsitem)                   :: ls
@@ -420,6 +615,9 @@ contains
     integer,intent(in)             :: natoms
     integer                        :: nX,nY,nZ
     real(4), intent(in)            :: ATOMXYZ(3,nATOMS)
+    !> PLT info, including grid box info
+    type(pltinfo),intent(in) :: MyPlt
+
     !Local
     integer                        :: I,J,P,Q,Xg,Yg,Zg,nGRIDPOINTS
     integer                        :: orbnr, nORBITALS,nBASIS,iorb,iunit,ig
@@ -434,12 +632,18 @@ contains
 
     nORBITALS = dCMO%ncol
     nBASIS    = dCMO%nrow
-    ! Determine grid-box. It extends from
-    ! X1/Y1/Z1 to Xn/Yn/Zn in the x-/y-/z-directions,
-    ! and the number of gridpoints in these directions are nX/nY/nZ.
-    ! Thus, the total number of gridpoints is nGRIDPOINT=nX*nY*nZ.
-    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-         &ATOMXYZ,natoms,nGRIDPOINTS)
+
+    ! Copy grid box info from MyPlt structure for easier overview
+    nX = MyPlt%nX
+    nY = MyPlt%nY
+    nZ = MyPlt%nZ
+    deltax = MyPlt%deltax
+    deltay = MyPlt%deltay
+    deltaz = MyPlt%deltaz
+    X1 = MyPlt%X1
+    Y1 = MyPlt%Y1
+    Z1 = MyPlt%Z1
+    nGRIDPOINTS = MyPlt%nGRIDPOINTS
 
     allocate(moorb(nGRIDPOINTS),CMO(nBASIS)) !MO orbitals
     moorb = 0; ijk = 0
@@ -512,7 +716,7 @@ contains
 
   !> \brief Calculates electrostatic potential at gridpoints.
   !> KK: Whoever is responsible, please document this properly!
-  subroutine calculate_ep(filename,D,ls,natoms,ATOMXYZ)
+  subroutine calculate_ep(filename,D,ls,natoms,ATOMXYZ,MyPlt)
     implicit none
     type(matrix)                   :: D
     type(matrix)                   :: dEPint
@@ -522,6 +726,8 @@ contains
     integer,intent(in)             :: natoms
     integer                        :: nX,nY,nZ
     real(4), intent(in)            :: ATOMXYZ(3,nATOMS)
+    !> PLT info, including grid box info
+    type(pltinfo),intent(in) :: MyPlt
     !Local
     real(realk), allocatable       :: R(:,:), emoorb(:)
     integer                        :: I,Q,Xg,Yg,Zg,nGRIDPOINTS
@@ -536,12 +742,18 @@ contains
 
     nORBITALS = D%ncol
     nBASIS    = D%nrow
-    ! Determine grid-box. It extends from
-    ! X1/Y1/Z1 to Xn/Yn/Zn in the x-/y-/z-directions,
-    ! and the number of gridpoints in these directions are nX/nY/nZ.
-    ! Thus, the total number of gridpoints is nGRIDPOINT=nX*nY*nZ.
-    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-         &ATOMXYZ,natoms,nGRIDPOINTS)
+
+    ! Copy grid box info from MyPlt structure for easier overview
+    nX = MyPlt%nX
+    nY = MyPlt%nY
+    nZ = MyPlt%nZ
+    deltax = MyPlt%deltax
+    deltay = MyPlt%deltay
+    deltaz = MyPlt%deltaz
+    X1 = MyPlt%X1
+    Y1 = MyPlt%Y1
+    Z1 = MyPlt%Z1
+    nGRIDPOINTS = MyPlt%nGRIDPOINTS
 
     allocate(moorb(nGRIDPOINTS),emoorb(nGRIDPOINTS),R(3,nGRIDPOINTS)) !MO orbitals
     moorb = 0_4; emoorb = 0_realk;
@@ -621,7 +833,7 @@ contains
 
   !> \brief Calculates electron density at gridpoints.
   !> KK: Whoever is responsible, please document this properly!
-  subroutine calculate_density(filename,dD,ls,natoms,ATOMXYZ)
+  subroutine calculate_density(filename,dD,ls,natoms,ATOMXYZ,myplt)
     implicit none
     type(matrix)                   :: dD
     type(lsitem)                   :: ls
@@ -629,6 +841,8 @@ contains
     integer,intent(in)             :: natoms
     integer                        :: nX,nY,nZ
     real(4), intent(in)            :: ATOMXYZ(3,nATOMS)
+    !> PLT info, including grid box info
+    type(pltinfo),intent(in) :: MyPlt
     !Local
     integer                        :: I,J,P,Q,Xg,Yg,Zg,nGRIDPOINTS
     integer                        :: orbnr,nBASIS,iorb,iunit,ig
@@ -642,12 +856,18 @@ contains
     br=real(bohr_to_angstrom,4)
 
     nBASIS    = dD%nrow
-    ! Determine grid-box. It extends from
-    ! X1/Y1/Z1 to Xn/Yn/Zn in the x-/y-/z-directions,
-    ! and the number of gridpoints in these directions are nX/nY/nZ.
-    ! Thus, the total number of gridpoints is nGRIDPOINT=nX*nY*nZ.
-    call DETERMINE_GRIDBOX(X1,nX,Y1,nY,Z1,nZ,deltax,deltay,deltaz,&
-         &ATOMXYZ,natoms,nGRIDPOINTS)
+
+    ! Copy grid box info from MyPlt structure for easier overview
+    nX = MyPlt%nX
+    nY = MyPlt%nY
+    nZ = MyPlt%nZ
+    deltax = MyPlt%deltax
+    deltay = MyPlt%deltay
+    deltaz = MyPlt%deltaz
+    X1 = MyPlt%X1
+    Y1 = MyPlt%Y1
+    Z1 = MyPlt%Z1
+    nGRIDPOINTS = MyPlt%nGRIDPOINTS
 
     write(*,*)  'calculate_density2 computing',nGRIDPOINTS, ' gridpoints' 
 
@@ -773,13 +993,15 @@ contains
 
   !> \brief Make PLT files for specific orbitals
   !> Ida, please document properly!
-  subroutine make_orbitalplot_file(CMO,CFG,ls)
+  subroutine make_orbitalplot_file(CMO,CFG,ls,MyPlt)
     implicit none
     !> file containing localized orbitals
     type(matrix) :: CMO 
     type(RedSpaceItem) :: CFG
     type(lsitem) :: ls
-    integer :: indx1,indx2,nocc
+    !> Info for PLT generation
+    type(pltinfo),intent(inout) :: MyPlt
+    integer :: nocc
 
 
     IF(ls%setting%integraltransformGC)THEN
@@ -788,52 +1010,69 @@ contains
     ENDIF
 
     nocc=int(ls%input%molecule%nelectrons/2)
+    MyPlt%frmt = 'ORB'
 
     select case (trim(CFG%plt_orbital))
     case('HOMO')
-       indx1 = nocc
+       MyPLt%iorb = nocc
+       Myplt%outputfile = 'HOMO.plt'
        write(ls%lupri,*) 'Writing plt file for HOMO...'
-       call construct_plt_file_driver('HOMO.plt','ORB',CMO,ls,indx1,-1)
+       call construct_plt_file_driver(MyPlt,CMO,ls)
     case('LUMO')
-       indx1 = nocc+1
+       MyPlt%iorb = nocc+1
+       Myplt%outputfile = 'LUMO.plt'
        write(ls%lupri,*) 'Writing plt file for LUMO...'
-       call construct_plt_file_driver('LUMO.plt','ORB',CMO,ls,indx1,-1)
+       call construct_plt_file_driver(MyPlt,CMO,ls)
     case('LEASTL')
        write(ls%lupri,*) 'Writing plt file for the least local occupied and virtual orbitals...'
-       indx1=CFG%leastl_occ
-       indx2=CFG%leastl_virt
-       if (indx1>0) call construct_plt_file_driver('LeastLocal_occ.plt','ORB',CMO,ls,indx1,-1)
-       if (indx2>0) call construct_plt_file_driver('Leastlocal_virt.plt','ORB',CMO,ls,indx2,-1)
+       MyPlt%iorb=CFG%leastl_occ
+       Myplt%outputfile = 'LeastLocal_occ.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
+
+       MyPlt%iorb=CFG%leastl_virt
+       Myplt%outputfile = 'LeastLocal_virt.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
     case('MOSTL')
        write(ls%lupri,*) 'Writing plt file for the most local occupied and virtual orbitals...'
-       indx1=CFG%mostl_occ
-       indx2=CFG%mostl_virt
-       if (indx1>0) call construct_plt_file_driver('MostLocal_occ.plt','ORB',CMO,ls,indx1,-1)
-       if (indx2>0) call construct_plt_file_driver('Mostlocal_virt.plt','ORB',CMO,ls,indx2,-1)
+       MyPlt%iorb=CFG%mostl_occ
+       Myplt%outputfile = 'MostLocal_occ.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
+
+       Myplt%outputfile = 'MostLocal_virt.plt'
+       MyPlt%iorb=CFG%mostl_virt
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
     case('ALL')
        write(ls%lupri,*) 'Writing plt file for the least local occupied and virtual orbitals...'
-       indx1=CFG%leastl_occ
-       indx2=CFG%leastl_virt
-       if (indx1>0) call construct_plt_file_driver('LeastLocal_occ.plt','ORB',CMO,ls,indx1,-1)
-       if (indx2>0) call construct_plt_file_driver('Leastlocal_virt.plt','ORB',CMO,ls,indx2,-1)
+       MyPlt%iorb=CFG%leastl_occ
+       Myplt%outputfile = 'LeastLocal_occ.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
+
+       MyPlt%iorb=CFG%leastl_virt
+       Myplt%outputfile = 'LeastLocal_virt.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
+
        write(ls%lupri,*) 'Writing plt file for the most local occupied and virtual orbitals...'
-       indx1=CFG%mostl_occ
-       indx2=CFG%mostl_virt
-       if (indx1>0) call construct_plt_file_driver('MostLocal_occ.plt','ORB',CMO,ls,indx1,-1)
-       if (indx2>0) call construct_plt_file_driver('Mostlocal_virt.plt','ORB',CMO,ls,indx2,-1)
+       MyPlt%iorb=CFG%mostl_occ
+       Myplt%outputfile = 'MostLocal_occ.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
+
+       MyPlt%iorb=CFG%mostl_virt
+       Myplt%outputfile = 'MostLocal_virt.plt'
+       if (MyPlt%iorb>0) call construct_plt_file_driver(MyPlt,CMO,ls)
+
     case default
        write(ls%lupri,*) '========== SOMETHING WRONG WHEN MAKING .plt FILE ================'
        write(ls%lupri,*) 'None of the valid options chosen. Use the options'
        write(ls%lupri,*) ' HOMO,LUMO,MOSTL,LEASTL or ALL below keyword .ORBITAL PLOT'
        write(ls%lupri,*) ' If you want to plot other than the above orbitals, consider using'
-       write(ls%lupri,*) ' **PLOT option where you may specify any orbital index.'
+       write(ls%lupri,*) ' **PLT option where you may specify any orbital index.'
        write(ls%lupri,*) '================================================================='
 
        write(*,*) '========== SOMETHING WRONG WHEN MAKING .plt FILE ================'
        write(*,*) 'None of the valid options chosen. Use the options'
        write(*,*) ' HOMO,LUMO,MOSTL,LEASTL or ALL below keyword .ORBITAL PLOT'
        write(*,*) ' If you want to plot other than the above orbitals, consider using'
-       write(*,*) ' **PLOT option where you may specify any orbital index.'
+       write(*,*) ' **PLT option where you may specify any orbital index.'
        write(*,*) '================================================================='
     end select
 
