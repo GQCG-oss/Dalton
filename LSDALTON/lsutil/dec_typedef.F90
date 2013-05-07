@@ -292,22 +292,6 @@ module dec_typedef_module
   end type DECSETTINGS
 
 
-  !tile structure
-  type tile
-    type(c_ptr) :: c
-    real(realk),pointer :: t(:) => null()         !data in tiles
-    integer,pointer :: d(:)     => null()         !actual dimension of the tiles
-    integer :: e,gt                               !number of elements in current tile, global ti nr
-  end type tile
-  type scalapack_block_info
-    integer,pointer :: fe(:)  => null()            !first element in row/column blocks(rowidx:first element,colidx:node), length of row/column batches (rowidx:length,colidx:node)
-    integer,pointer :: lb(:)  => null()
-    integer,pointer :: bpn(:) => null()    !blocks per node, leading dimension of distributed matrix on node, indices as above
-    integer,pointer :: ldn(:) => null()
-    integer :: mld,mnb,mnbpn            !maximum leading dimension and maximum number of batches (per node) define the size of some matrices and thus index restrictions
-  endtype scalapack_block_info
-
-
 
   type array2
 

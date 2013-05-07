@@ -1907,9 +1907,9 @@ contains
       if(scheme==1) write(DECinfo%output,'("Using memory saving scheme with direct updates")')
       if(scheme==0) write(DECinfo%output,'("Using memory saving scheme (NON-PDM), this is only for non-MPI")')
       ActuallyUsed=get_min_mem_req(no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,3,scheme,.false.)
-      write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")'),ActuallyUsed/MemFree*100
+      write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part B on master")')ActuallyUsed/MemFree*100
       ActuallyUsed=get_min_mem_req(no,nv,nb,MaxActualDimAlpha,MaxActualDimGamma,2,scheme,.false.)
-      write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")'),ActuallyUsed/MemFree*100
+      write(DECinfo%output,'("Using",1f8.4,"% of available Memory in part C on master")')ActuallyUsed/MemFree*100
     endif
     
 
@@ -2551,7 +2551,7 @@ contains
 #ifdef VAR_LSMPI
         write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
 #else
-        write(DECinfo%output,'("C and D   :",f15.4)'),stopp-startt
+        write(DECinfo%output,'("C and D   :",f15.4)')stopp-startt
 #endif
       endif
     endif
@@ -2658,7 +2658,7 @@ contains
 #elif VAR_LSMPI
     stopp=MPI_wtime()
 #endif
-    write(DECinfo%output,'("Fock trafo:",f15.4)'),stopp-startt
+    write(DECinfo%output,'("Fock trafo:",f15.4)')stopp-startt
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_LSMPI
@@ -2703,7 +2703,7 @@ contains
 #elif VAR_LSMPI
     stopp=MPI_wtime()
 #endif
-    write(DECinfo%output,'("S and E   :",f15.4)'),stopp-startt
+    write(DECinfo%output,'("S and E   :",f15.4)')stopp-startt
 
 
 #ifdef VAR_LSMPI
@@ -2938,7 +2938,7 @@ contains
        if(prnt)write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")'),infpar%mynum,&
        &a,na,g,ng
 #else
-       write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")'),a,&
+       write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
        &na,g,ng
 #endif
        call lsmpi_poke()
@@ -4510,13 +4510,13 @@ contains
 #endif
             if (mem_used>frac_of_total_mem*MemFree)then
               write(DECinfo%output,*) "MINIMUM MEMORY REQUIREMENT IS NOT AVAILABLE"
-              write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")'),&
+              write(DECinfo%output,'("Fraction of free mem to be used:          ",f8.3," GB")')&
               &frac_of_total_mem*MemFree
-              write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")'),mem_used
+              write(DECinfo%output,'("Memory required in memory saving scheme:  ",f8.3," GB")')mem_used
               mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,1,.false.)
-              write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")'),mem_used
+              write(DECinfo%output,'("Memory required in intermediate scheme: ",f8.3," GB")')mem_used
               mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,2,.false.)
-              write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")'),mem_used
+              write(DECinfo%output,'("Memory required in memory wasting scheme: ",f8.3," GB")')mem_used
               call lsquit("ERROR(CCSD): there is just not enough memory&
               &available",DECinfo%output)
 #ifndef VAR_LSMPI
@@ -4900,10 +4900,10 @@ contains
     endif
 
     if(print_stuff) then
-      write(DECinfo%output,*), "Memory requirements:"
-      write(DECinfo%output,*), "Basic  :",(memrq *8.0E0_realk)/(1.024E3_realk**3)
-      write(DECinfo%output,*), "Part B :",(memin *8.0E0_realk)/(1.024E3_realk**3)
-      write(DECinfo%output,*), "Part C :",(memout*8.0E0_realk)/(1.024E3_realk**3)
+      write(DECinfo%output,*) "Memory requirements:"
+      write(DECinfo%output,*) "Basic  :",(memrq *8.0E0_realk)/(1.024E3_realk**3)
+      write(DECinfo%output,*) "Part B :",(memin *8.0E0_realk)/(1.024E3_realk**3)
+      write(DECinfo%output,*) "Part C :",(memout*8.0E0_realk)/(1.024E3_realk**3)
     endif
     select case(choice)
       case(1)

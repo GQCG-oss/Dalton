@@ -1971,9 +1971,9 @@ if (.not. unres) then
 endif
 
 write (lupri, '("Electronic contribution to dipole moment in a.u.")')
-write (lupri, '("x ", e15.6)'), dip(1)
-write (lupri, '("y ", e15.6)'), dip(2)
-write (lupri, '("z ", e15.6)'), dip(3)
+write (lupri, '("x ", e15.6)') dip(1)
+write (lupri, '("y ", e15.6)') dip(2)
+write (lupri, '("z ", e15.6)') dip(3)
 
 end subroutine soeo_dipole
 !=======================================================================
@@ -2044,10 +2044,10 @@ enddo
 !end debug
 
 write (soeo%lupri, '("Electronic contribution to polarizability in a.u.")')
-write (soeo%lupri, '("  ", 3a15)'), "x", "y", "z"
-write (soeo%lupri, '("x ", 3e15.6)'), pol(1,1), pol(1,2), pol(1,3)
-write (soeo%lupri, '("y ", 3e15.6)'), pol(2,1), pol(2,2), pol(2,3)
-write (soeo%lupri, '("z ", 3e15.6)'), pol(3,1), pol(3,2), pol(3,3)
+write (soeo%lupri, '("  ", 3a15)') "x", "y", "z"
+write (soeo%lupri, '("x ", 3e15.6)') pol(1,1), pol(1,2), pol(1,3)
+write (soeo%lupri, '("y ", 3e15.6)') pol(2,1), pol(2,2), pol(2,3)
+write (soeo%lupri, '("z ", 3e15.6)') pol(3,1), pol(3,2), pol(3,3)
 
 !debug polarizability
 !calculate the change in occupation numbers along v1(z) to see if this 

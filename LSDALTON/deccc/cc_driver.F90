@@ -3089,8 +3089,8 @@ contains
         if(file_exists11)then
           file_status11=.true.
           OPEN(fu_t11,FILE=fullname11,STATUS='OLD',FORM='UNFORMATTED')
-          READ(fu_t11),saved_iter11
-          READ(fu_t11),saved_nel11
+          READ(fu_t11)saved_iter11
+          READ(fu_t11)saved_nel11
           if(saved_nel11/=no*nv)then
             call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
             &file",DECinfo%output)
@@ -3102,8 +3102,8 @@ contains
         if(file_exists12)then
           file_status12=.true.
           OPEN(fu_t12,FILE=fullname12,STATUS='OLD',FORM='UNFORMATTED')
-          READ(fu_t12),saved_iter12
-          READ(fu_t12),saved_nel12
+          READ(fu_t12)saved_iter12
+          READ(fu_t12)saved_nel12
           if(saved_nel12/=no*nv)then
             call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
             &file",DECinfo%output)
@@ -3138,8 +3138,8 @@ contains
       if(file_exists21)then
         file_status21=.true.
         OPEN(fu_t21,FILE=fullname21,STATUS='OLD',FORM='UNFORMATTED')
-        READ(fu_t21),saved_iter21
-        READ(fu_t21),saved_nel21
+        READ(fu_t21)saved_iter21
+        READ(fu_t21)saved_nel21
         if(saved_nel21/=no*no*nv*nv)then
           call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
           &file",DECinfo%output)
@@ -3151,8 +3151,8 @@ contains
       if(file_exists22)then
         file_status22=.true.
         OPEN(fu_t22,FILE=fullname22,STATUS='OLD',FORM='UNFORMATTED')
-        READ(fu_t22),saved_iter22
-        READ(fu_t22),saved_nel22
+        READ(fu_t22)saved_iter22
+        READ(fu_t22)saved_nel22
         if(saved_nel22/=no*no*nv*nv)then
           call lsquit("ERROR(ccsolver_par):wrong dimensions in amplitude &
           &file",DECinfo%output)
@@ -3172,16 +3172,16 @@ contains
           CLOSE(fu_t21)
           readfile2=.true.
         endif
-        WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)'),iter_start
+        WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
       elseif(file_status21)then
         iter_start=saved_iter21
         fu_t2=fu_t21
-        WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)'),iter_start
+        WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
         readfile2=.true.
       elseif(file_status22)then
         iter_start=saved_iter22
         fu_t2=fu_t22
-        WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)'),iter_start
+        WRITE(DECinfo%output,'("RESTARTING CC CALCULATION WITH TRIAL-VECS FROM: ",I3)')iter_start
         readfile2=.true.
       else
         iter_start=1
@@ -3190,14 +3190,14 @@ contains
 
 
     if(readfile1)then
-      READ(fu_t1),t1%elm1
+      READ(fu_t1)t1%elm1
       CLOSE(fu_t1)
       restart = .true.
     else
       call array_zero(t1)
     endif
     if(readfile2)then
-      READ(fu_t2), t2%elm1
+      READ(fu_t2) t2%elm1
       CLOSE(fu_t2)
       restart = .true.
     else
@@ -3228,8 +3228,8 @@ contains
     logical :: all_singles
     character(ARR_MSG_LEN) :: msg
 #ifdef SYS_AIX
-    character(12) :: funllname11, fullname12, fullname21, fullname22
-    character(12) :: funllname11D, fullname12D, fullname21D, fullname22D
+    character(12) :: fullname11,  fullname12,  fullname21,  fullname22
+    character(12) :: fullname11D, fullname12D, fullname21D, fullname22D
 #else
     character(11) :: fullname11, fullname12, fullname21, fullname22
     character(11) :: fullname11D, fullname12D, fullname21D, fullname22D
@@ -3242,17 +3242,22 @@ contains
     if(DECinfo%use_singles.and.all_singles)then
       !msg="singles norm save"
       !call print_norm(t1,msg)
+#ifdef SYS_AIX
+      fullname11=safefilet11//'.writing\0'
+      fullname12=safefilet12//'.writing\0'
+#else
       fullname11=safefilet11//'.writing'
       fullname12=safefilet12//'.writing'
+#endif
 
       if(mod(iter,2)==1)then
         file_status11=.false. 
         OPEN(fu_t11,FILE=fullname11,STATUS='REPLACE',FORM='UNFORMATTED')
-        WRITE(fu_t11),iter
-        WRITE(fu_t11),t1%nelms
-        WRITE(fu_t11),t1%elm1
+        WRITE(fu_t11)iter
+        WRITE(fu_t11)t1%nelms
+        WRITE(fu_t11)t1%elm1
         file_status11=.true.
-        WRITE(fu_t11),file_status11
+        WRITE(fu_t11)file_status11
         ENDFILE(fu_t11)
         CLOSE(fu_t11)
 #ifdef SYS_AIX
@@ -3266,11 +3271,11 @@ contains
       elseif(mod(iter,2)==0)then
         file_status12=.false. 
         OPEN(fu_t12,FILE=fullname12,STATUS='REPLACE',FORM='UNFORMATTED')
-        WRITE(fu_t12),iter
-        WRITE(fu_t12),t1%nelms
-        WRITE(fu_t12),t1%elm1
+        WRITE(fu_t12)iter
+        WRITE(fu_t12)t1%nelms
+        WRITE(fu_t12)t1%elm1
         file_status12=.true.
-        WRITE(fu_t12),file_status12
+        WRITE(fu_t12)file_status12
         ENDFILE(fu_t12)
         CLOSE(fu_t12)
 #ifdef SYS_AIX
@@ -3294,11 +3299,11 @@ contains
     if(mod(iter,2)==1)then
       file_status21=.false. 
       OPEN(fu_t21,FILE=fullname21,STATUS='REPLACE',FORM='UNFORMATTED')
-      WRITE(fu_t21),iter
-      WRITE(fu_t21),t2%nelms
-      WRITE(fu_t21),t2%elm1
+      WRITE(fu_t21)iter
+      WRITE(fu_t21)t2%nelms
+      WRITE(fu_t21)t2%elm1
       file_status21=.true. 
-      WRITE(fu_t22),file_status21
+      WRITE(fu_t22)file_status21
       ENDFILE(fu_t21)
       CLOSE(fu_t21)
 #ifdef SYS_AIX
@@ -3312,11 +3317,11 @@ contains
     elseif(mod(iter,2)==0)then
       file_status22=.false. 
       OPEN(fu_t22,FILE=fullname22,STATUS='REPLACE',FORM='UNFORMATTED')
-      WRITE(fu_t22),iter
-      WRITE(fu_t22),t2%nelms
-      WRITE(fu_t22),t2%elm1
+      WRITE(fu_t22)iter
+      WRITE(fu_t22)t2%nelms
+      WRITE(fu_t22)t2%elm1
       file_status22=.true.
-      WRITE(fu_t22),file_status22
+      WRITE(fu_t22)file_status22
       ENDFILE(fu_t22)
       CLOSE(fu_t22)
 #ifdef SYS_AIX
