@@ -575,7 +575,19 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 do
                     read(luinp,*) option
                     call chcase(option)
-                    if (trim(option(1:)) == 'GRID') then
+                    if (trim(option(1:)) == 'COARSE') then
+                        xgrid = 3
+                        ygrid = 3
+                        zgrid = 3
+                    else if (trim(option(1:)) == 'MEDIUM') then
+                        xgrid = 6
+                        ygrid = 6
+                        zgrid = 6
+                    else if (trim(option(1:)) == 'FINE') then
+                        xgrid = 12
+                        ygrid = 12
+                        zgrid = 12
+                    else if (trim(option(1:)) == 'GRID') then
                         read(luinp,*) xsize, xgrid, ysize, ygrid, zsize, zgrid
                     else if (trim(option(1:)) == 'FIELD') then
                         mep_field = .true.
