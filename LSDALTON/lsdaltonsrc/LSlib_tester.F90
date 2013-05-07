@@ -14,7 +14,7 @@ use lsmpi_type, only: lsmpi_finalize
   use memory_handling
 #endif
 implicit none
-Integer             :: nbast,natoms,nelectrons,lupri,luerr,i,j,k,l,n,m,x,y,iGrad,iHess,ij
+Integer             :: nbast,natoms,nelectrons,lupri,luerr,i,j,k,l,n,m,o,x,y,z,iGrad,iHess,iCubic,ij
 #ifdef LSLIB_RESTART
   type(matrix) :: D
   logical :: dens_exsist, OnMaster=.true., gcbasis
@@ -24,6 +24,7 @@ Integer,parameter   :: realk = 8
 #endif
 Real(realk),pointer :: Smat(:,:),Dmat(:,:,:),TempMat(:,:,:),TempGrad(:,:,:),DFD(:,:,:),h1(:,:),Fmat(:,:,:)
 Real(realk),pointer :: TempHess(:,:,:,:,:)
+Real(realk),pointer :: TempCubic(:,:,:,:,:,:,:)
 Real(realk)         :: tmp1,tmp2,EXC(2),constant
 Real(realk),pointer :: eri(:,:,:,:,:)
 Integer,external    :: LSlib_get_nbasis
@@ -680,11 +681,11 @@ write(lupri,'(A80,2F18.10)') 'Coulomb gradient from diff-eri (Dirac): RMS and in
      &                     sqrt(tmp1/natoms/3),tmp2/natoms/3
 #endif
 
+#if 0
 !*****************************************************************************
 !******                             Coulomb Hessian from differentiated 4-center ERI (Mulliken)
 !*****************************************************************************
 
-#if 0
 deallocate(eri)
 nullify(eri)
 allocate(eri(nbast,nbast,nbast,nbast,9*nAtoms*nAtoms))
@@ -706,9 +707,9 @@ DO n=1,nAtoms
          DO k=1,nbast
           DO j=1,nbast
            DO i=1,nbast
-            TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + &
-     &         2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iHess)*Dmat(k,l,1)
-!           TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + 0.25_realk*eri(i,j,k,l,iHess)
+!           TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + &
+!    &         2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iHess)*Dmat(k,l,1)
+            TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + 0.25_realk*eri(i,j,k,l,iHess)
            ENDDO
           ENDDO
          ENDDO
@@ -728,7 +729,7 @@ DO n=1,nAtoms
         iHess = iHess+1
         tmp1=tmp1+TempHess(y,m,x,n,1)*TempHess(y,m,x,n,1)
         tmp2=tmp2+TempHess(y,m,x,n,1)*iHess
-!write(*,'(A,I4,F21.9)') 'Hessian components:',iHess,TempHess(y,m,x,n,1)
+ write(*,'(A,I4,F21.9)') 'Hessian components:',iHess,TempHess(y,m,x,n,1)
       ENDDO
     ENDDO
   ENDDO
@@ -736,6 +737,72 @@ ENDDO
 write(lupri,'(A80,2F18.10)') 'Coulomb Hessian from diff-eri (Mulliken): RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/natoms/9),tmp2/natoms/natoms/9
 deallocate(TempHess)
+
+#endif
+#if 0
+!*****************************************************************************
+!******                             Coulomb third derivative from differentiated 4-center ERI (Mulliken)
+!*****************************************************************************
+
+deallocate(eri)
+nullify(eri)
+allocate(eri(nbast,nbast,nbast,nbast,27*nAtoms*nAtoms*nAtoms))
+call ls_dzero(eri,nbast*nbast*nbast*nbast*27*nAtoms*nAtoms*nAtoms)
+
+CALL LSlib_get_4center_eri_geoderiv(eri,nbast,3,27*nAtoms*nAtoms*nAtoms,.FALSE.,lupri,luerr)
+
+nullify(TempCubic)
+allocate(TempCubic(3,nAtoms,3,nAtoms,3,nAtoms,1))
+call ls_dzero(TempCubic,natoms*3*nAtoms*3*nAtoms*3)
+
+iCubic = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        DO o=1,nAtoms
+          DO z=1,3
+            iCubic = iCubic+1
+            DO l=1,nbast
+             DO k=1,nbast
+              DO j=1,nbast
+               DO i=1,nbast
+!               TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + &
+!    &             2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
+                TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + 0.25_realk*eri(i,j,k,l,iCubic)
+             ENDDO
+            ENDDO
+           ENDDO
+          ENDDO
+         ENDDO
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+   
+tmp1 = 0.0_realk
+tmp2 = 0.0_realk
+iCubic = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        DO o=1,nAtoms
+          DO z=1,3
+            iCubic = iCubic+1
+            tmp1=tmp1+TempCubic(z,o,y,m,x,n,1)*TempCubic(z,o,y,m,x,n,1)
+            tmp2=tmp2+TempCubic(z,o,y,m,x,n,1)*iCubic
+ write(*,'(A,7I4,F21.9)') 'Cubic force components:',iCubic,o,m,n,z,y,x,TempCubic(z,o,y,m,x,n,1)
+          ENDDO
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+write(lupri,'(A80,2F18.10)') 'Coulomb Cubic force from diff-eri (Mulliken): RMS and index-weighted sum',&
+     &                     sqrt(tmp1/natoms/natoms/natoms/27),tmp2/natoms/natoms/natoms/27
+deallocate(TempCubic)
 #endif
 
 
