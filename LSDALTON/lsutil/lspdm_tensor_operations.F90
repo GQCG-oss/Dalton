@@ -52,7 +52,7 @@ module lspdm_tensor_operations_module
   !> persistent array type-def
   type persistent_array
     !> collection of arrays
-    type(array) :: a(n_arrays)
+    type(array),pointer :: a(:)
     !> current address on node
     integer :: curr_addr_on_node=1
     !> counter for how many arrays were allocated in the persisten array
@@ -65,7 +65,7 @@ module lspdm_tensor_operations_module
     integer :: new_offset = 0
     !> list of n logicals as indicator wheter an adress is free to allocate a
     !new array
-    logical :: free_addr_on_node(n_arrays)=.true.
+    logical,pointer :: free_addr_on_node(:) => null()
   endtype persistent_array
 
   save
@@ -104,6 +104,24 @@ module lspdm_tensor_operations_module
   integer(kind=long) :: bytes_transferred_get = 0
   integer(kind=long) :: nmsg_get = 0
   contains
+
+  !>  \brief intitialize storage room for the tiled distributed arrays
+  !> \author Patrick Ettenhuber
+  !> \date May 2013
+  subroutine init_persistent_array()
+    implicit none
+    call mem_alloc(p_arr%a,n_arrays)
+    call mem_alloc(p_arr%free_addr_on_node,n_arrays)
+    p_arr%free_addr_on_node=.true.
+  end subroutine init_persistent_array
+  !>  \brief free storage room for the tiled distributed arrays
+  !> \author Patrick Ettenhuber
+  !> \date May 2013
+  subroutine free_persistent_array()
+    implicit none
+    call mem_dealloc(p_arr%a)
+    call mem_dealloc(p_arr%free_addr_on_node)
+  end subroutine free_persistent_array
 
   !> \brief main subroutine for the communication of nodes on grid handling arr structures
   !> \author Patrick Ettenhuber
