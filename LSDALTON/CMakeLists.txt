@@ -71,6 +71,7 @@ option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
 option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"           OFF)
 option(ENABLE_LSEEK          "Enable lseek"                  OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"              OFF)
+option(ENABLE_RELEASE        "Enable Release"                OFF)
 #option(ENABLE_EXTERNLIB      "Create lsdaltonextern.a extern lib " OFF)
 option(ENABLE_GIT_SUBMODULES "Download external projects using Git submodules at compilation time" ON)
 
@@ -152,6 +153,10 @@ if(NOT ENABLE_CRAYWRAPPER)
          ${OWN_LAPACK_SOURCES}
        )
     endif()
+endif()
+
+if(ENABLE_RELEASE)
+   add_definitions(-DMOD_UNRELEASED)
 endif()
 
 if(ENABLE_MPI)
