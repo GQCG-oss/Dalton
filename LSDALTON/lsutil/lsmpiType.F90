@@ -177,18 +177,28 @@ module lsmpi_type
 !#else
   integer,parameter :: SPLIT_MPI_MSG=2147483640
 !#endif
-  !integer conversion factor
-#ifdef VAR_INT64
-#ifdef VAR_LSMPI_32
-  integer,parameter :: int_to_short=4
-#else
-  integer,parameter :: int_to_short=8
-#endif
-#else
-  integer,parameter :: int_to_short=4
-#endif
-  logical :: AddToBuffer
   integer(kind=ls_mpik) :: status(MPI_STATUS_SIZE) 
+  type mpigroup
+     integer(kind=ls_mpik) :: groupsize
+     integer(kind=ls_mpik),pointer :: ranks(:)
+  end type mpigroup
+#endif
+!integer conversion factor
+#ifdef VAR_INT64
+#ifdef VAR_LSMPI
+#ifdef VAR_LSMPI_32
+  integer,parameter :: int_to_short=4 !int64,mpi & mpi32
+#else
+  integer,parameter :: int_to_short=8 !int64,mpi nompi32
+#endif
+#else
+  integer,parameter :: int_to_short=8 !int64 nompi
+#endif
+#else
+  integer,parameter :: int_to_short=4 !no int64
+#endif
+  !nonMPI stuff
+  logical :: AddToBuffer
   integer(kind=long) :: iLog,iDP,iInt4,iInt8,iSho,iCha
   integer(kind=long) :: nLog,nDP,nShort,nInteger4,nInteger8,nCha
   real(realk),pointer :: lsmpibufferDP(:)
@@ -199,17 +209,12 @@ module lsmpi_type
   character,pointer :: lsmpibufferCha(:)
   integer,parameter :: incremLog=169,incremDP=100,incremInteger=626
   integer,parameter :: incremCha=1510,incremShort=incremInteger*int_to_short
-  type mpigroup
-     integer(kind=ls_mpik) :: groupsize
-     integer(kind=ls_mpik),pointer :: ranks(:)
-  end type mpigroup
-#endif
   real(realk) :: poketime=0.0E0_realk
   integer(kind=long) :: poketimes = 0
 
-!$OMP THREADPRIVATE(AddToBuffer,iLog,iDP,iInt,iSho,iCha,&
-!$OMP nLog,nDP,nInteger,nShort,nCha,lsmpibufferDP,lsmpibufferInt,&
-!$OMP lsmpibufferSho,lsmpibufferLog,lsmpibufferCha)
+!$OMP THREADPRIVATE(AddToBuffer,iLog,iDP,iInt4,iInt8,iSho,iCha,&
+!$OMP nLog,nDP,nInteger4,nInteger8,nShort,nCha,lsmpibufferDP,lsmpibufferInt4,&
+!$OMP lsmpibufferInt8,lsmpibufferSho,lsmpibufferLog,lsmpibufferCha)
 
 contains
 
