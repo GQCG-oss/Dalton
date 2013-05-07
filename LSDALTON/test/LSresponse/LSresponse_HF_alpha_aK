@@ -22,7 +22,7 @@ cat > LSresponse_HF_alpha_aK.info <<'%EOF%'
    -------------------
    Molecule:         H2O2
    Wave Function:    HF / 6-31+G* / 3-21G (JK aux.basis for ADMM)
-   Test Purpose:     Test real and complex polarizability in LSDALTON 
+   Test Purpose:     Test real and complex polarizability in LSDALTON
                      using the ADMM approximation for the exchange contribution
                      (Patrick Merlot).
 %EOF%
@@ -53,14 +53,11 @@ cat > LSresponse_HF_alpha_aK.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.PRINTFINALCMO
 .NVEC
 8
 .CONVTHR
 1.0D-6
 **RESPONS
-.NEXCIT
-5
 *SOLVER
 .CONVTHR
 1.0D-6
