@@ -1176,7 +1176,7 @@ if (prnt==4) then
     call soeo_solver_getX (iter, lub_m, lub_v, lusp, xred, zero, X_m, X_v)
     normm = soeo_norm (X_m, X_v)
   
-    write (lupri, '("FINDMU", 2es15.5)'), middle, normm
+    write (lupri, '("FINDMU", 2es15.5)') middle, normm
   
     middle = middle - 1.0E-1_realk
     if (middle < -20.0E0_realk) exit

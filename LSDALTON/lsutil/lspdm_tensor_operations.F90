@@ -2754,11 +2754,11 @@ module lspdm_tensor_operations_module
 #endif
     nintel = o2v2/nnod
     firstintel = me*nintel + 1
-    if(me<mod(o2v2,nnod))then
+    if(me<int(mod(o2v2,int(nnod,kind=long)),kind=ls_mpik))then
       nintel = nintel + 1
-      firstintel = firstintel + me 
-    elseif(me>=mod(o2v2,nnod))then
-      firstintel = firstintel + mod(o2v2,nnod) 
+      firstintel = firstintel + int(me) 
+    elseif(me>=int(mod(o2v2,int(nnod,kind=long)),kind=ls_mpik))then
+      firstintel = firstintel + int(mod(o2v2,int(nnod,kind=long))) 
     endif
   end subroutine get_int_dist_info
 
