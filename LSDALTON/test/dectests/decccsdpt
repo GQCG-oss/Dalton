@@ -64,7 +64,6 @@ $END INFO
 .FOT
 4
 .FragmentAdapted
-.CCSDsolver_par
 .manual_batchsizes
 19 19
 .MPIsplit

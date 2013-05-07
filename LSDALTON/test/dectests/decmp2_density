@@ -18,8 +18,8 @@ fi
 #  TEST DESCRIPTION
 #######################################################################
 cat > decmp2_density.info <<'%EOF%'
-   DEC-MP2 density matrix where integral batching in enforced and using frozen core
-   --------------------------------------------------------------------------------
+   DEC-MP2 density matrix using frozen core
+   ----------------------------------------
    Molecule:         C2H4
    Wave Function:    MP2 / 6-31G
    Test Purpose:     Calculate DEC-MP2 energy and density matrix (Kasper K)

@@ -25,6 +25,8 @@ module pe_variables
     logical, save :: pe_nomb = .false.
     logical, save :: pe_gauss = .false.
     logical, save :: pe_polar = .false.
+    logical, save :: pe_cube = .false.
+    logical, save :: pe_infld = .false.
     logical, save :: pe_mep = .false.
     logical, save :: pe_skipqm = .false.
     logical, save :: pe_twoint = .false.
@@ -34,7 +36,6 @@ module pe_variables
     logical, save :: pe_fdes = .true.
     logical, save :: pe_sol = .false.
     logical, save :: pe_noneq = .true.
-    logical, save :: pe_infld = .false.
     logical, save :: pe_restart = .false.
     logical, save :: pe_verbose = .false.
     logical, save :: pe_debug = .false.
@@ -183,8 +184,9 @@ module pe_variables
     logical, dimension(:), allocatable, save :: zeroalphas
 
 
-    ! MEP stuff
+    ! CUBE stuff
     ! ---------
+    ! options for MEP
     ! create QM cubes
     logical, save :: mep_qmcube = .true.
     ! create multipole cubes
@@ -195,10 +197,11 @@ module pe_variables
     ! calculate electric field
     logical, save :: mep_field = .false.
     logical, save :: mep_fldnrm = .false.
+    ! general cube information
     ! number of grid points
     integer, save :: npoints
     ! grid points
-    real(dp), dimension(:,:), allocatable, save :: mepgrid
+    real(dp), dimension(:,:), allocatable, save :: Rp
     ! CUBE file origin and step sizes
     real(dp), dimension(3), save :: origin, step
     ! grid density in x, y and z direction

@@ -71,6 +71,7 @@ option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
 option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"           OFF)
 option(ENABLE_LSEEK          "Enable lseek"                  OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"              OFF)
+option(ENABLE_RELEASE        "Enable Release"                OFF)
 #option(ENABLE_EXTERNLIB      "Create lsdaltonextern.a extern lib " OFF)
 option(ENABLE_GIT_SUBMODULES "Download external projects using Git submodules at compilation time" ON)
 
@@ -152,6 +153,10 @@ if(NOT ENABLE_CRAYWRAPPER)
          ${OWN_LAPACK_SOURCES}
        )
     endif()
+endif()
+
+if(ENABLE_RELEASE)
+   add_definitions(-DMOD_UNRELEASED)
 endif()
 
 if(ENABLE_MPI)
@@ -434,6 +439,7 @@ add_library(
     ${LSINT_SOURCES}
     )
 target_link_libraries(lsintlib dftfunclib)
+add_dependencies(lsintlib pdpacklib)
 add_dependencies(lsintlib lsutillib)
 add_dependencies(lsintlib xcfun_interface)
 add_library(
@@ -530,13 +536,6 @@ add_executable(
     )
 
 add_executable(
-    gridgen.x
-    ${CMAKE_SOURCE_DIR}/tools/gridgen.f90
-    ${LINK_FLAGS}
-    )
-
-
-add_executable(
     lslib_tester.x
     ${LSLIB_SOURCES}
     ${LINK_FLAGS}
@@ -545,7 +544,6 @@ add_executable(
 if(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX)
   SET_TARGET_PROPERTIES(lsdalton.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
   SET_TARGET_PROPERTIES(lslib_tester.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
-  SET_TARGET_PROPERTIES(gridgen.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
 endif()
 
 if(ENABLE_OPENRSP)
@@ -609,11 +607,6 @@ target_link_libraries(
 
 target_link_libraries(
    lsdalton.x
-   lsdalton
-   ) 
-
-target_link_libraries(
-   gridgen.x
    lsdalton
    ) 
 
