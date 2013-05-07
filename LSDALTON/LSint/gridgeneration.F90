@@ -338,58 +338,58 @@ DO IATOM=1+tid,NATOMS,nthreads
       FACTOR = pim4*weight
       IF(iang.EQ. 1)THEN
          N=14
-         call ld0014(locR(1:14),locR(15:28),locR(29:42),locR(43:56),dummy)
+         !call ld0014(locR(1:14),locR(15:28),locR(29:42),locR(43:56),dummy)
       ELSEIF(iang.EQ. 2)THEN
          N=38
-         call ld0038(locR(1:38),locR(39:76),locR(77:114),locR(115:152),dummy)
+         !call ld0038(locR(1:38),locR(39:76),locR(77:114),locR(115:152),dummy)
       ELSEIF(iang.EQ. 3)THEN
          N=50
-         call ld0050(locR(1:50),locR(51:100),locR(101:150),locR(151:200),dummy)
+         !call ld0050(locR(1:50),locR(51:100),locR(101:150),locR(151:200),dummy)
       ELSEIF(iang.EQ. 4)THEN
          N=86
-         call ld0086(locR(1:86),locR(87:172),locR(173:258),locR(259:344),dummy)
+         !call ld0086(locR(1:86),locR(87:172),locR(173:258),locR(259:344),dummy)
       ELSEIF(iang.EQ. 5)THEN
          N=110
-         call ld0110(locR(1:110),locR(111:220),locR(221:330),locR(331:440),dummy)
+         !call ld0110(locR(1:110),locR(111:220),locR(221:330),locR(331:440),dummy)
       ELSEIF(iang.EQ. 6)THEN
          N=146
-         call ld0146(locR(1:146),locR(147:292),locR(293:438),locR(439:584),dummy)
+         !call ld0146(locR(1:146),locR(147:292),locR(293:438),locR(439:584),dummy)
       ELSEIF(iang.EQ. 7)THEN
          N=170
-         call ld0170(locR(1:170),locR(171:340),locR(341:510),locR(511:680),dummy)
+         !call ld0170(locR(1:170),locR(171:340),locR(341:510),locR(511:680),dummy)
       ELSEIF(iang.EQ. 8)THEN
          N=194
-         call ld0194(locR(1:194),locR(195:388),locR(389:582),locR(583:776),dummy)
+         !call ld0194(locR(1:194),locR(195:388),locR(389:582),locR(583:776),dummy)
       ELSEIF(iang.EQ. 9)THEN
          N=230
-         call ld0230(locR(1:230),locR(231:460),locR(461:690),locR(691:920),dummy)
+         !call ld0230(locR(1:230),locR(231:460),locR(461:690),locR(691:920),dummy)
       ELSEIF(iang.EQ. 10)THEN
          N=266
-         call ld0266(locR(1:266),locR(267:532),locR(533:798),locR(799:1064),dummy)
+         !call ld0266(locR(1:266),locR(267:532),locR(533:798),locR(799:1064),dummy)
       ELSEIF(iang.EQ. 11)THEN
          N=302
-         call ld0302(locR(1:302),locR(303:604),locR(605:906),locR(907:1208),dummy)
+         !call ld0302(locR(1:302),locR(303:604),locR(605:906),locR(907:1208),dummy)
       ELSEIF(iang.EQ. 12)THEN
          N=350
-         call ld0350(locR(1:350),locR(351:700),locR(701:1050),locR(1051:1400),dummy)
+         !call ld0350(locR(1:350),locR(351:700),locR(701:1050),locR(1051:1400),dummy)
       ELSEIF(iang.EQ. 13)THEN
          N=434
-         call ld0434(locR(1:434),locR(435:868),locR(869:1302),locR(1303:1736),dummy)
+         !call ld0434(locR(1:434),locR(435:868),locR(869:1302),locR(1303:1736),dummy)
       ELSEIF(iang.EQ. 14)THEN
          N=590
-         call ld0590(locR(1:590),locR(591:1180),locR(1181:1770),locR(1771:2360),dummy)
+         !call ld0590(locR(1:590),locR(591:1180),locR(1181:1770),locR(1771:2360),dummy)
       ELSEIF(iang.EQ. 15)THEN
          N=770
-         call ld0770(locR(1:770),locR(771:1540),locR(1541:2310),locR(2311:3080),dummy)
+         !call ld0770(locR(1:770),locR(771:1540),locR(1541:2310),locR(2311:3080),dummy)
       ELSEIF(iang.EQ. 16)THEN
          N=974
-         call ld0974(locR(1:974),locR(975:1948),locR(1949:2922),locR(2923:3896),dummy)
+         !call ld0974(locR(1:974),locR(975:1948),locR(1949:2922),locR(2923:3896),dummy)
       ELSEIF(iang.EQ. 17)THEN
          N=1202
-         call ld1202(locR(1:1202),locR(1203:2404),locR(2405:3606),locR(3607:4808),dummy)
+         !call ld1202(locR(1:1202),locR(1203:2404),locR(2405:3606),locR(3607:4808),dummy)
       ELSEIF(iang.EQ. 18)THEN
          N=1454
-         call ld1454(locR(1:1454),locR(1455:2908),locR(2909:4362),locR(4363:5816),dummy)
+         !call ld1454(locR(1:1454),locR(1455:2908),locR(2909:4362),locR(4363:5816),dummy)
       ELSE
          CALL LSQUIT('wrong case in ld, maximum ANGINT exceeded',-1)
       ENDIF
