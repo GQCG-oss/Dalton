@@ -66,6 +66,7 @@ $END INFO
 4
 .SimulateFull
 .CCSD
+.CCSDsovler_serial
 .ccThr
 1e-9
 *END OF INPUT

@@ -27,8 +27,6 @@ SUBROUTINE lsdalton
   use decompMod, only: decomp_init, decomp_shutdown, decomposition, get_oao_transformed_matrices
   use matrix_util, only: save_fock_matrix_to_file, save_overlap_matrix_to_file, util_mo_to_ao_2
   use daltoninfo, only: ls_free 
-  !For making orbital .plt files
-  use print_moorb_grid_mod
   ! Debug and Testing
   use dal_interface, only: di_debug_general, di_debug_general2
   use extra_output, only: print_orbital_info2
@@ -51,6 +49,7 @@ SUBROUTINE lsdalton
   use molecular_hessian_mod, only: get_molecular_hessian
   use test_molecular_hessian_mod, only: test_Hessian_contributions
   use rsp_util, only: init_rsp_util
+  use plt_driver_module
 #ifdef VAR_PAPI
   use papi_module
 #endif
@@ -72,7 +71,7 @@ SUBROUTINE lsdalton
   real(realk), allocatable :: eival(:)
   real(realk),pointer :: GGem(:,:,:,:,:)
   integer     :: lusoeo,funit
-  logical     :: soeosaveexist, HFdone,OnMaster,scfpurify
+  logical     :: soeosaveexist, HFdone,OnMaster,scfpurify,skipHFpart
   type(matrix) :: Dmo, tmp
   integer             :: nelec
   Integer             :: Natoms
@@ -132,37 +131,30 @@ SUBROUTINE lsdalton
      DECinfo%doHF = .TRUE.
   endif
 
-  ! Read in already optimized HF orbitals, and localize
-  OnlyLoc:  if (config%davidOrbLoc%OnlyLocalize) then
-           ! read orbitals
-           lun = -1
-	   call mat_init(CMO,nbast,nbast)
-           CALL LSOPEN(lun,'orbitals_in.u','unknown','UNFORMATTED')
-	   call mat_read_from_disk(LUN,cmo,OnMaster)
-           call LSclose(LUN,'KEEP')
-           if (config%decomp%cfg_mlo) then
-	      write(ls%lupri,*)
-	      write(ls%lupri,'(a)') '*** LOCALIZING ORBITALS ***'
-              call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
-           else
-               call lsquit('No localization type was requested',ls%lupri) 
-	   end if
-           ! write localized orbitals
-           lun = -1
-           CALL LSOPEN(lun,'orbitals_out.u','unknown','UNFORMATTED')
-           call mat_write_to_disk(lun,Cmo,OnMaster)
-           call LSclose(LUN,'KEEP')
-	   call mat_free(cmo)
-  end if OnlyLoc
 
-  ! Kasper K, skip Hartree-Fock related calculations for DEC calculation if requested
-  ! Also skip, if we only want to localize orbitals
-  SkipHF: if( (DECinfo%doDEC .and. .not. DECinfo%doHF) .or. config%davidOrbLoc%OnlyLocalize) then
+  ! Skip Hartree Fock part? Done when a HF calculation has already been carried out and we want to:
+  ! (i)   localize orbitals
+  ! (ii)  carry out DEC calculation 
+  ! (iii) Construct PLT file
+  if(config%davidOrbLoc%OnlyLocalize .or. (DECinfo%doDEC .and. .not. DECinfo%doHF) &
+       & .or. config%doplt) then
+     skipHFpart=.true.
+  else
+     skipHFpart=.false.
+  end if
+  ! Special case, if we run PLT test cases then we do need to run HF calculation first.
+  if(config%plt%test) then
+     skipHFpart=.false.
+  end if
+
+
+  SkipHF: if(skipHFpart) then   ! Skip Hartree-Fock related calculations
      write(lupri,*)
-     write(lupri,*) 'Initital Hartree-Fock calculation is skipped!'
+     write(lupri,*) 'Hartree-Fock calculation is skipped!'
      write(lupri,*)
      HFdone=.false.
-  else
+
+  else 
      HFdone=.true.
 
      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
@@ -372,7 +364,7 @@ SUBROUTINE lsdalton
               write(ls%lupri,'(a)')'Pred= **** LEVEL 3 ORBITAL LOCALIZATION ****'
               call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
 	      if (config%davidOrbLoc%make_orb_plot) then
-                 call make_orbitalplot_file(CMO,config%davidOrbLoc,ls)
+                 call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
 	      end if
            end if
            ! write LCM orbitals
@@ -500,6 +492,41 @@ SUBROUTINE lsdalton
   end if SkipHF
 
 
+  ! Read in already optimized HF orbitals, and localize
+  OnlyLoc:  if (config%davidOrbLoc%OnlyLocalize) then
+           ! read orbitals
+           lun = -1
+	   call mat_init(CMO,nbast,nbast)
+           CALL LSOPEN(lun,'orbitals_in.u','unknown','UNFORMATTED')
+	   call mat_read_from_disk(LUN,cmo,OnMaster)
+           call LSclose(LUN,'KEEP')
+           if (config%decomp%cfg_mlo) then
+	      write(ls%lupri,*)
+	      write(ls%lupri,'(a)') '*** LOCALIZING ORBITALS ***'
+              call optimloc(Cmo,config%decomp%nocc,config%decomp%cfg_mlo_m,ls,config%davidOrbLoc)
+           else
+               call lsquit('No localization type was requested',ls%lupri) 
+	   end if
+           ! write localized orbitals
+           lun = -1
+           CALL LSOPEN(lun,'orbitals_out.u','unknown','UNFORMATTED')
+           call mat_write_to_disk(lun,Cmo,OnMaster)
+           call LSclose(LUN,'KEEP')
+	   call mat_free(cmo)
+  end if OnlyLoc
+
+  ! Construct PLT file
+  ConstructPLT: if(config%doplt) then
+     call plt_wrapper(ls,config%plt)
+  end if ConstructPLT
+
+
+  ! Single point DEC calculation using HF restart files
+  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. .not. DECinfo%doHF) ) then
+     call dec_main_prog_file(ls)
+  endif DECcalculationHFrestart
+
+
   ! Kasper K, calculate orbital spread for projected atomic orbitals
   if(config%decomp%cfg_PAO) then
      call mat_init(Cmo,nbast,nbast)
@@ -531,15 +558,9 @@ SUBROUTINE lsdalton
   WRITE(LUPRI,'("Total no. of Fock/KS matrix evaluations:  ",I10)') ls%input%nfock
   if (mem_monitor) WRITE(LUPRI,'("Max no. of matrices allocated in Level 3: ",I10)') max_no_of_matrices
 
-
-  ! Single point DEC calculation using HF restart files
-  ! ***************************************************
-  DECcalculationHFrestart: if (.not. HFdone) then
-     IF(DECinfo%doDEC) then
-        call dec_main_prog_file(ls)
-     ENDIF
+  if(.not. HFdone) then  ! ensure there's no memory leak when HF calc was skipped
      call config_shutdown(config)
-  endif DECcalculationHFrestart
+  end if
   call config_free(config)
 
   call ls_free(ls)

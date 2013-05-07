@@ -46,7 +46,6 @@ F90_OBJS = \
 	localization_charge.o \
 	localization_orbspread.o \
 	localization_util.o \
-	print_MO.o\
         prop_contribs.o \
         response_driver.o \
         response_prop.o \
@@ -60,6 +59,7 @@ F90_OBJS = \
 	soeo-debug.o \
 	starting_guess.o \
 	statistics.o   	\
+	plt_driver.o  \
         trilevel.o 
 #	cgop.o
 #C_OBJS = memory.o

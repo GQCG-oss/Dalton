@@ -59,6 +59,12 @@ real(realk),target      :: bCMO( basis_size(ang+1), basis_size(ang+1))
 real(realk), pointer    :: bF(:,:), bS(:,:), eig(:), wrk(:)
 integer                 :: i, j, k, istart, info, nb, lwrk
 integer,     pointer    :: indexlist(:) 
+#ifdef VAR_LSESSL
+integer :: ifail(basis_size(ang+1)),iwrk(5*basis_size(ang+1)),nfound
+real(realk) :: no_ref,tol
+real(realk), external :: DLAMCH
+real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
+#endif
  
  info = 0
  nb =  basis_size(ang+1)
@@ -80,15 +86,30 @@ integer,     pointer    :: indexlist(:)
 !querry optimal work size
 
  if (nb.gt. 1) then
+  lwrk=-1
   call mem_alloc(eig,nb)
   call mem_alloc(wrk,2)
-  call dsygv(1,'V','U',nb,bF,nb,bS,nb,eig,wrk,-1,info)
+#ifdef VAR_LSESSL
+  no_ref=0.0E0_realk
+  tol = 2*DLAMCH('S')
+  call DSYGVX( 1,'V','A','U', nb,bF,nb,bS,nb,no_ref,no_ref,no_ref,&
+   &no_ref,tol,nfound,eig, Z,nb, wrk, lwrk, iwrk, ifail, info)
+  bF=Z
+#else
+  call dsygv(1,'V','U',nb,bF,nb,bS,nb,eig,wrk,lwrk,info)
+#endif
   
 !run diagonalization
   lwrk = wrk(1)
   call mem_dealloc(wrk)
   call mem_alloc(wrk,lwrk)
+#ifdef VAR_LSESSL
+  call DSYGVX( 1,'V','A','U', nb,bF,nb,bS,nb,no_ref,no_ref,no_ref,&
+   &no_ref,tol,nfound,eig, Z,nb, wrk, lwrk, iwrk, ifail, info)
+  bF=Z
+#else
   call dsygv(1,'V','U',nb,bF,nb,bS,nb,eig,wrk,lwrk,info)
+#endif
  
   call mem_dealloc(eig)
   call mem_dealloc(wrk)

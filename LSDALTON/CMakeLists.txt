@@ -434,6 +434,7 @@ add_library(
     ${LSINT_SOURCES}
     )
 target_link_libraries(lsintlib dftfunclib)
+add_dependencies(lsintlib pdpacklib)
 add_dependencies(lsintlib lsutillib)
 add_dependencies(lsintlib xcfun_interface)
 add_library(
@@ -530,13 +531,6 @@ add_executable(
     )
 
 add_executable(
-    gridgen.x
-    ${CMAKE_SOURCE_DIR}/tools/gridgen.f90
-    ${LINK_FLAGS}
-    )
-
-
-add_executable(
     lslib_tester.x
     ${LSLIB_SOURCES}
     ${LINK_FLAGS}
@@ -545,7 +539,6 @@ add_executable(
 if(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX)
   SET_TARGET_PROPERTIES(lsdalton.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
   SET_TARGET_PROPERTIES(lslib_tester.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
-  SET_TARGET_PROPERTIES(gridgen.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
 endif()
 
 if(ENABLE_OPENRSP)
@@ -609,11 +602,6 @@ target_link_libraries(
 
 target_link_libraries(
    lsdalton.x
-   lsdalton
-   ) 
-
-target_link_libraries(
-   gridgen.x
    lsdalton
    ) 
 
