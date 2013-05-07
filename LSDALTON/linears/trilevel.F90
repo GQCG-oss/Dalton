@@ -62,7 +62,6 @@ integer,     pointer    :: indexlist(:)
 #ifdef VAR_LSESSL
 integer :: ifail(basis_size(ang+1)),iwrk(5*basis_size(ang+1)),nfound
 real(realk) :: no_ref,tol
-real(realk), external :: DLAMCH
 real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
 #endif
  
@@ -91,10 +90,9 @@ real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
   call mem_alloc(wrk,2)
 #ifdef VAR_LSESSL
   no_ref=0.0E0_realk
-  tol = 2*DLAMCH('S')
+  tol = 0.0E0_realk
   call DSYGVX( 1,'V','A','U', nb,bF,nb,bS,nb,no_ref,no_ref,no_ref,&
    &no_ref,tol,nfound,eig, Z,nb, wrk, lwrk, iwrk, ifail, info)
-  bF=Z
 #else
   call dsygv(1,'V','U',nb,bF,nb,bS,nb,eig,wrk,lwrk,info)
 #endif
@@ -106,11 +104,15 @@ real(realk) :: Z(basis_size(ang+1),basis_size(ang+1))
 #ifdef VAR_LSESSL
   call DSYGVX( 1,'V','A','U', nb,bF,nb,bS,nb,no_ref,no_ref,no_ref,&
    &no_ref,tol,nfound,eig, Z,nb, wrk, lwrk, iwrk, ifail, info)
-  bF=Z
+  call dcopy(nb*nb,Z,1,bF,1)
 #else
   call dsygv(1,'V','U',nb,bF,nb,bS,nb,eig,wrk,lwrk,info)
 #endif
  
+  if(info/=0)then
+    call lsquit("ERROR(trilevel_diag_per_ang):dsygv(x) failed to converge",-1)
+  endif 
+
   call mem_dealloc(eig)
   call mem_dealloc(wrk)
  else

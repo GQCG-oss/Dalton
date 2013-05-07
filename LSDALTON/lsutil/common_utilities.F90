@@ -127,10 +127,9 @@
      lwrk = -1
 #ifdef VAR_LSESSL
      no_ref=0.0E0_realk
-     tol = 2*DLAMCH('S')
+     tol = 0.0E0_realk
      call DSYGVX( 1,'V','A','L', N, A, N, B, N, no_ref,no_ref,no_ref,&
       &no_ref,tol,nfound,eigval, Z, N, wrk, lwrk, iwrk, ifail, ierr)
-     A=Z
 #else
      call DSYGV(1,'V','L',N,A,N,B,N,eigval,wrk,lwrk,ierr)
 #endif 
@@ -144,7 +143,7 @@
 #ifdef VAR_LSESSL
      call DSYGVX( 1,'V','A','L', N, A, N, B, N, no_ref,no_ref,no_ref,&
       &no_ref,tol,nfound,eigval, Z, N, wrk, lwrk, iwrk, ifail, ierr)
-     A=Z
+     call dcopy(N*N,Z,1,A,1)
 #else
      call DSYGV(1,'V','L',N,A,N,B,N,eigval,wrk,lwrk,ierr)
 #endif 
