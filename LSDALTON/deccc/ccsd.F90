@@ -1809,7 +1809,6 @@ contains
 
     hstatus = 80
     CALL MPI_GET_PROCESSOR_NAME(hname,hstatus,ierr)
-    print *,infpar%lg_mynum,"got scheme",scheme
 
     !dense part was allocated in the communicate subroutine
     if(scheme==4.or.scheme==0)then
@@ -2345,7 +2344,6 @@ contains
         call array_add(omega2,1.0E0_realk,w2)
       else
         call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3,o2v,1.0E0_realk,omega2%elm1,nv)
-        call print_norm(omega2%elm1,o2v2)
       endif
       call lsmpi_poke()
 

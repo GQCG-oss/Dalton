@@ -8,7 +8,7 @@ F77FILES = \
         dft_gridLL.F
 
 F90FILES = \
-	II_util.f90
+	II_util.F90
 
 # we define functional files separately since they are used also 
 # for the fun-tester.
@@ -42,14 +42,14 @@ CFILES =\
 
 EXTRA_FILES = fun-tester.c
 
-F_CPPS = $(F77FILES:.F=.i) $(F90FILES:.f90=.i)
+F_CPPS = $(F77FILES:.F=.i) $(F90FILES:.F90=.i)
 
 pre: $(F_CPPS)
 
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > dft.ftnchek
 
-OBJS = $(F77FILES:.F=.o) $(F90FILES:.f90=.o) $(CFILES:.c=.o)
+OBJS = $(F77FILES:.F=.o) $(F90FILES:.F90=.o) $(CFILES:.c=.o)
 
 clean :
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a

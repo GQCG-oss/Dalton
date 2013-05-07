@@ -21,8 +21,8 @@ libddynam.a: $(F90_OBJS)
 clean : 
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod
 
-Makefile.depend depend: $(F90_OBJS:.o=.f90)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../geomopt -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90) > Makefile.depend
+Makefile.depend depend: $(F90_OBJS:.o=.F90)
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../geomopt -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) > Makefile.depend
 
 ######################################################################
 # read dependencies:

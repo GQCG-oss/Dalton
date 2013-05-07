@@ -1,6 +1,4 @@
 LSDALTON=@PROJECT_BINARY_DIR@/lsdalton.x
-EXTERNLOC=@PROJECT_BINARY_DIR@/externloc.x
-GRIDGEN=@PROJECT_BINARY_DIR@/gridgen.x
 LSLIB_TEST=@PROJECT_BINARY_DIR@/lslib_tester.x
 DALMPI=@PROJECT_BINARY_DIR@/lsdalton.x
 MPIRUN=@MPIEXEC@
@@ -17,9 +15,7 @@ MOLEXT="mol"
 AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK"
 #deafult values for options
 opt_valgrind=0
-opt_externloc=0
 opt_lslib_test=0
-opt_gridgen=0
 opta=0
 optA=0
 optd=0
@@ -56,9 +52,7 @@ usage (){
 	  echo ' -pg       do profiling'
 	  echo ' -dens     copy dens.restart and maybe fock.restart lcm_orbitals.u'
 	  echo ' -valgrind run with valgrind'
-	  echo ' -externloc run with externloc'	  
 	  echo ' -lslib_test run lslib test'	  
-	  echo ' -gridgen run with gridgen'	  
 	  echo ' -D        do not delete TMPDIR after calculation stops'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
 	  echo ' -o FILE   redirect output from program to FILE in WRKDIR'
@@ -103,9 +97,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -D ) optD=0;;
       -pg ) optpg=1;;
       -valgrind ) opt_valgrind=1;;
-      -externloc ) opt_externloc=1;;
       -lslib_test ) opt_lslib_test=1;;
-      -gridgen ) opt_gridgen=1;;
       -geo1 ) optgeo1=1;;
       -geo2 ) optgeo2=1;;
       -dens ) optdens=1;;
@@ -256,18 +248,6 @@ else
 	    valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON
 	    lsdalton_exitcode=$?
 	 else	
-	     if [ $opt_externloc -eq 1 ]; then	
-	         $LSDALTON
-		 echo 'EXTERNLOC lcm_orbitals.u something.u'
-                 $EXTERNLOC lcm_orbitals.u something.u 1 1 MLO >> EXTERNLOC.OUT
-		 lsdalton_exitcode=$?
-	     else	  
-	      if [ $opt_gridgen -eq 1 ]; then	
-	     	$LSDALTON
-		echo 'GRIDGEN '
-                $GRIDGEN lcm_orbitals.u orbital.plt PLT 1 >> GRIDGEN.OUT
-		lsdalton_exitcode=$?
-              else
                if [ $opt_lslib_test -eq 1 ]; then
                   $LSLIB_TEST
 	          lsdalton_exitcode=$?
@@ -275,8 +255,6 @@ else
 	          $LSDALTON	 	
 	          lsdalton_exitcode=$?
                fi
-              fi
- 	     fi
    	 fi		   
 	fi
       fi
@@ -347,8 +325,6 @@ fi
       backup -v $WRKDIR/$outnam.$OUTEXT
       if [ -s LSDALTON.OUT -a -r LSDALTON.OUT ]; then
          cp LSDALTON.OUT $WRKDIR/$outnam.$OUTEXT
-         [ -f EXTERNLOC.OUT ] && cp -f EXTERNLOC.OUT $WRKDIR/$outnam.ext.$OUTEXT
-         [ -f GRIDGEN.OUT ] && cp -f GRIDGEN.OUT $WRKDIR/$outnam.grid.$OUTEXT
          [ -f PROFILE ] && cp -f PROFILE $WRKDIR/$outnam.prof.$OUTEXT
 	 if [ $optgeo1 -eq 1 ] ; then
 	 	 cp $WRKDIR/$outnam.$OUTEXT $WRKDIR/$outnam.$OUTEXT.original

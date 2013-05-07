@@ -1525,10 +1525,10 @@ integer :: indABCD,indABDC,indBACD,indBADC,indCDAB,indCDBA,indDCAB,indDCBA
 integer :: ndimMag
 Real(realk),pointer :: ABCD(:),ABDC(:),BACD(:),BADC(:),CDAB(:),CDBA(:),DCAB(:),DCBA(:)
 Real(realk)  :: factor,center(3,1)
-logical :: antiAB,antiCD,AntipermuteAB,AntipermuteCD,translate
+logical :: antiAB,antiCD,AntipermuteAB,AntipermuteCD,translate,same12,same13,same23
 Type(derivativeInfo) :: derivInfo
 integer :: n1,n2,n3,n4,sA,sB,sC,sD,CMimat,maxBat,maxAng,itrans,nDerivQ
-integer :: dim5(4),iAtom1,iAtom2,i1,i2,iPermute,nPermute,nAtoms
+integer :: dim5(6),iAtom1,iAtom2,iAtom3,i1,i2,i3,iPermute,nPermute,nAtoms
 
 antiAB=.FALSE.
 antiCD=.FALSE.
@@ -1742,7 +1742,41 @@ DO iPassP=1,P%nPasses
           Dim5(1) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom1-1)+i1
           Dim5(2) = 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom2-1)+i2
           nPermute=2
-          IF ((Dim5(1).EQ.Dim5(2)).AND.(derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))) nPermute=1
+          same12 = (Dim5(1).EQ.Dim5(2)).AND.(derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
+          IF (same12) nPermute=1
+       ELSEIF (input%geoDerivOrder.EQ. 3)THEN
+          iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
+          iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
+          iAtom3 = derivInfo%Atom(derivInfo%AO(3,iDeriv))
+          i1 = derivInfo%dirComp(1,iDeriv)
+          i2 = derivInfo%dirComp(2,iDeriv)
+          i3 = derivInfo%dirComp(3,iDeriv)
+          Dim5(1) = 9*nAtoms*nAtoms*(3*(iAtom3-1)+i3-1) + 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom1-1)+i1
+          Dim5(2) = 9*nAtoms*nAtoms*(3*(iAtom3-1)+i3-1) + 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom2-1)+i2
+          Dim5(3) = 9*nAtoms*nAtoms*(3*(iAtom2-1)+i2-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iAtom1-1)+i1
+          Dim5(4) = 9*nAtoms*nAtoms*(3*(iAtom2-1)+i2-1) + 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom3-1)+i3
+          Dim5(5) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom3-1)+i3
+          Dim5(6) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iAtom2-1)+i2
+          same12 = (Dim5(1).EQ.Dim5(2)).AND.(derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
+          same13 = (Dim5(3).EQ.Dim5(4)).AND.(derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(3,iDeriv))
+          same23 = (Dim5(5).EQ.Dim5(6)).AND.(derivInfo%AO(2,iDeriv).EQ.derivInfo%AO(3,iDeriv))
+          nPermute = 6
+          IF (same12) THEN
+            IF (same13) THEN !All are the same
+              nPermute=1
+            ELSE 
+              nPermute=3
+              Dim5(2) = Dim5(3)
+              Dim5(3) = Dim5(4)
+            ENDIF
+          ELSE IF (same13) THEN
+            nPermute=3
+          ELSE IF (same23) THEN
+            nPermute=3
+            Dim5(3) = dim5(5)
+          ENDIF
+       ELSE IF (input%geoDerivOrder.GE. 4)THEN
+         call lsquit('Error in generalDistributePQ - geoDerivORder > 3 not implemented',-1)
        ENDIF
        DO iPermute=1,nPermute
        iDim5 = Dim5(iPermute)

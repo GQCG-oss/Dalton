@@ -1,5 +1,4 @@
 program d2nwchem
-!use print_moorb_grid_mod
 use typedef
 use matrix_operations
 implicit none
