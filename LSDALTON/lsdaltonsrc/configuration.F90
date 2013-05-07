@@ -198,7 +198,7 @@ INTEGER            :: LUPRI
 type(ConfigItem), intent(inout) :: config
 INTEGER            :: LUCMD !Logical unit number for the daltoninput
 INTEGER            :: IDUMMY,IPOS,IPOS2,COUNTER
-character(len=80)  :: WORD
+character(len=80)  :: WORD,TMPWORD
 character(len=2)   :: PROMPT
 LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS
 !LINSCA variables:
@@ -338,9 +338,7 @@ DO
                      IF(.NOT.USEXCFUN)THEN
                         CALL II_DFTsetFunc(WORD,hfweight)
                      ELSE
-                        print*,'II_DFTsetFunc'
                         CALL II_DFTsetFunc(WORD,hfweight)
-                        print*,'xcfun_host_init'
                         call xcfun_host_init(WORD,hfweight,lupri)
                      ENDIF
                      config%integral%exchangeFactor = hfweight

@@ -35,7 +35,7 @@ contains
     !   in the X,Y, and Z directions (giving a total number of gridpoints: nGRIDPOINTS=nX*nY*nZ).
     !
     ! We define the grid box parameters such that (i) all atoms in the molecule are contained
-    ! within the grid box, and (ii) there is a buffer zone (mybuffer) of around the outermost atoms.
+    ! within the grid box, and (ii) there is a buffer zone (mybuffer) around the outermost atoms.
 
     ! Set distances between gridpoints from input
     deltax = MyPlt%deltax

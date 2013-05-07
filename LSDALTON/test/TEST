@@ -157,6 +157,11 @@ RSP="LSresponse/LSresponse_HF_alpha
   LSresponse/LSresponse_mcd3
   LSresponse/LSresponse_excit_cs00"
 
+XCFUN="LSresponse/LSresponse_xcfun_lda_molgrad
+  LSresponse/LSresponse_xcfun_gga_molgrad
+  LSresponse/LSresponse_xcfun_lda_linrsp
+  LSresponse/LSresponse_xcfun_gga_linrsp"
+
 GEO="geomopt/Excited_state_opt
      geomopt/geoopt_constrain
      geomopt/cartes_bfgs_min
@@ -388,6 +393,7 @@ else
       geo)         testcase=$GEO;;
       ddyn)        testcase=$DDYN;;
       pbc)         testcase=$PBC;;
+      xcfun)       testcase=$XCFUN;;
   esac
 fi
 
