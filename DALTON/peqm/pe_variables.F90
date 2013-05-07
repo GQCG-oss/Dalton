@@ -205,9 +205,9 @@ module pe_variables
     ! CUBE file origin and step sizes
     real(dp), dimension(3), save :: origin, step
     ! grid density in x, y and z direction
-    integer, save :: xgrid = 20
-    integer, save :: ygrid = 20
-    integer, save :: zgrid = 20
+    integer, save :: xgrid = 6
+    integer, save :: ygrid = 6
+    integer, save :: zgrid = 6
     ! numberof steps in x, y and z direction
     integer, save :: xsteps
     integer, save :: ysteps
