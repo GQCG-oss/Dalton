@@ -213,9 +213,9 @@ module pe_variables
     integer, save :: ysteps
     integer, save :: zsteps
     ! box size relative to molecule size
-    real(dp), save :: xsize = 5.0
-    real(dp), save :: ysize = 5.0
-    real(dp), save :: zsize = 5.0
+    real(dp), save :: xsize = 8.0
+    real(dp), save :: ysize = 8.0
+    real(dp), save :: zsize = 8.0
 
     ! Internal field stuff
     ! --------------------
