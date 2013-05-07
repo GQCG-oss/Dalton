@@ -587,6 +587,7 @@ SUBROUTINE lsinit_all()
   use rsp_util, only: init_rsp_util
   use memory_handling, only: init_globalmemvar
   use lstiming, only: init_timers
+  use lspdm_tensor_operations_module,only:init_persistent_array
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
@@ -601,6 +602,7 @@ implicit none
   call init_rsp_util      !initialize response util module
   call lstmem_init
   call MatrixmemBuf_init()
+  call init_persistent_array
   call init_timers !initialize timers
   ! MPI initialization
   call lsmpi_init
@@ -611,10 +613,12 @@ SUBROUTINE lsfree_all()
   use precision
   use matrix_operations, only: MatrixmemBuf_free
   use lstensorMem, only: lstmem_free
+  use lspdm_tensor_operations_module,only:free_persistent_array
 implicit none
   
   call lstmem_free
 
   call MatrixmemBuf_free()
+  call free_persistent_array
 
 END SUBROUTINE lsfree_all
