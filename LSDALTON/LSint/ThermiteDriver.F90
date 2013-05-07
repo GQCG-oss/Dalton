@@ -1664,6 +1664,7 @@ real(realk)           :: ReductionECONT(input%NDMAT_RHS)
 #ifdef VAR_OMP
 integer,pointer :: MPIINDEX(:)
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
+integer :: tn
 #else
 integer :: MPIINDEX(0:0)
 #endif
@@ -1966,8 +1967,11 @@ node = 0
 nthreads=OMP_GET_NUM_THREADS()
 tid = omp_get_thread_num()
 !$OMP MASTER
-IF(node.EQ.0)WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',omp_get_num_threads(),' threads.'
-call mem_alloc(MPIINDEX,nthreads,.TRUE.)
+tn=omp_get_thread_num
+if(tn==0)then
+  IF(node.EQ.0)WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',omp_get_num_threads(),' threads.'
+  call mem_alloc(MPIINDEX,nthreads,.TRUE.)
+endif
 !$OMP END MASTER
 
 !$OMP BARRIER
@@ -2382,7 +2386,7 @@ call freeRHS_centerinfo(atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,&
 #ifdef VAR_OMP
 !$OMP BARRIER
 !$OMP MASTER
-call mem_dealloc(MPIINDEX)
+if(tn==0)call mem_dealloc(MPIINDEX)
 !$OMP END MASTER
 #endif
 
