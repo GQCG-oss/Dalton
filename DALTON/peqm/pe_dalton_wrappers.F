@@ -506,7 +506,7 @@
        subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,
      &                      udvtr, dvtr, dtv, dtvtr, scvecs, wrk, nwrk)
 
-         use pe_variables, only: pe_polar
+         use pe_variables, only: pe_polar, pe_debug
          use polarizable_embedding, only: pe_master
  
          implicit none
@@ -531,12 +531,13 @@
       real*8, dimension(kzyvar,*) :: scvecs
       real*8, dimension(nwrk) :: wrk
 
-      real*8 :: ovlap, solelm
-      real*8, dimension(:,:), allocatable :: udtv, udtvao, fxcs, fxcacs
+      real*8 :: ovlap, solelm, tfpeac, tfpe
+      real*8, dimension(:,:), allocatable :: udtv, udtvao
+      real*8, dimension(:,:), allocatable :: fxcs, fxcacs, fuxcs
       real*8, dimension(:), allocatable :: fdtvaos, fxcaos
       real*8, dimension(:), allocatable :: tfxc, tfxcacs 
-      real*8, dimension(:), allocatable :: fpemo, fupemo
-
+      real*8, dimension(:), allocatable :: fpe, fupe, fpeac
+      
       logical :: lexist, lopen
       logical :: fndlab
       logical :: tdm, norho2
@@ -594,8 +595,8 @@
          do i = 1, ncsim
             j = (i - 1) * nnbasx + 1
             call uthu(fxcaos(j), fxcs(:,i), cmo, wrk, nbast, norbt)
-            write(lupri,*)'fxcs matrix rsp_pelnc' 
-            call outpak(fxcs,norbt,1,lupri) 
+!            write(lupri,*)'fxcs matrix rsp_pelnc' 
+!            call outpak(fxcs,norbt,1,lupri) 
             if (nasht > 0) call getac2(fxcs(:,i), fxcacs(:,i))
 !                if (trplet) then
 !                    tfxc = solelm(dvtr, fxcacs(:,i), fxcs(:,i), tfxcac)
@@ -611,10 +612,10 @@
 
 
       !---------------------------------------
-      ! Fg = V - <0|F|0>Fe -unpack into fupemo
+      ! Fg = V - <0|F|0>Fe -unpack into fpe
       !---------------------------------------
       if (.not. tdhf) then          
-          allocate(fpemo(nnorbx))
+          allocate(fpe(nnorbx))
           if (lusifc <= 0) then
               call gpopen(lusifc, 'SIRIFC', 'OLD', ' ', 'UNFORMATTED',
      &                    idummy, .false.)
@@ -622,14 +623,87 @@
           end if
           rewind(lusifc)
           call mollab('PETMAT  ', lusifc, lupri)
-          call readt(lusifc, nnorbx, fpemo)
+          call readt(lusifc, nnorbx, fpe)
           if (lopen) call gpclose(lusifc, 'KEEP')
-              allocate(fupemo(n2orbx))
-              call dsptsi(norbt, fpemo, fupemo)
-              deallocate(fpemo)
+              allocate(fupe(n2orbx), fpeac(nnashx))
+              call dsptsi(norbt, fpe, fupe)               
+              if (nasht > 0) call getac2(fpe, fpeac)
+                  tfpe = solelm(dv, fpeac, fpe, tfpeac)
+              deallocate(fpe)
 !          end if
-          deallocate(fupemo)
+!          deallocate(fupemo)
       end if
+
+C    ***************************************
+
+C     Calculate Fxc(Rxc) and Fg(Ryc) contributions to SCVECS(NVAR,NCSIM)
+C     =================================================================
+
+C     ... CSF part of sigma vectors
+C
+      if (pe_debug ) then
+         write(lupri,*)' Linear transformed configuration vector'
+         write(lupri,*)' **** Before slvsc in pe_rsplnc **** '
+         call output(scvecs,1,kzyvar,1,ncsim,kzyvar,ncsim,1,lupri)
+      endif
+
+      call slvsc(ncsim, 0, nnashx, bcvecs, cref, scvecs, fxcacs, 
+     &           fpeac, tfxcacs, tfpeac, cindx, wrk, nwrk)
+      deallocate(fxcacs, tfxcacs, fpeac)
+     
+      if (pe_debug) then
+          write(lupri,*)' Linear transformed configuration vector'
+          write(lupri,*)' **** After slvsc in pe_rsplnc **** '
+          call output(scvecs,1,kzyvar,1,ncsim,kzyvar,ncsim,1,lupri)
+      end if
+C
+C     ... orbital part of sigma vector(s)
+C
+      if (kzwopt .gt. 0) then
+!          allocate(fupe(n2orbx))
+!          call dsptsi(norbt, fpe, fupe)         
+          do i = 1,ncsim
+             allocate(fuxcs(n2orbx,ncsim))
+             call dsptsi(norbt,fxcs(:,i), fuxcs(:,i))
+!            if (trplet) then
+!               call slvsor(.true.,.false.,1,udvtr,
+!    &                      scvecs(1,i),fuxcs(:,i))
+!            else
+             call slvsor(.true.,.true., 1, udv, scvecs(1,i), fuxcs(:,i))
+!             end if
+           
+             if (pe_debug) then
+                 write(lupri,*)' **** After slvsor in pe_rsplnc **** '
+                 write(lupri,*)
+     &           ' Orbital part of linear transformed conf vec no',i
+                 write(lupri,*)' Txc contribution'
+                 call output(scvecs(1,i),1,kzyvar,1,1,kzyvar,1,1,lupri)
+             end if
+           
+!            if (trplet) then
+!               call slvsor(.false.,.false., 1, dtvtr(1,i),
+!    *                       scvecs(1,i),fupe )
+!            else
+             call slvsor(.false.,.false.,1, dtv(1,i), scvecs(1,i), fupe)
+!             end if
+             deallocate(fupe) 
+           
+             if (pe_debug ) then
+                 write(lupri,*)
+     &           ' Orbital part of linear transformed conf vec no',i
+                 write(lupri,*)' Tg contribution'
+                 call output(scvecs(1,i),1,kzyvar,1,1,kzyvar,1,1,lupri)
+             end if
+         end do
+
+         if (pe_debug ) then
+               write(lupri,*)' linear transformed configuration vector'
+               write(lupri,*)' **** after slvsor  in pe_rsplnc **** '
+               call output(scvecs,1,kzyvar,1,ncsim,kzyvar,ncsim,1,lupri)
+         end if
+      end if
+
+      if (ncref .ne. kzconf) call quit('pe_rsplnc: ncref .ne. kzconf')
 
       call qexit('pe_rsplnc')
 
