@@ -22,6 +22,12 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
     logical :: triangular
     logical :: symmetric
     type(one_prop_t) :: prop_operator
+    type(nary_tree_t) :: nary_tree_bra
+    type(nary_tree_t) :: nary_tree_ket
+    type(nary_tree_t) :: nary_tree_total
+    integer :: num_geo_bra
+    integer :: num_geo_ket
+    integer :: num_geo_total
     type(matrix), dimension(:), allocatable :: intmats
 
     integer :: nbas
@@ -82,9 +88,41 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
                             prop_sym=prop_sym)
     if (num_prop /= ncomps) stop 'Wrong number of components.'
 
+    ! creates N-ary tree for geometric derivatives on bra center
+    ! here is zeroth order geometric derivatives
+    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
+                                  order_geo=0,         &
+                                  num_geo_atoms=0,     &
+                                  idx_geo_atoms=(/0/), &
+                                  nary_tree=nary_tree_bra)
+    ! creates N-ary tree for geometric derivatives on ket center
+    ! here is zeroth order geometric derivatives
+    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
+                                  order_geo=0,         &
+                                  num_geo_atoms=0,     &
+                                  idx_geo_atoms=(/0/), &
+                                  nary_tree=nary_tree_ket)
+    ! creates N-ary tree for total geometric derivatives
+    ! here is zeroth order geometric derivatives
+    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
+                                  order_geo=0,         &
+                                  num_geo_atoms=0,     &
+                                  idx_geo_atoms=(/0/), &
+                                  nary_tree=nary_tree_total)
+    ! gets the number of geometric derivatives, since we are asking zeroth order geometric
+    ! derivatives, the number is simply 1; otherwise, we need to
+    ! call NaryTreeGetNumGeo(nary_tree=nary_tree_bra, num_unique_geo=num_geo_bra)
+    ! call NaryTreeGetNumGeo(nary_tree=nary_tree_ket, num_unique_geo=num_geo_ket)
+    ! call NaryTreeGetNumGeo(nary_tree=nary_tree_total, num_unique_geo=num_geo_total)
+    num_geo_bra = 1
+    num_geo_ket = 1
+    num_geo_total = 1
+
     call Gen1IntAPIGetNumAO(num_ao=num_ao)
     if (num_ao /= nbas) stop 'Array size inconsistency.'
 
+    ! if you have partial gemetric derivatives on bra and/or ket center, please
+    ! reset prop_sym = SQUARE_INT_MAT
     select case(prop_sym)
         case(SYMM_INT_MAT, ANTI_INT_MAT)
             triangular = .true.
@@ -95,6 +133,7 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
             stop 'Integral matrices not symmetric!'
     end select
 
+    num_prop = num_prop*num_geo_bra*num_geo_ket*num_geo_total
     allocate(intmats(num_prop), stat=ierr)
     if (ierr /= 0) stop 'Failed to allocate matrices.'
 
@@ -139,15 +178,21 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
 
     ! calculates the integrals, please refer to the comments in subroutine
     ! \fn(Gen1IntOnePropGetIntExpt) in gen1int_api.F90
-    call Gen1IntOnePropGetIntExpt(nnz_comp=nnz_comp,      &
-                                  one_prop=prop_operator, &
-                                  num_ints=num_prop,      &
-                                  val_ints=intmats,       &
-                                  num_dens=1,             &
-                                  io_viewer=io,           &
+    call Gen1IntOnePropGetIntExpt(nnz_comp=nnz_comp,               &
+                                  one_prop=prop_operator,          &
+                                  nary_tree_bra=nary_tree_bra,     &
+                                  nary_tree_ket=nary_tree_ket,     &
+                                  nary_tree_total=nary_tree_total, &
+                                  num_ints=num_prop,               &
+                                  val_ints=intmats,                &
+                                  num_dens=1,                      &
+                                  io_viewer=io,                    &
                                   level_print=printlvl)
 
     call OnePropDestroy(one_prop=prop_operator)
+    call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_bra)
+    call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_ket)
+    call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_total)
 
     do i = 1, num_prop
         call MatNullify(A=intmats(i))
@@ -183,6 +228,12 @@ subroutine Tkb_integrals(Tk_ints, nnbas, ncomps, coord)
     logical :: triangular
     logical :: symmetric
     type(one_prop_t) :: prop_operator
+    type(nary_tree_t) :: nary_tree_bra
+    type(nary_tree_t) :: nary_tree_ket
+    type(nary_tree_t) :: nary_tree_total
+    integer :: num_geo_bra
+    integer :: num_geo_ket
+    integer :: num_geo_total
     type(matrix), dimension(:), allocatable :: intmats
 
     integer :: nbas
@@ -225,23 +276,57 @@ subroutine Tkb_integrals(Tk_ints, nnbas, ncomps, coord)
     call OnePropSetMag(one_prop=prop_operator, &
                        order_mag=1)
     call OnePropSetGTO(one_prop=prop_operator, &
-                       gto_type=LONDON, &
+                       gto_type=LONDON,        &
                        info_prop=ierr)
     if (ierr /= 0) stop 'Failed to set london orbitals.'
+
+    ! creates N-ary tree for geometric derivatives on bra center
+    ! here is zeroth order geometric derivatives
+    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
+                                  order_geo=0,         &
+                                  num_geo_atoms=0,     &
+                                  idx_geo_atoms=(/0/), &
+                                  nary_tree=nary_tree_bra)
+    ! creates N-ary tree for geometric derivatives on ket center
+    ! here is zeroth order geometric derivatives
+    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
+                                  order_geo=0,         &
+                                  num_geo_atoms=0,     &
+                                  idx_geo_atoms=(/0/), &
+                                  nary_tree=nary_tree_ket)
+    ! creates N-ary tree for total geometric derivatives
+    ! here is zeroth order geometric derivatives
+    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
+                                  order_geo=0,         &
+                                  num_geo_atoms=0,     &
+                                  idx_geo_atoms=(/0/), &
+                                  nary_tree=nary_tree_total)
+    ! gets the number of geometric derivatives, since we are asking zeroth order geometric
+    ! derivatives, the number is simply 1; otherwise, we need to
+    ! call NaryTreeGetNumGeo(nary_tree=nary_tree_bra, num_unique_geo=num_geo_bra)
+    ! call NaryTreeGetNumGeo(nary_tree=nary_tree_ket, num_unique_geo=num_geo_ket)
+    ! call NaryTreeGetNumGeo(nary_tree=nary_tree_total, num_unique_geo=num_geo_total)
+    num_geo_bra = 1
+    num_geo_ket = 1
+    num_geo_total = 1
 
     ! gets the number of property integrals and their symmetry
     call OnePropGetNumProp(one_prop=prop_operator, &
                            num_prop=num_prop)
+    num_prop = num_prop*num_geo_bra*num_geo_ket*num_geo_total
     call OnePropGetSymmetry(one_prop=prop_operator, &
                             prop_sym=prop_sym)
     call OnePropView(one_prop=prop_operator, io_viewer=6)
     write(*,*) "CSS:NUMPROP", num_prop
+    ! Gao: not sure what ncomps mean? and what order of geometric derivatives you may need?
     if (num_prop /= 3*ncomps) stop 'Wrong number of components.'
 
     call Gen1IntAPIGetNumAO(num_ao=num_ao)
     write(6,'(A5,3I5)') 'CSS:B', num_ao, nbas, nnbas
     if (num_ao /= nbas) stop 'Array size inconsistency.'
 
+    ! if you have partial gemetric derivatives on bra and/or ket center, please
+    ! reset prop_sym = SQUARE_INT_MAT
     write(6,'(A5,I5)') 'CSS:P', prop_sym
     select case(prop_sym)
         case(SYMM_INT_MAT, ANTI_INT_MAT)
@@ -298,15 +383,21 @@ subroutine Tkb_integrals(Tk_ints, nnbas, ncomps, coord)
 
     ! calculates the integrals, please refer to the comments in subroutine
     ! \fn(Gen1IntOnePropGetIntExpt) in gen1int_api.F90
-    call Gen1IntOnePropGetIntExpt(nnz_comp=nnz_comp,      &
-                                  one_prop=prop_operator, &
-                                  num_ints=num_prop,      &
-                                  val_ints=intmats,       &
-                                  num_dens=1,             &
-                                  io_viewer=io,           &
+    call Gen1IntOnePropGetIntExpt(nnz_comp=nnz_comp,               &
+                                  one_prop=prop_operator,          &
+                                  nary_tree_bra=nary_tree_bra,     &
+                                  nary_tree_ket=nary_tree_ket,     &
+                                  nary_tree_total=nary_tree_total, &
+                                  num_ints=num_prop,               &
+                                  val_ints=intmats,                &
+                                  num_dens=1,                      &
+                                  io_viewer=io,                    &
                                   level_print=printlvl)
 
     call OnePropDestroy(one_prop=prop_operator)
+    call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_bra)
+    call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_ket)
+    call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_total)
 
     do i = 1, num_prop
         call MatNullify(A=intmats(i))
