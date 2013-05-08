@@ -190,7 +190,7 @@ C
           ITYPE = 3
         ELSE
           WRITE(LUABSPRI,'(2A)') ' Warning : Unknown operator! ',LABEL
-          RETURN
+          GO TO 778
         END IF
 C
         RESLRF(1,J,INDEX,INDEX,ITYPE) = 
@@ -199,6 +199,7 @@ C
      &         DDOT(KZYVAR,GD,1,XSOL(1,2,J),1)
 C     
       ENDDO
+ 778  CONTINUE
 c
 C     Check status
 C     

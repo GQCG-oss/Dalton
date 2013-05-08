@@ -50,7 +50,7 @@ module f12_integrals_module
   !       & array4_close_file, array4_write_file_type1, mat_transpose, &
   !     & array4_read_file_type2
 
-  public :: f12_single_fragment_energy, f12_pair_fragment_energy, energy
+  public :: f12_single_fragment_energy, f12_pair_fragment_energy!, energy
 
   private
 
@@ -64,7 +64,7 @@ contains
     
     !> Atomic fragment to be determined  (NOT pair fragment)
     type(ccatom), intent(inout) :: MyFragment
-
+#ifdef MOD_UNRELEASED
     !> MO coefficient matrix for the occupied EOS
     real(realk), pointer :: CoccEOS(:,:)
     
@@ -107,7 +107,7 @@ contains
     ! Free memory
     call mem_dealloc(CoccEOS)
     call mem_dealloc(gr_ijji)
-
+#endif
   end subroutine f12_single_fragment_energy
 
   !> Brief: Gives the pair fragment energy for MP2F12
@@ -124,7 +124,7 @@ contains
     type(ccatom),intent(inout) :: Fragment2
     !> Pair fragment formed from fragment 1 and 2
     type(ccatom), intent(inout) :: PairFragment
-
+#ifdef MOD_UNRELEASED
     real(realk), pointer :: CoccEOS(:,:)
     real(realk), pointer :: gr_ijji(:,:,:,:)
 
@@ -165,9 +165,10 @@ contains
     call mem_dealloc(dopair_occ)
     call mem_dealloc(CoccEOS)
     call mem_dealloc(gr_ijji)
-
+#endif
   end subroutine f12_pair_fragment_energy
 
+#ifdef MOD_UNRELEASED
   !> Brief: MP2-F12 correction for the single fragment of term V1: E_P(V1)
   !> Author: Yang M. Wang
   !> Data: April 2013
@@ -517,5 +518,6 @@ contains
     call mem_dealloc(CoccEOST)
 
   end subroutine get_f12_V_gr_ijij
+#endif
 
 end module f12_integrals_module
