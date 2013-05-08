@@ -61,11 +61,12 @@ END INTERFACE
    PUBLIC::&
         & di_debug_general, &
         & di_debug_general2, &
+#ifdef MOD_UNRELEASED
         & di_debug_4center_eri, &
         & di_debug_4center, &
         & di_decpacked, &
+#endif
         & di_debug_ccfragment, &
-        & di_get_overlap_and_H1, &
         & di_get_fock_LSDALTON, &
         & di_GET_GbDs, &
         & di_GET_GbDs_and_XC_linrsp, &
@@ -89,9 +90,11 @@ CONTAINS
       type(matrix)          :: S,D
       real(realk) :: Etest,E
       logical :: debugProp
+#ifdef MOD_UNRELEASED
       IF(ls%input%dalton%DEBUGDECPACKED)then
          call di_decpacked(lupri,luerr,ls,nbast,D)
       ENDIF
+#endif
       IF(ls%setting%scheme%interest)then
          print*,'di_debug_4center_eri_interest'
          call di_debug_4center_eri_interest(lupri,luerr,ls,nbast)
@@ -970,7 +973,7 @@ CONTAINS
       call mat_free(tempm1)
       call mat_free(NONsym)
     end subroutine di_debug_PropertyIntegrals
-
+#ifdef MOD_UNRELEASED
    SUBROUTINE di_debug_4center_eri(lupri,lu_err,ls,nbast)
      IMPLICIT NONE
      integer,intent(in)      :: lupri,lu_err,nbast
@@ -1133,7 +1136,7 @@ CONTAINS
       call mat_free(tempm3)
 
     END SUBROUTINE DI_DEBUG_4CENTER
-
+#endif
     SUBROUTINE di_debug_magderiv_4center_eri(lupri,luerr,ls,nbast,D)
       IMPLICIT NONE
       integer,intent(in)      :: lupri,luerr,nbast
@@ -1924,7 +1927,7 @@ CONTAINS
       deallocate(Sx)
       WRITE(lupri,*)'di_magderivOverlap_test Successful'
     end subroutine di_magderivOverlap_test
-
+#ifdef MOD_UNRELEASED
    SUBROUTINE di_debug_ccfragment(lupri,luerr,ls,nbast,D,CMO,nocc)
       IMPLICIT NONE
       TYPE(Matrix),intent(in) :: D,CMO
@@ -2111,22 +2114,7 @@ CONTAINS
       call free_aoitem(lupri,AO)
 
     END SUBROUTINE di_debug_ccfragment
-
-   SUBROUTINE di_get_overlap_and_H1(S, H1,LSint,newlupri,newluerr,ls)
-      IMPLICIT NONE
-      TYPE(Matrix), target :: S, H1
-      TYPE(Matrix) :: tempm1,tempm2,Kinetic
-      integer  :: NNBAST, n2basx,newlupri,newluerr
-      type(lsitem) :: ls
-      logical :: LFOUND,LSint
-      real(realk), ALLOCATABLE :: wrk(:), wrk1(:)
-      !local pointer to H1
-      LFOUND = .FALSE.
-      lH1 => H1
-      call II_get_overlap(newlupri,newluerr,ls%setting,S)
-      call II_get_h1(newlupri,newluerr,ls%setting,H1)
-
-   END SUBROUTINE di_get_overlap_and_H1
+#endif
 
    SUBROUTINE di_get_fock_LSDALTON(D,h1,F,ndmat,Etotal,lupri,luerr,ls)
    ! ===================================================================
@@ -2997,6 +2985,7 @@ CONTAINS
            &lsint_fock_data%ls%setting,nbast,b,D,sigma_xc_cont,nbmat)
     end subroutine di_get_sigma_xc_contArray_lsd
 
+#ifdef MOD_UNRELEASED
     SUBROUTINE di_decpacked(lupri,luerr,ls,nbast,D)
       IMPLICIT NONE
       TYPE(Matrix),intent(in) :: D
@@ -3138,7 +3127,7 @@ CONTAINS
       call mat_free(tempm3)
 
     END SUBROUTINE DI_DECPACKED
-
+#endif
     SUBROUTINE di_debug_4center_eri_interest(lupri,lu_err,ls,nbast)
       IMPLICIT NONE
       integer,intent(in)      :: lupri,lu_err,nbast
