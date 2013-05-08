@@ -123,8 +123,8 @@ LSDALTON="linsca/lsdalton_dft_ssfgrid
   LSint/LSDALTON_donotsavegab
   LSint/LSDALTON_INCREMDALINK
   LSint/LSDALTON_SR_EXCHANGE
-  LSint/LSDALTON_uncontAObatch
   LSint/LSDALTON_LSlib"
+#  LSint/LSDALTON_uncontAObatch test unreleaseable code. 
 
 RSP="LSresponse/LSresponse_HF_alpha
   LSresponse/LSresponse_HF_alpha_aK
