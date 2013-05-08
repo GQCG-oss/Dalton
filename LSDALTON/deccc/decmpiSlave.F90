@@ -84,12 +84,6 @@
       case(QUITNOMOREJOBS); 
          infpar%lg_morejobs=.false.
          goto 200
-      case(LSMPIQUIT);  
-         call lsmpi_finalize(6,.FALSE.)
-      case(LSMPIQUITINFO);
-         call lsmpi_finalize(6,.TRUE.)
-      case default
-         call lsmpi_finalize(6,.FALSE.)
       end select
       
       goto 100
