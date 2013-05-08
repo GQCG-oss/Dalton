@@ -1065,8 +1065,8 @@
     integer num_ao                                        !number of orbitals
     integer, parameter :: NUM_TEST = 4                    !number of tests
     character*20, parameter :: PROP_NAME(NUM_TEST) = &    !names of testing property integrals,
-      (/INT_KIN_ENERGY, INT_OVERLAP, INT_POT_ENERGY, &    !see Gen1int library src/gen1int.F90
-        INT_CART_MULTIPOLE/)
+      (/"INT_KIN_ENERGY    ", "INT_OVERLAP       ",  &    !see Gen1int library src/gen1int.F90
+        "INT_POT_ENERGY    ", "INT_CART_MULTIPOLE"/)
     character*8, parameter :: HERM_PROP(NUM_TEST) = &     !names of property integrals,
       (/"KINENERG", "OVERLAP ", "POTENERG", "CARMOM  "/)  !see \fn(PR1IN1) in abacus/her1pro.F
     integer, parameter :: GTO_TYPE(NUM_TEST) = &          !
