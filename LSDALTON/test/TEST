@@ -147,6 +147,7 @@ RSP="LSresponse/LSresponse_HF_alpha
   LSresponse/LSresponse_DFT_dipole
   LSresponse/LSresponse_DFT_esd
   LSresponse/LSresponse_DFT_esg
+  LSresponse/LSresponse_DFT_esg_LDA
   LSresponse/LSresponse_DFT_dtpa
   LSresponse/LSresponse_DFT_molgra
   LSresponse/LSresponse_DFT_opa
