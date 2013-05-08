@@ -46,10 +46,12 @@ SUBROUTINE lsdalton
   use ls_optimizer_mod, only: LS_RUNOPT
   use lsmpi_type, only: lsmpi_finalize
   use lstensorMem, only: lstmem_init, lstmem_free
-  use numerical_hessian, only: get_numerical_hessian
   use pbc_setup, only: set_pbc_molecules
+#ifdef MOD_UNRELEASED
+  use numerical_hessian, only: get_numerical_hessian
   use molecular_hessian_mod, only: get_molecular_hessian
   use test_molecular_hessian_mod, only: test_Hessian_contributions
+#endif
   use rsp_util, only: init_rsp_util
   use plt_driver_module
 #ifdef VAR_PAPI
@@ -77,7 +79,10 @@ SUBROUTINE lsdalton
   type(matrix) :: Dmo, tmp
   integer             :: nelec
   Integer             :: Natoms
-  Real(realk),pointer :: geomHessian(:,:)
+#ifdef MOD_UNRELEASED
+  Real(realk),pointer   ::      geomHessian(:,:)
+#endif
+
   type(LowAccuracyStartType)  :: LAStype
   Interface 
      subroutine optimloc(CMO,nocc,m,ls,CFG)
@@ -443,10 +448,11 @@ SUBROUTINE lsdalton
 
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
 
+#ifdef MOD_UNRELEASED
         ! Numerical Derivatives
         if(config%response%tasks%doNumHess .or. &
              & config%response%tasks%doNumGrad .or. &
-             & config%response%tasks%doNumGradHess)then 
+             & config%response%tasks%doNumGradHess)then
            nbast=D(1)%nrow
            call get_numerical_hessian(lupri,luerr,ls,nbast,config,config%response%tasks%doNumHess,&
                 & config%response%tasks%doNumGrad,config%response%tasks%doNumGradHess)
@@ -466,6 +472,7 @@ SUBROUTINE lsdalton
            call get_molecular_hessian(geomHessian,Natoms,F(1),D(1),ls%setting,config%geoHessian,lupri,luerr)   
            call mem_dealloc(geomHessian)
         ENDIF
+#endif
 
         ! PROPERTIES SECTION
         !

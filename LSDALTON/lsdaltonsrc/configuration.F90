@@ -9,7 +9,11 @@ use precision
 use lstiming, only: SET_LSTIME_PRINT
 use configurationType, only: configitem
 use profile_type, only: profileinput, prof_set_default_config
+#ifdef MOD_UNRELEASED
 use typedeftype, only: lsitem,integralconfig,geoHessianConfig
+#else
+use typedeftype, only: lsitem,integralconfig
+#endif
 use opttype, only: opt_set_default_config
 use response_wrapper_type_module, only: free_mcdinputitem, &
      & alphainputitem_set_default_config, betainputitem_set_default_config, &
@@ -54,7 +58,9 @@ use lsmpi_type, only: DFTSETFU
 use cgto_diff_eri_host_interface, only: cgto_diff_eri_xfac_general
 #endif
 use scf_stats, only: scf_stats_arh_header
+#ifdef MOD_UNRELEASED
 use molecular_hessian_mod, only: geohessian_set_default_config
+#endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN
 contains
 
@@ -103,8 +109,10 @@ implicit none
   ! RSP solver
   call RSPSOLVERiputitem_set_default_config(config%response%RSPSOLVERinput)
   call rsp_tasks_set_default_config(config%response%tasks)
+#ifdef MOD_UNRELEASED
   ! Molecular Hessian
   call geohessian_set_default_config(config%geoHessian)
+#endif
   ! geometry optimization
   call optimization_set_default_config(config%optinfo)
   ! Dynamics
@@ -689,6 +697,7 @@ DO
       ENDDO
    ENDIF
 
+#ifdef MOD_UNRELEASED
    ! Geometrical Hessian input section
    IF (WORD(1:12) == '**GEOHESSIAN') THEN
       READWORD = .TRUE.
@@ -698,6 +707,7 @@ DO
       config%geoHessian%IntPrint = 1
       call GEOHESSIAN_INPUT(config%geohessian,readword,word,lucmd,lupri)
    ENDIF
+#endif
 
 
    ! KK, change from $RESPONS to **RESPONS to be consistent with other input structure.
@@ -1229,6 +1239,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
   ENDDO
 END subroutine INTEGRAL_INPUT
 
+#ifdef MOD_UNRELEASED
 !> \brief Read the $INFO section under **GEOHESSIAN in the input file DALTON.INP
 !> \author Patrick Merlot
 !> \date 14/09/2012
@@ -1288,6 +1299,7 @@ subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
      ENDIF
   ENDDO
 END subroutine GEOHESSIAN_INPUT
+#endif
 
 !> \brief Read the $INFO section under *LINSCA in input file DALTON.INP and set configuration structure accordingly.
 !> \author S. Host
@@ -1802,7 +1814,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
                     config%response%tasks%doResponse=.true.
                     config%response%tasks%dograd = .True.
              ! Joanna K
-       
+
+#ifdef MOD_UNRELEASED
        CASE('*NUMHESS')
                     WRITE(config%LUPRI,*) 'Numerical Hessian calculations are carried out using the analytical gradient'
                     config%response%tasks%doNumHess = .True.
@@ -1812,7 +1825,7 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
 	CASE('*NUMGRADHESS')
                     WRITE(config%LUPRI,*) 'Numerical Hessian calculations are carried out using the numerical gradient'
                     config%response%tasks%doNumGradHess = .True.
-
+#endif
         CASE('*SOLVER')
             do
                READ(LUCMD,'(A40)') word
