@@ -23,6 +23,9 @@
 !
 !...  This file is the module of API of Gen1Int interface.
 !
+!...  2013-05-03, Bin Gao
+!...  * fix the bug of returning wrong partial geometric derivatives
+!
 !...  2012-05-09, Radovan Bast
 !...  * implements large and small components
 !
@@ -37,8 +40,8 @@
 module gen1int_api
 
   ! Fortran 90 module of Gen1Int library
-  use gen1int, Gen1IntAPIGeoTreeDestroy => GeomTreeDestroy, &
-               Gen1IntAPIGeoTreeView => GeomTreeView
+  use gen1int, Gen1IntAPINaryTreeDestroy => NaryTreeDestroy, &
+               Gen1IntAPINaryTreeView => NaryTreeView
   ! AO sub-shells
   use gen1int_shell
   ! matrix module
@@ -100,9 +103,9 @@ module gen1int_api
   public :: Gen1IntAPIPropGetFunExpt
   public :: Gen1IntAPIPropDestroy
 
-  public :: Gen1IntAPIGeoTreeCreate
-  public :: Gen1IntAPIGeoTreeView
-  public :: Gen1IntAPIGeoTreeDestroy
+  public :: Gen1IntAPINaryTreeCreate
+  public :: Gen1IntAPINaryTreeView
+  public :: Gen1IntAPINaryTreeDestroy
 
   public :: Gen1IntOnePropGetIntExpt
 
@@ -523,8 +526,6 @@ module gen1int_api
   !>        angular momentum on ket center, not implemented
   !> \param order_ram_total is the order of total derivatives w.r.t. the total rotational
   !>        angular momentum, not implemented
-  !> \param order_geo_bra is the order of partial geometric derivatives on bra center
-  !> \param order_geo_ket is the order of partial geometric derivatives on ket center
   !> \param add_sr is for scalar-relativistic (SR) correction, not implemented
   !> \param add_so is for spin-orbit (SO) correction, not implemented
   !> \param add_london transforms the operator by the LAO type gauge-including projector, not implemented
@@ -535,7 +536,6 @@ module gen1int_api
                                   order_mag_total,                &
                                   order_ram_bra, order_ram_ket,   &
                                   order_ram_total,                &
-                                  order_geo_bra, order_geo_ket,   &
                                   add_sr, add_so, add_london,     &
                                   nr_active_blocks,               &
                                   active_component_pairs,         &
@@ -551,8 +551,6 @@ module gen1int_api
     integer,           intent(in)    :: order_ram_bra
     integer,           intent(in)    :: order_ram_ket
     integer,           intent(in)    :: order_ram_total
-    integer,           intent(in)    :: order_geo_bra
-    integer,           intent(in)    :: order_geo_ket
     logical,           intent(in)    :: add_sr
     logical,           intent(in)    :: add_so
     logical,           intent(in)    :: add_london
@@ -616,10 +614,6 @@ module gen1int_api
       write(STDOUT,999) "failed to create operator of "//trim(prop_name)//"!"
       stop
     end if
-    ! sets partial geometric derivatives
-    call OnePropSetPartialGeom(one_prop=prop_comp%one_prop, &
-                               order_geo_bra=order_geo_bra, &
-                               order_geo_ket=order_geo_ket)
     ! sets magnetic derivatives
     call OnePropSetMag(one_prop=prop_comp%one_prop, &
                        order_mag=order_mag_total,   &
@@ -683,12 +677,9 @@ module gen1int_api
   !> \author Bin Gao and Radovan Bast
   !> \date 2011-01-11
   !> \param prop_comp contains the information of one-electron property integrals and non-zero components
-  !> \param geom_tree contains the information of N-ary tree for total geometric derivatives
-  !> \param geom_type is the type of returned total geometric derivatives, UNIQUE_GEO is for unique total
-  !>        geometric derivatives, and REDUNDANT_GEO for redundant total geometric derivatives;
-  !>        for instance, (xx,xy,yy,xz,yz,zz) are unique while (xx,yx,zx,xy,yy,zy,xz,yz,zz) are
-  !>        redundant, note that the "triangular" total geometric derivatives could be obtained
-  !>        from the unique total geometric derivatives by giving \var(max_num_cent)=\var(order_geo_total)
+  !> \param nary_tree_bra is the N-ary tree for geometric derivatives on bra center
+  !> \param nary_tree_ket is the N-ary tree for geometric derivatives on ket center
+  !> \param nary_tree_total is the N-ary tree for total geometric derivatives
   !> \param api_comm is the MPI communicator
   !> \param num_ints is the number of property integral matrices including various derivatives
   !> \param write_ints indicates if writing integral matrices on file
@@ -704,13 +695,15 @@ module gen1int_api
   !>       them is arranged in the order of (xx,xy,yy,xz,yz,zz) or (xx,yx,zx,xy,yy,zy,xz,yz,zz),
   !>       see Gen1Int library manual, for instance Section 2.2;
   !>       \var(val_expt) should be zero by users before calculations
-  subroutine Gen1IntAPIPropGetIntExpt(prop_comp, geom_tree, geom_type, api_comm, &
-                                      num_ints, val_ints, write_ints,            &
-                                      num_dens, ao_dens, val_expt, write_expt,   &
+  subroutine Gen1IntAPIPropGetIntExpt(prop_comp, nary_tree_bra, nary_tree_ket, &
+                                      nary_tree_total, api_comm,               &
+                                      num_ints, val_ints, write_ints,          &
+                                      num_dens, ao_dens, val_expt, write_expt, &
                                       io_viewer, level_print)
     type(prop_comp_t), intent(in) :: prop_comp
-    type(geom_tree_t), optional, intent(inout) :: geom_tree
-    integer, optional, intent(in) :: geom_type
+    type(nary_tree_t), intent(inout) :: nary_tree_bra
+    type(nary_tree_t), intent(inout) :: nary_tree_ket
+    type(nary_tree_t), intent(inout) :: nary_tree_total
     integer, optional, intent(in) :: api_comm
     integer, intent(in) :: num_ints
     type(matrix), optional, intent(inout) :: val_ints(num_ints)
@@ -725,19 +718,20 @@ module gen1int_api
     if (.not.api_inited) then
       stop "Gen1IntAPIPropGetIntExpt>> sub-shells are not created!"
     end if
-    call Gen1IntOnePropGetIntExpt(nnz_comp=prop_comp%nnz_comp, &
-                                  one_prop=prop_comp%one_prop, &
-                                  geom_tree=geom_tree,         &
-                                  geom_type=geom_type,         &
-                                  api_comm=api_comm,           &
-                                  num_ints=num_ints,           &
-                                  val_ints=val_ints,           &
-                                  write_ints=write_ints,       &
-                                  num_dens=num_dens,           &
-                                  ao_dens=ao_dens,             &
-                                  val_expt=val_expt,           &
-                                  write_expt=write_expt,       &
-                                  io_viewer=io_viewer,         &
+    call Gen1IntOnePropGetIntExpt(nnz_comp=prop_comp%nnz_comp,     &
+                                  one_prop=prop_comp%one_prop,     &
+                                  nary_tree_bra=nary_tree_bra,     &
+                                  nary_tree_ket=nary_tree_ket,     &
+                                  nary_tree_total=nary_tree_total, &
+                                  api_comm=api_comm,               &
+                                  num_ints=num_ints,               &
+                                  val_ints=val_ints,               &
+                                  write_ints=write_ints,           &
+                                  num_dens=num_dens,               &
+                                  ao_dens=ao_dens,                 &
+                                  val_expt=val_expt,               &
+                                  write_expt=write_expt,           &
+                                  io_viewer=io_viewer,             &
                                   level_print=level_print)
   end subroutine Gen1IntAPIPropGetIntExpt
 
@@ -745,12 +739,9 @@ module gen1int_api
   !> \author Bin Gao
   !> \date 2012-05-15
   !> \param prop_comp contains the information of one-electron property integrals and non-zero components
-  !> \param geom_tree contains the information of N-ary tree for total geometric derivatives
-  !> \param geom_type is the type of returned total geometric derivatives, UNIQUE_GEO is for unique total
-  !>        geometric derivatives, and REDUNDANT_GEO for redundant total geometric derivatives;
-  !>        for instance, (xx,xy,yy,xz,yz,zz) are unique while (xx,yx,zx,xy,yy,zy,xz,yz,zz) are
-  !>        redundant, note that the "triangular" total geometric derivatives could be obtained
-  !>        from the unique total geometric derivatives by giving \var(max_num_cent)=\var(order_geo_total)
+  !> \param nary_tree_bra is the N-ary tree for geometric derivatives on bra center
+  !> \param nary_tree_ket is the N-ary tree for geometric derivatives on ket center
+  !> \param nary_tree_total is the N-ary tree for total geometric derivatives
   !> \param api_comm is the MPI communicator
   !> \param num_points is the number of grid points
   !> \param grid_points contains the coordinates of grid points
@@ -765,13 +756,15 @@ module gen1int_api
   !>       them is arranged in the order of (xx,xy,yy,xz,yz,zz) or (xx,yx,zx,xy,yy,zy,xz,yz,zz),
   !>       see Gen1Int library manual, for instance Section 2.2;
   !>       \var(val_expt) should be zero by users before calculations
-  subroutine Gen1IntAPIPropGetFunExpt(prop_comp, geom_tree, geom_type,       &
-                                      api_comm, num_points, grid_points,     &
-                                      num_dens, ao_dens, num_ints, val_expt, &
+  subroutine Gen1IntAPIPropGetFunExpt(prop_comp, nary_tree_bra, nary_tree_ket, &
+                                      nary_tree_total, api_comm,               &
+                                      num_points, grid_points,                 &
+                                      num_dens, ao_dens, num_ints, val_expt,   &
                                       io_viewer, level_print)
     type(prop_comp_t), intent(in) :: prop_comp
-    type(geom_tree_t), optional, intent(inout) :: geom_tree
-    integer, optional, intent(in) :: geom_type
+    type(nary_tree_t), intent(inout) :: nary_tree_bra
+    type(nary_tree_t), intent(inout) :: nary_tree_ket
+    type(nary_tree_t), intent(inout) :: nary_tree_total
     integer, optional, intent(in) :: api_comm
     integer, intent(in) :: num_points
     real(REALK), intent(in) :: grid_points(3,num_points)
@@ -781,64 +774,30 @@ module gen1int_api
     real(REALK), intent(inout) :: val_expt(num_points,num_ints,num_dens)
     integer, intent(in) :: io_viewer
     integer, intent(in) :: level_print
-    integer num_nnz_comp                    !number of non-zero components
-    integer num_prop                        !number of property integrals
-    integer order_geo                       !order of total geometric derivatives
-    integer p_geom_type                     !type of returned total geometric derivatives
-    integer num_return_geo                  !number of returned total geometric derivatives
-    integer idx_path                        !index of current path of N-ary tree
-    integer num_paths                       !total number of different paths of N-ary tree
-    integer ipath                           !incremental recorder over different paths
-    integer icomp                           !incremental recorder over components
-    integer comp_bra                        !which component of AO sub-shells on bra center
-    integer comp_ket                        !which component of AO sub-shells on ket center
-    logical same_braket                     !if the AO sub-shells are the same on bra and ket centers
+    integer num_nnz_comp         !number of non-zero components
+    integer num_prop             !number of property integrals
+    integer num_geo_bra          !number of geometric derivatives on bra center
+    integer num_geo_ket          !number of geometric derivatives on ket center
+    integer num_geo_total        !number of total geometric derivatives
+    integer idx_path_bra         !index of current path of N-ary tree for geometric derivatives on bra center
+    integer num_paths_bra        !total number of different paths of N-ary tree for geometric derivatives on bra center
+    integer idx_path_ket         !index of current path of N-ary tree for geometric derivatives on ket center
+    integer num_paths_ket        !total number of different paths of N-ary tree for geometric derivatives on ket center
+    integer idx_path_total       !index of current path of N-ary tree for total geometric derivatives
+    integer num_paths_total      !total number of different paths of N-ary tree for total geometric derivatives
+    integer num_cent_bra         !number of differentiated centers for geometric derivatives on bra center
+    integer num_cent_ket         !number of differentiated centers for geometric derivatives on ket center
+    integer ipath, jpath, kpath  !incremental recorder over different paths
+    integer icomp                !incremental recorder over components
+    integer comp_bra             !which component of AO sub-shells on bra center
+    integer comp_ket             !which component of AO sub-shells on ket center
+    logical same_braket          !if the AO sub-shells are the same on bra and ket centers
     ! checks if the AO sub-shells are created
     if (.not.api_inited) then
       stop "Gen1IntAPIPropGetFunExpt>> sub-shells are not created!"
     end if
     ! gets the number of non-zero components
     num_nnz_comp = size(prop_comp%nnz_comp,2)
-    ! gets the number of property integrals
-    call OnePropGetNumProp(one_prop=prop_comp%one_prop, num_prop=num_prop)
-    ! sets the type of total geometric derivatives
-    if (present(geom_tree)) then
-      ! gets the order of total geometric derivatives
-      call GeomTreeGetOrder(geom_tree=geom_tree, order_geo=order_geo)
-      ! gets the type of total geometric derivatives
-      if (order_geo>1) then
-        if (present(geom_type)) then
-          select case (geom_type)
-          case (REDUNDANT_GEO)
-            p_geom_type = REDUNDANT_GEO
-          case default
-            p_geom_type = UNIQUE_GEO
-          end select
-        ! default are unique total geometric derivatives
-        else
-          p_geom_type = UNIQUE_GEO
-        end if
-      ! the first order total geometric derivatives are unique
-      else
-        p_geom_type = UNIQUE_GEO
-      end if
-      ! gets the number of returned geometric derivatives
-      select case (p_geom_type)
-      case (REDUNDANT_GEO)
-        call GeomTreeGetNumAtoms(geom_tree=geom_tree, num_atoms=num_return_geo)
-        num_return_geo = (3*num_return_geo)**order_geo
-      case default
-        call GeomTreeGetNumGeo(geom_tree=geom_tree, num_unique_geo=num_return_geo)
-      end select
-    ! no total geometric derivatives
-    else
-      p_geom_type = UNIQUE_GEO
-      num_return_geo = 1
-    end if
-    ! checks the validity of \var(num_ints)
-    if (num_prop*num_return_geo>num_ints) then
-      stop "Gen1IntAPIPropGetFunExpt>> input num_ints is not enough!"
-    end if
     ! dumps AO sub-shells
     if (level_print>=15) then
       do icomp = 1, num_nnz_comp
@@ -861,17 +820,12 @@ module gen1int_api
     if (level_print>=10) then
       ! the information of one-electron property integrals
       call OnePropView(one_prop=prop_comp%one_prop, io_viewer=io_viewer)
-      if (present(geom_tree)) then
-        write(io_viewer,100) "evalutes total geometric derivatives"
-        call Gen1IntAPIGeoTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
-        ! type of total geometric derivatives
-        select case (p_geom_type)
-        case (REDUNDANT_GEO)
-          write(io_viewer,100) "redundant total geometric derivatives required"
-        case default
-          write(io_viewer,100) "unique total geometric derivatives required"
-        end select
-      end if
+      write(io_viewer,100) "information of partial geometric derivatives on bra center"
+      call Gen1IntAPINaryTreeView(nary_tree=nary_tree_bra, io_viewer=io_viewer)
+      write(io_viewer,100) "information of partial geometric derivatives on ket center"
+      call Gen1IntAPINaryTreeView(nary_tree=nary_tree_ket, io_viewer=io_viewer)
+      write(io_viewer,100) "information of total geometric derivatives"
+      call Gen1IntAPINaryTreeView(nary_tree=nary_tree_total, io_viewer=io_viewer)
       ! MPI communicator
       if (present(api_comm)) write(io_viewer,100) "MPI communicator provided"
       ! arguments related to AO density matrices
@@ -885,83 +839,84 @@ module gen1int_api
         end do
       end if
     end if
-    ! calculates total geometric derivatives
-    if (present(geom_tree)) then
-      ! gets the index of current path and total number of different paths
-      call GeomPathGetIndex(geom_tree=geom_tree, idx_path=idx_path)
-      call GeomTreeGetNumPaths(geom_tree=geom_tree, num_paths=num_paths)
-      ! calculates the property integrals of current path
-      do icomp = 1, num_nnz_comp
-        comp_bra = prop_comp%nnz_comp(1,icomp)
-        comp_ket = prop_comp%nnz_comp(2,icomp)
-        same_braket = comp_bra==comp_ket
-        call Gen1IntShellGetFunExpt(num_shells_bra=num_sub_shells(comp_bra), &
-                                    sub_shells_bra=sub_shells(:,comp_bra),   &
-                                    num_shells_ket=num_sub_shells(comp_ket), &
-                                    sub_shells_ket=sub_shells(:,comp_ket),   &
-                                    same_braket=same_braket,                 &
-                                    one_prop=prop_comp%one_prop,             &
-                                    geom_tree=geom_tree,                     &
-                                    geom_type=p_geom_type,                   &
-                                    api_comm=api_comm,                       &
-                                    num_points=num_points,                   &
-                                    grid_points=grid_points,                 &
-                                    num_dens=num_dens,                       &
-                                    ao_dens=ao_dens,                         &
-                                    num_ints=num_ints,                       &
-                                    val_expt=val_expt)
-      end do
-      ! loops over other paths
-      do ipath = idx_path+1, num_paths
-        ! generates the differentiated centers and their orders
-        call GeomTreeSearch(geom_tree=geom_tree)
-        ! dumps the information of current path
-        if (level_print>=20) &
-          call Gen1IntAPIGeoTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
-        ! calculates the property integrals of current path
-        do icomp = 1, num_nnz_comp
-          comp_bra = prop_comp%nnz_comp(1,icomp)
-          comp_ket = prop_comp%nnz_comp(2,icomp)
-          same_braket = comp_bra==comp_ket
-          call Gen1IntShellGetFunExpt(num_shells_bra=num_sub_shells(comp_bra), &
-                                      sub_shells_bra=sub_shells(:,comp_bra),   &
-                                      num_shells_ket=num_sub_shells(comp_ket), &
-                                      sub_shells_ket=sub_shells(:,comp_ket),   &
-                                      same_braket=same_braket,                 &
-                                      one_prop=prop_comp%one_prop,             &
-                                      geom_tree=geom_tree,                     &
-                                      geom_type=p_geom_type,                   &
-                                      api_comm=api_comm,                       &
-                                      num_points=num_points,                   &
-                                      grid_points=grid_points,                 &
-                                      num_dens=num_dens,                       &
-                                      ao_dens=ao_dens,                         &
-                                      num_ints=num_ints,                       &
-                                      val_expt=val_expt)
-        end do
-      end do
-    ! no total geometric derivatives
-    else
-      do icomp = 1, num_nnz_comp
-        comp_bra = prop_comp%nnz_comp(1,icomp)
-        comp_ket = prop_comp%nnz_comp(2,icomp)
-        same_braket = comp_bra==comp_ket
-        call Gen1IntShellGetFunExpt(num_shells_bra=num_sub_shells(comp_bra), &
-                                    sub_shells_bra=sub_shells(:,comp_bra),   &
-                                    num_shells_ket=num_sub_shells(comp_ket), &
-                                    sub_shells_ket=sub_shells(:,comp_ket),   &
-                                    same_braket=same_braket,                 &
-                                    one_prop=prop_comp%one_prop,             &
-                                    api_comm=api_comm,                       &
-                                    num_points=num_points,                   &
-                                    grid_points=grid_points,                 &
-                                    num_dens=num_dens,                       &
-                                    ao_dens=ao_dens,                         &
-                                    num_ints=num_ints,                       &
-                                    val_expt=val_expt)
-      end do
+    ! gets the number of property integrals
+    call OnePropGetNumProp(one_prop=prop_comp%one_prop, num_prop=num_prop)
+    ! gets the numbers of geometric derivatives
+    call NaryTreeGetNumGeo(nary_tree=nary_tree_bra, num_unique_geo=num_geo_bra)
+    call NaryTreeGetNumGeo(nary_tree=nary_tree_ket, num_unique_geo=num_geo_ket)
+    call NaryTreeGetNumGeo(nary_tree=nary_tree_total, num_unique_geo=num_geo_total)
+    ! checks the size of input arguments
+    if (num_prop*num_geo_bra*num_geo_ket*num_geo_total>num_ints) then
+      write(io_viewer,100) "input size", num_ints
+      write(io_viewer,100) "required size", num_prop*num_geo_bra*num_geo_ket*num_geo_total
+      stop "Gen1IntOnePropGetIntExpt>> input array not enough!"
     end if
-100 format("Gen1IntAPIPropGetFunExpt>> ",A,I4)
+    ! gets the index of current path and total number of different paths
+    call NaryTreePathGetIndex(nary_tree=nary_tree_bra, idx_path=idx_path_bra)
+    call NaryTreeGetNumPaths(nary_tree=nary_tree_bra, num_paths=num_paths_bra)
+    call NaryTreePathGetIndex(nary_tree=nary_tree_ket, idx_path=idx_path_ket)
+    call NaryTreeGetNumPaths(nary_tree=nary_tree_ket, num_paths=num_paths_ket)
+    call NaryTreePathGetIndex(nary_tree=nary_tree_total, idx_path=idx_path_total)
+    call NaryTreeGetNumPaths(nary_tree=nary_tree_total, num_paths=num_paths_total)
+    ! loops over different paths
+    do kpath = idx_path_total, num_paths_total
+      ! dumps the information of current path
+      if (level_print>=20) then
+        call Gen1IntAPINaryTreeView(nary_tree=nary_tree_total, io_viewer=io_viewer)
+      end if
+      do jpath = idx_path_ket, num_paths_ket
+        ! dumps the information of current path
+        if (level_print>=20) then
+          call Gen1IntAPINaryTreeView(nary_tree=nary_tree_ket, io_viewer=io_viewer)
+        end if
+        ! gets the number of differentiated centers on ket center
+        call NaryTreePathGetNumCenters(nary_tree=nary_tree_ket, num_centers=num_cent_ket)
+        if (num_cent_ket<=1) then
+          do ipath = idx_path_bra, num_paths_bra
+            ! dumps the information of current path
+            if (level_print>=20) then
+              call Gen1IntAPINaryTreeView(nary_tree=nary_tree_bra, io_viewer=io_viewer)
+            end if
+            ! gets the number of differentiated centers on bra center
+            call NaryTreePathGetNumCenters(nary_tree=nary_tree_bra, num_centers=num_cent_bra)
+            if (num_cent_bra<=1) then
+              ! calculates the property intergrands of current path
+              do icomp = 1, num_nnz_comp
+                comp_bra = prop_comp%nnz_comp(1,icomp)
+                comp_ket = prop_comp%nnz_comp(2,icomp)
+                same_braket = comp_bra==comp_ket
+                call Gen1IntShellGetFunExpt(num_shells_bra=num_sub_shells(comp_bra), &
+                                            sub_shells_bra=sub_shells(:,comp_bra),   &
+                                            num_shells_ket=num_sub_shells(comp_ket), &
+                                            sub_shells_ket=sub_shells(:,comp_ket),   &
+                                            same_braket=same_braket,                 &
+                                            one_prop=prop_comp%one_prop,             &
+                                            nary_tree_bra=nary_tree_bra,             &
+                                            nary_tree_ket=nary_tree_ket,             &
+                                            nary_tree_total=nary_tree_total,         &
+                                            api_comm=api_comm,                       &
+                                            num_points=num_points,                   &
+                                            grid_points=grid_points,                 &
+                                            num_dens=num_dens,                       &
+                                            ao_dens=ao_dens,                         &
+                                            num_prop=num_prop,                       &
+                                            num_geo_bra=num_geo_bra,                 &
+                                            num_geo_ket=num_geo_ket,                 &
+                                            num_geo_total=num_geo_total,             &
+                                            val_expt=val_expt)
+              end do
+            end if
+            ! generates the differentiated centers and their orders of the next path
+            call NaryTreeSearch(nary_tree=nary_tree_bra)
+          end do
+        end if
+        ! generates the differentiated centers and their orders of the next path
+        call NaryTreeSearch(nary_tree=nary_tree_ket)
+      end do
+      ! generates the differentiated centers and their orders of the next path
+      call NaryTreeSearch(nary_tree=nary_tree_total)
+    end do
+100 format("Gen1IntAPIPropGetFunExpt>> ",A,I8)
   end subroutine Gen1IntAPIPropGetFunExpt
 
   !> \brief frees space taken by the operator of property integrals with non-zero components
@@ -974,68 +929,65 @@ module gen1int_api
     deallocate(prop_comp%nnz_comp)
   end subroutine Gen1IntAPIPropDestroy
 
-  !> \brief creates N-ary tree for total geometric derivatives
+  !> \brief creates N-ary tree for geometric derivatives
   !> \author Bin Gao
   !> \date 2012-05-09
   !> \param max_num_cent is the maximum number of differentiated centers for total
   !>        geometric derivatives
-  !> \param order_geo_total is the order of total geometric derivatives
+  !> \param order_geo is the order of geometric derivatives
   !> \param num_geo_atoms is the number of selected atoms which might be chosen as the
   !>        differentiated centers, <1 means using all atoms, not tested
   !> \param idx_geo_atoms contains the indices of the selected atoms, will not be used
   !>        if \var(num_geo_atoms) is <1, not tested
-  !> \return geom_tree is the N-ary tree for total geometric derivatives
-  subroutine Gen1IntAPIGeoTreeCreate(max_num_cent, order_geo_total, &
-                                     num_geo_atoms, idx_geo_atoms, geom_tree)
+  !> \return nary_tree is the N-ary tree for total geometric derivatives
+  subroutine Gen1IntAPINaryTreeCreate(max_num_cent, order_geo, num_geo_atoms, &
+                                      idx_geo_atoms, nary_tree)
     integer, intent(in) :: max_num_cent
-    integer, intent(in) :: order_geo_total
+    integer, intent(in) :: order_geo
     integer, intent(in) :: num_geo_atoms
     integer, intent(in) :: idx_geo_atoms(*)
-    type(geom_tree_t), intent(inout) :: geom_tree
+    type(nary_tree_t), intent(inout) :: nary_tree
     integer ierr  !error information
-    if (order_geo_total>=0) then
+    if (order_geo>=0) then
       if (num_geo_atoms>0) then
-        call GeomTreeCreate(num_atoms=num_geo_atoms,   &
-                            order_geo=order_geo_total, &
+        call NaryTreeCreate(num_atoms=num_geo_atoms,   &
+                            order_geo=order_geo,       &
                             max_num_cent=max_num_cent, &
-                            geom_tree=geom_tree,       &
+                            nary_tree=nary_tree,       &
                             info_geom=ierr)
         if (ierr/=0) then
-          stop "Gen1IntAPIGeoTreeCreate>> error occurred when calling GeomTreeCreate!"
+          stop "Gen1IntAPINaryTreeCreate>> error occurred when calling NaryTreeCreate!"
         end if
-        call GeomTreeSetAtoms(num_atoms=num_geo_atoms, &
+        call NaryTreeSetAtoms(num_atoms=num_geo_atoms, &
                               idx_atoms=idx_geo_atoms, &
-                              geom_tree=geom_tree,     &
+                              nary_tree=nary_tree,     &
                               info_geom=ierr)
         if (ierr/=0) then
-          stop "Gen1IntAPIGeoTreeCreate>> error occurred when calling GeomTreeSetAtoms!"
+          stop "Gen1IntAPINaryTreeCreate>> error occurred when calling NaryTreeSetAtoms!"
         end if
       else
-        call GeomTreeCreate(num_atoms=num_atoms,       &
-                            order_geo=order_geo_total, &
+        call NaryTreeCreate(num_atoms=num_atoms,       &
+                            order_geo=order_geo,       &
                             max_num_cent=max_num_cent, &
-                            geom_tree=geom_tree,       &
+                            nary_tree=nary_tree,       &
                             info_geom=ierr)
         if (ierr/=0) then
-          stop "Gen1IntAPIGeoTreeCreate>> error occurred when calling GeomTreeCreate!"
+          stop "Gen1IntAPINaryTreeCreate>> error occurred when calling NaryTreeCreate!"
         end if
       end if
     else
-      stop "Gen1IntAPIGeoTreeCreate>> negative order of geometric derivatives!"
+      stop "Gen1IntAPINaryTreeCreate>> negative order of geometric derivatives!"
     end if
-  end subroutine Gen1IntAPIGeoTreeCreate
+  end subroutine Gen1IntAPINaryTreeCreate
 
   !> \brief evaluates the integral matrices and/or expectation values
   !> \author Bin Gao and Radovan Bast
   !> \date 2011-01-11
   !> \param nnz_comp contains the non-zero components
   !> \param one_prop contains the information of one-electron property integrals
-  !> \param geom_tree contains the information of N-ary tree for total geometric derivatives
-  !> \param geom_type is the type of returned total geometric derivatives, UNIQUE_GEO is for unique total
-  !>        geometric derivatives, and REDUNDANT_GEO for redundant total geometric derivatives;
-  !>        for instance, (xx,xy,yy,xz,yz,zz) are unique while (xx,yx,zx,xy,yy,zy,xz,yz,zz) are
-  !>        redundant, note that the "triangular" total geometric derivatives could be obtained
-  !>        from the unique total geometric derivatives by giving \var(max_num_cent)=\var(order_geo_total)
+  !> \param nary_tree_bra is the N-ary tree for geometric derivatives on bra center
+  !> \param nary_tree_ket is the N-ary tree for geometric derivatives on ket center
+  !> \param nary_tree_total is the N-ary tree for total geometric derivatives
   !> \param api_comm is the MPI communicator
   !> \param num_ints is the number of property integral matrices including various derivatives
   !> \param write_ints indicates if writing integral matrices on file
@@ -1051,14 +1003,16 @@ module gen1int_api
   !>       them is arranged in the order of (xx,xy,yy,xz,yz,zz) or (xx,yx,zx,xy,yy,zy,xz,yz,zz),
   !>       see Gen1Int library manual, for instance Section 2.2;
   !>       \var(val_expt) should be zero by users before calculations
-  subroutine Gen1IntOnePropGetIntExpt(nnz_comp, one_prop, geom_tree, geom_type, &
-                                      api_comm, num_ints, val_ints, write_ints, &
-                                      num_dens, ao_dens, val_expt, write_expt,  &
+  subroutine Gen1IntOnePropGetIntExpt(nnz_comp, one_prop,                            &
+                                      nary_tree_bra, nary_tree_ket, nary_tree_total, &
+                                      api_comm, num_ints, val_ints, write_ints,      &
+                                      num_dens, ao_dens, val_expt, write_expt,       &
                                       io_viewer, level_print)
     integer, intent(in) :: nnz_comp(:,:)
     type(one_prop_t), intent(in) :: one_prop
-    type(geom_tree_t), optional, intent(inout) :: geom_tree
-    integer, optional, intent(in) :: geom_type
+    type(nary_tree_t), intent(inout) :: nary_tree_bra
+    type(nary_tree_t), intent(inout) :: nary_tree_ket
+    type(nary_tree_t), intent(inout) :: nary_tree_total
     integer, optional, intent(in) :: api_comm
     integer, intent(in) :: num_ints
     type(matrix), optional, intent(inout) :: val_ints(num_ints)
@@ -1069,18 +1023,24 @@ module gen1int_api
     logical, optional, intent(in) :: write_expt
     integer, intent(in) :: io_viewer
     integer, intent(in) :: level_print
-    integer num_nnz_comp                    !number of non-zero components
-    integer num_prop                        !number of property integrals
-    integer order_geo                       !order of total geometric derivatives
-    integer p_geom_type                     !type of returned total geometric derivatives
-    integer num_return_geo                  !number of returned total geometric derivatives
-    integer idx_path                        !index of current path of N-ary tree
-    integer num_paths                       !total number of different paths of N-ary tree
-    integer ipath                           !incremental recorder over different paths
-    integer icomp                           !incremental recorder over components
-    integer comp_bra                        !which component of AO sub-shells on bra center
-    integer comp_ket                        !which component of AO sub-shells on ket center
-    logical same_braket                     !if the AO sub-shells are the same on bra and ket centers
+    integer num_nnz_comp         !number of non-zero components
+    integer num_prop             !number of property integrals
+    integer num_geo_bra          !number of geometric derivatives on bra center
+    integer num_geo_ket          !number of geometric derivatives on ket center
+    integer num_geo_total        !number of total geometric derivatives
+    integer idx_path_bra         !index of current path of N-ary tree for geometric derivatives on bra center
+    integer num_paths_bra        !total number of different paths of N-ary tree for geometric derivatives on bra center
+    integer idx_path_ket         !index of current path of N-ary tree for geometric derivatives on ket center
+    integer num_paths_ket        !total number of different paths of N-ary tree for geometric derivatives on ket center
+    integer idx_path_total       !index of current path of N-ary tree for total geometric derivatives
+    integer num_paths_total      !total number of different paths of N-ary tree for total geometric derivatives
+    integer num_cent_bra         !number of differentiated centers for geometric derivatives on bra center
+    integer num_cent_ket         !number of differentiated centers for geometric derivatives on ket center
+    integer ipath, jpath, kpath  !incremental recorder over different paths
+    integer icomp                !incremental recorder over components
+    integer comp_bra             !which component of AO sub-shells on bra center
+    integer comp_ket             !which component of AO sub-shells on ket center
+    logical same_braket          !if the AO sub-shells are the same on bra and ket centers
     ! checks if the AO sub-shells are created
     if (.not.api_inited) then
       stop "Gen1IntOnePropGetIntExpt>> sub-shells are not created!"
@@ -1092,48 +1052,6 @@ module gen1int_api
     num_nnz_comp = size(nnz_comp,2)
     if (num_nnz_comp>NUM_COMPONENTS) then
       stop "Gen1IntOnePropGetIntExpt>> too many components!"
-    end if
-    ! gets the number of property integrals
-    call OnePropGetNumProp(one_prop=one_prop, num_prop=num_prop)
-    ! sets the type of total geometric derivatives
-    if (present(geom_tree)) then
-      ! gets the order of total geometric derivatives
-      call GeomTreeGetOrder(geom_tree=geom_tree, order_geo=order_geo)
-      ! gets the type of total geometric derivatives
-      if (order_geo>1) then
-        if (present(geom_type)) then
-          select case (geom_type)
-          case (REDUNDANT_GEO)
-            p_geom_type = REDUNDANT_GEO
-          case default
-            p_geom_type = UNIQUE_GEO
-          end select
-        ! default are unique total geometric derivatives
-        else
-          p_geom_type = UNIQUE_GEO
-        end if
-      ! the first order total geometric derivatives are unique
-      else
-        p_geom_type = UNIQUE_GEO
-      end if
-      ! gets the number of returned geometric derivatives
-      select case (p_geom_type)
-      case (REDUNDANT_GEO)
-        call GeomTreeGetNumAtoms(geom_tree=geom_tree, num_atoms=num_return_geo)
-        num_return_geo = (3*num_return_geo)**order_geo
-      case default
-        call GeomTreeGetNumGeo(geom_tree=geom_tree, num_unique_geo=num_return_geo)
-      end select
-    ! no total geometric derivatives
-    else
-      p_geom_type = UNIQUE_GEO
-      num_return_geo = 1
-    end if
-    ! checks the validity of \var(num_ints)
-    if (present(val_ints) .or. present(val_expt)) then
-      if (num_prop*num_return_geo>num_ints) then
-        stop "Gen1IntOnePropGetIntExpt>> input num_ints is not enough!"
-      end if
     end if
     ! dumps AO sub-shells
     if (level_print>=15) then
@@ -1157,17 +1075,12 @@ module gen1int_api
     if (level_print>=10) then
       ! the information of one-electron property integrals
       call OnePropView(one_prop=one_prop, io_viewer=io_viewer)
-      if (present(geom_tree)) then
-        write(io_viewer,100) "evalutes total geometric derivatives"
-        call Gen1IntAPIGeoTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
-        ! type of total geometric derivatives
-        select case (p_geom_type)
-        case (REDUNDANT_GEO)
-          write(io_viewer,100) "redundant total geometric derivatives required"
-        case default
-          write(io_viewer,100) "unique total geometric derivatives required"
-        end select
-      end if
+      write(io_viewer,100) "information of partial geometric derivatives on bra center"
+      call Gen1IntAPINaryTreeView(nary_tree=nary_tree_bra, io_viewer=io_viewer)
+      write(io_viewer,100) "information of partial geometric derivatives on ket center"
+      call Gen1IntAPINaryTreeView(nary_tree=nary_tree_ket, io_viewer=io_viewer)
+      write(io_viewer,100) "information of total geometric derivatives"
+      call Gen1IntAPINaryTreeView(nary_tree=nary_tree_total, io_viewer=io_viewer)
       ! MPI communicator
       if (present(api_comm)) write(io_viewer,100) "MPI communicator provided"
       ! arguments related to integral matrices
@@ -1192,86 +1105,87 @@ module gen1int_api
         end if
       end if
     end if
-    ! calculates total geometric derivatives
-    if (present(geom_tree)) then
-      ! gets the index of current path and total number of different paths
-      call GeomPathGetIndex(geom_tree=geom_tree, idx_path=idx_path)
-      call GeomTreeGetNumPaths(geom_tree=geom_tree, num_paths=num_paths)
-      ! calculates the property integrals of current path
-      do icomp = 1, num_nnz_comp
-        comp_bra = nnz_comp(1,icomp)
-        comp_ket = nnz_comp(2,icomp)
-        same_braket = comp_bra==comp_ket
-        call Gen1IntShellGetIntExpt(num_shells_bra=num_sub_shells(comp_bra), &
-                                    sub_shells_bra=sub_shells(:,comp_bra),   &
-                                    num_shells_ket=num_sub_shells(comp_ket), &
-                                    sub_shells_ket=sub_shells(:,comp_ket),   &
-                                    same_braket=same_braket,                 &
-                                    one_prop=one_prop,                       &
-                                    geom_tree=geom_tree,                     &
-                                    geom_type=p_geom_type,                   &
-                                    api_comm=api_comm,                       &
-                                    num_ints=num_ints,                       &
-                                    val_ints=val_ints,                       &
-                                    write_ints=write_ints,                   &
-                                    num_dens=num_dens,                       &
-                                    ao_dens=ao_dens,                         &
-                                    val_expt=val_expt,                       &
-                                    write_expt=write_expt)
-      end do
-      ! loops over other paths
-      do ipath = idx_path+1, num_paths
-        ! generates the differentiated centers and their orders
-        call GeomTreeSearch(geom_tree=geom_tree)
-        ! dumps the information of current path
-        if (level_print>=20) &
-          call Gen1IntAPIGeoTreeView(geom_tree=geom_tree, io_viewer=io_viewer)
-        ! calculates the property integrals of current path
-        do icomp = 1, num_nnz_comp
-          comp_bra = nnz_comp(1,icomp)
-          comp_ket = nnz_comp(2,icomp)
-          same_braket = comp_bra==comp_ket
-          call Gen1IntShellGetIntExpt(num_shells_bra=num_sub_shells(comp_bra), &
-                                      sub_shells_bra=sub_shells(:,comp_bra),   &
-                                      num_shells_ket=num_sub_shells(comp_ket), &
-                                      sub_shells_ket=sub_shells(:,comp_ket),   &
-                                      same_braket=same_braket,                 &
-                                      one_prop=one_prop,                       &
-                                      geom_tree=geom_tree,                     &
-                                      geom_type=p_geom_type,                   &
-                                      api_comm=api_comm,                       &
-                                      num_ints=num_ints,                       &
-                                      val_ints=val_ints,                       &
-                                      write_ints=write_ints,                   &
-                                      num_dens=num_dens,                       &
-                                      ao_dens=ao_dens,                         &
-                                      val_expt=val_expt,                       & 
-                                      write_expt=write_expt)
-        end do
-      end do
-    ! no total geometric derivatives
-    else
-      do icomp = 1, num_nnz_comp
-        comp_bra = nnz_comp(1,icomp)
-        comp_ket = nnz_comp(2,icomp)
-        same_braket = comp_bra==comp_ket
-        call Gen1IntShellGetIntExpt(num_shells_bra=num_sub_shells(comp_bra), &
-                                    sub_shells_bra=sub_shells(:,comp_bra),   &
-                                    num_shells_ket=num_sub_shells(comp_ket), &
-                                    sub_shells_ket=sub_shells(:,comp_ket),   &
-                                    same_braket=same_braket,                 &
-                                    one_prop=one_prop,                       &
-                                    api_comm=api_comm,                       &
-                                    num_ints=num_ints,                       &
-                                    val_ints=val_ints,                       &
-                                    write_ints=write_ints,                   &
-                                    num_dens=num_dens,                       &
-                                    ao_dens=ao_dens,                         &
-                                    val_expt=val_expt,                       & 
-                                    write_expt=write_expt)
-      end do
+    ! gets the number of property integrals
+    call OnePropGetNumProp(one_prop=one_prop, num_prop=num_prop)
+    ! gets the numbers of geometric derivatives
+    call NaryTreeGetNumGeo(nary_tree=nary_tree_bra, num_unique_geo=num_geo_bra)
+    call NaryTreeGetNumGeo(nary_tree=nary_tree_ket, num_unique_geo=num_geo_ket)
+    call NaryTreeGetNumGeo(nary_tree=nary_tree_total, num_unique_geo=num_geo_total)
+    ! checks the size of input arguments
+    if (present(val_ints) .or. present(val_expt)) then
+      if (num_prop*num_geo_bra*num_geo_ket*num_geo_total>num_ints) then
+        write(io_viewer,100) "input size", num_ints
+        write(io_viewer,100) "required size", num_prop*num_geo_bra*num_geo_ket*num_geo_total
+        stop "Gen1IntOnePropGetIntExpt>> input array not enough!"
+      end if
     end if
-100 format("Gen1IntOnePropGetIntExpt>> ",A,I4)
+    ! gets the index of current path and total number of different paths
+    call NaryTreePathGetIndex(nary_tree=nary_tree_bra, idx_path=idx_path_bra)
+    call NaryTreeGetNumPaths(nary_tree=nary_tree_bra, num_paths=num_paths_bra)
+    call NaryTreePathGetIndex(nary_tree=nary_tree_ket, idx_path=idx_path_ket)
+    call NaryTreeGetNumPaths(nary_tree=nary_tree_ket, num_paths=num_paths_ket)
+    call NaryTreePathGetIndex(nary_tree=nary_tree_total, idx_path=idx_path_total)
+    call NaryTreeGetNumPaths(nary_tree=nary_tree_total, num_paths=num_paths_total)
+    ! loops over different paths
+    do kpath = idx_path_total, num_paths_total
+      ! dumps the information of current path
+      if (level_print>=20) then
+        call Gen1IntAPINaryTreeView(nary_tree=nary_tree_total, io_viewer=io_viewer)
+      end if
+      do jpath = idx_path_ket, num_paths_ket
+        ! dumps the information of current path
+        if (level_print>=20) then
+          call Gen1IntAPINaryTreeView(nary_tree=nary_tree_ket, io_viewer=io_viewer)
+        end if
+        ! gets the number of differentiated centers on ket center
+        call NaryTreePathGetNumCenters(nary_tree=nary_tree_ket, num_centers=num_cent_ket)
+        if (num_cent_ket<=1) then
+          do ipath = idx_path_bra, num_paths_bra
+            ! dumps the information of current path
+            if (level_print>=20) then
+              call Gen1IntAPINaryTreeView(nary_tree=nary_tree_bra, io_viewer=io_viewer)
+            end if
+            ! gets the number of differentiated centers on bra center
+            call NaryTreePathGetNumCenters(nary_tree=nary_tree_bra, num_centers=num_cent_bra)
+            if (num_cent_bra<=1) then
+              ! calculates the property integrals of current path
+              do icomp = 1, num_nnz_comp
+                comp_bra = nnz_comp(1,icomp)
+                comp_ket = nnz_comp(2,icomp)
+                same_braket = comp_bra==comp_ket
+                call Gen1IntShellGetIntExpt(num_shells_bra=num_sub_shells(comp_bra), &
+                                            sub_shells_bra=sub_shells(:,comp_bra),   &
+                                            num_shells_ket=num_sub_shells(comp_ket), &
+                                            sub_shells_ket=sub_shells(:,comp_ket),   &
+                                            same_braket=same_braket,                 &
+                                            one_prop=one_prop,                       &
+                                            nary_tree_bra=nary_tree_bra,             &
+                                            nary_tree_ket=nary_tree_ket,             &
+                                            nary_tree_total=nary_tree_total,         &
+                                            api_comm=api_comm,                       &
+                                            num_prop=num_prop,                       &
+                                            num_geo_bra=num_geo_bra,                 &
+                                            num_geo_ket=num_geo_ket,                 &
+                                            num_geo_total=num_geo_total,             &
+                                            val_ints=val_ints,                       &
+                                            write_ints=write_ints,                   &
+                                            num_dens=num_dens,                       &
+                                            ao_dens=ao_dens,                         &
+                                            val_expt=val_expt,                       & 
+                                            write_expt=write_expt)
+              end do
+            end if
+            ! generates the differentiated centers and their orders of the next path
+            call NaryTreeSearch(nary_tree=nary_tree_bra)
+          end do
+        end if
+        ! generates the differentiated centers and their orders of the next path
+        call NaryTreeSearch(nary_tree=nary_tree_ket)
+      end do
+      ! generates the differentiated centers and their orders of the next path
+      call NaryTreeSearch(nary_tree=nary_tree_total)
+    end do
+100 format("Gen1IntOnePropGetIntExpt>> ",A,I8)
   end subroutine Gen1IntOnePropGetIntExpt
 
 end module gen1int_api
