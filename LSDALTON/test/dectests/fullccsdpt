@@ -54,12 +54,10 @@ cat > fullccsdpt.dal <<'%EOF%'
 $INFO
 DEBUG_MPI_MEM
 $END INFO
-**DEC
-.FULL
+**CC
 .CCSD(T)
 .ccThr
 1.0d-9
-.CCSDsolver_par
 .Memory
 1.0
 *END OF INPUT

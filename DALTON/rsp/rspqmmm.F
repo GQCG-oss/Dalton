@@ -10,7 +10,7 @@
 !...   used, copied, transmitted, or stored only in accord with that
 !...   written licence.
 !...
-!...   In particular, no part of the source code or compiled modules may
+!!...   In particular, no part of the source code or compiled modules may
 !...   be distributed outside the research group of the licence holder.
 !...   This means also that persons (e.g. post-docs) leaving the research
 !...   group of the licence holder may not take any part of Dalton,
@@ -264,7 +264,6 @@ C        2.d Fel^(1) operator in MO basis
          CALL UTHU(WRK(KMATAO + 1*NNBASX),WRK(KMATMO + 1*NNORBT),
      &             WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
-
          CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
      &             WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
@@ -319,18 +318,21 @@ C         start from x MM center of next root
 
       DO ICSIM = 1, NCSIM
 
-        NDIM=3*NNZAL
-        IF (MMMAT) THEN
-          CALL DSPMV('L',NDIM,D1,WRK(KINVMAT),
-     &               WRK(KEFIELD + (ICSIM-1)*3*NNZAL),1,D0,
-     &               WRK(KINDMOM + (ICSIM-1)*3*NNZAL),1)
-        ELSE IF (MMITER) THEN
-          IOPT = 2 ! Do not read from file any previuos induced moments
-          CALL F2QMMM(WRK(KEFIELD + 3*(ICSIM-1)*NNZAL),NDIM,
-     &                WRK(KINDMOM + 3*(ICSIM-1)*NNZAL),
-     &                WRK(KWRK2),LWRK2,IOPT,IPQMMM)
-        ENDIF
-
+         NDIM=3*NNZAL
+         IF (MMMAT) THEN
+             CALL DSPMV('L',NDIM,D1,WRK(KINVMAT),
+     &                   WRK(KEFIELD + (ICSIM-1)*3*NNZAL),1,D0,
+     &                   WRK(KINDMOM + (ICSIM-1)*3*NNZAL),1)
+         ELSE IF (MMITER) THEN
+             IOPT = 2 ! Do not read from file any previuos induced moments
+             CALL F2QMMM(WRK(KEFIELD + 3*(ICSIM-1)*NNZAL),NDIM,
+     &                   WRK(KINDMOM + 3*(ICSIM-1)*NNZAL),
+     &                   WRK(KWRK2),LWRK2,IOPT,IPQMMM)
+         ENDIF
+        
+          WRITE(LUPRI,*)'Induced moments'
+          CALL OUTPUT(WRK(KINDMOM),1,NDIM,1,1,1,1,1,LUPRI)
+   
       END DO ! ICSIM
 
 C     2.f  Make F(el) and daxpy first x, then y and then z
@@ -358,10 +360,12 @@ C       2.g Fel^(1) operator in AO basis
 
         RUNQM3 = .FALSE.
 
+
 C       2.h Fel(1) operator in MO basis
 
         CALL UTHU(WRK(KMATAO),WRK(KMATMO),WRK(KUCMO),
      &             WRK(KWRK2),NBAST,NORBT)
+         
 
         CALL UTHU(WRK(KMATAO + 1*NNBASX),WRK(KMATMO + 1*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
@@ -369,14 +373,11 @@ C       2.h Fel(1) operator in MO basis
         CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
-
           LCI = 0 ! alternative set LCI = 3*NNZAL*(ICSIM-1)
 
           DO ICSIM = 1,NCSIM
 
             FACx = -WRK(KINDMOM + LRI + 0 + LCI)
-
-
 
             CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,
      &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
@@ -399,6 +400,15 @@ C       2.h Fel(1) operator in MO basis
             LCI = LCI + 3*NNZAL
         END DO
         LRI = LRI + 3
+      END DO
+                   
+      DO ICSIM = 1,NCSIM
+         WRITE(LUPRI,*)'FXC Operator'
+         CALL OUTPAK(WRK(KFXC),NORBT,1,LUPRI) 
+         IF (NASHT .GT. 0) THEN
+             WRITE(LUPRI,*)'FXC Operator (active part)'
+             CALL OUTPAK(WRK(KFXCAC),NASHX,1,LUPRI)
+         END IF
       END DO
 
       DO ICSIM = 1,NCSIM
@@ -609,7 +619,7 @@ c     Exit if not MCSCF (with- or without pol.) or HF/DFT without polarization
         RETURN
       ENDIF
 
-      IF  ( ((NASHT.EQ.0) .AND. (TRPLET))  ) THEN ! no pol. contr. can arrise in this case
+      IF  ( ((NASHT.EQ.0) .AND. (TRPLET))  ) THEN
         CALL QEXIT('QMMMLNO')
         RETURN
       ENDIF
@@ -724,19 +734,24 @@ C    *** Read the solvent contributions from PEFCMO from file ***
       CALL QUIT('ERROR IN DIMENSION OF QM/MM FOCK CONTR. IN QMMMLNO')
       END IF
 
+!      write(lupri,*)'MMORBT', MMORBT
+!      write(lupri,*)'LUSIFC', LUSIFC
+
       CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI)
       CALL READT (LUSIFC,NNORBX,WRK(KFPEMO))
 
       IF (LOPEN) THEN
       CALL GPCLOSE(LUSIFC,'KEEP')
       END IF
-
+      
 C     *************************************************************
 
       CALL UPKCMO(CMO,WRK(KUCMO))
 
       CALL DSPTSI(NORBT,WRK(KFPEMO),WRK(KUFPE))
 
+!      WRITE(LUPRI,*)'KUFPE QMMMLNO'
+!      CALL OUTPUT(WRK(KUFPE),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       IF (NOSIM.GT.0) THEN
         CALL RSPZYM(NOSIM,BOVECS,WRK(KUBO))
         CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)   
@@ -749,8 +764,8 @@ C     Add this explicitly only for MCSCF.
 C
       DO 200 IOSIM = 1,NOSIM
 
-      JRXYO = KRXYO + (IOSIM-1)*N2ORBX                ! edh: Arrange Fxo (KRXYO in memory)
-      IF (TRPLET) JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX  ! edh: Arrange Fxo triplet (KRXYOT in memory) 
+      JRXYO = KRXYO + (IOSIM-1)*N2ORBX                ! edh: Arrange Fyo (KRXYO in memory)
+      IF (TRPLET) JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX  ! edh: Arrange Fyo triplet (KRXYOT in memory) 
       JUBO  = KUBO  + (IOSIM-1)*N2ORBX                ! edh: Unpack orbital response trial vectors 
 C                                                       k(t) = sum(u)k(t)q + k*(t)q(dagger)
 C        Calculate one-index transformed integrals
@@ -759,6 +774,9 @@ C
 
         CALL DZERO(WRK(KUFPEX),N2ORBX)                        
         CALL ONEXH1(WRK(JUBO),WRK(KUFPE),WRK(KUFPEX))
+
+!       WRITE(LUPRI,*)'KUFPEX QMMMLNO'
+!       CALL OUTPUT(WRK(KUFPEX),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
 
 C      WRITE(LUPRI,*) 'EDH TRIPLET TEST' , TRPLET 
 
@@ -830,7 +848,7 @@ C       Now we need the integrals again transformed to the MO basis.
         ELSE
         LRXYO = JRXYO
         ENDIF
-
+        ! Make Fxo (add to Fyo and store in KRXYO) 
         IF ((NODTOT .GE. 1) .AND. TDHF) THEN
         CALL QMMMLNO_M2(WRK(LRXYO),WRK(KUCMO),WRK(KINDMOM),
      *                      WRK(KWRK2),LWRK2)
@@ -858,9 +876,9 @@ C     Calculate Fxo (Rxo) and Fyo (Ryo)
 C     contributions to SVEC(NSVEC,NOSIM)
 C--------------------------------------------
 
-      DO IOSIM = 1,NOSIM
-         JRXYO  = KRXYO  + (IOSIM-1)*N2ORBX ! edh: Inactive part of F(xo) (?) 
-         JRXYOA = KRXYOA + (IOSIM-1)*N2ASHX ! edh: Active part of F(xo)
+      DO IOSIM = 1,NOSIM         
+         JRXYO  = KRXYO  + (IOSIM-1)*N2ORBX
+         JRXYOA = KRXYOA + (IOSIM-1)*N2ASHX 
          IF (TRPLET) THEN
             JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX
             JRXYAT = KRXYAT + (IOSIM-1)*N2ASHX
@@ -870,9 +888,13 @@ C--------------------------------------------
          ELSE
             WRK(KOVLP-1+IOSIM) = D0
          END IF
+  
             CALL GETACQ(WRK(JRXYO),WRK(JRXYOA))
-            TXYO   = SLVQLM(UDV,WRK(JRXYOA),WRK(JRXYO),TXYOAC)  !edh: F(xo) = KRXYO ?
+            TXYO   = SLVQLM(UDV,WRK(JRXYOA),WRK(JRXYO),TXYOAC)  
             WRK(KTXYOA-1+IOSIM) = TXYOAC
+ 
+            WRITE (LUPRI,*)'TXYOAC', TXYOAC
+
          IF (TRPLET) THEN
               CALL GETACQ(WRK(JRXYOT),WRK(JRXYAT))
               TXYOT  = SLVQLM(UDVTR,WRK(JRXYAT),WRK(JRXYOT),TXYACT)

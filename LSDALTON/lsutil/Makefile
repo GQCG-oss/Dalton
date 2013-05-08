@@ -29,6 +29,14 @@ F90_OBJS = \
 	OverlapDistributionType.o\
 	ls_screenMPI.o\
 	lstensor_operations.o\
+        manual_utils.o\
+        manual_reorderings.o\
+        tensor_type_def.o\
+        tensor_interface.o\
+        lspdm_tensor_operations.o\
+        lspdm_slave.o\
+        tensor_basic.o\
+        lspdm_basic.o\
 	lstensorType.o\
 	lstensor_Mem.o\
 	LSoptType.o\
@@ -43,7 +51,6 @@ F90_OBJS = \
 	matop_dense_unrest.o\
 	mat-operations-aux.o\
 	mat-operations-essential.o\
-	matop_sparse1.o\
 	matrix_defop.o\
 	matrix_defop_backend.o\
         matrix_utilities.o \
@@ -90,8 +97,8 @@ clean :
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
 
 
-Makefile.depend depend: $(F90_OBJS:.o=.f90) $(C_OBJS:.o=.c)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -- $(F90_OBJS:.o=.f90) $(C_OBJS:.o=.c) > Makefile.depend
+Makefile.depend depend: $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -- $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

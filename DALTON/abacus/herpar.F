@@ -571,7 +571,6 @@ C  /* Deck her_sdinit */
 #include "mpif.h"
 #endif
 #endif
-
 C
 #include "priunit.h"
 #include "mxcent.h"
@@ -938,7 +937,6 @@ C
             CALL DAXPY(NUMHES,D1,TMPMAT(NUMGRA+1),1,HESSEE,1)
 #if !defined(_CRAYT3E) && !defined(NO_BINSUM)
          ELSE IF (ITYPE .EQ. 3) THEN
-
             if(.not.rma_model)then
               CALL MPIXRECV(TMPMAT,NUMFCK,'DOUBLE',NWHO,MTAG7)
               CALL MPIXRECV(TMPMAT(1+NUMFCK),8,'DOUBLE',NWHO,MTAG7)

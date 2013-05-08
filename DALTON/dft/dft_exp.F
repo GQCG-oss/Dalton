@@ -41,14 +41,17 @@
 
 C /* Deck dftexp */
       SUBROUTINE DEXPGC(NBLEN,NBLCNT,NBLOCKS,LDAIB,GAO,
-     &                  RHOA,GRADA,COORD,WGHT,DMAT)
+     &                  RHOA,GRADA,DST,VFA,XCPOT,COORD,WGHT,DMAT)
 #include "implicit.h"
       PARAMETER (D0 = 0.0D0, D2 = 2.0D0)
 #include "inforb.h"
+#include "mxcent.h"
+#include "nuclei.h"
       DIMENSION GAO(NBLEN,NBAST,*), COORD(3,NBLEN),WGHT(NBLEN),
      &          RHOA(NBLEN), GRADA(3,NBLEN),
      &          NBLCNT(8),NBLOCKS(2,LDAIB,8),
-     &          DMAT(NBAST,NBAST)
+     &          DMAT(NBAST,NBAST), DST(NATOMS), VFA(NBLEN),
+     &          XCPOT(NBLEN)
       LOGICAL DFT_ISGGA,DOGGA
       EXTERNAL DFT_ISGGA
       DIMENSION VX(5), VXC(NBLEN), VXB(NBLEN)

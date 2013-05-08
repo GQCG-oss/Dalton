@@ -121,10 +121,6 @@ group.add_argument('--explicit-libs',
         default=None,
         help='explicit linker specification for exotic libraries',
         metavar='STRING')
-group.add_argument('--force',
-        action='store_true',
-        default=False,
-        help='run setup even if build directory exists [default: %(default)s]')
 group.add_argument('--debug',
         action='store_true',
         default=False,
@@ -301,15 +297,9 @@ def setup_build_path(build_path, only_show_command):
         return
     if os.path.isdir(build_path):
         if not only_show_command:
-            if args.force:
-                fname = os.path.join(build_path, 'CMakeCache.txt')
-                if os.path.exists(fname):
-                    os.unlink(fname)
-            else:
-                print('aborting setup - build directory %s exists already' % build_path)
-                print('you have two options: first remove it and then rerun setup')
-                print('                      or force configuration with --force')
-                sys.exit()
+            print('aborting setup - build directory %s exists already' % build_path)
+            print('first remove it and then rerun setup')
+            sys.exit()
     else:
         os.makedirs(build_path, 0755)
 

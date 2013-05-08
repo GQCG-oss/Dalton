@@ -257,7 +257,6 @@ C     get PSO and AMFI SO integrals
          CALL GPCLOSE(LUPROP,'KEEP')
          IF (.NOT. (HSOBRT .OR. HSOEFF)) MNF_SO = .TRUE.
 C        solve response equations and compute values 
-         LQRGP = .TRUE.
          TRPSAVE = TRPLET 
          TRPLET = .FALSE.
          TRPFLG = .FALSE. 
@@ -287,7 +286,6 @@ C        solve response equations and compute values
             END IF
  100             CONTINUE
          CALL IZERO(NGPLR,8)
-         LQRGP  = .FALSE.
          TRPFLG = .TRUE. 
          TRPLET = TRPSAVE 
       END IF 

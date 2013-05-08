@@ -1,7 +1,7 @@
 if(NOT DEFINED DEFAULT_Fortran_FLAGS_SET)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
-    set(CMAKE_Fortran_FLAGS         "-fcray-pointer -DVAR_GFORTRAN -DGFORTRAN=445 -g -fbacktrace")
+    set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445 -g -fbacktrace -fcray-pointer")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -Wuninitialized")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -w")
     if(ENABLE_STATIC_LINKING)
@@ -62,7 +62,7 @@ endif()
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -mcmodel=medium -fast -Munroll")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fast -Munroll")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -m64 -i8"

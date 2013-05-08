@@ -223,9 +223,9 @@ C /* Deck ginit */
 #include "inflr.h"
 #include "infave.h"
 #include "priunit.h"
+#include "infrank.h"
       LOGICAL FNDLB2
       EXTERNAL FNDLB2
-      LQRGP = .TRUE.
       REFSPIN=DBLE(ISPIN-1)/2
       IF (.NOT.(ADDSO.OR.DOOZSO1.OR.DOOZSO2)) RETURN
 C
@@ -308,33 +308,21 @@ C
       DO IX=1,3
          DO J=1,NSO
             LLROP( INDPRP(SOLBL(IX,J))) = .FALSE.
-            LRRANK( INDPRP(SOLBL(IX,J))) = 1
+            OPRANK( INDPRP(SOLBL(IX,J))) = 1
          END DO
       END DO
       IF (.NOT.G_ALL) THEN
          IF (INDEX(G_LINE,"X").GT.0) THEN
             LLROP(INDPRP(ANGLBL(1))) = .FALSE.
-            LRRANK(INDPRP(ANGLBL(1))) = 0
-            DO J=1,NSO
-C              LLROP( INDPRP(SOLBL(1,J))) = .FALSE.
-C              LRRANK( INDPRP(SOLBL(1,J))) = 0
-            END DO
+            OPRANK(INDPRP(ANGLBL(1))) = 0
          END IF
          IF (INDEX(G_LINE,"Y").GT.0) THEN
             LLROP(INDPRP(ANGLBL(2))) = .FALSE.
-            LRRANK(INDPRP(ANGLBL(2))) = 0
-            DO J=1,NSO
-C              LLROP( INDPRP(SOLBL(2,J))) = .FALSE.
-C              LRRANK( INDPRP(SOLBL(2,J))) = 0
-            END DO
+            OPRANK(INDPRP(ANGLBL(2))) = 0
          END IF
          IF (INDEX(G_LINE,"Z").GT.0) THEN
             LLROP(INDPRP(ANGLBL(3))) = .FALSE.
-            LRRANK(INDPRP(ANGLBL(3))) = 0
-            DO J=1,NSO
-C              LLROP( INDPRP(SOLBL(3,J))) = .FALSE.
-C              LRRANK( INDPRP(SOLBL(3,J))) = 0
-            END DO
+            OPRANK(INDPRP(ANGLBL(3))) = 0
          END IF
       END IF
       RETURN

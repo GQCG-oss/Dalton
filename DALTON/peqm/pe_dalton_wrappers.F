@@ -261,6 +261,9 @@
         end do
         deallocate(udtvao)
 
+        !---------------------------------------
+        ! Fxc = -R<0|Fe|B>Fe in fxcaos
+        !--------------------------------------
         allocate(fxcaos(ncsim*nnbasx))
         call pe_master(runtype='response', denmats=fdtvaos,
      &                 fckmats=fxcaos, nmats=ncsim, dalwrk=wrk(1:nwrk))
@@ -275,6 +278,9 @@
         deallocate(fxcaos)
       end if
 
+      !--------------------------------------- 
+      ! Fg = Vmul -R<0|Fe|0>Fe in fyc
+      !---------------------------------------
       allocate(fyc(nnorbx), fycac(nnashx))
       call pe_fckmo(cmo, fyc, energy, dv, wrk, nwrk)
       if (nasht > 0) call getac2(fyc, fycac)
@@ -361,6 +367,10 @@
           end do
       end if
 
+      !---------------------------------------------------
+      ! 1. Calculation of Fxo = R*<0|Fe(k)|O>Fe 
+      !    Store in fxos
+      !---------------------------------------------------      
       if (pe_polar) then
         allocate(ubodcao(n2basx), ubodvao(n2basx))
         allocate(bodtaos(nosim*nnbasx))
@@ -378,6 +388,7 @@
      &                 fckmats=fxoaos, nmats=nosim, dalwrk=wrk(1:nwrk))
         deallocate(bodtaos)
 
+        
         allocate(fxos(nnorbx,nosim)) 
         do i = 1, nosim
             j = (i - 1) * nnbasx + 1
@@ -386,6 +397,10 @@
         deallocate(fxoaos)
       end if
 
+      !---------------------------------------------------
+      ! 2. Calculation of Fyo = V(k) + R<0|F|0>Fe(k)          
+      !    Store in fyos 
+      !---------------------------------------------------
       allocate(fckmo(nnorbx))
       call pe_fckmo(cmo, fckmo, energy, dv, wrk, nwrk)
 
@@ -407,15 +422,18 @@
         end if
         txyo = solelm(dv, fxyoacs(:,i), fxyos(:,i), txyoacs(i))
       end do
-
-!     ... CSF part of sigma vectors
+      !---------------------------------------------------
+      ! 3.   /        <0[Epq,Fxo + Fyo]|0>      \  orbital part
+      !      \ 2<0|Fyo + Fxo|mu> - <0|Fyo|0>*c0 /  CSF part
+      !---------------------------------------------------
+      !     ... CSF part of sigma vectors
       if (lsymrf == lsymst) then
         ncolim = 1
       else
         ncolim = 0
       end if
 
-!     Determine if full Hessian or only orbital Hessian
+      ! Determine if full Hessian or only orbital Hessian
       fulhes = (nso == nvarpt)
       if (fulhes) then
         jsovec = 1 + nconst
@@ -428,10 +446,10 @@
      &             txyoacs, dummy, cindx, wrk, nwrk)
       end if
 
-!     ... orbital part of sigma vectors
+      ! ... orbital part of sigma vectors
       mwoph = nwoph
       nwoph = nwoppt
-!    ... tell SOLGO only to use the NWOPPT first JWOP entries
+      ! ... tell SOLGO only to use the NWOPPT first JWOP entries
       do i = 1, nosim
         call solgo(2.0d0, dv, fxyos(:,i), sovecs(jsovec,i))
       end do
@@ -464,45 +482,237 @@
 
         call qenter('pe_rsplin')
 
-        if (kzconf >  0) then
-            stop 'ERROR: PE-MCSCF response not implemented.'
+!       if (.not. tdhf) then
+!            write(lupri,*) 'ERROR: PE-MCSCF response not implemented.'
+!           stop 'ERROR: PE-MCSCF response not implemented.'
+!       end if
+
+        if (ncsim > 0) then
+            call pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,
+     &                     udvtr, dvtr, dtv, dtvtr, scvecs, wrk, nwrk)
         end if
 
-!        if (ncsim > 0) then
-!            call pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,
-!     &                     udvtr, dvtr, dtv, dtvtr, scvecs, wrk, nwrk)
-!        end if
-
         if (nosim > 0) then
-            call pe_rsplno(nosim, bovecs, cref, cmo, cindx, udv, dv,
-     &                     udvtr, dvtr, sovecs, wrk, nwrk)
+            call pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx, 
+     &                     udv, dv, udvtr, dvtr, sovecs, wrk, nwrk)
         end if
 
         call qexit('pe_rsplin')
-
-
 
       end subroutine pe_rsplin
 
 !------------------------------------------------------------------------------
 !
-!      subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,
-!     &                     udvtr, dvtr, dtv, dtvtr, scvecs, wrk, nwrk)
+       subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,
+     &                      udvtr, dvtr, dtv, dtvtr, scvecs, wrk, nwrk)
+
+         use pe_variables, only: pe_polar, pe_debug
+         use polarizable_embedding, only: pe_master
+ 
+         implicit none
 !
-!        implicit none
+#include "priunit.h"
+#include "dummy.h"
+#include "infrsp.h"
+#include "inftap.h"
+#include "wrkrsp.h"
+#include "inforb.h"
+#include "qrinf.h"
+#include "infvar.h" 
 !
-!#include "priunit.h"
-!#include "dummy.h"
-!#include "infrsp.h"
-!#include "inftap.h"
-!
-!
-!      end subroutine pe_rsplnc
+! Used from common: n2ashx, kzyvar, kzconf, ncref, maxwop
+      integer :: i, j
+      integer :: ncsim, nwrk
+       
+      real*8, dimension(*) :: bcvecs, cref, cmo, cindx, udv, dv 
+      real*8, dimension(*) :: udvtr, dvtr
+      real*8, dimension(n2ashx,*) ::  dtv
+      real*8, dimension(n2ashx,*) :: dtvtr
+      real*8, dimension(kzyvar,*) :: scvecs
+      real*8, dimension(nwrk) :: wrk
+
+      real*8 :: ovlap, solelm, tfpeac, tfpe
+      real*8, dimension(:,:), allocatable :: udtv, udtvao
+      real*8, dimension(:,:), allocatable :: fxcs, fxcacs, fuxcs
+      real*8, dimension(:), allocatable :: fdtvaos, fxcaos
+      real*8, dimension(:), allocatable :: tfxc, tfxcacs 
+      real*8, dimension(:), allocatable :: fpe, fupe, fpeac
+      
+      logical :: lexist, lopen
+      logical :: fndlab
+      logical :: tdm, norho2
+
+      lopen = .false.
+      tdm = .true.
+      norho2 = .true.
+
+      
+      call qenter('pe_rsplnc')
+
+      allocate(fxcs(nnorbx,ncsim))
+      allocate(fxcacs(nnashx,ncsim))
+      allocate(tfxc(ncsim))
+      allocate(tfxcacs(ncsim))
+
+      !-----------------------------------
+      ! Fxc = R*(<0(L)|Fe|0> + <0|Fe|0(R)>)Fe
+      !-----------------------------------
+      if (pe_polar) then
+         call getref(cref, ncref)
+         ! ...Construct <0(L)|...|0> + <0|...|0(R)>                       
+         allocate(udtv(n2ashx,ncsim))        
+
+
+         call rsptdm(ncsim,irefsy,ksymst,ncref,kzconf,cref,
+     &                 bcvecs,udtv,dummy,0,0,.true.,.true.,
+     &                 cindx,wrk,1,nwrk)
+         udtv = -1.0d0*udtv          
+!     SUBROUTINE RSPTDM(NCSIM,ILRESY,IRSYM,NCLREF,NCRDIM,CLREF,
+!    *                 CR, RHO1,RHO2, ISPIN1,ISPIN2,TDM,NORHO2,
+!    *                 XINDX,WORK,KFREE,LFREE)
+
+                  
+         if ( ncsim > 0 ) then         
+            allocate(fdtvaos(nnbasx*ncsim))
+            allocate(udtvao(n2basx,ncsim))
+            do i = 1, ncsim
+               j = (i - 1) * nnbasx + 1
+               call fckden2(.false.,.true., dummy, udtvao(:,i), cmo,
+     &                      udtv(:,i), wrk, nwrk)
+               call dgefsp(nbast, udtvao(:,i), fdtvaos(j))
+!               write(lupri,*) 'udtvao matrix'
+!               call output(udtvao,1,nbast,1,nbast,nbast,nbast,1,lupri)
+            deallocate(udtv,udtvao)
+            end do
+         end if
+         
+         allocate(fxcaos(ncsim*nnbasx))
+         call pe_master(runtype='response', denmats=fdtvaos,
+     &                 fckmats=fxcaos, nmats=ncsim, dalwrk=wrk(1:nwrk))
+         deallocate(fdtvaos)           
+!           fxcaos = 2.0d0 * fxcaos
+
+         do i = 1, ncsim
+            j = (i - 1) * nnbasx + 1
+            call uthu(fxcaos(j), fxcs(:,i), cmo, wrk, nbast, norbt)
+!            write(lupri,*)'fxcs matrix rsp_pelnc' 
+!            call outpak(fxcs,norbt,1,lupri) 
+            if (nasht > 0) call getac2(fxcs(:,i), fxcacs(:,i))
+!                if (trplet) then
+!                    tfxc = solelm(dvtr, fxcacs(:,i), fxcs(:,i), tfxcac)
+!                    tfxc = tfxcac
+!            else
+            tfxc = solelm(dv, fxcacs(:,i), fxcs(:,i), tfxcacs(i))
+!            end if 
+         end do
+ 
+        deallocate(fxcaos)
+
+      end if
+
+
+      !---------------------------------------
+      ! Fg = V - <0|F|0>Fe -unpack into fpe
+      !---------------------------------------
+      if (.not. tdhf) then          
+          allocate(fpe(nnorbx))
+          if (lusifc <= 0) then
+              call gpopen(lusifc, 'SIRIFC', 'OLD', ' ', 'UNFORMATTED',
+     &                    idummy, .false.)
+              lopen = .true.
+          end if
+          rewind(lusifc)
+          call mollab('PETMAT  ', lusifc, lupri)
+          call readt(lusifc, nnorbx, fpe)
+          if (lopen) call gpclose(lusifc, 'KEEP')
+              allocate(fupe(n2orbx), fpeac(nnashx))
+              call dsptsi(norbt, fpe, fupe)               
+              if (nasht > 0) call getac2(fpe, fpeac)
+                  tfpe = solelm(dv, fpeac, fpe, tfpeac)
+              deallocate(fpe)
+!          end if
+!          deallocate(fupemo)
+      end if
+
+C    ***************************************
+
+C     Calculate Fxc(Rxc) and Fg(Ryc) contributions to SCVECS(NVAR,NCSIM)
+C     =================================================================
+
+C     ... CSF part of sigma vectors
+C
+      if (pe_debug ) then
+         write(lupri,*)' Linear transformed configuration vector'
+         write(lupri,*)' **** Before slvsc in pe_rsplnc **** '
+         call output(scvecs,1,kzyvar,1,ncsim,kzyvar,ncsim,1,lupri)
+      endif
+
+      call slvsc(ncsim, 0, nnashx, bcvecs, cref, scvecs, fxcacs, 
+     &           fpeac, tfxcacs, tfpeac, cindx, wrk, nwrk)
+      deallocate(fxcacs, tfxcacs, fpeac)
+     
+      if (pe_debug) then
+          write(lupri,*)' Linear transformed configuration vector'
+          write(lupri,*)' **** After slvsc in pe_rsplnc **** '
+          call output(scvecs,1,kzyvar,1,ncsim,kzyvar,ncsim,1,lupri)
+      end if
+C
+C     ... orbital part of sigma vector(s)
+C
+      if (kzwopt .gt. 0) then
+!          allocate(fupe(n2orbx))
+!          call dsptsi(norbt, fpe, fupe)         
+          do i = 1,ncsim
+             allocate(fuxcs(n2orbx,ncsim))
+             call dsptsi(norbt,fxcs(:,i), fuxcs(:,i))
+!            if (trplet) then
+!               call slvsor(.true.,.false.,1,udvtr,
+!    &                      scvecs(1,i),fuxcs(:,i))
+!            else
+             call slvsor(.true.,.true., 1, udv, scvecs(1,i), fuxcs(:,i))
+!             end if
+           
+             if (pe_debug) then
+                 write(lupri,*)' **** After slvsor in pe_rsplnc **** '
+                 write(lupri,*)
+     &           ' Orbital part of linear transformed conf vec no',i
+                 write(lupri,*)' Txc contribution'
+                 call output(scvecs(1,i),1,kzyvar,1,1,kzyvar,1,1,lupri)
+             end if
+           
+!            if (trplet) then
+!               call slvsor(.false.,.false., 1, dtvtr(1,i),
+!    *                       scvecs(1,i),fupe )
+!            else
+             call slvsor(.false.,.false.,1, dtv(1,i), scvecs(1,i), fupe)
+!             end if
+             deallocate(fupe) 
+           
+             if (pe_debug ) then
+                 write(lupri,*)
+     &           ' Orbital part of linear transformed conf vec no',i
+                 write(lupri,*)' Tg contribution'
+                 call output(scvecs(1,i),1,kzyvar,1,1,kzyvar,1,1,lupri)
+             end if
+         end do
+
+         if (pe_debug ) then
+               write(lupri,*)' linear transformed configuration vector'
+               write(lupri,*)' **** after slvsor  in pe_rsplnc **** '
+               call output(scvecs,1,kzyvar,1,ncsim,kzyvar,ncsim,1,lupri)
+         end if
+      end if
+
+      if (ncref .ne. kzconf) call quit('pe_rsplnc: ncref .ne. kzconf')
+
+      call qexit('pe_rsplnc')
+
+      end subroutine pe_rsplnc
 !
 !------------------------------------------------------------------------------
 
-      subroutine pe_rsplno(nosim, bovecs, cref, cmo, cindx, udv, dv,
-     &                     udvtr, dvtr, sovecs, wrk, nwrk)
+      subroutine pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx, 
+     &                     udv, dv, udvtr, dvtr, sovecs, wrk, nwrk)
 
         use pe_variables, only: pe_polar, pe_gspol
         use polarizable_embedding, only: pe_master
@@ -514,15 +724,17 @@
 #include "wrkrsp.h"
 #include "inforb.h"
 #include "infrsp.h"
-!#include "inftap.h"
+#include "inftap.h"
 
-        integer :: nosim, nwrk
+        integer :: nosim, ncsim, nwrk
         real*8, dimension(*) :: bovecs
         real*8, dimension(kzyvar,*) :: sovecs
         real*8, dimension(*) :: cref, cmo, cindx, udv, dv, udvtr, dvtr
         real*8, dimension(nwrk) :: wrk
 
         integer :: i, j
+        real*8 :: txyo
+        real*8 :: ddot, slvqlm
         real*8, dimension(:), allocatable :: dcao, dvao
 !        real*8, dimension(:), allocatable :: dcaotr, dvaotr
         real*8, dimension(:), allocatable :: daos, fckaos
@@ -530,6 +742,10 @@
         real*8, dimension(:), allocatable :: evec
         real*8, dimension(:,:), allocatable :: ubovecs, evecs, eacs
 !        real*8, dimension(:,:), allocatable :: evectrs, eactrs
+        real*8, dimension(:), allocatable :: fpemo,fupemo
+        real*8, dimension(:), allocatable :: txyoacs
+        real*8, dimension(:), allocatable :: ovlp
+        logical :: lexist, lopen
 
         ! return if no polarization and not MCSCF
         if ((kzconf == 0) .and. .not. pe_polar) then
@@ -544,28 +760,51 @@
         else if ((nasht > 0) .and. trplet) then
             stop 'ERROR: triplet response for open shell systems not
      & ready yet'
+        write(lupri,*)'WARNING: Triplet response open shell'
         end if
 
+        lopen = .false.
+
         call qenter('pe_rsplno')
+         
+        if (.not. tdhf) then
+            ! Read Fg = V - <0|F|0>Fe from file
+            allocate(fpemo(nnorbx))
+            if (lusifc <= 0) then
+                call gpopen(lusifc, 'SIRIFC', 'OLD', ' ', 'UNFORMATTED',
+     &                      idummy, .false.)
+                lopen = .true.
+            end if
+            rewind(lusifc)
+            call mollab('PETMAT  ', lusifc, lupri)
+            call readt(lusifc, nnorbx, fpemo)            
+            if (lopen) call gpclose(lusifc, 'KEEP')
+            allocate(fupemo(n2orbx))
+            call dsptsi(norbt, fpemo, fupemo)
+            deallocate(fpemo)
+        end if
+
 
         allocate(ubovecs(n2orbx,nosim))
         call rspzym(nosim, bovecs, ubovecs)
 
-        ubovecs = - 2.0d0 * ubovecs
+        ubovecs = - ubovecs
 
         allocate(dcao(n2basx), dvao(n2basx), daos(nosim*nnbasx))
 !        if (trplet) then
 !            allocate(dcaotr(n2basx), dvaotr(n2basx),
 !     &               daotrs(nosim*nnbasx))
 !        end if
+
+        ! Calculate Fxo = <0|Fe(k)|0>Fe
         do i = 1, nosim
-            j = 1 + (i - 1) * nnbasx
-            call deq27(cmo, ubovecs(:,i), udv, dcao, dvao, wrk, nwrk)
+            j = (i - 1) * nnbasx + 1
+            call deq27(cmo, ubovecs(:,i), udv, dcao, dvao,
+     &                 wrk, nwrk)
 !            if (trplet) then
 !                call deq27(cmo, ubovecs(:,i), udvtr, dcaotr, dvaotr,
 !     &                     wrk, nwrk)
 !            end if
-            ! factor 1/2 probably related to factor 2 above?
             if (nasht > 0) then
                 dcao = dcao + 0.5d0 * dvao
 !                if (trplet) then
@@ -576,6 +815,7 @@
 !            if (trplet) then
 !                call dgefsp(nbast, dcaotr, daotrs(j))
 !            end if
+   
         end do
         deallocate(dcao, dvao)
 !        if (trplet) then
@@ -587,6 +827,7 @@
      &                 fckmats=fckaos, nmats=nosim,
      &                 dalwrk=wrk)
         deallocate(daos)
+        fckaos = 2.0d0 * fckaos
 !        if (trplet) then
 !            allocate(fckaotrs(nosim*nnbasx))
 !            call pe_master(runtype='response', denmats=daotrs,
@@ -596,14 +837,37 @@
 !        end if
 
         allocate(evec(nnorbx))
-        allocate(evecs(n2orbx,nosim), eacs(n2ashx,nosim))
+        allocate(evecs(n2orbx,nosim))
+        evecs = 0.0d0
+        if (.not. tdhf) then
+            allocate(eacs(n2ashx,nosim))
+            allocate(txyoacs(nosim))
+            eacs = 0.0d0
+            txyoacs = 0.0d0
+        end if
 !        if (trplet) then
 !            allocate(evectrs(n2orbx,nosim), eactrs(n2ashx,nosim))
 !        end if
+
         do i = 1, nosim
-            j = 1 + (i - 1) * nnbasx
+            j = (i - 1) * nnbasx + 1
             call uthu(fckaos(j), evec, cmo, wrk, nbast, norbt)
             call dsptsi(norbt, evec, evecs(:,i))
+!            if (trplet) then
+!                uthu(fckaotrs(j), evectrs, cmo, wrk, nbast, norbt) 
+!                call dsptsi(norbt, evectrs, evecstrs(:,i))
+!            end if
+
+            ! calc. Fyo = V(k) - <0|F|0>Fe(k)
+            if (.not. tdhf) then
+                call onexh1(ubovecs(:,i), fupemo, evecs(:,i))
+                call getacq(evecs(:,i), eacs(:,i))
+                txyo = slvqlm(udv, eacs(:,i), evecs(:,i), txyoacs(i))
+!                if (trplet) then
+!                    call getacq(evecstrs, eacstrs)
+!                    txyot  = slvqlm(udvtr, eacstrs, evecstrs, fyoat(i))
+!                end if
+            end if
 !            if (trplet) then
 !                call uthu(fckaotrs(j), evec, cmo, wrk, nbast, norbt)
 !                call dsptsi(norbt, evec, evectrs(:,i))
@@ -616,7 +880,15 @@
 !            end if
 !            tr = solelm(dv, fxyoacs(:,i), fxyos(:,i), txyoacs(i))
         end do
+
         deallocate(evec)
+        if (.not. tdhf) then
+            deallocate(fupemo)
+            call slvsc(0, nosim, n2ashx, dummy, cref, sovecs, eacs,
+     &                 dummy, txyoacs, dummy, cindx, wrk, nwrk)
+            deallocate(eacs)
+            deallocate(txyoacs)
+        end if
 
 !        if (trplet) then
 !            call slvsor(.true., .false., nosim, udvtr, sovecs, evectrs)
@@ -625,10 +897,14 @@
             call slvsor(.true., .true., nosim, udv, sovecs, evecs)
 !        end if
 
-        deallocate(evecs, eacs)
+        deallocate(evecs)
 !        if (trplet) then
 !            deallocate(evectrs, eactrs)
 !        end if
+
+!        WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
+!        WRITE(LUPRI,*)' **** AFTER SLVSOR in pe_rsplno **** '
+!        CALL OUTPUT(sovecs,1,KZYVAR,1,NOSIM,KZYVAR,NOSIM,1,LUPRI)
 
         call qexit('pe_rsplno')
 

@@ -6,12 +6,13 @@
 import os
 import sys
 import string
-import subprocess
-from optparse import OptionParser, OptionGroup
 
 if sys.version < '2.4':
     print 'setup requires python version >= 2.4'
     sys.exit(1)
+
+import subprocess
+from optparse import OptionParser, OptionGroup
 
 root_directory = os.path.realpath(__file__)[:-5]
 default_path = root_directory + 'build/'
@@ -103,6 +104,11 @@ group.add_option('--omp',
                  dest='omp',
                  default=False,
                  help='build using OpenMP parallelization [default: %default]')
+group.add_option('--release',
+                 action='store_true',
+                 dest='release',
+                 default=False,
+                 help='build using MOD_UNRELEASED flag [default: %default]')
 group.add_option('--mklflag',
                  action='store_true',
                  dest='mklflag',
@@ -308,6 +314,8 @@ def gen_cmake_command():
         command += ' -DENABLE_CRAYWRAPPER=1'
     if options.omp:
         command += ' -DENABLE_OMP=1'
+    if options.release:
+        command += ' -DENABLE_RELEASE=1'
     if options.mklflag:
         command += ' -DENABLE_MKLFLAG=1'
     if options.lseek:

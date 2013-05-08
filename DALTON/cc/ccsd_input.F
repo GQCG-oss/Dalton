@@ -50,6 +50,7 @@ C     CC(2)(gives CIS(D) excitation energies)
 C     CC(3), CC(T)(gives CCSD(T) energy)
 C     CC1A, CC1B (for CCSDT-1a and CCSDT-1b models)
 C     CCD, MP2
+c     rCCD, drCCD, rTCCD
 C
 C
 C     Frozen core and finite diff. Keywords:
@@ -102,13 +103,17 @@ C
 #include "center.h"
 Cholesky  
 C
-      PARAMETER (NTABLE = 120)
+      PARAMETER (NTABLE = 126)
       LOGICAL   SET, NEWDEF, SIRFF
       CHARACTER PROMPT*1, WORD*7, TABLE(NTABLE)*7, WORD1*7
       CHARACTER*(80) LINE
 C
       SAVE SET
 CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
+CSONIA/FRAN/TBPEDERSEN
+CNew method keywords ring-CCD (rCCD), direct ring CCD (drCCD),
+Cring-CCD for triplet (rTCCD), and SOSEX added
+
       DATA TABLE /'.SKIP  ','.PRINT ','.DIRECT','.RESTAR','.CC3   ',
      &            '*CCEXCI','*CCLRSD','.CCSTST','.NSYM  ','.MAXRED',
      &            '*CCEXGR','.R1SKIP','.L1SKIP','.RESKIP','.LESKIP',
@@ -132,7 +137,10 @@ CSPAS 22.10.2003 keyword .SOPPA(CCSD) added at position 52
      &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V ','.ONLYMO',
      &            '.THRVEC','.MTRIP ','.SOPPA2','.AO-SOP','.NOSORT',
      &            '.KEPAOI','*CHO(T)','*CHOCC2','*CHOMP2','*CHODBG',
-     &            '.D01SKI','*ACTIVE','.CHO(T)','.XXXXXX','.XXXXXX'/
+     &            '.D01SKI','*ACTIVE','.CHO(T)','.T2UPDA','.RCCD  ',
+     &            '.RTCCD ','.DRCCD ','.SOSEX ','.T2STAR','.HURWIT',
+     &            '.DCPT2 '/
+
       DATA SET/.FALSE./
 C
       IF (SET) RETURN
@@ -146,9 +154,16 @@ C
       CCSDT  = .FALSE.
       CC2    = .FALSE.
       MP2    = .FALSE.
+      DCPT2  = .FALSE.
       CIS    = .FALSE.
       CCS    = .FALSE.
       CCD    = .FALSE.
+!SONIA/FRAN
+      rCCD   = .FALSE.
+      drCCD  = .FALSE.
+      rTCCD  = .FALSE.
+      SOSEX  = .FALSE.
+!
       CCP2   = .FALSE.
       CC1A   = .FALSE.
       CC1B   = .FALSE.
@@ -259,6 +274,28 @@ C
       KEEPAOIN  = .FALSE.
       LPACKINT  = .FALSE.
       THRPCKINT = 1.0D-15
+C
+C DRCCD/DRPA related stuff
+C
+C IT2UPD: decide on doubles amplitude updating scheme for RCCD and DRCCD
+C         (not used for other methods)
+C   =0 --- use conventional MP2-like update
+C   =1 --- use gradient update of Henderson and Scuseria,
+C          Mol. Phys. 108, 2511-2517 (2010)
+      IT2UPD=1
+C
+C IT2START: decide on doubles amplitude start guess for RCCD and DRCCD
+C         (not used for other methods)
+C   =-1 --- use zero amplitudes as initial guess (DEC-CC)
+C   =0  --- use conventional MP2 guess
+C   =1  --- use gradient start guess along the lines of Henderson and Scuseria,
+C           Mol. Phys. 108, 2511-2517 (2010)
+      IT2START=1
+C
+C HURWITZ_CHECK: check that solution is stabilizing for DRCCD
+      HURWITZ_CHECK=.FALSE.
+C end
+
 C
 CSPAS 22.10.2003 implementing SOPPA(CCSD)
       SIRSOP    = .FALSE.
@@ -393,7 +430,7 @@ C
      *                77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,
      *                92,93,94,95,96,97,98,99,100,101,102,103,104,
      *                105,106,107,108,109,110,111,112,113,114,115,
-     *                116,117,118,119,120), I
+     *                116,117,118,119,120,121,122,123,124,125,126), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -887,8 +924,63 @@ C                '.CHO(T)'
                   CCPT  = .TRUE.
                GO TO 1000
  119           CONTINUE 
- 120           CONTINUE 
+!                '.T2UPDATE'
+                  READ (LUCMD, *) IT2UPD
+                  IF (IT2UPD.LT.0) THEN
+                     IT2UPD=0
+                  ELSE IF (IT2UPD.GT.1) THEN
+                     IT2UPD=1
+                  END IF
                GO TO 1000
+ 120           CONTINUE 
+                  !SONIA/FRAN
+                  RCCD   = .TRUE.
+C                  write(lupri,*)'FRAN: activated ring CCD'
+               GO TO 1000
+ 121           CONTINUE 
+!                 '.RTCCD' 
+                  RTCCD   = .TRUE.
+C                  write(lupri,*)'SONIA: activated triplet-ring CCD'
+               GO TO 1000
+ 122           CONTINUE 
+!                 '.DRCCD'
+                  DRCCD   = .TRUE.
+C                  write(lupri,*)'FRAN: activated direct-ring CCD'
+               GO TO 1000
+ 123           CONTINUE 
+!                '.SOSEX '
+                  DRCCD=.TRUE.
+                  SOSEX=.TRUE.
+C                  write(lupri,*)'SONIA: activated SOSEX (DRCCD)'
+               GO TO 1000
+ 124           CONTINUE
+!                 '.T2START'
+                  READ (LUCMD, *) IT2START
+                  IF (IT2START.LT.-1) THEN
+                     IT2START=0
+                  ELSE IF (IT2START.GT.1) THEN
+                     IT2START=1
+                  END IF
+                  IF (IT2START.EQ.1) THEN
+                    WRITE(LUPRI,*)'Using New Initial T2 Guess'
+                  ELSE IF (IT2START.EQ.0) THEN
+                    WRITE(LUPRI,*)'Using Standard MP2 Initial T2 Guess'
+                  ELSE IF (IT2START.EQ.-1) THEN
+                   WRITE(LUPRI,*)'Using DEC-Style Initial T2 Guess (=0)'
+                  ENDIF
+               GO TO 1000
+ 125           CONTINUE 
+!                 '.HURWITZ'
+                  HURWITZ_CHECK=.TRUE.
+                  WRITE(LUPRI,*)'HURWITZ_CHECK activated in input'
+               GO TO 1000
+ 126           CONTINUE
+!                 '.DCPT2'
+                  DCPT2   = .TRUE.
+                  write(lupri,*)'DCPT2 Calculation.'
+                  WRITE(LUPRI,*)'See Assfeld, Almlof and Truhlar, '
+                  WRITE(LUPRI,*)'CPL 241, 438 (1995)'
+                  GO TO 1000
             ELSE
                WRITE (LUPRI,'(/3A,/)') ' Prompt "',WORD,
      *            '" not recognized in CC2INP.'

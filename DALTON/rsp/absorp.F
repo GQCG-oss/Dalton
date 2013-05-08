@@ -2229,7 +2229,7 @@ C
      &                  XINDX,MJWOP,WRK,LWRK)
 C
 C PURPOSE:
-C     Compute the quadratice response functions with response vectors
+C     Compute the quadratic response functions with response vectors
 C     found on file.
 C
 #include "implicit.h"

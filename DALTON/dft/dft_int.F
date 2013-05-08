@@ -30,7 +30,11 @@ C  dftcom.h : IPRDFT, ?
 C
 #include "priunit.h"
 #include "inforb.h"
+#include "mxcent.h"
 #include "dftcom.h"
+#include "nuclei.h"
+#include "dftacb.h"
+#include "maxorb.h"
       DIMENSION DMAT(NBAST,NBAST,NDMAT), WORK(LWORK), CBDATA(*)
       EXTERNAL CB
       LOGICAL DOLND
@@ -44,14 +48,33 @@ C
       LDMGAO = MXBLLEN*NBAST
       CALL MEMGET2('REAL','   GAO',KGAO  ,LGAO  ,WORK,KFREE,LFREE)
       CALL MEMGET2('REAL',' DMGAO',KDMGAO,LDMGAO,WORK,KFREE,LFREE)
+CAMT  Allocations for DFT-AC terms
+      LDAOx  = MXBLLEN*NBAST
+      LDAOy  = MXBLLEN*NBAST
+      LDAOz  = MXBLLEN*NBAST
+      LHESA  = 6*MXBLLEN
+      LDST   = NATOMS
+      LVFA   = MXBLLEN
+      LXCPOT = MXBLLEN
+      CALL MEMGET2('REAL','  DAOx',KDAOx ,LDAOx ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','  DAOy',KDAOy ,LDAOy ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','  DAOz',KDAOz ,LDAOz ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','  HESA',KHESA ,LHESA ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','   DST',KDST  ,LDST  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL','   VFA',KVFA  ,LVFA  ,WORK,KFREE,LFREE)
+      CALL MEMGET2('REAL',' XCPOT',KXCPOT,LXCPOT,WORK,KFREE,LFREE)
+CAMT
 C
       CALL DFTINT_1(DMAT,NDMAT,NGEODRV,DOLND,CB,CBDATA,ELECTRONS,
-     &            WORK(KGAO),WORK(KDMGAO),WORK,KFREE,LFREE,IPRDFT)
+     &            WORK(KGAO),WORK(KDMGAO),WORK(KDAOx),
+     &            WORK(KDAOy),WORK(KDAOz),WORK(KHESA),WORK(KDST),
+     &            WORK(KVFA),WORK(KXCPOT),WORK,KFREE,LFREE,IPRDFT)
 C
       CALL QEXIT('DFTINT')
       END
       SUBROUTINE DFTINT_1(DMAT,NDMAT,NGEODRV,DOLND,CB,CBDATA,ELECTRONS,
-     &                  GAO,DMAGAO,WORK,KFREE,LFREE,IPRINT)
+     &                    GAO,DMAGAO,DAOx,DAOy,DAOz,HESA,DST,VFA,XCPOT,
+     &                    WORK,KFREE,LFREE,IPRINT)
 
 C
 C     P. Salek and T. Helgaker, October 2003
@@ -62,7 +85,12 @@ C
 #include "maxorb.h"
 #include "inforb.h"
 #include "shells.h"
+#include "mxcent.h"
+#include "dftacb.h"
 #include "dftcom.h"
+#include "dftbrhs.h"
+#include "abainf.h"
+#include "nuclei.h"
 #include "infpar.h"
 #ifdef VAR_MPI
 #include "mpif.h"
@@ -75,6 +103,13 @@ C
       EXTERNAL CB
       LOGICAL DOLND
       DIMENSION DMAGAO(MXBLLEN,NBAST),GAO(MXBLLEN,NBAST,22)
+c     for Hessians
+      DIMENSION DAOx(MXBLLEN,NBAST),DAOy(MXBLLEN,NBAST)
+      DIMENSION DAOz(MXBLLEN,NBAST)
+      DIMENSION HESA(6,MXBLLEN)
+C     For AC
+      DIMENSION DST(NATOMS), VFA(MXBLLEN)
+      DIMENSION XCPOT(MXBLLEN)
 C
       DIMENSION COOR(3,NBUFLEN), WEIGHT(NBUFLEN)
       DIMENSION NSHLBLCK(2,KMAX), NBLCNT(8), NBLOCKS(2,NBAST,8)
@@ -89,6 +124,10 @@ C
       DOGGA = DFT_ISGGA() ! C code
       IGEODRV = NGEODRV
       IF (DOGGA) IGEODRV = IGEODRV + 1
+CAMT Require higher derivatives for explicit potential construction
+      IF (LDFTVXC) THEN
+        IF (IGEODRV.LT.2) IGEODRV = 2
+      ENDIF
       CALL SETUPSOS(IGEODRV,DOLND,IDUM1,IDUM2)
       CALL OPNQUA(NBAST,DMAT,WORK(KFREE),LFREE,IPRINT) ! C code
       NPOINTS = 0
@@ -134,12 +173,21 @@ C
             CALL BLGETSOS(NCURLEN,GAO,COOR(1,IPT),NSHELL,NSHLBLCK,
      &                    WORK(KFREE),LFREE,NBAST,DOLND,DOGGA,DFTHRI,0)
             CALL SHLTOORB(NSHELL,NSHLBLCK,NBLCNT,NBLOCKS,IORIDX)
-            IF(DOGGA) THEN
+            IF(DOGGA.OR.DFTASC) THEN
+              IF (LDFTVXC.AND.(.NOT.DOVB)) THEN
+               CALL GETRHO_BLOCKED_HES(DMAT,GAO,NBLCNT,NBLOCKS,
+     &              NSHELL,DMAGAO,DAOx,DAOy,DAOz,NCURLEN,
+     &              RHOA,GRADA,HESA)
+               IF (NDMAT .EQ. 2) THEN
+                 CALL QUIT('DFTAC / VXC NYI FOR NDMAT.GT.1')
+               ENDIF
+              ELSE
                CALL GETRHO_BLOCKED_GGA(DMAT,GAO,NBLCNT,NBLOCKS,NSHELL,
      &                                 DMAGAO,NCURLEN,RHOA,GRADA)
                IF (NDMAT .EQ. 2) CALL GETRHO_BLOCKED_GGA(DMAT(1,1,2),
      &                                 GAO,NBLCNT,NBLOCKS,NSHELL,
      &                                 DMAGAO,NCURLEN,RHOB,GRADB)
+              ENDIF
             ELSE
                CALL GETRHO_BLOCKED_LDA(DMAT,GAO,NBLCNT,NBLOCKS,NSHELL,
      &                                 DMAGAO,NCURLEN,RHOA)
@@ -147,20 +195,36 @@ C
      &                                 GAO,NBLCNT,NBLOCKS,NSHELL,
      &                                 DMAGAO,NCURLEN,RHOB)
             END IF
+
+
             IF (NDMAT .EQ. 2) THEN
               DO I = 1, NCURLEN
                  ELECTRONS = ELECTRONS + WEIGHT(IPT+I-1)
-     &                     * (RHOA(I)+RHOB(I))
+     &                       * (RHOA(I)+RHOB(I))
               END DO
-              CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,RHOB,
-     &                GRADA,GRADB,COOR(1,IPT),WEIGHT(IPT),CBDATA)
             ELSE
-               DO I = 1, NCURLEN
-                  ELECTRONS = ELECTRONS + WEIGHT(IPT+I-1)*RHOA(I)
-               END DO
-               CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,GRADA,
-     &                 COOR(1,IPT),WEIGHT(IPT),CBDATA)
-            END IF
+              DO I = 1, NCURLEN
+                 ELECTRONS = ELECTRONS + WEIGHT(IPT+I-1)*RHOA(I)
+              END DO
+            ENDIF
+
+            IF ((LDFTVXC.AND.DOGGA).AND.(.NOT.DOVB)) THEN
+              IF (NDMAT .EQ. 2) THEN
+                 CALL QUIT('DFTAC / VXC NYI FOR NDMAT.GT.1')
+              ELSE
+                CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,
+     &                  GRADA,HESA,DST,VFA,XCPOT,COOR(1,IPT),
+     &                  WEIGHT(IPT),CBDATA)
+              ENDIF
+            ELSE
+              IF (NDMAT .EQ. 2) THEN
+                CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,RHOB,
+     &                  GRADA,GRADB,COOR(1,IPT),WEIGHT(IPT),CBDATA)
+              ELSE
+                 CALL CB(NCURLEN,NBLCNT,NBLOCKS,NSHELL,GAO,RHOA,GRADA,
+     &                   DST,VFA,XCPOT,COOR(1,IPT),WEIGHT(IPT),CBDATA)
+              END IF
+            ENDIF
          END DO
          GO TO 100
  200     CONTINUE
@@ -368,6 +432,12 @@ c     /DFTCOM/
       call mpi_bcast(dfthri, 1, mpi_double_precision,
      &                       0, mpi_comm_world, ie)
 
+c     /DFTASC/
+      CALL MPI_Bcast(DFTASC,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(DOMPOLE,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(DOLB94,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+      CALL MPI_Bcast(LDFTVXC,1,MPI_LOGICAL,0,MPI_COMM_WORLD,ie)
+
 c     sync functionals, too.
 !     print *, 'calling DFTFUNCSYNC for mytid',mytid, NODTOT
       CALL DFTFUNCSYNC(MYNUM,NODTOT)
@@ -388,3 +458,86 @@ c
      &                0,MPI_COMM_WORLD,IERR)
 #endif
       END
+
+
+      SUBROUTINE GETRHO_BLOCKED_HES(DMAT,GAO,NBLOCKS,IBLOCKS,
+     *                              LDAIB,TMP,TMPx,TMPy,TMPz,NVCLEN,
+     *                              RHO,GRAD,HES)
+#include "implicit.h"
+#include "inforb.h"
+#include "dftinf.h"
+      DIMENSION DMAT(NBAST,NBAST), GAO(NVCLEN,NBAST,NTYPSO)
+      DIMENSION NBLOCKS(NSYM),IBLOCKS(2,LDAIB,NSYM)
+      DIMENSION RHO(NVCLEN), GRAD(3,NVCLEN),TMP(NVCLEN,NBAST)
+      DIMENSION TMPx(NVCLEN,NBAST),TMPy(NVCLEN,NBAST)
+      DIMENSION TMPz(NVCLEN,NBAST),HES(6,NVCLEN)
+#include "priunit.h"
+c
+      CALL zeroorbs(TMP,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
+      CALL zeroorbs(TMPx,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
+      CALL zeroorbs(TMPy,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
+      CALL zeroorbs(TMPz,NBLOCKS,IBLOCKS,LDAIB,NVCLEN)
+
+        DO ISYM = 1, NSYM
+        DO IBL=1, NBLOCKS(ISYM)
+          ISTART=IBLOCKS(1,IBL,ISYM)
+          ILEN=IBLOCKS(2,IBL,ISYM)-ISTART+1
+           DO JBL=1, NBLOCKS(ISYM)
+           JSTART=IBLOCKS(1,JBL,ISYM)
+           JLEN=IBLOCKS(2,JBL,ISYM)-JSTART+1
+           call dgemm('N','N',NVCLEN,JLEN,ILEN,1.0d0,
+     *            gao(1,ISTART,1),NVCLEN,
+     *            DMAT(ISTART,JSTART),NBAST,1.0d0,
+     *            TMP(1,JSTART),NVCLEN)
+
+           call dgemm('N','N',NVCLEN,JLEN,ILEN,1.0d0,
+     *            gao(1,ISTART,2),NVCLEN,
+     *            DMAT(ISTART,JSTART),NBAST,1.0d0,
+     *            TMPx(1,JSTART),NVCLEN)
+
+           call dgemm('N','N',NVCLEN,JLEN,ILEN,1.0d0,
+     *            gao(1,ISTART,3),NVCLEN,
+     *            DMAT(ISTART,JSTART),NBAST,1.0d0,
+     *            TMPy(1,JSTART),NVCLEN)
+
+           call dgemm('N','N',NVCLEN,JLEN,ILEN,1.0d0,
+     *            gao(1,ISTART,4),NVCLEN,
+     *            DMAT(ISTART,JSTART),NBAST,1.0d0,
+     *            TMPz(1,JSTART),NVCLEN)
+
+      END DO
+      END DO
+      END DO
+      call dzero(RHO, NVCLEN)
+      call dzero(GRAD, 3*NVCLEN)
+      call dzero(HES, 6*NVCLEN)
+      DO ISYM = 1, NSYM
+      DO IBL=1, NBLOCKS(ISYM)
+      DO IDX=IBLOCKS(1,IBL,ISYM), IBLOCKS(2,IBL,ISYM)
+         DO K = 1, NVCLEN
+            RHO(K)    = RHO(K)    + GAO(K,IDX,1)*TMP(K,IDX)
+            GRAD(1,K) = GRAD(1,K) + 2*GAO(K,IDX,2)*TMP(K,IDX)
+            GRAD(2,K) = GRAD(2,K) + 2*GAO(K,IDX,3)*TMP(K,IDX)
+            GRAD(3,K) = GRAD(3,K) + 2*GAO(K,IDX,4)*TMP(K,IDX)
+            HES(1,K)  = HES(1,K)  + 2*GAO(K,IDX,5)*TMP(K,IDX)
+     *                 + 2*GAO(K,IDX,2)*TMPx(K,IDX)
+            HES(2,K)  = HES(2,K)  + 2*GAO(K,IDX,6)*TMP(K,IDX)
+     *        + GAO(K,IDX,2)*TMPy(K,IDX)+GAO(K,IDX,3)*TMPx(K,IDX)
+            HES(3,K)  = HES(3,K)  + 2*GAO(K,IDX,7)*TMP(K,IDX)
+     *        + GAO(K,IDX,2)*TMPz(K,IDX)+GAO(K,IDX,4)*TMPx(K,IDX)
+            HES(4,K)  = HES(4,K)  + 2*GAO(K,IDX,8)*TMP(K,IDX)
+     *                 + 2*GAO(K,IDX,3)*TMPy(K,IDX)
+            HES(5,K)  = HES(5,K)  + 2*GAO(K,IDX,9)*TMP(K,IDX)
+     *        + GAO(K,IDX,3)*TMPz(K,IDX)+GAO(K,IDX,4)*TMPy(K,IDX)
+            HES(6,K)  = HES(6,K)  + 2*GAO(K,IDX,10)*TMP(K,IDX)
+     *                 + 2*GAO(K,IDX,4)*TMPz(K,IDX)
+
+         END DO
+      END DO
+      END DO
+      END DO
+      END
+
+
+
+

@@ -963,6 +963,11 @@ C
             IF (DFTRUN) THEN
                CALL HEADER('DFT contribution to gradient',-1)
                CALL PRIGRD(GRADFT,WORK(KCSTRA),WORK(KSCTRA))
+CAMT If requested also emprical dispersion gradient contrib
+               IF (DODFTD) THEN
+                 CALL HEADER('DFT-D contribution to gradient',-1)
+                 CALL PRIGRD(GRADFTD,WORK(KCSTRA),WORK(KSCTRA))
+               ENDIF
             END IF
             IF (SECDER) THEN
                CALL HEADER('Kinetic energy integral Hessian',-1)

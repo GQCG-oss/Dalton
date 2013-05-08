@@ -26,8 +26,12 @@ fi
 # LINSCA is a set of tests that MUST be run before commiting to linsca-ng
 # branch
 LINSCA="linsca/linsca_energy  
+  linsca/linsca_energy_h1oao  
+  linsca/linsca_emsl
+  linsca/linsca_las
+  linsca/linsca_admm
+  linsca/linsca_admm_df
   linsca/linsca_dft_energy
-  linsca/linsca_sp        
   linsca/linsca_unrest_energy
   linsca/linsca_unrest_dft_energy
   linsca/linsca_rhf_stability
@@ -35,38 +39,44 @@ LINSCA="linsca/linsca_energy
   linsca/linsca_direct_dens
   linsca/linsca_arh
   linsca/linsca_arh_davidson
-  linsca/linsca_lcm_nongc
-  linsca/linsca_trilevel 
-  linsca/linsca_atoms
+  linsca/linsca_arh_ls_davidson
   linsca/linsca_trilevel_2nd_local
   linsca/linsca_trilevel_2nd_all
+  linsca/linsca_atoms
+  linsca/linsca_trilevel 
   linsca/test_kurtosis
   linsca/PipekMezeyLowdin
+  linsca/linsca_lcm_nongc
   linsca/test_soeo"
 ARH="linsca/linsca_atoms
   linsca/linsca_trilevel
+  linsca/linsca_arh_davidson
+  linsca_arh_ls_davidson
   linsca/linsca_arh"
 LSDALTON="linsca/lsdalton_dft_ssfgrid
-  LSint/LSDALTON_screen1
-  LSint/LSDALTON_screen2
   LSint/LSDALTON_b3lyp_water
+  LSint/LSDALTON_pure
   LSint/LSDALTON_userdefined_basis1
   LSint/LSDALTON_userdefined_basis2
-  LSint/LSDALTON_PropertyTest1
   LSint/LSDALTON_NOBQBQ2
   LSint/LSDALTON_pointcharge
   LSint/LSDALTON_pointcharge2
   LSint/LSDALTON_phantom
   LSint/LSDALTON_phantom2
-  LSint/LSDALTON_donotsavegab
   LSint/LSDALTON_EP
+  LSint/LSDALTON_PropertyTest1
   LSint/LSDALTON_geoderiv
   LSint/LSDALTON_magderiv
   LSint/LSDALTON_magderiv2
+  LSint/LSDALTON_magderiv3
   LSint/LSDALTON_camb3lyp
   LSint/LSDALTON_camb3lyp2
+  LSint/LSDALTON_screen1
+  LSint/LSDALTON_screen2
   LSint/LSDALTON_cartesian_ecoeff 
+  LSint/LSDALTON_MBIE
   LSint/LSDALTON_DaLink
+  LSint/LSDALTON_DaLink2
   LSint/LSDALTON_DENSFIT_FMM
   LSint/LSDALTON_dftfunc_bp86
   LSint/LSDALTON_dftfunc_bpw91
@@ -75,6 +85,7 @@ LSDALTON="linsca/lsdalton_dft_ssfgrid
   LSint/LSDALTON_dftfunc_pbe0
   LSint/LSDALTON_dftfunc_pw86x
   LSint/LSDALTON_dftfunc_vwn3 
+  LSint/LSDALTON_dftfunc_GGAKey
   LSint/LSDALTON_ethane_df_dft_molgrad
   LSint/LSDALTON_ethane_df_lda_jengine
   LSint/LSDALTON_ethane_df_overlap_lda
@@ -89,15 +100,13 @@ LSDALTON="linsca/lsdalton_dft_ssfgrid
   LSint/LSDALTON_INCREM2
   LSint/LSDALTON_J_NSETUV
   LSint/LSDALTON_Link
-  LSint/LSDALTON_MBIE
-  LSint/LSDALTON_SR_EXCHANGE
+  LSint/LSDALTON_NOFAMILY
   LSint/LSDALTON_pass
   LSint/LSDALTON_PrimAng
   LSint/LSDALTON_ethane_pari_b3lyp
   LSint/LSDALTON_ethane_pari_b3lyp_unconstrained
   LSint/LSDALTON_ethane_pari_b3lyp_ChgConst
   LSint/LSDALTON_ethane_pari_b3lyp_ChgDipConst
-  LSint/LSDALTON_sparse
   LSint/LSDALTON_UDFT
   LSint/LSDALTON_UHF_DEFAULT
   LSint/LSDALTON_UHF_excit
@@ -110,8 +119,15 @@ LSDALTON="linsca/lsdalton_dft_ssfgrid
   LSint/LSDALTON_UNCONT
   LSint/LSDALTON_ethane_dft_disp
   LSint/LSDALTON_HF_cartesian
-  LSint/LSDALTON_augTZ"
+  LSint/LSDALTON_augTZ
+  LSint/LSDALTON_donotsavegab
+  LSint/LSDALTON_INCREMDALINK
+  LSint/LSDALTON_SR_EXCHANGE
+  LSint/LSDALTON_LSlib"
+#  LSint/LSDALTON_uncontAObatch test unreleaseable code. 
+
 RSP="LSresponse/LSresponse_HF_alpha
+  LSresponse/LSresponse_HF_alpha_aK
   LSresponse/LSresponse_HF_alpha_astv
   LSresponse/LSresponse_HF_beta
   LSresponse/LSresponse_HF_dipole
@@ -119,6 +135,7 @@ RSP="LSresponse/LSresponse_HF_alpha
   LSresponse/LSresponse_HF_esd
   LSresponse/LSresponse_HF_esg
   LSresponse/LSresponse_HF_gamma
+  LSresponse/LSresponse_HF_gamma_SVD
   LSresponse/LSresponse_HF_gamma_lcm
   LSresponse/LSresponse_HF_molgra
   LSresponse/LSresponse_HF_molHessian
@@ -130,39 +147,59 @@ RSP="LSresponse/LSresponse_HF_alpha
   LSresponse/LSresponse_DFT_dipole
   LSresponse/LSresponse_DFT_esd
   LSresponse/LSresponse_DFT_esg
+  LSresponse/LSresponse_DFT_esg_LDA
   LSresponse/LSresponse_DFT_dtpa
   LSresponse/LSresponse_DFT_molgra
   LSresponse/LSresponse_DFT_opa
   LSresponse/LSresponse_DFT_tpa
-  LSresponse/LSresponse_NMR_SHIELD"
-GEO="geomopt/cartes_bfgs_min
+  LSresponse/LSresponse_NMR_SHIELD
+  LSresponse/LSresponse_mcd
+  LSresponse/LSresponse_mcd2
+  LSresponse/LSresponse_mcd3
+  LSresponse/LSresponse_excit_cs00"
+
+XCFUN="LSresponse/LSresponse_xcfun_lda_molgrad
+  LSresponse/LSresponse_xcfun_gga_molgrad
+  LSresponse/LSresponse_xcfun_lda_linrsp
+  LSresponse/LSresponse_xcfun_gga_linrsp"
+
+GEO="geomopt/Excited_state_opt
+     geomopt/geoopt_constrain
+     geomopt/cartes_bfgs_min
      geomopt/redint_bfgs
      geomopt/cartes_trilevel_newconv
-     geomopt/cartes_psb_min
-     geomopt/ethane_dec_mp2"
+     geomopt/cartes_psb_min"
+
+DDYN="ddynam/HCN_ddyn
+      ddynam/HF_vib
+      ddynam/H2O_fmd"
+
 DEC="dectests/arraytest
      dectests/reordertest
-     dectests/fullmp2
+     dectests/fullmp2_energy
      dectests/fullmp2_f12
+     dectests/fullmp2_local_f12
      dectests/fullccsd_f12
      dectests/fullcc2 
-     dectests/fullccsd_low
-     dectests/fullccsd_1
-     dectests/fullccsd_2
-     dectests/fullccsd_3
      dectests/fullccsd_high
+     dectests/fullccsd_3
+     dectests/fullccsd_2
+     dectests/fullccsd_1
+     dectests/fullccsd_low
      dectests/fullccsdpt
-     dectests/dec_ccsdpt
-     dectests/fulldec 
-     dectests/fragment_adapted
-     dectests/mp2density_special
-     dectests/mp2_gradient_diatomic
-     dectests/mp2_gradient_special
-     dectests/mp2grad_frozencore
-     dectests/fragmentccsd_simple
-     dectests/dec_geoopt
-     geomopt/ethane_dec_mp2"
-ALL="$LSDALTON $LINSCA $RSP $GEO $DEC"
+     dectests/decccsdpt
+     dectests/decmp2_energy
+     dectests/decmp2_density
+     dectests/decmp2_gradient
+     dectests/decmp2_geoopt
+     dectests/decmp2_gradient_debug
+     dectests/decmp2_gradient_debug2
+     dectests/decmp2_energy_FO
+     dectests/decmp2_geoopt_FO
+     dectests/decccsd"
+PLT="plt/plt_dens
+     plt/plt_ep"
+ALL="$LSDALTON $LINSCA $RSP $GEO $DDYN $DEC $PLT"
 # used to be $LINSCA and $LSINT but not anymore 
 # Test code compiled with 64 bit integers
 # These are the only test cases that MUST work for 64-bit integers
@@ -239,7 +276,6 @@ Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
        -reftest             : test reference file(s); do not run any calculations
        -benchmark           : print CPU time for each testcase as part of the summary
        -param "option list" : pass "option list" to lsdalton-script
-       -externloc           : use externloc
        -gridgen             : use gridgen
        -lsdalton script     : use script instead of the default
                               lsdalton-script "$LSDALTON_script"
@@ -251,6 +287,7 @@ Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
           csr                  -- run Compressed-Sparse Row test cases (requires linking to MKL!)
           scalapack            -- run SCALAPACK test cases (requires linking to SCALAPACK!)
           dec                  -- run Divide-Expand-Consolidate coupled cluster tests
+          plt                  -- run PLT test
           rsp                  -- run LSresponse tests
 		  pbc                  -- run periodic boundary condition test cases
           geo                  -- run test cases for geometry optimization
@@ -283,7 +320,6 @@ myprint(){
 TESTparams="$0 $*"
 help=""
 geotest="false"
-externloctest="false"
 gridgentest="false"
 keep="false"
 paramlist=""
@@ -305,7 +341,6 @@ while echo $1 | egrep -q '^-'; do
      "-lsdalton" )  shift; LSDALTON_script=$1; shift;;
      "-log" ) shift; listing=$1; shift;;
      "-geotest" ) geotest="true"; shift;;
-     "-externloc" ) externloctest="true"; shift;;
      "-gridgen" ) gridgentest="true"; shift;;
      "-keep" ) keep="true"; shift;;
      -param* ) shift; paramlist="$1"; shift;;
@@ -350,13 +385,16 @@ else
       csr)         testcase=$CSR;;
       scalapack)   testcase=$SCALAPACK;;
       dec)         testcase=$DEC;;
+      plt)         testcase=$PLT;;
       rsp)         testcase=$RSP;;
       linsca)      testcase=$LINSCA;;
       lsdalton)    testcase=$LSDALTON;;
       int64)       testcase=$INT64;;
       dft)         testcase=$DFT;;
       geo)         testcase=$GEO;;
-	  pbc)         testcase=$PBC;;
+      ddyn)        testcase=$DDYN;;
+      pbc)         testcase=$PBC;;
+      xcfun)       testcase=$XCFUN;;
   esac
 fi
 
@@ -504,14 +542,10 @@ do
           myprint ""
           myprint "evaluate output file $logfile:"
           myprint "-----------------------------------------------------------"
-	  if [ "$externloctest" = "true" ]; then
-	      checkout=`$checkfile $extlogfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
+	  if [ "$gridgentest" = "true" ]; then
+	      checkout=`$checkfile $gridlogfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
 	  else
-	      if [ "$gridgentest" = "true" ]; then
-		  checkout=`$checkfile $gridlogfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
-	      else
-		  checkout=`$checkfile $logfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
-	      fi
+	      checkout=`$checkfile $logfile | tee -a $listing | tee -a $SCRIPT_DIR/$listing`
 	  fi
           if [ "$benchmark" = "true" ]; then
               if [ `$GREP "CPU Time used in LSDALTON  *is" $logfile | wc -l` = 1 ]; then

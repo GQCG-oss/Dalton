@@ -6411,32 +6411,32 @@ C
       IF (LWRK1 .LT. 0) CALL ERRWRK('PELNC',-KWRK1,LWRK1)
 C
       CALL UPKCMO(CMO,WRK(KUCMO))
+C     --------------------------------------------------------
+C     Define FXC operator (DTV = < 0 | Fxc | B > )
+C     --------------------------------------------------------
 C
-C     ... Define F(PE) xc operator using function SOLELM (DTV is  < 0 | Fxc | B > type matrix )
-C
-C     1) Construct B(r) response (relay) matrix from file or solve iteratively
+C      ---- 1) Construct B(r) response (relay) matrix ----
 
       N = 3*NNZAL
 
       IF (LPOL .AND. MMMAT) THEN
       LUQMMM = -1
-        IF (LUQMMM .LT. 0) THEN
-        CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
+          IF (LUQMMM .LT. 0) THEN
+          CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
      &               'UNFORMATTED',IDUMMY,.FALSE.)
-        ENDIF
-      REWIND(LUQMMM)
+          ENDIF
+          REWIND(LUQMMM)
 
-        IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
-          CALL READT(LUQMMM,N*(N+1)/2,WRK(KINVMAT))
-        ELSE
+          IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
+              CALL READT(LUQMMM,N*(N+1)/2,WRK(KINVMAT))
+          ELSE
           CALL QUIT('Problem reading the matrix from the QMMMIM file.')
-        ENDIF
+          ENDIF
 
         CALL GPCLOSE(LUQMMM,'KEEP')
-
       ENDIF
 
-C     2.a) ...Loop over MM sites
+C     ---- 2) F^(1) operator ----
 
       IF (.NOT. LPOL) GOTO 755
 
@@ -6445,124 +6445,112 @@ C     2.a) ...Loop over MM sites
       KMATAC   = KMATMO + 3*NNORBT
       KWRK2    = KMATAC + 3*NNASHX
       LWRK2    = LFREE  - KWRK2
-
-C     1. KMATAO  : QM dipole one-elctron integrals (Fel^(1) in ao basis)
-C     2. KMATMO  : QM dipole one-elctron integrals (mo basis)
+C     -----------------------------------
+C     1. KMATAO  : F^(1) in ao basis
+C     2. KMATMO  : F^(1) in mo basis
 C     3. KMATAC  : Active part of F^(1)
-
+C     -----------------------------------
       IF (LWRK2 .LT. 0) CALL ERRWRK('PELNC',-KWRK2,LWRK2)
 
-      LRI = 0 ! counter for index in transformed electric field vector
+      ! index in transformed electric field vector
+      LRI = 0 
 
       DO I = 1,MMCENT
 
-        KPATOM = 0
-        NCOM  = 3       ! called NOSIM occationally but denoted NCOM here 
-        TOFILE = .FALSE.
-        TRIMAT = .TRUE.
-        EXP1VL = .FALSE.
-
-        CALL DZERO(WRK(KMATAO),3*NNBASX)
-        CALL DZERO(WRK(KMATMO),3*NNORBT)
-        CALL DZERO(WRK(KMATAC),3*NNASHX)
-
-        DIPORG(1) = MMCORD(1,I)
-        DIPORG(2) = MMCORD(2,I)
-        DIPORG(3) = MMCORD(3,I)
-
-C       2.b) Fel^(1) operator in AO basis
-
-C       ...Get Fel^(1) integral: 1) x-coord. 2) y-coord. 3) z-coord.  
-
-         RUNQM3 = .TRUE.
-
-         CALL GET1IN(WRK(KMATAO),'NEFIELD',NCOM,WRK(KWRK2),   
-     &               LWRK2,LABINT,INTREP,INTADR,I,TOFILE,        
-     &               KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)
-
-         RUNQM3 = .FALSE.
-
-C        2.c) Fel^(1) operator in MO basis
-
-         CALL UTHU(WRK(KMATAO),WRK(KMATMO),WRK(KUCMO),
-     &             WRK(KWRK2),NBAST,NORBT)
-
-         CALL UTHU(WRK(KMATAO + 1*NNBASX),WRK(KMATMO + 1*NNORBT),
-     &             WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
-
-         CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
-     &             WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
-
-C        2.d) Active part of Fel(1) operator in MO basis
-
-         IF (NASHT .GT. 0) THEN
-                  
-             CALL GETAC2(WRK(KMATMO),
-     &                   WRK(KMATAC))
-
-             CALL GETAC2(WRK(KMATMO + 1*NNORBT),
-     &                   WRK(KMATAC + 1*NNASHX))
-
-             CALL GETAC2(WRK(KMATMO + 2*NNORBT),
-     &                   WRK(KMATAC + 2*NNASHX))
-         ENDIF
-
-C        2.e ) Make F(tilde) =  2 < 0 | F(el) | B > is the 2 included in SOLELM ???
-C        for one |u > in | B > = sum(u)| u >b(u)        
-
-         LCI = 0
-
-         DO ICSIM = 1,NCSIM
-
-            TXPE1 = SOLELM(DTV(1,ICSIM),WRK(KMATAC),
-     &                     WRK(KMATMO),TXPEAC1)
-
-            TXPE2 = SOLELM(DTV(1,ICSIM),WRK(KMATAC + 1*NNASHX),
-     &                     WRK(KMATMO + 1*NNORBT),TXPEAC2)
-
-            TXPE3 = SOLELM(DTV(1,ICSIM),WRK(KMATAC + 2*NNASHX),
-     &                     WRK(KMATMO + 2*NNORBT),TXPEAC3)
-
-C         ...To store the F(tilde) in dynamical memory, get
-C         KEFIELD x, y, z first time loop is run. Next time  
-C         Set LRI + 3 to get next MM center.         
-
-C         x-value                                   ! This is for storage of the vector
-          WRK(KEFIELD + LRI + 0 + LCI) = TXPEAC1    ! containing the expectation value of F(tilde)
-C         y-value                                   ! LCI is a counter for each state in 
-          WRK(KEFIELD + LRI + 1 + LCI) = TXPEAC2    ! < 0 | F(el) | B > = sum(u) < 0 | F(el) | u >
-C         z-value
-          WRK(KEFIELD + LRI + 2 + LCI) = TXPEAC3
-C         start from x MM center of next root
-          LCI = LCI + 3*NNZAL
-
-
-        END DO ! NCSIM
-
-        LRI = LRI + 3
+         KPATOM = 0
+         NCOM  = 3       
+         TOFILE = .FALSE.
+         TRIMAT = .TRUE.
+         EXP1VL = .FALSE.
+        
+         CALL DZERO(WRK(KMATAO),3*NNBASX)
+         CALL DZERO(WRK(KMATMO),3*NNORBT)
+         CALL DZERO(WRK(KMATAC),3*NNASHX)
+        
+         DIPORG(1) = MMCORD(1,I)
+         DIPORG(2) = MMCORD(2,I)
+         DIPORG(3) = MMCORD(3,I)
+        
+C        ---- 2.a) Get F^(1) integral ----
+C        1. x-coord. 2. y-coord. 3. z-coord.  
+        
+          RUNQM3 = .TRUE.        
+          CALL GET1IN(WRK(KMATAO),'NEFIELD',NCOM,WRK(KWRK2),   
+     &                LWRK2,LABINT,INTREP,INTADR,I,TOFILE,        
+     &                KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)        
+          RUNQM3 = .FALSE.
+                
+          CALL UTHU(WRK(KMATAO),WRK(KMATMO),WRK(KUCMO),
+     &              WRK(KWRK2),NBAST,NORBT)        
+          CALL UTHU(WRK(KMATAO + 1*NNBASX),WRK(KMATMO + 1*NNORBT),
+     &              WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)        
+          CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
+     &              WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
+        
+          IF (NASHT .GT. 0) THEN
+                   
+              CALL GETAC2(WRK(KMATMO),
+     &                    WRK(KMATAC))        
+              CALL GETAC2(WRK(KMATMO + 1*NNORBT),
+     &                    WRK(KMATAC + 1*NNASHX))        
+              CALL GETAC2(WRK(KMATMO + 2*NNORBT),
+     &                    WRK(KMATAC + 2*NNASHX))
+          ENDIF
+        
+C         ---- 2.c ) Make F = 2 < 0 | F^(1) | B > ---- 
+C         
+          LCI = 0
+        
+          DO ICSIM = 1,NCSIM
+        
+             TXPE1 = SOLELM(DTV(1,ICSIM),WRK(KMATAC),
+     &                      WRK(KMATMO),TXPEAC1)
+             TXPE2 = SOLELM(DTV(1,ICSIM),WRK(KMATAC + 1*NNASHX),
+     &                      WRK(KMATMO + 1*NNORBT),TXPEAC2)        
+             TXPE3 = SOLELM(DTV(1,ICSIM),WRK(KMATAC + 2*NNASHX),
+     &                      WRK(KMATMO + 2*NNORBT),TXPEAC3)
+        
+C             ...To store the F(tilde) in dynamical memory, get
+C             KEFIELD x, y, z first time loop is run. Next time  
+C             Set LRI + 3 to get next MM center.         
+        
+C              x-value                                   ! This is for storage of the vector
+               WRK(KEFIELD + LRI + 0 + LCI) = TXPEAC1    ! containing the expectation value of F(tilde)
+C              y-value                                   ! LCI is a counter for each state in 
+               WRK(KEFIELD + LRI + 1 + LCI) = TXPEAC2    ! < 0 | F(el) | B > = sum(u) < 0 | F(el) | u >
+C              z-value
+               WRK(KEFIELD + LRI + 2 + LCI) = TXPEAC3
+C              start from x MM center of next root
+               LCI = LCI + 3*NNZAL
+                
+          END DO ! NCSIM
+        
+          LRI = LRI + 3
 
       END DO ! MMCENT
 
-C     ... Dot the KEFIELD matrix with B(r) matrix to get mu(tilde) for each | B > vector
+C     ---- make FXC = 2 B*< 0 | F^(1) | B > ----
+C     ... Dot the KEFIELD matrix with B matrix to 
+C         get mu for each | B > vector
 
       DO ICSIM = 1, NCSIM
 
       NDIM=3*NNZAL
       IF (MMMAT) THEN
-         CALL DSPMV('L',NDIM,D1,WRK(KINVMAT),
-     &              WRK(KEFIELD + (ICSIM-1)*3*NNZAL),1,D0,
-     &              WRK(KINDMOM + (ICSIM-1)*3*NNZAL),1)
+          CALL DSPMV('L',NDIM,D1,WRK(KINVMAT),
+     &               WRK(KEFIELD + (ICSIM-1)*3*NNZAL),1,D0,
+     &               WRK(KINDMOM + (ICSIM-1)*3*NNZAL),1)
       ELSE IF (MMITER) THEN
-         IOPT = 2 ! Do not read from file any previuos induced moments
-         CALL F2QMMM(WRK(KEFIELD + 3*(ICSIM-1)*NNZAL),NDIM,
-     &               WRK(KINDMOM + 3*(ICSIM-1)*NNZAL),
-     &               WRK(KWRK2),LWRK2,IOPT,IPQMMM)
+               IOPT = 2 ! Do not read from file any previuos induced moments
+               CALL F2QMMM(WRK(KEFIELD + 3*(ICSIM-1)*NNZAL),NDIM,
+     &                     WRK(KINDMOM + 3*(ICSIM-1)*NNZAL),
+     &                      WRK(KWRK2),LWRK2,IOPT,IPQMMM)
       ENDIF
 
       END DO ! ICSIM
 
-C     3) Make F(el) and daxpy first x, then y and then z
-C        for each CI B vector
+C     ---- 3) Make F(el) and daxpy first x, then y and then z ----
+C             (for each CI B vector)                            
 
        LRI = 0
          
@@ -6576,69 +6564,55 @@ C        for each CI B vector
         CALL DZERO(WRK(KMATMO),3*NNORBT)
         CALL DZERO(WRK(KMATAC),3*NNASHX)   
 
-C       5.a) Fel(1) operator in AO basis
+C       ---- 3.a) F^(1) operator ----
 
         RUNQM3 = .TRUE.
-
         CALL GET1IN(WRK(KMATAO),'NEFIELD',NCOM,WRK(KWRK2),
      &               LWRK2,LABINT,INTREP,INTADR,I,TOFILE,
      &               KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPQMMM)
-
         RUNQM3 = .FALSE.
-
-C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
 
         CALL UTHU(WRK(KMATAO),WRK(KMATMO),WRK(KUCMO),
      &             WRK(KWRK2),NBAST,NORBT)
-
         CALL UTHU(WRK(KMATAO + 1*NNBASX),WRK(KMATMO + 1*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
-
         CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
+C         --- 3.b) Add B*<0|F^(1)|B> to F^(1) operator ----
         
           LCI = 0 ! alternative set LCI = 3*NNZAL*(ICSIM-1)
 
           DO ICSIM = 1,NCSIM
+             FACx = -WRK(KINDMOM + LRI + 0 + LCI)        
+            
+             CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,            
+     &              WRK(KFXC + (ICSIM-1)*NNORBT),1)
+            
+             FACy = -WRK(KINDMOM + LRI + 1 + LCI)
+            
+             CALL DAXPY(NNORBT,FACy,WRK(KMATMO + 1*NNORBT),1, 
+     &                  WRK(KFXC + (ICSIM-1)*NNORBT),1)
+            
+             FACz = -WRK(KINDMOM + LRI + 2 + LCI)       
 
-            FACx = -WRK(KINDMOM + LRI + 0 + LCI)        
-
-            CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,            
-     &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
-
-
-            FACy = -WRK(KINDMOM + LRI + 1 + LCI)
-
-
-            CALL DAXPY(NNORBT,FACy,WRK(KMATMO + 1*NNORBT),1, 
-     &                 WRK(KFXC + (ICSIM-1)*NNORBT),1)
-
-            FACz = -WRK(KINDMOM + LRI + 2 + LCI)       
-
-            CALL DAXPY(NNORBT,FACz,WRK(KMATMO + 2*NNORBT),1, 
-     &                 WRK(KFXC + (ICSIM-1)*NNORBT),1)
-
-            IF (NASHT .GT. 0) THEN
-              CALL GETAC2(WRK(KFXC + (ICSIM-1)*NNORBT),
-     &                    WRK(KFXCAC + (ICSIM-1)*NNASHX))
-            END IF
-
-            LCI = LCI + 3*NNZAL
-
+             CALL DAXPY(NNORBT,FACz,WRK(KMATMO + 2*NNORBT),1, 
+     &                  WRK(KFXC + (ICSIM-1)*NNORBT),1)
+            
+             IF (NASHT .GT. 0) THEN
+               CALL GETAC2(WRK(KFXC + (ICSIM-1)*NNORBT),
+     &                     WRK(KFXCAC + (ICSIM-1)*NNASHX))
+             END IF
+            
+             LCI = LCI + 3*NNZAL
         END DO
-
-      LRI = LRI + 3
-
+        LRI = LRI + 3
       END DO
 
       DO ICSIM = 1,NCSIM
-
-      TFXC = SOLELM(DV,WRK(KFXCAC + (ICSIM-1)*NNASHX),
-     &              WRK(KFXC + (ICSIM-1)*NNORBT),TFXCAC)
-
-      WRK(KTFXCAC-1+ICSIM) = TFXCAC
-      
+         TFXC = SOLELM(DV,WRK(KFXCAC + (ICSIM-1)*NNASHX),
+     &                 WRK(KFXC + (ICSIM-1)*NNORBT),TFXCAC)
+         WRK(KTFXCAC-1+ICSIM) = TFXCAC      
       END DO
 
   755 CONTINUE ! IF LPOL
@@ -6651,26 +6625,22 @@ C       5.b) Dipole one-electron integrals (Fel(1) operator in MO basis)
 
       TFPEMO = SOLELM(DV,WRK(KFPEAC),WRK(KFPEMO),TFPEAC) 
 C
-C ****** edh: Write statements for debugging ******************
-C *************************************************************
-
+C ----Write statements for debugging ----  
       IF ( (IPQMMM .GE. 15) .OR. (LOCDEB) ) THEN
-         WRITE (LUPRI,'(A,F17.8)')
-     *   ' --- FPE expectation value MO :',TFPEMO
-         WRITE (LUPRI,'(A,F17.8)')
-     *   ' --- active part of FPE    :',TFPEAC
-      
-         WRITE (LUPRI,'(/A)') ' F(PE)_mo matrix in PELNC:'
-         CALL OUTPAK(WRK(KFPEMO),  NORBT,1,LUPRI)
-         IF (NASHT .GT. 0) THEN
-         WRITE (LUPRI,'(/A)') ' F(PE)_ac matrix in PELNC:'
-         CALL OUTPAK(WRK(KFPEAC),NASHT,1,LUPRI)
-         END IF
+          WRITE (LUPRI,'(A,F17.8)')
+     *    ' --- FPE expectation value MO :',TFPEMO
+          WRITE (LUPRI,'(A,F17.8)')
+     *    ' --- active part of FPE    :',TFPEAC
+         
+          WRITE (LUPRI,'(/A)') ' F(PE)_mo matrix in PELNC:'
+          CALL OUTPAK(WRK(KFPEMO),  NORBT,1,LUPRI)
+          IF (NASHT .GT. 0) THEN
+              WRITE (LUPRI,'(/A)') ' F(PE)_ac matrix in PELNC:'
+              CALL OUTPAK(WRK(KFPEAC),NASHT,1,LUPRI)
+          END IF
       END IF
-
-C *************************************************************
-C *************************************************************
-
+C --------------------------------------- 
+C 
 C    ...CSF part of sigma vectors    
  
       CALL SOLSC(NCSIM,0,BCVEC,CREF,SVEC,WRK(KFXCAC),WRK(KFPEAC), ! KRYCAC = KFPEAC (i.e. KRYC = KFPEMO)
@@ -6703,7 +6673,6 @@ C        ... tell SOLGO only to use the NWOPPT first JWOP entries
          END DO
          NWOPH  = MWOPH
       END IF
-
 
 C     ...Restore the dipole origin.
 

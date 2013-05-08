@@ -49,9 +49,9 @@ ESSENTIAL=""
 #
 GEN1INT="gen1int_fluorobenzene_cart gen1int_water_cart gen1int_fluorobenzene_spher \
 gen1int_water_spher"
-SHORT_ENERGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart \
+SHORT_ENERGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart energy_restart_scf \
 energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc \
-energy_lucita_gasci"
+energy_lucita_gasci energy_stex"
 SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe dft_open_b3lyp dft_qr_sym dft_rspexci_sym dft_rspexci_nosym \
 tddft_tda"
 SHORTGOPT="geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a \
@@ -72,6 +72,7 @@ rsp_soppapolar rsp_soppapolarnosymm rsp_soppapolarsymm rsp_sreslrso \
 rsp_sresqr rsp_ctocdhyper prop_spinspin5 prop_nolondon_soppacc rsp_soppaccexci \
 rsp_soppaccpolar rsp_g_rohf rsp_g_rohf_dir rsp_g_cas \
 rsp_g_rohf_ecc rsp_hfc rsp_zfs rsp_zfs_mc rsp_absorp rsp_prop_file tddft_tda rpa_cis \
+rsp_g_rohfx rsp_g_ldax rsp_g_b3lypx \
 rsp_abslrs rsp_cpp_mcd"
 SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibave2"
 SHORTREST="r12_sym dpt_h2s"
@@ -252,6 +253,7 @@ Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
           geoopt               -- run all OPTIMIZE testcases
           numder               -- run all numerical derivatives testcases
           pcm                  -- run all pcm testcases
+          peqm                 -- run all peqm testcases
           <case1 [case2] ...>  -- run only the specified testcase(s)
 %EOF%
 exit 1
@@ -622,6 +624,10 @@ do
           myprint "---------------------------------------------------------------------"
           myprint "  Start $item step $step of $numsteps :"
           myprint "---------------------------------------------------------------------"
+          # use unique molfile for this step if available
+          if [ -r $item'__'$step.mol ]; then
+              cp -v $item'__'$step'.mol' $item'.mol'
+          fi
           molfile=$item
           if [ -r $item.pot ]; then potfile=$item ; fi
           cp $item'__'$step'.dal' $item'.dal'

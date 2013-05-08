@@ -207,7 +207,7 @@ C
       RETURN
       END
 C  /* Deck dft3drv */
-      SUBROUTINE DFT3DRV(VECB, VECC,FI,ZYMB,ZYMC,
+      SUBROUTINE DFT3DRV(VECB, VECC,FI,FA,ZYMB,ZYMC,
      &                   KZYVA,KZYVB,KZYVC,
      &                   ISYMA,ISYMB,ISYMC,
      &                   ISPINA,ISPINB,ISPINC,
@@ -219,15 +219,21 @@ C  /* Deck dft3drv */
 #include "infinp.h"
 #include "dftcom.h"
       DIMENSION VECB(*),VECC(*),ZYMB(*),ZYMC(*),WRK(*),CMO(*)
-      DIMENSION FI(NORBT,NORBT), MJWOP(2,MAXWOP,8)
+      DIMENSION FI(NORBT,NORBT),FA(NORBT,NORBT),MJWOP(2,MAXWOP,8)
       LOGICAL ADDFOCK
 c     unpack response vectors.
       NSIM = 1
       CALL GTZYMT(NSIM,VECB,KZYVB,ISYMB,ZYMB,MJWOP)
       CALL GTZYMT(NSIM,VECC,KZYVC,ISYMC,ZYMC,MJWOP)
 c     compute dft contribution
-      CALL DFTQRC(FI,CMO,ZYMB,ISYMB,ISPINB,ZYMC,ISYMC,ISPINC,
-     &            ADDFOCK,WRK,LFREE,IPRDFT)
+C ZR testing dft_qr_ab
+      IF (NASHT.GT.0) THEN
+         CALL dft_qr_ab(FI,FA,CMO,ZYMB,ISYMB,ISPINB,ZYMC,ISYMC,ISPINC,
+     &                  ADDFOCK,WRK,LFREE,IPRDFT)
+      ELSE
+         CALL DFTQRC(FI,CMO,ZYMB,ISYMB,ISPINB,ZYMC,ISYMC,ISPINC,
+     &               ADDFOCK,WRK,LFREE,IPRDFT)
+      END IF
 c     pack stuff back.
       END
 C  /* Deck e3init */
@@ -259,7 +265,9 @@ C
 #include "infsmo.h"
 #include "infhyp.h"
 #include "esg.h"
+#include "dftcom.h"
 #include "absorp.h"
+#include "abslrs.h"
 #include "gnrinf.h"
 #include "infpar.h"
 C
@@ -306,14 +314,17 @@ C hj end TODO Mar 2004
 C
 C ov rsp_solvhyper passes with Q3FOCK  Sep 2004
 C
-      IF (TDHF) THEN
+      IF (TDHF.AND.NASHT.EQ.0.OR.HSROHF.OR.DFTRUN) THEN
          IF (CRCAL.OR.TOMOM.OR.TPAMP.OR.ESG) THEN
             CALL C3FOCK(IBEQC,WRK(KFC),VECB,VECC,
-     *                 WRK(KZYMB),WRK(KZYMC),
-     *                 KZYVB,KZYVC,
-     *                 ISYMA,ISYMB,ISYMC,
-     *                 CMO,FC,MJWOP,WRK(KFREE),LFREE)
-         ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM.OR.ABS_BETA.OR.ABS_MCD) THEN
+     &                 WRK(KZYMB),WRK(KZYMC),
+     &                 KZYVB,KZYVC,
+     &                 ISYMA,ISYMB,ISYMC,
+     &                 CMO,FC,MJWOP,WRK(KFREE),LFREE)
+         ELSE IF (HYPCAL.OR.SOMOM.OR.EXMOM.OR.ABS_BETA
+     &             .OR.ABS_MCD.OR.ABSLRS_MCD.OR.ABSLRS_MCHD 
+     &             .OR. ABSLRS_NSCD) THEN
+
             DFTSAV=DODFT
             DODFT=.FALSE.
             CALL Q3FOCK(
@@ -358,7 +369,8 @@ C DFT contribution
 C
       IF(DODFT) THEN
          CALL DZERO(WRK(KFC),N2ORBX)
-         CALL DFT3DRV(VECB,VECC,WRK(KFC),WRK(KZYMB),WRK(KZYMC),
+         IF (NASHT.GT.0) CALL DZERO(WRK(KFO),N2ORBX)
+         CALL DFT3DRV(VECB,VECC,WRK(KFC),WRK(KFO),WRK(KZYMB),WRK(KZYMC),
      *                   KZYVA,KZYVB,KZYVC,
      *                   ISYMA,ISYMB,ISYMC,
      *                   ISPINA,ISPINB,ISPINC,
@@ -368,8 +380,8 @@ C
          END IF
          TRPLETSAVE=TRPLET
          TRPLET=MOD(ISPINA+ISPINB+ISPINC,2).NE.0
-         CALL ORBEX(ISYMA,1,KZYVA,WRK(KFC),WRK(KDUM),WRK(KDUM),
-     &        WRK(KDUM),ETRS,D1,WRK(KDUM),MJWOP)
+         CALL ORBEX(ISYMA,1,KZYVA,WRK(KFC),WRK(KFO),WRK(KDUM),
+     &        WRK(KDUM),ETRS,D1,UDV,MJWOP)
          TRPLET=TRPLETSAVE
          IF (E3TEST) THEN
             E3TOT = -DDOT(KZYVA,ETRS,1,VECA,1)
@@ -381,23 +393,20 @@ C
          END IF
       END IF
 
-      if (peqm .and. tdhf) then
-         if (ncsim > 0) then
-            call quit('PE quadratic response not implemented for
-     & ncsim > 0.')
-         else if (nasht > 0) then
-            call quit('PE quadratic response not implemented for
-     & open shell.')
-         else if (trplet) then
-            call quit('Triplets not implemented for PE quadratic
-     & response.')
-         endif
-         call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
-     &              udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
-     &              isyma, isymb, isymc, cmo, mjwop)
-!         call pe_rspqro(vecc, vecb, etrs, xindx, wrk(kzymc), wrk(kzymb),
-!     &              udv, wrk(kfree), lfree, kzyva, kzyvc, kzyvb,
-!     &              isyma, isymc, isymb, cmo, mjwop) 
+      if (peqm) then
+        if (.not. tdhf) then 
+            call quit('ERROR: MCSCF quadratic response not'//
+     &                ' implemented with PE module.')
+        else if (nasht > 0) then
+            call quit('ERROR: quadratic response not implemented for'//
+     &                ' open shell systems with PE module.')
+        else if (trplet) then
+            call quit('ERROR: triplets not implemented for quadratic'//
+     &                ' response with PE module.')
+        endif
+        call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
+     &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
+     &                 isyma, isymb, isymc, cmo, mjwop)
       end if
 
       IF (QM3) THEN
@@ -1254,6 +1263,14 @@ c     DFT contribution, as opposed to RSPFXD/RSPFX which return electronic
 c     part only (w/o DFT contribution). If this is the case (i.e. .NOT.DIRFCK) 
 c     we add the DFT contribution to KS matrix later in DFTQRC.
 c
+            IF (NASHT.GT.0) THEN
+               !This point in code is reached for the special case
+               !single open shell direct HF
+               WRITE(LUPRI,*)'Input combination not implemented'
+               WRITE(LUPRI,*)
+     &        'Remove .DIRECT or reformulate problem as DFT GGAKey HF=1'
+               CALL QUIT('QFOCK not implemented for open shells')
+            END IF
             CALL QFOCK(1,ISYM1,ISYM2,IGRSPI,ISPIN1,ISPIN2,
      &                 ZYMAT1,ZYMAT2,FC,CMO,FI,WRKO,KFREE,LFREE)
             DFTADD = DFTSAV
@@ -3008,7 +3025,7 @@ C     ======
       IF (MZWOPT(ISYMV) .EQ. 0 ) GOTO 2000
 C
       ISPIN = MULSP(ISPINV,IOPSPI)
-      IF (ISPIN.NE.IGRSPI) THEN
+      IF (NASHT.EQ.0 .AND. ISPIN.NE.IGRSPI) THEN
          WRITE(LUPRI,*) "FOUND: ", ISPIN, " Expected:", IGRSPI
          WRITE(LUPRI,*) "parameters: ", ispinv, iopspi
          CALL QUIT('X2DRV: SPIN ERROR')
@@ -3022,7 +3039,11 @@ C
 C
 C     Make copies of the MC density matrix in DEN1
 C
-      CALL DCOPY(NASHT*NASHT,UDV,1,DEN1,1)
+      IF (ISPIN.EQ.IGRSPI) THEN
+         CALL DCOPY(N2ASHX,UDV,1,DEN1,1)
+      ELSE
+         CALL DCOPY(N2ASHX,UDV(1+N2ASHX,1),1,DEN1,1)
+      END IF
       OVLAP = D1
       ISYMDN = 1
 C
@@ -3367,7 +3388,11 @@ C
       IF ( MZWOPT(ISYMV) .EQ. 0 ) GOTO 2000
 C
       ISPIN = MULSP(ISPINV,IOPSPI)
-      IF (ISPIN.NE.IGRSPI) CALL QUIT('A2DRV: SPIN ERROR')
+      IF (NASHT.EQ.0 .AND. ISPIN.NE.IGRSPI) THEN
+         WRITE(LUPRI,*) "FOUND: ", ISPIN, " Expected:", IGRSPI
+         WRITE(LUPRI,*) "parameters: ", ispinv, iopspi
+        CALL QUIT('A2DRV: SPIN ERROR')
+      END IF
 C
 C     Transform the operator
 C
@@ -4067,6 +4092,7 @@ C
 #include "priunit.h"
 #include "qrinf.h"
 #include "inflin.h"
+#include <infrank.h>
       LOGICAL LREFST, LORB, LCON, TRPSAVE
       PARAMETER (D1     = 1.0D0)
 C
@@ -4083,7 +4109,7 @@ C
       IPR=IPRRSP
       CALL PRPGET(WORD,CMO,WORK(KOP),KSYMP,ANTSYM,WORK(KFREE),LFREE,IPR)
       IOPSYM=KSYMOP
-      IOPSPI=LRRANK(INDPRP(WORD))
+      IOPSPI=OPRANK(INDPRP(WORD))
 C
 C     Whereas ANTSYM from PRPGET refers to matrix symmetry, ANTSYM_GP will
 C     from here on refer to the antisymmetry of the response property vector,

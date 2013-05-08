@@ -248,17 +248,17 @@ C
      *          DDOT(KZYVA,VECA,1,ETRS,1) - VAL
       END IF
 C
-      if (peqm .and. tdhf) then
-        if (ncsim > 0) then
-            call quit('PE cubic response not implemented for
-     & ncsim > 0.')
+      if (peqm) then
+        if (.not. tdhf) then
+            call quit('ERROR: MCSCF cubic response not'//
+     &                ' implemented with PE module.')
         else if (nasht > 0) then
-            call quit('PE cubic response not implemented for
-     & open shell.')
+            call quit('ERROR: cubic response not implemented for'//
+     &                ' open shell systems with PE module.')
         else if (trplet) then
-            call quit('Triplets not implemented for PE cubic response.')
+            call quit('ERROR: triplets not implemented for cubic'//
+     &                ' response with PE module.')
         endif
-
         call pe_rspcro(vecb, vecc, vecd, etrs, xindx, wrk(kzymb),
      &                 wrk(kzymc), wrk(kzymd), udv, wrk(kfree), lfree,
      &                 kzyva, kzyvb, kzyvc, kzyvd, isyma, isymb, isymc,
