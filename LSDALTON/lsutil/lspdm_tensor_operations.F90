@@ -119,8 +119,12 @@ module lspdm_tensor_operations_module
   !> \date May 2013
   subroutine free_persistent_array()
     implicit none
-    call mem_dealloc(p_arr%a)
-    call mem_dealloc(p_arr%free_addr_on_node)
+    if(associated(p_arr%a))then
+      call mem_dealloc(p_arr%a)
+    endif
+    if(associated(p_arr%free_addr_on_node))then
+      call mem_dealloc(p_arr%free_addr_on_node)
+    endif
   end subroutine free_persistent_array
 
   !> \brief main subroutine for the communication of nodes on grid handling arr structures
