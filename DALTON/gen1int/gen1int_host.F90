@@ -1105,8 +1105,7 @@
       (/.true., .false., .true., .true., .true./)
     logical, parameter :: SYMMETRIC(NUM_TEST) = &         !integral matrices are symmetric or anti-symmetric
       (/.true., .false., .true., .true., .false./)
-    integer, parameter :: NUM_INTS(NUM_TEST) = &          !number of integral matrices
-      (/1, 12, 1, 3, 3/)
+    integer NUM_INTS(NUM_TEST)                            !number of integral matrices
     type(matrix), allocatable :: val_ints(:)              !integral matrices
     logical, parameter :: WRITE_INTS = .false.            !if writing integrals on file
     logical, parameter :: WRITE_EXPT = .false.            !if writing expectation values on file
@@ -1157,6 +1156,12 @@
     write(io_viewer,100) "number of orbitals", num_ao
     write(io_viewer,110) "threshold of error", ERR_THRSH
     write(io_viewer,110) "threshold of ratio to the referenced result", RATIO_THRSH
+    ! sets the number of integral matrices
+    NUM_INTS(1) = 1
+    NUM_INTS(2) = 3*NUCDEP
+    NUM_INTS(3) = 1
+    NUM_INTS(4) = 3
+    NUM_INTS(5) = 3
     ! loops over different tests
     do itest = 1, NUM_TEST
 #if defined(PRG_DIRAC)
