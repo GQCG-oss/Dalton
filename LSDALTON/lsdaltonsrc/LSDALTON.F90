@@ -31,7 +31,9 @@ SUBROUTINE lsdalton
   use dal_interface, only: di_debug_general, di_debug_general2
   use extra_output, only: print_orbital_info2
   ! Profile 
+#ifdef MOD_UNRELEASED
   use profile_int, only: di_profile_lsint
+#endif
   ! DEC 
   use DEC_typedef_module, only: DECinfo  
   ! PROPERTIES SECTION
@@ -119,11 +121,13 @@ SUBROUTINE lsdalton
      call II_test_uncontAObatch(lupri,luerr,ls%setting) 
   ENDIF
 
+#ifdef MOD_UNRELEASED
   if(config%prof%doProf)then
      call di_profile_lsint(ls,config,lupri,nbast)
      call lsmpi_finalize(lupri,config%mpi_mem_monitor)
      return
   endif
+#endif
   ! Vladimir Rybkin: If we do dec and optimize geometry or run dynamics 
   ! than we don't skip HF calculation
   if ( ( (config%optinfo%optimize .EQV. .TRUE.) .OR. (config%dynamics%do_dynamics .EQV. .TRUE.)) &
