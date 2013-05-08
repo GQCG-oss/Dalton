@@ -1658,6 +1658,7 @@ contains
     !double_2G_nel=250000000
     double_2G_nel=170000000
     print_debug = (DECinfo%PL>1)
+    call print_norm(t2)
 
 
 
@@ -2116,6 +2117,7 @@ contains
        endif
        !u [gamma c i j ] -> u [i gamma c j]
        call array_reorder_4d(1.0E0_realk,w1,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj)
+       call print_norm(uigcj,int(lg*nv*no*no,kind=8))
 
        !Lambda^h [gamma c] * t [c d i j] = t [gamma d i j]
        if(DECinfo%ccModel>2.and.(scheme==0.or.scheme==1)) then
@@ -2200,6 +2202,7 @@ contains
        !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
        call dgemm('n','n',nv,nb,lg*la*no,1.0E0_realk,w3,nv,w1,lg*la*no,1.0E0_realk,Had,nv)
        call lsmpi_poke()
+       call print_norm(Had,int(nb*nv,kind=8))
 
        !VVOO
        if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2)) then
@@ -2228,6 +2231,7 @@ contains
         endif
         call lsmpi_poke()
        endif
+       call print_norm(gvvoo,o2v2)
 
        ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
        call dgemm('n','n',lg*la*no,nv,nb,1.0E0_realk,w1,la*no*lg,yv,nb,0.0E0_realk,w3,la*no*lg)
@@ -2235,6 +2239,7 @@ contains
        !I [alpha l gamma c] * u [l gamma c j]  =+ Gbi [alpha j]
        call dgemm('n','n',la,no,nv*no*lg,1.0E0_realk,w3,la,uigcj,nv*no*lg,1.0E0_realk,Gbi(fa),nb)
        call lsmpi_poke()
+       call print_norm(Gbi,int(nb*no,kind=8))
        
        
        !CALCULATE govov FOR ENERGY
@@ -2257,6 +2262,7 @@ contains
          endif
          call lsmpi_poke()
        endif
+       call print_norm(govov)
 
        !VOOV
        if((restart.and.iter==1).and..not.scheme==4)&
@@ -2282,6 +2288,7 @@ contains
         endif
         call lsmpi_poke()
        endif
+       call print_norm(gvoov,o2v2)
 
        !prepare w0 to contain L
        if(DECinfo%ccModel>2.and.(scheme==0.or.scheme==1)) call dscal(int(lg*la*nb2),2.0E0_realk,w0,1)
@@ -2316,6 +2323,7 @@ contains
 
         endif
       endif
+      call print_norm(omega2)
       
 
       !(w0):I[ delta gamma alpha beta] <- (w1):I[ alpha beta gamma delta ]
@@ -2330,6 +2338,7 @@ contains
       ! (w3):I[alpha gamma i j] <- (w0):I[i gamma alpha j]
       if(DECinfo%ccModel>2)call add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
       call lsmpi_poke()
+      call print_norm(sio4,int(no*no*nor,kind=8))
 
 
       ! (w2):I[gamma i j alpha] <- (w0):I[i gamma alpha j]
@@ -2346,6 +2355,7 @@ contains
         call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3,o2v,1.0E0_realk,omega2%elm1,nv)
       endif
       call lsmpi_poke()
+      call print_norm(omega2)
 
       if(DECinfo%ccmodel>2.and.(scheme==0.or.scheme==1))then
         call get_c_term_int_direct(w0,w1,w2,w3,no,nv,nb,fa,fg,la,lg,xo,&
@@ -2427,8 +2437,7 @@ contains
     startt=MPI_wtime()
     if(infpar%lg_nodtot>1.or.scheme==3) then
        if(iter==1.and.scheme==4.or.scheme==0)then
-         dummy64 = int(no2*nv2,kind=long)
-         call lsmpi_local_allreduce_chunks(govov%elm1,dummy64,double_2G_nel)
+         call lsmpi_local_allreduce_chunks(govov%elm1,o2v2,double_2G_nel)
          call lsmpi_barrier(infpar%lg_comm)
        elseif(scheme==3)then
          call array_cp_tiled2dense(govov,.false.)
@@ -2443,9 +2452,8 @@ contains
          !print *,"second allred done"
          call lsmpi_barrier(infpar%lg_comm)
          if(scheme==4)then
-           dummy64 = int(no2*nv2,kind=long)
-           call lsmpi_local_allreduce_chunks(gvvoo,dummy64,double_2G_nel)
-           call lsmpi_local_allreduce_chunks(gvoov,dummy64,double_2G_nel)
+           call lsmpi_local_allreduce_chunks(gvvoo,o2v2,double_2G_nel)
+           call lsmpi_local_allreduce_chunks(gvoov,o2v2,double_2G_nel)
          elseif(scheme==3)then
 #ifdef VAR_MPIWIN
            dummy64 = int(no2*nv2,kind=long)
@@ -2493,6 +2501,9 @@ contains
     maxsize64 = max(int(nv2*no2,kind=8),int(nb2,kind=8))
     maxsize64 = max(maxsize64,int(nv2*nor,kind=8))
     call mem_alloc(w1,maxsize64)
+    call dcopy(int(o2v2),omega2%elm1,1,w1,1)
+    call lsmpi_local_reduction(w1,o2v2,infpar%master,double_2G_nel)
+    if(master)call print_norm(w1,o2v2)
     w1=0.0E0_realk
 
     !reorder integral for use within the solver and the c and d terms
@@ -2562,7 +2573,7 @@ contains
 #ifdef VAR_LSMPI
     if(infpar%lg_nodtot>1) then
       if(scheme==4.or.scheme==3.or.scheme==0)&
-       &call lsmpi_local_reduction(omega2%elm1,int(no2*nv2,kind=long),infpar%master,double_2G_nel)
+       &call lsmpi_local_reduction(omega2%elm1,o2v2,infpar%master,double_2G_nel)
       call lsmpi_local_reduction(Gbi,nb*no,infpar%master,double_2G_nel)
       call lsmpi_local_reduction(Had,nb*nv,infpar%master,double_2G_nel)
     endif
@@ -2589,6 +2600,7 @@ contains
       if(scheme==4.or.scheme==3.or.scheme==0)call array_free(u2)
       return
     endif
+    call print_norm(omega2%elm1,o2v2)
 
 
     !allocate the density matrix
