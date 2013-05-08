@@ -1,1 +1,5 @@
 DALTON/abacus/example.F
+LSDALTON/rsp_properties/Makefile
+LSDALTON/rsp_properties/molecular_hessian.F90
+LSDALTON/rsp_properties/test_molHessian.F90
+LSDALTON/lsdaltonsrc/numerical_derivatives.F90
