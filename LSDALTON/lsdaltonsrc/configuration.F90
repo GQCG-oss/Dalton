@@ -1814,7 +1814,8 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
                     config%response%tasks%doResponse=.true.
                     config%response%tasks%dograd = .True.
              ! Joanna K
-       
+
+#ifdef MOD_UNRELEASED
        CASE('*NUMHESS')
                     WRITE(config%LUPRI,*) 'Numerical Hessian calculations are carried out using the analytical gradient'
                     config%response%tasks%doNumHess = .True.
@@ -1824,7 +1825,7 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
 	CASE('*NUMGRADHESS')
                     WRITE(config%LUPRI,*) 'Numerical Hessian calculations are carried out using the numerical gradient'
                     config%response%tasks%doNumGradHess = .True.
-
+#endif
         CASE('*SOLVER')
             do
                READ(LUCMD,'(A40)') word
