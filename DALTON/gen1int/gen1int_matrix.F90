@@ -740,6 +740,7 @@ module gen1int_matrix
         A%triangular = .false.
       end if
     end if
+    A%elms_alpha = 0.0
   end subroutine MatCreate
 
 #if defined(VAR_MPI)
