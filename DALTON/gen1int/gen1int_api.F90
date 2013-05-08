@@ -606,6 +606,12 @@ module gen1int_api
                          info_prop=ierr,              &
                          coord_nuclei=coord_atoms,    &
                          charge_nuclei=charge_atoms)
+    ! angular momentum integrals
+    case (INT_ANGMOM)
+      call OnePropCreate(prop_name=INT_ANGMOM,        &
+                         one_prop=prop_comp%one_prop, &
+                         info_prop=ierr,              &
+                         dipole_origin=dipole_origin)
     case default
       write(STDOUT,999) "unknown property "//trim(prop_name)//"!"
       stop
