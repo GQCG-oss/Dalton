@@ -1507,7 +1507,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_2dim',IERR,n1,n2
-     STOP
+     call memory_error_quit('Error in real_allocate_2dim')
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1523,7 +1523,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_2dim_sp',IERR,n1,n2
-     STOP
+     call memory_error_quit('Error in real_allocate_2dim_sp')
    ENDIF
    nsize = size(A,KIND=long)*4
    call mem_allocated_mem_real(nsize)
@@ -1545,28 +1545,28 @@ Logical :: First, Second
    If (First .AND. Second) then
       ALLOCATE(A(0:n1,0:n2),STAT = IERR)
       IF (IERR.NE. 0) THEN
-          write(*,*) 'Error in real_allocate_2dim_zero',IERR,n1,n2
-          STOP
+          write(*,*) 'Error1 in real_allocate_2dim_zero',IERR,n1,n2
+          CALL MEMORY_ERROR_QUIT('Error1 in real_allocate_2dim_zero')
       ENDIF
    Else
 ! Only one
         If (First) then
            ALLOCATE(A(0:n1,n2),STAT = IERR)
            IF (IERR.NE. 0) THEN
-               write(*,*) 'Error in real_allocate_2dim_zero',IERR,n1,n2
-               STOP
+               write(*,*) 'Error2 in real_allocate_2dim_zero',IERR,n1,n2
+               CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero')
            ENDIF
         Else
            If (Second) then
               ALLOCATE(A(n1,0:n2),STAT = IERR)
               IF (IERR.NE. 0) THEN
-                  write(*,*) 'Error in real_allocate_2dim_zero',IERR,n1,n2
-                  STOP
+                  write(*,*) 'Error2 in real_allocate_2dim_zero',IERR,n1,n2
+                  CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero')
               ENDIF
            Else
 ! None :: an error, should be at least one.
-              write(*,*) 'Error in real_allocate_2dim_zero'
-              STOP
+              write(*,*) 'Error2 in real_allocate_2dim_zero'
+              CALL MEMORY_ERROR_QUIT('Error2 in real_allocate_2dim_zero')
            Endif
         Endif
    Endif
@@ -1584,7 +1584,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2,n3),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_3dim',IERR,n1,n2,n3
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim')
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1600,7 +1600,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2,n3),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_3dim_sp',IERR,n1,n2,n3
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim_sp')
    ENDIF
    nsize = size(A,KIND=long)*4
    call mem_allocated_mem_real(nsize)
@@ -1625,7 +1625,7 @@ integer             :: i1,i2,i3
    ALLOCATE(A(i1:n1,i2:n2,i3:n3),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_3dim',IERR,n1,n2,n3
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_3dim')
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1641,7 +1641,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2,n3,n4),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_4dim',IERR,n1,n2,n3,n4
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_4dim')
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1657,7 +1657,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2,n3,n4,n5),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_5dim',IERR,n1,n2,n3,n4,n5
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_5dim')
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1687,7 +1687,7 @@ integer             :: i1,i2,i3,i4,i5
    ALLOCATE(A(i1:n1,i2:n2,i3:n3,i4:n4,i5:n5),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_allocate_5dim_zero',IERR,n1,n2,n3,n4,n5
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_5dim_zero')
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1720,8 +1720,8 @@ integer             :: i1,i2,i3,i4,i5,i6,i7
    IF(z7)i7=0
    ALLOCATE(A(i1:n1,i2:n2,i3:n3,i4:n4,i5:n5,i6:n6,i7:n7),STAT = IERR)
    IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_allocate_5dim_zero',IERR,n1,n2,n3,n4,n5,n6,n7
-     STOP
+     write(*,*) 'Error in real_allocate_7dim_zero',IERR,n1,n2,n3,n4,n5,n6,n7
+     CALL MEMORY_ERROR_QUIT('Error in real_allocate_7dim_zero')
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
    call mem_allocated_mem_real(nsize)
@@ -1743,7 +1743,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_1dim',IERR
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_1dim')
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_1dim
@@ -1762,7 +1762,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_1dim_sp',IERR
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_1dim_sp')
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_1dim_sp
@@ -1782,7 +1782,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_2dim',IERR
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_2dim')
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_2dim
@@ -1801,7 +1801,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_2dim_sp',IERR
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_2dim_sp')
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_2dim_sp
@@ -1821,7 +1821,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_3dim',IERR
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_3dim')
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_3dim
@@ -1840,7 +1840,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_3dim_sp',IERR
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_3dim_sp')
    ENDIF
    nullify(A)
  END SUBROUTINE real_deallocate_3dim_sp
@@ -1859,7 +1859,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_4dim',IERR
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_4dim')
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_4dim
@@ -1878,7 +1878,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in real_deallocate_5dim',IERR
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in real_deallocate_5dim')
    ENDIF
    nullify(A)
 END SUBROUTINE real_deallocate_5dim
@@ -1896,8 +1896,8 @@ if (.not.ASSOCIATED(A)) then
 endif
 DEALLOCATE(A,STAT = IERR)
 IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in real_deallocate_5dim',IERR
-   STOP
+   write(*,*) 'Error in real_deallocate_7dim',IERR
+   CALL MEMORY_ERROR_QUIT('Error in real_deallocate_7dim')
 ENDIF
 nullify(A)
 END SUBROUTINE real_deallocate_7dim
@@ -2129,7 +2129,7 @@ integer (kind=long) :: nsize
    ALLOCATE(A(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in complex_allocate_2dim',IERR,n1,n2
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in complex_allocate_2dim')
    ENDIF
    nsize = size(A,KIND=long)*mem_complexsize
    call mem_allocated_mem_complex(nsize)
@@ -2151,7 +2151,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in complex_deallocate_1dim',IERR
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in complex_deallocate_1dim')
    ENDIF
    nullify(A)
 END SUBROUTINE complex_deallocate_1dim
@@ -2170,7 +2170,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(A,STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in complex_deallocate_2dim',IERR
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in complex_deallocate_2dim')
    ENDIF
    nullify(A)
 END SUBROUTINE complex_deallocate_2dim
@@ -2494,7 +2494,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int8_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in int8_deallocate_1dim')
    ENDIF
    nullify(I)
 END SUBROUTINE int8_deallocate_1dim
@@ -2513,7 +2513,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int4_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in int4_deallocate_1dim')
    ENDIF
    nullify(I)
 END SUBROUTINE int4_deallocate_1dim
@@ -2532,7 +2532,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int4_deallocate_2dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in int4_deallocate_2dim')
    ENDIF
    nullify(I)
 END SUBROUTINE int4_deallocate_2dim
@@ -2550,7 +2550,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int8_deallocate_2dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in int8_deallocate_2dim')
    ENDIF
    nullify(I)
 END SUBROUTINE int8_deallocate_2dim
@@ -2569,7 +2569,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in shortint_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in shortint_deallocate_1dim')
    ENDIF
    nullify(I)
 END SUBROUTINE shortint_deallocate_1dim
@@ -2588,7 +2588,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in shortint_deallocate_2dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in shortint_deallocate_2dim')
    ENDIF
    nullify(I)
 END SUBROUTINE shortint_deallocate_2dim
@@ -2607,7 +2607,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int4_deallocate_3dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in int4_deallocate_3dim')
    ENDIF
    nullify(I)
 END SUBROUTINE int4_deallocate_3dim
@@ -2625,7 +2625,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int8_deallocate_3dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in int8_deallocate_3dim')
    ENDIF
    nullify(I)
 END SUBROUTINE int8_deallocate_3dim
@@ -2644,7 +2644,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int4_deallocate_4dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in int4_deallocate_4dim')
    ENDIF
    nullify(I)
 END SUBROUTINE int4_deallocate_4dim
@@ -2662,7 +2662,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(I,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in int8_deallocate_4dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in int8_deallocate_4dim')
    ENDIF
    nullify(I)
 END SUBROUTINE int8_deallocate_4dim
@@ -2688,7 +2688,7 @@ integer (kind=long) :: nsize
    ALLOCATE(C(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in char_allocate_1dim_n8',IERR,n
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in char_allocate_1dim_n8')
    ENDIF
    nsize = mem_complexsize*size(C,KIND=long)
    call mem_allocated_mem_character(nsize)
@@ -2710,7 +2710,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(C,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in char_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in char_deallocate_1dim')
    ENDIF
 END SUBROUTINE char_deallocate_1dim
 !----- ALLOCATE LOGICAL POINTERS -----!
@@ -2743,7 +2743,7 @@ integer (kind=long) :: nsize
    ALLOCATE(L(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in logic_allocate_1dim',IERR,n
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim')
    ENDIF
    nsize = size(L,KIND=long)*mem_logicalsize
    call mem_allocated_mem_logical(nsize)
@@ -2759,7 +2759,7 @@ integer (kind=long) :: nsize
    ALLOCATE(L(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in logic_allocate_1dim',IERR,n
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim')
    ENDIF
    nsize = size(L,KIND=long)*mem_logicalsize
    call mem_allocated_mem_logical(nsize)
@@ -2778,7 +2778,7 @@ if(z1)i1=0
 ALLOCATE(L(i1:n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in logic_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim')
 ENDIF
 nsize = size(L,KIND=long)*mem_logicalsize
 call mem_allocated_mem_logical(nsize)
@@ -2797,7 +2797,7 @@ if(z1)i1=0
 ALLOCATE(L(i1:n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in logic_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in logic_allocate_1dim')
 ENDIF
 nsize = size(L,KIND=long)*mem_logicalsize
 call mem_allocated_mem_logical(nsize)
@@ -2813,7 +2813,7 @@ integer (kind=long) :: nsize
    ALLOCATE(L(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in logic_allocate_2dim',IERR,n1,n2
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_2dim')
    ENDIF
    nsize = size(L,KIND=long)*mem_logicalsize
    call mem_allocated_mem_logical(nsize)
@@ -2828,7 +2828,7 @@ integer (kind=long) :: nsize
    ALLOCATE(L(n1,n2),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in logic_allocate_2dim',IERR,n1,n2
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_2dim')
    ENDIF
    nsize = size(L,KIND=long)*mem_logicalsize
    call mem_allocated_mem_logical(nsize)
@@ -2844,7 +2844,7 @@ integer (kind=long) :: nsize
    ALLOCATE(L(n1,n2,n3),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in logic_allocate_3dim',IERR,n1,n2,n3
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_3dim')
    ENDIF
    nsize = size(L,KIND=long)*mem_logicalsize
    call mem_allocated_mem_logical(nsize)
@@ -2859,7 +2859,7 @@ integer (kind=long) :: nsize
    ALLOCATE(L(n1,n2,n3),STAT = IERR)
    IF (IERR.NE. 0) THEN
      write(*,*) 'Error in logic_allocate_3dim',IERR,n1,n2,n3
-     STOP
+     CALL MEMORY_ERROR_QUIT('Error in logic_allocate_3dim')
    ENDIF
    nsize = size(L,KIND=long)*mem_logicalsize
    call mem_allocated_mem_logical(nsize)
@@ -2882,7 +2882,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_1dim')
    ENDIF
    NULLIFY(L)
 END SUBROUTINE logic4_deallocate_1dim
@@ -2901,7 +2901,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_1dim')
    ENDIF
    NULLIFY(L)
 END SUBROUTINE logic8_deallocate_1dim
@@ -2920,7 +2920,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_deallocate_2dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_2dim')
    ENDIF
    NULLIFY(L)
 END SUBROUTINE logic4_deallocate_2dim
@@ -2939,7 +2939,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_deallocate_2dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_2dim')
    ENDIF
    NULLIFY(L)
 END SUBROUTINE logic8_deallocate_2dim
@@ -2958,7 +2958,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_deallocate_3dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_3dim')
    ENDIF
    NULLIFY(L)
  END SUBROUTINE logic4_deallocate_3dim
@@ -2977,7 +2977,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(L,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in logic_deallocate_3dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in logic_deallocate_3dim')
    ENDIF
    NULLIFY(L)
  END SUBROUTINE logic8_deallocate_3dim
@@ -2995,7 +2995,7 @@ nullify(AOBATCHITEM)
 ALLOCATE(AOBATCHITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in AOBATCH_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in AOBATCH_allocate_1dim')
 ENDIF
 nsize = size(AOBATCHITEM,KIND=long)*mem_AOBATCHsize
 call mem_allocated_mem_AOBATCH(nsize)
@@ -3015,7 +3015,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(AOBATCHITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in AOBATCH_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in AOBATCH_deallocate_1dim')
    ENDIF
    NULLIFY(AOBATCHITEM)
 END SUBROUTINE AOBATCH_deallocate_1dim
@@ -3032,7 +3032,7 @@ nullify(OVERLAPITEM)
 ALLOCATE(OVERLAPITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in OVERLAP_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in OVERLAP_allocate_1dim')
 ENDIF
 nsize = size(OVERLAPITEM,KIND=long)*mem_OVERLAPsize 
 call mem_allocated_mem_OVERLAPT(nsize)
@@ -3052,7 +3052,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(OVERLAPITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in OVERLAP_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in OVERLAP_deallocate_1dim')
    ENDIF
    NULLIFY(OVERLAPITEM)
 END SUBROUTINE OVERLAPT_deallocate_1dim
@@ -3069,7 +3069,7 @@ nullify(CCORBITALITEM)
 ALLOCATE(CCORBITALITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in CCORBITAL_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in CCORBITAL_allocate_1dim')
 ENDIF
 nsize = size(CCORBITALITEM,KIND=long)*mem_CCORBITALsize
 call mem_allocated_mem_CCORBITAL(nsize)
@@ -3089,7 +3089,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(CCORBITALITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in CCORBITAL_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in CCORBITAL_deallocate_1dim')
    ENDIF
    NULLIFY(CCORBITALITEM)
 END SUBROUTINE CCORBITAL_deallocate_1dim
@@ -3107,7 +3107,7 @@ nullify(CCATOMITEM)
 ALLOCATE(CCATOMITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in CCATOM_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in CCATOM_allocate_1dim')
 ENDIF
 nsize = size(CCATOMITEM,KIND=long)*mem_CCATOMsize
 call mem_allocated_mem_CCATOM(nsize)
@@ -3127,7 +3127,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(CCATOMITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in CCATOM_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in CCATOM_deallocate_1dim')
    ENDIF
    NULLIFY(CCATOMITEM)
 END SUBROUTINE CCATOM_deallocate_1dim
@@ -3145,7 +3145,7 @@ nullify(BATCHTOORBITEM)
 ALLOCATE(BATCHTOORBITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in BATCHTOORB_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in BATCHTOORB_allocate_1dim')
 ENDIF
 nsize = size(BATCHTOORBITEM,KIND=long)*mem_BATCHTOORBsize
 call mem_allocated_mem_BATCHTOORB(nsize)
@@ -3165,7 +3165,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(BATCHTOORBITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in BATCHTOORB_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in BATCHTOORB_deallocate_1dim')
    ENDIF
    NULLIFY(BATCHTOORBITEM)
 END SUBROUTINE BATCHTOORB_deallocate_1dim
@@ -3182,7 +3182,7 @@ nullify(MYPOINTERITEM)
 ALLOCATE(MYPOINTERITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in MYPOINTER_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in MYPOINTER_allocate_1dim')
 ENDIF
 nsize = size(MYPOINTERITEM,KIND=long)*mem_MYPOINTERsize
 call mem_allocated_mem_MYPOINTER(nsize)
@@ -3202,7 +3202,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(MYPOINTERITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in MYPOINTER_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in MYPOINTER_deallocate_1dim')
    ENDIF
    NULLIFY(MYPOINTERITEM)
 END SUBROUTINE MYPOINTER_deallocate_1dim
@@ -3218,7 +3218,7 @@ nullify(MYPOINTERITEM)
 ALLOCATE(MYPOINTERITEM(n1,n2),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in MYPOINTER_allocate_2dim',IERR,n1,n2
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in MYPOINTER_allocate_2dim')
 ENDIF
 nsize = size(MYPOINTERITEM,KIND=long)*mem_MYPOINTERsize
 call mem_allocated_mem_MYPOINTER(nsize)
@@ -3238,7 +3238,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(MYPOINTERITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in MYPOINTER_deallocate_2dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in MYPOINTER_deallocate_2dim')
    ENDIF
    NULLIFY(MYPOINTERITEM)
 END SUBROUTINE MYPOINTER_deallocate_2dim
@@ -3256,7 +3256,7 @@ nullify(ARRAY2ITEM)
 ALLOCATE(ARRAY2ITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in ARRAY2_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in ARRAY2_allocate_1dim')
 ENDIF
 nsize = size(ARRAY2ITEM,KIND=long)*mem_ARRAY2size
 call mem_allocated_mem_ARRAY2(nsize)
@@ -3276,7 +3276,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(ARRAY2ITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in ARRAY2_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in ARRAY2_deallocate_1dim')
    ENDIF
    NULLIFY(ARRAY2ITEM)
 END SUBROUTINE ARRAY2_deallocate_1dim
@@ -3293,7 +3293,7 @@ nullify(ARRAY4ITEM)
 ALLOCATE(ARRAY4ITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in ARRAY4_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in ARRAY4_allocate_1dim')
 ENDIF
 nsize = size(ARRAY4ITEM,KIND=long)*mem_ARRAY4size
 call mem_allocated_mem_ARRAY4(nsize)
@@ -3313,7 +3313,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(ARRAY4ITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in ARRAY4_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in ARRAY4_deallocate_1dim')
    ENDIF
    NULLIFY(ARRAY4ITEM)
 END SUBROUTINE ARRAY4_deallocate_1dim
@@ -3330,7 +3330,7 @@ nullify(ARRAYITEM)
 ALLOCATE(ARRAYITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in ARRAY_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in ARRAY_allocate_1dim')
 ENDIF
 nsize = size(ARRAYITEM,KIND=long)*mem_ARRAYsize
 call mem_allocated_mem_ARRAY(nsize)
@@ -3350,7 +3350,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(ARRAYITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in ARRAY_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in ARRAY_deallocate_1dim')
    ENDIF
    NULLIFY(ARRAYITEM)
 END SUBROUTINE ARRAY_deallocate_1dim
@@ -3367,7 +3367,7 @@ nullify(MP2DENSITEM)
 ALLOCATE(MP2DENSITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in MP2DENS_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in MP2DENS_allocate_1dim')
 ENDIF
 nsize = size(MP2DENSITEM,KIND=long)*mem_MP2DENSsize
 call mem_allocated_mem_MP2DENS(nsize)
@@ -3387,7 +3387,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(MP2DENSITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in MP2DENS_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in MP2DENS_deallocate_1dim')
    ENDIF
    NULLIFY(MP2DENSITEM)
 END SUBROUTINE MP2DENS_deallocate_1dim
@@ -3404,7 +3404,7 @@ nullify(TRACEBACKITEM)
 ALLOCATE(TRACEBACKITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in TRACEBACK_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in TRACEBACK_allocate_1dim')
 ENDIF
 nsize = size(TRACEBACKITEM,KIND=long)*mem_TRACEBACKsize
 call mem_allocated_mem_TRACEBACK(nsize)
@@ -3424,7 +3424,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(TRACEBACKITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in TRACEBACK_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in TRACEBACK_deallocate_1dim')
    ENDIF
    NULLIFY(TRACEBACKITEM)
 END SUBROUTINE TRACEBACK_deallocate_1dim
@@ -3441,7 +3441,7 @@ nullify(MP2GRADITEM)
 ALLOCATE(MP2GRADITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in MP2GRAD_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in MP2GRAD_allocate_1dim')
 ENDIF
 nsize = size(MP2GRADITEM,KIND=long)*mem_MP2GRADsize
 call mem_allocated_mem_MP2GRAD(nsize)
@@ -3461,7 +3461,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(MP2GRADITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in MP2GRAD_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in MP2GRAD_deallocate_1dim')
    ENDIF
    NULLIFY(MP2GRADITEM)
 END SUBROUTINE MP2GRAD_deallocate_1dim
@@ -3480,7 +3480,7 @@ nullify(ODBATCHITEM)
 ALLOCATE(ODBATCHITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in ODBATCH_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in ODBATCH_allocate_1dim')
 ENDIF
 nsize = size(ODBATCHITEM,KIND=long)*mem_ODBATCHsize
 call mem_allocated_mem_ODBATCH(nsize)
@@ -3500,7 +3500,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(ODBATCHITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in ODBATCH_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in ODBATCH_deallocate_1dim')
    ENDIF
    NULLIFY(ODBATCHITEM)
 END SUBROUTINE ODBATCH_deallocate_1dim
@@ -3517,7 +3517,7 @@ nullify(LSAOTENSORITEM)
 ALLOCATE(LSAOTENSORITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in LSAOTENSOR_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in LSAOTENSOR_allocate_1dim')
 ENDIF
 nsize = size(LSAOTENSORITEM,KIND=long)*mem_LSAOTENSORsize
 call mem_allocated_mem_LSAOTENSOR(nsize)
@@ -3537,7 +3537,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(LSAOTENSORITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in LSAOTENSOR_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in LSAOTENSOR_deallocate_1dim')
    ENDIF
    NULLIFY(LSAOTENSORITEM)
 END SUBROUTINE LSAOTENSOR_deallocate_1dim
@@ -3554,7 +3554,7 @@ nullify(SLSAOTENSORITEM)
 ALLOCATE(SLSAOTENSORITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in SLSAOTENSOR_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in SLSAOTENSOR_allocate_1dim')
 ENDIF
 nsize = size(SLSAOTENSORITEM,KIND=long)*mem_SLSAOTENSORsize
 call mem_allocated_mem_SLSAOTENSOR(nsize)
@@ -3574,7 +3574,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(SLSAOTENSORITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in SLSAOTENSOR_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in SLSAOTENSOR_deallocate_1dim')
    ENDIF
    NULLIFY(SLSAOTENSORITEM)
 END SUBROUTINE SLSAOTENSOR_deallocate_1dim
@@ -3591,7 +3591,7 @@ nullify(GLOBALLSAOTENSORITEM)
 ALLOCATE(GLOBALLSAOTENSORITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in GLOBALLSAOTENSOR_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in GLOBALLSAOTENSOR_allocate_1dim')
 ENDIF
 nsize = size(GLOBALLSAOTENSORITEM,KIND=long)*mem_GLOBALLSAOTENSORsize
 call mem_allocated_mem_GLOBALLSAOTENSOR(nsize)
@@ -3611,7 +3611,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(GLOBALLSAOTENSORITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in GLOBALLSAOTENSOR_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in GLOBALLSAOTENSOR_deallocate_1dim')
    ENDIF
    NULLIFY(GLOBALLSAOTENSORITEM)
 END SUBROUTINE GLOBALLSAOTENSOR_deallocate_1dim
@@ -3628,7 +3628,7 @@ nullify(ATOMTYPEITEMITEM)
 ALLOCATE(ATOMTYPEITEMITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in ATOMTYPEITEM_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in ATOMTYPEITEM_allocate_1dim')
 ENDIF
 nsize = size(ATOMTYPEITEMITEM,KIND=long)*mem_ATOMTYPEITEMsize
 call mem_allocated_mem_ATOMTYPEITEM(nsize)
@@ -3648,7 +3648,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(ATOMTYPEITEMITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in ATOMTYPEITEM_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in ATOMTYPEITEM_deallocate_1dim')
    ENDIF
    NULLIFY(ATOMTYPEITEMITEM)
 END SUBROUTINE ATOMTYPEITEM_deallocate_1dim
@@ -3665,7 +3665,7 @@ nullify(ATOMITEMITEM)
 ALLOCATE(ATOMITEMITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in ATOMITEM_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in ATOMITEM_allocate_1dim')
 ENDIF
 nsize = size(ATOMITEMITEM,KIND=long)*mem_ATOMITEMsize
 call mem_allocated_mem_ATOMITEM(nsize)
@@ -3685,7 +3685,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(ATOMITEMITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in ATOMITEM_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in ATOMITEM_deallocate_1dim')
    ENDIF
    NULLIFY(ATOMITEMITEM)
 END SUBROUTINE ATOMITEM_deallocate_1dim
@@ -3702,7 +3702,7 @@ nullify(LSMATRIXITEM)
 ALLOCATE(LSMATRIXITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in LSMATRIX_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_allocate_1dim')
 ENDIF
 nsize = size(LSMATRIXITEM,KIND=long)*mem_LSMATRIXsize
 call mem_allocated_mem_LSMATRIX(nsize)
@@ -3722,7 +3722,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(LSMATRIXITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in LSMATRIX_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_deallocate_1dim')
    ENDIF
    NULLIFY(LSMATRIXITEM)
 END SUBROUTINE LSMATRIX_deallocate_1dim
@@ -3737,7 +3737,7 @@ nullify(LSMATRIXITEM)
 ALLOCATE(LSMATRIXITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in LSMATRIX_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_allocate_1dim')
 ENDIF
 nsize = size(LSMATRIXITEM,KIND=long)*8
 call mem_allocated_mem_LSMATRIX(nsize)
@@ -3757,7 +3757,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(LSMATRIXITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in LSMATRIX_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_deallocate_1dim')
    ENDIF
    NULLIFY(LSMATRIXITEM)
 END SUBROUTINE LSMATRIXP_deallocate_1dim
@@ -3774,7 +3774,7 @@ nullify(MATRIXITEM)
 ALLOCATE(MATRIXITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in MATRIX_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in MATRIX_allocate_1dim')
 ENDIF
 nsize = size(MATRIXITEM,KIND=long)*mem_MATRIXsize
 call mem_allocated_mem_type_matrix(nsize)
@@ -3794,7 +3794,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(MATRIXITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in MATRIX_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in MATRIX_deallocate_1dim')
    ENDIF
    NULLIFY(MATRIXITEM)
 END SUBROUTINE MATRIX_deallocate_1dim
@@ -3809,7 +3809,7 @@ nullify(MATRIXITEM)
 ALLOCATE(MATRIXITEM(n),STAT = IERR)
 IF (IERR.NE. 0) THEN
    write(*,*) 'Error in MATRIX_allocate_1dim',IERR,n
-   STOP
+   CALL MEMORY_ERROR_QUIT('Error in MATRIX_allocate_1dim')
 ENDIF
 nsize = size(MATRIXITEM,KIND=long)*8
 call mem_allocated_mem_type_matrix(nsize)
@@ -3829,7 +3829,7 @@ integer (kind=long) :: nsize
    DEALLOCATE(MATRIXITEM,STAT = IERR)
    IF (IERR.NE. 0) THEN
       write(*,*) 'Error in MATRIX_deallocate_1dim',IERR
-      STOP
+      CALL MEMORY_ERROR_QUIT('Error in MATRIX_deallocate_1dim')
    ENDIF
    NULLIFY(MATRIXITEM)
 END SUBROUTINE MATRIXP_deallocate_1dim
@@ -5538,7 +5538,7 @@ END SUBROUTINE MATRIXP_deallocate_1dim
          if(.not. doublecheck)then
            print *,"not the correct format of /proc/meminfo --> check and update get_available_memory_specific"
            print *,"in lsutil/memory.f90"
-           stop 0
+           call memory_error_quit('not the correct format of /proc/meminfo')
          endif
 
          do i=endpos-1,1,-1
