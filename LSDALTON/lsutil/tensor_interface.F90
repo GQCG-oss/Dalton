@@ -54,6 +54,7 @@ module tensor_interface_module
                     &array_print_norm_nrm,&
                     &array2_print_norm_nrm,&
                     &array4_print_norm_nrm,&
+                    &matrix_print_norm_nrm,&
                     &print_norm_fort_wrapper1_customprint,&
                     &print_norm_fort_wrapper2_customprint,&
                     &print_norm_fort_wrapper3_customprint,&
@@ -1547,6 +1548,17 @@ contains
     if(.not.present(square))call print_norm_fort_customprint(arrf%val,nelms,msg)
     if(present(square))call print_norm_fort_customprint(arrf%val,nelms,msg,square)
   end subroutine array4_print_norm_customprint
+  subroutine matrix_print_norm_nrm(mat,nrm,square)
+    implicit none
+    type(matrix),intent(in) :: mat
+    real(realk),intent(inout), optional :: nrm
+    logical,intent(in),optional :: square
+    integer(kind=8) :: nelms
+    nelms = int(mat%nrow*mat%ncol,kind=8)
+    if(present(nrm).and..not.present(square))call print_norm_fort_nrm(mat%elms,nelms,nrm)
+    if(present(nrm).and.present(square))call print_norm_fort_nrm(mat%elms,nelms,nrm,square)
+    if(.not.present(nrm).and..not.present(square))call print_norm_fort_nrm(mat%elms,nelms)
+  end subroutine matrix_print_norm_nrm
 
   subroutine print_norm_fort_nrm(fort,nelms,nrm,returnsquared)
     implicit none
