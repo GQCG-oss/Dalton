@@ -25,8 +25,12 @@
        ! symmetry of property integrals
        integer prop_sym
 
+       ! N-ary tree for geometric derivatives on bra center
+       type(nary_tree_t) nary_tree_bra
+       ! N-ary tree for geometric derivatives on ket center
+       type(nary_tree_t) nary_tree_ket
        ! N-ary tree for total geometric derivatives
-       type(geom_tree_t) geom_tree
+       type(nary_tree_t) nary_tree_total
 
        ! error information
        integer ierr
@@ -65,19 +69,24 @@
        ! please refer to the manual of Gen1Int library for more details about the results
        ! you get, see Section 2.2
 
-       ! initializes the information of N-ary tree for total geometric derivatives (optional)
-       call GeomTreeCreate(num_atoms=num_atoms, order_geo=order_geo,    &
-                           max_ncent=max_num_cent, geom_tree=geom_tree, &
+       ! initializes the information of N-ary tree for total geometric derivatives
+       call NaryTreeCreate(num_atoms=num_atoms,       &
+                           order_geo=order_geo,       &
+                           max_ncent=max_num_cent,    &
+                           nary_tree=nary_tree_total, &
                            info_geom=ierr)
        if (ierr/=0) stop "failed to create N-ary tree"
 
-       ! gets the number of all unique total geometric derivatives
-       call GeomTreeGetNumGeo(geom_tree=geom_tree, num_unique_geo=num_unique_geo)
-       ! the number of all redundant total geometric derivatives is
-       ! num_redunt_geo = (3*num_atoms)**order_geo
+       ! initializes the information of N-ary trees for partial geometric derivatives
+       ! on bra and ket centers ...
+
+       ! gets the number of all unique geometric derivatives
+       call NaryTreeGetNumGeo(nary_tree=nary_tree_bra, num_unique_geo=num_unique_bgeo)
+       call NaryTreeGetNumGeo(nary_tree=nary_tree_ket, num_unique_geo=num_unique_kgeo)
+       call NaryTreeGetNumGeo(nary_tree=nary_tree_total, num_unique_geo=num_unique_tgeo)
 
        ! sets the number of integral matrices including property integrals and various derivatives
-       num_matrices = num_prop*num_unique_geo  !or num_prop*num_redunt_geo
+       num_matrices = num_prop*num_unique_bgeo*num_unique_kgeo*num_unique_tgeo
 
        ! allocates memory for integrals
        call Gen1IntAPIGetNumAO(num_ao=num_ao)  !gets the number of atomic orbitals
@@ -123,26 +132,29 @@
        ! NOTE:
        ! \var(Int_Matrix) contains the upper and diagonal parts if using triangular format,
        ! \var(val_expt) should be zero before calculations, it is intent(inout)
-       call Gen1IntOnePropGetIntExpt(nnz_comp=nnz_comp,      &
-                                     one_prop=prop_operator, &
-                                     geom_tree=geom_tree,    &  !optional
-                                     geom_type=geom_type,    &  !optional
-                                     api_comm=api_comm,      &  !optional
-                                     num_ints=num_ints,      &
-                                     val_ints=val_ints,      &  !optional
-                                     write_ints=write_ints,  &  !optional
-                                     num_dens=num_dens,      &
-                                     ao_dens=ao_dens,        &  !optional
-                                     val_expt=val_expt,      &  !optional
-                                     write_expt=write_expt,  &  !optional
-                                     io_viewer=io_viewer,    &
+       call Gen1IntOnePropGetIntExpt(nnz_comp=nnz_comp,               &
+                                     one_prop=prop_operator,          &
+                                     nary_tree_bra=nary_tree_bra,     &  !geometric derivatives on bra center
+                                     nary_tree_ket=nary_tree_ket,     &  !geometric derivatives on ket center
+                                     nary_tree_total=nary_tree_total, &  !total geometric derivatives
+                                     api_comm=api_comm,               &  !optional
+                                     num_ints=num_ints,               &
+                                     val_ints=val_ints,               &  !optional
+                                     write_ints=write_ints,           &  !optional
+                                     num_dens=num_dens,               &
+                                     ao_dens=ao_dens,                 &  !optional
+                                     val_expt=val_expt,               &  !optional
+                                     write_expt=write_expt,           &  !optional
+                                     io_viewer=io_viewer,             &
                                      level_print=level_print)
 
        ! frees the space of information of property integrals
        call OnePropDestroy(one_prop=prop_operator)
 
-       ! frees space taken by a N-ary tree for total geometric derivatives (if created)
-       call GeomTreeDestroy(geom_tree=geom_tree)
+       ! frees space taken by N-ary trees for geometric derivatives
+       call NaryTreeDestroy(nary_tree=nary_tree_bra)
+       call NaryTreeDestroy(nary_tree=nary_tree_ket)
+       call NaryTreeDestroy(nary_tree=nary_tree_total)
 
        ! frees the space of matrices
        do imat = 1, num_matrices
