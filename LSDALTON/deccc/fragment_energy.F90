@@ -16,7 +16,9 @@ module fragment_energy_module
 
   ! DEC DEPENDENCIES (within deccc directory)                                                         
   ! ****************************************
+#ifdef MOD_UNRELEASED
   use f12_integrals_module
+#endif
   use dec_fragment_utils
   use array2_simple_operations
   use array4_simple_operations
@@ -401,11 +403,12 @@ contains
     ! which calculates atomic fragment contribution and saves it in myfragment%energies(?),
     ! see dec_readme file.
 
+#ifdef MOD_UNRELEASED
     if(DECinfo%f12) then    
        print *, "---------------F12-energy-single-fragment-------------"
        call f12_single_fragment_energy(MyFragment)
     endif
-
+#endif
     call LSTIMER('SINGLE L.ENERGY',tcpu,twall,DECinfo%output)
 
     ! First order properties
@@ -1029,11 +1032,12 @@ contains
     ! which calculates pair fragment contribution and saves it in pairfragment%energies(?),
     ! see dec_readme file.
 
+#ifdef MOD_UNRELEASED
     if(DECinfo%f12) then    
        print *, "---------------F12-energy-pair-fragment-------------"
        call f12_pair_fragment_energy(Fragment1, Fragment2, PairFragment, natoms)
     endif
-
+#endif
     call LSTIMER('PAIR L.ENERGY',tcpu,twall,DECinfo%output)
 
 

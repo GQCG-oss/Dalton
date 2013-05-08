@@ -156,6 +156,8 @@ if(NOT ENABLE_CRAYWRAPPER)
 endif()
 
 if(ENABLE_RELEASE)
+
+else()
    add_definitions(-DMOD_UNRELEASED)
 endif()
 

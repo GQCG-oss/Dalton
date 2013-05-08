@@ -1626,7 +1626,7 @@ contains
           do I=1,nocc
              do A=1,nunocc
                 ! Difference in orbital energies: eps(I) + eps(J) - eps(A) - eps(B)
-                eps = MyMolecule%ppfock(I,I) + MyMolecule%ppfock(J,J) &
+                eps = MyMolecule%ppfock(I+offset,I+offset) + MyMolecule%ppfock(J+offset,J+offset) &
                      & - MyMolecule%qqfock(A,A) - MyMolecule%qqfock(B,B)
 
                 ! Ecorr = sum_{IJAB} (AI|BJ) * [ 2*(AI|BJ) - (BI|AJ) ] / [eps(I)+eps(J)-eps(A)-eps(B)]

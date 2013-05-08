@@ -6980,209 +6980,209 @@ subroutine copy_batch_selms(selms2,sA2,sB2,nA2,nB2,selms1,sA1,sB1,nA1,nB1,nOrbA1
   ENDDO
 end subroutine copy_batch_selms
 
-!> \brief copy an lstensor to a new lstensor
-!> \author T. Kjaergaard
-!> \date 2010
-!> \param TENSOR1 the original full slstensor
-!> \param TENSOR2 the new batch slstensor
-SUBROUTINE build_singleBatchGab(AOfull,AO1,ibatch,nbatches,dim2,TENSOR1,TENSOR_LHS,TENSOR_RHS)
-  implicit none
-  integer,intent(in) :: dim2
-  type(AOITEM),intent(in) :: AOfull
-  type(AOITEM) :: AO1
-  TYPE(LSTENSOR),intent(in)     :: TENSOR1    ! full,full
-  TYPE(LSTENSOR),intent(inout)  :: TENSOR_LHS ! full,batch
-  TYPE(LSTENSOR),intent(inout)  :: TENSOR_RHS ! batch,full
-  integer,intent(in)   :: iBatch
-  !
-  INTEGER    :: I1,I2,dim,ielms,nbatches1,nbatches2,nbast
-  INTEGER    :: nAngmomA,nAngmomB,nAngmomC,nAngmomD
-  integer(kind=long) :: nmemsize
-  TYPE(SLSAOTENSOR),pointer    :: lsao1
-  TYPE(SLSAOTENSOR),pointer    :: lsao2
-  integer(kind=short),pointer     :: elms1(:),elms2(:)
-  integer(kind=short) :: maxelm1
-  integer :: natomJ,jatom_old,jBatch2,jatom,natomI,JbatchLoc,nbatches
-  integer :: iatom_old,iBatch2,iatom,jatom2,iatom2,IbatchLoc,I2_LHS,I2_RHS
-  integer :: NIBAT,NJBAT,ibat,jbat,iBatchLoc2,jBatchLoc2,jbatch,maxbat1,maxbat2
-  logical :: CS_SCREEN,PS_SCREEN
-  integer :: sA1,sA2,sB1,sB2,nOrbA1,nOrbA2,nOrbB1,nOrbB2,I,J,nA2,nB2,nA1,nB1
-  CS_SCREEN = ASSOCIATED(TENSOR1%maxgab)
-  PS_SCREEN = ASSOCIATED(TENSOR1%maxprimgab)
-  call lstensor_nullify(TENSOR_LHS)
-  call lstensor_nullify(TENSOR_RHS)
-  nbast = TENSOR1%nbast(1)
-  call init_ps_lstensor(TENSOR_LHS,AOfull,AO1,nbast,dim2,.FALSE.,6)
-  call init_ps_lstensor(TENSOR_RHS,AO1,AOfull,dim2,nbast,.FALSE.,6)
-  call LSTENSOR_mem_est(TENSOR_LHS,nmemsize)
-  call remove_mem_from_global(nmemsize)
-  call LSTENSOR_mem_est(TENSOR_RHS,nmemsize)
-  call remove_mem_from_global(nmemsize)
-
-  nbatches = TENSOR1%nbatches(1)
-  dim = nbatches
-  IF(CS_SCREEN)THEN
-     nullify(TENSOR_LHS%maxgab)
-     call mem_alloc(TENSOR_LHS%maxgab,nbatches,1)
-     call ls_sizero(TENSOR_LHS%maxgab,dim)
-     nullify(TENSOR_RHS%maxgab)
-     call mem_alloc(TENSOR_RHS%maxgab,1,nbatches)
-     call ls_sizero(TENSOR_RHS%maxgab,dim)
-  ENDIF
-  IF(PS_SCREEN)THEN
-     nullify(TENSOR_LHS%maxprimgab)
-     call mem_alloc(TENSOR_LHS%maxprimgab,nbatches,1)
-     call ls_sizero(TENSOR_LHS%maxprimgab,dim)
-     nullify(TENSOR_RHS%maxprimgab)
-     call mem_alloc(TENSOR_RHS%maxprimgab,1,nbatches)
-     call ls_sizero(TENSOR_RHS%maxprimgab,dim)
-  ENDIF
-  call LSTENSOR_mem_est(TENSOR_LHS,nmemsize)
-  call add_mem_to_global(nmemsize)
-  call LSTENSOR_mem_est(TENSOR_RHS,nmemsize)
-  call add_mem_to_global(nmemsize)
-
-
-  iatom = AOfull%Batch(iBatch)%atom
-  IbatchLoc = AOfull%Batch(iBatch)%batch
-
-  DO jBatch=1,nbatches
-     jatom = AOfull%Batch(jBatch)%atom
-     JbatchLoc = AOfull%Batch(jBatch)%batch
-
-     I1 = TENSOR1%INDEX(iatom,jatom,1,1)
-     IF(I1.NE.0)THEN
-        I1 = TENSOR1%INDEX(jatom,iatom,1,1)
-        IF(I1.EQ.0)call lsquit('GAB NOT SYM in buildbatchgab thksnjvd',-1)
-        maxBat1 = TENSOR1%SLSAO(I1)%maxBat
-        nOrbA1 = TENSOR1%SLSAO(I1)%nOrb(jbatchLoc)
-        nOrbB1 = TENSOR1%SLSAO(I1)%nOrb(ibatchLoc+maxBat1)
-        sA1 = TENSOR1%SLSAO(I1)%startLocalOrb(jbatchLoc)-1
-        sB1 = TENSOR1%SLSAO(I1)%startLocalOrb(ibatchLoc+maxBat1)-1
-        nA1 = TENSOR1%SLSAO(I1)%nLocal(1)
-        nB1 = TENSOR1%SLSAO(I1)%nLocal(2)
-
-        !LHS
-        I2_LHS = TENSOR_LHS%INDEX(jatom,1,1,1)
-        IF(I2_LHS.EQ.0)call lsquit('I1,I2_LHS mismatch',-1)
-        maxBat2 = TENSOR_LHS%SLSAO(I2_LHS)%maxBat
-        sA2 = TENSOR_LHS%SLSAO(I2_LHS)%startLocalOrb(jbatchLoc)-1
-        sB2 = TENSOR_LHS%SLSAO(I2_LHS)%startLocalOrb(1+maxBat2)-1
-        nA2 = TENSOR_LHS%SLSAO(I2_LHS)%nLocal(1)
-        nB2 = TENSOR_LHS%SLSAO(I2_LHS)%nLocal(2)
-        call copy_batch_selms(TENSOR_LHS%SLSAO(I2_LHS)%selms,sA2,sB2,nA2,&
-             & nB2,TENSOR1%SLSAO(I1)%selms,sA1,sB1,nA1,nB1,nOrbA1,nOrbB1)
-
-        IF(CS_SCREEN)TENSOR_LHS%maxgab(jBatch,1) = TENSOR1%maxgab(jBatch,iBatch)
-        IF(PS_SCREEN)TENSOR_LHS%maxprimgab(jBatch,1) = TENSOR1%maxprimgab(jBatch,iBatch) 
-
-        I1 = TENSOR1%INDEX(iatom,jatom,1,1)
-        maxBat1 = TENSOR1%SLSAO(I1)%maxBat
-        nOrbA1 = TENSOR1%SLSAO(I1)%nOrb(ibatchLoc)
-        nOrbB1 = TENSOR1%SLSAO(I1)%nOrb(jbatchLoc+maxbat1)
-        sA1 = TENSOR1%SLSAO(I1)%startLocalOrb(ibatchLoc)-1
-        sB1 = TENSOR1%SLSAO(I1)%startLocalOrb(jbatchLoc+maxbat1)-1
-        nA1 = TENSOR1%SLSAO(I1)%nLocal(1)
-        nB1 = TENSOR1%SLSAO(I1)%nLocal(2)
-
-
-        I2_RHS = TENSOR_RHS%INDEX(1,jatom,1,1)
-        IF(I2_RHS.EQ.0)call lsquit('I1,I2_RHS mismatch',-1)
-        maxBat2 = TENSOR_RHS%SLSAO(I2_RHS)%maxBat
-        sA2 = TENSOR_RHS%SLSAO(I2_RHS)%startLocalOrb(1)-1
-        sB2 = TENSOR_RHS%SLSAO(I2_RHS)%startLocalOrb(jbatchLoc+maxbat2)-1
-        nA2 = TENSOR_RHS%SLSAO(I2_RHS)%nLocal(1)
-        nB2 = TENSOR_RHS%SLSAO(I2_RHS)%nLocal(2)
-        IF(associated(TENSOR1%SLSAO(I1)%selms))THEN
-           call copy_batch_selms(TENSOR_RHS%SLSAO(I2_RHS)%selms,sA2,sB2,nA2,&
-                & nB2,TENSOR1%SLSAO(I1)%selms,sA1,sB1,nA1,nB1,nOrbA1,nOrbB1)
-        ELSE
-           nullify(TENSOR_RHS%SLSAO(I2_RHS)%selms)
-           TENSOR_RHS%SLSAO(I2_RHS)%nelms=0
-        ENDIF
-        IF(CS_SCREEN)TENSOR_RHS%maxgab(1,jBatch) = TENSOR1%maxgab(iBatch,jBatch)
-        IF(PS_SCREEN)TENSOR_RHS%maxprimgab(1,jBatch) = TENSOR1%maxprimgab(iBatch,jBatch) 
-     ENDIF
-  ENDDO
-  IF(CS_SCREEN)call set_lst_maxgabelms(TENSOR_LHS)
-  IF(PS_SCREEN)call set_lst_maxprimgabelms(TENSOR_LHS)
-  IF(CS_SCREEN)call set_lst_maxgabelms(TENSOR_RHS)
-  IF(PS_SCREEN)call set_lst_maxprimgabelms(TENSOR_RHS)
-end SUBROUTINE build_singleBatchGab
-
-!> \brief copy an lstensor to a new lstensor
-!> \author T. Kjaergaard
-!> \date 2010
-!> \param TENSOR1 the original full slstensor
-!> \param TENSOR2 the new batch slstensor
-SUBROUTINE build_SingleSingleBatchGab(AOfull,AO1,AO2,ibatch,jbatch,dim1,dim2,TENSOR1,TENSOR_RHS)
-  implicit none
-  integer,intent(in) :: dim1,dim2
-  type(AOITEM),intent(in) :: AOfull,AO1,AO2
-  TYPE(LSTENSOR),intent(in)     :: TENSOR1    ! full,full
-  TYPE(LSTENSOR),intent(inout)  :: TENSOR_RHS ! batch,full
-  integer,intent(in)   :: iBatch,jBatch
-  !
-  INTEGER    :: I1,I2,dim,maxbat1,maxbat2
-  integer(kind=long) :: nmemsize
-  TYPE(SLSAOTENSOR),pointer    :: lsao1
-  TYPE(SLSAOTENSOR),pointer    :: lsao2
-  integer(kind=short),pointer     :: elms1(:),elms2(:)
-  integer(kind=short) :: maxelm1
-  integer :: iatom,jatom,ibatchloc,jbatchloc,I2_RHS!,nbast
-  logical :: CS_SCREEN,PS_SCREEN
-  integer :: sA1,sA2,sB1,sB2,nOrbA1,nOrbA2,nOrbB1,nOrbB2,I,J,nA2,nB2,nA1,nB1
-  CS_SCREEN = ASSOCIATED(TENSOR1%maxgab)
-  PS_SCREEN = ASSOCIATED(TENSOR1%maxprimgab)
-!  nbast = TENSOR1%nbast(1)
-  call lstensor_nullify(TENSOR_RHS)
-  call init_ps_lstensor(TENSOR_RHS,AO1,AO2,dim1,dim2,.FALSE.,6)
-  call LSTENSOR_mem_est(TENSOR_RHS,nmemsize)
-  call remove_mem_from_global(nmemsize)
-  IF(CS_SCREEN)THEN
-     nullify(TENSOR_RHS%maxgab)
-     call mem_alloc(TENSOR_RHS%maxgab,1,1)
-     TENSOR_RHS%maxgab(1,1)=shortzero
-  ENDIF
-  IF(PS_SCREEN)THEN
-     nullify(TENSOR_RHS%maxprimgab)
-     call mem_alloc(TENSOR_RHS%maxprimgab,1,1)
-     TENSOR_RHS%maxprimgab(1,1)=shortzero
-  ENDIF
-  call LSTENSOR_mem_est(TENSOR_RHS,nmemsize)
-  call add_mem_to_global(nmemsize)
-  iatom = AOfull%Batch(iBatch)%atom
-  IbatchLoc = AOfull%Batch(iBatch)%batch
-  jatom = AOfull%Batch(jBatch)%atom
-  JbatchLoc = AOfull%Batch(jBatch)%batch
-  I1 = TENSOR1%INDEX(iatom,jatom,1,1)
-  IF(I1.NE.0)THEN
-     maxBat1 = TENSOR1%SLSAO(I1)%maxBat
-     nOrbA1 = TENSOR1%SLSAO(I1)%nOrb(ibatchLoc)
-     nOrbB1 = TENSOR1%SLSAO(I1)%nOrb(jbatchLoc+maxBat1)
-     sA1 = TENSOR1%SLSAO(I1)%startLocalOrb(ibatchLoc)-1
-     sB1 = TENSOR1%SLSAO(I1)%startLocalOrb(jbatchLoc+maxBat1)-1
-     nA1 = TENSOR1%SLSAO(I1)%nLocal(1)
-     nB1 = TENSOR1%SLSAO(I1)%nLocal(2)
-     I2_RHS = TENSOR_RHS%INDEX(1,1,1,1)
-     IF(I2_RHS.EQ.0)call lsquit('I1,I2_RHS mismatch',-1)
-     maxBat2 = TENSOR_RHS%SLSAO(I2_RHS)%maxBat
-     sA2 = TENSOR_RHS%SLSAO(I2_RHS)%startLocalOrb(1)-1
-     sB2 = TENSOR_RHS%SLSAO(I2_RHS)%startLocalOrb(1+maxBat2)-1
-     nA2 = TENSOR_RHS%SLSAO(I2_RHS)%nLocal(1)
-     nB2 = TENSOR_RHS%SLSAO(I2_RHS)%nLocal(2)
-     IF(associated(TENSOR1%SLSAO(I1)%selms))THEN
-        call copy_batch_selms(TENSOR_RHS%SLSAO(I2_RHS)%selms,sA2,sB2,nA2,nB2,TENSOR1%SLSAO(I1)%selms,sA1,sB1,nA1,nB1,nOrbA1,nOrbB1)
-     ELSE
-        NULLIFY(TENSOR_RHS%SLSAO(I2_RHS)%selms)
-        TENSOR_RHS%SLSAO(I2_RHS)%nelms=0
-     ENDIF
-     IF(CS_SCREEN)TENSOR_RHS%maxgab(1,1) = TENSOR1%maxgab(iBatch,jBatch) 
-     IF(PS_SCREEN)TENSOR_RHS%maxprimgab(1,1) = TENSOR1%maxprimgab(iBatch,jBatch) 
-  ENDIF
-  TENSOR_RHS%maxgabelm = TENSOR_RHS%maxgab(1,1)
-  TENSOR_RHS%maxprimgabelm = TENSOR_RHS%maxprimgab(1,1) 
-end SUBROUTINE build_SingleSingleBatchGab
+!!$!> \brief copy an lstensor to a new lstensor
+!!$!> \author T. Kjaergaard
+!!$!> \date 2010
+!!$!> \param TENSOR1 the original full slstensor
+!!$!> \param TENSOR2 the new batch slstensor
+!!$SUBROUTINE build_singleBatchGab(AOfull,AO1,ibatch,nbatches,dim2,TENSOR1,TENSOR_LHS,TENSOR_RHS)
+!!$  implicit none
+!!$  integer,intent(in) :: dim2
+!!$  type(AOITEM),intent(in) :: AOfull
+!!$  type(AOITEM) :: AO1
+!!$  TYPE(LSTENSOR),intent(in)     :: TENSOR1    ! full,full
+!!$  TYPE(LSTENSOR),intent(inout)  :: TENSOR_LHS ! full,batch
+!!$  TYPE(LSTENSOR),intent(inout)  :: TENSOR_RHS ! batch,full
+!!$  integer,intent(in)   :: iBatch
+!!$  !
+!!$  INTEGER    :: I1,I2,dim,ielms,nbatches1,nbatches2,nbast
+!!$  INTEGER    :: nAngmomA,nAngmomB,nAngmomC,nAngmomD
+!!$  integer(kind=long) :: nmemsize
+!!$  TYPE(SLSAOTENSOR),pointer    :: lsao1
+!!$  TYPE(SLSAOTENSOR),pointer    :: lsao2
+!!$  integer(kind=short),pointer     :: elms1(:),elms2(:)
+!!$  integer(kind=short) :: maxelm1
+!!$  integer :: natomJ,jatom_old,jBatch2,jatom,natomI,JbatchLoc,nbatches
+!!$  integer :: iatom_old,iBatch2,iatom,jatom2,iatom2,IbatchLoc,I2_LHS,I2_RHS
+!!$  integer :: NIBAT,NJBAT,ibat,jbat,iBatchLoc2,jBatchLoc2,jbatch,maxbat1,maxbat2
+!!$  logical :: CS_SCREEN,PS_SCREEN
+!!$  integer :: sA1,sA2,sB1,sB2,nOrbA1,nOrbA2,nOrbB1,nOrbB2,I,J,nA2,nB2,nA1,nB1
+!!$  CS_SCREEN = ASSOCIATED(TENSOR1%maxgab)
+!!$  PS_SCREEN = ASSOCIATED(TENSOR1%maxprimgab)
+!!$  call lstensor_nullify(TENSOR_LHS)
+!!$  call lstensor_nullify(TENSOR_RHS)
+!!$  nbast = TENSOR1%nbast(1)
+!!$  call init_ps_lstensor(TENSOR_LHS,AOfull,AO1,nbast,dim2,.FALSE.,6)
+!!$  call init_ps_lstensor(TENSOR_RHS,AO1,AOfull,dim2,nbast,.FALSE.,6)
+!!$  call LSTENSOR_mem_est(TENSOR_LHS,nmemsize)
+!!$  call remove_mem_from_global(nmemsize)
+!!$  call LSTENSOR_mem_est(TENSOR_RHS,nmemsize)
+!!$  call remove_mem_from_global(nmemsize)
+!!$
+!!$  nbatches = TENSOR1%nbatches(1)
+!!$  dim = nbatches
+!!$  IF(CS_SCREEN)THEN
+!!$     nullify(TENSOR_LHS%maxgab)
+!!$     call mem_alloc(TENSOR_LHS%maxgab,nbatches,1)
+!!$     call ls_sizero(TENSOR_LHS%maxgab,dim)
+!!$     nullify(TENSOR_RHS%maxgab)
+!!$     call mem_alloc(TENSOR_RHS%maxgab,1,nbatches)
+!!$     call ls_sizero(TENSOR_RHS%maxgab,dim)
+!!$  ENDIF
+!!$  IF(PS_SCREEN)THEN
+!!$     nullify(TENSOR_LHS%maxprimgab)
+!!$     call mem_alloc(TENSOR_LHS%maxprimgab,nbatches,1)
+!!$     call ls_sizero(TENSOR_LHS%maxprimgab,dim)
+!!$     nullify(TENSOR_RHS%maxprimgab)
+!!$     call mem_alloc(TENSOR_RHS%maxprimgab,1,nbatches)
+!!$     call ls_sizero(TENSOR_RHS%maxprimgab,dim)
+!!$  ENDIF
+!!$  call LSTENSOR_mem_est(TENSOR_LHS,nmemsize)
+!!$  call add_mem_to_global(nmemsize)
+!!$  call LSTENSOR_mem_est(TENSOR_RHS,nmemsize)
+!!$  call add_mem_to_global(nmemsize)
+!!$
+!!$
+!!$  iatom = AOfull%Batch(iBatch)%atom
+!!$  IbatchLoc = AOfull%Batch(iBatch)%batch
+!!$
+!!$  DO jBatch=1,nbatches
+!!$     jatom = AOfull%Batch(jBatch)%atom
+!!$     JbatchLoc = AOfull%Batch(jBatch)%batch
+!!$
+!!$     I1 = TENSOR1%INDEX(iatom,jatom,1,1)
+!!$     IF(I1.NE.0)THEN
+!!$        I1 = TENSOR1%INDEX(jatom,iatom,1,1)
+!!$        IF(I1.EQ.0)call lsquit('GAB NOT SYM in buildbatchgab thksnjvd',-1)
+!!$        maxBat1 = TENSOR1%SLSAO(I1)%maxBat
+!!$        nOrbA1 = TENSOR1%SLSAO(I1)%nOrb(jbatchLoc)
+!!$        nOrbB1 = TENSOR1%SLSAO(I1)%nOrb(ibatchLoc+maxBat1)
+!!$        sA1 = TENSOR1%SLSAO(I1)%startLocalOrb(jbatchLoc)-1
+!!$        sB1 = TENSOR1%SLSAO(I1)%startLocalOrb(ibatchLoc+maxBat1)-1
+!!$        nA1 = TENSOR1%SLSAO(I1)%nLocal(1)
+!!$        nB1 = TENSOR1%SLSAO(I1)%nLocal(2)
+!!$
+!!$        !LHS
+!!$        I2_LHS = TENSOR_LHS%INDEX(jatom,1,1,1)
+!!$        IF(I2_LHS.EQ.0)call lsquit('I1,I2_LHS mismatch',-1)
+!!$        maxBat2 = TENSOR_LHS%SLSAO(I2_LHS)%maxBat
+!!$        sA2 = TENSOR_LHS%SLSAO(I2_LHS)%startLocalOrb(jbatchLoc)-1
+!!$        sB2 = TENSOR_LHS%SLSAO(I2_LHS)%startLocalOrb(1+maxBat2)-1
+!!$        nA2 = TENSOR_LHS%SLSAO(I2_LHS)%nLocal(1)
+!!$        nB2 = TENSOR_LHS%SLSAO(I2_LHS)%nLocal(2)
+!!$        call copy_batch_selms(TENSOR_LHS%SLSAO(I2_LHS)%selms,sA2,sB2,nA2,&
+!!$             & nB2,TENSOR1%SLSAO(I1)%selms,sA1,sB1,nA1,nB1,nOrbA1,nOrbB1)
+!!$
+!!$        IF(CS_SCREEN)TENSOR_LHS%maxgab(jBatch,1) = TENSOR1%maxgab(jBatch,iBatch)
+!!$        IF(PS_SCREEN)TENSOR_LHS%maxprimgab(jBatch,1) = TENSOR1%maxprimgab(jBatch,iBatch) 
+!!$
+!!$        I1 = TENSOR1%INDEX(iatom,jatom,1,1)
+!!$        maxBat1 = TENSOR1%SLSAO(I1)%maxBat
+!!$        nOrbA1 = TENSOR1%SLSAO(I1)%nOrb(ibatchLoc)
+!!$        nOrbB1 = TENSOR1%SLSAO(I1)%nOrb(jbatchLoc+maxbat1)
+!!$        sA1 = TENSOR1%SLSAO(I1)%startLocalOrb(ibatchLoc)-1
+!!$        sB1 = TENSOR1%SLSAO(I1)%startLocalOrb(jbatchLoc+maxbat1)-1
+!!$        nA1 = TENSOR1%SLSAO(I1)%nLocal(1)
+!!$        nB1 = TENSOR1%SLSAO(I1)%nLocal(2)
+!!$
+!!$
+!!$        I2_RHS = TENSOR_RHS%INDEX(1,jatom,1,1)
+!!$        IF(I2_RHS.EQ.0)call lsquit('I1,I2_RHS mismatch',-1)
+!!$        maxBat2 = TENSOR_RHS%SLSAO(I2_RHS)%maxBat
+!!$        sA2 = TENSOR_RHS%SLSAO(I2_RHS)%startLocalOrb(1)-1
+!!$        sB2 = TENSOR_RHS%SLSAO(I2_RHS)%startLocalOrb(jbatchLoc+maxbat2)-1
+!!$        nA2 = TENSOR_RHS%SLSAO(I2_RHS)%nLocal(1)
+!!$        nB2 = TENSOR_RHS%SLSAO(I2_RHS)%nLocal(2)
+!!$        IF(associated(TENSOR1%SLSAO(I1)%selms))THEN
+!!$           call copy_batch_selms(TENSOR_RHS%SLSAO(I2_RHS)%selms,sA2,sB2,nA2,&
+!!$                & nB2,TENSOR1%SLSAO(I1)%selms,sA1,sB1,nA1,nB1,nOrbA1,nOrbB1)
+!!$        ELSE
+!!$           nullify(TENSOR_RHS%SLSAO(I2_RHS)%selms)
+!!$           TENSOR_RHS%SLSAO(I2_RHS)%nelms=0
+!!$        ENDIF
+!!$        IF(CS_SCREEN)TENSOR_RHS%maxgab(1,jBatch) = TENSOR1%maxgab(iBatch,jBatch)
+!!$        IF(PS_SCREEN)TENSOR_RHS%maxprimgab(1,jBatch) = TENSOR1%maxprimgab(iBatch,jBatch) 
+!!$     ENDIF
+!!$  ENDDO
+!!$  IF(CS_SCREEN)call set_lst_maxgabelms(TENSOR_LHS)
+!!$  IF(PS_SCREEN)call set_lst_maxprimgabelms(TENSOR_LHS)
+!!$  IF(CS_SCREEN)call set_lst_maxgabelms(TENSOR_RHS)
+!!$  IF(PS_SCREEN)call set_lst_maxprimgabelms(TENSOR_RHS)
+!!$end SUBROUTINE build_singleBatchGab
+!!$
+!!$!> \brief copy an lstensor to a new lstensor
+!!$!> \author T. Kjaergaard
+!!$!> \date 2010
+!!$!> \param TENSOR1 the original full slstensor
+!!$!> \param TENSOR2 the new batch slstensor
+!!$SUBROUTINE build_SingleSingleBatchGab(AOfull,AO1,AO2,ibatch,jbatch,dim1,dim2,TENSOR1,TENSOR_RHS)
+!!$  implicit none
+!!$  integer,intent(in) :: dim1,dim2
+!!$  type(AOITEM),intent(in) :: AOfull,AO1,AO2
+!!$  TYPE(LSTENSOR),intent(in)     :: TENSOR1    ! full,full
+!!$  TYPE(LSTENSOR),intent(inout)  :: TENSOR_RHS ! batch,full
+!!$  integer,intent(in)   :: iBatch,jBatch
+!!$  !
+!!$  INTEGER    :: I1,I2,dim,maxbat1,maxbat2
+!!$  integer(kind=long) :: nmemsize
+!!$  TYPE(SLSAOTENSOR),pointer    :: lsao1
+!!$  TYPE(SLSAOTENSOR),pointer    :: lsao2
+!!$  integer(kind=short),pointer     :: elms1(:),elms2(:)
+!!$  integer(kind=short) :: maxelm1
+!!$  integer :: iatom,jatom,ibatchloc,jbatchloc,I2_RHS!,nbast
+!!$  logical :: CS_SCREEN,PS_SCREEN
+!!$  integer :: sA1,sA2,sB1,sB2,nOrbA1,nOrbA2,nOrbB1,nOrbB2,I,J,nA2,nB2,nA1,nB1
+!!$  CS_SCREEN = ASSOCIATED(TENSOR1%maxgab)
+!!$  PS_SCREEN = ASSOCIATED(TENSOR1%maxprimgab)
+!!$!  nbast = TENSOR1%nbast(1)
+!!$  call lstensor_nullify(TENSOR_RHS)
+!!$  call init_ps_lstensor(TENSOR_RHS,AO1,AO2,dim1,dim2,.FALSE.,6)
+!!$  call LSTENSOR_mem_est(TENSOR_RHS,nmemsize)
+!!$  call remove_mem_from_global(nmemsize)
+!!$  IF(CS_SCREEN)THEN
+!!$     nullify(TENSOR_RHS%maxgab)
+!!$     call mem_alloc(TENSOR_RHS%maxgab,1,1)
+!!$     TENSOR_RHS%maxgab(1,1)=shortzero
+!!$  ENDIF
+!!$  IF(PS_SCREEN)THEN
+!!$     nullify(TENSOR_RHS%maxprimgab)
+!!$     call mem_alloc(TENSOR_RHS%maxprimgab,1,1)
+!!$     TENSOR_RHS%maxprimgab(1,1)=shortzero
+!!$  ENDIF
+!!$  call LSTENSOR_mem_est(TENSOR_RHS,nmemsize)
+!!$  call add_mem_to_global(nmemsize)
+!!$  iatom = AOfull%Batch(iBatch)%atom
+!!$  IbatchLoc = AOfull%Batch(iBatch)%batch
+!!$  jatom = AOfull%Batch(jBatch)%atom
+!!$  JbatchLoc = AOfull%Batch(jBatch)%batch
+!!$  I1 = TENSOR1%INDEX(iatom,jatom,1,1)
+!!$  IF(I1.NE.0)THEN
+!!$     maxBat1 = TENSOR1%SLSAO(I1)%maxBat
+!!$     nOrbA1 = TENSOR1%SLSAO(I1)%nOrb(ibatchLoc)
+!!$     nOrbB1 = TENSOR1%SLSAO(I1)%nOrb(jbatchLoc+maxBat1)
+!!$     sA1 = TENSOR1%SLSAO(I1)%startLocalOrb(ibatchLoc)-1
+!!$     sB1 = TENSOR1%SLSAO(I1)%startLocalOrb(jbatchLoc+maxBat1)-1
+!!$     nA1 = TENSOR1%SLSAO(I1)%nLocal(1)
+!!$     nB1 = TENSOR1%SLSAO(I1)%nLocal(2)
+!!$     I2_RHS = TENSOR_RHS%INDEX(1,1,1,1)
+!!$     IF(I2_RHS.EQ.0)call lsquit('I1,I2_RHS mismatch',-1)
+!!$     maxBat2 = TENSOR_RHS%SLSAO(I2_RHS)%maxBat
+!!$     sA2 = TENSOR_RHS%SLSAO(I2_RHS)%startLocalOrb(1)-1
+!!$     sB2 = TENSOR_RHS%SLSAO(I2_RHS)%startLocalOrb(1+maxBat2)-1
+!!$     nA2 = TENSOR_RHS%SLSAO(I2_RHS)%nLocal(1)
+!!$     nB2 = TENSOR_RHS%SLSAO(I2_RHS)%nLocal(2)
+!!$     IF(associated(TENSOR1%SLSAO(I1)%selms))THEN
+!!$        call copy_batch_selms(TENSOR_RHS%SLSAO(I2_RHS)%selms,sA2,sB2,nA2,nB2,TENSOR1%SLSAO(I1)%selms,sA1,sB1,nA1,nB1,nOrbA1,nOrbB1)
+!!$     ELSE
+!!$        NULLIFY(TENSOR_RHS%SLSAO(I2_RHS)%selms)
+!!$        TENSOR_RHS%SLSAO(I2_RHS)%nelms=0
+!!$     ENDIF
+!!$     IF(CS_SCREEN)TENSOR_RHS%maxgab(1,1) = TENSOR1%maxgab(iBatch,jBatch) 
+!!$     IF(PS_SCREEN)TENSOR_RHS%maxprimgab(1,1) = TENSOR1%maxprimgab(iBatch,jBatch) 
+!!$  ENDIF
+!!$  TENSOR_RHS%maxgabelm = TENSOR_RHS%maxgab(1,1)
+!!$  TENSOR_RHS%maxprimgabelm = TENSOR_RHS%maxprimgab(1,1) 
+!!$end SUBROUTINE build_SingleSingleBatchGab
 
 !!$Subroutine cleanup_gabmatrix(GAB,CS_THRLOG,CS_SCREEN,PS_SCREEN,lupri)
 !!$  implicit none

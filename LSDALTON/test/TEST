@@ -123,8 +123,8 @@ LSDALTON="linsca/lsdalton_dft_ssfgrid
   LSint/LSDALTON_donotsavegab
   LSint/LSDALTON_INCREMDALINK
   LSint/LSDALTON_SR_EXCHANGE
-  LSint/LSDALTON_uncontAObatch
   LSint/LSDALTON_LSlib"
+#  LSint/LSDALTON_uncontAObatch test unreleaseable code. 
 
 RSP="LSresponse/LSresponse_HF_alpha
   LSresponse/LSresponse_HF_alpha_aK
@@ -147,6 +147,7 @@ RSP="LSresponse/LSresponse_HF_alpha
   LSresponse/LSresponse_DFT_dipole
   LSresponse/LSresponse_DFT_esd
   LSresponse/LSresponse_DFT_esg
+  LSresponse/LSresponse_DFT_esg_LDA
   LSresponse/LSresponse_DFT_dtpa
   LSresponse/LSresponse_DFT_molgra
   LSresponse/LSresponse_DFT_opa
@@ -175,7 +176,7 @@ DDYN="ddynam/HCN_ddyn
 
 DEC="dectests/arraytest
      dectests/reordertest
-     dectests/fullmp2
+     dectests/fullmp2_energy
      dectests/fullmp2_f12
      dectests/fullmp2_local_f12
      dectests/fullccsd_f12
