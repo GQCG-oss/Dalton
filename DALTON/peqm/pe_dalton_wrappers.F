@@ -487,10 +487,10 @@
 !           stop 'ERROR: PE-MCSCF response not implemented.'
 !       end if
 
-!        if (ncsim > 0) then
-!            call pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,
-!     &                     udvtr, dvtr, dtv, dtvtr, scvecs, wrk, nwrk)
-!        end if
+        if (ncsim > 0) then
+            call pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,
+     &                     udvtr, dvtr, dtv, dtvtr, scvecs, wrk, nwrk)
+        end if
 
         if (nosim > 0) then
             call pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx, 
@@ -505,6 +505,9 @@
 !
        subroutine pe_rsplnc(ncsim, bcvecs, cref, cmo, cindx, udv, dv,
      &                      udvtr, dvtr, dtv, dtvtr, scvecs, wrk, nwrk)
+
+         use pe_variables, only: pe_polar
+         use polarizable_embedding, only: pe_master
  
          implicit none
 !
@@ -514,9 +517,13 @@
 #include "inftap.h"
 #include "wrkrsp.h"
 #include "inforb.h"
+#include "qrinf.h"
+#include "infvar.h" 
 !
-! Used from common: kzyvar n2ashx
+! Used from common: n2ashx, kzyvar, kzconf, ncref, maxwop
+      integer :: i, j
       integer :: ncsim, nwrk
+       
       real*8, dimension(*) :: bcvecs, cref, cmo, cindx, udv, dv 
       real*8, dimension(*) :: udvtr, dvtr
       real*8, dimension(n2ashx,*) ::  dtv
@@ -524,13 +531,87 @@
       real*8, dimension(kzyvar,*) :: scvecs
       real*8, dimension(nwrk) :: wrk
 
+      real*8 :: ovlap, solelm
+      real*8, dimension(:,:), allocatable :: udtv, udtvao, fxcs, fxcacs
+      real*8, dimension(:), allocatable :: fdtvaos, fxcaos
+      real*8, dimension(:), allocatable :: tfxc, tfxcacs 
       real*8, dimension(:), allocatable :: fpemo, fupemo
 
       logical :: lexist, lopen
       logical :: fndlab
+      logical :: tdm, norho2
+
+      lopen = .false.
+      tdm = .true.
+      norho2 = .true.
+
+      
+      call qenter('pe_rsplnc')
+
+      allocate(fxcs(nnorbx,ncsim))
+      allocate(fxcacs(nnashx,ncsim))
+      allocate(tfxc(ncsim))
+      allocate(tfxcacs(ncsim))
+
+      !-----------------------------------
+      ! Fxc = R*(<0(L)|Fe|0> + <0|Fe|0(R)>)Fe
+      !-----------------------------------
+      if (pe_polar) then
+         call getref(cref, ncref)
+         ! ...Construct <0(L)|...|0> + <0|...|0(R)>                       
+         allocate(udtv(n2ashx,ncsim))        
+
+
+         call rsptdm(ncsim,irefsy,ksymst,ncref,kzconf,cref,
+     &                 bcvecs,udtv,dummy,0,0,.true.,.true.,
+     &                 cindx,wrk,1,nwrk)
+         udtv = -1.0d0*udtv          
+!     SUBROUTINE RSPTDM(NCSIM,ILRESY,IRSYM,NCLREF,NCRDIM,CLREF,
+!    *                 CR, RHO1,RHO2, ISPIN1,ISPIN2,TDM,NORHO2,
+!    *                 XINDX,WORK,KFREE,LFREE)
+
+                  
+         if ( ncsim > 0 ) then         
+            allocate(fdtvaos(nnbasx*ncsim))
+            allocate(udtvao(n2basx,ncsim))
+            do i = 1, ncsim
+               j = (i - 1) * nnbasx + 1
+               call fckden2(.false.,.true., dummy, udtvao(:,i), cmo,
+     &                      udtv(:,i), wrk, nwrk)
+               call dgefsp(nbast, udtvao(:,i), fdtvaos(j))
+!               write(lupri,*) 'udtvao matrix'
+!               call output(udtvao,1,nbast,1,nbast,nbast,nbast,1,lupri)
+            deallocate(udtv,udtvao)
+            end do
+         end if
+         
+         allocate(fxcaos(ncsim*nnbasx))
+         call pe_master(runtype='response', denmats=fdtvaos,
+     &                 fckmats=fxcaos, nmats=ncsim, dalwrk=wrk(1:nwrk))
+         deallocate(fdtvaos)           
+!           fxcaos = 2.0d0 * fxcaos
+
+         do i = 1, ncsim
+            j = (i - 1) * nnbasx + 1
+            call uthu(fxcaos(j), fxcs(:,i), cmo, wrk, nbast, norbt)
+            write(lupri,*)'fxcs matrix rsp_pelnc' 
+            call outpak(fxcs,norbt,1,lupri) 
+            if (nasht > 0) call getac2(fxcs(:,i), fxcacs(:,i))
+!                if (trplet) then
+!                    tfxc = solelm(dvtr, fxcacs(:,i), fxcs(:,i), tfxcac)
+!                    tfxc = tfxcac
+!            else
+            tfxc = solelm(dv, fxcacs(:,i), fxcs(:,i), tfxcacs(i))
+!            end if 
+         end do
+ 
+        deallocate(fxcaos)
+
+      end if
+
 
       !---------------------------------------
-      ! Fg = V - <0|F|0>Fe from file
+      ! Fg = V - <0|F|0>Fe -unpack into fupemo
       !---------------------------------------
       if (.not. tdhf) then          
           allocate(fpemo(nnorbx))
@@ -543,13 +624,15 @@
           call mollab('PETMAT  ', lusifc, lupri)
           call readt(lusifc, nnorbx, fpemo)
           if (lopen) call gpclose(lusifc, 'KEEP')
-          allocate(fupemo(n2orbx))
-          call dsptsi(norbt, fpemo, fupemo)
-          deallocate(fpemo)
-        end if
+              allocate(fupemo(n2orbx))
+              call dsptsi(norbt, fpemo, fupemo)
+              deallocate(fpemo)
+!          end if
+          deallocate(fupemo)
+      end if
 
+      call qexit('pe_rsplnc')
 
- 
       end subroutine pe_rsplnc
 !
 !------------------------------------------------------------------------------
@@ -626,6 +709,7 @@
             call dsptsi(norbt, fpemo, fupemo)
             deallocate(fpemo)
         end if
+
 
         allocate(ubovecs(n2orbx,nosim))
         call rspzym(nosim, bovecs, ubovecs)

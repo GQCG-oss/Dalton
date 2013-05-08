@@ -10,7 +10,7 @@
 !...   used, copied, transmitted, or stored only in accord with that
 !...   written licence.
 !...
-!...   In particular, no part of the source code or compiled modules may
+!!...   In particular, no part of the source code or compiled modules may
 !...   be distributed outside the research group of the licence holder.
 !...   This means also that persons (e.g. post-docs) leaving the research
 !...   group of the licence holder may not take any part of Dalton,
@@ -264,7 +264,6 @@ C        2.d Fel^(1) operator in MO basis
          CALL UTHU(WRK(KMATAO + 1*NNBASX),WRK(KMATMO + 1*NNORBT),
      &             WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
-
          CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
      &             WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
@@ -319,18 +318,21 @@ C         start from x MM center of next root
 
       DO ICSIM = 1, NCSIM
 
-        NDIM=3*NNZAL
-        IF (MMMAT) THEN
-          CALL DSPMV('L',NDIM,D1,WRK(KINVMAT),
-     &               WRK(KEFIELD + (ICSIM-1)*3*NNZAL),1,D0,
-     &               WRK(KINDMOM + (ICSIM-1)*3*NNZAL),1)
-        ELSE IF (MMITER) THEN
-          IOPT = 2 ! Do not read from file any previuos induced moments
-          CALL F2QMMM(WRK(KEFIELD + 3*(ICSIM-1)*NNZAL),NDIM,
-     &                WRK(KINDMOM + 3*(ICSIM-1)*NNZAL),
-     &                WRK(KWRK2),LWRK2,IOPT,IPQMMM)
-        ENDIF
-
+         NDIM=3*NNZAL
+         IF (MMMAT) THEN
+             CALL DSPMV('L',NDIM,D1,WRK(KINVMAT),
+     &                   WRK(KEFIELD + (ICSIM-1)*3*NNZAL),1,D0,
+     &                   WRK(KINDMOM + (ICSIM-1)*3*NNZAL),1)
+         ELSE IF (MMITER) THEN
+             IOPT = 2 ! Do not read from file any previuos induced moments
+             CALL F2QMMM(WRK(KEFIELD + 3*(ICSIM-1)*NNZAL),NDIM,
+     &                   WRK(KINDMOM + 3*(ICSIM-1)*NNZAL),
+     &                   WRK(KWRK2),LWRK2,IOPT,IPQMMM)
+         ENDIF
+        
+          WRITE(LUPRI,*)'Induced moments'
+          CALL OUTPUT(WRK(KINDMOM),1,NDIM,1,1,1,1,1,LUPRI)
+   
       END DO ! ICSIM
 
 C     2.f  Make F(el) and daxpy first x, then y and then z
@@ -358,10 +360,12 @@ C       2.g Fel^(1) operator in AO basis
 
         RUNQM3 = .FALSE.
 
+
 C       2.h Fel(1) operator in MO basis
 
         CALL UTHU(WRK(KMATAO),WRK(KMATMO),WRK(KUCMO),
      &             WRK(KWRK2),NBAST,NORBT)
+         
 
         CALL UTHU(WRK(KMATAO + 1*NNBASX),WRK(KMATMO + 1*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
@@ -369,14 +373,11 @@ C       2.h Fel(1) operator in MO basis
         CALL UTHU(WRK(KMATAO + 2*NNBASX),WRK(KMATMO + 2*NNORBT),
      &            WRK(KUCMO),WRK(KWRK2),NBAST,NORBT)
 
-
           LCI = 0 ! alternative set LCI = 3*NNZAL*(ICSIM-1)
 
           DO ICSIM = 1,NCSIM
 
             FACx = -WRK(KINDMOM + LRI + 0 + LCI)
-
-
 
             CALL DAXPY(NNORBT,FACx,WRK(KMATMO),1,
      &             WRK(KFXC + (ICSIM-1)*NNORBT),1)
@@ -399,6 +400,15 @@ C       2.h Fel(1) operator in MO basis
             LCI = LCI + 3*NNZAL
         END DO
         LRI = LRI + 3
+      END DO
+                   
+      DO ICSIM = 1,NCSIM
+         WRITE(LUPRI,*)'FXC Operator'
+         CALL OUTPAK(WRK(KFXC),NORBT,1,LUPRI) 
+         IF (NASHT .GT. 0) THEN
+             WRITE(LUPRI,*)'FXC Operator (active part)'
+             CALL OUTPAK(WRK(KFXCAC),NASHX,1,LUPRI)
+         END IF
       END DO
 
       DO ICSIM = 1,NCSIM
@@ -879,11 +889,8 @@ C--------------------------------------------
             WRK(KOVLP-1+IOSIM) = D0
          END IF
   
-            WRITE (LUPRI,*)'KRXYO QMMMLNO'
-            CALL OUTPUT(WRK(KRXYO),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
-
             CALL GETACQ(WRK(JRXYO),WRK(JRXYOA))
-            TXYO   = SLVQLM(UDV,WRK(JRXYOA),WRK(JRXYO),TXYOAC)  !edh: F(xo) = KRXYO ?
+            TXYO   = SLVQLM(UDV,WRK(JRXYOA),WRK(JRXYO),TXYOAC)  
             WRK(KTXYOA-1+IOSIM) = TXYOAC
  
             WRITE (LUPRI,*)'TXYOAC', TXYOAC
