@@ -175,7 +175,7 @@ DDYN="ddynam/HCN_ddyn
 
 DEC="dectests/arraytest
      dectests/reordertest
-     dectests/fullmp2
+     dectests/fullmp2_energy
      dectests/fullmp2_f12
      dectests/fullmp2_local_f12
      dectests/fullccsd_f12
