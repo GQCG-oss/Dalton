@@ -2,14 +2,17 @@
 \chapter{List of \lsdalton\ keywords}\label{ch:keywords}
 
 In this chapter, we describe all keywords for the different sections
-of the DALTON.INP file. In general, DALTON.INP is divided in four different sections under
+of the DALTON.INP file. In general, DALTON.INP is divided into the following sections under
 the headlines:
 \begin{itemize}
 \item **INTEGRAL contain settings for the calculation of integrals (optional)
 \item **WAVE FUNCTIONS contains info about the wave function (e.g. HF/DFT) and settings
 for optimization of the wave function (mandatory)
 \item **OPTIMIZE contains settings for geometry optimization (optional)
-\item **RESPONS contains info about requested properties (optional)
+\item **RESPONS contains info about requested molecular properties for HF and DFT (optional)
+\item **DEC \emph{or} **CC contains info about MP2 and coupled-cluster calculations (optional)
+\item **PLT contains information about construction of *.plt files which may be used to visualize densities and orbitals using e.g. the Chimera program~\cite{chimera}.
+\item **PLTGRID contains information about grid used for construction of *.plt files.
 \end{itemize}
 Each of these sections may contain subsections, indicated by a single asterisk. DALTON.INP
 should always end with *END OF INPUT. 
@@ -1468,4 +1471,259 @@ are calculated. \newline
 Input is identical to .EXSTATES under *ESDIPOLE.
 \end{description}
 
+
+\section{**DEC and **CC}\label{sec:dec}
+Correlated coupled-cluster (CC) calculations using the Divide-Expand-Consolidate (DEC) scheme~\cite{dec1,dec2,dec3,dec4,dec5,dec6}, where
+local orbitals are used to carry out the correlated calculation on a large molecular system in terms of many small local calculations.
+Formally, the computational time for the DEC scheme scales linearly with system size.
+Currently only second-order M{\o}ller-Plesset (MP2) calculations (energy, density, and geometry optimization) are available using the DEC scheme. 
+DEC calculations are invoked using the **DEC keyword.
+
+Furthermore, conventional coupled-cluster energies for the MP2, CC2, and CCSD models are available using the **CC keyword. The computational time for these implementations scale with the system size to the fifth, fifth, and sixth power for MP2, CC2, and CCSD, respectively.
+
+The **DEC and **CC implementations employ massive parallelism and will be highly effective only if many computing nodes are available.
+
+\textbf{Special note}: It is highly recommended that the memory available for the calculation is specified in the input, see \Key{MEMORY} keyword below.
+
+The **DEC section uses local orbitals by default, while the **CC section uses canonical orbitals by default.
+Below keywords for the **DEC section and **CC sections and relevant test cases are given. 
+
+\vspace{1 cm}
+\noindent
+\textbf{**DEC input keywords} (only MP2 model):
+
+\begin{description}
+\item[\Key{FOT}]\verb| | \newline
+\verb|<FOT level>|\newline
+Level for fragment optimization threshold (FOT). The FOT defines the precision of a DEC calculation compared
+to a conventional calculation~\cite{dec1,dec2,dec3,dec4,dec5,dec6}.
+The input is an integer which defines the negative power of the FOT; e.g. if FOT level=5, then the FOT=$10^{-5}$ a.u.
+Thus, the higher the FOT, the smaller is the error of the DEC calculation compared to a conventional calculation (and of course, the more expensive is the calculation). Possible values: 1,2,3,4,5,6,7,8. Default value: 4.
+
+
+\item[\Key{MEMORY}] \verb| | \newline
+\verb|<Memory in gigabytes>| \newline
+It is highly recommended to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
+If this keyword is not set, the program will try to estimate the available memory using a system call. While this will usually work fine it might fail on some architectures.
+(This keyword can also be used in **CC section).
+
+
+\item[\Key{PAIRTHR}] \verb| | \newline
+\verb|<Pair distance threshold (in a.u.)>|\newline
+Pair distance threshold (in a.u.) beyond which pair fragments are omitted from the calculation. By default this value is adapted to the FOT.
+
+\item[\Key{PAIRTHRANGSTROM}]  \verb| | \newline
+\verb|<Pair distance threshold (in Angstrom)>|\newline
+Pair distance threshold (in {\AA}) beyond which pair fragments are omitted from the calculation. By default this value is adapted to the FOT.
+
+
+\item[\Key{RESTART}] \verb| | \newline
+Restart unfinished DEC calculation. Requires that .info files are present in the folder where the calculation is restarted.
+
+
+\item[\Key{NOTABSORBH}] \verb| | \newline
+By default orbitals originally assigned to hydrogen atoms are reassigned to the nearest heavy atom. This reassigning can be turned off by invoking this keyword.
+
+\item[\Key{FROZENCORE}]  \verb| | \newline
+Use the frozen core approximation (can also be used in **CC section).
+
+
+\item[\Key{DENSITY}] \verb| | \newline
+Calculate DEC-MP2 density matrix~\cite{dec5} (stored in MP2.dens). The MP2 electric dipole moment is also calculated if this keyword is invoked.
+
+\item[\Key{GRADIENT}] \verb| | \newline
+Calculate MP2 molecular gradient~\cite{dec5} at input geometry (for geometry optimization, see test case examples below). The MP2 density and electric dipole moment is also calculated if this keyword is invoked.
+
+\item[\Key{KAPPATHR}] \verb| | \newline
+Threshold for $\bar{kappa}$ multiplier equations solved when DEC-MP2 molecular gradiient is calculation. Default value is 10$^{-4}$.
+
+
+\item[\Key{CANONICAL}] \verb| | \newline
+Use canonical orbitals. This is only recommended for advanced users for testing purposes. In general, the DEC scheme is only meaningful for local orbitals.
+
+
+\end{description}
+
+\vspace{1 cm}
+\noindent
+\textbf{Example test cases for **DEC calculations}: \newline
+These test cases illustrate the main features of the DEC scheme. The test cases are located in LSDALTON/test/dectests.
+
+\begin{itemize}
+\item
+\textit{decmp2\_energy}: Calculate DEC-MP2 energy.
+\item
+\textit{decmp2\_density}: Calculate DEC-MP2 density matrix and electric dipole moment.
+\item
+\textit{decmp2\_gradient}: Calculate DEC-MP2 molecular gradient.
+\item
+\textit{decmp2\_geoopt}: Carry out DEC-MP2 geometry optization. Note that the geometry optimization is invoked by the **OPTIMIZE section, while the **DEC section specifies that the geometry optimization should use DEC-MP2 energies and molecular gradients. The DEC-MP2 geometry optimization will automatically estimate the intrinsic energy error of the DEC calculation. If this error is larger than the difference between two geometry, the FOT will be increased to get a more accurate energy and gradient in the next iteration.
+\end{itemize}
+
+
+\vspace{1 cm}
+\noindent
+\textbf{**CC input keywords}:
+
+\begin{description}
+
+\item[\Key{MP2}]\verb| | \newline
+Use MP2 model. This gives the canonical MP2 energy and is not optimized for parallel performance. It is only intended to be used for benchmarking DEC-MP2 calculations on relatively small molecular systems.
+
+\item[\Key{CC2}]\verb| | \newline
+Use CC2 model.
+
+\item[\Key{CCSD}]\verb| | \newline
+Use CCSD model.
+
+\item[\Key{FROZENCORE}]  \verb| | \newline
+Use the frozen core approximation (can also be used in **DEC section).
+
+\item[\Key{MEMORY}] \verb| | \newline
+\verb|<Memory in gigabytes>| \newline
+It is highly recommended to specify the memory (in gigabytes) available for the calculation using this keyword! For an MPI run this is the memory available for each MPI process.
+If this keyword is not set, the program will try to estimate the available memory using a system call. While this will usually work fine it might fail on some architectures.
+(This keyword can also be used in **DEC section).
+
+\item[\Key{CCMAXITER}]  \verb| | \newline
+Maximum number of iterations in CC solver.
+
+\item[\Key{CCTHR}]  \verb| | \newline
+Convergence threshold for residual norm in CC solver.
+
+
+\item[\Key{SUBSIZE}]  \verb| | \newline
+Number of previous vectors to store in CROP scheme~\cite{crop} for CC solver.
+
+\item[\Key{CCSDSAFE}]  \verb| | \newline
+Save CCSD amplitudes to be able to restart full CCSD calculation.
+
+
+\end{description}
+
+
+\vspace{1 cm}
+\noindent
+\textbf{Example test cases for **CC calculations}: \newline
+The test cases are located in LSDALTON/test/dectests.
+
+\begin{itemize}
+\item
+\textit{fullmp2}: Calculate conventional canonical MP2 energy.
+\end{itemize}
+
+
+
+
+
+\section{**PLT}\label{sec:plt}
+Generation of .plt files which may be used to visualize densities, orbitals, and electrostatic potentials by calculating these at specific points in space.
+The .plt files can be visualized e.g. using the Chimera program~\cite{chimera}.
+
+\textbf{Important note}: This section assumes that an LSDALTON calculation has already been carried out to generate files containing
+density matrix elements or molecular orbital coefficients. The .plt files can then be generated by running a new calculation where the DALTON.INP file has been modified as exemplified below.
+
+The density matrix from HF and DFT calculation are saved in a file \emph{dens.restart}, while the MP2 density is saved in the file \emph{MP2.dens} (if requested, see **DEC section).
+The canonical MO coefficients are saved in the file \emph{cmo\_orbitals.u}, while localized molecular orbitals are saved in a file \emph{lcm\_orbitals.u} (if requested).
+The definition of the grid points is described in the **PLTGRID section.
+
+KK fixme: Insert reference to orbital section here!
+
+\begin{description}
+\item[\Key{INPUT}] \verb| | \newline
+\verb|<Name of input file>| \newline
+The name of the input file containing density matrix elements or orbital coefficients. Possible input files include \emph{dens.restart}, \emph{MP2.dens}, \emph{cmo\_orbitals.u}, and \emph{lcm\_orbitals.u}.
+
+\item[\Key{OUTPUT}] \verb| | \newline
+\verb|<Name of output file>| \newline
+The name of the output plt-file where the calculated values at each grid point are saved. Examples are given below.
+
+\item[\Key{DENS}]\verb| | \newline
+Construct .plt file for electron density at grid points.
+For example to calculate electron density from the file  \emph{dens.restart} and save information in file  dens.plt,
+insert the following section in the DALTON.INP file used to generate the  \emph{dens.restart} file in the first place:
+ \newline
+**PLT \newline
+.INPUT \newline
+dens.restart \newline
+.OUTPUT \newline
+dens.plt \newline
+.DENS \newline
+
+\item[\Key{EP}]\verb| | \newline
+Construct .plt file for electrostatic potential grid points based on input density matrix.
+For example to calculate electrostatic potential from the density in the the file  \emph{dens.restart} and save information in file  ep.plt,
+insert the following section in the DALTON.INP file used to generate the  \emph{dens.restart} file in the first place:
+ \newline
+**PLT \newline
+.INPUT \newline
+dens.restart \newline
+.OUTPUT \newline
+ep.plt \newline
+.EP \newline
+
+
+\item[\Key{ORB}]\verb| | \newline
+\verb|<Orbital index>|\newline
+Construct .plt file for specific orbital at grid points. For example to calculate values of orbital number 8 at grid points from the file  \emph{lcm\_orbitals.u} and save information in file orb8.plt, insert the following section in the DALTON.INP file used to generate the  \emph{lcm\_orbitals.u} file in the first place: \newline
+**PLT \newline
+.INPUT \newline
+lcm\_orbitals.u \newline
+.OUTPUT \newline
+orb8.plt \newline
+.ORB \newline
+8
+
+\item[\Key{CHARGEDIST}]\verb| | \newline
+\verb|<Orbital index 1     Orbital index 2>|\newline
+Construct .plt file for charge distribution of two orbitals at grid points. 
+For example to calculate charge distribution between orbitals 5 and 8 at grid points from the file  \emph{lcm\_orbitals.u} and save information in file cd\_5\_8.plt,
+insert the following section in the DALTON.INP file used to generate the  \emph{lcm\_orbitals.u} file in the first place::
+ \newline
+**PLT \newline
+.INPUT \newline
+lcm\_orbitals.u \newline
+.OUTPUT \newline
+ cd\_5\_8.plt \newline
+.CHARGEDIST \newline
+5  8
+
+\end{description}
+
+
+
+\section{**PLTGRID}\label{sec:pltgrid}
+Definition of 3-dimensinal grid used for generation of .plt files in **PLT section.
+The default grid choice should suffice for most visualization purposes. This section is only for the advanced user who wishes to modify the default choice of grid.
+
+KK fixme: Insert reference to orbital section here!
+
+The grid box is defined in the following manner:
+\begin{itemize}
+\item
+The first point in the grid box is (X1,Y1,Z1).                                                 
+\item
+The remaining grid points are then defined by going out in the X, Y, and Z directions with step sizes deltax, deltay, and deltaz, until there are nX, nY, and nZ points in the X,Y, and Z directions (giving a total number of gridpoints $nX\times nY \times nZ$).      
+\end{itemize}
+
+There are two options to define the grid box: (i) manual gridbox where X1, Y1, Z1, deltax, deltay, deltaz, nX, nY, nZ are defined explicitly in the input file; (ii)
+molecule-specific gridbox where all atoms are contained within the grid box AND there is an additional buffer zone around the outermost atoms in the X, Y, and Z directions. Option (ii) thus requires that the deltax, deltay, deltaz, and buffer values are defined by the input, which implicitly defines X1, Y1, Z1, nX, nY, and nZ based on the molecular structure.
+
+The default gridbox uses option (ii) with {deltax=deltay=deltaz=0.3 a.u.} and {buffer=6.0 a.u}. 
+User-defined grid box based on options (i) and (ii) use the following inputs:
+
+
+\begin{description}
+\item[\Key{MANUAL}] \verb| | \newline
+\verb|<X1   Y1   Z1>| \newline
+\verb|<deltax    deltay    deltaz>| \newline
+\verb|<nX    nY    nZ>| \newline
+Manual definition of gridbox as described above. All input values are in a.u.
+
+\item[\Key{MOLECULE}] \verb| | \newline
+\verb|<buffer>| \newline
+\verb|<deltax    deltay    deltaz>| \newline
+Molecule-specifc definition of gridbox as described above. All input values are in a.u.
+
+\end{description}
 

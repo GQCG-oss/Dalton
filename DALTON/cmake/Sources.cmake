@@ -216,6 +216,7 @@ cc/cc_d1ao.F
 cc/cc_den.F
 cc/cc_den2_pt.F
 cc/cc_den_pt2.F
+cc/cc_den_rccd.F
 cc/cc_dhfao.F
 cc/cc_dmat.F
 cc/cc_drv.F
@@ -275,6 +276,7 @@ cc/cc_landf2.F
 cc/cc_landf3.F
 cc/cc_lhtr.F
 cc/cc_lhtr_noddy.F
+cc/cc_lhtr_rccd.F
 cc/cc_lr.F
 cc/cc_maomao.F
 cc/cc_mcdny.F
@@ -284,6 +286,7 @@ cc/cc_mofcon2.F
 cc/cc_mofconr12.F
 cc/cc_nuccon.F
 cc/cc_opa.F
+cc/cc_omega2_rccd.F
 cc/cc_pckutil.F
 cc/cc_pqi.F
 cc/cc_qaos.F
@@ -397,6 +400,7 @@ cc/iroper2.F
 cc/cc_lanczos_lrinp.F
 cc/cc_lanczos_drv.F
 cc/cc_lanczos_lrextras.F
+cc/rpa_grad.F
 choles/cc_caa.F
 choles/cc_choatr.F
 choles/cc_chocc2.F
@@ -611,9 +615,11 @@ sirius/sirpop.F
 sirius/sirqm3.F
 sirius/sirqmmm.F
 sirius/sirsav.F
+sirius/sirscat.F
 sirius/sirset.F
 sirius/sirsol.F
 sirius/sirsolpcm.F
+sirius/sirstex.F
 sirius/sirtest.F
 sirius/sirtr1.F
 sirius/sirtra.F
@@ -751,14 +757,10 @@ gp/memory_parallel.F90
 abacus/rma_windows.F90
     )
 set(OWN_BLAS_SOURCES
-    pdpack/gp_dblas1.F
-    pdpack/gp_dblas2.F
-    pdpack/gp_dblas3.F
-    pdpack/gp_zblas.F
+    pdpack/gp_blas.F
     )
 set(OWN_LAPACK_SOURCES
-    pdpack/gp_dlapack.F
-    pdpack/gp_zlapack.F
+    pdpack/gp_lapack.F
     )
 if(NOT ENABLE_MPI)
     set(C_SOURCES

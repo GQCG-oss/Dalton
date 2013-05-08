@@ -25,6 +25,8 @@ module pe_variables
     logical, save :: pe_nomb = .false.
     logical, save :: pe_gauss = .false.
     logical, save :: pe_polar = .false.
+    logical, save :: pe_cube = .false.
+    logical, save :: pe_infld = .false.
     logical, save :: pe_mep = .false.
     logical, save :: pe_skipqm = .false.
     logical, save :: pe_twoint = .false.
@@ -34,7 +36,6 @@ module pe_variables
     logical, save :: pe_fdes = .true.
     logical, save :: pe_sol = .false.
     logical, save :: pe_noneq = .true.
-    logical, save :: pe_infld = .false.
     logical, save :: pe_restart = .false.
     logical, save :: pe_verbose = .false.
     logical, save :: pe_debug = .false.
@@ -151,7 +152,7 @@ module pe_variables
     ! core fragment nuclear coordinates
     real(dp), dimension(:,:), allocatable, save :: Rm
     ! surface point coordinates
-    real(dp), dimension(:,:), allocatable, save :: Sp
+    real(dp), dimension(:,:), allocatable, save :: Rsp
     ! site elements
     character(len=2), dimension(:), allocatable, save :: elems
     ! exclusion list
@@ -183,8 +184,9 @@ module pe_variables
     logical, dimension(:), allocatable, save :: zeroalphas
 
 
-    ! MEP stuff
+    ! CUBE stuff
     ! ---------
+    ! options for MEP
     ! create QM cubes
     logical, save :: mep_qmcube = .true.
     ! create multipole cubes
@@ -195,24 +197,25 @@ module pe_variables
     ! calculate electric field
     logical, save :: mep_field = .false.
     logical, save :: mep_fldnrm = .false.
+    ! general cube information
     ! number of grid points
     integer, save :: npoints
     ! grid points
-    real(dp), dimension(:,:), allocatable, save :: mepgrid
+    real(dp), dimension(:,:), allocatable, save :: Rp
     ! CUBE file origin and step sizes
     real(dp), dimension(3), save :: origin, step
     ! grid density in x, y and z direction
-    integer, save :: xgrid = 20
-    integer, save :: ygrid = 20
-    integer, save :: zgrid = 20
+    integer, save :: xgrid = 6
+    integer, save :: ygrid = 6
+    integer, save :: zgrid = 6
     ! numberof steps in x, y and z direction
     integer, save :: xsteps
     integer, save :: ysteps
     integer, save :: zsteps
     ! box size relative to molecule size
-    real(dp), save :: xsize = 5.0
-    real(dp), save :: ysize = 5.0
-    real(dp), save :: zsize = 5.0
+    real(dp), save :: xsize = 8.0
+    real(dp), save :: ysize = 8.0
+    real(dp), save :: zsize = 8.0
 
     ! Internal field stuff
     ! --------------------

@@ -71,6 +71,7 @@ option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
 option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"           OFF)
 option(ENABLE_LSEEK          "Enable lseek"                  OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"              OFF)
+option(ENABLE_RELEASE        "Enable Release"                OFF)
 #option(ENABLE_EXTERNLIB      "Create lsdaltonextern.a extern lib " OFF)
 option(ENABLE_GIT_SUBMODULES "Download external projects using Git submodules at compilation time" ON)
 
@@ -107,16 +108,10 @@ endif()
 include(Archs)
 include(Sources)
 include(Compilers)
-#this does not always work. TK
-#include(ConfigExternal)
+include(ConfigExternal)
 
 #add_subdirectory(LSint)
 set(LIBS)
-if(ENABLE_XCFUN)
-	set(LIBS ${LIBS} ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a)
-#	add_subdirectory(xcfun_host)
-	add_definitions(-DVAR_XCFUN)
-endif()
 
 if(ENABLE_OPENRSP)
 	set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
@@ -158,6 +153,10 @@ if(NOT ENABLE_CRAYWRAPPER)
          ${OWN_LAPACK_SOURCES}
        )
     endif()
+endif()
+
+if(ENABLE_RELEASE)
+   add_definitions(-DMOD_UNRELEASED)
 endif()
 
 if(ENABLE_MPI)
@@ -371,11 +370,6 @@ target_link_libraries(lsutillib lsutiltypelib_common)
 add_dependencies(lsutillib generate_revinfo)
 add_dependencies(lsutillib generate_compinfo)
 
-add_library(
-    xcfun_interface
-    xcfun_host/xcfun_host.F90
-    )
-
 set(PARENT_DEFINITIONS "-DVAR_LSDALTON")
 
 set(ExternalProjectCMakeArgs
@@ -388,10 +382,22 @@ set(ExternalProjectCMakeArgs
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
 
-target_link_libraries(xcfun_interface lsutillib)
+add_library(
+    xcfun_interface
+    xcfun_host/xcfun_host.F90
+    )
+add_dependencies(xcfun_interface lsutillib_precision)
+
 if(ENABLE_XCFUN)
-	add_external(xcfun)
-	add_dependencies(xcfun_interface xcfun)
+    add_external(xcfun)
+#    add_subdirectory(xcfun_host)
+    add_dependencies(xcfun_interface xcfun)
+    add_definitions(-DVAR_XCFUN)
+    set(LIBS
+        ${PROJECT_BINARY_DIR}/external/lib/libxcfun_f90_bindings.a
+        ${PROJECT_BINARY_DIR}/external/lib/libxcfun.a
+        ${LIBS}
+        )
 endif()
 
 if(ENABLE_INTEREST)
@@ -400,7 +406,9 @@ if(ENABLE_INTEREST)
 		interestlib
     		${INTERESTLIB_SOURCES}
 		)
+                if(ENABLE_XCFUN)
 		target_link_libraries(interestlib xcfun_interface)
+                endif()
 endif()
 
 add_library(
@@ -408,7 +416,13 @@ add_library(
     ${FMM_SOURCES}
     ${FMM_C_SOURCES}
     )
+        if(ENABLE_XCFUN)
 	target_link_libraries(fmmlib xcfun_interface)
+        endif()
+add_dependencies(fmmlib lsutillib_precision)
+add_dependencies(fmmlib lsutillib_common)
+add_dependencies(fmmlib lsutiltypelib_common)
+
 if(ENABLE_INTEREST)
 target_link_libraries(fmmlib interestlib)
 endif()
@@ -425,7 +439,9 @@ add_library(
     ${LSINT_SOURCES}
     )
 target_link_libraries(lsintlib dftfunclib)
-
+add_dependencies(lsintlib pdpacklib)
+add_dependencies(lsintlib lsutillib)
+add_dependencies(lsintlib xcfun_interface)
 add_library(
     pbclib
     ${PBC_FORTRAN_SOURCES}
@@ -496,6 +512,7 @@ target_link_libraries(lsdaltonmain declib)
 target_link_libraries(lsdaltonmain ddynamlib)
 target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
+target_link_libraries(lsdaltonmain xcfun_interface)
 
 if(ENABLE_OPENRSP)
 	add_dependencies(gen1int_interface lsutillib_precision)
@@ -519,13 +536,6 @@ add_executable(
     )
 
 add_executable(
-    gridgen.x
-    ${CMAKE_SOURCE_DIR}/tools/gridgen.f90
-    ${LINK_FLAGS}
-    )
-
-
-add_executable(
     lslib_tester.x
     ${LSLIB_SOURCES}
     ${LINK_FLAGS}
@@ -534,7 +544,6 @@ add_executable(
 if(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX)
   SET_TARGET_PROPERTIES(lsdalton.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
   SET_TARGET_PROPERTIES(lslib_tester.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
-  SET_TARGET_PROPERTIES(gridgen.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
 endif()
 
 if(ENABLE_OPENRSP)
@@ -576,7 +585,6 @@ MERGE_STATIC_LIBS(
     lsutiltypelib_common
     lsutillib
     fmmlib
-    xcfun_interface
     dftfunclib
     lsint
     pbclib
@@ -587,27 +595,24 @@ MERGE_STATIC_LIBS(
     linearslib
     rsp_prop
     geooptlib
+    xcfun_interface
     lsdaltonmain 
     )
-target_link_libraries(lsdalton lsdaltonmain)
+
+target_link_libraries(
+    lsdalton
+    lsdaltonmain
+    ${LIBS}
+    )
 
 target_link_libraries(
    lsdalton.x
    lsdalton
-   ${LIBS}
    ) 
-
-target_link_libraries(
-   gridgen.x
-   lsdalton
-   ${LIBS}
-   ) 
-
 
 target_link_libraries(
    lslib_tester.x
    lsdalton
-   ${LIBS}
    ) 
 
 include(CompilationInfo)

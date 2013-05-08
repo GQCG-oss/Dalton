@@ -619,7 +619,7 @@ c     Exit if not MCSCF (with- or without pol.) or HF/DFT without polarization
         RETURN
       ENDIF
 
-      IF  ( ((NASHT.EQ.0) .AND. (TRPLET))  ) THEN ! no pol. contr. can arrise in this case
+      IF  ( ((NASHT.EQ.0) .AND. (TRPLET))  ) THEN
         CALL QEXIT('QMMMLNO')
         RETURN
       ENDIF

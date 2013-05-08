@@ -89,6 +89,7 @@ C
 ! dftcom.h: DFT_SPINDNS, DFT_LOCALSPIN
 #include "dftcom.h"
 #include "exeinf.h"
+#include "stex.h"
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
@@ -788,6 +789,11 @@ C
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
          IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
       END IF
+
+      IF (DOSTEX) THEN
+         CALL STXCTL(WORK,LWORK)
+      END IF
+
 #if defined(BUILD_GEN1INT)
 C... added by Bin Gao, to generate cube files
       if (DO_CUBE) then

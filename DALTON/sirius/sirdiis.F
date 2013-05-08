@@ -851,7 +851,7 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
-            IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM) THEN
+            IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. peqm) THEN
 C           this also includes the case of MMPCM
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(I4,1P,G20.12,G20.12,D15.5,D12.2)')
