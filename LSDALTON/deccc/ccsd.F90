@@ -2304,6 +2304,8 @@ contains
        !Mylsitem%setting%scheme%intprint=0
 
 
+      print *,"omegabeforeandafterb22term"
+      call print_norm(omega2)
       if(DECinfo%ccmodel>2)then
         if(scheme==0.or.scheme==1)then
           call get_d_term_int_direct(w0,w1,w2,w3,no,nv,nb,fa,fg,la,lg,&
