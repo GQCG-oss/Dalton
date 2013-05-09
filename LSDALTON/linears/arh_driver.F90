@@ -1343,10 +1343,10 @@ end subroutine linesearch_thresholds
   !dd  : standard diviation
 
   Subroutine LS_POLY(m,e1,n,l,x,y,c,dd)
-    parameter(SIZE=25)
+    parameter(MYSIZE=25)
     !Labels: 10,15,20,30,50
-    real*8 x(SIZE),y(SIZE),v(SIZE),a(SIZE),b(SIZE)
-    real*8 c(0:SIZE),d(SIZE),c2(SIZE),e(SIZE),f(SIZE)
+    real*8 x(MYSIZE),y(MYSIZE),v(MYSIZE),a(MYSIZE),b(MYSIZE)
+    real*8 c(0:MYSIZE),d(MYSIZE),c2(MYSIZE),e(MYSIZE),f(MYSIZE)
     integer i,l,l2,m,n,n1
     real*8 a1,a2,b1,b2,c1,dd,d1,e1,f1,f2,v1,v2,w
     n1 = m + 1; l=0
