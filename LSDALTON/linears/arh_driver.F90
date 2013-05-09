@@ -1238,9 +1238,9 @@ end subroutine linesearch_thresholds
     real(realk),intent(inout)    :: energy_array(ndensmat),alpha(ndensmat)
     real(realk),intent(inout)    :: optimal_alpha,dd2,dd3,EstVal
     !
-    integer,parameter :: SIZE=25
+    integer,parameter :: MYSIZE=25
     integer :: morder,lorder,i
-    real(realk) :: xarray(SIZE),yarray(SIZE),carray(0:SIZE),e1,ddx
+    real(realk) :: xarray(MYSIZE),yarray(MYSIZE),carray(0:MYSIZE),e1,ddx
     ! m  : the order of the fit (2)
     ! e1 : the error reduction factor (0)
     ! n  : number of datapoints
@@ -1343,12 +1343,13 @@ end subroutine linesearch_thresholds
   !dd  : standard diviation
 
   Subroutine LS_POLY(m,e1,n,l,x,y,c,dd)
-    parameter(MYSIZE=25)
+    implicit none
+    integer,parameter :: MYSIZE=25
     !Labels: 10,15,20,30,50
     real*8 x(MYSIZE),y(MYSIZE),v(MYSIZE),a(MYSIZE),b(MYSIZE)
     real*8 c(0:MYSIZE),d(MYSIZE),c2(MYSIZE),e(MYSIZE),f(MYSIZE)
     integer i,l,l2,m,n,n1
-    real*8 a1,a2,b1,b2,c1,dd,d1,e1,f1,f2,v1,v2,w
+    real*8 a1,a2,b1,b2,c1,dd,d1,e1,f1,f2,v1,v2,w,vv
     n1 = m + 1; l=0
     v1 = 1.d7
     ! Initialize the arrays
