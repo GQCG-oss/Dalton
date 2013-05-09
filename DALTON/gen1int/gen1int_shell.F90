@@ -965,7 +965,7 @@ module gen1int_shell
             shell_pair(1) = 1
           end if
         case default
-          if (shell_pair(1)<min_shell_bra) then
+          if (shell_pair(1)<max_shell_bra) then
             shell_pair(1) = shell_pair(1)+1
           else
             shell_pair(2) = shell_pair(2)+1
@@ -1674,7 +1674,7 @@ module gen1int_shell
             shell_pair(1) = 1
           end if
         case default
-          if (shell_pair(1)<min_shell_bra) then
+          if (shell_pair(1)<max_shell_bra) then
             shell_pair(1) = shell_pair(1)+1
           else
             shell_pair(2) = shell_pair(2)+1
