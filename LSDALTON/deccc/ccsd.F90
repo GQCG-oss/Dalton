@@ -3789,7 +3789,8 @@ contains
     integer :: l1,l2,i,j,lsa,lsg,gamm_i_b,a,b,full1T,full2T,tsq,jump,dim_big,dim_small,ft1,ft2,ncph
     logical :: second_trafo_step
     real(realk),pointer :: dumm(:)
-    integer :: mv((nv*nv)/2),st,pos1
+    integer :: mv((nv*nv)/2),st,pos1,dims(2)
+    real(realk),pointer :: source(:,:),drain(:,:)
 
     scaleitby=0.5E0_realk
     second_trafo_step=.false.
@@ -3909,13 +3910,11 @@ contains
     dim_big=full1*full2
     dim_small=full1T*full2T
 
-#ifdef VAR_OMP
-    call omp_set_nested(.false.)
-#endif
     !$OMP PARALLEL DEFAULT(NONE)&
     !$OMP& SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
     !$OMP& full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
-    !$OMP& PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21)
+    !$OMP& PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
+    !$OMP& dims,drain,source)
     !$OMP DO
     do occ=1,nor
       do gamm=1,lg-goffs
@@ -3953,12 +3952,14 @@ contains
           ft1=full1
           ft2=full2
         endif
-
-        call dcopy(nel2cp,w3(pos2),1,w0(pos),1)
+        
+        !call dcopy(nel2cp,w3(pos2),1,w0(pos),1)
+        w0(pos:pos+nel2cp-1) = w3(pos2:pos2+nel2cp-1)
         !get corresponding position in sigma- and add to output
         pos21=pos2+tred*nor
-        call daxpy(nel2cp,1.0E0_realk,w3(pos21),1,w0(pos),1)
-    
+        !call daxpy(nel2cp,1.0E0_realk,w3(pos21),1,w0(pos),1)
+        w0(pos:pos+nel2cp-1) =w0(pos:pos+nel2cp-1) + w3(pos21:pos21+nel2cp-1)    
+
         !ANTI-SYMMETRIC COMBINATION OF THE SIGMAS
         pos=gamm+aoffs+(occ-1)*ft1*ft2
         if(second_trafo_step.and.gamm>tlen) pos=pos+full1*full2*nor-tlen
@@ -3969,27 +3970,50 @@ contains
           else
             ncph=gamm
           endif
-          call daxpy(ncph,1.0E0_realk,w3(pos2+aoffs),1,w0(aoffs+gamm+(occ-1)*full1*full2),full1)
-          call daxpy(ncph,-1.0E0_realk,w3(pos21+aoffs),1,w0(aoffs+gamm+(occ-1)*dim_big),full1)
+          !call daxpy(ncph,1.0E0_realk,w3(pos2+aoffs),1,w0(aoffs+gamm+(occ-1)*full1*full2),full1)
+          !call daxpy(ncph,-1.0E0_realk,w3(pos21+aoffs),1,w0(aoffs+gamm+(occ-1)*dim_big),full1)
+
+          !because of the intrinsic omp-parallelizaton of daxpy the following
+          !lines replace the daxpy calls
+          dims=[full1,ncph]
+          call ass_D1to2(w0(aoffs+gamm+(occ-1)*dim_big:&
+                           &aoffs+gamm+(occ-1)*dim_big+full1*ncph-1),drain,dims)
+          dims=[1,ncph]
+          call ass_D1to2(w3(pos2+aoffs:pos2+aoffs+ncph-1),source,dims)
+          drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
+          call ass_D1to2(w3(pos21+aoffs:pos21+aoffs+ncph-1),source,dims)
+          drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
           !fill small matrix
           if(gamm>tlen)then
             ncph=nel2cp
           else
             ncph=nel2cp-gamm
           endif
-          call daxpy(ncph,1.0E0_realk,w3(pos2),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
-          call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          !call daxpy(ncph, 1.0E0_realk,w3(pos2 ),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          !call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          dims=[full1T,ncph]
+          call ass_D1to2(w0(gamm+(occ-1)*full1T*full2T+dim_big*nor:&
+                           &gamm+(occ-1)*full1T*full2T+dim_big*nor+ncph*full1T-1),drain,dims)
+          dims=[1,ncph]
+          call ass_D1to2(w3(pos2:pos2+ncph-1),source,dims)
+          drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
+          call ass_D1to2(w3(pos21:pos21+ncph-1),source,dims)
+          drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
         else
-          call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
-          call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
+          !call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
+          !call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
+          dims=[jump,nel2cp]
+          call ass_D1to2(w0(pos:pos+jump*nel2cp-1),drain,dims)
+          dims=[1,nel2cp]
+          call ass_D1to2(w3(pos2:pos2+nel2cp-1),source,dims)
+          drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) + source(1:1,1:nel2cp)
+          call ass_D1to2(w3(pos21:pos21+nel2cp-1),source,dims)
+          drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) - source(1:1,1:nel2cp)
         endif
       enddo
     enddo
     !$OMP END DO
     !$OMP END PARALLEL
-#ifdef VAR_OMP
-    call omp_set_nested(.true.)
-#endif
     call lsmpi_poke()
 
 
