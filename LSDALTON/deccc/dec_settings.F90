@@ -340,8 +340,7 @@ contains
           ! ****************************************************************************
           ! *               Keywords only available for developers                     *
           ! ****************************************************************************
-#ifndef RELEASE
-          ! NOTE: By default, we assume that the HF has already been carried out.
+#ifdef MOD_UNRELEASED
        case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
        case('.CCSDSOLVER_SERIAL'); DECinfo%solver_par=.false.
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
