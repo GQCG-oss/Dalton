@@ -2135,7 +2135,8 @@ SUBROUTINE GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
   ENDIF
 END SUBROUTINE GDPQ_intABDC
 
-SUBROUTINE GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+SUBROUTINE GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
@@ -2240,7 +2241,8 @@ SUBROUTINE GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
   ENDIF
 END SUBROUTINE GDPQ_intBACD
 
-SUBROUTINE GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+SUBROUTINE GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
@@ -2275,7 +2277,8 @@ SUBROUTINE GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,nd
   ENDIF
 END SUBROUTINE GDPQ_AntiIntBACD
 
-SUBROUTINE GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+SUBROUTINE GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
@@ -2310,7 +2313,8 @@ SUBROUTINE GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
   ENDIF
 END SUBROUTINE GDPQ_intBADC
 
-SUBROUTINE GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+SUBROUTINE GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
@@ -2345,7 +2349,8 @@ SUBROUTINE GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,nd
   ENDIF
 END SUBROUTINE GDPQ_AntiIntBADC
 
-SUBROUTINE GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+SUBROUTINE GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
@@ -2380,7 +2385,8 @@ SUBROUTINE GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
   ENDIF
 END SUBROUTINE GDPQ_intDCBA
 
-SUBROUTINE GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+SUBROUTINE GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
@@ -2415,7 +2421,8 @@ SUBROUTINE GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5o
   ENDIF
 END SUBROUTINE GDPQ_intCDBA
 
-SUBROUTINE GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,CDABin,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+SUBROUTINE GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,CDABin,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
   implicit none
   Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
   Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
