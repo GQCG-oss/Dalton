@@ -3909,6 +3909,9 @@ contains
     dim_big=full1*full2
     dim_small=full1T*full2T
 
+#ifdef VAR_OMP
+    call omp_set_nested(.false.)
+#endif
     !$OMP PARALLEL DEFAULT(NONE)&
     !$OMP& SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
     !$OMP& full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
@@ -3984,6 +3987,9 @@ contains
     enddo
     !$OMP END DO
     !$OMP END PARALLEL
+#ifdef VAR_OMP
+    call omp_set_nested(.true.)
+#endif
     call lsmpi_poke()
 
 
