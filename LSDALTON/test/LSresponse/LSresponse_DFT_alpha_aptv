@@ -51,25 +51,15 @@ cat > LSresponse_DFT_alpha_aptv.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*DFT INPUT
-.GRID TYPE
- BECKEORIG LMG
-.RADINT
-1.0D-11
-.ANGINT
-31
 *DENSOPT
-.RH            
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
+.ARH DAVID
+.CONVDYN
+TIGHT
 **RESPONS
 *SOLVER
 .PAIR_SOLVER
-.CONVTHR
-1.0D-6
+.CONVDYN
+TIGHT
 *ALPHA
 .BFREQ
 2
@@ -99,7 +89,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-149\.3649[0-1]" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * \-149\.3649" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
@@ -120,7 +110,7 @@ ERROR[3]="Error in real polarizability"
 
 # Imaginary part of complex polarizability tests
 CRIT1=`$GREP "Ex * 14.613[0-9][0-9][0-9] * 4.667" $log | wc -l`
-CRIT2=`$GREP "Ey * 4.667[0-9][0-9][0-9][0-9] * 1.505" $log | wc -l`
+CRIT2=`$GREP "Ey * 4.667[0-9][0-9][0-9][0-9] * 1.504" $log | wc -l`
 
 TEST[4]=`expr  $CRIT1 \+ $CRIT2 `
 CTRL[4]=2

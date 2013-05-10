@@ -50,27 +50,17 @@ cat > LSresponse_DFT_excit_beta.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*DFT INPUT
-.GRID TYPE
- BECKEORIG LMG
-.RADINT
-1.0D-11
-.ANGINT
-31
 *DENSOPT
-.RH                                                                       
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
+.ARH DAVID
+.CONVDYN
+TIGHT
 **RESPONS
 .NEXCIT
 3
 *SOLVER
 .EXCVECLINEQ
-.CONVTHR
-1.0D-6
+.CONVDYN
+TIGHT
 *BETA
 .BFREQ
 1

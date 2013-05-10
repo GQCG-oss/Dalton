@@ -1518,7 +1518,7 @@ Pair distance threshold (in {\AA}) beyond which pair fragments are omitted from 
 
 
 \item[\Key{RESTART}] \verb| | \newline
-Restart unfinished DEC calculation. Requires that .info files are present in the folder where the calculation is restarted.
+Restart unfinished DEC calculation. Requires that HF files \emph{dens.restart}, \emph{fock.restart}, \emph{lcm\_orbitals.u}, and \emph{overlapmatrix} and the DEC files (ending with \emph{.info}) are present in the folder where the calculation is restarted. THIS KEYWORD SHOULD NOT BE COMBINED WITH .RESTART IN THE *DENSOPT SECTION SINCE THIS WOULD REPEAT THE HF CALCULATION!
 
 
 \item[\Key{NOTABSORBH}] \verb| | \newline
