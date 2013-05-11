@@ -51,7 +51,7 @@
  Last commit time         | Fri May 10 10:55:33 2013 +0200
 
 Start simulation
-     Date and time (Linux)  : Fri May 10 16:42:58 2013
+     Date and time (Linux)  : Fri May 10 16:46:50 2013
      Host name              : kasper-kristensens-macbook-pro.local    
                       
  -----------------------------------------
@@ -82,6 +82,7 @@ Start simulation
   TIGHT                                                                                               
   **RESPONS                                                                                           
   *SOLVER                                                                                             
+  .SYM_SOLVER                                                                                         
   .CONVDYN                                                                                            
   TIGHT                                                                                               
   *ALPHA                                                                                              
@@ -887,202 +888,278 @@ Calculation of virtual orbital energies converged in     8 iterations!
  <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
 
 
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           1
- The Coulomb energy contribution   4.05318790850989000E-002
- The Exchange energy contribution  -0.12891956861035589     
- The Fock energy contribution   8.83876895252570516E-002
- omega in build_reduc..   0.10000000000000001     
- Dynamic response convergence threshold set to  3.96528251024777078E-004
-Residual norm for vector   1 is:   0.396528E+00    and frequency =     0.100000   It =   1 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           2
- The Coulomb energy contribution   0.29636945500633660     
- The Exchange energy contribution  -0.34403527163254771     
- The Fock energy contribution   4.76658166262109786E-002
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.199639E+00    and frequency =     0.100000   It =   2 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           3
- The Coulomb energy contribution   0.50025743045735327     
- The Exchange energy contribution  -0.38528034679509843     
- The Fock energy contribution  -0.11497708366225526     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.479648E-01    and frequency =     0.100000   It =   3 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           4
- The Coulomb energy contribution   7.89857920423250176E-002
- The Exchange energy contribution  -0.30831819073466765     
- The Fock energy contribution   0.22933239869234234     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.198839E-01    and frequency =     0.100000   It =   4 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           5
- The Coulomb energy contribution   0.16421708070094265     
- The Exchange energy contribution  -0.28037612027763603     
- The Fock energy contribution   0.11615903957669357     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.162959E-01    and frequency =     0.100000   It =   5 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           6
- The Coulomb energy contribution   0.14785677475979001     
- The Exchange energy contribution  -0.44878614841400383     
- The Fock energy contribution   0.30092937365421374     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.742266E-02    and frequency =     0.100000   It =   6 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           7
- The Coulomb energy contribution   3.68411373979531873E-002
- The Exchange energy contribution  -0.28388813230328508     
- The Fock energy contribution   0.24704699490533188     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.238631E-02    and frequency =     0.100000   It =   7 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           8
- The Coulomb energy contribution   4.15179412548543764E-002
- The Exchange energy contribution  -0.28083049401228183     
- The Fock energy contribution   0.23931255275742747     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.883973E-03    and frequency =     0.100000   It =   8 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           9
- The Coulomb energy contribution   5.50738670302167860E-002
- The Exchange energy contribution  -0.35208425412022759     
- The Fock energy contribution   0.29701038709001104     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.237511E-03    and frequency =     0.100000   It =   9 CONV = T
-
- *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
-
-
-
- <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
-
-
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           1
- The Coulomb energy contribution   8.89898018232593430E-002
- The Exchange energy contribution  -0.16529427780269004     
- The Fock energy contribution   7.63044759794304778E-002
- omega in build_reduc..   0.10000000000000001     
- Dynamic response convergence threshold set to  2.13806820470011224E-003
-Residual norm for vector   1 is:   0.213807E+01    and frequency =     0.100000   It =   1 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           2
- The Coulomb energy contribution   0.63319759398031306     
- The Exchange energy contribution  -0.47770545801803166     
- The Fock energy contribution  -0.15549213596228131     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.618463E+00    and frequency =     0.100000   It =   2 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           3
- The Coulomb energy contribution   0.35608234820665685     
- The Exchange energy contribution  -0.53525117240043074     
- The Fock energy contribution   0.17916882419377433     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.129360E+00    and frequency =     0.100000   It =   3 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           4
- The Coulomb energy contribution   4.96777998573732227E-002
- The Exchange energy contribution  -0.32182004581408075     
- The Fock energy contribution   0.27214224595670794     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.515729E-01    and frequency =     0.100000   It =   4 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           5
- The Coulomb energy contribution   6.69631666385136770E-002
- The Exchange energy contribution  -0.25911414535990002     
- The Fock energy contribution   0.19215097872138617     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.367861E-01    and frequency =     0.100000   It =   5 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           6
- The Coulomb energy contribution   6.78207418395482403E-002
- The Exchange energy contribution  -0.37575358460962455     
- The Fock energy contribution   0.30793284277007654     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.238876E-01    and frequency =     0.100000   It =   6 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           7
- The Coulomb energy contribution   0.13131098831334309     
- The Exchange energy contribution  -0.40715468993781911     
- The Fock energy contribution   0.27584370162447525     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.744206E-02    and frequency =     0.100000   It =   7 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           8
- The Coulomb energy contribution   9.22343780646074918E-002
- The Exchange energy contribution  -0.29006703111264759     
- The Fock energy contribution   0.19783265304804032     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.166735E-02    and frequency =     0.100000   It =   8 CONV = T
-
- *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           1
+ ------------------------------------------
+ The Coulomb energy contribution   8.10637581701991322E-002
+ The Exchange energy contribution  -0.25783913722071589     
+ The Fock energy contribution   0.17677537905051671     
+ residual tot norm in it           1  0.39652825102477712     
+ Dynamic response convergence threshold set to  2.12412559298704178E-004
+Residual norm for herm vector   1 is:   0.293873E-01    and frequency =     0.100000   It =   1 CONV = F
+Residual norm for antiherm vector   1 is:   0.395438E+00    and frequency =     0.100000   It =   1 CONV = F
+ Dispersion value macroiteration:           1 for  frequency  0.10000000000000001      =  0.83841938724554077     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           2
+ ------------------------------------------
+ The Coulomb energy contribution   0.59273891001265666     
+ The Exchange energy contribution  -0.68807054326507699     
+ The Fock energy contribution   9.53316332524199173E-002
+ residual tot norm in it           2  0.19963898112105530     
+Residual norm for herm vector   1 is:   0.420267E-01    and frequency =     0.100000   It =   2 CONV = F
+Residual norm for antiherm vector   1 is:   0.195165E+00    and frequency =     0.100000   It =   2 CONV = F
+ Dispersion value macroiteration:           2 for  frequency  0.10000000000000001      =  0.87381065907786870     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           3
+ ------------------------------------------
+ The Coulomb energy contribution    1.0005148609146812     
+ The Exchange energy contribution  -0.77056069359018742     
+ The Fock energy contribution  -0.22995416732449461     
+ residual tot norm in it           3  4.79647598119220114E-002
+Residual norm for herm vector   1 is:   0.274874E-01    and frequency =     0.100000   It =   3 CONV = F
+Residual norm for antiherm vector   1 is:   0.393073E-01    and frequency =     0.100000   It =   3 CONV = F
+ Dispersion value macroiteration:           3 for  frequency  0.10000000000000001      =  0.88723506803485719     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           4
+ ------------------------------------------
+ The Coulomb energy contribution   0.15797158408464895     
+ The Exchange energy contribution  -0.61663638146933042     
+ The Fock energy contribution   0.45866479738468197     
+ residual tot norm in it           4  1.98838832948151842E-002
+Residual norm for herm vector   1 is:   0.114941E-01    and frequency =     0.100000   It =   4 CONV = F
+Residual norm for antiherm vector   1 is:   0.162251E-01    and frequency =     0.100000   It =   4 CONV = F
+ Dispersion value macroiteration:           4 for  frequency  0.10000000000000001      =  0.88859433823865763     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           5
+ ------------------------------------------
+ The Coulomb energy contribution   0.32843416140188936     
+ The Exchange energy contribution  -0.56075224055527340     
+ The Fock energy contribution   0.23231807915338382     
+ residual tot norm in it           5  1.62959448195195249E-002
+Residual norm for herm vector   1 is:   0.121685E-01    and frequency =     0.100000   It =   5 CONV = F
+Residual norm for antiherm vector   1 is:   0.108391E-01    and frequency =     0.100000   It =   5 CONV = F
+ Dispersion value macroiteration:           5 for  frequency  0.10000000000000001      =  0.88904161138185800     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           6
+ ------------------------------------------
+ The Coulomb energy contribution   0.29571354951958240     
+ The Exchange energy contribution  -0.89757229682801365     
+ The Fock energy contribution   0.60185874730843136     
+ residual tot norm in it           6  7.42266464663729562E-003
+Residual norm for herm vector   1 is:   0.519045E-02    and frequency =     0.100000   It =   6 CONV = F
+Residual norm for antiherm vector   1 is:   0.530614E-02    and frequency =     0.100000   It =   6 CONV = F
+ Dispersion value macroiteration:           6 for  frequency  0.10000000000000001      =  0.88924559189538366     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           7
+ ------------------------------------------
+ The Coulomb energy contribution   7.36822747958884305E-002
+ The Exchange energy contribution  -0.56777626460655450     
+ The Fock energy contribution   0.49409398981066671     
+ residual tot norm in it           7  2.38631361057594499E-003
+Residual norm for herm vector   1 is:   0.158524E-02    and frequency =     0.100000   It =   7 CONV = F
+Residual norm for antiherm vector   1 is:   0.178367E-02    and frequency =     0.100000   It =   7 CONV = F
+ Dispersion value macroiteration:           7 for  frequency  0.10000000000000001      =  0.88927282555170117     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           8
+ ------------------------------------------
+ The Coulomb energy contribution   8.30358825097136238E-002
+ The Exchange energy contribution  -0.56166098802457998     
+ The Fock energy contribution   0.47862510551486631     
+ residual tot norm in it           8  8.83972660773580288E-004
+Residual norm for herm vector   1 is:   0.555174E-03    and frequency =     0.100000   It =   8 CONV = F
+Residual norm for antiherm vector   1 is:   0.687888E-03    and frequency =     0.100000   It =   8 CONV = F
+ Dispersion value macroiteration:           8 for  frequency  0.10000000000000001      =  0.88927611972312692     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           9
+ ------------------------------------------
+ The Coulomb energy contribution   0.11014773406039736     
+ The Exchange energy contribution  -0.70416850824041122     
+ The Fock energy contribution   0.59402077418001265     
+ residual tot norm in it           9  2.37510924313449342E-004
+Residual norm for herm vector   1 is:   0.172619E-03    and frequency =     0.100000   It =   9 CONV = T
+Residual norm for antiherm vector   1 is:   0.163138E-03    and frequency =     0.100000   It =   9 CONV = T
 
 
 
  <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
 
 
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           1
- The Coulomb energy contribution   5.52058128353665536E-002
- The Exchange energy contribution  -0.11478376439794566     
- The Fock energy contribution   5.95779515625790984E-002
- omega in build_reduc..   0.10000000000000001     
- Dynamic response convergence threshold set to  8.56381338304231117E-004
-Residual norm for vector   1 is:   0.856381E+00    and frequency =     0.100000   It =   1 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           2
- The Coulomb energy contribution   0.48522306755694711     
- The Exchange energy contribution  -0.50528579841455090     
- The Fock energy contribution   2.00627308576027293E-002
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.218048E+00    and frequency =     0.100000   It =   2 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           3
- The Coulomb energy contribution   0.38811262461702672     
- The Exchange energy contribution  -0.37664837187069011     
- The Fock energy contribution  -1.14642527463370419E-002
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.444105E-01    and frequency =     0.100000   It =   3 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           4
- The Coulomb energy contribution   5.97137968026583213E-002
- The Exchange energy contribution  -0.31709225612305791     
- The Fock energy contribution   0.25737845932039971     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.157835E-01    and frequency =     0.100000   It =   4 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           5
- The Coulomb energy contribution   0.11693611786562788     
- The Exchange energy contribution  -0.49532244650907231     
- The Fock energy contribution   0.37838632864344451     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.741729E-02    and frequency =     0.100000   It =   5 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           6
- The Coulomb energy contribution   4.42457367237212018E-002
- The Exchange energy contribution  -0.27369740194520875     
- The Fock energy contribution   0.22945166522148738     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.358236E-02    and frequency =     0.100000   It =   6 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           7
- The Coulomb energy contribution   1.97852433459374116E-002
- The Exchange energy contribution  -0.22441324194625395     
- The Fock energy contribution   0.20462799860031664     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.125682E-02    and frequency =     0.100000   It =   7 CONV = F
- MO preconditioning
-  ** RSP_SOLVER MICROITERATION NUMBER           8
- The Coulomb energy contribution   3.22110059262800535E-002
- The Exchange energy contribution  -0.25177304207419487     
- The Fock energy contribution   0.21956203614791495     
- omega in build_reduc..   0.10000000000000001     
-Residual norm for vector   1 is:   0.310440E-03    and frequency =     0.100000   It =   8 CONV = T
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           1
+ ------------------------------------------
+ The Coulomb energy contribution   0.17797960364652107     
+ The Exchange energy contribution  -0.33058855560538386     
+ The Fock energy contribution   0.15260895195886257     
+ residual tot norm in it           1   2.1380682047001169     
+ Dynamic response convergence threshold set to  1.10315290852256538E-003
+Residual norm for herm vector   1 is:   0.693630E-01    and frequency =     0.100000   It =   1 CONV = F
+Residual norm for antiherm vector   1 is:   0.213694E+01    and frequency =     0.100000   It =   1 CONV = F
+ Dispersion value macroiteration:           1 for  frequency  0.10000000000000001      =   3.5735155560881871     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           2
+ ------------------------------------------
+ The Coulomb energy contribution    1.2663951879606410     
+ The Exchange energy contribution  -0.95541091603607287     
+ The Fock energy contribution  -0.31098427192456873     
+ residual tot norm in it           2  0.61846283087329501     
+Residual norm for herm vector   1 is:   0.133241E+00    and frequency =     0.100000   It =   2 CONV = F
+Residual norm for antiherm vector   1 is:   0.603940E+00    and frequency =     0.100000   It =   2 CONV = F
+ Dispersion value macroiteration:           2 for  frequency  0.10000000000000001      =   4.3869171819369992     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           3
+ ------------------------------------------
+ The Coulomb energy contribution   0.71216469641332292     
+ The Exchange energy contribution   -1.0705023448008670     
+ The Fock energy contribution   0.35833764838754401     
+ residual tot norm in it           3  0.12936021738161790     
+Residual norm for herm vector   1 is:   0.856291E-01    and frequency =     0.100000   It =   3 CONV = F
+Residual norm for antiherm vector   1 is:   0.969625E-01    and frequency =     0.100000   It =   3 CONV = F
+ Dispersion value macroiteration:           3 for  frequency  0.10000000000000001      =   4.5165026705159059     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           4
+ ------------------------------------------
+ The Coulomb energy contribution   9.93555997147441972E-002
+ The Exchange energy contribution  -0.64364009162815183     
+ The Fock energy contribution   0.54428449191340766     
+ residual tot norm in it           4  5.15729269621604675E-002
+Residual norm for herm vector   1 is:   0.305220E-01    and frequency =     0.100000   It =   4 CONV = F
+Residual norm for antiherm vector   1 is:   0.415713E-01    and frequency =     0.100000   It =   4 CONV = F
+ Dispersion value macroiteration:           4 for  frequency  0.10000000000000001      =   4.5229183744937425     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           5
+ ------------------------------------------
+ The Coulomb energy contribution   0.13392633327702741     
+ The Exchange energy contribution  -0.51822829071980292     
+ The Fock energy contribution   0.38430195744277584     
+ residual tot norm in it           5  3.67861136767517263E-002
+Residual norm for herm vector   1 is:   0.256419E-01    and frequency =     0.100000   It =   5 CONV = F
+Residual norm for antiherm vector   1 is:   0.263763E-01    and frequency =     0.100000   It =   5 CONV = F
+ Dispersion value macroiteration:           5 for  frequency  0.10000000000000001      =   4.5248761700223668     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           6
+ ------------------------------------------
+ The Coulomb energy contribution   0.13564148367909745     
+ The Exchange energy contribution  -0.75150716921926286     
+ The Fock energy contribution   0.61586568554016541     
+ residual tot norm in it           6  2.38876185188201771E-002
+Residual norm for herm vector   1 is:   0.181051E-01    and frequency =     0.100000   It =   6 CONV = F
+Residual norm for antiherm vector   1 is:   0.155828E-01    and frequency =     0.100000   It =   6 CONV = F
+ Dispersion value macroiteration:           6 for  frequency  0.10000000000000001      =   4.5257298856380626     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           7
+ ------------------------------------------
+ The Coulomb energy contribution   0.26262197662671111     
+ The Exchange energy contribution  -0.81430937987564889     
+ The Fock energy contribution   0.55168740324893795     
+ residual tot norm in it           7  7.44205836479470972E-003
+Residual norm for herm vector   1 is:   0.593951E-02    and frequency =     0.100000   It =   7 CONV = F
+Residual norm for antiherm vector   1 is:   0.448402E-02    and frequency =     0.100000   It =   7 CONV = F
+ Dispersion value macroiteration:           7 for  frequency  0.10000000000000001      =   4.5260013506997909     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           8
+ ------------------------------------------
+ The Coulomb energy contribution   0.18446875612923458     
+ The Exchange energy contribution  -0.58013406222536779     
+ The Fock energy contribution   0.39566530609613187     
+ residual tot norm in it           8  1.66734875238219596E-003
+Residual norm for herm vector   1 is:   0.123916E-02    and frequency =     0.100000   It =   8 CONV = F
+Residual norm for antiherm vector   1 is:   0.111558E-02    and frequency =     0.100000   It =   8 CONV = F
+ Dispersion value macroiteration:           8 for  frequency  0.10000000000000001      =   4.5260161289028114     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           9
+ ------------------------------------------
+ The Coulomb energy contribution   7.61595022258813592E-002
+ The Exchange energy contribution  -0.39377101494268840     
+ The Fock energy contribution   0.31761151271680704     
+ residual tot norm in it           9  5.12912875721278179E-004
+Residual norm for herm vector   1 is:   0.317916E-03    and frequency =     0.100000   It =   9 CONV = T
+Residual norm for antiherm vector   1 is:   0.402503E-03    and frequency =     0.100000   It =   9 CONV = T
 
- *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           1
+ ------------------------------------------
+ The Coulomb energy contribution   0.11041162567073334     
+ The Exchange energy contribution  -0.22956752879589215     
+ The Fock energy contribution   0.11915590312515885     
+ residual tot norm in it           1  0.85638133830425500     
+ Dynamic response convergence threshold set to  4.46047339093570857E-004
+Residual norm for herm vector   1 is:   0.364912E-01    and frequency =     0.100000   It =   1 CONV = F
+Residual norm for antiherm vector   1 is:   0.855604E+00    and frequency =     0.100000   It =   1 CONV = F
+ Dispersion value macroiteration:           1 for  frequency  0.10000000000000001      =   2.0517802993934633     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           2
+ ------------------------------------------
+ The Coulomb energy contribution   0.97044613511398836     
+ The Exchange energy contribution   -1.0105715968292757     
+ The Fock energy contribution   4.01254617152864701E-002
+ residual tot norm in it           2  0.21804837967931384     
+Residual norm for herm vector   1 is:   0.536705E-01    and frequency =     0.100000   It =   2 CONV = F
+Residual norm for antiherm vector   1 is:   0.211340E+00    and frequency =     0.100000   It =   2 CONV = F
+ Dispersion value macroiteration:           2 for  frequency  0.10000000000000001      =   2.1953966856874065     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           3
+ ------------------------------------------
+ The Coulomb energy contribution   0.77622524923396008     
+ The Exchange energy contribution  -0.75329674374135447     
+ The Fock energy contribution  -2.29285054926057323E-002
+ residual tot norm in it           3  4.44105402489734721E-002
+Residual norm for herm vector   1 is:   0.282803E-01    and frequency =     0.100000   It =   3 CONV = F
+Residual norm for antiherm vector   1 is:   0.342421E-01    and frequency =     0.100000   It =   3 CONV = F
+ Dispersion value macroiteration:           3 for  frequency  0.10000000000000001      =   2.2102982338439614     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           4
+ ------------------------------------------
+ The Coulomb energy contribution   0.11942759360532161     
+ The Exchange energy contribution  -0.63418451224604733     
+ The Fock energy contribution   0.51475691864072592     
+ residual tot norm in it           4  1.57835103811794046E-002
+Residual norm for herm vector   1 is:   0.105033E-01    and frequency =     0.100000   It =   4 CONV = F
+Residual norm for antiherm vector   1 is:   0.117813E-01    and frequency =     0.100000   It =   4 CONV = F
+ Dispersion value macroiteration:           4 for  frequency  0.10000000000000001      =   2.2111514211759822     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           5
+ ------------------------------------------
+ The Coulomb energy contribution   0.23387223573122284     
+ The Exchange energy contribution  -0.99064489301783065     
+ The Fock energy contribution   0.75677265728660814     
+ residual tot norm in it           5  7.41728701637418483E-003
+Residual norm for herm vector   1 is:   0.494083E-02    and frequency =     0.100000   It =   5 CONV = F
+Residual norm for antiherm vector   1 is:   0.553212E-02    and frequency =     0.100000   It =   5 CONV = F
+ Dispersion value macroiteration:           5 for  frequency  0.10000000000000001      =   2.2113006553465180     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           6
+ ------------------------------------------
+ The Coulomb energy contribution   8.84914734474209624E-002
+ The Exchange energy contribution  -0.54739480389047379     
+ The Fock energy contribution   0.45890333044305320     
+ residual tot norm in it           6  3.58235840772804480E-003
+Residual norm for herm vector   1 is:   0.238583E-02    and frequency =     0.100000   It =   6 CONV = F
+Residual norm for antiherm vector   1 is:   0.267229E-02    and frequency =     0.100000   It =   6 CONV = F
+ Dispersion value macroiteration:           6 for  frequency  0.10000000000000001      =   2.2113266201460635     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           7
+ ------------------------------------------
+ The Coulomb energy contribution   3.95704866918669823E-002
+ The Exchange energy contribution  -0.44882648389225871     
+ The Fock energy contribution   0.40925599720039180     
+ residual tot norm in it           7  1.25681626676689352E-003
+Residual norm for herm vector   1 is:   0.800233E-03    and frequency =     0.100000   It =   7 CONV = F
+Residual norm for antiherm vector   1 is:   0.969131E-03    and frequency =     0.100000   It =   7 CONV = F
+ Dispersion value macroiteration:           7 for  frequency  0.10000000000000001      =   2.2113310356378375     
+ ------------------------------------------
+ Start iteration in the rsp_std_sym solver:           8
+ ------------------------------------------
+ The Coulomb energy contribution   6.44220118525277996E-002
+ The Exchange energy contribution  -0.50354608414813151     
+ The Fock energy contribution   0.43912407229560368     
+ residual tot norm in it           8  3.10440105572443951E-004
+Residual norm for herm vector   1 is:   0.251394E-03    and frequency =     0.100000   It =   8 CONV = T
+Residual norm for antiherm vector   1 is:   0.182137E-03    and frequency =     0.100000   It =   8 CONV = T
  Starting linear response function calculation for: << EL  ; EL  >>
 
  Entering the complex sym rsp solver, gamma=  1.00000000000000002E-003
@@ -1570,11 +1647,11 @@ Residual norm for antiherm vector  1 is:   0.123530E-03    and frequency =     0
  Real part of polarizability tensor
  ''''''''''''''''''''''''''''''''''
                  Ex               Ey               Ez
- Ex         3.5571058         1.6185211        0.15626389E-12
- Ey         1.6197757         18.104065       -0.16607271E-11
- Ez       -0.12970180E-12   -0.12226331E-12     8.8453262    
+ Ex         3.5571058         1.6196142        0.14060975E-12
+ Ey         1.6197757         18.104069       -0.15405455E-11
+ Ez       -0.12162493E-12   -0.14044321E-12     8.8453262    
 
- Isotropic real polarizability =      10.168832    
+ Isotropic real polarizability =      10.168834    
 
 
  Imaginary part of polarizability tensor
@@ -1618,10 +1695,10 @@ Residual norm for antiherm vector  1 is:   0.123530E-03    and frequency =     0
 
 
  *****************************************************
- **     CPU-TIME USED IN LSDALTON RESPONSE:    22.855604000000000         **
+ **     CPU-TIME USED IN LSDALTON RESPONSE:    23.081458999999999         **
  *****************************************************
 
-Total no. of matmuls used:                      5108
+Total no. of matmuls used:                      5637
 Total no. of Fock/KS matrix evaluations:          10
 Max no. of matrices allocated in Level 3:         81
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -1704,5 +1781,5 @@ Max no. of matrices allocated in Level 3:         81
 
 
 End simulation
-     Date and time (Linux)  : Fri May 10 16:43:24 2013
+     Date and time (Linux)  : Fri May 10 16:47:17 2013
      Host name              : kasper-kristensens-macbook-pro.local    

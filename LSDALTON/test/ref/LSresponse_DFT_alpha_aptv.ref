@@ -51,7 +51,7 @@
  Last commit time         | Fri May 10 10:55:33 2013 +0200
 
 Start simulation
-     Date and time (Linux)  : Fri May 10 16:48:52 2013
+     Date and time (Linux)  : Fri May 10 16:49:44 2013
      Host name              : kasper-kristensens-macbook-pro.local    
                       
  -----------------------------------------
@@ -83,6 +83,7 @@ Start simulation
   TIGHT                                                                                               
   **RESPONS                                                                                           
   *SOLVER                                                                                             
+  .PAIR_SOLVER                                                                                        
   .CONVDYN                                                                                            
   TIGHT                                                                                               
   *ALPHA                                                                                              
@@ -318,7 +319,7 @@ Total Number of grid points:       48788
   Max allocated memory, Grid                    2.520 MB
 
  >>>  CPU  Time used in gridgeneration2 is     0.10 seconds
- >>>  WALL Time used in gridgeneration2 is     0.10 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.09 seconds
   KS electrons/energy:   18.00000417520179  -14.42869231639332 rel.err: 0.23E-06
  >>>  CPU  Time used II_get_xc_Fock_mat is     0.57 seconds
  >>>  WALL Time used II_get_xc_Fock_mat is     0.59 seconds
@@ -775,7 +776,7 @@ Calculation of virtual orbital energies converged in     3 iterations!
  The Exchange energy contribution  -6.01297221431833229E-002
  The Fock energy contribution  -4.77923313859471982E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.67 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
  omega in build_reduc..   0.10000000000000001     
@@ -831,7 +832,7 @@ Residual norm for vector   1 is:   0.123182E-02    and frequency =     0.100000 
  The Exchange energy contribution  -9.23968722717640467E-002
  The Fock energy contribution   2.89620149121642169E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.67 seconds
+ >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
  omega in build_reduc..   0.10000000000000001     
@@ -980,153 +981,170 @@ KS electrons:   18.00000230447083 rel.err: 0.13E-06
   Max allocated memory, XC                    176.400 kB
  Starting linear response function calculation for: << EL  ; EL  >>
 
- Entering the complex sym rsp solver, gamma=  1.00000000000000002E-003
+ Entering the complex rsp solver, gamma=  1.00000000000000002E-003
  ------------------
  Start macroiteration:           1
  ------------------
- The Coulomb energy contribution   0.14573836041936650     
- The Exchange energy contribution  -6.78905168077519328E-002
- The Fock energy contribution  -7.78478436116145645E-002
+ The Coulomb energy contribution   0.11051605271113295     
+ The Coulomb energy contribution   7.34908580070346706E-002
+ The Exchange energy contribution  -5.61514317263822615E-002
+ The Exchange energy contribution  -7.15233166836037743E-002
+ The Fock energy contribution  -5.43646209847506862E-002
+ The Fock energy contribution  -1.96754132343090679E-003
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   3.76277264627783298E-002
- The Exchange energy contribution  -6.92813335367642030E-002
- The Fock energy contribution   3.16536070739859426E-002
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- Dynamic response convergence threshold set to  1.00000000000000005E-004
-Residual norm for herm vector   1 is:   0.387252E-01    and frequency =     0.215627   It =   1 CONV = F
-Residual norm for antiherm vector  1 is:   0.287324E+00    and frequency =     0.215627   It =   1 CONV = F
- Dispersion value macroiteration:           1 for  frequency  0.21562679000000001      =  0.42011479487679265     
- Absorption value in macroiteration:           1 for  frequency   0.21562679000000001      =  6.50300761168437491E-003
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+ Dynamic response convergence threshold set to  1.99740294619757907E-004
+Residual norm for real vector   1 is:   0.397490E+00    and frequency =     0.215627   It =   1 CONV = F
+Residual norm for img vector   1 is:   0.199075E-02    and frequency =     0.215627   It =   1 CONV = F
+ Dispersion value macroiteration:           1 for  frequency  0.21562679000000001      =  0.39635267889149023     
+ Absorption value in macroiteration:           1 for  frequency   0.21562679000000001      =  7.50655909250446448E-004
  ------------------
  Start macroiteration:           2
  ------------------
- The Coulomb energy contribution   0.31449322093659049     
- The Exchange energy contribution  -8.09179224532552976E-002
- The Fock energy contribution  -0.23357529848333489     
+ The Coulomb energy contribution   8.75116030806485645E-002
+ The Coulomb energy contribution   0.33682881478220639     
+ The Exchange energy contribution  -7.01243396571726574E-002
+ The Exchange energy contribution  -9.88298183691385251E-002
+ The Fock energy contribution  -1.73872634234759418E-002
+ The Fock energy contribution  -0.23799899641306804     
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   4.11870428713259004E-002
- The Exchange energy contribution  -4.32801630165878179E-002
- The Fock energy contribution   2.09312014526190186E-003
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.491785E-01    and frequency =     0.215627   It =   2 CONV = F
-Residual norm for antiherm vector  1 is:   0.264583E+00    and frequency =     0.215627   It =   2 CONV = F
- Dispersion value macroiteration:           2 for  frequency  0.21562679000000001      =  0.52587460991927581     
- Absorption value in macroiteration:           2 for  frequency   0.21562679000000001      =  0.11536351187141031     
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.938205E+00    and frequency =     0.215627   It =   2 CONV = F
+Residual norm for img vector   1 is:   0.111826E+00    and frequency =     0.215627   It =   2 CONV = F
+ Dispersion value macroiteration:           2 for  frequency  0.21562679000000001      =  0.76114185315919081     
+ Absorption value in macroiteration:           2 for  frequency   0.21562679000000001      =  4.45714825641924939E-002
  ------------------
  Start macroiteration:           3
  ------------------
- The Coulomb energy contribution   0.23676004466427319     
- The Exchange energy contribution  -8.49683167544793422E-002
- The Fock energy contribution  -0.15179172790979378     
+ The Coulomb energy contribution   1.99223668221389510E-002
+ The Coulomb energy contribution   8.86261809596639166E-002
+ The Exchange energy contribution  -3.52326636486790315E-002
+ The Exchange energy contribution  -7.33062732734124783E-002
+ The Fock energy contribution   1.53102968265400891E-002
+ The Fock energy contribution  -1.53199076862514209E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   0.20952237055519160     
- The Exchange energy contribution  -8.11597616557146462E-002
- The Fock energy contribution  -0.12836260889947690     
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.563770E-01    and frequency =     0.215627   It =   3 CONV = F
-Residual norm for antiherm vector  1 is:   0.418562E+00    and frequency =     0.215627   It =   3 CONV = F
- Dispersion value macroiteration:           3 for  frequency  0.21562679000000001      =  0.61039020184833437     
- Absorption value in macroiteration:           3 for  frequency   0.21562679000000001      =   3.4367932167313473     
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.128985E+01    and frequency =     0.215627   It =   3 CONV = F
+Residual norm for img vector   1 is:   0.873531E+00    and frequency =     0.215627   It =   3 CONV = F
+ Dispersion value macroiteration:           3 for  frequency  0.21562679000000001      =   2.0689627993100514     
+ Absorption value in macroiteration:           3 for  frequency   0.21562679000000001      =   1.1226268288430468     
  ------------------
  Start macroiteration:           4
  ------------------
- The Coulomb energy contribution   0.12391798774150371     
- The Exchange energy contribution  -7.75506572575353492E-002
- The Fock energy contribution  -4.63673304839682665E-002
+ The Coulomb energy contribution   4.59703423689365037E-002
+ The Coulomb energy contribution   3.16035019949044912E-002
+ The Exchange energy contribution  -4.93267098916545660E-002
+ The Exchange energy contribution  -4.85877345073297273E-002
+ The Fock energy contribution   3.35636752271810434E-003
+ The Fock energy contribution   1.69842325124252604E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   0.24472446815513621     
- The Exchange energy contribution  -8.60435482108080907E-002
- The Fock energy contribution  -0.15868091994432798     
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.202790E-01    and frequency =     0.215627   It =   4 CONV = F
-Residual norm for antiherm vector  1 is:   0.636136E-01    and frequency =     0.215627   It =   4 CONV = F
- Dispersion value macroiteration:           4 for  frequency  0.21562679000000001      =  0.35726664611686637     
- Absorption value in macroiteration:           4 for  frequency   0.21562679000000001      =   3.6592831888893489     
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.81 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.837197E-01    and frequency =     0.215627   It =   4 CONV = F
+Residual norm for img vector   1 is:   0.500599E+00    and frequency =     0.215627   It =   4 CONV = F
+ Dispersion value macroiteration:           4 for  frequency  0.21562679000000001      =   1.0241667707772319     
+ Absorption value in macroiteration:           4 for  frequency   0.21562679000000001      =   3.5696504917509770     
  ------------------
  Start macroiteration:           5
  ------------------
- The Coulomb energy contribution   6.61059858271512008E-002
- The Exchange energy contribution  -5.40280911561926286E-002
- The Fock energy contribution  -1.20778946709586190E-002
+ The Coulomb energy contribution   8.40600138939016917E-002
+ The Coulomb energy contribution   5.32336118246988649E-002
+ The Exchange energy contribution  -5.48717847813950804E-002
+ The Exchange energy contribution  -6.22896293424216804E-002
+ The Fock energy contribution  -2.91882291125065939E-002
+ The Fock energy contribution   9.05601751772282942E-003
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   6.78780198965669296E-002
- The Exchange energy contribution  -5.51156707371489446E-002
- The Fock energy contribution  -1.27623491594179711E-002
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.186123E-02    and frequency =     0.215627   It =   5 CONV = F
-Residual norm for antiherm vector  1 is:   0.650650E-02    and frequency =     0.215627   It =   5 CONV = F
- Dispersion value macroiteration:           5 for  frequency  0.21562679000000001      =  0.35638010018213168     
- Absorption value in macroiteration:           5 for  frequency   0.21562679000000001      =   3.6543923428892149     
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.81 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.883399E-02    and frequency =     0.215627   It =   5 CONV = F
+Residual norm for img vector   1 is:   0.200662E+00    and frequency =     0.215627   It =   5 CONV = F
+ Dispersion value macroiteration:           5 for  frequency  0.21562679000000001      =  0.59398209886167852     
+ Absorption value in macroiteration:           5 for  frequency   0.21562679000000001      =   3.6540661888562918     
  ------------------
  Start macroiteration:           6
  ------------------
- The Coulomb energy contribution   0.18314139540321028     
- The Exchange energy contribution  -8.16242262119114687E-002
- The Fock energy contribution  -0.10151716919129877     
+ The Coulomb energy contribution   8.74573831466030627E-002
+ The Coulomb energy contribution   4.70164127861027736E-002
+ The Exchange energy contribution  -6.15500860951243706E-002
+ The Exchange energy contribution  -5.90659305000419479E-002
+ The Fock energy contribution  -2.59072970514787407E-002
+ The Fock energy contribution   1.20495177139391466E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   0.10551409396921743     
- The Exchange energy contribution  -6.05105614307194992E-002
- The Fock energy contribution  -4.50035325384979049E-002
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.175987E-03    and frequency =     0.215627   It =   6 CONV = F
-Residual norm for antiherm vector  1 is:   0.314521E-03    and frequency =     0.215627   It =   6 CONV = F
- Dispersion value macroiteration:           6 for  frequency  0.21562679000000001      =  0.35637172540607859     
- Absorption value in macroiteration:           6 for  frequency   0.21562679000000001      =   3.6534043748768865     
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.81 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.512140E-03    and frequency =     0.215627   It =   6 CONV = F
+Residual norm for img vector   1 is:   0.562521E-01    and frequency =     0.215627   It =   6 CONV = F
+ Dispersion value macroiteration:           6 for  frequency  0.21562679000000001      =  0.42460543526500383     
+ Absorption value in macroiteration:           6 for  frequency   0.21562679000000001      =   3.6526710448159951     
  ------------------
  Start macroiteration:           7
  ------------------
- The Coulomb energy contribution   0.13547167965504361     
- The Exchange energy contribution  -7.19157734809878213E-002
- The Fock energy contribution  -6.35559061740558068E-002
+ The Coulomb energy contribution   2.60371949848356085E-002
+ The Coulomb energy contribution   9.07295836276274248E-002
+ The Exchange energy contribution  -4.96866270221080764E-002
+ The Exchange energy contribution  -6.89878105456974144E-002
+ The Fock energy contribution   2.36494320372724262E-002
+ The Fock energy contribution  -2.17417730819300381E-002
+KS electrons:   18.00000230447083 rel.err: 0.13E-06
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.373939E-03    and frequency =     0.215627   It =   7 CONV = F
+Residual norm for img vector   1 is:   0.116607E-01    and frequency =     0.215627   It =   7 CONV = F
+ Dispersion value macroiteration:           7 for  frequency  0.21562679000000001      =  0.35910037402646006     
+ Absorption value in macroiteration:           7 for  frequency   0.21562679000000001      =   3.6534681618243359     
+ ------------------
+ Start macroiteration:           8
+ ------------------
+ The Coulomb energy contribution   6.17556956802367690E-002
+ The Coulomb energy contribution   4.66889244719667501E-002
+ The Exchange energy contribution  -5.58618910165070079E-002
+ The Exchange energy contribution  -6.25743771436266666E-002
+ The Fock energy contribution  -5.89380466372973859E-003
+ The Fock energy contribution   1.58854526716598991E-002
+KS electrons:   18.00000230447083 rel.err: 0.13E-06
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.830647E-04    and frequency =     0.215627   It =   8 CONV = T
+Residual norm for img vector   1 is:   0.196519E-02    and frequency =     0.215627   It =   8 CONV = F
+ Dispersion value macroiteration:           8 for  frequency  0.21562679000000001      =  0.35602610902771931     
+ Absorption value in macroiteration:           8 for  frequency   0.21562679000000001      =   3.6534115378401242     
+ ------------------
+ Start macroiteration:           9
+ ------------------
+ The Coulomb energy contribution   2.36861718428980524E-002
+ The Exchange energy contribution  -5.35637220918354293E-002
+ The Fock energy contribution   2.98775502489373977E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   0.12500922426664327     
- The Exchange energy contribution  -7.55609299052023980E-002
- The Fock energy contribution  -4.94482943614408949E-002
+Residual norm for real vector   1 is:   0.401449E-04    and frequency =     0.215627   It =   9 CONV = T
+Residual norm for img vector   1 is:   0.408936E-03    and frequency =     0.215627   It =   9 CONV = F
+ Dispersion value macroiteration:           9 for  frequency  0.21562679000000001      =  0.35630449796386771     
+ Absorption value in macroiteration:           9 for  frequency   0.21562679000000001      =   3.6533996245516565     
+ ------------------
+ Start macroiteration:          10
+ ------------------
+ The Coulomb energy contribution   2.83637522238059173E-002
+ The Exchange energy contribution  -5.84936220602677234E-002
+ The Fock energy contribution   3.01298698364617853E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.287420E-04    and frequency =     0.215627   It =   7 CONV = T
-Residual norm for antiherm vector  1 is:   0.279400E-04    and frequency =     0.215627   It =   7 CONV = T
+Residual norm for real vector   1 is:   0.241485E-04    and frequency =     0.215627   It =  10 CONV = T
+Residual norm for img vector   1 is:   0.900743E-04    and frequency =     0.215627   It =  10 CONV = T
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
@@ -1135,153 +1153,167 @@ KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
- Entering the complex sym rsp solver, gamma=  1.00000000000000002E-003
+ Entering the complex rsp solver, gamma=  1.00000000000000002E-003
  ------------------
  Start macroiteration:           1
  ------------------
- The Coulomb energy contribution   0.43264798481565969     
- The Exchange energy contribution  -0.10356899689783873     
- The Fock energy contribution  -0.32907898791782103     
+ The Coulomb energy contribution   0.27251320277434921     
+ The Coulomb energy contribution   7.05132665401151798E-002
+ The Exchange energy contribution  -9.09968466356352451E-002
+ The Exchange energy contribution  -6.61858204294966668E-002
+ The Fock energy contribution  -0.18151635613871409     
+ The Fock energy contribution  -4.32744611061867263E-003
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   0.13509786314312994     
- The Exchange energy contribution  -7.29793988536126398E-002
- The Fock energy contribution  -6.21184642895172764E-002
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- Dynamic response convergence threshold set to  2.14104724384098612E-004
-Residual norm for herm vector   1 is:   0.264396E-01    and frequency =     0.215627   It =   1 CONV = F
-Residual norm for antiherm vector  1 is:   0.829979E+00    and frequency =     0.215627   It =   1 CONV = F
- Dispersion value macroiteration:           1 for  frequency  0.21562679000000001      =   2.1674107874092043     
- Absorption value in macroiteration:           1 for  frequency   0.21562679000000001      =  5.07071363674841367E-003
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+ Dynamic response convergence threshold set to  3.86915767920761422E-004
+Residual norm for real vector   1 is:   0.772430E+00    and frequency =     0.215627   It =   1 CONV = F
+Residual norm for img vector   1 is:   0.140175E-02    and frequency =     0.215627   It =   1 CONV = F
+ Dispersion value macroiteration:           1 for  frequency  0.21562679000000001      =   2.2352486634216699     
+ Absorption value in macroiteration:           1 for  frequency   0.21562679000000001      =  3.11710103855786713E-003
  ------------------
  Start macroiteration:           2
  ------------------
- The Coulomb energy contribution   0.39506239034983420     
- The Exchange energy contribution  -8.76158005228562103E-002
- The Fock energy contribution  -0.30744658982697792     
+ The Coulomb energy contribution   0.18058114774537989     
+ The Coulomb energy contribution   0.13320933942626387     
+ The Exchange energy contribution  -8.36127205519473227E-002
+ The Exchange energy contribution  -7.33707211469697834E-002
+ The Fock energy contribution  -9.69684271934325853E-002
+ The Fock energy contribution  -5.98386182792941257E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   0.14558496578412838     
- The Exchange energy contribution  -7.46071637818629813E-002
- The Fock energy contribution  -7.09778020022653611E-002
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.231068E-01    and frequency =     0.215627   It =   2 CONV = F
-Residual norm for antiherm vector  1 is:   0.621967E-01    and frequency =     0.215627   It =   2 CONV = F
- Dispersion value macroiteration:           2 for  frequency  0.21562679000000001      =   2.5842588423245068     
- Absorption value in macroiteration:           2 for  frequency   0.21562679000000001      =  7.60126578277321198E-003
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.200387E+00    and frequency =     0.215627   It =   2 CONV = F
+Residual norm for img vector   1 is:   0.431072E-02    and frequency =     0.215627   It =   2 CONV = F
+ Dispersion value macroiteration:           2 for  frequency  0.21562679000000001      =   2.5423826259348008     
+ Absorption value in macroiteration:           2 for  frequency   0.21562679000000001      =  3.86218888274891640E-003
  ------------------
  Start macroiteration:           3
  ------------------
- The Coulomb energy contribution   6.07310112165682578E-002
- The Exchange energy contribution  -6.26554688687597922E-002
- The Fock energy contribution   1.92445765219153848E-003
+ The Coulomb energy contribution   5.20674813049054400E-002
+ The Coulomb energy contribution   7.25658386830732721E-002
+ The Exchange energy contribution  -7.26397830717599169E-002
+ The Exchange energy contribution  -6.56546585954883716E-002
+ The Fock energy contribution   2.05723017668544700E-002
+ The Fock energy contribution  -6.91118008758486845E-003
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   0.12980810296597325     
- The Exchange energy contribution  -5.86620171454572681E-002
- The Fock energy contribution  -7.11460858205160418E-002
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.348558E-01    and frequency =     0.215627   It =   3 CONV = F
-Residual norm for antiherm vector  1 is:   0.148885E+00    and frequency =     0.215627   It =   3 CONV = F
- Dispersion value macroiteration:           3 for  frequency  0.21562679000000001      =   2.6033468429128299     
- Absorption value in macroiteration:           3 for  frequency   0.21562679000000001      =  2.19667314717134042E-002
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.334820E+00    and frequency =     0.215627   It =   3 CONV = F
+Residual norm for img vector   1 is:   0.555788E-01    and frequency =     0.215627   It =   3 CONV = F
+ Dispersion value macroiteration:           3 for  frequency  0.21562679000000001      =   2.6313646493769789     
+ Absorption value in macroiteration:           3 for  frequency   0.21562679000000001      =  1.32868592557251527E-002
  ------------------
  Start macroiteration:           4
  ------------------
- The Coulomb energy contribution   0.10683791655067935     
- The Exchange energy contribution  -7.16996192856390185E-002
- The Fock energy contribution  -3.51382972650403358E-002
+ The Coulomb energy contribution   2.53872500562711233E-002
+ The Coulomb energy contribution   9.85122797392763289E-002
+ The Exchange energy contribution  -5.22618548709923372E-002
+ The Exchange energy contribution  -7.95274169237708967E-002
+ The Fock energy contribution   2.68746048147212174E-002
+ The Fock energy contribution  -1.89848628155055085E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   8.93420559042728130E-002
- The Exchange energy contribution  -7.42200541660693464E-002
- The Fock energy contribution  -1.51220017382035048E-002
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.235315E-01    and frequency =     0.215627   It =   4 CONV = F
-Residual norm for antiherm vector  1 is:   0.655596E-01    and frequency =     0.215627   It =   4 CONV = F
- Dispersion value macroiteration:           4 for  frequency  0.21562679000000001      =   2.5640756607863571     
- Absorption value in macroiteration:           4 for  frequency   0.21562679000000001      =  0.36809054699721372     
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.124242E+00    and frequency =     0.215627   It =   4 CONV = F
+Residual norm for img vector   1 is:   0.349787E+00    and frequency =     0.215627   It =   4 CONV = F
+ Dispersion value macroiteration:           4 for  frequency  0.21562679000000001      =   2.6875136124292625     
+ Absorption value in macroiteration:           4 for  frequency   0.21562679000000001      =  0.33413987651862642     
  ------------------
  Start macroiteration:           5
  ------------------
- The Coulomb energy contribution   0.11055537342262864     
- The Exchange energy contribution  -6.78741727433449377E-002
- The Fock energy contribution  -4.26812006792837498E-002
+ The Coulomb energy contribution   7.98362153755938775E-002
+ The Coulomb energy contribution   3.32154610943521805E-002
+ The Exchange energy contribution  -6.82222108206305133E-002
+ The Exchange energy contribution  -4.82470541654080182E-002
+ The Fock energy contribution  -1.16140045549633815E-002
+ The Fock energy contribution   1.50315930710558168E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   4.86698732771806072E-002
- The Exchange energy contribution  -6.45542896222442708E-002
- The Fock energy contribution   1.58844163450636462E-002
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.195588E-02    and frequency =     0.215627   It =   5 CONV = F
-Residual norm for antiherm vector  1 is:   0.521315E-02    and frequency =     0.215627   It =   5 CONV = F
- Dispersion value macroiteration:           5 for  frequency  0.21562679000000001      =   2.5632759838099028     
- Absorption value in macroiteration:           5 for  frequency   0.21562679000000001      =  0.37659709417282311     
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.604610E-02    and frequency =     0.215627   It =   5 CONV = F
+Residual norm for img vector   1 is:   0.118899E+00    and frequency =     0.215627   It =   5 CONV = F
+ Dispersion value macroiteration:           5 for  frequency  0.21562679000000001      =   2.5928997355395578     
+ Absorption value in macroiteration:           5 for  frequency   0.21562679000000001      =  0.37435925450993629     
  ------------------
  Start macroiteration:           6
  ------------------
- The Coulomb energy contribution   0.11914873628102396     
- The Exchange energy contribution  -8.95718609947601385E-002
- The Fock energy contribution  -2.95768752862637999E-002
+ The Coulomb energy contribution   9.40523359256103253E-002
+ The Coulomb energy contribution   2.30654461052835803E-002
+ The Exchange energy contribution  -6.09133897686099865E-002
+ The Exchange energy contribution  -5.19849141756879574E-002
+ The Fock energy contribution  -3.31389461570003110E-002
+ The Fock energy contribution   2.89194680704043840E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   9.41904517633678218E-002
- The Exchange energy contribution  -6.85620356320246205E-002
- The Fock energy contribution  -2.56284161313432776E-002
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.332117E-03    and frequency =     0.215627   It =   6 CONV = F
-Residual norm for antiherm vector  1 is:   0.360124E-03    and frequency =     0.215627   It =   6 CONV = F
- Dispersion value macroiteration:           6 for  frequency  0.21562679000000001      =   2.5632665717570919     
- Absorption value in macroiteration:           6 for  frequency   0.21562679000000001      =  0.37624196276339145     
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.486462E-03    and frequency =     0.215627   It =   6 CONV = F
+Residual norm for img vector   1 is:   0.414413E-01    and frequency =     0.215627   It =   6 CONV = F
+ Dispersion value macroiteration:           6 for  frequency  0.21562679000000001      =   2.5731618140479338     
+ Absorption value in macroiteration:           6 for  frequency   0.21562679000000001      =  0.37870628220275498     
  ------------------
  Start macroiteration:           7
  ------------------
- The Coulomb energy contribution   0.12336092567357376     
- The Exchange energy contribution  -9.10272407236513287E-002
- The Fock energy contribution  -3.23336849499224060E-002
+ The Coulomb energy contribution   4.82203471251623703E-002
+ The Coulomb energy contribution   3.36431120381944782E-002
+ The Exchange energy contribution  -5.77104535277045277E-002
+ The Exchange energy contribution  -4.90356692605743300E-002
+ The Fock energy contribution   9.49010640254216442E-003
+ The Fock energy contribution   1.53925572223798553E-002
+KS electrons:   18.00000230447083 rel.err: 0.13E-06
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.261111E-03    and frequency =     0.215627   It =   7 CONV = T
+Residual norm for img vector   1 is:   0.877214E-02    and frequency =     0.215627   It =   7 CONV = F
+ Dispersion value macroiteration:           7 for  frequency  0.21562679000000001      =   2.5656050523177889     
+ Absorption value in macroiteration:           7 for  frequency   0.21562679000000001      =  0.37648923540814977     
+ ------------------
+ Start macroiteration:           8
+ ------------------
+ The Coulomb energy contribution   3.13919234616807305E-002
+ The Exchange energy contribution  -5.48446883108616376E-002
+ The Fock energy contribution   2.34527648491808759E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   7.44253055950437337E-002
- The Exchange energy contribution  -6.48785013090828894E-002
- The Fock energy contribution  -9.54680428596083389E-003
+Residual norm for real vector   1 is:   0.116750E-03    and frequency =     0.215627   It =   8 CONV = T
+Residual norm for img vector   1 is:   0.295367E-02    and frequency =     0.215627   It =   8 CONV = F
+ Dispersion value macroiteration:           8 for  frequency  0.21562679000000001      =   2.5634710615266796     
+ Absorption value in macroiteration:           8 for  frequency   0.21562679000000001      =  0.37628157625567760     
+ ------------------
+ Start macroiteration:           9
+ ------------------
+ The Coulomb energy contribution   4.29593894648328950E-002
+ The Exchange energy contribution  -5.36891273624559642E-002
+ The Fock energy contribution   1.07297378976231282E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.380024E-04    and frequency =     0.215627   It =   7 CONV = T
-Residual norm for antiherm vector  1 is:   0.249833E-04    and frequency =     0.215627   It =   7 CONV = T
+Residual norm for real vector   1 is:   0.637382E-04    and frequency =     0.215627   It =   9 CONV = T
+Residual norm for img vector   1 is:   0.104986E-02    and frequency =     0.215627   It =   9 CONV = F
+ Dispersion value macroiteration:           9 for  frequency  0.21562679000000001      =   2.5631149081461939     
+ Absorption value in macroiteration:           9 for  frequency   0.21562679000000001      =  0.37625724057644072     
+ ------------------
+ Start macroiteration:          10
+ ------------------
+ The Coulomb energy contribution   3.46029250641435512E-002
+ The Exchange energy contribution  -5.55473926548887970E-002
+ The Fock energy contribution   2.09444675907452700E-002
+KS electrons:   18.00000230447083 rel.err: 0.13E-06
+ >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
+  Max allocated memory, XC                    176.400 kB
+Residual norm for real vector   1 is:   0.609574E-04    and frequency =     0.215627   It =  10 CONV = T
+Residual norm for img vector   1 is:   0.265672E-03    and frequency =     0.215627   It =  10 CONV = T
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
@@ -1290,139 +1322,137 @@ KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
- Entering the complex sym rsp solver, gamma=  1.00000000000000002E-003
+ Entering the complex rsp solver, gamma=  1.00000000000000002E-003
  ------------------
  Start macroiteration:           1
  ------------------
- The Coulomb energy contribution   0.27682447681268324     
- The Exchange energy contribution  -6.66314372505890790E-002
- The Fock energy contribution  -0.21019303956209415     
+ The Coulomb energy contribution   0.15969645686699535     
+ The Coulomb energy contribution   8.67319064110044086E-002
+ The Exchange energy contribution  -5.44252075273191638E-002
+ The Exchange energy contribution  -6.71377748363310434E-002
+ The Fock energy contribution  -0.10527124933967620     
+ The Fock energy contribution  -1.95941315746733548E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   5.09244071824270089E-002
- The Exchange energy contribution  -4.04430529180310472E-002
- The Fock energy contribution  -1.04813542643959982E-002
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
  Dynamic response convergence threshold set to  1.00000000000000005E-004
-Residual norm for herm vector   1 is:   0.738648E-02    and frequency =     0.215627   It =   1 CONV = F
-Residual norm for antiherm vector  1 is:   0.172096E+00    and frequency =     0.215627   It =   1 CONV = F
- Dispersion value macroiteration:           1 for  frequency  0.21562679000000001      =   1.5101950539610300     
- Absorption value in macroiteration:           1 for  frequency   0.21562679000000001      =  1.41766493439735236E-003
+Residual norm for real vector   1 is:   0.149029E+00    and frequency =     0.215627   It =   1 CONV = F
+Residual norm for img vector   1 is:   0.646230E-03    and frequency =     0.215627   It =   1 CONV = F
+ Dispersion value macroiteration:           1 for  frequency  0.21562679000000001      =   1.5290537239552604     
+ Absorption value in macroiteration:           1 for  frequency   0.21562679000000001      =  1.22187954503758314E-003
  ------------------
  Start macroiteration:           2
  ------------------
- The Coulomb energy contribution   0.13530577412366784     
- The Exchange energy contribution  -6.71037379739798240E-002
- The Fock energy contribution  -6.82020361496880612E-002
+ The Coulomb energy contribution   2.41105630625151335E-002
+ The Coulomb energy contribution   8.08629722561570868E-002
+ The Exchange energy contribution  -4.24163682639855863E-002
+ The Exchange energy contribution  -5.82726509970977816E-002
+ The Fock energy contribution   1.83058052014704493E-002
+ The Fock energy contribution  -2.25903212590592740E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   3.06647142265295720E-002
- The Exchange energy contribution  -4.85506796980345948E-002
- The Fock energy contribution   1.78859654715050054E-002
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.372754E-02    and frequency =     0.215627   It =   2 CONV = F
-Residual norm for antiherm vector  1 is:   0.204012E-01    and frequency =     0.215627   It =   2 CONV = F
- Dispersion value macroiteration:           2 for  frequency  0.21562679000000001      =   1.5342370287047671     
- Absorption value in macroiteration:           2 for  frequency   0.21562679000000001      =  1.26148513265099578E-003
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.530060E-01    and frequency =     0.215627   It =   2 CONV = F
+Residual norm for img vector   1 is:   0.573400E-03    and frequency =     0.215627   It =   2 CONV = F
+ Dispersion value macroiteration:           2 for  frequency  0.21562679000000001      =   1.5322895764235358     
+ Absorption value in macroiteration:           2 for  frequency   0.21562679000000001      =  1.20878580548642320E-003
  ------------------
  Start macroiteration:           3
  ------------------
- The Coulomb energy contribution   7.39078755178963209E-002
- The Exchange energy contribution  -4.58464908029203658E-002
- The Fock energy contribution  -2.80613847149759829E-002
+ The Coulomb energy contribution   6.65681064621461982E-002
+ The Coulomb energy contribution   9.41207354684555075E-002
+ The Exchange energy contribution  -5.09929874013798703E-002
+ The Exchange energy contribution  -5.48395306759514520E-002
+ The Fock energy contribution  -1.55751190607662671E-002
+ The Fock energy contribution  -3.92812047925040417E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   0.22166962288233641     
- The Exchange energy contribution  -6.28635254390460807E-002
- The Fock energy contribution  -0.15880609744329038     
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.438963E-03    and frequency =     0.215627   It =   3 CONV = F
-Residual norm for antiherm vector  1 is:   0.309269E-02    and frequency =     0.215627   It =   3 CONV = F
- Dispersion value macroiteration:           3 for  frequency  0.21562679000000001      =   1.5346733028309014     
- Absorption value in macroiteration:           3 for  frequency   0.21562679000000001      =  1.26417114716961734E-003
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.135832E-01    and frequency =     0.215627   It =   3 CONV = F
+Residual norm for img vector   1 is:   0.148066E-03    and frequency =     0.215627   It =   3 CONV = F
+ Dispersion value macroiteration:           3 for  frequency  0.21562679000000001      =   1.5347890229963741     
+ Absorption value in macroiteration:           3 for  frequency   0.21562679000000001      =  1.26832877579475980E-003
  ------------------
  Start macroiteration:           4
  ------------------
- The Coulomb energy contribution   9.83723193422092052E-002
- The Exchange energy contribution  -6.60237644731504481E-002
- The Fock energy contribution  -3.23485548690588126E-002
+ The Coulomb energy contribution   2.87360351374904496E-002
+ The Coulomb energy contribution   0.28441914899181342     
+ The Exchange energy contribution  -5.89133484600625756E-002
+ The Exchange energy contribution  -8.22635369223642526E-002
+ The Fock energy contribution   3.01773133225721017E-002
+ The Fock energy contribution  -0.20215561206944935     
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.67 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   7.34181519525269055E-002
- The Exchange energy contribution  -6.56691271293695644E-002
- The Fock energy contribution  -7.74902482315744517E-003
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.141814E-03    and frequency =     0.215627   It =   4 CONV = F
-Residual norm for antiherm vector  1 is:   0.628616E-03    and frequency =     0.215627   It =   4 CONV = F
- Dispersion value macroiteration:           4 for  frequency  0.21562679000000001      =   1.5346823842857793     
- Absorption value in macroiteration:           4 for  frequency   0.21562679000000001      =  1.27354934199786938E-003
+ >>>  CPU  Time used II_get_xc_linrsp is     0.81 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.82 seconds
+  Max allocated memory, XC                    182.160 kB
+Residual norm for real vector   1 is:   0.528365E-02    and frequency =     0.215627   It =   4 CONV = F
+Residual norm for img vector   1 is:   0.922046E-04    and frequency =     0.215627   It =   4 CONV = T
+ Dispersion value macroiteration:           4 for  frequency  0.21562679000000001      =   1.5348925288878383     
+ Absorption value in macroiteration:           4 for  frequency   0.21562679000000001      =  1.27257582803653340E-003
  ------------------
  Start macroiteration:           5
  ------------------
- The Coulomb energy contribution   0.11086133959621200     
- The Exchange energy contribution  -6.81555580204852018E-002
- The Fock energy contribution  -4.27057815757267561E-002
+ The Coulomb energy contribution   5.81782395772345376E-002
+ The Exchange energy contribution  -7.01787877250624192E-002
+ The Fock energy contribution   1.20005481478278990E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   4.46885330793302532E-002
- The Exchange energy contribution  -6.95418193485124320E-002
- The Fock energy contribution   2.48532862691821718E-002
-KS electrons:   18.00000230447083 rel.err: 0.13E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
-  Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.478323E-04    and frequency =     0.215627   It =   5 CONV = T
-Residual norm for antiherm vector  1 is:   0.191215E-03    and frequency =     0.215627   It =   5 CONV = F
- Dispersion value macroiteration:           5 for  frequency  0.21562679000000001      =   1.5346831214516248     
- Absorption value in macroiteration:           5 for  frequency   0.21562679000000001      =  1.27094238875701004E-003
+Residual norm for real vector   1 is:   0.195032E-02    and frequency =     0.215627   It =   5 CONV = F
+Residual norm for img vector   1 is:   0.511288E-04    and frequency =     0.215627   It =   5 CONV = T
+ Dispersion value macroiteration:           5 for  frequency  0.21562679000000001      =   1.5347256259637094     
+ Absorption value in macroiteration:           5 for  frequency   0.21562679000000001      =  1.27275089250743906E-003
  ------------------
  Start macroiteration:           6
  ------------------
- The Coulomb energy contribution   0.10149824499778953     
- The Exchange energy contribution  -8.39060231277303087E-002
- The Fock energy contribution  -1.75922218700592138E-002
+ The Coulomb energy contribution   4.29356363131217569E-002
+ The Exchange energy contribution  -5.42055032918673518E-002
+ The Fock energy contribution   1.12698669787456227E-002
+KS electrons:   18.00000230447083 rel.err: 0.13E-06
+ >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.69 seconds
+  Max allocated memory, XC                    176.400 kB
+Residual norm for real vector   1 is:   0.636043E-03    and frequency =     0.215627   It =   6 CONV = F
+Residual norm for img vector   1 is:   0.496486E-04    and frequency =     0.215627   It =   6 CONV = T
+ Dispersion value macroiteration:           6 for  frequency  0.21562679000000001      =   1.5346924640939115     
+ Absorption value in macroiteration:           6 for  frequency   0.21562679000000001      =  1.27208438790652541E-003
+ ------------------
+ Start macroiteration:           7
+ ------------------
+ The Coulomb energy contribution   4.96446067897551996E-002
+ The Exchange energy contribution  -6.88524791628971761E-002
+ The Fock energy contribution   1.92078723731419487E-002
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
- The Coulomb energy contribution   7.97539813968540234E-002
- The Exchange energy contribution  -5.95974737011147268E-002
- The Fock energy contribution  -2.01565076957393001E-002
+Residual norm for real vector   1 is:   0.270808E-03    and frequency =     0.215627   It =   7 CONV = F
+Residual norm for img vector   1 is:   0.476652E-04    and frequency =     0.215627   It =   7 CONV = T
+ Dispersion value macroiteration:           7 for  frequency  0.21562679000000001      =   1.5346778709225393     
+ Absorption value in macroiteration:           7 for  frequency   0.21562679000000001      =  1.27112055294977553E-003
+ ------------------
+ Start macroiteration:           8
+ ------------------
+ The Coulomb energy contribution   6.37902493017651617E-002
+ The Exchange energy contribution  -5.48910158591258412E-002
+ The Fock energy contribution  -8.89923344263936211E-003
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
-Residual norm for herm vector   1 is:   0.512558E-05    and frequency =     0.215627   It =   6 CONV = T
-Residual norm for antiherm vector  1 is:   0.323421E-04    and frequency =     0.215627   It =   6 CONV = T
+Residual norm for real vector   1 is:   0.509030E-04    and frequency =     0.215627   It =   8 CONV = T
+Residual norm for img vector   1 is:   0.348557E-04    and frequency =     0.215627   It =   8 CONV = T
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.68 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
 KS electrons:   18.00000230447083 rel.err: 0.13E-06
  >>>  CPU  Time used II_get_xc_linrsp is     0.67 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.67 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.68 seconds
   Max allocated memory, XC                    176.400 kB
 
 
@@ -1468,33 +1498,33 @@ KS electrons:   18.00000230447083 rel.err: 0.13E-06
  Real part of polarizability tensor
  ''''''''''''''''''''''''''''''''''
                  Ex               Ey               Ez
- Ex         1.4254868         1.6879953       -0.43243187E-11
- Ey         1.6880041         10.253066        0.40976111E-10
- Ez        0.16286972E-11    0.23585578E-11     6.1387326    
+ Ex         1.4253461         1.6873035       -0.13020693E-02
+ Ey         1.6879435         10.252845       -0.35713730E-03
+ Ez        0.15766192E-05   -0.77335162E-05     6.1387279    
 
- Isotropic real polarizability =      5.9390951    
+ Isotropic real polarizability =      5.9389730    
 
 
  Imaginary part of polarizability tensor
  '''''''''''''''''''''''''''''''''''''''
                  Ex               Ey               Ez
- Ex         14.613622         4.6670831       -0.10201258E-12
- Ey         4.6670703         1.5048229        0.60988627E-12
- Ez       -0.97322150E-11   -0.50116022E-11    0.50837287E-02
+ Ex         14.613633         4.6672793       -0.39706085E-04
+ Ey         4.6670658         1.5048693       -0.48546481E-04
+ Ez       -0.18820949E-04   -0.34260014E-04    0.50864514E-02
 
- Isotropic imaginary polarizability =      5.3745094    
+ Isotropic imaginary polarizability =      5.3745297    
 
 
 
 
 
  *****************************************************
- **     CPU-TIME USED IN LSDALTON RESPONSE:    47.366754999999998         **
+ **     CPU-TIME USED IN LSDALTON RESPONSE:    41.392465000000001         **
  *****************************************************
 
-Total no. of matmuls used:                      2976
+Total no. of matmuls used:                      3954
 Total no. of Fock/KS matrix evaluations:           7
-Max no. of matrices allocated in Level 3:         66
+Max no. of matrices allocated in Level 3:         59
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -1537,7 +1567,7 @@ Max no. of matrices allocated in Level 3:         66
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
   Max allocated memory, TOTAL                          3.021 MB
-  Max allocated memory, type(matrix)                  85.184 kB
+  Max allocated memory, type(matrix)                  83.872 kB
   Max allocated memory, real(realk)                    1.693 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
@@ -1562,18 +1592,18 @@ Max no. of matrices allocated in Level 3:         66
   Max allocated memory, ATOMTYPEITEM                 153.056 kB
   Max allocated memory, ATOMITEM                       2.160 kB
   Max allocated memory, LSMATRIX                       1.120 kB
-  Max allocated memory, OverlapT                      66.240 kB
+  Max allocated memory, OverlapT                      68.448 kB
   Max allocated memory, linkshell                      0.904 kB
   Max allocated memory, integrand                     64.512 kB
   Max allocated memory, integralitem                 829.440 kB
   Max allocated memory, IntWork                       27.448 kB
-  Max allocated memory, Overlap                      388.436 kB
+  Max allocated memory, Overlap                      710.996 kB
   Max allocated memory, ODitem                         2.560 kB
-  Max allocated memory, LStensor                      17.922 kB
+  Max allocated memory, LStensor                      22.530 kB
   Max allocated memory, FMM                            0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
 
 End simulation
-     Date and time (Linux)  : Fri May 10 16:49:44 2013
+     Date and time (Linux)  : Fri May 10 16:50:30 2013
      Host name              : kasper-kristensens-macbook-pro.local    

@@ -51,7 +51,7 @@
  Last commit time         | Fri May 10 10:55:33 2013 +0200
 
 Start simulation
-     Date and time (Linux)  : Fri May 10 16:51:36 2013
+     Date and time (Linux)  : Fri May 10 16:51:43 2013
      Host name              : kasper-kristensens-macbook-pro.local    
                       
  -----------------------------------------
@@ -74,11 +74,18 @@ Start simulation
                       
   **WAVE FUNCTIONS                                                                                    
   .DFT                                                                                                
-  B3LYP                                                                                               
+  LDA                                                                                                 
+  *DFT INPUT                                                                                          
+  .FINE                                                                                               
+  .GRID TYPE                                                                                          
+   BECKEORIG LMG                                                                                      
   *DENSOPT                                                                                            
-  .ARH DAVID                                                                                          
-  .CONVDYN                                                                                            
-  TIGHT                                                                                               
+  .RH                                                                                                 
+  .DIIS                                                                                               
+  .NVEC                                                                                               
+  8                                                                                                   
+  .CONVTHR                                                                                            
+  1.0D-6                                                                                              
   **RESPONS                                                                                           
   .NEXCIT                                                                                             
   4                                                                                                   
@@ -161,51 +168,30 @@ total         10                               18        6
  Configuration:
  ==============
  
-     This is a DFT calculation of type: B3LYP
- Weighted mixed functional:
-                       VWN:    0.19000
-                       LYP:    0.81000
-                     Becke:    0.72000
-                    Slater:    0.80000
+     This is a DFT calculation of type: LDA
    
   The Exchange-Correlation Grid specifications:
-  Radial Quadrature : Treutler-Ahlrichs M4-T2 scheme
-                      (J. Chem. Phys. (1995) 102, 346).
-                      Implies also that the angular integration quality becomes Z-dependant
-  Space partitioning: Stratmann-Scuseria-Frisch partitioning scheme
-                      Chem. Phys. Lett. (1996) vol. 213 page 257,
-                      Combined with a blockwise handling of grid points
-                      J. Chem. Phys. (2004) vol 121, page 2915.
-                      Useful for large molecules.
+  Radial Quadrature : LMG scheme
+                      Radial grid as proposed by R. Lindh, P.A. Malmqvist
+                      and L. Gagliardi. Theor. Chem. Acc. (2001) 106, 178
+  Space partitioning: Becke partitioning scheme without atomic size correction
+                      J. Chem. Phys. (1988) vol 88 page 2547
 
   We use grid pruning according to Mol. Phys. (1993) vol 78 page 997
 
-     DFT LSint Radial integration threshold:   0.5012D-13
-     DFT LSint integration order range     :   [  5:  35]
+     DFT LSint Radial integration threshold:   0.2154D-16
+     DFT LSint integration order range     :   [  5:  47]
      Hardness of the partioning function   :   3
      DFT LSint screening thresholds        :   0.10D-08   0.20D-09   0.20D-11
      Threshold for number of electrons     :   0.10D-02
-     The Exact Exchange Factor             : 0.2000D+00
+     The Exact Exchange Factor             : 0.0000D+00
 
-   You have requested Augmented Roothaan-Hall optimization
-   => explicit averaging is turned off!
+Density subspace min. method    : DIIS                    
+Density optimization : Diagonalization                    
 
-Expand trust radius if ratio is larger than:            0.75
-Contract trust radius if ratio is smaller than:         0.25
-On expansion, trust radius is expanded by a factor      1.20
-On contraction, trust radius is contracted by a factor  0.70
+ Maximum size of Fock/density queue in averaging:           8
 
- Maximum size of subspace in ARH linear equations:           2
-
-Density subspace min. method    : None                    
-Density optimization : Augmented RH optimization          
-
- Maximum size of Fock/density queue in averaging:           7
- 
- Due to the tightend SCF convergence threshold we also tighten the integral Threshold
- with a factor:  9.99999999999999917E-002
-
-Dynamic convergence threshold for gradient:   0.32E-05
+Convergence threshold for gradient:   0.10E-05
  
 We perform the calculation in the Grand Canonical basis
 (see PCCP 2009, 11, 5805-5813)
@@ -219,11 +205,11 @@ You can force the integral evaluation in Grand
 Canonical basis by using the keyword
 .NOGCINTEGRALTRANSFORM
  
-    The Overall Screening threshold is set to              :1.0000E-09
-    The Screening threshold used for Coulomb               :1.0000E-11
-    The Screening threshold used for Exchange              :1.0000E-09
-    The Screening threshold used for One-electron operators:1.0000E-16
- The SCF Convergence Criteria is applied to the gradnorm in OAO basis
+    The Overall Screening threshold is set to              :1.0000E-08
+    The Screening threshold used for Coulomb               :1.0000E-10
+    The Screening threshold used for Exchange              :1.0000E-08
+    The Screening threshold used for One-electron operators:1.0000E-15
+ The SCF Convergence Criteria is applied to the gradnorm in AO basis
 
  End of configuration!
 
@@ -234,54 +220,48 @@ Matrix type: mtype_dense
  QQQ New  h:   1.5045811993237843     
  QQQ New  K:  0.57764842464889588     
  The Coulomb energy contribution   0.38730296535677067     
- The Exchange energy contribution   3.87302965356770557E-002
- The Fock energy contribution  -0.34857266882109361     
-Total Number of grid points:       10026
- >>>  CPU  Time used in Boxify is     0.00 seconds
- >>>  WALL Time used in Boxify is     0.00 seconds
+ The Exchange energy contribution   -0.0000000000000000     
+ The Fock energy contribution  -0.38730296535677067     
+Total Number of grid points:       30668
+ >>>  CPU  Time used in Boxify is     0.02 seconds
+ >>>  WALL Time used in Boxify is     0.02 seconds
 
-  Max allocated memory, Grid                  753.473 kB
+  Max allocated memory, Grid                    1.933 MB
 
- >>>  CPU  Time used in gridgeneration2 is     0.01 seconds
- >>>  WALL Time used in gridgeneration2 is     0.01 seconds
-  KS electrons/energy:    1.00000000000014   -0.27155394364507 rel.err: 0.14E-12
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.06 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.07 seconds
-  Max allocated memory, XC                     57.528 kB
-**************************************************************************************###
- it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     ###
-******************************************************************  ********************###
-  1     -0.3895631295    0.00000000000    0.00      0.00000    0.00    0.00E+00  ###
-*******************************************************************************************%%%
- Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
-*******************************************************************************************%%%
+ >>>  CPU  Time used in gridgeneration2 is     0.03 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.03 seconds
+  KS electrons/energy:    0.99999999999999   -0.30925489496707 rel.err:-0.10E-13
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.10 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.11 seconds
+  Max allocated memory, XC                     46.264 kB
+*******************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo  AO gradient     ###
+*******************************************************************************************###
+  1     -0.3885337843    0.00000000000    0.00      0.00000    0.00    0.0000000    0.00E+00  ###
 
  Level 1 atomic calculation on STO-3G Charge   9
  ================================================
  QQQ New  h:   6625.3275872759259     
  QQQ New  K:   1400.6757660030501     
  The Coulomb energy contribution    50.894653163046769     
- The Exchange energy contribution    1.9715652963015753     
- The Fock energy contribution   -48.923087866745206     
-Total Number of grid points:       14812
+ The Exchange energy contribution   -0.0000000000000000     
+ The Fock energy contribution   -50.894653163046769     
+Total Number of grid points:       26786
  >>>  CPU  Time used in Boxify is     0.01 seconds
  >>>  WALL Time used in Boxify is     0.01 seconds
 
-  Max allocated memory, Grid                    1.068 MB
+  Max allocated memory, Grid                    1.697 MB
 
- >>>  CPU  Time used in gridgeneration2 is     0.01 seconds
- >>>  WALL Time used in gridgeneration2 is     0.01 seconds
-  KS electrons/energy:    9.00000000002467   -8.41488819069796 rel.err: 0.27E-11
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.11 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.12 seconds
-  Max allocated memory, XC                    103.828 kB
-**************************************************************************************###
- it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    AO gradient     ###
-******************************************************************  ********************###
-  1    -98.1443099285    0.00000000000    0.00      0.00000    0.00    2.08E-14  ###
-*******************************************************************************************%%%
- Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
-*******************************************************************************************%%%
+ >>>  CPU  Time used in gridgeneration2 is     0.02 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.02 seconds
+  KS electrons/energy:    8.99999999999994   -9.81958696980137 rel.err:-0.67E-14
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.10 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.11 seconds
+  Max allocated memory, XC                     59.796 kB
+*******************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo  AO gradient     ###
+*******************************************************************************************###
+  1    -97.5774434113    0.00000000000    0.00      0.00000    0.00    0.0000000    1.98E-14  ###
 Matrix type: mtype_dense
  QQQ New  h:   6840.4413366107392     
  QQQ New  K:   1584.2032158728314     
@@ -289,51 +269,48 @@ Matrix type: mtype_dense
  First density: Atoms in molecule guess
 
  The Coulomb energy contribution    55.577776387795495     
- The Exchange energy contribution   -2.0514842075952315     
- The Fock energy contribution   -53.526292180200272     
-Total Number of grid points:       24838
- >>>  CPU  Time used in Boxify is     0.01 seconds
- >>>  WALL Time used in Boxify is     0.01 seconds
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -55.577776387795495     
+Total Number of grid points:       57378
+ >>>  CPU  Time used in Boxify is     0.04 seconds
+ >>>  WALL Time used in Boxify is     0.04 seconds
 
-  Max allocated memory, Grid                    1.546 MB
+  Max allocated memory, Grid                    2.824 MB
 
- >>>  CPU  Time used in gridgeneration2 is     0.03 seconds
- >>>  WALL Time used in gridgeneration2 is     0.03 seconds
-  KS electrons/energy:    9.99999562117143   -8.74684163397841 rel.err:-0.44E-06
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.22 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.23 seconds
-  Max allocated memory, XC                    113.512 kB
-  Iteration 0 energy:  -98.728509688969567     
+ >>>  CPU  Time used in gridgeneration2 is     0.07 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.08 seconds
+  KS electrons/energy:    9.99999994797817  -10.21827243300176 rel.err:-0.52E-08
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.26 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.27 seconds
+  Max allocated memory, XC                     63.336 kB
+  Iteration 0 energy:  -98.148456280397696     
 
-Max no. of matrices allocated in Level 2 / get_initial_dens:         11
+Max no. of matrices allocated in Level 2 / get_initial_dens:          9
  Preparing to do S^1/2 decomposition...
 Matrix S     has nnz=        12 sparsity:     33.333 %
 Matrix AO D  has nnz=        18 sparsity:     50.000 %
   Relative convergence threshold for solver:  1.00000000000000002E-002
-  SCF Convergence criteria for gradient norm:  3.16227766016837919E-006
+  SCF Convergence criteria for gradient norm:  9.99999999999999955E-007
 ** Get Fock matrix number   1
- The Coulomb energy contribution    56.824809225645879     
- The Exchange energy contribution   -2.1314078950875714     
- The Fock energy contribution   -54.693401330558309     
-  KS electrons/energy:    9.99999743497952   -8.84355027017384 rel.err:-0.26E-06
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.19 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.19 seconds
-  Max allocated memory, XC                    113.512 kB
-**************************************************************************************###
- it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift    OAO gradient     ###
-******************************************************************  ********************###
-  1    -98.8645419637    0.00000000000    0.00      0.00000    0.00    1.45E-01  ###
-*******************************************************************************************%%%
- Trust Radius   Max element     Norm     RHshift   Ratio  Dpar/Dtot  Ndens(FIFO)    SCF it %%%
-*******************************************************************************************%%%
+ The Coulomb energy contribution    56.530428746416547     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -56.530428746416547     
+  KS electrons/energy:    9.99999993898500  -10.31208019892455 rel.err:-0.61E-08
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.18 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.18 seconds
+  Max allocated memory, XC                     63.336 kB
+*******************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo  AO gradient     ###
+*******************************************************************************************###
+  1    -98.2414299973    0.00000000000    0.00      0.00000    0.00    0.0000000    3.24E-01  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   1
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                          1.971 MB
-  Max allocated memory, type(matrix)                   6.328 kB
-  Max allocated memory, real                         957.992 kB
-  Max allocated memory, integer                      135.076 kB
-  Max allocated memory, logical                      101.992 kB
+  Max allocated memory, TOTAL                          2.816 MB
+  Max allocated memory, type(matrix)                   4.328 kB
+  Max allocated memory, real                           1.904 MB
+  Max allocated memory, integer                      293.856 kB
+  Max allocated memory, logical                        3.092 kB
   Max allocated memory, character                      2.448 kB
   Max allocated memory, AOBATCH                        5.952 kB
   Max allocated memory, ARRAY                        732.000 kB
@@ -344,13 +321,65 @@ Matrix AO D  has nnz=        18 sparsity:     50.000 %
   Max allocated memory, ATOMITEM                       1.296 kB
   Max allocated memory, LSMATRIX                       1.120 kB
   Max allocated memory, overlapType                   26.496 kB
-  Max allocated memory, linkshell                      0.252 kB
   Max allocated memory, integrand                     64.512 kB
   Max allocated memory, integralitem                 829.440 kB
   Max allocated memory, IntWork                       25.720 kB
   Max allocated memory, overlap                      388.288 kB
   Max allocated memory, ODitem                         0.768 kB
-  Max allocated memory, lstensor                       6.571 kB
+  Max allocated memory, lstensor                       6.535 kB
+
+  Allocated memory,     TOTAL                 897.496 kB
+  Allocated memory,     type(matrix)            3.456 kB
+  Allocated memory,     real                    0.432 kB
+  Allocated memory,     integer                 0.837 kB
+  Allocated memory,     logical                 2.640 kB
+  Allocated memory,     character               1.600 kB
+  Allocated memory,     ARRAY                 732.000 kB
+  Allocated memory,     SLSAOTENSOR             1.104 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOMITEM                0.864 kB
+  Allocated memory,     lstensor                1.507 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+ general fifoqueue%offset           0
+** Make average of the last F and D matrices
+ after general fifoqueue%offset           0
+** Get new density 
+ after DOPT_get_density fifoqueue%offset           0
+No. of matmuls in get_density:     1
+** Get Fock matrix number   2
+ The Coulomb energy contribution    55.312503385608636     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -55.312503385608636     
+  KS electrons/energy:    9.99999993063712  -10.19894231977385 rel.err:-0.69E-08
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.18 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.18 seconds
+  Max allocated memory, XC                     63.336 kB
+  2    -98.2371965453    0.00423345193    0.00      0.00000    0.00    0.0000000    4.38E-01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   2
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                          2.816 MB
+  Max allocated memory, type(matrix)                   5.192 kB
+  Max allocated memory, real                           1.904 MB
+  Max allocated memory, integer                      293.856 kB
+  Max allocated memory, logical                        3.092 kB
+  Max allocated memory, character                      2.448 kB
+  Max allocated memory, AOBATCH                        5.952 kB
+  Max allocated memory, ARRAY                        732.000 kB
+  Max allocated memory, ODBATCH                        1.056 kB
+  Max allocated memory, LSAOTENSOR                     2.432 kB
+  Max allocated memory, SLSAOTENSOR                    2.576 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOMITEM                       1.296 kB
+  Max allocated memory, LSMATRIX                       1.120 kB
+  Max allocated memory, overlapType                   26.496 kB
+  Max allocated memory, integrand                     64.512 kB
+  Max allocated memory, integralitem                 829.440 kB
+  Max allocated memory, IntWork                       25.720 kB
+  Max allocated memory, overlap                      388.288 kB
+  Max allocated memory, ODitem                         0.768 kB
+  Max allocated memory, lstensor                       6.535 kB
 
   Allocated memory,     TOTAL                 898.360 kB
   Allocated memory,     type(matrix)            4.320 kB
@@ -367,34 +396,27 @@ Matrix AO D  has nnz=        18 sparsity:     50.000 %
 
  general fifoqueue%offset           0
 ** Make average of the last F and D matrices
-Matrix AO D  has nnz=        18 sparsity:     50.000 %
-Matrix AO F  has nnz=        18 sparsity:     50.000 %
-Matrix OAO D has nnz=        18 sparsity:     50.000 %
-Matrix OAO F has nnz=        18 sparsity:     50.000 %
  after general fifoqueue%offset           0
 ** Get new density 
- OAO gradnorm  0.14503572173010071     
- WHILELOOP j=           1
-    2 total step norm =    0.258 trust radius =     0.500 mu =      0.00  %#%
  after DOPT_get_density fifoqueue%offset           0
-No. of matmuls in get_density:    32
-** Get Fock matrix number   2
- The Coulomb energy contribution    55.203383182953516     
- The Exchange energy contribution   -2.1001888832424016     
- The Fock energy contribution   -53.103194299711099     
-  KS electrons/energy:    9.99999820987530   -8.72573864709444 rel.err:-0.18E-06
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.19 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.19 seconds
-  Max allocated memory, XC                    113.512 kB
-  2    -98.8701752643   -0.00563330067    0.00      0.00000   -0.00    1.31E-01  ###
+No. of matmuls in get_density:     1
+** Get Fock matrix number   3
+ The Coulomb energy contribution    55.982947997446409     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -55.982947997446395     
+  KS electrons/energy:    9.99999993550436  -10.26073877421353 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.18 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.18 seconds
+  Max allocated memory, XC                     63.336 kB
+  3    -98.2506954244   -0.01349887909   -1.00      0.00000    0.00    0.0000000    1.14E-02  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics, iteration   2
+                  Memory statistics, iteration   3
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                          1.971 MB
-  Max allocated memory, type(matrix)                  33.056 kB
-  Max allocated memory, real                         957.992 kB
-  Max allocated memory, integer                      135.076 kB
-  Max allocated memory, logical                      101.992 kB
+  Max allocated memory, TOTAL                          2.816 MB
+  Max allocated memory, type(matrix)                   6.056 kB
+  Max allocated memory, real                           1.904 MB
+  Max allocated memory, integer                      293.856 kB
+  Max allocated memory, logical                        3.092 kB
   Max allocated memory, character                      2.448 kB
   Max allocated memory, AOBATCH                        5.952 kB
   Max allocated memory, ARRAY                        732.000 kB
@@ -405,16 +427,15 @@ No. of matmuls in get_density:    32
   Max allocated memory, ATOMITEM                       1.296 kB
   Max allocated memory, LSMATRIX                       1.120 kB
   Max allocated memory, overlapType                   26.496 kB
-  Max allocated memory, linkshell                      0.252 kB
   Max allocated memory, integrand                     64.512 kB
   Max allocated memory, integralitem                 829.440 kB
   Max allocated memory, IntWork                       25.720 kB
   Max allocated memory, overlap                      388.288 kB
   Max allocated memory, ODitem                         0.768 kB
-  Max allocated memory, lstensor                       6.571 kB
+  Max allocated memory, lstensor                       6.535 kB
 
-  Allocated memory,     TOTAL                 898.936 kB
-  Allocated memory,     type(matrix)            4.896 kB
+  Allocated memory,     TOTAL                 899.224 kB
+  Allocated memory,     type(matrix)            5.184 kB
   Allocated memory,     real                    0.432 kB
   Allocated memory,     integer                 0.837 kB
   Allocated memory,     logical                 2.640 kB
@@ -428,95 +449,27 @@ No. of matmuls in get_density:    32
 
  general fifoqueue%offset           0
 ** Make average of the last F and D matrices
-Matrix AO D  has nnz=        18 sparsity:     50.000 %
-Matrix AO F  has nnz=        18 sparsity:     50.000 %
-Matrix OAO D has nnz=        18 sparsity:     50.000 %
-Matrix OAO F has nnz=        18 sparsity:     50.000 %
- after general fifoqueue%offset           1
+ after general fifoqueue%offset           0
 ** Get new density 
- OAO gradnorm  0.13136255797846727     
- WHILELOOP j=           1
-    3 total step norm =    0.120 trust radius =     0.500 mu =      0.00  %#%
- after DOPT_get_density fifoqueue%offset           1
-No. of matmuls in get_density:    46
-** Get Fock matrix number   3
- The Coulomb energy contribution    55.987207395343454     
- The Exchange energy contribution   -2.1144736285825689     
- The Fock energy contribution   -53.872733766760881     
-  KS electrons/energy:    9.99999783009001   -8.78141732759275 rel.err:-0.22E-06
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.19 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.19 seconds
-  Max allocated memory, XC                    113.512 kB
-  3    -98.8851943271   -0.01501906280    0.00      0.00000   -0.00    6.41E-03  ###
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-                  Memory statistics, iteration   3
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                          1.971 MB
-  Max allocated memory, type(matrix)                  34.208 kB
-  Max allocated memory, real                         957.992 kB
-  Max allocated memory, integer                      135.076 kB
-  Max allocated memory, logical                      101.992 kB
-  Max allocated memory, character                      2.448 kB
-  Max allocated memory, AOBATCH                        5.952 kB
-  Max allocated memory, ARRAY                        732.000 kB
-  Max allocated memory, ODBATCH                        1.056 kB
-  Max allocated memory, LSAOTENSOR                     2.432 kB
-  Max allocated memory, SLSAOTENSOR                    2.576 kB
-  Max allocated memory, ATOMTYPEITEM                 153.056 kB
-  Max allocated memory, ATOMITEM                       1.296 kB
-  Max allocated memory, LSMATRIX                       1.120 kB
-  Max allocated memory, overlapType                   26.496 kB
-  Max allocated memory, linkshell                      0.252 kB
-  Max allocated memory, integrand                     64.512 kB
-  Max allocated memory, integralitem                 829.440 kB
-  Max allocated memory, IntWork                       25.720 kB
-  Max allocated memory, overlap                      388.288 kB
-  Max allocated memory, ODitem                         0.768 kB
-  Max allocated memory, lstensor                       6.571 kB
-
-  Allocated memory,     TOTAL                 899.512 kB
-  Allocated memory,     type(matrix)            5.472 kB
-  Allocated memory,     real                    0.432 kB
-  Allocated memory,     integer                 0.837 kB
-  Allocated memory,     logical                 2.640 kB
-  Allocated memory,     character               1.600 kB
-  Allocated memory,     ARRAY                 732.000 kB
-  Allocated memory,     SLSAOTENSOR             1.104 kB
-  Allocated memory,     ATOMTYPEITEM          153.056 kB
-  Allocated memory,     ATOMITEM                0.864 kB
-  Allocated memory,     lstensor                1.507 kB
-*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-
- general fifoqueue%offset           1
-** Make average of the last F and D matrices
-Matrix AO D  has nnz=        18 sparsity:     50.000 %
-Matrix AO F  has nnz=        18 sparsity:     50.000 %
-Matrix OAO D has nnz=        18 sparsity:     50.000 %
-Matrix OAO F has nnz=        18 sparsity:     50.000 %
- after general fifoqueue%offset           2
-** Get new density 
- OAO gradnorm  6.40779028949309791E-003
- WHILELOOP j=           1
-    4 total step norm =    0.005 trust radius =     0.500 mu =      0.00  %#%
- after DOPT_get_density fifoqueue%offset           2
-No. of matmuls in get_density:    42
+ after DOPT_get_density fifoqueue%offset           0
+No. of matmuls in get_density:     1
 ** Get Fock matrix number   4
- The Coulomb energy contribution    55.955262016808980     
- The Exchange energy contribution   -2.1138519524858062     
- The Fock energy contribution   -53.841410064323171     
-  KS electrons/energy:    9.99999785269265   -8.77892964232365 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.19 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.19 seconds
-  Max allocated memory, XC                    113.512 kB
-  4    -98.8852234690   -0.00002914182    0.00      0.00000   -0.00    3.08E-04  ###
+ The Coulomb energy contribution    55.998284761107413     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -55.998284761107413     
+  KS electrons/energy:    9.99999993556543  -10.26209348914756 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.18 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.18 seconds
+  Max allocated memory, XC                     63.336 kB
+  4    -98.2507086878   -0.00001326337   -1.00      0.00000    0.00    0.0000000    2.98E-04  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   4
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                          1.971 MB
-  Max allocated memory, type(matrix)                  34.784 kB
-  Max allocated memory, real                         957.992 kB
-  Max allocated memory, integer                      135.076 kB
-  Max allocated memory, logical                      101.992 kB
+  Max allocated memory, TOTAL                          2.816 MB
+  Max allocated memory, type(matrix)                   6.920 kB
+  Max allocated memory, real                           1.904 MB
+  Max allocated memory, integer                      293.856 kB
+  Max allocated memory, logical                        3.092 kB
   Max allocated memory, character                      2.448 kB
   Max allocated memory, AOBATCH                        5.952 kB
   Max allocated memory, ARRAY                        732.000 kB
@@ -527,13 +480,12 @@ No. of matmuls in get_density:    42
   Max allocated memory, ATOMITEM                       1.296 kB
   Max allocated memory, LSMATRIX                       1.120 kB
   Max allocated memory, overlapType                   26.496 kB
-  Max allocated memory, linkshell                      0.252 kB
   Max allocated memory, integrand                     64.512 kB
   Max allocated memory, integralitem                 829.440 kB
   Max allocated memory, IntWork                       25.720 kB
   Max allocated memory, overlap                      388.288 kB
   Max allocated memory, ODitem                         0.768 kB
-  Max allocated memory, lstensor                       6.571 kB
+  Max allocated memory, lstensor                       6.535 kB
 
   Allocated memory,     TOTAL                 900.088 kB
   Allocated memory,     type(matrix)            6.048 kB
@@ -548,36 +500,29 @@ No. of matmuls in get_density:    42
   Allocated memory,     lstensor                1.507 kB
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
- general fifoqueue%offset           2
+ general fifoqueue%offset           0
 ** Make average of the last F and D matrices
-Matrix AO D  has nnz=        18 sparsity:     50.000 %
-Matrix AO F  has nnz=        18 sparsity:     50.000 %
-Matrix OAO D has nnz=        18 sparsity:     50.000 %
-Matrix OAO F has nnz=        18 sparsity:     50.000 %
- after general fifoqueue%offset           3
+ after general fifoqueue%offset           0
 ** Get new density 
- OAO gradnorm  3.07818087639457716E-004
- WHILELOOP j=           1
-    5 total step norm =    0.000 trust radius =     0.500 mu =      0.00  %#%
- after DOPT_get_density fifoqueue%offset           3
-No. of matmuls in get_density:    41
+ after DOPT_get_density fifoqueue%offset           0
+No. of matmuls in get_density:     1
 ** Get Fock matrix number   5
- The Coulomb energy contribution    55.955196785637895     
- The Exchange energy contribution   -2.1138509567792978     
- The Fock energy contribution   -53.841345828858607     
-  KS electrons/energy:    9.99999785225968   -8.77893479625516 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.19 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.19 seconds
-  Max allocated memory, XC                    113.512 kB
-  5    -98.8852235278   -0.00000005886    0.00      0.00000   -0.00    1.04E-06  ###
+ The Coulomb energy contribution    55.998510640082365     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -55.998510640082380     
+  KS electrons/energy:    9.99999993556863  -10.26211781298964 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.18 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.18 seconds
+  Max allocated memory, XC                     63.336 kB
+  5    -98.2507086925   -0.00000000467   -1.00      0.00000    0.00    0.0000000    2.87E-06  ###
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics, iteration   5
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
-  Max allocated memory, TOTAL                          1.971 MB
-  Max allocated memory, type(matrix)                  35.360 kB
-  Max allocated memory, real                         957.992 kB
-  Max allocated memory, integer                      135.076 kB
-  Max allocated memory, logical                      101.992 kB
+  Max allocated memory, TOTAL                          2.816 MB
+  Max allocated memory, type(matrix)                   7.784 kB
+  Max allocated memory, real                           1.904 MB
+  Max allocated memory, integer                      293.856 kB
+  Max allocated memory, logical                        3.092 kB
   Max allocated memory, character                      2.448 kB
   Max allocated memory, AOBATCH                        5.952 kB
   Max allocated memory, ARRAY                        732.000 kB
@@ -588,16 +533,68 @@ No. of matmuls in get_density:    41
   Max allocated memory, ATOMITEM                       1.296 kB
   Max allocated memory, LSMATRIX                       1.120 kB
   Max allocated memory, overlapType                   26.496 kB
-  Max allocated memory, linkshell                      0.252 kB
   Max allocated memory, integrand                     64.512 kB
   Max allocated memory, integralitem                 829.440 kB
   Max allocated memory, IntWork                       25.720 kB
   Max allocated memory, overlap                      388.288 kB
   Max allocated memory, ODitem                         0.768 kB
-  Max allocated memory, lstensor                       6.571 kB
+  Max allocated memory, lstensor                       6.535 kB
 
-  Allocated memory,     TOTAL                 900.664 kB
-  Allocated memory,     type(matrix)            6.624 kB
+  Allocated memory,     TOTAL                 900.952 kB
+  Allocated memory,     type(matrix)            6.912 kB
+  Allocated memory,     real                    0.432 kB
+  Allocated memory,     integer                 0.837 kB
+  Allocated memory,     logical                 2.640 kB
+  Allocated memory,     character               1.600 kB
+  Allocated memory,     ARRAY                 732.000 kB
+  Allocated memory,     SLSAOTENSOR             1.104 kB
+  Allocated memory,     ATOMTYPEITEM          153.056 kB
+  Allocated memory,     ATOMITEM                0.864 kB
+  Allocated memory,     lstensor                1.507 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+ general fifoqueue%offset           0
+** Make average of the last F and D matrices
+ after general fifoqueue%offset           0
+** Get new density 
+ after DOPT_get_density fifoqueue%offset           0
+No. of matmuls in get_density:     1
+** Get Fock matrix number   6
+ The Coulomb energy contribution    55.998506014817636     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution   -55.998506014817636     
+  KS electrons/energy:    9.99999993556873  -10.26211738398414 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.18 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.18 seconds
+  Max allocated memory, XC                     63.336 kB
+  6    -98.2507086925   -0.00000000000   -1.00      0.00000    0.00    0.0000000    9.89E-09  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   6
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                          2.816 MB
+  Max allocated memory, type(matrix)                   8.648 kB
+  Max allocated memory, real                           1.904 MB
+  Max allocated memory, integer                      293.856 kB
+  Max allocated memory, logical                        3.092 kB
+  Max allocated memory, character                      2.448 kB
+  Max allocated memory, AOBATCH                        5.952 kB
+  Max allocated memory, ARRAY                        732.000 kB
+  Max allocated memory, ODBATCH                        1.056 kB
+  Max allocated memory, LSAOTENSOR                     2.432 kB
+  Max allocated memory, SLSAOTENSOR                    2.576 kB
+  Max allocated memory, ATOMTYPEITEM                 153.056 kB
+  Max allocated memory, ATOMITEM                       1.296 kB
+  Max allocated memory, LSMATRIX                       1.120 kB
+  Max allocated memory, overlapType                   26.496 kB
+  Max allocated memory, integrand                     64.512 kB
+  Max allocated memory, integralitem                 829.440 kB
+  Max allocated memory, IntWork                       25.720 kB
+  Max allocated memory, overlap                      388.288 kB
+  Max allocated memory, ODitem                         0.768 kB
+  Max allocated memory, lstensor                       6.535 kB
+
+  Allocated memory,     TOTAL                 901.816 kB
+  Allocated memory,     type(matrix)            7.776 kB
   Allocated memory,     real                    0.432 kB
   Allocated memory,     integer                 0.837 kB
   Allocated memory,     logical                 2.640 kB
@@ -610,36 +607,38 @@ No. of matmuls in get_density:    41
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
 
-Total no. of matmuls in SCF optimization:        278
+Total no. of matmuls in SCF optimization:         68
  Postponing calculation of HOMO-LUMO gap to response part...
 
 ********************************************************
  it       dE(HF)       DSMexit   RHshift    RHinfo 
 ********************************************************
   1    0.00000000000    0.0000    0.0000    0.0000000
-  2   -0.00563330067    0.0000   -0.0000    0.0000000
-  3   -0.01501906280    0.0000   -0.0000    0.0000000
-  4   -0.00002914182    0.0000   -0.0000    0.0000000
-  5   -0.00000005886    0.0000   -0.0000    0.0000000
+  2    0.00423345193    0.0000    0.0000    0.0000000
+  3   -0.01349887909   -1.0000    0.0000    0.0000000
+  4   -0.00001326337   -1.0000    0.0000    0.0000000
+  5   -0.00000000467   -1.0000    0.0000    0.0000000
+  6   -0.00000000000   -1.0000    0.0000    0.0000000
 
 ======================================================================
                    LINSCF ITERATIONS:
-  It.nr.               Energy                 OAO Gradient norm
+  It.nr.               Energy                 AO Gradient norm
 ======================================================================
   Atoms          -2.00000000000000133227      0.000000000000000D+00
-    1           -98.86454196367759550412      0.145035721730101D+00
-    2           -98.87017526434271985636      0.131362557978467D+00
-    3           -98.88519432714457479960      0.640779028949310D-02
-    4           -98.88522346896205306166      0.307818087639458D-03
-    5           -98.88522352782487701006      0.104075497613407D-05
+    1           -98.24142999725933123045      0.324130222348693D+00
+    2           -98.23719654533310574607      0.438349894659188D+00
+    3           -98.25069542442004433269      0.113833108997876D-01
+    4           -98.25070868779172883478      0.298497615426281D-03
+    5           -98.25070869246083304915      0.287220943309200D-05
+    6           -98.25070869246137306163      0.989160885962625D-08
 
       SCF converged !!!! 
          >>> Final results from LSDALTON <<<
 
 
-      Final DFT energy:                  -98.885223527825
+      Final DFT energy:                  -98.250708692461
       Nuclear repulsion:                   4.511278195489
-      Electronic energy:                -103.396501723314
+      Electronic energy:                -102.761986887950
 
 
 
@@ -647,15 +646,15 @@ Total no. of matmuls in SCF optimization:        278
                        Permanent dipole moment
                        -----------------------
                au              Debye           10**-30 C m
-           0.414778           1.05426           3.51663    
+           0.434624           1.10470           3.68489    
 
 
                        Dipole moment components
                        ------------------------
                au              Debye           10**-30 C m
- x        -0.414778          -1.05426          -3.51663    
- y        -0.848196E-17     -0.215590E-16     -0.719130E-16
- z        -0.667853E-18     -0.169751E-17     -0.566229E-17
+ x        -0.434624          -1.10470          -3.68489    
+ y         0.346354E-16      0.880345E-16      0.293651E-15
+ z         0.319376E-16      0.811775E-16      0.270778E-15
 
 
 
@@ -667,66 +666,66 @@ Total no. of matmuls in SCF optimization:        278
 
  Use MO orbital energy differences to find  first guess for eigenvectors/values
   ** RSP_SOLVER MICROITERATION NUMBER           1
- The Coulomb energy contribution   3.46282043706893083E-002
- The Coulomb energy contribution   3.46282043706892945E-002
- The Coulomb energy contribution   0.24350132740361957     
- The Coulomb energy contribution   0.18659755436778325     
- The Exchange energy contribution  -7.36145655457885739E-002
- The Exchange energy contribution  -7.36145655457885600E-002
- The Exchange energy contribution  -8.04785437693866929E-002
- The Exchange energy contribution  -0.10098496670503471     
- The Fock energy contribution   3.89863611750992656E-002
- The Fock energy contribution   3.89863611750992656E-002
- The Fock energy contribution  -0.16302278363423292     
- The Fock energy contribution  -8.56125876627485405E-002
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.39 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.39 seconds
-  Max allocated memory, XC                    133.000 kB
+ The Coulomb energy contribution   3.43686978010567107E-002
+ The Coulomb energy contribution   3.43686978010567037E-002
+ The Coulomb energy contribution   0.23393331587982333     
+ The Coulomb energy contribution   0.19420166428868346     
+ The Exchange energy contribution    0.0000000000000000     
+ The Exchange energy contribution    0.0000000000000000     
+ The Exchange energy contribution    0.0000000000000000     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution  -3.43686978010567107E-002
+ The Fock energy contribution  -3.43686978010567107E-002
+ The Fock energy contribution  -0.23393331587982333     
+ The Fock energy contribution  -0.19420166428868346     
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_linrsp is     0.35 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.35 seconds
+  Max allocated memory, XC                     83.920 kB
  Response convergence threshold is  1.00000000000000005E-004
-Residual norm for vector   1 is:   0.809019E-16    and eigenvalue =   0.33483468   It =   1 CONV = T
-Residual norm for vector   2 is:   0.149754E-14    and eigenvalue =   0.33483468   It =   1 CONV = T
-Residual norm for vector   3 is:   0.275369E-01    and eigenvalue =   0.73296794   It =   1 CONV = F
+Residual norm for vector   1 is:   0.405272E-15    and eigenvalue =   0.32663358   It =   1 CONV = T
+Residual norm for vector   2 is:   0.579796E-15    and eigenvalue =   0.32663358   It =   1 CONV = T
+Residual norm for vector   3 is:   0.285757E-01    and eigenvalue =   0.72770137   It =   1 CONV = F
  MO preconditioning
-Residual norm for vector   4 is:   0.398095E-01    and eigenvalue =   1.30169539   It =   1 CONV = F
+Residual norm for vector   4 is:   0.364761E-01    and eigenvalue =   1.26689818   It =   1 CONV = F
  MO preconditioning
-bvector number   2 is removed because its norm**2 : 0.40678D-36 is < molcfg%solver%rsp_thr_lin_depend  0.10000D-19
+bvector number   2 is removed because its norm**2 : 0.50615D-36 is < molcfg%solver%rsp_thr_lin_depend  0.10000D-19
   ** RSP_SOLVER MICROITERATION NUMBER           2
- The Coulomb energy contribution   2.72412874280987469E-002
- The Exchange energy contribution  -0.10006690138206964     
- The Fock energy contribution   7.28256139539708996E-002
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.27 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.27 seconds
-  Max allocated memory, XC                    114.064 kB
-Residual norm for vector   1 is:   0.137911E-15    and eigenvalue =   0.33483468   It =   2 CONV = T
-Residual norm for vector   2 is:   0.396287E-14    and eigenvalue =   0.33483468   It =   2 CONV = T
-Residual norm for vector   3 is:   0.343997E-14    and eigenvalue =   0.73294224   It =   2 CONV = T
-Residual norm for vector   4 is:   0.546810E-14    and eigenvalue =   1.30164154   It =   2 CONV = T
+ The Coulomb energy contribution   2.74169895968724292E-002
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution  -2.74169895968724361E-002
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_linrsp is     0.26 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.26 seconds
+  Max allocated memory, XC                     73.464 kB
+Residual norm for vector   1 is:   0.247737E-15    and eigenvalue =   0.32663358   It =   2 CONV = T
+Residual norm for vector   2 is:   0.681805E-14    and eigenvalue =   0.32663358   It =   2 CONV = T
+Residual norm for vector   3 is:   0.312826E-14    and eigenvalue =   0.72767336   It =   2 CONV = T
+Residual norm for vector   4 is:   0.490721E-14    and eigenvalue =   1.26685246   It =   2 CONV = T
 
  *** THE REQUESTED              4 SOLUTION VECTORS CONVERGED
  Write            4  excitation vectors to disk
- The Coulomb energy contribution   2.78043937432736962E-002
- The Exchange energy contribution  -6.43961167983722466E-002
- The Fock energy contribution   3.65917230550985503E-002
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.27 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.27 seconds
-  Max allocated memory, XC                    114.064 kB
- The Coulomb energy contribution   2.78043502740576223E-002
- The Exchange energy contribution  -6.43960161218841698E-002
- The Fock energy contribution   3.65916658478265336E-002
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.27 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.27 seconds
-  Max allocated memory, XC                    114.064 kB
+ The Coulomb energy contribution   2.70698733263678507E-002
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution  -2.70698733263678507E-002
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_linrsp is     0.26 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.26 seconds
+  Max allocated memory, XC                     73.464 kB
+ The Coulomb energy contribution   2.70453883515327925E-002
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution  -2.70453883515327925E-002
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_linrsp is     0.26 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.26 seconds
+  Max allocated memory, XC                     73.464 kB
 
  The following excitation energies are used for the response calculation:
 
-           1  0.33483467927713356     
-           2  0.33483467927713512     
-           3  0.73294224279899622     
-           4   1.3016415397589638     
+           1  0.32663357782154284     
+           2  0.32663357782154329     
+           3  0.72767336462998744     
+           4   1.2668524605294198     
  Starting linear response function calculation for: << EL  ; EXCI>>
 
  Starting linear response function calculation for: << EL  ; EXCI>>
@@ -748,10 +747,10 @@ KS electrons:    9.99999785225968 rel.err:-0.21E-06
    Excitation                 Transition Dipole Moments                  Oscillator
     Energies              x                y                z            Strengths
  ====================================================================================
-   0.33483468       0.81812387E-16   0.43792471E-03   0.19657538E-01   0.86300417E-04
-   0.33483468      -0.95844501E-15  -0.19657538E-01   0.43792471E-03   0.86300417E-04
-   0.73294224        1.2225482       0.98582580E-16   0.29868566E-18   0.73031537    
-    1.3016415       0.19181873      -0.13781405E-15  -0.72144905E-17   0.31928770E-01
+   0.32663358       0.10950189E-15   0.14028958E-01  -0.13803261E-01   0.84345871E-04
+   0.32663358       0.28111189E-14  -0.13803261E-01  -0.14028958E-01   0.84345871E-04
+   0.72767336        1.1862944      -0.13889080E-15  -0.12632035E-15   0.68270041    
+    1.2668525      -0.26627973      -0.39275550E-15  -0.36242931E-15   0.59884029E-01
 
 
 
@@ -761,37 +760,37 @@ KS electrons:    9.99999785225968 rel.err:-0.21E-06
                      Coulomb contribution to gradient
                      --------------------------------
 
-   H        2.9089538853           -0.0000000000           -0.0000000000
-   F       -2.9089538853            0.0000000000            0.0000000000
+   H        2.9089392300            0.0000000000            0.0000000000
+   F       -2.9089392300           -0.0000000000           -0.0000000000
 
 
                     exchange contribution to gradient
                     ---------------------------------
 
-   H       -0.0714807458            0.0000000000            0.0000000000
-   F        0.0714807458           -0.0000000000           -0.0000000000
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.31 seconds
- >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.31 seconds
-  Max allocated memory, XC                    254.656 kB
+   H        0.0000000000            0.0000000000            0.0000000000
+   F        0.0000000000            0.0000000000            0.0000000000
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.24 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.24 seconds
+  Max allocated memory, XC                    125.632 kB
  Starting quadratic response function calculation for: << GEO ; EXCI, EXCI>>
 
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.27 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.27 seconds
-  Max allocated memory, XC                    114.064 kB
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.27 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.27 seconds
-  Max allocated memory, XC                    114.064 kB
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_quadrsp is    0.41 seconds
- >>>  WALL Time used II_get_xc_quadrsp is    0.41 seconds
-  Max allocated memory, XC                    114.920 kB
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.27 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.27 seconds
-  Max allocated memory, XC                    114.064 kB
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_linrsp is     0.26 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.26 seconds
+  Max allocated memory, XC                     73.464 kB
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_linrsp is     0.26 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.26 seconds
+  Max allocated memory, XC                     73.464 kB
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_quadrsp is    0.32 seconds
+ >>>  WALL Time used II_get_xc_quadrsp is    0.32 seconds
+  Max allocated memory, XC                     75.344 kB
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_linrsp is     0.26 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.26 seconds
+  Max allocated memory, XC                     73.464 kB
 
 
 
@@ -800,78 +799,78 @@ KS electrons:    9.99999785225968 rel.err:-0.21E-06
 
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           1
- The Coulomb energy contribution   0.18299206539257862     
- The Exchange energy contribution  -7.04633968164941060E-002
- The Fock energy contribution  -0.11252866857608451     
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.27 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.27 seconds
-  Max allocated memory, XC                    114.064 kB
+ The Coulomb energy contribution   0.18321221083066680     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution  -0.18321221083066680     
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_linrsp is     0.26 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.26 seconds
+  Max allocated memory, XC                     73.464 kB
  omega in build_reduc..    0.0000000000000000     
  Response convergence threshold is  1.00000000000000005E-004
-Residual norm for vector   1 is:   0.669831E-01    and frequency =     0.000000   It =   1 CONV = F
+Residual norm for vector   1 is:   0.912738E-01    and frequency =     0.000000   It =   1 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           2
- The Coulomb energy contribution   0.24714296938684163     
- The Exchange energy contribution  -0.11098286112476013     
- The Fock energy contribution  -0.13616010826208153     
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.27 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.27 seconds
-  Max allocated memory, XC                    114.064 kB
+ The Coulomb energy contribution   0.24509746794421755     
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution  -0.24509746794421758     
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_linrsp is     0.26 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.26 seconds
+  Max allocated memory, XC                     73.464 kB
  omega in build_reduc..    0.0000000000000000     
-Residual norm for vector   1 is:   0.281023E-02    and frequency =     0.000000   It =   2 CONV = F
+Residual norm for vector   1 is:   0.261826E-02    and frequency =     0.000000   It =   2 CONV = F
  MO preconditioning
   ** RSP_SOLVER MICROITERATION NUMBER           3
- The Coulomb energy contribution   2.72051344200815066E-002
- The Exchange energy contribution  -0.10008415391523706     
- The Fock energy contribution   7.28790194951555587E-002
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
- >>>  CPU  Time used II_get_xc_linrsp is     0.27 seconds
- >>>  WALL Time used II_get_xc_linrsp is     0.27 seconds
-  Max allocated memory, XC                    114.064 kB
+ The Coulomb energy contribution   2.72422909904964823E-002
+ The Exchange energy contribution    0.0000000000000000     
+ The Fock energy contribution  -2.72422909904964788E-002
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
+ >>>  CPU  Time used II_get_xc_linrsp is     0.26 seconds
+ >>>  WALL Time used II_get_xc_linrsp is     0.26 seconds
+  Max allocated memory, XC                     73.464 kB
  omega in build_reduc..    0.0000000000000000     
-Residual norm for vector   1 is:   0.157120E-15    and frequency =     0.000000   It =   3 CONV = T
+Residual norm for vector   1 is:   0.191888E-15    and frequency =     0.000000   It =   3 CONV = T
 
  *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
-KS electrons:    9.99999785225968 rel.err:-0.21E-06
+KS electrons:    9.99999993556873 rel.err:-0.64E-08
  >>>  CPU  Time used II_get_xc_linrsp is     0.27 seconds
  >>>  WALL Time used II_get_xc_linrsp is     0.27 seconds
-  Max allocated memory, XC                    114.064 kB
+  Max allocated memory, XC                     73.464 kB
 
 
                      Coulomb contribution to gradient
                      --------------------------------
 
-   H        1.2438528629            0.0000000000           -0.0000000000
-   F       -1.2438528629           -0.0000000000            0.0000000000
+   H        1.0508800606            0.0000000000            0.0000000000
+   F       -1.0508800606           -0.0000000000           -0.0000000000
 
 
                     exchange contribution to gradient
                     ---------------------------------
 
-   H       -0.0102213218           -0.0000000000            0.0000000000
-   F        0.0102213218            0.0000000000           -0.0000000000
- >>>  CPU  Time used II_get_xc_geoderiv_FxDgrad is     0.47 seconds
- >>>  WALL Time used II_get_xc_geoderiv_FxDgrad is     0.47 seconds
-  Max allocated memory, XC                    205.504 kB
+   H        0.0000000000            0.0000000000            0.0000000000
+   F        0.0000000000            0.0000000000            0.0000000000
+ >>>  CPU  Time used II_get_xc_geoderiv_FxDgrad is     0.41 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_FxDgrad is     0.41 seconds
+  Max allocated memory, XC                    114.208 kB
 
 
                      Coulomb contribution to gradient
                      --------------------------------
 
-   H        0.0355302847            0.0000000000           -0.0000000000
-   F       -0.0355302847           -0.0000000000            0.0000000000
+   H        0.0281480301            0.0000000000            0.0000000000
+   F       -0.0281480301           -0.0000000000           -0.0000000000
 
 
                     exchange contribution to gradient
                     ---------------------------------
 
-   H       -0.0248285739            0.0000000000           -0.0000000000
-   F        0.0248285739           -0.0000000000            0.0000000000
- >>>  CPU  Time used II_get_xc_geoderiv_FxDgrad is     0.83 seconds
- >>>  WALL Time used II_get_xc_geoderiv_FxDgrad is     0.84 seconds
-  Max allocated memory, XC                    268.952 kB
+   H        0.0000000000            0.0000000000            0.0000000000
+   F        0.0000000000            0.0000000000            0.0000000000
+ >>>  CPU  Time used II_get_xc_geoderiv_FxDgrad is     0.54 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_FxDgrad is     0.54 seconds
+  Max allocated memory, XC                    121.496 kB
 
 
 
@@ -884,11 +883,11 @@ KS electrons:    9.99999785225968 rel.err:-0.21E-06
 
   State No.   Exc. Energy
   =======================
-      3       0.73294224    
+      3       0.72767336    
 
   Atom                 x                 y                 z
-   H              0.27631114        0.24662054E-14    0.14798254E-14
-   F             -0.27628542        0.29449260E-13    0.29686664E-13
+   H              0.24820228       -0.26989601E-13   -0.47395204E-12
+   F             -0.24819964        0.39120600E-13    0.75152777E-13
 
 
 
@@ -898,12 +897,12 @@ KS electrons:    9.99999785225968 rel.err:-0.21E-06
 
 
  *****************************************************
- **     CPU-TIME USED IN LSDALTON RESPONSE:    5.2967809999999993         **
+ **     CPU-TIME USED IN LSDALTON RESPONSE:    4.5498839999999996         **
  *****************************************************
 
-Total no. of matmuls used:                       750
-Total no. of Fock/KS matrix evaluations:           6
-Max no. of matrices allocated in Level 3:         74
+Total no. of matmuls used:                       540
+Total no. of Fock/KS matrix evaluations:           7
+Max no. of matrices allocated in Level 3:         48
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
                   Memory statistics          
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
@@ -945,13 +944,13 @@ Max no. of matrices allocated in Level 3:         74
   Allocated memory (ODitem):                  0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (lstensor):                0 byte  - Should be zero - otherwise a leakage is present
   Allocated memory (FMM   ):                  0 byte  - Should be zero - otherwise a leakage is present
-  Max allocated memory, TOTAL                          5.036 MB
-  Max allocated memory, type(matrix)                  41.536 kB
-  Max allocated memory, real(realk)                    5.007 MB
+  Max allocated memory, TOTAL                          2.816 MB
+  Max allocated memory, type(matrix)                  20.544 kB
+  Max allocated memory, real(realk)                    2.383 MB
   Max allocated memory, MPI                            0.000 Byte
   Max allocated memory, complex(complexk)              0.000 Byte
-  Max allocated memory, integer                      135.076 kB
-  Max allocated memory, logical                      101.992 kB
+  Max allocated memory, integer                      293.856 kB
+  Max allocated memory, logical                        3.092 kB
   Max allocated memory, character                      2.448 kB
   Max allocated memory, AOBATCH                        5.952 kB
   Max allocated memory, CCORBITAL                      0.000 Byte
@@ -972,17 +971,17 @@ Max no. of matrices allocated in Level 3:         74
   Max allocated memory, ATOMITEM                       1.296 kB
   Max allocated memory, LSMATRIX                       1.120 kB
   Max allocated memory, OverlapT                      26.496 kB
-  Max allocated memory, linkshell                      0.252 kB
+  Max allocated memory, linkshell                      0.000 Byte
   Max allocated memory, integrand                     64.512 kB
-  Max allocated memory, integralitem                   4.666 MB
-  Max allocated memory, IntWork                      161.424 kB
+  Max allocated memory, integralitem                 921.600 kB
+  Max allocated memory, IntWork                      160.848 kB
   Max allocated memory, Overlap                        1.356 MB
   Max allocated memory, ODitem                         0.768 kB
-  Max allocated memory, LStensor                      10.603 kB
+  Max allocated memory, LStensor                       8.263 kB
   Max allocated memory, FMM                            0.000 Byte
 *=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
 
 
 End simulation
-     Date and time (Linux)  : Fri May 10 16:51:43 2013
+     Date and time (Linux)  : Fri May 10 16:51:49 2013
      Host name              : kasper-kristensens-macbook-pro.local    
