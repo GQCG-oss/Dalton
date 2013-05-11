@@ -1092,12 +1092,11 @@ should be used in the optimization.
 
 \section{**RESPONS}\label{subsec:respons}
 This section describes the keywords needed for obtaining molecular
-properties.
+properties for HF and DFT based on the atomic orbital based response formulation~\cite{thorvaldsen:214108}.
 The response section begins with
 **RESPONS. 
 General response information related to more than one property
-(how many excitation energies,
-threshold for the response solver etc.)
+(e.g. how many excitation energies)
 is put directly under **RESPONS.
 After this,
 each individual response property (e.g. the polarizability tensor)
@@ -1115,14 +1114,14 @@ The general structure is thus:
 \item[\Keyinfo{.Specific (optional) information for property 2}]
 \end{description}
 Each of the properties below have a test case.
-The test cases may be found in the {\bf test/} directory.
+The test cases may be found in the {\bf LSDALTON/test/LSresponse} directory.
 To run a test case, go to the
 {\bf test/} directory and type: 
 \begin{description}
 \item
 \verb|./TEST  <test case>|
 \end{description}
-The test case files contains simple examples of full input files.
+The test case files contains simple examples of input files.
 
 Below, the list of general response input keywords follows.
 
@@ -1138,8 +1137,9 @@ are requested (e.g. two-photon absorption or the excited state gradient)
 this keyword must be listed \emph{before}
 any of these properties. \newline
 {\bf Test case}: LSresponse/LSresponse\_HF\_opa
-\item[\Key{*SOLVER}] \verb| | \newline
-.\verb|<Solver information>|\newline
+\end{description}
+
+\subsection{*SOLVER}\label{subsec:responsesolver}
 General information related to the way response equations are solved to obtained property.
 By default standard and eigenvalue response equations are solved using the
 algorithm with paired trial vectors\cite{coriani:2007} and damped
@@ -1155,9 +1155,9 @@ The solver with paired trial vectors is used for solving damped (complex)
 response equations.\newline
 {\bf Test case}: LSresponse/LSresponse\_DFT\_alpha\_aptv
 \item[\Key{COMPLEX}] \verb| | \newline
-\verb|<Damping parmeter gamma>|\newline
-The $\gamma$ parmeter is treated as an imaginary component of a frequency of intrest and describes a broadening of
-a spectrum.
+\verb|<Damping parameter gamma>|\newline
+The $\gamma$ parameter is treated as an imaginary component of a frequency of interest and describes a broadening of
+the spectrum~\cite{dampedresponse}.
 \item[\Key{OLSEN}] \verb| | \newline
 The Olsen algorithm is used for obtaining excitation energies. The Olsen algorithm works under the algorithm with symmetrized trial vectors.
 \item[\Key{CONVTHR}] \verb| | \newline
@@ -1194,7 +1194,6 @@ energies but realize that you need 10, you can provide the file rsp\_eigenvecs a
 option to restart the calculation from the previous. 
 Naturally this option can also be used to bypass the excitation vector step if the previous calculation failed for some property evaluation which needed the excitation vectors.  
 
-\end{description}
 \end{description}
 Now follows a list of input keywords for the specific properties
 available in \lsdalton.
@@ -1280,7 +1279,7 @@ Input as for .BFREQ under *ALPHA.
 \end{description}
 
 \subsection{*DAMPED\_TPA}\label{subsec:dtpa}
-Damped two-photon absorption where both individual photons
+Damped two-photon absorption~\cite{dampedtpa} where both individual photons
 have the same energy (= half the excitation energy).
 \newline
 {\bf Test case}: LSresponse/LSresponse\_HF\_dtpa 
