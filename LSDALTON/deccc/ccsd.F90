@@ -3414,7 +3414,8 @@ contains
       do i=j,1,-1
         pos1=1+((i+j*(j-1)/2)-1)*nv*nv
         pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-        if(j/=1) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
+        !if(j/=1) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
+        if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
       enddo
       !$OMP END DO
       !$OMP BARRIER
@@ -3425,7 +3426,8 @@ contains
       do i=j,1,-1
           pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
           pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-          if(i/=j) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
+          !if(i/=j) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
+          if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
           call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
       enddo
     enddo
@@ -4073,8 +4075,8 @@ contains
       do i=j,1,-1
         pos1=1+((i+j*(j-1)/2)-1)*nv*nv
         pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-        if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
-        !if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
+        !if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+        if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
       enddo
       !$OMP END DO
       !$OMP BARRIER
@@ -4085,7 +4087,8 @@ contains
       do i=j,1,-1
           pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
           pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-          if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+          !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+          if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
           call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
       enddo
     enddo
@@ -4128,7 +4131,8 @@ contains
         do i=j,1,-1
           pos1=1+((i+j*(j-1)/2)-1)*nv*nv
           pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-          if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+          !if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+          if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
         enddo
         !$OMP END DO
         !$OMP BARRIER
@@ -4139,7 +4143,8 @@ contains
         do i=j,1,-1
             pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
             pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-            if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+            !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+            if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
             call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
         enddo
       enddo
