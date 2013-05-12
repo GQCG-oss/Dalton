@@ -3407,13 +3407,20 @@ contains
     endif
    
 
+    !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
+    !$OMP& PRIVATE(i,j,pos1,pos2,mv,st)
     do j=no,1,-1
+      !$OMP DO 
       do i=j,1,-1
         pos1=1+((i+j*(j-1)/2)-1)*nv*nv
         pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
         if(j/=1) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
       enddo
+      !$OMP END DO
+      !$OMP BARRIER
     enddo
+    !$OMP BARRIER
+    !$OMP DO 
     do j=no,1,-1
       do i=j,1,-1
           pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
@@ -3422,6 +3429,10 @@ contains
           call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
       enddo
     enddo
+    !$OMP END DO
+    !$OMP BARRIER
+    !$OMP END PARALLEL
+
     if(s==4.or.s==3.or.s==0)then
       call daxpy(int(no*no*nv*nv),1.0E0_realk,w1,1,om2%elm1,1)
     elseif(s==2.or.s==1)then
@@ -3910,12 +3921,12 @@ contains
     dim_big=full1*full2
     dim_small=full1T*full2T
 
-    !$OMP PARALLEL DEFAULT(NONE)&
-    !$OMP& SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
-    !$OMP& full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
-    !$OMP& PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
-    !$OMP& dims,drain,source)
-    !$OMP DO
+    !OMP PARALLEL DEFAULT(NONE)&
+    !OMP& SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
+    !OMP& full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
+    !OMP& PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
+    !OMP& dims,drain,source)
+    !OMP DO
     do occ=1,nor
       do gamm=1,lg-goffs
         gamm_i_b=gamm+goffs
@@ -4012,8 +4023,9 @@ contains
         endif
       enddo
     enddo
-    !$OMP END DO
-    !$OMP END PARALLEL
+    !OMP END DO
+    !OMP BARRIER
+    !OMP END PARALLEL
     call lsmpi_poke()
 
 
@@ -4053,31 +4065,22 @@ contains
 
 
     ! add up contributions in the residual with keeping track of i<j
-    !OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,omega,nv,scaleitby)&
-    !OMP& PRIVATE(i,j,pos)
-    !OMP DO 
-   ! do i=1,no
-   !   do j=1,no
-   !     if(i<=j)then
-   !       pos=1+((i+j*(j-1)/2)-1)*nv*nv
-   !       call mat_transpose_pl(nv,nv,scaleitby,w2(pos:pos+nv*nv-1),&
-   !            &1.0E0_realk,omega%elm1(1+(i-1)*nv*nv+(j-1)*no*nv*nv:))
-   !     endif
-   !     if(i>j)then
-   !       pos=1+((j+i*(i-1)/2)-1)*nv*nv
-   !       call daxpy(nv*nv,scaleitby,w2(pos),1,&
-   !                 &omega%elm1(1+(i-1)*nv*nv+(j-1)*no*nv*nv),1)
-   !     endif
-   !   enddo
-   ! enddo
-    !dumm = 0.0E0_realk
+
+    !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
+    !$OMP& PRIVATE(i,j,pos1,pos2,mv,st)
     do j=no,1,-1
+      !$OMP DO 
       do i=j,1,-1
         pos1=1+((i+j*(j-1)/2)-1)*nv*nv
         pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
         if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+        !if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
       enddo
+      !$OMP END DO
+      !$OMP BARRIER
     enddo
+    !$OMP BARRIER
+    !$OMP DO 
     do j=no,1,-1
       do i=j,1,-1
           pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
@@ -4086,13 +4089,15 @@ contains
           call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
       enddo
     enddo
+    !$OMP END DO
+    !$OMP BARRIER
+    !$OMP END PARALLEL
+
     if(s==4.or.s==3.or.s==0)then
       call daxpy(int(no*no*nv*nv),scaleitby,w2,1,omega%elm1,1)
     elseif(s==2.or.s==1)then
       call array_add(omega,scaleitby,w2)
     endif
-    !OMP END DO
-    !OMP END PARALLEL
     call lsmpi_poke()
 
     !If the contributions are split in terms of the sigma matrix this adds the
@@ -4115,32 +4120,21 @@ contains
       !transform alpha -> , order is now sigma[b a i j]
       call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
       call lsmpi_poke()
-      ! add up contributions in the residual with a and b interchanged compared
-      ! to the previous contribution
-      !OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,omega,nv,scaleitby)&
-      !OMP& PRIVATE(i,j,pos)
-      !OMP DO 
-      !do i=1,no
-      !  do j=1,no
-      !    if(i<=j)then
-      !      pos=1+((i+j*(j-1)/2)-1)*nv*nv
-      !      call mat_transpose_pl(nv,nv,scaleitby,w2(pos:pos+nv*nv-1),&
-      !            &1.0E0_realk,omega%elm1(1+(i-1)*nv*nv+(j-1)*no*nv*nv:))
-      !    endif
-      !    if(i>j)then
-      !      pos=1+((j+i*(i-1)/2)-1)*nv*nv
-      !      call daxpy(nv*nv,scaleitby,w2(pos),1,&
-      !                &omega%elm1(1+(i-1)*nv*nv+(j-1)*no*nv*nv),1)
-      !    endif
-      !  enddo
-      !enddo
+
+      !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
+      !$OMP& PRIVATE(i,j,pos1,pos2,mv,st)
       do j=no,1,-1
+        !$OMP DO 
         do i=j,1,-1
           pos1=1+((i+j*(j-1)/2)-1)*nv*nv
           pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
           if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
         enddo
+        !$OMP END DO
+        !$OMP BARRIER
       enddo
+      !$OMP BARRIER
+      !$OMP DO 
       do j=no,1,-1
         do i=j,1,-1
             pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
@@ -4149,13 +4143,15 @@ contains
             call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
         enddo
       enddo
+      !$OMP END DO
+      !$OMP BARRIER
+      !$OMP END PARALLEL
+
       if(s==4.or.s==3.or.s==0)then
         call daxpy(no*no*nv*nv,scaleitby,w2,1,omega%elm1,1)
       elseif(s==2.or.s==1)then
         call array_add(omega,scaleitby,w2)
       endif
-      !OMP END DO
-      !OMP END PARALLEL
       call lsmpi_poke()
     endif
 
@@ -4215,18 +4211,34 @@ contains
     !> leading dimension m and virtual dimension
     integer,intent(in)::m,nv
     integer ::d,pos,pos2,a,b,c,cged
-    !OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv)&
-    !OMP& PRIVATE(pos,pos2,d)
+    logical :: doit
+#ifdef VAR_OMP
+    integer :: tid,nthr
+    integer, external :: omp_get_thread_num,omp_get_max_threads
+    nthr = omp_get_max_threads()
+    nthr = min(nthr,nv)
+    call omp_set_num_threads(nthr)
+#endif
+    !$OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
+    !$OMP& PRIVATE(pos,pos2,d,tid,doit)
+#ifdef VAR_OMP
+    tid = omp_get_thread_num()
+#else 
+    doit = .true.
+#endif
     pos =1
-    !OMP DO
     do d=1,nv
-      pos2=1+(d-1)*m+(d-1)*nv*m
-      !print *,pos2,pos
-      call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
+#ifdef VAR_OMP
+      doit = (mod(d,nthr) == tid)
+#endif
+      if(doit) then
+        pos2=1+(d-1)*m+(d-1)*nv*m
+        call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
+        !Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
+      endif
       pos=pos+m*(nv-d+1)
     enddo
-    !OMP END DO
-    !OMP END PARALLEL
+    !$OMP END PARALLEL
   end subroutine get_I_cged
 
 
