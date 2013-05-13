@@ -181,33 +181,45 @@ WRITE(LUPRI,*)' '
 
 
          WRITE (LUPRI,'(5X,A)')&
-     &  ' This is output from LSDALTON (Release Dalton2011)',&
-     &  '       Authors:                                  ',&
-     &  ' Sonia Coriani,            University of Trieste,        Italy  ',&
-     &  ' Trygve Helgaker,          University of Oslo,           Norway ',&
-     &  ' Stinne Hoest,             Aarhus University,            Denmark',&
-     &  ' Branislav Jansik,         Aarhus University,            Denmark',&
-     &  ' Poul Joergensen,          Aarhus University,            Denmark',&
-     &  ' Joanna Kauczor,           Aarhus University,            Denmark',&
-     &  ' Thomas Kjaergaard,        Aarhus University,            Denmark',&
-     &  ' Kasper Kristensen,        Aarhus University,            Denmark',&
-     &  ' Jeppe Olsen,              Aarhus University,            Denmark',&
-     &  ' Simen Reine,              University of Oslo,           Norway ',&
-     &  ' Pawel Salek,              KTH Stockholm,                Sweden ',&
-     &  ' Andreas J. Thorvaldsen,   University of Tromsoe,        Norway ',&
-     &  ' Lea Thoegersen,           Aarhus University,            Denmark',&
-     &  ' Vladimir Rybkin,          University of Oslo,           Norway ',&
-     &  ' Vebjoern Bakken,          University of Oslo,           Norway ',&
-     &  ' Mark Watson,              University of Oslo,           Norway ',&
-     &  ' Andreas Krapp,            University of Oslo,           Norway '
-!         WRITE (LUPRI,'(/1X,69A1/)') ('-',I=1,69)
+     &  ' This is output from LSDALTON (Release Dalton2013)',&
+     &  '                                           ',&
+     &  ' Authors in alphabetical order (main contribution(s) in parenthesis)',&
+     &  ' -------------------------------------------------------------------',&
+     &  ' Vebjoern Bakken,         University of Oslo,     Norway    (geometry optimizer)',&
+     &  ' Sonia Coriani,           University of Trieste,  Italy     (response)',&
+     &  ' Patrick Ettenhuber,      Aarhus University,      Denmark   (CCSD)',&
+     &  ' Stinne Hoest,            Aarhus University,      Denmark   (SCF optimization)',&
+     &  ' Ida-Marie Hoeyvik,       Aarhus University,      Denmark   (orbital localization, SCF optimization)',&
+     &  ' Branislav Jansik,        Aarhus University,      Denmark   (trilevel, orbital localization)',&
+     &  ' Joanna Kauczor,          Aarhus University,      Denmark   (response solver)',&
+     &  ' Thomas Kjaergaard,       Aarhus University,      Denmark   (response, integrals)',&
+     &  ' Andreas Krapp,           University of Oslo,     Norway    (FMM, dispersion-corrected DFT)',&
+     &  ' Kasper Kristensen,       Aarhus University,      Denmark   (response, DEC)',&
+     &  ' Patrick Merlot,          University of Oslo,     Norway    (PARI)',&
+     &  ' Simen Reine,             University of Oslo,     Norway    (integrals, geometry optimizer)',&
+     &  ' Vladimir Rybkin,         University of Oslo,     Norway    (geometry optimizer, dynamics)',&
+     &  ' Pawel Salek,             KTH Stockholm,          Sweden    (FMM, DFT functionals)',&
+     &  ' Andreas J. Thorvaldsen,  University of Tromsoe,  Norway    (response)',&
+     &  ' Lea Thoegersen,          Aarhus University,      Denmark   (SCF optimization)',&
+     &  ' Mark Watson,             University of Oslo,     Norway    (FMM)',&
+     &  ' Marcin Ziolkowski,       Aarhus University,      Denmark   (DEC)'
 
+     WRITE(LUPRI,*)
+         WRITE (LUPRI,'(5X,A)')&
+     &  ' Mentors',&
+     &  ' -------',&
+     &  ' Trygve Helgaker,        University of Oslo,     Norway ',&
+     &  ' Poul Joergensen,        Aarhus University,      Denmark',&
+     &  ' Jeppe Olsen,            Aarhus University,      Denmark'
+
+     WRITE(LUPRI,*)
+     WRITE(LUPRI,*)
          WRITE (LUPRI,'(5X,A)')&
      &'NOTE:',&
      &' ',&
      &'This is an experimental code for the evaluation of molecular',&
-     &'properties using SCF wave functions. The authors',&
-     &'accept no responsibility for the performance of the code or',&
+     &'energies and properties using various electronic structure models.',&
+     &'The authors accept no responsibility for the performance of the code or',&
      &'for the correctness of the results.',&
      &' ',&
      &'The code (in whole or part) is provided under a licence and',&
@@ -220,7 +232,7 @@ WRITE(LUPRI,*)' '
      &'If results obtained with this code are published,',&
      &'an appropriate citation would be:',&
      &' ',&
-     &'"LSDalton, a molecular electronic structure program, Release 2011,',&
+     &'"LSDalton, a molecular electronic structure program, Release 2013,',&
      &' written by <INSERT AUTHOR LIST>"'
         write(lupri,*)
 

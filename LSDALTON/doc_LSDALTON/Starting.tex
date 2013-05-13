@@ -141,21 +141,9 @@ A typical example of DALTON.INP for a {\bf large molecule} (say, more than 100 a
 \begin{verbatim}
 **INTEGRAL
 .DENSFIT
-.RUNMM
-*FMM
-.SCREEN
- 1e-10
-.LMAX
- 5
-.TLMAX
- 12
 **WAVE FUNCTIONS
 .DFT
  BP86
-*DFT INPUT
-.GRID3
-.DFTTHR
-1.d-6 0.d0 1.d-7 1.d-9
 *DENSOPT
 .START
  TRILEVEL
@@ -164,16 +152,14 @@ A typical example of DALTON.INP for a {\bf large molecule} (say, more than 100 a
  STANDARD
 *END OF INPUT
 \end{verbatim}
-Under **INTEGRAL, we have requested the use of density-fitting and FMM (the Fast Multipole Method)
-to speed up the calculation (the use of J-engine is default). 
+Under **INTEGRAL, we have requested the use of density-fitting to speed up the calculation (the use of J-engine is default). 
 Under **WAVE FUNCTIONS, we now request a DFT
-calculation using the BP86 exchange-correlation functional and 
-specify an efficient integration grid. Since this is a calculation on a large molecule, 
+calculation using the BP86 exchange-correlation functional.
+
+Since this is a calculation on a large molecule, 
 we request the trilevel starting guess (atomic, valence, and then full
 optimization) and the Augmented Rothaan-Hall (ARH) method for density optimization. 
 Note that ARH is default, so this keyword is actually unnecessary.
-ARH is more robust than
-the standard diagonalization/DIIS scheme, and linear-scaling if sparse-matrix algebra is employed. You may use
-sparse-matrix algebra by putting .CSR (i.e. Compressed-Sparse Row) under *DENSOPT (NB: requires linking to the
-MKL library). 
+ARH is more robust than the standard diagonalization/DIIS scheme, and linear-scaling if sparse-matrix algebra is employed. You may use
+sparse-matrix algebra by putting .CSR (i.e. Compressed-Sparse Row) under *DENSOPT (NB: requires linking to the MKL library). 
 
