@@ -1655,19 +1655,8 @@ contains
     dynamic_load = DECinfo%dyn_load
     startt=0.0E0_realk
     stopp=0.0E0_realk
-    !double_2G_nel=250000000
     double_2G_nel=170000000
     print_debug = (DECinfo%PL>1)
-
-
-
-!HACK
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    print_debug = .true.
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
 
 #ifdef VAR_DEBUG
     double_2G_nel=20
@@ -2480,7 +2469,7 @@ contains
     endif
     stopp=MPI_wtime()
 #ifdef VAR_DEBUG
-    if(master) print*,"MPI part of the calculation finished, comm-time",stopp-startt
+    if(master.and.DECinfo%PL>2) print*,"MPI part of the calculation finished, comm-time",stopp-startt
 #endif    
     !free windows and deallocate partial int matrices in scheme 1
     if(DECinfo%ccModel>2.and.(scheme==3.or.scheme==4))then
@@ -2554,9 +2543,9 @@ contains
 
 !OUTPUT
 #ifdef VAR_LSMPI
-        write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
+        if(DECinfo%PL>2)write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
 #else
-        write(DECinfo%output,'("C and D   :",f15.4)')stopp-startt
+        if(DECinfo%PL>2)write(DECinfo%output,'("C and D   :",f15.4)')stopp-startt
 #endif
       endif
     endif
@@ -2663,7 +2652,7 @@ contains
 #elif VAR_LSMPI
     stopp=MPI_wtime()
 #endif
-    write(DECinfo%output,'("Fock trafo:",f15.4)')stopp-startt
+    if(DECinfo%PL>2)write(*,'("Fock trafo:",f15.4)')stopp-startt
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_LSMPI
@@ -2708,7 +2697,7 @@ contains
 #elif VAR_LSMPI
     stopp=MPI_wtime()
 #endif
-    write(DECinfo%output,'("S and E   :",f15.4)')stopp-startt
+    if(DECinfo%PL>2)write(*,'("S and E   :",f15.4)')stopp-startt
 
 
 #ifdef VAR_LSMPI
