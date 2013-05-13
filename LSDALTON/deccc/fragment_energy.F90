@@ -29,8 +29,11 @@ module fragment_energy_module
   !       & get_fragmentt1_AOSAOS_from_full, extract_specific_fragmentt1, &
   !       & update_full_t1_from_atomic_frag,which_pairs, &
   !       & update_full_t1_from_atomic_frag, update_full_t1_from_pair_frag
+#ifdef MOD_UNRELEASED
   use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
        ccsdpt_energy_e4_pair,ccsdpt_energy_e5_pair
+!endif mod_unreleased
+#endif
   use mp2_gradient_module ,only: single_calculate_mp2gradient_driver,&
        & pair_calculate_mp2gradient_driver
   use ccdriver, only: mp2_solver,fragment_ccsolver
@@ -339,6 +342,7 @@ contains
        ! Note, t2occ and t2virt also contain singles contributions
        call array4_free(u)
 
+#ifdef MOD_UNRELEASED
 
        ! calculate ccsd(t) fragment energies
        ! ***********************************
@@ -367,6 +371,8 @@ contains
           call array4_free(ccsdpt_t2)
 
        end if
+!endif mod_unreleased
+#endif 
 
        call array2_free(t1)
        call array4_free(t2)
@@ -773,10 +779,13 @@ contains
        ! CCSD
        MyFragment%energies(6) = e1_final   ! occupied
        MyFragment%energies(7) = e3_final   ! virtual
+#ifdef MOD_UNRELEASED
     case(4)
        ! Save also CCSD contribution for CCSD(T)
        MyFragment%energies(6) = e1_final   ! occupied
        MyFragment%energies(7) = e3_final   ! virtual
+!endif mod_unreleased
+#endif
     end select
     ! Energy contributions other than MP2,CC2, and CCSD are calculated elsewhere
 
@@ -1050,6 +1059,7 @@ contains
        call array4_free(VOVV)
     end if
 
+#ifdef MOD_UNRELEASED
 
     ! calculate ccsd(t) pair interaction energies
     ! *******************************************
@@ -1080,7 +1090,8 @@ contains
        call array4_free(ccsdpt_t2)
 
     end if
-
+!endif mod_unreleased
+#endif
 
     if(DECinfo%ccmodel/=1) then
        call array2_free(t1)
@@ -1357,10 +1368,13 @@ contains
        ! CCSD
        PairFragment%energies(6) = e1_final   ! occupied
        PairFragment%energies(7) = e3_final   ! virtual
+#ifdef MOD_UNRELEASED
     case(4)
        ! save CCSD contribution for CCSD(T)
        PairFragment%energies(6) = e1_final   ! occupied
        PairFragment%energies(7) = e3_final   ! virtual
+!endif mod_unreleased
+#endif
     end select
     ! Energy contributions other than MP2,CC2, and CCSD are calculated elsewhere
     call mem_dealloc(dopair_occ)
@@ -4774,12 +4788,15 @@ contains
        fragment%EvirtFOP = fragment%energies(7)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
+#ifdef MOD_UNRELEASED
     case(4)
        ! CCSD(T)
        fragment%EoccFOP = fragment%energies(8)
        fragment%EvirtFOP = fragment%energies(9)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
+!endif mod_unreleased
+#endif
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
             & for model:', DECinfo%ccmodel
@@ -4817,11 +4834,14 @@ contains
     case(3)
        ! CCSD
        fragment%energies(6) = fragment%EoccFOP 
-       fragment%energies(7) = fragment%EvirtFOP 
+       fragment%energies(7) = fragment%EvirtFOP
+#ifdef MOD_UNRELEASED 
     case(4)
        ! CCSD(T)
        fragment%energies(8) = fragment%EoccFOP 
        fragment%energies(9) = fragment%EvirtFOP
+!endif mod_unreleased
+#endif
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
             & for model:', DECinfo%ccmodel
@@ -4894,6 +4914,7 @@ contains
              FragEnergiesModel(i,j,1) = 0.5_realk*(FragEnergiesModel(i,j,2) + &
                   & FragEnergiesModel(i,j,3) )
 
+#ifdef MOD_UNRELEASED
           case(4)
              ! CCSD(T)
 
@@ -4907,6 +4928,8 @@ contains
              FragEnergiesModel(i,j,1) = 0.5_realk*(FragEnergiesModel(i,j,2) + &
                   & FragEnergiesModel(i,j,3) )
 
+!endif mod_unreleased
+#endif
           case default
              write(DECinfo%output,*) 'WARNING: extract_fragenergies_for_model: Needs implementation &
                   & for model:', DECinfo%ccmodel
