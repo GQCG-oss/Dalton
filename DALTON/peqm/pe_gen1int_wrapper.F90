@@ -22,12 +22,12 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
     logical :: triangular
     logical :: symmetric
     type(one_prop_t) :: prop_operator
-    type(nary_tree_t) :: nary_tree_bra
-    type(nary_tree_t) :: nary_tree_ket
-    type(nary_tree_t) :: nary_tree_total
-    integer :: num_geo_bra
-    integer :: num_geo_ket
-    integer :: num_geo_total
+    type(nary_tree_t) nary_tree_bra    !N-ary tree for partial geometric derivatives on bra center
+    type(nary_tree_t) nary_tree_ket    !N-ary tree for partial geometric derivatives on ket center
+    type(nary_tree_t) nary_tree_total  !N-ary tree for total geometric derivatives
+    integer num_geo_bra                !number of partial geometric derivatives on bra center
+    integer num_geo_ket                !number of partial geometric derivatives on ket center
+    integer num_geo_total              !number of total geometric derivatives
     type(matrix), dimension(:), allocatable :: intmats
 
     integer :: nbas
@@ -81,11 +81,39 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
         stop 'ERROR: unknown integral type'
     end if
     if (ierr /= 0) stop 'Failed to create property operator.'
+
+    ! creates N-ary tree for geometric derivatives
+    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
+                                  order_geo=0,         &
+                                  num_geo_atoms=0,     &
+                                  idx_geo_atoms=(/0/), &
+                                  nary_tree=nary_tree_bra)
+    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
+                                  order_geo=0,         &
+                                  num_geo_atoms=0,     &
+                                  idx_geo_atoms=(/0/), &
+                                  nary_tree=nary_tree_ket)
+    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
+                                  order_geo=0,         &
+                                  num_geo_atoms=0,     &
+                                  idx_geo_atoms=(/0/), &
+                                  nary_tree=nary_tree_total)
+
     ! gets the number of property integrals and their symmetry
     call OnePropGetNumProp(one_prop=prop_operator, &
                            num_prop=num_prop)
     call OnePropGetSymmetry(one_prop=prop_operator, &
                             prop_sym=prop_sym)
+
+    ! gets the number of geometric derivatives
+    call NaryTreeGetNumGeo(nary_tree=nary_tree_bra, num_unique_geo=num_geo_bra)
+    call NaryTreeGetNumGeo(nary_tree=nary_tree_ket, num_unique_geo=num_geo_ket)
+    call NaryTreeGetNumGeo(nary_tree=nary_tree_total, num_unique_geo=num_geo_total)
+
+    ! updates the number and symmetry of property integrals
+    num_prop = num_prop*num_geo_bra*num_geo_ket*num_geo_total
+    ! FIXME: if there are partial geometric derivatives, please set prop_sym = SQUARE_INT_MAT
+
     if (num_prop /= ncomps) stop 'Wrong number of components.'
 
     ! creates N-ary tree for geometric derivatives on bra center

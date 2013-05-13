@@ -50,16 +50,13 @@ cat > LSresponse_HF_alpha.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.RH                                                                                       
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
+.ARH DAVID
+.CONVDYN
+TIGHT
 **RESPONS
 *SOLVER
-.CONVTHR
-1.0D-6
+.CONVDYN
+TIGHT
 *ALPHA
 .BFREQ
 2
@@ -88,6 +85,7 @@ else
    GREP="egrep"
 fi
 
+
 # Energy
 CRIT1=`$GREP "Final * HF energy\: * \-150\.69387" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
@@ -101,16 +99,16 @@ CTRL[2]=1
 ERROR[2]="Memory leak -"
 
 # Real Polarizability tests
-CRIT1=`$GREP "Ex *  3.557[0-9][0-9][0-9][0-9] *  1.619[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "Ey * 1.619[0-9][0-9][0-9][0-9] * 18.104[0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Ex *  3.55[0-9][0-9][0-9][0-9][0-9] *  1.61[0-9][0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "Ey * 1.61[0-9][0-9][0-9][0-9][0-9] * 18.10[0-9][0-9][0-9][0-9]" $log | wc -l`
 
 TEST[3]=`expr  $CRIT1 \+ $CRIT2 `
 CTRL[3]=2
 ERROR[3]="Error in real polarizability"
 
 # Imaginary part of complex polarizability tests
-CRIT1=`$GREP "Ex * 1.859[0-9][0-9][0-9][0-9] * 4.276[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "Ey * 4.276[0-9][0-9][0-9][0-9] * 9.877[0-9][0-9][0-9[0-9]" $log | wc -l`
+CRIT1=`$GREP "Ex * 1.8[5-6][0-9][0-9][0-9][0-9][0-9] * 4.27[0-9][0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "Ey * 4.27[0-9][0-9][0-9][0-9][0-9] * 9.87[0-9][0-9][0-9][0-9[0-9]" $log | wc -l`
 
 TEST[4]=`expr  $CRIT1 \+ $CRIT2 `
 CTRL[4]=2

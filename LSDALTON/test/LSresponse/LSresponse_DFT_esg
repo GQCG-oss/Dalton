@@ -48,17 +48,10 @@ cat > LSresponse_DFT_esg.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*DFT INPUT
-.FINE
-.GRID TYPE
- BECKEORIG LMG
 *DENSOPT
-.RH                                                                                       
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
+.ARH DAVID                                                                                       
+.CONVDYN
+TIGHT
 **RESPONS
 .NEXCIT
 4

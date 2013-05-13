@@ -3974,6 +3974,9 @@ Real(realk)  :: Econt2(ndmat)
 integer :: idmat
 real(realk)         :: OLDTHRESH,Kfac
 
+IF(setting%IntegralTransformGC)THEN
+   call lsquit('IntegralTransformGC in II_get_Econt1 use .NOGCBASIS',-1)
+ENDIF
 Kfac = SETTING%SCHEME%exchangeFactor
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR*modThresh
 
@@ -4020,6 +4023,9 @@ integer    :: Oper,dascreen_thrlog
 integer :: nCalcInt,nCalcIntZero,nCalcIntZeroContrib
 Logical :: DaLink
 
+IF(setting%IntegralTransformGC)THEN
+   call lsquit('IntegralTransformGC in II_get_exchangeEcont use .NOGCBASIS',-1)
+ENDIF
 DaLink = setting%scheme%daLinK
 Dascreen_thrlog = setting%scheme%Dascreen_thrlog
 CALL LSTIMER('START ',TS,TE,LUPRI)
@@ -4075,6 +4081,9 @@ integer      :: oper,natoms
 Real(realk),pointer :: g1alphafull(:,:,:,:,:)
 Real(realk),pointer :: calphafull(:,:,:)
 
+IF(setting%IntegralTransformGC)THEN
+   call lsquit('IntegralTransformGC in II_get_CoulombEcont use .NOGCBASIS',-1)
+ENDIF
 CALL LSTIMER('START ',TS,TE,LUPRI)
 FMM = SETTING%SCHEME%FMM
 SETTING%SCHEME%FMM = .FALSE.

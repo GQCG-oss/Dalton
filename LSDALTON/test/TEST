@@ -144,6 +144,7 @@ RSP="LSresponse/LSresponse_HF_alpha
   LSresponse/LSresponse_DFT_alpha
   LSresponse/LSresponse_DFT_alpha_aptv
   LSresponse/LSresponse_DFT_beta
+  LSresponse/LSresponse_DFT_excit_beta
   LSresponse/LSresponse_DFT_dipole
   LSresponse/LSresponse_DFT_esd
   LSresponse/LSresponse_DFT_esg
@@ -156,6 +157,7 @@ RSP="LSresponse/LSresponse_HF_alpha
   LSresponse/LSresponse_mcd
   LSresponse/LSresponse_mcd2
   LSresponse/LSresponse_mcd3
+  LSresponse/LSresponse_mcd_calc
   LSresponse/LSresponse_excit_cs00"
 
 XCFUN="LSresponse/LSresponse_xcfun_lda_molgrad
