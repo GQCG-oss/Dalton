@@ -57,10 +57,9 @@ cat > linsca_direct_dens_csr.dal <<'%EOF%'
  1.D-5
 .START
  H1DIAG
-$INFO
-INFO_LINEQ
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.INFO_LINEQ
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 

@@ -56,9 +56,8 @@ cat > linsca_trilevel_2nd_all_csr.dal <<'%EOF%'
 .CONVDYN
  TIGHT
 .2ND_ALL
-$INFO
-INFO_LINEQ
-$END INFO
+**INFO
+.INFO_LINEQ
 *END OF INPUT
 %EOF%
 

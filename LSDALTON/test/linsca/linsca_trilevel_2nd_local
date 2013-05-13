@@ -57,9 +57,8 @@ cat > linsca_trilevel_2nd_local.dal <<'%EOF%'
 .CONVDYN
  STANDARD
 .2ND_LOC
-$INFO
-INFO_LINEQ
-$END INFO
+**INFO
+.INFO_LINEQ
 *END OF INPUT
 %EOF%
 
