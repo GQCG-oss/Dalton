@@ -56,9 +56,12 @@
       case(CCSDDATA);
          call ccsd_data_preparation
       case(CCSDSLV4E2);
-         call calculate_E2_and_permute_slave 
+         call calculate_E2_and_permute_slave
+#ifdef MOD_UNRELEASED 
       case(CCSDPTSLAVE);
          call ccsdpt_slave
+!endif mod_unreleased
+#endif
       case(GROUPINIT);
          call init_mpi_groups_slave
 ! DEC driver - main loop

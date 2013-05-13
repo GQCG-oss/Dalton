@@ -42,6 +42,8 @@ module ccsdpt_module
 
 contains
 
+#ifdef MOD_UNRELEASED
+
   !> \brief: driver routine for dec-ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2012
@@ -3525,8 +3527,16 @@ contains
 
 
   end subroutine get_max_arraysizes_for_ccsdpt_integrals
+!endif mod_unreleased
+#endif
+
+  subroutine dummy_ccsdpt_routine()
+
+  end subroutine dummy_ccsdpt_routine
 
 end module ccsdpt_module
+
+#ifdef MOD_UNRELEASED
 
   !> \brief slaves enter here from lsmpi_slave (or dec_lsmpi_slave) and need to get to work 
   !> \author Janus Juul Eriksen
@@ -3604,4 +3614,6 @@ end module ccsdpt_module
 
   end subroutine ccsdpt_slave
 
+#endif
+!endif mod_unreleased
 #endif

@@ -121,6 +121,8 @@ contains
           end do
        end do       
 
+#ifdef MOD_UNRELEASED
+
        if (DECinfo%ccModel .eq. 4) then
           ! ccsd(t) correction
           Ecorr = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
@@ -130,11 +132,15 @@ contains
                & MyMolecule%ypv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
                & print_level,fragment_job,ppfock_fc,MyMolecule%qqfock)
        end if
+!endif mod_unreleased
+#endif
 
        call mem_dealloc(ppfock_fc)
        call mem_dealloc(ypo_fc)
 
     else
+
+#ifdef MOD_UNRELEASED
 
        if (Decinfo%ccModel .eq. 4) then
 
@@ -142,12 +148,18 @@ contains
                & mylsitem,print_level,fragment_job)
 
        else
+!endif mod_unreleased
+#endif
 
           Ecorr = ccsolver_justenergy(MyMolecule%ypo,MyMolecule%ypv,&
                & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
                & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock)
 
+#ifdef MOD_UNRELEASED
+
        end if
+!endif mod_unreleased
+#endif
 
     end if
 
