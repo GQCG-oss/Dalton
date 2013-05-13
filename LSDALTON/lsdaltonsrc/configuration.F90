@@ -1853,8 +1853,6 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
                  config%response%rspsolverinput%rsp_maxred=2*config%response%rspsolverinput%rsp_maxit 
                CASE('.MAXRED')
                   READ(LUCMD,*) config%response%rspsolverinput%rsp_maxred 
-               CASE('.S_NORM')
-                  config%response%rspsolverinput%rsp_single_norm =.true.
                CASE('.CONVDYN')
                   READ(LUCMD,*) config%response%rspsolverinput%rsp_convdyn_type
                   config%response%rspsolverinput%rsp_convdyn =.true.
@@ -1869,8 +1867,6 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
                   WRITE (config%LUPRI,*) 'Options are TIGHT, STANDARD, and SLOPPY.'
                   CALL lsQUIT('Illegal keyword with .CONVDYN',config%lupri)
                   END SELECT
-               CASE('.OLSEN')
-                  config%response%rspsolverinput%rsp_olsen = .true.
                CASE('.QUIET')
                   config%response%rspsolverinput%rsp_quiet = .true.
                CASE('.AOPREC')
@@ -1894,8 +1890,6 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
                CASE ('.NSTART');   READ(LUCMD,*) config%response%rspsolverinput%rsp_no_of_startvectors
                   config%response%rspsolverinput%rsp_startvectors = .true.  
                   config%decomp%cfg_startvectors = .TRUE.
-               CASE('.TWOSTART')
-                  config%response%rspsolverinput%rsp_damp_2start=.true.
                CASE('.DTHR')
                   !threshold for when excited states is considered degenerate
                   READ(LUCMD,*) config%response%rspsolverinput%degenerateTHR
