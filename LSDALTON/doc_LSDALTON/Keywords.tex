@@ -22,8 +22,9 @@ should always end with *END OF INPUT.
 This input module defines the way the integrals should be calculated.
 \begin{description}
 
-\item[\Key{DENSFIT}] Use density-fitting. When using this keyword, an auxiliary
-basis set has to be specified in \mol\ file.
+\item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
+When using this keyword, an auxiliary basis set has to be 
+specified in \mol\ file.
 
 \item[\Key{RUNMM}] Use the (Fast) Multipole Method.
 
@@ -1154,12 +1155,6 @@ response equations.\newline
 The solver with paired trial vectors is used for solving damped (complex)
 response equations.\newline
 {\bf Test case}: LSresponse/LSresponse\_DFT\_alpha\_aptv
-\item[\Key{COMPLEX}] \verb| | \newline
-\verb|<Damping parameter gamma>|\newline
-The $\gamma$ parameter is treated as an imaginary component of a frequency of interest and describes a broadening of
-the spectrum~\cite{dampedresponse}.
-\item[\Key{OLSEN}] \verb| | \newline
-The Olsen algorithm is used for obtaining excitation energies. The Olsen algorithm works under the algorithm with symmetrized trial vectors.
 \item[\Key{CONVTHR}] \verb| | \newline
 \verb|<Convergence threshold>|\newline
 Convergence threshold to which response equations are solved.
