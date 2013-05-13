@@ -3,8 +3,6 @@ Things to do before release 2013
 
 * Everybody please feel free to add/remove things from this list!
 
-General
-'''''''
 - cleanup keywords and update manual
 - Write "New features" section for manual and homepage
 - Remove non-releasable code (see below)
@@ -15,13 +13,10 @@ General
 - Response properties in LSDalton - wrappers for (magnetic) properties not present in 2011 version
 - Clean up Output file (For the users point of view on the requested output should be there, but print of Timings can be added, print of HOMO-LUMO gap can be added and so on.)  
 - Document tools directory (KK: Integrated gridgen into lsdalton.x, also did some cleanup)
-
-Specific issues
-'''''''''''''''
-. update author list
-- Possibly tighten default SCF convergence thresholds for DFT (currently under investigation by KK/IMH/TK).
-- Quit program with meaningful error message rather than simply printing a warning when a wrong input keyword is used (done for **INTEGRAL, **DEC, *DENSOPT, **RESPONSE sections)
+- Make **GENERAL section with general info. Currently *DENSOPT has become a junk box with various inputs.
+- update author list
 - Treat $INFO in the same way as other input sections (call it **INFO). Currently $INFO only works if it is put in the *DENSOPT section, which is mostly an historical artefact.
+- Rename DALTON.INP to LSDALTON.INP (TK).
 
 
 Non-releasable code
