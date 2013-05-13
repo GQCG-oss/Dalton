@@ -891,14 +891,15 @@ subroutine DEC_meaningful_input(config,doresponse)
   !> Do Response calculation?
   logical,intent(in) :: doresponse
 
-  ! DEC and response do not go together right now...
-  if(doresponse) then
-     call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONSE!',-1)
-  end if
 
   ! Only make modifications to config for DEC calculation AND if it is not
   ! a full CC calculation
   DECcalculation: if(config%doDEC) then
+
+     ! DEC and response do not go together right now...
+     if(doresponse) then
+        call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONS!',-1)
+     end if
 
      ! DEC geometry optimization 
      ! *************************
