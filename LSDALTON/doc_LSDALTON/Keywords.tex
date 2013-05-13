@@ -1592,10 +1592,10 @@ These test cases illustrate the main features of the DEC scheme. The test cases 
 Use MP2 model. This gives the canonical MP2 energy and is not optimized for parallel performance. It is only intended to be used for benchmarking DEC-MP2 calculations on relatively small molecular systems.
 
 \item[\Key{CC2}]\verb| | \newline
-Use CC2 model.
+Use CC2 model which is not an optimized code, but rather uses the CCSD optimized code with some contributions removed. See CCSD documentation for details.
 
 \item[\Key{CCSD}]\verb| | \newline
-Use CCSD model.
+Use CCSD model. The code employed is a massively parallel version and flexible with respect to memory. Due to the use of one-sided communication in these models it is recommended to run CCSD with an asynchronous progress engine switched on (how to do that can be found in the documentation of the respective MPI library you are using). When running a CCSD calculation make sure that at least one quantity of size $V^2O^2$ ($O$ = number of occupied orbitals, $V$ = number of virtual orbitals) fits into memory in double precision floating point numbers (with some additional space of course). 
 
 \item[\Key{FROZENCORE}]  \verb| | \newline
 Use the frozen core approximation (can also be used in **DEC section).
@@ -1617,8 +1617,7 @@ Convergence threshold for residual norm in CC solver.
 Number of previous vectors to store in CROP scheme~\cite{crop} for CC solver.
 
 \item[\Key{CCSDSAFE}]  \verb| | \newline
-Save CCSD amplitudes to be able to restart full CCSD calculation.
-
+Save CCSD amplitudes to be able to restart full CCSD calculation. The files are named t11.restart and t12.restart for the singles amplitudes and t21.restart and t22.restart for the doubles amplitudes. These files are written in in an alternate fashion and the latest amplitudes are read automatically if a CCSD calculation is started in the same folder.
 
 \end{description}
 
@@ -1631,6 +1630,8 @@ The test cases are located in LSDALTON/test/dectests.
 \begin{itemize}
 \item
 \textit{fullmp2\_energy}: Calculate conventional canonical MP2 energy.
+\item
+\textit{fullccsd\_high}: Calculate conventional canonical CCSD energy.
 \end{itemize}
 
 
