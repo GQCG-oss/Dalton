@@ -208,7 +208,7 @@ INTEGER            :: LUCMD !Logical unit number for the daltoninput
 INTEGER            :: IDUMMY,IPOS,IPOS2,COUNTER
 character(len=80)  :: WORD,TMPWORD
 character(len=2)   :: PROMPT
-LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS
+LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS,doresponse
 !LINSCA variables:
 real(realk)        :: shift, min_density_overlap, maxratio, zero
 integer            :: nvec, i
@@ -217,6 +217,7 @@ Real(realk)  :: hfweight
 STARTGUESS = .FALSE.
 Config%integral%cfg_lsdalton = .TRUE.
 COUNTER = 0
+doresponse=.false.
 
 INQUIRE(file='LSDALTON.INP',EXIST=file_exists) 
 IF(file_exists)THEN
@@ -717,6 +718,7 @@ DO
 
    ! KK, change from $RESPONS to **RESPONS to be consistent with other input structure.
    ResponseInput: IF (WORD(1:9) == '**RESPONS') THEN
+      doresponse=.true.
       READWORD=.TRUE.
       call config_rsp_input(config,lucmd,readword,WORD)
    END IF ResponseInput
@@ -872,7 +874,7 @@ if(config%solver%do_dft)THEN
    call init_dftfunc(config%integral%DFT)
 endif
 ! Check that DEC input is consistent with geometry optimization and orbital localization.
-call DEC_meaningful_input(config)
+call DEC_meaningful_input(config,doresponse)
 
 END SUBROUTINE read_dalton_input
 
@@ -882,10 +884,17 @@ END SUBROUTINE read_dalton_input
 !> If necessary, modify config structure to comply with DEC calculation.
 !> \author Kasper Kristensen
 !> \date April 2013
-subroutine DEC_meaningful_input(config)
+subroutine DEC_meaningful_input(config,doresponse)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(ConfigItem), intent(inout) :: config
+  !> Do Response calculation?
+  logical,intent(in) :: doresponse
+
+  ! DEC and response do not go together right now...
+  if(doresponse) then
+     call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONSE!',-1)
+  end if
 
   ! Only make modifications to config for DEC calculation AND if it is not
   ! a full CC calculation
