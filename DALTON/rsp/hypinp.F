@@ -26,6 +26,7 @@ C
 C  /* Deck hypinp */
       SUBROUTINE HYPINP(WORD)
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -38,6 +39,7 @@ C
 #include "maxorb.h"
 #include "infinp.h"
 #include "inftap.h"
+#include "infrank.h"
 ! gnrinf.h: QM3, THR_REDFAC
 #include "gnrinf.h"
 C
@@ -406,9 +408,18 @@ C
       NCQRTO = 0
       IF (ICHANG .GT. 0) THEN
          DO 500 I = 1,NPRLBL
-            IF (AQROP(I)) NAQRTO = NAQRTO + 1
-            IF (BQROP(I)) NBQRTO = NBQRTO + 1
-            IF (CQROP(I)) NCQRTO = NCQRTO + 1
+            IF (AQROP(I)) THEN
+                NAQRTO = NAQRTO + 1
+                OPRANK(I) = ISPINA
+            END IF
+            IF (BQROP(I)) THEN
+                NBQRTO = NBQRTO + 1
+                OPRANK(I) = ISPINB
+            END IF
+            IF (CQROP(I)) THEN
+                NCQRTO = NCQRTO + 1
+                OPRANK(I) = ISPINC
+            END IF
   500    CONTINUE
 C
 C  If special processes specified, we need to put the input freq. into 
@@ -524,6 +535,11 @@ C
           WRITE(LUPRI,*) 'QM/MM response calculation'
          END IF
 
+         if (peqm) then
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
+         end if
+
          IF (QRSHG) THEN
             WRITE (LUPRI,'(A,L2)')
      *      ' Second harmonic generation                     : SHG='
@@ -571,6 +587,7 @@ C  /* Deck smoinp */
 C
 C Sonia: added MCDBTE section (1999)
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -989,6 +1006,11 @@ C
          IF (QM3 .OR. QMMM) THEN
           WRITE(LUPRI,*) 'QM/MM response calculation'
          END IF
+
+         if (peqm) then
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
+         end if
 
          IF (MCDCAL) THEN
             WRITE (LUPRI,'(A,L1)')

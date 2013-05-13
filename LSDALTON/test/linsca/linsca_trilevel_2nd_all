@@ -52,8 +52,9 @@ cat > linsca_trilevel_2nd_all.dal <<'%EOF%'
 *DENSOPT
 .START
  TRILEVEL
+.NOATOMSTART
 .CONVDYN
- STANDARD
+ TIGHT
 .2ND_ALL
 $INFO
 INFO_LINEQ
@@ -86,7 +87,7 @@ TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
 ERROR[2]="LEVEL 3 ENERGY NOT CORRECT -"
 
-CRIT1=`$GREP "HOMO-LUMO Gap \(iteratively\): * 0.759724" $log | wc -l`
+CRIT1=`$GREP "HOMO-LUMO Gap \(iteratively\): * 0.759725" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="HOMO-LUMO GAP NOT CORRECT -"

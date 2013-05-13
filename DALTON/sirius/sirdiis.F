@@ -277,6 +277,8 @@ C
 C DFT modifications T.  Helgaker
 C
 C
+      use pe_variables, only: peqm, pe_mep
+      use polarizable_embedding, only: pe_master
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -310,6 +312,7 @@ C
 #include "infpri.h"
 #include "gnrinf.h"
 #include "dfterg.h"
+#include "dftcom.h"
 #include "cbirea.h"
 #include "r12int.h"
 #include "qm3.h"
@@ -354,6 +357,13 @@ C
 C     Get one-electron Hamiltonian
 C
       CALL SIRH1(H1AO,WRK(KFREE),LFREE)
+
+CAMT  If requested calculate the DFT-D energy correction
+      IF(DODFT .AND. DODFTD) THEN
+         NDERIV=0
+         CALL DFT_D_DAL_IFC(EDISP,NDERIV,WRK(KFREE),LFREE)
+      END IF
+
 C
       IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM) THEN
@@ -377,6 +387,10 @@ C     this also includes the case of MMPCM
      &      ' Iter     Total energy      Solvation energy  Error norm'//
      &      '  Delta(E)  Sym.  Closed shell occupation'
       END IF
+      else if (peqm) then
+        write(luw4,'(/a)')
+     &      ' Iter      Total energy     Embedding energy      '//
+     &      'Error norm     Delta(E)'
       ELSE ! no solvation energy
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
@@ -469,6 +483,7 @@ C------------------
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
      &     .AND. .NOT.AOSAVE   .AND. .NOT. CHOINT
+     &     .and. .not. peqm
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
@@ -677,6 +692,13 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
          IF (DODFT) CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPR_DIIS)
+
+CAMT If calculated add the empirical dispersion energy correction
+         IF (DODFTD) THEN
+           EMY = EMY + EDISP
+         END IF
+
+
 C
 c        we need to divide the solvent calls into mmpcm and not mmpcm
 c        since we in the latter iterate between the mm and pcm for a given QM
@@ -772,6 +794,28 @@ Clf             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
            IF (.NOT. LCONV) write(lupri,*) 'MMPCM not converged !'
            CALL MEMREL('DISCTL.PCMQM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
          ENDIF
+
+         if (peqm) then
+           call memget('REAL', kfpe, nnbasx, wrk, kfree, lfree)
+           call memget('REAL', kepe, 1, wrk, kfree, lfree)
+           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+             call pe_master(runtype='fock', denmats=daosav(:,1),
+     &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
+     &                      energies=wrk(kepe:kepe),
+     &                      dalwrk=wrk(kfree:lfree))
+           else
+             call pe_master(runtype='fock',
+     &                      denmats=(daosav(:,1) + daosav(:,2)),
+     &                      fckmats=wrk(kfpe:kfpe+nnbasx-1), nmats=1,
+     &                      energies=wrk(kepe:kepe), 
+     &                      dalwrk=wrk(kfree:lfree))
+           end if
+           esolt = wrk(kepe)
+           faosav(:,indevc,1) = faosav(:,indevc,1)
+     &                          + wrk(kfpe:kfpe+nnbasx-1)
+           call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfpe,
+     &                 kfree, lfree)
+         end if
 C
          EMCDIF = EMCSCF
          EMCSCF = EMY + EACTIV + EPOT + ESOLT
@@ -809,7 +853,7 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
-            IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM) THEN
+            IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. peqm) THEN
 C           this also includes the case of MMPCM
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(I4,1P,G20.12,G20.12,D15.5,D12.2)')
@@ -1348,24 +1392,45 @@ C
          CALL DAXPY(NNBAST,D1,H1AO,1,DCAO,1)
          CALL UTHUB(DCAO,FCAO,CMO,WRK(KFREE),
      &              NSYM,NBAS,NORB)
-       END IF
+      END IF
 C
 C      if qm3 .or. pcm then also mmpcm automatically
        IF (IPRENR .GT. 0) THEN
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
+         if (peqm) write(luw4,'(a)')
+     &    '   (incl. contribution from polarizable embedding potential)'
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
 C-------------------
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
+            if (peqm) write(lupri,'(A)')
+     &    '   (incl. contribution from polarizable embedding potential)'
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
 C-------------------
 C        CALL RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
       END IF
+      ! needed to get specific PE energy contributions for printout
+      ! when converged
+      if (peqm) then
+        if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+           call pe_master(runtype='energy',
+     &                    denmats=daosav(:,1), nmats=1,
+     &                    dalwrk=wrk(kfree:lfree))
+        else
+           call pe_master(runtype='energy',
+     &                    denmats=(daosav(:,1) + daosav(:,2)),
+     &                    nmats=1, dalwrk=wrk(kfree:lfree))
+        end if
+      end if
+      if (pe_mep) then
+        call pe_master(runtype='mep', denmats=daosav(:,1), nmats=1,
+     &                 dalwrk=wrk(kfree:lfree))
+      end if
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC
 C       FLAG(25) is true for .ABACUS (geometry optimization)
@@ -1934,9 +1999,9 @@ C
 #include "scbrhf.h"
 #include "infind.h"
 #include "infpri.h"
-#ifdef MOD_DFTASC
+#include "mxcent.h"
+#include "dftcom.h"
 #include "dftacb.h"
-#endif
 C
       LOGICAL LSAVE4,LSAVE6
       PARAMETER (D0 = 0.0D0, DP5 = 0.5D0)
@@ -2036,9 +2101,9 @@ C
       KSAO  = KLAST
       KSCR1 = KSAO + NNBAST
       LSCR1 = LSCRA - KSCR1
-#ifdef MOD_DFTASC
-      IF (DFTASC) CALL DFTASC_GETHOMO(FC)
-#endif
+
+      IF (DFTASC) CALL GETHOMOAC(FC,SCRA(KSCR1),LSCR1)
+
       CALL ORTHO(CMO,SCRA(KSAO),SCRA(KSCR1),LSCR1)
       IF (SUPSYM) THEN
          KFREE = 1
@@ -2210,3 +2275,58 @@ C
       CALL MEMREL('FVCORR',WRK,KS,KS,KFREE,LFREE)
       CALL QEXIT('FVCORR')
       END
+
+
+      SUBROUTINE GETHOMOAC(FD,SCRA,LSCRA)
+
+#include "implicit.h"
+#include "priunit.h"
+      DIMENSION FD(*),SCRA(*)
+      PARAMETER (DBIG = 1.D+12)
+#include "maxash.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "inforb.h"
+#include "infinp.h"
+#include "infind.h"
+#include "dftacb.h"
+#include "dftcom.h"
+
+      logical   exchanged
+C
+      KORBEN = 1
+      LNEED  = KORBEN + NORBT
+      IF (LNEED .GT. LSCRA) CALL ERRWRK('GETHOMOAC',LNEED,LSCRA)
+      CALL DZERO(SCRA,NORBT)
+
+      call dcopy(NORBT,FD,1,SCRA,1)
+100   continue
+      exchanged=.false.
+      do i=1,norbt-1
+        if (scra(i+1) .lt. scra(i) ) then
+          tmp=scra(i+1)
+          scra(i+1)=scra(i)
+          scra(i)=tmp
+          exchanged=.true.
+        end if
+      end do
+      if (exchanged) goto 100
+
+      EhomoA =  scra(NOCCT)
+      ehomo  =  ehomoa
+      ehomob =  scra(NishT)
+
+      ElumoA =  scra(NOCCT+1)
+      ElumoB =  scra(NishT+1)
+
+      SHIFA = DFTIPTA + EHOMOA - SHF
+
+      write(LUPRI,10)' E_HOMO Alpha ',EhomoA,' E_HOMO Beta ',
+     &                EhomoB, 'v_xc(inf)', SHIFA
+      write(LUPRI,10)' E_LUMO Alpha ',ElumoA,' E_LUMO Beta ',
+     &                ElumoB
+10    format(5x,A14,F20.12,A14,F20.12,A14,F20.12)
+
+      RETURN
+      END
+

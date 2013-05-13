@@ -2,12 +2,14 @@ set(C_SOURCES
 cc/crayio.c
 dft/basisinfo.c
 dft/cube-fast.c
+dft/dft_dftd.F
 dft/eval-dso.c
 dft/fun-b86.c
 dft/fun-b86mx.c
 dft/fun-b97-1.c
 dft/fun-b97-2.c
 dft/fun-b97-3.c
+dft/fun-b97-d.c
 dft/fun-b97-k.c
 dft/fun-b97.c
 dft/fun-becke.c
@@ -23,6 +25,7 @@ dft/fun-example6.c
 dft/fun-example7.c
 dft/fun-example8.c
 dft/fun-example9.c
+dft/fun-1-4.c
 dft/fun-g96.c
 dft/fun-gga.c
 dft/fun-hcth120.c
@@ -51,6 +54,7 @@ dft/fun-pw91x2.c
 dft/fun-pw92ac.c
 dft/fun-pw92c.c
 dft/fun-pz81.c
+dft/fun-rcam-b3lyp.c
 dft/fun-revpbex.c
 dft/fun-rpbex.c
 dft/fun-slater.c
@@ -66,6 +70,7 @@ dft/integrator.c
 dft/prop-eval.c
 dft/quad-fast.c
 dft/quad-faster.c
+dft/quad-open.c
 dft/quad-strict.c
 pdpack/scatter-io.c
     )
@@ -211,6 +216,7 @@ cc/cc_d1ao.F
 cc/cc_den.F
 cc/cc_den2_pt.F
 cc/cc_den_pt2.F
+cc/cc_den_rccd.F
 cc/cc_dhfao.F
 cc/cc_dmat.F
 cc/cc_drv.F
@@ -270,6 +276,7 @@ cc/cc_landf2.F
 cc/cc_landf3.F
 cc/cc_lhtr.F
 cc/cc_lhtr_noddy.F
+cc/cc_lhtr_rccd.F
 cc/cc_lr.F
 cc/cc_maomao.F
 cc/cc_mcdny.F
@@ -279,6 +286,7 @@ cc/cc_mofcon2.F
 cc/cc_mofconr12.F
 cc/cc_nuccon.F
 cc/cc_opa.F
+cc/cc_omega2_rccd.F
 cc/cc_pckutil.F
 cc/cc_pqi.F
 cc/cc_qaos.F
@@ -392,6 +400,7 @@ cc/iroper2.F
 cc/cc_lanczos_lrinp.F
 cc/cc_lanczos_drv.F
 cc/cc_lanczos_lrextras.F
+cc/rpa_grad.F
 choles/cc_caa.F
 choles/cc_choatr.F
 choles/cc_chocc2.F
@@ -419,6 +428,7 @@ densfit/denfit_noddy.F
 densfit/df_dirac.F
 densfit/dposv.F
 dft/dft_aos.F
+dft/dft_ac.F 
 dft/dft_aux.F
 dft/dft_den.F
 dft/dft_exp.F
@@ -493,6 +503,7 @@ pdpack/jacobi.F
 pdpack/linextra.F
 pdpack/linpack.F
 pdpack/printpkg.F
+peqm/pe_dalton_wrappers.F
 rsp/absorp.F
 rsp/abscomplex.F
 rsp/complexpp.F
@@ -604,9 +615,11 @@ sirius/sirpop.F
 sirius/sirqm3.F
 sirius/sirqmmm.F
 sirius/sirsav.F
+sirius/sirscat.F
 sirius/sirset.F
 sirius/sirsol.F
 sirius/sirsolpcm.F
+sirius/sirstex.F
 sirius/sirtest.F
 sirius/sirtr1.F
 sirius/sirtra.F
@@ -731,16 +744,23 @@ lucita/par_communication_model.F90
 lucita/par_io.F90
 lucita/par_io_fh.F90
 lucita/par_sync_cw.F90
+peqm/pe_gen1int_wrapper.F90
+peqm/pe_precision.F90
+peqm/pe_blas_wrappers.F90
+peqm/pe_lapack_wrappers.F90
+peqm/pe_variables.F90
+peqm/polarizable_embedding.F90
+abacus/parallel_models_mpi.F90
+abacus/parallel_communication_models_mpi.F90
+gp/one_sided_communication_wrappers.F90
+gp/memory_parallel.F90
+abacus/rma_windows.F90
     )
 set(OWN_BLAS_SOURCES
-    pdpack/gp_dblas1.F
-    pdpack/gp_dblas2.F
-    pdpack/gp_dblas3.F
-    pdpack/gp_zblas.F
+    pdpack/gp_blas.F
     )
 set(OWN_LAPACK_SOURCES
-    pdpack/gp_dlapack.F
-    pdpack/gp_zlapack.F
+    pdpack/gp_lapack.F
     )
 if(NOT ENABLE_MPI)
     set(C_SOURCES

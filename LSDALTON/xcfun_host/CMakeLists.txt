@@ -1,10 +1,5 @@
-#add_library(
-#    xcfun_interface
-#    xcfun_host.F90
-#    )
-#
 #set(PARENT_DEFINITIONS "-DVAR_LSDALTON")
-#
+
 #set(ExternalProjectCMakeArgs
 #    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
 #    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
@@ -14,7 +9,7 @@
 #    -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
 #    -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
 #    )
-#
+
 #add_external(xcfun)
-#
+
 #add_dependencies(xcfun_interface xcfun)

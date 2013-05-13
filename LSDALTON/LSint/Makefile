@@ -2,11 +2,12 @@ all: libLSint.a
 
 include ../Makefile.config
 
-INCLUDES := $(INCLUDES) -I../lsutil -I../mm -I../xcfun_host
+INCLUDES := $(INCLUDES) -I../lsutil -I../mm -I../xcfun_host -I../dft
 
 # Keep the file lists sorted for easier modification.
 
 F90_OBJS = \
+	dft_gridLL.o\
 	BuildMolFile.o\
         BuildBasis.o   \
 	dalton-input.o\
@@ -18,6 +19,7 @@ F90_OBJS = \
 	Integral_interface.o\
 	Integral_interfaceDF.o\
 	Integral_interface_test.o\
+        II_absval_int.o \
 	II_dft_int.o \
 	II_dft_ksm.o \
 	II_dft_ksm_worker.o \
@@ -51,8 +53,8 @@ clean :
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
 
 
-Makefile.depend depend: $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../xcfun_host -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90) > Makefile.depend
+Makefile.depend depend: $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../xcfun_host -M../dft -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

@@ -267,7 +267,7 @@ C
       LFREE  = LWRK
       CALL MEMGET('REAL',KINDX,LCINDX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMO ,NCMOT ,WRK,KFREE,LFREE)
-      LUDV   = NACTT*NACTT
+      LUDV   = NACTT*NACTT*2
       CALL MEMGET('REAL',KUDV ,LUDV  ,WRK,KFREE,LFREE)
       IF (RSPCI) THEN
          CALL MEMGET('REAL',KPVX ,0     ,WRK,KFREE,LFREE)
@@ -383,12 +383,22 @@ C
      *                 WRK(KINDX),WRK(KTOT),KFREE_KTOT,LFREE)
 C
          END IF
+C
+C Include triplet one-electron density 
+C
+            CALL RSPDM(IREFSY,IREFSY,NCREF,NCREF,WRK(KCREF),WRK(KCREF),
+     *                 WRK(KUDV+N2ASHX),WRK(KFREE),
+     *                 1,0,.FALSE.,.TRUE.,
+     *                 WRK(KINDX),WRK(KTOT),KFREE,LFREE)
          IF ( IPRRSP.GT.110 ) THEN
             WRITE(LUPRI,'(/A)')' ** ONE BODY DENSITY MATRIX FROM RSPDM'
             CALL OUTPUT(WRK(KUDV),1,NASHT,1,NASHT,NASHT,NASHT,-1,LUPRI)
+            KUDV2=KUDV+N2ASHX
+            CALL OUTPUT(WRK(KUDV2),1,NASHT,1,NASHT,NASHT,NASHT,1,LUPRI)
          END IF
       ELSE IF ( TDHF .AND. NASHT .EQ. 1 ) THEN
          WRK(KUDV) = D1
+         WRK(KUDV+1) = D1
          WRK(KPVX) = D0
          IF (TRPLET) WRK(KPVX+1) = D0
       ELSE IF ( TDHF .AND. HSROHF ) THEN
@@ -1235,6 +1245,7 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1674,6 +1685,12 @@ C
             END IF
          ENDIF
 
+         if (peqm) then
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
+            if (soppa) stop 'Not sure if SOPPA works with PE module yet'
+         end if
+
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
      *      ' Equilibrium PCM solvent model requested        : SOLVNT ='
@@ -1782,6 +1799,7 @@ C
 C Read input options for LR = "Linear Response"
 C
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -1803,6 +1821,7 @@ C
 #include "gnrinf.h"
 #include "chrnos.h"
 #include "elweak.h"
+#include "infrank.h"
 #include "channel.h"
 C--------------------
 C
@@ -1939,35 +1958,34 @@ C
                   LLROP( INDPRP('X SPNORB')) = .TRUE.
                   LLROP( INDPRP('Y SPNORB')) = .TRUE.
                   LLROP( INDPRP('Z SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('X SPNORB')) = 1
+                  OPRANK( INDPRP('Y SPNORB')) = 1
+                  OPRANK( INDPRP('Z SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  21            CONTINUE
                   LLROP( INDPRP('X SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('X SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  22            CONTINUE
                   LLROP( INDPRP('Y SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('Y SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  23            CONTINUE
                   LLROP( INDPRP('Z SPNORB')) = .TRUE.
-                  TRPLET=.TRUE.
-                  TRPFLG=.TRUE.
+                  OPRANK( INDPRP('Z SPNORB')) = 1
                   DOSO1 = .TRUE.
                   DOSO2 = .TRUE.
                GO TO 100
  24            CONTINUE
                   READ(LUCMD,'(BN,A,I8)')LABEL,IRANK
                   LLROP( INDPRP(LABEL)) = .TRUE.
+                  OPRANK(INDPRP(LABEL)) = IRANK
                GO TO 100
  25            CONTINUE
                   READ (LUCMD,*) MAXITL
@@ -2225,6 +2243,11 @@ C
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
+
+         if (peqm) then
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
+         end if
 
          IF (CHANNEL_CALC) THEN
             WRITE(LUPRI,'(/A,10(/,10I5))')
@@ -4659,6 +4682,7 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
+      use pe_variables, only: peqm
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )
@@ -4806,6 +4830,11 @@ C
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
+
+         if (peqm) then
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
+         end if
 
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='

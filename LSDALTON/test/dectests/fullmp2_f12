@@ -53,11 +53,10 @@ cat > fullmp2_f12.dal <<'%EOF%'
 TRILEVEL
 .CONVTHR
 1.0d-5
-**DEC
-.FULL
+**CC
 .MP2
 .F12
-.canonical
+.NOTCANONICAL
 *END OF INPUT
 %EOF%
 #######################################################################

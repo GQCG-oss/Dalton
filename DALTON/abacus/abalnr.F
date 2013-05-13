@@ -325,7 +325,7 @@ C
                   NFRVAL = NFREQ_INTERVAL
                   DO I=1,NFRVAL
                      FRVAL(I)=FREQ_INTERVAL(1) + (I-1)*FREQ_INTERVAL(3)
-                  END DO                  
+                  END DO
                ENDIF
                   NFREQ_ALPHA = NFRVAL
                   NFREQ_INTERVAL = NFRVAL

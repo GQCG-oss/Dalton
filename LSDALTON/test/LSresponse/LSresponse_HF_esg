@@ -49,12 +49,9 @@ cat > LSresponse_HF_esg.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.RH                                                                                       
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
+.ARH DAVID
+.CONVDYN
+TIGHT
 **RESPONS
 .NEXCIT
 6

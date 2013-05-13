@@ -56,8 +56,9 @@ cat > linsca_trilevel_2nd_all_SCALAPACK.dal <<'%EOF%'
 8
 .START
  TRILEVEL
+.NOATOMSTART
 .CONVDYN
- STANDARD
+ TIGHT
 .2ND_ALL
 $INFO
 INFO_LINEQ
@@ -91,7 +92,7 @@ TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
 ERROR[2]="LEVEL 3 ENERGY NOT CORRECT -"
 
-CRIT1=`$GREP "HOMO-LUMO Gap \(iteratively\): * 0.759724" $log | wc -l`
+CRIT1=`$GREP "HOMO-LUMO Gap \(iteratively\): * 0.759725" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="HOMO-LUMO GAP NOT CORRECT -"
@@ -109,9 +110,9 @@ CTRL[5]=1
 ERROR[5]="1st L3 energy not correct -"
 
 # Test second order convergence
-CRIT1=`$GREP "0.0000000    3.65E-02" $log | wc -l`
-CRIT1=`$GREP "0.0000000    2.86E-04" $log | wc -l`
-CRIT2=`$GREP "0.0000000    1.28E-07" $log | wc -l`
+CRIT1=`$GREP "0.0000000    2.06E-01" $log | wc -l`
+CRIT1=`$GREP "0.0000000    9.57E-03" $log | wc -l`
+CRIT2=`$GREP "0.0000000    6.81E-05" $log | wc -l`
 TEST[6]=`expr $CRIT1 + $CRIT2`
 CTRL[6]=2
 ERROR[6]="Not second order convergence -"

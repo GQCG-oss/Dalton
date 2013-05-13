@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# radovan: script to remove sources from final tarball
+
+SCRIPT_DIR="${0%/*}"
+# if the script was started from the base directory, then the
+# expansion returns a period
+if test "$SCRIPT_DIR" == "." ; then
+    SCRIPT_DIR="$PWD"
+#   if the script was not called with an absolute path, then we need to add the
+#   current working directory to the relative path of the script
+elif test "${SCRIPT_DIR:0:1}" != "/" ; then
+    SCRIPT_DIR="$PWD/$SCRIPT_DIR"
+fi
+
+if [ "$1" = "" ]; then
+    echo "usage: $0 /path/to/be/filtered"
+    exit 1
+fi
+
+delete_flags=`cat $SCRIPT_DIR/delete_flags`
+
+for file in `find $1 -type f -name "*.f"`   \
+            `find $1 -type f -name "*.F"`   \
+            `find $1 -type f -name "*.f90"` \
+            `find $1 -type f -name "*.F90"` \
+            `find $1 -type f -name "*.c"`
+do
+    $SCRIPT_DIR/cppp.py $delete_flags $file
+done
+
+if [ -f $SCRIPT_DIR/source_files_and_dirs_to_exclude ]
+then
+    for file in `cat $SCRIPT_DIR/source_files_and_dirs_to_exclude`; do
+        # file can be file or directory that's why we use -rf
+        rm -rf $1/$file
+    done
+else
+   echo ERROR: file source_files_and_dirs_to_exclude not found!
+fi

@@ -64,7 +64,6 @@ $END INFO
 19 19
 .CCSDforce_scheme
 2
-.CCSDsolver_par
 .CCSDdynamic_load
 .SimulateFull
 .CCSD

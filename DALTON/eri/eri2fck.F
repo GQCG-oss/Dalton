@@ -553,7 +553,7 @@ C
       INTEGER P, Q, R, S
 #include "priunit.h"
 #include "inforb.h"
-      DIMENSION FMAT(NBAST,NBAST,NDMT,*), DMAT(NBAST,NBAST,NDMT),
+      DIMENSION FMAT(NBAST,NBAST,NDMT), DMAT(NBAST,NBAST,NDMT),
      &          BUF(LBIN), IBUF(LBIN,4), IFCTYP(NDMT)
 C
       DO I = 1, NDMT
@@ -576,8 +576,8 @@ C NECgh980505  FAC = DP5
          END IF
          IF (IFIT_DMAT.EQ.0) THEN
 C...........Ordinary Fock matrix with exact density
-            CALL FCKCON(FMAT,DMAT,NDMT,I,BUF,IBUF,LBIN,LBIN,LENGTH,IX,
-     &                  IY,FAC)
+            CALL FCKCON(FMAT(1,1,I),DMAT(1,1,I),I,BUF,IBUF,LBIN,
+     &                  LBIN,LENGTH,IX,IY,FAC)
          ELSE
 C...........Construction of special Fock matrix for density fitting
 C...........The multiplication factor should be one in this case.

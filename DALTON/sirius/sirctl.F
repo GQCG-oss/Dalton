@@ -53,6 +53,7 @@ C
 C
 
       use lucita_orbital_spaces
+      use pe_variables, only: peqm
 
 #include "implicit.h"
 C
@@ -87,6 +88,7 @@ C
 ! dftcom.h: DFT_SPINDNS, DFT_LOCALSPIN
 #include "dftcom.h"
 #include "exeinf.h"
+#include "stex.h"
 C
       LOGICAL   FLAGSV(NFLAG), OLDWOP, RHFWOP, PCMSV
       LOGICAL   DFT_SPINDNS_SAVE, DFT_LOCALSPIN_SAVE
@@ -334,6 +336,8 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
+            if (peqm) call quit('ERROR: DIIS failed to converge'//
+     &                 'and QC-SCF is not implemented with PE module')
             IF (QMMM) CALL QUIT('DIIS failed to converge for QMMM'//
      &         ' and QC-SCF is not implemented for QMMM')
             FLAG( 2) = .TRUE.
@@ -774,6 +778,11 @@ C
          IF (LUPRI.NE.LUW4) CALL FLSHFO(LUPRI)
          IF (LUSTAT.NE.LUW4 .AND. LUSTAT.NE.LUPRI) CALL FLSHFO(LUSTAT)
       END IF
+
+      IF (DOSTEX) THEN
+         CALL STXCTL(WORK,LWORK)
+      END IF
+
 #if defined(BUILD_GEN1INT)
 C... added by Bin Gao, to generate cube files
       if (DO_CUBE) then
