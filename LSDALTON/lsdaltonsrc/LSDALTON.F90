@@ -486,7 +486,7 @@ SUBROUTINE lsdalton
            !call dd_shutdown(config%decomp%cfg_unres)
         endif
 
-        CALL LSTIMER('*SCF  ',TIMSTR,TIMEND,lupri)
+        CALL LSTIMER('*SCF  ',TIMSTR,TIMEND,lupri,.TRUE.)
         WRITE(lupri,*)
 
         !call mat_no_of_matmuls(matmultot)
@@ -582,7 +582,7 @@ SUBROUTINE lsdalton
   !finalize MPI 
   call lsmpi_finalize(lupri,config%mpi_mem_monitor)
   call print_timers(lupri) !timings for mat operations.
-  call LSTIMER('LSDALTON',t1,t2,LUPRI)
+  call LSTIMER('LSDALTON',t1,t2,LUPRI,.TRUE.)
   CALL LS_TSTAMP('End simulation',LUPRI)
 
   CALL LSCLOSE(LUPRI,'KEEP')

@@ -1,8 +1,8 @@
 !> @file
 !> Contains single subroutine for initializing lsitem and config structures 
-!> from information in DALTON.INP and MOLECULE.INP
+!> from information in LSDALTON.INP and MOLECULE.INP
 
-!> \brief Initilize lsitem and config structures from DALTON.INP and MOLECULE.INP
+!> \brief Initilize lsitem and config structures from LSDALTON.INP and MOLECULE.INP
 !> \author Kasper Kristensen (based on the old lsdalton subroutine)
 !> \date December 2011
 module init_lsdalton_mod
@@ -28,7 +28,7 @@ module init_lsdalton_mod
   use lsmpi_type, only: lsmpi_finalize, lsmpi_print
 contains
 
-!> \brief Initilize lsitem and config structures from DALTON.INP and MOLECULE.INP
+!> \brief Initilize lsitem and config structures from LSDALTON.INP and MOLECULE.INP
 !> \author Kasper Kristensen (based on the old lsdalton subroutine)
 !> \date December 2011
 SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
@@ -40,9 +40,9 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
   integer,intent(in) :: luerr
   !> Number of basis functions
   integer,intent(inout) :: nbast
-  !> lsitem structure initialized according to information in DALTON.INP and MOLECULE.INP
+  !> lsitem structure initialized according to information in LSDALTON.INP and MOLECULE.INP
   TYPE(lsitem),target,intent(inout) :: ls
-  !> configuration structure initialized according to information in DALTON.INP and MOLECULE.INP
+  !> configuration structure initialized according to information in LSDALTON.INP and MOLECULE.INP
   type(configItem),intent(inout)    :: config
   !> Monitor memory - mostly for debugging, set to false by default
   logical, intent(inout) :: mem_monitor
@@ -125,7 +125,7 @@ end SUBROUTINE init_lsdalton_and_get_lsitem
 SUBROUTINE get_lsitem_from_input(ls)
 
   implicit none
-  !> lsitem structure initialized according to information in DALTON.INP and MOLECULE.INP
+  !> lsitem structure initialized according to information in LSDALTON.INP and MOLECULE.INP
   TYPE(lsitem),target,intent(inout) :: ls
   type(configItem)    :: config
   integer :: lupri,luerr,nbast

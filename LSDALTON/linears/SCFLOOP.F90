@@ -37,7 +37,7 @@ CONTAINS
 !> \param F Fock/Kohn-Sham matrix
 !> \param D Density matrix
 !> \param S Overlap matrix
-!> \param ls Contains information read from DALTON.INP 
+!> \param ls Contains information read from LSDALTON.INP 
 !> \param config Contains all info about configuration/settings for SCF calculation
 SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    implicit none   
@@ -574,7 +574,7 @@ end subroutine scf_afterplay
 !> \author B. Jansik
 !> \date 2008-10-26
 !> \param basis contains information about the basis set
-!> \param input contains information read from file DALTON.INP
+!> \param input contains information read from file LSDALTON.INP
 !>
 !> initbsm is a routine to intialize the blocked sparse library.  The
 !> library needs to know the position of all atoms and the indexes of
@@ -623,7 +623,7 @@ contains
 !> \author B. Jansik
 !> \date 2008-10-26
 !> \param basis Contains information about the basis set
-!> \param dalton_inp Contains information read from DALTON.INP
+!> \param dalton_inp Contains information read from LSDALTON.INP
  function initbsm_setlist(basis,input)
   use BUILDAOBATCH
   use typedef, only: daltoninput
@@ -662,7 +662,7 @@ END SUBROUTINE LS_INITBSM
 !> \brief This subroutine calculates number of electron for neutral molecule defined in ls%setting structure
 !> \author T. Kjaergaard, S. Reine
 !> \date 2008-10-26
-!> \param ls Contains information read from DALTON.INP 
+!> \param ls Contains information read from LSDALTON.INP 
 !> \param nel Number of electrons
 SUBROUTINE get_num_electrons_neutral(nel,ls)
   implicit none

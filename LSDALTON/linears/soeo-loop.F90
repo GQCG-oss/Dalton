@@ -121,7 +121,7 @@ if (.not. soeoinp%cfg_grandcan) then
     print '("sum(fracoccs) = ", f15.5)', sum(soeoinp%fracoccs(1:soeoinp%Nfracocc))
     print '("sum(fracoccsb) =", f15.5)', sum(soeoinp%fracoccsb(1:soeoinp%Nfracoccb))
     print '("Your given number of electrons =", f15.5)', tmp
-    call lsquit ('wrong number of electrons in DALTON.INP', soeoinp%lupri)
+    call lsquit ('wrong number of electrons in LSDALTON.INP', soeoinp%lupri)
   endif
 endif
 
@@ -612,7 +612,7 @@ end subroutine soeoloop
 !> \brief Creates starting point for soeo calculation from input
 !> \author C. Nygaard
 !> \date Feb 10. 2011
-!> \param inp Contains input read from DALTON.INP
+!> \param inp Contains input read from LSDALTON.INP
 !> \param Dmo The MO density matrix
 !=======================================================================
 subroutine soeo_setoccs (inp, Dmo, theta)
