@@ -2,7 +2,7 @@
 
 In this chapter we give an introduction to the two input files needed
 for doing a calculation with the {\lsdalton} program
-(MOLECULE.INP and DALTON.INP), as well as the
+(MOLECULE.INP and LSDALTON.INP), as well as the
 shell script file that is supplied with the program for moving
 relevant files to the scratch-directory and back to the home directory
 after a calculation has completed. A couple of examples of
@@ -53,7 +53,7 @@ We now describe the \mol\ file line by line:
 atoms.
 \item Line 2: The name of the basis set, in this case cc-pVDZ. Optional: The name
 of the auxiliary basis set, in this case Ahlrichs-Coulomb-Fit
-(only referenced if density-fitting is requested in DALTON.INP)
+(only referenced if density-fitting is requested in LSDALTON.INP)
 \item Lines 3-4: Comments (may be left blank)
 \item Line 5: {\bf Atomtypes=} Number of different atoms - in the case of H$_2$O, there are two different
 atoms type, H and O. {\bf Angstrom} If this keyword is omitted, the program will assume that coordinates
@@ -88,14 +88,14 @@ make sense, though, for larger molecules. An example could be a biomocule contai
 an active site with one or more transition metal atoms. In may be useful to
 describe such an active site at a higher level of theory than the surroundings. 
 
-\section{The DALTON.INP file}\label{sec:daltoninp}
-In this section, we show two typical examples of a DALTON.INP file, one
+\section{The LSDALTON.INP file}\label{sec:daltoninp}
+In this section, we show two typical examples of a LSDALTON.INP file, one
 for small molecules and one for large molecules. Many other examples
 of input files for requesting e.g. specific molecular properties may be found
 at \verb|http://daltonprogram.org|, and
 a complete reference manual of all keywords is found in Chapter \ref{ch:keywords}.
 
-In general, the DALTON.INP is divided in four different sections under
+In general, the LSDALTON.INP is divided in four different sections under
 the headlines:
 \begin{itemize}
 \item **INTEGRAL contain settings for the calculation of integrals (optional)
@@ -107,9 +107,9 @@ for optimization of the wave function (mandatory)
 \item **RESPONS contains info about requested properties (optional)
 \end{itemize}
 Each of these sections may contain subsections, indicated by a single asterisk.
-The DALTON.INP file should always end with \verb|*END OF INPUT|. 
+The LSDALTON.INP file should always end with \verb|*END OF INPUT|. 
 
-A typical example of DALTON.INP for a {\bf small molecule} (say, less than 100 atoms) could look like:
+A typical example of LSDALTON.INP for a {\bf small molecule} (say, less than 100 atoms) could look like:
 \begin{verbatim}
 **INTEGRAL
 .NOJENGINE
@@ -137,7 +137,7 @@ Note that under **INTEGRAL we have turned off the LinK and J-engine schemes for 
 of the exact exchange and Coulomb contributions, respectively, since these are probably not needed for a small
 molecule.
 
-A typical example of DALTON.INP for a {\bf large molecule} (say, more than 100 atoms) could look like: 
+A typical example of LSDALTON.INP for a {\bf large molecule} (say, more than 100 atoms) could look like: 
 \begin{verbatim}
 **INTEGRAL
 .DENSFIT
