@@ -1005,6 +1005,25 @@ By default, the atoms-in-molecule approach is used to set up the initial density
 geometry (each step). However, it is possible to take as starting guess McWeeny-purified converged
 density-matrix at the previous geometry. This is achieved by setting the .RESTART option under
 the *DENSOPT subsection.
+\newline
+\vspace{1 cm}
+\noindent
+\textbf{Example test cases for **OPTIMIZE calculations}: \newline
+These test cases illustrate the main features of the geometry optimization. The test cases are located in LSDALTON/test/geomopt.
+\begin{itemize}
+\item
+\textit{geomopt/cartes\_bfgs\_min}:
+\item
+\textit{geomopt/Excited\_state\_opt}: Performs a geometry optimization of an excited state. 
+\item
+\textit{geomopt/redint\_bfgs}:
+\item
+\textit{geomopt/cartes\_psb\_min}:
+\item
+\textit{geomopt/geoopt\_constrain}:
+\item
+\textit{geomopt/cartes\_trilevel\_newconv}: 
+\end{itemize}
 
 \begin{description}
 \item[\Key{PRINT}]\verb| | \newline
