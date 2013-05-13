@@ -52,9 +52,6 @@ B3LYP
 .ARH DAVID     
 .CONVDYN
 TIGHT
-$INFO
-DEBUG_MPI_MEM
-$END INFO
 **RESPONSE
 .NEXCIT 
 6
@@ -62,6 +59,8 @@ $END INFO
 .EXSTATES
 2
 3  6
+**INFO
+.DEBUG_MPI_MEM
 *END OF INPUT  
 %EOF%
 #######################################################################

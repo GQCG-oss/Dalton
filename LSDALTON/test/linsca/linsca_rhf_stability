@@ -62,9 +62,8 @@ cat > linsca_rhf_stability.dal <<'%EOF%'
 8
 .CONVTHR
 1.0d-5
-$INFO
-INFO_STABILITY
-$END INFO
+**INFO
+.INFO_STABILITY
 *END OF INPUT
 %EOF%
 
