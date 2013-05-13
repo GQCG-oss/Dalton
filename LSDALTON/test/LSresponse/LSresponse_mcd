@@ -43,6 +43,7 @@ H -0.300000    -0.173205     0.000000
 
 #######################################################################
 #  DALTON INPUT
+#  WARNING DO NOT USE THIS INPUT WITHOUT MODIFICATION 
 #######################################################################
 cat > LSresponse_mcd.dal <<'%EOF%'
 **WAVE FUNCTIONS
