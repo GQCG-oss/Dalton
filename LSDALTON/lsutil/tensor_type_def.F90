@@ -73,7 +73,6 @@ module tensor_type_def_module
   integer, parameter :: REPLICATED=2
   integer, parameter :: TILED=3
   integer, parameter :: TILED_DIST=4
-  integer, parameter :: SCALAPACK=5
 
   !parameters for PDMTYPE:
   integer,parameter :: NO_PDM=0
@@ -152,8 +151,8 @@ module tensor_type_def_module
     integer :: i,j,cdim
     integer :: a
     select case(modes)
-    !case(4)
-    !  a=inds(1)+(inds(2)-1)*dims(1)+(inds(3)-1)*dims(1)*dims(2)+(inds(4)-1)*inds(1)*inds(2)*inds(3)
+   ! case(4)
+   !   a=inds(1)+(inds(2)-1)*dims(1)+(inds(3)-1)*dims(1)*dims(2)+(inds(4)-1)*inds(1)*inds(2)*inds(3)
     case default
       a=1
       do i=1,modes

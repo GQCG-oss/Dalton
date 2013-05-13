@@ -290,8 +290,8 @@ contains
               call lsquit("ERROR(array_contract_outer_indices_rl):not yet implemented for tiled",DECinfo%output)
       case(TILED_DIST)
               call lsquit("ERROR(array_contract_outer_indices_rl):not yet implemented for PDM",DECinfo%output)
-      case(SCALAPACK)
-              call lsquit("scalapack for arrays not yet implemented",DECinfo%output)
+      case default
+              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
     end select
     
   end subroutine array_contract_outer_indices_rl
@@ -362,8 +362,8 @@ contains
               call lsquit("ERROR(array_contract_outer_indices_ll):not yet implemented for tiled",DECinfo%output)
       case(TILED_DIST)
               call lsquit("ERROR(array_contract_outer_indices_ll):not yet implemented for PDM",DECinfo%output)
-      case(SCALAPACK)
-              call lsquit("scalapack for arrays not yet implemented",DECinfo%output)
+      case default
+              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
     end select
     
   end subroutine array_contract_outer_indices_ll
@@ -442,8 +442,8 @@ contains
               call lsquit("ERROR(array_contract_outer_indices_lr):not yet implemented for tiled",DECinfo%output)
       case(TILED_DIST)
               call lsquit("ERROR(array_contract_outer_indices_lr):not yet implemented for PDM",DECinfo%output)
-      case(SCALAPACK)
-              call lsquit("scalapack for arrays not yet implemented",DECinfo%output)
+      case default
+              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
     end select
     
   end subroutine array_contract_outer_indices_lr
@@ -513,8 +513,8 @@ contains
               call lsquit("ERROR(array_contract_outer_indices_rr):not yet implemented for tiled",DECinfo%output)
       case(TILED_DIST)
               call lsquit("ERROR(array_contract_outer_indices_rr):not yet implemented for PDM",DECinfo%output)
-      case(SCALAPACK)
-              call lsquit("scalapack for arrays not yet implemented",DECinfo%output)
+      case default
+              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
     end select
     
   end subroutine array_contract_outer_indices_rr
@@ -702,10 +702,6 @@ contains
         if(present(tdims))arr=array_init_tiled(dims,nmodes,pdmtype,tdims,zeros_in_tiles)
         if(.not.present(tdims))arr=array_init_tiled(dims,nmodes,pdmtype)
         CreatedPDMArrays = CreatedPDMArrays+1
-      !case(SCALAPACK)
-      !  call lsquit("scalapack for arrays not yet implemented",DECinfo%output)
-      !  arr = array_init_scalapack(dims)
-      !  CreatedPDMArrays = CreatedPDMArrays+1
     end select
     arr%init_type=pdmtype
     arr%atype=atype
@@ -760,8 +756,8 @@ contains
       case(TILED_DIST)
         call array_free_pdm(arr)
         DestroyedPDMArrays = DestroyedPDMArrays + 1
-      case(SCALAPACK)
-        call lsquit("SCALAPACK FOR ARRAY NOT YET IMPLEMENTED",DECinfo%output)
+      case default
+        call lsquit("YOUR COICE FOR ARRAY NOT YET IMPLEMENTED",DECinfo%output)
     end select
     !call print_memory_currents(DECinfo%output)
   end subroutine array_free
