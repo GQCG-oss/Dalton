@@ -134,7 +134,7 @@ implicit none
 #endif
 end subroutine config_set_default_config
 
-!> \brief Wrapper to routines for read input files DALTON.INP and MOLECULE.INP.
+!> \brief Wrapper to routines for read input files LSDALTON.INP and MOLECULE.INP.
 !> \author S. Host and T. Kjaergaard
 !> \date March 2010
 subroutine config_read_input(config,lupri,luerr)
@@ -164,7 +164,7 @@ implicit none
         & config%integral%CABSbasis,config%integral%JKbasis,config%latt_config)
    config%integral%nelectrons = config%molecule%nelectrons 
    config%integral%molcharge = INT(config%molecule%charge)
-   !read the DALTON.INP and set input
+   !read the LSDALTON.INP and set input
    CALL read_dalton_input(LUPRI,config) 
 
 end subroutine config_read_input
@@ -193,7 +193,7 @@ implicit none
 
 end subroutine config_free
 
-!> \brief Read input file DALTON.INP and set configuration structure accordingly.
+!> \brief Read input file LSDALTON.INP and set configuration structure accordingly.
 !> \author T. Kjaergaard
 !> \date March 2010
 SUBROUTINE read_dalton_input(LUPRI,config)
@@ -218,12 +218,12 @@ STARTGUESS = .FALSE.
 Config%integral%cfg_lsdalton = .TRUE.
 COUNTER = 0
 
-INQUIRE(file='DALTON.INP',EXIST=file_exists) 
+INQUIRE(file='LSDALTON.INP',EXIST=file_exists) 
 IF(file_exists)THEN
    LUCMD=-1
-   CALL lsOPEN(LUCMD,'DALTON.INP','OLD','FORMATTED')
+   CALL lsOPEN(LUCMD,'LSDALTON.INP','OLD','FORMATTED')
 ELSE
-   CALL lsQUIT('DALTON.INP does not exist',lupri)
+   CALL lsQUIT('LSDALTON.INP does not exist',lupri)
 ENDIF
 READWORD=.TRUE.
 DONE=.FALSE.
@@ -441,7 +441,9 @@ DO
                 call lsquit('.NOECONTINCREM must be placed some pointer after .ARH DAVID',-1)
                ENDIF
                config%opt%cfg_saveF0andD0 = .false.
+#ifdef MOD_UNRELEASED
             CASE('.ASYM');       config%opt%cfg_asym = .true.
+#endif
             CASE('.BLOCK');      CALL mat_select_type(mtype_sparse_block,lupri)
                                  config%opt%cfg_prefer_BSM = .true.
             CASE('.CHOLESKY');   config%decomp%lowdin_diagonalize = .false.; config%decomp%cholesky_decomp   = .true.
@@ -775,7 +777,7 @@ DO
    !SECTION MADE BY JOHANNES
    IF (WORD(1:5) == '**PBC') THEN
      READWORD=.TRUE.
-     !should be in MOLECULE.INP not DALTON.INP
+     !should be in MOLECULE.INP not LSDALTON.INP
      !READ(WORD(6:),*) config%latt_config%max_layer,config%latt_config%nneighbour
      config%latt_config%comp_pbc= .true.
      config%latt_config%wannier_direct= 'indirectly'
@@ -1244,7 +1246,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
 END subroutine INTEGRAL_INPUT
 
 #ifdef MOD_UNRELEASED
-!> \brief Read the $INFO section under **GEOHESSIAN in the input file DALTON.INP
+!> \brief Read the $INFO section under **GEOHESSIAN in the input file LSDALTON.INP
 !> \author Patrick Merlot
 !> \date 14/09/2012
 subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
@@ -1305,14 +1307,14 @@ subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
 END subroutine GEOHESSIAN_INPUT
 #endif
 
-!> \brief Read the $INFO section under *LINSCA in input file DALTON.INP and set configuration structure accordingly.
+!> \brief Read the $INFO section under *LINSCA in input file LSDALTON.INP and set configuration structure accordingly.
 !> \author S. Host
 !> \date March 2010
 SUBROUTINE config_info_input(config,lucmd)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(configItem),intent(inout) :: config
-  !> Logical unit number for DALTON.INP
+  !> Logical unit number for LSDALTON.INP
   integer,intent(in) :: lucmd
   character(len=40) :: word
   integer :: i
@@ -1449,7 +1451,7 @@ END SUBROUTINE config_info_input
 
 
 
-!> \brief Read the **RESPONS section under *LINSCA in input file DALTON.INP and set configuration structure accordingly.
+!> \brief Read the **RESPONS section under *LINSCA in input file LSDALTON.INP and set configuration structure accordingly.
 !> \author S. Host
 !> \date March 2010
 SUBROUTINE config_rsp_input(config,lucmd,readword)
@@ -1458,7 +1460,7 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
   LOGICAL,intent(inout)                :: READWORD
   !> Contains info, settings and data for entire calculation, including response
   type(configItem),intent(inout) :: config
-  !> Logical unit number for DALTON.INP
+  !> Logical unit number for LSDALTON.INP
   integer,intent(in) :: lucmd
   character(len=40) :: word
   character(len=8) :: labels(2)
@@ -2671,7 +2673,7 @@ END SUBROUTINE READ_INTEGRALS_FCK3_INPUT
 !> \author S. Host
 !> \date March 2010
 !>
-!> If keywords specified in DALTON.INP do not conform, there are two options: \n
+!> If keywords specified in LSDALTON.INP do not conform, there are two options: \n
 !> 1. Clean up, i.e. change the settings specified by the user to something
 !>    meaningful. Remember to clarify this in output! E.g. \n
 !>    'H1DIAG does not work well with only few saved microvectors for ARH. 
@@ -3214,7 +3216,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       WRITE(config%lupri,*)'1.0D-9'
       WRITE(config%lupri,*)'The scheme is first activated when the maximum element of the '
       WRITE(config%lupri,*)'differences Matrix is below 0.1'
-      WRITE(config%lupri,*)'to the DALTON.INP file.'
+      WRITE(config%lupri,*)'to the LSDALTON.INP file.'
    endif
 
    IF(config%decomp%cfg_gcbasis)THEN
@@ -3465,7 +3467,7 @@ end subroutine set_final_config_and_print
 !> \author T. Kjaergaard
 !> \date March 2010
 !>
-!> If keywords specified in DALTON.INP do not conform, there are two options: \n
+!> If keywords specified in LSDALTON.INP do not conform, there are two options: \n
 !> 1. Clean up, i.e. change the settings specified by the user to something
 !>    meaningful. Remember to clarify this in output! E.g. \n
 !>    'H1DIAG does not work well with only few saved microvectors for ARH. 
