@@ -134,7 +134,7 @@ implicit none
 #endif
 end subroutine config_set_default_config
 
-!> \brief Wrapper to routines for read input files DALTON.INP and MOLECULE.INP.
+!> \brief Wrapper to routines for read input files LSDALTON.INP and MOLECULE.INP.
 !> \author S. Host and T. Kjaergaard
 !> \date March 2010
 subroutine config_read_input(config,lupri,luerr)
@@ -164,7 +164,7 @@ implicit none
         & config%integral%CABSbasis,config%integral%JKbasis,config%latt_config)
    config%integral%nelectrons = config%molecule%nelectrons 
    config%integral%molcharge = INT(config%molecule%charge)
-   !read the DALTON.INP and set input
+   !read the LSDALTON.INP and set input
    CALL read_dalton_input(LUPRI,config) 
 
 end subroutine config_read_input
@@ -193,7 +193,7 @@ implicit none
 
 end subroutine config_free
 
-!> \brief Read input file DALTON.INP and set configuration structure accordingly.
+!> \brief Read input file LSDALTON.INP and set configuration structure accordingly.
 !> \author T. Kjaergaard
 !> \date March 2010
 SUBROUTINE read_dalton_input(LUPRI,config)
@@ -218,12 +218,12 @@ STARTGUESS = .FALSE.
 Config%integral%cfg_lsdalton = .TRUE.
 COUNTER = 0
 
-INQUIRE(file='DALTON.INP',EXIST=file_exists) 
+INQUIRE(file='LSDALTON.INP',EXIST=file_exists) 
 IF(file_exists)THEN
    LUCMD=-1
-   CALL lsOPEN(LUCMD,'DALTON.INP','OLD','FORMATTED')
+   CALL lsOPEN(LUCMD,'LSDALTON.INP','OLD','FORMATTED')
 ELSE
-   CALL lsQUIT('DALTON.INP does not exist',lupri)
+   CALL lsQUIT('LSDALTON.INP does not exist',lupri)
 ENDIF
 READWORD=.TRUE.
 DONE=.FALSE.
@@ -441,7 +441,9 @@ DO
                 call lsquit('.NOECONTINCREM must be placed some pointer after .ARH DAVID',-1)
                ENDIF
                config%opt%cfg_saveF0andD0 = .false.
+#ifdef MOD_UNRELEASED
             CASE('.ASYM');       config%opt%cfg_asym = .true.
+#endif
             CASE('.BLOCK');      CALL mat_select_type(mtype_sparse_block,lupri)
                                  config%opt%cfg_prefer_BSM = .true.
             CASE('.CHOLESKY');   config%decomp%lowdin_diagonalize = .false.; config%decomp%cholesky_decomp   = .true.
@@ -561,8 +563,10 @@ DO
                                  call lsquit('Keyword .MOCHANGE nolonger supported',-1)
             CASE('.MUOPT');      config%diag%CFG_lshift = diag_lshift_search
                                  config%av%CFG_lshift = Diag_lshift_search
+#ifdef MOD_UNRELEASED
             CASE('.NALPHA');     read(LUCMD,*) config%decomp%nocca ; config%decomp%alpha_specified = .true.
             CASE('.NBETA');      read(LUCMD,*) config%decomp%noccb ; config%decomp%beta_specified = .true.
+#endif
             CASE('.NOAV');       config%av%CFG_averaging =   config%av%CFG_AVG_none  
             CASE('.NO HLSHIFT'); config%solver%lshift_by_hlgap = .false. !Don't use the default scheme (level shift by homo lumo gap), 
                                                                          !use instead the "old" scheme developed for the Davidson algorithm
@@ -658,12 +662,14 @@ DO
             CASE('.TrFD');       config%opt%CFG_density_method =  config%opt%CFG_F2D_DIRECT_DENS
             CASE('.TrFD FULL');  config%opt%CFG_density_method =  config%opt%CFG_F2D_DIRECT_DENS
                                  config%solver%cfg_arh_truncate = .false.
+#ifdef MOD_UNRELEASED
             CASE('.UNREST');     config%decomp%cfg_unres=.true.
                                  config%integral%unres=.true.
                                  config%diag%cfg_unres=.true.
                                  config%opt%cfg_unres=.true.
                                  config%soeoinp%cfg_unres=.true.
                                  config%response%RSPsolverinput%cfg_unres = .true.
+#endif
             CASE('.UNSAFE');     config%solver%cfg_arh_crop_safe = .false.
             CASE('.VanLenthe');  config%opt%CFG_density_method =  config%opt%CFG_F2D_ROOTHAAN !Diagonalization
                                  config%av%CFG_averaging = config%av%CFG_AVG_van_lenthe
@@ -771,7 +777,7 @@ DO
    !SECTION MADE BY JOHANNES
    IF (WORD(1:5) == '**PBC') THEN
      READWORD=.TRUE.
-     !should be in MOLECULE.INP not DALTON.INP
+     !should be in MOLECULE.INP not LSDALTON.INP
      !READ(WORD(6:),*) config%latt_config%max_layer,config%latt_config%nneighbour
      config%latt_config%comp_pbc= .true.
      config%latt_config%wannier_direct= 'indirectly'
@@ -1240,7 +1246,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
 END subroutine INTEGRAL_INPUT
 
 #ifdef MOD_UNRELEASED
-!> \brief Read the $INFO section under **GEOHESSIAN in the input file DALTON.INP
+!> \brief Read the $INFO section under **GEOHESSIAN in the input file LSDALTON.INP
 !> \author Patrick Merlot
 !> \date 14/09/2012
 subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
@@ -1301,14 +1307,14 @@ subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
 END subroutine GEOHESSIAN_INPUT
 #endif
 
-!> \brief Read the $INFO section under *LINSCA in input file DALTON.INP and set configuration structure accordingly.
+!> \brief Read the $INFO section under *LINSCA in input file LSDALTON.INP and set configuration structure accordingly.
 !> \author S. Host
 !> \date March 2010
 SUBROUTINE config_info_input(config,lucmd)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(configItem),intent(inout) :: config
-  !> Logical unit number for DALTON.INP
+  !> Logical unit number for LSDALTON.INP
   integer,intent(in) :: lucmd
   character(len=40) :: word
   integer :: i
@@ -1445,7 +1451,7 @@ END SUBROUTINE config_info_input
 
 
 
-!> \brief Read the **RESPONS section under *LINSCA in input file DALTON.INP and set configuration structure accordingly.
+!> \brief Read the **RESPONS section under *LINSCA in input file LSDALTON.INP and set configuration structure accordingly.
 !> \author S. Host
 !> \date March 2010
 SUBROUTINE config_rsp_input(config,lucmd,readword)
@@ -1454,7 +1460,7 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
   LOGICAL,intent(inout)                :: READWORD
   !> Contains info, settings and data for entire calculation, including response
   type(configItem),intent(inout) :: config
-  !> Logical unit number for DALTON.INP
+  !> Logical unit number for LSDALTON.INP
   integer,intent(in) :: lucmd
   character(len=40) :: word
   character(len=8) :: labels(2)
@@ -1849,8 +1855,6 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
                  config%response%rspsolverinput%rsp_maxred=2*config%response%rspsolverinput%rsp_maxit 
                CASE('.MAXRED')
                   READ(LUCMD,*) config%response%rspsolverinput%rsp_maxred 
-               CASE('.S_NORM')
-                  config%response%rspsolverinput%rsp_single_norm =.true.
                CASE('.CONVDYN')
                   READ(LUCMD,*) config%response%rspsolverinput%rsp_convdyn_type
                   config%response%rspsolverinput%rsp_convdyn =.true.
@@ -1865,8 +1869,6 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
                   WRITE (config%LUPRI,*) 'Options are TIGHT, STANDARD, and SLOPPY.'
                   CALL lsQUIT('Illegal keyword with .CONVDYN',config%lupri)
                   END SELECT
-               CASE('.OLSEN')
-                  config%response%rspsolverinput%rsp_olsen = .true.
                CASE('.QUIET')
                   config%response%rspsolverinput%rsp_quiet = .true.
                CASE('.AOPREC')
@@ -1890,8 +1892,6 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
                CASE ('.NSTART');   READ(LUCMD,*) config%response%rspsolverinput%rsp_no_of_startvectors
                   config%response%rspsolverinput%rsp_startvectors = .true.  
                   config%decomp%cfg_startvectors = .TRUE.
-               CASE('.TWOSTART')
-                  config%response%rspsolverinput%rsp_damp_2start=.true.
                CASE('.DTHR')
                   !threshold for when excited states is considered degenerate
                   READ(LUCMD,*) config%response%rspsolverinput%degenerateTHR
@@ -2673,7 +2673,7 @@ END SUBROUTINE READ_INTEGRALS_FCK3_INPUT
 !> \author S. Host
 !> \date March 2010
 !>
-!> If keywords specified in DALTON.INP do not conform, there are two options: \n
+!> If keywords specified in LSDALTON.INP do not conform, there are two options: \n
 !> 1. Clean up, i.e. change the settings specified by the user to something
 !>    meaningful. Remember to clarify this in output! E.g. \n
 !>    'H1DIAG does not work well with only few saved microvectors for ARH. 
@@ -2937,6 +2937,7 @@ ENDIF
       config%decomp%nactive = 0
 
    ELSE
+#ifdef MOD_UNRELEASED
       !Odd number of electrons
       !Stinne change 23/4-2010: why subtract one here???
       !config%decomp%nocc = (config%integral%nelectrons - 1 - config%integral%molcharge)/2
@@ -2944,10 +2945,15 @@ ENDIF
       !Cecilie change 07/07 2010: Same here
       config%decomp%nocc = config%integral%nelectrons/2
       config%decomp%nactive = 1
+#else
+      print*,'Error: Odd number of electrons'
+      call lsquit('Only Closed Shell Systems are allowed',-1)
+#endif
    ENDIF
    config%diag%nocc = config%decomp%nocc
 
    if (config%decomp%alpha_specified .or. config%decomp%beta_specified) then
+#ifdef MOD_UNRELEASED
       config%integral%unres =.TRUE.
       config%decomp%cfg_unres =.TRUE.
       config%diag%cfg_unres =.TRUE.
@@ -2971,8 +2977,13 @@ ENDIF
       write(LUPRI,'(1x,a,i6)')   'ALPHA spin occupancy =',config%decomp%nocca
       write(LUPRI,'(1x,a,i6,/)') 'BETA  spin occupancy =',config%decomp%noccb
       call mat_select_type(mtype_unres_dense,lupri)
+#else
+      print*,'Error: alpha_specified or beta_specified'
+      call lsquit('Only Closed Shell Systems are allowed',-1)
+#endif
    else IF(config%decomp%nactive /= 0 .or. config%decomp%cfg_unres) THEN
       !unrestricted SCF if Nelec uneven or if cfg_unres=.true.
+#ifdef MOD_UNRELEASED
 
       config%integral%unres = .true.
       config%decomp%cfg_unres = .true.
@@ -2985,6 +2996,10 @@ ENDIF
 
       config%diag%nocca = config%decomp%NOCCA
       config%diag%noccb = config%decomp%NOCCb
+#else
+      print*,'Error: nactive not equal to zero'
+      call lsquit('Only Closed Shell Systems are allowed',-1)
+#endif
       if(config%integral%nelectrons /= 0) then
 WRITE(config%LUPRI,*)
 write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stinne'
@@ -3049,7 +3064,12 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       write(LUPRI,'(1x,a,i6)')   'ALPHA spin occupancy =', config%decomp%nocca
       write(LUPRI,'(1x,a,i6,/)') 'BETA  spin occupancy =', config%decomp%noccb
       !fixme: should be available for other matrix types as well
+#ifdef MOD_UNRELEASED
       call mat_select_type(mtype_unres_dense,lupri)
+#else
+      print*,'Error: mtype_unres_densechosen'
+      call lsquit('Only Closed Shell Systems are allowed',-1)
+#endif
    ENDIF
 
 !Settings concerning SCF gradient convergence threshold:
@@ -3196,7 +3216,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
       WRITE(config%lupri,*)'1.0D-9'
       WRITE(config%lupri,*)'The scheme is first activated when the maximum element of the '
       WRITE(config%lupri,*)'differences Matrix is below 0.1'
-      WRITE(config%lupri,*)'to the DALTON.INP file.'
+      WRITE(config%lupri,*)'to the LSDALTON.INP file.'
    endif
 
    IF(config%decomp%cfg_gcbasis)THEN
@@ -3447,7 +3467,7 @@ end subroutine set_final_config_and_print
 !> \author T. Kjaergaard
 !> \date March 2010
 !>
-!> If keywords specified in DALTON.INP do not conform, there are two options: \n
+!> If keywords specified in LSDALTON.INP do not conform, there are two options: \n
 !> 1. Clean up, i.e. change the settings specified by the user to something
 !>    meaningful. Remember to clarify this in output! E.g. \n
 !>    'H1DIAG does not work well with only few saved microvectors for ARH. 

@@ -22,8 +22,9 @@ should always end with *END OF INPUT.
 This input module defines the way the integrals should be calculated.
 \begin{description}
 
-\item[\Key{DENSFIT}] Use density-fitting. When using this keyword, an auxiliary
-basis set has to be specified in \mol\ file.
+\item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
+When using this keyword, an auxiliary basis set has to be 
+specified in \mol\ file.
 
 \item[\Key{RUNMM}] Use the (Fast) Multipole Method.
 
@@ -731,6 +732,7 @@ and energy. The default is diagonalization combined with the DIIS scheme for acc
 of SCF convergence (no damping/level shifting). 
 Should have a different name. DENSOPT?
 \begin{description}
+\item[\Key{TIME}] Activate the printout of timings.
 \item[\Key{2ND\_ALL}] Use second order optimization in all SCF iterations.
 \item[\Key{2ND\_LOC}] Use second order optimization in local SCF iterations.
 \item[\Key{ARH}] Use Augmented Roothaan-Hall scheme for density optimization 
@@ -738,8 +740,8 @@ Should have a different name. DENSOPT?
 \item[\Key{ARH FULL}] Use Augmented Roothaan-Hall for density optimization -
 no truncation of the reduced space, keep all micro vectors. This is recommended
 if the standard scheme (.ARH) fails to converge (see ref.~\cite{crop}).
-\item[\Key{ASYM}] Asymmetrize H1DIAG starting guess (only referenced for unrestricted
-calculations).
+%\item[\Key{ASYM}] Asymmetrize H1DIAG starting guess (only referenced for unrestricted
+%calculations).
 %\item[\Key{BLOCK}] I assume that we do not support BSM????
 \item[\Key{STABILITY}] Check stability of the optimized wave function by calculation
 of the lowest Hessian eigenvalue.
@@ -880,12 +882,12 @@ Only referenced if ARH, Direct Density optimization or second order optimization
 Never allow level shift to be smaller than this.
 \item[\Key{MOCHANGE}] Level shifting is done by use of MO overlaps (diagonalization only).
 \item[\Key{MUOPT}] Optimal level shift is chosen by doing a line search in the SCF energy - very expensive! For diagonalization only.
-\item[\Key{NALPHA}] \verb| | \newline
-\verb|<Number of alpha electrons>|\newline
-Explicitly specify number of alpha electrons (automatically set if not specified). If both NALPHA and NBETA are set, they must conform with the total number of electrons!
-\item[\Key{NBETA}] \verb| | \newline
-\verb|<Number of beta electrons>|\newline
-Explicitly specify number of alpha electrons (automatically set if not specified). If both NALPHA and NBETA are set, they must conform with the total number of electrons!
+%\item[\Key{NALPHA}] \verb| | \newline
+%\verb|<Number of alpha electrons>|\newline
+%Explicitly specify number of alpha electrons (automatically set if not specified). If both NALPHA and NBETA are set, they must conform with the total number of electrons!
+%\item[\Key{NBETA}] \verb| | \newline
+%\verb|<Number of beta electrons>|\newline
+%Explicitly specify number of alpha electrons (automatically set if not specified). If both NALPHA and NBETA are set, they must conform with the total number of electrons!
 \item[\Key{NOAV}] Turn off Fock matrix averaging in SCF iterations (this is default since the default optimization scheme is ARH, which contains implicit averaging).
 %\item[\Key{NEWDAMP}] New level shifting which should be better suited for ARH/CROP. CAREFUL! Still under development!
 \item[\Key{NVEC}] \verb| | \newline
@@ -961,7 +963,7 @@ Note that Huckel guess is not supported by \lsdalton.
 \item[\Key{TRSCF}] Use Trust-Region SCF scheme, i.e. diagonalization, .DORTH level shift, and DSM~\cite{TOKJ,TOYJ}.
 \item[\Key{TrFD}] Density optimization by minimization of the Roothaan-Hall energy E$_{\rm RH}$ = Tr{\bf FD}({\bf X})~\cite{TrFD}.
 \item[\Key{TrFD FULL}] As above, but keep the full subspace of trial vectors (instead of truncating) when solving linear equations.
-\item[\Key{UNREST}] Force unrestricted calculation (default for open shell systems).
+%\item[\Key{UNREST}] Force unrestricted calculation (default for open shell systems).
 \item[\Key{VanLenthe}] Use Van Lenthe's scheme for level shifting and averaging~\cite{VanLenthe}.
 
 \subsection{\$INFO}\label{subsec:info}
@@ -1154,12 +1156,6 @@ response equations.\newline
 The solver with paired trial vectors is used for solving damped (complex)
 response equations.\newline
 {\bf Test case}: LSresponse/LSresponse\_DFT\_alpha\_aptv
-\item[\Key{COMPLEX}] \verb| | \newline
-\verb|<Damping parameter gamma>|\newline
-The $\gamma$ parameter is treated as an imaginary component of a frequency of interest and describes a broadening of
-the spectrum~\cite{dampedresponse}.
-\item[\Key{OLSEN}] \verb| | \newline
-The Olsen algorithm is used for obtaining excitation energies. The Olsen algorithm works under the algorithm with symmetrized trial vectors.
 \item[\Key{CONVTHR}] \verb| | \newline
 \verb|<Convergence threshold>|\newline
 Convergence threshold to which response equations are solved.

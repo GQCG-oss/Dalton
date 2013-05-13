@@ -166,7 +166,7 @@ contains
   end subroutine dec_set_default_config
 
 
-  !> \brief Read the **DEC or **CC input section in DALTON.INP and set 
+  !> \brief Read the **DEC or **CC input section in LSDALTON.INP and set 
   !> configuration structure accordingly.
   !> \author Kasper Kristensen
   !> \date September 2010
@@ -174,7 +174,7 @@ contains
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
-    !> Logical unit number for DALTON.INP
+    !> Logical unit number for LSDALTON.INP
     integer,intent(in) :: input
     !> Logical unit number for DALTON.OUT
     integer,intent(in) :: output
@@ -188,7 +188,7 @@ contains
 
     ! Sanity check that this routine is only called once for either **DEC OR **CC
     if(already_called) then
-       call lsquit('Error: DALTON.INP must contain EITHER **DEC for DEC calculation OR &
+       call lsquit('Error: LSDALTON.INP must contain EITHER **DEC for DEC calculation OR &
             & **CC for full molecular calculation!',-1)
     else
        ! First call to this routine

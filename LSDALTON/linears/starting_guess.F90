@@ -144,7 +144,7 @@ subroutine get_initial_dens(H1,S,D,ls,config)
 
      if (gcbasis .and. .not. config%decomp%cfg_gcbasis) then
         WRITE(config%lupri,*) 'Your dens.restart was constructed using the grand-canonical (GC) basis,'
-        WRITE(config%lupri,*) 'while your DALTON.INP uses the standard basis. The GC basis is default'
+        WRITE(config%lupri,*) 'while your LSDALTON.INP uses the standard basis. The GC basis is default'
         WRITE(config%lupri,*) 'when running TRILEVEL or ATOMS. Either contruct a new dens.restart or '
         WRITE(config%lupri,*) 'add .GCBASIS under *LINSCA'
         call lsquit('Calculation in standard basis, dens.restart in GC basis!',config%lupri)
@@ -155,7 +155,7 @@ subroutine get_initial_dens(H1,S,D,ls,config)
            call AO2GCAO_transform_matrixD(D(1),ls%setting,config%lupri)
         ELSE
            WRITE(config%lupri,*) 'Your dens.restart was constructed using the standard basis, while your'
-           WRITE(config%lupri,*) 'DALTON.INP uses the grand-canonical (GC) basis. The GC basis is default'
+           WRITE(config%lupri,*) 'LSDALTON.INP uses the grand-canonical (GC) basis. The GC basis is default'
            WRITE(config%lupri,*) 'when running TRILEVEL or ATOMS. Either contruct a new dens.restart or '
            WRITE(config%lupri,*) 'do not use grand-canonical basis!'
            WRITE(config%lupri,*) 'Alternativly you can add the keyword '

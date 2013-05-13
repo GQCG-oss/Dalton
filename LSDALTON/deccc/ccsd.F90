@@ -4553,7 +4553,7 @@ contains
       if(.not.DECinfo%solver_par)then
         if(scheme==3.or.scheme==2.or.scheme==1)then
           print *,"CHOSEN SCHEME DOES NOT WORK WITHOUT PARALLEL SOLVER, USE&
-          & .CCSDsolver_par IN DALTON.INP"
+          & .CCSDsolver_par IN LSDALTON.INP"
           call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme",-1)
         endif
       endif
@@ -4580,7 +4580,7 @@ contains
 
     ! Attention this manual block should be only used for debugging, also you
     ! will have to ajust its properties to your system. The block is called
-    ! with the keywordk ".manual_batchsizes" in DALTON.INP the next line
+    ! with the keywordk ".manual_batchsizes" in LSDALTON.INP the next line
     ! then contains the alpha and gamma batch sizes separated by space
     if (manual) then
       ! KK and PE hacks -> only for debugging

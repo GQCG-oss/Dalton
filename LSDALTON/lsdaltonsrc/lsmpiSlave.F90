@@ -105,9 +105,12 @@
       case(CCSDDATA);
          call ccsd_data_preparation
       case(CCSDSLV4E2);
-         call calculate_E2_and_permute_slave 
+         call calculate_E2_and_permute_slave
+#ifdef MOD_UNRELEASED
       case(CCSDPTSLAVE);
          call ccsdpt_slave
+!endif mod_unreleased
+#endif
       case(ARRAYTEST);
          call get_slaves_to_array_test
       case(GROUPINIT);

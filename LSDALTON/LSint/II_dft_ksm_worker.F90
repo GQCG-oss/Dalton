@@ -129,7 +129,7 @@ W6 = (NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
 W7 = (NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
 W8 = (2*NBLEN+Nactbast + 1) * Nactbast     !W7 - 1 + NBLEN*Nactbast    -> TMP
 #ifdef VAR_DEBUGINT
-IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDA',lupri)
 #endif
 ! LDA Exchange-correlation contribution to Kohn-Sham matrix
 DO IDMAT = 1, NDMAT
@@ -201,6 +201,7 @@ REAL(REALK) :: VX(5),DFTENEUNRES
 REAL(REALK),pointer :: VXC(:,:)
 REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
 EXTERNAL DFTENEUNRES
+#ifdef MOD_UNRELEASED
 call mem_dft_alloc(VXC,NBLEN,NDMAT)
 
 ! LDA Exchange-correlation contribution to Kohn-Sham energy
@@ -263,7 +264,9 @@ DO IDMAT = 1, NDMAT
 !        & WORK(W5:W6),WORK(W7:W8))
 ENDDO
 call mem_dft_dealloc(VXC)
-
+#else
+call lsquit('II_DFT_KSMLDAUNRES not implemented',-1)
+#endif
 END SUBROUTINE II_DFT_KSMLDAUNRES
 
 !> \brief main kohn-sham matrix driver
@@ -512,7 +515,7 @@ W6 = (4*NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOG
 W7 = (4*NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
 W8 = (5*NBLEN+Nactbast + 1) * Nactbast       !W7 - 1 + NBLEN*Nactbast    -> TMP
 #ifdef VAR_DEBUGINT
-IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDA',lupri)
 #endif
 
 CALL II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,NactBast,NBAST,NTYPSO,NDMAT,&
@@ -618,7 +621,7 @@ W6 = (4*NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOG
 W7 = (4*NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
 W8 = (5*NBLEN+Nactbast + 1) * Nactbast       !W7 - 1 + NBLEN*Nactbast    -> TMP
 #ifdef VAR_DEBUGINT
-IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDA',lupri)
 #endif
 
 CALL II_DISTMETA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,NactBast,NBAST,NTYPSO,NDMAT,&
@@ -737,7 +740,7 @@ INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT,IDMAT1,IDMAT2
 REAL(REALK) :: VXC(NBLEN,2,2),VXM(NBLEN),VX(5),DFTENEUNRES,GRDA,GRDB
 REAL(REALK) :: XCFUNINPUT(5,1),XCFUNOUTPUT(6,1)
 EXTERNAL DFTENEUNRES
-
+#ifdef MOD_UNRELEASED
 !     GGA Exchange-correlation contribution to Kohn-Sham matrix
 DO IDMAT = 1,NDMAT/2
  IDMAT1 = 1 + (IDMAT-1)*2
@@ -825,6 +828,9 @@ DO IDMAT = 1,NDMAT/2
       &  VXC(:,1,2),VXM,VXC(:,2,2),GAO(:,:,1:4),GRAD(:,:,1),GRAD(:,:,2),DFTDATA%FKSM(:,:,IDMAT2),&
       &DFTHRI,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
 ENDDO
+#else
+call lsquit('II_DFT_KSMGGAUNRES not implemented',-1)
+#endif
 
 END SUBROUTINE II_DFT_KSMGGAUNRES
 
@@ -871,7 +877,7 @@ INTEGER     :: IRED,JRED,NRED,offset
 REAL(REALK) :: GAOMAX
 !REAL(REALK),pointer :: EXCRED(:,:)
 !REAL(REALK) :: EXCRED(NactBast*NactBast)
-
+#ifdef MOD_UNRELEASED
 NRED = 0
 GAOMAX = 0.0E0_realk
 ! Set up maximum Gaussian AO elements
@@ -931,6 +937,9 @@ IF (NRED.GT. 0) THEN
    ENDDO
 !   CALL MEM_DFT_DEALLOC(EXCRED)
 ENDIF
+#else
+call lsquit('II_DISTGGABUNRES not implemented',-1)
+#endif
 
 END SUBROUTINE II_DISTGGABUNRES
 
@@ -1659,7 +1668,7 @@ W6 = (NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
 W7 = (NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
 W8 = (2*NBLEN+Nactbast + 1) * Nactbast     !W7 - 1 + NBLEN*Nactbast    -> TMP
 #ifdef VAR_DEBUGINT
-IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in ii_dft_linrsplda',lupri)
 #endif
 
 call mem_dft_alloc(EXPVAL,NBLEN,DFTDATA%NBMAT)
@@ -1994,7 +2003,7 @@ IF(DOCALC)THEN
   W7 = (4*NBLEN+1)*Nactbast + 1   !W6 + 1
   W8 = (5*NBLEN+1)*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
 #ifdef VAR_DEBUGINT
-  IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+  IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_LINRSPGGA',lupri)
 #endif
   call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
        & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
@@ -2388,7 +2397,7 @@ W6 = (NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
 W7 = (NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
 W8 = (2*NBLEN+Nactbast + 1) * Nactbast     !W7 - 1 + NBLEN*Nactbast    -> TMP
 #ifdef VAR_DEBUGINT
-IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPLDA',lupri)
 #endif
 
 call mem_dft_alloc(EXPVAL,NBLEN,DFTDATA%NBMAT)
@@ -2526,7 +2535,7 @@ IF(DOCALC)THEN
  W7 = (4*NBLEN+1)*Nactbast + 1   !W6 + 1
  W8 = (5*NBLEN+1)*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
 #ifdef VAR_DEBUGINT
- IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+ IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPGGA',lupri)
 #endif
  call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
       & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
@@ -2603,7 +2612,7 @@ IF(DOCALC)THEN
   W7 = (4*NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
   W8 = (5*NBLEN+Nactbast + 1) * Nactbast       !W7 - 1 + NBLEN*Nactbast    -> TMP
 #ifdef VAR_DEBUGINT
-  IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+  IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPGGA',lupri)
 #endif
   CALL II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NTYPSO,1,&
        & VXC,GAO,DFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
@@ -4485,7 +4494,7 @@ IF(DOCALC)THEN
  W7 = (4*NBLEN+1)*Nactbast + 1   !W6 + 1
  W8 = (5*NBLEN+1)*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
 #ifdef VAR_DEBUGINT
- IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+ IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_kohnshamGGA',lupri)
 #endif
  call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
       & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
@@ -4651,7 +4660,7 @@ IF(DOCALC)THEN
   W9  = W8+1                       
   W10 = W8+NBLEN*NactBast          !TMPZ(NBLEN,NactBast)
 #ifdef VAR_DEBUGINT
-  IF(W10.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+  IF(W10.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_kohnshamGGA',lupri)
 #endif
   CALL II_DFT_distgeoderiv_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
       &NBAST,VXC1,VXC2,VXC3,VXC4,GAO(:,:,:),DFTDATA%GRAD,&
@@ -5238,7 +5247,7 @@ IF(DOCALC)THEN
  W7 = (4*NBLEN+1)*Nactbast + 1   !W6 + 1
  W8 = (5*NBLEN+1)*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
 #ifdef VAR_DEBUGINT
- IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+ IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_linrspGGA',lupri)
 #endif
  call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
       & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
@@ -5706,6 +5715,7 @@ Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
 INTEGER     :: IPNT,I,J,IDMAT,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT1,IDMAT2
 REAL(REALK) :: VX(5),DFTENEUNRES
 EXTERNAL DFTENEUNRES
+#ifdef MOD_UNRELEASED
 ! LDA Exchange-correlation contribution to Kohn-Sham energy
 DO IDMAT = 1, NDMAT/2
  IDMAT1 = 1 + (IDMAT-1)*2
@@ -5728,6 +5738,10 @@ DO IDMAT = 1, NDMAT/2
    ENDIF
  END DO
 ENDDO
+#else
+call lsquit('II_DFT_KSMELDAUNRES not implemented',-1)
+#endif
+
 END SUBROUTINE II_DFT_KSMELDAUNRES
 
 !> \brief main closed shell GGA kohn-sham matrix driver
