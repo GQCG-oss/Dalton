@@ -147,12 +147,19 @@ module tensor_type_def_module
   !> \brief get composite index from mode index
   function get_comp_idx(inds,dims,modes) result(a)
     implicit none
-    integer,intent(in) :: inds(*),dims(*),modes
-    integer :: i,j,cdim
-    integer :: a
+    integer,intent(in) :: inds(modes),dims(modes),modes
+    integer :: i,j,cdim,cd(modes-2)
+    integer :: a,b
     select case(modes)
-   ! case(4)
-   !   a=inds(1)+(inds(2)-1)*dims(1)+(inds(3)-1)*dims(1)*dims(2)+(inds(4)-1)*inds(1)*inds(2)*inds(3)
+    case(2)
+      a=inds(1)+(inds(2)-1)*dims(1)
+    case(3)
+      cd(1) = dims(1)*dims(2)
+      a=inds(1)+(inds(2)-1)*dims(1)+(inds(3)-1)*cd(1)
+    case(4)
+      cd(1) = dims(1)*dims(2)
+      cd(2) = dims(1)*dims(2)*dims(3)
+      a=inds(1)+(inds(2)-1)*dims(1)+(inds(3)-1)*cd(1)+(inds(4)-1)*cd(2)
     case default
       a=1
       do i=1,modes
