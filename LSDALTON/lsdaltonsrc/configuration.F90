@@ -1875,12 +1875,15 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
                   config%response%rspsolverinput%rsp_mostart = .false.
                CASE('.NOPREC')
                   config%response%rspsolverinput%rsp_no_precond = .true.
+#ifdef MOD_UNRELEASED
                CASE('.EXCVECLINEQ')
                   !use excitation vectors as additional initial guess for lineq
-                  config%response%rspsolverinput%UseExcitationVecs = .TRUE.     
+                  config%response%rspsolverinput%UseExcitationVecs = .TRUE.    
                CASE('.SVD')
                   !use SVD decomposition on the Residual in order to improve conv.
                   config%response%rspsolverinput%doSVD = .TRUE.     
+                  !This is not fully tested more test on bigger systems required. 
+#endif 
                CASE('.RESTEXC')
                   READ (LUCMD,*) config%response%rspsolverinput%rsp_restart_nexci
                   config%response%rspsolverinput%rsp_restart_exci = .true.

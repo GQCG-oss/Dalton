@@ -1193,7 +1193,9 @@ energies but realize that you need 10, you can provide the file rsp\_eigenvecs a
 
 option to restart the calculation from the previous. 
 Naturally this option can also be used to bypass the excitation vector step if the previous calculation failed for some property evaluation which needed the excitation vectors.  
-
+\item[\Key{DTHR}] \verb| | \newline
+\verb|<Threshold>|\newline 
+Threshold for when excited states is considered degenerate
 \end{description}
 Now follows a list of input keywords for the specific properties
 available in \lsdalton.
@@ -1313,10 +1315,11 @@ The standard units for the $\mathcal{A}$ term is given as $D^{2} \mu_{B}$ with a
 
 \item Perform damped calculations based on the Standard MCD calculation. A number of points around each of the MCD peaks (default value: 10) are determined for which to calculate the damped spectra. The result is printed to the files dampedMCDspectraRAU.dat (atomic units) and dampedMCDspectraR.dat.
 \end{enumerate}
-{\bf Test case}: LSresponse/LSresponse\_mcd, LSresponse/LSresponse\_mcd2\newline
-LSresponse/LSresponse\_mcd3  
-\begin{description}
+{\bf Test case}: LSresponse/LSresponse\_mcd\_calc, LSresponse/LSresponse\_mcd\newline
+LSresponse/LSresponse\_mcd2, LSresponse/LSresponse\_mcd3  \newline
+Note that only the LSresponse/LSresponse\_mcd\_calc test case is a good example for a general MCD calculation
 
+\begin{description}
 \item[\Key{MCDEXCIT}] \verb| | \newline
 \verb|<Number of excited states to consider>|\newline
 The $\mathcal{B}$ terms will be calculated for all states, unless they are zero due to selection rules (dipole forbidden)
@@ -1355,7 +1358,11 @@ Changes the number of frequencies used around each MCD peak (default 10).
 \verb|<number of frequencies used for the simulated MCD spectra>|\newline
 Changes the number of frequencies used for the simulated MCD spectra (default 5000).
 \end{description}
+Note that the keyword {\bf .DTHR} under {\bf *SOLVER} (see section \ref{subsec:responsesolver} ) can be used to define the threshold for when excited states is considered degenerate
 
+\subsection{*SHIELD}\label{nmrshield}
+Nuclear magnetic shielding tensors and chemical shift can be calculated with this keyword
+{\bf Test case}: LSresponse/LSresponse\_NMR\_SHIELD
 
 \subsection{*ESDIPOLE}\label{subsec:esd}
 Permanent dipole moment for excited states.
