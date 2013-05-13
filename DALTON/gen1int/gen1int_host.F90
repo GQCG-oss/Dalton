@@ -1275,7 +1275,7 @@
                                  symmetric=SYMMETRIC(itest),                    &
                                  threshold=ERR_THRSH,                           &
                                  ratio_thrsh=RATIO_THRSH)
-        test_failed = .not.almost_equal
+        if (.not. test_failed) test_failed = .not.almost_equal
         call MatDestroy(A=val_ints(imat))
         start_herm_int = end_herm_int
       end do
