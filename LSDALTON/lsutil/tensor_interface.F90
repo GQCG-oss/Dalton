@@ -737,16 +737,6 @@ contains
     call memory_allocate_array_dense(arr)
     call ls_dzero(arr%elm1,size(arr%elm1))
 
-
-    ! By default: Do not create files when arrays are stored in memory.
-    arr%funit=0
-    arr%filename = 'NoFilename'
-    arr%address_counter=0
-    arr%storing_type=0
-    arr%nelements=0
-    nullify(arr%address)
-
-
   end function array_init_standard
 
   !> \brief array freeing routine, give an arbitrary array and all allocated

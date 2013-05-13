@@ -4848,6 +4848,7 @@ contains
       e2 = max(tl3,tl4) + max(no*no,nv*nv)
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+max(nb*nb,max(cd,e2)))
       !memrq=memrq+max(memin,memout)
+#ifdef MOD_UNRELEASED
     elseif(memintensive==1)then
       print *,"ATTENTION, mem estimation not yet correct"
       !govov stays in pdm and is dense in second part
@@ -4903,6 +4904,7 @@ contains
       ! w1 + FO 
       memout = 1.0E0_realk*max(nv*nv*no*no,nb*nb)+nb*nb
       !memrq=memrq+max(memin,memout)
+#endif
     else
       call lsquit("ERROR(get_min_mem_req):requested memory scheme not known",-1)
     endif

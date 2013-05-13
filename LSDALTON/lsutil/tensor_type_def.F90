@@ -48,33 +48,6 @@ module tensor_type_def_module
      integer :: init_type                            !type of initializtation
      logical :: zeros=.false.                        !use zeros in tiles --> it is at the moment not recommended to use .true. here
 
-!#ifdef VAR_SCALAPACK
-!     !> PE add PDM for 4idx arrays
-!     ! when using parallel distributed memory the following parameter defines uniquely
-!     ! the distribution of the array, but there are restrictions on the distribution
-!     ! of the 4 idx quantities since only 2D cyclic distribution makes sense with the
-!     ! scalapack routines. The integers at different postions have special meanings
-!     ! read it in the following way [row node that contains fist element of array, how many dimensions are spread over rows, column node that contains first element of array, how many dimensions are spread over cols]
-!     ! or [ frn , rdim , fcn , cdim ]
-!     ! so if both rdim and cdim /= 0 then obligatory rdim+cdim=4
-!     ! to account for load balancing  
-!     integer, pointer :: distribution(:) => null()
-!     ! the array4 parts on the nodes are allocated in the DARRAY which was implemented
-!     ! for the matrix type but has general functionality, to identify the parts, the
-!     ! address is saved for the nodes rows and cols on master in addr_on_grid
-!     integer,pointer :: addr_on_grid(:,:) => null()
-!     integer :: localnrow,localncol,nrow,ncol,grid_nr
-!     type(scalapack_block_info) :: block(2)  !1=row block info , 2=col block info
-!#endif
-
-     !Dragging along all the old array4 stuff to stay compatible
-     integer :: FUnit
-     character(len=80) :: FileName
-     integer(kind=long) :: address_counter
-     integer :: storing_type
-     integer(kind=long) :: nelements
-     integer(kind=long), pointer :: address(:,:,:,:) => null()
-
   end type array
 
   !> Allocated memory of dense array
