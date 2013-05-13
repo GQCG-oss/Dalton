@@ -53,7 +53,7 @@ LDA
 .GRID TYPE
  BECKEORIG LMG
 *DENSOPT
-.RH                                                                                       
+.RH
 .DIIS
 .NVEC
 8

@@ -50,27 +50,17 @@ cat > LSresponse_DFT_excit_beta.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*DFT INPUT
-.GRID TYPE
- BECKEORIG LMG
-.RADINT
-1.0D-11
-.ANGINT
-31
 *DENSOPT
-.RH                                                                       
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
+.ARH DAVID
+.CONVDYN
+TIGHT
 **RESPONS
 .NEXCIT
 3
 *SOLVER
 .EXCVECLINEQ
-.CONVTHR
-1.0D-6
+.CONVDYN
+TIGHT
 *BETA
 .BFREQ
 1
@@ -100,7 +90,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-149\.3649[0-1]" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * \-149\.3649" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
@@ -112,18 +102,18 @@ CTRL[2]=1
 ERROR[2]="Memory leak -"
 
 # excitation energies 
-CRIT1=`$GREP "* 1 * 0\.2156267" $log | wc -l`
-CRIT2=`$GREP "* 2 * 0\.2948985" $log | wc -l`
-CRIT3=`$GREP "* 3 * 0\.3745027" $log | wc -l`
+CRIT1=`$GREP "* 1 * 0\.21562" $log | wc -l`
+CRIT2=`$GREP "* 2 * 0\.29489" $log | wc -l`
+CRIT3=`$GREP "* 3 * 0\.37450" $log | wc -l`
 
 TEST[3]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[3]=3
 ERROR[3]="Error in excitation energies"
 
 # 1 hyperpolarizability tests
-CRIT1=`$GREP "XXZ * \-2.238" $log | wc -l`
-CRIT2=`$GREP "ZYY * \-4.384" $log | wc -l`
-CRIT3=`$GREP "ZZZ * \-9.891" $log | wc -l`
+CRIT1=`$GREP "XXZ * \-2.23[8-9]" $log | wc -l`
+CRIT2=`$GREP "ZYY * \-4.38[3-4]" $log | wc -l`
+CRIT3=`$GREP "ZZZ * \-9.89[1-2]" $log | wc -l`
 
 TEST[4]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[4]=3

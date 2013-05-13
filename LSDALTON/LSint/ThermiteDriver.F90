@@ -1560,6 +1560,284 @@ CALL freeTUVitem(sharedTUV,Input)
 
 END SUBROUTINE Jengine
 
+!> \brief 
+!> \author T. Kjaergaard
+!> \date 2010
+!>
+!> \param OD_LHS the ODbatches belonging to the Left hand side
+!> \param OD_RHS the ODbatches belonging to the Reft hand side
+!> \param INPUT the integral input specifications, contains all info about what to do
+!> \param OUTPUT the integral output specifications, determines how the output should be given
+!> \param LUPRI the logical unit number for the output file
+!> \param IPRINT the printlevel, determining how much output should be generated
+SUBROUTINE DaJengineMethod(OD_LHS,OD_RHS,INPUT,OUTPUT,LUPRI,IPRINT)
+implicit none
+TYPE(INTEGRALINPUT)  :: INPUT
+TYPE(INTEGRALOUTPUT) :: OUTPUT
+integer              :: LUPRI,IPRINT
+TYPE(ODITEM)         :: OD_LHS,OD_RHS
+!
+Integer               :: ILHS,IRHS,Start_LHS,End_LHS,NFTUVbatches
+TYPE(Integralitem)    :: Integral
+TYPE(Allocitem)       :: Alloc
+TYPE(TUVitem),target  :: SharedTUV
+TYPE(Overlap),pointer :: P(:)
+TYPE(Overlap),pointer :: Q(:)
+TYPE(Overlap),pointer :: F(:)
+TYPE(Overlap)         :: PassF
+TYPE(Integrand)       :: PQ
+Integer               :: nPrimP, nPrimQ,nPrimPass,PassType,doLHS
+Integer               :: maxPrimPass(20)
+Logical               :: screen,doPasses
+integer               :: maxPrim,maxTUVdim,maxOrb,iPassP
+integer(kind=long)    :: WORKLENGTH
+real(realk),pointer   :: Econt(:)
+
+IF (IPRINT.GT. 5) THEN
+  CALL LSHEADER(LUPRI,'DaJengineMethod')
+  WRITE(LUPRI,'(1X,A)') ''
+  WRITE(LUPRI,'(1X,A)') '******************************************************************'
+  WRITE(LUPRI,'(1X,A)') '***                    DaJengineMethod                         ***'
+  WRITE(LUPRI,'(1X,A)') '******************************************************************'
+  WRITE(LUPRI,'(1X,A)') ''
+ENDIF
+
+CALL initTUVitem(sharedTUV,Input,OD_LHS,OD_RHS,LUPRI,IPRINT)
+integral%TUV => sharedTUV
+doPasses  = INPUT%DO_PASSES
+
+IF(doPasses.AND..NOT.(INPUT%DO_FMM.OR.INPUT%OE_SCREEN)) THEN
+  maxPrimPass   = 2
+  maxPrimPass(1) = 128
+  maxPrimPass(2) =  64
+  maxPrimPass(3) =  32
+  maxPrimPass(4) =  16
+  maxPrimPass(5) =   8
+  maxPrimPass(6) =   4
+!  WRITE(LUPRI,*)'Jengine integrals are calculated using passes with maxPrimPass=',maxPrimPass
+ELSE
+  maxPrimPass = 1
+ENDIF
+
+CALL AllocItem_zero(Alloc,'Both')
+CALL SET_ALLOC(Alloc,Input,OD_LHS,'LHS',IPRINT,LUPRI)
+CALL SET_ALLOC(Alloc,Input,OD_RHS,'RHS',IPRINT,LUPRI)
+
+!TODO 
+! 1. MEM USAGE
+! 2. ADD RHS PASS 
+! 3. screening 
+! 4. permutational symmetry?
+
+!RHS
+call MEM_OVERLAP(OD_RHS,Input,2)
+call ALLOC_ODRHS_BUFFERS
+call mem_alloc(Q,OD_RHS%nbatches)
+!we need room for a Contraction Matrix
+WORKLENGTH = Alloc%maxprimRHS*Alloc%maxContRHS
+!we need room for a contraction matrix
+WORKLENGTH = Alloc%maxprimRHS*Alloc%maxijkRHS*INPUT%NDMAT_RHS
+!When we do a spherical transformation on Etuv we need 2 Etuvs and a spherical transform
+WORKLENGTH = WORKLENGTH+2*Alloc%maxETUVlenRHS+Alloc%maxijkRHS*Alloc%maxijkRHS
+!for an intermediate
+WORKLENGTH = WORKLENGTH+Alloc%maxprimRHS*Alloc%maxprimLHS
+call init_workmem(WORKLENGTH) 
+CALL SET_FTUVbatches(F,NFTUVbatches,OD_RHS,Q,Input,SharedTUV,Integral,Alloc,&
+     &               INPUT%NDMAT_RHS,maxPrimPass,LUPRI,IPRINT)
+call free_workmem
+call mem_dealloc(Q)
+call DEALLOC_ODRHS_BUFFERS
+
+Q=>F
+NULLIFY(F)
+
+IF(.NOT.INPUT%noOMP)call mem_TurnONThread_Memory()
+!$OMP PARALLEL IF(.NOT.INPUT%noOMP) DEFAULT(none) PRIVATE(integral,PQ,&
+!$OMP ILHS,IRHS,Start_LHS,End_LHS,nPrimP,nPrimQ,PassF,&
+!$OMP screen,nPrimPass,passType,doLHS,WORKLENGTH,maxPrim,maxTUVdim,&
+!$OMP maxOrb,Econt) SHARED(sharedTUV,Alloc,Input,OD_LHS,OD_RHS,&
+!$OMP NFTUVbatches,P,Q,maxprimpass,output,IPRINT,LUPRI,dopasses)
+IF(.NOT.INPUT%noOMP)call init_threadmemvar()
+
+!LHS
+P=>Q
+integral%TUV => sharedTUV
+!FIXME update this
+!we need room for a LHS or RHS Contraction Matrix
+WORKLENGTH = MAX(Alloc%maxprimRHS*Alloc%maxContRHS,Alloc%maxprimLHS*Alloc%maxContLHS) 
+!When we do a spherical transformation on Etuv we need 2 Etuvs and a spherical transform
+WORKLENGTH = WORKLENGTH+MAX(2*Alloc%maxETUVlenLHS+&
+     & Alloc%maxijkLHS*Alloc%maxijkLHS,2*Alloc%maxETUVlenRHS+&
+     & Alloc%maxijkRHS*Alloc%maxijkRHS) 
+!for an intermediate
+WORKLENGTH = WORKLENGTH+Alloc%maxprimRHS*Alloc%maxprimLHS
+call init_workmem(WORKLENGTH) 
+call getIntegralDimsJengine2(Alloc,maxPrimPass,INPUT%NDMAT_RHS,&
+     & INPUT%geoderivorder,INPUT%magderivorder,maxTUVdim,maxPrim)
+call init_bufcounters(5)
+CALL MemFTUVbatches(maxPrim,maxTUVdim,INPUT%NDMAT_RHS,5)
+call ALLOC_ODPASSF_BUFFERS
+
+maxTUVdim = 30*getIntegralDimsJengine(Alloc,maxPrimPass,INPUT%NDMAT_RHS,INPUT%geoderivorder,INPUT%magderivorder)
+maxPrim   = 30*Alloc%maxPrimLHS*Alloc%maxPrimRHS
+maxOrb    = 30*Alloc%maxTotOrbRHS*Alloc%maxTotOrbLHS*INPUT%NDMAT_RHS
+CALL allocIntegrals(PQ,Integral,maxPrim,maxTUVdim,maxorb,lupri)
+call mem_alloc(Integral%Econt,input%NDMAT_RHS)
+call mem_alloc(Econt,input%NDMAT_RHS)
+do iRHS=1,input%NDMAT_RHS
+   Integral%Econt(iRHS) = 0.0E0_realk
+enddo
+!$OMP DO SCHEDULE(DYNAMIC,1)
+DO ILHS = 1,NFTUVbatches  
+  CALL LS_DZERO(Integral%tuvQ,P(ILHS)%nPrimitives*P(ILHS)%nTUV*input%ndmat_rhs)
+  nPrimPass = 0
+  passType  = 0
+  doLHS = 0 
+  ! if doLHS remains 0 the DaJengineInnerContLHS should not be called.
+  DO IRHS = 1,NFTUVbatches
+     screen = getScreening(P(ILHS),Q(IRHS),INPUT,LUPRI,IPRINT)
+     IF (.NOT.screen) THEN
+      IF (doPasses) THEN
+       ! If new pass-type calculate contribution from previous pass type
+       IF ((passType.NE.Q(IRHS)%passType).AND.(nPrimPass.GT. 0)) THEN
+        CALL JengineInnerCont(PQ,P(ILHS),PassF,INTEGRAL,INPUT,ILHS,IRHS,&
+             &                INPUT%NDMAT_RHS,LUPRI,IPRINT)
+        nPrimPass = 0
+        CALL free_Overlap(PassF)
+        CALL REINIT_OD_PASSF
+       ENDIF
+       !If the OD-batch has more primivites that the maximum do not add to pass
+       !but calculate directly
+       IF (Q(IRHS)%nPrimitives.GE.maxPrimPass(Q(IRHS)%endAngmom+1)) THEN
+        CALL JengineInnerCont(PQ,P(ILHS),Q(IRHS),INTEGRAL,INPUT,ILHS,IRHS, &
+             &                INPUT%NDMAT_RHS,LUPRI,IPRINT)
+       ELSE
+        IF (nPrimPass.EQ. 0) THEN
+         passType = Q(IRHS)%passType
+         CALL InitFTUVbatches(PassF,passType,&
+              & maxPrimPass(Q(IRHS)%endAngmom+1),Q(IRHS)%startAngmom,&
+              & Q(IRHS)%endAngmom,Q(IRHS)%nTUV,INPUT%NDMAT_RHS,5)
+        ENDIF
+        !Calcluate old pass first if number of primitives would exceed
+        !the maximal number
+        IF ((Q(IRHS)%nPrimitives+nPrimPass).GT.maxPrimPass(Q(IRHS)%endAngmom+1))THEN
+         CALL JengineInnerCont(PQ,P(ILHS),PassF,INTEGRAL,INPUT,ILHS,IRHS, &
+              &                              INPUT%NDMAT_RHS,LUPRI,IPRINT)
+         nPrimPass = 0
+         PassF%nPrimitives = 0
+        ENDIF
+        CALL AddODtoFTUV(PassF,Q(IRHS)%nPrimitives,nPrimPass,Q(IRHS),INPUT%NDMAT_RHS,LUPRI,IPRINT)
+        nPrimPass = nPrimPass + Q(IRHS)%nPrimitives
+       ENDIF
+       !****************************** NO Passes ***************************
+       !Integrals are calculated batchwise
+      ELSE
+       CALL JengineInnerCont(PQ,P(ILHS),Q(IRHS),INTEGRAL,INPUT,ILHS,IRHS, &
+            &                            INPUT%NDMAT_RHS,LUPRI,IPRINT)
+      ENDIF
+      IF (IPRINT.GT. 3) WRITE(LUPRI,'(1X,A,I3,A,I3)') 'Overlap distributions P',ILHS,' and Q',IRHS
+      CALL JengineInnerCont(PQ,P(ILHS),Q(IRHS),INTEGRAL,INPUT,ILHS,IRHS, &
+           &                INPUT%NDMAT_RHS,LUPRI,IPRINT)
+      doLHS = 1
+     ENDIF
+  ENDDO
+  IF(doLHS .EQ. 1)THEN
+   IF (doPasses.AND.(nPrimPass.GT. 0)) THEN
+    CALL JengineInnerCont(PQ,P(ILHS),PassF,INTEGRAL,INPUT,ILHS,IRHS, &
+         &                     INPUT%NDMAT_RHS,LUPRI,IPRINT)
+   ENDIF
+   CALL DaJengineInnerContLHS(Econt,P(ILHS),INTEGRAL,input%NDMAT_RHS,LUPRI,IPRINT)
+   do iRHS=1,input%NDMAT_RHS
+    Integral%Econt(iRHS) = Integral%Econt(iRHS) + Econt(iRHS)
+    IF (IPRINT.GT. 50) THEN
+       Write(lupri,*)'ACCUMULATED  Integral%Econt(',iRHS,') = ',Integral%Econt(iRHS)
+    ENDIF
+   enddo
+   IF (doPasses.AND.(nPrimPass.GT. 0)) THEN
+    nPrimPass = 0
+    CALL free_Overlap(PassF)
+    CALL REINIT_OD_PASSF
+   ENDIF
+  ENDIF
+ENDDO
+!$OMP END DO NOWAIT
+
+!$OMP CRITICAL (distributeKcont)
+ do iLHS=1,input%NDMAT_RHS
+  IF (IPRINT.GT. 50) THEN
+     Write(lupri,*)'Integral%Econt(',iLHS,')',Integral%Econt(iLHS)
+  ENDIF
+  Output%ResultTensor%LSAO(1)%elms(iLHS) = Output%ResultTensor%LSAO(1)%elms(iLHS) &
+       & + 0.5E0_realk*Integral%Econt(iLHS)
+  IF (IPRINT.GT. 50) THEN
+     Write(lupri,*)'Result%Integral%Econt(',iLHS,') = ',Output%ResultTensor%LSAO(1)%elms(iLHS)
+  ENDIF
+ enddo
+!$OMP END CRITICAL (distributeKcont)
+IF (IPRINT.GT. 50) THEN
+    print*,'Output%ResultTensor%LSAO(1)%elms',Output%ResultTensor%LSAO(1)%elms
+    print*,'NFTUVbatches',NFTUVbatches
+    print*,'OD_LHS%nbatches',OD_LHS%nbatches
+ENDIF
+call mem_dealloc(Econt)
+call mem_dealloc(Integral%Econt)
+CALL deallocIntegrals(PQ,Integral)
+
+call free_workmem
+
+IF(.NOT.INPUT%noOMP)call collect_thread_memory()
+!$OMP END PARALLEL
+IF(.NOT.INPUT%noOMP)call mem_TurnOffThread_Memory()
+
+DO IRHS = 1,NFTUVbatches
+  IF (Q(IRHS)%nPrimitives.GT. 0) CALL FREE_OVERLAP(Q(IRHS)) !maybe not needed
+ENDDO
+call mem_dealloc(Q)
+call DEALLOC_ODFTUV_BUFFERS
+CALL freeTUVitem(sharedTUV,Input)
+END SUBROUTINE DaJengineMethod
+
+SUBROUTINE DaJengineInnerContLHS(Econt,P,INTEGRAL,NDMAT,LUPRI,IPRINT)
+implicit none
+integer,intent(in)             :: LUPRI,IPRINT,NDMAT
+TYPE(Integralitem),intent(in)  :: Integral
+TYPE(Overlap),intent(in)       :: P
+Real(realk),intent(inout)      :: Econt(ndmat)
+
+CALL ContractFTUVLHS(Econt,P%nTUV,P%nPrimitives,ndmat,P%nPrimAlloc,&
+     & P%nTUVAlloc,Integral%tuvQ,P%FTUV,lupri)
+IF (IPRINT.GT. 50) THEN
+   Write(lupri,*)'New Econt(1)',Econt(1)
+   Write(lupri,*)'P%nTUV,P%nPrimitives,ndmat',P%nTUV,P%nPrimitives,ndmat
+ENDIF
+
+END SUBROUTINE DaJengineInnerContLHS
+
+SUBROUTINE ContractFTUVLHS(Econt,ntuvP,nPrimP,nDmat,nPrimAlloc,&
+     & nTUVAlloc,INTERMEDIATE,FTUV,lupri)
+implicit none
+Integer,intent(in)  :: ntuvP,nPrimP,nDmat,lupri
+Integer,intent(in)  :: nPrimAlloc,nTUVAlloc
+Real(realk),intent(inout) :: Econt(ndmat)
+Real(realk),intent(in) :: INTERMEDIATE(nPrimP,ntuvP,nDmat)
+Real(realk),intent(in) :: FTUV(nPrimAlloc,nTUVAlloc,ndmat)
+!
+Integer     :: idmat,tuvP,iprimP
+real(realk) :: TMP
+IF(nPrimP.NE.nPrimAlloc)call lsquit('nPrimalloc',-1)
+IF(ntuvP.NE.ntuvalloc)call lsquit('ntuvalloc',-1)
+DO idmat = 1,ndmat
+   TMP = 0.0E0_realk
+   DO tuvP=1,ntuvP
+      DO iPrimP=1,nPrimP
+         TMP = TMP + INTERMEDIATE(iPrimP,tuvP,idmat)*FTUV(iPrimP,tuvP,idmat)
+      ENDDO
+   ENDDO
+   Econt(idmat) = TMP 
+ENDDO
+
+END SUBROUTINE ContractFTUVLHS
+
 !> \brief The inner contraction required in a Jengine based integration
 !> \author S. Reine
 !> \date 2010
@@ -6134,6 +6412,12 @@ Integral%nAng  = 1
 Integral%nPrim = ndmat
 Integral%nOrb  = P%nPrimitives*P%nTUV
 !CALL PrintTuvQ_old(Integral%integrals,P%nTUV,P%nPrimitives,1,ndmat,LUPRI,IPRINT)
+#ifdef VAR_DEBUGINT
+IF (IPRINT.GT. 50) THEN
+   CALL PrintTensor(Integral%tuvQ,' InnerFTUV          ',P%nPrimitives,P%nTUV,ndmat,Lupri,&
+        & 'iPrim ','iTUV  ','idmat ',1)
+ENDIF
+#endif
 
 END SUBROUTINE ContractFTUV
 
@@ -6193,7 +6477,7 @@ DO tuvP=1,ntuvP
      fsum = fsum + WTUV(iPrimPQ,tuvPQ)*FTUV(iPrimQ+offset)
      iPrimPQ = iPrimPQ+1
     ENDDO
-   TUV(iPrimP,tuvP,idmat) = TUV(iPrimP,tuvP,idmat) + fsum
+    TUV(iPrimP,tuvP,idmat) = TUV(iPrimP,tuvP,idmat) + fsum
    ENDDO
   ENDDO
  ENDDO

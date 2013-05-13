@@ -4199,7 +4199,7 @@ integer,intent(in)        :: WORKLENGTH
 !> tmp array to avoid allocation and deallocation of mem
 REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
 !
-REAL(REALK) :: VXC(NBLEN),VX(14),DFTENE,EXPVAL(NBLEN,1)
+REAL(REALK) :: VX(14),DFTENE,EXPVAL(NBLEN,1)
 REAL(REALK) :: fR(NBLEN),fRR(NBLEN)
 REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,DUMMY = 0E0_realk 
 INTEGER     :: I,J,nred,nbmat,ipnt
@@ -4231,7 +4231,8 @@ IF(DOCALC)THEN
     ENDIF
 #endif
    ELSE
-      VXC(IPNT) = 0.0E0_realk
+      fR(IPNT) = 0.0E0_realk
+      fRR(IPNT) = 0.0E0_realk
    ENDIF
   END DO
    CALL II_DFT_distgeoderiv_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
@@ -4922,7 +4923,7 @@ integer,intent(in)        :: WORKLENGTH
 !> tmp array to avoid allocation and deallocation of mem
 REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
 !
-REAL(REALK) :: VXC(NBLEN),VX(27),DFTENE,EXPVAL(NBLEN,2)
+REAL(REALK) :: VX(27),DFTENE,EXPVAL(NBLEN,2)
 REAL(REALK) :: fRRR(NBLEN),fRR(2,NBLEN),A
 REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,D3=3E0_realk,DUMMY = 0E0_realk 
 INTEGER     :: I,J,nred,nbmat,IPNT
@@ -4957,7 +4958,9 @@ IF(DOCALC)THEN
      ENDIF
 #endif
    ELSE
-      VXC(IPNT) = 0.0E0_realk
+      fRR(1,IPNT) = 0.0E0_realk
+      fRR(2,IPNT) = 0.0E0_realk
+      fRRR(IPNT) = 0.0E0_realk
    ENDIF
   END DO
    CALL II_DFT_distgeoderiv2_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&

@@ -1770,10 +1770,12 @@ contains
       ! scheme 2: additionally to 3 also the amplitudes, u, the residual are
       !           treated in PDM, the strategy is to only use one V^2O^2 in 
       !           local mem
+#ifdef MOD_UNRELEASED
       ! scheme 1: is the high scaling scheme with the same constraints as in 2,
       !           this reduces the communication (probably not even worth 
       !           implementing)
       ! scheme 0: the "tradional" high scaling scheme for non-MPI calculations
+#endif
 
 #ifndef VAR_LSMPI
       !scheme 1 is a pure mpi-scheme, it is not selected by get_max_batch_size,
@@ -2117,6 +2119,7 @@ contains
        !u [gamma c i j ] -> u [i gamma c j]
        call array_reorder_4d(1.0E0_realk,w1,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj)
 
+#ifdef MOD_UNRELEASED
        !Lambda^h [gamma c] * t [c d i j] = t [gamma d i j]
        if(DECinfo%ccModel>2.and.(scheme==0.or.scheme==1)) then
          if(scheme==1)then
@@ -2126,7 +2129,7 @@ contains
            call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,t2%elm1,nv,0.0E0_realk,tGammadij,lg)
          endif
        endif
-
+#endif
        alphaB=0
        
     !**********************************
@@ -2298,12 +2301,13 @@ contains
 
 
       if(DECinfo%ccmodel>2)then
+#ifdef MOD_UNRELEASED
         if(scheme==0.or.scheme==1)then
           call get_d_term_int_direct(w0,w1,w2,w3,no,nv,nb,fa,fg,la,lg,&
           &xo,yo,xv,yv,u2,uigcj,omega2,u2kcjb,scheme)
           call lsmpi_poke()
         endif
-
+#endif
         if(fa<=fg+lg-1)then
         !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
         !element in the alpha batch has a smaller index as the last element in
@@ -2346,12 +2350,13 @@ contains
         call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3,o2v,1.0E0_realk,omega2%elm1,nv)
       endif
       call lsmpi_poke()
-
+#ifdef MOD_UNRELEASED
       if(DECinfo%ccmodel>2.and.(scheme==0.or.scheme==1))then
         call get_c_term_int_direct(w0,w1,w2,w3,no,nv,nb,fa,fg,la,lg,xo,&
              &yo,xv,yv,t2,tGammadij,omega2,t2jabi,scheme)
         call lsmpi_poke()
       endif
+#endif
 
     end do BatchAlpha
     end do BatchGamma
@@ -3464,6 +3469,7 @@ contains
 
   end subroutine add_int_to_sio4
 
+#ifdef MOD_UNRELEASED
   !> \brief calculate d term integral direct form echange and coulomb integrals
   !> \author Patrick Ettenhuber
   !> \date December 2012
@@ -3611,6 +3617,8 @@ contains
       call array_reorder_4d(1.0E0_realk,w2,no,nv,no,nv,[2,4,1,3],1.0E0_realk,omega2%elm1)
     endif
   end subroutine get_d_term_int_direct
+#endif
+
 
   !> \brief calculate a and b terms in a kobayashi fashion
   !> \author Patrick Ettenhuber

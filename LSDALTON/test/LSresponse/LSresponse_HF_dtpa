@@ -51,12 +51,9 @@ cat > LSresponse_HF_dtpa.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.RH                                                                                       
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
+.ARH DAVID                                                                                       
+.CONVDYN
+TIGHT
 **RESPONS
 *DAMPED_TPA
 .OPFREQ

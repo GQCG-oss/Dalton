@@ -4,9 +4,6 @@ include ../Makefile.config
 
 INCLUDES := $(INCLUDES) -I../LSint -I../linears -I../lsutil
 
-F77FILES = \
-        dft_gridLL.F
-
 F90FILES = \
 	II_util.F90
 
@@ -42,19 +39,19 @@ CFILES =\
 
 EXTRA_FILES = fun-tester.c
 
-F_CPPS = $(F77FILES:.F=.i) $(F90FILES:.F90=.i)
+F_CPPS = $(F90FILES:.F90=.i)
 
 pre: $(F_CPPS)
 
 ftnchek: pre
 	ftnchek $(CHEKFLAGS) *.i > dft.ftnchek
 
-OBJS = $(F77FILES:.F=.o) $(F90FILES:.F90=.o) $(CFILES:.c=.o)
+OBJS = $(F90FILES:.F90=.o) $(CFILES:.c=.o)
 
 clean :
 	$(RM) -f *.o *~ *.lst *.i *.L i.*.f v.i.*.f *.a
 
-Makefile.depend depend:  $(F77FILES) $(F90FILES) $(CFILES)
+Makefile.depend depend:  $(F90FILES) $(CFILES)
 	../tools/check_depend $(INCLUDES) > Makefile.depend
 	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../LSint -M../linears -M../lsutil -- $(F90FILES) >> Makefile.depend
 

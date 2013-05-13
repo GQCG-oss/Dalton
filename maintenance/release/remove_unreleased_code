@@ -29,6 +29,12 @@ do
     $SCRIPT_DIR/cppp.py $delete_flags $file
 done
 
-for file in `cat $SCRIPT_DIR/source_files_to_exclude`; do
-    rm -f $1/$file
-done
+if [ -f $SCRIPT_DIR/source_files_and_dirs_to_exclude ]
+then
+    for file in `cat $SCRIPT_DIR/source_files_and_dirs_to_exclude`; do
+        # file can be file or directory that's why we use -rf
+        rm -rf $1/$file
+    done
+else
+   echo ERROR: file source_files_and_dirs_to_exclude not found!
+fi

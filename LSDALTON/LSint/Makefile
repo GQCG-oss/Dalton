@@ -7,6 +7,7 @@ INCLUDES := $(INCLUDES) -I../lsutil -I../mm -I../xcfun_host -I../dft
 # Keep the file lists sorted for easier modification.
 
 F90_OBJS = \
+	dft_gridLL.o\
 	BuildMolFile.o\
         BuildBasis.o   \
 	dalton-input.o\
