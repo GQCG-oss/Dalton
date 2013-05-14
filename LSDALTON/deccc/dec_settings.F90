@@ -339,6 +339,17 @@ contains
           ! ****************************************************************************
           ! *               Keywords only available for developers                     *
           ! ****************************************************************************
+
+       !Keywords only used for testing in release branch, no documentation needed
+
+       !general testing
+       case('.TESTARRAY'); DECinfo%array_test=.true.
+       case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
+    
+       !CCSD testing
+       case('.CCSDFORCE_SCHEME'); DECinfo%force_scheme=.true.
+          read(input,*) DECinfo%en_mem
+
 #ifdef MOD_UNRELEASED
        case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
        case('.CCSDSOLVER_SERIAL'); DECinfo%solver_par=.false.
@@ -418,10 +429,6 @@ contains
           ! integrals tests
        case('.CHECKLCM'); DECinfo%check_lcm_orbitals=.true.
 
-       case('.CCSDFORCE_SCHEME'); DECinfo%force_scheme=.true.
-          read(input,*) DECinfo%en_mem
-       case('.TESTARRAY'); DECinfo%array_test=.true.
-       case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
 
           ! Size of local groups in MPI scheme
        case('.MPIGROUPSIZE'); read(input,*) DECinfo%MPIgroupsize
