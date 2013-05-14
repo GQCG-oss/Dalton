@@ -1701,6 +1701,16 @@ contains
     nvr=nv*(nv+1)/2
 !print*,"HACK:random t"
 !if(master)call random_number(t2%elm1)
+    if(master.and.print_debug)then
+      write(msg,*)"NORM(xo)    :"
+      call print_norm(xo,int(nb*no,kind=8),msg)
+      write(msg,*)"NORM(xv)    :"
+      call print_norm(xv,int(nb*nv,kind=8),msg)
+      write(msg,*)"NORM(yo)    :"
+      call print_norm(yo,int(nb*no,kind=8),msg)
+      write(msg,*)"NORM(yv)    :"
+      call print_norm(yv,int(nb*nv,kind=8),msg)
+    endif
 
     ! Initialize stuff
     nullify(orb2batchAlpha)
@@ -1791,6 +1801,7 @@ contains
       
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(scheme,infpar%master)
+    call ls_mpi_buffer(print_debug,infpar%master)
     call ls_mpi_buffer(dynamic_load,infpar%master)
     call ls_mpi_buffer(restart,infpar%master)
     call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
@@ -2407,7 +2418,7 @@ contains
     max_wait_time = wait_time
 
 
-#ifdef VAR_DEBUG
+!#ifdef VAR_DEBUG
     if(print_debug)write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
     call lsmpi_local_reduction(wait_time,infpar%master)
     call lsmpi_local_max(max_wait_time,infpar%master)
@@ -2415,7 +2426,7 @@ contains
       write(*,'("----------------------------------------------------------")')
       write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)'),wait_time,wait_time/(infpar%nodtot*1.0E0_realk),max_wait_time
     endif
-#endif
+!#endif
     if (master) call LSTIMER('CCSD part B',time_start,timewall_start,DECinfo%output)
     startt=MPI_wtime()
     if(infpar%lg_nodtot>1.or.scheme==3) then
@@ -2466,7 +2477,7 @@ contains
     endif
     stopp=MPI_wtime()
 #ifdef VAR_DEBUG
-    if(master.and.DECinfo%PL>2) print*,"MPI part of the calculation finished, comm-time",stopp-startt
+    if(master.and.DECinfo%PL>1) print*,"MPI part of the calculation finished, comm-time",stopp-startt
 #endif    
     !free windows and deallocate partial int matrices in scheme 1
     if(DECinfo%ccModel>2.and.(scheme==3.or.scheme==4))then
@@ -2484,6 +2495,18 @@ contains
     maxsize64 = max(int(nv2*no2,kind=8),int(nb2,kind=8))
     maxsize64 = max(maxsize64,int(nv2*nor,kind=8))
     call mem_alloc(w1,maxsize64)
+    if(print_debug)then
+      if(scheme==1)w1(1:o2v2) = omega2%elm1(1:o2v2)
+      call lsmpi_local_reduction(w1,o2v2,infpar%master)
+      write(msg,*)"NORM(omega2 after main loop):"
+      if(master.and.scheme==1)call print_norm(w1,o2v2)
+      write(msg,*)"NORM(govov):"
+      if(master.and.scheme==1)call print_norm(govov)
+      write(msg,*)"NORM(gvvoo):"
+      if(master.and.scheme==1)call print_norm(gvvoo,o2v2)
+      write(msg,*)"NORM(gvoov):"
+      if(master.and.scheme==1)call print_norm(gvoov,o2v2)
+    endif
     w1=0.0E0_realk
 
     !reorder integral for use within the solver and the c and d terms
@@ -2540,9 +2563,9 @@ contains
 
 !OUTPUT
 #ifdef VAR_LSMPI
-        if(DECinfo%PL>2)write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
+        if(DECinfo%PL>1)write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
 #else
-        if(DECinfo%PL>2)write(*,'("C and D   :",f15.4)')stopp-startt
+        if(DECinfo%PL>1)write(*,'("C and D   :",f15.4)')stopp-startt
 #endif
       endif
     endif
@@ -2580,7 +2603,12 @@ contains
       if(scheme==4.or.scheme==3.or.scheme==0)call array_free(u2)
       return
     endif
-
+    if(print_debug)then
+      write(msg,*)"NORM(Gbi):"
+      call print_norm(Gbi,int(no*nb,kind=8),msg)
+      write(msg,*)"NORM(Had):"
+      call print_norm(Had,int(nv*nb,kind=8),msg)
+    endif
 
     !allocate the density matrix
     call mat_init(iFock,nb,nb)
@@ -2613,6 +2641,12 @@ contains
 #elif VAR_LSMPI
     startt=MPI_wtime()
 #endif
+    if(print_debug)then
+      write(msg,*)"NORM(deltafock):"
+      call print_norm(deltafock,int(nb*nb,kind=8),msg)
+      write(msg,*)"NORM(iFock):"
+      call print_norm(iFock%elms,int(nb*nb,kind=8),msg)
+    endif
     !Transform inactive Fock matrix into the different mo subspaces
     if (DECinfo%ccModel>2) then
       ! -> Foo
@@ -2639,6 +2673,16 @@ contains
       call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,fock,nb,0.0E0_realk,w1,nv)
       call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1,nv,yv,nb,0.0E0_realk,qqfock,nv)
     endif
+    if(print_debug)then
+      write(msg,*)"NORM(ppfock):"
+      call print_norm(ppfock,int(no*no,kind=8),msg)
+      write(msg,*)"NORM(pqfock):"
+      call print_norm(pqfock,int(no*nv,kind=8),msg)
+      write(msg,*)"NORM(qpfock):"
+      call print_norm(qpfock,int(no*nv,kind=8),msg)
+      write(msg,*)"NORM(qqfock):"
+      call print_norm(qqfock,int(nv*nv,kind=8),msg)
+    endif
 
     !Free the AO fock matrix
     call mat_free(iFock)
@@ -2649,7 +2693,7 @@ contains
 #elif VAR_LSMPI
     stopp=MPI_wtime()
 #endif
-    if(DECinfo%PL>2)write(*,'("Fock trafo:",f15.4)')stopp-startt
+    if(DECinfo%PL>1)write(*,'("Fock trafo:",f15.4)')stopp-startt
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_LSMPI
@@ -2694,7 +2738,7 @@ contains
 #elif VAR_LSMPI
     stopp=MPI_wtime()
 #endif
-    if(DECinfo%PL>2)write(*,'("S and E   :",f15.4)')stopp-startt
+    if(DECinfo%PL>1)write(*,'("S and E   :",f15.4)')stopp-startt
 
 
 #ifdef VAR_LSMPI
@@ -2709,6 +2753,13 @@ contains
     call LSTIMER('CCSD part C',time_start,timewall_start,DECinfo%output)
     call LSTIMER('CCSD RESIDUAL',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
+
+    if(print_debug)then
+      write(msg,*)"NORM(omega1):"
+      call print_norm(omega1,int(no*nv,kind=8),msg)
+      write(msg,*)"NORM(omega2):"
+      call print_norm(omega2,msg)
+    endif
 
   end subroutine get_ccsd_residual_integral_driven
 
