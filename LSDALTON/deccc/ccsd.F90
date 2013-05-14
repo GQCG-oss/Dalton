@@ -1656,11 +1656,10 @@ contains
     startt=0.0E0_realk
     stopp=0.0E0_realk
     double_2G_nel=170000000
-    print_debug = (DECinfo%PL>1)
+    print_debug = (DECinfo%PL>2)
 
 #ifdef VAR_DEBUG
     double_2G_nel=20
-    print_debug = .true.
 #endif
     
 
@@ -2409,10 +2408,10 @@ contains
 
 
 #ifdef VAR_DEBUG
-    write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
+    if(print_debug)write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
     call lsmpi_local_reduction(wait_time,infpar%master)
     call lsmpi_local_max(max_wait_time,infpar%master)
-    if(master)then
+    if(master.and.print_debug)then
       write(*,'("----------------------------------------------------------")')
       write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)'),wait_time,wait_time/(infpar%nodtot*1.0E0_realk),max_wait_time
     endif
@@ -2545,7 +2544,7 @@ contains
 #ifdef VAR_LSMPI
         if(DECinfo%PL>2)write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
 #else
-        if(DECinfo%PL>2)write(DECinfo%output,'("C and D   :",f15.4)')stopp-startt
+        if(DECinfo%PL>2)write(*,'("C and D   :",f15.4)')stopp-startt
 #endif
       endif
     endif

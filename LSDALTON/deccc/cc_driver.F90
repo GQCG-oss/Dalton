@@ -2980,7 +2980,7 @@ contains
     call mem_dealloc(Uocc)
     call mem_dealloc(Uvirt)
 
-#ifdef MOD_UNRELEASED  
+#ifdef MOD_UNRELEASED
     call array4_print_statistics(DECinfo%output)
     call array_print_mem_info(DECinfo%output,.true.,.false.)
 #endif
