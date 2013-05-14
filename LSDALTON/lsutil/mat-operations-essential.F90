@@ -20,6 +20,7 @@
 MODULE matrix_operations
 !FIXME: order routines alphabetically
 !   use lstiming
+  use chol_decomp_mod
    use matrix_module
 !   Use matrix_operations_symm_dense
    use matrix_operations_dense
@@ -718,7 +719,7 @@ end type matrixmembuf
                  U_full(i,j) = 0.0E0_realk
               enddo
            enddo           
-           call dchdc(U_full,fulldim,fulldim,work1,0,0,IERR)           
+           call dchdc(U_full,fulldim,fulldim,work1,ipvt,0,IERR)           
            call mat_scalapack_set_from_full(U_full,1.0E0_realk,B)
            call mem_dealloc(U_full) 
            call mem_dealloc(work1)
@@ -736,7 +737,7 @@ end type matrixmembuf
                  U_full(i,j) = 0.0E0_realk
               enddo
            enddo           
-           call dchdc(U_full,fulldim,fulldim,work1,0,0,IERR)           
+           call dchdc(U_full,fulldim,fulldim,work1,IPVT,0,IERR)           
            call mat_csr_set_from_full(U_full,1.0E0_realk,B)
            call mem_dealloc(U_full) 
            call mem_dealloc(work1)
@@ -754,7 +755,7 @@ end type matrixmembuf
                  U_full(i,j) = 0.0E0_realk
               enddo
            enddo           
-           call dchdc(U_full,fulldim,fulldim,work1,0,0,IERR)           
+           call dchdc(U_full,fulldim,fulldim,work1,IPVT,0,IERR)           
            call mat_unres_dense_set_from_full(U_full,1.0E0_realk,B)
            call mem_dealloc(U_full) 
            call mem_dealloc(work1)
