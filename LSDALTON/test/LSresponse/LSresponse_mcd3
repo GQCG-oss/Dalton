@@ -46,6 +46,8 @@ H -0.300000    -0.173205     0.000000
 #  WARNING DO NOT USE THIS INPUT WITHOUT MODIFICATION
 #######################################################################
 cat > LSresponse_mcd3.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .THRESH
 1.d-14
@@ -61,7 +63,6 @@ B3LYP
 H1DIAG
 .CONVTHR
 1.0D-8
-.NOGCBASIS
 **RESPONSE
 *QUASIMCD
 .DEGENERATE

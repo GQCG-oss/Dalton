@@ -44,6 +44,8 @@ H    -1.45235              0.899623      0.00000000
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_magderiv2.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRAL
 .DEBUGMAGDERIV
 **WAVE FUNCTIONS
@@ -54,7 +56,6 @@ B3LYP
 .DIIS
 .START
 H1DIAG
-.NOGCBASIS
 **INFO
 .DEBUG_MPI_MEM
 *END OF INPUT

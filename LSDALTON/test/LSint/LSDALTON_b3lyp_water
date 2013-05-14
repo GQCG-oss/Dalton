@@ -44,6 +44,8 @@ H     -1.45235              0.899623      0.00000000
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_b3lyp_water.dal <<'%EOF%'
+**GENERAL
+#.NOGCBASIS
 **WAVE FUNCTIONS
 .DFT
 GGAKey SLATER=0.8000 BECKE=0.7200 LYP=0.8100 VWN=0.1900
@@ -61,7 +63,6 @@ GGAKey SLATER=0.8000 BECKE=0.7200 LYP=0.8100 VWN=0.1900
 H1DIAG
 .CONVDYN
 TIGHT
-#.NOGCBASIS
 **INFO
 .DEBUG_MPI_MEM
 *END OF INPUT

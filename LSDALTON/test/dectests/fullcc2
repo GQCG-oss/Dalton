@@ -43,10 +43,11 @@ H          0.70368        0.11634       -1.09866
 #  DALTON INPUT
 #######################################################################
 cat > fullcc2.dal <<'%EOF%'
+**GENERAL
+.FORCEGCBASIS
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.FORCEGCBASIS
 .ARH
 .START
 TRILEVEL
@@ -54,7 +55,7 @@ TRILEVEL
 1.0d-5
 **INFO
 .DEBUG_MPI_MEM
-**DEC
+**CC
 .CC2
 .ccThr
 1e-9

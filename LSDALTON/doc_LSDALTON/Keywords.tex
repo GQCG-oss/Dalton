@@ -5,6 +5,7 @@ In this chapter, we describe all keywords for the different sections
 of the LSDALTON.INP file. In general, LSDALTON.INP is divided into the following sections under
 the headlines:
 \begin{itemize}
+\item **GENERAL contain general settings (optional)
 \item **INTEGRAL contain settings for the calculation of integrals (optional)
 \item **WAVE FUNCTIONS contains info about the wave function (e.g. HF/DFT) and settings
 for optimization of the wave function (mandatory)
@@ -17,6 +18,20 @@ for optimization of the wave function (mandatory)
 Each of these sections may contain subsections, indicated by a single asterisk. LSDALTON.INP
 should always end with *END OF INPUT. 
 
+\section{**GENERAL}\label{sec:integral}
+
+This input module defines the way the integrals should be calculated.
+\begin{description}
+
+\item[\Key{SCALAPACK}] Use SCALAPACK matrices. NB: Requires linking to the scalapack lib (provided by MKL)
+\item[\Key{SCALAPACKBLOCKSIZE}] the blocksize used in SCALAPACK matrices
+\item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library!
+\item[\Key{TIME}] Activate the printout of timings.
+\item[\Key{NOGCBASIS}] Deactivate the use of the Grand Canonical basis \cite{trilevel1, trilevel2}
+\item[\Key{FORCEGCBASIS}] The Grand Canonical basis \cite{trilevel1, trilevel2} is deactivated when the program
+detects the use of a Dunning basis set like (cc-pVXZ) but the calculation will force the use of the Grand Canonical basis using this keyword.
+
+\end{description}
 \section{**INTEGRAL}\label{sec:integral}
 
 This input module defines the way the integrals should be calculated.
@@ -732,7 +747,6 @@ and energy. The default is diagonalization combined with the DIIS scheme for acc
 of SCF convergence (no damping/level shifting). 
 Should have a different name. DENSOPT?
 \begin{description}
-\item[\Key{TIME}] Activate the printout of timings.
 \item[\Key{2ND\_ALL}] Use second order optimization in all SCF iterations.
 \item[\Key{2ND\_LOC}] Use second order optimization in local SCF iterations.
 \item[\Key{ARH}] Use Augmented Roothaan-Hall scheme for density optimization 
@@ -769,7 +783,6 @@ Options are TIGHT, STANDARD, and SLOPPY.
 SCF convergence threshold - Frobenius norm of SCF gradient (default is 1.0d-4). 
 Note that this convergence criterion
 is not size-extensive. For large molecules, it is recommended to use .CONVDYN instead.
-\item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library!
 \item[\Key{LB94}] Uses the van Leeuwen-Baerends asymptotic correction. Note that the LB94 functional is the same as using the follwing input. 
 \begin{verbatim}
 **WAVE FUNCTIONS

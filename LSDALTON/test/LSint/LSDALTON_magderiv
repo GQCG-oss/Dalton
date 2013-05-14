@@ -53,6 +53,8 @@ O          7.13448500      0.65989700     -3.94249600
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_magderiv.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRAL
 .DEBUGMAGDERIVOVERLAP
 **WAVE FUNCTIONS
@@ -62,7 +64,6 @@ cat > LSDALTON_magderiv.dal <<'%EOF%'
 .DIIS
 .START
 H1DIAG
-.NOGCBASIS
 **INFO
 .DEBUG_MPI_MEM
 *END OF INPUT

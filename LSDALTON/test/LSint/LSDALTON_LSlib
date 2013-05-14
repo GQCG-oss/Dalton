@@ -46,6 +46,8 @@ C   0.0   0.0     0.0
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_LSlib.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .DEBUGLSLIB
 **WAVE FUNCTIONS
@@ -55,7 +57,6 @@ cat > LSDALTON_LSlib.dal <<'%EOF%'
 .DIIS
 .START
 H1DIAG
-.NOGCBASIS
 .MAXIT
 1
 *END OF INPUT
