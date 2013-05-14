@@ -2469,7 +2469,7 @@ contains
     endif
     stopp=MPI_wtime()
 #ifdef VAR_DEBUG
-    if(master.and.print_debug) print*,"MPI part of the calculation finished, comm-time",stopp-startt
+    if(master.and.DECinfo%PL>2) print*,"MPI part of the calculation finished, comm-time",stopp-startt
 #endif    
     !free windows and deallocate partial int matrices in scheme 1
     if(DECinfo%ccModel>2.and.(scheme==3.or.scheme==4))then
@@ -4837,6 +4837,7 @@ contains
       e2 = max(tl3,tl4) + max(no*no,nv*nv)
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+max(nb*nb,max(cd,e2)))
       !memrq=memrq+max(memin,memout)
+#ifdef MOD_UNRELEASED
     elseif(memintensive==1)then
       print *,"ATTENTION, mem estimation not yet correct"
       !govov stays in pdm and is dense in second part
@@ -4892,6 +4893,7 @@ contains
       ! w1 + FO 
       memout = 1.0E0_realk*max(nv*nv*no*no,nb*nb)+nb*nb
       !memrq=memrq+max(memin,memout)
+#endif
     else
       call lsquit("ERROR(get_min_mem_req):requested memory scheme not known",-1)
     endif
