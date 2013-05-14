@@ -2463,14 +2463,14 @@ end subroutine atomic_fragment_basis
   !> file atomicfragmentsdone.info.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine restart_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,UnoccOrbitals,&
-       & DoBasis,fragments,jobs)
+  subroutine restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,UnoccOrbitals,&
+       & DoBasis,fragments,jobs,restart_files_exist)
     implicit none
     !> Number of atoms in the full molecule
     integer,intent(in) :: natoms
     !> Full molecule info
     type(fullmolecule),intent(in)  :: MyMolecule
-    !> LSitem infi
+    !> LSitem info
     type(lsitem),intent(inout)        :: MyLsitem
     !> Occupied orbitals in DEC format
     type(ccorbital),intent(in)     :: OccOrbitals(MyMolecule%numocc)
@@ -2482,6 +2482,8 @@ end subroutine atomic_fragment_basis
     type(ccatom), intent(inout),dimension(natoms) :: fragments
     !> Job list
     type(joblist),intent(inout) :: jobs
+    !> Do restart files exist?
+    logical,intent(inout) :: restart_files_exist
     character(len=40) :: FileName
     integer :: funit, i, MyAtom, ndone,idx,j
     logical :: file_exist
@@ -2496,9 +2498,13 @@ end subroutine atomic_fragment_basis
 
     ! Sanity check
     inquire(file=FileName,exist=file_exist)
-    if(.not. file_exist) then ! something wrong
-       call lsquit('restart_fragments_from_file: File atomicfragmentsdone.info &
-            & does not exist!',-1)
+    if(file_exist) then ! something wrong
+       restart_files_exist=.true.
+    else
+       write(DECinfo%output,*) 'You requested DEC restart but no restart files exist!'
+       write(DECinfo%output,*) '--> I will calculate all atomic fragments from scratch...'
+       restart_files_exist=.false.
+       return
     end if
 
     call lsopen(funit,FileName,'OLD','UNFORMATTED')
@@ -2522,7 +2528,7 @@ end subroutine atomic_fragment_basis
     ! Sanity check
     inquire(file=FileName,exist=file_exist)
     if(.not. file_exist) then ! something wrong
-       call lsquit('restart_fragments_from_file: File atomicfragments.info &
+       call lsquit('restart_atomic_fragments_from_file: File atomicfragments.info &
             & does not exist!',-1)
     end if
 
@@ -2556,7 +2562,7 @@ end subroutine atomic_fragment_basis
        end do FindAtom
        ! Check that we found atom in job list
        if(idx==0) then
-          call lsquit('restart_fragments_from_file: Atom not found in job list!',-1)
+          call lsquit('restart_atomic_fragments_from_file: Atom not found in job list!',-1)
        end if
 
        ! Consistency check that atom MyAtom (represented by job list index "idx") is 
@@ -2565,7 +2571,7 @@ end subroutine atomic_fragment_basis
           print *, 'MyAtom = ', MyAtom
           print *, 'idx in job list = ', idx
           print *, 'jobsdone=', jobs%jobsdone
-          call lsquit('restart_fragments_from_file: Central atom read from file &
+          call lsquit('restart_atomic_fragments_from_file: Central atom read from file &
                & is not in bookkeeping list',-1)
        end if
 
@@ -2577,7 +2583,7 @@ end subroutine atomic_fragment_basis
     call lsclose(funit,'KEEP')
 
 
-  end subroutine restart_fragments_from_file
+  end subroutine restart_atomic_fragments_from_file
 
 
 

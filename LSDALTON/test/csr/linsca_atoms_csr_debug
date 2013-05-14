@@ -49,7 +49,7 @@ cat > linsca_atoms_csr_debug.dal <<'%EOF%'
 *DENSOPT
 .CSR
 !.ARH
-.TrFD
+.RH
 .NOAV
 .START
 H1DIAG

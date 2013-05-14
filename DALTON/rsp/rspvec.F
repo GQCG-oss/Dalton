@@ -563,6 +563,7 @@ C
 #include "inftap.h"
 !SONIA: MCDPRJ
 #include "infsmo.h"
+#include "infrank.h"
 C
 C Local variables
 C
@@ -697,9 +698,10 @@ C
      &               ANTSYM,WRK(KGP),LWRK1)
          GPNORM = DNRM2(KZYVAR,WRK(KGP),1)
 C
-         WRITE (LUPRI,'(//A,I3,/2A,/A,(T25,5F10.6))')
+         WRITE (LUPRI,'(//A,I3,/2A,/A,I3,/A,(T25,5F10.6))')
      &   ' QRLRVE -- linear response calculation for symmetry',KSYMOP,
      &   ' QRLRVE -- operator label : ',LRLAB(ILRLAB),
+     &   ' QRLRVE -- operator spin  : ',OPRANK(INDPRP(LRLAB(IRLAB))),
      &   ' QRLRVE -- frequencies :',(WRK(KEIVAL+I),I=0,NFREQ-1)
          IF (GPNORM .LT. THRSML) THEN
             WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'

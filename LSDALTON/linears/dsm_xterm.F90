@@ -3,16 +3,25 @@
 
 !> Module for adding an extra, more expensive, term to the DSM function.
 module dsm_x_term
+#ifdef VAR_DSM
    use av_utilities
    use matrix_util
+#endif
    private
+#ifdef VAR_DSM
    public :: xterm_start,xterm_build_Gpara,&
         &    xterm_add_Eterm,xterm_end !,xterm_build_deriv, xterm_Eps
    !> G(Delta_par) = sum_i coef_i (F_i - h)
    type(matrix),save :: Gpara
    !> coefficients used in sum for Gpara
    real(realk),allocatable,save :: coef(:)
+#endif
 contains
+  subroutine dsm_xterm_dummy()
+    implicit none
+  end subroutine dsm_xterm_dummy
+
+#ifdef VAR_DSM
 !> \brief Initialize xterm module.
 !> \author L. Thogersen
 !> \date 2003
@@ -194,5 +203,6 @@ contains
    !   xterm_Eps = mat_Tr(Gpara)
    !   call mat_free(Dpara)
    !end function xterm_Eps
+#endif
 
 end module dsm_x_term

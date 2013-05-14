@@ -89,10 +89,6 @@ MODULE scf_stats
       if (iteration > 1) then
         stat_tab(iteration,2) = stat_tab(iteration,1)-stat_tab(iteration-1,1)
         call scf_stats_print_table(opt,iteration)
-        !if (config%diag%DEBUG_RH_DSM_ECHANGE) then
-        !  !** col9 for the SCF energy change in the RH-step
-        !  stat_tab(iteration,9) = E - stat_tab(iteration,9)
-        !endif
       else
         call scf_stats_print_table_header(opt)
         call scf_stats_print_table(opt,iteration)
@@ -110,33 +106,20 @@ MODULE scf_stats
       !> Contains general settings for SCF optimization
       type(optItem), intent(in) :: opt
 
-      !if (config%diag%DEBUG_RH_DSM_ECHANGE) then
-      !  print"('********************************************************************************&
-      !         &*****************************')"
-      !  print"(' it        E(HF)           dEHF(RH)         dEHF(DSM)    DSMexit  DSM_alpha  RHshift  RHove&
-      !         &rlap    gradient    ###')"
-      !  print"('*******************************************************************************&
-      !         &*****************************')"
-      !  WRITE(config%LUPRI,"('********************************************************************************&
-      !       &*****************************###')")
-      !  WRITE(config%LUPRI,"(' it        E(HF)           dEHF(RH)         dEHF(DSM)    DSMexit  DSM_alpha  RHshift  RHove&
-      !         &rlap    gradient    ###')")
-      !  WRITE(config%LUPRI,"('********************************************************************************&
-      !         &*****************************###')")
       if (opt%cfg_density_method == opt%cfg_f2d_arh) then
         print*,'("************************************************************************************")'
         IF(opt%cfg_oao_gradnrm)THEN
-           print*,'it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift     OAO gradient'
+           print*,'it        E(HF)            dE(HF)         exit      alpha RHshift     OAO gradient'
         ELSE
-           print*,' it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift     AO gradient'
+           print*,' it        E(HF)            dE(HF)         exit      alpha RHshift     AO gradient'
         ENDIF
         print*,'("************************************************************************************")'
         WRITE(opt%LUPRI,'("**************************************************************************************###")')
         IF(opt%cfg_oao_gradnrm)THEN
-           WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift &
+           WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)         exit      alpha RHshift &
                 &   OAO gradient     ###")')
         ELSE
-           WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift &
+           WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)         exit      alpha RHshift &
                 &   AO gradient     ###")')
         ENDIF
         WRITE(opt%LUPRI,'("****************************************************************** &
@@ -144,16 +127,16 @@ MODULE scf_stats
       else
         print*,'("*****************************************************************************************")'
         IF(opt%cfg_oao_gradnrm)THEN
-           print*,' it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift  RHinfo  OAO gradient'
+           print*,' it        E(HF)            dE(HF)         exit      alpha RHshift  RHinfo  OAO gradient'
         ELSE
-           print*,' it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift  RHinfo  AO gradient'
+           print*,' it        E(HF)            dE(HF)         exit      alpha RHshift  RHinfo  AO gradient'
         ENDIF
         print*,'("*****************************************************************************************")'
         WRITE(opt%LUPRI,'("*******************************************************************************************###")')
         IF(opt%cfg_oao_gradnrm)THEN
-           WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo  OAO gradient    ###")')
+           WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  OAO gradient    ###")')
         ELSE
-           WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo  AO gradient     ###")')
+           WRITE(opt%LUPRI,'(" it        E(HF)            dE(HF)         exit      alpha RHshift   RHinfo  AO gradient     ###")')
         ENDIF
         WRITE(opt%LUPRI,'("*******************************************************************************************###")')
       endif
@@ -196,15 +179,6 @@ MODULE scf_stats
       integer, intent(in) :: iteration
       integer :: j,igrad
 
-      !if (config%diag%DEBUG_RH_DSM_ECHANGE) then
-      !  print"(i3,f18.10,2f17.11,f8.2,f13.5,f8.2,f13.7,e12.2)", iteration-1,stat_tab(iteration-1,1),&
-      !         &stat_tab(iteration-1,9),stat_tab(iteration-1,10),stat_tab(iteration-1,6),&
-      !         &stat_tab(iteration-1,11),(stat_tab(iteration-1,j),j=7,8),&
-      !         &stat_gradnorm(iteration-1,1)
-      !  WRITE(config%LUPRI,"(i3,f18.10,2f17.11,f8.2,f13.5,f8.2,f13.7,e12.2,'  ###')") iteration-1,stat_tab(iteration-1,1),&
-      !         &stat_tab(iteration-1,9),stat_tab(iteration-1,10),stat_tab(iteration-1,6),&
-      !         &stat_tab(iteration-1,11),(stat_tab(iteration-1,j),j=7,8),&
-      !         &stat_gradnorm(iteration-1,1)
       IF(opt%cfg_oao_gradnrm)THEN
          igrad = stat_oao_grad
       ELSE
@@ -264,26 +238,9 @@ MODULE scf_stats
          stat_current_iteration = opt%cfg_max_linscf_iterations
       endif
 
-      !if (config%diag%DEBUG_RH_DSM_ECHANGE) then
-      !  WRITE(config%LUPRI,*)
-      !  WRITE(config%LUPRI,"('*************************************************************************')")
-      !  WRITE(config%LUPRI,"(' it       dE(RH)          dEHF(RH)         dE(DSM)         dEHF(DSM)')")
-      !  WRITE(config%LUPRI,"('*************************************************************************')")
-      !  do i=2,stat_current_iteration
-      !     WRITE(config%LUPRI,"(i3,4f17.11)") i,stat_tab(i,4),stat_tab(i,9),stat_tab(i,5),stat_tab(i,10)
-      !  enddo
-      !else
-      !  WRITE(opt%LUPRI,*)
-      !  WRITE(opt%LUPRI,"('*************************************************************************')")
-      !  WRITE(opt%LUPRI,"(' it       dE(HF)        dE(DSM)+dE(RH)      dE(RH)dE(DSM)  ')")
-      !  WRITE(opt%LUPRI,"('*************************************************************************')")
-      !  do i=1,stat_current_iteration
-      !     WRITE(opt%LUPRI,"(i3,4f17.11)") i,(stat_tab(i,j),j=2,5)
-      !  enddo
-      !endif
       WRITE(opt%LUPRI,*)
       WRITE(opt%LUPRI,"('********************************************************')")
-      WRITE(opt%LUPRI,"(' it       dE(HF)       DSMexit   RHshift    RHinfo ')")
+      WRITE(opt%LUPRI,"(' it       dE(HF)          exit   RHshift    RHinfo ')")
       WRITE(opt%LUPRI,"('********************************************************')")
       do i=1,stat_current_iteration
          WRITE(opt%LUPRI,"(i3,f17.11,2f10.4,f13.7)") i,stat_tab(i,2),(stat_tab(i,j),j=6,8)
