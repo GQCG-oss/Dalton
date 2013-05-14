@@ -1630,7 +1630,6 @@ contains
     type(decsettings) :: DECitem
     master = 0
     call ls_mpi_buffer(DECitem%doDEC,Master)
-    call ls_mpi_buffer(DECitem%doHF,Master)
     call ls_mpi_buffer(DECitem%memory,Master)
     call ls_mpi_buffer(DECitem%full_molecular_cc,Master)
     call ls_mpi_buffer(DECitem%mp2energydebug,Master)

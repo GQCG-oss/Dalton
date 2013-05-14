@@ -25,7 +25,6 @@ contains
     integer, intent(in) :: output
 
     DECinfo%doDEC = .false.
-    DECinfo%doHF = .true.
     ! Max memory measured in GB. By default set to 2 GB
     DECinfo%memory=2.0E0_realk
     DECinfo%memory_defined=.false.
@@ -350,7 +349,6 @@ contains
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
           ! Skip Hartree-Fock calculation 
-       case('.SKIPHARTREEFOCK'); DECinfo%doHF=.false.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
@@ -553,11 +551,6 @@ contains
             & Note that density is a subset of a gradient calculation',DECinfo%output)
     end if
 
-    ! Always skip Hartree-Fock when restarting DEC
-    if(DECinfo%restart) then
-       DECinfo%doHF=.false.
-    end if
-
 #ifndef VAR_LSMPI
     if(DECinfo%restart) then
        call lsquit('DEC Restart option only possible using MPI!',DECinfo%output)
@@ -595,7 +588,6 @@ end if
     write(lupri,*) 
 
     write(lupri,*) 'doDEC ', DECitem%doDEC
-    write(lupri,*) 'doHF ', DECitem%doHF
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
     write(lupri,*) 'use_canonical ', DECitem%use_canonical
