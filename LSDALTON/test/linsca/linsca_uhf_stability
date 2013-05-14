@@ -54,9 +54,8 @@ cat > linsca_uhf_stability.dal <<'%EOF%'
 TIGHT
 .STABILITY
 .UNREST
-$INFO
-INFO_STABILITY
-$END INFO
+**INFO
+.INFO_STABILITY
 *END OF INPUT
 %EOF%
 

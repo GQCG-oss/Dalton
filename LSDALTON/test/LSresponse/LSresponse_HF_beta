@@ -53,9 +53,8 @@ cat > LSresponse_HF_beta.dal <<'%EOF%'
 .ARH DAVID                                                                                       
 .CONVDYN
 TIGHT
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 **RESPONS
 *BETA
 .BFREQ

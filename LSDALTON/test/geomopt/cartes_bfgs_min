@@ -66,9 +66,8 @@ cat > cartes_bfgs_min.dal <<'%EOF%'
 .START
 H1DIAG
 .RESTART
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 #######################################################################

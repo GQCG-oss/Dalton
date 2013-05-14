@@ -51,9 +51,8 @@ cat > fullccsdpt.dal <<'%EOF%'
 .NOGCBASIS
 .CONVTHR
 1.0d-6
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 **CC
 .CCSD(T)
 .ccThr

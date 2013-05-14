@@ -128,12 +128,14 @@ contains
           Ecorr = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
                & mylsitem,print_level,fragment_job,ypo_fc=ypo_fc,ppfock_fc=ppfock_fc)
        else
+#endif
           Ecorr = ccsolver_justenergy(ypo_fc,&
                & MyMolecule%ypv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
                & print_level,fragment_job,ppfock_fc,MyMolecule%qqfock)
+#ifdef MOD_UNRELEASED
        end if
-!endif mod_unreleased
 #endif
+!endif mod_unreleased
 
        call mem_dealloc(ppfock_fc)
        call mem_dealloc(ypo_fc)

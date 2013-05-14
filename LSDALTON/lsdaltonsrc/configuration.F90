@@ -208,7 +208,7 @@ INTEGER            :: LUCMD !Logical unit number for the daltoninput
 INTEGER            :: IDUMMY,IPOS,IPOS2,COUNTER
 character(len=80)  :: WORD,TMPWORD
 character(len=2)   :: PROMPT
-LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS
+LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS,doresponse
 !LINSCA variables:
 real(realk)        :: shift, min_density_overlap, maxratio, zero
 integer            :: nvec, i
@@ -217,6 +217,7 @@ Real(realk)  :: hfweight
 STARTGUESS = .FALSE.
 Config%integral%cfg_lsdalton = .TRUE.
 COUNTER = 0
+doresponse=.false.
 
 INQUIRE(file='LSDALTON.INP',EXIST=file_exists) 
 IF(file_exists)THEN
@@ -682,15 +683,10 @@ DO
                WRITE(config%LUPRI,*) ' Keyword ',WORD,' not recognized in read_dalton_input'
                CALL lsQUIT('Illegal keyword in *DENSOPT section',config%lupri)
             END SELECT
-         ELSE IF (PROMPT(1:1) .EQ. '$') THEN
-            IF (WORD == '$INFO') THEN
-              call config_info_input(config,lucmd)
-              cycle
-            ELSE
-              WRITE(LUPRI,*) ' Keyword ',WORD,' not recognized in read_dalton_input'
-              CALL lsQUIT('Illegal keyword in read_dalton_input.',config%lupri)
-              cycle
-            ENDIF
+         ENDIF
+         IF(PROMPT .EQ. '$') THEN
+            WRITE(LUPRI,*) ' Keyword ',WORD,' not recognized under *DENSOPT in read_dalton_input'
+            CALL lsQUIT('Illegal keyword under *DENSOPT in read_dalton_input.',config%lupri)
          ENDIF
          IF(PROMPT .EQ. '**') THEN
             READWORD=.FALSE.
@@ -701,6 +697,10 @@ DO
             EXIT
          ENDIF
       ENDDO
+   ENDIF
+   IF(WORD(1:6) .EQ. '**INFO') THEN
+      READWORD = .TRUE.
+      call config_info_input(config,lucmd,readword,word)
    ENDIF
 
 #ifdef MOD_UNRELEASED
@@ -718,8 +718,9 @@ DO
 
    ! KK, change from $RESPONS to **RESPONS to be consistent with other input structure.
    ResponseInput: IF (WORD(1:9) == '**RESPONS') THEN
+      doresponse=.true.
       READWORD=.TRUE.
-      call config_rsp_input(config,lucmd,readword)
+      call config_rsp_input(config,lucmd,readword,WORD)
    END IF ResponseInput
 
    ! Input for DEC calculation
@@ -873,7 +874,7 @@ if(config%solver%do_dft)THEN
    call init_dftfunc(config%integral%DFT)
 endif
 ! Check that DEC input is consistent with geometry optimization and orbital localization.
-call DEC_meaningful_input(config)
+call DEC_meaningful_input(config,doresponse)
 
 END SUBROUTINE read_dalton_input
 
@@ -883,20 +884,35 @@ END SUBROUTINE read_dalton_input
 !> If necessary, modify config structure to comply with DEC calculation.
 !> \author Kasper Kristensen
 !> \date April 2013
-subroutine DEC_meaningful_input(config)
+subroutine DEC_meaningful_input(config,doresponse)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(ConfigItem), intent(inout) :: config
+  !> Do Response calculation?
+  logical,intent(in) :: doresponse
+
 
   ! Only make modifications to config for DEC calculation AND if it is not
   ! a full CC calculation
   DECcalculation: if(config%doDEC) then
 
+     ! DEC and response do not go together right now...
+     if(doresponse) then
+        call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONS!',-1)
+     end if
+
      ! DEC geometry optimization 
      ! *************************
-     ! Always use dynamical optimization procedure
-     GeoOptCheck: if(config%optinfo%optimize) then
+     GeoOptCheck: if(config%optinfo%optimize .or. config%dynamics%do_dynamics) then
+        ! Always use dynamical optimization procedure
         config%optinfo%dynopt=.true.
+
+        ! DEC restart for geometry optimizations not implemented
+        if(DECinfo%restart) then
+           write(config%lupri,*) 'Warning: DEC restart not implemented for geometry optimization...'
+           write(config%lupri,*) '--> I turn off DEC restart!'
+           DECinfo%restart=.false.
+        end if
      end if GeoOptCheck
 
      ! Orbital localization must be turned on for DEC calculations
@@ -942,7 +958,7 @@ subroutine PROFILE_INPUT(profinput,readword,word,lucmd,lupri)
   implicit none
   LOGICAL,intent(inout)                :: READWORD
   TYPE(profileinput),intent(inout)   :: profinput
-  character(len=70)  :: WORD
+  character(len=80)  :: WORD
   INTEGER,intent(in) :: LUCMD !Logical unit number for the daltoninput
   INTEGER,intent(in) :: LUPRI !Logical unit number for the daltonoutput file
 !
@@ -992,7 +1008,7 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
   implicit none
   LOGICAL,intent(inout)                :: READWORD
   TYPE(integralconfig),intent(inout)   :: integral
-  character(len=70)  :: WORD
+  character(len=80)  :: WORD
   INTEGER,intent(in) :: LUCMD !Logical unit number for the daltoninput
   INTEGER,intent(in) :: LUPRI !Logical unit number for the daltonoutput file
 !
@@ -1253,7 +1269,7 @@ subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
   implicit none
   LOGICAL,intent(inout)                :: READWORD
   TYPE(geoHessianConfig),intent(inout)   :: geoHessian
-  character(len=70)  :: WORD
+  character(len=80)  :: WORD
   INTEGER,intent(in) :: LUCMD !Logical unit number for the daltoninput
   INTEGER,intent(in) :: LUPRI !Logical unit number for the daltonoutput file
   !
@@ -1310,143 +1326,151 @@ END subroutine GEOHESSIAN_INPUT
 !> \brief Read the $INFO section under *LINSCA in input file LSDALTON.INP and set configuration structure accordingly.
 !> \author S. Host
 !> \date March 2010
-SUBROUTINE config_info_input(config,lucmd)
+SUBROUTINE config_info_input(config,lucmd,readword,word)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(configItem),intent(inout) :: config
   !> Logical unit number for LSDALTON.INP
   integer,intent(in) :: lucmd
-  character(len=40) :: word
+  LOGICAL,intent(inout)                :: READWORD
+  character(len=80),intent(inout)  :: WORD
+  character(len=2)   :: PROMPT
   integer :: i
 
-  READ (LUCMD, '(A40)') word
-  DO
-     if (WORD(1:12) == '$END INFO') exit
-     IF (WORD(1:1) .EQ. '!' .OR. WORD(1:1) .EQ. '#') THEN
-         READ (LUCMD, '(A40)') word
-         CYCLE
-     endif
-     SELECT CASE(WORD)
-     CASE('DEBUG_MPI_MEM')
-        config%mpi_mem_monitor = .true.
-     CASE('DEBUG_ARH_LINTRA')
-          config%solver%DEBUG_ARH_LINTRA = .true.
-     CASE('DEBUG_ARH_PRECOND')
-          config%solver%DEBUG_ARH_PRECOND = .true.
-     CASE('DEBUG_CONVERT')
+  INFOLOOP: DO   
+     IF(READWORD) THEN
+        READ (LUCMD, '(A40)') WORD
+        READWORD=.TRUE.
+     ENDIF
+     PROMPT = WORD(1:2)
+     IF ((PROMPT(1:1) .EQ. '!') .OR. (PROMPT(1:1) .EQ. '#')) CYCLE
+     IF(PROMPT .EQ. '**') THEN
+        READWORD=.FALSE.
+        EXIT INFOLOOP
+     ENDIF
+     IF (PROMPT(1:1) == '*') THEN
+        READWORD=.FALSE.
+        EXIT INFOLOOP
+     ENDIF
+     IF(PROMPT(1:1) .EQ. '.') THEN
+        SELECT CASE(WORD)
+        CASE('.DEBUG_MPI_MEM')
+           config%mpi_mem_monitor = .true.
+        CASE('.DEBUG_ARH_LINTRA')
+           config%solver%DEBUG_ARH_LINTRA = .true.
+        CASE('.DEBUG_ARH_PRECOND')
+           config%solver%DEBUG_ARH_PRECOND = .true.
+        CASE('.DEBUG_CONVERT')
            config%opt%DEBUG_CONVERT = .true.
            READ(LUCMD,*) config%opt%cfg_which_conversion 
-     !CASE('DEBUG_DCHANGE')
-     !     DEBUG_DCHANGE = .true.
-     CASE('DEBUG_DD')
-          READ(LUCMD,*) config%solver%cfg_nits_debug
-          config%decomp%cfg_check_converged_solution = .true.
-          config%solver%DEBUG_DD = .true.
-     CASE('DEBUG_DD_LINTRA')
-          config%solver%DEBUG_DD_LINTRA = .true.
-     CASE('DEBUG_DD_HOMOLUMO')
-          config%solver%DEBUG_DD_HOMOLUMO = .true.
-     CASE('DEBUG_DIAG_REDSPACE')
-          config%solver%DEBUG_DIAG_REDSPACE = .true.
-     CASE('DEBUG_DIAG_HESSIAN')
-          config%opt%DEBUG_DIAG_HESSIAN = .true.
-     !CASE('DEBUG_DSM_DCHANGE')
-     !     DEBUG_DSM_DCHANGE = .true.
-     !CASE('DEBUG_DSM_EMODEL')
-     !     DEBUG_DSM_EMODEL = .true.
-     !CASE('DEBUG_DSM_METRIC')
-     !     DEBUG_DSM_METRIC = .true.
-     !CASE('DEBUG_EMODEL_CHANGE')
-     !     DEBUG_EMODEL_CHANGE = .true.
-     CASE('DEBUG_HESSIAN')
-          config%solver%DEBUG_HESSIAN = .true.
-     CASE('DEBUG_HESSIAN_EXACT')
-          config%solver%DEBUG_HESSIAN_EXACT = .true. ; config%solver%DEBUG_HESSIAN = .true.
-     CASE('DEBUG_IDEMPOTENCY')
-          config%diag%DEBUG_IDEMPOTENCY = .true.
-     !CASE('DEBUG_OAO_GRADIENT')
-     !     DEBUG_OAO_GRADIENT = .true.
-     CASE('DEBUG_RH_DSM_ECHANGE')
-          config%diag%DEBUG_RH_DSM_ECHANGE = .true.
-     !CASE('DEBUG_RH_MU_E')
-     !     DEBUG_RH_MU_E = .true.
-     !     READ(LUCMD,*) cfg_nits_debug,  cfg_mu_max_debug 
-     !     READ(LUCMD,*) (cfg_its_debug(i),i=1,cfg_nits_debug)
-     !CASE('DEBUG_RSP')
-     !     DEBUG_RSP = .true.
-     !CASE('DEBUG_RSP_LINSCA')
-     !     DEBUG_RSP_LINSCA = .true.
-     CASE('INFO_CROP')
-          config%solver%INFO_CROP = .true.
-     CASE('INFO_LEVELSHIFT')
-          config%solver%INFO_LEVELSHIFT    = .true.
-     CASE('INFO_STABILITY')
-          config%decomp%INFO_STABILITY      = .true.
-     CASE('INFO_DIIS')
-          config%av%INFO_DIIS = .true.
-          config%av%INFO_WEIGHT_FINAL = .true. 
-     CASE('INFO_DSM')
-          config%av%INFO_DSM_EIGENVAL     = .true.
-          config%av%INFO_DSM_ENERGY       = .true.
-          config%av%INFO_DSM_EXIT         = .true.
-          config%av%INFO_DSM_PROJ         = .true.
-          config%av%INFO_DSM_STEP_TOTAL   = .true.
-          config%av%INFO_WEIGHT_FINAL     = .true.
-     CASE('INFO_DSM_DETAIL')
-          config%av%INFO_D_PROJ           = .true.
-          config%av%INFO_DSM_CNORM_MU_FIG = .true.
-          !config%av%INFO_DSM_DELTA        = .true.
-          !config%av%INFO_DSM_DERIVATIVES  = .true.
-          config%av%INFO_DSM_EIGENVAL     = .TRUE.
-          config%av%INFO_DSM_ENERGY       = .TRUE.
-          config%av%INFO_DSM_EQ           = .true.
-          config%av%INFO_DSM_EXIT         = .TRUE.
-          config%av%INFO_DSM_GRAD         = .true.
-          config%av%INFO_DSM_METRIC       = .true.
-          config%av%INFO_DSM_NIT          = .true.
-          config%av%INFO_DSM_PROJ         = .TRUE.
-          config%av%INFO_DSM_RATIO        = .true.
-          config%av%INFO_DSM_STEP         = .true.
-          config%av%INFO_DSM_STEP_BRACKET = .true.
-          config%av%INFO_DSM_STEP_TOTAL   = .TRUE.
-          config%av%INFO_DSM_TRUSTR       = .true.
-          config%av%INFO_WEIGHTS          = .true.
-     CASE('INFO_LINEQ')
-          config%solver%INFO_LINEQ = .true.
-     CASE('INFO_MATOP')
-          config%opt%INFO_MATOP = .true.
-     !CASE('INFO_ORB_E')
-     !     INFO_ORB_E = .true.
-     CASE('INFO_STABILITY_REDSPACE')
+           !CASE('.DEBUG_DCHANGE')
+           !     DEBUG_DCHANGE = .true.
+        CASE('.DEBUG_DD')
+           READ(LUCMD,*) config%solver%cfg_nits_debug
+           config%decomp%cfg_check_converged_solution = .true.
+           config%solver%DEBUG_DD = .true.
+        CASE('.DEBUG_DD_LINTRA')
+           config%solver%DEBUG_DD_LINTRA = .true.
+        CASE('.DEBUG_DD_HOMOLUMO')
+           config%solver%DEBUG_DD_HOMOLUMO = .true.
+        CASE('.DEBUG_DIAG_REDSPACE')
+           config%solver%DEBUG_DIAG_REDSPACE = .true.
+        CASE('.DEBUG_DIAG_HESSIAN')
+           config%opt%DEBUG_DIAG_HESSIAN = .true.
+           !CASE('.DEBUG_DSM_DCHANGE')
+           !     DEBUG_DSM_DCHANGE = .true.
+           !CASE('.DEBUG_DSM_EMODEL')
+           !     DEBUG_DSM_EMODEL = .true.
+           !CASE('.DEBUG_DSM_METRIC')
+           !     DEBUG_DSM_METRIC = .true.
+           !CASE('.DEBUG_EMODEL_CHANGE')
+           !     DEBUG_EMODEL_CHANGE = .true.
+        CASE('.DEBUG_HESSIAN')
+           config%solver%DEBUG_HESSIAN = .true.
+        CASE('.DEBUG_HESSIAN_EXACT')
+           config%solver%DEBUG_HESSIAN_EXACT = .true. ; config%solver%DEBUG_HESSIAN = .true.
+        CASE('.DEBUG_IDEMPOTENCY')
+           config%diag%DEBUG_IDEMPOTENCY = .true.
+           !CASE('.DEBUG_OAO_GRADIENT')
+           !     DEBUG_OAO_GRADIENT = .true.
+        CASE('.DEBUG_RH_DSM_ECHANGE')
+           config%diag%DEBUG_RH_DSM_ECHANGE = .true.
+           !CASE('.DEBUG_RH_MU_E')
+           !     DEBUG_RH_MU_E = .true.
+           !     READ(LUCMD,*) cfg_nits_debug,  cfg_mu_max_debug 
+           !     READ(LUCMD,*) (cfg_its_debug(i),i=1,cfg_nits_debug)
+           !CASE('.DEBUG_RSP')
+           !     DEBUG_RSP = .true.
+           !CASE('.DEBUG_RSP_LINSCA')
+           !     DEBUG_RSP_LINSCA = .true.
+        CASE('.INFO_CROP')
+           config%solver%INFO_CROP = .true.
+        CASE('.INFO_LEVELSHIFT')
+           config%solver%INFO_LEVELSHIFT    = .true.
+        CASE('.INFO_STABILITY')
+           config%decomp%INFO_STABILITY      = .true.
+        CASE('.INFO_DIIS')
+           config%av%INFO_DIIS = .true.
+           config%av%INFO_WEIGHT_FINAL = .true. 
+        CASE('.INFO_DSM')
+           config%av%INFO_DSM_EIGENVAL     = .true.
+           config%av%INFO_DSM_ENERGY       = .true.
+           config%av%INFO_DSM_EXIT         = .true.
+           config%av%INFO_DSM_PROJ         = .true.
+           config%av%INFO_DSM_STEP_TOTAL   = .true.
+           config%av%INFO_WEIGHT_FINAL     = .true.
+        CASE('.INFO_DSM_DETAIL')
+           config%av%INFO_D_PROJ           = .true.
+           config%av%INFO_DSM_CNORM_MU_FIG = .true.
+           !config%av%INFO_DSM_DELTA        = .true.
+           !config%av%INFO_DSM_DERIVATIVES  = .true.
+           config%av%INFO_DSM_EIGENVAL     = .TRUE.
+           config%av%INFO_DSM_ENERGY       = .TRUE.
+           config%av%INFO_DSM_EQ           = .true.
+           config%av%INFO_DSM_EXIT         = .TRUE.
+           config%av%INFO_DSM_GRAD         = .true.
+           config%av%INFO_DSM_METRIC       = .true.
+           config%av%INFO_DSM_NIT          = .true.
+           config%av%INFO_DSM_PROJ         = .TRUE.
+           config%av%INFO_DSM_RATIO        = .true.
+           config%av%INFO_DSM_STEP         = .true.
+           config%av%INFO_DSM_STEP_BRACKET = .true.
+           config%av%INFO_DSM_STEP_TOTAL   = .TRUE.
+           config%av%INFO_DSM_TRUSTR       = .true.
+           config%av%INFO_WEIGHTS          = .true.
+        CASE('.INFO_LINEQ')
+           config%solver%INFO_LINEQ = .true.
+        CASE('.INFO_MATOP')
+           config%opt%INFO_MATOP = .true.
+           !CASE('.INFO_ORB_E')
+           !     INFO_ORB_E = .true.
+        CASE('.INFO_STABILITY_REDSPACE')
            config%decomp%info_stability_redspace = .true.
-     CASE('INFO_RH')
-          config%diag%INFO_RH_ITERATIONS    = .true.
-          config%diag%INFO_RH_MU            = .true. 
-          config%diag%INFO_RH_GAP           = .true.
-     CASE('INFO_RH_DETAIL')
-          !config%diag%INFO_RH_EPRED         = .true.
-          config%diag%INFO_RH_GAP           = .true.
-          config%diag%INFO_RH_GRADIENT      = .true.
-          config%diag%INFO_RH_ITERATIONS    = .true.
-          config%diag%INFO_RH_MU            = .true.
-     CASE('INFO_RSP')
-        config%response%rspsolverinput%INFO_RSP = .true.
-     CASE('INFO_RSP_REDSPACE')
-          config%response%rspsolverinput%INFO_RSP_REDSPACE = .true.
-     !CASE('INFO_TIME_MAT_OPERATIONS')
-     !     INFO_TIME_MAT_OPERATIONS = .true.
-     !     call mat_timings
-     CASE('INFO_WEIGHT')
-          config%av%INFO_WEIGHT_FINAL = .true.
-     CASE DEFAULT
-          WRITE(config%LUPRI,*) ' Keyword ',WORD,' not recognized in config_info_input'
-          CALL lsQUIT('Illegal keyword in config_info_input.',config%lupri)
-     END SELECT
-     READ (LUCMD, '(A40)') word
-  ENDDO
-
-  !if (INFO_TIME_MAT_OPERATIONS) call mat_timings
-  
+        CASE('.INFO_RH')
+           config%diag%INFO_RH_ITERATIONS    = .true.
+           config%diag%INFO_RH_MU            = .true. 
+           config%diag%INFO_RH_GAP           = .true.
+        CASE('.INFO_RH_DETAIL')
+           !config%diag%INFO_RH_EPRED         = .true.
+           config%diag%INFO_RH_GAP           = .true.
+           config%diag%INFO_RH_GRADIENT      = .true.
+           config%diag%INFO_RH_ITERATIONS    = .true.
+           config%diag%INFO_RH_MU            = .true.
+        CASE('.INFO_RSP')
+           config%response%rspsolverinput%INFO_RSP = .true.
+        CASE('.INFO_RSP_REDSPACE')
+           config%response%rspsolverinput%INFO_RSP_REDSPACE = .true.
+           !CASE('.INFO_TIME_MAT_OPERATIONS')
+           !     INFO_TIME_MAT_OPERATIONS = .true.
+           !     call mat_timings
+        CASE('.INFO_WEIGHT')
+           config%av%INFO_WEIGHT_FINAL = .true.
+        CASE DEFAULT
+           WRITE(config%LUPRI,*) ' Keyword ',WORD,' not recognized in config_info_input'
+           CALL lsQUIT('Illegal keyword in config_info_input.',config%lupri)
+        END SELECT
+     ENDIF
+  ENDDO INFOLOOP
 END SUBROUTINE config_info_input
 
 
@@ -1454,7 +1478,7 @@ END SUBROUTINE config_info_input
 !> \brief Read the **RESPONS section under *LINSCA in input file LSDALTON.INP and set configuration structure accordingly.
 !> \author S. Host
 !> \date March 2010
-SUBROUTINE config_rsp_input(config,lucmd,readword)
+SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
   implicit none
   !> Logical for keeping track of when to read
   LOGICAL,intent(inout)                :: READWORD
@@ -1462,7 +1486,7 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
   type(configItem),intent(inout) :: config
   !> Logical unit number for LSDALTON.INP
   integer,intent(in) :: lucmd
-  character(len=40) :: word
+  character(len=80) :: word
   character(len=8) :: labels(2)
   character(len=8) :: QRlabels(3)
   integer :: i,j,k,n,nops,nlabel
@@ -1477,7 +1501,7 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
   cfg_run_pdbs = .false.
   cfg_rsp_run_quadratic = .false.
   nops = 0
-  DO
+  RSPLOOP: DO
      IF(READWORD) THEN
         READ (LUCMD, '(A40)') WORD
         READWORD=.TRUE.
@@ -1485,11 +1509,11 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
      IF ((WORD(1:1) .EQ. '!') .OR. (WORD(1:1) .EQ. '#')) CYCLE
      IF(WORD(1:2) .EQ. '**') THEN
         READWORD=.FALSE.
-        EXIT
+        EXIT RSPLOOP
      ENDIF
      IF(WORD(1:13) == '*END OF INPUT') THEN
         backspace(LUCMD)
-        EXIT
+        EXIT RSPLOOP
      END IF
 
      if (WORD(1:1) == '*') then
@@ -2316,7 +2340,7 @@ SUBROUTINE config_rsp_input(config,lucmd,readword)
           CALL lsQUIT('Illegal keyword in **RESPONSE section',config%lupri)
        END SELECT
      endif
-  ENDDO
+  ENDDO RSPLOOP
 
   if (config%decomp%cfg_rsp_nexcit > 0) then !Stinne
       !cfg_rsp_maxred = config%decomp%cfg_rsp_nexcit*cfg_rsp_maxred
@@ -2377,7 +2401,7 @@ SUBROUTINE READ_WAVE_DFTINPUT(LUPRI,LUCMD,DALTON,WORD)
 implicit none
 TYPE(integralconfig)   :: DALTON
 INTEGER            :: LUCMD !Logical unit number for the daltoninput
-character(len=40),intent(out)  :: WORD
+character(len=80),intent(out)  :: WORD
 character(len=1)   :: PROMPT
 INTEGER            :: LUPRI,n,I
 character(len=80)  :: LINE
@@ -2526,7 +2550,7 @@ SUBROUTINE READ_INTEGRALS_DENFIT_INPUT(LUPRI,LUCMD,DALTON,word)
 implicit none
 TYPE(integralconfig)   :: DALTON
 INTEGER            :: LUCMD !Logical unit number for the daltoninput
-character(len=40),intent(out)  :: WORD
+character(len=80),intent(out)  :: WORD
 character(len=1)   :: PROMPT
 INTEGER            :: LUPRI
 
@@ -2568,7 +2592,7 @@ SUBROUTINE READ_INTEGRALS_FMM_INPUT(LUPRI,LUCMD,DALTON,word)
 implicit none
 TYPE(integralconfig)   :: DALTON
 INTEGER            :: LUCMD !Logical unit number for the daltoninput
-character(len=40),intent(out)  :: WORD
+character(len=80),intent(out)  :: WORD
 character(len=1)   :: PROMPT
 INTEGER            :: LUPRI
 
@@ -2621,7 +2645,7 @@ SUBROUTINE READ_INTEGRALS_FCK3_INPUT(LUPRI,LUCMD,DALTON,word)
 implicit none
 TYPE(integralconfig)   :: DALTON
 INTEGER            :: LUCMD !Logical unit number for the daltoninput
-character(len=40),intent(out)  :: WORD
+character(len=80),intent(out)  :: WORD
 character(len=1)   :: PROMPT
 INTEGER            :: LUPRI
 

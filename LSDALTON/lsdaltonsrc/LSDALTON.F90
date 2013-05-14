@@ -133,19 +133,13 @@ SUBROUTINE lsdalton
      return
   endif
 #endif
-  ! Vladimir Rybkin: If we do dec and optimize geometry or run dynamics 
-  ! than we don't skip HF calculation
-  if ( ( (config%optinfo%optimize .EQV. .TRUE.) .OR. (config%dynamics%do_dynamics .EQV. .TRUE.)) &
-       & .AND. (DECinfo%doDEC)) then
-     DECinfo%doHF = .TRUE.
-  endif
 
 
   ! Skip Hartree Fock part? Done when a HF calculation has already been carried out and we want to:
   ! (i)   localize orbitals
   ! (ii)  carry out DEC calculation 
   ! (iii) Construct PLT file
-  if(config%davidOrbLoc%OnlyLocalize .or. (DECinfo%doDEC .and. .not. DECinfo%doHF) &
+  if(config%davidOrbLoc%OnlyLocalize .or. (DECinfo%doDEC .and. DECinfo%restart) &
        & .or. config%doplt) then
      skipHFpart=.true.
   else
@@ -533,7 +527,7 @@ SUBROUTINE lsdalton
 
 
   ! Single point DEC calculation using HF restart files
-  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. .not. DECinfo%doHF) ) then
+  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. DECinfo%restart) ) then
      call dec_main_prog_file(ls)
   endif DECcalculationHFrestart
 
