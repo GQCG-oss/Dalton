@@ -3408,7 +3408,7 @@ contains
    
 
     !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-    !$OMP& PRIVATE(i,j,pos1,pos2,mv,st)
+    !$OMP& PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
       !$OMP DO 
       do i=j,1,-1
@@ -3424,17 +3424,21 @@ contains
     !$OMP DO 
     do j=no,1,-1
       do i=j,1,-1
-          pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-          pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-          !if(i/=j) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
-          if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
-          call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+        pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
+        !if(i/=j) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
+        if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
       enddo
     enddo
     !$OMP END DO
     !$OMP BARRIER
     !$OMP END PARALLEL
-
+    do j=no,1,-1
+      do i=j,1,-1
+        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+        call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+      enddo
+    enddo
     if(s==4.or.s==3.or.s==0)then
       call daxpy(int(no*no*nv*nv),1.0E0_realk,w1,1,om2%elm1,1)
     elseif(s==2.or.s==1)then
@@ -3923,21 +3927,29 @@ contains
     dim_big=full1*full2
     dim_small=full1T*full2T
 
-    !OMP PARALLEL DEFAULT(NONE)&
-    !OMP& SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
-    !OMP& full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
-    !OMP& PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
-    !OMP& dims,drain,source)
-    !OMP DO
+#ifndef VAR_LSESSL
+    !$OMP PARALLEL DEFAULT(NONE)&
+    !$OMP& SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
+    !$OMP& full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
+    !$OMP& PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
+    !$OMP& dims,drain,source)
+    !$OMP DO
+#endif
     do occ=1,nor
       do gamm=1,lg-goffs
         gamm_i_b=gamm+goffs
         !SYMMETRIC COMBINATION OF THE SIGMAS
+
+        !calculate the old position
+        !**************************
         if(case_sel==3.or.case_sel==4)then
-          pos=1+(gamm-1)*full1+(occ-1)*full1*full2
+          pos=1+(gamm      -1)*full1+(occ-1)*dim_big
         else
-          pos=1+(gamm+aoffs-1)*full1+(occ-1)*full1*full2
+          pos=1+(gamm+aoffs-1)*full1+(occ-1)*dim_big
         endif
+
+        !calculate the new position
+        !**************************
         if(gamm>tlen)then
           !get the elements from the rectangular part of the batch
           !print *,"getel from rect"
@@ -3966,12 +3978,16 @@ contains
           ft2=full2
         endif
         
-        !call dcopy(nel2cp,w3(pos2),1,w0(pos),1)
-        w0(pos:pos+nel2cp-1) = w3(pos2:pos2+nel2cp-1)
+        call dcopy(nel2cp,w3(pos2),1,w0(pos),1)
+        !OMP CRITICAL
+        !w0(pos:pos+nel2cp-1) = w3(pos2:pos2+nel2cp-1)
+        !OMP END CRITICAL
         !get corresponding position in sigma- and add to output
         pos21=pos2+tred*nor
-        !call daxpy(nel2cp,1.0E0_realk,w3(pos21),1,w0(pos),1)
-        w0(pos:pos+nel2cp-1) =w0(pos:pos+nel2cp-1) + w3(pos21:pos21+nel2cp-1)    
+        call daxpy(nel2cp,1.0E0_realk,w3(pos21),1,w0(pos),1)
+        !OMP CRITICAL
+        !w0(pos:pos+nel2cp-1) =w0(pos:pos+nel2cp-1) + w3(pos21:pos21+nel2cp-1)    
+        !OMP END CRITICAL
 
         !ANTI-SYMMETRIC COMBINATION OF THE SIGMAS
         pos=gamm+aoffs+(occ-1)*ft1*ft2
@@ -3983,51 +3999,65 @@ contains
           else
             ncph=gamm
           endif
-          !call daxpy(ncph,1.0E0_realk,w3(pos2+aoffs),1,w0(aoffs+gamm+(occ-1)*full1*full2),full1)
-          !call daxpy(ncph,-1.0E0_realk,w3(pos21+aoffs),1,w0(aoffs+gamm+(occ-1)*dim_big),full1)
+          call daxpy(ncph,1.0E0_realk,w3(pos2+aoffs),1,w0(aoffs+gamm+(occ-1)*full1*full2),full1)
+          call daxpy(ncph,-1.0E0_realk,w3(pos21+aoffs),1,w0(aoffs+gamm+(occ-1)*dim_big),full1)
 
           !because of the intrinsic omp-parallelizaton of daxpy the following
           !lines replace the daxpy calls
-          dims=[full1,ncph]
-          call ass_D1to2(w0(aoffs+gamm+(occ-1)*dim_big:&
-                           &aoffs+gamm+(occ-1)*dim_big+full1*ncph-1),drain,dims)
-          dims=[1,ncph]
-          call ass_D1to2(w3(pos2+aoffs:pos2+aoffs+ncph-1),source,dims)
-          drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
-          call ass_D1to2(w3(pos21+aoffs:pos21+aoffs+ncph-1),source,dims)
-          drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+          !dims=[full1,ncph]
+          !call ass_D1to2(w0(aoffs+gamm+(occ-1)*dim_big:&
+          !                 &aoffs+gamm+(occ-1)*dim_big+full1*ncph-1),drain,dims)
+          !dims=[1,ncph]
+          !call ass_D1to2(w3(pos2+aoffs:pos2+aoffs+ncph-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
+          !OMP END CRITICAL
+          !call ass_D1to2(w3(pos21+aoffs:pos21+aoffs+ncph-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+          !OMP END CRITICAL
           !fill small matrix
           if(gamm>tlen)then
             ncph=nel2cp
           else
             ncph=nel2cp-gamm
           endif
-          !call daxpy(ncph, 1.0E0_realk,w3(pos2 ),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
-          !call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
-          dims=[full1T,ncph]
-          call ass_D1to2(w0(gamm+(occ-1)*full1T*full2T+dim_big*nor:&
-                           &gamm+(occ-1)*full1T*full2T+dim_big*nor+ncph*full1T-1),drain,dims)
-          dims=[1,ncph]
-          call ass_D1to2(w3(pos2:pos2+ncph-1),source,dims)
-          drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
-          call ass_D1to2(w3(pos21:pos21+ncph-1),source,dims)
-          drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+          call daxpy(ncph, 1.0E0_realk,w3(pos2 ),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          !dims=[full1T,ncph]
+          !call ass_D1to2(w0(gamm+(occ-1)*full1T*full2T+dim_big*nor:&
+          !                 &gamm+(occ-1)*full1T*full2T+dim_big*nor+ncph*full1T-1),drain,dims)
+          !dims=[1,ncph]
+          !call ass_D1to2(w3(pos2:pos2+ncph-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
+          !OMP END CRITICAL
+          !call ass_D1to2(w3(pos21:pos21+ncph-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+          !OMP END CRITICAL
         else
-          !call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
-          !call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
-          dims=[jump,nel2cp]
-          call ass_D1to2(w0(pos:pos+jump*nel2cp-1),drain,dims)
-          dims=[1,nel2cp]
-          call ass_D1to2(w3(pos2:pos2+nel2cp-1),source,dims)
-          drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) + source(1:1,1:nel2cp)
-          call ass_D1to2(w3(pos21:pos21+nel2cp-1),source,dims)
-          drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) - source(1:1,1:nel2cp)
+          call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
+          call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
+          !dims=[jump,nel2cp]
+          !call ass_D1to2(w0(pos:pos+jump*nel2cp-1),drain,dims)
+          !dims=[1,nel2cp]
+          !call ass_D1to2(w3(pos2:pos2+nel2cp-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) + source(1:1,1:nel2cp)
+          !OMP END CRITICAL
+          !call ass_D1to2(w3(pos21:pos21+nel2cp-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) - source(1:1,1:nel2cp)
+          !OMP END CRITICAL
         endif
       enddo
     enddo
-    !OMP END DO
-    !OMP BARRIER
-    !OMP END PARALLEL
+#ifndef VAR_LSESSL
+    !$OMP END DO
+    !$OMP BARRIER
+    !$OMP END PARALLEL
+#endif
     call lsmpi_poke()
 
 
@@ -4069,7 +4099,7 @@ contains
     ! add up contributions in the residual with keeping track of i<j
 
     !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-    !$OMP& PRIVATE(i,j,pos1,pos2,mv,st)
+    !$OMP& PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
       !$OMP DO 
       do i=j,1,-1
@@ -4085,17 +4115,21 @@ contains
     !$OMP DO 
     do j=no,1,-1
       do i=j,1,-1
-          pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-          pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-          !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
-          if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-          call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+        pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
+        !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+        if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
       enddo
     enddo
     !$OMP END DO
-    !$OMP BARRIER
     !$OMP END PARALLEL
 
+    do j=no,1,-1
+      do i=j,1,-1
+        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+        call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+      enddo
+    enddo
     if(s==4.or.s==3.or.s==0)then
       call daxpy(int(no*no*nv*nv),scaleitby,w2,1,omega%elm1,1)
     elseif(s==2.or.s==1)then
@@ -4125,7 +4159,7 @@ contains
       call lsmpi_poke()
 
       !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-      !$OMP& PRIVATE(i,j,pos1,pos2,mv,st)
+      !$OMP& PRIVATE(i,j,pos1,pos2)
       do j=no,1,-1
         !$OMP DO 
         do i=j,1,-1
@@ -4145,12 +4179,17 @@ contains
             pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
             !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
             if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-            call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
         enddo
       enddo
       !$OMP END DO
       !$OMP BARRIER
       !$OMP END PARALLEL
+      do j=no,1,-1
+        do i=j,1,-1
+            pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+            call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+        enddo
+      enddo
 
       if(s==4.or.s==3.or.s==0)then
         call daxpy(no*no*nv*nv,scaleitby,w2,1,omega%elm1,1)
@@ -4244,6 +4283,9 @@ contains
       pos=pos+m*(nv-d+1)
     enddo
     !$OMP END PARALLEL
+#ifdef VAR_OMP
+    call omp_set_num_threads(omp_get_max_threads())
+#endif
   end subroutine get_I_cged
 
 
