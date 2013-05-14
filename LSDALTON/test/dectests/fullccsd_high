@@ -43,10 +43,11 @@ H          0.70368        0.11634       -1.09866
 #  DALTON INPUT
 #######################################################################
 cat > fullccsd_high.dal <<'%EOF%'
+**GENERAL
+.FORCEGCBASIS
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.FORCEGCBASIS
 .ARH
 .START
 TRILEVEL

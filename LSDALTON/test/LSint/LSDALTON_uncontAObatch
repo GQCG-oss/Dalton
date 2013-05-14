@@ -46,6 +46,8 @@ C   0.0   0.0     0.0
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_uncontAObatch.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .DEBUGUNCONTAOBATCH
 **PROFILE
@@ -57,7 +59,6 @@ cat > LSDALTON_uncontAObatch.dal <<'%EOF%'
 .DIIS
 .START
 H1DIAG
-.NOGCBASIS
 *END OF INPUT
 %EOF%
 

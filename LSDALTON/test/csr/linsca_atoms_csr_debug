@@ -44,12 +44,12 @@ He    0.0000000000   0.0000000000   3.9218840000
 #  DALTON INPUT
 #######################################################################
 cat > linsca_atoms_csr_debug.dal <<'%EOF%'
+**GENERAL
+.CSR
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.CSR
-!.ARH
-.RH
+.2ND_LOC
 .NOAV
 .START
 H1DIAG

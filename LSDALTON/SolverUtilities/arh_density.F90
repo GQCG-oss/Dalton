@@ -11,6 +11,7 @@
 !> Direct density: P. Sałek, S. Høst, L. Thøgersen et al. JCP 126, 114110 (2007)
 !>
 module arhDensity
+use chol_decomp_mod,only: invert_by_diag2
 use precision
 use matrix_module
 use decompMod

@@ -45,10 +45,11 @@ H      0.55168  -0.77340   0.00000
 #  DALTON INPUT
 #######################################################################
 cat > linsca_energy.dal <<'%EOF%'
+**GENERAL
+.TIME
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.TIME
 .RH
 .DIIS
 .NVEC

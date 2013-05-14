@@ -50,6 +50,8 @@ Cl   -1.303842   -0.036443   -0.048756
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_HF_cartesian.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .CART-E
 **WAVE FUNCTIONS
@@ -59,7 +61,6 @@ cat > LSDALTON_HF_cartesian.dal <<'%EOF%'
 .DIIS
 .START
 H1DIAG
-.NOGCBASIS
 **INFO
 .DEBUG_MPI_MEM
 *END OF INPUT

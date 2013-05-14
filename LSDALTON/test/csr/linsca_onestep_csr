@@ -50,6 +50,8 @@ Cl   -1.303842   -0.036443   -0.048756
 #  DALTON INPUT
 #######################################################################
 cat > linsca_onestep_csr.dal <<'%EOF%'
+**GENERAL
+.CSR
 **WAVE FUNCTIONS
 .DFT
 B3LYP
@@ -61,7 +63,6 @@ BLOCK LMG
 .ANGINT
 31
 *DENSOPT
-.CSR
 .ARH FULL
 .NVEC
  8
