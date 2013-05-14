@@ -50,8 +50,8 @@ cat > LSresponse_mcd2.dal <<'%EOF%'
 .DFT
 B3LYP
 *DENSOPT
-.TrFD
-.DSM
+.RH
+.DIIS
 .NVEC
 8
 .START

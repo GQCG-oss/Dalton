@@ -45,7 +45,7 @@ module LINSCA_DIIS
          call get_AVERAGE_arr(av,'F',queue,av%diis_history_size,weights,Fav)
       endif
       !call PURIFY(Ndim,Dav,S) !If new D is not found diagonalizing F
-!** note in general info table that diis and not dsm has been carried
+!** note in general info table that diis has been carried
 !** out by putting a -1
       stat_tab(stat_current_iteration+1,6) = -1
       call mem_dealloc(weights)
@@ -163,7 +163,7 @@ module LINSCA_EDIIS
       call get_AVERAGE_arr(av,'D',queue,av%ediis_history_size,weights,Dav)
       call get_AVERAGE_arr(av,'F',queue,av%ediis_history_size,weights,Fav)
       !call PURIFY(Ndim,Dav,S) !If new D is not found diagonalizing F
-!** note in general info table that ediis and not dsm has been carried
+!** note in general info table that ediis has been carried
 !** out by putting a -2
       stat_tab(stat_current_iteration+1,6) = -2
       call mem_dealloc(weights)

@@ -98,7 +98,9 @@ type DiagItem
    logical :: DEBUG_DCHANGE
    logical :: DEBUG_EMODEL_CHANGE
    logical :: debug_idempotency
+#ifdef VAR_DSM
    logical :: DEBUG_RH_DSM_ECHANGE
+#endif
    logical :: DEBUG_RH_MU_E
    !DATA:
    !=====
@@ -143,7 +145,9 @@ implicit none
    diag%DEBUG_EMODEL_CHANGE   = .false.
    diag%debug_idempotency     = .false.
    diag%DEBUG_RH_MU_E         = .false.
+#ifdef VAR_DSM
    diag%DEBUG_RH_DSM_ECHANGE  = .false.
+#endif
    diag%nofinalhomolumo       = .false.
    diag%eHOMO                 = 0.0E0_realk
 
@@ -609,6 +613,7 @@ end subroutine diag_set_default_config
       logical :: nofv
 
       !** Initializations
+#ifdef VAR_DSM
       N = MIN(queue%used_entries,av%dsm_history_size)
       if (N == 0) then
         RETURN
@@ -622,6 +627,9 @@ end subroutine diag_set_default_config
       call get_average_arr(av,'D',queue, av%dsm_history_size, coef, Dpara)
       call mat_add(1E0_realk,Dmu,-1E0_realk,Dpara,Dorth)
       ratio = util_Snorm(Dorth,S)/util_Snorm(Dmu,S)
+#else
+      call lsquit('ratio_Dorth_D',-1)
+#endif
 
       call mat_free(Dpara)
       call mat_free(Dorth)
@@ -850,17 +858,34 @@ end subroutine diag_set_default_config
       integer :: ndim,i
 
       ndim = S%nrow
+#ifdef VAR_DSM
       if (diag%DEBUG_RH_DSM_ECHANGE .or. diag%DEBUG_EMODEL_CHANGE .or. diag%debug_rh_mu_E) then
         !** diagonalize SDS (SDS C = SCe) giving the corresponding
         ! idempotent Didem = <C|C> 
         call mat_init(Didem,ndim,ndim)
         call GET_Didem(diag,D,S,Didem,Co)
       endif
+#else
+      if (diag%DEBUG_EMODEL_CHANGE .or. diag%debug_rh_mu_E) then
+        !** diagonalize SDS (SDS C = SCe) giving the corresponding
+        ! idempotent Didem = <C|C> 
+        call mat_init(Didem,ndim,ndim)
+        call GET_Didem(diag,D,S,Didem,Co)
+      endif
+#endif
+#ifdef VAR_DSM
       if (diag%DEBUG_RH_DSM_ECHANGE .or. diag%debug_rh_mu_E) then
         !find the pseudo SCF-energy for the idempotent Dbar
          EHFstart = pEHF(Didem)
          WRITE(diag%LUPRI,*) 'SCF energy after averaging:',EHFstart
       endif
+#else
+      if (diag%debug_rh_mu_E) then
+        !find the pseudo SCF-energy for the idempotent Dbar
+         EHFstart = pEHF(Didem)
+         WRITE(diag%LUPRI,*) 'SCF energy after averaging:',EHFstart
+      endif
+#endif
       !if (DEBUG_RH_MU_E) then
       !  if (queue%used_entries > 0) then
       !    Epred_0 = roothan_Epred(queue,H1,S,Didem)
@@ -890,6 +915,7 @@ end subroutine diag_set_default_config
          stat_tab(stat_current_iteration+1,8) = 0.0E0_realk
        endif
  
+#ifdef VAR_DSM
        !** col4 for RH E-model change
        if (diag%DEBUG_RH_DSM_ECHANGE .or. diag%DEBUG_EMODEL_CHANGE .or. diag%DEBUG_RH_MU_E) then
          orbE = 2E0_realk*mat_dotproduct(F,Didem)
@@ -916,6 +942,7 @@ end subroutine diag_set_default_config
        if (diag%DEBUG_RH_DSM_ECHANGE .or. diag%DEBUG_EMODEL_CHANGE .or. diag%debug_rh_mu_E) then
          call mat_free(Didem)
        endif
+#endif
 !
 ! Stuff written directly to output
 !
@@ -1258,100 +1285,6 @@ end subroutine diag_set_default_config
      call mat_free(SDnew)
      call mat_free(SDnewS)
    end subroutine Cchange
-
-!!> \brief Calculate Dmu = D(orth) + D(para)
-!!> \author L. Thogersen
-!!> \date October 2005
-!!> \param queue Contains density and Fock/KS matrices from previous SCF iterations
-!!> \param H1 One-electron Hamiltonian
-!!> \param S Overlap matrix
-!!> \param Dmu New density matrix
-!!>
-!!> Dmu = D(orth) + D(para); D(para) = sum_i(c_i D_i); c_i = sum_j({(S[2])^-1}_ij<D_j|Dmu>
-!!> <D_j|Dmu> = TrD_j S Dmu S; S[2]_ij = Tr D_i S D_j S
-!!> F(para) = sum_i(c_i F_i)
-!!> Epred = Tr{h + F(para)}D(para) + 2TrF(para)*{Dmu-D(para)}
-!!>     rest = Tr D(orth)G(orth); EHF = Epred + rest
-!!>
-!   real(realk) function roothan_Epred(queue,H1,S,Dmu)
-!      implicit none
-!      TYPE(util_HistoryStore),intent(in) :: queue
-!      type(Matrix), intent(in) :: H1,S,Dmu
-!      type(Matrix) :: Dpara,Fpara !,pointer
-!      real(realk),allocatable  :: coef(:)
-!      real(realk) ::DDOT
-!      integer :: i,N,j, ierr
-!      type(Matrix) :: Dchange
-!      logical :: nofv
-!
-!      !** Initializations
-!      N = MIN(queue%used_entries,dsm_history_size)
-!      if (N == 0) then
-!        roothan_Epred = 0.0E0_realk
-!        RETURN
-!      endif
-!      call mat_init(Dpara,Dmu%nrow,Dmu%ncol)
-!      call mat_init(Fpara,Dmu%nrow,Dmu%ncol)
-!      ALLOCATE(coef(N))
-!      !** Get the coefficients c
-!      call util_GET_PROJ_PART(queue,Dmu,S,coef)
-!      !** D(para) = sum_i(c_i D_i); F(para) = sum_i(c_i F_i)
-!      call get_average_arr('D',queue, dsm_history_size, coef, Dpara)
-!      call get_average_arr('F',queue, dsm_history_size, coef, Fpara)
-!      !correction to F if sum_i c_i /= 1
-!      call mat_daxpy(1-SUM(coef(1:N)),H1,Fpara)
-!      !** Epred = EHF(Do)+TrDparaFo -TrDoFo +TrDparaFpara -TrDoFpara + 2TrF(para)*{Dmu-D(para)}
-!      roothan_Epred = &
-!           &   queue%energy(dsm_pos)                  &
-!           & + mat_dotproduct(Dpara,queue%F(dsm_pos)) &
-!           & - mat_dotproduct(queue%D(dsm_pos),queue%F(dsm_pos)) &
-!           & + mat_dotproduct(Dpara,Fpara)                       &
-!           & - mat_dotproduct(queue%D(dsm_pos),Fpara)            &
-!           & + 2.0E0_realk*mat_dotproduct(Fpara,Dmu)  &
-!           & - 2.0E0_realk*mat_dotproduct(Fpara,Dpara) &
-!           & + POTNUC  
-!      call mat_init(Dchange,dmu%nrow,dmu%ncol)
-!      call mat_add(1.0E0_realk,Dmu,-1.0E0_realk,Dpara,Dchange)
-!      WRITE(diag%LUPRI,*) 'Dpara:',sqrt(util_Snorm(Dpara,S)),'Dorth:',sqrt(util_Snorm(Dchange,S))
-!      call mat_free(Dchange)
-!      call mat_free(Dpara)
-!      call mat_free(Fpara)
-!      DEALLOCATE(coef)
-!   end function Roothan_Epred
-
-!   !***************************
-!   !** Currently unused routine
-!   !***************************    
-!#if 0
-!   subroutine CTSCnorm_F(CMO)
-!      use Matrix_operations
-!      implicit none
-!      real(realk), intent(inout) :: CMO(Ndim,Ndim)
-!      real(realk) :: xnorm(Ndim,Ndim),CTS(Ndim*Ndim)
-!      real(realk) :: xval, xi
-!      integer :: i
-!
-!      !** Find normalization matrix xnorm = C^T S C
-!      call DGEMM('T','n',ndim,ndim,ndim,1.0E0_realk,CMO,ndim,Sfull,ndim,0.0E0_realk,CTS,ndim)
-!      call DGEMM('n','n',ndim,ndim,ndim,1.0E0_realk,CTS,ndim,CMO,ndim,0.0E0_realk,xnorm,ndim)
-!      !** Check to see that C^T S C is diagonal
-!      xval = 0.0E0_realk
-!      do i=2, Ndim
-!         xval=xval+SUM(ABS(xnorm(1:i-1,i)))
-!      enddo
-!      if (XVAL>1.0E-8_realk) then
-!         WRITE(diag%LUPRI,*) 'sum of offdiagonal elements = ',xval
-!         WRITE(diag%LUPRI,*) 'Matrix diagonalization failed!'
-!         STOP
-!      endif
-!      !** Normalize the eigenvectors
-!      ! strictly, LAPACK routines leave them normalized with S.
-!      do i=1,ndim
-!         xi = 1.0E0_realk/SQRT(xnorm(i,i))
-!         CMO(:,i)=CMO(:,i)*xi
-!      enddo
-!   end subroutine CTSCnorm_F
-!#endif
 
 !> \brief Diagonalize Fock/KS matrix to get density.
 !> \author S. Host

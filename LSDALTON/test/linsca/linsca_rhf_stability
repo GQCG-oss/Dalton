@@ -56,10 +56,7 @@ cat > linsca_rhf_stability.dal <<'%EOF%'
 .HF
 *DENSOPT
 .STABILITY
-.TrFD
-.DSM
-.NVEC
-8
+.ARH
 .CONVTHR
 1.0d-5
 **INFO

@@ -49,7 +49,8 @@ cat > linsca_energy.dal <<'%EOF%'
 .HF
 *DENSOPT
 .TIME
-.TRSCF
+.RH
+.DIIS
 .NVEC
 8
 .CONVTHR
