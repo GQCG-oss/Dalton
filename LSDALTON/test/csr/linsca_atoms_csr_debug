@@ -49,8 +49,7 @@ cat > linsca_atoms_csr_debug.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-!.ARH
-.RH
+.2ND_LOC
 .NOAV
 .START
 H1DIAG
