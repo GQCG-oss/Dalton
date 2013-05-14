@@ -54,7 +54,7 @@ TRILEVEL
 1.0d-5
 **INFO
 .DEBUG_MPI_MEM
-**DEC
+**CC
 .CC2
 .ccThr
 1e-9
