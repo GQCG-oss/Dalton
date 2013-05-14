@@ -52,7 +52,8 @@ cat > linsca_energy_SCALAPACK.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.TRSCF
+.RH
+.DIIS
 .NVEC
 8
 .CONVTHR
