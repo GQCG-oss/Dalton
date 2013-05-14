@@ -570,6 +570,10 @@ module lspdm_tensor_operations_module
       enddo
 
       !count over local indices
+      !$OMP PARALLEL DEFAULT(NONE) &
+      !$OMP& SHARED(prec,om,dims,ppfock,qqfock,lt) &
+      !$OMP& PRIVATE(i,j,a,b)
+      !$OMP DO COLLAPSE(4)
       do j=1,prec%ti(lt)%d(4)
         do i=1,prec%ti(lt)%d(3)
           do b=1,prec%ti(lt)%d(2)
@@ -583,6 +587,8 @@ module lspdm_tensor_operations_module
           enddo
         enddo
       enddo
+      !$OMP END DO
+      !$OMP END PARALLEL
       nullify(om)
     enddo
     
