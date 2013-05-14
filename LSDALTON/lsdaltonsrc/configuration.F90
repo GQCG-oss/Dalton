@@ -913,9 +913,16 @@ subroutine DEC_meaningful_input(config,doresponse)
 
      ! DEC geometry optimization 
      ! *************************
-     ! Always use dynamical optimization procedure
-     GeoOptCheck: if(config%optinfo%optimize) then
+     GeoOptCheck: if(config%optinfo%optimize .or. config%dynamics%do_dynamics) then
+        ! Always use dynamical optimization procedure
         config%optinfo%dynopt=.true.
+
+        ! DEC restart for geometry optimizations not implemented
+        if(DECinfo%restart) then
+           write(config%lupri,*) 'Warning: DEC restart not implemented for geometry optimization...'
+           write(config%lupri,*) '--> I turn off DEC restart!'
+           DECinfo%restart=.false.
+        end if
      end if GeoOptCheck
 
      ! Orbital localization must be turned on for DEC calculations
