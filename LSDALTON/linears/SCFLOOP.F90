@@ -260,6 +260,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
             call lsclose(denslun,'KEEP')
          endif
          if(.NOT.NotLastSCFLevel)THEN
+            Write(config%lupri,'(A,i6,A)')'SCF converged in ',iteration,' iterations'
             EXIT
          endif
       else if ((config%opt%cfg_hesonly .or. config%opt%cfg_diaghesonly) .and. &
@@ -286,6 +287,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
 
       IF(NotLastSCFLevel)THEN
          IF(gradnrm < config%opt%set_convergence_threshold) then 
+            Write(config%lupri,'(A,i6,A)')'SCF converged in ',iteration,' iterations'
             EXIT
          ENDIF
       ENDIF
