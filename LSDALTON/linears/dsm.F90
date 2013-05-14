@@ -3,13 +3,16 @@
 
 !> Density Subspace minimization (DSM) module. JCP, 121, 16-27, 2004; JCP 123, 074103, 2005
 module LINSCA_DSM
+#ifdef VAR_DSM
    use precision
    use av_utilities
    use dsm_x_term
    use matrix_util, only: util_Snorm
    use matrix_module
    use matrix_operations
+#endif
    private
+#ifdef VAR_DSM
    public :: dsm_get_avg_density
    !logical, parameter :: former = .false.
    !> Eigenvalues smaller than this are considered negative!
@@ -19,11 +22,13 @@ module LINSCA_DSM
    !real(realk), save :: timing1, timing2
    !> Keep track of current position etc. for subspace of densities
    integer, allocatable, save :: his_p(:)
+#endif
 
 CONTAINS                                      
    SUBROUTINE dsm_init
    END SUBROUTINE dsm_init
 
+#ifdef VAR_DSM
 !> \brief Construct average F and D from subspace from previous SCF iterations.
 !> \author L. Thogersen
 !> \date 2003
@@ -107,7 +112,6 @@ CONTAINS
          endif
          DEALLOCATE(weights)
       endif
-
    end subroutine DSM_GET_AVG_DENSITY
 
 !> \brief Get weights for averaging Fock/KS and density matrices in DSM.
@@ -2554,6 +2558,7 @@ CONTAINS
 !!     hes = (-1.0E0_realk*f2d+16.0E0_realk*fd-30.0E0_realk*f0+16.0E0_realk*fmd-1.0E0_realk*fm2d)/(12.0E0_realk*delta**2)
 ! 
 !   end subroutine get_fd_hes_grad
+#endif
 
 end module LINSCA_DSM
 

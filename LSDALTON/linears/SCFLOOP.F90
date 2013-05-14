@@ -348,7 +348,7 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,ndmat,Etotal,ls)
    type(configItem),intent(inout)         :: config
    !> New queue type: Contains Fock/KS and density matrices from previous SCF iterations (if ARH)
    type(modFIFO), intent(inout)                  :: fifoqueue
-   !> Old queue type: Contains Fock/KS and density matrices from previous SCF iterations (if DIIS or DSM)
+   !> Old queue type: Contains Fock/KS and density matrices from previous SCF iterations (if DIIS)
    type(util_HistoryStore), intent(inout) :: queue
    !> Current SCF iteration
    integer, intent(in)                    :: iteration

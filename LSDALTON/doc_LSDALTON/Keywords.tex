@@ -811,11 +811,11 @@ when solving linear equations ({\it memory-saving option}). Only referenced is d
 optimization method is ARH, Direct Density optimization or second order optimization.
 \item[\Key{DORTH}] Do level shift by using the ratio $\vert\vert$Dorth$\vert\vert$/$\vert\vert$D$\vert\vert$ 
 (for diagonalization only).
-\item[\Key{DSM}] The Density Subspace Minimization scheme is used to speed up SCF convergence~\cite{TOKJ,TOYJ}.
-\item[\Key{DSMONE}] The Density Subspace Minimization scheme is used to speed up SCF convergence, 
-but only one DSM step is taken in each SCF iteration.
-\item[\Key{DSMXTRA}] The Density Subspace Minimization scheme is used to speed up SCF convergence,
-including extra (more expensive) term.
+%\item[\Key{DSM}] The Density Subspace Minimization scheme is used to speed up SCF convergence~\cite{TOKJ,TOYJ}.
+%\item[\Key{DSMONE}] The Density Subspace Minimization scheme is used to speed up SCF convergence, 
+%but only one DSM step is taken in each SCF iteration.
+%\item[\Key{DSMXTRA}] The Density Subspace Minimization scheme is used to speed up SCF convergence,
+%including extra (more expensive) term.
 \item[\Key{DUMPMAT}] Dump Fock/KS and density matrices from all iterations to disk for later investigation.
 \item[\Key{EDIIS}] The energy-DIIS scheme is used to speed up SCF convergence~\cite{ediis}.
 \item[\Key{EXPAND}] \verb| | \newline
@@ -892,7 +892,7 @@ Never allow level shift to be smaller than this.
 %\item[\Key{NEWDAMP}] New level shifting which should be better suited for ARH/CROP. CAREFUL! Still under development!
 \item[\Key{NVEC}] \verb| | \newline
 \verb|<Max. no of vectors for averaging>|\newline
-Maximum number of previous Fock and density matrices to be stored and used for ARH, DIIS, and DSM (default is 10 for HF and 7 for DFT).
+Maximum number of previous Fock and density matrices to be stored and used for ARH and DIIS (default is 10 for HF and 7 for DFT).
 %\item[\Key{NVECDSM}] \verb| | \newline
 %\verb|<Max. no of vectors for DSM>|\newline
 %\item[\Key{NVECDII}] \verb| | \newline
@@ -960,9 +960,9 @@ Starting guess for SCF optimization. Options are:
 \item {\bf TRILEVEL} Optimization in three steps. 1. Atomic densities, 2. Valence molecular density, 3. Full molecular density~\cite{trilevel1, trilevel2}. 
 \end{itemize}
 Note that Huckel guess is not supported by \lsdalton.
-\item[\Key{TRSCF}] Use Trust-Region SCF scheme, i.e. diagonalization, .DORTH level shift, and DSM~\cite{TOKJ,TOYJ}.
-\item[\Key{TrFD}] Density optimization by minimization of the Roothaan-Hall energy E$_{\rm RH}$ = Tr{\bf FD}({\bf X})~\cite{TrFD}.
-\item[\Key{TrFD FULL}] As above, but keep the full subspace of trial vectors (instead of truncating) when solving linear equations.
+%\item[\Key{TRSCF}] Use Trust-Region SCF scheme, i.e. diagonalization, .DORTH level shift, and DSM~\cite{TOKJ,TOYJ}.
+%\item[\Key{TrFD}] Density optimization by minimization of the Roothaan-Hall energy E$_{\rm RH}$ = Tr{\bf FD}({\bf X})~\cite{TrFD}.
+%\item[\Key{TrFD FULL}] As above, but keep the full subspace of trial vectors (instead of truncating) when solving linear equations.
 %\item[\Key{UNREST}] Force unrestricted calculation (default for open shell systems).
 \item[\Key{VanLenthe}] Use Van Lenthe's scheme for level shifting and averaging~\cite{VanLenthe}.
 
@@ -976,15 +976,15 @@ do NOT start with a dot!
 \begin{description}
 \item[\Keyinfo{INFO\_CROP}] Detailed info from Conjugated Residual OPtimal vectors scheme (Direct Density Optimization, ARH and second order optimization).
 \item[\Keyinfo{INFO\_DIIS}] Detailed info from Direct Inversion in the Iterative Subspace algorithm.
-\item[\Keyinfo{INFO\_DSM}] Detailed info from Density Subspace Minimization algorithm.
-\item[\Keyinfo{INFO\_DSM\_DETAIL}] Even more detailed info from Density Subspace Minimization algorithm.
+%\item[\Keyinfo{INFO\_DSM}] Detailed info from Density Subspace Minimization algorithm.
+%\item[\Keyinfo{INFO\_DSM\_DETAIL}] Even more detailed info from Density Subspace Minimization algorithm.
 \item[\Keyinfo{INFO\_LEVELSHIFT}] Detailed info from determination of dynamic level shift (Direct Density Optimization, ARH and second order optimization). 
 \item[\Keyinfo{INFO\_LINEQ}] Detailed info from solution of linear equations and trust-radius update (Direct Density Optimization, ARH and second order optimization).
 \item[\Keyinfo{INFO\_RH}] Detailed info from Roothaan-Hall algorithm (diagonalization).
 \item[\Keyinfo{INFO\_RH\_DETAIL}] Even more detailed info from Roothaan-Hall algorithm (diagonalization).
 \item[\Keyinfo{INFO\_STABILITY}] Detailed info from calculation of lowest Hessian eigenvalue (stability analysis) and HOMO-LUMO gap.
 \item[\Keyinfo{INFO\_STABILITY\_REDSPACE}] Reduced space info from calculation of lowest Hessian eigenvalue (stability analysis) and HOMO-LUMO gap.
-\item[\Keyinfo{INFO\_WEIGHT}] Detailed info about weights of the densities in DIIS and DSM algorithms.
+%\item[\Keyinfo{INFO\_WEIGHT}] Detailed info about weights of the densities in DIIS and DSM algorithms.
 \item[\Keyinfo{}]
 \end{description}\end{description}
 
