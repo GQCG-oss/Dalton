@@ -276,95 +276,106 @@ subroutine arh_davidson_solver(CFG,arh,decomp,wrk,X,SCF_iteration,H1,wrk2,ls)
            CALL LSTIMER('START ',t1,t2,decomp%lupri)
            call davidson_solver(CFG,G,X)
            CALL LSTIMER('DAVID. SOLVER ',t1,t2,arh%lupri)
-
-           ndensmat = 10
-           call mem_alloc(alpha,ndensmat)
-           call mem_alloc(densmat,ndensmat)
-           call mem_alloc(energy_array,ndensmat)
-
-           !Now we construct the new density from X:
-           if (CFG%arh_gradnorm < 1E-2_realk) stepfactor=0.25_realk
-           if (CFG%arh_gradnorm .ge. 1E-2_realk) stepfactor=0.5_realk
-           if (CFG%arh_gradnorm .ge. 1E-1_realk) stepfactor=0.75_realk
-           if (CFG%arh_gradnorm .ge. 1E0_realk) stepfactor=1.0_realk
-           scaling = 1.0_realk-stepfactor
-           do i=1,ndensmat
-              scaling = scaling + stepfactor 
-              if (abs(scaling) <1E-5_realk) scaling=scaling+stepfactor 
-              alpha(i)=scaling
-           end do
-
-           CALL LSTIMER('START ',t1,t2,decomp%lupri)
-           do i =1, ndensmat
-              call mat_init(densmat(i),wrk%nrow,wrk%ncol)
-              call mat_copy(alpha(i),x,aX)
-              call oao_density_param(aX,decomp%DU,densmat(i)) !wrk = new D(X)
-              call oao_purify(densmat(i),wrk2) !wrk2 = new purified density in oao basis
-              call x_from_oao_basis(decomp,wrk2, densmat(i)) 
-           end do
-
-           call linesearch_thresholds(CFG,ls,SCF_iteration,TightLineSearchEsitmatesThresholds)
-
-           call di_SCF_EnergyCont(densmat,H1,energy_array,ndensmat,&
-                & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
-           CALL LSTIMER('NEW D ',t1,t2,CFG%lupri)
-           CFG%MaxLineSearchEnergyDiff = 10000.0E0_realk
-           indx = MINLOC(energy_array) 
-
-           if (indx(1) ==  1)THEN
-              CFG%MaxLineSearchEnergyDiff=ABS(energy_array(indx(1))-energy_array(indx(1)+1))               
-           elseif (indx(1) <  ndensmat)THEN
-              CFG%MaxLineSearchEnergyDiff=ABS(energy_array(indx(1))-energy_array(indx(1)+1))
-              CFG%MaxLineSearchEnergyDiff=MIN(CFG%MaxLineSearchEnergyDiff,&
-                   &ABS(energy_array(indx(1))-energy_array(indx(1)-1)))
-           elseif (indx(1) == ndensmat)then
-              CFG%MaxLineSearchEnergyDiff=ABS(energy_array(indx(1))-energy_array(indx(1)-1))
-           endif
-
-           ! If energy obtained is larger than old energy, reduce stepsize and call solver
-           if (energy_array(indx(1)) > arh%old_energy) then
-              CFG%stepsize = (2.0_realk/3.0_realk)*CFG%stepsize
+           IF(ABS(CFG%mu).GT.0.0E-14_realk)THEN
+              ndensmat = 10
+              call mem_alloc(alpha,ndensmat)
+              call mem_alloc(densmat,ndensmat)
+              call mem_alloc(energy_array,ndensmat)
+              
+              !Now we construct the new density from X:
+              if (CFG%arh_gradnorm < 1E-2_realk) stepfactor=0.25_realk
+              if (CFG%arh_gradnorm .ge. 1E-2_realk) stepfactor=0.5_realk
+              if (CFG%arh_gradnorm .ge. 1E-1_realk) stepfactor=0.75_realk
+              if (CFG%arh_gradnorm .ge. 1E0_realk) stepfactor=1.0_realk
+              scaling = 1.0_realk-stepfactor
+              do i=1,ndensmat
+                 scaling = scaling + stepfactor 
+                 if (abs(scaling) <1E-5_realk) scaling=scaling+stepfactor 
+                 alpha(i)=scaling
+              end do
+              
+              CALL LSTIMER('START ',t1,t2,decomp%lupri)
+              do i =1, ndensmat
+                 call mat_init(densmat(i),wrk%nrow,wrk%ncol)
+                 call mat_copy(alpha(i),x,aX)
+                 call oao_density_param(aX,decomp%DU,densmat(i)) !wrk = new D(X)
+                 call oao_purify(densmat(i),wrk2) !wrk2 = new purified density in oao basis
+                 call x_from_oao_basis(decomp,wrk2, densmat(i)) 
+              end do
+              
+              call linesearch_thresholds(CFG,ls,SCF_iteration,TightLineSearchEsitmatesThresholds)
+              
+              call di_SCF_EnergyCont(densmat,H1,energy_array,ndensmat,&
+                   & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
+              CALL LSTIMER('NEW D ',t1,t2,CFG%lupri)
+              CFG%MaxLineSearchEnergyDiff = 10000.0E0_realk
+              indx = MINLOC(energy_array) 
+              
+              if (indx(1) ==  1)THEN
+                 CFG%MaxLineSearchEnergyDiff=ABS(energy_array(indx(1))-energy_array(indx(1)+1))               
+              elseif (indx(1) <  ndensmat)THEN
+                 CFG%MaxLineSearchEnergyDiff=ABS(energy_array(indx(1))-energy_array(indx(1)+1))
+                 CFG%MaxLineSearchEnergyDiff=MIN(CFG%MaxLineSearchEnergyDiff,&
+                      &ABS(energy_array(indx(1))-energy_array(indx(1)-1)))
+              elseif (indx(1) == ndensmat)then
+                 CFG%MaxLineSearchEnergyDiff=ABS(energy_array(indx(1))-energy_array(indx(1)-1))
+              endif
+              
+              ! If energy obtained is larger than old energy, reduce stepsize and call solver
+              if (energy_array(indx(1)) > arh%old_energy) then
+                 CFG%stepsize = (2.0_realk/3.0_realk)*CFG%stepsize
+                 do i=1,ndensmat
+                    call mat_free(densmat(i))
+                 end do
+                 call mem_dealloc(alpha)
+                 call mem_dealloc(densmat)
+                 call mem_dealloc(energy_array)              
+                 cycle WHILELOOP
+              end if
+              
+              write(arh%lupri,*)
+              write(arh%lupri,'(a)') '***** LINESEARCH INFORMATION *****'
+              write(arh%lupri,*)
+              if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') 'Old energy',arh%old_energy
+              xnorm=dsqrt(mat_dotproduct(x,x))
+              if (CFG%arh_davidson_debug) then
+                 do i=1,ndensmat
+                    write(arh%lupri,'(a,ES20.11,a,f10.4)') 'Energy', energy_array(i), &
+                         &' Tot. stepsize:', alpha(i)*xnorm 
+                 end do
+              endif
+              call mat_scal(alpha(indx(1)),X)
+              arh%xnorm = sqrt(mat_sqnorm2(x))
+              write(arh%lupri,'(a,ES14.7)') 'Alpha Value ',alpha(indx(1))
+              write(arh%lupri,'(a,i4,a,ES14.7)') 'ARHLS: Minimum function value for ', indx(1),&
+                   &' using step size ', arh%xnorm
+              CFG%arh_linesE=energy_array(indx(1))
+              if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') &
+                   &'ARHLS: Energy From Linesearch   ',CFG%arh_linesE 
+              if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') &
+                   &'ARHLS: Maximum Energy difference', CFG%MaxLineSearchEnergyDiff
+              write(arh%lupri,*)
+              write(arh%lupri,'(a)') '***** END  LINESEARCH INFORMATION *****'
+              write(arh%lupri,*)
+              call x_to_oao_basis(decomp,densmat(indx(1)),wrk2)
               do i=1,ndensmat
                  call mat_free(densmat(i))
               end do
               call mem_dealloc(alpha)
               call mem_dealloc(densmat)
               call mem_dealloc(energy_array)              
-              cycle WHILELOOP
-           end if
-
-           write(arh%lupri,*)
-           write(arh%lupri,'(a)') '***** LINESEARCH INFORMATION *****'
-           write(arh%lupri,*)
-           if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') 'Old energy',arh%old_energy
-           xnorm=dsqrt(mat_dotproduct(x,x))
-           if (CFG%arh_davidson_debug) then
-              do i=1,ndensmat
-                 write(arh%lupri,'(a,ES20.11,a,f10.4)') 'Energy', energy_array(i), &
-                      &' Tot. stepsize:', alpha(i)*xnorm 
-              end do
-           endif
-           call mat_scal(alpha(indx(1)),X)
-           arh%xnorm = sqrt(mat_sqnorm2(x))
-           write(arh%lupri,'(a,i4,a,ES14.7)') 'ARHLS: Minimum function value for ', indx(1),&
-                &' using step size ', arh%xnorm
-           CFG%arh_linesE=energy_array(indx(1))
-           if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') &
-                &'ARHLS: Energy From Linesearch   ',CFG%arh_linesE 
-           if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') &
-                &'ARHLS: Maximum Energy difference', CFG%MaxLineSearchEnergyDiff
-           write(arh%lupri,*)
-           write(arh%lupri,'(a)') '***** END  LINESEARCH INFORMATION *****'
-           write(arh%lupri,*)
-
-           call x_to_oao_basis(decomp,densmat(indx(1)),wrk2)
-           do i=1,ndensmat
-              call mat_free(densmat(i))
-           end do
-           call mem_dealloc(alpha)
-           call mem_dealloc(densmat)
-           call mem_dealloc(energy_array)              
-           EXIT
+              EXIT WHILELOOP             
+           ELSE
+              !no linesearch
+              arh%xnorm = sqrt(mat_sqnorm2(x))
+              write(arh%lupri,'(a,ES14.7)') 'No linesearch due to no levelshift, step size= ', arh%xnorm
+              !Now we construct the new density from X:
+              CALL LSTIMER('START ',t1,t2,decomp%lupri)
+              call oao_density_param(x,decomp%DU,wrk) !wrk = new D(X)
+              call oao_purify(wrk,wrk2) !wrk2 = new purified density in oao basis
+              CALL LSTIMER('NEW D ',t1,t2,arh%lupri)
+              EXIT WHILELOOP
+           ENDIF
         ELSE !debugLinesearch
            !this is the possible way new way with a several Fits
            counter = counter+1
@@ -374,182 +385,105 @@ subroutine arh_davidson_solver(CFG,arh,decomp,wrk,X,SCF_iteration,H1,wrk2,ls)
            CALL LSTIMER('DAVID. SOLVER ',t1,t2,arh%lupri)
            CALL LSTIMER('START ',t1,t2,decomp%lupri)
 
-           nEnergies = 1
-           call mem_alloc(fullalpha,nEnergies)
-           call mem_alloc(fullenergy_array,nEnergies)
-           nEnergies = 0
-           ! step 1 we calculate Energy of D(X)
-           ndensmat = 1
-           call mem_alloc(alpha,ndensmat)
-           call mem_alloc(densmat,ndensmat)
-           do i=1,ndensmat
-              call mat_init(densmat(i),X%nrow,X%ncol)
-           end do
-           call mem_alloc(energy_array,ndensmat)
-           alpha(1) = 1.0E0_realk
-           call build_Dmat_from_alpha_X(alpha(1),X,Densmat(1),decomp)
-           !set the linesearch_thresholds
-           call linesearch_thresholds(CFG,ls,SCF_iteration,TightLineSearchEsitmatesThresholds)
-           IF(CFG%arh_davidson_debug)THEN
-              call debug_arh_LineSearch(Densmat,H1,energy_array,ndensmat,&
-                   & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
-           ELSE
-              call di_SCF_EnergyCont(Densmat,H1,energy_array,ndensmat,&
-                   & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
-           ENDIF
-           call add_energy_array_to_full(nEnergies,fullenergy_array,fullalpha,&
-                & ndensmat,energy_array,alpha)
-           call mem_dealloc(alpha)
-           call mem_dealloc(energy_array)
-           do i=1,ndensmat
-              call mat_free(densmat(i))
-           end do
-           call mem_dealloc(densmat)
-           do i=1,nEnergies
-              WRITE(ls%lupri,*)'energy_array(',i,')',fullenergy_array(i)
-           enddo
-
-           ! If found energy is larger than old energy, reduce stepsize and call solver
-           if (fullenergy_array(1) > arh%old_energy) then
-              WRITE(ls%lupri,*)'found energy  ',fullenergy_array(1)
-              WRITE(ls%lupri,*)'arh%old_energy',arh%old_energy
-              WRITE(ls%lupri,*)'step rejection'
-              CFG%stepsize = (2.0_realk/3.0_realk)*CFG%stepsize
-              cycle WHILELOOP
-           end if
-           ! We have found a good direction now determine the step.
-
-           ! we determine the maximum stepsize max_alpha
-           if (CFG%arh_gradnorm < 1E-2_realk) stepfactor=0.25_realk
-           if (CFG%arh_gradnorm .ge. 1E-2_realk) stepfactor=0.5_realk
-           if (CFG%arh_gradnorm .ge. 1E-1_realk) stepfactor=0.75_realk
-           if (CFG%arh_gradnorm .ge. 1E0_realk) stepfactor=1.0_realk
-           ndensmat = 10
-           scaling = 1.0_realk-stepfactor
-           do i=1,ndensmat
-              scaling = scaling + stepfactor 
-              if (abs(scaling) <1E-5_realk) scaling=scaling+stepfactor 
-              !      alpha(i)=scaling
-           end do
-           !  max_alpha = 6*CFG%stepsize
-           max_alpha = scaling
-           write(ls%lupri,*)'stepfactor',stepfactor,'max_alpha',max_alpha,'CFG%stepsize',CFG%stepsize
-           ! we make ndensmat matrices for a linesearch  
-           ndensmat = 3 
-           call mem_alloc(alpha,ndensmat)
-           call mem_alloc(densmat,ndensmat)
-           call mem_alloc(energy_array,ndensmat)
-           do i = 1, ndensmat
-              alpha(i) = i*max_alpha/ndensmat
-              call mat_init(densmat(i),X%nrow,X%ncol)
-              call build_Dmat_from_alpha_X(alpha(i),X,Densmat(i),decomp)
-           end do
-           !set the linesearch_thresholds
-           call linesearch_thresholds(CFG,ls,SCF_iteration,TightLineSearchEsitmatesThresholds)
-           IF(CFG%arh_davidson_debug)THEN
-              call debug_arh_LineSearch(Densmat,H1,energy_array,ndensmat,&
-                   & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
-           ELSE
-              call di_SCF_EnergyCont(Densmat,H1,energy_array,ndensmat,&
-                   & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
-           ENDIF
-           call add_energy_array_to_full(nEnergies,fullenergy_array,fullalpha,&
-                & ndensmat,energy_array,alpha)
-           call mem_dealloc(alpha)
-           call mem_dealloc(energy_array)
-           do i=1,ndensmat
-              call mat_free(densmat(i))
-           end do
-           call mem_dealloc(densmat)
-
-           ! we fit the energies to a quadratic fit 
-           call fit_arh_LineSearch2(nEnergies,fullenergy_array,&
-                & CFG%lupri,fullalpha,Optimal_alpha,dd2,dd3,EstVal)
-
-           WRITE(ls%lupri,*)'Optimal_alpha     :',Optimal_alpha
-           WRITE(ls%lupri,*)'Standard Diviation:',dd2
-           do i=1,nEnergies
-              WRITE(ls%lupri,*)'fit_energy_array(',i,')',fullenergy_array(i),fullalpha(i)
-           enddo
-
-           IF(dd2.GT.0.1E0_realk)THEN
-              IF(dd3.LT.0.1E0_realk)THEN
-                 Write(ls%lupri,*)'Warning: Clealy not quadratic surface standard diviation for cubic fit smaller'
-              ENDIF
-              !we must chose a conservative alpha
-              !looks like a dobbel well 
-              indx = MINLOC(fullenergy_array)   
-              ndensmat = 0
-              do i=1,nEnergies
-                 IF(fullalpha(i).LE.max_alpha+0.0E-5_realk)THEN
-                    ndensmat = ndensmat + 1               
-                 ENDIF
-              enddo
-              call mem_alloc(tmpindex,ndensmat)
+           IF(ABS(CFG%mu).GT.0.0E-14_realk)THEN
+              nEnergies = 1
+              call mem_alloc(fullalpha,nEnergies)
+              call mem_alloc(fullenergy_array,nEnergies)
+              nEnergies = 0
+              ! step 1 we calculate Energy of D(X)
+              ndensmat = 1
               call mem_alloc(alpha,ndensmat)
+              call mem_alloc(densmat,ndensmat)
+              do i=1,ndensmat
+                 call mat_init(densmat(i),X%nrow,X%ncol)
+              end do
               call mem_alloc(energy_array,ndensmat)
-              ndensmat = 0
-              do i=1,nEnergies
-                 IF(fullalpha(i).LE.max_alpha+0.0E-5_realk)THEN
-                    ndensmat = ndensmat + 1               
-                    alpha(ndensmat) = fullalpha(i)
-                    energy_array(ndensmat) = fullenergy_array(i)
-                    tmpindex(ndensmat) = i
-                 ENDIF
-              enddo
-              indx = MINLOC(energy_array)   
-              indx(1) = tmpindex(indx(1))
-              call mem_dealloc(tmpindex)
+              alpha(1) = 1.0E0_realk
+              call build_Dmat_from_alpha_X(alpha(1),X,Densmat(1),decomp)
+              !set the linesearch_thresholds
+              call linesearch_thresholds(CFG,ls,SCF_iteration,TightLineSearchEsitmatesThresholds)
+              IF(CFG%arh_davidson_debug)THEN
+                 call debug_arh_LineSearch(Densmat,H1,energy_array,ndensmat,&
+                      & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
+              ELSE
+                 call di_SCF_EnergyCont(Densmat,H1,energy_array,ndensmat,&
+                      & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
+              ENDIF
+              call add_energy_array_to_full(nEnergies,fullenergy_array,fullalpha,&
+                   & ndensmat,energy_array,alpha)
               call mem_dealloc(alpha)
               call mem_dealloc(energy_array)
-              Write(ls%lupri,*)'due to non quadratic surface we chose conservative step'
-              Write(ls%lupri,*)'indx  ',indx(1)
-              Write(ls%lupri,*)'Energy',fullenergy_array(indx(1))
-              Write(ls%lupri,*)'alpha ',fullalpha(indx(1))
-           ELSE
-              !if the optimal_alpha is far from largest alpha the fit is probably bad
-              !so we add a few more densities in between
-              IF(Optimal_alpha .GT. fullalpha(nEnergies)+fullalpha(nEnergies)/2)THEN
-                 !Calculate the energy of the Density from the fit
-                 ndensmat = 2
-                 call mem_alloc(alpha,ndensmat)
-                 alpha(1) = fullalpha(nEnergies) + (Optimal_alpha - fullalpha(nEnergies))/2
-                 alpha(2) = Optimal_alpha
-                 call mem_alloc(densmat,ndensmat)
-                 call mem_alloc(energy_array,ndensmat)
-                 do i = 1, ndensmat
-                    call mat_init(densmat(i),X%nrow,X%ncol)
-                    call build_Dmat_from_alpha_X(alpha(i),X,Densmat(i),decomp)
-                 end do
-                 !set the linesearch_thresholds
-                 call linesearch_thresholds(CFG,ls,SCF_iteration,TightLineSearchEsitmatesThresholds)
-                 IF(CFG%arh_davidson_debug)THEN
-                    call debug_arh_LineSearch(Densmat,H1,energy_array,ndensmat,&
-                         & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
-                 ELSE
-                    call di_SCF_EnergyCont(Densmat,H1,energy_array,ndensmat,&
-                         & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
-                 ENDIF
-                 call add_energy_array_to_full(nEnergies,fullenergy_array,fullalpha,&
-                      & ndensmat,energy_array,alpha)
-                 call mem_dealloc(alpha)
-                 call mem_dealloc(energy_array)
-                 do i = 1, ndensmat
-                    call mat_free(densmat(i))
-                 enddo
-                 call mem_dealloc(densmat)
-
-                 ! we fit the energies to a quadratic fit 
-                 call fit_arh_LineSearch2(nEnergies,fullenergy_array,&
-                      & CFG%lupri,fullalpha,Optimal_alpha,dd2,dd3,EstVal)
-
-                 WRITE(ls%lupri,*)'Optimal_alpha     :',Optimal_alpha
-                 WRITE(ls%lupri,*)'Standard Diviation:',dd2
-                 do i=1,nEnergies
-                    WRITE(ls%lupri,*)'fit_energy_array(',i,')',fullenergy_array(i),fullalpha(i)
-                 enddo
+              do i=1,ndensmat
+                 call mat_free(densmat(i))
+              end do
+              call mem_dealloc(densmat)
+              do i=1,nEnergies
+                 WRITE(ls%lupri,*)'energy_array(',i,')',fullenergy_array(i)
+              enddo
+              
+              ! If found energy is larger than old energy, reduce stepsize and call solver
+              if (fullenergy_array(1) > arh%old_energy) then
+                 WRITE(ls%lupri,*)'found energy  ',fullenergy_array(1)
+                 WRITE(ls%lupri,*)'arh%old_energy',arh%old_energy
+                 WRITE(ls%lupri,*)'step rejection'
+                 CFG%stepsize = (2.0_realk/3.0_realk)*CFG%stepsize
+                 cycle WHILELOOP
+              end if
+              ! We have found a good direction now determine the step.
+              
+              ! we determine the maximum stepsize max_alpha
+              if (CFG%arh_gradnorm < 1E-2_realk) stepfactor=0.25_realk
+              if (CFG%arh_gradnorm .ge. 1E-2_realk) stepfactor=0.5_realk
+              if (CFG%arh_gradnorm .ge. 1E-1_realk) stepfactor=0.75_realk
+              if (CFG%arh_gradnorm .ge. 1E0_realk) stepfactor=1.0_realk
+              ndensmat = 10
+              scaling = 1.0_realk-stepfactor
+              do i=1,ndensmat
+                 scaling = scaling + stepfactor 
+                 if (abs(scaling) <1E-5_realk) scaling=scaling+stepfactor 
+                 !      alpha(i)=scaling
+              end do
+              !  max_alpha = 6*CFG%stepsize
+              max_alpha = scaling
+              write(ls%lupri,*)'stepfactor',stepfactor,'max_alpha',max_alpha,'CFG%stepsize',CFG%stepsize
+              ! we make ndensmat matrices for a linesearch  
+              ndensmat = 3 
+              call mem_alloc(alpha,ndensmat)
+              call mem_alloc(densmat,ndensmat)
+              call mem_alloc(energy_array,ndensmat)
+              do i = 1, ndensmat
+                 alpha(i) = i*max_alpha/ndensmat
+                 call mat_init(densmat(i),X%nrow,X%ncol)
+                 call build_Dmat_from_alpha_X(alpha(i),X,Densmat(i),decomp)
+              end do
+              !set the linesearch_thresholds
+              call linesearch_thresholds(CFG,ls,SCF_iteration,TightLineSearchEsitmatesThresholds)
+              IF(CFG%arh_davidson_debug)THEN
+                 call debug_arh_LineSearch(Densmat,H1,energy_array,ndensmat,&
+                      & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
+              ELSE
+                 call di_SCF_EnergyCont(Densmat,H1,energy_array,ndensmat,&
+                      & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
               ENDIF
-
+              call add_energy_array_to_full(nEnergies,fullenergy_array,fullalpha,&
+                   & ndensmat,energy_array,alpha)
+              call mem_dealloc(alpha)
+              call mem_dealloc(energy_array)
+              do i=1,ndensmat
+                 call mat_free(densmat(i))
+              end do
+              call mem_dealloc(densmat)
+              
+              ! we fit the energies to a quadratic fit 
+              call fit_arh_LineSearch2(nEnergies,fullenergy_array,&
+                   & CFG%lupri,fullalpha,Optimal_alpha,dd2,dd3,EstVal)
+              
+              WRITE(ls%lupri,*)'Optimal_alpha     :',Optimal_alpha
+              WRITE(ls%lupri,*)'Standard Diviation:',dd2
+              do i=1,nEnergies
+                 WRITE(ls%lupri,*)'fit_energy_array(',i,')',fullenergy_array(i),fullalpha(i)
+              enddo
+              
               IF(dd2.GT.0.1E0_realk)THEN
                  IF(dd3.LT.0.1E0_realk)THEN
                     Write(ls%lupri,*)'Warning: Clealy not quadratic surface standard diviation for cubic fit smaller'
@@ -585,16 +519,20 @@ subroutine arh_davidson_solver(CFG,arh,decomp,wrk,X,SCF_iteration,H1,wrk2,ls)
                  Write(ls%lupri,*)'Energy',fullenergy_array(indx(1))
                  Write(ls%lupri,*)'alpha ',fullalpha(indx(1))
               ELSE
-                 CalcEnergyForFit = CFG%arh_davidson_debug
-                 IF(CalcEnergyForFit)THEN 
+                 !if the optimal_alpha is far from largest alpha the fit is probably bad
+                 !so we add a few more densities in between
+                 IF(Optimal_alpha .GT. fullalpha(nEnergies)+fullalpha(nEnergies)/2)THEN
                     !Calculate the energy of the Density from the fit
-                    ndensmat = 1
+                    ndensmat = 2
                     call mem_alloc(alpha,ndensmat)
-                    alpha(1) = Optimal_alpha
+                    alpha(1) = fullalpha(nEnergies) + (Optimal_alpha - fullalpha(nEnergies))/2
+                    alpha(2) = Optimal_alpha
                     call mem_alloc(densmat,ndensmat)
                     call mem_alloc(energy_array,ndensmat)
-                    call mat_init(densmat(1),X%nrow,X%ncol)
-                    call build_Dmat_from_alpha_X(Optimal_alpha,X,Densmat(1),decomp)
+                    do i = 1, ndensmat
+                       call mat_init(densmat(i),X%nrow,X%ncol)
+                       call build_Dmat_from_alpha_X(alpha(i),X,Densmat(i),decomp)
+                    end do
                     !set the linesearch_thresholds
                     call linesearch_thresholds(CFG,ls,SCF_iteration,TightLineSearchEsitmatesThresholds)
                     IF(CFG%arh_davidson_debug)THEN
@@ -604,91 +542,176 @@ subroutine arh_davidson_solver(CFG,arh,decomp,wrk,X,SCF_iteration,H1,wrk2,ls)
                        call di_SCF_EnergyCont(Densmat,H1,energy_array,ndensmat,&
                             & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
                     ENDIF
-                    WRITE(ls%lupri,*)'the energy from fit',energy_array(1)
                     call add_energy_array_to_full(nEnergies,fullenergy_array,fullalpha,&
                          & ndensmat,energy_array,alpha)
                     call mem_dealloc(alpha)
                     call mem_dealloc(energy_array)
-                    call mat_free(densmat(1))
+                    do i = 1, ndensmat
+                       call mat_free(densmat(i))
+                    enddo
                     call mem_dealloc(densmat)
-
+                    
                     ! we fit the energies to a quadratic fit 
                     call fit_arh_LineSearch2(nEnergies,fullenergy_array,&
                          & CFG%lupri,fullalpha,Optimal_alpha,dd2,dd3,EstVal)
-
+                    
                     WRITE(ls%lupri,*)'Optimal_alpha     :',Optimal_alpha
                     WRITE(ls%lupri,*)'Standard Diviation:',dd2
                     do i=1,nEnergies
                        WRITE(ls%lupri,*)'fit_energy_array(',i,')',fullenergy_array(i),fullalpha(i)
                     enddo
-                    ndensmat = 1
-                    call mem_alloc(alpha,ndensmat)
-                    alpha(1) = Optimal_alpha
-                    call mem_alloc(densmat,ndensmat)
-                    call mem_alloc(energy_array,ndensmat)
-                    call mat_init(densmat(1),X%nrow,X%ncol)
-                    call build_Dmat_from_alpha_X(Optimal_alpha,X,Densmat(1),decomp)
-                    !set the linesearch_thresholds
-                    energy_array(1) = -EstVal
-                    call add_energy_array_to_full(nEnergies,fullenergy_array,fullalpha,&
-                         & ndensmat,energy_array,alpha)
-                    call mem_dealloc(alpha)
-                    call mem_dealloc(energy_array)
-                    call mat_free(densmat(1))
-                    call mem_dealloc(densmat)
-                 ELSE
-                    ndensmat = 1
-                    call mem_alloc(alpha,ndensmat)
-                    alpha(1) = Optimal_alpha
-                    call mem_alloc(densmat,ndensmat)
-                    call mem_alloc(energy_array,ndensmat)
-                    call mat_init(densmat(1),X%nrow,X%ncol)
-                    call build_Dmat_from_alpha_X(Optimal_alpha,X,Densmat(1),decomp)
-                    !set the linesearch_thresholds
-                    energy_array(1) = -EstVal
-                    call add_energy_array_to_full(nEnergies,fullenergy_array,fullalpha,&
-                         & ndensmat,energy_array,alpha)
-                    call mem_dealloc(alpha)
-                    call mem_dealloc(energy_array)
-                    call mat_free(densmat(1))
-                    call mem_dealloc(densmat)
                  ENDIF
+                 
+                 IF(dd2.GT.0.1E0_realk)THEN
+                    IF(dd3.LT.0.1E0_realk)THEN
+                       Write(ls%lupri,*)'Warning: Clealy not quadratic surface standard diviation for cubic fit smaller'
+                    ENDIF
+                    !we must chose a conservative alpha
+                    !looks like a dobbel well 
+                    indx = MINLOC(fullenergy_array)   
+                    ndensmat = 0
+                    do i=1,nEnergies
+                       IF(fullalpha(i).LE.max_alpha+0.0E-5_realk)THEN
+                          ndensmat = ndensmat + 1               
+                       ENDIF
+                    enddo
+                    call mem_alloc(tmpindex,ndensmat)
+                    call mem_alloc(alpha,ndensmat)
+                    call mem_alloc(energy_array,ndensmat)
+                    ndensmat = 0
+                    do i=1,nEnergies
+                       IF(fullalpha(i).LE.max_alpha+0.0E-5_realk)THEN
+                          ndensmat = ndensmat + 1               
+                          alpha(ndensmat) = fullalpha(i)
+                          energy_array(ndensmat) = fullenergy_array(i)
+                          tmpindex(ndensmat) = i
+                       ENDIF
+                    enddo
+                    indx = MINLOC(energy_array)   
+                    indx(1) = tmpindex(indx(1))
+                    call mem_dealloc(tmpindex)
+                    call mem_dealloc(alpha)
+                    call mem_dealloc(energy_array)
+                    Write(ls%lupri,*)'due to non quadratic surface we chose conservative step'
+                    Write(ls%lupri,*)'indx  ',indx(1)
+                    Write(ls%lupri,*)'Energy',fullenergy_array(indx(1))
+                    Write(ls%lupri,*)'alpha ',fullalpha(indx(1))
+                 ELSE
+                    CalcEnergyForFit = CFG%arh_davidson_debug
+                    IF(CalcEnergyForFit)THEN 
+                       !Calculate the energy of the Density from the fit
+                       ndensmat = 1
+                       call mem_alloc(alpha,ndensmat)
+                       alpha(1) = Optimal_alpha
+                       call mem_alloc(densmat,ndensmat)
+                       call mem_alloc(energy_array,ndensmat)
+                       call mat_init(densmat(1),X%nrow,X%ncol)
+                       call build_Dmat_from_alpha_X(Optimal_alpha,X,Densmat(1),decomp)
+                       !set the linesearch_thresholds
+                       call linesearch_thresholds(CFG,ls,SCF_iteration,TightLineSearchEsitmatesThresholds)
+                       IF(CFG%arh_davidson_debug)THEN
+                          call debug_arh_LineSearch(Densmat,H1,energy_array,ndensmat,&
+                               & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
+                       ELSE
+                          call di_SCF_EnergyCont(Densmat,H1,energy_array,ndensmat,&
+                               & CFG%lupri,CFG%lupri,ls,CFG%LSmodthresh)
+                       ENDIF
+                       WRITE(ls%lupri,*)'the energy from fit',energy_array(1)
+                       call add_energy_array_to_full(nEnergies,fullenergy_array,fullalpha,&
+                            & ndensmat,energy_array,alpha)
+                       call mem_dealloc(alpha)
+                       call mem_dealloc(energy_array)
+                       call mat_free(densmat(1))
+                       call mem_dealloc(densmat)
+                       
+                       ! we fit the energies to a quadratic fit 
+                       call fit_arh_LineSearch2(nEnergies,fullenergy_array,&
+                            & CFG%lupri,fullalpha,Optimal_alpha,dd2,dd3,EstVal)
+                       
+                       WRITE(ls%lupri,*)'Optimal_alpha     :',Optimal_alpha
+                       WRITE(ls%lupri,*)'Standard Diviation:',dd2
+                       do i=1,nEnergies
+                          WRITE(ls%lupri,*)'fit_energy_array(',i,')',fullenergy_array(i),fullalpha(i)
+                       enddo
+                       ndensmat = 1
+                       call mem_alloc(alpha,ndensmat)
+                       alpha(1) = Optimal_alpha
+                       call mem_alloc(densmat,ndensmat)
+                       call mem_alloc(energy_array,ndensmat)
+                       call mat_init(densmat(1),X%nrow,X%ncol)
+                       call build_Dmat_from_alpha_X(Optimal_alpha,X,Densmat(1),decomp)
+                       !set the linesearch_thresholds
+                       energy_array(1) = -EstVal
+                       call add_energy_array_to_full(nEnergies,fullenergy_array,fullalpha,&
+                            & ndensmat,energy_array,alpha)
+                       call mem_dealloc(alpha)
+                       call mem_dealloc(energy_array)
+                       call mat_free(densmat(1))
+                       call mem_dealloc(densmat)
+                    ELSE
+                       ndensmat = 1
+                       call mem_alloc(alpha,ndensmat)
+                       alpha(1) = Optimal_alpha
+                       call mem_alloc(densmat,ndensmat)
+                       call mem_alloc(energy_array,ndensmat)
+                       call mat_init(densmat(1),X%nrow,X%ncol)
+                       call build_Dmat_from_alpha_X(Optimal_alpha,X,Densmat(1),decomp)
+                       !set the linesearch_thresholds
+                       energy_array(1) = -EstVal
+                       call add_energy_array_to_full(nEnergies,fullenergy_array,fullalpha,&
+                            & ndensmat,energy_array,alpha)
+                       call mem_dealloc(alpha)
+                       call mem_dealloc(energy_array)
+                       call mat_free(densmat(1))
+                       call mem_dealloc(densmat)
+                    ENDIF
 
-                 !we choose the Density with the lowest energy
-                 indx = MINLOC(fullenergy_array)   
+                    !we choose the Density with the lowest energy
+                    indx = MINLOC(fullenergy_array)   
+                 ENDIF
               ENDIF
-           ENDIF
-           CFG%MaxLineSearchEnergyDiff = 10000.0E0_realk
+              CFG%MaxLineSearchEnergyDiff = 10000.0E0_realk
 
 
-           write(arh%lupri,*)
-           write(arh%lupri,'(a)') '***** LINESEARCH INFORMATION *****'
-           write(arh%lupri,*)
-           if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') 'Old energy',arh%old_energy
-           xnorm=dsqrt(mat_dotproduct(x,x))
-           if (CFG%arh_davidson_debug) then
-              do i=1,nEnergies
-                 write(arh%lupri,'(a,ES20.11,a,f10.4)') 'Energy', fullenergy_array(i), &
-                      &' Tot. stepsize:', fullalpha(i)*xnorm 
-              end do
+              write(arh%lupri,*)
+              write(arh%lupri,'(a)') '***** LINESEARCH INFORMATION *****'
+              write(arh%lupri,*)
+              if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') 'Old energy',arh%old_energy
+              xnorm=dsqrt(mat_dotproduct(x,x))
+              if (CFG%arh_davidson_debug) then
+                 do i=1,nEnergies
+                    write(arh%lupri,'(a,ES20.11,a,f10.4)') 'Energy', fullenergy_array(i), &
+                         &' Tot. stepsize:', fullalpha(i)*xnorm 
+                 end do
+              endif
+              call mat_scal(fullalpha(indx(1)),X)
+              arh%xnorm = sqrt(mat_sqnorm2(x))
+              write(arh%lupri,'(a,ES14.7)') 'Alpha Value ',fullalpha(indx(1))
+              write(arh%lupri,'(a,i4,a,ES14.7)') 'ARHLS: Minimum function value for ', indx(1),&
+                   &' using step size ', arh%xnorm
+              CFG%arh_linesE=fullenergy_array(indx(1))
+              if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') &
+                   &'ARHLS: Energy From Linesearch   ',CFG%arh_linesE 
+              write(arh%lupri,*)
+              write(arh%lupri,'(a)') '***** END  LINESEARCH INFORMATION *****'
+              write(arh%lupri,*)
+              call mat_init(scratchMat,X%nrow,X%ncol)
+              call oao_density_param(X,decomp%DU,scratchMat) !D = new D(X)
+              call oao_purify(scratchMat,wrk2) !wrk2 = new purified density in oao basis
+              call mat_free(scratchMat)
+              CALL LSTIMER('NEW D ',t1,t2,arh%lupri)
+              EXIT WHILELOOP
+           ELSE
+              !no linesearch
+              arh%xnorm = sqrt(mat_sqnorm2(x))
+              write(arh%lupri,'(a,ES14.7)') 'No linesearch due to no levelshift, step size= ', arh%xnorm
+              !Now we construct the new density from X:
+              CALL LSTIMER('START ',t1,t2,decomp%lupri)
+              call oao_density_param(x,decomp%DU,wrk) !wrk = new D(X)
+              call oao_purify(wrk,wrk2) !wrk2 = new purified density in oao basis
+              CALL LSTIMER('NEW D ',t1,t2,arh%lupri)
+              EXIT WHILELOOP
            endif
-           call mat_scal(fullalpha(indx(1)),X)
-           arh%xnorm = sqrt(mat_sqnorm2(x))
-           write(arh%lupri,'(a,ES14.7)') 'Alpha Value ',fullalpha(indx(1))
-           write(arh%lupri,'(a,i4,a,ES14.7)') 'ARHLS: Minimum function value for ', indx(1),&
-                &' using step size ', arh%xnorm
-           CFG%arh_linesE=fullenergy_array(indx(1))
-           if (CFG%arh_davidson_debug) write(arh%lupri,'(a,ES20.11)') &
-                &'ARHLS: Energy From Linesearch   ',CFG%arh_linesE 
-           write(arh%lupri,*)
-           write(arh%lupri,'(a)') '***** END  LINESEARCH INFORMATION *****'
-           write(arh%lupri,*)
-           call mat_init(scratchMat,X%nrow,X%ncol)
-           call oao_density_param(X,decomp%DU,scratchMat) !D = new D(X)
-           call oao_purify(scratchMat,wrk2) !wrk2 = new purified density in oao basis
-           call mat_free(scratchMat)
-           CALL LSTIMER('NEW D ',t1,t2,arh%lupri)
-           EXIT WHILELOOP
         endif debugLinesearch
      else
         CALL LSTIMER('START ',t1,t2,decomp%lupri)

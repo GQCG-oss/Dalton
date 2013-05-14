@@ -49,6 +49,8 @@ F   -1.303842   -0.036443   -0.048756
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_screen1.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .DEBUGSCREEN
 **WAVE FUNCTIONS
@@ -57,7 +59,6 @@ cat > LSDALTON_screen1.dal <<'%EOF%'
 .ARH
 .START
 H1DIAG
-.NOGCBASIS
 **INFO
 .DEBUG_MPI_MEM
 *END OF INPUT

@@ -40,6 +40,7 @@ C
 #include "infinp.h"
 #include "inftap.h"
 #include "infrank.h"
+#include "inforb.h"
 ! gnrinf.h: QM3, THR_REDFAC
 #include "gnrinf.h"
 C
@@ -89,7 +90,7 @@ C
                CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
                CALL QUIT(' ILLEGAL KEYWORD IN *QUADRA')
     1          CONTINUE
-                  READ(LUCMD,'( A )')LABEL
+                  READ(LUCMD,'(BN,A,I8)')LABEL, IRANKB
                   IF (LABEL .EQ. 'ANGMOM  ') THEN
                      BQROP(INDPRP('XANGMOM ')) = .TRUE.
                      BQROP(INDPRP('YANGMOM ')) = .TRUE.
@@ -139,6 +140,7 @@ C
                      CALL GPCLOSE(LUPROP,'KEEP')
                   ELSE
                      BQROP( INDPRP(LABEL)) = .TRUE.
+                     OPRANK( INDPRP(LABEL)) = IRANKB
                   END IF
                GO TO 100
     2          CONTINUE
@@ -157,7 +159,7 @@ C
                   END IF
                GO TO 100
     3          CONTINUE
-                  READ(LUCMD,'( A )')LABEL
+                  READ(LUCMD,'(BN,A,I8)')LABEL,IRANKC
                   IF (LABEL .EQ. 'ANGMOM  ') THEN
                      CQROP(INDPRP('XANGMOM ')) = .TRUE.
                      CQROP(INDPRP('YANGMOM ')) = .TRUE.
@@ -207,6 +209,7 @@ C
                      CALL GPCLOSE(LUPROP,'KEEP')
                   ELSE
                      CQROP( INDPRP(LABEL)) = .TRUE.
+                     OPRANK( INDPRP(LABEL)) = IRANKC
                   END IF
                GO TO 100
     4          CONTINUE
@@ -225,7 +228,7 @@ C
                   END IF
                GO TO 100
     5          CONTINUE
-                  READ(LUCMD,'( A )')LABEL
+                  READ(LUCMD,'(BN,A,I8)')LABEL,IRANKA
                   IF (LABEL .EQ. 'ANGMOM  ') THEN
                      AQROP(INDPRP('XANGMOM ')) = .TRUE.
                      AQROP(INDPRP('YANGMOM ')) = .TRUE.
@@ -275,6 +278,7 @@ C
                      CALL GPCLOSE(LUPROP,'KEEP')
                   ELSE
                      AQROP( INDPRP(LABEL)) = .TRUE.
+                     OPRANK(INDPRP(LABEL)) = IRANKA
                   END IF
                GO TO 100
     6          CONTINUE
@@ -410,15 +414,16 @@ C
          DO 500 I = 1,NPRLBL
             IF (AQROP(I)) THEN
                 NAQRTO = NAQRTO + 1
-                OPRANK(I) = ISPINA
+                ! For singlet states couple operator rank to excitation rank
+                IF (ISPIN.EQ.1) OPRANK(I) = ISPINA 
             END IF
             IF (BQROP(I)) THEN
                 NBQRTO = NBQRTO + 1
-                OPRANK(I) = ISPINB
+                IF (ISPIN.EQ.1) OPRANK(I) = ISPINB
             END IF
             IF (CQROP(I)) THEN
                 NCQRTO = NCQRTO + 1
-                OPRANK(I) = ISPINC
+                IF (ISPIN.EQ.1) OPRANK(I) = ISPINC
             END IF
   500    CONTINUE
 C

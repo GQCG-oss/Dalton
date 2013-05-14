@@ -55,6 +55,8 @@ O          -0.009356        0.015216       -3.215161
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_cgto.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .DEBUGGEN1INT
 .DEBUGCGTODIFF
@@ -66,7 +68,6 @@ cat > LSDALTON_cgto.dal <<'%EOF%'
 .DIIS
 .START
 H1DIAG
-.NOGCBASIS
 .MAXIT
 1
 **INFO

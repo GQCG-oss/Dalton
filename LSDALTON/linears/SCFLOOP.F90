@@ -260,6 +260,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
             call lsclose(denslun,'KEEP')
          endif
          if(.NOT.NotLastSCFLevel)THEN
+            Write(config%lupri,'(A,i6,A)')'SCF converged in ',iteration,' iterations'
             EXIT
          endif
       else if ((config%opt%cfg_hesonly .or. config%opt%cfg_diaghesonly) .and. &
@@ -286,6 +287,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
 
       IF(NotLastSCFLevel)THEN
          IF(gradnrm < config%opt%set_convergence_threshold) then 
+            Write(config%lupri,'(A,i6,A)')'SCF converged in ',iteration,' iterations'
             EXIT
          ENDIF
       ENDIF
@@ -348,7 +350,7 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,ndmat,Etotal,ls)
    type(configItem),intent(inout)         :: config
    !> New queue type: Contains Fock/KS and density matrices from previous SCF iterations (if ARH)
    type(modFIFO), intent(inout)                  :: fifoqueue
-   !> Old queue type: Contains Fock/KS and density matrices from previous SCF iterations (if DIIS or DSM)
+   !> Old queue type: Contains Fock/KS and density matrices from previous SCF iterations (if DIIS)
    type(util_HistoryStore), intent(inout) :: queue
    !> Current SCF iteration
    integer, intent(in)                    :: iteration
