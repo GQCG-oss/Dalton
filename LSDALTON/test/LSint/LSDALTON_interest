@@ -45,6 +45,8 @@ C   0.000   0.000   0.000
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_interest.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .UNCONT
 .NOFAMILY
@@ -62,7 +64,6 @@ cat > LSDALTON_interest.dal <<'%EOF%'
 H1DIAG
 .MAXIT
 1
-.NOGCBASIS
 **INFO
 .DEBUG_MPI_MEM
 *END OF INPUT
