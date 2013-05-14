@@ -214,6 +214,15 @@ contains
     ! *                           Initialize stuff                           *
     ! ************************************************************************
 
+    ! Internal control of first order property keywords
+    ! (Necessary because these must be false during fragment optimization.)
+    dens_save = DECinfo%MP2density
+    FO_save = DECinfo%first_order
+    grad_save = DECinfo%gradient
+    DECinfo%MP2density=.false.
+    DECinfo%first_order=.false.
+    DECinfo%gradient=.false.
+
     Eerr=0.0_realk
     whichfrags=.false.
     redo=.false.
@@ -361,16 +370,6 @@ contains
 #else
     nworkers=0   ! master node does all jobs
 #endif
-
-
-    ! Internal control of first order property keywords
-    ! (Necessary because these must be false during fragment optimization.)
-    dens_save = DECinfo%MP2density
-    FO_save = DECinfo%first_order
-    grad_save = DECinfo%gradient
-    DECinfo%MP2density=.false.
-    DECinfo%first_order=.false.
-    DECinfo%gradient=.false.
 
 
     ! Sort atomic fragments according to estimated size
