@@ -52,13 +52,10 @@ cat > fullccsd_3.dal <<'%EOF%'
 TRILEVEL
 .CONVTHR
 1.0d-5
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 **CC
 .CCSD
-.manual_batchsizes
-19 19
 .CCSDforce_scheme
 3
 .ccThr

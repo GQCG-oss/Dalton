@@ -33,7 +33,7 @@ Integer,intent(in)  :: lupri
 Integer,intent(in)  :: luerr
 !> the number of basisfunctions
 integer,intent(out) :: nbast
-!> a collection of logicals read from the DALTON.INP file
+!> a collection of logicals read from the LSDALTON.INP file
 type(integralconfig) :: integral 
 !> Should we print stuff to output file
 Logical      :: doprint
@@ -80,7 +80,7 @@ SUBROUTINE dalton_init(intinp,LUPRI,LUERR,nbast,integral,dodft,doDEC,doprint)
 use infpar_module
 #endif
 implicit none
-!> contains info about input from DALTON.INP(only integral info) and MOLECULE.INP
+!> contains info about input from LSDALTON.INP(only integral info) and MOLECULE.INP
 TYPE(DALTONINPUT)    :: intinp
 !> the logical unit number for the output file
 integer,intent(in)   :: LUPRI
@@ -88,7 +88,7 @@ integer,intent(in)   :: LUPRI
 integer,intent(in)   :: LUERR
 !> number of basisfunctions
 integer, intent(out) :: nbast
-!> information about the integral evaluation info read from DALTON.INP
+!> information about the integral evaluation info read from LSDALTON.INP
 type(integralconfig)      :: integral
 !> is it a DFT run
 logical              :: dodft
@@ -300,7 +300,7 @@ END SUBROUTINE dalton_init
 !>
 SUBROUTINE dalton_finalize(intinp,LUPRI,LUERR)
 implicit none
-!> contains info about input from DALTON.INP(only integral info) and MOLECULE.INP
+!> contains info about input from LSDALTON.INP(only integral info) and MOLECULE.INP
 TYPE(DALTONINPUT)    :: intinp
 !> the logical unit number for the output file
 integer   :: LUPRI
@@ -339,7 +339,7 @@ END SUBROUTINE dalton_finalize
 !!$!> \date 2010
 !!$SUBROUTINE dalton_free(intinp)
 !!$implicit none
-!!$!> contains info about input from DALTON.INP(only integral info) and MOLECULE.INP
+!!$!> contains info about input from LSDALTON.INP(only integral info) and MOLECULE.INP
 !!$TYPE(DALTONINPUT) :: intinp
 !!$
 !!$call free_Moleculeinfo(intinp%MOLECULE)
@@ -369,16 +369,16 @@ LOGICAL            :: DONE_LINSCA,file_exist
 
 WRITE(LUPRI,*) '                     '
 WRITE(LUPRI,*) '-----------------------------------------'
-WRITE(LUPRI,*) '         PRINTING THE DALTON.INP FILE '
+WRITE(LUPRI,*) '         PRINTING THE LSDALTON.INP FILE '
 WRITE(LUPRI,*) '-----------------------------------------'
 WRITE(LUPRI,*) '                     '
 
-INQUIRE(file='DALTON.INP',EXIST=file_exist) 
+INQUIRE(file='LSDALTON.INP',EXIST=file_exist) 
 IF(file_exist)THEN
   LUCMD=-1
-  CALL LSOPEN(LUCMD,'DALTON.INP','OLD','FORMATTED')
+  CALL LSOPEN(LUCMD,'LSDALTON.INP','OLD','FORMATTED')
 ELSE
-  CALL LSQUIT('DALTON.INP does not exist',lupri)
+  CALL LSQUIT('LSDALTON.INP does not exist',lupri)
 ENDIF
 rewind(LUCMD)
 DO

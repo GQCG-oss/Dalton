@@ -55,9 +55,8 @@ cat > linsca_atoms.dal <<'%EOF%'
  ATOMS
 .CONVTHR
  1.0d-6
-$INFO
-INFO_LINEQ
-$END INFO
+**INFO
+.INFO_LINEQ
 *END OF INPUT
 %EOF%
 

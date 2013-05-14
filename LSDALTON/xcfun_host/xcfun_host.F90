@@ -25,6 +25,7 @@ module xcfun_host
     character(len=80),intent(in)  :: DFTfuncString
     real(realk),intent(out) :: hfweight
     !
+#ifdef VAR_XCFUN
     character(len=80),pointer  :: DFTfuncStringSingle(:)
     integer :: Ipos,nStrings,ierr,I,ierrLDA,ierrGGA,ierrMETA,ierrHF
     logical :: GGAkeyString
@@ -52,7 +53,6 @@ module xcfun_host
             & DFTfuncStringSingle,WeightSingle)
        WeightSingle(1) = 1.0E0_realk
     ENDIF
-#ifdef VAR_XCFUN
     XCFUNfunctional = xc_new_functional()
     do I=1,nStrings
        ierr = xc_set(XCFUNfunctional,DFTfuncStringSingle(I),WeightSingle(I))
@@ -64,9 +64,6 @@ module xcfun_host
           call lsquit('xcfun_host_init: error',lupri)
        ENDIF
     enddo   
-#else
-    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
-#endif
     !Test for the different types of functional (LDA,GGA,META)
     !we start assuming that we only need the parameters need for LDA:
     ! \frac{\partial f}{\partial \rho} 
@@ -80,7 +77,6 @@ module xcfun_host
     ! \frac{\partial f}{\partial |\nabla \rho|^{2}}
     ! \frac{\partial f}{\partial \tau}
     !Test if this is a LDA type
-#ifdef VAR_XCFUN
     ierrLDA = xc_eval_setup(XCFUNfunctional,XC_N,XC_PARTIAL_DERIVATIVES,1)
     IF(ierrLDA.NE.0)THEN
        !Test if this is a GGA type
@@ -106,9 +102,6 @@ module xcfun_host
        XCFUN_DOMETA = .FALSE.
     ENDIF
     ierrHF = xc_get(XCFUNfunctional,'EXX',hfweight)
-#else
-    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
-#endif
     IF(ierrHF.NE.0)THEN
        call lsquit('Error determining exact (HF) exchange weight.',lupri)
     ENDIF
@@ -120,6 +113,9 @@ module xcfun_host
     ENDIF
     deallocate(DFTfuncStringSingle)
     deallocate(WeightSingle)
+#else
+    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
+#endif
 
   end subroutine xcfun_host_init
 
@@ -1058,6 +1054,7 @@ module xcfun_host
 #endif
   end subroutine xcfun_host_free
 
+#ifdef VAR_XCFUN
   SUBROUTINE determine_nStrings(string,n)
     implicit none
     character(len=*), intent(in) :: string
@@ -1171,5 +1168,6 @@ module xcfun_host
     enddo MAJOR
 
   END SUBROUTINE TRIM_STRINGS
+#endif
 
 end module xcfun_host

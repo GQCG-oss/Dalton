@@ -5,6 +5,7 @@ contains
 !> Full molecular CC program
 !> \author Thomas Kjaergaard
 
+#ifdef MOD_UNRELEASED
   subroutine ccsdf12_Vjiij_coupling(Vjiij,Ciajb,Taibj,Viajb,Vijja,Viaji,Tai,nocc,nvirt)
   implicit none
   real(realk),intent(INOUT) :: Vjiij(nocc,nocc)
@@ -1264,6 +1265,10 @@ end subroutine ccsdf12_Viija3
      ENDDO
   ENDDO
   end subroutine mp2f12_Bjiij
-
+#else
+  subroutine full_f12contractions_dummy_sub12()
+    implicit none
+  end subroutine full_f12contractions_dummy_sub12
+#endif
 end module full_f12contractions
 

@@ -66,8 +66,8 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
 
     work => dalwrk
 
-    ! setting up grid for MEP calculation
-    if (pe_mep) then
+    ! setting up grid for MEP and CUBE calculation
+    if (pe_mep .or. pe_cube) then
         origin(1) = minval(Rm(1,:)) - xsize
         origin(2) = minval(Rm(2,:)) - ysize
         origin(3) = minval(Rm(3,:)) - zsize
@@ -79,14 +79,14 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
         zsteps = int((maxval(Rm(3,:)) + zsize - origin(3)) / step(3))
         npoints = 0
         npoints = xsteps * ysteps * zsteps
-        allocate(mepgrid(3,npoints))
+        allocate(Rp(3,npoints))
         l = 1
         do i = 1, xsteps
             do j = 1, ysteps
                 do k = 1, zsteps
-                    mepgrid(1,l) = origin(1) + (i - 1) * step(1)
-                    mepgrid(2,l) = origin(2) + (j - 1) * step(2)
-                    mepgrid(3,l) = origin(3) + (k - 1) * step(3)
+                    Rp(1,l) = origin(1) + (i - 1) * step(1)
+                    Rp(2,l) = origin(2) + (j - 1) * step(2)
+                    Rp(3,l) = origin(3) + (k - 1) * step(3)
                     l = l + 1
                 end do
             end do
@@ -143,6 +143,11 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
     if (pe_restart) then
          write(luout,'(/4x,a)') 'Existing files will be used to restart if&
                                 & possible.'
+    end if
+    if (pe_cube) then
+        write(luout,'(/4x,a)') 'Cube files containing the potential and&
+                               & electric field from the embedding potential&
+                               & will be written.'
     end if
 
     ! handling sites near border
@@ -561,6 +566,42 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! Use existing files for restart
         else if (trim(option(2:)) == 'RESTAR') then
             pe_restart = .true.
+        ! Write cube files
+        else if (trim(option(2:)) == 'CUBE') then
+            read(luinp,*) option
+            backspace(luinp)
+            if ((option(1:1) /= '.') .and. (option(1:1) /= '*') .and.&
+               & (option(1:1) /= '!') .and. (option(1:1) /= '#')) then
+                do
+                    read(luinp,*) option
+                    call chcase(option)
+                    if (trim(option(1:)) == 'COARSE') then
+                        xgrid = 3
+                        ygrid = 3
+                        zgrid = 3
+                    else if (trim(option(1:)) == 'MEDIUM') then
+                        xgrid = 6
+                        ygrid = 6
+                        zgrid = 6
+                    else if (trim(option(1:)) == 'FINE') then
+                        xgrid = 12
+                        ygrid = 12
+                        zgrid = 12
+                    else if (trim(option(1:)) == 'GRID') then
+                        read(luinp,*) xsize, xgrid, ysize, ygrid, zsize, zgrid
+                    else if (trim(option(1:)) == 'FIELD') then
+                        mep_field = .true.
+                    else if (option(1:1) == '.' .or. option(1:1) == '*') then
+                        backspace(luinp)
+                        exit
+                    else if (option(1:1) == '!' .or. option(1:1) == '#') then
+                        cycle
+                    else
+                        stop 'ERROR: unknown option present in .CUBE section.'
+                    end if
+                end do
+            end if
+            pe_cube = .true.
         ! evaluate molecular electrostatic potential
         else if (trim(option(2:)) == 'MEP') then
             read(luinp,*) option
@@ -917,11 +958,15 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
             end if
         end if
         write(luout,'(/3x,a18,9x,f20.12)') 'Total PE energy: ', Epe(1)
+        if (pe_cube) then
+            if (ndens > 1) stop 'ERROR: CUBE not implemented for more than 1 density matrix'
+            call compute_cube(denmats)
+        end if
     else if (response) then
         call pe_fock(denmats, fckmats)
     else if (mep) then
-        if (ndens > 1) stop 'Not implemented for more than 1 density matrix'
-        call pe_compute_mep(denmats)
+        if (ndens > 1) stop 'ERROR: MEP not implemented for more than 1 density matrix'
+        call compute_mep(denmats)
     end if
 
     nullify(work)
@@ -989,10 +1034,13 @@ subroutine pe_mpi(dalwrk, runtype)
                     & work(2*ndens*nnbas+1:2*ndens*nnbas+ndens))
     else if (energy) then
         call pe_fock(work(1:ndens*nnbas))
+        if (pe_cube) then
+            call compute_cube(work(1:ndens*nnbas))
+        end if
     else if (response) then
         call pe_fock(work(1:ndens*nnbas), work(ndens*nnbas+1:2*ndens*nnbas))
     else if (mep) then
-        call pe_compute_mep(work(1:ndens*nnbas))
+        call compute_mep(work(1:ndens*nnbas))
     end if
 
     nullify(work)
@@ -1113,8 +1161,9 @@ subroutine pe_sync()
     end if
 
     call mpi_bcast(pe_mep, 1, lmpi, 0, comm, ierr)
+    call mpi_bcast(pe_cube, 1, lmpi, 0, comm, ierr)
 
-    if (pe_mep) then
+    if (pe_mep .or. pe_cube) then
         call mpi_bcast(mep_field, 1, lmpi, 0, comm, ierr)
         call mpi_bcast(mep_fldnrm, 1, lmpi, 0, comm, ierr)
         call mpi_bcast(mep_extfld, 1, lmpi, 0, comm, ierr)
@@ -1136,22 +1185,25 @@ subroutine pe_sync()
                 meploops(i) = sum(mepdists(0:i-1))
             end do
         end if
+        call mpi_bcast(npoints, 1, impi, 0, comm, ierr)
         call mpi_bcast(mepdists, nprocs, impi, 0, comm, ierr)
-        call mpi_bcast(npoints, nprocs + 1, impi, 0, comm, ierr)
+        call mpi_bcast(meploops, nprocs + 1, impi, 0, comm, ierr)
         mep_start = meploops(myid) + 1
         mep_finish = meploops(myid+1)
-        if (myid == 0) then
-            displs(0) = 0
-            do i = 1, nprocs
-             displs(i) = displs(i-1) + 3 * mepdists(i-1)
-            end do
-            call mpi_scatterv(mepgrid, 3 * mepdists, displs, rmpi,&
-                             & mpi_in_place, 0, rmpi, 0, comm, ierr)
-        else if (myid /= 0) then
-            allocate(mepgrid(3,mepdists(myid)))
-            call mpi_scatterv(0, 0, 0, rmpi, mepgrid, 3 * mepdists(myid),&
-                             & rmpi, 0, comm, ierr)
-        end if
+        if (myid /= 0) allocate(Rp(3,npoints))
+        call mpi_bcast(Rp, 3 * npoints, rmpi, 0, comm, ierr)
+!        if (myid == 0) then
+!            displs(0) = 0
+!            do i = 1, nprocs
+!             displs(i) = displs(i-1) + 3 * mepdists(i-1)
+!            end do
+!            call mpi_scatterv(Rp, 3 * mepdists, displs, rmpi,&
+!                             & mpi_in_place, 0, rmpi, 0, comm, ierr)
+!        else if (myid /= 0) then
+!            allocate(Rp(3,mepdists(myid)))
+!            call mpi_scatterv(0, 0, 0, rmpi, Rp, 3 * mepdists(myid),&
+!                             & rmpi, 0, comm, ierr)
+!        end if
     end if
 
     synced = .true.
@@ -2662,38 +2714,252 @@ end subroutine chcase
 
 !------------------------------------------------------------------------------
 
-subroutine pe_compute_mep(denmats)
+subroutine compute_cube(denmats)
 
     real(dp), dimension(:), intent(in) :: denmats
 
     character(len=1) :: tcl
     character(len=99) :: cl
-    integer :: point
     integer :: i, j, k, l
-    integer :: ndist, nrest
+    integer :: lu
+    logical :: exclude, lexist
+    real(dp), dimension(3) :: Rsp
+    real(dp), dimension(:), allocatable :: Vpe
+    real(dp), dimension(:,:), allocatable :: Fpe, M1inds
+
+    if (myid == 0) then
+        allocate(Vpe(npoints))
+    else if (myid /= 0) then
+        allocate(Vpe(mepdists(myid)))
+    end if
+
+    Vpe = 0.0d0
+
+    if (mulorder >= 0) then
+        k = 1
+        do i = mep_start, mep_finish
+            do j = 1, nsites
+                Rsp = Rp(:,i) - Rs(:,j)
+                if (lmul(0)) then
+                    call multipole_potential(Vpe(k), Rsp, M0s(:,j))
+                end if
+                if (lmul(1)) then
+                    call multipole_potential(Vpe(k), Rsp, M1s(:,j))
+                end if
+                if (lmul(2)) then
+                    call multipole_potential(Vpe(k), Rsp, M2s(:,j))
+                end if
+                if (lmul(3)) then
+                    call multipole_potential(Vpe(k), Rsp, M3s(:,j))
+                end if
+                if (lmul(4)) then
+                    call multipole_potential(Vpe(k), Rsp, M4s(:,j))
+                end if
+                if (lmul(5)) then
+                    call multipole_potential(Vpe(k), Rsp, M5s(:,j))
+                end if
+            end do
+            k = k + 1
+        end do
+    end if
+
+    if (lpol(1)) then
+        allocate(M1inds(3*npols,1))
+        if (myid == 0) then
+            inquire(file='pe_induced_dipoles.bin', exist=lexist)
+        end if
+#if defined(VAR_MPI)
+        if (nprocs > 1) then
+            call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
+        end if
+#endif
+        if (lexist) then
+            if (myid == 0) then
+                call openfile('pe_induced_dipoles.bin', lu, 'old', 'unformatted')
+                rewind(lu)
+                read(lu) M1inds
+                close(lu)
+            end if
+        else
+            write(luout,*) 'WARNING: pe_induced_dipoles.bin not found'
+            write(luout,*) '         cannot create cube file.'
+        end if
+#if defined(VAR_MPI)
+        if (nprocs > 1) then
+            call mpi_bcast(M1inds, 3*npols, rmpi, 0, comm, ierr)
+        end if
+#endif
+        k = 1
+        do i = mep_start, mep_finish
+            l = 1
+            do j = 1, nsites
+                if (zeroalphas(j)) cycle
+                Rsp = Rp(:,i) - Rs(:,j)
+                call multipole_potential(Vpe(k), Rsp, M1inds(l:l+2,1))
+                l = l + 3
+            end do
+            k = k + 1
+        end do
+    end if
+
+#if defined(VAR_MPI)
+    if (myid == 0 .and. nprocs > 1) then
+        displs(0) = 0
+        do i = 1, nprocs
+            displs(i) = displs(i-1) + mepdists(i-1)
+        end do
+        call mpi_gatherv(mpi_in_place, 0, rmpi, Vpe, mepdists, displs,&
+                        & rmpi, 0, comm, ierr)
+    else if (myid /= 0) then
+        call mpi_gatherv(Vpe, mepdists(myid), rmpi, 0, 0, 0,&
+                        & rmpi, 0, comm, ierr)
+    end if
+#endif
+    if (myid == 0) then
+        call openfile('embedding_potential.cube', lu, 'new', 'formatted')
+        write(lu,'(a)') 'Polarizable embedding potential'
+        write(lu,'(a)') 'Generated by the PE module in DALTON2013'
+        write(lu,'(i5,3f12.6)') qmnucs, origin
+        write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
+        write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
+        write(lu,'(i5,3f12.6)') zsteps, 0.0d0, 0.0d0, step(3)
+        do j = 1, qmnucs
+            write(lu,'(i5,4f12.6)') int(Zm(1,j)), Zm(1,j), Rm(:,j)
+        end do
+        do i = 1, xsteps * ysteps
+            j = (i - 1) * zsteps + 1
+            k = j - 1 + zsteps
+            write(lu,'(6e13.5)') Vpe(j:k)
+        end do
+        close(lu)
+    end if
+ 
+    if (mep_field) then
+        if (myid == 0) then
+            allocate(Fpe(npoints,3))
+        else if (myid /= 0) then
+            allocate(Fpe(mepdists(myid),3))
+        end if
+
+        Fpe = 0.0d0
+
+        if (mulorder >= 0) then
+            k = 1
+            do i = mep_start, mep_finish
+                do j = 1, nsites
+                    Rsp = Rp(:,i) - Rs(:,j)
+                    if (lmul(0)) then
+                        call multipole_field(Fpe(k,:), Rsp, M0s(:,j))
+                    end if
+                    if (lmul(1)) then
+                        call multipole_field(Fpe(k,:), Rsp, M1s(:,j))
+                    end if
+                    if (lmul(2)) then
+                        call multipole_field(Fpe(k,:), Rsp, M2s(:,j))
+                    end if
+                    if (lmul(3)) then
+                        call multipole_field(Fpe(k,:), Rsp, M3s(:,j))
+                    end if
+                    if (lmul(4)) then
+                        call multipole_field(Fpe(k,:), Rsp, M4s(:,j))
+                    end if
+                    if (lmul(5)) then
+                        call multipole_field(Fpe(k,:), Rsp, M5s(:,j))
+                    end if
+                end do
+                k = k + 1
+            end do
+        end if
+
+        if (lpol(1)) then
+            k = 1
+            do i = mep_start, mep_finish
+                l = 1
+                do j = 1, nsites
+                    if (zeroalphas(j)) cycle
+                    Rsp = Rp(:,i) - Rs(:,j)
+                    call multipole_field(Fpe(k,:), Rsp, M1inds(l:l+2,1))
+                    l = l + 3
+                end do
+                k = k + 1
+            end do
+            deallocate(M1inds)
+        end if
+
+#if defined(VAR_MPI)
+        if (myid == 0 .and. nprocs > 1) then
+            displs(0) = 0
+            do i = 1, nprocs
+                displs(i) = displs(i-1) + 3 * mepdists(i-1)
+            end do
+            call mpi_gatherv(mpi_in_place, 0, rmpi, Fpe, 3 * mepdists,&
+                            & displs, rmpi, 0, comm, ierr)
+        else if (myid /= 0) then
+            call mpi_gatherv(Fpe, 3 * mepdists(myid), rmpi, 0, 0, 0, rmpi,&
+                            & 0, comm, ierr)
+        end if
+#endif
+        if (myid == 0) then
+            do l = 1, 3
+                write(cl,*) l
+                tcl = trim(adjustl(cl))
+                call openfile('embedding_field_'//tcl//'.cube', lu, 'new', 'formatted')
+                write(lu,'(a)') 'Polarizable embedding electric field component '//tcl
+                write(lu,'(a)') 'Generated by the PE module in DALTON2013'
+                write(lu,'(i5,3f12.6)') qmnucs, origin
+                write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
+                write(lu,'(i5,3f12.6)') ysteps, 0.0d0, step(2), 0.0d0
+                write(lu,'(i5,3f12.6)') zsteps, 0.0d0, 0.0d0, step(3)
+                do j = 1, qmnucs
+                    write(lu,'(i5,4f12.6)') nint(Zm(1,j)), Zm(1,j), Rm(:,j)
+                end do
+                do i = 1, xsteps * ysteps
+                    j = (i - 1) * zsteps + 1
+                    k = j - 1 + zsteps
+                    write(lu,'(6e13.5)') Fpe(j:k,l)
+                end do
+                close(lu)
+            end do
+        end if
+    end if
+
+end subroutine compute_cube
+
+!------------------------------------------------------------------------------
+
+subroutine compute_mep(denmats)
+
+    real(dp), dimension(:), intent(in) :: denmats
+
+    character(len=1) :: tcl
+    character(len=99) :: cl
+    integer :: i, j, k, l
     integer :: lu, lum0, lum1, lum2, lum3, lum4, lum5
-    logical :: exclude
+    logical :: exclude, lexist
     real(dp) :: taylor
-    real(dp), dimension(3) :: Tm, Rsp, Rji, Fs
+    real(dp), dimension(3) :: Rji, Rsp, Fs
     real(dp), dimension(:,:), allocatable :: Vqm, Vpe, Vind
     real(dp), dimension(:,:), allocatable :: Fqm, Find
     real(dp), dimension(:,:,:), allocatable :: Fpe
     real(dp), dimension(:,:), allocatable :: Fmuls, M1inds
     real(dp), dimension(:,:), allocatable :: Tk_ints
-    real(dp), dimension(:), allocatable :: factors, Tsp
 
     if (mep_qmcube) then
-        allocate(Vqm(1,npoints))
+        if (myid == 0) then
+            allocate(Vqm(npoints,1))
+        else if (myid /= 0) then
+            allocate(Vqm(mepdists(myid),1))
+        end if
+        Vqm = 0.0d0
         allocate(Tk_ints(nnbas,1))
-        i = 1
-        do point = mep_start, mep_finish
-            call Tk_integrals('es', Tk_ints(:,1), nnbas, 1, mepgrid(:,i))
-            Vqm(1,i) = dot(denmats, Tk_ints(:,1))
+        k = 1
+        do i = mep_start, mep_finish
+            call Tk_integrals('es', Tk_ints(:,1), nnbas, 1, Rp(:,i))
+            Vqm(k,1) = dot(denmats, Tk_ints(:,1))
             do j = 1, qmnucs
-                call Tk_tensor(Tm(1:1), mepgrid(:,i) - Rm(:,j))
-                Vqm(1,i) = Vqm(1,i) + Zm(1,j) * Tm(1)
+                call multipole_potential(Vqm(k,1), Rp(:,i) - Rm(:,j), Zm(:,j))
             end do
-            i = i + 1
+            k = k + 1
         end do
         deallocate(Tk_ints)
 #if defined(VAR_MPI)
@@ -2713,7 +2979,7 @@ subroutine pe_compute_mep(denmats)
 #endif
         if (myid == 0) then
             call openfile('qm_mep.cube', lu, 'new', 'formatted')
-            write(lu,'(a)') 'QM MEP'
+            write(lu,'(a)') 'QM electrostatic potential'
             write(lu,'(a)') 'Generated by the polarizable embedding (PE) module'
             write(lu,'(i5,3f12.6)') qmnucs, origin
             write(lu,'(i5,3f12.6)') xsteps, step(1), 0.0d0, 0.0d0
@@ -2725,7 +2991,7 @@ subroutine pe_compute_mep(denmats)
             do i = 1, xsteps * ysteps
                 j = (i - 1) * zsteps + 1
                 k = j - 1 + zsteps
-                write(lu,'(6e13.5)') Vqm(1,j:k)
+                write(lu,'(6e13.5)') Vqm(j:k,1)
             end do
             close(lu)
         end if
@@ -2733,78 +2999,36 @@ subroutine pe_compute_mep(denmats)
     end if
 
     if (mulorder >= 0 .and. mep_mulcube) then
-        allocate(Vpe(0:mulorder,npoints))
+        if (myid == 0) then
+            allocate(Vpe(npoints,0:mulorder))
+        else if (myid /= 0) then
+            allocate(Vpe(mepdists(myid),0:mulorder))
+        end if
         Vpe = 0.0d0
-        i = 1
-        do point = mep_start, mep_finish
+        k = 1
+        do i = mep_start, mep_finish
             do j = 1, nsites
-                Rsp = mepgrid(:,i) - Rs(:,j)
+                Rsp = Rp(:,i) - Rs(:,j)
                 if (lmul(0)) then
-                    allocate(Tsp(1), factors(1))
-                    call symmetry_factors(factors)
-                    taylor = 1.0d0 / factorial(0)
-                    call Tk_tensor(Tsp, Rsp)
-                    Vpe(0,i) = Vpe(0,i) + taylor * factors(1) * Tsp(1) *&
-                             & M0s(1,j)
-                    deallocate(Tsp, factors)
+                    call multipole_potential(Vpe(k,0), Rsp, M0s(:,j))
                 end if
                 if (lmul(1)) then
-                    allocate(Tsp(3), factors(3))
-                    call symmetry_factors(factors)
-                    taylor = - 1.0d0 / factorial(1)
-                    call Tk_tensor(Tsp, Rsp)
-                    do k = 1, 3
-                        Vpe(1,i) = Vpe(1,i) + taylor * factors(k) * Tsp(k) *&
-                                 & M1s(k,j)
-                    end do
-                    deallocate(Tsp, factors)
+                    call multipole_potential(Vpe(k,1), Rsp, M1s(:,j))
                 end if
                 if (lmul(2)) then
-                    allocate(Tsp(6), factors(6))
-                    call symmetry_factors(factors)
-                    taylor = 1.0d0 / factorial(2)
-                    call Tk_tensor(Tsp, Rsp)
-                    do k = 1, 6
-                        Vpe(2,i) = Vpe(2,i) + taylor * factors(k) * Tsp(k) *&
-                                 & M2s(k,j)
-                    end do
-                    deallocate(Tsp, factors)
+                    call multipole_potential(Vpe(k,2), Rsp, M2s(:,j))
                 end if
                 if (lmul(3)) then
-                    allocate(Tsp(10), factors(10))
-                    call symmetry_factors(factors)
-                    taylor = - 1.0d0 / factorial(3)
-                    call Tk_tensor(Tsp, Rsp)
-                    do k = 1, 10
-                        Vpe(3,i) = Vpe(3,i) + taylor * factors(k) * Tsp(k) *&
-                                 & M3s(k,j)
-                    end do
-                    deallocate(Tsp, factors)
+                    call multipole_potential(Vpe(k,3), Rsp, M3s(:,j))
                 end if
                 if (lmul(4)) then
-                    allocate(Tsp(15), factors(15))
-                    call symmetry_factors(factors)
-                    taylor = 1.0d0 / factorial(4)
-                    call Tk_tensor(Tsp, Rsp)
-                    do k = 1, 15
-                        Vpe(4,i) = Vpe(4,i) + taylor * factors(k) * Tsp(k) *&
-                                 & M4s(k,j)
-                    end do
-                    deallocate(Tsp, factors)
+                    call multipole_potential(Vpe(k,4), Rsp, M4s(:,j))
                 end if
                 if (lmul(5)) then
-                    allocate(Tsp(21), factors(21))
-                    call symmetry_factors(factors)
-                    taylor = - 1.0d0 / factorial(5)
-                    call Tk_tensor(Tsp, Rsp)
-                    do k = 1, 21
-                        Vpe(5,i) = Vpe(5,i) + taylor * factors(k) * Tsp(k) *&
-                                 & M5s(k,j)
-                    end do
-                    deallocate(Tsp, factors)
+                    call multipole_potential(Vpe(k,5), Rsp, M5s(:,j))
                 end if
             end do
-            i = i + 1
+            k = k + 1
         end do
 #if defined(VAR_MPI)
         if (myid == 0 .and. nprocs > 1) then
@@ -2812,13 +3036,12 @@ subroutine pe_compute_mep(denmats)
             do i = 1, nprocs
                 displs(i) = displs(i-1) + (mulorder + 1) * mepdists(i-1)
             end do
-            call mpi_gatherv(mpi_in_place, 0, rmpi,&
-                            &Vpe, (mulorder+1)*mepdists, displs, rmpi,&
-                            &0, comm, ierr)
+            call mpi_gatherv(mpi_in_place, 0, rmpi, Vpe,&
+                            & (mulorder + 1) * mepdists, displs, rmpi,&
+                            & 0, comm, ierr)
         else if (myid /= 0) then
-            call mpi_gatherv(Vpe, (mulorder+1)*mepdists(myid), rmpi,&
-                            &0, 0, 0, rmpi,&
-                            &0, comm, ierr)
+            call mpi_gatherv(Vpe, (mulorder + 1) * mepdists(myid), rmpi,&
+                            & 0, 0, 0, rmpi, 0, comm, ierr)
         end if
 #endif
         if (myid == 0) then
@@ -2868,28 +3091,28 @@ subroutine pe_compute_mep(denmats)
                 j = (i - 1) * zsteps + 1
                 k = j - 1 + zsteps
                 if (mulorder >= 0) then
-                    write(lum0,'(6e13.5)') Vpe(0,j:k)
+                    write(lum0,'(6e13.5)') Vpe(j:k,0)
                 end if
                 if (mulorder >= 1) then
-                    write(lum1,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k))
+                    write(lum1,'(6e13.5)') (Vpe(j:k,0) + Vpe(j:k,1))
                 end if
                 if (mulorder >= 2) then
-                    write(lum2,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k) +&
-                                           & Vpe(2,j:k))
+                    write(lum2,'(6e13.5)') (Vpe(j:k,0) + Vpe(j:k,1) +&
+                                           & Vpe(j:k,2))
                 end if
                 if (mulorder >= 3) then
-                    write(lum3,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k) +&
-                                           & Vpe(2,j:k) + Vpe(3,j:k))
+                    write(lum3,'(6e13.5)') (Vpe(j:k,0) + Vpe(j:k,1) +&
+                                           & Vpe(j:k,2) + Vpe(j:k,3))
                 end if
                 if (mulorder >= 4) then
-                    write(lum4,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k) +&
-                                           & Vpe(2,j:k) + Vpe(3,j:k) +&
-                                           & Vpe(4,j:k))
+                    write(lum4,'(6e13.5)') (Vpe(j:k,0) + Vpe(j:k,1) +&
+                                           & Vpe(j:k,2) + Vpe(j:k,3) +&
+                                           & Vpe(j:k,4))
                 end if
                 if (mulorder >= 5) then
-                    write(lum5,'(6e13.5)') (Vpe(0,j:k) + Vpe(1,j:k) +&
-                                           & Vpe(2,j:k) + Vpe(3,j:k) +&
-                                           & Vpe(4,j:k) + Vpe(5,j:k))
+                    write(lum5,'(6e13.5)') (Vpe(j:k,0) + Vpe(j:k,1) +&
+                                           & Vpe(j:k,2) + Vpe(j:k,3) +&
+                                           & Vpe(j:k,4) + Vpe(j:k,5))
                 end if
             end do
             if (mulorder >= 0) then
@@ -2967,11 +3190,6 @@ subroutine pe_compute_mep(denmats)
             l = l + 3
         end do
         allocate(M1inds(3*npols,1))
-!        call multipole_fields(Fmuls(:,1))
-        if (myid == 0) then
-            write(luout,*) 'Electric fields from static multipole moments:'
-            write(luout,'(3f12.6)') Fmuls
-        end if
         if (mep_extfld) then
             j = 1
             do i = 1, npols
@@ -2980,39 +3198,29 @@ subroutine pe_compute_mep(denmats)
             end do
         end if
         call induced_moments(M1inds, Fmuls)
-        if (myid == 0) then
-            write(luout,*) 'Induced dipole moments:'
-            write(luout,'(3f12.6)') M1inds
-        end if
         deallocate(Fmuls)
 #if defined(VAR_MPI)
         if (nprocs > 1) then
-            call mpi_bcast(M1inds, 3*npols, rmpi,&
-                          &0, comm, ierr)
+            call mpi_bcast(M1inds, 3*npols, rmpi, 0, comm, ierr)
         end if
 #endif
-        allocate(Vind(1,npoints))
+        if (myid == 0) then
+            allocate(Vind(npoints,1))
+        else if (myid /= 0) then
+            allocate(Vind(mepdists(myid),1))
+        end if
         Vind = 0.0d0
-        allocate(Tsp(3), factors(3))
-        call symmetry_factors(factors)
-        taylor = - 1.0d0 / factorial(1)
-        i = 1
-        do point = mep_start, mep_finish
-            l = 0
+        k = 1
+        do i = mep_start, mep_finish
+            l = 1
             do j = 1, nsites
                 if (zeroalphas(j)) cycle
-                Rsp = mepgrid(:,i) - Rs(:,j)
-                Tsp = 0.0d0
-                call Tk_tensor(Tsp, Rsp)
-                do k = 1, 3
-                    Vind(1,i) = Vind(1,i) + taylor * factors(k) * Tsp(k) *&
-                              & M1inds(l+k,1)
-                end do
+                Rsp = Rp(:,i) - Rs(:,j)
+                call multipole_potential(Vind(k,1), Rsp, M1inds(l:l+2,1))
                 l = l + 3
             end do
-            i = i + 1
+            k = k + 1
         end do
-        deallocate(Tsp, factors)
         deallocate(M1inds)
 #if defined(VAR_MPI)
         if (myid == 0 .and. nprocs > 1) then
@@ -3020,13 +3228,11 @@ subroutine pe_compute_mep(denmats)
             do i = 1, nprocs
                 displs(i) = displs(i-1) + mepdists(i-1)
             end do
-            call mpi_gatherv(mpi_in_place, 0, rmpi,&
-                            &Vind, mepdists, displs, rmpi,&
-                            &0, comm, ierr)
+            call mpi_gatherv(mpi_in_place, 0, rmpi, Vind, mepdists, displs,&
+                            & rmpi, 0, comm, ierr)
         else if (myid /= 0) then
-            call mpi_gatherv(Vind, mepdists(myid), rmpi,&
-                            &0, 0, 0, rmpi,&
-                            &0, comm, ierr)
+            call mpi_gatherv(Vind, mepdists(myid), rmpi, 0, 0, 0,&
+                            & rmpi, 0, comm, ierr)
         end if
 #endif
         if (myid == 0) then
@@ -3043,7 +3249,7 @@ subroutine pe_compute_mep(denmats)
             do i = 1, xsteps * ysteps
                 j = (i - 1) * zsteps + 1
                 k = j - 1 + zsteps
-                write(lu,'(6e13.5)') Vind(1,j:k)
+                write(lu,'(6e13.5)') Vind(j:k,1)
             end do
             close(lu)
         end if
@@ -3052,21 +3258,23 @@ subroutine pe_compute_mep(denmats)
 
     if (mep_field) then
         if (mep_qmcube) then
-            allocate(Fqm(3,npoints))
+            if (myid == 0) then
+                allocate(Fqm(npoints,3))
+            else if (myid /= 0) then
+                allocate(Fqm(mepdists(myid),3))
+            end if
+            Fqm = 0.0d0
             allocate(Tk_ints(nnbas,3))
-            i = 1
-            do point = mep_start, mep_finish
-                call Tk_integrals('es', Tk_ints, nnbas, 3, mepgrid(:,i))
+            k = 1
+            do i = mep_start, mep_finish
+                call Tk_integrals('es', Tk_ints, nnbas, 3, Rp(:,i))
                 do j = 1, 3
-                    Fqm(j,i) = dot(denmats, Tk_ints(:,j))
+                    Fqm(k,j) = dot(denmats, Tk_ints(:,j))
                 end do
                 do j = 1, qmnucs
-                    call Tk_tensor(Tm, mepgrid(:,i) - Rm(:,j))
-                    do k = 1, 3
-                        Fqm(k,i) = Fqm(k,i) - Zm(1,j) * Tm(k)
-                    end do
+                    call multipole_field(Fqm(k,:), Rp(:,i) - Rm(:,j), Zm(:,j))
                 end do
-                i = i + 1
+                k = k + 1
             end do
             deallocate(Tk_ints)
 #if defined(VAR_MPI)
@@ -3075,12 +3283,10 @@ subroutine pe_compute_mep(denmats)
                 do i = 1, nprocs
                     displs(i) = displs(i-1) + 3 * mepdists(i-1)
                 end do
-                call mpi_gatherv(mpi_in_place, 0, rmpi,&
-                                &Fqm, 3*mepdists, displs, rmpi,&
-                                &0, comm, ierr)
+                call mpi_gatherv(mpi_in_place, 0, rmpi, Fqm, 3 * mepdists,& 
+                                & displs, rmpi, 0, comm, ierr)
             else if (myid /= 0) then
-                call mpi_gatherv(Fqm, 3*mepdists(myid), rmpi,&
-                                &0, 0, 0, rmpi,&
+                call mpi_gatherv(Fqm, 3 * mepdists(myid), rmpi, 0, 0, 0, rmpi,&
                                 &0, comm, ierr)
             end if
 #endif
@@ -3100,7 +3306,7 @@ subroutine pe_compute_mep(denmats)
                     do i = 1, xsteps * ysteps
                         j = (i - 1) * zsteps + 1
                         k = j - 1 + zsteps
-                        write(lu,'(6e13.5)') (nrm2(Fqm(:,l)), l = j, k)
+                        write(lu,'(6e13.5)') (nrm2(Fqm(l,:)), l = j, k)
                     end do
                     close(lu)
                 else
@@ -3123,7 +3329,7 @@ subroutine pe_compute_mep(denmats)
                         do i = 1, xsteps * ysteps
                             j = (i - 1) * zsteps + 1
                             k = j - 1 + zsteps
-                            write(lu,'(6e13.5)') Fqm(l,j:k)
+                            write(lu,'(6e13.5)') Fqm(j:k,l)
                         end do
                         close(lu)
                     end do
@@ -3133,44 +3339,48 @@ subroutine pe_compute_mep(denmats)
         end if
 
         if (mulorder >= 0 .and. mep_mulcube) then
-            allocate(Fpe(3,0:mulorder,npoints))
+            if (myid == 0) then
+                allocate(Fpe(npoints,3,0:mulorder))
+            else if (myid /= 0) then
+                allocate(Fpe(mepdists(myid),3,0:mulorder))
+            end if
             Fpe = 0.0d0
-            i = 1
-            do point = mep_start, mep_finish
+            k = 1
+            do i = mep_start, mep_finish
                 do j = 1, nsites
-                    Rsp = mepgrid(:,i) - Rs(:,j)
+                    Rsp = Rp(:,i) - Rs(:,j)
                     if (lmul(0)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M0s(:,j))
-                        Fpe(:,0,i) = Fpe(:,0,i) + Fs
+                        Fpe(k,:,0) = Fpe(k,:,0) + Fs
                     end if
                     if (lmul(1)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M1s(:,j))
-                        Fpe(:,1,i) = Fpe(:,1,i) + Fs
+                        Fpe(k,:,1) = Fpe(k,:,1) + Fs
                     end if
                     if (lmul(2)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M2s(:,j))
-                        Fpe(:,2,i) = Fpe(:,2,i) + Fs
+                        Fpe(k,:,2) = Fpe(k,:,2) + Fs
                     end if
                     if (lmul(3)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M3s(:,j))
-                        Fpe(:,3,i) = Fpe(:,3,i) + Fs
+                        Fpe(k,:,3) = Fpe(k,:,3) + Fs
                     end if
                     if (lmul(4)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M4s(:,j))
-                        Fpe(:,4,i) = Fpe(:,4,i) + Fs
+                        Fpe(k,:,4) = Fpe(k,:,4) + Fs
                     end if
                     if (lmul(5)) then
                         Fs = 0.0d0
                         call multipole_field(Fs, Rsp, M5s(:,j))
-                        Fpe(:,5,i) = Fpe(:,5,i) + Fs
+                        Fpe(k,:,5) = Fpe(k,:,5) + Fs
                     end if
                 end do
-                i = i + 1
+                k = k + 1
             end do
 #if defined(VAR_MPI)
             if (myid == 0 .and. nprocs > 1) then
@@ -3178,13 +3388,12 @@ subroutine pe_compute_mep(denmats)
                 do i = 1, nprocs
                     displs(i) = displs(i-1) + 3 * (mulorder + 1) * mepdists(i-1)
                 end do
-                call mpi_gatherv(mpi_in_place, 0, rmpi,&
-                                &Fpe, 3*(mulorder+1)*mepdists, displs, rmpi,&
-                                &0, comm, ierr)
+                call mpi_gatherv(mpi_in_place, 0, rmpi, Fpe,&
+                                & 3 * (mulorder + 1) * mepdists, displs, rmpi,&
+                                & 0, comm, ierr)
             else if (myid /= 0) then
-                call mpi_gatherv(Fpe, 3*(mulorder+1)*mepdists(myid), rmpi,&
-                                &0, 0, 0, rmpi,&
-                                &0, comm, ierr)
+                call mpi_gatherv(Fpe, 3 * (mulorder + 1) * mepdists(myid),&
+                                & rmpi, 0, 0, 0, rmpi, 0, comm, ierr)
             end if
 #endif
             if (myid == 0) then
@@ -3237,37 +3446,37 @@ subroutine pe_compute_mep(denmats)
                         j = (i - 1) * zsteps + 1
                         k = j - 1 + zsteps
                         if (mulorder >= 0) then
-                            write(lum0,'(6e13.5)') (nrm2(Fpe(:,0,l)), l = j, k)
+                            write(lum0,'(6e13.5)') (nrm2(Fpe(l,:,0)), l = j, k)
                         end if
                         if (mulorder >= 1) then
-                            write(lum1,'(6e13.5)') (nrm2(Fpe(:,0,l) +&
-                                                        & Fpe(:,1,l)), l = j, k)
+                            write(lum1,'(6e13.5)') (nrm2(Fpe(l,:,0) +&
+                                                        & Fpe(l,:,1)), l = j, k)
                         end if
                         if (mulorder >= 2) then
-                            write(lum2,'(6e13.5)') (nrm2(Fpe(:,0,l) +&
-                                                        & Fpe(:,1,l) +&
-                                                        & Fpe(:,2,l)), l = j, k)
+                            write(lum2,'(6e13.5)') (nrm2(Fpe(l,:,0) +&
+                                                        & Fpe(l,:,1) +&
+                                                        & Fpe(l,:,2)), l = j, k)
                         end if
                         if (mulorder >= 3) then
-                            write(lum3,'(6e13.5)') (nrm2(Fpe(:,0,l) +&
-                                                        & Fpe(:,1,l) +&
-                                                        & Fpe(:,2,l) +&
-                                                        & Fpe(:,3,l)), l = j, k)
+                            write(lum3,'(6e13.5)') (nrm2(Fpe(l,:,0) +&
+                                                        & Fpe(l,:,1) +&
+                                                        & Fpe(l,:,2) +&
+                                                        & Fpe(l,:,3)), l = j, k)
                         end if
                         if (mulorder >= 4) then
-                            write(lum4,'(6e13.5)') (nrm2(Fpe(:,0,l) +&
-                                                        & Fpe(:,1,l) +&
-                                                        & Fpe(:,2,l) +&
-                                                        & Fpe(:,3,l) +&
-                                                        & Fpe(:,4,l)), l = j, k)
+                            write(lum4,'(6e13.5)') (nrm2(Fpe(l,:,0) +&
+                                                        & Fpe(l,:,1) +&
+                                                        & Fpe(l,:,2) +&
+                                                        & Fpe(l,:,3) +&
+                                                        & Fpe(l,:,4)), l = j, k)
                         end if
                         if (mulorder >= 5) then
-                            write(lum5,'(6e13.5)') (nrm2(Fpe(:,0,l) +&
-                                                        & Fpe(:,1,l) +&
-                                                        & Fpe(:,2,l) +&
-                                                        & Fpe(:,3,l) +&
-                                                        & Fpe(:,4,l) +&
-                                                        & Fpe(:,5,l)), l = j, k)
+                            write(lum5,'(6e13.5)') (nrm2(Fpe(l,:,0) +&
+                                                        & Fpe(l,:,1) +&
+                                                        & Fpe(l,:,2) +&
+                                                        & Fpe(l,:,3) +&
+                                                        & Fpe(l,:,4) +&
+                                                        & Fpe(l,:,5)), l = j, k)
                         end if
                     end do
                     if (mulorder >= 0) then
@@ -3349,37 +3558,37 @@ subroutine pe_compute_mep(denmats)
                             j = (i - 1) * zsteps + 1
                             k = j - 1 + zsteps
                             if (mulorder >= 0) then
-                                write(lum0,'(6e13.5)') Fpe(l,0,j:k)
+                                write(lum0,'(6e13.5)') Fpe(j:k,l,0)
                             end if
                             if (mulorder >= 1) then
-                                write(lum1,'(6e13.5)') (Fpe(l,0,j:k) +&
-                                                       & Fpe(l,1,j:k))
+                                write(lum1,'(6e13.5)') (Fpe(j:k,l,0) +&
+                                                       & Fpe(j:k,l,1))
                             end if
                             if (mulorder >= 2) then
-                                write(lum2,'(6e13.5)') (Fpe(l,0,j:k) +&
-                                                       & Fpe(l,1,j:k) +&
-                                                       & Fpe(l,2,j:k))
+                                write(lum2,'(6e13.5)') (Fpe(j:k,l,0) +&
+                                                       & Fpe(j:k,l,1) +&
+                                                       & Fpe(j:k,l,2))
                             end if
                             if (mulorder >= 3) then
-                                write(lum3,'(6e13.5)') (Fpe(l,0,j:k) +&
-                                                       & Fpe(l,1,j:k) +&
-                                                       & Fpe(l,2,j:k) +&
-                                                       & Fpe(l,3,j:k))
+                                write(lum3,'(6e13.5)') (Fpe(j:k,l,0) +&
+                                                       & Fpe(j:k,l,1) +&
+                                                       & Fpe(j:k,l,2) +&
+                                                       & Fpe(j:k,l,3))
                             end if
                             if (mulorder >= 4) then
-                                write(lum4,'(6e13.5)') (Fpe(l,0,j:k) +&
-                                                       & Fpe(l,1,j:k) +&
-                                                       & Fpe(l,2,j:k) +&
-                                                       & Fpe(l,3,j:k) +&
-                                                       & Fpe(l,4,j:k))
+                                write(lum4,'(6e13.5)') (Fpe(j:k,l,0) +&
+                                                       & Fpe(j:k,l,1) +&
+                                                       & Fpe(j:k,l,2) +&
+                                                       & Fpe(j:k,l,3) +&
+                                                       & Fpe(j:k,l,4))
                             end if
                             if (mulorder >= 5) then
-                                write(lum5,'(6e13.5)') (Fpe(l,0,j:k) +&
-                                                       & Fpe(l,1,j:k) +&
-                                                       & Fpe(l,2,j:k) +&
-                                                       & Fpe(l,3,j:k) +&
-                                                       & Fpe(l,4,j:k) +&
-                                                       & Fpe(l,5,j:k))
+                                write(lum5,'(6e13.5)') (Fpe(j:k,l,0) +&
+                                                       & Fpe(j:k,l,1) +&
+                                                       & Fpe(j:k,l,2) +&
+                                                       & Fpe(j:k,l,3) +&
+                                                       & Fpe(j:k,l,4) +&
+                                                       & Fpe(j:k,l,5))
                             end if
                         end do
                         if (mulorder >= 0) then
@@ -3403,7 +3612,7 @@ subroutine pe_compute_mep(denmats)
                     end do
                 end if
             end if
-            if (.not. lpol(1)) deallocate(Fpe)
+            deallocate(Fpe)
         end if
 
         if (lpol(1)) then
@@ -3475,20 +3684,24 @@ subroutine pe_compute_mep(denmats)
                               &0, comm, ierr)
             end if
 #endif
-            allocate(Find(3,npoints))
+            if (myid == 0) then
+                allocate(Find(npoints,3))
+            else if (myid /= 0) then
+                allocate(Find(mepdists(myid),3))
+            end if
             Find = 0.0d0
-            i = 1
-            do point = mep_start, mep_finish
+            k = 1
+            do i = mep_start, mep_finish
                 l = 1
                 do j = 1, nsites
                     if (zeroalphas(j)) cycle
-                    Rsp = mepgrid(:,i) - Rs(:,j)
+                    Rsp = Rp(:,i) - Rs(:,j)
                     Fs = 0.0d0
                     call multipole_field(Fs, Rsp, M1inds(l:l+2,1))
-                    Find(:,i) = Find(:,i) + Fs
+                    Find(k,:) = Find(k,:) + Fs
                     l = l + 3
                 end do
-                i = i + 1
+                k = k + 1
             end do
             deallocate(M1inds)
 #if defined(VAR_MPI)
@@ -3497,13 +3710,11 @@ subroutine pe_compute_mep(denmats)
                 do i = 1, nprocs
                     displs(i) = displs(i-1) + 3 * mepdists(i-1)
                 end do
-                call mpi_gatherv(mpi_in_place, 0, rmpi,&
-                                &Find, 3*mepdists, displs, rmpi,&
-                                &0, comm, ierr)
+                call mpi_gatherv(mpi_in_place, 0, rmpi, Find, 3 * mepdists,&
+                                & displs, rmpi, 0, comm, ierr)
             else if (myid /= 0) then
-                call mpi_gatherv(Find, 3*mepdists(myid), rmpi,&
-                                &0, 0, 0, rmpi,&
-                                &0, comm, ierr)
+                call mpi_gatherv(Find, 3 * mepdists(myid), rmpi, 0, 0, 0,&
+                                & rmpi, 0, comm, ierr)
             end if
 #endif
             if (myid == 0) then
@@ -3522,7 +3733,7 @@ subroutine pe_compute_mep(denmats)
                     do i = 1, xsteps * ysteps
                         j = (i - 1) * zsteps + 1
                         k = j - 1 + zsteps
-                        write(lu,'(6e13.5)') (nrm2(Find(:,l)), l = j, k)
+                        write(lu,'(6e13.5)') (nrm2(Find(l,:)), l = j, k)
                     end do
                     close(lu)
                 else
@@ -3545,7 +3756,7 @@ subroutine pe_compute_mep(denmats)
                         do i = 1, xsteps * ysteps
                             j = (i - 1) * zsteps + 1
                             k = j - 1 + zsteps
-                            write(lu,'(6e13.5)') Find(l,j:k)
+                            write(lu,'(6e13.5)') Find(j:k,l)
                         end do
                         close(lu)
                     end do
@@ -3555,6 +3766,6 @@ subroutine pe_compute_mep(denmats)
         end if
     end if
 
-end subroutine pe_compute_mep
+end subroutine compute_mep
 
 end module polarizable_embedding

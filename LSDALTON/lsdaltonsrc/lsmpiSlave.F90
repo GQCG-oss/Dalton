@@ -52,6 +52,7 @@
       use lsmpi_test
       use integralinterfaceMod
       use dec_driver_slave_module
+      use lspdm_tensor_operations_module,only:free_persistent_array
     implicit none
     !> Communicator from which task is to be received
     integer(kind=ls_mpik) :: comm 
@@ -104,9 +105,12 @@
       case(CCSDDATA);
          call ccsd_data_preparation
       case(CCSDSLV4E2);
-         call calculate_E2_and_permute_slave 
+         call calculate_E2_and_permute_slave
+#ifdef MOD_UNRELEASED
       case(CCSDPTSLAVE);
          call ccsdpt_slave
+!endif mod_unreleased
+#endif
       case(ARRAYTEST);
          call get_slaves_to_array_test
       case(GROUPINIT);
@@ -135,12 +139,15 @@
          infpar%lg_morejobs=.false.
          goto 200
       case(LSMPIQUIT);  
+         call free_persistent_array()
          call lsmpi_finalize(6,.FALSE.)
       case(LSMPIQUITINFO);
+         call free_persistent_array()
          call lsmpi_finalize(6,.TRUE.)
       case(LSMPITEST);
          call test_mpi(comm)
       case default
+         call free_persistent_array()
          call lsmpi_finalize(6,.FALSE.)
       end select
      

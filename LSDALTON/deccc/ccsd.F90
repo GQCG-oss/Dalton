@@ -1655,24 +1655,11 @@ contains
     dynamic_load = DECinfo%dyn_load
     startt=0.0E0_realk
     stopp=0.0E0_realk
-    !double_2G_nel=250000000
     double_2G_nel=170000000
-    print_debug = (DECinfo%PL>1)
-    call print_norm(t2)
-
-
-
-!HACK
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    print_debug = .true.
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
+    print_debug = (DECinfo%PL>2)
 
 #ifdef VAR_DEBUG
     double_2G_nel=20
-    print_debug = .true.
 #endif
     
 
@@ -1771,10 +1758,12 @@ contains
       ! scheme 2: additionally to 3 also the amplitudes, u, the residual are
       !           treated in PDM, the strategy is to only use one V^2O^2 in 
       !           local mem
+#ifdef MOD_UNRELEASED
       ! scheme 1: is the high scaling scheme with the same constraints as in 2,
       !           this reduces the communication (probably not even worth 
       !           implementing)
       ! scheme 0: the "tradional" high scaling scheme for non-MPI calculations
+#endif
 
 #ifndef VAR_LSMPI
       !scheme 1 is a pure mpi-scheme, it is not selected by get_max_batch_size,
@@ -2117,8 +2106,8 @@ contains
        endif
        !u [gamma c i j ] -> u [i gamma c j]
        call array_reorder_4d(1.0E0_realk,w1,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj)
-       call print_norm(uigcj,int(lg*nv*no*no,kind=8))
 
+#ifdef MOD_UNRELEASED
        !Lambda^h [gamma c] * t [c d i j] = t [gamma d i j]
        if(DECinfo%ccModel>2.and.(scheme==0.or.scheme==1)) then
          if(scheme==1)then
@@ -2128,7 +2117,7 @@ contains
            call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,t2%elm1,nv,0.0E0_realk,tGammadij,lg)
          endif
        endif
-
+#endif
        alphaB=0
        
     !**********************************
@@ -2202,7 +2191,6 @@ contains
        !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
        call dgemm('n','n',nv,nb,lg*la*no,1.0E0_realk,w3,nv,w1,lg*la*no,1.0E0_realk,Had,nv)
        call lsmpi_poke()
-       call print_norm(Had,int(nb*nv,kind=8))
 
        !VVOO
        if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2)) then
@@ -2231,7 +2219,6 @@ contains
         endif
         call lsmpi_poke()
        endif
-       call print_norm(gvvoo,o2v2)
 
        ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
        call dgemm('n','n',lg*la*no,nv,nb,1.0E0_realk,w1,la*no*lg,yv,nb,0.0E0_realk,w3,la*no*lg)
@@ -2239,7 +2226,6 @@ contains
        !I [alpha l gamma c] * u [l gamma c j]  =+ Gbi [alpha j]
        call dgemm('n','n',la,no,nv*no*lg,1.0E0_realk,w3,la,uigcj,nv*no*lg,1.0E0_realk,Gbi(fa),nb)
        call lsmpi_poke()
-       call print_norm(Gbi,int(nb*no,kind=8))
        
        
        !CALCULATE govov FOR ENERGY
@@ -2262,7 +2248,6 @@ contains
          endif
          call lsmpi_poke()
        endif
-       call print_norm(govov)
 
        !VOOV
        if((restart.and.iter==1).and..not.scheme==4)&
@@ -2288,7 +2273,6 @@ contains
         endif
         call lsmpi_poke()
        endif
-       call print_norm(gvoov,o2v2)
 
        !prepare w0 to contain L
        if(DECinfo%ccModel>2.and.(scheme==0.or.scheme==1)) call dscal(int(lg*la*nb2),2.0E0_realk,w0,1)
@@ -2304,15 +2288,14 @@ contains
        !Mylsitem%setting%scheme%intprint=0
 
 
-      print *,"omegabeforeandafterb22term"
-      call print_norm(omega2)
       if(DECinfo%ccmodel>2)then
+#ifdef MOD_UNRELEASED
         if(scheme==0.or.scheme==1)then
           call get_d_term_int_direct(w0,w1,w2,w3,no,nv,nb,fa,fg,la,lg,&
           &xo,yo,xv,yv,u2,uigcj,omega2,u2kcjb,scheme)
           call lsmpi_poke()
         endif
-
+#endif
         if(fa<=fg+lg-1)then
         !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
         !element in the alpha batch has a smaller index as the last element in
@@ -2325,7 +2308,6 @@ contains
 
         endif
       endif
-      call print_norm(omega2)
       
 
       !(w0):I[ delta gamma alpha beta] <- (w1):I[ alpha beta gamma delta ]
@@ -2340,7 +2322,6 @@ contains
       ! (w3):I[alpha gamma i j] <- (w0):I[i gamma alpha j]
       if(DECinfo%ccModel>2)call add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
       call lsmpi_poke()
-      call print_norm(sio4,int(no*no*nor,kind=8))
 
 
       ! (w2):I[gamma i j alpha] <- (w0):I[i gamma alpha j]
@@ -2357,13 +2338,13 @@ contains
         call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3,o2v,1.0E0_realk,omega2%elm1,nv)
       endif
       call lsmpi_poke()
-      call print_norm(omega2)
-
+#ifdef MOD_UNRELEASED
       if(DECinfo%ccmodel>2.and.(scheme==0.or.scheme==1))then
         call get_c_term_int_direct(w0,w1,w2,w3,no,nv,nb,fa,fg,la,lg,xo,&
              &yo,xv,yv,t2,tGammadij,omega2,t2jabi,scheme)
         call lsmpi_poke()
       endif
+#endif
 
     end do BatchAlpha
     end do BatchGamma
@@ -2427,10 +2408,10 @@ contains
 
 
 #ifdef VAR_DEBUG
-    write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
+    if(print_debug)write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
     call lsmpi_local_reduction(wait_time,infpar%master)
     call lsmpi_local_max(max_wait_time,infpar%master)
-    if(master)then
+    if(master.and.print_debug)then
       write(*,'("----------------------------------------------------------")')
       write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)'),wait_time,wait_time/(infpar%nodtot*1.0E0_realk),max_wait_time
     endif
@@ -2485,7 +2466,7 @@ contains
     endif
     stopp=MPI_wtime()
 #ifdef VAR_DEBUG
-    if(master) print*,"MPI part of the calculation finished, comm-time",stopp-startt
+    if(master.and.DECinfo%PL>2) print*,"MPI part of the calculation finished, comm-time",stopp-startt
 #endif    
     !free windows and deallocate partial int matrices in scheme 1
     if(DECinfo%ccModel>2.and.(scheme==3.or.scheme==4))then
@@ -2503,9 +2484,6 @@ contains
     maxsize64 = max(int(nv2*no2,kind=8),int(nb2,kind=8))
     maxsize64 = max(maxsize64,int(nv2*nor,kind=8))
     call mem_alloc(w1,maxsize64)
-    call dcopy(int(o2v2),omega2%elm1,1,w1,1)
-    call lsmpi_local_reduction(w1,o2v2,infpar%master,double_2G_nel)
-    if(master)call print_norm(w1,o2v2)
     w1=0.0E0_realk
 
     !reorder integral for use within the solver and the c and d terms
@@ -2562,9 +2540,9 @@ contains
 
 !OUTPUT
 #ifdef VAR_LSMPI
-        write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
+        if(DECinfo%PL>2)write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
 #else
-        write(DECinfo%output,'("C and D   :",f15.4)')stopp-startt
+        if(DECinfo%PL>2)write(*,'("C and D   :",f15.4)')stopp-startt
 #endif
       endif
     endif
@@ -2602,7 +2580,6 @@ contains
       if(scheme==4.or.scheme==3.or.scheme==0)call array_free(u2)
       return
     endif
-    call print_norm(omega2%elm1,o2v2)
 
 
     !allocate the density matrix
@@ -2672,7 +2649,7 @@ contains
 #elif VAR_LSMPI
     stopp=MPI_wtime()
 #endif
-    write(DECinfo%output,'("Fock trafo:",f15.4)')stopp-startt
+    if(DECinfo%PL>2)write(*,'("Fock trafo:",f15.4)')stopp-startt
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_LSMPI
@@ -2717,7 +2694,7 @@ contains
 #elif VAR_LSMPI
     stopp=MPI_wtime()
 #endif
-    write(DECinfo%output,'("S and E   :",f15.4)')stopp-startt
+    if(DECinfo%PL>2)write(*,'("S and E   :",f15.4)')stopp-startt
 
 
 #ifdef VAR_LSMPI
@@ -3495,6 +3472,7 @@ contains
 
   end subroutine add_int_to_sio4
 
+#ifdef MOD_UNRELEASED
   !> \brief calculate d term integral direct form echange and coulomb integrals
   !> \author Patrick Ettenhuber
   !> \date December 2012
@@ -3642,6 +3620,8 @@ contains
       call array_reorder_4d(1.0E0_realk,w2,no,nv,no,nv,[2,4,1,3],1.0E0_realk,omega2%elm1)
     endif
   end subroutine get_d_term_int_direct
+#endif
+
 
   !> \brief calculate a and b terms in a kobayashi fashion
   !> \author Patrick Ettenhuber
@@ -4648,7 +4628,7 @@ contains
       if(.not.DECinfo%solver_par)then
         if(scheme==3.or.scheme==2.or.scheme==1)then
           print *,"CHOSEN SCHEME DOES NOT WORK WITHOUT PARALLEL SOLVER, USE&
-          & .CCSDsolver_par IN DALTON.INP"
+          & .CCSDsolver_par IN LSDALTON.INP"
           call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme",-1)
         endif
       endif
@@ -4675,7 +4655,7 @@ contains
 
     ! Attention this manual block should be only used for debugging, also you
     ! will have to ajust its properties to your system. The block is called
-    ! with the keywordk ".manual_batchsizes" in DALTON.INP the next line
+    ! with the keywordk ".manual_batchsizes" in LSDALTON.INP the next line
     ! then contains the alpha and gamma batch sizes separated by space
     if (manual) then
       ! KK and PE hacks -> only for debugging
@@ -4943,6 +4923,7 @@ contains
       e2 = max(tl3,tl4) + max(no*no,nv*nv)
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+max(nb*nb,max(cd,e2)))
       !memrq=memrq+max(memin,memout)
+#ifdef MOD_UNRELEASED
     elseif(memintensive==1)then
       print *,"ATTENTION, mem estimation not yet correct"
       !govov stays in pdm and is dense in second part
@@ -4998,6 +4979,7 @@ contains
       ! w1 + FO 
       memout = 1.0E0_realk*max(nv*nv*no*no,nb*nb)+nb*nb
       !memrq=memrq+max(memin,memout)
+#endif
     else
       call lsquit("ERROR(get_min_mem_req):requested memory scheme not known",-1)
     endif

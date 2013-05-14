@@ -163,7 +163,7 @@ contains
        endif
     endif
 
-    call LSTIMER('LSDALTON RSP',t1,t2,LU_PRI)
+    call LSTIMER('LSDALTON RSP',t1,t2,LU_PRI,.TRUE.)
     call CPU_TIME(tend)
     WRITE(lu_pri,*) "*****************************************************"
     Write(lu_pri,*) "**     CPU-TIME USED IN LSDALTON RESPONSE: ",tend-tstart,"   **"

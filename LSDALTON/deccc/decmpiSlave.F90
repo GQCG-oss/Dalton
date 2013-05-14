@@ -56,9 +56,12 @@
       case(CCSDDATA);
          call ccsd_data_preparation
       case(CCSDSLV4E2);
-         call calculate_E2_and_permute_slave 
+         call calculate_E2_and_permute_slave
+#ifdef MOD_UNRELEASED 
       case(CCSDPTSLAVE);
          call ccsdpt_slave
+!endif mod_unreleased
+#endif
       case(GROUPINIT);
          call init_mpi_groups_slave
 ! DEC driver - main loop
@@ -84,12 +87,6 @@
       case(QUITNOMOREJOBS); 
          infpar%lg_morejobs=.false.
          goto 200
-      case(LSMPIQUIT);  
-         call lsmpi_finalize(6,.FALSE.)
-      case(LSMPIQUITINFO);
-         call lsmpi_finalize(6,.TRUE.)
-      case default
-         call lsmpi_finalize(6,.FALSE.)
       end select
       
       goto 100
