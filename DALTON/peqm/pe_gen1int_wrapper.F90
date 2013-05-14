@@ -22,12 +22,18 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
     logical :: triangular
     logical :: symmetric
     type(one_prop_t) :: prop_operator
-    type(nary_tree_t) nary_tree_bra    !N-ary tree for partial geometric derivatives on bra center
-    type(nary_tree_t) nary_tree_ket    !N-ary tree for partial geometric derivatives on ket center
-    type(nary_tree_t) nary_tree_total  !N-ary tree for total geometric derivatives
-    integer num_geo_bra                !number of partial geometric derivatives on bra center
-    integer num_geo_ket                !number of partial geometric derivatives on ket center
-    integer num_geo_total              !number of total geometric derivatives
+    !N-ary tree for partial geometric derivatives on bra center
+    type(nary_tree_t) :: nary_tree_bra
+    !N-ary tree for partial geometric derivatives on ket center
+    type(nary_tree_t) :: nary_tree_ket
+    !N-ary tree for total geometric derivatives
+    type(nary_tree_t) :: nary_tree_total
+    !number of partial geometric derivatives on bra center
+    integer :: num_geo_bra
+    !number of partial geometric derivatives on ket center
+    integer :: num_geo_ket
+    !number of total geometric derivatives
+    integer :: num_geo_total
     type(matrix), dimension(:), allocatable :: intmats
 
     integer :: nbas
@@ -116,41 +122,9 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
 
     if (num_prop /= ncomps) stop 'Wrong number of components.'
 
-    ! creates N-ary tree for geometric derivatives on bra center
-    ! here is zeroth order geometric derivatives
-    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
-                                  order_geo=0,         &
-                                  num_geo_atoms=0,     &
-                                  idx_geo_atoms=(/0/), &
-                                  nary_tree=nary_tree_bra)
-    ! creates N-ary tree for geometric derivatives on ket center
-    ! here is zeroth order geometric derivatives
-    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
-                                  order_geo=0,         &
-                                  num_geo_atoms=0,     &
-                                  idx_geo_atoms=(/0/), &
-                                  nary_tree=nary_tree_ket)
-    ! creates N-ary tree for total geometric derivatives
-    ! here is zeroth order geometric derivatives
-    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
-                                  order_geo=0,         &
-                                  num_geo_atoms=0,     &
-                                  idx_geo_atoms=(/0/), &
-                                  nary_tree=nary_tree_total)
-    ! gets the number of geometric derivatives, since we are asking zeroth order geometric
-    ! derivatives, the number is simply 1; otherwise, we need to
-    ! call NaryTreeGetNumGeo(nary_tree=nary_tree_bra, num_unique_geo=num_geo_bra)
-    ! call NaryTreeGetNumGeo(nary_tree=nary_tree_ket, num_unique_geo=num_geo_ket)
-    ! call NaryTreeGetNumGeo(nary_tree=nary_tree_total, num_unique_geo=num_geo_total)
-    num_geo_bra = 1
-    num_geo_ket = 1
-    num_geo_total = 1
-
     call Gen1IntAPIGetNumAO(num_ao=num_ao)
     if (num_ao /= nbas) stop 'Array size inconsistency.'
 
-    ! if you have partial gemetric derivatives on bra and/or ket center, please
-    ! reset prop_sym = SQUARE_INT_MAT
     select case(prop_sym)
         case(SYMM_INT_MAT, ANTI_INT_MAT)
             triangular = .true.
@@ -161,7 +135,6 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
             stop 'Integral matrices not symmetric!'
     end select
 
-    num_prop = num_prop*num_geo_bra*num_geo_ket*num_geo_total
     allocate(intmats(num_prop), stat=ierr)
     if (ierr /= 0) stop 'Failed to allocate matrices.'
 
