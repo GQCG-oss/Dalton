@@ -1655,23 +1655,11 @@ contains
     dynamic_load = DECinfo%dyn_load
     startt=0.0E0_realk
     stopp=0.0E0_realk
-    !double_2G_nel=250000000
     double_2G_nel=170000000
-    print_debug = (DECinfo%PL>1)
-
-
-
-!HACK
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    print_debug = .true.
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
+    print_debug = (DECinfo%PL>2)
 
 #ifdef VAR_DEBUG
     double_2G_nel=20
-    print_debug = .true.
 #endif
     
 
@@ -1803,6 +1791,7 @@ contains
       
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(scheme,infpar%master)
+    call ls_mpi_buffer(print_debug,infpar%master)
     call ls_mpi_buffer(dynamic_load,infpar%master)
     call ls_mpi_buffer(restart,infpar%master)
     call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
@@ -2420,10 +2409,10 @@ contains
 
 
 #ifdef VAR_DEBUG
-    write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
+    if(print_debug)write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
     call lsmpi_local_reduction(wait_time,infpar%master)
     call lsmpi_local_max(max_wait_time,infpar%master)
-    if(master)then
+    if(master.and.print_debug)then
       write(*,'("----------------------------------------------------------")')
       write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)'),wait_time,wait_time/(infpar%nodtot*1.0E0_realk),max_wait_time
     endif
@@ -2480,7 +2469,7 @@ contains
     endif
     stopp=MPI_wtime()
 #ifdef VAR_DEBUG
-    if(master) print*,"MPI part of the calculation finished, comm-time",stopp-startt
+    if(master.and.print_debug) print*,"MPI part of the calculation finished, comm-time",stopp-startt
 #endif    
     !free windows and deallocate partial int matrices in scheme 1
     if(DECinfo%ccModel>2.and.(scheme==3.or.scheme==4))then
@@ -2554,9 +2543,9 @@ contains
 
 !OUTPUT
 #ifdef VAR_LSMPI
-        write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
+        if(DECinfo%PL>2)write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
 #else
-        write(DECinfo%output,'("C and D   :",f15.4)')stopp-startt
+        if(DECinfo%PL>2)write(*,'("C and D   :",f15.4)')stopp-startt
 #endif
       endif
     endif
@@ -2663,7 +2652,7 @@ contains
 #elif VAR_LSMPI
     stopp=MPI_wtime()
 #endif
-    write(DECinfo%output,'("Fock trafo:",f15.4)')stopp-startt
+    if(DECinfo%PL>2)write(*,'("Fock trafo:",f15.4)')stopp-startt
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_LSMPI
@@ -2708,7 +2697,7 @@ contains
 #elif VAR_LSMPI
     stopp=MPI_wtime()
 #endif
-    write(DECinfo%output,'("S and E   :",f15.4)')stopp-startt
+    if(DECinfo%PL>2)write(*,'("S and E   :",f15.4)')stopp-startt
 
 
 #ifdef VAR_LSMPI
