@@ -474,7 +474,7 @@ module manual_reorderings_module
         real(realk), dimension(mn), intent(inout) :: a
         integer, dimension(iwrk), intent(inout) :: move
         integer :: ncount, k, i, ir1, ir2
-        integer :: ir0, im, i2, kmi, i1c, i2c, i1, j, max, n1, j1
+        integer :: ir0, im, i2, kmi, i1c, i2c, i1, j, maxx, n1, j1
         real(realk) :: b, c, d
   !check arguments and initialize.
         if (m.lt.2 .or. n.lt.2) go to 120
@@ -502,9 +502,9 @@ module manual_reorderings_module
   !at least one loop must be re-arranged
         go to 80
   !search for loops to rearrange
-     40 max = k - i
+     40 maxx = k - i
         i = i + 1
-        if (i.gt.max) go to 160
+        if (i.gt.maxx) go to 160
         im = im + m
         if (im.gt.k) im = im - k
         i2 = im
@@ -513,7 +513,7 @@ module manual_reorderings_module
         if (move(i).eq.0) go to 80
         go to 40
      50 i2 = m*i1 - k*(i1/n)
-     60 if (i2.le.i .or. i2.ge.max) go to 70
+     60 if (i2.le.i .or. i2.ge.maxx) go to 70
         i1 = i2
         go to 50
      70 if (i2.ne.i) go to 40
