@@ -52,7 +52,8 @@ cat > linsca_energy_h1oao.dal <<'%EOF%'
 H1OAO
 .TIME
 .OAO
-.TRSCF
+.RH
+.DIIS
 .NVEC
 8
 .CONVTHR

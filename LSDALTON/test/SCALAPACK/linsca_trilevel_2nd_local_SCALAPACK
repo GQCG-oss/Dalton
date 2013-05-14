@@ -54,7 +54,7 @@ cat > linsca_trilevel_2nd_local_SCALAPACK.dal <<'%EOF%'
 .SCALAPACK
 .SCALAPACKBLOCKSIZE
 7
-.DSM
+.DIIS
 .START
  TRILEVEL
 .NOATOMSTART

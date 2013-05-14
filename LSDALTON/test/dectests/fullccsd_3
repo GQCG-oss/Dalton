@@ -56,8 +56,6 @@ TRILEVEL
 .DEBUG_MPI_MEM
 **CC
 .CCSD
-.manual_batchsizes
-19 19
 .CCSDforce_scheme
 3
 .ccThr
