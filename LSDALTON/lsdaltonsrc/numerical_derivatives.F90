@@ -1,3 +1,4 @@
+#ifdef MOD_UNRELEASED
 !> @file 
 !> Contains the trilevel and atoms starting guess in addition to the construction of the GCbasis se PCCP 2009, 11, 5805-5813 
 !> Trilevel and Atoms module
@@ -53,8 +54,8 @@ allocate(unperturbed_molecule)
 LWORK = 3*ls%INPUT%MOLECULE%nAtoms*3-1
 allocate(WORK(LWORK))
 nAtoms=ls%INPUT%MOLECULE%nAtoms
- h = 1.0E-5_realk !1.0E-7_realk
- call copy_molecule(ls%INPUT%MOLECULE,unperturbed_molecule,lupri)
+h = 1.0E-5_realk !1.0E-7_realk
+call copy_molecule(ls%INPUT%MOLECULE,unperturbed_molecule,lupri)
 
 
 call mem_alloc(numerical_hessian,3*ls%INPUT%MOLECULE%nAtoms,3*ls%INPUT%MOLECULE%nAtoms)
@@ -67,33 +68,12 @@ call mem_alloc(analytical_gradient_min,3,nAtoms)
 call mem_alloc(numerical_gradient_plus,ls%INPUT%MOLECULE%nAtoms,3)
 call mem_alloc(numerical_gradient_min,ls%INPUT%MOLECULE%nAtoms,3)
 call mem_alloc(numerical_gradient,ls%INPUT%MOLECULE%nAtoms,3)
-!call ls_dzero(gradient,3*ls%INPUT%MOLECULE%nAtoms)
-!call ls_dzero(semi_analytical_hessian,3*ls%INPUT%MOLECULE%nAtoms)
-!call ls_dzero(analytical_gradient,3*ls%INPUT%MOLECULE%nAtoms)
  
- 
-
-!*******************************************************************************************************************!
-!*******************************************************************************************************************!
-
-
-
 
 if(doNumGrad) then
    call get_numerical_gradient(h,E(1),lupri,luerr,nbast,ls,H1,S,F(1),D(1),C,config,unperturbed_molecule,numerical_gradient)
    call LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,TRANSPOSE(numerical_gradient),ls%SETTING%MOLECULE(1)%p%nAtoms,'NUMGR')
 endif
-
-
-!CALL get_energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
-!CALL get_gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,analytical_gradient)
-! write(lupri,*) 'ANALYTICAL GRAD'
-!do i=1, ls%INPUT%MOLECULE%nAtoms
-!   write(lupri,*)     analytical_gradient(1,i),&
-!            &  analytical_gradient(2,i),&
-!            &  analytical_gradient(3,i)
-!enddo
-
 
 !Checking whether the molecule is linear to determine vibrational degrees of freedom.
 DegFree = 6
@@ -127,9 +107,6 @@ if (doNumGradHess) then
    CALL get_energy(E,Eerr,config,H1,F,D,S,ls,C,NAtoms,lupri,luerr)
    call print_hessian_and_vibrations(E(1),ls,symmetric_hessian,EigValues,DegFree,nAtoms,WORK,LWORK,IERR,lupri,luerr)
 endif
-
-
-
 
 call free_Moleculeinfo(unperturbed_molecule)
 CALL mat_free(H1)
@@ -634,3 +611,5 @@ end subroutine print_hessian_and_vibrations
 
 
 end module Numerical_Hessian
+#endif
+
