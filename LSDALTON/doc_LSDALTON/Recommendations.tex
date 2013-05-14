@@ -50,22 +50,40 @@ guess\cite{trilevel1, trilevel2} (atomic, valence, and then full optimization) u
 The Trilevel starting guess usually provide a good starting guess 
 for the HF/KS calculation, especially for large molecular systems. 
  
+We also use the dynamical convergence threshold, appropiate also for small molecules. 
+
 We employ the The Augmented Rothaan-Hall (ARH) method for density optimization. 
 Note that ARH is default, so this keyword is actually unnecessary.
 ARH is more robust than the standard diagonalization/DIIS scheme.
 
-We also use the dynamical convergence threshold. 
+For Large molecules it may be beneficial to use the new davidson algorithm 
+
+\begin{verbatim}
+.ARH DAVID
+\end{verbatim}
+
+keyword instead of the default ARH
+
+\begin{verbatim}
+.ARH
+\end{verbatim}
+which uses the CROP solver or use the 
+\begin{verbatim}
+.ARH(LS) DAVID
+\end{verbatim}
+where the ARH method have been Augmented by a linesearch. 
 
 \section{Large MPI Jobs}
 
 For large HF/KS calculation all matrix operations are parallized through the use of the SCALAPACK library, which is activated through the .SCALAPACK keyword 
 
 \begin{verbatim}
+**GENERAL
+.SCALAPACK
 **WAVE FUNCTIONS
 .DFT
 B3LYP
 *DENSOPT
-.SCALAPACK
 .ARH
 .START
 TRILEVEL

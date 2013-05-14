@@ -49,6 +49,8 @@ H           0.931113       -0.104860       -3.346471
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_gen1int.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .DEBUGGEN1INT
 .NOFAMILY
@@ -59,7 +61,6 @@ cat > LSDALTON_gen1int.dal <<'%EOF%'
 .DIIS
 .START
 H1DIAG
-.NOGCBASIS
 .MAXIT
 1
 **INFO

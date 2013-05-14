@@ -45,15 +45,16 @@ H      0.55168  -0.77340   0.00000
 #  DALTON INPUT
 #######################################################################
 cat > linsca_atoms_SCALAPACK_MEMDIST.dal <<'%EOF%'
+**GENERAL
+.SCALAPACK
+.SCALAPACKBLOCKSIZE
+10
 **INTEGRAL
 .MEMDIST
 .DENSFIT
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.SCALAPACK
-.SCALAPACKBLOCKSIZE
-10
 .ARH
 .START
  ATOMS

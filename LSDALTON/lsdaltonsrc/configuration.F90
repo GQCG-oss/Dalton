@@ -250,6 +250,10 @@ DO
    PROMPT = WORD(1:2)
    IF ((PROMPT(1:1) .EQ. '!') .OR. (PROMPT(1:1) .EQ. '#'))CYCLE
 !   IF (WORD(1:14) == '**DALTON INPUT') CYCLE
+   IF (WORD(1:10) == '**GENERAL') THEN
+      READWORD = .TRUE.
+      CALL GENERAL_INPUT(config,readword,word,lucmd,lupri)
+   ENDIF
    IF (WORD(1:10) == '**PROFILE') THEN
       READWORD = .TRUE.
       CALL PROFILE_INPUT(config%prof,readword,word,lucmd,lupri)
@@ -399,8 +403,6 @@ DO
          IF ((PROMPT(1:1) .EQ. '!') .OR. (PROMPT(1:1) .EQ. '#')) CYCLE
          IF(PROMPT(1:1) .EQ. '.') THEN
             SELECT CASE(WORD) 
-            CASE('.TIME');     
-               call SET_LSTIME_PRINT(.TRUE.)
             CASE('.2ND_ALL');    config%solver%cfg_2nd_order_all = .true.
                                  config%solver%cfg_do_2nd_order = .true.
                                  config%solver%set_do_2nd_order = .true.
@@ -460,12 +462,6 @@ DO
             CASE('.CONVDYN');    READ(LUCMD,*) config%opt%cfg_convdyn_type ; config%opt%cfg_convdyn = .true.
             CASE('.CONVTHR');    READ(LUCMD,*) config%opt%cfg_convergence_threshold
                                  config%opt%set_convergence_threshold = config%opt%cfg_convergence_threshold
-            CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
-            CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
-#ifdef VAR_LSMPI
-            CASE('.SCALAPACKBLOCKSIZE');  
-               READ(LUCMD,*) infpar%inputBLOCKSIZE
-#endif
             CASE('.DIAGHESONLY'); config%opt%cfg_diaghesonly = .true.
             CASE('.DIIS');       config%av%CFG_averaging = config%av%CFG_AVG_DIIS
             CASE('.DISK');       config%opt%cfg_queue_on_disk = .true.
@@ -489,9 +485,6 @@ DO
                                  config%solver%cfg_fixed_shift_param = shift ; config%solver%cfg_fixed_shift = .true.
                                  config%diag%cfg_fixed_shift_param = shift   ; config%diag%cfg_fixed_shift = .true.
             CASE('.FLUSH');      config%av%cfg_flush_vec = .true.
-            CASE('.GCBASIS');    config%decomp%cfg_gcbasis = .true. ! left for backward compatibility
-            CASE('.NOGCBASIS');  config%decomp%cfg_gcbasis = .false.
-            CASE('.FORCEGCBASIS'); config%INTEGRAL%FORCEGCBASIS = .true.
             CASE('.NORESTART');  config%decomp%cfg_DumpDensRestart = .false.
             CASE('.PAO');  config%decomp%cfg_pao = .true.
             CASE('.HESONLY');    config%opt%cfg_hesonly = .true.
@@ -1008,9 +1001,9 @@ subroutine PROFILE_INPUT(profinput,readword,word,lucmd,lupri)
         CASE ('.FOCK');  PROFINPUT%FOCK = .TRUE.
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
-                & '" not recognized in **INTEGRALS readin.'
+                & '" not recognized in **PROFILE readin.'
            print*,'Keyword ',WORD
-           CALL lsQUIT('Illegal keyword in **INTEGRAL.',lupri)
+           CALL lsQUIT('Illegal keyword in **PROFILE.',lupri)
         END SELECT
      ENDIF
      IF (WORD(1:2) == '**') THEN
@@ -1019,6 +1012,53 @@ subroutine PROFILE_INPUT(profinput,readword,word,lucmd,lupri)
      ENDIF
   ENDDO
 END subroutine PROFILE_INPUT
+
+subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
+  implicit none
+  LOGICAL,intent(inout)                :: READWORD
+  type(ConfigItem), intent(inout) :: config
+  character(len=80)  :: WORD
+  INTEGER,intent(in) :: LUCMD !Logical unit number for the daltoninput
+  INTEGER,intent(in) :: LUPRI !Logical unit number for the daltonoutput file
+!
+  INTEGER            :: IDUMMY
+  character(len=2)   :: PROMPT
+  DO   
+     IF(READWORD) THEN
+        READ (LUCMD, '(A40)') WORD
+        READWORD=.TRUE.
+     ENDIF
+     PROMPT = WORD(1:2)
+     IF ((PROMPT(1:1) .EQ. '!') .OR. (PROMPT(1:1) .EQ. '#')) CYCLE
+     IF(PROMPT .EQ. '**') THEN
+        READWORD=.FALSE.
+        EXIT
+     ENDIF
+     IF(PROMPT(1:1) .EQ. '.') THEN
+        SELECT CASE(WORD) 
+        CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
+        CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
+#ifdef VAR_LSMPI
+        CASE('.SCALAPACKBLOCKSIZE');  
+           READ(LUCMD,*) infpar%inputBLOCKSIZE
+#endif
+        CASE('.TIME');         call SET_LSTIME_PRINT(.TRUE.)
+        CASE('.GCBASIS');      config%decomp%cfg_gcbasis = .true. ! left for backward compatibility
+        CASE('.NOGCBASIS');    config%decomp%cfg_gcbasis = .false.
+        CASE('.FORCEGCBASIS'); config%INTEGRAL%FORCEGCBASIS = .true.
+        CASE DEFAULT
+           WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
+                & '" not recognized in **GENERAL readin.'
+           print*,'Keyword ',WORD
+           CALL lsQUIT('Illegal keyword in **GENERAL.',lupri)
+        END SELECT
+     ENDIF
+     IF (WORD(1:2) == '**') THEN
+        READWORD=.FALSE.
+        EXIT
+     ENDIF
+  ENDDO
+END subroutine GENERAL_INPUT
 
 subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
   implicit none

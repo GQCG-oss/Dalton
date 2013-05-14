@@ -48,6 +48,8 @@ O  0.00000000   0.00000000   1.20500000
 #  DALTON INPUT
 #######################################################################
 cat > linsca_lcm_nongc.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -57,7 +59,6 @@ TRILEVEL
 .CONVDYN
 STANDARD
 .LCM
-.NOGCBASIS
 *END OF INPUT
 %EOF%
 #######################################################################

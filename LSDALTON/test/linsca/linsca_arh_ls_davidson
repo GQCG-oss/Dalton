@@ -124,7 +124,7 @@ ERROR[2]="number of iterations wrong -"
 
 
 # Test individual iterations
-CRIT1=`$GREP " 2 * \-97\.69643[0-9][0-9][0-9][0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP " 2 * \-97\.69[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="2nd energy shift not correct -"

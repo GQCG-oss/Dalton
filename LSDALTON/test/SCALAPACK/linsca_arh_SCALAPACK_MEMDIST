@@ -50,6 +50,10 @@ Cl   -1.303842   -0.036443   -0.048756
 #  DALTON INPUT
 #######################################################################
 cat > linsca_arh_SCALAPACK_MEMDIST.dal <<'%EOF%'
+**GENERAL
+.SCALAPACK
+.SCALAPACKBLOCKSIZE
+22
 **INTEGRALS
 .MEMDIST
 **WAVE FUNCTIONS
@@ -63,9 +67,6 @@ BLOCK LMG
 .ANGINT
 31
 *DENSOPT
-.SCALAPACK
-.SCALAPACKBLOCKSIZE
-22
 .ARH FULL
 .NVEC
  8
