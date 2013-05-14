@@ -211,6 +211,7 @@ INTEGER,intent(in)    :: nbast
 TYPE(MATRIX),intent(in) :: CMO
 !> The Absolute Valued overlap  matrix
 TYPE(MATRIX),intent(inout) :: S
+#if MOD_UNRELEASED
 !
 REAL(REALK),pointer   :: Cmat(:,:),ABSVALOVERLAP(:,:)
 REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2,CPUTIME,WALLTIME
@@ -259,6 +260,7 @@ CALL ls_TIMTXT('>>> CPU  Time used II_get_AbsoluteValue_overlap',CPUTIME,LUPRI)
 CALL ls_TIMTXT('>>> WALL Time used II_get_AbsoluteValue_overlap',WALLTIME,LUPRI)
 call stats_dft_mem(lupri)
 !call time_II_operations2(JOB_II_get_xc_Fock_mat)
+#endif
 END SUBROUTINE II_get_AbsoluteValue_overlap
 
 !> \brief Calculates the xc contribution to the Kohn-Sham energy

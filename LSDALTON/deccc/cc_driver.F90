@@ -37,7 +37,10 @@ module ccdriver
 !       & getDoublesResidualCCSD_simple,getDoublesResidualCCSD_simple2, &
 !       & precondition_doubles,get_ccsd_residual_integral_driven,&
 !       & get_ccsd_residual_integral_driven_oldarray_wrapper
+#ifdef MOD_UNRELEASED
   use ccsdpt_module
+!endif mod_unreleased
+#endif
   use orbital_operations
   use rpa_module
 
@@ -972,6 +975,8 @@ contains
 
   end function ccsolver_justenergy
 
+#ifdef MOD_UNRELEASED
+
   !> \brief get ccsd(t) corrections for full molecule.
   !> \author Janus Juul Eriksen
   !> \date February 2013
@@ -1188,7 +1193,8 @@ contains
     call array4_free(ccsdpt_t2)
 
   end function ccsolver_justenergy_pt
-
+!endif mod_unreleased
+#endif
 
   !> \brief For a given fragment, calculate singles and doubles amplitudes and
   !> two-electron integrals (a i | bj ) required for CC energy.
@@ -2974,9 +2980,10 @@ contains
     call mem_dealloc(Uocc)
     call mem_dealloc(Uvirt)
 
-
+#ifdef MOD_UNRELEASED
     call array4_print_statistics(DECinfo%output)
     call array_print_mem_info(DECinfo%output,.true.,.false.)
+#endif
 
   end subroutine ccsolver_par
 

@@ -1655,24 +1655,11 @@ contains
     dynamic_load = DECinfo%dyn_load
     startt=0.0E0_realk
     stopp=0.0E0_realk
-    !double_2G_nel=250000000
     double_2G_nel=170000000
-    print_debug = (DECinfo%PL>1)
-    call print_norm(t2)
-
-
-
-!HACK
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    print_debug = .true.
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
+    print_debug = (DECinfo%PL>2)
 
 #ifdef VAR_DEBUG
     double_2G_nel=20
-    print_debug = .true.
 #endif
     
 
@@ -1771,10 +1758,12 @@ contains
       ! scheme 2: additionally to 3 also the amplitudes, u, the residual are
       !           treated in PDM, the strategy is to only use one V^2O^2 in 
       !           local mem
+#ifdef MOD_UNRELEASED
       ! scheme 1: is the high scaling scheme with the same constraints as in 2,
       !           this reduces the communication (probably not even worth 
       !           implementing)
       ! scheme 0: the "tradional" high scaling scheme for non-MPI calculations
+#endif
 
 #ifndef VAR_LSMPI
       !scheme 1 is a pure mpi-scheme, it is not selected by get_max_batch_size,
@@ -2117,8 +2106,8 @@ contains
        endif
        !u [gamma c i j ] -> u [i gamma c j]
        call array_reorder_4d(1.0E0_realk,w1,lg,nv,no,no,[3,1,2,4],0.0E0_realk,uigcj)
-       call print_norm(uigcj,int(lg*nv*no*no,kind=8))
 
+#ifdef MOD_UNRELEASED
        !Lambda^h [gamma c] * t [c d i j] = t [gamma d i j]
        if(DECinfo%ccModel>2.and.(scheme==0.or.scheme==1)) then
          if(scheme==1)then
@@ -2128,7 +2117,7 @@ contains
            call dgemm('n','n',lg,o2v,nv,1.0E0_realk,yv(fg),nb,t2%elm1,nv,0.0E0_realk,tGammadij,lg)
          endif
        endif
-
+#endif
        alphaB=0
        
     !**********************************
@@ -2202,7 +2191,6 @@ contains
        !u [b alpha k gamma] * I [alpha k gamma delta] =+ Had [a delta]
        call dgemm('n','n',nv,nb,lg*la*no,1.0E0_realk,w3,nv,w1,lg*la*no,1.0E0_realk,Had,nv)
        call lsmpi_poke()
-       call print_norm(Had,int(nb*nv,kind=8))
 
        !VVOO
        if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2)) then
@@ -2231,7 +2219,6 @@ contains
         endif
         call lsmpi_poke()
        endif
-       call print_norm(gvvoo,o2v2)
 
        ! I [alpha l gamma delta] * Lambda^h [delta c] = I[alpha l gamma c]
        call dgemm('n','n',lg*la*no,nv,nb,1.0E0_realk,w1,la*no*lg,yv,nb,0.0E0_realk,w3,la*no*lg)
@@ -2239,7 +2226,6 @@ contains
        !I [alpha l gamma c] * u [l gamma c j]  =+ Gbi [alpha j]
        call dgemm('n','n',la,no,nv*no*lg,1.0E0_realk,w3,la,uigcj,nv*no*lg,1.0E0_realk,Gbi(fa),nb)
        call lsmpi_poke()
-       call print_norm(Gbi,int(nb*no,kind=8))
        
        
        !CALCULATE govov FOR ENERGY
@@ -2262,7 +2248,6 @@ contains
          endif
          call lsmpi_poke()
        endif
-       call print_norm(govov)
 
        !VOOV
        if((restart.and.iter==1).and..not.scheme==4)&
@@ -2288,7 +2273,6 @@ contains
         endif
         call lsmpi_poke()
        endif
-       call print_norm(gvoov,o2v2)
 
        !prepare w0 to contain L
        if(DECinfo%ccModel>2.and.(scheme==0.or.scheme==1)) call dscal(int(lg*la*nb2),2.0E0_realk,w0,1)
@@ -2304,15 +2288,14 @@ contains
        !Mylsitem%setting%scheme%intprint=0
 
 
-      print *,"omegabeforeandafterb22term"
-      call print_norm(omega2)
       if(DECinfo%ccmodel>2)then
+#ifdef MOD_UNRELEASED
         if(scheme==0.or.scheme==1)then
           call get_d_term_int_direct(w0,w1,w2,w3,no,nv,nb,fa,fg,la,lg,&
           &xo,yo,xv,yv,u2,uigcj,omega2,u2kcjb,scheme)
           call lsmpi_poke()
         endif
-
+#endif
         if(fa<=fg+lg-1)then
         !CHECK WHETHER THE TERM HAS TO BE DONE AT ALL, i.e. when the first
         !element in the alpha batch has a smaller index as the last element in
@@ -2325,7 +2308,6 @@ contains
 
         endif
       endif
-      call print_norm(omega2)
       
 
       !(w0):I[ delta gamma alpha beta] <- (w1):I[ alpha beta gamma delta ]
@@ -2340,7 +2322,6 @@ contains
       ! (w3):I[alpha gamma i j] <- (w0):I[i gamma alpha j]
       if(DECinfo%ccModel>2)call add_int_to_sio4(w0,w2,w3,no,nv,nb,fa,fg,la,lg,xo,sio4)
       call lsmpi_poke()
-      call print_norm(sio4,int(no*no*nor,kind=8))
 
 
       ! (w2):I[gamma i j alpha] <- (w0):I[i gamma alpha j]
@@ -2357,13 +2338,13 @@ contains
         call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3,o2v,1.0E0_realk,omega2%elm1,nv)
       endif
       call lsmpi_poke()
-      call print_norm(omega2)
-
+#ifdef MOD_UNRELEASED
       if(DECinfo%ccmodel>2.and.(scheme==0.or.scheme==1))then
         call get_c_term_int_direct(w0,w1,w2,w3,no,nv,nb,fa,fg,la,lg,xo,&
              &yo,xv,yv,t2,tGammadij,omega2,t2jabi,scheme)
         call lsmpi_poke()
       endif
+#endif
 
     end do BatchAlpha
     end do BatchGamma
@@ -2427,10 +2408,10 @@ contains
 
 
 #ifdef VAR_DEBUG
-    write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
+    if(print_debug)write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
     call lsmpi_local_reduction(wait_time,infpar%master)
     call lsmpi_local_max(max_wait_time,infpar%master)
-    if(master)then
+    if(master.and.print_debug)then
       write(*,'("----------------------------------------------------------")')
       write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)'),wait_time,wait_time/(infpar%nodtot*1.0E0_realk),max_wait_time
     endif
@@ -2485,7 +2466,7 @@ contains
     endif
     stopp=MPI_wtime()
 #ifdef VAR_DEBUG
-    if(master) print*,"MPI part of the calculation finished, comm-time",stopp-startt
+    if(master.and.DECinfo%PL>2) print*,"MPI part of the calculation finished, comm-time",stopp-startt
 #endif    
     !free windows and deallocate partial int matrices in scheme 1
     if(DECinfo%ccModel>2.and.(scheme==3.or.scheme==4))then
@@ -2503,9 +2484,6 @@ contains
     maxsize64 = max(int(nv2*no2,kind=8),int(nb2,kind=8))
     maxsize64 = max(maxsize64,int(nv2*nor,kind=8))
     call mem_alloc(w1,maxsize64)
-    call dcopy(int(o2v2),omega2%elm1,1,w1,1)
-    call lsmpi_local_reduction(w1,o2v2,infpar%master,double_2G_nel)
-    if(master)call print_norm(w1,o2v2)
     w1=0.0E0_realk
 
     !reorder integral for use within the solver and the c and d terms
@@ -2562,9 +2540,9 @@ contains
 
 !OUTPUT
 #ifdef VAR_LSMPI
-        write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
+        if(DECinfo%PL>2)write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
 #else
-        write(DECinfo%output,'("C and D   :",f15.4)')stopp-startt
+        if(DECinfo%PL>2)write(*,'("C and D   :",f15.4)')stopp-startt
 #endif
       endif
     endif
@@ -2602,7 +2580,6 @@ contains
       if(scheme==4.or.scheme==3.or.scheme==0)call array_free(u2)
       return
     endif
-    call print_norm(omega2%elm1,o2v2)
 
 
     !allocate the density matrix
@@ -2672,7 +2649,7 @@ contains
 #elif VAR_LSMPI
     stopp=MPI_wtime()
 #endif
-    write(DECinfo%output,'("Fock trafo:",f15.4)')stopp-startt
+    if(DECinfo%PL>2)write(*,'("Fock trafo:",f15.4)')stopp-startt
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_LSMPI
@@ -2717,7 +2694,7 @@ contains
 #elif VAR_LSMPI
     stopp=MPI_wtime()
 #endif
-    write(DECinfo%output,'("S and E   :",f15.4)')stopp-startt
+    if(DECinfo%PL>2)write(*,'("S and E   :",f15.4)')stopp-startt
 
 
 #ifdef VAR_LSMPI
@@ -3408,7 +3385,7 @@ contains
    
 
     !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-    !$OMP& PRIVATE(i,j,pos1,pos2,mv,st)
+    !$OMP& PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
       !$OMP DO 
       do i=j,1,-1
@@ -3424,17 +3401,21 @@ contains
     !$OMP DO 
     do j=no,1,-1
       do i=j,1,-1
-          pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-          pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-          !if(i/=j) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
-          if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
-          call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+        pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
+        !if(i/=j) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
+        if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
       enddo
     enddo
     !$OMP END DO
     !$OMP BARRIER
     !$OMP END PARALLEL
-
+    do j=no,1,-1
+      do i=j,1,-1
+        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+        call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+      enddo
+    enddo
     if(s==4.or.s==3.or.s==0)then
       call daxpy(int(no*no*nv*nv),1.0E0_realk,w1,1,om2%elm1,1)
     elseif(s==2.or.s==1)then
@@ -3491,6 +3472,7 @@ contains
 
   end subroutine add_int_to_sio4
 
+#ifdef MOD_UNRELEASED
   !> \brief calculate d term integral direct form echange and coulomb integrals
   !> \author Patrick Ettenhuber
   !> \date December 2012
@@ -3638,6 +3620,8 @@ contains
       call array_reorder_4d(1.0E0_realk,w2,no,nv,no,nv,[2,4,1,3],1.0E0_realk,omega2%elm1)
     endif
   end subroutine get_d_term_int_direct
+#endif
+
 
   !> \brief calculate a and b terms in a kobayashi fashion
   !> \author Patrick Ettenhuber
@@ -3923,21 +3907,29 @@ contains
     dim_big=full1*full2
     dim_small=full1T*full2T
 
-    !OMP PARALLEL DEFAULT(NONE)&
-    !OMP& SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
-    !OMP& full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
-    !OMP& PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
-    !OMP& dims,drain,source)
-    !OMP DO
+#ifndef VAR_LSESSL
+    !$OMP PARALLEL DEFAULT(NONE)&
+    !$OMP& SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
+    !$OMP& full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
+    !$OMP& PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
+    !$OMP& dims,drain,source)
+    !$OMP DO
+#endif
     do occ=1,nor
       do gamm=1,lg-goffs
         gamm_i_b=gamm+goffs
         !SYMMETRIC COMBINATION OF THE SIGMAS
+
+        !calculate the old position
+        !**************************
         if(case_sel==3.or.case_sel==4)then
-          pos=1+(gamm-1)*full1+(occ-1)*full1*full2
+          pos=1+(gamm      -1)*full1+(occ-1)*dim_big
         else
-          pos=1+(gamm+aoffs-1)*full1+(occ-1)*full1*full2
+          pos=1+(gamm+aoffs-1)*full1+(occ-1)*dim_big
         endif
+
+        !calculate the new position
+        !**************************
         if(gamm>tlen)then
           !get the elements from the rectangular part of the batch
           !print *,"getel from rect"
@@ -3966,12 +3958,16 @@ contains
           ft2=full2
         endif
         
-        !call dcopy(nel2cp,w3(pos2),1,w0(pos),1)
-        w0(pos:pos+nel2cp-1) = w3(pos2:pos2+nel2cp-1)
+        call dcopy(nel2cp,w3(pos2),1,w0(pos),1)
+        !OMP CRITICAL
+        !w0(pos:pos+nel2cp-1) = w3(pos2:pos2+nel2cp-1)
+        !OMP END CRITICAL
         !get corresponding position in sigma- and add to output
         pos21=pos2+tred*nor
-        !call daxpy(nel2cp,1.0E0_realk,w3(pos21),1,w0(pos),1)
-        w0(pos:pos+nel2cp-1) =w0(pos:pos+nel2cp-1) + w3(pos21:pos21+nel2cp-1)    
+        call daxpy(nel2cp,1.0E0_realk,w3(pos21),1,w0(pos),1)
+        !OMP CRITICAL
+        !w0(pos:pos+nel2cp-1) =w0(pos:pos+nel2cp-1) + w3(pos21:pos21+nel2cp-1)    
+        !OMP END CRITICAL
 
         !ANTI-SYMMETRIC COMBINATION OF THE SIGMAS
         pos=gamm+aoffs+(occ-1)*ft1*ft2
@@ -3983,51 +3979,65 @@ contains
           else
             ncph=gamm
           endif
-          !call daxpy(ncph,1.0E0_realk,w3(pos2+aoffs),1,w0(aoffs+gamm+(occ-1)*full1*full2),full1)
-          !call daxpy(ncph,-1.0E0_realk,w3(pos21+aoffs),1,w0(aoffs+gamm+(occ-1)*dim_big),full1)
+          call daxpy(ncph,1.0E0_realk,w3(pos2+aoffs),1,w0(aoffs+gamm+(occ-1)*full1*full2),full1)
+          call daxpy(ncph,-1.0E0_realk,w3(pos21+aoffs),1,w0(aoffs+gamm+(occ-1)*dim_big),full1)
 
           !because of the intrinsic omp-parallelizaton of daxpy the following
           !lines replace the daxpy calls
-          dims=[full1,ncph]
-          call ass_D1to2(w0(aoffs+gamm+(occ-1)*dim_big:&
-                           &aoffs+gamm+(occ-1)*dim_big+full1*ncph-1),drain,dims)
-          dims=[1,ncph]
-          call ass_D1to2(w3(pos2+aoffs:pos2+aoffs+ncph-1),source,dims)
-          drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
-          call ass_D1to2(w3(pos21+aoffs:pos21+aoffs+ncph-1),source,dims)
-          drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+          !dims=[full1,ncph]
+          !call ass_D1to2(w0(aoffs+gamm+(occ-1)*dim_big:&
+          !                 &aoffs+gamm+(occ-1)*dim_big+full1*ncph-1),drain,dims)
+          !dims=[1,ncph]
+          !call ass_D1to2(w3(pos2+aoffs:pos2+aoffs+ncph-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
+          !OMP END CRITICAL
+          !call ass_D1to2(w3(pos21+aoffs:pos21+aoffs+ncph-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+          !OMP END CRITICAL
           !fill small matrix
           if(gamm>tlen)then
             ncph=nel2cp
           else
             ncph=nel2cp-gamm
           endif
-          !call daxpy(ncph, 1.0E0_realk,w3(pos2 ),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
-          !call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
-          dims=[full1T,ncph]
-          call ass_D1to2(w0(gamm+(occ-1)*full1T*full2T+dim_big*nor:&
-                           &gamm+(occ-1)*full1T*full2T+dim_big*nor+ncph*full1T-1),drain,dims)
-          dims=[1,ncph]
-          call ass_D1to2(w3(pos2:pos2+ncph-1),source,dims)
-          drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
-          call ass_D1to2(w3(pos21:pos21+ncph-1),source,dims)
-          drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+          call daxpy(ncph, 1.0E0_realk,w3(pos2 ),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          !dims=[full1T,ncph]
+          !call ass_D1to2(w0(gamm+(occ-1)*full1T*full2T+dim_big*nor:&
+          !                 &gamm+(occ-1)*full1T*full2T+dim_big*nor+ncph*full1T-1),drain,dims)
+          !dims=[1,ncph]
+          !call ass_D1to2(w3(pos2:pos2+ncph-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
+          !OMP END CRITICAL
+          !call ass_D1to2(w3(pos21:pos21+ncph-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+          !OMP END CRITICAL
         else
-          !call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
-          !call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
-          dims=[jump,nel2cp]
-          call ass_D1to2(w0(pos:pos+jump*nel2cp-1),drain,dims)
-          dims=[1,nel2cp]
-          call ass_D1to2(w3(pos2:pos2+nel2cp-1),source,dims)
-          drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) + source(1:1,1:nel2cp)
-          call ass_D1to2(w3(pos21:pos21+nel2cp-1),source,dims)
-          drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) - source(1:1,1:nel2cp)
+          call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
+          call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
+          !dims=[jump,nel2cp]
+          !call ass_D1to2(w0(pos:pos+jump*nel2cp-1),drain,dims)
+          !dims=[1,nel2cp]
+          !call ass_D1to2(w3(pos2:pos2+nel2cp-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) + source(1:1,1:nel2cp)
+          !OMP END CRITICAL
+          !call ass_D1to2(w3(pos21:pos21+nel2cp-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) - source(1:1,1:nel2cp)
+          !OMP END CRITICAL
         endif
       enddo
     enddo
-    !OMP END DO
-    !OMP BARRIER
-    !OMP END PARALLEL
+#ifndef VAR_LSESSL
+    !$OMP END DO
+    !$OMP BARRIER
+    !$OMP END PARALLEL
+#endif
     call lsmpi_poke()
 
 
@@ -4069,7 +4079,7 @@ contains
     ! add up contributions in the residual with keeping track of i<j
 
     !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-    !$OMP& PRIVATE(i,j,pos1,pos2,mv,st)
+    !$OMP& PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
       !$OMP DO 
       do i=j,1,-1
@@ -4085,17 +4095,21 @@ contains
     !$OMP DO 
     do j=no,1,-1
       do i=j,1,-1
-          pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-          pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-          !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
-          if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-          call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+        pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
+        !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+        if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
       enddo
     enddo
     !$OMP END DO
-    !$OMP BARRIER
     !$OMP END PARALLEL
 
+    do j=no,1,-1
+      do i=j,1,-1
+        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+        call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+      enddo
+    enddo
     if(s==4.or.s==3.or.s==0)then
       call daxpy(int(no*no*nv*nv),scaleitby,w2,1,omega%elm1,1)
     elseif(s==2.or.s==1)then
@@ -4125,7 +4139,7 @@ contains
       call lsmpi_poke()
 
       !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-      !$OMP& PRIVATE(i,j,pos1,pos2,mv,st)
+      !$OMP& PRIVATE(i,j,pos1,pos2)
       do j=no,1,-1
         !$OMP DO 
         do i=j,1,-1
@@ -4145,12 +4159,17 @@ contains
             pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
             !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
             if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
-            call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
         enddo
       enddo
       !$OMP END DO
       !$OMP BARRIER
       !$OMP END PARALLEL
+      do j=no,1,-1
+        do i=j,1,-1
+            pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+            call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+        enddo
+      enddo
 
       if(s==4.or.s==3.or.s==0)then
         call daxpy(no*no*nv*nv,scaleitby,w2,1,omega%elm1,1)
@@ -4244,6 +4263,9 @@ contains
       pos=pos+m*(nv-d+1)
     enddo
     !$OMP END PARALLEL
+#ifdef VAR_OMP
+    call omp_set_num_threads(omp_get_max_threads())
+#endif
   end subroutine get_I_cged
 
 
@@ -4606,7 +4628,7 @@ contains
       if(.not.DECinfo%solver_par)then
         if(scheme==3.or.scheme==2.or.scheme==1)then
           print *,"CHOSEN SCHEME DOES NOT WORK WITHOUT PARALLEL SOLVER, USE&
-          & .CCSDsolver_par IN DALTON.INP"
+          & .CCSDsolver_par IN LSDALTON.INP"
           call lsquit("ERROR(get_ccsd_residual_integral_driven):invalid scheme",-1)
         endif
       endif
@@ -4633,7 +4655,7 @@ contains
 
     ! Attention this manual block should be only used for debugging, also you
     ! will have to ajust its properties to your system. The block is called
-    ! with the keywordk ".manual_batchsizes" in DALTON.INP the next line
+    ! with the keywordk ".manual_batchsizes" in LSDALTON.INP the next line
     ! then contains the alpha and gamma batch sizes separated by space
     if (manual) then
       ! KK and PE hacks -> only for debugging
@@ -4901,6 +4923,7 @@ contains
       e2 = max(tl3,tl4) + max(no*no,nv*nv)
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+max(nb*nb,max(cd,e2)))
       !memrq=memrq+max(memin,memout)
+#ifdef MOD_UNRELEASED
     elseif(memintensive==1)then
       print *,"ATTENTION, mem estimation not yet correct"
       !govov stays in pdm and is dense in second part
@@ -4956,6 +4979,7 @@ contains
       ! w1 + FO 
       memout = 1.0E0_realk*max(nv*nv*no*no,nb*nb)+nb*nb
       !memrq=memrq+max(memin,memout)
+#endif
     else
       call lsquit("ERROR(get_min_mem_req):requested memory scheme not known",-1)
     endif

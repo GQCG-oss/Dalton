@@ -76,6 +76,8 @@ option(ENABLE_RELEASE        "Enable Release"                OFF)
 option(ENABLE_GIT_SUBMODULES "Download external projects using Git submodules at compilation time" ON)
 
 
+#add_definitions(-DVAR_DSM)
+
 #add_definitions(-DVAR_MFDS -D_FILE_OFFSET_BITS=64 -DIMPLICIT_NONE)
 
 # find a good default scratch base directory
@@ -156,6 +158,8 @@ if(NOT ENABLE_CRAYWRAPPER)
 endif()
 
 if(ENABLE_RELEASE)
+
+else()
    add_definitions(-DMOD_UNRELEASED)
 endif()
 

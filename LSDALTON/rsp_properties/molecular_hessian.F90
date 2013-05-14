@@ -2,6 +2,7 @@
 !> Contains the Hessian module, with routines specific to the molecular Hessian.
 !> \brief Contains Hessian specific routines.
 MODULE molecular_hessian_mod
+#ifdef MOD_UNRELEASED
   use precision ! realk
   use matrix_module, only: matrix
   use matrix_Operations, only: mat_mul, mat_free, mat_zero, mat_tr, &
@@ -12,12 +13,17 @@ MODULE molecular_hessian_mod
   use lstiming, only: lstimer
   use integralinterfaceMod, only: ii_get_geoderivexchange, ii_get_overlap, &
        & ii_get_geoderivoverlap
+#endif
 #ifdef BUILD_GEN1INT
   use gen1int_host
 #endif
 
 CONTAINS
 
+  SUBROUTINE dummy_subroutine_hessian()
+  END SUBROUTINE dummy_subroutine_hessian
+
+#ifdef MOD_UNRELEASED
   !> \brief Set default settings for the geometrical Hessian calculation (default: run nothing)
   !> \author Patrick Merlot
   !> \date October,26 2012
@@ -432,4 +438,5 @@ CONTAINS
 !   END SUBROUTINE test_Hessian_contributions
 !
 !
+#endif
 END MODULE molecular_hessian_mod

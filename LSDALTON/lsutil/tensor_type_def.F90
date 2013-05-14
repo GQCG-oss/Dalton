@@ -48,33 +48,6 @@ module tensor_type_def_module
      integer :: init_type                            !type of initializtation
      logical :: zeros=.false.                        !use zeros in tiles --> it is at the moment not recommended to use .true. here
 
-!#ifdef VAR_SCALAPACK
-!     !> PE add PDM for 4idx arrays
-!     ! when using parallel distributed memory the following parameter defines uniquely
-!     ! the distribution of the array, but there are restrictions on the distribution
-!     ! of the 4 idx quantities since only 2D cyclic distribution makes sense with the
-!     ! scalapack routines. The integers at different postions have special meanings
-!     ! read it in the following way [row node that contains fist element of array, how many dimensions are spread over rows, column node that contains first element of array, how many dimensions are spread over cols]
-!     ! or [ frn , rdim , fcn , cdim ]
-!     ! so if both rdim and cdim /= 0 then obligatory rdim+cdim=4
-!     ! to account for load balancing  
-!     integer, pointer :: distribution(:) => null()
-!     ! the array4 parts on the nodes are allocated in the DARRAY which was implemented
-!     ! for the matrix type but has general functionality, to identify the parts, the
-!     ! address is saved for the nodes rows and cols on master in addr_on_grid
-!     integer,pointer :: addr_on_grid(:,:) => null()
-!     integer :: localnrow,localncol,nrow,ncol,grid_nr
-!     type(scalapack_block_info) :: block(2)  !1=row block info , 2=col block info
-!#endif
-
-     !Dragging along all the old array4 stuff to stay compatible
-     integer :: FUnit
-     character(len=80) :: FileName
-     integer(kind=long) :: address_counter
-     integer :: storing_type
-     integer(kind=long) :: nelements
-     integer(kind=long), pointer :: address(:,:,:,:) => null()
-
   end type array
 
   !> Allocated memory of dense array
@@ -100,7 +73,6 @@ module tensor_type_def_module
   integer, parameter :: REPLICATED=2
   integer, parameter :: TILED=3
   integer, parameter :: TILED_DIST=4
-  integer, parameter :: SCALAPACK=5
 
   !parameters for PDMTYPE:
   integer,parameter :: NO_PDM=0
@@ -175,12 +147,19 @@ module tensor_type_def_module
   !> \brief get composite index from mode index
   function get_comp_idx(inds,dims,modes) result(a)
     implicit none
-    integer,intent(in) :: inds(*),dims(*),modes
-    integer :: i,j,cdim
-    integer :: a
+    integer,intent(in) :: inds(modes),dims(modes),modes
+    integer :: i,j,cdim,cd(modes-2)
+    integer :: a,b
     select case(modes)
-    !case(4)
-    !  a=inds(1)+(inds(2)-1)*dims(1)+(inds(3)-1)*dims(1)*dims(2)+(inds(4)-1)*inds(1)*inds(2)*inds(3)
+    case(2)
+      a=inds(1)+(inds(2)-1)*dims(1)
+    case(3)
+      cd(1) = dims(1)*dims(2)
+      a=inds(1)+(inds(2)-1)*dims(1)+(inds(3)-1)*cd(1)
+    case(4)
+      cd(1) = dims(1)*dims(2)
+      cd(2) = dims(1)*dims(2)*dims(3)
+      a=inds(1)+(inds(2)-1)*dims(1)+(inds(3)-1)*cd(1)+(inds(4)-1)*cd(2)
     case default
       a=1
       do i=1,modes

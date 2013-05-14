@@ -9,6 +9,7 @@ use gridgenerationboxmodule
 !WARNING you must not add memory_handling, all memory goes through 
 !grid_memory_handling  module so as to determine the memory used in this module.
 use precision
+use dft_ld_module
 use files
 use Fundamental, only: bohr_to_angstrom
 #ifdef VAR_LSMPI

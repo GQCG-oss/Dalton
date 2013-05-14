@@ -1076,7 +1076,7 @@ ELSE
    WRITE(LUPRI,'(2X,A)')'to force full printout use'
    WRITE(LUPRI,'(2X,A)')'.MOLPRINT'
    WRITE(LUPRI,'(2X,A)')'1'
-   WRITE(LUPRI,'(2X,A)')'under **INTEGRALS in DALTON.INP'
+   WRITE(LUPRI,'(2X,A)')'under **INTEGRALS in LSDALTON.INP'
 ENDIF
 
 WRITE(LUPRI,*) '                     '

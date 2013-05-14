@@ -171,11 +171,6 @@ contains
     write(DECinfo%output,'(a,a)') &
          '             -- Divide, Expand & Consolidate Coupled-Cluster -- ',program_version
     write(DECinfo%output,'(a)') '============================================================================='
-    write(DECinfo%output,'(a)') ' Authors: Marcin Ziolkowski @ AU 2009,2010' 
-    write(DECinfo%output,'(a)') '          Kasper Kristensen (kasperk@chem.au.dk)' 
-    write(DECinfo%output,'(a)') '          Ida-Marie Hoeyvik (idamh@chem.au.dk)' 
-    write(DECinfo%output,'(a)') '          Patrick Ettenhuber (pett@chem.au.dk)'
-    write(DECinfo%output,'(a)') '          Janus Juul Eriksen (janusje@chem.au.dk)'
     write(DECinfo%output,*)
     write(DECinfo%output,*)
 

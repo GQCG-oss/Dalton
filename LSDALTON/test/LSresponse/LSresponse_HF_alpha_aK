@@ -22,7 +22,7 @@ cat > LSresponse_HF_alpha_aK.info <<'%EOF%'
    -------------------
    Molecule:         H2O2
    Wave Function:    HF / 6-31+G* / 3-21G (JK aux.basis for ADMM)
-   Test Purpose:     Test real and complex polarizability in LSDALTON 
+   Test Purpose:     Test real and complex polarizability in LSDALTON
                      using the ADMM approximation for the exchange contribution
                      (Patrick Merlot).
 %EOF%
@@ -32,16 +32,15 @@ cat > LSresponse_HF_alpha_aK.info <<'%EOF%'
 #######################################################################
 cat > LSresponse_HF_alpha_aK.mol <<'%EOF%'
 BASIS
-6-31+G* Aux=3-21G CABS=3-21G JK=3-21G
-Hydrogen Peroxide
+6-31G* Aux=3-21G CABS=3-21G JK=3-21G
+H2O
 
-AtomTypes=2 Generators=0
-Charge=8.0 Atoms=2
-O    -0.00000000  1.40784586 -0.09885600
-O     0.00000000 -1.40784586 -0.09885600
+Atomtypes=2 Angstrom Nosymmetry
+Charge=8.0 Atoms=1
+O     -0.00000048765313      0.40820236609260      0.00000000000000
 Charge=1.0 Atoms=2
-H     0.69081489  1.72614891  1.56891868
-H    -0.69081489 -1.72614891  1.56891868
+H      0.75888506250693     -0.20410082647718      0.00000000000000
+H     -0.75888457485381     -0.20410153961542      0.00000000000000
 %EOF%
 
 #######################################################################
@@ -53,14 +52,11 @@ cat > LSresponse_HF_alpha_aK.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.PRINTFINALCMO
 .NVEC
 8
 .CONVTHR
 1.0D-6
 **RESPONS
-.NEXCIT
-5
 *SOLVER
 .CONVTHR
 1.0D-6
@@ -93,7 +89,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * HF energy\: * \-150\.76046" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-76\.01212" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
@@ -105,19 +101,21 @@ CTRL[2]=1
 ERROR[2]="Memory leak -"
 
 # Real Polarizability tests
-CRIT1=`$GREP "Ex *  8.949[0-9][0-9][0-9][0-9] * -1.594[0-9][0-9][0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "Ey * -1.594[0-9][0-9][0-9][0-9] * 12.345[0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Ex *  5.759[0-9][0-9][0-9][0-9] " $log | wc -l`
+CRIT2=`$GREP "Ey .*  2.3987[0-9][0-9][0-9]"     $log | wc -l`
+CRIT3=`$GREP "Ez .*  2.542[0-9][0-9][0-9]"      $log | wc -l`
 
-TEST[3]=`expr  $CRIT1 \+ $CRIT2 `
-CTRL[3]=2
+TEST[3]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 `
+CTRL[3]=3
 ERROR[3]="Error in real polarizability"
 
 # Imaginary part of complex polarizability tests
-CRIT1=`$GREP "Ex * 0.1382[0-9][0-9][0-9][0-9]E-01 * 0.7116[0-9][0-9][0-9][0-9]E-02" $log | wc -l`
-CRIT2=`$GREP "Ey * 0.7116[0-9][0-9][0-9][0-9]E-02 * 0.4863[0-9][0-9][0-9][0-9]E-02" $log | wc -l`
+CRIT1=`$GREP "Ex * 0.6324[0-9][0-9][0-9][0-9]E-01"  $log | wc -l`
+CRIT2=`$GREP "Ey .* 0.1105[0-9][0-9][0-9][0-9]E-02" $log | wc -l`
+CRIT3=`$GREP "Ez .* 0.1429[0-9][0-9][0-9][0-9]E-02" $log | wc -l`
 
-TEST[4]=`expr  $CRIT1 \+ $CRIT2 `
-CTRL[4]=2
+TEST[4]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 `
+CTRL[4]=3
 ERROR[4]="Error in imaginary part of complex polarizability"
 
 

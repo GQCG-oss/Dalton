@@ -57,9 +57,8 @@ cat > LSDALTON_J_NSETUV.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 #######################################################################

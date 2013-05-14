@@ -121,8 +121,8 @@ ENDIF
 CALL READ_COMMENTS(LUPRI,LUINFO,.FALSE.)
 
 CALL READ_LINE4(LUPRI,LUINFO,Atomtypes,DoSpherical,MolecularCharge&
-                           &,Angstrom,Symmetry,doprint,&
-						   &latt_config%setup_pbclatt)
+     &,Angstrom,Symmetry,doprint,&
+     &latt_config%setup_pbclatt)
 
 Molecule%charge = MolecularCharge
 
@@ -730,11 +730,14 @@ CHARACTER(len=80)  :: LINE,Atomicbasisset,Auxbasisset,Cabsbasisset,JKbasisset
 CHARACTER(len=1)   :: CHRXYZ(3)=(/'x','y','z'/)
 INTEGER            :: LUPRI,basissetnumber,basissetnumber1,basissetnumber2
 INTEGER            :: unique1,unique2,uniqueCharge,IPRINT
-LOGICAL            :: PRINTATOMCOORD,pointcharge,phantom
+LOGICAL            :: PRINTATOMCOORD,pointcharge,phantom,DunningsBasis
 INTEGER :: auxunique2,auxbasissetnumber2,cabsunique2,cabsbasissetnumber2
 INTEGER :: jkunique2,jkbasissetnumber2
 atomnumber=0
 basissetnumber=0
+
+DunningsBasis = .TRUE.
+
 DO I=1,Atomtypes
  CALL READ_LINE5(LUPRI,LUINFO,AtomicCharge,nAtoms,AtomicBasisset,ATOMBASIS,&
       & BASIS,AUXBASIS,AUXBASISSET,CABSBASIS,CABSbasisset,JKBASIS,JKbasisset,pointcharge,phantom)
@@ -742,6 +745,12 @@ DO I=1,Atomtypes
  IF(ATOMBASIS)THEN
     CALL DETERMINE_UNIQUE_BASIS(BASISSETLIBRARY,ATOMICBASISSET,&
                                              &unique1,basissetnumber)
+    IPOS = INDEX(ATOMICBASISSET,'cc-pV')
+    IF (IPOS .EQ. 0) THEN 
+       DunningsBasis = .FALSE.
+       !Not all atomic basis sets are Dunning basis sets
+    ENDIF
+
     IF(unique1 == 0)THEN !found new basisset
        basissetnumber=basissetnumber+1
        IF(basissetnumber .GT. maxBasisSetInLIB) THEN
@@ -1073,6 +1082,17 @@ IF(latt_config%setup_pbclatt) THEN
   !READ lattice vectors
   CALL READ_LATT_VECTORS(LUPRI,LUINFO,latt_config)
 ENDIF
+
+IF(ATOMBASIS)THEN
+   IF(DunningsBasis)THEN
+      BASISSETLIBRARY%DunningsBasis = .TRUE.
+   ELSE
+      BASISSETLIBRARY%DunningsBasis = .FALSE.
+   ENDIF
+!ELSE
+!do nothing already set
+ENDIF
+
 END SUBROUTINE READ_GEOMETRY
 
 !> \brief determines if the basisset is unique and set the basissetlibrary accordingly

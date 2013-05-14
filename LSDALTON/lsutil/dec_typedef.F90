@@ -28,8 +28,6 @@ module dec_typedef_module
 
      !> Run DEC calculation at all?
      logical :: doDEC
-     !> Do Hartree-Fock calculation before DEC calculation (default: TRUE)
-     logical :: doHF
      !> Frozen core calculation?
      logical :: frozencore
      !> Full molecular job

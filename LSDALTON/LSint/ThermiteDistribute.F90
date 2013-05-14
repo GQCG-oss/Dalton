@@ -1610,19 +1610,19 @@ if(Input%LinComCarmomType.GT.0)then
    !linear combination of cartesian momentum integrals
    call mem_workpointer_alloc(QPmat3,nA*nB*3*nPasses)
    if(Input%LinComCarmomType.EQ.1)then !magnetic derivative overlap integrals
-      call magderiv_crossproduct(QPmat4,nA*nB,Input%nCartesianMomentComp,&
+      call GDPQ_magderiv_crossproduct(QPmat4,nA*nB,Input%nCartesianMomentComp,&
            & nPasses,QPmat3,3,P%distance12,lupri)
    elseif(Input%LinComCarmomType.EQ.2)then !LHS half magnetic derivative overlap integrals
       center(1,1) = P%orbital1%center(1)
       center(2,1) = P%orbital1%center(2)
       center(3,1) = P%orbital1%center(3)
-      call magderiv_crossproduct(QPmat4,nA*nB,Input%nCartesianMomentComp,&
+      call GDPQ_magderiv_crossproduct(QPmat4,nA*nB,Input%nCartesianMomentComp,&
            & nPasses,QPmat3,3,center,lupri)
    elseif(Input%LinComCarmomType.EQ.3)then !RHS half magnetic derivative overlap integrals
       center(1,1) = - P%orbital2%center(1)
       center(2,1) = - P%orbital2%center(2)
       center(3,1) = - P%orbital2%center(3)
-      call magderiv_crossproduct(QPmat4,nA*nB,Input%nCartesianMomentComp,&
+      call GDPQ_magderiv_crossproduct(QPmat4,nA*nB,Input%nCartesianMomentComp,&
            & nPasses,QPmat3,3,center,lupri)
    else
       call lsquit('unknown case in LinComCarmomType',-1)
@@ -1781,94 +1781,94 @@ DO iPassP=1,P%nPasses
        DO iPermute=1,nPermute
        iDim5 = Dim5(iPermute)
        IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
-          CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
        ELSE IF (permuteOD.AND.permuteCD) THEN
-          CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
        ELSE IF (permuteOD.AND.permuteAB) THEN
-          CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
        ELSE IF (antipermuteAB.AND.permuteCD) THEN
-          CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
        ELSE IF (permuteAB.AND.antipermuteCD) THEN
-          CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL IntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_IntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
        ELSE IF (permuteAB.AND.permuteCD) THEN
-          CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
        ELSE IF (antipermuteAB) THEN
-          CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
        ELSE IF (permuteAB) THEN
-          CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
        ELSE IF (antipermuteCD) THEN
-          CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
        ELSE IF (permuteCD) THEN
-          CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
        ELSE IF (permuteOD) THEN
-          CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
        ELSE
-          CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
        ENDIF
        translate = .FALSE.
@@ -1882,153 +1882,155 @@ DO iPassP=1,P%nPasses
           QPmat5 = 0.0E0_realk
           call daxpy(nA*nB*nC*nD*ndim5*nPasses,-1.0E0_realk,QPmat3,1,QPmat5,1)
           IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
-             CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
           ELSE IF (permuteOD.AND.permuteCD) THEN
-             CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
           ELSE IF (permuteOD.AND.permuteAB) THEN
-             CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
           ELSE IF (antipermuteAB.AND.permuteCD) THEN
-             CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
           ELSE IF (permuteAB.AND.antipermuteCD) THEN
-             CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL IntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_IntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
           ELSE IF (permuteAB.AND.permuteCD) THEN
-             CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
           ELSE IF (antipermuteAB) THEN
-             CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
           ELSE IF (permuteAB) THEN
-             CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
           ELSE IF (antipermuteCD) THEN
-             CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
           ELSE IF (permuteCD) THEN
-             CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
           ELSE IF (permuteOD) THEN
-             CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
           ELSE
-             CALL intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
                   & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
           ENDIF
           call mem_workpointer_dealloc(QPmat5)
        ENDIF !translate
        ENDDO !Permute
+#ifdef VAR_DEBUGINT
        IF (IPRINT.GT.40) THEN
           IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
-             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
-             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
-             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
-             CALL printInt(BADC,'BADC',n2,n1,n4,n3,ndim5output,lupri)
-             CALL printInt(CDAB,'CDAB',n3,n4,n1,n2,ndim5output,lupri)
-             CALL printInt(CDBA,'CDBA',n3,n4,n2,n1,ndim5output,lupri)
-             CALL printInt(DCAB,'DCAB',n4,n3,n1,n2,ndim5output,lupri)
-             CALL printInt(DCBA,'DCBA',n4,n3,n2,n1,ndim5output,lupri)
+             CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+             CALL GDPQ_printInt(BADC,'BADC',n2,n1,n4,n3,ndim5output,lupri)
+             CALL GDPQ_printInt(CDAB,'CDAB',n3,n4,n1,n2,ndim5output,lupri)
+             CALL GDPQ_printInt(CDBA,'CDBA',n3,n4,n2,n1,ndim5output,lupri)
+             CALL GDPQ_printInt(DCAB,'DCAB',n4,n3,n1,n2,ndim5output,lupri)
+             CALL GDPQ_printInt(DCBA,'DCBA',n4,n3,n2,n1,ndim5output,lupri)
           ELSE IF (permuteOD.AND.permuteCD) THEN
-             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
-             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
-             CALL printInt(CDAB,'CDAB',n3,n4,n1,n2,ndim5output,lupri)
-             CALL printInt(DCAB,'DCAB',n4,n3,n1,n2,ndim5output,lupri)
+             CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+             CALL GDPQ_printInt(CDAB,'CDAB',n3,n4,n1,n2,ndim5output,lupri)
+             CALL GDPQ_printInt(DCAB,'DCAB',n4,n3,n1,n2,ndim5output,lupri)
           ELSE IF (permuteOD.AND.permuteAB) THEN
-             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
-             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
-             CALL printInt(CDAB,'CDAB',n3,n4,n1,n2,ndim5output,lupri)
-             CALL printInt(CDBA,'CDBA',n3,n4,n2,n1,ndim5output,lupri)
+             CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(CDAB,'CDAB',n3,n4,n1,n2,ndim5output,lupri)
+             CALL GDPQ_printInt(CDBA,'CDBA',n3,n4,n2,n1,ndim5output,lupri)
           ELSE IF (antipermuteAB.AND.permuteCD) THEN
-             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
-             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
-             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
-             CALL printInt(BADC,'BADC',n2,n1,n4,n3,ndim5output,lupri)
+             CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+             CALL GDPQ_printInt(BADC,'BADC',n2,n1,n4,n3,ndim5output,lupri)
           ELSE IF (permuteAB.AND.antipermuteCD) THEN
-             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
-             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
-             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
-             CALL printInt(BADC,'BADC',n2,n1,n4,n3,ndim5output,lupri)
+             CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+             CALL GDPQ_printInt(BADC,'BADC',n2,n1,n4,n3,ndim5output,lupri)
           ELSE IF (permuteAB.AND.permuteCD) THEN
-             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
-             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
-             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
-             CALL printInt(BADC,'BADC',n2,n1,n4,n3,ndim5output,lupri)
+             CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+             CALL GDPQ_printInt(BADC,'BADC',n2,n1,n4,n3,ndim5output,lupri)
           ELSE IF (antipermuteAB) THEN
-             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
-             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
           ELSE IF (permuteAB) THEN
-             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
-             CALL printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(BACD,'BACD',n2,n1,n3,n4,ndim5output,lupri)
           ELSE IF (antipermuteCD) THEN
-             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
-             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+             CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
           ELSE IF (permuteCD) THEN
-             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
-             CALL printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
+             CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(ABDC,'ABDC',n1,n2,n4,n3,ndim5output,lupri)
           ELSE IF (permuteOD) THEN
-             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
-             CALL printInt(CDAB,'CDAB',n3,n4,n1,n2,ndim5output,lupri)
+             CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(CDAB,'CDAB',n3,n4,n1,n2,ndim5output,lupri)
           ELSE
-             CALL printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
+             CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
           ENDIF
        ENDIF !IPRINT
+#endif
 !     ENDDO !iDerivQ
 !    ENDDO !iDerivP
      ENDDO !iDeriv
@@ -2041,10 +2043,9 @@ IF(Input%LinComCarmomType.GT.0)THEN
 ELSEIF(PQ%reverseOrder)THEN
    call mem_workpointer_dealloc(QPmat4)
 ENDIF
+end SUBROUTINE GeneraldistributePQ
 
-
-CONTAINS
-  SUBROUTINE printInt(ABCD,text,n1,n2,n3,n4,n5,lupri)
+SUBROUTINE GDPQ_printInt(ABCD,text,n1,n2,n3,n4,n5,lupri)
   implicit none
   Integer,intent(IN)          :: n1,n2,n3,n4,n5,lupri
   Character(len=4),intent(IN) :: text
@@ -2062,422 +2063,426 @@ CONTAINS
   ENDDO
   ENDDO
   ENDDO
-  END SUBROUTINE printInt
+END SUBROUTINE GDPQ_printInt
 
-  SUBROUTINE intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
-    implicit none
-    Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
-    Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-    Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
-    Real(realk),intent(INOUT) :: ABCD(n1,n2,n3,n4,ndim5output) !nP,nQ,ndim5output)
-    Logical,intent(IN)      :: add
-    !
-    Integer :: iA,iB,iC,iD
-    IF (.not.add) THEN
-       DO iD=1,nD
-          DO iC=1,nC
-             DO iB=1,nB
-                DO iA=1,nA
-                   ABCD(sA+iA,sB+iB,sC+iC,sD+iD,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)                   
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ELSE
-       !$OMP CRITICAL (GeneraldistributePQBlock)
-       DO iD=1,nD
-          DO iC=1,nC
-             DO iB=1,nB
-                DO iA=1,nA
-                   ABCD(sA+iA,sB+iB,sC+iC,sD+iD,iDim5output)=ABCD(sA+iA,sB+iB,sC+iC,sD+iD,iDim5output)+&
-                        & CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-       !$OMP END CRITICAL (GeneraldistributePQBlock)
-    ENDIF
-  END SUBROUTINE intABCD
+SUBROUTINE GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+  implicit none
+  Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
+  Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(INOUT) :: ABCD(n1,n2,n3,n4,ndim5output) !nP,nQ,ndim5output)
+  Logical,intent(IN)      :: add
+  !
+  Integer :: iA,iB,iC,iD
+  IF (.not.add) THEN
+     DO iD=1,nD
+        DO iC=1,nC
+           DO iB=1,nB
+              DO iA=1,nA
+                 ABCD(sA+iA,sB+iB,sC+iC,sD+iD,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)                   
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ELSE
+     !$OMP CRITICAL (GeneraldistributePQBlock)
+     DO iD=1,nD
+        DO iC=1,nC
+           DO iB=1,nB
+              DO iA=1,nA
+                 ABCD(sA+iA,sB+iB,sC+iC,sD+iD,iDim5output)=ABCD(sA+iA,sB+iB,sC+iC,sD+iD,iDim5output)+&
+                      & CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END CRITICAL (GeneraldistributePQBlock)
+  ENDIF
+END SUBROUTINE GDPQ_intABCD
 
-  SUBROUTINE intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
-    implicit none
-    Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
-    Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-    Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
-    Real(realk),intent(INOUT) :: ABDC(n1,n2,n4,n3,ndim5output) !(nP,nD,nC,ndim5output)
-    Logical,intent(IN)      :: add
-    !
-    Integer :: iA,iB,iC,iD
-    IF (.NOT.add) THEN
-       DO iC=1,nC
-          DO iD=1,nD
-             DO iB=1,nB
-                DO iA=1,nA
-                   ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ELSE
-       !$OMP CRITICAL (GeneraldistributePQBlock)
-       DO iC=1,nC
-          DO iD=1,nD
-             DO iB=1,nB
-                DO iA=1,nA
-                   ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = &
-                        & ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) +CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-       !$OMP END CRITICAL (GeneraldistributePQBlock)
-    ENDIF
-  END SUBROUTINE intABDC
+SUBROUTINE GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+  implicit none
+  Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
+  Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(INOUT) :: ABDC(n1,n2,n4,n3,ndim5output) !(nP,nD,nC,ndim5output)
+  Logical,intent(IN)      :: add
+  !
+  Integer :: iA,iB,iC,iD
+  IF (.NOT.add) THEN
+     DO iC=1,nC
+        DO iD=1,nD
+           DO iB=1,nB
+              DO iA=1,nA
+                 ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ELSE
+     !$OMP CRITICAL (GeneraldistributePQBlock)
+     DO iC=1,nC
+        DO iD=1,nD
+           DO iB=1,nB
+              DO iA=1,nA
+                 ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = &
+                      & ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) +CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END CRITICAL (GeneraldistributePQBlock)
+  ENDIF
+END SUBROUTINE GDPQ_intABDC
 
-  SUBROUTINE AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
-    implicit none
-    Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
-    Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-    Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
-    Real(realk),intent(INOUT) :: ABDC(n1,n2,n4,n3,ndim5output)!(nP,nD,nC,ndim5output)
-    Logical,intent(IN)      :: add
-    !
-    Integer :: iA,iB,iC,iD
-    IF (.NOT.add) THEN
-       DO iC=1,nC
-          DO iD=1,nD
-             DO iB=1,nB
-                DO iA=1,nA
-                   ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ELSE
-       !$OMP CRITICAL (GeneraldistributePQBlock)
-       DO iC=1,nC
-          DO iD=1,nD
-             DO iB=1,nB
-                DO iA=1,nA
-                   ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = &
-                        & ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-       !$OMP END CRITICAL (GeneraldistributePQBlock)
-    ENDIF
-  END SUBROUTINE AntiIntABDC
+SUBROUTINE GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+  implicit none
+  Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
+  Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(INOUT) :: ABDC(n1,n2,n4,n3,ndim5output)!(nP,nD,nC,ndim5output)
+  Logical,intent(IN)      :: add
+  !
+  Integer :: iA,iB,iC,iD
+  IF (.NOT.add) THEN
+     DO iC=1,nC
+        DO iD=1,nD
+           DO iB=1,nB
+              DO iA=1,nA
+                 ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ELSE
+     !$OMP CRITICAL (GeneraldistributePQBlock)
+     DO iC=1,nC
+        DO iD=1,nD
+           DO iB=1,nB
+              DO iA=1,nA
+                 ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) = &
+                      & ABDC(sA+iA,sB+iB,sD+iD,sC+iC,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END CRITICAL (GeneraldistributePQBlock)
+  ENDIF
+END SUBROUTINE GDPQ_AntiIntABDC
 
-  SUBROUTINE intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
-    implicit none
-    Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
-    Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-    Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
-    Real(realk),intent(INOUT) :: DCAB(n4,n3,n1,n2,ndim5output)!(nD,nC,nP,ndim5output)
-    Logical,intent(IN)      :: add
-    !
-    Integer :: iA,iB,iC,iD
-    IF (.NOT.add) THEN
-       DO iC=1,nC
-          DO iD=1,nD
-             DO iB=1,nB
-                DO iA=1,nA
-                   DCAB(sD+iD,sC+iC,sA+iA,sB+iB,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ELSE
-       !$OMP CRITICAL (GeneraldistributePQBlock)
-       DO iC=1,nC
-          DO iD=1,nD
-             DO iB=1,nB
-                DO iA=1,nA
-                   DCAB(sD+iD,sC+iC,sA+iA,sB+iB,iDim5output) &
-                        & = DCAB(sD+iD,sC+iC,sA+iA,sB+iB,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-       !$OMP END CRITICAL (GeneraldistributePQBlock)
-    ENDIF
-  END SUBROUTINE intDCAB
+SUBROUTINE GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+  implicit none
+  Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
+  Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(INOUT) :: DCAB(n4,n3,n1,n2,ndim5output)!(nD,nC,nP,ndim5output)
+  Logical,intent(IN)      :: add
+  !
+  Integer :: iA,iB,iC,iD
+  IF (.NOT.add) THEN
+     DO iC=1,nC
+        DO iD=1,nD
+           DO iB=1,nB
+              DO iA=1,nA
+                 DCAB(sD+iD,sC+iC,sA+iA,sB+iB,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ELSE
+     !$OMP CRITICAL (GeneraldistributePQBlock)
+     DO iC=1,nC
+        DO iD=1,nD
+           DO iB=1,nB
+              DO iA=1,nA
+                 DCAB(sD+iD,sC+iC,sA+iA,sB+iB,iDim5output) &
+                      & = DCAB(sD+iD,sC+iC,sA+iA,sB+iB,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END CRITICAL (GeneraldistributePQBlock)
+  ENDIF
+END SUBROUTINE GDPQ_intDCAB
 
-  SUBROUTINE intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
-    implicit none
-    Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
-    Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-    Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
-    Real(realk),intent(INOUT) :: BACD(n2,n1,n3,n4,ndim5output) !(nB,nA,nQ,ndim5output)
-    Logical,intent(IN)      :: add
-    !
-    Integer :: iA,iB,iC,iD
-    IF (.NOT.add) THEN
-       DO iB=1,nB
-          DO iA=1,nA
-             DO iD=1,nD
-                DO iC=1,nC
-                   BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ELSE
-       !$OMP CRITICAL (GeneraldistributePQBlock)
-       DO iB=1,nB
-          DO iA=1,nA
-             DO iD=1,nD
-                DO iC=1,nC
-                   BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) &
-                        &=BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output)+CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-       !$OMP END CRITICAL (GeneraldistributePQBlock)
-    ENDIF
-  END SUBROUTINE intBACD
+SUBROUTINE GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+  implicit none
+  Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
+  Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(INOUT) :: BACD(n2,n1,n3,n4,ndim5output) !(nB,nA,nQ,ndim5output)
+  Logical,intent(IN)      :: add
+  !
+  Integer :: iA,iB,iC,iD
+  IF (.NOT.add) THEN
+     DO iB=1,nB
+        DO iA=1,nA
+           DO iD=1,nD
+              DO iC=1,nC
+                 BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ELSE
+     !$OMP CRITICAL (GeneraldistributePQBlock)
+     DO iB=1,nB
+        DO iA=1,nA
+           DO iD=1,nD
+              DO iC=1,nC
+                 BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) &
+                      &=BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output)+CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END CRITICAL (GeneraldistributePQBlock)
+  ENDIF
+END SUBROUTINE GDPQ_intBACD
 
-  SUBROUTINE AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
-    implicit none
-    Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
-    Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-    Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
-    Real(realk),intent(INOUT) :: BACD(n2,n1,n3,n4,ndim5output)!(nB,nA,nQ,ndim5output)
-    Logical,intent(IN)      :: add
-    !
-    Integer :: iA,iB,iC,iD
-    IF (.NOT.add) THEN
-       DO iB=1,nB
-          DO iA=1,nA
-             DO iD=1,nD
-                DO iC=1,nC
-                   BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ELSE
-       !$OMP CRITICAL (GeneraldistributePQBlock)
-       DO iB=1,nB
-          DO iA=1,nA
-             DO iD=1,nD
-                DO iC=1,nC
-                   BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) &
-                        & = BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) - CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-       !$OMP END CRITICAL (GeneraldistributePQBlock)
-    ENDIF
-  END SUBROUTINE AntiIntBACD
+SUBROUTINE GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+  implicit none
+  Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
+  Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(INOUT) :: BACD(n2,n1,n3,n4,ndim5output)!(nB,nA,nQ,ndim5output)
+  Logical,intent(IN)      :: add
+  !
+  Integer :: iA,iB,iC,iD
+  IF (.NOT.add) THEN
+     DO iB=1,nB
+        DO iA=1,nA
+           DO iD=1,nD
+              DO iC=1,nC
+                 BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ELSE
+     !$OMP CRITICAL (GeneraldistributePQBlock)
+     DO iB=1,nB
+        DO iA=1,nA
+           DO iD=1,nD
+              DO iC=1,nC
+                 BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) &
+                      & = BACD(sB+iB,sA+iA,sC+iC,sD+iD,iDim5output) - CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END CRITICAL (GeneraldistributePQBlock)
+  ENDIF
+END SUBROUTINE GDPQ_AntiIntBACD
 
-  SUBROUTINE intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
-    implicit none
-    Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
-    Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-    Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
-    Real(realk),intent(INOUT) :: BADC(n2,n1,n4,n3,ndim5output)!(nB,nA,nD,nC,ndim5output)
-    Logical,intent(IN)      :: add
-    !
-    Integer :: iA,iB,iC,iD
-    IF (.NOT.add) THEN
-       DO iD=1,nD
-          DO iC=1,nC
-             DO iA=1,nA
-                DO iB=1,nB
-                   BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ELSE
-       !$OMP CRITICAL (GeneraldistributePQBlock)
-       DO iD=1,nD
-          DO iC=1,nC
-             DO iA=1,nA
-                DO iB=1,nB
-                   BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) &
-                        & = BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-       !$OMP END CRITICAL (GeneraldistributePQBlock)
-    ENDIF
-  END SUBROUTINE intBADC
+SUBROUTINE GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+  implicit none
+  Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
+  Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(INOUT) :: BADC(n2,n1,n4,n3,ndim5output)!(nB,nA,nD,nC,ndim5output)
+  Logical,intent(IN)      :: add
+  !
+  Integer :: iA,iB,iC,iD
+  IF (.NOT.add) THEN
+     DO iD=1,nD
+        DO iC=1,nC
+           DO iA=1,nA
+              DO iB=1,nB
+                 BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ELSE
+     !$OMP CRITICAL (GeneraldistributePQBlock)
+     DO iD=1,nD
+        DO iC=1,nC
+           DO iA=1,nA
+              DO iB=1,nB
+                 BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) &
+                      & = BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END CRITICAL (GeneraldistributePQBlock)
+  ENDIF
+END SUBROUTINE GDPQ_intBADC
 
-  SUBROUTINE AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
-    implicit none
-    Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
-    Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-    Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
-    Real(realk),intent(INOUT) :: BADC(n2,n1,n4,n3,ndim5output)!(nB,nA,nD,nC,ndim5output)
-    Logical,intent(IN)      :: add
-    !
-    Integer :: iA,iB,iC,iD
-    IF (.NOT.add) THEN
-       DO iD=1,nD
-          DO iC=1,nC
-             DO iA=1,nA
-                DO iB=1,nB
-                   BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ELSE
-       !$OMP CRITICAL (GeneraldistributePQBlock)
-       DO iD=1,nD
-          DO iC=1,nC
-             DO iA=1,nA
-                DO iB=1,nB
-                   BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) &
-                        & = BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) - CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-       !$OMP END CRITICAL (GeneraldistributePQBlock)
-    ENDIF
-  END SUBROUTINE AntiIntBADC
+SUBROUTINE GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+  implicit none
+  Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
+  Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(INOUT) :: BADC(n2,n1,n4,n3,ndim5output)!(nB,nA,nD,nC,ndim5output)
+  Logical,intent(IN)      :: add
+  !
+  Integer :: iA,iB,iC,iD
+  IF (.NOT.add) THEN
+     DO iD=1,nD
+        DO iC=1,nC
+           DO iA=1,nA
+              DO iB=1,nB
+                 BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ELSE
+     !$OMP CRITICAL (GeneraldistributePQBlock)
+     DO iD=1,nD
+        DO iC=1,nC
+           DO iA=1,nA
+              DO iB=1,nB
+                 BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) &
+                      & = BADC(sB+iB,sA+iA,sD+iD,sC+iC,iDim5output) - CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END CRITICAL (GeneraldistributePQBlock)
+  ENDIF
+END SUBROUTINE GDPQ_AntiIntBADC
 
-  SUBROUTINE intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
-    implicit none
-    Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
-    Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-    Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
-    Real(realk),intent(INOUT) :: DCBA(n4,n3,n2,n1,ndim5output)!(nD,nC,nB,nA,ndim5output)
-    Logical,intent(IN)      :: add
-    !
-    Integer :: iA,iB,iC,iD
-    IF (.NOT.add) THEN
-       DO iB=1,nB
-          DO iA=1,nA
-             DO iD=1,nD
-                DO iC=1,nC
-                   DCBA(sD+iD,sC+iC,sB+iB,sA+iA,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ELSE
-       !$OMP CRITICAL (GeneraldistributePQBlock)
-       DO iB=1,nB
-          DO iA=1,nA
-             DO iD=1,nD
-                DO iC=1,nC
-                   DCBA(sD+iD,sC+iC,sB+iB,sA+iA,iDim5output) &
-                        & = DCBA(sD+iD,sC+iC,sB+iB,sA+iA,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-       !$OMP END CRITICAL (GeneraldistributePQBlock)
-    ENDIF
-  END SUBROUTINE intDCBA
+SUBROUTINE GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+  implicit none
+  Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
+  Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(INOUT) :: DCBA(n4,n3,n2,n1,ndim5output)!(nD,nC,nB,nA,ndim5output)
+  Logical,intent(IN)      :: add
+  !
+  Integer :: iA,iB,iC,iD
+  IF (.NOT.add) THEN
+     DO iB=1,nB
+        DO iA=1,nA
+           DO iD=1,nD
+              DO iC=1,nC
+                 DCBA(sD+iD,sC+iC,sB+iB,sA+iA,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ELSE
+     !$OMP CRITICAL (GeneraldistributePQBlock)
+     DO iB=1,nB
+        DO iA=1,nA
+           DO iD=1,nD
+              DO iC=1,nC
+                 DCBA(sD+iD,sC+iC,sB+iB,sA+iA,iDim5output) &
+                      & = DCBA(sD+iD,sC+iC,sB+iB,sA+iA,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END CRITICAL (GeneraldistributePQBlock)
+  ENDIF
+END SUBROUTINE GDPQ_intDCBA
 
-  SUBROUTINE intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
-    implicit none
-    Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
-    Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-    Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
-    Real(realk),intent(INOUT) :: CDBA(n3,n4,n2,n1,ndim5output)!(nQ,nB,nA,ndim5output)
-    Logical,intent(IN)      :: add
-    !
-    Integer :: iA,iB,iC,iD
-    IF (.NOT.add) THEN
-       DO iB=1,nB
-          DO iA=1,nA
-             DO iD=1,nD
-                DO iC=1,nC
-                   CDBA(sC+iC,sD+iD,sB+iB,sA+iA,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ELSE
-       !$OMP CRITICAL (GeneraldistributePQBlock)
-       DO iB=1,nB
-          DO iA=1,nA
-             DO iD=1,nD
-                DO iC=1,nC
-                   CDBA(sC+iC,sD+iD,sB+iB,sA+iA,iDim5output) &
-                        & = CDBA(sC+iC,sD+iD,sB+iB,sA+iA,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-       !$OMP END CRITICAL (GeneraldistributePQBlock)
-    ENDIF
-  END SUBROUTINE intCDBA
+SUBROUTINE GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,CDAB,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+  implicit none
+  Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
+  Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
+  Real(realk),intent(IN)  :: CDAB(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(INOUT) :: CDBA(n3,n4,n2,n1,ndim5output)!(nQ,nB,nA,ndim5output)
+  Logical,intent(IN)      :: add
+  !
+  Integer :: iA,iB,iC,iD
+  IF (.NOT.add) THEN
+     DO iB=1,nB
+        DO iA=1,nA
+           DO iD=1,nD
+              DO iC=1,nC
+                 CDBA(sC+iC,sD+iD,sB+iB,sA+iA,iDim5output) = CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ELSE
+     !$OMP CRITICAL (GeneraldistributePQBlock)
+     DO iB=1,nB
+        DO iA=1,nA
+           DO iD=1,nD
+              DO iC=1,nC
+                 CDBA(sC+iC,sD+iD,sB+iB,sA+iA,iDim5output) &
+                      & = CDBA(sC+iC,sD+iD,sB+iB,sA+iA,iDim5output) + CDAB(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END CRITICAL (GeneraldistributePQBlock)
+  ENDIF
+END SUBROUTINE GDPQ_intCDBA
 
-  SUBROUTINE intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,CDABin,add,nA,nB,nC,nD,ndim5output,idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
-    implicit none
-    Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
-    Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
-    Real(realk),intent(IN)  :: CDABin(nC,nD,nA,nB,ndim5,nPasses)
-    Real(realk),intent(INOUT) :: CDAB(n3,n4,n1,n2,ndim5output) !(nPQ,ndim5output)
-    Logical,intent(IN)      :: add
-    !
-    Integer :: iA,iB,iC,iD
+SUBROUTINE GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,CDABin,add,nA,nB,nC,nD,ndim5output,&
+     & idim5output,iPass,iDeriv,nPasses,ndim5,lupri)
+  implicit none
+  Integer,intent(IN)      :: nA,nB,nC,nD,iPass,iDeriv,nPasses,ndim5,idim5output,ndim5output,lupri
+  Integer,intent(IN)      :: n1,n2,n3,n4,sA,sB,sC,sD
+  Real(realk),intent(IN)  :: CDABin(nC,nD,nA,nB,ndim5,nPasses)
+  Real(realk),intent(INOUT) :: CDAB(n3,n4,n1,n2,ndim5output) !(nPQ,ndim5output)
+  Logical,intent(IN)      :: add
+  !
+  Integer :: iA,iB,iC,iD
 
-    Integer :: iPQ
-    IF (.NOT.add) THEN
-       DO iA=1,nA
-          DO iB=1,nB
-             DO iD=1,nD
-                DO iC=1,nC
-                   CDAB(sC+iC,sD+iD,sA+iA,sB+iB,iDim5output) = CDABin(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-    ELSE
-       !$OMP CRITICAL (GeneraldistributePQBlock)
-       DO iA=1,nA
-          DO iB=1,nB
-             DO iD=1,nD
-                DO iC=1,nC
-                   CDAB(sC+iC,sD+iD,sA+iA,sB+iB,iDim5output) &
-                        & = CDAB(sC+iC,sD+iD,sA+iA,sB+iB,iDim5output) + CDABin(iC,iD,iA,iB,iDeriv,iPass)
-                ENDDO
-             ENDDO
-          ENDDO
-       ENDDO
-       !$OMP END CRITICAL (GeneraldistributePQBlock)
-    ENDIF
-  END SUBROUTINE intCDAB
+  Integer :: iPQ
+  IF (.NOT.add) THEN
+     DO iA=1,nA
+        DO iB=1,nB
+           DO iD=1,nD
+              DO iC=1,nC
+                 CDAB(sC+iC,sD+iD,sA+iA,sB+iB,iDim5output) = CDABin(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+  ELSE
+     !$OMP CRITICAL (GeneraldistributePQBlock)
+     DO iA=1,nA
+        DO iB=1,nB
+           DO iD=1,nD
+              DO iC=1,nC
+                 CDAB(sC+iC,sD+iD,sA+iA,sB+iB,iDim5output) &
+                      & = CDAB(sC+iC,sD+iD,sA+iA,sB+iB,iDim5output) + CDABin(iC,iD,iA,iB,iDeriv,iPass)
+              ENDDO
+           ENDDO
+        ENDDO
+     ENDDO
+     !$OMP END CRITICAL (GeneraldistributePQBlock)
+  ENDIF
+END SUBROUTINE GDPQ_intCDAB
 
-  SUBROUTINE magderiv_crossproduct(QPmatCARMOM,nP,nCarmom,nPasses,QPmatMAG,ndimMag,distanceAB,lupri)
-    implicit none
-    Integer,intent(IN)      :: nP,nCarmom,nPasses,ndimMag,lupri
-    Real(realk),intent(IN)  :: QPmatCARMOM(nP,nCarmom,nPasses),distanceAB(3,nPasses)
-    Real(realk),intent(INOUT) :: QPmatMAG(nP,ndimMag,nPasses)
-    !
-    integer,parameter :: betalist(3)=(/2,3,1/),gammalist(3)=(/3,1,2/)
-    integer :: iPassP,X,beta,gamma,beta2,gamma2,IP
-    real(realk) :: BETADIST,GAMMADIST
-    DO iPassP=1,P%nPasses
-       DO X=1,3
-          beta = betalist(X)
-          gamma = gammalist(X)
-          BETADIST=distanceAB(beta,iPassP)
-          GAMMADIST=distanceAB(gamma,iPassP) 
-          GAMMA2 = gamma+1 !because the first carmom is normal overlap and then X;Y;Z; moments
-          BETA2 = beta+1
-          DO IP=1,nP
-             QPmatMAG(IP,X,iPassP) =  BETADIST*QPmatCARMOM(iP,GAMMA2,iPassP)&
-                  &                  -GAMMADIST*QPmatCARMOM(iP,BETA2,iPassP)
-          ENDDO
-       ENDDO
-    ENDDO
-
-  end SUBROUTINE magderiv_crossproduct
-
-END SUBROUTINE GENERALDISTRIBUTEPQ
+SUBROUTINE GDPQ_magderiv_crossproduct(QPmatCARMOM,nP,nCarmom,nPasses,QPmatMAG,ndimMag,distanceAB,lupri)
+  implicit none
+  Integer,intent(IN)      :: nP,nCarmom,nPasses,ndimMag,lupri
+  Real(realk),intent(IN)  :: QPmatCARMOM(nP,nCarmom,nPasses),distanceAB(3,nPasses)
+  Real(realk),intent(INOUT) :: QPmatMAG(nP,ndimMag,nPasses)
+  !
+  integer,parameter :: betalist(3)=(/2,3,1/),gammalist(3)=(/3,1,2/)
+  integer :: iPassP,X,beta,gamma,beta2,gamma2,IP
+  real(realk) :: BETADIST,GAMMADIST
+  DO iPassP=1,nPasses
+     DO X=1,3
+        beta = betalist(X)
+        gamma = gammalist(X)
+        BETADIST=distanceAB(beta,iPassP)
+        GAMMADIST=distanceAB(gamma,iPassP) 
+        GAMMA2 = gamma+1 !because the first carmom is normal overlap and then X;Y;Z; moments
+        BETA2 = beta+1
+        DO IP=1,nP
+           QPmatMAG(IP,X,iPassP) =  BETADIST*QPmatCARMOM(iP,GAMMA2,iPassP)&
+                &                  -GAMMADIST*QPmatCARMOM(iP,BETA2,iPassP)
+        ENDDO
+     ENDDO
+  ENDDO
+end SUBROUTINE GDPQ_magderiv_crossproduct
 
 subroutine transposeQPorder(QPmatIN,QPmatOUT,nQ,nP,ndim5,nPasses,lupri)
   implicit none

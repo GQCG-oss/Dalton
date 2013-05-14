@@ -98,8 +98,10 @@ type ConfigItem
    type(profileinput) :: prof
    !> Memory monitor for MPI calculations
    logical            :: mpi_mem_monitor
+#ifdef MOD_UNRELEASED
    !> Used to store info about geometrical Hessian
    type(geoHessianconfig) :: geoHessian
+#endif
    !> Should a excited state geometry optimization be performed 
    logical              :: doESGopt
    !> Skip LSDALTON calculation and calculate PLT file from existing density

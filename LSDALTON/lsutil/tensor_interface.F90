@@ -14,15 +14,6 @@ module tensor_interface_module
   use lspdm_tensor_operations_module
 
 
-  ! DEC DEPENDENCIES (within deccc directory)
-  ! *****************************************
-  !use dec_fragment_utils
-  !use array4_simple_operations!,only:array_reorder_4d
-  !use array3_simple_operations!,only:array_reorder_3d
-  !use array_memory_manager
-  !use dec_pdm_module
-
-
   !> Number of created arrays
   integer(kind=long) :: ArraysCreated=0
   !> Number of destroyed arrays
@@ -104,37 +95,6 @@ contains
     endif
   end subroutine copy_array
 
-
-!  subroutine array_contract_pref(pre1,A,B,cmA,cmB,NM2C,pre2,C,order)
-!    implicit none
-!    real(realk), intent(in) :: pre1,pre2
-!    type(array), intent(in) :: A, B
-!    type(array), intent(inout) :: C
-!    integer, intent(in) :: NM2C
-!    integer, intent(in) :: cmA(NM2C),cmB(NM2C)
-!    integer, optional, intent(in) :: order(C%mode)
-!    integer :: i,j,car,cad,cbr,cbd,k
-!    integer :: cmA_o(NM2C)!,cmB_o(NM2C)
-!    integer, pointer :: ar(:),ad(:),br(:),bd(:)
-!
-!    !Categorize contractions
-!    car=0;cad=0;cbr=0;cbd=0
-!    do i=1,NM2C
-!      do j=i+1,NM2C
-!        if(cmA(i)<cmA(j))then
-!          cmA_o(i)=cmA(j)
-!        else
-!          cmA_o(i)=cmA(i)
-!        endif
-!      enddo
-!    enddo
-!    print *,cmA_o,cmA
-!!    print *,cmB_o,cmB
-!    print *,"not yet further implemented"
-!    stop 0
-!
-!
-!  end subroutine array_contract_pref
 
   ! x = x + b * y
   !> \brief add a scaled array to another array. The data may have different
@@ -230,8 +190,6 @@ contains
       case(TILED)
         call lsquit("ERROR(array_add_fullfort2arr):not implemented",-1)
       case(TILED_DIST)
-        !if(present(order))call lsquit("ERROR(array_add_fullfort2arr:not implemented",-1)
-        !call add_data2tiled_lowmem(arrx,b,fortarry,arrx%dims,arrx%mode)
         if(present(order))call add_data2tiled_intiles(arrx,b,fortarry,arrx%dims,arrx%mode,order)
         if(.not.present(order))call add_data2tiled_intiles(arrx,b,fortarry,arrx%dims,arrx%mode)
     end select
@@ -333,8 +291,8 @@ contains
               call lsquit("ERROR(array_contract_outer_indices_rl):not yet implemented for tiled",DECinfo%output)
       case(TILED_DIST)
               call lsquit("ERROR(array_contract_outer_indices_rl):not yet implemented for PDM",DECinfo%output)
-      case(SCALAPACK)
-              call lsquit("scalapack for arrays not yet implemented",DECinfo%output)
+      case default
+              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
     end select
     
   end subroutine array_contract_outer_indices_rl
@@ -405,8 +363,8 @@ contains
               call lsquit("ERROR(array_contract_outer_indices_ll):not yet implemented for tiled",DECinfo%output)
       case(TILED_DIST)
               call lsquit("ERROR(array_contract_outer_indices_ll):not yet implemented for PDM",DECinfo%output)
-      case(SCALAPACK)
-              call lsquit("scalapack for arrays not yet implemented",DECinfo%output)
+      case default
+              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
     end select
     
   end subroutine array_contract_outer_indices_ll
@@ -485,8 +443,8 @@ contains
               call lsquit("ERROR(array_contract_outer_indices_lr):not yet implemented for tiled",DECinfo%output)
       case(TILED_DIST)
               call lsquit("ERROR(array_contract_outer_indices_lr):not yet implemented for PDM",DECinfo%output)
-      case(SCALAPACK)
-              call lsquit("scalapack for arrays not yet implemented",DECinfo%output)
+      case default
+              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
     end select
     
   end subroutine array_contract_outer_indices_lr
@@ -556,8 +514,8 @@ contains
               call lsquit("ERROR(array_contract_outer_indices_rr):not yet implemented for tiled",DECinfo%output)
       case(TILED_DIST)
               call lsquit("ERROR(array_contract_outer_indices_rr):not yet implemented for PDM",DECinfo%output)
-      case(SCALAPACK)
-              call lsquit("scalapack for arrays not yet implemented",DECinfo%output)
+      case default
+              call lsquit("operation for your choice of arrays not yet implemented",DECinfo%output)
     end select
     
   end subroutine array_contract_outer_indices_rr
@@ -745,10 +703,6 @@ contains
         if(present(tdims))arr=array_init_tiled(dims,nmodes,pdmtype,tdims,zeros_in_tiles)
         if(.not.present(tdims))arr=array_init_tiled(dims,nmodes,pdmtype)
         CreatedPDMArrays = CreatedPDMArrays+1
-      !case(SCALAPACK)
-      !  call lsquit("scalapack for arrays not yet implemented",DECinfo%output)
-      !  arr = array_init_scalapack(dims)
-      !  CreatedPDMArrays = CreatedPDMArrays+1
     end select
     arr%init_type=pdmtype
     arr%atype=atype
@@ -780,16 +734,6 @@ contains
     call memory_allocate_array_dense(arr)
     call ls_dzero(arr%elm1,size(arr%elm1))
 
-
-    ! By default: Do not create files when arrays are stored in memory.
-    arr%funit=0
-    arr%filename = 'NoFilename'
-    arr%address_counter=0
-    arr%storing_type=0
-    arr%nelements=0
-    nullify(arr%address)
-
-
   end function array_init_standard
 
   !> \brief array freeing routine, give an arbitrary array and all allocated
@@ -813,8 +757,8 @@ contains
       case(TILED_DIST)
         call array_free_pdm(arr)
         DestroyedPDMArrays = DestroyedPDMArrays + 1
-      case(SCALAPACK)
-        call lsquit("SCALAPACK FOR ARRAY NOT YET IMPLEMENTED",DECinfo%output)
+      case default
+        call lsquit("YOUR COICE FOR ARRAY NOT YET IMPLEMENTED",DECinfo%output)
     end select
     !call print_memory_currents(DECinfo%output)
   end subroutine array_free
@@ -928,70 +872,6 @@ contains
     return
 #endif
   end subroutine array_mv_dense2tiled
-
-!  subroutine array_convert_atype(arr,atype,usertdim,pdm)
-!    implicit none
-!    type(array), intent(inout) :: arr
-!    integer, intent(in) :: atype
-!    integer, intent(in), optional::usertdim(arr%mode)
-!    integer, intent(in),optional :: pdm
-!    integer :: tdim(arr%mode)
-!    real(realk),pointer :: tmp(:)
-!    tdim=DEFAULT_TDIM
-!    if(present(usertdim))tdim=usertdim
-!    if(atype==TILED_DIST.and.arr%atype==DENSE.and..not.present(pdm))then
-!      call lsquit("ERROR(array_convert_atype): in a conversion from DENSE to&
-!      & TILED_DIST the arguments usertdim and pdm need to be given",DECinfo%output)
-!    endif
-!
-!    select case(arr%atype)
-!    case(DENSE)
-!      select case(atype)
-!      case(DENSE)
-!        call lsquit("ERROR(array_convert_atype):cowardly refusing to convert&
-!        & from DENSE to DENSE",DECinfo%output)
-!      case(TILED)
-!        !arr=array_init_tiled(arr%dims,arr%mode,NO_PDM,.false.,arr%tdim)
-!        arr%atype=TILED
-!        call array_convert_fort2arr(arr%elm1,arr,arr%nelms)
-!        call memory_deallocate_array_dense(arr)
-!        stop 0
-!      case(TILED_DIST)
-!        call array_convert2pdm(arr,tdim,pdm)
-!      end select
-!    case(TILED)
-!      select case(arr%atype)
-!      case(DENSE)
-!        call memory_allocate_array_dense(arr)
-!        call array_convert_arr2fort(arr,arr%elm1,arr%nelms)
-!        call memory_deallocate_tile(arr)
-!          stop 0
-!      case(TILED)
-!        call lsquit("ERROR(array_convert_atype):cowardly refusing to convert&
-!        & from TILED to TILED",DECinfo%output)
-!      case(TILED_DIST)
-!        print *,"should be simple, just try"
-!        if(.not.present(pdm))call lsquit("ERROR(array_convert_atype):&
-!        & pdm access type should be given",-1)
-!              stop 0
-!      end select
-!    case(TILED_DIST)
-!      select case(arr%atype)
-!      case(DENSE)
-!              print *,"easy to implement, but did not yet have time"
-!              stop 0
-!      case(TILED)
-!              print *,"not yet implemented, somehow the order of the tiles on&
-!              & the local node has to be handled"
-!              stop 0
-!      case(TILED_DIST)
-!        print *,"if you want to change the distribution think of a clever&
-!        & routine and implement it here, else contract and redistribute"
-!        call lsquit("ERROR(array_convert_atype):cowardly refusing to convert&
-!        & from TILED_DIST to TILED_DIST",DECinfo%output)
-!      end select
-!    end select
-!  end subroutine array_convert_atype
 
 
   !\brief all the following wrappers are necessary to use the conversion routine
@@ -1206,9 +1086,6 @@ contains
             call dcopy(int(from_arr%nelms),from_arr%elm1,1,to_arr%elm1,1)
             call array_sync_replicated(to_arr)
           case(TILED_DIST)
-            !tilemem=to_arr%tsize*8.0E0_realk/(1024.0E0_realk**3)
-            !call get_currently_available_memory(MemFree)
-            !call cp_data2tiled_lowmem(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode)
             call cp_data2tiled_intiles(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode)
           case default
             call lsquit("ERROR(array_cp_data):operation not yet&
@@ -1222,9 +1099,6 @@ contains
             call dcopy(int(from_arr%nelms),from_arr%elm1,1,to_arr%elm1,1)
             call array_sync_replicated(to_arr)
           case(TILED_DIST)
-            !tilemem=to_arr%tsize*8.0E0_realk/(1024.0E0_realk**3)
-            !call get_currently_available_memory(MemFree)
-            !call cp_data2tiled_lowmem(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode)
             call cp_data2tiled_intiles(to_arr,from_arr%elm1,from_arr%dims,from_arr%mode)
           case default
             call lsquit("ERROR(array_cp_data):operation not yet&

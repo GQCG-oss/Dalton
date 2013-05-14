@@ -17,7 +17,7 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > fullmp2.info <<'%EOF%'
+cat > fullmp2_energy.info <<'%EOF%'
    DEC-MP2 energy for full molecule
    --------------------------------
    Molecule:         C2H2
@@ -28,7 +28,7 @@ cat > fullmp2.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > fullmp2.mol <<'%EOF%'
+cat > fullmp2_energy.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 
@@ -44,7 +44,7 @@ H         -1.61434       -0.03454       -0.38238
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > fullmp2.dal <<'%EOF%'
+cat > fullmp2_energy.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
@@ -66,8 +66,8 @@ TIGHT
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >fullmp2.check
-cat >>fullmp2.check <<'%EOF%'
+echo $CHECK_SHELL >fullmp2_energy.check
+cat >>fullmp2_energy.check <<'%EOF%'
 
 log=$1
 

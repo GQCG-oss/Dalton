@@ -210,6 +210,7 @@ set(INTERESTLIB_SOURCES
     interest/src/module_interest_osr.F90
     )
 set(LSINT_SOURCES
+    LSint/dft_gridLL.F90
     LSint/BuildBasis.F90
     LSint/BuildMolFile.F90
     LSint/II_Fragment.F90
@@ -371,7 +372,6 @@ set(LSLIB_SOURCES
     )
 
 set(FIXED_FORTRAN_SOURCES
-    dft/dft_gridLL.F
     linears/cholesky.F
     linears/invroutines.F
     pdpack/jacobi.F
