@@ -54,6 +54,8 @@ C   0.000  20.000   0.000
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_screen3.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .DEBUGSCREEN
 **WAVE FUNCTIONS
@@ -62,7 +64,6 @@ cat > LSDALTON_screen3.dal <<'%EOF%'
 .ARH
 .START
 H1DIAG
-.NOGCBASIS
 *END OF INPUT
 %EOF%
 

@@ -48,6 +48,8 @@ O                  7.134485    0.659897   -3.942496
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_DENSFIT_FMM_csr.dal <<'%EOF%'
+**GENERAL
+.CSR
 **INTEGRALS
 .RUNMM
 .DENSFIT
@@ -71,7 +73,6 @@ cat > LSDALTON_DENSFIT_FMM_csr.dal <<'%EOF%'
 .ANGINT
 31
 *DENSOPT
-.CSR
 .ARH
 .START
 H1DIAG
