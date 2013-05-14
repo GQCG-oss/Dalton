@@ -7,7 +7,9 @@ MODULE READMOLEFILE
   use molecule_module
   use fundamental
   use lattice_type
+#ifdef MOD_UNRELEASED
   use lattice_vectors
+#endif
 contains
 !> \brief read the molecule file and build the molecule structure 
 !> \author T. Kjaergaard
@@ -1080,10 +1082,12 @@ IF(IPRINT .GT. -1 .AND. PRINTATOMCOORD.AND.DOPRINT) THEN
    CALL LSHEADER(LUPRI,'Cartesian Coordinates Linsca (au)')
    CALL PRINT_GEOMETRY(MOLECULE,LUPRI)
 ENDIF
+#ifdef MOD_UNRELEASED
 IF(latt_config%setup_pbclatt) THEN
   !READ lattice vectors
   CALL READ_LATT_VECTORS(LUPRI,LUINFO,latt_config)
 ENDIF
+#endif
 
 IF(ATOMBASIS)THEN
    IF(DunningsBasis)THEN

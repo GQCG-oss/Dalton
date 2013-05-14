@@ -1,4 +1,5 @@
 
+#ifdef MOD_UNRELEASED
 
 MODULE lattice_vectors
 use precision
@@ -475,3 +476,4 @@ END SUBROUTINE find_latt_index
 
 END MODULE lattice_vectors
 
+#endif
