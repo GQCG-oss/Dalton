@@ -2496,16 +2496,16 @@ contains
     maxsize64 = max(maxsize64,int(nv2*nor,kind=8))
     call mem_alloc(w1,maxsize64)
     if(print_debug)then
-      if(scheme==1)w1(1:o2v2) = omega2%elm1(1:o2v2)
+      if(scheme==4)w1(1:o2v2) = omega2%elm1(1:o2v2)
       call lsmpi_local_reduction(w1,o2v2,infpar%master)
       write(msg,*)"NORM(omega2 after main loop):"
-      if(master.and.scheme==1)call print_norm(w1,o2v2)
+      if(master.and.scheme==4)call print_norm(w1,o2v2,msg)
       write(msg,*)"NORM(govov):"
-      if(master.and.scheme==1)call print_norm(govov)
+      if(master.and.scheme==4)call print_norm(govov,msg)
       write(msg,*)"NORM(gvvoo):"
-      if(master.and.scheme==1)call print_norm(gvvoo,o2v2)
+      if(master.and.scheme==4)call print_norm(gvvoo,o2v2,msg)
       write(msg,*)"NORM(gvoov):"
-      if(master.and.scheme==1)call print_norm(gvoov,o2v2)
+      if(master.and.scheme==4)call print_norm(gvoov,o2v2,msg)
     endif
     w1=0.0E0_realk
 
