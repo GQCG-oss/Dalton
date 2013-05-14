@@ -786,6 +786,7 @@ DO
    ENDIF
 !
    !SECTION MADE BY JOHANNES
+#ifdef MOD_UNRELEASED
    IF (WORD(1:5) == '**PBC') THEN
      READWORD=.TRUE.
      !should be in MOLECULE.INP not LSDALTON.INP
@@ -866,6 +867,7 @@ DO
   ENDDO
 
    ENDIF
+#endif
 
    IF (WORD == '*END OF INPUT') THEN
       DONE=.TRUE.

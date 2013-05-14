@@ -626,6 +626,7 @@ READ (LUINFO, '(a80)') LINE
 !      IntegralThreshold=1.00E-15_realk
 !    ENDIF
 
+#ifdef MOD_UNRELEASED
   !johannesfor reading lattice vectors in pbc
     IPOS = INDEX(LINE,'PBC')
     IF (IPOS .NE. 0) THEN
@@ -635,6 +636,7 @@ READ (LUINFO, '(a80)') LINE
     IF (IPOS .NE. 0) THEN
       setup_pbclatt=.TRUE.
     ENDIF
+#endif
 
   ELSE
 !*******************************************************************

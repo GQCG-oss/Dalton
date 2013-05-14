@@ -1,4 +1,3 @@
-
 MODULE lattice_type
 use precision
 use matrix_module, only: matrix
@@ -77,4 +76,3 @@ end type
 
 TYPE(lvec_list_t), save :: pbc_control
 END MODULE lattice_type
-
