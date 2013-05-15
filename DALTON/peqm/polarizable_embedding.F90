@@ -62,6 +62,7 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
     if (allocated(Rm) .and. allocated(Zm)) then
         Rm(:,:) = coords
         Zm(1,:) = charges
+        scfcycle = 0
         return
     end if
 
@@ -1643,7 +1644,7 @@ subroutine pe_electrostatic(denmats, fckmats)
         call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
     end if
 #endif
-    if (lexist .and. fock) then
+    if (lexist .and. fock .and. (scfcycle.gt.1)) then
         if (myid == 0) then
             call openfile('pe_electrostatics.bin', lu, 'old', 'unformatted')
             rewind(lu)
@@ -1752,7 +1753,7 @@ subroutine pe_electrostatic(denmats, fckmats)
             end if
 #endif
             if (myid == 0) then
-                call openfile('pe_electrostatics.bin', lu, 'new', 'unformatted')
+                call openfile('pe_electrostatics.bin', lu, 'unknown', 'unformatted')
                 rewind(lu)
                 write(lu) Etmp, fckmats
                 close(lu)

@@ -820,14 +820,14 @@ C
         CALL QUIT('Too many atomic types in .mol input')
       END IF
 !     If symmetry and polarizable embedding are specified we quit
-      if (peqm .and. addsym) then
-        write(lupri,'(/a)') 'ERROR: polarizable embedding is not'//
-     &                      ' compatible with symmetry.'
-        write(lupri,'(/a)') 'Please rerun calculation with Nosymmetry'//
-     &                      ' keyword in the molecule input file.'
-            call quit('polarizable embedding is not compatible with'//
-     &                ' symmetry.')
-      end if
+!      if (peqm .and. addsym) then
+!        write(lupri,'(/a)') 'ERROR: polarizable embedding is not'//
+!     &                      ' compatible with symmetry.'
+!        write(lupri,'(/a)') 'Please rerun calculation with Nosymmetry'//
+!     &                      ' keyword in the molecule input file.'
+!            call quit('polarizable embedding is not compatible with'//
+!     &                ' symmetry.')
+!      end if
 C***********************************************************************
 C Check integral threshold: THRS must be .gt. 0
 C       ( log(thrs*thrs) taken in oneint) (851005-hjaaj)
@@ -4450,7 +4450,7 @@ C
       IPTEST = MIN(NUCDEP/13,2)
 C     hjaaj: x,y,z normally only interesting for
 C            small molecules, otherwise just a lot of lines.
-      IF ( (IPREAD .GT. IPTEST) .OR. QMMM )  THEN
+      IF ( (IPREAD .GT. IPTEST) .OR. QMMM .or. peqm )  THEN
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
       END IF
@@ -4478,7 +4478,7 @@ C
          NAME   = NAMEX(3*ICENT)(1:4)
          IF (MULT(MULCNT) .EQ. 1) THEN
             IPCMN = IPCMN + 1
-            IF ( (IPREAD .GT. IPTEST) .OR. QMMM ) THEN
+            IF ( (IPREAD .GT. IPTEST) .OR. QMMM .or. peqm) THEN
                WRITE (LUPRI,'(2X,A,3X," : ",3(I5,2X,A,F15.10))')
      &              NAME, ICRX  , CHRXYZ(-1), CORD(1,ICENT),
      &                    ICRX+1, CHRXYZ(-2), CORD(2,ICENT),
