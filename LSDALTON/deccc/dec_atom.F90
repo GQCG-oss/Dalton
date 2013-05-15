@@ -4340,7 +4340,7 @@ if(DECinfo%PL>0) then
     !> Current job list which will be appended with new pairs
     type(joblist),intent(inout) :: jobs
     type(joblist) :: oldjobs
-    integer :: i,j,nsingle,npairold,npairnew,npairdelta, nold,nnew,k,nbasisFragment
+    integer :: i,j,nsingle,npairold,npairnew,npairdelta, nold,nnew,k,nbasisFragment,n
     integer,pointer :: atom1(:), atom2(:), jobsize(:),order(:)
     logical,pointer :: occAOS(:,:), unoccAOS(:,:), REDoccAOS(:,:), REDunoccAOS(:,:)
     logical,pointer :: occpairAOS(:), unoccpairAOS(:)
@@ -4367,9 +4367,17 @@ if(DECinfo%PL>0) then
        end do
     end do
 
+    ! Number of jobs in job list (for MP2 energy calculations atomic frags are not 
+    ! included in job list because they have already been determined during fragment optimization)
+    if(DECinfo%ccmodel==1 .and. .not. DECinfo%first_order) then
+       n = npairold
+    else
+       n = nsingle+npairold
+    end if
+
 
     ! Sanity check 1: Number current jobs should be sum of single jobs + old pairs
-    if( jobs%njobs /= (nsingle+npairold) ) then
+    if( jobs%njobs /= n ) then
        write(DECinfo%output,*) 'Number of single  frags: ', nsingle
        write(DECinfo%output,*) 'Number of pair    frags: ', npairold
        write(DECinfo%output,*) 'Number of jobs in job list  : ', jobs%njobs
