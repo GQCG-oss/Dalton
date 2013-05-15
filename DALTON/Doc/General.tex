@@ -1325,6 +1325,25 @@ the ion-core is determined by the keyword \Key{ZCMVAL} (default: +1).
 If no center named \verb|X| is present in the \verb|MOLECULE.INP| file,
 this input will be ignored.
 
+\item[\Key{CONTINUUM}]\verb| |\newline
+\verb|READ (LUCMD,*) LCNTMAX, CNTSTR, CNTEND|
+
+%
+% Introduced by Sonia Coriani, 2012
+%
+Use continuum-like basis functions\index{Continuum basis function}\index{basis function!Continuum}
+(Gaussian continuum-like\index{Gaussian continuum basis}) as suggested by
+Kaufman {\it et al.\/}~\cite{kkwbmjjpbamop22} (cf. eq. 20). \verb|LCNTMAX| denoted
+the maximum quantum number of the continuum functions, basis functions
+for all quantum up to and including \verb|LCNTMAX| will be generated
+(s=0, p=1 etc.) \verb|CNTSTR| and \verb|CNTEND| are the integer
+start- and ending quantum number for the continuum basis functions. The
+basis functions will be placed at the position of a dummy center
+indicated as \verb|X| in the \verb|MOLECULE.INP| file. 
+No charge of the ion-core is required for these functions.
+If no center named \verb|X| is present in the \verb|MOLECULE.INP| file,
+this input will be ignored.
+
 \item[\Key{MAXPRI}]\verb| |\newline
 \verb|READ (LUCMD,*) MAXPRI|
 
