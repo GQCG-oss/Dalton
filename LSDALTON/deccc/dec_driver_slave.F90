@@ -607,9 +607,9 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
         singlejob%jobsdone(1) = .true.
 
         if(atomA==atomB) then ! single fragment dimensions
-           call copy_fragment_info_job(AtomicFragments(atomA),job)
+           call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
         else
-           call copy_fragment_info_job(PairFragment,job)
+           call copy_fragment_info_job(PairFragment,singlejob)
         end if
 
         print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
