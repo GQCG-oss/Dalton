@@ -56,15 +56,11 @@ cat > linsca_rhf_stability.dal <<'%EOF%'
 .HF
 *DENSOPT
 .STABILITY
-.TrFD
-.DSM
-.NVEC
-8
+.ARH
 .CONVTHR
 1.0d-5
-$INFO
-INFO_STABILITY
-$END INFO
+**INFO
+.INFO_STABILITY
 *END OF INPUT
 %EOF%
 

@@ -49,6 +49,8 @@ H           0.931113       -0.104860       -3.346471
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_PropertyTest1.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .DEBUGPROP
 **WAVE FUNCTIONS
@@ -56,12 +58,10 @@ cat > LSDALTON_PropertyTest1.dal <<'%EOF%'
 *DENSOPT
 .START
 H1DIAG
-.NOGCBASIS
 .MAXIT
 1
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 

@@ -27,6 +27,7 @@ fi
 # branch
 LINSCA="linsca/linsca_energy  
   linsca/linsca_energy_h1oao  
+  linsca/linsca_VanLenthe
   linsca/linsca_emsl
   linsca/linsca_las
   linsca/linsca_admm
@@ -138,7 +139,6 @@ RSP="LSresponse/LSresponse_HF_alpha
   LSresponse/LSresponse_HF_gamma_SVD
   LSresponse/LSresponse_HF_gamma_lcm
   LSresponse/LSresponse_HF_molgra
-  LSresponse/LSresponse_HF_molHessian
   LSresponse/LSresponse_HF_opa
   LSresponse/LSresponse_HF_tpa
   LSresponse/LSresponse_DFT_alpha
@@ -159,6 +159,7 @@ RSP="LSresponse/LSresponse_HF_alpha
   LSresponse/LSresponse_mcd3
   LSresponse/LSresponse_mcd_calc
   LSresponse/LSresponse_excit_cs00"
+#  LSresponse/LSresponse_HF_molHessian
 
 XCFUN="LSresponse/LSresponse_xcfun_lda_molgrad
   LSresponse/LSresponse_xcfun_gga_molgrad

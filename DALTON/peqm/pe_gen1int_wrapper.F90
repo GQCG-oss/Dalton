@@ -2,6 +2,7 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
 
     ! Gen1Int API
     use gen1int_api
+    use gen1int_matrix
     use pe_precision
 
     implicit none
@@ -40,6 +41,7 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
     integer :: i, j, k, x, y, z
     integer, dimension(3,ncomps) :: row2col
     real(dp), dimension(1) :: charge
+    real(dp), dimension(:,:), allocatable :: temp
 
     ! non-zero components for the operator, the first dimension is for bra and
     ! ket sub-shells, the last is the number of non-zero components, which should
@@ -149,6 +151,12 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
         end do
     end do
 
+#if defined(BUILD_OPENRSP)
+    do i = 1, num_prop
+            call MatCreate(A=intmats(i), num_row=nbas, info_mat=ierr,&
+                          & triangular=triangular, symmetric=symmetric)
+    end do
+#else
     i = 1
     do z = 0, k
         do y = 0, k
@@ -171,6 +179,7 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
             end do
         end do
     end do
+#endif
 
     ! sets the non-zero components for the one-electron operator, here we only
     ! consider the (large,large) part
@@ -195,9 +204,34 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_ket)
     call Gen1IntAPINaryTreeDestroy(nary_tree=nary_tree_total)
 
+#if defined(BUILD_OPENRSP)
+    allocate(temp(nbas,nbas))
+    temp = 0.0d0
+    i = 1
+    do z = 0, k
+        do y = 0, k
+            do x = 0, k
+                if (x+y+z /= k) cycle
+                do j = 1, ncomps
+                    if (x == row2col(1,j) .and.&
+                        y == row2col(2,j) .and.&
+                        z == row2col(3,j)) then
+                        call MatGetValues(intmats(i), 1, nbas, 1, nbas, temp)
+                        call dgetsp(nbas, temp, Tk_ints(:,j))
+                    end if
+                end do
+                i = i + 1
+            end do
+        end do
+    end do
+    do i = 1, num_prop
+        call MatDestroy(A=intmats(i))
+    end do
+#else
     do i = 1, num_prop
         call MatNullify(A=intmats(i))
     end do
+#endif
 
     deallocate(intmats)
 

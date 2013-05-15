@@ -43,7 +43,7 @@ contains
 
 !------------------------------------------------------------------------------
 
-subroutine pe_init(lupri, coords, charges, dalwrk)
+subroutine pe_init(lupri, coords, charges)
 
     ! Initialization routine for the PE module.
     integer :: lupri
@@ -78,8 +78,6 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
     else if (.not. present(coords) .and. present(charges)) then
         stop 'ERROR in pe_init: charges present but coords missing'
     end if
-
-    work => dalwrk
 
     ! setting up grid for MEP and CUBE calculation
     if (pe_mep .or. pe_cube) then

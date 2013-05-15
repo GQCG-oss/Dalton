@@ -8,6 +8,7 @@
 !> ajt FIXME Currently both re and im in elms(:). Should use celms/ielms
 !>
 module matrix_operations_dense
+  use chol_decomp_mod, only: dchdc
   use memory_handling
   use matrix_module
   contains
@@ -1719,13 +1720,13 @@ end subroutine mat_dense_insert_section
         TYPE(Matrix),intent(inout)  :: b !output
         real(realk), pointer   :: work1(:)
         real(realk), pointer   :: U_full(:,:)
-        integer,pointer    :: IPVT(:)
+        integer,pointer        :: JPVT(:)
         real(realk)            :: RCOND, dummy(2), tmstart, tmend
         integer                :: IERR, i, j, fulldim, ndim
         fulldim = a%nrow
         call mem_alloc(U_full,fulldim,fulldim) 
         call mem_alloc(work1,fulldim)
-        call mem_alloc(IPVT,fulldim)
+        call mem_alloc(JPVT,fulldim)
         call mat_dense_to_full(A,1.0E0_realk,U_full)
            !Set lower half of U = 0:
         do i = 1, fulldim
@@ -1733,11 +1734,12 @@ end subroutine mat_dense_insert_section
               U_full(i,j) = 0.0E0_realk
            enddo
         enddo
-        call dchdc(U_full,fulldim,fulldim,work1,0,0,IERR)           
+        JPVT(1) = 0
+        call dchdc(U_full,fulldim,fulldim,work1,JPVT,0,IERR)           
         call mat_dense_set_from_full(U_full,1.0E0_realk,B)
         call mem_dealloc(U_full) 
         call mem_dealloc(work1)
-        call mem_dealloc(IPVT)
+        call mem_dealloc(JPVT)
       end SUBROUTINE mat_dense_chol
 
 !Routines needed for purification

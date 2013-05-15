@@ -50,12 +50,13 @@ Cl   -1.303842   -0.036443   -0.048756
 #  DALTON INPUT
 #######################################################################
 cat > linsca_rhf_stability_csr.dal <<'%EOF%'
+**GENERAL
+.CSR
 **INTEGRAL
 .DENSFIT
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.CSR
 .STABILITY
 .ARH
 !.NOINCREM
@@ -63,10 +64,9 @@ cat > linsca_rhf_stability_csr.dal <<'%EOF%'
 8
 .CONVDYN
 STANDAR
-$INFO
-INFO_STABILITY
-INFO_STABILITY_REDSPACE
-$END INFO
+**INFO
+.INFO_STABILITY
+.INFO_STABILITY_REDSPACE
 *END OF INPUT
 %EOF%
 

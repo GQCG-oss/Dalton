@@ -37,7 +37,7 @@ end type PDBSvec
 !  An Excited state gradient for a given excitation 
 !  An Raman calculation for a given frequency 
 !  A  Verdet calculation for a given frequency 
-! The dimension PDBSitems is determined in config.f90 from data in DALTON.INP
+! The dimension PDBSitems is determined in config.f90 from data in LSDALTON.INP
 !
 !  So if you want to do a Raman calculation for 2 freq. you have 
 !  2 PDBS_item's in the PDBS_STACK

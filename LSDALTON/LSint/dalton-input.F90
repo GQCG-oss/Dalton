@@ -10,7 +10,9 @@ use typedef, only: typedef_init_setting, getNbasis, PRINT_MOLECULEINFO,&
      & PRINT_MOLECULE_AND_BASIS, typedef_set_default_setting, &
      & typedef_free_setting, print_basissetlibrary
 use lattice_type, only: lvec_list_t
-use lattice_vectors, only: pbc_setup_default
+#ifdef MOD_UNRELEASED
+ use lattice_vectors, only: pbc_setup_default
+#endif
 use basis_type, only: copy_basissetinfo, free_basissetinfo
 use io, only: io_init, io_free
 use molecule_type, only: free_moleculeinfo
@@ -33,7 +35,7 @@ Integer,intent(in)  :: lupri
 Integer,intent(in)  :: luerr
 !> the number of basisfunctions
 integer,intent(out) :: nbast
-!> a collection of logicals read from the DALTON.INP file
+!> a collection of logicals read from the LSDALTON.INP file
 type(integralconfig) :: integral 
 !> Should we print stuff to output file
 Logical      :: doprint
@@ -80,7 +82,7 @@ SUBROUTINE dalton_init(intinp,LUPRI,LUERR,nbast,integral,dodft,doDEC,doprint)
 use infpar_module
 #endif
 implicit none
-!> contains info about input from DALTON.INP(only integral info) and MOLECULE.INP
+!> contains info about input from LSDALTON.INP(only integral info) and MOLECULE.INP
 TYPE(DALTONINPUT)    :: intinp
 !> the logical unit number for the output file
 integer,intent(in)   :: LUPRI
@@ -88,7 +90,7 @@ integer,intent(in)   :: LUPRI
 integer,intent(in)   :: LUERR
 !> number of basisfunctions
 integer, intent(out) :: nbast
-!> information about the integral evaluation info read from DALTON.INP
+!> information about the integral evaluation info read from LSDALTON.INP
 type(integralconfig)      :: integral
 !> is it a DFT run
 logical              :: dodft
@@ -142,7 +144,9 @@ IF(intinp%DALTON%TIMINGS) CALL LSTIMER('READ DALTONFILE',TIM1,TIM2,LUPRI)
 !*  STRUCTURE
 !*
 !*************************************************
-call pbc_setup_default(latt_config)
+#ifdef MOD_UNRELEASED
+  call pbc_setup_default(latt_config)
+#endif
 CALL READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,intinp%MOLECULE,LIBRARY,doprint,&
      & intinp%dalton%molprint,intinp%dalton%DoSpherical,intinp%dalton%auxbasis,&
      & intinp%dalton%CABSbasis,intinp%dalton%JKbasis,latt_config)
@@ -300,7 +304,7 @@ END SUBROUTINE dalton_init
 !>
 SUBROUTINE dalton_finalize(intinp,LUPRI,LUERR)
 implicit none
-!> contains info about input from DALTON.INP(only integral info) and MOLECULE.INP
+!> contains info about input from LSDALTON.INP(only integral info) and MOLECULE.INP
 TYPE(DALTONINPUT)    :: intinp
 !> the logical unit number for the output file
 integer   :: LUPRI
@@ -339,7 +343,7 @@ END SUBROUTINE dalton_finalize
 !!$!> \date 2010
 !!$SUBROUTINE dalton_free(intinp)
 !!$implicit none
-!!$!> contains info about input from DALTON.INP(only integral info) and MOLECULE.INP
+!!$!> contains info about input from LSDALTON.INP(only integral info) and MOLECULE.INP
 !!$TYPE(DALTONINPUT) :: intinp
 !!$
 !!$call free_Moleculeinfo(intinp%MOLECULE)
@@ -369,16 +373,16 @@ LOGICAL            :: DONE_LINSCA,file_exist
 
 WRITE(LUPRI,*) '                     '
 WRITE(LUPRI,*) '-----------------------------------------'
-WRITE(LUPRI,*) '         PRINTING THE DALTON.INP FILE '
+WRITE(LUPRI,*) '         PRINTING THE LSDALTON.INP FILE '
 WRITE(LUPRI,*) '-----------------------------------------'
 WRITE(LUPRI,*) '                     '
 
-INQUIRE(file='DALTON.INP',EXIST=file_exist) 
+INQUIRE(file='LSDALTON.INP',EXIST=file_exist) 
 IF(file_exist)THEN
   LUCMD=-1
-  CALL LSOPEN(LUCMD,'DALTON.INP','OLD','FORMATTED')
+  CALL LSOPEN(LUCMD,'LSDALTON.INP','OLD','FORMATTED')
 ELSE
-  CALL LSQUIT('DALTON.INP does not exist',lupri)
+  CALL LSQUIT('LSDALTON.INP does not exist',lupri)
 ENDIF
 rewind(LUCMD)
 DO

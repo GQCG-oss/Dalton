@@ -44,16 +44,16 @@ H    0.0000     -0.7572 -0.4692
 #  DALTON INPUT
 #######################################################################
 cat > fullccsdpt.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
 .ARH
-.NOGCBASIS
 .CONVTHR
 1.0d-6
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 **CC
 .CCSD(T)
 .ccThr

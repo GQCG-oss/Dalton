@@ -61,6 +61,8 @@ H         0.00000000      0.00000000     21.32766500
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_pure.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .DENSFIT
 .OVERLAP-DF-J
@@ -72,7 +74,6 @@ cat > LSDALTON_pure.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.NOGCBASIS
 .PURESCF
 .CONVDYN
 STANDARD

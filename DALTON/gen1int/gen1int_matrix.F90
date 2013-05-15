@@ -50,6 +50,9 @@ module gen1int_matrix
   implicit none
 
   public :: MatView
+  public :: MatCreate
+  public :: MatMultBlockedTrace
+  public :: MatArrayAlmostEqual
 
   contains
 

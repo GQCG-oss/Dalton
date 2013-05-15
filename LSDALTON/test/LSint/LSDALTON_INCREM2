@@ -45,6 +45,8 @@ H          0.0000       -0.9569 0.9208
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_INCREM2.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **INTEGRALS
 .THRESH
 1.D-9
@@ -58,7 +60,6 @@ TRILEVEL
 1.0d-5
 .INCREM
 .LCM
-.NOGCBASIS
 *END OF INPUT
 %EOF%
 

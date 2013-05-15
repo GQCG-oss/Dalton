@@ -47,6 +47,10 @@ H    -0.69081489 -1.72614891  1.56891868
 #  DALTON INPUT
 #######################################################################
 cat > LSresponse_DFT_beta_SCALAPACK.dal <<'%EOF%'
+**GENERAL
+.SCALAPACK
+.SCALAPACKBLOCKSIZE
+14
 **WAVE FUNCTIONS
 .DFT
 B3LYP
@@ -58,17 +62,13 @@ B3LYP
 .ANGINT
 31
 *DENSOPT
-.SCALAPACK
-.SCALAPACKBLOCKSIZE
-14
 .ARH                              
 .NVEC
 8
 .CONVTHR
 1.0D-6
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 **RESPONS
 *SOLVER
 .CONVTHR
