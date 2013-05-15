@@ -558,12 +558,6 @@ contains
             & Note that density is a subset of a gradient calculation',DECinfo%output)
     end if
 
-#ifndef VAR_LSMPI
-    if(DECinfo%restart) then
-       call lsquit('DEC Restart option only possible using MPI!',DECinfo%output)
-    end if
-#endif
-
     if(DECinfo%SinglesPolari) then
        call lsquit('Full singles polarization has been temporarily disabled!',-1)
     end if

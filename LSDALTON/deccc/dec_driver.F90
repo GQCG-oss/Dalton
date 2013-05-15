@@ -214,15 +214,6 @@ contains
     ! *                           Initialize stuff                           *
     ! ************************************************************************
 
-    ! Internal control of first order property keywords
-    ! (Necessary because these must be false during fragment optimization.)
-    dens_save = DECinfo%MP2density
-    FO_save = DECinfo%first_order
-    grad_save = DECinfo%gradient
-    DECinfo%MP2density=.false.
-    DECinfo%first_order=.false.
-    DECinfo%gradient=.false.
-
     Eerr=0.0_realk
     whichfrags=.false.
     redo=.false.
@@ -273,7 +264,7 @@ contains
 
           ! Restart pair fragments only if all atomic fragments are done AND fragment file exists
           if(count(dofrag) == count(jobs%jobsdone)) then
-             post_fragopt_restart = fragment_restart_file_exist(FO_save)
+             post_fragopt_restart = fragment_restart_file_exist(DECinfo%first_order)
              if(post_fragopt_restart) then
                 write(DECinfo%output,'(a)') 'Fragment optimization is done, restart remaining fragments'
              else
@@ -369,7 +360,19 @@ contains
 
 #else
     nworkers=0   ! master node does all jobs
+    siz=1
+    call init_joblist(siz,singlejob)
 #endif
+
+
+    ! Internal control of first order property keywords
+    ! (Necessary because these must be false during fragment optimization.)
+    dens_save = DECinfo%MP2density
+    FO_save = DECinfo%first_order
+    grad_save = DECinfo%gradient
+    DECinfo%MP2density=.false.
+    DECinfo%first_order=.false.
+    DECinfo%gradient=.false.
 
 
     ! Sort atomic fragments according to estimated size
@@ -442,8 +445,8 @@ contains
        end if
        call ls_mpisendrecv(newjob,MPI_COMM_LSDALTON,master,MPISTATUS(MPI_SOURCE))
 #else
-       ! No MPI: Master nodes does all jobs.
 
+       ! No MPI: Master nodes does all jobs.
        if(DECinfo%SinglesPolari) then ! singles effects for full molecule
           call optimize_atomic_fragment(i,AtomicFragments(i),nAtoms, &
                & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
@@ -453,6 +456,15 @@ contains
                & OccOrbitals,nOcc,UnoccOrbitals,nUnocc,DistanceTable, &
                & MyMolecule,mylsitem,.true.)
        end if
+
+       ! Copy fragment information into joblist
+       call copy_fragment_info_job(AtomicFragments(i),singlejob)
+       ! Increase job counter and put received job info into big job list
+       jobidx = jobidx+1
+       singlejob%jobsdone(1) = .true.
+       call put_job_into_joblist(singlejob,jobidx,jobs)
+       ! Save fragment info to file atomicfragments.info
+       call add_fragment_to_file(AtomicFragments(i),jobs)
 
 #endif
 
@@ -479,6 +491,8 @@ contains
 #ifdef VAR_LSMPI
     ! Print MPI statistics
     call print_MPI_fragment_statistics(jobs,mastertime,'ATOMIC FRAGMENTS')
+#else
+    call free_joblist(singlejob)
 #endif
     ! Done with atomic fragment job list
     call free_joblist(jobs)
@@ -1093,7 +1107,7 @@ contains
     !> New t1 amplitudes (see main_fragment_driver for details)
     type(array2),intent(inout) :: t1new
     type(ccatom) :: PairFragment
-    integer :: k,atomA,atomB,i,j,counter,jobdone,nworkers,newjob,jobstodo
+    integer :: k,atomA,atomB,i,j,counter,jobdone,nworkers,newjob,jobstodo,siz
     type(mp2grad) :: grad
     type(joblist) :: singlejob,jobsold
     real(realk) :: fragenergy(ndecenergies)
@@ -1113,6 +1127,8 @@ contains
     nworkers = infpar%nodtot -1
 #else
     nworkers=0   ! master node does all jobs
+    siz=1
+    call init_joblist(siz,singlejob)
 #endif
 
     ! Restart in case some fragments are already done
@@ -1315,6 +1331,9 @@ contains
              FragEnergies(atomA,atomA,j) = AtomicFragments(atomA)%energies(j)
           end do
 
+          ! Copy fragment information into joblist
+          call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
+          singlejob%jobsdone(1) = .true.
 
        else ! pair calculation
 
@@ -1345,6 +1364,11 @@ contains
              fragenergies(atomA,atomB,j) = PairFragment%energies(j)
              fragenergies(atomB,atomA,j) = PairFragment%energies(j)
           end do
+
+          ! Copy fragment information into joblist
+          call copy_fragment_info_job(PairFragment,singlejob)
+          singlejob%jobsdone(1) = .true.
+
           call atomic_fragment_free(PairFragment)
 
        end if
@@ -1357,9 +1381,24 @@ contains
           call free_mp2grad(grad)
        end if
 
+
+       ! Save info for restart
+       ! *********************
+       ! Put received job into total job list
+       call put_job_into_joblist(singlejob,k,jobs)
+       if(DECinfo%first_order) then  ! density and/or gradient 
+          call write_gradient_and_energies_for_restart(natoms,FragEnergies,jobs,fullgrad)
+       else ! just energy
+          call write_fragment_energies_for_restart(natoms,FragEnergies,jobs)
+       end if
+
 #endif
 
     end do JobLoop
+
+#ifndef VAR_LSMPI
+    call free_joblist(singlejob)
+#endif
 
 
   end subroutine fragment_jobs
