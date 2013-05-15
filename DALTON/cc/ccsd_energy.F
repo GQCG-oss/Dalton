@@ -32,8 +32,8 @@ C
 C     Ove juli-sept. 1995: RSP intermediates
 C                          noccit
 C     Ove februar    1997: CCS, FD gradient hacks and restart.
-C     Sonia/FRAN: rCCD, drCCD 3/9-2009
-C     Sonia: rTCCD, 8/11-2010
+C     Sonia/MFIozzi  2009: rCCD, drCCD 
+C     Sonia          2010: rTCCD
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -449,6 +449,12 @@ C------------------------
 C     Dynamic allocation.
 C------------------------
 C
+      IF ((NSYM.NE.1) .AND. (RCCD.OR.DRCCD)) THEN
+        WRITE(LUPRI,*)'ERROR: Symmetry not yet available ', 
+     &                'with RCCD, dRPA and SOSEX'
+        CALL QUIT('Symmetry not available with RCCD, dRPA and SOSEX!!!')
+      END IF
+
       NTAMR12 = 0 
       IF ((CCD).or.(RCCD).or.(DRCCD).or.(RTCCD)) THEN
         NTAMP = NT2AMX
