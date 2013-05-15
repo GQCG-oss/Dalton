@@ -44,7 +44,7 @@ contains
     DECinfo%restart = .false.
     DECinfo%TimeBackup = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals = .false.
-    DECinfo%NoExtraPairs=.false.
+    DECinfo%CheckPairs=.false.
 
 
     ! -- Debug modes
@@ -386,8 +386,8 @@ contains
        case('.SKIPPAIRS') 
           DECinfo%pair_distance_threshold=0.0E0_realk
           DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
-       case('.NOEXTRAPAIRS') 
-          DECinfo%NoExtraPairs=.true.  
+       case('.CHECKPAIRS') 
+          DECinfo%checkpairs=.true.
        case('.PAIRREDDIST') 
           read(input,*) DECinfo%PairReductionDistance 
        case('.PAIRREDDISTANGSTROM') 
@@ -668,7 +668,7 @@ end if
     write(lupri,*) 'paircut_set ', DECitem%paircut_set
     write(lupri,*) 'PairReductionDistance ', DECitem%PairReductionDistance
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
-    write(lupri,*) 'NoExtraPairs ', DECitem%NoExtraPairs
+    write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
     write(lupri,*) 'first_order ', DECitem%first_order
     write(lupri,*) 'MP2density ', DECitem%MP2density
     write(lupri,*) 'gradient ', DECitem%gradient

@@ -578,6 +578,7 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
            flops_slaves = AtomicFragments(atomA)%flops_slaves
            tottime = AtomicFragments(atomA)%slavetime ! time used by all local slaves
            fragenergy = AtomicFragments(atomA)%energies
+           call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
            call atomic_fragment_free_basis_info(AtomicFragments(atomA))
 
         else ! pair  fragment
@@ -588,6 +589,8 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
            flops_slaves = PairFragment%flops_slaves
            tottime = PairFragment%slavetime ! time used by all local slaves
            fragenergy=PairFragment%energies
+
+           call copy_fragment_info_job(PairFragment,singlejob)
            ! Free pair
            call atomic_fragment_free(PairFragment)
 
@@ -605,12 +608,6 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
         ! load distribution: { tottime / time(local master) } / number of nodes (ideally 1.0)
         singlejob%load(1) = (tottime/singlejob%LMtime(1))/real(singlejob%nslaves(1))
         singlejob%jobsdone(1) = .true.
-
-        if(atomA==atomB) then ! single fragment dimensions
-           call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
-        else
-           call copy_fragment_info_job(PairFragment,singlejob)
-        end if
 
         print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
              & job, singlejob%LMtime(1)
