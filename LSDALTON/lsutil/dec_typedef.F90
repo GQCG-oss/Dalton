@@ -250,7 +250,7 @@ module dec_typedef_module
      !> When pair regression fit is performed, pair distances smaller than PairMinDist are ignored
      real(realk) :: PairMinDist
      !> Skip pair analysis (debug)
-     logical :: NoExtraPairs
+     logical :: checkpairs
      ! --
 
 

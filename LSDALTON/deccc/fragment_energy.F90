@@ -2158,13 +2158,15 @@ contains
          & morepairsneeded,newpaircut, Lmiss,EOCCmiss,EVIRTmiss,Eerr,L,Eocc,Evirt,alag,aocc,avirt,&
          & allpairs,dofrag,nnewpairs)
 
-    if(DECinfo%NoExtraPairs .and. morepairsneeded) then
-       write(DECinfo%output,*) 'WARNING! You have turned off pair control!'
-       write(DECinfo%output,*) 'However, the pair analysis indicates that more pairs are needed!'
-       write(DECinfo%output,*) 'Your final results may be inaccurate!'
-       write(DECinfo%output,*) 'I recommend that you restart the calculation WITHOUT'
-       write(DECinfo%output,*) 'the .NoExtraPairs keyword and WITH the .restart option.'
-       Eerr=0.0_realk
+    ! Note: The check pairs option should be made default but has not yet been properly tested.
+    ! For now we simply make a warning if pair analysis indicated that more pairs are needed.
+    if( (.not. DECinfo%checkpairs) .and. morepairsneeded) then
+       write(DECinfo%output,*) 'WARNING! The pair analysis indicated that more pairs are needed.'
+       write(DECinfo%output,*) '--> Your final results may be inaccurate!'
+       write(DECinfo%output,*) 'I recommend that your rerun the calculation with a larger pair cut-off.'
+       write(DECinfo%output,*) 'This can be done with the .PAIRTHRANGSTROM keyword.'
+       write(DECinfo%output,'(1X,a,g12.4,a)') 'Current pair cutoff: ', paircut*bohr_to_angstrom, &
+            & ' Angstrom'
        newpaircut = paircut
        morepairsneeded = .false.
     end if
