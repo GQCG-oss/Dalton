@@ -35,7 +35,6 @@ subroutine pe_init(lupri, coords, charges)
     integer :: lupri
     real(dp), dimension(:), intent(in), optional :: charges
     real(dp), dimension(:,:), intent(in), optional :: coords
-    real(dp), dimension(:), target, intent(inout) :: dalwrk
 
     integer :: i, j, k, l
     integer :: idx, jdx, kdx, nidx
