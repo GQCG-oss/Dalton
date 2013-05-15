@@ -1026,6 +1026,9 @@ vector, and its maximum absolute element (in internal or Cartesian coordinates) 
 are smaller than $\epsilon$, 5$\epsilon$, 3$\epsilon$ and 15$\epsilon$ respectively \cite{NewConv}.
 The default value of $\epsilon$ is $1.0\cdot 10^{-5}$.
 
+The geometry optimization generates a sequence of geometry steps. The coordinates of each 
+accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX} 
+is the geometry step number, and the final converged geometry in MOLECULE.OUT.
 By default, the atoms-in-molecule approach is used to set up the initial density-matrix at each new
 geometry (each step). However, it is possible to take as starting guess McWeeny-purified converged
 density-matrix at the previous geometry. This is achieved by setting the .RESTART option under
