@@ -46,7 +46,9 @@ SUBROUTINE lsdalton
   use ls_optimizer_mod, only: LS_RUNOPT
   use lsmpi_type, only: lsmpi_finalize
   use lstensorMem, only: lstmem_init, lstmem_free
+#ifdef MOD_UNRELEASED
   use pbc_setup, only: set_pbc_molecules
+#endif
 #ifdef MOD_UNRELEASED
   use numerical_hessian, only: get_numerical_hessian
   use molecular_hessian_mod, only: get_molecular_hessian
@@ -162,6 +164,7 @@ SUBROUTINE lsdalton
 
      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
 
+#ifdef MOD_UNRELEASED
      do_pbc: if(config%latt_config%comp_pbc) then
         CALL mat_init(S,nbast,nbast)
 
@@ -216,6 +219,7 @@ SUBROUTINE lsdalton
         call config_shutdown(config)
 
      else
+#endif
         !default - non PBC
         CALL mat_init(S,nbast,nbast)
 
@@ -493,7 +497,9 @@ SUBROUTINE lsdalton
            !DEALLOCATE(ls)
         endif
 
+#ifdef MOD_UNRELEASED
      endif do_pbc
+#endif
   end if SkipHF
 
 

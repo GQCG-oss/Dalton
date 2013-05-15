@@ -40,7 +40,9 @@ use DEC_settings_mod, only: dec_set_default_config, config_dec_input
 use dec_typedef_module,only: DECinfo
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
-use lattice_vectors, only: pbc_setup_default
+#ifdef MOD_UNRELEASED
+  use lattice_vectors, only: pbc_setup_default
+#endif
 use davidson_settings, only: davidson_default_SCF, davidson_default_OrbLoc
 use molecule_type, only: free_moleculeinfo
 use readmolefile, only: read_molfile_and_build_molecule
@@ -124,7 +126,9 @@ implicit none
   config%doESGopt = .false.
   config%noDecEnergy = .false.
   call prof_set_default_config(config%prof)
+#ifdef MOD_UNRELEASED
   call pbc_setup_default(config%latt_config)
+#endif
   ! PLT info
   call pltinfo_set_default_config(config%Plt)
   config%doplt=.false.
@@ -779,6 +783,7 @@ DO
    ENDIF
 !
    !SECTION MADE BY JOHANNES
+#ifdef MOD_UNRELEASED
    IF (WORD(1:5) == '**PBC') THEN
      READWORD=.TRUE.
      !should be in MOLECULE.INP not LSDALTON.INP
@@ -859,6 +864,7 @@ DO
   ENDDO
 
    ENDIF
+#endif
 
    IF (WORD == '*END OF INPUT') THEN
       DONE=.TRUE.

@@ -2805,7 +2805,7 @@ contains
           enddo
         endif
         if(me==0.or.me==nod)then
-          call ls_mpisendrecv(w3,int(no*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+          call ls_mpisendrecv(w3(1:no*tri),int(no*tri,kind=long),infpar%lg_comm,infpar%master,nod)
         endif
       enddo
       if(me==0)then
@@ -2839,7 +2839,7 @@ contains
           enddo
         endif
         if(me==0.or.me==nod)then
-          call ls_mpisendrecv(w3,int(nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+          call ls_mpisendrecv(w3(1:nv*tri),int(nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
         endif
       enddo
       if(me==0)then
@@ -3063,7 +3063,7 @@ contains
               enddo
             endif
             if(me==0.or.me==nod)then
-              call ls_mpisendrecv(w2,int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+              call ls_mpisendrecv(w2(1:no*nv*tri),int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
             endif
           enddo
           if(me==0)then
@@ -3095,7 +3095,7 @@ contains
               enddo
             endif
             if(me==0.or.me==nod)then
-              call ls_mpisendrecv(w3,int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+              call ls_mpisendrecv(w3(1:no*nv*tri),int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
             endif
           enddo
           if(me==0)then
@@ -3201,7 +3201,7 @@ contains
               enddo
             endif
             if(me==0.or.me==nod)then
-              call ls_mpisendrecv(w2,int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+              call ls_mpisendrecv(w2(1:no*nv*tri),int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
             endif
           enddo
           if(me==0)then
@@ -3234,7 +3234,7 @@ contains
               enddo
             endif
             if(me==0.or.me==nod)then
-              call ls_mpisendrecv(w3,int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+              call ls_mpisendrecv(w3(1:no*nv*tri),int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
             endif
           enddo
           if(me==0)then
@@ -3372,7 +3372,7 @@ contains
           enddo
         endif
         if(me==0.or.me==nod)then
-          call ls_mpisendrecv(w2,int(no*no*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+          call ls_mpisendrecv(w2(1:no*no*tri),int(no*no*tri,kind=long),infpar%lg_comm,infpar%master,nod)
         endif
       enddo
       if(me==0)then

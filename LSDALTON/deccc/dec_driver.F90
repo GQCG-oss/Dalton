@@ -264,7 +264,7 @@ contains
 
           ! Restart pair fragments only if all atomic fragments are done AND fragment file exists
           if(count(dofrag) == count(jobs%jobsdone)) then
-             post_fragopt_restart = fragment_restart_file_exist(FO_save)
+             post_fragopt_restart = fragment_restart_file_exist(DECinfo%first_order)
              if(post_fragopt_restart) then
                 write(DECinfo%output,'(a)') 'Fragment optimization is done, restart remaining fragments'
              else

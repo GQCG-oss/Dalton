@@ -21,8 +21,10 @@ cat > LSDALTON_ethane_pari_b3lyp_unconstrained.info <<'%EOF%'
    LSDALTON_ethane_pari_b3lyp_unconstrained
    ------------------------
    Molecule:         Ethane
-   Wave Function:    DFT (LDA) / STO-3G 
-   Test Purpose:     Test energy as obtained from FCK3 in Hermite basis
+   Wave Function:    DFT (B3LYP) / 6-31G
+   Test Purpose:     Test PARI for Coulomb and Exchange
+                     without any constraints on the fitted AO 
+                     pair-products.
 %EOF%
 
 #######################################################################

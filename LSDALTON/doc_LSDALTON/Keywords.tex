@@ -41,6 +41,18 @@ This input module defines the way the integrals should be calculated.
 When using this keyword, an auxiliary basis set has to be 
 specified in \mol\ file.
 
+\item[\Key{PARI}] Use the very local Pair-Atomic Resolution-of-the-Identity (PARI) 
+approximation \cite{PARI:2013} for the Coulomb and exact Exchange contribution.
+When using this keyword, an auxiliary basis set has to be 
+specified in \mol\ file.\newline
+{\bf Use at your own risk!}. \newline
+Note that this method contains inherent deficiencies (discussed in~\cite{PARI:2013}) 
+which may result in the non-convergence of the SCF scheme for HF or KS-DFT. \newline
+{\bf Test cases} in LSint: LSDALTON\_ethane\_pari\_b3lyp, 
+LSDALTON\_ethane\_pari\_b3lyp\_ChgConst, 
+LSDALTON\_ethane\_pari\_b3lyp\_ChgDipConst, 
+LSDALTON\_ethane\_pari\_b3lyp\_unconstrained
+
 \item[\Key{RUNMM}] Use the (Fast) Multipole Method.
 
 \item[\Key{AOPRINT}] 
