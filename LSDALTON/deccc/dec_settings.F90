@@ -25,7 +25,6 @@ contains
     integer, intent(in) :: output
 
     DECinfo%doDEC = .false.
-    DECinfo%doHF = .true.
     ! Max memory measured in GB. By default set to 2 GB
     DECinfo%memory=2.0E0_realk
     DECinfo%memory_defined=.false.
@@ -45,7 +44,7 @@ contains
     DECinfo%restart = .false.
     DECinfo%TimeBackup = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals = .false.
-    DECinfo%NoExtraPairs=.false.
+    DECinfo%CheckPairs=.false.
 
 
     ! -- Debug modes
@@ -166,7 +165,7 @@ contains
   end subroutine dec_set_default_config
 
 
-  !> \brief Read the **DEC or **CC input section in DALTON.INP and set 
+  !> \brief Read the **DEC or **CC input section in LSDALTON.INP and set 
   !> configuration structure accordingly.
   !> \author Kasper Kristensen
   !> \date September 2010
@@ -174,7 +173,7 @@ contains
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
-    !> Logical unit number for DALTON.INP
+    !> Logical unit number for LSDALTON.INP
     integer,intent(in) :: input
     !> Logical unit number for DALTON.OUT
     integer,intent(in) :: output
@@ -188,7 +187,7 @@ contains
 
     ! Sanity check that this routine is only called once for either **DEC OR **CC
     if(already_called) then
-       call lsquit('Error: DALTON.INP must contain EITHER **DEC for DEC calculation OR &
+       call lsquit('Error: LSDALTON.INP must contain EITHER **DEC for DEC calculation OR &
             & **CC for full molecular calculation!',-1)
     else
        ! First call to this routine
@@ -340,6 +339,17 @@ contains
           ! ****************************************************************************
           ! *               Keywords only available for developers                     *
           ! ****************************************************************************
+
+       !Keywords only used for testing in release branch, no documentation needed
+
+       !general testing
+       case('.TESTARRAY'); DECinfo%array_test=.true.
+       case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
+    
+       !CCSD testing
+       case('.CCSDFORCE_SCHEME'); DECinfo%force_scheme=.true.
+          read(input,*) DECinfo%en_mem
+
 #ifdef MOD_UNRELEASED
        case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
        case('.CCSDSOLVER_SERIAL'); DECinfo%solver_par=.false.
@@ -350,7 +360,6 @@ contains
           DECinfo%manual_batchsizes=.true.
           read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
           ! Skip Hartree-Fock calculation 
-       case('.SKIPHARTREEFOCK'); DECinfo%doHF=.false.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
@@ -377,8 +386,8 @@ contains
        case('.SKIPPAIRS') 
           DECinfo%pair_distance_threshold=0.0E0_realk
           DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
-       case('.NOEXTRAPAIRS') 
-          DECinfo%NoExtraPairs=.true.  
+       case('.CHECKPAIRS') 
+          DECinfo%checkpairs=.true.
        case('.PAIRREDDIST') 
           read(input,*) DECinfo%PairReductionDistance 
        case('.PAIRREDDISTANGSTROM') 
@@ -420,10 +429,6 @@ contains
           ! integrals tests
        case('.CHECKLCM'); DECinfo%check_lcm_orbitals=.true.
 
-       case('.CCSDFORCE_SCHEME'); DECinfo%force_scheme=.true.
-          read(input,*) DECinfo%en_mem
-       case('.TESTARRAY'); DECinfo%array_test=.true.
-       case('.TESTREORDERINGS'); DECinfo%reorder_test=.true.
 
           ! Size of local groups in MPI scheme
        case('.MPIGROUPSIZE'); read(input,*) DECinfo%MPIgroupsize
@@ -553,17 +558,6 @@ contains
             & Note that density is a subset of a gradient calculation',DECinfo%output)
     end if
 
-    ! Always skip Hartree-Fock when restarting DEC
-    if(DECinfo%restart) then
-       DECinfo%doHF=.false.
-    end if
-
-#ifndef VAR_LSMPI
-    if(DECinfo%restart) then
-       call lsquit('DEC Restart option only possible using MPI!',DECinfo%output)
-    end if
-#endif
-
     if(DECinfo%SinglesPolari) then
        call lsquit('Full singles polarization has been temporarily disabled!',-1)
     end if
@@ -595,7 +589,6 @@ end if
     write(lupri,*) 
 
     write(lupri,*) 'doDEC ', DECitem%doDEC
-    write(lupri,*) 'doHF ', DECitem%doHF
     write(lupri,*) 'frozencore ', DECitem%frozencore
     write(lupri,*) 'full_molecular_cc ', DECitem%full_molecular_cc
     write(lupri,*) 'use_canonical ', DECitem%use_canonical
@@ -675,7 +668,7 @@ end if
     write(lupri,*) 'paircut_set ', DECitem%paircut_set
     write(lupri,*) 'PairReductionDistance ', DECitem%PairReductionDistance
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
-    write(lupri,*) 'NoExtraPairs ', DECitem%NoExtraPairs
+    write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
     write(lupri,*) 'first_order ', DECitem%first_order
     write(lupri,*) 'MP2density ', DECitem%MP2density
     write(lupri,*) 'gradient ', DECitem%gradient

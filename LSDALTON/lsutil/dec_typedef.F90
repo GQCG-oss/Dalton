@@ -28,8 +28,6 @@ module dec_typedef_module
 
      !> Run DEC calculation at all?
      logical :: doDEC
-     !> Do Hartree-Fock calculation before DEC calculation (default: TRUE)
-     logical :: doHF
      !> Frozen core calculation?
      logical :: frozencore
      !> Full molecular job
@@ -252,7 +250,7 @@ module dec_typedef_module
      !> When pair regression fit is performed, pair distances smaller than PairMinDist are ignored
      real(realk) :: PairMinDist
      !> Skip pair analysis (debug)
-     logical :: NoExtraPairs
+     logical :: checkpairs
      ! --
 
 

@@ -1,4 +1,6 @@
 
+#ifdef MOD_UNRELEASED
+
 MODULE lattice_vectors
 use precision
 use matrix_module, only: matrix
@@ -474,3 +476,4 @@ END SUBROUTINE find_latt_index
 
 END MODULE lattice_vectors
 
+#endif

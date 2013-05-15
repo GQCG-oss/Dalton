@@ -68,9 +68,8 @@ cat > LSDALTON_ethane_df_lda_jengine.dal <<'%EOF%'
 H1DIAG
 .RH
 .DIIS
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 #######################################################################

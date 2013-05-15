@@ -4,7 +4,19 @@ In this chapter we give an few recommendations to keywords that is advantages to
 
 \section{Small Molecular systems}
 
-the {\lsdalton} program have been design to treat large molecular systems and as such the performance for small molecules is not expected to be competative.   
+the {\lsdalton} program have been design to treat large molecular systems and as such the performance for small molecules is not expected to be competative.
+\begin{verbatim}
+**WAVE FUNCTIONS
+.HF
+*DENSOPT
+.RH
+.DIIS
+.CONVTHR
+1.0D-6
+*END OF INPUT
+\end{verbatim}
+The .RH (.i.e. Roothaan-Hall) and .DIIS keywords requests a standard diagonalization combined with the DIIS scheme for convergence acceleration, which is usually the fast option for small uncomplicated molecules. 
+With the keyword .CONVTHR (i.e. convergence threshold) it is requested that iterations are terminated when the Frobenius norm of the SCF gradient is smaller than 10$^{-6}$. 
 
 \section{Large Molecular systems}
 
@@ -12,20 +24,82 @@ the {\lsdalton} program have been designed to treat large molecular systems and 
 settings, will mostly likely work well. However, large molecular systems present a number of 
 challengens and we suggest to use the following Keywords.
 
-
-\subsection{Starting Guess}
-The Trilevel \cite{trilevel1, trilevel2} starting guess usually provide a good starting guess
-for the HF/KS calculation, especially for large molecular systems. 
 \begin{verbatim}
+**INTEGRAL
+.DENSFIT
+**WAVE FUNCTIONS
+.DFT
+B3LYP
+*DENSOPT
+.ARH
 .START
 TRILEVEL
+.CONVDYN
+STANDARD
+*END OF INPUT
 \end{verbatim}
+Under **INTEGRAL, we have requested the use of density-fitting to speed up the calculation of 
+the Coulomb contribution (the use of J-engine is default). The exact exchange contribution will not 
+be calculated using density fitting, as no such method have been implemented in the {\lsdalton} program.
+
+Under **WAVE FUNCTIONS, we now request a DFT
+calculation using the B3LYP exchange-correlation functional.
+
+Since this is a calculation on a large molecule, we request the trilevel starting 
+guess\cite{trilevel1, trilevel2} (atomic, valence, and then full optimization) under **DENSOPT. 
+The Trilevel starting guess usually provide a good starting guess 
+for the HF/KS calculation, especially for large molecular systems. 
+ 
+We also use the dynamical convergence threshold, appropiate also for small molecules. 
+
+We employ the The Augmented Rothaan-Hall (ARH) method for density optimization. 
+Note that ARH is default, so this keyword is actually unnecessary.
+ARH is more robust than the standard diagonalization/DIIS scheme.
+
+For Large molecules it may be beneficial to use the new davidson algorithm 
+
+\begin{verbatim}
+.ARH DAVID
+\end{verbatim}
+
+keyword instead of the default ARH
+
+\begin{verbatim}
+.ARH
+\end{verbatim}
+which uses the CROP solver or use the 
+\begin{verbatim}
+.ARH(LS) DAVID
+\end{verbatim}
+where the ARH method have been Augmented by a linesearch. 
 
 \section{Large MPI Jobs}
 
+For large HF/KS calculation all matrix operations are parallized through the use of the SCALAPACK library, which is activated through the .SCALAPACK keyword 
+
+\begin{verbatim}
+**GENERAL
+.SCALAPACK
+**WAVE FUNCTIONS
+.DFT
+B3LYP
+*DENSOPT
+.ARH
+.START
+TRILEVEL
+.CONVDYN
+STANDARD
+*END OF INPUT
+\end{verbatim}
 
 \section{Response Calculations}
 
+For response calculations we recommend to use a tight convergence threshld for the initial SCF optimization. 
+
+\begin{verbatim}
+.CONVDYN
+STANDARD
+\end{verbatim}
 
 \section{Accuracy}
 
@@ -43,7 +117,7 @@ removes all screening.
 \begin{verbatim}
 .NO OMP 
 \end{verbatim}
-Deactivats the use of OpenMP which makes the code non deterministic. Alternative the 
+Deactivats the use of OpenMP, which makes the code non deterministic. Alternative the 
 \begin{verbatim}
 export OMP_NUM_THREADS=1
 \end{verbatim}

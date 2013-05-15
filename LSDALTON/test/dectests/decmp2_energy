@@ -55,9 +55,8 @@ cat > decmp2_energy.dal <<'%EOF%'
 TRILEVEL
 .CONVDYN
 TIGHT
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 **DEC
 .MP2
 .FOT

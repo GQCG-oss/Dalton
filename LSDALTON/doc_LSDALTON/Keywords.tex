@@ -2,9 +2,10 @@
 \chapter{List of \lsdalton\ keywords}\label{ch:keywords}
 
 In this chapter, we describe all keywords for the different sections
-of the DALTON.INP file. In general, DALTON.INP is divided into the following sections under
+of the LSDALTON.INP file. In general, LSDALTON.INP is divided into the following sections under
 the headlines:
 \begin{itemize}
+\item **GENERAL contain general settings (optional)
 \item **INTEGRAL contain settings for the calculation of integrals (optional)
 \item **WAVE FUNCTIONS contains info about the wave function (e.g. HF/DFT) and settings
 for optimization of the wave function (mandatory)
@@ -14,16 +15,43 @@ for optimization of the wave function (mandatory)
 \item **PLT contains information about construction of *.plt files which may be used to visualize densities and orbitals using e.g. the Chimera program~\cite{chimera}.
 \item **PLTGRID contains information about grid used for construction of *.plt files.
 \end{itemize}
-Each of these sections may contain subsections, indicated by a single asterisk. DALTON.INP
+Each of these sections may contain subsections, indicated by a single asterisk. LSDALTON.INP
 should always end with *END OF INPUT. 
 
+\section{**GENERAL}\label{sec:integral}
+
+This input module defines the way the integrals should be calculated.
+\begin{description}
+
+\item[\Key{SCALAPACK}] Use SCALAPACK matrices. NB: Requires linking to the scalapack lib (provided by MKL)
+\item[\Key{SCALAPACKBLOCKSIZE}] the blocksize used in SCALAPACK matrices
+\item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library!
+\item[\Key{TIME}] Activate the printout of timings.
+\item[\Key{NOGCBASIS}] Deactivate the use of the Grand Canonical basis \cite{trilevel1, trilevel2}
+\item[\Key{FORCEGCBASIS}] The Grand Canonical basis \cite{trilevel1, trilevel2} is deactivated when the program
+detects the use of a Dunning basis set like (cc-pVXZ) but the calculation will force the use of the Grand Canonical basis using this keyword.
+
+\end{description}
 \section{**INTEGRAL}\label{sec:integral}
 
 This input module defines the way the integrals should be calculated.
 \begin{description}
 
-\item[\Key{DENSFIT}] Use density-fitting. When using this keyword, an auxiliary
-basis set has to be specified in \mol\ file.
+\item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
+When using this keyword, an auxiliary basis set has to be 
+specified in \mol\ file.
+
+\item[\Key{PARI}] Use the very local Pair-Atomic Resolution-of-the-Identity (PARI) 
+approximation \cite{PARI:2013} for the Coulomb and exact Exchange contribution.
+When using this keyword, an auxiliary basis set has to be 
+specified in \mol\ file.\newline
+{\bf Use at your own risk!}. \newline
+Note that this method contains inherent deficiencies (discussed in~\cite{PARI:2013}) 
+which may result in the non-convergence of the SCF scheme for HF or KS-DFT. \newline
+{\bf Test cases} in LSint: LSDALTON\_ethane\_pari\_b3lyp, 
+LSDALTON\_ethane\_pari\_b3lyp\_ChgConst, 
+LSDALTON\_ethane\_pari\_b3lyp\_ChgDipConst, 
+LSDALTON\_ethane\_pari\_b3lyp\_unconstrained
 
 \item[\Key{RUNMM}] Use the (Fast) Multipole Method.
 
@@ -738,8 +766,8 @@ Should have a different name. DENSOPT?
 \item[\Key{ARH FULL}] Use Augmented Roothaan-Hall for density optimization -
 no truncation of the reduced space, keep all micro vectors. This is recommended
 if the standard scheme (.ARH) fails to converge (see ref.~\cite{crop}).
-\item[\Key{ASYM}] Asymmetrize H1DIAG starting guess (only referenced for unrestricted
-calculations).
+%\item[\Key{ASYM}] Asymmetrize H1DIAG starting guess (only referenced for unrestricted
+%calculations).
 %\item[\Key{BLOCK}] I assume that we do not support BSM????
 \item[\Key{STABILITY}] Check stability of the optimized wave function by calculation
 of the lowest Hessian eigenvalue.
@@ -767,7 +795,6 @@ Options are TIGHT, STANDARD, and SLOPPY.
 SCF convergence threshold - Frobenius norm of SCF gradient (default is 1.0d-4). 
 Note that this convergence criterion
 is not size-extensive. For large molecules, it is recommended to use .CONVDYN instead.
-\item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library!
 \item[\Key{LB94}] Uses the van Leeuwen-Baerends asymptotic correction. Note that the LB94 functional is the same as using the follwing input. 
 \begin{verbatim}
 **WAVE FUNCTIONS
@@ -809,11 +836,11 @@ when solving linear equations ({\it memory-saving option}). Only referenced is d
 optimization method is ARH, Direct Density optimization or second order optimization.
 \item[\Key{DORTH}] Do level shift by using the ratio $\vert\vert$Dorth$\vert\vert$/$\vert\vert$D$\vert\vert$ 
 (for diagonalization only).
-\item[\Key{DSM}] The Density Subspace Minimization scheme is used to speed up SCF convergence~\cite{TOKJ,TOYJ}.
-\item[\Key{DSMONE}] The Density Subspace Minimization scheme is used to speed up SCF convergence, 
-but only one DSM step is taken in each SCF iteration.
-\item[\Key{DSMXTRA}] The Density Subspace Minimization scheme is used to speed up SCF convergence,
-including extra (more expensive) term.
+%\item[\Key{DSM}] The Density Subspace Minimization scheme is used to speed up SCF convergence~\cite{TOKJ,TOYJ}.
+%\item[\Key{DSMONE}] The Density Subspace Minimization scheme is used to speed up SCF convergence, 
+%but only one DSM step is taken in each SCF iteration.
+%\item[\Key{DSMXTRA}] The Density Subspace Minimization scheme is used to speed up SCF convergence,
+%including extra (more expensive) term.
 \item[\Key{DUMPMAT}] Dump Fock/KS and density matrices from all iterations to disk for later investigation.
 \item[\Key{EDIIS}] The energy-DIIS scheme is used to speed up SCF convergence~\cite{ediis}.
 \item[\Key{EXPAND}] \verb| | \newline
@@ -880,17 +907,17 @@ Only referenced if ARH, Direct Density optimization or second order optimization
 Never allow level shift to be smaller than this.
 \item[\Key{MOCHANGE}] Level shifting is done by use of MO overlaps (diagonalization only).
 \item[\Key{MUOPT}] Optimal level shift is chosen by doing a line search in the SCF energy - very expensive! For diagonalization only.
-\item[\Key{NALPHA}] \verb| | \newline
-\verb|<Number of alpha electrons>|\newline
-Explicitly specify number of alpha electrons (automatically set if not specified). If both NALPHA and NBETA are set, they must conform with the total number of electrons!
-\item[\Key{NBETA}] \verb| | \newline
-\verb|<Number of beta electrons>|\newline
-Explicitly specify number of alpha electrons (automatically set if not specified). If both NALPHA and NBETA are set, they must conform with the total number of electrons!
+%\item[\Key{NALPHA}] \verb| | \newline
+%\verb|<Number of alpha electrons>|\newline
+%Explicitly specify number of alpha electrons (automatically set if not specified). If both NALPHA and NBETA are set, they must conform with the total number of electrons!
+%\item[\Key{NBETA}] \verb| | \newline
+%\verb|<Number of beta electrons>|\newline
+%Explicitly specify number of alpha electrons (automatically set if not specified). If both NALPHA and NBETA are set, they must conform with the total number of electrons!
 \item[\Key{NOAV}] Turn off Fock matrix averaging in SCF iterations (this is default since the default optimization scheme is ARH, which contains implicit averaging).
 %\item[\Key{NEWDAMP}] New level shifting which should be better suited for ARH/CROP. CAREFUL! Still under development!
 \item[\Key{NVEC}] \verb| | \newline
 \verb|<Max. no of vectors for averaging>|\newline
-Maximum number of previous Fock and density matrices to be stored and used for ARH, DIIS, and DSM (default is 10 for HF and 7 for DFT).
+Maximum number of previous Fock and density matrices to be stored and used for ARH and DIIS (default is 10 for HF and 7 for DFT).
 %\item[\Key{NVECDSM}] \verb| | \newline
 %\verb|<Max. no of vectors for DSM>|\newline
 %\item[\Key{NVECDII}] \verb| | \newline
@@ -958,10 +985,10 @@ Starting guess for SCF optimization. Options are:
 \item {\bf TRILEVEL} Optimization in three steps. 1. Atomic densities, 2. Valence molecular density, 3. Full molecular density~\cite{trilevel1, trilevel2}. 
 \end{itemize}
 Note that Huckel guess is not supported by \lsdalton.
-\item[\Key{TRSCF}] Use Trust-Region SCF scheme, i.e. diagonalization, .DORTH level shift, and DSM~\cite{TOKJ,TOYJ}.
-\item[\Key{TrFD}] Density optimization by minimization of the Roothaan-Hall energy E$_{\rm RH}$ = Tr{\bf FD}({\bf X})~\cite{TrFD}.
-\item[\Key{TrFD FULL}] As above, but keep the full subspace of trial vectors (instead of truncating) when solving linear equations.
-\item[\Key{UNREST}] Force unrestricted calculation (default for open shell systems).
+%\item[\Key{TRSCF}] Use Trust-Region SCF scheme, i.e. diagonalization, .DORTH level shift, and DSM~\cite{TOKJ,TOYJ}.
+%\item[\Key{TrFD}] Density optimization by minimization of the Roothaan-Hall energy E$_{\rm RH}$ = Tr{\bf FD}({\bf X})~\cite{TrFD}.
+%\item[\Key{TrFD FULL}] As above, but keep the full subspace of trial vectors (instead of truncating) when solving linear equations.
+%\item[\Key{UNREST}] Force unrestricted calculation (default for open shell systems).
 \item[\Key{VanLenthe}] Use Van Lenthe's scheme for level shifting and averaging~\cite{VanLenthe}.
 
 \subsection{\$INFO}\label{subsec:info}
@@ -974,15 +1001,15 @@ do NOT start with a dot!
 \begin{description}
 \item[\Keyinfo{INFO\_CROP}] Detailed info from Conjugated Residual OPtimal vectors scheme (Direct Density Optimization, ARH and second order optimization).
 \item[\Keyinfo{INFO\_DIIS}] Detailed info from Direct Inversion in the Iterative Subspace algorithm.
-\item[\Keyinfo{INFO\_DSM}] Detailed info from Density Subspace Minimization algorithm.
-\item[\Keyinfo{INFO\_DSM\_DETAIL}] Even more detailed info from Density Subspace Minimization algorithm.
+%\item[\Keyinfo{INFO\_DSM}] Detailed info from Density Subspace Minimization algorithm.
+%\item[\Keyinfo{INFO\_DSM\_DETAIL}] Even more detailed info from Density Subspace Minimization algorithm.
 \item[\Keyinfo{INFO\_LEVELSHIFT}] Detailed info from determination of dynamic level shift (Direct Density Optimization, ARH and second order optimization). 
 \item[\Keyinfo{INFO\_LINEQ}] Detailed info from solution of linear equations and trust-radius update (Direct Density Optimization, ARH and second order optimization).
 \item[\Keyinfo{INFO\_RH}] Detailed info from Roothaan-Hall algorithm (diagonalization).
 \item[\Keyinfo{INFO\_RH\_DETAIL}] Even more detailed info from Roothaan-Hall algorithm (diagonalization).
 \item[\Keyinfo{INFO\_STABILITY}] Detailed info from calculation of lowest Hessian eigenvalue (stability analysis) and HOMO-LUMO gap.
 \item[\Keyinfo{INFO\_STABILITY\_REDSPACE}] Reduced space info from calculation of lowest Hessian eigenvalue (stability analysis) and HOMO-LUMO gap.
-\item[\Keyinfo{INFO\_WEIGHT}] Detailed info about weights of the densities in DIIS and DSM algorithms.
+%\item[\Keyinfo{INFO\_WEIGHT}] Detailed info about weights of the densities in DIIS and DSM algorithms.
 \item[\Keyinfo{}]
 \end{description}\end{description}
 
@@ -1003,6 +1030,25 @@ By default, the atoms-in-molecule approach is used to set up the initial density
 geometry (each step). However, it is possible to take as starting guess McWeeny-purified converged
 density-matrix at the previous geometry. This is achieved by setting the .RESTART option under
 the *DENSOPT subsection.
+\newline
+\vspace{1 cm}
+\noindent
+\textbf{Example test cases for **OPTIMIZE calculations}: \newline
+These test cases illustrate the main features of the geometry optimization. The test cases are located in LSDALTON/test/geomopt.
+\begin{itemize}
+\item
+\textit{geomopt/cartes\_bfgs\_min}:
+\item
+\textit{geomopt/Excited\_state\_opt}: Performs a geometry optimization of an excited state. 
+\item
+\textit{geomopt/redint\_bfgs}:
+\item
+\textit{geomopt/cartes\_psb\_min}:
+\item
+\textit{geomopt/geoopt\_constrain}:
+\item
+\textit{geomopt/cartes\_trilevel\_newconv}: 
+\end{itemize}
 
 \begin{description}
 \item[\Key{PRINT}]\verb| | \newline
@@ -1154,12 +1200,6 @@ response equations.\newline
 The solver with paired trial vectors is used for solving damped (complex)
 response equations.\newline
 {\bf Test case}: LSresponse/LSresponse\_DFT\_alpha\_aptv
-\item[\Key{COMPLEX}] \verb| | \newline
-\verb|<Damping parameter gamma>|\newline
-The $\gamma$ parameter is treated as an imaginary component of a frequency of interest and describes a broadening of
-the spectrum~\cite{dampedresponse}.
-\item[\Key{OLSEN}] \verb| | \newline
-The Olsen algorithm is used for obtaining excitation energies. The Olsen algorithm works under the algorithm with symmetrized trial vectors.
 \item[\Key{CONVTHR}] \verb| | \newline
 \verb|<Convergence threshold>|\newline
 Convergence threshold to which response equations are solved.
@@ -1577,10 +1617,10 @@ These test cases illustrate the main features of the DEC scheme. The test cases 
 Use MP2 model. This gives the canonical MP2 energy and is not optimized for parallel performance. It is only intended to be used for benchmarking DEC-MP2 calculations on relatively small molecular systems.
 
 \item[\Key{CC2}]\verb| | \newline
-Use CC2 model.
+Use CC2 model which is not an optimized code, but rather uses the CCSD optimized code with some contributions removed. See CCSD documentation for details.
 
 \item[\Key{CCSD}]\verb| | \newline
-Use CCSD model.
+Use CCSD model. The code employed is a massively parallel version and flexible with respect to memory. Due to the use of one-sided communication in these models it is recommended to run CCSD with an asynchronous progress engine switched on (how to do that can be found in the documentation of the respective MPI library you are using). When running a CCSD calculation make sure that at least one quantity of size $V^2O^2$ ($O$ = number of occupied orbitals, $V$ = number of virtual orbitals) fits into memory in double precision floating point numbers (with some additional space of course). 
 
 \item[\Key{FROZENCORE}]  \verb| | \newline
 Use the frozen core approximation (can also be used in **DEC section).
@@ -1602,8 +1642,7 @@ Convergence threshold for residual norm in CC solver.
 Number of previous vectors to store in CROP scheme~\cite{crop} for CC solver.
 
 \item[\Key{CCSDSAFE}]  \verb| | \newline
-Save CCSD amplitudes to be able to restart full CCSD calculation.
-
+Save CCSD amplitudes to be able to restart full CCSD calculation. The files are named t11.restart and t12.restart for the singles amplitudes and t21.restart and t22.restart for the doubles amplitudes. These files are written in in an alternate fashion and the latest amplitudes are read automatically if a CCSD calculation is started in the same folder.
 
 \end{description}
 
@@ -1616,6 +1655,8 @@ The test cases are located in LSDALTON/test/dectests.
 \begin{itemize}
 \item
 \textit{fullmp2\_energy}: Calculate conventional canonical MP2 energy.
+\item
+\textit{fullccsd\_high}: Calculate conventional canonical CCSD energy.
 \end{itemize}
 
 
@@ -1627,7 +1668,7 @@ Generation of .plt files which may be used to visualize densities, orbitals, and
 The .plt files can be visualized e.g. using the Chimera program~\cite{chimera}.
 
 \textbf{Important note}: This section assumes that an LSDALTON calculation has already been carried out to generate files containing
-density matrix elements or molecular orbital coefficients. The .plt files can then be generated by running a new calculation where the DALTON.INP file has been modified as exemplified below.
+density matrix elements or molecular orbital coefficients. The .plt files can then be generated by running a new calculation where the LSDALTON.INP file has been modified as exemplified below.
 
 The density matrix from HF and DFT calculation are saved in a file \emph{dens.restart}, while the MP2 density is saved in the file \emph{MP2.dens} (if requested, see **DEC section).
 The canonical MO coefficients are saved in the file \emph{cmo\_orbitals.u}, while localized molecular orbitals are saved in a file \emph{lcm\_orbitals.u} (if requested).
@@ -1647,7 +1688,7 @@ The name of the output plt-file where the calculated values at each grid point a
 \item[\Key{DENS}]\verb| | \newline
 Construct .plt file for electron density at grid points.
 For example to calculate electron density from the file  \emph{dens.restart} and save information in file  dens.plt,
-insert the following section in the DALTON.INP file used to generate the  \emph{dens.restart} file in the first place:
+insert the following section in the LSDALTON.INP file used to generate the  \emph{dens.restart} file in the first place:
  \newline
 **PLT \newline
 .INPUT \newline
@@ -1659,7 +1700,7 @@ dens.plt \newline
 \item[\Key{EP}]\verb| | \newline
 Construct .plt file for electrostatic potential grid points based on input density matrix.
 For example to calculate electrostatic potential from the density in the the file  \emph{dens.restart} and save information in file  ep.plt,
-insert the following section in the DALTON.INP file used to generate the  \emph{dens.restart} file in the first place:
+insert the following section in the LSDALTON.INP file used to generate the  \emph{dens.restart} file in the first place:
  \newline
 **PLT \newline
 .INPUT \newline
@@ -1671,7 +1712,7 @@ ep.plt \newline
 
 \item[\Key{ORB}]\verb| | \newline
 \verb|<Orbital index>|\newline
-Construct .plt file for specific orbital at grid points. For example to calculate values of orbital number 8 at grid points from the file  \emph{lcm\_orbitals.u} and save information in file orb8.plt, insert the following section in the DALTON.INP file used to generate the  \emph{lcm\_orbitals.u} file in the first place: \newline
+Construct .plt file for specific orbital at grid points. For example to calculate values of orbital number 8 at grid points from the file  \emph{lcm\_orbitals.u} and save information in file orb8.plt, insert the following section in the LSDALTON.INP file used to generate the  \emph{lcm\_orbitals.u} file in the first place: \newline
 **PLT \newline
 .INPUT \newline
 lcm\_orbitals.u \newline
@@ -1684,7 +1725,7 @@ orb8.plt \newline
 \verb|<Orbital index 1     Orbital index 2>|\newline
 Construct .plt file for charge distribution of two orbitals at grid points. 
 For example to calculate charge distribution between orbitals 5 and 8 at grid points from the file  \emph{lcm\_orbitals.u} and save information in file cd\_5\_8.plt,
-insert the following section in the DALTON.INP file used to generate the  \emph{lcm\_orbitals.u} file in the first place::
+insert the following section in the LSDALTON.INP file used to generate the  \emph{lcm\_orbitals.u} file in the first place::
  \newline
 **PLT \newline
 .INPUT \newline

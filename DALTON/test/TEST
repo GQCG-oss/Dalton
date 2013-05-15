@@ -96,6 +96,10 @@ cc_grad_ccpt_hf cc_geopt_ccpt_hf cc_geopt_ccpt_h2o cc_prop_file"
 SHORT_CHOLESKY="choles_b3lyp_polar choles_cc2_fop \
 choles_hf_magnet choles_kt3_ctocd choles_lda_prop"
 #
+SHORTPEQM="pehf_small_iter pehf_small_direct pehf_small_redthr pehf_small_gspol \
+pehf_fixsol_direct pehf_small_london pehf_small_alpha pehf_small_1pa pehf_small_beta \
+pehf_small_2pa"
+#
 SHORT="$GEN1INT $SHORTNOCC $SHORTCC $SHORT_CHOLESKY $SHORTPEQM $SHORTQM3"
 #
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
@@ -122,19 +126,15 @@ LONGCC="cc_geoopt2"
 #
 LONG_CHOLESKY="choles_ccsdpt_energy"
 #
+LONGPEQM="pehf_large_iter pehf_large_direct pehf_large_redthr pehf_large_gspol \
+pehf_large_damp"
+#
 LONG="$LONG $LONGCC $LONG_CHOLESKY $LONGPEQM"
 #
 PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel \
 dft_parallell_properties parallel_lucita_gasci parallel_spin_local"
 #
 QMMM="qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
-#
-SHORTPEQM="pehf_small_iter pehf_small_direct pehf_small_redthr pehf_small_gspol \
-pehf_fixsol_direct pehf_small_london pehf_small_alpha pehf_small_1pa pehf_small_beta \
-pehf_small_2pa"
-#
-LONGPEQM="pehf_large_iter pehf_large_direct pehf_large_redthr pehf_large_gspol \
-pehf_large_damp"
 #
 PEQM="$SHORTPEQM $LONGPEQM"
 #

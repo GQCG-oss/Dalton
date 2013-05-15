@@ -43,7 +43,7 @@ contains
 
 !------------------------------------------------------------------------------
 
-subroutine pe_init(lupri, coords, charges, dalwrk)
+subroutine pe_init(lupri, coords, charges)
 
     ! Initialization routine for the PE module.
     integer :: lupri
@@ -62,6 +62,7 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
     if (allocated(Rm) .and. allocated(Zm)) then
         Rm(:,:) = coords
         Zm(1,:) = charges
+        scfcycle = 0
         return
     end if
 
@@ -77,8 +78,6 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
     else if (.not. present(coords) .and. present(charges)) then
         stop 'ERROR in pe_init: charges present but coords missing'
     end if
-
-    work => dalwrk
 
     ! setting up grid for MEP and CUBE calculation
     if (pe_mep .or. pe_cube) then
@@ -2054,7 +2053,7 @@ subroutine pe_electrostatic(denmats, fckmats)
         call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
     end if
 #endif
-    if (lexist .and. fock) then
+    if (lexist .and. fock .and. (scfcycle.gt.1)) then
         if (myid == 0) then
             call openfile('pe_electrostatics.bin', lu, 'old', 'unformatted')
             rewind(lu)
@@ -2163,7 +2162,7 @@ subroutine pe_electrostatic(denmats, fckmats)
             end if
 #endif
             if (myid == 0) then
-                call openfile('pe_electrostatics.bin', lu, 'new', 'unformatted')
+                call openfile('pe_electrostatics.bin', lu, 'unknown', 'unformatted')
                 rewind(lu)
                 write(lu) Etmp, fckmats
                 close(lu)

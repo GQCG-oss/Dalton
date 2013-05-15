@@ -29,8 +29,11 @@ module fragment_energy_module
   !       & get_fragmentt1_AOSAOS_from_full, extract_specific_fragmentt1, &
   !       & update_full_t1_from_atomic_frag,which_pairs, &
   !       & update_full_t1_from_atomic_frag, update_full_t1_from_pair_frag
+#ifdef MOD_UNRELEASED
   use ccsdpt_module, only:ccsdpt_driver,ccsdpt_energy_e4_frag,ccsdpt_energy_e5_frag,&
        ccsdpt_energy_e4_pair,ccsdpt_energy_e5_pair
+!endif mod_unreleased
+#endif
   use mp2_gradient_module ,only: single_calculate_mp2gradient_driver,&
        & pair_calculate_mp2gradient_driver
   use ccdriver, only: mp2_solver,fragment_ccsolver
@@ -339,6 +342,7 @@ contains
        ! Note, t2occ and t2virt also contain singles contributions
        call array4_free(u)
 
+#ifdef MOD_UNRELEASED
 
        ! calculate ccsd(t) fragment energies
        ! ***********************************
@@ -367,6 +371,8 @@ contains
           call array4_free(ccsdpt_t2)
 
        end if
+!endif mod_unreleased
+#endif 
 
        call array2_free(t1)
        call array4_free(t2)
@@ -773,10 +779,13 @@ contains
        ! CCSD
        MyFragment%energies(6) = e1_final   ! occupied
        MyFragment%energies(7) = e3_final   ! virtual
+#ifdef MOD_UNRELEASED
     case(4)
        ! Save also CCSD contribution for CCSD(T)
        MyFragment%energies(6) = e1_final   ! occupied
        MyFragment%energies(7) = e3_final   ! virtual
+!endif mod_unreleased
+#endif
     end select
     ! Energy contributions other than MP2,CC2, and CCSD are calculated elsewhere
 
@@ -1050,6 +1059,7 @@ contains
        call array4_free(VOVV)
     end if
 
+#ifdef MOD_UNRELEASED
 
     ! calculate ccsd(t) pair interaction energies
     ! *******************************************
@@ -1080,7 +1090,8 @@ contains
        call array4_free(ccsdpt_t2)
 
     end if
-
+!endif mod_unreleased
+#endif
 
     if(DECinfo%ccmodel/=1) then
        call array2_free(t1)
@@ -1357,10 +1368,13 @@ contains
        ! CCSD
        PairFragment%energies(6) = e1_final   ! occupied
        PairFragment%energies(7) = e3_final   ! virtual
+#ifdef MOD_UNRELEASED
     case(4)
        ! save CCSD contribution for CCSD(T)
        PairFragment%energies(6) = e1_final   ! occupied
        PairFragment%energies(7) = e3_final   ! virtual
+!endif mod_unreleased
+#endif
     end select
     ! Energy contributions other than MP2,CC2, and CCSD are calculated elsewhere
     call mem_dealloc(dopair_occ)
@@ -2144,13 +2158,15 @@ contains
          & morepairsneeded,newpaircut, Lmiss,EOCCmiss,EVIRTmiss,Eerr,L,Eocc,Evirt,alag,aocc,avirt,&
          & allpairs,dofrag,nnewpairs)
 
-    if(DECinfo%NoExtraPairs .and. morepairsneeded) then
-       write(DECinfo%output,*) 'WARNING! You have turned off pair control!'
-       write(DECinfo%output,*) 'However, the pair analysis indicates that more pairs are needed!'
-       write(DECinfo%output,*) 'Your final results may be inaccurate!'
-       write(DECinfo%output,*) 'I recommend that you restart the calculation WITHOUT'
-       write(DECinfo%output,*) 'the .NoExtraPairs keyword and WITH the .restart option.'
-       Eerr=0.0_realk
+    ! Note: The check pairs option should be made default but has not yet been properly tested.
+    ! For now we simply make a warning if pair analysis indicated that more pairs are needed.
+    if( (.not. DECinfo%checkpairs) .and. morepairsneeded) then
+       write(DECinfo%output,*) 'WARNING! The pair analysis indicated that more pairs are needed.'
+       write(DECinfo%output,*) '--> Your final results may be inaccurate!'
+       write(DECinfo%output,*) 'I recommend that your rerun the calculation with a larger pair cut-off.'
+       write(DECinfo%output,*) 'This can be done with the .PAIRTHRANGSTROM keyword.'
+       write(DECinfo%output,'(1X,a,g12.4,a)') 'Current pair cutoff: ', paircut*bohr_to_angstrom, &
+            & ' Angstrom'
        newpaircut = paircut
        morepairsneeded = .false.
     end if
@@ -3927,7 +3943,6 @@ contains
     logical      :: converged,ReductionPossible(2),finetuning_converged
     logical :: expansion_converged, lag_converged, occ_converged, virt_converged
     real(realk) :: slavetime, flops_slaves
-    real(realk),pointer :: OccMat(:,:), VirtMat(:,:)
 
     write(DECinfo%output,'(a)')    ' FOP'
     write(DECinfo%output,'(a)')    ' FOP ==============================================='
@@ -4037,11 +4052,6 @@ contains
        LagEnergyOld = AtomicFragment%LagFOP
        OccEnergyOld = AtomicFragment%EoccFOP
        VirtEnergyOld = AtomicFragment%EvirtFOP
-       ! correlation density matrices
-       call mem_alloc(OccMat,AtomicFragment%noccAOS,AtomicFragment%noccAOS)
-       call mem_alloc(VirtMat,AtomicFragment%nunoccAOS,AtomicFragment%nunoccAOS)
-       OccMat = AtomicFragment%OccMat
-       VirtMat = AtomicFragment%VirtMat
 
        call Expandfragment(Occ_atoms,Virt_atoms,DistTrackMyAtom,natoms,&
             & nocc_per_atom,nunocc_per_atom)
@@ -4094,8 +4104,6 @@ contains
           exit
        end if ExpansionConvergence
 
-       call mem_dealloc(OccMat)
-       call mem_dealloc(VirtMat)
 
     end do EXPANSION_LOOP
 
@@ -4186,26 +4194,12 @@ contains
        occ_atoms=occold
        virt_atoms=virtold
        call atomic_fragment_free(AtomicFragment)
-       call atomic_fragment_init_atom_specific(MyAtom,natoms,Virt_Atoms, &
-            & Occ_Atoms,nocc,nunocc,OccOrbitals,UnoccOrbitals, &
-            & MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-
-       ! Set energies correctly without having to do a new calculation
-       AtomicFragment%LagFOP = LagEnergyOld
-       AtomicFragment%EoccFOP = OccEnergyOld
-       AtomicFragment%EvirtFOP = VirtEnergyOld
-
-       ! Also set correlation density matrix without doing new calculation
-       call mem_alloc(AtomicFragment%OccMat,AtomicFragment%noccAOS,AtomicFragment%noccAOS)
-       call mem_alloc(AtomicFragment%VirtMat,AtomicFragment%nunoccAOS,AtomicFragment%nunoccAOS)
-       AtomicFragment%CDSet=.true. ! correlation density matrices have been set
-       AtomicFragment%OccMat = OccMat
-       AtomicFragment%VirtMat = VirtMat
+       call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
+            & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+            & AtomicFragment)
 
     end if FineTuningFailed
 
-    call mem_dealloc(OccMat)
-    call mem_dealloc(VirtMat)
 
     ! Save dimensions for statistics
     nocc_exp = AtomicFragment%noccAOS
@@ -4774,12 +4768,15 @@ contains
        fragment%EvirtFOP = fragment%energies(7)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
+#ifdef MOD_UNRELEASED
     case(4)
        ! CCSD(T)
        fragment%EoccFOP = fragment%energies(8)
        fragment%EvirtFOP = fragment%energies(9)
        ! simply use average of occ and virt energies since Lagrangian is not yet implemented
        fragment%LagFOP =  0.5_realk*(fragment%EoccFOP+fragment%EvirtFOP)
+!endif mod_unreleased
+#endif
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
             & for model:', DECinfo%ccmodel
@@ -4817,11 +4814,14 @@ contains
     case(3)
        ! CCSD
        fragment%energies(6) = fragment%EoccFOP 
-       fragment%energies(7) = fragment%EvirtFOP 
+       fragment%energies(7) = fragment%EvirtFOP
+#ifdef MOD_UNRELEASED 
     case(4)
        ! CCSD(T)
        fragment%energies(8) = fragment%EoccFOP 
        fragment%energies(9) = fragment%EvirtFOP
+!endif mod_unreleased
+#endif
     case default
        write(DECinfo%output,*) 'WARNING: get_occ_virt_lag_energies_fragopt needs implementation &
             & for model:', DECinfo%ccmodel
@@ -4894,6 +4894,7 @@ contains
              FragEnergiesModel(i,j,1) = 0.5_realk*(FragEnergiesModel(i,j,2) + &
                   & FragEnergiesModel(i,j,3) )
 
+#ifdef MOD_UNRELEASED
           case(4)
              ! CCSD(T)
 
@@ -4907,6 +4908,8 @@ contains
              FragEnergiesModel(i,j,1) = 0.5_realk*(FragEnergiesModel(i,j,2) + &
                   & FragEnergiesModel(i,j,3) )
 
+!endif mod_unreleased
+#endif
           case default
              write(DECinfo%output,*) 'WARNING: extract_fragenergies_for_model: Needs implementation &
                   & for model:', DECinfo%ccmodel

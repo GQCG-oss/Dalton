@@ -29,7 +29,7 @@ Integer          :: nbasis
 type(configItem) :: config
 
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -75,7 +75,7 @@ type(lsitem)        :: ls
 Integer             :: mtype_save, nbasis, mynum, nodtot, ierr
 type(configItem)    :: config
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -139,7 +139,7 @@ Integer              :: mtype_save, nbasis,idmat
 type(configItem)    :: config
 
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -212,7 +212,7 @@ Integer             :: mtype_save, nbasis,idmat
 type(configItem)    :: config
 
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -285,7 +285,7 @@ type(configItem)     :: config
 real(realk)          :: EdXC
 
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -367,7 +367,7 @@ type(configItem)     :: config
 logical              :: dodft
 
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 doDFT = config%opt%calctype.EQ.config%opt%dftcalc
@@ -437,7 +437,7 @@ Integer             :: mtype_save, nbasis
 type(configItem)    :: config
 
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -494,7 +494,7 @@ type(lsitem)        :: ls
 Integer             :: nbasis
 type(configItem)    :: config
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -544,7 +544,7 @@ type(lsitem)        :: ls
 Integer             :: nbasis
 type(configItem)    :: config
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -585,7 +585,7 @@ integer      :: nbasis
 type(configItem)    :: config
 
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -632,7 +632,7 @@ integer             :: idmat,nbasis
 type(configItem)    :: config
 
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -696,7 +696,7 @@ integer             :: idmat,nbasis
 type(configItem)    :: config
 
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -768,7 +768,7 @@ type(configItem)    :: config
 logical             :: coeff
 Character(80)       :: Filename
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -858,7 +858,7 @@ type(configItem) :: config
 integer          :: nbasis
 logical          :: doDFT
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 doDFT = config%opt%calctype.EQ.config%opt%dftcalc
@@ -926,7 +926,7 @@ Character(80)       :: Filename
 Logical             :: coeff
 
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -1017,7 +1017,7 @@ type(matrix),target :: DtargetLHS(ndlhs),DtargetRHS(ndrhs)
 integer             :: idmat,nbasis
 type(configItem)    :: config
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -1090,7 +1090,7 @@ integer             :: idmat,nbasis
 type(configItem)    :: config
 
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
@@ -1155,7 +1155,7 @@ integer             :: idmat,nbasis
 type(configItem)    :: config
 
 
-!Initialize the ls-item from DALTON.INP and MOLECULE.INP
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
 call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)

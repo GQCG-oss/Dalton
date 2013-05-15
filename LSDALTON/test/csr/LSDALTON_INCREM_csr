@@ -48,6 +48,8 @@ O                  7.134485    0.659897   -3.942496
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_INCREM_csr.dal <<'%EOF%'
+**GENERAL
+.CSR
 **INTEGRALS
 .RUNMM
 .THRESH
@@ -72,7 +74,6 @@ cat > LSDALTON_INCREM_csr.dal <<'%EOF%'
 .ANGINT
 31
 *DENSOPT
-.CSR
 .INCREM
 .CONVDYN
 TIGHT

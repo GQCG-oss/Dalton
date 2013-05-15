@@ -17,51 +17,55 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > LSDALTON_UHF_DEFAULT.info <<'%EOF%'
-   LSDALTON_UHF_DEFAULT
+cat > linsca_VanLenthe.info <<'%EOF%'
+   linsca_VanLenthe
    -------------
-   Molecule:         5 HCN molecules placed 20 atomic units apart
-   Wave Function:    B3LYP/STO-2G
-   Test Purpose:     Check UHF_DEFAULT integrals
+   Molecule:         H2O
+   Wave Function:    HF
+   Test Purpose:     Check Linsca 
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > LSDALTON_UHF_DEFAULT.mol <<'%EOF%'
+cat > linsca_VanLenthe.mol <<'%EOF%'
 BASIS
-6-31G
-HeH, CCSD( T)/cc-pVQZ opt. geometry
-Test open shell response
-Atomtypes=2 Charge=0 Nosymmetry Angstrom
-Charge=1.0 Atoms=1
-H     0.0000000000   0.0000000000   0.0000000000
-Charge=2.0 Atoms=1
-He    0.0000000000   0.0000000000   3.9218840000
+3-21G
+water R(OH) = 0.95Aa , <HOH = 109 deg.
+Distance in Aangstroms
+   2     0         *
+        8.    1
+O      0.00000   0.00000   0.00000
+        1.    2
+H      0.55168   0.77340   0.00000
+H      0.55168  -0.77340   0.00000
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > LSDALTON_UHF_DEFAULT.dal <<'%EOF%'
-**INTEGRALS
-.THRESH
-1.D-10
+cat > linsca_VanLenthe.dal <<'%EOF%'
+**GENERAL
+.TIME
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
 .RH
-.DIIS
-**INFO
-.DEBUG_MPI_MEM
+.VanLenthe
+.NVEC
+8
+.CONVTHR
+3.D-5
+.START
+H1DIAG
 *END OF INPUT
 %EOF%
 
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >LSDALTON_UHF_DEFAULT.check
-cat >> LSDALTON_UHF_DEFAULT.check <<'%EOF%'
+echo $CHECK_SHELL >linsca_VanLenthe.check
+cat >> linsca_VanLenthe.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -70,11 +74,11 @@ else
    GREP="egrep"
 fi
 
-# Energy
-CRIT1=`$GREP "Final * HF energy\: * \-3\.353394151" $log | wc -l`
-TEST[1]=`expr   $CRIT1`
+# ENERGY test
+CRIT1=`$GREP "Final HF energy: * -75.585422" $log | wc -l`
+TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
-ERROR[1]="DFT ENERGY NOT CORRECT -"
+ERROR[1]="ENERGY NOT CORRECT -"
 
 # Memory test
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
@@ -82,14 +86,8 @@ TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
 ERROR[2]="Memory leak -"
 
-# MPI Memory test
-CRIT1=`$GREP "[0-9][0-9] byte  \- Should be zero \- otherwise a leakage is present" $log | wc -l`
-TEST[3]=`expr  $CRIT1`
-CTRL[3]=0
-ERROR[3]="MPI Memory leak -"
-
 PASSED=1
-for i in 1 2 3
+for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
       echo ${ERROR[i]}

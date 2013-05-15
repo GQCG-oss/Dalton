@@ -55,9 +55,8 @@ cat > decmp2_gradient_debug.dal <<'%EOF%'
 TRILEVEL
 .CONVDYN
 TIGHT
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 **DEC
 .MPIgroupsize
 2

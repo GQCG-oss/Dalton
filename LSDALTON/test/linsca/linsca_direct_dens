@@ -56,9 +56,8 @@ cat > linsca_direct_dens.dal <<'%EOF%'
  1.D-5
 .START
  H1DIAG
-$INFO
-INFO_LINEQ
-$END INFO
+**INFO
+.INFO_LINEQ
 *END OF INPUT
 %EOF%
 

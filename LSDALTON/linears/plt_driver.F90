@@ -137,7 +137,7 @@ contains
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
-    !> Logical unit number for DALTON.INP
+    !> Logical unit number for LSDALTON.INP
     integer,intent(in) :: input
     !> Logical unit number for LSDALTON.OUT
     integer,intent(in) :: output
@@ -259,7 +259,7 @@ contains
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
-    !> Logical unit number for DALTON.INP
+    !> Logical unit number for LSDALTON.INP
     integer,intent(in) :: input
     !> Logical unit number for LSDALTON.OUT
     integer,intent(in) :: output
