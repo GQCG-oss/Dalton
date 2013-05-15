@@ -214,15 +214,6 @@ contains
     ! *                           Initialize stuff                           *
     ! ************************************************************************
 
-    ! Internal control of first order property keywords
-    ! (Necessary because these must be false during fragment optimization.)
-    dens_save = DECinfo%MP2density
-    FO_save = DECinfo%first_order
-    grad_save = DECinfo%gradient
-    DECinfo%MP2density=.false.
-    DECinfo%first_order=.false.
-    DECinfo%gradient=.false.
-
     Eerr=0.0_realk
     whichfrags=.false.
     redo=.false.
@@ -273,7 +264,7 @@ contains
 
           ! Restart pair fragments only if all atomic fragments are done AND fragment file exists
           if(count(dofrag) == count(jobs%jobsdone)) then
-             post_fragopt_restart = fragment_restart_file_exist(FO_save)
+             post_fragopt_restart = fragment_restart_file_exist(DECinfo%first_order)
              if(post_fragopt_restart) then
                 write(DECinfo%output,'(a)') 'Fragment optimization is done, restart remaining fragments'
              else
@@ -370,6 +361,16 @@ contains
 #else
     nworkers=0   ! master node does all jobs
 #endif
+
+
+    ! Internal control of first order property keywords
+    ! (Necessary because these must be false during fragment optimization.)
+    dens_save = DECinfo%MP2density
+    FO_save = DECinfo%first_order
+    grad_save = DECinfo%gradient
+    DECinfo%MP2density=.false.
+    DECinfo%first_order=.false.
+    DECinfo%gradient=.false.
 
 
     ! Sort atomic fragments according to estimated size
