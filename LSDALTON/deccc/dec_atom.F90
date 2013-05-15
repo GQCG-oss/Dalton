@@ -2350,7 +2350,7 @@ end subroutine atomic_fragment_basis
     do i=1,jobs%njobs
        if(jobs%atom1(i)==fragment%atomic_number) then
           if(.not. jobs%jobsdone(i)) then
-             call lsquit('add_fragment_to_file: Fragment calculation is not done1',-1)
+             call lsquit('add_fragment_to_file: Fragment calculation is not done!',-1)
           end if
        end if
     end do
@@ -5256,6 +5256,40 @@ if(DECinfo%PL>0) then
     call mem_dealloc(which_XOS)
 
   end subroutine put_XOS_orbitals_unocc
+
+
+  !> \brief Copy basic fragment information into job structure
+  !> \author Kasper Kristensen
+  !> \date May 2013
+  subroutine copy_fragment_info_job(myfragment,myjob)
+    implicit none
+    !> Fragent info
+    type(ccatom),intent(in) :: myfragment
+    !> Job list of length 1
+    type(joblist) :: myjob
+
+    ! Sanity check
+    if(myjob%njobs/=1) then
+       call lsquit('copy_fragment_info_job: Length of job list is not 1!',-1)
+    end if
+
+
+    ! Copy info
+    if(myfragment%nEOSatoms==1) then ! atomic fragment
+       myjob%atom1(1) = myfragment%atomic_number
+       myjob%atom2(1) = myfragment%atomic_number   
+    else
+       myjob%atom1(1) = myfragment%EOSatoms(1)
+       myjob%atom2(1) = myfragment%EOSatoms(2)
+    end if
+
+    myjob%nocc(1) = myfragment%noccAOS
+    myjob%nvirt(1) = myfragment%nunoccAOS
+    myjob%nbasis(1) = myfragment%number_basis
+    myjob%ntasks(1) = myfragment%ntasks
+    myjob%jobsize(1) = myjob%nocc(1)*myjob%nvirt(1)*myjob%nbasis(1)
+
+  end subroutine copy_fragment_info_job
 
 
 
