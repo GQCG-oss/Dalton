@@ -1504,7 +1504,7 @@ contains
         DATATYPE = MPI_DOUBLE_PRECISION
         THESIZE = SIZE(buffer)
         if(THESIZE.NE.nbuf)THEN
-           call lsquit('lsmpi error in ls_mpisendrecv_realkV',-1)
+           call lsquit('lsmpi error in ls_mpisendrecv_realkV_wrapper8',-1)
         endif
        
         !     Send/receive 
