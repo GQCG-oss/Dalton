@@ -18,7 +18,7 @@ for optimization of the wave function (mandatory)
 Each of these sections may contain subsections, indicated by a single asterisk. LSDALTON.INP
 should always end with *END OF INPUT. 
 
-\section{**GENERAL}\label{sec:integral}
+\section{**GENERAL}\label{sec:general}
 
 This input module defines the way the integrals should be calculated.
 \begin{description}
@@ -1564,7 +1564,14 @@ Pair distance threshold (in {\AA}) beyond which pair fragments are omitted from 
 
 
 \item[\Key{RESTART}] \verb| | \newline
-Restart unfinished DEC calculation. Requires that HF files \emph{dens.restart}, \emph{fock.restart}, \emph{lcm\_orbitals.u}, and \emph{overlapmatrix} and the DEC files (ending with \emph{.info}) are present in the folder where the calculation is restarted. THIS KEYWORD SHOULD NOT BE COMBINED WITH .RESTART IN THE *DENSOPT SECTION SINCE THIS WOULD REPEAT THE HF CALCULATION!
+Restart unfinished DEC calculation. Requires that HF files \emph{dens.restart}, \emph{fock.restart}, \emph{lcm\_orbitals.u}, and \emph{overlapmatrix} are present in the folder where the calculation is restarted. Additionally, if .info files are present it means that some of the fragment calculations have been
+carried out and the .RESTART keyword will read information about the finished fragment calculations from file and calculate the missing fragments.
+Specifically, if the files atomicfragments.info and atomicfragmentsdone.info are present, it means that some (or all) of the atomic fragment calculations are finished. If, in addition, the file fragenergies.info (energy calculation) \emph{or} mp2grad.info (MP2 density or gradient calculation) is also present,
+it means that some (or all) of the pair fragments are also done.
+
+\textbf{Note 1: This keyword should NOT be combined with .RESTART in the *DENSOPT section.}
+
+\textbf{Note 2: This keyword cannot be used for a DEC-MP2 geometry optimization. The only way to "restart" a DEC-MP2 geometry optimization is use the current geometry in a new DEC-MP2 geometry optimization -- i.e., copy the most recently generated MOLECULE.xxx file to MOLECULE.INP and run the calculation again using the same LSDALTON.INP.}
 
 
 \item[\Key{NOTABSORBH}] \verb| | \newline
