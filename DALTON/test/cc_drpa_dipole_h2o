@@ -33,7 +33,7 @@ BASIS
 aug-cc-pVDZ
 H2O
 Equilibrium.
-Atomtypes=2 
+Atomtypes=2 NoSymmetry
 Charge=8.0 Atoms=1
 O                0.0000000000  -0.1254038222    0.0000000000
 Charge=1.0 Atoms=2
