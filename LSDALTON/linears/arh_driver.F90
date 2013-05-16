@@ -1206,8 +1206,8 @@ end subroutine linesearch_thresholds
   
 
 
-  write(davidCFG%lupri,'(i5,a,f9.3,a,f9.3,a,f9.2,a)') it+1,' total step norm =',step,' trust radius = '&
-  &,davidCFG%stepsize,' mu = ',davidCFG%mu, '  %#%' 
+  write(davidCFG%lupri,'(i5,a,f7.3,a,f7.3,a,f6.2,a,i3,a)') it+1,' step norm =',step,' trust radius = '&
+  &,davidCFG%stepsize,' mu = ',davidCFG%mu, ' micro it. = ',davidCFG%it, '  %#%' 
 
  
 

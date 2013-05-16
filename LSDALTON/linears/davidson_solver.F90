@@ -510,14 +510,9 @@ implicit none
  real(realk)  :: tcpu,twall
       
   call mat_init(temp,grad%nrow,grad%ncol)
-  call mat_copy(1.0_realk,grad,temp)
-  if (CFG%Precond) then
-      !second trialvector is precond gradient
-      call Precondition(CFG,temp,b_current,grad)
-  else
-      call LinearTransformations(CFG,temp,b_current,grad) 
-      call mat_daxpy(-1.0_realk,grad,b_current)
-  end if
+  call mat_copy(-1.0_realk,grad,temp)
+  call LinearTransformations(CFG,temp,b_current,grad) 
+  call mat_daxpy(-1.0_realk,grad,b_current)
  
   call orthonormalize(b_current,1,CFG)
   call LinearTransformations(CFG,b_current,sigma_temp,grad) 

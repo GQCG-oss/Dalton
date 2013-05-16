@@ -264,6 +264,8 @@ CFG%max_stepsize =0.5_realk
 CFG%mu = 0.0_realk
 ! Initialize denominator
 CFG%r_denom = 1.0_realk
+! Initialize micro it
+CFG%it = 0
 
 end subroutine davidson_reset
 
