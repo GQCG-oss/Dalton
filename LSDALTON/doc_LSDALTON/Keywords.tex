@@ -10,6 +10,7 @@ the headlines:
 \item **WAVE FUNCTION contains information about the wave function (e.g. HF/DFT) and settings
 for the optimization of the wave function (mandatory)
 \item **OPTIMIZE contains settings for geometry optimization (optional)
+\item **DYNAMI contains settings for Born-Oppenheimer molecular dynamics (optional)
 \item **LOCALIZE ORBITALS contains settings for orbital localization procedure (optional)
 \item **RESPONS contains information about requested molecular properties for HF and DFT (optional)
 \item **DEC \emph{or} **CC contains info about MP2 and coupled-cluster calculations (optional)
@@ -1231,6 +1232,61 @@ Default convergence criterion $\epsilon$ set to $1.0\cdot 10^{-3}$.
 
 \item[\Key{VTIGHT}]
 Default convergence criterion $\epsilon$ set to $1.0\cdot 10^{-7}$.
+
+\end{description}
+
+\section{**DYNAMI}\label{sec:dynami}
+This input module is devoted to molecular dynamics simulations. LSDALTON provides some tools for performing
+direct Born-Oppenheimer molecular dynamics, i.e. trajectories are integrated with forces calculated on the fly.
+Trajectory integration is available for SCF-type wavefunctions (with dispersion correction for DFT)
+  and for DEC wavefunctions. Properties could be calculated along the trajectories and should be
+ specified in the **RESPONSE section.
+LSDALTON simulates microcanonical(NVE) ensembles. Currently no sampling is availabe and the starting coordinates
+and velocities must be provided as input. Trajectories are integrated with gradient-based velocity-Verlet 
+method \cite{Verlet}. 
+
+LSDALTON provides several options for the choice of starting guess for SCF-type electronic theory methods. By
+default, the guess is generated anew each time step according to the corresponding input. Alternatively, one can
+restart from the density optimized at the previous time-step. This is achieved by setting the .RESTART option under
+the *DENSOPT subsection. This reduces the number of SCF iterations per time-step and accelerates the integration. 
+Two more efficient algorithms for starting guess propagation are implemented in LSDALTON: Fock matrix dynamics \cite{FMD} 
+ and time-reversible propagator \cite{TimRev}.  
+\newline
+\vspace{1 cm}
+\noindent
+\textbf{Example test cases for **DYNAMI calculations}: \newline
+These test cases illustrate the main features of direct dynamics. The test cases are located in LSDALTON/test/ddynam:
+\begin{itemize}
+\item
+\textit{ddynam/H2O\_fmd}: free water molecule with Fock matrix dynamics; 
+\item
+\textit{ddynam/HCN\_ddyn}: HCN dissociation with restart density; 
+\item
+\textit{ddynam/HF\_vib}: a vibrating HF molecule with time-reversible propagator.
+\end{itemize}
+
+\begin{description}
+\item[\Key{PRINT}]\verb| | \newline
+\verb|<Print level>|\newline
+Print level for the output. The higher the print level, the more information
+is printed to the output file.
+\item[\Key{TIMESTEP}]\verb| | \newline
+Defines integration time step in femtoseconds which should be given in the next line (real).
+\item[\Key{MAX ITER}]\verb| | \newline
+Defines maximum number of time steps. Must be given in the next line (integer).
+\item[\Key{MASSWE}]\verb| | \newline 
+States that the integration is carried out in mass-weighted coordinates. The default is FALSE.
+\item[\Key{MWVEL}]\verb| | \newline 
+States that the input velocities are mass-weighted. The default is FALSE.
+\item[\Key{VELOCI}]\verb| | \newline 
+Begins the input of the velocities. In the next line the number of atoms should be given (integer),
+then the velocities grouped atom-wise: three(x,y,z) in a line (real).
+\item[\Key{FOCKMD}]\verb| | \newline 
+Fock matrix dynamics. Below number of points for extrapolation $N$ and polynomial order $M$ must
+be specified. Note that $M>N$ (both integer). Works only with .RESTART option under the *DENSOPT subsection
+\item[\Key{TIMREV}]\verb| | \newline 
+Time-reversible density propagation. Below the number of points for extrapolation $N$ (integer)  must be specified.
+The only thoroughly tested option is $N=2$.
 
 \end{description}
 
