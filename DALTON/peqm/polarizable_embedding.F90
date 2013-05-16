@@ -57,7 +57,6 @@ subroutine pe_init(lupri, coords, charges)
     logical :: lexist
     real(dp) :: rclose, redist
 
-    ! Assume geometry optimization
     if (allocated(Rm) .and. allocated(Zm)) then
         Rm(:,:) = coords
         synced = .false.
@@ -3153,7 +3152,7 @@ subroutine multipole_potentials(Vmuls)
     end if
 #endif
 
-    if (lexist) then
+    if (lexist .and. (scfcycle > 1)) then
         if (myid == 0) then
             call openfile('pe_multipole_potential.bin', lu, 'old',&
                          & 'unformatted')
