@@ -505,7 +505,13 @@ contains
   110 X = A (IL) * COSX - A (IM) * SINX 
       A (IM) = A (IL) * SINX + A (IM) * COSX 
       A (IL) = X 
-  115 IF (MV - 1) 120, 125, 120 
+  115 IF (MV - 1.LT.0)THEN
+         GOTO 120
+      ELSE IF(MV - 1.EQ.0)THEN
+         GOTO 125
+      ELSE
+         GOTO 120 
+      ENDIF
   120 ILR = ILQ + I 
       IMR = IMQ + I 
       X = R (ILR) * COSX - R (IMR) * SINX 
@@ -523,22 +529,47 @@ contains
 !                                                                       
 !        TEST FOR M = LAST COLUMN                                       
 !                                                                       
-  130 IF (M - N) 135, 140, 135 
+  130 IF (M - N.LT.0)THEN
+         GOTO 135
+      ELSE IF(M-N.EQ.0)THEN
+         GOTO 140
+      ELSE
+         GOTO 135
+      ENDIF
   135 M = M + 1 
       GOTO 60 
 !                                                                       
 !        TEST FOR L = SECOND FROM LAST COLUMN                           
 !                                                                       
-  140 IF (L - (N - 1) ) 145, 150, 145 
+  140 IF (L - (N - 1).LT.0 )THEN
+         GOTO 145
+      ELSE IF(L - (N - 1).EQ.0)THEN
+         GOTO 150
+      ELSE
+         GOTO 145
+      ENDIF
+
   145 L = L + 1 
       GOTO 55 
-  150 IF (IND-1) 160, 155, 160 
+  150 IF (IND-1.LT.0)THEN
+         GOTO 160
+      ELSE IF(IND-1.EQ.0)THEN
+         GOTO 155
+      ELSE
+         GOTO 160
+      ENDIF
   155 IND = 0 
       GOTO 50 
 !                                                                       
 !        COMPARE THRESHOLD WITH FINAL NORM                              
 !                                                                       
-  160 IF (THR - ANRMX) 165, 165, 45 
+  160 IF (THR - ANRMX.LT.0)THEN
+         GOTO 165
+      ELSE IF (THR - ANRMX.EQ.0)THEN
+         GOTO 165
+      ELSE
+         GOTO 45
+      ENDIF
 !                                                                       
 !        SORT EIGENVALUES AND EIGENVECTORS                              
 !                                                                       
@@ -551,11 +582,23 @@ contains
       DO 185 J = I, N 
       JQ = JQ + N 
       MM = J + (J * J - J) / 2 
-      IF (A (MM) - A (LL) ) 170, 185, 185 
+      IF (A (MM) - A (LL) .LT.0)THEN
+         GOTO 170
+      ELSE IF (A (MM) - A (LL) .EQ.0)THEN
+         GOTO 185
+      ELSE
+         GOTO 185
+      ENDIF
   170 X = A (LL) 
       A (LL) = A (MM) 
       A (MM) = X 
-      IF (MV - 1) 175, 185, 175 
+      IF (MV - 1.LT.0)THEN
+         GOTO 175
+      ELSE IF(MV - 1.EQ.0)THEN 
+         GOTO 185
+      ELSE
+         GOTO 175
+      ENDIF
   175 DO 180 K = 1, N 
       ILR = IQ + K 
       IMR = JQ + K 

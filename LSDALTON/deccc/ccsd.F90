@@ -4484,10 +4484,11 @@ contains
     nba=minbsize
     nbg=minbsize
     nnod=1
-    magic = DECinfo%MPIsplit/5
 #ifdef VAR_LSMPI
     nnod=infpar%lg_nodtot
 #endif
+    !magic = DECinfo%MPIsplit/5
+    magic = 2
     !test for scheme with highest reqirements --> fastest
     mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,4,.false.)
     if(first)then
