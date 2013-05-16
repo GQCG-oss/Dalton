@@ -43,7 +43,7 @@ use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 #ifdef MOD_UNRELEASED
   use lattice_vectors, only: pbc_setup_default
 #endif
-use davidson_settings, only: davidson_default_SCF, davidson_default_OrbLoc
+use davidson_settings, only: davidson_default_SCF, davidson_default
 use molecule_type, only: free_moleculeinfo
 use readmolefile, only: read_molfile_and_build_molecule
 use IntegralInterfaceMOD, only: ii_get_nucpot
@@ -88,8 +88,9 @@ implicit none
   call diag_set_default_config(config%diag)
   call soeoinp_set_default_config(config%soeoinp)
   ! Orbital localization settings
-  call davidson_default_OrbLoc(config%davidOrbLoc)
+  call davidson_default(config%davidOrbLoc)
   ! SCF optimization w/ davidson solver settings
+  call davidson_default(config%davidSCF)
   call davidson_default_SCF(config%davidSCF)
   !RESPONSE
   ! Polarizability
@@ -499,50 +500,6 @@ DO
             CASE('.LCM');        config%decomp%cfg_lcv = .true. ; config%decomp%cfg_lcm=.true.
             CASE('.LCVBF');      config%decomp%cfg_lcv = .true. ; config%decomp%cfg_lcvbf=.true.
             CASE('.LCMBF');      config%decomp%cfg_lcv = .true. ; config%decomp%cfg_lcvbf=.true.; config%decomp%cfg_lcm=.true.
-            CASE('.NO L2OPT');   config%decomp%cfg_mlo = .true.; config%davidOrbLoc%NOL2OPT = .true. 
-	    CASE('.ONLY LOC');   config%davidOrbLoc%OnlyLocalize=.true.
-            CASE('.PSM');        config%decomp%cfg_mlo = .true.
-                                 config%davidOrbLoc%orbspread=.true.
-				 config%davidOrbLoc%linesearch=.true.
-                                 READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-            CASE('.CLM');        config%davidOrbLoc%PM_input%ChargeLocMulliken=.true.
-                                 config%davidOrbLoc%PM=.true.
-                                 config%decomp%cfg_mlo = .true.
-                                 READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-            CASE('.CLL');        config%davidOrbLoc%PM_input%ChargeLocLowdin=.true.
-                                 config%davidOrbLoc%PM=.true.
-                                 config%decomp%cfg_mlo = .true.
-                                 READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-            CASE('.PipekMezey'); config%davidOrbLoc%PM_input%PipekMezeyLowdin=.true.
-                                 config%davidOrbLoc%PM=.true.
-                                 config%decomp%cfg_mlo = .true.
-				 config%davidOrbLoc%NOL2OPT = .true.
-                                 config%decomp%cfg_mlo_m(1)=2
-				 config%decomp%cfg_mlo_m(2)=2
-            CASE('.PipekM(Mull)');config%davidOrbLoc%PM_input%PipekMezeyMull=.true.
-                                 config%davidOrbLoc%PM=.true.
-                                 config%decomp%cfg_mlo = .true.
-				 config%davidOrbLoc%NOL2OPT = .true.
-                                 config%decomp%cfg_mlo_m(1) = 2
-				 config%decomp%cfg_mlo_m(2) = 2 
-            CASE('.PFM');        config%decomp%cfg_mlo = .true.
-	                         config%davidOrbLoc%PFM = .true.
-                                 config%davidOrbLoc%PM =.false.
-                                 config%davidOrbLoc%orbspread=.false.
-                                 READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-                                 config%davidOrbLoc%PFM_input%crossterms=.true.
-                                 config%davidOrbLoc%precond=.true.
-            CASE('.TEST PFM');   config%davidOrbLoc%PFM_input%TESTCASE = .true.
-                                 config%decomp%cfg_mlo = .true.
-            CASE('.ORBITAL LOCALITY'); config%davidOrbLoc%all_orb_locality=.true.
-	    CASE('.ORBITAL PLOT'); config%davidOrbLoc%make_orb_plot=.true.
-	                          READ(LUCMD,*) config%davidOrbLoc%plt_orbital
-            CASE('.ORBLOC DEBUG');config%davidOrbLoc%orb_debug = .true.
-	                         config%davidOrbLoc%PM_input%orb_debug = .true.
-	    CASE('.NoPrecond');  config%davidOrbLoc%precond=.false.
-	                         config%davidSCF%precond=.false.
-                                 config%davidOrbLoc%PM_input%precond=.false.
-	    CASE('.OrbLinesearch'); config%davidOrbLoc%linesearch=.true.
             CASE('.LEVELSH');    ALLOCATE(config%diag%cfg_levelshifts(100)) ; config%diag%cfg_levelshifts = 0.0E0_realk
                                  READ(LUCMD,*) config%diag%cfg_nshifts,(config%diag%cfg_levelshifts(i),i=1,config%diag%cfg_nshifts)
                                  config%diag%cfg_fixed_shift = .true. ; config%diag%cfg_custom_shift = .true.
@@ -772,6 +729,15 @@ DO
       CALL LS_optimization_input(config%optinfo,readword,word,lucmd, &
            & lupri,config%molecule%nAtoms)
    ENDIF
+
+! Orbital localization section
+!
+   IF (WORD(1:7) .EQ. '**LOCAL') THEN
+     READWORD=.true.
+     call orbitalloc_input(lucmd,lupri,config,READWORD,word)
+   ENDIF
+
+
 
 !
 ! Find dynamics input section
