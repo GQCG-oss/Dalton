@@ -91,6 +91,25 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
     if (ierr /= 0) stop 'Failed to create property operator.'
 
     ! creates N-ary tree for geometric derivatives
+    if (inttype == 'molgrad') then  !for geometry opt
+    call Gen1IntAPINaryTreeCreate(max_num_cent=1,      &
+                                  order_geo=1,         &
+                                  num_geo_atoms=0,     &
+                                  idx_geo_atoms=(/0/), &
+                                  nary_tree=nary_tree_bra)
+    call Gen1IntAPINaryTreeCreate(max_num_cent=1,      &
+                                  order_geo=1,         &
+                                  num_geo_atoms=0,     &
+                                  idx_geo_atoms=(/0/), &
+                                  nary_tree=nary_tree_ket)
+    call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
+                                  order_geo=0,         &
+                                  num_geo_atoms=0,     &
+                                  idx_geo_atoms=(/0/), &
+                                  nary_tree=nary_tree_total)
+
+
+    else !if not geometry opt
     call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
                                   order_geo=0,         &
                                   num_geo_atoms=0,     &
@@ -106,6 +125,9 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
                                   num_geo_atoms=0,     &
                                   idx_geo_atoms=(/0/), &
                                   nary_tree=nary_tree_total)
+
+    end if !NANNA: this end if should be moved further down!
+
 
     ! gets the number of property integrals and their symmetry
     call OnePropGetNumProp(one_prop=prop_operator, &

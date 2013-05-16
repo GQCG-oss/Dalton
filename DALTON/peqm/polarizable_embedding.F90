@@ -1755,7 +1755,7 @@ subroutine pol_gradients(denmats, molgrads)
         call induced_moments(Mkinds, Fktots)
     end if
 
-!   derivative of QM nuclear field 
+!   derivative of QM nuclear and electron field 
     
     grd_npol = 0.0d0
     grdFnucs = 0.0d0
@@ -1933,7 +1933,7 @@ subroutine es_gradients(denmats, molgrads)
 end subroutine es_gradients
 !------------------------------------------------------------------------------
 
-subroutine derMk_integrals(Mk_ints, Rij, Mk, idx_qmnuc)
+subroutine derMk_integrals(Mk_ints, Rs, Mk, idx_qmnuc)
 
 !   Calculates gradient contribution from QM electron - multipole
 !   interaction energy 
@@ -1942,7 +1942,7 @@ subroutine derMk_integrals(Mk_ints, Rij, Mk, idx_qmnuc)
 
     real(dp), dimension(:,:,:), intent(out) :: Mk_ints
     real(dp), dimension(:), intent(in) :: Mk
-    real(dp), dimension(3), intent(in) :: Rij
+!    real(dp), dimension(3), intent(in) :: Rs
 
     integer :: i, k, l 
     integer :: ncomps, idx_qmnuc
@@ -1959,7 +1959,7 @@ subroutine derMk_integrals(Mk_ints, Rij, Mk, idx_qmnuc)
 
     ncomps = size(Mk_ints, 2)
 
-    call derTk_integrals(Mk_ints, nnbas, ncomps, Rij, idx_qmnuc)  !this routine is missing
+    call derTk_integrals(Mk_ints, nnbas, ncomps, Rs, idx_qmnuc)  !this routine is missing
 
     ! get symmetry factors
     allocate(factors(ncomps))
