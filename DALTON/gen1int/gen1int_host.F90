@@ -69,8 +69,6 @@
 #include "mpif.h"
 #include "iprtyp.h"
 #endif
-    ! in case of initializing the interface multiple times
-    if (Gen1IntAPIInited()) return
     ! initializes API of Gen1Int
     call Gen1IntAPICreate(num_comp, num_atom_type, KATOM, num_sym_atom, &
                           ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &
