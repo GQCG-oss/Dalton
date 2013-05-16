@@ -166,7 +166,10 @@ ENDTYPE RedSpaceItem
 
 CONTAINS
 
-subroutine davidson_default_SCF(CFG)
+
+!> \brief contains default settings for use of davidson solver
+!> both for orbital localization and arh.
+subroutine davidson_default(CFG)
 implicit none
 type(RedSpaceItem) :: CFG
 
@@ -177,6 +180,53 @@ nullify(CFG%arh)
 nullify(CFG%fifoqueue)
 nullify(CFG%P)
 
+! ARH related keywords
+CFG%debug_info     = .false.
+CFG%arh_davidson   = .false.
+CFG%arh_precond    = .true.
+CFG%arh_lintrans   = .false.
+CFG%arh_linesearch = .false.
+CFG%arh_extravecs  = .false.
+CFG%arh_inp_linesearch   = .false.
+CFG%arh_debug_linesearch = .false.
+CFG%arh_davidson_debug   = .false.
+
+! Orbital loc. related keywords
+CFG%precond     =.true.
+CFG%PRINT_INFO  = .false.
+CFG%PM          = .false.
+CFG%orbspread   = .false.
+CFG%PFM         = .false.
+CFG%NOL2OPT     = .false.
+CFG%OnlyLocalize       = .false.
+CFG%PFM_input%TESTCASE = .false.
+CFG%all_orb_locality   = .false.
+CFG%make_orb_plot      = .false.
+CFG%linesearch         =.true.
+CFG%PM_input%ChargeLocMulliken = .false.
+CFG%PM_input%ChargeLocLowdin   = .false.
+CFG%PM_input%PipekMezeyLowdin  = .false.
+CFG%PM_input%linesearch        = .false.
+CFG%PM_input%precond           = .true.
+CFG%PM_input%orb_debug         = .false.
+CFG%leastl_occ=0
+CFG%leastl_virt=0
+CFG%mostl_occ=0
+CFG%mostl_virt=0
+
+
+
+!General solver related keywords
+CFG%max_it = 25
+end subroutine davidson_default
+
+subroutine davidson_default_SCF(CFG)
+implicit none
+type(RedSpaceItem) :: CFG
+
+
+
+! line search spec. keywords
 CFG%EnergyDiffset=.FALSE.
 CFG%arh_linesE = 0.0E0_realk
 CFG%ActualEnergyDiff = 0.0E0_realk
@@ -184,70 +234,8 @@ CFG%MaxLineSearchEnergyDiff = 0.0E0_realk
 CFG%LSmodthresh = 1000.0E0_realk !correspond to 10^-5 on the energy on 1. iteration
 CFG%max_it = 20
 
-CFG%debug_info     = .false.
-CFG%arh_davidson   = .false.
-CFG%arh_davidson_debug  = .false.
-CFG%arh_precond    = .true.
-CFG%arh_lintrans   = .false.
-CFG%arh_linesearch = .false.
-CFG%arh_inp_linesearch = .false.
-CFG%arh_extravecs  = .false.
-CFG%arh_debug_linesearch = .false.
-CFG%precond=.true.
-CFG%PRINT_INFO = .false.
-CFG%PM = .false.
-CFG%orbspread = .false.
-CFG%PFM  = .false.
-CFG%NOL2OPT   = .false.
-CFG%OnlyLocalize   = .false.
-CFG%PFM_input%TESTCASE = .false.
-CFG%PM_input%ChargeLocMulliken = .false.
-CFG%PM_input%ChargeLocLowdin   = .false.
-CFG%PM_input%PipekMezeyLowdin  = .false.
-CFG%PM_input%linesearch        = .false.
-CFG%all_orb_locality = .false.
-CFG%make_orb_plot = .false.
-
 end subroutine davidson_default_SCF
 
-subroutine davidson_default_OrbLoc(CFG)
-implicit none
-type(RedSpaceItem) :: CFG
-
-call davidson_reset(CFG)
-
-CFG%precond=.true.
-CFG%PRINT_INFO = .false.
-CFG%PM = .false.
-CFG%orbspread = .false.
-CFG%PFM  = .false.
-CFG%NOL2OPT   = .false.
-CFG%OnlyLocalize   = .false.
-CFG%PFM_input%TESTCASE = .false.
-CFG%PM_input%ChargeLocMulliken = .false.
-CFG%PM_input%ChargeLocLowdin   = .false.
-CFG%PM_input%PipekMezeyLowdin  = .false.
-CFG%PM_input%linesearch        = .false.
-CFG%PM_input%precond           = .true.
-CFG%PM_input%orb_debug  = .false.
-CFG%arh_davidson   = .false.
-CFG%arh_precond    = .true.
-CFG%arh_lintrans   = .false.
-CFG%arh_linesearch = .false.
-CFG%arh_extravecs  = .false.
-CFG%arh_debug_linesearch = .false.
-CFG%debug_info = .false.
-CFG%orb_debug = .false.
-CFG%arh_davidson_debug =.false.
-CFG%max_it = 25
-CFG%all_orb_locality = .false.
-CFG%make_orb_plot = .false.
-CFG%leastl_occ=0
-CFG%leastl_virt=0
-CFG%mostl_occ=0
-CFG%mostl_virt=0
-
-end subroutine davidson_default_OrbLoc
 
 subroutine davidson_reset(CFG)
 implicit none
@@ -257,9 +245,9 @@ type(RedSpaceItem) :: CFG
 !*       Solver settings          *
 !**********************************
 ! Convergence thresh for micro
-CFG%conv_thresh = 0.05_realk
+CFG%conv_thresh = 0.01_realk
 ! Global convergence threshold for micro
-CFG%global_conv_thresh = 0.05_realk
+CFG%global_conv_thresh = 0.01_realk
 ! Local convergence threshold for micro
 CFG%local_conv_thresh = 0.005_realk
 ! convergence threshold for macro
@@ -269,12 +257,16 @@ CFG%macro_thresh = 0.0001_realk
 !* Stepsize specific settings    *
 !*********************************
 ! stepsize
-CFG%stepsize =0.75_realk
+CFG%stepsize =0.5_realk
 ! maximum stepsize
-CFG%max_stepsize =0.75_realk
+CFG%max_stepsize =0.5_realk
 ! Initialize mu
-CFG%mu = 0d0
+CFG%mu = 0.0_realk
+! Initialize denominator
+CFG%r_denom = 1.0_realk
+
 end subroutine davidson_reset
+
 
 
 
