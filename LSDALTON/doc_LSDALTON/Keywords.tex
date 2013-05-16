@@ -10,6 +10,7 @@ the headlines:
 \item **WAVE FUNCTIONS contains info about the wave function (e.g. HF/DFT) and settings
 for optimization of the wave function (mandatory)
 \item **OPTIMIZE contains settings for geometry optimization (optional)
+\item **LOCALIZE ORBITALS contains settings for orbital localization procedure (optional)
 \item **RESPONS contains info about requested molecular properties for HF and DFT (optional)
 \item **DEC \emph{or} **CC contains info about MP2 and coupled-cluster calculations (optional)
 \item **PLT contains information about construction of *.plt files which may be used to visualize densities and orbitals using e.g. the Chimera program~\cite{chimera}.
@@ -1026,6 +1027,9 @@ vector, and its maximum absolute element (in internal or Cartesian coordinates) 
 are smaller than $\epsilon$, 5$\epsilon$, 3$\epsilon$ and 15$\epsilon$ respectively \cite{NewConv}.
 The default value of $\epsilon$ is $1.0\cdot 10^{-5}$.
 
+The geometry optimization generates a sequence of geometry steps. The coordinates of each 
+accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX} 
+is the geometry step number, and the final converged geometry in MOLECULE.OUT.
 By default, the atoms-in-molecule approach is used to set up the initial density-matrix at each new
 geometry (each step). However, it is possible to take as starting guess McWeeny-purified converged
 density-matrix at the previous geometry. This is achieved by setting the .RESTART option under
@@ -1135,6 +1139,65 @@ Indicates that Cartesian coordinates\index{Cartesian coordinates}\index{coordina
 should be used in the optimization.
 
 \end{description}
+
+
+\section{**LOCALIZE ORBITALS}\label{subsec:orbloc}
+
+This section describes keywords needed to perform localization of molecular orbitals. The optimization of the
+chosen localization function will be performed using a trust-region algorithm, and can be performed for  the occupied space and/or the virtual orbital space. For the occupied space the core and valence spaces will be localized separately.  
+
+For the most effcient orbital localization for large molecular systems, the .ARH, .START/TRILEVEL  and .LCM options are recommended for the *DENSOPT section described in Section \ref{subsec:densopt}.  
+
+\begin{description}
+
+\item[\Key{PSM}]\verb| | \newline
+\verb|<m m>|\newline
+Use powers m of the second moment (PSM) localization function.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). m=1 is equivalent with the Boys localization function. For improved locality m$\ge$2 is recommended. 
+
+\item[\Key{PFM}]\verb| | \newline
+\verb|<m m>|\newline
+Use powers m of the fourth moment (PFM) localization function.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). Using power 1 yields orbitals with good locality, but a power 2 is recommended if locality of the orbitals is essential. Powers higher than 3 are not recommended.  The PFM localization function should be chosen is basis sets augmented with diffuse functions are used.
+
+\item[\Key{PipekMezey}]\verb| | \newline
+Use Pipek-Mezey localization function  using an implementation based on L{\"o}wdin population analysis 
+rather than the traditional Mulliken population analysis.  Both occupied and virtual orbitals will be localized. Please note, the Pipek-Mezey localization function suffers from system and basis set dependencies. For systems with complicated bonding structures or when using basis sets augmented with diffuse functions the PSM or PFM options should be used if good locality is essential.
+
+\item[\Key{OccPipekMezey}]\verb| | \newline
+Pipek-Mezey localization of only the occupied space.
+
+
+\item[\Key{VirtPipekMezey}]\verb| | \newline
+Pipek-Mezey localization of only the virtual space.
+
+
+\item[\Key{PipekM(MULL)}]\verb| | \newline
+Use Pipek-Mezey localization function using the Mulliken population analysis. A power 0 specifies that no localization should be carried out.  Otherwise the same considerations as for the \Key{PipekMezey} option.
+
+
+\item[\Key{OccPipekM(MULL)}]\verb| | \newline
+Pipek-Mezey localization (using Mulliken population analysis) of occcupied space.
+
+\item[\Key{VirtPipekM(MULL)}]\verb| | \newline
+Pipek-Mezey localization (using Mulliken population analysis) of virtual space.
+
+\item[\Key{No Level2 Localization}]\verb| | \newline
+Should only be used in combination with a .STARTINGUESS/TRILEVEL option (see Section \ref{}) and the .LCM keyword. The keyword is used to skip orbital localization after the second level in the three level procedure. Not recommended for general use, but can be used to save  computational time if only the virtual space is to be localized.  
+
+\item[\Key{Only Loc}]\verb| | \newline
+Provided the file with the molecular orbital coefficients (e.g., cmo\_orbitals.u or lcm\_orbitals.u) using this keyword the Hartree-Fock calculation will be skipped, and the orbitals will be read in and localized. Important: rename or copy the orbital coefficient file to orbitals\_in.u, only this file will be read. After the localization procedure the molecular orbital coefficients corresponding to the localized basis is written to orbitals\_out.u. Thus, for this keyword to be used, orbitals\_in.u must exist and a localization function must be chosen.
+
+
+\item[\Key{Orbital Locality}]\verb| | \newline
+This keyword will make sure second and fourth moment orbital spreads are printed for all orbitals, not just the least local ones.
+
+
+\item[\Key{Orbital Plot}]\verb| | \newline
+\verb|<orbital specification>|\newline
+Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications.
+\end{description}
+
+
+
 
 \section{**RESPONS}\label{subsec:respons}
 This section describes the keywords needed for obtaining molecular

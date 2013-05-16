@@ -116,6 +116,7 @@ set(LINEARS_SOURCES
     linears/levelshift.F90
     linears/minimize.F90
     linears/optimlocNONMOD.F90
+    linears/OrbLoc_input.F90
     linears/localization_util.F90
     linears/localization_orbspread.F90
     linears/localization_charge.F90
