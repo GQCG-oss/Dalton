@@ -43,6 +43,7 @@ use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
 #ifdef MOD_UNRELEASED
   use lattice_vectors, only: pbc_setup_default
 #endif
+use localization_input
 use davidson_settings, only: davidson_default_SCF, davidson_default
 use molecule_type, only: free_moleculeinfo
 use readmolefile, only: read_molfile_and_build_molecule
