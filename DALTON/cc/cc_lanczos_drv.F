@@ -447,7 +447,7 @@ C     --------------------------------
 
       if (locdbg) then
         Write(lupri,*)'>>>AQ vector reread from file<<<'
-        CALL CC_PRP(WORK(KAQnew1),WORK(KAQnew2),1,1,N2VEC)
+        !CALL CC_PRP(WORK(KAQnew1),WORK(KAQnew2),1,1,N2VEC)
       end if
 !
 ! NOW ETA^X VECTOR IN PRINCIPLE ANOTHER SYMMETRY
@@ -479,7 +479,7 @@ C     -------------------------------------------------
 
       if (locdbg) then
         CALL AROUND('P1 vector (eta^X) before biorthonorm:')
-        CALL CC_PRP(WORK(KPnew1),WORK(KPnew2),ISYETA,1,N2VEC)
+        !CALL CC_PRP(WORK(KPnew1),WORK(KPnew2),ISYETA,1,N2VEC)
         !recompute using different drive to make sure we got it right
 !        call DZERO(NT1AM(ISYETA)+NT2AM(ISYETA),WORK(KPnew1))
 !        call CC_ETAC(ISYETA,LABEL,WORK(KPnew1),'L0',1,0,
@@ -498,7 +498,7 @@ C     -------------------------------------------------
       !normalize vs q vector, not against itself
       if (locdbg) then
          CALL AROUND('BINORMALIZED P1 vector (= eta^Z):')
-         CALL CC_PRP(WORK(KPnew1),WORK(KPnew2),ISYETA,1,N2VEC)
+         !CALL CC_PRP(WORK(KPnew1),WORK(KPnew2),ISYETA,1,N2VEC)
       end if
       q1norm = ddot(length,WORK(KPnew1),1,WORK(KQnew1),1)
       write(lupri,*)'p1*q1 norm (2): ', q1norm
