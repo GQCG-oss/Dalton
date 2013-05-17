@@ -1146,7 +1146,9 @@ should be used in the optimization.
 This section describes keywords needed to perform localization of molecular orbitals. The optimization of the
 chosen localization function will be performed using a trust-region algorithm, and can be performed for  the occupied space and/or the virtual orbital space. For the occupied space the core and valence spaces will be localized separately.  
 
-For the most effcient orbital localization for large molecular systems, the .ARH, .START/TRILEVEL  and .LCM options are recommended for the *DENSOPT section described in Section \ref{subsec:densopt}.  
+After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; cmo\_orbitals.u and localized\_orbitals.u. cmo\_orbitals.u contains coefficients for the canonical molecular orbitals and localized\_orbitals.u contains coefficients for the localized orbitals. The format of these files are as described in the Matrix File Format part of Section \ref{interfacing}.  
+
+For the most effcient orbital localization for large molecular systems, the .ARH, .START/TRILEVEL  and .LCM options are recommended for the *DENSOPT section described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
 
 \begin{description}
 
@@ -1181,7 +1183,7 @@ Pipek-Mezey localization (using Mulliken population analysis) of occcupied space
 Pipek-Mezey localization (using Mulliken population analysis) of virtual space.
 
 \item[\Key{No Level2 Localization}]\verb| | \newline
-Should only be used in combination with a .STARTINGUESS/TRILEVEL option (see Section \ref{}) and the .LCM keyword. The keyword is used to skip orbital localization after the second level in the three level procedure. Not recommended for general use, but can be used to save  computational time if only the virtual space is to be localized.  
+Should only be used in combination with the .START/TRILEVEL and  .LCM options for the *DENSOPT section. The keyword is used to skip orbital localization after the second level in the three level procedure. Not recommended for general use, but can be used to save  computational time if only the virtual space is to be localized.  
 
 \item[\Key{Only Loc}]\verb| | \newline
 Provided the file with the molecular orbital coefficients (e.g., cmo\_orbitals.u or lcm\_orbitals.u) using this keyword the Hartree-Fock calculation will be skipped, and the orbitals will be read in and localized. Important: rename or copy the orbital coefficient file to orbitals\_in.u, only this file will be read. After the localization procedure the molecular orbital coefficients corresponding to the localized basis is written to orbitals\_out.u. Thus, for this keyword to be used, orbitals\_in.u must exist and a localization function must be chosen.
