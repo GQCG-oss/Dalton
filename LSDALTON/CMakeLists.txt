@@ -22,26 +22,9 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake
     )
 
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE
-        Debug
-        CACHE STRING
-        "Choose the type of build, options are: None Debug Release, Profile."
-        FORCE
-        )
-endif()
-
 message("-- System: ${CMAKE_SYSTEM_NAME}")
 
-string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
-if(    NOT cmake_build_type_tolower STREQUAL "debug"
-		AND NOT cmake_build_type_tolower STREQUAL "release"
-		AND NOT cmake_build_type_tolower STREQUAL "relwithdebinfo"
-		AND NOT cmake_build_type_tolower STREQUAL "profile")
-	message(FATAL_ERROR "Unknown build type \"${CMAKE_BUILD_TYPE}\".
-	Allowed values are Debug, Release, RelWithDebInfo, Profile (case-insensitive).")
-endif()
-
+include(ConfigSafeGuards)
 if(cmake_build_type_tolower STREQUAL "debug")
 	add_definitions(-DVAR_DEBUGINT)
 	add_definitions(-DVAR_DEBUG)
