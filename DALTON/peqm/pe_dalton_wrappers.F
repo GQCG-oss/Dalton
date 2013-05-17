@@ -532,8 +532,9 @@
       real*8, dimension(nwrk) :: wrk
 
       real*8 :: ovlap, solelm, tfpeac, tfpe
-      real*8, dimension(:,:), allocatable :: udtv, udtvao
-      real*8, dimension(:,:), allocatable :: fxcs, fxcacs, fuxcs
+      real*8, dimension(:,:), allocatable :: udtv!, udtvao
+      real*8, dimension(:,:), allocatable :: fxcs, fxcacs
+      real*8, dimension(:), allocatable :: udtvao, fuxcs
       real*8, dimension(:), allocatable :: fdtvaos, fxcaos
       real*8, dimension(:), allocatable :: tfxc, tfxcacs 
       real*8, dimension(:), allocatable :: fpe, fupe, fpeac
@@ -550,6 +551,7 @@
       call qenter('pe_rsplnc')
 
       allocate(fxcs(nnorbx,ncsim))
+      allocate(fuxcs(n2orbx))
       allocate(fxcacs(nnashx,ncsim))
       allocate(tfxc(ncsim))
       allocate(tfxcacs(ncsim))
@@ -561,8 +563,6 @@
          call getref(cref, ncref)
          ! ...Construct <0(L)|...|0> + <0|...|0(R)>                       
          allocate(udtv(n2ashx,ncsim))        
-
-
          call rsptdm(ncsim,irefsy,ksymst,ncref,kzconf,cref,
      &                 bcvecs,udtv,dummy,0,0,.true.,.true.,
      &                 cindx,wrk,1,nwrk)
@@ -571,26 +571,26 @@
 !    *                 CR, RHO1,RHO2, ISPIN1,ISPIN2,TDM,NORHO2,
 !    *                 XINDX,WORK,KFREE,LFREE)
 
-                  
+      write(lupri,*)'ncsim', ncsim               
          if ( ncsim > 0 ) then         
             allocate(fdtvaos(nnbasx*ncsim))
-            allocate(udtvao(n2basx,ncsim))
+
+            allocate(udtvao(n2basx))
             do i = 1, ncsim
                j = (i - 1) * nnbasx + 1
-               call fckden2(.false.,.true., dummy, udtvao(:,i), cmo,
-     &                      udtv(:,i), wrk, nwrk)
-               call dgefsp(nbast, udtvao(:,i), fdtvaos(j))
-!               write(lupri,*) 'udtvao matrix'
-!               call output(udtvao,1,nbast,1,nbast,nbast,nbast,1,lupri)
-            deallocate(udtv,udtvao)
+                call fckden2(.false.,.true., dummy, udtvao, cmo,
+     &                       udtv(:,i), wrk, nwrk)
+                call dgefsp(nbast, udtvao, fdtvaos(j))
+!                write(lupri,*) 'udtvao matrix'
+!                call output(udtvao,1,nbast,1,nbast,nbast,nbast,1,lupri)
             end do
+            deallocate(udtv,udtvao)
          end if
          
          allocate(fxcaos(ncsim*nnbasx))
          call pe_master(runtype='response', denmats=fdtvaos,
      &                 fckmats=fxcaos, nmats=ncsim, dalwrk=wrk(1:nwrk))
          deallocate(fdtvaos)           
-!           fxcaos = 2.0d0 * fxcaos
 
          do i = 1, ncsim
             j = (i - 1) * nnbasx + 1
@@ -660,16 +660,17 @@ C
 C     ... orbital part of sigma vector(s)
 C
       if (kzwopt .gt. 0) then
-!          allocate(fupe(n2orbx))
-!          call dsptsi(norbt, fpe, fupe)         
           do i = 1,ncsim
-             allocate(fuxcs(n2orbx,ncsim))
-             call dsptsi(norbt,fxcs(:,i), fuxcs(:,i))
+!            allocate(fuxcs(n2orbx,ncsim))
+!            call dsptsi(norbt,fxcs(:,i), fuxcs(:,i))
+!             allocate(fuxcs(n2orbx))
+             call dsptsi(norbt,fxcs(:,i), fuxcs)
 !            if (trplet) then
 !               call slvsor(.true.,.false.,1,udvtr,
 !    &                      scvecs(1,i),fuxcs(:,i))
 !            else
-             call slvsor(.true.,.true., 1, udv, scvecs(1,i), fuxcs(:,i))
+!             call slvsor(.true.,.true., 1, udv, scvecs(1,i), fuxcs(:,i))
+              call slvsor(.true.,.true., 1, udv, scvecs(1,i), fuxcs)
 !             end if
            
              if (pe_debug) then
@@ -684,9 +685,9 @@ C
 !               call slvsor(.false.,.false., 1, dtvtr(1,i),
 !    *                       scvecs(1,i),fupe )
 !            else
-             call slvsor(.false.,.false.,1, dtv(1,i), scvecs(1,i), fupe)
+!             call slvsor(.false.,.false.,1, dtv(1,i), scvecs(1,i), fupe)
+             call slvsor(.false.,.false.,1, dtv(1,i), scvecs(1,i),fupe)
 !             end if
-             deallocate(fupe) 
            
              if (pe_debug ) then
                  write(lupri,*)
@@ -695,6 +696,7 @@ C
                  call output(scvecs(1,i),1,kzyvar,1,1,kzyvar,1,1,lupri)
              end if
          end do
+         deallocate(fupe, fuxcs)
 
          if (pe_debug ) then
                write(lupri,*)' linear transformed configuration vector'
