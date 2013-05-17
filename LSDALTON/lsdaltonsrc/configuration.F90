@@ -64,7 +64,7 @@ use scf_stats, only: scf_stats_arh_header
 #ifdef MOD_UNRELEASED
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
-use xcfun_host,only: xcfun_host_init, USEXCFUN
+use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
 contains
 
 !> \brief Call routines to set default values for different structures.
@@ -2820,7 +2820,11 @@ ENDIF
 !Printing the configuration for the calculation:
 !===============================================
 
-   if(ls%input%DO_DFT) CALL DFTREPORT(lupri) !print the functional
+   IF(.NOT.USEXCFUN)THEN
+      if(ls%input%DO_DFT) CALL DFTREPORT(lupri) !print the functional
+   ELSE
+      if(ls%input%DO_DFT) CALL XCFUNDFTREPORT(lupri) !print the functional
+   ENDIF
    if(ls%input%DO_DFT)THEN
       IF(config%integral%DFT%CS00)THEN
          WRITE(LUPRI,'(2X,A)')' '
