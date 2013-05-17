@@ -7,7 +7,7 @@ the headlines:
 \begin{itemize}
 \item **GENERAL contain general settings (optional)
 \item **INTEGRAL contain settings for the calculation of integrals (optional)
-\item **WAVE FUNCTIONS contains info about the wave function (e.g. HF/DFT) and settings
+\item **WAVE FUNCTION contains info about the wave function (e.g. HF/DFT) and settings
 for optimization of the wave function (mandatory)
 \item **OPTIMIZE contains settings for geometry optimization (optional)
 \item **LOCALIZE ORBITALS contains settings for orbital localization procedure (optional)
@@ -763,15 +763,25 @@ Should have a different name. DENSOPT?
 \item[\Key{2ND\_ALL}] Use second order optimization in all SCF iterations.
 \item[\Key{2ND\_LOC}] Use second order optimization in local SCF iterations.
 \item[\Key{ARH}] Use Augmented Roothaan-Hall scheme for density optimization 
-(default)~\cite{ARH1,ARH2}.\index{Augmented Roothaan-Hall}\index{ARH} 
+(default)~\cite{ARH1,ARH2} where the CROP solver (\cite{crop}) is used for 
+solving the (level-shifted) Newton equationw.\index{Augmented Roothaan-Hall}\index{ARH} 
 \item[\Key{ARH FULL}] Use Augmented Roothaan-Hall for density optimization -
-no truncation of the reduced space, keep all micro vectors. This is recommended
-if the standard scheme (.ARH) fails to converge (see ref.~\cite{crop}).
+no truncation of the reduced space, keep all micro vectors for the CROP algorithm 
+(see ref.~\cite{crop}).
+\item[\Key{ARH DAVID}] Use Augmented Roothan-Hall for density optimization where
+the (level-shifted) Newton equations are solved using a reduced space solver based 
+Davidson's algorithm \cite{davidson:1975}. This option
+is recommended for complicated optimizations, especially for large molecular systems
+ with charges separated in space. This setting should be used if \Key{ARH} 
+converges to a saddle point. 
+ \item[\Key{ARH(LS) DAVID}] The same procedure as described for \Key{ARH DAVID} 
+augmented with a line search to accelerate convergence for very large molecular 
+systems, but is less efficient than \Key{ARH DAVID} for smaller molecular systems. 
 %\item[\Key{ASYM}] Asymmetrize H1DIAG starting guess (only referenced for unrestricted
 %calculations).
 %\item[\Key{BLOCK}] I assume that we do not support BSM????
 \item[\Key{STABILITY}] Check stability of the optimized wave function by calculation
-of the lowest Hessian eigenvalue.
+of the lowest Hessian eigenvalue. 
 \item[\Key{STAB\_MAXIT}] \verb| | \newline
 \verb|<Max. number of stability iterations>|\newline
 Max. number of iterations in calculation of lowest Hessian eigenvalue (default is 40).
@@ -1143,26 +1153,26 @@ should be used in the optimization.
 
 \section{**LOCALIZE ORBITALS}\label{subsec:orbloc}
 
-This section describes keywords needed to perform localization of molecular orbitals. The optimization of the
-chosen localization function will be performed using a trust-region algorithm, and can be performed for  the occupied space and/or the virtual orbital space. For the occupied space the core and valence spaces will be localized separately.  
+This section describes keywords needed to perform localization of Hartree--Fock orbitals. The optimization of the
+chosen localization function will be performed using a trust-region algorithm \cite{hoyvik:TRM}, and can be performed for  the occupied space and/or the virtual orbital space. For the occupied space the core and valence spaces will be localized separately.  
 
 After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; cmo\_orbitals.u and localized\_orbitals.u. cmo\_orbitals.u contains coefficients for the canonical molecular orbitals and localized\_orbitals.u contains coefficients for the localized orbitals. The format of these files are as described in the Matrix File Format part of Section \ref{interfacing}.  
 
-For the most effcient orbital localization for large molecular systems, the .ARH, .START/TRILEVEL  and .LCM options are recommended for the *DENSOPT section described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
+For the most effcient orbital localization for large molecular systems \cite{hoyvik:3L}, the .ARH, .START/TRILEVEL  and .LCM options are recommended for use as described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
 
 \begin{description}
 
 \item[\Key{PSM}]\verb| | \newline
 \verb|<m m>|\newline
-Use powers m of the second moment (PSM) localization function.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). m=1 is equivalent with the Boys localization function. For improved locality m$\ge$2 is recommended. 
+Use powers m of the second moment (PSM) localization function \cite{jansik:2011}.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). m=1 is equivalent with the Boys localization function. For improved locality m$\ge$2 is recommended. 
 
 \item[\Key{PFM}]\verb| | \newline
 \verb|<m m>|\newline
-Use powers m of the fourth moment (PFM) localization function.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). Using power 1 yields orbitals with good locality, but a power 2 is recommended if locality of the orbitals is essential. Powers higher than 3 are not recommended.  The PFM localization function should be chosen is basis sets augmented with diffuse functions are used.
+Use powers m of the fourth moment (PFM) localization function \cite{hoyvik:PFM}.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). Using power 1 yields orbitals with good locality, but a power 2 is recommended if locality of the orbitals is essential. Powers higher than 3 are not recommended.  The PFM localization function should be chosen is basis sets augmented with diffuse functions are used.
 
 \item[\Key{PipekMezey}]\verb| | \newline
-Use Pipek-Mezey localization function  using an implementation based on L{\"o}wdin population analysis 
-rather than the traditional Mulliken population analysis.  Both occupied and virtual orbitals will be localized. Please note, the Pipek-Mezey localization function suffers from system and basis set dependencies. For systems with complicated bonding structures or when using basis sets augmented with diffuse functions the PSM or PFM options should be used if good locality is essential.
+Use Pipek-Mezey localization function using an implementation based on L{\"o}wdin population analysis 
+rather than the traditional Mulliken population analysis (see Ref. \cite{hoyvik:PM}).  Both occupied and virtual orbitals will be localized. Please note, the Pipek-Mezey localization function suffers from system and basis set dependencies. For systems with complicated bonding structures or when using basis sets augmented with diffuse functions the PSM or PFM options should be used if good locality is essential.
 
 \item[\Key{OccPipekMezey}]\verb| | \newline
 Pipek-Mezey localization of only the occupied space.
@@ -1195,7 +1205,7 @@ This keyword will make sure second and fourth moment orbital spreads are printed
 
 \item[\Key{Orbital Plot}]\verb| | \newline
 \verb|<orbital specification>|\newline
-Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications.
+Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plottinge other orbitals, use the **PLT option described in section \ref{sec:plt}. 
 \end{description}
 
 
