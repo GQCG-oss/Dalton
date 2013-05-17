@@ -90,6 +90,7 @@ module xcfun_host
              WRITE(lupri,*)'The Functional chosen is a META type functional'
              XCFUN_DOGGA = .FALSE.
              XCFUN_DOMETA = .TRUE.
+             call lsquit('Meta functionals current do not work.',lupri)
           ENDIF
        ELSE
           WRITE(lupri,*)'The Functional chosen is a GGA type functional'
