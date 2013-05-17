@@ -191,6 +191,7 @@ DEC="dectests/arraytest
      dectests/fullccsd_low
      dectests/fullccsdpt
      dectests/decccsdpt
+     dectests/decccsdpt_simfull
      dectests/decmp2_energy
      dectests/decmp2_density
      dectests/decmp2_gradient
