@@ -357,7 +357,7 @@ DO
                      IF(.NOT.USEXCFUN)THEN
                         CALL II_DFTsetFunc(WORD,hfweight)
                      ELSE
-                        CALL II_DFTsetFunc(WORD,hfweight)
+!                        CALL II_DFTsetFunc(WORD,hfweight)
                         call xcfun_host_init(WORD,hfweight,lupri)
                      ENDIF
                      config%integral%exchangeFactor = hfweight
