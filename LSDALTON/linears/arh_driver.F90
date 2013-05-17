@@ -259,7 +259,6 @@ subroutine arh_davidson_solver(CFG,arh,decomp,wrk,X,SCF_iteration,H1,wrk2,ls)
   call mat_init(ax,x%nrow,x%ncol)
   counter = 0
   WHILELOOP: do j=1,10
-     WRITE(ls%lupri,*)'WHILELOOP j=',j
      if (CFG%stepsize < 0.0001_realk) then
         write(ls%lupri,*) ' **************************************************************'
         write(ls%lupri,*) ' * Too many rejections in SCF optimization                    *'
