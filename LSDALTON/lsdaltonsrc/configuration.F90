@@ -3666,11 +3666,13 @@ use typedef
   implicit none
   character(len=80)  :: WORD
   real(realk) :: hfweight
+  integer :: ierror
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
   hfweight=0E0_realk   
   IF(.NOT.USEXCFUN)THEN
-     CALL DFTsetFunc(WORD(1:80),hfweight)
+     CALL DFTsetFunc(WORD(1:80),hfweight,ierror)
+     IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
   ELSE
 #ifdef VAR_XCFUN
      call xcfun_host_init(WORD,hfweight,6)
