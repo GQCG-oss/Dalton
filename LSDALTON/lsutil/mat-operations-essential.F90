@@ -20,7 +20,6 @@
 MODULE matrix_operations
 !FIXME: order routines alphabetically
 !   use lstiming
-  use chol_decomp_mod
    use matrix_module
 !   Use matrix_operations_symm_dense
    use matrix_operations_dense
