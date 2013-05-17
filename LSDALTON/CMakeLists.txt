@@ -14,9 +14,6 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 set(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX FALSE)
 
 set(THIS_CODE "linsca")
-#if(THIS_CODE STREQUAL "linsca")
-#    add_definitions(-DVAR_LINSCA)
-#endif()
 
 add_definitions(-DTHIS_IS_CMAKE_BUILD)
 
@@ -76,10 +73,6 @@ option(ENABLE_RELEASE        "Enable Release"                OFF)
 option(ENABLE_GIT_SUBMODULES "Download external projects using Git submodules at compilation time" ON)
 
 
-#add_definitions(-DVAR_DSM)
-
-#add_definitions(-DVAR_MFDS -D_FILE_OFFSET_BITS=64 -DIMPLICIT_NONE)
-
 # find a good default scratch base directory
 foreach(dir "/work" "/scratch" "/scr" "/temp" "/tmp")
    if(EXISTS "${dir}/")
@@ -112,7 +105,6 @@ include(Sources)
 include(Compilers)
 include(ConfigExternal)
 
-#add_subdirectory(LSint)
 set(LIBS)
 
 if(ENABLE_OPENRSP)
