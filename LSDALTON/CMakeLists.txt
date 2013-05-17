@@ -17,9 +17,11 @@ set(THIS_CODE "linsca")
 
 add_definitions(-DTHIS_IS_CMAKE_BUILD)
 
+# these are paths that CMake will search for cmake module files that end with .cmake
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
+    ${CMAKE_SOURCE_DIR}/cmake/compilers
     )
 
 message("-- System: ${CMAKE_SYSTEM_NAME}")
@@ -85,7 +87,7 @@ endif()
 
 include(Archs)
 include(Sources)
-include(Compilers)
+include(ConfigCompilerFlags)
 include(ConfigExternal)
 
 set(LIBS)
