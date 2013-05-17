@@ -2461,7 +2461,9 @@ use lsmpi_type
 implicit none
 Character(len=80),intent(IN) :: Func
 Real(realk),intent(INOUT)    :: hfweight
-CALL DFTsetFunc(Func,hfweight)
+integer                      :: ierror
+CALL DFTsetFunc(Func,hfweight,ierror)
+IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
 #ifdef VAR_LSMPI
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN
