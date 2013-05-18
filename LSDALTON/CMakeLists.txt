@@ -13,8 +13,6 @@ set(VERSION_PATCH 0)
 # flag to add a fix OpenMPI bug for gfortran/macOSX
 set(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX FALSE)
 
-set(THIS_CODE "linsca")
-
 add_definitions(-DTHIS_IS_CMAKE_BUILD)
 
 # these are paths that CMake will search for cmake module files that end with .cmake
@@ -81,9 +79,7 @@ set(BASIS_DIR
     )
 message("-- BASIS_DIR set to: ${BASIS_DIR}")
 
-if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DINSTALL_BASDIR="${BASIS_DIR}")
-endif()
 
 include(ConfigArchitecture)
 include(Sources)
@@ -172,9 +168,7 @@ endif()
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DVAR_INT64)
-    if(THIS_CODE STREQUAL "linsca")
-        add_definitions(-DVAR_64BITS)
-    endif()
+    add_definitions(-DVAR_64BITS)
 endif()
 
 if(ENABLE_CSR)
