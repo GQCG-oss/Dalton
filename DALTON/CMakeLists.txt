@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-project(DALTON Fortran C)
+project(DALTON Fortran C CXX)
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"          OFF)
 option(ENABLE_PROFILING      "Enable profiling"                OFF)
