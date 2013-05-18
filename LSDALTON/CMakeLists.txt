@@ -85,7 +85,7 @@ if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DINSTALL_BASDIR="${BASIS_DIR}")
 endif()
 
-include(Archs)
+include(ConfigArchitecture)
 include(Sources)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
