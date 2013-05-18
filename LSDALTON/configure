@@ -403,7 +403,7 @@ fi
 #
 # For rs6000 we first try ESSL, then BLAS
 #
-pdpackextras="linpack.o eispack.o"
+pdpackextras="linpack.o eispack.o cholesky.o invroutines.o"
 
 LIB=''
 for testdir in $dirlist; do
