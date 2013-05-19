@@ -43,7 +43,7 @@ add_custom_target(
     COMMAND cp     ${CMAKE_SOURCE_DIR}/dalton.in         ${EXPORT_DIR}/DALTON
     COMMAND cp     ${CMAKE_SOURCE_DIR}/INSTALL           ${EXPORT_DIR}/DALTON
     COMMAND cp     ${CMAKE_SOURCE_DIR}/setup             ${EXPORT_DIR}/DALTON
-    COMMAND cp     ${CMAKE_SOURCE_DIR}/VERSION           ${EXPORT_DIR}/DALTON
+    COMMAND cp     ${CMAKE_SOURCE_DIR}/../VERSION        ${EXPORT_DIR}
     COMMAND cp -r  ${CMAKE_SOURCE_DIR}/abacus/dalton.F   ${EXPORT_DIR}/DALTON/abacus
     COMMAND cp -r  ${CMAKE_SOURCE_DIR}/cmake             ${EXPORT_DIR}/DALTON
     COMMAND cp -r  ${CMAKE_SOURCE_DIR}/Doc               ${EXPORT_DIR}/DALTON
