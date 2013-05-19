@@ -5,11 +5,6 @@ project(LSDALTON Fortran C CXX)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-# set version
-set(VERSION_MAJOR 2011)
-set(VERSION_MINOR 0)
-set(VERSION_PATCH 0)
-
 # flag to add a fix OpenMPI bug for gfortran/macOSX
 set(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX FALSE)
 
@@ -24,6 +19,8 @@ set(CMAKE_MODULE_PATH
     )
 
 message("-- System: ${CMAKE_SYSTEM_NAME}")
+
+include(ConfigVersion)
 
 include(ConfigSafeGuards)
 if(cmake_build_type_tolower STREQUAL "debug")
