@@ -1019,10 +1019,122 @@ spni_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp,
     /* the final section: begin */
     ds->df1000 += (vcfp + delta*rho*zA)*factor;
     ds->df0100 += (vcfp - delta*(1+zeta))*factor; 
+    /* first order */
+    //ds->df1000 += (f_zeta*ef1 + f_zet1*zA*rho*ef0)*factor;
+    //ds->df0100 += (f_zeta*ef1 + f_zet1*zB*rho*ef0)*factor;
 
     ds->df2000 += (vcf2 + vap2*(zA+zA) + fac2*zA*zA + delta*zAAr)*factor;
     ds->df1100 += (vcf2 + vap2*(zA+zB)  +fac2*zA*zB + delta*zABr)*factor;
     ds->df0200 += (vcf2 + vap2*(zB+zB) + fac2*zB*zB + delta*zBBr)*factor;
+    /* second order */
+    //ds->df2000 += (f_zeta*ef2 + f_zet1*((zA+zA)*ef1 + zAAr*ef0) + f_zet2*zA*zA*rho*ef0)*factor;
+    //ds->df1100 += (f_zeta*ef2 + f_zet1*((zA+zB)*ef1 + zABr*ef0) + f_zet2*zA*zB*rho*ef0)*factor;
+    //ds->df0200 += (f_zeta*ef2 + f_zet1*((zB+zB)*ef1 + zBBr*ef0) + f_zet2*zB*zB*rho*ef0)*factor;
+    /* the final section: end */
+}
+
+/* third not tested for open-shell! */
+static void
+spni_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp,
+          const struct vwn_params* para, const struct vwn_params* ferro)
+{
+    real zeta, f_zeta, f_zet1, f_zet2, f_zet3;
+    real delta, ep_p[4], ep_f[4];
+    real ef0, ef1, ef2, ef3;
+    real zA, zB, zAA, zAB, zBB, zAAA, zAAB, zABB, zBBB;
+    real rhoa = dp->rhoa, rhob = dp->rhob, rho, rho2, rho3, rho4;
+
+    if(rhoa<VWN_ZERO) rhoa = VWN_ZERO;
+    if(rhob<VWN_ZERO) rhob = VWN_ZERO;
+
+    rho = rhoa + rhob;
+    rho2 = rho*rho; 
+    rho3 = rho2*rho;
+    rho4 = rho3*rho;
+    vwn_en_pot(ep_p, rho, 3, para);
+
+    ds->df1000 += ep_p[1]*factor;
+    ds->df0100 += ep_p[1]*factor;
+
+    ds->df2000 += ep_p[2]*factor;
+    ds->df1100 += ep_p[2]*factor;
+    ds->df0200 += ep_p[2]*factor;
+
+    ds->df3000 += ep_p[3]*factor;
+    ds->df2100 += ep_p[3]*factor;
+    ds->df1200 += ep_p[3]*factor;
+    ds->df0300 += ep_p[3]*factor;
+
+    zeta   = (dp->rhoa-dp->rhob)/rho;
+    f_zeta = SPINPOLF*    (pow(1+zeta,FOURTHREE)+pow(1-zeta,FOURTHREE)-2.0);
+    f_zet1 = SPINPOLF*4.0/3.0 *(pow(1+zeta, 1.0/3.0)-pow(1-zeta, 1.0/3.0));
+    f_zet2 = SPINPOLF*4.0/9.0 *(pow(1+zeta,-2.0/3.0)+pow(1-zeta,-2.0/3.0));
+    f_zet3 =-SPINPOLF*8.0/27.0*(pow(1+zeta,-5.0/3.0)-pow(1-zeta,-5.0/3.0));
+
+    vwn_en_pot(ep_f, rho, 3, ferro);
+    ef0   = ep_f[0] - ep_p[0];
+    ef1   = ep_f[1] - ep_p[1];
+    ef2   = ep_f[2] - ep_p[2];
+    ef3   = ep_f[3] - ep_p[3];
+
+    zA = 2*rhob/rho2; /* =  2(1-zeta)/rho */
+    zB =-2*rhoa/rho2; /* = -2(1+zeta)/rho */
+    zAA = -4*rhob/rho3;
+    zAB = 2*(rhoa-rhob)/rho3;
+    zBB = 4*rhoa/rho3;
+    zAAA = 12*rhob/rho4;
+    zAAB = zAAA - 4/rho3;
+    zBBB = -12*rhoa/rho4;
+    zABB = zBBB + 4/rho3;
+
+    float f0e1, f0e2, f0e3, f1e0, f1e1, f1e2, f2e0, f2e1, f3e0; 
+    f0e1 = f_zeta*ef1;
+    f0e2 = f_zeta*ef2;
+    f0e3 = f_zeta*ef3;
+    f1e0 = f_zet1*ef0*rho;
+    f1e1 = f_zet1*ef1;
+    f1e2 = f_zet1*ef2;
+    f2e0 = f_zet2*ef0*rho;
+    f2e1 = f_zet2*ef1;
+    f3e0 = f_zet3*ef0*rho;
+
+
+    /* first order */
+    ds->df1000 += (zA*f1e0 + f0e1)*factor;
+    ds->df0100 += (zB*f1e0 + f0e1)*factor;
+
+    /* second order */
+    ds->df2000 += (zAA*f1e0 + zA*zA*f2e0 + (zA+zA)*f1e1 + f0e2)*factor;
+    ds->df1100 += (zAB*f1e0 + zA*zB*f2e0 + (zA+zB)*f1e1 + f0e2)*factor;
+    ds->df0200 += (zBB*f1e0 + zB*zB*f2e0 + (zB+zB)*f1e1 + f0e2)*factor;
+
+    /* third order terms */
+
+    ds->df3000 += (
+        f0e3 +
+        zAAA*f1e0 + (zAA + zAA + zAA)*f1e1 + (zA + zA + zA)*f1e2 +
+        (zAA*zA + zA*zAA + zAA*zA)*f2e0 + (zA*zA + zA*zA +zA*zA)*f2e1 +
+        zA*zA*zA*f3e0
+        )*factor;
+    ds->df2100 += (
+        f0e3 +
+        zAAB*f1e0 + (zAA + zAB + zAB)*f1e1 + (zA + zA + zB)*f1e2 +
+        (zAA*zB +zAB*zA + zA*zAB)*f2e0 + (zA*zA + zA*zB + zA*zB)*f2e1 + 
+        zA*zA*zB*f3e0
+        )*factor;
+    ds->df1200 += (
+        f0e3 +
+        zABB*f1e0 + (zBB + zAB + zAB)*f1e1 + (zB + zB + zA)*f1e2 +
+        (zBB*zA +zAB*zB + zB*zAB)*f2e0 + (zB*zB + zB*zA + zB*zA)*f2e1 + 
+        zB*zB*zA*f3e0
+        )*factor;
+    ds->df0300 += (
+        f0e3 +
+        zBBB*f1e0 + (zBB+zBB+zBB)*f1e1 + (zB + zB + zB)*f1e2 + 
+        (zBB*zB + zBB*zB + zB*zBB)*f2e0 + (zB*zB+ (zB+zB)*zB)*f2e1 + 
+        zB*zB*zB*f3e0
+        )*factor;
+                
     /* the final section: end */
 }
 
@@ -1047,7 +1159,7 @@ vwni_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 static void
 vwni_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
 {
-    fun_printf("vwni_third not implemented."); exit(1);
+    spni_third(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
 }
 
 static real
