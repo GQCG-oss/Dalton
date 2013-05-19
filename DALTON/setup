@@ -345,17 +345,17 @@ def configure_host():
 def configure_default_compilers():
     # if compiler starts with 'mp' turn on mpi
     # it is possible to call compilers with long paths
-    if  args.cc  and (os.path.basename(args.cc)[:2].lower()  == 'mp') or \
-        args.cxx and (os.path.basename(args.cxx)[:2].lower() == 'mp') or \
-        args.fc  and (os.path.basename(args.fc)[:2].lower()  == 'mp'):
-            args.mpi = 'on'
+    if  args.cc  and os.path.basename(args.cc).lower().startswith('mp')  or \
+        args.cxx and os.path.basename(args.cxx).lower().startswith('mp') or \
+        args.fc  and os.path.basename(args.fc).lower().startswith('mp'):
+        args.mpi = 'on'
 
     # if compiler starts with 'openmpi' turn on mpi
     # it is possible to call compilers with long paths
-    if  args.cc  and (os.path.basename(args.cc)[:7].lower()  == 'openmpi') or \
-        args.cxx and (os.path.basename(args.cxx)[:7].lower() == 'openmpi') or \
-        args.fc  and (os.path.basename(args.fc)[:7].lower()  == 'openmpi'):
-            args.mpi = 'on'
+    if  args.cc  and os.path.basename(args.cc).lower().startswith('openmpi')  or \
+        args.cxx and os.path.basename(args.cxx).lower().startswith('openmpi') or \
+        args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
+        args.mpi = 'on'
 
     if args.mpi == 'on':
         if  args.fc  and (os.path.basename(args.fc)[:7].lower()  == 'openmpi'):
