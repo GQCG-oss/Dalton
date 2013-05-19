@@ -21,10 +21,6 @@ module init_lsdalton_mod
   use SCFLOOP_module, only: ls_initbsm
 #endif
   use matrix_operations, only: mat_no_of_matmuls, mat_pass_info, no_of_matmuls
-#ifdef THIS_IS_CMAKE_BUILD
-  use gitrevinfo, only: print_git_revision_info
- ! use compinfo, only: print_compilation_info
-#endif
   use lsmpi_type, only: lsmpi_finalize, lsmpi_print
 contains
 
@@ -59,8 +55,7 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
   CALL PRINT_INTRO(LUPRI)
   call lsmpi_print(lupri)
 #ifdef THIS_IS_CMAKE_BUILD
-  !call print_compilation_info(lupri)
-  call print_git_revision_info(lupri)
+  call print_binary_info(lupri)
 #endif
 
   ! Timing of individual steps

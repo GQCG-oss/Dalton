@@ -16,6 +16,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_SOURCE_DIR}/cmake/compilers
     ${CMAKE_SOURCE_DIR}/cmake/math
+    ${CMAKE_SOURCE_DIR}/cmake/binary-info
     )
 
 message("-- System: ${CMAKE_SYSTEM_NAME}")
@@ -225,6 +226,8 @@ else()
         )
 endif()
 
+include(BinaryInfo)
+
 include(Tests)
 include(CTest)
 include(merge)
@@ -285,9 +288,8 @@ if(ENABLE_OPENRSP)
 	add_subdirectory(gen1int)
 endif()
 
-# Tell CMake the source won't be available until build time.
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/lsutil/git_revision_info.f90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/lsutil/compilation_info.f90 PROPERTIES GENERATED 1)
+# tell CMake the source won't be available until build time
+SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/binary_info.f90 PROPERTIES GENERATED 1)
 
 add_library(
     lsutillib_precision
@@ -337,6 +339,7 @@ target_link_libraries(lsutiltypelib_common pdpacklib)
 add_library(
     lsutillib
     ${LSUTILLIB_SOURCES}
+    ${PROJECT_BINARY_DIR}/binary_info.F90
     )
 target_link_libraries(lsutillib lsutiltypelib_common)
 # Make sure the source is generated before the lsutillib lib is built
@@ -588,5 +591,4 @@ target_link_libraries(
    lsdalton
    ) 
 
-include(CompilationInfo)
 include(Install)

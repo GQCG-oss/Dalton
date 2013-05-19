@@ -352,8 +352,6 @@ set(LSUTIL_TYPE_SOURCES
 set(LSUTILLIB_SOURCES
     lsutil/lowdin.F90
     lsutil/AtomicSparse.F90
-    lsutil/compilation_info.f90
-    lsutil/git_revision_info.f90
     lsutil/fundamental.F90
     lsutil/ks-settings.F90
     lsutil/lsmpi-operations.F90
