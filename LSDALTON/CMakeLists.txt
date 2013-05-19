@@ -20,6 +20,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_SOURCE_DIR}/cmake/compilers
+    ${CMAKE_SOURCE_DIR}/cmake/math
     )
 
 message("-- System: ${CMAKE_SYSTEM_NAME}")
