@@ -357,17 +357,6 @@ def configure_default_compilers():
         args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
         args.mpi = 'on'
 
-    if args.mpi == 'on':
-        if  args.fc  and (os.path.basename(args.fc)[:7].lower()  == 'openmpi'):
-	   if not args.cc:
-               args.cc = 'openmpicc'
-           if not args.cxx:
-               args.cxx = 'openmpicxx'
-        else:
-            if not args.cc:
-               args.cc = 'mpicc'
-            if not args.cxx:
-               args.cxx = 'mpicxx'
     if not args.cc:
         args.cc = 'gcc'
     if not args.cxx:
