@@ -1,47 +1,30 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 project(LSDALTON Fortran C CXX)
+
+# do not rebuild if rules (compiler flags) change
+set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 # set version
 set(VERSION_MAJOR 2011)
 set(VERSION_MINOR 0)
 set(VERSION_PATCH 0)
 
-# do not rebuild if rules (compiler flags) change
-set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
-
 # flag to add a fix OpenMPI bug for gfortran/macOSX
 set(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX FALSE)
 
-set(THIS_CODE "linsca")
-
 add_definitions(-DTHIS_IS_CMAKE_BUILD)
 
+# these are paths that CMake will search for cmake module files that end with .cmake
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
+    ${CMAKE_SOURCE_DIR}/cmake/compilers
     )
-
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE
-        Debug
-        CACHE STRING
-        "Choose the type of build, options are: None Debug Release, Profile."
-        FORCE
-        )
-endif()
 
 message("-- System: ${CMAKE_SYSTEM_NAME}")
 
-string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
-if(    NOT cmake_build_type_tolower STREQUAL "debug"
-		AND NOT cmake_build_type_tolower STREQUAL "release"
-		AND NOT cmake_build_type_tolower STREQUAL "relwithdebinfo"
-		AND NOT cmake_build_type_tolower STREQUAL "profile")
-	message(FATAL_ERROR "Unknown build type \"${CMAKE_BUILD_TYPE}\".
-	Allowed values are Debug, Release, RelWithDebInfo, Profile (case-insensitive).")
-endif()
-
+include(ConfigSafeGuards)
 if(cmake_build_type_tolower STREQUAL "debug")
 	add_definitions(-DVAR_DEBUGINT)
 	add_definitions(-DVAR_DEBUG)
@@ -96,13 +79,11 @@ set(BASIS_DIR
     )
 message("-- BASIS_DIR set to: ${BASIS_DIR}")
 
-if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DINSTALL_BASDIR="${BASIS_DIR}")
-endif()
 
-include(Archs)
+include(ConfigArchitecture)
 include(Sources)
-include(Compilers)
+include(ConfigCompilerFlags)
 include(ConfigExternal)
 
 set(LIBS)
@@ -187,9 +168,7 @@ endif()
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DVAR_INT64)
-    if(THIS_CODE STREQUAL "linsca")
-        add_definitions(-DVAR_64BITS)
-    endif()
+    add_definitions(-DVAR_64BITS)
 endif()
 
 if(ENABLE_CSR)
