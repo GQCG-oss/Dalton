@@ -54,6 +54,7 @@ static real vwn3_energy(const FunDensProp* dp);
 static void vwn3_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
 static void vwn3_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
 static void vwn3_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void vwn3_fourth(FunFourthFuncDrv *ds,   real factor, const FunDensProp* dp);
 static real vwn_energy(const FunDensProp* dp);
 static void vwn_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
 static void vwn_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
@@ -70,6 +71,7 @@ static real vwn3i_energy(const FunDensProp* dp);
 static void vwn3i_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
 static void vwn3i_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
 static void vwn3i_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp);
+static void vwn3i_fourth(FunFourthFuncDrv *ds,   real factor, const FunDensProp* dp);
 
 /* VWN3 is a Gaussian version of the VWN functional based on suboptimal
  * set of parameters */
@@ -82,7 +84,8 @@ Functional VWN3Functional = {
     vwn3_energy, 
     vwn3_first,
     vwn3_second,
-    vwn3_third
+    vwn3_third,
+    vwn3_fourth
 };
 
 Functional VWN5Functional = {
@@ -139,7 +142,8 @@ Functional VWN3IFunctional = {
     vwn3i_energy, 
     vwn3i_first,
     vwn3i_second,
-    vwn3i_third
+    vwn3i_third,
+    vwn3i_fourth
 };
 
 
@@ -527,58 +531,9 @@ par_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp,
     /* the final section: end */
 }
 
-/* The dispatch part of the functional implementation */
-static real
-vwn3_energy(const FunDensProp* dp)
-{
-    return par_energy(dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
-}
-
 static void
-vwn3_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
-{
-    par_first(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
-}
-
-static void
-vwn3_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
-{
-    par_second(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
-}
-
-static void
-vwn3_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
-{
-    par_third(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
-}
-
-
-static real
-vwn_energy(const FunDensProp* dp)
-{
-    return par_energy(dp, &vwn_paramagnetic, &vwn_ferromagnetic);
-}
-
-static void
-vwn_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
-{
-    par_first(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
-}
-
-static void
-vwn_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
-{
-    par_second(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
-}
-
-static void
-vwn_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
-{
-    par_third(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
-}
-
-static void
-vwn_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
+par_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp,
+          const struct vwn_params* para, const struct vwn_params* ferro)
 {
     real zeta, zeta2, zeta3,zeta4, f_zeta, f_zet1, f_zet2, f_zet3, vcfp;
     real delta, ep_p[6], ep_f[6], ep_i[6], d_ef0, d_ei0;
@@ -604,7 +559,7 @@ vwn_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
         d_dterm_dep, d_dtrm1_indep, d_dtrm1_dep, d_dtrm2_indep,
         d_dtrm2_dep;
     
-    vwn_en_pot(ep_p, rho, 4, &vwn_paramagnetic);
+    vwn_en_pot(ep_p, rho, 4, para);
 
     ds->df1000 += ep_p[1]*factor;
     ds->df0100 += ep_p[1]*factor;
@@ -641,7 +596,7 @@ vwn_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
     f_zet3 =-SPINPOLF*8.0/27.0*(pow(1+zeta,-5.0/3.0)-pow(1-zeta,-5.0/3.0));
     f_zet4 = SPINPOLF*(40.0/81.0)*(pow(1-zeta,-8.0/3.0)+pow(1+zeta,-8.0/3.0));
 
-    vwn_en_pot(ep_f, rho, 4,&vwn_ferromagnetic);
+    vwn_en_pot(ep_f, rho, 4, ferro);
     ef0   = ep_f[0] - ep_p[0];
     ef1   = ep_f[1] - ep_p[1];
     ef2   = ep_f[2] - ep_p[2];
@@ -916,6 +871,69 @@ vwn_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
     
     /* the final section: end */
 }
+
+/* The dispatch part of the functional implementation */
+static real
+vwn3_energy(const FunDensProp* dp)
+{
+    return par_energy(dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+static void
+vwn3_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    par_first(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+static void
+vwn3_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    par_second(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+static void
+vwn3_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
+{
+    par_third(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+static void
+vwn3_fourth(FunFourthFuncDrv *ds,   real factor, const FunDensProp* dp)
+{
+    par_fourth(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+
+static real
+vwn_energy(const FunDensProp* dp)
+{
+    return par_energy(dp, &vwn_paramagnetic, &vwn_ferromagnetic);
+}
+
+static void
+vwn_first(FunFirstFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    par_first(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
+}
+
+static void
+vwn_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
+{
+    par_second(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
+}
+
+static void
+vwn_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
+{
+    par_third(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
+}
+
+static void
+vwn_fourth(FunFourthFuncDrv *ds,   real factor, const FunDensProp* dp)
+{
+    par_fourth(ds, factor, dp, &vwn_paramagnetic, &vwn_ferromagnetic);
+}
+
 
 
 /* Other spin interpolation scheme */
@@ -1365,5 +1383,11 @@ vwn3i_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
 static void
 vwn3i_third(FunThirdFuncDrv *ds,   real factor, const FunDensProp* dp)
 {
-    fun_printf("vwn3i_third not implemented."); exit(1);
+    spni_third(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
+}
+
+static void
+vwn3i_fourth(FunFourthFuncDrv *ds,   real factor, const FunDensProp* dp)
+{
+    spni_fourth(ds, factor, dp, &vwn3_paramagnetic, &vwn3_ferromagnetic);
 }
