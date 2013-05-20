@@ -51,13 +51,6 @@ group.add_option('--fc',
                  default=None,
                  help='set the Fortran compiler [default: pick automatically]',
                  metavar='STRING')
-group.add_option('--mpiexec',
-                 type='string',
-                 action='store',
-                 dest='mpiexec',
-                 default=None,
-                 help='set the MPI executable [default: pick automatically]',
-                 metavar='STRING')
 group.add_option('--cc',
                  type='string',
                  action='store',
@@ -109,16 +102,6 @@ group.add_option('--release',
                  dest='release',
                  default=False,
                  help='build using MOD_UNRELEASED flag [default: %default]')
-group.add_option('--mklflag',
-                 action='store_true',
-                 dest='mklflag',
-                 default=False,
-                 help='build using MKL FLAG VAR_MKL [default: %default]')
-group.add_option('--lseek',
-                 action='store_true',
-                 dest='lseek',
-                 default=False,
-                 help='add HAVE_NO_LSEEK64 precompiler flag [default: %default]')
 group.add_option('--int64',
                  action='store_true',
                  dest='int64',
@@ -134,11 +117,6 @@ group.add_option('--scalapack',
                  dest='scalapack',
                  default=False,
                  help='build using scalapack [default: %default]')
-group.add_option('--timings',
-                 action='store_true',
-                 dest='timings',
-                 default=False,
-                 help='build using timings [default: %default]')
 group.add_option('--show',
                  action='store_true',
                  dest='show',
@@ -235,11 +213,11 @@ group.add_option('--scalasca',
                  dest='scalasca',
                  default=False,
                  help='build using scalasca profiler mode [default: %default]')
-group.add_option('--debugpbc',
+group.add_option('--timings',
                  action='store_true',
-                 dest='debugpbc',
+                 dest='timings',
                  default=False,
-                 help='help debugging pbc matrices')
+                 help='build using timings [default: %default]')
 parser.add_option_group(group)
 
 # process input
@@ -297,9 +275,6 @@ def gen_cmake_command():
             print "Specified MATH directory does not exist!"
             sys.exit(1)
         command += ' -DMATH_ROOT="%s"' % options.mathdir
-
-    if options.mpiexec:
-        command += ' -DMPIEXEC=%s' % options.mpiexec
     # if fc starts with 'mpi' turn on MPI
     if options.fc and (options.fc[:3] == 'mpi' or options.fc[:3] == 'MPI'):
         options.mpi = True
@@ -316,10 +291,6 @@ def gen_cmake_command():
         command += ' -DENABLE_OMP=1'
     if options.release:
         command += ' -DENABLE_RELEASE=1'
-    if options.mklflag:
-        command += ' -DENABLE_MKLFLAG=1'
-    if options.lseek:
-        command += ' -DENABLE_LSEEK=1'
     if options.interest:
         command += ' -DENABLE_INTEREST=1'
     if options.int64:
@@ -330,8 +301,6 @@ def gen_cmake_command():
         command += ' -DENABLE_SCALAPACK=1'
     if options.timings:
         command += ' -DENABLE_TIMINGS=1'
-    if options.debugpbc:
-        command += ' -DENABLE_DEBUGPBC=DEBUGPBC'
     if options.check:
         command += ' -DENABLE_BOUNDS_CHECK=1'
     if options.coverage:

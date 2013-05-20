@@ -4,7 +4,7 @@ Changes in setup
   Basic options:
     --auto            this flag will disappear in new version of setup
     --fc=STRING       ok
-    --mpiexec=STRING  in which situation do you need this flag?
+    --mpiexec=STRING  in which situation do you need this flag?  - REMOVED Simen
     --cc=STRING       ok
     --cpp=STRING      will be renamed to --cxx
     --math-dir=PATH   this will be a bit different in new version
@@ -15,12 +15,12 @@ Changes in setup
                       (i have code for it in DIRAC)
     --omp             ok
     --release         does not belong here, what are users supposed to do with this flag
-    --mklflag         does not belong here, should be set by math detection
-    --lseek           does not belong here
+    --mklflag         does not belong here, should be set by math detection  - REMOVED Simen
+    --lseek           does not belong here  - REMOVED Simen
     --int64           ok
     --csr             ok
     --scalapack       ok
-    --timings         perhaps move to advanced?
+    --timings         perhaps move to advanced?  - MOVED TO ADVANCED Simen
     --show            ok
 
   Change default paths:
@@ -40,4 +40,4 @@ Changes in setup
     --xcfun           does not belong to setup IMO (code specific)
     --interest=PATH   does not belong to setup IMO (code specific)
     --scalasca        does not belong to setup IMO (code specific)
-    --debugpbc        does not belong to setup IMO (code specific)
+    --debugpbc        does not belong to setup IMO (code specific)  - REMOVED Simen
