@@ -1026,6 +1026,11 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         READWORD=.FALSE.
         EXIT
      ENDIF
+     IF (WORD(1:7) == '*END OF') THEN
+           READWORD=.FALSE.
+           EXIT
+     ENDIF
+
   ENDDO
 END subroutine GENERAL_INPUT
 
