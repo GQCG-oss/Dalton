@@ -558,10 +558,6 @@ C               for in WORK
  400     CONTINUE
          NDERIV = NDERIV + IKDRV
  300  CONTINUE
-      if (nderiv .le. 0 .AND. .NOT. PRPONL ) then
-         write(lupri,*) 'hjaaj: nderiv .le. 0',nderiv
-         write(lupri,*) 'hjaaj: nmordr,naordr,ncoor',nmordr,naordr,ncoor
-      end if
 C
       DO 500 IORDR = 1, NMORDR
          IKDIME = 1
