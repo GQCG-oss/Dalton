@@ -417,12 +417,12 @@ contains
 ! Quadruple precision not supported by gfortran-4.1.1
 #ifndef VAR_OPEN64
 #ifndef GFORTRAN
-#ifndef VAR_PGI
+#ifndef VAR_PGF90
 !      call lowdin_qschulz(decomp%cfg_unres,decomp%lupri,decomp%S,decomp%U,decomp%U_inv)
       call lsquit('Brano needs to add qblas routines to lsdalton own math lib',-1)
 
 #else
-      !VAR_PGI
+      !VAR_PGF90
       call lsquit('Qschultz does not support quadruple precision',decomp%lupri)
 #endif
 #else 

@@ -22,8 +22,8 @@ option(ENABLE_ALWAYS_RESET_EXTERNAL_BUILDS "Always remove builds stamps of exter
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
-    ${CMAKE_SOURCE_DIR}/cmake/binary-info
-    ${CMAKE_SOURCE_DIR}/cmake/compilers
+    ${CMAKE_SOURCE_DIR}/../cmake/binary-info
+    ${CMAKE_SOURCE_DIR}/../cmake/compilers
     ${CMAKE_SOURCE_DIR}/cmake/math
     ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
     ${CMAKE_SOURCE_DIR}/cmake/testing

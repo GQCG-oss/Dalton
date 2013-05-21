@@ -39,8 +39,8 @@ s.append(['Static linking'   , r'@ENABLE_STATIC_LINKING@'])
 s.append(['Last Git revision', r'@GIT_REVISION@'         ])
 
 output  = ''
-output += 'subroutine print_binary_info()\n'
-output += '#include "priunit.h"\n'
+output += 'subroutine print_binary_info(lupri)\n'
+output += 'integer, intent(in) :: lupri\n'
 
 def chunkify(l, n):
     return [l[i:i+n] for i in range(0, len(l), n)]

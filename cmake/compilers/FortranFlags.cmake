@@ -13,12 +13,12 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
             "${CMAKE_Fortran_FLAGS} -m64"
             )
     endif()
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -ffast-math -funroll-loops -ftree-vectorize -g -pg")
-    if(ENABLE_CODE_COVERAGE)
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fbacktrace -fcray-pointer -Wuninitialized")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -w")
+    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -ffast-math -funroll-loops -ftree-vectorize -w -g -pg")
+    if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -fprofile-arcs -ftest-coverage"
+            "${CMAKE_Fortran_FLAGS} -static"
             )
     endif()
     if(ENABLE_OMP)
@@ -38,7 +38,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     endif()
     if(ENABLE_CODE_COVERAGE)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -ftest-coverage"
+            "${CMAKE_Fortran_FLAGS} -fprofile-arcs -ftest-coverage"
             )
     endif()
 endif()
@@ -48,7 +48,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
     set(CMAKE_Fortran_FLAGS         "-fno-second-underscore -ftrace=full -DVAR_G95")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fsloppy-char")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fsloppy-char -g -pg")
+    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -fsloppy-char -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
@@ -67,26 +67,17 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-
-    # example code to determine ifort version
-    exec_program(ifort
-        ARGS -v
-        OUTPUT_VARIABLE IFORT_OUTPUT
-        RETURN_VALUE IFORT_INFO
-        )
-    STRING(REGEX MATCH "[0-9]+" IFORT_VERSION "${IFORT_OUTPUT}")
-  # message("-- hey i found the following ifort version: ${IFORT_VERSION}")
-  # if(${IFORT_VERSION} STREQUAL "11")
-  #     ...
-  # else()
-  #     ...
-  # endif()
     add_definitions(-DVAR_IFORT)
-    set(CMAKE_Fortran_FLAGS         "-w -assume byterecl -DVAR_IFORT")
+    set(CMAKE_Fortran_FLAGS         "-w -fpp -assume byterecl -DVAR_IFORT")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -traceback")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ip")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -ip -g -pg")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -xW -ip")
+    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -xW -ip -g -pg")
 
+    if(ENABLE_STATIC_LINKING)
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -static-libgcc -static-intel"
+            )
+    endif()
     if(ENABLE_OMP)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -openmp -parallel"
@@ -102,18 +93,28 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
             "${CMAKE_Fortran_FLAGS} -check all -traceback -debug all -fpstkchk -ftrapuv"
             )
     endif()
+    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+        message("--Switch off warnings due to incompatibility XCode 4 and Intel 11 on OsX 10.6")
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -Qoption,ld,-w"
+            )
+    endif()
 endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     add_definitions(-DVAR_PGI)
-    set(CMAKE_Fortran_FLAGS         "-DVAR_PGI -Mpreprocess")
-    set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mlarge_arrays -mcmodel=medium")
+    set(CMAKE_Fortran_FLAGS         "-DVAR_PGF90 -mcmodel=medium")
+    set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
 # I would like to add -fast but this makes certain dec tests fails
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mlarge_arrays -mcmodel=medium -Mipa=fast")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -g -pg -Mlarge_arrays -mcmodel=medium")
+    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mipa=fast")
+    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -Mipa=fast -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -i8 -i8storage"
+            "${CMAKE_Fortran_FLAGS} -m64 -i8 -i8storage"
+            )
+    else()
+        set(CMAKE_Fortran_FLAGS
+            "${CMAKE_Fortran_FLAGS} -m32"
             )
     endif()
     if(ENABLE_OMP) 
@@ -136,7 +137,7 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     add_definitions(-DVAR_XLF)
-    set(CMAKE_Fortran_FLAGS         "-qextname -qlanglvl=extended -qinit=f90ptr")
+    set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname -qlanglvl=extended -qinit=f90ptr")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-qstrict -O3")
     set(CMAKE_Fortran_FLAGS_PROFILE "-qstrict -O3 -p -pg")
