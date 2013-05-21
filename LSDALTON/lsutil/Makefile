@@ -14,11 +14,9 @@ F90_OBJS = \
 	ddynType.o\
 	BasisinfoType.o\
 	Basisinfo_operations.o\
-	cholesky.o\
         common_utilities.o \
         file-operations.o \
         grid_utilities.o \
-	invroutines.o\
 	lsutilities.o\
 	lowdin.o\
 	ls_precision.o\

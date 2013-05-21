@@ -2929,10 +2929,10 @@ contains
        a=a+1
        if(a>na)return
 #ifdef VAR_LSMPI
-       if(prnt)write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")'),infpar%mynum,&
+       if(prnt) write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")'),infpar%mynum,&
        &a,na,g,ng
 #else
-       write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
+       if(prnt) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
        &na,g,ng
 #endif
        call lsmpi_poke()
@@ -4484,10 +4484,11 @@ contains
     nba=minbsize
     nbg=minbsize
     nnod=1
-    magic = DECinfo%MPIsplit/5
 #ifdef VAR_LSMPI
     nnod=infpar%lg_nodtot
 #endif
+    !magic = DECinfo%MPIsplit/5
+    magic = 2
     !test for scheme with highest reqirements --> fastest
     mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,4,.false.)
     if(first)then

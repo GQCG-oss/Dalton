@@ -304,8 +304,6 @@ set(LSUTIL_COMMON_SOURCES
     lsutil/ls_math.F90
     lsutil/SphCartMatrices.F90
     lsutil/OverlapDistributionType.F90
-    lsutil/cholesky.F90
-    lsutil/invroutines.F90
     )
 
 set(LSUTIL_MATRIXO_SOURCES
@@ -378,6 +376,8 @@ set(FIXED_FORTRAN_SOURCES
     pdpack/jacobi.F
     pdpack/eispack.F
     pdpack/linpack.F
+    pdpack/cholesky.F
+    pdpack/invroutines.F
     )
 set(OWN_BLAS_SOURCES
     pdpack/blas_wrapper.F

@@ -340,7 +340,8 @@ contains
           ! *               Keywords only available for developers                     *
           ! ****************************************************************************
 
-       !Keywords only used for testing in release branch, no documentation needed
+          ! Keywords only used for testing in release branch, not intended to be used by end-users,
+          ! so on purpose there is no documentation for those in the LSDALTON manual.
 
        !general testing
        case('.TESTARRAY'); DECinfo%array_test=.true.
@@ -350,21 +351,24 @@ contains
        case('.CCSDFORCE_SCHEME'); DECinfo%force_scheme=.true.
           read(input,*) DECinfo%en_mem
 
+       case('.MANUAL_BATCHSIZES') 
+          DECinfo%manual_batchsizes=.true.
+          read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
+       case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
+       case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
+          ! Size of local groups in MPI scheme
+       case('.MPIGROUPSIZE'); read(input,*) DECinfo%MPIgroupsize
+
 #ifdef MOD_UNRELEASED
        case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
        case('.CCSDSOLVER_SERIAL'); DECinfo%solver_par=.false.
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
-       case('.MANUAL_BATCHSIZES') 
-          DECinfo%manual_batchsizes=.true.
-          read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
-          ! Skip Hartree-Fock calculation 
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
-       case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
        case('.CCSD(T)'); DECinfo%ccModel=4; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.RPA'); DECinfo%ccModel=5; DECinfo%use_singles=.false.
        case('.NOTUSEMP2FRAG') 
@@ -412,7 +416,6 @@ contains
           DECinfo%convert64to32=.true.
        case('.CONVERT32TO64')
           DECinfo%convert32to64=.true.
-       case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
@@ -426,12 +429,8 @@ contains
        case('.NOTKAPPAPREC'); DECinfo%kappa_use_preconditioner=.false.
        case('.NOTKAPPABPREC'); DECinfo%kappa_use_preconditioner_in_b=.false.
 
-          ! integrals tests
+          ! Check that input orbitals are orthogonal (debug)
        case('.CHECKLCM'); DECinfo%check_lcm_orbitals=.true.
-
-
-          ! Size of local groups in MPI scheme
-       case('.MPIGROUPSIZE'); read(input,*) DECinfo%MPIgroupsize
 
           !> Collect fragment contributions to calculate full molecular MP2 density
        case('.SKIPFULL') 
