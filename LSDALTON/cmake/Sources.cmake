@@ -1,3 +1,8 @@
+# WARNING if you add a new set of sources that contain .F90 files 
+# remember to add it to the collection of all free fortran sources
+# FREE_FORTRAN_SOURCES  
+# at the end of the file
+
 set(DEC_C_SOURCES
     deccc/crayio.c
     )
@@ -390,3 +395,28 @@ set(OWN_LAPACK_SOURCES
     pdpack/gp_dlapack.F
     pdpack/gp_zlapack.F
     )
+#collection of all free fortran sources
+set(FREE_FORTRAN_SOURCES
+    ${DFTFUNC_F_SOURCES}
+    ${LSDALTONMAIN_FORTRAN_SOURCES}
+    ${DDYNAM_SOURCES}
+    ${DEC_SOURCES}
+    ${GEOOPT_SOURCES}
+    ${LINEARS_SOURCES}	
+    ${RSPSOLVER_SOURCES}	
+    ${SOLVERUTIL_SOURCES}	
+    ${RSP_PROPERTIES_SOURCES}	
+    ${PBC_FORTRAN_SOURCES}
+    ${FMM_SOURCES}
+    ${INTERESTLIB_SOURCES}
+    ${LSINT_SOURCES}
+    ${LSUTIL_PRECISION_SOURCES}
+    ${LSUTIL_MATRIXM_SOURCES}
+    ${LSUTIL_COMMON_SOURCES}
+    ${LSUTIL_MATRIXO_SOURCES}
+    ${LSUTIL_MATRIXO_C_SOURCES}
+    ${LSUTIL_MATRIXU_SOURCES}
+    ${LSUTIL_TYPE_SOURCES}
+    ${LSUTILLIB_SOURCES}
+    ${LSLIB_SOURCES}
+ )

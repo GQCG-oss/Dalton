@@ -473,8 +473,8 @@ module matrix_operations_dense
           print*,'dsyevx was succesfull for a symmetriced version'
        else
           print*,'dsyevx also fails for a symmetriced version'
+          call lsquit('mat_dense_dsyevx_aux: diagonalization failed.',-1)
        endif
-       call lsquit('mat_dense_dsyevx_aux: diagonalization failed.',-1)
     end if
     call mem_dealloc(eivec)
     call mem_dealloc(work)

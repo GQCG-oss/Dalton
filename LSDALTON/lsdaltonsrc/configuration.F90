@@ -292,6 +292,7 @@ DO
                            config%av%CFG_SET_type = config%av%CFG_THR_dft
                            config%solver%do_dft = .true.
                            config%soeoinp%do_dft = .true.
+                           config%davidSCF%arh_dodft = .true.
                DO 
                   READ (LUCMD, '(A80)') WORD
                   IF ((WORD(1:1) .EQ. '!') .OR. (WORD(1:1) .EQ. '#')) CYCLE   
@@ -445,7 +446,8 @@ DO
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
 #endif
 	    CASE('.DAVIDSON DEBUG'); config%davidSCF%debug_info =.true.
-	    CASE('.DAVIDSON EXTRAVECS'); config%davidSCF%arh_extravecs =.true.
+	    CASE('.DAVIDSON EXTRAVEC'); config%davidSCF%arh_extravec =.true.
+                                      config%davidSCF%arh_inp_extravec =.true.
 	    CASE('.DAVIDSON LSDEBUG'); config%davidSCF%arh_debug_linesearch =.true.
             CASE('.NOECONTINCREM');
                IF(.NOT.config%opt%cfg_saveF0andD0)THEN
@@ -549,7 +551,7 @@ DO
             CASE('.NOSHIFT');    config%diag%cfg_lshift = diag_lshift_none
                                  config%av%cfg_lshift = diag_lshift_none
                                  config%solver%cfg_nodamp = .true.
-            CASE('.OAO');        config%decomp%cfg_do_in_oao = .true.; config%opt%cfg_start_guess = 'H1OAO'
+!            CASE('.OAO');        config%decomp%cfg_do_in_oao = .true.; config%opt%cfg_start_guess = 'H1OAO'
             CASE('.OVERLAP');    READ(LUCMD,*) min_density_overlap
                                  config%av%cfg_settings%min_density_overlap &
                                      & = min_density_overlap
@@ -1024,6 +1026,11 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         READWORD=.FALSE.
         EXIT
      ENDIF
+     IF (WORD(1:7) == '*END OF') THEN
+           READWORD=.FALSE.
+           EXIT
+     ENDIF
+
   ENDDO
 END subroutine GENERAL_INPUT
 

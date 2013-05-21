@@ -197,11 +197,7 @@ contains
 
      !Stinne 24/1-07: Why tranform to AO basis? We already calculated the corresponding Fock matrix...
      !30/1-07: Because otherwise a wrong density is written in dens.restart!!
-     if (decomp%cfg_do_in_oao) then
-        call mat_assign(Dnew,wrk2)
-     else
-        call x_from_oao_basis(decomp,wrk2, Dnew) 
-     endif
+     call x_from_oao_basis(decomp,wrk2, Dnew) 
 
     if (associated(arh%fifometric)) then
        deallocate(arh%fifometric)
@@ -1201,8 +1197,8 @@ end subroutine linesearch_thresholds
   
 
 
-  write(davidCFG%lupri,'(i5,a,f9.3,a,f9.3,a,f9.2,a)') it+1,' total step norm =',step,' trust radius = '&
-  &,davidCFG%stepsize,' mu = ',davidCFG%mu, '  %#%' 
+  write(davidCFG%lupri,'(i5,a,f7.3,a,f7.3,a,f6.2,a,i3,a)') it+1,' step norm =',step,' trust radius = '&
+  &,davidCFG%stepsize,' mu = ',davidCFG%mu, ' micro it. = ',davidCFG%it, '  %#%' 
 
  
 
