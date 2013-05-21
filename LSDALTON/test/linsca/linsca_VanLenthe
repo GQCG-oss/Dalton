@@ -50,7 +50,6 @@ cat > linsca_VanLenthe.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.RH
 .VanLenthe
 .NVEC
 8
