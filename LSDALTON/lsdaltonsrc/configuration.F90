@@ -64,7 +64,7 @@ use scf_stats, only: scf_stats_arh_header
 #ifdef MOD_UNRELEASED
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
-use xcfun_host,only: xcfun_host_init, USEXCFUN
+use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
 contains
 
 !> \brief Call routines to set default values for different structures.
@@ -358,7 +358,7 @@ DO
                      IF(.NOT.USEXCFUN)THEN
                         CALL II_DFTsetFunc(WORD,hfweight)
                      ELSE
-                        CALL II_DFTsetFunc(WORD,hfweight)
+!                        CALL II_DFTsetFunc(WORD,hfweight)
                         call xcfun_host_init(WORD,hfweight,lupri)
                      ENDIF
                      config%integral%exchangeFactor = hfweight
@@ -2822,7 +2822,11 @@ ENDIF
 !Printing the configuration for the calculation:
 !===============================================
 
-   if(ls%input%DO_DFT) CALL DFTREPORT(lupri) !print the functional
+   IF(.NOT.USEXCFUN)THEN
+      if(ls%input%DO_DFT) CALL DFTREPORT(lupri) !print the functional
+   ELSE
+      if(ls%input%DO_DFT) CALL XCFUNDFTREPORT(lupri) !print the functional
+   ENDIF
    if(ls%input%DO_DFT)THEN
       IF(config%integral%DFT%CS00)THEN
          WRITE(LUPRI,'(2X,A)')' '
@@ -3664,11 +3668,13 @@ use typedef
   implicit none
   character(len=80)  :: WORD
   real(realk) :: hfweight
+  integer :: ierror
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
   hfweight=0E0_realk   
   IF(.NOT.USEXCFUN)THEN
-     CALL DFTsetFunc(WORD(1:80),hfweight)
+     CALL DFTsetFunc(WORD(1:80),hfweight,ierror)
+     IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
   ELSE
 #ifdef VAR_XCFUN
      call xcfun_host_init(WORD,hfweight,6)
