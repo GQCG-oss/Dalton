@@ -48,7 +48,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
     set(CMAKE_Fortran_FLAGS         "-fno-second-underscore -ftrace=full -DVAR_G95")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fsloppy-char")
-    set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fsloppy-char -g -pg")
+    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -fsloppy-char -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
@@ -146,7 +146,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
             "${CMAKE_Fortran_FLAGS} -q64"
             )
     endif()
-    set_source_files_properties(${LSDALTONMAIN_FORTRAN_SOURCES} ${LINEARS_SOURCES} ${RSPSOLVER_SOURCES} ${SOLVERUTIL_SOURCES} ${GEOOPT_SOURCES} ${LSUTIL_PRECISION_SOURCES} ${LSUTIL_COMMON_SOURCES} ${LSUTIL_MATRIXM_SOURCES} ${LSUTIL_MATRIXO_SOURCES} ${LSUTIL_MATRIXU_SOURCES} ${LSUTIL_TYPE_SOURCES} ${LSUTILLIB_SOURCES} ${INTERESTLIB_SOURCES} ${FMM_SOURCES} ${DFTFUNC_F_SOURCES}  ${LSINT_SOURCES} ${PBC_FORTRAN_SOURCES} ${DDYNAM_SOURCES} ${DEC_SOURCES} ${RSP_PROPERTIES_SOURCES} ${LSLIB_SOURCES}
+    set_source_files_properties(${FREE_FORTRAN_SOURCES}
         PROPERTIES COMPILE_FLAGS
         "-qfree"
         )
