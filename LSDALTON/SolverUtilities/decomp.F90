@@ -41,8 +41,6 @@ type DecompItem
       logical     :: lowdin_iterative
       !> Do iterative Lowdin decomposition in quadruple precision
       logical     :: lowdin_qiterative
-      !> Construct Fock/KS matrix directly in OAO without transforming to AO basis
-      logical     :: cfg_do_in_oao
       !> Use Least-Change Valence basis 
       logical     :: cfg_lcv
       !> Use Least-Change Molecular basis
@@ -200,7 +198,6 @@ contains
          decomp%lowdin_iterative     = .false.
          decomp%lowdin_qiterative    = .false.
    
-         decomp%cfg_do_in_oao        = .false.
          decomp%cfg_lcv              = .false.
          decomp%cfg_lcm              = .false.
          decomp%cfg_lcvbf            = .false.
@@ -567,24 +564,17 @@ contains
       ndim = decomp%S%nrow
       call mat_init(wrk,ndim,ndim)
 
-      if (decomp%cfg_do_in_oao) then
-         IF(.NOT.decomp%decompMatInit_DU)call lsquit('Decomp: decomp%DU not set',-1)
-         IF(.NOT.decomp%decompMatInit_FU)call lsquit('Decomp: decomp%FU not set',-1)
-         call mat_assign(decomp%DU,D)
-         call mat_assign(decomp%FU,F)
-      else
-         IF(.NOT.decomp%decompMatInit_U)call lsquit('Decomp: decomp%U not set',-1)
-         call mat_mul(decomp%U,D,'n','n',1E0_realk,0E0_realk,wrk)
-         IF(.NOT.decomp%decompMatInit_DU)call lsquit('Decomp: decomp%DU not set',-1)
-         call mat_mul(wrk,decomp%U,'n','t',1E0_realk,0E0_realk,decomp%DU)
-         !write(lupri,*) 'DU:'
-         !call mat_print(DU,1,FU%nrow,1,FU%ncol,lupri)
-
-         IF(.NOT.decomp%decompMatInit_U_inv)call lsquit('Decomp: decomp%U_inv not set',-1)
-         call mat_mul(decomp%U_inv,F,'t','n',1E0_realk,0E0_realk,wrk)
-         IF(.NOT.decomp%decompMatInit_FU)call lsquit('Decomp: decomp%FU not set',-1)
-         call mat_mul(wrk,decomp%U_inv,'n','n',1E0_realk,0E0_realk,decomp%FU)
-      endif
+      IF(.NOT.decomp%decompMatInit_U)call lsquit('Decomp: decomp%U not set',-1)
+      call mat_mul(decomp%U,D,'n','n',1E0_realk,0E0_realk,wrk)
+      IF(.NOT.decomp%decompMatInit_DU)call lsquit('Decomp: decomp%DU not set',-1)
+      call mat_mul(wrk,decomp%U,'n','t',1E0_realk,0E0_realk,decomp%DU)
+      !write(lupri,*) 'DU:'
+      !call mat_print(DU,1,FU%nrow,1,FU%ncol,lupri)
+      
+      IF(.NOT.decomp%decompMatInit_U_inv)call lsquit('Decomp: decomp%U_inv not set',-1)
+      call mat_mul(decomp%U_inv,F,'t','n',1E0_realk,0E0_realk,wrk)
+      IF(.NOT.decomp%decompMatInit_FU)call lsquit('Decomp: decomp%FU not set',-1)
+      call mat_mul(wrk,decomp%U_inv,'n','n',1E0_realk,0E0_realk,decomp%FU)
 
       IF(.NOT.decomp%decompMatInit_DU)call lsquit('Decomp: decomp%DU not set',-1)
       IF(.NOT.decomp%decompMatInit_QU)call lsquit('Decomp: decomp%QU not set',-1)
