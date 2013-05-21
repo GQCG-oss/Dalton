@@ -192,7 +192,8 @@ Defines the threshold used to determine if a contribution can be calculated clas
 DFT calculation. The exchange---correlation functional is read from the following line.
 
 Functionals in \lsdalton\ can be divided into two groups: generic and combined functionals. 
-Combined functionals are a linear combination of generic ones. One can always create own combined functionals by using GGAKey general functional.
+Combined functionals are a linear combination of generic ones. 
+One can always create own combined functionals by using GGAKey general functional.
 A number of standalone functionals are also included within \lsdalton. 
 
 It should be noted that the input is not case sensitive, although the notation
@@ -645,6 +646,21 @@ combines the VWN local and P86 non-local correlation functionals.
 
 Linear combinations of all exchange and correlation functionals listed above
 are possible with the \verb|GGAKey| keyword.
+
+
+\subsubsection{XCFUN functionals}
+
+Recently some support have been added for using the functionals from the XCFUN lib\cite{XCFUN}. Full 
+support is expected in the next release, but unfortunetly time constraints did not allow for 
+full support in this release. 
+
+Currently only LDA and GGA type functionals are currently supported and only upto and including 
+linear response. the XCFUN functionals are activated using the .XCFUN keyword under the **INTEGRALS section (see Section \ref{sec:integral})
+\begin{verbatim}
+**INTEGRALS
+.XCFUN
+\end{verbatim} 
+Linear combinations XCFUN functionals are possible with the \verb|GGAKey| keyword.
 
 \end{description}
 
