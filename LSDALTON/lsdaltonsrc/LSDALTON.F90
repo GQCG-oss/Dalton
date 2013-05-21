@@ -373,12 +373,18 @@ SUBROUTINE lsdalton
 	      if (config%davidOrbLoc%make_orb_plot) then
                  call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
 	      end if
+              lun = -1
+              CALL LSOPEN(lun,'localized_orbitals.u','unknown','UNFORMATTED')
+              call mat_write_to_disk(lun,Cmo,OnMaster)
+              call LSclose(LUN,'KEEP')
+           else
+              !write lcm to file
+              lun = -1
+              CALL LSOPEN(lun,'localized_orbitals.u','unknown','UNFORMATTED')
+              call mat_write_to_disk(lun,Cmo,OnMaster)
+              call LSclose(LUN,'KEEP')
            end if
-           ! write LCM orbitals
-           lun = -1
-           CALL LSOPEN(lun,'lcm_orbitals.u','unknown','UNFORMATTED')
-           call mat_write_to_disk(lun,Cmo,OnMaster)
-           call LSclose(LUN,'KEEP')
+
 
            if (.not. config%decomp%cfg_mlo) then
               call leastchangeOrbspreadStandalone(mx,ls,Cmo,config%decomp%lupri,config%decomp%luerr)
@@ -520,7 +526,7 @@ SUBROUTINE lsdalton
 	   end if
            ! write localized orbitals
            lun = -1
-           CALL LSOPEN(lun,'orbitals_out.u','unknown','UNFORMATTED')
+           CALL LSOPEN(lun,'localized_orbitals.u','unknown','UNFORMATTED')
            call mat_write_to_disk(lun,Cmo,OnMaster)
            call LSclose(LUN,'KEEP')
 	   call mat_free(cmo)

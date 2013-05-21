@@ -8,7 +8,6 @@
 !> ajt FIXME Currently both re and im in elms(:). Should use celms/ielms
 !>
 module matrix_operations_dense
-  use chol_decomp_mod, only: dchdc
   use memory_handling
   use matrix_module
   contains
