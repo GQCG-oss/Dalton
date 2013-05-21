@@ -901,6 +901,10 @@ Use custom level shifts in the first {\it N} SCF iterations.
 %\verb|<Weight for linear combination> |\newline
 %Weight to use for D1 when linear combination of densities is used as starting
 %guess (.START $\rightarrow$ LINCOMB)
+
+\item[\Key{LOW ACCURACY START}] Use low accuracy settings in the first couple of 
+iterations until the appropriate gradient threshold have been reached. 
+
 \item[\Key{LWITER}] Do L{\"o}wdin decomposition of overlap matrix (for density optimization
 in orthogonal AO basis) - iteratively (default is L{\"o}wdin by diagonalization)~\cite{shalf}.
 \item[\Key{LWQITER}] Do L{\"o}wdin decomposition of overlap matrix 
@@ -952,7 +956,6 @@ Maximum number of previous Fock and density matrices to be stored and used for A
 \item[\Key{NOINCREM}] Turn off incremental scheme for Fock/KS matrix build.
 \item[\Key{NOPREC}] Turn off preconditioning of linear equations (ARH, TrFD, and second order optimization).
 \item[\Key{NOSHIFT}] Do no level shifting.
-\item[\Key{OAO}] Keep the whole calculation (also Fock/KS matrix construction) in orthonormal AO basis.
 \item[\Key{OVERLAP}] \verb| | \newline
 \verb|<Overlap>|\newline
 Smallest accepted overlap when doing level shift by use of MO overlaps (.MOCHANGE).
@@ -1007,7 +1010,6 @@ Specifies the starting trust-radius in the ensemble optimization. Trust-radius w
 Starting guess for SCF optimization. Options are:
 \begin{itemize}
 \item {\bf H1DIAG} Obtain initial guess by diagonalizing one-electron Hamiltonian
-\item {\bf H1OAO}  Obtain initial guess by diagonalizing one-electron Hamiltonian in orthonormal AO basis
 \item {\bf ATOMS}  Obtain initial guess by atoms-in-molecules approach (default)
 \item {\bf TRILEVEL} Optimization in three steps. 1. Atomic densities, 2. Valence molecular density, 3. Full molecular density~\cite{trilevel1, trilevel2}. 
 \end{itemize}
