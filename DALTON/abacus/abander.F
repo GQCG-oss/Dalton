@@ -303,6 +303,7 @@ C     **** Subroutine that keeps track of the analytical ****
 C     **** for a given wave-function. NAORDR gives the   ****
 C     **** order of the analytical derivative.           ****
 C     *******************************************************
+      use pe_variables, only: peqm
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -339,20 +340,22 @@ C
      &    .OR. CC3   .OR. CCP3 .OR. CCRT .OR. CCR3 .OR.
      &    CCR1A .OR. CCR1B .OR. CCT  .OR.
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
-     &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN) THEN
+     &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN .OR.
+C JMHO: Only numerical derivs with polarizable embedding module atm.
+     &    peqm) THEN
          NAORDR = 0
       ELSE IF (CCD. OR. CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
      &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR.
      &        (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0)) .OR.
 !RPA Methods with analytic gradient only
      &        DRCCD .OR. SOSEX .OR. RCCD .OR.
-     &        DPCM .OR. DOROHF) THEN
+     &        DPCM .OR. DOROHF .OR.
+CAMT Only gradients for empirical disp correction so far
+     &        DODFTD) THEN
          NAORDR = 1
       ELSE
          NAORDR = 2
       END IF
-CAMT Only gradients for empirical disp correction so far
-      IF (DODFTD) NAORDR = 1
 C
       WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
      &          'energy-derivatives available:', NAORDR

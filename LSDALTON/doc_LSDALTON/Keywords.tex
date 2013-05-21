@@ -1212,7 +1212,7 @@ The only thoroughly tested option is $N=2$.
 This section describes keywords needed to perform localization of Hartree--Fock orbitals. The optimization of the
 chosen localization function will be performed using a trust-region algorithm \cite{hoyvik:TRM}, and can be performed for  the occupied space and/or the virtual orbital space. For the occupied space the core and valence spaces will be localized separately.  
 
-After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; cmo\_orbitals.u and localized\_orbitals.u. cmo\_orbitals.u contains coefficients for the canonical molecular orbitals and localized\_orbitals.u contains coefficients for the localized orbitals. The format of these files are as described in the Matrix File Format part of Section \ref{interfacing}.  
+After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; cmo\_orbitals.u and localized\_orbitals.u. cmo\_orbitals.u contains coefficients for the canonical molecular orbitals and localized\_orbitals.u contains coefficients for the localized orbitals. The coefficient matrix row index refer to the atomic orbital basis index, while the column index refer to the molecular orbital basis. The format of the files are as described in the Matrix File Format part of Section \ref{interfacing}.  
 
 For the most effcient orbital localization for large molecular systems \cite{hoyvik:3L}, the .ARH, .START/TRILEVEL  and .LCM options are recommended for use as described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
 
