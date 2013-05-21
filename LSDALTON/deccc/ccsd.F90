@@ -2929,10 +2929,10 @@ contains
        a=a+1
        if(a>na)return
 #ifdef VAR_LSMPI
-       if(prnt)write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")'),infpar%mynum,&
+       if(prnt) write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")'),infpar%mynum,&
        &a,na,g,ng
 #else
-       write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
+       if(prnt) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
        &na,g,ng
 #endif
        call lsmpi_poke()

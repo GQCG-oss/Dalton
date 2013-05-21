@@ -86,16 +86,6 @@ group.add_argument('--lapack',
         default='on',
         const='on',
         help='enable LAPACK [default: %(default)s]')
-group.add_argument('--blas-dir',
-        action='store',
-        default=None,
-        help='directory containing BLAS libraries [default: pick automatically based on BLAS_ROOT (see INSTALL.rst)]',
-        metavar='PATH')
-group.add_argument('--lapack-dir',
-        action='store',
-        default=None,
-        help='directory containing LAPACK libraries [default: pick automatically based on LAPACK_ROOT (see INSTALL.rst)]',
-        metavar='PATH')
 group.add_argument('--int64',
         nargs='?',
         action='store',
@@ -196,9 +186,9 @@ def gen_cmake_command():
     command = ''
 
     if args.fc:
-        command += ' FC=%s' % args.fc
+        command += ' FC=%s'  % args.fc
     if args.cc:
-        command += ' CC=%s' % args.cc
+        command += ' CC=%s'  % args.cc
     if args.cxx:
         command += ' CXX=%s' % args.cxx
 
@@ -208,13 +198,6 @@ def gen_cmake_command():
         # fix for windows
         command = ' cmake ' + command
 
-    # if compiler starts with 'mp' turn on mpi
-    # it is possible to call compilers with long paths
-    if args.cc and (os.path.basename(args.cc)[:2].lower() == 'mp') or \
-        args.cxx and (os.path.basename(args.cxx)[:2].lower() == 'mp') or \
-        args.fc and (os.path.basename(args.fc)[:2].lower() == 'mp'):
-            args.mpi = 'on'
-
     command += ' -DENABLE_MPI=%s'            % args.mpi.upper()
     command += ' -DENABLE_SGI_MPT=%s'        % args.sgi_mpt.upper()
     command += ' -DENABLE_OPENMP=%s'         % args.openmp.upper()
@@ -222,12 +205,6 @@ def gen_cmake_command():
     command += ' -DENABLE_LAPACK=%s'         % args.lapack.upper()
     command += ' -DENABLE_TESTS=%s'          % args.tests.upper()
     command += ' -DENABLE_64BIT_INTEGERS=%s' % args.int64.upper()
-
-    if args.blas_dir:
-        command += ' -DBLAS_ROOT=%s' % args.blas_dir
-
-    if args.lapack_dir:
-        command += ' -DLAPACK_ROOT=%s' % args.lapack_dir
 
     if args.explicit_libs:
         command += ' -DEXPLICIT_LIBS="%s"' % args.explicit_libs
@@ -296,10 +273,13 @@ def setup_build_path(build_path, only_show_command):
     if args.show:
         return
     if os.path.isdir(build_path):
-        if not only_show_command:
-            print('aborting setup - build directory %s exists already' % build_path)
-            print('first remove it and then rerun setup')
-            sys.exit()
+        fname = os.path.join(build_path, 'CMakeCache.txt')
+        if os.path.exists(fname):
+            if not only_show_command:
+                print('aborting setup - build directory %s which contains CMakeCache.txt' % build_path)
+                print('exists already')
+                print('remove the build directory and then rerun setup')
+                sys.exit()
     else:
         os.makedirs(build_path, 0755)
 
@@ -363,17 +343,26 @@ def configure_host():
     return True
 
 def configure_default_compilers():
+    # if compiler starts with 'mp' turn on mpi
+    # it is possible to call compilers with long paths
+    if  args.cc  and os.path.basename(args.cc).lower().startswith('mp')  or \
+        args.cxx and os.path.basename(args.cxx).lower().startswith('mp') or \
+        args.fc  and os.path.basename(args.fc).lower().startswith('mp'):
+        args.mpi = 'on'
+
+    # if compiler starts with 'openmpi' turn on mpi
+    # it is possible to call compilers with long paths
+    if  args.cc  and os.path.basename(args.cc).lower().startswith('openmpi')  or \
+        args.cxx and os.path.basename(args.cxx).lower().startswith('openmpi') or \
+        args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
+        args.mpi = 'on'
+
     if not args.cc:
         args.cc = 'gcc'
     if not args.cxx:
         args.cxx = 'g++'
     if not args.fc:
         args.fc = 'gfortran'
-    if args.mpi == 'on':
-        if not args.cc:
-           args.cc = 'mpicc'
-        if not args.cxx:
-           args.cxx = 'mpicxx'
 
 configure_ubuntu = configure_default_compilers
 configure_fedora = configure_default_compilers

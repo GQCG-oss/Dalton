@@ -10,7 +10,7 @@ parser = ap.ArgumentParser(description='Finite Field test 0.1',
                            fromfile_prefix_chars='@')
 parser.add_argument('--version', action='version', version='%(prog)s 0.1')
 parser.add_argument('--basis', dest='basis', metavar='BASIS_SET',
-                    default='6-31G',
+                    default='STO-3G',
                     help='''Specify basis set [default: %(default)s]''')
 parser.add_argument('--method', dest='method', metavar='METHOD',
                     default='HF', choices=['DFT', 'HF'],
@@ -23,7 +23,7 @@ parser.add_argument('--open-shell', dest='openshell', action='store_true',
                     help='''Use open-shell water molecule, i.e. water molecule
                             with negative charge [default: %(default)s]''')
 parser.add_argument('--field-strength', dest='field', metavar='FIELD_STRENGTH',
-                    default=0.01, type=float,
+                    default=0.001, type=float,
                     help='''Specify field strength [default: %(default)s]''')
 parser.add_argument('--qc-scf', dest='qcscf', action='store_true',
                     default=False,
@@ -35,9 +35,9 @@ parser.add_argument('--linear', dest='linear', action='store_true',
 parser.add_argument('--quadratic', dest='quadratic', action='store_true',
                     default=False,
                     help='''Test quadratic response [default: %(default)s]''')
-parser.add_argument('--system', dest='system', default='water',
+parser.add_argument('--system', dest='system', default='acrolein',
                     metavar='TEST_SYSTEM', choices=['water', 'acrolein'],
-                    help='''Use acrolein test molecule? [default: %(default)s]''')
+                    help='''Select test system [choices: %(choices)s]''')
 parser.add_argument('--no-calc', dest='nocalc', action='store_true',
                     default=False,
                     help='''Read existing output files? [default: %(default)s]''')
@@ -47,7 +47,7 @@ parser.add_argument('--fixsol', dest='fixsol', action='store_true',
 parser.add_argument('--pcm', dest='pcm', action='store_true',
                     default=False,
                     help='''Use PCM solvation? [default: %(default)s]''')
-parser.add_argument('--pepot', dest='pepot', action='store_true',
+parser.add_argument('--pe', dest='pe', action='store_true',
                     default=False,
                     help='''Use PE potential? [default: %(default)s]''')
 parser.add_argument('--pe-direct', dest='pedirect', action='store_true',
@@ -58,18 +58,13 @@ parser.add_argument('--pe-diis', dest='pediis', action='store_true',
                     default=False,
                     help='''Use DIIS solver for induced moments?
                             [default: %(default)s]''')
-#parser.add_argument('-sub', dest='sublist', nargs='+', default=[], type=int,
-#                    metavar=('CUBE1', 'CUBE2'),
-#                    help='''Specify which cubes to subtract. The cubes are
-#                            numbered according to the input order starting
-#                            from 0''')
-#parser.add_argument('-mae', dest='mae', action='store_true', default=False,
-#                    help='''Calculate MAE with REFCUBE as the reference.''')
-#parser.add_argument('-vdw', dest='vdw', nargs=3, default=[], type=float,
-#                    metavar=('MIN','MAX','STEP'),
-#                    help='''Do a vdw analysis. RMSD is calculated relative to
-#                            a reference in volumes between MIN times vdw radius
-#                            and MAX times vdw radius in STEP steps''')
+parser.add_argument('--openrsp', dest='openrsp', action='store_true',
+                    default=False,
+                    help='''Use OpenRSP module for properties?
+                            [default: %(default)s]''')
+parser.add_argument('--ncores', dest='ncores', default=1, type=int,
+                    metavar='NCORES',
+                    help='''Specify number of cores. [default: %(default)s]''')
 
 args = parser.parse_args()
 
@@ -7650,21 +7645,23 @@ exlists
    249
 ''')
 
-if args.pcm and args.pepot:
+if args.pcm and args.pe:
     exit('ERROR: PCM and PE are not compatible...')
 
 if args.pediis and args.pedirect:
     exit('ERROR: cannot use both DIIS and direct solver...')
+elif args.fixsol and not (args.pediis or args.pedirect):
+    exit('ERROR: --fixsol requires either --pe-diis or --pe-direct')
 elif args.pediis and not args.pedirect:
     solv = ('.DIIS\n'
-            '1.0d-10\n')
+            '1.0d-8\n')
 elif args.pedirect and not args.pediis:
     solv = '.DIRECT\n'
 else:
     solv = ('.ITERATIVE\n'
-            '1.0d-10\n')
+            '1.0d-8\n')
 
-if args.pcm and not args.pepot:
+if args.pcm and not args.pe:
     wftn = ('*PCM\n'
             '.SOLVNT\n'
             'H2O\n'
@@ -7713,19 +7710,19 @@ if args.pcm and not args.pepot:
                  '0.3\n')
     wftn += '*END OF INPUT\n'
     wftn += solv
-elif args.pcm and not args.pepot:
-    wftn = ('*PCM\n'
-            '.SOLVNT\n'
-            'H2O\n'
-            '.NPCMMT\n'
-            '0\n'
-            '.ICESPH\n'
-            '2\n'
-            '.NEQRSP\n'
-            '*PCMCAV\n'
-            '.AREATS\n'
-            '0.3\n'
-            '*END OF INPUT\n')
+#elif args.pcm and not args.pe:
+#    wftn = ('*PCM\n'
+#            '.SOLVNT\n'
+#            'H2O\n'
+#            '.NPCMMT\n'
+#            '0\n'
+#            '.ICESPH\n'
+#            '2\n'
+#            '.NEQRSP\n'
+#            '*PCMCAV\n'
+#            '.AREATS\n'
+#            '0.3\n'
+#            '*END OF INPUT\n')
 elif args.fixsol:
     wftn = ('.PEQM\n'
             '*PEQM\n'
@@ -7736,7 +7733,7 @@ elif args.fixsol:
             '.MAXTES\n'
             '20000\n')
     wftn += solv
-elif args.pepot:
+elif args.pe:
     wftn = ('.PEQM\n'
             '*PEQM\n'
             '.PEQM\n')
@@ -7755,17 +7752,35 @@ if args.qcscf:
 
 if args.linear:
     main = ('**DALTON\n'
-            '.RUN PROPERTIES\n')
-
-    anal = ('**PROPERTIES\n'
-            '.ALPHA\n'
-            '*ABALNR\n'
-            '.THRESH\n'
-            '1.0d-6\n'
-            '.FREQUENCY\n'
-            '1\n'
-            '0.0d0\n'
-            '**END OF\n')
+            '.RUN PROPERTIES\n'
+            '.DIRECT\n')
+    if not args.openrsp:
+        anal = ('**PROPERTIES\n'
+                '.ALPHA\n'
+                '*ABALNR\n'
+                '.THRESH\n'
+                '1.0d-6\n'
+                '.FREQUENCY\n'
+                '1\n'
+                '0.0d0\n'
+                '**END OF\n')
+    elif args.openrsp:
+        anal = ('**OPENRSP\n'
+                '.CUSTOM\n'
+                '.SPORDR\n'
+                '2\n'
+                '.SPRULE\n'
+                '0\n'
+                '1\n'
+                '.SPPLAB\n'
+                'EL\n'
+                'EL\n'
+                '.FREQ\n'
+                '1\n'
+                '0.0d0\n'
+                '.THRESH\n'
+                '1.0d-6\n'
+                '**END OF\n')
 
     hamil = ('*HAMILTONIAN\n'
              '.FIELD\n')
@@ -7817,7 +7832,7 @@ if args.linear:
     dalfile.close()
 
     potfile = ''
-    if args.pepot:
+    if args.pe:
         potfile = 'mm.pot'
 
     dalfiles = ['analytic', 'xplus', 'xminus', 'yplus',
@@ -7829,25 +7844,38 @@ if args.linear:
             print('Reusing outputfile from calculation using {0}.dal'.format(dalfile))
         else:
             print('Running calculation using {0}.dal'.format(dalfile))
-            cmd = ('{0}/dalton -d -nobackup -noarch -M 1024 -N 1'.format(dalton) +
-               ' -o {0}.out {0} qm {1} > /dev/null 2> /dev/null'.format(dalfile, potfile))
+            cmd = ('{0}/dalton -d -get rsp_tensor -nobackup -noarch'.format(dalton) +
+                   ' -M 1024 -N 1'.format(args.ncores) +
+                   ' -o {0}.out {0} qm {1}'.format(dalfile, potfile) +
+                   ' > /dev/null 2> /dev/null')
             os.system(cmd)
         outfiles.append(open('{0}.out'.format(dalfile), 'r'))
 
     alpha = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
     anafile = outfiles.pop(0)
-    line = anafile.readline()
-    while line != '':
-        if 'Polarizability tensor' in line:
-            line = anafile.readline()
-            line = anafile.readline()
-            line = anafile.readline()
-            for i in range(3):
-                line = anafile.readline().split()
-                for j in range(3):
-                    alpha[i][j] = float(line[j+1])
-            break
+    if not args.openrsp:
         line = anafile.readline()
+        while line != '':
+            if 'Polarizability tensor' in line:
+                line = anafile.readline()
+                line = anafile.readline()
+                line = anafile.readline()
+                for i in range(3):
+                    line = anafile.readline().split()
+                    for j in range(3):
+                        alpha[i][j] = float(line[j+1])
+                break
+            line = anafile.readline()
+    elif args.openrsp:
+        if args.pe:
+            anafile = open('analytic_qm_mm.rsp_tensor', 'r')
+        else:
+            anafile = open('analytic_qm.rsp_tensor', 'r')
+        line = anafile.readline()
+        for i in range(3):
+            line = anafile.readline().split()
+            for j in range(3):
+                alpha[i][j] = - float(line[j])
     anafile.close()
 
     dipoles = []
@@ -7886,17 +7914,38 @@ if args.linear:
             print('{0:15.8f}'.format(alpha[i][j]))
             print('{0:15.8f}'.format(ff_alpha[i][j]))
             print('{0:15.8f}'.format(ff_alpha[i][j] - alpha[i][j]))
+            if abs(ff_alpha[i][j] - alpha[i][j]) / abs(alpha[i][j]) > 0.001:
+                print('WARNING: large discrepancy')
 
 if args.quadratic:
     main = ('**DALTON\n'
-            '.RUN RESPONSE\n')
-
-    anal = ('**RESPONSE\n'
-            '*QUADRATIC\n'
-            '.DIPLEN\n'
-            '.THCLR\n'
-            '1.0d-6\n'
-            '**END OF\n')
+            '.RUN RESPONSE\n'
+            '.DIRECT\n')
+    if not args.openrsp:
+        anal = ('**RESPONSE\n'
+                '*QUADRATIC\n'
+                '.DIPLEN\n'
+                '.THCLR\n'
+                '1.0d-6\n'
+                '**END OF\n')
+    elif args.openrsp:
+        anal = ('**OPENRSP\n'
+                '.CUSTOM\n'
+                '.SPORDR\n'
+                '3\n'
+                '.SPRULE\n'
+                '1\n'
+                '1\n'
+                '.SPPLAB\n'
+                'EL\n'
+                'EL\n'
+                'EL\n'
+                '.FREQ\n'
+                '1\n'
+                '0.0d0\n'
+                '.THRESH\n'
+                '1.0d-6\n'
+                '**END OF\n')
 
     hamil = ('*HAMILTONIAN\n'
              '.FIELD\n')
@@ -7908,18 +7957,36 @@ if args.quadratic:
     y = 'YDIPLEN\n'
     z = 'ZDIPLEN\n'
 
-    end = ('**RESPONSE\n'
-           '*LINEAR\n'
-           '.DIPLEN\n'
-           '.THCLR\n'
-           '1.0d-6\n'
-           '**END OF\n')
+    if not args.openrsp:
+        end = ('**RESPONSE\n'
+               '*LINEAR\n'
+               '.DIPLEN\n'
+               '.THCLR\n'
+               '1.0d-6\n'
+               '**END OF\n')
+    elif args.openrsp:
+        end = ('**OPENRSP\n'
+               '.CUSTOM\n'
+               '.SPORDR\n'
+               '2\n'
+               '.SPRULE\n'
+               '0\n'
+               '1\n'
+               '.SPPLAB\n'
+               'EL\n'
+               'EL\n'
+               '.FREQ\n'
+               '1\n'
+               '0.0d0\n'
+               '.THRESH\n'
+               '1.0d-6\n'
+               '**END OF\n')
 
-    molfile = open('h2o.mol', 'w')
+    molfile = open('qm.mol', 'w')
     molfile.write(mol)
     molfile.close()
 
-    potfile = open('water.pot', 'w')
+    potfile = open('mm.pot', 'w')
     potfile.write(pot)
     potfile.close()
 
@@ -7952,7 +8019,7 @@ if args.quadratic:
     dalfile.close()
 
     potfile = ''
-    if args.pepot:
+    if args.pe:
         potfile = 'mm.pot'
 
     dalfiles = ['analytic', 'xplus', 'xminus', 'yplus',
@@ -7964,136 +8031,179 @@ if args.quadratic:
             print('Reusing outputfile from calculation using {0}.dal'.format(dalfile))
         else:
             print('Running calculation using {0}.dal'.format(dalfile))
-            cmd = ('{0}/dalton -d -nobackup -noarch -M 1024 -N 1'.format(dalton) +
-               ' -o {0}.out {0} qm {1} > /dev/null 2> /dev/null'.format(dalfile, potfile))
+            cmd = ('{0}/dalton -d -get rsp_tensor -nobackup -noarch'.format(dalton) +
+                   ' -M 1024 -N 1'.format(args.ncores) +
+                   ' -o {0}.out {0} qm {1}'.format(dalfile, potfile) +
+                   ' > /dev/null 2> /dev/null')
             os.system(cmd)
         outfiles.append(open('{0}.out'.format(dalfile), 'r'))
 
     beta = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0], [0, 0, 0]]]
     anafile = outfiles.pop(0)
-    line = anafile.readline()
-    while line != '':
-        if 'beta(X;X,X) =   ' in line:
-            beta[0][0][0] = float(line.split()[-1])
-        elif 'beta(Y;X,X) =   ' in line:
-            beta[1][0][0] = float(line.split()[-1])
-        elif 'beta(Z;X,X) =   ' in line:
-            beta[2][0][0] = float(line.split()[-1])
-        elif 'beta(X;Y,X) =   ' in line:
-            beta[0][1][0] = float(line.split()[-1])
-        elif 'beta(Y;Y,X) =   ' in line:
-            beta[1][1][0] = float(line.split()[-1])
-        elif 'beta(Z;Y,X) =   ' in line:
-            beta[2][1][0] = float(line.split()[-1])
-        elif 'beta(X;Z,X) =   ' in line:
-            beta[0][2][0] = float(line.split()[-1])
-        elif 'beta(Y;Z,X) =   ' in line:
-            beta[1][2][0] = float(line.split()[-1])
-        elif 'beta(Z;Z,X) =   ' in line:
-            beta[2][2][0] = float(line.split()[-1])
-        elif 'beta(X;Y,Y) =   ' in line:
-            beta[0][1][1] = float(line.split()[-1])
-        elif 'beta(Y;Y,Y) =   ' in line:
-            beta[1][1][1] = float(line.split()[-1])
-        elif 'beta(Z;Y,Y) =   ' in line:
-            beta[2][1][1] = float(line.split()[-1])
-        elif 'beta(X;Z,Y) =   ' in line:
-            beta[0][2][1] = float(line.split()[-1])
-        elif 'beta(Y;Z,Y) =   ' in line:
-            beta[1][2][1] = float(line.split()[-1])
-        elif 'beta(Z;Z,Y) =   ' in line:
-            beta[2][2][1] = float(line.split()[-1])
-        elif 'beta(X;Z,Z) =   ' in line:
-            beta[0][2][2] = float(line.split()[-1])
-        elif 'beta(Y;Z,Z) =   ' in line:
-            beta[1][2][2] = float(line.split()[-1])
-        elif 'beta(Z;Z,Z) =   ' in line:
-            beta[2][2][2] = float(line.split()[-1])
+    if not args.openrsp:
         line = anafile.readline()
-    anafile.close()
-    beta[0][1][0] = beta[1][0][0]
-    beta[0][2][0] = beta[2][0][0]
-    beta[1][2][0] = beta[2][1][0]
-    beta[0][0][1] = beta[1][0][0]
-    beta[1][0][1] = beta[1][1][0]
-    beta[2][0][1] = beta[2][1][0]
-    beta[0][1][1] = beta[1][1][0]
-    beta[0][2][1] = beta[2][1][0]
-    beta[1][2][1] = beta[2][1][1]
-    beta[0][0][2] = beta[2][0][0]
-    beta[1][0][2] = beta[2][1][0]
-    beta[2][0][2] = beta[2][2][0]
-    beta[0][1][2] = beta[2][1][0]
-    beta[1][1][2] = beta[2][1][1]
-    beta[2][1][2] = beta[2][2][1]
-    beta[0][2][2] = beta[2][2][0]
-    beta[1][2][2] = beta[2][2][1]
-
-    alphas = []
-    for outfile in outfiles:
-        alpha = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
-        line = outfile.readline()
         while line != '':
-            if '@ -<< XDIPLEN  ; XDIPLEN  >> =' in line:
-                comp = line.split()[-1]
-                conv = comp[:-4] + 'e' + comp[-3:]
-                alpha[0][0] = float(conv)
-            elif '@ -<< XDIPLEN  ; YDIPLEN  >> =' in line:
-                comp = line.split()[-1]
-                conv = comp[:-4] + 'e' + comp[-3:]
-                alpha[0][1] = float(conv)
-            elif '@ -<< XDIPLEN  ; ZDIPLEN  >> =' in line:
-                comp = line.split()[-1]
-                conv = comp[:-4] + 'e' + comp[-3:]
-                alpha[0][2] = float(conv)
-            elif '@ -<< YDIPLEN  ; YDIPLEN  >> =' in line:
-                comp = line.split()[-1]
-                conv = comp[:-4] + 'e' + comp[-3:]
-                alpha[1][1] = float(conv)
-            elif '@ -<< YDIPLEN  ; ZDIPLEN  >> =' in line:
-                comp = line.split()[-1]
-                conv = comp[:-4] + 'e' + comp[-3:]
-                alpha[1][2] = float(conv)
-            elif '@ -<< ZDIPLEN  ; ZDIPLEN  >> =' in line:
-                comp = line.split()[-1]
-                conv = comp[:-4] + 'e' + comp[-3:]
-                alpha[2][2] = float(conv)
+            if 'beta(X;X,X) =   ' in line:
+                beta[0][0][0] = float(line.split()[-1])
+            elif 'beta(Y;X,X) =   ' in line:
+                beta[1][0][0] = float(line.split()[-1])
+            elif 'beta(Z;X,X) =   ' in line:
+                beta[2][0][0] = float(line.split()[-1])
+            elif 'beta(X;Y,X) =   ' in line:
+                beta[0][1][0] = float(line.split()[-1])
+            elif 'beta(Y;Y,X) =   ' in line:
+                beta[1][1][0] = float(line.split()[-1])
+            elif 'beta(Z;Y,X) =   ' in line:
+                beta[2][1][0] = float(line.split()[-1])
+            elif 'beta(X;Z,X) =   ' in line:
+                beta[0][2][0] = float(line.split()[-1])
+            elif 'beta(Y;Z,X) =   ' in line:
+                beta[1][2][0] = float(line.split()[-1])
+            elif 'beta(Z;Z,X) =   ' in line:
+                beta[2][2][0] = float(line.split()[-1])
+            elif 'beta(X;Y,Y) =   ' in line:
+                beta[0][1][1] = float(line.split()[-1])
+            elif 'beta(Y;Y,Y) =   ' in line:
+                beta[1][1][1] = float(line.split()[-1])
+            elif 'beta(Z;Y,Y) =   ' in line:
+                beta[2][1][1] = float(line.split()[-1])
+            elif 'beta(X;Z,Y) =   ' in line:
+                beta[0][2][1] = float(line.split()[-1])
+            elif 'beta(Y;Z,Y) =   ' in line:
+                beta[1][2][1] = float(line.split()[-1])
+            elif 'beta(Z;Z,Y) =   ' in line:
+                beta[2][2][1] = float(line.split()[-1])
+            elif 'beta(X;Z,Z) =   ' in line:
+                beta[0][2][2] = float(line.split()[-1])
+            elif 'beta(Y;Z,Z) =   ' in line:
+                beta[1][2][2] = float(line.split()[-1])
+            elif 'beta(Z;Z,Z) =   ' in line:
+                beta[2][2][2] = float(line.split()[-1])
+            line = anafile.readline()
+        anafile.close()
+        beta[0][1][0] = beta[1][0][0]
+        beta[0][2][0] = beta[2][0][0]
+        beta[1][2][0] = beta[2][1][0]
+        beta[0][0][1] = beta[1][0][0]
+        beta[1][0][1] = beta[1][1][0]
+        beta[2][0][1] = beta[2][1][0]
+        beta[0][1][1] = beta[1][1][0]
+        beta[0][2][1] = beta[2][1][0]
+        beta[1][2][1] = beta[2][1][1]
+        beta[0][0][2] = beta[2][0][0]
+        beta[1][0][2] = beta[2][1][0]
+        beta[2][0][2] = beta[2][2][0]
+        beta[0][1][2] = beta[2][1][0]
+        beta[1][1][2] = beta[2][1][1]
+        beta[2][1][2] = beta[2][2][1]
+        beta[0][2][2] = beta[2][2][0]
+        beta[1][2][2] = beta[2][2][1]
+    elif args.openrsp:
+        if args.pe:
+            anafile = open('analytic_qm_mm.rsp_tensor', 'r')
+        else:
+            anafile = open('analytic_qm.rsp_tensor', 'r')
+        line = anafile.readline()
+        for i in range(3):
+            line = anafile.readline().split()
+            for j in range(3):
+                for k in range(3):
+                    beta[i][j][k] = - float(line[k])
+                line = anafile.readline().split()
+    anafile.close()
+ 
+    alphas = []
+    if not args.openrsp:
+        for outfile in outfiles:
+            alpha = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
             line = outfile.readline()
-            alpha[1][0] = alpha[0][1]
-            alpha[2][0] = alpha[0][2]
-            alpha[2][1] = alpha[1][2]
-        alphas.append(alpha)
+            while line != '':
+                if '@ -<< XDIPLEN  ; XDIPLEN  >> =' in line:
+                    comp = line.split()[-1]
+                    conv = comp[:-4] + 'e' + comp[-3:]
+                    alpha[0][0] = float(conv)
+                elif '@ -<< XDIPLEN  ; YDIPLEN  >> =' in line:
+                    comp = line.split()[-1]
+                    conv = comp[:-4] + 'e' + comp[-3:]
+                    alpha[0][1] = float(conv)
+                elif '@ -<< XDIPLEN  ; ZDIPLEN  >> =' in line:
+                    comp = line.split()[-1]
+                    conv = comp[:-4] + 'e' + comp[-3:]
+                    alpha[0][2] = float(conv)
+                elif '@ -<< YDIPLEN  ; YDIPLEN  >> =' in line:
+                    comp = line.split()[-1]
+                    conv = comp[:-4] + 'e' + comp[-3:]
+                    alpha[1][1] = float(conv)
+                elif '@ -<< YDIPLEN  ; ZDIPLEN  >> =' in line:
+                    comp = line.split()[-1]
+                    conv = comp[:-4] + 'e' + comp[-3:]
+                    alpha[1][2] = float(conv)
+                elif '@ -<< ZDIPLEN  ; ZDIPLEN  >> =' in line:
+                    comp = line.split()[-1]
+                    conv = comp[:-4] + 'e' + comp[-3:]
+                    alpha[2][2] = float(conv)
+                line = outfile.readline()
+                alpha[1][0] = alpha[0][1]
+                alpha[2][0] = alpha[0][2]
+                alpha[2][1] = alpha[1][2]
+            alphas.append(alpha)
+    elif args.openrsp:
+        for dalfile in dalfiles:
+            if dalfile == 'analytic':
+                continue
+            alpha = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+            if args.pe:
+                filename = '{}_qm_mm.rsp_tensor'.format(dalfile)
+            else:
+                filename = '{}_qm.rsp_tensor'.format(dalfile)
+            file = open(filename, 'r')
+            line = file.readline()
+            for i in range(3):
+                line = file.readline().split()
+                for j in range(3):
+                    alpha[i][j] = - float(line[j])
+            alphas.append(alpha)
+            file.close()
 
     for outfile in outfiles:
         outfile.close()
 
     ff_beta = [[[0, 0, 0], [0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0], [0, 0, 0]], [[0, 0, 0], [0, 0, 0], [0, 0, 0]]]
+
     ff_beta[0][0][0] = (alphas[0][0][0] - alphas[1][0][0]) / (2.0 * args.field)
-    ff_beta[0][0][1] = (alphas[2][0][0] - alphas[3][0][0]) / (2.0 * args.field)
-    ff_beta[0][0][2] = (alphas[4][0][0] - alphas[5][0][0]) / (2.0 * args.field)
-    ff_beta[0][1][0] = (alphas[0][0][1] - alphas[1][0][1]) / (2.0 * args.field)
-    ff_beta[0][1][1] = (alphas[2][0][1] - alphas[3][0][1]) / (2.0 * args.field)
-    ff_beta[0][1][2] = (alphas[4][0][1] - alphas[5][0][1]) / (2.0 * args.field)
-    ff_beta[0][2][0] = (alphas[0][0][2] - alphas[1][0][2]) / (2.0 * args.field)
-    ff_beta[0][2][1] = (alphas[2][0][2] - alphas[3][0][2]) / (2.0 * args.field)
-    ff_beta[0][2][2] = (alphas[4][0][2] - alphas[5][0][2]) / (2.0 * args.field)
-    ff_beta[1][0][0] = (alphas[0][1][0] - alphas[1][1][0]) / (2.0 * args.field)
-    ff_beta[1][0][1] = (alphas[2][1][0] - alphas[3][1][0]) / (2.0 * args.field)
-    ff_beta[1][0][2] = (alphas[4][1][0] - alphas[5][1][0]) / (2.0 * args.field)
-    ff_beta[1][1][0] = (alphas[0][1][1] - alphas[1][1][1]) / (2.0 * args.field)
+    ff_beta[1][0][0] = (alphas[2][0][0] - alphas[3][0][0]) / (2.0 * args.field)
+    ff_beta[2][0][0] = (alphas[4][0][0] - alphas[5][0][0]) / (2.0 * args.field)
+
+    ff_beta[0][0][1] = (alphas[0][0][1] - alphas[1][0][1]) / (2.0 * args.field)
+    ff_beta[1][0][1] = (alphas[2][0][1] - alphas[3][0][1]) / (2.0 * args.field)
+    ff_beta[2][0][1] = (alphas[4][0][1] - alphas[5][0][1]) / (2.0 * args.field)
+
+    ff_beta[0][0][2] = (alphas[0][0][2] - alphas[1][0][2]) / (2.0 * args.field)
+    ff_beta[1][0][2] = (alphas[2][0][2] - alphas[3][0][2]) / (2.0 * args.field)
+    ff_beta[2][0][2] = (alphas[4][0][2] - alphas[5][0][2]) / (2.0 * args.field)
+
+    ff_beta[0][1][0] = (alphas[0][1][0] - alphas[1][1][0]) / (2.0 * args.field)
+    ff_beta[1][1][0] = (alphas[2][1][0] - alphas[3][1][0]) / (2.0 * args.field)
+    ff_beta[2][1][0] = (alphas[4][1][0] - alphas[5][1][0]) / (2.0 * args.field)
+
+    ff_beta[0][1][1] = (alphas[0][1][1] - alphas[1][1][1]) / (2.0 * args.field)
     ff_beta[1][1][1] = (alphas[2][1][1] - alphas[3][1][1]) / (2.0 * args.field)
-    ff_beta[1][1][2] = (alphas[4][1][1] - alphas[5][1][1]) / (2.0 * args.field)
-    ff_beta[1][2][0] = (alphas[0][1][2] - alphas[1][1][2]) / (2.0 * args.field)
-    ff_beta[1][2][1] = (alphas[2][1][2] - alphas[3][1][2]) / (2.0 * args.field)
-    ff_beta[1][2][2] = (alphas[4][1][2] - alphas[5][1][2]) / (2.0 * args.field)
-    ff_beta[2][0][0] = (alphas[0][2][0] - alphas[1][2][0]) / (2.0 * args.field)
-    ff_beta[2][0][1] = (alphas[2][2][0] - alphas[3][2][0]) / (2.0 * args.field)
-    ff_beta[2][0][2] = (alphas[4][2][0] - alphas[5][2][0]) / (2.0 * args.field)
-    ff_beta[2][1][0] = (alphas[0][2][1] - alphas[1][2][1]) / (2.0 * args.field)
-    ff_beta[2][1][1] = (alphas[2][2][1] - alphas[3][2][1]) / (2.0 * args.field)
-    ff_beta[2][1][2] = (alphas[4][2][1] - alphas[5][2][1]) / (2.0 * args.field)
-    ff_beta[2][2][0] = (alphas[0][2][2] - alphas[1][2][2]) / (2.0 * args.field)
-    ff_beta[2][2][1] = (alphas[2][2][2] - alphas[3][2][2]) / (2.0 * args.field)
+    ff_beta[2][1][1] = (alphas[4][1][1] - alphas[5][1][1]) / (2.0 * args.field)
+
+    ff_beta[0][1][2] = (alphas[0][1][2] - alphas[1][1][2]) / (2.0 * args.field)
+    ff_beta[1][1][2] = (alphas[2][1][2] - alphas[3][1][2]) / (2.0 * args.field)
+    ff_beta[2][1][2] = (alphas[4][1][2] - alphas[5][1][2]) / (2.0 * args.field)
+
+    ff_beta[0][2][0] = (alphas[0][2][0] - alphas[1][2][0]) / (2.0 * args.field)
+    ff_beta[1][2][0] = (alphas[2][2][0] - alphas[3][2][0]) / (2.0 * args.field)
+    ff_beta[2][2][0] = (alphas[4][2][0] - alphas[5][2][0]) / (2.0 * args.field)
+
+    ff_beta[0][2][1] = (alphas[0][2][1] - alphas[1][2][1]) / (2.0 * args.field)
+    ff_beta[1][2][1] = (alphas[2][2][1] - alphas[3][2][1]) / (2.0 * args.field)
+    ff_beta[2][2][1] = (alphas[4][2][1] - alphas[5][2][1]) / (2.0 * args.field)
+
+    ff_beta[0][2][2] = (alphas[0][2][2] - alphas[1][2][2]) / (2.0 * args.field)
+    ff_beta[1][2][2] = (alphas[2][2][2] - alphas[3][2][2]) / (2.0 * args.field)
     ff_beta[2][2][2] = (alphas[4][2][2] - alphas[5][2][2]) / (2.0 * args.field)
 
     for i in range(3):
@@ -8103,6 +8213,6 @@ if args.quadratic:
                 print('{0:15.8f}'.format(beta[i][j][k]))
                 print('{0:15.8f}'.format(ff_beta[i][j][k]))
                 print('{0:15.8f}'.format(ff_beta[i][j][k]-beta[i][j][k]))
-                if abs(ff_beta[i][j][k]-beta[i][j][k]) > 1e-4:
+                if abs(ff_beta[i][j][k] - beta[i][j][k]) / abs(beta[i][j][k]) > 0.001:
                     print('WARNING: large discrepancy')
 

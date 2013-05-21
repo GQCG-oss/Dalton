@@ -14,6 +14,7 @@ use precision
 use TYPEDEF
 use dft_type
 use dft_typetype
+use IIDFTKSMWORK
 private
 public :: II_DFTINT, TEST_NELECTRONS, II_DFTDISP, II_DFTsetFunc, II_DFTaddFunc
 ! Notes 
@@ -45,11 +46,10 @@ LOGICAL         :: UNRES !unrestricted calc
 LOGICAL         :: USE_MPI !use MPI ?
 !
 TYPE(BASINF)  :: BAS
-LOGICAL       :: DFT_ISGGA,DOGGA
+LOGICAL       :: DOGGA,DOMETA
 INTEGER       :: NDER,NTYPSO,IGEODRV,NSOB,igrid,GRIDDONE
 INTEGER       :: maxNactbast,GRIDITERATIONS
 REAL(REALK),parameter :: D0=0E0_realk
-EXTERNAL DFT_ISGGA
 
 igrid = SETTING%scheme%DFT%igrid
 GRIDDONE = SETTING%scheme%DFT%GridObject(igrid)%GRIDDONE
@@ -65,7 +65,7 @@ IF (SETTING%SCHEME%CONTANG) CALL LSQUIT('Error in II_DFTINT. ContAng option not 
 ELECTRONS=d0
 CALL BUILD_BASINF(LUPRI,IPRINT,BAS,SETTING,GRIDDONE,.FALSE.)
 
-DOGGA = DFT_ISGGA() ! C code
+CALL DFT_DOGGA_DOMETA(DOGGA,DOMETA)
 IGEODRV = NGEODRV
 IF (DOGGA) IGEODRV = IGEODRV + 1
 CALL II_SETUPSOS(IGEODRV,DOLND,NBAST,NDER,NTYPSO,NSOB)
@@ -2461,7 +2461,9 @@ use lsmpi_type
 implicit none
 Character(len=80),intent(IN) :: Func
 Real(realk),intent(INOUT)    :: hfweight
-CALL DFTsetFunc(Func,hfweight)
+integer                      :: ierror
+CALL DFTsetFunc(Func,hfweight,ierror)
+IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
 #ifdef VAR_LSMPI
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN

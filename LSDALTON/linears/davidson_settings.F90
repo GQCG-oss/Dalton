@@ -127,7 +127,11 @@ logical :: arh_linesearch
 logical :: arh_inp_linesearch
 !> enable debug printouts
 logical :: arh_davidson_debug
-
+!> turned on if HOMO-LUMP gap is needed in reduced space Hessian
+logical :: arh_extravec
+logical :: arh_inp_extravec
+!> if true, must perturb extravec
+logical :: arh_dodft
 
 
 !> debug 
@@ -142,8 +146,6 @@ real(realk) :: ActualEnergyDiff
 real(realk) :: LSmodthresh
 !> determines if the ActualEnergyDiff have been set
 logical :: EnergyDiffset
-! true if we want some extra trial vecs for ARH 
-logical :: arh_extravecs
 
 !*****************
 !* Useful output *
@@ -186,10 +188,12 @@ CFG%arh_davidson   = .false.
 CFG%arh_precond    = .true.
 CFG%arh_lintrans   = .false.
 CFG%arh_linesearch = .false.
-CFG%arh_extravecs  = .false.
+CFG%arh_extravec  = .false.
+CFG%arh_inp_extravec  = .false.
 CFG%arh_inp_linesearch   = .false.
 CFG%arh_debug_linesearch = .false.
 CFG%arh_davidson_debug   = .false.
+CFG%arh_dodft            = .false.
 
 ! Orbital loc. related keywords
 CFG%precond     =.true.
@@ -232,7 +236,6 @@ CFG%arh_linesE = 0.0E0_realk
 CFG%ActualEnergyDiff = 0.0E0_realk
 CFG%MaxLineSearchEnergyDiff = 0.0E0_realk
 CFG%LSmodthresh = 1000.0E0_realk !correspond to 10^-5 on the energy on 1. iteration
-CFG%max_it = 20
 
 end subroutine davidson_default_SCF
 
@@ -264,6 +267,8 @@ CFG%max_stepsize =0.5_realk
 CFG%mu = 0.0_realk
 ! Initialize denominator
 CFG%r_denom = 1.0_realk
+! Initialize micro it
+CFG%it = 0
 
 end subroutine davidson_reset
 

@@ -259,7 +259,6 @@ subroutine arh_davidson_solver(CFG,arh,decomp,wrk,X,SCF_iteration,H1,wrk2,ls)
   call mat_init(ax,x%nrow,x%ncol)
   counter = 0
   WHILELOOP: do j=1,10
-     WRITE(ls%lupri,*)'WHILELOOP j=',j
      if (CFG%stepsize < 0.0001_realk) then
         write(ls%lupri,*) ' **************************************************************'
         write(ls%lupri,*) ' * Too many rejections in SCF optimization                    *'
@@ -484,10 +483,8 @@ subroutine arh_davidson_solver(CFG,arh,decomp,wrk,X,SCF_iteration,H1,wrk2,ls)
                  WRITE(ls%lupri,*)'fit_energy_array(',i,')',fullenergy_array(i),fullalpha(i)
               enddo
               
-              IF(dd2.GT.0.1E0_realk)THEN
-                 IF(dd3.LT.0.1E0_realk)THEN
-                    Write(ls%lupri,*)'Warning: Clealy not quadratic surface standard diviation for cubic fit smaller'
-                 ENDIF
+              IF(dd2.GT.0.1E0_realk.AND.(Optimal_alpha.LT.fullalpha(1).OR.Optimal_alpha.GT.fullalpha(nEnergies)))THEN
+                 Write(ls%lupri,*)'Warning: Clealy not quadratic surface standard diviation too large'
                  !we must chose a conservative alpha
                  !looks like a dobbel well 
                  indx = MINLOC(fullenergy_array)   
@@ -562,10 +559,8 @@ subroutine arh_davidson_solver(CFG,arh,decomp,wrk,X,SCF_iteration,H1,wrk2,ls)
                     enddo
                  ENDIF
                  
-                 IF(dd2.GT.0.1E0_realk)THEN
-                    IF(dd3.LT.0.1E0_realk)THEN
-                       Write(ls%lupri,*)'Warning: Clealy not quadratic surface standard diviation for cubic fit smaller'
-                    ENDIF
+                 IF(dd2.GT.0.1E0_realk.AND.(Optimal_alpha.LT.fullalpha(1).OR.Optimal_alpha.GT.fullalpha(nEnergies)))THEN
+                    Write(ls%lupri,*)'Warning: Clealy not quadratic surface standard diviation too large'
                     !we must chose a conservative alpha
                     !looks like a dobbel well 
                     indx = MINLOC(fullenergy_array)   
@@ -1206,8 +1201,8 @@ end subroutine linesearch_thresholds
   
 
 
-  write(davidCFG%lupri,'(i5,a,f9.3,a,f9.3,a,f9.2,a)') it+1,' total step norm =',step,' trust radius = '&
-  &,davidCFG%stepsize,' mu = ',davidCFG%mu, '  %#%' 
+  write(davidCFG%lupri,'(i5,a,f7.3,a,f7.3,a,f6.2,a,i3,a)') it+1,' step norm =',step,' trust radius = '&
+  &,davidCFG%stepsize,' mu = ',davidCFG%mu, ' micro it. = ',davidCFG%it, '  %#%' 
 
  
 
