@@ -193,7 +193,8 @@ Defines the threshold used to determine if a contribution can be calculated clas
 DFT calculation. The exchange---correlation functional is read from the following line.
 
 Functionals in \lsdalton\ can be divided into two groups: generic and combined functionals. 
-Combined functionals are a linear combination of generic ones. One can always create own combined functionals by using GGAKey general functional.
+Combined functionals are a linear combination of generic ones. 
+One can always create own combined functionals by using GGAKey general functional.
 A number of standalone functionals are also included within \lsdalton. 
 
 It should be noted that the input is not case sensitive, although the notation
@@ -647,6 +648,21 @@ combines the VWN local and P86 non-local correlation functionals.
 Linear combinations of all exchange and correlation functionals listed above
 are possible with the \verb|GGAKey| keyword.
 
+
+\subsubsection{XCFUN functionals}
+
+Recently some support have been added for using the functionals from the XCFUN lib\cite{XCFUN}. Full 
+support is expected in the next release, but unfortunetly time constraints did not allow for 
+full support in this release. 
+
+Currently only LDA and GGA type functionals are currently supported and only upto and including 
+linear response. the XCFUN functionals are activated using the .XCFUN keyword under the **INTEGRALS section (see Section \ref{sec:integral})
+\begin{verbatim}
+**INTEGRALS
+.XCFUN
+\end{verbatim} 
+Linear combinations XCFUN functionals are possible with the \verb|GGAKey| keyword.
+
 \end{description}
 
 \subsection{*DFT INPUT}\label{subsec:dftinput}
@@ -886,6 +902,10 @@ Use custom level shifts in the first {\it N} SCF iterations.
 %\verb|<Weight for linear combination> |\newline
 %Weight to use for D1 when linear combination of densities is used as starting
 %guess (.START $\rightarrow$ LINCOMB)
+
+\item[\Key{LOW ACCURACY START}] Use low accuracy settings in the first couple of 
+iterations until the appropriate gradient threshold have been reached. 
+
 \item[\Key{LWITER}] Do L{\"o}wdin decomposition of overlap matrix (for density optimization
 in orthogonal AO basis) - iteratively (default is L{\"o}wdin by diagonalization)~\cite{shalf}.
 \item[\Key{LWQITER}] Do L{\"o}wdin decomposition of overlap matrix 
@@ -937,7 +957,6 @@ Maximum number of previous Fock and density matrices to be stored and used for A
 \item[\Key{NOINCREM}] Turn off incremental scheme for Fock/KS matrix build.
 \item[\Key{NOPREC}] Turn off preconditioning of linear equations (ARH, TrFD, and second order optimization).
 \item[\Key{NOSHIFT}] Do no level shifting.
-\item[\Key{OAO}] Keep the whole calculation (also Fock/KS matrix construction) in orthonormal AO basis.
 \item[\Key{OVERLAP}] \verb| | \newline
 \verb|<Overlap>|\newline
 Smallest accepted overlap when doing level shift by use of MO overlaps (.MOCHANGE).
@@ -992,7 +1011,6 @@ Specifies the starting trust-radius in the ensemble optimization. Trust-radius w
 Starting guess for SCF optimization. Options are:
 \begin{itemize}
 \item {\bf H1DIAG} Obtain initial guess by diagonalizing one-electron Hamiltonian
-\item {\bf H1OAO}  Obtain initial guess by diagonalizing one-electron Hamiltonian in orthonormal AO basis
 \item {\bf ATOMS}  Obtain initial guess by atoms-in-molecules approach (default)
 \item {\bf TRILEVEL} Optimization in three steps. 1. Atomic densities, 2. Valence molecular density, 3. Full molecular density~\cite{trilevel1, trilevel2}. 
 \end{itemize}
@@ -1212,7 +1230,7 @@ The only thoroughly tested option is $N=2$.
 This section describes keywords needed to perform localization of Hartree--Fock orbitals. The optimization of the
 chosen localization function will be performed using a trust-region algorithm \cite{hoyvik:TRM}, and can be performed for  the occupied space and/or the virtual orbital space. For the occupied space the core and valence spaces will be localized separately.  
 
-After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; cmo\_orbitals.u and localized\_orbitals.u. cmo\_orbitals.u contains coefficients for the canonical molecular orbitals and localized\_orbitals.u contains coefficients for the localized orbitals. The format of these files are as described in the Matrix File Format part of Section \ref{interfacing}.  
+After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; cmo\_orbitals.u and localized\_orbitals.u. cmo\_orbitals.u contains coefficients for the canonical molecular orbitals and localized\_orbitals.u contains coefficients for the localized orbitals. The coefficient matrix row index refer to the atomic orbital basis index, while the column index refer to the molecular orbital basis. The format of the files are as described in the Matrix File Format part of Section \ref{interfacing}.  
 
 For the most effcient orbital localization for large molecular systems \cite{hoyvik:3L}, the .ARH, .START/TRILEVEL  and .LCM options are recommended for use as described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
 

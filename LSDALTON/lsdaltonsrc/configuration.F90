@@ -551,7 +551,7 @@ DO
             CASE('.NOSHIFT');    config%diag%cfg_lshift = diag_lshift_none
                                  config%av%cfg_lshift = diag_lshift_none
                                  config%solver%cfg_nodamp = .true.
-            CASE('.OAO');        config%decomp%cfg_do_in_oao = .true.; config%opt%cfg_start_guess = 'H1OAO'
+!            CASE('.OAO');        config%decomp%cfg_do_in_oao = .true.; config%opt%cfg_start_guess = 'H1OAO'
             CASE('.OVERLAP');    READ(LUCMD,*) min_density_overlap
                                  config%av%cfg_settings%min_density_overlap &
                                      & = min_density_overlap
