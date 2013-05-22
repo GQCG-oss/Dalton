@@ -6134,6 +6134,12 @@ Integral%nAng  = 1
 Integral%nPrim = ndmat
 Integral%nOrb  = P%nPrimitives*P%nTUV
 !CALL PrintTuvQ_old(Integral%integrals,P%nTUV,P%nPrimitives,1,ndmat,LUPRI,IPRINT)
+#ifdef VAR_DEBUGINT
+IF (IPRINT.GT. 50) THEN
+   CALL PrintTensor(Integral%tuvQ,' InnerFTUV          ',P%nPrimitives,P%nTUV,ndmat,Lupri,&
+        & 'iPrim ','iTUV  ','idmat ',1)
+ENDIF
+#endif
 
 END SUBROUTINE ContractFTUV
 
@@ -6193,7 +6199,7 @@ DO tuvP=1,ntuvP
      fsum = fsum + WTUV(iPrimPQ,tuvPQ)*FTUV(iPrimQ+offset)
      iPrimPQ = iPrimPQ+1
     ENDDO
-   TUV(iPrimP,tuvP,idmat) = TUV(iPrimP,tuvP,idmat) + fsum
+    TUV(iPrimP,tuvP,idmat) = TUV(iPrimP,tuvP,idmat) + fsum
    ENDDO
   ENDDO
  ENDDO

@@ -23,6 +23,9 @@
 !
 !...  This file is the module of API of Gen1Int interface.
 !
+!...  2013-05-16, Bin Gao
+!...  * add a subroutine to update the information of molecule in this interface
+!
 !...  2013-05-03, Bin Gao
 !...  * fix the bug of returning wrong partial geometric derivatives
 !
@@ -79,10 +82,10 @@ module gen1int_api
   type(sub_shell_t), save, allocatable, private :: sub_shells(:,:)
 
   ! molecule information used when creating operator and generating cube files
-  integer, save, private :: num_atoms = 0                      !number of atoms
-  real(REALK), save, allocatable, private :: coord_atoms(:,:)  !coordinates of atoms
-  real(REALK), save, allocatable, private :: charge_atoms(:)   !charges of atoms
-  real(REALK), save, private :: dipole_origin(3) = 0.0_REALK   !coordinates of dipole origin
+  integer, save, private :: api_num_atoms = 0                      !number of atoms
+  real(REALK), save, allocatable, private :: api_coord_atoms(:,:)  !coordinates of atoms
+  real(REALK), save, allocatable, private :: api_charge_atoms(:)   !charges of atoms
+  real(REALK), save, private :: api_dipole_origin(3) = 0.0_REALK   !coordinates of dipole origin
 
   ! \fn(Gen1IntAPICreate) might be the only program specific subroutine (depends on common blocks)
   public :: Gen1IntAPICreate
@@ -90,6 +93,7 @@ module gen1int_api
   public :: Gen1IntAPIBcast
 #endif
   public :: Gen1IntAPIInited
+  public :: Gen1IntAPIUpdateMolecule
   public :: Gen1IntAPIShellView
   public :: Gen1IntAPIGetNumAO
   public :: Gen1IntAPIGetMO
@@ -300,21 +304,21 @@ module gen1int_api
       end do
     end do
     ! number of atoms
-    num_atoms = NUCDEP
+    api_num_atoms = NUCDEP
     ! coordinates of atoms
-    allocate(coord_atoms(3,num_atoms), stat=ierr)
+    allocate(api_coord_atoms(3,api_num_atoms), stat=ierr)
     if (ierr/=0) then
-      stop "Gen1IntAPICreate>> failed to allocate coord_atoms!"
+      stop "Gen1IntAPICreate>> failed to allocate api_coord_atoms!"
     end if
-    coord_atoms = CORD(:,1:NUCDEP)
+    api_coord_atoms = CORD(:,1:NUCDEP)
     ! charges of atoms
-    allocate(charge_atoms(num_atoms), stat=ierr)
+    allocate(api_charge_atoms(api_num_atoms), stat=ierr)
     if (ierr/=0) then
-      stop "Gen1IntAPICreate>> failed to allocate charge_atoms!"
+      stop "Gen1IntAPICreate>> failed to allocate api_charge_atoms!"
     end if
-    charge_atoms = -CHARGE(1:NUCDEP)
+    api_charge_atoms = -CHARGE(1:NUCDEP)
     ! coordinates of dipole origin
-    dipole_origin = DIPORG
+    api_dipole_origin = DIPORG
     api_inited = .true.
   end subroutine Gen1IntAPICreate
 
@@ -358,25 +362,25 @@ module gen1int_api
                                api_comm=api_comm)
     end do
     ! number of atoms
-    call MPI_Bcast(num_atoms, 1, MPI_INTEGER, root, api_comm, ierr)
+    call MPI_Bcast(api_num_atoms, 1, MPI_INTEGER, root, api_comm, ierr)
     ! coordinates and charges of atoms
     if (rank_proc==root) then
-      call MPI_Bcast(coord_atoms, 3*num_atoms, MPI_REALK, root, api_comm, ierr)
-      call MPI_Bcast(charge_atoms, num_atoms, MPI_REALK, root, api_comm, ierr)
+      call MPI_Bcast(api_coord_atoms, 3*api_num_atoms, MPI_REALK, root, api_comm, ierr)
+      call MPI_Bcast(api_charge_atoms, api_num_atoms, MPI_REALK, root, api_comm, ierr)
     else
-      allocate(coord_atoms(3,num_atoms), stat=ierr)
+      allocate(api_coord_atoms(3,api_num_atoms), stat=ierr)
       if (ierr/=0) then
-        stop "Gen1IntAPIBcast>> failed to allocate coord_atoms!"
+        stop "Gen1IntAPIBcast>> failed to allocate api_coord_atoms!"
       end if
-      call MPI_Bcast(coord_atoms, 3*num_atoms, MPI_REALK, root, api_comm, ierr)
-      allocate(charge_atoms(num_atoms), stat=ierr)
+      call MPI_Bcast(api_coord_atoms, 3*api_num_atoms, MPI_REALK, root, api_comm, ierr)
+      allocate(api_charge_atoms(api_num_atoms), stat=ierr)
       if (ierr/=0) then
-        stop "Gen1IntAPIBcast>> failed to allocate charge_atoms!"
+        stop "Gen1IntAPIBcast>> failed to allocate api_charge_atoms!"
       end if
-      call MPI_Bcast(charge_atoms, num_atoms, MPI_REALK, root, api_comm, ierr)
+      call MPI_Bcast(api_charge_atoms, api_num_atoms, MPI_REALK, root, api_comm, ierr)
     end if
     ! coordinates of dipole origin
-    call MPI_Bcast(dipole_origin, 3, MPI_REALK, root, api_comm, ierr)
+    call MPI_Bcast(api_dipole_origin, 3, MPI_REALK, root, api_comm, ierr)
     api_inited = .true.
   end subroutine Gen1IntAPIBcast
 #endif
@@ -405,6 +409,60 @@ module gen1int_api
       end do
     end if
   end subroutine Gen1IntAPIShellView
+
+  !> \brief updates the information of molecule
+  !> \author Bin Gao
+  !> \date 2013-05-16
+  !> \param num_atoms is the number of atoms to update
+  !> \param idx_atoms contains the indices of atoms to update
+  !> \param charge_atoms contains the charges of atoms
+  !> \param coord_atoms contains the coordinates of atoms
+  !> \param dipole_origin contains the coordinates of dipole origin
+  subroutine Gen1IntAPIUpdateMolecule(num_atoms, idx_atoms, charge_atoms, coord_atoms, dipole_origin)
+    integer, intent(in) :: num_atoms
+    integer, optional, intent(in) :: idx_atoms(num_atoms)
+    real(REALK), optional, intent(in) :: charge_atoms(num_atoms)
+    real(REALK), optional, intent(in) :: coord_atoms(3,num_atoms)
+    real(REALK), optional, intent(in) :: dipole_origin(3)
+    integer iatom  !incremental recorder over atoms
+    if (.not.api_inited) stop "Gen1IntAPIUpdateMolecule>> interface is not initialized!"
+    if (present(idx_atoms)) then
+      if (present(charge_atoms)) then
+        do iatom = 1, num_atoms
+          if (idx_atoms(iatom)>=1 .and. idx_atoms(iatom)<=api_num_atoms) then
+            api_charge_atoms(idx_atoms(iatom)) = charge_atoms(iatom)
+          else
+            stop "Gen1IntAPIUpdateMolecule>> wrong index when updating charges!"
+          end if
+        end do
+      end if
+      if (present(coord_atoms)) then
+        do iatom = 1, num_atoms
+          if (idx_atoms(iatom)>=1 .and. idx_atoms(iatom)<=api_num_atoms) then
+            api_coord_atoms(:,idx_atoms(iatom)) = coord_atoms(:,iatom)
+          else
+            stop "Gen1IntAPIUpdateMolecule>> wrong index when updating coordinates!"
+          end if
+        end do
+      end if
+    ! the first \var(num_atoms) atoms will update
+    else
+      if (num_atoms>api_num_atoms) then
+        stop "Gen1IntAPIUpdateMolecule>> too many atoms to update!"
+      end if
+      if (present(charge_atoms)) then
+        do iatom = 1, num_atoms
+          api_charge_atoms(iatom) = charge_atoms(iatom)
+        end do
+      end if
+      if (present(coord_atoms)) then
+        do iatom = 1, num_atoms
+          api_coord_atoms(:,iatom) = coord_atoms(:,iatom)
+        end do
+      end if
+    end if
+    if (present(dipole_origin)) api_dipole_origin = dipole_origin
+  end subroutine Gen1IntAPIUpdateMolecule
 
   !> \brief gets the number of atomic orbitals in host programs
   !> \author Bin Gao and Radovan Bast
@@ -501,10 +559,10 @@ module gen1int_api
       end do
       deallocate(sub_shells)
       num_sub_shells = 0
-      num_atoms = 0              !number of atoms
-      deallocate(coord_atoms)    !coordinates of atoms
-      deallocate(charge_atoms)   !charges of atoms
-      dipole_origin = 0.0_REALK  !coordinates of dipole origin
+      api_num_atoms = 0              !number of atoms
+      deallocate(api_coord_atoms)    !coordinates of atoms
+      deallocate(api_charge_atoms)   !charges of atoms
+      api_dipole_origin = 0.0_REALK  !coordinates of dipole origin
     end if
     api_inited = .false.
   end subroutine Gen1IntAPIDestroy
@@ -576,18 +634,18 @@ module gen1int_api
     select case (trim(prop_name))
     ! one-electron Hamiltonian
     case (INT_ONE_HAMIL)
-      call OnePropCreate(prop_name=INT_ONE_HAMIL,     &
-                         one_prop=prop_comp%one_prop, &
-                         info_prop=ierr,              &
-                         coord_nuclei=coord_atoms,    &
-                         charge_nuclei=charge_atoms)
-    ! Cartesian multipole moments
-    case (INT_CART_MULTIPOLE)
-      call OnePropCreate(prop_name=INT_CART_MULTIPOLE, &
+      call OnePropCreate(prop_name=INT_ONE_HAMIL,      &
                          one_prop=prop_comp%one_prop,  &
                          info_prop=ierr,               &
-                         dipole_origin=dipole_origin,  &
-                         order_mom=order_mom,          &
+                         coord_nuclei=api_coord_atoms, &
+                         charge_nuclei=api_charge_atoms)
+    ! Cartesian multipole moments
+    case (INT_CART_MULTIPOLE)
+      call OnePropCreate(prop_name=INT_CART_MULTIPOLE,    &
+                         one_prop=prop_comp%one_prop,     &
+                         info_prop=ierr,                  &
+                         dipole_origin=api_dipole_origin, &
+                         order_mom=order_mom,             &
                          order_elec=order_elec)
     ! overlap integrals
     case (INT_OVERLAP)
@@ -601,17 +659,17 @@ module gen1int_api
                          info_prop=ierr)
     ! one-electron potential energy integrals
     case (INT_POT_ENERGY)
-      call OnePropCreate(prop_name=INT_POT_ENERGY,    &
-                         one_prop=prop_comp%one_prop, &
-                         info_prop=ierr,              &
-                         coord_nuclei=coord_atoms,    &
-                         charge_nuclei=charge_atoms)
+      call OnePropCreate(prop_name=INT_POT_ENERGY,     &
+                         one_prop=prop_comp%one_prop,  &
+                         info_prop=ierr,               &
+                         coord_nuclei=api_coord_atoms, &
+                         charge_nuclei=api_charge_atoms)
     ! angular momentum integrals
     case (INT_ANGMOM)
       call OnePropCreate(prop_name=INT_ANGMOM,        &
                          one_prop=prop_comp%one_prop, &
                          info_prop=ierr,              &
-                         dipole_origin=dipole_origin)
+                         dipole_origin=api_dipole_origin)
     case default
       write(STDOUT,999) "unknown property "//trim(prop_name)//"!"
       stop
@@ -972,7 +1030,7 @@ module gen1int_api
           stop "Gen1IntAPINaryTreeCreate>> error occurred when calling NaryTreeSetAtoms!"
         end if
       else
-        call NaryTreeCreate(num_atoms=num_atoms,       &
+        call NaryTreeCreate(num_atoms=api_num_atoms,   &
                             order_geo=order_geo,       &
                             max_num_cent=max_num_cent, &
                             nary_tree=nary_tree,       &

@@ -43,21 +43,23 @@ H -0.300000    -0.173205     0.000000
 
 #######################################################################
 #  DALTON INPUT
+#  WARNING DO NOT USE THIS INPUT WITHOUT MODIFICATION 
 #######################################################################
 cat > LSresponse_mcd.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **WAVE FUNCTIONS
 .DFT
 B3LYP
 *DENSOPT
-.TrFD
-.DSM
+.RH
+.DIIS
 .NVEC
 8
 .START
 H1DIAG
 .CONVTHR
 1.0D-7
-.NOGCBASIS
 **RESPONSE
 *QUASIMCD
 .DEGENERATE
@@ -76,6 +78,10 @@ H1DIAG
 .NOPREC
 .CONVTHR
 1.0D-6
+.MAXIT
+40
+.MAXRED
+80
 *END OF INPUT
 %EOF%
 #######################################################################

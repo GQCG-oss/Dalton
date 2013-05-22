@@ -45,21 +45,21 @@ H      0.55168  -0.77340   0.00000
 #  DALTON INPUT
 #######################################################################
 cat > linsca_atoms_csr.dal <<'%EOF%'
+**GENERAL
+.CSR
 **INTEGRAL
 .DENSFIT
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.CSR
 .ARH
 .START
  ATOMS
 .CONVTHR
  1.0d-6
-$INFO
-INFO_LINEQ
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.INFO_LINEQ
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 

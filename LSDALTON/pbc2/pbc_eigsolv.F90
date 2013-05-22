@@ -1,3 +1,4 @@
+#ifdef MOD_UNRELEASED
 MODULE pbc_scfdiis
   USE TYPEDEF
   USE precision
@@ -1505,3 +1506,5 @@ end subroutine pbc_fixzggevnorm
 
 
 END MODULE pbc_scfdiis
+#endif
+

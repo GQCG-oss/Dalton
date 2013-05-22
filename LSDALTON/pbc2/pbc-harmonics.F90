@@ -1,3 +1,4 @@
+#ifdef MOD_UNRELEASED
 MODULE harmonics_pbc
 use precision
 USE matrix_module
@@ -159,3 +160,4 @@ Clmt=fract*binomial(l-t,abs(m)+t)*binomial(l,t)
 END FUNCTION Clmt
 
 END MODULE harmonics_pbc
+#endif

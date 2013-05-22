@@ -144,7 +144,7 @@ subroutine get_initial_dens(H1,S,D,ls,config)
 
      if (gcbasis .and. .not. config%decomp%cfg_gcbasis) then
         WRITE(config%lupri,*) 'Your dens.restart was constructed using the grand-canonical (GC) basis,'
-        WRITE(config%lupri,*) 'while your DALTON.INP uses the standard basis. The GC basis is default'
+        WRITE(config%lupri,*) 'while your LSDALTON.INP uses the standard basis. The GC basis is default'
         WRITE(config%lupri,*) 'when running TRILEVEL or ATOMS. Either contruct a new dens.restart or '
         WRITE(config%lupri,*) 'add .GCBASIS under *LINSCA'
         call lsquit('Calculation in standard basis, dens.restart in GC basis!',config%lupri)
@@ -155,7 +155,7 @@ subroutine get_initial_dens(H1,S,D,ls,config)
            call AO2GCAO_transform_matrixD(D(1),ls%setting,config%lupri)
         ELSE
            WRITE(config%lupri,*) 'Your dens.restart was constructed using the standard basis, while your'
-           WRITE(config%lupri,*) 'DALTON.INP uses the grand-canonical (GC) basis. The GC basis is default'
+           WRITE(config%lupri,*) 'LSDALTON.INP uses the grand-canonical (GC) basis. The GC basis is default'
            WRITE(config%lupri,*) 'when running TRILEVEL or ATOMS. Either contruct a new dens.restart or '
            WRITE(config%lupri,*) 'do not use grand-canonical basis!'
            WRITE(config%lupri,*) 'Alternativly you can add the keyword '
@@ -284,10 +284,6 @@ end subroutine get_initial_dens
     !   write(*,*) 'Take first density from atomic densities'
     !   write(lupri,*) 'Take first density from atomic densities'
     !   call starting_guess_atden(D)
-    else if (config%opt%cfg_start_guess=='H1OAO') then
-       write(config%lupri,*) 'Take first density from H1DIAG in OAO basis'
-       write(config%lupri,*)
-       call starting_guess_h1oao(config%decomp,H1,D(1))
     else if (config%opt%cfg_start_guess=='ATOMS') then
        write(config%lupri,*) 'First density: Atoms in molecule guess'
        write(config%lupri,*)
@@ -394,59 +390,6 @@ end subroutine get_initial_dens
     call mem_dealloc(eival)
     call mat_free(Cmo)
   end subroutine starting_guess_h1
-
-!> \brief Implements H1DIAG starting guess by diagonalization of OAO-transformed H1.
-!> \author B. Jansik
-!> \date 2003
-  subroutine starting_guess_h1oao(decomp,H1,D)
-    implicit none
-    !> Contains matrices from OAO decomposition of overlap matrix
-    type(decompItem),intent(inout) :: decomp
-    !> One-electron Hamiltonian
-    type(matrix),intent(inout) :: H1
-    !> Initial density matrix (output)
-    type(matrix)             :: D,H1OAO
-    type(matrix)             :: Cmo
-    real(realk), pointer :: eival(:), V(:)
-    integer                  :: n, n2, info
-
-    !init
-    if (decomp%cfg_unres) then
-       !I believe this it how it should be for unres, but didn't test it /Stinne
-       write(decomp%lupri,*) 'WARNING: starting guess not tested for open shell!!'
-       n=2*decomp%S%nrow; n2=n*n
-    else
-       n=decomp%S%nrow; n2=n*n
-    endif
-
-    !transform H1 to OAO
-    call mat_init(H1OAO,H1%nrow,H1%ncol)
-    call res_to_oao_basis(decomp,H1,H1OAO)
-    call mat_assign(H1OAO,H1)
-    call mat_free(H1OAO)
-
-    !diagonalize. on output V  contain Cmo orbitals
-    call mem_alloc(eival,n)
-    call mem_alloc(V,n2)
-
-    call mat_to_full(H1,1.0E0_realk,V)
-    call my_dsyev('v','u',n,V,eival)
-    call mat_init(Cmo,n,n)
-    call mat_set_from_full(V,1.0E0_realk,Cmo)
-
-    call mem_dealloc(eival)
-    call mem_dealloc(V)
-
-    !get OAO density
-    call mat_density_from_orbs(Cmo,D,decomp%nocc,decomp%nocca,decomp%noccb)
-
-    !free
-    call mat_free(Cmo)
-
-    !set OAO overlap
-    call mat_identity(decomp%S)
-
-  end subroutine starting_guess_h1oao
 
   !> \brief Obtain initial guess from the fitted density.
   !> \author S. Reine

@@ -1,12 +1,9 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-# suppress Windows warning about policy
-cmake_policy(SET CMP0010 OLD)
+project(DALTON Fortran C CXX)
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
-
-project(DALTON Fortran C)
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"          OFF)
 option(ENABLE_PROFILING      "Enable profiling"                OFF)
@@ -25,8 +22,9 @@ option(ENABLE_ALWAYS_RESET_EXTERNAL_BUILDS "Always remove builds stamps of exter
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
-    ${CMAKE_SOURCE_DIR}/cmake/binary-info
-    ${CMAKE_SOURCE_DIR}/cmake/compilers
+    ${CMAKE_SOURCE_DIR}/../cmake
+    ${CMAKE_SOURCE_DIR}/../cmake/binary-info
+    ${CMAKE_SOURCE_DIR}/../cmake/compilers
     ${CMAKE_SOURCE_DIR}/cmake/math
     ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
     ${CMAKE_SOURCE_DIR}/cmake/testing

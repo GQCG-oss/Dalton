@@ -404,7 +404,7 @@ mem_LSMATRIXsize=80
 mem_MATRIXsize=1264
 mem_OVERLAPsize=2904
 #else
-!implemented for VAR_PGI VAR_GFORTRAN VAR_IFORT we think!
+!implemented for VAR_PGF90 VAR_GFORTRAN VAR_IFORT we think!
 !we assume that all other compilers work with sizeof()
 mem_AOBATCHsize=sizeof(AOBATCHitem)
 mem_CCORBITALsize=sizeof(CCORBITALitem)
@@ -2193,8 +2193,8 @@ integer (kind=long) :: nsize
    nullify(I)
    ALLOCATE(I(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in int64_allocate_1dim',IERR,n
-     call memory_error_quit('Error in int64_allocate_1dim')
+     write(*,*) 'Error in int8_allocate_1dim',IERR,n
+     call memory_error_quit('Error in int8_allocate_1dim')
    ENDIF
    nsize = size(I,KIND=long)*mem_int8size
    call mem_allocated_mem_integer(nsize)
@@ -2217,8 +2217,8 @@ integer (kind=long) :: nsize
    nullify(I)
    ALLOCATE(I(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in int64_allocate_1dim',IERR,n
-     call memory_error_quit('Error in int64_allocate_1dim')
+     write(*,*) 'Error in int4_allocate_1dim',IERR,n
+     call memory_error_quit('Error in int4_allocate_1dim')
    ENDIF
    nsize = size(I,KIND=long)*mem_int4size
    call mem_allocated_mem_integer(nsize)

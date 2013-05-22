@@ -137,7 +137,7 @@ contains
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
-    !> Logical unit number for DALTON.INP
+    !> Logical unit number for LSDALTON.INP
     integer,intent(in) :: input
     !> Logical unit number for LSDALTON.OUT
     integer,intent(in) :: output
@@ -259,7 +259,7 @@ contains
     implicit none
     !> Logical for keeping track of when to read
     LOGICAL,intent(inout)                :: READWORD
-    !> Logical unit number for DALTON.INP
+    !> Logical unit number for LSDALTON.INP
     integer,intent(in) :: input
     !> Logical unit number for LSDALTON.OUT
     integer,intent(in) :: output
@@ -1013,16 +1013,6 @@ contains
     MyPlt%frmt = 'ORB'
 
     select case (trim(CFG%plt_orbital))
-    case('HOMO')
-       MyPLt%iorb = nocc
-       Myplt%outputfile = 'HOMO.plt'
-       write(ls%lupri,*) 'Writing plt file for HOMO...'
-       call construct_plt_file_driver(MyPlt,CMO,ls)
-    case('LUMO')
-       MyPlt%iorb = nocc+1
-       Myplt%outputfile = 'LUMO.plt'
-       write(ls%lupri,*) 'Writing plt file for LUMO...'
-       call construct_plt_file_driver(MyPlt,CMO,ls)
     case('LEASTL')
        write(ls%lupri,*) 'Writing plt file for the least local occupied and virtual orbitals...'
        MyPlt%iorb=CFG%leastl_occ
@@ -1063,14 +1053,14 @@ contains
     case default
        write(ls%lupri,*) '========== SOMETHING WRONG WHEN MAKING .plt FILE ================'
        write(ls%lupri,*) 'None of the valid options chosen. Use the options'
-       write(ls%lupri,*) ' HOMO,LUMO,MOSTL,LEASTL or ALL below keyword .ORBITAL PLOT'
+       write(ls%lupri,*) ' MOSTL,LEASTL or ALL below keyword .ORBITAL PLOT'
        write(ls%lupri,*) ' If you want to plot other than the above orbitals, consider using'
        write(ls%lupri,*) ' **PLT option where you may specify any orbital index.'
        write(ls%lupri,*) '================================================================='
 
        write(*,*) '========== SOMETHING WRONG WHEN MAKING .plt FILE ================'
        write(*,*) 'None of the valid options chosen. Use the options'
-       write(*,*) ' HOMO,LUMO,MOSTL,LEASTL or ALL below keyword .ORBITAL PLOT'
+       write(*,*) ' MOSTL,LEASTL or ALL below keyword .ORBITAL PLOT'
        write(*,*) ' If you want to plot other than the above orbitals, consider using'
        write(*,*) ' **PLT option where you may specify any orbital index.'
        write(*,*) '================================================================='

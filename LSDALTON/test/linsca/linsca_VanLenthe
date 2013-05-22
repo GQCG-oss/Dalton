@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > linsca_energy_h1oao.info <<'%EOF%'
-   linsca_energy_h1oao
+cat > linsca_VanLenthe.info <<'%EOF%'
+   linsca_VanLenthe
    -------------
    Molecule:         H2O
    Wave Function:    HF
@@ -28,7 +28,7 @@ cat > linsca_energy_h1oao.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > linsca_energy_h1oao.mol <<'%EOF%'
+cat > linsca_VanLenthe.mol <<'%EOF%'
 BASIS
 3-21G
 water R(OH) = 0.95Aa , <HOH = 109 deg.
@@ -44,15 +44,13 @@ H      0.55168  -0.77340   0.00000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > linsca_energy_h1oao.dal <<'%EOF%'
+cat > linsca_VanLenthe.dal <<'%EOF%'
+**GENERAL
+.TIME
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.START
-H1OAO
-.TIME
-.OAO
-.TRSCF
+.VanLenthe
 .NVEC
 8
 .CONVTHR
@@ -65,8 +63,8 @@ H1DIAG
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >linsca_energy_h1oao.check
-cat >> linsca_energy_h1oao.check <<'%EOF%'
+echo $CHECK_SHELL >linsca_VanLenthe.check
+cat >> linsca_VanLenthe.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then

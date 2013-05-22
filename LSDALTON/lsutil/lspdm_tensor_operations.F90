@@ -2042,7 +2042,7 @@ module lspdm_tensor_operations_module
       case(1)
         call manual_2143_reordering_tile2full(bs,tdims,dims,fels,sc,tilein,1.0E0_realk,fort)
       case default
-        print *,"default part reorder add",o
+        !print *,"default part reorder add",o
         !count elements in the current tile for loop over elements
         !identify their original position and put them in tile
         nelms=1
@@ -2177,7 +2177,7 @@ module lspdm_tensor_operations_module
       !  enddo
       !  call mem_dealloc(dummy)
     case default
-      print *,"default part reorder put",o
+      !print *,"default part reorder put",o
       !count elements in the current tile for loop over elements
       !identify their original position and put them in tile
       nelms=1
@@ -2274,7 +2274,7 @@ module lspdm_tensor_operations_module
         call daxpy(ccels,pre,fort(pos1),1,tileout(1+(i-1)*ccels),1)
       enddo
     else
-      print *,"default part reorder extract",order
+      !print *,"default part reorder extract",order
       
       !count elements in the current tile for loop over elements
       !identify their original position and put them in tile

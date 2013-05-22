@@ -1,11 +1,6 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
 project(LSDALTON Fortran C CXX)
-
-# set version
-set(VERSION_MAJOR 2011)
-set(VERSION_MINOR 0)
-set(VERSION_PATCH 0)
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
@@ -13,38 +8,23 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 # flag to add a fix OpenMPI bug for gfortran/macOSX
 set(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX FALSE)
 
-set(THIS_CODE "linsca")
-#if(THIS_CODE STREQUAL "linsca")
-#    add_definitions(-DVAR_LINSCA)
-#endif()
-
 add_definitions(-DTHIS_IS_CMAKE_BUILD)
 
+# these are paths that CMake will search for cmake module files that end with .cmake
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
     ${CMAKE_SOURCE_DIR}/cmake
+    ${CMAKE_SOURCE_DIR}/../cmake
+    ${CMAKE_SOURCE_DIR}/../cmake/compilers
+    ${CMAKE_SOURCE_DIR}/cmake/math
+    ${CMAKE_SOURCE_DIR}/../cmake/binary-info
     )
-
-if(NOT CMAKE_BUILD_TYPE)
-    set(CMAKE_BUILD_TYPE
-        Debug
-        CACHE STRING
-        "Choose the type of build, options are: None Debug Release, Profile."
-        FORCE
-        )
-endif()
 
 message("-- System: ${CMAKE_SYSTEM_NAME}")
 
-string(TOLOWER "${CMAKE_BUILD_TYPE}" cmake_build_type_tolower)
-if(    NOT cmake_build_type_tolower STREQUAL "debug"
-		AND NOT cmake_build_type_tolower STREQUAL "release"
-		AND NOT cmake_build_type_tolower STREQUAL "relwithdebinfo"
-		AND NOT cmake_build_type_tolower STREQUAL "profile")
-	message(FATAL_ERROR "Unknown build type \"${CMAKE_BUILD_TYPE}\".
-	Allowed values are Debug, Release, RelWithDebInfo, Profile (case-insensitive).")
-endif()
+include(ConfigVersion)
 
+include(ConfigSafeGuards)
 if(cmake_build_type_tolower STREQUAL "debug")
 	add_definitions(-DVAR_DEBUGINT)
 	add_definitions(-DVAR_DEBUG)
@@ -62,7 +42,6 @@ option(ENABLE_XCFUN          "Enable XCFUN"                  OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
 option(ENABLE_MPI32          "Enable 32 bit integer MPI lib workaround" OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
-option(ENABLE_MKLFLAG        "Enable MKL FLAG"               OFF)
 option(ENABLE_INTEREST       "Enable interest integrals"     OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
 option(ENABLE_OPENRSP        "Enable OpenRSP module"         OFF)
@@ -75,8 +54,6 @@ option(ENABLE_RELEASE        "Enable Release"                OFF)
 #option(ENABLE_EXTERNLIB      "Create lsdaltonextern.a extern lib " OFF)
 option(ENABLE_GIT_SUBMODULES "Download external projects using Git submodules at compilation time" ON)
 
-
-#add_definitions(-DVAR_MFDS -D_FILE_OFFSET_BITS=64 -DIMPLICIT_NONE)
 
 # find a good default scratch base directory
 foreach(dir "/work" "/scratch" "/scr" "/temp" "/tmp")
@@ -101,16 +78,13 @@ set(BASIS_DIR
     )
 message("-- BASIS_DIR set to: ${BASIS_DIR}")
 
-if(THIS_CODE STREQUAL "linsca")
     add_definitions(-DINSTALL_BASDIR="${BASIS_DIR}")
-endif()
 
-include(Archs)
+include(ConfigArchitecture)
 include(Sources)
-include(Compilers)
+include(ConfigCompilerFlags)
 include(ConfigExternal)
 
-#add_subdirectory(LSint)
 set(LIBS)
 
 if(ENABLE_OPENRSP)
@@ -193,9 +167,7 @@ endif()
 
 if(ENABLE_64BIT_INTEGERS)
     add_definitions(-DVAR_INT64)
-    if(THIS_CODE STREQUAL "linsca")
-        add_definitions(-DVAR_64BITS)
-    endif()
+    add_definitions(-DVAR_64BITS)
 endif()
 
 if(ENABLE_CSR)
@@ -212,9 +184,6 @@ endif()
 
 if(ENABLE_DEBUGPBC)
   add_definitions(-DDEBUGPBC)
-endif()
-if(ENABLE_MKLFLAG)
-    add_definitions(-DVAR_MKL)
 endif()
 if(PROFILER STREQUAL "SCALASCA")
   SET(CMAKE_Fortran_COMPILER "../scalascaf90.sh")
@@ -253,6 +222,8 @@ else()
         "Set timeout in seconds for every single test"
         )
 endif()
+
+include(BinaryInfo)
 
 include(Tests)
 include(CTest)
@@ -314,9 +285,8 @@ if(ENABLE_OPENRSP)
 	add_subdirectory(gen1int)
 endif()
 
-# Tell CMake the source won't be available until build time.
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/lsutil/git_revision_info.f90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/lsutil/compilation_info.f90 PROPERTIES GENERATED 1)
+# tell CMake the source won't be available until build time
+SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/binary_info.f90 PROPERTIES GENERATED 1)
 
 add_library(
     lsutillib_precision
@@ -366,6 +336,7 @@ target_link_libraries(lsutiltypelib_common pdpacklib)
 add_library(
     lsutillib
     ${LSUTILLIB_SOURCES}
+    ${PROJECT_BINARY_DIR}/binary_info.F90
     )
 target_link_libraries(lsutillib lsutiltypelib_common)
 # Make sure the source is generated before the lsutillib lib is built
@@ -617,5 +588,4 @@ target_link_libraries(
    lsdalton
    ) 
 
-include(CompilationInfo)
 include(Install)

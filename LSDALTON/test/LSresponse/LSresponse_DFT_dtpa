@@ -45,26 +45,13 @@ F 1.96000000  0.0000000000   0.000000000000000
 #  DALTON INPUT
 #######################################################################
 cat > LSresponse_DFT_dtpa.dal <<'%EOF%'
-**INTEGRALS
-.NOLINK
-.NOJENGINE
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*DFT INPUT
-.GRID TYPE
- BECKEORIG LMG
-.RADINT
-1.0D-11
-.ANGINT
-31
 *DENSOPT
-.RH          
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
+.ARH DAVID
+.CONVDYN
+TIGHT
 **RESPONSE
 *DAMPED_TPA
 .GAMMA
@@ -94,7 +81,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-98.8868" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * \-98.886[7-8]" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
@@ -106,7 +93,7 @@ CTRL[2]=1
 ERROR[2]="Memory leak -"
 
 # Isotropically averaged TPA
-CRIT1=`$GREP "0.37225[0-9][0-9] * 1281\.[0-9][0-9][0-9] * 528." $log | wc -l`
+CRIT1=`$GREP "0.37225[0-9][0-9] * 128[0-9]\.[0-9][0-9][0-9] * 528." $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="Error in damped TPA"

@@ -3732,7 +3732,9 @@ Contains
                endif
             endif
          enddo
+         IF(nAterms.EQ.0)WRITE(lupri,*)'No Aterms found'
       ELSE
+         WRITE(lupri,*)'No Aterms is calculated'
          nAterms = 0
       ENDIF
       IF(.NOT.degenerateStates)THEN

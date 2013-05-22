@@ -1,5 +1,6 @@
 @String{pra = {Phys. Rev. A}}
 @String{prb = {Phys. Rev. B}}
+@String{pr = {Phys. Rev.}}
 @String{prl = {Phys. Rev. Lett.}}
 @String{cpl = {Chem. Phys. Lett.}}
 @String{molp = {Mol. Phys.}}
@@ -575,6 +576,13 @@ year = {1978},
 volume = {26},
 pages ={218--231},
 }
+@ARTICLE{davidson:1975,
+         AUTHOR = {Ernest R. Davidson},
+         JOURNAL = "J. Comput. Phys.",
+         VOLUME = 17,
+         YEAR = 1975,
+         PAGES = 87}
+
 
 @article{trilevel1,
 	author = {B. Jans{\'i}k and S. H{\o}st and M. P. Johansson and J. Olsen and P. J{\o}rgensen}, 
@@ -728,6 +736,36 @@ pages ={218--231},
 	pages = {1085}
  }
 
+@Article{Verlet,
+	author = {L. Verlet},
+	title = {Computer "experiments" on classical fluids. I. Thermodynamics Properties of
+                 Lennard-Jones molecules},
+	journal = pr,
+	year = {1967} ,
+	volume = {159} ,
+	pages = {98}
+}
+
+@Article{FMD,
+	author = {P. Pulay and G. Fogarasi},
+	title = {Fock matrix dynamics},
+	journal = cpl,
+	year = {2004} ,
+	volume = {386} ,
+	pages = {272}
+}
+
+
+@Article{TivRev,
+	author = {A. M. N. Niklasson and C. J. Tymczak and  M. Challacombe},
+	title = {Time-reversible Born-Oppenheimer molecular dynamics},
+	journal = prl,
+	year = {2006} ,
+	volume = {97} ,
+	pages = {123001}
+}
+
+
 @Article{KjaergaardMCD,
 	author = {T. Kj{\ae}rgaard and P. J{\o}rgensen and A. J. Thorvaldsen, P. Sa{\l}ek and S. Coriani},
 	title = {A gauge-origin independent formulation and implementation
@@ -747,6 +785,24 @@ Kohn-Sham response theories},
         volume = {135},
         pages = {024112}
  }
+
+@article{dampedresponse,
+AUTHOR  = "K. Kristensen and J. Kauczor and T. Kj{\ae}rgaard and P.~J{\o}rgensen",
+   JOURNAL = jcp,
+  YEAR    = 2009,
+   VOLUME  = "131",
+   PAGES   = "044112"
+}
+
+@article{dampedtpa,
+AUTHOR  = {Kasper Kristensen and Joanna Kauczor and Andreas J. Thorvaldsen and
+Poul J{\o}rgensen and Thomas Kj{\ae}rgaard and Antonio Rizzo},
+   JOURNAL = jcp,
+  YEAR    = 2011,
+   VOLUME  = "134",
+   PAGES   = "214104"
+}
+
 
 @article{thorvaldsen:214108,
 author = {A. J. Thorvaldsen and K. Ruud and K. Kristensen and P. J{\o}rgensen and S. Coriani},
@@ -863,11 +919,74 @@ title = "The divide-expand-consolidate MP2 scheme goes massively parallel",
    VOLUME  = "XXX",
    PAGES   = "(DOI: 10.1080/00268976.2013.783941)"
 }
+@article{jansik:2011,
+        author={B. Jans{\'i}k and S. H{\o}st and  K.Kristensen
+                and P.J{\o}rgensen},
+        title={Local orbitals by minimizing powers of the orbital variance},
+        journal=jcp,
+  volume=134,
+  pages=194104,
+        year=2011
+}
 
+@article{hoyvik:TRM,
+        author={I.-M. H{\o}yvik and B. Jans{\'i}k 
+                and P.J{\o}rgensen},
+        title={Trust Region Minimization of Orbital Localization Functions},
+        journal=jctc,
+  volume=8,
+  pages=3137-3146,
+        year=2012
+}
+
+@article{hoyvik:PM,
+        author={I.-M. H{\o}yvik and B. Jans{\'i}k 
+                and P.J{\o}rgensen},
+        title={Pipek-Mezey localization of occupied and virtual orbitals},
+        journal=jcc,
+        year=2013
+PAGES   = "(DOI: 10.1002/jcc.23281)"
+}
+
+@article{hoyvik:3L,
+        author={I.-M. H{\o}yvik and B. Jans{\'i}k and K. Kristensen 
+                and P.J{\o}rgensen},
+        title={Local Hartree-Fock orbitals using a three-level optimization strategy for the energy},
+        journal=jcc,
+        year=2013
+        volume=34,
+        pages=1311-1320,
+
+}
+@article{hoyvik:PFM,
+        author={I.-M. H{\o}yvik and B. Jans{\'i}k  
+                and P.J{\o}rgensen},
+        title={Orbital localization using fourth central moment minimization},
+        journal=jcp,
+        year=2012
+        volume=137,
+        pages=224114,
+
+}
 @article{chimera,
 author = {E. F. Pettersen and T. D. Goddard and C. C. Huang and G. S. Couch and D.M. Greenblatt and E. C. Meng and T. E. Ferrin},
    JOURNAL = jcc,
   YEAR    = 2004,
    VOLUME  = "25",
    PAGES   = "1605"
+}
+
+@article{PARI:2013,
+abstract = {An analysis of Dunlap's robust fitting approach reveals that the resulting two-electron integral matrix is not manifestly positive semidefinite when local fitting domains or non-Coulomb fitting metrics are used. We present a highly local approximate method for evaluating four-center two-electron integrals based on the resolution-of-the-identity (RI) approximation and apply it to the construction of the Coulomb and exchange contributions to the Fock matrix. In this pair-atomic resolution-of-the-identity (PARI) approach, atomic-orbital (AO) products are expanded in auxiliary functions centered on the two atoms associated with each product. Numerical tests indicate that in 1\% or less of all Hartree-Fock and Kohn-Sham calculations, the indefinite integral matrix causes nonconvergence in the self-consistent-field iterations. In these cases, the two-electron contribution to the total energy becomes negative, meaning that the electronic interaction is effectively attractive, and the total energy is dramatically lower than that obtained with exact integrals. In the vast majority of our test cases, however, the indefiniteness does not interfere with convergence. The total energy accuracy is comparable to that of the standard Coulomb-metric RI method. The speed-up compared with conventional algorithms is similar to the RI method for Coulomb contributions; exchange contributions are accelerated by a factor of up to eight with a triple-zeta quality basis set. A positive semidefinite integral matrix is recovered within PARI by introducing local auxiliary basis functions spanning the full AO product space, as may be achieved by using Cholesky-decomposition techniques. Local completion, however, slows down the algorithm to a level comparable with or below conventional calculations. © 2013 Wiley Periodicals, Inc.},
+author = {Merlot, Patrick and Kjaergaard, Thomas and Helgaker, Trygve and Lindh, Roland and Aquilante, Francesco and Reine, Simen and Pedersen, Thomas Bondo},
+doi = {10.1002/jcc.23284},
+file = {:home/patrime/Documents/Mendeley Desktop/2013\_Merlot et al.\_Attractive electron-electron interactions within robust local fitting approximations.pdf:pdf},
+issn = {1096-987X},
+journal = {Journal of computational chemistry},
+month = apr,
+pages = {1--11},
+pmid = {23553369},
+title = {{Attractive electron-electron interactions within robust local fitting approximations.}},
+url = {http://www.ncbi.nlm.nih.gov/pubmed/23553369},
+year = {2013}
 }

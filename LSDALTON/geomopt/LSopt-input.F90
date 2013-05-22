@@ -57,8 +57,8 @@ Type(opt_setting) :: optinfo
      optinfo%NTempMat = 0
      optinfo%KEPTIT = 0
      optinfo%optimize = .FALSE.
-     optinfo%maxIter     = 25
-     optinfo%scanMaxIter = 25
+     optinfo%maxIter     = 100
+     optinfo%scanMaxIter = 100
      optinfo% Change  = 0E0_realk
      optinfo%ChGradThr    = 0
      optinfo%IcnLevel = -1

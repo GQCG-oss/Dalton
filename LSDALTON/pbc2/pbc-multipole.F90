@@ -1,3 +1,4 @@
+#ifdef MOD_UNRELEASED
 MODULE multipole_pbc
 use precision
 use harmonics_pbc
@@ -511,4 +512,4 @@ ENDDO
 END FUNCTION ANGMOM_MAPPING_TO
 END MODULE multipole_pbc
 
-
+#endif

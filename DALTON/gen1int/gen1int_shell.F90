@@ -23,6 +23,9 @@
 !
 !...  This file takes care the atomic orbital (AO) sub-shell used in Gen1Int interface.
 !
+!...  2013-05-16, Bin Gao
+!...  * fix the bug of calculating expectation values in parallel
+!
 !...  2013-05-04, Bin Gao
 !...  * fix the bug of returning wrong partial geometric derivatives
 !
@@ -789,8 +792,11 @@ module gen1int_shell
         end do
         ! receives expectation values from worker processors
         if (do_expectation) then
-          call MPI_Reduce(MPI_IN_PLACE, unique_expt, num_matrices*num_dens, &
-                          MPI_REALK, MPI_SUM, MANAGER, api_comm, ierr)
+          call MPI_Reduce(MPI_IN_PLACE,                                                     &
+                          unique_expt(:,path_offset_bgeo+1:path_offset_bgeo+path_num_bgeo,  &
+                                      path_offset_kgeo+1:path_offset_kgeo+path_num_kgeo,    &
+                                      path_offset_tgeo+1:path_offset_tgeo+path_num_tgeo,:), &
+                          num_matrices*num_dens, MPI_REALK, MPI_SUM, MANAGER, api_comm, ierr)
         end if
       ! worker code
       else
@@ -1485,8 +1491,13 @@ module gen1int_shell
         end do
         ! receives expectation values from worker processors
         if (do_expectation) then
-          call MPI_Reduce(MPI_IN_PLACE, unique_expt, num_points*num_matrices*num_dens, &
-                          MPI_REALK, MPI_SUM, MANAGER, api_comm, ierr)
+          call MPI_Reduce(MPI_IN_PLACE,                                                     &
+                          unique_expt(:,:,                                                  &
+                                      path_offset_bgeo+1:path_offset_bgeo+path_num_bgeo,    &
+                                      path_offset_kgeo+1:path_offset_kgeo+path_num_kgeo,    &
+                                      path_offset_tgeo+1:path_offset_tgeo+path_num_tgeo,:), &
+                          num_points*num_matrices*num_dens, MPI_REALK, MPI_SUM, MANAGER,    &
+                          api_comm, ierr)
         end if
       ! worker code
       else

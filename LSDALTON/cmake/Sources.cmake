@@ -1,3 +1,8 @@
+# WARNING if you add a new set of sources that contain .F90 files 
+# remember to add it to the collection of all free fortran sources
+# FREE_FORTRAN_SOURCES  
+# at the end of the file
+
 set(DEC_C_SOURCES
     deccc/crayio.c
     )
@@ -116,6 +121,7 @@ set(LINEARS_SOURCES
     linears/levelshift.F90
     linears/minimize.F90
     linears/optimlocNONMOD.F90
+    linears/OrbLoc_input.F90
     linears/localization_util.F90
     linears/localization_orbspread.F90
     linears/localization_charge.F90
@@ -210,6 +216,7 @@ set(INTERESTLIB_SOURCES
     interest/src/module_interest_osr.F90
     )
 set(LSINT_SOURCES
+    LSint/dft_gridLL.F90
     LSint/BuildBasis.F90
     LSint/BuildMolFile.F90
     LSint/II_Fragment.F90
@@ -350,8 +357,6 @@ set(LSUTIL_TYPE_SOURCES
 set(LSUTILLIB_SOURCES
     lsutil/lowdin.F90
     lsutil/AtomicSparse.F90
-    lsutil/compilation_info.f90
-    lsutil/git_revision_info.f90
     lsutil/fundamental.F90
     lsutil/ks-settings.F90
     lsutil/lsmpi-operations.F90
@@ -371,12 +376,11 @@ set(LSLIB_SOURCES
     )
 
 set(FIXED_FORTRAN_SOURCES
-    dft/dft_gridLL.F
-    linears/cholesky.F
-    linears/invroutines.F
     pdpack/jacobi.F
     pdpack/eispack.F
     pdpack/linpack.F
+    pdpack/cholesky.F
+    pdpack/invroutines.F
     )
 set(OWN_BLAS_SOURCES
     pdpack/blas_wrapper.F
@@ -391,3 +395,28 @@ set(OWN_LAPACK_SOURCES
     pdpack/gp_dlapack.F
     pdpack/gp_zlapack.F
     )
+#collection of all free fortran sources
+set(FREE_FORTRAN_SOURCES
+    ${DFTFUNC_F_SOURCES}
+    ${LSDALTONMAIN_FORTRAN_SOURCES}
+    ${DDYNAM_SOURCES}
+    ${DEC_SOURCES}
+    ${GEOOPT_SOURCES}
+    ${LINEARS_SOURCES}	
+    ${RSPSOLVER_SOURCES}	
+    ${SOLVERUTIL_SOURCES}	
+    ${RSP_PROPERTIES_SOURCES}	
+    ${PBC_FORTRAN_SOURCES}
+    ${FMM_SOURCES}
+    ${INTERESTLIB_SOURCES}
+    ${LSINT_SOURCES}
+    ${LSUTIL_PRECISION_SOURCES}
+    ${LSUTIL_MATRIXM_SOURCES}
+    ${LSUTIL_COMMON_SOURCES}
+    ${LSUTIL_MATRIXO_SOURCES}
+    ${LSUTIL_MATRIXO_C_SOURCES}
+    ${LSUTIL_MATRIXU_SOURCES}
+    ${LSUTIL_TYPE_SOURCES}
+    ${LSUTILLIB_SOURCES}
+    ${LSLIB_SOURCES}
+ )

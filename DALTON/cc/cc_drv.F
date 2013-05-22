@@ -1447,7 +1447,7 @@ C
       CCT    = .FALSE.
       STCCS  = .FALSE.
 CSonia
-      RCCD = .false.
+      RCCD  = .false.
       DRCCD = .false.
       RTCCD = .false.
       SOSEX = .false.

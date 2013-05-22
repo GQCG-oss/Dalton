@@ -56,10 +56,8 @@ TRILEVEL
 .NOATOMSTART
 .CONVTHR
 1.0d-6
-# LOCALIZE USING ORBITAL VARIANCE, m=2 for occ and virt
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 **DEC
 .FOT
 4
@@ -100,49 +98,49 @@ CTRL[1]=1
 ERROR[1]="HF energy not correct"
 
 # CCSD ENERGY (occ. part. scheme)
-CRIT1=`$GREP "CCSD occupied correlation energy : * \-0\.2091" $log | wc -l`
+CRIT1=`$GREP "CCSD occupied correlation energy : * \-0\.209" $log | wc -l`
 TEST[2]=`expr   $CRIT1`
 CTRL[2]=1
 ERROR[2]="CCSD correlation energy (occ. part. scheme) is not correct"
 
 # CCSD ENERGY (unocc. part. scheme)
-CRIT1=`$GREP "CCSD virtual  correlation energy : * \-0\.2091" $log | wc -l`
+CRIT1=`$GREP "CCSD virtual  correlation energy : * \-0\.209" $log | wc -l`
 TEST[3]=`expr   $CRIT1`
 CTRL[3]=1
 ERROR[3]="CCSD correlation energy (unocc. part. scheme) is not correct"
 
 # E[4] contribution to (T) energy correction (occ. part. scheme)
-CRIT1=`$GREP "\(T\) occupied 4th order energy * : * \-0\.538" $log | wc -l`
+CRIT1=`$GREP "\(T\) occupied 4th order energy * : * \-0\.5[3-4]" $log | wc -l`
 TEST[4]=`expr   $CRIT1`
 CTRL[4]=1
 ERROR[4]="4th-order contribution to (T) energy correction (occ. part. scheme) is not correct"
 
 # E[4] contribution to (T) energy correction (unocc. part. scheme)
-CRIT1=`$GREP "\(T\) virtual  4th order energy * : * \-0\.540" $log | wc -l`
+CRIT1=`$GREP "\(T\) virtual  4th order energy * : * \-0\.5[3-4]" $log | wc -l`
 TEST[5]=`expr   $CRIT1`
 CTRL[5]=1
 ERROR[5]="4th-order contribution to (T) energy correction (unocc. part. scheme) is not correct"
 
 # E[5] contribution to (T) energy correction (occ. part. scheme)
-CRIT1=`$GREP "\(T\) occupied 5th order energy * : * 0\.232" $log | wc -l`
+CRIT1=`$GREP "\(T\) occupied 5th order energy * : * 0\.2[2-3]" $log | wc -l`
 TEST[6]=`expr   $CRIT1`
 CTRL[6]=1
 ERROR[6]="5th-order contribution to (T) energy correction (occ. part. scheme) is not correct"
 
 # E[5] contribution to (T) energy correction (unocc. part. scheme)
-CRIT1=`$GREP "\(T\) virtual  5th order energy * : * 0\.232" $log | wc -l`
+CRIT1=`$GREP "\(T\) virtual  5th order energy * : * 0\.2[2-3]" $log | wc -l`
 TEST[7]=`expr   $CRIT1`
 CTRL[7]=1
 ERROR[7]="5th-order contribution to (T) energy correction (unocc. part. scheme) is not correct"
 
 # Total CCSD(T) correlation energy (occ. part. scheme)
-CRIT1=`$GREP "Total CCSD\(T\) occupied correlation energy : * \-0\.2143" $log | wc -l`
+CRIT1=`$GREP "Total CCSD\(T\) occupied correlation energy : * \-0\.214" $log | wc -l`
 TEST[8]=`expr   $CRIT1`
 CTRL[8]=1
 ERROR[8]="Total CCSD(T) correlation energy (occ. part. scheme) is not correct"
 
 # Total CCSD(T) correlation energy (unocc. part. scheme)
-CRIT1=`$GREP "Total CCSD\(T\) virtual  correlation energy : * \-0\.2143" $log | wc -l`
+CRIT1=`$GREP "Total CCSD\(T\) virtual  correlation energy : * \-0\.214" $log | wc -l`
 TEST[9]=`expr   $CRIT1`
 CTRL[9]=1
 ERROR[9]="Total CCSD(T) correlation energy (unocc. part. scheme) is not correct"

@@ -50,12 +50,9 @@ cat > LSresponse_HF_dipole.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.RH                                                                                       
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
+.ARH DAVID                                                                                       
+.CONVDYN
+TIGHT
 *END OF INPUT  
 %EOF%
 #######################################################################
@@ -90,7 +87,7 @@ CTRL[2]=1
 ERROR[2]="Memory leak -"
 
 # Dipole
-CRIT1=`$GREP "z * 1\.52858 * 3\.88526 * 12\.9598" $log | wc -l`
+CRIT1=`$GREP "z * 1\.52858 * 3\.88527 * 12\.9598" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="Error in electric dipole"

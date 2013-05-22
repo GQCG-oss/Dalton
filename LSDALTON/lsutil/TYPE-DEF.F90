@@ -583,7 +583,7 @@ END TYPE LSSETTING
 !*
 !*****************************************
 TYPE LSITEM
-TYPE(DALTONINPUT) :: INPUT   !Input handling (of DALTON.INP and MOLECULE.INP)
+TYPE(DALTONINPUT) :: INPUT   !Input handling (of LSDALTON.INP and MOLECULE.INP)
 TYPE(LSSETTING)   :: SETTING !Settings for integral evaluation
 INTEGER           :: LUPRI = -1  !Output-file unit number
 INTEGER           :: LUERR = -1  !Error-file unit number

@@ -2,7 +2,7 @@
 !FIXME: - a modification of the contraction coefficients, 
 !FIXME: for the time being we need to deactivate use of this
 !FIXME: "grand canonical" basis by using the keyword .NOGCBASIS
-!FIXME: In conclusion use the the following in DALTON.INP:
+!FIXME: In conclusion use the the following in LSDALTON.INP:
 !FIXME: *DENSOPT
 !FIXME: .START
 !FIXME: H1DIAG

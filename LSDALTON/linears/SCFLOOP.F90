@@ -37,7 +37,7 @@ CONTAINS
 !> \param F Fock/Kohn-Sham matrix
 !> \param D Density matrix
 !> \param S Overlap matrix
-!> \param ls Contains information read from DALTON.INP 
+!> \param ls Contains information read from LSDALTON.INP 
 !> \param config Contains all info about configuration/settings for SCF calculation
 SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    implicit none   
@@ -106,6 +106,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    config%davidSCF%lupri = config%lupri
    config%davidSCF%stepsize=config%davidSCF%max_stepsize
    config%davidSCF%arh_linesearch=config%davidSCF%arh_inp_linesearch
+   config%davidSCF%arh_extravec=config%davidSCF%arh_inp_extravec
    
    IF(config%opt%cfg_saveF0andD0)THEN
       call ks_init_linesearch_fock(nbast)
@@ -260,6 +261,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
             call lsclose(denslun,'KEEP')
          endif
          if(.NOT.NotLastSCFLevel)THEN
+            Write(config%lupri,'(A,i6,A)')'SCF converged in ',iteration,' iterations'
             EXIT
          endif
       else if ((config%opt%cfg_hesonly .or. config%opt%cfg_diaghesonly) .and. &
@@ -286,6 +288,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
 
       IF(NotLastSCFLevel)THEN
          IF(gradnrm < config%opt%set_convergence_threshold) then 
+            Write(config%lupri,'(A,i6,A)')'SCF converged in ',iteration,' iterations'
             EXIT
          ENDIF
       ENDIF
@@ -348,7 +351,7 @@ subroutine get_fock(config,fifoqueue,queue,iteration,D,H1,F,ndmat,Etotal,ls)
    type(configItem),intent(inout)         :: config
    !> New queue type: Contains Fock/KS and density matrices from previous SCF iterations (if ARH)
    type(modFIFO), intent(inout)                  :: fifoqueue
-   !> Old queue type: Contains Fock/KS and density matrices from previous SCF iterations (if DIIS or DSM)
+   !> Old queue type: Contains Fock/KS and density matrices from previous SCF iterations (if DIIS)
    type(util_HistoryStore), intent(inout) :: queue
    !> Current SCF iteration
    integer, intent(in)                    :: iteration
@@ -574,7 +577,7 @@ end subroutine scf_afterplay
 !> \author B. Jansik
 !> \date 2008-10-26
 !> \param basis contains information about the basis set
-!> \param input contains information read from file DALTON.INP
+!> \param input contains information read from file LSDALTON.INP
 !>
 !> initbsm is a routine to intialize the blocked sparse library.  The
 !> library needs to know the position of all atoms and the indexes of
@@ -623,7 +626,7 @@ contains
 !> \author B. Jansik
 !> \date 2008-10-26
 !> \param basis Contains information about the basis set
-!> \param dalton_inp Contains information read from DALTON.INP
+!> \param dalton_inp Contains information read from LSDALTON.INP
  function initbsm_setlist(basis,input)
   use BUILDAOBATCH
   use typedef, only: daltoninput
@@ -662,7 +665,7 @@ END SUBROUTINE LS_INITBSM
 !> \brief This subroutine calculates number of electron for neutral molecule defined in ls%setting structure
 !> \author T. Kjaergaard, S. Reine
 !> \date 2008-10-26
-!> \param ls Contains information read from DALTON.INP 
+!> \param ls Contains information read from LSDALTON.INP 
 !> \param nel Number of electrons
 SUBROUTINE get_num_electrons_neutral(nel,ls)
   implicit none
