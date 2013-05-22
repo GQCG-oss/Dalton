@@ -132,6 +132,7 @@ contains
    !> arguments' dimensions, and doing permutations
    !> S0 is passed as argument only as reference to nuclei and basis set
    subroutine prop_oneave(mol, S0, p, D, dime, E, perm, comp, freq, DFD)
+     implicit none
       !> structure containing integral program settings
       type(prop_molcfg), intent(inout) :: mol
       !> unperturbed overlap matrix
@@ -172,6 +173,7 @@ contains
       complex(realk) :: ffreq(size(p)), tmpf
       logical        :: zero, bas
       complex(realk), pointer :: Etmp(:)
+      i=0
       allocate(Etmp(product(dime)))
 
       ! verify that all perturbation labels exist, find index of each
@@ -310,6 +312,7 @@ contains
 
 
    subroutine oneave(mol, S0, np, p, c, dp, w, nd, D, E, DFD)
+     implicit none
       !> structure containing integral program settings
       type(prop_molcfg), intent(inout):: mol 
       !> unperturbed overlap, to know its dimension
@@ -344,6 +347,7 @@ contains
       real(realk),allocatable :: expval(:)
       integer      :: i, j, k, l, ii, jj, kk, ll, na
 
+      i=0
       na = mol%natoms
       A(1) = 0*S0
       A(2:) = (/(A(1), i=2,size(A))/) !scratch matrices
@@ -503,6 +507,7 @@ contains
    !> arguments' dimensions, and doing permutations
    !> D(1) serves as reference to nuclei, basis and model/functional
    subroutine prop_twoave(mol, p, D, dime, E, perm, comp)
+     implicit none
       !> structure containing integral program settings
       type(prop_molcfg), intent(in) :: mol
       !> p(np) perturbation lables
@@ -531,6 +536,7 @@ contains
       logical      :: zero
       complex(realk), pointer :: Etmp(:)
       integer      :: sizep
+      i=0
       sizep = size(p)
       IF(size(p).GE.1)THEN
          IF(p(1).EQ.'NOOP') sizep = 0
@@ -630,6 +636,7 @@ contains
 
 
    subroutine twoave(mol, np, nd, p, c, de, D, E)
+     implicit none
       !> structure containing integral program settings
       type(prop_molcfg), intent(in)  :: mol
       !> number of perturbations and order of density
@@ -653,6 +660,7 @@ contains
       integer      :: lupri,luerr,nbast
       type(matrix) :: A(9) !scratch matrices
       logical      :: ok
+      i=0
 !!$      Interface 
 !!$         SUBROUTINE II_get_xc_geoderiv_molgrad(LUPRI,LUERR,SETTING,nbast,D,grad,natoms)
 !!$           use precision
@@ -926,6 +934,7 @@ contains
    !> arguments' dimensions, and doing permutations
    !> S0 is passed as argument only as reference to nuclei and basis set
    subroutine prop_oneint(mol, S0, p, dimp, F, S, comp, freq)
+     implicit none
       !> mol/basis data needed by integral program
       type(prop_molcfg), intent(inout) :: mol
       !> unperturbed overlap matrix
@@ -957,7 +966,7 @@ contains
       complex(realk) :: ffreq(size(p)), tmpf
       logical        :: zero, bas
       type(matrix),pointer :: Ftmp(:), Stmp(:)
-
+      i=0
       allocate(Ftmp(product(dimp)))
       allocate(Stmp(product(dimp)))
 
@@ -1157,6 +1166,7 @@ contains
    !> dimensions, and doing permutations
    !> D(1) serves as reference to nuclei, basis and model/functional
    subroutine prop_twoint(mol, p, D, dimf, F, perm, comp)
+     implicit none
       !> mol/basis data needed by integral program
       type(prop_molcfg), intent(in) :: mol
       !> p(np) perturbation lables
@@ -1181,12 +1191,13 @@ contains
       integer,      optional, intent(in) :: comp(:)
       !---------------------------------------------------------------
       integer      :: idxp(size(p)), pperm(size(dimf)), ccomp(size(p)), &
-                      stepf(size(dimf)), ddimf(size(dimf)), idxf(size(dimf)), &
-                      i, j, k, tmpi, nd
+                      & stepf(size(dimf)), ddimf(size(dimf)), idxf(size(dimf)), &
+                      & i, j, k, tmpi, nd
       character(4) :: pp(size(p)), tmpp
       logical      :: zero
       type(matrix),pointer :: Ftmp(:)
       integer      :: sizep
+      i=0
       allocate(Ftmp(product(dimf)))
       ! verify that all perturbation labels exist, find index of each
       sizep = size(p)
@@ -1485,12 +1496,14 @@ contains
 
 
    subroutine twofck_ks(mol, n, D, F)
+     implicit none
       type(prop_molcfg), intent(in)    :: mol
       integer,           intent(in)    :: n
       type(matrix),      intent(in)    :: D(n+1)
       type(matrix),      intent(inout) :: F
       type(matrix) :: A(1)
       integer      :: i, lupri, luerr, nbast
+      i=0
 !!$      interface
 !!$         SUBROUTINE II_get_xc_linrsp(LUPRI,LUERR,SETTING,nbast,b,D,G,nbmat)
 !!$           use precision
@@ -1604,20 +1617,24 @@ contains
 
 
    function pert_antisym(p)
+     implicit none
       character(*), intent(in) :: p(:)
       logical :: pert_antisym(size(p))
       integer :: i
+      i=0
       pert_antisym = (/(field_list(idx(p(i)))%anti, i=1,size(p))/)
    end function
 
 
    !> shape (dimensions) of property p(:)
    function pert_shape(mol, p)
+     implicit none
       !> structure containing the integral program settings
       type(prop_molcfg), intent(in) :: mol
       !> field lables
       character(*),      intent(in) :: p(:)
       integer :: pert_shape(size(p)), i,sizep
+      i=0
       sizeP = size(p)
       IF(size(p).GE.1)THEN
          IF(p(1).EQ.'NOOP')THEN
@@ -1642,9 +1659,11 @@ contains
 
 
    function pert_basdep(p)
+     implicit none
       character(*), intent(in) :: p(:)
       logical :: pert_basdep(size(p))
       integer :: i
+      i=0
       pert_basdep = (/(field_list(idx(p(i)))%bas, i=1,size(p))/)
    end function
 
@@ -1657,8 +1676,10 @@ contains
    !>           4) decreasing absolute value of imaginary
    !>              part of %freq (- before +)
    function pert_order(fld) result(ord)
+     implicit none
       type(pert_field), intent(in) :: fld(:)
       integer :: ord(size(fld)), i, j, k
+      i=0
       ord = (/(i, i=1, size(fld))/)
       do i=1, size(fld)
          !find perturbation after i, with highest idxp (secondly highest ddime)

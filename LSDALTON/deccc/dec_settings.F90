@@ -103,8 +103,8 @@ contains
     ! -- Pair fragments
     DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
     DECinfo%paircut_set=.false.
-    ! Pair reduction distance - default 1000 Angstrom, effectively turned off.
-    DECinfo%PairReductionDistance = 1000.0E0_realk/bohr_to_angstrom
+    ! Pair reduction distance - default 5 Angstrom.
+    DECinfo%PairReductionDistance = 5.0E0_realk/bohr_to_angstrom
     DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
 
     ! Memory use for full molecule structure

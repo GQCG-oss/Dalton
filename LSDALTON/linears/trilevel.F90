@@ -915,6 +915,21 @@ integer              :: nbast, len,iAO,itype,igrid
 type(moleculeinfo),target :: atomicmolecule
 TYPE(lssetting)           :: atomicSetting
 logical :: integraltransformGC
+
+Write(ls%lupri,*)''
+Write(ls%lupri,*)'A set of atomic calculations are performed in order to construct'
+Write(ls%lupri,*)'the Grand Canonical Basis set (see PCCP 11, 5805-5813 (2009))'
+Write(ls%lupri,*)'as well as JCTC 5, 1027 (2009)'
+Write(ls%lupri,*)'This is done in order to use the TRILEVEL starting guess and '
+Write(ls%lupri,*)'perform orbital localization'
+Write(ls%lupri,*)'This is Level 1 of the TRILEVEL starting guess and is performed per default.'
+Write(ls%lupri,*)'The use of the Grand Canonical Basis can be deactivated using .NOGCBASIS'
+Write(ls%lupri,*)'under the **GENERAL section. This is NOT recommended if you do TRILEVEL '
+Write(ls%lupri,*)'or orbital localization.'
+Write(ls%lupri,*)''
+!> Contains the trilevel and atoms starting guess in addition to the construction of the GCbasis se PCCP 2009, 11, 5805-5813 
+
+
 !atomic calc is always done in AO basis and not transformed
 integraltransformGC = ls%setting%integraltransformGC
 ls%setting%integraltransformGC = .FALSE.
@@ -1557,6 +1572,7 @@ interface
      integer,       intent(in)    :: m(2)
    end subroutine optimloc
 end interface
+
   ndmat = 1
   OnMaster = .TRUE.
   !initialise the IO so that old screening matrices are not used 
@@ -1593,7 +1609,12 @@ end interface
 
   write(config%lupri,'(1X,A)') 'Level 2 molecular calculation'
   write(   * ,'(1X,A)') 'Level 2 molecular calculation'
-  write(config%lupri,*) '============================='
+  write(config%lupri,'(A)') '============================='
+  Write(ls%lupri,'(A)')' '
+  Write(ls%lupri,'(1X,A)')'We now perform the 2. Level of the TRILEVEL starting guess '
+  Write(ls%lupri,'(1X,A)')'see PCCP 11, 5805-5813 (2009) as well as JCTC 5, 1027 (2009)'
+  Write(ls%lupri,'(1X,A)')'The 2. level is a full molecular calculation done in a minimal basis'
+  Write(ls%lupri,'(A)')' '
   write(config%lupri,'(A)') '  The 2. Level Basis'
   CALL PRINT_LEVEL2BASIS(config%lupri,&
        & ls%input%MOLECULE,ls%input%basis%VALENCE)
@@ -1743,6 +1764,9 @@ end interface
   call scfloop(H1,F,Dval,S,E,ls,config)
   write(   * ,'(1X,A)') 'Level 2 minimization done! Starting Level 3 minimization...'
   write(config%lupri,'(1X,A)') 'Level 2 minimization done! Starting Level 3 minimization...'
+  Write(ls%lupri,'(1X,A)')'Level 3 is the final level of the TRILEVEL algorithm '
+  Write(ls%lupri,'(1X,A)')'and is the standard calculation using the TRILEVEL starting guess'
+  Write(ls%lupri,'(1X,A)')'obtained from Level 2.'
 
   write(config%lupri,*)
   config%opt%optlevel = 3

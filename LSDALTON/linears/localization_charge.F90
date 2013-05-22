@@ -113,9 +113,9 @@ end if
     nrmG = dsqrt(mat_sqnorm2(G))/real(norb)
     max_loc = fVal/real(norb)
 
-  write (ls%lupri,'(1X,I3,A,ES10.3,A,ES10.2,f5.2,A,f6.2,A,ES10.2,A,ES10.2,A,I3,A,f8.3)') &
- &i, 'Pred=',CFG%r_denom,' max_loc=',max_loc, CFG%PM_input%loc_degree,&
- &   ' r=',r,' mu=',CFG%mu,' grd=', nrmG, ' Nit=',CFG%it, '  step ', stepsize
+  write (ls%lupri,'(1X,I3,A,ES8.1,A,ES8.1,A,ES8.1,A,ES8.1,A,I2,A,f5.2,A,f5.2)') &
+ &i, ' Pred= ',CFG%r_denom,' max_loc = ',max_loc, &
+ & ' mu = ',CFG%mu,' grd = ', nrmG, ' it = ',CFG%it, ' trust-region =', CFG%stepsize, ' step =',stepsize
 
 
    if( nrmG .le. CFG%macro_thresh) exit
