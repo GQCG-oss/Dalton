@@ -137,7 +137,7 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     add_definitions(-DVAR_XLF)
-    set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname -qlanglvl=extended -qinit=f90ptr")
+    set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-qstrict -O3")
     set(CMAKE_Fortran_FLAGS_PROFILE "-qstrict -O3 -p -pg")
@@ -148,7 +148,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     endif()
     set_source_files_properties(${FREE_FORTRAN_SOURCES}
         PROPERTIES COMPILE_FLAGS
-        "-qfree"
+        "-qfree -qlanglvl=extended -qinit=f90ptr"
         )
 # -qsuffix=f=f90:cpp=f90 -d
     set_source_files_properties(${FIXED_FORTRAN_SOURCES}
