@@ -110,11 +110,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -Mipa=fast -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -m64 -i8 -i8storage"
-            )
-    else()
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -m32"
+            "${CMAKE_Fortran_FLAGS} -i8 -i8storage"
             )
     endif()
     if(ENABLE_OMP) 
