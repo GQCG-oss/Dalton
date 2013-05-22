@@ -47,8 +47,6 @@ C   0.0   0.0     0.0
 #  DALTON INPUT
 #######################################################################
 cat > linsca_admm_df.dal <<'%EOF%'
-**GENERAL
-.NOGCBASIS
 **INTEGRALS
 .ADMM-JK
 .DENSFIT
