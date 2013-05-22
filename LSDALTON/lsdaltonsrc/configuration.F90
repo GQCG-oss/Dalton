@@ -551,7 +551,7 @@ DO
             CASE('.NOSHIFT');    config%diag%cfg_lshift = diag_lshift_none
                                  config%av%cfg_lshift = diag_lshift_none
                                  config%solver%cfg_nodamp = .true.
-            CASE('.OAO');        config%decomp%cfg_do_in_oao = .true.; config%opt%cfg_start_guess = 'H1OAO'
+!            CASE('.OAO');        config%decomp%cfg_do_in_oao = .true.; config%opt%cfg_start_guess = 'H1OAO'
             CASE('.OVERLAP');    READ(LUCMD,*) min_density_overlap
                                  config%av%cfg_settings%min_density_overlap &
                                      & = min_density_overlap
@@ -2910,7 +2910,7 @@ ENDIF
       WRITE (config%LUPRI,'(4X,A,D11.4)')&
            & ' The Exact Exchange Factor             :', config%integral%exchangeFactor
    endif
-   if (config%opt%cfg_density_method == config%opt%cfg_f2d_arh) then
+   if (config%opt%cfg_density_method == config%opt%cfg_f2d_arh .and. (.not. config%davidSCF%arh_davidson )) then
       WRITE(config%LUPRI,*)
       write (config%lupri,*) '  You have requested Augmented Roothaan-Hall optimization'
       write (config%lupri,*) '  => explicit averaging is turned off!'
@@ -3540,6 +3540,18 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    ELSE
       Write(config%lupri,*)'The SCF Convergence Criteria is applied to the gradnorm in AO basis'
    ENDIF
+
+   ! ORBITAL LOCALIZATION RELATED MATTERS
+   if (config%decomp%cfg_mlo .and. (.not. config%decomp%cfg_lcm )) then
+       write(config%lupri,*)  
+       write(config%lupri,*) '    ** ORBITAL LOCALIZATION INFORMATION **'  
+       write(config%lupri,*) ' Orbital localization using canonical molecular orbitals as starting guess '
+       write(config%lupri,*) ' is requested. For more efficient orbital localization (particularly for large) '
+       write(config%lupri,*) ' system, use options  .START/TRILEVEL and .LCM in *DENSOPT section.   '  
+       write(config%lupri,*) 
+   endif 
+   
+
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)
