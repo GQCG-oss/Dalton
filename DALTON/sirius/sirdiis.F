@@ -330,7 +330,6 @@ C
 #include "infpri.h"
 #include "gnrinf.h"
 #include "dfterg.h"
-#include "dftcom.h"
 #include "cbirea.h"
 #include "r12int.h"
 #include "qm3.h"

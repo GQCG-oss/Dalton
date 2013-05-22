@@ -47,7 +47,7 @@ C
 !===========================================================================
 #endif
 C  /* Deck mp2inp */
-      SUBROUTINE MP2INP(WORD,INPERR,ALLOPT)
+      SUBROUTINE MP2INP(WORD1,INPERR,ALLOPT)
 C
 C 17/9 - 1990 Hans Agren, Revised Sep 2007-Nov 2009, Hans Joergen Aa. Jensen
 C
@@ -73,7 +73,6 @@ CMAERKE 900918: MP2SAV not implemented, should it be?
 C
 C     ***** PROCESS INPUT FOR MP2INP *****
 C
-      WORD1 = WORD
       IF (ALLOPT) CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',
      &                       LUPRI)
   100    READ (LUCMD, '(A7)') WORD
@@ -104,7 +103,7 @@ C
      *         ' one of the four characters ".*!#" for ',WORD1
          END IF
          CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-         CALL QUIT(' ILLEGAL KEYWORD IN MP2INP ')
+         CALL QUIT('Illegal keyword for "*MP2 INPUT"')
 C
 C *** Option 1 >MP2 FROZEN<   Frozen MP2 orbitals
   101 READ(LUCMD,*) (NFRMP2(I),I=1,NSYM)
@@ -205,6 +204,7 @@ C
          END IF
       END IF
 
+      WORD1 = WORD
       RETURN
       END
 C  /* Deck mp2ctl */
