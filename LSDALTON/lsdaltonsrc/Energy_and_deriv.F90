@@ -227,7 +227,7 @@ contains
        call GET_EXCITED_STATE_GRADIENT(ls,config,F,D,S,Gradient,Natoms)
     else
        ! HF or DFT gradient
-        if( config%response%tasks%doNumGrad )then
+        if( config%response%tasks%doNumGradGeomOpt )then
 nbast=D%nrow
 h = 1.0E-7_realk !1.0E-5_realk
 call get_num_grad(h,lupri,config%luerr,ls,S,F,D,C,config,Gradient)

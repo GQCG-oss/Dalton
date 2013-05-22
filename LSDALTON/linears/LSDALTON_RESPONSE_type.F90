@@ -11,6 +11,8 @@ module lsdalton_response_type_mod
      logical :: doNumHess
      !> Numerical Gradient
      logical :: doNumGrad
+     !> Numerical Gradient for geometry optimization
+     logical :: doNumGradGeomOpt
      !> Numerical Gradient and Hessian
      logical :: doNumGradHess
 #endif
@@ -50,6 +52,7 @@ contains
 #ifdef MOD_UNRELEASED
     tasksitem%doNumHess = .false.
     tasksitem%doNumGrad = .false.
+    tasksitem%doNumGradGeomOpt = .false.
     tasksitem%doNumGradHess = .false.
 #endif
     tasksitem%doMCD = .false.
