@@ -1810,7 +1810,7 @@ ELSE
       ENDDO
       call mem_alloc(maxLHSGAB,dim2)
       DO ILHS=1,dim2
-         maxLHSGAB(B) = 3
+         maxLHSGAB(ILHS) = 3
       ENDDO
       maxLHSELM = 3
    ENDIF
