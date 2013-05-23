@@ -5036,6 +5036,8 @@ DO idmat=1,ndrhs
 
    call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,zeromat,DmatLHS(idmat)%p,D2,&
         &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
+
+   ADMM_proj = 0E0_realk
    call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
    call get_ADMM_K_gradient_projection_term(ADMM_proj,zeromat,xc2,DmatLHS(idmat)%p,D2,&
         &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
