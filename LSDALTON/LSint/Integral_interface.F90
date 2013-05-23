@@ -17,8 +17,7 @@ MODULE IntegralInterfaceMOD
   use TYPEDEF, only: getNbasis, retrieve_output, gcao2ao_transform_matrixd2, &
        & retrieve_screen_output, ao2gcao_transform_matrixf, &
        & gcao2ao_transform_fulld, ao2gcao_transform_fullf, &
-       & ao2gcao_half_transform_matrix,gcao2ao_half_transform_matrix,&
-       & GCAO2AO_transform_matrixD2
+       & ao2gcao_half_transform_matrix,GCAO2AO_transform_matrixD2
   use KS_settings, only: SaveF0andD0,incrD0,incrF0,incremental_scheme,&
        & incrDdiff,do_increment,activate_incremental
   use ls_Integral_Interface, only: ls_same_mats, ls_getintegrals, &
