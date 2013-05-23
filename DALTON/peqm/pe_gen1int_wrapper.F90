@@ -60,7 +60,7 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
         charge = 1.0d0
     end if
 
-    if (inttype == 'es') then
+    if (inttype == 'es' .or. inttype == 'molgrad') then
         call OnePropCreate(prop_name=INT_POT_ENERGY,&
                            one_prop=prop_operator,  &
                            info_prop=ierr,          &
@@ -77,14 +77,6 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
 !                           gaupot_charge=charge,      &
 !                           gaupot_expt=gauexp,        &
 !                           order_geo_pot=k)
-    else if (inttype == 'molgrad') then
-        call OnePropCreate(prop_name=INT_POT_ENERGY,&
-                           one_prop=prop_operator,  &
-                           info_prop=ierr,          &
-                           idx_nuclei=(/-1/),       &
-                           coord_nuclei=coord,      &
-                           charge_nuclei=charge,    &
-                           order_geo_pot=k)
     else
         stop 'ERROR: unknown integral type'
     end if
@@ -92,39 +84,39 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
 
     ! creates N-ary tree for geometric derivatives
     if (inttype == 'molgrad') then  !for geometry opt
-        call Gen1IntAPINaryTreeCreate(max_num_cent=1,      &
-                                  order_geo=1,         &
-                                  num_geo_atoms=0,     &
-                                  idx_geo_atoms=(/0/), &
-                                  nary_tree=nary_tree_bra)
-        call Gen1IntAPINaryTreeCreate(max_num_cent=1,      &
-                                  order_geo=1,         &
-                                  num_geo_atoms=0,     &
-                                  idx_geo_atoms=(/0/), &
-                                  nary_tree=nary_tree_ket)
         call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
-                                  order_geo=0,         &
-                                  num_geo_atoms=0,     &
-                                  idx_geo_atoms=(/0/), &
-                                  nary_tree=nary_tree_total)
+                                      order_geo=0,         &
+                                      num_geo_atoms=0,     &
+                                      idx_geo_atoms=(/0/), &
+                                      nary_tree=nary_tree_bra)
+        call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
+                                      order_geo=0,         &
+                                      num_geo_atoms=0,     &
+                                      idx_geo_atoms=(/0/), &
+                                      nary_tree=nary_tree_ket)
+        call Gen1IntAPINaryTreeCreate(max_num_cent=1,      &
+                                      order_geo=1,         &
+                                      num_geo_atoms=0,     &
+                                      idx_geo_atoms=(/0/), &
+                                      nary_tree=nary_tree_total)
 
 
     else !if not geometry opt
         call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
-                                  order_geo=0,         &
-                                  num_geo_atoms=0,     &
-                                  idx_geo_atoms=(/0/), &
-                                  nary_tree=nary_tree_bra)
+                                      order_geo=0,         &
+                                      num_geo_atoms=0,     &
+                                      idx_geo_atoms=(/0/), &
+                                      nary_tree=nary_tree_bra)
         call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
-                                  order_geo=0,         &
-                                  num_geo_atoms=0,     &
-                                  idx_geo_atoms=(/0/), &
-                                  nary_tree=nary_tree_ket)
+                                      order_geo=0,         &
+                                      num_geo_atoms=0,     &
+                                      idx_geo_atoms=(/0/), &
+                                      nary_tree=nary_tree_ket)
         call Gen1IntAPINaryTreeCreate(max_num_cent=0,      &
-                                  order_geo=0,         &
-                                  num_geo_atoms=0,     &
-                                  idx_geo_atoms=(/0/), &
-                                  nary_tree=nary_tree_total)
+                                      order_geo=0,         &
+                                      num_geo_atoms=0,     &
+                                      idx_geo_atoms=(/0/), &
+                                      nary_tree=nary_tree_total)
 
     end if !NANNA: this end if should be moved further down!
 
