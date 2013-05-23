@@ -515,8 +515,10 @@ def print_shells(cubelist, refcub, mini, maxi, step):
     if maxi < mini:
         exit('ERROR: maximum vdw radius is less than the specified minimum')
     vals = []
+    rels = []
     for i in range(len(cubelist)):
         vals.append([])
+        rels.append([])
     grdpts = []
     shells = []
     inner = mini
@@ -524,6 +526,7 @@ def print_shells(cubelist, refcub, mini, maxi, step):
     while round(outer, 4) <= round(maxi, 4):
         for i in range(len(cubelist)):
             vals[i].append([])
+            rels[i].append([])
         grdpts.append(0)
         shells.append([round(inner, 4), round(outer, 4)])
         inner += step
@@ -544,7 +547,8 @@ def print_shells(cubelist, refcub, mini, maxi, step):
     for i in xrange(nprocs):
         proc = mp.Process(target=print_shell_worker,
                           args=(points[chunksize * i:chunksize * (i + 1)],
-                                shells, vals, grdpts, refcub, cubelist, out_queue))
+                                shells, vals, rels, grdpts, refcub, cubelist,
+                                out_queue))
         procs.append(proc)
         proc.start()
     results = []
@@ -552,12 +556,13 @@ def print_shells(cubelist, refcub, mini, maxi, step):
         results.append(out_queue.get())
     for proc in procs:
         proc.join()
-    for val, pts in results:
+    for val, rel, pts in results:
         for i in xrange(len(shells)):
             grdpts[i] += pts[i]
             for j in xrange(len(cubelist)):
                 for k in xrange(pts[i]):
                     vals[j][i].append(val[j][i][k])
+                    rels[j][i].append(rel[j][i][k])
     for ic, cube in enumerate(cubelist):
         for ish, shell in enumerate(shells):
             fprt = open('{0}_shell_{1}.log'.format(cube.filename[:-5], ish), 'w')
@@ -569,20 +574,26 @@ def print_shells(cubelist, refcub, mini, maxi, step):
             fprt.write(prt)
             prt = ''
             for i in xrange(grdpts[ish]):
-                prt += '{0:12.4e}\n'.format(vals[ic][ish][i])
+                prt += '{0:12.4e} {0:12.4e}\n'.format(vals[ic][ish][i],
+                                                      rels[ic][ish][i])
             fprt.write(prt)
             fprt.close()
 
-def print_shell_worker(points, shells, vals, grdpts, refcub, cubelist, out_queue):
+def print_shell_worker(points, shells, vals, rels, grdpts, refcub, cubelist,
+                       out_queue):
     for point, x, y, z in points:
         for ish, shell in enumerate(shells):
             include = inorout(point, shell, refcub.coords, refcub.charges)
             if include:
                 for ic, cube in enumerate(cubelist):
-                    vals[ic][ish].append(cube.grid[x][y][z] - refcub.grid[x][y][z])
+                    vals[ic][ish].append(cube.grid[x][y][z]
+                                         - refcub.grid[x][y][z])
+                    rels[ic][ish].append(abs((refcube.grid[x][y][z]
+                                              - cub.grid[x][y][z])
+                                             / refcub.grid[x][y][z]))
                 grdpts[ish] += 1
                 break
-    out_queue.put((vals, grdpts))
+    out_queue.put((vals, rels, grdpts))
 
 if __name__ == "__main__":
 
