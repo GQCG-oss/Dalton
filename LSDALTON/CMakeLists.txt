@@ -82,24 +82,6 @@ message("-- BASIS_DIR set to: ${BASIS_DIR}")
 
 include(ConfigArchitecture)
 include(Sources)
-
-if(NOT ENABLE_CRAYWRAPPER)
-    include(Math)
-    if(NOT BLAS_FOUND)
-       message("-- Using own BLAS implementation (slow)")
-       set(FIXED_FORTRAN_SOURCES
-          ${FIXED_FORTRAN_SOURCES}
-          ${OWN_BLAS_SOURCES}
-          )
-    endif()
-    if(NOT LAPACK_FOUND)
-       set(FIXED_FORTRAN_SOURCES
-         ${FIXED_FORTRAN_SOURCES}
-         ${OWN_LAPACK_SOURCES}
-       )
-    endif()
-endif()
-
 include(ConfigCompilerFlags)
 include(ConfigExternal)
 
@@ -129,6 +111,23 @@ set(ExternalProjectCMakeArgs
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
+
+if(NOT ENABLE_CRAYWRAPPER)
+    include(Math)
+    if(NOT BLAS_FOUND)
+       message("-- Using own BLAS implementation (slow)")
+       set(FIXED_FORTRAN_SOURCES
+          ${FIXED_FORTRAN_SOURCES}
+          ${OWN_BLAS_SOURCES}
+          )
+    endif()
+    if(NOT LAPACK_FOUND)
+       set(FIXED_FORTRAN_SOURCES
+         ${FIXED_FORTRAN_SOURCES}
+         ${OWN_LAPACK_SOURCES}
+       )
+    endif()
+endif()
 
 if(ENABLE_RELEASE)
 
