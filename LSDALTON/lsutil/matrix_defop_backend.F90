@@ -384,9 +384,11 @@ contains
 
   ! matrix trace = sum Aii, for A square
   function mat_trace(A)
+    implicit none
     type(matrix), intent(in) :: A
-    real(realk) mat_trace
-    integer i
+    real(realk) :: mat_trace
+    integer :: i
+    i=0
     call mat_assert_def(A, 'mat_trace(A) called with matrix A undefined')
     if (A%nrow/=A%ncol) call quit('mat_trace called with non-square matrix A')
     mat_trace = 0

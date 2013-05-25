@@ -4,7 +4,7 @@
 *
 * unfortunately, cannoy be compiled by gfortran-4.1.1
 #ifndef GFORTRAN   
-#ifndef VAR_PGI
+#ifndef VAR_PGF90
 #ifndef VAR_OPEN64
       subroutine  qzero(dx,n)
       implicit none

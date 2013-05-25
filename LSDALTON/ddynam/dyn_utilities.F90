@@ -1309,9 +1309,10 @@ End subroutine
 !  Init_random_seed   !
 !=====================!
 Subroutine init_random_seed()
+  implicit none
             INTEGER :: i, n, clock
             INTEGER, DIMENSION(:), ALLOCATABLE :: seed
-          
+            i=0
             CALL RANDOM_SEED(size = n)
             ALLOCATE(seed(n))
           
