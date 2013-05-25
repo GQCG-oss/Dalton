@@ -37,6 +37,7 @@ add_custom_target(
     COMMAND tar xf ${EXPORT_DIR}/DALTON/sources.tar -C ${EXPORT_DIR}/DALTON
     COMMAND rm     ${EXPORT_DIR}/DALTON/sources.tar
     COMMAND cp -r  ${CMAKE_SOURCE_DIR}/../basis          ${EXPORT_DIR}
+    COMMAND cp -r  ${CMAKE_SOURCE_DIR}/../cmake          ${EXPORT_DIR}
     COMMAND cp     ${CMAKE_SOURCE_DIR}/CMakeLists.txt    ${EXPORT_DIR}/DALTON
     COMMAND cp     ${CMAKE_SOURCE_DIR}/COPYING           ${EXPORT_DIR}/DALTON
     COMMAND cp     ${CMAKE_SOURCE_DIR}/CTestConfig.cmake ${EXPORT_DIR}/DALTON
