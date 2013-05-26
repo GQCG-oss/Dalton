@@ -173,7 +173,9 @@ contains
     integer function pre_decimals_mat(A)
       type(matrix) :: A
       real(realk), pointer :: elms(:,:)
-      integer i, j
+      integer :: i, j
+      i=0
+      j=0
       elms => mat_acquire_block(A, 1, nrow, 1, ncol)
       pre_decimals_mat = maxval((/((pre_decimals(elms(i,j)), i=1,nrow), j=1,ncol)/))
       call mat_unacquire_block(A, elms)

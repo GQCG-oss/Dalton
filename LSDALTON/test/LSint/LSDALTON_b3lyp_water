@@ -80,7 +80,7 @@ if [ `uname` = Linux ]; then
 else
    GREP="egrep"
 fi
-CRIT1=`$GREP "Final DFT energy:  * -76.380917263" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy:  * -76.380917142" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="ENERGY NOT CORRECT -"

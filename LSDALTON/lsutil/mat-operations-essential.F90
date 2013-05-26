@@ -137,23 +137,27 @@ end type matrixmembuf
           WRITE(6,*)'We therefore use the dense unrestricted type - which do not use memory distribution'
        else
           matrix_type = a
-          select case(matrix_type)             
-          case(mtype_symm_dense)
-             WRITE(lupri,'(A)') 'Matrix type: mtype_symm_dense'
-          case(mtype_dense)
-             WRITE(lupri,'(A)') 'Matrix type: mtype_dense'
-          case(mtype_sparse_block)
-             WRITE(lupri,'(A)') 'Matrix type: mtype_sparse_block'
-          case(mtype_unres_dense)
-             WRITE(lupri,'(A)') 'Matrix type: mtype_unres_dense'
-          case(mtype_csr)
-             WRITE(lupri,'(A)') 'Matrix type: mtype_csr'
-          case(mtype_scalapack)
-             WRITE(lupri,'(A)') 'Matrix type: mtype_scalapack'
-          case default
-             call lsquit("Unknown type of matrix",-1)
-          end select
 #ifdef VAR_LSMPI
+          IF (infpar%mynum.EQ.infpar%master) THEN
+#endif
+            select case(matrix_type)             
+            case(mtype_symm_dense)
+               WRITE(lupri,'(A)') 'Matrix type: mtype_symm_dense'
+            case(mtype_dense)
+               WRITE(lupri,'(A)') 'Matrix type: mtype_dense'
+            case(mtype_sparse_block)
+               WRITE(lupri,'(A)') 'Matrix type: mtype_sparse_block'
+            case(mtype_unres_dense)
+               WRITE(lupri,'(A)') 'Matrix type: mtype_unres_dense'
+            case(mtype_csr)
+               WRITE(lupri,'(A)') 'Matrix type: mtype_csr'
+            case(mtype_scalapack)
+               WRITE(lupri,'(A)') 'Matrix type: mtype_scalapack'
+            case default
+               call lsquit("Unknown type of matrix",-1)
+            end select
+#ifdef VAR_LSMPI
+          ENDIF
           IF (infpar%mynum.EQ.infpar%master) THEN
              call ls_mpibcast(MATRIXTY,infpar%master,MPI_COMM_LSDALTON)
              call lsmpi_set_matrix_type_master(a)
@@ -1896,6 +1900,7 @@ end type matrixmembuf
       type(Matrix), intent(in) :: A
       integer, intent(in) :: from_row, to_row, from_col, to_col
       type(Matrix), intent(inout) :: Asec  !output
+      type(Matrix) :: B,Bsec
       
       !Check if Asec is inside A
       if (to_row > A%nrow .or. from_row < 1 .or. from_col < 1 .or. A%ncol < to_col) then
@@ -1922,6 +1927,16 @@ end type matrixmembuf
          !             call mat_unres_symm_dense_section(A,from_row,to_row,from_col,to_col,Asec)
       case(mtype_unres_dense)
          call mat_unres_dense_section(A,from_row,to_row,from_col,to_col,Asec)
+      case(mtype_scalapack)
+         write(*,'(A)') 'Fallback mat_section for mtype_scalapack'
+         call mat_dense_init(B,A%nrow,A%ncol)
+         call mat_dense_init(Bsec,Asec%nrow,Asec%ncol)
+         call mat_to_full(A,1E0_realk,B%elms)
+         call mat_dense_section(B,from_row,to_row,from_col,to_col,Bsec)
+         call mat_set_from_full(Bsec%elms,1E0_realk,Asec)
+         call mat_dense_free(B)
+         call mat_dense_free(Bsec)
+         write(*,'(A)') 'debug: fallback mat_section finished'
       case default
          call lsquit("mat_section not implemented for this type of matrix",-1)
       end select

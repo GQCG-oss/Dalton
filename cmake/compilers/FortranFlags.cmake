@@ -110,11 +110,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -Mipa=fast -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -m64 -i8 -i8storage"
-            )
-    else()
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -m32"
+            "${CMAKE_Fortran_FLAGS} -i8 -i8storage"
             )
     endif()
     if(ENABLE_OMP) 
@@ -137,7 +133,7 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     add_definitions(-DVAR_XLF)
-    set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname -qlanglvl=extended -qinit=f90ptr")
+    set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-qstrict -O3")
     set(CMAKE_Fortran_FLAGS_PROFILE "-qstrict -O3 -p -pg")
@@ -148,7 +144,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     endif()
     set_source_files_properties(${FREE_FORTRAN_SOURCES}
         PROPERTIES COMPILE_FLAGS
-        "-qfree"
+        "-qfree -qlanglvl=extended -qinit=f90ptr"
         )
 # -qsuffix=f=f90:cpp=f90 -d
     set_source_files_properties(${FIXED_FORTRAN_SOURCES}
