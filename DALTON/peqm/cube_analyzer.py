@@ -574,7 +574,7 @@ def print_shells(cubelist, refcub, mini, maxi, step):
             fprt.write(prt)
             prt = ''
             for i in xrange(grdpts[ish]):
-                prt += '{0:12.4e} {0:12.4e}\n'.format(vals[ic][ish][i],
+                prt += '{0:12.4e} {1:12.4e}\n'.format(vals[ic][ish][i],
                                                       rels[ic][ish][i])
             fprt.write(prt)
             fprt.close()
