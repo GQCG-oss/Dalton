@@ -127,6 +127,9 @@ if(NOT ENABLE_CRAYWRAPPER)
          ${OWN_LAPACK_SOURCES}
        )
     endif()
+    if(HAVE_MKL_LAPACK)
+        add_definitions(-DVAR_MKL)
+    endif()
 endif()
 
 if(NOT ENABLE_RELEASE)
