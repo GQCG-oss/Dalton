@@ -94,43 +94,29 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
     set(COMPILER_SPECIFIC_LIB_PREFIX mkl_gf)
 endif()
 
-set(MKL_BLAS_LIBS mkl_core ${COMPILER_SPECIFIC_THREAD_LIB} guide pthread m)
+set(_mysuffix)
 if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     if(ENABLE_64BIT_INTEGERS)
-        set(MKL_BLAS_LIBS ${MKL_BLAS_LIBS} ${COMPILER_SPECIFIC_LIB_PREFIX}_ilp64)
+        set(_mysuffix _ilp64)
     else()
-        set(MKL_BLAS_LIBS ${MKL_BLAS_LIBS} ${COMPILER_SPECIFIC_LIB_PREFIX}_lp64)
+        set(_mysuffix _lp64)
     endif()
-else()
-    set(MKL_BLAS_LIBS ${MKL_BLAS_LIBS} ${COMPILER_SPECIFIC_LIB_PREFIX})
 endif()
+
+set(MKL_BLAS_LIBS mkl_core ${COMPILER_SPECIFIC_THREAD_LIB} guide pthread m)
+set(MKL_BLAS_LIBS ${MKL_BLAS_LIBS} ${COMPILER_SPECIFIC_LIB_PREFIX}${_mysuffix})
 
 # newer MKL versions don't have libguide
 set(MKL_BLAS_LIBS2 mkl_core ${COMPILER_SPECIFIC_THREAD_LIB} pthread m)
-if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-    if(ENABLE_64BIT_INTEGERS)
-        set(MKL_BLAS_LIBS2 ${MKL_BLAS_LIBS2} ${COMPILER_SPECIFIC_LIB_PREFIX}_ilp64)
-    else()
-        set(MKL_BLAS_LIBS2 ${MKL_BLAS_LIBS2} ${COMPILER_SPECIFIC_LIB_PREFIX}_lp64)
-    endif()
-else()
-    set(MKL_BLAS_LIBS2 ${MKL_BLAS_LIBS2} ${COMPILER_SPECIFIC_LIB_PREFIX})
-endif()
+set(MKL_BLAS_LIBS2 ${MKL_BLAS_LIBS2} ${COMPILER_SPECIFIC_LIB_PREFIX}${_mysuffix})
 
 # ancient MKL BLAS
 set(MKL_BLAS_LIBS3 mkl guide m)
 
-unset(COMPILER_SPECIFIC_THREAD_LIB)
-
-if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-    if(ENABLE_64BIT_INTEGERS)
-        set(MKL_LAPACK_LIBS mkl_lapack95_ilp64)
-    else()
-        set(MKL_LAPACK_LIBS mkl_lapack95_lp64)
-    endif()
-else()
-    set(MKL_LAPACK_LIBS mkl_lapack95)
-endif()
+set(MKL_LAPACK_LIBS mkl_lapack95${_mysuffix} ${COMPILER_SPECIFIC_LIB_PREFIX}${_mysuffix})
 
 # older MKL LAPACK
 set(MKL_LAPACK_LIBS2 mkl_lapack)
+
+unset(COMPILER_SPECIFIC_THREAD_LIB)
+unset(_mysuffix)

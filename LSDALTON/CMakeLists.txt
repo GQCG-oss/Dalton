@@ -115,7 +115,6 @@ set(ExternalProjectCMakeArgs
 if(NOT ENABLE_CRAYWRAPPER)
     include(Math)
     if(NOT BLAS_FOUND)
-       message("-- Using own BLAS implementation (slow)")
        set(FIXED_FORTRAN_SOURCES
           ${FIXED_FORTRAN_SOURCES}
           ${OWN_BLAS_SOURCES}
