@@ -390,4 +390,4 @@ add_test(dft_disp_d3 ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/d
 add_test(dft_disp_d3bj ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dft_disp_d3bj)
 add_test(dft_ac_grac ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dft_ac_grac)
 add_test(dft_ac_th ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dft_ac_th)
-add_test(dcpt2 ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dft_ac_th)
+add_test(dcpt2 ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null dcpt2)
