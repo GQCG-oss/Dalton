@@ -1,3 +1,8 @@
+if(ENABLE_64BIT_INTEGERS)
+    set(MATH_LIB_SEARCH_ORDER MKL)
+else()
+    set(MATH_LIB_SEARCH_ORDER MKL ESSL ATLAS ACML GENERIC)
+endif()
 
 #-------------------------------------------------------------------------------
 # GENERIC
