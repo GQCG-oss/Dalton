@@ -127,11 +127,10 @@ macro(find_mkl)
             set(path_suffixes lib/ia32 lib/32)
 	endif()
 
-        set(_mythreadtype)
 	if(ENABLE_OMP)
             set(_mythreadtype mkl_intel_thread)
-            set(_mythreadtype mkl_sequential)
 	else()
+            set(_mythreadtype mkl_sequential)
 	endif()
 
        	if(ENABLE_SCALAPACK)
