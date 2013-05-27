@@ -98,9 +98,6 @@ type DiagItem
    logical :: DEBUG_DCHANGE
    logical :: DEBUG_EMODEL_CHANGE
    logical :: debug_idempotency
-#ifdef VAR_DSM
-   logical :: DEBUG_RH_DSM_ECHANGE
-#endif
    logical :: DEBUG_RH_MU_E
    !DATA:
    !=====
@@ -145,9 +142,6 @@ implicit none
    diag%DEBUG_EMODEL_CHANGE   = .false.
    diag%debug_idempotency     = .false.
    diag%DEBUG_RH_MU_E         = .false.
-#ifdef VAR_DSM
-   diag%DEBUG_RH_DSM_ECHANGE  = .false.
-#endif
    diag%nofinalhomolumo       = .false.
    diag%eHOMO                 = 0.0E0_realk
 
@@ -598,33 +592,10 @@ end subroutine diag_set_default_config
       TYPE(util_HistoryStore),intent(in) :: queue
       type(Matrix), intent(in) :: S,Dmu
       real(realk), intent(out) :: ratio
-      type(Matrix) :: Dpara, Dorth
-      real(realk),pointer  :: coef(:)
-      integer :: N
-      logical :: nofv
 
       !** Initializations
-#ifdef VAR_DSM
-      N = MIN(queue%used_entries,av%dsm_history_size)
-      if (N == 0) then
-        RETURN
-      endif
-      call mat_init(Dpara,Dmu%nrow,Dmu%ncol)
-      call mat_init(Dorth,Dmu%nrow,Dmu%ncol)
-      call mem_alloc(coef,N)
-      !** Get the coefficients c
-      call util_GET_PROJ_PART(av,queue,Dmu,S,coef)
-      !** D(para) = sum_i(c_i D_i)
-      call get_average_arr(av,'D',queue, av%dsm_history_size, coef, Dpara)
-      call mat_add(1E0_realk,Dmu,-1E0_realk,Dpara,Dorth)
-      ratio = util_Snorm(Dorth,S)/util_Snorm(Dmu,S)
-#else
       call lsquit('ratio_Dorth_D',-1)
-#endif
 
-      call mat_free(Dpara)
-      call mat_free(Dorth)
-      call mem_dealloc(coef)
    end subroutine ratio_Dorth_D
 
 !> \brief Testing the configuration at mu = 0 and mu = mu_r and returning
@@ -849,34 +820,17 @@ end subroutine diag_set_default_config
       integer :: ndim,i
 
       ndim = S%nrow
-#ifdef VAR_DSM
-      if (diag%DEBUG_RH_DSM_ECHANGE .or. diag%DEBUG_EMODEL_CHANGE .or. diag%debug_rh_mu_E) then
-        !** diagonalize SDS (SDS C = SCe) giving the corresponding
-        ! idempotent Didem = <C|C> 
-        call mat_init(Didem,ndim,ndim)
-        call GET_Didem(diag,D,S,Didem,Co)
-      endif
-#else
       if (diag%DEBUG_EMODEL_CHANGE .or. diag%debug_rh_mu_E) then
         !** diagonalize SDS (SDS C = SCe) giving the corresponding
         ! idempotent Didem = <C|C> 
         call mat_init(Didem,ndim,ndim)
         call GET_Didem(diag,D,S,Didem,Co)
       endif
-#endif
-#ifdef VAR_DSM
-      if (diag%DEBUG_RH_DSM_ECHANGE .or. diag%debug_rh_mu_E) then
-        !find the pseudo SCF-energy for the idempotent Dbar
-         EHFstart = pEHF(Didem)
-         WRITE(diag%LUPRI,*) 'SCF energy after averaging:',EHFstart
-      endif
-#else
       if (diag%debug_rh_mu_E) then
         !find the pseudo SCF-energy for the idempotent Dbar
          EHFstart = pEHF(Didem)
          WRITE(diag%LUPRI,*) 'SCF energy after averaging:',EHFstart
       endif
-#endif
       !if (DEBUG_RH_MU_E) then
       !  if (queue%used_entries > 0) then
       !    Epred_0 = roothan_Epred(queue,H1,S,Didem)
@@ -906,34 +860,6 @@ end subroutine diag_set_default_config
          stat_tab(stat_current_iteration+1,8) = 0.0E0_realk
        endif
  
-#ifdef VAR_DSM
-       !** col4 for RH E-model change
-       if (diag%DEBUG_RH_DSM_ECHANGE .or. diag%DEBUG_EMODEL_CHANGE .or. diag%DEBUG_RH_MU_E) then
-         orbE = 2E0_realk*mat_dotproduct(F,Didem)
-         stat_tab(stat_current_iteration+1,4) = 2*mat_dotproduct(F,Dnew) - orbE
-
-         !** col5 for the DSM E-model change
-         !** col3 for the Sum of the DSM and RH E-model contributions
-         stat_tab(stat_current_iteration+1,3) = &
-                               & stat_tab(stat_current_iteration+1,4) + &
-                               & stat_tab(stat_current_iteration+1,5)
-       endif
-       if (diag%DEBUG_RH_DSM_ECHANGE .or. diag%DEBUG_RH_MU_E) then
-
-         !** col9 for the SCF energy change in the RH-step
-         !The pseudo HF energy between DSM and Roothan 
-         ! - later the SCF energy of next iteration is subtracted 
-         stat_tab(stat_current_iteration+1,9) = EHFstart
-
-         !** col10 for the SCF energy change in the DSM-step
-         !The pseudo energy change in DSM:
-         stat_tab(stat_current_iteration+1,10) = &
-                         &EHFstart - stat_tab(stat_current_iteration,1)
-       endif
-       if (diag%DEBUG_RH_DSM_ECHANGE .or. diag%DEBUG_EMODEL_CHANGE .or. diag%debug_rh_mu_E) then
-         call mat_free(Didem)
-       endif
-#endif
 !
 ! Stuff written directly to output
 !

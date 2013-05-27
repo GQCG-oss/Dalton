@@ -427,7 +427,6 @@ DO
 				 config%davidSCF%stepsize=0.5
 				 config%davidSCF%arh_inp_linesearch=.false.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
-            CASE('.ARH DEBUG');  config%davidSCF%arh_davidson_debug=.true.
             CASE('.ARH(LS) DAVID');  config%davidSCF%arh_davidson=.true.
                                  config%davidSCF%arh_lintrans = .true.
 				 config%davidSCF%precond=.true.
@@ -435,16 +434,7 @@ DO
 				 config%davidSCF%stepsize=0.5
 				 config%davidSCF%arh_inp_linesearch=.true.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
-#ifdef VAR_DSM
-            CASE('.RH TRM');     config%davidSCF%arh_davidson=.true.
-                                 config%davidSCF%arh_lintrans = .true.
-                                 config%davidSCF%arh_linesearch = .true.
-				 config%davidSCF%precond=.true.
-				 config%solver%set_arhterms=.false.
-                                 config%opt%cfg_saveF0andD0 = .true.
-				 config%davidSCF%stepsize=0.5
-                                 config%davidSCF%max_stepsize = config%davidSCF%stepsize
-#endif
+            CASE('.ARH DEBUG');  config%davidSCF%arh_davidson_debug=.true.
 	    CASE('.DAVIDSON DEBUG'); config%davidSCF%debug_info =.true.
 	    CASE('.DAVIDSON EXTRAVEC'); config%davidSCF%arh_extravec =.true.
                                       config%davidSCF%arh_inp_extravec =.true.
@@ -471,13 +461,6 @@ DO
             !CASE('.DISKQUEUE') ; config%solver%cfg_arh_disk_macro = .true. !Not active - get_from_modFIFO_disk won't work!
             CASE('.DORTH');      config%diag%CFG_lshift = diag_lshift_dorth
                                  config%av%CFG_lshift = diag_lshift_dorth
-#ifdef VAR_DSM
-            CASE('.DSM');        config%av%CFG_averaging = config%av%CFG_AVG_DSM
-            CASE('.DSMONE');     config%av%cfg_averaging = config%av%cfg_avg_dsm
-                                 config%av%cfg_dsm_app = config%av%cfg_dsm_one
-            CASE('.DSMXTRA');    config%av%cfg_averaging = config%av%cfg_avg_dsm
-                                 config%av%cfg_dsm_app = config%av%cfg_dsm_xtra_term
-#endif
             CASE('.PURESCF');    config%opt%purescf = .true.
             CASE('.DUMPMAT');    config%opt%dumpmatrices = .true.
             CASE('.EDIIS');      config%av%CFG_averaging = config%av%CFG_AVG_EDIIS
@@ -532,14 +515,8 @@ DO
                                                                          !use instead the "old" scheme developed for the Davidson algorithm
             CASE('.NEWDAMP');    config%solver%cfg_arh_newdamp = .true.
             CASE('.NVEC');       READ(LUCMD,*) NVEC; config%av%cfg_settings%max_history_size = NVEC
-#ifdef VAR_DSM
-                                 config%av%dsm_history_size = NVEC
-#endif
                                  config%av%diis_history_size = NVEC
                                  config%av%ediis_history_size = NVEC
-#ifdef VAR_DSM
-            CASE('.NVECDSM');    READ(LUCMD,*) config%av%dsm_history_size
-#endif
             CASE('.NVECDII');    READ(LUCMD,*) NVEC
                                  config%av%diis_history_size = NVEC
                                  config%av%ediis_history_size = NVEC
@@ -619,15 +596,6 @@ DO
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
             CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
-#ifdef VAR_DSM
-            CASE('.TRSCF');      config%opt%CFG_density_method = config%opt%CFG_F2D_ROOTHAAN
-                                 config%diag%cfg_lshift = diag_lshift_dorth
-                                 config%av%cfg_lshift = diag_lshift_dorth
-                                 config%av%CFG_averaging = config%av%CFG_AVG_DSM
-            CASE('.TrFD');       config%opt%CFG_density_method =  config%opt%CFG_F2D_DIRECT_DENS
-            CASE('.TrFD FULL');  config%opt%CFG_density_method =  config%opt%CFG_F2D_DIRECT_DENS
-                                 config%solver%cfg_arh_truncate = .false.
-#endif
 #ifdef MOD_UNRELEASED
             CASE('.UNREST');     config%decomp%cfg_unres=.true.
                                  config%integral%unres=.true.
@@ -1405,16 +1373,6 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
            config%solver%DEBUG_DIAG_REDSPACE = .true.
         CASE('.DEBUG_DIAG_HESSIAN')
            config%opt%DEBUG_DIAG_HESSIAN = .true.
-#ifdef VAR_DSM
-           !CASE('.DEBUG_DSM_DCHANGE')
-           !     DEBUG_DSM_DCHANGE = .true.
-           !CASE('.DEBUG_DSM_EMODEL')
-           !     DEBUG_DSM_EMODEL = .true.
-           !CASE('.DEBUG_DSM_METRIC')
-           !     DEBUG_DSM_METRIC = .true.
-           !CASE('.DEBUG_EMODEL_CHANGE')
-           !     DEBUG_EMODEL_CHANGE = .true.
-#endif
         CASE('.DEBUG_HESSIAN')
            config%solver%DEBUG_HESSIAN = .true.
         CASE('.DEBUG_HESSIAN_EXACT')
@@ -1423,10 +1381,6 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
            config%diag%DEBUG_IDEMPOTENCY = .true.
            !CASE('.DEBUG_OAO_GRADIENT')
            !     DEBUG_OAO_GRADIENT = .true.
-#ifdef VAR_DSM
-        CASE('.DEBUG_RH_DSM_ECHANGE')
-           config%diag%DEBUG_RH_DSM_ECHANGE = .true.
-#endif
            !CASE('.DEBUG_RH_MU_E')
            !     DEBUG_RH_MU_E = .true.
            !     READ(LUCMD,*) cfg_nits_debug,  cfg_mu_max_debug 
@@ -1444,34 +1398,6 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         CASE('.INFO_DIIS')
            config%av%INFO_DIIS = .true.
            config%av%INFO_WEIGHT_FINAL = .true. 
-#ifdef VAR_DSM
-        CASE('.INFO_DSM')
-           config%av%INFO_DSM_EIGENVAL     = .true.
-           config%av%INFO_DSM_ENERGY       = .true.
-           config%av%INFO_DSM_EXIT         = .true.
-           config%av%INFO_DSM_PROJ         = .true.
-           config%av%INFO_DSM_STEP_TOTAL   = .true.
-           config%av%INFO_WEIGHT_FINAL     = .true.
-        CASE('.INFO_DSM_DETAIL')
-           config%av%INFO_D_PROJ           = .true.
-           config%av%INFO_DSM_CNORM_MU_FIG = .true.
-           !config%av%INFO_DSM_DELTA        = .true.
-           !config%av%INFO_DSM_DERIVATIVES  = .true.
-           config%av%INFO_DSM_EIGENVAL     = .TRUE.
-           config%av%INFO_DSM_ENERGY       = .TRUE.
-           config%av%INFO_DSM_EQ           = .true.
-           config%av%INFO_DSM_EXIT         = .TRUE.
-           config%av%INFO_DSM_GRAD         = .true.
-           config%av%INFO_DSM_METRIC       = .true.
-           config%av%INFO_DSM_NIT          = .true.
-           config%av%INFO_DSM_PROJ         = .TRUE.
-           config%av%INFO_DSM_RATIO        = .true.
-           config%av%INFO_DSM_STEP         = .true.
-           config%av%INFO_DSM_STEP_BRACKET = .true.
-           config%av%INFO_DSM_STEP_TOTAL   = .TRUE.
-           config%av%INFO_DSM_TRUSTR       = .true.
-           config%av%INFO_WEIGHTS          = .true.
-#endif
         CASE('.INFO_LINEQ')
            config%solver%INFO_LINEQ = .true.
         CASE('.INFO_MATOP')
@@ -2755,21 +2681,10 @@ implicit none
    real(realk)                     :: conv_factor, potnuc, cutoff,inverse_std_conv_factor
    CHARACTER*24, PARAMETER :: AVG_NAMES(5) = &
         &  (/ 'None                    ', &
-#ifdef VAR_DSM
-        &     'DSM                     ', &
-#else
         &     '                        ', &
-#endif
         &     'DIIS                    ', &
         &     'EDIIS                   ', &
         &     'Van Lenthe modified DIIS' /)
-#ifdef VAR_DSM
-   CHARACTER*49, PARAMETER :: dsm_names(4) = &
-        &  (/ 'Standard DSM                                     ', &
-        &     'Only one iteration in DSM                        ', &
-        &     'Line search in the steplength after one iteration', &
-        &     'Extra accurate DSM energy model                  '/) 
-#endif
    CHARACTER*35, PARAMETER :: F2D_NAMES(4) = (/ &
         & 'Diagonalization            ',&
         & 'Direct density optimization',&
@@ -2807,14 +2722,8 @@ ENDIF
 !$OMP END PARALLEL
 #endif
 
-#ifdef VAR_DSM
-   config%av%dsm_history_size   = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
-   config%av%diis_history_size  = config%av%dsm_history_size
-   config%av%ediis_history_size = config%av%dsm_history_size
-#else
-   config%av%diis_history_size = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
-   config%av%ediis_history_size = config%av%diis_history_size
-#endif
+config%av%diis_history_size = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
+config%av%ediis_history_size = config%av%diis_history_size
 !Printing the configuration for the calculation:
 !===============================================
 
@@ -2931,21 +2840,12 @@ ENDIF
    if (config%solver%cfg_2nd_order_all) then
       WRITE(config%LUPRI,*)
       config%av%CFG_averaging = config%av%CFG_AVG_none 
-#ifdef VAR_DSM
-      write (config%lupri,*) 'You have requested 2nd order optimization => no averaging (DIIS or DSM)!'
-#else
       write (config%lupri,*) 'You have requested 2nd order optimization => no averaging (no DIIS)!'
-#endif
       config%solver%set_do_2nd_order = .true.
    endif
 
    WRITE(config%LUPRI,*)
    WRITE(config%LUPRI,"('Density subspace min. method    : ',A)") AVG_NAMES(config%av%CFG_averaging)
-#ifdef VAR_DSM
-   if (config%av%cfg_averaging == config%av%cfg_avg_dsm) then
-     WRITE(config%LUPRI,"('  dsm approach: ',A)") dsm_names(config%av%cfg_dsm_app)
-   endif
-#endif
    WRITE(config%LUPRI,"('Density optimization : ',A)") F2D_NAMES(config%opt%CFG_density_method)
    !if (config%opt%CFG_density_method == config%opt%CFG_F2D_ROOTHAAN) then
    !   cfg_rsp_mostart = .true.
@@ -2973,11 +2873,7 @@ ENDIF
    endif
 
    !find the maximum number of stored vectors
-#ifdef VAR_DSM
-   config%av%cfg_settings%max_history_size = MAX(config%av%dsm_history_size,config%av%diis_history_size)
-#else
    config%av%cfg_settings%max_history_size = config%av%diis_history_size
-#endif
    WRITE(config%LUPRI,*)
    WRITE(config%LUPRI,*) 'Maximum size of Fock/density queue in averaging:', &
       &  config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
