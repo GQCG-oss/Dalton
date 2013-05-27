@@ -3,25 +3,12 @@ Changes in setup
 
   Basic options:
     --auto            this flag will disappear in new version of setup
-    --fc=STRING       ok
-    --mpiexec=STRING  in which situation do you need this flag?  - REMOVED Simen
-    --cc=STRING       ok
     --cpp=STRING      will be renamed to --cxx
     --math-dir=PATH   this will be a bit different in new version
     --internal-math   this will be a bit different in new version
-    --craywrap        ok i can see this
-    --mpi             ok
     --mpi32           this does not belong here, cmake should figure out whether mpi lib is 32/64
                       (i have code for it in DIRAC)
-    --omp             ok
     --release         does not belong here, what are users supposed to do with this flag
-    --mklflag         does not belong here, should be set by math detection  - REMOVED Simen
-    --lseek           does not belong here  - REMOVED Simen
-    --int64           ok
-    --csr             ok
-    --scalapack       ok
-    --timings         perhaps move to advanced?  - MOVED TO ADVANCED Simen
-    --show            ok
 
   Change default paths:
     --scratch=PATH    does not belong here (this is independent of compilation)
@@ -31,13 +18,7 @@ Changes in setup
 
   Advanced options:
     --math=STRING     this will be a bit different in new version
-    --debug           ok
-    --profile         ok
-    --check           ok
-    --coverage        ok
-    -D STRING         ok
-    --openrsp         does not belong to setup IMO (code specific)
-    --xcfun           does not belong to setup IMO (code specific)
-    --interest=PATH   does not belong to setup IMO (code specific)
-    --scalasca        does not belong to setup IMO (code specific)
-    --debugpbc        does not belong to setup IMO (code specific)  - REMOVED Simen
+    --openrsp         
+    --xcfun           
+    --interest=PATH   
+    --scalasca        

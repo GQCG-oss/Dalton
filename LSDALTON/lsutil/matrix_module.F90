@@ -29,28 +29,32 @@ MODULE Matrix_module
       INTEGER :: nrow
       !> number of columns
       INTEGER :: ncol
-      !> room for various flags/information for the matrix
-      integer, dimension(:),pointer :: idata
-      !> bsm permutation pointer
-      integer, dimension(:),pointer :: permutation
+!      !> room for various flags/information for the matrix
+!      integer, dimension(:),pointer :: idata
+!      !> bsm permutation pointer
+!      integer, dimension(:),pointer :: permutation
+
       !> pointer to double precision matrix element storage
       real(realk), pointer   :: elms(:)
       !> pointer to double precision matrix element storage for beta part
       real(realk), pointer   :: elmsb(:)
-      !> pointer to complex matrix element storage
-      complex(realk), pointer :: celms(:)
-      !> pointer to complex matrix element storage for beta part
-      complex(realk), pointer :: celmsb(:)
+!      !> pointer to complex matrix element storage
+!      complex(realk), pointer :: celms(:)
+!      !> pointer to complex matrix element storage for beta part
+!      complex(realk), pointer :: celmsb(:)
       !> room for any integer auxiliary information
       integer, pointer     :: iaux(:)
       !> room for any real auxiliary information
       real(realk), pointer :: raux(:)
+!CSR INFO 
       real(realk),pointer :: val(:)
       integer,pointer :: col(:)
       integer,pointer :: row(:)
       integer :: nnz
-      !> flag for complex elements
+
+!      !> flag for complex elements
       logical :: complex
+
       !> tag used to spot accidental use of uninitialized and memory-corrupted
       !> matrices, and fail with something other than 'segmentation fault'.
       !> Tag is set by mat_init and cleared by mat_free
@@ -59,6 +63,7 @@ MODULE Matrix_module
       !> Used to distinguish init'ed matrices from copy-in'ed matrices like
       !> "call subr((/A,B,C/))". Set by mat_init and cleared by mat_free
       type(Matrix), pointer :: init_self_ptr
+!SCALAPACK INFO
 #ifdef VAR_SCALAPACK
       !> number of rows
       INTEGER :: localnrow
@@ -83,12 +88,12 @@ MODULE Matrix_module
 
      SUBROUTINE MAT_NULLIFY(MAT)
        type(matrix) :: MAT
-       nullify(MAT%idata)
-       nullify(MAT%permutation)
+!       nullify(MAT%idata)
+!       nullify(MAT%permutation)
        nullify(MAT%elms)
        nullify(MAT%elmsb)
-       nullify(MAT%celms)
-       nullify(MAT%celmsb)
+!       nullify(MAT%celms)
+!       nullify(MAT%celmsb)
        nullify(MAT%iaux)
        nullify(MAT%raux)
        nullify(MAT%val)

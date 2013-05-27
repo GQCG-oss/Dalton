@@ -127,11 +127,12 @@ if(NOT ENABLE_CRAYWRAPPER)
          ${OWN_LAPACK_SOURCES}
        )
     endif()
+    if(HAVE_MKL_LAPACK)
+        add_definitions(-DVAR_MKL)
+    endif()
 endif()
 
-if(ENABLE_RELEASE)
-
-else()
+if(NOT ENABLE_RELEASE)
    add_definitions(-DMOD_UNRELEASED)
 endif()
 
@@ -373,6 +374,7 @@ if(ENABLE_XCFUN)
         )
 endif()
 
+if(NOT ENABLE_RELEASE)
 if(ENABLE_INTEREST)
         add_definitions(-DVAR_INTEREST)
 	add_library(
@@ -382,6 +384,7 @@ if(ENABLE_INTEREST)
                 if(ENABLE_XCFUN)
 		target_link_libraries(interestlib xcfun_interface)
                 endif()
+endif()
 endif()
 
 add_library(
@@ -396,8 +399,10 @@ add_dependencies(fmmlib lsutillib_precision)
 add_dependencies(fmmlib lsutillib_common)
 add_dependencies(fmmlib lsutiltypelib_common)
 
+if(NOT ENABLE_RELEASE)
 if(ENABLE_INTEREST)
 target_link_libraries(fmmlib interestlib)
+endif()
 endif()
 
 add_library(
@@ -533,12 +538,19 @@ else()
     )
 endif()
 
-if(ENABLE_INTEREST)
-  MERGE_STATIC_LIBS(
-    lsint
-    lsintlib
-    interestlib
-    )
+if(NOT ENABLE_RELEASE)
+  if(ENABLE_INTEREST)
+    MERGE_STATIC_LIBS(
+      lsint
+      lsintlib
+      interestlib
+      )
+  else()
+    MERGE_STATIC_LIBS(
+      lsint
+      lsintlib
+      )
+  endif()
 else()
   MERGE_STATIC_LIBS(
     lsint

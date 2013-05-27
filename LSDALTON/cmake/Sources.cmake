@@ -211,9 +211,9 @@ set(FMM_SOURCES
     mm/cbifmm_f90.F90
     )   
 set(INTERESTLIB_SOURCES
-    interest/src/module_interest.F90
-    interest/src/module_interest_hrr.F90
-    interest/src/module_interest_osr.F90
+    interest/src/module_interest.f90
+    interest/src/module_interest_hrr.f90
+    interest/src/module_interest_osr.f90
     )
 set(LSINT_SOURCES
     LSint/dft_gridLL.F90

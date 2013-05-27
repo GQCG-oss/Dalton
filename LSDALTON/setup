@@ -202,10 +202,9 @@ group.add_option('--xcfun',
                  help='enable XCFUN external library [default: %default]',
                  metavar='PATH')
 group.add_option('--interest',
-                 type='string',
-                 action='store',
+                 action='store_true',
                  dest='interest',
-                 default=None,
+                 default=False,
                  help='use interest code [default: %default]',
                  metavar='PATH')
 group.add_option('--scalasca',

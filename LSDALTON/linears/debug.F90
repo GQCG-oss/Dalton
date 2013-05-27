@@ -23,7 +23,7 @@ contains
   !>
   !> This is not a real debug routine. It writes the initial (typically dens.restart) density
   !> to disk in formatted form, so that it can be transferred to another machine, avoiding
-  !> little/big-endian problems. Works only with matrix types dense and BSM.
+  !> little/big-endian problems. Works only with matrix types dense.
   !>
   subroutine debug_convert_density(opt,D)
   implicit none
@@ -54,68 +54,6 @@ contains
      else
         WRITE(opt%LUPRI,'(/A)') 'File dens.format must be present when using DEBUG_CONVERT in input'
         CALL lsQUIT(' dens.format not present ',opt%lupri)
-     endif
-   else if (opt%cfg_which_conversion == 3) then !Take formatted sparse density on file dens.format, read it and
-                                                !convert it to dense, and run the program
-     if (matrix_type==mtype_dense) then
-        INQUIRE(file='dens.format',EXIST=file_exists)
-        if (file_exists) then
-           CALL lsOPEN(luconvert,'dens.format','old','FORMATTED')
-        !Hack: set matrix type to BSM
-           CALL mat_select_type(mtype_sparse_block,6)
-           opt%CFG_prefer_BSM = .TRUE.
-           call mat_init(Dsparse,ndim,ndim)
-           call mat_read_from_disk2(luconvert,Dsparse)
-        !Convert the read sparse density to a standard fortran matrix:
-           allocate(Dfull(ndim,ndim))
-           call mat_to_full(Dsparse,1.0E0_realk,Dfull)
-        !Deallocate Dsparse and set matrix type to dense:
-           call mat_free(Dsparse)
-           CALL mat_select_type(mtype_dense,6)
-           opt%CFG_prefer_BSM = .false.
-        !Convert the full matrix to type(matrix):
-           call mat_set_from_full(Dfull,1.0E0_realk,D)
-           deallocate(Dfull)
-           write(opt%lupri,*) 'Sparse formatted density successfully read from dens.format'
-           write(opt%lupri,*) 'and converted to type(dense)' ; call ls_flshfo(opt%lupri)
-        else
-           WRITE(opt%LUPRI,'(/A)') 'File dens.format must be present when using DEBUG_CONVERT=3 in input'
-           CALL lsQUIT(' dens.format not present ',opt%lupri)
-        endif
-     else
-        WRITE(opt%LUPRI,'(/A)') 'Matrix type must be dense when using DEBUG_CONVERT=3 in input'
-        CALL lsQUIT(' Matrix type /= dense ',opt%lupri)
-     endif
-  else if (opt%cfg_which_conversion == 4) then !Take unformatted sparse density on file dens.convert, read it and
-                                               !convert it to dense, and run the program
-     if (matrix_type==mtype_dense) then
-        INQUIRE(file='dens.convert',EXIST=file_exists)
-        if (file_exists) then
-           CALL lsOPEN(luconvert,'dens.convert','old','FORMATTED')
-        !Hack: set matrix type to BSM
-           CALL mat_select_type(mtype_sparse_block,6)
-           opt%CFG_prefer_BSM = .TRUE.
-           call mat_init(Dsparse,ndim,ndim)
-           call mat_read_from_disk(luconvert,Dsparse,OnMaster)
-        !Convert the read sparse density to a standard fortran matrix:
-           allocate(Dfull(ndim,ndim))
-           call mat_to_full(Dsparse,1.0E0_realk,Dfull)
-        !Deallocate Dsparse and set matrix type to dense:
-           call mat_free(Dsparse)
-           CALL mat_select_type(mtype_dense,6)
-           opt%CFG_prefer_BSM = .false.
-        !Convert the full matrix to type(matrix):
-           call mat_set_from_full(Dfull,1.0E0_realk,D)
-           deallocate(Dfull)
-           write(opt%lupri,*) 'Sparse unformatted density successfully read from dens.convert'
-           write(opt%lupri,*) 'and converted to type(dense)' ; call ls_flshfo(opt%lupri)
-        else
-           WRITE(opt%LUPRI,'(/A)') 'File dens.convert must be present when using DEBUG_CONVERT=4 in input'
-           CALL lsQUIT(' dens.convert not present ',opt%lupri)
-        endif
-     else
-        WRITE(opt%LUPRI,'(/A)') 'Matrix type must be dense when using DEBUG_CONVERT=4 in input'
-        CALL lsQUIT(' Matrix type /= dense ',opt%lupri)
      endif
   else
      WRITE(opt%LUPRI,'(/A)') 'Incorrect conversion specification with DEBUG_CONVERT (can be 1-4)'
