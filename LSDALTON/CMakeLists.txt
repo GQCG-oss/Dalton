@@ -16,7 +16,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_SOURCE_DIR}/../cmake
     ${CMAKE_SOURCE_DIR}/../cmake/compilers
-    ${CMAKE_SOURCE_DIR}/cmake/math
+    ${CMAKE_SOURCE_DIR}/../cmake/math
     ${CMAKE_SOURCE_DIR}/../cmake/binary-info
     )
 
@@ -113,7 +113,7 @@ set(ExternalProjectCMakeArgs
     )
 
 if(NOT ENABLE_CRAYWRAPPER)
-    include(Math)
+    include(ConfigMath)
     if(NOT BLAS_FOUND)
        set(FIXED_FORTRAN_SOURCES
           ${FIXED_FORTRAN_SOURCES}
