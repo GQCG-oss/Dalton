@@ -361,16 +361,7 @@ end subroutine diag_set_default_config
 !     type(matrix), intent(inout) :: Dnew
 !     integer cycles
 !
-!#if HAVE_BSM
-!     if(opt%CFG_prefer_BSM) THEN
-!        call bsm_d_from_f(F,S,nocc,Dnew,cycles)
-!        write(opt%lupri,*)'BSM+TCP purification converged in ',cycles,'cycles.'
-!     ELSE
-!        call purify(opt%lupri,F,S,nocc,opt%cfg_purification_method,Dnew)
-!     END IF
-!#else
 !     call purify(opt%lupri,F,S,nocc,opt%cfg_purification_method,Dnew)
-!#endif
 !
 !   end subroutine purification_update
 

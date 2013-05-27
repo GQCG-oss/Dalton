@@ -62,8 +62,6 @@ type OptItem
       !> Request to add a Level 4 using regular integrals - no densfit or increm
       logical     :: purescf
       !> Use Block-Sparse Matrices:
-      logical     :: cfg_prefer_BSM
-      !> Use Block-Sparse Matrices:
       logical     :: cfg_prefer_CSR
       !> Use SCALAPACK Matrices:
       logical     :: cfg_prefer_SCALAPACK
@@ -147,7 +145,6 @@ implicit none
    opt%dftcalc                   = 2
    opt%calctype                  = opt%hfcalc !Default is HF
    opt%purescf                   = .false.
-   opt%cfg_prefer_BSM            = .false.
    opt%cfg_prefer_CSR            = .false.
    opt%cfg_prefer_SCALAPACK      = .false.
    opt%cfg_incremental           = .false.

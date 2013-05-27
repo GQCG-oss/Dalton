@@ -1599,13 +1599,6 @@ end interface
 
   !set setting basis to the valens basis
   call set_default_AOs(AOVAL,AOdfAux)
-#ifdef HAVE_BSM
- if (config%opt%CFG_prefer_BSM) then
-    call bsm_lib_getpermutation(fperm)
-    call ls_initbsm(ls%input%BASIS%VALENCE,ls%input)
-    call bsm_lib_getpermutation(vperm)
- endif
-#endif
 
   write(config%lupri,'(1X,A)') 'Level 2 molecular calculation'
   write(   * ,'(1X,A)') 'Level 2 molecular calculation'
@@ -1848,12 +1841,7 @@ end interface
   !that is not used in the valence basis - But we do not actually free the basis
   call freeVbasis(ls%input%BASIS)
 
-  ! initialize decomp%lcv_CMO, if BSM, we need to temporarily switch
-  ! from valence BSM permutation to full BSM permutation 
-#ifdef HAVE_BSM
- if (config%opt%CFG_prefer_BSM) call bsm_lib_setpermutation(fperm)
-#endif
-
+  ! initialize decomp%lcv_CMO
   nbast = ls%input%BASIS%REGULAR%nbast !full basis nbast 
   !set setting basis to the full basis
   call set_default_AOs(AORegular,AOdfAux)
@@ -1861,9 +1849,6 @@ end interface
   call mat_init(config%decomp%lcv_CMO,nbast,nbast)
   config%decomp%decompMatInit_lcv_CMO = .TRUE.
 
-#ifdef HAVE_BSM
- if (config%opt%CFG_prefer_BSM) call bsm_lib_setpermutation(vperm)
-#endif
   ! convert valence CMO to full cmo
   call trilevel_cmo_valence2full(config%decomp%lcv_Cmo,Cmo,list,vlist,len)
   config%decomp%lcv_basis = .true.
@@ -1931,14 +1916,6 @@ end interface
   call leastchangeOrbspreadStandalone(mx,ls,config%decomp%lcv_Cmo,config%decomp%lupri,config%decomp%luerr)
   write(*,*) 'Orbspread standalone full CMO: ', mx
 
-  ! release valence BSM permutation and set the full
-  ! instead
-#ifdef HAVE_BSM
- if (config%opt%CFG_prefer_BSM) then
-  call bsm_lib_free(vperm)
-  call bsm_lib_setpermutation(fperm)
- endif
-#endif
  call trilevel_atominfo_free(ai)
 
 END SUBROUTINE trilevel_start

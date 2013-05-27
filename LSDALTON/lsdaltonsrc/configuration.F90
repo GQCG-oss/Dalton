@@ -33,7 +33,7 @@ use diagonalization, only: diag_lshift_dorth, &
 use decompMod, only: decomp_set_default_config
 use files, only: lsopen,lsclose
 use matrix_operations, only: mat_select_type, matrix_type, &
-     & mtype_symm_dense, mtype_dense, mtype_sparse_block, &
+     & mtype_symm_dense, mtype_dense, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input
@@ -457,8 +457,6 @@ DO
 #ifdef MOD_UNRELEASED
             CASE('.ASYM');       config%opt%cfg_asym = .true.
 #endif
-            CASE('.BLOCK');      CALL mat_select_type(mtype_sparse_block,lupri)
-                                 config%opt%cfg_prefer_BSM = .true.
             CASE('.CHOLESKY');   config%decomp%lowdin_diagonalize = .false.; config%decomp%cholesky_decomp   = .true.
             CASE('.CONFSHIFT');  config%diag%cfg_no_conf_shift = .false.
             CASE('.CONTFAC');    READ(LUCMD,*) config%solver%cfg_arh_contract
@@ -2808,13 +2806,6 @@ ENDIF
 !$OMP END MASTER
 !$OMP END PARALLEL
 #endif
-  
-   if (config%opt%cfg_prefer_BSM) then
-#if !defined(HAVE_BSM)
-      CALL lsQUIT('.BLOCK requested but BSM not there',config%lupri)
-#endif
-   endif
-
 
 #ifdef VAR_DSM
    config%av%dsm_history_size   = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
