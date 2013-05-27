@@ -105,7 +105,7 @@ C
 C
 C ALLOCATE WORK SPACE FOR RSPLIN
 C
-
+      CALL QENTER('RSPLIN')
       KELI   = 1
       KSLI   = KELI + (NCSIM+NOSIM) * KZYVAR
       KWRKS  = KSLI + (NCSIM+NOSIM) * KZYVAR
@@ -121,6 +121,7 @@ C    *            XINDX,WRK,LWRK)
       CALL DZERO(WRK(KSLI),NTOT)
       CALL RSPSLI(NCSIM,NOSIM,ZYCVEC,ZYOVEC,
      *            UDV,WRK(KSLI),XINDX,WRK(KWRKS),LWRKS)
+      CALL QEXIT('RSPLIN')
       RETURN
       END
 C  /* Deck rspsli */
@@ -163,6 +164,7 @@ C
       PARAMETER ( D1 = 1.0D0 , DM1 = -1.0D0 )
       PARAMETER ( DUMMY = 1.0D20 )
 C
+      CALL QENTER('RSPSLI')
 C
 C
 C ALLOCATE WORK SPACE
@@ -353,6 +355,7 @@ C      END IF
 C
 C END OF RSPSLI
 C
+      CALL QEXIT('RSPSLI')
       RETURN
       END
 C  /* Deck rspsor */
@@ -437,6 +440,7 @@ C
       PARAMETER (  D2 =2.0D0  )
 C
 C
+      CALL QENTER('RSPSOR')
       KYCONF = KZCONF + KZVAR
 C
 C DISTRIBUTE FOCK MATRICES IN EVECS
@@ -547,6 +551,7 @@ C
 C
 C END OF RSPSOR
 C
+      CALL QEXIT('RSPSOR')
       RETURN
       END
 C  /* Deck rspeli */
@@ -587,6 +592,7 @@ C
 #include "infrsp.h"
 #include "gnrinf.h"
 C
+      CALL QENTER('RSPELI')
 C
 C ALLOCATE WORK SPACE
 C
@@ -663,8 +669,9 @@ C
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF
 C
-C *** END OF RSPLIN
+C *** END OF RSPELI
 C
+      CALL QEXIT('RSPELI')
       RETURN
       END
 C  /* Deck rsporb */
@@ -759,6 +766,7 @@ C -- local constants
 C
       PARAMETER ( D0 = 0.0D0 , D2 =2.0D0 , DM1 = -1.0D0 )
 C
+      CALL QENTER('RSPORB')
 C
       KYCONF = KZCONF + KZVAR
       if (KYCONF + kzwopt .gt. kzyvar) then
@@ -988,6 +996,7 @@ C
 C
 C END OF RSPORB
 C
+      CALL QEXIT('RSPORB')
       RETURN
       END
 C  /* Deck rspnex */
@@ -1044,6 +1053,8 @@ C
       LOGICAL LINEQ,OLSEN1,LMAXIT
       real(8), allocatable :: THCORP(:),EOVAL(:)
       integer, allocatable :: KEX(:)
+C
+      CALL QENTER('RSPNEX')
 C
       IF (KEXSIM .LE. 0) THEN
          WRITE (LUPRI,*) 'ERROR in RSPNEX: KEXSIM .le. 0'
@@ -1692,6 +1703,7 @@ C
          deallocate(EOVAL)
          deallocate(THCORP)
       end if
+      CALL QEXIT('RSPNEX')
       RETURN
       END
 C  /* Deck rspord */
@@ -1718,6 +1730,8 @@ C
       PARAMETER (ZEROT=1.0D-9)
       PARAMETER (COMPLX = 1.0D7 )
       PARAMETER (D0=0.0D0, D1=1.0D0)
+C
+      CALL QENTER('RSPORD')
 C
       IF (IPRRSP .GT. 20) THEN
          WRITE (LUPRI,'(//A/A)')
@@ -1902,6 +1916,7 @@ C
          END IF
       END IF
 C
+      CALL QEXIT('RSPORD')
       RETURN
       END
 C  /* Deck rsport */
@@ -1973,6 +1988,8 @@ C
       IF (NBNEW .LE. 0) RETURN
 
       allocate( JLDP(NBNEW) )
+C
+      CALL QENTER('RSPORT')
 C
 C *** Average new trial vectors for supersymmetry
 C
@@ -2290,6 +2307,7 @@ C
 C
       deallocate( JLDP )
 
+      CALL QEXIT('RSPORT')
       RETURN
 C
 C     ERROR : Illegal IBTYP found:
@@ -2628,7 +2646,6 @@ C
 C
 C Used from common blocks:
 C   INFIND : ISMO(*)
-C
 C
       IUNIT = IABS(IUNITX)
 C
@@ -3209,6 +3226,8 @@ C
 C
 C WORK SPACE ALLOCATION
 C
+      CALL QENTER('PPST')
+C
       CALL PHPINI(LPHPMX,KZCONF,KZWOPT,MAXPHP)
       KDIAE  = 1
       KDIASO = KDIAE + LPHPMX
@@ -3582,6 +3601,7 @@ C           CALL DCOPY(NTOT,WRK(KDIASO),1,WRK(1),1)
 C
 C     END OF PPST
 C
+      CALL QEXIT('PPST')
       RETURN
       END
 C  /* Deck rsptr1 */
@@ -3608,6 +3628,8 @@ C
 #include "infind.h"
 #include "infrsp.h"
 #include "wrkrsp.h"
+C
+      CALL QENTER('RSPTR1')
 C
       CALL DZERO(DENB,NORBT*NASHT*NSIM)
       CALL DZERO(DENA,NORBT*NASHT*NSIM)
@@ -3656,6 +3678,7 @@ C
      &                  LUPRI)
  3010    CONTINUE
       END IF
+      CALL QEXIT('RSPTR1')
       RETURN
       END
 C  /* Deck rspzym */
@@ -3680,6 +3703,9 @@ C
 #include "wrkrsp.h"
 C
       PARAMETER ( D1 = 1.0D0 )
+C
+      CALL QENTER('RSPZYM')
+C
       CALL DZERO(ZYMAT,NORBT*NORBT*NSIM)
       DO 100 ISIM=1,NSIM
          DO 200 IG=1,KZWOPT
@@ -3707,6 +3733,7 @@ C 300  CONTINUE
  400     CONTINUE
       END IF
 C
+      CALL QEXIT('RSPZYM')
       RETURN
       END
 C  /* Deck rspcve */
@@ -3728,6 +3755,8 @@ C
 #include "wrkrsp.h"
 #include "inftap.h"
 #include "infpri.h"
+C
+      CALL QENTER('RSPCVE')
 C
       CALL DZERO(BVECS,KZCONF)
       CALL REWSPL(LURSP3)
@@ -3768,8 +3797,9 @@ C
          CALL OUTPUT(BVECS(1),1,KZCONF,1,1,KZCONF,1,1,LUPRI)
       END IF
 C
-C     END OF RSPEVE
+C     END OF RSPCVE
 C
+      CALL QEXIT('RSPCVE')
       RETURN
       END
 C  /* Deck phpdsk */
@@ -3788,6 +3818,8 @@ C
 #include "infpri.h"
 #include "inftap.h"
       LOGICAL PHPWRT
+C
+      CALL QENTER('PHPDSK')
 C
       CALL REWSPL(LURSP4)
       JRSP4 = 0
@@ -3836,5 +3868,6 @@ C
 C
 C *** END OF PHPDSK
 C
+      CALL QEXIT('PHPDSK')
       RETURN
       END

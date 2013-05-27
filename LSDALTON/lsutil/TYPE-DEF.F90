@@ -583,7 +583,7 @@ END TYPE LSSETTING
 !*
 !*****************************************
 TYPE LSITEM
-TYPE(DALTONINPUT) :: INPUT   !Input handling (of DALTON.INP and MOLECULE.INP)
+TYPE(DALTONINPUT) :: INPUT   !Input handling (of LSDALTON.INP and MOLECULE.INP)
 TYPE(LSSETTING)   :: SETTING !Settings for integral evaluation
 INTEGER           :: LUPRI = -1  !Output-file unit number
 INTEGER           :: LUERR = -1  !Error-file unit number
@@ -591,6 +591,8 @@ INTEGER           :: optlevel !1=atoms, 2=valence, 3=full
 LOGICAL           :: fopen = .false. !Determines wether the LSDALTON.OUT and LSDALTON.ERR has been opened
 END TYPE LSITEM
 
+
+#ifdef MOD_UNRELEASED
 !*****************************************
 !*
 !* OBJECT CONTAINING INFORMATION ABOUT 
@@ -604,6 +606,7 @@ TYPE geoHessianConfig
    LOGICAL  :: DebugGen1Int
    INTEGER  :: IntPrint
 END TYPE geoHessianConfig
+#endif
 
 
 !*****************************************************************************

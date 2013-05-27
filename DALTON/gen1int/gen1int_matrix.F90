@@ -50,6 +50,9 @@ module gen1int_matrix
   implicit none
 
   public :: MatView
+  public :: MatCreate
+  public :: MatMultBlockedTrace
+  public :: MatArrayAlmostEqual
 
   contains
 
@@ -740,6 +743,7 @@ module gen1int_matrix
         A%triangular = .false.
       end if
     end if
+    A%elms_alpha = 0.0
   end subroutine MatCreate
 
 #if defined(VAR_MPI)

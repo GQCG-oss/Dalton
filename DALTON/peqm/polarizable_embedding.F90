@@ -43,13 +43,12 @@ contains
 
 !------------------------------------------------------------------------------
 
-subroutine pe_init(lupri, coords, charges, dalwrk)
+subroutine pe_init(lupri, coords, charges)
 
     ! Initialization routine for the PE module.
     integer :: lupri
     real(dp), dimension(:), intent(in), optional :: charges
     real(dp), dimension(:,:), intent(in), optional :: coords
-    real(dp), dimension(:), target, intent(inout) :: dalwrk
 
     integer :: i, j, k, l
     integer :: idx, jdx, kdx, nidx
@@ -58,10 +57,10 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
     logical :: lexist
     real(dp) :: rclose, redist
 
-    ! Assume geometry optimization
     if (allocated(Rm) .and. allocated(Zm)) then
         Rm(:,:) = coords
-        Zm(1,:) = charges
+        synced = .false.
+        scfcycle = 0
         return
     end if
 
@@ -77,8 +76,6 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
     else if (.not. present(coords) .and. present(charges)) then
         stop 'ERROR in pe_init: charges present but coords missing'
     end if
-
-    work => dalwrk
 
     ! setting up grid for MEP and CUBE calculation
     if (pe_mep .or. pe_cube) then
@@ -110,9 +107,9 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
     call read_potential(trim(potfile))
 
     if (pe_sol) then
-           call setup_solvent()
-           call setup_cavity()
-           if (.not. fixpva) call read_surface(trim(surfile))
+        call setup_solvent()
+        call setup_cavity()
+        if (.not. fixpva) call read_surface(trim(surfile))
     end if
 
     write(luout,'(//2x,a)') 'Polarizable embedding information'
@@ -1643,7 +1640,7 @@ subroutine pe_electrostatic(denmats, fckmats)
         call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
     end if
 #endif
-    if (lexist .and. fock) then
+    if (lexist .and. fock .and. (scfcycle > 1)) then
         if (myid == 0) then
             call openfile('pe_electrostatics.bin', lu, 'old', 'unformatted')
             rewind(lu)
@@ -1752,15 +1749,17 @@ subroutine pe_electrostatic(denmats, fckmats)
             end if
 #endif
             if (myid == 0) then
-                call openfile('pe_electrostatics.bin', lu, 'new', 'unformatted')
+                call openfile('pe_electrostatics.bin', lu, 'unknown', 'unformatted')
                 rewind(lu)
                 write(lu) Etmp, fckmats
                 close(lu)
             end if
+#if defined(VAR_MPI)
             if (myid == 0 .and. nprocs > 1) then
                 fckmats = tmpfcks
                 deallocate(tmpfcks)
             end if
+#endif
         end if
 #if defined(VAR_MPI)
         if (myid == 0 .and. nprocs > 1) then
@@ -3050,7 +3049,7 @@ subroutine nuclear_fields(Fnucs)
     end if
 #endif
 
-    if (lexist) then
+    if (lexist .and. (scfcycle > 1)) then
         if (myid == 0) then
             call openfile('pe_nuclear_field.bin', lu, 'old', 'unformatted')
             rewind(lu)
@@ -3095,7 +3094,7 @@ subroutine nuclear_fields(Fnucs)
         end if
 #endif
         if (myid == 0) then
-            call openfile('pe_nuclear_field.bin', lu, 'new', 'unformatted')
+            call openfile('pe_nuclear_field.bin', lu, 'unknown', 'unformatted')
             rewind(lu)
             write(lu) Fnucs
             close(lu)
@@ -3153,7 +3152,7 @@ subroutine multipole_potentials(Vmuls)
     end if
 #endif
 
-    if (lexist) then
+    if (lexist .and. (scfcycle > 1)) then
         if (myid == 0) then
             call openfile('pe_multipole_potential.bin', lu, 'old',&
                          & 'unformatted')

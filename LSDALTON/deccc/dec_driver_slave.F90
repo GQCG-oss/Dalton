@@ -371,15 +371,10 @@ subroutine atomic_fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
         call LSTIMER('START',t2cpu,t2wall,DECinfo%output)
         call end_flop_counter(flops) ! flops for local master
 
-        ! EOS atom
-        job%atom1(1) = AtomicFragment%atomic_number
-        ! simply the same for atom2 since it is not a pair
-        job%atom2(1) = AtomicFragment%atomic_number  
-        ! Job size: Occ AOS size * Virt AOS size * nbasis
-        job%jobsize(1) = AtomicFragment%noccAOS*AtomicFragment%nunoccAOS*AtomicFragment%number_basis
+        call copy_fragment_info_job(AtomicFragment,job)
+
         ! Job is done...
         job%jobsdone(1) = .true.
-
         ! wall time used by local master
         job%LMtime(1) = t2wall - t1wall
         ! total time for all local slaves and local master
@@ -389,14 +384,6 @@ subroutine atomic_fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
         job%nslaves(1) = infpar%lg_nodtot ! Sizes of local slot (local master + local slaves)
         ! load distribution: { tottime / time(local master) } / number of nodes (ideally 1.0)
         job%load(1)= (tottime/job%LMtime(1))/job%nslaves(1)
-        ! Number of tasks (nalpha*ngamma)
-        job%ntasks(1) = AtomicFragment%ntasks
-
-        ! atomic fragment dimensions
-        job%nocc(1) = AtomicFragment%noccAOS
-        job%nvirt(1) = AtomicFragment%nunoccAOS
-        job%nbasis(1) = AtomicFragment%number_basis
-
 
      end if
      print '(a,i6,a,i6,g14.6)', 'Local master ', infpar%mynum, ' is done with atomic job/time ', &
@@ -591,6 +578,7 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
            flops_slaves = AtomicFragments(atomA)%flops_slaves
            tottime = AtomicFragments(atomA)%slavetime ! time used by all local slaves
            fragenergy = AtomicFragments(atomA)%energies
+           call copy_fragment_info_job(AtomicFragments(atomA),singlejob)
            call atomic_fragment_free_basis_info(AtomicFragments(atomA))
 
         else ! pair  fragment
@@ -601,6 +589,8 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
            flops_slaves = PairFragment%flops_slaves
            tottime = PairFragment%slavetime ! time used by all local slaves
            fragenergy=PairFragment%energies
+
+           call copy_fragment_info_job(PairFragment,singlejob)
            ! Free pair
            call atomic_fragment_free(PairFragment)
 
@@ -617,25 +607,7 @@ subroutine fragments_slave(natoms,nocc,nunocc,DistanceTable,OccOrbitals,&
         singlejob%nslaves(1) = infpar%lg_nodtot ! Sizes of local slot (local master + local slaves)
         ! load distribution: { tottime / time(local master) } / number of nodes (ideally 1.0)
         singlejob%load(1) = (tottime/singlejob%LMtime(1))/real(singlejob%nslaves(1))
-        singlejob%atom1(1) = atomA
-        singlejob%atom2(1) = atomB
         singlejob%jobsdone(1) = .true.
-
-        if(atomA==atomB) then ! single fragment dimensions
-           singlejob%nocc(1) = AtomicFragments(atomA)%noccAOS
-           singlejob%nvirt(1) = AtomicFragments(atomA)%nunoccAOS
-           singlejob%nbasis(1) = AtomicFragments(atomA)%number_basis
-           ! Number of tasks (nalpha*ngamma)
-           singlejob%ntasks(1) = AtomicFragments(atomA)%ntasks
-
-        else ! pair fragment dimensions
-           singlejob%nocc(1) = PairFragment%noccAOS
-           singlejob%nvirt(1) = PairFragment%nunoccAOS
-           singlejob%nbasis(1) = PairFragment%number_basis
-           ! Number of tasks (nalpha*ngamma)
-           singlejob%ntasks(1) = PairFragment%ntasks
-        end if
-        singlejob%jobsize(1) = singlejob%nocc(1)*singlejob%nvirt(1)*PairFragment%number_basis
 
         print '(a,i8,a,i8,g14.6)', 'Slave ', infpar%mynum, ' is done with  job/time ', &
              & job, singlejob%LMtime(1)

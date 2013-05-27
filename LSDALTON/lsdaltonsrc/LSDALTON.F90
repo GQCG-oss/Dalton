@@ -46,10 +46,14 @@ SUBROUTINE lsdalton
   use ls_optimizer_mod, only: LS_RUNOPT
   use lsmpi_type, only: lsmpi_finalize
   use lstensorMem, only: lstmem_init, lstmem_free
-  use numerical_hessian, only: get_numerical_hessian
+#ifdef MOD_UNRELEASED
   use pbc_setup, only: set_pbc_molecules
+#endif
+#ifdef MOD_UNRELEASED
+  use numerical_hessian, only: get_numerical_hessian
   use molecular_hessian_mod, only: get_molecular_hessian
   use test_molecular_hessian_mod, only: test_Hessian_contributions
+#endif
   use rsp_util, only: init_rsp_util
   use plt_driver_module
 #ifdef VAR_PAPI
@@ -77,7 +81,10 @@ SUBROUTINE lsdalton
   type(matrix) :: Dmo, tmp
   integer             :: nelec
   Integer             :: Natoms
-  Real(realk),pointer :: geomHessian(:,:)
+#ifdef MOD_UNRELEASED
+  Real(realk),pointer   ::      geomHessian(:,:)
+#endif
+
   type(LowAccuracyStartType)  :: LAStype
   Interface 
      subroutine optimloc(CMO,nocc,m,ls,CFG)
@@ -128,19 +135,13 @@ SUBROUTINE lsdalton
      return
   endif
 #endif
-  ! Vladimir Rybkin: If we do dec and optimize geometry or run dynamics 
-  ! than we don't skip HF calculation
-  if ( ( (config%optinfo%optimize .EQV. .TRUE.) .OR. (config%dynamics%do_dynamics .EQV. .TRUE.)) &
-       & .AND. (DECinfo%doDEC)) then
-     DECinfo%doHF = .TRUE.
-  endif
 
 
   ! Skip Hartree Fock part? Done when a HF calculation has already been carried out and we want to:
   ! (i)   localize orbitals
   ! (ii)  carry out DEC calculation 
   ! (iii) Construct PLT file
-  if(config%davidOrbLoc%OnlyLocalize .or. (DECinfo%doDEC .and. .not. DECinfo%doHF) &
+  if(config%davidOrbLoc%OnlyLocalize .or. (DECinfo%doDEC .and. DECinfo%restart) &
        & .or. config%doplt) then
      skipHFpart=.true.
   else
@@ -163,6 +164,7 @@ SUBROUTINE lsdalton
 
      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
 
+#ifdef MOD_UNRELEASED
      do_pbc: if(config%latt_config%comp_pbc) then
         CALL mat_init(S,nbast,nbast)
 
@@ -217,6 +219,7 @@ SUBROUTINE lsdalton
         call config_shutdown(config)
 
      else
+#endif
         !default - non PBC
         CALL mat_init(S,nbast,nbast)
 
@@ -443,10 +446,11 @@ SUBROUTINE lsdalton
 
         !write(lupri,*) 'mem_allocated_integer, max_mem_used_integer', mem_allocated_integer, max_mem_used_integer
 
+#ifdef MOD_UNRELEASED
         ! Numerical Derivatives
         if(config%response%tasks%doNumHess .or. &
              & config%response%tasks%doNumGrad .or. &
-             & config%response%tasks%doNumGradHess)then 
+             & config%response%tasks%doNumGradHess)then
            nbast=D(1)%nrow
            call get_numerical_hessian(lupri,luerr,ls,nbast,config,config%response%tasks%doNumHess,&
                 & config%response%tasks%doNumGrad,config%response%tasks%doNumGradHess)
@@ -466,6 +470,7 @@ SUBROUTINE lsdalton
            call get_molecular_hessian(geomHessian,Natoms,F(1),D(1),ls%setting,config%geoHessian,lupri,luerr)   
            call mem_dealloc(geomHessian)
         ENDIF
+#endif
 
         ! PROPERTIES SECTION
         !
@@ -479,7 +484,7 @@ SUBROUTINE lsdalton
            !call dd_shutdown(config%decomp%cfg_unres)
         endif
 
-        CALL LSTIMER('*SCF  ',TIMSTR,TIMEND,lupri)
+        CALL LSTIMER('*SCF  ',TIMSTR,TIMEND,lupri,.TRUE.)
         WRITE(lupri,*)
 
         !call mat_no_of_matmuls(matmultot)
@@ -492,7 +497,9 @@ SUBROUTINE lsdalton
            !DEALLOCATE(ls)
         endif
 
+#ifdef MOD_UNRELEASED
      endif do_pbc
+#endif
   end if SkipHF
 
 
@@ -526,7 +533,7 @@ SUBROUTINE lsdalton
 
 
   ! Single point DEC calculation using HF restart files
-  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. .not. DECinfo%doHF) ) then
+  DECcalculationHFrestart: if ( (DECinfo%doDEC .and. DECinfo%restart) ) then
      call dec_main_prog_file(ls)
   endif DECcalculationHFrestart
 
@@ -575,7 +582,7 @@ SUBROUTINE lsdalton
   !finalize MPI 
   call lsmpi_finalize(lupri,config%mpi_mem_monitor)
   call print_timers(lupri) !timings for mat operations.
-  call LSTIMER('LSDALTON',t1,t2,LUPRI)
+  call LSTIMER('LSDALTON',t1,t2,LUPRI,.TRUE.)
   CALL LS_TSTAMP('End simulation',LUPRI)
 
   CALL LSCLOSE(LUPRI,'KEEP')

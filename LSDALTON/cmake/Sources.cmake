@@ -116,6 +116,7 @@ set(LINEARS_SOURCES
     linears/levelshift.F90
     linears/minimize.F90
     linears/optimlocNONMOD.F90
+    linears/OrbLoc_input.F90
     linears/localization_util.F90
     linears/localization_orbspread.F90
     linears/localization_charge.F90
@@ -210,6 +211,7 @@ set(INTERESTLIB_SOURCES
     interest/src/module_interest_osr.F90
     )
 set(LSINT_SOURCES
+    LSint/dft_gridLL.F90
     LSint/BuildBasis.F90
     LSint/BuildMolFile.F90
     LSint/II_Fragment.F90
@@ -302,6 +304,8 @@ set(LSUTIL_COMMON_SOURCES
     lsutil/ls_math.F90
     lsutil/SphCartMatrices.F90
     lsutil/OverlapDistributionType.F90
+    lsutil/cholesky.F90
+    lsutil/invroutines.F90
     )
 
 set(LSUTIL_MATRIXO_SOURCES
@@ -371,9 +375,6 @@ set(LSLIB_SOURCES
     )
 
 set(FIXED_FORTRAN_SOURCES
-    dft/dft_gridLL.F
-    linears/cholesky.F
-    linears/invroutines.F
     pdpack/jacobi.F
     pdpack/eispack.F
     pdpack/linpack.F

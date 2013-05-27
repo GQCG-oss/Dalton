@@ -59,9 +59,8 @@ cat > LSDALTON_cartesian_ecoeff.dal <<'%EOF%'
 *DENSOPT
 .RH
 .DIIS
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 

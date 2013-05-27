@@ -2350,7 +2350,7 @@ end subroutine atomic_fragment_basis
     do i=1,jobs%njobs
        if(jobs%atom1(i)==fragment%atomic_number) then
           if(.not. jobs%jobsdone(i)) then
-             call lsquit('add_fragment_to_file: Fragment calculation is not done1',-1)
+             call lsquit('add_fragment_to_file: Fragment calculation is not done!',-1)
           end if
        end if
     end do
@@ -2463,14 +2463,14 @@ end subroutine atomic_fragment_basis
   !> file atomicfragmentsdone.info.
   !> \author Kasper Kristensen
   !> \date May 2012
-  subroutine restart_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,UnoccOrbitals,&
-       & DoBasis,fragments,jobs)
+  subroutine restart_atomic_fragments_from_file(natoms,MyMolecule,MyLsitem,OccOrbitals,UnoccOrbitals,&
+       & DoBasis,fragments,jobs,restart_files_exist)
     implicit none
     !> Number of atoms in the full molecule
     integer,intent(in) :: natoms
     !> Full molecule info
     type(fullmolecule),intent(in)  :: MyMolecule
-    !> LSitem infi
+    !> LSitem info
     type(lsitem),intent(inout)        :: MyLsitem
     !> Occupied orbitals in DEC format
     type(ccorbital),intent(in)     :: OccOrbitals(MyMolecule%numocc)
@@ -2482,6 +2482,8 @@ end subroutine atomic_fragment_basis
     type(ccatom), intent(inout),dimension(natoms) :: fragments
     !> Job list
     type(joblist),intent(inout) :: jobs
+    !> Do restart files exist?
+    logical,intent(inout) :: restart_files_exist
     character(len=40) :: FileName
     integer :: funit, i, MyAtom, ndone,idx,j
     logical :: file_exist
@@ -2496,9 +2498,13 @@ end subroutine atomic_fragment_basis
 
     ! Sanity check
     inquire(file=FileName,exist=file_exist)
-    if(.not. file_exist) then ! something wrong
-       call lsquit('restart_fragments_from_file: File atomicfragmentsdone.info &
-            & does not exist!',-1)
+    if(file_exist) then ! something wrong
+       restart_files_exist=.true.
+    else
+       write(DECinfo%output,*) 'You requested DEC restart but no restart files exist!'
+       write(DECinfo%output,*) '--> I will calculate all atomic fragments from scratch...'
+       restart_files_exist=.false.
+       return
     end if
 
     call lsopen(funit,FileName,'OLD','UNFORMATTED')
@@ -2522,7 +2528,7 @@ end subroutine atomic_fragment_basis
     ! Sanity check
     inquire(file=FileName,exist=file_exist)
     if(.not. file_exist) then ! something wrong
-       call lsquit('restart_fragments_from_file: File atomicfragments.info &
+       call lsquit('restart_atomic_fragments_from_file: File atomicfragments.info &
             & does not exist!',-1)
     end if
 
@@ -2556,7 +2562,7 @@ end subroutine atomic_fragment_basis
        end do FindAtom
        ! Check that we found atom in job list
        if(idx==0) then
-          call lsquit('restart_fragments_from_file: Atom not found in job list!',-1)
+          call lsquit('restart_atomic_fragments_from_file: Atom not found in job list!',-1)
        end if
 
        ! Consistency check that atom MyAtom (represented by job list index "idx") is 
@@ -2565,7 +2571,7 @@ end subroutine atomic_fragment_basis
           print *, 'MyAtom = ', MyAtom
           print *, 'idx in job list = ', idx
           print *, 'jobsdone=', jobs%jobsdone
-          call lsquit('restart_fragments_from_file: Central atom read from file &
+          call lsquit('restart_atomic_fragments_from_file: Central atom read from file &
                & is not in bookkeeping list',-1)
        end if
 
@@ -2577,7 +2583,7 @@ end subroutine atomic_fragment_basis
     call lsclose(funit,'KEEP')
 
 
-  end subroutine restart_fragments_from_file
+  end subroutine restart_atomic_fragments_from_file
 
 
 
@@ -4334,7 +4340,7 @@ if(DECinfo%PL>0) then
     !> Current job list which will be appended with new pairs
     type(joblist),intent(inout) :: jobs
     type(joblist) :: oldjobs
-    integer :: i,j,nsingle,npairold,npairnew,npairdelta, nold,nnew,k,nbasisFragment
+    integer :: i,j,nsingle,npairold,npairnew,npairdelta, nold,nnew,k,nbasisFragment,n
     integer,pointer :: atom1(:), atom2(:), jobsize(:),order(:)
     logical,pointer :: occAOS(:,:), unoccAOS(:,:), REDoccAOS(:,:), REDunoccAOS(:,:)
     logical,pointer :: occpairAOS(:), unoccpairAOS(:)
@@ -4361,9 +4367,17 @@ if(DECinfo%PL>0) then
        end do
     end do
 
+    ! Number of jobs in job list (for MP2 energy calculations atomic frags are not 
+    ! included in job list because they have already been determined during fragment optimization)
+    if(DECinfo%ccmodel==1 .and. .not. DECinfo%first_order) then
+       n = npairold
+    else
+       n = nsingle+npairold
+    end if
+
 
     ! Sanity check 1: Number current jobs should be sum of single jobs + old pairs
-    if( jobs%njobs /= (nsingle+npairold) ) then
+    if( jobs%njobs /= n ) then
        write(DECinfo%output,*) 'Number of single  frags: ', nsingle
        write(DECinfo%output,*) 'Number of pair    frags: ', npairold
        write(DECinfo%output,*) 'Number of jobs in job list  : ', jobs%njobs
@@ -5250,6 +5264,40 @@ if(DECinfo%PL>0) then
     call mem_dealloc(which_XOS)
 
   end subroutine put_XOS_orbitals_unocc
+
+
+  !> \brief Copy basic fragment information into job structure
+  !> \author Kasper Kristensen
+  !> \date May 2013
+  subroutine copy_fragment_info_job(myfragment,myjob)
+    implicit none
+    !> Fragent info
+    type(ccatom),intent(in) :: myfragment
+    !> Job list of length 1
+    type(joblist) :: myjob
+
+    ! Sanity check
+    if(myjob%njobs/=1) then
+       call lsquit('copy_fragment_info_job: Length of job list is not 1!',-1)
+    end if
+
+
+    ! Copy info
+    if(myfragment%nEOSatoms==1) then ! atomic fragment
+       myjob%atom1(1) = myfragment%atomic_number
+       myjob%atom2(1) = myfragment%atomic_number   
+    else
+       myjob%atom1(1) = myfragment%EOSatoms(1)
+       myjob%atom2(1) = myfragment%EOSatoms(2)
+    end if
+
+    myjob%nocc(1) = myfragment%noccAOS
+    myjob%nvirt(1) = myfragment%nunoccAOS
+    myjob%nbasis(1) = myfragment%number_basis
+    myjob%ntasks(1) = myfragment%ntasks
+    myjob%jobsize(1) = myjob%nocc(1)*myjob%nvirt(1)*myjob%nbasis(1)
+
+  end subroutine copy_fragment_info_job
 
 
 

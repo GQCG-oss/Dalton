@@ -51,17 +51,19 @@ H   0.0  200.0    0.0
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_SR_EXCHANGE.dal <<'%EOF%'
+**GENERAL
+.FORCEGCBASIS
 **INTEGRALS
 .MBIE
 .NOLINK
 .SREXC
 0.001
+.NOGCINTEGRALTRANSFORM
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 

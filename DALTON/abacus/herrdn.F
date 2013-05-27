@@ -674,7 +674,6 @@ C       ISHELL - runs over all shells
 C       IPRIM  - runs over all primitives
 C       NUCIND - runs over all symmetry independent centers
 C******************************************************************************
-      use pe_variables, only: peqm
 #include "implicit.h"
 #include "iratdef.h"
 #include "priunit.h"
@@ -819,15 +818,6 @@ C
      &    NMLINE,MLINE(NMLINE)
         CALL QUIT('Too many atomic types in .mol input')
       END IF
-!     If symmetry and polarizable embedding are specified we quit
-      if (peqm .and. addsym) then
-        write(lupri,'(/a)') 'ERROR: polarizable embedding is not'//
-     &                      ' compatible with symmetry.'
-        write(lupri,'(/a)') 'Please rerun calculation with Nosymmetry'//
-     &                      ' keyword in the molecule input file.'
-            call quit('polarizable embedding is not compatible with'//
-     &                ' symmetry.')
-      end if
 C***********************************************************************
 C Check integral threshold: THRS must be .gt. 0
 C       ( log(thrs*thrs) taken in oneint) (851005-hjaaj)
@@ -4450,7 +4440,7 @@ C
       IPTEST = MIN(NUCDEP/13,2)
 C     hjaaj: x,y,z normally only interesting for
 C            small molecules, otherwise just a lot of lines.
-      IF ( (IPREAD .GT. IPTEST) .OR. QMMM )  THEN
+      IF ( (IPREAD .GT. IPTEST) .OR. QMMM .or. peqm )  THEN
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
       END IF
@@ -4478,7 +4468,7 @@ C
          NAME   = NAMEX(3*ICENT)(1:4)
          IF (MULT(MULCNT) .EQ. 1) THEN
             IPCMN = IPCMN + 1
-            IF ( (IPREAD .GT. IPTEST) .OR. QMMM ) THEN
+            IF ( (IPREAD .GT. IPTEST) .OR. QMMM .or. peqm) THEN
                WRITE (LUPRI,'(2X,A,3X," : ",3(I5,2X,A,F15.10))')
      &              NAME, ICRX  , CHRXYZ(-1), CORD(1,ICENT),
      &                    ICRX+1, CHRXYZ(-2), CORD(2,ICENT),
@@ -4591,8 +4581,7 @@ C
       END IF
 
       if (peqm .or. pe_mep .or. pe_savden) then
-        call pe_init(lupri, cord(:,1:natoms), charge(1:natoms),
-     &               work(1:lwork))
+        call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
       end if
 
       RETURN
@@ -6529,6 +6518,7 @@ C
 C
 C     Read in the fourth input line using the new input scheme
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -6709,6 +6699,17 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
          DOOWN  = CRT .EQ. 'X'
       END IF
       IF (ADDSYM) NSYMOP = 0
+      if (peqm) then
+        if (addsym) then
+            addsym = .false.
+        else if (nsymop > 0) then
+            write(lupri,'(/a)') 'ERROR: point group symmetry is'//
+     &                          ' incompatible with polarizable'//
+     &                          ' embedding'
+            call quit('point group symmetry is incompatible with'//
+     &                ' polarizable embedding')
+        end if
+      end if
       RETURN
  199  CONTINUE
       WRITE (LUPRI,'(/A)') ' Error in the determination of the number'

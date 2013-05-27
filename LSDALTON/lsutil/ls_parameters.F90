@@ -97,7 +97,10 @@ MODULE Integralparameters
   integer,parameter :: ARRAYTEST      = 30
   integer,parameter :: PDMA4SLV       = 31
   integer,parameter :: LSMPI_IIDFTKSME= 32
+#ifdef MOD_UNRELEASED
   integer,parameter :: CCSDPTSLAVE    = 33
+!endif mod_unreleased
+#endif
   integer,parameter :: CCSDSLV4E2     = 34
   integer,parameter :: DFTADDFU       = 35
   integer,parameter :: LSMPI_IIDFTABSVALOVERLAP = 36

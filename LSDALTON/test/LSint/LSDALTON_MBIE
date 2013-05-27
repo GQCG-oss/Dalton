@@ -51,15 +51,15 @@ H   0.0  200.0    0.0
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_MBIE.dal <<'%EOF%'
+**GENERAL
+.FORCEGCBASIS
 **INTEGRALS
 .MBIE
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.FORCEGCBASIS
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 

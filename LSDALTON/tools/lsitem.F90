@@ -17,7 +17,7 @@ implicit none
 
   mem_monitor = .false. !Mostly for memory debugging
   call init_globalmemvar !initialize the global memory counters
-! Read DALTON.INP FILE,MOLECULE.INP AND BASISSET FILES TO SET UP
+! Read LSDALTON.INP FILE,MOLECULE.INP AND BASISSET FILES TO SET UP
 ! THE  DALTONINPUT STRUCTURE
   LUPRI=6
   LUERR=6

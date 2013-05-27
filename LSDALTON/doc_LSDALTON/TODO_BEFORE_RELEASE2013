@@ -3,8 +3,6 @@ Things to do before release 2013
 
 * Everybody please feel free to add/remove things from this list!
 
-General
-'''''''
 - cleanup keywords and update manual
 - Write "New features" section for manual and homepage
 - Remove non-releasable code (see below)
@@ -14,30 +12,24 @@ General
       	   serial, massively parallel, large molecules
 - Response properties in LSDalton - wrappers for (magnetic) properties not present in 2011 version
 - Clean up Output file (For the users point of view on the requested output should be there, but print of Timings can be added, print of HOMO-LUMO gap can be added and so on.)  
-- Document tools directory (maybe cleanup)
-
-Specific issues
-'''''''''''''''
-. update author list
-- Check units and conversion factor for TPA  (KK)
-- Merge linsca-develop branch with master branch to get a Dalton and an LSDalton directory (TK)
-- Possibly tighten default SCF convergence thresholds for DFT (currently under investigation by KK/IMH/TK).
-- Quit program with meaningful error message rather than simply printing a warning when a wrong input keyword is used (done for **INTEGRAL, **DEC, *DENSOPT, **RESPONSE sections)
+- Document tools directory (KK: Integrated gridgen into lsdalton.x, also did some cleanup)
+- Make **GENERAL section with general info. Currently *DENSOPT has become a junk box with various inputs.
+- update author list
 - Treat $INFO in the same way as other input sections (call it **INFO). Currently $INFO only works if it is put in the *DENSOPT section, which is mostly an historical artefact.
-- check the reclen (ifdef VAR_GFORTRAN) issue with different compilers. 
-- Electrostatic potential with gringen does not work with MPI.
+- Rename DALTON.INP to LSDALTON.INP (TK).
+
 
 Non-releasable code
 *******************
 
-If you don't want to release some part of the code write we will use a "VAR_RELEASE2013" flag, 
+If you don't want to release some part of the code write we will use a "MOD_UNRELEASED" flag, 
 e.g., if you want subroutines A and C to be a part of the release 2013 version but not subroutine B:
 
 subroutine A
 ...
 end subroutine A
 
-#ifdef VAR_RELEASE2013
+#ifdef MOD_UNRELEASED
 subroutine B
 ...
 end subroutine B
@@ -48,8 +40,8 @@ subroutine C
 end subroutine C
 
 
-Then when compiling with -DVAR_RELEASE2013, the code from "#ifdef VAR_RELEASE2013" to "#endif"
-will not be compiled and effectively the code is:
+Then when building LSDALTON with cmake using the --release flag, the code from 
+"#ifdef MOD_UNRELEASED" to "#endif" will not be compiled and effectively the code is:
 
 
 subroutine A
@@ -61,7 +53,6 @@ subroutine C
 end subroutine C
 
 
-When it is time to release we will make a new branch "Release2013" where all the code encapsulated by "#ifdef VAR_RELEASE2013" to "#endif" will be removed by a script. Thus, that code will never be seen by any users.
+For the actual release all code encapsulated by "#ifdef MOD_UNRELEASED" to "#endif" will be removed by a script. Thus, that code will never be seen by any users.
 
-Thomas will modify Cmake and add some new Jonas Kramer cases to test the VAR_RELEASE2013 flag.
-Naturally LSDALTON should compile both with and without -DVAR_RELEASE2013!!!
+Naturally LSDALTON should compile both with and without --release!!!

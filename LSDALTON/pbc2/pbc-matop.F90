@@ -1,3 +1,4 @@
+#ifdef MOD_UNRELEASED
 MODULE pbc_matrix_operations
 USE precision
 !use matrix_operations
@@ -637,3 +638,4 @@ ENDDO
 
 END SUBROUTINE make_uptriag1_mat
 END MODULE pbc_matrix_operations
+#endif

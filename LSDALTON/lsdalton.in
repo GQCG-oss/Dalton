@@ -169,7 +169,7 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
    fi
    cd $TMPDIR/$outnam
    if [ -s $WRKDIR/$dalfil.$DALEXT -a -r $WRKDIR/$dalfil.$DALEXT ]; then
-      cp $WRKDIR/$dalfil.$DALEXT DALTON.INP
+      cp $WRKDIR/$dalfil.$DALEXT LSDALTON.INP
    else
       echo "$WRKDIR/$dalfil.$DALEXT does not exist or is not readable"
       exit 1
@@ -191,7 +191,7 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
       [ -f $WRKDIR/$molfil.runopt.history ] && cp -f $WRKDIR/$molfil.runopt.history runopt.history 
       [ -f $WRKDIR/$molfil.$MOLEXT ] && cp -f $WRKDIR/$molfil.$MOLEXT runopt.initMOLECULE
       if [ -s $WRKDIR/$dalfil.$DALEXT.2 -a -r $WRKDIR/$dalfil.$DALEXT.2 ]; then
-	  cp $WRKDIR/$dalfil.$DALEXT.2 DALTON.INP
+	  cp $WRKDIR/$dalfil.$DALEXT.2 LSDALTON.INP
       else
 	  echo "$WRKDIR/$dalfil.$DALEXT.2 does not exist or is not readable"
 	  exit 1

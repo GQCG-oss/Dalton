@@ -72,8 +72,6 @@
 #include "mpif.h"
 #include "iprtyp.h"
 #endif
-    ! in case of initializing the interface multiple times
-    if (Gen1IntAPIInited()) return
     ! initializes API of Gen1Int
     call Gen1IntAPICreate(num_comp, num_atom_type, KATOM, num_sym_atom, &
                           ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &
@@ -1063,48 +1061,49 @@
     real(REALK), parameter :: RATIO_THRSH = 10.0_REALK**(-6)  !threshold of ratio to the referenced result
     logical test_failed                                   !indicator if the test failed
     integer num_ao                                        !number of orbitals
-    integer, parameter :: NUM_TEST = 4                    !number of tests
+    integer, parameter :: NUM_TEST = 5                    !number of tests
     character*20, parameter :: PROP_NAME(NUM_TEST) = &    !names of testing property integrals,
       (/"INT_KIN_ENERGY    ", "INT_OVERLAP       ",  &    !see Gen1int library src/gen1int.F90
-        "INT_POT_ENERGY    ", "INT_CART_MULTIPOLE"/)
+        "INT_POT_ENERGY    ", "INT_CART_MULTIPOLE",  &
+        "INT_ANGMOM        "/)
     character*8, parameter :: HERM_PROP(NUM_TEST) = &     !names of property integrals,
-      (/"KINENERG", "OVERLAP ", "POTENERG", "CARMOM  "/)  !see \fn(PR1IN1) in abacus/her1pro.F
+      (/"KINENERG", "SQHDOR  ", "POTENERG",         &     !see \fn(PR1IN1) in abacus/her1pro.F
+        "CARMOM  ", "ANGMOM  "/)
     integer, parameter :: GTO_TYPE(NUM_TEST) = &          !
-      (/NON_LAO, NON_LAO, NON_LAO, NON_LAO/)
+      (/NON_LAO, NON_LAO, NON_LAO, NON_LAO, NON_LAO/)
     integer, parameter :: ORDER_MOM(NUM_TEST) = &         !order of Cartesian multipole moments
-      (/0, 0, 0, 1/)
+      (/0, 0, 0, 1, 0/)
     integer, parameter :: ORDER_MAG_BRA(NUM_TEST) = &     !
-      (/0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_MAG_KET(NUM_TEST) = &     !
-      (/0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_MAG_TOTAL(NUM_TEST) = &   !
-      (/0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_RAM_BRA(NUM_TEST) = &     !
-      (/0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_RAM_KET(NUM_TEST) = &     !
-      (/0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_RAM_TOTAL(NUM_TEST) = &   !
-      (/0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_GEO_BRA(NUM_TEST) = &     !
-      (/0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0/)
     integer, parameter :: ORDER_GEO_KET(NUM_TEST) = &     !
-      (/0, 0, 0, 0/)
+      (/0, 1, 0, 0, 0/)
     integer, parameter :: MAX_NUM_CENT(NUM_TEST) = &      !maximum number of differentiated centers
-      (/0, 0, 0, 0/)
+      (/0, 1, 0, 0, 0/)
     integer, parameter :: ORDER_GEO_TOTAL(NUM_TEST) = &   !order of total geometric derivatives
-      (/0, 0, 0, 0/)
+      (/0, 0, 0, 0, 0/)
     logical, parameter :: ADD_SR(NUM_TEST) = &            !
-      (/.false., .false., .false., .false./)
+      (/.false., .false., .false., .false., .false./)
     logical, parameter :: ADD_SO(NUM_TEST) = &            !
-      (/.false., .false., .false., .false./)
+      (/.false., .false., .false., .false., .false./)
     logical, parameter :: ADD_LONDON(NUM_TEST) = &        !
-      (/.false., .false., .false., .false./)
+      (/.false., .false., .false., .false., .false./)
     logical, parameter :: TRIANG(NUM_TEST) = &            !integral matrices are triangularized or squared
-      (/.true., .true., .true., .true./)
+      (/.true., .false., .true., .true., .true./)
     logical, parameter :: SYMMETRIC(NUM_TEST) = &         !integral matrices are symmetric or anti-symmetric
-      (/.true., .true., .true., .true./)
-    integer, parameter :: NUM_INTS(NUM_TEST) = &          !number of integral matrices
-      (/1, 1, 1, 3/)
+      (/.true., .false., .true., .true., .false./)
+    integer NUM_INTS(NUM_TEST)                            !number of integral matrices
     type(matrix), allocatable :: val_ints(:)              !integral matrices
     logical, parameter :: WRITE_INTS = .false.            !if writing integrals on file
     logical, parameter :: WRITE_EXPT = .false.            !if writing expectation values on file
@@ -1155,6 +1154,12 @@
     write(io_viewer,100) "number of orbitals", num_ao
     write(io_viewer,110) "threshold of error", ERR_THRSH
     write(io_viewer,110) "threshold of ratio to the referenced result", RATIO_THRSH
+    ! sets the number of integral matrices
+    NUM_INTS(1) = 1
+    NUM_INTS(2) = 3*NUCDEP
+    NUM_INTS(3) = 1
+    NUM_INTS(4) = 3
+    NUM_INTS(5) = 3
     ! loops over different tests
     do itest = 1, NUM_TEST
 #if defined(PRG_DIRAC)
@@ -1250,7 +1255,8 @@
       deallocate(lb_int)
       ! HERMIT uses different sign for the following integrals
       if (HERM_PROP(itest)=="DPLGRA  " .or. HERM_PROP(itest)=="POTENERG" .or. &
-          HERM_PROP(itest)=="NUCSLO  " .or. HERM_PROP(itest)=="PSO     ") then
+          HERM_PROP(itest)=="NUCSLO  " .or. HERM_PROP(itest)=="PSO     " .or. &
+          HERM_PROP(itest)=="ANGMOM  " .or. HERM_PROP(itest)=="SQHDOR  ") then
         wrk_space(1:end_herm_int) = -wrk_space(1:end_herm_int)
       end if
       ! checks the results
@@ -1267,7 +1273,7 @@
                                  symmetric=SYMMETRIC(itest),                    &
                                  threshold=ERR_THRSH,                           &
                                  ratio_thrsh=RATIO_THRSH)
-        test_failed = .not.almost_equal
+        if (.not. test_failed) test_failed = .not.almost_equal
         call MatDestroy(A=val_ints(imat))
         start_herm_int = end_herm_int
       end do

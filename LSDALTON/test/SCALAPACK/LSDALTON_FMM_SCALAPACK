@@ -48,6 +48,10 @@ O                  7.134485    0.659897   -3.942496
 #  DALTON INPUT
 #######################################################################
 cat > LSDALTON_FMM_SCALAPACK.dal <<'%EOF%'
+**GENERAL
+.SCALAPACK
+.SCALAPACKBLOCKSIZE
+15
 **INTEGRALS
 .RUNMM
 *FMM
@@ -71,12 +75,8 @@ cat > LSDALTON_FMM_SCALAPACK.dal <<'%EOF%'
 31
 *DENSOPT
 .ARH
-.SCALAPACK
-.SCALAPACKBLOCKSIZE
-15
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 

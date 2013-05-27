@@ -1184,7 +1184,7 @@ Endif ! Optimization
              end if
           end if
           ! Write molecule file for each iteration
-          write(molname,'(A9,I3)') 'MOLECULE.',config%optinfo%ItrNmr
+          write(molname,'(A9,I3)') 'MOLECULE.',config%optinfo%ItrNmr+1
           DO I=10,11
             IF (molname(I:I).EQ.' ') molname(I:I)='0'
           ENDDO

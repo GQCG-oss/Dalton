@@ -20,7 +20,7 @@ fi
 cat > linsca_arh_ls_davidson.info <<'%EOF%'
    linsca_arh_ls_davidson
    ---------------
-   Molecule:         C4H2 
+   Molecule:         He14
    Wave Function:    BLYP/6-31G
    Test Purpose:     Check scf opt using davidson solver and linesearch
 %EOF%
@@ -33,15 +33,50 @@ BASIS
 6-31G
 
 
-AtomTypes=2 Angstrom Generators=0
-Charge=6.0 Atoms=4
-C                       -14.35700     0.00000     0.00000
-C                       -13.15400     0.00000     0.00000
-C                       -11.61900     0.00000     0.00000
-C                       -10.41600     0.00000     0.00000
-Charge=1.0 Atoms=2
-H                       -15.000     0.00000     0.00000
-H                        -9.61800     0.00000     0.00000
+AtomTypes=1 Angstrom Nosymmetry
+Charge=2.0 Atoms=42
+He        0.000000     0.00000     0.00000
+He        1.500000     0.00000     0.00000
+He        3.000000     0.00000     0.00000
+He        4.500000     0.00000     0.00000
+He        6.000000     0.00000     0.00000
+He        7.500000     0.00000     0.00000
+He        9.000000     0.00000     0.00000
+He        0.000000     1.50000    10.00000
+He        1.500000     1.50000    10.00000
+He        3.000000     1.50000    10.00000
+He        4.500000     1.50000    10.00000
+He        6.000000     1.50000    10.00000
+He        7.500000     1.50000    10.00000
+He        9.000000     1.50000    10.00000
+He        0.000000     3.00000     0.00000
+He        1.500000     3.00000     0.00000
+He        3.000000     3.00000     0.00000
+He        4.500000     3.00000     0.00000
+He        6.000000     3.00000     0.00000
+He        7.500000     3.00000     0.00000
+He        9.000000     3.00000     0.00000
+He        0.000000     4.50000    10.00000
+He        1.500000     4.50000    10.00000
+He        3.000000     4.50000    10.00000
+He        4.500000     4.50000    10.00000
+He        6.000000     4.50000    10.00000
+He        7.500000     4.50000    10.00000
+He        9.000000     4.50000    10.00000
+He        0.000000     6.00000     0.00000
+He        1.500000     6.00000     0.00000
+He        3.000000     6.00000     0.00000
+He        4.500000     6.00000     0.00000
+He        6.000000     6.00000     0.00000
+He        7.500000     6.00000     0.00000
+He        9.000000     6.00000     0.00000
+He        0.000000     7.50000    10.00000
+He        1.500000     7.50000    10.00000
+He        3.000000     7.50000    10.00000
+He        4.500000     7.50000    10.00000
+He        6.000000     7.50000    10.00000
+He        7.500000     7.50000    10.00000
+He        9.000000     7.50000    10.00000
 %EOF%
 
 #######################################################################
@@ -53,12 +88,11 @@ cat > linsca_arh_ls_davidson.dal <<'%EOF%'
 BLYP
 *DENSOPT
 .ARH(LS) DAVID
+.ARH DEBUG
 .START
-TRILEVEL
-.NOATOMSTART
+H1DIAG
 .CONVDYN
 STANDARD
-.LCM
 *END OF INPUT
 %EOF%
 
@@ -76,26 +110,43 @@ else
 fi
 
 # test energy
-CRIT1=`$GREP "Final DFT energy: * -152.9418" $log | wc -l`
+CRIT1=`$GREP "Final DFT energy: * -121.025773" $log | wc -l`
 TEST[1]=`expr  $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
 
 
-# Test individual iterations
-CRIT1=`$GREP " 2   -0\.568263" $log | wc -l`
+# Test number of iterations
+CRIT1=`$GREP "SCF converged in * 9" $log | wc -l`
 TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
-ERROR[2]="2nd energy shift not correct -"
+ERROR[2]="number of iterations wrong -"
+
+
+# Test individual iterations
+CRIT1=`$GREP " 2 * \-97\.69[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]" $log | wc -l`
+TEST[3]=`expr  $CRIT1`
+CTRL[3]=1
+ERROR[3]="2nd energy shift not correct -"
+
+# Test step length 
+CRIT1=`$GREP "Alpha Value * 3\.000" $log | wc -l`
+CRIT2=`$GREP "Alpha Value * 7\.750" $log | wc -l`
+CRIT3=`$GREP "Alpha Value * 7\.000" $log | wc -l`
+CRIT4=`$GREP "Alpha Value * 2\.000" $log | wc -l`
+TEST[4]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[4]=4
+ERROR[4]="Alpha Value incorrect -"
+
 
 # Memory test
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
-TEST[3]=`expr  $CRIT1`
-CTRL[3]=1
-ERROR[3]="Memory leak -"
+TEST[5]=`expr  $CRIT1`
+CTRL[5]=1
+ERROR[5]="Memory leak -"
 
 PASSED=1
-for i in 1 2 3
+for i in 1 2 3 4 5
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
       echo ${ERROR[i]}

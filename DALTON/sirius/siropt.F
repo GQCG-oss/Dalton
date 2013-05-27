@@ -2920,12 +2920,12 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          CALL UTHU(WRK(KMAT),WRK(KMATMO),WRK(KUCMO),WRK(KWRK2),
      &               NBAST,NORBT)
 
-!         IF (IPQMMM .GE. 15) THEN
-!           WRITE (LUPRI,'(/A)') ' PE_ao matrix from WR_SIRIFC:'
-!           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
+         IF (IPQMMM .GE. 15) THEN
+           WRITE (LUPRI,'(/A)') ' PE_ao matrix from WR_SIRIFC:'
+           CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
            WRITE (LUPRI,'(/A)') ' PE_mo matrix from WR_SIRIFC'
            CALL OUTPAK(WRK(KMATMO),NORBT,1,LUPRI)
-!         ENDIF
+         ENDIF
 
          WRITE (LUSIFC) LAB123,TABLE(11)
          CALL WRITT (LUSIFC,MMORBT,WRK(KMATMO))

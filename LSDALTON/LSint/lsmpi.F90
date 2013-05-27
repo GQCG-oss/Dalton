@@ -1296,41 +1296,51 @@ ENDIF
          tmRHS(iC,iD) = ZERO
        ENDDO
      ENDDO
-
 #if 1
 !    Then add the batch-wise time-estimates to the atomic pair estimates
      IF(useScreen)THEN
-      DO iA=1,nA!setting%redCS%AO(1)%nAtoms
-       aoA => setting%redCS%AO(1)%batch(iA)
-       globalstartbatchA = aoA%GlobalStartBatchindex -1 
-       startB = 1
-       IF (sameAB) startB=iA
-       DO iB=startB,nB!setting%redCS%AO(2)%nAtoms
-        aoB => setting%redCS%AO(2)%batch(iB)
-        globalstartbatchB = aoB%GlobalStartBatchindex - 1
-        ABatomPairTE = 0E0_realk
-        DO ibatchB=1,aoB%nBatches
-         globalbatchB = globalstartbatchB+ibatchB
-         DO ibatchA=1,aoA%nBatches
-          maxgab = LHSGAB(globalstartbatchA+ibatchA,globalbatchB)
-          IF (maxgab.NE.shortzero) THEN
-           IF (LHSDMATset) THEN
-            csProduct = maxgab + LHSDENS(globalstartbatchA+ibatchA,globalbatchB)
-           ELSE
-            csProduct = maxgab
-           ENDIF
-           screen = (csProduct.LT.LHS_CSTHR)
-           IF (.not.screen) THEN
-            batchTE = aoA%nPrim(ibatchA)*aoB%nPrim(iBatchB)&
-    &                  *(aoA%maxAng(iBatchA)+aoB%maxAng(iBatchB)+10E0_realk)**POWER
-            ABatomPairTE = ABatomPairTE + batchTE
-           ENDIF !screen
-          ENDIF !maxgab.NE.shortzero
-         ENDDO !ibatchB
-        ENDDO !ibatchA
-        tmLHS(iA,iB) = ABatomPairTE
-       ENDDO !iB
-      ENDDO !iA        
+      IF(size(setting%redCS%AO(1)%batch).NE.nA)THEN
+       !special for EP type integrals where 
+       ! sum_CD (nuclear empty|CD)D_CD
+       ! is done
+       DO iA=1,nA
+         DO iB=1,nB
+           tmLHS(iA,iB) = 1.0E0_realk
+         ENDDO
+       ENDDO
+      ELSE
+       DO iA=1,nA!setting%redCS%AO(1)%nAtoms
+        aoA => setting%redCS%AO(1)%batch(iA)
+        globalstartbatchA = aoA%GlobalStartBatchindex -1 
+        startB = 1
+        IF (sameAB) startB=iA
+        DO iB=startB,nB!setting%redCS%AO(2)%nAtoms
+         aoB => setting%redCS%AO(2)%batch(iB)
+         globalstartbatchB = aoB%GlobalStartBatchindex - 1
+         ABatomPairTE = 0E0_realk
+         DO ibatchB=1,aoB%nBatches
+          globalbatchB = globalstartbatchB+ibatchB
+          DO ibatchA=1,aoA%nBatches
+           maxgab = LHSGAB(globalstartbatchA+ibatchA,globalbatchB)
+           IF (maxgab.NE.shortzero) THEN
+            IF (LHSDMATset) THEN
+             csProduct = maxgab + LHSDENS(globalstartbatchA+ibatchA,globalbatchB )
+            ELSE
+             csProduct = maxgab
+            ENDIF
+            screen = (csProduct.LT.LHS_CSTHR)
+            IF (.not.screen) THEN
+             batchTE = aoA%nPrim(ibatchA)*aoB%nPrim(iBatchB)&
+                  & *(aoA%maxAng(iBatchA)+aoB%maxAng(iBatchB)+10E0_realk)**POWER
+             ABatomPairTE = ABatomPairTE + batchTE
+            ENDIF !screen
+           ENDIF !maxgab.NE.shortzero
+          ENDDO !ibatchB
+         ENDDO !ibatchA
+         tmLHS(iA,iB) = ABatomPairTE
+        ENDDO !iB
+       ENDDO !iA
+      ENDIF
       DO iC=1,nC!setting%redCS%AO(3)%nAtoms
        aoC => setting%redCS%AO(3)%batch(iC)
        globalstartbatchC = aoC%GlobalStartBatchindex -1 

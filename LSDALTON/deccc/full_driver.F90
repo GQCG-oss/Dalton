@@ -16,7 +16,9 @@ module full
   ! *****************************************
   use dec_fragment_utils
   use CABS_operations
+#ifdef MOD_UNRELEASED
   use full_f12contractions
+#endif
   use array4_simple_operations
   use array3_simple_operations
   use array2_simple_operations
@@ -49,11 +51,15 @@ contains
 
     ! run cc program
     if(DECinfo%F12) then ! F12 correction
+#ifdef MOD_UNRELEASED
        if(DECinfo%ccModel==1) then
           call full_canonical_mp2_f12(MyMolecule,MyLsitem,D,Ecorr)
        else
           call full_get_ccsd_f12_energy(MyMolecule,MyLsitem,D,Ecorr)
        end if
+#else
+       call lsquit('f12 not released',-1)
+#endif
     else
        if(DECinfo%ccModel==1) then
           call full_canonical_mp2_correlation_energy(MyMolecule,mylsitem,Ecorr)
@@ -115,20 +121,28 @@ contains
           end do
        end do       
 
+#ifdef MOD_UNRELEASED
+
        if (DECinfo%ccModel .eq. 4) then
           ! ccsd(t) correction
           Ecorr = ccsolver_justenergy_pt(MyMolecule,nbasis,nocc,nunocc,&
                & mylsitem,print_level,fragment_job,ypo_fc=ypo_fc,ppfock_fc=ppfock_fc)
        else
+#endif
           Ecorr = ccsolver_justenergy(ypo_fc,&
                & MyMolecule%ypv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
                & print_level,fragment_job,ppfock_fc,MyMolecule%qqfock)
+#ifdef MOD_UNRELEASED
        end if
+#endif
+!endif mod_unreleased
 
        call mem_dealloc(ppfock_fc)
        call mem_dealloc(ypo_fc)
 
     else
+
+#ifdef MOD_UNRELEASED
 
        if (Decinfo%ccModel .eq. 4) then
 
@@ -136,17 +150,24 @@ contains
                & mylsitem,print_level,fragment_job)
 
        else
+!endif mod_unreleased
+#endif
 
           Ecorr = ccsolver_justenergy(MyMolecule%ypo,MyMolecule%ypv,&
                & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
                & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock)
 
+#ifdef MOD_UNRELEASED
+
        end if
+!endif mod_unreleased
+#endif
 
     end if
 
   end subroutine full_cc_dispatch
 
+#ifdef MOD_UNRELEASED
   !> \brief Calculate canonical MP2 energy for full molecular system
   !> keeping full AO integrals in memory. Only for testing.
   !> \author Kasper Kristensen
@@ -458,7 +479,7 @@ contains
     call mem_dealloc(gmo)
 
   end subroutine full_canonical_mp2_f12
-
+#endif
 
   !> \brief Memory check for full_canonical_mp2 subroutine
   !> \author Kasper Kristensen
@@ -492,6 +513,7 @@ contains
   end subroutine full_canonical_mp2_memory_check
 
 
+#ifdef MOD_UNRELEASED
   subroutine submp2f12_EBX(mp2f12_EBX,Bijij,Bjiij,Xijij,Xjiij,Fii,nocc)
     implicit none
     Real(realk)               :: mp2f12_EBX
@@ -583,6 +605,7 @@ contains
   ENDDO
   mp2f12_EV = mp2f12_EV - 0.25E0_realk*tmp
   end function mp2f12_EV
+#endif
 
   subroutine get_4Center_MO_integrals(mylsitem,lupri,nbasis,nocc,noccfull,nvirt,&
        & Cocc,Cvirt,inputstring,gAO,gMO)
@@ -881,6 +904,7 @@ contains
 
   end subroutine MO_transform_AOMatrix
 
+#ifdef MOD_UNRELEASED
   !> \brief Get CCSD-F12 energy, testing code.
   !> \date May 2012
   subroutine full_get_ccsd_f12_energy(MyMolecule,MyLsitem,Dmat,ECCSD_F12)
@@ -1161,7 +1185,7 @@ contains
     call free_cabs
 
   end subroutine full_get_ccsd_f12_energy
-
+#endif
 
   !> \brief Get CCSD singles and doubles amplitude for full molecule,
   !> only to be used for debugging purposes.
@@ -1231,6 +1255,7 @@ contains
   end subroutine full_get_ccsd_singles_and_doubles
 
 
+#ifdef MOD_UNRELEASED
     subroutine get_4Center_F12_integrals(mylsitem,MyMolecule,nbasis,nocc,noccfull,nvirt,ncabsAO,&
          & Ripjq,Fijkl,Tijkl,Rimjc,Dijkl,Tirjk,Tijkr,Gipjq,Gimjc,Girjs,Girjm,&
          & Grimj,Gipja,Gpiaj,Gicjm,Gcimj,Gcirj,Gciaj,Giajc)
@@ -1540,7 +1565,7 @@ contains
       call mat_free(Fcp)
 
   end subroutine free_F12_mixed_MO_Matrices
-
+#endif
 
 
 
