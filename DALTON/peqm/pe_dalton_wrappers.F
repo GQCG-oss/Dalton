@@ -625,13 +625,11 @@
           call mollab('PETMAT  ', lusifc, lupri)
           call readt(lusifc, nnorbx, fpe)
           if (lopen) call gpclose(lusifc, 'KEEP')
-              allocate(fupe(n2orbx), fpeac(nnashx))
-              call dsptsi(norbt, fpe, fupe)               
-              if (nasht > 0) call getac2(fpe, fpeac)
-                  tfpe = solelm(dv, fpeac, fpe, tfpeac)
-              deallocate(fpe)
-!          end if
-!          deallocate(fupemo)
+          allocate(fupe(n2orbx), fpeac(nnashx))
+          call dsptsi(norbt, fpe, fupe)               
+          if (nasht > 0) call getac2(fpe, fpeac)
+              tfpe = solelm(dv, fpeac, fpe, tfpeac)
+          deallocate(fpe)
       end if
 
 C    ***************************************
