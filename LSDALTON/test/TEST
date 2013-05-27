@@ -26,7 +26,6 @@ fi
 # LINSCA is a set of tests that MUST be run before commiting to linsca-ng
 # branch
 LINSCA="linsca/linsca_energy  
-  linsca/linsca_energy_h1oao  
   linsca/linsca_VanLenthe
   linsca/linsca_emsl
   linsca/linsca_las
@@ -191,6 +190,7 @@ DEC="dectests/arraytest
      dectests/fullccsd_low
      dectests/fullccsdpt
      dectests/decccsdpt
+     dectests/decccsdpt_simfull
      dectests/decmp2_energy
      dectests/decmp2_density
      dectests/decmp2_gradient

@@ -77,12 +77,7 @@ endfunction()
 
 macro(find_default)
 	if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-	    if(LINUX_UBUNTU)
-                # apparently ubuntu throws everything into lib
-	        set(path_suffixes lib)
-	    else()
 	        set(path_suffixes lib64)
-	    endif()
 	else()
 	    set(path_suffixes lib)
 	endif()

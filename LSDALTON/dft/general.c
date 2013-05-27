@@ -117,7 +117,7 @@ const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
 */
 static char* DftConfString = NULL;
 integer
-FSYM(dftsetfunc)(const char* line, real *hfweight)
+FSYM(dftsetfunc)(const char* line, real *hfweight, integer *ierror)
 {
   integer i, off, len;
   len=80;
@@ -133,16 +133,18 @@ FSYM(dftsetfunc)(const char* line, real *hfweight)
   DftConfString = malloc(i+1-off);
   strncpy(DftConfString, line+off, i-off); 
   DftConfString[i-off] = '\0';
-  
+  *ierror = 0;
   switch(fun_select_by_name(DftConfString, hfweight)) {    
   case FUN_OK: free(DftConfString); DftConfString = NULL; return 1; /* SUCCESS! */
   case FUN_UNKNOWN:
     printf("Unknown functional '%s'. Aborting.\n", DftConfString);
     dftlistfuncs_();
+    *ierror = 1;
     break;
   case FUN_CONF_ERROR:
     printf("Functional configuration '%s' is not understood. "
 	   "Aborting.\n", DftConfString);
+    *ierror = 1;
     break;
   }
   free(DftConfString);

@@ -37,13 +37,35 @@ parser.add_argument('-sub', dest='sublist', nargs='+', default=[], type=int,
                     help='''Specify which cubes to subtract. The cubes are
                             numbered according to the input order starting
                             from 0''')
-parser.add_argument('-mae', dest='mae', action='store_true', default=False,
-                    help='''Calculate MAE with REFCUBE as the reference.''')
-parser.add_argument('-vdw', dest='vdw', nargs=3, default=[], type=float,
+parser.add_argument('-mae', dest='mae', nargs=3, default=[], type=float,
                     metavar=('MIN','MAX','STEP'),
-                    help='''Do a vdw analysis. RMSD is calculated relative to
-                            a reference in volumes between MIN times vdw radius
-                            and MAX times vdw radius in STEP steps''')
+                    help='''Do a MAE analysis. MAE is calculated relative to
+                            the reference cube in volumes between MIN times
+                            vdw radius and MAX times vdw radius in STEP steps.''')
+parser.add_argument('-mre', dest='mre', nargs=3, default=[], type=float,
+                    metavar=('MIN','MAX','STEP'),
+                    help='''Do a MRE analysis. MRE is calculated relative to
+                            the reference cube in volumes between MIN times
+                            vdw radius and MAX times vdw radius in STEP steps.''')
+parser.add_argument('-print-shells', dest='printshells', nargs=3, default=[],
+                    type=float, metavar=('MIN','MAX','STEP'),
+                    help='''Print difference values relative to the reference
+                            cube divided in volumes between MIN times vdw radius
+                            and MAX times vdw radius in STEP steps.''')
+parser.add_argument('-rmsd', dest='rmsd', nargs=3, default=[], type=float,
+                    metavar=('MIN','MAX','STEP'),
+                    help='''Do a RMSD analysis. RMSD is calculated relative to
+                            the reference cube in volumes between MIN times
+                            vdw radius and MAX times vdw radius in STEP steps''')
+parser.add_argument('-nrmsd', dest='nrmsd', nargs=3, default=[], type=float,
+                    metavar=('MIN','MAX','STEP'),
+                    help='''Do a normalized RMSD analysis. RMSD is calculated
+                            relative to the reference cube in volumes between
+                            MIN times vdw radius and MAX times vdw radius in
+                            STEP steps''')
+parser.add_argument('-ncores', dest='ncores', default=1, type=int,
+                    metavar='NCORES',
+                    help='''Number of cores [default: %(default)s]''')
 
 if len(sys.argv) == 1:
     parser.print_help()
@@ -164,9 +186,9 @@ class Cube(object):
             grid = ''
         fcube.close()
 
-def vdw_analysis(cubelist, refcub, mini, maxi, step):
+def rmsd_analysis(cubelist, refcub, mini, maxi, step):
     if maxi < mini:
-        exit('ERROR: maximum is less than minimum')
+        exit('ERROR: maximum vdw radius is less than the specified minimum')
     rmsds = []
     for i in range(len(cubelist)):
         rmsds.append([])
@@ -191,11 +213,11 @@ def vdw_analysis(cubelist, refcub, mini, maxi, step):
                 point[2] = refcub.origo[2] + z * refcub.zstep
                 points.append([list(point), x, y, z])
     out_queue = mp.Queue()
-    nprocs = mp.cpu_count()
+    nprocs = args.ncores
     chunksize = int(math.ceil(len(points) / float(nprocs)))
     procs = []
     for i in xrange(nprocs):
-        proc = mp.Process(target=worker,
+        proc = mp.Process(target=rmsd_worker,
                           args=(points[chunksize * i:chunksize * (i + 1)],
                                 shells, rmsds, grdpts, refcub, cubelist, out_queue))
         procs.append(proc)
@@ -211,21 +233,21 @@ def vdw_analysis(cubelist, refcub, mini, maxi, step):
             for j in xrange(len(cubelist)):
                 rmsds[j][i] += rmsd[j][i]
     for ic, cube in enumerate(cubelist):
-        fvdw = open('{}.log'.format(cube.filename[:-5]), 'w')
-        vdw = 'Reference: {}\n'.format(refcub.filename)
-        vdw += '{}\n'.format(cube.filename)
-        vdw += ' Points   vdW Volume   Midpoint    RMSD\n'
+        frmsd = open('{}_rmsd.log'.format(cube.filename[:-5]), 'w')
+        rmsd = 'Reference: {}\n'.format(refcub.filename)
+        rmsd += '{}\n'.format(cube.filename)
+        rmsd += ' Points   vdW Volume   Midpoint    RMSD\n'
         for ish, shell in enumerate(shells):
             inner = shell[0]
             outer = shell[1]
-            vdw += '{0:8d} '.format(grdpts[ish])
-            vdw += '{0:5.2f}-{1:<5.2f} '.format(inner, outer)
-            vdw += '{0:5.2f} '.format(round(inner + 0.5 * step, 4))
-            vdw += '{0:12.4e}\n'.format(math.sqrt(rmsds[ic][ish] / grdpts[ish]))
-        fvdw.write(vdw)
-        fvdw.close()
+            rmsd += '{0:8d} '.format(grdpts[ish])
+            rmsd += '{0:5.2f}-{1:<5.2f} '.format(inner, outer)
+            rmsd += '{0:5.2f} '.format(round(inner + 0.5 * step, 4))
+            rmsd += '{0:12.4e}\n'.format(math.sqrt(rmsds[ic][ish] / grdpts[ish]))
+        frmsd.write(rmsd)
+        frmsd.close()
 
-def worker(points, shells, rmsds, grdpts, refcub, cubelist, out_queue):
+def rmsd_worker(points, shells, rmsds, grdpts, refcub, cubelist, out_queue):
     for point, x, y, z in points:
         for ish, shell in enumerate(shells):
             include = inorout(point, shell, refcub.coords, refcub.charges)
@@ -257,14 +279,321 @@ def inorout(point, shell, coords, charges):
             continue
     return False
 
-def mae_analysis(cube, refcub):
-    mae = 0.0
+def nrmsd_analysis(cubelist, refcub, mini, maxi, step):
+    if maxi < mini:
+        exit('ERROR: maximum vdw radius is less than the specified minimum')
+    nrmsds = []
+    for i in range(len(cubelist)):
+        nrmsds.append([])
+    grdpts = []
+    maxvals = []
+    minvals = []
+    shells = []
+    inner = mini
+    outer = mini + step
+    while round(outer, 4) <= round(maxi, 4):
+        for i in range(len(cubelist)):
+            nrmsds[i].append(0.0)
+        grdpts.append(0)
+        maxvals.append(0.0)
+        minvals.append(0.0)
+        shells.append([round(inner, 4), round(outer, 4)])
+        inner += step
+        outer += step
+    points = []
+    point = [0.0, 0.0, 0.0]
     for x in xrange(refcub.xpoints):
+        point[0] = refcub.origo[0] + x * refcub.xstep
         for y in xrange(refcub.ypoints):
+            point[1] = refcub.origo[1] + y * refcub.ystep
             for z in xrange(refcub.zpoints):
-                mae += abs(cube.grid[x][y][z] - refcub.grid[x][y][z])
-    return mae / (refcub.xpoints * refcub.ypoints * refcub.zpoints)
+                point[2] = refcub.origo[2] + z * refcub.zstep
+                points.append([list(point), x, y, z])
+    out_queue = mp.Queue()
+    nprocs = args.ncores
+    chunksize = int(math.ceil(len(points) / float(nprocs)))
+    procs = []
+    for i in xrange(nprocs):
+        proc = mp.Process(target=nrmsd_worker,
+                          args=(points[chunksize * i:chunksize * (i + 1)],
+                                shells, nrmsds, grdpts, maxvals, minvals,
+                                refcub, cubelist, out_queue))
+        procs.append(proc)
+        proc.start()
+    results = []
+    for i in xrange(nprocs):
+        results.append(out_queue.get())
+    for proc in procs:
+        proc.join()
+    for nrmsd, pts, maxval, minval in results:
+        for i in xrange(len(shells)):
+            maxvals[i] = max(maxvals[i], maxval[i])
+            minvals[i] = min(minvals[i], minval[i])
+            grdpts[i] += pts[i]
+            for j in xrange(len(cubelist)):
+                nrmsds[j][i] += nrmsd[j][i]
+    for ic, cube in enumerate(cubelist):
+        fnrmsd = open('{}_nrmsd.log'.format(cube.filename[:-5]), 'w')
+        nrmsd = 'Reference: {}\n'.format(refcub.filename)
+        nrmsd += '{}\n'.format(cube.filename)
+        nrmsd += ' Points   vdW Volume   Midpoint    NRMSD\n'
+        for ish, shell in enumerate(shells):
+            inner = shell[0]
+            outer = shell[1]
+            nrmsd += '{0:8d} '.format(grdpts[ish])
+            nrmsd += '{0:5.2f}-{1:<5.2f} '.format(inner, outer)
+            nrmsd += '{0:5.2f} '.format(round(inner + 0.5 * step, 4))
+            nrmsd += '{0:12.4e}\n'.format(math.sqrt(nrmsds[ic][ish] / grdpts[ish])
+                                            / (maxvals[ish] - minvals[ish]))
+        fnrmsd.write(nrmsd)
+        fnrmsd.close()
 
+def nrmsd_worker(points, shells, nrmsds, grdpts, maxvals, minvals,
+                 refcub, cubelist, out_queue):
+    for point, x, y, z in points:
+        for ish, shell in enumerate(shells):
+            include = inorout(point, shell, refcub.coords, refcub.charges)
+            if include:
+                for ic, cube in enumerate(cubelist):
+                    nrmsds[ic][ish] += (cube.grid[x][y][z] -
+                                        refcub.grid[x][y][z])**2
+                    if refcub.grid[x][y][z] > maxvals[ish]:
+                        maxvals[ish] = refcub.grid[x][y][z]
+                    if refcub.grid[x][y][z] < minvals[ish]:
+                        minvals[ish] = refcub.grid[x][y][z]
+                grdpts[ish] += 1
+                break
+    out_queue.put((nrmsds, grdpts, maxvals, minvals))
+
+def mae_analysis(cubelist, refcub, mini, maxi, step):
+    if maxi < mini:
+        exit('ERROR: maximum vdw radius is less than the specified minimum')
+    maes = []
+    for i in range(len(cubelist)):
+        maes.append([])
+    grdpts = []
+    shells = []
+    inner = mini
+    outer = mini + step
+    while round(outer, 4) <= round(maxi, 4):
+        for i in range(len(cubelist)):
+            maes[i].append(0.0)
+        grdpts.append(0)
+        shells.append([round(inner, 4), round(outer, 4)])
+        inner += step
+        outer += step
+    points = []
+    point = [0.0, 0.0, 0.0]
+    for x in xrange(refcub.xpoints):
+        point[0] = refcub.origo[0] + x * refcub.xstep
+        for y in xrange(refcub.ypoints):
+            point[1] = refcub.origo[1] + y * refcub.ystep
+            for z in xrange(refcub.zpoints):
+                point[2] = refcub.origo[2] + z * refcub.zstep
+                points.append([list(point), x, y, z])
+    out_queue = mp.Queue()
+    nprocs = args.ncores 
+    chunksize = int(math.ceil(len(points) / float(nprocs)))
+    procs = []
+    for i in xrange(nprocs):
+        proc = mp.Process(target=mae_worker,
+                          args=(points[chunksize * i:chunksize * (i + 1)],
+                                shells, maes, grdpts, refcub, cubelist, out_queue))
+        procs.append(proc)
+        proc.start()
+    results = []
+    for i in xrange(nprocs):
+        results.append(out_queue.get())
+    for proc in procs:
+        proc.join()
+    for mae, pts in results:
+        for i in xrange(len(shells)):
+            grdpts[i] += pts[i]
+            for j in xrange(len(cubelist)):
+                maes[j][i] += mae[j][i]
+    for ic, cube in enumerate(cubelist):
+        fmae = open('{}_mae.log'.format(cube.filename[:-5]), 'w')
+        mae = 'Reference: {}\n'.format(refcub.filename)
+        mae += '{}\n'.format(cube.filename)
+        mae += ' Points   vdW Volume   Midpoint    MAE\n'
+        for ish, shell in enumerate(shells):
+            inner = shell[0]
+            outer = shell[1]
+            mae += '{0:8d} '.format(grdpts[ish])
+            mae += '{0:5.2f}-{1:<5.2f} '.format(inner, outer)
+            mae += '{0:5.2f} '.format(round(inner + 0.5 * step, 4))
+            mae += '{0:12.4e}\n'.format(maes[ic][ish] / grdpts[ish])
+        fmae.write(mae)
+        fmae.close()
+
+def mae_worker(points, shells, maes, grdpts, refcub, cubelist, out_queue):
+    for point, x, y, z in points:
+        for ish, shell in enumerate(shells):
+            include = inorout(point, shell, refcub.coords, refcub.charges)
+            if include:
+                for ic, cube in enumerate(cubelist):
+                    maes[ic][ish] += np.abs(cube.grid[x][y][z] -
+                                       refcub.grid[x][y][z])
+                grdpts[ish] += 1
+                break
+    out_queue.put((maes, grdpts))
+
+def mre_analysis(cubelist, refcub, mini, maxi, step):
+    if maxi < mini:
+        exit('ERROR: maximum vdw radius is less than the specified minimum')
+    mres = []
+    for i in range(len(cubelist)):
+        mres.append([])
+    grdpts = []
+    shells = []
+    inner = mini
+    outer = mini + step
+    while round(outer, 4) <= round(maxi, 4):
+        for i in range(len(cubelist)):
+            mres[i].append(0.0)
+        grdpts.append(0)
+        shells.append([round(inner, 4), round(outer, 4)])
+        inner += step
+        outer += step
+    points = []
+    point = [0.0, 0.0, 0.0]
+    for x in xrange(refcub.xpoints):
+        point[0] = refcub.origo[0] + x * refcub.xstep
+        for y in xrange(refcub.ypoints):
+            point[1] = refcub.origo[1] + y * refcub.ystep
+            for z in xrange(refcub.zpoints):
+                point[2] = refcub.origo[2] + z * refcub.zstep
+                points.append([list(point), x, y, z])
+    out_queue = mp.Queue()
+    nprocs = args.ncores 
+    chunksize = int(math.ceil(len(points) / float(nprocs)))
+    procs = []
+    for i in xrange(nprocs):
+        proc = mp.Process(target=mre_worker,
+                          args=(points[chunksize * i:chunksize * (i + 1)],
+                                shells, mres, grdpts, refcub, cubelist, out_queue))
+        procs.append(proc)
+        proc.start()
+    results = []
+    for i in xrange(nprocs):
+        results.append(out_queue.get())
+    for proc in procs:
+        proc.join()
+    for mre, pts in results:
+        for i in xrange(len(shells)):
+            grdpts[i] += pts[i]
+            for j in xrange(len(cubelist)):
+                mres[j][i] += mre[j][i]
+    for ic, cube in enumerate(cubelist):
+        fmre = open('{}_mre.log'.format(cube.filename[:-5]), 'w')
+        mre = 'Reference: {}\n'.format(refcub.filename)
+        mre += '{}\n'.format(cube.filename)
+        mre += ' Points   vdW Volume   Midpoint    MAE\n'
+        for ish, shell in enumerate(shells):
+            inner = shell[0]
+            outer = shell[1]
+            mre += '{0:8d} '.format(grdpts[ish])
+            mre += '{0:5.2f}-{1:<5.2f} '.format(inner, outer)
+            mre += '{0:5.2f} '.format(round(inner + 0.5 * step, 4))
+            mre += '{0:12.4e}\n'.format(mres[ic][ish] / grdpts[ish])
+        fmre.write(mre)
+        fmre.close()
+
+def mre_worker(points, shells, mres, grdpts, refcub, cubelist, out_queue):
+    for point, x, y, z in points:
+        for ish, shell in enumerate(shells):
+            include = inorout(point, shell, refcub.coords, refcub.charges)
+            if include:
+                for ic, cube in enumerate(cubelist):
+                    mres[ic][ish] += np.abs(1.0 - (cube.grid[x][y][z] /
+                                                   refcub.grid[x][y][z]))
+                grdpts[ish] += 1
+                break
+    out_queue.put((mres, grdpts))
+
+def print_shells(cubelist, refcub, mini, maxi, step):
+    if maxi < mini:
+        exit('ERROR: maximum vdw radius is less than the specified minimum')
+    vals = []
+    rels = []
+    for i in range(len(cubelist)):
+        vals.append([])
+        rels.append([])
+    grdpts = []
+    shells = []
+    inner = mini
+    outer = mini + step
+    while round(outer, 4) <= round(maxi, 4):
+        for i in range(len(cubelist)):
+            vals[i].append([])
+            rels[i].append([])
+        grdpts.append(0)
+        shells.append([round(inner, 4), round(outer, 4)])
+        inner += step
+        outer += step
+    points = []
+    point = [0.0, 0.0, 0.0]
+    for x in xrange(refcub.xpoints):
+        point[0] = refcub.origo[0] + x * refcub.xstep
+        for y in xrange(refcub.ypoints):
+            point[1] = refcub.origo[1] + y * refcub.ystep
+            for z in xrange(refcub.zpoints):
+                point[2] = refcub.origo[2] + z * refcub.zstep
+                points.append([list(point), x, y, z])
+    out_queue = mp.Queue()
+    nprocs = args.ncores 
+    chunksize = int(math.ceil(len(points) / float(nprocs)))
+    procs = []
+    for i in xrange(nprocs):
+        proc = mp.Process(target=print_shell_worker,
+                          args=(points[chunksize * i:chunksize * (i + 1)],
+                                shells, vals, rels, grdpts, refcub, cubelist,
+                                out_queue))
+        procs.append(proc)
+        proc.start()
+    results = []
+    for i in xrange(nprocs):
+        results.append(out_queue.get())
+    for proc in procs:
+        proc.join()
+    for val, rel, pts in results:
+        for i in xrange(len(shells)):
+            grdpts[i] += pts[i]
+            for j in xrange(len(cubelist)):
+                for k in xrange(pts[i]):
+                    vals[j][i].append(val[j][i][k])
+                    rels[j][i].append(rel[j][i][k])
+    for ic, cube in enumerate(cubelist):
+        for ish, shell in enumerate(shells):
+            fprt = open('{0}_shell_{1}.log'.format(cube.filename[:-5], ish), 'w')
+            prt = 'Reference: {0}\n'.format(refcub.filename)
+            prt += '{0}\n'.format(cube.filename)
+            prt += 'Inner-outer radii: {0[0]:5.2f}-{0[1]:<5.2f}\n'.format(shell)
+            prt += 'Shell midpoint: {0:5.2f}\n'.format(round(shell[0] + 0.5 * step, 4))
+            prt += 'Number of grid points: {0:9d}\n'.format(grdpts[ish])
+            fprt.write(prt)
+            prt = ''
+            for i in xrange(grdpts[ish]):
+                prt += '{0:12.4e} {1:12.4e}\n'.format(vals[ic][ish][i],
+                                                      rels[ic][ish][i])
+            fprt.write(prt)
+            fprt.close()
+
+def print_shell_worker(points, shells, vals, rels, grdpts, refcub, cubelist,
+                       out_queue):
+    for point, x, y, z in points:
+        for ish, shell in enumerate(shells):
+            include = inorout(point, shell, refcub.coords, refcub.charges)
+            if include:
+                for ic, cube in enumerate(cubelist):
+                    vals[ic][ish].append(cub.grid[x][y][z]
+                                         - refcub.grid[x][y][z])
+                    rels[ic][ish].append(abs((refcub.grid[x][y][z]
+                                              - cub.grid[x][y][z])
+                                             / refcub.grid[x][y][z]))
+                grdpts[ish] += 1
+                break
+    out_queue.put((vals, rels, grdpts))
 
 if __name__ == "__main__":
 
@@ -286,23 +615,49 @@ if __name__ == "__main__":
             newcube.grid -= cubelist[index].grid
 
     if args.mae:
-        print('MAEs:')
-        refcub = cubelist[args.refidx]
-        print('Reference: {}'.format(refcub.filename))
-        for cube in cubelist:
-            if cube == refcub:
-                continue
-            mae = mae_analysis(cube, refcub)
-            print('{0}: {1:13.5e}'.format(cube.filename, mae))
-
-    if args.vdw:
         refcub = cubelist[args.refidx]
         cubana = []
         for cube in cubelist:
             if cube == refcub:
                 continue
             cubana.append(cube)
-        vdw_analysis(cubana, refcub, *args.vdw)
+        mae_analysis(cubana, refcub, *args.mae)
+    
+    if args.mre:
+        refcub = cubelist[args.refidx]
+        cubana = []
+        for cube in cubelist:
+            if cube == refcub:
+                continue
+            cubana.append(cube)
+        mre_analysis(cubana, refcub, *args.mre)
+
+    if args.rmsd:
+        refcub = cubelist[args.refidx]
+        cubana = []
+        for cube in cubelist:
+            if cube == refcub:
+                continue
+            cubana.append(cube)
+        rmsd_analysis(cubana, refcub, *args.rmsd)
+
+    if args.nrmsd:
+        refcub = cubelist[args.refidx]
+        cubana = []
+        for cube in cubelist:
+            if cube == refcub:
+                continue
+            cubana.append(cube)
+        nrmsd_analysis(cubana, refcub, *args.nrmsd)
+
+    if args.printshells:
+        refcub = cubelist[args.refidx]
+        cubana = []
+        for cube in cubelist:
+            if cube == refcub:
+                continue
+            cubana.append(cube)
+        print_shells(cubana, refcub, *args.printshells)
 
     if args.outputfile:
         newcube.writecube(args.outputfile)

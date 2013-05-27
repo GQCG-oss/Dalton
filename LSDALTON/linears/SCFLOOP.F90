@@ -106,6 +106,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    config%davidSCF%lupri = config%lupri
    config%davidSCF%stepsize=config%davidSCF%max_stepsize
    config%davidSCF%arh_linesearch=config%davidSCF%arh_inp_linesearch
+   config%davidSCF%arh_extravec=config%davidSCF%arh_inp_extravec
    
    IF(config%opt%cfg_saveF0andD0)THEN
       call ks_init_linesearch_fock(nbast)

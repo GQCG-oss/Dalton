@@ -11,7 +11,6 @@
 !> Direct density: P. Sałek, S. Høst, L. Thøgersen et al. JCP 126, 114110 (2007)
 !>
 module arhDensity
-use chol_decomp_mod,only: invert_by_diag2
 use precision
 use matrix_module
 use decompMod
@@ -1076,11 +1075,7 @@ contains
             call mat_scal(-1.0E0_realk,FX)
          endif
          call MAT_ADD(1.0E0_realk,XF(1),-1.0E0_realk,FX,scr1)
-         if (decomp%cfg_do_in_oao) then
-           call mat_assign(XF(1),scr1)
-         else
-           call x_from_oao_basis(decomp, scr1, XF(1)) !XF is XD_AO
-         endif
+         call x_from_oao_basis(decomp, scr1, XF(1)) !XF is XD_AO
          if (decomp%nocca+decomp%noccb /= 1) then !if only 1 electron -> 2 el part = 0
          
             !call di_GET_GbDs(decomp%lupri,decomp%lupri,XF(1),scr1) !scr1 is G_AO without DFT
@@ -1107,11 +1102,7 @@ contains
             call mat_free(D_AO)
             call mat_free(Gxc(1))
          end if
-         if (decomp%cfg_do_in_oao) then
-           call mat_assign(scr2,scr1)
-         else
-           call res_to_oao_basis(decomp, scr1, scr2) !scr2 is G in chol basis
-         endif
+         call res_to_oao_basis(decomp, scr1, scr2) !scr2 is G in chol basis
          !Add contribution to AX, 1.0*(GU*DU -DU*GU)
          call MAT_MUL(scr2,decomp%DU,'n','n',1.0E0_realk,0.0E0_realk,XF(1)) !XF is GU*DU here!
          call mat_trans(XF(1),FX) !FX is DU*GU here (both D and G are always symm)
