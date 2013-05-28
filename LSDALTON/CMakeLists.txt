@@ -5,9 +5,6 @@ project(LSDALTON Fortran C CXX)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-# flag to add a fix OpenMPI bug for gfortran/macOSX
-set(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX FALSE)
-
 add_definitions(-DTHIS_IS_CMAKE_BUILD)
 
 # these are paths that CMake will search for cmake module files that end with .cmake
@@ -142,11 +139,6 @@ if(ENABLE_MPI)
         add_definitions(-DVAR_LSMPI)
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
         include_directories(${MPI_INCLUDE_PATH})
-        if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-          if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-            set(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX TRUE)
-          endif()
-        endif()
     endif()
 endif()
 
@@ -527,9 +519,14 @@ add_executable(
     ${LINK_FLAGS}
     )
 
-if(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX)
-  SET_TARGET_PROPERTIES(lsdalton.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
-  SET_TARGET_PROPERTIES(lslib_tester.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
+if(MPI_FOUND)
+    # Simen's magic fix for Mac/GNU/OpenMPI
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+        if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+            SET_TARGET_PROPERTIES(lsdalton.x     PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
+            SET_TARGET_PROPERTIES(lslib_tester.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
+        endif()
+    endif()
 endif()
 
 if(ENABLE_OPENRSP)
