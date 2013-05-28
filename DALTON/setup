@@ -65,7 +65,7 @@ group.add_argument('--sgi-mpt',
         default='off',
         const='on',
         help='enable SGI MPT [default: %(default)s]')
-group.add_argument('--openmp',
+group.add_argument('--omp',
         nargs='?',
         action='store',
         choices=('on','off'),
@@ -125,6 +125,10 @@ group.add_argument('--release',
         action='store_false',
         dest='debug',
         help='build in release mode (full optimization) [default: %(default)s]')
+group.add_argument('--profile',
+        action='store_true',
+        default=False,
+        help='enable profiling [default: %(default)s]')
 group.add_argument('--tests',
         nargs='?',
         action='store',
@@ -140,10 +144,6 @@ group.add_argument('--coverage',
         action='store_true',
         default=False,
         help='enable code coverage [default: %(default)s]')
-group.add_argument('--profiling',
-        action='store_true',
-        default=False,
-        help='enable profiling [default: %(default)s]')
 group.add_argument('--static',
         action='store_true',
         default=False,
@@ -166,6 +166,34 @@ group.add_argument('--generator',
         default=None,
         help='set the cmake generator [default: %(default)s]',
         metavar='STRING')
+group.add_argument('--csr',
+        nargs='?',
+        action='store',
+        choices=('on','off'),
+        default='off',
+        const='on',
+        help='build using MKL compressed sparse row [default: %(default)s]')
+group.add_argument('--scalapack',
+        nargs='?',
+        action='store',
+        choices=('on','off'),
+        default='off',
+        const='on',
+        help='build using scalapack [default: %(default)s]')
+group.add_argument('--scalasca',
+        nargs='?',
+        action='store',
+        choices=('on','off'),
+        default='off',
+        const='on',
+        help='build using scalasca profiler mode [default: %(default)s]')
+group.add_argument('--timings',
+        nargs='?',
+        action='store',
+        choices=('on','off'),
+        default='off',
+        const='on',
+        help='build using timings [default: %(default)s]')
 
 # process input
 
@@ -206,16 +234,19 @@ def gen_cmake_command():
 
     command += ' -DENABLE_MPI=%s'            % args.mpi.upper()
     command += ' -DENABLE_SGI_MPT=%s'        % args.sgi_mpt.upper()
-    command += ' -DENABLE_OPENMP=%s'         % args.openmp.upper()
+    command += ' -DENABLE_OMP=%s'            % args.omp.upper()
+    command += ' -DENABLE_64BIT_INTEGERS=%s' % args.int64.upper()
+    command += ' -DENABLE_TESTS=%s'          % args.tests.upper()
+    command += ' -DENABLE_CSR=%s'            % args.csr.upper()
+    command += ' -DENABLE_SCALAPACK=%s'      % args.scalapack.upper()
+    command += ' -DENABLE_SCALASCA=%s'       % args.scalasca.upper()
+    command += ' -DENABLE_TIMINGS=%s'        % args.timings.upper()
 
     if args.mkl:
-        command += ' -DMKL_FLAG="-mkl=%s"'   % args.mkl
+        command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
     else:
-        command += ' -DENABLE_BLAS=%s'       % args.blas.upper()
-        command += ' -DENABLE_LAPACK=%s'     % args.lapack.upper()
-
-    command += ' -DENABLE_TESTS=%s'          % args.tests.upper()
-    command += ' -DENABLE_64BIT_INTEGERS=%s' % args.int64.upper()
+        command += ' -DENABLE_BLAS=%s'     % args.blas.upper()
+        command += ' -DENABLE_LAPACK=%s'   % args.lapack.upper()
 
     if args.explicit_libs:
         command += ' -DEXPLICIT_LIBS="%s"' % args.explicit_libs
@@ -226,9 +257,6 @@ def gen_cmake_command():
     if args.coverage:
         command += ' -DENABLE_CODE_COVERAGE=ON'
 
-    if args.profiling:
-        command += ' -DENABLE_PROFILING=ON'
-
     if args.static:
         command += ' -DENABLE_STATIC_LINKING=ON'
 
@@ -237,6 +265,8 @@ def gen_cmake_command():
 
     if args.debug:
         command += ' -DCMAKE_BUILD_TYPE=Debug'
+    elif args.profile:
+        command += ' -DCMAKE_BUILD_TYPE=Profile'
     else:
         command += ' -DCMAKE_BUILD_TYPE=Release'
 
