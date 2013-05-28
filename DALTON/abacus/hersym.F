@@ -807,7 +807,7 @@ C            sort after decreasing value to get molecular axis along z-axis
             IF (CINRTP(2) .LT. CINRTP(3)) THEN ! switch 2 and 3
                CALL DSWAP(3,VPCMOM(1,2),1,VPCMOM(1,3),1)
                CALL DSWAP(1,CINRTP(2),1,CINRTP(3),1)
-               VPCMOM(1:3,1) = -VPCMOM(1:3,2)  ! to not change chirality!!!
+               VPCMOM(1:3,2) = -VPCMOM(1:3,2)  ! to not change chirality!!!
                IF (CINRTP(1) .LT. CINRTP(2)) THEN ! switch 1 and 2
                   CALL DSWAP(3,VPCMOM(1,1),1,VPCMOM(1,2),1)
                   CALL DSWAP(1,CINRTP(1),1,CINRTP(2),1)
@@ -825,7 +825,7 @@ C            primarily in the x-y plane.
             IF (CINRTP(2) .GT. CINRTP(3)) THEN ! switch 2 and 3
                CALL DSWAP(3,VPCMOM(1,2),1,VPCMOM(1,3),1)
                CALL DSWAP(1,CINRTP(2),1,CINRTP(3),1)
-               VPCMOM(1:3,1) = -VPCMOM(1:3,2)  ! to not change chirality!!!
+               VPCMOM(1:3,2) = -VPCMOM(1:3,2)  ! to not change chirality!!!
                IF (CINRTP(1) .GT. CINRTP(2)) THEN ! switch 1 and 2
                   CALL DSWAP(3,VPCMOM(1,1),1,VPCMOM(1,2),1)
                   CALL DSWAP(1,CINRTP(1),1,CINRTP(2),1)
