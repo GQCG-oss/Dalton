@@ -48,7 +48,6 @@ include(BinaryInfo)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/mm
     ${PROJECT_SOURCE_DIR}/dft
     ${CMAKE_Fortran_MODULE_DIRECTORY}
     )
