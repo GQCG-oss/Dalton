@@ -26,7 +26,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/../cmake/binary-info
     ${CMAKE_SOURCE_DIR}/../cmake/compilers
     ${CMAKE_SOURCE_DIR}/../cmake/math
-    ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
+    ${CMAKE_SOURCE_DIR}/cmake/mpi
     ${CMAKE_SOURCE_DIR}/cmake/testing
     ${CMAKE_BINARY_DIR}
     )
@@ -39,7 +39,8 @@ include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
 include(ConfigMath)
-include(ConfigParallelEnvironment)
+include(ConfigMPI)
+include(ConfigOMP)
 include(ConfigSafeGuards)
 include(ConfigTesting)
 include(ConfigVersion)

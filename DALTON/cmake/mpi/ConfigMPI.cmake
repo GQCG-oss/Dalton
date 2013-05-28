@@ -6,7 +6,3 @@ if(ENABLE_MPI)
         include_directories(${MPI_INCLUDE_PATH})
     endif()
 endif()
-
-if(ENABLE_OMP)
-    add_definitions(-DVAR_OMP)
-endif()
