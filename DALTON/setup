@@ -140,7 +140,7 @@ group.add_argument('--coverage',
         action='store_true',
         default=False,
         help='enable code coverage [default: %(default)s]')
-group.add_argument('--profiling',
+group.add_argument('--profile',
         action='store_true',
         default=False,
         help='enable profiling [default: %(default)s]')
@@ -226,9 +226,6 @@ def gen_cmake_command():
     if args.coverage:
         command += ' -DENABLE_CODE_COVERAGE=ON'
 
-    if args.profiling:
-        command += ' -DENABLE_PROFILING=ON'
-
     if args.static:
         command += ' -DENABLE_STATIC_LINKING=ON'
 
@@ -237,6 +234,8 @@ def gen_cmake_command():
 
     if args.debug:
         command += ' -DCMAKE_BUILD_TYPE=Debug'
+    elif args.profile:
+        command += ' -DCMAKE_BUILD_TYPE=Profile'
     else:
         command += ' -DCMAKE_BUILD_TYPE=Release'
 
