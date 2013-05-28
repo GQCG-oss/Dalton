@@ -2872,7 +2872,7 @@ ENDIF
 IF(associated(setting%LST_GAB_LHS))THEN
    DEALLOCATE(SETTING%LST_GAB_LHS)
    NULLIFY(SETTING%LST_GAB_LHS)
-#ifdef LSVAR_MPI
+#ifdef VAR_LSMPI
 ! FIXME THIS IS UGLY
    IF(setting%node.NE.infpar%master)then
       call lstensor_free(setting%LST_GAB_LHS) 
@@ -2883,7 +2883,7 @@ ENDIF
 IF(associated(setting%LST_GAB_RHS))THEN
    DEALLOCATE(SETTING%LST_GAB_RHS)
    NULLIFY(SETTING%LST_GAB_RHS)
-#ifdef LSVAR_MPI 
+#ifdef VAR_LSMPI 
 ! FIXME THIS IS UGLY
    IF(setting%node.NE.infpar%master)then
       call lstensor_free(setting%LST_GAB_RHS) 
