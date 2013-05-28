@@ -40,7 +40,6 @@ include(ConfigCompilerFlags)
 include(ConfigExternal)
 include(ConfigMath)
 include(ConfigMPI)
-include(ConfigOMP)
 include(ConfigSafeGuards)
 include(ConfigTesting)
 include(ConfigVersion)
@@ -65,6 +64,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 
 if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
     add_definitions(-DMOD_UNRELEASED)
+endif()
+
+if(ENABLE_OMP)
+    add_definitions(-DVAR_OMP)
 endif()
 
 if(ENABLE_GEN1INT)

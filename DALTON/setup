@@ -65,7 +65,7 @@ group.add_argument('--sgi-mpt',
         default='off',
         const='on',
         help='enable SGI MPT [default: %(default)s]')
-group.add_argument('--openmp',
+group.add_argument('--omp',
         nargs='?',
         action='store',
         choices=('on','off'),
@@ -206,7 +206,7 @@ def gen_cmake_command():
 
     command += ' -DENABLE_MPI=%s'            % args.mpi.upper()
     command += ' -DENABLE_SGI_MPT=%s'        % args.sgi_mpt.upper()
-    command += ' -DENABLE_OPENMP=%s'         % args.openmp.upper()
+    command += ' -DENABLE_OMP=%s'            % args.omp.upper()
 
     if args.mkl:
         command += ' -DMKL_FLAG="-mkl=%s"'   % args.mkl
