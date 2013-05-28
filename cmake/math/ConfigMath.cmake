@@ -21,5 +21,13 @@ if(EXPLICIT_LIBS)
     message("-- User set explicit libraries: ${EXPLICIT_LIBS}")
 endif()
 
-config_math_service(LAPACK)
-config_math_service(BLAS)
+if(DEFINED MKL_FLAG)
+    set(LIBS
+        ${LIBS}
+        ${MKL_FLAG}
+        )
+    message("-- User set explicit MKL flag which is passed to the compiler and linker: ${MKL_FLAG}")
+else()
+    config_math_service(LAPACK)
+    config_math_service(BLAS)
+endif()
