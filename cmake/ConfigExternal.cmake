@@ -34,7 +34,8 @@ macro(add_external _project)
         CMAKE_ARGS ${ExternalProjectCMakeArgs}
         )
     include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build)
-    include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/modules)
+  # radovan: don't think the next line is right/needed
+  # include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/modules)
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)
     if(DEVELOPMENT_CODE)
