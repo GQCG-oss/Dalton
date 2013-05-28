@@ -84,6 +84,7 @@ include(ConfigArchitecture)
 include(Sources)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
+include(GenericMacros)
 
 set(LIBS)
 
@@ -186,10 +187,21 @@ if(ENABLE_DEBUGPBC)
   add_definitions(-DDEBUGPBC)
 endif()
 if(PROFILER STREQUAL "SCALASCA")
-  SET(CMAKE_Fortran_COMPILER "../scalascaf90.sh")
-  SET(CMAKE_C_COMPILER "../scalascaCC.sh")
-  MESSAGE(STATUS "Fortran Compiler " ${CMAKE_Fortran_COMPILER})
-  MESSAGE(STATUS "C Compiler       " ${CMAKE_C_COMPILER})
+    set(SCALASCA_INSTRUMENT ${CMAKE_Fortran_COMPILER})
+    configure_script(
+        ${CMAKE_SOURCE_DIR}/scalasca.in
+        ${CMAKE_SOURCE_DIR}/scalascaf90.sh
+        )
+    set(SCALASCA_INSTRUMENT ${CMAKE_C_COMPILER})
+    configure_script(
+        ${CMAKE_SOURCE_DIR}/scalasca.in
+        ${CMAKE_SOURCE_DIR}/scalascaCC.sh
+        )
+    unset(SCALASCA_INSTRUMENT)
+    SET(CMAKE_Fortran_COMPILER "../scalascaf90.sh")
+    SET(CMAKE_C_COMPILER "../scalascaCC.sh")
+    MESSAGE(STATUS "Fortran Compiler " ${CMAKE_Fortran_COMPILER})
+    MESSAGE(STATUS "C Compiler       " ${CMAKE_C_COMPILER})
 endif()
 
 # set code coverage
@@ -271,13 +283,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     ${PROJECT_BINARY_DIR}/lib
     )
 
-configure_file(
+configure_script(
     ${CMAKE_SOURCE_DIR}/lsdalton.in
-    ${CMAKE_BINARY_DIR}/lsdalton.in
-    @ONLY
+    ${CMAKE_BINARY_DIR}/lsdalton
     )
-execute_process(COMMAND	cat ${CMAKE_BINARY_DIR}/lsdalton.in OUTPUT_FILE ${CMAKE_BINARY_DIR}/lsdalton)
-execute_process(COMMAND	chmod 755 ${CMAKE_BINARY_DIR}/lsdalton OUTPUT_QUIET)
 
 execute_process(COMMAND echo LSDALTON_script="${CMAKE_BINARY_DIR}/lsdalton" OUTPUT_FILE ${CMAKE_BINARY_DIR}/test.scipt)
 
