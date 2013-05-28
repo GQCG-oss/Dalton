@@ -283,13 +283,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     ${PROJECT_BINARY_DIR}/lib
     )
 
-configure_file(
+configure_script(
     ${CMAKE_SOURCE_DIR}/lsdalton.in
-    ${CMAKE_BINARY_DIR}/lsdalton.in
-    @ONLY
+    ${CMAKE_BINARY_DIR}/lsdalton
     )
-execute_process(COMMAND	cat ${CMAKE_BINARY_DIR}/lsdalton.in OUTPUT_FILE ${CMAKE_BINARY_DIR}/lsdalton)
-execute_process(COMMAND	chmod 755 ${CMAKE_BINARY_DIR}/lsdalton OUTPUT_QUIET)
 
 execute_process(COMMAND echo LSDALTON_script="${CMAKE_BINARY_DIR}/lsdalton" OUTPUT_FILE ${CMAKE_BINARY_DIR}/test.scipt)
 
