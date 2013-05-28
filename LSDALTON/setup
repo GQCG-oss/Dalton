@@ -291,8 +291,6 @@ def gen_cmake_command():
 
     if args.scalasca:
         command += ' -DPROFILER=SCALASCA'
-        scalascaExecF(args.fc)
-        scalascaExecC(args.cc)
 
     if args.debug:
         command += ' -DCMAKE_BUILD_TYPE=Debug'
@@ -314,24 +312,6 @@ def gen_cmake_command():
     if args.show:
         sys.exit()
     return command
-
-def scalascaExecF(optionsFC):
-    str="#!/bin/sh \n scalasca -instrument "+optionsFC+ " \"$@\""
-    filename = './scalascaf90.sh'
-    file = open(filename,'w')
-    file.write(str)
-    file.close()
-    command = "chmod a+x "+filename
-    result = os.popen(command).read()
-
-def scalascaExecC(optionsCC):
-    str="#!/bin/sh \n scalasca -instrument "+optionsCC+ " \"$@\""
-    filename = './scalascaCC.sh'
-    file = open(filename,'w')
-    file.write(str)
-    file.close()
-    command = "chmod a+x "+filename
-    result = os.popen(command).read()
 
 def print_build_help(build_path):
     print('   configure step is done')
