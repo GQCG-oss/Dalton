@@ -121,10 +121,6 @@ group.add_argument('--interest',
                  action='store_true',
                  default=False,
                  help='use interest code, give path as argument [default: %(default)s]')
-group.add_argument('--timings',
-                 action='store_true',
-                 default=False,
-                 help='build using timings [default: %(default)s]')
 
 group = parser.add_argument_group('Change default paths')
 group.add_argument('--prefix',
@@ -147,6 +143,10 @@ group.add_argument('--release',
         action='store_false',
         dest='debug',
         help='build in release mode (full optimization) [default: %(default)s]')
+group.add_argument('--profile',
+        action='store_true',
+        default=False,
+        help='enable profiling [default: %(default)s]')
 group.add_argument('--tests',
         nargs='?',
         action='store',
@@ -162,10 +162,6 @@ group.add_argument('--coverage',
         action='store_true',
         default=False,
         help='enable code coverage [default: %(default)s]')
-group.add_argument('--profile',
-        action='store_true',
-        default=False,
-        help='enable profiling [default: %(default)s]')
 group.add_argument('--static',
         action='store_true',
         default=False,
@@ -209,6 +205,13 @@ group.add_argument('--scalasca',
         default='off',
         const='on',
         help='build using scalasca profiler mode [default: %(default)s]')
+group.add_argument('--timings',
+        nargs='?',
+        action='store',
+        choices=('on','off'),
+        default='off',
+        const='on',
+        help='build using timings [default: %(default)s]')
 
 # process input
 
@@ -255,6 +258,7 @@ def gen_cmake_command():
     command += ' -DENABLE_CSR=%s'            % args.csr.upper()
     command += ' -DENABLE_SCALAPACK=%s'      % args.scalapack.upper()
     command += ' -DENABLE_SCALASCA=%s'       % args.scalasca.upper()
+    command += ' -DENABLE_TIMINGS=%s'        % args.timings.upper()
 
     if args.mkl:
         command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
@@ -271,8 +275,6 @@ def gen_cmake_command():
         command += ' -DENABLE_CRAYWRAPPER=1'
     if args.interest:
         command += ' -DENABLE_INTEREST=1'
-    if args.timings:
-        command += ' -DENABLE_TIMINGS=1'
 
     if args.check:
         command += ' -DENABLE_BOUNDS_CHECK=ON'

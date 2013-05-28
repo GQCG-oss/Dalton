@@ -125,6 +125,10 @@ group.add_argument('--release',
         action='store_false',
         dest='debug',
         help='build in release mode (full optimization) [default: %(default)s]')
+group.add_argument('--profile',
+        action='store_true',
+        default=False,
+        help='enable profiling [default: %(default)s]')
 group.add_argument('--tests',
         nargs='?',
         action='store',
@@ -140,10 +144,6 @@ group.add_argument('--coverage',
         action='store_true',
         default=False,
         help='enable code coverage [default: %(default)s]')
-group.add_argument('--profile',
-        action='store_true',
-        default=False,
-        help='enable profiling [default: %(default)s]')
 group.add_argument('--static',
         action='store_true',
         default=False,
@@ -187,6 +187,13 @@ group.add_argument('--scalasca',
         default='off',
         const='on',
         help='build using scalasca profiler mode [default: %(default)s]')
+group.add_argument('--timings',
+        nargs='?',
+        action='store',
+        choices=('on','off'),
+        default='off',
+        const='on',
+        help='build using timings [default: %(default)s]')
 
 # process input
 
@@ -233,6 +240,7 @@ def gen_cmake_command():
     command += ' -DENABLE_CSR=%s'            % args.csr.upper()
     command += ' -DENABLE_SCALAPACK=%s'      % args.scalapack.upper()
     command += ' -DENABLE_SCALASCA=%s'       % args.scalasca.upper()
+    command += ' -DENABLE_TIMINGS=%s'        % args.timings.upper()
 
     if args.mkl:
         command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
