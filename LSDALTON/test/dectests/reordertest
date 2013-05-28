@@ -50,6 +50,7 @@ cat > reordertest.dal <<'%EOF%'
 **INFO
 .DEBUG_MPI_MEM
 **DEC
+.RESTART
 .TESTREORDERINGS
 *END OF INPUT
 %EOF%
