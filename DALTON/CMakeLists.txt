@@ -6,7 +6,6 @@ project(DALTON Fortran C CXX)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"          OFF)
-option(ENABLE_PROFILING      "Enable profiling"                OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"             OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"            OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"      OFF)
@@ -21,13 +20,13 @@ option(ENABLE_ALWAYS_RESET_EXTERNAL_BUILDS "Always remove builds stamps of exter
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_SOURCE_DIR}/../cmake
     ${CMAKE_SOURCE_DIR}/../cmake/binary-info
     ${CMAKE_SOURCE_DIR}/../cmake/compilers
     ${CMAKE_SOURCE_DIR}/../cmake/math
-    ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
+    ${CMAKE_SOURCE_DIR}/../cmake/mpi
     ${CMAKE_SOURCE_DIR}/cmake/testing
+    ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_BINARY_DIR}
     )
 
@@ -39,7 +38,7 @@ include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
 include(ConfigMath)
-include(ConfigParallelEnvironment)
+include(ConfigMPI)
 include(ConfigSafeGuards)
 include(ConfigTesting)
 include(ConfigVersion)
@@ -64,6 +63,10 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 
 if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
     add_definitions(-DMOD_UNRELEASED)
+endif()
+
+if(ENABLE_OMP)
+    add_definitions(-DVAR_OMP)
 endif()
 
 if(ENABLE_GEN1INT)
