@@ -86,6 +86,13 @@ group.add_argument('--lapack',
         default='on',
         const='on',
         help='enable LAPACK [default: %(default)s]')
+group.add_argument('--mkl',
+        nargs='?',
+        action='store',
+        choices=('sequential', 'parallel', 'cluster'),
+        default='sequential',
+        const='sequential',
+        help='pass -mkl=STRING flag to the compiler and linker, sets --blas and --lapack to off [default: %(default)s]')
 group.add_argument('--int64',
         nargs='?',
         action='store',
@@ -201,8 +208,13 @@ def gen_cmake_command():
     command += ' -DENABLE_MPI=%s'            % args.mpi.upper()
     command += ' -DENABLE_SGI_MPT=%s'        % args.sgi_mpt.upper()
     command += ' -DENABLE_OPENMP=%s'         % args.openmp.upper()
-    command += ' -DENABLE_BLAS=%s'           % args.blas.upper()
-    command += ' -DENABLE_LAPACK=%s'         % args.lapack.upper()
+
+    if args.mkl:
+        command += ' -DMKL_FLAG="-mkl=%s"'   % args.mkl
+    else:
+        command += ' -DENABLE_BLAS=%s'       % args.blas.upper()
+        command += ' -DENABLE_LAPACK=%s'     % args.lapack.upper()
+
     command += ' -DENABLE_TESTS=%s'          % args.tests.upper()
     command += ' -DENABLE_64BIT_INTEGERS=%s' % args.int64.upper()
 
