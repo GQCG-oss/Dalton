@@ -239,7 +239,7 @@ include(BinaryInfo)
 
 include(Tests)
 include(CTest)
-include(merge)
+include(mergestaticlibs)
 enable_testing()
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
