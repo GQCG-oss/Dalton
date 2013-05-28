@@ -6,7 +6,6 @@ project(DALTON Fortran C CXX)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"          OFF)
-option(ENABLE_PROFILING      "Enable profiling"                OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"             OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"            OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"      OFF)
