@@ -10,11 +10,12 @@ add_definitions(-DTHIS_IS_CMAKE_BUILD)
 # these are paths that CMake will search for cmake module files that end with .cmake
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_SOURCE_DIR}/../cmake
     ${CMAKE_SOURCE_DIR}/../cmake/compilers
     ${CMAKE_SOURCE_DIR}/../cmake/math
     ${CMAKE_SOURCE_DIR}/../cmake/binary-info
+    ${CMAKE_SOURCE_DIR}/../cmake/mpi
+    ${CMAKE_SOURCE_DIR}/cmake
     )
 
 message("-- System: ${CMAKE_SYSTEM_NAME}")
@@ -133,14 +134,7 @@ if(NOT ENABLE_RELEASE)
    add_definitions(-DMOD_UNRELEASED)
 endif()
 
-if(ENABLE_MPI)
-    find_package(MPI)
-    if(MPI_FOUND)
-        add_definitions(-DVAR_LSMPI)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
-        include_directories(${MPI_INCLUDE_PATH})
-    endif()
-endif()
+include(ConfigMPI)
 
 if(ENABLE_MPI32)
     if(ENABLE_64BIT_INTEGERS)
