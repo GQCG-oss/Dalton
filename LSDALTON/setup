@@ -121,10 +121,6 @@ group.add_argument('--mpi32',
                  action='store_true',
                  default=False,
                  help='build using 32 bit MPI library [default: %(default)s]')
-group.add_argument('--openrsp',
-                 action='store_true',
-                 default=False,
-                 help='enable OpenRSP library, give path as argument [default: %(default)s]')
 group.add_argument('--xcfun',
                  action='store_true',
                  default=False,
@@ -276,11 +272,6 @@ def gen_cmake_command():
 
     if args.coverage:
         command += ' -DENABLE_CODE_COVERAGE=ON'
-
-    if args.openrsp:
-        command += ' -DENABLE_OPENRSP=1'
-        command += ' -DENABLE_GIT_SUBMODULES=1'
-        command += ' -DENABLE_INTEREST=1'
 
     if args.xcfun:
         command += ' -DENABLE_XCFUN=1'

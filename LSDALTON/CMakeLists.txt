@@ -42,7 +42,6 @@ option(ENABLE_MPI32          "Enable 32 bit integer MPI lib workaround" OFF)
 option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
 option(ENABLE_INTEREST       "Enable interest integrals"     OFF)
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
-option(ENABLE_OPENRSP        "Enable OpenRSP module"         OFF)
 option(ENABLE_UTILITIES      "Enable utilities"              OFF)
 option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
 option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"           OFF)
@@ -85,17 +84,6 @@ include(ConfigExternal)
 include(GenericMacros)
 
 set(LIBS)
-
-if(ENABLE_OPENRSP)
-	set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
-	add_definitions(-DBUILD_GEN1INT)
-	set(CMAKE_Fortran_MODULE_DIRECTORY
-	   ${PROJECT_BINARY_DIR}/modules
-	   )
-        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-    	   ${PROJECT_BINARY_DIR}/lib
-    	   )
-endif()
 
 set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
 add_definitions(-DVAR_LSDALTON)
@@ -195,11 +183,6 @@ if(ENABLE_CODE_COVERAGE)
   set(LIBS ${LIBS} gcov)
 endif()
 
-# gen1int library
-if(ENABLE_OPENRSP)
-   set(LIBS ${LIBS} ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a)
-endif()
-
 # set cdash buildname
 set(BUILDNAME
     "BUILDNAME-not-set"
@@ -275,10 +258,6 @@ configure_script(
     )
 
 execute_process(COMMAND echo LSDALTON_script="${CMAKE_BINARY_DIR}/lsdalton" OUTPUT_FILE ${CMAKE_BINARY_DIR}/test.scipt)
-
-if(ENABLE_OPENRSP)
-	add_subdirectory(gen1int)
-endif()
 
 # tell CMake the source won't be available until build time
 SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/binary_info.f90 PROPERTIES GENERATED 1)
@@ -486,21 +465,6 @@ target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
 target_link_libraries(lsdaltonmain xcfun_interface)
 
-if(ENABLE_OPENRSP)
-	add_dependencies(gen1int_interface lsutillib_precision)
-	add_dependencies(gen1int_interface matrixmlib)
-	add_dependencies(gen1int_interface lsutillib_common)
-	add_dependencies(gen1int_interface matrixolib)
-	add_dependencies(gen1int_interface matrixulib)
-	add_dependencies(gen1int_interface lsutiltypelib_common)
-	add_dependencies(lsintlib gen1int)
-	add_dependencies(gen1int_interface lsintlib)
-	add_dependencies(linearslib gen1int_interface)
-	add_dependencies(lsdaltonmain gen1int_interface)
-	add_dependencies(rsp_propertieslib gen1int_interface)
-endif()
-
-
 add_executable(
     lsdalton.x
     ${CMAKE_SOURCE_DIR}/lsdaltonsrc/lsdalton_wrapper.f90
@@ -523,19 +487,10 @@ if(MPI_FOUND)
     endif()
 endif()
 
-if(ENABLE_OPENRSP)
-  MERGE_STATIC_LIBS(
-    rsp_prop
-    rsp_propertieslib
-    gen1int_interface
-#   ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
-    )
-else()
   MERGE_STATIC_LIBS(
     rsp_prop
     rsp_propertieslib
     )
-endif()
 
 if(NOT ENABLE_RELEASE)
   if(ENABLE_INTEREST)
