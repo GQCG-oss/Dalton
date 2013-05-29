@@ -6,7 +6,6 @@ project(DALTON Fortran C CXX)
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"          OFF)
-option(ENABLE_PROFILING      "Enable profiling"                OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"             OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"            OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"      OFF)
@@ -16,18 +15,18 @@ option(ENABLE_UTILITIES      "Enable utilities"                OFF)
 option(ENABLE_LOCAL_DISKS    "Enable local disks"              OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking" OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"          ON)
-option(ENABLE_TEST_RELEASE_MODE "Test release mode which undefines MOD_UNRELEASED" OFF)
+option(ENABLE_RELEASE "Test release mode which undefines MOD_UNRELEASED" OFF)
 option(ENABLE_ALWAYS_RESET_EXTERNAL_BUILDS "Always remove builds stamps of external projects" OFF)
 
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_SOURCE_DIR}/../cmake
     ${CMAKE_SOURCE_DIR}/../cmake/binary-info
     ${CMAKE_SOURCE_DIR}/../cmake/compilers
     ${CMAKE_SOURCE_DIR}/../cmake/math
-    ${CMAKE_SOURCE_DIR}/cmake/parallel-environment
+    ${CMAKE_SOURCE_DIR}/../cmake/mpi
     ${CMAKE_SOURCE_DIR}/cmake/testing
+    ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_BINARY_DIR}
     )
 
@@ -39,7 +38,7 @@ include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
 include(ConfigMath)
-include(ConfigParallelEnvironment)
+include(ConfigMPI)
 include(ConfigSafeGuards)
 include(ConfigTesting)
 include(ConfigVersion)
@@ -48,7 +47,6 @@ include(BinaryInfo)
 
 include_directories(
     ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/mm
     ${PROJECT_SOURCE_DIR}/dft
     ${CMAKE_Fortran_MODULE_DIRECTORY}
     )
@@ -63,8 +61,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 
 # set definitions
 
-if(DEVELOPMENT_CODE AND NOT ENABLE_TEST_RELEASE_MODE)
+if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
     add_definitions(-DMOD_UNRELEASED)
+endif()
+
+if(ENABLE_OMP)
+    add_definitions(-DVAR_OMP)
 endif()
 
 if(ENABLE_GEN1INT)

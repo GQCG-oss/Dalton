@@ -794,9 +794,6 @@ converges to a saddle point.
  \item[\Key{ARH(LS) DAVID}] The same procedure as described for \Key{ARH DAVID} 
 augmented with a line search to accelerate convergence for very large molecular 
 systems, but is less efficient than \Key{ARH DAVID} for smaller molecular systems. 
-%\item[\Key{ASYM}] Asymmetrize H1DIAG starting guess (only referenced for unrestricted
-%calculations).
-%\item[\Key{BLOCK}] I assume that we do not support BSM????
 \item[\Key{STABILITY}] Check stability of the optimized wave function by calculation
 of the lowest Hessian eigenvalue. 
 \item[\Key{STAB\_MAXIT}] \verb| | \newline
@@ -906,11 +903,11 @@ Use custom level shifts in the first {\it N} SCF iterations.
 \item[\Key{LOW ACCURACY START}] Use low accuracy settings in the first couple of 
 iterations until the appropriate gradient threshold have been reached. 
 
-\item[\Key{LWITER}] Do L{\"o}wdin decomposition of overlap matrix (for density optimization
-in orthogonal AO basis) - iteratively (default is L{\"o}wdin by diagonalization)~\cite{shalf}.
-\item[\Key{LWQITER}] Do L{\"o}wdin decomposition of overlap matrix 
-in quadruple precision (for density optimization
-in orthogonal AO basis) - iteratively.
+%\item[\Key{LWITER}] Do L{\"o}wdin decomposition of overlap matrix (for density optimization
+%in orthogonal AO basis) - iteratively (default is L{\"o}wdin by diagonalization)~\cite{shalf}.
+%\item[\Key{LWQITER}] Do L{\"o}wdin decomposition of overlap matrix 
+%in quadruple precision (for density optimization
+%in orthogonal AO basis) - iteratively.
 \item[\Key{MAXELM}] \verb| | \newline
 \verb|<Trust radius (max. element)> |\newline
 Absolute max. element of step allowed (default is 0.35).

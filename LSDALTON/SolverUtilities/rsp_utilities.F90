@@ -70,7 +70,7 @@ CONTAINS
       type(matrix) :: tmp_mat
       real(realk) :: omegas(NOCC*(Cmo_final%nrow-NOCC)),x
       integer :: i,j,a,n,Mindex((Cmo_final%nrow-NOCC)*NOCC,2),xv(2),ndim
-      real(realk), allocatable   :: iniguess_full(:,:) !FIXME: mat_create_elm does not work with BSM
+      real(realk), allocatable   :: iniguess_full(:,:) 
       IF(.NOT.Cmo_final_saved)call lsquit('Cmo_final have not been saved (util_save_MOinfo)',-1)
       ndim = Cmo_final%nrow
       allocate(iniguess_full(ndim,ndim))

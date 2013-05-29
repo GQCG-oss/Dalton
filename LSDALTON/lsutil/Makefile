@@ -87,10 +87,7 @@ F90_OBJS = \
 
 #       AoBatchType.o\
 
-# we should really have a separate target for bsm to properly
-# track dependencies but we would not like it to be too troublesome.
 liblsutil.a: $(F90_OBJS) $(C_OBJS)
-	if grep -q HAVE_BSM ../Makefile.config; then cd bsm && $(MAKE) install prefix=../.. AR="$(AR)"; fi
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 

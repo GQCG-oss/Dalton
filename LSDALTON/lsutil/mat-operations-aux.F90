@@ -425,10 +425,6 @@ end subroutine mat_mix_homolumo
 !             call mat_symm_dense_precond(M,x,xprec)
          case(mtype_dense)
              call mat_dense_precond(M,x,xprec)
-#ifdef HAVE_BSM
-         case(mtype_sparse_block)
-            call bsm_precond(M,x,xprec)
-#endif /* HAVE_BSM */
 !         case(mtype_unres_symm_dense)
 !             call mat_unres_symm_dense_precond(M,x,xprec)
          case(mtype_unres_dense)
@@ -717,15 +713,6 @@ end subroutine mat_mix_homolumo
             call mat_csr_ao_precond(symm,omega,FUP,FUQ,DU,X_AO)
          case(mtype_unres_dense)
             call mat_unres_dense_ao_precond(symm,omega,FUP,FUQ,DU,X_AO)
-#ifdef HAVE_BSM
-         case(mtype_sparse_block)
-#if 1
-            PRINT *, "FALLBACK: mat_ao_bsm_precond half-optimal", symm
-            call mat_ao_precond_bsm_fallback
-#else
-            call bsm_ao_precond(symm,omega,FUP,FUQ,DU,X_AO)
-#endif 
-#endif /* HAVE_BSM */
          case(mtype_scalapack)
             call mat_scalapack_ao_precond(symm,omega,FUP,FUQ,DU,X_AO)
          case default
@@ -776,47 +763,7 @@ end subroutine mat_mix_homolumo
            call mat_set_from_full(X,1E0_realk, X_AO)
            deallocate(FPPd,FQQd,Dd,X)
          end subroutine mat_ao_precond_fallback
-#ifdef HAVE_BSM
-         subroutine mat_ao_precond_bsm_fallback
-            implicit none
-            real(realk), allocatable :: FPPdiag(:), FQQdiag(:)
-            REAL(realk), ALLOCATABLE :: Ddiag(:), X(:,:)
-            integer :: n, i, j
-            real(realk) :: denom
 
-            n = FUP%nrow
-            allocate(FPPdiag(n),FQQdiag(n),X(n,n))
-            ! extract diagonals and use them instead of inefficient
-            ! stride (n+1) access!
-            call bsm_extract_diag(FUP,FPPdiag)
-            call bsm_extract_diag(FUQ,FQQdiag)
-            call mat_to_full(X_AO,1E0_realk,X)
-            IF(symm .EQ. 1 .OR. symm .EQ. 2) THEN
-               DO i = 1, n
-                  DO j = 1, n
-                     denom = FQQdiag(j) + FQQdiag(i) &
-                          &- FPPdiag(i) - FPPdiag(j) &
-                          &- omega
-                     IF(ABS(denom)>1E-9_realk) X(i,j) = X(i,j)/(2E0_realk*denom)
-                  END DO
-               END DO
-            ELSE
-               allocate(Ddiag(n))
-               CALL bsm_extract_diag(DU,Ddiag)
-               DO i = 1, n
-                  DO j = 1, n
-                     denom = FQQdiag(j) + FQQdiag(i) &
-                          &- FPPdiag(i) - FPPdiag(j) &
-                          &- omega*(Ddiag(i)-Ddiag(j)) 
-                     IF(ABS(denom)>1E-9_realk) X(i,j) = X(i,j)/(2E0_realk*denom)
-                  END DO
-               END DO
-              DEALLOCATE(Ddiag)
-            END IF
-            call mat_set_from_full(X,1E0_realk, X_AO)
-            deallocate(FPPdiag,FQQdiag,X)
-         end subroutine mat_ao_precond_bsm_fallback
-#endif /* HAVE_BSM */
       END SUBROUTINE mat_ao_precond
 
 
@@ -977,12 +924,6 @@ subroutine mat_zerohalf(part,A)
      !             call mat_symm_dense_zerohalf(part,A)
   case(mtype_dense)
      call mat_dense_zerohalf(part,A)
-#ifndef UNITTEST
-#ifdef HAVE_BSM
-  CASE(mtype_sparse_block)
-     CALL bsm_zerohalf(part, A)
-#endif
-#endif
      !         case(mtype_unres_symm_dense)
      !             call mat_unres_symm_dense_zerohalf(part,A)
   case(mtype_unres_dense)
@@ -1021,21 +962,12 @@ subroutine mat_write_to_disk2(iunit,A)
   integer, intent(in) :: iunit
   type(Matrix), intent(in) :: A
   real(realk), allocatable :: afull(:,:)
-#ifdef HAVE_BSM
-  external mat_write_int2, mat_write_real2
-#endif
   !if (INFO_TIME_MAT) CALL LSTIMER('START ',mat_TSTR,mat_TEN,mat_lu)
   select case(matrix_type)
      !         case(mtype_symm_dense)
      !             call mat_symm_dense_write_to_disk(iunit,A)
   case(mtype_dense)
      call mat_dense_write_to_disk2(iunit,A)
-#ifndef UNITTEST
-#ifdef HAVE_BSM
-  case(mtype_sparse_block)
-     call bsm_write_to_unit(iunit,A,mat_write_int2,mat_write_real2)
-#endif
-#endif
      !         case(mtype_unres_symm_dense)
      !             call mat_unres_symm_dense_write_to_disk(iunit,A)
   case(mtype_unres_dense)
@@ -1066,21 +998,12 @@ subroutine mat_read_from_disk2(iunit,A)
   type(Matrix), intent(inout) :: A  !output
   real(realk), allocatable :: afull(:,:)
   integer                  :: nrow, ncol
-#ifdef HAVE_BSM
-         external mat_read_int2, mat_read_real2
-#endif
          !if (INFO_TIME_MAT) CALL LSTIMER('START ',mat_TSTR,mat_TEN,mat_lu)
          select case(matrix_type)
 !         case(mtype_symm_dense)
 !             call mat_symm_dense_read_from_disk(iunit,A)
          case(mtype_dense)
              call mat_dense_read_from_disk2(iunit,A)
-#ifndef UNITTEST
-#ifdef HAVE_BSM
-         case(mtype_sparse_block)
-            call bsm_read_from_unit(iunit,A,mat_read_int2,mat_read_real2)
-#endif
-#endif
 !         case(mtype_unres_symm_dense)
 !             call mat_unres_symm_dense_read_from_disk(iunit,A)
          case(mtype_unres_dense)
@@ -1233,12 +1156,6 @@ subroutine mat_read_from_disk2(iunit,A)
          CALL mat_dense_report_sparsity(A,sparsity)
       CASE(mtype_csr)
          CALL mat_csr_report_sparsity(A,sparsity)
-#ifndef UNITTEST
-#ifdef HAVE_BSM
-      CASE(mtype_sparse_block)
-         CALL bsm_get_sparsity(A, sparsity)
-#endif
-#endif
       CASE default
          return
       END SELECT

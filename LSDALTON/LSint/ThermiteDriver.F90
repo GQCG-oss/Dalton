@@ -490,6 +490,7 @@ Integer             :: nPQ,la,lb,lc,ld,iPQ
 Real(realk)         :: A(3),B(3),C(3),D(3),an,bn,cn,dn,ea,eb,ec,ed
 Real(realk),pointer :: inter(:)
 Integer             :: derOrder, startDer, endDer,iDerLHS
+#ifdef MOD_UNRELEASED
 #if VAR_INTEREST
 IF (INPUT%interest) THEN
   P_inter = (.NOT.(P%TYPE_empty.OR.P%single)).AND.(P%nPrimitives.EQ. 1).AND.(P%nAngmom.EQ. 1)&
@@ -503,9 +504,11 @@ ELSE
   DO_INTEREST = .FALSE.
 ENDIF
 #endif
+#endif
 IF(INPUT%DO_PROP)THEN
   call ExplicitPropIntegrals(Integral,PQ,P,Q,INPUT,OUTPUT,ILHS,IRHS,&
      &                       LUPRI,IPRINT)
+#ifdef MOD_UNRELEASED
 #if VAR_INTEREST
 ELSEIF (DO_INTEREST) THEN
   CALL Build_Integrand(PQ,P,Q,INPUT,ILHS,IRHS,LUPRI,IPRINT)
@@ -557,6 +560,7 @@ ELSEIF (DO_INTEREST) THEN
 !     call lsquit('error',-1)
 !  ENDIF
 !  call mem_dealloc(inter)
+#endif
 #endif
 ELSE
 !  Settings for derivative loop structure

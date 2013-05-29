@@ -622,10 +622,6 @@ contains
     type(matrix), intent(inout) :: A
     integer,      intent(in)    :: root
     integer,      intent(in)    :: mat_comm
-#ifdef VAR_MPI
-#include "mpif.h"
-#error mat_mpi_bcast has not yet been implemented in LSdalton
-#endif
   end subroutine
 
   ! LSdalton uses lsquit(msg,lupri) instead of quit, so make this proxy.

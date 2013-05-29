@@ -2,7 +2,7 @@ if(NOT DEFINED DEFAULT_Fortran_FLAGS_SET)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     add_definitions(-DVAR_GFORTRAN)
-    set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445 -ffloat-store")
+    set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445 -ffloat-store -fcray-pointer")
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i386")
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -m64"
@@ -72,6 +72,10 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -traceback")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -xW -ip")
     set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -xW -ip -g -pg")
+
+    if(DEFINED MKL_FLAG)
+        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MKL_FLAG}")
+    endif()
 
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS

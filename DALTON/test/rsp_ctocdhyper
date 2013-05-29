@@ -180,7 +180,7 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Final * HF energy\: * \-76\.060784218[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-76\.06078421[89]" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="ENERGIES NOT CORRECT"
