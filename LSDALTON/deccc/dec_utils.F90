@@ -1693,7 +1693,7 @@ contains
 
     ! Make pointer point to requested values
     nullify(thepointer%p)
-    thepointer%p(1:thepointer%N) => arr(thepointer%start:thepointer%end)
+    thepointer%p => arr(thepointer%start:thepointer%end)
 
   end subroutine mypointer_init
 

@@ -186,7 +186,7 @@ contains
 #endif
     integer(kind=ls_mpik) :: ierr
     integer :: myload,ncore
-    real(realk),pointer :: arr(:)
+    real(realk),allocatable,target :: arr(:)
     integer :: num,extra,narrays,nocctot
     type(mypointer),pointer :: CvirtTspecial(:,:)
     real(realk),pointer :: mini1(:),mini2(:),mini3(:),mini4(:)
@@ -746,17 +746,17 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           ! Therefore, the code gets slightly uglier/more complicated.
           idx=i8*(i-1)*nbasis*nbasis+tmp1%start  ! start index for tmp1
           siz=nbasis*nbasis  ! size of (alpha,gamma) chunk of tmp1
-          mini1(1:siz) => arr(idx:idx+siz-1)   ! make mini1 point to this chunk of tmp1
+          mini1 => arr(idx:idx+siz-1)   ! make mini1 point to this chunk of tmp1
           idx=i8*(i-1)*nbasis*nocc+tmp3%start ! start index for tmp3
           siz=nbasis*nocc  ! size of (alpha,gamma) chunk of tmp3
-          mini3(1:siz) => arr(idx:idx+siz-1)  ! make mini3 point to this chunk of tmp3
+          mini3 => arr(idx:idx+siz-1)  ! make mini3 point to this chunk of tmp3
           call dec_simple_dgemm(nbasis,nbasis, nocc, mini1, &
                & CDIAGocc%val, mini3, 'n', 'n')
 
           ! tmp2(B,J,alpha,gamma) = sum_{beta} C^T_{B beta} tmp3(beta,J,alpha,gamma)
           idx=i8*(i-1)*nvirt*nocc + tmp2%start
           siz=nvirt*nocc
-          mini2(1:siz) => arr(idx:idx+siz-1)
+          mini2 => arr(idx:idx+siz-1)
           call dec_simple_dgemm(nvirt,nbasis, nocc, CvirtT,mini3,mini2, 'n', 'n')
 
        end do
@@ -815,10 +815,10 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           do counter=1,dimGamma*dimAlpha
              idx=i8*(counter-1)*nvirt*nocc + tmp2%start
              siz = nvirt*nocc
-             mini2(1:siz) => arr(idx:idx+siz-1)
+             mini2 => arr(idx:idx+siz-1)
 
              idx=i8*(counter-1)*nvirt*nocc + tmp1%start
-             mini1(1:siz) => arr(idx:idx+siz-1)
+             mini1 => arr(idx:idx+siz-1)
              call mat_transpose(mini2,nvirt,nocc,mini1)
           end do
 
@@ -878,9 +878,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
        do counter=1,nocctot
              idx=i8*(counter-1)*nvirt*nocc*dimAlpha + tmp3%start
              siz = nvirt*nocc*dimAlpha
-             mini3(1:siz) => arr(idx:idx+siz-1)
+             mini3 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*nvirt*nocc*dimAlpha + tmp4%start
-             mini4(1:siz) => arr(idx:idx+siz-1)
+             mini4 => arr(idx:idx+siz-1)
              call mat_transpose(mini3,nvirt*nocc,dimAlpha,mini4)
        end do
 
@@ -957,9 +957,9 @@ ts=.true.
           do counter=1,noccEOS
              idx=i8*(counter-1)*dimA*nvirt*nocc + b3(num)%start
              siz = dimA*nvirt*nocc
-             mini3(1:siz) => arr(idx:idx+siz-1)
+             mini3 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt*nocc + b2(num)%start
-             mini2(1:siz) => arr(idx:idx+siz-1)
+             mini2 => arr(idx:idx+siz-1)
              call mat_transpose(mini3,dimA*nvirt,nocc,mini2)
           end do
 
@@ -1000,9 +1000,9 @@ ts=.true.
           do counter=1,nocc*nocctot
              idx=i8*(counter-1)*dimA*nvirt + b1(num)%start
              siz = dimA*nvirt
-             mini1(1:siz) => arr(idx:idx+siz-1)
+             mini1 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt + b3(num)%start
-             mini3(1:siz) => arr(idx:idx+siz-1)
+             mini3 => arr(idx:idx+siz-1)
              call mat_transpose(mini1,dimA,nvirt,mini3)
           end do
 
@@ -1018,9 +1018,9 @@ ts=.true.
           do counter=1,nocc*nocctot
              idx=i8*(counter-1)*nvirtEOS*dimA + b2(num)%start
              siz=nvirtEOS*dimA
-             mini2(1:siz) => arr(idx:idx+siz-1)
+             mini2 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*nvirtEOS*dimA + b3(num)%start
-             mini3(1:siz) => arr(idx:idx+siz-1)
+             mini3 => arr(idx:idx+siz-1)
              call mat_transpose(mini2,nvirtEOS,dimA,mini3)
           end do
 
@@ -1101,9 +1101,9 @@ ts=.true.
           do counter=1,noccEOS
              idx=i8*(counter-1)*dimA*nvirt*nocc + b3(num)%start
              siz = dimA*nvirt*nocc
-             mini3(1:siz) => arr(idx:idx+siz-1)
+             mini3 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt*nocc + b2(num)%start
-             mini2(1:siz) => arr(idx:idx+siz-1)
+             mini2 => arr(idx:idx+siz-1)
              call mat_transpose(mini3,dimA*nvirt,nocc,mini2)
           end do
 
@@ -1139,9 +1139,9 @@ ts=.true.
           do counter=1,nocc*nocc
              idx=i8*(counter-1)*dimA*nvirt + b1(num)%start
              siz = dimA*nvirt
-             mini1(1:siz) => arr(idx:idx+siz-1)
+             mini1 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt + b3(num)%start
-             mini3(1:siz) => arr(idx:idx+siz-1)
+             mini3 => arr(idx:idx+siz-1)
              call mat_transpose(mini1,dimA,nvirt,mini3)
           end do
 
@@ -1156,9 +1156,9 @@ ts=.true.
           do counter=1,nocc*nocc
              idx=i8*(counter-1)*nvirtEOS*dimA + b2(num)%start
              siz = nvirtEOS*dimA
-             mini2(1:siz) => arr(idx:idx+siz-1)
+             mini2 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*nvirtEOS*dimA + b3(num)%start
-             mini3(1:siz) => arr(idx:idx+siz-1)
+             mini3 => arr(idx:idx+siz-1)
              call mat_transpose(mini2,nvirtEOS,dimA,mini3)
           end do
 
@@ -1394,9 +1394,9 @@ call mem_dealloc(decmpitasks)
  do counter=1,nocctot
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp1%start
     siz = nvirtEOS*nvirtEOS*nocc
-    mini1(1:siz) => arr(idx:idx+siz-1)
+    mini1 => arr(idx:idx+siz-1)
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp2%start
-    mini2(1:siz) => arr(idx:idx+siz-1)
+    mini2 => arr(idx:idx+siz-1)
     call mat_transpose(mini1,nvirtEOS*nvirtEOS, nocc,mini2)
  end do
 
@@ -1432,9 +1432,9 @@ call mem_dealloc(decmpitasks)
  do counter=1,nocc
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp1%start
     siz = nvirtEOS*nvirtEOS*nocc
-    mini1(1:siz) => arr(idx:idx+siz-1)
+    mini1 => arr(idx:idx+siz-1)
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp2%start
-    mini2(1:siz) => arr(idx:idx+siz-1)
+    mini2 => arr(idx:idx+siz-1)
     call mat_transpose(mini1,nvirtEOS*nvirtEOS,nocc,mini2)
  end do
 
