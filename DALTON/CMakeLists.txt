@@ -186,7 +186,7 @@ target_link_libraries(
 # get size of static allocations
 add_custom_target(
     info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py dalton.x
+    COMMAND ${CMAKE_SOURCE_DIR}/../cmake/binary-info/get_static_size.py dalton.x
     )
 
 # copy basis/ to build directory
