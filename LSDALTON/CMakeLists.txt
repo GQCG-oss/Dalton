@@ -545,3 +545,12 @@ target_link_libraries(
    lslib_tester.x
    lsdalton
    ) 
+
+# copy basis/ to build directory
+execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})
+
+# this controlls "make install" target
+# include(ConfigMakeInstall)
+
+# this controlls "make release" target
+# include(ConfigMakeRelease)
