@@ -176,6 +176,11 @@ add_executable(
     ${CMAKE_SOURCE_DIR}/abacus/dalton.F
     )
 
+# compile Peter's utilities
+add_executable(aces2dalton ${CMAKE_SOURCE_DIR}/tools/aces2dalton.f90 ${CMAKE_SOURCE_DIR}/tools/blocks.f90)
+add_executable(xyz2dalton  ${CMAKE_SOURCE_DIR}/tools/xyz2dalton.f90  ${CMAKE_SOURCE_DIR}/tools/blocks.f90)
+add_executable(distances   ${CMAKE_SOURCE_DIR}/tools/distances.f90   ${CMAKE_SOURCE_DIR}/tools/blocks.f90)
+
 set_property(TARGET dalton.x PROPERTY LINKER_LANGUAGE Fortran)
 target_link_libraries(
     dalton.x
