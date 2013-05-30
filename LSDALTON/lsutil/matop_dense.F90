@@ -396,7 +396,7 @@ module matrix_operations_dense
 #ifdef VAR_LSESSL
     call mem_alloc(iwork,5)
     call DSYEVD('V','U',ndim,S%elms,ndim,eival,work,lwork,iwork,liwork,infdiag)
-    liwork = NINT(iwork(1))
+    liwork = iwork(1)
     call mem_dealloc(iwork)
     call mem_alloc(iwork,liwork)
 #else
