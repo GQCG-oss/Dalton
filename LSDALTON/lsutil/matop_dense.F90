@@ -383,15 +383,34 @@ module matrix_operations_dense
 !
     real(realk),pointer :: work(:)
     integer :: infdiag,lwork
+#ifdef VAR_LSESSL
+    integer :: liwork
+    integer, pointer:: iwork(:)
+    liwork=-1
+#endif
     infdiag=0
     lwork = -1
+ 
     call mem_alloc(work,5)
     ! we inquire the size of lwork
+#ifdef VAR_LSESSL
+    call mem_alloc(iwork,5)
+    call DSYEVD('V','U',ndim,S%elms,ndim,eival,work,lwork,iwork,liwork,infdiag)
+    liwork = NINT(iwork(1))
+    call mem_dealloc(iwork)
+    call mem_alloc(iwork,liwork)
+#else
     call DSYEV('V','U',ndim,S%elms,ndim,eival,work,lwork,infdiag)
+#endif
     lwork = NINT(work(1))
     call mem_dealloc(work)
     call mem_alloc(work,lwork)
+#ifdef VAR_LSESSL
+    call DSYEVD('V','U',ndim,S%elms,ndim,eival,work,lwork,iwork,liwork,infdiag)
+    call mem_dealloc(iwork)
+#else
     call DSYEV('V','U',ndim,S%elms,ndim,eival,work,lwork,infdiag)
+#endif
     call mem_dealloc(work)
     if(infdiag.ne. 0) then
        print*,'mat_dsyev: dsyev failed, info=',infdiag

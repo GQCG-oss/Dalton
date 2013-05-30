@@ -171,7 +171,19 @@
        double precision              :: W(N)
        character(len=70)             :: MSG
        INTEGER                       :: INFO, LWORK, NB, ILAENV
-       double precision, allocatable :: WORK(:)
+       double precision, allocatable     :: WORK(:)
+#ifdef VAR_LSESSL
+       integer :: liwork
+       integer, allocatable :: iwork(:)
+       liwork = -1
+       if(JOBZ=='V'.or.JOBZ=='v')then
+         liwork = 3+5*N
+         allocate(iwork(3+5*N))
+       elseif(JOBZ=='N'.or.JOBZ=='n')then
+         liwork = 1
+         allocate(iwork(1))
+       endif
+#endif
        INFO=0
    
        !find out optimal work memory size
@@ -182,7 +194,12 @@
        allocate(WORK(LWORK))
    
        !run
+#ifdef VAR_LSESSL
+       call dsyev(JOBZ,UPLO,N,A,N,W,WORK,LWORK,iwork,liwork,INFO)
+       deallocate(iwork)
+#else
        call dsyev(JOBZ,UPLO,N,A,N,W,WORK,LWORK,INFO)
+#endif
        if (info.ne. 0) then
          write(*,'(1X,A,I3)') 'Error in dsyev in my_DSYGV, info=',info
          call LSquit('Error in dsyev in my_DSYGV',-1)
