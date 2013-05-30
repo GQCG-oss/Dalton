@@ -114,13 +114,6 @@ set(SCRATCH_DIR
     )
 message("-- SCRATCH_DIR set to: ${SCRATCH_DIR}")
 
-set(BASIS_DIR
-    "${CMAKE_SOURCE_DIR}/../basis"
-    CACHE STRING
-    "Basis set directory"
-    FORCE
-    )
-
 if(ENABLE_GEN1INT)
     add_subdirectory(gen1int)
 endif()

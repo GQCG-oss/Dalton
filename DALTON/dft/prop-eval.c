@@ -116,105 +116,6 @@ dft_kohn_sham_collect_info(real*ksm, real* energy, real* work, integer lwork)
 #endif /* VAR_MPI */
 
 static real energy = 0.0;
-static void
-kohn_sham_cb(DftGrid* grid, real* excmat)
-{
-    FirstDrv drvs;
-    int isym, i, j;
-    real de = selected_func->func(&grid->dp);
-
-    energy += de*grid->curr_weight;
-    dftpot0_(&drvs, &grid->curr_weight, &grid->dp);
-
-    if(grid->dogga) {
-	real *atvX = &grid->atv[inforb_.nbast];
-	real *atvY = &grid->atv[inforb_.nbast*2];
-	real *atvZ = &grid->atv[inforb_.nbast*3];
-	real fx, fy, fz;
-
-	drvs.fZ *= 1.0/grid->dp.grada;
-	fx = 2*drvs.fZ*grid->grada[0];
-	fy = 2*drvs.fZ*grid->grada[1];
-	fz = 2*drvs.fZ*grid->grada[2];
-
-	for(isym=0; isym<inforb_.nsym; isym++) {
-	    int istr = inforb_.ibas[isym];
-	    int iend = inforb_.ibas[isym]+inforb_.nbas[isym];
-	    for(j=istr; j<iend; j++) { 
-		real fc = drvs.fR*grid->atv[j]
-		    +fx*atvX[j] + fy*atvY[j] + fz*atvZ[j];
-		if(fabs(fc)>grid->dfthri) {
-		    int joff = j*inforb_.nbast;
-		    for(i=istr; i<iend; i++)  
-			excmat[i+joff] += fc*grid->atv[i];
-		}
-	    }
-	}
-    } else {
-	for(isym=0; isym<inforb_.nsym; isym++) {
-	    int istr = inforb_.ibas[isym];
-	    int iend = inforb_.ibas[isym]+inforb_.nbas[isym];
-	    for(j=istr; j<iend; j++) { 
-		real gvxc = 2.0*drvs.fR*grid->atv[j];
-		if(fabs(gvxc)>grid->dfthri) {
-		    int joff = j*inforb_.nbast;
-		    for(i=istr; i<j; i++)  
-			excmat[i+joff] += gvxc*grid->atv[i];
-		    excmat[j+joff] += 0.5*gvxc*grid->atv[j];
-		}
-	    }
-	}
-    }
-}
-
-/* dft_kohn_sham:
-   compute Fock matrix ksm corresponding to given density matrix dmat.
-*/
-void
-FSYM2(dft_kohn_sham)(real* dmat, real* ksm, real *edfty, 
-		     real* work, integer *lwork, integer* iprint)
-{
-    int nbast2, i, j;
-    DftCallbackData cbdata[1];
-    DftDensity dens = { dft_dens_restricted, NULL, NULL };
-    struct tms starttm, endtm; clock_t utm;
-    real electrons, *ksm_exch;
-
-    /* WARNING: NO work MAY BE done before syncing slaves! */
-    dft_wake_slaves((DFTPropEvalMaster)dft_kohn_sham_); /* NO-OP in serial */
-    dft_kohn_sham_sync_slaves(dmat);                    /* NO-OP in serial */
-
-    dens.dmata = dmat;
-    nbast2   = inforb_.nbast*inforb_.nbast;
-    ksm_exch =  calloc(nbast2, sizeof(real));
-    cbdata[0].callback = (DftCallback)kohn_sham_cb;
-    cbdata[0].cb_data  = ksm_exch;
-
-    times(&starttm);
-    energy = 0.0;
-
-    electrons = dft_integrate_ao(&dens, work, lwork, iprint, 0, 0,0, 
-				 cbdata, ELEMENTS(cbdata));
-
-    for(i=0; i<inforb_.nbast; i++) {
-	int ioff = i*inforb_.nbast;
-	for(j=0; j<i; j++) {
-	    int joff = j*inforb_.nbast;
-	    real averag = 0.5*(ksm_exch[i+joff] + ksm_exch[j+ioff]);
-	    ksm_exch[i+joff] = ksm_exch[j+ioff] = averag;
-	}
-    }
-    dft_kohn_sham_collect_info(ksm_exch, &energy, work, *lwork);
-    *edfty = energy;
-    daxpy_(&inforb_.n2basx, &ONER, ksm_exch, &ONEI, ksm, &ONEI);
-    
-    free(ksm_exch);
-    times(&endtm);
-    utm = endtm.tms_utime-starttm.tms_utime;
-    fort_print("      Electrons: %11.7f %8.2g: Energy %12.6f KS/B time: %9.1f s", 
-               electrons, (electrons-2.0*inforb_.nrhft)/(2.0*inforb_.nrhft), 
-               energy, utm/(double)sysconf(_SC_CLK_TCK));
-}
 
 /* ------------------------------------------------------------------- */
 /* ---------- DFT LINEAR RESPONSE CONTRIBUTION EVALUATOR ------------- */
@@ -1682,6 +1583,8 @@ dft_kohn_shamab_b_slave(real* work, integer* lwork, integer* iprint)
   FSYM2(dft_kohn_shamab_b)(dmat, NULL, NULL, work, lwork, iprint);
   free(dmat);
 }
+
+extern void FSYM(dftintbcast)(void); 
 
 void
 dft_kohn_shamab_b_sync_slaves(real* dmat)
