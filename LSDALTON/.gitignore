@@ -1,7 +1,5 @@
 test/*
 build/*
-lsutil/compilation_info.f90
-lsutil/git_revision_info.f90
 */*.o
 */*/*.o
 */*.mod

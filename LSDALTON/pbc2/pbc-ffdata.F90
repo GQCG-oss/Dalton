@@ -1,3 +1,4 @@
+#ifdef MOD_UNRELEASED
 module pbcffdata
   use precision
   use TYPEDEF
@@ -65,4 +66,4 @@ module pbcffdata
 !  END SUBROUTINE pbc_mmcontrib
 end module pbcffdata
 
-
+#endif

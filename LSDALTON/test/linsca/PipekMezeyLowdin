@@ -59,8 +59,8 @@ cat > PipekMezeyLowdin.dal <<'%EOF%'
 .START
 TRILEVEL
 .LCM
+**LOCALIZE ORBITALS
 .PipekMezey
-.NO L2OPT
 *END OF INPUT  
 %EOF%
 #######################################################################

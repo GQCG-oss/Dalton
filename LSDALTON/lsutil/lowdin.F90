@@ -115,7 +115,7 @@ contains
 ! Quadruple precision not supported by gfortran-4.1.1
 !!$#ifndef VAR_OPEN64
 !!$#ifndef GFORTRAN
-!!$#ifndef VAR_PGI
+!!$#ifndef VAR_PGF90
 !!$   subroutine lowdin_qschulz(cfg_unres, lupri, S, S_sqrt, S_minus_sqrt)
 !!$     implicit none
 !!$     logical,intent(in)           :: cfg_unres

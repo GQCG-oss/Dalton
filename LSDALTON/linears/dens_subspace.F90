@@ -74,48 +74,34 @@ CONTAINS
          call mat_init(tmp2,ndim,ndim)
          if (iteration == 1) then    !If initial D, transform to cholesky basis and add
             config%solver%old_energy = E
-            if (config%decomp%cfg_do_in_oao) then
-               call mat_report_sparsity(D,'OAO D',nnz,config%lupri)
-               call mat_report_sparsity(F,'OAO F',nnz,config%lupri) 
-
-               call add_to_modFIFO(fifoqueue, F, D, E, .true.)
-            else
-              call mat_report_sparsity(D,'AO D ',nnz,config%lupri)
-              call mat_report_sparsity(F,'AO F ',nnz,config%lupri) 
-
-              call x_to_oao_basis(config%decomp, D, tmp1)
-              call res_to_oao_basis(config%decomp, F, tmp2)
-
-              call mat_report_sparsity(tmp1,'OAO D',nnz,config%lupri)
-              call mat_report_sparsity(tmp2,'OAO F',nnz,config%lupri) 
-
-              call add_to_modFIFO(fifoqueue, tmp2, tmp1, E, .true.)
-
-              if (config%opt%dumpmatrices) call dumpmats(iteration,tmp1,tmp2,config%opt%optlevel)
-            endif
+            call mat_report_sparsity(D,'AO D ',nnz,config%lupri)
+            call mat_report_sparsity(F,'AO F ',nnz,config%lupri) 
+            
+            call x_to_oao_basis(config%decomp, D, tmp1)
+            call res_to_oao_basis(config%decomp, F, tmp2)
+            
+            call mat_report_sparsity(tmp1,'OAO D',nnz,config%lupri)
+            call mat_report_sparsity(tmp2,'OAO F',nnz,config%lupri) 
+            
+            call add_to_modFIFO(fifoqueue, tmp2, tmp1, E, .true.)
+            
+            if (config%opt%dumpmatrices) call dumpmats(iteration,tmp1,tmp2,config%opt%optlevel)
           else 
             if (config%solver%step_accepted) then !Only add to queue if it is an accepted step!
                config%solver%Nrejections = 0
                config%solver%old_energy = E
-               if (config%decomp%cfg_do_in_oao) then
-                  call mat_report_sparsity(D,'OAO D',nnz,config%lupri)
-                  call mat_report_sparsity(F,'OAO F',nnz,config%lupri) 
-
-                  call add_to_modFIFO(fifoqueue, F, D, E, .true.)
-               else
-                  call mat_report_sparsity(D,'AO D ',nnz,config%lupri)
-                  call mat_report_sparsity(F,'AO F ',nnz,config%lupri) 
-
-                  call x_to_oao_basis(config%decomp, D, tmp1)
-                  call res_to_oao_basis(config%decomp, F, tmp2)
-
-                  call mat_report_sparsity(tmp1,'OAO D',nnz,config%lupri)
-                  call mat_report_sparsity(tmp2,'OAO F',nnz,config%lupri) 
-
-                  call add_to_modFIFO(fifoqueue, tmp2, tmp1, E, .true.)
-
-                  if (config%opt%dumpmatrices) call dumpmats(iteration,tmp1,tmp2,config%opt%optlevel)
-               endif
+               call mat_report_sparsity(D,'AO D ',nnz,config%lupri)
+               call mat_report_sparsity(F,'AO F ',nnz,config%lupri) 
+               
+               call x_to_oao_basis(config%decomp, D, tmp1)
+               call res_to_oao_basis(config%decomp, F, tmp2)
+               
+               call mat_report_sparsity(tmp1,'OAO D',nnz,config%lupri)
+               call mat_report_sparsity(tmp2,'OAO F',nnz,config%lupri) 
+               
+               call add_to_modFIFO(fifoqueue, tmp2, tmp1, E, .true.)
+               
+               if (config%opt%dumpmatrices) call dumpmats(iteration,tmp1,tmp2,config%opt%optlevel)
             else
                !FIXME: Remove unnecessary ao-oao transformations!
                call res_from_oao_basis(config%decomp,fifoqueue%F_exp,F)
@@ -175,14 +161,6 @@ CONTAINS
 
       if (config%av%cfg_averaging == config%av%CFG_AVG_NONE) then
          ! nothing
-#ifdef VAR_DSM
-      else if (config%av%cfg_averaging == config%av%CFG_AVG_DSM) then
-         CALL dsm_get_avg_density(config%av, queue, S, H1,F, D,restart)
-         do
-           if (.not. restart) exit
-           CALL dsm_get_avg_density(config%av, queue, S, H1,F, D,restart)
-         enddo
-#endif
       else if (config%av%cfg_averaging == config%av%CFG_AVG_DIIS) then
          CALL diis(config%av, queue, D, F)
       else if (config%av%cfg_averaging == config%av%CFG_AVG_EDIIS) then

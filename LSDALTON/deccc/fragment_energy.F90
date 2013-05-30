@@ -2158,13 +2158,15 @@ contains
          & morepairsneeded,newpaircut, Lmiss,EOCCmiss,EVIRTmiss,Eerr,L,Eocc,Evirt,alag,aocc,avirt,&
          & allpairs,dofrag,nnewpairs)
 
-    if(DECinfo%NoExtraPairs .and. morepairsneeded) then
-       write(DECinfo%output,*) 'WARNING! You have turned off pair control!'
-       write(DECinfo%output,*) 'However, the pair analysis indicates that more pairs are needed!'
-       write(DECinfo%output,*) 'Your final results may be inaccurate!'
-       write(DECinfo%output,*) 'I recommend that you restart the calculation WITHOUT'
-       write(DECinfo%output,*) 'the .NoExtraPairs keyword and WITH the .restart option.'
-       Eerr=0.0_realk
+    ! Note: The check pairs option should be made default but has not yet been properly tested.
+    ! For now we simply make a warning if pair analysis indicated that more pairs are needed.
+    if( (.not. DECinfo%checkpairs) .and. morepairsneeded) then
+       write(DECinfo%output,*) 'WARNING! The pair analysis indicated that more pairs are needed.'
+       write(DECinfo%output,*) '--> Your final results may be inaccurate!'
+       write(DECinfo%output,*) 'I recommend that your rerun the calculation with a larger pair cut-off.'
+       write(DECinfo%output,*) 'This can be done with the .PAIRTHRANGSTROM keyword.'
+       write(DECinfo%output,'(1X,a,g12.4,a)') 'Current pair cutoff: ', paircut*bohr_to_angstrom, &
+            & ' Angstrom'
        newpaircut = paircut
        morepairsneeded = .false.
     end if
@@ -3941,7 +3943,6 @@ contains
     logical      :: converged,ReductionPossible(2),finetuning_converged
     logical :: expansion_converged, lag_converged, occ_converged, virt_converged
     real(realk) :: slavetime, flops_slaves
-    real(realk),pointer :: OccMat(:,:), VirtMat(:,:)
 
     write(DECinfo%output,'(a)')    ' FOP'
     write(DECinfo%output,'(a)')    ' FOP ==============================================='
@@ -4051,11 +4052,6 @@ contains
        LagEnergyOld = AtomicFragment%LagFOP
        OccEnergyOld = AtomicFragment%EoccFOP
        VirtEnergyOld = AtomicFragment%EvirtFOP
-       ! correlation density matrices
-       call mem_alloc(OccMat,AtomicFragment%noccAOS,AtomicFragment%noccAOS)
-       call mem_alloc(VirtMat,AtomicFragment%nunoccAOS,AtomicFragment%nunoccAOS)
-       OccMat = AtomicFragment%OccMat
-       VirtMat = AtomicFragment%VirtMat
 
        call Expandfragment(Occ_atoms,Virt_atoms,DistTrackMyAtom,natoms,&
             & nocc_per_atom,nunocc_per_atom)
@@ -4108,8 +4104,6 @@ contains
           exit
        end if ExpansionConvergence
 
-       call mem_dealloc(OccMat)
-       call mem_dealloc(VirtMat)
 
     end do EXPANSION_LOOP
 
@@ -4200,26 +4194,12 @@ contains
        occ_atoms=occold
        virt_atoms=virtold
        call atomic_fragment_free(AtomicFragment)
-       call atomic_fragment_init_atom_specific(MyAtom,natoms,Virt_Atoms, &
-            & Occ_Atoms,nocc,nunocc,OccOrbitals,UnoccOrbitals, &
-            & MyMolecule,mylsitem,AtomicFragment,.true.,.false.)
-
-       ! Set energies correctly without having to do a new calculation
-       AtomicFragment%LagFOP = LagEnergyOld
-       AtomicFragment%EoccFOP = OccEnergyOld
-       AtomicFragment%EvirtFOP = VirtEnergyOld
-
-       ! Also set correlation density matrix without doing new calculation
-       call mem_alloc(AtomicFragment%OccMat,AtomicFragment%noccAOS,AtomicFragment%noccAOS)
-       call mem_alloc(AtomicFragment%VirtMat,AtomicFragment%nunoccAOS,AtomicFragment%nunoccAOS)
-       AtomicFragment%CDSet=.true. ! correlation density matrices have been set
-       AtomicFragment%OccMat = OccMat
-       AtomicFragment%VirtMat = VirtMat
+       call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
+            & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
+            & AtomicFragment)
 
     end if FineTuningFailed
 
-    call mem_dealloc(OccMat)
-    call mem_dealloc(VirtMat)
 
     ! Save dimensions for statistics
     nocc_exp = AtomicFragment%noccAOS

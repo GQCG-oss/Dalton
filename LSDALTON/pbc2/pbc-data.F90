@@ -1,3 +1,4 @@
+#ifdef MOD_UNRELEASED
 module pbc_data
   use precision
   implicit none
@@ -93,3 +94,4 @@ module pbc_data
 !contains
 
 end module pbc_data
+#endif

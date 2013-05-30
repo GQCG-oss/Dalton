@@ -1565,8 +1565,8 @@ DO iPassP=1,P%nPasses
   atomB  = P%orb2atom(iPassP)
   batchB = P%orb2batch(iPassP)
   nB     = P%orbital2%totOrbitals
-  derivInfo%Atom(1)=P%orb1mol(iPassP)
-  derivInfo%Atom(2)=P%orb2mol(iPassP)
+  derivInfo%Atom(1)=AtomA
+  derivInfo%Atom(2)=AtomB
 
   permuteAB  = SameLHSaos.AND.((batchA.NE.batchB).OR.(atomA.NE.atomB))
   DO iPassQ=1,Q%nPasses
@@ -1578,8 +1578,8 @@ DO iPassP=1,P%nPasses
     atomD  = Q%orb2atom(iPassQ)
     batchD = Q%orb2batch(iPassQ)
     nD     = Q%orbital2%totOrbitals
-    derivInfo%Atom(3)=Q%orb1mol(iPassQ)
-    derivInfo%Atom(4)=Q%orb2mol(iPassQ)
+    derivInfo%Atom(3)=atomC
+    derivInfo%Atom(4)=atomD
     permuteCD = SameRHSaos.AND.((batchC.NE.batchD).OR.(atomC.NE.atomD))
     permuteOD = SameODs.AND.( ((batchA.NE.batchC).OR.(atomA.NE.atomC)).OR.&
    &                          ((batchB.NE.batchD).OR.(atomB.NE.atomD)) )

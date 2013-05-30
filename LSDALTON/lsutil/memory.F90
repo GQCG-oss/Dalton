@@ -404,7 +404,7 @@ mem_LSMATRIXsize=80
 mem_MATRIXsize=1264
 mem_OVERLAPsize=2904
 #else
-!implemented for VAR_PGI VAR_GFORTRAN VAR_IFORT we think!
+!implemented for VAR_PGF90 VAR_GFORTRAN VAR_IFORT we think!
 !we assume that all other compilers work with sizeof()
 mem_AOBATCHsize=sizeof(AOBATCHitem)
 mem_CCORBITALsize=sizeof(CCORBITALitem)

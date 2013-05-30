@@ -16,7 +16,7 @@ module xcfun_host
        & xcfun_meta_xc_single_eval, xcfun2_lda_xc_single_eval,&
        & xcfun_host_set_order,xcfun_type_lda,xcfun_type_gga,&
        & xcfun_type_metagga, xcfun_gga_components_xc_single_eval,&
-       & xcfun_host_type
+       & xcfun_host_type, xcfundftreport
   private
   contains
   subroutine xcfun_host_init(DFTfuncString,hfweight,lupri)
@@ -90,6 +90,7 @@ module xcfun_host
              WRITE(lupri,*)'The Functional chosen is a META type functional'
              XCFUN_DOGGA = .FALSE.
              XCFUN_DOMETA = .TRUE.
+             call lsquit('Meta functionals current do not work.',lupri)
           ENDIF
        ELSE
           WRITE(lupri,*)'The Functional chosen is a GGA type functional'
@@ -118,6 +119,53 @@ module xcfun_host
 #endif
 
   end subroutine xcfun_host_init
+
+  subroutine xcfundftreport(lupri)
+    implicit none
+    integer :: lupri
+#ifdef VAR_XCFUN
+    integer     :: Ipos,nStrings,ierr,I,ierrLDA,ierrGGA,ierrMETA,ierrHF
+    logical     :: GGAkeyString
+    real(realk) :: hfweight
+    ierrLDA = xc_eval_setup(XCFUNfunctional,XC_N,XC_PARTIAL_DERIVATIVES,1)
+    IF(ierrLDA.NE.0)THEN
+       !Test if this is a GGA type
+       ierrGGA = xc_eval_setup(XCFUNfunctional,XC_N_GNN,XC_PARTIAL_DERIVATIVES,1)
+       IF(ierrGGA.NE.0)THEN
+          !Test if this is a Meta type
+          ierrMETA = xc_eval_setup(XCFUNfunctional,XC_N_GNN_TAUN,XC_PARTIAL_DERIVATIVES,1)
+          IF(ierrMETA.NE.0)THEN
+             call lsquit('Error determining the correct XC type.',lupri)
+          ELSE
+             WRITE(lupri,*)'The Functional chosen is a META type functional'
+             XCFUN_DOGGA = .FALSE.
+             XCFUN_DOMETA = .TRUE.
+             call lsquit('Meta functionals current do not work.',lupri)
+          ENDIF
+       ELSE
+          WRITE(lupri,*)'The Functional chosen is a GGA type functional'
+          XCFUN_DOGGA = .TRUE.
+          XCFUN_DOMETA = .FALSE.
+       ENDIF
+    ELSE
+       WRITE(lupri,*)'The Functional chosen is a LDA type functional'
+       XCFUN_DOGGA = .FALSE.
+       XCFUN_DOMETA = .FALSE.
+    ENDIF
+    ierrHF = xc_get(XCFUNfunctional,'EXX',hfweight)
+    IF(ierrHF.NE.0)THEN
+       call lsquit('Error determining exact (HF) exchange weight.',lupri)
+    ENDIF
+    IF(ABS(hfweight).GT.1.0E-16_realk)THEN
+       WRITE(lupri,*)'The Functional chosen contains a exact exchange contribution'
+       WRITE(lupri,*)'with the weight:', hfweight
+    ELSE
+       WRITE(lupri,*)'The Functional chosen contains no exact exchange contribution'
+    ENDIF
+#else
+    call lsquit('xcfun not activated -DVAR_XCFUN (can only be done using cmake)',-1)
+#endif
+  end subroutine xcfundftreport
 
   subroutine xcfun_host_type(DOGGA,DOMETA)
     implicit none
@@ -169,9 +217,9 @@ module xcfun_host
        endif
     ELSEIF(type.EQ.xcfun_type_metagga)THEN
        if(unres)THEN
-          ierrMETA = xc_eval_setup(XCFUNfunctional,XC_A_B_AX_AY_AZ_BX_BY_BZ_TAUA_TAUB,XC_PARTIAL_DERIVATIVES,order)
+!          ierrMETA = xc_eval_setup(XCFUNfunctional,XC_A_B_AX_AY_AZ_BX_BY_BZ_TAUA_TAUB,XC_PARTIAL_DERIVATIVES,order)
        else
-          ierrMETA = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ_TAUN,XC_PARTIAL_DERIVATIVES,order)
+!          ierrMETA = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ_TAUN,XC_PARTIAL_DERIVATIVES,order)
        endif
        IF(ierrMETA.NE.0) then
           print*,'ierrMETA',ierrMETA,'order',order,'unres',unres
@@ -909,7 +957,7 @@ module xcfun_host
     ! out(286,1) d^3 Exc / d taub taub taub
     integer :: ierr
 #ifdef VAR_XCFUN
-    ierr = xc_eval_setup(XCFUNfunctional,XC_A_B_AX_AY_AZ_BX_BY_BZ_TAUA_TAUB,XC_PARTIAL_DERIVATIVES,order)
+!    ierr = xc_eval_setup(XCFUNfunctional,XC_A_B_AX_AY_AZ_BX_BY_BZ_TAUA_TAUB,XC_PARTIAL_DERIVATIVES,order)
     IF(ierr.NE.0) then
        print*,'ierr from xcfun',ierr
        call lsquit('Unexpected error from xcfun',-1)
@@ -994,7 +1042,7 @@ module xcfun_host
     ! out(56,1) d^3 Exc / d tau tau tau
     integer :: ierr
 #ifdef VAR_XCFUN
-    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ_TAUN,XC_PARTIAL_DERIVATIVES,order)
+!    ierr = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ_TAUN,XC_PARTIAL_DERIVATIVES,order)
     IF(ierr.NE.0) then
        print*,'ierr from xcfun',ierr
        call lsquit('Unexpected error from xcfun',-1)

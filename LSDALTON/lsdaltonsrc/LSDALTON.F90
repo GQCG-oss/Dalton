@@ -46,7 +46,9 @@ SUBROUTINE lsdalton
   use ls_optimizer_mod, only: LS_RUNOPT
   use lsmpi_type, only: lsmpi_finalize
   use lstensorMem, only: lstmem_init, lstmem_free
+#ifdef MOD_UNRELEASED
   use pbc_setup, only: set_pbc_molecules
+#endif
 #ifdef MOD_UNRELEASED
   use numerical_hessian, only: get_numerical_hessian
   use molecular_hessian_mod, only: get_molecular_hessian
@@ -162,6 +164,7 @@ SUBROUTINE lsdalton
 
      call II_precalc_ScreenMat(LUPRI,LUERR,ls%SETTING)
 
+#ifdef MOD_UNRELEASED
      do_pbc: if(config%latt_config%comp_pbc) then
         CALL mat_init(S,nbast,nbast)
 
@@ -216,6 +219,7 @@ SUBROUTINE lsdalton
         call config_shutdown(config)
 
      else
+#endif
         !default - non PBC
         CALL mat_init(S,nbast,nbast)
 
@@ -347,7 +351,7 @@ SUBROUTINE lsdalton
 !        call lsquit('test done',-1)
 
         !lcm basis
-        if (config%decomp%cfg_lcm ) then
+        if (config%decomp%cfg_lcm .or. config%decomp%cfg_mlo) then
            ! get orbitals
            call mat_init(Cmo,nbast,nbast)
            allocate(eival(nbast))
@@ -361,7 +365,7 @@ SUBROUTINE lsdalton
            call LSclose(LUN,'KEEP')
 
            ! localize orbitals
-           call leastchange_lcm(config%decomp,Cmo,config%decomp%nocc,ls)
+           if (config%decomp%cfg_lcm) call leastchange_lcm(config%decomp,Cmo,config%decomp%nocc,ls)
 
            if (config%decomp%cfg_mlo ) then
               write(ls%lupri,'(a)')'Pred= **** LEVEL 3 ORBITAL LOCALIZATION ****'
@@ -369,12 +373,13 @@ SUBROUTINE lsdalton
 	      if (config%davidOrbLoc%make_orb_plot) then
                  call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
 	      end if
-           end if
-           ! write LCM orbitals
+           endif
+           !write lcm to file
            lun = -1
            CALL LSOPEN(lun,'lcm_orbitals.u','unknown','UNFORMATTED')
            call mat_write_to_disk(lun,Cmo,OnMaster)
            call LSclose(LUN,'KEEP')
+
 
            if (.not. config%decomp%cfg_mlo) then
               call leastchangeOrbspreadStandalone(mx,ls,Cmo,config%decomp%lupri,config%decomp%luerr)
@@ -493,7 +498,9 @@ SUBROUTINE lsdalton
            !DEALLOCATE(ls)
         endif
 
+#ifdef MOD_UNRELEASED
      endif do_pbc
+#endif
   end if SkipHF
 
 
@@ -514,7 +521,7 @@ SUBROUTINE lsdalton
 	   end if
            ! write localized orbitals
            lun = -1
-           CALL LSOPEN(lun,'orbitals_out.u','unknown','UNFORMATTED')
+           CALL LSOPEN(lun,'localized_orbitals.u','unknown','UNFORMATTED')
            call mat_write_to_disk(lun,Cmo,OnMaster)
            call LSclose(LUN,'KEEP')
 	   call mat_free(cmo)

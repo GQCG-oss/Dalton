@@ -64,24 +64,27 @@
     integer, intent(in) :: KPRIM
     real(REALK), intent(in) :: exponents(KPRIM,KBLOCK,num_comp)
     real(REALK), intent(in) :: ucontr_coefs(KPRIM,KPRIM,KBLOCK,num_comp)
-    integer ierr  !error information
+    integer :: ierr  !error information
+    logical :: mpi_sync = .true.
 #if defined(VAR_MPI)
 #include "mpif.h"
 #include "iprtyp.h"
 #endif
     ! in case of initializing the interface multiple times
-    if (Gen1IntAPIInited()) return
+    if (Gen1IntAPIInited()) mpi_sync = .false.
     ! initializes API of Gen1Int
     call Gen1IntAPICreate(num_comp, num_atom_type, KATOM, num_sym_atom, &
                           ang_numbers, NBLCK, KANG, num_cgto, KBLOCK,   &
                           num_prim, num_contr, KPRIM, exponents, ucontr_coefs)
 #if defined(VAR_MPI)
-    ! wakes up workers
-    call MPI_Bcast(GEN1INT_INIT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    ! broadcasts level of print
-    call MPI_Bcast(0, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
-    ! broadcasts information of API of Gen1Int
-    call Gen1IntAPIBcast(MANAGER, MPI_COMM_WORLD)
+    if (mpi_sync) then
+      ! wakes up workers
+      call MPI_Bcast(GEN1INT_INIT, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+      ! broadcasts level of print
+      call MPI_Bcast(0, 1, MPI_INTEGER, MANAGER, MPI_COMM_WORLD, ierr)
+      ! broadcasts information of API of Gen1Int
+      call Gen1IntAPIBcast(MANAGER, MPI_COMM_WORLD)
+    end if
 #endif
     return
   end subroutine gen1int_host_init

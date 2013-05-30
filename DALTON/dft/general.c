@@ -604,7 +604,6 @@ struct {
     DFTPropEvalSlave  slave_func;
 } PropEvaluatorList[] = {
 #if 0
-    { (DFTPropEvalMaster)dft_kohn_sham_,   dft_kohn_sham_slave   },
     { (DFTPropEvalMaster)dft_kohn_shamab_, dft_kohn_shamab_slave },
     { (DFTPropEvalMaster)dft_lin_resp_,    dft_lin_resp_slave    },
     { (DFTPropEvalMaster)dft_lin_respab_,  dft_lin_respab_slave  },
@@ -633,6 +632,8 @@ mpi_sync_data(const SyncData* data, int count)
                   0, MPI_COMM_WORLD);
     }
 }
+
+extern void FSYM(dftintbcast)(void); 
 
 /* defined parallel calculation types */
 #include "iprtyp.h"

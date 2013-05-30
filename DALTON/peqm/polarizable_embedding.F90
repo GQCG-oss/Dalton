@@ -29,13 +29,12 @@ contains
 
 !------------------------------------------------------------------------------
 
-subroutine pe_init(lupri, coords, charges, dalwrk)
+subroutine pe_init(lupri, coords, charges)
 
     ! Initialization routine for the PE module.
     integer :: lupri
     real(dp), dimension(:), intent(in), optional :: charges
     real(dp), dimension(:,:), intent(in), optional :: coords
-    real(dp), dimension(:), target, intent(inout) :: dalwrk
 
     integer :: i, j, k, l
     integer :: idx, jdx, kdx, nidx
@@ -44,10 +43,10 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
     logical :: lexist
     real(dp) :: rclose, redist
 
-    ! Assume geometry optimization
     if (allocated(Rm) .and. allocated(Zm)) then
         Rm(:,:) = coords
-        Zm(1,:) = charges
+        synced = .false.
+        scfcycle = 0
         return
     end if
 
@@ -63,8 +62,6 @@ subroutine pe_init(lupri, coords, charges, dalwrk)
     else if (.not. present(coords) .and. present(charges)) then
         stop 'ERROR in pe_init: charges present but coords missing'
     end if
-
-    work => dalwrk
 
     ! setting up grid for MEP and CUBE calculation
     if (pe_mep .or. pe_cube) then
@@ -924,6 +921,8 @@ subroutine pe_master(runtype, denmats, fckmats, nmats, energies, dalwrk)
         call mpi_bcast(nnbas, 1, impi, 0, comm, ierr)
         call mpi_bcast(denmats, nnbas * ndens, rmpi, 0, comm, ierr)
 
+        call mpi_bcast(scfcycle, 1, impi, 0, comm, ierr)
+        call mpi_bcast(synced, 1, lmpi, 0, comm, ierr)
         if (.not. synced) then
             call pe_sync()
         end if
@@ -995,7 +994,6 @@ subroutine pe_mpi(dalwrk, runtype)
         energy = .false.
         response = .false.
         mep = .false.
-        scfcycle = scfcycle + 1
     else if (runtype == 2) then
         fock = .false.
         energy = .true.
@@ -1025,6 +1023,8 @@ subroutine pe_mpi(dalwrk, runtype)
     if (.not. allocated(Epol)) allocate(Epol(3,ndens))
     Epol = 0.0d0
 
+    call mpi_bcast(scfcycle, 1, impi, 0, comm, ierr)
+    call mpi_bcast(synced, 1, lmpi, 0, comm, ierr)
     if (.not. synced) then
         call pe_sync()
     end if
@@ -1054,8 +1054,8 @@ subroutine pe_sync()
     integer :: i, j, k
     integer :: quotient, remainder
 
-    allocate(siteloops(0:nprocs))
-    allocate(sitedists(0:nprocs-1))
+    if (.not. allocated(siteloops)) allocate(siteloops(0:nprocs))
+    if (.not. allocated(sitedists)) allocate(sitedists(0:nprocs-1))
     if (myid == 0) then
         quotient = nsites / nprocs
         sitedists = quotient
@@ -1069,7 +1069,7 @@ subroutine pe_sync()
         do i = 1, nprocs
             siteloops(i) = sum(sitedists(0:i-1))
         end do
-        allocate(displs(0:nprocs))
+        if (.not. allocated(displs)) allocate(displs(0:nprocs))
         displs(0) = 0
         do i = 1, nprocs
             displs(i) = displs(i-1) + 3 * sitedists(i-1)
@@ -1085,13 +1085,13 @@ subroutine pe_sync()
 
     call mpi_bcast(qmnucs, 1, impi, 0, comm, ierr)
 
-    if (myid /= 0) allocate(Zm(1,qmnucs))
+    if (myid /= 0 .and. .not. allocated(Zm)) allocate(Zm(1,qmnucs))
     call mpi_bcast(Zm, qmnucs, rmpi, 0, comm, ierr)
 
-    if (myid /= 0) allocate(Rm(3,qmnucs))
+    if (myid /= 0 .and. .not. allocated(Rm)) allocate(Rm(3,qmnucs))
     call mpi_bcast(Rm, 3 * qmnucs, rmpi, 0, comm, ierr)
 
-    if (myid /= 0) allocate(Rs(3,nsites))
+    if (myid /= 0 .and. .not. allocated(Rs)) allocate(Rs(3,nsites))
     call mpi_bcast(Rs, 3 * nsites, rmpi, 0, comm, ierr)
 
     call mpi_bcast(pe_polar, 1, lmpi, 0, comm, ierr)
@@ -1099,7 +1099,7 @@ subroutine pe_sync()
 
     if (pe_polar) then
         if (lpol(1)) then
-            allocate(poldists(0:nprocs-1))
+            if (.not. allocated(poldists)) allocate(poldists(0:nprocs-1))
             if (myid == 0) then
                 poldists = 0
                 do i = 1, nprocs
@@ -1115,14 +1115,18 @@ subroutine pe_sync()
             call mpi_bcast(poldists, nprocs, impi, 0, comm, ierr)
             call mpi_bcast(npols, 1, impi, 0, comm, ierr)
             call mpi_bcast(lexlst, 1, impi, 0, comm, ierr)
-            if (myid /= 0) allocate(exclists(lexlst,nsites))
+            if (myid /= 0 .and. .not. allocated(exclists)) then
+                allocate(exclists(lexlst,nsites))
+            end if
             call mpi_bcast(exclists, lexlst * nsites, impi, 0, comm, ierr)
-            if (myid /= 0) allocate(zeroalphas(nsites))
+            if (myid /= 0 .and. .not. allocated(zeroalphas)) then
+                allocate(zeroalphas(nsites))
+            end if
             call mpi_bcast(zeroalphas, nsites, lmpi, 0, comm, ierr)
         end if
         call mpi_bcast(pe_iter, 1, lmpi, 0, comm, ierr)
         if (pe_iter) then
-            if (myid /= 0) allocate(P1s(6,nsites))
+            if (myid /= 0 .and. .not. allocated(P1s)) allocate(P1s(6,nsites))
             call mpi_bcast(P1s, 6 * nsites, rmpi, 0, comm, ierr)
         end if
         call mpi_bcast(pe_nomb, 1, lmpi, 0, comm, ierr)
@@ -1136,27 +1140,27 @@ subroutine pe_sync()
     call mpi_bcast(lmul, 6, lmpi, 0, comm, ierr)
 
     if (lmul(0)) then
-        if (myid /= 0) allocate(M0s(1,nsites))
+        if (myid /= 0 .and. .not. allocated(M0s)) allocate(M0s(1,nsites))
         call mpi_bcast(M0s, nsites, rmpi, 0, comm, ierr)
     end if
     if (lmul(1)) then
-        if (myid /= 0) allocate(M1s(3,nsites))
+        if (myid /= 0 .and. .not. allocated(M1s)) allocate(M1s(3,nsites))
         call mpi_bcast(M1s, 3 * nsites, rmpi, 0, comm, ierr)
     end if
     if (lmul(2)) then
-        if (myid /= 0) allocate(M2s(6,nsites))
+        if (myid /= 0 .and. .not. allocated(M2s)) allocate(M2s(6,nsites))
         call mpi_bcast(M2s, 6 * nsites, rmpi, 0, comm, ierr)
     end if
     if (lmul(3)) then
-        if (myid /= 0) allocate(M3s(10,nsites))
+        if (myid /= 0 .and. .not. allocated(M3s)) allocate(M3s(10,nsites))
         call mpi_bcast(M3s, 10 * nsites, rmpi, 0, comm, ierr)
     end if
     if (lmul(4)) then
-        if (myid /= 0) allocate(M4s(15,nsites))
+        if (myid /= 0 .and. .not. allocated(M4s)) allocate(M4s(15,nsites))
         call mpi_bcast(M4s, 15 * nsites, rmpi, 0, comm, ierr)
     end if
     if (lmul(5)) then
-        if (myid /= 0) allocate(M5s(21,nsites))
+        if (myid /= 0 .and. .not. allocated(M5s)) allocate(M5s(21,nsites))
         call mpi_bcast(M5s, 21 * nsites, rmpi, 0, comm, ierr)
     end if
 
@@ -1169,8 +1173,8 @@ subroutine pe_sync()
         call mpi_bcast(mep_extfld, 1, lmpi, 0, comm, ierr)
         call mpi_bcast(mep_qmcube, 1, lmpi, 0, comm, ierr)
         call mpi_bcast(mep_mulcube, 1, lmpi, 0, comm, ierr)
-        allocate(meploops(0:nprocs))
-        allocate(mepdists(0:nprocs-1))
+        if (.not. allocated(meploops)) allocate(meploops(0:nprocs))
+        if (.not. allocated(mepdists)) allocate(mepdists(0:nprocs-1))
         if (myid == 0) then
             quotient = npoints / nprocs
             mepdists = quotient
@@ -1190,7 +1194,7 @@ subroutine pe_sync()
         call mpi_bcast(meploops, nprocs + 1, impi, 0, comm, ierr)
         mep_start = meploops(myid) + 1
         mep_finish = meploops(myid+1)
-        if (myid /= 0) allocate(Rp(3,npoints))
+        if (myid /= 0 .and. .not. allocated(Rp)) allocate(Rp(3,npoints))
         call mpi_bcast(Rp, 3 * npoints, rmpi, 0, comm, ierr)
 !        if (myid == 0) then
 !            displs(0) = 0
@@ -1283,7 +1287,7 @@ subroutine pe_electrostatic(denmats, fckmats)
         call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
     end if
 #endif
-    if (lexist .and. fock) then
+    if (lexist .and. fock .and. (scfcycle > 1)) then
         if (myid == 0) then
             call openfile('pe_electrostatics.bin', lu, 'old', 'unformatted')
             rewind(lu)
@@ -1379,15 +1383,17 @@ subroutine pe_electrostatic(denmats, fckmats)
             end if
 #endif
             if (myid == 0) then
-                call openfile('pe_electrostatics.bin', lu, 'new', 'unformatted')
+                call openfile('pe_electrostatics.bin', lu, 'unknown', 'unformatted')
                 rewind(lu)
                 write(lu) Etmp, fckmats
                 close(lu)
             end if
+#if defined(VAR_MPI)
             if (myid == 0 .and. nprocs > 1) then
                 fckmats = tmpfcks
                 deallocate(tmpfcks)
             end if
+#endif
         end if
 #if defined(VAR_MPI)
         if (myid == 0 .and. nprocs > 1) then
@@ -2045,7 +2051,7 @@ subroutine nuclear_fields(Fnucs)
     end if
 #endif
 
-    if (lexist) then
+    if (lexist .and. (scfcycle > 1)) then
         if (myid == 0) then
             call openfile('pe_nuclear_field.bin', lu, 'old', 'unformatted')
             rewind(lu)
@@ -2080,7 +2086,7 @@ subroutine nuclear_fields(Fnucs)
         end if
 #endif
         if (myid == 0) then
-            call openfile('pe_nuclear_field.bin', lu, 'new', 'unformatted')
+            call openfile('pe_nuclear_field.bin', lu, 'unknown', 'unformatted')
             rewind(lu)
             write(lu) Fnucs
             close(lu)

@@ -39,6 +39,7 @@ F90_OBJS = \
         LSDALTON_RESPONSE_type.o        \
 	minimize.o \
 	optimlocNONMOD.o \
+	OrbLoc_input.o  \
 	localization_charge.o \
 	localization_orbspread.o \
 	localization_util.o \

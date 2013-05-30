@@ -1,3 +1,4 @@
+#ifdef MOD_UNRELEASED
 MODULE pbc_ff_contrib
 USE precision
 USE TYPEDEF
@@ -1325,3 +1326,4 @@ end subroutine pbc_mat_redefine_q
 
 
 END MODULE pbc_ff_contrib
+#endif

@@ -1,4 +1,5 @@
 
+#ifdef MOD_UNRELEASED
 
 MODULE PBC_MSC
 use precision
@@ -665,3 +666,5 @@ CHARACTER(LEN=3) :: nline
 END SUBROUTINE print_bands
 
 END MODULE PBC_MSC
+
+#endif

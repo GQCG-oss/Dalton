@@ -44,7 +44,7 @@ contains
     DECinfo%restart = .false.
     DECinfo%TimeBackup = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals = .false.
-    DECinfo%NoExtraPairs=.false.
+    DECinfo%CheckPairs=.false.
 
 
     ! -- Debug modes
@@ -103,8 +103,8 @@ contains
     ! -- Pair fragments
     DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
     DECinfo%paircut_set=.false.
-    ! Pair reduction distance - default 1000 Angstrom, effectively turned off.
-    DECinfo%PairReductionDistance = 1000.0E0_realk/bohr_to_angstrom
+    ! Pair reduction distance - default 5 Angstrom.
+    DECinfo%PairReductionDistance = 5.0E0_realk/bohr_to_angstrom
     DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
 
     ! Memory use for full molecule structure
@@ -340,7 +340,8 @@ contains
           ! *               Keywords only available for developers                     *
           ! ****************************************************************************
 
-       !Keywords only used for testing in release branch, no documentation needed
+          ! Keywords only used for testing in release branch, not intended to be used by end-users,
+          ! so on purpose there is no documentation for those in the LSDALTON manual.
 
        !general testing
        case('.TESTARRAY'); DECinfo%array_test=.true.
@@ -350,21 +351,24 @@ contains
        case('.CCSDFORCE_SCHEME'); DECinfo%force_scheme=.true.
           read(input,*) DECinfo%en_mem
 
+       case('.MANUAL_BATCHSIZES') 
+          DECinfo%manual_batchsizes=.true.
+          read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
+       case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
+       case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
+          ! Size of local groups in MPI scheme
+       case('.MPIGROUPSIZE'); read(input,*) DECinfo%MPIgroupsize
+
 #ifdef MOD_UNRELEASED
        case('.CCSD_OLD'); DECinfo%ccsd_old=.true.
        case('.CCSDSOLVER_SERIAL'); DECinfo%solver_par=.false.
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
-       case('.MANUAL_BATCHSIZES') 
-          DECinfo%manual_batchsizes=.true.
-          read(input,*) DECinfo%ccsdAbatch, DECinfo%ccsdGbatch
-          ! Skip Hartree-Fock calculation 
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
        case('.READDECORBITALS'); DECinfo%read_dec_orbitals=.true.
-       case('.MPISPLIT'); read(input,*) DECinfo%MPIsplit
        case('.CCSD(T)'); DECinfo%ccModel=4; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.RPA'); DECinfo%ccModel=5; DECinfo%use_singles=.false.
        case('.NOTUSEMP2FRAG') 
@@ -386,8 +390,8 @@ contains
        case('.SKIPPAIRS') 
           DECinfo%pair_distance_threshold=0.0E0_realk
           DECinfo%paircut_set=.true.  ! overwrite default pair cutoff defined by .FOT
-       case('.NOEXTRAPAIRS') 
-          DECinfo%NoExtraPairs=.true.  
+       case('.CHECKPAIRS') 
+          DECinfo%checkpairs=.true.
        case('.PAIRREDDIST') 
           read(input,*) DECinfo%PairReductionDistance 
        case('.PAIRREDDISTANGSTROM') 
@@ -412,7 +416,6 @@ contains
           DECinfo%convert64to32=.true.
        case('.CONVERT32TO64')
           DECinfo%convert32to64=.true.
-       case('.INCLUDEFULLMOLECULE');DECinfo%InclFullMolecule=.true.
        case('.ARRAY4ONFILE') 
           DECinfo%array4OnFile=.true.
           DECinfo%array4OnFile_specified=.true.
@@ -426,12 +429,8 @@ contains
        case('.NOTKAPPAPREC'); DECinfo%kappa_use_preconditioner=.false.
        case('.NOTKAPPABPREC'); DECinfo%kappa_use_preconditioner_in_b=.false.
 
-          ! integrals tests
+          ! Check that input orbitals are orthogonal (debug)
        case('.CHECKLCM'); DECinfo%check_lcm_orbitals=.true.
-
-
-          ! Size of local groups in MPI scheme
-       case('.MPIGROUPSIZE'); read(input,*) DECinfo%MPIgroupsize
 
           !> Collect fragment contributions to calculate full molecular MP2 density
        case('.SKIPFULL') 
@@ -558,12 +557,6 @@ contains
             & Note that density is a subset of a gradient calculation',DECinfo%output)
     end if
 
-#ifndef VAR_LSMPI
-    if(DECinfo%restart) then
-       call lsquit('DEC Restart option only possible using MPI!',DECinfo%output)
-    end if
-#endif
-
     if(DECinfo%SinglesPolari) then
        call lsquit('Full singles polarization has been temporarily disabled!',-1)
     end if
@@ -674,7 +667,7 @@ end if
     write(lupri,*) 'paircut_set ', DECitem%paircut_set
     write(lupri,*) 'PairReductionDistance ', DECitem%PairReductionDistance
     write(lupri,*) 'PairMinDist ', DECitem%PairMinDist
-    write(lupri,*) 'NoExtraPairs ', DECitem%NoExtraPairs
+    write(lupri,*) 'CheckPairs ', DECitem%CheckPairs
     write(lupri,*) 'first_order ', DECitem%first_order
     write(lupri,*) 'MP2density ', DECitem%MP2density
     write(lupri,*) 'gradient ', DECitem%gradient
