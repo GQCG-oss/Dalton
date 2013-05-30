@@ -124,14 +124,6 @@ endif()
 
 include(ConfigMPI)
 
-if(ENABLE_MPI32)
-    if(ENABLE_64BIT_INTEGERS)
-        add_definitions(-DVAR_LSMPI_32)
-    else()
-        message("--mpi32 should only be enabled if --int64 is used.")
-    endif()
-endif()
-
 if(ENABLE_OMP)
     add_definitions(-DVAR_OMP)
 endif()
