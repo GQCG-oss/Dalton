@@ -2,8 +2,8 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > HF_631G_2hyp_noddy.info <<%EOF%
-   HF_631G_2hyp_noddy
+cat > cc3_HF_631G_2hyp_noddy.info <<%EOF%
+   cc3_HF_631G_2hyp_noddy
    -----------
    Molecule:         HF
    Theory Level:     CC3 / 6-31G (USING NODDY CODE)
@@ -13,7 +13,7 @@ cat > HF_631G_2hyp_noddy.info <<%EOF%
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > HF_631G_2hyp_noddy.mol <<%EOF%
+cat > cc3_HF_631G_2hyp_noddy.mol <<%EOF%
 BASIS
 6-31G
 CC3 hyperpolarizability
@@ -28,7 +28,7 @@ H     0.0000000000000000   0.000000000  -1.64558444
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > HF_631G_2hyp_noddy.dal <<%EOF%
+cat > cc3_HF_631G_2hyp_noddy.dal <<%EOF%
 **DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
@@ -192,5 +192,5 @@ else
   exit 1
 fi
 
-' > HF_631G_2hyp_noddy.check
+' > cc3_HF_631G_2hyp_noddy.check
 #######################################################################

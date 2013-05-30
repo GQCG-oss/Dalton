@@ -2,11 +2,11 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > HF_ccpVDZ_pol.info <<%EOF%
-   HF_ccpVDZ_pol
+cat > cc3_CARBON_pol.info <<%EOF%
+   cc3_CARBON_pol
    -----------
-   Molecule:         HF
-   Theory Level:     CC3 / cc-pVDZ
+   Molecule:         Carbon ATOM
+   Theory Level:     CC3 / (three-function basis)
    Test Purpose:     Polarizability for 0.00 and 0.50 frequencies 
                      for non-totally symmetric operator
 %EOF%
@@ -14,27 +14,29 @@ cat > HF_ccpVDZ_pol.info <<%EOF%
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > HF_ccpVDZ_pol.mol <<%EOF%
-BASIS
-cc-pVDZ
-CCSD(T) unrelaxed FOP
-Dum di dum di da
-    2    2  X  Y  Z   1.00D-15
-        9.0   1    2    1    1
-F     0.0000000000000000   0.000000000   0.08729478
-        1.0   1    1    1
-H     0.0000000000000000   0.000000000  -1.64558444
+cat > cc3_CARBON_pol.mol <<%EOF%
+INTGRL
+C atom
+CC3 polarizability
+    1  0 3  X  Y  Z
+        6.    1    2    0    1
+C     0.0     0.0      0.0
+    3    2
+      1.3148331  0.15591627 0.0
+      0.3055389  0.60768372 0.0
+      0.0993707  0.00000000 1.0
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > HF_ccpVDZ_pol.dal <<%EOF%
+cat > cc3_CARBON_pol.dal <<%EOF%
 **DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 .THETA
+.QUADRU
 **WAVE FUNCTION
 .CC
 *SCF INPUT
@@ -57,7 +59,7 @@ cat > HF_ccpVDZ_pol.dal <<%EOF%
  100
 *CCLR
 .OPERATOR
-YDIPLEN YDIPLEN
+XYQUADRUXYQUADRU
 .FREQUE
  2
 0.00 0.50
@@ -82,17 +84,17 @@ else
 fi
 
 # SCF, MP2 and CC3 energies:
-CRIT1=`$GREP "Total SCF   energy: * -100\.0194112620" $log | wc -l`
-CRIT2=`$GREP "Total MP2   energy: * -100\.2231931820" $log | wc -l`
-CRIT3=`$GREP "Total CC3   energy: * -100\.2301803919" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy: * -12\.7064119390" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -12\.7830171936" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -12\.7839653358" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 polarizability :
-CRIT1=`$GREP  "YDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *YDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *1\.5961471" $log | wc -l`
-CRIT2=`$GREP  " *(-|-0).5000 *( |0).5000 *(|0).64451431" $log | wc -l`
+CRIT1=`$GREP  "XYQUADRU *\(unrel\.\) *(|-|-0|0)\.0000 *XYQUADRU \(unrel\.\) *(|-|-0|0)\.0000 *(|0)\.52547754" $log | wc -l`
+CRIT2=`$GREP  " *(-|-0)\.5000 *(|0)\.5000 *(|0)\.95888344" $log | wc -l`
 
 TEST[2]=`expr $CRIT1  \+ $CRIT2`
 CTRL[2]=2
@@ -116,5 +118,5 @@ else
   exit 1
 fi
 
-' > HF_ccpVDZ_pol.check
+' > cc3_CARBON_pol.check
 #######################################################################

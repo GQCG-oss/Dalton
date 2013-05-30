@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > tmom_fdif.info <<'%EOF%'
-   tmom_fdif
+cat > cc3_tmom_fdif.info <<'%EOF%'
+   cc3_tmom_fdif
    --------------
    Molecule:         He2 in C1
    Wave Function:    CCSD and CC3 / cc-pVDZ
@@ -28,7 +28,7 @@ cat > tmom_fdif.info <<'%EOF%'
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > tmom_fdif.mol <<'%EOF%'
+cat > cc3_tmom_fdif.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 
@@ -42,7 +42,7 @@ He    0.0000000000000000  0.0000000000000000 1.50000000000000000
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > tmom_fdif.dal <<'%EOF%'
+cat > cc3_tmom_fdif.dal <<'%EOF%'
 **DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
@@ -89,8 +89,8 @@ cat > tmom_fdif.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >tmom_fdif.check
-cat >>tmom_fdif.check <<'%EOF%'
+echo $CHECK_SHELL >cc3_tmom_fdif.check
+cat >>cc3_tmom_fdif.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -128,7 +128,7 @@ ERROR[3]="CC3 EXCITATION ENERGIES NOT CORRECT"
 
 # CCSD onephoton transition moments:
 CRIT1=`$GREP "ZDIPLEN * . * (0||\-|\-0)\.48077965 *. * (0||\-|\-0)\.95231131 *. * (0|)\.45785190" $log | wc -l`
-CRIT2=`$GREP "ZDIPLEN * . * (0||\-|\-0)\.00000229 *. * (0||\-|\-0)\.00000457 *. * (0|)\.00000000" $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN * . * (0||\-|\-0)\.0000022. *. * (0||\-|\-0)\.00000457 *. * (0|)\.00000000" $log | wc -l`
 CRIT3=`$GREP -m 1 "(Y|X)DIPLEN * . * (0||\-|\-0)\.0000001. *. * (0||\-|\-0)\.00000021 *. * (0|)\.00000000" $log | wc -l`
 CRIT4=`$GREP "ZDIPLEN * . * (0||\-|\-0)\.00000150 *. * (0||\-|\-0)\.00000304 *. * (0|)\.00000000" $log | wc -l`
 CRIT5=`$GREP "oscillator strength .length gauge. * . * (0|)\.41265595" $log | wc -l`
@@ -142,7 +142,7 @@ ERROR[4]="CCSD ONEPHOTON TRANSITION MOMENTS NOT CORRECT"
 
 # CC3 onephoton transition moments:
 CRIT1=`$GREP "ZDIPLEN * . * (0||\-|\-0)\.48079338 *. * (0||\-|\-0)\.95174601 *. * (0|)\.45759318" $log | wc -l`
-CRIT2=`$GREP "ZDIPLEN * . * (0||\-|\-0)\.00000229 *. * (0||\-|\-0)\.00000457 *. * (0|)\.00000000" $log | wc -l`
+CRIT2=`$GREP "ZDIPLEN * . * (0||\-|\-0)\.0000022. *. * (0||\-|\-0)\.00000457 *. * (0|)\.00000000" $log | wc -l`
 CRIT3=`$GREP -m 1 "(Y|X)DIPLEN * . * (0||\-|\-0)\.0000001. *. * (0||\-|\-0)\.00000021 *. * (0|)\.00000000" $log | wc -l`
 CRIT4=`$GREP "ZDIPLEN * . * (0||\-|\-0)\.00000151 *. * (0||\-|\-0)\.00000306 *. * (0|)\.00000000" $log | wc -l`
 CRIT5=`$GREP "oscillator strength .length gauge. * . * (0|)\.41237882" $log | wc -l`

@@ -17,44 +17,44 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > twophot3_noddy.info <<'%EOF%'
-   twophot3_noddy
+cat > cc3_twophot3.info <<'%EOF%'
+   cc3_twophot3
    --------------
-   Molecule:         He2 in C1
+   Molecule:         He2 (with symmetry)
    Wave Function:    CCSD and CC3 / cc-pVDZ
-   Test Purpose:     finite difference on transition moments
+   Test Purpose:     transition moments (one and two photon, between
+                     ground and an excited states)
 %EOF%
 
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > twophot3_noddy.mol <<'%EOF%'
+cat > cc3_twophot3.mol <<'%EOF%'
 BASIS
 cc-pVDZ
 
 
-    1    0  Y  X  Z   1.00D-15
-        2.0   2
-He    0.0000000000000000  0.0000000000000000 0.00000000000000000      
-He    0.0000000000000000  0.0000000000000000 1.50000000000000000      
+    1    3  Y  X  Z   1.00D-15
+        2.0   1
+He    0.0000000000000000  0.0000000000000000 0.75000000000000000
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > twophot3_noddy.dal <<'%EOF%'
+cat > cc3_twophot3.dal <<'%EOF%'
 **DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
 **SIRIUS
 .CC
-*ORBITALS 
+*ORBITALS
 .NOSUPSYM
-*SCF INPUT 
+*SCF INPUT
 .THRESH
  1.0d-12
-*CC INPUT 
+*CC INPUT
 .RESTART
 .CCSD
 .CC3
@@ -64,27 +64,22 @@ cat > twophot3_noddy.dal <<'%EOF%'
  1.0d-10
 *CCEXCI
 .NCCEXCI
- 4 
+ 2 0 0 0 1 1 0 0
 .THREXC
  1.0d-8
 .R3DIIS
 *CCOPA
 .DIPLEN
 *CCTPA
+.PRINT
+  10
 .SELEXC
+ 5 1 0.0
  1 1 0.0
+ 6 1 0.0
  1 2 0.0
- 1 3 0.0
- 1 4 0.0
 .HALFFR
 .DIPLEN
-*NODDY
-.GMAT
-.FMAT
-.FAMAT
-.XIDEN
-.ETADEN
-.AAMAT
 **END OF DALTON
 %EOF%
 #######################################################################
@@ -93,8 +88,8 @@ cat > twophot3_noddy.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >twophot3_noddy.check
-cat >>twophot3_noddy.check <<'%EOF%'
+echo $CHECK_SHELL >cc3_twophot3.check
+cat >>cc3_twophot3.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -109,64 +104,57 @@ CRIT2=`$GREP "Total CCSD * energy: * \-5.4317381158" $log | wc -l`
 CRIT3=`$GREP "Total CC3 * energy:  * \-5.4318075446" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[1]=5
-ERROR[1]="ENERGIES NOT CORRECT (noddy)"
+ERROR[1]="ENERGIES NOT CORRECT"
 
 # CCSD excitation energies
-CRIT1=`$GREP "\^1A * . * 1 * . * 1\.351930. * . * 36\.7879. * . * 296714\.... * . * 98\.93" $log | wc -l`
-CRIT2=`$GREP "\^1A * . * 2 * . * 1\.586139. * . * 43\.1610. * . * 348117\.... * . * 98\.84" $log | wc -l`
-CRIT3=`$GREP "\^1A * . * 3 * . * 2\.045322. * . * 55\.6560. * . * 448896\.... * . * 99\.16" $log | wc -l`
-CRIT4=`$GREP "\^1A * . * 4 * . * 2\.124874. * . * 57\.8207. * . * 466355\.... * . * 96\.75" $log | wc -l`
+CRIT1=`$GREP " * . * . * . * 1\.351930. * . * 36\.7879. * . * 296714\.... * . * 98\.93" $log | wc -l`
+CRIT2=`$GREP " * . * . * . * 1\.586139. * . * 43\.1610. * . * 348117\.... * . * 98\.84" $log | wc -l`
+CRIT3=`$GREP " * . * . * . * 2\.045322. * . * 55\.6560. * . * 448896\.... * . * 99\.16" $log | wc -l`
+CRIT4=`$GREP " * . * . * . * 2\.124874. * . * 57\.8207. * . * 466355\.... * . * 96\.75" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[2]=4
-ERROR[2]="CCSD EXCITATION ENERGIES NOT CORRECT (noddy)"
+ERROR[2]="CCSD EXCITATION ENERGIES NOT CORRECT"
 
 # CC3 excitation energies
-CRIT1=`$GREP "\^1A * . * 1 * . * 1\.351786. * . * 36\.7839. * . * 296682\.... * . * 98\.92" $log | wc -l`
-CRIT2=`$GREP "\^1A * . * 2 * . * 1\.585795. * . * 43\.1516. * . * 348041\.... * . * 98\.83" $log | wc -l`
-CRIT3=`$GREP "\^1A * . * 3 * . * 2\.045085. * . * 55\.6496. * . * 448844\.... * . * 99\.14" $log | wc -l`
-CRIT4=`$GREP "\^1A * . * 4 * . * 2\.124499. * . * 57\.8105. * . * 466273\.... * . * 96\.67" $log | wc -l`
+CRIT1=`$GREP " * . * . * . * 1\.351786. * . * 36\.7839. * . * 296682\.... * . * 98\.92" $log | wc -l`
+CRIT2=`$GREP " * . * . * . * 1\.585795. * . * 43\.1516. * . * 348041\.... * . * 98\.83" $log | wc -l`
+CRIT3=`$GREP " * . * . * . * 2\.045085. * . * 55\.6496. * . * 448844\.... * . * 99\.14" $log | wc -l`
+CRIT4=`$GREP " * . * . * . * 2\.124499. * . * 57\.8105. * . * 466273\.... * . * 96\.67" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[3]=4
-ERROR[3]="CC3 EXCITATION ENERGIES NOT CORRECT (noddy)"
+ERROR[3]="CC3 EXCITATION ENERGIES NOT CORRECT"
+
 
 # CCSD onephoton transition moments:
+#CRIT1=1
 CRIT1=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.480779.. *. * (0| |\-|\-0)\.952311.. *. * (0| )\.457851" $log | wc -l`
+#CRIT2=6
+CRIT2=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.000000.. *. * (0| |\-|\-0)\.000000.. *. * (0| )\.000000" $log | wc -l`
+#CRIT3=8+8=16
+CRIT3=`$GREP "(X|Y)DIPLEN * . * (0| |\-|\-0)\.000000.. *. * (0| |\-|\-0)\.000000.. *. * (0| )\.000000" $log | wc -l`
+#CRIT4=1
 CRIT4=`$GREP "oscillator strength .length gauge. * . * (0| )\.41265595" $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT4`
-CTRL[4]=2
-ERROR[4]="CCSD ONEPHOTON TRANSITION MOMENTS NOT CORRECT (noddy)"
+#CRIT5=6
+CRIT5=`$GREP "oscillator strength .length gauge. * . * (0| )\.00000000" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[4]=30
+ERROR[4]="CCSD ONEPHOTON TRANSITION MOMENTS NOT CORRECT"
 
 
 # CC3 onephoton transition moments:
+#CRIT1=1
 CRIT1=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.480793.. *. * (0| |\-|\-0)\.951746.. *. * (0| )\.457593" $log | wc -l`
+#CRIT2=6
+CRIT2=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.000000.. *. * (0| |\-|\-0)\.000000.. *. * (0| )\.000000" $log | wc -l`
+#CRIT3=8+8=16
+CRIT3=`$GREP "(X|Y)DIPLEN * . * (0| |\-|\-0)\.000000.. *. * (0| |\-|\-0)\.000000.. *. * (0| )\.000000" $log | wc -l`
+#CRIT4=1
 CRIT4=`$GREP "oscillator strength .length gauge. * . * (0| )\.41237882" $log | wc -l`
-TEST[5]=`expr $CRIT1 \+ $CRIT4`
-CTRL[5]=2
-ERROR[5]="CC3 ONEPHOTON TRANSITION MOMENTS NOT CORRECT (noddy)"
-
-#########################################
-###### OLD WITH MISLEADING ZEROS ########
-#########################################
-## CCSD onephoton transition moments:
-#CRIT1=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.480779.. *. * (0| |\-|\-0)\.952311.. *. * (0| )\.457851" $log | wc -l`
-#CRIT2=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.000000.. *. * (0| |\-|\-0)\.000000.. *. * (0| )\.000000" $log | wc -l`
-#CRIT3=`$GREP "(X|Y)DIPLEN * . * (0| |\-|\-0)\.000000.. *. * (0| |\-|\-0)\.000000.. *. * (0| )\.000000" $log | wc -l`
-#CRIT4=`$GREP "oscillator strength .length gauge. * . * (0| )\.41265595" $log | wc -l`
-#CRIT5=`$GREP "oscillator strength .length gauge. * . * (0| )\.00000000" $log | wc -l`
-#TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
-#CTRL[4]=86
-#ERROR[4]="CCSD ONEPHOTON TRANSITION MOMENTS NOT CORRECT (noddy)"
-#
-#
-## CC3 onephoton transition moments:
-#CRIT1=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.480793.. *. * (0| |\-|\-0)\.951746.. *. * (0| )\.457593" $log | wc -l`
-#CRIT2=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.000000.. *. * (0| |\-|\-0)\.000000.. *. * (0| )\.000000" $log | wc -l`
-#CRIT3=`$GREP "(X|Y)DIPLEN * . * (0| |\-|\-0)\.000000.. *. * (0| |\-|\-0)\.000000.. *. * (0| )\.000000" $log | wc -l`
-#CRIT4=`$GREP "oscillator strength .length gauge. * . * (0| )\.41237882" $log | wc -l`
-#CRIT5=`$GREP "oscillator strength .length gauge. * . * (0| )\.00000000" $log | wc -l`
-#TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
-#CTRL[5]=86
-#ERROR[5]="CC3 ONEPHOTON TRANSITION MOMENTS NOT CORRECT (noddy)"
+#CRIT5=6
+CRIT5=`$GREP "oscillator strength .length gauge. * . * (0| )\.00000000" $log | wc -l`
+TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+CTRL[5]=30
+ERROR[5]="CC3 ONEPHOTON TRANSITION MOMENTS NOT CORRECT"
 
 # CCSD twophoton transition moment:
 #  +-------------------+----------------+----------------+----------------+
@@ -189,7 +177,7 @@ CRIT7=`$GREP "YDIPLEN *YDIPLEN *. *(0| |\-0|\-)\.210283.. *. *(0| |\-0|\-)\.1041
 CRIT8=`$GREP "ZDIPLEN *ZDIPLEN *. *( |\-)4\.439828.. *. *( |\-)2\.207758.. *. *9\.802067.." $log | wc -l`
 TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8`
 CTRL[6]=8
-ERROR[6]="CCSD TWOPHOTON TRANSITION MOMENTS OR STRENGTHS NOT CORRECT (noddy)"
+ERROR[6]="CCSD TWOPHOTON TRANSITION MOMENTS OR STRENGTHS NOT CORRECT"
 
 # CC3 twophoton transition moment:
 #  +-------------------+----------------+----------------+----------------+
@@ -212,7 +200,7 @@ CRIT7=`$GREP "YDIPLEN *YDIPLEN *. *(0| |\-0|\-)\.210504.. *. *(0| |\-0|\-)\.1043
 CRIT8=`$GREP "ZDIPLEN *ZDIPLEN *. *( |\-)4\.448153.. *. *( |\-)2\.206770.. *. *9\.816053.." $log | wc -l`
 TEST[7]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8`
 CTRL[7]=8
-ERROR[7]="CC3 TWOPHOTON TRANSITION MOMENTS OR STRENGTHS NOT CORRECT (noddy)"
+ERROR[7]="CC3 TWOPHOTON TRANSITION MOMENTS OR STRENGTHS NOT CORRECT"
 
 # CCSD twophoton transition moment:
 

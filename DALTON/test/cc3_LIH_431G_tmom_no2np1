@@ -1,76 +1,77 @@
- 
+
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > LIH_431G_cauchy_12.info <<%EOF%
-   LIH_431G_cauchy_12
+cat > cc3_LIH_431G_tmom_no2np1.info <<%EOF%
+   cc3_LIH_431G_tmom_no2np1
    -----------
-   Molecule:         LiH
+   Molecule:         LiH 
    Theory Level:     CC3 / 4-31G
-   Test Purpose:     Cauchy moments
+   Test Purpose:     Transition moment between the ground and an 
+                     excited state; non-totally symmetric operator.
+                     (NOT exploiting 2n+1 rule !)
 %EOF%
 
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > LIH_431G_cauchy_12.mol <<%EOF%
+cat > cc3_LIH_431G_tmom_no2np1.mol <<%EOF%
 BASIS
 4-31G
-Lithium flourid
-small test basis
-    2    0  Y  X      1.00D-15
-        3.0   1
-Li    0.0000000000000000  0.0000000000000000 1.30000000000000000
-        1.0   1
-H     0.0000000000000000  0.0000000000000000 0.00000000000000000
+blubber
+blubber
+    2    2  X  Y      1.00D-15
+        3.0   1    1    1
+Li    0.0000000000000000   0.000000000   1.30000000
+        1.0   1    1    1
+H     0.0000000000000000   0.000000000   0.00000000
 %EOF%
 
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > LIH_431G_cauchy_12.dal <<%EOF%
+cat > cc3_LIH_431G_tmom_no2np1.dal <<%EOF%
 **DALTON
-.RUN WAVEFUNCTIONS
+.RUN WAVE FUNCTIONS
 **INTEGRAL
 .DIPLEN
+.DIPVEL
 .ANGMOM
-.THETA
-**WAVE FUNCTIONS
+**WAVE FUNCTION
 .CC
-*ORBITALS
-.NOSUPSYM
-!.MOSTART
-!.H1DIAG
 *SCF INPUT
 .THRESH
- 1.0d-12
-*CC INPUT
+ 1.0D-12
+.NODIIS
+*ORBITAL INPUT
+.NOSUPSYM
+*CC INP
+.NSIMLE
+  1
 .CC3
-.THRENR
- 1.0d-14
-.THRLEQ
- 1.0d-10
-.PRINT
- 1
-.MAXRED
- 1000
-.MXLRV
- 111
 .RESTART
-*CCLR
-!.ASYMSD
-!.OLD_LR
+.PRINT
+ 2
+.THRENR
+1.0D-14
+.THRLEQ
+1.0D-14
+.MXLRV
+  1000
+.MAX IT
+  1000
+*CCEXCI
+.THREXC
+ 1.0D-13
+.TOLSC
+ 1.0D-12
+.NCCEXCI
+ 1 0 0 0
+ 0 0 0 0
+*CCOPA
 .OPERATOR
-ZDIPLEN ZDIPLEN
-.DISPCF
-  12
-!*NODDY
-!.XI
-!.ETA
-!.FMAT
-!.FNOALT
-!.XIDEN
-!.ETADEN
+ZDIPLEN
+.NO2N+1
 **END OF DALTON
 %EOF%
 #######################################################################
@@ -100,22 +101,21 @@ CTRL[1]=6
 ERROR[1]="ENERGIES NOT CORRECT"
 
 
-# CC3 cauchy moments :
-CRIT1=`$GREP  "   ZDIPLEN     ZDIPLEN       0        12\.9559198882" $log | wc -l`
-CRIT2=`$GREP  "                             2        920\.450029980" $log | wc -l`
-CRIT3=`$GREP  "                             4        83755\.8824075" $log | wc -l` 
-CRIT4=`$GREP  "                             6        7971366\.12693" $log | wc -l` 
-CRIT5=`$GREP  "                             8        764788701\.16." $log | wc -l` 
-CRIT6=`$GREP  "                            10        73478812219\.2" $log | wc -l` 
-CRIT7=`$GREP  "                            12       ( |0)\.706138027779E\+13" $log | wc -l`      
+# CC3 transition moments:
+CRIT1=`$GREP  " *\| *ZDIPLEN *\| *(|-|-0|0)\.48586718 *\| *(|-|-0|0)\.94072362 *\| *(|0)\.45706673 *\|" $log | wc -l`
 
+TEST[2]=$CRIT1
+CTRL[2]=1
+ERROR[2]="CC3 TRANSITION MOMENT NOT CORRECT"
 
-TEST[2]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7`
-CTRL[2]=7
-ERROR[2]="CC3 CAUCHY MOMENTS NOT CORRECT"
+# CC3 excitation energies:
+CRIT1=`$GREP  " *\| *\^1A1 *\| *1 *\| *(|0)\.1020058 *\| *2\.77572 *\| *22387\.69. *\| *91\.92 *\|" $log | wc -l`
+TEST[3]=$CRIT1
+CTRL[3]=1
+ERROR[3]="CC3 EXCITATION ENERGIES NOT CORRECT"
 
 PASSED=1
-for i in 1 2
+for i in 1 2 3
 do 
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -132,5 +132,5 @@ else
   exit 1
 fi
 
-' > LIH_431G_cauchy_12.check
+' > cc3_LIH_431G_tmom_no2np1.check
 #######################################################################
