@@ -5,7 +5,7 @@ project(LSDALTON Fortran C CXX)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-add_definitions(-DTHIS_IS_CMAKE_BUILD)
+add_definitions(-DBINARY_INFO_AVAILABLE)
 
 # these are paths that CMake will search for cmake module files that end with .cmake
 set(CMAKE_MODULE_PATH

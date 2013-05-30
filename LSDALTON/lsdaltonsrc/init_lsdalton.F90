@@ -51,7 +51,7 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
 #endif
   CALL PRINT_INTRO(LUPRI)
   call lsmpi_print(lupri)
-#ifdef THIS_IS_CMAKE_BUILD
+#ifdef BINARY_INFO_AVAILABLE
   call print_binary_info(lupri)
 #endif
 
