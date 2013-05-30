@@ -383,6 +383,7 @@ C
       END IF
 C
       IF (ABSLRS) THEN
+        ABS_DIRFCK=DIRFCK
         CALL GPINQ('ABSVECS','EXIST',EX)
         IF (.NOT.EX) THEN
           OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
@@ -677,7 +678,7 @@ C
 C
       KFREE = 1
       LFREE = LWRK
-      IF (ABSLRS) THEN
+      IF (ABSLRS .AND. ABS_DIRFCK .AND. NKONF.LE.1) THEN
         CALL MEMGET('REAL',KRES,2*3*3*NFREQ_INTERVAL,WRK,KFREE,
      &              LFREE)
         CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
@@ -705,7 +706,7 @@ C
       CALL MEMGET('REAL',KREDZGD,2*MAXRM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
 C
-      IF (ABSORP) THEN
+      IF (ABSORP .OR. ABSLRS) THEN
 C
 C     Nonzero damping parameter corresponds to complex response including 
 C     absorption in the system
