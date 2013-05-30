@@ -115,6 +115,7 @@ C
 #include "mxcent.h"
 #include "esrhfc.h"
 #include "abslrs.h"
+#include "infvar.h"
 C
       LOGICAL SAVLR, DORESP, FLAGSV, EX, NEED_PVX
 C
@@ -472,7 +473,10 @@ C
 C     Calculate response properties with absorption
 C     =============================================
 C
-      IF (ABSORP) THEN
+      IF (ABSORP .OR. (ABSLRS .AND. (NCONF.GT.1)).OR.
+     *   (ABSLRS .AND. (.NOT.DIRFCK))) THEN
+C     Use the old linear response solver
+C     for MCSCF (or SCF if OLDCPP is requested by user)         
          CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
      *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
      *                WRK(KINDX),WRK(KWRK1),LWRK1)
@@ -642,7 +646,7 @@ C <<< GENERAL INPUT FOR RESPONSE >>>
 C
 #include "implicit.h"
 #include "dummy.h"
-      PARAMETER ( NTABLE = 12 )
+      PARAMETER ( NTABLE = 11 )
 C
 #include "priunit.h"
 #include "infpri.h"
@@ -669,7 +673,7 @@ C
 C
       DATA TABLE /'*END OF', '**RESPO', '*LINEAR', '*QUADRA',
      *            '*CUBIC ', '*C6    ', '*ESR   ', '*ABSORP',
-     *            '*SPIN-O', '*ESG   ', '*HFC   ', '*ABSLRS'/
+     *            '*SPIN-O', '*ESG   ', '*HFC   '/
 
       logical, external :: fun_is_ready_for_qr
       logical, external :: fun_is_ready_for_cr
@@ -716,7 +720,7 @@ C     end of this input module
       IF (PROMPT .EQ. '*') THEN
          DO I=1, NTABLE
             IF (WORD .EQ. TABLE(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
          END DO
 C
@@ -779,8 +783,6 @@ C
  10   CALL ESGINP(WORD)
       GO TO 200
  11   CALL HFCINP(WORD)
-      GO TO 200
- 12   CALL ABSLRS_INPUT(WORD)
       GO TO 200
 C
  1    CONTINUE
@@ -865,7 +867,8 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,
-     *                    11,12,13,14,15,16,17,18,19,20,21,22,23,24), I
+     *                      11,12,13,14,15,16,17,18,19,20,21,22,23,
+     *                      24), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1211,6 +1214,7 @@ C  Initializing ABSORP
       DATA THCLR_ABSORP/1.0D-3/,THCPP_ABSORP/1.0D-3/
       DATA FREQ_ALPHA(1)/0.0D0/
       DATA FREQ_BETA_B(1)/0.0D0/,FREQ_BETA_C(1)/0.0D0/
+      DATA ABS_OLDCPP/.FALSE./
 C  Initializing CHANNEL
       DATA CHANNEL_CALC/.FALSE./,CHANNEL_VCALC/.FALSE./
       DATA CHANNEL_VIRT/-1,-1,-1,-1,-1,-1,-1,-1/
@@ -1229,9 +1233,11 @@ C  Initializing ABSLRS
        DATA ABSLRS_ALPHA/.FALSE./,ABS_BATCH/.FALSE./
        DATA ABSLRS_ANALYZE/.FALSE./,ABS_IMFREQ/.FALSE./
        DATA ABS_MAXITER/150/,IPRABSLRS/0/,ABS_NFREQ_ALPHA/1/
-       DATA ABS_MAXRM/200/
+       DATA ABS_NFREQ_BETA_B/1/,ABS_NFREQ_BETA_C/1/
+       DATA ABS_MAXRM/1000/
        DATA ABS_FREQ_INTERVAL/0.0D0,0.0D0,1.0D0/,ABS_THD_LD/1.0D-8/
        DATA ABS_THCLR/1.0D-3/,ABS_FREQ_ALPHA(1)/0.0D0/
+       DATA ABS_FREQ_BETA_B(1)/0.0D0/,ABS_FREQ_BETA_C(1)/0.0D0/
        DATA LUSB/80/,LUAB/81/,LUSS/82/,LUAS/83/,LUABSVECS/84/
        DATA LUE1RED/85/,LUE2RED/86/,LUSRED/87/
       END
