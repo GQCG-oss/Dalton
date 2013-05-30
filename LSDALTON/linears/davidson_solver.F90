@@ -56,9 +56,9 @@ subroutine davidson_solver(CFG,grad,x)
       call mat_min_elm(CFG%P,minel,minel_pos)
       if (minel < 0_realk) start_it = 4
   else
-      start_it = 4
-      if (CFG%arh_gradnorm .ge. 1E-2_realk) arh_thresh=0.001_realk
-      if (CFG%arh_gradnorm < 1E-2_realk) arh_thresh=0.0001_realk
+      if (CFG%arh_extravec) start_it = 4
+      if (CFG%arh_gradnorm .ge. 1E-3_realk) arh_thresh=0.0001_realk
+      if (CFG%arh_gradnorm < 1E-3_realk) arh_thresh=0.00001_realk
       if (CFG%arh_gradnorm < 1E-5_realk) arh_thresh=0.00001_realk
   end if
 
@@ -376,50 +376,6 @@ end if
 
 end subroutine Precondition
 
-!! Compute preconditioner for arh
-!subroutine arh_precondmatrix_david(FUQ,FUP,mu,P)
-!implicit none
-!type(matrix) :: FUQ,FUP,P
-!real(realk) :: mu
-!integer :: ndim,i,j
-!call mat_zero(P)
-!
-!ndim = FUP%nrow
-!do j = 1,ndim   !columns
-!  do i = 1,ndim  !rows
-!    P%elms((j-1)*ndim+i) = FUQ%elms((j-1)*ndim+j) + FUQ%elms((i-1)*ndim+i)  &
-!         &- FUP%elms((i-1)*ndim+i) - FUP%elms((j-1)*ndim+j) 
-!  enddo
-!enddo
-!
-!
-!end subroutine arh_precondmatrix_david
-
-!subroutine arh_precond_david(CFG,mu,res_prec)
-!implicit none
-!type(RedSpaceItem) :: CFG
-!type(matrix) :: res_prec,res
-!integer :: ndim, i,j
-!real(realk) :: mu
-!
-!ndim= res_prec%nrow
-!call mat_init(res,res_prec%nrow,res_prec%ncol)
-!res = res_prec
-!
-!if (.not. CFG%arh%cfg_noprec) then
-!     do j=1,ndim
-!        do i=1,ndim
-!           if (ABS(CFG%P%elms((j-1)*ndim+i)-mu) > 1.0E-10_realk) then
-!                 res%elms((j-1)*ndim+i) = res%elms((j-1)*ndim+i)/(CFG%P%elms((j-1)*ndim+i)-mu)
-!           endif
-!        end do
-!     end do
-!end if
-!call project_oao_basis(CFG%decomp, res, CFG%symm, res_prec)
-!
-!call mat_free(res)
-!end subroutine arh_precond_david
-
 
 !> \brief Subroutine that takes V and projects out U component.
 !> \author Ida-Marie Hoeyvik
@@ -510,14 +466,9 @@ implicit none
  real(realk)  :: tcpu,twall
       
   call mat_init(temp,grad%nrow,grad%ncol)
-  call mat_copy(1.0_realk,grad,temp)
-  if (CFG%Precond) then
-      !second trialvector is precond gradient
-      call Precondition(CFG,temp,b_current,grad)
-  else
-      call LinearTransformations(CFG,temp,b_current,grad) 
-      call mat_daxpy(-1.0_realk,grad,b_current)
-  end if
+  call mat_copy(-1.0_realk,grad,temp)
+  call LinearTransformations(CFG,temp,b_current,grad) 
+  call mat_daxpy(-1.0_realk,grad,b_current)
  
   call orthonormalize(b_current,1,CFG)
   call LinearTransformations(CFG,b_current,sigma_temp,grad) 
@@ -544,7 +495,6 @@ integer :: pos(2)
 integer :: i,j,norb,ndim,start_it
 real(realk) :: min_diag
 real(realk),pointer :: trial(:,:)
-real(realk),pointer :: HOMO(:),HOMOm1(:),LUMO(:),LUMOp1(:) 
 
 norb= G%ncol
 
@@ -552,49 +502,20 @@ call mat_zero(b)
 ndim=b%ncol
 
 if (CFG%arh_davidson) then
-     if (CFG%arh_extravecs) then
-        start_it=6 
-        call mat_init(CFG%Allb(4),G%nrow,G%ncol)
-        call mat_init(CFG%AllSigma(4),G%nrow,G%ncol)
-        call mat_init(CFG%Allb(5),G%nrow,G%ncol)
-        call mat_init(CFG%AllSigma(5),G%nrow,G%ncol)
-     endif
-  
-    call mem_alloc(HOMO,CFG%decomp%FU%nrow)
-    call mem_alloc(LUMO,CFG%decomp%FU%nrow)
-    call mem_alloc(HOMOm1,CFG%decomp%FU%nrow)
-    call mem_alloc(LUMOp1,CFG%decomp%FU%nrow)
 
-    call ComputeFock_eigvecs(CFG%decomp,HOMO,HOMOm1,LUMO,LUMOp1,ndim) 
-    
-    call ExtraVecs_ARH(HOMO,LUMO,b,ndim)
+    call ComputeFock_eigvecs(CFG%decomp,b,CFG%Allb(1),ndim,CFG%lupri,CFG%arh_dodft,CFG%arh_extravec) 
+    if (.not. CFG%arh_extravec) then
+       call mat_free(CFG%Allb(3))
+       call mat_free(CFG%AllSigma(3))
+       start_it = 3
+       return
+    endif
     call orthonormalize(b,2,CFG)
     call LinearTransformations(CFG,b,sigma,G)
     call mat_assign(CFG%Allb(3),b)
     call mat_assign(CFG%AllSigma(3),sigma)
     call IncreaseDimRedSpace(G,CFG,b,3)
-    if (CFG%arh_extravecs) then
-       !TRIAL VEC #4
-       call ExtraVecs_ARH(HOMOm1,LUMO,b,ndim)
-       call orthonormalize(b,3,CFG)
-       call LinearTransformations(CFG,b,sigma,G)
-       call mat_assign(CFG%Allb(4),b)
-       call mat_assign(CFG%AllSigma(4),sigma)
-       call IncreaseDimRedSpace(G,CFG,b,4)
-       
-       !TRIAL VEC #5
-       call ExtraVecs_ARH(HOMO,LUMOp1,b,ndim)
-       call orthonormalize(b,4,CFG)
-       call LinearTransformations(CFG,b,sigma,G)
-       call mat_assign(CFG%Allb(5),b)
-       call mat_assign(CFG%AllSigma(5),sigma)
-       call IncreaseDimRedSpace(G,CFG,b,5)
-    endif    
-         
-    call mem_dealloc(HOMO) 
-    call mem_dealloc(LUMO) 
-    call mem_dealloc(HOMOm1) 
-    call mem_dealloc(LUMOp1) 
+
 else
      call mem_alloc(trial,1,1)
      trial(1,1)=1.0_realk
@@ -1058,92 +979,117 @@ call mem_dealloc(wrk)
 
 end subroutine RedHessian_eigvals
 
-subroutine ExtraVecs_ARH(FUP,FUQ,b,ndim)
-implicit none
-integer :: ndim
-type(matrix),intent(inout) :: b
-real(realk) :: FUP(ndim),FUQ(ndim)
-real(realk),pointer :: trial(:,:)
-type(matrix):: tmp
-integer :: i,j
-call mem_alloc(trial,ndim,ndim)
-call mat_init(tmp,b%ncol,b%nrow)
-trial=0.0_realk
-do i=1,ndim
-    if (FUP(i) > 1E-12_realk) FUP(i)=FUP(i) + 0.005_realk
-    if (FUP(i) < 1E-12_realk) FUP(i)=FUP(i) - 0.005_realk
-enddo
 
-call dger(ndim,ndim,1.0_realk,FUP,1,FUQ,1,trial,ndim)
-call mat_create_block(b,trial,ndim,ndim,1,1)
-call mat_trans(b,tmp)
-call mat_scal(0.5_realk,b)
-call mat_daxpy(-0.5_realk,tmp,b)
-
-call mat_free(tmp)
-call mem_dealloc(trial)
-end subroutine ExtraVecs_ARH
-
-subroutine ComputeFock_eigvecs(decomp,HOMO,HOMOm1,LUMO,LUMOp1,ndim)
+subroutine ComputeFock_eigvecs(decomp,b,G,ndim,lupri,DFT,success)
 implicit none
 type(DecompItem) :: decomp
 integer          :: ndim
-real(realk)   :: HOMO(ndim),HOMOm1(ndim)
-real(realk)   :: LUMO(ndim),LUMOp1(ndim)
-real(realk),pointer    :: eigvals(:)
-real(realk),pointer    :: Fmat(:,:)
+type(matrix)  :: b
+type(matrix),intent(in) :: G
+real(realk),pointer    :: eigvalsO(:),eigvalsV(:)
+real(realk),pointer    :: FmatO(:,:),FmatV(:,:)
 real(realk),pointer    :: wrk(:)
-integer :: lwrk,IERR,loc
-integer :: i,j
-IERR=0
-call mem_alloc(Fmat,ndim,ndim)
-call mat_to_full(decomp%FUP,1.0_realk,Fmat)
-call mem_alloc(eigvals,ndim)
+real(realk) :: sortocc(100,100),sortvirt(100,100),gap(100,100)
+integer :: lwrk,IERR,loc(2),locO(1),locV(1)
+integer :: i,j,indxO,indxV,lupri
+logical :: success,DFT
+real(realk) ::thr,nrm
+integer :: maxdim,maxdimV,maxdimO
+
+call mem_alloc(FmatO,ndim,ndim)
+call mem_alloc(FmatV,ndim,ndim)
+call mat_to_full(decomp%FUP,1.0_realk,FmatO)
+call mat_to_full(decomp%FUQ,1.0_realk,FmatV)
+call mem_alloc(eigvalsO,ndim)
+call mem_alloc(eigvalsV,ndim)
+
 
 lwrk=-1
 call mem_alloc(wrk,5)
-call dsyev('V','L',ndim,Fmat,ndim,eigvals,wrk,lwrk,IERR)
+call dsyev('V','L',ndim,FmatO,ndim,eigvalsO,wrk,lwrk,IERR)
 
 lwrk=wrk(1)
 call mem_dealloc(wrk)
 call mem_alloc(wrk,lwrk)
 
 ! DIAGONALIZE OCCUPIED PART
-call dsyev('V','L',ndim,Fmat,ndim,eigvals,wrk,lwrk,IERR)
+call dsyev('V','L',ndim,FmatO,ndim,eigvalsO,wrk,lwrk,IERR)
 if (IERR .ne. 0) STOP 'diag FUP error'
 
-do i=ndim,1,-1
-   if (dabs(eigvals(i))> 1E-8_realk) then
-      loc = i
-      exit
-   endif
-end do
-do i=1,ndim; HOMO(i)=Fmat(i,loc);enddo
-do i=ndim,1,-1;if (dabs(eigvals(i))> 1E-8_realk .and. i<loc) then
-       loc = i
-       exit
-endif;end do
-do i=1,ndim; HOMOm1(i)=Fmat(i,loc);enddo
-
 ! COMPUTE VIRT EIGENVECTORS
-call mat_to_full(decomp%FUQ,1.0_realk,Fmat)
-call dsyev('V','L',ndim,Fmat,ndim,eigvals,wrk,lwrk,IERR)
+call dsyev('V','L',ndim,FmatV,ndim,eigvalsV,wrk,lwrk,IERR)
 if (IERR .ne. 0) STOP 'diag FUQ error'
-
-do i=1,ndim;if (dabs(eigvals(i))> 1E-8_realk) then
-       loc = i
-       exit
-endif;end do
-do i=1,ndim; LUMO(i)=Fmat(i,loc);enddo
-do i=1,ndim;if (dabs(eigvals(i))> 1E-8_realk .and. i>loc) then
-       loc = i
-       exit
-endif;end do
-do i=1,ndim; LUMOp1(i)=Fmat(i,loc);enddo
-
 call mem_dealloc(wrk)
-call mem_dealloc(Fmat)
-call mem_dealloc(eigvals)
+
+! Sort ten lowest virt eigvals and ten highest occ eigvals
+! Save their locations, not their values
+thr=1.0E-10_realk
+maxdimO=ndim
+maxdimV=ndim
+do i=1,100
+  locO=maxloc(eigvalsO,MASK=abs(eigvalsO)>thr)
+  if (locO(1) == 0 .and. i>1) then
+     maxdimO=i-1 
+     maxdimV=i-1
+     exit
+  endif
+  sortocc(i,1)=dble(locO(1))
+  sortocc(i,2)=eigvalsO(locO(1))
+  eigvalsO(locO(1))=0.0_realk
+  locV=minloc(eigvalsV,MASK=abs(eigvalsV)>thr)
+  if (locV(1) == 0 .and. i>1) then
+     maxdimV=i-1 
+     maxdimO=i-1 
+     exit
+  endif
+  sortvirt(i,1)=dble(locV(1))
+  sortvirt(i,2)=eigvalsV(locV(1))
+  eigvalsV(locV(1))=0.0_realk
+ end do
+! Find combinations e_virt-e_occ in matrix
+do i=1,min(maxdimV,100)
+  do j=1,min(maxdimO,100)
+     gap(i,j)=sortvirt(i,2)-sortocc(j,2)
+  end do
+end do
+      write(lupri,*) ' HOMO-LUMO gap calc. by diagonalization ', minval(gap)
+nrm = 0.0_realk
+maxdim=min(100*100,maxdimV*maxdimO)
+do i=1,maxdim
+   loc=minloc(gap)
+   indxV=nint(sortvirt(loc(1),1))
+   indxO=nint(sortocc(loc(2),1))
+   call mat_zero(b)
+   
+   ! In case of DFT, must perturb vectors
+   if (DFT) then
+     do j=1,ndim
+       if (FmatO(j,indxO)>1.0E-12_realk) FmatO(j,indxO)=FmatO(j,indxO) +0.001
+       if (FmatO(j,indxO)<1.0E-12_realk) FmatO(j,indxO)=FmatO(j,indxO) -0.001
+     end do
+   end if
+   call mat_dger(1.0_realk,FmatO(:,indxO),FmatV(:,indxV),b)
+   call mat_dger(-1.0_realk,FmatV(:,indxV),FmatO(:,indxO),b)
+
+
+   nrm=abs(mat_dotproduct(b,G))
+   if (nrm> 1.0E-4_realk) then
+      write(lupri,*) 'Special trial vector: orbital energy difference', minval(gap)
+      write(lupri,*) "Special trial vector: successfull! Non-orthogonal to gradient", i
+      exit
+   else
+      gap(loc(1),loc(2))=1.0E10_realk
+   endif
+   if (i==maxdim) write(lupri,*)"Special trial vector: FAILED TO FIND NON-ORTHOGONAL VEC"
+   success = .false.
+end do
+
+
+call mem_dealloc(FmatO)
+call mem_dealloc(FmatV)
+call mem_dealloc(eigvalsO)
+call mem_dealloc(eigvalsV)
+
 
 end subroutine ComputeFock_eigvecs
 

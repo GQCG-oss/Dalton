@@ -288,7 +288,7 @@ INTEGER               :: i,j,ndmat2,idmat
 TYPE(DFTDATATYPE)     :: DFTDATA
 REAL(REALK),pointer   :: Dmat(:,:,:),DmatAO(:,:,:),EDFT2(:)
 REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2,CPUTIME,WALLTIME
-REAL(REALK)   :: DUMMY(1,1),SAVERHOTHR
+REAL(REALK)   :: DUMMY(1,1),RHOTHR,DFTHRI
 LOGICAL               :: UNRES
 
 IF(matrix_type .EQ. mtype_unres_dense)THEN
@@ -305,7 +305,6 @@ IF(UNRES)ndmat2=2*ndmat
 call mem_dft_alloc(EDFT2,ndmat2)
 DFTDATA%ndmat = ndmat2
 call mem_dft_alloc(Dmat,nbast,nbast,ndmat2)
-SAVERHOTHR = SETTING%SCHEME%DFT%RHOTHR
 !reduced accuracy !!
 !SETTING%SCHEME%DFT%RHOTHR = SETTING%SCHEME%DFT%RHOTHR*100.0E0_realk
 !WARNING: the densitymatrix for an unrestriced calculation fullfill 
@@ -334,9 +333,20 @@ ELSE
    DmatAO => Dmat
 ENDIF
 
+!save parameters
+DFTHRI = SETTING%scheme%DFT%DFTHRI 
+RHOTHR = SETTING%scheme%DFT%RHOTHR 
+!chose new loosend parameters
+SETTING%scheme%DFT%DFTHRI = DFTHRI*5000
+SETTING%scheme%DFT%RHOTHR = RHOTHR*5000
+
 CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_KSME(SETTING,LUPRI,1,nbast,ndmat2,DmatAO,DFTDATA,EDFT2,UNRES)
 CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
+
+!revert to default grid
+SETTING%scheme%DFT%DFTHRI = DFTHRI
+SETTING%scheme%DFT%RHOTHR = RHOTHR
 
 IF(SETTING%SCHEME%DFT%DODISP) THEN 
     ! add empirical dispersion correction \Andreas Krapp
@@ -362,7 +372,6 @@ WALLTIME = WALL2-WALL1
 CALL ls_TIMTXT('>>>  CPU  Time used II_get_xc_energy is  ',CPUTIME,LUPRI)
 CALL ls_TIMTXT('>>>  WALL Time used II_get_xc_energy is  ',WALLTIME,LUPRI)
 call stats_dft_mem(lupri)
-SETTING%SCHEME%DFT%RHOTHR = SAVERHOTHR
 
 END SUBROUTINE II_get_xc_energy
 

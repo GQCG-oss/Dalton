@@ -76,8 +76,7 @@ cat > LSDALTON_donotsavegab.dal <<'%EOF%'
 *DENSOPT
 .RH
 .DIIS
-#.START
-#H1DIAG
+.CHOLESKY
 **INFO
 .DEBUG_MPI_MEM
 *END OF INPUT

@@ -158,6 +158,7 @@ contains
    !> Computes the p'th derivative of idempotency relation DSD-D
    !> and SCF equation FDS-SDF, ie. the p-perturbed SCF equations.
    subroutine pert_scf_eq(mol, S0, p, dimp, Dp, Fp, FDSp, DSDp, comp, freq)
+     implicit none
       !> mol/basis/decomp/thresh needed by integrals and solver
       type(prop_molcfg), intent(inout) :: mol
       !> unperturbed overlap matrix
@@ -188,6 +189,9 @@ contains
       complex(realk) :: w(size(p)) !copy of freq or zero
       character(4)   :: UNP(0)
       logical        :: bas(size(p)), presnt
+      i=0
+      j=0
+      ij=0
       np = product(dimp)
       nd = product(dimp+1)
       bas = pert_basdep(p)
@@ -316,6 +320,7 @@ contains
    !> ajt FIXME remove vectorization to simplify higher-order generalization
    !> ajt FIXME make D,F,Dp,Fp optional, with default in rsp_eq_sol
    subroutine pert_dens(mol, S0, p, dimp, D, F, Dp, Fp, comp, freq)
+     implicit none
       !> mol/basis/decomp/thresh needed by integrals and solver
       type(prop_molcfg), target, intent(inout) :: mol
       !> unperturbed overlap matrix
@@ -343,6 +348,7 @@ contains
       integer        :: ord(size(p)), ccomp(size(p)), pd, pd1, sym, nanti, i, j
       complex(realk) :: ffreq(size(p))
       type(matrix), pointer :: DSDp(:), FDSp(:), Sp(:)
+      i=0
       allocate(DSDp(product(dimp)))
       allocate(FDSp(product(dimp)))
       allocate(Sp(product(dimp)))
@@ -506,10 +512,12 @@ contains
    !> Grow array storing saved solutions, rsp_eq_sol, so there are n vacancies.
    !> If rsp_eq_sol already has n vacancies, just return
    subroutine rsp_eq_sol_grow(n)
+     implicit none
      integer, intent(in) :: n
      type(rsp_saved_sol), allocatable :: tmp(:)
      integer :: i, nvac, prevsiz, newsiz
      ! current size, number of vacancies, return if sufficient
+     i=0
      nvac = 0
      prevsiz = 0
      if (allocated(rsp_eq_sol)) then

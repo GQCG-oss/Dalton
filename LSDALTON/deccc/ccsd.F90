@@ -2853,7 +2853,7 @@ contains
           enddo
         endif
         if(me==0.or.me==nod)then
-          call ls_mpisendrecv(w3,int(no*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+          call ls_mpisendrecv(w3(1:no*tri),int(no*tri,kind=long),infpar%lg_comm,infpar%master,nod)
         endif
       enddo
       if(me==0)then
@@ -2887,7 +2887,7 @@ contains
           enddo
         endif
         if(me==0.or.me==nod)then
-          call ls_mpisendrecv(w3,int(nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+          call ls_mpisendrecv(w3(1:nv*tri),int(nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
         endif
       enddo
       if(me==0)then
@@ -2977,10 +2977,10 @@ contains
        a=a+1
        if(a>na)return
 #ifdef VAR_LSMPI
-       if(prnt)write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")'),infpar%mynum,&
+       if(prnt) write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")'),infpar%mynum,&
        &a,na,g,ng
 #else
-       write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
+       if(prnt) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&
        &na,g,ng
 #endif
        call lsmpi_poke()
@@ -3111,7 +3111,7 @@ contains
               enddo
             endif
             if(me==0.or.me==nod)then
-              call ls_mpisendrecv(w2,int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+              call ls_mpisendrecv(w2(1:no*nv*tri),int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
             endif
           enddo
           if(me==0)then
@@ -3143,7 +3143,7 @@ contains
               enddo
             endif
             if(me==0.or.me==nod)then
-              call ls_mpisendrecv(w3,int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+              call ls_mpisendrecv(w3(1:no*nv*tri),int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
             endif
           enddo
           if(me==0)then
@@ -3249,7 +3249,7 @@ contains
               enddo
             endif
             if(me==0.or.me==nod)then
-              call ls_mpisendrecv(w2,int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+              call ls_mpisendrecv(w2(1:no*nv*tri),int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
             endif
           enddo
           if(me==0)then
@@ -3282,7 +3282,7 @@ contains
               enddo
             endif
             if(me==0.or.me==nod)then
-              call ls_mpisendrecv(w3,int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+              call ls_mpisendrecv(w3(1:no*nv*tri),int(no*nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
             endif
           enddo
           if(me==0)then
@@ -3420,7 +3420,7 @@ contains
           enddo
         endif
         if(me==0.or.me==nod)then
-          call ls_mpisendrecv(w2,int(no*no*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+          call ls_mpisendrecv(w2(1:no*no*tri),int(no*no*tri,kind=long),infpar%lg_comm,infpar%master,nod)
         endif
       enddo
       if(me==0)then
@@ -4621,10 +4621,11 @@ contains
     nba=minbsize
     nbg=minbsize
     nnod=1
-    magic = DECinfo%MPIsplit/5
 #ifdef VAR_LSMPI
     nnod=infpar%lg_nodtot
 #endif
+    !magic = DECinfo%MPIsplit/5
+    magic = 2
     !test for scheme with highest reqirements --> fastest
     mem_used=get_min_mem_req(no,nv,nb,nba,nbg,4,4,.false.)
     if(first)then

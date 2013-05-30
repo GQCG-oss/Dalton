@@ -61,12 +61,12 @@ TIGHT
 .MPIgroupsize
 2
 .MPIsplit
-1000
+0
 .gradient
 .kappaTHR
 1e-6
-.IncludeFullMolecule
-.manual_batchsizes
+.INCLUDEFULLMOLECULE
+.MANUAL_BATCHSIZES
 3  3
 *END OF INPUT  
 %EOF%

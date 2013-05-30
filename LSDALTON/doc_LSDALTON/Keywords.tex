@@ -7,9 +7,10 @@ the headlines:
 \begin{itemize}
 \item **GENERAL contain general settings (optional)
 \item **INTEGRAL contain settings for the calculation of integrals (optional)
-\item **WAVE FUNCTIONS contains info about the wave function (e.g. HF/DFT) and settings
+\item **WAVE FUNCTION contains info about the wave function (e.g. HF/DFT) and settings
 for optimization of the wave function (mandatory)
 \item **OPTIMIZE contains settings for geometry optimization (optional)
+\item **LOCALIZE ORBITALS contains settings for orbital localization procedure (optional)
 \item **RESPONS contains info about requested molecular properties for HF and DFT (optional)
 \item **DEC \emph{or} **CC contains info about MP2 and coupled-cluster calculations (optional)
 \item **PLT contains information about construction of *.plt files which may be used to visualize densities and orbitals using e.g. the Chimera program~\cite{chimera}.
@@ -18,7 +19,7 @@ for optimization of the wave function (mandatory)
 Each of these sections may contain subsections, indicated by a single asterisk. LSDALTON.INP
 should always end with *END OF INPUT. 
 
-\section{**GENERAL}\label{sec:integral}
+\section{**GENERAL}\label{sec:general}
 
 This input module defines the way the integrals should be calculated.
 \begin{description}
@@ -40,6 +41,18 @@ This input module defines the way the integrals should be calculated.
 \item[\Key{DENSFIT}] Use density-fitting for the Coulomb contribution (no exact exchange density-fitting method have been introduced). 
 When using this keyword, an auxiliary basis set has to be 
 specified in \mol\ file.
+
+\item[\Key{PARI}] Use the very local Pair-Atomic Resolution-of-the-Identity (PARI) 
+approximation \cite{PARI:2013} for the Coulomb and exact Exchange contribution.
+When using this keyword, an auxiliary basis set has to be 
+specified in \mol\ file.\newline
+{\bf Use at your own risk!}. \newline
+Note that this method contains inherent deficiencies (discussed in~\cite{PARI:2013}) 
+which may result in the non-convergence of the SCF scheme for HF or KS-DFT. \newline
+{\bf Test cases} in LSint: LSDALTON\_ethane\_pari\_b3lyp, 
+LSDALTON\_ethane\_pari\_b3lyp\_ChgConst, 
+LSDALTON\_ethane\_pari\_b3lyp\_ChgDipConst, 
+LSDALTON\_ethane\_pari\_b3lyp\_unconstrained
 
 \item[\Key{RUNMM}] Use the (Fast) Multipole Method.
 
@@ -179,7 +192,8 @@ Defines the threshold used to determine if a contribution can be calculated clas
 DFT calculation. The exchange---correlation functional is read from the following line.
 
 Functionals in \lsdalton\ can be divided into two groups: generic and combined functionals. 
-Combined functionals are a linear combination of generic ones. One can always create own combined functionals by using GGAKey general functional.
+Combined functionals are a linear combination of generic ones. 
+One can always create own combined functionals by using GGAKey general functional.
 A number of standalone functionals are also included within \lsdalton. 
 
 It should be noted that the input is not case sensitive, although the notation
@@ -633,6 +647,21 @@ combines the VWN local and P86 non-local correlation functionals.
 Linear combinations of all exchange and correlation functionals listed above
 are possible with the \verb|GGAKey| keyword.
 
+
+\subsubsection{XCFUN functionals}
+
+Recently some support have been added for using the functionals from the XCFUN lib\cite{XCFUN}. Full 
+support is expected in the next release, but unfortunetly time constraints did not allow for 
+full support in this release. 
+
+Currently only LDA and GGA type functionals are currently supported and only upto and including 
+linear response. the XCFUN functionals are activated using the .XCFUN keyword under the **INTEGRALS section (see Section \ref{sec:integral})
+\begin{verbatim}
+**INTEGRALS
+.XCFUN
+\end{verbatim} 
+Linear combinations XCFUN functionals are possible with the \verb|GGAKey| keyword.
+
 \end{description}
 
 \subsection{*DFT INPUT}\label{subsec:dftinput}
@@ -750,15 +779,22 @@ Should have a different name. DENSOPT?
 \item[\Key{2ND\_ALL}] Use second order optimization in all SCF iterations.
 \item[\Key{2ND\_LOC}] Use second order optimization in local SCF iterations.
 \item[\Key{ARH}] Use Augmented Roothaan-Hall scheme for density optimization 
-(default)~\cite{ARH1,ARH2}.\index{Augmented Roothaan-Hall}\index{ARH} 
+(default)~\cite{ARH1,ARH2} where the CROP solver (\cite{crop}) is used for 
+solving the (level-shifted) Newton equationw.\index{Augmented Roothaan-Hall}\index{ARH} 
 \item[\Key{ARH FULL}] Use Augmented Roothaan-Hall for density optimization -
-no truncation of the reduced space, keep all micro vectors. This is recommended
-if the standard scheme (.ARH) fails to converge (see ref.~\cite{crop}).
-%\item[\Key{ASYM}] Asymmetrize H1DIAG starting guess (only referenced for unrestricted
-%calculations).
-%\item[\Key{BLOCK}] I assume that we do not support BSM????
+no truncation of the reduced space, keep all micro vectors for the CROP algorithm 
+(see ref.~\cite{crop}).
+\item[\Key{ARH DAVID}] Use Augmented Roothan-Hall for density optimization where
+the (level-shifted) Newton equations are solved using a reduced space solver based 
+Davidson's algorithm \cite{davidson:1975}. This option
+is recommended for complicated optimizations, especially for large molecular systems
+ with charges separated in space. This setting should be used if \Key{ARH} 
+converges to a saddle point. 
+ \item[\Key{ARH(LS) DAVID}] The same procedure as described for \Key{ARH DAVID} 
+augmented with a line search to accelerate convergence for very large molecular 
+systems, but is less efficient than \Key{ARH DAVID} for smaller molecular systems. 
 \item[\Key{STABILITY}] Check stability of the optimized wave function by calculation
-of the lowest Hessian eigenvalue.
+of the lowest Hessian eigenvalue. 
 \item[\Key{STAB\_MAXIT}] \verb| | \newline
 \verb|<Max. number of stability iterations>|\newline
 Max. number of iterations in calculation of lowest Hessian eigenvalue (default is 40).
@@ -862,11 +898,15 @@ Use custom level shifts in the first {\it N} SCF iterations.
 %\verb|<Weight for linear combination> |\newline
 %Weight to use for D1 when linear combination of densities is used as starting
 %guess (.START $\rightarrow$ LINCOMB)
-\item[\Key{LWITER}] Do L{\"o}wdin decomposition of overlap matrix (for density optimization
-in orthogonal AO basis) - iteratively (default is L{\"o}wdin by diagonalization)~\cite{shalf}.
-\item[\Key{LWQITER}] Do L{\"o}wdin decomposition of overlap matrix 
-in quadruple precision (for density optimization
-in orthogonal AO basis) - iteratively.
+
+\item[\Key{LOW ACCURACY START}] Use low accuracy settings in the first couple of 
+iterations until the appropriate gradient threshold have been reached. 
+
+%\item[\Key{LWITER}] Do L{\"o}wdin decomposition of overlap matrix (for density optimization
+%in orthogonal AO basis) - iteratively (default is L{\"o}wdin by diagonalization)~\cite{shalf}.
+%\item[\Key{LWQITER}] Do L{\"o}wdin decomposition of overlap matrix 
+%in quadruple precision (for density optimization
+%in orthogonal AO basis) - iteratively.
 \item[\Key{MAXELM}] \verb| | \newline
 \verb|<Trust radius (max. element)> |\newline
 Absolute max. element of step allowed (default is 0.35).
@@ -913,7 +953,6 @@ Maximum number of previous Fock and density matrices to be stored and used for A
 \item[\Key{NOINCREM}] Turn off incremental scheme for Fock/KS matrix build.
 \item[\Key{NOPREC}] Turn off preconditioning of linear equations (ARH, TrFD, and second order optimization).
 \item[\Key{NOSHIFT}] Do no level shifting.
-\item[\Key{OAO}] Keep the whole calculation (also Fock/KS matrix construction) in orthonormal AO basis.
 \item[\Key{OVERLAP}] \verb| | \newline
 \verb|<Overlap>|\newline
 Smallest accepted overlap when doing level shift by use of MO overlaps (.MOCHANGE).
@@ -968,7 +1007,6 @@ Specifies the starting trust-radius in the ensemble optimization. Trust-radius w
 Starting guess for SCF optimization. Options are:
 \begin{itemize}
 \item {\bf H1DIAG} Obtain initial guess by diagonalizing one-electron Hamiltonian
-\item {\bf H1OAO}  Obtain initial guess by diagonalizing one-electron Hamiltonian in orthonormal AO basis
 \item {\bf ATOMS}  Obtain initial guess by atoms-in-molecules approach (default)
 \item {\bf TRILEVEL} Optimization in three steps. 1. Atomic densities, 2. Valence molecular density, 3. Full molecular density~\cite{trilevel1, trilevel2}. 
 \end{itemize}
@@ -1014,6 +1052,9 @@ vector, and its maximum absolute element (in internal or Cartesian coordinates) 
 are smaller than $\epsilon$, 5$\epsilon$, 3$\epsilon$ and 15$\epsilon$ respectively \cite{NewConv}.
 The default value of $\epsilon$ is $1.0\cdot 10^{-5}$.
 
+The geometry optimization generates a sequence of geometry steps. The coordinates of each 
+accepted step are stored in the files MOLECULE.\emph{XXX}, where \emph{XXX} 
+is the geometry step number, and the final converged geometry in MOLECULE.OUT.
 By default, the atoms-in-molecule approach is used to set up the initial density-matrix at each new
 geometry (each step). However, it is possible to take as starting guess McWeeny-purified converged
 density-matrix at the previous geometry. This is achieved by setting the .RESTART option under
@@ -1123,6 +1164,67 @@ Indicates that Cartesian coordinates\index{Cartesian coordinates}\index{coordina
 should be used in the optimization.
 
 \end{description}
+
+
+\section{**LOCALIZE ORBITALS}\label{subsec:orbloc}
+
+This section describes keywords needed to perform localization of Hartree--Fock orbitals. The optimization of the
+chosen localization function will be performed using a trust-region algorithm \cite{hoyvik:TRM}, and can be performed for  the occupied space and/or the virtual orbital space. For the occupied space the core and valence spaces will be localized separately.  
+
+After running a Hartree-Fock calculation followed by an orbital localization two files with molecular orbital coefficients will be present; cmo\_orbitals.u and localized\_orbitals.u. cmo\_orbitals.u contains coefficients for the canonical molecular orbitals and localized\_orbitals.u contains coefficients for the localized orbitals. The coefficient matrix row index refer to the atomic orbital basis index, while the column index refer to the molecular orbital basis. The format of the files are as described in the Matrix File Format part of Section \ref{interfacing}.  
+
+For the most effcient orbital localization for large molecular systems \cite{hoyvik:3L}, the .ARH, .START/TRILEVEL  and .LCM options are recommended for use as described in Section \ref{subsec:densopt}, and .PSM with powers 2 2 are recommended for the **LOCALIZE ORBITALS section.  
+
+\begin{description}
+
+\item[\Key{PSM}]\verb| | \newline
+\verb|<m m>|\newline
+Use powers m of the second moment (PSM) localization function \cite{jansik:2011}.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). m=1 is equivalent with the Boys localization function. For improved locality m$\ge$2 is recommended. 
+
+\item[\Key{PFM}]\verb| | \newline
+\verb|<m m>|\newline
+Use powers m of the fourth moment (PFM) localization function \cite{hoyvik:PFM}.  A power 0 specifies that no localization should be carried out (e.g., 0 1  to only localize the virtual space). Using power 1 yields orbitals with good locality, but a power 2 is recommended if locality of the orbitals is essential. Powers higher than 3 are not recommended.  The PFM localization function should be chosen is basis sets augmented with diffuse functions are used.
+
+\item[\Key{PipekMezey}]\verb| | \newline
+Use Pipek-Mezey localization function using an implementation based on L{\"o}wdin population analysis 
+rather than the traditional Mulliken population analysis (see Ref. \cite{hoyvik:PM}).  Both occupied and virtual orbitals will be localized. Please note, the Pipek-Mezey localization function suffers from system and basis set dependencies. For systems with complicated bonding structures or when using basis sets augmented with diffuse functions the PSM or PFM options should be used if good locality is essential.
+
+\item[\Key{OccPipekMezey}]\verb| | \newline
+Pipek-Mezey localization of only the occupied space.
+
+
+\item[\Key{VirtPipekMezey}]\verb| | \newline
+Pipek-Mezey localization of only the virtual space.
+
+
+\item[\Key{PipekM(MULL)}]\verb| | \newline
+Use Pipek-Mezey localization function using the Mulliken population analysis. A power 0 specifies that no localization should be carried out.  Otherwise the same considerations as for the \Key{PipekMezey} option.
+
+
+\item[\Key{OccPipekM(MULL)}]\verb| | \newline
+Pipek-Mezey localization (using Mulliken population analysis) of occcupied space.
+
+\item[\Key{VirtPipekM(MULL)}]\verb| | \newline
+Pipek-Mezey localization (using Mulliken population analysis) of virtual space.
+
+\item[\Key{No Level2 Localization}]\verb| | \newline
+Should only be used in combination with the .START/TRILEVEL and  .LCM options for the *DENSOPT section. The keyword is used to skip orbital localization after the second level in the three level procedure. Not recommended for general use, but can be used to save  computational time if only the virtual space is to be localized.  
+
+\item[\Key{Only Loc}]\verb| | \newline
+Provided the file with the molecular orbital coefficients (e.g., cmo\_orbitals.u or lcm\_orbitals.u) using this keyword the Hartree-Fock calculation will be skipped, and the orbitals will be read in and localized. Important: rename or copy the orbital coefficient file to orbitals\_in.u, only this file will be read. After the localization procedure the molecular orbital coefficients corresponding to the localized basis is written to orbitals\_out.u. Thus, for this keyword to be used, orbitals\_in.u must exist and a localization function must be chosen.
+
+
+\item[\Key{Orbital Locality}]\verb| | \newline
+This keyword will make sure second and fourth moment orbital spreads are printed for all orbitals, not just the least local ones.
+
+
+\item[\Key{Orbital Plot}]\verb| | \newline
+\verb|<orbital specification>|\newline
+Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plottinge other orbitals, use the **PLT option described in section \ref{sec:plt}. 
+\end{description}
+
+
+
 
 \section{**RESPONS}\label{subsec:respons}
 This section describes the keywords needed for obtaining molecular
@@ -1552,7 +1654,14 @@ Pair distance threshold (in {\AA}) beyond which pair fragments are omitted from 
 
 
 \item[\Key{RESTART}] \verb| | \newline
-Restart unfinished DEC calculation. Requires that HF files \emph{dens.restart}, \emph{fock.restart}, \emph{lcm\_orbitals.u}, and \emph{overlapmatrix} and the DEC files (ending with \emph{.info}) are present in the folder where the calculation is restarted. THIS KEYWORD SHOULD NOT BE COMBINED WITH .RESTART IN THE *DENSOPT SECTION SINCE THIS WOULD REPEAT THE HF CALCULATION!
+Restart unfinished DEC calculation. Requires that HF files \emph{dens.restart}, \emph{fock.restart}, \emph{lcm\_orbitals.u}, and \emph{overlapmatrix} are present in the folder where the calculation is restarted. Additionally, if .info files are present it means that some of the fragment calculations have been
+carried out and the .RESTART keyword will read information about the finished fragment calculations from file and calculate the missing fragments.
+Specifically, if the files atomicfragments.info and atomicfragmentsdone.info are present, it means that some (or all) of the atomic fragment calculations are finished. If, in addition, the file fragenergies.info (energy calculation) \emph{or} mp2grad.info (MP2 density or gradient calculation) is also present,
+it means that some (or all) of the pair fragments are also done.
+
+\textbf{Note 1: This keyword should NOT be combined with .RESTART in the *DENSOPT section.}
+
+\textbf{Note 2: This keyword cannot be used for a DEC-MP2 geometry optimization. The only way to "restart" a DEC-MP2 geometry optimization is use the current geometry in a new DEC-MP2 geometry optimization -- i.e., copy the most recently generated MOLECULE.xxx file to MOLECULE.INP and run the calculation again using the same LSDALTON.INP.}
 
 
 \item[\Key{NOTABSORBH}] \verb| | \newline
@@ -1574,6 +1683,9 @@ Threshold for $\bar{kappa}$ multiplier equations solved when DEC-MP2 molecular g
 
 \item[\Key{CANONICAL}] \verb| | \newline
 Use canonical orbitals. This is only recommended for advanced users for testing purposes. In general, the DEC scheme is only meaningful for local orbitals.
+
+\item[\Key{MPIGROUPSIZE}] \verb| | \newline
+Size of local MPI groups in massively parallel DEC scheme~\cite{dec6}. The default settings should suffice for most purposes, and use of the keyword is only recommended for advanced users.
 
 
 \end{description}

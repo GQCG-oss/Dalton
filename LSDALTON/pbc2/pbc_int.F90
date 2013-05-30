@@ -1,3 +1,4 @@
+#ifdef MOD_UNRELEASED
 !GIVE MODULE NAME
 MODULE pbc_setup
   USE precision
@@ -581,3 +582,4 @@ END SUBROUTINE pbc_init_recvec
 !
 !END SUBROUTINE pbc_scf
 END MODULE pbc_setup
+#endif

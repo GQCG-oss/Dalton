@@ -57,6 +57,7 @@ cat > rsp_absorp.dal <<'%EOF%'
 .PROPAVE
 ZDIPLEN
 *ABSORPTION
+.OLDCPP
 .SHG
 .DAMPING
  0.005

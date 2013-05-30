@@ -33,15 +33,18 @@ use diagonalization, only: diag_lshift_dorth, &
 use decompMod, only: decomp_set_default_config
 use files, only: lsopen,lsclose
 use matrix_operations, only: mat_select_type, matrix_type, &
-     & mtype_symm_dense, mtype_dense, mtype_sparse_block, &
+     & mtype_symm_dense, mtype_dense, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input
 use dec_typedef_module,only: DECinfo
 use optimization_input, only: optimization_set_default_config, ls_optimization_input
 use ls_dynamics, only: ls_dynamics_init, ls_dynamics_input
-use lattice_vectors, only: pbc_setup_default
-use davidson_settings, only: davidson_default_SCF, davidson_default_OrbLoc
+#ifdef MOD_UNRELEASED
+  use lattice_vectors, only: pbc_setup_default
+#endif
+use localization_input
+use davidson_settings, only: davidson_default_SCF, davidson_default
 use molecule_type, only: free_moleculeinfo
 use readmolefile, only: read_molfile_and_build_molecule
 use IntegralInterfaceMOD, only: ii_get_nucpot
@@ -61,7 +64,7 @@ use scf_stats, only: scf_stats_arh_header
 #ifdef MOD_UNRELEASED
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
-use xcfun_host,only: xcfun_host_init, USEXCFUN
+use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
 contains
 
 !> \brief Call routines to set default values for different structures.
@@ -86,8 +89,9 @@ implicit none
   call diag_set_default_config(config%diag)
   call soeoinp_set_default_config(config%soeoinp)
   ! Orbital localization settings
-  call davidson_default_OrbLoc(config%davidOrbLoc)
+  call davidson_default(config%davidOrbLoc)
   ! SCF optimization w/ davidson solver settings
+  call davidson_default(config%davidSCF)
   call davidson_default_SCF(config%davidSCF)
   !RESPONSE
   ! Polarizability
@@ -124,7 +128,9 @@ implicit none
   config%doESGopt = .false.
   config%noDecEnergy = .false.
   call prof_set_default_config(config%prof)
+#ifdef MOD_UNRELEASED
   call pbc_setup_default(config%latt_config)
+#endif
   ! PLT info
   call pltinfo_set_default_config(config%Plt)
   config%doplt=.false.
@@ -286,6 +292,7 @@ DO
                            config%av%CFG_SET_type = config%av%CFG_THR_dft
                            config%solver%do_dft = .true.
                            config%soeoinp%do_dft = .true.
+                           config%davidSCF%arh_dodft = .true.
                DO 
                   READ (LUCMD, '(A80)') WORD
                   IF ((WORD(1:1) .EQ. '!') .OR. (WORD(1:1) .EQ. '#')) CYCLE   
@@ -351,7 +358,7 @@ DO
                      IF(.NOT.USEXCFUN)THEN
                         CALL II_DFTsetFunc(WORD,hfweight)
                      ELSE
-                        CALL II_DFTsetFunc(WORD,hfweight)
+!                        CALL II_DFTsetFunc(WORD,hfweight)
                         call xcfun_host_init(WORD,hfweight,lupri)
                      ENDIF
                      config%integral%exchangeFactor = hfweight
@@ -420,7 +427,6 @@ DO
 				 config%davidSCF%stepsize=0.5
 				 config%davidSCF%arh_inp_linesearch=.false.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
-            CASE('.ARH DEBUG');  config%davidSCF%arh_davidson_debug=.true.
             CASE('.ARH(LS) DAVID');  config%davidSCF%arh_davidson=.true.
                                  config%davidSCF%arh_lintrans = .true.
 				 config%davidSCF%precond=.true.
@@ -428,18 +434,10 @@ DO
 				 config%davidSCF%stepsize=0.5
 				 config%davidSCF%arh_inp_linesearch=.true.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
-#ifdef VAR_DSM
-            CASE('.RH TRM');     config%davidSCF%arh_davidson=.true.
-                                 config%davidSCF%arh_lintrans = .true.
-                                 config%davidSCF%arh_linesearch = .true.
-				 config%davidSCF%precond=.true.
-				 config%solver%set_arhterms=.false.
-                                 config%opt%cfg_saveF0andD0 = .true.
-				 config%davidSCF%stepsize=0.5
-                                 config%davidSCF%max_stepsize = config%davidSCF%stepsize
-#endif
+            CASE('.ARH DEBUG');  config%davidSCF%arh_davidson_debug=.true.
 	    CASE('.DAVIDSON DEBUG'); config%davidSCF%debug_info =.true.
-	    CASE('.DAVIDSON EXTRAVECS'); config%davidSCF%arh_extravecs =.true.
+	    CASE('.DAVIDSON EXTRAVEC'); config%davidSCF%arh_extravec =.true.
+                                      config%davidSCF%arh_inp_extravec =.true.
 	    CASE('.DAVIDSON LSDEBUG'); config%davidSCF%arh_debug_linesearch =.true.
             CASE('.NOECONTINCREM');
                IF(.NOT.config%opt%cfg_saveF0andD0)THEN
@@ -449,8 +447,6 @@ DO
 #ifdef MOD_UNRELEASED
             CASE('.ASYM');       config%opt%cfg_asym = .true.
 #endif
-            CASE('.BLOCK');      CALL mat_select_type(mtype_sparse_block,lupri)
-                                 config%opt%cfg_prefer_BSM = .true.
             CASE('.CHOLESKY');   config%decomp%lowdin_diagonalize = .false.; config%decomp%cholesky_decomp   = .true.
             CASE('.CONFSHIFT');  config%diag%cfg_no_conf_shift = .false.
             CASE('.CONTFAC');    READ(LUCMD,*) config%solver%cfg_arh_contract
@@ -465,13 +461,6 @@ DO
             !CASE('.DISKQUEUE') ; config%solver%cfg_arh_disk_macro = .true. !Not active - get_from_modFIFO_disk won't work!
             CASE('.DORTH');      config%diag%CFG_lshift = diag_lshift_dorth
                                  config%av%CFG_lshift = diag_lshift_dorth
-#ifdef VAR_DSM
-            CASE('.DSM');        config%av%CFG_averaging = config%av%CFG_AVG_DSM
-            CASE('.DSMONE');     config%av%cfg_averaging = config%av%cfg_avg_dsm
-                                 config%av%cfg_dsm_app = config%av%cfg_dsm_one
-            CASE('.DSMXTRA');    config%av%cfg_averaging = config%av%cfg_avg_dsm
-                                 config%av%cfg_dsm_app = config%av%cfg_dsm_xtra_term
-#endif
             CASE('.PURESCF');    config%opt%purescf = .true.
             CASE('.DUMPMAT');    config%opt%dumpmatrices = .true.
             CASE('.EDIIS');      config%av%CFG_averaging = config%av%CFG_AVG_EDIIS
@@ -495,56 +484,13 @@ DO
             CASE('.LCM');        config%decomp%cfg_lcv = .true. ; config%decomp%cfg_lcm=.true.
             CASE('.LCVBF');      config%decomp%cfg_lcv = .true. ; config%decomp%cfg_lcvbf=.true.
             CASE('.LCMBF');      config%decomp%cfg_lcv = .true. ; config%decomp%cfg_lcvbf=.true.; config%decomp%cfg_lcm=.true.
-            CASE('.NO L2OPT');   config%decomp%cfg_mlo = .true.; config%davidOrbLoc%NOL2OPT = .true. 
-	    CASE('.ONLY LOC');   config%davidOrbLoc%OnlyLocalize=.true.
-            CASE('.PSM');        config%decomp%cfg_mlo = .true.
-                                 config%davidOrbLoc%orbspread=.true.
-				 config%davidOrbLoc%linesearch=.true.
-                                 READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-            CASE('.CLM');        config%davidOrbLoc%PM_input%ChargeLocMulliken=.true.
-                                 config%davidOrbLoc%PM=.true.
-                                 config%decomp%cfg_mlo = .true.
-                                 READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-            CASE('.CLL');        config%davidOrbLoc%PM_input%ChargeLocLowdin=.true.
-                                 config%davidOrbLoc%PM=.true.
-                                 config%decomp%cfg_mlo = .true.
-                                 READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-            CASE('.PipekMezey'); config%davidOrbLoc%PM_input%PipekMezeyLowdin=.true.
-                                 config%davidOrbLoc%PM=.true.
-                                 config%decomp%cfg_mlo = .true.
-				 config%davidOrbLoc%NOL2OPT = .true.
-                                 config%decomp%cfg_mlo_m(1)=2
-				 config%decomp%cfg_mlo_m(2)=2
-            CASE('.PipekM(Mull)');config%davidOrbLoc%PM_input%PipekMezeyMull=.true.
-                                 config%davidOrbLoc%PM=.true.
-                                 config%decomp%cfg_mlo = .true.
-				 config%davidOrbLoc%NOL2OPT = .true.
-                                 config%decomp%cfg_mlo_m(1) = 2
-				 config%decomp%cfg_mlo_m(2) = 2 
-            CASE('.PFM');        config%decomp%cfg_mlo = .true.
-	                         config%davidOrbLoc%PFM = .true.
-                                 config%davidOrbLoc%PM =.false.
-                                 config%davidOrbLoc%orbspread=.false.
-                                 READ(LUCMD,*) config%decomp%cfg_mlo_m(1), config%decomp%cfg_mlo_m(2)
-                                 config%davidOrbLoc%PFM_input%crossterms=.true.
-                                 config%davidOrbLoc%precond=.true.
-            CASE('.TEST PFM');   config%davidOrbLoc%PFM_input%TESTCASE = .true.
-                                 config%decomp%cfg_mlo = .true.
-            CASE('.ORBITAL LOCALITY'); config%davidOrbLoc%all_orb_locality=.true.
-	    CASE('.ORBITAL PLOT'); config%davidOrbLoc%make_orb_plot=.true.
-	                          READ(LUCMD,*) config%davidOrbLoc%plt_orbital
-            CASE('.ORBLOC DEBUG');config%davidOrbLoc%orb_debug = .true.
-	                         config%davidOrbLoc%PM_input%orb_debug = .true.
-	    CASE('.NoPrecond');  config%davidOrbLoc%precond=.false.
-	                         config%davidSCF%precond=.false.
-                                 config%davidOrbLoc%PM_input%precond=.false.
-	    CASE('.OrbLinesearch'); config%davidOrbLoc%linesearch=.true.
             CASE('.LEVELSH');    ALLOCATE(config%diag%cfg_levelshifts(100)) ; config%diag%cfg_levelshifts = 0.0E0_realk
                                  READ(LUCMD,*) config%diag%cfg_nshifts,(config%diag%cfg_levelshifts(i),i=1,config%diag%cfg_nshifts)
                                  config%diag%cfg_fixed_shift = .true. ; config%diag%cfg_custom_shift = .true.
             CASE('.LINCOMB');    READ(LUCMD,*) config%opt%cfg_weight_param 
-            CASE('.LWITER') ;    config%decomp%lowdin_diagonalize = .false.; config%decomp%lowdin_iterative  = .true. 
-            CASE('.LWQITER') ;   config%decomp%lowdin_diagonalize = .false.; config%decomp%lowdin_qiterative = .true.
+!            Both these iterative lowdin decomp are broken
+!            CASE('.LWITER') ;    config%decomp%lowdin_diagonalize = .false.; config%decomp%lowdin_iterative  = .true. 
+!            CASE('.LWQITER') ;   config%decomp%lowdin_diagonalize = .false.; config%decomp%lowdin_qiterative = .true.
             CASE('.MAXELM');     READ(LUCMD,*) config%solver%cfg_max_element
                                                config%solver%set_max_element = config%solver%cfg_max_element
             CASE('.MAXIT');      READ(LUCMD,*) config%opt%cfg_max_linscf_iterations
@@ -570,14 +516,8 @@ DO
                                                                          !use instead the "old" scheme developed for the Davidson algorithm
             CASE('.NEWDAMP');    config%solver%cfg_arh_newdamp = .true.
             CASE('.NVEC');       READ(LUCMD,*) NVEC; config%av%cfg_settings%max_history_size = NVEC
-#ifdef VAR_DSM
-                                 config%av%dsm_history_size = NVEC
-#endif
                                  config%av%diis_history_size = NVEC
                                  config%av%ediis_history_size = NVEC
-#ifdef VAR_DSM
-            CASE('.NVECDSM');    READ(LUCMD,*) config%av%dsm_history_size
-#endif
             CASE('.NVECDII');    READ(LUCMD,*) NVEC
                                  config%av%diis_history_size = NVEC
                                  config%av%ediis_history_size = NVEC
@@ -587,7 +527,7 @@ DO
             CASE('.NOSHIFT');    config%diag%cfg_lshift = diag_lshift_none
                                  config%av%cfg_lshift = diag_lshift_none
                                  config%solver%cfg_nodamp = .true.
-            CASE('.OAO');        config%decomp%cfg_do_in_oao = .true.; config%opt%cfg_start_guess = 'H1OAO'
+!            CASE('.OAO');        config%decomp%cfg_do_in_oao = .true.; config%opt%cfg_start_guess = 'H1OAO'
             CASE('.OVERLAP');    READ(LUCMD,*) min_density_overlap
                                  config%av%cfg_settings%min_density_overlap &
                                      & = min_density_overlap
@@ -657,15 +597,6 @@ DO
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
             CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
-#ifdef VAR_DSM
-            CASE('.TRSCF');      config%opt%CFG_density_method = config%opt%CFG_F2D_ROOTHAAN
-                                 config%diag%cfg_lshift = diag_lshift_dorth
-                                 config%av%cfg_lshift = diag_lshift_dorth
-                                 config%av%CFG_averaging = config%av%CFG_AVG_DSM
-            CASE('.TrFD');       config%opt%CFG_density_method =  config%opt%CFG_F2D_DIRECT_DENS
-            CASE('.TrFD FULL');  config%opt%CFG_density_method =  config%opt%CFG_F2D_DIRECT_DENS
-                                 config%solver%cfg_arh_truncate = .false.
-#endif
 #ifdef MOD_UNRELEASED
             CASE('.UNREST');     config%decomp%cfg_unres=.true.
                                  config%integral%unres=.true.
@@ -769,6 +700,15 @@ DO
            & lupri,config%molecule%nAtoms)
    ENDIF
 
+! Orbital localization section
+!
+   IF (WORD(1:7) .EQ. '**LOCAL') THEN
+     READWORD=.true.
+     call orbitalloc_input(lucmd,lupri,config,READWORD,word)
+   ENDIF
+
+
+
 !
 ! Find dynamics input section
 !
@@ -779,6 +719,7 @@ DO
    ENDIF
 !
    !SECTION MADE BY JOHANNES
+#ifdef MOD_UNRELEASED
    IF (WORD(1:5) == '**PBC') THEN
      READWORD=.TRUE.
      !should be in MOLECULE.INP not LSDALTON.INP
@@ -859,6 +800,7 @@ DO
   ENDDO
 
    ENDIF
+#endif
 
    IF (WORD == '*END OF INPUT') THEN
       DONE=.TRUE.
@@ -1051,6 +993,11 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         READWORD=.FALSE.
         EXIT
      ENDIF
+     IF (WORD(1:7) == '*END OF') THEN
+           READWORD=.FALSE.
+           EXIT
+     ENDIF
+
   ENDDO
 END subroutine GENERAL_INPUT
 
@@ -1427,16 +1374,6 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
            config%solver%DEBUG_DIAG_REDSPACE = .true.
         CASE('.DEBUG_DIAG_HESSIAN')
            config%opt%DEBUG_DIAG_HESSIAN = .true.
-#ifdef VAR_DSM
-           !CASE('.DEBUG_DSM_DCHANGE')
-           !     DEBUG_DSM_DCHANGE = .true.
-           !CASE('.DEBUG_DSM_EMODEL')
-           !     DEBUG_DSM_EMODEL = .true.
-           !CASE('.DEBUG_DSM_METRIC')
-           !     DEBUG_DSM_METRIC = .true.
-           !CASE('.DEBUG_EMODEL_CHANGE')
-           !     DEBUG_EMODEL_CHANGE = .true.
-#endif
         CASE('.DEBUG_HESSIAN')
            config%solver%DEBUG_HESSIAN = .true.
         CASE('.DEBUG_HESSIAN_EXACT')
@@ -1445,10 +1382,6 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
            config%diag%DEBUG_IDEMPOTENCY = .true.
            !CASE('.DEBUG_OAO_GRADIENT')
            !     DEBUG_OAO_GRADIENT = .true.
-#ifdef VAR_DSM
-        CASE('.DEBUG_RH_DSM_ECHANGE')
-           config%diag%DEBUG_RH_DSM_ECHANGE = .true.
-#endif
            !CASE('.DEBUG_RH_MU_E')
            !     DEBUG_RH_MU_E = .true.
            !     READ(LUCMD,*) cfg_nits_debug,  cfg_mu_max_debug 
@@ -1466,34 +1399,6 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         CASE('.INFO_DIIS')
            config%av%INFO_DIIS = .true.
            config%av%INFO_WEIGHT_FINAL = .true. 
-#ifdef VAR_DSM
-        CASE('.INFO_DSM')
-           config%av%INFO_DSM_EIGENVAL     = .true.
-           config%av%INFO_DSM_ENERGY       = .true.
-           config%av%INFO_DSM_EXIT         = .true.
-           config%av%INFO_DSM_PROJ         = .true.
-           config%av%INFO_DSM_STEP_TOTAL   = .true.
-           config%av%INFO_WEIGHT_FINAL     = .true.
-        CASE('.INFO_DSM_DETAIL')
-           config%av%INFO_D_PROJ           = .true.
-           config%av%INFO_DSM_CNORM_MU_FIG = .true.
-           !config%av%INFO_DSM_DELTA        = .true.
-           !config%av%INFO_DSM_DERIVATIVES  = .true.
-           config%av%INFO_DSM_EIGENVAL     = .TRUE.
-           config%av%INFO_DSM_ENERGY       = .TRUE.
-           config%av%INFO_DSM_EQ           = .true.
-           config%av%INFO_DSM_EXIT         = .TRUE.
-           config%av%INFO_DSM_GRAD         = .true.
-           config%av%INFO_DSM_METRIC       = .true.
-           config%av%INFO_DSM_NIT          = .true.
-           config%av%INFO_DSM_PROJ         = .TRUE.
-           config%av%INFO_DSM_RATIO        = .true.
-           config%av%INFO_DSM_STEP         = .true.
-           config%av%INFO_DSM_STEP_BRACKET = .true.
-           config%av%INFO_DSM_STEP_TOTAL   = .TRUE.
-           config%av%INFO_DSM_TRUSTR       = .true.
-           config%av%INFO_WEIGHTS          = .true.
-#endif
         CASE('.INFO_LINEQ')
            config%solver%INFO_LINEQ = .true.
         CASE('.INFO_MATOP')
@@ -2777,21 +2682,10 @@ implicit none
    real(realk)                     :: conv_factor, potnuc, cutoff,inverse_std_conv_factor
    CHARACTER*24, PARAMETER :: AVG_NAMES(5) = &
         &  (/ 'None                    ', &
-#ifdef VAR_DSM
-        &     'DSM                     ', &
-#else
         &     '                        ', &
-#endif
         &     'DIIS                    ', &
         &     'EDIIS                   ', &
         &     'Van Lenthe modified DIIS' /)
-#ifdef VAR_DSM
-   CHARACTER*49, PARAMETER :: dsm_names(4) = &
-        &  (/ 'Standard DSM                                     ', &
-        &     'Only one iteration in DSM                        ', &
-        &     'Line search in the steplength after one iteration', &
-        &     'Extra accurate DSM energy model                  '/) 
-#endif
    CHARACTER*35, PARAMETER :: F2D_NAMES(4) = (/ &
         & 'Diagonalization            ',&
         & 'Direct density optimization',&
@@ -2828,26 +2722,17 @@ ENDIF
 !$OMP END MASTER
 !$OMP END PARALLEL
 #endif
-  
-   if (config%opt%cfg_prefer_BSM) then
-#if !defined(HAVE_BSM)
-      CALL lsQUIT('.BLOCK requested but BSM not there',config%lupri)
-#endif
-   endif
 
-
-#ifdef VAR_DSM
-   config%av%dsm_history_size   = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
-   config%av%diis_history_size  = config%av%dsm_history_size
-   config%av%ediis_history_size = config%av%dsm_history_size
-#else
-   config%av%diis_history_size = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
-   config%av%ediis_history_size = config%av%diis_history_size
-#endif
+config%av%diis_history_size = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
+config%av%ediis_history_size = config%av%diis_history_size
 !Printing the configuration for the calculation:
 !===============================================
 
-   if(ls%input%DO_DFT) CALL DFTREPORT(lupri) !print the functional
+   IF(.NOT.USEXCFUN)THEN
+      if(ls%input%DO_DFT) CALL DFTREPORT(lupri) !print the functional
+   ELSE
+      if(ls%input%DO_DFT) CALL XCFUNDFTREPORT(lupri) !print the functional
+   ENDIF
    if(ls%input%DO_DFT)THEN
       IF(config%integral%DFT%CS00)THEN
          WRITE(LUPRI,'(2X,A)')' '
@@ -2926,7 +2811,7 @@ ENDIF
       WRITE (config%LUPRI,'(4X,A,D11.4)')&
            & ' The Exact Exchange Factor             :', config%integral%exchangeFactor
    endif
-   if (config%opt%cfg_density_method == config%opt%cfg_f2d_arh) then
+   if (config%opt%cfg_density_method == config%opt%cfg_f2d_arh .and. (.not. config%davidSCF%arh_davidson )) then
       WRITE(config%LUPRI,*)
       write (config%lupri,*) '  You have requested Augmented Roothaan-Hall optimization'
       write (config%lupri,*) '  => explicit averaging is turned off!'
@@ -2956,21 +2841,12 @@ ENDIF
    if (config%solver%cfg_2nd_order_all) then
       WRITE(config%LUPRI,*)
       config%av%CFG_averaging = config%av%CFG_AVG_none 
-#ifdef VAR_DSM
-      write (config%lupri,*) 'You have requested 2nd order optimization => no averaging (DIIS or DSM)!'
-#else
       write (config%lupri,*) 'You have requested 2nd order optimization => no averaging (no DIIS)!'
-#endif
       config%solver%set_do_2nd_order = .true.
    endif
 
    WRITE(config%LUPRI,*)
    WRITE(config%LUPRI,"('Density subspace min. method    : ',A)") AVG_NAMES(config%av%CFG_averaging)
-#ifdef VAR_DSM
-   if (config%av%cfg_averaging == config%av%cfg_avg_dsm) then
-     WRITE(config%LUPRI,"('  dsm approach: ',A)") dsm_names(config%av%cfg_dsm_app)
-   endif
-#endif
    WRITE(config%LUPRI,"('Density optimization : ',A)") F2D_NAMES(config%opt%CFG_density_method)
    !if (config%opt%CFG_density_method == config%opt%CFG_F2D_ROOTHAAN) then
    !   cfg_rsp_mostart = .true.
@@ -2998,11 +2874,7 @@ ENDIF
    endif
 
    !find the maximum number of stored vectors
-#ifdef VAR_DSM
-   config%av%cfg_settings%max_history_size = MAX(config%av%dsm_history_size,config%av%diis_history_size)
-#else
    config%av%cfg_settings%max_history_size = config%av%diis_history_size
-#endif
    WRITE(config%LUPRI,*)
    WRITE(config%LUPRI,*) 'Maximum size of Fock/density queue in averaging:', &
       &  config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
@@ -3556,6 +3428,18 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    ELSE
       Write(config%lupri,*)'The SCF Convergence Criteria is applied to the gradnorm in AO basis'
    ENDIF
+
+   ! ORBITAL LOCALIZATION RELATED MATTERS
+   if (config%decomp%cfg_mlo .and. (.not. config%decomp%cfg_lcm )) then
+       write(config%lupri,*)  
+       write(config%lupri,*) '    ** ORBITAL LOCALIZATION INFORMATION **'  
+       write(config%lupri,*) ' Orbital localization using canonical molecular orbitals as starting guess '
+       write(config%lupri,*) ' is requested. For more efficient orbital localization (particularly for large) '
+       write(config%lupri,*) ' system, use options  .START/TRILEVEL and .LCM in *DENSOPT section.   '  
+       write(config%lupri,*) 
+   endif 
+   
+
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
    write(config%lupri,*)
@@ -3689,11 +3573,13 @@ use typedef
   implicit none
   character(len=80)  :: WORD
   real(realk) :: hfweight
+  integer :: ierror
   call ls_mpibcast(WORD,80,infpar%master,MPI_COMM_LSDALTON)
   call ls_mpibcast(USEXCFUN,infpar%master,MPI_COMM_LSDALTON)
   hfweight=0E0_realk   
   IF(.NOT.USEXCFUN)THEN
-     CALL DFTsetFunc(WORD(1:80),hfweight)
+     CALL DFTsetFunc(WORD(1:80),hfweight,ierror)
+     IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
   ELSE
 #ifdef VAR_XCFUN
      call xcfun_host_init(WORD,hfweight,6)

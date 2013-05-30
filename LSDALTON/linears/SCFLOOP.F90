@@ -106,6 +106,7 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
    config%davidSCF%lupri = config%lupri
    config%davidSCF%stepsize=config%davidSCF%max_stepsize
    config%davidSCF%arh_linesearch=config%davidSCF%arh_inp_linesearch
+   config%davidSCF%arh_extravec=config%davidSCF%arh_inp_extravec
    
    IF(config%opt%cfg_saveF0andD0)THEN
       call ks_init_linesearch_fock(nbast)
@@ -570,97 +571,6 @@ subroutine scf_afterplay(config,H1,S,D,E,F)
 
 end subroutine scf_afterplay
 
-
-#ifdef HAVE_BSM 
-!> \brief Initialize the Block-Sparse Matrix module
-!> \author B. Jansik
-!> \date 2008-10-26
-!> \param basis contains information about the basis set
-!> \param input contains information read from file LSDALTON.INP
-!>
-!> initbsm is a routine to intialize the blocked sparse library.  The
-!> library needs to know the position of all atoms and the indexes of
-!> the related basis function blocks in the matrices to create proper
-!> permutations of the blocks. Epsilon is the truncation
-!> threshold. MAXBLOCKSIZE is the block size optimal for used blas
-!> implementation. It should usually be around 100-150.  TRACETHR is
-!> the trace convergence threshold when the eigenvalues are supposed
-!> to be well separated and after which the algorithm switches to a
-!> "tightening" mode.  NTIGHT is the number of double-iterations made
-!>  in the tightening mode.
-!>
-SUBROUTINE ls_initbsm(basis,input)
-  use typedef, only: daltoninput
-  use basis_type, only: basissetinfo
-  implicit none
-  type(basissetinfo) :: basis
-  type(daltoninput),intent(in)   :: input
-  integer             :: natoms, i
-  real(realk),PARAMETER :: EPSILON = 1E-7_realk
-  real(realk),PARAMETER :: TRACETHR = 5E-3_realk
-  INTEGER,PARAMETER     :: MAXBLOCKSIZE = 110
-  INTEGER,PARAMETER     :: NTIGHT = 3
-  INTEGER, pointer      :: NATMST(:)
-  real(realk),allocatable :: X(:), Y(:), Z(:)
-
-  NATOMS = input%MOLECULE%nAtoms
-
-  NATMST => initbsm_setlist(basis,input)
-
-  allocate(X(NATOMS),Y(NATOMS),Z(NATOMS))
-
-  DO I=1,NATOMS
-     X(I) = input%MOLECULE%ATOM(I)%CENTER(1)
-     Y(I) = input%MOLECULE%ATOM(I)%CENTER(2)
-     Z(I) = input%MOLECULE%ATOM(I)%CENTER(3)
-  ENDDO
-
-  CALL bsm_lib_init(X,Y,Z,NATMST,nAtoms,MAXBLOCKSIZE,EPSILON,TRACETHR,NTIGHT)
-
-  deallocate (NATMST,X,Y,Z)
-
-contains
-
-!> \brief Initialize the list for the Block-Sparse Matrix module (?) Not really sure what happens here!!
-!> \author B. Jansik
-!> \date 2008-10-26
-!> \param basis Contains information about the basis set
-!> \param dalton_inp Contains information read from LSDALTON.INP
- function initbsm_setlist(basis,input)
-  use BUILDAOBATCH
-  use typedef, only: daltoninput
-  use basis_type, only: basissetinfo
-implicit none
-type(basissetinfo),intent(in)  :: basis
-type(daltoninput),intent(in)    :: input
-integer :: nAtoms
-integer :: itype, iset, r,icharge
-integer, pointer :: initbsm_setlist(:)
-
- nAtoms = input%MOLECULE%nAtoms
-
- allocate (initbsm_setlist(nAtoms+1))
- 
- initbsm_setlist = 0
- R = basis%labelindex
- do i=1, nAtoms
-    IF(R .EQ. 0)THEN
-       icharge = INT(input%MOLECULE%ATOM(i)%charge) 
-       itype = basis%chargeindex(icharge)
-    ELSE
-       itype = input%MOLECULE%ATOM(i)%IDtype(1)
-    ENDIF
-
-    initbsm_setlist(i+1)= &
-         &initbsm_setlist(i)  + basis%ATOMTYPE(itype)%ToTnorb
- enddo
-
- return 
- end function initbsm_setlist
-
-END SUBROUTINE LS_INITBSM
-#endif
-
 !> \brief This subroutine calculates number of electron for neutral molecule defined in ls%setting structure
 !> \author T. Kjaergaard, S. Reine
 !> \date 2008-10-26
@@ -677,7 +587,5 @@ SUBROUTINE get_num_electrons_neutral(nel,ls)
     nel = nel + ls%setting%MOLECULE(1)%p%Atom(i)%Charge
   enddo
 END SUBROUTINE get_num_electrons_neutral
-
-
 
 end module scfloop_module

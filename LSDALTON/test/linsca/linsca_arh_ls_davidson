@@ -117,7 +117,7 @@ ERROR[1]="DFT ENERGY NOT CORRECT -"
 
 
 # Test number of iterations
-CRIT1=`$GREP "SCF converged in * 9" $log | wc -l`
+CRIT1=`$GREP "SCF converged in * 8" $log | wc -l`
 TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
 ERROR[2]="number of iterations wrong -"
@@ -131,22 +131,24 @@ ERROR[3]="2nd energy shift not correct -"
 
 # Test step length 
 CRIT1=`$GREP "Alpha Value * 3\.000" $log | wc -l`
-CRIT2=`$GREP "Alpha Value * 7\.750" $log | wc -l`
-CRIT3=`$GREP "Alpha Value * 7\.000" $log | wc -l`
-CRIT4=`$GREP "Alpha Value * 2\.000" $log | wc -l`
-TEST[4]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[4]=4
-ERROR[4]="Alpha Value incorrect -"
+TEST[4]=`expr  $CRIT1`
+CTRL[4]=2
+ERROR[4]="Alpha Value 3.00 incorrect - "
 
+# Test step length 
+CRIT1=`$GREP "Alpha Value * 7\.750" $log | wc -l`
+TEST[5]=`expr  $CRIT1`
+CTRL[5]=1
+ERROR[5]="Alpha Value incorrect -"
 
 # Memory test
 CRIT1=`$GREP "Allocated memory \(TOTAL\): * 0 byte" $log | wc -l`
-TEST[5]=`expr  $CRIT1`
-CTRL[5]=1
-ERROR[5]="Memory leak -"
+TEST[6]=`expr  $CRIT1`
+CTRL[6]=1
+ERROR[6]="Memory leak -"
 
 PASSED=1
-for i in 1 2 3 4 5
+for i in 1 2 3 4 5 6
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
       echo ${ERROR[i]}
