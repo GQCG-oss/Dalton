@@ -849,6 +849,7 @@ C
          IF (DOHFSRDFT .OR. DOMCSRDFT) DIRFCK = .TRUE.
          IF (NASHT .LE. 1 .OR. HSROHF) NOITRA = DIRFCK
          IF (DOMCSRDFT .OR. DOMC) NOITRA = .FALSE.
+         IF (DOMC) DIRFCK = .FALSE.
          MAXPHP = 100
          N1AVTOT = 0
          N2AVTOT = 0

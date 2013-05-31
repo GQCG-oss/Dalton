@@ -2,8 +2,8 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > HF_ccpVDZ_pol.info <<%EOF%
-   HF_ccpVDZ_pol
+cat > cc3_HF_ccpVDZ_pol.info <<%EOF%
+   cc3_HF_ccpVDZ_pol
    -----------
    Molecule:         HF
    Theory Level:     CC3 / cc-pVDZ
@@ -14,7 +14,7 @@ cat > HF_ccpVDZ_pol.info <<%EOF%
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > HF_ccpVDZ_pol.mol <<%EOF%
+cat > cc3_HF_ccpVDZ_pol.mol <<%EOF%
 BASIS
 cc-pVDZ
 CCSD(T) unrelaxed FOP
@@ -29,7 +29,7 @@ H     0.0000000000000000   0.000000000  -1.64558444
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > HF_ccpVDZ_pol.dal <<%EOF%
+cat > cc3_HF_ccpVDZ_pol.dal <<%EOF%
 **DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
@@ -116,5 +116,5 @@ else
   exit 1
 fi
 
-' > HF_ccpVDZ_pol.check
+' > cc3_HF_ccpVDZ_pol.check
 #######################################################################

@@ -2,23 +2,23 @@
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > HF_631G_2hyp_noddy.info <<%EOF%
-   HF_631G_2hyp_noddy
+cat > cc3_HF_631G_2hyp.info <<%EOF%
+   cc3_HF_631G_2hyp
    -----------
    Molecule:         HF
-   Theory Level:     CC3 / 6-31G (USING NODDY CODE)
+   Theory Level:     CC3 / 6-31G
    Test Purpose:     freq.-dep. 1. and 2. hyperpolarizability  
 %EOF%
 
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > HF_631G_2hyp_noddy.mol <<%EOF%
+cat > cc3_HF_631G_2hyp.mol <<%EOF%
 BASIS
 6-31G
 CC3 hyperpolarizability
 HF molecule
-    2    0  X  Y  Z   1.00D-15
+    2    2  X  Y  Z   1.00D-15
         9.0   1    2    1    1
 F     0.0000000000000000   0.000000000   0.08729478
         1.0   1    1    1
@@ -28,7 +28,7 @@ H     0.0000000000000000   0.000000000  -1.64558444
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > HF_631G_2hyp_noddy.dal <<%EOF%
+cat > cc3_HF_631G_2hyp.dal <<%EOF%
 **DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRAL
@@ -56,6 +56,7 @@ XDIPLEN XDIPLEN
  3
 0.00 0.10 0.20
 *CCQR
+.NOBMAT
 .OPERATOR
 ZDIPLEN ZDIPLEN ZDIPLEN
 XDIPLEN XDIPLEN ZDIPLEN
@@ -84,16 +85,6 @@ ZDIPLEN XDIPLEN XDIPLEN ZDIPLEN
 .ESHGFR
    1
   0.10
-*NODDY
-!.HMAT
-.GMAT
-.FAMAT
-.AAMAT
-.BMAT
-.FMAT
-.FNOALT
-.ETA
-.XI
 **END OF DALTON
 %EOF%
 #######################################################################
@@ -120,7 +111,7 @@ CRIT2=`$GREP "Total MP2   energy: * -100\.1121031642" $log | wc -l`
 CRIT3=`$GREP "Total CC3   energy: * -100\.1153427592" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
 CTRL[1]=6
-ERROR[1]="ENERGIES NOT CORRECT (noddy)"
+ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 polarizability :
@@ -133,7 +124,7 @@ CRIT6=`$GREP  "(-|-0)\.2000 *(|0)\.2000 *(|0)\.75875841" $log | wc -l`
 
 TEST[2]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[2]=6
-ERROR[2]="CC3 POLARIZABILITY NOT CORRECT (noddy)"
+ERROR[2]="CC3 POLARIZABILITY NOT CORRECT"
 
 # CC3 first hyperpolarizability :
 CRIT1=`$GREP "ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *18\.41070379" $log | wc -l`
@@ -145,7 +136,7 @@ CRIT6=`$GREP "(-|-0)\.2000 *(|0)\.1000 *(|0)\.1000 *1\.510503249" $log | wc -l`
 
 TEST[3]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[3]=6
-ERROR[3]="CC3 QUADRATIC RESPONSE FUNCTION NOT CORRECT (noddy)"
+ERROR[3]="CC3 QUADRATIC RESPONSE FUNCTION NOT CORRECT"
 
 
 # CC3 second hyperpolarizability :
@@ -170,7 +161,7 @@ CRIT18=`$GREP "(-|-0)\.2000 *(|0)\.1000 *(|0)\.1000 *(|-|-0|0)\.0000 *-12\.03513
 
 TEST[4]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ $CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18`
 CTRL[4]=20
-ERROR[4]="CC3 CUBIC RESPONSE FUNCTION NOT CORRECT (noddy)"
+ERROR[4]="CC3 CUBIC RESPONSE FUNCTION NOT CORRECT"
 
 
 
@@ -192,5 +183,5 @@ else
   exit 1
 fi
 
-' > HF_631G_2hyp_noddy.check
+' > cc3_HF_631G_2hyp.check
 #######################################################################

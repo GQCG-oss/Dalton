@@ -10,13 +10,24 @@
 #                                                                              #
 ################################################################################
 
-BUILD_DIR=@CMAKE_BINARY_DIR@
+# radovan: this is to figure out the location of this script
+SCRIPT_DIR="${0%/*}"
+# if the script was started from the base directory with ./script, then the
+# expansion returns a period, if it was started directly with script then the
+# expansion returns the script file name
+if [ "$SCRIPT_DIR" == "." -o "$SCRIPT_DIR" == "$0" ]; then
+  SCRIPT_DIR="$PWD"
+# if the script was not called with an absolute path, then we need to add the
+# current working directory to the relative path of the script
+elif [ "${SCRIPT_DIR:0:1}" != "/" ]; then
+  SCRIPT_DIR="$PWD/$SCRIPT_DIR"
+fi
 
-DALTON=$BUILD_DIR/dalton.x
-DALMPI=$BUILD_DIR/dalton.x
+DALTON=$SCRIPT_DIR/dalton.x
+DALMPI=$SCRIPT_DIR/dalton.x
 
 MPIRUN=@MPIEXEC@
-INSTALL_BASDIR=$BUILD_DIR/basis
+INSTALL_BASDIR=$SCRIPT_DIR/basis
 [ -z "$TMPDIR" ] && TMPDIR=@SCRATCH_DIR@
 WRKDIR=`pwd` ; export WRKDIR
 # always search for basis sets in job work directory

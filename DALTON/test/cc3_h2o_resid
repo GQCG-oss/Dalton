@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > h2o_resid.info <<'%EOF%'
-   h2o_resid
+cat > cc3_h2o_resid.info <<'%EOF%'
+   cc3_h2o_resid
    ---------
    Molecule:         H2O in C2v
    Wave Function:    CC3 / STO-3G
@@ -30,7 +30,7 @@ cat > h2o_resid.info <<'%EOF%'
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > h2o_resid.mol <<'%EOF%'
+cat > cc3_h2o_resid.mol <<'%EOF%'
 BASIS
 STO-3G
 Properties of excited state
@@ -45,7 +45,7 @@ H     0.0000000000000000  1.447614500000000   1.07875057000000         *
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > h2o_resid.dal <<'%EOF%'
+cat > cc3_h2o_resid.dal <<'%EOF%'
 **DALTON
 .RUN WAVE FUNCTIONS
 **INTEGRALS
@@ -116,8 +116,8 @@ ZDIPLEN YDIPLEN
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >h2o_resid.check
-cat >>h2o_resid.check <<'%EOF%'
+echo $CHECK_SHELL >cc3_h2o_resid.check
+cat >>cc3_h2o_resid.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then

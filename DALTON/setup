@@ -25,7 +25,7 @@ default_path = os.path.join(root_directory, 'build')
 
 # initialize parser
 
-parser = ArgumentParser(description="Setup build configurations.")
+parser = ArgumentParser(description="setup build configurations")
 
 # define options
 
@@ -35,7 +35,7 @@ parser.add_argument('builddir', nargs='?',
         help='build directory [default: %(default)s]',
         metavar='build path')
 
-group = parser.add_argument_group('Basic options')
+group = parser.add_argument_group('basic options')
 group.add_argument('--fc',
         action='store',
         default=None,
@@ -51,27 +51,47 @@ group.add_argument('--cxx',
         default=None,
         help='set the C++ compiler [default: pick automatically or based on CXX=...]',
         metavar='STRING')
-group.add_argument('--mpi',
+group.add_argument('--type',
         nargs='?',
         action='store',
-        choices=('on','off'),
-        default='off',
-        const='on',
+        choices=('release', 'debug', 'profile'),
+        default='release',
+        help='set the CMake build type [default: %(default)s]')
+group.add_argument('--int64',
+        action='store_true',
+        default=False,
+        help='enable 64bit integers [default: %(default)s]')
+group.add_argument('--prefix',
+        action='store',
+        default=None,
+        help='set the install path for make install [default: %(default)s]',
+        metavar='PATH')
+group.add_argument('--show',
+        action='store_true',
+        default=False,
+        help='show cmake command and exit [default: %(default)s]')
+
+group = parser.add_argument_group('parallelization')
+group.add_argument('--mpi',
+        action='store_true',
+        default=False,
         help='enable MPI [default: %(default)s]')
 group.add_argument('--sgi-mpt',
-        nargs='?',
-        action='store',
-        choices=('on','off'),
-        default='off',
-        const='on',
+        action='store_true',
+        default=False,
         help='enable SGI MPT [default: %(default)s]')
 group.add_argument('--omp',
+        action='store_true',
+        default=False,
+        help='enable OpenMP [default: %(default)s]')
+
+group = parser.add_argument_group('math libraries')
+group.add_argument('--mkl',
         nargs='?',
         action='store',
-        choices=('on','off'),
-        default='off',
-        const='on',
-        help='enable OpenMP [default: %(default)s]')
+        choices=('sequential', 'parallel', 'cluster'),
+        default=None,
+        help='pass -mkl=STRING flag to the compiler and linker, sets --blas and --lapack to off [default: %(default)s]')
 group.add_argument('--blas',
         nargs='?',
         action='store',
@@ -86,56 +106,29 @@ group.add_argument('--lapack',
         default='on',
         const='on',
         help='enable LAPACK [default: %(default)s]')
-group.add_argument('--mkl',
-        nargs='?',
-        action='store',
-        choices=('sequential', 'parallel', 'cluster'),
-        default=None,
-        help='pass -mkl=STRING flag to the compiler and linker, sets --blas and --lapack to off [default: %(default)s]')
-group.add_argument('--int64',
-        nargs='?',
-        action='store',
-        choices=('on','off'),
-        default='off',
-        const='on',
-        help='enable 64bit integers [default: %(default)s]')
-group.add_argument('--show',
-        action='store_true',
-        default=False,
-        help='show cmake command and exit [default: %(default)s]')
-
-group = parser.add_argument_group('Change default paths')
-group.add_argument('--prefix',
-        action='store',
-        default=None,
-        help='set the install path for make install [default: %(default)s]',
-        metavar='PATH')
-
-group = parser.add_argument_group('Advanced options')
 group.add_argument('--explicit-libs',
         action='store',
         default=None,
         help='explicit linker specification for exotic libraries',
         metavar='STRING')
-group.add_argument('--debug',
+group.add_argument('--cray',
         action='store_true',
         default=False,
-        help='build in debug mode (no optimization) [default: %(default)s]')
-group.add_argument('--release',
-        action='store_false',
-        dest='debug',
-        help='build in release mode (full optimization) [default: %(default)s]')
-group.add_argument('--profile',
+        help='use cray wrapper which disables math detection and internal math implementation [default: %(default)s]')
+group.add_argument('--csr',
         action='store_true',
         default=False,
-        help='enable profiling [default: %(default)s]')
-group.add_argument('--tests',
-        nargs='?',
-        action='store',
-        choices=('on','off'),
-        default='off',
-        const='on',
-        help='build test suite [default: %(default)s]')
+        help='build using MKL compressed sparse row [default: %(default)s]')
+group.add_argument('--scalapack',
+        action='store_true',
+        default=False,
+        help='build using SCALAPACK [default: %(default)s]')
+group.add_argument('--scalasca',
+        action='store_true',
+        default=False,
+        help='build using SCALASCA profiler mode [default: %(default)s]')
+
+group = parser.add_argument_group('advanced options')
 group.add_argument('--check',
         action='store_true',
         default=False,
@@ -166,34 +159,20 @@ group.add_argument('--generator',
         default=None,
         help='set the cmake generator [default: %(default)s]',
         metavar='STRING')
-group.add_argument('--csr',
-        nargs='?',
-        action='store',
-        choices=('on','off'),
-        default='off',
-        const='on',
-        help='build using MKL compressed sparse row [default: %(default)s]')
-group.add_argument('--scalapack',
-        nargs='?',
-        action='store',
-        choices=('on','off'),
-        default='off',
-        const='on',
-        help='build using scalapack [default: %(default)s]')
-group.add_argument('--scalasca',
-        nargs='?',
-        action='store',
-        choices=('on','off'),
-        default='off',
-        const='on',
-        help='build using scalasca profiler mode [default: %(default)s]')
 group.add_argument('--timings',
-        nargs='?',
-        action='store',
-        choices=('on','off'),
-        default='off',
-        const='on',
+        action='store_true',
+        default=False,
         help='build using timings [default: %(default)s]')
+
+group = parser.add_argument_group('external libraries')
+group.add_argument('--xcfun',
+        action='store_true',
+        default=False,
+        help='enable XCFun external library [default: %(default)s]')
+group.add_argument('--interest',
+        action='store_true',
+        default=False,
+        help='enable interest external library [default: %(default)s]')
 
 # process input
 
@@ -214,6 +193,13 @@ def check_cmake_exists():
         print('   $ module load cmake')
         sys.exit()
 
+def translate_cmake(s):
+    if s:
+        return 'ON'
+    else:
+        return 'OFF'
+
+
 def gen_cmake_command():
     # create cmake command from flags
 
@@ -232,15 +218,18 @@ def gen_cmake_command():
         # fix for windows
         command = ' cmake ' + command
 
-    command += ' -DENABLE_MPI=%s'            % args.mpi.upper()
-    command += ' -DENABLE_SGI_MPT=%s'        % args.sgi_mpt.upper()
-    command += ' -DENABLE_OMP=%s'            % args.omp.upper()
-    command += ' -DENABLE_64BIT_INTEGERS=%s' % args.int64.upper()
-    command += ' -DENABLE_TESTS=%s'          % args.tests.upper()
-    command += ' -DENABLE_CSR=%s'            % args.csr.upper()
-    command += ' -DENABLE_SCALAPACK=%s'      % args.scalapack.upper()
-    command += ' -DENABLE_SCALASCA=%s'       % args.scalasca.upper()
-    command += ' -DENABLE_TIMINGS=%s'        % args.timings.upper()
+    command += ' -DENABLE_MPI=%s'            % translate_cmake(args.mpi)
+    command += ' -DENABLE_SGI_MPT=%s'        % translate_cmake(args.sgi_mpt)
+    command += ' -DENABLE_OMP=%s'            % translate_cmake(args.omp)
+    command += ' -DENABLE_64BIT_INTEGERS=%s' % translate_cmake(args.int64)
+    command += ' -DENABLE_CSR=%s'            % translate_cmake(args.csr)
+    command += ' -DENABLE_SCALAPACK=%s'      % translate_cmake(args.scalapack)
+    command += ' -DENABLE_SCALASCA=%s'       % translate_cmake(args.scalasca)
+    command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
+    command += ' -DENABLE_XCFUN=%s'          % translate_cmake(args.xcfun)
+    command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
+    command += ' -DENABLE_CRAYWRAPPER=%s'    % translate_cmake(args.cray)
+    command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
 
     if args.mkl:
         command += ' -DMKL_FLAG="-mkl=%s"' % args.mkl
@@ -257,18 +246,10 @@ def gen_cmake_command():
     if args.coverage:
         command += ' -DENABLE_CODE_COVERAGE=ON'
 
-    if args.static:
-        command += ' -DENABLE_STATIC_LINKING=ON'
-
     if args.prefix:
         command += ' -DCMAKE_INSTALL_PREFIX=' + args.prefix
 
-    if args.debug:
-        command += ' -DCMAKE_BUILD_TYPE=Debug'
-    elif args.profile:
-        command += ' -DCMAKE_BUILD_TYPE=Profile'
-    else:
-        command += ' -DCMAKE_BUILD_TYPE=Release'
+    command += ' -DCMAKE_BUILD_TYPE=%s' % args.type
 
     if args.define:
         for definition in args.define:
@@ -317,8 +298,7 @@ def setup_build_path(build_path, only_show_command):
         fname = os.path.join(build_path, 'CMakeCache.txt')
         if os.path.exists(fname):
             if not only_show_command:
-                print('aborting setup - build directory %s which contains CMakeCache.txt' % build_path)
-                print('exists already')
+                print('aborting setup - build directory %s which contains CMakeCache.txt exists already' % build_path)
                 print('remove the build directory and then rerun setup')
                 sys.exit()
     else:

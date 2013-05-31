@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-project(LSDALTON Fortran C CXX)
+project(DALTON Fortran C CXX)
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-add_definitions(-DTHIS_IS_CMAKE_BUILD)
+add_definitions(-DBINARY_INFO_AVAILABLE)
 
 # these are paths that CMake will search for cmake module files that end with .cmake
 set(CMAKE_MODULE_PATH
@@ -123,14 +123,6 @@ if(NOT ENABLE_RELEASE)
 endif()
 
 include(ConfigMPI)
-
-if(ENABLE_MPI32)
-    if(ENABLE_64BIT_INTEGERS)
-        add_definitions(-DVAR_LSMPI_32)
-    else()
-        message("--mpi32 should only be enabled if --int64 is used.")
-    endif()
-endif()
 
 if(ENABLE_OMP)
     add_definitions(-DVAR_OMP)
@@ -553,3 +545,12 @@ target_link_libraries(
    lslib_tester.x
    lsdalton
    ) 
+
+# copy basis/ to build directory
+execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})
+
+# this controlls "make install" target
+# include(ConfigMakeInstall)
+
+# this controlls "make release" target
+# include(ConfigMakeRelease)

@@ -114,13 +114,6 @@ set(SCRATCH_DIR
     )
 message("-- SCRATCH_DIR set to: ${SCRATCH_DIR}")
 
-set(BASIS_DIR
-    "${CMAKE_SOURCE_DIR}/../basis"
-    CACHE STRING
-    "Basis set directory"
-    FORCE
-    )
-
 if(ENABLE_GEN1INT)
     add_subdirectory(gen1int)
 endif()
@@ -183,6 +176,11 @@ add_executable(
     ${CMAKE_SOURCE_DIR}/abacus/dalton.F
     )
 
+# compile Peter's utilities
+add_executable(aces2dalton ${CMAKE_SOURCE_DIR}/tools/aces2dalton.f90 ${CMAKE_SOURCE_DIR}/tools/blocks.f90)
+add_executable(xyz2dalton  ${CMAKE_SOURCE_DIR}/tools/xyz2dalton.f90  ${CMAKE_SOURCE_DIR}/tools/blocks.f90)
+add_executable(distances   ${CMAKE_SOURCE_DIR}/tools/distances.f90   ${CMAKE_SOURCE_DIR}/tools/blocks.f90)
+
 set_property(TARGET dalton.x PROPERTY LINKER_LANGUAGE Fortran)
 target_link_libraries(
     dalton.x
@@ -193,7 +191,7 @@ target_link_libraries(
 # get size of static allocations
 add_custom_target(
     info
-    COMMAND ${CMAKE_SOURCE_DIR}/cmake/binary-info/get_static_size.py dalton.x
+    COMMAND ${CMAKE_SOURCE_DIR}/../cmake/binary-info/get_static_size.py dalton.x
     )
 
 # copy basis/ to build directory
