@@ -96,6 +96,22 @@
    deallocate(IFAIL)
    end subroutine dsyevx_interface
 
+   SUBROUTINE my_dcopy8(N,DX,INCX,DY,INCY)
+     use precision
+     implicit none
+     integer(kind=8),intent(in)::N
+     integer,intent(in)::INCX,INCY
+     real(realk),intent(in) :: DX(*)
+     real(realk),intent(out) :: DY(*)
+     integer::nel,i
+     
+     do i=1,N,MAXINT
+       nel=MAXINT
+       if(((N-i)<MAXINT).and.&
+         &(mod(N-i+1,MAXINT)/=0))nel=mod(N,MAXINT)
+       call dcopy(nel,DX(i),INCX,DY(i),INCY)
+     enddo
+   end SUBROUTINE my_dcopy8
    !> \brief Interface to DSYGV. Computes eigenvector and eigenvalues of A*x = (lambda)*B*x
    !> \author L. Thogersen
    !> \date 2003
