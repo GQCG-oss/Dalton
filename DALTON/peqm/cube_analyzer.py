@@ -586,10 +586,10 @@ def print_shell_worker(points, shells, vals, rels, grdpts, refcub, cubelist,
             include = inorout(point, shell, refcub.coords, refcub.charges)
             if include:
                 for ic, cube in enumerate(cubelist):
-                    vals[ic][ish].append(cub.grid[x][y][z]
+                    vals[ic][ish].append(cube.grid[x][y][z]
                                          - refcub.grid[x][y][z])
                     rels[ic][ish].append(abs((refcub.grid[x][y][z]
-                                              - cub.grid[x][y][z])
+                                              - cube.grid[x][y][z])
                                              / refcub.grid[x][y][z]))
                 grdpts[ish] += 1
                 break
