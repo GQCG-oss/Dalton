@@ -28,7 +28,7 @@ DALMPI=$SCRIPT_DIR/dalton.x
 
 MPIRUN=@MPIEXEC@
 INSTALL_BASDIR=$SCRIPT_DIR/basis
-[ -z "$TMPDIR" ] && TMPDIR=@SCRATCH_DIR@
+[ -z "$DALTON_TMPDIR" ] && DALTON_TMPDIR=@SCRATCH_DIR@
 WRKDIR=`pwd` ; export WRKDIR
 # always search for basis sets in job work directory
 # (before standard dalton basis library in INSTALL_BASDIR, appended below)
@@ -90,12 +90,12 @@ usage (){
         echo ' -hostfile file : use hostfile "file" for start with mpirun'
         #echo ' -lam file  : call "lamboot file" and "wipe file" before and after mpirun'
         # Jan 2013: lammpi is not an active mpi implementation any more
-        echo ' -t dir     : change TMPDIR to dir. Default: ' $TMPDIR
+        echo ' -t dir     : change DALTON_TMPDIR to dir. Default: ' $DALTON_TMPDIR
         echo ' -w dir     : change WRKDIR to dir. Default: ' $WRKDIR
         echo ' -noarch    : do not create tar.gz archive'
-        echo ' -f dalmol  : extract dalmol.tar.gz archive from WRKDIR into TMPDIR before calculation starts'
-        echo ' -get "file1 file2" : get files back from TMPDIR after calculation stops'
-        echo ' -put "file1 file2" : put files to TMPDIR before calculation starts'
+        echo ' -f dalmol  : extract dalmol.tar.gz archive from WRKDIR into DALTON_TMPDIR before calculation starts'
+        echo ' -get "file1 file2" : get files back from DALTON_TMPDIR after calculation stops'
+        echo ' -put "file1 file2" : put files to DALTON_TMPDIR before calculation starts'
 	    echo ' -nocpex    : force to not copy dalton executable from master node to slave nodes (for global work)'
         echo ' -valgrind  : run with valgrind'
         echo ' -rsh       : use rsh/rcp (default: ssh/scp)'
@@ -150,7 +150,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
          -nb ) NODE_WRKMEM=`expr $2 "*" 128000`; export NODE_WRKMEM; shift;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
-      -t ) optt=1; TMPDIR=$2; shift;;
+      -t ) optt=1; DALTON_TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
        * ) usage; exit 1;;
    esac
@@ -212,14 +212,14 @@ if [ -n "$3" ]; then
    input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
 fi
 #
-export TMPDIR
-if [ ! -d "$TMPDIR" ]; then
-   mkdir -p $TMPDIR
+export DALTON_TMPDIR
+if [ ! -d "$DALTON_TMPDIR" ]; then
+   mkdir -p $DALTON_TMPDIR
 fi
 if [ $optn -gt 1 -o $optt -gt 0 ] ; then
-  SCRATCHDIR=$TMPDIR
+  SCRATCHDIR=$DALTON_TMPDIR
 else
-  SCRATCHDIR=$TMPDIR/$USER/$outnam
+  SCRATCHDIR=$DALTON_TMPDIR/$USER/$outnam
 fi
 #
 echo
