@@ -588,9 +588,9 @@ def print_shell_worker(points, shells, vals, rels, grdpts, refcub, cubelist,
                 for ic, cube in enumerate(cubelist):
                     vals[ic][ish].append(cube.grid[x][y][z]
                                          - refcub.grid[x][y][z])
-                    rels[ic][ish].append(abs((refcub.grid[x][y][z]
-                                              - cube.grid[x][y][z])
-                                             / refcub.grid[x][y][z]))
+                    rels[ic][ish].append((refcub.grid[x][y][z]
+                                          - cube.grid[x][y][z])
+                                         / abs(refcub.grid[x][y][z]))
                 grdpts[ish] += 1
                 break
     out_queue.put((vals, rels, grdpts))
