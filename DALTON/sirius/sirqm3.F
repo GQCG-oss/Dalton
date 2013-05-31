@@ -835,7 +835,7 @@ C Run loop over MM nuclear charges
       END IF
 
 C     No more Ns to calculate
-      CALL MPI_REDUCE(WRK(KDFTNS),WRK(KDFTNS),MXQM3,
+      CALL MPI_REDUCE(WRK(KDFTNS),MPI_IN_PLACE,MXQM3,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
