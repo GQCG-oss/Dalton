@@ -1,3 +1,17 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
 
 #######################################################################
 #  TEST DESCRIPTION
@@ -73,7 +87,8 @@ YDIPLEN YDIPLEN
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo '#!/bin/ksh
+echo $CHECK_SHELL > cc3_HF_ccpVDZ_asym_pol.check
+cat >>cc3_HF_ccpVDZ_asym_pol.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -117,5 +132,5 @@ else
   exit 1
 fi
 
-' > cc3_HF_ccpVDZ_asym_pol.check
+%EOF%
 #######################################################################
