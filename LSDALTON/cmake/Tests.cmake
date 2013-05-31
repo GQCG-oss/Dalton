@@ -4,7 +4,7 @@ set(TEST_ARGS  )
 set(TEST_ARGS5 )
 
 if(ENABLE_MPI)
-  set(TEST_PARAM -N 2)
+  set(TEST_PARAM "-N 2")
   set(TEST_ARGS  -param "-N 2")
   set(TEST_ARGS5 -param "-N 5")
 endif()
