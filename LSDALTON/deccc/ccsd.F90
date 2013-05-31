@@ -2728,7 +2728,7 @@ contains
 
     !GET DOUBLES E2 TERM - AND INTRODUCE PERMUTATIONAL SYMMMETRY
     !***********************************************************
-    call calculate_E2_and_permute(ppfock,qqfock,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,scheme)
+    call calculate_E2_and_permute(ppfock,qqfock,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,scheme,print_debug)
 
     call mem_dealloc(Had)
     call mem_dealloc(Gbi)
@@ -2763,7 +2763,7 @@ contains
 
   end subroutine get_ccsd_residual_integral_driven
 
-  subroutine calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s)
+  subroutine calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,pd)
     implicit none
     real(realk),intent(inout)::ppf(:)
     real(realk),intent(inout)::qqf(:)
@@ -2776,6 +2776,7 @@ contains
     integer, intent(in) :: no,nv,nb
     type(array),intent(inout) :: omega2
     integer, intent(in) :: s
+    logical, intent(in) :: pd
     integer :: no2,nv2,v2o,o2v
     logical :: master 
     real(realk),pointer :: w2(:),w3(:)
@@ -2786,6 +2787,7 @@ contains
     integer :: fri,tri
     character(ARR_MSG_LEN) :: msg
     real(realk) :: nrm
+    integer(kind=8) :: o2v2
     master = .true.
     nrm=0.0E0_realk
 
@@ -2793,6 +2795,7 @@ contains
     nv2=nv*nv
     v2o=nv*nv*no
     o2v=no*no*nv
+    o2v2=int(no2*nv2,kind=8)
     
 #ifdef VAR_LSMPI
     master=(infpar%lg_mynum==infpar%master)
@@ -2816,8 +2819,16 @@ contains
       ! H'[a c] * t [c b i j] =+ Omega [a b i j]
       call dgemm('n','n',nv,o2v,nv,1.0E0_realk,w1,nv,t2%elm1,nv,1.0E0_realk,omega2%elm1,nv)
      
+      if(pd) then 
+        write(msg,*)"NORM(omega2 before permut):"
+        call print_norm(omega2,msg)
+      endif
       !INTRODUCE PERMUTATION
-      call dcopy(nv2*no2,omega2%elm1,1,w1,1)
+      call my_dcopy8(o2v2,omega2%elm1,1,w1,1)
+      if(pd) then 
+        write(msg,*)"NORM(w1):"
+        call print_norm(w1,o2v2,msg)
+      endif
       call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,omega2%elm1)
     elseif(s==1.or.s==2)then
 #ifdef VAR_LSMPI
@@ -5998,7 +6009,7 @@ subroutine calculate_E2_and_permute_slave()
     call ls_mpibcast(ppf,no*no,infpar%master,infpar%lg_comm)
     call ls_mpibcast(qqf,nv*nv,infpar%master,infpar%lg_comm)
     call mem_alloc(w1,int(no*no*nv*nv,kind=8))
-    call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s)
+    call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,.false.)
 
     call mem_dealloc(ppf)
     call mem_dealloc(qqf)
