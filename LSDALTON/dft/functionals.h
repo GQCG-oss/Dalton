@@ -370,6 +370,8 @@ extern Functional BXFunctional;
 extern Functional BP86Functional;
 extern Functional BPW91Functional;
 extern Functional Camb3lypFunctional;
+extern Functional CamxFunctional;
+extern Functional CamcompxFunctional;
 extern Functional GGAKeyFunctional;
 extern Functional KT1Functional;
 extern Functional KT2Functional;
