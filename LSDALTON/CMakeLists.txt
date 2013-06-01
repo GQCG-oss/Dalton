@@ -202,22 +202,7 @@ include(CTest)
 include(mergestaticlibs)
 enable_testing()
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-# Hack to make gfortran 4.6.2 work, also done for other gfortran versions
-  if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-    set(CMAKE_Fortran_MODULE_DIRECTORY
-      ${PROJECT_BINARY_DIR}/modules
-      )
-  else()
-    set(CMAKE_Fortran_MODULE_DIRECTORY
-      ${PROJECT_BINARY_DIR}/modules
-      )
-  endif()
-else()
-    set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/modules)
-#    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-#    endif()
-endif()
+set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/modules)
 
 if(cmake_build_type_tolower STREQUAL "debug")
        message("-- Fortran Compiler Flags: ${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_DEBUG}")
