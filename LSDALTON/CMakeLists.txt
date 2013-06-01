@@ -1,5 +1,10 @@
+
+
+# exit if cmake version is below 2.8
+# we need at least 2.8 for external projects support
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
+# set project name and languanges that are involved
 project(DALTON Fortran C CXX)
 
 # do not rebuild if rules (compiler flags) change
