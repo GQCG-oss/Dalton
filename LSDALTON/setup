@@ -216,7 +216,6 @@ def translate_cmake(s):
     else:
         return 'OFF'
 
-
 def gen_cmake_command():
     # create cmake command from flags
 
@@ -336,7 +335,13 @@ def run_cmake(command, build_path):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
     s = p.communicate()[0]
+    # print cmake output to screen
     print(s)
+    # write cmake output to file
+    f = open(os.path.join(build_path, 'setup_cmake_output'), 'w')
+    f.write(s)
+    f.close()
+    # change directory and return
     os.chdir(topdir)
     return s
 
