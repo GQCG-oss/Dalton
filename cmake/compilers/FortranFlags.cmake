@@ -189,5 +189,9 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
     endif()
 endif()
 
+if(DEFINED EXTRA_Fortran_FLAGS)
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${EXTRA_Fortran_FLAGS}")
+endif()
+
 save_compiler_flags(Fortran)
 endif()

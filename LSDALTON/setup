@@ -174,6 +174,23 @@ group.add_argument('--interest',
         default=False,
         help='enable interest external library [default: %(default)s]')
 
+group = parser.add_argument_group('pass extra flags to the compiler')
+group.add_argument('--extra-fc-flags',
+        action='store',
+        default=None,
+        help='extra Fortran flags [default: %(default)s]',
+        metavar='STRING')
+group.add_argument('--extra-cc-flags',
+        action='store',
+        default=None,
+        help='extra C flags [default: %(default)s]',
+        metavar='STRING')
+group.add_argument('--extra-cxx-flags',
+        action='store',
+        default=None,
+        help='extra C++ flags [default: %(default)s]',
+        metavar='STRING')
+
 # process input
 
 args = parser.parse_args()
@@ -239,6 +256,13 @@ def gen_cmake_command():
 
     if args.explicit_libs:
         command += ' -DEXPLICIT_LIBS="%s"' % args.explicit_libs
+
+    if args.extra_fc_flags:
+        command += ' -DEXTRA_Fortran_FLAGS="%s"' % args.extra_fc_flags
+    if args.extra_cc_flags:
+        command += ' -DEXTRA_C_FLAGS="%s"' % args.extra_cc_flags
+    if args.extra_cxx_flags:
+        command += ' -DEXTRA_CXX_FLAGS="%s"' % args.extra_cxx_flags
 
     if args.check:
         command += ' -DENABLE_BOUNDS_CHECK=ON'
