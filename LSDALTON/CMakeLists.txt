@@ -15,7 +15,6 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/../cmake/math
     ${CMAKE_SOURCE_DIR}/../cmake/binary-info
     ${CMAKE_SOURCE_DIR}/../cmake/mpi
-    ${CMAKE_SOURCE_DIR}/cmake
     )
 
 message("-- System: ${CMAKE_SYSTEM_NAME}")
@@ -198,7 +197,7 @@ endif()
 
 include(BinaryInfo)
 
-include(Tests)
+include(TestsLSDALTON)
 include(CTest)
 include(mergestaticlibs)
 enable_testing()

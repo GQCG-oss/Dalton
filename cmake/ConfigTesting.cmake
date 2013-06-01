@@ -10,6 +10,6 @@ set(DART_TESTING_TIMEOUT
     CACHE STRING
     "Set timeout in seconds for every single test"
     )
-include(Tests)
+include(TestsDALTON)
 include(CTest)
 enable_testing()
