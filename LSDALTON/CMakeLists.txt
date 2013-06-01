@@ -29,7 +29,6 @@ option(ENABLE_SCALASCA       "Enable scalasca profiler mode" OFF)
 option(ENABLE_TIMINGS        "Enable TIMINGS"                OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
-option(ENABLE_INTERNAL_MATH  "Enable internal math library implementation"  OFF)
 option(ENABLE_XCFUN          "Enable XCFUN"                  OFF)
 option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
 option(ENABLE_MPI32          "Enable 32 bit integer MPI lib workaround" OFF)
@@ -42,8 +41,6 @@ option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"           OFF)
 option(ENABLE_LSEEK          "Enable lseek"                  OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"              OFF)
 option(ENABLE_RELEASE        "Enable Release"                OFF)
-#option(ENABLE_EXTERNLIB      "Create lsdaltonextern.a extern lib " OFF)
-option(ENABLE_GIT_SUBMODULES "Download external projects using Git submodules at compilation time" ON)
 
 
 
