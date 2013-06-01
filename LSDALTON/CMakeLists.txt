@@ -5,27 +5,17 @@ project(DALTON Fortran C CXX)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-add_definitions(-DBINARY_INFO_AVAILABLE)
-
-# these are paths that CMake will search for cmake module files that end with .cmake
+# these are paths that CMake will search for cmake
+# module files that end with .cmake
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/../cmake
+    ${CMAKE_SOURCE_DIR}/../cmake/binary-info
     ${CMAKE_SOURCE_DIR}/../cmake/compilers
     ${CMAKE_SOURCE_DIR}/../cmake/math
-    ${CMAKE_SOURCE_DIR}/../cmake/binary-info
     ${CMAKE_SOURCE_DIR}/../cmake/mpi
+    ${CMAKE_SOURCE_DIR}/../cmake
+    ${CMAKE_BINARY_DIR}
     )
-
-message("-- System: ${CMAKE_SYSTEM_NAME}")
-
-include(ConfigVersion)
-
-include(ConfigSafeGuards)
-if(cmake_build_type_tolower STREQUAL "debug")
-	add_definitions(-DVAR_DEBUGINT)
-	add_definitions(-DVAR_DEBUG)
-endif()
 
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
 option(ENABLE_CSR            "Enable MKL compressed sparse row" OFF)
@@ -49,6 +39,21 @@ option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"              OFF)
 option(ENABLE_RELEASE        "Enable Release"                OFF)
 #option(ENABLE_EXTERNLIB      "Create lsdaltonextern.a extern lib " OFF)
 option(ENABLE_GIT_SUBMODULES "Download external projects using Git submodules at compilation time" ON)
+
+
+
+
+add_definitions(-DBINARY_INFO_AVAILABLE)
+
+
+include(ConfigVersion)
+
+include(ConfigSafeGuards)
+if(cmake_build_type_tolower STREQUAL "debug")
+	add_definitions(-DVAR_DEBUGINT)
+	add_definitions(-DVAR_DEBUG)
+endif()
+
 
 
 # find a good default scratch base directory
@@ -203,14 +208,6 @@ include(mergestaticlibs)
 enable_testing()
 
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/modules)
-
-if(cmake_build_type_tolower STREQUAL "debug")
-       message("-- Fortran Compiler Flags: ${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_DEBUG}")
-       message("-- C Compiler Flags      : ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}")
-else()
-       message("-- Fortran Compiler Flags: ${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_RELEASE}")
-       message("-- C Compiler Flags      : ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}")
-endif()
 
 get_directory_property( DirDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS )
 foreach( d ${DirDefs} )
@@ -538,3 +535,6 @@ execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})
 
 # this controlls "make release" target
 # include(ConfigMakeRelease)
+
+# give information about system, compiler flags, and size of static allocations
+include(ConfigInfo)

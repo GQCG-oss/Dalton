@@ -5,6 +5,19 @@ project(DALTON Fortran C CXX)
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
+# these are paths that CMake will search for cmake
+# module files that end with .cmake
+set(CMAKE_MODULE_PATH
+    ${CMAKE_MODULE_PATH}
+    ${CMAKE_SOURCE_DIR}/../cmake/binary-info
+    ${CMAKE_SOURCE_DIR}/../cmake/compilers
+    ${CMAKE_SOURCE_DIR}/../cmake/math
+    ${CMAKE_SOURCE_DIR}/../cmake/mpi
+    ${CMAKE_SOURCE_DIR}/../cmake
+    ${CMAKE_BINARY_DIR}
+    )
+
+
 option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"          OFF)
 option(ENABLE_BOUNDS_CHECK   "Enable bounds check"             OFF)
 option(ENABLE_CODE_COVERAGE  "Enable code coverage"            OFF)
@@ -18,15 +31,6 @@ option(ENABLE_GEN1INT        "Enable Gen1Int library"          ON)
 option(ENABLE_RELEASE "Test release mode which undefines MOD_UNRELEASED" OFF)
 option(ENABLE_ALWAYS_RESET_EXTERNAL_BUILDS "Always remove builds stamps of external projects" OFF)
 
-set(CMAKE_MODULE_PATH
-    ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/../cmake
-    ${CMAKE_SOURCE_DIR}/../cmake/binary-info
-    ${CMAKE_SOURCE_DIR}/../cmake/compilers
-    ${CMAKE_SOURCE_DIR}/../cmake/math
-    ${CMAKE_SOURCE_DIR}/../cmake/mpi
-    ${CMAKE_BINARY_DIR}
-    )
 
 set(LIBS)
 
@@ -186,12 +190,6 @@ target_link_libraries(
     ${LIBS}
     )
 
-# get size of static allocations
-add_custom_target(
-    info
-    COMMAND ${CMAKE_SOURCE_DIR}/../cmake/binary-info/get_static_size.py dalton.x
-    )
-
 # copy basis/ to build directory
 execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})
 
@@ -200,3 +198,6 @@ include(ConfigMakeInstall)
 
 # this controlls "make release" target
 include(ConfigMakeRelease)
+
+# give information about system, compiler flags, and size of static allocations
+include(ConfigInfo)
