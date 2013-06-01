@@ -3003,11 +3003,11 @@ C
 C     No more tesseraes to calculate
 C
       IF (EXP1VL) THEN
-         CALL MPI_REDUCE(WORK(KEXPVL),WORK(KEXPVL),NTSIRR*(MAXREP + 1),
+         CALL MPI_REDUCE(WORK(KEXPVL),MPI_IN_PLACE,NTSIRR*(MAXREP + 1),
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
       ELSE IF (.NOT. TOFILE) THEN
-         CALL MPI_REDUCE(WORK(KDEN),WORK(KDEN),MATDIM*NOSIM,
+         CALL MPI_REDUCE(WORK(KDEN),MPI_IN_PLACE,MATDIM*NOSIM,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
       END IF
@@ -3294,10 +3294,10 @@ C
 C
 C     Return expectation values and one-index transformed potentials
 C
-      CALL MPI_REDUCE(WORK(KEXPVL),WORK(KEXPVL),
+      CALL MPI_REDUCE(WORK(KEXPVL),MPI_IN_PLACE,
      &                NOSIM*NTSIRR*(MAXREP + 1),MPI_DOUBLE_PRECISION,
      &                MPI_SUM,0,MPI_COMM_WORLD,IERR)
-      CALL MPI_REDUCE(WORK(KPCMX),WORK(KPCMX),NOSIM*N2ORBX,
+      CALL MPI_REDUCE(WORK(KPCMX),MPI_IN_PLACE,NOSIM*N2ORBX,
      &                MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                IERR)
       RETURN
@@ -3518,7 +3518,7 @@ C Contract transformed charges with the density
 C
 C     Return relevant data to the master process
 C
-      CALL MPI_REDUCE(WRK(KTCHG),WRK(KTCHG),NTSIRR*(MAXREP + 1),
+      CALL MPI_REDUCE(WRK(KTCHG),MPI_IN_PLACE,NTSIRR*(MAXREP + 1),
      &                MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                IERR)
       RETURN

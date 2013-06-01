@@ -89,6 +89,13 @@ C
       CALL DFT_HESSTAT_COLLECT(WORK(KDFTHS),WORK(KLAST),LWRK)
       CALL DFTHSSYM(WORK(KDFTHS),MXCOOR)
       CALL ADDHES(WORK(KDFTHS))
+
+CAMT  Add Grimme empirical dispersion correction  
+      IF (DODFTD) THEN
+         NDERIV=2 !Note hessians NYI, this will just cause a quit
+         CALL DFT_D_DAL_IFC(EDISP,NDERIV,WORK(KLAST),LWRK)
+      ENDIF
+
 C
       IF (IPRINT.GT.1) THEN
         KCSTRA = KLAST
