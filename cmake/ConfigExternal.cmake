@@ -42,7 +42,7 @@ macro(add_external _project)
         add_dependencies(${_project} git_update)
     endif()
 
-    if(ENABLE_ALWAYS_RESET_EXTERNAL_BUILDS)
+    if(ALWAYS_RESET_EXTERNAL)
         # remove stamps for external builds so that they are rebuilt every time
         add_custom_command(
             TARGET ${_project}
