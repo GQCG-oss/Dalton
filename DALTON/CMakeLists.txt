@@ -33,7 +33,7 @@ set(CMAKE_MODULE_PATH
 set(LIBS)
 
 include(ConfigVersion)
-include(Sources)
+include(SourcesDALTON)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)

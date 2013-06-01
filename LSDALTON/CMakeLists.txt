@@ -78,7 +78,7 @@ message("-- BASIS_DIR set to: ${BASIS_DIR}")
     add_definitions(-DINSTALL_BASDIR="${BASIS_DIR}")
 
 include(ConfigArchitecture)
-include(Sources)
+include(SourcesLSDALTON)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
 include(GenericMacros)
