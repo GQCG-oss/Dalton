@@ -101,15 +101,15 @@ set(ExternalProjectCMakeArgs
 if(NOT ENABLE_CRAYWRAPPER)
     include(ConfigMath)
     if(NOT BLAS_FOUND)
-       set(FIXED_FORTRAN_SOURCES
-          ${FIXED_FORTRAN_SOURCES}
-          ${OWN_BLAS_SOURCES}
+       set(LSDALTON_FIXED_FORTRAN_SOURCES
+          ${LSDALTON_FIXED_FORTRAN_SOURCES}
+          ${LSDALTON_OWN_BLAS_SOURCES}
           )
     endif()
     if(NOT LAPACK_FOUND)
-       set(FIXED_FORTRAN_SOURCES
-         ${FIXED_FORTRAN_SOURCES}
-         ${OWN_LAPACK_SOURCES}
+       set(LSDALTON_FIXED_FORTRAN_SOURCES
+         ${LSDALTON_FIXED_FORTRAN_SOURCES}
+         ${LSDALTON_OWN_LAPACK_SOURCES}
        )
     endif()
     if(HAVE_MKL_LAPACK)
@@ -286,7 +286,7 @@ target_link_libraries(matrixulib matrixolib)
 
 add_library(
     pdpacklib
-    ${FIXED_FORTRAN_SOURCES}
+    ${LSDALTON_FIXED_FORTRAN_SOURCES}
     )
 
 target_link_libraries(pdpacklib matrixulib)
