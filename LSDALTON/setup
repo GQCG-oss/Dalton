@@ -338,7 +338,7 @@ def run_cmake(command, build_path):
     # print cmake output to screen
     print(s)
     # write cmake output to file
-    f = open(os.path.join(build_path, 'setup_cmake_output'), 'w')
+    f = open('setup_cmake_output', 'w')
     f.write(s)
     f.close()
     # change directory and return
