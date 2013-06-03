@@ -211,7 +211,7 @@ Character(Len=7), dimension(82) :: KwordTABLE = &
             '.VLOOSE', '.LOOSE ', '.TIGHT ', '.VTIGHT', &
             '.NOHSWR', '.FREEZE', '.FRZITR', '.REDSPA', &
             '.CARTRS', '.FORBAC', '.SCANSI', '.SCANST', &
-            '.NUMOPT','.NUMMESH'/)
+            '.NUMOPT', '.NUMESH'/)
 ! Number of cartesian coordinates
 optinfo%IcartCoord = NAtoms*3
 !
