@@ -454,6 +454,9 @@ FSYM2(getrho_blocked_gga)(real*dmat, const real* atv,
 			  integer (*basblocks)[2], const integer *shl,
 			  real *tmp, const integer * bllen,
 			  real *rho, real (*grad)[3]);
+#ifdef VAR_MPI
+extern void FSYM(dftintcollect)(real *elenum);
+#endif
 
 real
 dft_integrate_ao_bl(int ndmat, real *dmat, real *work, integer *lwork, integer *iprint,

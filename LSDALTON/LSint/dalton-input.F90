@@ -526,23 +526,23 @@ ENDIF
       ENDIF
       WRITE(LUPRI,'(2X,A60)')  WORD
       
-      IF(nAtoms.GT. 10)THEN
-         DO J=1,10
-            READ (LUINFO, '(a80)') WORD
-            WRITE(LUPRI,'(2X,A60)') WORD
-         ENDDO
-         WRITE(LUPRI,'(2X,A60)') 'WARNING: SINCE YOU HAVE MORE THAN 10 ATOMS&
-              & OF THIS'
-         WRITE(LUPRI,'(2X,A60)') 'TYPE I WILL NOT PRINT THEM ALL TO LIMIT OUTPUT'
-         DO J=11,nAtoms
-            READ (LUINFO, '(a80)') WORD
-         ENDDO
-      ELSE
+!       IF(nAtoms.GT. 10)THEN
+!          DO J=1,10
+!             READ (LUINFO, '(a80)') WORD
+!             WRITE(LUPRI,'(2X,A60)') WORD
+!          ENDDO
+!          WRITE(LUPRI,'(2X,A60)') 'WARNING: SINCE YOU HAVE MORE THAN 10 ATOMS&
+!               & OF THIS'
+!          WRITE(LUPRI,'(2X,A60)') 'TYPE I WILL NOT PRINT THEM ALL TO LIMIT OUTPUT'
+!          DO J=11,nAtoms
+!             READ (LUINFO, '(a80)') WORD
+!          ENDDO
+!       ELSE
          DO J=1,nAtoms
             READ (LUINFO, '(a80)') WORD
             WRITE(LUPRI,'(2X,A60)') WORD
          ENDDO
-      ENDIF
+!      ENDIF
    ENDDO
    
    CALL LSCLOSE(LUINFO,'KEEP')

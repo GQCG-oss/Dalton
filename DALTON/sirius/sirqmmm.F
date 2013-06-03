@@ -4771,26 +4771,26 @@ C-------------------------------------------------
       ENDIF
 
 C     Send data to master (Do you love me?)
-      CALL MPI_REDUCE(WRK(KNSNUC),WRK(KNSNUC),MMCENT,
+      CALL MPI_REDUCE(WRK(KNSNUC),MPI_IN_PLACE,MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(WRK(KNSEL),WRK(KNSEL),MMCENT,
+      CALL MPI_REDUCE(WRK(KNSEL),MPI_IN_PLACE,MMCENT,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),NNBASX,
+      CALL MPI_REDUCE(WRK(KTAO),MPI_IN_PLACE,NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
-      IF (NMULT .GE. 0) CALL MPI_REDUCE(ECHART,ECHART,1, 
+      IF (NMULT .GE. 0) CALL MPI_REDUCE(ECHART,MPI_IN_PLACE,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      IF (NMULT .GE. 1) CALL MPI_REDUCE(EDIPT,EDIPT,1, 
+      IF (NMULT .GE. 1) CALL MPI_REDUCE(EDIPT,MPI_IN_PLACE,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      IF (NMULT .GE. 2) CALL MPI_REDUCE(EQUADT,EQUADT,1, 
+      IF (NMULT .GE. 2) CALL MPI_REDUCE(EQUADT,MPI_IN_PLACE,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      IF (NMULT .GE. 3) CALL MPI_REDUCE(EOCTUP,EOCTUP,1, 
+      IF (NMULT .GE. 3) CALL MPI_REDUCE(EOCTUP,MPI_IN_PLACE,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
@@ -5042,15 +5042,15 @@ C     Do the work
          GO TO 200
       ENDIF
 
-      CALL MPI_REDUCE(WRK(KELF),WRK(KELF),3*POLDIM,
+      CALL MPI_REDUCE(WRK(KELF),MPI_IN_PLACE,3*POLDIM,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
       IF (SPLDIP) THEN
-         CALL MPI_REDUCE(WRK(KELFEL),WRK(KELFEL),3*POLDIM,
+         CALL MPI_REDUCE(WRK(KELFEL),MPI_IN_PLACE,3*POLDIM,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-         CALL MPI_REDUCE(WRK(KELFNU),WRK(KELFNU),3*POLDIM,
+         CALL MPI_REDUCE(WRK(KELFNU),MPI_IN_PLACE,3*POLDIM,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
       ENDIF
@@ -5273,7 +5273,7 @@ C     Do the work
          GOTO 200
       ENDIF
 
-      CALL MPI_REDUCE(WRK(KELF),WRK(KELF),3*POLDIM,
+      CALL MPI_REDUCE(WRK(KELF),MPI_IN_PLACE,3*POLDIM,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
@@ -5549,26 +5549,26 @@ C     total solvation energy
       ENDIF
 
 
-      CALL MPI_REDUCE(WRK(KTAO),WRK(KTAO),NNBASX,
+      CALL MPI_REDUCE(WRK(KTAO),MPI_IN_PLACE,NNBASX,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
-      CALL MPI_REDUCE(EDELD,EDELD,1, 
+      CALL MPI_REDUCE(EDELD,MPI_IN_PLACE,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(EDNUC,EDNUC,1, 
+      CALL MPI_REDUCE(EDNUC,MPI_IN_PLACE,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(ED0MOM,ED0MOM,1, 
+      CALL MPI_REDUCE(ED0MOM,MPI_IN_PLACE,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(ED1MOM,ED1MOM,1, 
+      CALL MPI_REDUCE(ED1MOM,MPI_IN_PLACE,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(ED2MOM,ED2MOM,1, 
+      CALL MPI_REDUCE(ED2MOM,MPI_IN_PLACE,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
-      CALL MPI_REDUCE(ED3MOM,ED3MOM,1, 
+      CALL MPI_REDUCE(ED3MOM,MPI_IN_PLACE,1, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
@@ -5812,7 +5812,7 @@ C     check if there is leftovers
           LRI = LRI + 3
         ENDDO
 
-        CALL MPI_REDUCE(WRK(KINDP2),WRK(KINDP2),NDIM, 
+        CALL MPI_REDUCE(WRK(KINDP2),MPI_IN_PLACE,NDIM, 
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 

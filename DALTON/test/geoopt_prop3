@@ -126,7 +126,7 @@ ERROR[4]="INITIAL HF ENERGY NOT CORRECT"
 
 # MCSCF energy, 1st iteration:
 CRIT1=`$GREP "MP2 second order energy \: * \-224\.963913" $log | wc -l`
-CRIT2=`$GREP "Final MCSCF energy\: * \-224\.5185239102" $log | wc -l`
+CRIT2=`$GREP "Final MCSCF energy\: * \-224\.518523910[0-2]" $log | wc -l`
 TEST[5]=`expr $CRIT1  \+ $CRIT2`
 CTRL[5]=2
 ERROR[5]="INITIAL MCSCF ENERGY IS NOT CORRECT"
@@ -212,7 +212,7 @@ CTRL[14]=12
 ERROR[14]="FINAL GEOMETRY NOT CORRECT"
 
 # Final SCF energy:
-CRIT1=`$GREP "Total energy * \-224\.518756963[0-9] au \(Hartrees\)" $log | wc -l`
+CRIT1=`$GREP "Total energy * \-224\.51875696[2-4][0-9] au \(Hartrees\)" $log | wc -l`
 CRIT2=`$GREP "\-6109\.4661580[0-9] eV" $log | wc -l`
 CRIT3=`$GREP "\-589473\.905[0-9] kJ\/mol" $log | wc -l`
 TEST[15]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`

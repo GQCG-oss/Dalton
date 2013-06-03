@@ -136,7 +136,7 @@ fi
 #
 #
 
-CRIT1=`$GREP "Total MP2-R12/A energy:               -40.391807844" $log | wc -l`
+CRIT1=`$GREP "Total MP2-R12/A energy:               -40.39180784(3|4)" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=2
 ERROR[1]="MP2-R12/A ENERGY NOT CORRECT"

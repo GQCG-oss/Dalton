@@ -172,8 +172,8 @@ c jim-dbg ICHANG < 0 no cambios
          IF (SIGMAD1S) WRITE (LUPRI,*)
      &   '  **Diamagnetic first order singlet corrections to shielding'
          IF (NUCSPI .GT. 0)
-     &      WRITE (LUPRI,'(A)')' XXXXXXXXTn couplings of selected '//
-     &           'nuclei with all the others will be calculated'
+     &      WRITE (LUPRI,'(A)')' XXXXXXXX NUCSPI GT 0 ??  '//
+     &           '    '
        WRITE(LUPRI,*)' ' 
       END IF
       IF (LRESCALL) WRITE (LUPRI,*)

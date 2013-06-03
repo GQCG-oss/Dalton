@@ -116,7 +116,7 @@ CTRL[4]=13
 ERROR[4]="MOLECULAR GEOMETRY NOT READ CORRECTLY"
 
 # Initial energy
-CRIT1=`$GREP "Final * HF energy\: * \-56\.07999029616[0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-56\.0799902961[67][0-9]" $log | wc -l`
 TEST[5]=`expr	$CRIT1`
 CTRL[5]=1
 ERROR[5]="INITIAL ENERGY NOT CORRECT"
@@ -224,16 +224,16 @@ ERROR[14]="GEOMETRY OPTIMIZATION NOT CONVERGED"
 # Hessian eigenvalues
 CRIT1=`$GREP "\@ * 1 * 1 * \-*0*\.00000000.. * \-0*\.10374[67].." $log | wc -l`
 CRIT2=`$GREP "\@ * 1 * 2 * \-*0*\.0000001... * 0*\.157841.." $log | wc -l`
-CRIT3=`$GREP "\@ * 1 * 3 *   *0*\.00000000.. * 0*\.157841.." $log | wc -l`
-CRIT4=`$GREP "\@ * 1 * 4 * \-*0*\.0000003... * 0*\.56253(8|9)...." $log | wc -l`
+CRIT3=`$GREP "\@ * 1 * 3 * (\-0|\-|0| )\.00000000.. * 0*\.157841.." $log | wc -l`
+CRIT4=`$GREP "\@ * 1 * 4 * (\-0|\-|0| )\.0000003... * 0*\.56253(8|9)...." $log | wc -l`
 CRIT5=`$GREP "\@ * 1 * 5 * \-*0*\.0000016... * 1\.472913.." $log | wc -l`
-CRIT6=`$GREP "\@ * 1 * 6 *   *0*\.00000000.. * 1\.472921.." $log | wc -l`
+CRIT6=`$GREP "\@ * 1 * 6 * (\-0|\-|0| )\.00000000.. * 1\.472921.." $log | wc -l`
 TEST[15]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[15]=6
 ERROR[15]="FINAL GRADIENT AND HESSIAN EIGENVALUES NOT CORRECT"
 
 # Final geometry
-CRIT1=`$GREP "N * (\-0|\-)\.2670511..[0-9] * (\-0|\-|0| )\.0000000000 * (\-0|\-|0| )\.0000000(0|1).." $log | wc -l`
+CRIT1=`$GREP "N * (\-0|\-)\.2670511..[0-9] * (\-0|\-|0| )\.000000000. * (\-0|\-|0| )\.0000000(0|1).." $log | wc -l`
 CRIT2=`$GREP "H * 1\.597245(0|1)..[0-9] * (\-0|\-|0| )\.0000000... * (\-0|\-|0| )\.0000000..[0-9]" $log | wc -l`
 CRIT3=`$GREP "H * \-1\.19919(6|7)...[0-9] * 1\.6145268..[0-9] * (\-0|\-|0| )\.0000000..[0-9]" $log | wc -l`
 CRIT4=`$GREP "H * \-1\.19919(6|7)...[0-9] * \-1\.6145268..[0-9] * (\-0|\-|0| )\.0000000..[0-9]" $log | wc -l`

@@ -1,26 +1,52 @@
+
+
+# exit if cmake version is below 2.8
+# we need at least 2.8 for external projects support
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
-project(LSDALTON Fortran C CXX)
+# set project name and languanges that are involved
+project(DALTON Fortran C CXX)
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-# flag to add a fix OpenMPI bug for gfortran/macOSX
-set(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX FALSE)
-
-add_definitions(-DTHIS_IS_CMAKE_BUILD)
-
-# these are paths that CMake will search for cmake module files that end with .cmake
+# these are paths that CMake will search for cmake
+# module files that end with .cmake
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/cmake
-    ${CMAKE_SOURCE_DIR}/../cmake
-    ${CMAKE_SOURCE_DIR}/../cmake/compilers
-    ${CMAKE_SOURCE_DIR}/cmake/math
     ${CMAKE_SOURCE_DIR}/../cmake/binary-info
+    ${CMAKE_SOURCE_DIR}/../cmake/compilers
+    ${CMAKE_SOURCE_DIR}/../cmake/math
+    ${CMAKE_SOURCE_DIR}/../cmake/mpi
+    ${CMAKE_SOURCE_DIR}/../cmake
+    ${CMAKE_BINARY_DIR}
     )
 
-message("-- System: ${CMAKE_SYSTEM_NAME}")
+option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
+option(ENABLE_CSR            "Enable MKL compressed sparse row" OFF)
+option(ENABLE_SCALAPACK      "Enable SCALAPACK"              OFF)
+option(ENABLE_SCALASCA       "Enable scalasca profiler mode" OFF)
+option(ENABLE_TIMINGS        "Enable TIMINGS"                OFF)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
+option(ENABLE_XCFUN          "Enable XCFUN"                  OFF)
+option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
+option(ENABLE_MPI32          "Enable 32 bit integer MPI lib workaround" OFF)
+option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
+option(ENABLE_INTEREST       "Enable interest integrals"     OFF)
+option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
+option(ENABLE_UTILITIES      "Enable utilities"              OFF)
+option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
+option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"           OFF)
+option(ENABLE_LSEEK          "Enable lseek"                  OFF)
+option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"              OFF)
+option(ENABLE_RELEASE        "Enable Release"                OFF)
+
+
+
+
+add_definitions(-DBINARY_INFO_AVAILABLE)
+
 
 include(ConfigVersion)
 
@@ -30,29 +56,6 @@ if(cmake_build_type_tolower STREQUAL "debug")
 	add_definitions(-DVAR_DEBUG)
 endif()
 
-option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
-option(ENABLE_CSR            "Enable MKL compressed sparse row" OFF)
-option(ENABLE_SCALAPACK      "Enable SCALAPACK"              OFF)
-option(ENABLE_TIMINGS        "Enable TIMINGS"                OFF)
-option(ENABLE_PROFILING      "Enable profiling"              OFF)
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
-option(ENABLE_INTERNAL_MATH  "Enable internal math library implementation"  OFF)
-option(ENABLE_XCFUN          "Enable XCFUN"                  OFF)
-option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
-option(ENABLE_MPI32          "Enable 32 bit integer MPI lib workaround" OFF)
-option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
-option(ENABLE_INTEREST       "Enable interest integrals"     OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
-option(ENABLE_OPENRSP        "Enable OpenRSP module"         OFF)
-option(ENABLE_UTILITIES      "Enable utilities"              OFF)
-option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
-option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"           OFF)
-option(ENABLE_LSEEK          "Enable lseek"                  OFF)
-option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"              OFF)
-option(ENABLE_RELEASE        "Enable Release"                OFF)
-#option(ENABLE_EXTERNLIB      "Create lsdaltonextern.a extern lib " OFF)
-option(ENABLE_GIT_SUBMODULES "Download external projects using Git submodules at compilation time" ON)
 
 
 # find a good default scratch base directory
@@ -81,22 +84,12 @@ message("-- BASIS_DIR set to: ${BASIS_DIR}")
     add_definitions(-DINSTALL_BASDIR="${BASIS_DIR}")
 
 include(ConfigArchitecture)
-include(Sources)
+include(SourcesLSDALTON)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
+include(GenericMacros)
 
 set(LIBS)
-
-if(ENABLE_OPENRSP)
-	set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
-	add_definitions(-DBUILD_GEN1INT)
-	set(CMAKE_Fortran_MODULE_DIRECTORY
-	   ${PROJECT_BINARY_DIR}/modules
-	   )
-        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
-    	   ${PROJECT_BINARY_DIR}/lib
-    	   )
-endif()
 
 set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
 add_definitions(-DVAR_LSDALTON)
@@ -113,49 +106,29 @@ set(ExternalProjectCMakeArgs
     )
 
 if(NOT ENABLE_CRAYWRAPPER)
-    include(Math)
+    include(ConfigMath)
     if(NOT BLAS_FOUND)
-       message("-- Using own BLAS implementation (slow)")
-       set(FIXED_FORTRAN_SOURCES
-          ${FIXED_FORTRAN_SOURCES}
-          ${OWN_BLAS_SOURCES}
+       set(LSDALTON_FIXED_FORTRAN_SOURCES
+          ${LSDALTON_FIXED_FORTRAN_SOURCES}
+          ${LSDALTON_OWN_BLAS_SOURCES}
           )
     endif()
     if(NOT LAPACK_FOUND)
-       set(FIXED_FORTRAN_SOURCES
-         ${FIXED_FORTRAN_SOURCES}
-         ${OWN_LAPACK_SOURCES}
+       set(LSDALTON_FIXED_FORTRAN_SOURCES
+         ${LSDALTON_FIXED_FORTRAN_SOURCES}
+         ${LSDALTON_OWN_LAPACK_SOURCES}
        )
+    endif()
+    if(HAVE_MKL_LAPACK)
+        add_definitions(-DVAR_MKL)
     endif()
 endif()
 
-if(ENABLE_RELEASE)
-
-else()
+if(NOT ENABLE_RELEASE)
    add_definitions(-DMOD_UNRELEASED)
 endif()
 
-if(ENABLE_MPI)
-    find_package(MPI)
-    if(MPI_FOUND)
-        add_definitions(-DVAR_LSMPI)
-        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MPI_COMPILE_FLAGS}")
-        include_directories(${MPI_INCLUDE_PATH})
-        if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-          if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-            set(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX TRUE)
-          endif()
-        endif()
-    endif()
-endif()
-
-if(ENABLE_MPI32)
-    if(ENABLE_64BIT_INTEGERS)
-        add_definitions(-DVAR_LSMPI_32)
-    else()
-        message("--mpi32 should only be enabled if --int64 is used.")
-    endif()
-endif()
+include(ConfigMPI)
 
 if(ENABLE_OMP)
     add_definitions(-DVAR_OMP)
@@ -185,21 +158,27 @@ endif()
 if(ENABLE_DEBUGPBC)
   add_definitions(-DDEBUGPBC)
 endif()
-if(PROFILER STREQUAL "SCALASCA")
-  SET(CMAKE_Fortran_COMPILER "../scalascaf90.sh")
-  SET(CMAKE_C_COMPILER "../scalascaCC.sh")
-  MESSAGE(STATUS "Fortran Compiler " ${CMAKE_Fortran_COMPILER})
-  MESSAGE(STATUS "C Compiler       " ${CMAKE_C_COMPILER})
+if(ENABLE_SCALASCA)
+    set(SCALASCA_INSTRUMENT ${CMAKE_Fortran_COMPILER})
+    configure_script(
+        ${CMAKE_SOURCE_DIR}/scalasca.in
+        ${CMAKE_SOURCE_DIR}/scalascaf90.sh
+        )
+    set(SCALASCA_INSTRUMENT ${CMAKE_C_COMPILER})
+    configure_script(
+        ${CMAKE_SOURCE_DIR}/scalasca.in
+        ${CMAKE_SOURCE_DIR}/scalascaCC.sh
+        )
+    unset(SCALASCA_INSTRUMENT)
+    SET(CMAKE_Fortran_COMPILER "../scalascaf90.sh")
+    SET(CMAKE_C_COMPILER "../scalascaCC.sh")
+    MESSAGE(STATUS "Fortran Compiler " ${CMAKE_Fortran_COMPILER})
+    MESSAGE(STATUS "C Compiler       " ${CMAKE_C_COMPILER})
 endif()
 
 # set code coverage
 if(ENABLE_CODE_COVERAGE)
   set(LIBS ${LIBS} gcov)
-endif()
-
-# gen1int library
-if(ENABLE_OPENRSP)
-   set(LIBS ${LIBS} ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a)
 endif()
 
 # set cdash buildname
@@ -225,35 +204,12 @@ endif()
 
 include(BinaryInfo)
 
-include(Tests)
+include(TestsLSDALTON)
 include(CTest)
-include(merge)
+include(mergestaticlibs)
 enable_testing()
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-# Hack to make gfortran 4.6.2 work, also done for other gfortran versions
-  if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-    set(CMAKE_Fortran_MODULE_DIRECTORY
-      ${PROJECT_BINARY_DIR}/modules
-      )
-  else()
-    set(CMAKE_Fortran_MODULE_DIRECTORY
-      ${PROJECT_BINARY_DIR}/modules
-      )
-  endif()
-else()
-    set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/modules)
-#    if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-#    endif()
-endif()
-
-if(cmake_build_type_tolower STREQUAL "debug")
-       message("-- Fortran Compiler Flags: ${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_DEBUG}")
-       message("-- C Compiler Flags      : ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG}")
-else()
-       message("-- Fortran Compiler Flags: ${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_RELEASE}")
-       message("-- C Compiler Flags      : ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE}")
-endif()
+set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/modules)
 
 get_directory_property( DirDefs DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS )
 foreach( d ${DirDefs} )
@@ -271,19 +227,12 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     ${PROJECT_BINARY_DIR}/lib
     )
 
-configure_file(
+configure_script(
     ${CMAKE_SOURCE_DIR}/lsdalton.in
-    ${CMAKE_BINARY_DIR}/lsdalton.in
-    @ONLY
+    ${CMAKE_BINARY_DIR}/lsdalton
     )
-execute_process(COMMAND	cat ${CMAKE_BINARY_DIR}/lsdalton.in OUTPUT_FILE ${CMAKE_BINARY_DIR}/lsdalton)
-execute_process(COMMAND	chmod 755 ${CMAKE_BINARY_DIR}/lsdalton OUTPUT_QUIET)
 
 execute_process(COMMAND echo LSDALTON_script="${CMAKE_BINARY_DIR}/lsdalton" OUTPUT_FILE ${CMAKE_BINARY_DIR}/test.scipt)
-
-if(ENABLE_OPENRSP)
-	add_subdirectory(gen1int)
-endif()
 
 # tell CMake the source won't be available until build time
 SET_SOURCE_FILES_PROPERTIES(${PROJECT_BINARY_DIR}/binary_info.f90 PROPERTIES GENERATED 1)
@@ -321,7 +270,7 @@ target_link_libraries(matrixulib matrixolib)
 
 add_library(
     pdpacklib
-    ${FIXED_FORTRAN_SOURCES}
+    ${LSDALTON_FIXED_FORTRAN_SOURCES}
     )
 
 target_link_libraries(pdpacklib matrixulib)
@@ -373,6 +322,7 @@ if(ENABLE_XCFUN)
         )
 endif()
 
+if(NOT ENABLE_RELEASE)
 if(ENABLE_INTEREST)
         add_definitions(-DVAR_INTEREST)
 	add_library(
@@ -382,6 +332,7 @@ if(ENABLE_INTEREST)
                 if(ENABLE_XCFUN)
 		target_link_libraries(interestlib xcfun_interface)
                 endif()
+endif()
 endif()
 
 add_library(
@@ -396,8 +347,10 @@ add_dependencies(fmmlib lsutillib_precision)
 add_dependencies(fmmlib lsutillib_common)
 add_dependencies(fmmlib lsutiltypelib_common)
 
+if(NOT ENABLE_RELEASE)
 if(ENABLE_INTEREST)
 target_link_libraries(fmmlib interestlib)
+endif()
 endif()
 
 add_library(
@@ -487,21 +440,6 @@ target_link_libraries(lsdaltonmain rsp_propertieslib)
 target_link_libraries(lsdaltonmain rspsolverlib)
 target_link_libraries(lsdaltonmain xcfun_interface)
 
-if(ENABLE_OPENRSP)
-	add_dependencies(gen1int_interface lsutillib_precision)
-	add_dependencies(gen1int_interface matrixmlib)
-	add_dependencies(gen1int_interface lsutillib_common)
-	add_dependencies(gen1int_interface matrixolib)
-	add_dependencies(gen1int_interface matrixulib)
-	add_dependencies(gen1int_interface lsutiltypelib_common)
-	add_dependencies(lsintlib gen1int)
-	add_dependencies(gen1int_interface lsintlib)
-	add_dependencies(linearslib gen1int_interface)
-	add_dependencies(lsdaltonmain gen1int_interface)
-	add_dependencies(rsp_propertieslib gen1int_interface)
-endif()
-
-
 add_executable(
     lsdalton.x
     ${CMAKE_SOURCE_DIR}/lsdaltonsrc/lsdalton_wrapper.f90
@@ -514,31 +452,34 @@ add_executable(
     ${LINK_FLAGS}
     )
 
-if(CMAKE_GFORTRAN_OPENMPI_MAGIC_FIX)
-  SET_TARGET_PROPERTIES(lsdalton.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
-  SET_TARGET_PROPERTIES(lslib_tester.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
+if(MPI_FOUND)
+    # Simen's magic fix for Mac/GNU/OpenMPI
+    if(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+        if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+            SET_TARGET_PROPERTIES(lsdalton.x     PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
+            SET_TARGET_PROPERTIES(lslib_tester.x PROPERTIES LINK_FLAGS "-Wl,-commons,use_dylibs")
+        endif()
+    endif()
 endif()
 
-if(ENABLE_OPENRSP)
-  MERGE_STATIC_LIBS(
-    rsp_prop
-    rsp_propertieslib
-    gen1int_interface
-#   ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
-    )
-else()
   MERGE_STATIC_LIBS(
     rsp_prop
     rsp_propertieslib
     )
-endif()
 
-if(ENABLE_INTEREST)
-  MERGE_STATIC_LIBS(
-    lsint
-    lsintlib
-    interestlib
-    )
+if(NOT ENABLE_RELEASE)
+  if(ENABLE_INTEREST)
+    MERGE_STATIC_LIBS(
+      lsint
+      lsintlib
+      interestlib
+      )
+  else()
+    MERGE_STATIC_LIBS(
+      lsint
+      lsintlib
+      )
+  endif()
 else()
   MERGE_STATIC_LIBS(
     lsint
@@ -588,4 +529,14 @@ target_link_libraries(
    lsdalton
    ) 
 
-include(Install)
+# copy basis/ to build directory
+execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})
+
+# this controlls "make install" target
+# include(ConfigMakeInstall)
+
+# this controlls "make release" target
+# include(ConfigMakeRelease)
+
+# give information about system, compiler flags, and size of static allocations
+include(ConfigInfo)

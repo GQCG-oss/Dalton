@@ -2216,7 +2216,7 @@ module lspdm_tensor_operations_module
     !reference to the tile to calculate
     integer, intent(in),optional :: optorder(mode)
     !> tile output
-    real(realk), intent(out) :: tileout(*)
+    real(realk), intent(inout) :: tileout(*)
     integer :: i,nccblcks,nels,k
     integer :: tmodeidx(mode)
     integer :: idxintile(mode),glbidx,order(mode)

@@ -86,10 +86,7 @@ C     Calculate RRa, Obar and ENSA and write these to file
 
 C     Calculate Ns and keep in memory (DFTNS).
 C     (Run QM3_NSP instead of QM3_NS if #nodes > 1, Arnfinn nov. -08)
-      IF (NODTOT.GE.1) THEN 
-         IF (.NOT. INTDIR) THEN
-            CALL QUIT('Include .INTDIR in *QM3 when run in parallel')
-         END IF
+      IF (NODTOT.GE.1 .AND. .NOT. OLDTG) THEN
          CALL QM3_NSP(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
       ELSE
          CALL QM3_NS(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
@@ -838,7 +835,7 @@ C Run loop over MM nuclear charges
       END IF
 
 C     No more Ns to calculate
-      CALL MPI_REDUCE(WRK(KDFTNS),WRK(KDFTNS),MXQM3,
+      CALL MPI_REDUCE(WRK(KDFTNS),MPI_IN_PLACE,MXQM3,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
