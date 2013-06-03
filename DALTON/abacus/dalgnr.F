@@ -1007,7 +1007,7 @@ Cholesky
 Cholesky
          IF (RNSIRI) CALL EXESIR(WORK(0),LMWORK,WRKDLM)
 Cact
-         IF (ACTIVE) CALL EXEACT(WORK(0),LMWORK,WRKDLM)
+         IF (ACTSEL) CALL EXEACT(WORK(0),LMWORK,WRKDLM)
 Cact
          IF (DOCCSD) CALL EXECC (WORK(0),LMWORK,WRKDLM)
 C
@@ -1286,7 +1286,6 @@ C
 C
 Cholesky
       CHOINT = .FALSE.
-      ACTIVE = .FALSE.
 Cholesky
 C
 C     Initialize /GRDCCPT/
@@ -1592,8 +1591,6 @@ C
 Cholesky
       IF (CHOINT) WRITE (LUPRI,'(4X,A)')
      &  'Cholesky decomposition-based calculation will be done'
-      IF (ACTIVE) WRITE (LUPRI,'(4X,A)')
-     &  'Selection of active atoms switched on'
 Cholesky
 C
       WRITE (LUPRI,'(1X,A)') SEPARATOR
@@ -1977,19 +1974,18 @@ C
 C
 C     Select orbitals and basis fucntions for hybrid CC models.
 C
-      CALL QENTER('SELACT')
+      CALL QENTER('EXEACT')
 C
-      CALL TITLER('Starting in Selact Section',' ',200)
+      CALL TITLER('Starting in Choact Section',' ',200)
 C
-C_not_yet     CALL CC_SELACT(WORK(1),LMWORK)
-      write(lupri,*) 'INFO: SELACT is not yet implemented. Skipped.'
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SELECT_ACTIVE')
+      CALL CC_SELACT(WORK(1),LMWORK)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOACT')
 C
 ctst  CLOSE(24)
-      CALL TITLER('End of Selact Section',' ',200)
+      CALL TITLER('End of Choact Section',' ',200)
 C
       CALL FLSHFO(LUPRI)
-      CALL QEXIT('SELACT')
+      CALL QEXIT('EXEACT')
       RETURN
       END
 C --- end of dalgnr.F ---
