@@ -1891,9 +1891,6 @@ SUBROUTINE config_rsp_input(config,lucmd,readword,WORD)
 	CASE('*NUMGRADHESS')
                     WRITE(config%LUPRI,*) 'Numerical Hessian calculations are carried out using the numerical gradient'
                     config%response%tasks%doNumGradHess = .True.
-	CASE('*NUMGRADGEOMOPT')
-                    WRITE(config%LUPRI,*) 'Numerical Gradient geometry optimization calculations are carried out'
-                    config%response%tasks%doNumGradGeomOpt = .True.
 #endif
         CASE('*SOLVER')
             do

@@ -23,7 +23,7 @@ use integralinterfaceMod, only: II_get_molecular_gradient,&
      & II_get_nucpot,II_get_overlap,II_get_h1
 use lsdalton_rsp_mod,only: get_excitation_energy, GET_EXCITED_STATE_GRADIENT
 use dec_main_mod!, only: get_total_mp2energy_from_inputs, get_mp2gradient_and_energy_from_inputs
-
+use ls_util, only: ls_print_gradient
 use molecule_typetype, only: moleculeinfo
 !
 contains
@@ -227,20 +227,14 @@ contains
        call GET_EXCITED_STATE_GRADIENT(ls,config,F,D,S,Gradient,Natoms)
     else
        ! HF or DFT gradient
-        if( config%response%tasks%doNumGradGeomOpt )then
-nbast=D%nrow
-h = 1.0E-7_realk !1.0E-5_realk
-call get_num_grad(h,lupri,config%luerr,ls,S,F,D,C,config,Gradient)
-	else
-       		Call II_get_molecular_gradient(Gradient,lupri,F,D,ls%setting,ls%input%do_dft,.TRUE.)
-	endif
+       Call II_get_molecular_gradient(Gradient,lupri,F,D,ls%setting,ls%input%do_dft,.TRUE.)
     Endif
     
   End subroutine Get_Gradient
 
 
 ! Calculates the numerical geometrical gradient of the energy
-!> \author: P. Merlot (clean copy of the work by S. Reine and K. Dankel)
+!> \author: P. Merlot (almost copy of the work by S. Reine and K. Dankel)
 !> \date 2013-05-16
 subroutine get_num_grad(h,lupri,luerr,ls,S,F,D,C,config,numerical_gradient)
 implicit none
@@ -266,8 +260,11 @@ call mat_assign(Dmat(1),D)
 call mat_init(Fmat(1),nbast,nbast)
 call mat_assign(Fmat(1),F)
 
+
 do i=1,ls%INPUT%MOLECULE%nAtoms
    do j=1, 3
+write (*,*) "atom index:",i,"  coord:",j
+write (lupri,*) "atom index:",i,"  coord:",j
       ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)-h 
       CALL get_energy(E,Eerr,config,H1,Fmat,Dmat,S,ls,C,nAtoms,lupri,luerr)
       Emin=E(1)
@@ -281,6 +278,9 @@ do i=1,ls%INPUT%MOLECULE%nAtoms
       numerical_gradient(j,i)=(Eplus-Emin)/(2*h)
     enddo
 enddo
+write (*,*) "print gradient"
+write (lupri,*) "print gradient"
+CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,numerical_gradient,nAtoms,'TOTAL')
 end subroutine get_num_grad
 
 End module Energy_and_deriv

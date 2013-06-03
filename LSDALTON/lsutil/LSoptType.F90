@@ -117,6 +117,8 @@ Type opt_setting
      Integer :: NFrAtom
      Character(len=80), pointer :: PreText(:)
      Character(len=80) :: SpBText
+     Logical :: doNumGradGeomOpt !To run geom. optim. with a numerical gradient
+     Real(realk) :: findif_mesh  !mesh with a numerical gradient 
 ! Serve as parameters
      Real(realk) :: ZeroGrad ! A threshold for zero gradient 
      Real(realk) :: DefTh2 
