@@ -149,13 +149,14 @@ C     Backup diporg. We use diporg to transfer coordinates to int. program.
       OBKPZ = DIPORG(3)
 
       IF (MMTIME) DTIME = SECOND()
+#if defined(VAR_MPI)
       IF (NODTOT.GE.1) THEN
 C     All the corrections to the Fock/KS operator due to the static
 C     multipoles when the calculation is done in parallel
         CALL PARQMMM_M(DCAO,WRK(KTAO),ESOLT,LOCDEB,
      &                  WRK(KWRK1),LWRK1,IPRINT)
       ELSE
-
+#endif
 C     1) The charge correction to the Fock/KS operator
         IF (NMULT .GE. 0) CALL QMMM_CHARGE(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
@@ -173,7 +174,9 @@ C     integrals numerically here.
         IF (NMULT .GE. 3) CALL QMMM_OCTUPOLE(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
       
+#if defined(VAR_MPI)
       ENDIF ! nodtot .ge. 1
+#endif
       IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMMULPOL = TMMMULPOL + DTIME
@@ -814,11 +817,12 @@ C     total solvation energy
 
       CALL DZERO(WRK(KTAO),NNBASX)
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
         CALL MM_POLAR_CONTR_M(DCAO(1),WRK(KTAO),WRK(KINDMOM),
      &                      WRK(KWRK2),LWRK2,IPRINT)
       ELSE
-
+#endif
         KEDALL = KWRK2
         KWRK3  = KEDALL + 6
         LWRK3  = LWRK - KWRK3 + 1
@@ -843,8 +847,9 @@ C     total solvation energy
 
         EDMULT = ED0MOM + ED1MOM + ED2MOM + ED3MOM
 
+#if defined(VAR_MPI)
       ENDIF                     ! IF (NODTOT .GE. 1) ... ELSE
-
+#endif
       CALL DAXPY(NNBASX,1.0D0,WRK(KTAO),1,TAO,1)
 
       EPOLT  = EDELD + EDNUC + EDMULT
@@ -1039,11 +1044,12 @@ C     (the order KELF KELFEL KELFNU has to be kept because of QMMM_POLARI_M1! AH
       ENDIF
 
 C     Form F vector due to permanent MM moments
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
         CALL MM_FIELD_M1(DCAO(1),WRK(KELF),POLDIM,
      &                      WRK(KEND),LWRK1,IPRINT)
       ELSE
-
+#endif
         LRI = 1                 ! Row index in the large matrix
 
         DO 200 I=1,MMCENT
@@ -1055,8 +1061,9 @@ C     Form F vector due to permanent MM moments
           LRI = LRI + 3
  200    CONTINUE
 
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       NDIM = 3*POLDIM
 
       IF (LOCDEB) THEN
@@ -2202,11 +2209,12 @@ C     Allocate memory for electric field integrals and electric fields
 C     1. Form F vector due to permanent MM moments
 
       IF (MMTIME) DTIME = SECOND()
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
         CALL MM_FIELD_M2(DCAO(1),WRK(KELF),POLDIM,
      &                       WRK(KEND),LWRK1,IPRINT)
       ELSE
-
+#endif
         LRI = 1   
 
         DO 200 I=1,MMCENT
@@ -2219,7 +2227,9 @@ C     1. Form F vector due to permanent MM moments
 
  200    CONTINUE
 
+#if defined(VAR_MPI)
       ENDIF
+#endif
       IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMPOL2 = TMMPOL2 + DTIME
@@ -2460,11 +2470,12 @@ C     Now iterate...  !
 
       LM = 0
       DIPCON = .FALSE.
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
         CALL MMITER_INDDIP_M(POLDIM,WRK(KINDP),INDMOM,WRK(KVEC),
      *                WRK(KINDDIA),WRK(KEND),LWRK1,LOCDEB,DIPCON,LM)
       ELSE
-
+#endif
         DO 999 ITER = 1, MXMMIT
           LM = LM + 1
 
@@ -2532,8 +2543,9 @@ C       induced dipoles, i.e. not only the diagonal part
 
  9000   CONTINUE !Done
 
+#if defined(VAR_MPI)
       ENDIF !parallel mmiter
-
+#endif
       IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMITER = TMMITER + DTIME
@@ -4448,6 +4460,7 @@ C  /* Deck qmmmtimes */
       RETURN
       END
 C
+#if defined(VAR_MPI)
 C*****************************************************
 C Parallel routines for QM/MM SIRIUS
 C Arnfinn, Odense/Tromso Oct. 2009 - Oct. 2010
@@ -5826,3 +5839,4 @@ C     check if there is leftovers
       RETURN
       END
 
+#endif

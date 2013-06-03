@@ -497,7 +497,7 @@ C
       YI = DIPORG(2)
       ZI = DIPORG(3)
 #if defined (VAR_MPI)
-      IF (NODTOT .GE. 1) THEN
+      IF (NODTOT .GE. 1 .AND. .NOT. MMPCM) THEN
          CALL J1XP(NOSIM,WRK(KVTEX),WRK(KUCMO),WRK(KUBO),UDV,UDVTR,
      &             WRK(KPCMX),WRK(KPCMXT),.FALSE.,TRPLET,JWOPSY,
      &             WRK(KW50),LW50)
