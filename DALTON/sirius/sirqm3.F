@@ -87,7 +87,7 @@ C     Calculate RRa, Obar and ENSA and write these to file
 C     Calculate Ns and keep in memory (DFTNS).
 C     (Run QM3_NSP instead of QM3_NS if #nodes > 1, Arnfinn nov. -08)
 #if defined(VAR_MPI)
-      IF (NODTOT.GE.1 .AND. .NOT. OLDTG) THEN
+      IF (NODTOT.GE.1 .AND. .NOT. OLDTG .AND. .NOT. MMPCM) THEN
          CALL QM3_NSP(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
       ELSE
 #endif
