@@ -1,39 +1,51 @@
+
+
+# exit if cmake version is below 2.8
+# we need at least 2.8 for external projects support
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
+# set project name and languanges that are involved
 project(DALTON Fortran C CXX)
 
 # do not rebuild if rules (compiler flags) change
 set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 
-option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"          OFF)
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"             OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"            OFF)
-option(ENABLE_MPI            "Enable MPI parallelization"      OFF)
-option(ENABLE_OMP            "Enable OpenMP parallelization"   OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU acceleration"    OFF)
-option(ENABLE_UTILITIES      "Enable utilities"                OFF)
-option(ENABLE_LOCAL_DISKS    "Enable local disks"              OFF)
-option(ENABLE_STATIC_LINKING "Enable static libraries linking" OFF)
-option(ENABLE_GEN1INT        "Enable Gen1Int library"          ON)
-option(ENABLE_RELEASE "Test release mode which undefines MOD_UNRELEASED" OFF)
-option(ENABLE_ALWAYS_RESET_EXTERNAL_BUILDS "Always remove builds stamps of external projects" OFF)
-
+# these are paths that CMake will search for cmake
+# module files that end with .cmake
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/../cmake
     ${CMAKE_SOURCE_DIR}/../cmake/binary-info
     ${CMAKE_SOURCE_DIR}/../cmake/compilers
     ${CMAKE_SOURCE_DIR}/../cmake/math
     ${CMAKE_SOURCE_DIR}/../cmake/mpi
-    ${CMAKE_SOURCE_DIR}/cmake/testing
-    ${CMAKE_SOURCE_DIR}/cmake
+    ${CMAKE_SOURCE_DIR}/../cmake
     ${CMAKE_BINARY_DIR}
     )
+
+option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                           OFF)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                              OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"                             OFF)
+option(ENABLE_MPI            "Enable MPI parallelization"                       OFF)
+option(ENABLE_OMP            "Enable OpenMP parallelization"                    OFF)
+option(ENABLE_RELEASE        "Test release mode which undefines MOD_UNRELEASED" OFF)
+option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     OFF)
+option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
+option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" OFF)
+option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
+option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
+option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
+option(ENABLE_TIMINGS        "Enable TIMINGS"                                   OFF)
+option(ENABLE_XCFUN          "Enable XCFUN"                                     OFF)
+option(ENABLE_INTEREST       "Enable interest integrals"                        OFF)
+option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"                              OFF)
+option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
+option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 
 set(LIBS)
 
 include(ConfigVersion)
-include(Sources)
+include(SourcesDALTON)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
@@ -126,15 +138,15 @@ configure_script(
 # if BLAS and/or LAPACK not found, add own sources to the list of
 # sources to compile
 if(USE_OWN_BLAS)
-    set(FIXED_FORTRAN_SOURCES
-        ${FIXED_FORTRAN_SOURCES}
-        ${OWN_BLAS_SOURCES}
+    set(DALTON_FIXED_FORTRAN_SOURCES
+        ${DALTON_FIXED_FORTRAN_SOURCES}
+        ${DALTON_OWN_BLAS_SOURCES}
         )
 endif()
 if(USE_OWN_LAPACK)
-    set(FIXED_FORTRAN_SOURCES
-        ${FIXED_FORTRAN_SOURCES}
-        ${OWN_LAPACK_SOURCES}
+    set(DALTON_FIXED_FORTRAN_SOURCES
+        ${DALTON_FIXED_FORTRAN_SOURCES}
+        ${DALTON_OWN_LAPACK_SOURCES}
         )
 endif()
 
@@ -151,9 +163,9 @@ add_custom_target(dalton_interfaces
 )
 
 set(DALTON_SOURCES
-    ${C_SOURCES}
-    ${FREE_FORTRAN_SOURCES}
-    ${FIXED_FORTRAN_SOURCES}
+    ${DALTON_C_SOURCES}
+    ${DALTON_FREE_FORTRAN_SOURCES}
+    ${DALTON_FIXED_FORTRAN_SOURCES}
     )
 
 add_library(
@@ -188,12 +200,6 @@ target_link_libraries(
     ${LIBS}
     )
 
-# get size of static allocations
-add_custom_target(
-    info
-    COMMAND ${CMAKE_SOURCE_DIR}/../cmake/binary-info/get_static_size.py dalton.x
-    )
-
 # copy basis/ to build directory
 execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})
 
@@ -202,3 +208,6 @@ include(ConfigMakeInstall)
 
 # this controlls "make release" target
 include(ConfigMakeRelease)
+
+# give information about system, compiler flags, and size of static allocations
+include(ConfigInfo)

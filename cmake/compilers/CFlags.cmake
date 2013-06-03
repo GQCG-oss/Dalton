@@ -71,5 +71,9 @@ if(CMAKE_C_COMPILER_ID MATCHES Cray)
     set(CMAKE_C_FLAGS_PROFILE "-g")
 endif()
 
+if(DEFINED EXTRA_C_FLAGS)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_C_FLAGS}")
+endif()
+
 save_compiler_flags(C)
 endif()

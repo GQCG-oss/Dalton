@@ -1,4 +1,4 @@
-set(C_SOURCES
+set(DALTON_C_SOURCES
 cc/crayio.c
 dft/basisinfo.c
 dft/cube-fast.c
@@ -74,7 +74,7 @@ dft/quad-open.c
 dft/quad-strict.c
 pdpack/scatter-io.c
     )
-set(FIXED_FORTRAN_SOURCES
+set(DALTON_FIXED_FORTRAN_SOURCES
 abacus/aba2eth.F
 abacus/aba2r12.F
 abacus/aba2tex.F
@@ -733,7 +733,7 @@ soppa/so_write.F
 soppa/so_writeset.F
 soppa/so_wrtve.F
     )
-set(FREE_FORTRAN_SOURCES
+set(DALTON_FREE_FORTRAN_SOURCES
 input/input_reader_sections.F90
 input/input_reader.F90
 input/parse_input.F90
@@ -757,19 +757,19 @@ gp/one_sided_communication_wrappers.F90
 gp/memory_parallel.F90
 abacus/rma_windows.F90
     )
-set(OWN_BLAS_SOURCES
+set(DALTON_OWN_BLAS_SOURCES
     pdpack/gp_blas.F
     )
-set(OWN_LAPACK_SOURCES
+set(DALTON_OWN_LAPACK_SOURCES
     pdpack/gp_lapack.F
     )
 if(NOT ENABLE_MPI)
-    set(C_SOURCES
-        ${C_SOURCES}
+    set(DALTON_C_SOURCES
+        ${DALTON_C_SOURCES}
         gp/mpi_dummyc.c
         )
-    set(FIXED_FORTRAN_SOURCES
-        ${FIXED_FORTRAN_SOURCES}
+    set(DALTON_FIXED_FORTRAN_SOURCES
+        ${DALTON_FIXED_FORTRAN_SOURCES}
         gp/mpi_dummy.F
         )
 endif()

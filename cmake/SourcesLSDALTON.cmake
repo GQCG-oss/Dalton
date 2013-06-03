@@ -1,6 +1,6 @@
 # WARNING if you add a new set of sources that contain .F90 files 
 # remember to add it to the collection of all free fortran sources
-# FREE_FORTRAN_SOURCES  
+# LSDALTON_FREE_FORTRAN_SOURCES  
 # at the end of the file
 
 set(DEC_C_SOURCES
@@ -375,14 +375,14 @@ set(LSLIB_SOURCES
     lsdaltonsrc/LSlib_tester.F90
     )
 
-set(FIXED_FORTRAN_SOURCES
+set(LSDALTON_FIXED_FORTRAN_SOURCES
     pdpack/jacobi.F
     pdpack/eispack.F
     pdpack/linpack.F
     pdpack/cholesky.F
     pdpack/invroutines.F
     )
-set(OWN_BLAS_SOURCES
+set(LSDALTON_OWN_BLAS_SOURCES
     pdpack/blas_wrapper.F
     pdpack/gp_dblas1.F
     pdpack/gp_dblas2.F
@@ -391,12 +391,12 @@ set(OWN_BLAS_SOURCES
     pdpack/gp_qblas.F
     pdpack/gp_zblas.F
     )
-set(OWN_LAPACK_SOURCES
+set(LSDALTON_OWN_LAPACK_SOURCES
     pdpack/gp_dlapack.F
     pdpack/gp_zlapack.F
     )
 #collection of all free fortran sources
-set(FREE_FORTRAN_SOURCES
+set(LSDALTON_FREE_FORTRAN_SOURCES
     ${DFTFUNC_F_SOURCES}
     ${LSDALTONMAIN_FORTRAN_SOURCES}
     ${DDYNAM_SOURCES}
