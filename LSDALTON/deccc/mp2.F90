@@ -4,7 +4,7 @@
 
 module mp2_module
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       use infpar_module
       use lsmpi_type
 #endif
@@ -25,7 +25,7 @@ module mp2_module
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       use decmpi_module !, only: mpi_communicate_mp2_int_and_amp
 #endif
 
@@ -176,7 +176,7 @@ contains
     TYPE(DECscreenITEM)   :: DecScreen
     logical :: master,wakeslave
     real(realk) :: twmpi1,twmpi2, tcmpi1, tcmpi2, tmpidiff
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: HSTATUS
     CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
 !    this really should be
@@ -197,7 +197,7 @@ contains
 
 ! If MPI is not used, consider the single node to be "master"
 master=.true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 if(infpar%lg_mynum /= 0) then  ! this is a local slave
 master=.false.
 end if
@@ -467,7 +467,7 @@ end if
     ! *                    Start up MPI slaves                    *
     ! *************************************************************
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     ! Only use slave helper if there is at least two jobs AND
     ! there is at least one local slave available.
@@ -572,7 +572,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
 
 ! For MPI: Get array defining which jobs are done by which ranks
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       call mem_alloc(decmpitasks,nbatchesAlpha*nbatchesGamma)
       if(wakeslave) then  ! share workload with slave(s)
          call distribute_mpi_jobs(decmpitasks,nbatchesAlpha,nbatchesGamma,&
@@ -616,13 +616,13 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       allocate(arr(maxdim),stat=ierr)
       arr=0.0E0_realk
       if(ierr == 0) then
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       if(DECinfo%PL>0) write(DECinfo%output,'(a,i7,i15)') 'MP2: Allocation OK for node/dim ', infpar%mynum,maxdim
 #else
       if(DECinfo%PL>0) write(DECinfo%output,'(a,i15)') 'MP2: Allocation OK for dim ', maxdim
 #endif
    else
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       write(DECinfo%output,'(a,i7,i15)') 'MP2: Error in allocation for node/dimm ', infpar%mynum,maxdim
 #else
       write(DECinfo%output,'(a,i15)') 'MP2: Error in allocation for dim ', maxdim
@@ -685,7 +685,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
     ! Start looping over gamma and alpha batches and calculate integrals
     ! ******************************************************************
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       if(DECinfo%PL>0) write(DECinfo%output,'(a,g14.4,i7)') 'Memory (GB) available before loop/node ', &
            & (DECinfo%memory - 1.0E-9_realk*mem_allocated_global), infpar%mynum
 #endif
@@ -703,7 +703,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
        AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
        ! MPI: Only do (alpha,gamma) contribution if this is a task for this particular rank
        if(decmpitasks((alphaB-1)*nbatchesGamma+gammaB) /= infpar%lg_mynum) cycle
 #endif
@@ -1203,7 +1203,7 @@ call mem_TurnOffThread_Memory()
  call LSTIMER('START',tcmpi2,twmpi2,DECinfo%output)
  tmpidiff = twmpi2-twmpi1
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
  if(DECinfo%PL>0) write(DECinfo%output,'(a,i6,i12,g18.8)') 'RANK, LOAD, TIME(s) ', infpar%mynum,myload, tmpidiff
  if(master) write(DECinfo%output,'(1X,a,g18.8)') 'TIME INTEGRALLOOP(s) = ', tmpidiff
 #endif
@@ -1217,7 +1217,7 @@ end if
 
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 call mem_dealloc(decmpitasks)
 #endif
 
@@ -1561,7 +1561,7 @@ end if
 
 ! MPI: Add arrays from master and all slaves to get final output arrays on master
 ! *******************************************************************************
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
 ! If slaves were not invoked
 ! then we of course skip the addition of different components of the array.
@@ -2083,7 +2083,7 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
 #endif
 
 doprint = printstuff
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ! Only print for local master
 if(infpar%lg_mynum/=0) doprint=.false.
 #endif
@@ -2575,7 +2575,7 @@ subroutine get_VOVO_from_full_AO(nbasis,nocc,nvirt,Cocc,Cvirt,gao,gmo)
 end subroutine get_VOVO_from_full_AO
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
 !> \brief Get array defining - for each (alpha,gamma) batch
 !> in MP2_integrals_and_amplitudes_workhorse - which rank is supposed to do
@@ -2627,7 +2627,7 @@ end subroutine get_mpi_tasks_for_MP2_int_and_amp
 end module mp2_module
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !> \brief MPI Slave routine for MP2_integrals_and_amplitudes_workhorse.
 !> The slave gets fragment information and other information from master rank,
 !> then calls MP2_integrals_and_amplitudes_workhorse to do its specific components

@@ -210,12 +210,12 @@ IF(PRINTTIM)THEN
    CALL LS_GETTIM(CPU2,WALL2)
    CPUTIME = CPU2-CPU1
    WALLTIME = WALL2-WALL1
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
       CALL LS_TIMTXT('>>>  CPU  Time used in gridgeneration2 is  ',CPUTIME,LUPRI)
       CALL LS_TIMTXT('>>>  WALL Time used in gridgeneration2 is  ',WALLTIME,LUPRI)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    ENDIF
 #endif
 ENDIF
@@ -284,7 +284,7 @@ call mem_dft_dealloc(NVALUE)
 ! Test on the number of electrons
 !   
 ELECTRONS(1:ndmat) = TELECTRONS(1:ndmat)
-#ifndef VAR_LSMPI
+#ifndef VAR_MPI
 IF (DFT%testNelectrons) THEN
   CALL TEST_NELECTRONS(ELECTRONS,NELECTRONS,NDMAT,DFT%DFTELS,UNRES,LUPRI)
 ENDIF
@@ -2453,7 +2453,7 @@ TYPE(LSSETTING),   INTENT(INOUT) :: SETTING
 END SUBROUTINE II_DFTDISP
 
 SUBROUTINE II_DFTsetFunc(Func,hfweight)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
 use lsmpi_type
@@ -2464,7 +2464,7 @@ Real(realk),intent(INOUT)    :: hfweight
 integer                      :: ierror
 CALL DFTsetFunc(Func,hfweight,ierror)
 IF(ierror.NE.0)CALL LSQUIT('Unknown Functional',-1)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN
   call ls_mpibcast(DFTSETFU,infpar%master,MPI_COMM_LSDALTON)
@@ -2476,7 +2476,7 @@ ENDIF
 END SUBROUTINE II_DFTsetFunc
 
 SUBROUTINE II_DFTaddFunc(Func,hfweight)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
 use lsmpi_type
@@ -2485,7 +2485,7 @@ implicit none
 Character(len=80),intent(IN) :: Func
 Real(realk),intent(INOUT)    :: hfweight
 CALL DFTaddFunc(Func,hfweight)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !for MPI ne also need to set the functional on the slaves
 IF (infpar%mynum.EQ.infpar%master) THEN
   call ls_mpibcast(DFTADDFU,infpar%master,MPI_COMM_LSDALTON)

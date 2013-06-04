@@ -35,7 +35,7 @@ MODULE IntegralInterfaceMOD
        & mat_scal, mat_mul, mat_assign, mat_trans, mat_copy, mat_add
   use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym, mcweeney_purify
   use memory_handling, only: mem_alloc, mem_dealloc
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use screen_modMPI, only: mpicopy_screen
   use lsmpi_type!, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, &
 !       & LSMPIBROADCAST,  ls_mpibcast, get_rank_for_comm
@@ -71,7 +71,7 @@ MODULE IntegralInterfaceMOD
        & II_get_sphmom,II_carmom_to_shermom,II_get_3center_overlap,&
        & II_get_2center_eri,II_get_4center_eri,II_get_4center_eri_diff,&
        & II_precalc_ScreenMat, &
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
        & II_bcast_screen, II_screeninit, II_screenfree,&
 #endif
        & II_get_2int_ScreenMat,II_get_maxGabelm_ScreenMat,II_setIncremental,&
@@ -1076,7 +1076,7 @@ setting%scheme%daScreen_THRLOG = 0
 call initIntegralOutputDims(setting%Output,3,nAtoms,1,1,1)
 call ls_get_exchange_mat(AORdefault,AORdefault,AORdefault,AORdefault,&
      &                   Oper,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ! Hack - since symmetry is currently turned off in exchange the resultTensor 
 !        currently has dimension 3,nAtom*4
   call mem_alloc(grad,3,nAtoms*4)
@@ -2483,7 +2483,7 @@ IF(SETTING%SCHEME%saveGABtoMem)THEN
     ENDDO
  ENDIF
 ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 call ls_mpibcast(IISCREEN,infpar%master,setting%comm)
 call II_bcast_screen(setting%comm)
 #endif
@@ -2491,7 +2491,7 @@ call time_II_operations2(JOB_II_precalc_ScreenMat)
 
 END SUBROUTINE II_precalc_ScreenMat
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 subroutine II_bcast_screen(comm)
 implicit none
 integer(kind=ls_mpik) :: comm,Master,mynum

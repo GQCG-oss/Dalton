@@ -15,7 +15,6 @@ endif()
 
 if(MPI_FOUND)
     add_definitions(-DVAR_MPI)
-    add_definitions(-DVAR_LSMPI)
 
     # test whether MPI integer type matches
     file(READ "${CMAKE_SOURCE_DIR}/../cmake/mpi/test-MPI-itype-compatibility.F90" _source)

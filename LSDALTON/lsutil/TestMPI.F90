@@ -3,7 +3,7 @@ module lsmpi_test
   use Integralparameters
   use memory_handling
   use lsmpi_type
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
 #endif
 

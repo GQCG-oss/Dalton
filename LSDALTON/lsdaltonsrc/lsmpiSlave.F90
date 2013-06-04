@@ -1,5 +1,5 @@
     subroutine lsmpi_init
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     use lsmpi_type
     use infpar_module
     use ls_env
@@ -44,7 +44,7 @@
     endif
 #endif
     end subroutine lsmpi_init 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     subroutine lsmpi_slave(comm)
       use infpar_module
