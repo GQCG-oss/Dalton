@@ -976,7 +976,17 @@ contains
          & mylsitem,ccPrintLevel,fragment_job,ppfock_f,qqfock_f,ccenergy, &
          & t1_final,t2_final,VOVO,.false.)
     endif
+
+#ifdef MOD_UNRELEASED
     if(DECinfo%PL>1)then
+      natoms = MyMolecule%natoms
+      nocc_tot = MyMolecule%numocc
+      if(DECinfo%frozencore)then
+        ncore = MyMolecule%ncore
+      else
+        ncore = 0
+      endif
+
       ! -- Calculate distance matrix
       call mem_alloc(distance_table,natoms,natoms)
       distance_table = 0.0E0_realk
@@ -1002,6 +1012,8 @@ contains
      
       ! reorder VOVO integrals from (a,i,b,j) to (a,b,i,j)
       call array4_reorder(VOVO,[1,3,2,4])
+      ! reorder doubles amplitudes from (a,i,b,j) to (a,b,i,j)
+      call array4_reorder(t2_final,[1,3,2,4])
      
       ! print out ccsd fragment and pair interaction energies
       ccsd_mat_tot = array2_init([natoms,natoms])
@@ -1016,9 +1028,16 @@ contains
       call array2_free(ccsd_mat_tot)
       call array2_free(ccsd_mat_tmp)
       call mem_dealloc(distance_table)
+      call mem_dealloc(occ_orbitals)
       call mem_dealloc(unocc_orbitals)
       call mem_dealloc(orbitals_assigned)
+
+      ! reorder VOVO integrals from (a,b,i,j) to (a,i,b,j)
+      call array4_reorder(VOVO,[1,3,2,4])
+      ! reorder doubles amplitudes from (a,b,i,j) to (a,i,b,j)
+      call array4_reorder(t2_final,[1,3,2,4])
     endif
+#endif
 
     ! Free arrays
     call array2_free(t1_final)
@@ -2227,7 +2246,11 @@ contains
           write(DECinfo%output,'(/,a)') '--------------------------'
           write(DECinfo%output,'(a)')   '  Coupled-cluster energy  '
           write(DECinfo%output,'(a,/)') '--------------------------'
-          write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(DECinfo%ccModel)
+          if(DECinfo%CCDhack)then
+            write(DECinfo%output,'(a,a)')      'Wave function    = ','CCD'
+          else
+            write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(DECinfo%ccModel)
+          endif
           write(DECinfo%output,'(a,i4)')     'MaxIter          = ',DECinfo%ccMaxIter
           write(DECinfo%output,'(a,i4)')     'Num. b.f.        = ',nbasis
           write(DECinfo%output,'(a,i4)')     'Num. occ. orb.   = ',nocc
@@ -2243,7 +2266,11 @@ contains
        else
           write(DECinfo%output,'(/,a)') '  Coupled-cluster energy  -> Fragment job '
           write(DECinfo%output,'(a)')   '------------------------------------------'
-          write(DECinfo%output,'(a,a,$)')       'Wave function    = ',DECinfo%cc_models(DECinfo%ccModel)
+          if(DECinfo%CCDhack)then
+            write(DECinfo%output,'(a,a)')      'Wave function    = ','CCD'
+          else
+            write(DECinfo%output,'(a,a)')      'Wave function    = ',DECinfo%cc_models(DECinfo%ccModel)
+          endif
           write(DECinfo%output,'(4x,a,l1)')     'Debug mode       = ',DECinfo%cc_driver_debug
           write(DECinfo%output,'(a,i4,$)')      'MaxIter          = ',DECinfo%ccMaxIter
           write(DECinfo%output,'(5x,a,e8.1e2)') 'Convergence      = ',DECinfo%ccConvergenceThreshold
