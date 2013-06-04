@@ -57,7 +57,7 @@ cat > rsp_abslrs.dal <<'%EOF%'
 **WAVE FUNCTION
 .HF
 **RESPONSE
-*ABSLRS
+*ABSORP
 .ALPHA
 .DAMPING
  0.004556
@@ -67,15 +67,6 @@ cat > rsp_abslrs.dal <<'%EOF%'
  800
 .THCLR
  1.0D-5
-*END OF
-
-**DALTON INPUT
-.RUN RESPONSE
-.DIRECT
-**INTEGRALS
-.DIPLEN
-**WAVE FUNCTION
-.HF
 **END OF DALTON INPUT
 %EOF%
 

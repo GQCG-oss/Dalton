@@ -17,9 +17,6 @@ module init_lsdalton_mod
   use lstiming, only: lstimer
   use daltoninfo, only: ls_init
   use IIDFTINT, only: II_DFTDISP
-#ifdef HAVE_BSM
-  use SCFLOOP_module, only: ls_initbsm
-#endif
   use matrix_operations, only: mat_no_of_matmuls, mat_pass_info, no_of_matmuls
   use lsmpi_type, only: lsmpi_finalize, lsmpi_print
 contains
@@ -54,7 +51,7 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
 #endif
   CALL PRINT_INTRO(LUPRI)
   call lsmpi_print(lupri)
-#ifdef THIS_IS_CMAKE_BUILD
+#ifdef BINARY_INFO_AVAILABLE
   call print_binary_info(lupri)
 #endif
 
@@ -98,14 +95,6 @@ SUBROUTINE init_lsdalton_and_get_lsitem(lupri,luerr,nbast,ls,config,mem_monitor)
     CALL LSTIMER('*ATOM ',TIMSTR,TIMEND,lupri)
  endif
   
-  if (config%opt%cfg_prefer_bsm) then
-#ifdef HAVE_BSM
-     CALL ls_initbsm(ls%input%BASIS%REGULAR,ls%input)
-#else
-     call lsquit('.BLOCK requested but BSM is not compiled',lupri)
-#endif
-  endif
-
   if (config%sparsetest) then
     call sparsetest(ls%setting, lupri)
   endif

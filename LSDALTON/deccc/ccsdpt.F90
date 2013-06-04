@@ -2757,18 +2757,31 @@ contains
 !    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
 
     ! print out fragment energies
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,'(1X,a)') '*                         CCSD energies                       *'
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (CCSD)'
-    write(DECinfo%output,'(8X,a)') '------    --------------------'
-    write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-    write(DECinfo%output,'(8X,a)') '------    --------------------'
-    write(DECinfo%output,*)
+    if(.not.DECinfo%CCDhack)then
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a)') '***************************************************************'
+      write(DECinfo%output,'(1X,a)') '*                         CCSD energies                       *'
+      write(DECinfo%output,'(1X,a)') '***************************************************************'
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (CCSD)'
+      write(DECinfo%output,'(8X,a)') '------    --------------------'
+      write(DECinfo%output,'(8X,a)') ' Atom            Energy '
+      write(DECinfo%output,'(8X,a)') '------    --------------------'
+      write(DECinfo%output,*)
+    else
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a)') '***************************************************************'
+      write(DECinfo%output,'(1X,a)') '*                         CCD energies                        *'
+      write(DECinfo%output,'(1X,a)') '***************************************************************'
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (CCD)'
+      write(DECinfo%output,'(8X,a)') '------    --------------------'
+      write(DECinfo%output,'(8X,a)') ' Atom            Energy '
+      write(DECinfo%output,'(8X,a)') '------    --------------------'
+      write(DECinfo%output,*)
+    endif
 
     do i=1,natoms
 
@@ -2782,14 +2795,25 @@ contains
 
     ! now print out pair interaction energies
 
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (CCSD)                   '
-    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
+    if(.not.DECinfo%CCDhack)then
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (CCSD)                   '
+      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+      write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
+      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+    else
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (CCD)                   '
+      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+      write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
+      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+    endif
 
     do j=1,natoms
        do i=j+1,natoms

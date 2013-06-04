@@ -161,14 +161,9 @@ macro(config_math_service _SERVICE)
     endif()
     if(${_SERVICE}_FOUND)
 
-        if(HAVE_MKL_LAPACK)
-            set(LAPACK_LIBRARIES
-                -Wl,--start-group ${LAPACK_LIBRARIES} -Wl,--end-group)
-        endif()
-
-        if(HAVE_MKL_BLAS)
-            # hack to sneak in extra libraries
-            set(EXTRA_LIBS)
+        # hack to sneak in extra libraries
+        set(EXTRA_LIBS)
+        if(HAVE_MKL_BLAS OR HAVE_MKL_LAPACK)
             if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
                 set(EXTRA_LIBS -openmp)
             endif()
@@ -178,9 +173,11 @@ macro(config_math_service _SERVICE)
             if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
                 set(EXTRA_LIBS -mp)
             endif()
-            set(BLAS_LIBRARIES -Wl,--start-group ${BLAS_LIBRARIES} ${EXTRA_LIBS} -Wl,--end-group)
-            unset(EXTRA_LIBS)
         endif()
+        if(HAVE_MKL_${_SERVICE})
+            set(${_SERVICE}_LIBRARIES -Wl,--start-group ${${_SERVICE}_LIBRARIES} ${EXTRA_LIBS} -Wl,--end-group)
+        endif()
+        unset(EXTRA_LIBS)
 
         find_package_message(${_SERVICE} "Found ${_SERVICE}: ${${_SERVICE}_TYPE}" "[${${_SERVICE}_LIBRARIES}]")
         set(LIBS

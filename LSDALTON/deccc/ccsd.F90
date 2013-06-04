@@ -2659,30 +2659,32 @@ contains
     startt=MPI_wtime()
 #endif
 
-
-    !GET SINGLES CONTRIBUTIONS
-    !*************************
-
-    !calculate singles J term
-    ! F [a i] = Omega [a i]
-    call dcopy(no*nv,qpfock,1,omega1,1)
-
-    !calculate singles I term
-    ! Reorder u [c a i k] -> u [a i c k]
-    if(scheme==4.or.scheme==3.or.scheme==0)then
-      call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
-    elseif(scheme==2.or.scheme==1)then
-      call array_convert(u2,w1,[4,1,2,3])
+    !CCD can be achieved by not using singles residual updates here
+    if(.not. DECinfo%CCDhack)then
+      !GET SINGLES CONTRIBUTIONS
+      !*************************
+     
+      !calculate singles J term
+      ! F [a i] = Omega [a i]
+      call dcopy(no*nv,qpfock,1,omega1,1)
+     
+      !calculate singles I term
+      ! Reorder u [c a i k] -> u [a i c k]
+      if(scheme==4.or.scheme==3.or.scheme==0)then
+        call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
+      elseif(scheme==2.or.scheme==1)then
+        call array_convert(u2,w1,[4,1,2,3])
+      endif
+      ! u [a i k c] * F[k c] =+ Omega [a i]
+      call dgemv('n',nv*no,nv*no,1.0E0_realk,w1,nv*no,pqfock,1,1.0E0_realk,omega1,1)
+     
+      !calculate singles G term
+      ! Lambda^p [alpha a]^T Gbi [alpha i] =+ Omega [a i]
+      call dgemm('t','n',nv,no,nb,1.0E0_realk,xv,nb,Gbi,nb,1.0E0_realk,omega1,nv)
+      !calculate singles H term
+      ! (-1) Had [a delta] * Lambda^h [delta i] =+ Omega[a i]
+      call dgemm('n','n',nv,no,nb,-1.0E0_realk,Had,nv,yo,nb,1.0E0_realk,omega1,nv)
     endif
-    ! u [a i k c] * F[k c] =+ Omega [a i]
-    call dgemv('n',nv*no,nv*no,1.0E0_realk,w1,nv*no,pqfock,1,1.0E0_realk,omega1,1)
-
-    !calculate singles G term
-    ! Lambda^p [alpha a]^T Gbi [alpha i] =+ Omega [a i]
-    call dgemm('t','n',nv,no,nb,1.0E0_realk,xv,nb,Gbi,nb,1.0E0_realk,omega1,nv)
-    !calculate singles H term
-    ! (-1) Had [a delta] * Lambda^h [delta i] =+ Omega[a i]
-    call dgemm('n','n',nv,no,nb,-1.0E0_realk,Had,nv,yo,nb,1.0E0_realk,omega1,nv)
     
 
     !GET DOUBLES E2 TERM - AND INTRODUCE PERMUTATIONAL SYMMMETRY

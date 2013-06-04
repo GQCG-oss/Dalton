@@ -1,23 +1,23 @@
 if(ENABLE_64BIT_INTEGERS)
     set(MATH_LIB_SEARCH_ORDER MKL)
 else()
-    set(MATH_LIB_SEARCH_ORDER MKL ESSL ATLAS ACML GENERIC)
+    set(MATH_LIB_SEARCH_ORDER MKL ESSL ATLAS ACML SYSTEM_NATIVE)
 endif()
 
 #-------------------------------------------------------------------------------
-# GENERIC
+# SYSTEM_NATIVE
 
-set(GENERIC_BLAS_INCLUDE_PATH_SUFFIXES)
-set(GENERIC_LAPACK_INCLUDE_PATH_SUFFIXES)
+set(SYSTEM_NATIVE_BLAS_INCLUDE_PATH_SUFFIXES)
+set(SYSTEM_NATIVE_LAPACK_INCLUDE_PATH_SUFFIXES)
 
-set(GENERIC_BLAS_HEADERS   cblas.h)
-set(GENERIC_LAPACK_HEADERS clapack.h)
+set(SYSTEM_NATIVE_BLAS_HEADERS   cblas.h)
+set(SYSTEM_NATIVE_LAPACK_HEADERS clapack.h)
 
-set(GENERIC_BLAS_LIBRARY_PATH_SUFFIXES)
-set(GENERIC_LAPACK_LIBRARY_PATH_SUFFIXES)
+set(SYSTEM_NATIVE_BLAS_LIBRARY_PATH_SUFFIXES)
+set(SYSTEM_NATIVE_LAPACK_LIBRARY_PATH_SUFFIXES)
 
-set(GENERIC_BLAS_LIBS   blas)
-set(GENERIC_LAPACK_LIBS lapack)
+set(SYSTEM_NATIVE_BLAS_LIBS   blas)
+set(SYSTEM_NATIVE_LAPACK_LIBS lapack)
 
 #-------------------------------------------------------------------------------
 # ESSL
@@ -81,56 +81,69 @@ else()
     set(MKL_LAPACK_LIBRARY_PATH_SUFFIXES ia32 32)
 endif()
 
+if(ENABLE_OMP)
+    set(_thread_lib)
+    if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
+        set(_thread_lib mkl_intel_thread)
+    endif()
+    if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
+        set(_thread_lib mkl_pgi_thread)
+    endif()
+    if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
+        set(_thread_lib mkl_gnu_thread)
+    endif()
+else()
+    set(_thread_lib mkl_sequential)
+endif()
+
 if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
-    set(COMPILER_SPECIFIC_THREAD_LIB mkl_intel_thread)
-    set(COMPILER_SPECIFIC_LIB_PREFIX mkl_intel)
+    set(_compiler_mkl_interface mkl_intel)
 endif()
 if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
-    set(COMPILER_SPECIFIC_THREAD_LIB mkl_pgi_thread)
-    set(COMPILER_SPECIFIC_LIB_PREFIX mkl_intel)
+    set(_compiler_mkl_interface mkl_intel)
 endif()
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
-    set(COMPILER_SPECIFIC_THREAD_LIB mkl_gnu_thread)
-    set(COMPILER_SPECIFIC_LIB_PREFIX mkl_gf)
+    set(_compiler_mkl_interface mkl_gf)
+endif()
+if(DEFINED MKL_FLAG)
+    if(NOT DEFINED _compiler_mkl_interface)
+         message(FATAL_ERROR "compiler MKL interface not defined for your compiler")
+    endif()
 endif()
 
-set(MKL_BLAS_LIBS mkl_core ${COMPILER_SPECIFIC_THREAD_LIB} guide pthread m)
+set(_lib_suffix)
 if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
     if(ENABLE_64BIT_INTEGERS)
-        set(MKL_BLAS_LIBS ${MKL_BLAS_LIBS} ${COMPILER_SPECIFIC_LIB_PREFIX}_ilp64)
+        set(_lib_suffix _ilp64)
     else()
-        set(MKL_BLAS_LIBS ${MKL_BLAS_LIBS} ${COMPILER_SPECIFIC_LIB_PREFIX}_lp64)
+        set(_lib_suffix _lp64)
     endif()
-else()
-    set(MKL_BLAS_LIBS ${MKL_BLAS_LIBS} ${COMPILER_SPECIFIC_LIB_PREFIX})
 endif()
 
-# newer MKL versions don't have libguide
-set(MKL_BLAS_LIBS2 mkl_core ${COMPILER_SPECIFIC_THREAD_LIB} pthread m)
-if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-    if(ENABLE_64BIT_INTEGERS)
-        set(MKL_BLAS_LIBS2 ${MKL_BLAS_LIBS2} ${COMPILER_SPECIFIC_LIB_PREFIX}_ilp64)
-    else()
-        set(MKL_BLAS_LIBS2 ${MKL_BLAS_LIBS2} ${COMPILER_SPECIFIC_LIB_PREFIX}_lp64)
-    endif()
+if(ENABLE_SCALAPACK)
+    set(_scalapack_lib mkl_scalapack${_lib_suffix})
+    set(_blacs_lib     mkl_blacs_intelmpi${_lib_suffix})
 else()
-    set(MKL_BLAS_LIBS2 ${MKL_BLAS_LIBS2} ${COMPILER_SPECIFIC_LIB_PREFIX})
+    set(_scalapack_lib)
+    set(_blacs_lib)
 endif()
+
+# first try this MKL BLAS combination
+set(MKL_BLAS_LIBS  ${_scalapack_lib} mkl_core ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_lib} guide pthread m)
+
+# newer MKL BLAS versions do not have libguide
+set(MKL_BLAS_LIBS2 ${_scalapack_lib} mkl_core ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_lib}       pthread m)
 
 # ancient MKL BLAS
 set(MKL_BLAS_LIBS3 mkl guide m)
 
-unset(COMPILER_SPECIFIC_THREAD_LIB)
-
-if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
-    if(ENABLE_64BIT_INTEGERS)
-        set(MKL_LAPACK_LIBS mkl_lapack95_ilp64)
-    else()
-        set(MKL_LAPACK_LIBS mkl_lapack95_lp64)
-    endif()
-else()
-    set(MKL_LAPACK_LIBS mkl_lapack95)
-endif()
+set(MKL_LAPACK_LIBS mkl_lapack95${_lib_suffix} ${_compiler_mkl_interface}${_lib_suffix})
 
 # older MKL LAPACK
 set(MKL_LAPACK_LIBS2 mkl_lapack)
+
+unset(_lib_suffix)
+unset(_thread_lib)
+unset(_compiler_mkl_interface)
+unset(_scalapack_lib)
+unset(_blacs_lib)

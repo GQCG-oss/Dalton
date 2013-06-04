@@ -34,14 +34,15 @@ macro(add_external _project)
         CMAKE_ARGS ${ExternalProjectCMakeArgs}
         )
     include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build)
-    include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/modules)
+  # radovan: don't think the next line is right/needed
+  # include_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/modules)
     link_directories(${PROJECT_BINARY_DIR}/external/lib)
     link_directories(${PROJECT_BINARY_DIR}/external/${_project}-build/external/lib)
     if(DEVELOPMENT_CODE)
         add_dependencies(${_project} git_update)
     endif()
 
-    if(ENABLE_ALWAYS_RESET_EXTERNAL_BUILDS)
+    if(ALWAYS_RESET_EXTERNAL)
         # remove stamps for external builds so that they are rebuilt every time
         add_custom_command(
             TARGET ${_project}

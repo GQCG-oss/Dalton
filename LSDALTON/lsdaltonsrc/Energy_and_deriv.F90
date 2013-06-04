@@ -8,10 +8,10 @@ use matrix_module, only: matrix
 use TYPEDEFTYPE, only: lsitem
 use configurationType, only: configitem
 use TYPEDEF, only: typedef_set_default_setting, typedef_init_setting, &
-     & typedef_free_setting
+     & typedef_free_setting, copy_molecule
 use memory_handling, only: mem_alloc,mem_dealloc
 use scfloop_module, only: scfloop
-use matrix_operations, only: mat_init, mat_free, mat_diag_f
+use matrix_operations, only: mat_init, mat_free, mat_diag_f, mat_assign
 use basis_type, only: free_basissetinfo
 use ks_settings, only: ks_init_incremental_fock, ks_free_incremental_fock
 use decompMod, only: decomp_shutdown, decomp_init, decomposition
@@ -23,6 +23,8 @@ use integralinterfaceMod, only: II_get_molecular_gradient,&
      & II_get_nucpot,II_get_overlap,II_get_h1
 use lsdalton_rsp_mod,only: get_excitation_energy, GET_EXCITED_STATE_GRADIENT
 use dec_main_mod!, only: get_total_mp2energy_from_inputs, get_mp2gradient_and_energy_from_inputs
+use ls_util, only: ls_print_gradient
+use molecule_typetype, only: moleculeinfo
 !
 contains
 ! Get energy: calculates energy in a general way
@@ -204,7 +206,7 @@ contains
     ! Calls II_get_molecular_gradient  
     !
     Implicit none
-    Integer :: lupri,NAtoms,i,j
+    Integer :: lupri,NAtoms,i,j,nbast
     Real(realk) :: E     ! MP2 energy, auxiliary
     Type(Matrix), intent(inout) :: S  ! overlap matrix
     Type(Matrix), intent(inout) :: F,D   ! Fock and density matrix
@@ -212,8 +214,7 @@ contains
     Type(lsitem) :: ls
     Type(ConfigItem), intent(inout) :: Config ! General information
     Real(realk) :: Gradient(3,NAtoms)
-    real(realk) :: Eerr  ! For DEC: Estimated intrinsic energy error
-
+    real(realk) :: h, Eerr  ! For DEC: Estimated intrinsic energy error
     Gradient = 0E0_realk
     Eerr     = 0E0_realk
     ! Calculate gradient
@@ -231,5 +232,55 @@ contains
     
   End subroutine Get_Gradient
 
+
+! Calculates the numerical geometrical gradient of the energy
+!> \author: P. Merlot (almost copy of the work by S. Reine and K. Dankel)
+!> \date 2013-05-16
+subroutine get_num_grad(h,lupri,luerr,ls,S,F,D,C,config,numerical_gradient)
+implicit none
 !
+real(realk), intent(in) :: h
+integer, intent(in)     :: lupri,luerr
+type(lsitem)            :: ls
+Type(Matrix)            :: S,F,D,C ! overlap matrix, Fock and density matrix, Orbitals
+type(configItem)        :: config
+real(realk)             :: numerical_gradient(3,ls%INPUT%MOLECULE%nAtoms)
+!
+Type(Matrix)            :: H1
+real(realk)             :: E(1),Emin,Eplus, Eerr
+integer                 :: i, j, nbast, nAtoms
+Type(Matrix)            :: Fmat(1),Dmat(1)
+
+nbast=D%nrow
+CALL mat_init(H1,nbast,nbast)
+nAtoms = ls%INPUT%MOLECULE%nAtoms
+
+call mat_init(Dmat(1),nbast,nbast)
+call mat_assign(Dmat(1),D)
+call mat_init(Fmat(1),nbast,nbast)
+call mat_assign(Fmat(1),F)
+
+
+do i=1,ls%INPUT%MOLECULE%nAtoms
+   do j=1, 3
+write (*,*) "atom index:",i,"  coord:",j
+write (lupri,*) "atom index:",i,"  coord:",j
+      ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)-h 
+      CALL get_energy(E,Eerr,config,H1,Fmat,Dmat,S,ls,C,nAtoms,lupri,luerr)
+      Emin=E(1)
+      
+      ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)+(2*h)
+      CALL get_energy(E,Eerr,config,H1,Fmat,Dmat,S,ls,C,nAtoms,lupri,luerr)
+      Eplus=E(1)
+
+      ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)=ls%INPUT%MOLECULE%ATOM(i)%CENTER(j)-h
+      
+      numerical_gradient(j,i)=(Eplus-Emin)/(2*h)
+    enddo
+enddo
+write (*,*) "print gradient"
+write (lupri,*) "print gradient"
+CALL LS_PRINT_GRADIENT(lupri,ls%setting%molecule(1)%p,numerical_gradient,nAtoms,'TOTAL')
+end subroutine get_num_grad
+
 End module Energy_and_deriv

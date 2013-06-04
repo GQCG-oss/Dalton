@@ -129,7 +129,7 @@ contains
                & mylsitem,print_level,fragment_job,ypo_fc=ypo_fc,ppfock_fc=ppfock_fc)
        else
 #endif
-          Ecorr = ccsolver_justenergy(ypo_fc,&
+          Ecorr = ccsolver_justenergy(MyMolecule,ypo_fc,&
                & MyMolecule%ypv,MyMolecule%fock, nbasis,nocc,nunocc,mylsitem,&
                & print_level,fragment_job,ppfock_fc,MyMolecule%qqfock)
 #ifdef MOD_UNRELEASED
@@ -153,7 +153,7 @@ contains
 !endif mod_unreleased
 #endif
 
-          Ecorr = ccsolver_justenergy(MyMolecule%ypo,MyMolecule%ypv,&
+          Ecorr = ccsolver_justenergy(MyMolecule,MyMolecule%ypo,MyMolecule%ypv,&
                & MyMolecule%fock, nbasis,nocc,nunocc,mylsitem, &
                & print_level,fragment_job,MyMolecule%ppfock,MyMolecule%qqfock)
 

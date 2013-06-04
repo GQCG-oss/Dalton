@@ -4750,7 +4750,10 @@ call mat_zero(F2(1))
 !Subtract XC-correction
 
 !****Calculation of Level 2 XC matrix from level 2 Density matrix starts here
-WORD = "BX"
+!FOR CAM  
+!WORD = "Camcompx" ! lr only GGAX
+!WORD = "Camx" ! sr only GGAX
+WORD = "BX"  ! full Becke
 call II_DFTsetFunc(WORD(1:80),hfweight) !Here hfweight is only used as a dummy variable
 !Print the functional used at this stage 
 call DFTREPORT(lupri) 
@@ -4988,7 +4991,10 @@ DO idmat=1,ndrhs
    
    ! XC-correction
    !****Calculation of Level 2 XC gradient from level 2 Density matrix starts here
-   WORD = "BX"
+   !FOR CAM  
+   !WORD = "Camcompx" !lr only GGA X
+   !WORD = "Camx"     !sr only GGA X
+   WORD = "BX"      !full Becke
    call II_DFTsetFunc(WORD(1:80),hfweight) !Here hfweight is only used as a dummy variable
    
    !choose the ADMM Level 2 grid
