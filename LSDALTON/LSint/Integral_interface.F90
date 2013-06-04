@@ -4680,6 +4680,14 @@ logical             :: ADMMexchange,testNelectrons,unres,grid_done
 real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3
 character(21)       :: L2file,L3file
+real(realk)         :: GGAXfactor
+
+IF (setting%scheme%cam) THEN
+  GGAXfactor = 1.0E0_realk
+ELSE
+  GGAXfactor = setting%scheme%exchangeFactor
+ENDIF
+
 IF(ndmat.GT.1)call lsquit('II_get_admm_exchange_mat ndmat.GT.1',-1)
 nbast = F%nrow
 unres = matrix_type .EQ. mtype_unres_dense
@@ -4750,13 +4758,9 @@ call mat_zero(F2(1))
 !Subtract XC-correction
 
 !****Calculation of Level 2 XC matrix from level 2 Density matrix starts here
-!FOR CAM  
-!WORD = "Camcompx" ! lr only GGAX
-!WORD = "Camx" ! sr only GGAX
-WORD = "BX"  ! full Becke
-call II_DFTsetFunc(WORD(1:80),hfweight) !Here hfweight is only used as a dummy variable
+call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight) !Here hfweight is only used as a dummy variable
 !Print the functional used at this stage 
-call DFTREPORT(lupri) 
+!call DFTREPORT(lupri) 
 !use this call to add a functional instead of replacing it. 
 !call II_DFTaddFunc(setting%scheme%dft%dftfunc,hfweight)
 
@@ -4771,7 +4775,7 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
 !Transform to level 3
 call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
-call mat_daxpy(-setting%scheme%exchangeFactor,TMPF,dXC)
+call mat_daxpy(-GGAXfactor,TMPF,dXC)
 setting%scheme%dft%testNelectrons = testNelectrons
 
 !Re-set to default (level 3) grid
@@ -4788,13 +4792,13 @@ setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 CALL mat_init(F3(1),nbast,nbast)
 CALL mat_zero(F3(1))
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
-CALL mat_daxpy(setting%scheme%exchangeFactor,F3(1),dXC)
+CALL mat_daxpy(GGAXfactor,F3(1),dXC)
 CALL mat_free(F3(1))
 
-EdXC = (EX3(1)-EX2(1))*setting%scheme%exchangeFactor
+EdXC = (EX3(1)-EX2(1))*GGAXfactor
 
 !Restore dft functional to original
-IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%dftfunc,hfweight)
+IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
          
 !the remainder =================================================
 !call mat_zero(TMPF)
@@ -4931,8 +4935,15 @@ logical             :: GC3,GC2,testNelectrons,grid_done,DSym,unres
 integer             :: AOdfold,AORold
 character(len=80)   :: WORD
 character(21)       :: L2file,L3file
+real(realk)         :: GGAXfactor
 !
 call lstimer('START',ts,te,lupri)
+
+IF (setting%scheme%cam) THEN
+  GGAXfactor = 1.0E0_realk
+ELSE
+  GGAXfactor = setting%scheme%exchangeFactor
+ENDIF
 
 IF (ndrhs.NE.ndlhs) call lsquit('II_get_ADMM_K_gradient:Different LHS/RHS density matrices not implemented',-1)
 
@@ -4991,11 +5002,7 @@ DO idmat=1,ndrhs
    
    ! XC-correction
    !****Calculation of Level 2 XC gradient from level 2 Density matrix starts here
-   !FOR CAM  
-   !WORD = "Camcompx" !lr only GGA X
-   !WORD = "Camx"     !sr only GGA X
-   WORD = "BX"      !full Becke
-   call II_DFTsetFunc(WORD(1:80),hfweight) !Here hfweight is only used as a dummy variable
+   call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight)
    
    !choose the ADMM Level 2 grid
    setting%scheme%dft%igrid = Grid_ADMML2
@@ -5014,7 +5021,7 @@ DO idmat=1,ndrhs
    call mem_alloc(grad_xc2,3,nAtoms)
    grad_xc2 = 0E0_realk
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast2,D2,grad_xc2,nAtoms)
-   call DAXPY(3*nAtoms,-setting%scheme%exchangeFactor,grad_xc2,1,admm_Kgrad,1)
+   call DAXPY(3*nAtoms,-GGAXfactor,grad_xc2,1,admm_Kgrad,1)
    call mem_dealloc(grad_xc2)
    
 
@@ -5028,7 +5035,7 @@ DO idmat=1,ndrhs
    call mem_alloc(grad_XC3,3,nAtoms)
    grad_XC3(:,:) = 0E0_realk
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast,DmatLHS(idmat)%p,grad_XC3,nAtoms)
-   call DAXPY(3*nAtoms,setting%scheme%exchangeFactor,grad_XC3,1,admm_Kgrad,1)
+   call DAXPY(3*nAtoms,GGAXfactor,grad_XC3,1,admm_Kgrad,1)
    call mem_dealloc(grad_XC3)
 
    
@@ -5042,10 +5049,10 @@ DO idmat=1,ndrhs
    call mat_zero(zeromat)
 
    call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,zeromat,DmatLHS(idmat)%p,D2,&
-        &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
+        &   nbast2,nbast,nAtoms,GGAXfactor,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
    call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
    call get_ADMM_K_gradient_projection_term(ADMM_proj,zeromat,xc2,DmatLHS(idmat)%p,D2,&
-        &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
+        &   nbast2,nbast,nAtoms,GGAXfactor,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
    call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
 
 
@@ -5060,21 +5067,23 @@ ENDDO !idmat
 call DSCAL(3*nAtoms,0.25_realk,admm_Kgrad,1)
 
 !Restore dft functional to original
-IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%dftfunc,hfweight)
+IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
 
 CONTAINS
-    SUBROUTINE get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,D3,D2,n2,n3,nAtoms,AO2,AO3,GCAO2,GCAO3,setting,lupri,luerr)
+    SUBROUTINE get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,D3,D2,n2,n3,nAtoms,GGAXfactor,&
+      &                                            AO2,AO3,GCAO2,GCAO3,setting,lupri,luerr)
         implicit none
         type(lssetting),intent(inout) :: setting
         real(realk),intent(inout)  :: ADMM_proj(3,nAtoms)
-        type(matrix),intent(in)    :: D3 !level 3 matrix input 
-        type(matrix),intent(in)    :: D2 !level 2 matrix input 
-        type(matrix),intent(in)    :: k2 !level 2 exact exchange matrix (not transformed to level3)
-        type(matrix),intent(in)    :: xc2 !level 2 exchange-corr. matrix (not transformed to level3)
+        type(matrix),intent(in)    :: D3 !Regular density matrix
+        type(matrix),intent(in)    :: D2 !ADMM projected density matrix
+        type(matrix),intent(in)    :: k2 !ADMM exchange matrix k2(d2)
+        type(matrix),intent(in)    :: xc2 !ADMM XC matrix xc2(d2)
         integer,intent(in)         :: nAtoms
         integer,intent(in)         :: n2,n3,lupri,luerr
         integer,intent(in)         :: AO2,AO3
         logical,intent(in)         :: GCAO2,GCAO3
+        real(realk),intent(in)     :: GGAXfactor
         !
         type(matrix),target        :: A22,B32,C22
         type(matrix)               :: S22,S22inv,S23,T23,tmp32,tmp22
@@ -5086,10 +5095,10 @@ CONTAINS
         call mat_init(T23,n2,n3)
         call mat_init(S23,n2,n3)
         call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
-        ! A22 = 2*k2(d2) - xc2(d2)
+        ! A22 = 2*[ k2(d2) - xc2(d2) ]
         call mat_init(A22,n2,n2)
         call mat_zero(A22)
-        call mat_add(2E0_realk,k2,-setting%scheme%exchangeFactor*2E0_realk, xc2, A22)
+        call mat_add(2E0_realk,k2,-GGAXfactor*2E0_realk, xc2, A22)
 
         ! S22^(-1)
         call mat_init(S22,n2,n2)
