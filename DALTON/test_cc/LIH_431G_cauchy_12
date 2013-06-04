@@ -105,7 +105,7 @@ CRIT1=`$GREP  "   ZDIPLEN     ZDIPLEN       0        12\.9559198882" $log | wc -
 CRIT2=`$GREP  "                             2        920\.450029980" $log | wc -l`
 CRIT3=`$GREP  "                             4        83755\.8824075" $log | wc -l` 
 CRIT4=`$GREP  "                             6        7971366\.12693" $log | wc -l` 
-CRIT5=`$GREP  "                             8        764788701\.163" $log | wc -l` 
+CRIT5=`$GREP  "                             8        764788701\.16." $log | wc -l` 
 CRIT6=`$GREP  "                            10        73478812219\.2" $log | wc -l` 
 CRIT7=`$GREP  "                            12       ( |0)\.706138027779E\+13" $log | wc -l`      
 

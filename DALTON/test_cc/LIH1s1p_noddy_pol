@@ -107,8 +107,8 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 polarizability :
-CRIT1=`$GREP  "XDIPLEN  \(unrel\.\)  ( |0)\.0000   XDIPLEN  \(unrel\.\)  ( |0)\.0000    ( -|-0)\.52964096" $log | wc -l`
-CRIT2=`$GREP  "                   ( -|-0)\.5000                      ( |0)\.5000     ( |0)\.75079172" $log | wc -l`
+CRIT1=`$GREP  "XDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *XDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *(-|-0)\.52964096" $log | wc -l`
+CRIT2=`$GREP  " *(-|-0)\.5000 *(|0)\.5000 *(|0)\.75079172" $log | wc -l`
 
 TEST[2]=`expr $CRIT1  \+ $CRIT2`
 CTRL[2]=2

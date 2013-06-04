@@ -17,7 +17,8 @@ MODULE IntegralInterfaceMOD
   use TYPEDEF, only: getNbasis, retrieve_output, gcao2ao_transform_matrixd2, &
        & retrieve_screen_output, ao2gcao_transform_matrixf, &
        & gcao2ao_transform_fulld, ao2gcao_transform_fullf, &
-       & ao2gcao_half_transform_matrix,GCAO2AO_transform_matrixD2
+       & ao2gcao_half_transform_matrix,gcao2ao_half_transform_matrix,&
+       & GCAO2AO_transform_matrixD2
   use KS_settings, only: SaveF0andD0,incrD0,incrF0,incremental_scheme,&
        & incrDdiff,do_increment,activate_incremental
   use ls_Integral_Interface, only: ls_same_mats, ls_getintegrals, &
@@ -2635,8 +2636,10 @@ TYPE(LSSETTING),intent(INOUT) :: SETTING
 Real(realk),intent(INOUT)       :: reOrtho(3,setting%molecule(1)%p%nAtoms)
 Integer,intent(IN)            :: lupri,luerr,ndmat
 Type(matrixp),intent(IN)      :: DFDmat(ndmat)
+Logical :: GC
+GC = setting%integralTransformGC
 !
-call II_get_reorthoNormalization_mixed(reOrtho,DFDmat,ndmat,AORdefault,AORdefault,setting,lupri,luerr)
+call II_get_reorthoNormalization_mixed(reOrtho,DFDmat,ndmat,AORdefault,AORdefault,GC,GC,setting,lupri,luerr)
 !
 END SUBROUTINE II_get_reorthoNormalization
 
@@ -2649,12 +2652,13 @@ END SUBROUTINE II_get_reorthoNormalization
 !> \param setting Integral evalualtion settings
 !> \param lupri Default print unit
 !> \param luerr Unit for error printing
-SUBROUTINE II_get_reorthoNormalization_mixed(reOrtho,DFDmat,ndmat,AO1,AO2,setting,lupri,luerr)
+SUBROUTINE II_get_reorthoNormalization_mixed(reOrtho,DFDmat,ndmat,AO1,AO2,GC1,GC2,setting,lupri,luerr)
 IMPLICIT NONE
 TYPE(LSSETTING),intent(INOUT) :: SETTING
-Real(realk),intent(INOUT)       :: reOrtho(3,setting%molecule(1)%p%nAtoms)
+Real(realk),intent(INOUT)     :: reOrtho(3,setting%molecule(1)%p%nAtoms)
 Integer,intent(IN)            :: lupri,luerr,ndmat,AO1,AO2
 Type(matrixp),intent(IN)      :: DFDmat(ndmat)
+Logical,intent(IN)            :: GC1,GC2
 !
 Type(matrixp)       :: DFDmat_AO(ndmat)
 integer             :: nAtoms,I
@@ -2663,11 +2667,13 @@ call time_II_operations1()
 IF(ndmat.NE.1)call lsquit('option not verified in II_get_reorthoNormalization',-1)
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%ONEEL_THR
 
-IF(setting%IntegralTransformGC)THEN
+IF (GC1.OR.GC2) THEN
    DO I=1,ndmat
       allocate(DFDmat_AO(I)%p)
       CALL mat_init(DFDmat_AO(I)%p,DFDmat(1)%p%nrow,DFDmat(1)%p%ncol)
-      call GCAO2AO_transform_matrixD2(DFDmat(I)%p,DFDmat_AO(I)%p,setting,lupri)
+      CALL mat_assign(DFDmat_AO(I)%p,DFDmat(I)%p)
+      IF (GC1) call GCAO2AO_half_transform_matrix(DFDmat_AO(I)%p,SETTING,LUPRI,1)
+      IF (GC2) call GCAO2AO_half_transform_matrix(DFDmat_AO(I)%p,SETTING,LUPRI,2)
    ENDDO
    CALL ls_attachDmatToSetting(DFDmat_AO,ndmat,setting,'LHS',1,2,.TRUE.,lupri)
 ELSE
@@ -2681,7 +2687,7 @@ CALL ls_getIntegrals(AO1,AO2,AOempty,AOempty,&
      &OverlapOperator,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR)
 CALL retrieve_Output(lupri,setting,reOrtho,setting%IntegralTransformGC)
 CALL ls_freeDmatFromSetting(setting)
-IF(setting%IntegralTransformGC)THEN
+IF(GC1.OR.GC2)THEN
    DO I=1,ndmat
       CALL mat_free(DFDmat_AO(I)%p)
       deallocate(DFDmat_AO(I)%p)
@@ -4744,7 +4750,10 @@ call mat_zero(F2(1))
 !Subtract XC-correction
 
 !****Calculation of Level 2 XC matrix from level 2 Density matrix starts here
-WORD = "BX"
+!FOR CAM  
+!WORD = "Camcompx" ! lr only GGAX
+!WORD = "Camx" ! sr only GGAX
+WORD = "BX"  ! full Becke
 call II_DFTsetFunc(WORD(1:80),hfweight) !Here hfweight is only used as a dummy variable
 !Print the functional used at this stage 
 call DFTREPORT(lupri) 
@@ -4982,7 +4991,10 @@ DO idmat=1,ndrhs
    
    ! XC-correction
    !****Calculation of Level 2 XC gradient from level 2 Density matrix starts here
-   WORD = "BX"
+   !FOR CAM  
+   !WORD = "Camcompx" !lr only GGA X
+   !WORD = "Camx"     !sr only GGA X
+   WORD = "BX"      !full Becke
    call II_DFTsetFunc(WORD(1:80),hfweight) !Here hfweight is only used as a dummy variable
    
    !choose the ADMM Level 2 grid
@@ -5031,7 +5043,6 @@ DO idmat=1,ndrhs
 
    call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,zeromat,DmatLHS(idmat)%p,D2,&
         &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
-
    call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
    call get_ADMM_K_gradient_projection_term(ADMM_proj,zeromat,xc2,DmatLHS(idmat)%p,D2,&
         &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
@@ -5108,11 +5119,13 @@ CONTAINS
         tmpDFD(1)%p => C22
         call mem_alloc(reOrtho2,3,nAtoms)
         reOrtho2 = 0E0_realk
-        call II_get_reorthoNormalization_mixed(reOrtho2,tmpDFD,1,AO2,AO2,setting,lupri,luerr)
+        call II_get_reorthoNormalization_mixed(reOrtho2,tmpDFD,1,AO2,AO2,GCAO2,GCAO2,setting,&
+     &                                         lupri,luerr)
         tmpDFD(1)%p => B32
         call mem_alloc(reOrtho1,3,nAtoms)
         reOrtho1 = 0E0_realk
-        call II_get_reorthoNormalization_mixed(reOrtho1,tmpDFD,1,AO3,AO2,setting,lupri,luerr)
+        call II_get_reorthoNormalization_mixed(reOrtho1,tmpDFD,1,AO3,AO2,GCAO3,GCAO2,setting,&
+     &                                         lupri,luerr)
 
         ADMM_proj = 0E0_realk
         call DAXPY(3*nAtoms, 1E0_realk,reOrtho1,1,ADMM_proj,1)

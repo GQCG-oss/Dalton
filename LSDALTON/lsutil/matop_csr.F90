@@ -186,7 +186,7 @@ contains
     REAL(realk) :: mat_csr_outdia_sqnorm2
     integer     :: i,j
     
-!    mat_csr_outdia_sqnorm2 = 0.0E0_realk
+    mat_csr_outdia_sqnorm2 = 0.0E0_realk
     do i = 1, a%nrow
        do j = a%row(i), a%row(i+1)-1
           if (a%col(j) .ne. i) then

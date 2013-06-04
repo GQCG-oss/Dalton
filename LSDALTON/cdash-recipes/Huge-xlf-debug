@@ -23,7 +23,7 @@ cd $TMP_DIR/build
 ## -DUSERDEFINED_LIBS="-Llib -L/usr/lib -lxlsmp -lmass -lmassv -L/usr/local/mass -lpthread -lC -lesslsmp6464"
 #cmake -DCMAKE_Fortran_COMPILER=/usr/bin/xlf90_r -DCMAKE_C_COMPILER=/usr/vacpp/bin/xlc -DCMAKE_BUILD_TYPE=Debug -DBUILDNAME=Huge-AIX-XL -DSCRATCH_DIR=$SCRATCH_DIR /gpfshome/kemi/tkjaer/NightlyTestingCdash/tmp/daltonDebug
 
-cmake -DCMAKE_Fortran_COMPILER=/usr/bin/xlf90_r -DCMAKE_C_COMPILER=/usr/vacpp/bin/xlc -DCMAKE_BUILD_TYPE=Debug -DBUILDNAME=Huge-AIX-XL-Debug -DENABLE_INTERNAL_MATH=1 -DSCRATCH_DIR=$SCRATCH_DIR /gpfshome/kemi/tkjaer/NightlyTestingCdash/tmp/daltonDebug
+cmake -DCMAKE_Fortran_COMPILER=/usr/bin/xlf90_r -DCMAKE_C_COMPILER=/usr/vacpp/bin/xlc -DCMAKE_BUILD_TYPE=Debug -DBUILDNAME=Huge-AIX-XL-Debug -DSCRATCH_DIR=$SCRATCH_DIR /gpfshome/kemi/tkjaer/NightlyTestingCdash/tmp/daltonDebug
 
 cd $TMP_DIR/build
 #make VERBOSE=1 #>& outputfromcompilationDebug

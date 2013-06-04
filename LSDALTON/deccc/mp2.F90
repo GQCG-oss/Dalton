@@ -8,7 +8,6 @@ module mp2_module
       use infpar_module
       use lsmpi_type
 #endif
-  use,intrinsic :: iso_c_binding, only: c_f_pointer, c_loc
   use precision
   use lstiming!, only: lstimer
   use screen_mod!, only: DECscreenITEM
@@ -150,8 +149,8 @@ contains
     real(realk),pointer :: UoccEOST(:,:),  UoccEOS(:,:), UvirtEOS(:,:),CvirtT(:,:),gvirt2(:,:,:,:)
     real(realk),pointer :: gocc(:,:,:,:),tocc(:,:,:,:),gvirt(:,:,:,:),tvirt(:,:,:,:),CoccT(:,:)
     integer,pointer :: V(:,:)
-    integer(kind=long) :: dim1,dim2,dim3,dim4,idx,idx2,max1,max2,max3,maxdim,start
-    integer:: Astart, Aend,dimA, A,B,I,J,counter,siz,arrsize
+    integer(kind=long) :: dim1,dim2,dim3,dim4,idx,idx2,max1,max2,max3,maxdim,start,siz
+    integer:: Astart, Aend,dimA, A,B,I,J,counter,arrsize
     real(realk) :: flops
     integer,dimension(4) :: dimocc, dimvirt
     integer :: m,k,n, nvbatches, Abat, GammaStart, GammaEnd, AlphaStart, AlphaEnd,c,d,l
@@ -187,7 +186,7 @@ contains
 #endif
     integer(kind=ls_mpik) :: ierr
     integer :: myload,ncore
-    real(realk),pointer :: arr(:)
+    real(realk),allocatable,target :: arr(:)
     integer :: num,extra,narrays,nocctot
     type(mypointer),pointer :: CvirtTspecial(:,:)
     real(realk),pointer :: mini1(:),mini2(:),mini3(:),mini4(:)
@@ -640,15 +639,15 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       ! tmp1 starts pointing to element 1 in arr and has size bat%size1(1)
       start=1
       call mypointer_init(maxdim,arr,start,bat%size1(1),tmp1)
-      CALL c_f_pointer(c_loc(arr(tmp1%start)),tmp1%p,[tmp1%N])
+
       ! tmp2 starts pointing to element tmp1%end+1 in arr and has size bat%size1(2)
       start=tmp1%end+1
       call mypointer_init(maxdim,arr,start,bat%size1(2),tmp2)
-      CALL c_f_pointer(c_loc(arr(tmp2%start)),tmp2%p,[tmp2%N])
+
       ! tmp2 starts pointing to element tmp2%end+1 in arr and has size bat%size1(3)
       start=tmp2%end+1
       call mypointer_init(maxdim,arr,start,bat%size1(3),tmp3)
-      CALL c_f_pointer(c_loc(arr(tmp3%start)),tmp3%p,[tmp3%N])
+
 
 
       ! Pointers for step 2
@@ -661,23 +660,19 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       ! tmp4 starts pointing to element 1 in arr and has size bat%size2(4)
       start=1
       call mypointer_init(maxdim,arr,start,bat%size2(4),tmp4)
-      CALL c_f_pointer(c_loc(arr(tmp4%start)),tmp4%p,[tmp4%N])
       start = tmp4%end +1
 
       do j=1,nthreads
          ! tmp array b1 inside OMP loop
          call mypointer_init(maxdim,arr,start,bat%size2(1),b1(j))
-         CALL c_f_pointer(c_loc(arr(b1(j)%start)),b1(j)%p,[b1(j)%N])
          start = b1(j)%end + 1
 
          ! tmp array b2 inside OMP loop
          call mypointer_init(maxdim,arr,start,bat%size2(2),b2(j))
-         CALL c_f_pointer(c_loc(arr(b2(j)%start)),b2(j)%p,[b2(j)%N])
          start = b2(j)%end + 1
 
          ! tmp array b3 inside OMP loop
          call mypointer_init(maxdim,arr,start,bat%size2(3),b3(j))
-         CALL c_f_pointer(c_loc(arr(b3(j)%start)),b3(j)%p,[b3(j)%N])
          start = b3(j)%end + 1
       end do
 
@@ -751,17 +746,17 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           ! Therefore, the code gets slightly uglier/more complicated.
           idx=i8*(i-1)*nbasis*nbasis+tmp1%start  ! start index for tmp1
           siz=nbasis*nbasis  ! size of (alpha,gamma) chunk of tmp1
-          CALL c_f_pointer(c_loc(arr(idx)),mini1,[siz])  ! make mini1 point to this chunk of tmp1
+          mini1 => arr(idx:idx+siz-1)   ! make mini1 point to this chunk of tmp1
           idx=i8*(i-1)*nbasis*nocc+tmp3%start ! start index for tmp3
           siz=nbasis*nocc  ! size of (alpha,gamma) chunk of tmp3
-          CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz]) ! make mini3 point to this chunk of tmp3
+          mini3 => arr(idx:idx+siz-1)  ! make mini3 point to this chunk of tmp3
           call dec_simple_dgemm(nbasis,nbasis, nocc, mini1, &
                & CDIAGocc%val, mini3, 'n', 'n')
 
           ! tmp2(B,J,alpha,gamma) = sum_{beta} C^T_{B beta} tmp3(beta,J,alpha,gamma)
           idx=i8*(i-1)*nvirt*nocc + tmp2%start
           siz=nvirt*nocc
-          CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
+          mini2 => arr(idx:idx+siz-1)
           call dec_simple_dgemm(nvirt,nbasis, nocc, CvirtT,mini3,mini2, 'n', 'n')
 
        end do
@@ -820,9 +815,10 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           do counter=1,dimGamma*dimAlpha
              idx=i8*(counter-1)*nvirt*nocc + tmp2%start
              siz = nvirt*nocc
-             CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
+             mini2 => arr(idx:idx+siz-1)
+
              idx=i8*(counter-1)*nvirt*nocc + tmp1%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini1,[siz])
+             mini1 => arr(idx:idx+siz-1)
              call mat_transpose(mini2,nvirt,nocc,mini1)
           end do
 
@@ -882,9 +878,9 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
        do counter=1,nocctot
              idx=i8*(counter-1)*nvirt*nocc*dimAlpha + tmp3%start
              siz = nvirt*nocc*dimAlpha
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
+             mini3 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*nvirt*nocc*dimAlpha + tmp4%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini4,[siz])
+             mini4 => arr(idx:idx+siz-1)
              call mat_transpose(mini3,nvirt*nocc,dimAlpha,mini4)
        end do
 
@@ -961,9 +957,9 @@ ts=.true.
           do counter=1,noccEOS
              idx=i8*(counter-1)*dimA*nvirt*nocc + b3(num)%start
              siz = dimA*nvirt*nocc
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
+             mini3 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt*nocc + b2(num)%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
+             mini2 => arr(idx:idx+siz-1)
              call mat_transpose(mini3,dimA*nvirt,nocc,mini2)
           end do
 
@@ -1004,9 +1000,9 @@ ts=.true.
           do counter=1,nocc*nocctot
              idx=i8*(counter-1)*dimA*nvirt + b1(num)%start
              siz = dimA*nvirt
-             CALL c_f_pointer(c_loc(arr(idx)),mini1,[siz])
+             mini1 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt + b3(num)%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
+             mini3 => arr(idx:idx+siz-1)
              call mat_transpose(mini1,dimA,nvirt,mini3)
           end do
 
@@ -1022,9 +1018,9 @@ ts=.true.
           do counter=1,nocc*nocctot
              idx=i8*(counter-1)*nvirtEOS*dimA + b2(num)%start
              siz=nvirtEOS*dimA
-             CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
+             mini2 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*nvirtEOS*dimA + b3(num)%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
+             mini3 => arr(idx:idx+siz-1)
              call mat_transpose(mini2,nvirtEOS,dimA,mini3)
           end do
 
@@ -1105,9 +1101,9 @@ ts=.true.
           do counter=1,noccEOS
              idx=i8*(counter-1)*dimA*nvirt*nocc + b3(num)%start
              siz = dimA*nvirt*nocc
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
+             mini3 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt*nocc + b2(num)%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
+             mini2 => arr(idx:idx+siz-1)
              call mat_transpose(mini3,dimA*nvirt,nocc,mini2)
           end do
 
@@ -1143,9 +1139,9 @@ ts=.true.
           do counter=1,nocc*nocc
              idx=i8*(counter-1)*dimA*nvirt + b1(num)%start
              siz = dimA*nvirt
-             CALL c_f_pointer(c_loc(arr(idx)),mini1,[siz])
+             mini1 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt + b3(num)%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
+             mini3 => arr(idx:idx+siz-1)
              call mat_transpose(mini1,dimA,nvirt,mini3)
           end do
 
@@ -1160,9 +1156,9 @@ ts=.true.
           do counter=1,nocc*nocc
              idx=i8*(counter-1)*nvirtEOS*dimA + b2(num)%start
              siz = nvirtEOS*dimA
-             CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
+             mini2 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*nvirtEOS*dimA + b3(num)%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
+             mini3 => arr(idx:idx+siz-1)
              call mat_transpose(mini2,nvirtEOS,dimA,mini3)
           end do
 
@@ -1290,10 +1286,8 @@ call mem_dealloc(decmpitasks)
  ! --------------------------------------------------
  start = 1
  call mypointer_init(maxdim,arr,start,bat%size3(1),tmp1)
- CALL c_f_pointer(c_loc(arr(tmp1%start)),tmp1%p,[tmp1%N])
  start = tmp1%end+1
  call mypointer_init(maxdim,arr,start,bat%size3(2),tmp2)
- CALL c_f_pointer(c_loc(arr(tmp2%start)),tmp2%p,[tmp2%N])
 
 
 
@@ -1400,9 +1394,9 @@ call mem_dealloc(decmpitasks)
  do counter=1,nocctot
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp1%start
     siz = nvirtEOS*nvirtEOS*nocc
-    CALL c_f_pointer(c_loc(arr(idx)),mini1,[siz])
+    mini1 => arr(idx:idx+siz-1)
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp2%start
-    CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
+    mini2 => arr(idx:idx+siz-1)
     call mat_transpose(mini1,nvirtEOS*nvirtEOS, nocc,mini2)
  end do
 
@@ -1438,9 +1432,9 @@ call mem_dealloc(decmpitasks)
  do counter=1,nocc
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp1%start
     siz = nvirtEOS*nvirtEOS*nocc
-    CALL c_f_pointer(c_loc(arr(idx)),mini1,[siz])
+    mini1 => arr(idx:idx+siz-1)
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp2%start
-    CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
+    mini2 => arr(idx:idx+siz-1)
     call mat_transpose(mini1,nvirtEOS*nvirtEOS,nocc,mini2)
  end do
 

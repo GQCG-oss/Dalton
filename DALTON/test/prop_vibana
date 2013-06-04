@@ -145,19 +145,19 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energy
-CRIT1=`$GREP "Final * HF energy\: * \-262\.375106125" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-262\.37510612[5-6]" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="SCF ENERGY NOT CORRECT"
 
 # Gradient
 CRIT1=`$GREP "N. * x * (\-0|\-)\.000000084[0-9]" $log | wc -l`
-CRIT2=`$GREP "N. * y * (0| )\.000000061[0-9]" $log | wc -l`
+CRIT2=`$GREP "N. * y * (0| )\.00000006[1-2][0-9]" $log | wc -l`
 CRIT3=`$GREP "C. * x * (0| )\.000000058[0-9]" $log | wc -l`
 CRIT4=`$GREP "C. * y * (\-0|\-)\.000000090[0-9]" $log | wc -l`
 CRIT5=`$GREP "C. * y * (0| )\.000000009[0-9]" $log | wc -l`
 CRIT6=`$GREP "C. * y * (0| )\.000000002[0-9]" $log | wc -l`
-CRIT7=`$GREP "H. * x * (0| )\.000000003[0-9]" $log | wc -l`
+CRIT7=`$GREP "H. * x * (0| )\.00000000[3-4][0-9]" $log | wc -l`
 CRIT8=`$GREP "H. * y * (0| )\.000000027[0-9]" $log | wc -l`
 CRIT9=`$GREP "H. * y * (\-0|\-)\.000000003[0-9]" $log | wc -l`
 CRIT10=`$GREP "H. * y * (\-0|\-)\.000000007[0-9]" $log | wc -l`

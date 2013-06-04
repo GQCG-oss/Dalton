@@ -46,7 +46,6 @@ pre: $(F_CPPS)
 # we should really have a separate target for bsm to properly
 # track dependencies but we would not like it to be too troublesome.
 libLSint.a: $(F_OBJS) $(F90_OBJS) 
-#	if grep -q HAVE_BSM ../Makefile.config; then cd bsm && $(MAKE) install prefix=../.. AR="$(AR)"; fi
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 

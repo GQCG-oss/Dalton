@@ -351,7 +351,7 @@ SUBROUTINE lsdalton
 !        call lsquit('test done',-1)
 
         !lcm basis
-        if (config%decomp%cfg_lcm ) then
+        if (config%decomp%cfg_lcm .or. config%decomp%cfg_mlo) then
            ! get orbitals
            call mat_init(Cmo,nbast,nbast)
            allocate(eival(nbast))
@@ -365,7 +365,7 @@ SUBROUTINE lsdalton
            call LSclose(LUN,'KEEP')
 
            ! localize orbitals
-           call leastchange_lcm(config%decomp,Cmo,config%decomp%nocc,ls)
+           if (config%decomp%cfg_lcm) call leastchange_lcm(config%decomp,Cmo,config%decomp%nocc,ls)
 
            if (config%decomp%cfg_mlo ) then
               write(ls%lupri,'(a)')'Pred= **** LEVEL 3 ORBITAL LOCALIZATION ****'
@@ -373,17 +373,12 @@ SUBROUTINE lsdalton
 	      if (config%davidOrbLoc%make_orb_plot) then
                  call make_orbitalplot_file(CMO,config%davidOrbLoc,ls,config%plt)
 	      end if
-              lun = -1
-              CALL LSOPEN(lun,'localized_orbitals.u','unknown','UNFORMATTED')
-              call mat_write_to_disk(lun,Cmo,OnMaster)
-              call LSclose(LUN,'KEEP')
-           else
-              !write lcm to file
-              lun = -1
-              CALL LSOPEN(lun,'localized_orbitals.u','unknown','UNFORMATTED')
-              call mat_write_to_disk(lun,Cmo,OnMaster)
-              call LSclose(LUN,'KEEP')
-           end if
+           endif
+           !write lcm to file
+           lun = -1
+           CALL LSOPEN(lun,'lcm_orbitals.u','unknown','UNFORMATTED')
+           call mat_write_to_disk(lun,Cmo,OnMaster)
+           call LSclose(LUN,'KEEP')
 
 
            if (.not. config%decomp%cfg_mlo) then
