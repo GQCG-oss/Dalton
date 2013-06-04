@@ -102,6 +102,8 @@ set(ExternalProjectCMakeArgs
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
 
+include(ConfigOMP)
+
 include(ConfigMath)
 # if BLAS and/or LAPACK not found, add own sources to the list of
 # sources to compile
@@ -127,7 +129,6 @@ if(NOT ENABLE_RELEASE)
 endif()
 
 include(ConfigMPI)
-include(ConfigOMP)
 
 if(ENABLE_LSEEK)
     add_definitions(-DHAVE_NO_LSEEK64)

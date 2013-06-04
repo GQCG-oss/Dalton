@@ -49,6 +49,7 @@ include(SourcesDALTON)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
+include(ConfigOMP)
 include(ConfigMath)
 include(ConfigMPI)
 include(ConfigSafeGuards)
@@ -76,8 +77,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
     add_definitions(-DMOD_UNRELEASED)
 endif()
-
-include(ConfigOMP)
 
 if(ENABLE_GEN1INT)
     add_definitions(-DBUILD_GEN1INT)
