@@ -15,7 +15,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     endif()
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fbacktrace -fcray-pointer -Wuninitialized")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -w")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -ffast-math -funroll-loops -ftree-vectorize -w -g -pg")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -static"
@@ -48,7 +48,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
     set(CMAKE_Fortran_FLAGS         "-fno-second-underscore -ftrace=full -DVAR_G95")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fsloppy-char")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -fsloppy-char -g -pg")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
@@ -71,7 +71,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     set(CMAKE_Fortran_FLAGS         "-w -fpp -assume byterecl -DVAR_IFORT")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -traceback")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -xW -ip")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -xW -ip -g -pg")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
 
     if(DEFINED MKL_FLAG)
         set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MKL_FLAG}")
@@ -111,7 +111,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
 # I would like to add -fast but this makes certain dec tests fails
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mipa=fast")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -Mipa=fast -g -pg")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8 -i8storage"
@@ -140,7 +140,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-qstrict -O3")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-qstrict -O3 -p -pg")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -q64"
