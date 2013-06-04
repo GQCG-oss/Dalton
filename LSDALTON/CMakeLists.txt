@@ -127,10 +127,7 @@ if(NOT ENABLE_RELEASE)
 endif()
 
 include(ConfigMPI)
-
-if(ENABLE_OMP)
-    add_definitions(-DVAR_OMP)
-endif()
+include(ConfigOMP)
 
 if(ENABLE_LSEEK)
     add_definitions(-DHAVE_NO_LSEEK64)
