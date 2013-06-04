@@ -186,7 +186,7 @@ module lsmpi_type
 !integer conversion factor
 #ifdef VAR_INT64
 #ifdef VAR_LSMPI
-#ifdef VAR_LSMPI_32
+#ifdef VAR_MPI_32BIT_INT
   integer,parameter :: int_to_short=4 !int64,mpi & mpi32
 #else
   integer,parameter :: int_to_short=8 !int64,mpi nompi32
@@ -4455,7 +4455,7 @@ contains
     integer(kind=short) :: buffer(*)
 #ifdef VAR_LSMPI
 #ifdef VAR_INT64
-#ifdef VAR_LSMPI_32
+#ifdef VAR_MPI_32BIT_INT
     integer(kind=4),pointer :: buffer2(:),buffer1(:)
 #else
     integer(kind=8),pointer :: buffer2(:),buffer1(:)

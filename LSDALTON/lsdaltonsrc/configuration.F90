@@ -3372,7 +3372,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          CALL mat_select_type(mtype_scalapack,lupri,nbast)
 
 #ifdef VAR_INT64
-#ifdef VAR_LSMPI_32
+#ifdef VAR_MPI_32BIT_INT
          print*,'you cannot compile using a 64 bit integers, when linking to a 32 bit integer library and'
          print*,'use the 64 bit integer BLACS/SCALAPACK provided by MKL/intel'
          write(config%lupri,*)'you cannot compile using a 64 bit integers, when linking to a 32 bit integer library and'

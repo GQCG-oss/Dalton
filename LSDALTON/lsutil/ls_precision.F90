@@ -12,7 +12,7 @@ MODULE precision
 !integer defining the size of the MPI input (depending on wheter the mpi library
 !is compiled with 64 or 32 bit integers)
 #ifdef VAR_INT64
-#ifdef VAR_LSMPI_32
+#ifdef VAR_MPI_32BIT_INT
   integer, parameter :: ls_mpik = 4
 #else
   integer, parameter :: ls_mpik = 8
