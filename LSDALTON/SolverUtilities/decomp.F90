@@ -406,8 +406,8 @@ contains
    else if (decomp%lowdin_iterative) then
       !print *, "Preparing to do iterative S^1/2 decomposition..."
       write (decomp%lupri,*) "Preparing to do iterative S^1/2 decomposition..."
-!      call lowdin_schulz(decomp%S,decomp%U,decomp%U_inv,decomp%lupri)
-      call lsquit('Brano needs to add qblas routines to lsdalton own math lib',-1)
+      call lowdin_schulz(decomp%S,decomp%U,decomp%U_inv,decomp%lupri)
+!      call lsquit('Brano needs to add qblas routines to lsdalton own math lib',-1)
       call lstimer('LWITER',tmstart,tmend,decomp%lupri)
 
    else if (decomp%lowdin_qiterative) then

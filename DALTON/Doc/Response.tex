@@ -1421,16 +1421,9 @@ you will need $L = 0, 1$ and $L = 0, \ldots, 5$, respectively.
 
 Input for specification of a damped response
 calculation.
-\index{damped response}\index{response!damped}
-
-This section of the manual has not been written yet. Check the file 'rsp/absorp.F' for input options.
-
-\subsection{Damped response calculation: \Sec{ABSLRS}}
-\label{sec:abslrsrsp}
-
-Input for specification of a damped response calculation using the solver
-with symmetrized trial vectors.\cite{kauczor:2011}
-\index{damped response}\index{response!damped}
+\index{damped response}\index{response!damped}\\
+By default, the solver
+with symmetrized trial vectors \cite{kauczor:2011} is used.
 
 \begin{description}
 \item{\Key{ALPHA}} \\
@@ -1438,6 +1431,14 @@ Calculate the linear polarizability.
 
 \item{\Key{MCD}} \\
 Calculate the magnetic circular dichroism (MCD).
+
+\item{\Key{BETA}}\\
+Calculate the first-order hyperpolarizability.
+
+\item{\Key{SHG}}\\
+Only response functions connected with second harmonic
+generation\index{second harmonic generation}\index{response!second harmonic generation}\index{quadratic response!second harmonic generation}
+are computed, $\beta(-2\omega,\omega,\omega)$ .
 
 \item{\Key{FREQUE}} \\
 \verb|READ (LUCMD,*),ABS_NFREQ_ALPHA |\\
@@ -1455,15 +1456,22 @@ the interval, and \verb|STEP| is a step between frequencies of interest.
 \item{\Key{BFREQ}} \\
 \verb|READ (LUCMD,*),ABS_NFREQ_BETA_B |\\
 \verb|READ (LUCMD,*) (ABS_FREQ_BETA_B(I), I = 1, ABS_NFREQ_BETA_B) | \\
-Select frequencies for which MCD will be calculated.
-The first line contains number of frequencies and in the second line the
-frequencies of interest are specified.
+The frequencies\index{frequency!cubic response}
+$\omega_b$. Input as in \Key{FREQUE}.
+Default only zero frequency (static).
 
 \item{\Key{BFREQI}} \\
 \verb|READ (LUCMD,*),FREQ1 FREQ2 STEP |\\
-Select the frequency interval for which MCD will be calculated.
+Select the frequency interval for $\omega_b$.
 \verb|FREQ1| and \verb|FREQ2| refer to the first and the last frequency in
 the interval, and \verb|STEP| is a step between frequencies of interest.
+
+\item{\Key{CFREQ}} \\
+\verb|READ (LUCMD,*),ABS_NFREQ_BETA_C |\\
+\verb|READ (LUCMD,*) (ABS_FREQ_BETA_C(I), I = 1, ABS_NFREQ_BETA_C) | \\
+The frequencies\index{frequency!cubic response}
+$\omega_c$. Input as in \Key{FREQUE}.
+Default only zero frequency (static).
 
 \item{\Key{DAMPING}}      \\
 \verb|READ (LUCMD,*),ABS_DAMP |\\
@@ -1510,6 +1518,17 @@ parameter $\gamma = 0$.
 calculations for many frequencies on large systems.
 If calculations are performed using DFT, it is recommended to use
 a multiplicity of 4 to obtain full efficiency. 
+
+\item{\Key{OLDCPP}}\\
+ The old complex polarization propagator
+solver \cite{pndmbhjajjojcp123,pndmbhjajjojcp115} is used
+in the damped response calculations. For {\Key{MCSCF}} calculations, the
+old CPP solver is always used.
+\item{\Key{EXCITA}}\\
+\verb|READ (LUCMD,*),NEXCITED_STATES|\\
+ Number of first eigenvectors used as the trial vectors in the CPP solver.
+It is neglected in the input unless the
+{\Key{OLDCPP}} is specified.
 
 \end{description}
 \subsection{Electron Spin Resonance: \Sec{ESR}}

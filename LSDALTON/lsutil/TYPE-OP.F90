@@ -936,51 +936,51 @@ ELSE
    WRITE(LUPRI,*) '--------------------------------------------------------------------'
 ENDIF
 
-IF(MOLECULE%nAtoms .GT. 30)THEN
-   IF(BASIS%REGULAR%Labelindex .EQ. 0)THEN
-      DO I=1,30
-         IF(MOLECULE%ATOM(I)%nbasis == 2) THEN
-            ICHARGE = NINT(MOLECULE%ATOM(I)%CHARGE)
-            ITYPE1 = BASIS%REGULAR%CHARGEINDEX(ICHARGE)
-            ITYPE2 = BASIS%AUXILIARY%CHARGEINDEX(ICHARGE)
-            WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,2X,A20,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
-                 &BASIS%REGULAR%ATOMTYPE(ITYPE1)%NAME,&
-                 &BASIS%AUXILIARY%ATOMTYPE(ITYPE2)%NAME,&
-                 &MOLECULE%ATOM(I)%Phantom,&
-                 &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
-         ELSE
-            ICHARGE = NINT(MOLECULE%ATOM(I)%CHARGE)
-            ITYPE1 = BASIS%REGULAR%CHARGEINDEX(ICHARGE)
-            WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
-                 &BASIS%REGULAR%ATOMTYPE(ITYPE1)%NAME,&
-                 &MOLECULE%ATOM(I)%Phantom,&
-                 &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
-         ENDIF
-      ENDDO
-      WRITE(LUPRI,'(2X,A)')'Since you have more than 30 atoms only the first 30'
-      WRITE(LUPRI,'(2X,A)')'are printed in order to limit output'
-   ELSE
-      DO I=1,30
-         IF(MOLECULE%ATOM(I)%nbasis == 2) THEN
-            ITYPE1 = MOLECULE%ATOM(I)%IDtype(1)
-            ITYPE2 = MOLECULE%ATOM(I)%IDtype(2)
-            WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,2X,A20,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
-                 &BASIS%REGULAR%ATOMTYPE(ITYPE1)%NAME,&
-                 &BASIS%AUXILIARY%ATOMTYPE(ITYPE2)%NAME,&
-                 &MOLECULE%ATOM(I)%Phantom,&
-                 &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
-         ELSE
-            ITYPE1 = MOLECULE%ATOM(I)%IDtype(1)
-            WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
-                 &BASIS%REGULAR%ATOMTYPE(ITYPE1)%NAME,&
-                 &MOLECULE%ATOM(I)%Phantom,&
-                 &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
-         ENDIF
-      ENDDO
-      WRITE(LUPRI,'(2X,A)')'Since you have more than 30 atoms only the first 30'
-      WRITE(LUPRI,'(2X,A)')'are printed in order to limit output'
-   ENDIF
-ELSE
+! IF(MOLECULE%nAtoms .GT. 30)THEN
+!    IF(BASIS%REGULAR%Labelindex .EQ. 0)THEN
+!       DO I=1,30
+!          IF(MOLECULE%ATOM(I)%nbasis == 2) THEN
+!             ICHARGE = NINT(MOLECULE%ATOM(I)%CHARGE)
+!             ITYPE1 = BASIS%REGULAR%CHARGEINDEX(ICHARGE)
+!             ITYPE2 = BASIS%AUXILIARY%CHARGEINDEX(ICHARGE)
+!             WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,2X,A20,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
+!                  &BASIS%REGULAR%ATOMTYPE(ITYPE1)%NAME,&
+!                  &BASIS%AUXILIARY%ATOMTYPE(ITYPE2)%NAME,&
+!                  &MOLECULE%ATOM(I)%Phantom,&
+!                  &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
+!          ELSE
+!             ICHARGE = NINT(MOLECULE%ATOM(I)%CHARGE)
+!             ITYPE1 = BASIS%REGULAR%CHARGEINDEX(ICHARGE)
+!             WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
+!                  &BASIS%REGULAR%ATOMTYPE(ITYPE1)%NAME,&
+!                  &MOLECULE%ATOM(I)%Phantom,&
+!                  &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
+!          ENDIF
+!       ENDDO
+!       WRITE(LUPRI,'(2X,A)')'Since you have more than 30 atoms only the first 30'
+!       WRITE(LUPRI,'(2X,A)')'are printed in order to limit output'
+!    ELSE
+!       DO I=1,30
+!          IF(MOLECULE%ATOM(I)%nbasis == 2) THEN
+!             ITYPE1 = MOLECULE%ATOM(I)%IDtype(1)
+!             ITYPE2 = MOLECULE%ATOM(I)%IDtype(2)
+!             WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,2X,A20,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
+!                  &BASIS%REGULAR%ATOMTYPE(ITYPE1)%NAME,&
+!                  &BASIS%AUXILIARY%ATOMTYPE(ITYPE2)%NAME,&
+!                  &MOLECULE%ATOM(I)%Phantom,&
+!                  &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
+!          ELSE
+!             ITYPE1 = MOLECULE%ATOM(I)%IDtype(1)
+!             WRITE(LUPRI,'(2X,I4,2X,F6.3,2X,A12,4X,L1,10X,I5,7X,I5)') I,MOLECULE%ATOM(I)%Charge,&
+!                  &BASIS%REGULAR%ATOMTYPE(ITYPE1)%NAME,&
+!                  &MOLECULE%ATOM(I)%Phantom,&
+!                  &MOLECULE%ATOM(I)%nPrimOrbREG,MOLECULE%ATOM(I)%nContOrbREG
+!          ENDIF
+!       ENDDO
+!       WRITE(LUPRI,'(2X,A)')'Since you have more than 30 atoms only the first 30'
+!       WRITE(LUPRI,'(2X,A)')'are printed in order to limit output'
+!    ENDIF
+! ELSE
    IF(BASIS%REGULAR%Labelindex .EQ. 0)THEN
       DO I=1,MOLECULE%nAtoms
          IF(MOLECULE%ATOM(I)%nbasis == 2) THEN
@@ -1046,7 +1046,7 @@ ELSE
          ENDIF
       ENDDO
    ENDIF
-ENDIF
+!ENDIF !!! testing if the molecule input contains more than 30 atoms
 
 WRITE(LUPRI,*) '                     '
 
@@ -2872,7 +2872,7 @@ ENDIF
 IF(associated(setting%LST_GAB_LHS))THEN
    DEALLOCATE(SETTING%LST_GAB_LHS)
    NULLIFY(SETTING%LST_GAB_LHS)
-#ifdef LSVAR_MPI
+#ifdef VAR_LSMPI
 ! FIXME THIS IS UGLY
    IF(setting%node.NE.infpar%master)then
       call lstensor_free(setting%LST_GAB_LHS) 
@@ -2883,7 +2883,7 @@ ENDIF
 IF(associated(setting%LST_GAB_RHS))THEN
    DEALLOCATE(SETTING%LST_GAB_RHS)
    NULLIFY(SETTING%LST_GAB_RHS)
-#ifdef LSVAR_MPI 
+#ifdef VAR_LSMPI 
 ! FIXME THIS IS UGLY
    IF(setting%node.NE.infpar%master)then
       call lstensor_free(setting%LST_GAB_RHS) 
@@ -3238,6 +3238,59 @@ call MAT_free(wrk)
 call MAT_free(CC)
 
 end subroutine AO2GCAO_half_transform_matrix
+
+!> \brief Half-transform GCAO matrix to AO matrix
+!> \author S. Reine
+!> \date May 22nd 2013
+!> \param F Matrix to be transformed
+!> \param setting the setting structure
+!> \param lupri the logical unit number for output
+!> \param side index indicating if first or second AO should be transformed (1 or 2)
+subroutine GCAO2AO_half_transform_matrix(F,setting,lupri,side)
+implicit none
+integer,intent(in) :: lupri
+type(matrix)       :: F
+TYPE(LSSETTING)    :: setting
+Integer            :: side
+!
+integer :: nrow,ncol,ngcao
+type(Matrix) :: wrk,CC
+real(realk),pointer :: CCfull(:,:)
+
+nrow = F%nrow
+ncol = F%ncol
+IF (side.EQ.1) THEN
+  ngcao = nrow
+ELSEIF (side.EQ.2) THEN
+  ngcao = ncol
+ELSE
+  CALL lsquit('Error in GCAO2AO_half_transform_matrix. Incorrect side.',lupri)
+ENDIF
+
+
+call mem_alloc(CCfull,ngcao,ngcao)
+!FIXME - build special case for CSR 
+call read_GCtransformationmatrix(CCfull,ngcao,setting,lupri)
+call mat_init(CC,ngcao,ngcao)
+IF(matrix_type .EQ. mtype_unres_dense)THEN
+   CALL DCOPY(ngcao*ngcao,CCfull,1,CC%elms,1)
+   CALL DCOPY(ngcao*ngcao,CCfull,1,CC%elmsb,1)
+ELSE
+   call mat_set_from_full(CCfull,1E0_realk,CC)
+ENDIF
+call mem_dealloc(CCfull)
+
+call MAT_INIT(wrk,nrow,ncol)
+IF (side.EQ.1) THEN
+  call mat_mul(CC,F,'n','n',1E0_realk,0E0_realk,wrk)
+ELSE
+  call mat_mul(F,CC,'n','t',1E0_realk,0E0_realk,wrk)
+ENDIF
+call mat_copy(1E0_realk,wrk,F)
+call MAT_free(wrk)
+call MAT_free(CC)
+
+end subroutine GCAO2AO_half_transform_matrix
 
 !> \brief Transform GCAO Density matrix to AO Density matrix
 !> \author T. Kjaergaard

@@ -56,10 +56,6 @@ type AvItem
       !AIX compiler does not allow values to be set here - instead, set them in av_set_default_config below
       !> Use no averaging
       integer :: CFG_AVG_NONE ! = 1  
-#ifdef VAR_DSM
-      !> Use Density Subspace Minimization
-      integer :: CFG_AVG_DSM  ! = 2
-#endif
       !> Use standard DIIS
       integer :: CFG_AVG_DIIS ! = 3
       !Use E-DIIS
@@ -67,26 +63,7 @@ type AvItem
       !Use Van Lenthe scheme with custom shifts etc
       integer :: CFG_AVG_van_lenthe != 5
 
-#ifdef VAR_DSM
-      !DSM SETTINGS:
-      !=============
-      ! If cfg_averagning = cfg_avg_DSM, several approaches are available
-      integer :: cfg_dsm_app
-      !> Use DSM steps until limit or convergence
-      integer :: cfg_dsm_default  ! = 1
-      !> Use only one DSM step
-      integer :: cfg_dsm_one      ! = 2
-      !> Use line search in the first dsm-step - expensive!
-      integer :: cfg_dsm_search   ! = 3
-      !> Add the extra more expensive term
-      integer :: cfg_dsm_xtra_term != 4    
-      !> How many vectors should be saved for averaging?
-#endif
       integer :: max_history_size
-#ifdef VAR_DSM
-      !> How many vectors should be used for DSM?
-      integer :: dsm_history_size 
-#endif
       !> How many vectors should be used for DIIS?
       integer :: diis_history_size 
       !> How many vectors should be used for E-DIIS?
@@ -139,10 +116,6 @@ type AvItem
       integer :: CFG_lshift_vanlenthe  != 5
    !SETTINGS:
    !=========
-#ifdef VAR_DSM
-      !> Which entry in queue is the last for DSM?
-      integer :: dsm_pos
-#endif
       !> Which entry in queue is the last for DIIS?
       integer :: diis_pos
       !> Which entry in queue is the last for EDIIS?
@@ -153,36 +126,12 @@ type AvItem
    !=====
       logical :: INFO_D_proj
       logical :: INFO_DIIS
-#ifdef VAR_DSM
-      logical :: INFO_DSM_CNORM_MU_FIG
-      logical :: INFO_DSM_EIGENVAL
-      logical :: INFO_DSM_ENERGY
-      logical :: INFO_DSM_EQ
-      logical :: INFO_DSM_EXIT
-      logical :: INFO_DSM_GRAD
-      logical :: INFO_DSM_METRIC
-      logical :: INFO_DSM_NIT
-      logical :: INFO_DSM_PROJ
-      logical :: INFO_DSM_RATIO
-      logical :: INFO_DSM_STEP
-      logical :: INFO_DSM_STEP_BRACKET
-      logical :: INFO_DSM_STEP_TOTAL
-      logical :: INFO_DSM_TRUSTR
-#endif
       logical :: INFO_EDIIS
       logical :: INFO_WEIGHT_FINAL
       logical :: INFO_WEIGHTS
 
    !DEBUGGING:
    !==========
-#ifdef VAR_DSM
-      logical :: DEBUG_DSM_DCHANGE
-      logical :: debug_dsm_dhistory
-      logical :: debug_dsm_Ecomp_fig
-      logical :: DEBUG_DSM_EMODEL
-      logical :: DEBUG_DSM_LINESEARCH
-      logical :: DEBUG_DSM_metric
-#endif
       logical :: DEBUG_EDIIS
       logical :: DEBUG_RH_MU_E
    !DATA:
@@ -204,19 +153,10 @@ implicit none
    type(AvItem), intent(inout) :: av
 
       av%CFG_AVG_NONE       = 1
-#ifdef VAR_DSM
-      av%CFG_AVG_DSM        = 2
-#endif
       av%CFG_AVG_DIIS       = 3
       av%CFG_AVG_EDIIS      = 4
       av%CFG_AVG_van_lenthe = 5
 
-#ifdef VAR_DSM
-      av%cfg_dsm_default    = 1
-      av%cfg_dsm_one        = 2
-      av%cfg_dsm_search     = 3
-      av%cfg_dsm_xtra_term  = 4
-#endif
 
       av%CFG_THR_HartreeFock = 1
       av%CFG_THR_dft         = 2
@@ -228,9 +168,6 @@ implicit none
       av%CFG_lshift_vanlenthe = 5
 
       av%cfg_averaging = av%cfg_avg_none        !Default is no averaging, since default optimization is ARH
-#ifdef VAR_DSM
-      av%cfg_dsm_app   = av%cfg_dsm_default     !Default = standard dsm
-#endif
       av%CFG_lshift    = av%CFG_lshift_none     !Default = no level shift
       av%cfg_safe      = .false.
       av%CFG_SET_type  = av%CFG_THR_HartreeFock ! Default is HF
@@ -244,14 +181,8 @@ implicit none
       av%cfg_settings(2)%max_history_size = 7
       av%cfg_settings(2)%max_dorth_ratio = 0.03E0_realk
 
-#ifdef VAR_DSM
-      av%dsm_history_size   = av%cfg_settings(av%CFG_SET_type)%max_history_size
-      av%diis_history_size  = av%dsm_history_size
-      av%ediis_history_size = av%dsm_history_size
-#else
       av%diis_history_size   = av%cfg_settings(av%CFG_SET_type)%max_history_size
       av%ediis_history_size = av%diis_history_size
-#endif
       av%usequeue           = .false.
       av%vanlentheCounter   = 0
       av%save_gradient      = .false.
@@ -262,35 +193,11 @@ implicit none
    !=====
       av%INFO_D_proj           = .false.
       av%INFO_DIIS             = .false.
-#ifdef VAR_DSM
-      av%INFO_DSM_CNORM_MU_FIG = .false.
-      av%INFO_DSM_EIGENVAL     = .false.
-      av%INFO_DSM_ENERGY       = .false.
-      av%INFO_DSM_EQ           = .false.
-      av%INFO_DSM_EXIT         = .false.
-      av%INFO_DSM_GRAD         = .false.
-      av%INFO_DSM_METRIC       = .false.
-      av%INFO_DSM_NIT          = .false.
-      av%INFO_DSM_PROJ         = .false.
-      av%INFO_DSM_RATIO        = .false.
-      av%INFO_DSM_STEP         = .false.
-      av%INFO_DSM_STEP_BRACKET = .false.
-      av%INFO_DSM_STEP_TOTAL   = .false.
-      av%INFO_DSM_TRUSTR       = .false.
-#endif
       av%INFO_EDIIS            = .false.
       av%INFO_WEIGHT_FINAL     = .false.
       av%INFO_WEIGHTS          = .false.
    !DEBUGGING:
    !=========
-#ifdef VAR_DSM
-      av%DEBUG_DSM_DCHANGE    = .false.
-      av%debug_dsm_dhistory   = .false.
-      av%debug_dsm_Ecomp_fig  = .false.
-      av%DEBUG_DSM_EMODEL     = .false.
-      av%DEBUG_DSM_LINESEARCH = .false.
-      av%DEBUG_DSM_metric     = .false.
-#endif
       av%DEBUG_EDIIS          = .false.
       av%DEBUG_RH_MU_E        = .false.
 
@@ -342,9 +249,6 @@ end subroutine av_shutdown
       queue%current_position = 0
       queue%metric = 0.0E0_realk !Stinne 24/10-06
 !initialize specific pointers for dsm and diis
-#ifdef VAR_DSM
-      av%dsm_pos = 0
-#endif
       av%diis_pos = 0
       av%ediis_pos = 0
       queue%used_entries = 0
@@ -374,9 +278,6 @@ end subroutine av_shutdown
       queue%allocated = 0
       queue%used_entries = 0
       queue%current_position = 0
-#ifdef VAR_DSM
-      av%dsm_pos = 0
-#endif
       av%diis_pos = 0
       av%ediis_pos = 0
       deallocate(queue%D)
@@ -529,13 +430,6 @@ end subroutine av_shutdown
       ENDIF
       !update ediis pointer
       av%ediis_pos = MOD(av%ediis_pos,av%ediis_history_size) + 1
-#ifdef VAR_DSM
-      if(av%cfg_averaging == av%cfg_avg_dsm .or. av%cfg_lshift == av%cfg_lshift_dorth .or. av%DEBUG_RH_MU_E) then
-        !update dsm pointer
-        av%dsm_pos = MOD(av%dsm_pos,av%dsm_history_size) + 1
-        call queue_update_TrDSDS(av,S,queue)
-      endif
-#endif
 
    END SUBROUTINE add_to_queue
 
@@ -558,26 +452,9 @@ end subroutine av_shutdown
       call mat_init(SDS,queue%D(pos)%nrow,queue%D(pos)%ncol)
       call mat_mul(S,queue%D(pos),'n','n',1E0_realk,0E0_realk,SDpos)
       call mat_mul(SDpos,S,'n','n',1E0_realk,0E0_realk,SDS)
-#ifdef VAR_DSM
-      !WRITE(LUPRI,*) 'dsm_pos',dsm_pos
-      queue%metric(av%dsm_pos,av%dsm_pos) = mat_dotproduct(queue%D(pos),SDS)
-      !write (LUPRI,*) "metric(i,i):", queue%metric(dsm_pos,dsm_pos)
-      i = av%dsm_pos - 1
-      if (i == 0) i = av%dsm_history_size
-      j = pos - 1
-      if (j == 0) j = av%cfg_settings(av%cfg_set_type)%max_history_size
-      do
-        if (i == av%dsm_pos .or. j > queue%used_entries) exit
-        queue%metric(i,av%dsm_pos) =  mat_dotproduct(queue%D(j),SDS)
-        queue%metric(av%dsm_pos,i) = queue%metric(i,av%dsm_pos)
-        i = i - 1
-        if (i == 0) i = av%dsm_history_size
-        j = j - 1
-        if (j == 0) j = av%cfg_settings(av%cfg_set_type)%max_history_size
-      enddo         
-#else
-     call lsquit('Queue_update_TrDSDS',-1)
-#endif
+
+      call lsquit('Queue_update_TrDSDS',-1)
+
       call mat_free(SDpos)
       call mat_free(SDS)
       !write(LUPRI,*) "Matrix array after update"
@@ -648,25 +525,12 @@ end subroutine av_shutdown
 !
 !  Handle density subspace minimization stuff
 !     
-#ifdef VAR_DSM
-    av%dsm_pos = 0
-#endif
      av%diis_pos = 0
      if (nentries > 0) then
        do k = 1,nentries
          queue%current_position = k
          queue%used_entries = k
-#ifdef VAR_DSM
-         av%dsm_pos = MOD(av%dsm_pos,av%dsm_history_size) + 1
-#endif
          av%diis_pos = MOD(av%diis_pos,av%diis_history_size) + 1    
-#ifdef VAR_DSM
-         if(av%cfg_averaging == av%cfg_avg_dsm .or. av%DEBUG_RH_MU_E .or.&
-            &av%cfg_lshift == av%cfg_lshift_dorth ) then
-            !** Make TrDiSDjS array
-            call queue_update_TrDSDS(av,S,queue)
-         endif
-#endif
          pos = k
 
          IF(av%save_gradient) THEN
@@ -718,10 +582,6 @@ end subroutine av_shutdown
       his_pos = queue%current_position
       if (his_size == av%cfg_settings(av%cfg_set_type)%max_history_size) then
         pos = his_pos
-#ifdef VAR_DSM
-      elseif (his_size == av%dsm_history_size) then
-        pos = av%dsm_pos
-#endif
       elseif (his_size == av%diis_history_size) then
         pos = av%diis_pos
       else
@@ -793,40 +653,6 @@ end subroutine av_shutdown
      type(matrix) :: tmp, SDinS ! pointer
      real(realk) :: TrDjSDinS
      integer :: N,i1,j,k,i2
-#ifdef VAR_DSM
- !** Initializations
-!     N = queue%used_entries    !number of stored fock and density matrices
-     N = MIN(queue%used_entries,av%dsm_history_size) !dimension of queue%metric
-     coef(1:N) = 0.0E0_realk
-     call mat_init(tmp,S%nrow,S%nrow)
-     call mat_init(SDinS,S%nrow,S%nrow)
-
-     !** S[2]^-1
-     ALLOCATE(inv_metric(N,N))
-     inv_metric = queue%metric(1:N,1:N)
-     call INVERT_BY_DIAG2(inv_metric,wrk,wrk(N*N+1),vec,N)
-     !** SDmuS
-     call mat_mul(Din,S,'n','n',1E0_realk,0E0_realk,tmp)
-     call mat_mul(S,tmp,'n','n',1E0_realk,0E0_realk,SDinS)
- 
- !** c_i = sum_j({(S[2])^-1}_ij<D_j|Din>; <D_j|Din> = TrD_j S Din S
-     j = queue%current_position
-     i2 = av%dsm_pos
-     do k = 1,N 
-       TrDjSDinS = mat_dotproduct(queue%D(j),SDinS)
-       do i1 = 1,N
-         coef(i1) = coef(i1) + inv_metric(i1,i2)*TrDjSDinS
-       enddo
-       i2 = i2 - 1
-       if (i2 == 0) i2 = av%dsm_history_size
-       j = j - 1
-       if (j == 0) j = av%cfg_settings(av%cfg_set_type)%max_history_size
-     enddo
-     if (av%info_d_proj) WRITE(av%LUPRI,*) 'coef in GET_PROJ_PART:',(coef(i1),i1=1,N)
-     call mat_free(tmp)
-     call mat_free(SDinS)
-#else
      call lsquit('util_GET_PROJ_PART',-1)
-#endif
    end subroutine util_GET_PROJ_PART
 end MODULE av_utilities

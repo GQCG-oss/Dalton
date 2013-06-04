@@ -2631,7 +2631,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "maxaqn.h"
-      CHARACTER TSTRING*(6*MXAQN+3)
+      CHARACTER TSTRING*(6*MXQN+3)
       CHARACTER SPDCAR*1 ! type declaration for external function
       DIMENSION JCO(IQM),NRC(*),NUC(*)
 #include "ccom.h"

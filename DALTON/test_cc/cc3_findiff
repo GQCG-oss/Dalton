@@ -94,33 +94,32 @@ else
 fi
 
 # SCF, MP2 and CC3 energies:
-CRIT1=`$GREP "Total SCF   energy: * -99\.9834089624" $log | wc -l`
-CRIT3=`$GREP "Total CC3   energy: * -100\.1153427053" $log | wc -l`
+CRIT1=`$GREP "Total SCF   energy: * -99\.9834089353" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -100\.1153426681" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT3` 
 CTRL[1]=4
 ERROR[1]="ENERGIES IN FIELD NOT CORRECT"
 
 # CC3 dipole moment in field :
-# Electronic dipole moment (au):  0.0000000000E+00  0.0000000000E+00 -0.5557075135E-04
-CRIT1=`$GREP  "Electronic dipole moment" $log | $GREP "(-0| -)\.55570751..E-04" | wc -l`
+ #Electronic dipole moment (au):  -0.000000000      -0.000000000     -0.5545260590E-04
+CRIT1=`$GREP  "Electronic dipole moment" $log | $GREP "(-0|-)\.55452605..E-04" | wc -l`
 TEST[2]=`expr $CRIT1`
 CTRL[2]=1
 ERROR[2]="CC3 DIPOLE MOMENT IN FIELD NOT CORRECT"
 
-
 # CC3 polarizability in field:
-CRIT1=`$GREP  "ZDIPLEN  \(unrel\.\)  ( |0)\.0000   ZDIPLEN  \(unrel\.\)  ( |0)\.0000 *  4\.002049" $log | wc -l`
-CRIT2=`$GREP  "XDIPLEN  \(unrel\.\)  ( |0)\.0000   XDIPLEN  \(unrel\.\)  ( |0)\.0000 * ( |0)\.6876346" $log | wc -l`
-CRIT3=`$GREP  "XDIPLEN  \(unrel\.\)  ( |0)\.0000   YDIPLEN  \(unrel\.\)  ( |0)\.0000 * ( |0)\.0000000" $log | wc -l`
+CRIT1=`$GREP  "ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *4\.002049" $log | wc -l`
+CRIT2=`$GREP  "XDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *XDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *(|0)\.6876346" $log | wc -l`
+CRIT3=`$GREP  "XDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *YDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *(|-|-0|0)\.0000000" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[3]=3
 ERROR[3]="CC3 POLARIZABILITY IN FIELD NOT CORRECT"
 
-# CC3 polarizability in field:
-CRIT1=`$GREP "ZDIPLEN  \(unrel\.\)  ( |0)\.0*   ZDIPLEN  \(unrel\.\)  ( |0)\.0*   ZDIPLEN  \(unrel\.\)  ( |0)\.0* * 18\.43617" $log | wc -l`
-CRIT2=`$GREP "XDIPLEN  \(unrel\.\)  ( |0)\.0*   XDIPLEN  \(unrel\.\)  ( |0)\.0*   ZDIPLEN  \(unrel\.\)  ( |0)\.0* * ( |0)\.9867655" $log | wc -l`
-CRIT3=`$GREP "XDIPLEN  \(unrel\.\)  ( |0)\.0*   YDIPLEN  \(unrel\.\)  ( |0)\.0*   ZDIPLEN  \(unrel\.\)  ( |0)\.0* * ( |0)\.0000000" $log | wc -l`
-CRIT4=`$GREP "ZDIPLEN  \(unrel\.\)  ( |0)\.0*   YDIPLEN  \(unrel\.\)  ( |0)\.0*   YDIPLEN  \(unrel\.\)  ( |0)\.0* * ( |0)\.9867655" $log | wc -l`
+# CC3 hyperpolarizability in field:
+CRIT1=`$GREP "ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0* *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0* *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0* * 18\.43617" $log | wc -l`
+CRIT2=`$GREP "XDIPLEN *\(unrel\.\) *(|-|-0|0)\.0* *XDIPLEN *\(unrel\.\) *(|-|-0|0)\.0* *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0* *(|0)\.9867656" $log | wc -l`
+CRIT3=`$GREP "XDIPLEN *\(unrel\.\) *(|-|-0|0)\.0* *YDIPLEN *\(unrel\.\) *(|-|-0|0)\.0* *ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0* *(|-|-0|0)\.0000000" $log | wc -l`
+CRIT4=`$GREP "ZDIPLEN *\(unrel\.\) *(|-|-0|0)\.0* *YDIPLEN *\(unrel\.\) *(|-|-0|0)\.0* *YDIPLEN *\(unrel\.\) *(|-|-0|0)\.0* *(|0)\.9867656" $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[4]=4
 ERROR[4]="CC3 HYPERPOLARIZABILITY IN FIELD NOT CORRECT"

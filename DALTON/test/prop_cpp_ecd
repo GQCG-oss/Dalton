@@ -62,7 +62,6 @@ cat > prop_cpp_ecd.dal <<'%EOF%'
 **PROPERTIES                                      
 .OPTROT                                           
 *ABALNR                                           
-.ABSLRS                                           
 .DAMPING                                          
  0.0045566                                        
 .FREQUENCIES                                      

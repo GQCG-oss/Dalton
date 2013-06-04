@@ -267,6 +267,105 @@ describing the options available. For the calculation of nuclear
 shieldings, these are the same as listed above for magnetizability
 calculations.
 
+
+%------------------------------------------------------------
+% by jmelo May-2013
+
+\section{LRESC corrections to Nuclear shielding constants}\label{sec:lresc}
+
+Linear Response Elimination of Small Component scheme provides the calculation
+of first and second order relativistic corrections to nuclear shielding constants. 
+This corrections are invoked through the keyword \Key{LRESC} on the \Sec{*PROPERTIES} input module. Detailed description of the LRESC theoretical scheme and discussions are on this papers. 
+
+\begin{center}
+\fbox{
+\parbox[h][\height][l]{12cm}{
+\small
+\noindent
+{\bf Reference literature:}
+\begin{list}{}{}
+\item J.I. Melo, M.C. Ruiz de Azua, C.G Giribet, G.A. Aucar, and R.H. Romero \newblock {\em J. Chem. Phys.}, {\bf 118},\hspace{0.25em}2, (2003).
+
+\item M.C.Ruiz de Azua, J.I. Melo, and C.G Giribet \newblock {\em Mol. Phys.}, {\bf 101},\hspace{0.25em}20, (2003).
+
+\item J.I. Melo, M.C.Ruiz de Azua, C.G Giribet, G.A. Aucar and P.F. Provasi \newblock {\em J.Chem.Phys.}, {\bf 121},\hspace{0.25em}14, (2004).
+
+\item P.G. Roura, J.I. Melo, M.C.Ruiz de Azua, and C.G Giribet \newblock {\em J.Chem.Phys.}, {\bf 125},\hspace{0.25em}064107, (2006).
+\end{list}
+}}
+\end{center}
+
+LRESC module computes all first and second order (singlet and triplet) corrections to nuclear magnetic shielding constant of a specific nucleus in a molecule. 
+Third order corrections are not included in the present version of the code, anyway they can be computed via \Sec{*RESPONSE} module (see \Sec{Quadratic Response}, \ref{subsec:quadrsp}). Namely spin orbit correction to shielding constants and paramagnetic third order scalar terms (Darwin and Massvelo). A complete input file for the calculation within LRESC corrections to shielding constant is thus :
+
+\begin{verbatim}
+**DALTON INPUT
+.RUN PROPERTIES
+**WAVE FUNCTIONS
+.HF
+**PROPERTIES
+.LRESC
+**END OF DALTON INPUT
+\end{verbatim}
+
+
+There are a few keywords to get more control over the output and the amount of corrections to be calculated. A detailed description on each correction can be found in Ref.~\cite{melomaldojcp12}. Regarding basis sets convergence, benchmark calculations where presented on XXXXX . The complete list of control keywords are:
+
+\begin{list}{}{\itemsep 0.10cm \parsep 0.0cm}
+\item[\Key{PRINT}] Controls the print level, for debugging purpose.
+\item[\Key{SELECT}] Select the atom to which LRESC corrections will be calculated. Default is 1, first atom in input list (.mol file).
+\item[\Key{PRTALL}] Full output of individual LRESC corrections will be prompted in output file. If not, only the total Paramagnetic and Diamagnetic corrections are printed. Depending on whether you asked for all or just some of LRESC corrections (see next keywords).
+\item[\Key{PARA1S}] Only Paramagnetic Singlet First order corrections are calculated 
+\item[\Key{PARA1T}] Only Paramagnetic Triplet First order corrections are calculated 
+\item[\Key{PARA3S}] (not implemented yet) Only Paramagnetic Singlet Third order corrections are calculated. 
+\item[\Key{PARA3T}] (not implemented yet) Only Paramagnetic Triplet Third order corrections are calculated. 
+\item[\Key{DIAM0S}] Only Diamagnetic Singlet Zeroth order corrections are calculated 
+\item[\Key{DIAM1S}] Only Diamagnetic Singlet First order corrections are calculated 
+\end{list}
+
+
+Default Values, and some tips for better running:
+
+\begin{center}
+\begin{itemize}{}{}
+\item First Atom on input list is selected, unless specified with \Key{SELECT}. 
+\item Center of Mass gauge origin for atomic integrals. As mentioned, \Key{GAUGEO} on 
+\Sec{*INTEGRALS} must be placed in the position of the selected nucleus. Default value is the center of mass.
+\item All LRESC terms will be calculated, unless some (or more) of them are asked for. (PARA1S, PARA1T, DIAM0S and/or DIAM1S). 
+\item Only uncontracted basis set is recommended. Integrals under \Key{DIAM0S} only supports uncontraced basis sets.
+\item No symmetry for molecule specification. 
+\item Hartree-Fock and DFT schemes supported for the ground state Wave Function.
+\end{itemize}
+\end{center}
+
+
+\begin{verbatim}
+(...)
+*INTEGRALS
+.GAUGEO 
+a b c        !where a b c are the atomic cartesian coordinates of the selected nucleus
+(...)
+**PROPERTIES
+.LRESC
+*LROPTS
+.PRTALL      ! detailed output on individual corrections
+.PRINT
+JIMPRT       ! reads one integer , for debugging
+.SELECT
+LRATOM       ! reads one integer corresponding to the place of the nucleus on input file 
+.DIAM0S      ! calculation of diamagnetic  zeroth order terms
+.DIAM1S      ! calculation of diamagnetic  first order terms
+.PARA1S      ! calculation of paramagnetic first(singlet) order terms
+.PARA1T      ! calculation of paramagnetic first(triplet) order terms
+**END OF DALTON INPUT
+\end{verbatim}
+
+
+
+
+
+%------------------------------------------------------------
+
 \section{Rotational {\em g} tensor}\label{sec:gfac}
 
 \begin{center}

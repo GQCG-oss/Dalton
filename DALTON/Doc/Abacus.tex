@@ -626,11 +626,6 @@ functions.
 %(ROA)\index{Raman optical activity}\index{ROA}.
 
 \begin{description}
-\item[\Key{ABSLRS}]\verb| |\newline
-If absorption is included in the calculation of the linear response
-functions, the algorithm with symmetrized trial vectors\cite{kauczor:2011}
-is used to solve damped response equations. \Key{ABSLRS} requires that
-\Key{LIFETIME} is specified.
 
 \item[\Key{FREQUE}]\verb| |\newline
 \verb|READ (LUCMD,*) NFRVAL|\newline
@@ -646,14 +641,22 @@ static case is evaluated.
 The \Key{FREQUE} keyword may be combined with the wave length input
 \Key{WAVELE} (see below).
 
-\item[\Key{LIFETIME}]\verb| |\newline
-\verb|READ (LUCMD,*) LIFETIME|
+\item[\Key{DAMPING}]\verb| |\newline
+\verb|READ (LUCMD,*) ABS_DAMP|
 
 Sets the lifetime of the excited states if absorption is also included
 in the calculation of the linear response functions as described in
 Ref.~\cite{pndmbhjajjojcp115,pnkrthjcp120}. The default is that no
 absorption is included in the calculation. The lifetime is given in
-$cm^{-1}$.
+atomic units. By default the algorithm with symmetrized trial vectors is
+used \cite{kauczor:2011}.
+
+\item[\Key{OLDCPP}]\verb| |\newline
+If absorption is included in the calculation of the linear response
+functions, the complex polarization propagator
+solver \cite{pndmbhjajjojcp123,pndmbhjajjojcp115} 
+is used to solve damped response equations. \Key{OLDCPP} requires that
+\Key{DAMPING} is specified.
 
 \item[\Key{MAX IT}]\verb| |\newline
 \verb|READ (LUCMD,*) MAXITE|
