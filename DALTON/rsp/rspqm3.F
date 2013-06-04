@@ -667,6 +667,7 @@ c      END IF
       RETURN
       END 
 C
+#if defined(VAR_MPI)
 C-----------------------------------------------------------------------
       SUBROUTINE QM3LNO_P(NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,UDVTR,
      &               EVECS,WRK,LWRK)
@@ -1158,7 +1159,7 @@ C     No more integrals to calculate
 
       RETURN
       END
-
+#endif
 C ---------------------------------------------------------------------
 
 C  /* Deck qm3qro */
@@ -1546,6 +1547,7 @@ C
       RETURN
       END
 
+#if defined(VAR_MPI)
 C-----------------------------------------------------------------------
       SUBROUTINE QM3QRO_P(VEC1,VEC2,ETRS,XINDX,ZYM1,ZYM2,
      &                 UDV,WRK,LWRK,KZYVR,KZYV1,KZYV2,
@@ -2130,6 +2132,7 @@ C     No more integrals to calculate
 
       RETURN
       END
+#endif
 C-----------------------------------------------------------------------
 C  /* Deck qm3qlm */
       FUNCTION QM3QLM(RLM)

@@ -751,7 +751,8 @@ c        density
            END IF
          ELSE  ! the mmpcm interface is only implemented for hf/dft so
 C                no reference to doccsd
-
+           if (nodtot.ge.1) write(lupri,*) 'WARNING: qm3pcm is
+     & not parallelized, so it will be slower than expected!'
 C          parameters on input: MXITMP and THRSMP
            LCONV = .FALSE. 
            XTEST1 = D0

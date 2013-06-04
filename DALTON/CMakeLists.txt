@@ -1,5 +1,10 @@
+
+
+# exit if cmake version is below 2.8
+# we need at least 2.8 for external projects support
 cmake_minimum_required(VERSION 2.8 FATAL_ERROR)
 
+# set project name and languanges that are involved
 project(DALTON Fortran C CXX)
 
 # do not rebuild if rules (compiler flags) change
@@ -17,20 +22,25 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_BINARY_DIR}
     )
 
-
-option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"          OFF)
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"             OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"            OFF)
-option(ENABLE_MPI            "Enable MPI parallelization"      OFF)
-option(ENABLE_OMP            "Enable OpenMP parallelization"   OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU acceleration"    OFF)
-option(ENABLE_UTILITIES      "Enable utilities"                OFF)
-option(ENABLE_LOCAL_DISKS    "Enable local disks"              OFF)
-option(ENABLE_STATIC_LINKING "Enable static libraries linking" OFF)
-option(ENABLE_GEN1INT        "Enable Gen1Int library"          ON)
-option(ENABLE_RELEASE "Test release mode which undefines MOD_UNRELEASED" OFF)
-option(ENABLE_ALWAYS_RESET_EXTERNAL_BUILDS "Always remove builds stamps of external projects" OFF)
-
+option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                           OFF)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                              OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"                             OFF)
+option(ENABLE_MPI            "Enable MPI parallelization"                       OFF)
+option(ENABLE_OMP            "Enable OpenMP parallelization"                    OFF)
+option(ENABLE_RELEASE        "Test release mode which undefines MOD_UNRELEASED" OFF)
+option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     OFF)
+option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
+option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" OFF)
+option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
+option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
+option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
+option(ENABLE_TIMINGS        "Enable TIMINGS"                                   OFF)
+option(ENABLE_XCFUN          "Enable XCFUN"                                     OFF)
+option(ENABLE_INTEREST       "Enable interest integrals"                        OFF)
+option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
+option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
+option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 
 set(LIBS)
 

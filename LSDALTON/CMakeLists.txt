@@ -22,28 +22,25 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_BINARY_DIR}
     )
 
-option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"        OFF)
-option(ENABLE_CSR            "Enable MKL compressed sparse row" OFF)
-option(ENABLE_SCALAPACK      "Enable SCALAPACK"              OFF)
-option(ENABLE_SCALASCA       "Enable scalasca profiler mode" OFF)
-option(ENABLE_TIMINGS        "Enable TIMINGS"                OFF)
-option(ENABLE_BOUNDS_CHECK   "Enable bounds check"           OFF)
-option(ENABLE_CODE_COVERAGE  "Enable code coverage"          OFF)
-option(ENABLE_XCFUN          "Enable XCFUN"                  OFF)
-option(ENABLE_MPI            "Enable MPI parallelization"    OFF)
-option(ENABLE_MPI32          "Enable 32 bit integer MPI lib workaround" OFF)
-option(ENABLE_OMP            "Enable OpenMP parallelization" OFF)
-option(ENABLE_INTEREST       "Enable interest integrals"     OFF)
-option(ENABLE_CUDA           "Enable CUDA GPU acceleration"  OFF)
-option(ENABLE_UTILITIES      "Enable utilities"              OFF)
-option(ENABLE_LOCAL_DISKS    "Enable local disks"            OFF)
-option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"           OFF)
-option(ENABLE_LSEEK          "Enable lseek"                  OFF)
-option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"              OFF)
-option(ENABLE_RELEASE        "Enable Release"                OFF)
-
-
-
+option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers"                           OFF)
+option(ENABLE_BOUNDS_CHECK   "Enable bounds check"                              OFF)
+option(ENABLE_CODE_COVERAGE  "Enable code coverage"                             OFF)
+option(ENABLE_MPI            "Enable MPI parallelization"                       OFF)
+option(ENABLE_OMP            "Enable OpenMP parallelization"                    OFF)
+option(ENABLE_RELEASE        "Test release mode which undefines MOD_UNRELEASED" OFF)
+option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     OFF)
+option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
+option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" OFF)
+option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
+option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
+option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
+option(ENABLE_TIMINGS        "Enable TIMINGS"                                   OFF)
+option(ENABLE_XCFUN          "Enable XCFUN"                                     OFF)
+option(ENABLE_INTEREST       "Enable interest integrals"                        OFF)
+option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
+option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
+option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 
 add_definitions(-DBINARY_INFO_AVAILABLE)
 
@@ -105,23 +102,24 @@ set(ExternalProjectCMakeArgs
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
 
-if(NOT ENABLE_CRAYWRAPPER)
-    include(ConfigMath)
-    if(NOT BLAS_FOUND)
-       set(LSDALTON_FIXED_FORTRAN_SOURCES
-          ${LSDALTON_FIXED_FORTRAN_SOURCES}
-          ${LSDALTON_OWN_BLAS_SOURCES}
-          )
-    endif()
-    if(NOT LAPACK_FOUND)
-       set(LSDALTON_FIXED_FORTRAN_SOURCES
-         ${LSDALTON_FIXED_FORTRAN_SOURCES}
-         ${LSDALTON_OWN_LAPACK_SOURCES}
-       )
-    endif()
-    if(HAVE_MKL_LAPACK)
-        add_definitions(-DVAR_MKL)
-    endif()
+include(ConfigMath)
+# if BLAS and/or LAPACK not found, add own sources to the list of
+# sources to compile
+if(USE_OWN_BLAS)
+    set(LSDALTON_FIXED_FORTRAN_SOURCES
+        ${LSDALTON_FIXED_FORTRAN_SOURCES}
+        ${LSDALTON_OWN_BLAS_SOURCES}
+        )
+endif()
+if(USE_OWN_LAPACK)
+    set(LSDALTON_FIXED_FORTRAN_SOURCES
+        ${LSDALTON_FIXED_FORTRAN_SOURCES}
+        ${LSDALTON_OWN_LAPACK_SOURCES}
+        )
+endif()
+
+if(HAVE_MKL_LAPACK)
+    add_definitions(-DVAR_MKL)
 endif()
 
 if(NOT ENABLE_RELEASE)
