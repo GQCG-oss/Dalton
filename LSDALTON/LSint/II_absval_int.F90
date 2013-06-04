@@ -141,12 +141,12 @@ IF(PRINTTIM)THEN
    CALL LS_GETTIM(CPU2,WALL2)
    CPUTIME = CPU2-CPU1
    WALLTIME = WALL2-WALL1
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
       CALL LS_TIMTXT('>>>  CPU  Time used in gridgeneration2 is  ',CPUTIME,LUPRI)
       CALL LS_TIMTXT('>>>  WALL Time used in gridgeneration2 is  ',WALLTIME,LUPRI)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    ENDIF
 #endif
 ENDIF

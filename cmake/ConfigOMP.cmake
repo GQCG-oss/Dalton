@@ -1,0 +1,6 @@
+if(ENABLE_OMP)
+    add_definitions(-DVAR_OMP)
+    set(ENABLE_THREADED_MKL TRUE)
+else()
+    set(ENABLE_THREADED_MKL FALSE)
+endif()

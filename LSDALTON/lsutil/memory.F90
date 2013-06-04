@@ -11,7 +11,7 @@ MODULE memory_handling
    use dec_typedef_module
    use OverlapType
    use tensor_type_def_module
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   include 'mpif.h'
 !   use mpi
 #endif
@@ -1909,7 +1909,7 @@ type(c_ptr), intent(inout) :: cip
 integer (kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    nullify(A)
    info = MPI_INFO_NULL
@@ -1949,7 +1949,7 @@ type(c_ptr), intent(inout) :: cip
 integer (kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    nullify(A)
    info = MPI_INFO_NULL
@@ -1989,7 +1989,7 @@ type(c_ptr), intent(inout) :: cip
 integer(kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    nullify(A)
 
@@ -2028,7 +2028,7 @@ type(c_ptr), intent(inout) :: cip
 integer(kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    info = MPI_INFO_NULL
 
@@ -2068,7 +2068,7 @@ type(c_ptr), intent(inout) :: cip
 integer(kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    info = MPI_INFO_NULL
 

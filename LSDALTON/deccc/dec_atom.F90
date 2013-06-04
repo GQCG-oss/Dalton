@@ -16,7 +16,7 @@ module atomic_fragment_operations
   use memory_handling!, only: mem_alloc,mem_dealloc
   use IntegralInterfaceMod!, only: ii_get_mixed_overlap_full
   use Integralparameters!,only: AORdefault
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
 #endif
 
@@ -1150,7 +1150,7 @@ contains
 
 
     ! lsitem
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     ! Quick fix such that lsitem is never constructed for global master
     ! as this will destroy the overall MPI framework.
     if(infpar%mynum/=infpar%master) then
