@@ -39,7 +39,6 @@ module f12_integrals_module
 
   use dec_fragment_utils!,only: calculate_fragment_memory, &
   !       & dec_simple_dgemm_update,start_flop_counter,&
-  !       & end_flop_counter, dec_simple_dgemm, mypointer_init, &
   !       & get_currently_available_memory, atomic_fragment_free
   use array2_simple_operations!, only: array2_free, array2_extract_EOS, &
   !       & get_mp2_integral_transformation_matrices, get_mp2_integral_transformation_matrices_fc, &

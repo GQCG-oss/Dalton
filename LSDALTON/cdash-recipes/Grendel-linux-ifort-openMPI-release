@@ -16,7 +16,7 @@ git checkout linsca-develop
 export OMP_NUM_THREADS=3
 export MATH_ROOT=/com/intel/Compiler/11.1/064/mkl
 cd $TMP_DIR/build
-FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 -DSCRATCH_DIR=$SCRATCH_DIR -DCMAKE_BUILD_TYPE=Release -DENABLE_INTERNAL_MATH=1 -DBUILDNAME=Grendel-linux-ifort-openMPI-release $TMP_DIR
+FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 -DSCRATCH_DIR=$SCRATCH_DIR -DCMAKE_BUILD_TYPE=Release -DBUILDNAME=Grendel-linux-ifort-openMPI-release $TMP_DIR
 make depend
 make Nightly
 rm -rf $TMP_DIR 

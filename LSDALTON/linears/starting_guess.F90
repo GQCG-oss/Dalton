@@ -371,13 +371,6 @@ end subroutine get_initial_dens
     real(realk), pointer    :: eival(:)
     integer :: cycles
 
-#ifdef HAVE_BSM
-    if(config%opt%CFG_prefer_BSM) THEN
-       call bsm_d_from_f(H1,config%decomp%S,config%decomp%nocc,D,cycles)
-       write(config%lupri,*)'BSM+TCP purification converged in ',cycles,'cycles.'
-       return
-    end if
-#endif
     call mem_alloc(eival,config%decomp%S%nrow*2) ! allow for unrestricted.
     call mat_init(Cmo,config%decomp%S%nrow,config%decomp%S%nrow)
     call mat_diag_f(H1,config%decomp%S,eival,Cmo)

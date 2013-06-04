@@ -109,6 +109,8 @@ module dec_typedef_module
      logical :: CCSDno_restart
      !> prevent canonicalization in the ccsolver
      logical :: CCSDpreventcanonical
+     !> do not update the singles residual
+     logical :: CCDhack
      !> Debug CC driver
      logical :: cc_driver_debug
      !> Integer specifying which scheme to use in CCSD calculations (debug)

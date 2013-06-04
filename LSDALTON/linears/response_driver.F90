@@ -2441,6 +2441,7 @@ Contains
     NOOP(1) = 'NOOP'
 
     lupri => molcfg%lupri
+    i=0
 
     ! Initialize stuff
     nA=MyRspFunc%dims(1)

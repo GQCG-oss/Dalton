@@ -2765,28 +2765,6 @@ CONTAINS
         integer             :: n, lupri
         
         call lowdin_diag(n,S,S_sqrt, S_minus_sqrt, lupri)
-#if 0 && defined(HAVE_BSM)
-        select case (matrix_type)
-        case(mtype_sparse_block)
-           
-           call mat_init(tS,n,n)
-           call mat_init(tS_sqrt,n,n)
-           call mat_init(tS_minus_sqrt,n,n)
-           
-           call mat_set_from_full(S,1.0E0_realk,tS)
-           
-           call lowdin_schulz(tS,tS_sqrt,tS_minus_sqrt,lupri)
-           
-           call mat_to_full(tS_sqrt,1.0E0_realk,S_sqrt)
-           call mat_to_full(tS_minus_sqrt,1.0E0_realk,S_minus_sqrt)
-           
-           call mat_free(tS)
-           call mat_free(tS_sqrt)
-           call mat_free(tS_minus_sqrt)
-        case default
-           call lsquit('Only dense and BSM matrices are supported by di_lowdin()!',-1)
-        end select
-#endif
       end subroutine di_lowdin
 
 !> \brief Get the three matrices of dipole integrals

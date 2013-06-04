@@ -77,11 +77,12 @@ real(realk) :: trial(1,1)
     CFG%old_mu = CFG%mu
     old_oVal = oVal
     nrmG = dsqrt(mat_sqnorm2(G))/real(norb)
-    max_FM=maxval(CFG%PFM_input%omega)
-write(ls%lupri,'(I3,A,ES10.2,A,ES10.3,A,ES10.2,A,ES10.2,A,ES10.3,A,I3,A,f10.3,A,f10.3)') &
-     &i, ' Pred=',CFG%r_denom,' max_FM=',max_FM,&
-     &   ' r=',r,' mu=',CFG%mu,' grd=', nrmG, ' it=',CFG%it, ' step ', CFG%stepsize&
-     & ,' totstep',stepsize
+    max_FM=sqrt(sqrt(maxval(CFG%PFM_input%omega)))
+write(ls%lupri,'(I3,A,ES8.1,A,f6.2,A,ES8.1,A,ES8.1,A,I3,A,f5.2,A,f5.2)') &
+     &i, ' Pred= ',CFG%r_denom,'  sigma_4 =',max_FM,&
+     &   '  mu = ',CFG%mu,'  grd =', nrmG, '  it =',CFG%it, '  trust-region = ', CFG%stepsize&
+
+     & ,' step= ',stepsize
     
     if( nrmG.le. CFG%macro_thresh*100.0) then
        exit
@@ -197,9 +198,9 @@ real(realk) :: nrm_thresh,stepsize,orig_Eval
     imx  =  idamax(norb,orbspread_input%spread2,1)
     nrmG = sqrt(mat_sqnorm2(G))/real(norb)
 
-    write (ls%lupri,'(I3,A,ES9.2,A,f8.3,A,f8.3,A,ES9.2,A,ES9.2,A,I3,A,f6.3,A,f6.3)') &
-         &i, 'Pred=',CFG%r_denom,' max_o=',sqrt(orbspread_input%spread2(imx)),&
-         &   ' r=',r,' mu=',CFG%mu,' grd=', nrmG, ' it=',CFG%it, ' step',CFG%stepsize,' tot step ', stepsize
+    write (ls%lupri,'(I3,A,ES8.1,A,f6.2,A,ES8.1,A,ES8.1,A,I2,A,f5.2,A,f5.2)') &
+         &i, ' Pred=',CFG%r_denom,' sigma_2 =',sqrt(orbspread_input%spread2(imx)),&
+         &  ' mu = ',CFG%mu,' grd = ', nrmG, ' it = ',CFG%it, ' trust-region = ',CFG%stepsize,' step =', stepsize
     if(nrmG .le. CFG%macro_thresh) exit
 
    

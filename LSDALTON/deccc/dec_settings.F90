@@ -65,6 +65,7 @@ contains
     DECinfo%CCSDsaferun=.false.
     DECinfo%solver_par=.false.
     DECinfo%CCSDpreventcanonical=.false.
+    DECinfo%CCDhack = .false.
 
     ! -- Output options 
     DECinfo%output=output
@@ -103,8 +104,8 @@ contains
     ! -- Pair fragments
     DECinfo%pair_distance_threshold=10.0E0_realk/bohr_to_angstrom
     DECinfo%paircut_set=.false.
-    ! Pair reduction distance - default 1000 Angstrom, effectively turned off.
-    DECinfo%PairReductionDistance = 1000.0E0_realk/bohr_to_angstrom
+    ! Pair reduction distance - default 5 Angstrom.
+    DECinfo%PairReductionDistance = 5.0E0_realk/bohr_to_angstrom
     DECinfo%PairMinDist = 3.0E0_realk/bohr_to_angstrom  ! 3 Angstrom
 
     ! Memory use for full molecule structure
@@ -365,6 +366,7 @@ contains
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
+       case('.CCD'); DECinfo%CCDhack=.true.;DECinfo%ccModel=3; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup
