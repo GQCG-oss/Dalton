@@ -38,7 +38,7 @@ option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    
 option(ENABLE_TIMINGS        "Enable TIMINGS"                                   OFF)
 option(ENABLE_XCFUN          "Enable XCFUN"                                     OFF)
 option(ENABLE_INTEREST       "Enable interest integrals"                        OFF)
-option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"                              OFF)
+option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 
@@ -102,23 +102,23 @@ set(ExternalProjectCMakeArgs
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
 
-if(NOT ENABLE_CRAYWRAPPER)
-    include(ConfigMath)
-    if(NOT BLAS_FOUND)
-       set(LSDALTON_FIXED_FORTRAN_SOURCES
-          ${LSDALTON_FIXED_FORTRAN_SOURCES}
-          ${LSDALTON_OWN_BLAS_SOURCES}
-          )
-    endif()
-    if(NOT LAPACK_FOUND)
-       set(LSDALTON_FIXED_FORTRAN_SOURCES
-         ${LSDALTON_FIXED_FORTRAN_SOURCES}
-         ${LSDALTON_OWN_LAPACK_SOURCES}
-       )
-    endif()
-    if(HAVE_MKL_LAPACK)
-        add_definitions(-DVAR_MKL)
-    endif()
+# if BLAS and/or LAPACK not found, add own sources to the list of
+# sources to compile
+if(USE_OWN_BLAS)
+    set(LSDALTON_FIXED_FORTRAN_SOURCES
+        ${LSDALTON_FIXED_FORTRAN_SOURCES}
+        ${LSDALTON_OWN_BLAS_SOURCES}
+        )
+endif()
+if(USE_OWN_LAPACK)
+    set(LSDALTON_FIXED_FORTRAN_SOURCES
+        ${LSDALTON_FIXED_FORTRAN_SOURCES}
+        ${LSDALTON_OWN_LAPACK_SOURCES}
+        )
+endif()
+
+if(HAVE_MKL_LAPACK)
+    add_definitions(-DVAR_MKL)
 endif()
 
 if(NOT ENABLE_RELEASE)
