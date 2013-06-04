@@ -102,6 +102,7 @@ set(ExternalProjectCMakeArgs
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
 
+include(ConfigMath)
 # if BLAS and/or LAPACK not found, add own sources to the list of
 # sources to compile
 if(USE_OWN_BLAS)
