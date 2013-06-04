@@ -4947,7 +4947,7 @@ ENDIF
 
 IF (ndrhs.NE.ndlhs) call lsquit('II_get_ADMM_K_gradient:Different LHS/RHS density matrices not implemented',-1)
 
-admm_Kgrad = 0E0_realk
+call ls_dzero(admm_Kgrad,3*nAtoms)
 nAtoms = setting%molecule(1)%p%nAtoms
 nbast  = DmatLHS(1)%p%nrow
 unres  = matrix_type .EQ. mtype_unres_dense
@@ -4995,7 +4995,7 @@ DO idmat=1,ndrhs
    call II_get_exchange_mat(lupri,luerr,setting,D2,1,Dsym,k2)
    
    call mem_alloc(grad_k2,3,nAtoms)
-   grad_k2 = 0E0_realk
+   call ls_dzero(grad_k2,3*nAtoms)
    call II_get_regular_K_gradient(grad_k2,D2p,D2p,1,1,setting,lupri,luerr)
    call DAXPY(3*nAtoms,4E0_realk,grad_k2,1,admm_Kgrad,1) !Include factor 4 to use D instead of 2D
    call mem_dealloc(grad_k2)
@@ -5019,7 +5019,7 @@ DO idmat=1,ndrhs
  
    !Level 2 XC gradient
    call mem_alloc(grad_xc2,3,nAtoms)
-   grad_xc2 = 0E0_realk
+   call ls_dzero(grad_xc2,3*nAtoms)
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast2,D2,grad_xc2,nAtoms)
    call DAXPY(3*nAtoms,-GGAXfactor,grad_xc2,1,admm_Kgrad,1)
    call mem_dealloc(grad_xc2)
@@ -5033,7 +5033,7 @@ DO idmat=1,ndrhs
    setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 
    call mem_alloc(grad_XC3,3,nAtoms)
-   grad_XC3(:,:) = 0E0_realk
+   call ls_dzero(grad_XC3,3*nAtoms)
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast,DmatLHS(idmat)%p,grad_XC3,nAtoms)
    call DAXPY(3*nAtoms,GGAXfactor,grad_XC3,1,admm_Kgrad,1)
    call mem_dealloc(grad_XC3)
@@ -5044,7 +5044,7 @@ DO idmat=1,ndrhs
    
    ! Additional (reorthonormalisation like) projection terms coming from the derivative of the small d2 Density matrix
    call mem_alloc(ADMM_proj,3,nAtoms)
-   ADMM_proj = 0E0_realk
+   call ls_dzero(ADMM_proj,3*nAtoms)
    call mat_init(zeromat,nbast2,nbast2)
    call mat_zero(zeromat)
 
