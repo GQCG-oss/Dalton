@@ -536,4 +536,5 @@ execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})
 # include(ConfigMakeRelease)
 
 # give information about system, compiler flags, and size of static allocations
+set(STATIC_MEM_INFO_BINARIES lsdalton)
 include(ConfigInfo)
