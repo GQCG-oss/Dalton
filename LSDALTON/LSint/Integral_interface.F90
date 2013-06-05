@@ -4947,8 +4947,8 @@ ENDIF
 
 IF (ndrhs.NE.ndlhs) call lsquit('II_get_ADMM_K_gradient:Different LHS/RHS density matrices not implemented',-1)
 
-call ls_dzero(admm_Kgrad,3*nAtoms)
 nAtoms = setting%molecule(1)%p%nAtoms
+call ls_dzero(admm_Kgrad,3*nAtoms)
 nbast  = DmatLHS(1)%p%nrow
 unres  = matrix_type .EQ. mtype_unres_dense
 
