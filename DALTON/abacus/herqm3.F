@@ -355,6 +355,8 @@ C
         END IF
         IF (MMPCM) THEN
           WRITE(LUPRI,*) ' MM/PCM interface active'
+          if (nodtot.ge.1) write(lupri,*) 'WARNING: qm3pcm is
+     & not parallelized, so it will be much slower than expected!'
         END IF
 
         IF (NODTOT .GT. 1 .AND. .NOT. INTDIR) THEN
