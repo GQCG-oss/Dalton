@@ -1,6 +1,6 @@
 message("-- System: ${CMAKE_SYSTEM_NAME}")
-message("-- Fortran Compiler Flags: ${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_${cmake_build_type_toupper}}")
-message("-- C Compiler Flags: ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${cmake_build_type_toupper}}")
+message("-- Fortran compiler flags: ${CMAKE_Fortran_FLAGS} ${CMAKE_Fortran_FLAGS_${cmake_build_type_toupper}}")
+message("-- C compiler flags: ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_${cmake_build_type_toupper}}")
 message("-- Libraries: ${LIBS}")
 
 # get size of static allocations
