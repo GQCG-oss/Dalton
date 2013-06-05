@@ -52,7 +52,7 @@ use ks_settings, only: ks_free_incremental_fock
 use memory_handling, only: mem_alloc,mem_dealloc
 use dft_typetype
 use plt_driver_module
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
 use lsmpi_type, only: DFTSETFU
@@ -135,7 +135,7 @@ implicit none
   call pltinfo_set_default_config(config%Plt)
   config%doplt=.false.
   
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
 #endif
 end subroutine config_set_default_config
@@ -364,7 +364,7 @@ DO
                      config%integral%exchangeFactor = hfweight
                      config%integral%dft%HFexchangeFac = hfweight
 #ifdef BUILD_CGTODIFF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
                      call lsquit('cgto_diff_eri not testet for MPI',-1)
 #endif                     
 !                     call cgto_diff_eri_xfac_general(config%integral%exchangeFactor)
@@ -974,7 +974,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         SELECT CASE(WORD) 
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
@@ -3366,28 +3366,28 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          call lsquit('SCALAPACK not implemented for unrestricted!',config%lupri)
       else
 #ifdef VAR_SCALAPACK
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
          WRITE(lupri,'(4X,A)')'with SCALAPACK for memory distribution and parallelization.'
          CALL mat_select_type(mtype_scalapack,lupri,nbast)
 
 #ifdef VAR_INT64
-#ifdef VAR_LSMPI_32
+#ifdef VAR_MPI_32BIT_INT
          print*,'you cannot compile using a 64 bit integers, when linking to a 32 bit integer library and'
          print*,'use the 64 bit integer BLACS/SCALAPACK provided by MKL/intel'
          write(config%lupri,*)'you cannot compile using a 64 bit integers, when linking to a 32 bit integer library and'
          write(config%lupri,*)'use the 64 bit integer BLACS/SCALAPACK provided by MKL/intel'
-         call lsquit('you cannot compile with VAR_INT64 and SCALAPACK and VAR_LSMPI32',-1)
+         call lsquit('you cannot compile with VAR_INT64 and SCALAPACK and VAR_MPI32',-1)
 #endif 
 #endif
 
 #else
-         !VAR_SCALAPACK but no VAR_LSMPI
-         CALL LSQUIT('SCALAPACK requires MPI - recompile using MPI and the -DVAR_LSMPI flag',config%lupri)
+         !VAR_SCALAPACK but no VAR_MPI
+         CALL LSQUIT('SCALAPACK requires MPI - recompile using MPI and the -DVAR_MPI flag',config%lupri)
 #endif
 #else
          !no VAR_SCALAPACK
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors.'
          call lsquit('.SCALAPACK requires -DVAR_SCALAPACK precompiler flag',config%lupri)
 #else
@@ -3554,7 +3554,7 @@ END SUBROUTINE TRIM_STRING
 
 end module configuration
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 subroutine lsmpi_setmasterToSlaveFunc(WORD)
 use infpar_module
 use xcfun_host,only: USEXCFUN

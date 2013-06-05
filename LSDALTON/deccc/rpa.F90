@@ -20,7 +20,7 @@ module rpa_module
 !       & ii_getbatchorbitalscreenk, ii_get_decpacked4center_k_eri
   use integralinterfaceMod!, only: ii_get_h1, ii_get_h1_mixed_full,&
 !       & ii_get_fock_mat_full
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
@@ -28,7 +28,7 @@ module rpa_module
 
     ! DEC DEPENDENCIES (within deccc directory)   
     ! *****************************************
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use decmpi_module!, only: mpi_communicate_ccsd_calcdata,distribute_mpi_jobs
 #endif
     use dec_fragment_utils

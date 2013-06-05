@@ -2053,7 +2053,7 @@ integer :: CA,DB
 Real(realk),pointer :: lAC(:),lBC(:),lAD(:),lBD(:),rBD(:),rAD(:),rBC(:),rAC(:)
 Real(realk),pointer :: lCA(:),lCB(:),lDA(:),lDB(:),rDB(:),rDA(:),rCB(:),rCA(:)
 Real(realk) :: tmpKcont(ndmat)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !We assume sym dmat
 
 P => PQ%P%p
