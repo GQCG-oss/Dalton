@@ -371,6 +371,12 @@ C
           CALL QUIT('QM damping only implemented for .INTDIR option')
         ENDIF
 C
+        IF (MMPCM .AND. .NOT. INTDIR) THEN
+          WRITE(LUPRI,*) ' WARNING: QM3 .INTDIR activated since',
+     *                   ' this is a QM/MM/PCM calculation'
+          INTDIR = .TRUE.
+        ENDIF
+
       END IF
 C
       CALL QEXIT('QM3INP')
