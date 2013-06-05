@@ -1961,7 +1961,7 @@ IF(.NOT.INPUT%noOMP) call mem_TurnONThread_Memory()
 !$OMP ODtypeIndex,nLHSbatches,ReductionECONT)
 
 IF(.NOT.INPUT%noOMP) call init_threadmemvar()
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 node = input%node
 #else
 node = 0
@@ -2093,7 +2093,7 @@ CALL determineMaxPassesForType(Alloc,currentODtype,nPassTypes,&
      & maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
 iODtype = currentODtype
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 MPIINDEX(tid) = 0 
 numnodes = input%numnodes
 node = input%node
@@ -2221,7 +2221,7 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
    ENDIF
    !Do diagonal =================================================
    IF(sameODs)THEN
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       MPIINDEX(tid) = MPIINDEX(tid) + 1
       IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
 #endif
@@ -2236,7 +2236,7 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
          CALL ExplicitIntegrals(Integral,PQ,P,Q(ipasstype),INPUT,LSOUTPUT,&
               & ILHS,ILHS,LUPRI,IPRINT)
          CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       ENDIF
 #endif
       DoINT(ILHS) = .FALSE.
@@ -2265,7 +2265,7 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
          overlaplist(numPasses(iPassType),ipassType) = IRHS
          IF (numPasses(iPassType).EQ.maxPassesForTypes(iPassType)) THEN
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
             MPIINDEX(tid) = MPIINDEX(tid) + 1
             IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
 #endif
@@ -2282,14 +2282,14 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
                CALL ExplicitIntegrals(Integral,PQ,P,PassQ(iPassType),INPUT,LSOUTPUT,&
                     & ILHS,IRHS,LUPRI,IPRINT)
                CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
             ENDIF
 #endif
             numPasses(iPassType) = 0
          ENDIF
       ELSE
          IRHSI(1) = IRHS
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          MPIINDEX(tid) = MPIINDEX(tid) + 1
          IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
 #endif
@@ -2302,14 +2302,14 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
             CALL ExplicitIntegrals(Integral,PQ,P,Q(Ipasstype),INPUT,LSOUTPUT,&
                  & ILHS,IRHS,LUPRI,IPRINT)
             CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          ENDIF
 #endif
       ENDIF
    ENDDO LOOPRHS
    DO iPassType=1,nPassTypes
       IF(numPasses(iPassType).GT. 0) THEN
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          MPIINDEX(tid) = MPIINDEX(tid) + 1
          IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
 #endif
@@ -2332,7 +2332,7 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
             CALL ExplicitIntegrals(Integral,PQ,P,PassQ(iPassType),INPUT,LSOUTPUT,&
                  & ILHS,IRHS,LUPRI,IPRINT)
             CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          ENDIF
 #endif
          numPasses(iPassType) = 0

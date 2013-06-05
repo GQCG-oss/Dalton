@@ -41,6 +41,7 @@ option(ENABLE_INTEREST       "Enable interest integrals"                        
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
+option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard"               OFF)
 
 set(LIBS)
 
@@ -49,6 +50,7 @@ include(SourcesDALTON)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
+include(ConfigOMP)
 include(ConfigMath)
 include(ConfigMPI)
 include(ConfigSafeGuards)
@@ -75,10 +77,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 
 if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
     add_definitions(-DMOD_UNRELEASED)
-endif()
-
-if(ENABLE_OMP)
-    add_definitions(-DVAR_OMP)
 endif()
 
 if(ENABLE_GEN1INT)

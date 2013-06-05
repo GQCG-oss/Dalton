@@ -163,7 +163,7 @@ ENDIF
 end subroutine free_DFTdata
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 subroutine mpicopy_DFTparam(DFT,master)
 implicit none
 integer(kind=ls_mpik) :: master
@@ -371,7 +371,7 @@ nullify(inputDFTDATA%orb2atom)
 
 end subroutine DFTdataReduction
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !> \brief mpi copy the DFTdata structure
 !> \author T. Kjaergaard
 !> \date 2011

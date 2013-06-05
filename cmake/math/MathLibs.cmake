@@ -81,7 +81,7 @@ else()
     set(MKL_LAPACK_LIBRARY_PATH_SUFFIXES ia32 32)
 endif()
 
-if(ENABLE_OMP)
+if(ENABLE_THREADED_MKL)
     set(_thread_lib)
     if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
         set(_thread_lib mkl_intel_thread)

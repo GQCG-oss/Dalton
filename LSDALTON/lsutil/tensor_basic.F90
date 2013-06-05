@@ -7,7 +7,7 @@ module tensor_basic_module
 !         &ass_D1to4, ass_D1to5, ass_D1to6, ass_D1to7
   use LSTIMING!,only:lstimer
   use memory_handling!, only: mem_alloc,mem_dealloc
-!#ifdef VAR_LSMPI
+!#ifdef VAR_MPI
 !  use infpar_module
 !  use lsmpi_type!, only: lsmpi_localwin_create_realk,&
 !       & lsmpi_fence, lsmpi_win_free, lsmpi_barrier,&
@@ -253,7 +253,7 @@ module tensor_basic_module
            dim1 = dble(size(arr%ti(i)%t))*realk
            if(.false.)then
              call mem_dealloc(arr%ti(i)%t)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
            else
              call mem_dealloc(arr%ti(i)%t,arr%ti(i)%c)
 #endif
