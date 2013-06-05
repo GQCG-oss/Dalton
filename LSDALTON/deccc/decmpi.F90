@@ -2,7 +2,7 @@
 !> DEC MPI handling
 !> \author Kasper Kristensen
 !> \date March 2012
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 module decmpi_module
 
   use precision

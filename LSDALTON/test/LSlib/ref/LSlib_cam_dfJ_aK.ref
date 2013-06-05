@@ -1,464 +1,263 @@
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
 Starting lslib_test with nbast =      38, natoms =       3 and nelectrons =      14
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
- >>>  CPU Time used in OVERLAP         is   0.00 seconds
- >>> wall Time used in OVERLAP         is   0.00 seconds
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
                                    AO overlap matrix: RMS and index-weighted sum      0.2567070552     49.3475943949
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
- >>>  CPU Time used in CS15_INPUT-Mole is   0.01 seconds
- >>> wall Time used in CS15_INPUT-Mole is   0.01 seconds
- >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
- >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
- >>>  CPU Time used in NucElec         is   0.02 seconds
- >>> wall Time used in NucElec         is   0.02 seconds
- QQQ New  h:   11781.7031072802     
- >>>  CPU Time used in Kinetic         is   0.00 seconds
- >>> wall Time used in Kinetic         is   0.00 seconds
- QQQ New  K:   939.446137891854     
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+ QQQ New  h:   11781.703107280215     
+ QQQ New  K:   939.44613789185416     
                        One-electron AO-matrix matrix: RMS and index-weighted sum      2.2773987502   -395.6147111192
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
- WARNING: MBIE not working for densfit basis (Aux Empty|Aux Empty) but maybe it 
- should
- >>>  CPU Time used in CS10_INPUT-Mole is   0.00 seconds
- >>> wall Time used in CS10_INPUT-Mole is   0.00 seconds
- >>>  CPU Time used in CS10_INPUT-Mole is   0.01 seconds
- >>> wall Time used in CS10_INPUT-Mole is   0.01 seconds
- >>>  CPU Time used in GALPHA          is   0.02 seconds
- >>> wall Time used in GALPHA          is   0.02 seconds
- >>>  CPU Time used in ALBE            is   0.01 seconds
- >>> wall Time used in ALBE            is   0.01 seconds
- >>>  CPU Time used in LINSOL          is   0.00 seconds
- >>> wall Time used in LINSOL          is   0.00 seconds
- >>>  CPU Time used in GALPHA          is   0.01 seconds
- >>> wall Time used in GALPHA          is   0.01 seconds
- >>>  CPU Time used in ALBE            is   0.01 seconds
- >>> wall Time used in ALBE            is   0.01 seconds
- >>>  CPU Time used in LINSOL          is   0.00 seconds
- >>> wall Time used in LINSOL          is   0.00 seconds
- >>>  CPU Time used in FIT-J           is   0.00 seconds
- >>> wall Time used in FIT-J           is   0.00 seconds
- >>>  CPU Time used in dfJ-Jengine     is   0.04 seconds
- >>> wall Time used in dfJ-Jengine     is   0.05 seconds
-                   Coulomb AO-matrix matrix number 1: RMS and index-weighted sum     21.2390957719   3853.4360173225
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+                   Coulomb AO-matrix matrix number 1: RMS and index-weighted sum     21.2390957719   3853.4360173224
                    Coulomb AO-matrix matrix number 2: RMS and index-weighted sum     42.4781915437   7706.8720346449
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
- >>>  CPU Time used in AUX-IN          is   0.00 seconds
- >>> wall Time used in AUX-IN          is   0.00 seconds
- SET_SYMMETRY: Linear molecule along Z axis
- >>>  CPU Time used in CS08_INPUT-Mole is   0.00 seconds
- >>> wall Time used in CS08_INPUT-Mole is   0.00 seconds
- OVERALL WALL TIMINGS in LinkLoop
- >>>  WALL Time used in LinkLoop is            0.02 seconds
- OVERALL CPU TIMINGS in LinkLoop
- >>>  CPU Time used in LinkLoop is            0.02 seconds
- OVERALL WALL TIMINGS 
- >>>  WALL Time used in Link is                0.02 seconds
- OVERALL CPU TIMINGS 
- >>>  CPU Time used in Link is                0.02 seconds
- >>>  CPU Time used in LINK-Kbuild     is   0.03 seconds
- >>> wall Time used in LINK-Kbuild     is   0.03 seconds
- >>>  CPU Time used in AUX-EX          is   0.03 seconds
- >>> wall Time used in AUX-EX          is   0.03 seconds
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+    This is an OpenMP calculation using   4 threads.
+    This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       18344
  >>>  CPU  Time used in Boxify is     0.00 seconds
  >>>  WALL Time used in Boxify is     0.00 seconds
- 
-  Max allocated memory, Grid                    0.970 MB
- 
- >>>  CPU  Time used in gridgeneration2 is     0.00 seconds
- >>>  WALL Time used in gridgeneration2 is     0.00 seconds
-  KS electrons/energy:  173.73169916057660 -142.05569215834745 rel.err: 0.11E+02
- >>>  CPU Time used in xc-Fock         is   0.03 seconds
- >>> wall Time used in xc-Fock         is   0.03 seconds
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.03 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.03 seconds
-  Max allocated memory, XC                    357.140 kB
+
+  Max allocated memory, Grid                    1.409 MB
+
+ >>>  CPU  Time used in gridgeneration2 is     0.02 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.02 seconds
+  KS electrons/energy:  173.73169916058080  -40.50993093910789 rel.err: 0.11E+02
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.23 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.43 seconds
+  Max allocated memory, XC                      5.410 MB
+    This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       18344
  >>>  CPU  Time used in Boxify is     0.00 seconds
  >>>  WALL Time used in Boxify is     0.00 seconds
- 
-  Max allocated memory, Grid                    0.970 MB
- 
- >>>  CPU  Time used in gridgeneration2 is     0.00 seconds
- >>>  WALL Time used in gridgeneration2 is     0.00 seconds
-  KS electrons/energy:  190.31528939830247 -163.13354889988690 rel.err: 0.13E+02
- >>>  CPU Time used in xc-Fock         is   0.05 seconds
- >>> wall Time used in xc-Fock         is   0.05 seconds
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.05 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.05 seconds
-  Max allocated memory, XC                    485.036 kB
- >>>  CPU Time used in AUX-IN          is   0.00 seconds
- >>> wall Time used in AUX-IN          is   0.00 seconds
- SET_SYMMETRY: Linear molecule along Z axis
- OVERALL WALL TIMINGS in LinkLoop
- >>>  WALL Time used in LinkLoop is            0.02 seconds
- OVERALL CPU TIMINGS in LinkLoop
- >>>  CPU Time used in LinkLoop is            0.02 seconds
- OVERALL WALL TIMINGS 
- >>>  WALL Time used in Link is                0.02 seconds
- OVERALL CPU TIMINGS 
- >>>  CPU Time used in Link is                0.02 seconds
- >>>  CPU Time used in LINK-Kbuild     is   0.02 seconds
- >>> wall Time used in LINK-Kbuild     is   0.02 seconds
- >>>  CPU Time used in AUX-EX          is   0.02 seconds
- >>> wall Time used in AUX-EX          is   0.02 seconds
-  KS electrons/energy:  347.46339832115319 -355.79249528416148 rel.err: 0.24E+02
- >>>  CPU Time used in xc-Fock         is   0.03 seconds
- >>> wall Time used in xc-Fock         is   0.03 seconds
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.03 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.03 seconds
-  Max allocated memory, XC                    357.140 kB
-  KS electrons/energy:  380.63057879660494 -408.81558984615697 rel.err: 0.26E+02
- >>>  CPU Time used in xc-Fock         is   0.04 seconds
- >>> wall Time used in xc-Fock         is   0.05 seconds
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.04 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.05 seconds
-  Max allocated memory, XC                    485.036 kB
-                  Exchange AO-matrix matrix number 1: RMS and index-weighted sum      1.3393576129   -187.2838755687
-                  Exchange AO-matrix matrix number 2: RMS and index-weighted sum      2.6772064897   -373.4875854182
+
+  Max allocated memory, Grid                    1.409 MB
+
+ >>>  CPU  Time used in gridgeneration2 is     0.02 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.05 seconds
+  KS electrons/energy:  190.31528939830190  -45.89245391470121 rel.err: 0.13E+02
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.34 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.54 seconds
+  Max allocated memory, XC                      7.464 MB
+    This is an OpenMP calculation using   4 threads.
+  KS electrons/energy:  347.46339832116138  -95.08811578100176 rel.err: 0.24E+02
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.22 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.40 seconds
+  Max allocated memory, XC                      5.410 MB
+  KS electrons/energy:  380.63057879660329 -107.93042830471396 rel.err: 0.26E+02
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.31 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.55 seconds
+  Max allocated memory, XC                      7.464 MB
+                  Exchange AO-matrix matrix number 1: RMS and index-weighted sum      1.3395334239   -187.6774433901
+                  Exchange AO-matrix matrix number 2: RMS and index-weighted sum      2.6773462177   -373.8835197863
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+    This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       18344
  >>>  CPU  Time used in Boxify is     0.00 seconds
  >>>  WALL Time used in Boxify is     0.00 seconds
- 
-  Max allocated memory, Grid                    0.970 MB
- 
- >>>  CPU  Time used in gridgeneration2 is     0.00 seconds
- >>>  WALL Time used in gridgeneration2 is     0.00 seconds
-  KS electrons/energy:  190.31528939830247 -126.72008123365163 rel.err: 0.13E+02
-  KS electrons/energy:  380.63057879660494 -321.32273852673598 rel.err: 0.26E+02
- >>>  CPU Time used in xc-Fock         is   0.10 seconds
- >>> wall Time used in xc-Fock         is   0.11 seconds
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.10 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.11 seconds
-  Max allocated memory, XC                    535.364 kB
+
+  Max allocated memory, Grid                    1.409 MB
+
+ >>>  CPU  Time used in gridgeneration2 is     0.02 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.04 seconds
+  KS electrons/energy:  190.31528939830179 -126.72008123365060 rel.err: 0.13E+02
+  KS electrons/energy:  380.63057879660357 -321.32273852673723 rel.err: 0.26E+02
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.52 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.65 seconds
+  Max allocated memory, XC                      8.294 MB
                         XC AO-matrix matrix number 1: RMS and index-weighted sum      0.2506138346    -42.1934072402
                         XC AO-matrix matrix number 2: RMS and index-weighted sum      0.3164513438    -53.4463225024
-                   Fock/KS AO-matrix matrix number 1: RMS and index-weighted sum     17.7716261841   3228.3440233943
-                   Fock/KS AO-matrix matrix number 2: RMS and index-weighted sum     37.8448863382   6884.3234156051
+                   Fock/KS AO-matrix matrix number 1: RMS and index-weighted sum     17.7693439613   3227.9504555730
+                   Fock/KS AO-matrix matrix number 2: RMS and index-weighted sum     37.8426386770   6883.9274812369
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
- >>>  CPU Time used in CS10_INPUT-Mole is   0.01 seconds
- >>> wall Time used in CS10_INPUT-Mole is   0.01 seconds
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
         Coulomb AO-matrix matrix from eri (Mulliken): RMS and index-weighted sum     21.2391238000   3853.4469497776
        Exchange AO-matrix matrix from eri (Mulliken): RMS and index-weighted sum      3.3674681962   -498.0975251910
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
- >>>  CPU Time used in CS10_INPUT-Mole is   0.01 seconds
- >>> wall Time used in CS10_INPUT-Mole is   0.01 seconds
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
            Coulomb AO-matrix matrix from eri (Dirac): RMS and index-weighted sum     21.2391238000   3853.4469497776
           Exchange AO-matrix matrix from eri (Dirac): RMS and index-weighted sum      3.3674681962   -498.0975251910
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
                                          nn gradient: RMS and index-weighted sum      8.1829838501      1.8488888889
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
                                     kinetic gradient: RMS and index-weighted sum     12.8881214803      6.8872551533
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
- >>>  CPU Time used in CS15_INPUT-Mole is   0.01 seconds
- >>> wall Time used in CS15_INPUT-Mole is   0.01 seconds
- >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
- >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
                                          ne gradient: RMS and index-weighted sum    159.2728728812    -51.2572187260
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
- >>>  CPU Time used in CS15_INPUT-Mole is   0.01 seconds
- >>> wall Time used in CS15_INPUT-Mole is   0.01 seconds
- >>>  CPU Time used in CS15_INPUT-Mole is   0.00 seconds
- >>> wall Time used in CS15_INPUT-Mole is   0.00 seconds
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
                                  1-electron gradient: RMS and index-weighted sum    146.5591432405    -44.3699635728
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
- >>>  CPU Time used in CS10_INPUT-Mole is   0.01 seconds
- >>> wall Time used in CS10_INPUT-Mole is   0.01 seconds
- WARNING: MBIE not working for densfit basis (Aux Empty|Aux Empty) but maybe it 
- should
- >>>  CPU Time used in CS10_INPUT-Mole is   0.00 seconds
- >>> wall Time used in CS10_INPUT-Mole is   0.00 seconds
-                                    Coulomb gradient: RMS and index-weighted sum   3860.3948174356   1244.6809866121
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+                                    Coulomb gradient: RMS and index-weighted sum   3860.3948174358   1244.6809866123
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
- SET_SYMMETRY: Linear molecule along Z axis
- >>>  CPU Time used in CS08_INPUT-Mole is   0.00 seconds
- >>> wall Time used in CS08_INPUT-Mole is   0.01 seconds
- OVERALL WALL TIMINGS in LinkLoop
- >>>  WALL Time used in LinkLoop is            0.02 seconds
- OVERALL CPU TIMINGS in LinkLoop
- >>>  CPU Time used in LinkLoop is            0.02 seconds
- OVERALL WALL TIMINGS 
- >>>  WALL Time used in Link is                0.02 seconds
- OVERALL CPU TIMINGS 
- >>>  CPU Time used in Link is                0.02 seconds
- >>>  CPU Time used in LINK-Kbuild     is   0.03 seconds
- >>> wall Time used in LINK-Kbuild     is   0.03 seconds
- SET_SYMMETRY: Linear molecule along Z axis
- OVERALL WALL TIMINGS in LinkLoop
- >>>  WALL Time used in LinkLoop is            0.11 seconds
- OVERALL CPU TIMINGS in LinkLoop
- >>>  CPU Time used in LinkLoop is            0.11 seconds
- OVERALL WALL TIMINGS 
- >>>  WALL Time used in Link is                0.11 seconds
- OVERALL CPU TIMINGS 
- >>>  CPU Time used in Link is                0.11 seconds
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+    This is an OpenMP calculation using   4 threads.
+    This is an OpenMP calculation using   4 threads.
+    This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       18344
  >>>  CPU  Time used in Boxify is     0.00 seconds
  >>>  WALL Time used in Boxify is     0.00 seconds
- 
-  Max allocated memory, Grid                    0.970 MB
- 
- >>>  CPU  Time used in gridgeneration2 is     0.00 seconds
- >>>  WALL Time used in gridgeneration2 is     0.00 seconds
-  KS electrons/energy:  173.73169916057660 -142.05569215834745 rel.err: 0.11E+02
- >>>  CPU Time used in xc-Fock         is   0.03 seconds
- >>> wall Time used in xc-Fock         is   0.03 seconds
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.03 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.03 seconds
-  Max allocated memory, XC                    357.140 kB
-KS electrons:  173.73169916057660 rel.err: 0.11E+02
- >>>  CPU Time used in geoderiv_molgrd is   0.06 seconds
- >>> wall Time used in geoderiv_molgrd is   0.06 seconds
- >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.06 seconds
- >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.06 seconds
-  Max allocated memory, XC                      1.104 MB
+
+  Max allocated memory, Grid                    1.409 MB
+
+ >>>  CPU  Time used in gridgeneration2 is     0.02 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.03 seconds
+  KS electrons/energy:  173.73169916058080  -40.50993093910791 rel.err: 0.11E+02
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.23 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.37 seconds
+  Max allocated memory, XC                      5.410 MB
+ >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.43 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.68 seconds
+  Max allocated memory, XC                     10.557 MB
+    This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       18344
  >>>  CPU  Time used in Boxify is     0.00 seconds
- >>>  WALL Time used in Boxify is     0.00 seconds
- 
-  Max allocated memory, Grid                    0.970 MB
- 
- >>>  CPU  Time used in gridgeneration2 is     0.00 seconds
- >>>  WALL Time used in gridgeneration2 is     0.00 seconds
-KS electrons:  190.31528939830247 rel.err: 0.13E+02
- >>>  CPU Time used in geoderiv_molgrd is   0.11 seconds
- >>> wall Time used in geoderiv_molgrd is   0.11 seconds
- >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.11 seconds
- >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.11 seconds
-  Max allocated memory, XC                      1.448 MB
- SET_SYMMETRY: Linear molecule along Z axis
- OVERALL WALL TIMINGS in LinkLoop
- >>>  WALL Time used in LinkLoop is            0.02 seconds
- OVERALL CPU TIMINGS in LinkLoop
- >>>  CPU Time used in LinkLoop is            0.02 seconds
- OVERALL WALL TIMINGS 
- >>>  WALL Time used in Link is                0.02 seconds
- OVERALL CPU TIMINGS 
- >>>  CPU Time used in Link is                0.02 seconds
- >>>  CPU Time used in LINK-Kbuild     is   0.02 seconds
- >>> wall Time used in LINK-Kbuild     is   0.02 seconds
- SET_SYMMETRY: Linear molecule along Z axis
- OVERALL WALL TIMINGS in LinkLoop
- >>>  WALL Time used in LinkLoop is            0.11 seconds
- OVERALL CPU TIMINGS in LinkLoop
- >>>  CPU Time used in LinkLoop is            0.11 seconds
- OVERALL WALL TIMINGS 
- >>>  WALL Time used in Link is                0.11 seconds
- OVERALL CPU TIMINGS 
- >>>  CPU Time used in Link is                0.11 seconds
-  KS electrons/energy:  347.46339832115319 -355.79249528416148 rel.err: 0.24E+02
- >>>  CPU Time used in xc-Fock         is   0.02 seconds
- >>> wall Time used in xc-Fock         is   0.03 seconds
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.02 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.03 seconds
-  Max allocated memory, XC                    357.140 kB
-KS electrons:  347.46339832115319 rel.err: 0.24E+02
- >>>  CPU Time used in geoderiv_molgrd is   0.06 seconds
- >>> wall Time used in geoderiv_molgrd is   0.06 seconds
- >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.06 seconds
- >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.06 seconds
-  Max allocated memory, XC                      1.104 MB
-KS electrons:  380.63057879660494 rel.err: 0.26E+02
- >>>  CPU Time used in geoderiv_molgrd is   0.12 seconds
- >>> wall Time used in geoderiv_molgrd is   0.12 seconds
- >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.12 seconds
- >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.12 seconds
-  Max allocated memory, XC                      1.448 MB
-                                   Exchange gradient: RMS and index-weighted sum    189.8456426397      5.7248718189
+ >>>  WALL Time used in Boxify is     0.01 seconds
+
+  Max allocated memory, Grid                    1.409 MB
+
+ >>>  CPU  Time used in gridgeneration2 is     0.02 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.03 seconds
+ >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.66 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.82 seconds
+  Max allocated memory, XC                     14.151 MB
+    This is an OpenMP calculation using   4 threads.
+    This is an OpenMP calculation using   4 threads.
+  KS electrons/energy:  347.46339832116155  -95.08811578100183 rel.err: 0.24E+02
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.21 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.40 seconds
+  Max allocated memory, XC                      5.410 MB
+ >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.43 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.68 seconds
+  Max allocated memory, XC                     10.557 MB
+ >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.67 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.54 seconds
+  Max allocated memory, XC                     14.151 MB
+                                   Exchange gradient: RMS and index-weighted sum    189.4934614456      5.9916419384
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
- >>>  CPU Time used in CS10_INPUT-Mole is   0.01 seconds
- >>> wall Time used in CS10_INPUT-Mole is   0.01 seconds
- WARNING: MBIE not working for densfit basis (Aux Empty|Aux Empty) but maybe it 
- should
- >>>  CPU Time used in CS10_INPUT-Mole is   0.00 seconds
- >>> wall Time used in CS10_INPUT-Mole is   0.00 seconds
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
 
 
                      Coulomb contribution to gradient
                      --------------------------------
 
    H        0.0000000000            0.0000000000         2736.4608053632
-   N        0.0000000000            0.0000000000        -9206.9645705628
-   C        0.0000000000            0.0000000000         6470.5037651996
- SET_SYMMETRY: Linear molecule along Z axis
- >>>  CPU Time used in CS08_INPUT-Mole is   0.01 seconds
- >>> wall Time used in CS08_INPUT-Mole is   0.01 seconds
- OVERALL WALL TIMINGS in LinkLoop
- >>>  WALL Time used in LinkLoop is            0.02 seconds
- OVERALL CPU TIMINGS in LinkLoop
- >>>  CPU Time used in LinkLoop is            0.02 seconds
- OVERALL WALL TIMINGS 
- >>>  WALL Time used in Link is                0.02 seconds
- OVERALL CPU TIMINGS 
- >>>  CPU Time used in Link is                0.02 seconds
- >>>  CPU Time used in LINK-Kbuild     is   0.03 seconds
- >>> wall Time used in LINK-Kbuild     is   0.03 seconds
- SET_SYMMETRY: Linear molecule along Z axis
- OVERALL WALL TIMINGS in LinkLoop
- >>>  WALL Time used in LinkLoop is            0.11 seconds
- OVERALL CPU TIMINGS in LinkLoop
- >>>  CPU Time used in LinkLoop is            0.11 seconds
- OVERALL WALL TIMINGS 
- >>>  WALL Time used in Link is                0.11 seconds
- OVERALL CPU TIMINGS 
- >>>  CPU Time used in Link is                0.11 seconds
+   N        0.0000000000            0.0000000000        -9206.9645705633
+   C        0.0000000000            0.0000000000         6470.5037652001
+    This is an OpenMP calculation using   4 threads.
+    This is an OpenMP calculation using   4 threads.
+    This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       18344
  >>>  CPU  Time used in Boxify is     0.00 seconds
  >>>  WALL Time used in Boxify is     0.00 seconds
- 
-  Max allocated memory, Grid                    0.970 MB
- 
- >>>  CPU  Time used in gridgeneration2 is     0.00 seconds
- >>>  WALL Time used in gridgeneration2 is     0.00 seconds
-  KS electrons/energy:  173.73169916057660 -142.05569215834745 rel.err: 0.11E+02
- >>>  CPU Time used in xc-Fock         is   0.03 seconds
- >>> wall Time used in xc-Fock         is   0.03 seconds
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.03 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.03 seconds
-  Max allocated memory, XC                    357.140 kB
-KS electrons:  173.73169916057660 rel.err: 0.11E+02
- >>>  CPU Time used in geoderiv_molgrd is   0.06 seconds
- >>> wall Time used in geoderiv_molgrd is   0.06 seconds
- >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.06 seconds
- >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.06 seconds
-  Max allocated memory, XC                      1.104 MB
+
+  Max allocated memory, Grid                    1.409 MB
+
+ >>>  CPU  Time used in gridgeneration2 is     0.02 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.03 seconds
+  KS electrons/energy:  173.73169916058069  -40.50993093910787 rel.err: 0.11E+02
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.23 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.53 seconds
+  Max allocated memory, XC                      5.410 MB
+ >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.43 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.49 seconds
+  Max allocated memory, XC                     10.557 MB
+    This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       18344
  >>>  CPU  Time used in Boxify is     0.00 seconds
  >>>  WALL Time used in Boxify is     0.00 seconds
- 
-  Max allocated memory, Grid                    0.970 MB
- 
- >>>  CPU  Time used in gridgeneration2 is     0.00 seconds
- >>>  WALL Time used in gridgeneration2 is     0.00 seconds
-KS electrons:  190.31528939830247 rel.err: 0.13E+02
- >>>  CPU Time used in geoderiv_molgrd is   0.11 seconds
- >>> wall Time used in geoderiv_molgrd is   0.11 seconds
- >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.11 seconds
- >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.11 seconds
-  Max allocated memory, XC                      1.448 MB
- SET_SYMMETRY: Linear molecule along Z axis
- OVERALL WALL TIMINGS in LinkLoop
- >>>  WALL Time used in LinkLoop is            0.02 seconds
- OVERALL CPU TIMINGS in LinkLoop
- >>>  CPU Time used in LinkLoop is            0.02 seconds
- OVERALL WALL TIMINGS 
- >>>  WALL Time used in Link is                0.02 seconds
- OVERALL CPU TIMINGS 
- >>>  CPU Time used in Link is                0.02 seconds
- >>>  CPU Time used in LINK-Kbuild     is   0.02 seconds
- >>> wall Time used in LINK-Kbuild     is   0.02 seconds
- SET_SYMMETRY: Linear molecule along Z axis
- OVERALL WALL TIMINGS in LinkLoop
- >>>  WALL Time used in LinkLoop is            0.11 seconds
- OVERALL CPU TIMINGS in LinkLoop
- >>>  CPU Time used in LinkLoop is            0.11 seconds
- OVERALL WALL TIMINGS 
- >>>  WALL Time used in Link is                0.11 seconds
- OVERALL CPU TIMINGS 
- >>>  CPU Time used in Link is                0.11 seconds
-  KS electrons/energy:  347.46339832115319 -355.79249528416148 rel.err: 0.24E+02
- >>>  CPU Time used in xc-Fock         is   0.02 seconds
- >>> wall Time used in xc-Fock         is   0.03 seconds
- >>>  CPU  Time used II_get_xc_Fock_mat is     0.02 seconds
- >>>  WALL Time used II_get_xc_Fock_mat is     0.03 seconds
-  Max allocated memory, XC                    357.140 kB
-KS electrons:  347.46339832115319 rel.err: 0.24E+02
- >>>  CPU Time used in geoderiv_molgrd is   0.06 seconds
- >>> wall Time used in geoderiv_molgrd is   0.06 seconds
- >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.06 seconds
- >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.06 seconds
-  Max allocated memory, XC                      1.104 MB
-KS electrons:  380.63057879660494 rel.err: 0.26E+02
- >>>  CPU Time used in geoderiv_molgrd is   0.10 seconds
- >>> wall Time used in geoderiv_molgrd is   0.10 seconds
- >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.10 seconds
- >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.10 seconds
-  Max allocated memory, XC                      1.448 MB
+
+  Max allocated memory, Grid                    1.409 MB
+
+ >>>  CPU  Time used in gridgeneration2 is     0.02 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.04 seconds
+ >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.65 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.55 seconds
+  Max allocated memory, XC                     14.151 MB
+    This is an OpenMP calculation using   4 threads.
+    This is an OpenMP calculation using   4 threads.
+  KS electrons/energy:  347.46339832116109  -95.08811578100170 rel.err: 0.24E+02
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.22 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.46 seconds
+  Max allocated memory, XC                      5.410 MB
+ >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.44 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.69 seconds
+  Max allocated memory, XC                     10.557 MB
+ >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.67 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.73 seconds
+  Max allocated memory, XC                     14.151 MB
 
 
                     exchange contribution to gradient
                     ---------------------------------
 
-   H        0.0000000000            0.0000000000         -241.0469717281
-   N        0.0000000000           -0.0000000000          464.9192109584
-   C        0.0000000000            0.0000000000         -223.8722782439
-                                 2-electron gradient: RMS and index-weighted sum   3676.8170444361   1250.4058584311
+   H        0.0000000000            0.0000000000         -241.0106570445
+   N        0.0000000000           -0.0000000000          464.0462435880
+   C        0.0000000000           -0.0000000000         -223.0356347720
+                                 2-electron gradient: RMS and index-weighted sum   3677.2083365815   1250.6726285509
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+    This is an OpenMP Gridgeneration calculation using  4 threads.
 Total Number of grid points:       18344
  >>>  CPU  Time used in Boxify is     0.00 seconds
  >>>  WALL Time used in Boxify is     0.00 seconds
- 
-  Max allocated memory, Grid                    0.970 MB
- 
- >>>  CPU  Time used in gridgeneration2 is     0.00 seconds
- >>>  WALL Time used in gridgeneration2 is     0.00 seconds
-KS electrons:  190.31528939830247 rel.err: 0.13E+02
- >>>  CPU Time used in geoderiv_molgrd is   0.12 seconds
- >>> wall Time used in geoderiv_molgrd is   0.12 seconds
- >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.12 seconds
- >>>  WALL Time used II_get_xc_geoderiv_molgrad is     0.12 seconds
-  Max allocated memory, XC                      1.448 MB
+
+  Max allocated memory, Grid                    1.409 MB
+
+ >>>  CPU  Time used in gridgeneration2 is     0.02 seconds
+ >>>  WALL Time used in gridgeneration2 is     0.05 seconds
+ >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     0.70 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_molgrad is     1.22 seconds
+  Max allocated memory, XC                     14.151 MB
                                          XC gradient: RMS and index-weighted sum      9.6700098627     -2.8589065081
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
-                       Reorthonormalization gradient: RMS and index-weighted sum   7277.6851966155    888.2547871588
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
+                       Reorthonormalization gradient: RMS and index-weighted sum   7277.5713767938    888.3418400561
  This is a CAM functional with
- config%integral%CAMalpha  0.190000000000000     
- config%integral%CAMbeta  0.460000000000000     
- config%integral%CAMmu  0.330000000000000     
- >>>  CPU Time used in CS10_INPUT-Mole is   0.01 seconds
- >>> wall Time used in CS10_INPUT-Mole is   0.01 seconds
+ config%integral%CAMalpha  0.19000000000000000     
+ config%integral%CAMbeta  0.46000000000000002     
+ config%integral%CAMmu  0.33000000000000002     
            Coulomb gradient from diff-eri (Mulliken): RMS and index-weighted sum    772.0703198086    248.9265410712
 
 *** LSlib tester completed ***

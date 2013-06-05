@@ -12,6 +12,8 @@ F90FILES = \
 FUNFILES = \
 	fun-becke.c	\
 	fun-cam-b3lyp.c \
+	fun-camx.c \
+	fun-cam_compx.c \
 	fun-example.c	\
 	fun-b97-1.c	\
 	fun-gga.c	\

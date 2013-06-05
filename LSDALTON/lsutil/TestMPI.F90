@@ -3,7 +3,7 @@ module lsmpi_test
   use Integralparameters
   use memory_handling
   use lsmpi_type
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
 #endif
 
@@ -11,7 +11,7 @@ CONTAINS
   SUBROUTINE test_mpi(comm)
     implicit none
     integer(kind=ls_mpik) :: comm
-#ifdef VAR_LSMPI_32
+#ifdef VAR_MPI_32BIT_INT
     integer :: single
     integer,pointer :: intbuffer(:)
     integer(kind=4) :: single4

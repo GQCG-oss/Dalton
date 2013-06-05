@@ -28,7 +28,7 @@ MODULE LSTENSOR_TYPETYPE
      INTEGER :: nLocal(4)
      INTEGER :: ATOM(4)
      INTEGER :: AOBATCH(4)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
      INTEGER :: GLSAOindex
 #endif
   END TYPE LSAOTENSOR
@@ -42,7 +42,7 @@ MODULE LSTENSOR_TYPETYPE
   END TYPE GLOBALLSAOTENSOR
 
   TYPE LSTENSOR
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
      TYPE(GLOBALLSAOTENSOR),pointer :: G_LSAO(:)
 #endif
      TYPE(LSAOTENSOR),pointer :: LSAO(:)
@@ -71,7 +71,7 @@ MODULE LSTENSOR_TYPETYPE
      real(realk),pointer :: MBIE(:,:,:) !nMBIE,nbatches(1),nbatches(1)
      integer :: nMBIE
      integer :: lstmem_index
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
      INTEGER :: G_maxnLocal
      INTEGER :: G_nLSAO
      INTEGER :: G_nAtom(2)

@@ -5,7 +5,7 @@ subroutine pdm_array_slave()
   use memory_handling, only: mem_alloc,mem_dealloc
   use matrix_operations, only: mtype_scalapack, matrix_type
   use dec_typedef_module
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
@@ -23,7 +23,7 @@ subroutine pdm_array_slave()
    logical :: logi
    integer, external :: numroc
    integer, pointer :: dims(:),dims2(:)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    CALL PDM_ARRAY_SYNC(JOB,A,B,C,D) !Job is output
    !print *,"slave in pdm-> job is",JOB
    !print *,"array1_dims",A%dims

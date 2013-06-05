@@ -78,7 +78,7 @@ END SUBROUTINE ls_free
 !> ls%setting is the current info about molecule,basis, etc.
 !>
 SUBROUTINE dalton_init(intinp,LUPRI,LUERR,nbast,integral,dodft,doDEC,doprint)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 use infpar_module
 #endif
 implicit none
@@ -154,7 +154,7 @@ CALL READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,intinp%MOLECULE,LIBRARY,doprint,&
 integral%nelectrons = intinp%MOLECULE%nelectrons 
 integral%molcharge = INT(intinp%MOLECULE%charge)
 numAtoms = intinp%MOLECULE%nAtoms
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   intinp%node         = infpar%mynum
   intinp%numNodes     = infpar%nodtot
   intinp%numFragments = min(numAtoms,intinp%numNodes)
@@ -553,7 +553,7 @@ END SUBROUTINE PRINT_MOL_FILE
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE build_ccfragmentlsitem(LSFULL,FRAGMENT,ATOMS,NATOMS,LUPRI,IPRINT)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 use infpar_module
 #endif
 implicit none
@@ -643,7 +643,7 @@ CALL typedef_set_default_setting(FRAGMENT%SETTING,FRAGMENT%INPUT)
 FRAGMENT%SETTING%IntegralTransformGC =.FALSE.
 
 ! Set setting communicator to be local group communicator
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 fragment%setting%comm = infpar%lg_comm
 fragment%setting%node = infpar%lg_mynum
 fragment%setting%numnodes = infpar%lg_nodtot

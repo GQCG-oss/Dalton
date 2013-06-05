@@ -11,6 +11,8 @@ set(DFTFUNC_SOURCES
     dft/fun-b97-1.c
     dft/fun-becke.c
     dft/fun-cam-b3lyp.c
+    dft/fun-camx.c
+    dft/fun-cam_compx.c
     dft/fun-gga.c
     dft/fun-hcth120.c
     dft/fun-hcth147.c
