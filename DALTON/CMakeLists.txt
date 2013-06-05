@@ -31,16 +31,17 @@ option(ENABLE_RELEASE        "Test release mode which undefines MOD_UNRELEASED" 
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
-option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" OFF)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
 option(ENABLE_TIMINGS        "Enable TIMINGS"                                   OFF)
 option(ENABLE_XCFUN          "Enable XCFUN"                                     OFF)
 option(ENABLE_INTEREST       "Enable interest integrals"                        OFF)
-option(ENABLE_CRAYWRAPPER    "Enable cray wrapper"                              OFF)
+option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
+option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard"               OFF)
 
 set(LIBS)
 
@@ -49,6 +50,7 @@ include(SourcesDALTON)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
+include(ConfigOMP)
 include(ConfigMath)
 include(ConfigMPI)
 include(ConfigSafeGuards)
@@ -75,10 +77,6 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
 
 if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
     add_definitions(-DMOD_UNRELEASED)
-endif()
-
-if(ENABLE_OMP)
-    add_definitions(-DVAR_OMP)
 endif()
 
 if(ENABLE_GEN1INT)
@@ -210,4 +208,5 @@ include(ConfigMakeInstall)
 include(ConfigMakeRelease)
 
 # give information about system, compiler flags, and size of static allocations
+set(STATIC_MEM_INFO_BINARIES dalton)
 include(ConfigInfo)

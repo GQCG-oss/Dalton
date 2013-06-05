@@ -114,7 +114,7 @@ group.add_argument('--explicit-libs',
 group.add_argument('--cray',
         action='store_true',
         default=False,
-        help='use cray wrapper which disables math detection and internal math implementation [default: %(default)s]')
+        help='use cray wrappers for BLAS/LAPACK and MPI which disables math detection and internal math implementation [default: %(default)s]')
 group.add_argument('--csr',
         action='store_true',
         default=False,
@@ -244,7 +244,7 @@ def gen_cmake_command():
     command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
     command += ' -DENABLE_XCFUN=%s'          % translate_cmake(args.xcfun)
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
-    command += ' -DENABLE_CRAYWRAPPER=%s'    % translate_cmake(args.cray)
+    command += ' -DENABLE_CRAY_WRAPPERS=%s'  % translate_cmake(args.cray)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
 
     if args.mkl:
@@ -338,7 +338,7 @@ def run_cmake(command, build_path):
     # print cmake output to screen
     print(s)
     # write cmake output to file
-    f = open(os.path.join(build_path, 'setup_cmake_output'), 'w')
+    f = open('setup_cmake_output', 'w')
     f.write(s)
     f.close()
     # change directory and return

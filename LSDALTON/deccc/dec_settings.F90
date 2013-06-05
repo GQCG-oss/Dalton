@@ -65,6 +65,7 @@ contains
     DECinfo%CCSDsaferun=.false.
     DECinfo%solver_par=.false.
     DECinfo%CCSDpreventcanonical=.false.
+    DECinfo%CCDhack = .false.
 
     ! -- Output options 
     DECinfo%output=output
@@ -365,6 +366,7 @@ contains
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
+       case('.CCD'); DECinfo%CCDhack=.true.;DECinfo%ccModel=3; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.HACK'); DECinfo%hack=.true.
        case('.HACK2'); DECinfo%hack2=.true.
        case('.TIMEBACKUP'); read(input,*) DECinfo%TimeBackup

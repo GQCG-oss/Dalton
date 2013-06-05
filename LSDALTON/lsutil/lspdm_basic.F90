@@ -7,7 +7,7 @@ module lspdm_basic_module
   use precision
   use LSTIMING!,only:lstimer
   use memory_handling
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
@@ -25,7 +25,7 @@ module lspdm_basic_module
     !call memory_deallocate_array(arr)
     if(associated(arr%wi)) then
        do i=1,arr%ntiles
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          !call lsmpi_win_fence(arr%wi(i),.false.)
          call lsmpi_win_free(arr%wi(i))
 #else
@@ -88,7 +88,7 @@ module lspdm_basic_module
     master = .true.
     nnod=1
     me=0
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     !print *,infpar%lg_mynum,"in routine"
     nnod=infpar%lg_nodtot
     me=infpar%lg_mynum
@@ -120,7 +120,7 @@ module lspdm_basic_module
     if(arr%zeros)then
       do i=1,arr%ntiles
         doit=.true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
         if(.not.mod(i+arr%offset,infpar%lg_nodtot)==infpar%lg_mynum)doit=.false.
 #endif
         if(doit)then
@@ -150,7 +150,7 @@ module lspdm_basic_module
 
         !Check if the current tile resides on the current node
         doit=.true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
         if(arr%atype==TILED_DIST.and.&
         &.not.mod(i-1+arr%offset,infpar%lg_nodtot)==infpar%lg_mynum)doit=.false.
 #endif
@@ -179,7 +179,7 @@ module lspdm_basic_module
             arr%ti(loc_idx)%e=arr%ti(loc_idx)%e*arr%ti(loc_idx)%d(j)
           enddo
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
           !if(act_ts/=arr%ti(loc_idx)%e)print*,"something wrong"
           call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e)
           call lsmpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm)
@@ -196,11 +196,11 @@ module lspdm_basic_module
         else
          !open a window of size zero on the nodes where the tile does not
          !reside
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
           call lsmpi_win_create(arr%dummy,arr%wi(i),0,infpar%lg_comm)
 #endif
         endif
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
         call lsmpi_win_fence(arr%wi(i),.true.)
 #endif
       enddo
@@ -237,7 +237,7 @@ module lspdm_basic_module
 
       vector_size = dble(nelms)*realk
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       call mem_alloc(arr%dummy,arr%dummyc,nelms)
 #endif
 
@@ -264,7 +264,7 @@ module lspdm_basic_module
       if(associated(arr%dummy)) then
          dim1 = dble(size(arr%dummy(:)))
          vector_size = dim1*realk
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          call mem_dealloc(arr%dummy,arr%dummyc)
 #endif
          nullify(arr%dummy)

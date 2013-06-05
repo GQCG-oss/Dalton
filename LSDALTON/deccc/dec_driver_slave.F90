@@ -2,7 +2,7 @@
 !> MPI routines for main DEC driver.
 !> \author Kasper Kristensen
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 module dec_driver_slave_module
 
 

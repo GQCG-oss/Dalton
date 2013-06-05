@@ -152,10 +152,29 @@ subroutine init_dftfunc(dft)
 TYPE(dftparam) :: dft
 !
 integer :: iDFT
+character(80) :: word
+
 do iDFT=1,size(dft%dftfuncObject)
    DFT%DFTfuncObject(iDFT) = dft%dftfunc
 enddo
+IF ((INDEX(dft%dftfunc,'cam').NE.0).OR.(INDEX(dft%dftfunc,'CAM').NE.0)) THEN
+  !word = 'Camx'
+  word = 'Camcompx'
+ELSE
+  word = 'BX'
+ENDIF
+call set_admmfun(dft,word)
+
 end subroutine init_dftfunc
+
+subroutine set_admmfun(dft,func)
+TYPE(dftparam) :: dft
+character(80)  :: func
+
+DFT%DFTfuncObject(dftfunc_ADMML2) = func
+
+end subroutine set_admmfun
+
 
 !!$SUBROUTINE store_dft_grid(grid,filename,dft)
 !!$TYPE(dft_grid) :: grid

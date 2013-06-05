@@ -2,7 +2,7 @@
 !> Contains module for MPI integral evaluation settings
 module infpar_module
 use precision
-#if defined (VAR_LSMPI)
+#if defined (VAR_MPI)
 
 type infpar_struct
   integer :: nodeid(129), ncode,  iprpar, mtottk, ntask,&

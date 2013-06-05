@@ -186,10 +186,12 @@ C-------------------------------------------------------
 
          CALL DZERO(WRK(KEFIELD),3*NNZAL)
 
+#if defined(VAR_MPI)
          IF (NODTOT .GE. 1) THEN
             CALL QMMMLNO_M1(UDV,UDVTR,WRK(KEFIELD),WRK(KUCMO),
      *                      WRK(JUBO),WRK(KLAST),LWRK1)
          ELSE
+#endif
            LRI = 1             ! group-index in vector
            DO 201 J=1,MMCENT
 
@@ -202,8 +204,9 @@ C-------------------------------------------------------
              LRI = LRI + 3
              GOTO 201
   201      CONTINUE        
+#if defined(VAR_MPI)
          ENDIF
-
+#endif
          NDIM = 3*NNZAL
          NTOTI = MAX(NDIM,1)
 
@@ -250,10 +253,12 @@ C        before, but we choose to do all of this integral-direct.
             LRXYO = JRXYO
          ENDIF
 
+#if defined(VAR_MPI)
          IF (NODTOT .GE. 1) THEN
             CALL QMMMLNO_M2(WRK(LRXYO),WRK(KUCMO),WRK(KINDMOM),
      *                      WRK(KLAST),LWRK1)
          ELSE
+#endif
             LRI = 1
             DO 202 J=1,MMCENT
                IF (ZEROAL(J) .EQ. -1) GOTO 202
@@ -263,7 +268,9 @@ C        before, but we choose to do all of this integral-direct.
      *                        WRK(KLAST),LWRK1,IPRRSP)
                LRI = LRI + 3
  202        CONTINUE 
+#if defined(VAR_MPI)
          ENDIF
+#endif
          IF (MMTIME) THEN
            DTIME = SECOND() - DTIME
            TMMLNO3 = TMMLNO3 + DTIME
@@ -466,10 +473,12 @@ C     Unpack symmetry blocked CMO
 
       IF (MMTIME) DTIME = SECOND()
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
          CALL QMMMQRO_M1(WRK(KEF1),WRK(KEF2),UDV,WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ZYM1,ZYM2,WRK(KLAST),LWRK2)
       ELSE
+#endif
         LRI = 1                ! group-index in vector
         DO 100 J = 1,MMCENT 
           IF (ZEROAL(J) .EQ. -1) GOTO 100
@@ -478,8 +487,9 @@ C     Unpack symmetry blocked CMO
      *                     WRK(KLAST),LWRK2,IPRRSP)
           LRI = LRI + 3
   100   CONTINUE
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       IF (MMTIME) THEN 
         DTIME = SECOND() - DTIME
         TMMQRO1 = TMMQRO1 + DTIME
@@ -543,11 +553,13 @@ C     These could have been stored
 C     before, but we choose to do all of this integral-direct.
       IF (MMTIME) DTIME = SECOND()
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
          CALL QMMMQRO_M2(WRK(KIND1),WRK(KIND2),WRK(KUCMO),
      *                   WRK(KTRES),ISYMT,ISYMV2,ZYM2,
      *                   WRK(KLAST),LWRK2)
       ELSE
+#endif
         LRI = 1                ! group-index in vector
         DO 101 J = 1,MMCENT 
            IF (ZEROAL(J) .EQ. -1) GOTO 101
@@ -556,8 +568,9 @@ C     before, but we choose to do all of this integral-direct.
      *                   WRK(KLAST),LWRK2,IPRRSP)
            LRI = LRI + 3
  101    CONTINUE
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMQRO3 = TMMQRO3 + DTIME
@@ -768,11 +781,13 @@ C     Unpack symmetry blocked CMO
 
       IF (MMTIME) DTIME = SECOND()
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
          CALL QMMMCRO_M1(WRK(KEF1),WRK(KEF2),WRK(KEF3),UDV,WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM1,ZYM2,ZYM3,
      &                   WRK(KLAST),LWRK2)
       ELSE
+#endif
         LRI = 1                ! group-index in vector
         DO 100 J = 1,MMCENT 
            IF (ZEROAL(J) .EQ. -1) GOTO 100
@@ -782,8 +797,9 @@ C     Unpack symmetry blocked CMO
      *                   WRK(KLAST),LWRK2,IPRRSP)
            LRI = LRI + 3
  100    CONTINUE
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMCRO1 = TMMCRO1 + DTIME
@@ -872,11 +888,13 @@ C     before, but we choose to do all of this integral-direct.
 
       IF (MMTIME) DTIME = SECOND()
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
          CALL QMMMCRO_M2(WRK(KIND1),WRK(KIND2),WRK(KIND3),WRK(KUCMO),
      &        WRK(KTRES),ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM2,ZYM3,
      &        WRK(KLAST),LWRK2)
       ELSE
+#endif
          LRI = 1                ! group-index in vector
          DO 101 J = 1,MMCENT 
             IF (ZEROAL(J) .EQ. -1) GOTO 101
@@ -886,8 +904,9 @@ C     before, but we choose to do all of this integral-direct.
      *                       WRK(KLAST),LWRK2,IPRRSP)
             LRI = LRI + 3
  101     CONTINUE
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMCRO3 = TMMCRO3 + DTIME
@@ -2200,6 +2219,7 @@ C     Put back the dipole origin
       CALL QEXIT('MMCRO_ITER2')
       RETURN
       END
+#if defined(VAR_MPI)
 C ************************************************
 C Parallel QM/MM response routines (AHS 09-10)
 C ************************************************
@@ -3391,7 +3411,7 @@ C     No more integrals to calculate
       CALL QEXIT('QMMMCRO_S2')
       RETURN
       END
-
+#endif
 
 
 

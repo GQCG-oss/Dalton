@@ -1556,7 +1556,7 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
   use integral_type
   use memory_handling
   use io
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use lsmpi_type
 #endif
   implicit none
@@ -1639,7 +1639,7 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
   CALL typedef_init_setting(setting)
   CALL typedef_set_default_setting(setting,input)
   setting%SCHEME%DoSpherical = .TRUE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   call get_rank_for_comm(MPI_COMM_LSDALTON,mynum)
   CALL get_size_for_comm(MPI_COMM_LSDALTON,nodtot, ierr)
   setting%numNodes = nodtot 

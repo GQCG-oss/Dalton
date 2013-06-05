@@ -84,10 +84,11 @@ C     1. Construct the charge contribution for all MM centers
 
       IF (NMULT .GE. 0) THEN
 
+#if defined(VAR_MPI)
         IF (NODTOT.GE.1)THEN
            CALL QMMMFIRST_M1(VEC2,IPRINT,INTPRI,WORK(1),LWORK)
         ELSE
-
+#endif
         KMAT = 1
         KLAST = KMAT + 3*N2BASX
         LWRK = LWORK - KLAST + 1
@@ -135,7 +136,9 @@ C     1. Construct the charge contribution for all MM centers
 
   100   CONTINUE
 
+#if defined(VAR_MPI)
         ENDIF ! (NODTOT.GE.1) ... ELSE 
+#endif
       ENDIF !( NMULT .GE. 0)
 
 C     2. Construct the permanent dipole contribution for all MM centers
@@ -146,10 +149,11 @@ C     2. Construct the permanent dipole contribution for all MM centers
           WRITE(LUPRI,*) 'London gradient from permanent dipoles'
         ENDIF
 
+#if defined(VAR_MPI)
         IF (NODTOT .GE. 1) THEN
            CALL QMMMFIRST_M2(VEC2,IPRINT,INTPRI,WORK(1),LWORK)
         ELSE
-
+#endif
         KMAT = 1
         KLAST = KMAT + 9*N2BASX
         LWRK = LWORK - KLAST + 1
@@ -233,7 +237,9 @@ C     2. Construct the permanent dipole contribution for all MM centers
 
   200   CONTINUE
 
+#if defined(VAR_MPI)
         ENDIF ! (NODTOT.GE.1) ... ELSE 
+#endif
       ENDIF !( NMULT .GE. 1)
 
 C     3. Construct the induced dipole contribution for all MM centers
@@ -265,11 +271,12 @@ C        London orbital contribution. See the LCOMB option below.
 
         CALL GET_FROM_FILE_1('INDUCED_DIPOLES',NNZAL,WORK(KINDMOM))
 
+#if defined(VAR_MPI)
         IF (NODTOT.GE.1) THEN
            CALL QMMMFIRST_M3(WORK(KINDMOM),VEC2,
      &          IPRINT,INTPRI,WORK(KLAST),LWRK)
         ELSE
-
+#endif
         IL = 0 ! Counter for induced dipole moments
 
         DO 300 I = 1,MMCENT
@@ -346,7 +353,9 @@ C        London orbital contribution. See the LCOMB option below.
 
   300   CONTINUE
 
+#if defined(VAR_MPI)
         ENDIF ! (NODTOT.GE.1) ... ELSE 
+#endif
       ENDIF !(IPOLTP .GT. 0)
 
 C     3a. If both permanent dipoles AND polarizabilities construct TOTAL 
@@ -394,13 +403,13 @@ C         dipole contribution for all MM centers
           IL=IL+3
   400   CONTINUE
 
+#if defined(VAR_MPI)
         IF (NODTOT.GE.1)THEN
-C        IF (.FALSE.)THEN
 C     If we are doing a parallel calculation
            CALL QMMMFIRST_M4(WORK(KTOTMOM),VEC2,
      &          IPRINT,INTPRI,WORK(KLAST),LWRK)
         ELSE
-
+#endif
 Cahs        IL = 0 ! Counter for dipole moments
 
         DO 500 I = 1,MMCENT
@@ -483,8 +492,9 @@ Cahs          IL = IL+3
 
   500   CONTINUE
 
+#if defined(VAR_MPI)
         ENDIF ! (NODTOT.GE.1) ... ELSE 
-
+#endif
       ENDIF !(LCOMB)
 
 C     **print out section**
@@ -576,10 +586,11 @@ C     1. Construct the charge contribution for all MM centers
 
       IF (NMULT .GE. 0) THEN
 
+#if defined(VAR_MPI)
         IF (NODTOT .GE. 1) THEN
            CALL QMMMB2_M1(EXPVAL,IPRINT,DENMAT,WORK(1),LWORK)
         ELSE
-
+#endif
         KTMP  = 1
         KLAST = KTMP  + 6
         LWRK  = LWORK - KLAST + 1
@@ -619,8 +630,9 @@ C     1. Construct the charge contribution for all MM centers
 
   100   CONTINUE
 
+#if defined(VAR_MPI)
         ENDIF ! (NODTOT.GE.1) ... ELSE 
-
+#endif
       ENDIF !( NMULT .GE. 0)
 
 C     2. Construct the permanent dipole contribution for all MM centers
@@ -631,10 +643,11 @@ C     2. Construct the permanent dipole contribution for all MM centers
           WRITE(LUPRI,*) 'London gradient from permanent dipoles'
         ENDIF
 
+#if defined(VAR_MPI)
         IF (NODTOT .GE. 1) THEN
            CALL QMMMB2_M2(EXPVAL,IPRINT,DENMAT,WORK(1),LWORK)
         ELSE
-
+#endif
         KTMP  = 1
         KLAST = KTMP  + 18
         LWRK  = LWORK - KLAST + 1
@@ -685,8 +698,9 @@ C     2. Construct the permanent dipole contribution for all MM centers
 
   200   CONTINUE
 
+#if defined(VAR_MPI)
         ENDIF ! (NODTOT.GE.1) ... ELSE 
-
+#endif
       ENDIF !( NMULT .GE. 1)
 
 C     3. Construct the induced dipole contribution for all MM centers
@@ -718,11 +732,12 @@ C        London orbital contribution. See the LCOMB option below.
 
         CALL GET_FROM_FILE_1('INDUCED_DIPOLES',NNZAL,WORK(KINDMOM))
 
+#if defined(VAR_MPI)
         IF (NODTOT .GE. 1) THEN
            CALL QMMMB2_M3(WORK(KINDMOM),EXPVAL,IPRINT,DENMAT,
      &                    WORK(KLAST),LWRK)
         ELSE
-
+#endif
         IL = 0 ! Counter for induced dipole moments
 
         DO 300 I = 1,MMCENT
@@ -766,8 +781,9 @@ C        London orbital contribution. See the LCOMB option below.
 
   300   CONTINUE
 
+#if defined(VAR_MPI)
         ENDIF ! (NODTOT.GE.1) ... ELSE 
-
+#endif
       ENDIF !(IPOLTP .GT. 0)
 
 C     3a. If both permanent dipoles AND polarizabilities construct TOTAL 
@@ -815,11 +831,12 @@ C         dipole contribution for all MM centers
           IL=IL+3
   400   CONTINUE
 
+#if defined(VAR_MPI)
         IF (NODTOT .GE. 1) THEN
            CALL QMMMB2_M4(WORK(KTOTMOM),EXPVAL,IPRINT,DENMAT,
      &                    WORK(KLAST),LWRK)
         ELSE
-
+#endif
 Cahs        IL = 0 ! Counter for dipole moments
 
         DO 500 I = 1,MMCENT
@@ -868,8 +885,9 @@ Cahs          IL = IL+3
 
   500   CONTINUE
 
+#if defined(VAR_MPI)
         ENDIF ! (NODTOT.GE.1) ... ELSE 
-
+#endif
       ENDIF !(LCOMB)
 
 C     Put back the dipole origin
@@ -886,6 +904,7 @@ C
       CALL QEXIT('QMMMB2')
       RETURN
       END
+#if defined(VAR_MPI)
 C****************************************************************************
 C     Parallel section, AHS
 C****************************************************************************
@@ -2821,3 +2840,4 @@ C         See if the total dipole moment at this site is zero
       RETURN
       END
 C****************************************************************************
+#endif

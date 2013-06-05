@@ -3233,7 +3233,7 @@ integer :: indDCD,indDDC,indDAB,indDBA,maxbat,maxang
 integer :: nCd,nDd,sCd,sDd,nAd,nBd,sAd,sBd
 Real(realk) :: factor
 Real(realk),pointer :: dCD(:),dDC(:),dAB(:),dBA(:)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 call lsquit('not implemented',-1)
 #else
 !Special for same lhs and rhs !!!!
