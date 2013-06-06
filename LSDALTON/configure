@@ -1157,8 +1157,8 @@ cat <<EOF > $INSTALL_DIR/lsdalton
 LSDALTON="$INSTALL_DIR/$DALEXE"
 DALMPI="$INSTALL_DIR/dalpar.x"
 MPIRUN="$mpirun"
-# set TMPDIR (if not defined by e.g. NQS) and WRKDIR
-[ -z "\$TMPDIR" ] && TMPDIR="$worksp/\$USER"
+# set DALTON_TMPDIR (if not defined by e.g. NQS) and WRKDIR
+[ -z "\$DALTON_TMPDIR" ] && DALTON_TMPDIR="$worksp/\$USER"
 EOF
 sed '1,5d' lsdalton.in >> $INSTALL_DIR/lsdalton
 chmod 755 $INSTALL_DIR/lsdalton
