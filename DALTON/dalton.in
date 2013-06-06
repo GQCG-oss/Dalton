@@ -258,6 +258,27 @@ export DALTON_TMPDIR
 if [ ! -d "$DALTON_TMPDIR" ]; then
     mkdir -p $DALTON_TMPDIR
 fi
+if [ ! -d "$DALTON_TMPDIR" ]; then
+    # this means that user has no permission to create scratch dir, stop
+    echo "ERROR: you have no permission to create $DALTON_TMPDIR"
+    exit 1
+fi
+
+# now we know that the directory exists
+# we will now try whether user has write permission to this directory
+file=$DALTON_TMPDIR/test_whether_dalton_can_create_this_file
+if [ -f $file ]; then
+    rm $file &> /dev/null
+fi
+touch $file &> /dev/null
+if [ -f $file ]; then
+    rm $file &> /dev/null
+else
+    rm $file &> /dev/null
+    echo "ERROR: you have no write permission to directory $DALTON_TMPDIR"
+    exit 1
+fi
+
 if [ $optt -gt 0 ] ; then
     SCRATCHDIR=$DALTON_TMPDIR/$outnam
 else
