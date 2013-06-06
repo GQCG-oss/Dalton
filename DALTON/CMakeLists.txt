@@ -47,6 +47,7 @@ set(LIBS)
 
 include(ConfigVersion)
 include(SourcesDALTON)
+include(SourcesLSDALTON)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
