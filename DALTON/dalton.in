@@ -74,6 +74,7 @@ frl=rel
 opt_nobackup=0
 opt_noarch=0
 opt_valgrind=0
+opt_noappend=0
 
 
 #
@@ -102,7 +103,8 @@ usage (){
         #echo ' -lam file  : call "lamboot file" and "wipe file" before and after mpirun'
         # Jan 2013: lammpi is not an active mpi implementation any more
         echo " -t dir     : set scratch directory; this script will append '/DALTON_scratch_$USER' to the path"
-        echo "              unless the path contains 'DALTON_scratch'"
+        echo "              unless the path contains 'DALTON_scratch' or you explicitly set -noappend"
+        echo ' -noappend  : do not append anything to the scratch directory; be careful with this since by default scratch is wiped after calculation'
         echo ' -w dir     : change WRKDIR to dir. Default: ' $WRKDIR
         echo ' -noarch    : do not create tar.gz archive'
         echo ' -f dalmol  : extract dalmol.tar.gz archive from WRKDIR into DALTON_TMPDIR before calculation starts'
@@ -148,6 +150,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -noarch ) opt_noarch=1;;
       -valgrind ) opt_valgrind=1;;
       -nocpex ) opt_nocpex=1;;
+      -noappend ) opt_noappend=1;;
       -ext ) OUTEXT=$2; shift;;
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
@@ -195,17 +198,20 @@ if [ -z "$DALTON_TMPDIR" ]; then
     exit 1
 fi
 
-# DALTON_TMPDIR already contains "DALTON_scratch"
-# we do not append anything
-# in this case user set it explicitly and probably needs a fixed scratch dir
-if [[ "$DALTON_TMPDIR" != *"DALTON_scratch"* ]]; then
-    if [[ "$DALTON_TMPDIR" != */ ]]; then
-        # if there is no final slash, we append it
-        DALTON_TMPDIR=${DALTON_TMPDIR}/
+
+if [ $opt_noappend -eq 0 ]; then
+    # DALTON_TMPDIR already contains "DALTON_scratch"
+    # we do not append anything
+    # in this case user set it explicitly and probably needs a fixed scratch dir
+    if [[ "$DALTON_TMPDIR" != *"DALTON_scratch"* ]]; then
+        if [[ "$DALTON_TMPDIR" != */ ]]; then
+            # if there is no final slash, we append it
+            DALTON_TMPDIR=${DALTON_TMPDIR}/
+        fi
+        # now we append DALTON_scratch_$USER
+        # better safe than sorry
+        DALTON_TMPDIR=${DALTON_TMPDIR}DALTON_scratch_$USER
     fi
-    # now we append DALTON_scratch_$USER
-    # better safe than sorry
-    DALTON_TMPDIR=${DALTON_TMPDIR}DALTON_scratch_$USER
 fi
 
 #  remove .dal, if added by user
@@ -257,6 +263,12 @@ if [ $optt -gt 0 ] ; then
 else
     SCRATCHDIR=$DALTON_TMPDIR
 fi
+if [ $opt_noappend -eq 1 ]; then
+    SCRATCHDIR=$DALTON_TMPDIR
+fi
+
+
+
 #
 echo
 echo "   ***************************************** "
