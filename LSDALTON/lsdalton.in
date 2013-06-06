@@ -17,7 +17,18 @@ LSDALTON=$SCRIPT_DIR/lsdalton.x
 LSLIB_TEST=$SCRIPT_DIR/lslib_tester.x
 DALMPI=$SCRIPT_DIR/lsdalton.x
 MPIRUN=@MPIEXEC@
-[ -z "$DALTON_TMPDIR" ] && DALTON_TMPDIR=@SCRATCH_DIR@
+
+if [ -z "$DALTON_TMPDIR" ]; then
+    scratch_dir_candidates="/global/work/$USER /scratch/$USER /work /scratch /scr /temp"
+    for dir in $scratch_dir_candidates; do
+        if [ -d "$dir" ]; then
+            DALTON_TMPDIR=$dir
+            echo "found $dir and DALTON_TMPDIR set to $DALTON_TMPDIR"
+            break
+        fi
+    done
+fi
+
 WRKDIR=`pwd`
 export WRKDIR
 #
@@ -135,6 +146,17 @@ if [ -z "$1" ]; then
    usage
    exit 1
 fi
+
+if [ -z "$DALTON_TMPDIR" ]; then
+    # DALTON_TMPDIR is still not set, better stop here
+    echo "ERROR: searched for suitable scratch directories"
+    echo "       among $scratch_dir_candidates"
+    echo "       but none of them exists"
+    echo "       please either set the DALTON_TMPDIR environment variable"
+    echo "       or use -t to set the scratch directory"
+    exit 1
+fi
+
 if [ -z "$2" ]; then
 #  remove .mol, if added by user
    molfil=`basename $1 .mol`

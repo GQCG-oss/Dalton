@@ -64,22 +64,6 @@ if(cmake_build_type_tolower STREQUAL "debug")
 	add_definitions(-DVAR_DEBUG)
 endif()
 
-# find a good default scratch base directory
-foreach(dir "/work" "/scratch" "/scr" "/temp" "/tmp")
-   if(EXISTS "${dir}/")
-       set(DEFAULT_SCRATCH_BASE_DIR ${dir})
-       break()
-   endif()
-endforeach()
-
-# set scratch directory
-set(SCRATCH_DIR
-    "${DEFAULT_SCRATCH_BASE_DIR}/LSDALTON_scratch"
-    CACHE STRING
-    "Default scratch directory"
-    )
-message("-- SCRATCH_DIR set to: ${SCRATCH_DIR}")
-
 add_definitions(-DINSTALL_BASDIR="${PROJECT_BINARY_DIR}/basis")
 
 set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
