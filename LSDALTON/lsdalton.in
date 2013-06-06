@@ -1,3 +1,4 @@
+#!/bin/bash
 
 # radovan: this is to figure out the location of this script
 SCRIPT_DIR="${0%/*}"
