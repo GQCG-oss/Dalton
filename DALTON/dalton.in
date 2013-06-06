@@ -198,20 +198,14 @@ if [ -z "$DALTON_TMPDIR" ]; then
     exit 1
 fi
 
-
 if [ $opt_noappend -eq 0 ]; then
-    # DALTON_TMPDIR already contains "DALTON_scratch"
-    # we do not append anything
-    # in this case user set it explicitly and probably needs a fixed scratch dir
-    if [[ "$DALTON_TMPDIR" != *"DALTON_scratch"* ]]; then
-        if [[ "$DALTON_TMPDIR" != */ ]]; then
-            # if there is no final slash, we append it
-            DALTON_TMPDIR=${DALTON_TMPDIR}/
-        fi
-        # now we append DALTON_scratch_$USER
-        # better safe than sorry
-        DALTON_TMPDIR=${DALTON_TMPDIR}DALTON_scratch_$USER
+    if [[ "$DALTON_TMPDIR" != */ ]]; then
+        # if there is no final slash, we append it
+        DALTON_TMPDIR=${DALTON_TMPDIR}/
     fi
+    # now we append DALTON_scratch_$USER
+    # better safe than sorry
+    DALTON_TMPDIR=${DALTON_TMPDIR}DALTON_scratch_$USER
 fi
 
 #  remove .dal, if added by user
