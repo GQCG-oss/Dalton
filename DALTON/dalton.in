@@ -28,7 +28,18 @@ DALMPI=$SCRIPT_DIR/dalton.x
 
 MPIRUN=@MPIEXEC@
 INSTALL_BASDIR=$SCRIPT_DIR/basis
-[ -z "$DALTON_TMPDIR" ] && DALTON_TMPDIR=@SCRATCH_DIR@
+
+if [ -z "$DALTON_TMPDIR" ]; then
+    scratch_dir_candidates="/global/work/$USER /scratch/$USER /work /scratch /scr /temp"
+    for dir in $scratch_dir_candidates; do
+        if [ -d "$dir" ]; then
+            DALTON_TMPDIR=$dir
+            echo "found $dir and DALTON_TMPDIR set to $DALTON_TMPDIR"
+            break
+        fi
+    done
+fi
+
 WRKDIR=`pwd` ; export WRKDIR
 # always search for basis sets in job work directory
 # (before standard dalton basis library in INSTALL_BASDIR, appended below)
@@ -90,7 +101,8 @@ usage (){
         echo ' -hostfile file : use hostfile "file" for start with mpirun'
         #echo ' -lam file  : call "lamboot file" and "wipe file" before and after mpirun'
         # Jan 2013: lammpi is not an active mpi implementation any more
-        echo ' -t dir     : change DALTON_TMPDIR to dir. Default: ' $DALTON_TMPDIR
+        echo " -t dir     : set scratch directory; this script will append '/DALTON_scratch_$USER' to the path"
+        echo "              unless the path contains 'DALTON_scratch'"
         echo ' -w dir     : change WRKDIR to dir. Default: ' $WRKDIR
         echo ' -noarch    : do not create tar.gz archive'
         echo ' -f dalmol  : extract dalmol.tar.gz archive from WRKDIR into DALTON_TMPDIR before calculation starts'
@@ -172,6 +184,30 @@ if [ -z "$1" ]; then
    usage
    exit 1
 fi
+
+if [ -z "$DALTON_TMPDIR" ]; then
+    # DALTON_TMPDIR is still not set, better stop here
+    echo "ERROR: searched for suitable scratch directories"
+    echo "       among $scratch_dir_candidates"
+    echo "       but none of them exists"
+    echo "       please either set the DALTON_TMPDIR environment variable"
+    echo "       or use -t to set the scratch directory"
+    exit 1
+fi
+
+# DALTON_TMPDIR already contains "DALTON_scratch"
+# we do not append anything
+# in this case user set it explicitly and probably needs a fixed scratch dir
+if [[ "$DALTON_TMPDIR" != *"DALTON_scratch"* ]]; then
+    if [[ "$DALTON_TMPDIR" != */ ]]; then
+        # if there is no final slash, we append it
+        DALTON_TMPDIR=${DALTON_TMPDIR}/
+    fi
+    # now we append DALTON_scratch_$USER
+    # better safe than sorry
+    DALTON_TMPDIR=${DALTON_TMPDIR}DALTON_scratch_$USER
+fi
+
 #  remove .dal, if added by user
 dalfil=`echo $1 | sed "s/\.$DALEXT//"`
 if [ -z "$2" ]; then
@@ -214,12 +250,12 @@ fi
 #
 export DALTON_TMPDIR
 if [ ! -d "$DALTON_TMPDIR" ]; then
-   mkdir -p $DALTON_TMPDIR
+    mkdir -p $DALTON_TMPDIR
 fi
-if [ $optn -gt 1 -o $optt -gt 0 ] ; then
-  SCRATCHDIR=$DALTON_TMPDIR
+if [ $optt -gt 0 ] ; then
+    SCRATCHDIR=$DALTON_TMPDIR/$outnam
 else
-  SCRATCHDIR=$DALTON_TMPDIR/$USER/$outnam
+    SCRATCHDIR=$DALTON_TMPDIR
 fi
 #
 echo

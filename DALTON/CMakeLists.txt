@@ -109,22 +109,6 @@ set(2EL_MEM_WORDS
     )
 add_definitions(-DINSTALL_MMWORK=${2EL_MEM_WORDS})
 
-# find a good default scratch base directory
-foreach(dir "/global/work/$ENV{USER}" "/scratch/$ENV{USER}" "/work" "/scratch" "/scr" "/temp" "/tmp")
-   if(EXISTS "${dir}/")
-       set(DEFAULT_SCRATCH_BASE_DIR ${dir})
-       break()
-   endif()
-endforeach()
-
-# set scratch directory
-set(SCRATCH_DIR
-    "${DEFAULT_SCRATCH_BASE_DIR}/DALTON_scratch_\${USER}"
-    CACHE STRING
-    "Default scratch directory"
-    )
-message("-- SCRATCH_DIR set to: ${SCRATCH_DIR}")
-
 if(ENABLE_GEN1INT)
     add_subdirectory(gen1int)
 endif()
