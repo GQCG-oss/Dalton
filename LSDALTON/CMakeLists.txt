@@ -80,18 +80,7 @@ set(SCRATCH_DIR
     )
 message("-- SCRATCH_DIR set to: ${SCRATCH_DIR}")
 
-set(BASIS_DIR
-    "${CMAKE_SOURCE_DIR}/../basis"
-    CACHE STRING
-    "Basis set directory"
-    )
-message("-- BASIS_DIR set to: ${BASIS_DIR}")
-
-    add_definitions(-DINSTALL_BASDIR="${BASIS_DIR}")
-
-
-
-
+add_definitions(-DINSTALL_BASDIR="${PROJECT_BINARY_DIR}/basis")
 
 set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
 add_definitions(-DVAR_LSDALTON)
