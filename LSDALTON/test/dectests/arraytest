@@ -50,6 +50,7 @@ cat > arraytest.dal <<'%EOF%'
 **INFO
 .DEBUG_MPI_MEM
 **DEC
+.RESTART
 .TESTARRAY
 *END OF INPUT
 %EOF%

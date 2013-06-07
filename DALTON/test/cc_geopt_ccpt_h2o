@@ -110,9 +110,9 @@ ERROR[1]="INITIAL ITERATION IS ALREADY NOT CORRECT"
 
 
 #SCF, MP2, CCSD and CCSD(T) energies of 1 iteration:
-CRIT1=`$GREP "Final * HF energy: * -76\.0264382123.." $log | wc -l`
+CRIT1=`$GREP "Final * HF energy: * -76\.026438212(3|4).." $log | wc -l`
 CRIT2=`$GREP "Total RSTAR energy: * -76\.237664273." $log | wc -l`
-CRIT3=`$GREP "Total CCSD  energy: * -76\.238169857." $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy: * -76\.23816985(7|8)." $log | wc -l`
 CRIT4=`$GREP "Total energy CCSD\(T\): * -76\.241243811." $log | wc -l`
 CRIT5=`$GREP " H *_1 * ( |0)\.0000000000 *  1\.42223922.. * ( |0)\.99842254.." $log | wc -l`
 CRIT6=`$GREP " H *_2 * ( |0)\.0000000000 * -1\.42223922.. * ( |0)\.99842254.." $log | wc -l`

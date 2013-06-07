@@ -915,6 +915,21 @@ integer              :: nbast, len,iAO,itype,igrid
 type(moleculeinfo),target :: atomicmolecule
 TYPE(lssetting)           :: atomicSetting
 logical :: integraltransformGC
+
+Write(ls%lupri,*)''
+Write(ls%lupri,*)'A set of atomic calculations are performed in order to construct'
+Write(ls%lupri,*)'the Grand Canonical Basis set (see PCCP 11, 5805-5813 (2009))'
+Write(ls%lupri,*)'as well as JCTC 5, 1027 (2009)'
+Write(ls%lupri,*)'This is done in order to use the TRILEVEL starting guess and '
+Write(ls%lupri,*)'perform orbital localization'
+Write(ls%lupri,*)'This is Level 1 of the TRILEVEL starting guess and is performed per default.'
+Write(ls%lupri,*)'The use of the Grand Canonical Basis can be deactivated using .NOGCBASIS'
+Write(ls%lupri,*)'under the **GENERAL section. This is NOT recommended if you do TRILEVEL '
+Write(ls%lupri,*)'or orbital localization.'
+Write(ls%lupri,*)''
+!> Contains the trilevel and atoms starting guess in addition to the construction of the GCbasis se PCCP 2009, 11, 5805-5813 
+
+
 !atomic calc is always done in AO basis and not transformed
 integraltransformGC = ls%setting%integraltransformGC
 ls%setting%integraltransformGC = .FALSE.
@@ -1557,6 +1572,7 @@ interface
      integer,       intent(in)    :: m(2)
    end subroutine optimloc
 end interface
+
   ndmat = 1
   OnMaster = .TRUE.
   !initialise the IO so that old screening matrices are not used 
@@ -1583,17 +1599,15 @@ end interface
 
   !set setting basis to the valens basis
   call set_default_AOs(AOVAL,AOdfAux)
-#ifdef HAVE_BSM
- if (config%opt%CFG_prefer_BSM) then
-    call bsm_lib_getpermutation(fperm)
-    call ls_initbsm(ls%input%BASIS%VALENCE,ls%input)
-    call bsm_lib_getpermutation(vperm)
- endif
-#endif
 
   write(config%lupri,'(1X,A)') 'Level 2 molecular calculation'
   write(   * ,'(1X,A)') 'Level 2 molecular calculation'
-  write(config%lupri,*) '============================='
+  write(config%lupri,'(A)') '============================='
+  Write(ls%lupri,'(A)')' '
+  Write(ls%lupri,'(1X,A)')'We now perform the 2. Level of the TRILEVEL starting guess '
+  Write(ls%lupri,'(1X,A)')'see PCCP 11, 5805-5813 (2009) as well as JCTC 5, 1027 (2009)'
+  Write(ls%lupri,'(1X,A)')'The 2. level is a full molecular calculation done in a minimal basis'
+  Write(ls%lupri,'(A)')' '
   write(config%lupri,'(A)') '  The 2. Level Basis'
   CALL PRINT_LEVEL2BASIS(config%lupri,&
        & ls%input%MOLECULE,ls%input%basis%VALENCE)
@@ -1743,6 +1757,9 @@ end interface
   call scfloop(H1,F,Dval,S,E,ls,config)
   write(   * ,'(1X,A)') 'Level 2 minimization done! Starting Level 3 minimization...'
   write(config%lupri,'(1X,A)') 'Level 2 minimization done! Starting Level 3 minimization...'
+  Write(ls%lupri,'(1X,A)')'Level 3 is the final level of the TRILEVEL algorithm '
+  Write(ls%lupri,'(1X,A)')'and is the standard calculation using the TRILEVEL starting guess'
+  Write(ls%lupri,'(1X,A)')'obtained from Level 2.'
 
   write(config%lupri,*)
   config%opt%optlevel = 3
@@ -1824,12 +1841,7 @@ end interface
   !that is not used in the valence basis - But we do not actually free the basis
   call freeVbasis(ls%input%BASIS)
 
-  ! initialize decomp%lcv_CMO, if BSM, we need to temporarily switch
-  ! from valence BSM permutation to full BSM permutation 
-#ifdef HAVE_BSM
- if (config%opt%CFG_prefer_BSM) call bsm_lib_setpermutation(fperm)
-#endif
-
+  ! initialize decomp%lcv_CMO
   nbast = ls%input%BASIS%REGULAR%nbast !full basis nbast 
   !set setting basis to the full basis
   call set_default_AOs(AORegular,AOdfAux)
@@ -1837,9 +1849,6 @@ end interface
   call mat_init(config%decomp%lcv_CMO,nbast,nbast)
   config%decomp%decompMatInit_lcv_CMO = .TRUE.
 
-#ifdef HAVE_BSM
- if (config%opt%CFG_prefer_BSM) call bsm_lib_setpermutation(vperm)
-#endif
   ! convert valence CMO to full cmo
   call trilevel_cmo_valence2full(config%decomp%lcv_Cmo,Cmo,list,vlist,len)
   config%decomp%lcv_basis = .true.
@@ -1907,14 +1916,6 @@ end interface
   call leastchangeOrbspreadStandalone(mx,ls,config%decomp%lcv_Cmo,config%decomp%lupri,config%decomp%luerr)
   write(*,*) 'Orbspread standalone full CMO: ', mx
 
-  ! release valence BSM permutation and set the full
-  ! instead
-#ifdef HAVE_BSM
- if (config%opt%CFG_prefer_BSM) then
-  call bsm_lib_free(vperm)
-  call bsm_lib_setpermutation(fperm)
- endif
-#endif
  call trilevel_atominfo_free(ai)
 
 END SUBROUTINE trilevel_start

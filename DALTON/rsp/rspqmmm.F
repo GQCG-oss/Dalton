@@ -595,6 +595,11 @@ C
 
       CALL QENTER('QMMMLNO')
 
+      IF (MMTIME) THEN 
+        DTIME = SECOND()
+        BTIME = SECOND()
+      ENDIF
+
       IF (IPOLTP .GT. 0) LPOL = .TRUE.
 C
 C     Determine if full Hessian or only orbital Hessian
@@ -625,7 +630,6 @@ c     Exit if not MCSCF (with- or without pol.) or HF/DFT without polarization
       ENDIF
 
 C     Memory allocation   
-
       KUCMO   = 1
       KUBO    = KUCMO   + NORBT*NBAST
 C     ---------F(yo) construction--------
@@ -664,11 +668,7 @@ C     ---------F(xo) construction--------
       KWRK2  = KOVLP  + NOSIM
       LWRK2  = LWRK  - KWRK2
 
-C    --------------------------------------      
-
       IF (LWRK2 .LT. 0) CALL ERRWRK('QMMMLNO',-KWRK2,LWRK2)
-
-C    --------------------------------------
 
       CALL DZERO(WRK(KUCMO),NORBT*NBAST)
       CALL DZERO(WRK(KUBO),NOSIM*N2ORBX)
@@ -687,76 +687,70 @@ C    --------------------------------------
       IF (TRPLET) CALL DZERO(WRK(KTXYAT),NOSIM)
       CALL DZERO(WRK(KOVLP),NOSIM)
 
-C     ************* Read the relay matrix from file **************
+C     Read the relay matrix from file
 
       N = 3*NNZAL 
 
       IF (LPOL .AND. MMMAT) THEN
-      LUQMMM = -1
-      IF (LUQMMM .LT. 0) THEN
-      CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
+        LUQMMM = -1
+        IF (LUQMMM .LT. 0) THEN
+          CALL GPOPEN(LUQMMM,'QMMMIM','UNKNOWN','SEQUENTIAL',
      &               'UNFORMATTED',IDUMMY,.FALSE.)
-      ENDIF
+        ENDIF
+        REWIND(LUQMMM)
 
-      REWIND(LUQMMM)
+        IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
+          CALL READT(LUQMMM,N*(N+1)/2,WRK(KINVMAT))
+        ELSE
+          CALL QUIT('Problem reading the matrix from the QMMMIM file.')
+        ENDIF
 
-      IF (FNDLAB('QQMMMMAT',LUQMMM)) THEN
-      CALL READT(LUQMMM,N*(N+1)/2,WRK(KINVMAT))
-      ELSE
-      CALL QUIT('Problem reading the matrix from the QMMMIM file.')
-      ENDIF
+        CALL GPCLOSE(LUQMMM,'KEEP')
 
-      CALL GPCLOSE(LUQMMM,'KEEP')
-
-C       Relay matrix de-bug write statements ***********
-
-       IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
-        WRITE(LUPRI,*) ' The classical response matrix is'//
+        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
+          WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' read from file'
-        DO I = 1, N*(N+1)/2
-          WRITE(LUPRI,*) WRK(KINVMAT+I-1)
-        END DO
+          DO I = 1, N*(N+1)/2
+            WRITE(LUPRI,*) WRK(KINVMAT+I-1)
+          END DO
         ENDIF
       ENDIF
 
-C    *** Read the solvent contributions from PEFCMO from file ***
+C     *** Read the solvent contributions from PEFCMO from file ***
 
       IF (LUSIFC .LE. 0) THEN
-      CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
-     &               IDUMMY,.FALSE.)
-      LOPEN = .TRUE.
+        CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ','UNFORMATTED',
+     &              IDUMMY,.FALSE.)
+        LOPEN = .TRUE.
       END IF
 
       REWIND(LUSIFC)
 
       MMORBT = MAX(4,NNORBT)
       IF (MMORBT .NE. NNORBX) THEN
-      CALL QUIT('ERROR IN DIMENSION OF QM/MM FOCK CONTR. IN QMMMLNO')
+        CALL QUIT('ERROR IN DIMENSION OF QM/MM FOCK CONTR. IN QMMMLNO')
       END IF
-
-!      write(lupri,*)'MMORBT', MMORBT
-!      write(lupri,*)'LUSIFC', LUSIFC
 
       CALL MOLLAB('PETMAT  ',LUSIFC,LUPRI)
       CALL READT (LUSIFC,NNORBX,WRK(KFPEMO))
 
       IF (LOPEN) THEN
-      CALL GPCLOSE(LUSIFC,'KEEP')
+        CALL GPCLOSE(LUSIFC,'KEEP')
       END IF
       
-C     *************************************************************
-
       CALL UPKCMO(CMO,WRK(KUCMO))
 
       CALL DSPTSI(NORBT,WRK(KFPEMO),WRK(KUFPE))
 
-!      WRITE(LUPRI,*)'KUFPE QMMMLNO'
-!      CALL OUTPUT(WRK(KUFPE),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
       IF (NOSIM.GT.0) THEN
-        CALL RSPZYM(NOSIM,BOVECS,WRK(KUBO))
-        CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)   
+         CALL RSPZYM(NOSIM,BOVECS,WRK(KUBO))
+         CALL DSCAL(NOSIM*N2ORBX,-1.0D0,WRK(KUBO),1)
       END IF
 
+      IF (MMTIME) THEN 
+        DTIME = SECOND() - DTIME
+        TMMLNO0 = TMMLNO0 + DTIME
+      ENDIF
 C     For SCF the zero-order contribution, i.e.
 C     - sum_a mu_ind_a t_a_pq has been included since we in 
 C     sirius do not subtract this from the fock/ks-operator.
@@ -764,21 +758,21 @@ C     Add this explicitly only for MCSCF.
 C
       DO 200 IOSIM = 1,NOSIM
 
-      JRXYO = KRXYO + (IOSIM-1)*N2ORBX                ! edh: Arrange Fyo (KRXYO in memory)
-      IF (TRPLET) JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX  ! edh: Arrange Fyo triplet (KRXYOT in memory) 
-      JUBO  = KUBO  + (IOSIM-1)*N2ORBX                ! edh: Unpack orbital response trial vectors 
-C                                                       k(t) = sum(u)k(t)q + k*(t)q(dagger)
+         IF (MMTIME) DTIME = SECOND()
+
+         ! edh: Arrange Fyo (KRXYO in memory)
+         ! edh: Arrange Fyo triplet (KRXYOT in memory) 
+         ! edh: Unpack orbital response trial vectors k(t) = sum(u)k(t)q + k*(t)q(dagger)
+         JRXYO = KRXYO + (IOSIM-1)*N2ORBX
+         IF (TRPLET) JRXYOT = KRXYOT + (IOSIM-1)*N2ORBX
+         JUBO  = KUBO  + (IOSIM-1)*N2ORBX
+C
 C        Calculate one-index transformed integrals
 C
       IF (KZCONF .GT. 0) THEN    ! edh: KZCONF *not* optimal for triplet    
 
         CALL DZERO(WRK(KUFPEX),N2ORBX)                        
         CALL ONEXH1(WRK(JUBO),WRK(KUFPE),WRK(KUFPEX))
-
-!       WRITE(LUPRI,*)'KUFPEX QMMMLNO'
-!       CALL OUTPUT(WRK(KUFPEX),1,NORBT,1,NORBT,NORBT,NORBT,1,LUPRI)
-
-C      WRITE(LUPRI,*) 'EDH TRIPLET TEST' , TRPLET 
 
           IF (TRPLET) THEN
             CALL DAXPY(N2ORBX,ONE,WRK(KUFPEX),1,WRK(JRXYOT),1)
@@ -795,86 +789,109 @@ C-------------------------------------------------------
 
       IF (LPOL) THEN
 
-        CALL DZERO(WRK(KEFIELD),3*NNZAL)
+         CALL DZERO(WRK(KEFIELD),3*NNZAL)
 
-        IF ((NODTOT .GE. 1) .AND. TDHF) THEN 
-        CALL QMMMLNO_M1(UDV,UDVTR,WRK(KEFIELD),WRK(KUCMO),
-     *                  WRK(JUBO),WRK(KWRK2),LWRK2)
-        ELSE
-        LRI = 1             ! group-index in vector
-        DO 201 J=1,MMCENT
+#if defined(VAR_MPI)
+         IF ((NODTOT .GE. 1) .AND. TDHF) THEN
+            CALL QMMMLNO_M1(UDV,UDVTR,WRK(KEFIELD),WRK(KUCMO),
+     *                      WRK(JUBO),WRK(KWRK2),LWRK2)
+         ELSE
+#endif
+           LRI = 1             ! group-index in vector
+           DO 201 J=1,MMCENT
 
-        IF (ZEROAL(J) .EQ. -1) GOTO 201
+             IF (ZEROAL(J) .EQ. -1) GOTO 201
 
-        CALL MMLNO_ITER1(J,WRK(KEFIELD+LRI-1+0),
-     *                   WRK(KEFIELD+LRI-1+1),WRK(KEFIELD+LRI-1+2),
-     *                   UDV,UDVTR,WRK(KUCMO),WRK(JUBO),
-     *                   WRK(KWRK2),LWRK2,IPRRSP)
-        LRI = LRI + 3
-        GOTO 201
- 201    CONTINUE        
-        ENDIF
+             CALL MMLNO_ITER1(J,WRK(KEFIELD+LRI-1+0),
+     *                        WRK(KEFIELD+LRI-1+1),WRK(KEFIELD+LRI-1+2),
+     *                        UDV,UDVTR,WRK(KUCMO),WRK(JUBO),
+     *                        WRK(KWRK2),LWRK2,IPRRSP)
+             LRI = LRI + 3
+             GOTO 201
+  201      CONTINUE        
+#if defined(VAR_MPI)
+         ENDIF
+#endif
+         NDIM = 3*NNZAL
+         NTOTI = MAX(NDIM,1)
 
-        NDIM = 3*NNZAL
-        NTOTI = MAX(NDIM,1)
-
-        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
-        WRITE(LUPRI,*) 'Transformed electric fields'
-        CALL OUTPUT(WRK(KEFIELD),1,NDIM,1,1,NDIM,1,1,LUPRI)
-        WRITE(LUPRI,*)
-        ENDIF
-
+         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 5) )THEN
+           WRITE(LUPRI,*) 'Transformed electric fields'
+           CALL OUTPUT(WRK(KEFIELD),1,NDIM,1,1,NDIM,1,1,LUPRI)
+           WRITE(LUPRI,*)
+         ENDIF
+         IF (MMTIME) THEN
+           DTIME = SECOND() - DTIME
+           TMMLNO1 = TMMLNO1 + DTIME
+         ENDIF
 C        Calculate the induced dipoles corresponding to this field
 
-        IF (MMMAT) THEN
-          CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEFIELD), 1,
-     &               ZERO, WRK(KINDMOM), 1)
-        ELSE IF (MMITER) THEN
-          IOPT = 2 ! Do not read from file any previuos induced moments
-          CALL F2QMMM(WRK(KEFIELD),NNZAL,WRK(KINDMOM),WRK(KWRK2),LWRK2,
-     *                IOPT,IPQMMM)
-        ENDIF
+        IF (MMTIME) DTIME = SECOND()
+         IF (MMMAT) THEN
+           CALL DSPMV('L', NDIM, ONE, WRK(KINVMAT), WRK(KEFIELD), 1,
+     &                ZERO, WRK(KINDMOM), 1)
+         ELSE IF (MMITER) THEN
+           IOPT = 2 ! Do not read from file any previuos induced moments
+           CALL F2QMMM(WRK(KEFIELD),NNZAL,WRK(KINDMOM),WRK(KWRK2),LWRK2,
+     *                 IOPT,IPQMMM)
+         ENDIF
 
-        IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
-          WRITE(LUPRI,*) 'Transformed induced dipole moments' 
-          CALL OUTPUT(WRK(KINDMOM),1,N,1,1,N,1,1,LUPRI)
-          WRITE(LUPRI,*)
-        ENDIF
+         IF ( (IPRRSP .GE. 15) .OR. (LOCDEB) .OR. (IPQMMM .GE. 15) )THEN
+           WRITE(LUPRI,*) 'Transformed induced dipole moments' 
+           CALL OUTPUT(WRK(KINDMOM),1,N,1,1,N,1,1,LUPRI)
+           WRITE(LUPRI,*)
+         ENDIF
 
-C       Now we need the integrals again transformed to the MO basis. 
+C        Now we need the integrals again transformed to the MO basis. 
+         IF (MMTIME) THEN
+           DTIME = SECOND() - DTIME
+           TMMLNO2 = TMMLNO2 + DTIME
+         ENDIF
 
-        IF (TRPLET) THEN
-        LRXYO = JRXYOT
-        ELSE
-        LRXYO = JRXYO
-        ENDIF
+         IF (MMTIME) DTIME = SECOND()
+         
+         IF (TRPLET) THEN
+            LRXYO = JRXYOT
+         ELSE
+            LRXYO = JRXYO
+         ENDIF
         ! Make Fxo (add to Fyo and store in KRXYO) 
-        IF ((NODTOT .GE. 1) .AND. TDHF) THEN
-        CALL QMMMLNO_M2(WRK(LRXYO),WRK(KUCMO),WRK(KINDMOM),
+#if defined(VAR_MPI)
+         IF ((NODTOT .GE. 1) .AND. TDHF) THEN
+            CALL QMMMLNO_M2(WRK(LRXYO),WRK(KUCMO),WRK(KINDMOM),
      *                      WRK(KWRK2),LWRK2)
-        ELSE
-        LRI = 1
-        DO 202 J=1,MMCENT
-        IF (ZEROAL(J) .EQ. -1) GOTO 202
-        CALL MMLNO_ITER2(J,WRK(KINDMOM+LRI-1),
+         ELSE
+#endif
+            LRI = 1
+            DO 202 J=1,MMCENT
+               IF (ZEROAL(J) .EQ. -1) GOTO 202
+               CALL MMLNO_ITER2(J,WRK(KINDMOM+LRI-1),
      *                        WRK(KINDMOM+LRI),WRK(KINDMOM+LRI+1),
      *                        WRK(KUCMO),WRK(LRXYO),
      *                        WRK(KWRK2),LWRK2,IPRRSP)
-        LRI = LRI + 3
- 202    CONTINUE 
-        ENDIF
+               LRI = LRI + 3
+ 202        CONTINUE 
+#if defined(VAR_MPI)
+         ENDIF
+#endif
 
       ENDIF
 
+         IF (MMTIME) THEN
+           DTIME = SECOND() - DTIME
+           TMMLNO3 = TMMLNO3 + DTIME
+         ENDIF
  200  CONTINUE
 
-      IF (TDHF) GOTO 300   
+      IF (TDHF) GOTO 300
 
 C--------------------------------------------
 C 3.  Add effective operators to response
 C     Calculate Fxo (Rxo) and Fyo (Ryo) 
 C     contributions to SVEC(NSVEC,NOSIM)
 C--------------------------------------------
+
+      IF (MMTIME) DTIME = SECOND()
 
       DO IOSIM = 1,NOSIM         
          JRXYO  = KRXYO  + (IOSIM-1)*N2ORBX
@@ -928,11 +945,14 @@ C--------------------------------------------
   300 CONTINUE ! IF TDHF 
 
       IF (TRPLET) THEN
-         CALL SLVSOR(.TRUE.,.FALSE.,NOSIM,UDVTR,SVEC(1,1),WRK(KRXYO)) ! SLVSOR: < 0 | [ q_j, A ] | 0 > 
-         CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,SVEC(1,1),WRK(KRXYOT))   ! we need A = F(xo) + F(yo)
+          ! SLVSOR: < 0 | [ q_j, A ] | 0 >
+         CALL SLVSOR(.TRUE.,.FALSE.,NOSIM,UDVTR,SVEC(1,1),WRK(KRXYO))
+         ! we need A = F(xo) + F(yo)
+         CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,SVEC(1,1),WRK(KRXYOT))
       ELSE
          CALL SLVSOR(.TRUE.,.TRUE.,NOSIM,UDV,SVEC(1,1),WRK(KRXYO))
       ENDIF
+
       IF (IPQMMM.GT.101) THEN
          WRITE(LUPRI,*)' LINEAR TRANSFORMED ORBITAL VECTOR'
          WRITE(LUPRI,*)' **** AFTER SLVSOR in QMMMLNO **** '
@@ -941,6 +961,14 @@ C--------------------------------------------
 
       IF (.NOT. TDHF) THEN
         IF (NCREF .NE. KZCONF) CALL QUIT('QMMMLNO: NCREF .ne. KZCONF')
+      ENDIF
+
+      IF (MMTIME) THEN
+        DTIME   = SECOND() - DTIME
+        TMMLNO3 = TMMLNO3  + DTIME
+        BTIME   = SECOND() - BTIME
+        TMMLNO  = TMMLNO   + BTIME
+        TMMRSP  = TMMRSP   + BTIME
       ENDIF
 
       CALL QEXIT('QMMMLNO')
@@ -1118,10 +1146,12 @@ C     Unpack symmetry blocked CMO
 
       IF (MMTIME) DTIME = SECOND()
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
          CALL QMMMQRO_M1(WRK(KEF1),WRK(KEF2),UDV,WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ZYM1,ZYM2,WRK(KLAST),LWRK2)
       ELSE
+#endif
         LRI = 1                ! group-index in vector
         DO 100 J = 1,MMCENT 
           IF (ZEROAL(J) .EQ. -1) GOTO 100
@@ -1130,8 +1160,9 @@ C     Unpack symmetry blocked CMO
      *                     WRK(KLAST),LWRK2,IPRRSP)
           LRI = LRI + 3
   100   CONTINUE
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       IF (MMTIME) THEN 
         DTIME = SECOND() - DTIME
         TMMQRO1 = TMMQRO1 + DTIME
@@ -1195,11 +1226,13 @@ C     These could have been stored
 C     before, but we choose to do all of this integral-direct.
       IF (MMTIME) DTIME = SECOND()
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
          CALL QMMMQRO_M2(WRK(KIND1),WRK(KIND2),WRK(KUCMO),
      *                   WRK(KTRES),ISYMT,ISYMV2,ZYM2,
      *                   WRK(KLAST),LWRK2)
       ELSE
+#endif
         LRI = 1                ! group-index in vector
         DO 101 J = 1,MMCENT 
            IF (ZEROAL(J) .EQ. -1) GOTO 101
@@ -1208,8 +1241,9 @@ C     before, but we choose to do all of this integral-direct.
      *                   WRK(KLAST),LWRK2,IPRRSP)
            LRI = LRI + 3
  101    CONTINUE
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMQRO3 = TMMQRO3 + DTIME
@@ -1420,11 +1454,13 @@ C     Unpack symmetry blocked CMO
 
       IF (MMTIME) DTIME = SECOND()
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
          CALL QMMMCRO_M1(WRK(KEF1),WRK(KEF2),WRK(KEF3),UDV,WRK(KUCMO),
      &                   ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM1,ZYM2,ZYM3,
      &                   WRK(KLAST),LWRK2)
       ELSE
+#endif
         LRI = 1                ! group-index in vector
         DO 100 J = 1,MMCENT 
            IF (ZEROAL(J) .EQ. -1) GOTO 100
@@ -1434,8 +1470,9 @@ C     Unpack symmetry blocked CMO
      *                   WRK(KLAST),LWRK2,IPRRSP)
            LRI = LRI + 3
  100    CONTINUE
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMCRO1 = TMMCRO1 + DTIME
@@ -1524,11 +1561,13 @@ C     before, but we choose to do all of this integral-direct.
 
       IF (MMTIME) DTIME = SECOND()
 
+#if defined(VAR_MPI)
       IF (NODTOT .GE. 1) THEN
          CALL QMMMCRO_M2(WRK(KIND1),WRK(KIND2),WRK(KIND3),WRK(KUCMO),
      &        WRK(KTRES),ISYMT,ISYMV1,ISYMV2,ISYMV3,ZYM2,ZYM3,
      &        WRK(KLAST),LWRK2)
       ELSE
+#endif
          LRI = 1                ! group-index in vector
          DO 101 J = 1,MMCENT 
             IF (ZEROAL(J) .EQ. -1) GOTO 101
@@ -1538,8 +1577,9 @@ C     before, but we choose to do all of this integral-direct.
      *                       WRK(KLAST),LWRK2,IPRRSP)
             LRI = LRI + 3
  101     CONTINUE
+#if defined(VAR_MPI)
       ENDIF
-
+#endif
       IF (MMTIME) THEN
         DTIME = SECOND() - DTIME
         TMMCRO3 = TMMCRO3 + DTIME
@@ -2852,6 +2892,7 @@ C     Put back the dipole origin
       CALL QEXIT('MMCRO_ITER2')
       RETURN
       END
+#if defined(VAR_MPI)
 C ************************************************
 C Parallel QM/MM response routines (AHS 09-10)
 C ************************************************
@@ -3054,7 +3095,7 @@ C
 
 C     No more integrals to calculate
 
-      CALL MPI_REDUCE(WRK(KEFIELD),WRK(KEFIELD),3*NNZAL,
+      CALL MPI_REDUCE(WRK(KEFIELD),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
       CALL QEXIT('QMMMLNO_S1')
@@ -3212,7 +3253,7 @@ C
       ENDIF
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(JRXYO),WRK(JRXYO),N2ORBX,
+      CALL MPI_REDUCE(WRK(JRXYO),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
       CALL QEXIT('QMMMLNO_S2')
@@ -3420,9 +3461,9 @@ C     QRO
       ENDIF
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(KEF1),WRK(KEF1),3*NNZAL,
+      CALL MPI_REDUCE(WRK(KEF1),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
-      CALL MPI_REDUCE(WRK(KEF2),WRK(KEF2),3*NNZAL,
+      CALL MPI_REDUCE(WRK(KEF2),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
       CALL QEXIT('QMMMQRO_S1')
@@ -3596,7 +3637,7 @@ C     QRO
       ENDIF
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(KTRES),WRK(KTRES),N2ORBX,
+      CALL MPI_REDUCE(WRK(KTRES),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
       CALL QEXIT('QMMMQRO_S2')
@@ -3819,13 +3860,13 @@ C     CRO
       ENDIF
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(KEF1),WRK(KEF1),3*NNZAL,
+      CALL MPI_REDUCE(WRK(KEF1),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
 
-      CALL MPI_REDUCE(WRK(KEF2),WRK(KEF2),3*NNZAL,
+      CALL MPI_REDUCE(WRK(KEF2),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
 
-      CALL MPI_REDUCE(WRK(KEF3),WRK(KEF3),3*NNZAL,
+      CALL MPI_REDUCE(WRK(KEF3),MPI_IN_PLACE,3*NNZAL,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
 
       CALL QEXIT('QMMMCRO_S1')
@@ -4037,13 +4078,13 @@ C     CRO
       ENDIF
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(KTRES),WRK(KTRES),N2ORBX,
+      CALL MPI_REDUCE(WRK(KTRES),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
       
       CALL QEXIT('QMMMCRO_S2')
       RETURN
       END
-
+#endif
 
 
 

@@ -44,7 +44,8 @@ C
 #include "maxaqn.h"
 #include "mxsymm.h"
 #include "qm3.h"
-!#include <qmmm.h>
+#include "maxorb.h"
+#include "infpar.h"
 C
       PARAMETER ( NTABLE = 20, D1 = 1.0D0)
       LOGICAL NEWDEF
@@ -356,7 +357,12 @@ C
           WRITE(LUPRI,*) ' MM/PCM interface active'
         END IF
 
-        
+        IF (NODTOT .GT. 1 .AND. .NOT. INTDIR) THEN
+          WRITE(LUPRI,*) ' WARNING: QM3 .INTDIR activated since',
+     *                   ' this is a parallel calculation'
+          INTDIR = .TRUE.
+        ENDIF
+
         WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
 
         IF (QMDAMP .AND. (.NOT. INTDIR)) THEN

@@ -161,14 +161,6 @@ CONTAINS
 
       if (config%av%cfg_averaging == config%av%CFG_AVG_NONE) then
          ! nothing
-#ifdef VAR_DSM
-      else if (config%av%cfg_averaging == config%av%CFG_AVG_DSM) then
-         CALL dsm_get_avg_density(config%av, queue, S, H1,F, D,restart)
-         do
-           if (.not. restart) exit
-           CALL dsm_get_avg_density(config%av, queue, S, H1,F, D,restart)
-         enddo
-#endif
       else if (config%av%cfg_averaging == config%av%CFG_AVG_DIIS) then
          CALL diis(config%av, queue, D, F)
       else if (config%av%cfg_averaging == config%av%CFG_AVG_EDIIS) then

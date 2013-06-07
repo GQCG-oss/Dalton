@@ -27,7 +27,7 @@ setenv OMP_NUM_THREADS 4
 
 #-DUSERDEFINED_BLAS="-Llib -L/usr/lib -lxlsmp -lmass -lmassv -L/usr/local/mass -lpthread -lC -lesslsmp6464"
 
-cmake -DCMAKE_Fortran_COMPILER=/usr/bin/xlf90_r -DCMAKE_C_COMPILER=/usr/vacpp/bin/xlc -DCMAKE_BUILD_TYPE=Release -DENABLE_OMP=1 -DBUILDNAME=Huge-AIX-XL-Release -DENABLE_64BIT_INTEGERS=1 -DENABLE_INTERNAL_MATH=1 -DSCRATCH_DIR=$SCRATCH_DIR /gpfshome/kemi/tkjaer/NightlyTestingCdash/tmp/daltonRelease
+cmake -DCMAKE_Fortran_COMPILER=/usr/bin/xlf90_r -DCMAKE_C_COMPILER=/usr/vacpp/bin/xlc -DCMAKE_BUILD_TYPE=Release -DENABLE_OMP=1 -DBUILDNAME=Huge-AIX-XL-Release -DENABLE_64BIT_INTEGERS=1 -DSCRATCH_DIR=$SCRATCH_DIR /gpfshome/kemi/tkjaer/NightlyTestingCdash/tmp/daltonRelease
 
 cd $TMP_DIR/build
 make Nightly

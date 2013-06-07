@@ -179,7 +179,7 @@ gga_isgga(void)
     return res;
 }
 static FuncList*
-add_functional(FuncList* lst, Functional* f, float weight)
+add_functional(FuncList* lst, Functional* f, real weight)
 {
     FuncList* n = malloc(sizeof(FuncList));
     n->func = f; n->weight = weight; n->next = lst;
@@ -203,8 +203,8 @@ clear_funclist()
 static integer
 xalpha_read(const char* conf_line, real *hfweight)
 {
-    float weight;
-    integer res = (sscanf(conf_line, "%g", &weight)==1);
+    real weight;
+    integer res = (sscanf(conf_line, "%lf", &weight)==1);
     if(res) 
         gga_fun_list = add_functional(gga_fun_list, &SlaterFunctional, 
                                       1.5*weight);
@@ -411,7 +411,7 @@ static integer
 gga_key_read(const char* conf_line, real *hfweight)
 {
     integer res = 1, i;
-    float f;
+    real f;
     const char* str = conf_line;
 
     *hfweight = 0.0000;
@@ -420,7 +420,7 @@ gga_key_read(const char* conf_line, real *hfweight)
         while(*str && isspace((integer)*str)) str++; /* skip whitespace */
         if(*str =='\0') break; /* line ended by whitespace */
         if(strncasecmp("HF=", str, 3)==0) {
-            if(sscanf(str+3,"%g", &f) != 1) {
+            if(sscanf(str+3,"%lf", &f) != 1) {
                 printf("GGAKey: HF not followed by the weight: %s",conf_line);
                 res = 0;
             } else {
@@ -431,7 +431,7 @@ gga_key_read(const char* conf_line, real *hfweight)
                 integer len = strlen(available_functionals[i]->name);
                 if(strncasecmp(available_functionals[i]->name, str, len)==0 &&
                    str[len] == '=') {
-                    if(sscanf(str+len+1,"%g", &f) != 1) {
+                    if(sscanf(str+len+1,"%lf", &f) != 1) {
                         printf("GGAKey: keyword '%s' not followed by "
                                    "weight: %s",
                                    available_functionals[i]->name, 
