@@ -75,7 +75,13 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     )
 
 # set definitions
-include(DefinitionsDALTON)
+include(Definitions)
+
+# forward CPP directly to the code
+set(CPP)
+if(NOT "${CPP}" STREQUAL "")
+    add_definitions(${CPP})
+endif()
 
 # configure INSTALL_WRKMEM and INSTALL_MMWORK
 include(ConfigWORKMEM)

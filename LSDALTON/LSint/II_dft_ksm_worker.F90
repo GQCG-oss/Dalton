@@ -128,7 +128,7 @@ W5 = (NBLEN+Nactbast)*Nactbast + 1         !W4 + 1
 W6 = (NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
 W7 = (NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
 W8 = (2*NBLEN+Nactbast + 1) * Nactbast     !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDA',lupri)
 #endif
 ! LDA Exchange-correlation contribution to Kohn-Sham matrix
@@ -252,7 +252,7 @@ W5 = (NBLEN+Nactbast)*Nactbast + 1         !W4 + 1
 W6 = (NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
 W7 = (NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
 W8 = (2*NBLEN+Nactbast + 1) * Nactbast     !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
 #endif
 DO IDMAT = 1, NDMAT 
@@ -514,7 +514,7 @@ W5 = (4*NBLEN+Nactbast)*Nactbast + 1         !W4 + 1
 W6 = (4*NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
 W7 = (4*NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
 W8 = (5*NBLEN+Nactbast + 1) * Nactbast       !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDA',lupri)
 #endif
 
@@ -620,7 +620,7 @@ W5 = (4*NBLEN+Nactbast)*Nactbast + 1         !W4 + 1
 W6 = (4*NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
 W7 = (4*NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
 W8 = (5*NBLEN+Nactbast + 1) * Nactbast       !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDA',lupri)
 #endif
 
@@ -815,7 +815,7 @@ DO IDMAT = 1,NDMAT/2
  W6 = (4*NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
  W7 = (4*NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
  W8 = (5*NBLEN+Nactbast + 1) * Nactbast       !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
  IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
 #endif
 
@@ -1667,7 +1667,7 @@ W5 = (NBLEN+Nactbast)*Nactbast + 1         !W4 + 1
 W6 = (NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
 W7 = (NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
 W8 = (2*NBLEN+Nactbast + 1) * Nactbast     !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in ii_dft_linrsplda',lupri)
 #endif
 
@@ -2002,7 +2002,7 @@ IF(DOCALC)THEN
 
   W7 = (4*NBLEN+1)*Nactbast + 1   !W6 + 1
   W8 = (5*NBLEN+1)*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
   IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_LINRSPGGA',lupri)
 #endif
   call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
@@ -2118,7 +2118,7 @@ IF(DOCALC)THEN
   W6 = (4*NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
   W7 = (4*NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
   W8 = (5*NBLEN+Nactbast + 1) * Nactbast       !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
   IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
 #endif
   CALL II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NTYPSO,NBMAT,&
@@ -2396,7 +2396,7 @@ W5 = (NBLEN+Nactbast)*Nactbast + 1         !W4 + 1
 W6 = (NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
 W7 = (NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
 W8 = (2*NBLEN+Nactbast + 1) * Nactbast     !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPLDA',lupri)
 #endif
 
@@ -2534,7 +2534,7 @@ IF(DOCALC)THEN
  W6 = (4*NBLEN+1)*Nactbast       !W3 - 1 + Nactbast  -> GAOGMX
  W7 = (4*NBLEN+1)*Nactbast + 1   !W6 + 1
  W8 = (5*NBLEN+1)*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
  IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPGGA',lupri)
 #endif
  call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
@@ -2611,7 +2611,7 @@ IF(DOCALC)THEN
   W6 = (4*NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
   W7 = (4*NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
   W8 = (5*NBLEN+Nactbast + 1) * Nactbast       !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
   IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPGGA',lupri)
 #endif
   CALL II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NTYPSO,1,&
@@ -4493,7 +4493,7 @@ IF(DOCALC)THEN
  W6 = (4*NBLEN+1)*Nactbast       !W3 - 1 + Nactbast  -> GAOGMX
  W7 = (4*NBLEN+1)*Nactbast + 1   !W6 + 1
  W8 = (5*NBLEN+1)*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
  IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_kohnshamGGA',lupri)
 #endif
  call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
@@ -4659,7 +4659,7 @@ IF(DOCALC)THEN
   W8  = W6+NBLEN*NactBast          !TMPY(NBLEN,NactBast)
   W9  = W8+1                       
   W10 = W8+NBLEN*NactBast          !TMPZ(NBLEN,NactBast)
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
   IF(W10.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_kohnshamGGA',lupri)
 #endif
   CALL II_DFT_distgeoderiv_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
@@ -5246,7 +5246,7 @@ IF(DOCALC)THEN
  W6 = (4*NBLEN+1)*Nactbast       !W3 - 1 + Nactbast  -> GAOGMX
  W7 = (4*NBLEN+1)*Nactbast + 1   !W6 + 1
  W8 = (5*NBLEN+1)*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
  IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_linrspGGA',lupri)
 #endif
  call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&

@@ -171,7 +171,7 @@ module lsmpi_type
   integer,parameter :: LSMPISENDRECV=4
   !split mpi messages in case of 32bit mpi library to subparts, which are
   !describable by a 32bit integer and dividable by 8
-!#ifdef VAR_DEBUG
+!#ifdef VAR_LSDEBUG
   !FOR DEBUGGING USE THE FOLLOWING LINE
 !  integer,parameter :: SPLIT_MPI_MSG=24
 !#else
@@ -5084,7 +5084,7 @@ contains
      if (infpar%mynum.ne.infpar%master) call lsdaltonjumpout(99)
 #else
 
-!!$#ifdef VAR_DEBUG
+!!$#ifdef VAR_LSDEBUG
 !!$     count=1
 !!$     root = infpar%master
 !!$     recvbuffer = 0

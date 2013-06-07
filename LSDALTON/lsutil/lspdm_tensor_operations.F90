@@ -2777,7 +2777,7 @@ module lspdm_tensor_operations_module
     fe=1
     ne=0
     nnod = 1
-#ifdef VAR_DEBUG
+#ifdef VAR_LSDEBUG
     msg_len_mpi=24
 #else
     msg_len_mpi=170000000
@@ -2811,7 +2811,7 @@ module lspdm_tensor_operations_module
     fe=1
     ne=0
     nnod = 1
-#ifdef VAR_DEBUG
+#ifdef VAR_LSDEBUG
     msg_len_mpi=24
 #else
     msg_len_mpi=170000000
@@ -2847,7 +2847,7 @@ module lspdm_tensor_operations_module
     ne=0
     nnod = 1
     !msg_len_mpi=17
-#ifdef VAR_DEBUG
+#ifdef VAR_LSDEBUG
     msg_len_mpi=24
 #else
     msg_len_mpi=170000000

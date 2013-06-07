@@ -17,7 +17,7 @@ MODULE test_molecular_hessian_mod
   use integralinterfaceMOD, only: II_get_K_gradient, &
        & II_get_reorthoNormalization, ii_get_geoderivexchange       
 #endif
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
 #endif
 
@@ -121,7 +121,7 @@ SUBROUTINE test_first_geoderiv_overlap(Natoms,nbast,thresh,setting,lupri,luerr)
   ENDDO
   call get_first_geoderiv_overlap(Sa,Natoms,setting,lupri,luerr)
 
-#ifdef BUILD_GEN1INT 
+#ifdef BUILD_GEN1INT_LSDALTON 
 ! PATRICK would you pleas ensure that your fucking code compiles!!!!
 
 !!$  ! test only possible if gen1int available

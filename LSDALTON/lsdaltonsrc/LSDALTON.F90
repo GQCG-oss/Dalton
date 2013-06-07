@@ -107,7 +107,7 @@ SUBROUTINE lsdalton
 
   call lsinit_all()
 
-#if VAR_DEBUG
+#if VAR_LSDEBUG
   print *,       "THIS IS A DEBUG BUILD"
   write (LUPRI,*)"THIS IS A DEBUG BUILD"
   write (LUERR,*)"THIS IS A DEBUG BUILD"

@@ -57,7 +57,14 @@ include(ConfigMPI)
 include(ConfigSafeGuards)
 include(GenericMacros)
 
-include(DefinitionsLSDALTON)
+# set definitions
+include(Definitions)
+
+# forward CPP directly to the code
+set(CPP)
+if(NOT "${CPP}" STREQUAL "")
+    add_definitions(${CPP})
+endif()
 
 set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
 set(ExternalProjectCMakeArgs
