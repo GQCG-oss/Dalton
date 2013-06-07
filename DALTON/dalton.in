@@ -16,11 +16,11 @@ SCRIPT_DIR="${0%/*}"
 # expansion returns a period, if it was started directly with script then the
 # expansion returns the script file name
 if [ "$SCRIPT_DIR" == "." -o "$SCRIPT_DIR" == "$0" ]; then
-  SCRIPT_DIR="$PWD"
+    SCRIPT_DIR="$PWD"
 # if the script was not called with an absolute path, then we need to add the
 # current working directory to the relative path of the script
 elif [ "${SCRIPT_DIR:0:1}" != "/" ]; then
-  SCRIPT_DIR="$PWD/$SCRIPT_DIR"
+    SCRIPT_DIR="$PWD/$SCRIPT_DIR"
 fi
 
 DALTON=$SCRIPT_DIR/dalton.x
