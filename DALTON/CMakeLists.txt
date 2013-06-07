@@ -56,7 +56,6 @@ include(ConfigMath)
 include(ConfigMPI)
 include(ConfigSafeGuards)
 include(ConfigTesting)
-include(ConfigVersion)
 include(GenericMacros)
 include(BinaryInfo)
 
