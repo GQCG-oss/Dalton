@@ -47,6 +47,7 @@ set(LIBS)
 
 include(ConfigVersion)
 include(SourcesDALTON)
+include(SourcesLSDALTON)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
@@ -208,4 +209,5 @@ include(ConfigMakeInstall)
 include(ConfigMakeRelease)
 
 # give information about system, compiler flags, and size of static allocations
+set(STATIC_MEM_INFO_BINARIES dalton)
 include(ConfigInfo)
