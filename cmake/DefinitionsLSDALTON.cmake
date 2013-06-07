@@ -7,8 +7,6 @@ endif()
 
 add_definitions(-DINSTALL_BASDIR="${PROJECT_BINARY_DIR}/basis")
 
-add_definitions(-DVAR_LSDALTON)
-
 if(HAVE_MKL_LAPACK)
     add_definitions(-DVAR_MKL)
 endif()
