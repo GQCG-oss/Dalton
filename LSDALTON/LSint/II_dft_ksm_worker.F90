@@ -222,17 +222,19 @@ DO IDMAT = 1, NDMAT/2
          VXC(IPNT,IDMAT2) = VX(2)
 #ifdef VAR_XCFUN
       ELSE
+         call lsquit('xcfun version of II_DFT_KSMLDAUNRES not implemented',-1)
+         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
+         XCFUNINPUT(2,1) = RHO(IPNT,IDMAT)
          ! rho_alpha = XCFUNINPUT(1,1)
          ! rho_beta = XCFUNINPUT(2,1)
-         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT1)
-         XCFUNINPUT(2,1) = RHO(IPNT,IDMAT2)
          call xcfun_lda_unres_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
          DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
          ! XCFUNOUTPUT(1,1) - Exc
          ! XCFUNOUTPUT(2,1) - d Exc/d rho_alpha
          ! XCFUNOUTPUT(3,1) - d Exc/d rho_beta
-         VXC(IPNT,IDMAT1) = XCFUNOUTPUT(2,1)*WGHT(IPNT)
-         VXC(IPNT,IDMAT2) = XCFUNOUTPUT(3,1)*WGHT(IPNT)
+         VXC(IPNT,IDMAT1) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+         VXC(IPNT,IDMAT2) = D2*XCFUNOUTPUT(3,1)*WGHT(IPNT)
+         call lsquit('xcfun II_DFT_KSMLDAUNRES not testet',-1)
       ENDIF
 #endif
    ELSE
@@ -733,7 +735,7 @@ integer,intent(in)        :: WORKLENGTH
 !> tmp array to avoid allocation and deallocation of mem
 REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
 !
-Real(realk), parameter :: D4 = 4.0E0_realk,D2 = 2.0E0_realk,DUMMY = 0E0_realk
+Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
 INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT,IDMAT1,IDMAT2
 REAL(REALK) :: VXC(NBLEN,2,2),VXM(NBLEN),VX(5),DFTENEUNRES,GRDA,GRDB
 REAL(REALK) :: XCFUNINPUT(5,1),XCFUNOUTPUT(6,1)
@@ -772,15 +774,13 @@ DO IDMAT = 1,NDMAT/2
          VXM(IPNT) = D2*VX(5) !mixed derivate
 #ifdef VAR_XCFUN
       ELSE
+         call lsquit('II_DFT_KSMGGAUNRES not implemented for XCFUN',-1)
          XCFUNINPUT(1,1) = RHO(IPNT,IDMAT1)
          XCFUNINPUT(2,1) = RHO(IPNT,IDMAT2)
          XCFUNINPUT(3,1) = GRAD(1,IPNT,IDMAT1)*GRAD(1,IPNT,IDMAT1)&
               &+GRAD(2,IPNT,IDMAT1)*GRAD(2,IPNT,IDMAT1)&
               &+GRAD(3,IPNT,IDMAT1)*GRAD(3,IPNT,IDMAT1)
-         XCFUNINPUT(4,1) = GRAD(1,IPNT,IDMAT1)*GRAD(1,IPNT,IDMAT2)&
-              &+GRAD(2,IPNT,IDMAT1)*GRAD(2,IPNT,IDMAT2)&
-              &+GRAD(3,IPNT,IDMAT1)*GRAD(3,IPNT,IDMAT2)
-         XCFUNINPUT(5,1) = GRAD(1,IPNT,IDMAT2)*GRAD(1,IPNT,IDMAT2)&
+         XCFUNINPUT(4,1) = GRAD(1,IPNT,IDMAT2)*GRAD(1,IPNT,IDMAT2)&
               &+GRAD(2,IPNT,IDMAT2)*GRAD(2,IPNT,IDMAT2)&
               &+GRAD(3,IPNT,IDMAT2)*GRAD(3,IPNT,IDMAT2)
          call xcfun_gga_unres_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
@@ -791,11 +791,11 @@ DO IDMAT = 1,NDMAT/2
          ELSEIF(DFTDATA%CS00)THEN
             call lsquit('error cs00 xcfun',-1)
          ENDIF
-         VXC(IPNT,1,1) =    XCFUNOUTPUT(2,1)*WGHT(IPNT)
-         VXC(IPNT,1,2) =    XCFUNOUTPUT(3,1)*WGHT(IPNT)
-         VXC(IPNT,2,1) = D4*XCFUNOUTPUT(4,1)*WGHT(IPNT)
-         VXC(IPNT,2,2) = D4*XCFUNOUTPUT(6,1)*WGHT(IPNT)
-         VXM(IPNT)     = D2*XCFUNOUTPUT(5,1)*WGHT(IPNT)
+!         VXC(1,IPNT,IDMAT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+!         VXC(2,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(1,IPNT,IDMAT)
+!         VXC(3,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
+!         VXC(4,IPNT,IDMAT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
+         call lsquit('XCFUN II_DFT_KSMGGAUNRES not testet',-1)
       ENDIF
 #endif
    ELSE
