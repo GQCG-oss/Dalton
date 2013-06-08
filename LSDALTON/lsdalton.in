@@ -1,17 +1,15 @@
 #!/bin/bash
 
 # radovan: this is to figure out the location of this script
-SCRIPT_DIR="${0%/*}"
-# if the script was started from the base directory with ./script, then the
-# expansion returns a period, if it was started directly with script then the
-# expansion returns the script file name
-if [ "$SCRIPT_DIR" == "." -o "$SCRIPT_DIR" == "$0" ]; then
-    SCRIPT_DIR="$PWD"
-# if the script was not called with an absolute path, then we need to add the
-# current working directory to the relative path of the script
-elif [ "${SCRIPT_DIR:0:1}" != "/" ]; then
-    SCRIPT_DIR="$PWD/$SCRIPT_DIR"
-fi
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    [[ $SOURCE != /* ]] && SOURCE="$SCRIPT_DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 LSDALTON=$SCRIPT_DIR/lsdalton.x
 LSLIB_TEST=$SCRIPT_DIR/lslib_tester.x
