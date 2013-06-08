@@ -37,19 +37,19 @@ IF(AORdefault.EQ.AOregular)THEN
 ELSEIF(AORdefault.EQ.AOVAL)THEN
    nbast = MOLECULE%nbastVAL
 ELSEIF(AORdefault.EQ.AOdfAux)THEN
-   nBast = MOLECULE%nBastAUX
+   nBastAux = MOLECULE%nBastAUX
 ELSEIF(AORdefault.EQ.AOdfCABS)THEN
-   nBast = MOLECULE%nBastCABS
+   nBastAux = MOLECULE%nBastCABS
 ELSEIF(AORdefault.EQ.AOdfJK)THEN
-   nBast = MOLECULE%nBastJK
+   nBastAux = MOLECULE%nBastJK
 ELSE   
    CALL LSQUIT('ERROR IN NBASIS DETERMINATION in getMolecularDimensions',-1)
 ENDIF
 
 IF(AODFdefault.EQ.AOregular)THEN
-   nbastAux = MOLECULE%nbastREG
+   nbast = MOLECULE%nbastREG
 ELSEIF(AODFdefault.EQ.AOVAL)THEN
-   nbastAux = MOLECULE%nbastVAL
+   nbast = MOLECULE%nbastVAL
 ELSEIF(AODFdefault.EQ.AOdfAux)THEN
    nBastAux = MOLECULE%nBastAUX
 ELSEIF(AODFdefault.EQ.AOdfCABS)THEN
