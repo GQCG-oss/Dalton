@@ -29,7 +29,7 @@ MPIRUN=@MPIEXEC@
 INSTALL_BASDIR=$SCRIPT_DIR/basis
 
 if [ -z "$DALTON_TMPDIR" ]; then
-    scratch_dir_candidates="/global/work/$USER /scratch/$USER /work /scratch /scr /temp"
+    scratch_dir_candidates="/global/work/$USER /scratch/$USER /work /scratch /scr /temp /tmp"
     for dir in $scratch_dir_candidates; do
         if [ -d "$dir" ]; then
             DALTON_TMPDIR=$dir
