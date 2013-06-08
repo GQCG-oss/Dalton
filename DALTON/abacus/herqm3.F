@@ -355,6 +355,8 @@ C
         END IF
         IF (MMPCM) THEN
           WRITE(LUPRI,*) ' MM/PCM interface active'
+          if (nodtot.ge.1) write(lupri,*) 'WARNING: qm3pcm is
+     & not parallelized, so it will be much slower than expected!'
         END IF
 
         IF (NODTOT .GT. 1 .AND. .NOT. INTDIR) THEN
@@ -369,6 +371,12 @@ C
           CALL QUIT('QM damping only implemented for .INTDIR option')
         ENDIF
 C
+        IF (MMPCM .AND. .NOT. INTDIR) THEN
+          WRITE(LUPRI,*) ' WARNING: QM3 .INTDIR activated since',
+     *                   ' this is a QM/MM/PCM calculation'
+          INTDIR = .TRUE.
+        ENDIF
+
       END IF
 C
       CALL QEXIT('QM3INP')

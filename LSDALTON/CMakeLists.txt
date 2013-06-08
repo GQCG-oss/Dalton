@@ -31,7 +31,7 @@ option(ENABLE_RELEASE        "Test release mode which undefines MOD_UNRELEASED" 
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
-option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" OFF)
+option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
 option(ENABLE_SCALASCA       "Enable scalasca profiler mode"                    OFF)
@@ -41,19 +41,28 @@ option(ENABLE_INTEREST       "Enable interest integrals"                        
 option(ENABLE_CRAY_WRAPPERS  "Enable cray wrappers for BLAS/LAPACK and MPI"     OFF)
 option(ENABLE_LSEEK          "Enable lseek"                                     OFF)
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
+option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard"               OFF)
+
+set(LIBS)
+
+include(ConfigVersion)
+include(SourcesDALTON)
+include(SourcesLSDALTON)
+include(ConfigArchitecture)
+include(ConfigCompilerFlags)
+include(ConfigExternal)
+include(ConfigOMP)
+include(ConfigMath)
+include(ConfigMPI)
+include(ConfigSafeGuards)
+include(GenericMacros)
 
 add_definitions(-DBINARY_INFO_AVAILABLE)
 
-
-include(ConfigVersion)
-
-include(ConfigSafeGuards)
 if(cmake_build_type_tolower STREQUAL "debug")
 	add_definitions(-DVAR_DEBUGINT)
 	add_definitions(-DVAR_DEBUG)
 endif()
-
-
 
 # find a good default scratch base directory
 foreach(dir "/work" "/scratch" "/scr" "/temp" "/tmp")
@@ -71,22 +80,7 @@ set(SCRATCH_DIR
     )
 message("-- SCRATCH_DIR set to: ${SCRATCH_DIR}")
 
-set(BASIS_DIR
-    "${CMAKE_SOURCE_DIR}/../basis"
-    CACHE STRING
-    "Basis set directory"
-    )
-message("-- BASIS_DIR set to: ${BASIS_DIR}")
-
-    add_definitions(-DINSTALL_BASDIR="${BASIS_DIR}")
-
-include(ConfigArchitecture)
-include(SourcesLSDALTON)
-include(ConfigCompilerFlags)
-include(ConfigExternal)
-include(GenericMacros)
-
-set(LIBS)
+add_definitions(-DINSTALL_BASDIR="${PROJECT_BINARY_DIR}/basis")
 
 set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
 add_definitions(-DVAR_LSDALTON)
@@ -102,7 +96,7 @@ set(ExternalProjectCMakeArgs
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
 
-include(ConfigMath)
+
 # if BLAS and/or LAPACK not found, add own sources to the list of
 # sources to compile
 if(USE_OWN_BLAS)
@@ -126,11 +120,7 @@ if(NOT ENABLE_RELEASE)
    add_definitions(-DMOD_UNRELEASED)
 endif()
 
-include(ConfigMPI)
 
-if(ENABLE_OMP)
-    add_definitions(-DVAR_OMP)
-endif()
 
 if(ENABLE_LSEEK)
     add_definitions(-DHAVE_NO_LSEEK64)
@@ -537,4 +527,5 @@ execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})
 # include(ConfigMakeRelease)
 
 # give information about system, compiler flags, and size of static allocations
+set(STATIC_MEM_INFO_BINARIES lsdalton)
 include(ConfigInfo)

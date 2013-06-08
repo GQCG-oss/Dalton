@@ -8,7 +8,7 @@ module matrix_operations_scalapack
   use memory_handling
   use matrix_module
   use LSmatrix_type
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
@@ -2987,7 +2987,7 @@ module matrix_operations_scalapack
    use matrix_operations_scalapack
    use memory_handling
    use matrix_module
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    use infpar_module
    use lsmpi_type
 #endif
@@ -3058,7 +3058,7 @@ module matrix_operations_scalapack
    use matrix_operations_scalapack
    use memory_handling
    use matrix_module
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    use infpar_module
    use lsmpi_type
 #endif
@@ -3450,7 +3450,7 @@ module matrix_operations_scalapack
    use matrix_operations_scalapack
    use memory_handling
    use matrix_module
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    use infpar_module
    use lsmpi_type
 #endif

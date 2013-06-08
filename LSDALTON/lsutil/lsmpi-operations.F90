@@ -21,7 +21,7 @@ module lsmpi_op
        & retrieve_lstMemVal, free_lstensorMem, set_lstmemrealkbufferpointer
   use f12_module, only: GaussianGeminal
   use integraloutput_typetype, only: INTEGRALOUTPUT
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use dft_type,only: mpicopy_DFTparam
   use lsmpi_type, only: ls_mpibcast, lsmpi_reduction, ls_mpisendrecv, &
        & ls_mpi_buffer, lsmpi_local_reduction, get_rank_for_comm, &
@@ -132,7 +132,7 @@ type(lsitem),intent(inout) :: ls
 ! communicator
 integer(kind=ls_mpik),intent(in) :: comm
 integer(kind=ls_mpik) :: mynum
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 call get_rank_for_comm(comm,mynum)
 call mpicopy_daltoninput(ls%input,comm)
 call mpicopy_setting(ls%setting,comm)
@@ -152,7 +152,7 @@ SUBROUTINE mpicopy_daltoninput(input,comm)
 implicit none
 type(daltoninput),intent(inout) :: input
 integer(kind=ls_mpik),intent(in) :: comm  ! communicator 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 integer(kind=ls_mpik) :: MASTER
 LOGICAL :: SLAVE
 integer(kind=ls_mpik) :: mynum,nodtot,ierr
@@ -209,7 +209,7 @@ SUBROUTINE mpicopy_setting(setting,comm)
   integer(kind=ls_mpik),intent(in) :: comm  ! communicator
   integer :: lupri
   !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   integer :: I,nAO,ndmat,dim1,dim2,dim3,iAO
   logical :: SLAVE,nonemptyMolecule,DsymRHSassociated,DsymLHSassociated
   logical :: LHS_GAB,RHS_GAB
@@ -479,7 +479,7 @@ SUBROUTINE mpicopy_setting(setting,comm)
 
 END SUBROUTINE mpicopy_setting
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 subroutine lsmpi_isend_lstmemrealkbuf(lstmem_index,NodeToRecv,Mynum,comm)
 implicit none
 integer,intent(in) :: lstmem_index,NodeToRecv
