@@ -315,7 +315,7 @@ contains
 
     ! get new order
     do i=1,3
-!!$#ifdef VAR_DEBUG
+!!$#ifdef VAR_LSDEBUG
 !!$       print *, array%order(i),'(',array%dims(i), &
 !!$            ') => ',array%order(order(i)),' (',array%dims(order(i)),')'
 !!$#endif
