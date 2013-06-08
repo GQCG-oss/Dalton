@@ -16,11 +16,11 @@ SCRIPT_DIR="${0%/*}"
 # expansion returns a period, if it was started directly with script then the
 # expansion returns the script file name
 if [ "$SCRIPT_DIR" == "." -o "$SCRIPT_DIR" == "$0" ]; then
-  SCRIPT_DIR="$PWD"
+    SCRIPT_DIR="$PWD"
 # if the script was not called with an absolute path, then we need to add the
 # current working directory to the relative path of the script
 elif [ "${SCRIPT_DIR:0:1}" != "/" ]; then
-  SCRIPT_DIR="$PWD/$SCRIPT_DIR"
+    SCRIPT_DIR="$PWD/$SCRIPT_DIR"
 fi
 
 DALTON=$SCRIPT_DIR/dalton.x
@@ -28,7 +28,18 @@ DALMPI=$SCRIPT_DIR/dalton.x
 
 MPIRUN=@MPIEXEC@
 INSTALL_BASDIR=$SCRIPT_DIR/basis
-[ -z "$DALTON_TMPDIR" ] && DALTON_TMPDIR=@SCRATCH_DIR@
+
+if [ -z "$DALTON_TMPDIR" ]; then
+    scratch_dir_candidates="/global/work/$USER /scratch/$USER /work /scratch /scr /temp"
+    for dir in $scratch_dir_candidates; do
+        if [ -d "$dir" ]; then
+            DALTON_TMPDIR=$dir
+            echo "found $dir and DALTON_TMPDIR set to $DALTON_TMPDIR"
+            break
+        fi
+    done
+fi
+
 WRKDIR=`pwd` ; export WRKDIR
 # always search for basis sets in job work directory
 # (before standard dalton basis library in INSTALL_BASDIR, appended below)
@@ -63,6 +74,7 @@ frl=rel
 opt_nobackup=0
 opt_noarch=0
 opt_valgrind=0
+opt_noappend=0
 
 
 #
@@ -90,7 +102,9 @@ usage (){
         echo ' -hostfile file : use hostfile "file" for start with mpirun'
         #echo ' -lam file  : call "lamboot file" and "wipe file" before and after mpirun'
         # Jan 2013: lammpi is not an active mpi implementation any more
-        echo ' -t dir     : change DALTON_TMPDIR to dir. Default: ' $DALTON_TMPDIR
+        echo " -t dir     : set scratch directory; this script will append '/DALTON_scratch_$USER' to the path"
+        echo "              unless the path contains 'DALTON_scratch' or you explicitly set -noappend"
+        echo ' -noappend  : do not append anything to the scratch directory; be careful with this since by default scratch is wiped after calculation'
         echo ' -w dir     : change WRKDIR to dir. Default: ' $WRKDIR
         echo ' -noarch    : do not create tar.gz archive'
         echo ' -f dalmol  : extract dalmol.tar.gz archive from WRKDIR into DALTON_TMPDIR before calculation starts'
@@ -136,6 +150,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -noarch ) opt_noarch=1;;
       -valgrind ) opt_valgrind=1;;
       -nocpex ) opt_nocpex=1;;
+      -noappend ) opt_noappend=1;;
       -ext ) OUTEXT=$2; shift;;
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
@@ -172,6 +187,27 @@ if [ -z "$1" ]; then
    usage
    exit 1
 fi
+
+if [ -z "$DALTON_TMPDIR" ]; then
+    # DALTON_TMPDIR is still not set, better stop here
+    echo "ERROR: searched for suitable scratch directories"
+    echo "       among $scratch_dir_candidates"
+    echo "       but none of them exists"
+    echo "       please either set the DALTON_TMPDIR environment variable"
+    echo "       or use -t to set the scratch directory"
+    exit 1
+fi
+
+if [ $opt_noappend -eq 0 ]; then
+    if [[ "$DALTON_TMPDIR" != */ ]]; then
+        # if there is no final slash, we append it
+        DALTON_TMPDIR=${DALTON_TMPDIR}/
+    fi
+    # now we append DALTON_scratch_$USER
+    # better safe than sorry
+    DALTON_TMPDIR=${DALTON_TMPDIR}DALTON_scratch_$USER
+fi
+
 #  remove .dal, if added by user
 dalfil=`echo $1 | sed "s/\.$DALEXT//"`
 if [ -z "$2" ]; then
@@ -214,13 +250,40 @@ fi
 #
 export DALTON_TMPDIR
 if [ ! -d "$DALTON_TMPDIR" ]; then
-   mkdir -p $DALTON_TMPDIR
+    mkdir -p $DALTON_TMPDIR
 fi
-if [ $optn -gt 1 -o $optt -gt 0 ] ; then
-  SCRATCHDIR=$DALTON_TMPDIR
+if [ ! -d "$DALTON_TMPDIR" ]; then
+    # this means that user has no permission to create scratch dir, stop
+    echo "ERROR: you have no permission to create $DALTON_TMPDIR"
+    exit 1
+fi
+
+# now we know that the directory exists
+# we will now try whether user has write permission to this directory
+file=$DALTON_TMPDIR/test_whether_dalton_can_create_this_file
+if [ -f $file ]; then
+    rm $file &> /dev/null
+fi
+touch $file &> /dev/null
+if [ -f $file ]; then
+    rm $file &> /dev/null
 else
-  SCRATCHDIR=$DALTON_TMPDIR/$USER/$outnam
+    rm $file &> /dev/null
+    echo "ERROR: you have no write permission to directory $DALTON_TMPDIR"
+    exit 1
 fi
+
+if [ $optt -gt 0 ] ; then
+    SCRATCHDIR=$DALTON_TMPDIR/$outnam
+else
+    SCRATCHDIR=$DALTON_TMPDIR
+fi
+if [ $opt_noappend -eq 1 ]; then
+    SCRATCHDIR=$DALTON_TMPDIR
+fi
+
+
+
 #
 echo
 echo "   ***************************************** "

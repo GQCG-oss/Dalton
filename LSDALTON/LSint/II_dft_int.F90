@@ -492,7 +492,7 @@ DO XX=1+tid,IT,nthreads
 !  nshellblocks will be set to the number of these blocks and shellblocks
 !  entries will be filled with the beginnings (shellblocks[1][:]) and
 !  ends (shellblocks[2][:]) of the blocks of active shells.
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
    IF(NLEN .LE. 0) THEN
       CALL LSQUIT('SOMETHING WRONG IN THE DFT LOOP',lupri)
    ENDIF
