@@ -1658,7 +1658,7 @@ contains
     double_2G_nel=170000000
     print_debug = (DECinfo%PL>2)
 
-#ifdef VAR_DEBUG
+#ifdef VAR_LSDEBUG
     double_2G_nel=20
 #endif
     
@@ -2408,7 +2408,7 @@ contains
     max_wait_time = wait_time
 
 
-#ifdef VAR_DEBUG
+#ifdef VAR_LSDEBUG
     if(print_debug)write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
     call lsmpi_local_reduction(wait_time,infpar%master)
     call lsmpi_local_max(max_wait_time,infpar%master)
@@ -2468,7 +2468,7 @@ contains
       call mem_dealloc(mpi_stuff,mpi_ctasks)
     endif
     stopp=MPI_wtime()
-#ifdef VAR_DEBUG
+#ifdef VAR_LSDEBUG
     if(master.and.DECinfo%PL>2) print*,"MPI part of the calculation finished, comm-time",stopp-startt
 #endif    
     !free windows and deallocate partial int matrices in scheme 1

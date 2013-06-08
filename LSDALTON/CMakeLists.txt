@@ -57,34 +57,16 @@ include(ConfigMPI)
 include(ConfigSafeGuards)
 include(GenericMacros)
 
-add_definitions(-DBINARY_INFO_AVAILABLE)
+# set definitions
+include(Definitions)
 
-if(cmake_build_type_tolower STREQUAL "debug")
-	add_definitions(-DVAR_DEBUGINT)
-	add_definitions(-DVAR_DEBUG)
+# forward CPP directly to the code
+set(CPP)
+if(NOT "${CPP}" STREQUAL "")
+    add_definitions(${CPP})
 endif()
 
-# find a good default scratch base directory
-foreach(dir "/work" "/scratch" "/scr" "/temp" "/tmp")
-   if(EXISTS "${dir}/")
-       set(DEFAULT_SCRATCH_BASE_DIR ${dir})
-       break()
-   endif()
-endforeach()
-
-# set scratch directory
-set(SCRATCH_DIR
-    "${DEFAULT_SCRATCH_BASE_DIR}/LSDALTON_scratch"
-    CACHE STRING
-    "Default scratch directory"
-    )
-message("-- SCRATCH_DIR set to: ${SCRATCH_DIR}")
-
-add_definitions(-DINSTALL_BASDIR="${PROJECT_BINARY_DIR}/basis")
-
 set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DVAR_LSDALTON")
-add_definitions(-DVAR_LSDALTON)
-
 set(ExternalProjectCMakeArgs
     -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
@@ -95,7 +77,6 @@ set(ExternalProjectCMakeArgs
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
     )
-
 
 # if BLAS and/or LAPACK not found, add own sources to the list of
 # sources to compile
@@ -112,40 +93,6 @@ if(USE_OWN_LAPACK)
         )
 endif()
 
-if(HAVE_MKL_LAPACK)
-    add_definitions(-DVAR_MKL)
-endif()
-
-if(NOT ENABLE_RELEASE)
-   add_definitions(-DMOD_UNRELEASED)
-endif()
-
-
-
-if(ENABLE_LSEEK)
-    add_definitions(-DHAVE_NO_LSEEK64)
-endif()
-
-if(ENABLE_64BIT_INTEGERS)
-    add_definitions(-DVAR_INT64)
-    add_definitions(-DVAR_64BITS)
-endif()
-
-if(ENABLE_CSR)
-    add_definitions(-DVAR_MKL)
-endif()
-
-if(ENABLE_SCALAPACK)
-    add_definitions(-DVAR_SCALAPACK)
-endif()
-
-if(ENABLE_TIMINGS)
-    add_definitions(-DVAR_TIME)
-endif()
-
-if(ENABLE_DEBUGPBC)
-  add_definitions(-DDEBUGPBC)
-endif()
 if(ENABLE_SCALASCA)
     set(SCALASCA_INSTRUMENT ${CMAKE_Fortran_COMPILER})
     configure_script(
@@ -300,7 +247,6 @@ add_dependencies(xcfun_interface lsutillib_precision)
 
 if(ENABLE_XCFUN)
     add_external(xcfun)
-#    add_subdirectory(xcfun_host)
     add_dependencies(xcfun_interface xcfun)
     add_definitions(-DVAR_XCFUN)
     set(LIBS

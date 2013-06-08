@@ -37,7 +37,7 @@ MODULE dal_interface
    use II_XC_interfaceModule
    use IIDFTINT, only: II_DFTsetFunc
    use gridgenerationmodule
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
    ! debug GEN1INT
    use gen1int_host
 #endif
@@ -108,12 +108,12 @@ CONTAINS
          call di_debug_PropertyIntegrals(lupri,luerr,ls%setting,nbast,S,D)
       ENDIF
       if (ls%input%dalton%DEBUGGEN1INT) then
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
          !Test general 1 electron integrals by Bin Gao
          call gen1int_host_test(ls%setting,D,lupri)
          call di_gen1int_host_test(ls%setting,S,D,lupri)
 #else
-         call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT',lupri)
+         call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT_LSDALTON',lupri)
 #endif
       endif
       if (ls%input%dalton%DEBUGCGTODIFF) then
@@ -174,7 +174,7 @@ CONTAINS
 
     end subroutine di_debug_general2
 
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
     subroutine di_gen1int_host_test(setting,S,D,lupri)
       implicit none
       type(lssetting)                :: setting
