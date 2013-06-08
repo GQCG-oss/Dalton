@@ -15,7 +15,7 @@ thresholds="1e-10 1e-12 1e-14"
 
 # OTHER CONFIGURATION VARIABLES ------------------------------------
 dalton=`pwd`/../../dalton.x
-tmp=${TMPDIR:-/tmp}/${USER}
+tmp=${DALTON_TMPDIR:-/tmp}/${USER}
 
 # MOLECULE GENERATION ----------------------------------------------
 
