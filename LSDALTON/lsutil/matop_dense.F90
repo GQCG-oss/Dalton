@@ -391,21 +391,32 @@ module matrix_operations_dense
     infdiag=0
     lwork = -1
  
-    call mem_alloc(work,5)
     ! we inquire the size of lwork
 #ifdef VAR_LSESSL
-    call mem_alloc(iwork,5)
+    call mem_alloc(work,1)
+    call mem_alloc(iwork,1)
+    iwork = 0.0E0_realk
+    !print *,"here1 and trialrun",lwork,liwork,work(1),iwork(1)
     call DSYEVD('V','U',ndim,S%elms,ndim,eival,work,lwork,iwork,liwork,infdiag)
+    !print *,work,lwork,iwork,liwork
     liwork = iwork(1)
     call mem_dealloc(iwork)
     call mem_alloc(iwork,liwork)
 #else
+    call mem_alloc(work,5)
     call DSYEV('V','U',ndim,S%elms,ndim,eival,work,lwork,infdiag)
 #endif
+    if(infdiag.ne. 0) then
+       print*,'mat_dsyev: dsyev query failed, info=',infdiag
+       call lsquit('mat_dsyev: query failed.',-1)
+    end if
+
+
     lwork = NINT(work(1))
     call mem_dealloc(work)
     call mem_alloc(work,lwork)
 #ifdef VAR_LSESSL
+    !print *,"here1 and run",lwork,liwork,work(1),iwork(1)
     call DSYEVD('V','U',ndim,S%elms,ndim,eival,work,lwork,iwork,liwork,infdiag)
     call mem_dealloc(iwork)
 #else
