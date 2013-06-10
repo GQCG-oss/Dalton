@@ -11,7 +11,7 @@
 !> k,l,m : Occupied AOS
 module f12_integrals_module
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
@@ -33,7 +33,7 @@ module f12_integrals_module
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use decmpi_module !, only: mpi_communicate_mp2_int_and_amp
 #endif
 

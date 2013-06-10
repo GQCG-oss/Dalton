@@ -741,7 +741,7 @@ DO iAngmomP=1,P%nAngmom
          PBDIST(iPrimP,IX) = P%center(IX+(iPrimP-1)*3)-P%orbital2%center(IX)
       ENDDO
    ENDDO
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
    IF(size(P%preexpfac).NE.P%nPrimAlloc*P%nAngAlloc)call lsquit('preexpfac dim error',-1)
    IF(nPrimP.GT.P%nPrimAlloc)call lsquit('preexpfac dim error',-1)
 #endif
@@ -1145,7 +1145,7 @@ DO ip=1,nprim
    PassP%iPrim1(startPrim+ip) = P%iprim1(ip)
    PassP%iPrim2(startPrim+ip) = P%iprim2(ip)
 ENDDO
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
    IF(size(P%preexpfac).NE.P%nPrimAlloc*P%nAngAlloc)call lsquit('preexpfac dim errorA',-1)
    IF(size(PassP%preexpfac).NE.PassP%nPrimAlloc*PassP%nAngAlloc)call lsquit('preexpfac dim errorB',-1)
    IF(nAng.GT.P%nAngAlloc)call lsquit('preexpfac dim errorC',-1)
@@ -1198,7 +1198,7 @@ work3 = 2*nprim
 work4 = 3*nprim
 work5 = 4*nprim
 nAng = PassQ%nAngmom
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(size(PassQ%preexpfac).NE.PassQ%nPrimAlloc*PassQ%nAngAlloc)call lsquit('preexpfac dim errorB',-1)
 #endif
 preexpfac => PassQ%preexpfac
@@ -1250,7 +1250,7 @@ DO IPass = 1,numPass
    do ip = 1,nprim
       work(ip+work5) = work(ip+work4)*d2
    enddo
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(startPrim+nPrim.GT.PassQ%nPrimAlloc)call lsquit('preexpfac dim errorQ1',-1)
 #endif
 !call ls_vdexp(nprim,work(1+work5),preExpFac(startPrim+1))
@@ -1270,7 +1270,7 @@ IF(startPrim+nPrim.GT.PassQ%nPrimAlloc)call lsquit('preexpfac dim errorQ1',-1)
       center(3+(startPrim+ip-1)*3) = (e1*ZC+e2*ZD)*tmp 
    ENDDO
 ENDDO
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(nAng.GT.PassQ%nAngAlloc)call lsquit('preexpfac dim errorQ1',-1)
 IF(nprim*numPass.GT.nprimAlloc)call lsquit('preexpfac dim errorQ1',-1)
 #endif
@@ -1283,7 +1283,7 @@ iF(nAng.GT. 1)THEN
    ENDDO
 ENDIF
 IF (PassQ%segmented) THEN
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(nprim*numPass.GT.nprimAlloc)call lsquit('preexpfac dim errorQ1',-1)
 #endif
    iA12 = 0
@@ -1293,7 +1293,7 @@ IF(nprim*numPass.GT.nprimAlloc)call lsquit('preexpfac dim errorQ1',-1)
       DO iA2=startA2,nAng2
          offset =iA12*nprimAlloc
          iA12  = iA12 + 1
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
          IF(iA12.GT.PassQ%nAngAlloc)call lsquit('preexpfac dim errorQ2',-1)
 #endif
          DO ip=1,nprim      
@@ -1445,7 +1445,7 @@ IF(INPUT%fullcontraction)Integral%Econt = 0.0E0_realk
 DO ILHS = 1,OD_LHS%nbatches
    CALL SET_Overlap(P,Input,SharedTUV,Integral,OD_LHS%BATCH(ILHS),&
      &  1,LUPRI,IPRINT,.FALSE.)
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
     IF(P%nPrimitives*P%nTUV*input%ndmat_rhs.GT.allocIntmaxTUVdim)THEN
        call lsquit('ls_dzero in Jengine alloc error',lupri)
     ENDIF
@@ -1961,7 +1961,7 @@ IF(.NOT.INPUT%noOMP) call mem_TurnONThread_Memory()
 !$OMP ODtypeIndex,nLHSbatches,ReductionECONT)
 
 IF(.NOT.INPUT%noOMP) call init_threadmemvar()
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 node = input%node
 #else
 node = 0
@@ -2095,7 +2095,7 @@ CALL determineMaxPassesForType(Alloc,currentODtype,nPassTypes,&
      & maxPassesFortypes,1,INPUTDO_PASSES,nOverlapOfPassType,lupri)
 iODtype = currentODtype
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 MPIINDEX(tid) = 0 
 numnodes = input%numnodes
 node = input%node
@@ -2223,7 +2223,7 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
    ENDIF
    !Do diagonal =================================================
    IF(sameODs)THEN
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       MPIINDEX(tid) = MPIINDEX(tid) + 1
       IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
 #endif
@@ -2238,7 +2238,7 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
          CALL ExplicitIntegrals(Integral,PQ,P,Q(ipasstype),INPUT,LSOUTPUT,&
               & ILHS,ILHS,LUPRI,IPRINT)
          CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       ENDIF
 #endif
       DoINT(ILHS) = .FALSE.
@@ -2267,7 +2267,7 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
          overlaplist(numPasses(iPassType),ipassType) = IRHS
          IF (numPasses(iPassType).EQ.maxPassesForTypes(iPassType)) THEN
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
             MPIINDEX(tid) = MPIINDEX(tid) + 1
             IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
 #endif
@@ -2284,14 +2284,14 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
                CALL ExplicitIntegrals(Integral,PQ,P,PassQ(iPassType),INPUT,LSOUTPUT,&
                     & ILHS,IRHS,LUPRI,IPRINT)
                CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
             ENDIF
 #endif
             numPasses(iPassType) = 0
          ENDIF
       ELSE
          IRHSI(1) = IRHS
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          MPIINDEX(tid) = MPIINDEX(tid) + 1
          IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
 #endif
@@ -2304,14 +2304,14 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
             CALL ExplicitIntegrals(Integral,PQ,P,Q(Ipasstype),INPUT,LSOUTPUT,&
                  & ILHS,IRHS,LUPRI,IPRINT)
             CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          ENDIF
 #endif
       ENDIF
    ENDDO LOOPRHS
    DO iPassType=1,nPassTypes
       IF(numPasses(iPassType).GT. 0) THEN
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          MPIINDEX(tid) = MPIINDEX(tid) + 1
          IF(MOD(MPIINDEX(tid),numnodes).EQ.node)THEN
 #endif
@@ -2334,7 +2334,7 @@ DO ILHSCOUNT=1+tid,nLHSbatches,nthreads
             CALL ExplicitIntegrals(Integral,PQ,P,PassQ(iPassType),INPUT,LSOUTPUT,&
                  & ILHS,IRHS,LUPRI,IPRINT)
             CALL DistributeIntegrals(INTEGRAL,PQ,INPUT,LSOUTPUT,LUPRI,IPRINT)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          ENDIF
 #endif
          numPasses(iPassType) = 0
@@ -3318,7 +3318,7 @@ CALL GET_IJK(l1,l2,ijk1,ijk2,lm,ijkdiff,P%sphericalEcoeff,iOrder,P%single)
 ijk = ijk1*ijk2
 dim1 = Integral%nOrb*Integral%nPrim
 
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(dim1*ijkdiff.GT.allocIntmaxTUVdim)THEN
    print*,'dim1',dim1
    print*,'ijkdiff',ijkdiff
@@ -3578,7 +3578,7 @@ permute = P%sameAO.AND.(startA.NE.startB)
 
 IF (.NOT.contAng) THEN !Default AO ordering: angular,contracted
   IF (nQ.EQ. 1) THEN
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
   IF(nA*nB*ndim5P*nPassP.GT.allocIntmaxTUVdim)THEN
      print*,'nA',nA
      print*,'nB',nB
@@ -3599,7 +3599,7 @@ IF (.NOT.contAng) THEN !Default AO ordering: angular,contracted
     CALL AddToPQ1(Integral%integralsABCD,Integral%IN,nA,nB,nCompA,nCompB,&
          &        nContA,nContB,startA,startB,nAng,nCont,nPassP,ndim5P,permute,startDer,nDer,LUPRI,IPRINT)
   ELSE
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
   IF(nC*nD*nA*nB*ndim5Q*ndim5P*nPassP*nPassQ.GT.allocIntmaxTUVdim)THEN
      print*,'nQ',nQ
      print*,'nA',nA
@@ -3922,7 +3922,7 @@ Integral%nOrb  = nOrbQ
 Integral%ngeoDeriv  = 1
 
 IF(PQ%kinetic)THEN
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(nP*nOrbQ*ntuvP.GT.allocIntmaxTUVdim)THEN
    call lsquit('DistributeHermiteP_kinetic alloc error1',lupri)
 ENDIF
@@ -3933,7 +3933,7 @@ ENDIF
    CALL DistributeHermiteP_kinetic(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
      &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,der.EQ. 1,LUPRI,IPRINT)
 ELSE
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(nP*nOrbQ*ntuvP.GT.allocIntmaxTUVdim)THEN
    call lsquit('DistributeHermiteP_regular alloc error3',lupri)
 ENDIF
@@ -4289,7 +4289,7 @@ ELSE
       CALL BuildEcoeffTensor(integral%TUV,Q,signQ,Ecoeffs,ijk,ijkcart,&
            & Integral%nAng,Integral%nPrim,iAngmom,derQ,Q%nPasses,LUPRI,IPRINT,1)
       IF (Q%segmented) THEN         
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
          IF(Q%nPrimitives*Q%nPasses*nP*ntuvPQ*nEFG.GT.allocIntmaxTUVdim)THEN
             call lsquit('DirectcontractEQseg alloc error1',lupri)
          ENDIF
@@ -4310,7 +4310,7 @@ ELSE
               & ntuvPQ,ntuvP,ntuvQ,ideriv,Ecoeffs,1,ijk,l1,l2,Integral%TUV%SYMindex,Integral%TUV%iPQxyz,lupri)
          Integral%nPrim = Q%nPasses
       ELSE
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
          IF(nQ*nP*ntuvPQ*nEFG.GT.allocIntmaxTUVdim)THEN
             call lsquit('DirectcontractEQgen alloc error1',lupri)
          ENDIF
@@ -4487,7 +4487,7 @@ ENDIF
 nPrim1 = Q%orbital1%nPrimitives
 nPrim2 = Q%orbital2%nPrimitives
 IF (Q%segmented) THEN
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(Q%nPrimitives*nP*Q%nPasses*ntuvPQnEFG.GT.allocIntmaxTUVdim)THEN
    call lsquit('DirectSingleHermiteEcoeffseg alloc error1',lupri)
 ENDIF
@@ -4505,7 +4505,7 @@ ENDIF
        &                  Q%nPasses,Q%preexpfac,Q%nPrimAlloc,Q%nAngAlloc,iAngmom,lupri)
   Integral%nPrim = Q%nPasses
 ELSE
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(nP*nQ*ntuvPQnEFG.GT.allocIntmaxTUVdim)THEN
    call lsquit('DirectSingleHermiteEcoeffgen alloc error1',lupri)
 ENDIF
@@ -5376,7 +5376,7 @@ nCompD  = Q%orbital2%nOrbComp(angD)
 nPassQ  = Q%nPasses
 permute = Q%sameAO.AND.(startC.NE.startD)
 
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(nP*nC*nD*nPassQ*nOrder.GT.allocIntmaxTUVdim)THEN
    call lsquit('AddToTUVQ1 alloc error1',lupri)
 ENDIF
@@ -5638,7 +5638,7 @@ IF (spherical) THEN
   ijk1 = (ang1+1)*(ang1+2)/2 
   ijk2 = (ang2+1)*(ang2+2)/2
   CALL GET_IJK(ang1,ang2,lm1,lm2,lm,ijk,.TRUE.,0,P%single)
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(Integral%nPrim*Integral%nOrb*Integral%nGeoDeriv*ijk1*ijk2.GT.allocIntmaxTUVdim)THEN
    call lsquit('SphericalTransformation alloc error1',lupri)
 ENDIF
@@ -5701,7 +5701,7 @@ ELSE
    call mem_workpointer_alloc(Ecoeffs,nETUV)
    CALL BuildEcoeffTensor(integral%TUV,P,signP,Ecoeffs,ijk,ijkcart,Integral%nAng,&
         &Integral%nPrim,iAngmom,der,P%nPasses,LUPRI,IPRINT,nOperatorComp)
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
    IF(Integral%nPrim*Integral%nOrb*Integral%nAng.GT.allocIntmaxTUVdim)THEN
       call lsquit('ContractEcoeff1 alloc error1',lupri)
    ENDIF
@@ -5978,7 +5978,7 @@ nPrim1 = P%orbital1%nPrimitives
 nPrim2 = P%orbital2%nPrimitives
 IF (P%segmented) THEN
 ! Multiply in preexponential factor and contract to segmented basis
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(nPrim1*nPrim2*nPasses*nAng*nOrb.GT.allocIntmaxTUVdim)THEN
    call lsquit('SingleHermiteEcoeff1seg alloc error1',lupri)
 ENDIF
@@ -5997,7 +5997,7 @@ ENDIF
   Integral%nPrim = P%nPasses
 ELSE
 ! Multiply in preexponential factor
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(nPrim1*nPrim2*nPasses*nAng*nOrb.GT.allocIntmaxTUVdim)THEN
    call lsquit('SingleHermiteEcoeff1gen alloc error1',lupri)
 ENDIF
@@ -6112,7 +6112,7 @@ tuvOffQ    = startAngQ*(startAngQ+1)*(startAngQ+2)/6
 startAngPQ = startAngP + startAngQ
 tuvOffPQ   = startAngPQ*(startAngPQ+1)*(startAngPQ+2)/6
 
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(P%nPrimitives*P%nTUV*ndmat.GT.allocIntmaxTUVdim)THEN
    call lsquit('ContractFTUVPA alloc error1',lupri)
 ENDIF
@@ -6132,7 +6132,7 @@ Integral%nAng  = 1
 Integral%nPrim = ndmat
 Integral%nOrb  = P%nPrimitives*P%nTUV
 !CALL PrintTuvQ_old(Integral%integrals,P%nTUV,P%nPrimitives,1,ndmat,LUPRI,IPRINT)
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF (IPRINT.GT. 50) THEN
    CALL PrintTensor(Integral%tuvQ,' InnerFTUV          ',P%nPrimitives,P%nTUV,ndmat,Lupri,&
         & 'iPrim ','iTUV  ','idmat ',1)
@@ -6342,7 +6342,7 @@ Call Mem_alloc(PQ%exponents,maxPrim)
 Call Mem_alloc(PQ%reducedExponents,maxPrim)
 Call Mem_alloc(PQ%integralPrefactor,maxPrim)
 
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 call set_allocIntmaxTUVdim(maxprim,maxTUVdim,maxOrb)
 #endif
 
@@ -6618,7 +6618,7 @@ NPrim=PQ%nPrimitives
 JMAX=PQ%endAngmom
 Jstart=PQ%startAngmom
 
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(nPrim*(JMAX+1).GT.allocIntmaxTUVdim)THEN
    call lsquit('GET_WTUV alloc error1',lupri)
 ENDIF
@@ -6678,7 +6678,7 @@ ntuv=(JMAX+1)*(JMAX+2)*(JMAX+3)/6-Jstart*(Jstart+1)*(Jstart+2)/6
 INTEGRAL%nTUV=ntuv
 Integral%nEFG=1 !no cartesian multipole moments
 
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(nPrim*nTUV.GT.allocIntmaxTUVdim)THEN
    call lsquit('GET_WTUV alloc error2',lupri)
 ENDIF
@@ -7232,7 +7232,7 @@ IF(P%contractbasis)THEN
   nP1 = P%orbital1%nPrimitives
   nP2 = P%orbital2%nPrimitives
 
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(nPrim*P%nPasses*Integral%nOrb*Integral%nAng.GT.allocIntmaxTUVdim)THEN
    call lsquit('ContractBasisGen alloc error1',lupri)
 ENDIF

@@ -120,7 +120,7 @@ SUBROUTINE distributeJengine(RES,PQ,QPmat2,dimQ,dimP,Input,Lsoutput,Jcont,LUPRI,
 !is maybe not the most logical and we refer to discussion in the subroutine
 !init_gradientlstensor in lsutil/lstensor_operations.f90
         iLSAO = Lsoutput%resultTensor%INDEX(iAtom,1,1,derivInfo%AO(1,iDerivP))
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
         IF(iLSAO.EQ. 0)THEN
            WRITE(lupri,*)'iLSAO is zero - for some reason'
            WRITE(lupri,*)'iAtom          ',iAtom
@@ -425,13 +425,13 @@ Integer :: iP
 !call output(Gabint,1,nP,1,nP,nP,nP,1,lupri)
 maxgabelm = 0.0E0_realk
 DO iP=1,nP
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
   IF(Gabint(iP,iP).GT. shortintCrit)THEN
 #endif
      IF (Gabint(iP,iP).GT. maxgabelm) THEN
         maxgabelm = Gabint(iP,iP)
      ENDIF
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
   ELSE
      IF(abs(Gabint(iP,iP)).GT.thresh) THEN
         write(lupri,*) 'Error in addGab. Negative screening int',Gabint(iP,iP)
@@ -453,7 +453,7 @@ Integer :: iA,iB
 !call output(Gabint,1,nA*nB,1,nA*nB,nA*nB,nA*nB,1,lupri)
 DO iB=1,nB
    DO iA=1,nA
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
       IF(Gabint(iA,iB,iA,iB).LT. -1.0E-12_realk)THEN
          print*, 'Error in buildGab. Negative screening int',Gabint(iA,iB,iA,iB)
          call lsquit('Error in buildGab. Negative screening int',-1)
@@ -473,7 +473,7 @@ Real(realk),intent(INOUT) :: OutputMatrix(n2,n1)
 Integer :: iA,iB
 DO iB=1,nB
    DO iA=1,nA
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
       IF(Gabint(iA,iB,iA,iB).LT. -1.0E-12_realk)THEN
          print*, 'Error in buildGab. Negative screening int',Gabint(iA,iB,iA,iB)
          call lsquit('Error in buildGab. Negative screening int',-1)
@@ -1975,7 +1975,7 @@ DO iPassP=1,P%nPasses
           call mem_workpointer_dealloc(QPmat5)
        ENDIF !translate
        ENDDO !Permute
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
        IF (IPRINT.GT.40) THEN
           IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
              CALL GDPQ_printInt(ABCD,'ABCD',n1,n2,n3,n4,ndim5output,lupri)
@@ -2696,7 +2696,7 @@ DO iPassP=1,P%nPasses
 !is maybe not the most logical and we refer to discussion in the subroutine
 !init_gradientlstensor in lsutil/lstensor_operations.f90
        iLSAO = RES%INDEX(iAtom,1,1,derivInfo%AO(1,iDeriv))
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
        IF(iLSAO.EQ. 0)THEN
           WRITE(lupri,*)'iLSAO is zero - for some reason'
           WRITE(lupri,*)'iAtom          ',iAtom
@@ -2714,7 +2714,7 @@ DO iPassP=1,P%nPasses
          !is maybe not the most logical and we refer to discussion in the subroutine
          !init_gradientlstensor in lsutil/lstensor_operations.f90
          iLSAO = RES%INDEX(iTrans,1,1,derivInfo%translate)
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
          IF(iLSAO.EQ. 0)THEN
           WRITE(lupri,*)'iLSAO is zero - for some reason'
           WRITE(lupri,*)'iTrans         ',iTrans
@@ -3233,7 +3233,7 @@ integer :: indDCD,indDDC,indDAB,indDBA,maxbat,maxang
 integer :: nCd,nDd,sCd,sDd,nAd,nBd,sAd,sBd
 Real(realk) :: factor
 Real(realk),pointer :: dCD(:),dDC(:),dAB(:),dBA(:)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 call lsquit('not implemented',-1)
 #else
 !Special for same lhs and rhs !!!!

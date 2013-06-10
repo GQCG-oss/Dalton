@@ -553,7 +553,7 @@ end subroutine ls_dcopy
   !> \date 1984
   subroutine lsquit(text,lupri)
   use precision
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
@@ -586,7 +586,7 @@ end subroutine ls_dcopy
       CALL ls_TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRIN)
       CALL ls_FLSHFO(LUPRIN)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       IF(infpar%mynum.EQ.infpar%master)call lsmpi_finalize(lupri,.FALSE.)
 #endif
       !TRACEBACK INFO TO SEE WHERE IT CRASHED!!

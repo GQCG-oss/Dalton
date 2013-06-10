@@ -19,7 +19,7 @@
    In order to implement Gen1Int interface, we have modified the following files:
 
    * CMakeLists.txt
-     sets the corresponding compiler flag (-DBUILD_GEN1INT) and adds the source codes
+     sets the corresponding compiler flag (-DBUILD_GEN1INT_LSDALTON) and adds the source codes
      of Gen1Int library and interface
 
 3. Important files in Gen1Int interface

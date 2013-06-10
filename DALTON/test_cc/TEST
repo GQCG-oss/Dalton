@@ -18,7 +18,7 @@ if [ -x '/usr/bin/time' ]; then
 else
  TIMING_OF=" "
 fi
-DALTON="`pwd`/../bin/dalton"
+DALTON="`pwd`/../build/dalton"
 
 #########################################################################
 # define all the different test suites
@@ -293,7 +293,8 @@ do
           myprint ""
           myprint "evaluate output file $logfile:"
           myprint "-----------------------------------------------------------"
-          checkout=`sh $checkfile $logfile | tee -a $listing`
+          #checkout=`sh $checkfile $logfile | tee -a $listing`
+          checkout=`./$checkfile $logfile | tee -a $listing`
           if [ "$benchmark" = "true" ]; then
               if [ `$GREP "CPU  time used in DALTON" $logfile | wc -l` = 1 ]; then
                   CPU_usage=`$GREP "CPU  time used in DALTON" $logfile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`

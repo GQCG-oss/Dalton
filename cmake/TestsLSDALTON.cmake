@@ -4,7 +4,7 @@ set(TEST_ARGS  )
 set(TEST_ARGS5 )
 
 if(ENABLE_MPI)
-  set(TEST_PARAM -N 2)
+  set(TEST_PARAM "-N 2")
   set(TEST_ARGS  -param "-N 2")
   set(TEST_ARGS5 -param "-N 5")
 endif()
@@ -23,7 +23,7 @@ if(ENABLE_MPI)
       # 64 bit integers and 32 bit integer MPI lib
       # do not perform SCALAPACK tests this combi do not work 
       ####################################################################################################################################################### 
-      if(NOT ENABLE_MPI32)
+      if(NOT USE_32BIT_MPI_INTERFACE)
         set(RUN_SCALAPACK_TESTS TRUE)
       endif()
     else()

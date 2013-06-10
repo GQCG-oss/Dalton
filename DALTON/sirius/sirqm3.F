@@ -86,11 +86,15 @@ C     Calculate RRa, Obar and ENSA and write these to file
 
 C     Calculate Ns and keep in memory (DFTNS).
 C     (Run QM3_NSP instead of QM3_NS if #nodes > 1, Arnfinn nov. -08)
-      IF (NODTOT.GE.1 .AND. .NOT. OLDTG) THEN
+#if defined(VAR_MPI)
+      IF (NODTOT.GE.1 .AND. .NOT. OLDTG .AND. .NOT. MMPCM) THEN
          CALL QM3_NSP(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
       ELSE
+#endif
          CALL QM3_NS(WRK(KDTAO),DFTNS,WRK(KEND),LWRK1,IPRINT)
+#if defined(VAR_MPI)
       END IF
+#endif
 
 C     Modify the fock operator. Modification returned in FSOL. 
       CALL QM3_FMO(FSOL,WRK(KEND),LWRK1,IPRINT)
@@ -526,6 +530,7 @@ C
       END
 
 
+#if defined(VAR_MPI)
 C*********************************************************************
 C  /* Deck qm3_nsp */
       SUBROUTINE QM3_NSP(DCAO,DFTNS,WRK,LWRK,IPRINT)
@@ -835,13 +840,13 @@ C Run loop over MM nuclear charges
       END IF
 
 C     No more Ns to calculate
-      CALL MPI_REDUCE(WRK(KDFTNS),WRK(KDFTNS),MXQM3,
+      CALL MPI_REDUCE(WRK(KDFTNS),MPI_IN_PLACE,MXQM3,
      &                   MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,
      &                   IERR)
 
       RETURN
       END
-
+#endif
 C*********************************************************************  
 C  /* Deck qm3_fmo */
       SUBROUTINE QM3_FMO(FSOL,WRK,LWRK,IPRINT)   

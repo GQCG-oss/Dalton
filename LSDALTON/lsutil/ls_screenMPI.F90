@@ -5,7 +5,7 @@ use screen_mod
 use lsmpi_type
 use lsmpi_op
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 CONTAINS
 SUBROUTINE mpicopy_screen(Slave,Master)
 implicit none

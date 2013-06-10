@@ -106,14 +106,14 @@ ERROR[1]="ENERGIES NOT CORRECT"
 
 
 # CC3 transition moments:
-CRIT1=`$GREP  "     \| XDIPLEN   \|      ( |0)\.09414391 \|      ( |0)\.09514908 \|       ( |0)\.00895771    \|" $log | wc -l`
+CRIT1=`$GREP  " *\| XDIPLEN *\| *(|0)\.09414391 *\| *(|0)\.09514908 *\| *(|0)\.00895771 *\|" $log | wc -l`
 
 TEST[2]=$CRIT1
 CTRL[2]=1
 ERROR[2]="CC3 TRANSITION MOMENT NOT CORRECT"
 
 # CC3 excitation energies:
-CRIT1=`$GREP  " \| \^1B1  \|    1   \|    ( -|-0)\.0145342  \|      ( -|-0)\.39550  \|     -3189\.888  \| 100\.00  \|" $log | wc -l`
+CRIT1=`$GREP  " *\| *\^1B1 *\| *1 *\| *(-|-0)\.0145342 *\| *(-|-0)\.39550 *\| *-3189\.88. *\| *100\.00 *\|" $log | wc -l`
 TEST[3]=$CRIT1
 CTRL[3]=1
 ERROR[3]="CC3 EXCITATION ENERGIES NOT CORRECT"
