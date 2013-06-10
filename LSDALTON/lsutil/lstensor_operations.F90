@@ -507,7 +507,7 @@ CONTAINS
 
 
     WRITE(lupri,'(A)') ' The LSTENSOR structure'
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     IF(ASSOCIATED(LSTENSORitem%G_LSAO))THEN
        WRITE(lupri,'(A,I9)') ' The Global LSTENSOR structure  G_nLSAO=',LSTENSORitem%G_nLSAO
        DO I=1,LSTENSORitem%G_nLSAO
@@ -607,7 +607,7 @@ CONTAINS
           ELSE
              WRITE(lupri,'(A16,A)')' nAngmom ' , ' NOT ASSOCIATED ' 
           ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
           IF(ASSOCIATED(LSTENSORitem%G_fullatoms1).AND.ASSOCIATED(LSTENSORitem%G_fullatoms1))THEN
              IATOM = LSAOTENSORitem%ATOM(1)
              JATOM = LSAOTENSORitem%ATOM(2)
@@ -631,7 +631,7 @@ CONTAINS
                   &(LSAOTENSORitem%ATOM(I2),I2=1,size(LSAOTENSORitem%ATOM))
              WRITE(lupri,'(A16,10I8/,(16X,10I8))')' AOBATCH ' ,&
                   & (LSAOTENSORitem%AOBATCH(I2),I2=1,size(LSAOTENSORitem%AOBATCH))          
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
           ENDIF
 #endif
        ENDDO
@@ -760,7 +760,7 @@ CONTAINS
     TYPE(LSTENSOR) :: LSTENSORitem
     !
     integer :: I,J,K,L,M
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     NULLIFY(LSTENSORitem%G_LSAO)
 #endif
     NULLIFY(LSTENSORitem%LSAO)
@@ -778,7 +778,7 @@ CONTAINS
     LSTENSORitem%nLSAO=0
     LSTENSORitem%nSLSAO=0
     NULLIFY(LSTENSORitem%INDEX)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     NULLIFY(LSTENSORitem%G_nAOBATCH)
     NULLIFY(LSTENSORitem%G_INDEX)
     NULLIFY(LSTENSORitem%G_fullatoms1)
@@ -951,7 +951,7 @@ CONTAINS
     IF(ASSOCIATED(LSTENSORitem%MBIE))THEN
        CALL MEM_DEALLOC(LSTENSORitem%MBIE)
     ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     IF(ASSOCIATED(LSTENSORitem%G_LSAO))THEN
        CALL MEM_DEALLOC(LSTENSORitem%G_LSAO)
     ENDIF
@@ -988,7 +988,7 @@ CONTAINS
     IF(ASSOCIATED(LSTENSORitem%nAOBATCH))THEN
        CALL MEM_DEALLOC(LSTENSORitem%nAOBATCH)
     ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     IF(ASSOCIATED(LSTENSORitem%G_fullatoms1))THEN
        CALL MEM_DEALLOC(LSTENSORitem%G_fullatoms1)
     ENDIF
@@ -2846,7 +2846,7 @@ SUBROUTINE memdist_lstensor_zero_lowerTriangularMat(TENSOR)
 implicit none
 TYPE(LSTENSOR)     :: TENSOR
 !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 INTEGER    :: I,Ibat,Jbat,Kbat,Lbat,Iangmom,Jangmom,Kangmom,Langmom,nOrbA
 INTEGER    :: sA,nOrbB,sB,nOrbC,sC,dimA,dimB,jatom,iatom,I2
 INTEGER    :: nOrbD,sD,IORB,JORB,KORB,LORB,IELM,IMAT,i1,dim,ielms,ndim5
@@ -2970,7 +2970,7 @@ subroutine memdist_lstensor_SetupFullinfo(TENSOR,AO1,AO2,nbast1,nbast2,&
     TYPE(AOITEM),target  :: AO1,AO2
     logical   :: useAO1,useAO2,ODscreen
     !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     TYPE(AOITEMPOINTER) :: AOT(2)
     TYPE(AOITEM),target :: AOTE
     ! 
@@ -3108,7 +3108,7 @@ end subroutine memdist_lstensor_SetupFullinfo
     integer,intent(in) :: atoms1(natoms1),atoms2(natoms2)
     TYPE(AOITEM),target  :: AO1,AO2
     logical   :: useAO1,useAO2
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     !
     TYPE(AOITEMPOINTER) :: AOT(2)
     TYPE(AOITEM),target :: AOTE

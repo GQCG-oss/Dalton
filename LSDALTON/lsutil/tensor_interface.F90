@@ -580,7 +580,7 @@ contains
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in) :: nmodes, dims(nmodes)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr=array_init_tiled(dims,nmodes,MASTER_INIT)
     CreatedPDMArrays = CreatedPDMArrays+1
     arr%atype=TILED_DIST
@@ -597,7 +597,7 @@ contains
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in) :: nmodes, dims(nmodes)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr=array_init_tiled(dims,nmodes,MASTER_INIT)
     CreatedPDMArrays = CreatedPDMArrays+1
     call memory_allocate_array_dense(arr)
@@ -615,7 +615,7 @@ contains
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in) :: nmodes, dims(nmodes)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr=array_init_replicated(dims,nmodes,MASTER_INIT)
     CreatedPDMArrays = CreatedPDMArrays+1
     arr%atype=DENSE
@@ -632,7 +632,7 @@ contains
   subroutine array_free_rpseudo_dense(arr)
     !> the array to free
     type(array) :: arr
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr%atype=REPLICATED
 #endif
     call array_free(arr)
@@ -646,7 +646,7 @@ contains
   subroutine array_free_tdpseudo_dense(arr)
     !> the array to free
     type(array) :: arr
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr%atype=TILED_DIST
 #endif
     call array_free(arr)
@@ -777,7 +777,7 @@ contains
     implicit none
     !> array to change the array type
     type(array),intent(inout) :: arr
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr%atype=TILED_DIST
     if(associated(arr%elm1))then
       call memory_deallocate_array_dense(arr)
@@ -795,7 +795,7 @@ contains
     implicit none
     !> array to change the array type
     type(array),intent(inout) :: arr
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr%atype=REPLICATED
 #else
     return
@@ -810,7 +810,7 @@ contains
     implicit none
     !> array to change the array type
     type(array),intent(inout) :: arr
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr%atype=DENSE
 #else
     return
@@ -858,7 +858,7 @@ contains
     type(array),intent(inout) :: arr
     logical, intent(in) :: change
     logical :: pdm
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     pdm=.false.
     if(.not.associated(arr%elm1))then
       call lsquit("ERROR(array_cp_dense2tiled):dense is NOT allocated,&
@@ -1269,7 +1269,7 @@ contains
     alln = .false.
     red = .false.
     master=.true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     if(infpar%lg_mynum/=0)master=.false.
     nnod=infpar%lg_nodtot
 #endif
@@ -1277,7 +1277,7 @@ contains
     if(present(reducetocheck))then
       red=.true.
       if(red.and.master)then
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       call mem_alloc(red_info,nnod*8)
 #else
       call mem_alloc(red_info,8)
@@ -2330,7 +2330,7 @@ contains
     character(len=7) :: teststatus
     character(ARR_MSG_LEN) :: msg
     master = .true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     if(infpar%lg_mynum /= 0) then
       master =.false.
     endif
@@ -2340,7 +2340,7 @@ contains
     no =  12
     na =  7
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     if(master)then
       write(DECinfo%output,*)"TESTING PDM TILED ARRAY ALLOCATIONS"
       write(DECinfo%output,'(" Using",f8.3," GB of mem for the testarray")')&
@@ -2667,7 +2667,7 @@ contains
 end module tensor_interface_module
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 subroutine get_slaves_to_array_test()
   use precision
   use tensor_interface_module,only:test_array_struct

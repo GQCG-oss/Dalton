@@ -12,7 +12,7 @@ module lspdm_tensor_operations_module
   use ptr_assoc_module, only: ass_D1to4
   use dec_typedef_module
   use memory_handling
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
@@ -143,7 +143,7 @@ module lspdm_tensor_operations_module
     integer :: i, j, context,modes(3),counter, stat,ierr,basic
     integer(kind=ls_mpik) :: sendctr
     modes=0
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     basic = 12
 
@@ -329,7 +329,7 @@ module lspdm_tensor_operations_module
     integer,intent(in) :: globaltilenumber
     integer :: rankofnode,nnod
     nnod=1
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     nnod=infpar%lg_nodtot
 #endif      
     rankofnode=mod(globaltilenumber-1+arr%offset,nnod)
@@ -364,7 +364,7 @@ module lspdm_tensor_operations_module
     integer :: lt,i,j,a,b,o(t2%mode),fr_i,fr_j,fr_a,fr_b
     integer :: i_high,j_high,a_high,b_high
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(JOB_GET_FRAG_CC_ENERGY,t1,t2,gmo)
@@ -477,7 +477,7 @@ module lspdm_tensor_operations_module
     real(realk),pointer :: t(:,:,:,:)
     integer :: lt,i,j,a,b,o(t2%mode)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     !Get the slaves to this routine
     if(infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(JOB_GET_CC_ENERGY,t1,t2,gmo)
@@ -540,7 +540,7 @@ module lspdm_tensor_operations_module
     real(realk) :: nrm
     integer :: t(4)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     !CHECK if the distributions are the same, if it becomes necessary, that they
     !are not, then this routine has to be rewritten
@@ -614,7 +614,7 @@ module lspdm_tensor_operations_module
     real(realk), external :: ddot
     integer(kind=ls_mpik) :: dest_mpi
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     !check if the init-types are the same
     if(arr1%init_type/=arr2%init_type)then
       call lsquit("ERROR(array_ddot_par):different init types of the&
@@ -681,7 +681,7 @@ module lspdm_tensor_operations_module
     real(realk) :: b
     real(realk),pointer :: buffer(:)
     integer :: lt
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     !check if the init_types are the same
     if(x%init_type/=y%init_type)then
@@ -734,7 +734,7 @@ module lspdm_tensor_operations_module
     type(array), intent(inout) :: to_ar
     real(realk),pointer :: buffer(:)
     integer :: lt
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     !check for the same init_types
     if(from%init_type/=to_ar%init_type)then
@@ -772,7 +772,7 @@ module lspdm_tensor_operations_module
     !> array to zero
     type(array),intent(inout) :: a
     integer :: lt
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     !get the slaves here
     if(a%init_type==MASTER_INIT.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(JOB_ARRAY_ZERO,a)
@@ -815,7 +815,7 @@ module lspdm_tensor_operations_module
     master=.true.
     p_arr%a(addr)%init_type=pdm
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     !assign if master and the number of nodes in the local group
     if(.not.infpar%lg_mynum==infpar%master)master=.false.
     nlocalnodes=infpar%lg_nodtot
@@ -849,7 +849,7 @@ module lspdm_tensor_operations_module
     !pdm syncronization
     if(master .and. p_arr%a(addr)%init_type==MASTER_INIT)then
       call arr_set_addr(p_arr%a(addr),buf,nlocalnodes)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       call pdm_array_sync(JOB_INIT_ARR_REPLICATED,p_arr%a(addr))
 #endif
     endif
@@ -857,7 +857,7 @@ module lspdm_tensor_operations_module
     !if all_init all have to have the addresses allocated
     if(p_arr%a(addr)%init_type==ALL_INIT)call arr_set_addr(p_arr%a(addr),buf,nlocalnodes)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     !SET THE ADDRESSES ON ALL NODES     
     buf(infpar%lg_mynum+1)=addr 
     call lsmpi_local_allreduce(buf,nlocalnodes)
@@ -885,7 +885,7 @@ module lspdm_tensor_operations_module
     !return-value is the norm
     real(realk) :: nrm
     integer :: i
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     !get the slaves
     if(infpar%lg_mynum==infpar%master.and.arr%init_type==MASTER_INIT)then
@@ -915,7 +915,7 @@ module lspdm_tensor_operations_module
     !synchronized to all nodes
     integer,optional, intent(in) :: fromnode
     integer(kind=ls_mpik) :: source
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     !give meaningful quit statement for useless input
     if(present(fromnode).and.arr%init_type==MASTER_INIT)then
@@ -964,7 +964,7 @@ module lspdm_tensor_operations_module
     integer :: cdims
 
     nlocalnodes=1
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     nlocalnodes=infpar%lg_nodtot
 #endif    
 
@@ -1045,7 +1045,7 @@ module lspdm_tensor_operations_module
     else
       p_arr%a(addr)%init_type=NO_PDM
     endif
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     if(.not.infpar%lg_mynum==infpar%master)master=.false.
     !if(p_arr%a(addr)%init_type==ALL_INIT)call lsmpi_barrier(infpar%lg_comm)
     nlocalnodes=infpar%lg_nodtot
@@ -1131,7 +1131,7 @@ module lspdm_tensor_operations_module
 
 
     if(p_arr%a(addr)%init_type>=1)then
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       call get_distribution_info(p_arr%a(addr))
       buf(infpar%lg_mynum+1)=addr 
       buf(nlocalnodes+infpar%lg_mynum+1)=p_arr%a(addr)%offset
@@ -1260,7 +1260,7 @@ module lspdm_tensor_operations_module
     integer :: nelmsit,i, order(arr%mode)
     integer :: ltidx
     integer(kind=ls_mpik) :: nnod,dest,me
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     !TRY TO INCLUDE MPI_PUT FOR THAT OPERATION,SO MAYBE MASTER_SLAVE DEPENDENCE
     !IN THIS ROUTINE IS GONE
@@ -1315,7 +1315,7 @@ module lspdm_tensor_operations_module
     integer :: i,ltidx,order(arr%mode)
     integer :: nelintile
     real(realk), pointer :: tmp(:)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     do i=1,arr%mode
       order(i)=i
@@ -1367,7 +1367,7 @@ module lspdm_tensor_operations_module
     integer :: i,j,k,ltidx
     integer :: nelintile,order(arr%mode)
     real(realk), pointer :: tmp(:)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     do i = 1, arr%mode
       order(i) = i
     enddo
@@ -1423,7 +1423,7 @@ module lspdm_tensor_operations_module
 
     me = 0
     nnod=1
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     me=infpar%lg_mynum
     nnod=infpar%lg_nodtot
 #endif
@@ -1528,7 +1528,7 @@ module lspdm_tensor_operations_module
 
       !copy data to the identified places
       if(pdm)then
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
         call lsmpi_win_lock(dest,arr%wi(comp_ti),'e')
         call lsmpi_acc(A(fe_in_block:fe_in_block+act_step-1),act_step,comp_el,dest,arr%wi(comp_ti))
         call lsmpi_win_unlock(dest,arr%wi(comp_ti))
@@ -1555,7 +1555,7 @@ module lspdm_tensor_operations_module
     integer :: allallocd
     logical :: master
     real(realk) :: mb_acc,mb_put,mb_get,total(9),speed_acc,speed_get,speed_put
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !NODE SPECIFIC ONE-SIDED INFO!!!!!!!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1680,7 +1680,7 @@ module lspdm_tensor_operations_module
 
     me = 0
     nnod=1
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     me=infpar%lg_mynum
     nnod=infpar%lg_nodtot
 #endif
@@ -1704,7 +1704,7 @@ module lspdm_tensor_operations_module
       if(present(order))call extract_tile_from_fort(A,arr%mode,i,arr%dims,arr%tdim,buf,order)
       call get_tile_dim(nelmsit,arr,i)
       if(mult/=1.0E0_realk)call dscal(nelmsit,mult,buf,1)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       call array_accumulate_tile(arr,i,buf,nelmsit)
 #endif
     enddo
@@ -1729,7 +1729,7 @@ module lspdm_tensor_operations_module
 
     me = 0
     nnod=1
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     me=infpar%lg_mynum
     nnod=infpar%lg_nodtot
 #endif
@@ -1833,7 +1833,7 @@ module lspdm_tensor_operations_module
 
       !copy data to the identified places
       if(pdm)then
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
         call lsmpi_win_lock(dest,arr%wi(comp_ti),'e')
         call lsmpi_put(A(fe_in_block:fe_in_block+act_step-1),act_step,comp_el,dest,arr%wi(comp_ti))
         call lsmpi_win_unlock(dest,arr%wi(comp_ti))
@@ -1870,7 +1870,7 @@ module lspdm_tensor_operations_module
 
     me = 0
     nnod=1
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     me=infpar%lg_mynum
     nnod=infpar%lg_nodtot
 #endif
@@ -1894,7 +1894,7 @@ module lspdm_tensor_operations_module
       call get_tile_dim(nelmsit,arr,i)
       !call pn(buf,nelmsit)
       !copy data to the identified places
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       !print *,"copying",i,arr%ntiles
       call array_put_tile(arr,i,buf,nelmsit)
 #endif
@@ -1914,7 +1914,7 @@ module lspdm_tensor_operations_module
     integer :: nelmsit,i, order(arr%mode)
     integer :: ltidx
     integer(kind=ls_mpik) :: nnod,dest,me
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     !TRY TO INCLUDE MPI_PUT FOR THAT OPERATION,SO MAYBE MASTER_SLAVE DEPENDENCE
     !IN THIS ROUTINE IS GONE
@@ -2429,7 +2429,7 @@ module lspdm_tensor_operations_module
   subroutine array_free_pdm(arr)
     implicit none
     type(array) :: arr
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     if(arr%init_type==MASTER_INIT.and.&
     &infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(JOB_FREE_ARR_PDM,arr)
@@ -2445,7 +2445,7 @@ module lspdm_tensor_operations_module
     implicit none
     type(array),intent(inout) :: arr
     integer :: i,ntiles2dis
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr%offset=p_arr%new_offset
     p_arr%new_offset=mod(p_arr%new_offset+arr%ntiles,infpar%lg_nodtot)
     arr%nlti=arr%ntiles/infpar%lg_nodtot
@@ -2485,7 +2485,7 @@ module lspdm_tensor_operations_module
     real(realk) :: norm
     integer :: i,j,loctinr,gtnr
     integer(kind=ls_mpik) :: dest
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     gtnr=globtinr
     if(arr%init_type==MASTER_INIT.and.infpar%lg_mynum==infpar%master)then
       call pdm_array_sync(JOB_PRINT_TI_NRM,arr)
@@ -2522,7 +2522,7 @@ module lspdm_tensor_operations_module
     type(array), intent(in) :: arr
     real(realk) :: nrm
     integer :: i,j,should
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     if(infpar%lg_mynum==infpar%master.and.arr%init_type==MASTER_INIT) then
       call pdm_array_sync(JOB_GET_NRM2_TILED,arr)
     endif
@@ -2550,7 +2550,7 @@ module lspdm_tensor_operations_module
      implicit none
      type(array),intent(inout) :: arr
      integer,intent(in) :: totype
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
      if(totype/=REPLICATED.and.totype/=DENSE.and.totype/=TILED_DIST.and.totype/=TILED)then
        call lsquit("ERROR(change_init_type_td): wrong type given",-1)
      endif
@@ -2586,7 +2586,7 @@ module lspdm_tensor_operations_module
     real(realk),intent(inout) :: fort(nelms)
     integer(kind=ls_mpik) :: assert,dest, ierr,n
     real(realk) :: sta,sto
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
     assert=0
     offset=0
@@ -2611,7 +2611,7 @@ module lspdm_tensor_operations_module
     real(realk),intent(inout) :: fort(nelms)
     integer(kind=ls_mpik) :: assert,dest, ierr,n
     real(realk) :: sta,sto
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
     assert=0
     offset=0
@@ -2645,7 +2645,7 @@ module lspdm_tensor_operations_module
     real(realk),intent(inout) :: fort(nelms)
     integer(kind=ls_mpik) :: assert,dest, ierr,n
     real(realk) :: sta,sto
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
     assert=0
     offset=0
@@ -2669,7 +2669,7 @@ module lspdm_tensor_operations_module
     real(realk),intent(inout) :: fort(nelms)
     integer(kind=ls_mpik) :: assert,dest, ierr,n
     real(realk) :: sta,sto
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
     assert=0
     offset=0
@@ -2705,7 +2705,7 @@ module lspdm_tensor_operations_module
     real(realk),intent(inout) :: fort(nelms)
     integer(kind=ls_mpik) :: assert,source, ierr,n
     real(realk) :: sta,sto
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
     assert=0
     offset=0
@@ -2729,7 +2729,7 @@ module lspdm_tensor_operations_module
     real(realk),intent(inout) :: fort(nelms)
     integer(kind=ls_mpik) :: assert,source, ierr,n
     real(realk) :: sta,sto
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     integer(kind=MPI_ADDRESS_KIND) ::offset
     assert=0
     offset=0
@@ -2754,7 +2754,7 @@ module lspdm_tensor_operations_module
     integer(kind=ls_mpik) :: nnod, me
     nnod = 1
     me   = 0
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     nnod = infpar%lg_nodtot
     if(.not.present(remoterank))then
       me = infpar%lg_mynum
@@ -2783,12 +2783,12 @@ module lspdm_tensor_operations_module
     fe=1
     ne=0
     nnod = 1
-#ifdef VAR_DEBUG
+#ifdef VAR_LSDEBUG
     msg_len_mpi=24
 #else
     msg_len_mpi=170000000
 #endif
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     nnod = infpar%lg_nodtot
     me   = infpar%lg_mynum
     do node=0,nnod-1
@@ -2817,12 +2817,12 @@ module lspdm_tensor_operations_module
     fe=1
     ne=0
     nnod = 1
-#ifdef VAR_DEBUG
+#ifdef VAR_LSDEBUG
     msg_len_mpi=24
 #else
     msg_len_mpi=170000000
 #endif
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     nnod = infpar%lg_nodtot
     me   = infpar%lg_mynum
     do node=0,nnod-1
@@ -2853,12 +2853,12 @@ module lspdm_tensor_operations_module
     ne=0
     nnod = 1
     !msg_len_mpi=17
-#ifdef VAR_DEBUG
+#ifdef VAR_LSDEBUG
     msg_len_mpi=24
 #else
     msg_len_mpi=170000000
 #endif
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     nnod = infpar%lg_nodtot
     me   = infpar%lg_mynum
     do node=0,nnod-1

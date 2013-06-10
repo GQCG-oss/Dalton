@@ -14,7 +14,7 @@ MODULE molecular_hessian_mod
   use integralinterfaceMod, only: ii_get_geoderivexchange, ii_get_overlap, &
        & ii_get_geoderivoverlap
 #endif
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
 #endif
 
@@ -313,7 +313,7 @@ CONTAINS
 !     ENDDO
 !     call get_first_geoderiv_overlap(Sa,Natoms,setting,lupri,luerr)
 
-! #ifdef BUILD_GEN1INT 
+! #ifdef BUILD_GEN1INT_LSDALTON 
 !     ! test only possible if gen1int available
 !     call mem_alloc(genSa,3*nAtoms)
 !     DO i=1,3*Natoms

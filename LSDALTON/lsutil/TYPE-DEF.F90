@@ -14,7 +14,7 @@ MODULE TYPEDEFTYPE
  use Integralparameters
  use integralOutput_typetype
  use tensor_type_def_module,only:array
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
  use infpar_module
 #endif
 TYPE INTEGERP
@@ -444,7 +444,7 @@ Integer                    :: node         !Integer value defining the node numb
 !if you add a structure to this type remember to add it to MPI_ALLOC_DALTONINPUT
 END TYPE DALTONINPUT
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 TYPE AOBATCHINFO
 integer         :: nBatches
 integer,pointer :: nPrim(:)
@@ -461,7 +461,7 @@ END TYPE AOATOMINFO
 
 TYPE REDUCEDSCREENINGINFO
 LOGICAL                   :: isset
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 TYPE(AOATOMINFO)         :: AO(4)
 integer(kind=short),pointer  :: LHSGAB(:,:) !nbatches*nbatches
 integer(kind=short),pointer  :: RHSGAB(:,:) 

@@ -24,7 +24,7 @@ MODULE matrix_operations
    use matrix_operations_dense
    use matrix_operations_scalapack
    use LSTIMING
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    use lsmpi_type, only: MATRIXTY
 #endif
    use matrix_operations_csr
@@ -119,7 +119,7 @@ end type matrixmembuf
 !> \date 2003
 !> \param a Indicates the matrix type (see module documentation) 
      SUBROUTINE mat_select_type(a,lupri,nbast)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
        use infpar_module
        use lsmpi_type
 #endif
@@ -133,7 +133,7 @@ end type matrixmembuf
           WRITE(6,*)'We therefore use the dense unrestricted type - which do not use memory distribution'
        else
           matrix_type = a
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
           IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
             select case(matrix_type)             
@@ -148,7 +148,7 @@ end type matrixmembuf
             case default
                call lsquit("Unknown type of matrix",-1)
             end select
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
           ENDIF
           IF (infpar%mynum.EQ.infpar%master) THEN
              call ls_mpibcast(MATRIXTY,infpar%master,MPI_COMM_LSDALTON)
@@ -189,12 +189,12 @@ end type matrixmembuf
      END SUBROUTINE mat_select_type
 
      SUBROUTINE mat_finalize()
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
        use infpar_module
        use lsmpi_type
 #endif
        implicit none
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
        if(matrix_type.EQ.mtype_scalapack)then
           CALL PDM_GRIDEXIT
        endif
@@ -2710,7 +2710,7 @@ end subroutine set_lowertriangular_zero
     
 END MODULE Matrix_Operations
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       !> \brief Pass matrix_type to other MPI nodes
       !> \author T. Kjaergaard
       !> \date 2011

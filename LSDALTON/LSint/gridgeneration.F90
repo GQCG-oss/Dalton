@@ -12,7 +12,7 @@ use precision
 use dft_ld_module
 use files
 use Fundamental, only: bohr_to_angstrom
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_mod
 #endif
@@ -172,11 +172,11 @@ call mem_grid_dealloc(RADIALWEIGHT)
 call mem_grid_dealloc(nRadialPoints)   
 call mem_grid_dealloc(GRIDANG)
 GRIDDONE=1
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
 call stats_grid_mem(lupri)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ENDIF
 #endif
 
@@ -244,7 +244,7 @@ logical,pointer :: skip(:),skip2(:)
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
 type(gridboxtype),pointer :: GridBox
-#ifndef VAR_LSMPI
+#ifndef VAR_MPI
 integer :: infpar
 #endif
 !logical,pointer :: SHELLLIST(:)
@@ -301,14 +301,14 @@ call init_grid_threadmemvar()
 #ifdef VAR_OMP
 nthreads=OMP_GET_NUM_THREADS()
 tid = omp_get_thread_num()
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
 !$OMP MASTER
 WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP Gridgeneration calculation using',&
      &omp_get_num_threads(),' threads.'
 !$OMP END MASTER
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ENDIF
 #endif
 #else
@@ -532,7 +532,7 @@ LUGRID=-1
 call get_quadfilename(filename,nbast,node,GridId)
 CALL LSOPEN(LUGRID,filename,'NEW','UNFORMATTED')
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF(USE_MPI)THEN 
    nprocessors = numnodes
    mynum = node
@@ -2265,7 +2265,7 @@ character(len=22) :: filename
 integer,intent(in) :: nbast,gridid
 integer(kind=ls_mpik),intent(in) :: node
 filename(1:11)='DALTON.QUAD'
-#ifdef VAR_LSMPI 
+#ifdef VAR_MPI 
 filename(12:16)=Char(node/10000+48)//Char(mod(node,10000)/1000+48)&
    &//Char(mod(mod(node,10000),1000)/100+48)&
    &//Char(mod(mod(mod(node,10000),1000),100)/10+48)&

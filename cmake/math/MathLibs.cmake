@@ -81,7 +81,7 @@ else()
     set(MKL_LAPACK_LIBRARY_PATH_SUFFIXES ia32 32)
 endif()
 
-if(ENABLE_OMP)
+if(ENABLE_THREADED_MKL)
     set(_thread_lib)
     if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
         set(_thread_lib mkl_intel_thread)
@@ -105,8 +105,10 @@ endif()
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU)
     set(_compiler_mkl_interface mkl_gf)
 endif()
-if(NOT DEFINED _compiler_mkl_interface)
-    message(FATAL_ERROR "_compiler_mkl_interface not defined for your compiler")
+if(DEFINED MKL_FLAG)
+    if(NOT DEFINED _compiler_mkl_interface)
+         message(FATAL_ERROR "compiler MKL interface not defined for your compiler")
+    endif()
 endif()
 
 set(_lib_suffix)
@@ -119,21 +121,25 @@ if(${CMAKE_HOST_SYSTEM_PROCESSOR} STREQUAL "x86_64")
 endif()
 
 if(ENABLE_SCALAPACK)
-    set(_scalapack_lib mkl_scalapack${_lib_suffix})
-    set(_blacs_lib     mkl_blacs_intelmpi${_lib_suffix})
+    set(_scalapack_lib      mkl_scalapack${_lib_suffix})
+    set(_blacs_intelmpi_lib mkl_blacs_intelmpi${_lib_suffix})
+    set(_blacs_sgimpt_lib   mkl_blacs_sgimpt${_lib_suffix})
 else()
     set(_scalapack_lib)
-    set(_blacs_lib)
+    set(_blacs_intelmpi_lib)
+    set(_blacs_sgimpt_lib)
 endif()
 
-# first try this MKL BLAS combination
-set(MKL_BLAS_LIBS  ${_scalapack_lib} mkl_core ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_lib} guide pthread m)
-
+# first try this MKL BLAS combination with SGI MPT
+set(MKL_BLAS_LIBS  ${_scalapack_lib} mkl_core ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_sgimpt_lib}   guide pthread m)
+# now with Intel MPI
+set(MKL_BLAS_LIBS2 ${_scalapack_lib} mkl_core ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_intelmpi_lib} guide pthread m)
 # newer MKL BLAS versions do not have libguide
-set(MKL_BLAS_LIBS2 ${_scalapack_lib} mkl_core ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_lib}       pthread m)
-
+set(MKL_BLAS_LIBS3 ${_scalapack_lib} mkl_core ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_sgimpt_lib}         pthread m)
+# now with Intel MPI
+set(MKL_BLAS_LIBS4 ${_scalapack_lib} mkl_core ${_compiler_mkl_interface}${_lib_suffix} ${_thread_lib} ${_blacs_intelmpi_lib}       pthread m)
 # ancient MKL BLAS
-set(MKL_BLAS_LIBS3 mkl guide m)
+set(MKL_BLAS_LIBS5 mkl guide m)
 
 set(MKL_LAPACK_LIBS mkl_lapack95${_lib_suffix} ${_compiler_mkl_interface}${_lib_suffix})
 
@@ -144,4 +150,5 @@ unset(_lib_suffix)
 unset(_thread_lib)
 unset(_compiler_mkl_interface)
 unset(_scalapack_lib)
-unset(_blacs_lib)
+unset(_blacs_intelmpi_lib)
+unset(_blacs_sgimpt_lib)

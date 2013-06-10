@@ -33,7 +33,7 @@ module dec_driver_module
 !       & write_gradient_and_energies_for_restart,read_gradient_and_energies_for_restart
   use fragment_energy_module
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use dec_driver_slave_module
 #endif
@@ -201,7 +201,7 @@ contains
     !> (:,:,5): Occupied E[5] contribution;  (:,:,6): Virtual E[5] contribution
     logical :: morejobs,atomic_fragment_restart
     integer(kind=ls_mpik) :: master,IERR,comm,sender
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
 #endif
     master=0
@@ -316,7 +316,7 @@ contains
     ! ************************************************************************
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     ! Number of workers (slaves) = Number of nodes minus master itself
     nworkers = infpar%nodtot -1
@@ -407,7 +407,7 @@ contains
        ! ************************************************************************
        ! *               DEC-MPI ATOMIC FRAGMENT OPTIMIZATION SCHEME            *
        ! ***********************************************************************
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
        ! Counter used to distinquish real (counter<=njobs) and quit (counter>njobs) calculations
        counter=counter+1
 
@@ -488,7 +488,7 @@ contains
     mastertime = twall2-twall1
     call LSTIMER('DEC ATOMFRAG',tcpu,twall,DECinfo%output)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     ! Print MPI statistics
     call print_MPI_fragment_statistics(jobs,mastertime,'ATOMIC FRAGMENTS')
 #else
@@ -528,7 +528,7 @@ contains
     end if
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     ! Fragment MPI communication
     ! **************************
@@ -641,7 +641,7 @@ contains
           call lsquit('DEC singles polarization not implemented when job list in increased!',-1)
        end if
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
        ! Bcast information telling whether there are more jobs or not
        call ls_mpibcast(morejobs,master,MPI_COMM_LSDALTON)
 #endif
@@ -657,7 +657,7 @@ contains
     mastertime = twall2-twall1
     call LSTIMER('DEC ALLFRAG',tcpu,twall,DECinfo%output)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     call MPI_COMM_FREE(infpar%lg_comm,IERR)
     ! Set all MPI groups equal to the world group
     call lsmpi_default_mpi_group
@@ -840,20 +840,37 @@ contains
        write(DECinfo%output,*)
 
     case(3)
-       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,6),dofrag,&
-            & 'CCSD occupied single energies')
-       call print_atomic_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,&
-            & 'CCSD virtual single energies')
-
-       call print_pair_fragment_energies(natoms,FragEnergies(:,:,6),dofrag,AtomicFragments,&
-            & DistanceTable, 'CCSD occupied pair energies')
-       call print_pair_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,AtomicFragments,&
-            & DistanceTable, 'CCSD virtual pair energies')
-
-       write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g20.10)') 'CCSD occupied   correlation energy : ', energies(6)
-       write(DECinfo%output,'(1X,a,g20.10)') 'CCSD virtual    correlation energy : ', energies(7)
-       write(DECinfo%output,*)
+       if(.not.DECinfo%CCDhack)then
+         call print_atomic_fragment_energies(natoms,FragEnergies(:,:,6),dofrag,&
+              & 'CCSD occupied single energies')
+         call print_atomic_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,&
+              & 'CCSD virtual single energies')
+        
+         call print_pair_fragment_energies(natoms,FragEnergies(:,:,6),dofrag,AtomicFragments,&
+              & DistanceTable, 'CCSD occupied pair energies')
+         call print_pair_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,AtomicFragments,&
+              & DistanceTable, 'CCSD virtual pair energies')
+        
+         write(DECinfo%output,*)
+         write(DECinfo%output,'(1X,a,g20.10)') 'CCSD occupied   correlation energy : ', energies(6)
+         write(DECinfo%output,'(1X,a,g20.10)') 'CCSD virtual    correlation energy : ', energies(7)
+         write(DECinfo%output,*)
+       else
+         call print_atomic_fragment_energies(natoms,FragEnergies(:,:,6),dofrag,&
+              & 'CCD occupied single energies')
+         call print_atomic_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,&
+              & 'CCD virtual single energies')
+        
+         call print_pair_fragment_energies(natoms,FragEnergies(:,:,6),dofrag,AtomicFragments,&
+              & DistanceTable, 'CCD occupied pair energies')
+         call print_pair_fragment_energies(natoms,FragEnergies(:,:,7),dofrag,AtomicFragments,&
+              & DistanceTable, 'CCD virtual pair energies')
+        
+         write(DECinfo%output,*)
+         write(DECinfo%output,'(1X,a,g20.10)') 'CCD occupied   correlation energy : ', energies(6)
+         write(DECinfo%output,'(1X,a,g20.10)') 'CCD virtual    correlation energy : ', energies(7)
+         write(DECinfo%output,*)
+       endif
 
     case(4)
 
@@ -1114,7 +1131,7 @@ contains
     real(realk) :: t1cpu, t2cpu, t1wall, t2wall, dt
     integer(kind=ls_mpik) ::master, sender, groupsize,IERR
     logical :: only_update
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: MPISTATUS(MPI_STATUS_SIZE), DUMMYSTAT(MPI_STATUS_SIZE)
 #endif
     master = 0
@@ -1122,7 +1139,7 @@ contains
     only_update=.true.
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     ! Number of workers = Number of nodes minus master itself
     nworkers = infpar%nodtot -1
 #else
@@ -1162,7 +1179,7 @@ contains
 
 
     ! Send fragment job list to slaves and redefine MPI groups
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
        ! Send fragment job list
        call bcast_post_fragopt_joblist(jobs,MPI_COMM_LSDALTON)
@@ -1205,7 +1222,7 @@ contains
        ! *    MPI PARALLELIZATION OF FRAGMENT JOBS   *
        ! *********************************************
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
        ! Check for local masters to do a job
        CALL MPI_PROBE(MPI_ANY_SOURCE,MPI_ANY_TAG,MPI_COMM_LSDALTON,MPISTATUS,IERR)
@@ -1396,7 +1413,7 @@ contains
 
     end do JobLoop
 
-#ifndef VAR_LSMPI
+#ifndef VAR_MPI
     call free_joblist(singlejob)
 #endif
 

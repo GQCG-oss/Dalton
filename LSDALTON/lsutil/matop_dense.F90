@@ -125,7 +125,7 @@ module matrix_operations_dense
 #ifndef UNITTEST
 !> \brief See mat_mpicopy in mat-operations.f90
   subroutine mat_dense_mpicopy(a,slave,master)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     use lsmpi_type
 #endif
      implicit none
@@ -133,7 +133,7 @@ module matrix_operations_dense
      logical,intent(in)               :: slave
      integer(kind=ls_mpik),intent(in) :: master
      integer                          :: i
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
      call LS_MPI_BUFFER(a%nrow,Master)
      call LS_MPI_BUFFER(a%ncol,Master)
      call LS_MPI_BUFFER(a%complex,Master)

@@ -312,16 +312,20 @@ C
       IF (QM3 .AND. (.NOT. MMPCM)) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QM3LNO TO LINEAR TRANSFORMATION'
+#if defined(VAR_MPI)
          IF (NODTOT .GE. 1) THEN
             CALL QM3LNO_P(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &               WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
      &               WRK(KFREE),LFREE)
          ELSE
+#endif
             CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &               WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               EVECS(NCSIM*KZYVAR+1),
      &               WRK(KFREE),LFREE)
+#if defined(VAR_MPI)
          END IF
+#endif
       ENDIF
       IF (PCM .AND. (.NOT. MMPCM)) THEN
          LADDMM = .TRUE. 

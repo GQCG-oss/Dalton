@@ -114,7 +114,7 @@ group.add_argument('--explicit-libs',
 group.add_argument('--cray',
         action='store_true',
         default=False,
-        help='use cray wrapper which disables math detection and internal math implementation [default: %(default)s]')
+        help='use cray wrappers for BLAS/LAPACK and MPI which disables math detection and internal math implementation [default: %(default)s]')
 group.add_argument('--csr',
         action='store_true',
         default=False,
@@ -174,6 +174,23 @@ group.add_argument('--interest',
         default=False,
         help='enable interest external library [default: %(default)s]')
 
+group = parser.add_argument_group('pass extra flags to the compiler')
+group.add_argument('--extra-fc-flags',
+        action='store',
+        default=None,
+        help='extra Fortran flags [default: %(default)s]',
+        metavar='STRING')
+group.add_argument('--extra-cc-flags',
+        action='store',
+        default=None,
+        help='extra C flags [default: %(default)s]',
+        metavar='STRING')
+group.add_argument('--extra-cxx-flags',
+        action='store',
+        default=None,
+        help='extra C++ flags [default: %(default)s]',
+        metavar='STRING')
+
 # process input
 
 args = parser.parse_args()
@@ -198,7 +215,6 @@ def translate_cmake(s):
         return 'ON'
     else:
         return 'OFF'
-
 
 def gen_cmake_command():
     # create cmake command from flags
@@ -228,7 +244,7 @@ def gen_cmake_command():
     command += ' -DENABLE_TIMINGS=%s'        % translate_cmake(args.timings)
     command += ' -DENABLE_XCFUN=%s'          % translate_cmake(args.xcfun)
     command += ' -DENABLE_INTEREST=%s'       % translate_cmake(args.interest)
-    command += ' -DENABLE_CRAYWRAPPER=%s'    % translate_cmake(args.cray)
+    command += ' -DENABLE_CRAY_WRAPPERS=%s'  % translate_cmake(args.cray)
     command += ' -DENABLE_STATIC_LINKING=%s' % translate_cmake(args.static)
 
     if args.mkl:
@@ -239,6 +255,13 @@ def gen_cmake_command():
 
     if args.explicit_libs:
         command += ' -DEXPLICIT_LIBS="%s"' % args.explicit_libs
+
+    if args.extra_fc_flags:
+        command += ' -DEXTRA_Fortran_FLAGS="%s"' % args.extra_fc_flags
+    if args.extra_cc_flags:
+        command += ' -DEXTRA_C_FLAGS="%s"' % args.extra_cc_flags
+    if args.extra_cxx_flags:
+        command += ' -DEXTRA_CXX_FLAGS="%s"' % args.extra_cxx_flags
 
     if args.check:
         command += ' -DENABLE_BOUNDS_CHECK=ON'
@@ -312,7 +335,13 @@ def run_cmake(command, build_path):
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE)
     s = p.communicate()[0]
+    # print cmake output to screen
     print(s)
+    # write cmake output to file
+    f = open('setup_cmake_output', 'w')
+    f.write(s)
+    f.close()
+    # change directory and return
     os.chdir(topdir)
     return s
 
@@ -364,26 +393,34 @@ def configure_host():
     return True
 
 def configure_default_compilers():
-    # if compiler starts with 'mp' turn on mpi
-    # it is possible to call compilers with long paths
-    if  args.cc  and os.path.basename(args.cc).lower().startswith('mp')  or \
-        args.cxx and os.path.basename(args.cxx).lower().startswith('mp') or \
-        args.fc  and os.path.basename(args.fc).lower().startswith('mp'):
-        args.mpi = 'on'
 
-    # if compiler starts with 'openmpi' turn on mpi
-    # it is possible to call compilers with long paths
-    if  args.cc  and os.path.basename(args.cc).lower().startswith('openmpi')  or \
-        args.cxx and os.path.basename(args.cxx).lower().startswith('openmpi') or \
-        args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
-        args.mpi = 'on'
+    if args.mpi and not args.fc and not args.cc and not args.cxx:
+        # only --mpi flag but no --fc, --cc, --cxx
+        # set --fc, --cc, --cxx to mpif90, mpicc, mpicxx
+        args.fc  = 'mpif90'
+        args.cc  = 'mpicc'
+        args.cxx = 'mpicxx'
 
+    if not args.mpi:
+        # if compiler starts with 'mp' turn on mpi
+        # it is possible to call compilers with long paths
+        if  args.cc  and os.path.basename(args.cc).lower().startswith('mp')  or \
+            args.cxx and os.path.basename(args.cxx).lower().startswith('mp') or \
+            args.fc  and os.path.basename(args.fc).lower().startswith('mp'):
+            args.mpi = 'on'
+        # if compiler starts with 'openmpi' turn on mpi
+        # it is possible to call compilers with long paths
+        if  args.cc  and os.path.basename(args.cc).lower().startswith('openmpi')  or \
+            args.cxx and os.path.basename(args.cxx).lower().startswith('openmpi') or \
+            args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
+            args.mpi = 'on'
+
+    if not args.fc:
+        args.fc = 'gfortran'
     if not args.cc:
         args.cc = 'gcc'
     if not args.cxx:
         args.cxx = 'g++'
-    if not args.fc:
-        args.fc = 'gfortran'
 
 configure_ubuntu = configure_default_compilers
 configure_fedora = configure_default_compilers
