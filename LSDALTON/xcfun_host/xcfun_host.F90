@@ -194,28 +194,28 @@ module xcfun_host
 #ifdef VAR_XCFUN    
     IF(type.EQ.xcfun_type_lda)THEN
        if(unres)THEN
-          call lsquit('xcfun_set_lda_order unres',-1)
+          ierrLDA = xc_eval_setup(XCFUNfunctional,XC_A_B,XC_PARTIAL_DERIVATIVES,order)
        else
           ierrLDA = xc_eval_setup(XCFUNfunctional,XC_N,XC_PARTIAL_DERIVATIVES,order)
        endif
        IF(ierrLDA.NE.0) then
           print*,'ierrLDA',ierrLDA,'order',order,'unres',unres
-          print*,'error in xc_eval_setup(XCFUNfunctional,XC_N,XC_PARTIAL_DERIVATIVES,order)'
+          print*,'error in xc_eval_setup() for LDA'
           call lsquit('xcfun_set_order LDA error',-1)
        endif
     ELSEIF(type.EQ.xcfun_type_gga)THEN
        if(unres)THEN
-          call lsquit('xcfun_set_gga_order unres',-1)
+          ierrGGA = xc_eval_setup(XCFUNfunctional,XC_A_B_GAA_GAB_GBB,XC_PARTIAL_DERIVATIVES,order)
        else
-          print*,'xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ,XC_PARTIAL_DERIVATIVES,1)'
           ierrGGA = xc_eval_setup(XCFUNfunctional,XC_N_NX_NY_NZ,XC_PARTIAL_DERIVATIVES,order)
        endif
        IF(ierrGGA.NE.0) then
           print*,'ierrGGA',ierrGGA,'order',order,'unres',unres
-          print*,'error in xc_eval_setup(XCFUNfunctional,XC_N,XC_PARTIAL_DERIVATIVES,order)'
+          print*,'error in xc_eval_setup() for GGA'
           call lsquit('xcfun_set_order GGA error',-1)
        endif
     ELSEIF(type.EQ.xcfun_type_metagga)THEN
+       call lsquit('METAGGA not yet working for xcfun/lsdalton combination',-1)
        if(unres)THEN
 !          ierrMETA = xc_eval_setup(XCFUNfunctional,XC_A_B_AX_AY_AZ_BX_BY_BZ_TAUA_TAUB,XC_PARTIAL_DERIVATIVES,order)
        else

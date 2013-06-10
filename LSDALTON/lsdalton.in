@@ -1,22 +1,32 @@
+#!/bin/bash
 
 # radovan: this is to figure out the location of this script
-SCRIPT_DIR="${0%/*}"
-# if the script was started from the base directory with ./script, then the
-# expansion returns a period, if it was started directly with script then the
-# expansion returns the script file name
-if [ "$SCRIPT_DIR" == "." -o "$SCRIPT_DIR" == "$0" ]; then
-    SCRIPT_DIR="$PWD"
-# if the script was not called with an absolute path, then we need to add the
-# current working directory to the relative path of the script
-elif [ "${SCRIPT_DIR:0:1}" != "/" ]; then
-    SCRIPT_DIR="$PWD/$SCRIPT_DIR"
-fi
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    [[ $SOURCE != /* ]] && SOURCE="$SCRIPT_DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 LSDALTON=$SCRIPT_DIR/lsdalton.x
 LSLIB_TEST=$SCRIPT_DIR/lslib_tester.x
 DALMPI=$SCRIPT_DIR/lsdalton.x
 MPIRUN=@MPIEXEC@
-[ -z "$TMPDIR" ] && TMPDIR=@SCRATCH_DIR@
+
+if [ -z "$DALTON_TMPDIR" ]; then
+    scratch_dir_candidates="/global/work/$USER /scratch/$USER /work /scratch /scr /temp /tmp"
+    for dir in $scratch_dir_candidates; do
+        if [ -d "$dir" ]; then
+            DALTON_TMPDIR=$dir
+            echo "found $dir and DALTON_TMPDIR set to $DALTON_TMPDIR"
+            break
+        fi
+    done
+fi
+
 WRKDIR=`pwd`
 export WRKDIR
 #
@@ -61,20 +71,20 @@ usage (){
 	  echo
 	  echo 'Options:'
 	  echo ' -b dir    change directory where basis sets are searched for to dir'
-	  echo ' -d        delete TMPDIR before calculation starts'
+	  echo ' -d        delete DALTON_TMPDIR before calculation starts'
 	  echo ' -pg       do profiling'
 	  echo ' -dens     copy dens.restart and maybe fock.restart lcm_orbitals.u'
 	  echo ' -valgrind run with valgrind'
 	  echo ' -lslib_test run lslib test'	  
-	  echo ' -D        do not delete TMPDIR after calculation stops'
+	  echo ' -D        do not delete DALTON_TMPDIR after calculation stops'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
 	  echo ' -o FILE   redirect output from program to FILE in WRKDIR'
-	  echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in TMPDIR before calculation starts'
+	  echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in DALTON_TMPDIR before calculation starts'
 	  echo ' -m mem    set scratch memory to mem Mwords'
 	  echo ' -M mem    set scratch memory to mem Mb'
 	  echo ' -N num    use MPI version with num nodes'
 	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
-	  echo ' -t dir    change TMPDIR from default to dir'
+	  echo ' -t dir    change DALTON_TMPDIR from default to dir'
 	  echo ' -w dir    change WRKDIR from default to dir'
 	  echo ' -exe exec change the DALTON and DALMPI executables from default to exec'
 	  echo
@@ -121,7 +131,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -m ) WRKMEM=$2; export WRKMEM; shift;;
       -M ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
-      -t ) TMPDIR=$2; shift;;
+      -t ) DALTON_TMPDIR=$2; shift;;
       -w ) WRKDIR="`pwd`/$2"; shift;;
       -exe ) DALTON=$2; DALMPI=$2; shift;;
       * ) usage; exit 1;;
@@ -134,6 +144,17 @@ if [ -z "$1" ]; then
    usage
    exit 1
 fi
+
+if [ -z "$DALTON_TMPDIR" ]; then
+    # DALTON_TMPDIR is still not set, better stop here
+    echo "ERROR: searched for suitable scratch directories"
+    echo "       among $scratch_dir_candidates"
+    echo "       but none of them exists"
+    echo "       please either set the DALTON_TMPDIR environment variable"
+    echo "       or use -t to set the scratch directory"
+    exit 1
+fi
+
 if [ -z "$2" ]; then
 #  remove .mol, if added by user
    molfil=`basename $1 .mol`
@@ -150,7 +171,7 @@ else
    fi
 fi
 #
-export TMPDIR
+export DALTON_TMPDIR
 #
 echo
 echo "   ******************************************* "
@@ -163,24 +184,24 @@ echo;
 echo "   Calculation: $outnam  (input files: $dalfil and $molfil)"
 echo "   PID        : $$"
 echo "   Input dir  : $WRKDIR"
-echo "   Scratch dir: $TMPDIR/$outnam"
+echo "   Scratch dir: $DALTON_TMPDIR/$outnam"
 #echo "  Work memory: $WRKMEM"
 echo;
 #
-if [ ! -d "$TMPDIR" ]; then
-   mkdir -p $TMPDIR
+if [ ! -d "$DALTON_TMPDIR" ]; then
+   mkdir -p $DALTON_TMPDIR
 fi
 
-SCRATCHDIR=$TMPDIR/$2;
+SCRATCHDIR=$DALTON_TMPDIR/$2;
 
-if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
+if [ -d "$DALTON_TMPDIR" -a -w "$DALTON_TMPDIR" ]; then
    if [ $optd -eq 1 ] ; then
-      rm -rf $TMPDIR/$outnam
+      rm -rf $DALTON_TMPDIR/$outnam
    fi
-   if [ ! -d "$TMPDIR/$outnam" ]; then
-      mkdir -p $TMPDIR/$outnam
+   if [ ! -d "$DALTON_TMPDIR/$outnam" ]; then
+      mkdir -p $DALTON_TMPDIR/$outnam
    fi
-   cd $TMPDIR/$outnam
+   cd $DALTON_TMPDIR/$outnam
    if [ -s $WRKDIR/$dalfil.$DALEXT -a -r $WRKDIR/$dalfil.$DALEXT ]; then
       cp $WRKDIR/$dalfil.$DALEXT LSDALTON.INP
    else
@@ -220,7 +241,7 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
       fi
    fi
 else
-   echo "$TMPDIR does not exist or is not writeable"
+   echo "$DALTON_TMPDIR does not exist or is not writeable"
    exit 1
 fi
 #
@@ -330,7 +351,7 @@ fi
       else
          echo "$WRKDIR/$OUTFIL has not been created from the present run"
          if [ $optD -eq 1 ] ; then
-            echo "$TMPDIR/$outnam is therefore not deleted by this script."
+            echo "$DALTON_TMPDIR/$outnam is therefore not deleted by this script."
          fi
          exit 2
       fi
@@ -345,16 +366,16 @@ fi
       else
          echo "LSDALTON.OUT has not been created from the present run."
          if [ $optD -eq 1 ] ; then
-            echo "$TMPDIR/$outnam is therefore not deleted by this script."
+            echo "$DALTON_TMPDIR/$outnam is therefore not deleted by this script."
          fi
-         echo "List of created files in $TMPDIR/$outnam :"
+         echo "List of created files in $DALTON_TMPDIR/$outnam :"
          ls -sltr
          exit 2
       fi
    fi
 cd $WRKDIR
 if [ $optD -eq 1 ] ; then
-   rm -rf $TMPDIR/$outnam
+   rm -rf $DALTON_TMPDIR/$outnam
 fi
 
 exit $lsdalton_exitcode
