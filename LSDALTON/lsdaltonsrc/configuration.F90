@@ -1046,10 +1046,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.BASPRINT');  READ(LUCMD,*) INTEGRAL%BASPRINT
         CASE ('.DEBUGPROP');  INTEGRAL%DEBUGPROP = .TRUE.
         CASE ('.DEBUGGEN1INT')
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
            INTEGRAL%DEBUGGEN1INT = .TRUE.
 #else
-           call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT',-1)
+           call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT_LSDALTON',-1)
 #endif
         CASE ('.DEBUGCGTODIFF')
 #ifdef BUILD_CGTODIFF
@@ -1287,10 +1287,10 @@ subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
         CASE ('.TEST'); GEOHESSIAN%testContrib=.TRUE.
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
            GEOHESSIAN%DebugGen1Int = .TRUE.
 !#else
-!           call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT',-1)
+!           call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT_LSDALTON',-1)
 #endif
         CASE ('.INTPRINT');  READ(LUCMD,*) GEOHESSIAN%IntPrint
         CASE DEFAULT

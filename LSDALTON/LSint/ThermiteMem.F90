@@ -56,7 +56,7 @@ INTERFACE mem_ODpointer_alloc
   MODULE PROCEDURE real_setODpointer_1dim, int_setODpointer_1dim
 END INTERFACE
 CONTAINS
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 subroutine set_allocIntmaxTUVdim(maxPrim,maxTUVdim,maxOrb)
 implicit none
 integer :: maxTUVdim,maxOrb,maxPrim

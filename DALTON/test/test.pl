@@ -33,7 +33,7 @@ my $quiet = '';
 my $biglog = 'perl_test.log';
 my $bigerr = 'perl_test.err';
 chomp(my $tstdir =`pwd`);
-my $dalton   = $tstdir."/../bin/dalton";
+my $dalton   = $tstdir."/../build/dalton";
 $verbose = 0;
 %verb = ('test_inp'  => 0,
 	 'fetch_out' => 1,
@@ -1589,7 +1589,7 @@ Options:
 
 =over 8
 
-=item B<--dalton> (default `pwd`/../../bin/dalton)
+=item B<--dalton> (default `pwd`/../../build/dalton)
 
 Shell script to run Dalton (absolute path)
 
