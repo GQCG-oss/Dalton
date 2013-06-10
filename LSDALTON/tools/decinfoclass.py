@@ -129,7 +129,7 @@ class decinfo_class:
         self.nfragjobs = self.pfragjobs + self.sfragjobs
         nfithorderfragjobs = self.sfragjobs*self.sfragjobs
 
-      print fragtype,self.ecorrocc,self.ecorrvirt,self.ecorrlag,self.pfragjobs,self.sfragjobs
+      #print fragtype,self.ecorrocc,self.ecorrvirt,self.ecorrlag,self.pfragjobs,self.sfragjobs
 
 
       for i in range(self.pfragjobs):
