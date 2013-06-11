@@ -38,7 +38,6 @@ C  /* Deck opinpu */
 #include "maxorb.h"
 #include "infinp.h"
 #include "gnrinf.h"
-#include "cbiwlk.h"
 
       PARAMETER (NTABLE = 76, ITRMX = 25, MXREJ = 3, D0 = 0.0D0,
      &     DEFTHE = 1.0D-6, DEFTH2 = 1.0D-4, DEFDSP = 1.0D-3)

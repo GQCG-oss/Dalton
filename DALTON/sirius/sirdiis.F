@@ -321,7 +321,6 @@ C
 #include "infvar.h"
 #include "infopt.h"
 #include "scbrhf.h"
-#include "dftcom.h"
 #include "cbihr2.h"
 #include "infpri.h"
 #include "gnrinf.h"
