@@ -2786,6 +2786,10 @@ contains
       call mo_work_dist(nv*nv*no,fai1,tl1)
       call mo_work_dist(nv*no*no,fai2,tl2)
 
+      if(DECinfo%PL>2.and.me==0)then
+        write(DECinfo%output,'(Trafolength in striped E1:",I5," ",I5)')tl1,tl2
+      endif
+
       call mem_alloc(w3,max(tl1*no,tl2*nv))
       call mem_alloc(w2,max(nv2,no2))
 
@@ -3021,6 +3025,10 @@ contains
       !Setting transformation variables for each rank
       !**********************************************
       call mo_work_dist(nv*no,fai,tl)
+
+      if(DECinfo%PL>2.and.me==0)then
+        write(DECinfo%output,'(Trafolength in striped CD:",I5)')tl
+      endif
      
       if(s==4)then
         faif = fai
@@ -3353,6 +3361,10 @@ contains
     !Setting transformation variables for each rank
     !**********************************************
     call mo_work_dist(nv*nv,fai,tl)
+
+    if(DECinfo%PL>2.and.me==0)then
+      write(DECinfo%output,'(Trafolength in striped B2:",I5)')tl
+    endif
     
     nor=no*(no+1)/2
 
@@ -4655,14 +4667,14 @@ contains
 !> \brief calculate the memory requirement for the matrices in the ccsd routine
 !> \author Patrick Ettenhuber
 !> \date January 2012
-  function get_min_mem_req(no,nv,nb,nba,nbg,choice,memintensive,print_stuff) result (memrq)
+  function get_min_mem_req(no,nv,nb,nba,nbg,choice,s,print_stuff) result (memrq)
     implicit none
     integer, intent(in) :: no,nv,nb
     integer, intent(in) :: nba,nbg
     integer, intent(in) :: choice
     real(realk) :: memrq, memin, memout
     logical, intent(in) :: print_stuff
-    integer, intent(in) :: memintensive
+    integer, intent(in) :: s
     integer :: nor, nvr, fe, ne , nnod, me, i
     integer :: d1(4),ntpm(4),tdim(4),mode,splt,ntiles,tsze
     integer(kind=ls_mpik) :: master
@@ -4741,7 +4753,7 @@ contains
     tl4 = tl4 * no
     !calculate minimum memory requirement
     ! u+3*integrals
-    if(memintensive==4)then
+    if(s==4)then
       !govov + u 2 + Omega 2 +  H +G  
       memrq = 1.0E0_realk*(3*no*no*nv*nv+ nb*nv+nb*no)
       !gvoov gvvoo
@@ -4768,7 +4780,7 @@ contains
       ! w1 + FO + w2 + w3
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+nb*nb+2*no*no*nv*nv)
       !memrq=memrq+max(memin,memout)
-    elseif(memintensive==3)then
+    elseif(s==3)then
       !govov stays in pdm and is dense in second part
       ! u 2 + omega2 + H +G  + keep space for one update batch
       call get_int_dist_info(int(nv*nv*no*no,kind=8),fe,ne,master)
@@ -4799,7 +4811,7 @@ contains
       ! w1 + FO + w2 + w3 + govov
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+max(nb*nb,max(2*tl1,tl2)))
       !memrq=memrq+max(memin,memout)
-    elseif(memintensive==2)then
+    elseif(s==2)then
       call array_default_batches(d1,mode,tdim,splt)
       call array_get_ntpm(d1,tdim,mode,ntpm,ntiles)
       nloctiles=ntiles/nnod
@@ -4840,7 +4852,7 @@ contains
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+max(nb*nb,max(cd,e2)))
       !memrq=memrq+max(memin,memout)
 #ifdef MOD_UNRELEASED
-    elseif(memintensive==1)then
+    elseif(s==1)then
       print *,"ATTENTION, mem estimation not yet correct"
       !govov stays in pdm and is dense in second part
       ! u 2 + H +G  
@@ -4870,7 +4882,7 @@ contains
       ! w1 + FO + w2 + w3 + govov
       memout = 1.0E0_realk*(max(nv*nv*no*no,nb*nb)+nb*nb+3*no*no*nv*nv)
       !memrq=memrq+max(memin,memout)
-    elseif(memintensive==0)then
+    elseif(s==0)then
       !govov + u 2 + H +G  
       memrq = 1.0E0_realk*(2*no*no*nv*nv+ nb*nv+nb*no)
       !allocation of matries ONLY used inside the loop
@@ -4897,6 +4909,7 @@ contains
       !memrq=memrq+max(memin,memout)
 #endif
     else
+      print *,"DECinfo%force_scheme",DECinfo%force_scheme,s
       call lsquit("ERROR(get_min_mem_req):requested memory scheme not known",-1)
     endif
 
