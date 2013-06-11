@@ -2499,7 +2499,7 @@ contains
     if(print_debug)then
       if(scheme==4)w1(1:o2v2) = omega2%elm1(1:o2v2)
 #ifdef VAR_MPI
-      call lsmpi_local_reduction(w1,o2v2,infpar%master)
+      call lsmpi_local_reduction(w1,o2v2,infpar%master,double_2G_nel)
 #endif
       write(msg,*)"NORM(omega2 after main loop):"
       if(master.and.scheme==4)call print_norm(w1,o2v2,msg)
@@ -2516,7 +2516,7 @@ contains
     !reorder integral for use within the solver and the c and d terms
     if(iter==1.and.(scheme==4.or.scheme==0))then
       call array_reorder_4d(1.0E0_realk,govov%elm1,no,no,nv,nv,[1,4,2,3],0.0E0_realk,w1)
-      call dcopy(no2*nv2,w1,1,govov%elm1,1)
+      govov%elm1(1:o2v2)=w1(1:o2v2)
 #ifdef VAR_MPI
       if(DECinfo%solver_par)then
         govov%atype     = TILED_DIST
