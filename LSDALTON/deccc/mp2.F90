@@ -340,7 +340,7 @@ end if
        call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
             & EVocc, EVvirt)
        LoccTALL = array2_init([nocc,nbasis])
-       call mat_transpose(MyFragment%ypo,nbasis,nocc,LoccTALL%val)
+       call mat_transpose(nbasis,nocc,1.0E0_realk,MyFragment%ypo,0.0E0_realk,LoccTALL%val)
     end if
 
 
@@ -503,13 +503,13 @@ end if
 
     ! Transpose matrices
     ! ******************
-    call mat_transpose(CDIAGocc%val,nbasis,nocc,CoccT)
-    call mat_transpose(CDIAGvirt%val,nbasis,nvirt,CvirtT)
-    call mat_transpose(UoccEOS,noccEOS,nocc,UoccEOST)
-    call mat_transpose(UvirtEOS,nvirtEOS,nvirt,UvirtEOST)
-    call mat_transpose(LoccEOS%val,nbasis,noccEOS,LoccEOST)
-    call mat_transpose(LvirtEOS%val,nbasis,nvirtEOS,LvirtEOST)
-    call mat_transpose(MyFragment%ypv,nbasis,nvirt,LvirtT)
+    call mat_transpose(nbasis,nocc,1.0E0_realk,CDIAGocc%val,0.0E0_realk,CoccT)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,CDIAGvirt%val,0.0E0_realk,CvirtT)
+    call mat_transpose(noccEOS,nocc,1.0E0_realk,UoccEOS,0.0E0_realk,UoccEOST)
+    call mat_transpose(nvirtEOS,nvirt,1.0E0_realk,UvirtEOS,0.0E0_realk,UvirtEOST)
+    call mat_transpose(nbasis,noccEOS,1.0E0_realk,LoccEOS%val,0.0E0_realk,LoccEOST)
+    call mat_transpose(nbasis,nvirtEOS,1.0E0_realk,LvirtEOS%val,0.0E0_realk,LvirtEOST)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,MyFragment%ypv,0.0E0_realk,LvirtT)
 
 
     ! ***************************************************************
@@ -795,7 +795,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
           ! Reorder: tmp3(b,J,alphaB,a) --> tmp1(alphaB,a,b,J)
           dim1=dim3
-          call mat_transpose(tmp3%p(1:dim3),nvirtEOS*nocc,dimAlpha*nvirtEOS,tmp1%p(1:dim1))
+          call mat_transpose(nvirtEOS*nocc,dimAlpha*nvirtEOS,1.0E0_realk,tmp3%p(1:dim3),0.0E0_realk,tmp1%p(1:dim1))
 
           ! Update: VVVO(d,a,b,J) += sum_{alpha in alphaB} L^T_{d alpha} tmp1(alpha,a,b,J)
           ! (Similarly to the comment above, the d index is only partly transformed by this,
@@ -819,7 +819,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
              idx=i8*(counter-1)*nvirt*nocc + tmp1%start
              mini1 => arr(idx:idx+siz-1)
-             call mat_transpose(mini2,nvirt,nocc,mini1)
+             call mat_transpose(nvirt,nocc,1.0E0_realk,mini2,0.0E0_realk,mini1)
           end do
 
           ! tmp3(j,B,alphaB,gammaB) = sum_{J} U_{jJ} tmp1(J,B,alphaB,gammaB)
@@ -837,7 +837,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
           ! Reorder: tmp1(j,B,alphaB,i) --> tmp3(alphaB,i,j,B)
           dim3=dim1
-          call mat_transpose(tmp1%p(1:dim1),noccEOS*nvirt,dimAlpha*noccEOS,tmp3%p(1:dim3))
+          call mat_transpose(noccEOS*nvirt,dimAlpha*noccEOS,1.0E0_realk,tmp1%p(1:dim1),0.0E0_realk,tmp3%p(1:dim3))
 
           ! Update: OOOV(k,i,j,B) += sum_{alpha in alphaB} L^T_{k alpha} tmp3(alpha,i,j,B)
           ! NOTE! "k" refers to BOTH core and valence, also for frozen core approximation
@@ -881,7 +881,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
              mini3 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*nvirt*nocc*dimAlpha + tmp4%start
              mini4 => arr(idx:idx+siz-1)
-             call mat_transpose(mini3,nvirt*nocc,dimAlpha,mini4)
+             call mat_transpose(nvirt*nocc,dimAlpha,1.0E0_realk,mini3,0.0E0_realk,mini4)
        end do
 
        ! tmp4 will now be used in each step for each thread in step 2
@@ -960,7 +960,7 @@ ts=.true.
              mini3 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt*nocc + b2(num)%start
              mini2 => arr(idx:idx+siz-1)
-             call mat_transpose(mini3,dimA*nvirt,nocc,mini2)
+             call mat_transpose(dimA*nvirt,nocc,1.0E0_realk,mini3,0.0E0_realk,mini2)
           end do
 
           ! Transform diagonal AOS index J to local EOS index j:
@@ -1003,7 +1003,7 @@ ts=.true.
              mini1 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt + b3(num)%start
              mini3 => arr(idx:idx+siz-1)
-             call mat_transpose(mini1,dimA,nvirt,mini3)
+             call mat_transpose(dimA,nvirt,1.0E0_realk,mini1,0.0E0_realk,mini3)
           end do
 
           ! Transform diagonal AOS index B to local EOS index b:
@@ -1021,7 +1021,7 @@ ts=.true.
              mini2 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*nvirtEOS*dimA + b3(num)%start
              mini3 => arr(idx:idx+siz-1)
-             call mat_transpose(mini2,nvirtEOS,dimA,mini3)
+             call mat_transpose(nvirtEOS,dimA,1.0E0_realk,mini2,0.0E0_realk,mini3)
           end do
 
           ! Transform diagonal AOS index Abat to local EOS index a (but only inside A batch):
@@ -1104,7 +1104,7 @@ ts=.true.
              mini3 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt*nocc + b2(num)%start
              mini2 => arr(idx:idx+siz-1)
-             call mat_transpose(mini3,dimA*nvirt,nocc,mini2)
+             call mat_transpose(dimA*nvirt,nocc,1.0E0_realk,mini3,0.0E0_realk,mini2)
           end do
 
           ! Transform diagonal AOS index J to local EOS index j:
@@ -1142,7 +1142,7 @@ ts=.true.
              mini1 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt + b3(num)%start
              mini3 => arr(idx:idx+siz-1)
-             call mat_transpose(mini1,dimA,nvirt,mini3)
+             call mat_transpose(dimA,nvirt,1.0E0_realk,mini1,0.0E0_realk,mini3)
           end do
 
           ! Transform diagonal AOS index B to local EOS index b:
@@ -1159,7 +1159,7 @@ ts=.true.
              mini2 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*nvirtEOS*dimA + b3(num)%start
              mini3 => arr(idx:idx+siz-1)
-             call mat_transpose(mini2,nvirtEOS,dimA,mini3)
+             call mat_transpose(nvirtEOS,dimA,1.0E0_realk,mini2,0.0E0_realk,mini3)
           end do
 
           ! Transform diagonal AOS index Abat to local EOS index a (but only inside A batch):
@@ -1397,7 +1397,7 @@ call mem_dealloc(decmpitasks)
     mini1 => arr(idx:idx+siz-1)
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp2%start
     mini2 => arr(idx:idx+siz-1)
-    call mat_transpose(mini1,nvirtEOS*nvirtEOS, nocc,mini2)
+    call mat_transpose(nvirtEOS*nvirtEOS, nocc,1.0E0_realk,mini1,0.0E0_realk,mini2)
  end do
 
  ! Transform: tmp1(l,a,b,k) = sum_{J} U_{lJ} tmp2(J,a,b,k)
@@ -1435,7 +1435,7 @@ call mem_dealloc(decmpitasks)
     mini1 => arr(idx:idx+siz-1)
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp2%start
     mini2 => arr(idx:idx+siz-1)
-    call mat_transpose(mini1,nvirtEOS*nvirtEOS,nocc,mini2)
+    call mat_transpose(nvirtEOS*nvirtEOS,nocc,1.0E0_realk,mini1,0.0E0_realk,mini2)
  end do
 
  ! Transform: tmp1(l,a,b,k) = sum_{J} U_{lJ} tmp2(J,a,b,k)
@@ -1723,8 +1723,8 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     ! ***********************************************************
     call mem_alloc(CoccT,nocc,nbasis)
     call mem_alloc(CunoccT,nunocc,nbasis)
-    call mat_transpose(Cocc,nbasis,nocc,CoccT)
-    call mat_transpose(Cunocc,nbasis,nunocc,CunoccT)
+    call mat_transpose(nbasis,nocc,1.0E0_realk,Cocc,0.0E0_realk,CoccT)
+    call mat_transpose(nbasis,nunocc,1.0E0_realk,Cunocc,0.0E0_realk,CunoccT)
 
 
 
@@ -1899,7 +1899,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        ! tmp2(gammaB,j,b,alphaB) = tmp1^T(b,alphaB;gammaB,j)
        m = nunocc*dimAlpha    ! dimension of "row" in tmp1 array (to be "column" in tmp2)
        n = nocc*dimGamma      ! dimension of "column" in tmp1 array (to be "row" in tmp2)
-       call mat_transpose(tmp1,m,n,tmp2)
+       call mat_transpose(m,n,1.0E0_realk,tmp1,0.0E0_realk,tmp2)
        call mem_dealloc(tmp1)
 
 
@@ -2553,7 +2553,7 @@ subroutine get_VOVO_from_full_AO(nbasis,nocc,nvirt,Cocc,Cvirt,gao,gmo)
 
   ! Reorder: tmp2(B,nu,rho,I) --> tmp1(rho,I,B,nu)
   dim1=dim2
-  call mat_transpose(tmp2(1:dim2),nvirt*nbasis,nbasis*nocc,tmp1(1:dim1))
+  call mat_transpose(nvirt*nbasis,nbasis*nocc,1.0E0_realk,tmp2(1:dim2),0.0E0_realk,tmp1(1:dim1))
 
 
   ! Transform: tmp2(rho,I,B,J) = sum_{nu} tmp1(rho,I,B,nu) C(nu,J)

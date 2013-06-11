@@ -316,103 +316,7 @@
 
   !\>  \brief another transposition routine, intended to replace the others
   !\>  \> author Patrick Ettenhuber
-  subroutine mat_transpose_pl(r,c,p1,x,p2,y)
-    !integer,intent(in) :: r, c
-    !real(realk), intent(in) :: p1,p2
-    !real(realk), dimension(r,c), intent(in) :: x
-    !real(realk), dimension(c,r), intent(inout) :: y
-    !integer :: i,j, s, p, k, a, b,e,f
-    !integer :: nr, nc, rr, rc, IOK, kb,d, iwrk
-    !real(realk) :: val
-    !real(realk), dimension(:)  , pointer :: sm
-    !integer,     dimension(:)  , pointer :: h
-    !kb = 512 !cache size of cpu --> /proc/cpuinfo
-    !s = kb * 1024 / 8
-    !k = int(0.9*sqrt(float(s)))
-    !nr=r/k
-    !nc=c/k
-    !rr=mod(r,k)
-    !rc=mod(c,k)
-    !d = max(rr,rc)
-    !iwrk = (d+k) / 4
-    !call mem_alloc(sm,k*k)
-    !call mem_alloc(h,iwrk)
-    !if(p2/=1.0E0_realk)call dscal(r*c,p2,y,1)
-    !!if(p1/=1.0E0_realk)call dscal(r*c,p1,x,1)
-    !!call dscal(r*c,p2,y,1)
-    !!call dscal(r*c,p1,x,1)
-    !do a = 0, nr-1, 1
-    !  do b = 0, nc-1, 1
-    !    do j=1,k,1
-    !      do i=1,k,1
-    !        sm((j-1)*k+i) = x(i+a*k,j+b*k)
-    !      enddo
-    !    enddo
-!   !     call dcopy(k*k,x(a*k,j+b*k),1,sm((j-1)*k+i),1)
-    !    call alg513(sm,k,k,k*k,h,iwrk,IOK)
-    !    call dscal(k*k,p1,sm,1)
-!   !     call daxpy(k*k,p1,sm,1,y(b*k:k+k*b,a*k:k+a*k),1)
-    !    do j=1,k,1
-    !      do i=1,k,1
-    !        y(i+b*k,j+a*k) = y(i+b*k,j+a*k) + sm((j-1)*k+i)
-    !      enddo
-    !    enddo
-    !  enddo
-    !enddo
-
-    !if (rc>0) then
-    !  iwrk = (rc+k)/4
-    !  do a = 0, nr-1, 1
-    !    do j=1,rc,1
-    !      do i=1,k,1
-    !        sm((j-1)*k+i) = x(i+a*k,j+nc*k)
-    !      enddo
-    !    enddo
-    !    call alg513(sm,k,rc,k*rc,h,iwrk,IOK)
-    !    call dscal(k*rc,p1,sm,1)
-    !    do i=1,rc,1
-    !      do j=1,k,1
-    !        y(i+nc*k,j+a*k) = y(i+b*k,j+a*k) + sm((j-1)*rc+i)
-    !      enddo
-    !    enddo
-    !  enddo
-    !endif
-
-    !if (rr>0) then
-    !  iwrk = (rr+k)/4
-    !  do b = 0, nc-1, 1
-    !    do j=1,k,1
-    !      do i=1,rr,1
-    !        sm((j-1)*rr+i) = x(i+nr*k,j+b*k)
-    !      enddo
-    !    enddo
-    !    call alg513(sm,rr,k,k*rr,h,iwrk,IOK)
-    !    call dscal(k*rr,p1,sm,1)
-    !    do j=1,rr,1
-    !      do i=1,k,1
-    !        y(i+b*k,j+nr*k) = y(i+b*k,j+nr*k) + sm((j-1)*k+i)
-    !      enddo
-    !    enddo
-    !  enddo
-    !endif
-
-    !if (rr>0 .and. rc>0) then
-    !  iwrk = (rc+rr)/4
-    !  do j=1,rc,1
-    !    do i=1,rr,1
-    !      sm((j-1)*rr+i) = x(i+nr*k,j+nc*k)
-    !    enddo
-    !  enddo
-    !  call alg513(sm,rr,rc,rc*rr,h,iwrk,IOK)
-    !  call dscal(rc*rr,p1,sm,1)
-    !  do j=1,rr,1
-    !    do i=1,rc,1
-    !      y(i+nc*k,j+nr*k) = y(i+nc*k,j+nr*k) + sm((j-1)*rc+i)
-    !    enddo
-    !  enddo
-    !endif
-    !call mem_dealloc(h)
-    !call mem_dealloc(sm)
+  subroutine mat_transpose(r,c,p1,x,p2,y)
     implicit none
     integer,intent(in) ::        r,c
     real(realk), intent(in)::    x(i8*r*c),p1,p2
@@ -434,7 +338,7 @@
 
     call LSTIMER('START',tcpu2,twall2,-1)
 
-  end subroutine mat_transpose_pl
+  end subroutine mat_transpose
 
   !> \brief Transpose any (esp. rectangular)  matrix in place  -> algorithm 513
   subroutine alg513(a, m, n, mn, move, iwrk, iok)                    !tra   10
