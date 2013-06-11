@@ -14,91 +14,81 @@
     integer :: i,j,l
     integer :: aa,bb,cc,dd,block_size,fina,finb,finc,find
     integer :: order_type,m,n
+    integer :: di3(3), di2(2)
     real(realk) :: tcpu1,twall1,tcpu2,twall2
 
 
     call LSTIMER('START',tcpu1,twall1,-1)
-
-    ! assuming available cache memory is 8 MB and we need to store two blocks at a time 
-    block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/4.0))
     dims(1)=d1
     dims(2)=d2
     dims(3)=d3
     dims(4)=d4
-    dim1 = dims(1)
-    dim2 = dims(2)*dims(1)
-    dim3 = dims(3)*dims(2)*dims(1)
-    dim4 = dims(4)
 
-    ! select  general type of the reordering
+    block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/4.0))
+    ! select  invalid reordering type
     order_type = -1
+
+    !MAPPING TO LOWER ORDER REORDERINGS
     if(order(1)==1 .and. order(2)==2 .and. &
          order(3)==3 .and. order(4)==4) order_type = 0
+    !CASE 2 D REORDERINGS
+    ! rephrase to 2 1
     if(order(1)==3 .and. order(2)==4 .and. &
          order(3)==1 .and. order(4)==2) order_type = 1
     if(order(1)==4 .and. order(2)==1 .and. &
-         order(3)==2 .and. order(4)==3) order_type = 1
-    !equal to case 9
+         order(3)==2 .and. order(4)==3) order_type = 2
     if(order(1)==2 .and. order(2)==3 .and. &
-         order(3)==4 .and. order(4)==1) order_type = 1
-    !equal to case 16
-    if(order(1)==2 .and. order(2)==1 .and. &
-         order(3)==3 .and. order(4)==4) order_type = 2
-    if(order(1)==3 .and. order(2)==1 .and. &
-         order(3)==2 .and. order(4)==4) order_type = 2
-    if(order(1)==2 .and. order(2)==3 .and. &
-         order(3)==1 .and. order(4)==4) order_type = 2
-    !if necessary introduce special treatments for slow
-    ! reorderings here and put them into manual_reorderings.f90
-    if(order(1)==4 .and. order(2)==2 .and. &
-         order(3)==3 .and. order(4)==1) order_type = 3
-    if(order(1)==2 .and. order(2)==4 .and. &
-         order(3)==1 .and. order(4)==3) order_type = 4
-    if(order(1)==3 .and. order(2)==2 .and. &
-         order(3)==1 .and. order(4)==4) order_type = 5
+         order(3)==4 .and. order(4)==1) order_type = 3
+    !CASE 3 D REORDERINGS
+    ! rephrase to 1 3 2
+    if(order(1)==1 .and. order(2)==2 .and. &
+         order(3)==4 .and. order(4)==3) order_type = 4
+    if(order(1)==1 .and. order(2)==4 .and. &
+         order(3)==2 .and. order(4)==3) order_type = 5
     if(order(1)==1 .and. order(2)==3 .and. &
          order(3)==4 .and. order(4)==2) order_type = 6
-    if(order(1)==1 .and. order(2)==3 .and. &
+    ! rephrase to 2 1 3
+    if(order(1)==3 .and. order(2)==1 .and. &
          order(3)==2 .and. order(4)==4) order_type = 7
     if(order(1)==2 .and. order(2)==3 .and. &
          order(3)==1 .and. order(4)==4) order_type = 8
-    ! this already appears in transp case 1!!!
-    if(order(1)==2 .and. order(2)==3 .and. &
-         order(3)==4 .and. order(4)==1) order_type = 9
-    if(order(1)==4 .and. order(2)==1 .and. &
-         order(3)==2 .and. order(4)==3) order_type = 10
-    if(order(1)==4 .and. order(2)==1 .and. &
-         order(3)==3 .and. order(4)==2) order_type = 11
-    if(order(1)==1 .and. order(2)==2 .and. &
-         order(3)==4 .and. order(4)==3) order_type = 12
     if(order(1)==2 .and. order(2)==1 .and. &
-         order(3)==4 .and. order(4)==3) order_type = 13
-    if(order(1)==1 .and. order(2)==4 .and. &
-         order(3)==2 .and. order(4)==3) order_type = 14
-    ! new janus routines
+         order(3)==3 .and. order(4)==4) order_type = 9
+    ! rephrase to 3 2 1
     if(order(1)==4 .and. order(2)==3 .and. &
-         order(3)==2 .and. order(4)==1) order_type = 15
-    ! this already appears in transp case 2!!!
-    if(order(1)==2 .and. order(2)==1 .and. &
-         order(3)==3 .and. order(4)==4) order_type = 16
-    if(order(1)==2 .and. order(2)==4 .and. &
-         order(3)==3 .and. order(4)==1) order_type = 17
+         order(3)==1 .and. order(4)==2) order_type = 10
+    if(order(1)==4 .and. order(2)==2 .and. &
+         order(3)==3 .and. order(4)==1) order_type = 11
     if(order(1)==3 .and. order(2)==4 .and. &
-         order(3)==2 .and. order(4)==1) order_type = 18
-    if(order(1)==1 .and. order(2)==4 .and. &
-         order(3)==3 .and. order(4)==2) order_type = 19
-    if(order(1)==3 .and. order(2)==1 .and. &
-         order(3)==4 .and. order(4)==2) order_type = 20
+         order(3)==2 .and. order(4)==1) order_type = 12
+    !CASE REAL 4 D REORDERINGS
+    if(order(1)==2 .and. order(2)==4 .and. &
+         order(3)==1 .and. order(4)==3) order_type = 13
     if(order(1)==3 .and. order(2)==2 .and. &
-         order(3)==4 .and. order(4)==1) order_type = 21
+         order(3)==1 .and. order(4)==4) order_type = 14
+    if(order(1)==1 .and. order(2)==3 .and. &
+         order(3)==2 .and. order(4)==4) order_type = 15
+    if(order(1)==4 .and. order(2)==1 .and. &
+         order(3)==3 .and. order(4)==2) order_type = 16
+    if(order(1)==2 .and. order(2)==1 .and. &
+         order(3)==4 .and. order(4)==3) order_type = 17
     if(order(1)==4 .and. order(2)==3 .and. &
-         order(3)==1 .and. order(4)==2) order_type = 22
+         order(3)==2 .and. order(4)==1) order_type = 18
+    if(order(1)==2 .and. order(2)==4 .and. &
+         order(3)==3 .and. order(4)==1) order_type = 19
+    if(order(1)==1 .and. order(2)==4 .and. &
+         order(3)==3 .and. order(4)==2) order_type = 20
+    if(order(1)==3 .and. order(2)==1 .and. &
+         order(3)==4 .and. order(4)==2) order_type = 21
+    if(order(1)==3 .and. order(2)==2 .and. &
+         order(3)==4 .and. order(4)==1) order_type = 22
     if(order(1)==4 .and. order(2)==2 .and. &
          order(3)==1 .and. order(4)==3) order_type = 23
 
     ! do the reordering
     TypeOfReordering: select case(order_type)
     case(0)
+      ! CASE 1 2 3 4
        if (pre2 /= 0.0E0_realk) then
          call dscal(d1*d2*d3*d4,pre2,array_out,1)
          call daxpy(d1*d2*d3*d4,pre1,array_in,1,array_out,1)
@@ -108,124 +98,120 @@
            call dscal(d1*d2*d3*d4,pre1,array_out,1)
          endif
        endif
+
     case(1)
-       if(order(1) == 2) then
-         m = dims(1)
-         n = dims(3)*dims(4)*dims(2)
-       endif
-       if(order(1) == 3) then
-         m = dims(1)*dims(2)
-         n = dims(3)*dims(4)
-       endif
-       if(order(1) == 4) then
-         m = dims(1)*dims(2)*dims(3)
-         n = dims(4)
-       endif
-       !print *,"WARNING(array_reorder4d):case 1 deprecated"
-       call mat_transpose_pl(m,n,pre1,array_in,pre2,array_out)
+       ! CASE 3 4 1 2
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
+       di2(1) = dims(1)*dims(2)
+       di2(2) = dims(3)*dims(4)
+       call manual_21_reordering(block_size,di2,pre1,array_in,pre2,array_out)
     case(2)
-       if(order(1) == 2 .and. order(2) == 1) then
-         l = dims(3)
-         m = dims(1)
-         n = dims(2)
-       endif
-       if(order(1) == 2 .and. order(2) == 3) then
-         l = 1
-         m = dims(1)
-         n = dims(2)*dims(3)
-       endif
-       if(order(1) == 3) then
-         l = 1
-         m = dims(1)*dims(2)
-         n = dims(3)
-       endif
-       !print *,"WARNING(array_reorder4d):case 2 deprecated"
-       do j=1,dims(4)*l,1
-         call mat_transpose_pl(m,n,pre1,array_in((j-1)*m*n+1), pre2,array_out((j-1)*m*n+1))
-       end do
+       ! CASE 4 1 2 3
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
+       di2(1) = dims(1)*dims(2)*dims(3)
+       di2(2) = dims(4)
+       call manual_21_reordering(block_size,di2,pre1,array_in,pre2,array_out)
     case(3)
-       call manual_4231_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       ! CASE 2 3 4 1
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
+       di2(1) = dims(1)
+       di2(2) = dims(2)*dims(3)*dims(4)
+       call manual_21_reordering(block_size,di2,pre1,array_in,pre2,array_out)
+
     case(4)
-       call manual_2413_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       ! CASE  1 2 4 3
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
+       di3(1) = dims(1)*dims(2)
+       di3(2) = dims(3)
+       di3(3) = dims(4)
+       call manual_132_reordering(block_size,di3,pre1,array_in,pre2,array_out)
     case(5)
-       call manual_3214_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       ! CASE  1 4 2 3
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
+       di3(1) = dims(1)
+       di3(2) = dims(2)*dims(3)
+       di3(3) = dims(4)
+       call manual_132_reordering(block_size,di3,pre1,array_in,pre2,array_out)
     case(6)
-       call manual_1342_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       ! CASE  1 3 4 2
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
+       di3(1) = dims(1)
+       di3(2) = dims(2)
+       di3(3) = dims(3)*dims(4)
+       call manual_132_reordering(block_size,di3,pre1,array_in,pre2,array_out)
+
+
     case(7)
-       call manual_1324_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       ! CASE 3 1 2 4
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
+       di3(1) = dims(1)*dims(2)
+       di3(2) = dims(3)
+       di3(3) = dims(4)
+       call manual_213_reordering(block_size,di3,pre1,array_in,pre2,array_out)
     case(8)
-       call manual_2314_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       ! CASE  2 3 1 4
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
+       di3(1) = dims(1)
+       di3(2) = dims(2)*dims(3)
+       di3(3) = dims(4)
+       call manual_213_reordering(block_size,di3,pre1,array_in,pre2,array_out)
     case(9)
-       call manual_2341_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       ! CASE 2 1 3 4
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
+       di3(1) = dims(1)
+       di3(2) = dims(2)
+       di3(3) = dims(3)*dims(4)
+       call manual_213_reordering(block_size,di3,pre1,array_in,pre2,array_out)
+
     case(10)
-       call manual_4123_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       ! CASE  4 3 1 2
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
+       di3(1) = dims(1)*dims(2)
+       di3(2) = dims(3)
+       di3(3) = dims(4)
+       call manual_321_reordering(block_size,di3,pre1,array_in,pre2,array_out)
     case(11)
-       call manual_4132_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       ! CASE  4 2 3 1
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
+       di3(1) = dims(1)
+       di3(2) = dims(2)*dims(3)
+       di3(3) = dims(4)
+       call manual_321_reordering(block_size,di3,pre1,array_in,pre2,array_out)
     case(12)
-       call manual_1243_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       ! CASE  3 4 2 1
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/3.0))
+       di3(1) = dims(1)
+       di3(2) = dims(2)
+       di3(3) = dims(3)*dims(4)
+       call manual_321_reordering(block_size,di3,pre1,array_in,pre2,array_out)
+
+
     case(13)
-       call manual_2143_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_2413_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case(14)
-       call manual_1423_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_3214_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case(15)
-       call manual_4321_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_1324_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case(16)
-       call manual_2134_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_4132_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case(17)
-       call manual_2431_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_2143_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case(18)
-       call manual_3421_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_4321_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case(19)
-       call manual_1432_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_2431_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case(20)
-       call manual_3142_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_1432_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case(21)
-       call manual_3241_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_3142_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case(22)
-       call manual_4312_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_3241_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case(23)
        call manual_4213_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case default
-       print *,'4d_reordering case DEFAULT'
-       print *,order
-       !loops over blocks
-       do dd = 1, dim4, block_size
-         find= min(dd + block_size - 1, dims(4))
-         do cc = 1, dim3, block_size
-           finc= min(cc + block_size - 1, dims(3))
-           do bb = 1, dim2, block_size
-             finb=min(bb + block_size - 1, dims(2))
-             do aa = 1, dim1, block_size
-               fina=min(aa + block_size - 1, dims(1))
-               !loops over elements
-               do d = dd,find
-                 do c = cc,finc
-                   do b = bb,finb
-                     do a = aa,fina 
-
-                       ! old order
-                       order1 = [a,b,c,d]
-                       ! new order
-                       order2 = [order1(order(1)),order1(order(2)), &
-                            order1(order(3)),order1(order(4))]
-                       ! reorder
-                       dim1b=dims(order(1))
-                       dim2b=dims(order(1))*dims(order(2))
-                       dim3b=dims(order(1))*dims(order(2))*dims(order(3))
-                       array_out(order2(1)+(order2(2)-1)*dim1b+(order2(3)-1)*&
-                            &dim2b+(order2(4)-1)*dim3b) = &
-                            &pre2*array_out(order2(1)+(order2(2)-1)*dim1b+&
-                            &(order2(3)-1)*dim2b+(order2(4)-1)*dim3b) + &
-                         pre1*array_in(a+(b-1)*dim1+(c-1)*dim2+(d-1)*dim3)
-                     end do
-                   end do
-                 end do
-               end do
-
-             end do
-           end do
-         end do
-       end do
+       print *,'4d_reordering case does not exist, THIS IS IMPOSSIBLE UNLESS&
+       & SOMEBODY DID SOMETHING STUPID'
+       call lsquit("ERROR(array_reorder_4d):invalid case",-1)
     end select TypeOfReordering
 
 
@@ -247,6 +233,7 @@
     integer :: aa,bb,cc,block_size
     integer :: order_type
     integer :: vec_size
+    integer :: di2(2)
     integer(kind=long) :: vec_size64
     real(realk) :: tcpu1,twall1,tcpu2,twall2
 
@@ -266,22 +253,22 @@
     dims(1)=d1
     dims(2)=d2
     dims(3)=d3
-    dim1 = dims(1)
-    dim2 = dims(2)*dims(1)
-    dim3 = dims(3)
 
     ! select  general type of the reordering
     order_type = -1
     if(order(1)==1 .and. order(2)==2 .and. &
          order(3)==3) order_type = 0
-    if(order(1)==1 .and. order(2)==3 .and. &
-         order(3)==2) order_type = 1
-    if(order(1)==2 .and. order(2)==1 .and. &
-         order(3)==3) order_type = 2
-    if(order(1)==2 .and. order(2)==3 .and. &
-         order(3)==1) order_type = 3
+    !CASE 2 D REORDERINGS
+    ! rephrase to 2 1
     if(order(1)==3 .and. order(2)==1 .and. &
-         order(3)==2) order_type = 4
+         order(3)==2) order_type = 1
+    if(order(1)==2 .and. order(2)==3 .and. &
+         order(3)==1) order_type = 2
+    !REAL 3D REORDERINGS
+    if(order(1)==1 .and. order(2)==3 .and. &
+         order(3)==2) order_type = 3
+    if(order(1)==2 .and. order(2)==1 .and. &
+         order(3)==3) order_type = 4
     if(order(1)==3 .and. order(2)==2 .and. &
          order(3)==1) order_type = 5
 
@@ -298,51 +285,28 @@
          endif
        endif
     case(1)
-       call manual_132_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       ! CASE 3 1 2
+       di2(1) = dims(1)*dims(2)
+       di2(2) = dims(3)
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
+       call manual_21_reordering(block_size,di2,pre1,array_in,pre2,array_out)
     case(2)
-       call manual_213_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       ! CASE 2 3 1
+       di2(1) = dims(1)
+       di2(2) = dims(2) * dims(3)
+       block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
+       call manual_21_reordering(block_size,di2,pre1,array_in,pre2,array_out)
+
     case(3)
-       call manual_231_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_132_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case(4)
-       call manual_312_reordering(block_size,dims,pre1,array_in,pre2,array_out)
+       call manual_213_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case(5)
        call manual_321_reordering(block_size,dims,pre1,array_in,pre2,array_out)
     case default
-    ! ******************************
-    ! we should never enter in here!
-    ! ******************************
-       print *,'3d_reordering case DEFAULT'
-       !loops over blocks
-       do cc = 1, dim3, block_size
-         finc= min(cc + block_size - 1, dims(3))
-         do bb = 1, dim2, block_size
-           finb=min(bb + block_size - 1, dims(2))
-           do aa = 1, dim1, block_size
-             fina=min(aa + block_size - 1, dims(1))
-             !loops over elements
-             do c = cc,finc
-               do b = bb,finb
-                 do a = aa,fina
-
-                   ! old order
-                   order1 = [a,b,c]
-                   ! new order
-                   order2 = [order1(order(1)),order1(order(2)), &
-                        order1(order(3))]
-                   ! reorder
-                   dim1b=dims(order(1))
-                   dim2b=dims(order(1))*dims(order(2))
-                   array_out(order2(1)+(order2(2)-1)*dim1b+(order2(3)-1)*dim2b) = &
-                        &pre2*array_out(order2(1)+(order2(2)-1)*dim1b+&
-                        &(order2(3)-1)*dim2b) + &
-                     pre1*array_in(a+(b-1)*dim1+(c-1)*dim2)
-                 end do
-               end do
-             end do
-
-           end do
-         end do
-       end do
+       print *,'3d_reordering case does not exist, THIS IS IMPOSSIBLE UNLESS&
+       & SOMEBODY DID SOMETHING STUPID'
+       call lsquit("ERROR(array_reorder_3d):invalid case",-1)
 
     end select TypeOfReordering
 
@@ -353,102 +317,123 @@
   !\>  \brief another transposition routine, intended to replace the others
   !\>  \> author Patrick Ettenhuber
   subroutine mat_transpose_pl(r,c,p1,x,p2,y)
-    integer,intent(in) :: r, c
-    real(realk), intent(in) :: p1,p2
-    real(realk), dimension(r,c), intent(in) :: x
-    real(realk), dimension(c,r), intent(inout) :: y
-    integer :: i,j, s, p, k, a, b,e,f
-    integer :: nr, nc, rr, rc, IOK, kb,d, iwrk
-    real(realk) :: val
-    real(realk), dimension(:)  , pointer :: sm
-    integer,     dimension(:)  , pointer :: h
-    kb = 512 !cache size of cpu --> /proc/cpuinfo
-    s = kb * 1024 / 8
-    k = int(0.9*sqrt(float(s)))
-    nr=r/k
-    nc=c/k
-    rr=mod(r,k)
-    rc=mod(c,k)
-    d = max(rr,rc)
-    iwrk = (d+k) / 4
-    call mem_alloc(sm,k*k)
-    call mem_alloc(h,iwrk)
-    if(p2/=1.0E0_realk)call dscal(r*c,p2,y,1)
-    !if(p1/=1.0E0_realk)call dscal(r*c,p1,x,1)
-    !call dscal(r*c,p2,y,1)
-    !call dscal(r*c,p1,x,1)
-    do a = 0, nr-1, 1
-      do b = 0, nc-1, 1
-        do j=1,k,1
-          do i=1,k,1
-            sm((j-1)*k+i) = x(i+a*k,j+b*k)
-          enddo
-        enddo
-!        call dcopy(k*k,x(a*k,j+b*k),1,sm((j-1)*k+i),1)
-        call alg513(sm,k,k,k*k,h,iwrk,IOK)
-        call dscal(k*k,p1,sm,1)
-!        call daxpy(k*k,p1,sm,1,y(b*k:k+k*b,a*k:k+a*k),1)
-        do j=1,k,1
-          do i=1,k,1
-            y(i+b*k,j+a*k) = y(i+b*k,j+a*k) + sm((j-1)*k+i)
-          enddo
-        enddo
-      enddo
-    enddo
+    !integer,intent(in) :: r, c
+    !real(realk), intent(in) :: p1,p2
+    !real(realk), dimension(r,c), intent(in) :: x
+    !real(realk), dimension(c,r), intent(inout) :: y
+    !integer :: i,j, s, p, k, a, b,e,f
+    !integer :: nr, nc, rr, rc, IOK, kb,d, iwrk
+    !real(realk) :: val
+    !real(realk), dimension(:)  , pointer :: sm
+    !integer,     dimension(:)  , pointer :: h
+    !kb = 512 !cache size of cpu --> /proc/cpuinfo
+    !s = kb * 1024 / 8
+    !k = int(0.9*sqrt(float(s)))
+    !nr=r/k
+    !nc=c/k
+    !rr=mod(r,k)
+    !rc=mod(c,k)
+    !d = max(rr,rc)
+    !iwrk = (d+k) / 4
+    !call mem_alloc(sm,k*k)
+    !call mem_alloc(h,iwrk)
+    !if(p2/=1.0E0_realk)call dscal(r*c,p2,y,1)
+    !!if(p1/=1.0E0_realk)call dscal(r*c,p1,x,1)
+    !!call dscal(r*c,p2,y,1)
+    !!call dscal(r*c,p1,x,1)
+    !do a = 0, nr-1, 1
+    !  do b = 0, nc-1, 1
+    !    do j=1,k,1
+    !      do i=1,k,1
+    !        sm((j-1)*k+i) = x(i+a*k,j+b*k)
+    !      enddo
+    !    enddo
+!   !     call dcopy(k*k,x(a*k,j+b*k),1,sm((j-1)*k+i),1)
+    !    call alg513(sm,k,k,k*k,h,iwrk,IOK)
+    !    call dscal(k*k,p1,sm,1)
+!   !     call daxpy(k*k,p1,sm,1,y(b*k:k+k*b,a*k:k+a*k),1)
+    !    do j=1,k,1
+    !      do i=1,k,1
+    !        y(i+b*k,j+a*k) = y(i+b*k,j+a*k) + sm((j-1)*k+i)
+    !      enddo
+    !    enddo
+    !  enddo
+    !enddo
 
-    if (rc>0) then
-      iwrk = (rc+k)/4
-      do a = 0, nr-1, 1
-        do j=1,rc,1
-          do i=1,k,1
-            sm((j-1)*k+i) = x(i+a*k,j+nc*k)
-          enddo
-        enddo
-        call alg513(sm,k,rc,k*rc,h,iwrk,IOK)
-        call dscal(k*rc,p1,sm,1)
-        do i=1,rc,1
-          do j=1,k,1
-            y(i+nc*k,j+a*k) = y(i+b*k,j+a*k) + sm((j-1)*rc+i)
-          enddo
-        enddo
-      enddo
-    endif
+    !if (rc>0) then
+    !  iwrk = (rc+k)/4
+    !  do a = 0, nr-1, 1
+    !    do j=1,rc,1
+    !      do i=1,k,1
+    !        sm((j-1)*k+i) = x(i+a*k,j+nc*k)
+    !      enddo
+    !    enddo
+    !    call alg513(sm,k,rc,k*rc,h,iwrk,IOK)
+    !    call dscal(k*rc,p1,sm,1)
+    !    do i=1,rc,1
+    !      do j=1,k,1
+    !        y(i+nc*k,j+a*k) = y(i+b*k,j+a*k) + sm((j-1)*rc+i)
+    !      enddo
+    !    enddo
+    !  enddo
+    !endif
 
-    if (rr>0) then
-      iwrk = (rr+k)/4
-      do b = 0, nc-1, 1
-        do j=1,k,1
-          do i=1,rr,1
-            sm((j-1)*rr+i) = x(i+nr*k,j+b*k)
-          enddo
-        enddo
-        call alg513(sm,rr,k,k*rr,h,iwrk,IOK)
-        call dscal(k*rr,p1,sm,1)
-        do j=1,rr,1
-          do i=1,k,1
-            y(i+b*k,j+nr*k) = y(i+b*k,j+nr*k) + sm((j-1)*k+i)
-          enddo
-        enddo
-      enddo
-    endif
+    !if (rr>0) then
+    !  iwrk = (rr+k)/4
+    !  do b = 0, nc-1, 1
+    !    do j=1,k,1
+    !      do i=1,rr,1
+    !        sm((j-1)*rr+i) = x(i+nr*k,j+b*k)
+    !      enddo
+    !    enddo
+    !    call alg513(sm,rr,k,k*rr,h,iwrk,IOK)
+    !    call dscal(k*rr,p1,sm,1)
+    !    do j=1,rr,1
+    !      do i=1,k,1
+    !        y(i+b*k,j+nr*k) = y(i+b*k,j+nr*k) + sm((j-1)*k+i)
+    !      enddo
+    !    enddo
+    !  enddo
+    !endif
 
-    if (rr>0 .and. rc>0) then
-      iwrk = (rc+rr)/4
-      do j=1,rc,1
-        do i=1,rr,1
-          sm((j-1)*rr+i) = x(i+nr*k,j+nc*k)
-        enddo
-      enddo
-      call alg513(sm,rr,rc,rc*rr,h,iwrk,IOK)
-      call dscal(rc*rr,p1,sm,1)
-      do j=1,rr,1
-        do i=1,rc,1
-          y(i+nc*k,j+nr*k) = y(i+nc*k,j+nr*k) + sm((j-1)*rc+i)
-        enddo
-      enddo
-    endif
-    call mem_dealloc(h)
-    call mem_dealloc(sm)
+    !if (rr>0 .and. rc>0) then
+    !  iwrk = (rc+rr)/4
+    !  do j=1,rc,1
+    !    do i=1,rr,1
+    !      sm((j-1)*rr+i) = x(i+nr*k,j+nc*k)
+    !    enddo
+    !  enddo
+    !  call alg513(sm,rr,rc,rc*rr,h,iwrk,IOK)
+    !  call dscal(rc*rr,p1,sm,1)
+    !  do j=1,rr,1
+    !    do i=1,rc,1
+    !      y(i+nc*k,j+nr*k) = y(i+nc*k,j+nr*k) + sm((j-1)*rc+i)
+    !    enddo
+    !  enddo
+    !endif
+    !call mem_dealloc(h)
+    !call mem_dealloc(sm)
+    implicit none
+    integer,intent(in) ::        r,c
+    real(realk), intent(in)::    x(i8*r*c),p1,p2
+    real(realk), intent(inout):: y(i8*c*r)
+
+    integer, dimension(2) :: dims
+    integer :: block_size
+    real(realk) :: tcpu1,twall1,tcpu2,twall2
+
+    call LSTIMER('START',tcpu1,twall1,-1)
+
+    ! assuming available cache memory is 8 MB and we need to store two blocks at a time 
+    block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/2.0))
+
+    dims(1)=r
+    dims(2)=c
+
+    call manual_21_reordering(block_size,dims,p1,x,p2,y)
+
+    call LSTIMER('START',tcpu2,twall2,-1)
+
   end subroutine mat_transpose_pl
 
   !> \brief Transpose any (esp. rectangular)  matrix in place  -> algorithm 513
