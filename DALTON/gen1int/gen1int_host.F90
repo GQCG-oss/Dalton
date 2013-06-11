@@ -681,6 +681,7 @@
   !> \param io_viewer is the logical unit number of the viewer
   !> \param level_print is the level of print
   subroutine gen1int_host_get_cube(len_work, wrk_space, io_viewer, level_print)
+    use london_ao
     use gen1int_matrix
     use gen1int_api
     use gen1int_cube
@@ -1056,6 +1057,7 @@
   !> \param io_viewer is the logical unit number of the viewer
   !> \param level_print is the level of print
   subroutine gen1int_host_test(len_work, wrk_space, io_viewer, level_print)
+    use london_ao
     use gen1int_api
     implicit none
     integer, intent(in) :: len_work
@@ -1151,8 +1153,6 @@
     ! test suite of matrix module
     call MatTestSuite(test_failed=test_failed, io_viewer=io_viewer, &
                       level_print=level_print, threshold=ERR_THRSH)
-#else
-    test_failed = .false.
 #endif
     ! gets the number of atomic orbitals
     call Gen1IntAPIGetNumAO(num_ao=num_ao)
@@ -1167,6 +1167,7 @@
     NUM_INTS(5) = 3
     ! loops over different tests
     do itest = 1, NUM_TEST
+      test_failed = .false.
 #if defined(PRG_DIRAC)
       if (HERM_PROP(itest)=="POTENERG") cycle
 #endif

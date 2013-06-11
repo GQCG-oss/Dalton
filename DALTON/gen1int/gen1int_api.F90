@@ -86,6 +86,8 @@ module gen1int_api
   real(REALK), save, allocatable, private :: api_coord_atoms(:,:)  !coordinates of atoms
   real(REALK), save, allocatable, private :: api_charge_atoms(:)   !charges of atoms
   real(REALK), save, private :: api_dipole_origin(3) = 0.0_REALK   !coordinates of dipole origin
+  real(REALK), save, private :: api_gauge_origin(3) = 0.0_REALK    !coordinates of gauge origin
+  real(REALK), save, private :: api_origin_LPF(3) = 0.0_REALK      !coordinates of origin of London phase factor
 
   ! \fn(Gen1IntAPICreate) might be the only program specific subroutine (depends on common blocks)
   public :: Gen1IntAPICreate
@@ -317,8 +319,10 @@ module gen1int_api
       stop "Gen1IntAPICreate>> failed to allocate api_charge_atoms!"
     end if
     api_charge_atoms = -CHARGE(1:NUCDEP)
-    ! coordinates of dipole origin
+    ! coordinates of origins
     api_dipole_origin = DIPORG
+    api_gauge_origin = GAGORG
+    api_origin_LPF = ORIGIN
     api_inited = .true.
   end subroutine Gen1IntAPICreate
 
@@ -379,8 +383,10 @@ module gen1int_api
       end if
       call MPI_Bcast(api_charge_atoms, api_num_atoms, MPI_REALK, root, api_comm, ierr)
     end if
-    ! coordinates of dipole origin
+    ! coordinates of origins
     call MPI_Bcast(api_dipole_origin, 3, MPI_REALK, root, api_comm, ierr)
+    call MPI_Bcast(api_gauge_origin, 3, MPI_REALK, root, api_comm, ierr)
+    call MPI_Bcast(api_origin_LPF, 3, MPI_REALK, root, api_comm, ierr)
     api_inited = .true.
   end subroutine Gen1IntAPIBcast
 #endif
@@ -418,12 +424,17 @@ module gen1int_api
   !> \param charge_atoms contains the charges of atoms
   !> \param coord_atoms contains the coordinates of atoms
   !> \param dipole_origin contains the coordinates of dipole origin
-  subroutine Gen1IntAPIUpdateMolecule(num_atoms, idx_atoms, charge_atoms, coord_atoms, dipole_origin)
+  !> \param gauge_origin contains the coordinates of gauge origin of the magnetic vector potential
+  !> \param origin_LPF contains the coordinates of origin of the London phase factor
+  subroutine Gen1IntAPIUpdateMolecule(num_atoms, idx_atoms, charge_atoms, coord_atoms, &
+                                      dipole_origin, gauge_origin, origin_LPF)
     integer, intent(in) :: num_atoms
     integer, optional, intent(in) :: idx_atoms(num_atoms)
     real(REALK), optional, intent(in) :: charge_atoms(num_atoms)
     real(REALK), optional, intent(in) :: coord_atoms(3,num_atoms)
     real(REALK), optional, intent(in) :: dipole_origin(3)
+    real(REALK), optional, intent(in) :: gauge_origin(3)
+    real(REALK), optional, intent(in) :: origin_LPF(3)
     integer iatom  !incremental recorder over atoms
     if (.not.api_inited) stop "Gen1IntAPIUpdateMolecule>> interface is not initialized!"
     if (present(idx_atoms)) then
@@ -462,6 +473,8 @@ module gen1int_api
       end if
     end if
     if (present(dipole_origin)) api_dipole_origin = dipole_origin
+    if (present(gauge_origin)) api_gauge_origin = gauge_origin
+    if (present(origin_LPF)) api_origin_LPF = origin_LPF
   end subroutine Gen1IntAPIUpdateMolecule
 
   !> \brief gets the number of atomic orbitals in host programs
@@ -563,6 +576,8 @@ module gen1int_api
       deallocate(api_coord_atoms)    !coordinates of atoms
       deallocate(api_charge_atoms)   !charges of atoms
       api_dipole_origin = 0.0_REALK  !coordinates of dipole origin
+      api_gauge_origin = 0.0_REALK   !coordinates of gauge origin
+      api_origin_LPF = 0.0_REALK     !coordinates of origin of the London phase factor
     end if
     api_inited = .false.
   end subroutine Gen1IntAPIDestroy
@@ -599,6 +614,7 @@ module gen1int_api
                                   active_component_pairs,         &
                                   prop_comp)
 
+    use london_ao
     integer,           intent(in)    :: gto_type
     character*(*),     intent(in)    :: prop_name
     integer,           intent(in)    :: order_mom
@@ -688,10 +704,14 @@ module gen1int_api
                        order_ram=order_ram_total,   &
                        order_ram_bra=order_ram_bra, &
                        order_ram_ket=order_ram_ket)
-    ! sets the type of GTOs
-    call OnePropSetGTO(one_prop=prop_comp%one_prop, &
-                       gto_type=gto_type,           &
-                       info_prop=ierr)
+    ! sets the information of London atomic orbitals
+    if (gto_type/=NON_LAO .and.                                           &
+        (order_mag_total>0 .or. order_mag_bra>0 .or. order_mag_ket>0 .or. &
+         order_ram_total>0 .or. order_ram_bra>0 .or. order_ram_ket>0)) then
+      call OnePropSetLAO(one_prop=prop_comp%one_prop,   &
+                         gauge_origin=api_gauge_origin, &
+                         origin_London_PF=api_origin_LPF)
+    end if
     if (ierr/=0) then
       stop "Gen1IntAPIPropCreate>> invalid type of GTOs!"
     end if
