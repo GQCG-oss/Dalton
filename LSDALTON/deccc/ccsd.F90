@@ -3996,7 +3996,7 @@ contains
 
     !add up the contributions for the sigma [ alpha gamma ] contributions
     ! get the order sigma[ gamma i j alpha ]
-    call mat_transpose_pl(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
+    call mat_transpose(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
     call lsmpi_poke()
     !transform gamma -> b
     call dgemm('t','n',nv,nor*full1,full2,1.0E0_realk,xvirt(fg+goffs),nb,w2,full2,0.0E0_realk,w3,nv)
@@ -4061,7 +4061,7 @@ contains
         l1=fa
         l2=fg+goffs+tlen
       endif
-      call mat_transpose_pl(full1T,full2T*nor,1.0E0_realk,w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
+      call mat_transpose(full1T,full2T*nor,1.0E0_realk,w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
       call lsmpi_poke()
       !transform gamma -> a
       call dgemm('t','n',nv,nor*full1T,full2T,1.0E0_realk,xvirt(l1),nb,w2,full2T,0.0E0_realk,w3,nv)
@@ -4119,7 +4119,7 @@ contains
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !add up the contributions for the sigma [ alpha gamma ] contributions
     ! get the order sigma[ gamma i j alpha ]
-    call mat_transpose_pl(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
+    call mat_transpose(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
     call lsmpi_poke()
     !transform gamma -> l
     call dgemm('t','n',no,nor*full1,full2,1.0E0_realk,xocc(fg+goffs),nb,w2,full2,0.0E0_realk,w3,no)
@@ -4142,7 +4142,7 @@ contains
         l1=fa
         l2=fg+goffs+tlen
       endif
-      call mat_transpose_pl(full1T,full2T*nor,1.0E0_realk,w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
+      call mat_transpose(full1T,full2T*nor,1.0E0_realk,w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
       call lsmpi_poke()
       !transform gamma -> l
       call dgemm('t','n',no,nor*full1T,full2T,1.0E0_realk,xocc(l1),nb,w2,full2T,0.0E0_realk,w3,no)
