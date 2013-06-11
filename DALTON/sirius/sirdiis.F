@@ -354,7 +354,7 @@ C
       PARAMETER (THREVC = 0.01D0, THRINC = 1.0D-10, CNVFAC = 0.8D0)
 C
       LOGICAL   ONLYFC, C2DIIS, DIFDEN, DODIFDEN, NEWTHR, RHFWOP, OLDWOP
-      LOGICAL   LCONV, LNEWOCC
+      LOGICAL   LCONV, LNEWOCC, DODFT_SAVE
       DIMENSION NISH_SAVE(8), NCAN(8)
       CHARACTER*8 CMOLBL
 C
@@ -519,6 +519,12 @@ Chj      ... if (GEOWLK) then
          EMCGEO = EMCOLD
          DEPGEO = DEPRED
       END IF
+
+      HFXFAC_SAVE = HFXFAC
+      DODFT_SAVE  = DODFT
+C
+      ITDIIS = 0
+      JTDIIS = 0
 C
 C Projection operators for removing non-rotated orbitals (.FREEZE option)
 C A -> P_f*A*P_f(T), P_f = 1-S*D_f
@@ -758,6 +764,7 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
              xc_energy   = 0.0d0
              call daxpy(nbast*nbast, 0.5d0, dcao, 1,
      &                  dmat_ao, 1)
+             call interface_ao_write()
              call xc_integrate(
      &                         xc_mat_dim=nbast,
      &                         xc_nr_dmat=1,
@@ -777,7 +784,7 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
              deallocate(fmat_ao)
              deallocate(fmat_ao_tri)
 #else
-                        CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+             CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPR_DIIS)
 #endif /* USE_XCINT */
@@ -1554,7 +1561,7 @@ C              in a solvent calculation with inertial polarization
 C
       IF ( IWRIFC .EQ. 1 ) THEN
          IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A)')
-     &      ' >>> Writing SIRIFC interface file <<<'
+     &      ' >>> Writing SIRIFC interface file'
          IF (ICI0 .EQ. 6) THEN
 Chj      ... if (GEOWLK) then
             IF (.NOT. OPTNEW) WRITE (LUPRI,'(//A/)')
@@ -1632,9 +1639,9 @@ C
       IF (ICONV .NE. 0 .AND. ABS(ITRFIN) .LE. 10 .AND.
      &    .NOT.(DOMP2 .OR. DOCI .OR. DOMC) .AND.
      &    .NOT. CHOINT) THEN
-         IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3,A)')
+         IF (IPRI6 .GE. 0) WRITE (LUPRI,'(/A,I3)')
      &      ' >>> Transforming 2-el. integrals acc. to'//
-     &      ' .FINAL TRANSFORMATION =',ITRFIN,' <<<'
+     &      ' .FINAL TRANSFORMATION =',ITRFIN
          JTRLVL = ITRFIN
          CALL TRACTL(JTRLVL,CMO,WRK(KFREE),LFREE)
       END IF
