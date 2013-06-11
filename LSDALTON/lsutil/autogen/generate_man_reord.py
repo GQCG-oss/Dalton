@@ -21,11 +21,11 @@ else:
 
 
 #THIS FILE SHOULD GENERATE ALL REORDERINGS NEEDED in manual_reorderings.F90
-try:
+#try:
    #IF THE FILE EXISTS SKIP THE GENERATION
-   with open(lsutildir+"manual_reorderings.F90"): pass
-except IOError:
-
+#   with open(lsutildir+"manual_reorderings.F90"): pass
+#except IOError:
+if(not os.path.exists(lsutildir+"manual_reorderings.F90")):
    maxr = 4
    minr = 2
    f=open(lsutildir+"manual_reorderings.F90",'w')
