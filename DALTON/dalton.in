@@ -67,7 +67,6 @@ optn=0
 optlam=
 opti=0
 opto=0
-optt=0
 potfil=
 frl=rel
 opt_nobackup=0
@@ -164,7 +163,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
          -nb ) NODE_WRKMEM=`expr $2 "*" 128000`; export NODE_WRKMEM; shift;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
 #          OUTFIL and WRKDIR are read from environment inside dalton.x
-      -t ) optt=1; DALTON_TMPDIR=$2; shift;;
+      -t ) DALTON_TMPDIR=$2; shift;;
       -w ) WRKDIR=$2; shift;;
        * ) usage; exit 1;;
    esac
@@ -272,13 +271,10 @@ else
     exit 1
 fi
 
-if [ $optt -gt 0 ] ; then
-    SCRATCHDIR=$DALTON_TMPDIR/$outnam
-else
-    SCRATCHDIR=$DALTON_TMPDIR
-fi
 if [ $opt_noappend -eq 1 ]; then
     SCRATCHDIR=$DALTON_TMPDIR
+else
+    SCRATCHDIR=$DALTON_TMPDIR/$outnam
 fi
 
 
