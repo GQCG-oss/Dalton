@@ -3034,8 +3034,8 @@ contains
     ! For efficiency when calling dgemm, save transposed matrices
     call mem_alloc(CoccT,nocc,nbasis)
     call mem_alloc(CvirtT,nvirt,nbasis)
-    call mat_transpose(Cocc,nbasis,nocc,CoccT)
-    call mat_transpose(Cvirt,nbasis,nvirt,CvirtT)
+    call mat_transpose(nbasis,nocc,1.0E0_realk,Cocc,0.0E0_realk,CoccT)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,Cvirt,0.0E0_realk,CvirtT)
 
     ! Determine optimal batchsizes and corresponding sizes of arrays
     call get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
@@ -3211,7 +3211,7 @@ contains
           ! Reorder: tmp1(I,alphaB;gammaB,A) --> tmp2(gammaB,A;I,alphaB)
           m = nocc*dimAlpha
           n = dimGamma*nvirt
-          call mat_transpose(tmp1,m,n,tmp2)
+          call mat_transpose(m,n,1.0E0_realk,tmp1,0.0E0_realk,tmp2)
 
           ! tmp1(J;A,I,alphaB) = sum_{gamma in gammaB} CoccT(J,gamma) tmp2(gamma,A,I,alphaB)
           m = nocc
@@ -3236,7 +3236,7 @@ contains
           ! Reorder: tmp3(B,alphaB;gammaB,A) --> tmp1(gammaB,A;B,alphaB)
           m = nvirt*dimAlpha
           n = dimGamma*nvirt
-          call mat_transpose(tmp3,m,n,tmp1)
+          call mat_transpose(m,n,1.0E0_realk,tmp3,0.0E0_realk,tmp1)
 
           ! tmp3(C;A,B,alphaB) = sum_{gamma in gammaB} CvirtT(C,gamma) tmp1(gamma,A,B,alphaB)
           m = nvirt
