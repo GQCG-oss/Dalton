@@ -2495,7 +2495,7 @@ contains
     maxsize64 = max(int(nv2*no2,kind=8),int(nb2,kind=8))
     maxsize64 = max(maxsize64,int(nv2*nor,kind=8))
     call mem_alloc(w1,maxsize64)
-!#ifdef VAR_LSDEBUG
+#ifdef VAR_LSDEBUG
     if(print_debug)then
       if(scheme==4)w1(1:o2v2) = omega2%elm1(1:o2v2)
 #ifdef VAR_MPI
@@ -2510,7 +2510,7 @@ contains
       write(msg,*)"NORM(gvoov):"
       if(master.and.scheme==4)call print_norm(gvoov,o2v2,msg)
     endif
-!#endif
+#endif
     w1=0.0E0_realk
 
     !reorder integral for use within the solver and the c and d terms
