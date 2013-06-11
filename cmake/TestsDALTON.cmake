@@ -1,8 +1,18 @@
-
 macro(add_dalton_test _name _labels)
     add_test(${_name} ${CMAKE_SOURCE_DIR}/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null ${_name})
     if(NOT "${_labels}" STREQUAL "")
-        set_tests_properties(${_name} PROPERTIES LABELS ${_labels})
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
+macro(add_dalton_perl_test _name _labels)
+    add_test(
+        NAME perl_${_name}
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test
+        COMMAND ./test.pl --dalton=${CMAKE_BINARY_DIR}/dalton --list="${_name}"
+        )
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
     endif()
 endmacro()
 
@@ -422,3 +432,5 @@ add_dalton_test(cc3_twophot3                  "dalton")
 add_dalton_test(cc3_h2o_resid_noddy           "dalton")
 add_dalton_test(cc3_h2o_resid                 "dalton")
 add_dalton_test(cc3_LIH_431G_cauchy_12        "dalton")
+
+#add_dalton_perl_test(qmmm3 "dalton;perl")
