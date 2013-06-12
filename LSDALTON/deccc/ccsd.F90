@@ -1701,6 +1701,16 @@ contains
     nvr=nv*(nv+1)/2
 !print*,"HACK:random t"
 !if(master)call random_number(t2%elm1)
+    if(master.and.print_debug)then
+      write(msg,*)"NORM(xo)    :"
+      call print_norm(xo,int(nb*no,kind=8),msg)
+      write(msg,*)"NORM(xv)    :"
+      call print_norm(xv,int(nb*nv,kind=8),msg)
+      write(msg,*)"NORM(yo)    :"
+      call print_norm(yo,int(nb*no,kind=8),msg)
+      write(msg,*)"NORM(yv)    :"
+      call print_norm(yv,int(nb*nv,kind=8),msg)
+    endif
 
     ! Initialize stuff
     nullify(orb2batchAlpha)
@@ -1791,6 +1801,7 @@ contains
       
     call ls_mpiInitBuffer(infpar%master,LSMPIBROADCAST,infpar%lg_comm)
     call ls_mpi_buffer(scheme,infpar%master)
+    call ls_mpi_buffer(print_debug,infpar%master)
     call ls_mpi_buffer(dynamic_load,infpar%master)
     call ls_mpi_buffer(restart,infpar%master)
     call ls_mpi_buffer(MaxAllowedDimAlpha,infpar%master)
@@ -2407,7 +2418,7 @@ contains
     max_wait_time = wait_time
 
 
-#ifdef VAR_LSDEBUG
+!#ifdef VAR_LSDEBUG
     if(print_debug)write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
     call lsmpi_local_reduction(wait_time,infpar%master)
     call lsmpi_local_max(max_wait_time,infpar%master)
@@ -2415,13 +2426,12 @@ contains
       write(*,'("----------------------------------------------------------")')
       write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)'),wait_time,wait_time/(infpar%nodtot*1.0E0_realk),max_wait_time
     endif
-#endif
+!#endif
     if (master) call LSTIMER('CCSD part B',time_start,timewall_start,DECinfo%output)
     startt=MPI_wtime()
     if(infpar%lg_nodtot>1.or.scheme==3) then
        if(iter==1.and.scheme==4.or.scheme==0)then
-         dummy64 = int(no2*nv2,kind=long)
-         call lsmpi_local_allreduce_chunks(govov%elm1,dummy64,double_2G_nel)
+         call lsmpi_local_allreduce_chunks(govov%elm1,o2v2,double_2G_nel)
          call lsmpi_barrier(infpar%lg_comm)
        elseif(scheme==3)then
          call array_cp_tiled2dense(govov,.false.)
@@ -2436,9 +2446,8 @@ contains
          !print *,"second allred done"
          call lsmpi_barrier(infpar%lg_comm)
          if(scheme==4)then
-           dummy64 = int(no2*nv2,kind=long)
-           call lsmpi_local_allreduce_chunks(gvvoo,dummy64,double_2G_nel)
-           call lsmpi_local_allreduce_chunks(gvoov,dummy64,double_2G_nel)
+           call lsmpi_local_allreduce_chunks(gvvoo,o2v2,double_2G_nel)
+           call lsmpi_local_allreduce_chunks(gvoov,o2v2,double_2G_nel)
          elseif(scheme==3)then
 #ifdef VAR_MPIWIN
            dummy64 = int(no2*nv2,kind=long)
@@ -2486,12 +2495,28 @@ contains
     maxsize64 = max(int(nv2*no2,kind=8),int(nb2,kind=8))
     maxsize64 = max(maxsize64,int(nv2*nor,kind=8))
     call mem_alloc(w1,maxsize64)
+#ifdef VAR_LSDEBUG
+    if(print_debug)then
+      if(scheme==4)w1(1:o2v2) = omega2%elm1(1:o2v2)
+#ifdef VAR_MPI
+      call lsmpi_local_reduction(w1,o2v2,infpar%master,double_2G_nel)
+#endif
+      write(msg,*)"NORM(omega2 after main loop):"
+      if(master.and.scheme==4)call print_norm(w1,o2v2,msg)
+      write(msg,*)"NORM(govov):"
+      if(master.and.scheme==4)call print_norm(govov,msg)
+      write(msg,*)"NORM(gvvoo):"
+      if(master.and.scheme==4)call print_norm(gvvoo,o2v2,msg)
+      write(msg,*)"NORM(gvoov):"
+      if(master.and.scheme==4)call print_norm(gvoov,o2v2,msg)
+    endif
+#endif
     w1=0.0E0_realk
 
     !reorder integral for use within the solver and the c and d terms
     if(iter==1.and.(scheme==4.or.scheme==0))then
       call array_reorder_4d(1.0E0_realk,govov%elm1,no,no,nv,nv,[1,4,2,3],0.0E0_realk,w1)
-      call dcopy(no2*nv2,w1,1,govov%elm1,1)
+      govov%elm1(1:o2v2)=w1(1:o2v2)
 #ifdef VAR_MPI
       if(DECinfo%solver_par)then
         govov%atype     = TILED_DIST
@@ -2542,9 +2567,9 @@ contains
 
 !OUTPUT
 #ifdef VAR_MPI
-        if(DECinfo%PL>2)write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
+        if(DECinfo%PL>1)write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
 #else
-        if(DECinfo%PL>2)write(*,'("C and D   :",f15.4)')stopp-startt
+        if(DECinfo%PL>1)write(*,'("C and D   :",f15.4)')stopp-startt
 #endif
       endif
     endif
@@ -2555,7 +2580,7 @@ contains
 #ifdef VAR_MPI
     if(infpar%lg_nodtot>1) then
       if(scheme==4.or.scheme==3.or.scheme==0)&
-       &call lsmpi_local_reduction(omega2%elm1,int(no2*nv2,kind=long),infpar%master,double_2G_nel)
+       &call lsmpi_local_reduction(omega2%elm1,o2v2,infpar%master,double_2G_nel)
       call lsmpi_local_reduction(Gbi,nb*no,infpar%master,double_2G_nel)
       call lsmpi_local_reduction(Had,nb*nv,infpar%master,double_2G_nel)
     endif
@@ -2582,7 +2607,12 @@ contains
       if(scheme==4.or.scheme==3.or.scheme==0)call array_free(u2)
       return
     endif
-
+    if(print_debug)then
+      write(msg,*)"NORM(Gbi):"
+      call print_norm(Gbi,int(no*nb,kind=8),msg)
+      write(msg,*)"NORM(Had):"
+      call print_norm(Had,int(nv*nb,kind=8),msg)
+    endif
 
     !allocate the density matrix
     call mat_init(iFock,nb,nb)
@@ -2615,6 +2645,12 @@ contains
 #elif VAR_MPI
     startt=MPI_wtime()
 #endif
+    if(print_debug)then
+      write(msg,*)"NORM(deltafock):"
+      call print_norm(deltafock,int(nb*nb,kind=8),msg)
+      write(msg,*)"NORM(iFock):"
+      call print_norm(iFock%elms,int(nb*nb,kind=8),msg)
+    endif
     !Transform inactive Fock matrix into the different mo subspaces
     if (DECinfo%ccModel>2) then
       ! -> Foo
@@ -2641,6 +2677,16 @@ contains
       call dgemm('t','n',nv,nb,nb,1.0E0_realk,xv,nb,fock,nb,0.0E0_realk,w1,nv)
       call dgemm('n','n',nv,nv,nb,1.0E0_realk,w1,nv,yv,nb,0.0E0_realk,qqfock,nv)
     endif
+    if(print_debug)then
+      write(msg,*)"NORM(ppfock):"
+      call print_norm(ppfock,int(no*no,kind=8),msg)
+      write(msg,*)"NORM(pqfock):"
+      call print_norm(pqfock,int(no*nv,kind=8),msg)
+      write(msg,*)"NORM(qpfock):"
+      call print_norm(qpfock,int(no*nv,kind=8),msg)
+      write(msg,*)"NORM(qqfock):"
+      call print_norm(qqfock,int(nv*nv,kind=8),msg)
+    endif
 
     !Free the AO fock matrix
     call mat_free(iFock)
@@ -2651,7 +2697,7 @@ contains
 #elif VAR_MPI
     stopp=MPI_wtime()
 #endif
-    if(DECinfo%PL>2)write(*,'("Fock trafo:",f15.4)')stopp-startt
+    if(DECinfo%PL>1)write(*,'("Fock trafo:",f15.4)')stopp-startt
 #ifdef VAR_OMP
     startt=omp_get_wtime()
 #elif VAR_MPI
@@ -2688,7 +2734,7 @@ contains
 
     !GET DOUBLES E2 TERM - AND INTRODUCE PERMUTATIONAL SYMMMETRY
     !***********************************************************
-    call calculate_E2_and_permute(ppfock,qqfock,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,scheme)
+    call calculate_E2_and_permute(ppfock,qqfock,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,scheme,print_debug)
 
     call mem_dealloc(Had)
     call mem_dealloc(Gbi)
@@ -2698,7 +2744,7 @@ contains
 #elif VAR_MPI
     stopp=MPI_wtime()
 #endif
-    if(DECinfo%PL>2)write(*,'("S and E   :",f15.4)')stopp-startt
+    if(DECinfo%PL>1)write(*,'("S and E   :",f15.4)')stopp-startt
 
 
 #ifdef VAR_MPI
@@ -2714,9 +2760,16 @@ contains
     call LSTIMER('CCSD RESIDUAL',tcpu,twall,DECinfo%output)
     call LSTIMER('START',tcpu_end,twall_end,DECinfo%output)
 
+    if(print_debug)then
+      write(msg,*)"NORM(omega1):"
+      call print_norm(omega1,int(no*nv,kind=8),msg)
+      write(msg,*)"NORM(omega2):"
+      call print_norm(omega2,msg)
+    endif
+
   end subroutine get_ccsd_residual_integral_driven
 
-  subroutine calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s)
+  subroutine calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,pd)
     implicit none
     real(realk),intent(inout)::ppf(:)
     real(realk),intent(inout)::qqf(:)
@@ -2729,6 +2782,7 @@ contains
     integer, intent(in) :: no,nv,nb
     type(array),intent(inout) :: omega2
     integer, intent(in) :: s
+    logical, intent(in) :: pd
     integer :: no2,nv2,v2o,o2v
     logical :: master 
     real(realk),pointer :: w2(:),w3(:)
@@ -2739,6 +2793,7 @@ contains
     integer :: fri,tri
     character(ARR_MSG_LEN) :: msg
     real(realk) :: nrm
+    integer(kind=8) :: o2v2
     master = .true.
     nrm=0.0E0_realk
 
@@ -2746,6 +2801,7 @@ contains
     nv2=nv*nv
     v2o=nv*nv*no
     o2v=no*no*nv
+    o2v2=int(no2*nv2,kind=8)
     
 #ifdef VAR_MPI
     master=(infpar%lg_mynum==infpar%master)
@@ -2769,8 +2825,16 @@ contains
       ! H'[a c] * t [c b i j] =+ Omega [a b i j]
       call dgemm('n','n',nv,o2v,nv,1.0E0_realk,w1,nv,t2%elm1,nv,1.0E0_realk,omega2%elm1,nv)
      
+      if(pd) then 
+        write(msg,*)"NORM(omega2 before permut):"
+        call print_norm(omega2,msg)
+      endif
       !INTRODUCE PERMUTATION
-      call dcopy(nv2*no2,omega2%elm1,1,w1,1)
+      call my_dcopy8(o2v2,omega2%elm1,1,w1,1)
+      if(pd) then 
+        write(msg,*)"NORM(w1):"
+        call print_norm(w1,o2v2,msg)
+      endif
       call array_reorder_4d(1.0E0_realk,w1,nv,nv,no,no,[2,1,4,3],1.0E0_realk,omega2%elm1)
     elseif(s==1.or.s==2)then
 #ifdef VAR_MPI
@@ -3407,19 +3471,36 @@ contains
     endif
    
 
+    !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
+    !$OMP& PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
+      !$OMP DO 
       do i=j,1,-1
         pos1=1+((i+j*(j-1)/2)-1)*nv*nv
         pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-        if(j/=1) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
+        !if(j/=1) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
+        if(j/=1) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
       enddo
+      !$OMP END DO
+      !$OMP BARRIER
     enddo
+    !$OMP BARRIER
+    !$OMP DO 
     do j=no,1,-1
       do i=j,1,-1
-          pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-          pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-          if(i/=j) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
-          call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+        pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
+        !if(i/=j) call dcopy(nv*nv,w1(pos1),1,w1(pos2),1)
+        if(i/=j) w1(pos2:pos2+nv*nv-1) = w1(pos1:pos1+nv*nv-1)
+      enddo
+    enddo
+    !$OMP END DO
+    !$OMP BARRIER
+    !$OMP END PARALLEL
+    do j=no,1,-1
+      do i=j,1,-1
+        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+        call alg513(w1(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
       enddo
     enddo
     if(s==4.or.s==3.or.s==0)then
@@ -3792,7 +3873,8 @@ contains
     integer :: l1,l2,i,j,lsa,lsg,gamm_i_b,a,b,full1T,full2T,tsq,jump,dim_big,dim_small,ft1,ft2,ncph
     logical :: second_trafo_step
     real(realk),pointer :: dumm(:)
-    integer :: mv((nv*nv)/2),st,pos1
+    integer :: mv((nv*nv)/2),st,pos1,dims(2)
+    real(realk),pointer :: source(:,:),drain(:,:)
 
     scaleitby=0.5E0_realk
     second_trafo_step=.false.
@@ -3912,20 +3994,29 @@ contains
     dim_big=full1*full2
     dim_small=full1T*full2T
 
+#ifndef VAR_LSESSL
     !$OMP PARALLEL DEFAULT(NONE)&
     !$OMP& SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
     !$OMP& full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
-    !$OMP& PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21)
+    !$OMP& PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
+    !$OMP& dims,drain,source)
     !$OMP DO
+#endif
     do occ=1,nor
       do gamm=1,lg-goffs
         gamm_i_b=gamm+goffs
         !SYMMETRIC COMBINATION OF THE SIGMAS
+
+        !calculate the old position
+        !**************************
         if(case_sel==3.or.case_sel==4)then
-          pos=1+(gamm-1)*full1+(occ-1)*full1*full2
+          pos=1+(gamm      -1)*full1+(occ-1)*dim_big
         else
-          pos=1+(gamm+aoffs-1)*full1+(occ-1)*full1*full2
+          pos=1+(gamm+aoffs-1)*full1+(occ-1)*dim_big
         endif
+
+        !calculate the new position
+        !**************************
         if(gamm>tlen)then
           !get the elements from the rectangular part of the batch
           !print *,"getel from rect"
@@ -3953,12 +4044,18 @@ contains
           ft1=full1
           ft2=full2
         endif
-
+        
         call dcopy(nel2cp,w3(pos2),1,w0(pos),1)
+        !OMP CRITICAL
+        !w0(pos:pos+nel2cp-1) = w3(pos2:pos2+nel2cp-1)
+        !OMP END CRITICAL
         !get corresponding position in sigma- and add to output
         pos21=pos2+tred*nor
         call daxpy(nel2cp,1.0E0_realk,w3(pos21),1,w0(pos),1)
-    
+        !OMP CRITICAL
+        !w0(pos:pos+nel2cp-1) =w0(pos:pos+nel2cp-1) + w3(pos21:pos21+nel2cp-1)    
+        !OMP END CRITICAL
+
         !ANTI-SYMMETRIC COMBINATION OF THE SIGMAS
         pos=gamm+aoffs+(occ-1)*ft1*ft2
         if(second_trafo_step.and.gamm>tlen) pos=pos+full1*full2*nor-tlen
@@ -3971,22 +4068,63 @@ contains
           endif
           call daxpy(ncph,1.0E0_realk,w3(pos2+aoffs),1,w0(aoffs+gamm+(occ-1)*full1*full2),full1)
           call daxpy(ncph,-1.0E0_realk,w3(pos21+aoffs),1,w0(aoffs+gamm+(occ-1)*dim_big),full1)
+
+          !because of the intrinsic omp-parallelizaton of daxpy the following
+          !lines replace the daxpy calls
+          !dims=[full1,ncph]
+          !call ass_D1to2(w0(aoffs+gamm+(occ-1)*dim_big:&
+          !                 &aoffs+gamm+(occ-1)*dim_big+full1*ncph-1),drain,dims)
+          !dims=[1,ncph]
+          !call ass_D1to2(w3(pos2+aoffs:pos2+aoffs+ncph-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
+          !OMP END CRITICAL
+          !call ass_D1to2(w3(pos21+aoffs:pos21+aoffs+ncph-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+          !OMP END CRITICAL
           !fill small matrix
           if(gamm>tlen)then
             ncph=nel2cp
           else
             ncph=nel2cp-gamm
           endif
-          call daxpy(ncph,1.0E0_realk,w3(pos2),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          call daxpy(ncph, 1.0E0_realk,w3(pos2 ),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
           call daxpy(ncph,-1.0E0_realk,w3(pos21),1,w0(gamm+(occ-1)*full1T*full2T+dim_big*nor),full1T)
+          !dims=[full1T,ncph]
+          !call ass_D1to2(w0(gamm+(occ-1)*full1T*full2T+dim_big*nor:&
+          !                 &gamm+(occ-1)*full1T*full2T+dim_big*nor+ncph*full1T-1),drain,dims)
+          !dims=[1,ncph]
+          !call ass_D1to2(w3(pos2:pos2+ncph-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:ncph) = drain(1:1,1:ncph) + source(1:1,1:ncph)
+          !OMP END CRITICAL
+          !call ass_D1to2(w3(pos21:pos21+ncph-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:ncph) = drain(1:1,1:ncph) - source(1:1,1:ncph)
+          !OMP END CRITICAL
         else
           call daxpy(nel2cp,1.0E0_realk,w3(pos2),1,w0(pos),jump)
           call daxpy(nel2cp,-1.0E0_realk,w3(pos21),1,w0(pos),jump)
+          !dims=[jump,nel2cp]
+          !call ass_D1to2(w0(pos:pos+jump*nel2cp-1),drain,dims)
+          !dims=[1,nel2cp]
+          !call ass_D1to2(w3(pos2:pos2+nel2cp-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) + source(1:1,1:nel2cp)
+          !OMP END CRITICAL
+          !call ass_D1to2(w3(pos21:pos21+nel2cp-1),source,dims)
+          !OMP CRITICAL
+          !drain(1:1,1:nel2cp) = drain(1:1,1:nel2cp) - source(1:1,1:nel2cp)
+          !OMP END CRITICAL
         endif
       enddo
     enddo
+#ifndef VAR_LSESSL
     !$OMP END DO
+    !$OMP BARRIER
     !$OMP END PARALLEL
+#endif
     call lsmpi_poke()
 
 
@@ -4026,37 +4164,37 @@ contains
 
 
     ! add up contributions in the residual with keeping track of i<j
-    !OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,omega,nv,scaleitby)&
-    !OMP& PRIVATE(i,j,pos)
-    !OMP DO 
-   ! do i=1,no
-   !   do j=1,no
-   !     if(i<=j)then
-   !       pos=1+((i+j*(j-1)/2)-1)*nv*nv
-   !       call mat_transpose_pl(nv,nv,scaleitby,w2(pos:pos+nv*nv-1),&
-   !            &1.0E0_realk,omega%elm1(1+(i-1)*nv*nv+(j-1)*no*nv*nv:))
-   !     endif
-   !     if(i>j)then
-   !       pos=1+((j+i*(i-1)/2)-1)*nv*nv
-   !       call daxpy(nv*nv,scaleitby,w2(pos),1,&
-   !                 &omega%elm1(1+(i-1)*nv*nv+(j-1)*no*nv*nv),1)
-   !     endif
-   !   enddo
-   ! enddo
-    !dumm = 0.0E0_realk
+
+    !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
+    !$OMP& PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
+      !$OMP DO 
       do i=j,1,-1
         pos1=1+((i+j*(j-1)/2)-1)*nv*nv
         pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-        if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+        !if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+        if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
       enddo
+      !$OMP END DO
+      !$OMP BARRIER
     enddo
+    !$OMP BARRIER
+    !$OMP DO 
     do j=no,1,-1
       do i=j,1,-1
-          pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-          pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-          if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
-          call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
+        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+        pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
+        !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+        if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
+      enddo
+    enddo
+    !$OMP END DO
+    !$OMP END PARALLEL
+
+    do j=no,1,-1
+      do i=j,1,-1
+        pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
+        call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
       enddo
     enddo
     if(s==4.or.s==3.or.s==0)then
@@ -4064,8 +4202,6 @@ contains
     elseif(s==2.or.s==1)then
       call array_add(omega,scaleitby,w2)
     endif
-    !OMP END DO
-    !OMP END PARALLEL
     call lsmpi_poke()
 
     !If the contributions are split in terms of the sigma matrix this adds the
@@ -4088,47 +4224,45 @@ contains
       !transform alpha -> , order is now sigma[b a i j]
       call dgemm('t','t',nv,nv*nor,full1T,1.0E0_realk,xvirt(l2),nb,w3,nor*nv,0.0E0_realk,w2,nv)
       call lsmpi_poke()
-      ! add up contributions in the residual with a and b interchanged compared
-      ! to the previous contribution
-      !OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,omega,nv,scaleitby)&
-      !OMP& PRIVATE(i,j,pos)
-      !OMP DO 
-      !do i=1,no
-      !  do j=1,no
-      !    if(i<=j)then
-      !      pos=1+((i+j*(j-1)/2)-1)*nv*nv
-      !      call mat_transpose_pl(nv,nv,scaleitby,w2(pos:pos+nv*nv-1),&
-      !            &1.0E0_realk,omega%elm1(1+(i-1)*nv*nv+(j-1)*no*nv*nv:))
-      !    endif
-      !    if(i>j)then
-      !      pos=1+((j+i*(i-1)/2)-1)*nv*nv
-      !      call daxpy(nv*nv,scaleitby,w2(pos),1,&
-      !                &omega%elm1(1+(i-1)*nv*nv+(j-1)*no*nv*nv),1)
-      !    endif
-      !  enddo
-      !enddo
+
+      !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
+      !$OMP& PRIVATE(i,j,pos1,pos2)
       do j=no,1,-1
+        !$OMP DO 
         do i=j,1,-1
           pos1=1+((i+j*(j-1)/2)-1)*nv*nv
           pos2=1+(i-1)*nv*nv+(j-1)*no*nv*nv
-          if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+          !if(j/=1) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+          if(j/=1) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
         enddo
+        !$OMP END DO
+        !$OMP BARRIER
       enddo
+      !$OMP BARRIER
+      !$OMP DO 
       do j=no,1,-1
         do i=j,1,-1
             pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
             pos2=1+(j-1)*nv*nv+(i-1)*no*nv*nv
-            if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+            !if(i/=j) call dcopy(nv*nv,w2(pos1),1,w2(pos2),1)
+            if(i/=j) w2(pos2:pos2+nv*nv-1) = w2(pos1:pos1+nv*nv-1)
+        enddo
+      enddo
+      !$OMP END DO
+      !$OMP BARRIER
+      !$OMP END PARALLEL
+      do j=no,1,-1
+        do i=j,1,-1
+            pos1=1+(i-1)*nv*nv+(j-1)*no*nv*nv
             call alg513(w2(pos1:nv*nv+pos1-1),nv,nv,nv*nv,mv,(nv*nv)/2,st)
         enddo
       enddo
+
       if(s==4.or.s==3.or.s==0)then
         call daxpy(no*no*nv*nv,scaleitby,w2,1,omega%elm1,1)
       elseif(s==2.or.s==1)then
         call array_add(omega,scaleitby,w2)
       endif
-      !OMP END DO
-      !OMP END PARALLEL
       call lsmpi_poke()
     endif
 
@@ -4188,18 +4322,37 @@ contains
     !> leading dimension m and virtual dimension
     integer,intent(in)::m,nv
     integer ::d,pos,pos2,a,b,c,cged
-    !OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv)&
-    !OMP& PRIVATE(pos,pos2,d)
+    logical :: doit
+#ifdef VAR_OMP
+    integer :: tid,nthr
+    integer, external :: omp_get_thread_num,omp_get_max_threads
+    nthr = omp_get_max_threads()
+    nthr = min(nthr,nv)
+    call omp_set_num_threads(nthr)
+#endif
+    !$OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
+    !$OMP& PRIVATE(pos,pos2,d,tid,doit)
+#ifdef VAR_OMP
+    tid = omp_get_thread_num()
+#else 
+    doit = .true.
+#endif
     pos =1
-    !OMP DO
     do d=1,nv
-      pos2=1+(d-1)*m+(d-1)*nv*m
-      !print *,pos2,pos
-      call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
+#ifdef VAR_OMP
+      doit = (mod(d,nthr) == tid)
+#endif
+      if(doit) then
+        pos2=1+(d-1)*m+(d-1)*nv*m
+        call dcopy(m*(nv-d+1),Int_in(pos2),1,Int_out(pos),1)
+        !Int_out(pos:pos+m*(nv-d+1)-1) = Int_in(pos2:pos2+m*(nv-d+1)-1)
+      endif
       pos=pos+m*(nv-d+1)
     enddo
-    !OMP END DO
-    !OMP END PARALLEL
+    !$OMP END PARALLEL
+#ifdef VAR_OMP
+    call omp_set_num_threads(omp_get_max_threads())
+#endif
   end subroutine get_I_cged
 
 
@@ -5882,7 +6035,7 @@ subroutine calculate_E2_and_permute_slave()
     call ls_mpibcast(ppf,no*no,infpar%master,infpar%lg_comm)
     call ls_mpibcast(qqf,nv*nv,infpar%master,infpar%lg_comm)
     call mem_alloc(w1,int(no*no*nv*nv,kind=8))
-    call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s)
+    call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,.false.)
 
     call mem_dealloc(ppf)
     call mem_dealloc(qqf)

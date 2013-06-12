@@ -1968,10 +1968,12 @@ node = 0
 #endif
 #ifdef VAR_OMP
 nthreads=OMP_GET_NUM_THREADS()
-tid = omp_get_thread_num()
+tid=OMP_GET_THREAD_NUM()
 !$OMP MASTER
-IF(node.EQ.0)WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',omp_get_num_threads(),' threads.'
-call mem_alloc(MPIINDEX,nthreads,.TRUE.)
+if(tid==0)then
+  IF(node.EQ.0)WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP calculation using ',omp_get_num_threads(),' threads.'
+  call mem_alloc(MPIINDEX,nthreads,.TRUE.)
+endif
 !$OMP END MASTER
 
 !$OMP BARRIER
@@ -2386,7 +2388,7 @@ call freeRHS_centerinfo(atomC,atomD,atomIndexC,atomIndexD,batchC,batchD,&
 #ifdef VAR_OMP
 !$OMP BARRIER
 !$OMP MASTER
-call mem_dealloc(MPIINDEX)
+if(tid==0)call mem_dealloc(MPIINDEX)
 !$OMP END MASTER
 #endif
 
