@@ -29,25 +29,7 @@ if(ENABLE_64BIT_INTEGERS)
     add_lsdalton_test(linsca/linsca_atoms_64bit    "lsdalton")
 endif()
 
-set(RUN_SCALAPACK_TESTS FALSE)
-
-if(ENABLE_MPI)
-  if(ENABLE_SCALAPACK)
-    if(ENABLE_64BIT_INTEGERS)
-      #######################################################################################################################################################
-      # 64 bit integers and 32 bit integer MPI lib
-      # do not perform SCALAPACK tests this combi do not work
-      #######################################################################################################################################################
-      if(NOT USE_32BIT_MPI_INTERFACE)
-        set(RUN_SCALAPACK_TESTS TRUE)
-      endif()
-    else()
-      set(RUN_SCALAPACK_TESTS TRUE)
-    endif()
-  endif()
-endif()
-
-if(RUN_SCALAPACK_TESTS)
+if(ENABLE_MPI AND ENABLE_SCALAPACK AND NOT USE_32BIT_MPI_INTERFACE)
     add_lsdalton_test(SCALAPACK/linsca_arh_SCALAPACK                  "lsdalton")
     add_lsdalton_test(SCALAPACK/linsca_atoms_SCALAPACK                "lsdalton")
     add_lsdalton_test(SCALAPACK/linsca_energy_SCALAPACK               "lsdalton")
@@ -88,6 +70,8 @@ if(ENABLE_CSR)
 #   add_lsdalton_test(csr/LSDALTON_DENSFIT_FMM_csr            "lsdalton")
 endif()
 
+# radovan: will refactor this as soon as i know how we want to deal with mpi tests
+#          IMO the nr of cores should not be set here at all
 add_test(LSlib/LSlib_cam_reg                            ${TEST_BASE}  -param "-lslib_test ${TEST_PARAM}" LSlib/LSlib_cam_reg                 )
 add_test(LSlib/LSlib_cam_dfJ_aK                         ${TEST_BASE}  -param "-lslib_test ${TEST_PARAM}" LSlib/LSlib_cam_dfJ_aK              )
 
