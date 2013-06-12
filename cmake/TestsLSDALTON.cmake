@@ -88,6 +88,8 @@ if(ENABLE_CSR)
 #   add_lsdalton_test(csr/LSDALTON_DENSFIT_FMM_csr            "lsdalton")
 endif()
 
+# radovan: will refactor this as soon as i know how we want to deal with mpi tests
+#          IMO the nr of cores should not be set here at all
 add_test(LSlib/LSlib_cam_reg                            ${TEST_BASE}  -param "-lslib_test ${TEST_PARAM}" LSlib/LSlib_cam_reg                 )
 add_test(LSlib/LSlib_cam_dfJ_aK                         ${TEST_BASE}  -param "-lslib_test ${TEST_PARAM}" LSlib/LSlib_cam_dfJ_aK              )
 
