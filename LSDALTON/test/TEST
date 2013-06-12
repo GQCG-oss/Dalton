@@ -237,34 +237,6 @@ PBC="pbc2/pbc2_h2fock
      pbc2/pbc2_h2SCF_iter1
 	 pbc2/pbc2_h2STO3G"
 
-#The SHORT, MEDIUM, and LONG suites currently don't contain nothing. Do we need
-#them? Currently, the LSDALTON test suite is so small that all tests can be run 
-#without problems.
-ESSENTIAL=""
-#
-SHORTNOCC=""
-
-#
-SHORTCC=""
-#
-SHORT="$SHORTNOCC $SHORTCC"
-#
-MEDIUM=""
-#
-MEDIUMCC=""
-#
-MEDIUM="$MEDIUM $MEDIUMCC"
-#
-LONG=""
-#
-LONGCC=""
-#
-LONG="$LONG $LONGCC"
-#
-DFT=""
-#
-ALLCC="$SHORTCC $MEDIUMCC $LONGCC"
-#
 #########################################################################
 # function usage(): print usage information 
 #########################################################################
@@ -393,7 +365,6 @@ else
       linsca)      testcase=$LINSCA;;
       lsdalton)    testcase=$LSDALTON;;
       int64)       testcase=$INT64;;
-      dft)         testcase=$DFT;;
       geo)         testcase=$GEO;;
       ddyn)        testcase=$DDYN;;
       pbc)         testcase=$PBC;;
