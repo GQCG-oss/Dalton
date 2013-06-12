@@ -2718,7 +2718,7 @@ contains
       if(scheme==4.or.scheme==3.or.scheme==0)then
         call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[2,3,4,1],0.0E0_realk,w1)
       elseif(scheme==2.or.scheme==1)then
-        call array_convert(u2,w1,[4,1,2,3])
+        call array_convert(u2,w1,[2,3,4,1])
       endif
       ! u [a i k c] * F[k c] =+ Omega [a i]
       call dgemv('n',nv*no,nv*no,1.0E0_realk,w1,nv*no,pqfock,1,1.0E0_realk,omega1,1)
@@ -3677,7 +3677,8 @@ contains
     !(w2):u[k c j b] <- u[b c j k]
     if(s==1)then
       !call array_convert(u2kcjb,w2,u2kcjb%nelms)
-      call array_convert(u2,w2,[2,4,3,1])
+      !call array_convert(u2,w2,[2,4,3,1])
+      call array_convert(u2,w2,[4,1,3,2])
     else
       call array_reorder_4d(1.0E0_realk,u2%elm1,nv,nv,no,no,[4,1,3,2],0.0E0_realk,w2)
     endif
