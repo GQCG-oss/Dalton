@@ -6,11 +6,7 @@ macro(add_dalton_test _name _labels)
 endmacro()
 
 macro(add_dalton_perl_test _name _labels)
-    add_test(
-        NAME perl_${_name}
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/test
-        COMMAND ./test.pl --dalton=${CMAKE_BINARY_DIR}/dalton --list="${_name}"
-        )
+    add_test(perl_${_name} ${CMAKE_SOURCE_DIR}/test/test.pl --dalton=${CMAKE_BINARY_DIR}/dalton --tstdir=${CMAKE_SOURCE_DIR}/test --list=${_name})
     if(NOT "${_labels}" STREQUAL "")
         set_tests_properties(perl_${_name} PROPERTIES LABELS "${_labels}")
     endif()
