@@ -2,30 +2,44 @@
 #AUTHOR: PATRICK ETTENHUBER
 #EMAIL : pett@chem.au.dk, pettenhuber@gmail.com
 #DATE  : JUNE, 2013
-import sys,datetime,math,itertools,os
-abc = "abcdefghijklmnopqrstuvwxyz"
+import sys,datetime,math,os#,itertools
+"""This file is inteded for the automatic generation of a data sorting module in LSDALTON
+As data sorting is under constant development and features many lines of code this script was
+written for easy modification of the code. Furhtermore, one might note that the structure
+of optimal code might depend on the architecture which can be at some point introduced here
+as well
+
+Currently the routine does not take any command-line arguments, but is dependet on the LSDALTON
+folder structure, i.e. it needs LSDALTON/lsutil and LSDALTON/lsutil/autogen/reord_headers.F90
+which can be found as long as LSDALTON is in the execution path, or one layer below execution
+folder."""
+
+##################################################################################################
+##################################################################################################
+
+def main():
+  #GET THE FOLDER TO STORE THE manual_reorderings.F90
+  cwd = os.getcwd()
+  lsutildir = cwd
+  if ("LSDALTON" in lsutildir ):
+    lsutildir = lsutildir[0:lsutildir.find("LSDALTON")]+"/LSDALTON/lsutil/"
+  else:
+    for paths,dirs,files in os.walk(cwd+"/.."):
+      if("LSDALTON" in paths):
+        lsutildir = paths[0:paths.find("LSDALTON")]+"/LSDALTON/lsutil/"
+    if not os.path.exists(lsutildir):
+      print "COULD NOT FIND LSDALTON/lsutil, exiting"
+      sys.exit()
 
 
-#GET THE FOLDER TO STORE THE manual_reorderings.F90
-cwd = os.getcwd()
-lsutildir = cwd
-if ("LSDALTON" in lsutildir ):
-  lsutildir = lsutildir[0:lsutildir.find("LSDALTON")]+"/LSDALTON/lsutil/"
-else:
-  for paths,dirs,files in os.walk(cwd+"/.."):
-    if("LSDALTON" in paths):
-      lsutildir = paths[0:paths.find("LSDALTON")]+"/LSDALTON/lsutil/"
-  if not os.path.exists(lsutildir):
-    print "COULD NOT FIND LSDALTON/lsutil, exiting"
-    sys.exit()
+  #THIS FILE SHOULD GENERATE ALL REORDERINGS NEEDED in manual_reorderings.F90
+  if(not os.path.exists(lsutildir+"manual_reorderings.F90")):
+    produce_file(lsutildir)
 
-
-#THIS FILE SHOULD GENERATE ALL REORDERINGS NEEDED in manual_reorderings.F90
-#try:
-   #IF THE FILE EXISTS SKIP THE GENERATION
-#   with open(lsutildir+"manual_reorderings.F90"): pass
-#except IOError:
-if(not os.path.exists(lsutildir+"manual_reorderings.F90")):
+##################################################################################################
+##################################################################################################
+def produce_file(lsutildir):
+   abc = "abcdefghijklmnopqrstuvwxyz"
    maxr = 4
    minr = 2
    f=open(lsutildir+"manual_reorderings.F90",'w')
@@ -53,7 +67,8 @@ if(not os.path.exists(lsutildir+"manual_reorderings.F90")):
        idxarr[i] = i
    
      #GET ALL PERMUTATION
-     all_permutations=itertools.permutations(idxarr)
+     #all_permutations=itertools.permutations(idxarr)
+     all_permutations=permutations(idxarr)
     
      #LOOP OVER PERMUTATIONS AND WRITE SUBROUTINES
      for perm in all_permutations:
@@ -147,7 +162,8 @@ if(not os.path.exists(lsutildir+"manual_reorderings.F90")):
          casecounter = 1
          for i in range(modes+1):
            #FIND THE RESTRICTED INDICES IN THE OLD ORDERING
-           all_thingys = itertools.combinations(idxarr,i)
+           all_thingys = combinations(idxarr,i)
+           #all_thingys = itertools.combinations(idxarr,i)
            for oldr in all_thingys:
    
              label1 = "r"+str(casecounter)
@@ -329,3 +345,65 @@ if(not os.path.exists(lsutildir+"manual_reorderings.F90")):
    
    f.write("end module manual_reorderings_module")
    f.close()
+
+
+
+#ITERTOOLS COMBINATIONS AND PERMUTATIONS ARE NOT IMPLEMENTED BELOW PYTHON 2.6, THUS I COPIED THE
+#SOURCE CODE OF THE HOMEPAGE DIRECTLY
+##################################################################################################
+##################################################################################################
+
+#THIS IS A MODIFIED COPY OF http://docs.python.org/2/library/itertools.html#itertools.permutations
+##################################################################################################
+def permutations(iterable):
+    # permutations('ABCD', 2) --> AB AC AD BA BC BD CA CB CD DA DB DC
+    # permutations(range(3)) --> 012 021 102 120 201 210
+    pool = tuple(iterable)
+    n = len(pool)
+    r = n
+    if r > n:
+        return
+    indices = range(n)
+    cycles = range(n, n-r, -1)
+    yield tuple(pool[i] for i in indices[:r])
+    while n:
+        for i in reversed(range(r)):
+            cycles[i] -= 1
+            if cycles[i] == 0:
+                indices[i:] = indices[i+1:] + indices[i:i+1]
+                cycles[i] = n - i
+            else:
+                j = cycles[i]
+                indices[i], indices[-j] = indices[-j], indices[i]
+                yield tuple(pool[i] for i in indices[:r])
+                break
+        else:
+            return
+
+#THIS IS A MODIFIED COPY OF http://docs.python.org/2/library/itertools.html#itertools.permutations
+##################################################################################################
+def combinations(iterable, r):
+    # combinations('ABCD', 2) --> AB AC AD BC BD CD
+    # combinations(range(4), 3) --> 012 013 023 123
+    pool = tuple(iterable)
+    n = len(pool)
+    if r > n:
+        return
+    indices = range(r)
+    yield tuple(pool[i] for i in indices)
+    while True:
+        for i in reversed(range(r)):
+            if indices[i] != i + n - r:
+                break
+        else:
+            return
+        indices[i] += 1
+        for j in range(i+1, r):
+            indices[j] = indices[j-1] + 1
+        yield tuple(pool[i] for i in indices)
+
+##################################################################################################
+##################################################################################################
+
+
+main()
