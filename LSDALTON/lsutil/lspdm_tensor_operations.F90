@@ -1273,7 +1273,7 @@ module lspdm_tensor_operations_module
     integer,intent(in),optional :: optorder(arr%mode)
     real(realk),pointer :: buf(:)
     integer :: nelmsit,i, order(arr%mode)
-    integer :: ltidx
+    integer :: ltidx,fullfortdims(arr%mode)
     integer(kind=ls_mpik) :: nnod,dest,me
 #ifdef VAR_MPI
 
@@ -1283,6 +1283,9 @@ module lspdm_tensor_operations_module
       order(i)=i
     enddo
     if(present(optorder))order=optorder
+    do i=1,arr%mode
+      fullfortdims(order(i)) = arr%dims(i)
+    enddo
    
 
     me = 0
@@ -1299,10 +1302,10 @@ module lspdm_tensor_operations_module
       call get_tile_dim(nelmsit,arr,i)
       if(dest==me.and.nod==me)then
         ltidx = (i - 1) /nnod + 1
-        call extract_tile_from_fort(A,arr%mode,i,arr%dims,arr%tdim,buf,order)
+        call extract_tile_from_fort(A,arr%mode,i,fullfortdims,arr%tdim,buf,order)
         call daxpy(nelmsit,sc,buf,1,arr%ti(ltidx)%t,1)
       elseif(nod==me)then
-        call extract_tile_from_fort(A,arr%mode,i,arr%dims,arr%tdim,buf,order)
+        call extract_tile_from_fort(A,arr%mode,i,fullfortdims,arr%tdim,buf,order)
         call lsmpi_send(buf,nelmsit,infpar%lg_comm,dest)
       elseif(dest==me)then
         ltidx = (i - 1) /nnod + 1
@@ -1699,12 +1702,17 @@ module lspdm_tensor_operations_module
     integer ::nnod,fib,lt,ce,j,me,dest,step,act_step,mod_step,iter,nccblocks,ierr,st
     integer :: nelmsit,loc_ti,comp_ti,comp_el,i,nelms,fe_in_block,o(mode)
     integer, pointer :: elm_in_tile(:),in_tile_mode(:),orig_addr(:),remote_td(:)
+    integer :: fullfortdims(arr%mode)
     do i=1,mode
       o(i)=i
     enddo
     !TRY TO INCLUDE MPI_PUT FOR THAT OPERATION,SO MAYBE MASTER_SLAVE DEPENDENCE
     !IN THIS ROUTINE IS GONE
+    if(present(order))o=order
 
+    do i=1,arr%mode
+      fullfortdims(o(i)) = arr%dims(i)
+    enddo
     me = 0
     nnod=1
 #ifdef VAR_MPI
@@ -1727,8 +1735,7 @@ module lspdm_tensor_operations_module
 
     
     do i=1,arr%ntiles
-      if(.not.present(order))call extract_tile_from_fort(A,arr%mode,i,arr%dims,arr%tdim,buf,o)
-      if(present(order))call extract_tile_from_fort(A,arr%mode,i,arr%dims,arr%tdim,buf,order)
+      call extract_tile_from_fort(A,arr%mode,i,fullfortdims,arr%tdim,buf,o)
       call get_tile_dim(nelmsit,arr,i)
       if(mult/=1.0E0_realk)call dscal(nelmsit,mult,buf,1)
 #ifdef VAR_MPI
@@ -1886,6 +1893,7 @@ module lspdm_tensor_operations_module
     integer ::nnod,fib,lt,ce,j,me,dest,step,act_step,mod_step,iter,nccblocks,ierr,st
     integer :: nelmsit,loc_ti,comp_ti,comp_el,i,nelms,fe_in_block, order(mode)
     integer, pointer :: elm_in_tile(:),in_tile_mode(:),orig_addr(:),remote_td(:)
+    integer :: fullfortdims(arr%mode)
 
     !TRY TO INCLUDE MPI_PUT FOR THAT OPERATION,SO MAYBE MASTER_SLAVE DEPENDENCE
     !IN THIS ROUTINE IS GONE
@@ -1894,6 +1902,9 @@ module lspdm_tensor_operations_module
     enddo
     if(present(optorder))order=optorder
    
+    do i=1,arr%mode
+      fullfortdims(order(i)) = arr%dims(i)
+    enddo
 
     me = 0
     nnod=1
@@ -1917,7 +1928,7 @@ module lspdm_tensor_operations_module
 
     
     do i=1,arr%ntiles
-      call extract_tile_from_fort(A,arr%mode,i,arr%dims,arr%tdim,buf,order)
+      call extract_tile_from_fort(A,arr%mode,i,fullfortdims,arr%tdim,buf,order)
       call get_tile_dim(nelmsit,arr,i)
       !call pn(buf,nelmsit)
       !copy data to the identified places
@@ -1941,6 +1952,7 @@ module lspdm_tensor_operations_module
     integer :: nelmsit,i, order(arr%mode)
     integer :: ltidx
     integer(kind=ls_mpik) :: nnod,dest,me
+    integer :: fullfortdims(arr%mode)
 #ifdef VAR_MPI
 
     !TRY TO INCLUDE MPI_PUT FOR THAT OPERATION,SO MAYBE MASTER_SLAVE DEPENDENCE
@@ -1949,6 +1961,10 @@ module lspdm_tensor_operations_module
       order(i)=i
     enddo
     if(present(optorder))order=optorder
+
+    do i=1,arr%mode
+      fullfortdims(order(i)) = arr%dims(i)
+    enddo
    
 
     me = 0
@@ -1965,9 +1981,9 @@ module lspdm_tensor_operations_module
       call get_tile_dim(nelmsit,arr,i)
       if(dest==me.and.nod==me)then
         ltidx = (i - 1) /nnod + 1
-        call extract_tile_from_fort(A,arr%mode,i,arr%dims,arr%tdim,arr%ti(ltidx)%t,order)
+        call extract_tile_from_fort(A,arr%mode,i,fullfortdims,arr%tdim,arr%ti(ltidx)%t,order)
       elseif(nod==me)then
-        call extract_tile_from_fort(A,arr%mode,i,arr%dims,arr%tdim,buf,order)
+        call extract_tile_from_fort(A,arr%mode,i,fullfortdims,arr%tdim,buf,order)
         call lsmpi_send(buf,nelmsit,infpar%lg_comm,dest)
       elseif(dest==me)then
         ltidx = (i - 1) /nnod + 1
@@ -2216,7 +2232,7 @@ module lspdm_tensor_operations_module
   !> \autor Patrick Ettenhuber
   !> \brief Subroutine to extract a specific tile from a general matrix
   !> \date November 2012
-  subroutine extract_tile_from_fort(fort,mode,tnr,dims,tdims,tileout,o)
+  subroutine extract_tile_from_fort(fort,mode,tnr,full_arr_dim,tdims,tileout,o)
     implicit none
     !> input array with data in arbtirary order
     real(realk), intent(in) :: fort(*)
@@ -2225,7 +2241,7 @@ module lspdm_tensor_operations_module
     !> the tile number in column major ordering of the tiles
     integer, intent(in) :: tnr
     !> dimension infortmation about how to interpret data
-    integer, intent(in) :: dims(mode)
+    integer, intent(in) :: full_arr_dim(mode)
     !> batch information for the tiles
     integer, intent(in) :: tdims(mode)
     !> reorder information for the array with respect to the original array,
@@ -2237,10 +2253,10 @@ module lspdm_tensor_operations_module
     integer :: i,nccblcks,nels,k
     integer :: tmodeidx(mode)
     integer :: idxintile(mode),glbidx
-    integer :: ccels,ntimes,el,acttdim(mode),olddims(mode),nelms
+    integer :: ccels,ntimes,el,acttdim(mode),full_dim_tiled_arr(mode),nelms
     integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode),ro(mode),rtd(mode),fels(mode)
     integer :: simpleorder,bs,a,b,c,d
-    real(realk),pointer :: dummy(:)
+
     bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
     !bs=5
     simpleorder=0
@@ -2257,25 +2273,30 @@ module lspdm_tensor_operations_module
     !calculate number of tiles per mode
     nels=1
     do i=1,mode
-      olddims(i) = dims(ro(i))
-      ntpm(i) = dims(i)/tdims(i)
-      if(mod(dims(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
-      nels=nels*dims(i)
+      full_dim_tiled_arr(i)=full_arr_dim(o(i))
+      ntpm(i) = full_dim_tiled_arr(i)/tdims(i)
+      if(mod(full_dim_tiled_arr(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
+      nels=nels*full_dim_tiled_arr(i)
     enddo
-    call mem_alloc(dummy,nels)
-    if(mode==4)then
-      if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)simpleorder=1
-      if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)simpleorder=2
-      if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)simpleorder=3
-      if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)simpleorder=4
-      if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)simpleorder=5
-    endif
+
+    print *,"fad    :",full_arr_dim
+    print *,"tad    :",full_dim_tiled_arr
+    print *,"ntpm   :",ntpm
+    print *,"td     :",tdims
+
+    !if(mode==4)then
+    !  if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)simpleorder=1
+    !  if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)simpleorder=2
+    !  if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)simpleorder=3
+    !  if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)simpleorder=4
+    !  if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)simpleorder=5
+    !endif
     call get_midx(tnr,tmodeidx,ntpm,mode)
     ntimes=1
     do i=1,mode
       fels(o(i)) = (tmodeidx(i)-1) * tdims(i) + 1
-      if(tmodeidx(i)*tdims(i)>dims(i))then
-        acttdim(i)=mod(dims(i),tdims(i))
+      if(tmodeidx(i)*tdims(i)>full_dim_tiled_arr(i))then
+        acttdim(i)=mod(full_dim_tiled_arr(i),tdims(i))
       else
         acttdim(i)=tdims(i)
       endif
@@ -2295,21 +2316,24 @@ module lspdm_tensor_operations_module
           do k=1,mode
             glbmodeidx(k)=idxintile(k) +(tmodeidx(k)-1) *tdims(k)
           enddo
-          pos1=get_cidx(glbmodeidx,dims,mode)
+          pos1=get_cidx(glbmodeidx,full_dim_tiled_arr,mode)
           call dcopy(ccels,fort(pos1),1,tileout(1+(i-1)*ccels),1)
         enddo
-      case(1)
-        call manual_2143_reordering_full2tile(bs,rtd,olddims,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
-      case(2)
-        call manual_1324_reordering_full2tile(bs,rtd,olddims,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
-      case(3)
-        call manual_1342_reordering_full2tile(bs,rtd,olddims,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
-      case(4)
-        call manual_2134_reordering_full2tile(bs,rtd,olddims,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
-      case(5)
-        call manual_1423_reordering_full2tile(bs,rtd,olddims,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
+      !case(1)
+      !  call manual_2143_reordering_full2tile(bs,rtd,full_arr_dim,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
+      !case(2)
+      !  call manual_1324_reordering_full2tile(bs,rtd,full_arr_dim,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
+      !case(3)
+      !  call manual_1342_reordering_full2tile(bs,rtd,full_arr_dim,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
+      !case(4)
+      !  call manual_2134_reordering_full2tile(bs,rtd,full_arr_dim,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
+      !case(5)
+      !  call manual_1423_reordering_full2tile(bs,rtd,full_arr_dim,fels,1.0E0_realk,fort,0.0E0_realk,tileout)
       case default
-        print *,"default part reorder extract2",o
+        print *,"default extract !!!!!!!!!"
+        print *,"order  :",o
+        print *,"rorder :",ro
+        print *,"atd    :",acttdim
         !count elements in the current tile for loop over elements
         !identify their original position and put them in tile
         nelms=1
@@ -2325,12 +2349,10 @@ module lspdm_tensor_operations_module
           do k=1,mode
             glbmodeidx(o(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
           enddo
-          pos1=get_cidx(glbmodeidx,olddims,mode)
+          pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
           tileout(i)=fort(pos1)
         enddo
     end select
-
-    call mem_dealloc(dummy)
 
   end subroutine extract_tile_from_fort
 

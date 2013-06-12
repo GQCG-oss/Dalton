@@ -128,8 +128,6 @@ contains
         do ti=1,y%ntiles
           call get_tile_dim(nel,y,ti)
           call array_get_tile(y,ti,buffer,nel)
-          print *,ti,o
-          !call add_tile_to_fort(buffer,ti,y%tdim,x%elm1,x%dims,x%mode,b)
           call tile_in_fort(b,buffer,ti,y%tdim,1.0E0_realk,x%elm1,x%dims,x%mode,o)
         enddo
         call mem_dealloc(buffer)
@@ -2305,7 +2303,7 @@ if(.false.)then
 !!!!!!!!!!!
     endif 
      
-    call mem_alloc(til,nb*na*nv*(no/2))
+    call mem_alloc(til,nb*na*nv*(no))
 
     write (DECinfo%output,*)""
     write (DECinfo%output,*)""
@@ -2335,6 +2333,49 @@ if(.false.)then
 
         call extract_tile_from_fort(in1,4,3,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
         call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
+
+        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+        call print_norm(res,int(nb*nv*no,kind=8),normher)
+        if(rigorous)then
+          do a=1,nb
+            do b=1,na
+              do c=1,nv
+                do d=1,no
+                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)&
+                     &-res(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na))&
+                    & >1.0E-11_realk)then
+                      print *,a,b,c,d,pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)
+                      print *,a,d,b,c,res(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)
+                      print *,pr1,"---------------------",a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv,&
+                             &a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na,"------------------------",pr2
+                      teststatus="FAILED "
+                      print *,"1423",teststatus
+                      stop 0
+                   endif
+                enddo
+              enddo
+            enddo
+          enddo
+        endif
+        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+        write(DECinfo%output,&
+        &'(I1,I1,"-1234: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+
+
+        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+        teststatus="SUCCESS"
+        res = sto1
+        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+
+        call extract_tile_from_fort(in1,4,1,[nb,na,nv,no],[nb,no,na,nv],til,[1,4,2,3]) 
+        call tile_in_fort(pr1,til,1,[nb,no,na,nv],pr2,res,[nb,no,na,nv],4,[1,2,3,4])
+
+        !call extract_tile_from_fort(in1,4,2,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
+        !call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
+
+        !call extract_tile_from_fort(in1,4,3,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
+        !call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
 
         call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
         call print_norm(res,int(nb*nv*no,kind=8),normher)
