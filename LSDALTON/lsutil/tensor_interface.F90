@@ -110,7 +110,11 @@ contains
     !> scaling factor for array y
     real(realk),intent(in) :: b
     real(realk),pointer :: buffer(:)
-    integer :: ti,nel
+    integer :: ti,i,nel,o(x%mode)
+    do i=1,x%mode
+      o(i) = i
+    enddo
+
     select case(x%atype)
     case(DENSE)
       select case(y%atype)
@@ -124,7 +128,9 @@ contains
         do ti=1,y%ntiles
           call get_tile_dim(nel,y,ti)
           call array_get_tile(y,ti,buffer,nel)
-          call add_tile_to_fort(buffer,ti,y%tdim,x%elm1,x%dims,x%mode,b)
+          print *,ti,o
+          !call add_tile_to_fort(buffer,ti,y%tdim,x%elm1,x%dims,x%mode,b)
+          call tile_in_fort(b,buffer,ti,y%tdim,1.0E0_realk,x%elm1,x%dims,x%mode,o)
         enddo
         call mem_dealloc(buffer)
       case default
@@ -144,7 +150,7 @@ contains
         do ti=1,y%ntiles
           call get_tile_dim(nel,y,ti)
           call array_get_tile(y,ti,buffer,nel)
-          call add_tile_to_fort(buffer,ti,y%tdim,x%elm1,x%dims,x%mode,b)
+          call tile_in_fort(b,buffer,ti,y%tdim,1.0E0_realk,x%elm1,x%dims,x%mode,o)
         enddo
         call mem_dealloc(buffer)
         call array_sync_replicated(x)
@@ -2299,6 +2305,8 @@ if(.false.)then
 !!!!!!!!!!!
     endif 
      
+    call mem_alloc(til,nb*na*nv*(no/2))
+
     write (DECinfo%output,*)""
     write (DECinfo%output,*)""
     write (DECinfo%output,*)"TESTING 4D TILE REORDERINGS"
@@ -2306,14 +2314,13 @@ if(.false.)then
     write (DECinfo%output,*)""
     p1=1
     p2=0
-    !do p1=1,2
-    !  do p2=0,2
+    do p1=1,2
+      do p2=0,2
         pr1 = float(p1)
         pr2 = float(p2)
-    !    if (p1==2) call random_number(pr1)
-    !    if (p2==2) call random_number(pr2)
-    !    write (DECinfo%output,'(A3,f4.1,A3,f4.1,A2)')"B= ",pr1,"*A+",pr2,"*B"
-        call mem_alloc(til,nb*na*nv*(no/2))
+        if (p1==2) call random_number(pr1)
+        if (p2==2) call random_number(pr2)
+        write (DECinfo%output,'(A3,f4.1,A3,f4.1,A2)')"B= ",pr1,"*A+",pr2,"*B"
 
         call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
         teststatus="SUCCESS"
@@ -2321,13 +2328,13 @@ if(.false.)then
         call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
 
         call extract_tile_from_fort(in1,4,1,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        call put_tile_in_fort(til,1,[nb,na,nv,no/2],res,[nb,no,na,nv],4,[1,4,2,3])
+        call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
 
         call extract_tile_from_fort(in1,4,2,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        call put_tile_in_fort(til,2,[nb,na,nv,no/2],res,[nb,no,na,nv],4,[1,4,2,3])
+        call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
 
         call extract_tile_from_fort(in1,4,3,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        call put_tile_in_fort(til,3,[nb,na,nv,no/2],res,[nb,no,na,nv],4,[1,4,2,3])
+        call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
 
         call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
         call print_norm(res,int(nb*nv*no,kind=8),normher)
@@ -2364,13 +2371,13 @@ if(.false.)then
         call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
 
         call extract_tile_from_fort(in1,4,1,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        call put_tile_in_fort(til,1,[nb,na,nv,no/2],res,[nb,nv,no,na],4,[1,3,4,2])
+        call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nb,nv,no,na],4,[1,3,4,2])
 
         call extract_tile_from_fort(in1,4,2,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        call put_tile_in_fort(til,2,[nb,na,nv,no/2],res,[nb,nv,no,na],4,[1,3,4,2])
+        call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nb,nv,no,na],4,[1,3,4,2])
 
         call extract_tile_from_fort(in1,4,3,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        call put_tile_in_fort(til,3,[nb,na,nv,no/2],res,[nb,nv,no,na],4,[1,3,4,2])
+        call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,nv,no,na],4,[1,3,4,2])
 
         call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
         call print_norm(res,int(nb*nv*no,kind=8),normher)
@@ -2395,6 +2402,8 @@ if(.false.)then
         write(DECinfo%output,&
         &'(I1,I1,"-1234: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
         &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      enddo
+    enddo
 
     call mem_dealloc(til)
     call mem_dealloc(res)
@@ -2717,7 +2726,8 @@ if(.false.)then
       call get_tile_dim(j,test2,i)
       call mem_alloc(tileget,j)
       call array_get_tile(test2,i,tileget,j)
-      call put_tile_in_fort(tileget,i,test2%tdim,test2%elm1,test2%dims,4,[4,2,1,3])
+      call tile_in_fort(1.0E0_realk,tileget,i,test2%tdim,0.0E0_realk,&
+                        &test2%elm1,test2%dims,4,[3,2,4,1])
       call mem_dealloc(tileget)
     enddo
     call lsmpi_barrier(infpar%lg_comm)

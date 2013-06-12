@@ -1175,8 +1175,8 @@ module lspdm_tensor_operations_module
     logical, intent(in) :: pdm
     !> reorder if the array is reorder with respect to the fortran array
     integer, intent(in), optional :: order(arr%mode)
-    integer :: i,j,k,tmdidx(arr%mode)
-    integer :: l,nelintile,tdim(arr%mode)
+    integer :: i,j,k,tmdidx(arr%mode), o(arr%mode)
+    integer :: l,nelintile,tdim(arr%mode),fullfortdim(arr%mode)
     real(realk), pointer :: tmp(:)
 
     !check nelms
@@ -1188,6 +1188,16 @@ module lspdm_tensor_operations_module
       call mem_alloc(tmp,arr%tsize)
     endif
 
+    do i=1,arr%mode
+      o(i)=i
+    enddo
+
+    if(present(order))o=order
+
+    do i = 1, arr%mode
+      fullfortdim(i) = arr%dims(o(i))
+    enddo
+
     do i=1,arr%ntiles
       call get_midx(i,tmdidx,arr%ntpm,arr%mode)
       call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
@@ -1196,8 +1206,7 @@ module lspdm_tensor_operations_module
       else
         tmp => arr%ti(i)%t
       endif
-      if(present(order))call add_tile_to_fort(tmp,i,arr%tdim,fort,arr%dims,arr%mode,b,order)
-      if(.not.present(order))call add_tile_to_fort(tmp,i,arr%tdim,fort,arr%dims,arr%mode,b)
+      call tile_in_fort(b,tmp,i,arr%tdim,1.0E0_realk,fort,fullfortdim,arr%mode,o)
     enddo
 
     if(pdm)then
@@ -1242,7 +1251,7 @@ module lspdm_tensor_operations_module
       else
         tmp => arr%ti(i)%t
       endif
-      call put_tile_in_fort(tmp,i,arr%tdim,fort,fullfortdim,arr%mode,o)
+      call tile_in_fort(1.0E0_realk,tmp,i,arr%tdim,0.0E0_realk,fort,fullfortdim,arr%mode,o)
     enddo
 
     if(pdm)then
@@ -1319,7 +1328,7 @@ module lspdm_tensor_operations_module
     integer, intent(in), optional :: optorder(arr%mode)
     integer(kind=ls_mpik) :: src,me,nnod
     integer :: i,ltidx,order(arr%mode)
-    integer :: nelintile
+    integer :: nelintile,fullfortdim(arr%mode)
     real(realk), pointer :: tmp(:)
 #ifdef VAR_MPI
 
@@ -1335,6 +1344,10 @@ module lspdm_tensor_operations_module
     if(nelms/=arr%nelms)call lsquit("ERROR(cp_tileddate2fort):array&
         &dimensions are not the same",DECinfo%output)
 
+    do i = 1, arr%mode
+      fullfortdim(i) = arr%dims(order(i))
+    enddo
+
     call mem_alloc(tmp,arr%tsize)
 
     do i=1,arr%ntiles
@@ -1343,13 +1356,15 @@ module lspdm_tensor_operations_module
         call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
         if(src==me.and.nod==me)then
           ltidx = (i - 1) /nnod + 1
-          call add_tile_to_fort(arr%ti(ltidx)%t,i,arr%tdim,fort,arr%dims,arr%mode,sc,order)
+          call tile_in_fort(sc,arr%ti(ltidx)%t,i,arr%tdim,&
+               &1.0E0_realk,fort,fullfortdim,arr%mode,order)
         elseif(src==me)then
           ltidx = (i - 1) /nnod + 1
           call lsmpi_send(arr%ti(ltidx)%t,nelintile,infpar%lg_comm,nod)
         elseif(nod==me)then
           call lsmpi_recv(tmp,nelintile,infpar%lg_comm,src)
-          call add_tile_to_fort(tmp,i,arr%tdim,fort,arr%dims,arr%mode,sc,order)
+          call tile_in_fort(sc,tmp,i,arr%tdim,&
+               &1.0E0_realk,fort,fullfortdim,arr%mode,order)
         endif
       endif
     enddo
@@ -1397,13 +1412,15 @@ module lspdm_tensor_operations_module
         call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
         if(src==me.and.nod==me)then
           ltidx = (i - 1) /nnod + 1
-          call put_tile_in_fort(arr%ti(ltidx)%t,i,arr%tdim,fort,fullfortdim,arr%mode,order)
+          call tile_in_fort(1.0E0_realk,arr%ti(ltidx)%t,i,arr%tdim,&
+                           &0.0E0_realk,fort,fullfortdim,arr%mode,order)
         elseif(src==me)then
           ltidx = (i - 1) /nnod + 1
           call lsmpi_send(arr%ti(ltidx)%t,nelintile,infpar%lg_comm,nod)
         elseif(nod==me)then
           call lsmpi_recv(tmp,nelintile,infpar%lg_comm,src)
-          call put_tile_in_fort(tmp,i,arr%tdim,fort,fullfortdim,arr%mode,order)
+          call tile_in_fort(1.0E0_realk,tmp,i,arr%tdim,&
+                           &0.0E0_realk,fort,fullfortdim,arr%mode,order)
         endif
       endif
     enddo
@@ -1984,104 +2001,10 @@ module lspdm_tensor_operations_module
   !> \autor Patrick Ettenhuber
   !> \brief Subroutine to put a specific tile in a general matrix
   !> \date January 2013
-  subroutine add_tile_to_fort(tilein,tnr,tdims,fort,dims,mode,sc,optorder)
+  subroutine tile_in_fort(pre1,tilein,tnr,tdims,pre2,fort,full_arr_dim,mode,o)
     implicit none
-    !> input array with data in arbtirary order
-    real(realk), intent(inout) :: fort(*)
-    !> mode infortmation about how to interpret data
-    integer, intent(in) :: mode
-    !> the tile number in column major ordering of the tiles
-    integer, intent(in) :: tnr
-    !> dimension infortmation about how to interpret data
-    integer, intent(in) :: dims(mode)
-    !> batch information for the tiles
-    integer, intent(in) :: tdims(mode)
-    !> logical specifying wheter to copy or to add
-    real(realk),intent(in) :: sc
-    !> specify the order if the tile stems from a matrix with a different order
-    integer,intent(in),optional :: optorder(mode)
-    !> tile output
-    real(realk), intent(in) :: tilein(*)
-    integer :: i,nccblcks,nelms,k
-    integer :: tmodeidx(mode),o(mode)
-    integer :: idxintile(mode),glbidx,rorder(mode),olddims(mode)
-    integer :: ccels,ntimes,el,acttdim(mode),nels,fels(mode)
-    integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode)
-    integer :: simpleorder,bs
-    bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
-    !bs=5
-    nels=1
-    do i=1,mode
-      o(i)=i
-      nels=nels*dims(i)
-    enddo
-    simpleorder=0
-
-    if(present(optorder))o=optorder
-    
-    do i=1,mode
-      rorder(o(i))=i
-      if(o(i)/=i)simpleorder=-1
-      ntpm(i) = dims(i)/tdims(i)
-      if(mod(dims(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
-    enddo
-    if(mode==4)then
-      if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)simpleorder=1
-    endif
-    call get_midx(tnr,tmodeidx,ntpm,mode)
-
-    ntimes=1
-    do i=1,mode
-      fels(i) = (tmodeidx(i)-1) * tdims(i) + 1
-      olddims(i) = dims(rorder(i))
-      if(tmodeidx(i)*tdims(i)>dims(i))then
-        acttdim(i)=mod(dims(i),tdims(i))
-      else
-        acttdim(i)=tdims(i)
-      endif
-      if(i>1)ntimes=ntimes*acttdim(i)
-    enddo
-    
-
-    select case(simpleorder)
-      case(0)
-        ccels=acttdim(1)
-        do i=1,ntimes
-          call get_midx(i,idxintile(2:mode),acttdim(2:mode),mode-1)
-          idxintile(1)=1
-          do k=1,mode
-            glbmodeidx(k)=idxintile(k) +(tmodeidx(k)-1) *tdims(k)
-          enddo
-          pos1=get_cidx(glbmodeidx,dims,mode)
-          call daxpy(ccels,sc,tilein(1+(i-1)*ccels),1,fort(pos1),1)
-        enddo
-      case(1)
-        call manual_2143_reordering_tile2full(bs,tdims,dims,fels,sc,tilein,1.0E0_realk,fort)
-      case default
-        !print *,"default part reorder add",o
-        !count elements in the current tile for loop over elements
-        !identify their original position and put them in tile
-        nelms=1
-        do i=1,mode
-          nelms = nelms * acttdim(i)
-        enddo
-        do i = 1,nelms
-          !get mode index of element in tile
-          call get_midx(i,idxintile,acttdim,mode)
-          do k=1,mode
-            glbmodeidx(o(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
-          enddo
-          pos1=get_cidx(glbmodeidx,olddims,mode)
-          fort(pos1)=fort(pos1)+sc*tilein(i)
-        enddo
-    end select
-  end subroutine add_tile_to_fort
-
-  !> \autor Patrick Ettenhuber
-  !> \brief Subroutine to put a specific tile in a general matrix
-  !> \date January 2013
-  subroutine put_tile_in_fort(tilein,tnr,tdims,fort,full_arr_dim,mode,o)
-    implicit none
+    !> scaling factors
+    real(realk) :: pre1,pre2
     !> input array with data in arbtirary order
     real(realk), intent(inout) :: fort(*)
     !> mode infortmation about how to interpret data
@@ -2096,14 +2019,12 @@ module lspdm_tensor_operations_module
     integer,intent(in) :: o(mode)
     !> tile output
     real(realk), intent(in) :: tilein(*)
-    real(realk),pointer :: dummy(:)
-    integer :: i,nccblcks,nelms,k
-    integer :: tmodeidx(mode),rtd(mode)
-    integer :: idxintile(mode),glbidx,ro(mode),full_dim_tiled_arr(mode)
-    integer :: ccels,ntimes,el,acttdim(mode),fels(mode)
-    integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode),dummyidx(mode)
+    integer :: i,nelms,k
+    integer :: tmodeidx(mode)
+    integer :: idxintile(mode),ro(mode),full_dim_tiled_arr(mode)
+    integer :: ccels,ntimes,acttdim(mode),fels(mode)
+    integer :: pos1,ntpm(mode),glbmodeidx(mode)
     integer :: simpleorder,bs
-    real(realk) :: test(full_arr_dim(1)*full_arr_dim(2)*full_arr_dim(3)*full_arr_dim(4))
 
     bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
     !bs=5
@@ -2121,10 +2042,10 @@ module lspdm_tensor_operations_module
     enddo
 
 
-    !if(mode==4)then
-      !if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)simpleorder=1
-      !if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)simpleorder=2
-    !endif
+    if(mode==4)then
+      if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)simpleorder=1
+      if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)simpleorder=2
+    endif
 
     call get_midx(tnr,tmodeidx,ntpm,mode)
 
@@ -2150,12 +2071,17 @@ module lspdm_tensor_operations_module
             glbmodeidx(k)=idxintile(k) +(tmodeidx(k)-1) *tdims(k)
           enddo
           pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
-          call dcopy(ccels,tilein(1+(i-1)*ccels),1,fort(pos1),1)
+          if(pre1==1.0E0_realk.and.pre2==0.0E0_realk)then
+            call dcopy(ccels,tilein(1+(i-1)*ccels),1,fort(pos1),1)
+          else
+            call dscal(ccels,pre2,fort(pos1),1)
+            call daxpy(ccels,pre1,tilein(1+(i-1)*ccels),1,fort(pos1),1)
+          endif
         enddo
       case(1)
-        call manual_2143_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
+        call manual_2143_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
       case(2)
-        call manual_1423_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,1.0E0_realk,tilein,0.0E0_realk,fort)
+        call manual_1423_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
       case default
         print *,"default part reorder put !!!!!!!!!"
         print *,"order  :",o
@@ -2179,10 +2105,10 @@ module lspdm_tensor_operations_module
           enddo
           !get index in new array
           pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
-          fort(pos1)=tilein(i)
+          fort(pos1)=pre2*fort(pos1) + pre1 * tilein(i)
         enddo
     end select
-  end subroutine put_tile_in_fort
+  end subroutine tile_in_fort
 
   !> \autor Patrick Ettenhuber
   !> \brief Subroutine to extract a specific tile from a general matrix
