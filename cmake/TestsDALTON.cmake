@@ -12,7 +12,7 @@ macro(add_dalton_perl_test _name _labels)
         COMMAND ./test.pl --dalton=${CMAKE_BINARY_DIR}/dalton --list="${_name}"
         )
     if(NOT "${_labels}" STREQUAL "")
-        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+        set_tests_properties(perl_${_name} PROPERTIES LABELS "${_labels}")
     endif()
 endmacro()
 
