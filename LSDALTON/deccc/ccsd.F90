@@ -2787,7 +2787,7 @@ contains
       call mo_work_dist(nv*no*no,fai2,tl2)
 
       if(DECinfo%PL>2.and.me==0)then
-        write(DECinfo%output,'(Trafolength in striped E1:",I5," ",I5)')tl1,tl2
+        write(DECinfo%output,'("Trafolength in striped E1:",I5," ",I5)')tl1,tl2
       endif
 
       call mem_alloc(w3,max(tl1*no,tl2*nv))
@@ -3027,7 +3027,7 @@ contains
       call mo_work_dist(nv*no,fai,tl)
 
       if(DECinfo%PL>2.and.me==0)then
-        write(DECinfo%output,'(Trafolength in striped CD:",I5)')tl
+        write(DECinfo%output,'("Trafolength in striped CD:",I5)')tl
       endif
      
       if(s==4)then
@@ -3063,7 +3063,8 @@ contains
           !for a conversion from tiled to dense the reverse order has to be
           !given
           !if(me==0) call array_convert(gvvooa,w1,gvvooa%nelms,[1,4,2,3])
-          call array_gather_tilesinfort(gvvooa,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,4,2,3])
+          !call array_gather_tilesinfort(gvvooa,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,4,2,3])
+          call array_gather_tilesinfort(gvvooa,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
           do nod=1,nnod-1
             call mo_work_dist(no*nv,fri,tri,nod)
             if(me==0)then
@@ -3095,7 +3096,8 @@ contains
         elseif(s==2)then
 #ifdef VAR_MPI
           !if(me==0) call array_convert(t2,w1,t2%nelms,[1,3,4,2])
-          call array_gather_tilesinfort(t2,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
+          !call array_gather_tilesinfort(t2,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
+          call array_gather_tilesinfort(t2,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,4,2,3])
           do nod=1,nnod-1
             call mo_work_dist(no*nv,fri,tri,nod)
             if(me==0)then
@@ -3122,7 +3124,8 @@ contains
         elseif(s==2)then
 #ifdef VAR_MPI
           !if(me==0)call array_convert(govov,w1,govov%nelms,[4,1,2,3])
-          call array_gather_tilesinfort(govov,w1,int(no*no*nv*nv,kind=long),infpar%master,[4,1,2,3])
+          !call array_gather_tilesinfort(govov,w1,int(no*no*nv*nv,kind=long),infpar%master,[4,1,2,3])
+          call array_gather_tilesinfort(govov,w1,int(no*no*nv*nv,kind=long),infpar%master,[2,3,4,1])
           call ls_mpibcast(w1,int(no*no*nv*nv,kind=long),infpar%master,infpar%lg_comm)
 #endif
         endif
@@ -3143,7 +3146,8 @@ contains
         elseif(s==2)then
 #ifdef VAR_MPI
           !call array_convert(t2,w1,t2%nelms,[1,3,4,2])
-          call array_gather_tilesinfort(t2,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
+          !call array_gather_tilesinfort(t2,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
+          call array_gather_tilesinfort(t2,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,4,2,3])
           call ls_mpibcast(w1,int(no*no*nv*nv,kind=long),infpar%master,infpar%lg_comm)
           call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w1,no*nv,0.0E0_realk,w3,lead)
           w1=0.0E0_realk
@@ -3195,7 +3199,8 @@ contains
         elseif(s==2)then
 #ifdef VAR_MPI
           !call print_norm(gvoova,msg)
-          call array_gather_tilesinfort(gvoova,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
+          !call array_gather_tilesinfort(gvoova,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,3,4,2])
+          call array_gather_tilesinfort(gvoova,w1,int(no*no*nv*nv,kind=long),infpar%master,[1,4,2,3])
           if(me==0)then
             !call array_convert(gvoova,w1,gvoova%nelms,[1,3,4,2])
             call dscal(int(gvoova%nelms),2.0E0_realk,w1,1)
@@ -3234,7 +3239,8 @@ contains
         elseif(s==2)then
 #ifdef VAR_MPI
           !if(me==0)call array_convert(u2,w1,u2%nelms,[4,1,2,3])
-          call array_gather_tilesinfort(u2,w1,int(no*no*nv*nv,kind=long),infpar%master,[4,1,2,3])
+          !call array_gather_tilesinfort(u2,w1,int(no*no*nv*nv,kind=long),infpar%master,[4,1,2,3])
+          call array_gather_tilesinfort(u2,w1,int(no*no*nv*nv,kind=long),infpar%master,[2,3,4,1])
           do nod=1,nnod-1
             call mo_work_dist(no*nv,fri,tri,nod)
             if(me==0)then
@@ -3292,7 +3298,8 @@ contains
           enddo
         elseif(s==2)then
 #ifdef VAR_MPI
-          call array_gather_tilesinfort(u2,w1,int(no*no*nv*nv,kind=long),infpar%master,[4,1,2,3])
+          !call array_gather_tilesinfort(u2,w1,int(no*no*nv*nv,kind=long),infpar%master,[4,1,2,3])
+          call array_gather_tilesinfort(u2,w1,int(no*no*nv*nv,kind=long),infpar%master,[2,3,4,1])
           call ls_mpibcast(w1,int(nv*nv*no*no,kind=long),infpar%master,infpar%lg_comm)
           call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w1,nv*no,0.0E0_realk,w3,lead)
           w1=0.0E0_realk
@@ -3363,7 +3370,7 @@ contains
     call mo_work_dist(nv*nv,fai,tl)
 
     if(DECinfo%PL>2.and.me==0)then
-      write(DECinfo%output,'(Trafolength in striped B2:",I5)')tl
+      write(DECinfo%output,'("Trafolength in striped B2:",I5)')tl
     endif
     
     nor=no*(no+1)/2

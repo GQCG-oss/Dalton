@@ -1469,8 +1469,8 @@ contains
     implicit none
 
     type(array) :: test,test2
-    real(realk),pointer :: in1(:),sto1(:),tileget(:)
-    real(realk),pointer :: tileget2(:),res(:)
+    real(realk),pointer :: in1(:),sto1(:)
+    real(realk),pointer :: res(:),til(:)
     real(realk) :: normher,ref(6),ref1s,ref2s,ref1,ref2
     integer(kind=long) :: testint
     logical :: master,rigorous
@@ -1503,6 +1503,7 @@ contains
     write (DECinfo%output,*)"TESTING 3D REORDERINGS"
     write (DECinfo%output,*)"**********************"
     write (DECinfo%output,*)""
+if(.false.)then
     do p1=1,2
       do p2=0,2
         pr1 = float(p1)
@@ -1641,7 +1642,7 @@ contains
         write(DECinfo%output,'("")')
       enddo
     enddo
-
+endif
 
 
     call mem_dealloc(in1)
@@ -1668,6 +1669,7 @@ contains
     write (DECinfo%output,*)"TESTING 4D REORDERINGS"
     write (DECinfo%output,*)"**********************"
     write (DECinfo%output,*)""
+if(.false.)then
     do p1=1,2
       do p2=0,2
         pr1 = float(p1)
@@ -2282,8 +2284,107 @@ contains
         write(DECinfo%output,'("")')
       enddo
     enddo
-    
+!!!!!!!!!!!
+    endif 
+     
+    write (DECinfo%output,*)""
+    write (DECinfo%output,*)""
+    write (DECinfo%output,*)"TESTING 4D TILE REORDERINGS"
+    write (DECinfo%output,*)"***************************"
+    write (DECinfo%output,*)""
+    p1=1
+    p2=0
+    !do p1=1,2
+    !  do p2=0,2
+        pr1 = float(p1)
+        pr2 = float(p2)
+    !    if (p1==2) call random_number(pr1)
+    !    if (p2==2) call random_number(pr2)
+    !    write (DECinfo%output,'(A3,f4.1,A3,f4.1,A2)')"B= ",pr1,"*A+",pr2,"*B"
+        call mem_alloc(til,nb*na*nv*(no/2))
 
+        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+        teststatus="SUCCESS"
+        res = sto1
+        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+
+        call extract_tile_from_fort(in1,4,1,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
+        call put_tile_in_fort(til,1,[nb,na,nv,no/2],res,[nb,no,na,nv],4,[1,4,2,3])
+
+        call extract_tile_from_fort(in1,4,2,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
+        call put_tile_in_fort(til,2,[nb,na,nv,no/2],res,[nb,no,na,nv],4,[1,4,2,3])
+
+        call extract_tile_from_fort(in1,4,3,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
+        call put_tile_in_fort(til,3,[nb,na,nv,no/2],res,[nb,no,na,nv],4,[1,4,2,3])
+
+        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+        call print_norm(res,int(nb*nv*no,kind=8),normher)
+        if(rigorous)then
+          do a=1,nb
+            do b=1,na
+              do c=1,nv
+                do d=1,no
+                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)&
+                     &-res(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na))&
+                    & >1.0E-11_realk)then
+                      print *,a,b,c,d,pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)
+                      print *,a,d,b,c,res(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)
+                      print *,pr1,"---------------------",a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv,&
+                             &a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na,"------------------------",pr2
+                      teststatus="FAILED "
+                      print *,"1423",teststatus
+                      stop 0
+                   endif
+                enddo
+              enddo
+            enddo
+          enddo
+        endif
+        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+        write(DECinfo%output,&
+        &'(I1,I1,"-1234: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+
+
+        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+        teststatus="SUCCESS"
+        res = sto1
+        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+
+        call extract_tile_from_fort(in1,4,1,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
+        call put_tile_in_fort(til,1,[nb,na,nv,no/2],res,[nb,nv,no,na],4,[1,3,4,2])
+
+        call extract_tile_from_fort(in1,4,2,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
+        call put_tile_in_fort(til,2,[nb,na,nv,no/2],res,[nb,nv,no,na],4,[1,3,4,2])
+
+        call extract_tile_from_fort(in1,4,3,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
+        call put_tile_in_fort(til,3,[nb,na,nv,no/2],res,[nb,nv,no,na],4,[1,3,4,2])
+
+        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+        call print_norm(res,int(nb*nv*no,kind=8),normher)
+        if(rigorous)then
+          do a=1,nb
+            do b=1,na
+              do c=1,nv
+                do d=1,no
+                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(c-1)*nb+(d-1)*nb*nv+(b-1)*nb*nv*no)&
+                     &-res(a+(c-1)*nb+(d-1)*nb*nv+(b-1)*nb*nv*no))&
+                    & >1.0E-11_realk)then
+                      teststatus="FAILED "
+                      print *,"1342",teststatus
+                      stop 0
+                   endif
+                enddo
+              enddo
+            enddo
+          enddo
+        endif
+        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+        write(DECinfo%output,&
+        &'(I1,I1,"-1234: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+
+    call mem_dealloc(til)
     call mem_dealloc(res)
     call mem_dealloc(in1)
     call mem_dealloc(sto1)
