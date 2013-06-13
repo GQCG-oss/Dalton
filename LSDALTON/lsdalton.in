@@ -82,7 +82,7 @@ usage (){
 	  echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in DALTON_TMPDIR before calculation starts'
 	  echo ' -m mem    set scratch memory to mem Mwords'
 	  echo ' -M mem    set scratch memory to mem Mb'
-	  echo ' -N num    use MPI version with num cores'
+	  echo ' -N num    use MPI version with num cores (defaults to DALTON_MPI_NR_CORES)'
 	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
 	  echo ' -t dir    change DALTON_TMPDIR from default to dir'
 	  echo ' -w dir    change WRKDIR from default to dir'
@@ -244,7 +244,15 @@ else
    echo "$DALTON_TMPDIR does not exist or is not writeable"
    exit 1
 fi
-#
+
+if [ -n "$DALTON_MPI_NR_CORES" ]; then
+    if [ $optn -eq 0 ] ; then
+        # DALTON_MPI_NR_CORES is set but -N is not
+        # in this case default -N to DALTON_MPI_NR_CORES
+        optn=$DALTON_MPI_NR_CORES
+    fi
+fi
+
 if [ $optn -gt 1 ] ; then
    if [ $opt_lslib_test -eq 1 ]; then
       MPI=$LSLIB_TEST
