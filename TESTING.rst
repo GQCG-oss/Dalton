@@ -13,7 +13,31 @@ following environment variables::
 Testing
 -------
 
-radovan will write this ...
+You can run the test set either using::
+
+  $ make test
+
+or through ctest::
+
+  $ ctest
+
+Both are equivalent ("make test" runs ctest) but running
+ctest directly makes it easier to run sequential tests on several
+cores::
+
+  $ ctest -j4
+
+You can run a subset of tests matching test names to a regular expression::
+
+  $ ctest -R dft*
+
+Alternatively you can run a subtest with a specific label::
+
+  $ ctest -L linsca
+
+The following command will give you all available labels::
+
+  $ ctest --print-labels
 
 
 Nightly testing
