@@ -17,7 +17,7 @@ You can run the test set either using::
 
   $ make test
 
-or through ctest::
+or directly through ctest::
 
   $ ctest
 
@@ -43,4 +43,4 @@ The following command will give you all available labels::
 Nightly testing
 ---------------
 
-radovan will write this ...
+radovan will write this ...   ctest -D Nightly/Experimental -j4
