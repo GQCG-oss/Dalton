@@ -4,11 +4,10 @@
 
 module mp2_module
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       use infpar_module
       use lsmpi_type
 #endif
-  use,intrinsic :: iso_c_binding, only: c_f_pointer, c_loc
   use precision
   use lstiming!, only: lstimer
   use screen_mod!, only: DECscreenITEM
@@ -26,7 +25,7 @@ module mp2_module
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       use decmpi_module !, only: mpi_communicate_mp2_int_and_amp
 #endif
 
@@ -150,8 +149,8 @@ contains
     real(realk),pointer :: UoccEOST(:,:),  UoccEOS(:,:), UvirtEOS(:,:),CvirtT(:,:),gvirt2(:,:,:,:)
     real(realk),pointer :: gocc(:,:,:,:),tocc(:,:,:,:),gvirt(:,:,:,:),tvirt(:,:,:,:),CoccT(:,:)
     integer,pointer :: V(:,:)
-    integer(kind=long) :: dim1,dim2,dim3,dim4,idx,idx2,max1,max2,max3,maxdim,start
-    integer:: Astart, Aend,dimA, A,B,I,J,counter,siz,arrsize
+    integer(kind=long) :: dim1,dim2,dim3,dim4,idx,idx2,max1,max2,max3,maxdim,start,siz
+    integer:: Astart, Aend,dimA, A,B,I,J,counter,arrsize
     real(realk) :: flops
     integer,dimension(4) :: dimocc, dimvirt
     integer :: m,k,n, nvbatches, Abat, GammaStart, GammaEnd, AlphaStart, AlphaEnd,c,d,l
@@ -177,7 +176,7 @@ contains
     TYPE(DECscreenITEM)   :: DecScreen
     logical :: master,wakeslave
     real(realk) :: twmpi1,twmpi2, tcmpi1, tcmpi2, tmpidiff
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     INTEGER(kind=ls_mpik) :: HSTATUS
     CHARACTER*(MPI_MAX_PROCESSOR_NAME) ::  HNAME
 !    this really should be
@@ -187,7 +186,7 @@ contains
 #endif
     integer(kind=ls_mpik) :: ierr
     integer :: myload,ncore
-    real(realk),pointer :: arr(:)
+    real(realk),allocatable,target :: arr(:)
     integer :: num,extra,narrays,nocctot
     type(mypointer),pointer :: CvirtTspecial(:,:)
     real(realk),pointer :: mini1(:),mini2(:),mini3(:),mini4(:)
@@ -198,7 +197,7 @@ contains
 
 ! If MPI is not used, consider the single node to be "master"
 master=.true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 if(infpar%lg_mynum /= 0) then  ! this is a local slave
 master=.false.
 end if
@@ -341,7 +340,7 @@ end if
        call get_MP2_integral_transformation_matrices(MyFragment,CDIAGocc, CDIAGvirt, Uocc, Uvirt, &
             & EVocc, EVvirt)
        LoccTALL = array2_init([nocc,nbasis])
-       call mat_transpose(MyFragment%ypo,nbasis,nocc,LoccTALL%val)
+       call mat_transpose(nbasis,nocc,1.0E0_realk,MyFragment%ypo,0.0E0_realk,LoccTALL%val)
     end if
 
 
@@ -468,7 +467,7 @@ end if
     ! *                    Start up MPI slaves                    *
     ! *************************************************************
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     ! Only use slave helper if there is at least two jobs AND
     ! there is at least one local slave available.
@@ -504,13 +503,13 @@ end if
 
     ! Transpose matrices
     ! ******************
-    call mat_transpose(CDIAGocc%val,nbasis,nocc,CoccT)
-    call mat_transpose(CDIAGvirt%val,nbasis,nvirt,CvirtT)
-    call mat_transpose(UoccEOS,noccEOS,nocc,UoccEOST)
-    call mat_transpose(UvirtEOS,nvirtEOS,nvirt,UvirtEOST)
-    call mat_transpose(LoccEOS%val,nbasis,noccEOS,LoccEOST)
-    call mat_transpose(LvirtEOS%val,nbasis,nvirtEOS,LvirtEOST)
-    call mat_transpose(MyFragment%ypv,nbasis,nvirt,LvirtT)
+    call mat_transpose(nbasis,nocc,1.0E0_realk,CDIAGocc%val,0.0E0_realk,CoccT)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,CDIAGvirt%val,0.0E0_realk,CvirtT)
+    call mat_transpose(noccEOS,nocc,1.0E0_realk,UoccEOS,0.0E0_realk,UoccEOST)
+    call mat_transpose(nvirtEOS,nvirt,1.0E0_realk,UvirtEOS,0.0E0_realk,UvirtEOST)
+    call mat_transpose(nbasis,noccEOS,1.0E0_realk,LoccEOS%val,0.0E0_realk,LoccEOST)
+    call mat_transpose(nbasis,nvirtEOS,1.0E0_realk,LvirtEOS%val,0.0E0_realk,LvirtEOST)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,MyFragment%ypv,0.0E0_realk,LvirtT)
 
 
     ! ***************************************************************
@@ -573,7 +572,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
 
 ! For MPI: Get array defining which jobs are done by which ranks
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       call mem_alloc(decmpitasks,nbatchesAlpha*nbatchesGamma)
       if(wakeslave) then  ! share workload with slave(s)
          call distribute_mpi_jobs(decmpitasks,nbatchesAlpha,nbatchesGamma,&
@@ -617,13 +616,13 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       allocate(arr(maxdim),stat=ierr)
       arr=0.0E0_realk
       if(ierr == 0) then
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       if(DECinfo%PL>0) write(DECinfo%output,'(a,i7,i15)') 'MP2: Allocation OK for node/dim ', infpar%mynum,maxdim
 #else
       if(DECinfo%PL>0) write(DECinfo%output,'(a,i15)') 'MP2: Allocation OK for dim ', maxdim
 #endif
    else
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       write(DECinfo%output,'(a,i7,i15)') 'MP2: Error in allocation for node/dimm ', infpar%mynum,maxdim
 #else
       write(DECinfo%output,'(a,i15)') 'MP2: Error in allocation for dim ', maxdim
@@ -640,15 +639,15 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       ! tmp1 starts pointing to element 1 in arr and has size bat%size1(1)
       start=1
       call mypointer_init(maxdim,arr,start,bat%size1(1),tmp1)
-      CALL c_f_pointer(c_loc(arr(tmp1%start)),tmp1%p,[tmp1%N])
+
       ! tmp2 starts pointing to element tmp1%end+1 in arr and has size bat%size1(2)
       start=tmp1%end+1
       call mypointer_init(maxdim,arr,start,bat%size1(2),tmp2)
-      CALL c_f_pointer(c_loc(arr(tmp2%start)),tmp2%p,[tmp2%N])
+
       ! tmp2 starts pointing to element tmp2%end+1 in arr and has size bat%size1(3)
       start=tmp2%end+1
       call mypointer_init(maxdim,arr,start,bat%size1(3),tmp3)
-      CALL c_f_pointer(c_loc(arr(tmp3%start)),tmp3%p,[tmp3%N])
+
 
 
       ! Pointers for step 2
@@ -661,23 +660,19 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
       ! tmp4 starts pointing to element 1 in arr and has size bat%size2(4)
       start=1
       call mypointer_init(maxdim,arr,start,bat%size2(4),tmp4)
-      CALL c_f_pointer(c_loc(arr(tmp4%start)),tmp4%p,[tmp4%N])
       start = tmp4%end +1
 
       do j=1,nthreads
          ! tmp array b1 inside OMP loop
          call mypointer_init(maxdim,arr,start,bat%size2(1),b1(j))
-         CALL c_f_pointer(c_loc(arr(b1(j)%start)),b1(j)%p,[b1(j)%N])
          start = b1(j)%end + 1
 
          ! tmp array b2 inside OMP loop
          call mypointer_init(maxdim,arr,start,bat%size2(2),b2(j))
-         CALL c_f_pointer(c_loc(arr(b2(j)%start)),b2(j)%p,[b2(j)%N])
          start = b2(j)%end + 1
 
          ! tmp array b3 inside OMP loop
          call mypointer_init(maxdim,arr,start,bat%size2(3),b3(j))
-         CALL c_f_pointer(c_loc(arr(b3(j)%start)),b3(j)%p,[b3(j)%N])
          start = b3(j)%end + 1
       end do
 
@@ -690,7 +685,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
     ! Start looping over gamma and alpha batches and calculate integrals
     ! ******************************************************************
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       if(DECinfo%PL>0) write(DECinfo%output,'(a,g14.4,i7)') 'Memory (GB) available before loop/node ', &
            & (DECinfo%memory - 1.0E-9_realk*mem_allocated_global), infpar%mynum
 #endif
@@ -708,7 +703,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
        AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
        ! MPI: Only do (alpha,gamma) contribution if this is a task for this particular rank
        if(decmpitasks((alphaB-1)*nbatchesGamma+gammaB) /= infpar%lg_mynum) cycle
 #endif
@@ -751,17 +746,17 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           ! Therefore, the code gets slightly uglier/more complicated.
           idx=i8*(i-1)*nbasis*nbasis+tmp1%start  ! start index for tmp1
           siz=nbasis*nbasis  ! size of (alpha,gamma) chunk of tmp1
-          CALL c_f_pointer(c_loc(arr(idx)),mini1,[siz])  ! make mini1 point to this chunk of tmp1
+          mini1 => arr(idx:idx+siz-1)   ! make mini1 point to this chunk of tmp1
           idx=i8*(i-1)*nbasis*nocc+tmp3%start ! start index for tmp3
           siz=nbasis*nocc  ! size of (alpha,gamma) chunk of tmp3
-          CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz]) ! make mini3 point to this chunk of tmp3
+          mini3 => arr(idx:idx+siz-1)  ! make mini3 point to this chunk of tmp3
           call dec_simple_dgemm(nbasis,nbasis, nocc, mini1, &
                & CDIAGocc%val, mini3, 'n', 'n')
 
           ! tmp2(B,J,alpha,gamma) = sum_{beta} C^T_{B beta} tmp3(beta,J,alpha,gamma)
           idx=i8*(i-1)*nvirt*nocc + tmp2%start
           siz=nvirt*nocc
-          CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
+          mini2 => arr(idx:idx+siz-1)
           call dec_simple_dgemm(nvirt,nbasis, nocc, CvirtT,mini3,mini2, 'n', 'n')
 
        end do
@@ -800,7 +795,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
           ! Reorder: tmp3(b,J,alphaB,a) --> tmp1(alphaB,a,b,J)
           dim1=dim3
-          call mat_transpose(tmp3%p(1:dim3),nvirtEOS*nocc,dimAlpha*nvirtEOS,tmp1%p(1:dim1))
+          call mat_transpose(nvirtEOS*nocc,dimAlpha*nvirtEOS,1.0E0_realk,tmp3%p(1:dim3),0.0E0_realk,tmp1%p(1:dim1))
 
           ! Update: VVVO(d,a,b,J) += sum_{alpha in alphaB} L^T_{d alpha} tmp1(alpha,a,b,J)
           ! (Similarly to the comment above, the d index is only partly transformed by this,
@@ -820,10 +815,11 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
           do counter=1,dimGamma*dimAlpha
              idx=i8*(counter-1)*nvirt*nocc + tmp2%start
              siz = nvirt*nocc
-             CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
+             mini2 => arr(idx:idx+siz-1)
+
              idx=i8*(counter-1)*nvirt*nocc + tmp1%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini1,[siz])
-             call mat_transpose(mini2,nvirt,nocc,mini1)
+             mini1 => arr(idx:idx+siz-1)
+             call mat_transpose(nvirt,nocc,1.0E0_realk,mini2,0.0E0_realk,mini1)
           end do
 
           ! tmp3(j,B,alphaB,gammaB) = sum_{J} U_{jJ} tmp1(J,B,alphaB,gammaB)
@@ -841,7 +837,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
 
           ! Reorder: tmp1(j,B,alphaB,i) --> tmp3(alphaB,i,j,B)
           dim3=dim1
-          call mat_transpose(tmp1%p(1:dim1),noccEOS*nvirt,dimAlpha*noccEOS,tmp3%p(1:dim3))
+          call mat_transpose(noccEOS*nvirt,dimAlpha*noccEOS,1.0E0_realk,tmp1%p(1:dim1),0.0E0_realk,tmp3%p(1:dim3))
 
           ! Update: OOOV(k,i,j,B) += sum_{alpha in alphaB} L^T_{k alpha} tmp3(alpha,i,j,B)
           ! NOTE! "k" refers to BOTH core and valence, also for frozen core approximation
@@ -882,10 +878,10 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting DEC-MP2 integral/amplitudes -
        do counter=1,nocctot
              idx=i8*(counter-1)*nvirt*nocc*dimAlpha + tmp3%start
              siz = nvirt*nocc*dimAlpha
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
+             mini3 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*nvirt*nocc*dimAlpha + tmp4%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini4,[siz])
-             call mat_transpose(mini3,nvirt*nocc,dimAlpha,mini4)
+             mini4 => arr(idx:idx+siz-1)
+             call mat_transpose(nvirt*nocc,dimAlpha,1.0E0_realk,mini3,0.0E0_realk,mini4)
        end do
 
        ! tmp4 will now be used in each step for each thread in step 2
@@ -961,10 +957,10 @@ ts=.true.
           do counter=1,noccEOS
              idx=i8*(counter-1)*dimA*nvirt*nocc + b3(num)%start
              siz = dimA*nvirt*nocc
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
+             mini3 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt*nocc + b2(num)%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
-             call mat_transpose(mini3,dimA*nvirt,nocc,mini2)
+             mini2 => arr(idx:idx+siz-1)
+             call mat_transpose(dimA*nvirt,nocc,1.0E0_realk,mini3,0.0E0_realk,mini2)
           end do
 
           ! Transform diagonal AOS index J to local EOS index j:
@@ -1004,10 +1000,10 @@ ts=.true.
           do counter=1,nocc*nocctot
              idx=i8*(counter-1)*dimA*nvirt + b1(num)%start
              siz = dimA*nvirt
-             CALL c_f_pointer(c_loc(arr(idx)),mini1,[siz])
+             mini1 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt + b3(num)%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
-             call mat_transpose(mini1,dimA,nvirt,mini3)
+             mini3 => arr(idx:idx+siz-1)
+             call mat_transpose(dimA,nvirt,1.0E0_realk,mini1,0.0E0_realk,mini3)
           end do
 
           ! Transform diagonal AOS index B to local EOS index b:
@@ -1022,10 +1018,10 @@ ts=.true.
           do counter=1,nocc*nocctot
              idx=i8*(counter-1)*nvirtEOS*dimA + b2(num)%start
              siz=nvirtEOS*dimA
-             CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
+             mini2 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*nvirtEOS*dimA + b3(num)%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
-             call mat_transpose(mini2,nvirtEOS,dimA,mini3)
+             mini3 => arr(idx:idx+siz-1)
+             call mat_transpose(nvirtEOS,dimA,1.0E0_realk,mini2,0.0E0_realk,mini3)
           end do
 
           ! Transform diagonal AOS index Abat to local EOS index a (but only inside A batch):
@@ -1105,10 +1101,10 @@ ts=.true.
           do counter=1,noccEOS
              idx=i8*(counter-1)*dimA*nvirt*nocc + b3(num)%start
              siz = dimA*nvirt*nocc
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
+             mini3 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt*nocc + b2(num)%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
-             call mat_transpose(mini3,dimA*nvirt,nocc,mini2)
+             mini2 => arr(idx:idx+siz-1)
+             call mat_transpose(dimA*nvirt,nocc,1.0E0_realk,mini3,0.0E0_realk,mini2)
           end do
 
           ! Transform diagonal AOS index J to local EOS index j:
@@ -1143,10 +1139,10 @@ ts=.true.
           do counter=1,nocc*nocc
              idx=i8*(counter-1)*dimA*nvirt + b1(num)%start
              siz = dimA*nvirt
-             CALL c_f_pointer(c_loc(arr(idx)),mini1,[siz])
+             mini1 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*dimA*nvirt + b3(num)%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
-             call mat_transpose(mini1,dimA,nvirt,mini3)
+             mini3 => arr(idx:idx+siz-1)
+             call mat_transpose(dimA,nvirt,1.0E0_realk,mini1,0.0E0_realk,mini3)
           end do
 
           ! Transform diagonal AOS index B to local EOS index b:
@@ -1160,10 +1156,10 @@ ts=.true.
           do counter=1,nocc*nocc
              idx=i8*(counter-1)*nvirtEOS*dimA + b2(num)%start
              siz = nvirtEOS*dimA
-             CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
+             mini2 => arr(idx:idx+siz-1)
              idx=i8*(counter-1)*nvirtEOS*dimA + b3(num)%start
-             CALL c_f_pointer(c_loc(arr(idx)),mini3,[siz])
-             call mat_transpose(mini2,nvirtEOS,dimA,mini3)
+             mini3 => arr(idx:idx+siz-1)
+             call mat_transpose(nvirtEOS,dimA,1.0E0_realk,mini2,0.0E0_realk,mini3)
           end do
 
           ! Transform diagonal AOS index Abat to local EOS index a (but only inside A batch):
@@ -1207,7 +1203,7 @@ call mem_TurnOffThread_Memory()
  call LSTIMER('START',tcmpi2,twmpi2,DECinfo%output)
  tmpidiff = twmpi2-twmpi1
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
  if(DECinfo%PL>0) write(DECinfo%output,'(a,i6,i12,g18.8)') 'RANK, LOAD, TIME(s) ', infpar%mynum,myload, tmpidiff
  if(master) write(DECinfo%output,'(1X,a,g18.8)') 'TIME INTEGRALLOOP(s) = ', tmpidiff
 #endif
@@ -1221,7 +1217,7 @@ end if
 
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 call mem_dealloc(decmpitasks)
 #endif
 
@@ -1290,10 +1286,8 @@ call mem_dealloc(decmpitasks)
  ! --------------------------------------------------
  start = 1
  call mypointer_init(maxdim,arr,start,bat%size3(1),tmp1)
- CALL c_f_pointer(c_loc(arr(tmp1%start)),tmp1%p,[tmp1%N])
  start = tmp1%end+1
  call mypointer_init(maxdim,arr,start,bat%size3(2),tmp2)
- CALL c_f_pointer(c_loc(arr(tmp2%start)),tmp2%p,[tmp2%N])
 
 
 
@@ -1400,10 +1394,10 @@ call mem_dealloc(decmpitasks)
  do counter=1,nocctot
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp1%start
     siz = nvirtEOS*nvirtEOS*nocc
-    CALL c_f_pointer(c_loc(arr(idx)),mini1,[siz])
+    mini1 => arr(idx:idx+siz-1)
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp2%start
-    CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
-    call mat_transpose(mini1,nvirtEOS*nvirtEOS, nocc,mini2)
+    mini2 => arr(idx:idx+siz-1)
+    call mat_transpose(nvirtEOS*nvirtEOS, nocc,1.0E0_realk,mini1,0.0E0_realk,mini2)
  end do
 
  ! Transform: tmp1(l,a,b,k) = sum_{J} U_{lJ} tmp2(J,a,b,k)
@@ -1438,10 +1432,10 @@ call mem_dealloc(decmpitasks)
  do counter=1,nocc
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp1%start
     siz = nvirtEOS*nvirtEOS*nocc
-    CALL c_f_pointer(c_loc(arr(idx)),mini1,[siz])
+    mini1 => arr(idx:idx+siz-1)
     idx=i8*(counter-1)*nvirtEOS*nvirtEOS*nocc + tmp2%start
-    CALL c_f_pointer(c_loc(arr(idx)),mini2,[siz])
-    call mat_transpose(mini1,nvirtEOS*nvirtEOS,nocc,mini2)
+    mini2 => arr(idx:idx+siz-1)
+    call mat_transpose(nvirtEOS*nvirtEOS,nocc,1.0E0_realk,mini1,0.0E0_realk,mini2)
  end do
 
  ! Transform: tmp1(l,a,b,k) = sum_{J} U_{lJ} tmp2(J,a,b,k)
@@ -1567,7 +1561,7 @@ end if
 
 ! MPI: Add arrays from master and all slaves to get final output arrays on master
 ! *******************************************************************************
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
 ! If slaves were not invoked
 ! then we of course skip the addition of different components of the array.
@@ -1729,8 +1723,8 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     ! ***********************************************************
     call mem_alloc(CoccT,nocc,nbasis)
     call mem_alloc(CunoccT,nunocc,nbasis)
-    call mat_transpose(Cocc,nbasis,nocc,CoccT)
-    call mat_transpose(Cunocc,nbasis,nunocc,CunoccT)
+    call mat_transpose(nbasis,nocc,1.0E0_realk,Cocc,0.0E0_realk,CoccT)
+    call mat_transpose(nbasis,nunocc,1.0E0_realk,Cunocc,0.0E0_realk,CunoccT)
 
 
 
@@ -1905,7 +1899,7 @@ if(DECinfo%PL>0) write(DECinfo%output,*) 'Starting VOVO integrals - NO OMP!'
        ! tmp2(gammaB,j,b,alphaB) = tmp1^T(b,alphaB;gammaB,j)
        m = nunocc*dimAlpha    ! dimension of "row" in tmp1 array (to be "column" in tmp2)
        n = nocc*dimGamma      ! dimension of "column" in tmp1 array (to be "row" in tmp2)
-       call mat_transpose(tmp1,m,n,tmp2)
+       call mat_transpose(m,n,1.0E0_realk,tmp1,0.0E0_realk,tmp2)
        call mem_dealloc(tmp1)
 
 
@@ -2089,7 +2083,7 @@ subroutine get_optimal_batch_sizes_for_mp2_integrals(MyFragment,first_order_inte
 #endif
 
 doprint = printstuff
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ! Only print for local master
 if(infpar%lg_mynum/=0) doprint=.false.
 #endif
@@ -2559,7 +2553,7 @@ subroutine get_VOVO_from_full_AO(nbasis,nocc,nvirt,Cocc,Cvirt,gao,gmo)
 
   ! Reorder: tmp2(B,nu,rho,I) --> tmp1(rho,I,B,nu)
   dim1=dim2
-  call mat_transpose(tmp2(1:dim2),nvirt*nbasis,nbasis*nocc,tmp1(1:dim1))
+  call mat_transpose(nvirt*nbasis,nbasis*nocc,1.0E0_realk,tmp2(1:dim2),0.0E0_realk,tmp1(1:dim1))
 
 
   ! Transform: tmp2(rho,I,B,J) = sum_{nu} tmp1(rho,I,B,nu) C(nu,J)
@@ -2581,7 +2575,7 @@ subroutine get_VOVO_from_full_AO(nbasis,nocc,nvirt,Cocc,Cvirt,gao,gmo)
 end subroutine get_VOVO_from_full_AO
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
 !> \brief Get array defining - for each (alpha,gamma) batch
 !> in MP2_integrals_and_amplitudes_workhorse - which rank is supposed to do
@@ -2633,7 +2627,7 @@ end subroutine get_mpi_tasks_for_MP2_int_and_amp
 end module mp2_module
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !> \brief MPI Slave routine for MP2_integrals_and_amplitudes_workhorse.
 !> The slave gets fragment information and other information from master rank,
 !> then calls MP2_integrals_and_amplitudes_workhorse to do its specific components

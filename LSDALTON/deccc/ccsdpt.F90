@@ -5,7 +5,7 @@
 !> \date: 2012-2013, Aarhus
 module ccsdpt_module
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       use infpar_module
       use lsmpi_type
 #endif
@@ -26,7 +26,7 @@ module ccsdpt_module
 
   ! DEC DEPENDENCIES (within deccc directory)  
   ! *****************************************
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       use decmpi_module
 #endif
   use dec_fragment_utils
@@ -69,13 +69,13 @@ contains
     ! cbai is of type DENSE, if this is a serial calculation, and TILED_DIST,
     ! if this is a parallel calculation
     type(array) :: cbai ! integrals (AI|BC) in the order (C,B,A,I)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     type(array) :: cbai_pdm ! v^3 tiles from cbai, 1 == i, 2 == j, 3 == k
 #endif
     !> integers
     integer :: i,j,k,idx,tuple_type
     !> mpi stuff
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     !> logical determining whether a parallel task should be joined by several procs
     logical :: collab
 #endif
@@ -103,7 +103,7 @@ contains
     occAO       = [nbasis,nocc]
     virtAO      = [nbasis,nvirt]
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     ! bcast the JOB specifier and distribute data to all the slaves within local group
     waking_the_slaves: if ((infpar%lg_nodtot .gt. 1) .and. (infpar%lg_mynum .eq. infpar%master)) then
@@ -195,7 +195,7 @@ contains
     ! if cbai is tiled distributed, then put the three tiles into
     ! an array structure, cbai_pdm. here, initialize the array structure.
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     cbai_pdm = array_init([nvirt,nvirt,nvirt,3],4)
 
@@ -216,7 +216,7 @@ contains
 
  irun: do i=1,nocc
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
           if ((infpar%lg_nodtot + i - 1) .le. nocc) then
 
@@ -245,7 +245,7 @@ contains
 
     jrun: do j=1,i
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
              if (.not. collab) then
 
@@ -270,7 +270,7 @@ contains
 
        krun: do k=1,j
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
                 ! get the k'th tile
                 call array_get_tile(cbai,k,cbai_pdm%elm1(2*nvirt**3+1:3*nvirt**3),nvirt**3)
@@ -297,7 +297,7 @@ contains
 
                 case(1)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
                    ! generate the iik amplitude
                    call trip_amplitudes(i,i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles_portions%elm4(:,:,:,1),&
@@ -363,7 +363,7 @@ contains
 
                    ! now do the contractions
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
                    call ccsdpt_driver_case1(i,k,nocc,nvirt,abij,jaik,&
                                         & cbai_pdm%elm4(:,:,:,1),cbai_pdm%elm4(:,:,:,3),&
@@ -379,7 +379,7 @@ contains
 
                 case(2)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
                    ! generate the ijj amplitude
                    call trip_amplitudes(i,j,j,nocc,nvirt,ccsd_doubles%val(:,:,j,i),ccsd_doubles_portions%elm4(:,:,:,1),&
@@ -445,7 +445,7 @@ contains
 
                    ! now do the contractions
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
                    call ccsdpt_driver_case2(i,j,nocc,nvirt,abij,jaik,&
                                         & cbai_pdm%elm4(:,:,:,1),cbai_pdm%elm4(:,:,:,2),&
@@ -461,7 +461,7 @@ contains
 
                 case(3)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
                    ! generate the ijk amplitude
                    call trip_amplitudes(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,j,i),ccsd_doubles_portions%elm4(:,:,:,1),&
@@ -545,7 +545,7 @@ contains
 
                    ! now do the contractions
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
                    call ccsdpt_driver_case3(i,j,k,nocc,nvirt,abij,jaik,&
                                         & cbai_pdm%elm4(:,:,:,1),cbai_pdm%elm4(:,:,:,2),cbai_pdm%elm4(:,:,:,3),&
@@ -576,7 +576,7 @@ contains
     ! also, release ccsd_doubles help array
     call array_free(ccsd_doubles_portions)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     ! reduce singles and doubles arrays into that residing on the master
     reducing_to_master: if (infpar%lg_nodtot .gt. 1) then
@@ -635,7 +635,7 @@ contains
     call mem_dealloc(eivalvirt)
     call array4_free(abij)
     call array_free(cbai)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     call array_free(cbai_pdm)
 #endif
     call array4_free(jaik)
@@ -2757,18 +2757,31 @@ contains
 !    real(realk), parameter :: bohr_to_angstrom = 0.5291772083E0_realk
 
     ! print out fragment energies
-
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,'(1X,a)') '*                         CCSD energies                       *'
-    write(DECinfo%output,'(1X,a)') '***************************************************************'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (CCSD)'
-    write(DECinfo%output,'(8X,a)') '------    --------------------'
-    write(DECinfo%output,'(8X,a)') ' Atom            Energy '
-    write(DECinfo%output,'(8X,a)') '------    --------------------'
-    write(DECinfo%output,*)
+    if(.not.DECinfo%CCDhack)then
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a)') '***************************************************************'
+      write(DECinfo%output,'(1X,a)') '*                         CCSD energies                       *'
+      write(DECinfo%output,'(1X,a)') '***************************************************************'
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (CCSD)'
+      write(DECinfo%output,'(8X,a)') '------    --------------------'
+      write(DECinfo%output,'(8X,a)') ' Atom            Energy '
+      write(DECinfo%output,'(8X,a)') '------    --------------------'
+      write(DECinfo%output,*)
+    else
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(1X,a)') '***************************************************************'
+      write(DECinfo%output,'(1X,a)') '*                         CCD energies                        *'
+      write(DECinfo%output,'(1X,a)') '***************************************************************'
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(8X,a)') '-- Atomic fragment energies (CCD)'
+      write(DECinfo%output,'(8X,a)') '------    --------------------'
+      write(DECinfo%output,'(8X,a)') ' Atom            Energy '
+      write(DECinfo%output,'(8X,a)') '------    --------------------'
+      write(DECinfo%output,*)
+    endif
 
     do i=1,natoms
 
@@ -2782,14 +2795,25 @@ contains
 
     ! now print out pair interaction energies
 
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
-    write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (CCSD)                   '
-    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
-    write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
-    write(DECinfo%output,*)
-    write(DECinfo%output,*)
+    if(.not.DECinfo%CCDhack)then
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (CCSD)                   '
+      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+      write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
+      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+    else
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+      write(DECinfo%output,'(8X,a)') '-- Pair interaction energies (CCD)                   '
+      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+      write(DECinfo%output,'(8X,a)') '   P         Q        R(Ang)              E(PQ)       '
+      write(DECinfo%output,'(8X,a)') '------    ------    ----------    --------------------'
+      write(DECinfo%output,*)
+      write(DECinfo%output,*)
+    endif
 
     do j=1,natoms
        do i=j+1,natoms
@@ -2996,7 +3020,7 @@ contains
     ! CBAI: Integrals (AB|IC) in the order (C,B,A,I)
     dims = [nvirt,nvirt,nvirt,nocc]
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     CBAI = array_init(dims,4,TILED_DIST,ALL_INIT,[nvirt,nvirt,nvirt,1])
     call array_zero_tiled_dist(CBAI)
@@ -3010,8 +3034,8 @@ contains
     ! For efficiency when calling dgemm, save transposed matrices
     call mem_alloc(CoccT,nocc,nbasis)
     call mem_alloc(CvirtT,nvirt,nbasis)
-    call mat_transpose(Cocc,nbasis,nocc,CoccT)
-    call mat_transpose(Cvirt,nbasis,nvirt,CvirtT)
+    call mat_transpose(nbasis,nocc,1.0E0_realk,Cocc,0.0E0_realk,CoccT)
+    call mat_transpose(nbasis,nvirt,1.0E0_realk,Cvirt,0.0E0_realk,CvirtT)
 
     ! Determine optimal batchsizes and corresponding sizes of arrays
     call get_optimal_batch_sizes_ccsdpt_integrals(mylsitem,nbasis,nocc,nvirt,alphadim,gammadim,&
@@ -3114,7 +3138,7 @@ contains
     call mem_alloc(tmp2,size2)
     call mem_alloc(tmp3,size3)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     ! alloc distribution array
     nullify(distribution)
@@ -3141,7 +3165,7 @@ contains
           AlphaStart = batch2orbAlpha(alphaB)%orbindex(1)                 ! First index in alpha batch
           AlphaEnd = batch2orbAlpha(alphaB)%orbindex(dimAlpha)            ! Last index in alpha batch
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
           ! distribute tasks
           if (distribution((alphaB-1)*nbatchesGamma+gammaB) .ne. infpar%lg_mynum) then
@@ -3190,7 +3214,7 @@ contains
           ! Reorder: tmp1(I,alphaB;gammaB,A) --> tmp2(gammaB,A;I,alphaB)
           m = nocc*dimAlpha
           n = dimGamma*nvirt
-          call mat_transpose(tmp1,m,n,tmp2)
+          call mat_transpose(m,n,1.0E0_realk,tmp1,0.0E0_realk,tmp2)
 
           ! tmp1(J;A,I,alphaB) = sum_{gamma in gammaB} CoccT(J,gamma) tmp2(gamma,A,I,alphaB)
           m = nocc
@@ -3220,7 +3244,7 @@ contains
           ! Reorder: tmp3(B,alphaB;gammaB,A) --> tmp1(gammaB,A;B,alphaB)
           m = nvirt*dimAlpha
           n = dimGamma*nvirt
-          call mat_transpose(tmp3,m,n,tmp1)
+          call mat_transpose(m,n,1.0E0_realk,tmp3,0.0E0_realk,tmp1)
 
           ! tmp3(C;A,B,alphaB) = sum_{gamma in gammaB} CvirtT(C,gamma) tmp1(gamma,A,B,alphaB)
           m = nvirt
@@ -3234,7 +3258,7 @@ contains
           k = dimAlpha
           n = 1
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
           do i=1,nocc
 
@@ -3275,7 +3299,7 @@ contains
        end do BatchAlpha
     end do BatchGamma
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     if (infpar%lg_nodtot .gt. 1) then
 
@@ -3565,7 +3589,7 @@ end module ccsdpt_module
   !> \brief slaves enter here from lsmpi_slave (or dec_lsmpi_slave) and need to get to work 
   !> \author Janus Juul Eriksen
   !> \date x-mas 2012
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
   subroutine ccsdpt_slave()
 

@@ -134,11 +134,6 @@ real(realk)     :: A(n,n)
 TYPE(matrix)    :: S, S_sqrt, S_minus_sqrt
 real(realk)     :: emin,emax
 integer(8)      :: operm, nperm
-#ifdef HAVE_BSM
-call bsm_lib_getpermutation(operm)
-call ls_initbsm(SETTING%BASIS(1)%p%AUXILIARY,SETTING)
-call bsm_lib_getpermutation(nperm)
-#endif
 call mat_init(S,n,n)
 call mat_init(S_sqrt,n,n)
 call mat_init(S_minus_sqrt,n,n)
@@ -151,10 +146,6 @@ call mat_to_full(S_minus_sqrt,1E0_realk,A)
 call mat_free(S)
 call mat_free(S_sqrt)
 call mat_free(S_minus_sqrt)
-#ifdef HAVE_BSM
-   call bsm_lib_free(nperm)
-   call bsm_lib_setpermutation(operm);
-#endif
 END SUBROUTINE matrix_minushalf_df
 
 !> \brief  Lowdin-Schulz decomposition

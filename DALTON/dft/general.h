@@ -157,8 +157,6 @@ FSYM2(getexp_blocked_gga)(const integer *idsym, real*dmat, const real* atv,
 
 
 /* Property evaluators */
-void dft_kohn_sham_(real* dmat, real* ksm, real *edfty,
-                    real* work, integer *lwork, integer* iprint);
 void dft_lin_resp_(real* fmat, real *cmo, real *zymat, integer *trplet, 
 		   integer *ksymop, real* work, integer* lwork, integer* iprint);
 void FSYM2(dft_lin_respf)(integer *nosim, real* fmat, real *cmo, real *zymat,

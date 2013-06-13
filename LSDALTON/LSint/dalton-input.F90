@@ -78,7 +78,7 @@ END SUBROUTINE ls_free
 !> ls%setting is the current info about molecule,basis, etc.
 !>
 SUBROUTINE dalton_init(intinp,LUPRI,LUERR,nbast,integral,dodft,doDEC,doprint)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 use infpar_module
 #endif
 implicit none
@@ -154,7 +154,7 @@ CALL READ_MOLFILE_AND_BUILD_MOLECULE(LUPRI,intinp%MOLECULE,LIBRARY,doprint,&
 integral%nelectrons = intinp%MOLECULE%nelectrons 
 integral%molcharge = INT(intinp%MOLECULE%charge)
 numAtoms = intinp%MOLECULE%nAtoms
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   intinp%node         = infpar%mynum
   intinp%numNodes     = infpar%nodtot
   intinp%numFragments = min(numAtoms,intinp%numNodes)
@@ -526,23 +526,23 @@ ENDIF
       ENDIF
       WRITE(LUPRI,'(2X,A60)')  WORD
       
-      IF(nAtoms.GT. 10)THEN
-         DO J=1,10
-            READ (LUINFO, '(a80)') WORD
-            WRITE(LUPRI,'(2X,A60)') WORD
-         ENDDO
-         WRITE(LUPRI,'(2X,A60)') 'WARNING: SINCE YOU HAVE MORE THAN 10 ATOMS&
-              & OF THIS'
-         WRITE(LUPRI,'(2X,A60)') 'TYPE I WILL NOT PRINT THEM ALL TO LIMIT OUTPUT'
-         DO J=11,nAtoms
-            READ (LUINFO, '(a80)') WORD
-         ENDDO
-      ELSE
+!       IF(nAtoms.GT. 10)THEN
+!          DO J=1,10
+!             READ (LUINFO, '(a80)') WORD
+!             WRITE(LUPRI,'(2X,A60)') WORD
+!          ENDDO
+!          WRITE(LUPRI,'(2X,A60)') 'WARNING: SINCE YOU HAVE MORE THAN 10 ATOMS&
+!               & OF THIS'
+!          WRITE(LUPRI,'(2X,A60)') 'TYPE I WILL NOT PRINT THEM ALL TO LIMIT OUTPUT'
+!          DO J=11,nAtoms
+!             READ (LUINFO, '(a80)') WORD
+!          ENDDO
+!       ELSE
          DO J=1,nAtoms
             READ (LUINFO, '(a80)') WORD
             WRITE(LUPRI,'(2X,A60)') WORD
          ENDDO
-      ENDIF
+!      ENDIF
    ENDDO
    
    CALL LSCLOSE(LUINFO,'KEEP')
@@ -553,7 +553,7 @@ END SUBROUTINE PRINT_MOL_FILE
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE build_ccfragmentlsitem(LSFULL,FRAGMENT,ATOMS,NATOMS,LUPRI,IPRINT)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 use infpar_module
 #endif
 implicit none
@@ -643,7 +643,7 @@ CALL typedef_set_default_setting(FRAGMENT%SETTING,FRAGMENT%INPUT)
 FRAGMENT%SETTING%IntegralTransformGC =.FALSE.
 
 ! Set setting communicator to be local group communicator
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 fragment%setting%comm = infpar%lg_comm
 fragment%setting%node = infpar%lg_mynum
 fragment%setting%numnodes = infpar%lg_nodtot

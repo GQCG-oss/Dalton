@@ -171,6 +171,8 @@ Type(opt_setting) :: optinfo
      optinfo%dynopt = .FALSE.
      optinfo%dynamicThreshold   = .FALSE.
      optinfo%dynamicConvergence = .FALSE.
+     optinfo%doNumGradGeomOpt = .FALSE.
+     optinfo%findif_mesh = 1.0D-5
 ! 
 End subroutine Optimization_set_default_config 
 !=========================!
@@ -188,7 +190,7 @@ Integer :: NAtoms,i
 Character(Len = 70) :: Keyword
 Character(Len = 1) :: Prompt
 Integer :: FileStatus
-Character(Len=7), dimension(80) :: KwordTABLE = &
+Character(Len=7), dimension(82) :: KwordTABLE = &
             (/'.PRINT ', '.MAX IT', '.TRUSTR', '.TR FAC', &
             '.TR LIM', '.MAX RE', '.NOTRUS', '.ENERGY', &
             '.GRADIE', '.STEP T', '.CONDIT', '.NOBREA', &
@@ -208,7 +210,8 @@ Character(Len=7), dimension(80) :: KwordTABLE = &
             '.ADDCRD', '.NOADDA', '.RREDUN', '.NATNRM', &
             '.VLOOSE', '.LOOSE ', '.TIGHT ', '.VTIGHT', &
             '.NOHSWR', '.FREEZE', '.FRZITR', '.REDSPA', &
-            '.CARTRS', '.FORBAC', '.SCANSI', '.SCANST'/)
+            '.CARTRS', '.FORBAC', '.SCANSI', '.SCANST', &
+            '.NUMOPT', '.NUMESH'/)
 ! Number of cartesian coordinates
 optinfo%IcartCoord = NAtoms*3
 !
@@ -328,6 +331,11 @@ Do
 !                   optinfo%QuadSD = .TRUE.
 !                 Case('.SCHLEG')
 !                 Case('.HELLMA')
+                 Case('.NUMOPT')
+                    WRITE(LUPRI,*) 'Numerical Gradient geometry optimization calculations are carried out'
+                    optinfo%doNumGradGeomOpt = .True.
+                 Case('.NUMESH')
+                    Read(lucmd,*) optinfo%findif_mesh
                  Case('.BAKER')
                    optinfo%Baker = .TRUE.
 !                 Case('.M-BFGS')

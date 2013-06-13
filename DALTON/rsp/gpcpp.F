@@ -306,13 +306,13 @@ c
         KNVEC(1)=0
         KNVEC(2)=0
       ENDIF
-c      write(luabspri,*)'E1 mowi czesc',ABS_KLRED(1)
+c      write(luabspri,*)'E1 matrix',ABS_KLRED(1)
 c      CALL OUTPUT(REDE(1,1,1),1,ABS_KLRED(1),1,ABS_KLRED(1),
 c     &           ABS_MAXRM,ABS_MAXRM,1,LUABSPRI)
-c      write(luabspri,*)'E2 mowi czesc',ABS_KLRED(2)
+c      write(luabspri,*)'E2 matrix',ABS_KLRED(2)
 c      CALL OUTPUT(REDE(1,1,2),1,ABS_KLRED(2),1,ABS_KLRED(2),
 c     &           ABS_MAXRM,ABS_MAXRM,1,LUABSPRI)
-c      write(luabspri,*)'S mowi czesc'
+c      write(luabspri,*)'S matrix'
 c      CALL OUTPUT(REDS(1,1),1,ABS_KLRED(1),1,ABS_KLRED(2),
 c     &           ABS_MAXRM,ABS_MAXRM,1,LUABSPRI)
 c

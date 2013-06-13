@@ -1671,11 +1671,22 @@ Type(Matrix), intent(inout) :: C       ! Orbitals
 Type(lsitem) :: ls
 Type(ConfigItem), intent(inout) :: Config ! General information
 Real(realk), pointer :: Gradient(:,:)
-Real(realk) :: Eerr,E ! Energy
+Real(realk) :: h,Eerr,E ! Energy
 ! Allocate gradient
 Call mem_alloc(Gradient,3,NAtoms)
-! Calculate gradient
-Call Get_Gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,Gradient)
+
+if( optinfo%doNumGradGeomOpt )then
+      ! Calculate numerical gradient
+      !h = 1.0E-5_realk !1.0E-7_realk !1.0E-5_realk
+	h = optinfo%findif_mesh
+	write(lupri,*) "h: ",h
+      call get_num_grad(h,lupri,config%luerr,ls,S,F,D,C,config,Gradient)
+else
+	! Calculate analytical gradient
+	Call Get_Gradient(E,Eerr,lupri,NAtoms,S,F,D,ls,config,C,Gradient)
+endif
+
+
 ! Expand gradient to optinfo%GradMol
 Do i = 1,NAtoms
    optinfo%GradMol(3*i-2:3*i) = Gradient(:,i)

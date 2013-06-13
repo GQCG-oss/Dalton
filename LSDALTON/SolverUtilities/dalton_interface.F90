@@ -37,7 +37,7 @@ MODULE dal_interface
    use II_XC_interfaceModule
    use IIDFTINT, only: II_DFTsetFunc
    use gridgenerationmodule
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
    ! debug GEN1INT
    use gen1int_host
 #endif
@@ -108,12 +108,12 @@ CONTAINS
          call di_debug_PropertyIntegrals(lupri,luerr,ls%setting,nbast,S,D)
       ENDIF
       if (ls%input%dalton%DEBUGGEN1INT) then
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
          !Test general 1 electron integrals by Bin Gao
          call gen1int_host_test(ls%setting,D,lupri)
          call di_gen1int_host_test(ls%setting,S,D,lupri)
 #else
-         call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT',lupri)
+         call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT_LSDALTON',lupri)
 #endif
       endif
       if (ls%input%dalton%DEBUGCGTODIFF) then
@@ -174,7 +174,7 @@ CONTAINS
 
     end subroutine di_debug_general2
 
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
     subroutine di_gen1int_host_test(setting,S,D,lupri)
       implicit none
       type(lssetting)                :: setting
@@ -2465,6 +2465,13 @@ CONTAINS
             logical                :: inc_scheme, do_inc
             logical                :: Dsym, copy_IntegralTransformGC
             logical                :: GC3,GC2,testNelectrons,grid_done
+            real(realk)         :: GGAXfactor
+            !
+            IF (setting%scheme%cam) THEN
+              GGAXfactor = 1.0E0_realk
+            ELSE
+              GGAXfactor = setting%scheme%exchangeFactor
+            ENDIF
             !
             nbast  = Bmat(1)%nrow
             IF(matrix_type .EQ. mtype_unres_dense) THEN
@@ -2592,9 +2599,7 @@ CONTAINS
                 ! X3(B)- X2(b): XC-correction
                 !****Calculation of Level 2 XC gradient
                 !     from level 2 Density matrix starts here
-                WORD = "BX"
-                !Here hfweight is only used as a dummy variable
-                call II_DFTsetFunc(WORD(1:80),hfweight) 
+                call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight)
                 !choose the ADMM Level 2 grid
                 setting%scheme%dft%igrid = Grid_ADMML2
                      
@@ -2614,7 +2619,7 @@ CONTAINS
                 call transformed_F2_to_F3(TMPF3,Gx2(ibmat),setting,&
                                         & lupri,luerr,&
                                         & nbast2,nbast,AO2,AO3,GC2,GC3)
-                call mat_daxpy(-setting%scheme%exchangeFactor,TMPF3,K(ibmat))
+                call mat_daxpy(-GGAXfactor,TMPF3,K(ibmat))
                 setting%scheme%dft%testNelectrons = testNelectrons
 
                 !Re-set to level 3 grid
@@ -2632,9 +2637,10 @@ CONTAINS
                 call set_default_AOs(AO3,AOdfold)
                 call II_get_xc_linrsp(lupri,luerr,&
                       & setting,nbast,Bmat_AO(ibmat),Dmat_AO,Gx3(ibmat),1) 
-                call mat_daxpy(setting%scheme%exchangeFactor,&
-                                & Gx3(ibmat),K(ibmat))
+                call mat_daxpy(GGAXfactor,Gx3(ibmat),K(ibmat))
                                 
+                IF (setting%do_dft) &
+      &           call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
             ENDDO
 !            ! ---------------------------------------------------------------
 
@@ -2765,28 +2771,6 @@ CONTAINS
         integer             :: n, lupri
         
         call lowdin_diag(n,S,S_sqrt, S_minus_sqrt, lupri)
-#if 0 && defined(HAVE_BSM)
-        select case (matrix_type)
-        case(mtype_sparse_block)
-           
-           call mat_init(tS,n,n)
-           call mat_init(tS_sqrt,n,n)
-           call mat_init(tS_minus_sqrt,n,n)
-           
-           call mat_set_from_full(S,1.0E0_realk,tS)
-           
-           call lowdin_schulz(tS,tS_sqrt,tS_minus_sqrt,lupri)
-           
-           call mat_to_full(tS_sqrt,1.0E0_realk,S_sqrt)
-           call mat_to_full(tS_minus_sqrt,1.0E0_realk,S_minus_sqrt)
-           
-           call mat_free(tS)
-           call mat_free(tS_sqrt)
-           call mat_free(tS_minus_sqrt)
-        case default
-           call lsquit('Only dense and BSM matrices are supported by di_lowdin()!',-1)
-        end select
-#endif
       end subroutine di_lowdin
 
 !> \brief Get the three matrices of dipole integrals

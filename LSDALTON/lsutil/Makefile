@@ -2,6 +2,9 @@ all: liblsutil.a
 
 include ../Makefile.config
 
+manual_reorderings.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py
+
 # Keep the file lists sorted for easier modification.
 
 C_OBJS = matop_csr_aux.o \
@@ -87,14 +90,11 @@ F90_OBJS = \
 
 #       AoBatchType.o\
 
-# we should really have a separate target for bsm to properly
-# track dependencies but we would not like it to be too troublesome.
 liblsutil.a: $(F90_OBJS) $(C_OBJS)
-	if grep -q HAVE_BSM ../Makefile.config; then cd bsm && $(MAKE) install prefix=../.. AR="$(AR)"; fi
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
+	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD manual_reorderings.F90
 
 
 Makefile.depend depend: $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)

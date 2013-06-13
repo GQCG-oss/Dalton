@@ -411,6 +411,7 @@ C
 
       IF (QM3) THEN
          IF (TDHF) THEN
+#if defined(VAR_MPI)
             IF (NODTOT.GE.1) THEN
                CALL QM3QRO_P(VECB,VECC,
      *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
@@ -421,6 +422,7 @@ C
      *                 UDV,WRK(KFREE),LFREE,
      *                 KZYVA,KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP)
             ELSE
+#endif
                CALL QM3QRO(VECB,VECC,
      *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
      *                 UDV,WRK(KFREE),LFREE,
@@ -429,7 +431,9 @@ C
      *                 ETRS,XINDX,WRK(KZYMC),WRK(KZYMB),
      *                 UDV,WRK(KFREE),LFREE,
      *                 KZYVA,KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP)
+#if defined(VAR_MPI)
             ENDIF
+#endif
          END IF
       END IF
 

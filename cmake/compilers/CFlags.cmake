@@ -14,7 +14,7 @@ if(CMAKE_C_COMPILER_ID MATCHES GNU)
     endif()
     set(CMAKE_C_FLAGS_DEBUG   "-O0 -g3")
     set(CMAKE_C_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -Wno-unused")
-    set(CMAKE_C_FLAGS_PROFILE "-O3 -ffast-math -funroll-loops -ftree-vectorize -Wno-unused -g -pg")
+    set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
     if(ENABLE_OMP)
         set(CMAKE_C_FLAGS
             "${CMAKE_C_FLAGS} -fopenmp"
@@ -31,8 +31,13 @@ if(CMAKE_C_COMPILER_ID MATCHES Intel)
     set(CMAKE_C_FLAGS         "-g -wd981 -wd279 -wd383 -vec-report0 -wd1572 -wd1777 -restrict -DRESTRICT=restrict")
     set(CMAKE_C_FLAGS_DEBUG   "-O0")
     set(CMAKE_C_FLAGS_RELEASE "-O3 -ip")
-    set(CMAKE_C_FLAGS_PROFILE "-O3 -ip -g -pg")
+    set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
     set(CMAKE_C_LINK_FLAGS "${CMAKE_C_LINK_FLAGS} -shared-intel")
+
+    if(DEFINED MKL_FLAG)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MKL_FLAG}")
+    endif()
+
     if(ENABLE_OMP)
         set(CMAKE_C_FLAGS
             "${CMAKE_C_FLAGS} -openmp"
@@ -44,7 +49,7 @@ if(CMAKE_C_COMPILER_ID MATCHES PGI)
     set(CMAKE_C_FLAGS         "-Mpreprocess")
     set(CMAKE_C_FLAGS_DEBUG   "-g -O0 -c9x")
     set(CMAKE_C_FLAGS_RELEASE "-O3 -fast -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict")
-    set(CMAKE_C_FLAGS_PROFILE "-O3 -g -pg -fast -Munroll -Mvect=idiom -c9x -DRESTRICT=restrict")
+    set(CMAKE_C_FLAGS_PROFILE "${CMAKE_C_FLAGS_RELEASE} -g -pg")
     if(ENABLE_OMP)
         set(CMAKE_C_FLAGS
             "${CMAKE_C_FLAGS} -mp"
@@ -64,6 +69,10 @@ if(CMAKE_C_COMPILER_ID MATCHES Cray)
     set(CMAKE_C_FLAGS_DEBUG   "-g -O0")
     set(CMAKE_C_FLAGS_RELEASE " ")
     set(CMAKE_C_FLAGS_PROFILE "-g")
+endif()
+
+if(DEFINED EXTRA_C_FLAGS)
+    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_C_FLAGS}")
 endif()
 
 save_compiler_flags(C)

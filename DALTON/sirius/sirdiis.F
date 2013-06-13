@@ -751,7 +751,6 @@ c        density
            END IF
          ELSE  ! the mmpcm interface is only implemented for hf/dft so
 C                no reference to doccsd
-
 C          parameters on input: MXITMP and THRSMP
            LCONV = .FALSE. 
            XTEST1 = D0

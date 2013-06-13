@@ -33,7 +33,7 @@ use diagonalization, only: diag_lshift_dorth, &
 use decompMod, only: decomp_set_default_config
 use files, only: lsopen,lsclose
 use matrix_operations, only: mat_select_type, matrix_type, &
-     & mtype_symm_dense, mtype_dense, mtype_sparse_block, &
+     & mtype_symm_dense, mtype_dense, &
      & mtype_unres_dense, mtype_csr, mtype_scalapack
 use matrix_operations_aux, only: mat_zero_cutoff, mat_inquire_cutoff
 use DEC_settings_mod, only: dec_set_default_config, config_dec_input
@@ -52,7 +52,7 @@ use ks_settings, only: ks_free_incremental_fock
 use memory_handling, only: mem_alloc,mem_dealloc
 use dft_typetype
 use plt_driver_module
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
 use lsmpi_type, only: DFTSETFU
@@ -135,7 +135,7 @@ implicit none
   call pltinfo_set_default_config(config%Plt)
   config%doplt=.false.
   
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
 #endif
 end subroutine config_set_default_config
@@ -364,7 +364,7 @@ DO
                      config%integral%exchangeFactor = hfweight
                      config%integral%dft%HFexchangeFac = hfweight
 #ifdef BUILD_CGTODIFF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
                      call lsquit('cgto_diff_eri not testet for MPI',-1)
 #endif                     
 !                     call cgto_diff_eri_xfac_general(config%integral%exchangeFactor)
@@ -427,7 +427,6 @@ DO
 				 config%davidSCF%stepsize=0.5
 				 config%davidSCF%arh_inp_linesearch=.false.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
-            CASE('.ARH DEBUG');  config%davidSCF%arh_davidson_debug=.true.
             CASE('.ARH(LS) DAVID');  config%davidSCF%arh_davidson=.true.
                                  config%davidSCF%arh_lintrans = .true.
 				 config%davidSCF%precond=.true.
@@ -435,16 +434,7 @@ DO
 				 config%davidSCF%stepsize=0.5
 				 config%davidSCF%arh_inp_linesearch=.true.
                                  config%davidSCF%max_stepsize = config%davidSCF%stepsize
-#ifdef VAR_DSM
-            CASE('.RH TRM');     config%davidSCF%arh_davidson=.true.
-                                 config%davidSCF%arh_lintrans = .true.
-                                 config%davidSCF%arh_linesearch = .true.
-				 config%davidSCF%precond=.true.
-				 config%solver%set_arhterms=.false.
-                                 config%opt%cfg_saveF0andD0 = .true.
-				 config%davidSCF%stepsize=0.5
-                                 config%davidSCF%max_stepsize = config%davidSCF%stepsize
-#endif
+            CASE('.ARH DEBUG');  config%davidSCF%arh_davidson_debug=.true.
 	    CASE('.DAVIDSON DEBUG'); config%davidSCF%debug_info =.true.
 	    CASE('.DAVIDSON EXTRAVEC'); config%davidSCF%arh_extravec =.true.
                                       config%davidSCF%arh_inp_extravec =.true.
@@ -457,8 +447,6 @@ DO
 #ifdef MOD_UNRELEASED
             CASE('.ASYM');       config%opt%cfg_asym = .true.
 #endif
-            CASE('.BLOCK');      CALL mat_select_type(mtype_sparse_block,lupri)
-                                 config%opt%cfg_prefer_BSM = .true.
             CASE('.CHOLESKY');   config%decomp%lowdin_diagonalize = .false.; config%decomp%cholesky_decomp   = .true.
             CASE('.CONFSHIFT');  config%diag%cfg_no_conf_shift = .false.
             CASE('.CONTFAC');    READ(LUCMD,*) config%solver%cfg_arh_contract
@@ -473,13 +461,6 @@ DO
             !CASE('.DISKQUEUE') ; config%solver%cfg_arh_disk_macro = .true. !Not active - get_from_modFIFO_disk won't work!
             CASE('.DORTH');      config%diag%CFG_lshift = diag_lshift_dorth
                                  config%av%CFG_lshift = diag_lshift_dorth
-#ifdef VAR_DSM
-            CASE('.DSM');        config%av%CFG_averaging = config%av%CFG_AVG_DSM
-            CASE('.DSMONE');     config%av%cfg_averaging = config%av%cfg_avg_dsm
-                                 config%av%cfg_dsm_app = config%av%cfg_dsm_one
-            CASE('.DSMXTRA');    config%av%cfg_averaging = config%av%cfg_avg_dsm
-                                 config%av%cfg_dsm_app = config%av%cfg_dsm_xtra_term
-#endif
             CASE('.PURESCF');    config%opt%purescf = .true.
             CASE('.DUMPMAT');    config%opt%dumpmatrices = .true.
             CASE('.EDIIS');      config%av%CFG_averaging = config%av%CFG_AVG_EDIIS
@@ -507,8 +488,9 @@ DO
                                  READ(LUCMD,*) config%diag%cfg_nshifts,(config%diag%cfg_levelshifts(i),i=1,config%diag%cfg_nshifts)
                                  config%diag%cfg_fixed_shift = .true. ; config%diag%cfg_custom_shift = .true.
             CASE('.LINCOMB');    READ(LUCMD,*) config%opt%cfg_weight_param 
-            CASE('.LWITER') ;    config%decomp%lowdin_diagonalize = .false.; config%decomp%lowdin_iterative  = .true. 
-            CASE('.LWQITER') ;   config%decomp%lowdin_diagonalize = .false.; config%decomp%lowdin_qiterative = .true.
+!            Both these iterative lowdin decomp are broken
+!            CASE('.LWITER') ;    config%decomp%lowdin_diagonalize = .false.; config%decomp%lowdin_iterative  = .true. 
+!            CASE('.LWQITER') ;   config%decomp%lowdin_diagonalize = .false.; config%decomp%lowdin_qiterative = .true.
             CASE('.MAXELM');     READ(LUCMD,*) config%solver%cfg_max_element
                                                config%solver%set_max_element = config%solver%cfg_max_element
             CASE('.MAXIT');      READ(LUCMD,*) config%opt%cfg_max_linscf_iterations
@@ -534,14 +516,8 @@ DO
                                                                          !use instead the "old" scheme developed for the Davidson algorithm
             CASE('.NEWDAMP');    config%solver%cfg_arh_newdamp = .true.
             CASE('.NVEC');       READ(LUCMD,*) NVEC; config%av%cfg_settings%max_history_size = NVEC
-#ifdef VAR_DSM
-                                 config%av%dsm_history_size = NVEC
-#endif
                                  config%av%diis_history_size = NVEC
                                  config%av%ediis_history_size = NVEC
-#ifdef VAR_DSM
-            CASE('.NVECDSM');    READ(LUCMD,*) config%av%dsm_history_size
-#endif
             CASE('.NVECDII');    READ(LUCMD,*) NVEC
                                  config%av%diis_history_size = NVEC
                                  config%av%ediis_history_size = NVEC
@@ -621,15 +597,6 @@ DO
             CASE('.START');      READ(LUCMD,*) config%opt%cfg_start_guess 
                                  STARTGUESS = .TRUE.
             CASE('.NOATOMSTART');config%opt%add_atoms_start=.FALSE.
-#ifdef VAR_DSM
-            CASE('.TRSCF');      config%opt%CFG_density_method = config%opt%CFG_F2D_ROOTHAAN
-                                 config%diag%cfg_lshift = diag_lshift_dorth
-                                 config%av%cfg_lshift = diag_lshift_dorth
-                                 config%av%CFG_averaging = config%av%CFG_AVG_DSM
-            CASE('.TrFD');       config%opt%CFG_density_method =  config%opt%CFG_F2D_DIRECT_DENS
-            CASE('.TrFD FULL');  config%opt%CFG_density_method =  config%opt%CFG_F2D_DIRECT_DENS
-                                 config%solver%cfg_arh_truncate = .false.
-#endif
 #ifdef MOD_UNRELEASED
             CASE('.UNREST');     config%decomp%cfg_unres=.true.
                                  config%integral%unres=.true.
@@ -1007,7 +974,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         SELECT CASE(WORD) 
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
@@ -1079,10 +1046,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.BASPRINT');  READ(LUCMD,*) INTEGRAL%BASPRINT
         CASE ('.DEBUGPROP');  INTEGRAL%DEBUGPROP = .TRUE.
         CASE ('.DEBUGGEN1INT')
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
            INTEGRAL%DEBUGGEN1INT = .TRUE.
 #else
-           call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT',-1)
+           call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT_LSDALTON',-1)
 #endif
         CASE ('.DEBUGCGTODIFF')
 #ifdef BUILD_CGTODIFF
@@ -1320,10 +1287,10 @@ subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
         CASE ('.TEST'); GEOHESSIAN%testContrib=.TRUE.
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
            GEOHESSIAN%DebugGen1Int = .TRUE.
 !#else
-!           call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT',-1)
+!           call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT_LSDALTON',-1)
 #endif
         CASE ('.INTPRINT');  READ(LUCMD,*) GEOHESSIAN%IntPrint
         CASE DEFAULT
@@ -1407,16 +1374,6 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
            config%solver%DEBUG_DIAG_REDSPACE = .true.
         CASE('.DEBUG_DIAG_HESSIAN')
            config%opt%DEBUG_DIAG_HESSIAN = .true.
-#ifdef VAR_DSM
-           !CASE('.DEBUG_DSM_DCHANGE')
-           !     DEBUG_DSM_DCHANGE = .true.
-           !CASE('.DEBUG_DSM_EMODEL')
-           !     DEBUG_DSM_EMODEL = .true.
-           !CASE('.DEBUG_DSM_METRIC')
-           !     DEBUG_DSM_METRIC = .true.
-           !CASE('.DEBUG_EMODEL_CHANGE')
-           !     DEBUG_EMODEL_CHANGE = .true.
-#endif
         CASE('.DEBUG_HESSIAN')
            config%solver%DEBUG_HESSIAN = .true.
         CASE('.DEBUG_HESSIAN_EXACT')
@@ -1425,10 +1382,6 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
            config%diag%DEBUG_IDEMPOTENCY = .true.
            !CASE('.DEBUG_OAO_GRADIENT')
            !     DEBUG_OAO_GRADIENT = .true.
-#ifdef VAR_DSM
-        CASE('.DEBUG_RH_DSM_ECHANGE')
-           config%diag%DEBUG_RH_DSM_ECHANGE = .true.
-#endif
            !CASE('.DEBUG_RH_MU_E')
            !     DEBUG_RH_MU_E = .true.
            !     READ(LUCMD,*) cfg_nits_debug,  cfg_mu_max_debug 
@@ -1446,34 +1399,6 @@ SUBROUTINE config_info_input(config,lucmd,readword,word)
         CASE('.INFO_DIIS')
            config%av%INFO_DIIS = .true.
            config%av%INFO_WEIGHT_FINAL = .true. 
-#ifdef VAR_DSM
-        CASE('.INFO_DSM')
-           config%av%INFO_DSM_EIGENVAL     = .true.
-           config%av%INFO_DSM_ENERGY       = .true.
-           config%av%INFO_DSM_EXIT         = .true.
-           config%av%INFO_DSM_PROJ         = .true.
-           config%av%INFO_DSM_STEP_TOTAL   = .true.
-           config%av%INFO_WEIGHT_FINAL     = .true.
-        CASE('.INFO_DSM_DETAIL')
-           config%av%INFO_D_PROJ           = .true.
-           config%av%INFO_DSM_CNORM_MU_FIG = .true.
-           !config%av%INFO_DSM_DELTA        = .true.
-           !config%av%INFO_DSM_DERIVATIVES  = .true.
-           config%av%INFO_DSM_EIGENVAL     = .TRUE.
-           config%av%INFO_DSM_ENERGY       = .TRUE.
-           config%av%INFO_DSM_EQ           = .true.
-           config%av%INFO_DSM_EXIT         = .TRUE.
-           config%av%INFO_DSM_GRAD         = .true.
-           config%av%INFO_DSM_METRIC       = .true.
-           config%av%INFO_DSM_NIT          = .true.
-           config%av%INFO_DSM_PROJ         = .TRUE.
-           config%av%INFO_DSM_RATIO        = .true.
-           config%av%INFO_DSM_STEP         = .true.
-           config%av%INFO_DSM_STEP_BRACKET = .true.
-           config%av%INFO_DSM_STEP_TOTAL   = .TRUE.
-           config%av%INFO_DSM_TRUSTR       = .true.
-           config%av%INFO_WEIGHTS          = .true.
-#endif
         CASE('.INFO_LINEQ')
            config%solver%INFO_LINEQ = .true.
         CASE('.INFO_MATOP')
@@ -2757,21 +2682,10 @@ implicit none
    real(realk)                     :: conv_factor, potnuc, cutoff,inverse_std_conv_factor
    CHARACTER*24, PARAMETER :: AVG_NAMES(5) = &
         &  (/ 'None                    ', &
-#ifdef VAR_DSM
-        &     'DSM                     ', &
-#else
         &     '                        ', &
-#endif
         &     'DIIS                    ', &
         &     'EDIIS                   ', &
         &     'Van Lenthe modified DIIS' /)
-#ifdef VAR_DSM
-   CHARACTER*49, PARAMETER :: dsm_names(4) = &
-        &  (/ 'Standard DSM                                     ', &
-        &     'Only one iteration in DSM                        ', &
-        &     'Line search in the steplength after one iteration', &
-        &     'Extra accurate DSM energy model                  '/) 
-#endif
    CHARACTER*35, PARAMETER :: F2D_NAMES(4) = (/ &
         & 'Diagonalization            ',&
         & 'Direct density optimization',&
@@ -2808,22 +2722,9 @@ ENDIF
 !$OMP END MASTER
 !$OMP END PARALLEL
 #endif
-  
-   if (config%opt%cfg_prefer_BSM) then
-#if !defined(HAVE_BSM)
-      CALL lsQUIT('.BLOCK requested but BSM not there',config%lupri)
-#endif
-   endif
 
-
-#ifdef VAR_DSM
-   config%av%dsm_history_size   = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
-   config%av%diis_history_size  = config%av%dsm_history_size
-   config%av%ediis_history_size = config%av%dsm_history_size
-#else
-   config%av%diis_history_size = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
-   config%av%ediis_history_size = config%av%diis_history_size
-#endif
+config%av%diis_history_size = config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
+config%av%ediis_history_size = config%av%diis_history_size
 !Printing the configuration for the calculation:
 !===============================================
 
@@ -2940,21 +2841,12 @@ ENDIF
    if (config%solver%cfg_2nd_order_all) then
       WRITE(config%LUPRI,*)
       config%av%CFG_averaging = config%av%CFG_AVG_none 
-#ifdef VAR_DSM
-      write (config%lupri,*) 'You have requested 2nd order optimization => no averaging (DIIS or DSM)!'
-#else
       write (config%lupri,*) 'You have requested 2nd order optimization => no averaging (no DIIS)!'
-#endif
       config%solver%set_do_2nd_order = .true.
    endif
 
    WRITE(config%LUPRI,*)
    WRITE(config%LUPRI,"('Density subspace min. method    : ',A)") AVG_NAMES(config%av%CFG_averaging)
-#ifdef VAR_DSM
-   if (config%av%cfg_averaging == config%av%cfg_avg_dsm) then
-     WRITE(config%LUPRI,"('  dsm approach: ',A)") dsm_names(config%av%cfg_dsm_app)
-   endif
-#endif
    WRITE(config%LUPRI,"('Density optimization : ',A)") F2D_NAMES(config%opt%CFG_density_method)
    !if (config%opt%CFG_density_method == config%opt%CFG_F2D_ROOTHAAN) then
    !   cfg_rsp_mostart = .true.
@@ -2982,11 +2874,7 @@ ENDIF
    endif
 
    !find the maximum number of stored vectors
-#ifdef VAR_DSM
-   config%av%cfg_settings%max_history_size = MAX(config%av%dsm_history_size,config%av%diis_history_size)
-#else
    config%av%cfg_settings%max_history_size = config%av%diis_history_size
-#endif
    WRITE(config%LUPRI,*)
    WRITE(config%LUPRI,*) 'Maximum size of Fock/density queue in averaging:', &
       &  config%av%cfg_settings(config%av%CFG_SET_type)%max_history_size
@@ -3478,28 +3366,28 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          call lsquit('SCALAPACK not implemented for unrestricted!',config%lupri)
       else
 #ifdef VAR_SCALAPACK
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
          WRITE(lupri,'(4X,A)')'with SCALAPACK for memory distribution and parallelization.'
          CALL mat_select_type(mtype_scalapack,lupri,nbast)
 
 #ifdef VAR_INT64
-#ifdef VAR_LSMPI_32
+#ifdef VAR_MPI_32BIT_INT
          print*,'you cannot compile using a 64 bit integers, when linking to a 32 bit integer library and'
          print*,'use the 64 bit integer BLACS/SCALAPACK provided by MKL/intel'
          write(config%lupri,*)'you cannot compile using a 64 bit integers, when linking to a 32 bit integer library and'
          write(config%lupri,*)'use the 64 bit integer BLACS/SCALAPACK provided by MKL/intel'
-         call lsquit('you cannot compile with VAR_INT64 and SCALAPACK and VAR_LSMPI32',-1)
+         call lsquit('you cannot compile with VAR_INT64 and SCALAPACK and VAR_MPI32',-1)
 #endif 
 #endif
 
 #else
-         !VAR_SCALAPACK but no VAR_LSMPI
-         CALL LSQUIT('SCALAPACK requires MPI - recompile using MPI and the -DVAR_LSMPI flag',config%lupri)
+         !VAR_SCALAPACK but no VAR_MPI
+         CALL LSQUIT('SCALAPACK requires MPI - recompile using MPI and the -DVAR_MPI flag',config%lupri)
 #endif
 #else
          !no VAR_SCALAPACK
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors.'
          call lsquit('.SCALAPACK requires -DVAR_SCALAPACK precompiler flag',config%lupri)
 #else
@@ -3666,7 +3554,7 @@ END SUBROUTINE TRIM_STRING
 
 end module configuration
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 subroutine lsmpi_setmasterToSlaveFunc(WORD)
 use infpar_module
 use xcfun_host,only: USEXCFUN

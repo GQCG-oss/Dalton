@@ -7,26 +7,22 @@
 #
 #########################################################################
 
-# Note: DALTON points to the default installation directory,
-#       in the 'configure' script. If the person installing
-#       Dalton has chosen another installation directory when
-#       he/she ran 'configure', the you should modify the
-#       DALTON definition to pint to that place.
+# Note: $DALTON points to the default "DALTON/build/dalton" script.
+#       If another name than "build" has been chosen for the build directory,
+#       then you should modify the BUILD_DIR defintion to point to that place.
 
+BUILD_DIR="../build"
 
-# radovan: this is to figure out whether TEST is called from test directory
-#          or from outside
-SCRIPT_DIR="${0%/*}"
-# if the script was started from the base directory with ./TEST, then the
-# expansion returns a period, if it was started directly with TEST then the
-# expansion returns the script file name
-if [ "$SCRIPT_DIR" == "." -o "$SCRIPT_DIR" == "$0" ]; then
-  SCRIPT_DIR="$PWD"
-# if the script was not called with an absolute path, then we need to add the
-# current working directory to the relative path of the script
-elif [ "${SCRIPT_DIR:0:1}" != "/" ]; then
-  SCRIPT_DIR="$PWD/$SCRIPT_DIR"
-fi
+# radovan: this is to figure out the location of this script
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    [[ $SOURCE != /* ]] && SOURCE="$SCRIPT_DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 cd $SCRIPT_DIR
 
 if [ -x '/usr/bin/time' ]; then
@@ -36,8 +32,8 @@ else
 fi
 if [ -x '../bin/dalton' ]; then
   DALTON="`pwd`/../bin/dalton"
-elif [ -x '../build/dalton' ]; then
-  DALTON="`pwd`/../build/dalton"
+elif [ -x "$BUILD_DIR/dalton" ]; then
+  DALTON="`pwd`/$BUILD_DIR/dalton"
 else
   DALTON=NON_DEFAULT
 fi
@@ -83,6 +79,18 @@ SHORTQM3="hfmm_1 cc2mm_spc_fop \
 dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6 dftmm_7 dftmm_8 dftmm_9 \
 qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8 hfmmpcm_1"
 #
+SHORTCC3="cc3_LIH1s1p_pol cc3_LIH1s1p_asym_pol cc3_CARBON_pol \
+cc3_CARBON_asym_pol cc3_LIH1s1p_tmom cc3_LIH1s1p_tmom_no2np1 cc3_HF_631G_pol \
+cc3_HF_631G_asym_pol cc3_LIH_431G_tmom cc3_LIH_431G_tmom_no2np1 \
+cc3_HF_ccpVDZ_pol cc3_HF_ccpVDZ_asym_pol cc3_HF_ccpVDZ_tmom \
+cc3_HF_ccpVDZ_tmom_no2np1 cc3_hyp cc3_findiff cc3_hyp_HF631g \
+cc3_LIH1s1p_noddy_pol cc3_HF_631G_2hyp cc3_tmom_fdif cc3_twophot3_noddy \
+cc3_twophot3 cc3_h2o_resid_noddy cc3_h2o_resid cc3_LIH_431G_cauchy_12"
+#
+MEDIUMCC3="cc3_HF_631G_2hyp_noddy"
+#
+CC3="$SHORTCC3 $MEDIUMCC3"
+#
 SHORTCC="cc_rsp_alpha2 cc_rsp_beta cc_rsp_beta2 cc_rsp_betafreq \
 cc_rsp_betafreq2 cc_fop_drw2e cc_fop_prop cc_fop_prop2 cc_exgr_prop \
 cc_rsp_excipolar cc_rsp_exci cc_energy_field cc_fop_prop3 cc_fop_prop4 \
@@ -91,7 +99,7 @@ cc_rsp_mcdbterm cc_rsp_threephot cc_energy_triples cc_energy_triplesdirect \
 cc_energy_triplesdirect2 cc_energy_triplesdirect3 cc_energy_triplet2 \
 cc_rsp_twophot cc_rsp_twophot2 cc_rsp_gamma3 \
 cc_rsp_twophot5 cc_rsp_twophotb cc_grad cc_geoopt_mp2 cc_fop_cc3 cc_rsp_ctocd \
-cc_grad_ccpt_hf cc_geopt_ccpt_hf cc_geopt_ccpt_h2o cc_prop_file"
+cc_grad_ccpt_hf cc_geopt_ccpt_hf cc_geopt_ccpt_h2o cc_prop_file $SHORTCC3"
 #
 SHORT_CHOLESKY="choles_b3lyp_polar choles_cc2_fop \
 choles_hf_magnet choles_kt3_ctocd choles_lda_prop"
@@ -109,7 +117,7 @@ rsp_esr2 rsp_mnfphosph rsp_ecphosph rsp_solvesr walk_polar2"
 MEDIUMCC="cc_rsp_alpha cc_rsp_gamma2 cc_rsp_gammadirect cc_rsp_oddisp \
 cc_energy_triplet cc_rsp_twophotdirect cc_grad2 cc_grad3 cc_geoopt \
 cc_rsp_solv cc_energy_triplet3 cc2dc_energy cc2dc_resp cc2dc_exci cc2dc_resp_newlr \
-cc_beta_solv" 
+cc_beta_solv $MEDIUMCC3" 
 #
 MEDIUM_CHOLESKY="choles_cc2_polar"
 #
@@ -379,6 +387,15 @@ while [ -n "$1" ]; do
   "short_nocc" )
    testcase="$testcase $SHORTNOCC"; 
    shift ;;
+   "shortcc3" )
+   testcase="$testcase $SHORTCC3"; 
+   shift ;;
+   "mediumcc3" )
+   testcase="$testcase $MEDIUMCC3"; 
+   shift ;;
+   "cc3" )
+   testcase="$testcase $CC3"; 
+   shift ;;
    "shortcc" )
    testcase="$testcase $SHORTCC"; 
    shift ;;
@@ -571,12 +588,18 @@ if [ "$cmake" = "true" ]; then
    exit 0
 fi
 
-total_failed=0
 total_tests=0
-
 for item in ${testcase}
 do
   total_tests=`expr $total_tests \+ 1`
+done
+
+total_failed=0
+total_tests_run=0
+
+for item in ${testcase}
+do
+  total_tests_run=`expr $total_tests_run \+ 1`
   trouble=0
   case $item in
     par* | *parallel* )  # assume parallel test if name contains "parallel" or name starts with "par"
@@ -586,11 +609,14 @@ do
       paramlist_this_test="$paramlist"
       shift ;;
   esac
-  errprint "#####################################################################"
-  errprint "`date` -- Starting now with test $item:"
-  myprint  "#####################################################################"
-  myprint  "`date` -- Starting now with test $item:"
-  myprint  "---------------------------------------------------------------------"
+
+  # errprint is necessary to see what test a system error message came from, in case stderr and stdout are different
+  errprint "##########################################################################################"
+  errprint "`date` -- Starting now with test number $total_tests_run out of $total_tests: $item"
+
+  myprint  "##########################################################################################"
+  myprint  "`date` -- Starting now with test number $total_tests_run out of $total_tests: $item"
+  myprint  "------------------------------------------------------------------------------------------"
   chmod +x ../$item || exit 1
   ../$item
 # remove any directory path now the files are unpacked
@@ -744,7 +770,7 @@ do
         fi
 #     else everything OK and -keep defined
       fi
-      myprint "     $checkout -- so far $total_failed tests failed out of $total_tests"
+      myprint "     $checkout -- $total_failed tests failed out of the $total_tests_run tests run so far"
       step=`expr $step \+ 1`
   done
   if [ "$trouble" -eq 0 ]; then

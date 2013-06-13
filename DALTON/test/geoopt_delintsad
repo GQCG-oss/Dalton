@@ -144,7 +144,7 @@ CTRL[3]=0
 ERROR[3]="GEOMETRY NOT READ CORRECTLY"
 
 # Initial energy
-CRIT1=`$GREP "Final * HF energy\: * \-78\.3008092291" $log | wc -l`
+CRIT1=`$GREP "Final * HF energy\: * \-78\.300809229[01]" $log | wc -l`
 TEST[4]=`expr	$CRIT1`
 CTRL[4]=1
 ERROR[4]="INITIAL ENERGY NOT CORRECT"

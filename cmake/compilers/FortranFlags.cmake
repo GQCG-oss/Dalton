@@ -2,7 +2,7 @@ if(NOT DEFINED DEFAULT_Fortran_FLAGS_SET)
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     add_definitions(-DVAR_GFORTRAN)
-    set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445 -ffloat-store")
+    set(CMAKE_Fortran_FLAGS         "-DVAR_GFORTRAN -DGFORTRAN=445 -ffloat-store -fcray-pointer")
     if(${CMAKE_HOST_SYSTEM_PROCESSOR} MATCHES "i386")
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -m64"
@@ -15,7 +15,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES GNU) # this is gfortran
     endif()
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -fbacktrace -fcray-pointer -Wuninitialized")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -ffast-math -funroll-loops -ftree-vectorize -w")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -ffast-math -funroll-loops -ftree-vectorize -w -g -pg")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -static"
@@ -48,7 +48,7 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES G95)
     set(CMAKE_Fortran_FLAGS         "-fno-second-underscore -ftrace=full -DVAR_G95")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -fsloppy-char")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -fsloppy-char -g -pg")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -i8"
@@ -71,7 +71,11 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Intel)
     set(CMAKE_Fortran_FLAGS         "-w -fpp -assume byterecl -DVAR_IFORT")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-O0 -g -traceback")
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -xW -ip")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -xW -ip -g -pg")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
+
+    if(DEFINED MKL_FLAG)
+        set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${MKL_FLAG}")
+    endif()
 
     if(ENABLE_STATIC_LINKING)
         set(CMAKE_Fortran_FLAGS
@@ -107,14 +111,10 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES PGI)
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g -O0 -Mframe")
 # I would like to add -fast but this makes certain dec tests fails
     set(CMAKE_Fortran_FLAGS_RELEASE "-O3 -Mipa=fast")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-O3 -Mipa=fast -g -pg")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -m64 -i8 -i8storage"
-            )
-    else()
-        set(CMAKE_Fortran_FLAGS
-            "${CMAKE_Fortran_FLAGS} -m32"
+            "${CMAKE_Fortran_FLAGS} -i8 -i8storage"
             )
     endif()
     if(ENABLE_OMP) 
@@ -137,32 +137,23 @@ endif()
 
 if(CMAKE_Fortran_COMPILER_ID MATCHES XL)
     add_definitions(-DVAR_XLF)
-    set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname -qlanglvl=extended -qinit=f90ptr")
+    set(CMAKE_Fortran_FLAGS         "-qzerosize -qextname")
     set(CMAKE_Fortran_FLAGS_DEBUG   "-g")
     set(CMAKE_Fortran_FLAGS_RELEASE "-qstrict -O3")
-    set(CMAKE_Fortran_FLAGS_PROFILE "-qstrict -O3 -p -pg")
+    set(CMAKE_Fortran_FLAGS_PROFILE "${CMAKE_Fortran_FLAGS_RELEASE} -g -pg")
     if(ENABLE_64BIT_INTEGERS)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -q64"
             )
     endif()
-    set_source_files_properties(${FREE_FORTRAN_SOURCES}
-        PROPERTIES COMPILE_FLAGS
-        "-qfree"
-        )
-# -qsuffix=f=f90:cpp=f90 -d
-    set_source_files_properties(${FIXED_FORTRAN_SOURCES}
-        PROPERTIES COMPILE_FLAGS
-        "-qfixed"
-        )
-    set_source_files_properties(${OWN_BLAS_SOURCES}
-        PROPERTIES COMPILE_FLAGS
-        "-qfixed"
-        )
-    set_source_files_properties(${OWN_LAPACK_SOURCES}
-        PROPERTIES COMPILE_FLAGS
-        "-qfixed"
-        )
+    set_source_files_properties(${DALTON_FREE_FORTRAN_SOURCES}    PROPERTIES COMPILE_FLAGS "-qfree -qlanglvl=extended -qinit=f90ptr")
+    set_source_files_properties(${LSDALTON_FREE_FORTRAN_SOURCES}  PROPERTIES COMPILE_FLAGS "-qfree -qlanglvl=extended -qinit=f90ptr")
+    set_source_files_properties(${DALTON_FIXED_FORTRAN_SOURCES}   PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${LSDALTON_FIXED_FORTRAN_SOURCES} PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${DALTON_OWN_BLAS_SOURCES}        PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${DALTON_OWN_LAPACK_SOURCES}      PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${LSDALTON_OWN_BLAS_SOURCES}      PROPERTIES COMPILE_FLAGS "-qfixed")
+    set_source_files_properties(${LSDALTON_OWN_LAPACK_SOURCES}    PROPERTIES COMPILE_FLAGS "-qfixed")
     if(ENABLE_BOUNDS_CHECK)
         set(CMAKE_Fortran_FLAGS
             "${CMAKE_Fortran_FLAGS} -C"
@@ -187,6 +178,10 @@ if(CMAKE_Fortran_COMPILER_ID MATCHES Cray)
             "${CMAKE_Fortran_FLAGS} -R bps"
             )
     endif()
+endif()
+
+if(DEFINED EXTRA_Fortran_FLAGS)
+    set(CMAKE_Fortran_FLAGS "${CMAKE_Fortran_FLAGS} ${EXTRA_Fortran_FLAGS}")
 endif()
 
 save_compiler_flags(Fortran)

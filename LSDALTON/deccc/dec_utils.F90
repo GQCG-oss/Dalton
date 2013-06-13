@@ -17,7 +17,7 @@ module dec_fragment_utils
   use matrix_operations
   use IntegralInterfaceMOD!, only: ii_get_h1, ii_get_nucpot
   use BUILDAOBATCH
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
 #endif
 
@@ -1653,10 +1653,6 @@ contains
   end function count_number_of_nonhydrogen_atoms
 
   !> \brief Initialize simple pointer structure
-  !> NOTE!! Only start,end, and N are set here. Due to weird PGI problems
-  !> the pointer association must be executed where the pointer is needed!
-  !> E.g. using:
-  !> CALL c_f_pointer(c_loc(arr(thepointer%start)),thepointer%p,[thepointer%N])
   !> \author Kasper Kristensen
   !> \date May 2012
   subroutine mypointer_init(arrdim,arr,start,N,thepointer)
@@ -1696,11 +1692,12 @@ contains
     end if
 
     ! Make pointer point to requested values
-!    nullify(thepointer%p)
-!    CALL c_f_pointer(c_loc(arr(thepointer%start)),thepointer%p,[thepointer%N])
-
+    nullify(thepointer%p)
+    thepointer%p => arr(thepointer%start:thepointer%end)
 
   end subroutine mypointer_init
+
+
 
   !> \brief Start up PAPI flop counting
   !> Assumes that mypapi_init has been called with global "eventset" parameter.
@@ -2101,7 +2098,7 @@ retval=0
     end if
 
     ! delete dalton input
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     ! Quick fix such that lsitem is never handled for global master                                
     ! as this will destroy the overall MPI framework.
     if(infpar%mynum/=infpar%master) call ls_free(fragment%mylsitem)

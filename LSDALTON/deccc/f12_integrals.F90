@@ -11,7 +11,7 @@
 !> k,l,m : Occupied AOS
 module f12_integrals_module
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
@@ -33,13 +33,12 @@ module f12_integrals_module
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use decmpi_module !, only: mpi_communicate_mp2_int_and_amp
 #endif
 
   use dec_fragment_utils!,only: calculate_fragment_memory, &
   !       & dec_simple_dgemm_update,start_flop_counter,&
-  !       & end_flop_counter, dec_simple_dgemm, mypointer_init, &
   !       & get_currently_available_memory, atomic_fragment_free
   use array2_simple_operations!, only: array2_free, array2_extract_EOS, &
   !       & get_mp2_integral_transformation_matrices, get_mp2_integral_transformation_matrices_fc, &
@@ -284,7 +283,7 @@ contains
     ! For efficiency when calling dgemm, save transposed matrices
     ! ***********************************************************
     call mem_alloc(CoccEOST,noccEOS,nbasis)
-    call mat_transpose(CoccEOS,nbasis,noccEOS,CoccEOST)
+    call mat_transpose(nbasis,noccEOS,1.0E0_realk,CoccEOS,0.0E0_realk,CoccEOST)
 
     ! ************************
     ! Determine AO batch sizes
@@ -446,7 +445,7 @@ contains
           ! tmp2(gammaB,j,b,alphaB) = tmp1^T(b,alphaB;gammaB,j)
           m = noccEOS*dimAlpha    ! dimension of "row" in tmp1 array (to be "column" in tmp2)
           n = noccEOS*dimGamma      ! dimension of "column" in tmp1 array (to be "row" in tmp2)
-          call mat_transpose(tmp1,m,n,tmp2)
+          call mat_transpose(m,n,1.0E0_realk,tmp1,0.0E0_realk,tmp2)
           call mem_dealloc(tmp1)
 
           ! Transform gamma batch index to occupied index

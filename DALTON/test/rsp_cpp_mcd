@@ -56,7 +56,7 @@ cat > rsp_cpp_mcd.dal <<'%EOF%'
 .DFT                                              
  CAMB3LYP                                         
 **RESPONSE INPUT                                  
-*ABSLRS                                           
+*ABSORP                                           
 .MCD                                              
 .BFREQ                                            
  2                                                 

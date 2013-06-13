@@ -667,6 +667,7 @@ c      END IF
       RETURN
       END 
 C
+#if defined(VAR_MPI)
 C-----------------------------------------------------------------------
       SUBROUTINE QM3LNO_P(NOSIM,BOVECS,CREF,CMO,XINDX,UDV,DV,UDVTR,
      &               EVECS,WRK,LWRK)
@@ -1151,14 +1152,14 @@ C z-component
       END IF
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(JRXYO),WRK(JRXYO),N2ORBX,
+      CALL MPI_REDUCE(WRK(JRXYO),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
 
       CALL QEXIT('QM3LNO_S')
 
       RETURN
       END
-
+#endif
 C ---------------------------------------------------------------------
 
 C  /* Deck qm3qro */
@@ -1546,6 +1547,7 @@ C
       RETURN
       END
 
+#if defined(VAR_MPI)
 C-----------------------------------------------------------------------
       SUBROUTINE QM3QRO_P(VEC1,VEC2,ETRS,XINDX,ZYM1,ZYM2,
      &                 UDV,WRK,LWRK,KZYVR,KZYV1,KZYV2,
@@ -2123,13 +2125,14 @@ C z-component
 
 
 C     No more integrals to calculate
-      CALL MPI_REDUCE(WRK(KTRES),WRK(KTRES),N2ORBX,
+      CALL MPI_REDUCE(WRK(KTRES),MPI_IN_PLACE,N2ORBX,
      &     MPI_DOUBLE_PRECISION,MPI_SUM,0,MPI_COMM_WORLD,IERR)
 
       CALL QEXIT('QM3QRO_S')
 
       RETURN
       END
+#endif
 C-----------------------------------------------------------------------
 C  /* Deck qm3qlm */
       FUNCTION QM3QLM(RLM)

@@ -222,6 +222,7 @@ START REFOUT
   Christian B. Nielsen,     University of Copenhagen,     Denmark     (QM/MM code)
   Patrick Norman,           University of Linkoeping,     Sweden      (cubic response and complex response in RESPONS)
   Jeppe Olsen,              Aarhus University,            Denmark     (SIRIUS CI/density modules)
+  Jogvan Magnus H. Olsen,   Univ. of Southern Denmark,    Denmark     (Polarizable embedding (PE) module)
   Anders Osted,             Copenhagen University,        Denmark     (QM/MM code)
   Martin J. Packer,         University of Sheffield,      UK          (SOPPA)
   Filip Pawlowski,          Kazimierz Wielki University   Poland      (CC3)
@@ -240,20 +241,51 @@ START REFOUT
   Arnfinn H. Steindal,      University of Tromsoe,        Norway      (parallel QM/MM)
   K. O. Sylvester-Hvid,     University of Copenhagen,     Denmark     (MC-SCRF)
   Peter R. Taylor,          VLSCI/Univ. of Melbourne,     Australia   (Symmetry handling ABACUS, integral transformation)
+  Andrew M. Teale,          University of Nottingham,     England     (DFT-AC, DFT-D)
   David P. Tew,             University of Bristol,        England     (CCSD(R12))
   Olav Vahtras,             KTH Stockholm,                Sweden      (triplet response, spin-orbit, ESR, TDDFT, open-shell DFT)
   David J. Wilson,          La Trobe University,          Australia   (DFT Hessian and DFT magnetizabilities)
   Hans Agren,               KTH Stockholm,                Sweden      (SIRIUS module, MC-SCRF solvation model)
  --------------------------------------------------------------------------------
 
-     Date and time (Linux)  : Fri Mar 22 13:48:42 2013
-     Host name              : compute-1-7.local                       
+     Date and time (Linux)  : Wed Jun  5 20:39:19 2013
+     Host name              : c18-12.local                            
 
  * Work memory size             :    64000000 =  488.28 megabytes.
 
  * Directories for basis set searches:
-   1) /home/arnfinn/calculations/test/qm3pcm-merge
-   2) /home/arnfinn/dalton/build-merge/basis
+   1) /home/arnfinn/dalton/DALTON/test/perl-pid.25283__2013_6_5__20.39
+   2) /home/arnfinn/dalton/DALTON/build-trace/basis
+
+
+Compilation information
+-----------------------
+
+ Who compiled             | arnfinn@stallo-1.local
+ System                   | Linux-2.6.32-279.14.1.el6.x86_64
+ CMake generator          | Unix Makefiles
+ Processor                | x86_64
+ 64-bit integers          | OFF
+ MPI                      | ON
+ Fortran compiler         | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpif90
+ Fortran compiler version | ifort (IFORT) 13.0.1 20121010
+ C compiler               | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicc
+ C compiler version       | icc (ICC) 13.0.1 20121010
+ C++ compiler             | /global/apps/openmpi/1.6.2/intel/13.0/bin/mpicxx
+ C++ compiler version     | unknown
+ BLAS                     | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_core.so;/global/apps/intel/2013.1
+                          | /mkl/lib/intel64/libmkl_intel_lp64.so;/global/apps
+                          | /intel/2013.1/mkl/lib/intel64/libmkl_sequential.so
+                          | ;/usr/lib64/libpthread.so;/usr/lib64/libm.so;-open
+                          | mp;-Wl,--end-group
+ LAPACK                   | -Wl,--start-group;/global/apps/intel/2013.1/mkl/li
+                          | b/intel64/libmkl_lapack95_lp64.a;/global/apps/inte
+                          | l/2013.1/mkl/lib/intel64/libmkl_intel_lp64.so;-ope
+                          | nmp;-Wl,--end-group
+ Static linking           | OFF
+ Last Git revision        | c6beed320385b29d2f94c4f311a5082c1d9b67b4
+ Configuration time       | 2013-06-04 13:39:05.720816
 
 
    Content of the .dal input file
@@ -307,7 +339,7 @@ WATER
 .QM3                                              
 .MMPCM                                            
 .THRSMP                                           
- 1.0D-9                                           
+ 1.0e-9                                           
 **INTEGRALS                                       
 .DIPLEN                                           
 .NUCPOT                                           
@@ -319,7 +351,7 @@ WATER
 B3LYP                                             
 *SCF INPUT                                        
 .THRESH                                           
-1.0D-12                                           
+1.0e-12                                           
 **RESPONSE                                        
 *LINEAR                                           
 .DIPLEN                                           
@@ -327,7 +359,7 @@ B3LYP
 .ROOTS                                            
 4                                                 
 .THCPP                                            
- 1.0D-04                                          
+ 1.0e-04                                          
 .PRINT                                            
 5                                                 
 **END OF DALTON INPUT                             
@@ -374,7 +406,7 @@ H            2.303878   -1.461228     .570065 2 3
  ** LOOKING UP INTERNALLY STORED DATA FOR SOLVENT = WATER    **
  Optical and physical constants:
  EPS= 78.390; EPSINF=  1.776; RSOLV=  1.385 A; VMOL=  18.070 ML/MOL;
- TCE=2.57000D-04 1/K; STEN= 71.810 DYN/CM;  DSTEN=  0.6500; CMF=  1.2770
+ TCE=2.57000e-04 1/K; STEN= 71.810 DYN/CM;  DSTEN=  0.6500; CMF=  1.2770
 
 
      -----------------------------------
@@ -417,6 +449,7 @@ H            2.303878   -1.461228     .570065 2 3
   Iterative Method is used
   MM/PCM interface active
  +------------------+
+  WARNING: QM3 .INTDIR activated since this is a QM/MM/PCM calculation
 
 
     *************************************************************************
@@ -463,7 +496,7 @@ H            2.303878   -1.461228     .570065 2 3
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
   Basis set file used for this atomic type with Z =   6 :
-     "/home/arnfinn/dalton/build-merge/basis/STO-3G"
+     "/home/arnfinn/dalton/DALTON/build-trace/basis/STO-3G"
 
   Atomic type no.    2
   --------------------
@@ -472,7 +505,7 @@ H            2.303878   -1.461228     .570065 2 3
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
   Basis set file used for this atomic type with Z =   8 :
-     "/home/arnfinn/dalton/build-merge/basis/STO-3G"
+     "/home/arnfinn/dalton/DALTON/build-trace/basis/STO-3G"
 
   Atomic type no.    3
   --------------------
@@ -481,7 +514,7 @@ H            2.303878   -1.461228     .570065 2 3
   Number of basis sets to read;    2
   The basis set is "STO-3G" from the basis set library.
   Basis set file used for this atomic type with Z =   1 :
-     "/home/arnfinn/dalton/build-merge/basis/STO-3G"
+     "/home/arnfinn/dalton/DALTON/build-trace/basis/STO-3G"
 
   Atomic type no.    4
   --------------------
@@ -504,14 +537,14 @@ H            2.303878   -1.461228     .570065 2 3
 Point group: C1 
  ********SPHERES IN PCMSPHGEN************
  INDEX        X        Y         Z        R
-   1   -3.0015786160D+00   -1.4563174382D+00    5.5008037772D-02    1.7000000000D+00
-   2   -3.1314330364D+00    8.2405098160D-01   -1.8424829719D-02    1.5000000000D+00
-   3   -1.1728925345D+00   -2.4468589606D+00    1.0251953201D-01    1.2000000000D+00
-   4   -4.7395143797D+00   -2.6116033945D+00    7.6121947767D-02    1.2000000000D+00
-   5    1.8434958651D+00    2.8482311204D+00   -1.5607248066D-01    1.5000000000D+00
-   6    3.0872550190D+00   -2.3305614354D+00   -1.4888396248D-01    1.5000000000D+00
-   7    4.3841646100D-02    2.4568253762D+00   -1.6641495175D-01    1.2000000000D+00
-   8    2.1048355395D+00    3.8558557669D+00    1.3318373989D+00    1.2000000000D+00
+   1   -3.0015786160e+00   -1.4563174382e+00    5.5008037772e-02    1.7000000000e+00
+   2   -3.1314330364e+00    8.2405098160e-01   -1.8424829719e-02    1.5000000000e+00
+   3   -1.1728925345e+00   -2.4468589606e+00    1.0251953201e-01    1.2000000000e+00
+   4   -4.7395143797e+00   -2.6116033945e+00    7.6121947767e-02    1.2000000000e+00
+   5    1.8434958651e+00    2.8482311204e+00   -1.5607248066e-01    1.5000000000e+00
+   6    3.0872550190e+00   -2.3305614354e+00   -1.4888396248e-01    1.5000000000e+00
+   7    4.3841646100e-02    2.4568253762e+00   -1.6641495175e-01    1.2000000000e+00
+   8    2.1048355395e+00    3.8558557669e+00    1.3318373989e+00    1.2000000000e+00
 
 
                                  Isotopic Masses
@@ -546,7 +579,7 @@ Point group: C1
   total:     12   16.0000    36    12
   ----------------------------------------------------------------------
 
-  Threshold for neglecting AO integrals:  1.00D-12
+  Threshold for neglecting AO integrals:  1.00e-12
 
 
   Cartesian Coordinates (a.u.)
@@ -696,7 +729,7 @@ Point group: C1
      ************************************************************************
 
 
- Threshold for neglecting two-electron integrals:  1.00D-12
+ Threshold for neglecting two-electron integrals:  1.00e-12
  Number of two-electron integrals written:        2907 ( 94.4% )
  Megabytes written:                              0.034
 
@@ -728,11 +761,11 @@ Point group: C1
           THE SOLUTE IS ENCLOSED IN ONE CAVITY
 
  ..... DONE GENERATION CAVITY .....
-
+ 
   ..... DONE GENERATING -Q-  MATRIX .....
- >>>  Time used in Q-MAT      is   2.18 seconds
- >>>> Total CPU  time used in HERMIT:   4.44 seconds
- >>>> Total wall time used in HERMIT:   4.67 seconds
+ >>>  Time used in Q-MAT      is   0.30 seconds
+ >>>> Total CPU  time used in HERMIT:   0.67 seconds
+ >>>> Total wall time used in HERMIT:   0.70 seconds
 
 
                         .----------------------------------.
@@ -762,8 +795,8 @@ Point group: C1
  **********************************************************************
 
  
-     Date and time (Linux)  : Fri Mar 22 13:48:47 2013
-     Host name              : compute-1-7.local                       
+     Date and time (Linux)  : Wed Jun  5 20:39:20 2013
+     Host name              : c18-12.local                            
 
  Title lines from ".mol" input file:
      CH2O PLUS 2 WATERS                                                      
@@ -823,7 +856,7 @@ Point group: C1
      Maximum number of Fock   iterations      0
      Maximum number of DIIS   iterations     60
      Maximum number of QC-SCF iterations     60
-     Threshold for SCF convergence     1.00D-12
+     Threshold for SCF convergence     1.00e-12
  
      This is a DFT calculation of type: B3LYP
  Weighted mixed functional:
@@ -851,244 +884,252 @@ Point group: C1
 
  Iter      Total energy       Solvation energy    Error norm    Delta(E)
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.975378044871  16.0000012547    1.25D-06
+      K-S energy, electrons, error :    -11.975378044871  16.0000012547    1.25e-06
       QM3 induced Dipole vector converged in  12 iterations.
-      Final norm2 of QM3 induced dipole moment vector:   13.241662292657812
+      Final norm2 of QM3 induced dipole moment vector:   13.241662292657828
       QM3 induced Dipole vector converged in  10 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.646363105050853
+      Final norm2 of QM3 induced dipole moment vector:    0.688237384600798
+      QM3 induced Dipole vector converged in  10 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.154008077632154
       QM3 induced Dipole vector converged in   9 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.081849518869684
-      QM3 induced Dipole vector converged in   9 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.047171361930943
+      Final norm2 of QM3 induced dipole moment vector:    0.128059711130834
       QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043718750816638
+      Final norm2 of QM3 induced dipole moment vector:    0.126706885498394
       QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043194613844121
+      Final norm2 of QM3 induced dipole moment vector:    0.126664581086266
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043096838589755
+      Final norm2 of QM3 induced dipole moment vector:    0.126675731044768
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043077106815990
+      Final norm2 of QM3 induced dipole moment vector:    0.126680482362685
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043072989862787
+      Final norm2 of QM3 induced dipole moment vector:    0.126681854288569
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043072115514704
-      QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043071927802125
+      Final norm2 of QM3 induced dipole moment vector:    0.126682208816078
       QM3 induced Dipole vector converged in   3 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043071887143437
+      Final norm2 of QM3 induced dipole moment vector:    0.126682295680977
+      QM3 induced Dipole vector converged in   3 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.126682316680574
  MMPCM converged for given density
  No. of iterations:           12
-   1  -112.639529351     -3.423203955690E-02    2.41139D+00   -1.13D+02
-      Virial theorem: -V/T =      2.004570
+   1  -112.645865418     -4.056810716836e-02    2.41860e+00   -1.13e+02
+      Virial theorem: -V/T =      2.004627
 @      MULPOP C       0.99; O      -0.72; H      -0.14; H      -0.14; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.765242249359  16.0000013790    1.38D-06
-      QM3 induced Dipole vector converged in   9 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.009190575878454
+      K-S energy, electrons, error :    -11.758841657192  16.0000013793    1.38e-06
       QM3 induced Dipole vector converged in  10 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.020963873629841
+      Final norm2 of QM3 induced dipole moment vector:    0.040852670815576
+      QM3 induced Dipole vector converged in  10 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.082429011718478
       QM3 induced Dipole vector converged in   9 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.026331184411254
+      Final norm2 of QM3 induced dipole moment vector:    0.092641306212917
       QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.027317183411319
+      Final norm2 of QM3 induced dipole moment vector:    0.094365473198509
       QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.027485685307953
+      Final norm2 of QM3 induced dipole moment vector:    0.094641566827926
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.027514461010933
-      QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.027519442128667
-      QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.027520322241910
- MMPCM converged for given density
- No. of iterations:            8
-   2  -112.417759747     -5.284200264228E-03    2.53580D+00    2.22D-01
-      Virial theorem: -V/T =      2.014727
-@      MULPOP C      -1.38; O       0.94; H       0.24; H       0.20; 
- -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.950609959362  16.0000013055    1.31D-06
-      QM3 induced Dipole vector converged in  10 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.125973962747581
-      QM3 induced Dipole vector converged in  10 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.053369399591084
-      QM3 induced Dipole vector converged in   9 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.044634618617630
-      QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043303188574267
-      QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043089551490429
+      Final norm2 of QM3 induced dipole moment vector:    0.094684876851676
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043054749332645
+      Final norm2 of QM3 induced dipole moment vector:    0.094691499416061
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043049014493422
-      QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043048055618050
+      Final norm2 of QM3 induced dipole moment vector:    0.094692466567628
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.043047892098430
+      Final norm2 of QM3 induced dipole moment vector:    0.094692595088618
  MMPCM converged for given density
  No. of iterations:            9
-   3  -112.848030512     -2.777671776174E-02    8.25875D-01   -4.30D-01
-      Virial theorem: -V/T =      2.008969
-@      MULPOP C       0.45; O      -0.61; H       0.10; H       0.07; 
+   2  -112.409148132     -2.655002900105e-02    2.58352e+00    2.37e-01
+      Virial theorem: -V/T =      2.015001
+@      MULPOP C      -1.40; O       0.98; H       0.22; H       0.20; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.870212627640  16.0000013139    1.31D-06
+      K-S energy, electrons, error :    -11.945237489065  16.0000013047    1.30e-06
+      QM3 induced Dipole vector converged in  10 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.247060242179387
+      QM3 induced Dipole vector converged in  10 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.144115822359321
       QM3 induced Dipole vector converged in   9 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.021917464306991
-      QM3 induced Dipole vector converged in   9 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.033172454108083
+      Final norm2 of QM3 induced dipole moment vector:    0.130845343274184
       QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.035226928510843
+      Final norm2 of QM3 induced dipole moment vector:    0.128835970470722
       QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.035566655085391
+      Final norm2 of QM3 induced dipole moment vector:    0.128524651610388
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.035622324889660
+      Final norm2 of QM3 induced dipole moment vector:    0.128476881582408
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.035631501780788
+      Final norm2 of QM3 induced dipole moment vector:    0.128469744480428
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.035633031551232
+      Final norm2 of QM3 induced dipole moment vector:    0.128468733006708
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.035633290675340
+      Final norm2 of QM3 induced dipole moment vector:    0.128468605031618
+ MMPCM converged for given density
+ No. of iterations:            9
+   3  -112.860218149     -3.358229838273e-02    8.17454e-01   -4.51e-01
+      Virial theorem: -V/T =      2.009390
+@      MULPOP C       0.44; O      -0.59; H       0.08; H       0.07; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.866031151391  16.0000013131    1.31e-06
+      QM3 induced Dipole vector converged in   9 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.092690040469251
+      QM3 induced Dipole vector converged in   9 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.111670447582247
+      QM3 induced Dipole vector converged in   8 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.114900961587429
+      QM3 induced Dipole vector converged in   8 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.115415737318163
+      QM3 induced Dipole vector converged in   7 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.115496282101365
+      QM3 induced Dipole vector converged in   6 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.115508662368046
+      QM3 induced Dipole vector converged in   5 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.115510508670057
+      QM3 induced Dipole vector converged in   4 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.115510768526119
  MMPCM converged for given density
  No. of iterations:            8
-   4  -112.902375633     -1.008327488218E-02    3.76011D-02   -5.43D-02
-      Virial theorem: -V/T =      2.013820
-@      MULPOP C       0.03; O      -0.19; H       0.10; H       0.07; 
+   4  -112.912976030     -2.013543583818e-02    3.84248e-02   -5.28e-02
+      Virial theorem: -V/T =      2.014163
+@      MULPOP C       0.03; O      -0.18; H       0.08; H       0.07; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.875599499030  16.0000013158    1.32D-06
+      K-S energy, electrons, error :    -11.871395063283  16.0000013149    1.31e-06
       QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.037080243918050
+      Final norm2 of QM3 induced dipole moment vector:    0.118063592631383
       QM3 induced Dipole vector converged in   8 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036281467570861
+      Final norm2 of QM3 induced dipole moment vector:    0.116807082007326
       QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036153106161559
+      Final norm2 of QM3 induced dipole moment vector:    0.116609951901332
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036132253641701
+      Final norm2 of QM3 induced dipole moment vector:    0.116579117930852
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036128839641733
+      Final norm2 of QM3 induced dipole moment vector:    0.116574351946044
+      QM3 induced Dipole vector converged in   5 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116573631705578
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036128275353741
-      QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036128180771217
+      Final norm2 of QM3 induced dipole moment vector:    0.116573527424380
  MMPCM converged for given density
  No. of iterations:            7
-   5  -112.902499831     -1.094028162610E-02    7.11863D-03   -1.24D-04
-      Virial theorem: -V/T =      2.013440
-@      MULPOP C       0.02; O      -0.21; H       0.11; H       0.08; 
+   5  -112.913129983     -2.074773907698e-02    7.70486e-03   -1.54e-04
+      Virial theorem: -V/T =      2.013787
+@      MULPOP C       0.02; O      -0.19; H       0.10; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.874943770423  16.0000013153    1.32D-06
+      K-S energy, electrons, error :    -11.870742165816  16.0000013143    1.31e-06
       QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.035965772495676
+      Final norm2 of QM3 induced dipole moment vector:    0.116277515305010
       QM3 induced Dipole vector converged in   7 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036051028038225
+      Final norm2 of QM3 induced dipole moment vector:    0.116407296440637
       QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036064839333231
+      Final norm2 of QM3 induced dipole moment vector:    0.116427686861743
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036067087558026
+      Final norm2 of QM3 induced dipole moment vector:    0.116430863648249
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036067456150712
- MMPCM converged for given density
- No. of iterations:            5
-   6  -112.902504929     -1.084505236531E-02    1.79379D-03   -5.10D-06
-      Virial theorem: -V/T =      2.013493
-@      MULPOP C       0.03; O      -0.21; H       0.11; H       0.08; 
- -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.875051359319  16.0000013153    1.32D-06
-      QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036100430567094
-      QM3 induced Dipole vector converged in   6 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036080585004269
-      QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036077380428492
-      QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036076860546265
+      Final norm2 of QM3 induced dipole moment vector:    0.116431351250479
       QM3 induced Dipole vector converged in   3 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036076775716642
+      Final norm2 of QM3 induced dipole moment vector:    0.116431424034905
  MMPCM converged for given density
- No. of iterations:            5
-   7  -112.902505055     -1.086611026891E-02    2.12941D-04   -1.27D-07
-      Virial theorem: -V/T =      2.013488
-@      MULPOP C       0.03; O      -0.21; H       0.11; H       0.08; 
+ No. of iterations:            6
+   6  -112.913132247     -2.068018558522e-02    2.01874e-03   -2.26e-06
+      Virial theorem: -V/T =      2.013841
+@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.875065166005  16.0000013153    1.32D-06
+      K-S energy, electrons, error :    -11.870864699476  16.0000013143    1.31e-06
+      QM3 induced Dipole vector converged in   6 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116494528436151
+      QM3 induced Dipole vector converged in   6 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116457755803395
       QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036081133021128
-      QM3 induced Dipole vector converged in   5 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078524112917
+      Final norm2 of QM3 induced dipole moment vector:    0.116451932505411
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078102786485
+      Final norm2 of QM3 induced dipole moment vector:    0.116451013826730
+      QM3 induced Dipole vector converged in   4 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116450869896947
       QM3 induced Dipole vector converged in   3 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078034451081
+      Final norm2 of QM3 induced dipole moment vector:    0.116450847700309
+ MMPCM converged for given density
+ No. of iterations:            6
+   7  -112.913133038     -2.069724423336e-02    2.19851e-04   -7.91e-07
+      Virial theorem: -V/T =      2.013834
+@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.870878973298  16.0000013143    1.31e-06
+      QM3 induced Dipole vector converged in   5 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116458352315280
+      QM3 induced Dipole vector converged in   5 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116454039829781
+      QM3 induced Dipole vector converged in   4 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116453357418978
+      QM3 induced Dipole vector converged in   4 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116453249824789
  MMPCM converged for given density
  No. of iterations:            4
-   8  -112.902505046     -1.086886214315E-02    1.58447D-05    9.91D-09
-      Virial theorem: -V/T =      2.013487
-@      MULPOP C       0.03; O      -0.21; H       0.11; H       0.08; 
+   8  -112.913133103     -2.069924364304e-02    1.62335e-05   -6.49e-08
+      Virial theorem: -V/T =      2.013833
+@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.875066226758  16.0000013153    1.32D-06
+      K-S energy, electrons, error :    -11.870880120846  16.0000013143    1.31e-06
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078340113571
+      Final norm2 of QM3 induced dipole moment vector:    0.116453814467184
       QM3 induced Dipole vector converged in   4 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078147650972
- MMPCM converged for given density
- No. of iterations:            2
-   9  -112.902505045     -1.086906563986E-02    1.42117D-06    8.02D-10
-      Virial theorem: -V/T =      2.013487
-@      MULPOP C       0.03; O      -0.21; H       0.11; H       0.08; 
- -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.875066345980  16.0000013153    1.32D-06
-      QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078154509796
+      Final norm2 of QM3 induced dipole moment vector:    0.116453475322172
       QM3 induced Dipole vector converged in   3 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078126957434
+      Final norm2 of QM3 induced dipole moment vector:    0.116453421711052
  MMPCM converged for given density
- No. of iterations:            2
-  10  -112.902505045     -1.086908938105E-02    1.93626D-07    2.12D-10
-      Virial theorem: -V/T =      2.013487
-@      MULPOP C       0.03; O      -0.21; H       0.11; H       0.08; 
+ No. of iterations:            3
+   9  -112.913133107     -2.069940105393e-02    5.63273e-07   -4.67e-09
+      Virial theorem: -V/T =      2.013833
+@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.875066332718  16.0000013153    1.32D-06
-      QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078118350127
-      QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078120037223
+      K-S energy, electrons, error :    -11.870880169298  16.0000013143    1.31e-06
+      QM3 induced Dipole vector converged in   3 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116453440233722
+      QM3 induced Dipole vector converged in   3 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116453423970450
  MMPCM converged for given density
  No. of iterations:            2
-  11  -112.902505045     -1.086908674624E-02    5.68107D-09    4.15D-12
-      Virial theorem: -V/T =      2.013487
-@      MULPOP C       0.03; O      -0.21; H       0.11; H       0.08; 
+  10  -112.913133108     -2.069940787605e-02    7.92254e-08   -1.61e-10
+      Virial theorem: -V/T =      2.013833
+@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.875066332111  16.0000013153    1.32D-06
+      K-S energy, electrons, error :    -11.870880164192  16.0000013143    1.31e-06
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078120143327
+      Final norm2 of QM3 induced dipole moment vector:    0.116453418563726
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078120299373
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419748875
  MMPCM converged for given density
  No. of iterations:            2
-  12  -112.902505045     -1.086908663503E-02    1.65347D-09   -1.29D-12
-      Virial theorem: -V/T =      2.013487
-@      MULPOP C       0.03; O      -0.21; H       0.11; H       0.08; 
+  11  -112.913133108     -2.069940711281e-02    3.74246e-09    5.48e-11
+      Virial theorem: -V/T =      2.013833
+@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.875066332227  16.0000013153    1.32D-06
+      K-S energy, electrons, error :    -11.870880163773  16.0000013143    1.31e-06
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078120362510
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419721794
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078120346061
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419884980
  MMPCM converged for given density
  No. of iterations:            2
-  13  -112.902505045     -1.086908665784E-02    3.20863D-11    0.00D+00
-      Virial theorem: -V/T =      2.013487
-@      MULPOP C       0.03; O      -0.21; H       0.11; H       0.08; 
+  12  -112.913133108     -2.069940705857e-02    1.94440e-09   -7.11e-14
+      Virial theorem: -V/T =      2.013833
+@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
  -----------------------------------------------------------------------------
-      K-S energy, electrons, error :    -11.875066332229  16.0000013153    1.32D-06
+      K-S energy, electrons, error :    -11.870880163913  16.0000013143    1.31e-06
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078120343982
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419985015
       QM3 induced Dipole vector converged in   2 iterations.
-      Final norm2 of QM3 induced dipole moment vector:    0.036078120343088
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419949148
  MMPCM converged for given density
  No. of iterations:            2
-  14  -112.902505045     -1.086908665835E-02    3.47038D-13    8.53D-14
+  13  -112.913133108     -2.069940707837e-02    3.12236e-12   -9.24e-13
+      Virial theorem: -V/T =      2.013833
+@      MULPOP C       0.03; O      -0.19; H       0.09; H       0.08; 
+ -----------------------------------------------------------------------------
+      K-S energy, electrons, error :    -11.870880163913  16.0000013143    1.31e-06
+      QM3 induced Dipole vector converged in   2 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419943178
+      QM3 induced Dipole vector converged in   2 iterations.
+      Final norm2 of QM3 induced dipole moment vector:    0.116453419942232
+ MMPCM converged for given density
+ No. of iterations:            2
+  14  -112.913133108     -2.069940707830e-02    2.16383e-13   -1.42e-14
 
  *** DIIS converged in  14 iterations !
-@    Converged SCF energy, gradient:   -112.902505044558    3.47D-13
+@    Converged SCF energy, gradient:   -112.913133107583    2.16e-13
    - total time used in SIRFCK :              0.00 seconds
 
 
@@ -1102,18 +1143,18 @@ Point group: C1
 
  Sym       Kohn-Sham orbital energies
 
-  1    -18.91321918   -10.08163792    -1.01202420    -0.57188137    -0.44052230
-        -0.35083954    -0.31959556    -0.16395483     0.07209758     0.40032444
-         0.50229306     0.61656080
+  1    -18.91775721   -10.08361920    -1.01243288    -0.57586966    -0.44370785
+        -0.34959224    -0.31992888    -0.16496465     0.07089260     0.39461218
+         0.49760331     0.61482162
 
-    E(LUMO) :     0.07209758 au (symmetry 1)
-  - E(HOMO) :    -0.16395483 au (symmetry 1)
+    E(LUMO) :     0.07089260 au (symmetry 1)
+  - E(HOMO) :    -0.16496465 au (symmetry 1)
   ------------------------------------------
-    gap     :     0.23605241 au
+    gap     :     0.23585724 au
 
  >>> Writing SIRIFC interface file <<<
 
- >>>> CPU and wall time for SCF :      49.714      50.131
+ >>>> CPU and wall time for SCF :      45.070      46.185
 
 
                        .-----------------------------------.
@@ -1127,20 +1168,20 @@ Point group: C1
 
      QM/MM/PCM calculation converged :
 
-        Electrostatic energy:      -0.008289821636
-        Polarization energy:       -0.000525528099
+        Electrostatic energy:      -0.007669208901
+        Polarization energy:       -0.000833418285
         van der Waals energy:       0.000000000000
-        QM/MM/PCM energy:          -0.010869086658
+        QM/MM/PCM energy:          -0.020699407078
 
-@    Final DFT energy:           -112.902505044558                 
+@    Final DFT energy:           -112.913133107583                 
 @    Nuclear repulsion:            31.249215315972
-@    Electronic energy:          -144.140851273872
+@    Electronic energy:          -144.141649016477
 
 @    Final gradient norm:           0.000000000000
 
  
-     Date and time (Linux)  : Fri Mar 22 13:49:37 2013
-     Host name              : compute-1-7.local                       
+     Date and time (Linux)  : Wed Jun  5 20:40:06 2013
+     Host name              : c18-12.local                            
 
  (Only coefficients >0.0100 are printed.)
 
@@ -1148,41 +1189,41 @@ Point group: C1
  ------------------------------------------
 
     Orbital         1        2        3        4        5        6        7
-   1 C   :1s     0.0007   0.9910  -0.1284  -0.1877  -0.0050   0.0373   0.0001
-   2 C   :1s    -0.0089   0.0406   0.2841   0.5911   0.0188  -0.1166   0.0004
-   3 C   :2px    0.0005  -0.0001  -0.0095   0.0044   0.5774   0.0157  -0.0069
-   4 C   :2py   -0.0078   0.0011   0.1692  -0.2576   0.0180  -0.4248   0.0232
-   5 C   :2pz    0.0002  -0.0000  -0.0045   0.0109   0.0066   0.0184   0.5959
-   6 O   :1s     0.9935   0.0005  -0.2153   0.0989   0.0015  -0.1101   0.0013
-   7 O   :1s     0.0297  -0.0082   0.7406  -0.4198  -0.0048   0.5564  -0.0061
-   8 O   :2px    0.0004  -0.0002   0.0176  -0.0038   0.3368  -0.0250  -0.0067
-   9 O   :2py   -0.0064   0.0031  -0.2095  -0.1117   0.0231   0.6816   0.0163
-  10 O   :2pz    0.0002  -0.0001   0.0080   0.0033   0.0037  -0.0147   0.6859
-  11 H   :1s     0.0003  -0.0088   0.0306   0.2514   0.3133   0.1318  -0.0030
-  12 H   :1s     0.0003  -0.0088   0.0315   0.2691  -0.3109   0.1497  -0.0014
+   1 C   :1s     0.0007   0.9910  -0.1288  -0.1866  -0.0015   0.0398   0.0001
+   2 C   :1s    -0.0089   0.0406   0.2850   0.5871   0.0063  -0.1264  -0.0004
+   3 C   :2px    0.0005  -0.0001  -0.0089   0.0120   0.5756   0.0127  -0.0050
+   4 C   :2py   -0.0078   0.0011   0.1690  -0.2626   0.0215  -0.4227   0.0177
+   5 C   :2pz    0.0003  -0.0000  -0.0056   0.0081   0.0042   0.0119   0.6009
+   6 O   :1s     0.9935   0.0005  -0.2150   0.0979  -0.0003  -0.1120  -0.0004
+   7 O   :1s     0.0296  -0.0081   0.7390  -0.4141   0.0034   0.5647   0.0021
+   8 O   :2px    0.0004  -0.0002   0.0175  -0.0011   0.3297  -0.0297  -0.0064
+   9 O   :2py   -0.0064   0.0031  -0.2117  -0.1028   0.0272   0.6802   0.0236
+  10 O   :2pz    0.0002  -0.0001   0.0066   0.0034   0.0017  -0.0243   0.6814
+  11 H   :1s     0.0003  -0.0088   0.0314   0.2612   0.3170   0.1307   0.0008
+  12 H   :1s     0.0003  -0.0088   0.0317   0.2654  -0.3168   0.1466   0.0003
 
     Orbital         8        9       10
-   1 C   :1s     0.0009   0.0000   0.2048
-   2 C   :1s    -0.0052   0.0009  -1.2680
-   3 C   :2px   -0.0984  -0.0076   0.0530
-   4 C   :2py    0.0046   0.0269   0.4609
-   5 C   :2pz   -0.0020   0.8309  -0.0128
-   6 O   :1s     0.0034  -0.0002  -0.0229
-   7 O   :1s    -0.0158   0.0005   0.1306
-   8 O   :2px    0.9045   0.0075  -0.0133
-   9 O   :2py    0.0408  -0.0221  -0.2126
-  10 O   :2pz    0.0075  -0.7587   0.0060
-  11 H   :1s    -0.3391  -0.0021   0.8481
-  12 H   :1s     0.3479  -0.0007   0.9404
+   1 C   :1s    -0.0002  -0.0000   0.2051
+   2 C   :1s     0.0000  -0.0002  -1.2684
+   3 C   :2px   -0.0892  -0.0074   0.0170
+   4 C   :2py    0.0009   0.0262   0.4644
+   5 C   :2pz   -0.0002   0.8275  -0.0148
+   6 O   :1s     0.0032   0.0001  -0.0225
+   7 O   :1s    -0.0144  -0.0002   0.1275
+   8 O   :2px    0.9060   0.0065  -0.0011
+   9 O   :2py    0.0438  -0.0246  -0.2101
+  10 O   :2pz    0.0067  -0.7626   0.0067
+  11 H   :1s    -0.3411   0.0004   0.8724
+  12 H   :1s     0.3467   0.0000   0.9182
 
 
 
- >>>> Total CPU  time used in SIRIUS :     49.72 seconds
- >>>> Total wall time used in SIRIUS :     50.20 seconds
+ >>>> Total CPU  time used in SIRIUS :     45.09 seconds
+ >>>> Total wall time used in SIRIUS :     46.25 seconds
 
  
-     Date and time (Linux)  : Fri Mar 22 13:49:37 2013
-     Host name              : compute-1-7.local                       
+     Date and time (Linux)  : Wed Jun  5 20:40:06 2013
+     Host name              : c18-12.local                            
 
  NOTE:    1 warnings have been issued.
  Check output, result, and error files for "WARNING".
@@ -1219,7 +1260,7 @@ Point group: C1
  Optical dielectric constant                    : EPSOL  =  1.7760
  Print level                                    : IPRPP  =   5
  Maximum number of iterations for eigenval.eqs. : MAXITP =  60
- Threshold for convergence of eigenvalue eqs.   : THCPP  = 1.000D-04
+ Threshold for convergence of eigenvalue eqs.   : THCPP  = 1.000e-04
  Maximum iterations in optimal orbital algorithm: MAXITO =   5
 
       4 Excitation energies are calculated for symmetry no.    1
@@ -1230,11 +1271,11 @@ Point group: C1
                YDIPLEN 
                ZDIPLEN 
 
- Integral transformation: Total CPU and WALL times (sec)       0.002       0.118
+ Integral transformation: Total CPU and WALL times (sec)       0.007       0.011
 
 
-   SCF energy         :     -112.902505044558382
- -- inactive part     :     -144.282485409391796
+   SCF energy         :     -112.913133107582794
+ -- inactive part     :     -144.282662539261082
  -- nuclear repulsion :       31.249215315972382
 
 
@@ -1257,7 +1298,7 @@ Point group: C1
  Orbital variables.         KZWOPT:      32
  Configuration variables.   KZCONF:       0
  Total number of variables. KZVAR :      32
- Electrons in DFTMOMO:   16.00000131525930
+ Electrons in DFTMOMO:   16.00000131428623
 
 
                          Matrix < abs(phi_p) abs(phi_q) >
@@ -1265,32 +1306,32 @@ Point group: C1
 
 
                Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
-       1       1.00000001     0.00199754     0.21078672     0.09829678     0.07893030     0.19221261     0.15190092     0.19131494
-       2       0.00199754     1.00000055     0.13378850     0.19067920     0.14964670     0.11823613     0.14468472     0.03398147
-       3       0.21078672     0.13378850     1.00000005     0.47119193     0.60888887     0.70949695     0.79405162     0.69606600
-       4       0.09829678     0.19067920     0.47119193     1.00000004     0.82451440     0.66055338     0.59950171     0.62382659
-       5       0.07893030     0.14964670     0.60888887     0.82451440     1.00000005     0.55552499     0.52976099     0.74566021
-       6       0.19221261     0.11823613     0.70949695     0.66055338     0.55552499     1.00000000     0.62080319     0.64825786
-       7       0.15190092     0.14468472     0.79405162     0.59950171     0.52976099     0.62080319     0.99999999     0.51960690
-       8       0.19131494     0.03398147     0.69606600     0.62382659     0.74566021     0.64825786     0.51960690     0.99999998
-       9       0.15654009     0.18265097     0.66635882     0.68291771     0.53601999     0.59117308     0.94591192     0.48968138
-      10       0.05090694     0.21527034     0.32755277     0.82573712     0.71542753     0.45531276     0.41720526     0.49622792
-      11       0.07061320     0.22270398     0.47259150     0.72697751     0.87373386     0.50023855     0.43484730     0.60665266
-      12       0.21145389     0.24693907     0.76789179     0.63440630     0.61812457     0.71156088     0.67161452     0.51400533
+       1       1.00000001     0.00199563     0.21049475     0.09704217     0.07746212     0.19306334     0.15104992     0.19169152
+       2       0.00199563     1.00000055     0.13410930     0.19022437     0.14928021     0.11841411     0.14568113     0.03200435
+       3       0.21049475     0.13410930     1.00000005     0.46882440     0.60517410     0.70956035     0.79309361     0.69658954
+       4       0.09704217     0.19022437     0.46882440     1.00000004     0.82603197     0.64890286     0.59765571     0.61780758
+       5       0.07746212     0.14928021     0.60517410     0.82603197     1.00000004     0.54917202     0.52788194     0.73762333
+       6       0.19306334     0.11841411     0.70956035     0.64890286     0.54917202     1.00000000     0.62051646     0.64696297
+       7       0.15104992     0.14568113     0.79309361     0.59765571     0.52788194     0.62051646     0.99999999     0.51731898
+       8       0.19169152     0.03200435     0.69658954     0.61780758     0.73762333     0.64696297     0.51731898     0.99999998
+       9       0.15737825     0.18184850     0.66782058     0.67864879     0.53282948     0.59200082     0.94724205     0.48898593
+      10       0.05023827     0.21552930     0.32672900     0.82866151     0.71843100     0.44793287     0.41830817     0.49073935
+      11       0.07095010     0.22287843     0.47495003     0.72821385     0.87564171     0.49912794     0.43756232     0.60382383
+      12       0.21170599     0.24686412     0.76908519     0.63086162     0.61459841     0.71054325     0.67271817     0.51171038
 
                Column   9     Column  10     Column  11     Column  12
-       1       0.15654009     0.05090694     0.07061320     0.21145389
-       2       0.18265097     0.21527034     0.22270398     0.24693907
-       3       0.66635882     0.32755277     0.47259150     0.76789179
-       4       0.68291771     0.82573712     0.72697751     0.63440630
-       5       0.53601999     0.71542753     0.87373386     0.61812457
-       6       0.59117308     0.45531276     0.50023855     0.71156088
-       7       0.94591192     0.41720526     0.43484730     0.67161452
-       8       0.48968138     0.49622792     0.60665266     0.51400533
-       9       1.00000000     0.48779843     0.46839400     0.66073661
-      10       0.48779843     1.00000006     0.79089302     0.51715303
-      11       0.46839400     0.79089302     1.00000008     0.55472391
-      12       0.66073661     0.51715303     0.55472391     1.00000001
+       1       0.15737825     0.05023827     0.07095010     0.21170599
+       2       0.18184850     0.21552930     0.22287843     0.24686412
+       3       0.66782058     0.32672900     0.47495003     0.76908519
+       4       0.67864879     0.82866151     0.72821385     0.63086162
+       5       0.53282948     0.71843100     0.87564171     0.61459841
+       6       0.59200082     0.44793287     0.49912794     0.71054325
+       7       0.94724205     0.41830817     0.43756232     0.67271817
+       8       0.48898593     0.49073935     0.60382383     0.51171038
+       9       1.00000000     0.48593365     0.46884117     0.66073088
+      10       0.48593365     1.00000006     0.79225371     0.51403404
+      11       0.46884117     0.79225371     1.00000008     0.55454844
+      12       0.66073088     0.51403404     0.55454844     1.00000001
     ==== End of matrix output ====
 
 
@@ -1299,36 +1340,36 @@ Point group: C1
 
 
                Column   1     Column   2     Column   3     Column   4     Column   5     Column   6     Column   7     Column   8
-       1       1.00000000     0.00000054     0.42677038     0.14758752     0.01468897     0.13747232     0.04252137     0.05262530
-       2       0.00000054     1.00000000     0.09926033     0.34093778     0.03400688     0.01785736     0.02392719     0.00067119
-       3       0.42677038     0.09926033     1.00000000     0.22573340     0.28286036     0.41838901     0.52147074     0.46522767
-       4       0.14758752     0.34093778     0.22573340     1.00000000     0.62266090     0.34964153     0.29592476     0.24519516
-       5       0.01468897     0.03400688     0.28286036     0.62266090     1.00000000     0.19366421     0.21778583     0.43560640
-       6       0.13747232     0.01785736     0.41838901     0.34964153     0.19366421     1.00000000     0.33697878     0.35071282
-       7       0.04252137     0.02392719     0.52147074     0.29592476     0.21778583     0.33697878     1.00000000     0.29105594
-       8       0.05262530     0.00067119     0.46522767     0.24519516     0.43560640     0.35071282     0.29105594     1.00000000
-       9       0.04406058     0.03857368     0.38771453     0.37636880     0.23848713     0.31226289     0.93825597     0.25977643
-      10       0.00971941     0.32059074     0.10263621     0.74058886     0.48948561     0.11796389     0.16795551     0.14638750
-      11       0.00963643     0.06729712     0.15593373     0.44292304     0.79848101     0.13662374     0.16701276     0.23747054
-      12       0.16426568     0.10598164     0.66685130     0.31377589     0.29934120     0.44254076     0.39590536     0.30017862
+       1       1.00000000     0.00000054     0.42517117     0.14436899     0.01409204     0.14000110     0.04222008     0.05259723
+       2       0.00000054     1.00000000     0.09981674     0.33713965     0.03364779     0.01866632     0.02442532     0.00056562
+       3       0.42517117     0.09981674     1.00000000     0.22194090     0.27665116     0.41516551     0.51994416     0.46482337
+       4       0.14436899     0.33713965     0.22194090     1.00000000     0.62694280     0.33309604     0.29378103     0.23872927
+       5       0.01409204     0.03364779     0.27665116     0.62694280     1.00000000     0.18797521     0.21578874     0.42243850
+       6       0.14000110     0.01866632     0.41516551     0.33309604     0.18797521     1.00000000     0.33620819     0.35120199
+       7       0.04222008     0.02442532     0.51994416     0.29378103     0.21578874     0.33620819     1.00000000     0.28941838
+       8       0.05259723     0.00056562     0.46482337     0.23872927     0.42243850     0.35120199     0.28941838     1.00000000
+       9       0.04438798     0.03811779     0.38916388     0.36959697     0.23400071     0.31428655     0.94181985     0.26134796
+      10       0.00940404     0.32148010     0.10177585     0.74605323     0.49563550     0.11372446     0.17058326     0.14329171
+      11       0.00967013     0.06664709     0.15722939     0.44556732     0.80145029     0.13671479     0.17038184     0.23716718
+      12       0.16396678     0.10666663     0.66820503     0.31075417     0.29499923     0.43963014     0.39705907     0.30036156
 
                Column   9     Column  10     Column  11     Column  12
-       1       0.04406058     0.00971941     0.00963643     0.16426568
-       2       0.03857368     0.32059074     0.06729712     0.10598164
-       3       0.38771453     0.10263621     0.15593373     0.66685130
-       4       0.37636880     0.74058886     0.44292304     0.31377589
-       5       0.23848713     0.48948561     0.79848101     0.29934120
-       6       0.31226289     0.11796389     0.13662374     0.44254076
-       7       0.93825597     0.16795551     0.16701276     0.39590536
-       8       0.25977643     0.14638750     0.23747054     0.30017862
-       9       1.00000000     0.24237833     0.21052062     0.36751950
-      10       0.24237833     1.00000000     0.57465093     0.24019157
-      11       0.21052062     0.57465093     1.00000000     0.26961238
-      12       0.36751950     0.24019157     0.26961238     1.00000000
+       1       0.04438798     0.00940404     0.00967013     0.16396678
+       2       0.03811779     0.32148010     0.06664709     0.10666663
+       3       0.38916388     0.10177585     0.15722939     0.66820503
+       4       0.36959697     0.74605323     0.44556732     0.31075417
+       5       0.23400071     0.49563550     0.80145029     0.29499923
+       6       0.31428655     0.11372446     0.13671479     0.43963014
+       7       0.94181985     0.17058326     0.17038184     0.39705907
+       8       0.26134796     0.14329171     0.23716718     0.30036156
+       9       1.00000000     0.24007044     0.21007406     0.36759943
+      10       0.24007044     1.00000000     0.57709756     0.23828876
+      11       0.21007406     0.57709756     1.00000000     0.27086793
+      12       0.36759943     0.23828876     0.27086793     1.00000000
     ==== End of matrix output ====
 
  >>> IN RSPPP:
-  THCPP,MAXRM   1.00000000000000005E-004         600
+  THCPP,MAXRM   1.000000000000000e-004         600
   KSYMOP,NGPPP(KSYMOP)            1           3
   LWRK ,LWRK1     63999526    62917438
   KEXCNV,NSIM,LWRK2            4           4     1082605
@@ -1343,94 +1384,94 @@ Point group: C1
            4  START orbital VECTORS
 
  ** RSPCTL MICROITERATION NUMBER    1
-       Electrons: 16.000001( 1.32e-06): LR-DFT*4 evaluation time:       1.2 s
+       Electrons: 16.000001( 1.31e-06): LR-DFT*4 evaluation time:       1.5 s
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    1.38821D-02  0.00D+00  1.39D-02  7.09D-01    1.51503D-01
-         2    1.02923D-01  0.00D+00  1.03D-01  7.09D-01    3.57105D-01
-         3    9.91618D-03  0.00D+00  9.92D-03  7.07D-01    4.34320D-01
-         4    4.69505D-01  0.00D+00  4.70D-01  7.54D-01    5.32177D-01
+         1    1.40267e-02  0.00e+00  1.40e-02  7.09e-01    1.51007e-01
+         2    1.04260e-01  0.00e+00  1.04e-01  7.09e-01    3.55293e-01
+         3    9.02229e-03  0.00e+00  9.02e-03  7.07e-01    4.36525e-01
+         4    4.70976e-01  0.00e+00  4.71e-01  7.55e-01    5.31818e-01
 
  ** RSPCTL MICROITERATION NUMBER    2
-       Electrons: 16.000001( 1.32e-06): LR-DFT*4 evaluation time:       1.2 s
+       Electrons: 16.000001( 1.31e-06): LR-DFT*4 evaluation time:       1.5 s
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    2.11175D-04  0.00D+00  2.11D-04  7.09D-01    1.51393D-01
-         2    4.95820D-03  0.00D+00  4.96D-03  7.09D-01    3.51437D-01
-         3    1.88025D-03  0.00D+00  1.88D-03  7.07D-01    4.34183D-01
-         4    4.75703D-02  0.00D+00  4.76D-02  7.28D-01    4.39532D-01
+         1    1.03054e-04  0.00e+00  1.03e-04  7.09e-01    1.50894e-01
+         2    4.65491e-03  0.00e+00  4.65e-03  7.09e-01    3.49462e-01
+         3    1.32931e-03  0.00e+00  1.33e-03  7.07e-01    4.36407e-01
+         4    3.73315e-02  0.00e+00  3.73e-02  7.29e-01    4.37184e-01
 
  ** RSPCTL MICROITERATION NUMBER    3
-       Electrons: 16.000001( 1.32e-06): LR-DFT*4 evaluation time:       1.2 s
+       Electrons: 16.000001( 1.31e-06): LR-DFT*4 evaluation time:       1.5 s
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    1.47646D-05  0.00D+00  1.48D-05  7.09D-01    1.51393D-01
-         2    1.47040D-04  0.00D+00  1.47D-04  7.09D-01    3.51435D-01
-         3    8.22088D-04  0.00D+00  8.22D-04  7.07D-01    4.34180D-01
-         4    1.69279D-02  0.00D+00  1.69D-02  7.29D-01    4.37672D-01
+         1    9.84198e-06  0.00e+00  9.84e-06  7.09e-01    1.50894e-01
+         2    1.62865e-04  0.00e+00  1.63e-04  7.09e-01    3.49459e-01
+         3    9.91389e-03  0.00e+00  9.91e-03  7.28e-01    4.36267e-01
+         4    1.86853e-03  0.00e+00  1.87e-03  7.08e-01    4.36413e-01
 
  ** RSPCTL MICROITERATION NUMBER    4
-       Electrons: 16.000001( 1.32e-06): LR-DFT*3 evaluation time:       0.9 s
+       Electrons: 16.000001( 1.31e-06): LR-DFT*3 evaluation time:       1.1 s
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    1.30591D-05  0.00D+00  1.31D-05  7.09D-01    1.51393D-01
-         2    9.49479D-06  0.00D+00  9.49D-06  7.09D-01    3.51435D-01
-         3    6.73540D-05  0.00D+00  6.74D-05  7.07D-01    4.34179D-01
-         4    1.31555D-03  0.00D+00  1.32D-03  7.29D-01    4.37537D-01
+         1    8.86598e-06  0.00e+00  8.87e-06  7.09e-01    1.50894e-01
+         2    7.23080e-06  0.00e+00  7.23e-06  7.09e-01    3.49459e-01
+         3    1.44808e-03  0.00e+00  1.45e-03  7.29e-01    4.36216e-01
+         4    1.98095e-04  0.00e+00  1.98e-04  7.08e-01    4.36412e-01
 
  ** RSPCTL MICROITERATION NUMBER    5
-       Electrons: 16.000001( 1.32e-06): LR-DFT*1 evaluation time:       0.4 s
+       Electrons: 16.000001( 1.31e-06): LR-DFT*2 evaluation time:       0.8 s
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    1.30516D-05  0.00D+00  1.31D-05  7.09D-01    1.51393D-01
-         2    8.29402D-06  0.00D+00  8.29D-06  7.09D-01    3.51435D-01
-         3    6.20804D-06  0.00D+00  6.21D-06  7.07D-01    4.34179D-01
-         4    8.59199D-05  0.00D+00  8.59D-05  7.29D-01    4.37536D-01
+         1    9.03441e-06  0.00e+00  9.03e-06  7.09e-01    1.50894e-01
+         2    4.71304e-06  0.00e+00  4.71e-06  7.09e-01    3.49459e-01
+         3    9.72110e-05  0.00e+00  9.72e-05  7.29e-01    4.36215e-01
+         4    1.29840e-05  0.00e+00  1.30e-05  7.08e-01    4.36412e-01
 
  ** RSPCTL MICROITERATION NUMBER    6
-       Electrons: 16.000001( 1.32e-06): LR-DFT*1 evaluation time:       0.4 s
+       Electrons: 16.000001( 1.31e-06): LR-DFT*1 evaluation time:       0.4 s
 
       Root  Residual tot.,    conf., and orb.    Bnorm      Eigenvalue
       ----------------------------------------------------------------
-         1    1.30901D-05  0.00D+00  1.31D-05  7.09D-01    1.51393D-01
-         2    8.39845D-06  0.00D+00  8.40D-06  7.09D-01    3.51435D-01
-         3    5.36640D-06  0.00D+00  5.37D-06  7.07D-01    4.34179D-01
-         4    4.19787D-05  0.00D+00  4.20D-05  7.29D-01    4.37536D-01
+         1    8.82179e-06  0.00e+00  8.82e-06  7.09e-01    1.50894e-01
+         2    4.42692e-06  0.00e+00  4.43e-06  7.09e-01    3.49459e-01
+         3    3.74365e-05  0.00e+00  3.74e-05  7.29e-01    4.36215e-01
+         4    4.45791e-06  0.00e+00  4.46e-06  7.08e-01    4.36412e-01
 
  *** THE REQUESTED    4 SOLUTION VECTORS CONVERGED
 
- Convergence of RSP solution vectors, threshold = 1.00D-04
+ Convergence of RSP solution vectors, threshold = 1.00e-04
  ---------------------------------------------------------------
- (dimension of paired reduced space:   34)
- RSP solution vector no.    1; norm of residual   1.85D-05
- RSP solution vector no.    2; norm of residual   1.18D-05
- RSP solution vector no.    3; norm of residual   7.59D-06
- RSP solution vector no.    4; norm of residual   5.76D-05
+ (dimension of paired reduced space:   36)
+ RSP solution vector no.    1; norm of residual   1.24e-05
+ RSP solution vector no.    2; norm of residual   6.24e-06
+ RSP solution vector no.    3; norm of residual   5.14e-05
+ RSP solution vector no.    4; norm of residual   6.30e-06
 
  *** RSPCTL MICROITERATIONS CONVERGED
 
 @ Transition operator type:    XDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT: -2.04706688E-03 *ENERGY(eV):   4.1196132    
-@ STATE NO:    2 *TRANSITION MOMENT: -1.26730918E-03 *ENERGY(eV):   9.5630241    
-@ STATE NO:    3 *TRANSITION MOMENT:  4.29012700E-03 *ENERGY(eV):   11.814620    
-@ STATE NO:    4 *TRANSITION MOMENT: -5.24060013E-02 *ENERGY(eV):   11.905969    
+@ STATE NO:    1 *TRANSITION MOMENT: -3.95725849e-04 *ENERGY(eV):   4.1060393    
+@ STATE NO:    2 *TRANSITION MOMENT:  1.65899787e-03 *ENERGY(eV):   9.5092759    
+@ STATE NO:    3 *TRANSITION MOMENT:  4.27987055e-02 *ENERGY(eV):   11.870025    
+@ STATE NO:    4 *TRANSITION MOMENT:  5.81860300e-03 *ENERGY(eV):   11.875364    
 
 @ Transition operator type:    YDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT:  1.19097343E-05 *ENERGY(eV):   4.1196132    
-@ STATE NO:    2 *TRANSITION MOMENT:  3.02905036E-03 *ENERGY(eV):   9.5630241    
-@ STATE NO:    3 *TRANSITION MOMENT: -3.71519975E-02 *ENERGY(eV):   11.814620    
-@ STATE NO:    4 *TRANSITION MOMENT:  0.67670531     *ENERGY(eV):   11.905969    
+@ STATE NO:    1 *TRANSITION MOMENT: -9.19588871e-05 *ENERGY(eV):   4.1060393    
+@ STATE NO:    2 *TRANSITION MOMENT: -6.43359696e-03 *ENERGY(eV):   9.5092759    
+@ STATE NO:    3 *TRANSITION MOMENT: -0.66548695     *ENERGY(eV):   11.870025    
+@ STATE NO:    4 *TRANSITION MOMENT: -9.20759902e-02 *ENERGY(eV):   11.875364    
 
 @ Transition operator type:    ZDIPLEN 
-@ STATE NO:    1 *TRANSITION MOMENT: -3.49353378E-03 *ENERGY(eV):   4.1196132    
-@ STATE NO:    2 *TRANSITION MOMENT:  0.16972373     *ENERGY(eV):   9.5630241    
-@ STATE NO:    3 *TRANSITION MOMENT: -1.12449231E-02 *ENERGY(eV):   11.814620    
-@ STATE NO:    4 *TRANSITION MOMENT: -2.16047487E-02 *ENERGY(eV):   11.905969    
+@ STATE NO:    1 *TRANSITION MOMENT:  5.03948873e-03 *ENERGY(eV):   4.1060393    
+@ STATE NO:    2 *TRANSITION MOMENT: -0.17976795     *ENERGY(eV):   9.5092759    
+@ STATE NO:    3 *TRANSITION MOMENT:  2.19058394e-02 *ENERGY(eV):   11.870025    
+@ STATE NO:    4 *TRANSITION MOMENT: -4.37888474e-05 *ENERGY(eV):   11.875364    
 
 
   ******************************************************************************
@@ -1442,21 +1483,21 @@ Point group: C1
  @ Excited state no:    1 in symmetry  1
  ---------------------------------------
 
-@ Excitation energy :  0.15139300    au
-@                      4.1196132     eV
-@                      33226.923     cm-1
-                       397.48227     kJ / mol
+@ Excitation energy :  0.15089417    au
+@                      4.1060393     eV
+@                      33117.443     cm-1
+                       396.17259     kJ / mol
 
-@ Total energy :      -112.75111     au
+@ Total energy :      -112.76224     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  4.22939854E-07  (Transition moment : -2.04706688E-03 )
+@ Oscillator strength (LENGTH)   :  1.57532457e-08  (Transition moment : -3.95725849e-04 )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  1.43159011E-11  (Transition moment :  1.19097343E-05 )
+@ Oscillator strength (LENGTH)   :  8.50684702e-10  (Transition moment : -9.19588871e-05 )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  1.23181203E-06  (Transition moment : -3.49353378E-03 )
+@ Oscillator strength (LENGTH)   :  2.55478387e-06  (Transition moment :  5.03948873e-03 )
 
  Eigenvector for state no.  1
 
@@ -1465,9 +1506,9 @@ Point group: C1
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          29         8(1)   9(1)       -0.7077302737       -0.0371243361
+          29         8(1)   9(1)        0.7077518876        0.0375742150
 
-       31 elements with absolute value less than 7.08D-02 not printed.
+       31 elements with absolute value less than 7.08e-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
@@ -1486,29 +1527,29 @@ Point group: C1
 
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
-      8    9 -0.707730 -0.037124  0.489681  0.259776  0.449712  0.220216
+      8    9  0.707752  0.037574  0.488986  0.261348  0.449138  0.219622
 
-@ Overlap diagnostic LAMBDA =    0.4897
+@ Overlap diagnostic LAMBDA =    0.4890
 
 
  @ Excited state no:    2 in symmetry  1
  ---------------------------------------
 
-@ Excitation energy :  0.35143468    au
-@                      9.5630241     eV
-@                      77130.996     cm-1
-                       922.69161     kJ / mol
+@ Excitation energy :  0.34945947    au
+@                      9.5092759     eV
+@                      76697.488     cm-1
+                       917.50570     kJ / mol
 
-@ Total energy :      -112.55107     au
+@ Total energy :      -112.56367     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  3.76286399E-07  (Transition moment : -1.26730918E-03 )
+@ Oscillator strength (LENGTH)   :  6.41205461e-07  (Transition moment :  1.65899787e-03 )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  2.14964302E-06  (Transition moment :  3.02905036E-03 )
+@ Oscillator strength (LENGTH)   :  9.64302419e-06  (Transition moment : -6.43359696e-03 )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  6.74898545E-03  (Transition moment :  0.16972373     )
+@ Oscillator strength (LENGTH)   :  7.52887516e-03  (Transition moment : -0.17976795     )
 
  Eigenvector for state no.  2
 
@@ -1517,9 +1558,9 @@ Point group: C1
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          21         6(1)   9(1)       -0.7056491034       -0.0310781332
+          21         6(1)   9(1)        0.7056494895        0.0321398851
 
-       31 elements with absolute value less than 7.06D-02 not printed.
+       31 elements with absolute value less than 7.06e-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
@@ -1538,29 +1579,29 @@ Point group: C1
 
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
-      6    9 -0.705649 -0.031078  0.591173  0.312263  0.455046  0.269011
+      6    9  0.705649  0.032140  0.592001  0.314287  0.453615  0.268541
 
-@ Overlap diagnostic LAMBDA =    0.5924
+@ Overlap diagnostic LAMBDA =    0.5932
 
 
  @ Excited state no:    3 in symmetry  1
  ---------------------------------------
 
-@ Excitation energy :  0.43417933    au
-@                      11.814620     eV
-@                      95291.347     cm-1
-                       1139.9376     kJ / mol
+@ Excitation energy :  0.43621541    au
+@                      11.870025     eV
+@                      95738.215     cm-1
+                       1145.2834     kJ / mol
 
-@ Total energy :      -112.46833     au
+@ Total energy :      -112.47692     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  5.32743523E-06  (Transition moment :  4.29012700E-03 )
+@ Oscillator strength (LENGTH)   :  5.32685666e-04  (Transition moment :  4.27987055e-02 )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  3.99523397E-04  (Transition moment : -3.71519975E-02 )
+@ Oscillator strength (LENGTH)   :  0.12879198      (Transition moment : -0.66548695     )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  3.66008235E-05  (Transition moment : -1.12449231E-02 )
+@ Oscillator strength (LENGTH)   :  1.39549904e-04  (Transition moment :  2.19058394e-02 )
 
  Eigenvector for state no.  3
 
@@ -1569,9 +1610,12 @@ Point group: C1
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          17         5(1)   9(1)       -0.7055503354       -0.0080145980
+          17         5(1)   9(1)        0.0967565470        0.0010580612
+          24         6(1)  12(1)        0.1272163746       -0.0421839814
+          25         7(1)   9(1)        0.6677406674        0.1065742950
+          31         8(1)  11(1)       -0.1841357707        0.0288508750
 
-       31 elements with absolute value less than 7.06D-02 not printed.
+       28 elements with absolute value less than 6.68e-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
@@ -1590,29 +1634,31 @@ Point group: C1
 
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
-      5    9 -0.705550 -0.008015  0.536020  0.238487  0.486556  0.260804
+      6   12  0.127216 -0.042184  0.710543  0.439630  0.028696  0.020390
+      7    9  0.667741  0.106574  0.947242  0.941820  0.314908  0.298294
+      8   11 -0.184136  0.028851  0.603824  0.237167  0.045363  0.027391
 
-@ Overlap diagnostic LAMBDA =    0.5368
+@ Overlap diagnostic LAMBDA =    0.8766
 
 
  @ Excited state no:    4 in symmetry  1
  ---------------------------------------
 
-@ Excitation energy :  0.43753633    au
-@                      11.905969     eV
-@                      96028.125     cm-1
-                       1148.7515     kJ / mol
+@ Excitation energy :  0.43641161    au
+@                      11.875364     eV
+@                      95781.276     cm-1
+                       1145.7985     kJ / mol
 
-@ Total energy :      -112.46497     au
+@ Total energy :      -112.47672     au
 
 @ Operator type:    XDIPLEN 
-@ Oscillator strength (LENGTH)   :  8.01096640E-04  (Transition moment : -5.24060013E-02 )
+@ Oscillator strength (LENGTH)   :  9.85014196e-06  (Transition moment :  5.81860300e-03 )
 
 @ Operator type:    YDIPLEN 
-@ Oscillator strength (LENGTH)   :  0.13357403      (Transition moment :  0.67670531     )
+@ Oscillator strength (LENGTH)   :  2.46659492e-03  (Transition moment : -9.20759902e-02 )
 
 @ Operator type:    ZDIPLEN 
-@ Oscillator strength (LENGTH)   :  1.36151146E-04  (Transition moment : -2.16047487E-02 )
+@ Oscillator strength (LENGTH)   :  5.57868788e-10  (Transition moment : -4.37888474e-05 )
 
  Eigenvector for state no.  4
 
@@ -1621,11 +1667,10 @@ Point group: C1
 
       Index(r,s)      r      s        (r s) operator      (s r) operator
       ----------    -----  -----      --------------      --------------
-          24         6(1)  12(1)       -0.1288844011        0.0427782882
-          25         7(1)   9(1)       -0.6738965145       -0.1076449945
-          31         8(1)  11(1)        0.1807040324       -0.0286019793
+          17         5(1)   9(1)       -0.6999752575       -0.0078165517
+          25         7(1)   9(1)        0.0922812537        0.0147534262
 
-       29 elements with absolute value less than 6.74D-02 not printed.
+       30 elements with absolute value less than 7.00e-02 not printed.
 
  The numbers in parenthesis give the orbital symmetry.
 
@@ -1644,29 +1689,27 @@ Point group: C1
 
       I    A    K_IA      K_AI   <|I|*|A|> <I^2*A^2>    Weight   Contrib
 
-      6   12 -0.128884  0.042778  0.711561  0.442541  0.029468  0.020968
-      7    9 -0.673897 -0.107645  0.945912  0.938256  0.320641  0.303298
-      8   11  0.180704 -0.028602  0.606653  0.237471  0.043809  0.026577
+      5    9 -0.699975 -0.007817  0.532829  0.234001  0.479084  0.255270
 
-@ Overlap diagnostic LAMBDA =    0.8834
+@ Overlap diagnostic LAMBDA =    0.5384
 
 
- Time used in polarization propagator calculation is     10.22 CPU seconds for symmetry 1
+ Time used in polarization propagator calculation is     11.44 CPU seconds for symmetry 1
 
- >>>> Total CPU  time used in RESPONSE:  10.23 seconds
- >>>> Total wall time used in RESPONSE:  11.55 seconds
+ >>>> Total CPU  time used in RESPONSE:  11.45 seconds
+ >>>> Total wall time used in RESPONSE:  11.80 seconds
 
 
                    .-------------------------------------------.
                    | End of Dynamic Property Section (RESPONS) |
                    `-------------------------------------------'
 
- >>>> Total CPU  time used in DALTON:  1 minute   4 seconds
- >>>> Total wall time used in DALTON:  1 minute   7 seconds
+ >>>> Total CPU  time used in DALTON:  57.24 seconds
+ >>>> Total wall time used in DALTON:  58.91 seconds
 
  
-     Date and time (Linux)  : Fri Mar 22 13:49:49 2013
-     Host name              : compute-1-7.local                       
+     Date and time (Linux)  : Wed Jun  5 20:40:18 2013
+     Host name              : c18-12.local                            
 
 END REFOUT
 

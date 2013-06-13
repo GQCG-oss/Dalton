@@ -134,14 +134,14 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY IS NOT CORRECT"
 
 # SCF energy, 1st iteration:
-CRIT1=`$GREP "Hartree\-Fock total * energy\: * \-224\.2905002437[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total * energy\: * \-224\.2905002437" $log | wc -l`
 TEST[4]=`expr $CRIT1`
 CTRL[4]=1
 ERROR[4]="INITIAL HF ENERGY NOT CORRECT"
 
 # MCSCF energy, 1st iteration:
 CRIT1=`$GREP "MP2 second order energy \: * \-224\.963913" $log | wc -l`
-CRIT2=`$GREP "Final MCSCF energy\: * \-224\.5185239102" $log | wc -l`
+CRIT2=`$GREP "Final MCSCF energy\: * \-224\.518523910[0-2]" $log | wc -l`
 TEST[5]=`expr $CRIT1  \+ $CRIT2`
 CTRL[5]=2
 ERROR[5]="INITIAL MCSCF ENERGY IS NOT CORRECT"
@@ -242,7 +242,7 @@ ERROR[15]="SECOND HESSIAN NOT CORRECT"
 
 # Geometry optimization converged:
 CRIT1=`$GREP "Norm of molecular gradient: * (0| )\.0000040[0-9][0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "Change in energy since start of walk:(\-0| \-)\.000233053[0-9] au" $log | wc -l`
+CRIT2=`$GREP "Change in energy since start of walk:(\-0| \-)\.00023305[2-4][0-9] au" $log | wc -l`
 CRIT3=`$GREP "Geometry optimization has converged\." $log | wc -l`
 TEST[16]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[16]=3
