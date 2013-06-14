@@ -31,20 +31,21 @@ def main():
       print "COULD NOT FIND LSDALTON/lsutil, exiting"
       sys.exit()
 
-  #GET COMMAND LINE ARGUMENTS
-  debug_loops = ("VAR_LSDEBUG" in sys.argv)
-    
   #THIS FILE SHOULD GENERATE ALL REORDERINGS NEEDED in manual_reorderings.F90
   if(not os.path.exists(lsutildir+"manual_reorderings.F90")):
-    produce_file(lsutildir,debug_loops)
+    produce_file(lsutildir,sys.argv)
 
 ##################################################################################################
 ##################################################################################################
-def produce_file(lsutildir,debug_loops):
+def produce_file(lsutildir,args):
    abc = "abcdefghijklmnopqrstuvwxyz"
    maxr = 4
    minr = 2
    f=open(lsutildir+"manual_reorderings.F90",'w')
+   #GET COMMAND LINE ARGUMENTS
+   debug_loops = ("VAR_LSDEBUG" in args)
+   nocollapse = ("nocollapse" in args)
+    
     
    #WRITE HEADER AND MODULE
    now = datetime.datetime.now()
@@ -222,7 +223,7 @@ def produce_file(lsutildir,debug_loops):
              if(not debug_loops):
                if(modes-len(oldr)>0):
                  ompdo ="        !$OMP DO" 
-                 if (modes-len(oldr)>1):
+                 if (modes-len(oldr)>1 and (not nocollapse)):
                    ompdo += " COLLAPSE("+str(modes-len(oldr))+")\n"
                  else:
                    ompdo += "\n"

@@ -211,7 +211,7 @@ add_library(
 target_link_libraries(pdpacklib matrixulib)
 
 #automatially generate the manual_reorderdings.F90
-execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/lsutil/autogen/generate_man_reord.py ${DirDefs})
+execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/lsutil/autogen/generate_man_reord.py nocollapse ${DirDefs})
 
 add_library(
     lsutiltypelib_common
