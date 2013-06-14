@@ -102,7 +102,7 @@ cc_rsp_twophot5 cc_rsp_twophotb cc_grad cc_geoopt_mp2 cc_fop_cc3 cc_rsp_ctocd \
 cc_grad_ccpt_hf cc_geopt_ccpt_hf cc_geopt_ccpt_h2o cc_prop_file $SHORTCC3"
 #
 SHORT_CHOLESKY="choles_b3lyp_polar choles_cc2_fop \
-choles_hf_magnet choles_kt3_ctocd choles_lda_prop"
+choles_hf_magnet choles_kt3_ctocd choles_lda_prop choact_mp2_energy"
 #
 SHORTPEQM="pehf_small_iter pehf_small_direct pehf_small_gspol \
 pehf_small_alpha pehf_small_1pa pehf_small_beta pehf_small_2pa"
