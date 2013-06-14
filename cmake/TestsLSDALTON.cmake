@@ -1,24 +1,12 @@
-set(TEST_BASE ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton)
-set(TEST_PARAM )
-
-if(ENABLE_MPI)
-    if(DEFINED ENV{DALTON_TEST_MPI})
-        message(" -- DALTON_TEST_MPI set to $ENV{DALTON_TEST_MPI}")
-        set(TEST_ARGS -param "-N $ENV{DALTON_TEST_MPI}")
-    else()
-        message(" -- DALTON_TEST_MPI defaults to 5")
-        set(TEST_ARGS -param "-N 5")
-    endif()
-else()
-    set(TEST_ARGS)
-endif()
-
-if(ENABLE_MPI)
-  set(TEST_PARAM "-N 2")
-endif()
-
 macro(add_lsdalton_test _name _labels)
-    add_test(${_name} ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton ${TEST_ARGS} ${_name})
+    add_test(${_name} ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton ${_name})
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
+macro(add_lslib_test _name _labels)
+    add_test(${_name} ${CMAKE_SOURCE_DIR}/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton -param "-lslib_test" ${_name})
     if(NOT "${_labels}" STREQUAL "")
         set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
     endif()
@@ -70,10 +58,8 @@ if(ENABLE_CSR)
 #   add_lsdalton_test(csr/LSDALTON_DENSFIT_FMM_csr            "lsdalton")
 endif()
 
-# radovan: will refactor this as soon as i know how we want to deal with mpi tests
-#          IMO the nr of cores should not be set here at all
-add_test(LSlib/LSlib_cam_reg                            ${TEST_BASE}  -param "-lslib_test ${TEST_PARAM}" LSlib/LSlib_cam_reg                 )
-add_test(LSlib/LSlib_cam_dfJ_aK                         ${TEST_BASE}  -param "-lslib_test ${TEST_PARAM}" LSlib/LSlib_cam_dfJ_aK              )
+    add_lslib_test(LSlib/LSlib_cam_reg                            "lsdalton;lslib")
+    add_lslib_test(LSlib/LSlib_cam_dfJ_aK                         "lsdalton;lslib")
 
     add_lsdalton_test(linsca/linsca_energy                           "lsdalton")
     add_lsdalton_test(linsca/linsca_VanLenthe                        "lsdalton")
