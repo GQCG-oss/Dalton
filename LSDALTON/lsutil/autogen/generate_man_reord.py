@@ -31,18 +31,21 @@ def main():
       print "COULD NOT FIND LSDALTON/lsutil, exiting"
       sys.exit()
 
-
   #THIS FILE SHOULD GENERATE ALL REORDERINGS NEEDED in manual_reorderings.F90
   if(not os.path.exists(lsutildir+"manual_reorderings.F90")):
-    produce_file(lsutildir)
+    produce_file(lsutildir,sys.argv)
 
 ##################################################################################################
 ##################################################################################################
-def produce_file(lsutildir):
+def produce_file(lsutildir,args):
    abc = "abcdefghijklmnopqrstuvwxyz"
    maxr = 4
    minr = 2
    f=open(lsutildir+"manual_reorderings.F90",'w')
+   #GET COMMAND LINE ARGUMENTS
+   debug_loops = ("VAR_LSDEBUG" in args)
+   nocollapse = ("nocollapse" in args)
+    
     
    #WRITE HEADER AND MODULE
    now = datetime.datetime.now()
@@ -132,12 +135,16 @@ def produce_file(lsutildir):
 
        f.write(subheaderstr)
        #GENERAL CASE pre1/=1 pre2/=0 or 1
-       cases = ["pre2 == 0.0E0_realk .and. pre1 == 1.0E0_realk"]
-       cases.append("pre2 == 0.0E0_realk .and. pre1 /= 1.0E0_realk")
-       cases.append("pre2 == 1.0E0_realk .and. pre1 == 1.0E0_realk")
-       cases.append("pre2 == 1.0E0_realk .and. pre1 /= 1.0E0_realk")
-       cases.append("pre2 /= 1.0E0_realk .and. pre1 == 1.0E0_realk")
-       cases.append("pre2 /= 1.0E0_realk .and. pre1 /= 1.0E0_realk")
+       if(not debug_loops):
+         cases = ["pre2 == 0.0E0_realk .and. pre1 == 1.0E0_realk"]
+         cases.append("pre2 == 0.0E0_realk .and. pre1 /= 1.0E0_realk")
+         cases.append("pre2 == 1.0E0_realk .and. pre1 == 1.0E0_realk")
+         cases.append("pre2 == 1.0E0_realk .and. pre1 /= 1.0E0_realk")
+         cases.append("pre2 /= 1.0E0_realk .and. pre1 == 1.0E0_realk")
+         cases.append("pre2 /= 1.0E0_realk .and. pre1 /= 1.0E0_realk")
+       else:
+         cases = [".true."]
+
        #write sfuff for all the cases above
        for cas in range(len(cases)):
          if(cas==0):
@@ -153,14 +160,19 @@ def produce_file(lsutildir):
          for j in range(modes):
            omppar += "d"+abc[j] +",d"+abc[j]+"2,mod"+abc[j]+","
          omppar = omppar[0:-1]+")\n"
-         
-         f.write("#ifndef VAR_LSESSL\n")
-         f.write(omppar)
-         f.write("#endif\n")
+        
+         if(not debug_loops): 
+           f.write("#ifndef VAR_LSESSL\n")
+           f.write(omppar)
+           f.write("#endif\n")
        
          #get the batched space
          casecounter = 1
-         for i in range(modes+1):
+         if(not debug_loops):
+           fullrange = modes+1
+         else:
+           fullrange = 1
+         for i in range(fullrange):
            #FIND THE RESTRICTED INDICES IN THE OLD ORDERING
            all_thingys = combinations(idxarr,i)
            #all_thingys = itertools.combinations(idxarr,i)
@@ -198,24 +210,26 @@ def produce_file(lsutildir):
                    break
              
              #Build if-statement for current restrictions
-             conditionalstatement = "      "+label1+"if("
-             for j in range(len(conditions)):
-               conditionalstatement += conditions[j]
-               if j != len(conditions)-1:
-                 conditionalstatement+=".and."
-             conditionalstatement += ")then\n"
-             f.write(conditionalstatement)
+             if(not debug_loops):
+               conditionalstatement = "      "+label1+"if("
+               for j in range(len(conditions)):
+                 conditionalstatement += conditions[j]
+                 if j != len(conditions)-1:
+                   conditionalstatement+=".and."
+               conditionalstatement += ")then\n"
+               f.write(conditionalstatement)
          
              #WRITE OMP DO STUFF HERE
-             if(modes-len(oldr)>0):
-               ompdo ="        !$OMP DO" 
-               if (modes-len(oldr)>1):
-                 ompdo += " COLLAPSE("+str(modes-len(oldr))+")\n"
-               else:
-                 ompdo += "\n"
-               f.write("#ifndef VAR_LSESSL\n")
-               f.write(ompdo)
-               f.write("#endif\n")
+             if(not debug_loops):
+               if(modes-len(oldr)>0):
+                 ompdo ="        !$OMP DO" 
+                 if (modes-len(oldr)>1 and (not nocollapse)):
+                   ompdo += " COLLAPSE("+str(modes-len(oldr))+")\n"
+                 else:
+                   ompdo += "\n"
+                 f.write("#ifndef VAR_LSESSL\n")
+                 f.write(ompdo)
+                 f.write("#endif\n")
    
              #ORDER THE LOOPS, this depends on the architecture and may be modified
              #THESE CONDITIONS ARE SET UP FOR INTEL, please adapt whenever a different compiler/architecture is used
@@ -254,58 +268,75 @@ def produce_file(lsutildir):
            
    
              #WRITING THE OUTER FOR LOOPS HERE:
-             offsetstr="        "
-             for j in  range(len(outeri)):
-               f.write(offsetstr+"do b"+abc[outeri[j]]+"=1,d"+abc[outeri[j]]+"2,bs\n")
-               offsetstr += "  "
-             offsetstr = offsetstr[0:-2]
-             
+             if(not debug_loops):
+               offsetstr="        "
+               for j in  range(len(outeri)):
+                 f.write(offsetstr+"do b"+abc[outeri[j]]+"=1,d"+abc[outeri[j]]+"2,bs\n")
+                 offsetstr += "  "
+               offsetstr = offsetstr[0:-2]
+             else:
+               offsetstr="    "
+               
              f.write("\n")
             
              offsetstr2 = offsetstr + "  "
              #WRITING THE INNER FOR LOOPS HERE:
-             for j in range(modes):
-               if(inneri[j] in newr):
-                 f.write(offsetstr2+"do "+abc[inneri[j]]+"=d"+abc[inneri[j]]+"2+1,d"+abc[inneri[j]]+"\n")
-               elif(inneri[j] in newu):
-                 f.write(offsetstr2+"do "+abc[inneri[j]]+"=0,bcntr\n")
-               else:
-                 print "FUCKING INVALID STUFF HAPPENING HERE"
-               offsetstr2 += "  "
+             if(not debug_loops):
+               for j in range(modes):
+                 if(inneri[j] in newr):
+                   f.write(offsetstr2+"do "+abc[inneri[j]]+"=d"+abc[inneri[j]]+"2+1,d"+abc[inneri[j]]+"\n")
+                 elif(inneri[j] in newu):
+                   f.write(offsetstr2+"do "+abc[inneri[j]]+"=0,bcntr\n")
+                 else:
+                   print "FUCKING INVALID STUFF HAPPENING HERE"
+                 offsetstr2 += "  "
+             else:
+               for j in range(modes):
+                 f.write(offsetstr2+"do "+abc[inneri[j]]+"=1,d"+abc[inneri[j]]+"\n")
+                 offsetstr2 += "  "
    
              offsetstr2 = offsetstr2[0:-2]
              
              #CENTRAL COPYING AND ADDITION STRING
              newidx = ""
              oldidx = ""
-             for j in range(modes):
-               if(perm[j] in newu):
-                 newidx += "b"+abc[perm[j]]+"+"+abc[perm[j]]+","
-               elif(perm[j] in newr):
+             if(not debug_loops):
+               for j in range(modes):
+                 if(perm[j] in newu):
+                   newidx += "b"+abc[perm[j]]+"+"+abc[perm[j]]+","
+                 elif(perm[j] in newr):
+                   newidx += abc[perm[j]]+","
+                 else:
+                   print "FUCKING INVALID STUFF HAPPENING HERE"
+                 if(idxarr[j] in newu):
+                   oldidx += "b"+abc[idxarr[j]]+"+"+abc[idxarr[j]]+","
+                 elif(idxarr[j] in newr):
+                   oldidx += abc[idxarr[j]]+","
+                 else:
+                   print "FUCKING INVALID STUFF HAPPENING HERE"
+             else:
+               for j in range(modes):
                  newidx += abc[perm[j]]+","
-               else:
-                 print "FUCKING INVALID STUFF HAPPENING HERE"
-               if(idxarr[j] in newu):
-                 oldidx += "b"+abc[idxarr[j]]+"+"+abc[idxarr[j]]+","
-               elif(idxarr[j] in newr):
                  oldidx += abc[idxarr[j]]+","
-               else:
-                 print "FUCKING INVALID STUFF HAPPENING HERE"
+
              newidx = newidx[0:-1]
              oldidx = oldidx[0:-1]
    
              cpstr=offsetstr2+"  array_out("
-             if cas == 0:
-               cpstr += newidx+")=array_in("+oldidx+")\n"
-             elif cas==1:
-               cpstr += newidx+")=pre1*array_in("+oldidx+")\n"
-             elif cas==2:
-               cpstr += newidx+")=array_out("+newidx+")&\n                                                  &+array_in("+oldidx+")\n"
-             elif cas==3:
-               cpstr += newidx+")=array_out("+newidx+")&\n                                                  &+pre1*array_in("+oldidx+")\n"
-             elif cas==4:
-               cpstr += newidx+")=pre2*array_out("+newidx+")&\n                                                  &+array_in("+oldidx+")\n"
-             elif cas==5:
+             if(not debug_loops):
+               if cas == 0:
+                 cpstr += newidx+")=array_in("+oldidx+")\n"
+               elif cas==1:
+                 cpstr += newidx+")=pre1*array_in("+oldidx+")\n"
+               elif cas==2:
+                 cpstr += newidx+")=array_out("+newidx+")&\n                                                  &+array_in("+oldidx+")\n"
+               elif cas==3:
+                 cpstr += newidx+")=array_out("+newidx+")&\n                                                  &+pre1*array_in("+oldidx+")\n"
+               elif cas==4:
+                 cpstr += newidx+")=pre2*array_out("+newidx+")&\n                                                  &+array_in("+oldidx+")\n"
+               elif cas==5:
+                 cpstr += newidx+")=pre2*array_out("+newidx+")&\n                                                  &+pre1*array_in("+oldidx+")\n"
+             else:
                cpstr += newidx+")=pre2*array_out("+newidx+")&\n                                                  &+pre1*array_in("+oldidx+")\n"
     
              f.write(cpstr)
@@ -318,26 +349,28 @@ def produce_file(lsutildir):
              f.write("\n")
    
              #WRITING THE OUTER ENDOFOR HERE:
-             for j in  range(modes-len(oldr)-1,-1,-1):
-               f.write(offsetstr+"enddo\n")
-               offsetstr = offsetstr[0:-2]
-   
-             if(modes-len(oldr)> 0):
-               ompdo ="        !$OMP END DO NOWAIT\n" 
+             if(not debug_loops):
+               for j in  range(modes-len(oldr)-1,-1,-1):
+                 f.write(offsetstr+"enddo\n")
+                 offsetstr = offsetstr[0:-2]
+              
+               if(modes-len(oldr)> 0):
+                 ompdo ="        !$OMP END DO NOWAIT\n" 
+                 f.write("#ifndef VAR_LSESSL\n")
+                 f.write(ompdo)
+                 f.write("#endif\n")
+              
+               conditionalstatement="      endif "+label1+"\n"
+               f.write(conditionalstatement)
+             
+           if(not debug_loops):
+             if(i==modes-1):
+               ompdo = "      !$OMP END PARALLEL\n"
                f.write("#ifndef VAR_LSESSL\n")
                f.write(ompdo)
                f.write("#endif\n")
-   
-             conditionalstatement="      endif "+label1+"\n"
-             f.write(conditionalstatement)
-             
-           if(i==modes-1):
-             ompdo = "      !$OMP END PARALLEL\n"
-             f.write("#ifndef VAR_LSESSL\n")
-             f.write(ompdo)
-             f.write("#endif\n")
       
-         if(cas==5):
+         if(cas==len(cases)-1):
            f.write("    endif precase\n")
    
        #END THE SUBROUTINE
