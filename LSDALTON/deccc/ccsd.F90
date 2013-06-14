@@ -1658,7 +1658,7 @@ contains
     double_2G_nel=170000000
     print_debug = (DECinfo%PL>2)
 
-#ifdef VAR_DEBUG
+#ifdef VAR_LSDEBUG
     double_2G_nel=20
 #endif
     
@@ -2407,7 +2407,7 @@ contains
     max_wait_time = wait_time
 
 
-#ifdef VAR_DEBUG
+#ifdef VAR_LSDEBUG
     if(print_debug)write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
     call lsmpi_local_reduction(wait_time,infpar%master)
     call lsmpi_local_max(max_wait_time,infpar%master)
@@ -2467,7 +2467,7 @@ contains
       call mem_dealloc(mpi_stuff,mpi_ctasks)
     endif
     stopp=MPI_wtime()
-#ifdef VAR_DEBUG
+#ifdef VAR_LSDEBUG
     if(master.and.DECinfo%PL>2) print*,"MPI part of the calculation finished, comm-time",stopp-startt
 #endif    
     !free windows and deallocate partial int matrices in scheme 1
@@ -3996,7 +3996,7 @@ contains
 
     !add up the contributions for the sigma [ alpha gamma ] contributions
     ! get the order sigma[ gamma i j alpha ]
-    call mat_transpose_pl(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
+    call mat_transpose(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
     call lsmpi_poke()
     !transform gamma -> b
     call dgemm('t','n',nv,nor*full1,full2,1.0E0_realk,xvirt(fg+goffs),nb,w2,full2,0.0E0_realk,w3,nv)
@@ -4061,7 +4061,7 @@ contains
         l1=fa
         l2=fg+goffs+tlen
       endif
-      call mat_transpose_pl(full1T,full2T*nor,1.0E0_realk,w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
+      call mat_transpose(full1T,full2T*nor,1.0E0_realk,w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
       call lsmpi_poke()
       !transform gamma -> a
       call dgemm('t','n',nv,nor*full1T,full2T,1.0E0_realk,xvirt(l1),nb,w2,full2T,0.0E0_realk,w3,nv)
@@ -4119,7 +4119,7 @@ contains
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !add up the contributions for the sigma [ alpha gamma ] contributions
     ! get the order sigma[ gamma i j alpha ]
-    call mat_transpose_pl(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
+    call mat_transpose(full1,full2*nor,1.0E0_realk,w0,0.0E0_realk,w2)
     call lsmpi_poke()
     !transform gamma -> l
     call dgemm('t','n',no,nor*full1,full2,1.0E0_realk,xocc(fg+goffs),nb,w2,full2,0.0E0_realk,w3,no)
@@ -4142,7 +4142,7 @@ contains
         l1=fa
         l2=fg+goffs+tlen
       endif
-      call mat_transpose_pl(full1T,full2T*nor,1.0E0_realk,w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
+      call mat_transpose(full1T,full2T*nor,1.0E0_realk,w0(pos2:full1T*full2T*nor+pos2-1),0.0E0_realk,w2)
       call lsmpi_poke()
       !transform gamma -> l
       call dgemm('t','n',no,nor*full1T,full2T,1.0E0_realk,xocc(l1),nb,w2,full2T,0.0E0_realk,w3,no)

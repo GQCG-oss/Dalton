@@ -31,6 +31,7 @@ module manual_reorderings_module
 
     ! assuming available cache memory is 8 MB and we need to store two blocks at a time 
     block_size = int(((8000.0*1000.0)/(8.0*2.0))**(1.0/4.0))
+    print *,"block size",block_size, d1,d2,d3,d4
     dims(1)=d1
     dims(2)=d2
     dims(3)=d3

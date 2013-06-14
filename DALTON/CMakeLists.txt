@@ -47,6 +47,7 @@ set(LIBS)
 
 include(ConfigVersion)
 include(SourcesDALTON)
+include(SourcesLSDALTON)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
 include(ConfigExternal)
@@ -55,7 +56,6 @@ include(ConfigMath)
 include(ConfigMPI)
 include(ConfigSafeGuards)
 include(ConfigTesting)
-include(ConfigVersion)
 include(GenericMacros)
 include(BinaryInfo)
 
@@ -74,55 +74,16 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
     )
 
 # set definitions
+include(Definitions)
 
-if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
-    add_definitions(-DMOD_UNRELEASED)
-endif()
-
-if(ENABLE_GEN1INT)
-    add_definitions(-DBUILD_GEN1INT)
-endif()
-add_definitions(-DVAR_MFDS)
-add_definitions(-D_FILE_OFFSET_BITS=64)
-add_definitions(-DIMPLICIT_NONE)
-if(ENABLE_64BIT_INTEGERS)
-    add_definitions(-DVAR_INT64)
-endif()
 # forward CPP directly to the code
 set(CPP)
 if(NOT "${CPP}" STREQUAL "")
     add_definitions(${CPP})
 endif()
 
-set(WORK_MEM_WORDS
-    "64000000"
-    CACHE STRING
-    "Work memory in words"
-    )
-add_definitions(-DINSTALL_WRKMEM=${WORK_MEM_WORDS})
-
-set(2EL_MEM_WORDS
-    "1"
-    CACHE STRING
-    "Static memory for storing 2-el integrals"
-    )
-add_definitions(-DINSTALL_MMWORK=${2EL_MEM_WORDS})
-
-# find a good default scratch base directory
-foreach(dir "/global/work/$ENV{USER}" "/scratch/$ENV{USER}" "/work" "/scratch" "/scr" "/temp" "/tmp")
-   if(EXISTS "${dir}/")
-       set(DEFAULT_SCRATCH_BASE_DIR ${dir})
-       break()
-   endif()
-endforeach()
-
-# set scratch directory
-set(SCRATCH_DIR
-    "${DEFAULT_SCRATCH_BASE_DIR}/DALTON_scratch_\${USER}"
-    CACHE STRING
-    "Default scratch directory"
-    )
-message("-- SCRATCH_DIR set to: ${SCRATCH_DIR}")
+# configure INSTALL_WRKMEM and INSTALL_MMWORK
+include(ConfigWORKMEM)
 
 if(ENABLE_GEN1INT)
     add_subdirectory(gen1int)

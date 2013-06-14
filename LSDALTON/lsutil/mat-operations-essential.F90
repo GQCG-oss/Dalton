@@ -1627,6 +1627,7 @@ end type matrixmembuf
       integer, intent(in) :: from_row, to_row, from_col, to_col
       type(Matrix), intent(inout) :: Asec  !output
       type(Matrix) :: B,Bsec
+      real(realk),pointer :: Afull(:,:),Bsecfull(:,:)
       
       !Check if Asec is inside A
       if (to_row > A%nrow .or. from_row < 1 .or. from_col < 1 .or. A%ncol < to_col) then
@@ -1645,19 +1646,26 @@ end type matrixmembuf
       select case(matrix_type)
       case(mtype_dense)
          call mat_dense_section(A,from_row,to_row,from_col,to_col,Asec)
-#ifndef UNITTEST
-#endif
       case(mtype_unres_dense)
          call mat_unres_dense_section(A,from_row,to_row,from_col,to_col,Asec)
       case(mtype_scalapack)
          write(*,'(A)') 'Fallback mat_section for mtype_scalapack'
+         call mem_alloc(Afull,A%nrow,A%ncol)
          call mat_dense_init(B,A%nrow,A%ncol)
+         !transform from type to dense type
+         call mat_to_full(A,1E0_realk,Afull)
+         call mat_dense_set_from_full(Afull,1E0_realk,B)
+         call mem_dealloc(Afull)
+         !build section from dense mat
          call mat_dense_init(Bsec,Asec%nrow,Asec%ncol)
-         call mat_to_full(A,1E0_realk,B%elms)
          call mat_dense_section(B,from_row,to_row,from_col,to_col,Bsec)
-         call mat_set_from_full(Bsec%elms,1E0_realk,Asec)
          call mat_dense_free(B)
+         !build full from dense section mat
+         call mem_alloc(Bsecfull,Asec%nrow,Asec%ncol)
+         call mat_dense_to_full(Bsec, 1E0_realk, Bsecfull)
          call mat_dense_free(Bsec)
+         call mat_set_from_full(Bsecfull,1E0_realk,Asec)
+         call mem_dealloc(Bsecfull)
          write(*,'(A)') 'debug: fallback mat_section finished'
       case default
          call lsquit("mat_section not implemented for this type of matrix",-1)

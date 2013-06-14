@@ -567,7 +567,7 @@ C
       DIMENSION RDX(ABS_MAXRM,4,NFREQS),FREQS(NFREQS),GD(KZVAR,4),
      &     XVEC(KZVAR*NFREQS*4),XSOL(2*KZVAR,2,NFREQS),
      &     RES(KZVAR,NFREQS,4),WRK(LWRK)
-      LOGICAL CONVERGED,ORTHO_QUIT1,ORTHO_QUIT2
+      LOGICAL CONVERGED,ORTHO_QUIT1,ORTHO_QUIT2,SOLVER_QUIT
 C     local
       INTEGER KZYVAR,K,J,NOS,NOA,NCONV,NSR,NSI,NAR,NAI,N1LT,N2LT
 c      DOUBLE PRECISION DAMP,FREQI,FR1,FR2,FR3,FR4,DNORM_RR,DNORM_RI,
@@ -583,6 +583,7 @@ C
       IF (LFREE.LT.0) STOP 'ABS_RSD: out of memory'
 C      
       CONVERGED = .TRUE.
+      SOLVER_QUIT=.FALSE.
       DAMP=ABS_DAMP
 C
 C     Initialize residual vector
@@ -725,6 +726,8 @@ C
       NCONV=0
       DO K=1,NFREQS
          IF (.NOT.CONV(K)) THEN
+            DNORM_X=SQRT(DNRM2(KZYVAR,XSOL(1,1,K),1)+
+     &                   DNRM2(KZYVAR,XSOL(1,2,K),1))
             CALL DCOPY(KZVAR,RES(1,K,1),1,WRK(KTMP),1)
             CALL DCOPY(KZVAR,RES(1,K,1),1,WRK(KTMP+KZVAR),1)
             CALL DAXPY(KZVAR,1.0d0,RES(1,K,2),1,WRK(KTMP),1)
@@ -742,13 +745,36 @@ c            CALL DZERO(WRK(KTMP),KZYVAR)
             DNORM_GI = DNRM2(KZVAR,GD(1,2),1)
             DNORM_GT = SQRT(2.0d0*(DNORM_GR**2 + DNORM_GI**2))
 C     
-            RESID=DNORM_RT/DNORM_GT
+            DNORM_REL=DNORM_GT
+            IF (ABS_XREL) THEN
+              DNORM_REL=DNORM_X
+            ENDIF
+            RESID=DNORM_RT/DNORM_REL
 C    
-            IF (DNORM_RT/DNORM_GT.LE.ABS_THCLR) THEN
-            NCONV=NCONV+1
+            IF (DNORM_RT/DNORM_REL.LE.ABS_THCLR) THEN
+               NCONV=NCONV+1
                CONV(K)=.TRUE.
                CALL WRITE_XVEC(LUABSVECS,2*KZYVAR,XSOL(1,1,K),LABEL,
      &              FREQS(K),RESID)
+            ELSEIF (ITER.EQ.ABS_MAXITER) THEN
+               CONVERGED=.FALSE.
+               SOLVER_QUIT=.TRUE.
+               IF (RESID .LE. 10.0d0*ABS_THCLR) THEN
+                  CALL WRITE_XVEC(LUABSVECS,2*KZYVAR,XSOL(1,1,K),LABEL,
+     &                 FREQS(K),RESID)
+                  WRITE(LUABSPRI,*) 'WARNING! For',FREQS(K)
+                  WRITE(LUABSPRI,*) 'CPP equations not converged'
+                 WRITE(LUABSPRI,*) 'Threshold in iteration',ITER,RESID
+                 WRITE(LUABSPRI,*) 'Requested threshold', ABS_THCLR
+               ELSE
+                 WRITE(LUABSPRI,*) 'Maximum number of iter. exceeded'
+                 WRITE(LUABSPRI,*) 'and CPP equations not converged!'
+                 WRITE(LUABSPRI,*) 'Threshold in iteration',ITER,RESID
+                 WRITE(LUABSPRI,*) 'Requested threshold', ABS_THCLR
+          WRITE(LUABSPRI,*) 'Increase the iteration number or threshold'
+                 CALL QUIT('CPP equations not converged!')
+               ENDIF
+              
             ELSE
                CONVERGED=.FALSE.
             ENDIF
@@ -763,16 +789,22 @@ C
      &            'Damping:',ABS_DAMP,
      &            'Residual:',DNORM_RT/DNORM_GT
             END IF
-            write(luabspri,*)'residual ',LABEL,ITER,FREQS(K),
-     &        DNORM_RT/DNORM_GT
+            WRITE(LUABSPRI,'(A,2(I4),2X,A,2X,F6.4,2X,A,2(D15.7))')
+     &             'ITER, IVEC:',ITER,K, LABEL,FREQS(K),
+     &             ' RESID, RESID/X:',DNORM_RT/DNORM_GT,DNORM_RT/DNORM_X
+c            write(luabspri,*)'residual ',LABEL,ITER,FREQS(K),
+c     &        DNORM_RT/DNORM_GT
          ELSE
             NCONV=NCONV+1
-            write(luabspri,*)'residual ',LABEL,ITER,FREQS(K),
-     &        CONV(K)
+            WRITE(LUABSPRI,'(A,2(I3),2X,A,2X,F6.4,A,2(L1))')
+     *           'ITER, IVEC:',ITER,K,LABEL,FREQS(K),
+     *           ' RESID, RESID/X:',CONV(K),CONV(K)
+c            write(luabspri,*)'residual ',LABEL,ITER,FREQS(K),
+c     &        CONV(K)
 c           write(luabspri,*) 'Freq skipped in ABS_RSD',FREQS(K),CONV(K)
          END IF
        END DO
-       IF (.NOT. CONVERGED) THEN
+       IF (.NOT. CONVERGED .AND. (.NOT. SOLVER_QUIT)) THEN
           CALL ABS_PRECON(KZVAR,RES,FREQS,NFREQS,XVEC,CONV,
      &                    WRK(KFREE),LFREE)
             KNVEC(1)=2*NFREQS
