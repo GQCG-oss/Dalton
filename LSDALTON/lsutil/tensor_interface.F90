@@ -965,11 +965,16 @@ contains
     integer, intent(in),optional :: order(arr%mode)
     !> checkmem is outdated
     real(realk) :: tilemem,MemFree
-    integer :: i,o(arr%mode)
+    integer :: i,o(arr%mode),fullfortdims(arr%mode)
     real(realk) :: nrm
     do  i=1,arr%mode
       o(i)=i
     enddo
+    if(present(order))o=order
+    do  i=1,arr%mode
+      fullfortdims(o(i))=arr%dims(i)
+    enddo
+    
     if(nelms/=arr%nelms)call lsquit("ERROR(array_convert_fort2arr):array&
     &dimensions are not the same",-1)
     select case(arr%atype)
@@ -981,15 +986,12 @@ contains
         !if enough memory is available the lower one should be faster      
         if(arr%init_type==ALL_INIT)then
           do i=1,arr%nlti
-            if(present(order))call extract_tile_from_fort(fortarr,arr%mode,arr%ti(i)%gt,arr%dims,&
-                                              &arr%tdim,arr%ti(i)%t,order)
-            if(.not.present(order))call extract_tile_from_fort(fortarr,arr%mode,arr%ti(i)%gt,arr%dims,&
-                                              &arr%tdim,arr%ti(i)%t,o)
+            call tile_from_fort(1.0E0_realk,fortarr,fullfortdims,arr%mode,&
+                               &0.0E0_realk,arr%ti(i)%t,arr%ti(i)%gt,arr%tdim,o)
           enddo
         else
           !call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
-          if(present(order))call cp_data2tiled_intiles(arr,fortarr,arr%dims,arr%mode,order)
-          if(.not.present(order))call cp_data2tiled_intiles(arr,fortarr,arr%dims,arr%mode)
+          call cp_data2tiled_intiles(arr,fortarr,arr%dims,arr%mode,o)
         endif
       case default
         call lsquit("ERROR(array_convert_fort2arr) the array type is not implemented",-1)
@@ -1494,7 +1496,11 @@ contains
     integer :: p1,p2
     real(realk) :: pr1,pr2,begc1,begw1,endc1,endw1,begc2,begw2,endc2,endw2
     character(len=7) :: teststatus
+    logical :: test3dnormal, test4dnormal,test4dtiled
     master = .true.
+    test3dnormal =.false.
+    test4dnormal =.false.
+    test4dtiled  =.true.
     rigorous=.true.
     nb =  82
     nv =  81
@@ -1515,150 +1521,156 @@ contains
     call random_number(sto1)
 
 
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"TESTING 3D REORDERINGS"
-    write (DECinfo%output,*)"**********************"
-    write (DECinfo%output,*)""
-if(.false.)then
-    do p1=1,2
-      do p2=0,2
-        pr1 = float(p1)
-        pr2 = float(p2)
-        if (p1==2) call random_number(pr1)
-        if (p2==2) call random_number(pr2)
-        write (DECinfo%output,'(A3,f4.1,A3,f4.1,A2)')"B= ",pr1,"*A+",pr2,"*B"
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_3d(pr1,in1,nb,nv,no,[1,2,3],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,nv
-              do c=1,no
-                if(abs(pr1*in1(a+(b-1)*nb+(c-1)*nv*nb)+pr2*sto1(a+(b-1)*nb+(c-1)*nv*nb)&
-                   &-res(a+(b-1)*nb+(c-1)*nv*nb))&
-                  & >1.0E-11_realk)teststatus="FAILED "
+    if(test3dnormal)then
+      write (DECinfo%output,*)""
+      write (DECinfo%output,*)"TESTING 3D REORDERINGS"
+      write (DECinfo%output,*)"**********************"
+      write (DECinfo%output,*)""
+      do p1=1,2
+        do p2=0,2
+          pr1 = float(p1)
+          pr2 = float(p2)
+          if (p1==2) call random_number(pr1)
+          if (p2==2) call random_number(pr2)
+          write (DECinfo%output,'(A3,f4.1,A3,f4.1,A2)')"B= ",pr1,"*A+",pr2,"*B"
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_3d(pr1,in1,nb,nv,no,[1,2,3],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,nv
+                do c=1,no
+                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*nv*nb)+pr2*sto1(a+(b-1)*nb+(c-1)*nv*nb)&
+                     &-res(a+(b-1)*nb+(c-1)*nv*nb))&
+                    & >1.0E-11_realk)teststatus="FAILED "
+                enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write (DECinfo%output,'(I1,I1,"-123: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_3d(pr1,in1,nb,nv,no,[1,3,2],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,nv
-              do c=1,no
-                if(abs(pr1*in1(a+(b-1)*nb+(c-1)*nv*nb)+pr2*sto1(a+(c-1)*nb+(b-1)*no*nb)-res(a+(c-1)*nb+(b-1)*no*nb))&
-                  & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write (DECinfo%output,&
+          &'(I1,I1,"-123: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_3d(pr1,in1,nb,nv,no,[1,3,2],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,nv
+                do c=1,no
+                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*nv*nb)+pr2*sto1(a+(c-1)*nb+(b-1)*no*nb)-res(a+(c-1)*nb+(b-1)*no*nb))&
+                    & >1.0E-11_realk)teststatus="FAILED "
+                enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write (DECinfo%output,'(I1,I1,"-132: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_3d(pr1,in1,nb,nv,no,[2,1,3],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,nv
-              do c=1,no
-                if(abs(pr1*in1(a+(b-1)*nb+(c-1)*nv*nb)+pr2*sto1(b+(a-1)*nv+(c-1)*nv*nb)-res(b+(a-1)*nv+(c-1)*nv*nb))&
-                  & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write (DECinfo%output,&
+          &'(I1,I1,"-132: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_3d(pr1,in1,nb,nv,no,[2,1,3],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,nv
+                do c=1,no
+                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*nv*nb)+pr2*sto1(b+(a-1)*nv+(c-1)*nv*nb)-res(b+(a-1)*nv+(c-1)*nv*nb))&
+                    & >1.0E-11_realk)teststatus="FAILED "
+                enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write (DECinfo%output,'(I1,I1,"-213: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_3d(pr1,in1,nb,nv,no,[2,3,1],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,nv
-              do c=1,no
-                if(abs(pr1*in1(a+(b-1)*nb+(c-1)*nv*nb)+pr2*sto1(b+(c-1)*nv+(a-1)*nv*no)-res(b+(c-1)*nv+(a-1)*nv*no))&
-                  & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write (DECinfo%output,&
+          &'(I1,I1,"-213: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_3d(pr1,in1,nb,nv,no,[2,3,1],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,nv
+                do c=1,no
+                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*nv*nb)+pr2*sto1(b+(c-1)*nv+(a-1)*nv*no)-res(b+(c-1)*nv+(a-1)*nv*no))&
+                    & >1.0E-11_realk)teststatus="FAILED "
+                enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write (DECinfo%output,'(I1,I1,"-231: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_3d(pr1,in1,nb,nv,no,[3,1,2],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,nv
-              do c=1,no
-                if(abs(pr1*in1(a+(b-1)*nb+(c-1)*nv*nb)+pr2*sto1(c+(a-1)*no+(b-1)*nb*no)-res(c+(a-1)*no+(b-1)*nb*no))&
-                  & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write (DECinfo%output,&
+          &'(I1,I1,"-231: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_3d(pr1,in1,nb,nv,no,[3,1,2],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,nv
+                do c=1,no
+                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*nv*nb)+pr2*sto1(c+(a-1)*no+(b-1)*nb*no)-res(c+(a-1)*no+(b-1)*nb*no))&
+                    & >1.0E-11_realk)teststatus="FAILED "
+                enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write (DECinfo%output,'(I1,I1,"-312: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_3d(pr1,in1,nb,nv,no,[3,2,1],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,nv
-              do c=1,no
-                if(abs(pr1*in1(a+(b-1)*nb+(c-1)*nv*nb)+pr2*sto1(c+(b-1)*no+(a-1)*nv*no)-res(c+(b-1)*no+(a-1)*nv*no))&
-                  & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write (DECinfo%output,&
+          &'(I1,I1,"-312: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_3d(pr1,in1,nb,nv,no,[3,2,1],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,nv
+                do c=1,no
+                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*nv*nb)+pr2*sto1(c+(b-1)*no+(a-1)*nv*no)-res(c+(b-1)*no+(a-1)*nv*no))&
+                    & >1.0E-11_realk)teststatus="FAILED "
+                enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write (DECinfo%output,'(I1,I1,"-321: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        write(DECinfo%output,'("")')
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write (DECinfo%output,&
+          &'(I1,I1,"-321: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+          write(DECinfo%output,'("")')
+        enddo
       enddo
-    enddo
-endif
+    endif
 
 
     call mem_dealloc(in1)
@@ -1680,771 +1692,1990 @@ endif
     call random_number(sto1)
 
 
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"TESTING 4D REORDERINGS"
-    write (DECinfo%output,*)"**********************"
-    write (DECinfo%output,*)""
-if(.false.)then
-    do p1=1,2
-      do p2=0,2
-        pr1 = float(p1)
-        pr2 = float(p2)
-        if (p1==2) call random_number(pr1)
-        if (p2==2) call random_number(pr2)
-        write (DECinfo%output,'(A3,f4.1,A3,f4.1,A2)')"B= ",pr1,"*A+",pr2,"*B"
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[1,2,3,4],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
-                     &-res(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+    if(test4dnormal)then
+      write (DECinfo%output,*)""
+      write (DECinfo%output,*)""
+      write (DECinfo%output,*)"TESTING 4D REORDERINGS"
+      write (DECinfo%output,*)"**********************"
+      write (DECinfo%output,*)""
+      do p1=1,2
+        do p2=0,2
+          pr1 = float(p1)
+          pr2 = float(p2)
+          if (p1==2) call random_number(pr1)
+          if (p2==2) call random_number(pr2)
+          write (DECinfo%output,'(A3,f4.1,A3,f4.1,A2)')"B= ",pr1,"*A+",pr2,"*B"
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[1,2,3,4],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-1234: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[1,2,4,3],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(d-1)*na*nb+(c-1)*nb*na*no)&
-                     &-res(a+(b-1)*nb+(d-1)*na*nb+(c-1)*nb*na*no))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1234: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[1,2,4,3],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(d-1)*na*nb+(c-1)*nb*na*no)&
+                       &-res(a+(b-1)*nb+(d-1)*na*nb+(c-1)*nb*na*no))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-1243: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[1,3,2,4],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(c-1)*nb+(b-1)*nv*nb+(d-1)*nb*na*nv)&
-                     &-res(a+(c-1)*nb+(b-1)*nv*nb+(d-1)*nb*na*nv))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1243: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[1,3,2,4],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(c-1)*nb+(b-1)*nv*nb+(d-1)*nb*na*nv)&
+                       &-res(a+(c-1)*nb+(b-1)*nv*nb+(d-1)*nb*na*nv))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-1324: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[1,3,4,2],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(c-1)*nb+(d-1)*nv*nb+(b-1)*nb*no*nv)&
-                     &-res(a+(c-1)*nb+(d-1)*nv*nb+(b-1)*nb*no*nv))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1324: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[1,3,4,2],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(c-1)*nb+(d-1)*nv*nb+(b-1)*nb*no*nv)&
+                       &-res(a+(c-1)*nb+(d-1)*nv*nb+(b-1)*nb*no*nv))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-1342: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[1,4,2,3],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(b-1)*no*nb+(c-1)*nb*no*na)&
-                     &-res(a+(d-1)*nb+(b-1)*no*nb+(c-1)*nb*no*na))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1342: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[1,4,2,3],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(b-1)*no*nb+(c-1)*nb*no*na)&
+                       &-res(a+(d-1)*nb+(b-1)*no*nb+(c-1)*nb*no*na))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-1423: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[1,4,3,2],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(c-1)*no*nb+(b-1)*nb*no*nv)&
-                     &-res(a+(d-1)*nb+(c-1)*no*nb+(b-1)*nb*no*nv))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1423: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[1,4,3,2],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(c-1)*no*nb+(b-1)*nb*no*nv)&
+                       &-res(a+(d-1)*nb+(c-1)*no*nb+(b-1)*nb*no*nv))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-1432: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[2,1,3,4],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(a-1)*na+(c-1)*na*nb+(d-1)*na*nb*nv)&
-                     &-res(b+(a-1)*na+(c-1)*na*nb+(d-1)*na*nb*nv))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1432: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[2,1,3,4],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(a-1)*na+(c-1)*na*nb+(d-1)*na*nb*nv)&
+                       &-res(b+(a-1)*na+(c-1)*na*nb+(d-1)*na*nb*nv))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-2134: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[2,1,4,3],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(a-1)*na+(d-1)*na*nb+(c-1)*na*nb*no)&
-                     &-res(b+(a-1)*na+(d-1)*na*nb+(c-1)*na*nb*no))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2134: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[2,1,4,3],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(a-1)*na+(d-1)*na*nb+(c-1)*na*nb*no)&
+                       &-res(b+(a-1)*na+(d-1)*na*nb+(c-1)*na*nb*no))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-2143: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[2,3,1,4],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(c-1)*na+(a-1)*na*nv+(d-1)*na*nv*nb)&
-                     &-res(b+(c-1)*na+(a-1)*na*nv+(d-1)*na*nv*nb))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2143: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[2,3,1,4],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(c-1)*na+(a-1)*na*nv+(d-1)*na*nv*nb)&
+                       &-res(b+(c-1)*na+(a-1)*na*nv+(d-1)*na*nv*nb))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-2314: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[2,3,4,1],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(c-1)*na+(d-1)*na*nv+(a-1)*na*nv*no)&
-                     &-res(b+(c-1)*na+(d-1)*na*nv+(a-1)*na*nv*no))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2314: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[2,3,4,1],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(c-1)*na+(d-1)*na*nv+(a-1)*na*nv*no)&
+                       &-res(b+(c-1)*na+(d-1)*na*nv+(a-1)*na*nv*no))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-2341: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[2,4,1,3],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(d-1)*na+(a-1)*na*no+(c-1)*na*no*nb)&
-                     &-res(b+(d-1)*na+(a-1)*na*no+(c-1)*na*no*nb))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2341: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[2,4,1,3],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(d-1)*na+(a-1)*na*no+(c-1)*na*no*nb)&
+                       &-res(b+(d-1)*na+(a-1)*na*no+(c-1)*na*no*nb))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-2413: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[2,4,3,1],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(d-1)*na+(c-1)*na*no+(a-1)*na*no*nv)&
-                     &-res(b+(d-1)*na+(c-1)*na*no+(a-1)*na*no*nv))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2413: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[2,4,3,1],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(d-1)*na+(c-1)*na*no+(a-1)*na*no*nv)&
+                       &-res(b+(d-1)*na+(c-1)*na*no+(a-1)*na*no*nv))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-2431: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[3,1,2,4],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(a-1)*nv+(b-1)*nv*nb+(d-1)*nv*nb*na)&
-                     &-res(c+(a-1)*nv+(b-1)*nv*nb+(d-1)*nv*nb*na))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2431: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[3,1,2,4],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(a-1)*nv+(b-1)*nv*nb+(d-1)*nv*nb*na)&
+                       &-res(c+(a-1)*nv+(b-1)*nv*nb+(d-1)*nv*nb*na))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-3124: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[3,1,4,2],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(a-1)*nv+(d-1)*nv*nb+(b-1)*nv*nb*no)&
-                     &-res(c+(a-1)*nv+(d-1)*nv*nb+(b-1)*nv*nb*no))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3124: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[3,1,4,2],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(a-1)*nv+(d-1)*nv*nb+(b-1)*nv*nb*no)&
+                       &-res(c+(a-1)*nv+(d-1)*nv*nb+(b-1)*nv*nb*no))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-3142: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[3,2,1,4],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(b-1)*nv+(a-1)*nv*na+(d-1)*nv*na*nb)&
-                     &-res(c+(b-1)*nv+(a-1)*nv*na+(d-1)*nv*na*nb))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3142: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[3,2,1,4],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(b-1)*nv+(a-1)*nv*na+(d-1)*nv*na*nb)&
+                       &-res(c+(b-1)*nv+(a-1)*nv*na+(d-1)*nv*na*nb))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-3214: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[3,2,4,1],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(b-1)*nv+(d-1)*nv*na+(a-1)*nv*na*no)&
-                     &-res(c+(b-1)*nv+(d-1)*nv*na+(a-1)*nv*na*no))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3214: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[3,2,4,1],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(b-1)*nv+(d-1)*nv*na+(a-1)*nv*na*no)&
+                       &-res(c+(b-1)*nv+(d-1)*nv*na+(a-1)*nv*na*no))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-3241: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[3,4,1,2],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(d-1)*nv+(a-1)*nv*no+(b-1)*nv*no*nb)&
-                     &-res(c+(d-1)*nv+(a-1)*nv*no+(b-1)*nv*no*nb))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3241: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[3,4,1,2],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(d-1)*nv+(a-1)*nv*no+(b-1)*nv*no*nb)&
+                       &-res(c+(d-1)*nv+(a-1)*nv*no+(b-1)*nv*no*nb))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-3412: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[3,4,2,1],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(d-1)*nv+(b-1)*nv*no+(a-1)*nv*no*na)&
-                     &-res(c+(d-1)*nv+(b-1)*nv*no+(a-1)*nv*no*na))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3412: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[3,4,2,1],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(d-1)*nv+(b-1)*nv*no+(a-1)*nv*no*na)&
+                       &-res(c+(d-1)*nv+(b-1)*nv*no+(a-1)*nv*no*na))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-3421: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[4,1,2,3],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(a-1)*no+(b-1)*no*nb+(c-1)*no*nb*na)&
-                     &-res(d+(a-1)*no+(b-1)*no*nb+(c-1)*no*nb*na))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3421: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[4,1,2,3],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(a-1)*no+(b-1)*no*nb+(c-1)*no*nb*na)&
+                       &-res(d+(a-1)*no+(b-1)*no*nb+(c-1)*no*nb*na))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-4123: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[4,1,3,2],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(a-1)*no+(c-1)*no*nb+(b-1)*no*nb*nv)&
-                     &-res(d+(a-1)*no+(c-1)*no*nb+(b-1)*no*nb*nv))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-4123: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[4,1,3,2],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(a-1)*no+(c-1)*no*nb+(b-1)*no*nb*nv)&
+                       &-res(d+(a-1)*no+(c-1)*no*nb+(b-1)*no*nb*nv))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-4132: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[4,2,1,3],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(b-1)*no+(a-1)*no*na+(c-1)*no*na*nb)&
-                     &-res(d+(b-1)*no+(a-1)*no*na+(c-1)*no*na*nb))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-4132: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[4,2,1,3],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(b-1)*no+(a-1)*no*na+(c-1)*no*na*nb)&
+                       &-res(d+(b-1)*no+(a-1)*no*na+(c-1)*no*na*nb))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-4213: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[4,2,3,1],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(b-1)*no+(c-1)*no*na+(a-1)*no*na*nv)&
-                     &-res(d+(b-1)*no+(c-1)*no*na+(a-1)*no*na*nv))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-4213: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[4,2,3,1],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(b-1)*no+(c-1)*no*na+(a-1)*no*na*nv)&
+                       &-res(d+(b-1)*no+(c-1)*no*na+(a-1)*no*na*nv))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-4231: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[4,3,1,2],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(c-1)*no+(a-1)*no*nv+(b-1)*no*nv*nb)&
-                     &-res(d+(c-1)*no+(a-1)*no*nv+(b-1)*no*nv*nb))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-4231: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[4,3,1,2],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(c-1)*no+(a-1)*no*nv+(b-1)*no*nv*nb)&
+                       &-res(d+(c-1)*no+(a-1)*no*nv+(b-1)*no*nv*nb))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-4312: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-        call array_reorder_4d(pr1,in1,nb,na,nv,no,[4,3,2,1],pr2,res)
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(c-1)*no+(b-1)*no*nv+(a-1)*no*nv*na)&
-                     &-res(d+(c-1)*no+(b-1)*no*nv+(a-1)*no*nv*na))&
-                    & >1.0E-11_realk)teststatus="FAILED "
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-4312: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+          call array_reorder_4d(pr1,in1,nb,na,nv,no,[4,3,2,1],pr2,res)
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(c-1)*no+(b-1)*no*nv+(a-1)*no*nv*na)&
+                       &-res(d+(c-1)*no+(b-1)*no*nv+(a-1)*no*nv*na))&
+                      & >1.0E-11_realk)teststatus="FAILED "
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-4321: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-        write(DECinfo%output,'("")')
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-4321: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+      
+          write(DECinfo%output,'("")')
+        enddo
       enddo
-    enddo
-!!!!!!!!!!!
     endif 
      
     call mem_alloc(til,nb*na*nv*(no))
 
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"TESTING 4D TILE REORDERINGS"
-    write (DECinfo%output,*)"***************************"
-    write (DECinfo%output,*)""
-    p1=1
-    p2=0
-    do p1=1,2
-      do p2=0,2
-        pr1 = float(p1)
-        pr2 = float(p2)
-        if (p1==2) call random_number(pr1)
-        if (p2==2) call random_number(pr2)
-        write (DECinfo%output,'(A3,f4.1,A3,f4.1,A2)')"B= ",pr1,"*A+",pr2,"*B"
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-
-        call extract_tile_from_fort(in1,4,1,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
-
-        call extract_tile_from_fort(in1,4,2,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
-
-        call extract_tile_from_fort(in1,4,3,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
-
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)&
-                     &-res(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na))&
-                    & >1.0E-11_realk)then
-                      print *,a,b,c,d,pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)
-                      print *,a,d,b,c,res(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)
-                      print *,pr1,"---------------------",a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv,&
-                             &a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na,"------------------------",pr2
-                      teststatus="FAILED "
-                      print *,"1423",teststatus
-                      stop 0
-                   endif
+    if(test4dtiled)then
+      write (DECinfo%output,*)""
+      write (DECinfo%output,*)""
+      write (DECinfo%output,*)"TESTING 4D TILE REORDERINGS"
+      write (DECinfo%output,*)"***************************"
+      write (DECinfo%output,*)""
+      p1=1
+      p2=0
+      do p1=1,2
+        do p2=0,2
+          pr1 = float(p1)
+          pr2 = float(p2)
+          if (p1==2) call random_number(pr1)
+          if (p2==2) call random_number(pr2)
+          write (DECinfo%output,'(A3,f4.1,A3,f4.1,A2)')"B= ",pr1,"*A+",pr2,"*B"
+     
+          !1234
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nb,na,nv,no],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nb,na,nv,no],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,na,nv,no],4,[1,2,3,4])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-1234: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-
-        call extract_tile_from_fort(in1,4,1,[nb,na,nv,no],[nb,no,na,nv],til,[1,4,2,3]) 
-        call tile_in_fort(pr1,til,1,[nb,no,na,nv],pr2,res,[nb,no,na,nv],4,[1,2,3,4])
-
-        !call extract_tile_from_fort(in1,4,2,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        !call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
-
-        !call extract_tile_from_fort(in1,4,3,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        !call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
-
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)&
-                     &-res(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na))&
-                    & >1.0E-11_realk)then
-                      print *,a,b,c,d,pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)
-                      print *,a,d,b,c,res(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)
-                      print *,pr1,"---------------------",a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv,&
-                             &a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na,"------------------------",pr2
-                      teststatus="FAILED "
-                      print *,"1423",teststatus
-                      stop 0
-                   endif
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1234: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(1.0E0_realk,til,1,[nb,na,nv,no/2],0.0E0_realk,res,[nb,na,nv,no],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(1.0E0_realk,til,2,[nb,na,nv,no/2],0.0E0_realk,res,[nb,na,nv,no],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(1.0E0_realk,til,3,[nb,na,nv,no/2],0.0E0_realk,res,[nb,na,nv,no],4,[1,2,3,4])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-1234: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
-
-
-        call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
-        teststatus="SUCCESS"
-        res = sto1
-        call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
-
-        call extract_tile_from_fort(in1,4,1,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nb,nv,no,na],4,[1,3,4,2])
-
-        call extract_tile_from_fort(in1,4,2,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nb,nv,no,na],4,[1,3,4,2])
-
-        call extract_tile_from_fort(in1,4,3,[nb,na,nv,no],[nb,na,nv,no/2],til,[1,2,3,4]) 
-        call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,nv,no,na],4,[1,3,4,2])
-
-        call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
-        call print_norm(res,int(nb*nv*no,kind=8),normher)
-        if(rigorous)then
-          do a=1,nb
-            do b=1,na
-              do c=1,nv
-                do d=1,no
-                  if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(c-1)*nb+(d-1)*nb*nv+(b-1)*nb*nv*no)&
-                     &-res(a+(c-1)*nb+(d-1)*nb*nv+(b-1)*nb*nv*no))&
-                    & >1.0E-11_realk)then
-                      teststatus="FAILED "
-                      print *,"1342",teststatus
-                      stop 0
-                   endif
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1234: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+          !1243
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nb,na,no,nv],4,[1,2,4,3])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nb,na,no,nv],4,[1,2,4,3])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,na,no,nv],4,[1,2,4,3])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(d-1)*na*nb+(c-1)*nb*na*no)&
+                       &-res(a+(b-1)*nb+(d-1)*na*nb+(c-1)*nb*na*no))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
                 enddo
               enddo
             enddo
-          enddo
-        endif
-        call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
-        write(DECinfo%output,&
-        &'(I1,I1,"-1234: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
-        &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1243: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,no/2,nv],[1,2,4,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[nb,na,no/2,nv],[1,2,4,3]) 
+          call tile_in_fort(1.0E0_realk,til,1,[nb,na,no/2,nv],0.0E0_realk,res,[nb,na,no,nv],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,no/2,nv],[1,2,4,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[nb,na,no/2,nv],[1,2,4,3]) 
+          call tile_in_fort(1.0E0_realk,til,2,[nb,na,no/2,nv],0.0E0_realk,res,[nb,na,no,nv],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,no/2,nv],[1,2,4,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[nb,na,no/2,nv],[1,2,4,3]) 
+          call tile_in_fort(1.0E0_realk,til,3,[nb,na,no/2,nv],0.0E0_realk,res,[nb,na,no,nv],4,[1,2,3,4])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(a+(b-1)*nb+(d-1)*na*nb+(c-1)*nb*na*no))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1243: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+          !1324
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nb,nv,na,no],4,[1,3,2,4])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nb,nv,na,no],4,[1,3,2,4])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,nv,na,no],4,[1,3,2,4])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(c-1)*nb+(b-1)*nb*nv+(d-1)*nb*nv*na)&
+                       &-res(a+(c-1)*nb+(b-1)*nb*nv+(d-1)*nb*nv*na))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1324: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,nv,na,no/2],[1,3,2,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[nb,nv,na,no/2],[1,3,2,4]) 
+          call tile_in_fort(1.0E0_realk,til,1,[nb,nv,na,no/2],0.0E0_realk,res,[nb,nv,na,no],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,nv,na,no/2],[1,3,2,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[nb,nv,na,no/2],[1,3,2,4]) 
+          call tile_in_fort(1.0E0_realk,til,2,[nb,nv,na,no/2],0.0E0_realk,res,[nb,nv,na,no],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,nv,na,no/2],[1,3,2,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[nb,nv,na,no/2],[1,3,2,4]) 
+          call tile_in_fort(1.0E0_realk,til,3,[nb,nv,na,no/2],0.0E0_realk,res,[nb,nv,na,no],4,[1,2,3,4])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(a+(c-1)*nb+(b-1)*nb*nv+(d-1)*nb*nv*na))&
+                      & >1.0E-11_realk)then
+                        !print *,a,b,c,d,pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)
+                        !print *,a,d,b,c,res(a+(c-1)*nb+(d-1)*nb*nv+(b-1)*nb*nv*no)
+                        !print *,pr1,"---------------------",a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv,&
+                        !       &a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na,"------------------------",pr2
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1324: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          !1342
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nb,nv,no,na],4,[1,3,4,2])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nb,nv,no,na],4,[1,3,4,2])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,nv,no,na],4,[1,3,4,2])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(c-1)*nb+(d-1)*nb*nv+(b-1)*nb*nv*no)&
+                       &-res(a+(c-1)*nb+(d-1)*nb*nv+(b-1)*nb*nv*no))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                        print *,"1342",teststatus
+                        stop 0
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1342: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,nv,no/2,na],[1,3,4,2]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[nb,nv,no/2,na],[1,3,4,2]) 
+          call tile_in_fort(1.0E0_realk,til,1,[nb,nv,no/2,na],0.0E0_realk,res,[nb,nv,no,na],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,nv,no/2,na],[1,3,4,2]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[nb,nv,no/2,na],[1,3,4,2]) 
+          call tile_in_fort(1.0E0_realk,til,2,[nb,nv,no/2,na],0.0E0_realk,res,[nb,nv,no,na],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,nv,no/2,na],[1,3,4,2]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[nb,nv,no/2,na],[1,3,4,2]) 
+          call tile_in_fort(1.0E0_realk,til,3,[nb,nv,no/2,na],0.0E0_realk,res,[nb,nv,no,na],4,[1,2,3,4])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(a+(c-1)*nb+(d-1)*nb*nv+(b-1)*nb*nv*no))&
+                      & >1.0E-11_realk)then
+                        !print *,a,b,c,d,pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)
+                        !print *,a,d,b,c,res(a+(c-1)*nb+(d-1)*nb*nv+(b-1)*nb*nv*no)
+                        !print *,pr1,"---------------------",a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv,&
+                        !       &a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na,"------------------------",pr2
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1342: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+          !1423
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,no,na,nv],4,[1,4,2,3])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na)&
+                       &-res(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                        print *,"1423",teststatus
+                        stop 0
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1423: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,no/2,na,nv],[1,4,2,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[nb,no/2,na,nv],[1,4,2,3]) 
+          call tile_in_fort(1.0E0_realk,til,1,[nb,no/2,na,nv],0.0E0_realk,res,[nb,no,na,nv],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,no/2,na,nv],[1,4,2,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[nb,no/2,na,nv],[1,4,2,3]) 
+          call tile_in_fort(1.0E0_realk,til,2,[nb,no/2,na,nv],0.0E0_realk,res,[nb,no,na,nv],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,no/2,na,nv],[1,4,2,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[nb,no/2,na,nv],[1,4,2,3]) 
+          call tile_in_fort(1.0E0_realk,til,3,[nb,no/2,na,nv],0.0E0_realk,res,[nb,no,na,nv],4,[1,2,3,4])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(a+(d-1)*nb+(b-1)*nb*no+(c-1)*nb*no*na))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                        print *,"1423 extract reorder",teststatus
+                        stop 0
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1423: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+          !1423
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nb,no,nv,na],4,[1,4,3,2])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nb,no,nv,na],4,[1,4,3,2])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nb,no,nv,na],4,[1,4,3,2])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(d-1)*nb+(c-1)*nb*no+(b-1)*nb*no*nv)&
+                       &-res(a+(d-1)*nb+(c-1)*nb*no+(b-1)*nb*no*nv))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1432: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,no/2,nv,na],[1,4,3,2]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[nb,no/2,nv,na],[1,4,3,2]) 
+          call tile_in_fort(1.0E0_realk,til,1,[nb,no/2,nv,na],0.0E0_realk,res,[nb,no,nv,na],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,no/2,nv,na],[1,4,3,2]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[nb,no/2,nv,na],[1,4,3,2]) 
+          call tile_in_fort(1.0E0_realk,til,2,[nb,no/2,nv,na],0.0E0_realk,res,[nb,no,nv,na],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,no/2,nv,na],[1,4,3,2]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[nb,no/2,nv,na],[1,4,3,2]) 
+          call tile_in_fort(1.0E0_realk,til,3,[nb,no/2,nv,na],0.0E0_realk,res,[nb,no,nv,na],4,[1,2,3,4])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(a+(d-1)*nb+(c-1)*nb*no+(b-1)*nb*no*nv))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-1432: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+          !2134
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[na,nb,nv,no],4,[2,1,3,4])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[na,nb,nv,no],4,[2,1,3,4])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[na,nb,nv,no],4,[2,1,3,4])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(a-1)*na+(c-1)*na*nb+(d-1)*na*nb*nv)&
+                       &-res(b+(a-1)*na+(c-1)*na*nb+(d-1)*na*nb*nv))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2134: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[na,nb,nv,no/2],[2,1,3,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[na,nb,nv,no/2],[2,1,3,4]) 
+          call tile_in_fort(1.0E0_realk,til,1,[na,nb,nv,no/2],0.0E0_realk,res,[na,nb,nv,no],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[na,nb,nv,no/2],[2,1,3,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[na,nb,nv,no/2],[2,1,3,4]) 
+          call tile_in_fort(1.0E0_realk,til,2,[na,nb,nv,no/2],0.0E0_realk,res,[na,nb,nv,no],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[na,nb,nv,no/2],[2,1,3,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[na,nb,nv,no/2],[2,1,3,4]) 
+          call tile_in_fort(1.0E0_realk,til,3,[na,nb,nv,no/2],0.0E0_realk,res,[na,nb,nv,no],4,[1,2,3,4])
+
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(b+(a-1)*na+(c-1)*na*nb+(d-1)*na*nb*nv))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2134: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+          !2143
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[na,nb,no,nv],4,[2,1,4,3])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[na,nb,no,nv],4,[2,1,4,3])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[na,nb,no,nv],4,[2,1,4,3])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(a-1)*na+(d-1)*na*nb+(c-1)*na*nb*no)&
+                       &-res(b+(a-1)*na+(d-1)*na*nb+(c-1)*na*nb*no))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2143: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[na,nb,no/2,nv],[2,1,4,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[na,nb,no/2,nv],[2,1,4,3]) 
+          call tile_in_fort(1.0E0_realk,til,1,[na,nb,no/2,nv],0.0E0_realk,res,[na,nb,no,nv],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[na,nb,no/2,nv],[2,1,4,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[na,nb,no/2,nv],[2,1,4,3]) 
+          call tile_in_fort(1.0E0_realk,til,2,[na,nb,no/2,nv],0.0E0_realk,res,[na,nb,no,nv],4,[1,2,3,4])
+
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[na,nb,no/2,nv],[2,1,4,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[na,nb,no/2,nv],[2,1,4,3]) 
+          call tile_in_fort(1.0E0_realk,til,3,[na,nb,no/2,nv],0.0E0_realk,res,[na,nb,no,nv],4,[1,2,3,4])
+
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(b+(a-1)*na+(d-1)*na*nb+(c-1)*na*nb*no))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2143: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+
+          !2314
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[na,nv,nb,no],4,[2,3,1,4])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[na,nv,nb,no],4,[2,3,1,4])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[na,nv,nb,no],4,[2,3,1,4])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(c-1)*na+(a-1)*na*nv+(d-1)*na*nv*nb)&
+                       &-res(b+(c-1)*na+(a-1)*na*nv+(d-1)*na*nv*nb))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2314: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[na,nv,nb,no/2],[2,3,1,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[na,nv,nb,no/2],[2,3,1,4]) 
+          call tile_in_fort(1.0E0_realk,til,1,[na,nv,nb,no/2],0.0E0_realk,res,[na,nv,nb,no],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[na,nv,nb,no/2],[2,3,1,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[na,nv,nb,no/2],[2,3,1,4]) 
+          call tile_in_fort(1.0E0_realk,til,2,[na,nv,nb,no/2],0.0E0_realk,res,[na,nv,nb,no],4,[1,2,3,4])
+
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[na,nv,nb,no/2],[2,3,1,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[na,nv,nb,no/2],[2,3,1,4]) 
+          call tile_in_fort(1.0E0_realk,til,3,[na,nv,nb,no/2],0.0E0_realk,res,[na,nv,nb,no],4,[1,2,3,4])
+
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(b+(c-1)*na+(a-1)*na*nv+(d-1)*na*nv*nb))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2314: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+
+          !2341
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[na,nv,no,nb],4,[2,3,4,1])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[na,nv,no,nb],4,[2,3,4,1])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[na,nv,no,nb],4,[2,3,4,1])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(c-1)*na+(d-1)*na*nv+(a-1)*na*nv*no)&
+                       &-res(b+(c-1)*na+(d-1)*na*nv+(a-1)*na*nv*no))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2341: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[na,nv,no/2,nb],[2,3,4,1]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[na,nv,no/2,nb],[2,3,4,1]) 
+          call tile_in_fort(1.0E0_realk,til,1,[na,nv,no/2,nb],0.0E0_realk,res,[na,nv,no,nb],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[na,nv,no/2,nb],[2,3,4,1]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[na,nv,no/2,nb],[2,3,4,1]) 
+          call tile_in_fort(1.0E0_realk,til,2,[na,nv,no/2,nb],0.0E0_realk,res,[na,nv,no,nb],4,[1,2,3,4])
+
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[na,nv,no/2,nb],[2,3,4,1]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[na,nv,no/2,nb],[2,3,4,1]) 
+          call tile_in_fort(1.0E0_realk,til,3,[na,nv,no/2,nb],0.0E0_realk,res,[na,nv,no,nb],4,[1,2,3,4])
+
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(b+(c-1)*na+(d-1)*na*nv+(a-1)*na*nv*no))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2341: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+
+          !2413
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[na,no,nb,nv],4,[2,4,1,3])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[na,no,nb,nv],4,[2,4,1,3])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[na,no,nb,nv],4,[2,4,1,3])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(d-1)*na+(a-1)*na*no+(c-1)*na*no*nb)&
+                       &-res(b+(d-1)*na+(a-1)*na*no+(c-1)*na*no*nb))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2413: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[na,no/2,nb,nv],[2,4,1,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[na,no/2,nb,nv],[2,4,1,3]) 
+          call tile_in_fort(1.0E0_realk,til,1,[na,no/2,nb,nv],0.0E0_realk,res,[na,no,nb,nv],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[na,no/2,nb,nv],[2,4,1,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[na,no/2,nb,nv],[2,4,1,3]) 
+          call tile_in_fort(1.0E0_realk,til,2,[na,no/2,nb,nv],0.0E0_realk,res,[na,no,nb,nv],4,[1,2,3,4])
+
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[na,no/2,nb,nv],[2,4,1,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[na,no/2,nb,nv],[2,4,1,3]) 
+          call tile_in_fort(1.0E0_realk,til,3,[na,no/2,nb,nv],0.0E0_realk,res,[na,no,nb,nv],4,[1,2,3,4])
+
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(b+(d-1)*na+(a-1)*na*no+(c-1)*na*no*nb))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2413: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+
+          !2431
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[na,no,nv,nb],4,[2,4,3,1])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[na,no,nv,nb],4,[2,4,3,1])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[na,no,nv,nb],4,[2,4,3,1])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(b+(d-1)*na+(c-1)*na*no+(a-1)*na*no*nv)&
+                       &-res(b+(d-1)*na+(c-1)*na*no+(a-1)*na*no*nv))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2431: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[na,no/2,nv,nb],[2,4,3,1]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[na,no/2,nv,nb],[2,4,3,1]) 
+          call tile_in_fort(1.0E0_realk,til,1,[na,no/2,nv,nb],0.0E0_realk,res,[na,no,nv,nb],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[na,no/2,nv,nb],[2,4,3,1]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[na,no/2,nv,nb],[2,4,3,1]) 
+          call tile_in_fort(1.0E0_realk,til,2,[na,no/2,nv,nb],0.0E0_realk,res,[na,no,nv,nb],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[na,no/2,nv,nb],[2,4,3,1]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[na,no/2,nv,nb],[2,4,3,1]) 
+          call tile_in_fort(1.0E0_realk,til,3,[na,no/2,nv,nb],0.0E0_realk,res,[na,no,nv,nb],4,[1,2,3,4])
+     
+
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(b+(d-1)*na+(c-1)*na*no+(a-1)*na*no*nv))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-2431: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+
+          !3124
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nv,nb,na,no],4,[3,1,2,4])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nv,nb,na,no],4,[3,1,2,4])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nv,nb,na,no],4,[3,1,2,4])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(a-1)*nv+(b-1)*nv*nb+(d-1)*nv*nb*na)&
+                       &-res(c+(a-1)*nv+(b-1)*nv*nb+(d-1)*nv*nb*na))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3124: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nv,nb,na,no/2],[3,1,2,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[nv,nb,na,no/2],[3,1,2,4]) 
+          call tile_in_fort(1.0E0_realk,til,1,[nv,nb,na,no/2],0.0E0_realk,res,[nv,nb,na,no],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nv,nb,na,no/2],[3,1,2,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[nv,nb,na,no/2],[3,1,2,4]) 
+          call tile_in_fort(1.0E0_realk,til,2,[nv,nb,na,no/2],0.0E0_realk,res,[nv,nb,na,no],4,[1,2,3,4])
+
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nv,nb,na,no/2],[3,1,2,4]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[nv,nb,na,no/2],[3,1,2,4]) 
+          call tile_in_fort(1.0E0_realk,til,3,[nv,nb,na,no/2],0.0E0_realk,res,[nv,nb,na,no],4,[1,2,3,4])
+
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(c+(a-1)*nv+(b-1)*nv*nb+(d-1)*nv*nb*na))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3124: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+
+          !3142
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nv,nb,no,na],4,[3,1,4,2])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nv,nb,no,na],4,[3,1,4,2])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nv,nb,no,na],4,[3,1,4,2])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(a-1)*nv+(d-1)*nv*nb+(b-1)*nv*nb*no)&
+                       &-res(c+(a-1)*nv+(d-1)*nv*nb+(b-1)*nv*nb*no))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3142: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nv,nb,no/2,na],[3,1,4,2]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[nv,nb,no/2,na],[3,1,4,2]) 
+          call tile_in_fort(1.0E0_realk,til,1,[nv,nb,no/2,na],0.0E0_realk,res,[nv,nb,no,na],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nv,nb,no/2,na],[3,1,4,2]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[nv,nb,no/2,na],[3,1,4,2]) 
+          call tile_in_fort(1.0E0_realk,til,2,[nv,nb,no/2,na],0.0E0_realk,res,[nv,nb,no,na],4,[1,2,3,4])
+
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nv,nb,no/2,na],[3,1,4,2]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[nv,nb,no/2,na],[3,1,4,2]) 
+          call tile_in_fort(1.0E0_realk,til,3,[nv,nb,no/2,na],0.0E0_realk,res,[nv,nb,no,na],4,[1,2,3,4])
+
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(c+(a-1)*nv+(d-1)*nv*nb+(b-1)*nv*nb*no))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3142: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+
+          !3412
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nv,no,nb,na],4,[3,4,1,2])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nv,no,nb,na],4,[3,4,1,2])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nv,no,nb,na],4,[3,4,1,2])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(d-1)*nv+(a-1)*nv*no+(b-1)*nv*no*nb)&
+                       &-res(c+(d-1)*nv+(a-1)*nv*no+(b-1)*nv*no*nb))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3412: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nv,no/2,nb,na],[3,4,1,2]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[nv,no/2,nb,na],[3,4,1,2]) 
+          call tile_in_fort(1.0E0_realk,til,1,[nv,no/2,nb,na],0.0E0_realk,res,[nv,no,nb,na],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nv,no/2,nb,na],[3,4,1,2]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[nv,no/2,nb,na],[3,4,1,2]) 
+          call tile_in_fort(1.0E0_realk,til,2,[nv,no/2,nb,na],0.0E0_realk,res,[nv,no,nb,na],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nv,no/2,nb,na],[3,4,1,2]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[nv,no/2,nb,na],[3,4,1,2]) 
+          call tile_in_fort(1.0E0_realk,til,3,[nv,no/2,nb,na],0.0E0_realk,res,[nv,no,nb,na],4,[1,2,3,4])
+
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(c+(d-1)*nv+(a-1)*nv*no+(b-1)*nv*no*nb))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3412: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+
+          !3421
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[nv,no,na,nb],4,[3,4,2,1])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[nv,no,na,nb],4,[3,4,2,1])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[nv,no,na,nb],4,[3,4,2,1])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(c+(d-1)*nv+(b-1)*nv*no+(a-1)*nv*no*na)&
+                       &-res(c+(d-1)*nv+(b-1)*nv*no+(a-1)*nv*no*na))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3421: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nv,no/2,na,nb],[3,4,2,1]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[nv,no/2,na,nb],[3,4,2,1]) 
+          call tile_in_fort(1.0E0_realk,til,1,[nv,no/2,na,nb],0.0E0_realk,res,[nv,no,na,nb],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nv,no/2,na,nb],[3,4,2,1]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[nv,no/2,na,nb],[3,4,2,1]) 
+          call tile_in_fort(1.0E0_realk,til,2,[nv,no/2,na,nb],0.0E0_realk,res,[nv,no,na,nb],4,[1,2,3,4])
+
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nv,no/2,na,nb],[3,4,2,1]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[nv,no/2,na,nb],[3,4,2,1]) 
+          call tile_in_fort(1.0E0_realk,til,3,[nv,no/2,na,nb],0.0E0_realk,res,[nv,no,na,nb],4,[1,2,3,4])
+
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(c+(d-1)*nv+(b-1)*nv*no+(a-1)*nv*no*na))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-3421: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+
+          !4123
+          !****
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,1,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,1,[nb,na,nv,no/2],pr2,res,[no,nb,na,nv],4,[4,1,2,3])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,2,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,2,[nb,na,nv,no/2],pr2,res,[no,nb,na,nv],4,[4,1,2,3])
+     
+          call tile_from_fort(1.0E0_realk,in1,[nb,na,nv,no],4,0.0E0_realk,til,3,[nb,na,nv,no/2],[1,2,3,4]) 
+          call tile_in_fort(pr1,til,3,[nb,na,nv,no/2],pr2,res,[no,nb,na,nv],4,[4,1,2,3])
+     
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(d+(a-1)*no+(b-1)*no*nb+(c-1)*no*nb*na)&
+                       &-res(d+(a-1)*no+(b-1)*no*nb+(c-1)*no*nb*na))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-4123: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+     
+     
+          call LSTIMER('START',begc1,begw1,DECinfo%output,.false.)
+          teststatus="SUCCESS"
+          res = sto1
+          call LSTIMER('START',begc2,begw2,DECinfo%output,.false.)
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,1,[no/2,nb,na,nv],[4,1,2,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,1,[no/2,nb,na,nv],[4,1,2,3]) 
+          call tile_in_fort(1.0E0_realk,til,1,[no/2,nb,na,nv],0.0E0_realk,res,[no,nb,na,nv],4,[1,2,3,4])
+     
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,2,[no/2,nb,na,nv],[4,1,2,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,2,[no/2,nb,na,nv],[4,1,2,3]) 
+          call tile_in_fort(1.0E0_realk,til,2,[no/2,nb,na,nv],0.0E0_realk,res,[no,nb,na,nv],4,[1,2,3,4])
+
+          call tile_from_fort(1.0E0_realk,sto1,[nb,na,nv,no],4,0.0E0_realk,til,3,[no/2,nb,na,nv],[4,1,2,3]) 
+          call tile_from_fort(pr1,in1,[nb,na,nv,no],4,pr2,til,3,[no/2,nb,na,nv],[4,1,2,3]) 
+          call tile_in_fort(1.0E0_realk,til,3,[no/2,nb,na,nv],0.0E0_realk,res,[no,nb,na,nv],4,[1,2,3,4])
+
+          call LSTIMER('START',endc2,endw2,DECinfo%output,.false.)
+          call print_norm(res,int(nb*nv*no,kind=8),normher)
+          if(rigorous)then
+            do a=1,nb
+              do b=1,na
+                do c=1,nv
+                  do d=1,no
+                    if(abs(pr1*in1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)+pr2*sto1(a+(b-1)*nb+(c-1)*na*nb+(d-1)*nb*na*nv)&
+                       &-res(d+(a-1)*no+(b-1)*no*nb+(c-1)*no*nb*na))&
+                      & >1.0E-11_realk)then
+                        teststatus="FAILED "
+                     endif
+                  enddo
+                enddo
+              enddo
+            enddo
+          endif
+          call LSTIMER('START',endc1,endw1,DECinfo%output,.false.)
+          write(DECinfo%output,&
+          &'(I1,I1,"-4123: ",f19.10," C-T1: ",f9.4," W-T1: ",f9.4," C-T2: ",f9.4," W-T2: ",f9.4," STATUS=",A7)')&
+          &p1,p2,normher,endc1-begc1,endw1-begw1,endc2-begc2,endw2-begw2,teststatus
+        enddo
       enddo
-    enddo
+    endif
 
     call mem_dealloc(til)
     call mem_dealloc(res)
