@@ -19,3 +19,4 @@ doc_LSDALTON/*.idx
 doc_LSDALTON/*.ilg
 doc_LSDALTON/*.ind
 doc_LSDALTON/*.toc
+lsutil/manual_reorderings.F90

@@ -4102,6 +4102,12 @@ C
 #include "huckel.h"
 casm
 #include "suscc.h"
+#include "center.h"
+C
+      LOGICAL FNDEOI
+      DATA FNDEOI /.FALSE./
+      SAVE FNDEOI
+      CHARACTER*7 TMPWRD
 casm
 
 C
@@ -4281,6 +4287,86 @@ C
             END IF
          END DO
       END DO
+C
+C    Select atoms for Cholesky decomposition
+C
+      ACTSEL = .FALSE.
+C
+      REWIND(LUCMD)
+      DO WHILE (.NOT. FNDEOI)
+         READ(LUCMD,'(A7)') TMPWRD
+         CALL UPCASE(TMPWRD)
+         IF (TMPWRD(1:7) .EQ. '*CHOACT') THEN
+            ACTSEL = .TRUE.
+            FNDEOI = .TRUE.
+         ELSE IF ((TMPWRD(1:7) .EQ. '*END OF') .OR.
+     &            (TMPWRD(1:7) .EQ. '**END O')) THEN
+            FNDEOI = .TRUE.
+         END IF
+      END DO
+C
+      IF (.NOT. ACTSEL) GOTO 100
+C
+      CALL SYSTEM('cp molden.inp MOLDEN2.INP')
+C
+      ICOUNT = 0
+      DO ISYM = 1,MAXREP+1
+         DO I = 1,NAOS(ISYM)
+            ICOUNT = ICOUNT + 1
+            ICENT  = IPCEN(ICOUNT)
+            NBCENT(ICENT,ISYM) = NBCENT(ICENT,ISYM) + 1
+         END DO
+      END DO
+C
+      ICOUNT = 0
+      DO ISYM = 1,MAXREP+1
+         DO ICENT = 1,NUCIND
+            IBCENT(ICENT,ISYM) = ICOUNT
+            ICOUNT = ICOUNT + NBCENT(ICENT,ISYM)
+         END DO
+      END DO
+C
+      ICOUN0 = 0
+      DO ICENT = 1,NUCIND
+         ICOUN1 = 0
+         DO ISYM = 1,MAXREP + 1
+            ICOUN2 = IBCENT(ICENT,ISYM)
+            DO I = 1,NBCENT(ICENT,ISYM)
+               ICOUN1 = ICOUN1 + 1
+               IF (ICOUN1 .GT. MXBSCE) THEN
+                  WRITE(LUPRI,*) 'Maximum number of basis functions ',
+     &                  'on a sigle independent center is ', MXBSCE
+                  WRITE(LUPRI,*) 'Fix it in center.h'
+                  STOP 'Too many basis on one center'
+               END IF
+               ICOUN2 = ICOUN2 + 1
+               KBSCEN(ICOUN1,ICENT) = ICOUN2
+            END DO
+         END DO
+         NBSCEN(ICENT) = ICOUN1
+         ICOUN0 = ICOUN0 + ICOUN1
+      END DO
+      NCHKBS = ICOUN0
+C
+      WRITE(LUPRI,'(//,A,/,A,/)') 'Center information',
+     &                            '------------------'
+      WRITE(LUPRI,'(/,A,20X,A)') 'Nucleus','Number of basis'
+      WRITE(LUPRI,'(10X,A,8I5)') 'Sym.',(I,I=1,MAXREP+1)
+      DO ICENT = 1,NUCIND
+         WRITE(LUPRI,'(3X,I3,8X,8I5)') ICENT,
+     &                        (NBCENT(ICENT,ISYM),ISYM=1,MAXREP+1)
+      END DO
+C
+      DO ICENT = 1,NUCIND
+         WRITE(LUPRI,'(//I5,A,A,I5,A)')
+     &        NBSCEN(ICENT),' basis functions centered',
+     &       ' on nucleus',ICENT,' :'
+         WRITE(LUPRI,'(12I6)') (KBSCEN(I,ICENT),I=1,NBSCEN(ICENT))
+      END DO
+C
+  100 CONTINUE
+C
+Casm_end
 C
       RETURN
       END
