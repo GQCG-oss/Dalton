@@ -290,22 +290,11 @@ def gen_cmake_command():
 
 def print_build_help(build_path):
     print('   configure step is done')
-    print('   now you need to compile the sources')
-    print('')
-    print('   to compile with configured parameters (recommended):')
+    print('   now you need to compile the sources:')
     if (build_path == default_path):
         print('   $ cd build')
     else:
         print('   $ cd ' + build_path)
-    print('   $ make')
-    print('')
-    print('   to modify configured parameters and then compile:')
-    if (build_path == default_path):
-        print('   $ cd build')
-        print('   $ ccmake ..')
-    else:
-        print('   $ cd ' + build_path)
-        print('   $ ccmake ' + root_directory)
     print('   $ make')
 
 def save_setup_command(argv, build_path):

@@ -328,7 +328,6 @@ Cholesky
 #include "choscf.h"
 C
 #include "center.h"
-#include "nuclei.h"
 C
 Cholesky
 C
@@ -699,10 +698,12 @@ CAMT If calculated add the empirical dispersion energy correction
            EMY = EMY + EDISP
          END IF
 
+
 C
 c        we need to divide the solvent calls into mmpcm and not mmpcm
 c        since we in the latter iterate between the mm and pcm for a given QM
 c        density    
+       
          IF (.NOT. MMPCM) THEN ! do as we usually do ...
            ESOLT = D0
            IF (QM3 .AND. .NOT. DOCCSD) THEN
@@ -740,6 +741,7 @@ c        density
      &                   WRK(KFREE),LFREE,IPR_DIIS)
              CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
              CALL MEMREL('DISCTL.SOLFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+
            ELSE IF (PCM) THEN
              CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
              CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
@@ -1394,7 +1396,16 @@ C
      &              NSYM,NBAS,NORB)
       END IF
 C
-      IF (IPRENR .GT. 0) THEN
+C      if qm3 .or. pcm then also mmpcm automatically
+       IF (IPRENR .GT. 0) THEN
+C
+         IF (CMOPRI) THEN
+            IPR4SA = IPRI4
+            IPR6SA = IPRI6
+            IPRI4  = 11
+            IPRI6  = 11
+         END IF
+C
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
@@ -1412,6 +1423,12 @@ C-------------------
          END IF
 C-------------------
 C        CALL RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
+C
+         IF (CMOPRI) THEN
+            IPRI4 = IPR4SA
+            IPRI6 = IPR6SA
+         END IF
+C
       END IF
       ! needed to get specific PE energy contributions for printout
       ! when converged

@@ -5,7 +5,8 @@
 
 We present in this Chapter some examples of input files 
 \verb|DALTON.INP| for calculations that can be done
-with the Dalton program using either decomposed two-electron 
+with Cholesky-based algorithms available in the Dalton program 
+using either decomposed two-electron 
 integrals~\cite{choint,chorsp} either decomposed orbital 
 energy denominators~\cite{jcp_chopt,ijqc_chopt}.
 A few more examples may be found in the test suite. 
@@ -249,4 +250,47 @@ used. More detailed information can be found at section~\ref{sec:chopt}.
 .MXCHVE     ! Trunk the expansion of the denominators after the 6th term.
   6
 *END OF DALTON INPUT
+\end{verbatim}
+
+\section{CCSD excitation energies using a reduced active subsystem}
+
+We finally present an example of using active subsystems to reduce the 
+computational cost. In particular, the input below is used
+to calculate the two lowest excitations of
+butanal declaring as active the orbitals localized on the aldehyde group 
+(atoms 4, 5 and 13 of  \verb|MOLECULE.INP|)
+
+\begin{verbatim}
+**GENERAL
+.RUN WA
+**HERMIT
+.NOSUP
+**SIRIUS
+.CC
+*SCF IN
+.THRESHOLD
+ 1.0D-8
+.MAX DIIS
+ 100
+*ORBITAL
+.MOSTART
+ HUCKEL
+*CC INP
+.PRINT
+ 3
+.CCSD
+*CHOACT
+.ATOMIC
+   3
+   4   5   13
+.THACOC
+  0.15
+.THACVI
+  0.1
+*CCEXCI
+.THREXC
+ 1.0D-3
+.NCCEXCI
+  2
+*END OF
 \end{verbatim}

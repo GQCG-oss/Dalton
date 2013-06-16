@@ -3,7 +3,7 @@ all: liblsutil.a
 include ../Makefile.config
 
 manual_reorderings.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
 
 # Keep the file lists sorted for easier modification.
 
