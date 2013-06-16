@@ -540,7 +540,8 @@ C
      *                                ' ===================='
             END IF
          END IF
-         IF (IPRI4 .GT. 10) THEN
+C        IF (IPRI4 .GT. 10) THEN
+         IF ((IPRI4 .GT. 10) .OR. CMOPRI) THEN
             CALL PRORB(WRK(KCMO), .FALSE., LUPRI)
          ELSE
             CALL PRORB(WRK(KCMO),  .TRUE., LUPRI)

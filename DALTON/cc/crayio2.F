@@ -21,7 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
-#include "single.h"
+#include <single.h>
 C
 *---------------------------------------------------------------------*
 c/* Deck WOPEN2 */
@@ -30,8 +30,8 @@ c/* Deck WOPEN2 */
 *---------------------------------------------------------------------*
 * Purpose: open file and test error flag, if not 0, stop
 *=====================================================================*
-#include "priunit.h"
-#include "ccsdinp.h"
+#include <priunit.h>
+#include <ccsdinp.h>
       INTEGER LUNIT, IADR, ILEN, IERR, BLOCKSIZE, STATUS, IUN
       INTEGER IUNCRAY, J
       CHARACTER*(*) FILE
@@ -94,25 +94,53 @@ c/* Deck PUTWA2 */
 *---------------------------------------------------------------------*
 * Purpose: call putwa and test error flag, if not 0, stop
 *=====================================================================*
-#include "priunit.h"
+#include <priunit.h>
       INTEGER LUNIT, IADR, LEN, IERR
+      INTEGER LMAX, JADR, NBATCH, LETOT, IBATCH, IOFF
+      INTEGER LREAD
       CHARACTER*(*) FILE
-      DIMENSION DATA(LEN)
-
+      DOUBLE PRECISION DATA(LEN)
+c     DIMENSION DATA(LEN)
+C
+Casm Apparently, it is not possible to read more than 2 Gb (268435456 dw)
+C        
+      LMAX = 250000000      ! Just to be in the (too?) safe side.
+c     lmax = 80000000      ! Just to be in the (too?) safe side.
+C
+      LETOT = 0
+      LREAD = LMAX
+      JADR  = IADR
+      IOFF  = 1
+C
+      NBATCH = (LEN - 1) / LMAX + 1
+      DO IBATCH = 1, NBATCH
+         LETOT = LETOT + LREAD
+         IF (LETOT .GT. LEN) THEN
+            LETOT = LETOT - LREAD
+            LREAD = LEN   - LETOT
+         END IF
+C
 #if defined (SYS_CRAY)
-      CALL PUTWA(FILE,DATA(1),IADR,LEN,IERR)
+C        CALL PUTWA(FILE,DATA(1),IADR,LEN,IERR)
+         CALL PUTWA(FILE,DATA(IOFF),JADR,LREAD,IERR)
 #else
-      CALL PUTWA(LUNIT,DATA(1),IADR,LEN,IERR)
+C        CALL PUTWA(LUNIT,DATA(1),IADR,LEN,IERR)
+         CALL PUTWA(LUNIT,DATA(IOFF),JADR,LREAD,IERR)
 #endif
-
-      IF (IERR.NE.0) THEN
-        WRITE (LUPRI,*) 'I/O ERROR IN PUTWA2:'
-        WRITE (LUPRI,*) 'FILE:', FILE
-        WRITE (LUPRI,*) 'UNIT:', LUNIT
-        WRITE (LUPRI,*) 'IADR:', IADR
-        WRITE (LUPRI,*) 'LEN:',  LEN
-        CALL QUIT('I/O ERROR IN PUTWA2.')
-      END IF
+C
+         IF (IERR.NE.0) THEN
+           WRITE (LUPRI,*) 'I/O ERROR IN PUTWA2:'
+           WRITE (LUPRI,*) 'FILE:', FILE
+           WRITE (LUPRI,*) 'UNIT:', LUNIT
+           WRITE (LUPRI,*) 'IADR:', IADR
+           WRITE (LUPRI,*) 'LEN:',  LEN
+           CALL QUIT('I/O ERROR IN PUTWA2.')
+         END IF
+C
+         IOFF = IOFF + LREAD
+         JADR = JADR + LREAD
+C
+      END DO
 
       RETURN
       END
@@ -126,27 +154,57 @@ c/* Deck GETWA2 */
 *---------------------------------------------------------------------*
 * Purpose: call GETWA and test error flag, if not 0, stop
 *=====================================================================*
-#include "priunit.h"
+#include <priunit.h>
       INTEGER LUNIT, IADR, LEN, IERR
+      INTEGER LMAX, JADR, NBATCH, LETOT, IBATCH, IOFF
+      INTEGER LREAD
       CHARACTER*(*) FILE
-      DIMENSION DATA(LEN)
-
+      DOUBLE PRECISION DATA(LEN)
+c     DIMENSION DATA(LEN)
+C
+      
+C
+Casm Apparently, it is not possible to read more than 2 Gb (268435456 dw)
+C        
+      LMAX = 250000000      ! Just to be in the (too?) safe side.
+c     lmax = 80000000      ! Just to be in the (too?) safe side.
+C
+      LETOT = 0
+      LREAD = LMAX
+      JADR  = IADR
+      IOFF  = 1
+C
+      NBATCH = (LEN - 1) / LMAX + 1
+      DO IBATCH = 1, NBATCH
+         LETOT = LETOT + LREAD
+         IF (LETOT .GT. LEN) THEN
+            LETOT = LETOT - LREAD
+            LREAD = LEN   - LETOT
+         END IF
+C
 #if defined (SYS_CRAY)
-      CALL GETWA(FILE,DATA(1),IADR,LEN,IERR)
+C        CALL GETWA(FILE,DATA(1),IADR,LEN,IERR)
+         CALL GETWA(FILE,DATA(IOFF),JADR,LREAD,IERR)
 #else
-      CALL GETWA(LUNIT,DATA(1),IADR,LEN,IERR)
+C        CALL GETWA(LUNIT,DATA(1),IADR,LEN,IERR)
+         CALL GETWA(LUNIT,DATA(IOFF),JADR,LREAD,IERR)
 #endif
-
-      IF (IERR.NE.0) THEN
-        WRITE (LUPRI,*) 'I/O ERROR IN GETWA2:'
-        WRITE (LUPRI,*) 'FILE:', FILE
-        WRITE (LUPRI,*) 'UNIT:', LUNIT
-        WRITE (LUPRI,*) 'IADR:', IADR 
-        WRITE (LUPRI,*) 'LEN :', LEN 
-        WRITE (LUPRI,*) 'IERR:', IERR 
-        CALL QUIT('I/O ERROR IN GETWA2.')
-      END IF
-
+C
+         IF (IERR.NE.0) THEN
+           WRITE (LUPRI,*) 'I/O ERROR IN GETWA2:'
+           WRITE (LUPRI,*) 'FILE:', FILE
+           WRITE (LUPRI,*) 'UNIT:', LUNIT
+           WRITE (LUPRI,*) 'IADR:', IADR 
+           WRITE (LUPRI,*) 'LEN :', LEN 
+           WRITE (LUPRI,*) 'IERR:', IERR 
+           CALL QUIT('I/O ERROR IN GETWA2.')
+         END IF
+C
+         IOFF = IOFF + LREAD
+         JADR = JADR + LREAD
+C
+      END DO
+C
       RETURN
       END
 *=====================================================================*
@@ -160,8 +218,8 @@ c/* Deck WCLOSE2 */
 * Purpose: close file, test error flag, if not 0 bump...
 *          if MODE='DELETE' remove the file, else keep it
 *=====================================================================*
-#include "priunit.h"
-#include "ccsdinp.h"
+#include <priunit.h>
+#include <ccsdinp.h>
       INTEGER LUNIT, IERR, ILEN
       CHARACTER*(*) FILE, MODE
       CHARACTER*(80) COMMAND
@@ -250,8 +308,8 @@ c/* Deck WCLOSEALL */
 *---------------------------------------------------------------------*
 * Purpose: close all files opened by WOPEN2 which have not been closed
 *=====================================================================*
-#include "priunit.h"
-#include "ccsdinp.h"
+#include <priunit.h>
+#include <ccsdinp.h>
       COMMON /UNICRAYIO/ IUNCRAY(1:99)
 C
       DO LUNIT = 1, 70

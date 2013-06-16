@@ -112,7 +112,7 @@ fi
 
 # SCF, MP2 and CC2 energies:
 CRIT1=`$GREP "Final * HF energy:"  $log | $GREP "\-230.7281544." | wc -l`
-CRIT2=`$GREP "Coupled cluster MP2" $log | $GREP "\-231.5388340" | wc -l`
+CRIT2=`$GREP "Coupled cluster MP2" $log | $GREP "\-231.53883(40|39)" | wc -l`
 CRIT3=`$GREP "Total CC2 * energy:     *           -231.5458137" $log | wc -l`
 TESTA=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRLA=4
