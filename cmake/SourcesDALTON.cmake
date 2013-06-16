@@ -401,6 +401,7 @@ cc/cc_lanczos_lrinp.F
 cc/cc_lanczos_drv.F
 cc/cc_lanczos_lrextras.F
 cc/rpa_grad.F
+cc/cc_active.F
 choles/cc_caa.F
 choles/cc_choatr.F
 choles/cc_chocc2.F
@@ -744,7 +745,7 @@ lucita/par_communication_model.F90
 lucita/par_io.F90
 lucita/par_io_fh.F90
 lucita/par_sync_cw.F90
-peqm/pe_gen1int_wrapper.F90
+peqm/pe_integral_wrappers.F90
 peqm/pe_precision.F90
 peqm/pe_blas_wrappers.F90
 peqm/pe_lapack_wrappers.F90

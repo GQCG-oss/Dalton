@@ -17,7 +17,7 @@ module ccdriver
   use dec_typedef_module
   use integralinterfaceMod
   use integralparameters
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
 #endif
   use tensor_interface_module
@@ -2397,7 +2397,7 @@ contains
     safefilet22='t22'
 
     nnodes=1
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     nnodes=infpar%lg_nodtot
 #endif
 

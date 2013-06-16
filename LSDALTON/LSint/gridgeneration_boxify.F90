@@ -10,7 +10,7 @@ use grid_memory_handling
 use precision
 use files
 use dft_typetype
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_mod
 #endif
@@ -180,12 +180,12 @@ call free_box(Gridbox)
 CALL LS_GETTIM(CPU2,WALL2)
 CPUTIME = CPU2-CPU1
 WALLTIME = WALL2-WALL1
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
 CALL LS_TIMTXT('>>>  CPU  Time used in Boxify is  ',CPUTIME,LUPRI)
 CALL LS_TIMTXT('>>>  WALL Time used in Boxify is  ',WALLTIME,LUPRI)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ENDIF
 #endif
 !call lsquit('test done',lupri)

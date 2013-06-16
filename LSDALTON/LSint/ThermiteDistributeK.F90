@@ -1743,7 +1743,7 @@ DO iPassP=1,P%nPasses
 !is maybe not the most logical and we refer to discussion in the subroutine
 !init_gradientlstensor in lsutil/lstensor_operations.f90
       iLSAO = Kgrad%INDEX(iAtom,1,1,permuteAO(derivInfo%AO(1,iDeriv)))
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
       IF(iLSAO.EQ. 0)THEN
          WRITE(lupri,*)'iLSAO is zero - for some reason'
          WRITE(lupri,*)'iAtom          ',iAtom
@@ -2053,7 +2053,7 @@ integer :: CA,DB
 Real(realk),pointer :: lAC(:),lBC(:),lAD(:),lBD(:),rBD(:),rAD(:),rBC(:),rAC(:)
 Real(realk),pointer :: lCA(:),lCB(:),lDA(:),lDB(:),rDB(:),rDA(:),rCB(:),rCA(:)
 Real(realk) :: tmpKcont(ndmat)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !We assume sym dmat
 
 P => PQ%P%p

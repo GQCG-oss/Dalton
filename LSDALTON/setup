@@ -290,22 +290,11 @@ def gen_cmake_command():
 
 def print_build_help(build_path):
     print('   configure step is done')
-    print('   now you need to compile the sources')
-    print('')
-    print('   to compile with configured parameters (recommended):')
+    print('   now you need to compile the sources:')
     if (build_path == default_path):
         print('   $ cd build')
     else:
         print('   $ cd ' + build_path)
-    print('   $ make')
-    print('')
-    print('   to modify configured parameters and then compile:')
-    if (build_path == default_path):
-        print('   $ cd build')
-        print('   $ ccmake ..')
-    else:
-        print('   $ cd ' + build_path)
-        print('   $ ccmake ' + root_directory)
     print('   $ make')
 
 def save_setup_command(argv, build_path):
@@ -393,26 +382,34 @@ def configure_host():
     return True
 
 def configure_default_compilers():
-    # if compiler starts with 'mp' turn on mpi
-    # it is possible to call compilers with long paths
-    if  args.cc  and os.path.basename(args.cc).lower().startswith('mp')  or \
-        args.cxx and os.path.basename(args.cxx).lower().startswith('mp') or \
-        args.fc  and os.path.basename(args.fc).lower().startswith('mp'):
-        args.mpi = 'on'
 
-    # if compiler starts with 'openmpi' turn on mpi
-    # it is possible to call compilers with long paths
-    if  args.cc  and os.path.basename(args.cc).lower().startswith('openmpi')  or \
-        args.cxx and os.path.basename(args.cxx).lower().startswith('openmpi') or \
-        args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
-        args.mpi = 'on'
+    if args.mpi and not args.fc and not args.cc and not args.cxx:
+        # only --mpi flag but no --fc, --cc, --cxx
+        # set --fc, --cc, --cxx to mpif90, mpicc, mpicxx
+        args.fc  = 'mpif90'
+        args.cc  = 'mpicc'
+        args.cxx = 'mpicxx'
 
+    if not args.mpi:
+        # if compiler starts with 'mp' turn on mpi
+        # it is possible to call compilers with long paths
+        if  args.cc  and os.path.basename(args.cc).lower().startswith('mp')  or \
+            args.cxx and os.path.basename(args.cxx).lower().startswith('mp') or \
+            args.fc  and os.path.basename(args.fc).lower().startswith('mp'):
+            args.mpi = 'on'
+        # if compiler starts with 'openmpi' turn on mpi
+        # it is possible to call compilers with long paths
+        if  args.cc  and os.path.basename(args.cc).lower().startswith('openmpi')  or \
+            args.cxx and os.path.basename(args.cxx).lower().startswith('openmpi') or \
+            args.fc  and os.path.basename(args.fc).lower().startswith('openmpi'):
+            args.mpi = 'on'
+
+    if not args.fc:
+        args.fc = 'gfortran'
     if not args.cc:
         args.cc = 'gcc'
     if not args.cxx:
         args.cxx = 'g++'
-    if not args.fc:
-        args.fc = 'gfortran'
 
 configure_ubuntu = configure_default_compilers
 configure_fedora = configure_default_compilers

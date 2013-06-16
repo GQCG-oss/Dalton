@@ -1708,36 +1708,40 @@ C
          LUTOC = 0
          FNTOC = 'CCSDT_OC'
          CALL WOPEN2(LUTOC,FNTOC,64,0)
-C        CALL GETWA2(LUTOC,FNTOC,WORK(KINTOC),IOFF,NTOTOC(1))
+C
+         CALL GETWA2(LUTOC,FNTOC,WORK(KINTOC),IOFF,NTOTOC(1))
 C
 Casm     Never read more than 2Gb (268435456 words) in a single shot
+Casm     Fixed with modified crayio2.F
 C
-         LRDMAX = 268435456 / 4 - 1
-         NRDBAT = (NTOTOC(1) - 1) / LRDMAX + 1
-         LRD1 = 0
-         LRD2 = 0
-         KOFF = KINTOC
+c        LRDMAX = 268435456 / 4 - 1
+c        NRDBAT = (NTOTOC(1) - 1) / LRDMAX + 1
+c        LRD1 = 0
+c        LRD2 = 0
+c        KOFF = KINTOC
 c        write(lupri,*) 'NTOTOC(1),nrdbat',NTOTOC(1),nrdbat
-         DO IRDBAT = 1,NRDBAT
-            LRD3 = LRDMAX
-            LRD1 = LRD1 + LRDMAX
-            IF (LRD1 .GT. NTOTOC(1)) LRD3 = NTOTOC(1) - LRD2
+c        DO IRDBAT = 1,NRDBAT
+c           LRD3 = LRDMAX
+c           LRD1 = LRD1 + LRDMAX
+c           IF (LRD1 .GT. NTOTOC(1)) LRD3 = NTOTOC(1) - LRD2
 c           write(lupri,*) 'ioff,irdbat,lrd1,lrd2,lrd3',
 c    &                      ioff,irdbat,lrd1,lrd2,lrd3
 c           call  flshfo(lupri)
-            CALL GETWA2(LUTOC,FNTOC,WORK(KOFF),IOFF,LRD3)
-            IOFF = IOFF + LRD3
-            LRD2 = LRD2 + LRD3
-            KOFF = KOFF + LRD3
+c           CALL GETWA2(LUTOC,FNTOC,WORK(KOFF),IOFF,LRD3)
+c           IOFF = IOFF + LRD3
+c           LRD2 = LRD2 + LRD3
+c           KOFF = KOFF + LRD3
 c           write(lupri,*) 'irdbat,koff,ldr2,ldr3,ntotoc :',
 c    &                      irdbat,koff,ldr2,ldr3,ntotoc(1)
 c           call  flshfo(lupri)
-         END DO
-         IF (LRD2 .NE. NTOTOC(1)) THEN
-            WRITE(LUPRI,*) 'Error reading CCSDT_OC'
-            CALL QUIT('Error reading CCSDT_OC')
-         END IF
+c        END DO
+c        IF (LRD2 .NE. NTOTOC(1)) THEN
+c           WRITE(LUPRI,*) 'Error reading CCSDT_OC'
+c           CALL QUIT('Error reading CCSDT_OC')
+c        END IF
+C
          CALL WCLOSE2(LUTOC,FNTOC,'KEEP')
+C
       ENDIF
 C
 C-------------------------------------------------
@@ -1880,11 +1884,12 @@ C
          IF (NUMB .EQ. 0) CALL QUIT('Not enough space in CCHO_TRINT1')
 C
 Casm     Apparently, it is not possible to read more than 2 Gb (268435456 dw)
+Casm     Fixed with modified crayio2.F
 C
-         MXDAL1 = 268435456 / NCKA(ISYEMD)
-         MXDAL2 = 268435456 / NCKATR(ISYEMD)
-         MXDALF = MIN(MXDAL1,MXDAL2)
-         NUMB   = MIN(NUMB,MXDALF)
+c        MXDAL1 = 268435456 / NCKA(ISYEMD)
+c        MXDAL2 = 268435456 / NCKATR(ISYEMD)
+c        MXDALF = MIN(MXDAL1,MXDAL2)
+c        NUMB   = MIN(NUMB,MXDALF)
 C
          NBATB  = (NVIRB-1)/NUMB + 1
 C

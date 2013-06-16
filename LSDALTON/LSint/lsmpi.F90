@@ -7,7 +7,7 @@ module lsmpi_mod
   use typedefType
   use typedef
   use molecule_module
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
 #endif
 contains
@@ -32,7 +32,7 @@ contains
 
     real(realk) :: t1,t2,t3,t4
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 CALL LS_GETTIM(t1,t2)
     DO iAO=1,4 
        ! Consistency testing
@@ -190,7 +190,7 @@ CALL LS_GETTIM(t1,t2)
 
     END SUBROUTINE lsmpi_set_task_manager
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 SUBROUTINE lsmpi_set_MPI_task_list(task_list,tasks,setting,lupri,luerr)
 implicit none
 TYPE(LSMPI_TASK_LIST),INTENT(INOUT) :: task_list
@@ -1172,7 +1172,7 @@ ENDIF
     lstask_combine_fragments = reduction
     END FUNCTION lstask_combine_fragments
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     SUBROUTINE jengine_time_estimate(tmLHS,tmRHS,nA,nB,nC,nD,sameAB,sameCD,noA,noB,noC,noD,&
      &                               AO1,AO2,AO3,AO4,Spec,setting,lupri)
     implicit none
@@ -2207,7 +2207,7 @@ Integer(kind=ls_mpik),intent(IN) :: mynum,numnodes
 Integer,intent(IN)               :: lupri,iprint
 Real(realk),intent(INOUT)        :: cpu,wall,LHSpart,RHSpart,cpu0,wall0,cpu1,wall1,cpu2,wall2
 !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 Integer             :: inum, nodes, i,j
 Real(realk),pointer :: time_harvester(:,:)
 Real(realk)         :: tot_wall

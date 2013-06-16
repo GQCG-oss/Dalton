@@ -3,6 +3,7 @@ module polarizable_embedding
     use pe_precision
     use pe_blas_wrappers
     use pe_lapack_wrappers
+    use pe_integral_wrappers
     use pe_variables
 
 #if defined(VAR_MPI)
@@ -2252,7 +2253,7 @@ subroutine es_fragment_densities(denmats, Eel, Enuc, fckmats)
                     call Tk_tensor(Tfm, Rfm)
                     Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
                 end do
-    !            call Tk_integrals('es', Zfd_ints, nnbas, 1, Rfd(:,j)) 
+    !            call Tk_integrals('es', Zfd_ints, Rfd(:,j)) 
     !            Zfd_ints = Zfd(1,j) * Zfd_ints
                 call Mk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
                 do m = 1, ndens
@@ -2345,8 +2346,6 @@ end subroutine es_multipoles
 !------------------------------------------------------------------------------
 
 subroutine pe_polarization(denmats, fckmats)
-
-    external :: Tk_integrals
 
     real(dp), dimension(:), intent(in), optional :: denmats
     real(dp), dimension(:), intent(inout), optional :: fckmats
@@ -2549,7 +2548,7 @@ subroutine pe_polarization(denmats, fckmats)
             i = 0
             do site = site_start, site_finish
                 if (zeroalphas(site)) cycle
-                call Tk_integrals('es', Fel_ints, nnbas, 3, Rs(:,site))
+                call Tk_integrals('es', Fel_ints, Rs(:,site))
                 do j = 1, 3
                     do k = 1, ndens
                         l = (k - 1) * nnbas + 1
@@ -2566,7 +2565,7 @@ subroutine pe_polarization(denmats, fckmats)
             i = 1
             allocate(Vel_ints(nnbas,1))
             do site = surp_start, surp_finish
-                call Tk_integrals('es', Vel_ints, nnbas, 1, Rsp(:,site))
+                call Tk_integrals('es', Vel_ints, Rsp(:,site))
                 do k = 1, ndens
                     l = (k - 1) * nnbas + 1
                     m = k * nnbas
@@ -2600,7 +2599,7 @@ subroutine pe_polarization(denmats, fckmats)
                     write(lunoneq) fckmats(l:m)
                 end do
                 close(lunoneq)
-                call Tk_integrals('es', Vel_ints, nnbas, 1, Rsp(:,site))
+                call Tk_integrals('es', Vel_ints, Rsp(:,site))
                 do k = 1, ndens
                     l = (k - 1) * nnbas + 1
                     m = k * nnbas
@@ -3268,8 +3267,6 @@ end subroutine mixed_solver
 
 subroutine electron_potentials(Vels, denmats)
 
-    external :: Tk_integrals
-
     real(dp), dimension(:,:), intent(out) :: Vels
     real(dp), dimension(:), intent(in) :: denmats
 
@@ -3282,7 +3279,7 @@ subroutine electron_potentials(Vels, denmats)
 
     i = 1
     do site = surp_start, surp_finish 
-        call Tk_integrals('es', Vel_ints, nnbas, 1, Rsp(:,site))
+        call Tk_integrals('es', Vel_ints, Rsp(:,site))
         do k = 1, ndens
             l = (k - 1) * nnbas + 1
             m = k * nnbas
@@ -3321,8 +3318,6 @@ end subroutine electron_potentials
 
 subroutine electron_fields(Fels, denmats)
 
-    external :: Tk_integrals
-
     real(dp), dimension(:,:), intent(inout) :: Fels
     real(dp), dimension(:), intent(in) :: denmats
 
@@ -3346,7 +3341,7 @@ subroutine electron_fields(Fels, denmats)
                 cycle
             end if
         end if
-        call Tk_integrals('es', Fel_ints, nnbas, 3, Rs(:,site))
+        call Tk_integrals('es', Fel_ints, Rs(:,site))
         do j = 1, 3
             do k = 1, ndens
                 l = (k - 1) * nnbas + 1
@@ -4263,8 +4258,6 @@ end subroutine Tk_tensor
 
 subroutine Mk_integrals(Mk_ints, Rij, Mk)
 
-    external :: Tk_integrals
-
     real(dp), dimension(:,:), intent(out) :: Mk_ints
     real(dp), dimension(:), intent(in) :: Mk
     real(dp), dimension(3), intent(in) :: Rij
@@ -4284,7 +4277,7 @@ subroutine Mk_integrals(Mk_ints, Rij, Mk)
 
     ncomps = size(Mk_ints, 2)
 
-    call Tk_integrals('es', Mk_ints, nnbas, ncomps, Rij)
+    call Tk_integrals('es', Mk_ints, Rij)
 
     ! get symmetry factors
     allocate(factors(ncomps))
@@ -4544,8 +4537,6 @@ end subroutine chcase
 subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb, coords,&
                           & charges, dalwrk)
 
-    external :: Tk_integrals
-
     integer, intent(in) :: nbas, nocc, norb
     real(dp), dimension(:), intent(in) :: denmat
     real(dp), dimension(:), intent(in) :: mofckmat
@@ -4631,7 +4622,7 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb, coords,&
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, corenucs
-        call Tk_integrals('es', T0_ints, nnbas, 1, Rc(:,i))
+        call Tk_integrals('es', T0_ints, Rc(:,i))
         T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(denmat, T0_ints(:,1))
     end do
@@ -5456,7 +5447,7 @@ subroutine compute_mep(denmats)
         allocate(Tk_ints(nnbas,1))
         k = 1
         do i = mep_start, mep_finish
-            call Tk_integrals('es', Tk_ints(:,1), nnbas, 1, Rp(:,i))
+            call Tk_integrals('es', Tk_ints, Rp(:,i))
             Vqm(k,1) = dot(denmats, Tk_ints(:,1))
             do j = 1, qmnucs
                 call multipole_potential(Vqm(k,1), Rp(:,i) - Rm(:,j), Zm(:,j))
@@ -5769,7 +5760,7 @@ subroutine compute_mep(denmats)
             allocate(Tk_ints(nnbas,3))
             k = 1
             do i = mep_start, mep_finish
-                call Tk_integrals('es', Tk_ints, nnbas, 3, Rp(:,i))
+                call Tk_integrals('es', Tk_ints, Rp(:,i))
                 do j = 1, 3
                     Fqm(k,j) = dot(denmats, Tk_ints(:,j))
                 end do

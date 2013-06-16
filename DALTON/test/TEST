@@ -13,19 +13,16 @@
 
 BUILD_DIR="../build"
 
-# radovan: this is to figure out whether TEST is called from test directory
-#          or from outside
-SCRIPT_DIR="${0%/*}"
-# if the script was started from the base directory with ./TEST, then the
-# expansion returns a period, if it was started directly with TEST then the
-# expansion returns the script file name
-if [ "$SCRIPT_DIR" == "." -o "$SCRIPT_DIR" == "$0" ]; then
-  SCRIPT_DIR="$PWD"
-# if the script was not called with an absolute path, then we need to add the
-# current working directory to the relative path of the script
-elif [ "${SCRIPT_DIR:0:1}" != "/" ]; then
-  SCRIPT_DIR="$PWD/$SCRIPT_DIR"
-fi
+# radovan: this is to figure out the location of this script
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    [[ $SOURCE != /* ]] && SOURCE="$SCRIPT_DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 cd $SCRIPT_DIR
 
 if [ -x '/usr/bin/time' ]; then
@@ -105,7 +102,7 @@ cc_rsp_twophot5 cc_rsp_twophotb cc_grad cc_geoopt_mp2 cc_fop_cc3 cc_rsp_ctocd \
 cc_grad_ccpt_hf cc_geopt_ccpt_hf cc_geopt_ccpt_h2o cc_prop_file $SHORTCC3"
 #
 SHORT_CHOLESKY="choles_b3lyp_polar choles_cc2_fop \
-choles_hf_magnet choles_kt3_ctocd choles_lda_prop"
+choles_hf_magnet choles_kt3_ctocd choles_lda_prop choact_mp2_energy"
 #
 SHORTPEQM="pehf_small_iter pehf_small_direct pehf_small_redthr pehf_small_gspol \
 pehf_fixsol_direct pehf_small_london pehf_small_alpha pehf_small_1pa pehf_small_beta \

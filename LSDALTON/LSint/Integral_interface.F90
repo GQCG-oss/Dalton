@@ -35,7 +35,7 @@ MODULE IntegralInterfaceMOD
        & mat_scal, mat_mul, mat_assign, mat_trans, mat_copy, mat_add
   use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym, mcweeney_purify
   use memory_handling, only: mem_alloc, mem_dealloc
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use screen_modMPI, only: mpicopy_screen
   use lsmpi_type!, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, &
 !       & LSMPIBROADCAST,  ls_mpibcast, get_rank_for_comm
@@ -71,7 +71,7 @@ MODULE IntegralInterfaceMOD
        & II_get_sphmom,II_carmom_to_shermom,II_get_3center_overlap,&
        & II_get_2center_eri,II_get_4center_eri,II_get_4center_eri_diff,&
        & II_precalc_ScreenMat, &
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
        & II_bcast_screen, II_screeninit, II_screenfree,&
 #endif
        & II_get_2int_ScreenMat,II_get_maxGabelm_ScreenMat,II_setIncremental,&
@@ -1076,7 +1076,7 @@ setting%scheme%daScreen_THRLOG = 0
 call initIntegralOutputDims(setting%Output,3,nAtoms,1,1,1)
 call ls_get_exchange_mat(AORdefault,AORdefault,AORdefault,AORdefault,&
      &                   Oper,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ! Hack - since symmetry is currently turned off in exchange the resultTensor 
 !        currently has dimension 3,nAtom*4
   call mem_alloc(grad,3,nAtoms*4)
@@ -2483,7 +2483,7 @@ IF(SETTING%SCHEME%saveGABtoMem)THEN
     ENDDO
  ENDIF
 ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 call ls_mpibcast(IISCREEN,infpar%master,setting%comm)
 call II_bcast_screen(setting%comm)
 #endif
@@ -2491,7 +2491,7 @@ call time_II_operations2(JOB_II_precalc_ScreenMat)
 
 END SUBROUTINE II_precalc_ScreenMat
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 subroutine II_bcast_screen(comm)
 implicit none
 integer(kind=ls_mpik) :: comm,Master,mynum
@@ -4680,6 +4680,14 @@ logical             :: ADMMexchange,testNelectrons,unres,grid_done
 real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3
 character(21)       :: L2file,L3file
+real(realk)         :: GGAXfactor
+
+IF (setting%scheme%cam) THEN
+  GGAXfactor = 1.0E0_realk
+ELSE
+  GGAXfactor = setting%scheme%exchangeFactor
+ENDIF
+
 IF(ndmat.GT.1)call lsquit('II_get_admm_exchange_mat ndmat.GT.1',-1)
 nbast = F%nrow
 unres = matrix_type .EQ. mtype_unres_dense
@@ -4750,13 +4758,9 @@ call mat_zero(F2(1))
 !Subtract XC-correction
 
 !****Calculation of Level 2 XC matrix from level 2 Density matrix starts here
-!FOR CAM  
-!WORD = "Camcompx" ! lr only GGAX
-!WORD = "Camx" ! sr only GGAX
-WORD = "BX"  ! full Becke
-call II_DFTsetFunc(WORD(1:80),hfweight) !Here hfweight is only used as a dummy variable
+call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight) !Here hfweight is only used as a dummy variable
 !Print the functional used at this stage 
-call DFTREPORT(lupri) 
+!call DFTREPORT(lupri) 
 !use this call to add a functional instead of replacing it. 
 !call II_DFTaddFunc(setting%scheme%dft%dftfunc,hfweight)
 
@@ -4771,7 +4775,7 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
 !Transform to level 3
 call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
-call mat_daxpy(-setting%scheme%exchangeFactor,TMPF,dXC)
+call mat_daxpy(-GGAXfactor,TMPF,dXC)
 setting%scheme%dft%testNelectrons = testNelectrons
 
 !Re-set to default (level 3) grid
@@ -4788,13 +4792,13 @@ setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 CALL mat_init(F3(1),nbast,nbast)
 CALL mat_zero(F3(1))
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
-CALL mat_daxpy(setting%scheme%exchangeFactor,F3(1),dXC)
+CALL mat_daxpy(GGAXfactor,F3(1),dXC)
 CALL mat_free(F3(1))
 
-EdXC = (EX3(1)-EX2(1))*setting%scheme%exchangeFactor
+EdXC = (EX3(1)-EX2(1))*GGAXfactor
 
 !Restore dft functional to original
-IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%dftfunc,hfweight)
+IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
          
 !the remainder =================================================
 !call mat_zero(TMPF)
@@ -4922,22 +4926,29 @@ type(MatrixP),intent(in)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
 !
 real(realk),pointer :: grad_k2(:,:),grad_xc2(:,:),grad_XC3(:,:),ADMM_proj(:,:)
 integer             :: nbast,nbast2,AO2,AO3,idmat,nAtoms
-real(realk)         :: ts,te,hfweight,EX3
+real(realk)         :: ts,te,hfweight
 real(realk)         :: Exc2(1)
 type(Matrix),target :: D2
-type(Matrix)        :: k2,xc2,zeromat,F3
+type(Matrix)        :: k2,xc2,zeromat
 type(matrixp)       :: D2p(1)
 logical             :: GC3,GC2,testNelectrons,grid_done,DSym,unres
 integer             :: AOdfold,AORold
 character(len=80)   :: WORD
 character(21)       :: L2file,L3file
+real(realk)         :: GGAXfactor
 !
 call lstimer('START',ts,te,lupri)
 
+IF (setting%scheme%cam) THEN
+  GGAXfactor = 1.0E0_realk
+ELSE
+  GGAXfactor = setting%scheme%exchangeFactor
+ENDIF
+
 IF (ndrhs.NE.ndlhs) call lsquit('II_get_ADMM_K_gradient:Different LHS/RHS density matrices not implemented',-1)
 
-admm_Kgrad = 0E0_realk
 nAtoms = setting%molecule(1)%p%nAtoms
+call ls_dzero(admm_Kgrad,3*nAtoms)
 nbast  = DmatLHS(1)%p%nrow
 unres  = matrix_type .EQ. mtype_unres_dense
 
@@ -4984,18 +4995,14 @@ DO idmat=1,ndrhs
    call II_get_exchange_mat(lupri,luerr,setting,D2,1,Dsym,k2)
    
    call mem_alloc(grad_k2,3,nAtoms)
-   grad_k2 = 0E0_realk
+   call ls_dzero(grad_k2,3*nAtoms)
    call II_get_regular_K_gradient(grad_k2,D2p,D2p,1,1,setting,lupri,luerr)
    call DAXPY(3*nAtoms,4E0_realk,grad_k2,1,admm_Kgrad,1) !Include factor 4 to use D instead of 2D
    call mem_dealloc(grad_k2)
    
    ! XC-correction
    !****Calculation of Level 2 XC gradient from level 2 Density matrix starts here
-   !FOR CAM  
-   !WORD = "Camcompx" !lr only GGA X
-   !WORD = "Camx"     !sr only GGA X
-   WORD = "BX"      !full Becke
-   call II_DFTsetFunc(WORD(1:80),hfweight) !Here hfweight is only used as a dummy variable
+   call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight)
    
    !choose the ADMM Level 2 grid
    setting%scheme%dft%igrid = Grid_ADMML2
@@ -5008,13 +5015,14 @@ DO idmat=1,ndrhs
    !Level 2 XC matrix
    call mat_init(xc2,nbast2,nbast2)
    call mat_zero(xc2)
+   Exc2(1) = 0.0E0_realk
    call II_get_xc_Fock_mat(lupri,luerr,setting,nbast2,D2,xc2,Exc2,1)
  
    !Level 2 XC gradient
    call mem_alloc(grad_xc2,3,nAtoms)
-   grad_xc2 = 0E0_realk
+   call ls_dzero(grad_xc2,3*nAtoms)
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast2,D2,grad_xc2,nAtoms)
-   call DAXPY(3*nAtoms,-setting%scheme%exchangeFactor,grad_xc2,1,admm_Kgrad,1)
+   call DAXPY(3*nAtoms,-GGAXfactor,grad_xc2,1,admm_Kgrad,1)
    call mem_dealloc(grad_xc2)
    
 
@@ -5026,31 +5034,26 @@ DO idmat=1,ndrhs
    setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 
    call mem_alloc(grad_XC3,3,nAtoms)
-   grad_XC3(:,:) = 0E0_realk
+   call ls_dzero(grad_XC3,3*nAtoms)
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast,DmatLHS(idmat)%p,grad_XC3,nAtoms)
-   call DAXPY(3*nAtoms,setting%scheme%exchangeFactor,grad_XC3,1,admm_Kgrad,1)
+   call DAXPY(3*nAtoms,GGAXfactor,grad_XC3,1,admm_Kgrad,1)
    call mem_dealloc(grad_XC3)
 
    
    ! set back the default choice for testing the nb. of electrons
    setting%scheme%dft%testNelectrons = testNelectrons
    
-   ! Additional (reorthonormalisation like) projection terms coming from the derivative of the small d2 Density matrix
+   ! Additional (reorthonormalisation like) projection terms coming from the 
+   ! derivative of the small d2 Density matrix
+   ! calculating Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
    call mem_alloc(ADMM_proj,3,nAtoms)
-   ADMM_proj = 0E0_realk
-   call mat_init(zeromat,nbast2,nbast2)
-   call mat_zero(zeromat)
+   call ls_dzero(ADMM_proj,3*nAtoms)
 
-   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,zeromat,DmatLHS(idmat)%p,D2,&
-        &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
+   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,DmatLHS(idmat)%p,D2,&
+        &   nbast2,nbast,nAtoms,GGAXfactor,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) 2 k22(D2)))
    call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
-   call get_ADMM_K_gradient_projection_term(ADMM_proj,zeromat,xc2,DmatLHS(idmat)%p,D2,&
-        &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
-   call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
-
 
    !FREE MEMORY
-   call mat_free(zeromat)
    call mem_dealloc(ADMM_proj)
    call mat_free(k2)
    call mat_free(xc2)
@@ -5060,49 +5063,49 @@ ENDDO !idmat
 call DSCAL(3*nAtoms,0.25_realk,admm_Kgrad,1)
 
 !Restore dft functional to original
-IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%dftfunc,hfweight)
+IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
 
 CONTAINS
-    SUBROUTINE get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,D3,D2,n2,n3,nAtoms,AO2,AO3,GCAO2,GCAO3,setting,lupri,luerr)
+    SUBROUTINE get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,D3,D2,n2,n3,nAtoms,GGAXfactor,&
+      &                                            AO2,AO3,GCAO2,GCAO3,setting,lupri,luerr)
         implicit none
         type(lssetting),intent(inout) :: setting
         real(realk),intent(inout)  :: ADMM_proj(3,nAtoms)
-        type(matrix),intent(in)    :: D3 !level 3 matrix input 
-        type(matrix),intent(in)    :: D2 !level 2 matrix input 
-        type(matrix),intent(in)    :: k2 !level 2 exact exchange matrix (not transformed to level3)
-        type(matrix),intent(in)    :: xc2 !level 2 exchange-corr. matrix (not transformed to level3)
+        type(matrix),intent(in)    :: D3 !Regular density matrix
+        type(matrix),intent(in)    :: D2 !ADMM projected density matrix
+        type(matrix),intent(in)    :: k2 !ADMM exchange matrix k2(d2)
+        type(matrix),intent(in)    :: xc2 !ADMM XC matrix xc2(d2)
         integer,intent(in)         :: nAtoms
         integer,intent(in)         :: n2,n3,lupri,luerr
         integer,intent(in)         :: AO2,AO3
         logical,intent(in)         :: GCAO2,GCAO3
+        real(realk),intent(in)     :: GGAXfactor
         !
         type(matrix),target        :: A22,B32,C22
-        type(matrix)               :: S22,S22inv,S23,T23,tmp32,tmp22
+        type(matrix)               :: S22,S22inv,T23,tmp32,tmp22
         type(matrixp)              :: tmpDFD(1)
         real(realk),pointer        :: reOrtho1(:,:)
         real(realk),pointer        :: reOrtho2(:,:)
         integer :: i,j
         !
         call mat_init(T23,n2,n3)
-        call mat_init(S23,n2,n3)
+        call mat_zero(T23)
         call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
-        ! A22 = 2*k2(d2) - xc2(d2)
+        ! A22 = 2*[ k2(d2) - xc2(d2) ]
         call mat_init(A22,n2,n2)
         call mat_zero(A22)
-        call mat_add(2E0_realk,k2,-setting%scheme%exchangeFactor*2E0_realk, xc2, A22)
+        call mat_add(2E0_realk,k2,-GGAXfactor*2E0_realk, xc2, A22)
 
         ! S22^(-1)
         call mat_init(S22,n2,n2)
         call mat_zero(S22)
         call mat_init(S22inv,n2,n2)       
-        call mat_zero(S22inv)
         call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
         call mat_inv(S22,S22inv)
 
         ! B32 = D33 T32 A22 S22inv
         call mat_init(B32,n3,n2)
         call mat_init(tmp32,n3,n2)
-        call mat_zero(B32)
         call mat_mul(D3 ,T23,'n','t',1E0_realk,0E0_realk,B32)
         call mat_mul(B32,A22,'n','n',1E0_realk,0E0_realk,tmp32)
         call mat_mul(tmp32,S22inv,'n','n',1E0_realk,0E0_realk,B32)
@@ -5110,24 +5113,22 @@ CONTAINS
         ! C22 = D22 A22 S22inv
         call mat_init(C22,n2,n2)
         call mat_init(tmp22,n2,n2)
-        call mat_zero(C22)
-        call mat_zero(tmp22)
         call mat_mul(D2 ,A22,'n','n',1E0_realk,0E0_realk,tmp22)
         call mat_mul(tmp22,S22inv,'n','n',1E0_realk,0E0_realk,C22)
         
         ! 2 correction terms similar in the form to the reorthonormalisation gradient term 
         tmpDFD(1)%p => C22
         call mem_alloc(reOrtho2,3,nAtoms)
-        reOrtho2 = 0E0_realk
+	call ls_dzero(reOrtho2,3*nAtoms)
         call II_get_reorthoNormalization_mixed(reOrtho2,tmpDFD,1,AO2,AO2,GCAO2,GCAO2,setting,&
      &                                         lupri,luerr)
         tmpDFD(1)%p => B32
         call mem_alloc(reOrtho1,3,nAtoms)
-        reOrtho1 = 0E0_realk
+	call ls_dzero(reOrtho1,3*nAtoms)
         call II_get_reorthoNormalization_mixed(reOrtho1,tmpDFD,1,AO3,AO2,GCAO3,GCAO2,setting,&
      &                                         lupri,luerr)
 
-        ADMM_proj = 0E0_realk
+	call ls_dzero(ADMM_proj,3*nAtoms)
         call DAXPY(3*nAtoms, 1E0_realk,reOrtho1,1,ADMM_proj,1)
         call DAXPY(3*nAtoms,-1E0_realk,reOrtho2,1,ADMM_proj,1)
         
@@ -5137,7 +5138,6 @@ CONTAINS
         call mat_free(S22inv)
         call mat_free(S22)
         call mat_free(T23)
-        call mat_free(S23)
         call mat_free(A22)
         call mat_free(B32)
         call mat_free(C22)
@@ -5159,8 +5159,9 @@ CONTAINS
    
    
      CALL mat_init(T23,n2,n3)
+     CALL mat_zero(T23)	
      CALL mat_init(S23,n2,n3)
-   
+
      CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
    
      CALL mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,S23)
@@ -5168,6 +5169,7 @@ CONTAINS
     
      IF (McWeeny) THEN
        CALL mat_init(S22,n2,n3)
+       CALL mat_zero(S22)	
        CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
        CALL McWeeney_purify(S22,D2,purify_failed)
        IF (purify_failed) THEN
@@ -5198,8 +5200,11 @@ CONTAINS
      call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
    ELSE
      CALL mat_init(S22,n2,n2)
+     CALL mat_zero(S22)	
      CALL mat_init(S22inv,n2,n2)
+     CALL mat_zero(S22inv)	
      CALL mat_init(S23,n2,n3)
+     CALL mat_zero(S23)	
      
      CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
      CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)

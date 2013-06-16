@@ -297,9 +297,10 @@ C
       NCHORD = MIN((LWRKX-MINEED)/MINCHO,MXCHRD)
 C
 Casm  Don't read more than 2 Gb (268435456 dw)
+Casm  Fixed with modified crayio2.F
 C
-      MCHRD2 = 268435456 / MINCHO
-      NCHORD = MIN(NCHORD,MCHRD2)
+c     MCHRD2 = 268435456 / MINCHO
+c     NCHORD = MIN(NCHORD,MCHRD2)
 C
       IF (NCHORD .LT. 1) THEN 
          WRITE(LUPRI,*) 'Memory problem. NCHORD :',NCHORD
@@ -313,9 +314,10 @@ C
       MAXSEL = MIN((LWORK-LNEED)/MXNNBS,MAXQUA)
 C
 Casm  Don't read more than 2 Gb (268435456 dw)
+Casm  Fixed with modified crayio2.F
 C
-      MXSEL2 = 268435456 / MXNNBS
-      MAXSEL = MIN(MAXSEL,MXSEL2)
+c     MXSEL2 = 268435456 / MXNNBS
+c     MAXSEL = MIN(MAXSEL,MXSEL2)
 C
       IF (MAXSEL .LT. 1) THEN 
          WRITE(LUPRI,*) 'Memory problem. MAXSEL :',MAXSEL
@@ -551,6 +553,7 @@ C
          IF (IPRINT. GT. 2)
      &       WRITE(LUPRI,'(/,A,15X,A,15X,2(4X,A),6X,A)')
      &                 'ISAB    Iter','Treated','Conv','Neg','Max'
+         call flshfo(lupri)
       END IF
 C
 C     Loop over symmetries in file to decompose.
@@ -590,7 +593,7 @@ C
          END IF
          NVEFIL = MAXLEN / LEMAB
          NCHORD = MIN(NCHORD,NVEFIL)
-         NCHORD = MIN(NCHORD,MCHRD2)
+c        NCHORD = MIN(NCHORD,MCHRD2)
          NCHORD = MIN(NCHORD,MXCHRD)
 C
          LCHO2 = LENAB * NCHORD + NNBST(ISYMAB)
@@ -2335,11 +2338,14 @@ C
             LENAB = NDIM
          END IF
 C
-Casm     Apparently, it is not possible to read more than 2 Gb (268435456 dw)
-C
          NRDMX  = LWRKX / LENAB
-         NRDMX1 = 268435456 / LENAB
-         NRDMX  = MIN(NRDMX,NRDMX1)
+C
+Casm     Apparently, it is not possible to read more than 2 Gb (268435456 dw)
+Casm     Fixed with modified crayio2.F
+C
+c        NRDMX1 = 268435456 / LENAB
+c        NRDMX  = MIN(NRDMX,NRDMX1)
+C
          IF (NRDMX .LT. 1)
      &      CALL QUIT('Allocation failure in CHO_RESTART')
 C
