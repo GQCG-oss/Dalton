@@ -7,11 +7,8 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
 
     implicit none
 
-    intrinsic :: present
-
-    integer, intent(in) :: nnbas, ncomps
     real(dp), dimension(3,1), intent(in) :: coord
-    real(dp), dimension(nnbas,ncomps), intent(out) :: Tk_ints
+    real(dp), dimension(:,:), intent(out) :: Tk_ints
     character(*), intent(in) :: inttype
 
     integer :: num_ao
@@ -23,24 +20,24 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
     logical :: triangular
     logical :: symmetric
     type(one_prop_t) :: prop_operator
-    !N-ary tree for partial geometric derivatives on bra center
+    ! N-ary tree for partial geometric derivatives on bra center
     type(nary_tree_t) :: nary_tree_bra
-    !N-ary tree for partial geometric derivatives on ket center
+    ! N-ary tree for partial geometric derivatives on ket center
     type(nary_tree_t) :: nary_tree_ket
-    !N-ary tree for total geometric derivatives
+    ! N-ary tree for total geometric derivatives
     type(nary_tree_t) :: nary_tree_total
-    !number of partial geometric derivatives on bra center
+    ! number of partial geometric derivatives on bra center
     integer :: num_geo_bra
-    !number of partial geometric derivatives on ket center
+    ! number of partial geometric derivatives on ket center
     integer :: num_geo_ket
-    !number of total geometric derivatives
+    ! number of total geometric derivatives
     integer :: num_geo_total
     type(matrix), dimension(:), allocatable :: intmats
 
-    integer :: nbas
+    integer :: nbas, nnbas, ncomps
     integer :: i, j, k, x, y, z
-    integer, dimension(3,ncomps) :: row2col
     real(dp), dimension(1) :: charge
+    integer, dimension(:,:), allocatable :: row2col
     real(dp), dimension(:,:), allocatable :: temp
 
     ! non-zero components for the operator, the first dimension is for bra and
@@ -48,10 +45,12 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
     ! be 1 for non-relativistic calcualtions
     integer nnz_comp(2,1)
 
+    nnbas = size(Tk_ints, 1)
+    ncomps = size(Tk_ints, 2)
+
     Tk_ints = 0.0d0
 
     k = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * ncomps) - 1.0d0)) - 1
-
     nbas = int(0.5d0 * (sqrt(1.0d0 + 8.0d0 * nnbas) - 1.0d0))
 
     if (mod(k,2) == 0) then
@@ -152,6 +151,9 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
     end select
 
     allocate(intmats(num_prop), stat=ierr)
+    if (ierr /= 0) stop 'Failed to allocate matrices.'
+
+    allocate(row2col(3,ncomps), stat=ierr)
     if (ierr /= 0) stop 'Failed to allocate matrices.'
 
     i = 1
