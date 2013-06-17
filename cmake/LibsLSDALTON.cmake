@@ -1,19 +1,17 @@
 if(ENABLE_SCALASCA)
     set(SCALASCA_INSTRUMENT ${CMAKE_Fortran_COMPILER})
     configure_script(
-        ${CMAKE_SOURCE_DIR}/scalasca.in
-        ${CMAKE_SOURCE_DIR}/scalascaf90.sh
+        ${CMAKE_SOURCE_DIR}/LSDALTON/scalasca.in
+        ${PROJECT_BINARY_DIR}/scalascaf90.sh
         )
     set(SCALASCA_INSTRUMENT ${CMAKE_C_COMPILER})
     configure_script(
-        ${CMAKE_SOURCE_DIR}/scalasca.in
-        ${CMAKE_SOURCE_DIR}/scalascaCC.sh
+        ${CMAKE_SOURCE_DIR}/LSDALTON/scalasca.in
+        ${PROJECT_BINARY_DIR}/scalascaCC.sh
         )
     unset(SCALASCA_INSTRUMENT)
-    SET(CMAKE_Fortran_COMPILER "../scalascaf90.sh")
-    SET(CMAKE_C_COMPILER "../scalascaCC.sh")
-    MESSAGE(STATUS "Fortran Compiler " ${CMAKE_Fortran_COMPILER})
-    MESSAGE(STATUS "C Compiler       " ${CMAKE_C_COMPILER})
+    SET(CMAKE_Fortran_COMPILER "${PROJECT_BINARY_DIR}/scalascaf90.sh")
+    SET(CMAKE_C_COMPILER "${PROJECT_BINARY_DIR}/scalascaCC.sh")
 endif()
 
 add_library(
