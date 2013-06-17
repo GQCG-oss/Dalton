@@ -41,13 +41,6 @@ fi
 #########################################################################
 # define all the different test suites
 #########################################################################
-ESSENTIAL=""
-#
-GEN1INT="gen1int_fluorobenzene_cart gen1int_water_cart gen1int_fluorobenzene_spher \
-gen1int_water_spher"
-SHORT_ENERGY="energy_direct energy_direct_eri energy_douglaskroll energy_nosymm energy_restart energy_restart_scf \
-energy_symm energy_zmat energy_nevpt2_gs energy_nevpt2_ex energy_hsrohf energy_hsrohf_qc \
-energy_lucita_gasci energy_stex"
 SHORTDFT="dft_hcth120 dft_camb3lyp dft_pbe dft_open_b3lyp dft_qr_sym dft_rspexci_sym dft_rspexci_nosym \
 tddft_tda"
 SHORTGOPT="geoopt_cartsad geoopt_cartsad2 geoopt_constrain1a \
@@ -74,7 +67,7 @@ SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibav
 SHORTREST="r12_sym dpt_h2s"
 LOCAL="spin_local"
 AOSOPPA="prop_exci_ao prop_exci_aorpa prop_exci_aorpad prop_exci_aosoppa prop_exci_aosoppcc"
-SHORTNOCC="$SHORT_ENERGY $SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST $AOSOPPA $LOCAL"
+SHORTNOCC="$SHORTDFT $SHORTGOPT $SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST $AOSOPPA $LOCAL"
 SHORTQM3="hfmm_1 cc2mm_spc_fop \
 dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6 dftmm_7 dftmm_8 dftmm_9 \
 qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8 hfmmpcm_1"
@@ -107,7 +100,7 @@ choles_hf_magnet choles_kt3_ctocd choles_lda_prop choact_mp2_energy"
 SHORTPEQM="pehf_small_iter pehf_small_direct pehf_small_gspol \
 pehf_small_alpha pehf_small_1pa pehf_small_beta pehf_small_2pa"
 #
-SHORT="$GEN1INT $SHORTNOCC $SHORTCC $SHORT_CHOLESKY $SHORTPEQM $SHORTQM3"
+SHORT="$SHORTNOCC $SHORTCC $SHORT_CHOLESKY $SHORTPEQM $SHORTQM3"
 #
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
@@ -220,8 +213,6 @@ run_new=0;
 # function usage(): print usage information 
 #########################################################################
 usage() {
-# hjaaj: removed essential from usage because essential p.t. is empty
-#         essential            -- run a minimal set of essential testcases
  cat <<%EOF%
 Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
             [-param "option list"] [-dalton script] [-log logfile] testcase
@@ -367,14 +358,6 @@ perl_style=0
 all_perl_style=0
 while [ -n "$1" ]; do
    case $1 in
-  "essential" )
-   testcase="$testcase $ESSENTIAL"; 
-   perl_style_kwd="$perl_style_kwd $1";
-   shift ;;
-  "energy" )
-   testcase="$testcase $SHORT_ENERGY"; 
-   perl_style_kwd="$perl_style_kwd $1";
-   shift ;;
   "pcm" )
    perl_style_kwd="$perl_style_kwd $1";
    shift ;;
