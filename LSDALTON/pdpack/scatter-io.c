@@ -18,7 +18,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "../dft/general.h"
+#include "../dft/lsdalton_general.h"
 
 /* definition below must match the types used by the fortran
  * compilers.  There is usually no problem if you use same defaults

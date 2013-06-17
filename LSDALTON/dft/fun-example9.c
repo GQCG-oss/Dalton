@@ -78,7 +78,7 @@ C
 #include <stddef.h>
 #define __CVERSION__
 
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 
 /* INTERFACE PART */
 static integer example9_isgga(void) { return 1; }
