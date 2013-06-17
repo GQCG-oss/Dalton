@@ -328,6 +328,7 @@ Cholesky
 #include "choscf.h"
 C
 #include "center.h"
+#include "nuclei.h"
 C
 Cholesky
 C
