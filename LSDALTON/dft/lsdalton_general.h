@@ -1,5 +1,5 @@
 /*-*-mode: C; c-indentation-style: "bsd"; c-basic-offset: 4; -*-*/
-/* general.h: general definitions needed by C code:
+/* lsdalton_general.h: general definitions needed by C code:
    function prototypes, often used constants, etc.
 
    (c) Pawel Salek, pawsa@theochem.kth.se, feb 2002
@@ -29,7 +29,7 @@ typedef int integer; */
 #define __CVERSION__
 #endif
 
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 
 /* Match Fortran name mangling. If the Fortran compiler does not
  * mangle names, define FUNDERSCORE=0 in CFLAGS.  g77 and compaq fort

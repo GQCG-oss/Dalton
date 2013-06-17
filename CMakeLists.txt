@@ -14,11 +14,11 @@ set(CMAKE_SKIP_RULE_DEPENDENCY TRUE)
 # module files that end with .cmake
 set(CMAKE_MODULE_PATH
     ${CMAKE_MODULE_PATH}
-    ${CMAKE_SOURCE_DIR}/../cmake/binary-info
-    ${CMAKE_SOURCE_DIR}/../cmake/compilers
-    ${CMAKE_SOURCE_DIR}/../cmake/math
-    ${CMAKE_SOURCE_DIR}/../cmake/mpi
-    ${CMAKE_SOURCE_DIR}/../cmake
+    ${CMAKE_SOURCE_DIR}/cmake/binary-info
+    ${CMAKE_SOURCE_DIR}/cmake/compilers
+    ${CMAKE_SOURCE_DIR}/cmake/math
+    ${CMAKE_SOURCE_DIR}/cmake/mpi
+    ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_BINARY_DIR}
     )
 
@@ -58,10 +58,17 @@ include(ConfigSafeGuards)
 include(ConfigTesting)
 include(GenericMacros)
 include(BinaryInfo)
+include(mergestaticlibs)
+
+# set code coverage
+if(ENABLE_CODE_COVERAGE)
+    set(LIBS ${LIBS} gcov)
+endif()
 
 include_directories(
-    ${PROJECT_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/dft
+    ${PROJECT_SOURCE_DIR}/DALTON/include
+    ${PROJECT_SOURCE_DIR}/DALTON/dft
+    ${PROJECT_SOURCE_DIR}/LSDALTON/dft
     ${CMAKE_Fortran_MODULE_DIRECTORY}
     )
 
@@ -85,13 +92,13 @@ endif()
 # configure INSTALL_WRKMEM and INSTALL_MMWORK
 include(ConfigWORKMEM)
 
-if(ENABLE_GEN1INT)
-    add_subdirectory(gen1int)
-endif()
-
 configure_script(
-    ${CMAKE_SOURCE_DIR}/dalton.in
+    ${CMAKE_SOURCE_DIR}/DALTON/dalton.in
     ${CMAKE_BINARY_DIR}/dalton
+    )
+configure_script(
+    ${CMAKE_SOURCE_DIR}/LSDALTON/lsdalton.in
+    ${CMAKE_BINARY_DIR}/lsdalton
     )
 
 # if BLAS and/or LAPACK not found, add own sources to the list of
@@ -101,11 +108,19 @@ if(USE_OWN_BLAS)
         ${DALTON_FIXED_FORTRAN_SOURCES}
         ${DALTON_OWN_BLAS_SOURCES}
         )
+    set(LSDALTON_FIXED_FORTRAN_SOURCES
+        ${LSDALTON_FIXED_FORTRAN_SOURCES}
+        ${LSDALTON_OWN_BLAS_SOURCES}
+        )
 endif()
 if(USE_OWN_LAPACK)
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
         ${DALTON_OWN_LAPACK_SOURCES}
+        )
+    set(LSDALTON_FIXED_FORTRAN_SOURCES
+        ${LSDALTON_FIXED_FORTRAN_SOURCES}
+        ${LSDALTON_OWN_LAPACK_SOURCES}
         )
 endif()
 
@@ -115,52 +130,17 @@ set(GENERATED_FILES
     )
 
 # always invalidate generated files
-add_custom_target(dalton_interfaces
+add_custom_target(generated_files
     ALL
     DEPENDS
     ${GENERATED_FILES}
 )
 
-set(DALTON_SOURCES
-    ${DALTON_C_SOURCES}
-    ${DALTON_FREE_FORTRAN_SOURCES}
-    ${DALTON_FIXED_FORTRAN_SOURCES}
-    )
-
-add_library(
-    dalton
-    ${DALTON_SOURCES}
-    ${GENERATED_FILES}
-    )
-
-if(ENABLE_GEN1INT)
-    add_dependencies(dalton gen1int_interface)
-    set(LIBS
-        gen1int_interface
-        ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
-        ${LIBS}
-        )
-endif()
-
-add_executable(
-    dalton.x
-    ${CMAKE_SOURCE_DIR}/abacus/dalton.F
-    )
-
-# compile Peter's utilities
-add_executable(aces2dalton ${CMAKE_SOURCE_DIR}/tools/aces2dalton.f90 ${CMAKE_SOURCE_DIR}/tools/blocks.f90)
-add_executable(xyz2dalton  ${CMAKE_SOURCE_DIR}/tools/xyz2dalton.f90  ${CMAKE_SOURCE_DIR}/tools/blocks.f90)
-add_executable(distances   ${CMAKE_SOURCE_DIR}/tools/distances.f90   ${CMAKE_SOURCE_DIR}/tools/blocks.f90)
-
-set_property(TARGET dalton.x PROPERTY LINKER_LANGUAGE Fortran)
-target_link_libraries(
-    dalton.x
-    dalton
-    ${LIBS}
-    )
+include(LibsDALTON)
+include(LibsLSDALTON)
 
 # copy basis/ to build directory
-execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/../basis ${CMAKE_BINARY_DIR})
+execute_process(COMMAND cp -r ${CMAKE_SOURCE_DIR}/basis ${CMAKE_BINARY_DIR})
 
 # this controlls "make install" target
 include(ConfigMakeInstall)

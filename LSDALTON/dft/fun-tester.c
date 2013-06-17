@@ -53,8 +53,8 @@ C
 #include <stdlib.h>
 #include <string.h>
 
-#include "general.h"
-#include "functionals.h"
+#include "lsdalton_general.h"
+#include "lsdalton_functionals.h"
 
 #if !defined __inline__
 /* inline some stuff whenever possible */

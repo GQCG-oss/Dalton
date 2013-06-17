@@ -1,775 +1,775 @@
 set(DALTON_C_SOURCES
-cc/crayio.c
-dft/basisinfo.c
-dft/cube-fast.c
-dft/dft_dftd.F
-dft/eval-dso.c
-dft/fun-b86.c
-dft/fun-b86mx.c
-dft/fun-b97-1.c
-dft/fun-b97-2.c
-dft/fun-b97-3.c
-dft/fun-b97-d.c
-dft/fun-b97-k.c
-dft/fun-b97.c
-dft/fun-becke.c
-dft/fun-becke35.c
-dft/fun-cam-b3lyp.c
-dft/fun-dk87x.c
-dft/fun-example.c
-dft/fun-example2.c
-dft/fun-example3.c
-dft/fun-example4.c
-dft/fun-example5.c
-dft/fun-example6.c
-dft/fun-example7.c
-dft/fun-example8.c
-dft/fun-example9.c
-dft/fun-1-4.c
-dft/fun-g96.c
-dft/fun-gga.c
-dft/fun-hcth120.c
-dft/fun-hcth147.c
-dft/fun-hcth407.c
-dft/fun-hcth407p.c
-dft/fun-hcth93.c
-dft/fun-hcth93m.c
-dft/fun-kt.c
-dft/fun-lb94.c
-dft/fun-lg93.c
-dft/fun-lrc95x.c
-dft/fun-lyp.c
-dft/fun-lypr.c
-dft/fun-mpbex.c
-dft/fun-mpwx.c
-dft/fun-optx.c
-dft/fun-p86c.c
-dft/fun-pbec.c
-dft/fun-pbex.c
-dft/fun-pw86x.c
-dft/fun-pw91c.c
-dft/fun-pw91nc.c
-dft/fun-pw91x.c
-dft/fun-pw91x2.c
-dft/fun-pw92ac.c
-dft/fun-pw92c.c
-dft/fun-pz81.c
-dft/fun-rcam-b3lyp.c
-dft/fun-revpbex.c
-dft/fun-rpbex.c
-dft/fun-slater.c
-dft/fun-vwn.c
-dft/fun-wignerc.c
-dft/fun-wl90c.c
-dft/functionals.c
-dft/gen-so-int.c
-dft/general.c
-dft/grid-gen.c
-dft/grid-gen2.c
-dft/integrator.c
-dft/prop-eval.c
-dft/quad-fast.c
-dft/quad-faster.c
-dft/quad-open.c
-dft/quad-strict.c
-pdpack/scatter-io.c
+    DALTON/cc/crayio.c
+    DALTON/dft/basisinfo.c
+    DALTON/dft/cube-fast.c
+    DALTON/dft/dft_dftd.F
+    DALTON/dft/eval-dso.c
+    DALTON/dft/fun-b86.c
+    DALTON/dft/fun-b86mx.c
+    DALTON/dft/fun-b97-1.c
+    DALTON/dft/fun-b97-2.c
+    DALTON/dft/fun-b97-3.c
+    DALTON/dft/fun-b97-d.c
+    DALTON/dft/fun-b97-k.c
+    DALTON/dft/fun-b97.c
+    DALTON/dft/fun-becke.c
+    DALTON/dft/fun-becke35.c
+    DALTON/dft/fun-cam-b3lyp.c
+    DALTON/dft/fun-dk87x.c
+    DALTON/dft/fun-example.c
+    DALTON/dft/fun-example2.c
+    DALTON/dft/fun-example3.c
+    DALTON/dft/fun-example4.c
+    DALTON/dft/fun-example5.c
+    DALTON/dft/fun-example6.c
+    DALTON/dft/fun-example7.c
+    DALTON/dft/fun-example8.c
+    DALTON/dft/fun-example9.c
+    DALTON/dft/fun-1-4.c
+    DALTON/dft/fun-g96.c
+    DALTON/dft/fun-gga.c
+    DALTON/dft/fun-hcth120.c
+    DALTON/dft/fun-hcth147.c
+    DALTON/dft/fun-hcth407.c
+    DALTON/dft/fun-hcth407p.c
+    DALTON/dft/fun-hcth93.c
+    DALTON/dft/fun-hcth93m.c
+    DALTON/dft/fun-kt.c
+    DALTON/dft/fun-lb94.c
+    DALTON/dft/fun-lg93.c
+    DALTON/dft/fun-lrc95x.c
+    DALTON/dft/fun-lyp.c
+    DALTON/dft/fun-lypr.c
+    DALTON/dft/fun-mpbex.c
+    DALTON/dft/fun-mpwx.c
+    DALTON/dft/fun-optx.c
+    DALTON/dft/fun-p86c.c
+    DALTON/dft/fun-pbec.c
+    DALTON/dft/fun-pbex.c
+    DALTON/dft/fun-pw86x.c
+    DALTON/dft/fun-pw91c.c
+    DALTON/dft/fun-pw91nc.c
+    DALTON/dft/fun-pw91x.c
+    DALTON/dft/fun-pw91x2.c
+    DALTON/dft/fun-pw92ac.c
+    DALTON/dft/fun-pw92c.c
+    DALTON/dft/fun-pz81.c
+    DALTON/dft/fun-rcam-b3lyp.c
+    DALTON/dft/fun-revpbex.c
+    DALTON/dft/fun-rpbex.c
+    DALTON/dft/fun-slater.c
+    DALTON/dft/fun-vwn.c
+    DALTON/dft/fun-wignerc.c
+    DALTON/dft/fun-wl90c.c
+    DALTON/dft/functionals.c
+    DALTON/dft/gen-so-int.c
+    DALTON/dft/general.c
+    DALTON/dft/grid-gen.c
+    DALTON/dft/grid-gen2.c
+    DALTON/dft/integrator.c
+    DALTON/dft/prop-eval.c
+    DALTON/dft/quad-fast.c
+    DALTON/dft/quad-faster.c
+    DALTON/dft/quad-open.c
+    DALTON/dft/quad-strict.c
+    DALTON/pdpack/scatter-io.c
     )
 set(DALTON_FIXED_FORTRAN_SOURCES
-abacus/aba2eth.F
-abacus/aba2r12.F
-abacus/aba2tex.F
-abacus/abaaat.F
-abacus/abactocd.F
-abacus/abadip.F
-abacus/abadrv.F
-abacus/abadtra.F
-abacus/abaedrv.F
-abacus/abaenr.F
-abacus/abaesym.F
-abacus/abaexc.F
-abacus/abaflt.F
-abacus/abafmm.F
-abacus/abafsd.F
-abacus/abalnr.F
-abacus/abaloc.F
-abacus/abalrs.F
-abacus/abaltra.F
-abacus/abamag.F
-abacus/abamolden.F
-abacus/abander.F
-abacus/abandsym.F
-abacus/abanuc.F
-abacus/abanvib.F
-abacus/abaop2.F
-abacus/abaopg.F
-abacus/abaopt.F
-abacus/abaort.F
-abacus/abapcm.F
-abacus/abaptr.F
-abacus/abaqm3.F
-abacus/abaqmmm.F
-abacus/abaqpg.F
-abacus/abaqr.F
-abacus/abarhs.F
-abacus/abarint.F
-abacus/abarlx.F
-abacus/abarspn.F
-abacus/abaset.F
-abacus/abasop.F
-abacus/abasos.F
-abacus/abatro.F
-abacus/abavib.F
-abacus/abavrml.F
-abacus/abawalk.F
-abacus/dalgnr.F
-abacus/eckart.F
-abacus/ecp.F
-abacus/her1ave.F
-abacus/her1car.F
-abacus/her1drv.F
-abacus/her1int.F
-abacus/her1odc.F
-abacus/her1out.F
-abacus/her1pro.F
-abacus/her1sym.F
-abacus/her2ave.F
-abacus/her2dir.F
-abacus/her2drv.F
-abacus/her2el1.F
-abacus/her2el2.F
-abacus/her2fck.F
-abacus/her2gab.F
-abacus/her2her.F
-abacus/her2odc.F
-abacus/her2out.F
-abacus/her2sup.F
-abacus/her2sym.F
-abacus/herbas.F
-abacus/herdirect.F
-abacus/herdkh.F
-abacus/herdrv.F
-abacus/herfckcon.F
-abacus/hergam.F
-abacus/hergeo.F
-abacus/hergp.F
-abacus/hergroup.F
-abacus/herpar.F
-abacus/herqm3.F
-abacus/herrdn.F
-abacus/hersol.F
-abacus/hersym.F
-abacus/hertst.F
-abacus/huckel.F
-abacus/abalresc.F
-abacus/linearlr.F
-abacus/average.F
-abacus/angpso.F
-abacus/angkin.F
-amfi/amfi.F
-amfi/symtra.F
-cc/asqr.F
-cc/cc2_refop.F
-cc/cc3_aabmat_doub.F
-cc/cc3_aamat.F
-cc/cc3_aden.F
-cc/cc3_aden_cub.F
-cc/cc3_aden_cub_t0.F
-cc/cc3_bfmat.F
-cc/cc3_bmatsd.F
-cc/cc3_etasd.F
-cc/cc3_fbmatt3zu.F
-cc/cc3_fmat.F
-cc/cc3_fmatsd.F
-cc/cc3_ft3b.F
-cc/cc3_gmat.F
-cc/cc3_gmatnew.F
-cc/cc3_hmat.F
-cc/cc3_init.F
-cc/cc3_lhtr.F
-cc/cc3_omeg.F
-cc/cc3_omeg3.F
-cc/cc3_t3int.F
-cc/cc3_t3int3.F
-cc/cc3_xi_cont.F
-cc/cc3_xisd.F
-cc/cc_1idx_d2eff.F
-cc/cc_1idxtran.F
-cc/cc_21i2.F
-cc/cc_21i3.F
-cc/cc_2eexp_1.F
-cc/cc_2eexp_2.F
-cc/cc_2hyp.F
-cc/cc_3hyp.F
-cc/cc_4hyp.F
-cc/cc_aamat.F
-cc/cc_aodens3.F
-cc/cc_aofock2.F
-cc/cc_bamat.F
-cc/cc_bfbsort1.F
-cc/cc_bfden.F
-cc/cc_bfif1.F
-cc/cc_bmat.F
-cc/cc_cauchy.F
-cc/cc_cmat.F
-cc/cc_cphf.F
-cc/cc_d1ao.F
-cc/cc_den.F
-cc/cc_den2_pt.F
-cc/cc_den_pt2.F
-cc/cc_den_rccd.F
-cc/cc_dhfao.F
-cc/cc_dmat.F
-cc/cc_drv.F
-cc/cc_e1aim.F
-cc/cc_e21con.F
-cc/cc_e22con.F
-cc/cc_effckmo.F
-cc/cc_etadrv.F
-cc/cc_etadrv1.F
-cc/cc_exci.F
-cc/cc_exgr.F
-cc/cc_f1inact.F
-cc/cc_famat.F
-cc/cc_fbta.F
-cc/cc_fckdela.F
-cc/cc_fckrlx1.F
-cc/cc_fdaa.F
-cc/cc_fdba.F
-cc/cc_fdc.F
-cc/cc_fdd.F
-cc/cc_fdfb.F
-cc/cc_fmat.F
-cc/cc_fmattst.F
-cc/cc_fop.F
-cc/cc_foppt.F
-cc/cc_foppt_sc.F
-cc/cc_fropro.F
-cc/cc_ftst.F
-cc/cc_ftstnew.F
-cc/cc_get_lambda1.F
-cc/cc_get_rmat.F
-cc/cc_getgd.F
-cc/cc_getgp.F
-cc/cc_gim1.F
-cc/cc_gmat.F
-cc/cc_grad.F
-cc/cc_grad0.F
-cc/cc_grad2.F
-cc/cc_grad2e.F
-cc/cc_grad_1.F
-cc/cc_gradient.F
-cc/cc_hfr1den.F
-cc/cc_hmat.F
-cc/cc_hpqta.F
-cc/cc_hyppol.F
-cc/cc_iajb.F
-cc/cc_ijcb.F
-cc/cc_int3o2.F
-cc/cc_int4o.F
-cc/cc_jmat.F
-cc/cc_kmat.F
-cc/cc_lambdaq.F
-cc/cc_lammats.F
-cc/cc_lamtra.F
-cc/cc_landf.F
-cc/cc_landf2.F
-cc/cc_landf3.F
-cc/cc_lhtr.F
-cc/cc_lhtr_noddy.F
-cc/cc_lhtr_rccd.F
-cc/cc_lr.F
-cc/cc_maomao.F
-cc/cc_mcdny.F
-cc/cc_mkrv.F
-cc/cc_mmommo.F
-cc/cc_mofcon2.F
-cc/cc_mofconr12.F
-cc/cc_nuccon.F
-cc/cc_opa.F
-cc/cc_omega2_rccd.F
-cc/cc_pckutil.F
-cc/cc_pqi.F
-cc/cc_qaos.F
-cc/cc_qm3.F
-cc/cc_qmat.F
-cc/cc_qmmm.F
-cc/cc_qr2rs.F
-cc/cc_r12.F
-cc/cc_r12a2.F
-cc/cc_r12batf.F
-cc/cc_r12ccsd.F
-cc/cc_r12mkvamkl.F
-cc/cc_r12mkxajkl.F
-cc/cc_r12mkxajklfr.F
-cc/cc_r12no.F
-cc/cc_r12rdpck.F
-cc/cc_r12vunpack.F
-cc/cc_r12xieta.F
-cc/cc_r12xprep.F
-cc/cc_rdaod.F
-cc/cc_rdrsp.F
-cc/cc_rhtr.F
-cc/cc_rhtr3.F
-cc/cc_rhtr_noddy.F
-cc/cc_setdorps.F
-cc/cc_setfa.F
-cc/cc_setfb12.F
-cc/cc_setk11.F
-cc/cc_setxe.F
-cc/cc_slv.F
-cc/cc_soldrv.F
-cc/cc_solrsp.F
-cc/cc_sop.F
-cc/cc_sort4o.F
-cc/cc_sortz2.F
-cc/cc_tmcal.F
-cc/cc_tpa.F
-cc/cc_trdrv.F
-cc/cc_util.F
-cc/cc_wrrsp.F
-cc/cc_xetst.F
-cc/cc_xieta.F
-cc/cc_xopa.F
-cc/cc_zkjam.F
-cc/cccr_aa.F
-cc/cccr_setup.F
-cc/cccr_util.F
-cc/ccder1.F
-cc/ccdiis_solv.F
-cc/cceq_solv.F
-cc/ccetacor.F
-cc/ccexlr.F
-cc/ccexnorm.F
-cc/ccexpfck.F
-cc/ccfbint1.F
-cc/ccfbint2.F
-cc/ccfbtaao1.F
-cc/ccfbtaao2.F
-cc/ccfbtaf.F
-cc/ccfndop.F
-cc/cckappasq.F
-cc/cclhtr_r12.F
-cc/cclr_fa.F
-cc/cclr_setup.F
-cc/cclr_util.F
-cc/cclt_yps1.F
-cc/ccmcd_setup.F
-cc/ccpt_btrden.F
-cc/ccpt_den.F
-cc/ccpt_eta.F
-cc/ccpt_fropro.F
-cc/ccpt_grad0.F
-cc/ccpt_resort_den.F
-cc/ccpt_symmback.F
-cc/ccqr_setup.F
-cc/ccreo2con.F
-cc/ccrhs_ipm1.F
-cc/ccrhsvec.F
-cc/ccrlxxim.F
-cc/ccrspsym.F
-cc/ccsd_diis.F
-cc/ccsd_energy.F
-cc/ccsd_input.F
-cc/ccsd_rhs.F
-cc/ccsd_rhs3.F
-cc/ccsd_rou3.F
-cc/ccsd_sortao.F
-cc/ccsd_triple.F
-cc/ccsdr12ao.F
-cc/ccsdr12cd.F
-cc/ccsdr12oxr.F
-cc/ccsdt_aa_noddy.F
-cc/ccsdt_aden_noddy.F
-cc/ccsdt_b_noddy.F
-cc/ccsdt_ba_noddy.F
-cc/ccsdt_eta_cont.F
-cc/ccsdt_eta_noddy.F
-cc/ccsdt_f_noddy.F
-cc/ccsdt_fbmat.F
-cc/ccsdt_ints_noddy.F
-cc/ccsdt_o32_noddy.F
-cc/ccsdt_t32_noddy.F
-cc/ccsdt_xi_noddy.F
-cc/ccsoppa.F
-cc/cctrbt1.F
-cc/cctrbt2.F
-cc/ccximcon.F
-cc/crayio2.F
-cc/herdirect_cc.F
-cc/iroper2.F
-cc/cc_lanczos_lrinp.F
-cc/cc_lanczos_drv.F
-cc/cc_lanczos_lrextras.F
-cc/rpa_grad.F
-cc/cc_active.F
-choles/cc_caa.F
-choles/cc_choatr.F
-choles/cc_chocc2.F
-choles/cc_chodbg.F
-choles/cc_chofop.F
-choles/cc_choftr.F
-choles/cc_chogd.F
-choles/cc_choio.F
-choles/cc_cholesky.F
-choles/cc_cholrim.F
-choles/cc_chomp2.F
-choles/cc_chopden.F
-choles/cc_chopt.F
-choles/cc_chopt_dbg.F
-choles/cc_cia.F
-choles/cc_ciadbg.F
-choles/cc_cyi.F
-choles/cc_cyidbg.F
-choles/cc_decmo.F
-choles/cc_rdrspd.F
-choles/cc_rmrsp.F
-choles/cc_wrrspd.F
-choles/nocc_util.F
-densfit/denfit_noddy.F
-densfit/df_dirac.F
-densfit/dposv.F
-dft/dft_aos.F
-dft/dft_ac.F 
-dft/dft_aux.F
-dft/dft_den.F
-dft/dft_exp.F
-dft/dft_grad.F
-dft/dft_grid.F
-dft/dft_gridLL.F
-dft/dft_hes.F
-dft/dft_inp.F
-dft/dft_int.F
-dft/dft_ksm.F
-dft/dft_mag.F
-dft/dft_mos.F
-dft/dft_rho.F
-dft/dso_cb.F
-eri/eri2aob.F
-eri/eri2ave.F
-eri/eri2car1.F
-eri/eri2car2.F
-eri/eri2cft.F
-eri/eri2csi.F
-eri/eri2dis.F
-eri/eri2drv.F
-eri/eri2fck.F
-eri/eri2her.F
-eri/eri2odb.F
-eri/eri2out.F
-eri/eri2par.F
-eri/eri2pro.F
-eri/eri2r12.F
-eri/eri2sph.F
-eri/eri2sym.F
-eri/eri2vec.F
-eri/erisph.F
-gp/gpdahle.F
-gp/gphjj.F
-gp/gpjeppe.F
-gp/gpjkp.F
-gp/gpjt.F
-gp/gplucia.F
-gp/gplucia_io.F
-gp/gplupar.F
-gp/gpsaue.F
-gp/gpsimen.F
-gp/gptrygve.F
-gp/graphic.F
-gp/intf7790.F
-gp/mempkg.F
-gp/mpimacro.F
-gp/pvmmacro.F
-gp/qpack.F
-gp/vcraypack.F
-lucita/ciinfo.F
-lucita/dalton_interface.F
-lucita/density.F
-lucita/diagonal.F
-lucita/diagonalize.F
-lucita/fock.F
-lucita/io.F
-lucita/memory.F
-lucita/par_lucia.F
-lucita/par_solver.F
-lucita/program.F
-lucita/property.F
-lucita/sigma.F
-lucita/strings.F
-lucita/transform.F
-lucita/utils.F
-lucita/vecmat.F
-pdpack/arhpack.F
-pdpack/eispack.F
-pdpack/jacobi.F
-pdpack/linextra.F
-pdpack/linpack.F
-pdpack/printpkg.F
-peqm/pe_dalton_wrappers.F
-rsp/absorp.F
-rsp/abscomplex.F
-rsp/complexpp.F
-rsp/gpcpp.F
-rsp/deq27.F
-rsp/expone.F
-rsp/fone.F
-rsp/hypinp.F
-rsp/lagrang.F
-rsp/mcdrsp.F
-rsp/qfock.F
-rsp/qrhso.F
-rsp/rspave.F
-rsp/rspc8.F
-rsp/rspc82.F
-rsp/rspchannel.F
-rsp/rspcr1.F
-rsp/rspcr2.F
-rsp/rspcr3.F
-rsp/rspcr4.F
-rsp/rspcr5.F
-rsp/rspcr6.F
-rsp/rspcr7.F
-rsp/rspcr8.F
-rsp/rspcr9.F
-rsp/rspdm.F
-rsp/rspe2c.F
-rsp/rspesg.F
-rsp/rspesg_gp.F
-rsp/rspesg_lag.F
-rsp/rspfxd.F
-rsp/rspg.F
-rsp/rsphfc.F
-rsp/rsphso.F
-rsp/rspief.F
-rsp/rspief1.F
-rsp/rspief2.F
-rsp/rspmai.F
-rsp/rspmc1.F
-rsp/rspmc2.F
-rsp/rspmc3.F
-rsp/rspoit.F
-rsp/rspoli.F
-rsp/rsporp.F
-rsp/rspprp.F
-rsp/rspqm3.F
-rsp/rspqmmm.F
-rsp/rspqrx3.F
-rsp/rspsol.F
-rsp/rspsol1.F
-rsp/rspsol2.F
-rsp/rspsoppa.F
-rsp/rsptmo1.F
-rsp/rsptmo2.F
-rsp/rsptmo3.F
-rsp/rsptmo4.F
-rsp/rsptpa1.F
-rsp/rsptpa2.F
-rsp/rsptpa3.F
-rsp/rspvec.F
-rsp/rspzfs.F
-rsp/x2expl.F
-sirius/ciham.F
-sirius/cioff.F
-sirius/cisig.F
-sirius/csfstuff.F
-sirius/dalcip.F
-sirius/dens.F
-sirius/detfi.F
-sirius/detpr.F
-sirius/dets0.F
-sirius/dets1.F
-sirius/drcctl.F
-sirius/dypc.F
-sirius/getcix.F
-sirius/getint.F
-sirius/intsort.F
-sirius/koopro4.F
-sirius/newtrahso.F
-sirius/r12aux.F
-sirius/siraba.F
-sirius/sirave.F
-sirius/sircan.F
-sirius/sircav.F
-sirius/sirci.F
-sirius/sircmo.F
-sirius/sirctl.F
-sirius/sirdiis.F
-sirius/sirfck.F
-sirius/sirgp.F
-sirius/sirgrad.F
-sirius/sirief.F
-sirius/sirinp.F
-sirius/sirlintrn.F
-sirius/sirloc.F
-sirius/sirlocsel.F
-sirius/sirmp2.F
-sirius/sirneo.F
-sirius/sirnexkap.F
-sirius/sirnr.F
-sirius/sirntra.F
-sirius/siropt.F
-sirius/sirorb.F
-sirius/sirout.F
-sirius/sir_mep.F
-sirius/sirpcm.F
-sirius/sirpcmder.F
-sirius/sirpop.F
-sirius/sirqm3.F
-sirius/sirqmmm.F
-sirius/sirsav.F
-sirius/sirscat.F
-sirius/sirset.F
-sirius/sirsol.F
-sirius/sirsolpcm.F
-sirius/sirstex.F
-sirius/sirtest.F
-sirius/sirtr1.F
-sirius/sirtra.F
-sirius/sirupd.F
-sirius/symchk.F
-soppa/ccsd_tcmepkx.F
-soppa/dc_calc.F
-soppa/dc_eres.F
-soppa/dc_r1vec.F
-soppa/dc_res_o.F
-soppa/dc_rsplex.F
-soppa/dc_sres.F
-soppa/rp_anal.F
-soppa/rp_charge.F
-soppa/rp_check.F
-soppa/rp_diag.F
-soppa/rp_eres.F
-soppa/rp_getgp.F
-soppa/rp_incred.F
-soppa/rp_init.F
-soppa/rp_lrsolv.F
-soppa/rp_newtrial.F
-soppa/rp_optvec.F
-soppa/rp_orth_trn.F
-soppa/rp_redev.F
-soppa/rp_res_o.F
-soppa/rp_residual.F
-soppa/rp_rsplex.F
-soppa/rp_sres.F
-soppa/rp_trial1.F
-soppa/rp_trial2.F
-soppa/rp_trmom.F
-soppa/so_anal.F
-soppa/so_aodens.F
-soppa/so_bcktr.F
-soppa/so_bextract.F
-soppa/so_check.F
-soppa/so_close.F
-soppa/so_collect_tm.F
-soppa/so_dens.F
-soppa/so_densai1.F
-soppa/so_densai2.F
-soppa/so_diag.F
-soppa/so_ediag1.F
-soppa/so_ediag2.F
-soppa/so_eres.F
-soppa/so_excit1.F
-soppa/so_excout.F
-soppa/so_firgp.F
-soppa/so_fndpos.F
-soppa/so_getgp.F
-soppa/so_getmo.F
-soppa/so_gett2.F
-soppa/so_incred.F
-soppa/so_init.F
-soppa/so_initial.F
-soppa/so_intrp.F
-soppa/so_lrsolv.F
-soppa/so_memmax.F
-soppa/so_moenergy.F
-soppa/so_newtrial.F
-soppa/so_onefock.F
-soppa/so_onep.F
-soppa/so_onepmo.F
-soppa/so_open.F
-soppa/so_optvec.F
-soppa/so_ordeig.F
-soppa/so_orth_trn.F
-soppa/so_prpint.F
-soppa/so_read.F
-soppa/so_readset.F
-soppa/so_redev.F
-soppa/so_res_a.F
-soppa/so_res_b.F
-soppa/so_res_c.F
-soppa/so_res_cb.F
-soppa/so_res_cd.F
-soppa/so_res_cp.F
-soppa/so_res_fck.F
-soppa/so_res_o.F
-soppa/so_res_ovl.F
-soppa/so_res_ovlr.F
-soppa/so_res_sym.F
-soppa/so_res_tcb.F
-soppa/so_residual.F
-soppa/so_ropt.F
-soppa/so_rpprp1.F
-soppa/so_rsplex.F
-soppa/so_sdiag1.F
-soppa/so_secgp.F
-soppa/so_sigai.F
-soppa/so_sigda.F
-soppa/so_sort.F
-soppa/so_sqait2.F
-soppa/so_sres.F
-soppa/so_t2m1.F
-soppa/so_t2mp.F
-soppa/so_test.F
-soppa/so_test1.F
-soppa/so_tfset.F
-soppa/so_time.F
-soppa/so_tmltr.F
-soppa/so_tr1new.F
-soppa/so_tr1rp.F
-soppa/so_trial1.F
-soppa/so_trial2.F
-soppa/so_trmom.F
-soppa/so_twofock.F
-soppa/so_write.F
-soppa/so_writeset.F
-soppa/so_wrtve.F
+    DALTON/abacus/aba2eth.F
+    DALTON/abacus/aba2r12.F
+    DALTON/abacus/aba2tex.F
+    DALTON/abacus/abaaat.F
+    DALTON/abacus/abactocd.F
+    DALTON/abacus/abadip.F
+    DALTON/abacus/abadrv.F
+    DALTON/abacus/abadtra.F
+    DALTON/abacus/abaedrv.F
+    DALTON/abacus/abaenr.F
+    DALTON/abacus/abaesym.F
+    DALTON/abacus/abaexc.F
+    DALTON/abacus/abaflt.F
+    DALTON/abacus/abafmm.F
+    DALTON/abacus/abafsd.F
+    DALTON/abacus/abalnr.F
+    DALTON/abacus/abaloc.F
+    DALTON/abacus/abalrs.F
+    DALTON/abacus/abaltra.F
+    DALTON/abacus/abamag.F
+    DALTON/abacus/abamolden.F
+    DALTON/abacus/abander.F
+    DALTON/abacus/abandsym.F
+    DALTON/abacus/abanuc.F
+    DALTON/abacus/abanvib.F
+    DALTON/abacus/abaop2.F
+    DALTON/abacus/abaopg.F
+    DALTON/abacus/abaopt.F
+    DALTON/abacus/abaort.F
+    DALTON/abacus/abapcm.F
+    DALTON/abacus/abaptr.F
+    DALTON/abacus/abaqm3.F
+    DALTON/abacus/abaqmmm.F
+    DALTON/abacus/abaqpg.F
+    DALTON/abacus/abaqr.F
+    DALTON/abacus/abarhs.F
+    DALTON/abacus/abarint.F
+    DALTON/abacus/abarlx.F
+    DALTON/abacus/abarspn.F
+    DALTON/abacus/abaset.F
+    DALTON/abacus/abasop.F
+    DALTON/abacus/abasos.F
+    DALTON/abacus/abatro.F
+    DALTON/abacus/abavib.F
+    DALTON/abacus/abavrml.F
+    DALTON/abacus/abawalk.F
+    DALTON/abacus/dalgnr.F
+    DALTON/abacus/eckart.F
+    DALTON/abacus/ecp.F
+    DALTON/abacus/her1ave.F
+    DALTON/abacus/her1car.F
+    DALTON/abacus/her1drv.F
+    DALTON/abacus/her1int.F
+    DALTON/abacus/her1odc.F
+    DALTON/abacus/her1out.F
+    DALTON/abacus/her1pro.F
+    DALTON/abacus/her1sym.F
+    DALTON/abacus/her2ave.F
+    DALTON/abacus/her2dir.F
+    DALTON/abacus/her2drv.F
+    DALTON/abacus/her2el1.F
+    DALTON/abacus/her2el2.F
+    DALTON/abacus/her2fck.F
+    DALTON/abacus/her2gab.F
+    DALTON/abacus/her2her.F
+    DALTON/abacus/her2odc.F
+    DALTON/abacus/her2out.F
+    DALTON/abacus/her2sup.F
+    DALTON/abacus/her2sym.F
+    DALTON/abacus/herbas.F
+    DALTON/abacus/herdirect.F
+    DALTON/abacus/herdkh.F
+    DALTON/abacus/herdrv.F
+    DALTON/abacus/herfckcon.F
+    DALTON/abacus/hergam.F
+    DALTON/abacus/hergeo.F
+    DALTON/abacus/hergp.F
+    DALTON/abacus/hergroup.F
+    DALTON/abacus/herpar.F
+    DALTON/abacus/herqm3.F
+    DALTON/abacus/herrdn.F
+    DALTON/abacus/hersol.F
+    DALTON/abacus/hersym.F
+    DALTON/abacus/hertst.F
+    DALTON/abacus/huckel.F
+    DALTON/abacus/abalresc.F
+    DALTON/abacus/linearlr.F
+    DALTON/abacus/average.F
+    DALTON/abacus/angpso.F
+    DALTON/abacus/angkin.F
+    DALTON/amfi/amfi.F
+    DALTON/amfi/symtra.F
+    DALTON/cc/asqr.F
+    DALTON/cc/cc2_refop.F
+    DALTON/cc/cc3_aabmat_doub.F
+    DALTON/cc/cc3_aamat.F
+    DALTON/cc/cc3_aden.F
+    DALTON/cc/cc3_aden_cub.F
+    DALTON/cc/cc3_aden_cub_t0.F
+    DALTON/cc/cc3_bfmat.F
+    DALTON/cc/cc3_bmatsd.F
+    DALTON/cc/cc3_etasd.F
+    DALTON/cc/cc3_fbmatt3zu.F
+    DALTON/cc/cc3_fmat.F
+    DALTON/cc/cc3_fmatsd.F
+    DALTON/cc/cc3_ft3b.F
+    DALTON/cc/cc3_gmat.F
+    DALTON/cc/cc3_gmatnew.F
+    DALTON/cc/cc3_hmat.F
+    DALTON/cc/cc3_init.F
+    DALTON/cc/cc3_lhtr.F
+    DALTON/cc/cc3_omeg.F
+    DALTON/cc/cc3_omeg3.F
+    DALTON/cc/cc3_t3int.F
+    DALTON/cc/cc3_t3int3.F
+    DALTON/cc/cc3_xi_cont.F
+    DALTON/cc/cc3_xisd.F
+    DALTON/cc/cc_1idx_d2eff.F
+    DALTON/cc/cc_1idxtran.F
+    DALTON/cc/cc_21i2.F
+    DALTON/cc/cc_21i3.F
+    DALTON/cc/cc_2eexp_1.F
+    DALTON/cc/cc_2eexp_2.F
+    DALTON/cc/cc_2hyp.F
+    DALTON/cc/cc_3hyp.F
+    DALTON/cc/cc_4hyp.F
+    DALTON/cc/cc_aamat.F
+    DALTON/cc/cc_aodens3.F
+    DALTON/cc/cc_aofock2.F
+    DALTON/cc/cc_bamat.F
+    DALTON/cc/cc_bfbsort1.F
+    DALTON/cc/cc_bfden.F
+    DALTON/cc/cc_bfif1.F
+    DALTON/cc/cc_bmat.F
+    DALTON/cc/cc_cauchy.F
+    DALTON/cc/cc_cmat.F
+    DALTON/cc/cc_cphf.F
+    DALTON/cc/cc_d1ao.F
+    DALTON/cc/cc_den.F
+    DALTON/cc/cc_den2_pt.F
+    DALTON/cc/cc_den_pt2.F
+    DALTON/cc/cc_den_rccd.F
+    DALTON/cc/cc_dhfao.F
+    DALTON/cc/cc_dmat.F
+    DALTON/cc/cc_drv.F
+    DALTON/cc/cc_e1aim.F
+    DALTON/cc/cc_e21con.F
+    DALTON/cc/cc_e22con.F
+    DALTON/cc/cc_effckmo.F
+    DALTON/cc/cc_etadrv.F
+    DALTON/cc/cc_etadrv1.F
+    DALTON/cc/cc_exci.F
+    DALTON/cc/cc_exgr.F
+    DALTON/cc/cc_f1inact.F
+    DALTON/cc/cc_famat.F
+    DALTON/cc/cc_fbta.F
+    DALTON/cc/cc_fckdela.F
+    DALTON/cc/cc_fckrlx1.F
+    DALTON/cc/cc_fdaa.F
+    DALTON/cc/cc_fdba.F
+    DALTON/cc/cc_fdc.F
+    DALTON/cc/cc_fdd.F
+    DALTON/cc/cc_fdfb.F
+    DALTON/cc/cc_fmat.F
+    DALTON/cc/cc_fmattst.F
+    DALTON/cc/cc_fop.F
+    DALTON/cc/cc_foppt.F
+    DALTON/cc/cc_foppt_sc.F
+    DALTON/cc/cc_fropro.F
+    DALTON/cc/cc_ftst.F
+    DALTON/cc/cc_ftstnew.F
+    DALTON/cc/cc_get_lambda1.F
+    DALTON/cc/cc_get_rmat.F
+    DALTON/cc/cc_getgd.F
+    DALTON/cc/cc_getgp.F
+    DALTON/cc/cc_gim1.F
+    DALTON/cc/cc_gmat.F
+    DALTON/cc/cc_grad.F
+    DALTON/cc/cc_grad0.F
+    DALTON/cc/cc_grad2.F
+    DALTON/cc/cc_grad2e.F
+    DALTON/cc/cc_grad_1.F
+    DALTON/cc/cc_gradient.F
+    DALTON/cc/cc_hfr1den.F
+    DALTON/cc/cc_hmat.F
+    DALTON/cc/cc_hpqta.F
+    DALTON/cc/cc_hyppol.F
+    DALTON/cc/cc_iajb.F
+    DALTON/cc/cc_ijcb.F
+    DALTON/cc/cc_int3o2.F
+    DALTON/cc/cc_int4o.F
+    DALTON/cc/cc_jmat.F
+    DALTON/cc/cc_kmat.F
+    DALTON/cc/cc_lambdaq.F
+    DALTON/cc/cc_lammats.F
+    DALTON/cc/cc_lamtra.F
+    DALTON/cc/cc_landf.F
+    DALTON/cc/cc_landf2.F
+    DALTON/cc/cc_landf3.F
+    DALTON/cc/cc_lhtr.F
+    DALTON/cc/cc_lhtr_noddy.F
+    DALTON/cc/cc_lhtr_rccd.F
+    DALTON/cc/cc_lr.F
+    DALTON/cc/cc_maomao.F
+    DALTON/cc/cc_mcdny.F
+    DALTON/cc/cc_mkrv.F
+    DALTON/cc/cc_mmommo.F
+    DALTON/cc/cc_mofcon2.F
+    DALTON/cc/cc_mofconr12.F
+    DALTON/cc/cc_nuccon.F
+    DALTON/cc/cc_opa.F
+    DALTON/cc/cc_omega2_rccd.F
+    DALTON/cc/cc_pckutil.F
+    DALTON/cc/cc_pqi.F
+    DALTON/cc/cc_qaos.F
+    DALTON/cc/cc_qm3.F
+    DALTON/cc/cc_qmat.F
+    DALTON/cc/cc_qmmm.F
+    DALTON/cc/cc_qr2rs.F
+    DALTON/cc/cc_r12.F
+    DALTON/cc/cc_r12a2.F
+    DALTON/cc/cc_r12batf.F
+    DALTON/cc/cc_r12ccsd.F
+    DALTON/cc/cc_r12mkvamkl.F
+    DALTON/cc/cc_r12mkxajkl.F
+    DALTON/cc/cc_r12mkxajklfr.F
+    DALTON/cc/cc_r12no.F
+    DALTON/cc/cc_r12rdpck.F
+    DALTON/cc/cc_r12vunpack.F
+    DALTON/cc/cc_r12xieta.F
+    DALTON/cc/cc_r12xprep.F
+    DALTON/cc/cc_rdaod.F
+    DALTON/cc/cc_rdrsp.F
+    DALTON/cc/cc_rhtr.F
+    DALTON/cc/cc_rhtr3.F
+    DALTON/cc/cc_rhtr_noddy.F
+    DALTON/cc/cc_setdorps.F
+    DALTON/cc/cc_setfa.F
+    DALTON/cc/cc_setfb12.F
+    DALTON/cc/cc_setk11.F
+    DALTON/cc/cc_setxe.F
+    DALTON/cc/cc_slv.F
+    DALTON/cc/cc_soldrv.F
+    DALTON/cc/cc_solrsp.F
+    DALTON/cc/cc_sop.F
+    DALTON/cc/cc_sort4o.F
+    DALTON/cc/cc_sortz2.F
+    DALTON/cc/cc_tmcal.F
+    DALTON/cc/cc_tpa.F
+    DALTON/cc/cc_trdrv.F
+    DALTON/cc/cc_util.F
+    DALTON/cc/cc_wrrsp.F
+    DALTON/cc/cc_xetst.F
+    DALTON/cc/cc_xieta.F
+    DALTON/cc/cc_xopa.F
+    DALTON/cc/cc_zkjam.F
+    DALTON/cc/cccr_aa.F
+    DALTON/cc/cccr_setup.F
+    DALTON/cc/cccr_util.F
+    DALTON/cc/ccder1.F
+    DALTON/cc/ccdiis_solv.F
+    DALTON/cc/cceq_solv.F
+    DALTON/cc/ccetacor.F
+    DALTON/cc/ccexlr.F
+    DALTON/cc/ccexnorm.F
+    DALTON/cc/ccexpfck.F
+    DALTON/cc/ccfbint1.F
+    DALTON/cc/ccfbint2.F
+    DALTON/cc/ccfbtaao1.F
+    DALTON/cc/ccfbtaao2.F
+    DALTON/cc/ccfbtaf.F
+    DALTON/cc/ccfndop.F
+    DALTON/cc/cckappasq.F
+    DALTON/cc/cclhtr_r12.F
+    DALTON/cc/cclr_fa.F
+    DALTON/cc/cclr_setup.F
+    DALTON/cc/cclr_util.F
+    DALTON/cc/cclt_yps1.F
+    DALTON/cc/ccmcd_setup.F
+    DALTON/cc/ccpt_btrden.F
+    DALTON/cc/ccpt_den.F
+    DALTON/cc/ccpt_eta.F
+    DALTON/cc/ccpt_fropro.F
+    DALTON/cc/ccpt_grad0.F
+    DALTON/cc/ccpt_resort_den.F
+    DALTON/cc/ccpt_symmback.F
+    DALTON/cc/ccqr_setup.F
+    DALTON/cc/ccreo2con.F
+    DALTON/cc/ccrhs_ipm1.F
+    DALTON/cc/ccrhsvec.F
+    DALTON/cc/ccrlxxim.F
+    DALTON/cc/ccrspsym.F
+    DALTON/cc/ccsd_diis.F
+    DALTON/cc/ccsd_energy.F
+    DALTON/cc/ccsd_input.F
+    DALTON/cc/ccsd_rhs.F
+    DALTON/cc/ccsd_rhs3.F
+    DALTON/cc/ccsd_rou3.F
+    DALTON/cc/ccsd_sortao.F
+    DALTON/cc/ccsd_triple.F
+    DALTON/cc/ccsdr12ao.F
+    DALTON/cc/ccsdr12cd.F
+    DALTON/cc/ccsdr12oxr.F
+    DALTON/cc/ccsdt_aa_noddy.F
+    DALTON/cc/ccsdt_aden_noddy.F
+    DALTON/cc/ccsdt_b_noddy.F
+    DALTON/cc/ccsdt_ba_noddy.F
+    DALTON/cc/ccsdt_eta_cont.F
+    DALTON/cc/ccsdt_eta_noddy.F
+    DALTON/cc/ccsdt_f_noddy.F
+    DALTON/cc/ccsdt_fbmat.F
+    DALTON/cc/ccsdt_ints_noddy.F
+    DALTON/cc/ccsdt_o32_noddy.F
+    DALTON/cc/ccsdt_t32_noddy.F
+    DALTON/cc/ccsdt_xi_noddy.F
+    DALTON/cc/ccsoppa.F
+    DALTON/cc/cctrbt1.F
+    DALTON/cc/cctrbt2.F
+    DALTON/cc/ccximcon.F
+    DALTON/cc/crayio2.F
+    DALTON/cc/herdirect_cc.F
+    DALTON/cc/iroper2.F
+    DALTON/cc/cc_lanczos_lrinp.F
+    DALTON/cc/cc_lanczos_drv.F
+    DALTON/cc/cc_lanczos_lrextras.F
+    DALTON/cc/rpa_grad.F
+    DALTON/cc/cc_active.F
+    DALTON/choles/cc_caa.F
+    DALTON/choles/cc_choatr.F
+    DALTON/choles/cc_chocc2.F
+    DALTON/choles/cc_chodbg.F
+    DALTON/choles/cc_chofop.F
+    DALTON/choles/cc_choftr.F
+    DALTON/choles/cc_chogd.F
+    DALTON/choles/cc_choio.F
+    DALTON/choles/cc_cholesky.F
+    DALTON/choles/cc_cholrim.F
+    DALTON/choles/cc_chomp2.F
+    DALTON/choles/cc_chopden.F
+    DALTON/choles/cc_chopt.F
+    DALTON/choles/cc_chopt_dbg.F
+    DALTON/choles/cc_cia.F
+    DALTON/choles/cc_ciadbg.F
+    DALTON/choles/cc_cyi.F
+    DALTON/choles/cc_cyidbg.F
+    DALTON/choles/cc_decmo.F
+    DALTON/choles/cc_rdrspd.F
+    DALTON/choles/cc_rmrsp.F
+    DALTON/choles/cc_wrrspd.F
+    DALTON/choles/nocc_util.F
+    DALTON/densfit/denfit_noddy.F
+    DALTON/densfit/df_dirac.F
+    DALTON/densfit/dposv.F
+    DALTON/dft/dft_aos.F
+    DALTON/dft/dft_ac.F 
+    DALTON/dft/dft_aux.F
+    DALTON/dft/dft_den.F
+    DALTON/dft/dft_exp.F
+    DALTON/dft/dft_grad.F
+    DALTON/dft/dft_grid.F
+    DALTON/dft/dft_gridLL.F
+    DALTON/dft/dft_hes.F
+    DALTON/dft/dft_inp.F
+    DALTON/dft/dft_int.F
+    DALTON/dft/dft_ksm.F
+    DALTON/dft/dft_mag.F
+    DALTON/dft/dft_mos.F
+    DALTON/dft/dft_rho.F
+    DALTON/dft/dso_cb.F
+    DALTON/eri/eri2aob.F
+    DALTON/eri/eri2ave.F
+    DALTON/eri/eri2car1.F
+    DALTON/eri/eri2car2.F
+    DALTON/eri/eri2cft.F
+    DALTON/eri/eri2csi.F
+    DALTON/eri/eri2dis.F
+    DALTON/eri/eri2drv.F
+    DALTON/eri/eri2fck.F
+    DALTON/eri/eri2her.F
+    DALTON/eri/eri2odb.F
+    DALTON/eri/eri2out.F
+    DALTON/eri/eri2par.F
+    DALTON/eri/eri2pro.F
+    DALTON/eri/eri2r12.F
+    DALTON/eri/eri2sph.F
+    DALTON/eri/eri2sym.F
+    DALTON/eri/eri2vec.F
+    DALTON/eri/erisph.F
+    DALTON/gp/gpdahle.F
+    DALTON/gp/gphjj.F
+    DALTON/gp/gpjeppe.F
+    DALTON/gp/gpjkp.F
+    DALTON/gp/gpjt.F
+    DALTON/gp/gplucia.F
+    DALTON/gp/gplucia_io.F
+    DALTON/gp/gplupar.F
+    DALTON/gp/gpsaue.F
+    DALTON/gp/gpsimen.F
+    DALTON/gp/gptrygve.F
+    DALTON/gp/graphic.F
+    DALTON/gp/intf7790.F
+    DALTON/gp/mempkg.F
+    DALTON/gp/mpimacro.F
+    DALTON/gp/pvmmacro.F
+    DALTON/gp/qpack.F
+    DALTON/gp/vcraypack.F
+    DALTON/lucita/ciinfo.F
+    DALTON/lucita/dalton_interface.F
+    DALTON/lucita/density.F
+    DALTON/lucita/diagonal.F
+    DALTON/lucita/diagonalize.F
+    DALTON/lucita/fock.F
+    DALTON/lucita/io.F
+    DALTON/lucita/memory.F
+    DALTON/lucita/par_lucia.F
+    DALTON/lucita/par_solver.F
+    DALTON/lucita/program.F
+    DALTON/lucita/property.F
+    DALTON/lucita/sigma.F
+    DALTON/lucita/strings.F
+    DALTON/lucita/transform.F
+    DALTON/lucita/utils.F
+    DALTON/lucita/vecmat.F
+    DALTON/pdpack/arhpack.F
+    DALTON/pdpack/eispack.F
+    DALTON/pdpack/jacobi.F
+    DALTON/pdpack/linextra.F
+    DALTON/pdpack/linpack.F
+    DALTON/pdpack/printpkg.F
+    DALTON/peqm/pe_dalton_wrappers.F
+    DALTON/rsp/absorp.F
+    DALTON/rsp/abscomplex.F
+    DALTON/rsp/complexpp.F
+    DALTON/rsp/gpcpp.F
+    DALTON/rsp/deq27.F
+    DALTON/rsp/expone.F
+    DALTON/rsp/fone.F
+    DALTON/rsp/hypinp.F
+    DALTON/rsp/lagrang.F
+    DALTON/rsp/mcdrsp.F
+    DALTON/rsp/qfock.F
+    DALTON/rsp/qrhso.F
+    DALTON/rsp/rspave.F
+    DALTON/rsp/rspc8.F
+    DALTON/rsp/rspc82.F
+    DALTON/rsp/rspchannel.F
+    DALTON/rsp/rspcr1.F
+    DALTON/rsp/rspcr2.F
+    DALTON/rsp/rspcr3.F
+    DALTON/rsp/rspcr4.F
+    DALTON/rsp/rspcr5.F
+    DALTON/rsp/rspcr6.F
+    DALTON/rsp/rspcr7.F
+    DALTON/rsp/rspcr8.F
+    DALTON/rsp/rspcr9.F
+    DALTON/rsp/rspdm.F
+    DALTON/rsp/rspe2c.F
+    DALTON/rsp/rspesg.F
+    DALTON/rsp/rspesg_gp.F
+    DALTON/rsp/rspesg_lag.F
+    DALTON/rsp/rspfxd.F
+    DALTON/rsp/rspg.F
+    DALTON/rsp/rsphfc.F
+    DALTON/rsp/rsphso.F
+    DALTON/rsp/rspief.F
+    DALTON/rsp/rspief1.F
+    DALTON/rsp/rspief2.F
+    DALTON/rsp/rspmai.F
+    DALTON/rsp/rspmc1.F
+    DALTON/rsp/rspmc2.F
+    DALTON/rsp/rspmc3.F
+    DALTON/rsp/rspoit.F
+    DALTON/rsp/rspoli.F
+    DALTON/rsp/rsporp.F
+    DALTON/rsp/rspprp.F
+    DALTON/rsp/rspqm3.F
+    DALTON/rsp/rspqmmm.F
+    DALTON/rsp/rspqrx3.F
+    DALTON/rsp/rspsol.F
+    DALTON/rsp/rspsol1.F
+    DALTON/rsp/rspsol2.F
+    DALTON/rsp/rspsoppa.F
+    DALTON/rsp/rsptmo1.F
+    DALTON/rsp/rsptmo2.F
+    DALTON/rsp/rsptmo3.F
+    DALTON/rsp/rsptmo4.F
+    DALTON/rsp/rsptpa1.F
+    DALTON/rsp/rsptpa2.F
+    DALTON/rsp/rsptpa3.F
+    DALTON/rsp/rspvec.F
+    DALTON/rsp/rspzfs.F
+    DALTON/rsp/x2expl.F
+    DALTON/sirius/ciham.F
+    DALTON/sirius/cioff.F
+    DALTON/sirius/cisig.F
+    DALTON/sirius/csfstuff.F
+    DALTON/sirius/dalcip.F
+    DALTON/sirius/dens.F
+    DALTON/sirius/detfi.F
+    DALTON/sirius/detpr.F
+    DALTON/sirius/dets0.F
+    DALTON/sirius/dets1.F
+    DALTON/sirius/drcctl.F
+    DALTON/sirius/dypc.F
+    DALTON/sirius/getcix.F
+    DALTON/sirius/getint.F
+    DALTON/sirius/intsort.F
+    DALTON/sirius/koopro4.F
+    DALTON/sirius/newtrahso.F
+    DALTON/sirius/r12aux.F
+    DALTON/sirius/siraba.F
+    DALTON/sirius/sirave.F
+    DALTON/sirius/sircan.F
+    DALTON/sirius/sircav.F
+    DALTON/sirius/sirci.F
+    DALTON/sirius/sircmo.F
+    DALTON/sirius/sirctl.F
+    DALTON/sirius/sirdiis.F
+    DALTON/sirius/sirfck.F
+    DALTON/sirius/sirgp.F
+    DALTON/sirius/sirgrad.F
+    DALTON/sirius/sirief.F
+    DALTON/sirius/sirinp.F
+    DALTON/sirius/sirlintrn.F
+    DALTON/sirius/sirloc.F
+    DALTON/sirius/sirlocsel.F
+    DALTON/sirius/sirmp2.F
+    DALTON/sirius/sirneo.F
+    DALTON/sirius/sirnexkap.F
+    DALTON/sirius/sirnr.F
+    DALTON/sirius/sirntra.F
+    DALTON/sirius/siropt.F
+    DALTON/sirius/sirorb.F
+    DALTON/sirius/sirout.F
+    DALTON/sirius/sir_mep.F
+    DALTON/sirius/sirpcm.F
+    DALTON/sirius/sirpcmder.F
+    DALTON/sirius/sirpop.F
+    DALTON/sirius/sirqm3.F
+    DALTON/sirius/sirqmmm.F
+    DALTON/sirius/sirsav.F
+    DALTON/sirius/sirscat.F
+    DALTON/sirius/sirset.F
+    DALTON/sirius/sirsol.F
+    DALTON/sirius/sirsolpcm.F
+    DALTON/sirius/sirstex.F
+    DALTON/sirius/sirtest.F
+    DALTON/sirius/sirtr1.F
+    DALTON/sirius/sirtra.F
+    DALTON/sirius/sirupd.F
+    DALTON/sirius/symchk.F
+    DALTON/soppa/ccsd_tcmepkx.F
+    DALTON/soppa/dc_calc.F
+    DALTON/soppa/dc_eres.F
+    DALTON/soppa/dc_r1vec.F
+    DALTON/soppa/dc_res_o.F
+    DALTON/soppa/dc_rsplex.F
+    DALTON/soppa/dc_sres.F
+    DALTON/soppa/rp_anal.F
+    DALTON/soppa/rp_charge.F
+    DALTON/soppa/rp_check.F
+    DALTON/soppa/rp_diag.F
+    DALTON/soppa/rp_eres.F
+    DALTON/soppa/rp_getgp.F
+    DALTON/soppa/rp_incred.F
+    DALTON/soppa/rp_init.F
+    DALTON/soppa/rp_lrsolv.F
+    DALTON/soppa/rp_newtrial.F
+    DALTON/soppa/rp_optvec.F
+    DALTON/soppa/rp_orth_trn.F
+    DALTON/soppa/rp_redev.F
+    DALTON/soppa/rp_res_o.F
+    DALTON/soppa/rp_residual.F
+    DALTON/soppa/rp_rsplex.F
+    DALTON/soppa/rp_sres.F
+    DALTON/soppa/rp_trial1.F
+    DALTON/soppa/rp_trial2.F
+    DALTON/soppa/rp_trmom.F
+    DALTON/soppa/so_anal.F
+    DALTON/soppa/so_aodens.F
+    DALTON/soppa/so_bcktr.F
+    DALTON/soppa/so_bextract.F
+    DALTON/soppa/so_check.F
+    DALTON/soppa/so_close.F
+    DALTON/soppa/so_collect_tm.F
+    DALTON/soppa/so_dens.F
+    DALTON/soppa/so_densai1.F
+    DALTON/soppa/so_densai2.F
+    DALTON/soppa/so_diag.F
+    DALTON/soppa/so_ediag1.F
+    DALTON/soppa/so_ediag2.F
+    DALTON/soppa/so_eres.F
+    DALTON/soppa/so_excit1.F
+    DALTON/soppa/so_excout.F
+    DALTON/soppa/so_firgp.F
+    DALTON/soppa/so_fndpos.F
+    DALTON/soppa/so_getgp.F
+    DALTON/soppa/so_getmo.F
+    DALTON/soppa/so_gett2.F
+    DALTON/soppa/so_incred.F
+    DALTON/soppa/so_init.F
+    DALTON/soppa/so_initial.F
+    DALTON/soppa/so_intrp.F
+    DALTON/soppa/so_lrsolv.F
+    DALTON/soppa/so_memmax.F
+    DALTON/soppa/so_moenergy.F
+    DALTON/soppa/so_newtrial.F
+    DALTON/soppa/so_onefock.F
+    DALTON/soppa/so_onep.F
+    DALTON/soppa/so_onepmo.F
+    DALTON/soppa/so_open.F
+    DALTON/soppa/so_optvec.F
+    DALTON/soppa/so_ordeig.F
+    DALTON/soppa/so_orth_trn.F
+    DALTON/soppa/so_prpint.F
+    DALTON/soppa/so_read.F
+    DALTON/soppa/so_readset.F
+    DALTON/soppa/so_redev.F
+    DALTON/soppa/so_res_a.F
+    DALTON/soppa/so_res_b.F
+    DALTON/soppa/so_res_c.F
+    DALTON/soppa/so_res_cb.F
+    DALTON/soppa/so_res_cd.F
+    DALTON/soppa/so_res_cp.F
+    DALTON/soppa/so_res_fck.F
+    DALTON/soppa/so_res_o.F
+    DALTON/soppa/so_res_ovl.F
+    DALTON/soppa/so_res_ovlr.F
+    DALTON/soppa/so_res_sym.F
+    DALTON/soppa/so_res_tcb.F
+    DALTON/soppa/so_residual.F
+    DALTON/soppa/so_ropt.F
+    DALTON/soppa/so_rpprp1.F
+    DALTON/soppa/so_rsplex.F
+    DALTON/soppa/so_sdiag1.F
+    DALTON/soppa/so_secgp.F
+    DALTON/soppa/so_sigai.F
+    DALTON/soppa/so_sigda.F
+    DALTON/soppa/so_sort.F
+    DALTON/soppa/so_sqait2.F
+    DALTON/soppa/so_sres.F
+    DALTON/soppa/so_t2m1.F
+    DALTON/soppa/so_t2mp.F
+    DALTON/soppa/so_test.F
+    DALTON/soppa/so_test1.F
+    DALTON/soppa/so_tfset.F
+    DALTON/soppa/so_time.F
+    DALTON/soppa/so_tmltr.F
+    DALTON/soppa/so_tr1new.F
+    DALTON/soppa/so_tr1rp.F
+    DALTON/soppa/so_trial1.F
+    DALTON/soppa/so_trial2.F
+    DALTON/soppa/so_trmom.F
+    DALTON/soppa/so_twofock.F
+    DALTON/soppa/so_write.F
+    DALTON/soppa/so_writeset.F
+    DALTON/soppa/so_wrtve.F
     )
 set(DALTON_FREE_FORTRAN_SOURCES
-input/input_reader_sections.F90
-input/input_reader.F90
-input/parse_input.F90
-lucita/dalton_mpi.F90
-lucita/lucita_cfg.F90
-lucita/lucita_mcscf_ci_cfg.F90
-lucita/lucita_orbitalspaces.F90
-lucita/par_communication_model.F90
-lucita/par_io.F90
-lucita/par_io_fh.F90
-lucita/par_sync_cw.F90
-peqm/pe_gen1int_wrapper.F90
-peqm/pe_precision.F90
-peqm/pe_blas_wrappers.F90
-peqm/pe_lapack_wrappers.F90
-peqm/pe_variables.F90
-peqm/polarizable_embedding.F90
-abacus/parallel_models_mpi.F90
-abacus/parallel_communication_models_mpi.F90
-gp/one_sided_communication_wrappers.F90
-gp/memory_parallel.F90
-abacus/rma_windows.F90
+    DALTON/input/input_reader_sections.F90
+    DALTON/input/input_reader.F90
+    DALTON/input/parse_input.F90
+    DALTON/lucita/dalton_mpi.F90
+    DALTON/lucita/lucita_cfg.F90
+    DALTON/lucita/lucita_mcscf_ci_cfg.F90
+    DALTON/lucita/lucita_orbitalspaces.F90
+    DALTON/lucita/par_communication_model.F90
+    DALTON/lucita/par_io.F90
+    DALTON/lucita/par_io_fh.F90
+    DALTON/lucita/par_sync_cw.F90
+    DALTON/peqm/pe_gen1int_wrapper.F90
+    DALTON/peqm/pe_precision.F90
+    DALTON/peqm/pe_blas_wrappers.F90
+    DALTON/peqm/pe_lapack_wrappers.F90
+    DALTON/peqm/pe_variables.F90
+    DALTON/peqm/polarizable_embedding.F90
+    DALTON/abacus/parallel_models_mpi.F90
+    DALTON/abacus/parallel_communication_models_mpi.F90
+    DALTON/gp/one_sided_communication_wrappers.F90
+    DALTON/gp/memory_parallel.F90
+    DALTON/abacus/rma_windows.F90
     )
 set(DALTON_OWN_BLAS_SOURCES
-    pdpack/gp_blas.F
+    DALTON/pdpack/gp_blas.F
     )
 set(DALTON_OWN_LAPACK_SOURCES
-    pdpack/gp_lapack.F
+    DALTON/pdpack/gp_lapack.F
     )
 if(NOT ENABLE_MPI)
     set(DALTON_C_SOURCES
         ${DALTON_C_SOURCES}
-        gp/mpi_dummyc.c
+        DALTON/gp/mpi_dummyc.c
         )
     set(DALTON_FIXED_FORTRAN_SOURCES
         ${DALTON_FIXED_FORTRAN_SOURCES}
-        gp/mpi_dummy.F
+        DALTON/gp/mpi_dummy.F
         )
 endif()
