@@ -83,3 +83,12 @@ Then run CTest with -D Nightly or Experimental::
 
 If you want to test your current code, take Experimental. If you want to set
 up a cron script to run tests every night, take Nightly.
+
+Currently the above recipes for Nightly/Experimental will compile all targets.
+If you want to compile only LSDALTON within Nightly/Experimental, you can do this::
+
+  $ make lsdalton.x
+  $ ctest -L lsdalton -D NightlyTest
+  $ ctest -L lsdalton -D NightlySubmit
+
+This does not report configure/build problems. We will streamline this soon.
