@@ -1220,9 +1220,9 @@ contains
       integer(kind=8)       :: nbuf
       integer(kind=ls_mpik) :: comm   ! communicator
       integer(kind=ls_mpik) :: sender,receiver
-      integer(kind=ls_mpik) :: ierr,thesize,datatype,n
+      integer(kind=ls_mpik) :: ierr,thesize,datatype
       integer(kind=ls_mpik) :: mynum,tag
-      integer(kind=8) :: i,k
+      integer(kind=8) :: i,k,n
       integer(kind=4) :: n4
 #ifdef VAR_MPI
       IERR=0
