@@ -841,6 +841,11 @@ subroutine DEC_meaningful_input(config,doresponse)
   ! a full CC calculation
   DECcalculation: if(config%doDEC) then
 
+     ! DEC does not work for SCALAPACK
+     if(matrix_type==mtype_scalapack) then
+        call lsquit('Error in input: **DEC or **CC cannot be used together with .SCALAPACK!',-1)
+     end if
+
      ! DEC and response do not go together right now...
      if(doresponse) then
         call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONS!',-1)
@@ -892,9 +897,6 @@ subroutine DEC_meaningful_input(config,doresponse)
      end if OrbLocCheck
 
   end if DECcalculation
-
-
-  ! Special case: Restart full calculation fr
 
 
 end subroutine DEC_meaningful_input
