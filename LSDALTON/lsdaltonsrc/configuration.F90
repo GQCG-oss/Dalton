@@ -214,7 +214,7 @@ INTEGER            :: LUCMD !Logical unit number for the daltoninput
 INTEGER            :: IDUMMY,IPOS,IPOS2,COUNTER
 character(len=80)  :: WORD,TMPWORD
 character(len=2)   :: PROMPT
-LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS,doresponse
+LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS
 !LINSCA variables:
 real(realk)        :: shift, min_density_overlap, maxratio, zero
 integer            :: nvec, i
@@ -223,7 +223,6 @@ Real(realk)  :: hfweight
 STARTGUESS = .FALSE.
 Config%integral%cfg_lsdalton = .TRUE.
 COUNTER = 0
-doresponse=.false.
 
 INQUIRE(file='LSDALTON.INP',EXIST=file_exists) 
 IF(file_exists)THEN
@@ -652,7 +651,6 @@ DO
 
    ! KK, change from $RESPONS to **RESPONS to be consistent with other input structure.
    ResponseInput: IF (WORD(1:9) == '**RESPONS') THEN
-      doresponse=.true.
       READWORD=.TRUE.
       call config_rsp_input(config,lucmd,readword,WORD)
    END IF ResponseInput
