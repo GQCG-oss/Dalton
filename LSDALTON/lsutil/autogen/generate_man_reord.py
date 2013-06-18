@@ -37,16 +37,15 @@ def main():
   #GET THE FOLDER TO STORE THE manual_reorderings.F90
   cwd = os.getcwd()
   lsutildir = cwd
-  print cwd
-  if ("/LSDALTON/" in lsutildir ):
+  if ("/LSDALTON/lsutil" in lsutildir ):
 
-    lsutildir = lsutildir[0:lsutildir.find("/LSDALTON/")]+"/LSDALTON/lsutil/"
+    lsutildir = lsutildir[0:lsutildir.find("/LSDALTON/lsutil")]+"/LSDALTON/lsutil/"
 
   else:
 
-    for paths,dirs,files in os.walk(cwd+"/.."):
-      if("/LSDALTON/" in paths):
-        lsutildir = paths[0:paths.find("/LSDALTON/")]+"/LSDALTON/lsutil/"
+    for paths,dirs,files in os.walk(cwd+"/../LSDALTON"):
+      if("/LSDALTON/lsutil" in paths):
+        lsutildir = paths[0:paths.find("/LSDALTON/lsutil")]+"/LSDALTON/lsutil/"
         break
 
     if not os.path.exists(lsutildir):
@@ -60,7 +59,6 @@ def main():
   else:
      installdir = lsutildir
   
-  print lsutildir
   #THIS FILE SHOULD GENERATE ALL REORDERINGS NEEDED in manual_reorderings.F90
   if(not os.path.exists(installdir+"manual_reorderings.F90")):
     produce_files(installdir,lsutildir,args)
