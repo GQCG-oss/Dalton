@@ -28,7 +28,7 @@
 
 #define __CVERSION__
 
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 
 #define PW92THR 1e-14 /* PW92 Threshold, denities below this are ignored */
 

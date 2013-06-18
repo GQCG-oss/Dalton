@@ -4103,6 +4103,7 @@ C
 casm
 #include "suscc.h"
 #include "center.h"
+#include "infpar.h"
 C
       LOGICAL FNDEOI
       DATA FNDEOI /.FALSE./
@@ -4288,7 +4289,9 @@ C
          END DO
       END DO
 C
-C    Select atoms for Cholesky decomposition
+C     Select atoms for Cholesky decomposition (only in master)
+C
+      IF (SLAVE) GOTO 100
 C
       ACTSEL = .FALSE.
 C

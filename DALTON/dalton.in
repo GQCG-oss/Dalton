@@ -258,7 +258,7 @@ fi
 
 # now we know that the directory exists
 # we will now try whether user has write permission to this directory
-file=$DALTON_TMPDIR/test_whether_dalton_can_create_this_file
+file=$DALTON_TMPDIR/test_whether_dalton_can_create_this_file.$$.tmp
 if [ -f $file ]; then
     rm $file &> /dev/null
 fi

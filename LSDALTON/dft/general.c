@@ -71,7 +71,7 @@ C
    (c) Pawel Salek, pawsa@theochem.kth.se, 2001-08-02
    NOTES: Adding new functionals:
    a. use fun-slater.c as template.
-   b. add 'extern Functional MyFunctional;' to functionals.h
+   b. add 'extern Functional MyFunctional;' to lsdalton_functionals.h
    c. add '&MyFunctional' to available_functionals below.
    d. have a beer. Or some crackers, if you prefer.
 */
@@ -96,9 +96,9 @@ C
 
 #define __CVERSION__
 
-#include "general.h"
+#include "lsdalton_general.h"
 /*#include "integrator.h"*/
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 
 /* C-wide constants */
 const integer ZEROI = 0,   ONEI = 1, THREEI = 3, FOURI = 4;

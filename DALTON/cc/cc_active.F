@@ -170,7 +170,7 @@ C
       IF (NLAMDA .NE. NLAM) 
      &   STOP 'Something is rotten in the state of Norway.1'
 C
-c     IF (DBGPRT) THEN
+      IF (DBGPRT) THEN
 C
          write(lupri,*) 'sirius info read'
          write(lupri,*) 'nsym :',nsym
@@ -184,7 +184,6 @@ C
          write(lupri,*) 'nvir :',(nvir(i),i=1,nsym)
          call flshfo(lupri)
 c
-      IF (DBGPRT) THEN
          IEND = 0
          WRITE(LUPRI,'(A,/,A,/)') 'Orbital energies','----------------'
          DO ISYM = 1,NSYM
@@ -504,8 +503,6 @@ C
          END IF
          KOFF1 = KOCDEN + IOFDEN(ISYM)
          WRITE(LUPRI,'(//,A,I3,/)') 'ACTIVE OCCUPIED. SYMMETRY :',ISYM
-         write(lupri,*) 'Lacbas :', (lacbas(ioff1+i-1), i=1,nred)
-         write(lupri,*) 'mxvecl :',mxvecl
          CALL CHO_DENDECO(SELDIR,WORK(KOFF1),NDIM,LACBAS(IOFF1),
      &                    NRED,WORK(KSCR1),THRS,NVECS,IOPT,
      &                    MXVECL,IATDUM,MINSPR,WORK(KEND2),LWRK2)
@@ -557,6 +554,7 @@ C
          LWRK2 = LWORK - KEND2
          IF (LWRK2 .LT. 0) STOP 'Not enough space in CC_SELACT.2c'
 C
+         NRED = NACBSV(ISYM)
          IF (NRED .EQ. 0) GOTO 9140
 C
          IOPT  = 0
@@ -1076,27 +1074,85 @@ C
 C     Orbital energies
 C     ----------------
 C
-C     Energy of inactive orbitals put to +/- 999.99, since they are
-C     not needed right now
-C
       KFKDIA = KEND1
       KEND2  = KFKDIA + NORBT
       LWRK2 = LWORK - KEND2
       IF (LWRK2 .LT. 0) STOP 'Not enough space in CC_SELACT.2d'
 C
-      DO I = 1,NORBT
-         KOFF = KFKDIA + I - 1
-         WORK(KOFF) = 999.99D0
-      END DO
-C
       DO ISYM = 1,NSYM
-         KOFF = KFKDIA + IORB(ISYM) - 1
-         DO I = 1,NRHF(ISYM)
-            WORK(KOFF+I) = -999.99D0
+C
+C        Inactive occupied part
+C
+         KFCKIJ = KEND2
+         KSCRIQ = KFCKIJ + NINAOC(ISYM)*NINAOC(ISYM)
+         KEND3  = KSCRIQ + NINAOC(ISYM)*NBAS(ISYM)
+         LWRK3  = LWORK  - KEND3
+         IF (LWRK3 .LT. 0) STOP 'Not enough space in CC_SELACT.3a'
+C
+         NBASI = MAX(NBAS(ISYM),1)
+         NACTI = MAX(NINAOC(ISYM),1)
+C
+         KOFF1 = KCMO   + IOFCMO(ISYM)
+         KOFF2 = KFCKAO + IOFDEN(ISYM)
+         KOFF3 = KSCRIQ
+         CALL DGEMM('T','N',NINAOC(ISYM),NBAS(ISYM),NBAS(ISYM),
+     &              ONE,WORK(KOFF1),NBASI,WORK(KOFF2),NBASI,
+     &              ZERO,WORK(KOFF3),NACTI)
+C
+         KOFF1 = KSCRIQ
+         KOFF2 = KCMO   + IOFCMO(ISYM)
+         KOFF3 = KFCKIJ
+         CALL DGEMM('N','N',NINAOC(ISYM),NINAOC(ISYM),NBAS(ISYM),
+     &              ONE,WORK(KOFF1),NACTI,WORK(KOFF2),NBASI,
+     &              ZERO,WORK(KOFF3),NACTI)
+C
+         IF (DBGPRT) THEN
+            write(lupri,*)
+     &            'Fock matrix projected on inactive occupied orbitals'
+            call output(work(kfckij),1,NINAOC(isym),1,NINAOC(isym),
+     &                  NINAOC(isym),NINAOC(isym),1,lupri)
+         END IF
+C
+C        Diagonalize
+C
+         KEVAL = KEND3
+         KEVEC = KEVAL + NINAOC(ISYM)
+         KTMP1 = KEVEC + NINAOC(ISYM)*NINAOC(ISYM)
+         KTMP2 = KTMP1 + NINAOC(ISYM)
+         KEND4 = KTMP2 + NINAOC(ISYM)
+         LWRK4 = LWORK - KEND4
+         IF (LWRK4 .LT. 0) STOP 'Not enough space in CC_SELACT.4a'
+C
+         NACTI = NINAOC(ISYM)
+         MATZ  = 1
+         CALL RS(NACTI,NACTI,WORK(KFCKIJ),WORK(KEVAL),MATZ,
+     &           WORK(KEVEC),WORK(KTMP1),WORK(KTMP2),IERR)
+         IF (IERR .NE. 0) STOP 'Error diagonalizing occupied part'
+C
+C        Transform back and save
+C
+         KTRAN = KTMP1
+         KEND5 = KTRAN + NINAOC(ISYM)*NBAS(ISYM)
+         LWRK5 = LWORK - KEND5
+         IF (LWRK5 .LT. 0) STOP 'Not enough space in CC_SELACT.5a'
+C
+         NBASI = MAX(NBAS(ISYM),1)
+         NACTI = MAX(NINAOC(ISYM),1)
+C
+         KOFF = KCMO + IOFCMO(ISYM)
+         CALL DGEMM('N','N',NBAS(ISYM),NINAOC(ISYM),NINAOC(ISYM),
+     &              ONE,WORK(KOFF),NBASI,WORK(KEVEC),NACTI,
+     &              ZERO,WORK(KTRAN),NBASI)
+C
+         LENGTH = NBAS(ISYM) * NINAOC(ISYM)
+         IF (LENGTH .NE. 0)
+     &       CALL DCOPY(LENGTH,WORK(KTRAN),1,WORK(KOFF),1)
+C
+         DO I = 1,NINAOC(ISYM)
+            KOFF1 = KFKDIA + IORB(ISYM) + I - 1
+            KOFF2 = KEVAL  + I - 1
+            WORK(KOFF1) = WORK(KOFF2)
          END DO
-      END DO
-C
-      DO ISYM = 1,NSYM
 C
 C        Active occupied part
 C
@@ -1104,7 +1160,7 @@ C
          KSCRIQ = KFCKIJ + NACTOC(ISYM)*NACTOC(ISYM)
          KEND3  = KSCRIQ + NACTOC(ISYM)*NBAS(ISYM)
          LWRK3  = LWORK  - KEND3
-         IF (LWRK3 .LT. 0) STOP 'Not enough space in CC_SELACT.3a'
+         IF (LWRK3 .LT. 0) STOP 'Not enough space in CC_SELACT.3b'
 C
          NBASI = MAX(NBAS(ISYM),1)
          NACTI = MAX(NACTOC(ISYM),1)
@@ -1138,7 +1194,7 @@ C
          KTMP2 = KTMP1 + NACTOC(ISYM)
          KEND4 = KTMP2 + NACTOC(ISYM)
          LWRK4 = LWORK - KEND4
-         IF (LWRK4 .LT. 0) STOP 'Not enough space in CC_SELACT.4a'
+         IF (LWRK4 .LT. 0) STOP 'Not enough space in CC_SELACT.4b'
 C
          NACTI = NACTOC(ISYM)
          MATZ  = 1
@@ -1151,7 +1207,7 @@ C
          KTRAN = KTMP1
          KEND5 = KTRAN + NACTOC(ISYM)*NBAS(ISYM)
          LWRK5 = LWORK - KEND5
-         IF (LWRK5 .LT. 0) STOP 'Not enough space in CC_SELACT.5a' 
+         IF (LWRK5 .LT. 0) STOP 'Not enough space in CC_SELACT.5b' 
 C
          NBASI = MAX(NBAS(ISYM),1)
          NACTI = MAX(NACTOC(ISYM),1)
@@ -1183,7 +1239,7 @@ C
          KSCRAQ = KFCKAB + NACTVI(ISYM)*NACTVI(ISYM)
          KEND3  = KSCRAQ + NACTVI(ISYM)*NBAS(ISYM)
          LWRK3  = LWORK  - KEND3
-         IF (LWRK3 .LT. 0) STOP 'Not enough space in CC_SELACT.3b'
+         IF (LWRK3 .LT. 0) STOP 'Not enough space in CC_SELACT.3c'
 C
          NBASI = MAX(NBAS(ISYM),1)
          NACTI = MAX(NACTVI(ISYM),1)
@@ -1210,7 +1266,7 @@ C
          KTMP2 = KTMP1 + NACTVI(ISYM)
          KEND4 = KTMP2 + NACTVI(ISYM)
          LWRK4 = LWORK - KEND4
-         IF (LWRK4 .LT. 0) STOP 'Not enough space in CC_SELACT.4b'
+         IF (LWRK4 .LT. 0) STOP 'Not enough space in CC_SELACT.4c'
 C
          NACTI = NACTVI(ISYM)
          MATZ  = 1
@@ -1223,7 +1279,7 @@ C
          KTRAN = KTMP1
          KEND5 = KTRAN + NACTVI(ISYM)*NBAS(ISYM)
          LWRK5 = LWORK - KEND5
-         IF (LWRK5 .LT. 0) STOP 'Not enough space in CC_SELACT.5b'
+         IF (LWRK5 .LT. 0) STOP 'Not enough space in CC_SELACT.5c'
 C
          NBASI = MAX(NBAS(ISYM),1)
          NACTI = MAX(NACTVI(ISYM),1)
@@ -1242,6 +1298,77 @@ C
             KOFF2 = KEVAL  + I - 1
             WORK(KOFF1) = WORK(KOFF2)
          END DO
+C
+C        Inactive virtual part
+C
+         KFCKAB = KEND2
+         KSCRAQ = KFCKAB + NINAVI(ISYM)*NINAVI(ISYM)
+         KEND3  = KSCRAQ + NINAVI(ISYM)*NBAS(ISYM)
+         LWRK3  = LWORK  - KEND3
+         IF (LWRK3 .LT. 0) STOP 'Not enough space in CC_SELACT.3d'
+c
+         NBASI = MAX(NBAS(ISYM),1)
+         NACTI = MAX(NINAVI(ISYM),1)
+
+         KOFF1 = KCMO   + IOFCMO(ISYM) + NRHF(ISYM)*NBAS(ISYM)
+     &         + NACTVI(ISYM)*NBAS(ISYM)
+         KOFF2 = KFCKAO + IOFDEN(ISYM)
+         KOFF3 = KSCRAQ
+         CALL DGEMM('T','N',NINAVI(ISYM),NBAS(ISYM),NBAS(ISYM),
+     &              ONE,WORK(KOFF1),NBASI,WORK(KOFF2),NBASI,
+     &              ZERO,WORK(KOFF3),NACTI)
+
+         KOFF1 = KSCRAQ
+         KOFF2 = KCMO   + IOFCMO(ISYM) + NRHF(ISYM)*NBAS(ISYM)
+     &         + NACTVI(ISYM)*NBAS(ISYM)
+         KOFF3 = KFCKAB
+         CALL DGEMM('N','N',NINAVI(ISYM),NINAVI(ISYM),NBAS(ISYM),
+     &              ONE,WORK(KOFF1),NACTI,WORK(KOFF2),NBASI,
+     &              ZERO,WORK(KOFF3),NACTI)
+C
+c        Diagonalize
+C
+         KEVAL = KEND3
+         KEVEC = KEVAL + NINAVI(ISYM)
+         KTMP1 = KEVEC + NINAVI(ISYM)*NINAVI(ISYM)
+         KTMP2 = KTMP1 + NINAVI(ISYM)
+         KEND4 = KTMP2 + NINAVI(ISYM)
+         LWRK4 = LWORK - KEND4
+         IF (LWRK4 .LT. 0) STOP 'Not enough space in CC_SELACT.4d'
+
+         NACTI = NINAVI(ISYM)
+         MATZ  = 1
+         CALL RS(NACTI,NACTI,WORK(KFCKAB),WORK(KEVAL),MATZ,
+     &           WORK(KEVEC),WORK(KTMP1),WORK(KTMP2),IERR)
+         IF (IERR .NE. 0) STOP 'Error diagonalizing virtual part'
+c
+c        Transform back and save
+c
+         KTRAN = KTMP1
+         KEND5 = KTRAN + NINAVI(ISYM)*NBAS(ISYM)
+         LWRK5 = LWORK - KEND5
+         IF (LWRK5 .LT. 0) STOP 'Not enough space in CC_SELACT.5d'
+
+         NBASI = MAX(NBAS(ISYM),1)
+         NACTI = MAX(NINAVI(ISYM),1)
+
+         KOFF = KCMO + IOFCMO(ISYM) + NRHF(ISYM)*NBAS(ISYM)
+     &         + NACTVI(ISYM)*NBAS(ISYM)
+         CALL DGEMM('N','N',NBAS(ISYM),NINAVI(ISYM),NINAVI(ISYM),
+     &              ONE,WORK(KOFF),NBASI,WORK(KEVEC),NACTI,
+     &              ZERO,WORK(KTRAN),NBASI)
+
+         LENGTH = NBAS(ISYM) * NINAVI(ISYM)
+         IF (LENGTH .NE. 0)
+     &       CALL DCOPY(LENGTH,WORK(KTRAN),1,WORK(KOFF),1)
+
+         DO I = 1,NINAVI(ISYM)
+            KOFF1 = KFKDIA + IORB(ISYM) + NRHF(ISYM)
+     &            + NACTVI(ISYM) + I - 1
+            KOFF2 = KEVAL  + I - 1
+            WORK(KOFF1) = WORK(KOFF2)
+         END DO
+
 C
       END DO
 C
@@ -1265,17 +1392,29 @@ C
 C
       IF (.NOT. DOMC) THEN
 C
-         WRITE(LUPRI,'(/,A)') 'Orbital energies of active orbitals'
+         WRITE(LUPRI,'(/,A)') 'Orbital energies of Cholesky orbitals'
          KOFF0 = KFKDIA
          DO ISYM = 1,NSYM
-            WRITE(LUPRI,'(/,A,I3)') 'Occupied block of symmetry :',ISYM
+            WRITE(LUPRI,'(/,2A,I3)') 'Inactive occupied block ',
+     &                               'of symmetry :',ISYM
+            KOFF1 = KOFF0
+            WRITE(LUPRI,'(4(I3,A,F11.6,5X))')
+     &                  (I,')',WORK(KOFF1+I-1),I=1,NINAOC(ISYM))
+            WRITE(LUPRI,'(/,2A,I3)') 'Active occupied block ',
+     &                               'of symmetry :',ISYM
             KOFF1 = KOFF0 + NINAOC(ISYM)
-            WRITE(LUPRI,'(4(I3,A,F11.6,5X))') 
+            WRITE(LUPRI,'(4(I3,A,F11.6,5X))')
      &                  (I,')',WORK(KOFF1+I-1),I=1,NACTOC(ISYM))
-            WRITE(LUPRI,'(/,A,I3)') 'Virtual  block of symmetry :',ISYM
+            WRITE(LUPRI,'(/,2A,I3)') 'Active virtual block ',
+     &                               'of symmetry :',ISYM
             KOFF2 = KOFF0 + NRHF(ISYM)
-            WRITE(LUPRI,'(4(I3,A,F11.6,5X))') 
+            WRITE(LUPRI,'(4(I3,A,F11.6,5X))')
      &                  (I,')',WORK(KOFF2+I-1),I=1,NACTVI(ISYM))
+            WRITE(LUPRI,'(/,2A,I3)') 'Inactive virtual block ',
+     &                               'of symmetry :',ISYM
+            KOFF2 = KOFF0 + NRHF(ISYM) + NACTVI(ISYM)
+            WRITE(LUPRI,'(4(I3,A,F11.6,5X))')
+     &                  (I,')',WORK(KOFF2+I-1),I=1,NINAVI(ISYM))
             KOFF0 = KOFF0 + NORB(ISYM)
          END DO
 C
@@ -1306,11 +1445,14 @@ C
       LUMOLDEN = -1
       CALL GPOPEN(LUMOLDEN,'MOLDEN2.INP','OLD',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
-C
+ 
   555 CONTINUE
       READ(LUMOLDEN,'(A8)',END=556) LINE
       GOTO 555
   556 CONTINUE
+#if defined (SYS_OSXLION)
+      BACKSPACE(LUMOLDEN)
+#endif
 C
 C_To do: Fix symmetry for molden
 C
@@ -1327,9 +1469,6 @@ C
       LWRK6 = LWORK - KEND6
       IF (LWRK6 .LT. 0) STOP 'Not enough space in CC_SELACT.6'
 C
-C     MOLDEN does not want occupied orbitals classified by symmetry
-C     Aparently it puts electron by itself according to orbital energies
-C
       CALL DZERO(WORK(KOCCU),NORBT)
       DO I = 1,NRHFT
          WORK(KOCCU+I-1) = TWO
@@ -1343,13 +1482,13 @@ c    &                  '   Occupation',WORK(KOCCU+I-1)
          END DO
       END IF
 C
-c     CALL MOMOS(1,WORK(KCMO),WORK(KOCCU),WORK(KAOSO),
-c    &           WORK(KUNPK),WORK(KOVEC))
-C
+      CALL MOMOS(1,WORK(KCMO),WORK(KOCCU),WORK(KAOSO),
+     &           WORK(KUNPK),WORK(KOVEC))
+ 
       CALL GPCLOSE(LUMOLDEN,'KEEP')
       LUMOLDEN = LUMOSV
 C
-C 666 CONTINUE
+  666 CONTINUE
 C
       WRITE(LUPRI,'(//,A,/)') 'Active Cholesky Molecular Orbitals'
       CALL PRORB(WORK(KCMO),PROCC,LUPRI)
@@ -1643,19 +1782,18 @@ C
       END IF
 C
       IF (NSYM .GT. 1) THEN
-         KOFF = 0
+         KOFF1 = 0
+         KOFF2 = 0
          DO ISYM = 1,NSYM
             DO I = 1,NACTBS(ISYM)
-               LACBAS(KOFF+I) = LACBAS(KOFF+I) - IBAS(ISYM)
+               LACBAS(KOFF1+I) = LACBAS(KOFF1+I) - IBAS(ISYM)
             END DO
+            KOFF1 = KOFF1 + NACTBS(ISYM)
 C
-            IF (INFO .AND. (IPRINT .GT. 10)) THEN
-               WRITE(LUPRI,'(/,A,I2,A)') 
-     &               'Selected basis of symmetry', ISYM, ' :'
-               WRITE(LUPRI,'(16I5)') (LACBAS(KOFF+I), I=1,NACTBS(ISYM))
-            END IF
-C
-            KOFF = KOFF + NACTBS(ISYM)
+            DO I = 1,NACBSV(ISYM)
+               LACBSV(KOFF2+I) = LACBSV(KOFF2+I) - IBAS(ISYM)
+            END DO
+            KOFF2 = KOFF2 + NACBSV(ISYM)
          END DO
       END IF
 C
@@ -1685,11 +1823,6 @@ C
       PARAMETER (TOL = 1.00D-9)
 C
 C
-      write(lupri,*) 'In dedeco'
-      write(lupri,*) 'Lacbas :', (ivec(i), i=1,nred)
-      write(lupri,*) 'mxvecl :',mxvecl
-      write(lupri,*) 'iopt :',iopt
-      write(lupri,*) 'thrs: ',thrs
       INEG = 0
       XSUM = 0.0D0
       DO I = 1,NDIM
