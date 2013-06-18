@@ -1227,6 +1227,7 @@ contains
 #ifdef VAR_MPI
       IERR=0
       if(ls_mpik==4)then
+        n=nbuf
         k=SPLIT_MPI_MSG
         do i=1,n,k
           n4=k
