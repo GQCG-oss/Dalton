@@ -214,7 +214,7 @@ INTEGER            :: LUCMD !Logical unit number for the daltoninput
 INTEGER            :: IDUMMY,IPOS,IPOS2,COUNTER
 character(len=80)  :: WORD,TMPWORD
 character(len=2)   :: PROMPT
-LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS,doresponse
+LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS
 !LINSCA variables:
 real(realk)        :: shift, min_density_overlap, maxratio, zero
 integer            :: nvec, i
@@ -223,7 +223,6 @@ Real(realk)  :: hfweight
 STARTGUESS = .FALSE.
 Config%integral%cfg_lsdalton = .TRUE.
 COUNTER = 0
-doresponse=.false.
 
 INQUIRE(file='LSDALTON.INP',EXIST=file_exists) 
 IF(file_exists)THEN
@@ -652,7 +651,6 @@ DO
 
    ! KK, change from $RESPONS to **RESPONS to be consistent with other input structure.
    ResponseInput: IF (WORD(1:9) == '**RESPONS') THEN
-      doresponse=.true.
       READWORD=.TRUE.
       call config_rsp_input(config,lucmd,readword,WORD)
    END IF ResponseInput
@@ -818,8 +816,6 @@ if(config%solver%do_dft)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
    call init_dftfunc(config%integral%DFT)
 endif
-! Check that DEC input is consistent with geometry optimization and orbital localization.
-call DEC_meaningful_input(config,doresponse)
 
 END SUBROUTINE read_dalton_input
 
@@ -829,20 +825,23 @@ END SUBROUTINE read_dalton_input
 !> If necessary, modify config structure to comply with DEC calculation.
 !> \author Kasper Kristensen
 !> \date April 2013
-subroutine DEC_meaningful_input(config,doresponse)
+subroutine DEC_meaningful_input(config)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(ConfigItem), intent(inout) :: config
-  !> Do Response calculation?
-  logical,intent(in) :: doresponse
 
 
   ! Only make modifications to config for DEC calculation AND if it is not
   ! a full CC calculation
   DECcalculation: if(config%doDEC) then
 
+     ! DEC does not work for SCALAPACK
+     if(matrix_type==mtype_scalapack) then
+        call lsquit('Error in input: **DEC or **CC cannot be used together with .SCALAPACK!',-1)
+     end if
+
      ! DEC and response do not go together right now...
-     if(doresponse) then
+     if(config%response%tasks%doResponse) then
         call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONS!',-1)
      end if
 
@@ -892,9 +891,6 @@ subroutine DEC_meaningful_input(config,doresponse)
      end if OrbLocCheck
 
   end if DECcalculation
-
-
-  ! Special case: Restart full calculation fr
 
 
 end subroutine DEC_meaningful_input
@@ -3438,7 +3434,9 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
        write(config%lupri,*) ' system, use options  .START/TRILEVEL and .LCM in *DENSOPT section.   '  
        write(config%lupri,*) 
    endif 
-   
+
+   ! Check that DEC input is consistent with geometry optimization and orbital localization.
+   call DEC_meaningful_input(config,config%response%tasks%doResponse)
 
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
