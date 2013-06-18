@@ -165,6 +165,7 @@ implicit none
 integer          :: Totalnatoms,ipos,ipos2,natoms,I,J
 integer          :: LUINFO,Atomtypes,numbertypes
 CHARACTER(len=80):: LINE
+CHARACTER(len=120):: LINE120
 LOGICAL          :: FOUND,BASIS
 INTEGER          :: LUPRI
 INTEGER          :: MolecularCharge,ios
@@ -176,7 +177,8 @@ rewind(LUINFO)
 BASIS=.FALSE.
 
 DO
-  READ (LUINFO,'(a80)') LINE
+  READ (LUINFO,'(a120)') LINE120
+  call TestLength(LINE120,120,LINE,80)
   IF (LINE(1:1) == '!' .or. LINE(1:1) == '#') CYCLE
   EXIT
 ENDDO
@@ -206,7 +208,8 @@ ENDIF
 
 IF(BASIS) THEN
    DO
-      READ (LUINFO,'(a80)') LINE  !BASISSETLINE
+      READ (LUINFO,'(a80)') LINE120  !BASISSETLINE
+      call TestLength(LINE120,120,LINE,80)
       IF (LINE(1:1) == '!' .or. LINE(1:1) == '#') CYCLE
       EXIT
    ENDDO
@@ -218,7 +221,8 @@ Totalnatoms=0
 FOUND=.FALSE.
 DO   
   IF (FOUND) EXIT
-  READ (LUINFO,'(a80)') LINE
+  READ (LUINFO,'(a80)') LINE120
+  call TestLength(LINE120,120,LINE,80)
   IPOS = INDEX(LINE,'Atomtypes')
   IF (IPOS .EQ. 0) IPOS = INDEX(LINE,'AtomTypes')
   IF (IPOS .NE. 0) THEN
@@ -250,7 +254,8 @@ ENDDO
 numbertypes=1
 DO 
   IF(numbertypes>Atomtypes) EXIT
-  READ (LUINFO,'(a80)') LINE
+  READ (LUINFO,'(a80)') LINE120
+  call TestLength(LINE120,120,LINE,80)
   IPOS = INDEX(LINE,'Atoms')
   IF (IPOS .NE. 0) THEN
     IPOS2 = INDEX(LINE(IPOS:),'=')
@@ -264,7 +269,8 @@ DO
     ENDIF
     Totalnatoms=Totalnatoms+nAtoms
     DO J=1,nAtoms
-       READ (LUINFO, '(a80)') LINE
+       READ (LUINFO, '(a80)') LINE120
+       call TestLength(LINE120,120,LINE,80)
     ENDDO
   ELSE !OLD INPUT
      READ (LINE,'(BN,F10.0,I5)',IOSTAT=ios) AtomicCharge, nAtoms
@@ -276,13 +282,39 @@ DO
      numbertypes=numbertypes+1
      Totalnatoms=Totalnatoms+nAtoms
      DO J=1,nAtoms
-        READ (LUINFO, '(a80)') LINE
+        READ (LUINFO, '(a80)') LINE120
+        call TestLength(LINE120,120,LINE,80)
      ENDDO
   ENDIF
 ENDDO
 !CALL LSCLOSE(LUINFO,'KEEP')
 
 END SUBROUTINE Obtain_Totalnatoms
+
+subroutine TestLength(LINEBIG,NBIG,LINE,NSMALL)
+integer,intent(in) :: NBIG,NSMALL
+CHARACTER(len=NBIG),intent(in)  :: LINEBIG
+CHARACTER(len=NSMALL)  :: LINE
+
+IF(LINEBIG(1:1) == '!' .OR. LINEBIG(1:1) == '#')THEN
+   !comment line we just truncate 
+ELSE
+   do I=NSMALL+1,NBIG
+      IF(LINEBIG(I:I) .ne. ' ')THEN
+         
+         WRITE(LUPRI,'(//A/2A/2A//A,I5/A)')&
+              &   ' FATAL ERROR -- line in MOLECULE.INP file truncated',&
+              &   ' Line from file: ',LINEBIG,&
+              &   ' Truncated line: ',LINEBIG(1:NSMALL),&
+              &   ' NOTE: maximum length of an input line in MOLECULE file is',&
+              &     NSMALL,&
+              &   ' Rewrite the offending input line and be welcome back!'
+         CALL LSQUIT('Too long input line in MOLECULE.INP file',-1)      
+      ENDIF
+   ENDDO
+ENDIF
+LINE(1:NSMALL) = LINEBIG(1:NSMALL)
+end subroutine TestLength
 
 !> \brief read the first line of molecule file (BASIS or ATOMBASIS)
 !> \author T. Kjaergaard
@@ -294,12 +326,14 @@ END SUBROUTINE Obtain_Totalnatoms
 SUBROUTINE READ_LINE1(LUPRI,LUINFO,BASIS,ATOMBASIS)
 implicit none
 CHARACTER(len=80)  :: WORD
+CHARACTER(len=120)  :: WORD120
 LOGICAL            :: BASIS,ATOMBASIS
 INTEGER            :: LUINFO,IPOS,IPOS2,LUPRI
 
 rewind(LUINFO)
 DO
-  READ (LUINFO,'(a80)') WORD
+  READ (LUINFO,'(a80)') WORD120
+  call TestLength(WORD120,120,WORD,80)
   IF(WORD(1:1) == '!' .OR. WORD(1:1) == '#') CYCLE
   EXIT
 ENDDO
@@ -347,6 +381,7 @@ SUBROUTINE READ_LINE2(LUPRI,LUINFO,IPRINT,BASISSET,AUXBASISSET,AUXBASIS,&
      & CABSBASISSET,CABSBASIS,JKBASISSET,JKBASIS)
 implicit none
 CHARACTER(len=80)  :: WORD,BASISSET,AUXBASISSET,CABSBASISSET,JKBASISSET
+CHARACTER(len=120)  :: WORD120
 INTEGER            :: N,I,K,Itmp,M,L
 LOGICAL            :: NEXT,AUXBASIS,CABSBASIS,JKBASIS
 INTEGER            :: LUINFO
@@ -359,7 +394,8 @@ DO I=1,80
   BASISSET(I:I) = ' '
   AUXBASISSET(I:I) = ' '
 ENDDO
-READ (LUINFO, '(a80)') WORD
+READ (LUINFO, '(a80)') WORD120
+call TestLength(WORD120,120,WORD,80)
 BAS=0
 NEXT = .FALSE.
 DO I=1,80
@@ -491,11 +527,11 @@ SUBROUTINE READ_COMMENTS(LUPRI,LUINFO,PRINTING)
 implicit none
 INTEGER  :: LUINFO,LUPRI
 LOGICAL  :: PRINTING
-CHARACTER(len=60):: LINE 
+CHARACTER(len=80):: LINE 
 
-READ (LUINFO, '(2X,a80)') LINE
+READ (LUINFO, '(a80)') LINE
 IF (PRINTING) WRITE(LUPRI,*)LINE
-READ (LUINFO, '(2X,a80)') LINE
+READ (LUINFO, '(a80)') LINE
 IF (PRINTING) WRITE(LUPRI,*)LINE
 
 END SUBROUTINE READ_COMMENTS
@@ -520,13 +556,15 @@ Real(realk)      :: Charge
 LOGICAL          :: DoSpherical,Angstrom,Symmetry,doprint
 CHARACTER(len=2) :: SYMTXT,ID3
 CHARACTER(len=80):: LINE 
+CHARACTER(len=120):: LINE120 
 INTEGER          :: LUINFO,IOS,i,j
 CHARACTER(len=1) :: KASYM(3,3),CRT
 INTEGER          :: LUPRI
 CHARACTER(len=3) :: pbc_check
 LOGICAL,INTENT(INOUT) :: setup_pbclatt
 
-READ (LUINFO, '(a80)') LINE
+READ (LUINFO, '(a80)') LINE120
+call TestLength(LINE120,120,LINE,80)
   ! Number of different atom types
   IPOS = INDEX(LINE,'Ato')
   IF (IPOS .NE. 0) THEN
@@ -731,6 +769,7 @@ LOGICAL            :: ATOMBASIS,BASIS,Angstrom,dopbc,AUXBASIS,doprint
 LOGICAL            :: CABSBASIS,JKBASIS
 real(realk)        :: AtomicCharge
 CHARACTER(len=80)  :: LINE,Atomicbasisset,Auxbasisset,Cabsbasisset,JKbasisset  
+CHARACTER(len=120) :: LINE120
 CHARACTER(len=1)   :: CHRXYZ(3)=(/'x','y','z'/)
 INTEGER            :: LUPRI,basissetnumber,basissetnumber1,basissetnumber2
 INTEGER            :: unique1,unique2,uniqueCharge,IPRINT
@@ -923,7 +962,8 @@ DO I=1,Atomtypes
     MOLECULE%ATOM(AtomNumber)%molecularIndex = AtomNumber
     !READ_ATOMCOORD 
 
-    READ (LUINFO, '(a80)') LINE
+    READ (LUINFO, '(a80)') LINE120
+    call TestLength(LINE120,120,LINE,80)
 
     IPOS = INDEX(LINE,' ')
     IF (IPOS .LT. 2) THEN
@@ -1183,11 +1223,13 @@ implicit none
 real(realk)        :: AtomicCharge
 INTEGER            :: IPOS,IPOS2,IPOS3,nAtoms,LUINFO
 CHARACTER(len=80)  :: TEMPLINE,Atomicbasisset,Auxbasisset,CABSbasisset,JKbasisset
+CHARACTER(len=120)  :: LINE120
 LOGICAL            :: ATOMBASIS,BASIS,AUXBASIS,pointcharge,phantom,CABSBASIS,JKBASIS
 CHARACTER(len=5)   :: StringFormat
 INTEGER            :: LUPRI,ios,I
 
-READ (LUINFO, '(a80)') TEMPLINE
+READ (LUINFO, '(a80)') LINE120
+call TestLength(LINE120,120,TEMPLINE,80)
 IPOS = INDEX(TEMPLINE,'Cha')
 IF (IPOS .NE. 0 ) THEN
    IPOS2 = INDEX(TEMPLINE(IPOS:),'=')
