@@ -131,8 +131,9 @@ Cholesky
 Cholesky
 C
       CALL QENTER('CC_FOP')
-C     Initialize NATOCC logical
-      NATOCC = .false.
+C     Initialize variable for natural occupation numbers to false
+      NATOCC = .FALSE.
+
 C     Define CCDC and initialize local variables
       CCDC = CCSLV .AND. (.NOT. CCMM)
       CCMMCONV = .FALSE.
@@ -1401,7 +1402,7 @@ C
       !Sonia
       write(lupri,*)'CCFOP: call CC_D1AO to recalc the 1e Density'
       call flshfo(lupri)
-      natocc=.true.
+      NATOCC=.TRUE.
       !
       CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
      &             LWRK3,MODEL, LIST,ILSTNR,NATOCC,
