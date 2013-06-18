@@ -2,7 +2,7 @@
 #AUTHOR: PATRICK ETTENHUBER
 #EMAIL : pett@chem.au.dk, pettenhuber@gmail.com
 #DATE  : JUNE, 2013
-import sys,datetime,math,os#,itertools
+import sys,datetime,os#,itertools,math
 from random import randrange
 """This file is inteded for the automatic generation of a data sorting module in LSDALTON
 As data sorting is under constant development and features many lines of code this script was
@@ -620,7 +620,7 @@ def write_testing_framework(f,minr,maxr):
           write (LUPRI,'(A3,f4.1,A3,f4.1,A2)')\"B= \",pr1,\"*A+\",pr2,\"*B\"\n\n"
     f.write(words)
     pc = 0
-    maxperms = math.factorial(mode)
+    maxperms = factorial(mode)
     for perm in permutations(list(xrange(mode))):
       testcase="\
           call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
@@ -737,7 +737,7 @@ def write_testing_framework(f,minr,maxr):
           write (LUPRI,'(A3,f4.1,A3,f4.1,A2)')\"B= \",pr1,\"*A+\",pr2,\"*B\"\n\n"
     f.write(words)
     pc = 0
-    maxperms = math.factorial(mode)
+    maxperms = factorial(mode)
     for perm in permutations(list(xrange(mode))):
 
       #TEST THE FROM FORT REORDERINGS
@@ -980,7 +980,11 @@ def combinations(iterable, r):
 
 ##################################################################################################
 ##################################################################################################
-
+def factorial(d):
+   k=1
+   for i in range(1,d+1):
+     k *= i
+   return k
 
 abc = "abcdefghijklmnopqrstuvwxyz"
 main()
