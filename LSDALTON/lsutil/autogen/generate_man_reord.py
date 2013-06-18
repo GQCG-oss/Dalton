@@ -33,7 +33,7 @@ def main():
     if "CMAKE_BUILD=" in sys.argv[i]:
       args[2] = sys.argv[i][sys.argv[i].find("=")+1:]
     
-  print args
+  print sys.argv
   #GET THE FOLDER TO STORE THE manual_reorderings.F90
   cwd = os.getcwd()
   lsutildir = cwd

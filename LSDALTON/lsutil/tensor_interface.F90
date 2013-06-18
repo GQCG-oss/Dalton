@@ -3989,6 +3989,8 @@ contains
     call print_norm(test%elm1,test%nelms,ref)
     call array_convert(test%elm1,test2,[4,2,1,3])
     call lsmpi_barrier(infpar%lg_comm)
+    call print_norm(test2,normher)
+    print *,"convert",ref,normher
     call array_mv_dense2tiled(test,.false.)
     call memory_allocate_array_dense(test2)
     call lsmpi_barrier(infpar%lg_comm)
@@ -3998,7 +4000,7 @@ contains
       call mem_alloc(tileget,j)
       call array_get_tile(test2,i,tileget,j)
       call tile_in_fort(1.0E0_realk,tileget,i,test2%tdim,0.0E0_realk,&
-                        &test2%elm1,test2%dims,4,[3,2,4,1])
+                        &test2%elm1,test%dims,4,[3,2,4,1])
       call mem_dealloc(tileget)
     enddo
     call lsmpi_barrier(infpar%lg_comm)
