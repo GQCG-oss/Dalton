@@ -75,7 +75,7 @@ where the ARH method have been augmented by a linesearch.
 
 \section{Large MPI Jobs}
 
-For large HF/KS calculation all matrix operations are parallized through the use of the SCALAPACK library, which is activated through the .SCALAPACK keyword 
+For large HF/KS calculations all matrix operations can be parallized through the use of the SCALAPACK library, which is activated through the .SCALAPACK keyword 
 
 \begin{verbatim}
 **GENERAL
@@ -92,7 +92,9 @@ STANDARD
 *END OF INPUT
 \end{verbatim}
 
-When you want to perform a large scale MPI calculation you usually wants to run it on a super computer cluster. This means you need to understand how the supercomputer works and how you can achieve the best performance. Some testing may be required. The {\lsdalton} program is a MPI/OpenMP hybrid code which means that you may want to use 1 MPI process per compute node and exploit all the cores on the compute node using OpenMP. However some supercomputer use hyper-threading so even if the super computer homepage suggest that there are 16 cores pr. node  it may be more efficient to run with 8 OpenMP threads pr node/MPI process.    
+{\bf Warning: The .SCALAPACK keyword cannot be used with the **DEC or *CC sections!}
+
+When you want to perform a large scale MPI calculation you usually want to run it on a super computer cluster. This means you need to understand how the supercomputer works and how you can achieve the best performance. Some testing may be required. The {\lsdalton} program is a MPI/OpenMP hybrid code which means that you may want to use 1 MPI process per compute node and exploit all the cores on the compute node using OpenMP. However some supercomputers use hyper-threading so even if the super computer homepage suggest that there are 16 cores per node  it may be more efficient to run with 8 OpenMP threads per node.    
 
 The super computer cluster most likely use some queing system like PBS, which means you need to construct a submisssion script that may look something like:
 
