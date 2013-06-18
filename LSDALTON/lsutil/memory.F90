@@ -1490,7 +1490,8 @@ integer (kind=long) :: nsize
    nullify(A)
    ALLOCATE(A(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_allocate_1dim_int64',IERR,n
+     write(*,'("ERROR(real_allocate_1dim_int64),status=",I6," n=",I15," GBallocd=",f19.10)')&
+     &IERR,n,1.0E-9_realk*mem_allocated_global
      CALL memory_error_quit('Error in real_allocate_1dim_int64')
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize

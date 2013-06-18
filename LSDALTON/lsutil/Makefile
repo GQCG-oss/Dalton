@@ -3,7 +3,9 @@ all: liblsutil.a
 include ../Makefile.config
 
 manual_reorderings.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ./autogen/generate_man_reord.py nocollapse ${CPPFLAGS}
+manual_utils.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py nocollapse ${CPPFLAGS}
 
 # Keep the file lists sorted for easier modification.
 
@@ -94,7 +96,7 @@ liblsutil.a: $(F90_OBJS) $(C_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD manual_reorderings.F90
+	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD manual_reorderings.F90 manual_utils.F90
 
 
 Makefile.depend depend: $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
