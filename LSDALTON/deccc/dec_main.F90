@@ -17,6 +17,7 @@ module dec_main_mod
   use memory_handling!,only: mem_alloc, mem_dealloc
   use dec_typedef_module
   use files !,only:lsopen,lsclose
+  use manual_reorderings_module
   use tensor_interface_module
 
 
@@ -110,7 +111,7 @@ contains
     ! Reorder test
     if (DECinfo%reorder_test)then
       print *,"TEST REORDERINGS"
-      call test_array_reorderings()
+      call test_array_reorderings(DECinfo%output)
       return
     endif
 

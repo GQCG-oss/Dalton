@@ -7,7 +7,7 @@ add_library(
     )
 
 if(ENABLE_GEN1INT)
-    add_subdirectory(DALTON/gen1int)
+    add_subdirectory(DALTON/gen1int ${CMAKE_BINARY_DIR}/gen1int)
     add_dependencies(dalton gen1int_interface)
     set(LIBS
         gen1int_interface
