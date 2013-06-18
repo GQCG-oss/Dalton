@@ -3436,7 +3436,7 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    endif 
 
    ! Check that DEC input is consistent with geometry optimization and orbital localization.
-   call DEC_meaningful_input(config,config%response%tasks%doResponse)
+   call DEC_meaningful_input(config)
 
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
