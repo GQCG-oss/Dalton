@@ -9,6 +9,7 @@ following environment variables::
   $ export DALTON_TMPDIR=/scratch        # scratch space for Dalton (adapt the path of course)
   $ export DALTON_NR_MPI_PROCS=4         # in this case 4 cores, only relevant if you compile with MPI
 
+Note that if you set the DALTON_NR_MPI_PROCS to something different from 1 it will assume you have compiled using MPI and run the mpirun command!
 
 Testing
 -------
