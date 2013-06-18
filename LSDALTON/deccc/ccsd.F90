@@ -2419,12 +2419,12 @@ contains
 
 
 !#ifdef VAR_LSDEBUG
-    if(print_debug)write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)'),infpar%mynum,myload,wait_time
+    if(print_debug)write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)') infpar%mynum,myload,wait_time
     call lsmpi_local_reduction(wait_time,infpar%master)
     call lsmpi_local_max(max_wait_time,infpar%master)
     if(master.and.print_debug)then
       write(*,'("----------------------------------------------------------")')
-      write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)'),wait_time,wait_time/(infpar%nodtot*1.0E0_realk),max_wait_time
+      write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)') wait_time,wait_time/(infpar%nodtot*1.0E0_realk),max_wait_time
     endif
 !#endif
     if (master) call LSTIMER('CCSD part B',time_start,timewall_start,DECinfo%output)
@@ -2567,7 +2567,7 @@ contains
 
 !OUTPUT
 #ifdef VAR_MPI
-        if(DECinfo%PL>1)write(*,'(I3,"C and D   :",f15.4)'),infpar%lg_mynum,stopp-startt
+        if(DECinfo%PL>1)write(*,'(I3,"C and D   :",f15.4)') infpar%lg_mynum,stopp-startt
 #else
         if(DECinfo%PL>1)write(*,'("C and D   :",f15.4)')stopp-startt
 #endif
@@ -2998,7 +2998,7 @@ contains
        a=a+1
        if(a>na)return
 #ifdef VAR_MPI
-       if(prnt) write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")'),infpar%mynum,&
+       if(prnt) write (*, '("Rank ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') infpar%mynum,&
        &a,na,g,ng
 #else
        if(prnt) write (*, '("starting job (",I3,"/",I3,",",I3,"/",I3,")")')a,&

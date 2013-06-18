@@ -1609,17 +1609,17 @@ module lspdm_tensor_operations_module
       do i=1,infpar%lg_nodtot
         if(infpar%lg_mynum+1==i)then
           write(*,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
-          write(*,'("Printing memory information for rank",I3)'),infpar%lg_mynum
+          write(*,'("Printing memory information for rank",I3)') infpar%lg_mynum
           write(*,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
           call array_print_memory_currents(output)
           write(*,'("")')
-          write(*,'(" Printing one-sided transfer information for rank",I3)'),infpar%lg_mynum
+          write(*,'(" Printing one-sided transfer information for rank",I3)') infpar%lg_mynum
           write(*,'(" ***************************************************")')
-          write(*,'(I6," acc: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.4," MB/s")'),&
+          write(*,'(I6," acc: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.4," MB/s")') &
           &nmsg_acc,mb_acc,time_pdm_acc,speed_acc
-          write(*,'(I6," put: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.4," MB/s")'),&
+          write(*,'(I6," put: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.4," MB/s")') &
           &nmsg_put,mb_put,time_pdm_put,speed_put
-          write(*,'(I6," get: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.4," MB/s")'),&
+          write(*,'(I6," get: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.4," MB/s")') &
           &nmsg_get,mb_get,time_pdm_get,speed_get
           write(*,'(" currently",I4," arrays allocated")')p_arr%arrays_in_use
           write(*,'("")')
@@ -1681,11 +1681,11 @@ module lspdm_tensor_operations_module
         write(*,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
         write(*,'("Printing one-sided transfer information summary")')
         write(*,'("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")')
-        write(*,'(I9," Total acc: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.8," MB/s")'),&
+        write(*,'(I9," Total acc: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.8," MB/s")') &
         &int(total(7)),total(1),total(4),speed_acc
-        write(*,'(I9," Total put: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.8," MB/s")'),&
+        write(*,'(I9," Total put: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.8," MB/s")') &
         &int(total(8)),total(2),total(5),speed_put
-        write(*,'(I9," Total get: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.8," MB/s")'),&
+        write(*,'(I9," Total get: ",f15.4," MB in ",f15.4," s, bandwidth ",f15.8," MB/s")') &
         &int(total(9)),total(3),total(6),speed_get
       endif
     endif
@@ -2349,7 +2349,7 @@ module lspdm_tensor_operations_module
     if(infpar%lg_mynum==0.and.present(nrm))then
       nrm = norm
     elseif(infpar%lg_mynum==0)then
-      write(DECinfo%output,'("LOCAL TILE NORM ON",I3,f20.15)'),dest,sqrt(norm)
+      write(DECinfo%output,'("LOCAL TILE NORM ON",I3,f20.15)') dest,sqrt(norm)
     endif
 #endif
   end subroutine array_tiled_pdm_print_ti_nrm
