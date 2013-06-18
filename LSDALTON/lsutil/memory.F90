@@ -1919,7 +1919,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
 
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_dV8):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
     endif
 
@@ -1927,7 +1927,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_dV8):error in alloc",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_dV8):error in alloc",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
@@ -1959,7 +1959,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
 
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_dV4):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
     endif
 
@@ -1967,7 +1967,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_dV4):error in alloc",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_dV4):error in alloc",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
@@ -1999,7 +1999,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    call MPI_TYPE_GET_EXTENT(MPI_INTEGER,lb,mpi_intlen,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_iV):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
@@ -2007,7 +2007,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_iV):error in alloc",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_iV):error in alloc",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
    call c_f_pointer(cip,A,[n])
@@ -2036,7 +2036,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    call MPI_TYPE_GET_EXTENT(MPI_INTEGER,lb,mpi_intlen,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_iV):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
@@ -2050,7 +2050,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
 
    call MPI_FREE_MEM(A,IERR)
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_iV):error in MPI_FREE_MEM",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_iV):error in MPI_FREE_MEM",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
@@ -2076,7 +2076,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_realk,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_dV):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
@@ -2091,7 +2091,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_FREE_MEM(A,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_dV):error in MPI_FREE_MEM",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_dV):error in MPI_FREE_MEM",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
