@@ -818,8 +818,6 @@ if(config%solver%do_dft)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
    call init_dftfunc(config%integral%DFT)
 endif
-! Check that DEC input is consistent with geometry optimization and orbital localization.
-call DEC_meaningful_input(config,doresponse)
 
 END SUBROUTINE read_dalton_input
 
@@ -829,12 +827,10 @@ END SUBROUTINE read_dalton_input
 !> If necessary, modify config structure to comply with DEC calculation.
 !> \author Kasper Kristensen
 !> \date April 2013
-subroutine DEC_meaningful_input(config,doresponse)
+subroutine DEC_meaningful_input(config)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(ConfigItem), intent(inout) :: config
-  !> Do Response calculation?
-  logical,intent(in) :: doresponse
 
 
   ! Only make modifications to config for DEC calculation AND if it is not
@@ -847,7 +843,7 @@ subroutine DEC_meaningful_input(config,doresponse)
      end if
 
      ! DEC and response do not go together right now...
-     if(doresponse) then
+     if(config%response%tasks%doResponse) then
         call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONS!',-1)
      end if
 
@@ -3440,7 +3436,9 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
        write(config%lupri,*) ' system, use options  .START/TRILEVEL and .LCM in *DENSOPT section.   '  
        write(config%lupri,*) 
    endif 
-   
+
+   ! Check that DEC input is consistent with geometry optimization and orbital localization.
+   call DEC_meaningful_input(config,config%response%tasks%doResponse)
 
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
