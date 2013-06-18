@@ -333,6 +333,7 @@ set(LSUTIL_MATRIXU_SOURCES
     lsutil/matrix_defop.F90
     )
 
+
 set(LSUTIL_TYPE_SOURCES
     lsutil/AO_operations.F90
     lsutil/Molecule_operations.F90
@@ -352,8 +353,6 @@ set(LSUTIL_TYPE_SOURCES
     lsutil/lspdm_basic.F90
     lsutil/tensor_basic.F90
     lsutil/lspdm_tensor_operations.F90
-    lsutil/manual_reorderings.F90
-    lsutil/manual_utils.F90
     )
 
 set(LSUTILLIB_SOURCES
