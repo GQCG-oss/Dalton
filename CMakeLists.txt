@@ -149,5 +149,5 @@ include(ConfigMakeInstall)
 include(ConfigMakeRelease)
 
 # give information about system, compiler flags, and size of static allocations
-set(STATIC_MEM_INFO_BINARIES dalton)
+set(STATIC_MEM_INFO_BINARIES dalton lsdalton)
 include(ConfigInfo)
