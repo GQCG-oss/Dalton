@@ -1402,7 +1402,7 @@ C
       !Sonia
       write(lupri,*)'CCFOP: call CC_D1AO to recalc the 1e Density'
       call flshfo(lupri)
-      NATOCC=.FALSE.
+      NATOCC=.TRUE.
       !
       CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
      &             LWRK3,MODEL, LIST,ILSTNR,NATOCC,
