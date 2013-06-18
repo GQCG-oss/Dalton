@@ -292,17 +292,19 @@ ENDDO
 END SUBROUTINE Obtain_Totalnatoms
 
 subroutine TestLength(LINEBIG,NBIG,LINE,NSMALL)
+implicit none
 integer,intent(in) :: NBIG,NSMALL
 CHARACTER(len=NBIG),intent(in)  :: LINEBIG
 CHARACTER(len=NSMALL)  :: LINE
-
+!
+integer :: I
 IF(LINEBIG(1:1) == '!' .OR. LINEBIG(1:1) == '#')THEN
    !comment line we just truncate 
 ELSE
    do I=NSMALL+1,NBIG
       IF(LINEBIG(I:I) .ne. ' ')THEN
          
-         WRITE(LUPRI,'(//A/2A/2A//A,I5/A)')&
+         WRITE(6,'(//A/2A/2A//A,I5/A)')&
               &   ' FATAL ERROR -- line in MOLECULE.INP file truncated',&
               &   ' Line from file: ',LINEBIG,&
               &   ' Truncated line: ',LINEBIG(1:NSMALL),&
