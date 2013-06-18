@@ -58,7 +58,9 @@ target_link_libraries(pdpacklib matrixulib)
 # automatially generate the manual_reorderdings.F90
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/manual_reorderings.F90 PROPERTIES GENERATED 1)
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/manual_utils.F90 PROPERTIES GENERATED 1)
-execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py nocollapse VAR_LSDEBUG CMAKE_BUILD=${CMAKE_BINARY_DIR}  ${LIST_OF_DEFINITIONS})
+get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
+execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py nocollapse VAR_LSDEBUG CMAKE_BUILD=${CMAKE_BINARY_DIR} ${LIST_OF_DEFINITIONS})
+unset(LIST_OF_DEFINITIONS)
 
 add_library(
     lsutiltypelib_common
