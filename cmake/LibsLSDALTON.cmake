@@ -1,19 +1,17 @@
 if(ENABLE_SCALASCA)
     set(SCALASCA_INSTRUMENT ${CMAKE_Fortran_COMPILER})
     configure_script(
-        ${CMAKE_SOURCE_DIR}/scalasca.in
-        ${CMAKE_SOURCE_DIR}/scalascaf90.sh
+        ${CMAKE_SOURCE_DIR}/LSDALTON/scalasca.in
+        ${PROJECT_BINARY_DIR}/scalascaf90.sh
         )
     set(SCALASCA_INSTRUMENT ${CMAKE_C_COMPILER})
     configure_script(
-        ${CMAKE_SOURCE_DIR}/scalasca.in
-        ${CMAKE_SOURCE_DIR}/scalascaCC.sh
+        ${CMAKE_SOURCE_DIR}/LSDALTON/scalasca.in
+        ${PROJECT_BINARY_DIR}/scalascaCC.sh
         )
     unset(SCALASCA_INSTRUMENT)
-    SET(CMAKE_Fortran_COMPILER "../scalascaf90.sh")
-    SET(CMAKE_C_COMPILER "../scalascaCC.sh")
-    MESSAGE(STATUS "Fortran Compiler " ${CMAKE_Fortran_COMPILER})
-    MESSAGE(STATUS "C Compiler       " ${CMAKE_C_COMPILER})
+    SET(CMAKE_Fortran_COMPILER "${PROJECT_BINARY_DIR}/scalascaf90.sh")
+    SET(CMAKE_C_COMPILER "${PROJECT_BINARY_DIR}/scalascaCC.sh")
 endif()
 
 add_library(
@@ -59,7 +57,8 @@ target_link_libraries(pdpacklib matrixulib)
 
 # automatially generate the manual_reorderdings.F90
 SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/manual_reorderings.F90 PROPERTIES GENERATED 1)
-execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py nocollapse ${LIST_OF_DEFINITIONS})
+SET_SOURCE_FILES_PROPERTIES(${CMAKE_SOURCE_DIR}/lsutil/manual_utils.F90 PROPERTIES GENERATED 1)
+execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/lsutil/autogen/generate_man_reord.py nocollapse CMAKE_BUILD=${CMAKE_BINARY_DIR} ${DirDefs})
 
 add_library(
     lsutiltypelib_common

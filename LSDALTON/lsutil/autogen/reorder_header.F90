@@ -1,4 +1,81 @@
 
+  interface get_midx
+    module procedure get_mode_idx8,get_mode_idx4
+  end interface get_midx
+
+  interface get_cidx
+    module procedure get_comp_idx
+  end interface get_cidx
+
+  contains
+
+  !> \author Patrick Ettenhuber
+  !> \date June 2012
+  !> \brief get mode index from composite index
+  subroutine get_mode_idx8(a,inds,dims,modes)
+    implicit none
+    integer(kind=8),intent(in):: a
+    integer,intent(in)        :: dims(*),modes
+    integer,intent(inout)     :: inds(*)
+    integer(kind=8)           :: i,cind,ndim
+    select case(modes)
+    case default
+      cind=a
+      do i=1,modes
+        ndim = dims(i)
+        inds(i)=mod(cind-1,ndim)+1
+        cind=(cind-inds(i))/dims(i) + 1
+      enddo
+    end select
+  end subroutine get_mode_idx8
+  !> \author Patrick Ettenhuber
+  !> \date June 2012
+  !> \brief get mode index from composite index
+  subroutine get_mode_idx4(a,inds,dims,modes)
+    implicit none
+    integer(kind=4),intent(in):: a
+    integer,intent(in)        :: dims(*),modes
+    integer,intent(inout)     :: inds(*)
+    integer(kind=4)           :: i,cind
+    select case(modes)
+    case default
+      cind=a
+      do i=1,modes
+        inds(i)=mod(cind-1,dims(i))+1
+        cind=(cind-inds(i))/dims(i) + 1
+      enddo
+    end select
+  end subroutine get_mode_idx4
+
+  !> \author Patrick Ettenhuber
+  !> \date June 2012
+  !> \brief get composite index from mode index
+  function get_comp_idx(inds,dims,modes) result(a)
+    implicit none
+    integer,intent(in) :: inds(modes),dims(modes),modes
+    integer :: i,j,cdim,cd(modes-2)
+    integer :: a,b
+    select case(modes)
+    case(2)
+      a=inds(1)+(inds(2)-1)*dims(1)
+    case(3)
+      cd(1) = dims(1)*dims(2)
+      a=inds(1)+(inds(2)-1)*dims(1)+(inds(3)-1)*cd(1)
+    case(4)
+      cd(1) = dims(1)*dims(2)
+      cd(2) = dims(1)*dims(2)*dims(3)
+      a=inds(1)+(inds(2)-1)*dims(1)+(inds(3)-1)*cd(1)+(inds(4)-1)*cd(2)
+    case default
+      a=1
+      do i=1,modes
+        cdim=1
+        do j=i-1,1,-1
+          cdim=cdim*dims(j)
+        enddo
+        a=a+(inds(i)-1)*cdim
+      enddo
+    end select
+  end function get_comp_idx
   !> \brief general array reordering routine, can add to destination matrix
   !> \author Patrick Ettenhuber, adapted scheme from Marcin Ziolkowski
   subroutine array_reorder_4d(pre1,array_in,d1,d2,d3,d4,order,pre2,array_out)
@@ -314,6 +391,30 @@
 
   end subroutine array_reorder_3d
 
+  !> \brief 2d array reordering routine, for debugging and testing
+  !> \author Patrick Ettenhuber
+  subroutine array_reorder_2d(pre1,array_in,d1,d2,order,pre2,array_out)
+    implicit none
+    integer,intent(in) ::        d1,d2
+    real(realk), intent(in)::    array_in(i8*d1*d2),pre1,pre2
+    real(realk), intent(inout):: array_out(i8*d1*d2)
+    integer, dimension(2), intent(in) :: order
+    if (order(1) == 1 .and. order(2) == 2 )then
+      if (pre2 .ne. 0.0E0_realk) then
+        call dscal(d1*d2,pre2,array_out,1)
+        call daxpy(d1*d2,pre1,array_in,1,array_out,1)
+      else
+        call dcopy(d1*d2,array_in,1,array_out,1)
+        if (pre1 .ne. 1.0E0_realk) then
+          call dscal(d1*d2,pre1,array_out,1)
+        endif
+      endif
+    elseif (order(1) == 2 .and. order(2) == 1) then
+      call mat_transpose(d1,d2,pre1,array_in,pre2,array_out)
+    else
+      call lsquit("ERROR(array_reorder_2d): reordering not defined",-1)
+    endif
+  end subroutine array_reorder_2d
   !\>  \brief another transposition routine, intended to replace the others
   !\>  \> author Patrick Ettenhuber
   subroutine mat_transpose(r,c,p1,x,p2,y)
@@ -457,3 +558,370 @@
     190 iok = -2
         go to 170
   end subroutine alg513
+
+  !> \autor Patrick Ettenhuber
+  !> \brief Subroutine to put a specific tile in a general matrix
+  !> \date January 2013
+  subroutine tile_in_fort(pre1,tilein,tnr,tdims,pre2,fort,full_arr_dim,mode,o)
+    implicit none
+    !> scaling factors
+    real(realk) :: pre1,pre2
+    !> input array with data in arbtirary order
+    real(realk), intent(inout) :: fort(*)
+    !> mode infortmation about how to interpret data
+    integer, intent(in) :: mode
+    !> the tile number in column major ordering of the tiles
+    integer, intent(in) :: tnr
+    !> dimension information for the mew array
+    integer, intent(in) :: full_arr_dim(mode)
+    !> batch information for the tiles
+    integer, intent(in) :: tdims(mode)
+    !> specify how to reorder the tile to the new full array
+    integer,intent(in) :: o(mode)
+    !> tile output
+    real(realk), intent(in) :: tilein(*)
+    integer :: i,nelms,k
+    integer :: tmodeidx(mode)
+    integer :: idxintile(mode),ro(mode),full_dim_tiled_arr(mode)
+    integer :: ccels,ntimes,acttdim(mode),fels(mode)
+    integer :: pos1,ntpm(mode),glbmodeidx(mode)
+    integer :: order_type,bs
+
+    bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
+    !bs=5
+    order_type=0
+    do i=1,mode
+      if(o(i)/=i)order_type=-1
+      ro(o(i))=i
+    enddo
+
+    
+    do i=1,mode
+      full_dim_tiled_arr(i) = full_arr_dim(ro(i))
+      ntpm(i) = full_dim_tiled_arr(i)/tdims(i)
+      if(mod(full_dim_tiled_arr(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
+    enddo
+
+
+    if(mode==4)then
+      if(o(1)==1.and.o(2)==2.and.o(3)==3.and.o(4)==4)order_type = 0
+      if(o(1)==3.and.o(2)==4.and.o(3)==1.and.o(4)==2)order_type = 1
+      if(o(1)==4.and.o(2)==1.and.o(3)==2.and.o(4)==3)order_type = 2
+      if(o(1)==2.and.o(2)==3.and.o(3)==4.and.o(4)==1)order_type = 3
+      if(o(1)==1.and.o(2)==2.and.o(3)==4.and.o(4)==3)order_type = 4
+      if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)order_type = 5
+      if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)order_type = 6
+      if(o(1)==3.and.o(2)==1.and.o(3)==2.and.o(4)==4)order_type = 7
+      if(o(1)==2.and.o(2)==3.and.o(3)==1.and.o(4)==4)order_type = 8
+      if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)order_type = 9
+      if(o(1)==4.and.o(2)==3.and.o(3)==1.and.o(4)==2)order_type = 10
+      if(o(1)==4.and.o(2)==2.and.o(3)==3.and.o(4)==1)order_type = 11
+      if(o(1)==3.and.o(2)==4.and.o(3)==2.and.o(4)==1)order_type = 12
+      if(o(1)==2.and.o(2)==4.and.o(3)==1.and.o(4)==3)order_type = 13
+      if(o(1)==3.and.o(2)==2.and.o(3)==1.and.o(4)==4)order_type = 14
+      if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)order_type = 15
+      if(o(1)==4.and.o(2)==1.and.o(3)==3.and.o(4)==2)order_type = 16
+      if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)order_type = 17
+      if(o(1)==4.and.o(2)==3.and.o(3)==2.and.o(4)==1)order_type = 18
+      if(o(1)==2.and.o(2)==4.and.o(3)==3.and.o(4)==1)order_type = 19
+      if(o(1)==1.and.o(2)==4.and.o(3)==3.and.o(4)==2)order_type = 20
+      if(o(1)==3.and.o(2)==1.and.o(3)==4.and.o(4)==2)order_type = 21
+      if(o(1)==3.and.o(2)==2.and.o(3)==4.and.o(4)==1)order_type = 22
+      if(o(1)==4.and.o(2)==2.and.o(3)==1.and.o(4)==3)order_type = 23
+    endif
+
+    call get_midx(tnr,tmodeidx,ntpm,mode)
+
+    ntimes=1
+    do i=1,mode
+      fels(i) = (tmodeidx(i)-1) * tdims(i) + 1
+      if(tmodeidx(i)*tdims(i)>full_dim_tiled_arr(i))then
+        acttdim(i)=mod(full_dim_tiled_arr(i),tdims(i))
+      else
+        acttdim(i)=tdims(i)
+      endif
+      if(i>1)ntimes=ntimes*acttdim(i)
+    enddo
+    
+
+    select case(order_type)
+      case(0)
+        ccels=acttdim(1)
+        do i=1,ntimes
+          call get_midx(i,idxintile(2:mode),acttdim(2:mode),mode-1)
+          idxintile(1)=1
+          do k=1,mode
+            glbmodeidx(k)=idxintile(k) +(tmodeidx(k)-1) *tdims(k)
+          enddo
+          pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
+          if(pre1==1.0E0_realk.and.pre2==0.0E0_realk)then
+            call dcopy(ccels,tilein(1+(i-1)*ccels),1,fort(pos1),1)
+          else
+            call dscal(ccels,pre2,fort(pos1),1)
+            call daxpy(ccels,pre1,tilein(1+(i-1)*ccels),1,fort(pos1),1)
+          endif
+        enddo
+      case(1)
+        call manual_3412_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(2)
+        call manual_4123_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(3)
+        call manual_2341_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(4)
+        call manual_1243_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(5)
+        call manual_1423_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(6)
+        call manual_1342_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(7)
+        call manual_3124_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(8)
+        call manual_2314_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(9)
+        call manual_2134_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(10)
+        call manual_4312_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(11)
+        call manual_4231_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(12)
+        call manual_3421_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(13)
+        call manual_2413_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(14)
+        call manual_3214_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(15)
+        call manual_1324_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(16)
+        call manual_4132_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(17)
+        call manual_2143_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(18)
+        call manual_4321_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(19)
+        call manual_2431_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(20)
+        call manual_1432_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(21)
+        call manual_3142_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(22)
+        call manual_3241_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case(23)
+        call manual_4213_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+      case default
+        print *,"expensive default tile_in_fort",o
+        !print *,"order  :",o
+        !print *,"rorder :",ro
+        !print *,"fad    :",full_arr_dim
+        !print *,"tad    :",full_dim_tiled_arr
+        !print *,"atd    :",acttdim
+        !count elements in the current tile for loop over elements
+        !identify their original position and put them in tile
+        nelms=1
+        do i=1,mode
+          nelms = nelms * acttdim(i)
+        enddo
+       
+        do i = 1,nelms
+          !get mode index of element in tile
+          call get_midx(i,idxintile,acttdim,mode)
+          !get full index in new array from indices referencing the tile
+          do k=1,mode
+            glbmodeidx(ro(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
+          enddo
+          !get index in new array
+          pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
+          fort(pos1)=pre2*fort(pos1) + pre1 * tilein(i)
+        enddo
+    end select
+  end subroutine tile_in_fort
+
+
+
+  !> \autor Patrick Ettenhuber
+  !> \brief Subroutine to extract a specific tile from a general matrix
+  !> \date November 2012
+  subroutine tile_from_fort(pre1,fort,full_arr_dim,mode,pre2,tileout,tnr,tdims,o)
+    implicit none
+    !> scaling factors
+    real(realk) :: pre1,pre2
+    !> input array with data in arbtirary order
+    real(realk), intent(in) :: fort(*)
+    !> mode infortmation about how to interpret data
+    integer, intent(in) :: mode
+    !> the tile number in column major ordering of the tiles
+    integer, intent(in) :: tnr
+    !> dimension infortmation about how to interpret data
+    integer, intent(in) :: full_arr_dim(mode)
+    !> batch information for the tiles
+    integer, intent(in) :: tdims(mode)
+    !> reorder information for the array with respect to the original array,
+    !> if optorder is given, then the dimensions, tdims and tnr are with
+    !reference to the tile to calculate
+    integer, intent(in) :: o(mode)
+    !> tile output
+    real(realk), intent(out) :: tileout(*)
+    integer :: i,nccblcks,nels,k
+    integer :: tmodeidx(mode)
+    integer :: idxintile(mode),glbidx
+    integer :: ccels,ntimes,el,acttdim(mode),full_dim_tiled_arr(mode),nelms
+    integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode),ro(mode),rtd(mode),fels(mode)
+    integer :: order_type,bs,a,b,c,d
+
+    bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
+    !bs=5
+    order_type=0
+    do i=1,mode
+      if(o(i)/=i)order_type=-1
+    enddo
+
+
+    do i=1,mode
+      !get the reverse order information
+      ro(o(i))=i
+    enddo
+
+    !calculate number of tiles per mode
+    nels=1
+    do i=1,mode
+      full_dim_tiled_arr(i)=full_arr_dim(o(i))
+      ntpm(i) = full_dim_tiled_arr(i)/tdims(i)
+      if(mod(full_dim_tiled_arr(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
+      nels=nels*full_dim_tiled_arr(i)
+    enddo
+
+    !print *,"fad    :",full_arr_dim
+    !print *,"tad    :",full_dim_tiled_arr
+    !print *,"ntpm   :",ntpm
+    !print *,"td     :",tdims
+
+    if(mode==4)then
+      if(o(1)==1.and.o(2)==2.and.o(3)==3.and.o(4)==4)order_type = 0
+      if(o(1)==3.and.o(2)==4.and.o(3)==1.and.o(4)==2)order_type = 1
+      if(o(1)==4.and.o(2)==1.and.o(3)==2.and.o(4)==3)order_type = 2
+      if(o(1)==2.and.o(2)==3.and.o(3)==4.and.o(4)==1)order_type = 3
+      if(o(1)==1.and.o(2)==2.and.o(3)==4.and.o(4)==3)order_type = 4
+      if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)order_type = 5
+      if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)order_type = 6
+      if(o(1)==3.and.o(2)==1.and.o(3)==2.and.o(4)==4)order_type = 7
+      if(o(1)==2.and.o(2)==3.and.o(3)==1.and.o(4)==4)order_type = 8
+      if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)order_type = 9
+      if(o(1)==4.and.o(2)==3.and.o(3)==1.and.o(4)==2)order_type = 10
+      if(o(1)==4.and.o(2)==2.and.o(3)==3.and.o(4)==1)order_type = 11
+      if(o(1)==3.and.o(2)==4.and.o(3)==2.and.o(4)==1)order_type = 12
+      if(o(1)==2.and.o(2)==4.and.o(3)==1.and.o(4)==3)order_type = 13
+      if(o(1)==3.and.o(2)==2.and.o(3)==1.and.o(4)==4)order_type = 14
+      if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)order_type = 15
+      if(o(1)==4.and.o(2)==1.and.o(3)==3.and.o(4)==2)order_type = 16
+      if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)order_type = 17
+      if(o(1)==4.and.o(2)==3.and.o(3)==2.and.o(4)==1)order_type = 18
+      if(o(1)==2.and.o(2)==4.and.o(3)==3.and.o(4)==1)order_type = 19
+      if(o(1)==1.and.o(2)==4.and.o(3)==3.and.o(4)==2)order_type = 20
+      if(o(1)==3.and.o(2)==1.and.o(3)==4.and.o(4)==2)order_type = 21
+      if(o(1)==3.and.o(2)==2.and.o(3)==4.and.o(4)==1)order_type = 22
+      if(o(1)==4.and.o(2)==2.and.o(3)==1.and.o(4)==3)order_type = 23
+    endif
+    call get_midx(tnr,tmodeidx,ntpm,mode)
+    ntimes=1
+    do i=1,mode
+      fels(o(i)) = (tmodeidx(i)-1) * tdims(i) + 1
+      if(tmodeidx(i)*tdims(i)>full_dim_tiled_arr(i))then
+        acttdim(i)=mod(full_dim_tiled_arr(i),tdims(i))
+      else
+        acttdim(i)=tdims(i)
+      endif
+      if(i>1)ntimes=ntimes*acttdim(i)
+      rtd(o(i))     = acttdim(i)
+    enddo
+
+    select case(order_type)
+      case(0)
+        ccels=acttdim(1)
+        !loop over the remaining not-consecutive dimensions
+        do i=1,ntimes
+          !get the mode-index in the remaining dimensions
+          call get_midx(i,idxintile(2:mode),acttdim(2:mode),mode-1)
+          !get the position of the first element in the consecutive stretch
+          idxintile(1)=1
+          do k=1,mode
+            glbmodeidx(k)=idxintile(k) +(tmodeidx(k)-1) *tdims(k)
+          enddo
+          pos1=get_cidx(glbmodeidx,full_dim_tiled_arr,mode)
+          if(pre1==1.0E0_realk.and.pre2==0.0E0_realk)then
+            call dcopy(ccels,fort(pos1),1,tileout(1+(i-1)*ccels),1)
+          else
+            call dscal(ccels,pre2,tileout(1+(i-1)*ccels),1)
+            call daxpy(ccels,pre1,fort(pos1),1,tileout(1+(i-1)*ccels),1)
+          endif
+        enddo
+      case(1)
+        call manual_3412_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(2)
+        call manual_4123_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(3)
+        call manual_2341_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(4)
+        call manual_1243_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(5)
+        call manual_1423_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(6)
+        call manual_1342_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(7)
+        call manual_3124_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(8)
+        call manual_2314_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(9)
+        call manual_2134_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(10)
+        call manual_4312_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(11)
+        call manual_4231_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(12)
+        call manual_3421_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(13)
+        call manual_2413_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(14)
+        call manual_3214_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(15)
+        call manual_1324_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(16)
+        call manual_4132_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(17)
+        call manual_2143_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(18)
+        call manual_4321_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(19)
+        call manual_2431_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(20)
+        call manual_1432_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(21)
+        call manual_3142_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(22)
+        call manual_3241_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case(23)
+        call manual_4213_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+      case default
+        print *,"expensive default tile_from_fort",o
+        !print *,"order  :",o
+        !print *,"rorder :",ro
+        !print *,"atd    :",acttdim
+        !count elements in the current tile for loop over elements
+        !identify their original position and put them in tile
+        nelms=1
+        do i=1,mode
+          nelms = nelms * acttdim(i)
+        enddo
+        do i = 1,nelms
+          !get mode index of element in tile
+          call get_midx(i,idxintile,acttdim,mode)
+          !get global index of element, example order = 2 3 1 4 of new array with
+          !respect to old --> element 54 3 27 8 of old goes to 3 27 54 8 of new -
+          ! old with respect to new 3 1 2 4 
+          do k=1,mode
+            glbmodeidx(o(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
+          enddo
+          pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
+          tileout(i)=pre2*tileout(i)+pre1*fort(pos1)
+        enddo
+    end select
+
+  end subroutine tile_from_fort
