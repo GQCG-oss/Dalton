@@ -11,8 +11,145 @@ module lspdm_basic_module
   use infpar_module
   use lsmpi_type
 #endif
+  use manual_reorderings_module
   use tensor_type_def_module
+
+  interface get_tile_dim
+    module procedure get_tileinfo_nels_frombas,&
+                    &get_tileinfo_nelspmode_frombas,&
+                    &get_tileinfo_nels_fromarr8,&
+                    &get_tileinfo_nels_fromarr4,&
+                    &get_tileinfo_nelspermode_fromarr4,&
+                    &get_tileinfo_nelspermode_fromarr8
+  end interface get_tile_dim
+
   contains
+
+  subroutine get_tileinfo_nels_frombas(sze,tileidx,dims,tdim,mode,offset)
+    implicit none
+    integer, intent(out) :: sze
+    integer,intent(in) :: tileidx,mode,dims(mode),tdim(mode)
+    integer,intent(in),optional :: offset
+    integer :: j,orig_addr(mode),offs,ntpm(mode)
+    offs=1
+    if(present(offset))offs=offset
+    do j=1,mode
+      ntpm(j)=dims(j)/tdim(j)
+      if(mod(dims(j),tdim(j))>0)ntpm(j)=ntpm(j)+1
+    enddo
+    call get_midx(tileidx,orig_addr,ntpm,mode)
+    sze=1
+    do j=offs, mode
+      if(((dims(j)-(orig_addr(j)-1)*tdim(j))/tdim(j))>=1)then
+        sze=sze*tdim(j)
+      else
+        sze=sze*mod(dims(j),tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels_frombas
+
+  !> \brief this function returns the number of elements of a tile where the tile index is
+  ! a global tile index
+  !> \author Patrick Ettenhuber
+  subroutine get_tileinfo_nels_fromarr8(nels,arr,tnumber)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(array),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=long), intent(in) :: tnumber
+    !> return value, number of elements in the desired tile
+    integer :: nels
+    integer ::orig_addr(arr%mode),j
+    call get_midx(tnumber,orig_addr,arr%ntpm,arr%mode)
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels=nels*arr%tdim(j)
+      else
+        nels=nels*mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels_fromarr8
+
+  subroutine get_tileinfo_nels_fromarr4(nels,arr,tnumber)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(array),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=4), intent(in) :: tnumber
+    !> return value, number of elements in the desired tile
+    integer :: nels
+    integer ::orig_addr(arr%mode),j
+    call get_midx(tnumber,orig_addr,arr%ntpm,arr%mode)
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels=nels*arr%tdim(j)
+      else
+        nels=nels*mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels_fromarr4
+
+  subroutine get_tileinfo_nelspermode_fromarr8(nels,arr,tnumber)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(array),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=long), intent(in) :: tnumber
+    !> return value, number of elements in the desired tile
+    integer :: nels(arr%mode)
+    integer ::orig_addr(arr%mode),j
+    call get_midx(tnumber,orig_addr,arr%ntpm,arr%mode)
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels(j)=arr%tdim(j)
+      else
+        nels(j)=mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspermode_fromarr8
+
+  subroutine get_tileinfo_nelspermode_fromarr4(nels,arr,tnumber)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(array),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=4), intent(in) :: tnumber
+    !> return value, number of elements in the desired tile
+    integer :: nels(arr%mode)
+    integer ::orig_addr(arr%mode),j
+    call get_midx(tnumber,orig_addr,arr%ntpm,arr%mode)
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels(j)=arr%tdim(j)
+      else
+        nels(j)=mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspermode_fromarr4
+
+  subroutine get_tileinfo_nelspmode_frombas(sze,tileidx,dims,tdim,mode)
+    implicit none
+    integer,intent(in) :: tileidx,mode,dims(mode),tdim(mode)
+    integer, dimension(mode),intent(out) :: sze
+    integer :: j,orig_addr(mode),ntpm(mode)
+    do j=1,mode
+      ntpm(j)=dims(j)/tdim(j)
+      if(mod(dims(j),tdim(j))>0)ntpm(j)=ntpm(j)+1
+    enddo
+    call get_midx(tileidx,orig_addr,ntpm,mode)
+    do j=1, mode
+      if(((dims(j)-(orig_addr(j)-1)*tdim(j))/tdim(j))>=1)then
+        sze(j)=tdim(j)
+      else
+        sze(j)=mod(dims(j),tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspmode_frombas
+
   subroutine memory_deallocate_window(arr)
     implicit none
     type(array),intent(inout) :: arr
