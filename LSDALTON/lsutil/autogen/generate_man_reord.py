@@ -2,7 +2,7 @@
 #AUTHOR: PATRICK ETTENHUBER
 #EMAIL : pett@chem.au.dk, pettenhuber@gmail.com
 #DATE  : JUNE, 2013
-import sys,datetime,math,os#,itertools
+import sys,datetime,os#,itertools,math
 from random import randrange
 """This file is inteded for the automatic generation of a data sorting module in LSDALTON
 As data sorting is under constant development and features many lines of code this script was
@@ -37,16 +37,15 @@ def main():
   #GET THE FOLDER TO STORE THE manual_reorderings.F90
   cwd = os.getcwd()
   lsutildir = cwd
-  print cwd
-  if ("/LSDALTON/" in lsutildir ):
+  if ("/LSDALTON/lsutil" in lsutildir ):
 
-    lsutildir = lsutildir[0:lsutildir.find("/LSDALTON/")]+"/LSDALTON/lsutil/"
+    lsutildir = lsutildir[0:lsutildir.find("/LSDALTON/lsutil")]+"/LSDALTON/lsutil/"
 
   else:
 
-    for paths,dirs,files in os.walk(cwd+"/.."):
-      if("/LSDALTON/" in paths):
-        lsutildir = paths[0:paths.find("/LSDALTON/")]+"/LSDALTON/lsutil/"
+    for paths,dirs,files in os.walk(cwd+"/../LSDALTON"):
+      if("/LSDALTON/lsutil" in paths):
+        lsutildir = paths[0:paths.find("/LSDALTON/lsutil")]+"/LSDALTON/lsutil/"
         break
 
     if not os.path.exists(lsutildir):
@@ -60,7 +59,6 @@ def main():
   else:
      installdir = lsutildir
   
-  print lsutildir
   #THIS FILE SHOULD GENERATE ALL REORDERINGS NEEDED in manual_reorderings.F90
   if(not os.path.exists(installdir+"manual_reorderings.F90")):
     produce_files(installdir,lsutildir,args)
@@ -622,7 +620,7 @@ def write_testing_framework(f,minr,maxr):
           write (LUPRI,'(A3,f4.1,A3,f4.1,A2)')\"B= \",pr1,\"*A+\",pr2,\"*B\"\n\n"
     f.write(words)
     pc = 0
-    maxperms = math.factorial(mode)
+    maxperms = factorial(mode)
     for perm in permutations(list(xrange(mode))):
       testcase="\
           call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
@@ -739,7 +737,7 @@ def write_testing_framework(f,minr,maxr):
           write (LUPRI,'(A3,f4.1,A3,f4.1,A2)')\"B= \",pr1,\"*A+\",pr2,\"*B\"\n\n"
     f.write(words)
     pc = 0
-    maxperms = math.factorial(mode)
+    maxperms = factorial(mode)
     for perm in permutations(list(xrange(mode))):
 
       #TEST THE FROM FORT REORDERINGS
@@ -982,7 +980,11 @@ def combinations(iterable, r):
 
 ##################################################################################################
 ##################################################################################################
-
+def factorial(d):
+   k=1
+   for i in range(1,d+1):
+     k *= i
+   return k
 
 abc = "abcdefghijklmnopqrstuvwxyz"
 main()
