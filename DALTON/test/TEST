@@ -41,11 +41,6 @@ fi
 #########################################################################
 # define all the different test suites
 #########################################################################
-SHORTPROP="prop_ecd prop_or prop_exci prop_nolondon prop_spinspin prop_spinspin2 \
-prop_spinspin3 prop_spinspin4 prop_vibvcd prop_ctocd prop_soppactocd \
-prop_newtrasoppa prop_newtrasoppacc prop_newtramcscf aba_prop_file \
-prop_vibg1 prop_vibg2 prop_cpp_ecd prop_lresc"
-#
 SHORTRSP="rsp_2ndharm rsp_3rdharm \
 rsp_3rdmom rsp_dresqr rsp_ecp rsp_exci_cmfun rsp_excipolar2 rsp_hyperpolar \
 rsp_lrso rsp_lrso2 rsp_mcdbterm rsp_mnf rsp_phosph rsp_polar rsp_propave \
@@ -62,7 +57,7 @@ SHORTWALK="walk_gradex walk_image walk_modeflw walk_polar walk_vibave walk_vibav
 SHORTREST="r12_sym dpt_h2s"
 LOCAL="spin_local"
 AOSOPPA="prop_exci_ao prop_exci_aorpa prop_exci_aorpad prop_exci_aosoppa prop_exci_aosoppcc"
-SHORTNOCC="$SHORTPROP $SHORTRSP $SHORTWALK $SHORTREST $AOSOPPA $LOCAL"
+SHORTNOCC="$SHORTRSP $SHORTWALK $SHORTREST $AOSOPPA $LOCAL"
 SHORTQM3="hfmm_1 cc2mm_spc_fop \
 dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6 dftmm_7 dftmm_8 dftmm_9 \
 qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8 hfmmpcm_1"
