@@ -9921,7 +9921,7 @@ C
       USRTHO = .FALSE.
       USRTHV = .FALSE.
 C
-      DO I = 1,NSYM
+      DO I = 1,MSYM
          MXOCC(I) = 9999
          MXVIR(I) = 9999
       END DO
@@ -10100,7 +10100,7 @@ C
 C                    '.DOSPRE'
 C                    Calculate orbital spread
                      DOSPREAD = .TRUE.
-                     IF (NSYM .GT. 1) THEN
+                     IF (MSYM .GT. 1) THEN
                         WRITE(LUPRI,*) 'Calculation of orbital',
      &                       ' spreads is only possible w/o symmetry'
                         STOP 'DOSPRE with NSYM .GT. 1'
@@ -10112,7 +10112,7 @@ C                    'MINSPR'
 C                    Select diagonals to minimize orbital spreads
                      MINSPR   = .TRUE.
                      DOSPREAD = .TRUE.
-                     IF (NSYM .GT. 1) THEN
+                     IF (MSYM .GT. 1) THEN
                         WRITE(LUPRI,*) 'Calculation of orbital',
      &                       ' spreads is only possible w/o symmetry'
                         STOP 'MINSPR with NSYM .GT. 1'
@@ -10123,8 +10123,8 @@ C
 C                    'LIMLOC'
 C                    Get limited number of localized orbitals
                      LIMLOC = .TRUE.
-                     READ(LUCMD,*) (MXOCC(I), I=1,NSYM)
-                     READ(LUCMD,*) (MXVIR(I), I=1,NSYM)
+                     READ(LUCMD,*) (MXOCC(I), I=1,MSYM)
+                     READ(LUCMD,*) (MXVIR(I), I=1,MSYM)
                   GOTO 100
 C                    '.XXXXXX'
    12             CONTINUE             
