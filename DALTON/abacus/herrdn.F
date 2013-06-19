@@ -483,15 +483,15 @@ C           ... must close LUCMD again before RETURN, when opened here
          ELSE
             LUINFO = -1
          END IF
+         IF (IPREAD .GT.  0) THEN
+           CALL TITLER(
+     &   'Output of molecule and basis set information','*',115)
+         ELSE
+           CALL TITLER(
+     &   'Output of molecule and basis set info suppressed','*',118)
+         END IF
       END IF
       IF (IPREAD .GE. 11) CALL TIMER('START ',TIMSTR,TIMEND)
-      IF (IPREAD .GT.  0) THEN
-         CALL TITLER(
-     &   'Output of molecule and basis set information','*',115)
-      ELSE
-         CALL TITLER(
-     &   'Output of molecule and basis set info suppressed','*',118)
-      END IF
 C
 C Only the master in a parallel calculation reads the input file. The
 C slaves do not read the input file in RDLINE but use the input lines
@@ -761,9 +761,11 @@ C*****************************************************************************
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A72)',IOSTAT=IOS) TTITLE(2)
       IF (IPREAD .GT. 0) THEN
+        IF ((.NOT.SLAVE) .OR. (NODTOT.LE.20)) THEN
          WRITE (LUPRI,'(/4X,A/4X,A/2A/2A/4X,A)')
      &   'The two title cards from your ".mol" input:', SEPARATOR(1:72),
      &   ' 1: ',TTITLE(1),' 2: ',TTITLE(2),SEPARATOR(1:72)
+         END IF
          IF (LUCME.GT.0) WRITE (LUCME,'(2X,A)')
      &      SEPARATOR(1:72),TTITLE(1),TTITLE(2),SEPARATOR(1:72)
       END IF

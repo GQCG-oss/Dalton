@@ -86,9 +86,12 @@ C
       END DO
       EDFTY = ENERGY_DFTKSM
       ELE_ERROR = ELE - 2.0D0*NRHFT
-      IF (ABS(ELE_ERROR) .gt. 1.0D-8 .or. IPRFCK .ge. 0)
-     &   WRITE(LUPRI,'(T7,A,F20.12,F15.10,1P,D12.2)')
+      IF (ABS(ELE_ERROR) .gt. 1.0D-8 .or. IPRFCK .ge. 0) THEN
+        IF ((.NOT.SLAVE) .OR. (NODTOT.LE.20)) THEN
+          WRITE(LUPRI,'(T7,A,F20.12,F15.10,1P,D12.2)')
      &     'K-S energy, electrons, error :', EDFTY, ELE, ELE_ERROR
+        END IF
+      END IF
       CALL QEXIT('DFTKSMb')
       RETURN
       END
