@@ -41,10 +41,6 @@ fi
 #########################################################################
 # define all the different test suites
 #########################################################################
-SHORTQM3="hfmm_1 cc2mm_spc_fop \
-dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6 dftmm_7 dftmm_8 dftmm_9 \
-qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8 hfmmpcm_1"
-#
 SHORTCC3="cc3_LIH1s1p_pol cc3_LIH1s1p_asym_pol cc3_CARBON_pol \
 cc3_CARBON_asym_pol cc3_LIH1s1p_tmom cc3_LIH1s1p_tmom_no2np1 cc3_HF_631G_pol \
 cc3_HF_631G_asym_pol cc3_LIH_431G_tmom cc3_LIH_431G_tmom_no2np1 \
@@ -73,7 +69,7 @@ choles_hf_magnet choles_kt3_ctocd choles_lda_prop choact_mp2_energy"
 SHORTPEQM="pehf_small_iter pehf_small_direct pehf_small_gspol \
 pehf_small_alpha pehf_small_1pa pehf_small_beta pehf_small_2pa"
 #
-SHORT="$SHORTCC $SHORT_CHOLESKY $SHORTPEQM $SHORTQM3"
+SHORT="$SHORTCC $SHORT_CHOLESKY $SHORTPEQM "
 #
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
@@ -87,11 +83,7 @@ cc_beta_solv $MEDIUMCC3"
 #
 MEDIUM_CHOLESKY="choles_cc2_polar"
 #
-MEDIUMQM3="ccsdmm_spc_fop ccsdmm_oldtg ccsdmm_ec1_fop \
-ccsdmm_ec3_fop ccsdmm_e01_fop ccsdmm_modelmix cc2mm_exci \
-cc2mm_atmvdw ccsdmm_twopar_vdw cc2mm_lr_qr cc2mm_spc_exci ccmm_beta"
-#
-MEDIUM="$MEDIUM $MEDIUMCC $MEDIUM_CHOLESKY $MEDIUMQM3"
+MEDIUM="$MEDIUM $MEDIUMCC $MEDIUM_CHOLESKY"
 #
 LONG="geoopt_prop3 geoopt_prop3_ex prop_vibana rsp_excipolar rsp_twophot walk_solvmag"
 #
@@ -163,8 +155,6 @@ CHOLESKY="$SHORT_CHOLESKY $MEDIUM_CHOLESKY $LONG_CHOLESKY"
 CCR12="$SHORTCCR12 $LONGCCR12"
 #
 R12="$MP2R12 $SHORTCCR12 $LONGCCR12"
-#
-QM3="$SHORTQM3 $MEDIUMQM3"
 #
 NUMDER="hfreqfromE hfreqfromg effgeom_fromE effgeom_fromE2 vibave_spinspin"
 #
@@ -419,9 +409,6 @@ while [ -n "$1" ]; do
    shift ;;
    "cholesky" )
    testcase="$testcase $CHOLESKY"; 
-   shift ;;
-   "qm3" )
-   testcase="$testcase $QM3"; 
    shift ;;
    * )
    testcase="$testcase $1"; 
