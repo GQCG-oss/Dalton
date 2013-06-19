@@ -41,10 +41,6 @@ fi
 #########################################################################
 # define all the different test suites
 #########################################################################
-SHORTREST="r12_sym dpt_h2s"
-LOCAL="spin_local"
-AOSOPPA="prop_exci_ao prop_exci_aorpa prop_exci_aorpad prop_exci_aosoppa prop_exci_aosoppcc"
-SHORTNOCC="$SHORTREST $AOSOPPA $LOCAL"
 SHORTQM3="hfmm_1 cc2mm_spc_fop \
 dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6 dftmm_7 dftmm_8 dftmm_9 \
 qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8 hfmmpcm_1"
@@ -77,7 +73,7 @@ choles_hf_magnet choles_kt3_ctocd choles_lda_prop choact_mp2_energy"
 SHORTPEQM="pehf_small_iter pehf_small_direct pehf_small_gspol \
 pehf_small_alpha pehf_small_1pa pehf_small_beta pehf_small_2pa"
 #
-SHORT="$SHORTNOCC $SHORTCC $SHORT_CHOLESKY $SHORTPEQM $SHORTQM3"
+SHORT="$SHORTCC $SHORT_CHOLESKY $SHORTPEQM $SHORTQM3"
 #
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
@@ -219,8 +215,6 @@ Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
           mp2r12               -- run all MP2-R12 testcases
           shortccr12           -- run all short CC-R12 testcases
           longccr12            -- run all long CC-R12 testcases
-          aosoppa              -- run all AOSOPPA testcases
-          local                -- run all LOCAL testcases
           cholesky             -- run all Cholesky testcases
           dpt                  -- run all DPT testcases
           geoopt               -- run all OPTIMIZE testcases
@@ -338,9 +332,6 @@ while [ -n "$1" ]; do
   "pcm" )
    perl_style_kwd="$perl_style_kwd $1";
    shift ;;
-  "short_nocc" )
-   testcase="$testcase $SHORTNOCC"; 
-   shift ;;
    "shortcc3" )
    testcase="$testcase $SHORTCC3"; 
    shift ;;
@@ -443,12 +434,6 @@ while [ -n "$1" ]; do
    shift ;;
    "geoopt" )
    testcase="$testcase $GEOOPT"; 
-   shift ;;
-   "aosoppa" )
-   testcase="$testcase $AOSOPPA"; 
-   shift ;;
-   "local" )
-   testcase="$testcase $LOCAL"; 
    shift ;;
    "cholesky" )
    testcase="$testcase $CHOLESKY"; 
