@@ -480,35 +480,38 @@ C
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
-         CALL TITLER('DALTON - An electronic structure program',
+C ahs only print if number of cores are less than 20
+         IF (NODTOT .LE. 20) THEN
+           CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-         WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
-         CALL TSTAMP('INIT',LUPRI)
-         IF (GBYTES .GE. 1.D0) THEN
-           WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
+           WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
+           CALL TSTAMP('INIT',LUPRI)
+           IF (GBYTES .GE. 1.D0) THEN
+             WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
      &        LMWORK,' =',GBYTES,' gigabytes.'
-         ELSE
-           WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
+           ELSE
+             WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
      &        LMWORK,' =',XMBYTES,' megabytes.'
-         END IF
-         IF (AOSAVE) THEN
-           WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
+           END IF
+           IF (AOSAVE) THEN
+             WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
      &        MMCORE
-         END IF
-         CALL TITLER('DALTON - An electronic structure program',
+           END IF
+           CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-         WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
-         CALL TSTAMP('INIT',LUPRI)
-         IF (GBYTES .GE. 1.D0) THEN
-           WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
+           WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
+           CALL TSTAMP('INIT',LUPRI)
+           IF (GBYTES .GE. 1.D0) THEN
+             WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
      &        LMWORK,' =',GBYTES,' gigabytes.'
-         ELSE
-           WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
+           ELSE
+             WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
      &        LMWORK,' =',XMBYTES,' megabytes.'
-         END IF
-         IF (AOSAVE) THEN
-           WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
+           END IF
+           IF (AOSAVE) THEN
+             WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
      &        MMCORE
+           END IF
          END IF
          IF (PARIO) THEN
             CALL DALTON_GNRLINP

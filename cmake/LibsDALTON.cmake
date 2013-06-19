@@ -30,6 +30,10 @@ target_link_libraries(
     )
 
 # compile Peter's utilities
-add_executable(aces2dalton ${CMAKE_SOURCE_DIR}/DALTON/tools/aces2dalton.f90 ${CMAKE_SOURCE_DIR}/DALTON/tools/blocks.f90)
-add_executable(xyz2dalton  ${CMAKE_SOURCE_DIR}/DALTON/tools/xyz2dalton.f90  ${CMAKE_SOURCE_DIR}/DALTON/tools/blocks.f90)
-add_executable(distances   ${CMAKE_SOURCE_DIR}/DALTON/tools/distances.f90   ${CMAKE_SOURCE_DIR}/DALTON/tools/blocks.f90)
+add_library(peter_utils_blocks ${CMAKE_SOURCE_DIR}/DALTON/tools/blocks.f90)
+add_executable(aces2dalton ${CMAKE_SOURCE_DIR}/DALTON/tools/aces2dalton.f90)
+add_executable(xyz2dalton  ${CMAKE_SOURCE_DIR}/DALTON/tools/xyz2dalton.f90)
+add_executable(distances   ${CMAKE_SOURCE_DIR}/DALTON/tools/distances.f90)
+target_link_libraries(aces2dalton peter_utils_blocks)
+target_link_libraries(xyz2dalton peter_utils_blocks)
+target_link_libraries(distances peter_utils_blocks)
