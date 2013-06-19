@@ -646,7 +646,7 @@ end if
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize
     write(lupri,*) 'manual_batchsizes ', DECitem%manual_batchsizes
-    write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,ccsdGbatch
+    write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,DECitem%ccsdGbatch
     write(lupri,*) 'hack ', DECitem%hack
     write(lupri,*) 'hack2 ', DECitem%hack2
     write(lupri,*) 'mp2energydebug ', DECitem%mp2energydebug
