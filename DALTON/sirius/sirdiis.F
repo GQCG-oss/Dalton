@@ -109,6 +109,7 @@ C
 #include "inforb.h"
 #include "infvar.h"
 #include "infpri.h"
+#include "gnrinf.h"
 C
 Cholesky
 #include "ccdeco.h"
@@ -134,6 +135,14 @@ C
 C
       KFREE  = KFRSAV
       LFREE  = LFRSAV
+
+
+      ! QM/NP/MM embedding
+      IF (QMNPMM) THEN
+         call quit('not implemented in this version')
+      ELSE 
+         KRELMAT = 1 
+      END IF
 C
 CHJMAERKE: define IPR_DIIS separately?
 C
@@ -366,7 +375,7 @@ CAMT  If requested calculate the DFT-D energy correction
 
 C
       IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM) THEN
 C     this also includes the case of MMPCM   
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
@@ -483,6 +492,7 @@ C------------------
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
      &     .AND. .NOT.AOSAVE   .AND. .NOT. CHOINT
+     &     .AND. .NOT.QMNPMM   
      &     .and. .not. peqm
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
@@ -852,7 +862,8 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
-            IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. peqm) THEN
+            IF (FLAG(16) .OR. PCM .OR. QM3
+     &                   .OR. QMMM .or. QMNPMM .or. peqm) THEN
 C           this also includes the case of MMPCM
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(I4,1P,G20.12,G20.12,D15.5,D12.2)')
@@ -1404,7 +1415,7 @@ C
          END IF
 C
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
-         IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
+         IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
          if (peqm) write(luw4,'(a)')
      &    '   (incl. contribution from polarizable embedding potential)'
@@ -1412,7 +1423,7 @@ C
 C-------------------
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
-            IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
+            IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
             if (peqm) write(lupri,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'

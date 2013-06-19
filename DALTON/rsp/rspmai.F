@@ -1677,7 +1677,7 @@ C
      *      ,EPSOL
          END IF
 
-         IF (QM3 .OR. QMMM) THEN
+         IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
             IF (.NOT. SOPRPA .AND. SOPPA) THEN
                WRITE (LUPRI,*)
@@ -2251,6 +2251,10 @@ C
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
+         
+         IF (QMNPMM) THEN
+             WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
+         END IF    
 
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//

@@ -664,7 +664,8 @@ C    *              XINDX,CMO,WRK,LWRK)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
 C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. peqm) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3
+     &             .OR. QMMM .or. QMNPMM .or. peqm) THEN
          CALL RSPSLV(NCSIM,NOSIM,ZYCVEC,ZYOVEC,CMO,XINDX,UDV,
      *               WRK(KEVECS),WRK(KWRK1),LWRK1)
       END IF

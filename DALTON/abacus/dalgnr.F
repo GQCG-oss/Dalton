@@ -414,6 +414,16 @@ C
       IF (QM3 .AND. .NOT.ONLYOV) CALL QM3_RDPOT()
 C
 C     ***************************************************************
+C     Reading in the interaction parameters for the NP and MM 
+C     subsystems needed by QM/NP/MM embedding scheme
+C     ***************************************************************
+C
+      IF (QMNPMM .AND. .NOT.ONLYOV) THEN
+         call quit('not available in this version')
+!        CALL READ_POT_QMNPMM()
+      END IF
+C
+C     ***************************************************************
 C     Read initial geometry, orbital spec., etc. (MOLECULE format).
 C     ***************************************************************
 C
@@ -1142,7 +1152,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 11, NTABLE = 33, D0 = 0.D0)
+      PARAMETER (NDIR = 12, NTABLE = 33, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1155,7 +1165,7 @@ C
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
      &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
-     &            '*READIN'/
+     &            '*READIN', '*QMNPMM'/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
      &            '.INTEGR', '.WAVE F', '.PROPER', !  6
      &            '.INPTES', '.PARALL', '.DIRECT',
@@ -1215,6 +1225,7 @@ C
       DIRCAL = .FALSE.
       DOCCSD = .FALSE.
       WESTA  = .FALSE.
+      QMNPMM = .FALSE.
 C     NEWTRA is in /INFTRA/ for practical reasons
       NEWTRA = .FALSE.
       OPTNEW = .FALSE.
@@ -1595,10 +1606,6 @@ Cholesky
 C
       WRITE (LUPRI,'(1X,A)') SEPARATOR
 C
-C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
-C              '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
-C              '*READIN', '*GEN1IN'
-C
 C     Initialize for REAINP and READIN (reading of .mol input file)
       IPREAD_ini = IPRUSR + 1
       CALL REAINI(IPREAD_ini,RELCAL,TSTINP)
@@ -1611,7 +1618,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10,11), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1693,7 +1700,12 @@ C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
         WRITE(LUPRI,'(//A/)')
      &    ' INFO : "*READIN" is deprecated, use instead "*MOLBAS"'
       GO TO 6
-
+C
+C     "*QMNPMM" input
+   12 CONTINUE
+        call quit('not available in this version')
+!       CALL QMNPINP(WORD)
+      GO TO 200    
 C     "*END OF" or "**something"
     1 CONTINUE
 C
