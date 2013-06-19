@@ -514,7 +514,13 @@ def write_subroutine_header(f,idxarr,perm,now,modes,sname,ad,deb):
   subheaderstr+= "    bcntr=bs-1\n"
 
   if deb :
-    subheaderstr += "\n    if(pre2==0.0E0_realk)array_out = 0.0E0_realk\n\n"
+    if ad == "_tile2full":
+      subheaderstr += "\n    if(pre2==0.0E0_realk)array_out(&\n"
+      for i in range(modes):
+        subheaderstr += "                 &fels("+str(perm[i]+1)+"):fels("+str(perm[i]+1)+")+dims("+str(perm[i]+1)+")-1,&\n"
+      subheaderstr = subheaderstr[0:-3]+") = 0.0E0_realk\n\n"
+    else:
+      subheaderstr += "\n    if(pre2==0.0E0_realk)array_out = 0.0E0_realk\n\n"
   
   f.write(subheaderstr)
 
