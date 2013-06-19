@@ -30,9 +30,7 @@ if [ -x '/usr/bin/time' ]; then
 else
  TIMING_OF=" "
 fi
-if [ -x '../bin/dalton' ]; then
-  DALTON="`pwd`/../bin/dalton"
-elif [ -x "$BUILD_DIR/dalton" ]; then
+if [ -x "$BUILD_DIR/dalton" ]; then
   DALTON="`pwd`/$BUILD_DIR/dalton"
 else
   DALTON=NON_DEFAULT
@@ -173,14 +171,15 @@ usage() {
 Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
             [-param "option list"] [-dalton script] [-log logfile] testcase
 
-       -h | -help | --help  : show this help description
-       -keep                : keep *.mol, *.dal, *.check and *.log files
-       -reftest             : test reference file(s); do not run any calculations
-       -benchmark           : print CPU time for each testcase as part of the summary
-       -param "option list" : pass "option list" to dalton-script
-       -dalton script       : use script instead of the default
-                              dalton-script "`pwd`/../dalton" (absolute path) 
-       -log logfile         : write output into logfile instead of to "TESTLOG"
+       -h | -help | --help    : show this help description
+       -keep                  : keep *.mol, *.dal, *.check and *.log files
+       -reftest               : test reference file(s); do not run any calculations
+       -benchmark             : print CPU time for each testcase as part of the summary
+       -param "option list"   : pass "option list" to dalton-script
+       -dalton script         : use script instead of the default
+                                dalton-script "`pwd`/../dalton" (absolute path) 
+       -log logfile           : write output into logfile instead of to "TESTLOG"
+       -result-directory path : change default result directory to path
 
        and where testcase might be one of the following:
           short                -- run all short testcases
@@ -240,6 +239,7 @@ listing="TESTLOG"
 emptystring="                                "
 answer_yes=
 keep_quiet=
+result_directory=''
 
 tmpfile=/tmp/dalton-$$.log
 touch "$tmpfile"   || { echo "cannot create temporary file. Aborting execution."; exit 1; }
@@ -256,6 +256,7 @@ while echo $1 | egrep -q '^-'; do
      "-h" | "-help" | "--help" ) help="true" ; break;;
      "-dalton" )  shift; DALTON=$1; shift;;
      "-log" ) shift; listing=$1; shift;;
+     "-result-directory" ) shift; result_directory=$1; shift;;
      "-keep" ) keep="true"; shift;;
      -param* ) shift; paramlist="$1"; shift;;
      "-reftest" ) reftest="true"; shift;;
@@ -385,11 +386,13 @@ while [ -n "$1" ]; do
    esac
 done
 
-#########################################################################
-# create a unique directory for test output /hjaaj
-# nonportable characters in the directory name removed. /pawsa
-#########################################################################
-testdir="`date +'%Y-%m-%dT%H_%M'`-testjob-pid-$$"
+if [ "$result_directory" = "" ]; then
+    # create a unique directory for test output
+    testdir="`date +'%Y-%m-%dT%H_%M'`-testjob-pid-$$"
+else
+    # user specifies explicit result directory
+    testdir=$result_directory
+fi
 while [ -e $testdir ]; do
     testdir=${testdir}x
 done
@@ -457,8 +460,8 @@ do
   myprint  "##########################################################################################"
   myprint  "`date` -- Starting now with test number $total_tests_run out of $total_tests: $item"
   myprint  "------------------------------------------------------------------------------------------"
-  chmod +x ../$item || exit 1
-  ../$item
+  chmod +x $SCRIPT_DIR/$item || exit 1
+  $SCRIPT_DIR/$item
 # remove any directory path now the files are unpacked
   item=`basename $item`
   if [ -f $item.info -a "$keep_quiet" = "" ]; then
