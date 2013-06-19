@@ -147,7 +147,7 @@ def produce_files(installdir,lsutildir,args):
        for  addition in forfoo:
          # WRITE THE SUBROUTINE HEADER AND GET ITS NAME
          subroutinename = ""
-         write_subroutine_header(foo,idxarr,perm,now,modes,subroutinename,addition)
+         write_subroutine_header(foo,idxarr,perm,now,modes,subroutinename,addition,debug_loops)
          #Write the subroutine body
          write_subroutine_body(foo,idxarr,perm,modes,args,addition)
          #END THE SUBROUTINE
@@ -155,7 +155,7 @@ def produce_files(installdir,lsutildir,args):
        if doreord :
          # WRITE THE SUBROUTINE HEADER AND GET ITS NAME
          subroutinename = ""
-         write_subroutine_header(f,idxarr,perm,now,modes,subroutinename,"")
+         write_subroutine_header(f,idxarr,perm,now,modes,subroutinename,"",debug_loops)
          #Write the subroutine body
          write_subroutine_body(f,idxarr,perm,modes,args,"")
          #END THE SUBROUTINE
@@ -442,7 +442,7 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
 
 
 #WRITE THE HEADER AND GET THE SUBROUTINE NAME
-def write_subroutine_header(f,idxarr,perm,now,modes,sname,ad):
+def write_subroutine_header(f,idxarr,perm,now,modes,sname,ad,deb):
   reordstr1 = ""
   reordstr2 = ""
   reordstr3 = ""
@@ -510,9 +510,12 @@ def write_subroutine_header(f,idxarr,perm,now,modes,sname,ad):
     subheaderstr+= "    d"+abc[i]+"2=(d"+abc[i]+"/bs)*bs\n"
   subheaderstr+= "\n"
   for i in range(modes):
-    subheaderstr+= "    mod"+abc[i]+"=(mod(d"+abc[i]+",bs)>0)\n"
+    subheaderstr+= "    mod"+abc[i]+"=(mod(d"+abc[i]+",bs)>0)\n\n"
   subheaderstr+= "    bcntr=bs-1\n"
 
+  if deb :
+    subheaderstr += "\n    if(pre2==0.0E0_realk)array_out = 0.0E0_realk\n\n"
+  
   f.write(subheaderstr)
 
 
