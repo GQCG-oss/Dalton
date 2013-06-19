@@ -268,7 +268,8 @@ C
       CALL DIIS_CTL(CMO,WRK(KCMO1),WRK(KBMAT),WRK(KH1AO),
      &            WRK(KFSAV),WRK(KEVSAV),WRK(KEGSAV),MXERRV,C2DIIS,
      &            WRK(KSMOAO),WRK(KDCAO),WRK(KFCAO),WRK(KDSAV),WRK(KDV),
-     &            WRK(KCVEC),WRK(KTNLM),WRK,KFREE,LFREE,IPR_DIIS,ICONV)
+     &            WRK(KCVEC),WRK(KTNLM),WRK(KRELMAT),WRK,KFREE,
+     &            LFREE,IPR_DIIS,ICONV)
 C
  9990 CALL MEMREL('SRDIIS',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
  9999 CALL FLSHFO(LUW4)
@@ -278,8 +279,9 @@ C
       END
 C  /* Deck DIIS_CTL */
       SUBROUTINE DIIS_CTL(CMO,CMO1,BMAT,H1AO,FAOSAV,EVCSAV,EGSAV,MXERRV,
-     *                   C2DIIS,SMOAO,DCAO,FCAO,DAOSAV,DV,CVEC,
-     *                   TNLM,WRK,KFRSAV,LFRSAV,IPR_DIIS,ICONV)
+     *                    C2DIIS,SMOAO,DCAO,FCAO,DAOSAV,DV,CVEC,
+     *                    TNLM,RCPMAT,WRK,KFRSAV,LFRSAV,
+     *                    IPR_DIIS,ICONV)
 C
 C L.r. 5-May-1994 hjaaj / 1-Apr-1997
 C
@@ -295,6 +297,8 @@ C
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
+      ! rcpmat is used on branch qmcmm, please do not remove
+      DIMENSION RCPMAT(*)
 C
 C Used from common blocks:
 C  INFINP : FLAG(*)
