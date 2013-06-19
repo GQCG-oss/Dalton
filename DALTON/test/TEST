@@ -665,4 +665,13 @@ fi
 rm "$tmpfile"
 myprint "date and time         : `date`"
 
+if [ "$result_directory" != "" ]; then
+  if [ "$exitcode" -eq 0 ]; then
+      # test passed, we remove the custom result directory
+      rm -r $result_directory
+  else
+      mv $result_directory ${result_directory}_failed
+  fi
+fi
+
 exit $exitcode
