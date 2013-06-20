@@ -555,6 +555,11 @@
       allocate(fxcacs(nnashx,ncsim))
       allocate(tfxc(ncsim))
       allocate(tfxcacs(ncsim))
+      fxcs    = 0.0d0
+      fuxcs   = 0.0d0    
+      fxcacs  = 0.0d0      
+      tfxc    = 0.0d0
+      tfxcacs = 0.0d0 
 
       !-----------------------------------
       ! Fxc = R*(<0(L)|Fe|0> + <0|Fe|0(R)>)Fe
@@ -563,6 +568,7 @@
          call getref(cref, ncref)
          ! ...Construct <0(L)|...|0> + <0|...|0(R)>                       
          allocate(udtv(n2ashx,ncsim))        
+         udtv = 0.0d0
          call rsptdm(ncsim,irefsy,ksymst,ncref,kzconf,cref,
      &                 bcvecs,udtv,dummy,0,0,.true.,.true.,
      &                 cindx,wrk,1,nwrk)
@@ -574,8 +580,9 @@
       write(lupri,*)'ncsim', ncsim               
          if ( ncsim > 0 ) then         
             allocate(fdtvaos(nnbasx*ncsim))
-
+            fdtvaos = 0.0d0
             allocate(udtvao(n2basx))
+            udtvao = 0.0d0
             do i = 1, ncsim
                j = (i - 1) * nnbasx + 1
                 call fckden2(.false.,.true., dummy, udtvao, cmo,
@@ -588,6 +595,7 @@
          end if
          
          allocate(fxcaos(ncsim*nnbasx))
+         fxcaos = 0.0d0
          call pe_master(runtype='response', denmats=fdtvaos,
      &                 fckmats=fxcaos, nmats=ncsim, dalwrk=wrk(1:nwrk))
          deallocate(fdtvaos)           
@@ -615,6 +623,7 @@
       !---------------------------------------
       if (.not. tdhf) then          
           allocate(fpe(nnorbx))
+          fpe = 0.0d0
           if (lusifc <= 0) then
               call gpopen(lusifc, 'SIRIFC', 'OLD', ' ', 'UNFORMATTED',
      &                    idummy, .false.)
@@ -625,6 +634,8 @@
           call readt(lusifc, nnorbx, fpe)
           if (lopen) call gpclose(lusifc, 'KEEP')
           allocate(fupe(n2orbx), fpeac(nnashx))
+          fupe = 0.0d0
+          fpeac = 0.0d0
           call dsptsi(norbt, fpe, fupe)               
           if (nasht > 0) call getac2(fpe, fpeac)
               tfpe = solelm(dv, fpeac, fpe, tfpeac)
@@ -661,6 +672,7 @@ C
 !            allocate(fuxcs(n2orbx,ncsim))
 !            call dsptsi(norbt,fxcs(:,i), fuxcs(:,i))
 !             allocate(fuxcs(n2orbx))
+             fuxcs = 0.0d0
              call dsptsi(norbt,fxcs(:,i), fuxcs)
 !            if (trplet) then
 !               call slvsor(.true.,.false.,1,udvtr,
