@@ -17,7 +17,7 @@ module array4_simple_operations
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use array4_memory_manager
-  use manual_reorderings_module!,only:manual_4231_reordering,&
+  use reorder_frontend_module!,only:manual_4231_reordering,&
                                !     &manual_2413_reordering,&
                                !     &manual_3214_reordering,&
                                !     &manual_1324_reordering,&
