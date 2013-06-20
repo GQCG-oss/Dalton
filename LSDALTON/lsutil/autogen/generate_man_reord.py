@@ -62,13 +62,13 @@ def main():
      installdir = lsutildir
   
   #THIS FILE SHOULD GENERATE ALL REORDERINGS NEEDED in manual_reorderings.F90
-  if(not os.path.exists(installdir+"manual_reorderings.F90") or force_rewrite):
+  if(not os.path.exists(installdir+"reorder_frontend.F90") or force_rewrite):
     produce_files(installdir,lsutildir,args)
   else:
     #DEFAULT IS FALSE, CHECK THE PREVIOUS VARS IF A NEW PRODUCTION IS NECESSARY
     writenew = False
     endvars_found = False
-    c = open(installdir+"manual_reorderings.F90",'r')
+    c = open(installdir+"reorder_frontend.F90",'r')
 
     #PARSE THE LINES
     for line in c:
@@ -99,7 +99,37 @@ def main():
     if not endvars_found:
       writenew = True
 
-    if(not os.path.exists(installdir+"manual_utils.F90")):
+    if(not os.path.exists(installdir+"reord2d_2_reord.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord3d_1_reord.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord3d_2_reord.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord3d_3_reord.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord4d_1_reord.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord4d_2_reord.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord4d_3_reord.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord4d_4_reord.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord4d_1_utils_f2t.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord4d_2_utils_f2t.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord4d_3_utils_f2t.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord4d_4_utils_f2t.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord4d_1_utils_t2f.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord4d_2_utils_t2f.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord4d_3_utils_t2f.F90")):
+      writenew = True
+    if(not os.path.exists(installdir+"reord4d_4_utils_t2f.F90")):
       writenew = True
 
     if writenew:
