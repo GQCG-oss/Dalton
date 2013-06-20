@@ -395,8 +395,20 @@ C
 
       if (peqm) then
         if (.not. tdhf) then 
-            call quit('ERROR: MCSCF quadratic response not'//
-     &                ' implemented with PE module.')
+             write(lupri,*) '*** WARNING peqm MCSCF QR ***  '
+             write(lupri,*) '    Highly experimental version'
+             write(lupri,*) '    Results *WILL* be wrong    '
+!            call quit('ERROR: MCSCF quadratic response not'//
+!     &                ' implemented with PE module.')
+
+            write(lupri,*)'KFREE', KFREE
+            write(lupri,*)'LFREE', LFREE
+
+             call pe_rspmcqr(vecb, vecc, etrs, xindx, 
+     &                       wrk(kzymb), wrk(kzymc), wrk(kden1), udv, 
+     &                       wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
+     &                       isyma, isymb, isymc, cmo, mjwop)
+
         else if (nasht > 0) then
             call quit('ERROR: quadratic response not implemented for'//
      &                ' open shell systems with PE module.')
@@ -404,6 +416,7 @@ C
             call quit('ERROR: triplets not implemented for quadratic'//
      &                ' response with PE module.')
         endif
+        
         call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
      &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
      &                 isyma, isymb, isymc, cmo, mjwop)
