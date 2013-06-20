@@ -11,7 +11,7 @@ module lspdm_basic_module
   use infpar_module
   use lsmpi_type
 #endif
-  use manual_reorderings_module
+  use reorder_frontend_module
   use tensor_type_def_module
 
   interface get_tile_dim

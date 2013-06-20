@@ -10,7 +10,7 @@ module tensor_interface_module
   use precision
   use files!,only: lsopen,lsclose
   use LSTIMING!,only:lstimer
-  use manual_reorderings_module 
+  use reorder_frontend_module
   use lspdm_tensor_operations_module
 
 

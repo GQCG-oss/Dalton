@@ -2,10 +2,40 @@ all: liblsutil.a
 
 include ../Makefile.config
 
-manual_reorderings.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py nocollapse ${CPPFLAGS}
-manual_utils.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py nocollapse ${CPPFLAGS}
+reorder_frontend.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord2d_2_reord.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord3d_1_reord.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord3d_2_reord.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord3d_3_reord.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_1_reord.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_2_reord.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_3_reord.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_4_reord.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_1_utils_f2t.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_2_utils_f2t.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_3_utils_f2t.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_4_utils_f2t.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_1_utils_t2f.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_2_utils_t2f.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_3_utils_t2f.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+reord4d_4_utils_t2f.F90: ./autogen/generate_man_reord.py
+	python ./autogen/generate_man_reord.py ${CPPFLAGS}
 
 # Keep the file lists sorted for easier modification.
 
@@ -34,8 +64,23 @@ F90_OBJS = \
 	OverlapDistributionType.o\
 	ls_screenMPI.o\
 	lstensor_operations.o\
-        manual_utils.o\
-        manual_reorderings.o\
+        reorder_frontend.o\
+	reord2d_2_reord.o\
+	reord3d_1_reord.o\
+	reord3d_2_reord.o\
+	reord3d_3_reord.o\
+	reord4d_1_reord.o\
+	reord4d_2_reord.o\
+	reord4d_3_reord.o\
+	reord4d_4_reord.o\
+	reord4d_1_utils_f2t.o\
+	reord4d_2_utils_f2t.o\
+	reord4d_3_utils_f2t.o\
+	reord4d_4_utils_f2t.o\
+	reord4d_1_utils_t2f.o\
+	reord4d_2_utils_t2f.o\
+	reord4d_3_utils_t2f.o\
+	reord4d_4_utils_t2f.o\
         tensor_type_def.o\
         tensor_interface.o\
         lspdm_tensor_operations.o\

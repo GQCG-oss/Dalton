@@ -9,6 +9,5 @@ LSDALTON/doc_LSDALTON/*.idx
 LSDALTON/doc_LSDALTON/*.ilg
 LSDALTON/doc_LSDALTON/*.ind
 LSDALTON/doc_LSDALTON/*.toc
-LSDALTON/lsutil/manual_reorderings.F90
-LSDALTON/lsutil/manual_utils.F90
+LSDALTON/lsutil/reord*.F90
 LSDALTON/test/TESTLOG
