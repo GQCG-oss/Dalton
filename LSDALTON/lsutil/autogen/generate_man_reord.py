@@ -763,7 +763,12 @@ def write_testing_framework(f,minr,maxr):
       testcase="\
           call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
           teststatus=\"SUCCESS\"\n\
-          res = sto\n\
+          !res = sto\n\
+          call dcopy("
+      for i in range(mode):
+        testcase += "n"+abc[i]+"*"
+      testcase = testcase[0:-1] + ",sto,1,res,1)\n"
+      testcase+="\
           call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
           call array_reorder_"+str(mode)+"d(pr1,in1,"
       for i in range(mode):
