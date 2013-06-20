@@ -224,6 +224,8 @@ def produce_files(installdir,lsutildir,args):
        for ad in range(len(forutils)):
          write_simple_module_end_and_close(utils[idx][i][ad],idx+minr,i+1,now,args,forutils[ad])
 
+   #remove empty file
+   os.system("rm "+installdir+" reord2d_1_reord.F90")
 
 
 def write_subroutine_body(f,idxarr,perm,modes,args,ad):
@@ -648,6 +650,8 @@ def write_main_header(f,now,args,lsutildir,minr,maxr):
        if (mode == 4):
          f.write("  use reord"+str(mode)+"d_"+str(i+1)+"_utils_t2f_module\n")
          f.write("  use reord"+str(mode)+"d_"+str(i+1)+"_utils_f2t_module\n")
+       if(mode==2 and i == 0):
+         continue
        f.write("  use ""reord"+str(mode)+"d_"+str(i+1)+"_reord_module\n")
    f.write("  use LSTIMING\n")
    #f.write("  contains\n")

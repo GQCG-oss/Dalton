@@ -4,8 +4,6 @@ include ../Makefile.config
 
 reorder_frontend.F90: ./autogen/generate_man_reord.py
 	python ./autogen/generate_man_reord.py ${CPPFLAGS}
-reord2d_1_reord.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
 reord2d_2_reord.F90: ./autogen/generate_man_reord.py
 	python ./autogen/generate_man_reord.py ${CPPFLAGS}
 reord3d_1_reord.F90: ./autogen/generate_man_reord.py
@@ -67,7 +65,6 @@ F90_OBJS = \
 	ls_screenMPI.o\
 	lstensor_operations.o\
         reorder_frontend.o\
-	reord2d_1_reord.o\
 	reord2d_2_reord.o\
 	reord3d_1_reord.o\
 	reord3d_2_reord.o\
