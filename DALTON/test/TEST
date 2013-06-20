@@ -11,7 +11,7 @@
 #       If another name than "build" has been chosen for the build directory,
 #       then you should modify the BUILD_DIR defintion to point to that place.
 
-BUILD_DIR="../build"
+BUILD_DIR="../../build"
 
 # radovan: this is to figure out the location of this script
 # http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
@@ -30,9 +30,7 @@ if [ -x '/usr/bin/time' ]; then
 else
  TIMING_OF=" "
 fi
-if [ -x '../bin/dalton' ]; then
-  DALTON="`pwd`/../bin/dalton"
-elif [ -x "$BUILD_DIR/dalton" ]; then
+if [ -x "$BUILD_DIR/dalton" ]; then
   DALTON="`pwd`/$BUILD_DIR/dalton"
 else
   DALTON=NON_DEFAULT
@@ -41,10 +39,6 @@ fi
 #########################################################################
 # define all the different test suites
 #########################################################################
-SHORTQM3="hfmm_1 cc2mm_spc_fop \
-dftmm_1 dftmm_2 dftmm_3 dftmm_4 dftmm_5 dftmm_6 dftmm_7 dftmm_8 dftmm_9 \
-qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8 hfmmpcm_1"
-#
 SHORTCC3="cc3_LIH1s1p_pol cc3_LIH1s1p_asym_pol cc3_CARBON_pol \
 cc3_CARBON_asym_pol cc3_LIH1s1p_tmom cc3_LIH1s1p_tmom_no2np1 cc3_HF_631G_pol \
 cc3_HF_631G_asym_pol cc3_LIH_431G_tmom cc3_LIH_431G_tmom_no2np1 \
@@ -73,7 +67,7 @@ choles_hf_magnet choles_kt3_ctocd choles_lda_prop choact_mp2_energy"
 SHORTPEQM="pehf_small_iter pehf_small_direct pehf_small_gspol \
 pehf_small_alpha pehf_small_1pa pehf_small_beta pehf_small_2pa"
 #
-SHORT="$SHORTCC $SHORT_CHOLESKY $SHORTPEQM $SHORTQM3"
+SHORT="$SHORTCC $SHORT_CHOLESKY $SHORTPEQM "
 #
 MEDIUM="energy_corehole energy_solv geoopt_cartmin geoopt_dckerr \
 geoopt_delintmin geoopt_exci geoopt_mp2froz geoopt_redintsad \
@@ -87,11 +81,7 @@ cc_beta_solv $MEDIUMCC3"
 #
 MEDIUM_CHOLESKY="choles_cc2_polar"
 #
-MEDIUMQM3="ccsdmm_spc_fop ccsdmm_oldtg ccsdmm_ec1_fop \
-ccsdmm_ec3_fop ccsdmm_e01_fop ccsdmm_modelmix cc2mm_exci \
-cc2mm_atmvdw ccsdmm_twopar_vdw cc2mm_lr_qr cc2mm_spc_exci ccmm_beta"
-#
-MEDIUM="$MEDIUM $MEDIUMCC $MEDIUM_CHOLESKY $MEDIUMQM3"
+MEDIUM="$MEDIUM $MEDIUMCC $MEDIUM_CHOLESKY"
 #
 LONG="geoopt_prop3 geoopt_prop3_ex prop_vibana rsp_excipolar rsp_twophot walk_solvmag"
 #
@@ -106,16 +96,9 @@ LONG="$LONG $LONGCC $LONG_CHOLESKY $LONGPEQM"
 PARALLEL="energy_parallel geoopt_parallel prop_parallel rsp_parallel \
 dft_parallell_properties parallel_lucita_gasci parallel_spin_local"
 #
-QMMM="qmmm1 qmmm2 qmmm3 qmmm4 qmmm5 qmmm6 qmmm7 qmmm8"
-#
 PEQM="$SHORTPEQM $LONGPEQM"
 #
-PARQM3="par_hfmm_1 par_dftmm_1 par_dftmm_3 par_dftmm_4 par_dftmm_5 \
-par_dftmm_6 par_dftmm_7 dftmm_8 dftmm_9"
-#
-DEBUG="qmmm_debug1 qmmm_debug2"
-#
-LONGPAR="$PARALLEL $QMMM $PARQM3 $DEBUG"
+LONGPAR="$PARALLEL"
 #
 DFT="dft_b3lyp_cart dft_b3lyp_nosym dft_b3lyp_sym dft_blyp_nosym \
 dft_blyp_sym dft_energy_sym dft_lda_cart dft_lda_nosym dft_lda_sym \
@@ -164,8 +147,6 @@ CCR12="$SHORTCCR12 $LONGCCR12"
 #
 R12="$MP2R12 $SHORTCCR12 $LONGCCR12"
 #
-QM3="$SHORTQM3 $MEDIUMQM3"
-#
 NUMDER="hfreqfromE hfreqfromg effgeom_fromE effgeom_fromE2 vibave_spinspin"
 #
 GEOOPT="cc_geoopt cc_geoopt2 cc_geoopt_mp2 geoopt_cartmin geoopt_cartsad \
@@ -190,14 +171,15 @@ usage() {
 Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
             [-param "option list"] [-dalton script] [-log logfile] testcase
 
-       -h | -help | --help  : show this help description
-       -keep                : keep *.mol, *.dal, *.check and *.log files
-       -reftest             : test reference file(s); do not run any calculations
-       -benchmark           : print CPU time for each testcase as part of the summary
-       -param "option list" : pass "option list" to dalton-script
-       -dalton script       : use script instead of the default
-                              dalton-script "`pwd`/../dalton" (absolute path) 
-       -log logfile         : write output into logfile instead of to "TESTLOG"
+       -h | -help | --help    : show this help description
+       -keep                  : keep *.mol, *.dal, *.check and *.log files
+       -reftest               : test reference file(s); do not run any calculations
+       -benchmark             : print CPU time for each testcase as part of the summary
+       -param "option list"   : pass "option list" to dalton-script
+       -dalton script         : use script instead of the default
+                                dalton-script "`pwd`/../dalton" (absolute path) 
+       -log logfile           : write output into logfile instead of to "TESTLOG"
+       -result-directory path : change default result directory to path
 
        and where testcase might be one of the following:
           short                -- run all short testcases
@@ -257,6 +239,7 @@ listing="TESTLOG"
 emptystring="                                "
 answer_yes=
 keep_quiet=
+result_directory=''
 
 tmpfile=/tmp/dalton-$$.log
 touch "$tmpfile"   || { echo "cannot create temporary file. Aborting execution."; exit 1; }
@@ -273,6 +256,7 @@ while echo $1 | egrep -q '^-'; do
      "-h" | "-help" | "--help" ) help="true" ; break;;
      "-dalton" )  shift; DALTON=$1; shift;;
      "-log" ) shift; listing=$1; shift;;
+     "-result-directory" ) shift; result_directory=$1; shift;;
      "-keep" ) keep="true"; shift;;
      -param* ) shift; paramlist="$1"; shift;;
      "-reftest" ) reftest="true"; shift;;
@@ -350,30 +334,6 @@ while [ -n "$1" ]; do
    fi
    testcase="$testcase $PARALLEL"; 
    shift ;;
-  "parqmmm" )
-   if [ "$paramlist" = "" ]; then
-     paramlist="$par_paramlist"
-     par_paramlist=
-   fi
-   testcase="$testcase $QMMM";
-   shift ;;
-  "parqm3" )
-   if [ "$paramlist" = "" ]; then
-     paramlist="$par_paramlist"
-     par_paramlist=
-   fi
-   testcase="$testcase $PARQM3";
-   shift ;;
-  "debug" )
-   if [ "$paramlist" = "" ]; then
-     paramlist="$par_paramlist"
-     par_paramlist=
-   fi
-   testcase="$testcase $DEBUG";
-   shift ;;
-  "qmmm" )
-   testcase="$testcase $QMMM";
-   shift ;;
   "peqm" )
    testcase="$testcase $PEQM";
    shift ;;
@@ -420,20 +380,19 @@ while [ -n "$1" ]; do
    "cholesky" )
    testcase="$testcase $CHOLESKY"; 
    shift ;;
-   "qm3" )
-   testcase="$testcase $QM3"; 
-   shift ;;
    * )
    testcase="$testcase $1"; 
    shift ;;
    esac
 done
 
-#########################################################################
-# create a unique directory for test output /hjaaj
-# nonportable characters in the directory name removed. /pawsa
-#########################################################################
-testdir="`date +'%Y-%m-%dT%H_%M'`-testjob-pid-$$"
+if [ "$result_directory" = "" ]; then
+    # create a unique directory for test output
+    testdir="`date +'%Y-%m-%dT%H_%M'`-testjob-pid-$$"
+else
+    # user specifies explicit result directory
+    testdir=$result_directory
+fi
 while [ -e $testdir ]; do
     testdir=${testdir}x
 done
@@ -501,8 +460,8 @@ do
   myprint  "##########################################################################################"
   myprint  "`date` -- Starting now with test number $total_tests_run out of $total_tests: $item"
   myprint  "------------------------------------------------------------------------------------------"
-  chmod +x ../$item || exit 1
-  ../$item
+  chmod +x $SCRIPT_DIR/$item || exit 1
+  $SCRIPT_DIR/$item
 # remove any directory path now the files are unpacked
   item=`basename $item`
   if [ -f $item.info -a "$keep_quiet" = "" ]; then
@@ -705,5 +664,14 @@ if [ "$num_reftests_not_found" -gt 0  ]; then
 fi
 rm "$tmpfile"
 myprint "date and time         : `date`"
+
+if [ "$result_directory" != "" ]; then
+  if [ "$exitcode" -eq 0 ]; then
+      # test passed, we remove the custom result directory
+      rm -r $result_directory
+  else
+      mv $result_directory ${result_directory}_failed
+  fi
+fi
 
 exit $exitcode
