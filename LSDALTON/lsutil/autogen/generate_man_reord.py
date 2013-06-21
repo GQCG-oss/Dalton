@@ -24,7 +24,7 @@ def main():
   args.append(False)
   args.append(False)
   args.append("")
-  print sys.argv
+# print sys.argv
   force_rewrite = False 
   for i in range(len(sys.argv)):
     if "VAR_LSDEBUG" in sys.argv[i]:
@@ -255,7 +255,7 @@ def produce_files(installdir,lsutildir,args):
          write_simple_module_end_and_close(utils[idx][i][ad],idx+minr,i+1,now,args,forutils[ad])
 
    #remove empty file
-   os.system("rm "+installdir+" reord2d_1_reord.F90")
+   os.system("rm %s" % os.path.join(installdir, 'reord2d_1_reord.F90'))
 
 
 def write_subroutine_body(f,idxarr,perm,modes,args,ad):
