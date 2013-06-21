@@ -176,9 +176,9 @@ Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
        -reftest               : test reference file(s); do not run any calculations
        -benchmark             : print CPU time for each testcase as part of the summary
        -param "option list"   : pass "option list" to dalton-script
-       -dalton script         : use script instead of the default
+       -dalton script         : use "script" instead of the default
                                 dalton-script "`pwd`/../dalton" (absolute path) 
-       -log logfile           : write output into logfile instead of to "TESTLOG"
+       -log logfile           : write output into logfile instead of to "DALTON_TESTLOG"
        -result-directory path : change default result directory to path
 
        and where testcase might be one of the following:
@@ -235,9 +235,8 @@ paramlist=""
 par_paramlist="-N 4"
 reftest=""
 benchmark=""
-listing="TESTLOG"
+listing="DALTON_TESTLOG"
 emptystring="                                "
-answer_yes=
 keep_quiet=
 result_directory=''
 
@@ -260,7 +259,6 @@ while echo $1 | egrep -q '^-'; do
      "-keep" ) keep="true"; shift;;
      -param* ) shift; paramlist="$1"; shift;;
      "-reftest" ) reftest="true"; shift;;
-     "-y") answer_yes=true; shift;;
      "-q") keep_quiet=true; shift;;
      "-benchmark" ) benchmark="true"; shift;;
      * ) echo "---> ERROR: $1 is an unknown option!"; usage;;
@@ -268,11 +266,6 @@ while echo $1 | egrep -q '^-'; do
 done
 if [ $help ]; then
   usage
-fi
-
-if [ ! -x $DALTON ]; then
-  echo 'Fatal error: could not find dalton script'
-  exit 1 
 fi
 
 if [ "${DALTON:0:1}" != "/" ]; then
@@ -297,7 +290,7 @@ fi
 # set list of test cases:
 #########################################################################
 testcase=$*
-if   [ "$testcase" = "" ]; then
+if [ "$testcase" = "" ]; then
   echo '    ***********************************'
   echo '    * ERROR: No testcase(s) specified *'
   echo '    ***********************************'
@@ -389,27 +382,17 @@ done
 if [ "$result_directory" = "" ]; then
     # create a unique directory for test output
     testdir="`date +'%Y-%m-%dT%H_%M'`-testjob-pid-$$"
+    while [ -e $testdir ]; do
+       testdir=${testdir}x
+    done
+    mkdir $testdir 
 else
     # user specifies explicit result directory
     testdir=$result_directory
+    if [ ! -e $testdir ]; then mkdir $testdir; fi
 fi
-while [ -e $testdir ]; do
-    testdir=${testdir}x
-done
-mkdir $testdir 
 cp functions $testdir
 cd $testdir || exit 1
-
-#########################################################################
-# check files for test listing:
-#########################################################################
-if [ -s $listing -a "$answer_yes" = '' ]; then
-   echo "$listing already exists... should it be deleted first? (y/n)"
-   read answer
-   if [ "$answer" = "yes"  -o  "$answer" = "y" -o "$answer" = "Y" ]; then
-       rm -f $listing
-   fi
-fi
 
 myprint "#####################################################################"
 myprint "                          DALTON test suite"
@@ -455,10 +438,10 @@ do
 
   # errprint is necessary to see what test a system error message came from, in case stderr and stdout are different
   errprint "##########################################################################################"
-  errprint "`date` -- Starting now with test number $total_tests_run out of $total_tests: $item"
+  errprint "`date` -- Starting test number $total_tests_run out of $total_tests: $item"
 
   myprint  "##########################################################################################"
-  myprint  "`date` -- Starting now with test number $total_tests_run out of $total_tests: $item"
+  myprint  "`date` -- Starting test number $total_tests_run out of $total_tests: $item"
   myprint  "------------------------------------------------------------------------------------------"
   chmod +x $SCRIPT_DIR/$item || exit 1
   $SCRIPT_DIR/$item
@@ -666,11 +649,14 @@ rm "$tmpfile"
 myprint "date and time         : `date`"
 
 if [ "$result_directory" != "" ]; then
+  cd ..   # do not rm or mv your working directory
   if [ "$exitcode" -eq 0 ]; then
       # test passed, we remove the custom result directory
-      rm -r $result_directory
+      if [ "$keep" = "false" ]; then
+         rm -r $result_directory
+      fi
   else
-      mv $result_directory ${result_directory}_failed
+      mv $result_directory ${result_directory}_failed_"`date +'%Y-%m-%dT%H_%M'`-$$"
   fi
 fi
 

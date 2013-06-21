@@ -12,6 +12,10 @@ else()
     set(CTEST_DROP_LOCATION "/CDash/submit.php?project=DALTON")
 endif()
 
+if(DEFINED ENV{CTEST_MAKE_NR_PROC})
+    set(MAKECOMMAND "make -j$ENV{CTEST_MAKE_NR_PROC}" CACHE STRING "Custom make command")
+endif()
+
 # total allowed time for all tests in seconds
 # see http://www.itk.org/Wiki/CTest:Using_CTEST_and_CDASH_without_CMAKE#General_CTest_settings
 set(CTEST_TIMEOUT           "21600")

@@ -25,7 +25,7 @@ def main():
   args.append(False)
   args.append(False)
   args.append("")
-  print sys.argv
+# print sys.argv
   force_rewrite = False 
   for i in range(len(sys.argv)):
     if "VAR_LSDEBUG" in sys.argv[i]:
