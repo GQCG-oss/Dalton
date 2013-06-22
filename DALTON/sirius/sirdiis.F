@@ -282,6 +282,13 @@ C  /* Deck DIIS_CTL */
      *                    C2DIIS,SMOAO,DCAO,FCAO,DAOSAV,DV,CVEC,
      *                    TNLM,RCPMAT,WRK,KFRSAV,LFRSAV,
      *                    IPR_DIIS,ICONV)
+
+!#define USE_XCINT
+#ifdef USE_XCINT
+      use xcint_integrator
+      use interface_ao_specific
+#endif
+
 C
 C L.r. 5-May-1994 hjaaj / 1-Apr-1997
 C
@@ -297,8 +304,16 @@ C
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
+
       ! rcpmat is used on branch qmcmm, please do not remove
       DIMENSION RCPMAT(*)
+
+#ifdef USE_XCINT
+      real(8), allocatable :: dmat_ao(:)
+      real(8), allocatable :: fmat_ao(:)
+      real(8), allocatable :: fmat_ao_tri(:)
+#endif
+
 C
 C Used from common blocks:
 C  INFINP : FLAG(*)
@@ -703,10 +718,42 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
      &                 FAOSAV(1,INDEVC,1),1)
             END IF
          END IF
-         IF (DODFT) CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+         IF (DODFT) then
+#ifdef USE_XCINT
+             allocate(dmat_ao(nbast*nbast))
+             allocate(fmat_ao(nbast*nbast))
+             allocate(fmat_ao_tri(nnbast))
+             dmat_ao     = 0.0d0
+             fmat_ao     = 0.0d0
+             fmat_ao_tri = 0.0d0
+             xc_energy   = 0.0d0
+             call daxpy(nbast*nbast, 0.5d0, dcao, 1,
+     &                  dmat_ao, 1)
+             call interface_ao_write()
+             call xc_integrate(
+     &                         xc_mat_dim=nbast,
+     &                         xc_nr_dmat=1,
+     &                         xc_dmat=dmat_ao,
+     &                         xc_nr_geo_pert=0,
+     &                         xc_nr_fld_pert=0,
+     &                         xc_energy=xc_energy,
+     &                         xc_fmat=fmat_ao
+     &                        )
+             emy = emy + xc_energy
+
+             call dgetsp(nbast, fmat_ao, fmat_ao_tri)
+             call daxpy(nnbast, 1.0d0, fmat_ao_tri, 1,
+     &                  faosav(1, indevc, 1), 1)
+
+             deallocate(dmat_ao)
+             deallocate(fmat_ao)
+             deallocate(fmat_ao_tri)
+#else
+                        CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPR_DIIS)
-
+#endif
+         end if
 CAMT If calculated add the empirical dispersion energy correction
          IF (DODFTD) THEN
            EMY = EMY + EDISP

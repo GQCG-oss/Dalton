@@ -94,6 +94,7 @@ C
 #include "gnrinf.h"
 #include "qm3.h"
 #include "qmmm.h"
+#include "wavpcm.h"
 C
 C
 C EXTERNAL FUNCTIONS

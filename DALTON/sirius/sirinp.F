@@ -2191,6 +2191,12 @@ C
       END
 C  /* Deck sir_geninp */
       SUBROUTINE SIR_GENINP(WORD,INPERR,IREST,NUMRUN,ALLOPT)
+
+#ifdef MOD_XCINT
+      use xcint_integrator
+      use eri_contractions
+#endif
+
 C
 C 1-Oct 1987 Hans Agren
 C
@@ -2202,6 +2208,9 @@ C
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
+#ifdef MOD_XCINT
+      real(8) :: hfx_out, mu_out, beta_out
+#endif
 C
 C Used from common:
 C  INFINP : FLAG(*), IORTO, DO*
@@ -2481,6 +2490,20 @@ C        ... no P-supermatrix for DFT
 #ifdef MOD_XCFUN
          CALL xcfun_select(TITLIN)
 #endif
+#ifdef MOD_XCINT
+         call parse_functional(titlin, hfx_out, mu_out, beta_out)
+         open(42,
+     &        file   = 'xc_functional',
+     &        status = 'unknown',
+     &        form   = 'formatted',
+     &        access = 'sequential')
+         rewind(42)
+         write(42, *) titlin
+         close(42, status = 'keep')
+
+         call set_eri_contractions_xfac(hfx_out)
+#endif
+
          IF (WDFTMP.NE.0.0D0) THEN
             DOMP2    = .TRUE.
             FLAG(9)  = .TRUE.
