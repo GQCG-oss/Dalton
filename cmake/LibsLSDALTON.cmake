@@ -226,12 +226,13 @@ add_library(
 
 target_link_libraries(linearslib rspsolverlib)
 
-add_library(
-    rsp_propertieslib
-    ${RSP_PROPERTIES_SOURCES}
-    )
-
-target_link_libraries(rsp_propertieslib lsintlib)
+if(DEVELOPMENT_CODE)
+    add_library(
+        rsp_propertieslib
+        ${RSP_PROPERTIES_SOURCES}
+        )
+    target_link_libraries(rsp_propertieslib lsintlib)
+endif()
 
 add_library(
     geooptlib
@@ -250,7 +251,9 @@ target_link_libraries(lsdaltonmain geooptlib)
 target_link_libraries(lsdaltonmain linearslib)
 target_link_libraries(lsdaltonmain declib)
 target_link_libraries(lsdaltonmain ddynamlib)
-target_link_libraries(lsdaltonmain rsp_propertieslib)
+if(DEVELOPMENT_CODE)
+    target_link_libraries(lsdaltonmain rsp_propertieslib)
+endif()
 target_link_libraries(lsdaltonmain rspsolverlib)
 target_link_libraries(lsdaltonmain xcfun_interface)
 
@@ -276,11 +279,6 @@ if(MPI_FOUND)
     endif()
 endif()
 
-MERGE_STATIC_LIBS(
-    rsp_prop
-    rsp_propertieslib
-    )
-
 if(ENABLE_INTEREST)
     MERGE_STATIC_LIBS(
         lsint
@@ -294,8 +292,7 @@ else()
         )
 endif()
 
-MERGE_STATIC_LIBS(
-    lsdalton
+set(LIBS_TO_MERGE
     lsutillib_precision
     matrixmlib
     lsutillib_common
@@ -313,10 +310,22 @@ MERGE_STATIC_LIBS(
     solverutillib
     rspsolverlib
     linearslib
-    rsp_prop
     geooptlib
     xcfun_interface
     lsdaltonmain 
+    )
+
+if(DEVELOPMENT_CODE)
+    MERGE_STATIC_LIBS(
+        rsp_prop
+        rsp_propertieslib
+        )
+    set(LIBS_TO_MERGE ${LIBS_TO_MERGE} rsp_prop)
+endif()
+
+MERGE_STATIC_LIBS(
+    lsdalton
+    ${LIBS_TO_MERGE}
     )
 
 target_link_libraries(

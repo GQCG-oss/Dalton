@@ -161,10 +161,12 @@ set(SOLVERUTIL_SOURCES
     LSDALTON/SolverUtilities/rsp_precond.F90
     LSDALTON/SolverUtilities/rsp_utilities.F90
     )
-set(RSP_PROPERTIES_SOURCES	
-    LSDALTON/rsp_properties/molecular_hessian.F90
-    LSDALTON/rsp_properties/test_molHessian.F90
-    )
+if(DEVELOPMENT_CODE)
+    set(RSP_PROPERTIES_SOURCES	
+        LSDALTON/rsp_properties/molecular_hessian.F90
+        LSDALTON/rsp_properties/test_molHessian.F90
+        )
+endif()
 set(PBC_FORTRAN_SOURCES
     LSDALTON/pbc2/pbc_compare.F90
     LSDALTON/pbc2/pbc-multipole.F90
