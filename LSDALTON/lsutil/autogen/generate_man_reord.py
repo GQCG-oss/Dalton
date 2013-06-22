@@ -21,24 +21,28 @@ folder."""
 def main():
   #SET ARGUMENT LIST, MAKE SURE THE WRITING HERE CORRESPONDS TO READING IT IN produce_file
   args = []
+  args.append(sys.argv[0])
   args.append(False)
   args.append(False)
   args.append("")
-  print sys.argv
+# print sys.argv
   force_rewrite = False 
   for i in range(len(sys.argv)):
     if "VAR_LSDEBUG" in sys.argv[i]:
-      args[0] = True
-    if "nocollapse" in sys.argv[i]:
       args[1] = True
+    if "nocollapse" in sys.argv[i]:
+      args[2] = True
     if "CMAKE_BUILD=" in sys.argv[i]:
-      args[2] = sys.argv[i][sys.argv[i].find("=")+1:]
+      args[3] = sys.argv[i][sys.argv[i].find("=")+1:]
+
     if "FORCE_REWRITE" in sys.argv[i] :
       force_rewrite = True
     
+  
+  print args
   #GET THE FOLDER TO STORE THE manual_reorderings.F90
   cwd = os.getcwd()
-  lsutildir = cwd
+  lsutildir = args[0]
   if ("/LSDALTON/lsutil" in lsutildir ):
 
     lsutildir = lsutildir[0:lsutildir.find("/LSDALTON/lsutil")]+"/LSDALTON/lsutil/"
@@ -56,84 +60,94 @@ def main():
 
 
   installdir  = ""
-  if args[2] != "" :
-     installdir = args[2] +"/"
+  if args[3] != "" :
+     installdir = args[3] +"/"
   else:
      installdir = lsutildir
-  
-  #THIS FILE SHOULD GENERATE ALL REORDERINGS NEEDED in manual_reorderings.F90
-  if(not os.path.exists(installdir+"reorder_frontend.F90") or force_rewrite):
-    produce_files(installdir,lsutildir,args)
-  else:
-    #DEFAULT IS FALSE, CHECK THE PREVIOUS VARS IF A NEW PRODUCTION IS NECESSARY
-    writenew = False
-    endvars_found = False
-    c = open(installdir+"reorder_frontend.F90",'r')
 
-    #PARSE THE LINES
+  #DEFAULT OF WRITING THE FILES IS FALSE, CHECK THE PREVIOUS VARS IF A NEW PRODUCTION IS NECESSARY
+  writenew = False
+
+  #OVERRIDE OPTION
+  if(force_rewrite):
+    writenew = True
+
+  #CHECK IF THE FILES EXIST AT ALL, IF NOT, WRITE
+  if(not os.path.exists(installdir+"reorder_frontend.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord2d_2_reord.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord3d_1_reord.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord3d_2_reord.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord3d_3_reord.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord4d_1_reord.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord4d_2_reord.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord4d_3_reord.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord4d_4_reord.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord4d_1_utils_f2t.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord4d_2_utils_f2t.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord4d_3_utils_f2t.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord4d_4_utils_f2t.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord4d_1_utils_t2f.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord4d_2_utils_t2f.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord4d_3_utils_t2f.F90")):
+    writenew = True
+  if(not os.path.exists(installdir+"reord4d_4_utils_t2f.F90")):
+    writenew = True
+
+  if(not writenew):
+    c = open(installdir+"reorder_frontend.F90",'r')
+    endvars_found = False
+    #PARSE THE LINES TO CHECK WHETHER IT IS NECESSARY TO WRITE THE FILES FROM SCRATCH
     for line in c:
       line = line.strip()
-
+ 
       if "!ARG0:" in line:
         writenew = (not line.split()[-1] == str(args[0]))
         if writenew:
           break
-
+ 
       if "!ARG1:" in line:
         writenew = (not line.split()[-1] == str(args[1]))
         if writenew:
           break
-
+ 
       if "!ARG2:" in line:
         writenew = (not line.split()[-1] == str(args[2]))
         if writenew:
           break
-
+ 
+      if "!ARG3:" in line:
+        writenew = (not line.split()[-1] == str(args[3]))
+        if writenew:
+          break
+ 
       if "!END VARS" in line:
         endvars_found = True
         break
-
+ 
     c.close()
-    
-    #ASSUME THAT IF "!END VARS" IS NOT FOUND THE FILE IS AN OLD INSTANCE
+  
+    #ASSUME THAT IF "!END VARS" IS NOT FOUND THE FILE IS AN OLD OR DAMAGED VERSION
     if not endvars_found:
       writenew = True
 
-    if(not os.path.exists(installdir+"reord2d_2_reord.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord3d_1_reord.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord3d_2_reord.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord3d_3_reord.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord4d_1_reord.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord4d_2_reord.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord4d_3_reord.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord4d_4_reord.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord4d_1_utils_f2t.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord4d_2_utils_f2t.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord4d_3_utils_f2t.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord4d_4_utils_f2t.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord4d_1_utils_t2f.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord4d_2_utils_t2f.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord4d_3_utils_t2f.F90")):
-      writenew = True
-    if(not os.path.exists(installdir+"reord4d_4_utils_t2f.F90")):
-      writenew = True
 
-    if writenew:
-      produce_files(installdir,lsutildir,args)
+  if writenew:
+    produce_files(installdir,lsutildir,args)
 
 ##################################################################################################
 ##################################################################################################
@@ -171,8 +185,8 @@ def produce_files(installdir,lsutildir,args):
 
 
    #GET COMMAND LINE ARGUMENTS
-   debug_loops = args[0]
-   nocollapse  = args[1]
+   debug_loops = args[1]
+   nocollapse  = args[2]
     
     
    now = datetime.datetime.now()
@@ -220,10 +234,11 @@ def produce_files(installdir,lsutildir,args):
            doreord = False
 
        if doreord :
+         emptystr = ""
          # WRITE THE SUBROUTINE HEADER AND GET ITS NAME
-         sub = write_subroutine_header(reord[idx][perm[0]],idxarr,perm,now,modes,"",debug_loops)
+         sub = write_subroutine_header(reord[idx][perm[0]],idxarr,perm,now,modes,emptystr,debug_loops)
          #Write the subroutine body
-         write_subroutine_body(reord[idx][perm[0]],idxarr,perm,modes,args,"")
+         write_subroutine_body(reord[idx][perm[0]],idxarr,perm,modes,args,emptystr)
          #END THE SUBROUTINE
          reord[idx][perm[0]].write("  end subroutine "+sub+"\n\n")
 
@@ -255,12 +270,12 @@ def produce_files(installdir,lsutildir,args):
          write_simple_module_end_and_close(utils[idx][i][ad],idx+minr,i+1,now,args,forutils[ad])
 
    #remove empty file
-   os.system("rm "+installdir+" reord2d_1_reord.F90")
+   os.system("rm "+installdir+"/reord2d_1_reord.F90")
 
 
 def write_subroutine_body(f,idxarr,perm,modes,args,ad):
-  debug_loops = args[0]
-  nocollapse  = args[1]
+  debug_loops = args[1]
+  nocollapse  = args[2]
   #GENERAL CASE pre1/=1 pre2/=0 or 1
   if(not debug_loops):
     cases = ["pre2 == 0.0E0_realk .and. pre1 == 1.0E0_realk"]

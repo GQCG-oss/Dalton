@@ -3,39 +3,39 @@ all: liblsutil.a
 include ../Makefile.config
 
 reorder_frontend.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord2d_2_reord.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord3d_1_reord.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord3d_2_reord.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord3d_3_reord.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_1_reord.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_2_reord.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_3_reord.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_4_reord.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_1_utils_f2t.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_2_utils_f2t.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_3_utils_f2t.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_4_utils_f2t.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_1_utils_t2f.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_2_utils_t2f.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_3_utils_t2f.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 reord4d_4_utils_t2f.F90: ./autogen/generate_man_reord.py
-	python ./autogen/generate_man_reord.py ${CPPFLAGS}
+	python ../../LSDALTON/lsutil/autogen/generate_man_reord.py ${CPPFLAGS}
 
 # Keep the file lists sorted for easier modification.
 
@@ -141,7 +141,7 @@ liblsutil.a: $(F90_OBJS) $(C_OBJS)
 	$(AR) $(ARFLAGS) $@ $?
 
 clean : 
-	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD manual_reorderings.F90 manual_utils.F90
+	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD reord*.F90
 
 
 Makefile.depend depend: $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
