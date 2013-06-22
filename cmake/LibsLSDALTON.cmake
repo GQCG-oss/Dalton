@@ -57,29 +57,29 @@ target_link_libraries(pdpacklib matrixulib)
 
 # automatially generate the manual_reorderdings.F90
 set(MANUAL_REORDERING_SOURCES
-    ${CMAKE_BINARY_DIR}/reorder_frontend.F90
-    ${CMAKE_BINARY_DIR}/reord2d_2_reord.F90
-    ${CMAKE_BINARY_DIR}/reord3d_1_reord.F90
-    ${CMAKE_BINARY_DIR}/reord3d_2_reord.F90
-    ${CMAKE_BINARY_DIR}/reord3d_3_reord.F90
-    ${CMAKE_BINARY_DIR}/reord4d_1_reord.F90
-    ${CMAKE_BINARY_DIR}/reord4d_2_reord.F90
-    ${CMAKE_BINARY_DIR}/reord4d_3_reord.F90
-    ${CMAKE_BINARY_DIR}/reord4d_4_reord.F90
-    ${CMAKE_BINARY_DIR}/reord4d_1_utils_f2t.F90
-    ${CMAKE_BINARY_DIR}/reord4d_2_utils_f2t.F90
-    ${CMAKE_BINARY_DIR}/reord4d_3_utils_f2t.F90
-    ${CMAKE_BINARY_DIR}/reord4d_4_utils_f2t.F90
-    ${CMAKE_BINARY_DIR}/reord4d_1_utils_t2f.F90
-    ${CMAKE_BINARY_DIR}/reord4d_2_utils_t2f.F90
-    ${CMAKE_BINARY_DIR}/reord4d_3_utils_t2f.F90
-    ${CMAKE_BINARY_DIR}/reord4d_4_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_t2f.F90
     )
 foreach(_source ${MANUAL_REORDERING_SOURCES})
     set_source_files_properties(${_source} PROPERTIES GENERATED 1)
 endforeach()
 get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py nocollapse CMAKE_BUILD=${CMAKE_BINARY_DIR} ${LIST_OF_DEFINITIONS})
+execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py nocollapse CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS})
 unset(LIST_OF_DEFINITIONS)
 add_library(
     lsutiltypelib_common

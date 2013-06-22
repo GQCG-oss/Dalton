@@ -65,6 +65,10 @@ def main():
   else:
      installdir = lsutildir
 
+  # if output path does not exist, create it
+  if not os.path.exists(installdir):
+      os.mkdir(installdir)
+
   #DEFAULT OF WRITING THE FILES IS FALSE, CHECK THE PREVIOUS VARS IF A NEW PRODUCTION IS NECESSARY
   writenew = False
 
