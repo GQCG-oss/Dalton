@@ -39,7 +39,7 @@ def main():
       force_rewrite = True
     
   
-  print args
+# print args
   #GET THE FOLDER TO STORE THE manual_reorderings.F90
   cwd = os.getcwd()
   lsutildir = args[0]
