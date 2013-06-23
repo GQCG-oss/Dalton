@@ -56,46 +56,34 @@ add_library(
 target_link_libraries(pdpacklib matrixulib)
 
 # automatially generate the manual_reorderdings.F90
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reorder_frontend.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord2d_2_reord.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord3d_1_reord.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord3d_2_reord.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord3d_3_reord.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord4d_1_reord.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord4d_2_reord.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord4d_3_reord.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord4d_4_reord.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord4d_1_utils_f2t.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord4d_2_utils_f2t.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord4d_3_utils_f2t.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord4d_4_utils_f2t.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord4d_1_utils_t2f.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord4d_2_utils_t2f.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord4d_3_utils_t2f.F90 PROPERTIES GENERATED 1)
-SET_SOURCE_FILES_PROPERTIES(${CMAKE_BINARY_DIR}/reord4d_4_utils_t2f.F90 PROPERTIES GENERATED 1)
+set(MANUAL_REORDERING_SOURCES
+    ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord2d_2_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_1_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_2_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord3d_3_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_reord.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_f2t.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_1_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_2_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_3_utils_t2f.F90
+    ${CMAKE_BINARY_DIR}/manual_reordering/reord4d_4_utils_t2f.F90
+    )
+foreach(_source ${MANUAL_REORDERING_SOURCES})
+    set_source_files_properties(${_source} PROPERTIES GENERATED 1)
+endforeach()
 get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py nocollapse CMAKE_BUILD=${CMAKE_BINARY_DIR} ${LIST_OF_DEFINITIONS})
+execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py nocollapse CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS})
 unset(LIST_OF_DEFINITIONS)
-
 add_library(
     lsutiltypelib_common
-    ${CMAKE_BINARY_DIR}/reorder_frontend.F90
-    ${CMAKE_BINARY_DIR}/reord2d_2_reord.F90
-    ${CMAKE_BINARY_DIR}/reord3d_1_reord.F90
-    ${CMAKE_BINARY_DIR}/reord3d_2_reord.F90
-    ${CMAKE_BINARY_DIR}/reord3d_3_reord.F90
-    ${CMAKE_BINARY_DIR}/reord4d_1_reord.F90
-    ${CMAKE_BINARY_DIR}/reord4d_2_reord.F90
-    ${CMAKE_BINARY_DIR}/reord4d_3_reord.F90
-    ${CMAKE_BINARY_DIR}/reord4d_4_reord.F90
-    ${CMAKE_BINARY_DIR}/reord4d_1_utils_f2t.F90
-    ${CMAKE_BINARY_DIR}/reord4d_2_utils_f2t.F90
-    ${CMAKE_BINARY_DIR}/reord4d_3_utils_f2t.F90
-    ${CMAKE_BINARY_DIR}/reord4d_4_utils_f2t.F90
-    ${CMAKE_BINARY_DIR}/reord4d_1_utils_t2f.F90
-    ${CMAKE_BINARY_DIR}/reord4d_2_utils_t2f.F90
-    ${CMAKE_BINARY_DIR}/reord4d_3_utils_t2f.F90
-    ${CMAKE_BINARY_DIR}/reord4d_4_utils_t2f.F90
+    ${MANUAL_REORDERING_SOURCES}
     ${LSUTIL_TYPE_SOURCES}
     )
 
@@ -226,12 +214,13 @@ add_library(
 
 target_link_libraries(linearslib rspsolverlib)
 
-add_library(
-    rsp_propertieslib
-    ${RSP_PROPERTIES_SOURCES}
-    )
-
-target_link_libraries(rsp_propertieslib lsintlib)
+if(DEVELOPMENT_CODE)
+    add_library(
+        rsp_propertieslib
+        ${RSP_PROPERTIES_SOURCES}
+        )
+    target_link_libraries(rsp_propertieslib lsintlib)
+endif()
 
 add_library(
     geooptlib
@@ -250,7 +239,9 @@ target_link_libraries(lsdaltonmain geooptlib)
 target_link_libraries(lsdaltonmain linearslib)
 target_link_libraries(lsdaltonmain declib)
 target_link_libraries(lsdaltonmain ddynamlib)
-target_link_libraries(lsdaltonmain rsp_propertieslib)
+if(DEVELOPMENT_CODE)
+    target_link_libraries(lsdaltonmain rsp_propertieslib)
+endif()
 target_link_libraries(lsdaltonmain rspsolverlib)
 target_link_libraries(lsdaltonmain xcfun_interface)
 
@@ -276,11 +267,6 @@ if(MPI_FOUND)
     endif()
 endif()
 
-MERGE_STATIC_LIBS(
-    rsp_prop
-    rsp_propertieslib
-    )
-
 if(ENABLE_INTEREST)
     MERGE_STATIC_LIBS(
         lsint
@@ -294,8 +280,7 @@ else()
         )
 endif()
 
-MERGE_STATIC_LIBS(
-    lsdalton
+set(LIBS_TO_MERGE
     lsutillib_precision
     matrixmlib
     lsutillib_common
@@ -313,10 +298,22 @@ MERGE_STATIC_LIBS(
     solverutillib
     rspsolverlib
     linearslib
-    rsp_prop
     geooptlib
     xcfun_interface
     lsdaltonmain 
+    )
+
+if(DEVELOPMENT_CODE)
+    MERGE_STATIC_LIBS(
+        rsp_prop
+        rsp_propertieslib
+        )
+    set(LIBS_TO_MERGE ${LIBS_TO_MERGE} rsp_prop)
+endif()
+
+MERGE_STATIC_LIBS(
+    lsdalton
+    ${LIBS_TO_MERGE}
     )
 
 target_link_libraries(

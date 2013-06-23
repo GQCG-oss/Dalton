@@ -39,7 +39,7 @@ def main():
       force_rewrite = True
     
   
-  print args
+# print args
   #GET THE FOLDER TO STORE THE manual_reorderings.F90
   cwd = os.getcwd()
   lsutildir = args[0]
@@ -64,6 +64,10 @@ def main():
      installdir = args[3] +"/"
   else:
      installdir = lsutildir
+
+  # if output path does not exist, create it
+  if not os.path.exists(installdir):
+      os.mkdir(installdir)
 
   #DEFAULT OF WRITING THE FILES IS FALSE, CHECK THE PREVIOUS VARS IF A NEW PRODUCTION IS NECESSARY
   writenew = False
@@ -902,7 +906,12 @@ def write_testing_framework(f,minr,maxr):
       testcase="\
           call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
           teststatus=\"SUCCESS\"\n\
-          res = sto\n\
+          !res = sto\n\
+          call dcopy("
+      for i in range(mode):
+        testcase += "n"+abc[i]+"*"
+      testcase = testcase[0:-1] + ",sto,1,res,1)\n"
+      testcase+="\
           call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
           do tile_idx=1,3\n            call tile_from_fort(1.0E0_realk,in1,["
       for i in range(mode):
@@ -982,7 +991,12 @@ def write_testing_framework(f,minr,maxr):
       testcase+="\
           call LSTIMER('START',begc1,begw1,LUPRI,.false.)\n\
           teststatus=\"SUCCESS\"\n\
-          res = sto\n\
+          !res = sto\n\
+          call dcopy("
+      for i in range(mode):
+        testcase += "n"+abc[i]+"*"
+      testcase = testcase[0:-1] + ",sto,1,res,1)\n"
+      testcase+="\
           call LSTIMER('START',begc2,begw2,LUPRI,.false.)\n\
           do tile_idx=1,3\n            call tile_from_fort(1.0E0_realk,sto,["
       for i in range(mode):

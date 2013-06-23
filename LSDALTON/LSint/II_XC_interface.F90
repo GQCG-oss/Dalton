@@ -211,7 +211,7 @@ INTEGER,intent(in)    :: nbast
 TYPE(MATRIX),intent(in) :: CMO
 !> The Absolute Valued overlap  matrix
 TYPE(MATRIX),intent(inout) :: S
-#if MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
 !
 REAL(REALK),pointer   :: Cmat(:,:),ABSVALOVERLAP(:,:)
 REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2,CPUTIME,WALLTIME
