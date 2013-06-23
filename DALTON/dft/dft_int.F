@@ -119,7 +119,9 @@ C
       LOGICAL DOGGA, DFT_ISGGA
       EXTERNAL DFT_ISGGA
       DIMENSION IORIDX(KMAX,2,8)
-!#define EXPORT_GRID
+#ifdef MOD_XCINT
+#define EXPORT_GRID
+#endif
 #ifdef EXPORT_GRID
       integer              :: nr_points_export
       integer, parameter   :: max_export_grid_length = 1000000
