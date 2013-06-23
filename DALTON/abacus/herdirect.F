@@ -253,7 +253,7 @@ C
      &            TKTIME,IPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,RETUR,
      &            IDUMMY,I2TYP,WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &            WORK(KIORBS),
-     &            IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.)
+     &            IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,.FALSE.,.FALSE.)
       IF (IPRINT.GT.0) CALL TIMER('GETDIS/TWOINT',TIMSTR,TIMEND)
 C
 C--------------------------------------
@@ -511,7 +511,7 @@ C
      &                  WORK(KNSTAT),DUMMY,LFREE,IDUMMY,IDUMMY,IDUMMY,
      &                  LDUMMY,LDUMMY,LDUMMY,LDUMMY,LDUMMY,
      &                  IPRFCK,IPRTYP,
-     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY)
+     &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,LDUMMY)
 
          ELSE
 #endif
@@ -571,7 +571,7 @@ C
 #include "maxorb.h"
 #include "aovec.h"
 #include "dummy.h"
-      LOGICAL   ABA
+      LOGICAL   ABA, LDUMMY
       PARAMETER (D0 = 0.D0)
       DIMENSION FMAT(N2BASX,NDMAT), DMAT(N2BASX,NDMAT),
      &          ISYMDM(NDMAT), IFCTYP(NDMAT)
@@ -703,7 +703,7 @@ C
      &               WORK(KFREE),WORK(KNSTAT),DUMMY,LFREE,ITYPE,MAXDER,
      &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
      &               ICEDIF,IFTHRS,
-     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP))
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),LDUMMY)
          IF (IPRINT .GT. 0) THEN
            CALL GETTIM(CPU2,WALL2)
            WALL   = WALL2 - WALL1
@@ -737,7 +737,7 @@ c             calculation.
      &               WORK(KFREE),WORK(KNSTAT),DUMMY,LFREE,ITYPE,MAXDER,
      &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
      &               ICEDIF,IFTHRS,
-     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP))
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),LDUMMY)
             IF (IPRINT .GT. 0) THEN
               CALL GETTIM(CPU1,WALL1)
               WALL   = WALL1 - WALL2
@@ -767,7 +767,8 @@ C
      &               IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY,I2TYP,
      &               WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &               WORK(KIORBS),ICEDIF,IFTHRS,
-     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.,
+     &               .FALSE.)
          HFXMU = HFXM0
          IF (IPRINT .GT. 0) THEN
            CALL GETTIM(CPU2,WALL2)
@@ -787,7 +788,8 @@ C
      &               IPRNTB,IPRNTC,IPRNTD,RETUR,IDUMMY,I2TYP,
      &               WORK(KJSTRS),WORK(KNPRIM),WORK(KNCONT),
      &               WORK(KIORBS),ICEDIF,IFTHRS,
-     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.)
+     &               WORK(KGAB),WORK(KDRAO),DUMMY,WORK(KDSKP),.FALSE.,
+     &               .FALSE.)
             IF (IPRINT .GT. 0) THEN
               CALL GETTIM(CPU1,WALL1)
               WALL   = WALL1 - WALL2
