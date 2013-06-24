@@ -78,11 +78,11 @@ C
 #endif
 #include <math.h>
 #include <stddef.h>
-#include "general.h"
+#include "lsdalton_general.h"
 
 #define __CVERSION__
 
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 #define LOG log
 #define ABS fabs
 #define ASINH asinh

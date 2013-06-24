@@ -95,6 +95,8 @@ wl90c_energy(const FunDensProp* dp)
     zk = (0.06001*t[2]*sqrt(pow(gradb,2.0)+2.0*gradab+pow(grada,2.0))-0.7486*t[1])*sqrt(1.0-1.0*pow(rhoa-1.0*rhob,2.0)/pow(t[1],2.0))/(0.9*(gradb/pow(rhob,1.333333333333333)+grada/pow(rhoa,1.333333333333333))+0.6203504908994*t[2]+3.60073);
     return zk;
 
+    } else {
+    return 0;
     }
 }
 
@@ -158,7 +160,7 @@ wl90c_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp)
     real gradb = dp->gradb;
     real gradab = dp->gradab;
 
-    if (rhoa + rhob < WL90C_THRESHOLD) {
+    if (rhoa + rhob > WL90C_THRESHOLD) {
 
     t[1] = rhoa-1.0*rhob;
     t[2] = pow(t[1],2.0);
@@ -270,7 +272,7 @@ wl90c_third(FunThirdFuncDrv *ds, real factor, const FunDensProp* dp)
     real gradb = dp->gradb;
     real gradab = dp->gradab;
 
-    if (rhoa + rhob < WL90C_THRESHOLD) {
+    if (rhoa + rhob > WL90C_THRESHOLD) {
 
     t[1] = rhoa-1.0*rhob;
     t[2] = pow(t[1],2.0);
@@ -530,7 +532,7 @@ wl90c_fourth(FunFourthFuncDrv *ds, real factor, const FunDensProp* dp)
     real gradb = dp->gradb;
     real gradab = dp->gradab;
 
-    if (rhoa + rhob < WL90C_THRESHOLD) {
+    if (rhoa + rhob > WL90C_THRESHOLD) {
 
     t[1] = rhoa-1.0*rhob;
     t[2] = pow(t[1],2.0);

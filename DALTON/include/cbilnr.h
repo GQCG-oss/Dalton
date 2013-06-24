@@ -10,6 +10,6 @@
       COMMON /LNLBL / LABALN(MAXLN)
       real(8)         THCLNR, FRVAL
       integer         NFRVAL, IPRLNR, NABALN
-      COMMON /CBILNR/ THCLNR, FRVAL(MXFR), NFRVAL, IPRLNR, NABALN,
+      COMMON /CBILNR/ THCLNR, FRVAL(MXFR), NFRVAL, IPRLNR, NABALN,      &
      &                ALFA, ROAA, ROAG, STATIC
 ! -- end of cbilnr.h --

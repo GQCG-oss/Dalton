@@ -30,7 +30,7 @@
 
 #define __CVERSION__
 
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 /* #define FOURTH_ORDER_DERIVATIVES */
 
 

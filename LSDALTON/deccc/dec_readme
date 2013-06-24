@@ -20,7 +20,7 @@ requires N energies to be stored, increase ndecenergies by N.
 Update description of "energies" in ccatom type definition to include your new model/correction.
 
 (iii)
-For new model: The model gets the next available "number" to distinguish the various models, see "ccmodel" in type DECsettings in lsutil/dec_typedef.f90. Also change dec_set_default_config and add model to input in config_dec_input.
+For new model: The model gets the next available "number" to distinguish the various models, see "ccmodel" in type DECsettings in lsutil/dec_typedef.f90. Also change dec_set_default_config and add model to input in config_dec_input. Furthermore, whenever modifying the DECsettings type, REMEMBER TO MODIFY the mpicopy_dec_settings routine accordingly!
 
 For new correction: Insert logical describing whether correction should be done or not in type DECsettings in lsutil/dec_typedef.f90  (e.g. F12 is currently a possible correction). Also include keyword in config_dec_input.
 

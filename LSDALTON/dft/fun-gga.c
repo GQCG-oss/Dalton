@@ -89,11 +89,11 @@ C
 #include <string.h>
 #include <strings.h>
 #include <stdlib.h>
-#include "general.h"
+#include "lsdalton_general.h"
 
 #define __CVERSION__
 
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 
 /* INTERFACE PART */
 static integer  lda_read(const char* conf_line, real *hfweight);

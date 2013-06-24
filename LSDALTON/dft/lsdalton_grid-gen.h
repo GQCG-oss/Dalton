@@ -2,7 +2,7 @@
 #if !defined(GRID_GEN_H)
 #define GRID_GEN_H 1
 
-#include "general.h"
+#include "lsdalton_general.h"
 
 typedef struct GridGenAtom_     GridGenAtom;
 typedef struct GridGenAtomGrid_ GridGenAtomGrid;

@@ -54,11 +54,11 @@ Pawel Salek, 2004.06, Himmelbjerg.
 #include <string.h>
 #include <strings.h>
 #include <stdio.h>
-#include "general.h"
+#include "lsdalton_general.h"
  
 #define __CVERSION__
  
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 
 #define ELEMENTS(arr) (sizeof(arr)/sizeof(arr[0]))
 
