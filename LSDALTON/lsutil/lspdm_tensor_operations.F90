@@ -17,7 +17,6 @@ module lspdm_tensor_operations_module
   use lsmpi_type
 #endif
 
-  use manual_utils_module
   use tensor_basic_module
   use lspdm_basic_module
 

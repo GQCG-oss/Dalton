@@ -17,7 +17,7 @@ module dec_main_mod
   use memory_handling!,only: mem_alloc, mem_dealloc
   use dec_typedef_module
   use files !,only:lsopen,lsclose
-  use manual_reorderings_module
+  use reorder_frontend_module 
   use tensor_interface_module
 
 

@@ -548,15 +548,14 @@ C
 C
       MAXADR = 1
       DO 200 J = NMORDR, 1, -2
-      DO 200 I = 1, J
-         MAXADR = MAXADR + 1
+         IF (J .GT. 0) MAXADR = MAXADR + J
  200  CONTINUE
 C     
 C     NDERIV -> number derivatives to save space 
 C               for in WORK
       DO 300 IORDR = 3, NMORDR+NAORDR
          IKDRV = 1
-         DO 400 IIORDR =1, IORDR
+         DO 400 IIORDR = 1, IORDR
             IKDRV = IKDRV*(NCOOR+IIORDR-1)/IIORDR
  400     CONTINUE
          NDERIV = NDERIV + IKDRV
