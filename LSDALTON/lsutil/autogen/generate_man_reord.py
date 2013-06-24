@@ -2,7 +2,7 @@
 #AUTHOR: PATRICK ETTENHUBER
 #EMAIL : pett@chem.au.dk, pettenhuber@gmail.com
 #DATE  : JUNE, 2013
-import sys,datetime,os#,itertools,math
+import sys,datetime,os,time#,itertools,math
 from random import randrange
 """This file is inteded for the automatic generation of a data sorting module in LSDALTON
 As data sorting is under constant development and features many lines of code this script was
@@ -79,6 +79,11 @@ def main():
   #CHECK IF THE FILES EXIST AT ALL, IF NOT, WRITE
   if(not os.path.exists(installdir+"reorder_frontend.F90")):
     writenew = True
+  else:
+    reordmod  = time.ctime(os.path.getmtime(installdir+"reorder_frontend.F90"))
+    scriptmod = time.ctime(os.path.getmtime(sys.argv[0]))
+    if(scriptmod>reordmod):
+      writenew =True
   if(not os.path.exists(installdir+"reord2d_2_reord.F90")):
     writenew = True
   if(not os.path.exists(installdir+"reord3d_1_reord.F90")):
