@@ -746,7 +746,7 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/lucita/par_io.F90
     DALTON/lucita/par_io_fh.F90
     DALTON/lucita/par_sync_cw.F90
-    DALTON/peqm/pe_integral_wrapper.F90
+    DALTON/peqm/pe_integral_wrappers.F90
     DALTON/peqm/pe_precision.F90
     DALTON/peqm/pe_blas_wrappers.F90
     DALTON/peqm/pe_lapack_wrappers.F90
