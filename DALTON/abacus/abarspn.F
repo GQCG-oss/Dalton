@@ -689,11 +689,22 @@ C
         CALL ABS2INTER(WRK(KMJWOP),KZVAR)
         CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &              WRK(KFREE),LFREE)
-          CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KGD),1)
+        CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KGD),1)
+        GDNRM=DNRM2(2*KZVAR,WRK(KGD),1)
+        IF (GDNRM .LE. 1.0d-8) THEN
+          WRK(KXSOL:4*KZVAR-1)=0.0d0
+          RES0=0.0d0
+          DO K=1,NFREQ_ALPHA
+              CALL WRITE_XVEC(LUABSVECS,4*KZVAR,WRK(KXSOL),LABEL,
+     &                       ABS_FREQ_ALPHA(K),RES0)
+          ENDDO
+          WRITE(LUPRI,*) 'Vectors equal to zero'
+        ELSE
           CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &                 ABS_FREQ_ALPHA,
-     &                 WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
-     &                 WRK(KRES),WRK(KFREE),LFREE)
+     &               ABS_FREQ_ALPHA,
+     &               WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
+     &               WRK(KRES),WRK(KFREE),LFREE)
+        ENDIF   
       ELSE
       CALL MEMGET('REAL',KREDE,MAXRM*MAXRM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KREDS,MAXRM*MAXRM,WRK,KFREE,LFREE)
