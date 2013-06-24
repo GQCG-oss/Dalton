@@ -119,7 +119,7 @@ C
       PARAMETER(FNDPTIA='DPTIA', FNDPTIA2 = 'DPTIA2',
      *          FNDPTAB='DPTAB' ,FNDPTIJ  = 'DPTIJ'  ) 
 C
-      LOGICAL LTESTE
+      LOGICAL LTESTE, NATOCC
 C
       INTEGER ISYOF(8),KOFF(8,8),NCVAI1(8,8),NCVAI2(8,8),NCVAI3(8,8)
       INTEGER NCVIJ(8,8),NCVAI5(8,8) 
@@ -131,6 +131,9 @@ Cholesky
 Cholesky
 C
       CALL QENTER('CC_FOP')
+C     Initialize variable for natural occupation numbers to false
+      NATOCC = .FALSE.
+
 C     Define CCDC and initialize local variables
       CCDC = CCSLV .AND. (.NOT. CCMM)
       CCMMCONV = .FALSE.
@@ -1399,10 +1402,10 @@ C
       !Sonia
       write(lupri,*)'CCFOP: call CC_D1AO to recalc the 1e Density'
       call flshfo(lupri)
-      natocc=.false.
+      NATOCC=.TRUE.
       !
       CALL CC_D1AO(IPDD,R12PRP,WORK(KDENS),WORK(KZKAM),WORK(KWRK3),
-     &             LWRK3,MODEL, LIST,ILSTNR,.TRUE.,
+     &             LWRK3,MODEL, LIST,ILSTNR,NATOCC,
      &             FNDPTIA,FNDPTIA2,FNDPTAB,FNDPTIJ)
 C
       IF ((FROIMP .OR. FROEXP) .AND. (.NOT. MP2)) THEN

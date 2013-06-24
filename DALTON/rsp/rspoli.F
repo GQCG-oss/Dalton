@@ -40,6 +40,13 @@ C  /* Deck rspoli */
       SUBROUTINE RSPOLI(NCSIM,NOSIM,UDV,ZYCVEC,LZYCVEC,FC,FV,PVX,ZYMAT,
      *                  FCX,FVX,QAX,QBX, FVTD,QATD,QBTD, EVECS,
      *                  XINDX,CMO,WRK,LWRK)
+
+!#define USE_XCINT_RESPONSE
+#ifdef USE_XCINT_RESPONSE
+      use xcint_integrator
+      use interface_ao_specific
+#endif
+
 C
 C Copyright 13 FEB 1986 Poul Joergensen and Hans Joergen Aa. Jensen
 C
@@ -113,6 +120,11 @@ C
       LOGICAL   DOFXC, DOFXV, DOFTC, DOFTV
       integer, allocatable ::  ISYMDM(:), IFCTYP(:)
       DIMENSION NEEDMU(-4:6),NEEDDI(-4:6)
+#ifdef USE_XCINT_RESPONSE
+      real(8), allocatable :: dmat_ao(:)
+      real(8), allocatable :: fmat_ao(:)
+      real(8), allocatable :: fmat_mo(:)
+#endif
       CALL QENTER('RSPOLI')
 C
       ROKS = NASHT.GT.0 .AND. DODFT
@@ -1051,8 +1063,44 @@ C          Proceed normal way otherwise
              call dft_lin_respab_b(NOSIM,fcx,fvx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
            ELSE
+#ifdef USE_XCINT_RESPONSE
+             allocate(dmat_ao(nbast*nbast*2))
+             allocate(fmat_ao(nbast*nbast))
+             allocate(fmat_mo(norbt*norbt))
+             dmat_ao = 0.0d0
+             fmat_ao = 0.0d0
+             fmat_mo = 0.0d0
+             ! get unperturbed ao density matrix
+             call dft_get_ao_dens_mat(cmo, dmat_ao,
+     &                                wrk(kfree), lfree)
+             call dscal(nbast*nbast, 0.5d0, dmat_ao, 1)
+             call interface_ao_write()
+             ! get perturbed ao density matrix
+             call deq27(cmo, zymat, (/0.0d0/), dmat_ao(nbast*nbast + 1),
+     &                  (/0.0d0/), wrk(kfree), lfree)
+             call dscal(nbast*nbast, 0.5d0, dmat_ao(nbast*nbast + 1), 1)
+             xc_energy = 0.0d0
+             call xc_integrate(                     
+     &                         xc_mat_dim=nbast,    
+     &                         xc_nr_dmat=2,        
+     &                         xc_dmat=dmat_ao,
+     &                         xc_nr_geo_pert=0,
+     &                         xc_nr_fld_pert=1,
+     &                         xc_energy=xc_energy, 
+     &                         xc_fmat=fmat_ao    
+     &                        )
+
+             ! transform ao fock matrix contribution to mo
+             call lrao2mo(cmo, ksymop, fmat_ao,
+     &                    fmat_mo, wrk(kfree), lfree)
+             call daxpy(norbt*norbt, 1.0d0, fmat_mo, 1, fcx, 1)
+             deallocate(dmat_ao)
+             deallocate(fmat_ao)
+             deallocate(fmat_mo)
+#else
              call dft_lin_respf(NOSIM,fcx,cmo,zymat,
      &                         trplet, ksymop,wrk(kfree),lfree,iprdft)
+#endif /* ifdef USE_XCINT_RESPONSE */
            ENDIF
 #ifdef DEBUG_RSPOLI
            write(lupri,*) 'DODFT: after call dft_lin_resp*'

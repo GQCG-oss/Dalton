@@ -75,7 +75,7 @@ C
     derivative evaluation", Pawel Salek, 2004
     
     This functional is connected by making following changes:
-    1. add "extern Functional p86cFunctional;" to 'functionals.h'
+    1. add "extern Functional p86cFunctional;" to 'lsdalton_functionals.h'
     2. add "&p86cFunctional," to 'functionals.c'
     3. add "fun-p86c}.c" to 'Makefile.am', 'Makefile.in' or 'Makefile'.
 
@@ -117,11 +117,11 @@ K(rhoa,rhob,grada,gradb,gradab):=exp(-phi)*crho*(grad^2)*(rho^(-4.0/3.0))/dzet;
 #endif
 #include <math.h>
 #include <stddef.h>
-#include "general.h"
+#include "lsdalton_general.h"
  
 #define __CVERSION__
  
-#include "functionals.h"
+#include "lsdalton_functionals.h"
  
 /* INTERFACE PART */
 static integer p86c_isgga(void) { return 1; } /* FIXME: detect! */

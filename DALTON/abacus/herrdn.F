@@ -483,15 +483,15 @@ C           ... must close LUCMD again before RETURN, when opened here
          ELSE
             LUINFO = -1
          END IF
+         IF (IPREAD .GT.  0) THEN
+           CALL TITLER(
+     &   'Output of molecule and basis set information','*',115)
+         ELSE
+           CALL TITLER(
+     &   'Output of molecule and basis set info suppressed','*',118)
+         END IF
       END IF
       IF (IPREAD .GE. 11) CALL TIMER('START ',TIMSTR,TIMEND)
-      IF (IPREAD .GT.  0) THEN
-         CALL TITLER(
-     &   'Output of molecule and basis set information','*',115)
-      ELSE
-         CALL TITLER(
-     &   'Output of molecule and basis set info suppressed','*',118)
-      END IF
 C
 C Only the master in a parallel calculation reads the input file. The
 C slaves do not read the input file in RDLINE but use the input lines
@@ -761,9 +761,11 @@ C*****************************************************************************
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A72)',IOSTAT=IOS) TTITLE(2)
       IF (IPREAD .GT. 0) THEN
+        IF ((.NOT.SLAVE) .OR. (NODTOT.LE.20)) THEN
          WRITE (LUPRI,'(/4X,A/4X,A/2A/2A/4X,A)')
      &   'The two title cards from your ".mol" input:', SEPARATOR(1:72),
      &   ' 1: ',TTITLE(1),' 2: ',TTITLE(2),SEPARATOR(1:72)
+         END IF
          IF (LUCME.GT.0) WRITE (LUCME,'(2X,A)')
      &      SEPARATOR(1:72),TTITLE(1),TTITLE(2),SEPARATOR(1:72)
       END IF
@@ -4103,6 +4105,7 @@ C
 casm
 #include "suscc.h"
 #include "center.h"
+#include "infpar.h"
 C
       LOGICAL FNDEOI
       DATA FNDEOI /.FALSE./
@@ -4288,7 +4291,9 @@ C
          END DO
       END DO
 C
-C    Select atoms for Cholesky decomposition
+C     Select atoms for Cholesky decomposition (only in master)
+C
+      IF (SLAVE) GOTO 100
 C
       ACTSEL = .FALSE.
 C
@@ -5723,7 +5728,7 @@ C
       call header('priccf',-1)
       call output(priccf,1,npshel,1,mxcont,mxprim,mxcont,-1,lupri)
       call header('pricrx',-1)
-      call output(pricrx,1,npshel,1,3,mxprim,3,1,-lupri)
+      call output(pricrx,1,npshel,1,3,mxprim,3,1,lupri)
       WRITE(LUPRI,*) ' kmax ', kmax
       call header('cent',-1)
       call output(cent,1,kmax,1,3,mxshel,3,1,lupri)
@@ -6888,6 +6893,8 @@ C
 #include "dummy.h"
 #include "priunit.h"
 #include "pcmlog.h"
+#include "mxcent.h"
+#include "maxorb.h"
       CHARACTER TMPLN*80, BASNAM*80, BKPLIN*80, FRMT*5
       LOGICAL BASIS, ATOMBA, LMULBS, FOUNDR, FOUNDA
       DIMENSION JCO(KANG)

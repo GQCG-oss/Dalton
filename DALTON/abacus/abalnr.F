@@ -331,8 +331,8 @@ C
                      FRVAL(I)=FREQ_INTERVAL(1) + (I-1)*FREQ_INTERVAL(3)
                   END DO
                ENDIF
-                  ABS_MAXRM=MAX(MAXRM,ABS_MAXRM)
-                  MAXRM=MAX(MAXRM,ABS_MAXRM)
+                  ABS_MAXRM=MAX(MXRM,ABS_MAXRM)
+                  MXRM=MAX(MXRM,ABS_MAXRM)
                   NFREQ_ALPHA = NFRVAL
                   NFREQ_INTERVAL = NFRVAL
                   ABS_NFREQ_ALPHA = NFRVAL

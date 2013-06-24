@@ -21,6 +21,14 @@ module dec_typedef_module
   !> \brief Contains settings for DEC calculation
   type DECsettings
 
+     ! ****************************************************************************************
+     !                 !!!!!!!!!!!! VERY VERY IMPORTANT !!!!!!!!
+     !
+     !  IF YOU REMOVE/ADD MEMBERS OF/TO THIS STRUCTURE, REMEMBER TO MODIFY mpicopy_dec_settings
+     !  IN decmpi.f90 ACCORDINGLY!!!!!!
+     ! 
+     ! *****************************************************************************************
+
 
 
      !> MAIN SETTINGS DEFINING DEC CALCULATION

@@ -82,11 +82,11 @@ C
 
 #include <math.h>
 #include <stdio.h>
-#include "general.h"
+#include "lsdalton_general.h"
 
 #define __CVERSION__
 
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 
 /* INTERFACE PART */
 static integer pw86x_isgga(void) { return 1; }

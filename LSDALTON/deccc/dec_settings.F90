@@ -45,6 +45,7 @@ contains
     DECinfo%TimeBackup = 300.0E0_realk   ! backup every 5th minute
     DECinfo%read_dec_orbitals = .false.
     DECinfo%CheckPairs=.false.
+    call dec_set_model_names(DECinfo)
 
 
     ! -- Debug modes
@@ -115,11 +116,6 @@ contains
     ! -- CC solver options
 
     DECinfo%ccsd_expl=.false.
-    DECinfo%cc_models(1)='MP2     '
-    DECinfo%cc_models(2)='CC2     '
-    DECinfo%cc_models(3)='CCSD    '
-    DECinfo%cc_models(4)='CCSD(T) '
-    DECinfo%cc_models(5)='RPA     '
     DECinfo%simulate_eri= .false.
     DECinfo%fock_with_ri= .false.
     DECinfo%ccMaxIter=100
@@ -164,6 +160,20 @@ contains
 
 
   end subroutine dec_set_default_config
+
+  !> \brief Set names for models in DEC
+  subroutine dec_set_model_names(DECitem)
+    implicit none
+    !> The DEC item
+    type(decsettings),intent(inout) :: DECitem
+
+    DECitem%cc_models(1)='MP2     '
+    DECitem%cc_models(2)='CC2     '
+    DECitem%cc_models(3)='CCSD    '
+    DECitem%cc_models(4)='CCSD(T) '
+    DECitem%cc_models(5)='RPA     '
+
+  end subroutine dec_set_model_names
 
 
   !> \brief Read the **DEC or **CC input section in LSDALTON.INP and set 
@@ -636,7 +646,7 @@ end if
     write(lupri,*) 'mpisplit ', DECitem%mpisplit
     write(lupri,*) 'MPIgroupsize ', DECitem%MPIgroupsize
     write(lupri,*) 'manual_batchsizes ', DECitem%manual_batchsizes
-    write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,ccsdGbatch
+    write(lupri,*) 'ccsdAbatch,ccsdGbatch ', DECitem%ccsdAbatch,DECitem%ccsdGbatch
     write(lupri,*) 'hack ', DECitem%hack
     write(lupri,*) 'hack2 ', DECitem%hack2
     write(lupri,*) 'mp2energydebug ', DECitem%mp2energydebug
