@@ -8,7 +8,7 @@ module polarizable_embedding
 #if defined(VAR_MPI)
 #if defined(VAR_USE_MPIF)
     implicit none
-#include "mpif.h"
+!#include "mpif.h"
 #else
     use mpi
     implicit none

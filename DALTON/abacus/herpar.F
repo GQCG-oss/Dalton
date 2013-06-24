@@ -576,7 +576,7 @@ C  /* Deck her_sdinit */
 #include "implicit.h"
 #else
 #include "implicit.h"
-#include "mpif.h"
+!#include "mpif.h"
 #endif
 #endif
 C
@@ -1488,7 +1488,7 @@ C
 #include "implicit.h"
 #else
 #include "implicit.h"
-#include "mpif.h"
+!#include "mpif.h"
 #endif
 #endif
 

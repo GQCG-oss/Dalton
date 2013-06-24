@@ -1145,7 +1145,7 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                  WRITE(lupri,*)'We will try to this basis set, but this code is not very well testet. TK'
               ENDIF
               IF(nNUMBERS-1.LT.nOrbital)THEN
-                 CALL LINES_OF_CONTRACTION(nOrbital, NUMBER_OF_LINES,segmentedFormat)
+                 CALL LINES_OF_CONTRACTION(nOrbital,nNUMBERS-1,NUMBER_OF_LINES,segmentedFormat)
               ELSEIF(nNUMBERS-1.EQ.nOrbital)THEN
                  NUMBER_OF_LINES=1
               ELSE
@@ -1188,8 +1188,8 @@ SUBROUTINE READ_COEFFICIENT_AND_EXPONENTS(LUPRI,IPRINT,LUBAS,BASINFO,&
                  !          &(ContractionMatrix%elms(J+(I-1)*(nprim+IAUG)),I = 1, KNTORB)
                  !         If there are more lines with contraction-coeffecients
                  !         they will be read here.
-                 NUMNUM = 6
-                 NUMNUMOLD = 6
+                 NUMNUM = nNUMBERS-1
+                 NUMNUMOLD = nNUMBERS-1
                  DO I=2, NUMBER_OF_LINES
                     CALL determine_nNumbers_in_string(STRING,nNUMBERS)
                     IF(nNUMBERS.GT.7)THEN
@@ -1340,13 +1340,13 @@ END subroutine DETERMINE_NNUMBERS_IN_STRING
 !> \brief determine how many lines the contraction matrix is distributed over
 !> \author T. Kjaergaard
 !> \date 2010
-SUBROUTINE LINES_OF_CONTRACTION(nOrbital, NUMBER_OF_LINES,segmentedFormat)
+SUBROUTINE LINES_OF_CONTRACTION(nOrbital,nCont,NUMBER_OF_LINES,segmentedFormat)
 !*********************************************************************
 !* CALCULATE ON HOW MANY LINES THE CONTRACTION COEFFICIENTS ARE 
 !* WRITTEN ON
 !*********************************************************************
 implicit none
-INTEGER     :: NUMBER_OF_LINES,nOrbital
+INTEGER     :: NUMBER_OF_LINES,nOrbital,nCont
 REAL(realk) :: B,C
 LOGICAL     :: segmentedFormat
 !The intrisic functions DBLE makes a souble precision reak number of an integer.
@@ -1354,16 +1354,11 @@ IF (segmentedFormat) THEN
   NUMBER_OF_LINES = 1
   RETURN
 ENDIF
-B = DBLE(7)
-C = DBLE(nOrbital) - DBLE(6) 
-! This finds out how many lines we have, and puts it into NUMBER_OF_LINES.
-      IF ((nOrbital - 6) .LE. 0) THEN
-         NUMBER_OF_LINES = 1
-      ELSE IF (DMOD(C,B) .LT. 1.0E-30_realk) THEN
-         NUMBER_OF_LINES = (nOrbital - 6)/7 + 1
-      ELSE
-         NUMBER_OF_LINES = (nOrbital - 6)/7 + 2
-      END IF
+IF (MOD(nOrbital,nCont).EQ.0) THEN
+  NUMBER_OF_LINES = nOrbital/nCont
+ELSE
+  NUMBER_OF_LINES = nOrbital/nCont + 1
+ENDIF
 END SUBROUTINE LINES_OF_CONTRACTION
 
 !> \brief analyze the contraction matrix
