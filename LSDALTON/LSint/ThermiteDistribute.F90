@@ -1015,6 +1015,7 @@ Real(realk),pointer :: jAB(:),jBA(:),jCD(:),jDC(:),dCD(:),dDC(:),dAB(:),dBA(:)
 Real(realk)  :: factor
 Type(derivativeInfo) :: derivInfo
 integer :: ndim5Q,ndim5P,ndim5,nderiv,ider,iatom,ndim5output,idim5
+logical :: SameActualODs
 IF(INPUT%fullcontraction)call lsquit('Jcont not implemented without Jengine',-1)
 antiCD=.FALSE.
 SameLHSaos     = INPUT%SameLHSaos
@@ -1122,6 +1123,12 @@ DO iPassP=1,P%nPasses
        !can be calculated as 
        !J^x_{AB} = ((AB)^x|CD)D_{CD} + D_{CD}((CD)^x|AB)
        !so we set permuteOD to true 
+       !WARNING: This only works for non MPI when all 4 AOs are the same. 
+#ifdef VAR_MPI
+       print*,'calc of J^x_{AB} uses a hack that do not work for MPI'
+       print*,'This will be fixed in the next release'
+       call lsquit('calc of J^x_{AB} uses a hack that do not work for MPI',-1)
+#endif       
        permuteOD = .TRUE.
     ENDIF
     indJAB = Jmat%index(atomA,atomB,1,1)
