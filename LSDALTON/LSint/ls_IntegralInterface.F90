@@ -323,6 +323,7 @@ type(lstensor),pointer  :: dmat_lhs,dmat_rhs,result_tensor
 type(lstensor),pointer  :: dmat_lhs_full,dmat_rhs_full,result_tensor_full
 type(lstensor),pointer  :: gabCS_rhs,gabCS_lhs
 type(lstensor),pointer  :: gabCS_rhs_full,gabCS_lhs_full
+character(len=7)           :: LSTYPE
 !
 #ifdef VAR_MPI
 Integer                    :: itask,nAtoms(4),ntasks_lhs,ntasks_rhs,iAO,atomDim
@@ -358,8 +359,11 @@ ENDIF
 ndim2 = setting%output%ndim
 IntegralTransformGC = .FALSE.
 CALL ls_setDefaultFragments(setting)
-
-CALL ls_create_lstensor_full(setting,'FULLINT',AO1,AO2,AO3,AO4,Oper,Spec,intType,&
+LSTYPE = 'FULLINT'
+IF(Spec.EQ.GeoDerivCoulombSpec)THEN
+   LSTYPE = 'AB_TYPE'
+ENDIF
+CALL ls_create_lstensor_full(setting,LSTYPE,AO1,AO2,AO3,AO4,Oper,Spec,intType,&
      & result_tensor_full,dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created,&
      & gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created,&
      & PermuteResultTensor,doscreen,lupri,luerr,.FALSE.,.TRUE.)
@@ -418,7 +422,7 @@ DO itask=1,task_list%numMPItasks
   CALL getTaskDimension(tasks%orbInfo,rhs_current,AO3,AO4,'RHS',Spec,nbast3,nbast4,lupri)
   call SET_SAMEALLFRAG(sameAllFrag,setting%sameFrag,setting%nAO)
 ! CALL LSTIMER('gi-set-tf',TS,TE,6)
-  CALL ls_create_lstensor_task(setting,result_tensor,'FULLINT',dmat_lhs,dmat_rhs,&
+  CALL ls_create_lstensor_task(setting,result_tensor,LSTYPE,dmat_lhs,dmat_rhs,&
        & result_tensor_full,dmat_lhs_full,dmat_rhs_full,&
        & gabCS_rhs_full,gabCS_lhs_full,gabCS_rhs,gabCS_lhs,&
        & rhsCS_created,lhsCS_created,&
@@ -462,7 +466,7 @@ DO itask=1,task_list%numMPItasks
   ! ***************************************************************************
   ! *                                MPI Specific                             *
   ! ***************************************************************************
-  call ls_extract_and_annihilate_lstensor_task(setting,result_tensor,'FULLINT',dmat_lhs,dmat_rhs,result_tensor_full,&
+  call ls_extract_and_annihilate_lstensor_task(setting,result_tensor,LSTYPE,dmat_lhs,dmat_rhs,result_tensor_full,&
        & dmat_lhs_full,dmat_rhs_full,nbast1,nbast2,nbast3,nbast4,lhs_created,&
        & rhs_created,gabCS_rhs,gabCS_lhs,rhsCS_created,&
        & lhsCS_created,lhs_current,rhs_current,&
@@ -708,6 +712,7 @@ IF (Spec.EQ.EcontribSpec) THEN
 ENDIF
 
 CALL ls_setDensityDimensions(INT_INPUT,SETTING,lupri)
+
 call MAIN_INTEGRAL_DRIVER(LUPRI,SETTING%SCHEME%INTPRINT,INT_INPUT,setting%OUTPUT)
 CALL FreeInputAO(AObuild,nAObuilds,LUPRI)
 IF(doscreen) CALL free_screening_matrices(INT_INPUT,SETTING,LUPRI,LUERR)
