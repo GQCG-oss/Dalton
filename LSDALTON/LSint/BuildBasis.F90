@@ -1322,7 +1322,7 @@ subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
   nNUMBERS=0
   INSIDENUMBER=.FALSE.      
   DO I=1,LEN(STRING)
-     IF(STRING(I:I).EQ.' '.AND.INSIDENUMBER)THEN
+     IF((STRING(I:I).EQ.' ').OR.(STRING(I:I).EQ.'-').AND.INSIDENUMBER)THEN
         INSIDENUMBER=.FALSE.
      ELSEIF(STRING(I:I).EQ.' '.AND..NOT.INSIDENUMBER)THEN
         !still outside number but not yet inside new number
