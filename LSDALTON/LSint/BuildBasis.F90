@@ -1317,13 +1317,17 @@ subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
   CHARACTER(len=200)    :: STRING
   integer :: nNUMBERS
   !
-  logical :: INSIDENUMBER
+  logical :: INSIDENUMBER,SCIENTIFIC
   integer :: I
   nNUMBERS=0
   INSIDENUMBER=.FALSE.      
+  SCIENTIFIC = .FALSE.
   DO I=1,LEN(STRING)
+!    The '-' allows fixed format type numbers with no space separation
      IF((STRING(I:I).EQ.' ').OR.(STRING(I:I).EQ.'-').AND.INSIDENUMBER)THEN
-        INSIDENUMBER=.FALSE.
+!       In case of scientific number representation 1.2345678D-09 we do not 
+!       accept '-' to separate two nnumbers
+        INSIDENUMBER=SCIENTIFIC
      ELSEIF(STRING(I:I).EQ.' '.AND..NOT.INSIDENUMBER)THEN
         !still outside number but not yet inside new number
 !     ELSEIF(STRING(I:I).EQ.'H'.AND..NOT.INSIDENUMBER)THEN
@@ -1334,6 +1338,7 @@ subroutine determine_nNumbers_in_string(STRING,nNUMBERS)
            INSIDENUMBER=.TRUE.
         ENDIF
      ENDIF
+     SCIENTIFIC = STRING(I:I).EQ.'D'
   ENDDO
 END subroutine DETERMINE_NNUMBERS_IN_STRING
 
