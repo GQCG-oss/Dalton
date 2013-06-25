@@ -152,7 +152,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -ext ) OUTEXT=$2; shift;;
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
-      -rsh ) SCP=rcp; SSH=rsh; shift;;
+      -rsh ) SCP=rcp; SSH=rsh;;
       -f ) optf=$2; shift;;
       -N ) optn=$2; shift;;
       -omp ) export OMP_NUM_THREADS=$2; shift;;
