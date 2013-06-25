@@ -157,7 +157,7 @@ C*****************************************************************************
 #include "implicit.h"
 #else
 #include "implicit.h"
-#include "mpif.h"
+!#include "mpif.h"
 #endif
 #else
 #include "implicit.h"
