@@ -29,7 +29,7 @@ module parallel_models_mpi
   implicit none
 #else
   implicit none
-#include "mpif.h"
+!#include "mpif.h"
 #endif
 #else
   implicit none
