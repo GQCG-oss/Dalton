@@ -64,13 +64,13 @@
 #define Z 2.0
 
 static void
-matn_times_vec_full(real PM, int sym, const real* mat, const real* vec, real a, real* res);
+matn_times_vec_full(real PM, integer sym, const real* mat, const real* vec, real a, real* res);
 static void
-matt_times_vec_full(real PM, int sym, const real* mat, const real* vec, real a, real* res);
+matt_times_vec_full(real PM, integer sym, const real* mat, const real* vec, real a, real* res);
 static void
-matn_times_vec_symm(real PM, int sym, const real* mat, const real* vec, real a, real* res);
+matn_times_vec_symm(real PM, integer sym, const real* mat, const real* vec, real a, real* res);
 static void
-matt_times_vec_symm(real PM, int sym, const real* mat, const real* vec, real a, real* res);
+matt_times_vec_symm(real PM, integer sym, const real* mat, const real* vec, real a, real* res);
 
 
 typedef struct {
@@ -86,19 +86,19 @@ typedef struct {
      real *coeAB;  /* Coefficient of particular AB term */ 
      real fac;     /* Whole Commutator matrix will be scaled by this factor fac */
      real pref;    /* Whole Commutator matrix will be added with this weigth    */
-     int  vec_num; /* Number of elements (vectors or columns) in maps A, B */
-     int  sym;     /* Commutator symmetry */
+     integer  vec_num; /* Number of elements (vectors or columns) in maps A, B */
+     integer  sym;     /* Commutator symmetry */
 
 } CommData;
 
 static void
-add_commutators_full(CommData **d, int maxlst, real *dftcontr);
+add_commutators_full(CommData **d, integer maxlst, real *dftcontr);
 static void
-add_commutators_ij(CommData **d, int maxlst, real *dftcontr);
+add_commutators_ij(CommData **d, integer maxlst, real *dftcontr);
 
 #if 0
 static void
-add_commutators_symm(CommData **d, int maxlst, real *dftcontr);
+add_commutators_symm(CommData **d, integer maxlst, real *dftcontr);
 #endif
 
 static const real PLUS = 1.0, MINUS = -1.0, NEW = 0.0, ADD = 1.0;
@@ -108,7 +108,7 @@ static const real HALFR = 0.5, SIXTHR = 1.0/6.0;
 struct CubeFastData_ {
     /* pointers to external data (data is not owned) */
     const real *kappaB, *kappaC, *kappaD;
-    int           symB,    symC,    symD;
+    integer           symB,    symC,    symD;
 
     /* dft contribution matrix */
     real* dftcontr;
@@ -203,18 +203,18 @@ static CubeFastData*
 cubefast_data_new(  const real *kB, 
                     const real *kC,    
 		    const real *kD,
-                    const int symB,
-                    const int symC,
-                    const int symD)  
+                    const integer symB,
+                    const integer symC,
+                    const integer symD)  
 {
 /* This routine allocates space for CubeFastData structure and
    initialize its fields */
 
     /* Local vars */
-    int x; int ab;
-    int ksymBC, ksymCD, ksymBD, ksymBCD;
-    int vec_size;
-    int offset = 0;
+    integer x; int ab;
+    integer ksymBC, ksymCD, ksymBD, ksymBCD;
+    integer vec_size;
+    integer offset = 0;
     real **mapA;
     real **mapB;
     real *buf;
@@ -344,34 +344,34 @@ cubefast_data_free(CubeFastData* tmp)
 }
 
 static void
-matn_times_vec_full(real PM, int sym, const real* mat, const real* vec, real a, real* res)
+matn_times_vec_full(real PM, integer sym, const real* mat, const real* vec, real a, real* res)
 {
     dgemv_("N", &inforb_.norbt, &inforb_.norbt, &PM, mat,
            &inforb_.norbt, vec, &ONEI, &a, res, &ONEI);
 }
 
 static void
-matt_times_vec_full(real PM, int sym, const real* mat, const real* vec, real a, real* res)
+matt_times_vec_full(real PM, integer sym, const real* mat, const real* vec, real a, real* res)
 {
     dgemv_("T", &inforb_.norbt, &inforb_.norbt, &PM, mat,
            &inforb_.norbt, vec, &ONEI, &a, res, &ONEI);
 }
 
 static void
-matn_times_vec_symm(real PM, int ops,const real* mat, const real* vec, real a, real* res)
+matn_times_vec_symm(real PM, integer ops,const real* mat, const real* vec, real a, real* res)
 {
-    int isym;
+    integer isym;
                                                                                                               
     for(isym=0; isym<inforb_.nsym; isym++) {
-        int iorbs = inforb_.iorb[isym];
+        integer iorbs = inforb_.iorb[isym];
         integer noccs = inforb_.nocc[isym];
         integer nvirs = inforb_.nvir[isym];
-        int i     = inforb_.muld2h[ops][isym]-1;
-        int iorbi = inforb_.iorb[i];
+        integer i     = inforb_.muld2h[ops][isym]-1;
+        integer iorbi = inforb_.iorb[i];
         integer nocci = inforb_.nocc[i];
         integer nviri = inforb_.nvir[i];
-        int begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
-        int begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
+        integer begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
+        integer begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
         if(nviri>0) {
             if(noccs>0)
                 dgemv_("N", &nviri,&noccs, &PM, &mat[begll],&inforb_.norbt,
@@ -388,20 +388,20 @@ matn_times_vec_symm(real PM, int ops,const real* mat, const real* vec, real a, r
 }
 
 static void
-matt_times_vec_symm(real PM, int ops,const real* mat, const real* vec, real a, real* res)
+matt_times_vec_symm(real PM, integer ops,const real* mat, const real* vec, real a, real* res)
 {
-    int isym;
+    integer isym;
                                                                                                               
     for(isym=0; isym<inforb_.nsym; isym++) {
-        int iorbs = inforb_.iorb[isym];
+        integer iorbs = inforb_.iorb[isym];
         integer noccs = inforb_.nocc[isym];
         integer nvirs = inforb_.nvir[isym];
-        int i     = inforb_.muld2h[ops][isym]-1;
-        int iorbi = inforb_.iorb[i];
+        integer i     = inforb_.muld2h[ops][isym]-1;
+        integer iorbi = inforb_.iorb[i];
         integer nocci = inforb_.nocc[i];
         integer nviri = inforb_.nvir[i];
-        int begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
-        int begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
+        integer begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
+        integer begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
         if(noccs>0) {
             if(nviri>0)
                 dgemv_("T", &nviri,&noccs, &PM, &mat[begll],&inforb_.norbt,
@@ -423,11 +423,11 @@ static real inactive_trace_AB(CommData *d)
    real **mata = d->A;
    real **matb = d->B;
    real *coef   = d->coeAB;
-   int vec_num = d->vec_num;
-   int vec;
+   integer vec_num = d->vec_num;
+   integer vec;
 
    /* inactive trace part */
-   int isym, iorb;
+   integer isym, iorb;
    real result = 0.0;
 
    for (isym=0; isym<inforb_.nsym; isym++) {
@@ -447,9 +447,9 @@ eval_omega_vectors(CubeFastData *t,
 		real *vecA, real *vecB)
 {
 /* This routine returns commutator vectors A and B, see comments below */
-    int  symB = t->symB;
-    int  symC = t->symC;
-    int  symD = t->symD;
+    integer  symB = t->symB;
+    integer  symC = t->symC;
+    integer  symD = t->symD;
     
     void (*matn_times_vec)() = t->matn_times_vec;
     void (*matt_times_vec)() = t->matt_times_vec;
@@ -736,12 +736,12 @@ assign_omega_vectors(
 } /* end assign_omega_vectors */
 
 static void
-add_commutators_full(CommData **CommList, int maxlst, real *dftcontr) {
-     register int vec;
-     int i,lst;
+add_commutators_full(CommData **CommList, integer maxlst, real *dftcontr) {
+     register integer vec;
+     integer i,lst;
      real factor;
 
-     int vec_num;
+     integer vec_num;
      real **mapA; 
      real **mapB;
      real *coef;
@@ -772,12 +772,12 @@ add_commutators_full(CommData **CommList, int maxlst, real *dftcontr) {
 }
 
 static void
-add_commutators_ij(CommData **CommList, int maxlst, real *dftcontr) {
-     register int vec;
-     int i,j,lst;
+add_commutators_ij(CommData **CommList, integer maxlst, real *dftcontr) {
+     register integer vec;
+     integer i,j,lst;
      real factor;
                                                                                                                                        
-     int vec_num;
+     integer vec_num;
      real **mapA;
      real **mapB;
      real *coef;
@@ -808,17 +808,17 @@ add_commutators_ij(CommData **CommList, int maxlst, real *dftcontr) {
 
 #if 0
 static void
-add_commutators_symm(CommData **commlist, int maxlst, real *dftcontr) {
-     register int ii;
-     int i, isym, vec;
-     int vec_num = d->vec_num;
+add_commutators_symm(CommData **commlist, integer maxlst, real *dftcontr) {
+     register integer ii;
+     integer i, isym, vec;
+     integer vec_num = d->vec_num;
      real **mapA = d->A;
      real **mapB = d->B;
-     int  sym = d->sym;
+     integer  sym = d->sym;
      real factor;
 
-     int iorbs, noccs, nvirs, nuorb;
-     int iorbi, nocci, nviri, nuorbi;
+     integer iorbs, noccs, nvirs, nuorb;
+     integer iorbi, nocci, nviri, nuorbi;
 
      for (vec=0; vec<vec_num; vec++) {
        for (isym=0; isym<inforb_.nsym; isym++) {
@@ -883,7 +883,7 @@ static void
 eval_grad_vars(DftGrid *grid, CubeFastData* d)
 {
     /* temporary variables */
-    int x;
+    integer x;
 
     /* set aux variables to zero */
     d->sB = d->sC =  d->sD = d->sBC = d->sCD = d->sBD = d->sBCD =
@@ -958,12 +958,12 @@ eval_grad_vars(DftGrid *grid, CubeFastData* d)
 static void
 add_dft_contribution(DftGrid* grid, CubeFastData* d)
 {
-    int x;
+    integer x;
     real pref;
     real* dftcontr = d->dftcontr;
     void (*add_commutators)() = d->add_commutators;
     FourthDrv drvs; /* the functional derivatives */
-    int lst = 0;
+    integer lst = 0;
     CommData *commlist[49];
     
 
@@ -1269,9 +1269,9 @@ dft_cr_resp_sync_slaves(real* cmo, real* kappaB, real* kappaC, real *kappaD,
 }
 
 static __inline__ void
-dft_cr_resp_collect_info(real* fi, real*work, int lwork)
+dft_cr_resp_collect_info(real* fi, real*work, integer lwork)
 {
-    int sz = 0;
+    integer sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
     CHECK_WRKMEM(inforb_.n2orbx, lwork);
@@ -1295,13 +1295,13 @@ FSYM(dftcrcf)(real* fi, real* cmo,
 	      real* kappaD, integer* symD, 
 	      real* work,   integer* lwork, integer* iprint)
 {
-    static int msg_printed = 0;
+    static integer msg_printed = 0;
     integer norbt2 = inforb_.norbt*inforb_.norbt;
     void gettim_(real *a, real *b);
     real sec, tmpsec, dummy;
     DftCallbackData cbdata[1];
     CubeFastData* data;
-    void dump_mat(char *name, real* mat, int dimm, int dimn);
+    void dump_mat(char *name, real* mat, integer dimm, int dimn);
 
     /* WARNING: NO work MAY BE done before syncing slaves! */
     dft_wake_slaves((DFTPropEvalMaster)dftcrcf_);       /* NO-OP in serial */
@@ -1336,10 +1336,10 @@ FSYM(dftcrcf)(real* fi, real* cmo,
 }
 
 #ifdef TEST
-void dump_mat(char *name, real* mat, int dimm, int dimn)
+void dump_mat(char *name, real* mat, integer dimm, int dimn)
 {
     printf("%s\n",name); 
-    int i, j;
+    integer i, j;
     for(j=0; j<dimm; j++) {
         for(i=0; i<dimn; i++)
             printf("%5.3f ", mat[i*dimm + j]);

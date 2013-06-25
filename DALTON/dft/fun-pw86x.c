@@ -74,14 +74,15 @@ K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb)/2;
 #endif
 #include <math.h>
 #include <stddef.h>
- 
+#include "general.h"
+
 #define __CVERSION__
  
 #include "functionals.h"
  
 /* INTERFACE PART */
-static int pw86x_isgga(void) { return 1; } /* FIXME: detect! */
-static int pw86x_read(const char *conf_line);
+static integer pw86x_isgga(void) { return 1; } /* FIXME: detect! */
+static integer pw86x_read(const char *conf_line);
 static real pw86x_energy(const FunDensProp* dp);
 static void pw86x_first(FunFirstFuncDrv *ds,   real factor,
                          const FunDensProp* dp);
@@ -106,7 +107,7 @@ Functional PW86xFunctional = {
 };
  
 /* IMPLEMENTATION PART */
-static int
+static integer
 pw86x_read(const char *conf_line)
 {
     fun_set_hf_weight(0);

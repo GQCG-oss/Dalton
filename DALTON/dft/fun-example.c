@@ -38,14 +38,15 @@
 
 #include <math.h>
 #include <stdio.h>
+#include "general.h"
 
 #define __CVERSION__
 
 #include "functionals.h"
 
 /* INTERFACE PART */
-static int example_isgga(void) { return 1; }
-static int example_read(const char* conf_line);
+static integer example_isgga(void) { return 1; }
+static integer example_read(const char* conf_line);
 static real example_energy(const FunDensProp* dp);
 static void example_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
 static void example_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
@@ -64,7 +65,7 @@ Functional ExampleFunctional = {
 };
 
 /* IMPLEMENTATION PART */
-static int
+static integer
 example_read(const char* conf_line)
 {
   fun_set_hf_weight(0.0);
