@@ -431,7 +431,7 @@ READ(LUN) DALTON%Hermiteecoeff
 READ(LUN) DALTON%DoSpherical
 READ(LUN) DALTON%UNCONT
 READ(LUN) DALTON%NOSEGMENT
-READ(LUN) DALTON%DO3CENTEROVL
+Read(LUN) DALTON%DO3CENTEROVL
 READ(LUN) DALTON%DO2CENTERERI
 READ(LUN) DALTON%MIXEDOVERLAP
 READ(LUN) DALTON%CS_SCREEN
@@ -2870,25 +2870,25 @@ IF(ASSOCIATED(setting%DsymRHS))THEN
 ENDIF
 
 IF(associated(setting%LST_GAB_LHS))THEN
-   DEALLOCATE(SETTING%LST_GAB_LHS)
-   NULLIFY(SETTING%LST_GAB_LHS)
-#ifdef VAR_MPI
-! FIXME THIS IS UGLY
-   IF(setting%node.NE.infpar%master)then
-      call lstensor_free(setting%LST_GAB_LHS) 
-   ENDIF
-#endif
+  DEALLOCATE(SETTING%LST_GAB_LHS)
+  NULLIFY(SETTING%LST_GAB_LHS)
+!#ifdef VAR_MPI
+!! FIXME THIS IS UGLY
+!   IF(setting%node.NE.infpar%master)then
+!      call lstensor_free(setting%LST_GAB_LHS) 
+!   ENDIF
+!#endif
 ENDIF
 
 IF(associated(setting%LST_GAB_RHS))THEN
    DEALLOCATE(SETTING%LST_GAB_RHS)
    NULLIFY(SETTING%LST_GAB_RHS)
-#ifdef VAR_MPI 
-! FIXME THIS IS UGLY
-   IF(setting%node.NE.infpar%master)then
-      call lstensor_free(setting%LST_GAB_RHS) 
-   ENDIF
-#endif
+!#ifdef VAR_MPI 
+!! FIXME THIS IS UGLY
+!   IF(setting%node.NE.infpar%master)then
+!      call lstensor_free(setting%LST_GAB_RHS) 
+!   ENDIF
+!#endif
 ENDIF
 
 IF(SETTING%LHSdfull.AND.SETTING%LHSdalloc)THEN

@@ -1,19 +1,30 @@
 #!/bin/bash
 TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonIfortRelease64
-SCRATCH_DIR=/scratch/tkjaer/DaltonIfortRelease64
-rm -rf $TMP_DIR
+SCRATCH_DIR=/tmp/tkjaer/DaltonIfortRelease64
+rm -rf $TMP_DIR 
 rm -rf $SCRATCH_DIR
 export PATH=/usr/local/torque/bin:/home/com/intel/composer_xe_2011_sp1.11.339/bin:/com/bin:/usr/local/bin:/bin:/usr/bin:/home/com/intel/composer_xe_2011_sp1.11.339/lib/intel64
 export LD_LIBRARY_PATH=/home/com/intel/composer_xe_2011_sp1.11.339/bin:/home/com/intel/composer_xe_2011_sp1.11.339/lib/intel64
 git clone git@repo.ctcc.no:dalton.git $TMP_DIR
 cd $TMP_DIR
-git checkout linsca-develop
+#git checkout linsca-develop
+git checkout Dalton2013_release
 git log --pretty=format:"%an" --since=1.day > /home/tkjaer/NightlyTestingCdash/SINNERS
 export OMP_NUM_THREADS=3
 source /home/com/intel/composer_xe_2011_sp1.11.339/bin/ifortvars.sh intel64
+cd $TMP_DIR
 export MATH_ROOT=/home/com/intel/composer_xe_2011_sp1.11.339/mkl
-./setup --fc=ifort --cc=icc --int64 --math="-Llib -L$MATH_ROOT/lib/intel64 -lmkl_solver_ilp64 -Wl,--start-group -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group -openmp -lpthread" --omp --scratch=$SCRATCH_DIR -D BUILDNAME="Grendel-linux-ifort12.1.5-omp64int-release"
+export DALTON_TMPDIR=$SCRATCH_DIR
+export DALTON_NR_MPI_PROCS=1
+export CTEST_PROJECT_NAME=LSDALTON
+./setup --fc=ifort --cc=icc --int64 --explicit-libs="-Llib -L$MATH_ROOT/lib/intel64 -lmkl_solver_ilp64 -Wl,--start-group -lmkl_intel_ilp64 -lmkl_intel_thread -lmkl_core -Wl,--end-group -openmp -lpthread" --omp -D BUILDNAME="RB-Grendel-linux-ifort12.1.5-omp64int-release"
+#cp /home/tkjaer/NightlyTestingCdash/git_revision_info.f90 $TMP_DIR/lsutil/.
+#cp /home/tkjaer/NightlyTestingCdash/compilation_info.f90 $TMP_DIR/lsutil/.
 cd $TMP_DIR/build
-make Nightly
+#make depend
+#make Nightly
+#make Experimental
+ctest -D Nightly -L lsdalton
+
 exit 0
 
