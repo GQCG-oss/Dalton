@@ -91,6 +91,7 @@ class lsoutput:
              #SET DEC SPECIFIC CALCULTION INFO FROM INPUT FILE 
              if("**DEC" in lineparser):
                self.calctype[0] = "DEC"
+               self.decinfo.enable_fragread = True
                lineparser2 = ""
                k=j+1
                found = False
@@ -107,6 +108,12 @@ class lsoutput:
                    found = True
                  elif(".CCSD" == lineparser2):
                    self.calctype[1] = "CCSD"
+                   found = True
+                 elif(".CCD" == lineparser2):
+                   self.calctype[1] = "CCD"
+                   found = True
+                 elif(".CC2" == lineparser2):
+                   self.calctype[1] = "CC2"
                    found = True
                  k+=1
                if(not found):
@@ -135,7 +142,7 @@ class lsoutput:
                lineparser2 = ""
                k=j+1
                found = False
-               while("*" not in lineparser2 and not found):
+               while("*" not in lineparser2):
                  lineparser2=self.lines[k].strip().upper()
                  if(".MP2" in lineparser2):
                    self.calctype[1] = " MP2"
@@ -146,6 +153,15 @@ class lsoutput:
                  elif(".CCSD" == lineparser2):
                    self.calctype[1] = "CCSD"
                    found = True
+                 elif(".CCD" == lineparser2):
+                   self.calctype[1] = "CCD"
+                   found = True
+                 elif(".CC2" == lineparser2):
+                   self.calctype[1] = "CC2"
+                   found = True
+                 elif(".DECPRINT" == lineparser2):
+                   if(int(self.lines[k+1])>1):
+                     self.decinfo.enable_fragread = True
                  k+=1
                if(not found):
                  self.calctype[1] = " NONE"
@@ -198,7 +214,7 @@ class lsoutput:
    ############################################################
    #GET FRAGMENT ENERGIES FROM FULL CALCULATION
    def get_fraginfo_from_full(self):
-      if(("DEC"==self.calctype[0] and "MP2DEBUG" in self.calctype)or("CC"==self.calctype[0] and "CCSD(T)"==self.calctype[1])):
+      if(("DEC"==self.calctype[0] and "MP2DEBUG" in self.calctype)or self.decinfo.enable_fragread):
         self.decinfo.get_dec_info(self.lines,self.calctype[1],False)
       else:
         print "ERROR(get_frag_from_full): cannot be performed for this type of calculation"
