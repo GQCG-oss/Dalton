@@ -280,7 +280,7 @@ def produce_files(installdir,lsutildir,args):
          write_simple_module_end_and_close(utils[idx][i][ad],idx+minr,i+1,now,args,forutils[ad])
 
    #remove empty file
-   os.system("rm "+installdir+"/reord2d_1_reord.F90")
+   os.system("rm "+installdir+"reord2d_1_reord.F90")
 
 
 def write_subroutine_body(f,idxarr,perm,modes,args,ad):
@@ -432,15 +432,25 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
           for j in  range(len(outeri)):
             f.write(offsetstr+"do b"+abc[outeri[j]]+"=1,d"+abc[outeri[j]]+"2,bs\n")
             offsetstr += "  "
-            if ad != "":
-              f.write(offsetstr+"b"+abc[outeri[j]]+"f = f"+abc[outeri[j]]+" + b"+abc[outeri[j]]+"\n")
+#            if ad != "":
+#              f.write(offsetstr+"b"+abc[outeri[j]]+"f = f"+abc[outeri[j]]+" + b"+abc[outeri[j]]+"\n")
           offsetstr = offsetstr[0:-2]
         else:
           offsetstr="    "
-          
+
         f.write("\n")
+
+        if(not debug_loops):
+          offsetstr2 = offsetstr + "  "
+          for j in  range(len(outeri)):
+            if ad != "":
+              f.write(offsetstr2+"b"+abc[outeri[j]]+"f = f"+abc[outeri[j]]+" + b"+abc[outeri[j]]+"\n")          
+          f.write("\n")
+        else:
+          offsetstr2 = offsetstr + "  "        
+          f.write("\n")
        
-        offsetstr2 = offsetstr + "  "
+#        offsetstr2 = offsetstr + "  "
         #WRITING THE INNER FOR LOOPS HERE:
         if(not debug_loops):
           for j in range(modes):
