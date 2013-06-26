@@ -222,7 +222,7 @@ void* dal_malloc_(size_t sz, const char *func, unsigned line);
 #define dal_malloc(sz) dal_malloc_((sz),__FUNCTION__, __LINE__)
 #define dal_new(sz,tp) (tp*)dal_malloc_((sz)*sizeof(tp),__FUNCTION__, __LINE__)
 
-int fort_print(const char* format, ...);
+integer fort_print(const char* format, ...);
 /* FORTRAN FUNCTION PROTOTYPES */
 void dzero_(real* arr, const integer* len);
 void dunit_(real* arr, const integer* len);
@@ -265,7 +265,7 @@ void dgemm_(const char* transa, const char* transb, const integer* nrowc,
 	    const real* a, const integer* lda, const real* b, const integer* ldb,
 	    const real* beta, real* c, const integer* ldc);
 
-real* alloc_mat_MO(int cnt);
+real* alloc_mat_MO(integer cnt);
 
 void FSYM2(dft_get_ao_dens_mat)(const real* cmo, real* dmat,
                                 real* work, integer* lwork);

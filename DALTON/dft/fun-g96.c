@@ -65,14 +65,15 @@ K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb);
 #endif
 #include <math.h>
 #include <stddef.h>
- 
+#include "general.h"
+
 #define __CVERSION__
  
 #include "functionals.h"
  
 /* INTERFACE PART */
-static int g96_isgga(void) { return 1; } /* FIXME: detect! */
-static int g96_read(const char *conf_line);
+static integer g96_isgga(void) { return 1; } /* FIXME: detect! */
+static integer g96_read(const char *conf_line);
 static real g96_energy(const FunDensProp* dp);
 static void g96_first(FunFirstFuncDrv *ds,   real factor,
                          const FunDensProp* dp);
@@ -97,7 +98,7 @@ Functional G96xFunctional = {
 };
  
 /* IMPLEMENTATION PART */
-static int
+static integer
 g96_read(const char *conf_line)
 {
     fun_set_hf_weight(0);
