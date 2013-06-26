@@ -55,6 +55,7 @@ add_library(
 
 target_link_libraries(pdpacklib matrixulib)
 
+
 # automatially generate the manual_reorderdings.F90
 set(MANUAL_REORDERING_SOURCES
     ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90
@@ -79,13 +80,19 @@ foreach(_source ${MANUAL_REORDERING_SOURCES})
     set_source_files_properties(${_source} PROPERTIES GENERATED 1)
 endforeach()
 get_directory_property(LIST_OF_DEFINITIONS DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS)
-execute_process(COMMAND python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py nocollapse CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS})
+add_custom_target(
+    generate_man_reord
+    python ${CMAKE_SOURCE_DIR}/LSDALTON/lsutil/autogen/generate_man_reord.py nocollapse CMAKE_BUILD=${CMAKE_BINARY_DIR}/manual_reordering ${LIST_OF_DEFINITIONS}
+    )
 unset(LIST_OF_DEFINITIONS)
+
 add_library(
     lsutiltypelib_common
     ${MANUAL_REORDERING_SOURCES}
     ${LSUTIL_TYPE_SOURCES}
     )
+
+add_dependencies(lsutiltypelib_common generate_man_reord)
 
 target_link_libraries(lsutiltypelib_common pdpacklib)
 

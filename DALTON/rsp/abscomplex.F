@@ -746,10 +746,21 @@ C
                CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &              WRK(KFREE),LFREE)
                CALL DCOPY(2*KZVAR,WRK(KFREE),1,WRK(KGD),1)
-               CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &                 ABS_FREQ_ALPHA,
-     &                 MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
-     &                 WRK(KFREE),LFREE)
+               GDNRM=DNRM2(2*KZVAR,WRK(KGD),1)
+               RES0=0.0d0
+               IF (GDNRM .LE. 1.0d-6) THEN
+                 WRK(KXSOL:4*KZVAR-1)=0.0d0
+                 DO K=1,ABS_NFREQ_INTERVAL
+                   CALL WRITE_XVEC(LUABSVECS,4*KZVAR,WRK(KXSOL),LABEL,
+     &                  ABS_FREQ_ALPHA(K),RES0)
+                   ENDDO
+                 WRITE(LUPRI,*) 'Vectors equal to zero'
+               ELSE
+                 CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
+     &                        ABS_FREQ_ALPHA,
+     &                        MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
+     &                        WRK(KFREE),LFREE)
+               ENDIF
 C
                CALL GET_LRF(LUABSVECS,LABEL,ABS_NFREQ_INTERVAL,
      &                     ABS_FREQ_ALPHA,FC,FV,CMO,UDV,PV,XINDX,

@@ -89,14 +89,15 @@ K(rhoa,rhob,grada,gradb,gradab):=(Exa+Exb);
 #endif
 #include <math.h>
 #include <stddef.h>
- 
+#include "general.h"
+
 #define __CVERSION__
  
 #include "functionals.h"
  
 /* INTERFACE PART */
-static int lg93_isgga(void) { return 1; } /* FIXME: detect! */
-static int lg93_read(const char *conf_line);
+static integer lg93_isgga(void) { return 1; } /* FIXME: detect! */
+static integer lg93_read(const char *conf_line);
 static real lg93_energy(const FunDensProp* dp);
 static void lg93_first(FunFirstFuncDrv *ds,   real factor,
                          const FunDensProp* dp);
@@ -121,7 +122,7 @@ Functional LG93xFunctional = {
 };
  
 /* IMPLEMENTATION PART */
-static int
+static integer
 lg93_read(const char *conf_line)
 {
     fun_set_hf_weight(0);

@@ -58,9 +58,9 @@
 #include <pthread.h>
 #endif
 
-static const int CUBATURE_RULE = 3;
-static const int CUBATURE_RULE_2 = 6;
-static const int NO_OF_DIMENSIONS = 3;  /* 1, 2 or 3 */
+static const integer CUBATURE_RULE = 3;
+static const integer CUBATURE_RULE_2 = 6;
+static const integer NO_OF_DIMENSIONS = 3;  /* 1, 2 or 3 */
 static const real CONSTPI = M_PI;
 
 
@@ -68,35 +68,35 @@ static const real CONSTPI = M_PI;
  * a keyword in the input file. */
 int global_useHiCu = 0;
 
-static int    global_maxNoOfShells     = 44444;
+static integer    global_maxNoOfShells     = 44444;
 
 /* This variable is used to keep track of when it is time to 
    create a new grid, together with parameter global_nFreeze. */
-static int    global_gridCount = 0;
+static integer    global_gridCount = 0;
 
 
 /* ---------- CONFIGURABLE PARAMETERS ------------------------------
    ---------- CONFIGURABLE PARAMETERS ------------------------------
    ---------- CONFIGURABLE PARAMETERS ------------------------------ */
 /* number of threads */
-static int    global_nThreads          = 1;
+static integer    global_nThreads          = 1;
 
 /* flag for test integration. If turned on, the grid file is
 reopened after it has been created, and the density is integrated
 using the newly created grid. Just to check that it gives the 
 same result as reported by the grid generation and by 
 the dft integrator. */
-static int    global_doTestIntegration = 0; 
+static integer    global_doTestIntegration = 0; 
 
 /* Output level. 0 means minimum output, 1 means little output,
    2 means a lot of output. */
-static int    global_outputLevel       = 1;
+static integer    global_outputLevel       = 1;
 
 /* Number of iterations to use the same grid, before creating
 a new one. nFreeze=1 gives a new grid for each iteration.
 nFreeze=1000 means that the first grid is used throughout
 the whole calculation. */
-static int    global_nFreeze           = 1000;
+static integer    global_nFreeze           = 1000;
 
 /* Threshold value for distributions. A gaussian is ignored in areas
 where its value is below this threshold. A low value is 
@@ -153,23 +153,23 @@ pthread_mutex_t globalOutputMutex = PTHREAD_MUTEX_INITIALIZER;
 
 #if 0
 struct DistributionSpecContr_{
-  int noOfContr;
+  integer noOfContr;
   real coeffList[MAX_NO_OF_CONTR_GAUSSIANS];
   real exponentList[MAX_NO_OF_CONTR_GAUSSIANS];
   real centerCoords[3]; /* x0, y0, z0 */
-  int monomialInts[3];  /* nx, ny, nz */
+  integer monomialInts[3];  /* nx, ny, nz */
 };
 typedef struct DistributionSpecContr_ DistributionSpecContr;
 #endif
 
 typedef struct
 {
-  int noOfShells;
+  integer noOfShells;
   ShellSpecStruct* shellList;
-  int nbast;
+  integer nbast;
   const real* dmat;
   BasisFuncStruct* basisFuncList;
-  int noOfDistributions;
+  integer noOfDistributions;
   DistributionSpecStruct* distrList;
 } DensitySpecStruct;
 
@@ -185,16 +185,16 @@ struct rhoTreeNode_{
   BoxStruct box;
     struct rhoTreeNode_* child1; /* NULL for leaf node */
     struct rhoTreeNode_* child2; /* NULL for leaf node */
-    int distrIndex;      /* -1 for non-leaf node */
+    integer distrIndex;      /* -1 for non-leaf node */
 };
 typedef struct rhoTreeNode_ rhoTreeNode;
 
 typedef struct
 {
   DensitySpecStruct density;
-  int noOfNonzeroDistributions;
+  integer noOfNonzeroDistributions;
   int* nonZeroDistrIndexList;
-  int noOfNonzeroShells;
+  integer noOfNonzeroShells;
   int* nonZeroShellsIndexList;
   real maxerrorPerBox;
 } compute_grid_for_box_params_struct;
@@ -207,19 +207,19 @@ typedef struct
     real maxerror;
     FILE* gridFile;
     BoxStruct* startBox;
-    int Nx;
-    int Ny;
-    int Nz;
+    integer Nx;
+    integer Ny;
+    integer Nz;
 #ifdef USE_PTHREADS
     pthread_mutex_t* fileMutex;
     pthread_mutex_t* jobMutex;
     pthread_t thread;
 #endif
     int* currJobNumber;
-      int noOfPoints;         /* OUTPUT */
-      int noOfWrittenBatches; /* OUTPUT */
+      integer noOfPoints;         /* OUTPUT */
+      integer noOfWrittenBatches; /* OUTPUT */
       real integralResult;    /* OUTPUT */
-    int threadNo;
+    integer threadNo;
   } compute_grid_thread_func_struct;
 
 
@@ -254,7 +254,7 @@ typedef struct
 
 
 void 
-do_output_2(int prio, const char* format, ...)
+do_output_2(integer prio, const char* format, ...)
 {
   char s[888];
   va_list a;
@@ -296,7 +296,7 @@ do_error_exit(const char* s)
 }
 
 void*
-dal_malloc_safe_(size_t sz, const char *place, int line)
+dal_malloc_safe_(size_t sz, const char *place, integer line)
 {
   void* res = malloc(sz);
   if(!res) {
@@ -321,9 +321,9 @@ dal_free(void *a)
 
 #if 0
 void
-dftgridparams_(char *line, int len)
+dftgridparams_(char *line, integer len)
 {
-    int i = 0, tokenlen;
+    integer i = 0, tokenlen;
     char *sp;
     char* endPtr;
     printf("dftgridparams_ len = %i\n", len);
@@ -382,7 +382,7 @@ dftgridparams_(char *line, int len)
 static void make_float_string(char* s, real x)
 {
   real temp;
-  int power;
+  integer power;
   power = 0;
   temp = x;
   while(fabs(temp) > 9.999)
@@ -401,10 +401,10 @@ static void make_float_string(char* s, real x)
 
 
 
-static int 
+static integer 
 parseParam(char* s)
 {
-/* use #define instead of more modern static const int to please old
+/* use #define instead of more modern static const integer to please old
  * compilers. */
 #define MAX_BYTES 222
   char* p = s;
@@ -474,7 +474,7 @@ parseParam(char* s)
     }
   if(strcmp(paramName, "nfreeze") == 0)
     {
-      int new_nFreeze = atoi(paramValueString);
+      integer new_nFreeze = atoi(paramValueString);
       if(new_nFreeze <= 0)
 	{
 	  do_output_2(0, "error: grid param nfreeze = %f", new_nFreeze);
@@ -486,7 +486,7 @@ parseParam(char* s)
     }
   if(strcmp(paramName, "nthreads") == 0)
     {
-      int new_nThreads = atoi(paramValueString);
+      integer new_nThreads = atoi(paramValueString);
       if(new_nThreads <= 0)
 	{
 	  do_output_2(0, "error: grid param nthreads = %f", new_nThreads);
@@ -510,10 +510,10 @@ parseParam(char* s)
 /* dftcartesianinput: called from Fortran code to allow setting different
  * parameters of the cubature code. */
 void
-dftcartesianinput_(const char *line, int line_len)
+dftcartesianinput_(const char *line, integer line_len)
 {
 #define MAX_BYTES 222
-  int inperr;
+  integer inperr;
   int* inperrPtr = &inperr;
   char *endPtr, *p;
   char line2[MAX_BYTES];
@@ -551,9 +551,9 @@ dftcartesianinput_(const char *line, int line_len)
 
 
 static void 
-print_box(BoxStruct* box, int prio)
+print_box(BoxStruct* box, integer prio)
 {
-  int i;
+  integer i;
   do_output_2(prio, "print_box:");
   for(i = 0; i < NO_OF_DIMENSIONS; i++)
     {
@@ -563,13 +563,13 @@ print_box(BoxStruct* box, int prio)
 }
 
 
-static int 
+static integer 
 get_distribution_box(BoxStruct* box, 
 		     DistributionSpecStruct* distr, 
 		     real targetRhoError)
 {
   real targetError, r1, extent, arg;
-  int i;
+  integer i;
   targetError = targetRhoError;
   arg = distr->coeff / targetError;
   if(arg < 0) arg *= -1;
@@ -589,10 +589,10 @@ get_distribution_box(BoxStruct* box,
   return 0;
 } /* END get_distribution_box */
 
-static int 
+static integer 
 get_shell_box(BoxStruct* box, ShellSpecStruct* shell)
 {
-  int i;
+  integer i;
   for(i = 0; i < NO_OF_DIMENSIONS; i++)
     {
       box->min[i] = shell->centerCoords[i] - shell->extent;
@@ -607,20 +607,20 @@ get_shell_box(BoxStruct* box, ShellSpecStruct* shell)
 static real 
 compute_value_at_point(
 		       DensitySpecStruct* density,
-		       int noOfNonzeroShells,
+		       integer noOfNonzeroShells,
 		       int* nonZeroShellsIndexList,
-		       int noOfNonzeroBasFuncs,
+		       integer noOfNonzeroBasFuncs,
 		       int* nonZeroBasFuncsIndexList,
 		       real (*coor)[3],
 		       real* workList)
 {
   ShellSpecStruct* currShell;
-  int i, j, iIndex, jIndex, symmetryFactor, count;
+  integer i, j, iIndex, jIndex, symmetryFactor, count;
   real expFactor, result, currivalue;
   real xdiff, ydiff, zdiff;
   real x0, y0, z0;
   real x2, y2, z2, r2;
-  int nbast;
+  integer nbast;
   const real* dmat;
 
   nbast = density->nbast;
@@ -746,17 +746,17 @@ compute_value_at_point(
 static real 
 compute_integral_from_points(
 			     DensitySpecStruct* density,
-			     int noOfNonzeroShells,
+			     integer noOfNonzeroShells,
 			     int* nonZeroShellsIndexList,
-			     int noOfNonzeroBasFuncs,
+			     integer noOfNonzeroBasFuncs,
 			     int* nonZeroBasFuncsIndexList,
-			     int nPoints,
+			     integer nPoints,
 			     real (*coor)[3],
 			     real* weight,
 			     real* workList)
 {
 #if 1
-  int i;
+  integer i;
   real sum;
   sum = 0;
   for(i = 0; i < nPoints; i++)
@@ -772,14 +772,14 @@ compute_integral_from_points(
   return sum;
 #else
   ShellSpecStruct* currShell;
-  int i, j, iIndex, jIndex, symmetryFactor, count, pointNo;
+  integer i, j, iIndex, jIndex, symmetryFactor, count, pointNo;
   real expFactor, result;
   real xdiff, ydiff, zdiff;
   real x2, y2, z2, r2;
   real x0, y0, z0;
   real sum;
-  int savedCount;
-  int nbast;
+  integer savedCount;
+  integer nbast;
   const real* dmat;
 
   nbast = density->nbast;
@@ -951,10 +951,10 @@ compute_integral_from_points(
 
 
 static real 
-to_power(real x, int n)
+to_power(real x, integer n)
 {
   real result;
-  int i;
+  integer i;
   result = 1;
   for(i = 0; i < n; i++)
     result *= x;
@@ -963,7 +963,7 @@ to_power(real x, int n)
 
 
 static real 
-compute_1d_gaussian_integral_recursive(real a, real b, int n, real alpha)
+compute_1d_gaussian_integral_recursive(real a, real b, integer n, real alpha)
 {
   real result, sqrtalpha, term1, term2;
   real aToPowerNminus1, bToPowerNminus1;
@@ -998,7 +998,7 @@ compute_1d_gaussian_integral_recursive(real a, real b, int n, real alpha)
 
 
 static real
-compute_1d_gaussian_integral(real a, real b, int n, real alpha)
+compute_1d_gaussian_integral(real a, real b, integer n, real alpha)
 {
   real result, sqrtalpha, term1, term2;
   return compute_1d_gaussian_integral_recursive(a, b, n, alpha);
@@ -1036,7 +1036,7 @@ static real
 compute_integral_over_box(DistributionSpecStruct* distr, BoxStruct* box)
 {
   real result, a, b, alpha;
-  int i, n;
+  integer i, n;
   result = distr->coeff;
   alpha = distr->exponent;
   for(i = 0; i < NO_OF_DIMENSIONS; i++)
@@ -1050,13 +1050,13 @@ compute_integral_over_box(DistributionSpecStruct* distr, BoxStruct* box)
 } /* END compute_integral_over_box */
 
 
-static int 
+static integer 
 get_distrs_for_box(int* resultList, rhoTreeNode* node, BoxStruct* inputBoxPtr)
 {
 #define MAX_DEPTH 888
-  int n, i, overlap, currDepth;
+  integer n, i, overlap, currDepth;
   rhoTreeNode* nodeList[MAX_DEPTH];
-  int statusList[MAX_DEPTH];
+  integer statusList[MAX_DEPTH];
   rhoTreeNode* currNode;
   BoxStruct box;
   BoxStruct* currBox;
@@ -1122,18 +1122,18 @@ get_distrs_for_box(int* resultList, rhoTreeNode* node, BoxStruct* inputBoxPtr)
   return n;
 } /* END get_distrs_for_box */
 
-static int
-use_cubature_rule(int maxlen,
+static integer
+use_cubature_rule(integer maxlen,
 		  real (*coor)[3],
 		  real *weight,
 		  BoxStruct* box,
-		  int ruleNumber)
+		  integer ruleNumber)
 {
   real volume, diff0, diff1, diff2;
   real c0, c1, c2, a, b;
   real currCoords[3];
-  int Ngrid, currIndex;
-  int i, j, k, ii;
+  integer Ngrid, currIndex;
+  integer i, j, k, ii;
   real a0, a1, a2;
 
   volume = 1;
@@ -1420,9 +1420,9 @@ use_cubature_rule(int maxlen,
 } /* END use_cubature_rule */
 
 
-static int 
+static integer 
 compute_grid_for_box(compute_grid_for_box_params_struct* params,
-		     int maxlen,
+		     integer maxlen,
 		     real (*coor)[3],
 		     real *weight,
 		     BoxStruct* box,
@@ -1432,17 +1432,17 @@ compute_grid_for_box(compute_grid_for_box_params_struct* params,
 {
 #define MAX_NO_OF_TEST_POINTS 88
 
-  int noOfGridPoints;
-  int Ngrid;
-  int i;
+  integer noOfGridPoints;
+  integer Ngrid;
+  integer i;
   real Iapprox, Iexact;
   BoxStruct box1;
   BoxStruct box2;
-  int bestcoord, nPoints1, nPoints2;
+  integer bestcoord, nPoints1, nPoints2;
   real abserror, dist, maxdist, halfway;
   real IexactAbs;
   real analyticalIntegralBox1, analyticalIntegralBox2;
-  int splitBox;
+  integer splitBox;
 
   /*return 0; */
 
@@ -1494,7 +1494,7 @@ compute_grid_for_box(compute_grid_for_box_params_struct* params,
       real testCoor[MAX_NO_OF_TEST_POINTS][3];
       real testWeight[MAX_NO_OF_TEST_POINTS];
       real testIapprox;
-      int Ngrid2, testAbsError;
+      integer Ngrid2, testAbsError;
 
       Ngrid2 = use_cubature_rule(MAX_NO_OF_TEST_POINTS, 
 				 testCoor, testWeight, box, CUBATURE_RULE_2);
@@ -1611,21 +1611,21 @@ compute_grid_for_box(compute_grid_for_box_params_struct* params,
 
 
 static rhoTreeNode* 
-BuildRhoTreeBranch(int noOfDistributionsTot,
+BuildRhoTreeBranch(integer noOfDistributionsTot,
 		   DistributionSpecStruct* rho_alt_1,
 		   ShellSpecStruct* rho_alt_2,
-		   int distrIndexListN, 
+		   integer distrIndexListN, 
 		   int* distrIndexList,
 		   real targetRhoError)
 {
   rhoTreeNode* newNode;
-  int i, j, samePoint, n1, n2, bestCoord;
+  integer i, j, samePoint, n1, n2, bestCoord;
   BoxStruct tempBox;
   real currCoord, currDiff, maxDiff, limit, extent1, extent2, testCoord;
   rhoTreeNode* child1;
   rhoTreeNode* child2;
   int* tempList;
-  int tempInt;
+  integer tempInt;
 
   if(distrIndexListN < 1)
     {
@@ -1793,7 +1793,7 @@ BuildRhoTreeBranch(int noOfDistributionsTot,
     {
         /* all distrs are NOT at the same point */
       limit = (tempBox.max[bestCoord] + tempBox.min[bestCoord]) / 2;
-      tempList = dal_malloc_safe(distrIndexListN * sizeof(int));
+      tempList = dal_malloc_safe(distrIndexListN * sizeof(integer));
       n1 = 0;
       n2 = 0;
       for(i = 0; i < distrIndexListN; i++)
@@ -1821,7 +1821,7 @@ BuildRhoTreeBranch(int noOfDistributionsTot,
 	  return NULL;
 	}
 
-      memcpy(distrIndexList, tempList, distrIndexListN * sizeof(int));
+      memcpy(distrIndexList, tempList, distrIndexListN * sizeof(integer));
       dal_free(tempList);
     }
   if((n1 == 0) || (n2 == 0))
@@ -1846,14 +1846,14 @@ BuildRhoTreeBranch(int noOfDistributionsTot,
 
 
 static rhoTreeNode* 
-BuildRhoTree(int noOfDistributions,
+BuildRhoTree(integer noOfDistributions,
 	     DistributionSpecStruct* rho_alt_1,
 	     ShellSpecStruct* rho_alt_2,
 	     real targetRhoError)
 {
   rhoTreeNode* rootNode;
   int* distrIndexList;
-  int i;
+  integer i;
   real targetError, arg, r1;
   DistributionSpecStruct* distr;
 
@@ -1872,7 +1872,7 @@ BuildRhoTree(int noOfDistributions,
     }
 
   /* set up initial index list: all distributions included */
-  distrIndexList = dal_malloc_safe(noOfDistributions * sizeof(int));
+  distrIndexList = dal_malloc_safe(noOfDistributions * sizeof(integer));
   for(i = 0; i < noOfDistributions; i++)
     distrIndexList[i] = i;
 
@@ -1910,12 +1910,12 @@ static void free_rho_tree_memory(rhoTreeNode* rootNode)
 } /* END free_rho_tree_memory */
 
 
-static int round_real(real x)
+static integer round_real(real x)
 {
-  int x1, x2;
+  integer x1, x2;
   real err1, err2;
 
-  x1 = (int)x;
+  x1 = (integer)x;
   x2 = x1 + 1;
   err1 = x - (real)x1;
   err2 = (real)x2 - x;
@@ -1931,25 +1931,25 @@ void*
 compute_grid_thread_func(void* arg)
 {
     /*  char s[888]; */
-  int maxNoOfPoints;
+  integer maxNoOfPoints;
   real (*coor)[3];
   real* weight;
   real* coorx;
   real* coory;
   real* coorz;
-  int noOfShells, noOfDistributions;
-  int noOfNonzeroShells;
+  integer noOfShells, noOfDistributions;
+  integer noOfNonzeroShells;
   int* nonZeroShellIndexList;
-  int noOfNonzeroDistributions;
+  integer noOfNonzeroDistributions;
   int* nonZeroDistrIndexList;
-  int currShellNo, prevShellNo, tempInt;
+  integer currShellNo, prevShellNo, tempInt;
   int* listShlblocks;
   compute_grid_for_box_params_struct paramsStruct;
   real* workList;
   real totalIntegralResult;
-  int writeResultsToFile;
+  integer writeResultsToFile;
   DistributionSpecStruct* rhoForSubBox;
-  int noOfWrittenBatches, noOfGridPoints;
+  integer noOfWrittenBatches, noOfGridPoints;
   BoxStruct startBox;
   BoxStruct subBox;
   DensitySpecStruct* density;
@@ -1957,13 +1957,13 @@ compute_grid_thread_func(void* arg)
   rhoTreeNode* rhoTreeRootNode;
   rhoTreeNode* rhoTreeRootNodeShells;
   int* tempList;
-  int i, j, k, m, ii, jj, kk;
-  int Nx, Ny, Nz;
-  int nFunctions, count, nPoints, nblocks, blockStarted;
-  int startShellNo, NthisWrite;
+  integer i, j, k, m, ii, jj, kk;
+  integer Nx, Ny, Nz;
+  integer nFunctions, count, nPoints, nblocks, blockStarted;
+  integer startShellNo, NthisWrite;
   real Iexact, maxerror;
   FILE* gridFile;
-  int jobCount, assignedJobNumber;
+  integer jobCount, assignedJobNumber;
   ShellSpecStruct* currShell;
   
   /* get hold of input params */
@@ -1992,14 +1992,14 @@ compute_grid_thread_func(void* arg)
   coorx  = dal_malloc_safe(maxNoOfPoints * sizeof(real));
   coory  = dal_malloc_safe(maxNoOfPoints * sizeof(real));
   coorz  = dal_malloc_safe(maxNoOfPoints * sizeof(real));
-  nonZeroShellIndexList = dal_malloc_safe(noOfShells * sizeof(int));
-  nonZeroDistrIndexList = dal_malloc_safe(density->nbast * sizeof(int));
+  nonZeroShellIndexList = dal_malloc_safe(noOfShells * sizeof(integer));
+  nonZeroDistrIndexList = dal_malloc_safe(density->nbast * sizeof(integer));
   workList = dal_malloc_safe(density->nbast * 
 			     MAX_NO_OF_POINTS_PER_BATCH * sizeof(real));
   rhoForSubBox = dal_malloc_safe(noOfDistributions * 
 				 sizeof(DistributionSpecStruct));
-  tempList = dal_malloc_safe(noOfDistributions * sizeof(int));
-  listShlblocks = dal_malloc_safe(MAX_NO_OF_SHLBLOCKS * 2 * sizeof(int));
+  tempList = dal_malloc_safe(noOfDistributions * sizeof(integer));
+  listShlblocks = dal_malloc_safe(MAX_NO_OF_SHLBLOCKS * 2 * sizeof(integer));
 
 
   /* get initial assignedJobNumber */
@@ -2159,7 +2159,7 @@ compute_grid_thread_func(void* arg)
 
 	      if(writeResultsToFile == 1)
 		{
-                    int nPointsLeft;
+                    integer nPointsLeft;
                     /* make block-list of non-zero shells to write to file */
 		  nblocks = 0;
 		  blockStarted = 0;
@@ -2213,9 +2213,9 @@ compute_grid_thread_func(void* arg)
 			NthisWrite = nPointsLeft;
 		      else
 			NthisWrite = MAX_NO_OF_POINTS_PER_WRITE;
-		      fwrite(&NthisWrite, sizeof(int), 1, gridFile);
-		      fwrite(&nblocks, sizeof(int), 1, gridFile);
-		      fwrite(listShlblocks, sizeof(int), 2*nblocks, gridFile);
+		      fwrite(&NthisWrite, sizeof(integer), 1, gridFile);
+		      fwrite(&nblocks, sizeof(integer), 1, gridFile);
+		      fwrite(listShlblocks, sizeof(integer), 2*nblocks, gridFile);
 #if 1
 		      fwrite(&(coor[nPoints-nPointsLeft][0]),
 			     sizeof(real), 3*NthisWrite, gridFile);
@@ -2281,22 +2281,22 @@ do_test_integration(DensitySpecStruct* density, char* gridFileName)
   real* coorx;
   real* coory;
   real* coorz;
-  int noOfNonzeroShells;
+  integer noOfNonzeroShells;
   int* nonZeroShellIndexList;
-  int noOfNonzeroDistributions;
+  integer noOfNonzeroDistributions;
   int* nonZeroDistrIndexList;
-  int finished, currIndex;
+  integer finished, currIndex;
   int* listShlblocks;
   real* workList;
-  int nRepeats, repeatNo;
+  integer nRepeats, repeatNo;
   real testIntegralResult;
-  int maxNoOfPoints, noOfShells, noOfDistributions;
+  integer maxNoOfPoints, noOfShells, noOfDistributions;
   /*  char s[888]; */
   time_t startSeconds2, endSeconds2;
   clock_t startClock, endClock;
   FILE* gridFile;
-  int nPoints, nblocks, ii, kk, nFunctions;
-  int nPointsDone, nPointsThisTime, nBatches;
+  integer nPoints, nblocks, ii, kk, nFunctions;
+  integer nPointsDone, nPointsThisTime, nBatches;
   real secondsTakenReal;
 
 
@@ -2315,11 +2315,11 @@ do_test_integration(DensitySpecStruct* density, char* gridFileName)
   coorx  = dal_malloc_safe(maxNoOfPoints * sizeof(real));
   coory  = dal_malloc_safe(maxNoOfPoints * sizeof(real));
   coorz  = dal_malloc_safe(maxNoOfPoints * sizeof(real));
-  nonZeroShellIndexList = dal_malloc_safe(noOfShells * sizeof(int));
-  nonZeroDistrIndexList = dal_malloc_safe(density->nbast * sizeof(int));
+  nonZeroShellIndexList = dal_malloc_safe(noOfShells * sizeof(integer));
+  nonZeroDistrIndexList = dal_malloc_safe(density->nbast * sizeof(integer));
   workList = dal_malloc_safe(density->nbast * 
 			     MAX_NO_OF_POINTS_PER_BATCH * sizeof(real));
-  listShlblocks = dal_malloc_safe(MAX_NO_OF_SHLBLOCKS * 2 * sizeof(int));
+  listShlblocks = dal_malloc_safe(MAX_NO_OF_SHLBLOCKS * 2 * sizeof(integer));
 
 
   nRepeats = 1;
@@ -2342,16 +2342,16 @@ do_test_integration(DensitySpecStruct* density, char* gridFileName)
       nBatches = 0;
       while(finished == 0)
 	{
-	  if(fread(&nPoints, sizeof(int), 1, gridFile) != 1)
+	  if(fread(&nPoints, sizeof(integer), 1, gridFile) != 1)
 	    finished = 1;
 	  else
 	    {
-	      if(fread(&nblocks, sizeof(int), 1, gridFile) != 1) 
+	      if(fread(&nblocks, sizeof(integer), 1, gridFile) != 1) 
 		{
 		  do_output_2(0, "error reading nblocks");
 		  return -1;
 		}
-	      if(fread(listShlblocks, sizeof(int), 2*nblocks, gridFile) 
+	      if(fread(listShlblocks, sizeof(integer), 2*nblocks, gridFile) 
 		 != (2*nblocks))
 		{
 		  do_output_2(0, "error reading blocks");
@@ -2455,7 +2455,7 @@ do_test_integration(DensitySpecStruct* density, char* gridFileName)
 
   time(&endSeconds2);
   do_output_2(2, "time for test integration: %i s",
-	      (int)(endSeconds2 - startSeconds2));
+	      (integer)(endSeconds2 - startSeconds2));
 
   /* free memory */
   dal_free(coor);
@@ -2478,31 +2478,31 @@ int compute_grid(
 		 real boxdist,
 		 real targetRhoError,
 		 char* gridFileName,
-		 int noOfThreads,
-		 int doTestIntegration
+		 integer noOfThreads,
+		 integer doTestIntegration
 		 )
 {
   FILE* gridFile;
   char ss[888];
   char sss[888];
-  int noOfGridPoints;
+  integer noOfGridPoints;
   BoxStruct startBox;
   BoxStruct tempBox;
-  int i, j;
+  integer i, j;
   rhoTreeNode* rhoTreeRootNode;
   rhoTreeNode* rhoTreeRootNodeShells;
   clock_t startTime, timeTaken;
   time_t startSeconds, endSeconds;
   real Iexact, absRelError;
-  int Nxyz[3]; /* Nx Ny Nz */
-  int Nx, Ny, Nz;
-  int IexactInteger;
-  int correctValueInt;
+  integer Nxyz[3]; /* Nx Ny Nz */
+  integer Nx, Ny, Nz;
+  integer IexactInteger;
+  integer correctValueInt;
   real correctValue, abserrorRel;
-  int noOfWrittenBatches;
+  integer noOfWrittenBatches;
   real totalIntegralResult;
-  int noOfDistributions, writeResultsToFile;
-  int currJobNumber, noOfShells;
+  integer noOfDistributions, writeResultsToFile;
+  integer currJobNumber, noOfShells;
   real megaBytes;
   compute_grid_thread_func_struct* threadParamsList;
 
@@ -2600,7 +2600,7 @@ int compute_grid(
 
   /* compute Nx Ny Nz */
   for(i = 0; i < 3; i++)
-      Nxyz[i] = 1 + (int)((startBox.max[i] - startBox.min[i]) / boxdist);
+      Nxyz[i] = 1 + (integer)((startBox.max[i] - startBox.min[i]) / boxdist);
   Nx = Nxyz[0];
   Ny = Nxyz[1];
   Nz = Nxyz[2];
@@ -2733,7 +2733,7 @@ int compute_grid(
 
   time(&endSeconds);
   do_output_2(1, "compute_grid ending OK, noOfGridPoints = %i, took %i s",
-	      noOfGridPoints, (int)(endSeconds - startSeconds));
+	      noOfGridPoints, (integer)(endSeconds - startSeconds));
   do_output_2(2, "compute_grid totalIntegralResult = %.11f", 
 	      totalIntegralResult);
   correctValueInt = round_real(totalIntegralResult);
@@ -2765,8 +2765,8 @@ int compute_grid(
 } /* END compute_grid */
 
 
-static int 
-do_merge_sort_distrs(int n, 
+static integer 
+do_merge_sort_distrs(integer n, 
 		     DistributionSpecStruct* list, 
 		     DistributionSpecStruct* workList)
 {
@@ -2774,7 +2774,7 @@ do_merge_sort_distrs(int n,
     /* first sort the first half, */
     /* then sort the second half, */
     /* then merge results to form final sorted list. */
-  int n1, n2, nn, decision, i1, i2, i;
+  integer n1, n2, nn, decision, i1, i2, i;
   DistributionSpecStruct* d1;
   DistributionSpecStruct* d2;
 
@@ -2876,22 +2876,22 @@ do_merge_sort_distrs(int n,
 
 
 
-static int
+static integer
 compute_extent_for_shells(BasisInfoStruct* basisInfo, real targetRhoError)
 {
-  int i;
+  integer i;
   for(i = 0; i < basisInfo->noOfShells; i++)
     {
       ShellSpecStruct* currShell = &basisInfo->shellList[i];
-      int contr = currShell->noOfContr;
-      int worstIndex = -1;
+      integer contr = currShell->noOfContr;
+      integer worstIndex = -1;
       real largestExtent = 0;
-      int kk;
+      integer kk;
       for(kk = 0; kk < contr; kk++)
 	{
 	  DistributionSpecStruct testDistr;
 	  BoxStruct testBox;
-	  int j;
+	  integer j;
 	  real currExtent;
 
 	  testDistr.coeff = currShell->coeffList[kk];
@@ -2919,16 +2919,16 @@ compute_extent_for_shells(BasisInfoStruct* basisInfo, real targetRhoError)
 
 
 
-static int
+static integer
 get_no_of_primitives_for_density(real cutoff,
 				 const real *dmat,
 				 BasisInfoStruct* basisInfo)
 {
 #define MAX_DISTR_IN_TEMP_LIST 888
 
-  int i, j;
-  int symmetryFactor;
-  int nBasisFuncs, nn;
+  integer i, j;
+  integer symmetryFactor;
+  integer nBasisFuncs, nn;
   
   do_output_2(2, "entering function get_no_of_primitives_for_density, cutoff = %22.15f", cutoff);
 
@@ -2939,7 +2939,7 @@ get_no_of_primitives_for_density(real cutoff,
       for(j = 0; j < nBasisFuncs; j++)
 	{
 	  DistributionSpecStruct tempList[MAX_DISTR_IN_TEMP_LIST];
-	  int nPrimitives, k;
+	  integer nPrimitives, k;
 	  /* the matrix M is symmetric: include diagonal terms once, */
 	  /* and include upper off-diagonal terms multiplied by 2 */
 	  if(i == j)
@@ -2976,13 +2976,13 @@ get_no_of_primitives_for_density(real cutoff,
 
 
 
-static int
+static integer
 get_density(DistributionSpecStruct** rhoPtr,
-	    int maxCountShellList,
+	    integer maxCountShellList,
 	    int* noOfShellsReturn,
 	    real cutoffInp, 
 	    real targetRhoError,
-	    int nbast, 
+	    integer nbast, 
 	    const real *dmat,
 	    ShellSpecStruct* shellList,
 	    BasisFuncStruct* basisFuncList)
@@ -2991,17 +2991,17 @@ get_density(DistributionSpecStruct** rhoPtr,
   real cutoff = cutoffInp;
 
   /*char s[888]; */
-  int i, j, k, kk;
+  integer i, j, k, kk;
   DistributionSpecStruct* workList;
   DistributionSpecStruct* rhoSaved;
   real absvalue;
   real absdiff;
   real sqrtValue;
-  int sameYesNo, firstIndex, count, withinLimit, resultCount;
+  integer sameYesNo, firstIndex, count, withinLimit, resultCount;
   real coeffSum;
   int* markList;
-  int symmetryFactor;
-  int nBasisFuncs, nn, nNeededForRho;
+  integer symmetryFactor;
+  integer nBasisFuncs, nn, nNeededForRho;
   BasisInfoStruct basisInfo;
   DistributionSpecStruct* rho;
 
@@ -3057,7 +3057,7 @@ get_density(DistributionSpecStruct** rhoPtr,
       for(j = 0; j < nBasisFuncs; j++)
 	{
 	  DistributionSpecStruct tempList[MAX_DISTR_IN_TEMP_LIST];
-	  int nPrimitives, k;
+	  integer nPrimitives, k;
             /*printf("i = %i, j = %i\n", i, j); */
 	  /* the matrix M is symmetric: include diagonal terms once, */
 	  /* and include upper off-diagonal terms multiplied by 2 */
@@ -3158,7 +3158,7 @@ get_density(DistributionSpecStruct** rhoPtr,
   do_output_2(2, "sort checked OK");
 
 
-  markList = dal_malloc_safe(nn * sizeof(int));
+  markList = dal_malloc_safe(nn * sizeof(integer));
   for(i = 0; i < nn; i++)
     markList[i] = 0;
 
@@ -3297,12 +3297,12 @@ get_density(DistributionSpecStruct** rhoPtr,
 
 
 void
-do_cartesian_grid(int nbast, const real* dmat, DftGridReader* res)
+do_cartesian_grid(integer nbast, const real* dmat, DftGridReader* res)
 {
   DistributionSpecStruct* rho;
   ShellSpecStruct* shellList;
   BasisFuncStruct* basisFuncList;
-  int noOfShells, nGridPoints, noOfDistributions;
+  integer noOfShells, nGridPoints, noOfDistributions;
   DensitySpecStruct density;
 
   /* check if new grid must be created */
@@ -3312,7 +3312,7 @@ do_cartesian_grid(int nbast, const real* dmat, DftGridReader* res)
 
         /* check dmat */
       real maxabs = 0;
-      int i;
+      integer i;
       for(i = 0; i < nbast*nbast; i++)
 	{
 	  real temp = fabs(dmat[i]);

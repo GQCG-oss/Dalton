@@ -42,14 +42,15 @@
 #include <math.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include "general.h"
 
 #define __CVERSION__
 
 #include "functionals.h"
 
 /* INTERFACE PART */
-static int  vwn_isgga(void) { return 0; }
-static int  vwn_read(const char* conf_line);
+static integer  vwn_isgga(void) { return 0; }
+static integer  vwn_read(const char* conf_line);
 static real vwn3_energy(const FunDensProp* dp);
 static void vwn3_first(FunFirstFuncDrv *ds,   real factor, const FunDensProp* dp);
 static void vwn3_second(FunSecondFuncDrv *ds, real factor, const FunDensProp* dp);
@@ -150,7 +151,7 @@ Functional VWN3IFunctional = {
 /* IMPLEMENTATION PART */
 #define VWN_ZERO 1e-40
 
-static int
+static integer
 vwn_read(const char* conf_line)
 {
     fun_set_hf_weight(0);
@@ -184,7 +185,7 @@ static const real FOURTHREE   = 1.333333333333333;
    enpot[3]: E'''
 */
 static void
-vwn_en_pot(real* enpot, real rho, int order, const struct vwn_params* p)
+vwn_en_pot(real* enpot, real rho, integer order, const struct vwn_params* p)
 {
     const real
         AI   = p->A,

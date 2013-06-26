@@ -24,6 +24,7 @@
 
 #include <math.h>
 #include <stddef.h>
+#include "general.h"
 
 #define __CVERSION__
 
@@ -34,8 +35,8 @@
 #define SQRT sqrt
 
 /* INTERFACE PART */
-static int pbex_isgga(void) {return 1;}
-static int pbex_read(const char* conf_line);
+static integer pbex_isgga(void) {return 1;}
+static integer pbex_read(const char* conf_line);
 static real pbex_energy(const FunDensProp* dp);
 static void pbex_first(FunFirstFuncDrv *ds, real factor, 
                            const FunDensProp* dp);
@@ -47,7 +48,7 @@ static void pbex_third(FunThirdFuncDrv *ds, real factor,
 static void pbex_fourth(FunFourthFuncDrv *ds, real factor,
                            const FunDensProp* dp);
 
-//static int fun_true(void) { return 1; }
+//static integer fun_true(void) { return 1; }
 Functional PBExFunctional = {
   "pbex",
   pbex_isgga,
@@ -62,7 +63,7 @@ Functional PBExFunctional = {
 };
 
 /* IMPLEMENTATION PART */
-static int
+static integer
 pbex_read(const char* conf_line)
 {
     fun_set_hf_weight(0);
