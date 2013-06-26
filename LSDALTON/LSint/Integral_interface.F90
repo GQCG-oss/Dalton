@@ -33,7 +33,8 @@ MODULE IntegralInterfaceMOD
   use matrix_operations, only: mat_dotproduct, matrix_type, mtype_unres_dense,&
        & mat_daxpy, mat_init, mat_free, mat_write_to_disk, mat_print, mat_zero,&
        & mat_scal, mat_mul, mat_assign, mat_trans, mat_copy, mat_add
-  use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym, mcweeney_purify, util_get_symm_and_antisymm_part_full
+  use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym, mcweeney_purify, &
+                         util_get_symm_and_antisymm_part_full
   use memory_handling, only: mem_alloc, mem_dealloc
 #ifdef VAR_MPI
   use screen_modMPI, only: mpicopy_screen
