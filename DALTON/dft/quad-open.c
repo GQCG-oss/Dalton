@@ -19,7 +19,7 @@
 
 
 void FSYM(deq27)(const real* cmo, const real* ubo, const real* dv,
-                 real* dxcao, real* dxvao, real* wrk, int* lfrsav);
+                 real* dxcao, real* dxvao, real* wrk, integer* lfrsav);
 int isetksymop_(const integer *new_ksymop);
 
 typedef struct {

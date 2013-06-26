@@ -48,11 +48,16 @@ C  inftab.h : LUPROP
 #include "priunit.h"
 #include "codata.h" 
 #include "gnrinf.h"
-#include "maxorb.h" !MXCORB for symmet
-#include "maxaqn.h" !MXQN for symmet
-#include "mxcent.h" !MXCENT for symmet
-#include "symmet.h" !ISYMAX
-#include "infvar.h" !NCONF
+#include "maxorb.h"
+C MXCORB for symmet
+#include "maxaqn.h"
+C MXQN for symmet
+#include "mxcent.h"
+C MXCENT for symmet
+#include "symmet.h"
+C ISYMAX
+#include "infvar.h"
+C NCONF
 #include "abslrs.h"
 #include "absorp.h"
 #include "inforb.h"
