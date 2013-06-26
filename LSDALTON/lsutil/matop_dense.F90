@@ -97,11 +97,12 @@ module matrix_operations_dense
 !!     call mkl_domatcopy('R', 'T', A%nrow, A%ncol, 1.0E0_realk, A%elms, 1, B%elms,1)
 !!#else
 !     call ls_transpose(A%elms,B%elms,A%nrow)
-     do j = 1,a%ncol
-       do i = 1,a%nrow
-         b%elms(b%nrow*(i-1)+j) = a%elms(a%nrow*(j-1)+i)
-       enddo
-     enddo
+     call mat_transpose(a%nrow,a%ncol,1.0E0_realk,a%elms,0.0E0_realk,b%elms)
+     !do j = 1,a%ncol
+     !  do i = 1,a%nrow
+     !    b%elms(b%nrow*(i-1)+j) = a%elms(a%nrow*(j-1)+i)
+     !  enddo
+     !enddo
 !!#endif
   end subroutine mat_dense_trans
 
