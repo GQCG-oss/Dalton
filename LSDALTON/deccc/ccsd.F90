@@ -2418,7 +2418,7 @@ contains
     max_wait_time = wait_time
 
 
-!#ifdef VAR_LSDEBUG
+#ifdef VAR_LSDEBUG
     if(print_debug)write(*,'("--rank",I2,", load: ",I5,", w-time:",f15.4)') infpar%mynum,myload,wait_time
     call lsmpi_local_reduction(wait_time,infpar%master)
     call lsmpi_local_max(max_wait_time,infpar%master)
@@ -2426,7 +2426,7 @@ contains
       write(*,'("----------------------------------------------------------")')
       write(*,'("sum: ",f15.4," 0: ",f15.4," Max: ",f15.4)') wait_time,wait_time/(infpar%nodtot*1.0E0_realk),max_wait_time
     endif
-!#endif
+#endif
     if (master) call LSTIMER('CCSD part B',time_start,timewall_start,DECinfo%output)
     startt=MPI_wtime()
     if(infpar%lg_nodtot>1.or.scheme==3) then
@@ -2517,8 +2517,8 @@ contains
     !reorder integral for use within the solver and the c and d terms
     if(iter==1.and.(scheme==4.or.scheme==0))then
       call array_reorder_4d(1.0E0_realk,govov%elm1,no,no,nv,nv,[1,4,2,3],0.0E0_realk,w1)
-      !call my_dcopy8(o2v2,omega2%elm1,1,w1,1)
-      w1(1:o2v2)=omega2%elm1(1:o2v2)
+      !call my_dcopy8(o2v2,w1,1,govov%elm1,1)
+      govov%elm1(1:o2v2) = w1(1:o2v2)
 #ifdef VAR_MPI
       if(DECinfo%solver_par)then
         govov%atype     = TILED_DIST

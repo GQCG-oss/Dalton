@@ -10,6 +10,7 @@
 module matrix_operations_dense
   use memory_handling
   use matrix_module
+  use reorder_frontend_module
   contains
 !> \brief See mat_init in mat-operations.f90
   subroutine mat_dense_init(A,nrow,ncol)

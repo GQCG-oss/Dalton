@@ -26,36 +26,6 @@ add_library(
 
 target_link_libraries(matrixmlib lsutillib_precision)
 
-add_library(
-    lsutillib_common
-    ${LSUTIL_COMMON_SOURCES}
-    )
-
-target_link_libraries(lsutillib_common matrixmlib)
-
-add_library(
-    matrixolib
-    ${LSUTIL_MATRIXO_SOURCES}
-    ${LSUTIL_MATRIXO_C_SOURCES}
-    )
-
-target_link_libraries(matrixolib lsutillib_common)
-
-add_library(
-    matrixulib
-    ${LSUTIL_MATRIXU_SOURCES}
-    )
-
-target_link_libraries(matrixulib matrixolib)
-
-add_library(
-    pdpacklib
-    ${LSDALTON_FIXED_FORTRAN_SOURCES}
-    )
-
-target_link_libraries(pdpacklib matrixulib)
-
-
 # automatially generate the manual_reorderdings.F90
 set(MANUAL_REORDERING_SOURCES
     ${CMAKE_BINARY_DIR}/manual_reordering/reorder_frontend.F90
@@ -87,12 +57,43 @@ add_custom_target(
 unset(LIST_OF_DEFINITIONS)
 
 add_library(
-    lsutiltypelib_common
+    lsutillib_common
     ${MANUAL_REORDERING_SOURCES}
+    ${LSUTIL_COMMON_SOURCES}
+    )
+add_dependencies(lsutillib_common generate_man_reord)
+
+target_link_libraries(lsutillib_common matrixmlib)
+
+add_library(
+    matrixolib
+    ${LSUTIL_MATRIXO_SOURCES}
+    ${LSUTIL_MATRIXO_C_SOURCES}
+    )
+
+target_link_libraries(matrixolib lsutillib_common)
+
+add_library(
+    matrixulib
+    ${LSUTIL_MATRIXU_SOURCES}
+    )
+
+target_link_libraries(matrixulib matrixolib)
+
+add_library(
+    pdpacklib
+    ${LSDALTON_FIXED_FORTRAN_SOURCES}
+    )
+
+target_link_libraries(pdpacklib matrixulib)
+
+
+
+add_library(
+    lsutiltypelib_common
     ${LSUTIL_TYPE_SOURCES}
     )
 
-add_dependencies(lsutiltypelib_common generate_man_reord)
 
 target_link_libraries(lsutiltypelib_common pdpacklib)
 
