@@ -615,7 +615,7 @@ get_product_simple_prims(DistributionSpecStruct* primA,
   integer poly0degree, poly1degree, poly2degree;
   polydeg1struct polyDeg1;
   real* poly;
-  int* degreePtr;
+  integer* degreePtr;
 
   for(k = 0; k < 3; k++)
     {
