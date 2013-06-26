@@ -193,9 +193,9 @@ typedef struct
 {
   DensitySpecStruct density;
   integer noOfNonzeroDistributions;
-  int* nonZeroDistrIndexList;
+  integer* nonZeroDistrIndexList;
   integer noOfNonzeroShells;
-  int* nonZeroShellsIndexList;
+  integer* nonZeroShellsIndexList;
   real maxerrorPerBox;
 } compute_grid_for_box_params_struct;
 
@@ -215,7 +215,7 @@ typedef struct
     pthread_mutex_t* jobMutex;
     pthread_t thread;
 #endif
-    int* currJobNumber;
+    integer* currJobNumber;
       integer noOfPoints;         /* OUTPUT */
       integer noOfWrittenBatches; /* OUTPUT */
       real integralResult;    /* OUTPUT */
@@ -514,7 +514,7 @@ dftcartesianinput_(const char *line, integer line_len)
 {
 #define MAX_BYTES 222
   integer inperr;
-  int* inperrPtr = &inperr;
+  integer* inperrPtr = &inperr;
   char *endPtr, *p;
   char line2[MAX_BYTES];
 
@@ -608,9 +608,9 @@ static real
 compute_value_at_point(
 		       DensitySpecStruct* density,
 		       integer noOfNonzeroShells,
-		       int* nonZeroShellsIndexList,
+		       integer* nonZeroShellsIndexList,
 		       integer noOfNonzeroBasFuncs,
-		       int* nonZeroBasFuncsIndexList,
+		       integer* nonZeroBasFuncsIndexList,
 		       real (*coor)[3],
 		       real* workList)
 {
@@ -747,9 +747,9 @@ static real
 compute_integral_from_points(
 			     DensitySpecStruct* density,
 			     integer noOfNonzeroShells,
-			     int* nonZeroShellsIndexList,
+			     integer* nonZeroShellsIndexList,
 			     integer noOfNonzeroBasFuncs,
-			     int* nonZeroBasFuncsIndexList,
+			     integer* nonZeroBasFuncsIndexList,
 			     integer nPoints,
 			     real (*coor)[3],
 			     real* weight,
@@ -1051,7 +1051,7 @@ compute_integral_over_box(DistributionSpecStruct* distr, BoxStruct* box)
 
 
 static integer 
-get_distrs_for_box(int* resultList, rhoTreeNode* node, BoxStruct* inputBoxPtr)
+get_distrs_for_box(integer* resultList, rhoTreeNode* node, BoxStruct* inputBoxPtr)
 {
 #define MAX_DEPTH 888
   integer n, i, overlap, currDepth;
@@ -1615,7 +1615,7 @@ BuildRhoTreeBranch(integer noOfDistributionsTot,
 		   DistributionSpecStruct* rho_alt_1,
 		   ShellSpecStruct* rho_alt_2,
 		   integer distrIndexListN, 
-		   int* distrIndexList,
+		   integer* distrIndexList,
 		   real targetRhoError)
 {
   rhoTreeNode* newNode;
@@ -1624,7 +1624,7 @@ BuildRhoTreeBranch(integer noOfDistributionsTot,
   real currCoord, currDiff, maxDiff, limit, extent1, extent2, testCoord;
   rhoTreeNode* child1;
   rhoTreeNode* child2;
-  int* tempList;
+  integer* tempList;
   integer tempInt;
 
   if(distrIndexListN < 1)
@@ -1852,7 +1852,7 @@ BuildRhoTree(integer noOfDistributions,
 	     real targetRhoError)
 {
   rhoTreeNode* rootNode;
-  int* distrIndexList;
+  integer* distrIndexList;
   integer i;
   real targetError, arg, r1;
   DistributionSpecStruct* distr;
@@ -1939,11 +1939,11 @@ compute_grid_thread_func(void* arg)
   real* coorz;
   integer noOfShells, noOfDistributions;
   integer noOfNonzeroShells;
-  int* nonZeroShellIndexList;
+  integer* nonZeroShellIndexList;
   integer noOfNonzeroDistributions;
-  int* nonZeroDistrIndexList;
+  integer* nonZeroDistrIndexList;
   integer currShellNo, prevShellNo, tempInt;
-  int* listShlblocks;
+  integer* listShlblocks;
   compute_grid_for_box_params_struct paramsStruct;
   real* workList;
   real totalIntegralResult;
@@ -1956,7 +1956,7 @@ compute_grid_thread_func(void* arg)
   compute_grid_thread_func_struct* inputParams;
   rhoTreeNode* rhoTreeRootNode;
   rhoTreeNode* rhoTreeRootNodeShells;
-  int* tempList;
+  integer* tempList;
   integer i, j, k, m, ii, jj, kk;
   integer Nx, Ny, Nz;
   integer nFunctions, count, nPoints, nblocks, blockStarted;
@@ -2282,11 +2282,11 @@ do_test_integration(DensitySpecStruct* density, char* gridFileName)
   real* coory;
   real* coorz;
   integer noOfNonzeroShells;
-  int* nonZeroShellIndexList;
+  integer* nonZeroShellIndexList;
   integer noOfNonzeroDistributions;
-  int* nonZeroDistrIndexList;
+  integer* nonZeroDistrIndexList;
   integer finished, currIndex;
-  int* listShlblocks;
+  integer* listShlblocks;
   real* workList;
   integer nRepeats, repeatNo;
   real testIntegralResult;
@@ -2979,7 +2979,7 @@ get_no_of_primitives_for_density(real cutoff,
 static integer
 get_density(DistributionSpecStruct** rhoPtr,
 	    integer maxCountShellList,
-	    int* noOfShellsReturn,
+	    integer* noOfShellsReturn,
 	    real cutoffInp, 
 	    real targetRhoError,
 	    integer nbast, 
@@ -2999,7 +2999,7 @@ get_density(DistributionSpecStruct** rhoPtr,
   real sqrtValue;
   integer sameYesNo, firstIndex, count, withinLimit, resultCount;
   real coeffSum;
-  int* markList;
+  integer* markList;
   integer symmetryFactor;
   integer nBasisFuncs, nn, nNeededForRho;
   BasisInfoStruct basisInfo;
