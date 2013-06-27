@@ -152,6 +152,9 @@ hfsrpbe_sym mp2srpbe_ener_nosym energy_NEVPT2sr rsdhf_he2 cisrlda-sirius_n2 cisr
 #SRDFT="cisrlda-sirius_n2"
 #SRDFT="cisrpbe-lucita_be"
 #
+RSDH="mp2srlda_ener_nosym mp2srpbe_ener_nosym rsdhf_he2 \
+rsdhf_SRLDA_S_he2 rsdhf_gws_he2"
+#
 DPT="dpt_hf dpt_h2s dpt_h2s_finp dpt_hbr_finm dpt_h2s_finm \
 dpt_hbr dpt_hbr_finp dpt_h2s_ff"
 #
@@ -241,6 +244,7 @@ Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
           perl                 -- run all perl-style testcases 
           dft                  -- run all DFT testcases
           srdft                -- run all srDFT testcases
+          rsdh                 -- run all RSDH  testcases
           allcc                -- run all coupled-cluster testcases
           r12                  -- run all R12 testcases
           ccr12                -- run all CC-R12 testcases
@@ -455,6 +459,10 @@ while [ -n "$1" ]; do
   "srdft" )
    perl_style_kwd="$perl_style_kwd $1";
    testcase="$testcase $SRDFT"; 
+   shift ;;
+  "rsdh" )
+   perl_style_kwd="$perl_style_kwd $1";
+   testcase="$testcase $RSDH"; 
    shift ;;
   "dpt" )
    testcase="$testcase $DPT"; 
