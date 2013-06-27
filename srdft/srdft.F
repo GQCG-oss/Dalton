@@ -182,6 +182,7 @@ C
 
 C      print *,'DOSRX_PBERI = ',DOSRX_PBERI  ! Manu
 C      print *,'DOSRX_PBEHSE = ',DOSRX_PBEHSE  ! Manu
+       write(lupri,*),'SRXFUN = ', SRXFUN  ! Manu
 
       IF (.NOT.SETXFUN) THEN
           WRITE(LUPRI,'(/2A/,A/)')
@@ -487,6 +488,8 @@ C     =============================
 #endif
 
 C JT 15-02-05 beg
+      write(lupri,*) 'calling srdft1jt ? ISJT =', ISJT
+
       IF(ISJT) THEN
         CALL SRDFT1JT(ND_SIM,EXCMAT,EDFTY,DMAT,DOLND,WORK(KX),WORK(KY),
      &            WORK(KZ),WORK(KW),NBUF,WORK(KGSO),WORK(KCNT),
