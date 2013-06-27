@@ -22,7 +22,7 @@ cd $TMP_DIR/build
 #make depend
 #make Nightly
 #make -j3
-ctest -D Nightly -L lsdalton -j3
+ctest -D Nightly -L linsca -j3
 
 exit 0
 
