@@ -3335,6 +3335,7 @@ c               not sure, here
           end do
         end do
       else
+        k = 1
         do i = 1, khktab
           do j = 1, khktcd
             s=aoint(1,i,j,k)+aoint(1,i,j,k+3)+
