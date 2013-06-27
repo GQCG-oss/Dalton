@@ -581,6 +581,24 @@ cLig <<
          JMAXM  = 1
          DONUC1 = .TRUE.
          DOMOM1 = .FALSE.
+C copied from linsca abacus/her1int.F, Bin Gao, December 17, 2009
+Cdj contributions to magnetic 2nd derivative of overlap
+Cdj integrals types 104 bra diff. 105 ket diff. 106 mixed bra-ket diff.
+      ELSE IF (INTTYP .EQ.104) THEN
+         JMAXD = 0
+         JMAXM = 2
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.105) THEN
+         JMAXD = 0
+         JMAXM = 2
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
+      ELSE IF (INTTYP .EQ.106) THEN
+         JMAXD = 0
+         JMAXM = 2
+         DONUC1= .FALSE.
+         DOMOM1 = .TRUE.
       ELSE
          WRITE(LUPRI,*) 'PR1DR1 - Unknown INTTYP : ',INTTYP
          CALL QUIT('PR1DR1: Unknown INTTYP')
@@ -1193,6 +1211,11 @@ C
                CALL EFGTRA(SHLINT,EXPVAL,FACINT,JSYMC,JCENTC,NATOMC,
      &                     ISYMOP,1,NOPTYP,ANTI,INTADR,EXP1EL,
      &                     DENMAT,MULTA,MULTB,IPRINT)
+            ELSE IF (INTTYP .EQ. 52) THEN
+C            CALL DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
+C     &                  INTADR,IPRINT)
+               CALL DPGTRA(SHLINT,EXPVAL,ISYMOP,1,NOPTYP,ANTI,
+     &                  INTADR,EXP1EL,DENMAT,MULTA,MULTB,IPRINT)
             ELSE
                DO ICOMP = 1, NOPTYP
                   ICOUNT = 0
@@ -1258,8 +1281,10 @@ cLig <> added the call to NSSTRA for INTTYP = 82
             CALL NPETRA(SHLINT,SOINT,FACINT,JSYMC,JCENTC,NATOMC,ISYMOP,
      &                  NELMNT,NOPTYP,ANTI,INTADR,IPRINT)
          ELSE IF (INTTYP .EQ. 52) THEN
-            CALL DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
-     &                  INTADR,IPRINT)
+c            CALL DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
+c     &                  INTADR,IPRINT)
+               CALL DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
+     &                  INTADR,EXP1EL,DUMMY,MULTA,MULTB,IPRINT)
          ELSE IF (INTTYP .EQ. 53) THEN
             CALL QUGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
      &                  INTADR,IPRINT)
@@ -2262,6 +2287,38 @@ C
      &                     SHGTF,SHLINT(1,19))
 C
             END IF
+C
+C copied from linsca abacus/her1int.F, Bin Gao, December 17, 2009
+C        Second order magnetic derivatives of overlap matrix
+C        ---------------------------------------------------
+Cdj bra part
+         ELSE IF (INTTYP .EQ. 104) THEN
+            DIFAOX = CORAX - GAGORG(1)
+            DIFAOY = CORAY - GAGORG(2)
+            DIFAOZ = CORAZ - GAGORG(3)
+            CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  EXPPI,DIFAOX,DIFAOY,DIFAOZ)
+Cdj ket part
+         ELSE IF (INTTYP .EQ. 105) THEN
+            DIFOBX = GAGORG(1) - CORBX
+            DIFOBY = GAGORG(2) - CORBY
+            DIFOBZ = GAGORG(3) - CORBZ
+            CALL SM2INT(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  EXPPI,DIFOBX,DIFOBY,DIFOBZ)
+Cdj mixed bra-ket part
+         ELSE IF (INTTYP .EQ. 106) THEN
+c            CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+c     &                  EXPPI,DIFABX,DIFABY,DIFABZ,DIFABX,DIFABY,DIFABZ)
+            DIFAOX = CORAX - GAGORG(1)
+            DIFAOY = CORAY - GAGORG(2)
+            DIFAOZ = CORAZ - GAGORG(3)
+            DIFOBX = GAGORG(1) - CORBX
+            DIFOBY = GAGORG(2) - CORBY
+            DIFOBZ = GAGORG(3) - CORBZ
+            CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  EXPPI,DIFAOX,DIFAOY,DIFAOZ,DIFOBX,DIFOBY,DIFOBZ)
+c            CALL SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+c     &                  EXPPI,DIFOBX,DIFOBY,DIFOBZ,DIFAOX,DIFAOY,DIFAOZ)
          END IF
   200 CONTINUE
   100 CONTINUE
@@ -3178,6 +3235,82 @@ C
          SHLINT(INT,1) = SHLINT(INT,1) - D2I*(DIFABY*DPLZ - DIFABZ*DPLY)
          SHLINT(INT,2) = SHLINT(INT,2) - D2I*(DIFABZ*DPLX - DIFABX*DPLZ)
          SHLINT(INT,3) = SHLINT(INT,3) - D2I*(DIFABX*DPLY - DIFABY*DPLX)
+ 100  CONTINUE
+      RETURN
+      END
+C copied from linsca abacus/her1int.F, Bin Gao, December 17, 2009
+C  /* Deck sm2bin */
+      SUBROUTINE SM2BIN(ODC,JMAXA,JMAXB,JMAXT,JMAXD,JMAXM,SHGTF,SHLINT,
+     &                  EXPPI,DIFAX,DIFAY,DIFAZ,DIFBX,DIFBY,DIFBZ)
+C
+C     dj oct 08, based on SM2INT
+C
+#include <implicit.h>
+#include <priunit.h>
+#include <maxaqn.h>
+      PARAMETER (D0 = 0.0D0, D2 = 2.0D0, D4INV = 0.25D0)
+      DIMENSION SHLINT(KCKTAB,9)
+      DIMENSION ODC(0:JMAXA,0:JMAXB,0:JMAXT,0:JMAXD,0:JMAXM,3)
+#include <onecom.h>
+#include <lmns.h>
+      INT = 0
+      DO 100 ICOMPA = 1, KCKTA
+         LVALA = LVALUA(ICOMPA)
+         MVALA = MVALUA(ICOMPA)
+         NVALA = NVALUA(ICOMPA)
+      DO 100 ICOMPB = 1,KCKTB
+         LVALB = LVALUB(ICOMPB)
+         MVALB = MVALUB(ICOMPB)
+         NVALB = NVALUB(ICOMPB)
+C
+         INT = INT + 1
+C
+         SX0 = SHGTF*ODC(LVALA,LVALB,0,0,0,1)
+         SY0 = SHGTF*ODC(MVALA,MVALB,0,0,0,2)
+         SZ0 = SHGTF*ODC(NVALA,NVALB,0,0,0,3)
+         DX1 = SHGTF*ODC(LVALA,LVALB,0,0,1,1)
+         DY1 = SHGTF*ODC(MVALA,MVALB,0,0,1,2)
+         DZ1 = SHGTF*ODC(NVALA,NVALB,0,0,1,3)
+         DX2 = SHGTF*ODC(LVALA,LVALB,0,0,2,1)
+         DY2 = SHGTF*ODC(MVALA,MVALB,0,0,2,2)
+         DZ2 = SHGTF*ODC(NVALA,NVALB,0,0,2,3)
+C
+         SHLINT(INT,1) = SHLINT(INT,1) - (DIFAZ*DIFBY*SX0*DY1*DZ1 +
+     &                   DIFAY*DIFBZ*SX0*DY1*DZ1 -
+     &                   DIFAZ*DIFBZ*SX0*DY2*SZ0 -
+     &                   DIFAY*DIFBY*SX0*SY0*DZ2)*D4INV
+         SHLINT(INT,2) = SHLINT(INT,2) - (DIFAZ*DIFBZ*DX1*DY1*SZ0 -
+     &                   DIFAY*DIFBZ*DX1*SY0*DZ1 -
+     &                   DIFAZ*DIFBX*SX0*DY1*DZ1 +
+     &                   DIFAY*DIFBX*SX0*SY0*DZ2)*D4INV
+         SHLINT(INT,3) = SHLINT(INT,3) - (DIFAY*DIFBY*DX1*SY0*DZ1 -
+     &                   DIFAY*DIFBX*SX0*DY1*DZ1 +
+     &                   DIFAZ*DIFBX*DY2*SX0*SZ0 -
+     &                   DIFAZ*DIFBY*DX1*DY1*SZ0)*D4INV
+         SHLINT(INT,4) = SHLINT(INT,4) - (DIFAZ*DIFBZ*DX1*DY1*SZ0 -
+     &                   DIFAZ*DIFBY*DX1*SY0*DZ1 -
+     &                   DIFAX*DIFBZ*SX0*DY1*DZ1 +
+     &                   DIFAX*DIFBY*SX0*SY0*DZ2)*D4INV
+         SHLINT(INT,5) = SHLINT(INT,5) - (DIFAZ*DIFBX*DX1*SY0*DZ1 +
+     &                   DIFAX*DIFBZ*DX1*SY0*DZ1 -
+     &                   DIFAZ*DIFBZ*DX2*SY0*SZ0 -
+     &                   DIFAX*DIFBX*SX0*SY0*DZ2)*D4INV
+         SHLINT(INT,6) = SHLINT(INT,6) - (DIFAZ*DIFBY*DX2*SY0*SZ0 -
+     &                   DIFAZ*DIFBX*DX1*DY1*SZ0 -
+     &                   DIFAX*DIFBY*DX1*DZ1*SY0 +
+     &                   DIFAX*DIFBX*DY1*DZ1*SX0)*D4INV
+         SHLINT(INT,7) = SHLINT(INT,7) - (DIFAY*DIFBY*DX1*SY0*DZ1 -
+     &                   DIFAX*DIFBY*SX0*DY1*DZ1 +
+     &                   DIFAX*DIFBZ*SX0*DY2*SZ0 -
+     &                   DIFAY*DIFBZ*DX1*DY1*SZ0)*D4INV
+         SHLINT(INT,8) = SHLINT(INT,8) - (DIFAY*DIFBZ*DX2*SY0*SZ0 -
+     &                   DIFAX*DIFBZ*DX1*DY1*SZ0 -
+     &                   DIFAY*DIFBX*DX1*SY0*DZ1 +
+     &                   DIFAX*DIFBX*SX0*DY1*DZ1)*D4INV
+         SHLINT(INT,9) = SHLINT(INT,9) - (DIFAX*DIFBY*DX1*DY1*SZ0 +
+     &                   DIFAY*DIFBX*DX1*DY1*SZ0 -
+     &                   DIFAY*DIFBY*DX2*SY0*SZ0 -
+     &                   DIFAX*DIFBX*SX0*DY2*SZ0)*D4INV
  100  CONTINUE
       RETURN
       END
@@ -6235,21 +6368,21 @@ C  /* Deck hdbtra */
       RETURN
       END
 C  /* Deck dpgtra */
-      SUBROUTINE DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
-     &                  INTADR,IPRINT)
-#include "implicit.h"
-#include "dummy.h"
-#include "maxaqn.h"
-#include "maxmom.h"
-#include "mxcent.h"
-#include "maxorb.h"
+       SUBROUTINE DPGTRA(SHLINT,SOINT,ISYMOP,NELMNT,NOPTYP,ANTI,
+     &                  INTADR,EXP1EL,DMAT,MULTA,MULTB,IPRINT)
+#include <implicit.h>
+#include <dummy.h>
+#include <maxaqn.h>
+#include <maxmom.h>
+#include <mxcent.h>
+#include <maxorb.h>
       INTEGER B, X
-      LOGICAL FULMAT, ANTI
+      LOGICAL FULMAT, ANTI, EXP1EL
       DIMENSION SHLINT(KCKTAB,18), SOINT(NELMNT,NOPTYP),
-     &          INTADR(*)
-#include "onecom.h"
-#include "symmet.h"
-#include "ibtfun.h"
+     &     INTADR(*), DMAT(*)
+#include <onecom.h>
+#include <symmet.h>
+#include <ibtfun.h>
       FULMAT = .TRUE.
       ICOMP = 0
 
@@ -6274,7 +6407,11 @@ C                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
 C     &                         *PT(IBTAND(IREP,ISYMOP))
 ckr                  FACSYM = HKAB
                   FACSYM = HKAB
-                  IF (IREPO .EQ. 0) THEN
+                  IF (EXP1EL) THEN
+                     IF (IREPO .EQ. 0) CALL SYM1EV(SHLINT(1,ICOMP),DMAT,
+     &                                      SOINT(1,ITYP),FACSYM,
+     &                                      MULTA,MULTB,IPRINT)
+                  ELSE IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP),SOINT(1,ITYP),ISYMOP,
      &                          MULA,MULB,NHKTA,NHKTB,KHKTA,KHKTB,
      &                          FACSYM,LDIAG,FULMAT,DUM,IDUM,IPRINT)
@@ -6294,7 +6431,11 @@ C                  FACSYM = HKAB*PT(IBTAND(IREPC,ISYMOP))
 C    &                          *PT(IBTAND(IREP,ISYMOP))
                    FACSYM = HKAB*PT(IBTAND(ISYMAX(X,1),ISYMOP))
      &                          *PT(IBTAND(IREP,ISYMOP))
-                  IF (IREPO .EQ. 0) THEN
+                  IF (EXP1EL) THEN
+                     IF (IREPO .EQ. 0) CALL SYM1EV(SHLINT(1,ICOMP+9),
+     &                                      DMAT,SOINT(1,ITYP),FACSYM,
+     &                                      MULTA,MULTB,IPRINT)
+                  ELSE IF (IREPO .EQ. 0) THEN
                      CALL SYM1S(SHLINT(1,ICOMP + 9),SOINT(1,ITYP),
      &                          ISYMOP,MULA,MULB,NHKTA,NHKTB,KHKTA,
      &                          KHKTB,FACSYM,LDIAG,FULMAT,DUM,IDUM,

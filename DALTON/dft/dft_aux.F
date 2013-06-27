@@ -362,6 +362,14 @@ c
 !     print *, 'done with sync mytid',mytid
       END
 #endif
+C Bin Gao, December 10, 2009
+C copied from linsca, dft/dft_aux.F
+      FUNCTION DO_DFT()
+#include <implicit.h>
+#include <dftcom.h>
+      LOGICAL DO_DFT
+      DO_DFT = DFTADD
+      END
       SUBROUTINE GETSHELLSCNT(nshells)
 #include "implicit.h"
 #include "maxorb.h"

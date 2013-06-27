@@ -1276,6 +1276,7 @@ C
 #include "infpar.h"
 #include "inftap.h"
 #include "krcom.h"
+#include "wavpcm.h"
 C
       CHARACTER*7 INTLAB
       CHARACTER*8 LABINT(9*MXCENT)
@@ -1298,6 +1299,12 @@ C
          IPRTYP = PCMBSOL_WORK
          NCOMP  = 3
          TRIMAT = .FALSE.
+      ELSE IF (INTLAB .EQ. 'NPETES2') THEN
+         MATDIM = N2BASX
+         IPRTYP = 11
+         NCOMP  = 1
+         TRIMAT = .FALSE.
+         INTLAB = 'NPETES '
       ELSE
          MATDIM = NNBASX
          IPRTYP = NPETES2_WORK
@@ -1339,7 +1346,7 @@ C
          LWRK = LWORK - KLAST
       END IF
 #if defined (VAR_MPI)
-      IF (NODTOT .GE. 1) THEN
+      IF (NODTOT .GE. 1 .AND. .NOT. WAVPCM) THEN
          CALL J1INTP(NBAST,NOSIM,KSYMP,WORK(KDEN),EXP1VL,EXPVAL,TOFILE,
      &               IPRTYP,MATDIM,WORK(KLAST),LWRK)
          IF (.NOT. EXP1VL) CALL DAXPY(MATDIM*NOSIM,1.0D0,WORK(KDEN),1,

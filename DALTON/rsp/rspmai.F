@@ -1677,7 +1677,7 @@ C
      *      ,EPSOL
          END IF
 
-         IF (QM3 .OR. QMMM) THEN
+         IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
             IF (.NOT. SOPRPA .AND. SOPPA) THEN
                WRITE (LUPRI,*)
@@ -2251,6 +2251,10 @@ C
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
+         
+         IF (QMNPMM) THEN
+             WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
+         END IF    
 
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
@@ -4084,6 +4088,8 @@ C CBN+JK 03.01.06
 C--------------------
 #include "gnrinf.h"
 #include "qm3.h"
+#include "mxcent.h"
+#include "wavpcm.h"
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -4320,6 +4326,10 @@ C
         DO I = 1,NNORBT
            FC(I) = FC(I) + WRK(I)
         ENDDO
+      ELSE IF (WAVPCM) THEN
+         DO I = 1,NNORBT
+            FC(I) = FC(I) + WAVFCK(I)
+         ENDDO
       END IF
 C
       IF (SOPPA) THEN

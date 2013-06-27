@@ -162,7 +162,9 @@ Cbm initialized PCMSV
       PCMSV   = PCM
 c     WRITE(LUPRI,*)'INIZIALIZZO PCMSV',PCMSV
 c     IF (PCM) WRITE(LUPRI,*) ' CHIAMA SOLVNT'
-      IF (PCM) CALL PCMSOLVNT(WORK,LWORK)
+      IF (PCM) THEN
+         CALL PCMSOLVNT(WORK,LWORK)
+      END IF
 C
 C
 C ***************************************************
