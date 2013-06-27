@@ -5311,13 +5311,15 @@ contains
 #endif
   end subroutine lsmpi_win_fence_special
 
-  subroutine lsmpi_win_lock(dest,win,typeoflock)
+  subroutine lsmpi_win_lock(dest,win,typeoflock,ass)
     implicit none
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in),optional :: ass
     character, intent(in) :: typeoflock
     integer(kind=ls_mpik) :: ierr, assert
     assert = 0
+    if(present(ass))assert=ass
     ierr = 0
 #ifdef VAR_MPI   
     if(typeoflock=='e')then

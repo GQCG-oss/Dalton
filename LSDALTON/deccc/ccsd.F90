@@ -1939,13 +1939,17 @@ contains
 #endif
       if(scheme==4)then
 #ifdef VAR_MPI
-        call mem_alloc(gvoov,gvoov_c,int(no2*nv2,kind=long))
-        call mem_alloc(gvvoo,gvvoo_c,int(no2*nv2,kind=long))
-        call lsmpi_win_create(gvoov,gvoov_w,int(no2*nv2,kind=long),infpar%lg_comm)
-        call lsmpi_win_create(gvvoo,gvvoo_w,int(no2*nv2,kind=long),infpar%lg_comm)
+        call mem_alloc(gvoov,gvoov_c,o2v2)
+        call mem_alloc(gvvoo,gvvoo_c,o2v2)
+        call lsmpi_win_create(gvoov,gvoov_w,o2v2,infpar%lg_comm)
+        call lsmpi_win_create(gvvoo,gvvoo_w,o2v2,infpar%lg_comm)
+        !do nctr=0,nnod-1
+        !  call lsmpi_win_lock(nctr,gvoov_w,'s')!,MPI_MODE_NOCHECK)
+        !  call lsmpi_win_lock(nctr,gvvoo_w,'s')!,MPI_MODE_NOCHECK)
+        !enddo
 #else
-        call mem_alloc(gvoov,no2*nv2)
-        call mem_alloc(gvvoo,no2*nv2)
+        call mem_alloc(gvoov,o2v2)
+        call mem_alloc(gvvoo,o2v2)
 #endif
         gvoov=0.0E0_realk
         gvvoo=0.0E0_realk
@@ -1957,6 +1961,10 @@ contains
         gvoov_r=0.0E0_realk
         call lsmpi_win_create(gvoov_r,gvoov_w,int(nintel,kind=long),infpar%lg_comm)
         call lsmpi_win_create(gvvoo_r,gvvoo_w,int(nintel,kind=long),infpar%lg_comm)
+        !do nctr=0,nnod-1
+        !  call lsmpi_win_lock(nctr,gvoov_w,'e',MPI_MODE_NOCHECK)
+        !  call lsmpi_win_lock(nctr,gvvoo_w,'e',MPI_MODE_NOCHECK)
+        !enddo
 #else
         call mem_alloc(gvoov,int(no2*nv2,kind=long))
         call mem_alloc(gvvoo,int(no2*nv2,kind=long))
@@ -1983,7 +1991,7 @@ contains
     if(scheme==4.or.scheme==3) maxsize64 = max(maxsize64,int(o2v*MaxActualDimAlpha,kind=8))
     call mem_alloc(w1,maxsize64)
 
-    maxsize64 = max(int(nb*nb*MaxActualDimAlpha*MaxActualDimGamma,kind=8),int(nv2*no2,kind=8))
+    maxsize64 = max(int(nb*nb*MaxActualDimAlpha*MaxActualDimGamma,kind=8),o2v2)
     maxsize64 = max(maxsize64,int(nor*no2,kind=8))
     call mem_alloc(w2,maxsize64)
 
@@ -2184,8 +2192,11 @@ contains
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,1.0E0_realk,gvvoo,nv)
         elseif(scheme==3)then
 #ifdef VAR_MPI
+          do nctr=0,nnod-1
+            call lsmpi_win_lock(nctr,gvvoo_w,'s')!,MPI_MODE_NOCHECK)
+          enddo
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,0.0E0_realk,w2,nv)
-          call dist_int_contributions(w2,int(no2*nv2,kind=long),gvvoo_w)
+          call dist_int_contributions(w2,o2v2,gvvoo_w,.false.)
 #else
           call lsquit("ERROR(ccsd_integral_driven):this should never appear gvvoo_w",-1)
 #endif
@@ -2203,7 +2214,15 @@ contains
        call dgemm('n','n',la,no,nv*no*lg,1.0E0_realk,w3,la,uigcj,nv*no*lg,1.0E0_realk,Gbi(fa),nb)
        call lsmpi_poke()
        
-       
+#ifdef VAR_MPI
+       if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2)) then
+         if(scheme==3)then
+           do nctr=0,nnod-1
+             call lsmpi_win_unlock(nctr,gvvoo_w)
+           enddo
+         endif
+       endif
+#endif
        !CALCULATE govov FOR ENERGY
        !Reorder I [alpha j gamma b]                      -> I [alpha j b gamma]
        if(iter==1.or.(scheme==4.or.scheme==3.or.scheme==2))&
@@ -2239,7 +2258,10 @@ contains
         elseif(scheme==3)then
 #ifdef VAR_MPI
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1,la,0.0E0_realk,w2,nv)
-          call dist_int_contributions(w2,int(no2*nv2,kind=long),gvoov_w)
+          do nctr=0,nnod-1
+            call lsmpi_win_lock(nctr,gvoov_w,'s')!,MPI_MODE_NOCHECK)
+          enddo
+          call dist_int_contributions(w2,int(no2*nv2,kind=long),gvoov_w,.false.)
 #else
           call lsquit("ERROR(ccsd_integral_driven):this should never appear gvoov_w",-1)
 #endif
@@ -2261,6 +2283,15 @@ contains
        call lsmpi_poke()
        !Mylsitem%setting%scheme%intprint=0
 
+#ifdef VAR_MPI
+       if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2).and.(iter/=1.or.restart)) then
+         if(scheme==3)then
+           do nctr=0,nnod-1
+             call lsmpi_win_unlock(nctr,gvoov_w)
+           enddo
+         endif
+       endif
+#endif
 
       if(DECinfo%ccmodel>2)then
         if(fa<=fg+lg-1)then
@@ -2393,15 +2424,6 @@ contains
            call lsmpi_local_allreduce_chunks(gvvoo,o2v2,double_2G_nel)
            call lsmpi_local_allreduce_chunks(gvoov,o2v2,double_2G_nel)
          elseif(scheme==3)then
-#ifdef VAR_MPIWIN
-           dummy64 = int(no2*nv2,kind=long)
-           call lsmpi_win_fence(gvoov_w,.true.)
-           call collect_int_contributions_f(gvoov,dummy64,gvoov_w)
-           call lsmpi_win_fence(gvoov_w,.false.)
-           call lsmpi_win_fence(gvvoo_w,.true.)
-           call collect_int_contributions_f(gvvoo,dummy64,gvvoo_w)
-           call lsmpi_win_fence(gvvoo_w,.false.)
-#else
            do nctr = 0,infpar%lg_nodtot-1
              call get_int_dist_info(o2v2,fe,ne,nctr)
              rcnt(nctr+1) = ne
@@ -2409,7 +2431,6 @@ contains
            enddo
            call lsmpi_local_allgatherv(gvvoo_r,gvvoo,rcnt,dsp)
            call lsmpi_local_allgatherv(gvoov_r,gvoov,rcnt,dsp)
-#endif
          endif
        endif
     end if
@@ -2425,6 +2446,10 @@ contains
 #endif    
     !free windows and deallocate partial int matrices in scheme 1
     if(DECinfo%ccModel>2.and.(scheme==3.or.scheme==4))then
+      !do nctr=0,nnod-1
+      !  call lsmpi_win_unlock(nctr,gvoov_w)
+      !  call lsmpi_win_unlock(nctr,gvvoo_w)
+      !enddo
       call lsmpi_win_free(gvoov_w)
       call lsmpi_win_free(gvvoo_w)
       if(scheme==3)then
