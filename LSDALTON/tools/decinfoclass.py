@@ -34,6 +34,7 @@ class decinfo_class:
       self.ecorrlag   = []
       self.ecorrtype  = []
       self.esterr     = 0.0
+      self.enable_fragread = False
 
    ####################################
    #DEFINE DEC ANALYSIS OPERATIONS HERE
@@ -45,6 +46,16 @@ class decinfo_class:
       
       if(fragtype=="MP2"):
         self.ecorrtype.append("MP2")
+        self.ecorrocc.append(0.0)
+        self.ecorrvirt.append(0.0)
+        self.ecorrlag.append(0.0)
+      elif(fragtype=="CC2"):
+        self.ecorrtype.append("CC2")
+        self.ecorrocc.append(0.0)
+        self.ecorrvirt.append(0.0)
+        self.ecorrlag.append(0.0)
+      elif(fragtype=="CCD"):
+        self.ecorrtype.append("CCD")
         self.ecorrocc.append(0.0)
         self.ecorrvirt.append(0.0)
         self.ecorrlag.append(0.0)
@@ -119,6 +130,8 @@ class decinfo_class:
             self.ecorrocc[1]  = float(line.split()[-1])
           if("Total CCSD(T) energy contribution       ="  in line):
             self.ecorrocc[2]  = float(line.split()[-1])
+          if("Total CCD correlation energy           ="  in line):
+            self.ecorrocc[1]  = float(line.split()[-1])
 
         #allfound = (found_sf and found_pf and found_nf)
         #if(allfound):
@@ -285,6 +298,37 @@ class decinfo_class:
             #      #  self.pfrags[j].dist      = float(filelines[i+skip+j].split()[eldist])
             #      #  self.pfrags[j].ecorrocc[elpt] += float(filelines[i+skip+j].split()[elenpair])
             #      #  self.pfrags[j].ecorrtype[elpt] = self.ecorrtype[elpt]
+        if(fragtype=="CCD"):
+          skip       = 5
+          skip2      = 6
+          elfragid   = 1
+          elfragpid  = 2
+          elensing   = 2
+          eldist     = 3
+          elenpair   = 4
+          elccd      = 0
+          elpt       = 2
+          #SECOND ROUND GET THE FRAGMENT INFORMATION
+          for i in range(len(filelines)):
+            if("-- Atomic fragment energies (CCD)" in filelines[i]):
+              foundlags = True
+              for j in range(self.sfragjobs):
+                self.sfrags[j].fragid       = int(filelines[i+skip+j].split()[elfragid])
+                self.sfrags[j].ecorrocc[elccd]  = float(filelines[i+skip+j].split()[elensing])
+                self.sfrags[j].ecorrvirt[elccd]  = float(filelines[i+skip+j].split()[elensing])
+                self.sfrags[j].ecorrlag[elccd]  = float(filelines[i+skip+j].split()[elensing])
+                self.sfrags[j].ecorrtype[elccd] = self.ecorrtype[elccd]
+            
+            if("-- Pair interaction energies (CCD)" in filelines[i]):
+              foundlagp = True
+              for j in range(self.pfragjobs):
+                self.pfrags[j].fragid    = int(filelines[i+skip2+j].split()[elfragid])
+                self.pfrags[j].fragpid   = int(filelines[i+skip2+j].split()[elfragpid])
+                self.pfrags[j].dist      = float(filelines[i+skip2+j].split()[eldist])
+                self.pfrags[j].ecorrocc[elccd]  = float(filelines[i+skip2+j].split()[elenpair])
+                self.pfrags[j].ecorrvirt[elccd]  = float(filelines[i+skip2+j].split()[elenpair])
+                self.pfrags[j].ecorrlag[elccd]  = float(filelines[i+skip2+j].split()[elenpair])
+                self.pfrags[j].ecorrtype[elccd] = self.ecorrtype[elccd]
         elif(fragtype=="MP2"):
           skip       = 4
           skip2      = 4

@@ -56,6 +56,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include "general.h"
 
 #define __CVERSION__
 
@@ -161,7 +162,7 @@ quadstrict_data_free(QuadStrictData* tmp)
 }
 
 static __inline__ void
-commute_matrices(real alpha, const real* a, const real* b, real* c, int addp)
+commute_matrices(real alpha, const real* a, const real* b, real* c, integer addp)
 {
     const real* firstpref = addp ? &ONER : &ZEROR;
     dgemm_("N", "N", &inforb_.norbt, &inforb_.norbt, &inforb_.norbt, &alpha, 
@@ -173,7 +174,7 @@ commute_matrices(real alpha, const real* a, const real* b, real* c, int addp)
 
 static real inactive_trace(real *mat)
 {
-   int isym,symoff;
+   integer isym,symoff;
    integer stride;
    real result = 0;
    symoff =0;
@@ -210,27 +211,27 @@ eval_rho_vars(DftGrid *grid, QuadStrictData* d)
 static void
 eval_grad_vars(DftGrid *grid, QuadStrictData* d)
 {
-    int x, stride, norbt2;
+    integer x, stride, norbt2;
 
     norbt2 = inforb_.norbt*inforb_.norbt;
     /* compute grho, one-index grY and grZ and double-index 
      * grYZZY... */
     for(x=0; x<3; x++) {
-	int idx = x*norbt2;
-	dgemm_("N", "N", &inforb_.norbt, &inforb_.norbt, &ONEI, &ONER, 
-	       &grid->mog[x*inforb_.norbt], &inforb_.norbt, 
-	       grid->mov, &ONEI, 
-	       &ZEROR, &d->grho[idx], 
-	       &inforb_.norbt); 
-	dgemm_("N", "N", &inforb_.norbt, &inforb_.norbt, &ONEI, &ONER, 
-	       grid->mov, &inforb_.norbt, 
-	       &grid->mog[x*inforb_.norbt], &ONEI, 
-	       &ONER, &d->grho[idx], 
-	       &inforb_.norbt); 
-	commute_matrices(1.0, d->kappaY, &d->grho[idx], &d->grY[idx], 0);
-	commute_matrices(1.0, d->kappaZ, &d->grho[idx], &d->grZ[idx], 0);
-	commute_matrices(1.0, d->kappaY, &d->grZ[idx],  &d->grYZZY[idx], 0);
-	commute_matrices(1.0, d->kappaZ, &d->grY[idx],  &d->grYZZY[idx], 1);
+        integer idx = x*norbt2;
+        dgemm_("N", "N", &inforb_.norbt, &inforb_.norbt, &ONEI, &ONER, 
+               &grid->mog[x*inforb_.norbt], &inforb_.norbt, 
+               grid->mov, &ONEI, 
+               &ZEROR, &d->grho[idx], 
+               &inforb_.norbt); 
+        dgemm_("N", "N", &inforb_.norbt, &inforb_.norbt, &ONEI, &ONER, 
+               grid->mov, &inforb_.norbt, 
+               &grid->mog[x*inforb_.norbt], &ONEI, 
+               &ONER, &d->grho[idx], 
+               &inforb_.norbt); 
+        commute_matrices(1.0, d->kappaY, &d->grho[idx], &d->grY[idx], 0);
+        commute_matrices(1.0, d->kappaZ, &d->grho[idx], &d->grZ[idx], 0);
+        commute_matrices(1.0, d->kappaY, &d->grZ[idx],  &d->grYZZY[idx], 0);
+        commute_matrices(1.0, d->kappaZ, &d->grY[idx],  &d->grYZZY[idx], 1);
     }
     /* ... and some traces... */
     stride = inforb_.norbt+1;
@@ -256,12 +257,12 @@ static void
 add_dft_contribution(DftGrid* grid, QuadStrictData* d)
 {
     static const real sgn[2]={1.0,-1.0};
-    int stride, x;
+    integer stride, x;
     integer norbt2 = inforb_.norbt*inforb_.norbt;
     real pref;
     real* dftcontr = d->dftcontr;
     ThirdDrv drvs; /* the functional derivatives */
-    int sY = d->ispinY, sZ = d->ispinZ;
+    integer sY = d->ispinY, sZ = d->ispinZ;
 
     dftpot2_(&drvs, grid->curr_weight, &grid->dp,
 	     grid->dogga, d->ispinY != d->ispinZ);
@@ -432,19 +433,19 @@ dftqrcs_(real* fi, real* cmo, real* kappaY, integer* symY, integer* ispinY,
 struct common_inforb inforb_;
 
 static void
-dump_mat(char* name, real* mat, int dim)
+dump_mat(char* name, real* mat, integer dim)
 {
-    int i, j;
+    integer i, j;
     printf("%s:\n", name);
     for(j=0; j<dim; j++) {
-	int dj = dim*j;
-	for(i=0; i<dim; i++)
-	    printf("%10.7f ", mat[i+dj]);
-	puts("");
+        integer dj = dim*j;
+        for(i=0; i<dim; i++)
+           printf("%10.7f ", mat[i+dj]);
+        puts("");
     }
 	puts("");
 }    
-int main(int argc, char* argv[])
+integer main(integer argc, char* argv[])
 {
     static const real kappaY[] = { 0, 1, 1, 0};
     static const real kappaZ[] = { 0, 0, 0, 0};

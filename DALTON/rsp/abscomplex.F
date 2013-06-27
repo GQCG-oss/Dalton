@@ -48,11 +48,16 @@ C  inftab.h : LUPROP
 #include "priunit.h"
 #include "codata.h" 
 #include "gnrinf.h"
-#include "maxorb.h" !MXCORB for symmet
-#include "maxaqn.h" !MXQN for symmet
-#include "mxcent.h" !MXCENT for symmet
-#include "symmet.h" !ISYMAX
-#include "infvar.h" !NCONF
+#include "maxorb.h"
+C MXCORB for symmet
+#include "maxaqn.h"
+C MXQN for symmet
+#include "mxcent.h"
+C MXCENT for symmet
+#include "symmet.h"
+C ISYMAX
+#include "infvar.h"
+C NCONF
 #include "abslrs.h"
 #include "absorp.h"
 #include "inforb.h"
@@ -433,32 +438,14 @@ C
            CALL GPCLOSE(LUPROP,'KEEP')
          END IF
 C
-        IF (ABS_OLDCPP) THEN
-          ABSORP=.TRUE.
-          ABSLRS=.FALSE.
-          WRITE(LUPRI,'(/A)')'.OLDCPP specify' 
-          WRITE(LUPRI,'(/A)')'the old CPP solver is used' 
-        ELSE 
-         CALL AROUND('Variable settings for absorption calculation')
-C
-         IF (ABSLRS_ALPHA) THEN
-            WRITE (LUPRI,'(A,L4)')
-     &     ' Linear polarizability calculation requested: 
-     &          ABSLRS_ALPHA =',ABSLRS_ALPHA
-            IF (.NOT.ABSLRS_INTERVAL) WRITE(LUPRI,'(A,5(4F12.8,/,16X))')
-     &        ' at frequencies:',(ABS_FREQ_ALPHA(I),I=1,ABS_NFREQ_ALPHA)
+         IF (ABSLRS_INTERVAL) THEN 
+            IF( ABS_FREQ_INTERVAL(1).GT.ABS_FREQ_INTERVAL(2) .OR.
+     &         (ABS_FREQ_INTERVAL(2)-ABS_FREQ_INTERVAL(1)).LT.
+     &          ABS_FREQ_INTERVAL(3)
+     &         .OR. ABS_FREQ_INTERVAL(3).LE.0.0D0 ) THEN
+               CALL QUIT('.FREQ_INTERVAL not specify correctly')
+            END IF
          END IF
-C
-         IF (ABSLRS_BETA) THEN
-            WRITE (LUPRI,'(A,L4)')
-     &  ' Nonlinear polarizability calculation requested:ABSLRS_BETA =',
-     &           ABSLRS_BETA
-            WRITE(LUPRI,'(A,5(4F12.8))')
-     &           ' B-FREQ:',(ABS_FREQ_BETA_B(I),I=1,ABS_NFREQ_BETA_B)
-            WRITE(LUPRI,'(A,5(4F12.8))')
-     &           ' C-FREQ:',(ABS_FREQ_BETA_C(I),I=1,ABS_NFREQ_BETA_C)
-         END IF
-cC
          IF (ABSQRS_INTERVAL) THEN
            IF( ABS_BFREQ_INTERVAL(1).GT.ABS_BFREQ_INTERVAL(2) .OR.
      &        (ABS_BFREQ_INTERVAL(2)-ABS_BFREQ_INTERVAL(1)).LT.
@@ -491,6 +478,33 @@ cC
      &              (I-1)*ABS_CFREQ_INTERVAL(3)
            END DO
          ENDIF
+C
+        IF (ABS_OLDCPP) THEN
+          ABSORP=.TRUE.
+          ABSLRS=.FALSE.
+          WRITE(LUPRI,'(/A)')'.OLDCPP specify' 
+          WRITE(LUPRI,'(/A)')'the old CPP solver is used' 
+        ELSE 
+         CALL AROUND('Variable settings for absorption calculation')
+C
+         IF (ABSLRS_ALPHA) THEN
+            WRITE (LUPRI,'(A,L4)')
+     &     ' Linear polarizability calculation requested: 
+     &          ABSLRS_ALPHA =',ABSLRS_ALPHA
+            IF (.NOT.ABSLRS_INTERVAL) WRITE(LUPRI,'(A,5(4F12.8,/,16X))')
+     &        ' at frequencies:',(ABS_FREQ_ALPHA(I),I=1,ABS_NFREQ_ALPHA)
+         END IF
+C
+         IF (ABSLRS_BETA) THEN
+            WRITE (LUPRI,'(A,L4)')
+     &  ' Nonlinear polarizability calculation requested:ABSLRS_BETA =',
+     &           ABSLRS_BETA
+            WRITE(LUPRI,'(A,5(4F12.8))')
+     &           ' B-FREQ:',(ABS_FREQ_BETA_B(I),I=1,ABS_NFREQ_BETA_B)
+            WRITE(LUPRI,'(A,5(4F12.8))')
+     &           ' C-FREQ:',(ABS_FREQ_BETA_C(I),I=1,ABS_NFREQ_BETA_C)
+         END IF
+cC
          IF (ABSLRS_MCD) THEN
             WRITE (LUPRI,'(A,L4)')
      &     ' Magnetic circular dichroism requested : ABSLRS_MCD     = ',
@@ -532,15 +546,6 @@ c           ELSE
      &      ' Start:',ABS_FREQ_INTERVAL(1),'Stop:',ABS_FREQ_INTERVAL(2),
      &      '   Step:',ABS_FREQ_INTERVAL(3)
 c         END IF
-C
-         IF (ABSLRS_INTERVAL) THEN 
-            IF( ABS_FREQ_INTERVAL(1).GT.ABS_FREQ_INTERVAL(2) .OR.
-     &         (ABS_FREQ_INTERVAL(2)-ABS_FREQ_INTERVAL(1)).LT.
-     &          ABS_FREQ_INTERVAL(3)
-     &         .OR. ABS_FREQ_INTERVAL(3).LE.0.0D0 ) THEN
-               CALL QUIT('.FREQ_INTERVAL not specify correctly')
-            END IF
-         END IF
 C
          WRITE(LUPRI,'(A,F9.6,F8.1)')
      &      ' Damping parameter (a.u. and cm-1)        : ABS_DAMP     ='
@@ -746,10 +751,21 @@ C
                CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &              WRK(KFREE),LFREE)
                CALL DCOPY(2*KZVAR,WRK(KFREE),1,WRK(KGD),1)
-               CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &                 ABS_FREQ_ALPHA,
-     &                 MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
-     &                 WRK(KFREE),LFREE)
+               GDNRM=DNRM2(2*KZVAR,WRK(KGD),1)
+               RES0=0.0d0
+               IF (GDNRM .LE. 1.0d-6) THEN
+                 WRK(KXSOL:4*KZVAR-1)=0.0d0
+                 DO K=1,ABS_NFREQ_INTERVAL
+                   CALL WRITE_XVEC(LUABSVECS,4*KZVAR,WRK(KXSOL),LABEL,
+     &                  ABS_FREQ_ALPHA(K),RES0)
+                   ENDDO
+                 WRITE(LUPRI,*) 'Vectors equal to zero'
+               ELSE
+                 CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
+     &                        ABS_FREQ_ALPHA,
+     &                        MJWOP,CMO,UDV,FC,FCAC,FV,PV,XINDX,RESLRF,
+     &                        WRK(KFREE),LFREE)
+               ENDIF
 C
                CALL GET_LRF(LUABSVECS,LABEL,ABS_NFREQ_INTERVAL,
      &                     ABS_FREQ_ALPHA,FC,FV,CMO,UDV,PV,XINDX,

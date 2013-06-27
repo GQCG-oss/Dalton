@@ -133,14 +133,15 @@ K(rhoa,grada,rhob,gradb,gradab):=
 #endif
 #include <math.h>
 #include <stddef.h>
- 
+#include "general.h"
+
 #define __CVERSION__
  
 #include "functionals.h"
  
 /* INTERFACE PART */
-static int b97_k_isgga(void) { return 1; } /* FIXME: detect! */
-static int b97_k_read(const char *conf_line);
+static integer b97_k_isgga(void) { return 1; } /* FIXME: detect! */
+static integer b97_k_read(const char *conf_line);
 static real b97_k_energy(const FunDensProp* dp);
 static void b97_k_first(FunFirstFuncDrv *ds,   real factor,
                          const FunDensProp* dp);
@@ -165,7 +166,7 @@ Functional B97_KFunctional = {
 };
  
 /* IMPLEMENTATION PART */
-static int
+static integer
 b97_k_read(const char *conf_line)
 {
     fun_set_hf_weight(0);

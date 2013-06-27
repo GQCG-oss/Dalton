@@ -338,7 +338,7 @@ C
             GOTO 100
  39         FSTORD = .TRUE.
             GOTO 100
- 40         SNDORD = .TRUE.
+ 40         SNDORD = .TRUE.   ! .2NDORD
             GOTO 100
  41         GRDINI = .TRUE.
             GOTO 100
@@ -2786,6 +2786,20 @@ C
 #ifdef VAR_LINSCA
       CLOSE (13)
 #endif
+C
+C     Using FNDANA to find highest order of analytical 
+C     derivatives (NAORDR). If this is 0, we use numerical 
+C     gradients.
+C         NAORDR = 0; Only energies available
+C         NAORDR = 1; Analytical gradients available
+C         NAORDR = 2; Analytical gradients and hessians available.
+C
+      CALL FNDANA(NAORDR)
+      IF (NAORDR .LT. 2) THEN
+         CALL QUIT('2nd order optimization aborted because'//
+     &   ' analytical Hessian not available.')
+      END IF
+
       WRINDX = .TRUE.
       MOLGRD = .TRUE.
       MOLHES = .TRUE.
@@ -2809,8 +2823,8 @@ C
       END IF
 C
       CALL EXEABA(WORK,LWORK-1,WRKDLM)
-      EXABA = .TRUE.
-      START = .FALSE.
+      EXABA  = .TRUE.
+      START  = .FALSE.
       MOLGRD = .FALSE.
       MOLHES = .FALSE.
       HELFEY = .FALSE.

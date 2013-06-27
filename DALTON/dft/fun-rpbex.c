@@ -72,14 +72,15 @@ K(rhoa,grada,rhob,gradb,gradab):=0.5*(Ea(2*rhoa)+Eb(2*rhob));
 #endif
 #include <math.h>
 #include <stddef.h>
- 
+#include "general.h"
+
 #define __CVERSION__
  
 #include "functionals.h"
 
 /* INTERFACE PART */
-static int rpbe_isgga(void) { return 1; } /* FIXME: detect! */
-static int rpbe_read(const char *conf_line);
+static integer rpbe_isgga(void) { return 1; } /* FIXME: detect! */
+static integer rpbe_read(const char *conf_line);
 static real rpbe_energy(const FunDensProp* dp);
 static void rpbe_first(FunFirstFuncDrv *ds,   real factor,
                          const FunDensProp* dp);
@@ -104,7 +105,7 @@ Functional RPBExFunctional = {
 };
  
 /* IMPLEMENTATION PART */
-static int
+static integer
 rpbe_read(const char *conf_line)
 {
     fun_set_hf_weight(0);
