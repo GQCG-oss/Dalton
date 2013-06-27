@@ -23,6 +23,11 @@
 !
 #include "single.h"
 C
+C
+C FILE : sirius/sirdiis.F
+C Principal author : Hans Jørgen Aa. Jensen
+C First version    : 1993
+C
 #ifdef OLD_REV_LOG
 !===========================================================================
 !se efter HJTODO
@@ -61,20 +66,8 @@ C
 !940501-hjaaj
 !FCKEIG: exit if ".FREEZE" not compatible with ORDRSS.
 !    ORDRSS now always called (this also fixes error in prev. version).
-!940408-hjaaj
-!DIIS_CTL: s/EMCACT/EACTIV/ to define active energy in /INFOPT/
-!940311-hjaaj
-!DIIS_CTL: s/EVCNRM/GRDNRM/ (so gradient norm is transferred to SIROUT)
-!        nice output to LUW4 if LUW4 .ne. LUPRI
 !931126-hjaaj
 !DIIS_CTL: call NEWORB after each iteration (for restart)
-!930720-hjaaj
-!SRDIIS: new parameter PROCC .FALSE. in CALL PRORB
-!930715-hjaaj
-!------: improved some print
-!SRDIIS: exit MXDGSS .GT. 0
-!930623-hjaaj
-!FCKEIG: inserted PARAMETER(D0=0.0D0)
 !===========================================================================
 #endif
 C  /* Deck srdiis */
@@ -1377,9 +1370,12 @@ C
          call gettim(t1,w1)
          CALL FCKEIG(CMO,DCAO,SHFTLVL,WRK(KFREE),LFREE,
      &      THR_JACO,IPR_DIIS)
-         call gettim(t2,w2)
-         write(lupri,'(A,1P,3D10.2)')
-     &      ' Time used in FCKEIG: ',t2-t1,w2-w1,thr_jaco
+         IF (IPR_DIIS .GT. 2) THEN
+            call gettim(t2,w2)
+            write(lupri,'(A,1P,3D10.2)')
+     &         ' CPU and wall times used in FCKEIG, THR_JACO: ',
+     &         t2-t1,w2-w1,thr_jaco
+         END IF
 
 C        Test if AUTOCC has changed occupation :
 
