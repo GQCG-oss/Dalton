@@ -54,6 +54,8 @@ module tensor_interface_module
                     &array2_print_norm_customprint,&
                     &array4_print_norm_customprint
   end interface print_norm
+
+
   interface array_add
     module procedure array_add_normal, array_add_arr2fullfort,array_add_fullfort2arr
   end interface array_add
@@ -185,17 +187,25 @@ contains
     type(array), intent(inout) :: arrx
     !> order of the fortran array with respect to the array
     integer, intent(in),optional :: order(arrx%mode)
+    integer :: o(arrx%mode)
     !> check if there is enough memory to send a full tile, this will die out
     integer :: i
     real(realk) :: MemFree,tilemem
+    do i=1,arrx%mode
+      o(i) = i
+    enddo
+    if(present(order))o=order
     select case(arrx%atype)
       case(DENSE)
-        call daxpy(int(arrx%nelms),b,fortarry,1,arrx%elm1,1)
+        if(.not.present(order))then
+          call daxpy(int(arrx%nelms),b,fortarry,1,arrx%elm1,1)
+        else
+          call lsquit("ERROR(array_add_fullfort2arr1):not implemented",-1)
+        endif
       case(TILED)
-        call lsquit("ERROR(array_add_fullfort2arr):not implemented",-1)
+        call lsquit("ERROR(array_add_fullfort2arr2):not implemented",-1)
       case(TILED_DIST)
-        if(present(order))call add_data2tiled_intiles(arrx,b,fortarry,arrx%dims,arrx%mode,order)
-        if(.not.present(order))call add_data2tiled_intiles(arrx,b,fortarry,arrx%dims,arrx%mode)
+        call add_data2tiled_intiles(arrx,b,fortarry,arrx%dims,arrx%mode,o)
     end select
   end subroutine array_add_fullfort2arr
 

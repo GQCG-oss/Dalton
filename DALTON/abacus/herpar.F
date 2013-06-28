@@ -2637,6 +2637,7 @@ C
                   READ(LUCMD,*) IPRPAR
                GO TO 100
     4          CONTINUE
+#if defined (VAR_PVM)
                   READ (LUCMD,'(A7)') WORD
                   CALL UPCASE(WORD)
                   IF (WORD.EQ.' DATADE') THEN
@@ -2651,6 +2652,9 @@ C
      &              'Options are : DATADEFAULT','DATARAW','DATAINPLACE'
                      CALL QUIT('Nonexistent encoding type in input.')
                   END IF
+#else
+                  WRITE(LUPRI,'(/1X,A)')'.ENCODE keyword is not in use.'
+#endif
                GO TO 100
     5          CONTINUE
                   DEBUG = .TRUE.
