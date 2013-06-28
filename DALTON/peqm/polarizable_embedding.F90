@@ -6111,7 +6111,7 @@ subroutine pe_diis_solver_charges(Mkinds, Fs)
     IF(NTSATM.EQ.960) DISM0 = 0.1000D+00*aa2au 
     FACTOR  = 1.0d0/SQRT(4.0d0*pi)/1.07D+00
     DSCALE   = (eps - 1.0d0)/eps 
-    print *, dscale
+    if(pe_debug) write(luout,'(a,F9.4)') 'eps =', dscale
     
     do n = 1, ndens
       
