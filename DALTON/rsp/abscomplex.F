@@ -1736,7 +1736,7 @@ C           Add contribution to orientational average
              ISCORX = IPTCNT(3*(IWHICH-1)+1,KSYMOP-1,2)
              ISCORY = IPTCNT(3*(IWHICH-1)+2,KSYMOP-1,2)
              ISCORZ = IPTCNT(3*(IWHICH-1)+3,KSYMOP-1,2)
-             IF (ISCORX .GT. O) THEN
+             IF (ISCORX .GT. 0) THEN
                IFIRST = ISCORX/100
                ISECND = MOD(ISCORX,100)/10
                ITHIRD = MOD(MOD(ISCORX,100),10)
@@ -1745,7 +1745,7 @@ C           Add contribution to orientational average
      &                          CHRNOS(ITHIRD)//' '
 !               write(lupri,*)'Test label PSO X:', LABX
              END IF
-             IF (ISCORY .GT. O) THEN
+             IF (ISCORY .GT. 0) THEN
                IFIRST = ISCORY/100
                ISECND = MOD(ISCORY,100)/10
                ITHIRD = MOD(MOD(ISCORY,100),10)
@@ -1754,7 +1754,7 @@ C           Add contribution to orientational average
      &                          CHRNOS(ITHIRD)//' '
                !write(lupri,*)'Test label PSO Y:', LABY
              END IF
-             IF (ISCORZ .GT. O) THEN
+             IF (ISCORZ .GT. 0) THEN
                IFIRST = ISCORZ/100
                ISECND = MOD(ISCORZ,100)/10
                ITHIRD = MOD(MOD(ISCORZ,100),10)
@@ -2221,6 +2221,7 @@ C
      &     FC,FV,CMO,UDV,PV,XINDX,RESLRF,KZVAR,
      &     WRK,LWRK)
 #include "implicit.h"
+#include "priunit.h"
 #include "abslrs.h"
 C
       CHARACTER*8 LABEL,LABGD
