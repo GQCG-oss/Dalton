@@ -25,7 +25,7 @@ export CTEST_PROJECT_NAME=LSDALTON
 FC=mpif90 CC=mpicc cmake -DENABLE_MPI=1 -DCMAKE_BUILD_TYPE=Release -DENABLE_BLAS=OFF -DENABLE_LAPACK=OFF -DBUILDNAME=RB-Grendel-linux-ifort-openMPI-release $TMP_DIR
 #make depend
 #make Nightly
-ctest -D Nightly -L lsdalton
+ctest -D Nightly -L linsca
 
 exit 0
 
