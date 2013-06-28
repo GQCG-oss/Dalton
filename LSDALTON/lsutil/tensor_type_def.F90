@@ -41,6 +41,7 @@ module tensor_type_def_module
      integer,pointer    :: ntpm(:)   => null()       !dimensions in the modes, number of tiles per mode, 
      integer,pointer    :: tdim(:)   => null()       !dimension of the tiles per mode(per def symmetric, but needed)
      integer,pointer    :: addr_p_arr(:)   => null() !address of array in persistent array "p_arr" on each node
+     logical, pointer   :: lock_set(:)     => null() !contains information about whether a lock has been set on the window with the current index
      !global tile information
      integer :: ntiles,tsize                         !batching of tiles in one mode, number of tiles, tilesize (ts^mode), amount of modes of the array
      integer :: nlti                                 !number of local tiles
