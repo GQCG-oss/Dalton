@@ -23,35 +23,22 @@ module lspdm_tensor_operations_module
 
   !INTERFACES
   !**********
-  interface array_get_tile_nolock
-    module procedure array_gettile_combidx4_nolock,&
-                    &array_gettile_combidx8_nolock,&
-                    &array_gettile_modeidx_nolock
-  end interface array_get_tile_nolock
-  interface array_get_tile
-    module procedure array_gettile_combidx4,&
+  interface array_get_tile                                                                                        
+    module procedure array_gettile_combidx4,&                                                                     
                     &array_gettile_combidx8,&
                     &array_gettile_modeidx
   end interface array_get_tile
-
-
-  interface array_put_tile
+  interface array_put_tile                                                                                        
     module procedure array_puttile_combidx4,&
                     &array_puttile_combidx8,&
                     &array_puttile_modeidx
-  end interface array_put_tile
+  end interface array_put_tile 
 
   interface array_accumulate_tile
     module procedure array_accumulate_tile_combidx4,&
                     &array_accumulate_tile_combidx8,&
                     &array_accumulate_tile_modeidx
   end interface array_accumulate_tile 
-
-  interface array_accumulate_tile_nolock
-    module procedure array_accumulate_tile_combidx4_nolock,&
-                    &array_accumulate_tile_combidx8_nolock,&
-                    &array_accumulate_tile_modeidx_nolock
-  end interface array_accumulate_tile_nolock
 
 
   !Persistent array type definition
@@ -585,7 +572,7 @@ module lspdm_tensor_operations_module
       !$OMP PARALLEL DEFAULT(NONE) &
       !$OMP& SHARED(prec,om,dims,ppfock,qqfock,lt) &
       !$OMP& PRIVATE(i,j,a,b)
-      !$OMP DO COLLAPSE(3)
+      !$OMP DO COLLAPSE(4)
       do j=1,prec%ti(lt)%d(4)
         do i=1,prec%ti(lt)%d(3)
           do b=1,prec%ti(lt)%d(2)
@@ -1124,7 +1111,6 @@ module lspdm_tensor_operations_module
       p_arr%a(addr)%tsize  = p_arr%a(addr)%tsize  * min(p_arr%a(addr)%tdim(i),p_arr%a(addr)%dims(i))
     enddo
 
-
     !In the initialization the addess has to be set, since pdm_array_sync
     !depends on the  adresses, but setting them correctly is done later
     if(p_arr%a(addr)%init_type>=1)then
@@ -1162,7 +1148,6 @@ module lspdm_tensor_operations_module
       p_arr%a(addr)%nlti=p_arr%a(addr)%ntiles
     endif
 
-    call arr_init_lock_set(p_arr%a(addr))
     call memory_allocate_tiles(p_arr%a(addr))
 
     arr=p_arr%a(addr)
@@ -1720,6 +1705,8 @@ module lspdm_tensor_operations_module
     do i=1,mode
       o(i)=i
     enddo
+    !TRY TO INCLUDE MPI_PUT FOR THAT OPERATION,SO MAYBE MASTER_SLAVE DEPENDENCE
+    !IN THIS ROUTINE IS GONE
     if(present(order))o=order
 
     do i=1,arr%mode
@@ -1747,14 +1734,11 @@ module lspdm_tensor_operations_module
 
     
     do i=1,arr%ntiles
-      call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,o)
+      call tile_from_fort(1.0E0_realk,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,o)
       call get_tile_dim(nelmsit,arr,i)
+      if(mult/=1.0E0_realk)call dscal(nelmsit,mult,buf,1)
 #ifdef VAR_MPI
-      if(arr%lock_set(i))then
-        call array_accumulate_tile_nolock(arr,i,buf,nelmsit)
-      else
-        call array_accumulate_tile(arr,i,buf,nelmsit)
-      endif
+      call array_accumulate_tile(arr,i,buf,nelmsit)
 #endif
     enddo
     call mem_dealloc(buf)
@@ -2015,44 +1999,6 @@ module lspdm_tensor_operations_module
 
 
 
-  !\> \brief lock all windows of a tensor from the current node with the
-  !specified lock and assertion
-  !\> \author Patrick Ettenhuber
-  !\> \date July 2013
-#ifdef VAR_MPI
-  subroutine arr_lock_wins(arr,locktype,assert)
-    implicit none
-    type(array) :: arr
-    character, intent(in) :: locktype
-    integer(kind=ls_mpik), optional,intent(in) :: assert
-    integer(kind=ls_mpik) :: ass,node
-    integer :: i
-    ass = int(0,kind=ls_mpik)
-    if(present(assert))ass=assert
-    do i=1,arr%ntiles
-      node=get_residence_of_tile(i,arr)
-      call lsmpi_win_lock(node,arr%wi(i),locktype,ass)
-      arr%lock_set(i)=.true.
-    enddo
-  end subroutine arr_lock_wins
-
-  !\> \brief unlock all windows of a tensor 
-  !\> \author Patrick Ettenhuber
-  !\> \date July 2013
-  subroutine arr_unlock_wins(arr)
-    implicit none
-    type(array) :: arr
-    integer(kind=ls_mpik) :: node
-    integer :: i
-    do i=1,arr%ntiles
-      node=get_residence_of_tile(i,arr)
-      call lsmpi_win_unlock(node,arr%wi(i))
-      arr%lock_set(i)=.false.
-    enddo
-  end subroutine arr_unlock_wins
-#endif
-
-
   subroutine pn(a,n)
     implicit none
     real(realk), intent(in) :: a(*)
@@ -2067,6 +2013,254 @@ module lspdm_tensor_operations_module
     print *,"NORM:",nrm
   end subroutine
 
+
+  !> \autor Patrick Ettenhuber
+  !> \brief Subroutine to put a specific tile in a general matrix
+  !> \date January 2013
+  !subroutine tile_in_fort(pre1,tilein,tnr,tdims,pre2,fort,full_arr_dim,mode,o)
+  !  implicit none
+  !  !> scaling factors
+  !  real(realk) :: pre1,pre2
+  !  !> input array with data in arbtirary order
+  !  real(realk), intent(inout) :: fort(*)
+  !  !> mode infortmation about how to interpret data
+  !  integer, intent(in) :: mode
+  !  !> the tile number in column major ordering of the tiles
+  !  integer, intent(in) :: tnr
+  !  !> dimension information for the mew array
+  !  integer, intent(in) :: full_arr_dim(mode)
+  !  !> batch information for the tiles
+  !  integer, intent(in) :: tdims(mode)
+  !  !> specify how to reorder the tile to the new full array
+  !  integer,intent(in) :: o(mode)
+  !  !> tile output
+  !  real(realk), intent(in) :: tilein(*)
+  !  integer :: i,nelms,k
+  !  integer :: tmodeidx(mode)
+  !  integer :: idxintile(mode),ro(mode),full_dim_tiled_arr(mode)
+  !  integer :: ccels,ntimes,acttdim(mode),fels(mode)
+  !  integer :: pos1,ntpm(mode),glbmodeidx(mode)
+  !  integer :: simpleorder,bs
+
+  !  bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
+  !  !bs=5
+  !  simpleorder=0
+  !  do i=1,mode
+  !    if(o(i)/=i)simpleorder=-1
+  !    ro(o(i))=i
+  !  enddo
+
+  !  
+  !  do i=1,mode
+  !    full_dim_tiled_arr(i) = full_arr_dim(ro(i))
+  !    ntpm(i) = full_dim_tiled_arr(i)/tdims(i)
+  !    if(mod(full_dim_tiled_arr(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
+  !  enddo
+
+
+  !  if(mode==4)then
+  !    if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)simpleorder=1
+  !    if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)simpleorder=2
+  !  endif
+
+  !  call get_midx(tnr,tmodeidx,ntpm,mode)
+
+  !  ntimes=1
+  !  do i=1,mode
+  !    fels(i) = (tmodeidx(i)-1) * tdims(i) + 1
+  !    if(tmodeidx(i)*tdims(i)>full_dim_tiled_arr(i))then
+  !      acttdim(i)=mod(full_dim_tiled_arr(i),tdims(i))
+  !    else
+  !      acttdim(i)=tdims(i)
+  !    endif
+  !    if(i>1)ntimes=ntimes*acttdim(i)
+  !  enddo
+  !  
+
+  !  select case(simpleorder)
+  !    case(0)
+  !      ccels=acttdim(1)
+  !      do i=1,ntimes
+  !        call get_midx(i,idxintile(2:mode),acttdim(2:mode),mode-1)
+  !        idxintile(1)=1
+  !        do k=1,mode
+  !          glbmodeidx(k)=idxintile(k) +(tmodeidx(k)-1) *tdims(k)
+  !        enddo
+  !        pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
+  !        if(pre1==1.0E0_realk.and.pre2==0.0E0_realk)then
+  !          call dcopy(ccels,tilein(1+(i-1)*ccels),1,fort(pos1),1)
+  !        else
+  !          call dscal(ccels,pre2,fort(pos1),1)
+  !          call daxpy(ccels,pre1,tilein(1+(i-1)*ccels),1,fort(pos1),1)
+  !        endif
+  !      enddo
+  !    case(1)
+  !      call manual_2143_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+  !    case(2)
+  !      call manual_1423_reordering_tile2full(bs,acttdim,full_dim_tiled_arr,fels,pre1,tilein,pre2,fort)
+  !    case default
+  !      print *,"expensive default tile_in_fort",o
+  !      !print *,"order  :",o
+  !      !print *,"rorder :",ro
+  !      !print *,"fad    :",full_arr_dim
+  !      !print *,"tad    :",full_dim_tiled_arr
+  !      !print *,"atd    :",acttdim
+  !      !count elements in the current tile for loop over elements
+  !      !identify their original position and put them in tile
+  !      nelms=1
+  !      do i=1,mode
+  !        nelms = nelms * acttdim(i)
+  !      enddo
+  !     
+  !      do i = 1,nelms
+  !        !get mode index of element in tile
+  !        call get_midx(i,idxintile,acttdim,mode)
+  !        !get full index in new array from indices referencing the tile
+  !        do k=1,mode
+  !          glbmodeidx(ro(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
+  !        enddo
+  !        !get index in new array
+  !        pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
+  !        fort(pos1)=pre2*fort(pos1) + pre1 * tilein(i)
+  !      enddo
+  !  end select
+  !end subroutine tile_in_fort
+
+
+
+  !!> \autor Patrick Ettenhuber
+  !!> \brief Subroutine to extract a specific tile from a general matrix
+  !!> \date November 2012
+  !subroutine tile_from_fort(pre1,fort,full_arr_dim,mode,pre2,tileout,tnr,tdims,o)
+  !  implicit none
+  !  !> scaling factors
+  !  real(realk) :: pre1,pre2
+  !  !> input array with data in arbtirary order
+  !  real(realk), intent(in) :: fort(*)
+  !  !> mode infortmation about how to interpret data
+  !  integer, intent(in) :: mode
+  !  !> the tile number in column major ordering of the tiles
+  !  integer, intent(in) :: tnr
+  !  !> dimension infortmation about how to interpret data
+  !  integer, intent(in) :: full_arr_dim(mode)
+  !  !> batch information for the tiles
+  !  integer, intent(in) :: tdims(mode)
+  !  !> reorder information for the array with respect to the original array,
+  !  !> if optorder is given, then the dimensions, tdims and tnr are with
+  !  !reference to the tile to calculate
+  !  integer, intent(in) :: o(mode)
+  !  !> tile output
+  !  real(realk), intent(out) :: tileout(*)
+  !  integer :: i,nccblcks,nels,k
+  !  integer :: tmodeidx(mode)
+  !  integer :: idxintile(mode),glbidx
+  !  integer :: ccels,ntimes,el,acttdim(mode),full_dim_tiled_arr(mode),nelms
+  !  integer :: pos1,pos2,ntpm(mode),glbmodeidx(mode),ro(mode),rtd(mode),fels(mode)
+  !  integer :: simpleorder,bs,a,b,c,d
+
+  !  bs=int(((8000.0*1000.0)/(8.0*2.0))**(1.0/float(mode)))
+  !  !bs=5
+  !  simpleorder=0
+  !  do i=1,mode
+  !    if(o(i)/=i)simpleorder=-1
+  !  enddo
+
+
+  !  do i=1,mode
+  !    !get the reverse order information
+  !    ro(o(i))=i
+  !  enddo
+
+  !  !calculate number of tiles per mode
+  !  nels=1
+  !  do i=1,mode
+  !    full_dim_tiled_arr(i)=full_arr_dim(o(i))
+  !    ntpm(i) = full_dim_tiled_arr(i)/tdims(i)
+  !    if(mod(full_dim_tiled_arr(i),tdims(i))>0)ntpm(i) = ntpm(i) + 1
+  !    nels=nels*full_dim_tiled_arr(i)
+  !  enddo
+
+  !  !print *,"fad    :",full_arr_dim
+  !  !print *,"tad    :",full_dim_tiled_arr
+  !  !print *,"ntpm   :",ntpm
+  !  !print *,"td     :",tdims
+
+  !  if(mode==4)then
+  !    if(o(1)==2.and.o(2)==1.and.o(3)==4.and.o(4)==3)simpleorder=1
+  !    if(o(1)==1.and.o(2)==3.and.o(3)==2.and.o(4)==4)simpleorder=2
+  !    if(o(1)==1.and.o(2)==3.and.o(3)==4.and.o(4)==2)simpleorder=3
+  !    if(o(1)==2.and.o(2)==1.and.o(3)==3.and.o(4)==4)simpleorder=4
+  !    if(o(1)==1.and.o(2)==4.and.o(3)==2.and.o(4)==3)simpleorder=5
+  !  endif
+  !  call get_midx(tnr,tmodeidx,ntpm,mode)
+  !  ntimes=1
+  !  do i=1,mode
+  !    fels(o(i)) = (tmodeidx(i)-1) * tdims(i) + 1
+  !    if(tmodeidx(i)*tdims(i)>full_dim_tiled_arr(i))then
+  !      acttdim(i)=mod(full_dim_tiled_arr(i),tdims(i))
+  !    else
+  !      acttdim(i)=tdims(i)
+  !    endif
+  !    if(i>1)ntimes=ntimes*acttdim(i)
+  !    rtd(o(i))     = acttdim(i)
+  !  enddo
+
+  !  select case(simpleorder)
+  !    case(0)
+  !      ccels=acttdim(1)
+  !      !loop over the remaining not-consecutive dimensions
+  !      do i=1,ntimes
+  !        !get the mode-index in the remaining dimensions
+  !        call get_midx(i,idxintile(2:mode),acttdim(2:mode),mode-1)
+  !        !get the position of the first element in the consecutive stretch
+  !        idxintile(1)=1
+  !        do k=1,mode
+  !          glbmodeidx(k)=idxintile(k) +(tmodeidx(k)-1) *tdims(k)
+  !        enddo
+  !        pos1=get_cidx(glbmodeidx,full_dim_tiled_arr,mode)
+  !        if(pre1==1.0E0_realk.and.pre2==0.0E0_realk)then
+  !          call dcopy(ccels,fort(pos1),1,tileout(1+(i-1)*ccels),1)
+  !        else
+  !          call dscal(ccels,pre2,tileout(1+(i-1)*ccels),1)
+  !          call daxpy(ccels,pre1,fort(pos1),1,tileout(1+(i-1)*ccels),1)
+  !        endif
+  !      enddo
+  !    case(1)
+  !      call manual_2143_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+  !    case(2)
+  !      call manual_1324_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+  !    case(3)
+  !      call manual_1342_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+  !    case(4)
+  !      call manual_2134_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+  !    case(5)
+  !      call manual_1423_reordering_full2tile(bs,rtd,full_arr_dim,fels,pre1,fort,pre2,tileout)
+  !    case default
+  !      print *,"expensive default tile_from_fort",o
+  !      !print *,"order  :",o
+  !      !print *,"rorder :",ro
+  !      !print *,"atd    :",acttdim
+  !      !count elements in the current tile for loop over elements
+  !      !identify their original position and put them in tile
+  !      nelms=1
+  !      do i=1,mode
+  !        nelms = nelms * acttdim(i)
+  !      enddo
+  !      do i = 1,nelms
+  !        !get mode index of element in tile
+  !        call get_midx(i,idxintile,acttdim,mode)
+  !        !get global index of element, example order = 2 3 1 4 of new array with
+  !        !respect to old --> element 54 3 27 8 of old goes to 3 27 54 8 of new -
+  !        ! old with respect to new 3 1 2 4 
+  !        do k=1,mode
+  !          glbmodeidx(o(k))=idxintile(k) + (tmodeidx(k)-1)*tdims(k)
+  !        enddo
+  !        pos1=get_cidx(glbmodeidx,full_arr_dim,mode)
+  !        tileout(i)=pre2*tileout(i)+pre1*fort(pos1)
+  !      enddo
+  !  end select
+
+  !end subroutine tile_from_fort
 
   subroutine array_free_pdm(arr)
     implicit none
@@ -2204,65 +2398,6 @@ module lspdm_tensor_operations_module
    end subroutine change_init_type_td
 
 
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                 ACCUMULATE TILES
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  !> \brief direct communication routine for the accumulation of arrays,
-  !> interface to the combined index routine
-  !> \author Patrick Ettenhuber
-  subroutine array_accumulate_tile_modeidx_nolock(arr,modidx,fort,nelms)
-    implicit none
-    !> input array for which a tile should be accumulated
-    type(array),intent(in) ::arr
-    !> input, the index of the tile in modular form and the number of elements
-    integer,intent(in) :: modidx(arr%mode),nelms
-    !> input the fortan array which should be transferred to the tile
-    real(realk),intent(inout) :: fort(nelms)
-    integer :: cidx
-    cidx=get_cidx(modidx,arr%ntpm,arr%mode)
-    call array_accumulate_tile_nolock(arr,cidx,fort,nelms)
-  end subroutine array_accumulate_tile_modeidx_nolock
-  subroutine array_accumulate_tile_combidx4_nolock(arr,globtilenr,fort,nelms)
-    implicit none
-    type(array),intent(in) :: arr
-    integer,intent(in) :: globtilenr
-    integer(kind=4) :: nelms
-    !> input the fortan array which should be transferred to the tile
-    real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: dest
-    real(realk) :: sta,sto
-#ifdef VAR_MPI
-    dest=get_residence_of_tile(globtilenr,arr)
-    sta=MPI_WTIME()
-    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
-    sto = MPI_WTIME()
-    time_pdm_acc = time_pdm_acc + sto - sta
-    bytes_transferred_acc = bytes_transferred_acc + nelms * 8_long
-    nmsg_acc = nmsg_acc + 1
-#endif
-  end subroutine array_accumulate_tile_combidx4_nolock
-  subroutine array_accumulate_tile_combidx8_nolock(arr,globtilenr,fort,nelms)
-    implicit none
-    type(array),intent(in) :: arr
-    integer,intent(in) :: globtilenr
-    integer(kind=8) :: nelms
-    !> input the fortan array which should be transferred to the tile
-    real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: dest
-    real(realk) :: sta,sto
-#ifdef VAR_MPI
-    dest=get_residence_of_tile(globtilenr,arr)
-    sta=MPI_WTIME()
-    call lsmpi_acc(fort,nelms,1,dest,arr%wi(globtilenr))
-    sto = MPI_WTIME()
-    time_pdm_acc = time_pdm_acc + sto - sta
-    bytes_transferred_acc = bytes_transferred_acc + nelms * 8_long
-    nmsg_acc = nmsg_acc + 1
-#endif
-  end subroutine array_accumulate_tile_combidx8_nolock
-
-
   !> \brief direct communication routine for the accumulation of arrays,
   !> interface to the combined index routine
   !> \author Patrick Ettenhuber
@@ -2285,9 +2420,13 @@ module lspdm_tensor_operations_module
     integer(kind=4) :: nelms
     !> input the fortan array which should be transferred to the tile
     real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: dest
+    integer(kind=ls_mpik) :: assert,dest, ierr,n
     real(realk) :: sta,sto
 #ifdef VAR_MPI
+    integer(kind=MPI_ADDRESS_KIND) ::offset
+    assert=0
+    offset=0
+    n=nelms
     dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
@@ -2295,7 +2434,7 @@ module lspdm_tensor_operations_module
     CALL lsmpi_win_unlock(dest, arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_acc = time_pdm_acc + sto - sta
-    bytes_transferred_acc = bytes_transferred_acc + nelms * 8_long
+    bytes_transferred_acc = bytes_transferred_acc + n * 8_long
     nmsg_acc = nmsg_acc + 1
 #endif
   end subroutine array_accumulate_tile_combidx4
@@ -2306,9 +2445,13 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: nelms
     !> input the fortan array which should be transferred to the tile
     real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: dest
+    integer(kind=ls_mpik) :: assert,dest, ierr,n
     real(realk) :: sta,sto
 #ifdef VAR_MPI
+    integer(kind=MPI_ADDRESS_KIND) ::offset
+    assert=0
+    offset=0
+    n=nelms
     dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
@@ -2316,14 +2459,10 @@ module lspdm_tensor_operations_module
     call lsmpi_win_unlock(dest,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_acc = time_pdm_acc + sto - sta
-    bytes_transferred_acc = bytes_transferred_acc + nelms * 8_long
+    bytes_transferred_acc = bytes_transferred_acc + n * 8_long
     nmsg_acc = nmsg_acc + 1
 #endif
   end subroutine array_accumulate_tile_combidx8
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                   PUT TILES
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   subroutine array_puttile_modeidx(arr,modidx,fort,nelms)
     implicit none
     type(array),intent(in) ::arr
@@ -2340,9 +2479,13 @@ module lspdm_tensor_operations_module
     integer,intent(in) :: globtilenr
     integer(kind=8),intent(in) :: nelms
     real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: dest
+    integer(kind=ls_mpik) :: assert,dest, ierr,n
     real(realk) :: sta,sto
 #ifdef VAR_MPI
+    integer(kind=MPI_ADDRESS_KIND) ::offset
+    assert=0
+    offset=0
+    n=nelms
     dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
@@ -2350,7 +2493,7 @@ module lspdm_tensor_operations_module
     call lsmpi_win_unlock(dest,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_put = time_pdm_put + sto - sta
-    bytes_transferred_put = bytes_transferred_put + nelms * 8_long
+    bytes_transferred_put = bytes_transferred_put + n * 8_long
     nmsg_put = nmsg_put + 1
 #endif
   end subroutine array_puttile_combidx8
@@ -2360,9 +2503,13 @@ module lspdm_tensor_operations_module
     integer,intent(in) :: globtilenr
     integer(kind=4),intent(in) :: nelms
     real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: dest
+    integer(kind=ls_mpik) :: assert,dest, ierr,n
     real(realk) :: sta,sto
 #ifdef VAR_MPI
+    integer(kind=MPI_ADDRESS_KIND) ::offset
+    assert=0
+    offset=0
+    n=nelms
     dest=get_residence_of_tile(globtilenr,arr)
     sta=MPI_WTIME()
     call lsmpi_win_lock(dest,arr%wi(globtilenr),'s')
@@ -2370,68 +2517,10 @@ module lspdm_tensor_operations_module
     call lsmpi_win_unlock(dest,arr%wi(globtilenr))
     sto = MPI_WTIME()
     time_pdm_put = time_pdm_put + sto - sta
-    bytes_transferred_put = bytes_transferred_put + nelms * 8_long
+    bytes_transferred_put = bytes_transferred_put + n * 8_long
     nmsg_put = nmsg_put + 1
 #endif
   end subroutine array_puttile_combidx4
-
-
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!!!!!!!                   GET TILES
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-  !interface to the array_gettile_combidx
-  subroutine array_gettile_modeidx_nolock(arr,modidx,fort,nelms)
-    implicit none
-    type(array),intent(in) ::arr
-    integer,intent(in) :: modidx(arr%mode),nelms
-    real(realk),intent(inout) :: fort(nelms)
-    integer :: cidx
-    cidx=get_cidx(modidx,arr%ntpm,arr%mode)
-    call array_get_tile_nolock(arr,cidx,fort,nelms)
-  end subroutine array_gettile_modeidx_nolock
-
-  subroutine array_gettile_combidx8_nolock(arr,globtilenr,fort,nelms)
-    implicit none
-    type(array),intent(in) :: arr
-    integer,intent(in) :: globtilenr
-    integer(kind=8),intent(in) :: nelms
-    integer(kind=ls_mpik) :: ass
-    real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: source
-    real(realk) :: sta,sto
-#ifdef VAR_MPI
-    source=get_residence_of_tile(globtilenr,arr)
-    sta=MPI_WTIME()
-    call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))
-    sto = MPI_WTIME()
-    time_pdm_get = time_pdm_get + sto - sta
-    bytes_transferred_get = bytes_transferred_get + nelms * 8_long
-    nmsg_get = nmsg_get + 1
-#endif
-  end subroutine array_gettile_combidx8_nolock
-  subroutine array_gettile_combidx4_nolock(arr,globtilenr,fort,nelms)
-    implicit none
-    type(array),intent(in) :: arr
-    integer,intent(in) :: globtilenr
-    integer(kind=4),intent(in) :: nelms
-    real(realk),intent(inout) :: fort(nelms)
-    integer(kind=ls_mpik) :: source
-    real(realk) :: sta,sto
-#ifdef VAR_MPI
-    source=get_residence_of_tile(globtilenr,arr)
-    sta=MPI_WTIME()
-    call lsmpi_get(fort,nelms,1,source,arr%wi(globtilenr))
-    sto = MPI_WTIME()
-    time_pdm_get = time_pdm_get + sto - sta
-    bytes_transferred_get = bytes_transferred_get + nelms * 8_long
-    nmsg_get = nmsg_get + 1
-#endif
-  end subroutine array_gettile_combidx4_nolock
-
-
-
 
   !interface to the array_gettile_combidx
   subroutine array_gettile_modeidx(arr,modidx,fort,nelms)
@@ -2443,6 +2532,7 @@ module lspdm_tensor_operations_module
     cidx=get_cidx(modidx,arr%ntpm,arr%mode)
     call array_get_tile(arr,cidx,fort,nelms)
   end subroutine array_gettile_modeidx
+
   subroutine array_gettile_combidx8(arr,globtilenr,fort,nelms)
     implicit none
     type(array),intent(in) :: arr
@@ -2518,11 +2608,10 @@ module lspdm_tensor_operations_module
     endif
   end subroutine get_int_dist_info
 
-  subroutine dist_int_contributions(g,o2v2,win,lock_outside)
+  subroutine dist_int_contributions(g,o2v2,win)
     implicit none
     integer(kind=long),intent(in) :: o2v2
     real(realk),intent(in) :: g(o2v2)
-    logical :: lock_outside
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
     integer :: fe,ne,msg_len_mpi
@@ -2542,9 +2631,9 @@ module lspdm_tensor_operations_module
       call get_int_dist_info(o2v2,fe,ne,node)
       sta=MPI_WTIME()
       !print *,infpar%lg_mynum,"distributing",fe,fe+ne-1,ne,o2v2,node
-      if(.not.lock_outside)call lsmpi_win_lock(node,win,'s')
+      call lsmpi_win_lock(node,win,'s')
       call lsmpi_acc(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
-      if(.not.lock_outside)call lsmpi_win_unlock(node,win)
+      call lsmpi_win_unlock(node,win)
       sto = MPI_WTIME()
       time_pdm_acc = time_pdm_acc + sto - sta
       bytes_transferred_acc = bytes_transferred_acc + ne * 8_long
