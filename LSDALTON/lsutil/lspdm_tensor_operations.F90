@@ -1747,10 +1747,14 @@ module lspdm_tensor_operations_module
 
     
     do i=1,arr%ntiles
-      call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,o)
+      !call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,o)
+      !call get_tile_dim(nelmsit,arr,i)
+      call tile_from_fort(1.0E0_realk,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,o)
       call get_tile_dim(nelmsit,arr,i)
+      if(mult/=1.0E0_realk)call dscal(nelmsit,mult,buf,1)
 #ifdef VAR_MPI
       if(arr%lock_set(i))then
+        print *,"if this never appears we should have no probs"
         call array_accumulate_tile_nolock(arr,i,buf,nelmsit)
       else
         call array_accumulate_tile(arr,i,buf,nelmsit)

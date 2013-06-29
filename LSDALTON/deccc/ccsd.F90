@@ -2199,11 +2199,10 @@ contains
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,1.0E0_realk,gvvoo,nv)
         elseif(scheme==3)then
 #ifdef VAR_MPI
-#ifdef VAR_LSMPICH
           do nctr=0,nnod-1
-            call lsmpi_win_lock(nctr,gvvoo_w,'s')!,MPI_MODE_NOCHECK)
+            call lsmpi_win_lock(nctr,gvvoo_w,'s',MPI_MODE_NOCHECK)
           enddo
-#endif
+
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,0.0E0_realk,w2,nv)
           call dist_int_contributions(w2,o2v2,gvvoo_w,lock_outside)
 #else
@@ -2223,15 +2222,14 @@ contains
        call dgemm('n','n',la,no,nv*no*lg,1.0E0_realk,w3,la,uigcj,nv*no*lg,1.0E0_realk,Gbi(fa),nb)
        call lsmpi_poke()
        
-#ifdef VAR_LSMPICH
-       if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2)) then
-         if(scheme==3)then
-           do nctr=0,nnod-1
-             call lsmpi_win_unlock(nctr,gvvoo_w)
-           enddo
-         endif
+#ifdef VAR_MPI
+       if (DECinfo%ccModel>2.and.scheme==3.and.lock_outside) then
+         do nctr=0,nnod-1
+           call lsmpi_win_unlock(nctr,gvvoo_w)
+         enddo
        endif
 #endif
+
        !CALCULATE govov FOR ENERGY
        !Reorder I [alpha j gamma b]                      -> I [alpha j b gamma]
        if(iter==1.or.(scheme==4.or.scheme==3.or.scheme==2))&
@@ -2270,13 +2268,12 @@ contains
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1,la,1.0E0_realk,gvoov,nv)
         elseif(scheme==3)then
 #ifdef VAR_MPI
-#ifdef VAR_LSMPICH
           if(lock_outside)then
             do nctr=0,nnod-1
               call lsmpi_win_lock(nctr,gvoov_w,'s',MPI_MODE_NOCHECK)
             enddo
           endif
-#endif
+
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1,la,0.0E0_realk,w2,nv)
           call dist_int_contributions(w2,o2v2,gvoov_w,lock_outside)
 #else
@@ -2300,9 +2297,9 @@ contains
        call lsmpi_poke()
        !Mylsitem%setting%scheme%intprint=0
 
-#ifdef VAR_LSMPICH
-       if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2).and.(iter/=1.or.restart)) then
-         if(scheme==3.and.lock_outside)then
+#ifdef VAR_MPI
+       if (DECinfo%ccModel>2.and.scheme==3.and.(iter/=1.or.restart)) then
+         if(lock_outside)then
            do nctr=0,nnod-1
              call lsmpi_win_unlock(nctr,gvoov_w)
            enddo
