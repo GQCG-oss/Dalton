@@ -7441,6 +7441,7 @@ subroutine pe_compute_london(fckmats)
 
     integer :: k, lu
     real(dp), dimension(:,:), allocatable :: Mkinds
+    real(dp), dimension(:,:), allocatable :: Qinds
     logical :: lexist
 
     fckmats = 0.0d0
@@ -7449,6 +7450,37 @@ subroutine pe_compute_london(fckmats)
     if (lmul(1)) call lao_multipoles(M1s, fckmats)
     if (lmul(2)) call lao_multipoles(M2s, fckmats)
 
+! cosmo contribution
+    if(pe_sol) then
+        allocate(Qinds(1,nsurp))
+        if (myid == 0) then
+            inquire(file='pe_induced_charges.bin', exist=lexist)
+        end if
+#if     defined(VAR_MPI)
+        if (nprocs > 1) then
+            call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
+        end if
+#endif
+        if (lexist) then
+            if (myid == 0) then
+                call openfile('pe_induced_charges.bin', lu, 'old', 'unformatted')
+                rewind(lu)
+                read(lu) Qinds
+                close(lu)
+            end if
+        else
+            stop 'ERROR: pe_induced_charges.bin does not exist'
+        end if
+#if defined(VAR_MPI)
+        if (nprocs > 1) then
+            call mpi_bcast(Mkinds, nsurp, rmpi, 0, comm, ierr)
+        end if
+#endif
+        call lao_multipoles(Qinds, fckmats)
+        deallocate(Qinds, stat=ierr)
+    endif
+
+! polarization contribution
     if (lpol(1)) then
         allocate(Mkinds(3,npols))
         if (myid == 0) then
