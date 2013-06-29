@@ -2321,8 +2321,6 @@ contains
       else
         call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3,o2v,1.0E0_realk,omega2%elm1,nv)
       endif
-      print *,"nach int"
-      call print_norm(omega2)
       call lsmpi_poke()
 
     end do BatchAlpha
