@@ -6111,7 +6111,7 @@ subroutine pe_diis_solver_charges(Mkinds, Fs)
     IF(NTSATM.EQ.960) DISM0 = 0.1000D+00*aa2au 
     FACTOR  = 1.0d0/SQRT(4.0d0*pi)/1.07D+00
     DSCALE   = (eps - 1.0d0)/eps 
-    print *, dscale
+    if(pe_debug) write(luout,'(a,F9.4)') 'eps =', dscale
     
     do n = 1, ndens
       
@@ -7441,14 +7441,47 @@ subroutine pe_compute_london(fckmats)
 
     integer :: k, lu
     real(dp), dimension(:,:), allocatable :: Mkinds
+    real(dp), dimension(:,:), allocatable :: Qinds
     logical :: lexist
 
     fckmats = 0.0d0
 
+! static multipole moment contribution
     if (lmul(0)) call lao_multipoles(M0s, fckmats)
     if (lmul(1)) call lao_multipoles(M1s, fckmats)
     if (lmul(2)) call lao_multipoles(M2s, fckmats)
 
+! cosmo contribution
+    if(pe_sol) then
+        allocate(Qinds(1,nsurp))
+        if (myid == 0) then
+            inquire(file='pe_induced_charges.bin', exist=lexist)
+        end if
+#if     defined(VAR_MPI)
+        if (nprocs > 1) then
+            call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
+        end if
+#endif
+        if (lexist) then
+            if (myid == 0) then
+                call openfile('pe_induced_charges.bin', lu, 'old', 'unformatted')
+                rewind(lu)
+                read(lu) Qinds
+                close(lu)
+            end if
+        else
+            stop 'ERROR: pe_induced_charges.bin does not exist'
+        end if
+#if defined(VAR_MPI)
+        if (nprocs > 1) then
+            call mpi_bcast(Mkinds, nsurp, rmpi, 0, comm, ierr)
+        end if
+#endif
+        call lao_cosmo(Qinds, fckmats)
+        deallocate(Qinds, stat=ierr)
+    endif
+
+! polarization contribution
     if (lpol(1)) then
         allocate(Mkinds(3,npols))
         if (myid == 0) then
@@ -7492,6 +7525,33 @@ end subroutine pe_compute_london
 
 !------------------------------------------------------------------------------
 
+subroutine lao_cosmo(Mks, fckmats)
+
+    real(dp), dimension(:,:), intent(in) :: Mks
+    real(dp), dimension(:), intent(inout) :: fckmats
+
+    integer :: site, ncomps
+    integer :: i, j, ifrom, ito
+    real(dp), dimension(:,:,:), allocatable :: Mk_ints
+
+    ncomps = size(Mks, 1)
+    allocate(Mk_ints(n2bas,3,ncomps))
+    do site = 1, nsurp
+        call Mk_lao_integrals(Mk_ints, Rsp(:,site), Mks(:,site))
+
+        ! update for all directions of the magnetic field
+        do j = 1, 3
+            ifrom = (j - 1) * n2bas + 1
+            ito   = j * n2bas
+            fckmats(ifrom:ito) = fckmats(ifrom:ito) + sum(Mk_ints(:,j,:), 2)
+        end do
+    end do
+    deallocate(Mk_ints)
+
+end subroutine lao_cosmo
+
+!------------------------------------------------------------------------------
+
 subroutine lao_multipoles(Mks, fckmats, linduced)
 
     real(dp), dimension(:,:), intent(in) :: Mks
@@ -7500,7 +7560,6 @@ subroutine lao_multipoles(Mks, fckmats, linduced)
 
     integer :: i, j, ifrom, ito
     integer :: site, ncomps
-    real(dp), dimension(:), allocatable :: symfacs
     real(dp), dimension(:,:,:), allocatable :: Mk_ints
     logical :: pol
 
