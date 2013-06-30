@@ -7446,6 +7446,7 @@ subroutine pe_compute_london(fckmats)
 
     fckmats = 0.0d0
 
+! static multipole moment contribution
     if (lmul(0)) call lao_multipoles(M0s, fckmats)
     if (lmul(1)) call lao_multipoles(M1s, fckmats)
     if (lmul(2)) call lao_multipoles(M2s, fckmats)
@@ -7476,7 +7477,7 @@ subroutine pe_compute_london(fckmats)
             call mpi_bcast(Mkinds, nsurp, rmpi, 0, comm, ierr)
         end if
 #endif
-        call lao_multipoles(Qinds, fckmats)
+        call lao_cosmo(Qinds, fckmats)
         deallocate(Qinds, stat=ierr)
     endif
 
@@ -7524,6 +7525,33 @@ end subroutine pe_compute_london
 
 !------------------------------------------------------------------------------
 
+subroutine lao_cosmo(Mks, fckmats)
+
+    real(dp), dimension(:,:), intent(in) :: Mks
+    real(dp), dimension(:), intent(inout) :: fckmats
+
+    integer :: site, ncomps
+    integer :: i, j, ifrom, ito
+    real(dp), dimension(:,:,:), allocatable :: Mk_ints
+
+    ncomps = size(Mks, 1)
+    allocate(Mk_ints(n2bas,3,ncomps))
+    do site = 1, nsurp
+        call Mk_lao_integrals(Mk_ints, Rsp(:,site), Mks(:,site))
+
+        ! update for all directions of the magnetic field
+        do j = 1, 3
+            ifrom = (j - 1) * n2bas + 1
+            ito   = j * n2bas
+            fckmats(ifrom:ito) = fckmats(ifrom:ito) + sum(Mk_ints(:,j,:), 2)
+        end do
+    end do
+    deallocate(Mk_ints)
+
+end subroutine lao_cosmo
+
+!------------------------------------------------------------------------------
+
 subroutine lao_multipoles(Mks, fckmats, linduced)
 
     real(dp), dimension(:,:), intent(in) :: Mks
@@ -7532,7 +7560,6 @@ subroutine lao_multipoles(Mks, fckmats, linduced)
 
     integer :: i, j, ifrom, ito
     integer :: site, ncomps
-    real(dp), dimension(:), allocatable :: symfacs
     real(dp), dimension(:,:,:), allocatable :: Mk_ints
     logical :: pol
 
