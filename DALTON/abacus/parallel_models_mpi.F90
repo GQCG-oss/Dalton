@@ -64,9 +64,15 @@ contains
 
 #ifdef VAR_MPI
       call mpi_initialized(is_init, ierr)
-      if(.not.is_init) stop ' initialization of parallel communication models requires MPI_init to be called first.'
-      call mpi_comm_rank(mpi_comm_world, my_process_id_glb, ierr) 
-      call mpi_comm_size(mpi_comm_world, nr_of_process_glb, ierr) 
+      if(.not.is_init)then 
+        print *, ' warning: initialization of parallel communication models requires MPI_init to be called first.'
+        print *, ' warning: assuming DALTON was compiled with MPI support but run in serial mode... continuing...'
+        my_process_id_glb = 0
+        nr_of_process_glb = 1
+      else
+        call mpi_comm_rank(mpi_comm_world, my_process_id_glb, ierr) 
+        call mpi_comm_size(mpi_comm_world, nr_of_process_glb, ierr) 
+      end if
 #else
       my_process_id_glb = 0
       nr_of_process_glb = 1
