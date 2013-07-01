@@ -888,6 +888,8 @@ C /* Deck pcm_comp_el_pot1 */
 #include "inforb.h"
 #include "priunit.h"
 #include "infrsp.h"
+#include "maxorb.h"
+#include "infpar.h"
 
       LOGICAL TOFILE
       DIMENSION BOVECS(*), UDV(*), UDVTR(*), CMO(*), WORK(*)
