@@ -148,6 +148,144 @@ C     derivative wrt rho and grd -----------------------
 
       return
       end
+C****************************************************************************
+      SUBROUTINE DELA(ESR,rhot,grd,VLAMBDA,norder,
+     >                d1Edrho,d1Edgrd,d1Edgrda2,
+     >                d2Edrhodrho,d2Edgrddgrd,d2Edrhodgrd)
+
+C Linear complement exchange PBE functional, Kamal SHARKAS 20/05/2011
+C*****************************************************************************
+
+      implicit none
+
+      external ESR
+      integer norder
+
+      double precision rhot, grd, VLAMBDA
+      double precision d1Edrho,d1Edgrd,d1Edgrda2
+      double precision d2Edrhodrho, d2Edgrddgrd, d2Edrhodgrd
+
+      call   DESR(ESR,rhot,grd,0.d0,norder,
+     >            d1Edrho,d1Edgrd,d1Edgrda2,
+     >            d2Edrhodrho,d2Edgrddgrd,d2Edrhodgrd)
+
+
+      d1Edrho = (1.d0- VLAMBDA) * d1Edrho
+
+      d1Edgrd = (1.d0- VLAMBDA) * d1Edgrd
+
+      d1Edgrda2 = (1.d0- VLAMBDA) * d1Edgrda2
+
+      d2Edrhodrho = (1.d0- VLAMBDA) * d2Edrhodrho
+
+      d2Edgrddgrd =  (1.d0- VLAMBDA) * d2Edgrddgrd
+
+      d2Edrhodgrd = (1.d0- VLAMBDA) * d2Edrhodgrd
+
+          return
+           end
+
+C****************************************************************************
+      SUBROUTINE DELANSC(ESR,rhot,grd,VLAMBDA,norder,
+     >                d1Edrho,d1Edgrd,d1Edgrda2,
+     >                d2Edrhodrho,d2Edgrddgrd,d2Edrhodgrd)
+
+C Linear complement (NON-Scaled) correlation PBE GWS functional, Kamal SHARKAS 20/05/2011
+C*****************************************************************************
+      implicit none
+
+      external ESR
+      integer norder
+
+      double precision rhot, grd, VLAMBDA
+      double precision d1Edrho,d1Edgrd,d1Edgrda2
+      double precision d2Edrhodrho, d2Edgrddgrd, d2Edrhodgrd
+
+      call   DESR(ESR,rhot,grd,0.d0,norder,
+     >            d1Edrho,d1Edgrd,d1Edgrda2,
+     >            d2Edrhodrho,d2Edgrddgrd,d2Edrhodgrd)
+
+
+      d1Edrho = (1.d0- VLAMBDA**2) * d1Edrho
+
+      d1Edgrd = (1.d0- VLAMBDA**2) * d1Edgrd
+
+      d1Edgrda2 = (1.d0- VLAMBDA**2) * d1Edgrda2
+
+      d2Edrhodrho = (1.d0- VLAMBDA**2) * d2Edrhodrho
+
+      d2Edgrddgrd =  (1.d0- VLAMBDA**2) * d2Edgrddgrd
+
+      d2Edrhodgrd = (1.d0- VLAMBDA**2) * d2Edrhodgrd
+
+          return
+           end
+
+C****************************************************************************
+      SUBROUTINE DELASC(ESR,rhot,grd,VLAMBDA,norder,
+     >                d1Edrho,d1Edgrd,d1Edgrda2,
+     >                d2Edrhodrho,d2Edgrddgrd,d2Edrhodgrd)
+
+C Linear complement Scaled correlation PBE functional, Kamal SHARKAS 20/05/2011
+C*****************************************************************************
+      implicit none
+
+      external ESR
+      integer norder
+
+      double precision rhot, rhotscaled, grd, grdscaled, VLAMBDA
+      double precision d1Edrho,d1Edgrd,d1Edgrda2
+      double precision d2Edrhodrho, d2Edgrddgrd, d2Edrhodgrd
+      double precision d1Edrhocoul,d1Edgrdcoul,d1Edgrda2coul
+      double precision d2Edrhodrhocoul, d2Edgrddgrdcoul, d2Edrhodgrdcoul
+      double precision d1Edrhosca,d1Edgrdsca,d1Edgrda2sca
+      double precision d2Edrhodrhosca, d2Edgrddgrdsca, d2Edrhodgrdsca
+
+      d1Edrhocoul = 0.d0
+      d1Edgrdcoul = 0.d0
+      d1Edgrda2coul = 0.d0
+      d2Edrhodrhocoul = 0.d0
+      d2Edgrddgrdcoul = 0.d0
+      d2Edrhodgrdcoul =  0.d0
+
+      call  DESR(ESR,rhot,grd,0.d0,norder,
+     >           d1Edrhocoul,d1Edgrdcoul,d1Edgrda2coul,
+     >           d2Edrhodrhocoul,d2Edgrddgrdcoul,d2Edrhodgrdcoul)
+
+      rhotscaled = rhot/VLAMBDA**3
+      grdscaled  = grd/VLAMBDA**4
+
+      d1Edrhosca = 0.d0
+      d1Edgrdsca = 0.d0
+      d1Edgrda2sca = 0.d0
+      d2Edrhodrhosca = 0.d0
+      d2Edgrddgrdsca = 0.d0
+      d2Edrhodgrdsca =  0.d0
+
+      call  DESR(ESR,rhotscaled,grdscaled,0.d0,norder,
+     >           d1Edrhosca,d1Edgrdsca,d1Edgrda2sca,
+     >           d2Edrhodrhosca,d2Edgrddgrdsca,d2Edrhodgrdsca)
+
+
+      d1Edrho = d1Edrho + (d1Edrhocoul - VLAMBDA**2 * d1Edrhosca)
+
+      d1Edgrd = d1Edgrd + (d1Edgrdcoul - VLAMBDA * d1Edgrdsca)
+
+      d1Edgrda2 = d1Edgrda2+(d1Edgrda2coul-(d1Edgrda2sca/VLAMBDA**3))
+
+      d2Edrhodrho= d2Edrhodrho + (d2Edrhodrhocoul -
+     >                 (1.d0/VLAMBDA)*d2Edrhodrhosca)
+
+      d2Edgrddgrd = d2Edgrddgrd + (d2Edgrddgrdcoul-
+     >                   (d2Edgrddgrdsca/VLAMBDA**3))
+
+      d2Edrhodgrd = d2Edrhodgrd + (d2Edrhodgrdcoul-
+     >                   (d2Edrhodgrdsca/VLAMBDA**2))
+
+
+          return
+           end
+C****************************************************************************
 
 C****************************************************************************
       SUBROUTINE DESRSPIN(ESRSPIN,rhot,rhos,mu,dospin,norder,
@@ -258,6 +396,71 @@ C       derivative wrt rhot and rhos -----------------------
 
       return
       end
+C****************************************************************************
+      SUBROUTINE DELSPIN(ESRSPIN,rhot,rhos,VLAMBDA,dospin,norder,
+     >                d1Edrhot,d1Edrhos,
+     >                d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos)
+
+C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 23/04/2011
+C*****************************************************************************
+      implicit none
+
+      external ESRSPIN
+      integer norder
+      logical dospin
+      double precision rhot, rhos, VLAMBDA
+      double precision d1Edrhot, d1Edrhos
+      double precision d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos
+
+      call  DESRSPIN(ESRSPIN,rhot,rhos,0.d0,dospin,norder,
+     >                d1Edrhot,d1Edrhos,
+     >                d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos)
+
+
+      d1Edrhot = (1.d0- VLAMBDA) * d1Edrhot
+
+       if (dospin) d1Edrhos = (1.d0- VLAMBDA) * d1Edrhos
+
+      d2Edrhotdrhot = (1.d0- VLAMBDA) * d2Edrhotdrhot
+
+       if (dospin) d2Edrhotdrhos = (1.d0- VLAMBDA) * d2Edrhotdrhos
+
+       if (dospin) d2Edrhosdrhos =  (1.d0- VLAMBDA) * d2Edrhosdrhos
+
+          return
+           end
+
+C****************************************************************************
+      SUBROUTINE DELSPINnSC(ESRSPIN,rhot,rhos,VLAMBDA,dospin,norder,
+     >                d1Edrhot,d1Edrhos,
+     >                d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos)
+C linear complement non-scaled spin-dependent correlation LDA functional, Kamal SHARKAS 23/04/2011
+C*****************************************************************************
+      implicit none
+
+      external ESRSPIN
+      integer norder
+      logical dospin
+      double precision rhot, rhos, VLAMBDA
+      double precision d1Edrhot, d1Edrhos
+      double precision d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos
+
+      call  DESRSPIN(ESRSPIN,rhot,rhos,0.d0,dospin,norder,
+     >                d1Edrhot,d1Edrhos,
+     >                d2Edrhotdrhot,d2Edrhotdrhos,d2Edrhosdrhos)
+
+
+      d1Edrhot = (1.d0- VLAMBDA**2)* d1Edrhot
+        if (dospin) d1Edrhos = (1.d0- VLAMBDA**2)* d1Edrhos
+
+      d2Edrhotdrhot = (1.d0- VLAMBDA**2)* d2Edrhotdrhot
+        if (dospin) d2Edrhotdrhos = (1.d0- VLAMBDA**2)* d2Edrhotdrhos
+
+        if (dospin) d2Edrhosdrhos =  (1.d0- VLAMBDA**2)* d2Edrhosdrhos
+
+          return
+           end
+C****************************************************************************
 
 C****************************************************************************
       subroutine ESRX_PBETCSERF(rho,grd,mu,e)
@@ -2643,6 +2846,18 @@ C     LDA energy
       return
       end
 C****************************************************************************
+      subroutine ELAX_PBEGWS(rhot,grd,VLAMBDA,e)
+C linear complement exchange PBE energy, Kamal SHARKAS 19/05/2011 beg
+C*****************************************************************************
+      double precision rhot, grd, VLAMBDA
+      double precision e
+
+      call ESRX_PBEGWSERF(rhot,grd,0.d0,e)
+      e = (1.d0 - VLAMBDA) * e
+
+      return
+       end
+C****************************************************************************
       subroutine ESRC_PBEGWSERF(rho,grd,mu,e)
 C*****************************************************************************
 C     Short-range PBE correlation functional from
@@ -2713,6 +2928,44 @@ C*****************************************************************************
 
       return
       end
+C****************************************************************************
+      subroutine ELAC_PBEGWS(rhot,grd,VLAMBDA,e)
+C linear complement non-scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011 beg
+C*****************************************************************************
+      double precision rhot, grd, VLAMBDA
+      double precision e
+
+      call ESRC_PBEGWSERF(rhot,grd,0.d0,e)
+      e = (1.d0 - VLAMBDA**2) * e
+
+      return
+       end
+
+C****************************************************************************
+      subroutine ELASC_PBEGWS(rhot,grd,VLAMBDA,e)
+C linear complement Scaled correlation PBE functional energy, Kamal SHARKAS 20/05/2011
+C*****************************************************************************
+      double precision rhot, grd, VLAMBDA
+      double precision e, ecoul, escaled,rhotscaled,grdscaled
+
+      ecoul = 0.d0
+
+      call ESRC_PBEGWSERF(rhot,grd,0.d0,ecoul)
+
+      rhotscaled = rhot/VLAMBDA**3
+      grdscaled  = grd/VLAMBDA**4
+
+      escaled = 0.d0
+
+      call ESRC_PBEGWSERF(rhotscaled,grdscaled,0.d0,escaled)
+
+      e = ecoul - (VLAMBDA**5)*escaled
+
+      return
+       end
+
+C*****************************************************************************
+
 !-------------------------------------------
       function berf(a)
 !-------------------------------------------
@@ -3039,6 +3292,21 @@ C       divide by two because of spin scaling
       return
       end
 C****************************************************************************
+      subroutine ELX_LDALAMSPIN (rhot,rhos,VLAMBDA,dospin,e)
+C linear complement spin-dependent exchange LDA functional energy, Kamal SHARKAS 23/04/2011
+C*****************************************************************************
+      double precision rhot, rhos, VLAMBDA
+      double precision e
+      logical dospin
+
+      call ESRX_LDAERFSPIN(rhot,rhos,0.d0,dospin,e)
+      e = (1.d0 - VLAMBDA) * e
+
+      return
+       end
+C*****************************************************************************
+
+C****************************************************************************
       subroutine ESRC_LDAERFSPIN (rhot,rhos,mu,dospin,e)
 C*****************************************************************************
 C     Short-range spin-dependent LDA correlation functional from 
@@ -3097,6 +3365,20 @@ C     Spin-polarized case
 
       return
       end
+C****************************************************************************
+      subroutine ELC_LDALAMSPIN (rhot,rhos,VLAMBDA,dospin,e)
+C linear complement spin-dependent non-scaled correlation LDA functional, Kamal SHARKAS 23/04/2011
+C*****************************************************************************
+      double precision rhot, rhos, VLAMBDA
+      double precision e
+      logical dospin
+
+      call ESRC_LDAERFSPIN(rhot,rhos,0.d0,dospin,e)
+      e = (1.d0 - VLAMBDA**2) * e
+
+      return
+       end
+C*****************************************************************************
 C****************************************************************************
       subroutine ESRC_MD_LDAERF (rhot,rhos,mu,dospin,e)
 C*****************************************************************************

@@ -58,7 +58,8 @@ C
      &            WORK(KRJ000),WORK(KPQX),WORK(KPQY),WORK(KPQZ),
      &            WORK(KLAST),LWRK,NTUV,JMAX,MAXDER,NUABCD,IPQ0X,IPQ0Y,
      &            IPQ0Z,NOINT,ONECEN,NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,
-     &            THRESH,IPRINT,SIGNT,IODDHR,PANAS,CHIVAL,ERFEXP,SRINTS)
+     &            THRESH,IPRINT,SIGNT,IODDHR,PANAS,CHIVAL,ERFEXP,
+     &             VLAMBDA,COMLAM,SRINTS)
       LWTOT  = LWTOT - KLAST
       RETURN
       END
@@ -67,7 +68,8 @@ C  /* Deck hr2dr1 */
      &                  FAC34,RJ000,PQX,PQY,PQZ,WORK,LWORK,NTUV,JMAX,
      &                  MAXDER,NUABCD,IPQ0X,IPQ0Y,IPQ0Z,NOINT,ONECEN,
      &                  NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,THRESH,IPRINT,
-     &                  SIGNT,IODDHR,PANAS,CHIVAL,ERFEXP,SRINTS)
+     &                  SIGNT,IODDHR,PANAS,CHIVAL,ERFEXP,
+     &                  VLAMBDA,COMLAM,SRINTS)
 C     Modified for r12 integrals (WK/UniKA/15-11-2002).
 #include "implicit.h"
 #include "priunit.h"
@@ -75,7 +77,7 @@ C     Modified for r12 integrals (WK/UniKA/15-11-2002).
 #include "drw2el.h"
 #include "maxaqn.h"
       PARAMETER (D1 = 1.D0)
-      LOGICAL NOINT, ONECEN, SRINTS
+      LOGICAL NOINT, ONECEN, SRINTS, COMLAM
       LOGICAL ERFEXP(0:*)
 #include "twosta.h"
 C     HERINT is declared 3-dimensional for r12 integrals (WK/UniKA/14-11-2002).
@@ -139,7 +141,7 @@ C
          CALL R000(RJ000,COOR12,COOR34,EXP12,EXP34,FAC12,FAC34,PQX,PQY,
      &             PQZ,JMAX,NOINT,NUABCD,NUC1,NUC2,NUC12,NUC3,NUC4,
      &             NUC34,THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,SIGNT,
-     &             PANAS,CHIVAL,ERFEXP,SRINTS,WORK,LWORK)
+     &             PANAS,CHIVAL,ERFEXP,VLAMBDA,COMLAM,SRINTS,WORK,LWORK)
          IF (TKTIME) THEN
             TIMEND = SECOND()
             TIME = TIMEND - TIMSTR
@@ -189,7 +191,8 @@ C  /* Deck r000 */
       SUBROUTINE R000(RJ000,COOR12,COOR34,EXP12,EXP34,FAC12,FAC34,PQX,
      &                PQY,PQZ,JMAX,NOINT,NUABCD,NUC1,NUC2,NUC12,NUC3,
      &                NUC4,NUC34,THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,
-     &                SIGNT,PANAS,CHIVAL,ERFEXP,SRINTS,WORK,LWORK)
+     &                SIGNT,PANAS,CHIVAL,ERFEXP,VLAMBDA,COMLAM,SRINTS,
+     &                 WORK,LWORK)
 C
 C     TUH 84
 C
@@ -199,7 +202,7 @@ C
 #include "maxaqn.h"
 #include "twosta.h"
 #include "r12int.h"
-      LOGICAL ONECEN, NOINT, SRINTS
+      LOGICAL ONECEN, NOINT, SRINTS, COMLAM
       LOGICAL ERFEXP(0:*)
       DIMENSION RJ000(*), PQX(*), PQY(*), PQZ(*), COOR12(*), COOR34(*),
      &          EXP12 (*), EXP34(*), FAC12 (*), FAC34(*), SIGNT(3),
@@ -244,8 +247,8 @@ C     =============================================
      &           PQZ,JMAX,NOINT,NUABCD,NUC1,NUC2,NUC12,NUC3,NUC4,NUC34,
      &           THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,SIGNT,
      &           WORK(KWVALU),WORK(KALPHJ),WORK(KALPHA),WORK(KINDAD),
-     &           PANAS,CHIVAL,ERFEXP,NTALPHX,WORK(KEJ000),WORK(KSJ000),
-     &           SRINTS,WORK(KLAST),LWRK)
+     &           PANAS,CHIVAL,ERFEXP,VLAMBDA,COMLAM,NTALPHX,
+     &           WORK(KEJ000),WORK(KSJ000),SRINTS,WORK(KLAST),LWRK)
       RETURN
       END
 C  /* Deck r0001 */
@@ -253,7 +256,8 @@ C  /* Deck r0001 */
      &                PQY,PQZ,JMAX,NOINT,NUABCD,NUC1,NUC2,NUC12,NUC3,
      &                NUC4,NUC34,THRESH,ONECEN,IPRINT,IPQ0X,IPQ0Y,IPQ0Z,
      &                SIGNT,WVALU,TALPHA,SCLFAC,INDADR,PANAS,CHIVAL,
-     &                ERFEXP,NTALPHX,EJ000,SJ000,SRINTS,WORK,LWORK)
+     &                ERFEXP,VLAMBDA,COMLAM,NTALPHX,EJ000,SJ000,
+     &                 SRINTS,WORK,LWORK)
 C
 C     TUH 84
 C
@@ -266,7 +270,7 @@ C
 #include "drw2el.h"
       PARAMETER (D0=0.0D0,D1=1.0D0,D2=2.0D0,D3=3.0D0,D5=5.0D0,
      &           DP25=0.25D0,D10=10.0D0,D18=18.0D0)
-      LOGICAL ONECEN, NOINT, SRINTS
+      LOGICAL ONECEN, NOINT, SRINTS, COMLAM
       LOGICAL ERFEXP(0:*)
       DIMENSION RJ000(NUABCD,0:JMAX),EJ000(NUABCD,0:JMAX),
      &          SJ000(NUABCD,0:JMAX),PQX(NUABCD),PQY(NUABCD),
@@ -392,6 +396,9 @@ c              --- Modified
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQ*EXPPQII)
                   TALPHA(IODS,2) = - D2*EXPPQII
                   SJ000(IODS,0) = FACTOR
+                  IF(COMLAM) THEN
+                     SJ000(IODS,0) = SJ000(IODS,0) * VLAMBDA
+                  ENDIF
 c               --- Old ERFEXP function 2*chival/sqrt(pi)*exp(-chisq/3*r**2)
                   IF(ERFEXP(1)) THEN
                      AI = D3/CHISQ    
@@ -430,6 +437,9 @@ C
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQ*EXPPQII)
                   TALPHA(IODS,1) = - D2*EXPPQII
                   RJ000(IODS,0) = FACTOR
+                  IF(COMLAM) THEN
+                     RJ000(IODS,0) = RJ000(IODS,0) * VLAMBDA
+                  ENDIF
                   IF(ERFEXP(1)) THEN
                      AI = D3/CHISQ
                      EXPFAC  = EXPPI + EXPQI + AI
@@ -631,6 +641,9 @@ c                --- Modified
                   EXPPQII= D1/EXPPQI2
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQ*EXPPQII)
                   SCLFAC(IODS,2) = FACTOR
+                  IF(COMLAM) THEN
+                     SCLFAC(IODS,2) = SCLFAC(IODS,2) * VLAMBDA
+                  ENDIF
 #if !defined (SYS_IRIX)
                   NODS = NODS + 1
 #endif
@@ -687,6 +700,9 @@ C
                   EXPPQII= D1/EXPPQI
                   FACTOR = FAC12I*FAC34(IOD34)*SQRT(EXPPQ*EXPPQII)
                   SCLFAC(IODS,1) = FACTOR
+                  IF(COMLAM) THEN
+                     SCLFAC(IODS,1) = SCLFAC(IODS,1) * VLAMBDA
+                  ENDIF
 #if !defined (SYS_IRIX)
                   NODS = NODS + 1
 #endif
