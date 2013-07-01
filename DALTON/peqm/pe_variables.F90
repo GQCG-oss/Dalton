@@ -41,6 +41,7 @@ module pe_variables
     logical, save :: pe_debug = .false.
     logical, save :: rsp_first = .true.
     logical, save :: fixpva = .false.
+    logical, save :: pe_qmdamping = .false.
 
     ! calculation type
     logical, save :: fock = .false.
@@ -127,6 +128,12 @@ module pe_variables
     integer, save :: n2bas
     ! number of nuclei in core region
     integer, save :: qmnucs = 0
+
+    ! THOLE QM DAMPING STUFF
+    ! ----------------------
+    integer, save :: nqmpoltensors = 0
+    real(dp), dimension(:,:), allocatable, save :: qmpoltensors
+    ! ----------------------
 
     ! specifies what type of parameters are present
     ! lmul(0): monopoles, lmul(1): dipoles etc.

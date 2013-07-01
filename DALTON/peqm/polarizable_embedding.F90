@@ -31,7 +31,6 @@ module polarizable_embedding
 
 ! TODO:
 ! handle interface better, e.g. scale or remove higher order moments and pols
-! damping of electric field from QM system?
 ! find better solution for electric field calculation from fragment densities
 ! higher order polarizabilities
 ! write list of publications which should be cited
@@ -160,6 +159,17 @@ subroutine pe_init(lupri, coords, charges)
                                    & will be damped'
             write(luout,'(4x,a,f8.4)') 'using damping coefficient:', damp
         end if
+        if (pe_qmdamping) then
+            write(luout,'(/4x,a)') 'Interactions between QM and PE moments&
+             & will be damped with THOLE damping'
+            write(luout,'(4x,a)') 'using the following polarizability&
+                                   & tensors:'
+            if(qmnucs /= nqmpoltensors) stop 'ERROR: number of QM &
+             polarizability tensors do not match number of QM atoms.'
+            do i = 1, qmnucs
+                write(luout,'(8x,6f8.4)') (qmpoltensors(j,i),j=1,6)
+            enddo
+        endif
     end if
     if (pe_fd) then
         write(luout,'(/4x,a,i4)') 'Number of fragment densities: ', nfds
@@ -610,6 +620,27 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 read(luinp,*) damp
             end if
             pe_damp = .true.
+        ! damp fields from mm region onto qm region via
+        ! thole damping. this requires us to read a polarizability
+        ! tensor for each core. here we have no clue about the core
+        ! so do it the manual way
+        else if (trim(option(2:)) == 'QMDAMP') then
+            read(luinp,*) nqmpoltensors
+            read(luinp,*) option
+            !no backspace here, apparently :-/
+            !backspace(luinp)
+            allocate(qmpoltensors(6,nqmpoltensors))
+            qmpoltensors = 0.0d0
+            do i=1,nqmpoltensors
+                if (trim(option).eq.'ISO') then
+                    read(luinp, *) qmpoltensors(1,i)
+                    qmpoltensors(4,i) = qmpoltensors(1,i)
+                    qmpoltensors(6,i) = qmpoltensors(1,i)
+                else
+                    read(luinp, *) qmpoltensors(:,i)
+                endif
+            enddo
+            pe_qmdamping = .true.
         ! neglect dynamic response from environment
         else if (trim(option(2:)) == 'GSPOL') then
             pe_gspol = .true.
@@ -1491,6 +1522,7 @@ subroutine pe_sync()
         call mpi_bcast(pe_nomb, 1, lmpi, 0, comm, ierr)
         call mpi_bcast(pe_damp, 1, lmpi, 0, comm, ierr)
         call mpi_bcast(damp, 1, rmpi, 0, comm, ierr)
+        call mpi_bcast(pe_qmdamping, 1, lmpi, 0, comm, ierr)
     end if
 
     call mpi_bcast(pe_fd, 1, lmpi, 0, comm, ierr)
@@ -2914,6 +2946,7 @@ subroutine electron_fields(Fels, denmats)
     integer :: site
     integer :: i, j, k, l, m
     real(dp), dimension(nnbas,3) :: Fel_ints
+    real(dp) :: dfact
 
     Fels = 0.0d0
 
@@ -2931,6 +2964,14 @@ subroutine electron_fields(Fels, denmats)
             end if
         end if
         call Tk_integrals('es', Fel_ints, Rs(:,site))
+        if(pe_qmdamping) then
+            call thole_damping_for_site(Rs(:,site), P1s(:,site), dfact)
+            if(pe_debug) then
+                write(luout,'(a,i4,a,f8.4)') 'damping electric field &
+               &from site',site,' with a factor of',dfact
+            endif
+            Fel_ints = Fel_ints * dfact
+        endif
         do j = 1, 3
             do k = 1, ndens
                 l = (k - 1) * nnbas + 1
@@ -3040,6 +3081,7 @@ subroutine nuclear_fields(Fnucs)
     integer :: lu, site
     integer :: i, j, k
     real(dp), dimension(3) :: Rms, Tms
+    real(dp) :: dfact
 
     if (myid == 0) then
         inquire(file='pe_nuclear_field.bin', exist=lexist)
@@ -3073,11 +3115,19 @@ subroutine nuclear_fields(Fnucs)
                     cycle
                 end if
             end if
+            dfact = 1.0d0
+            if(pe_qmdamping) then
+                call thole_damping_for_site(Rs(:,site), P1s(:,site), dfact)
+                if(pe_debug) then
+                    write(luout,'(a,i4,a,f8.4)') 'damping nuclear field &
+                   &from site',site,' with a factor of',dfact
+                endif
+            endif
             do j = 1, qmnucs
                 Rms = Rs(:,site) - Rm(:,j)
                 call Tk_tensor(Tms, Rms)
                 do k = 1, 3
-                    Fnucs(i+k) = Fnucs(i+k) - Zm(1,j) * Tms(k)
+                    Fnucs(i+k) = Fnucs(i+k) - Zm(1,j) * Tms(k) * dfact
                 end do
             end do
             i = i + 3
@@ -7633,5 +7683,51 @@ subroutine Mk_lao_integrals(Mk_ints, Rij, Mk)
     deallocate(factors)
 
 end subroutine Mk_lao_integrals
+
+subroutine thole_damping_for_site(Ri, P1i, dfact)
+
+    real(dp), dimension(3), intent(in) :: Ri
+    real(dp), dimension(6), intent(in) :: P1i
+    real(dp), intent(out) :: dfact
+    !integer, intent(in), optional :: qmnuc
+
+    integer :: a
+    real(dp) :: R2, Ria, uia
+    real(dp) :: alphai, alphaa, alpha
+    integer :: iqmnuc
+
+    real(dp), parameter :: d3i = 1.0d0 / 3.0d0
+    real(dp), parameter :: d6i = 1.0d0 / 6.0d0
+    real(dp), parameter :: k = 2.1304
+
+    ! set some sensible standards
+    dfact = 1.0d0
+    Ria = 30.0d10
+
+    ! index and check to see if we found a QM nucleus
+    iqmnuc = -1
+
+    ! locate the nuclei closes to site i if it has not been provided
+    do a=1,qmnucs
+        R2 = (Ri(1) - Rm(1,a))**2 + &
+           & (Ri(2) - Rm(2,a))**2 + &
+           & (Ri(3) - Rm(3,a))**2
+        if(R2.le.Ria) then
+            Ria = R2
+            iqmnuc = a
+        endif
+    enddo
+
+    if(iqmnuc.eq.-1) stop 'ERROR: QM damping failed. QM site not found.'
+    alphaa = d3i*(qmpoltensors(1,iqmnuc) &
+               & +qmpoltensors(4,iqmnuc) &
+               & +qmpoltensors(6,iqmnuc))
+    alphai = d3i*(P1i(1)+P1i(4)+P1i(6))
+    alpha = (alphaa*alphai)**d6i
+    uia = sqrt(Ria)*k / alpha
+
+    dfact = 1.0d0 - (1.0d0 + uia + 0.5d0*uia*uia)*exp(-uia)
+
+end subroutine thole_damping_for_site
 
 end module polarizable_embedding
