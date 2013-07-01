@@ -4937,7 +4937,7 @@ C?     WRITE(luwrt,*) ' DIATERM2_GAS will be called '
      &          KC2, KCJRES, KSIRES, KSSCR, KCSCR, KCJPA, KSIPA, KSOMEH,
      &          KSOMESCR, KCONSPA, KCONSPB, KSTSTS, KSTSTD, KINSCR, 
      &          KCIOIO, KCBLTP
-      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR
+      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR, KLH0SPC
 !               for addressing of WORK
 #ifdef VAR_MPI
 #include "maxorb.h"
