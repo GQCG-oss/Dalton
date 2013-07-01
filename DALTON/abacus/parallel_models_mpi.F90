@@ -87,7 +87,7 @@ contains
   end subroutine parallel_models_initialize_mpi
 !*******************************************************************************
 
-  subroutine parallel_models_finalize_mpi()
+  subroutine parallel_models_finalize_mpi(nr_of_process_glb)
 !******************************************************************************
 !
 !    purpose: finalize parallel communication/file-I/O models
@@ -95,10 +95,12 @@ contains
 !             arrays)
 !
 !*******************************************************************************
+  integer, intent(in) :: nr_of_process_glb
 !-------------------------------------------------------------------------------
 
 !     finalize parallel communication models
-      call communication_free_mpi(communication_info_mpi)
+      call communication_free_mpi(communication_info_mpi,  &
+                                  nr_of_process_glb)
 
   end subroutine parallel_models_finalize_mpi
 !*******************************************************************************
