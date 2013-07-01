@@ -1194,6 +1194,48 @@ C*****************************************************************************
       RETURN
       END
 C
+C Kamal SHARKAS 17-05-11 beg
+C linear complement non-scaled LDA correlation-functional 
+      SUBROUTINE VCLALDA (ZKSR,RHO,RHO13,VLAMBDA)
+#include <implicit.h>
+      LOGICAL DOSRMULO,ERFEXP
+      DIMENSION ZKSR(3)
+
+      CALL VCSRLDA(ZKSR,RHO,RHO13,0.D0,DOSRMULO,1.D0,ERFEXP)
+      ZKSR(1) = (1.D0 - VLAMBDA**2) * ZKSR(1)
+      ZKSR(2) = (1.D0 - VLAMBDA**2) * ZKSR(2)
+      ZKSR(3) = (1.D0 - VLAMBDA**2) * ZKSR(3)
+      RETURN
+      END
+
+C linear complement scaled LDA correlation-functional
+
+      SUBROUTINE VCLASLDA (ZKSR,RHO,RHO13,VLAMBDA)
+#include <implicit.h>
+      LOGICAL DOSRMULO,ERFEXP
+      DIMENSION ZKSR(3),ZKSRCOUL(3),ZKSRSCALED(3)
+      double precision RHOSCALED,RHO13SCALED
+      ZKSRCOUL(1) = 0.d0
+      ZKSRCOUL(2) = 0.d0
+      ZKSRCOUL(3) = 0.d0
+
+      CALL VCSRLDA(ZKSRCOUL,RHO,RHO13,0.D0,DOSRMULO,1.D0,ERFEXP)
+      RHOSCALED     = RHO/VLAMBDA**3
+      RHO13SCALED   = (RHOSCALED)**(1.D0/3.D0)
+      ZKSRSCALED(1) = 0.d0
+      ZKSRSCALED(2) = 0.d0
+      ZKSRSCALED(3) = 0.d0
+
+      CALL VCSRLDA(ZKSRSCALED,RHOSCALED,RHO13SCALED,0,DOSRMULO,1,ERFEXP)
+      ZKSR(1) = ZKSRCOUL(1) - (VLAMBDA**5) * ZKSRSCALED(1)
+      ZKSR(2) = ZKSR(2) + (ZKSRCOUL(2) - (VLAMBDA**2) * ZKSRSCALED(2))
+      ZKSR(3) = ZKSR(3) + (ZKSRCOUL(3) - (1/VLAMBDA)* ZKSRSCALED(3))
+      RETURN
+      END
+
+C Kamal SHARKAS 17-05-11 end
+
+C
 C /* Deck vcsrlda */
 C*****************************************************************************
       SUBROUTINE VCSRLDA(ZKSR,RHO,RHO13,CHI,MULOCAL,NORDER,ERFEXP)
@@ -1443,6 +1485,22 @@ C*****************************************************************************
       RETURN
       END
 C
+C Kamal SHARKAS 17-05-11 beg
+C linear complement LDA exchange-functional
+      SUBROUTINE VXLALDA (XKSR,RHO,RHO13,VLAMBDA)
+#include <implicit.h>
+      LOGICAL ERFEXP
+      DIMENSION XKSR(3)
+
+      CALL VXSRLDA(XKSR,RHO,RHO13,0.D0,1.D0,ERFEXP)
+
+      XKSR(1) = (1.D0 - VLAMBDA) * XKSR(1)
+      XKSR(2) = (1.D0 - VLAMBDA) * XKSR(2)
+      XKSR(3) = (1.D0 - VLAMBDA) * XKSR(3)
+      RETURN
+      END
+C Kamal SHARKAS 17-05-11 end
+
 C /* Deck vxsrlda */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE VXSRLDA(XKSR,RHO,RHO13,CHI,NORDER,ERFEXP)
@@ -2034,6 +2092,20 @@ c         XKSR(2) = B * (EXLDA + EXB) + A * (VXLDA + VXB)
           XKSR(2) = XKSR(2) + B * EXB + A * VXB
       RETURN
       END
+C Kamal SHARKAS 23-05-11 beg
+C linear complement Becke exchange-functional
+      SUBROUTINE VLAXBEK(XKSR,RHO,RHO13,RHOGRD,RHOLAP,RHOGHG,
+     >                 VLAMBDA)
+#include <implicit.h>
+      DIMENSION XKSR(2)
+      CALL VXSRGGA(XKSR,RHO,RHO13,RHOGRD,RHOLAP,
+     >             RHOGHG,0.D0,.FALSE.)
+
+      XKSR(1) = (1.D0 - VLAMBDA) * XKSR(1)
+      XKSR(2) = (1.D0 - VLAMBDA) * XKSR(2)
+      RETURN
+      END
+C Kamal SHARKAS 23-05-11 end
 C /* Deck vxsrgga2 */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
       SUBROUTINE VXSRGGA2(XKSR,RHO,RHO13,RHOGRD,RHOLAP,
@@ -2122,6 +2194,44 @@ C
 C
       RETURN
       END
+C Kamal SHARKAS 23-05-11 beg
+C linear Non-scaled comlement LYP functional  
+      SUBROUTINE VNCLALYP(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,VLAMBDA)
+#include <implicit.h>
+      DIMENSION ZKSR(2),DENOM(3),ZVWN(2)
+      CALL VCSRGGA(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,
+     >             0.D0,.FALSE.)
+      ZKSR(1) = (1.D0 - VLAMBDA**2) * ZKSR(1)
+      ZKSR(2) = (1.D0 - VLAMBDA**2) * ZKSR(2)
+      RETURN
+      END
+C Scaled comlement LYP functional
+      SUBROUTINE VSCLALYP(ZKSR,RHO,RHO13,RHOGRD,RHOLAP,VLAMBDA)
+#include <implicit.h>
+      double precision RHOSCA,RHO13SCA,RHOGRDSCA,RHOLAPSCA
+      DIMENSION ZKSR(2),ZKSRCOUL(2),ZKSRSCA(2)
+
+      ZKSRCOUL(1) = 0.D0
+      ZKSRCOUL(2) = 0.D0
+
+      CALL VCSRGGA(ZKSRCOUL,RHO,RHO13,RHOGRD,RHOLAP,
+     >             0.D0,.FALSE.)
+
+      RHOSCA   = RHO/VLAMBDA**3
+      RHO13SCA = (RHOSCA)**(1.D0/3.D0)
+      RHOGRDSCA= RHOGRD/VLAMBDA**4
+      RHOLAPSCA= RHOLAP/VLAMBDA**5
+
+      ZKSRSCA(1) = 0.D0
+      ZKSRSCA(2) = 0.D0
+      CALL VCSRGGA(ZKSRSCA,RHOSCA,RHO13SCA,RHOGRDSCA,RHOLAPSCA,
+     >             0.D0,.FALSE.)
+
+      ZKSR(1) = ZKSRCOUL(1) - (VLAMBDA**5) * ZKSRSCA(1)
+      ZKSR(2) = ZKSR(2) + (ZKSRCOUL(2) - (VLAMBDA**2) * ZKSRSCA(2))
+      RETURN
+      END
+C Kamal SHARKAS 23-05-11 end
 C
 C /* Deck vxsrwint */
 C&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
