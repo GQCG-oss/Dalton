@@ -890,6 +890,7 @@ C /* Deck pcm_comp_el_pot1 */
 #include "infrsp.h"
 #include "maxorb.h"
 #include "infpar.h"
+#include "qm3.h"
 
       LOGICAL TOFILE
       DIMENSION BOVECS(*), UDV(*), UDVTR(*), CMO(*), WORK(*)
@@ -920,7 +921,7 @@ C      iprrsp = 1
      *        I3,' of',I3,')')
 
 #if defined (VAR_MPI)
-      IF (NODTOT.ge.1) THEN
+      IF (NODTOT .GE. 1 .AND. .NOT. MMPCM) THEN
          CALL J1XP(NOSIM,VSE1,WORK(KUCMO),WORK(KUBO),UDV,UDVTR,
      &          XJ1SQ,XJ1SQT,
      &          .FALSE.,TRPLET,JWOPSY,WORK(KFREE),LFREE)
