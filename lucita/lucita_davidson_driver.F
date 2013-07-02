@@ -348,10 +348,9 @@ C
             END IF
 *
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
-              WRITE(luwrt,*) ' WARNING WARNING WARNING WARNING ! '
-              WRITE(luwrt,*) ' DEGENERATE INITIAL VECTORS FOR CI '
+              WRITE(luwrt,*) ' NOTE! degenerate initial vectors for CI'
               WRITE(luwrt,*) ' degree of degeneracy: ',NDEG 
-!             NDEG = 1
+!old          NDEG = 1
             END IF
 
 *. Initial guess in compressed form in SCR1
@@ -364,7 +363,7 @@ C
               ELSE IF (INIDEG.EQ.1.OR.INIDEG.EQ.0) THEN
 !               SCR1(II) =  SCALE
                 SCR1(II) = (-1.0D0)**(II-1) * SCALE
-                write(luwrt,*) 'scr1(ii), ii ==> ',scr1(ii), ii
+!               write(luwrt,*) 'scr1(ii), ii ==> ',scr1(ii), ii
               END IF
   250       CONTINUE
             IF(IDIAG.EQ.2) THEN
@@ -480,23 +479,26 @@ C
            call rewine(lu6,-1)
 !                                                            1: sigma vector
 !                                                            2: density matrix
-           call sigden_ci(vec1,vec2,c2,lu5,lu6,cdummy,sdummy,2, 1,
-     &                    xxs2dum)                          !   1: rhotype == 1 (regular 1p density matrix)
+           call sigden_ci(vec1,vec2,c2,lu5,lu6,cdummy,sdummy,2, 0,
+     &                    xxs2dum)                          !   1: rhotype == 1 (regular density matrix)
 !                                                           !   3: rhotype == 3 (transition density matrix)
+!                                                           !   0: rhotype == 0 (regular density matrix run in CI)
 
 !********************
 !!! Odile+Manu debug
+#ifdef LUCI_DEBUG
            CALL HEADER(
      &     'lucita: individual one-el. density matrix, active part',-1)
            CALL OUTPUT(work(krho1),1,ntoob,1,ntoob,ntoob,ntoob,
      &                 -11,luwrt)
-
+           write(luwrt,*) 'weights(i)',weights(i)
+#endif
 !!!!
 !********************
 
-           write(luwrt,*) 'weights(i)',weights(i)
            call daxpy(ntoob**2,weights(i),work(krho1),1,
      &                work(KRHO1_ens),1)
+
          end do ! loop over # roots
 
          CALL HEADER(
@@ -544,10 +546,10 @@ C
            EMYDFT_mc2lu = 
      &            EJCSR_mc2lu + EJVSR_mc2lu + EDSR_mc2lu + EDFT_mc2lu
 
-           write(luwrt,*) 'eigshf before',eigshf
+!          write(luwrt,*) 'eigshf before',eigshf
 !          in lucita: emy is eigshf at this point in the code
            eigshf = eigshf + EMYDFT_mc2lu
-           write(luwrt,*) 'eigshf after',eigshf
+!          write(luwrt,*) 'eigshf after',eigshf
 !          ... extract and save SR over active indices
            CALL GETAC(fsr,srdft_srac_lucita)
 
@@ -570,7 +572,7 @@ C
            CALL DGEFSP(ntoob,fsr,srdft_srac_lucita)
 
            ESRDV = DDOT(nnashx,work(KRHO1_ens),1,srdft_srac_lucita,1)
-           write(luwrt,*) 'esrdv... ',esrdv
+!          write(luwrt,*) 'esrdv... ',esrdv
          end if
 
 #ifdef VAR_MPI
