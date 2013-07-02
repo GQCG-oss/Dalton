@@ -33,7 +33,8 @@ MODULE IntegralInterfaceMOD
   use matrix_operations, only: mat_dotproduct, matrix_type, mtype_unres_dense,&
        & mat_daxpy, mat_init, mat_free, mat_write_to_disk, mat_print, mat_zero,&
        & mat_scal, mat_mul, mat_assign, mat_trans, mat_copy, mat_add
-  use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym, mcweeney_purify
+  use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym, mcweeney_purify, &
+                         util_get_symm_and_antisymm_part_full
   use memory_handling, only: mem_alloc, mem_dealloc
 #ifdef VAR_MPI
   use screen_modMPI, only: mpicopy_screen
@@ -61,7 +62,7 @@ MODULE IntegralInterfaceMOD
        & II_get_magderivOverlap,II_get_maggradOverlap,II_get_magderivOverlapR,&
        & II_get_magderivOverlapL,II_get_ep_integrals,II_get_ep_integrals2,&
        & II_get_ep_integrals3,II_GET_MOLECULAR_GRADIENT,&
-       & II_get_twoElectron_gradient,II_get_K_gradient,&
+       & II_get_twoElectron_gradient,II_get_K_gradient,II_get_K_gradientfull,&
        & II_get_regular_K_gradient,II_get_J_gradient,&
        & II_get_J_gradient_regular,II_get_oneElectron_gradient,&
        & II_get_ne_gradient,II_get_kinetic_gradient,II_get_nucpot,&
@@ -1039,7 +1040,6 @@ call II_split_dmats(DmatLHS,DmatRHS,ndlhs,ndrhs,DLHS,DRHS,symLHS,symRHS,nlhs,nrh
 
 
 IF (nlhs.EQ. 0) RETURN
-
 ! Actual calculation
 
 nAtoms = setting%molecule(1)%p%nAtoms
@@ -1111,6 +1111,181 @@ setting%scheme%daScreen_THRLOG = Dascreen_thrlog
 
 SETTING%SCHEME%CS_THRESHOLD = OLDTHRESH
 END SUBROUTINE II_get_regular_K_gradient
+
+!> \brief Calculates the exchange contribution to the molecular gradient
+!> \author S. Reine
+!> \date 2010-03-01
+!> \param kGrad The exchange gradient
+!> \param DmatLHS The left-hand-side (or first electron) density matrix
+!> \param DmatRHS The reft-hand-side (or second electron) density matrix
+!> \param ndlhs The number of LHS density matrices
+!> \param ndrhs The number of RHS density matrices
+!> \param setting Integral evalualtion settings
+!> \param lupri Default print unit
+!> \param luerr Unit for error printing
+SUBROUTINE II_get_K_gradientfull(kGrad,DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,setting,lupri,luerr)
+IMPLICIT NONE
+TYPE(LSSETTING)               :: setting
+Integer,intent(IN)            :: ndlhs,ndrhs,lupri,luerr,nbast
+Real(realk),intent(INOUT)     :: kGrad(3,setting%molecule(1)%p%nAtoms)
+Real(realk),intent(IN)         :: DmatLHS(nbast,nbast,ndlhs)
+Real(realk),intent(IN)         :: DmatRHS(nbast,nbast,ndrhs)
+!
+logical                       :: ADMMexchange
+call time_II_operations1()
+ADMMexchange = setting%scheme%ADMM_EXCHANGE
+IF (setting%scheme%ADMM_GCBASIS) ADMMexchange = .FALSE.
+IF (ADMMexchange) THEN
+   call lsquit('ADMM exchange not implemented for full Dmat.',-1)
+ELSE
+   CALL II_get_regular_K_gradientfull(kGrad,DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,setting,lupri,luerr)
+ENDIF
+call time_II_operations2(JOB_II_GET_K_GRADIENT)
+END SUBROUTINE II_get_K_gradientfull
+
+!> \brief Calculates the regular exchange contribution to the molecular gradient
+!> \author S. Reine
+!> \date 2010-03-01
+!> \param kGrad The exchange gradient
+!> \param DmatLHS The left-hand-side (or first electron) density matrix
+!> \param DmatRHS The reft-hand-side (or second electron) density matrix
+!> \param ndlhs The number of LHS density matrices
+!> \param ndrhs The number of RHS density matrices
+!> \param setting Integral evalualtion settings
+!> \param lupri Default print unit
+!> \param luerr Unit for error printing
+SUBROUTINE II_get_regular_K_gradientfull(kGrad,DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,setting,lupri,luerr)
+IMPLICIT NONE
+TYPE(LSSETTING) :: SETTING
+Real(realk),intent(INOUT)       :: kGrad(3,setting%molecule(1)%p%nAtoms)
+Integer,intent(IN)            :: lupri,luerr,ndlhs,ndrhs,nbast
+Real(realk),intent(IN)         :: DmatLHS(nbast,nbast,ndlhs)
+Real(realk),intent(IN)         :: DmatRHS(nbast,nbast,ndrhs)
+integer :: Oper
+IF (SETTING%SCHEME%CAM) THEN
+  Oper = CAMOperator       !Coulomb attenuated method
+ELSEIF (SETTING%SCHEME%SR_EXCHANGE) THEN
+  Oper = ErfcOperator      !Short-Range Coulomb screened exchange
+ELSE
+  Oper = CoulombOperator   !Regular Coulomb metric 
+ENDIF
+call II_get_regular_K_gradientmixedfull(kGrad,DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,setting,&
+     & AORdefault,AORdefault,AORdefault,AORdefault,Oper,lupri,luerr)
+
+end SUBROUTINE II_get_regular_K_gradientfull
+
+
+!> \brief Calculates the regular exchange contribution to the molecular gradient
+!> \author S. Reine
+!> \date 2010-03-01
+!> \param kGrad The exchange gradient
+!> \param DmatLHS The left-hand-side (or first electron) density matrix
+!> \param DmatRHS The reft-hand-side (or second electron) density matrix
+!> \param ndlhs The number of LHS density matrices
+!> \param ndrhs The number of RHS density matrices
+!> \param setting Integral evalualtion settings
+!> \param lupri Default print unit
+!> \param luerr Unit for error printing
+SUBROUTINE II_get_regular_K_gradientmixedfull(kGrad,DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,setting,&
+     & AO1,AO2,AO3,AO4,Oper,lupri,luerr)
+IMPLICIT NONE
+TYPE(LSSETTING) :: SETTING
+Real(realk),intent(INOUT)       :: kGrad(3,setting%molecule(1)%p%nAtoms)
+Integer,intent(IN)            :: lupri,luerr,ndlhs,ndrhs,AO1,AO2,AO3,AO4,Oper,nbast
+Real(realk),intent(IN)         :: DmatLHS(nbast,nbast,ndlhs)
+Real(realk),intent(IN)         :: DmatRHS(nbast,nbast,ndrhs)
+!Type(matrixp),intent(IN)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
+!
+integer               :: nAtoms,iDmat,I,J
+real(realk)           :: Factor, symthresh,OLDTHRESH
+Integer                :: symLHS(ndlhs),symRHS(ndrhs)
+Integer                :: nlhs,nrhs,Dascreen_thrlog
+!Type(matrixp)          :: DLHS(2*ndlhs),DRHS(2*ndrhs)
+!Type(matrix)           :: DLHS_AO(2*ndlhs),DRHS_AO(2*ndrhs)
+logical                :: Dalink,IntegralTransformGC
+Real(realk),pointer   :: DRHS(:,:,:),DRHStmp(:,:,:)
+Real(realk),pointer   :: DLHS(:,:,:),DLHStmp(:,:,:)
+real(realk),pointer :: grad(:,:)
+! Check first if the exchange-contribution should be calculated. If not exit 
+! this subroutine
+IF (SETTING%SCHEME%exchangeFactor.EQ. 0.0E0_realk) RETURN
+
+! we screenin based on the non differentiated integrals
+! so we loosen the screening threshold with a factor 10
+! and use DaLink to speed up the calculation. 
+OLDTHRESH = SETTING%SCHEME%CS_THRESHOLD
+SETTING%SCHEME%CS_THRESHOLD = SETTING%SCHEME%CS_THRESHOLD*1.0E-1
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+
+! Check symetry. Split non-symmetric matrices to symmetric and anti symmetric parts. 
+! Symmetric, anti-symmetric and anti-symmetric, symmetric paris vanish.
+!thresh=MAX(1.0E-14_realk,SETTING%SCHEME%CS_THRESHOLD*SETTING%SCHEME%THRESHOLD)
+!you can chose a screening threshold below 15 but not this thresh.
+symthresh = 1.0E-14_realk
+call II_split_dmatsFULL(DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,DLHStmp,DRHStmp,symLHS,symRHS,nlhs,nrhs,symthresh)
+
+IF (nlhs.EQ. 0) RETURN
+
+! Actual calculation
+
+nAtoms = setting%molecule(1)%p%nAtoms
+IF(setting%IntegralTransformGC)THEN
+   call mem_alloc(DRHS,nbast,nbast,nrhs)
+   call GCAO2AO_transform_fullD(DRHStmp,DRHS,nbast,nrhs,setting,lupri)
+   call mem_alloc(DLHS,nbast,nbast,nlhs)
+   call GCAO2AO_transform_fullD(DLHStmp,DLHS,nbast,nlhs,setting,lupri)
+   IntegralTransformGC = .TRUE.
+   CALL ls_attachDmatToSetting(DLHS,nbast,nbast,nlhs,setting,'LHS',1,3,lupri)
+   CALL ls_attachDmatToSetting(DRHS,nbast,nbast,nrhs,setting,'RHS',2,4,lupri)
+ELSE
+   CALL ls_attachDmatToSetting(DLHStmp,nbast,nbast,nlhs,setting,'LHS',1,3,lupri)
+   CALL ls_attachDmatToSetting(DRHStmp,nbast,nbast,nrhs,setting,'RHS',2,4,lupri)
+   IntegralTransformGC=.FALSE.
+ENDIF
+setting%IntegralTransformGC = .FALSE.
+
+Dalink = setting%scheme%daLinK
+Dascreen_thrlog = setting%scheme%daScreen_THRLOG
+setting%scheme%daLinK = .TRUE.
+setting%scheme%daScreen_THRLOG = 0
+!Calculates the HF-exchange contribution
+
+call initIntegralOutputDims(setting%Output,3,nAtoms,1,1,1)
+call ls_get_exchange_mat(AORdefault,AORdefault,AORdefault,AORdefault,&
+     &                   Oper,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+#ifdef VAR_MPI
+! Hack - since symmetry is currently turned off in exchange the resultTensor 
+!        currently has dimension 3,nAtom*4
+  call mem_alloc(grad,3,nAtoms*4)
+  CALL retrieve_Output(lupri,setting,grad,.FALSE.)
+  Kgrad(:,1:nAtoms) = grad(:,1:nAtoms)
+  call mem_dealloc(grad)
+#else
+CALL retrieve_Output(lupri,setting,kGrad,.FALSE.)
+#endif
+
+Factor = SETTING%SCHEME%exchangeFactor
+do I=1,3
+   do J=1,natoms
+      kgrad(I,J)=Factor*kGrad(I,J)
+   enddo
+enddo
+
+CALL ls_freeDmatFromSetting(setting)
+IF(IntegralTransformGC)THEN
+   call mem_dealloc(DRHS)
+   call mem_dealloc(DLHS)
+ENDIF
+setting%IntegralTransformGC = IntegralTransformGC
+
+! Free allocated memory
+call II_free_split_dmatsFull(DLHStmp,DRHStmp)
+setting%scheme%daLinK=Dalink
+setting%scheme%daScreen_THRLOG = Dascreen_thrlog
+
+SETTING%SCHEME%CS_THRESHOLD = OLDTHRESH
+END SUBROUTINE II_get_regular_K_gradientmixedfull
 
 !> \brief Driver for calculating the electron-electron repulsion contribution to the molecular gradient
 !> \author S. Reine
@@ -3280,6 +3455,131 @@ DO idmat=1,ndrhs
 ENDDO
 
 END SUBROUTINE II_free_split_dmats
+
+!> \brief split the dmats
+!> \author S. Reine
+!> \date 2010
+!> \param DmatLHS The left-hand-side density matrix
+!> \param DmatRHS The right-hand-side density matrix
+!> \param ndlhs The number of LHS density matrices
+!> \param ndrhs The number of RHS density matrices
+!> \param DLHS The output left-hand-side density matrix
+!> \param DRHS The output right-hand-side density matrix
+!> \param symLHS The symmetry of LHS density matrices
+!> \param symRHS The symmetry of RHS density matrices
+!> \param nlhs The output number of LHS density matrices
+!> \param nrhs The output number of RHS density matrices
+SUBROUTINE II_split_dmatsfull(DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,DLHS,DRHS,&
+     & symLHS,symRHS,nlhs,nrhs,symthresh)
+  implicit none
+  Integer,intent(in)          :: ndlhs,ndrhs,nbast
+  real(realk),intent(IN)      :: DmatLHS(nbast,nbast,ndlhs),DmatRHS(nbast,nbast,ndrhs)
+  Integer,intent(inout)       :: symLHS(ndlhs),symRHS(ndrhs)
+  Integer,intent(inout)       :: nlhs,nrhs
+  real(realk),pointer         :: DLHS(:,:,:),DRHS(:,:,:)
+  Real(realk),intent(in) :: symthresh 
+  !
+  Integer                :: idmat,isym, ILHS, IRHS
+
+  IF (ndlhs.NE.ndrhs) CALL lsquit('Error in II_split_dmats: ndlhs different from ndrhs.',-1)
+
+  ! Make symmetry check
+!  symthresh = 1.0E-14_realk
+  do idmat=1,ndlhs
+     ILHS = matfull_get_isym(DmatLHS(:,:,idmat),nbast,nbast,symthresh)
+     IRHS = matfull_get_isym(DmatRHS(:,:,idmat),nbast,nbast,symthresh)
+     if(ILHS==IRHS) then ! Set symmetries to those found by mat_get_isym
+        symLHS(idmat) = ILHS
+        symRHS(idmat) = IRHS
+     else
+        ! If symmetries are different, set them both to have no symmetry (=3)
+        ! to make all special cases run through.
+        print '(a,2i4)', 'WARNING: Different symmetries in II_split_dmats:', ILHS,IRHS
+        symLHS(idmat) = 3
+        symRHS(idmat) = 3
+     end if
+  end do
+
+  nlhs = 0
+  DO idmat=1,ndlhs
+     isym = symLHS(idmat)
+     If (isym.EQ. 1) THEN
+        nlhs = nlhs + 1
+     ELSE IF  (isym.EQ. 3) THEN
+        nlhs = nlhs + 2
+     ELSE IF ((isym.EQ. 2).OR.(isym.EQ. 4)) THEN
+        ! Do nothing (i.e. remove the component from the calculation)
+     ELSE
+        call lsquit('Error in II_split_dmats. isym wrong in lhs-loop!',-1)
+     ENDIF
+  ENDDO
+  IF (nlhs.EQ. 0) RETURN
+
+  call mem_alloc(DLHS,nbast,nbast,nlhs)
+  nlhs = 0
+  DO idmat=1,ndlhs
+     isym = symLHS(idmat)
+     If (isym.EQ. 1) THEN
+        nlhs = nlhs + 1
+        call dcopy(nbast*nbast,DmatLHS(:,:,idmat),1,DLHS(:,:,nlhs),1)
+     ELSE IF  (isym.EQ. 3) THEN
+        nlhs = nlhs + 2
+        ! Asym  DLHS(:,:,nlhs-1)
+        ! AntiSym  DLHS(:,:,nlhs)
+        call util_get_symm_And_antisymm_part_full(DmatLHS(:,:,idmat),DLHS(:,:,nlhs-1),DLHS(:,:,nlhs),nbast)
+     ELSE IF ((isym.EQ. 2).OR.(isym.EQ. 4)) THEN
+        ! Do nothing (i.e. remove the component from the calculation)
+     ELSE
+        call lsquit('Error in II_split_dmats. isym wrong in lhs-loop!',-1)
+     ENDIF
+  ENDDO
+
+  nrhs = 0
+  DO idmat=1,ndrhs
+     isym = symRHS(idmat)
+     If (isym.EQ. 1) THEN
+        nrhs = nrhs + 1
+     ELSE IF  (isym.EQ. 3) THEN
+        nrhs = nrhs + 2
+     ELSE IF ((isym.EQ. 2).OR.(isym.EQ. 4)) THEN
+        ! Do nothing (i.e. remove the component from the calculation)
+     ELSE
+        call lsquit('II_split_dmats in II_symmetrize_dmats. isym wrong in rhs-loop!',-1)
+     ENDIF
+  ENDDO
+  call mem_alloc(DRHS,nbast,nbast,nrhs)
+
+  nrhs = 0
+  DO idmat=1,ndrhs
+     isym = symRHS(idmat)
+     If (isym.EQ. 1) THEN
+        nrhs = nrhs + 1
+        call dcopy(nbast*nbast,DmatRHS(:,:,idmat),1,DRHS(:,:,nrhs),1)
+     ELSE IF  (isym.EQ. 3) THEN
+        nrhs = nrhs + 2
+        ! Asym  DRHS(:,:,nrhs-1)
+        ! AntiSym  DRHS(:,:,nrhs)
+        call util_get_symm_And_antisymm_part_full(DmatRHS(:,:,idmat),DRHS(:,:,nrhs-1),DRHS(:,:,nrhs),nbast)
+     ELSE IF ((isym.EQ. 2).OR.(isym.EQ. 4)) THEN
+        ! Do nothing (i.e. remove the component from the calculation)
+     ELSE
+        call lsquit('II_split_dmats in II_symmetrize_dmats. isym wrong in rhs-loop!',-1)
+     ENDIF
+  ENDDO
+
+END SUBROUTINE II_split_dmatsfull
+
+!> \brief free the split dmats
+!> \author T. Kjaergaard
+!> \date 2013
+!> \param DLHS The left-hand-side density matrix
+!> \param DRHS The right-hand-side density matrix
+SUBROUTINE II_free_split_dmatsfull(DLHS,DRHS)
+implicit none
+real(realk),pointer         :: DLHS(:,:,:),DRHS(:,:,:)
+call mem_dealloc(DLHS)
+call mem_dealloc(DRHS)
+END SUBROUTINE II_free_split_dmatsfull
 
 !> \brief calculate ...
 !> \author S. Reine

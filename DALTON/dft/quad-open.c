@@ -19,15 +19,15 @@
 
 
 void FSYM(deq27)(const real* cmo, const real* ubo, const real* dv,
-                 real* dxcao, real* dxvao, real* wrk, int* lfrsav);
-int isetksymop_(const int *new_ksymop);
+                 real* dxcao, real* dxvao, real* wrk, integer* lfrsav);
+int isetksymop_(const integer *new_ksymop);
 
 typedef struct {
     real *dmata, *dmatb;       /* Denisty matrices                      */
     real *kappaY, *kappaZ;     /* Perturbation vectors                  */ 
-    int symY, symZ;            /* Symmetry of perturbations             */
-    int spinY, spinZ;          /* Spin rank of perturbations            */
-    int symYZ;                 /* Symmetry of mixed perturbation        */
+    integer symY, symZ;            /* Symmetry of perturbations             */
+    integer spinY, spinZ;          /* Spin rank of perturbations            */
+    integer symYZ;                 /* Symmetry of mixed perturbation        */
     real *rhoa_y, *rhob_y;     /* First order perturbed density (AO)    */ 
     real *rhoa_z, *rhob_z;     /* First order perturbed density (AO)    */ 
     real *rhoa_yzzy;           /* Second order perturbed density (AO)   */
@@ -62,12 +62,12 @@ min(real a, real b)
 
 static void
 quad_open_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
-            int bllen, int blstart, int blend,
+            integer bllen, integer blstart, integer blend,
             Quad_Open_Data* data)
 {
    static const real MONER = -1.0;
 
-   int i, j, k, isym, ibl, jbl;
+   integer i, j, k, isym, ibl, jbl;
    real * RESTRICT aos = grid->atv;
    real *om_a = data->res_omega_a;
    real *om_b = data->res_omega_b;
@@ -85,7 +85,7 @@ quad_open_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
    real *prefc2b = data->prefc2b;
    FunDensProp dp = { 0 };
    FunThirdFuncDrv vxc;
-   int mat_size = DFT_BLLEN;
+   integer mat_size = DFT_BLLEN;
 
    /* compute vector of transformed densities */
    FSYM2(getexp_blocked_lda)(&data->symY, data->rhoa_y, grid->atv,
@@ -145,11 +145,11 @@ quad_open_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
 
    /* main loop over symmetries */ 
    for(isym=0; isym<grid->nsym; isym++) {
-     int (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
-     int ibl_cnt = grid->bas_bl_cnt[isym];
+     integer (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
+     integer ibl_cnt = grid->bas_bl_cnt[isym];
         for(ibl=0; ibl<ibl_cnt; ibl++)
             for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) {
-                int ioff = i*bllen;
+                integer ioff = i*bllen;
                 for(k=blstart; k<blend; k++) {
                     tmpa[k+ioff] = pref3a[k]*aos[k+ioff];
                     tmpb[k+ioff] = pref3b[k]*aos[k+ioff];
@@ -162,20 +162,20 @@ quad_open_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
         /* Compute contributions to om, omY and omZ */
         for(ibl=0; ibl<ibl_cnt; ibl++) {
             for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) {
-                int jsym, jbl_cnt, ioff = i*inforb_.nbast;
+                integer jsym, jbl_cnt, ioff = i*inforb_.nbast;
                 real * RESTRICT tmpai = tmpa + i*bllen;
                 real * RESTRICT tmpbi = tmpb + i*bllen;
                 real * RESTRICT vyai = data->vya + i*bllen;
                 real * RESTRICT vybi = data->vyb + i*bllen;
                 real * RESTRICT vzai = data->vza + i*bllen;
                 real * RESTRICT vzbi = data->vzb + i*bllen;
-                int (*RESTRICT jblocks)[2];
+                integer (*RESTRICT jblocks)[2];
 
                 jsym = inforb_.muld2h[data->symYZ-1][isym]-1;
                 jblocks = BASBLOCK(grid,jsym);
                 jbl_cnt = grid->bas_bl_cnt[jsym];
                 for(jbl=0; jbl<jbl_cnt; jbl++) {
-                    int jtop = min(jblocks[jbl][1],i+1);
+                    integer jtop = min(jblocks[jbl][1],i+1);
                     for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
                         real * RESTRICT aosj = aos + j*bllen;
                         real sa = 0;
@@ -193,7 +193,7 @@ quad_open_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
                 jblocks = BASBLOCK(grid,jsym);
                 jbl_cnt = grid->bas_bl_cnt[jsym];
                 for(jbl=0; jbl<jbl_cnt; jbl++) {
-                    int jtop = min(jblocks[jbl][1],i+1);
+                    integer jtop = min(jblocks[jbl][1],i+1);
                     for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
                         real * RESTRICT aosj = aos + j*bllen;
                         real sa = 0;
@@ -211,7 +211,7 @@ quad_open_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
                 jblocks = BASBLOCK(grid,jsym);
                 jbl_cnt = grid->bas_bl_cnt[jsym];
                 for(jbl=0; jbl<jbl_cnt; jbl++) {
-                    int jtop = min(jblocks[jbl][1],i+1);
+                    integer jtop = min(jblocks[jbl][1],i+1);
                     for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
                         real * RESTRICT aosj = aos + j*bllen;
                         real sa = 0;
@@ -232,13 +232,13 @@ quad_open_lda_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
 
 static void
 quad_open_gga_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
-            int bllen, int blstart, int blend,
+            integer bllen, integer blstart, integer blend,
             Quad_Open_Data* data)
 {
 
     static const real MONER = -1.0;
 
-    int i,j, k, ibl, jbl, isym; 
+    integer i,j, k, ibl, jbl, isym; 
     real * RESTRICT aos = grid->atv;
     real * RESTRICT aox = grid->atv+bllen*inforb_.nbast;
     real * RESTRICT aoy = grid->atv+bllen*inforb_.nbast*2;
@@ -263,7 +263,7 @@ quad_open_gga_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
     real (*prefc2b)[4]  = (real (*)[4])data->prefc2b; 
     FunDensProp dp = { 0 };
     FunThirdFuncDrv vxc;    
-    int mat_size = 4*DFT_BLLEN;
+    integer mat_size = 4*DFT_BLLEN;
     real zetaYa, zetaYb, zetaYab;
     real zetaZa, zetaZb, zetaZab;
     real zetaYZZYa, zetaYZZYb, zetaYZZYab; 
@@ -706,8 +706,8 @@ quad_open_gga_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
    }   
    /* Compute VXC[3] contribution */
     for(isym=0; isym<grid->nsym; isym++) {
-        int (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
-        int ibl_cnt = grid->bas_bl_cnt[isym];
+        integer (*RESTRICT iblocks)[2] = BASBLOCK(grid,isym);
+        integer ibl_cnt = grid->bas_bl_cnt[isym];
         for(ibl=0; ibl<ibl_cnt; ibl++)
             for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) {
                 real * RESTRICT a0 = aos + i*bllen;
@@ -750,7 +750,7 @@ quad_open_gga_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
 	/* distribute VXC[3] contributions */ 
         for(ibl=0; ibl<ibl_cnt; ibl++) {
             for(i=iblocks[ibl][0]-1; i<iblocks[ibl][1]; i++) {
-                int ioff = i*inforb_.nbast;
+                integer ioff = i*inforb_.nbast;
 		real suma;
                 real sumb;
                 real * RESTRICT tmpai = tmpa  + i*bllen;
@@ -759,9 +759,9 @@ quad_open_gga_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
                 real * RESTRICT vybi  = vyb + i*bllen;
                 real * RESTRICT vzai  = vza + i*bllen;
                 real * RESTRICT vzbi  = vzb + i*bllen;
-                int jsym = inforb_.muld2h[data->symYZ-1][isym]-1;
-                int (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
-                int jbl_cnt = grid->bas_bl_cnt[jsym];
+                integer jsym = inforb_.muld2h[data->symYZ-1][isym]-1;
+                integer (*RESTRICT jblocks)[2] = BASBLOCK(grid,jsym);
+                integer jbl_cnt = grid->bas_bl_cnt[jsym];
                 for(jbl=0; jbl<jbl_cnt; jbl++) {
                     for(j=jblocks[jbl][0]-1; j<jblocks[jbl][1]; j++) {
                         real * RESTRICT aosj = aos + j*bllen;
@@ -811,9 +811,9 @@ quad_open_gga_cb(DftIntegratorBl* grid, real * RESTRICT tmp,
 
 Quad_Open_Data 
 quad_open_init(real *cmo, real *kappaY, real *kappaZ, 
-               int *symY, int *symZ, int *spinY, int *spinZ)
+               integer *symY, integer *symZ, integer *spinY, integer *spinZ)
 {
-    int isym;
+    integer isym;
     real *dv;
     Quad_Open_Data data; 
 
@@ -933,22 +933,22 @@ quad_open_free(Quad_Open_Data data)
 }
 
 static void
-commute_den_x(int den, real * RESTRICT kappaY, 
-              int symY, real * RESTRICT com_mat)
+commute_den_x(integer den, real * RESTRICT kappaY, 
+              integer symY, real * RESTRICT com_mat)
 {
-    int isym, i, j;
-    int norbt = inforb_.norbt;
-    int iocc, jocc;
+    integer isym, i, j;
+    integer norbt = inforb_.norbt;
+    integer iocc, jocc;
    
     real * res, * ky;
     /* if den 1 alpha, else beta density */ 
     for(isym=0; isym<inforb_.nsym; isym++) {
         /* the block in question corresponds to (isym,jsym) block */
-        int istart= inforb_.iorb[isym];
-        int iorb  = inforb_.norb[isym];
-        int jsym  = inforb_.muld2h[symY-1][isym]-1;
-        int jstart= inforb_.iorb[jsym];
-        int jorb  = inforb_.norb[jsym];
+        integer istart= inforb_.iorb[isym];
+        integer iorb  = inforb_.norb[isym];
+        integer jsym  = inforb_.muld2h[symY-1][isym]-1;
+        integer jstart= inforb_.iorb[jsym];
+        integer jorb  = inforb_.norb[jsym];
         if (den) {
             iocc  = inforb_.nocc[isym];
             jocc  = inforb_.nocc[jsym];            
@@ -973,8 +973,8 @@ commute_den_x(int den, real * RESTRICT kappaY,
 
 
 static __inline__ void
-commute_matrices(int sz, const real* a, const real* b,
-                 real* c, int addp)
+commute_matrices(integer sz, const real* a, const real* b,
+                 real* c, integer addp)
 {
     static const real MONER = -1.0;
     const real* firstpref = addp ? &ONER : &ZEROR;
@@ -987,27 +987,27 @@ commute_matrices(int sz, const real* a, const real* b,
 
 
 static void 
-transform_mat(real *cmo, real *matmo, int symYZ, real *matao)
+transform_mat(real *cmo, real *matmo, integer symYZ, real *matao)
 {
      static const real HALFR =  0.5;
      real * tmp;
-     int isym, norbt, nbast;
+     integer isym, norbt, nbast;
     
      norbt = inforb_.norbt;
      nbast = inforb_.nbast;
      tmp   = calloc(norbt*nbast,sizeof(real));
      for(isym=0; isym<inforb_.nsym; isym++) {
-         int ibasi = inforb_.ibas[isym];
-         int nbasi = inforb_.nbas[isym];
-         int iorbi = inforb_.iorb[isym];
-         int norbi = inforb_.norb[isym];
-         int icmoi = inforb_.icmo[isym];
-         int jsym  = inforb_.muld2h[symYZ-1][isym]-1;
-         int ibasj = inforb_.ibas[jsym];
-         int nbasj = inforb_.nbas[jsym];
-         int iorbj = inforb_.iorb[jsym];
-         int norbj = inforb_.norb[jsym];
-         int icmoj = inforb_.icmo[jsym];
+         integer ibasi = inforb_.ibas[isym];
+         integer nbasi = inforb_.nbas[isym];
+         integer iorbi = inforb_.iorb[isym];
+         integer norbi = inforb_.norb[isym];
+         integer icmoi = inforb_.icmo[isym];
+         integer jsym  = inforb_.muld2h[symYZ-1][isym]-1;
+         integer ibasj = inforb_.ibas[jsym];
+         integer nbasj = inforb_.nbas[jsym];
+         integer iorbj = inforb_.iorb[jsym];
+         integer norbj = inforb_.norb[jsym];
+         integer icmoj = inforb_.icmo[jsym];
          if(norbi == 0 || norbj == 0) continue;
          dgemm_("N","N", &nbasi, &norbj, &norbi,
                 &HALFR, cmo + icmoi, &nbasi, matmo + iorbi + iorbj*norbt, &norbt,
@@ -1025,16 +1025,16 @@ transform_mat(real *cmo, real *matmo, int symYZ, real *matao)
 /* =================================================================== */
 void
 FSYM2(dft_qr_ab)(real * fi, real * fo, real *cmo,
-                 real *kappaY, int *symY, int *spinY, 
-                 real *kappaZ, int *symZ, int *spinZ,
-                 int *addfock, real *work, int *lwork, int *iprint)
+                 real *kappaY, integer *symY, integer *spinY, 
+                 real *kappaZ, integer *symZ, integer *spinZ,
+                 integer *addfock, real *work, integer *lwork, integer *iprint)
 { 
     static const real DP5R  =  0.5;
     static const real MDP5R = -0.5;
     static const real ONER  =  1.0;
     static const real MONER = -1.0;
     static const real TWOR  =  2.0;
-    int i, j, isymsav; 
+    integer i, j, isymsav; 
     real * dv;
     struct tms starttm, endtm; clock_t utm;
     Quad_Open_Data qr_data; 
@@ -1088,8 +1088,8 @@ FSYM2(dft_qr_ab)(real * fi, real * fo, real *cmo,
     /* Symmetrize integrated contributions */
     for(i=0; i<inforb_.nbast; i++) {
         for(j=0; j<i; j++) {
-            int ji = j + i*inforb_.nbast;
-            int ij = i + j*inforb_.nbast;
+            integer ji = j + i*inforb_.nbast;
+            integer ij = i + j*inforb_.nbast;
             real avg = 0.5*(qr_data.res_omega_a[ij]+qr_data.res_omega_a[ji]);
             qr_data.res_omega_a[ij] = qr_data.res_omega_a[ji] = avg;
             avg = 0.5*(qr_data.res_omega_b[ij]+qr_data.res_omega_b[ji]);

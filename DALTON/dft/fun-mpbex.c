@@ -75,14 +75,15 @@ K(rhoa,grada,rhob,gradb,gradab):=0.5*(Ea(2*rhoa)+Eb(2*rhob));
 #endif
 #include <math.h>
 #include <stddef.h>
- 
+#include "general.h"
+
 #define __CVERSION__
  
 #include "functionals.h"
  
 /* INTERFACE PART */
-static int mpbex_isgga(void) { return 1; } /* FIXME: detect! */
-static int mpbex_read(const char *conf_line);
+static integer mpbex_isgga(void) { return 1; } /* FIXME: detect! */
+static integer mpbex_read(const char *conf_line);
 static real mpbex_energy(const FunDensProp* dp);
 static void mpbex_first(FunFirstFuncDrv *ds,   real factor,
                          const FunDensProp* dp);
@@ -107,7 +108,7 @@ Functional mPBExFunctional = {
 };
  
 /* IMPLEMENTATION PART */
-static int
+static integer
 mpbex_read(const char *conf_line)
 {
     fun_set_hf_weight(0);

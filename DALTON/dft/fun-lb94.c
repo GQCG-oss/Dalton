@@ -40,14 +40,15 @@
 #define _XOPEN_SOURCE 500
 #include <math.h>
 #include <stddef.h>
+#include "general.h"
 
 #define __CVERSION__
 
 #include "functionals.h"
 
 /* INTERFACE PART */
-static int  lb94_isgga(void) { return 1; }
-static int  lb94_read(const char* conf_line);
+static integer  lb94_isgga(void) { return 1; }
+static integer  lb94_read(const char* conf_line);
 static real lb94_energy(const FunDensProp* dens_prop);
 static void lb94_first(FunFirstFuncDrv *ds, real factor, 
                        const FunDensProp* dens_prop);
@@ -78,7 +79,7 @@ Functional LB94Functional = {"LB94",      /* name */
 
 /* IMPLEMENTATION PART */
 
-static int
+static integer
 lb94_read(const char* conf_line)
 {
     fun_set_hf_weight(0.0);

@@ -30,6 +30,7 @@
 /* DFT callback test program.
    (c) Pawel Salek, pawsa@theochem.kth.se, feb 2002
 */
+#include "general.h"
 #define __CVERSION__
 
 #include "integrator.h"

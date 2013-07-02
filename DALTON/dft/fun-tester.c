@@ -64,12 +64,12 @@ void ebck_(real* bck, const real* rho, const real* rho13, const real* rhogrd);
 void elyp_(real* lyp, const real* rho, const real* rho13, const real* rhogrd);
 
 void dftpot1(SecondDrv *ds, const real *w, const real* rho, const real* grad,
-             const int* triplet);
+             const integer* triplet);
 void condft_(void);
 
 static __inline__
 void test_var(real comp, real refer, const char* fun, const char* drv, 
-              int* counter)
+              integer* counter)
 {
       if(fabs(comp-refer)>2e-7+5e-5*(fabs(comp)+fabs(refer))) { 
         if(*counter<95)
@@ -80,15 +80,15 @@ void test_var(real comp, real refer, const char* fun, const char* drv,
                fun,drv, refer, comp); */
 }
 
-const int GRID_STEP = 1;
+const integer GRID_STEP = 1;
 
 /* test_first: test first order derivatives of given functional. 
    Note that really the restricted case is only tested...
 */
-static int
+static integer
 test_first(const char* fun_name, EnergyFunc func, FirstOrderFun first_func)
 { 
-    int i, j, k, failed = 0;
+    integer i, j, k, failed = 0;
     real drho, dgra, resp, resm, num;
     FunFirstFuncDrv gga;
     for(i=1; i<=40; i+=GRID_STEP) {
@@ -142,11 +142,11 @@ test_first(const char* fun_name, EnergyFunc func, FirstOrderFun first_func)
    num = (p.derdif-m.derdif)/(2*eps);\
    test_var(d.der, num, fname, label ":" #der, &fail)
 
-static int
+static integer
 test_second(const char* fname,
             FirstOrderFun first_fun, SecondOrderFun second_fun)
 { 
-    int i, j, k, fail = 0;
+    integer i, j, k, fail = 0;
     real drho, dgra, num;
     FunFirstFuncDrv m, p;
     FunSecondFuncDrv d;
@@ -207,11 +207,11 @@ test_second(const char* fname,
    test third order derivatives of given functional.
    It is assumed that the second order derivatives are OK.
 */
-static int
+static integer
 test_third(const char* fname,
            SecondOrderFun second_fun, ThirdOrderFun third_fun)
 { 
-    int i, j, k, fail = 0;
+    integer i, j, k, fail = 0;
     real eps, num;
     FunSecondFuncDrv m, p;
     FunThirdFuncDrv d;
@@ -298,11 +298,11 @@ test_third(const char* fname,
    test fourth order derivatives of given functional.
    It is assumed that the second order derivatives are OK.
 */
-static int
+static integer
 test_fourth(const char* fname,
             ThirdOrderFun third_fun, FourthOrderFun fourth_fun)
 { 
-    int i, j, k, fail = 0;
+    integer i, j, k, fail = 0;
     real eps, num;
     FunThirdFuncDrv m, p;
     FunFourthFuncDrv d;
@@ -531,10 +531,10 @@ test_fourth(const char* fname,
     return fail;
 }
 
-static int
-test_derivatives(Functional* f, int *orders, DaltonEnFunc dal_fun)
+static integer
+test_derivatives(Functional* f, integer *orders, DaltonEnFunc dal_fun)
 {
-    int res = 0;
+    integer res = 0;
     /* if(dal_fun) res = test_energy(f->name, f->func, dal_fun); */
     if(!res && (!orders || orders[0]) )
        res = test_first(f->name,  f->func,   f->first);
@@ -551,11 +551,11 @@ test_derivatives(Functional* f, int *orders, DaltonEnFunc dal_fun)
 /* main:
    this is the main test program.
 */
-int
-main(int argc, char* argv[])
+integer
+main(integer argc, char* argv[])
 {
-    int res = 0, i, length, argidx, funcsel = 0;
-    static int funco[] = { 0, 0, 0, 0 };
+    integer res = 0, i, length, argidx, funcsel = 0;
+    static integer funco[] = { 0, 0, 0, 0 };
     char* arg;
     Functional* func;
     

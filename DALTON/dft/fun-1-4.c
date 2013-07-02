@@ -108,14 +108,15 @@ K(rhoa,grada,rhob,gradb,gradab):=
 #endif
 #include <math.h>
 #include <stddef.h>
- 
+#include "general.h"
+
 #define __CVERSION__
  
 #include "functionals.h"
  
 /* INTERFACE PART */
-static int f14_isgga(void) { return 1; } /* FIXME: detect! */
-static int f14_read(const char *conf_line);
+static integer f14_isgga(void) { return 1; } /* FIXME: detect! */
+static integer f14_read(const char *conf_line);
 static real f14_energy(const FunDensProp* dp);
 static void f14_first(FunFirstFuncDrv *ds,   real factor,
                          const FunDensProp* dp);
@@ -140,7 +141,7 @@ Functional f14Functional = {
 };
  
 /* IMPLEMENTATION PART */
-static int
+static integer
 f14_read(const char *conf_line)
 {
     fun_set_hf_weight(0);

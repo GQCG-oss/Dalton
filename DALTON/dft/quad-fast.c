@@ -54,6 +54,7 @@
 #include <time.h>
 #include <sys/times.h>
 #include <unistd.h>
+#include "general.h"
 
 #if defined(VAR_MPI)
 #include <mpi.h>
@@ -181,26 +182,26 @@ quadfast_data_free(QuadFastData* tmp)
 */
 static const char* mm_code_version = "full (slower)";
 static __inline__ void
-matn_times_vec_MO(int sym, const real* mat, const real* vec, real a, real* res)
+matn_times_vec_MO(integer sym, const real* mat, const real* vec, real a, real* res)
 {
     dgemv_("N", &inforb_.norbt, &inforb_.norbt, &ONER, mat,
 	   &inforb_.norbt, vec, &ONEI, &a, res, &ONEI);
 }
 static __inline__ void
-matt_times_vec_MO(int sym, const real* mat, const real* vec, real a, real* res)
+matt_times_vec_MO(integer sym, const real* mat, const real* vec, real a, real* res)
 {
     dgemv_("T", &inforb_.norbt, &inforb_.norbt, &ONER, mat,
 	   &inforb_.norbt, vec, &ONEI, &a, res, &ONEI);
 }
 static __inline__ void
-matn_times_vec3_MO(int sym, const real* mat, const real* vec3, real a,
+matn_times_vec3_MO(integer sym, const real* mat, const real* vec3, real a,
                    real* res3)
 {
     dgemm_("N", "N", &inforb_.norbt, &THREEI, &inforb_.norbt, &ONER, mat,
 	   &inforb_.norbt, vec3, &inforb_.norbt, &a, res3, &inforb_.norbt);
 }
 static __inline__ void
-matt_times_vec3_MO(int sym, const real* mat, const real* vec3, real a,
+matt_times_vec3_MO(integer sym, const real* mat, const real* vec3, real a,
                    real* res3)
 {
     dgemm_("T", "N", &inforb_.norbt, &THREEI, &inforb_.norbt, &ONER, mat,
@@ -217,20 +218,20 @@ matt_times_vec3_MO(int sym, const real* mat, const real* vec3, real a,
 */
 static const char* mm_code_version = "symmetry adapted";
 static __inline__ void
-matn_times_vec_MO(int ops,const real* mat, const real* vec, real a, real* res)
+matn_times_vec_MO(integer ops,const real* mat, const real* vec, real a, real* res)
 {
-    int isym;
+    integer isym;
 
     for(isym=0; isym<inforb_.nsym; isym++) {
-        int iorbs = inforb_.iorb[isym];
+        integer iorbs = inforb_.iorb[isym];
         integer noccs = inforb_.nocc[isym];
         integer nvirs = inforb_.nvir[isym];
-        int i     = inforb_.muld2h[ops][isym]-1;
-        int iorbi = inforb_.iorb[i];
+        integer i     = inforb_.muld2h[ops][isym]-1;
+        integer iorbi = inforb_.iorb[i];
         integer nocci = inforb_.nocc[i];
         integer nviri = inforb_.nvir[i];
-        int begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
-        int begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
+        integer begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
+        integer begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
 	if(nviri>0) {
 	    if(noccs>0)
 		dgemv_("N", &nviri,&noccs, &ONER, &mat[begll],&inforb_.norbt, 
@@ -247,20 +248,20 @@ matn_times_vec_MO(int ops,const real* mat, const real* vec, real a, real* res)
 }
 
 static __inline__ void
-matt_times_vec_MO(int ops,const real* mat, const real* vec, real a, real* res)
+matt_times_vec_MO(integer ops,const real* mat, const real* vec, real a, real* res)
 {
-    int isym;
+    integer isym;
 
     for(isym=0; isym<inforb_.nsym; isym++) {
-        int iorbs = inforb_.iorb[isym];
+        integer iorbs = inforb_.iorb[isym];
         integer noccs = inforb_.nocc[isym];
         integer nvirs = inforb_.nvir[isym];
-        int i     = inforb_.muld2h[ops][isym]-1;
-        int iorbi = inforb_.iorb[i];
+        integer i     = inforb_.muld2h[ops][isym]-1;
+        integer iorbi = inforb_.iorb[i];
         integer nocci = inforb_.nocc[i];
         integer nviri = inforb_.nvir[i];
-        int begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
-        int begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
+        integer begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
+        integer begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
         if(noccs>0) {
             if(nviri>0)
                 dgemv_("T", &nviri,&noccs, &ONER, &mat[begll],&inforb_.norbt,
@@ -277,21 +278,21 @@ matt_times_vec_MO(int ops,const real* mat, const real* vec, real a, real* res)
 }
 
 static __inline__ void
-matn_times_vec3_MO(int ops, const real* mat, const real* vec3, real a, 
+matn_times_vec3_MO(integer ops, const real* mat, const real* vec3, real a, 
                    real* res3)
 {
-    int isym;
+    integer isym;
 
     for(isym=0; isym<inforb_.nsym; isym++) {
-        int iorbs = inforb_.iorb[isym];
+        integer iorbs = inforb_.iorb[isym];
         integer noccs = inforb_.nocc[isym];
         integer nvirs = inforb_.nvir[isym];
-        int i     = inforb_.muld2h[ops][isym]-1;
-        int iorbi = inforb_.iorb[i];
+        integer i     = inforb_.muld2h[ops][isym]-1;
+        integer iorbi = inforb_.iorb[i];
         integer nocci = inforb_.nocc[i];
         integer nviri = inforb_.nvir[i];
-        int begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
-        int begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
+        integer begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
+        integer begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
 	if(nviri>0) {
 	    if(noccs>0)
                 dgemm_("N","N", &nviri, &THREEI, &noccs, &ONER, 
@@ -320,21 +321,21 @@ matn_times_vec3_MO(int ops, const real* mat, const real* vec3, real a,
 }
 
 static __inline__ void
-matt_times_vec3_MO(int ops, const real* mat, const real* vec3, real a,
+matt_times_vec3_MO(integer ops, const real* mat, const real* vec3, real a,
                    real* res3)
 {
-    int isym;
+    integer isym;
 
     for(isym=0; isym<inforb_.nsym; isym++) {
-        int iorbs = inforb_.iorb[isym];
+        integer iorbs = inforb_.iorb[isym];
         integer noccs = inforb_.nocc[isym];
         integer nvirs = inforb_.nvir[isym];
-        int i     = inforb_.muld2h[ops][isym]-1;
-        int iorbi = inforb_.iorb[i];
+        integer i     = inforb_.muld2h[ops][isym]-1;
+        integer iorbi = inforb_.iorb[i];
         integer nocci = inforb_.nocc[i];
         integer nviri = inforb_.nvir[i];
-        int begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
-        int begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
+        integer begll = (iorbi+nocci)+iorbs        *inforb_.norbt;
+        integer begur = iorbi        +(iorbs+noccs)*inforb_.norbt;
         if(noccs>0) {
             if(nviri>0)
                 dgemm_("T", "N", &noccs, &THREEI, &nviri, &ONER, 
@@ -366,7 +367,7 @@ matt_times_vec3_MO(int ops, const real* mat, const real* vec3, real a,
 static __inline__ void
 eval_rho_vars(DftGrid* grid, QuadFastData* d)
 {
-    int isym,iorbi;
+    integer isym,iorbi;
     integer nocci;
 
     /* u_YN = kappaY*mov; u_YT = kappaY'*mov */
@@ -401,7 +402,7 @@ eval_rho_vars(DftGrid* grid, QuadFastData* d)
 static __inline__ void
 eval_grad_vars(DftGrid* grid, QuadFastData* d)
 {
-    int x, i, isym;
+    integer x, i, isym;
     
     matn_times_vec3_MO(d->symY, d->kappaY, grid->mog, 0.0, d->g_YN);
     matt_times_vec3_MO(d->symY, d->kappaY, grid->mog, 0.0, d->g_YT);
@@ -414,7 +415,7 @@ eval_grad_vars(DftGrid* grid, QuadFastData* d)
     d->trYsum = d->trZsum = d->trYZZYsum = 0;
     d->trYtimesZ = 0;
     for(x=0; x<3; x++) {
-        int ix = x*inforb_.norbt;
+        integer ix = x*inforb_.norbt;
         d->trY[x] = d->trZ[x] = d->trYZZY[x] = 0;
         for (isym=0; isym<inforb_.nsym; isym++) {
            for(i=inforb_.iorb[isym]; i<inforb_.iorb[isym]+inforb_.nocc[isym];i++) {
@@ -454,12 +455,12 @@ static void
 add_dft_contribution(DftGrid* grid, QuadFastData* d)
 {
     static const real sgn[2]={1.0,-1.0};
-    int j, x, p, q;
+    integer j, x, p, q;
     real pref, pref2b, pref2c, pref3;
     real *mov = grid->mov; /* just a shortcut */
     real *dftcontr = d->dftcontr;
     ThirdDrv drvs; /* the functional derivatives */
-    int sY = d->ispinY, sZ = d->ispinZ;
+    integer sY = d->ispinY, sZ = d->ispinZ;
 
     dftpot2_(&drvs, grid->curr_weight, &grid->dp,
              grid->dogga, d->ispinY != d->ispinZ);
@@ -491,7 +492,7 @@ add_dft_contribution(DftGrid* grid, QuadFastData* d)
 #ifdef OLD_CODE
         real f_ZN = mov[j]*pref2b, f_YN = mov[j]*pref2c;
         real f_mov = mov[j]*pref3 - (d->u_ZT[j]*pref2b + d->u_YT[j]*pref2c);
-        int i;
+        integer i;
         if(d->addfock) {
             f_YN  += -2*d->u_ZT[j]*pref;
             f_ZN  += -2*d->u_YT[j]*pref;
@@ -529,12 +530,12 @@ add_dft_contribution(DftGrid* grid, QuadFastData* d)
     /* now the same thing has to be done for the grho matrices...
      * "It's a long way to the top if you want to rock'n'roll!" */
     for(x=0; x<3; x++) {
-        int ix = x*inforb_.norbt;
+        integer ix = x*inforb_.norbt;
 	/* distribute two-index transformed densities */
         if(d->addfock) {
             pref = (drvs.fZ+0.5*drvs.fG)*d->grada[x];
             for(q=0; q<inforb_.norbt; q++) {
-                int dq=q*inforb_.norbt;
+                integer dq=q*inforb_.norbt;
                 for(p=0; p<inforb_.norbt; p++) {
                     /* FIXME: cache conflicts? */
                     real ompq =
@@ -586,7 +587,7 @@ add_dft_contribution(DftGrid* grid, QuadFastData* d)
 	pref3 += sgn[sY]*sgn[sZ]*drvs.fG*d->trYZZY[x]; 
 
         for(q=0; q<inforb_.norbt; q++) {
-            int dq=q*inforb_.norbt;
+            integer dq=q*inforb_.norbt;
             for(p=0; p<inforb_.norbt; p++) {
 		/* distribute one-index transformed densities [k, rho] */
                 dftcontr[p+dq] += 
@@ -690,7 +691,7 @@ dft_qr_resp_sync_slaves(real* cmo, real* kappaY, real* kappaZ, integer* addfock,
 static __inline__ void
 dft_qr_resp_collect_info(real* fi, real*work, integer lwork)
 {
-    int sz = 0;
+    integer sz = 0;
     MPI_Comm_size(MPI_COMM_WORLD, &sz);
     if(sz<=1) return;
     CHECK_WRKMEM(inforb_.n2orbx,lwork);
@@ -713,7 +714,7 @@ dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY,
          real* kappaZ, integer* symZ, integer* spinZ, integer* addfock, 
          real* work, integer* lwork, integer* iprint)
 {
-    static int msg_printed = 0;
+    static integer msg_printed = 0;
     struct tms starttm, endtm; clock_t utm;
     DftCallbackData cbdata[1];
     real electrons;
@@ -759,9 +760,9 @@ dftqrcf_(real* fi, real* cmo, real* kappaY, integer* symY, integer* spinY,
 struct common_inforb inforb_;
 
 static void
-dump_grY(char* name, DftGrid*grid, QuadFastData* d, int ix, int dim)
+dump_grY(char* name, DftGrid*grid, QuadFastData* d, integer ix, integer dim)
 {
-    int p, q;
+    integer p, q;
     printf("%s:\n", name);
     for(p=0; p<dim; p++) {
 	for(q=0; q<dim; q++)
@@ -774,7 +775,7 @@ dump_grY(char* name, DftGrid*grid, QuadFastData* d, int ix, int dim)
     }
     puts("");
 }    
-int main(int argc, char* argv[])
+integer main(integer argc, char* argv[])
 {
     static const real kappaY[] = { 0, 1, 1, 0};
     static const real kappaZ[] = { 0, 0, 0, 0};

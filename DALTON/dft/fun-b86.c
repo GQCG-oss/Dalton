@@ -21,6 +21,7 @@
 
 #include <math.h>
 #include <stddef.h>
+#include "general.h"
 
 #define __CVERSION__
 
@@ -31,8 +32,8 @@
 #define SQRT sqrt
 
 /* INTERFACE PART */
-static int becke86_isgga(void) {return 1;}
-static int becke86_read(const char* conf_line);
+static integer becke86_isgga(void) {return 1;}
+static integer becke86_read(const char* conf_line);
 static real becke86_energy(const FunDensProp* dp);
 static void becke86_first(FunFirstFuncDrv *ds, real factor, 
                            const FunDensProp* dp);
@@ -44,7 +45,7 @@ static void becke86_third(FunThirdFuncDrv *ds, real factor,
 static void becke86_fourth(FunFourthFuncDrv *ds, real factor,
                            const FunDensProp* dp);
 
-//static int fun_true(void) { return 1; }
+//static integer fun_true(void) { return 1; }
 Functional B86xFunctional = {
   "B86x",
   becke86_isgga,
@@ -59,7 +60,7 @@ Functional B86xFunctional = {
 };
 
 /* IMPLEMENTATION PART */
-static int
+static integer
 becke86_read(const char* conf_line)
 {
     fun_set_hf_weight(0);

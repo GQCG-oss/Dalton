@@ -29,6 +29,7 @@
 
 #include <math.h>
 #include <stddef.h>
+#include "general.h"
 
 #define __CVERSION__
 
@@ -42,8 +43,8 @@ static const real WL90C_THRESHOLD = 1e-14;
 
 
 /* INTERFACE PART */
-static int wl90c_isgga(void) {return 1;}
-static int wl90c_read(const char* conf_line);
+static integer wl90c_isgga(void) {return 1;}
+static integer wl90c_read(const char* conf_line);
 static real wl90c_energy(const FunDensProp* dp);
 static void wl90c_first(FunFirstFuncDrv *ds, real factor, 
                            const FunDensProp* dp);
@@ -55,7 +56,7 @@ static void wl90c_third(FunThirdFuncDrv *ds, real factor,
 static void wl90c_fourth(FunFourthFuncDrv *ds, real factor,
                            const FunDensProp* dp);
 
-//static int fun_true(void) { return 1; }
+//static integer fun_true(void) { return 1; }
 Functional WL90cFunctional = {
   "WL90c",
   wl90c_isgga,
@@ -70,7 +71,7 @@ Functional WL90cFunctional = {
 };
 
 /* IMPLEMENTATION PART */
-static int
+static integer
 wl90c_read(const char* conf_line)
 {
     fun_set_hf_weight(0);
