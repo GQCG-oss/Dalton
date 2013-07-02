@@ -70,7 +70,7 @@ MODULE IntegralInterfaceMOD
        & II_get_prop_expval,II_get_integral,II_get_integral_full,&
        & II_get_sphmom,II_carmom_to_shermom,II_get_3center_overlap,&
        & II_get_2center_eri,II_get_4center_eri,II_get_4center_eri_diff,&
-       & II_precalc_ScreenMat, &
+       & II_get_nucel_diff,II_precalc_ScreenMat, &
 #ifdef VAR_MPI
        & II_bcast_screen, II_screeninit, II_screenfree,&
 #endif
@@ -2362,6 +2362,68 @@ ENDIF
 
 END SUBROUTINE II_get_4center_eri_diff
 
+!> \brief Calculates the differentiated nuclear-electron attraction integral tensor: d/dR_e sum_C (ab|C)Z_C 
+!> \author S. Reine
+!> \date 2013-02-05
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param outputintegral the differentiated ne d/dR_e sum_C (ab|C)Z_C
+!> \param DIM1 the dimension of orbital alpha
+!> \param DIM2 the dimension of orbital beta
+!> \param DIM5 the number of differential components
+!> \param geoderiv Specifies the geoemetrical derivative order
+SUBROUTINE II_get_nucel_diff(LUPRI,LUERR,SETTING,outputintegral,dim1,dim2,dim5,geoderiv)
+IMPLICIT NONE
+TYPE(LSSETTING)       :: SETTING
+INTEGER               :: LUPRI,LUERR,dim1,dim2,dim5
+REAL(REALK),target,intent(inout) :: outputintegral(:,:,:,:,:) !dim1,dim2,1,1,dim5
+Integer,optional      :: geoderiv
+!
+Logical             :: dogeoderiv,nofamily
+integer             :: i,j,k,l,n,intSpec,geoOrder
+
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+
+!Specify geometrical derivative order if any
+dogeoderiv = .FALSE.
+geoOrder   = 0
+IF (present(geoderiv)) THEN
+  dogeoderiv = geoderiv.NE.0
+  geoOrder   = geoderiv
+ENDIF
+
+IF (dogeoderiv) THEN
+  IF (geoderiv.GE.1) THEN
+    intSpec = GeoDerivSpec
+  ENDIF
+
+  !Simen Hack - GeoDerivSpec currently not working with family-type basis sets
+  nofamily = setting%scheme%nofamily
+  setting%scheme%nofamily = .TRUE.
+ELSE
+  intSpec = RegularSpec
+ENDIF
+
+
+call initIntegralOutputDims(setting%output,dim1,dim2,1,1,dim5)
+call ls_dzero(outputintegral,dim1*dim2*dim5)
+ 
+CALL ls_getIntegrals(AORdefault,AORdefault,AONuclear,AOEmpty,&
+     &NucpotOperator,intSpec,ContractedInttype,SETTING,LUPRI,LUERR,geoOrder)
+
+IF(setting%IntegralTransformGC)THEN
+  call lsquit('Error in II_get_nucel_diff - IntegralTransformGC not implemented',lupri)
+ELSE
+  CALL retrieve_Output(lupri,setting,outputintegral,setting%IntegralTransformGC)
+  IF (dogeoderiv) THEN
+    setting%scheme%nofamily = nofamily
+  ENDIF
+ENDIF
+
+END SUBROUTINE II_get_nucel_diff
+
 !> \brief Calculates and stores the screening integrals
 !> \author T. Kjaergaard
 !> \date 2010
@@ -4207,10 +4269,8 @@ DO I=1,4
    setting%MOLECULE(I)%p => Point(I)%p
 ENDDO
 call initIntegralOutputDims(setting%output,5,5,5,5,1)
-setting%scheme%intprint=1000
 CALL ls_getIntegrals(AOD1p1cSeg,AOD1p1cSeg,AOD1p1cSeg,AOD1p1cSeg,&
      &CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-setting%scheme%intprint=0
 IF(setting%IntegralTransformGC)THEN
    call lsquit('Error in II_get_test4center_eri - IntegralTransformGC not implemented',lupri)
 ELSE

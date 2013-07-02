@@ -316,7 +316,7 @@ useFTUV = INPUT%DO_JENGINE .AND. IELECTRON.EQ. 2
  P%maxAngmom = maxAngmom-(P%endGeoOrder+CMorder+P%magderiv)
  P%minAngmom = minAngmom-(P%endGeoOrder+CMorder+P%magderiv)
  P%startAngmom = 0
- IF (P%type_hermite_single) P%startAngmom = minAngmom
+ IF (P%type_hermite_single) P%startAngmom = P%minAngmom
  IF( INPUT%operator .EQ. KineticOperator .AND. LHS) THEN
     IF (P%type_hermite_single) P%startAngmom = P%startAngmom + 2
     P%endAngmom   = maxAngmom + 2
