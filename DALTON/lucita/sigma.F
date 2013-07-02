@@ -4937,7 +4937,7 @@ C?     WRITE(luwrt,*) ' DIATERM2_GAS will be called '
      &          KC2, KCJRES, KSIRES, KSSCR, KCSCR, KCJPA, KSIPA, KSOMEH,
      &          KSOMESCR, KCONSPA, KCONSPB, KSTSTS, KSTSTD, KINSCR, 
      &          KCIOIO, KCBLTP
-      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR
+      INTEGER*8 KLOCSTR, KLREO, KLZ, KLZSCR, KLH0SPC
 !               for addressing of WORK
 #ifdef VAR_MPI
 #include "maxorb.h"
@@ -5207,6 +5207,11 @@ C
         IDOH2 = 0
       END IF
 *
+      if(ipertop /= 0)then
+        CALL MEMMAN(KLH0SPC,NOCTPA*NOCTPB,'ADDL  ',2,'h0spc ')
+      else
+        CALL MEMMAN(KLH0SPC,            0,'ADDL  ',2,'h0spc ')
+      end if
 *
       CALL SBLOCKS(NBLOCK,IBLOCK(1,IBOFF),CB,HCB,WORK(KC2),
      &     WORK(KCIOIO),ISMOST(1,ICSM),WORK(KCBLTP),
@@ -5426,7 +5431,7 @@ C
 #endif
       ELSE ! (LUCI_NMPROC .GT. 1) THEN
       IF(NTEST.GE.50) THEN
-        WRITE(LUCIWT,*) ' Initial C vector '
+        WRITE(LUWRT,*) ' Initial C vector '
         CALL WRTVCD(CB,LUC,1,-1)
       END IF
 C

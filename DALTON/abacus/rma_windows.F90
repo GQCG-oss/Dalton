@@ -58,7 +58,7 @@ module rma_windows
   end type rma_win
 
 ! rma-windows object
-  type(rma_win), public, save :: rma_win_info
+  type(rma_win), public :: rma_win_info
 ! ----------------------------------------------------------------------------
 
 #ifdef VAR_MPI

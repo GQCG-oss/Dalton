@@ -1077,9 +1077,11 @@ C     REAL * 8  INPROD
       ELSE
          XADD = 0.0D0
       END IF
+#ifdef VAR_MPI
       IDIA_OFFSET = 0
 *     proper offset
       IDIA_OFFSET = IDIA_OFFSET + MY_DIA_OFF
+#endif
 *
       IF( NTEST .GE. 20 ) THEN
         WRITE(LUWRT,*) ' Diagonal one electron integrals'
@@ -1387,6 +1389,7 @@ C     END IF
 * Jeppe Olsen, Feb. 98
 *
       IMPLICIT REAL*8(A,H,O-Z)
+#include "parluci.h"
 *. Input
       DIMENSION A(*)
       INTEGER LBLOCK(*)
