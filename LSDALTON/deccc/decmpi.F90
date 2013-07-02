@@ -1666,6 +1666,7 @@ contains
     call ls_mpi_buffer(DECitem%dyn_load,Master)
     call ls_mpi_buffer(DECitem%ccsd_old,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
+    call ls_mpi_buffer(DECitem%CCSD_MPICH,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)

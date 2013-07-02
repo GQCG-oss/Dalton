@@ -177,7 +177,7 @@ contains
   !distribution for the array
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine array_add_fullfort2arr(arrx,b,fortarry,order)
+  subroutine array_add_fullfort2arr(arrx,b,fortarry,order,wrk,iwrk)
     implicit none
     !> full fortan arra´y, this corresponds to y
     real(realk), intent(in) :: fortarry(*)
@@ -187,6 +187,9 @@ contains
     type(array), intent(inout) :: arrx
     !> order of the fortran array with respect to the array
     integer, intent(in),optional :: order(arrx%mode)
+    !> optinally workspace can be passed, the size is defined as iwrk
+    integer(kind=8), intent(in),optional :: iwrk
+    real(realk), intent(inout),optional :: wrk(*)
     integer :: o(arrx%mode)
     !> check if there is enough memory to send a full tile, this will die out
     integer :: i
@@ -205,7 +208,11 @@ contains
       case(TILED)
         call lsquit("ERROR(array_add_fullfort2arr2):not implemented",-1)
       case(TILED_DIST)
-        call add_data2tiled_intiles(arrx,b,fortarry,arrx%dims,arrx%mode,o)
+        if(present(wrk).and.present(iwrk))then
+          call add_data2tiled_intiles_explicitbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o,wrk,iwrk)
+        else
+          call add_data2tiled_intiles_stackbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o)
+        endif
     end select
   end subroutine array_add_fullfort2arr
 

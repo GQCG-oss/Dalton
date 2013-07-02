@@ -1584,6 +1584,8 @@ contains
                             &Gbi(:),uigcj(:), tGammadij(:),tpl(:),tmi(:),sio4(:),&
                             &gvvoo(:),gvoov(:),gvvoo_r(:),gvoov_r(:)
 
+    integer(kind=8) :: w0size,w1size,w2size,w3size
+
     type(matrix) :: Dens,iFock
     ! Variables for mpi
     logical :: master
@@ -1686,10 +1688,7 @@ contains
     nnod=infpar%lg_nodtot
     call get_int_dist_info(int(no*no*nv*nv,kind=8),fintel,nintel)
     def_atype=TILED_DIST
-    lock_outside=.false.
-#ifdef VAR_LSMPICH
-    lock_outside=.true.
-#endif
+    lock_outside=DECinfo%CCSD_MPICH
 #endif
 
     ! Some timings
@@ -1932,8 +1931,8 @@ contains
       u2=array_init([nv,nv,no,no],4,TILED_DIST,ALL_INIT)
       call array_zero(u2)
       if(master)then 
-        call array_add(u2,2.0E0_realk,t2%elm1,[2,1,3,4])
-        call array_add(u2,-1.0E0_realk,t2%elm1,[2,1,4,3])
+        call array_add(u2,2.0E0_realk,t2%elm1,order=[2,1,3,4])
+        call array_add(u2,-1.0E0_realk,t2%elm1,order=[2,1,4,3])
       endif
       call array_mv_dense2tiled(t2,.true.)
     else
@@ -1991,16 +1990,19 @@ contains
    
     ! allocate working arrays depending on the batch sizes
     maxsize64 = nb2*MaxActualDimAlpha*MaxActualDimGamma
-    call mem_alloc(w0,maxsize64)
+    w0size    = maxsize64
+    call mem_alloc(w0,w0size)
 
     maxsize64 = max(int(nb2*MaxActualDimAlpha*MaxActualDimGamma,kind=8),int(v2o*MaxActualDimAlpha,kind=8))
     maxsize64 = max(maxsize64,int(o2v*MaxActualDimGamma,kind=8))
     if(scheme==4.or.scheme==3) maxsize64 = max(maxsize64,int(o2v*MaxActualDimAlpha,kind=8))
-    call mem_alloc(w1,maxsize64)
+    w1size    = maxsize64
+    call mem_alloc(w1,w1size)
 
     maxsize64 = max(int(nb*nb*MaxActualDimAlpha*MaxActualDimGamma,kind=8),o2v2)
     maxsize64 = max(maxsize64,int(nor*no2,kind=8))
-    call mem_alloc(w2,maxsize64)
+    w2size    = maxsize64
+    call mem_alloc(w2,w2size)
 
     maxsize64 = max(int(nv*no*MaxActualDimAlpha*MaxActualDimGamma,kind=8),int(no2*MaxActualDimAlpha*MaxActualDimGamma,kind=8))
     maxsize64 = max(maxsize64,int(o2v*MaxActualDimAlpha,kind=8))
@@ -2009,7 +2011,8 @@ contains
     maxsize64 = max(maxsize64,int(nor*nv*MaxActualDimGamma,kind=8)) 
     maxsize64 = max(maxsize64,int(no*nor*MaxActualDimAlpha,kind=8)) 
     maxsize64 = max(maxsize64,int(no*nor*MaxActualDimGamma,kind=8)) 
-    call mem_alloc(w3,maxsize64)
+    w3size    = maxsize64
+    call mem_alloc(w3,w3size)
 
     !allocate semi-permanent storage arrays for loop
     !print *,"allocing help things:",o2v*MaxActualDimGamma*2,&
@@ -2199,9 +2202,11 @@ contains
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,1.0E0_realk,gvvoo,nv)
         elseif(scheme==3)then
 #ifdef VAR_MPI
-          do nctr=0,nnod-1
-            call lsmpi_win_lock(nctr,gvvoo_w,'s',MPI_MODE_NOCHECK)
-          enddo
+          if(lock_outside)then
+            do nctr=0,nnod-1
+              call lsmpi_win_lock(nctr,gvvoo_w,'s',MPI_MODE_NOCHECK)
+            enddo
+          endif
 
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,0.0E0_realk,w2,nv)
           call dist_int_contributions(w2,o2v2,gvvoo_w,lock_outside)
@@ -2232,8 +2237,7 @@ contains
 
        !CALCULATE govov FOR ENERGY
        !Reorder I [alpha j gamma b]                      -> I [alpha j b gamma]
-       if(iter==1.or.(scheme==4.or.scheme==3.or.scheme==2))&
-       &call array_reorder_4d(1.0E0_realk,w3,la,no,lg,nv,[1,2,4,3],0.0E0_realk,w2)
+       call array_reorder_4d(1.0E0_realk,w3,la,no,lg,nv,[1,2,4,3],0.0E0_realk,w2)
        
        if(iter==1)then
          !I [alpha  j b gamma] * Lambda^h [gamma a]          = I [alpha j b a]
@@ -2245,17 +2249,15 @@ contains
            !call array_add(govov,1.0E0_realk,w2,no2*nv2)
          else
            ! i a j b
+           if(lock_outside)call arr_lock_wins(govov,'e')
            call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,0.0E0_realk,w2,no)
-           !call arr_lock_wins(govov,'e')
-           call array_add(govov,1.0E0_realk,w2,[1,4,2,3])
-           !call arr_unlock_wins(govov)
+           call array_add(govov,1.0E0_realk,w2,order=[1,4,2,3],wrk=w3,iwrk=w3size)
          endif
          call lsmpi_poke()
        endif
 
        !VOOV
        if((restart.and.iter==1).and..not.scheme==4)then
-         !call arr_unlock_wins(govov)
          call array_reorder_4d(1.0E0_realk,w3,la,no,lg,nv,[1,2,4,3],0.0E0_realk,w2)
        endif
        if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2).and.(iter/=1.or.restart)) then
@@ -2268,6 +2270,7 @@ contains
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1,la,1.0E0_realk,gvoov,nv)
         elseif(scheme==3)then
 #ifdef VAR_MPI
+         
           if(lock_outside)then
             do nctr=0,nnod-1
               call lsmpi_win_lock(nctr,gvoov_w,'s',MPI_MODE_NOCHECK)
@@ -2298,6 +2301,7 @@ contains
        !Mylsitem%setting%scheme%intprint=0
 
 #ifdef VAR_MPI
+       if(scheme/=4.and.iter==1.and.lock_outside) call arr_unlock_wins(govov,.true.)
        if (DECinfo%ccModel>2.and.scheme==3.and.(iter/=1.or.restart)) then
          if(lock_outside)then
            do nctr=0,nnod-1

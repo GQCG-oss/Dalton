@@ -1706,22 +1706,16 @@ module lspdm_tensor_operations_module
 #endif
   end subroutine print_mem_per_node
 
-  subroutine add_data2tiled_intiles(arr,mult,A,dims,mode,order)
+  subroutine add_data2tiled_intiles_stackbuffer(arr,mult,A,dims,mode,o)
     implicit none
     type(array),intent(inout) :: arr
     real(realk),intent(in) :: A(*),mult
     integer,intent(in) :: mode, dims(mode)
-    integer,intent(in),optional :: order(mode)
+    integer,intent(in) :: o(mode)
     real(realk),pointer :: buf(:)
-    integer ::nnod,fib,lt,ce,j,me,dest,step,act_step,mod_step,iter,nccblocks,ierr,st
-    integer :: nelmsit,loc_ti,comp_ti,comp_el,i,nelms,fe_in_block,o(mode)
-    integer, pointer :: elm_in_tile(:),in_tile_mode(:),orig_addr(:),remote_td(:)
+    integer ::nnod,me
+    integer :: nelmsit,i
     integer :: fullfortdims(arr%mode)
-    do i=1,mode
-      o(i)=i
-    enddo
-    if(present(order))o=order
-
     do i=1,arr%mode
       fullfortdims(o(i)) = arr%dims(i)
     enddo
@@ -1747,11 +1741,8 @@ module lspdm_tensor_operations_module
 
     
     do i=1,arr%ntiles
-      !call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,o)
-      !call get_tile_dim(nelmsit,arr,i)
-      call tile_from_fort(1.0E0_realk,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,o)
+      call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,buf,i,arr%tdim,o)
       call get_tile_dim(nelmsit,arr,i)
-      if(mult/=1.0E0_realk)call dscal(nelmsit,mult,buf,1)
 #ifdef VAR_MPI
       if(arr%lock_set(i))then
         print *,"if this never appears we should have no probs"
@@ -1762,7 +1753,76 @@ module lspdm_tensor_operations_module
 #endif
     enddo
     call mem_dealloc(buf)
-  end subroutine add_data2tiled_intiles
+  end subroutine add_data2tiled_intiles_stackbuffer
+
+  subroutine add_data2tiled_intiles_explicitbuffer(arr,mult,A,dims,mode,o,wrk,iwrk)
+    implicit none
+    type(array),intent(inout) :: arr
+    real(realk),intent(in) :: A(*),mult
+    integer,intent(in) :: mode, dims(mode)
+    integer,intent(in) :: o(mode)
+    integer(kind=8),intent(in) :: iwrk
+    real(realk), intent(inout) :: wrk(*)
+    integer ::nnod,me
+    integer :: nelmsit
+    integer(kind=8) ::i,b,e,maxntiinwrk,mod_el
+    integer :: fullfortdims(arr%mode)
+
+    do i=1,arr%mode
+      fullfortdims(o(i)) = arr%dims(i)
+    enddo
+
+    me = 0
+    nnod=1
+#ifdef VAR_MPI
+    me=infpar%lg_mynum
+    nnod=infpar%lg_nodtot
+#endif
+
+    !compute the maximum number of tiles to be stored in the workspace
+    maxntiinwrk = int(iwrk/arr%tsize,kind=8)
+    !begin with sanity checks
+    if(maxntiinwrk == 0)then
+      print *,"ERROR(add_data2tiled_intiles_explicitbuffer)&
+      &:not enough space in wrk"
+      stop 1
+    endif
+    if(arr%mode/=mode)then
+      print *,"ERROR(add_data2tiled_intiles_explicitbuffer):&
+      &mode of array does not match mode of tiled_array"
+      stop 1
+    endif
+    do i=1,mode
+      if(arr%dims(i)/=dims(i))then
+        print *,"ERROR(add_data2tiled_intiles_explicitbuffer):&
+        &dims in input do not match dims of tiled_array"
+        stop 1
+      endif
+    enddo
+    
+    do i=1,arr%ntiles
+
+      if(arr%lock_set(i))then
+        if(i>maxntiinwrk) then
+          call arr_unlock_win(arr,int(i-maxntiinwrk))
+        endif
+      endif
+
+      call get_tile_dim(nelmsit,arr,i)
+      b = 1       + mod(i-1,maxntiinwrk) * arr%tsize
+      e = nelmsit + mod(i-1,maxntiinwrk) * arr%tsize
+      call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,wrk(b),int(i),arr%tdim,o)
+#ifdef VAR_MPI
+      if(arr%lock_set(i))then
+        print *,"if this never appears we should have no probs"
+        call array_accumulate_tile_nolock(arr,int(i),wrk(b:e),nelmsit)
+      else
+        call array_accumulate_tile(arr,int(i),wrk(b:e),nelmsit)
+      endif
+#endif
+    enddo
+
+  end subroutine add_data2tiled_intiles_explicitbuffer
 
   subroutine cp_data2tiled_lowmem(arr,A,dims,mode)
     implicit none
@@ -2024,6 +2084,35 @@ module lspdm_tensor_operations_module
   !\> \author Patrick Ettenhuber
   !\> \date July 2013
 #ifdef VAR_MPI
+  subroutine arr_lock_win(arr,ti_idx,locktype,assert)
+    implicit none
+    type(array) :: arr
+    integer,intent(in) :: ti_idx
+    character, intent(in) :: locktype
+    integer(kind=ls_mpik), optional,intent(in) :: assert
+    integer(kind=ls_mpik) :: ass,node
+
+    ass = int(0,kind=ls_mpik)
+    if(present(assert))ass=assert
+
+    node=get_residence_of_tile(ti_idx,arr)
+    call lsmpi_win_lock(node,arr%wi(ti_idx),locktype,ass)
+    arr%lock_set(ti_idx)=.true.
+
+  end subroutine arr_lock_win
+
+  subroutine arr_unlock_win(arr,ti_idx)
+    implicit none
+    type(array) :: arr
+    integer,intent(in) :: ti_idx
+    integer(kind=ls_mpik) :: node
+
+    node=get_residence_of_tile(ti_idx,arr)
+    call lsmpi_win_unlock(node,arr%wi(ti_idx))
+    arr%lock_set(ti_idx)=.false.
+
+  end subroutine arr_unlock_win
+
   subroutine arr_lock_wins(arr,locktype,assert)
     implicit none
     type(array) :: arr
@@ -2043,16 +2132,37 @@ module lspdm_tensor_operations_module
   !\> \brief unlock all windows of a tensor 
   !\> \author Patrick Ettenhuber
   !\> \date July 2013
-  subroutine arr_unlock_wins(arr)
+  subroutine arr_unlock_wins(arr,check)
     implicit none
     type(array) :: arr
+    logical, intent(in),optional:: check
     integer(kind=ls_mpik) :: node
     integer :: i
-    do i=1,arr%ntiles
-      node=get_residence_of_tile(i,arr)
-      call lsmpi_win_unlock(node,arr%wi(i))
-      arr%lock_set(i)=.false.
-    enddo
+    logical :: ch
+
+    ch = .false.
+    if(present(check))ch=check
+
+    if(ch)then
+
+      do i=1,arr%ntiles
+        if(arr%lock_set(i))then
+          node=get_residence_of_tile(i,arr)
+          call lsmpi_win_unlock(node,arr%wi(i))
+          arr%lock_set(i)=.false.
+        endif
+      enddo
+
+    else
+
+      do i=1,arr%ntiles
+        node=get_residence_of_tile(i,arr)
+        call lsmpi_win_unlock(node,arr%wi(i))
+        arr%lock_set(i)=.false.
+      enddo
+
+    endif
+
   end subroutine arr_unlock_wins
 #endif
 
