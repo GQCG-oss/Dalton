@@ -2940,9 +2940,9 @@ C?        write(6,*) ' before call to add_str_group '
 *. Last word of string information
 *
       CALL MEMMAN(KSTINE,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
-      IF(iprint.GE.10)
+      IF(NTEST.GE.10)
      &  WRITE(lupri,*) ' Last word with string information',KSTINE-1
-      IF(iprint.NE.0) THEN
+      IF(NTEST.NE.0) THEN
       WRITE(lupri,*) ' R*8 words used for storing string information ',
      &                 KSTINE - KSTINF
       END IF
