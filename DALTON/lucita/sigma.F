@@ -5745,16 +5745,16 @@ C
      &            GOTO 8764
 C
                 IF(NTEST.GE.60) THEN
-                  WRITE(LUCIWT,*) ' RSSBCB will be called for '
-                  WRITE(LUCIWT,*) ' Sigma block : '
-                  WRITE(LUCIWT,*) ' ISOFF ', ISOFF
-                  WRITE(LUCIWT,*) ' ISBLK IASM IBSM IATP IBTP'
-                  WRITE(LUCIWT,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
-                  WRITE(LUCIWT,*) ' C     block : '
-                  WRITE(LUCIWT,*) ' ICBLK LLASM LLBSM LLATP LLBTP'
-                  WRITE(LUCIWT,'(5I5)')  ICBLK,LLASM,LLBSM,LLATP,LLBTP
-                  WRITE(LUCIWT,*) ' ICOFF ', ICOFF
-                  WRITE(LUCIWT,*) ' Overall scale',SCLFAC(ICBLK)
+                  WRITE(LUWRT,*) ' RSSBCB will be called for '
+                  WRITE(LUWRT,*) ' Sigma block : '
+                  WRITE(LUWRT,*) ' ISOFF ', ISOFF
+                  WRITE(LUWRT,*) ' ISBLK IASM IBSM IATP IBTP'
+                  WRITE(LUWRT,'(5I5)')  ISBLK,IASM,IBSM,IATP,IBTP
+                  WRITE(LUWRT,*) ' C     block : '
+                  WRITE(LUWRT,*) ' ICBLK LLASM LLBSM LLATP LLBTP'
+                  WRITE(LUWRT,'(5I5)')  ICBLK,LLASM,LLBSM,LLATP,LLBTP
+                  WRITE(LUWRT,*) ' ICOFF ', ICOFF
+                  WRITE(LUWRT,*) ' Overall scale',SCLFAC(ICBLK)
                 END IF
 *
                 IF(IRESTRICT.EQ.1.AND.
