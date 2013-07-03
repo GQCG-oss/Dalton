@@ -378,7 +378,7 @@ C
         endif
         call pe_rsplin(ncsim, nosim, bcvecs, bovecs, wrk(kcref), cmo,
      &                 indxci, udv, wrk(kdv), wrk(kudvtr), wrk(kdvtr),
-     &                 wrk(kvdt), wrk(kdvttr), evecs,
+     &                 wrk(kdvt), wrk(kdvttr), evecs,
      &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
       end if
       IF (QMMM) THEN

@@ -23,6 +23,6 @@ FC=gfortran CC=gcc cmake -DENABLE_BOUNDS_CHECK=1 -DCMAKE_BUILD_TYPE=Debug -DENAB
 #make depend
 #make Experimental
 #make Nightly
-ctest -D Nightly -L lsdalton -j4
+ctest -D Nightly -L linsca -j4
 exit 0
 

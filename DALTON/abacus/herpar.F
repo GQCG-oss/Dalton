@@ -2668,6 +2668,7 @@ C
                   READ(LUCMD,*) IPRPAR
                GO TO 100
     4          CONTINUE
+#if defined (VAR_PVM)
                   READ (LUCMD,'(A7)') WORD
                   CALL UPCASE(WORD)
                   IF (WORD.EQ.' DATADE') THEN
@@ -2682,6 +2683,9 @@ C
      &              'Options are : DATADEFAULT','DATARAW','DATAINPLACE'
                      CALL QUIT('Nonexistent encoding type in input.')
                   END IF
+#else
+                  WRITE(LUPRI,'(/1X,A)')'.ENCODE keyword is not in use.'
+#endif
                GO TO 100
     5          CONTINUE
                   DEBUG = .TRUE.
@@ -3235,7 +3239,7 @@ C Transform V(MO) from triangular to square format
             CALL ONEXH1(WORK(JUBO),WORK(KJ1SQ),WORK(JJ1X))
 C     
             IF (NASHT .GT. 0) CALL GETACQ(WORK(JJ1X),WORK(JJ1XAC))
-            IF (IPRRSP .GE. 15) THEN
+            IF (IPRPCM .GE. 15) THEN
                WRITE (LUPRI,'(/A)') ' J1X_mo matrix:'
                CALL OUTPUT(WORK(JJ1X),1,NORBT,1,NORBT,
      &              NORBT,NORBT,1,LUPRI)
@@ -3259,7 +3263,7 @@ C
                END IF
                IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+ITS-1
                WORK(IADR) = FACTOR
-               IF (IPRRSP .GE. 6) THEN
+               IF (IPRPCM .GE. 6) THEN
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- J1X expectation value :',WORK(IADR)
                   WRITE (LUPRI,'(A,F17.8)')
@@ -3289,7 +3293,7 @@ C Transform V(MO) from triangular to square format
                CALL ONEXH1(WORK(JUBO),WORK(KJ1SQ),WORK(JJ1X))
 C     
                IF (NASHT .GT. 0) CALL GETACQ(WORK(JJ1X),WORK(JJ1XAC))
-               IF (IPRRSP .GE. 15) THEN
+               IF (IPRPCM .GE. 15) THEN
                   WRITE (LUPRI,'(/A)') ' J1X_mo matrix (KSYMOP):'
                   CALL OUTPUT(WORK(JJ1X),1,NORBT,1,NORBT,
      &                 NORBT,NORBT,1,LUPRI)
@@ -3312,7 +3316,7 @@ C
                ENDIF
                IADR = KEXPVL + NTSIRR*(MAXREP + 1)*(IOSIM - 1)+JTS-1
                WORK(IADR) = FACTOR
-               IF (IPRRSP .GE. 6) THEN
+               IF (IPRPCM .GE. 6) THEN
                   WRITE (LUPRI,'(A,F17.8)')
      *                 ' --- J1X expectation value :',WORK(IADR)
                   WRITE (LUPRI,'(A,F17.8)')

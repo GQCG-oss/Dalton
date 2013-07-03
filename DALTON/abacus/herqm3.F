@@ -359,7 +359,7 @@ C
      & not parallelized, so it will be much slower than expected!'
         END IF
 
-        IF (NODTOT .GT. 1 .AND. .NOT. INTDIR) THEN
+        IF (NODTOT .GE. 1 .AND. .NOT. INTDIR) THEN
           WRITE(LUPRI,*) ' WARNING: QM3 .INTDIR activated since',
      *                   ' this is a parallel calculation'
           INTDIR = .TRUE.

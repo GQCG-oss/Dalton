@@ -2860,7 +2860,7 @@ C?        write(6,*) ' before call to add_str_group '
 
 *. Start of string information
       CALL MEMMAN(KSTINF,IDUMMY,'FREE  ',IDUMMY,'DUMMY ')
-      IF(iprint.GE.10)
+      IF(NTEST.GE.10)
      &WRITE(lupri,*) ' First word with string information',KSTINF
 *
 *.  Offsets for occupation and reorder array of strings

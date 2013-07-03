@@ -2608,11 +2608,10 @@ module lspdm_tensor_operations_module
     endif
   end subroutine get_int_dist_info
 
-  subroutine dist_int_contributions(g,o2v2,win,classic)
+  subroutine dist_int_contributions(g,o2v2,win)
     implicit none
     integer(kind=long),intent(in) :: o2v2
     real(realk),intent(in) :: g(o2v2)
-    logical :: classic
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: nnod,node,me
     integer :: fe,ne,msg_len_mpi
@@ -2632,9 +2631,9 @@ module lspdm_tensor_operations_module
       call get_int_dist_info(o2v2,fe,ne,node)
       sta=MPI_WTIME()
       !print *,infpar%lg_mynum,"distributing",fe,fe+ne-1,ne,o2v2,node
-      if(classic)call lsmpi_win_lock(node,win,'s')
+      call lsmpi_win_lock(node,win,'s')
       call lsmpi_acc(g(fe:fe+ne-1),ne,1,node,win,msg_len_mpi)
-      if(classic)call lsmpi_win_unlock(node,win)
+      call lsmpi_win_unlock(node,win)
       sto = MPI_WTIME()
       time_pdm_acc = time_pdm_acc + sto - sta
       bytes_transferred_acc = bytes_transferred_acc + ne * 8_long

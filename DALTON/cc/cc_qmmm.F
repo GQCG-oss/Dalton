@@ -1991,6 +1991,7 @@ C
       INTEGER SITEI, LRI, SITEJ
       LOGICAL LOCDEB
       PARAMETER (LOCDEB=.FALSE.)
+      PARAMETER (D3I = 1.0D0/3.0D0, D6I = 1.0D0/6.0D0)
 
       TJKX = 0.0D0
       TJKY = 0.0D0
@@ -2030,11 +2031,10 @@ C
                DIQM = SQRT(DIQM)
 
           IF (IDAMP .EQ. 3) THEN
-            call quit('please fix: variable I is not defined')
             IF (IPOLTP .EQ. 2) THEN
-              TEMPI =D3I*(POLMM(1,I)+POLMM(4,I)+POLMM(6,I))
+              TEMPI =D3I*(POLMM(1,SITEI)+POLMM(4,SITEI)+POLMM(6,SITEI))
             ELSE IF (IPOLTP .EQ. 1) THEN
-              TEMPI = POLIMM(I)
+              TEMPI = POLIMM(SITEI)
             ENDIF
             TEMP = (TEMPI*QMPOL(MHIT))**(D6I)
             SIJ = 2.1304D0*DIQM/TEMP
