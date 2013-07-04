@@ -21,6 +21,12 @@ MODULE test_molecular_hessian_mod
   use gen1int_host
 #endif
 
+  private :: test_first_geoderiv_overlap,&
+           & test_first_geoderiv_refDmat,&
+           & test_get_geoderivExchange
+  public :: dummy_subroutine_hessian_test,&
+          & test_Hessian_contributions
+
 CONTAINS
 
   SUBROUTINE dummy_subroutine_hessian_test()
@@ -237,15 +243,14 @@ END SUBROUTINE test_first_geoderiv_refDmat
 SUBROUTINE test_get_geoderivExchange(D,Natoms,ndmat,thresh,setting,lupri,luerr)
   !
   IMPLICIT NONE
-  Integer,INTENT(IN)            :: Natoms,lupri,luerr
-  Real(realk),INTENT(IN)        :: thresh
-  TYPE(LSSETTING),intent(INOUT) :: setting
-  Type(matrix),INTENT(IN)       :: D
+  Integer,INTENT(IN)             :: Natoms,lupri,luerr
+  Real(realk),INTENT(IN)         :: thresh
+  TYPE(LSSETTING),intent(INOUT)  :: setting
+  Type(matrix),INTENT(IN),target :: D
   Type(matrix),pointer :: Ka(:)  ! derivative along x,y and z for each atom
   Integer              :: i,nbast,ndmat
   Real(realk)          :: ts,te
   Real(realk),pointer  :: exchangeGrad(:,:)
-  Type(matrix),target  :: temp1
   Type(matrixp)        :: Dmat(ndmat)
   Real(realk)          :: diffx,diffy,diffz
   !
@@ -256,9 +261,7 @@ SUBROUTINE test_get_geoderivExchange(D,Natoms,ndmat,thresh,setting,lupri,luerr)
   ! Testing the  geometric first derivative of the Exchange 
   ! term using a gradient contribution
   ! \latexonly $\frac{1}{2} Tr( \textbf{D K^a(D)} )$  \endlatexonly
-  call mat_init(temp1,nbast,nbast)
-  temp1 = D
-  Dmat(1)%p => temp1
+  Dmat(1)%p => D
   call mem_alloc(exchangeGrad,3,Natoms)
   exchangeGrad = 0E0_realk
   call  II_get_K_gradient(exchangeGrad,Dmat,Dmat,ndmat,ndmat,setting,lupri,luerr)
@@ -285,14 +288,13 @@ SUBROUTINE test_get_geoderivExchange(D,Natoms,ndmat,thresh,setting,lupri,luerr)
   ENDDO
   write (lupri,*) '   - geometric first derivative of the exchange term: OK'
   write (*,*)     '   - geometric first derivative of the exchange term: OK'
-  call mat_free(temp1)
-  call mem_dealloc(exchangeGrad)
 
   ! TESTS FINISHED: FREE MEMORY    
   DO i=1,3*Natoms
      call mat_free(Ka(i))
   ENDDO
   call mem_dealloc(Ka)
+  call mem_dealloc(exchangeGrad)
   call lstimer('test_Ka',ts,te,lupri)
 END SUBROUTINE test_get_geoderivExchange
 
