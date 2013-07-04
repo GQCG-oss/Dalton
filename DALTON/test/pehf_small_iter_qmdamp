@@ -146,6 +146,7 @@ cat > pehf_small_iter_qmdamp.dal <<'%EOF%'
 .ITERATIVE
 1.0d-8
 .QMDAMP
+2.1304
 8
 ISO
 8.6959
