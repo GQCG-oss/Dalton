@@ -72,7 +72,8 @@ Pawel Salek, 2004.06, Himmelbjerg.
 #include <string.h>
 #include <strings.h>
 #include <stdio.h>
- 
+#include "general.h"
+
 #define __CVERSION__
  
 #include "functionals.h"
@@ -114,8 +115,8 @@ typedef struct {
 #define THR 1e-15
  
 /* INTERFACE PART */
-static int rcamb3lyp_isgga(void) { return 1; }
-static int rcamb3lyp_read(const char *conf_line);
+static integer rcamb3lyp_isgga(void) { return 1; }
+static integer rcamb3lyp_read(const char *conf_line);
 static void rcamb3lyp_report(void);
 static real rcamb3lyp_energy(const FunDensProp* dp);
 static void rcamb3lyp_first(FunFirstFuncDrv *ds,   real factor,
@@ -143,15 +144,15 @@ Functional rCAM_B3LYPFunctional = {
 /* IMPLEMENTATION PART */
 static int
 parse_table(const char *func, const char *str,
-            int cnt, const char *keywords[], real *weights)
+            integer cnt, const char *keywords[], real *weights)
 {
-  int res=1;
+  integer res=1;
   while(*str) {
-    int i;
-    while(*str && isspace((int)*str)) str++; /* skip whitespace */
+    integer i;
+    while(*str && isspace((integer)*str)) str++; /* skip whitespace */
     if(*str =='\0') break; /* line ended by whitespace */
     for(i=0; i<cnt; i++) {
-      int len = strlen(keywords[i]);
+      integer len = strlen(keywords[i]);
       if(strncasecmp(keywords[i], str, len)==0 &&
          str[len] == '=') {
           float f;
@@ -168,7 +169,7 @@ parse_table(const char *func, const char *str,
       fun_printf("%s: unknown string: '%s'", func, str);
       res = 0;
     }
-    while(*str && !isspace((int)*str)) str++; /* skip nonws */
+    while(*str && !isspace((integer)*str)) str++; /* skip nonws */
   }
   return res;
 }
@@ -176,7 +177,7 @@ parse_table(const char *func, const char *str,
 static const char *rcam_keywords[] = { "alpha", "beta", "mu",
                                       "vwnweight", "lypweight"
 };
-static int
+static integer
 rcamb3lyp_read(const char *conf_line)
 {
     real weights[ELEMENTS(rcam_keywords)];
@@ -421,7 +422,7 @@ static real
 rcamb3lyp_b_energy_large(real a)
 {
     real res, ac, a2;
-    int i;
+    integer i;
     
     a = 2*a; /* the expension derived for different a; correct for this. */
     a2 = a*a;
@@ -438,7 +439,7 @@ rcamb3lyp_b_first_large(real a)
 {
     real tmp;
     real ac, a2;
-    int i;
+    integer i;
 
     a = 2*a; /* the expension derived for different a; correct for this. */
     a2  = a*a;
@@ -482,10 +483,10 @@ rcamb3lyp_b_first_medium(real a)
 }
 
 static real
-evaluate_series(int n, const real*coefs, real lambda)
+evaluate_series(integer n, const real*coefs, real lambda)
 {
     real res = 0, ac =1.0;
-    int i;
+    integer i;
     for(i=0; i<n; i++) {
         res += 1.0/(coefs[i]*ac);
         ac *= lambda;
@@ -1177,7 +1178,7 @@ rcamb3lyp_fourth(FunFourthFuncDrv *ds, real factor,
 #ifdef TEST
 #include <stdio.h>
 #include <stdlib.h>
-int main(int argc, char *argv[])
+integer main(integer argc, char *argv[])
 {
     FunDensProp dp;
     RGFirstDrv fa;

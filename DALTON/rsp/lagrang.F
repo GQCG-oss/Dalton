@@ -467,6 +467,7 @@ C
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRESR = THRESR*THR_REDFAC
+C arnfinn: This is not working. THRESR not used or defined
       END IF
 C
 C FC labels generation

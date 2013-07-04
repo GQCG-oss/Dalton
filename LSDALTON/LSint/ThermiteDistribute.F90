@@ -1521,7 +1521,7 @@ Integer,intent(in)              :: dimQ,dimP
 REAL(REALK),target,intent(in)   :: QPMAT2(:)
 TYPE(lstensor),intent(inout)    :: RES
 !
-REAL(REALK),pointer             :: QPMAT3(:),QPMAT4(:),QPMAT5(:)
+REAL(REALK),pointer             :: QPMAT3(:),QPMAT4(:),QPMAT5(:),QPMAT6(:)
 type(overlap),pointer :: P,Q
 logical :: SamePQ,SameLHSaos,SameRHSaos,SameODs,nucleiP,nucleiQ,add
 Logical :: permuteAB,permuteCD,permuteOD,noContraction,RHScontraction
@@ -1535,7 +1535,10 @@ Real(realk)  :: factor,center(3,1)
 logical :: antiAB,antiCD,AntipermuteAB,AntipermuteCD,translate,same12,same13,same23
 Type(derivativeInfo) :: derivInfo
 integer :: n1,n2,n3,n4,sA,sB,sC,sD,CMimat,maxBat,maxAng,itrans,nDerivQ
-integer :: dim5(6),iAtom1,iAtom2,iAtom3,i1,i2,i3,iPermute,nPermute,nAtoms
+integer :: iAtom1,iAtom2,iAtom3,i1,i2,i3,iPermute,nPermute,nAtoms
+integer,pointer :: dim5(:)
+logical,pointer :: negative(:)
+integer :: nDimGeo,nTranslate
 
 antiAB=.FALSE.
 antiCD=.FALSE.
@@ -1604,13 +1607,42 @@ nDerivQ        = ngeoderivcompQ
 ndim5output    = Lsoutput%ndim(5)
 nPasses = P%nPasses*Q%nPasses
 
+nDimGeo = 1
+nTranslate = 0
+translate = .FALSE.
 if(input%geoDerivOrder.GE.1)then
    CALL initDerivativeOverlapInfo(derivInfo,PQ,Input)
    IF (IPRINT.GT. 50) THEN
       CALL printDerivativeOverlapInfo(derivInfo,lupri)
    ENDIF
    IF (input%geoDerivOrder.GE.2) nAtoms = res%nAtom(1)
+   if(nderiv.GT.1)then
+     translate = derivInfo%translate.GT. 0
+   endif
+   IF (input%geoDerivOrder.EQ.1) THEN
+     nDimGeo = 1
+   ELSE IF (input%geoDerivOrder.EQ.2) THEN
+     nDimGeo = 2
+   ELSE IF (input%geoDerivOrder.EQ.3) THEN
+     nDimGeo = 6
+   ELSE 
+     call lsquit('nDimGeo not yet implemented for geoDerivOrder > 3 !',-1)
+   ENDIF
+   IF (translate) THEN
+     IF (input%geoDerivOrder.EQ.1) THEN
+       nTranslate = 1
+     ELSE IF (input%geoDerivOrder.EQ.2) THEN
+       nTranslate = 6
+     ELSE IF (input%geoDerivOrder.EQ.3) THEN
+       nTranslate = 7
+     ELSE
+       call lsquit('Translational invariance not yet implemented for geoDerivOrder > 3 !',-1)
+     ENDIF
+   ENDIF
 endif
+call mem_alloc(Dim5,nDimGeo+nTranslate)
+call mem_alloc(negative,nDimGeo+nTranslate)
+
 if(Input%LinComCarmomType.GT.0)then 
    !magnetic derivative overlaps and other integrals are a 
    !special case which can be written as a 
@@ -1700,6 +1732,13 @@ DO iPassP=1,P%nPasses
      sB = res%LSAO(indABCD)%startLocalOrb(1+(batchB-1)*maxAng+maxAng*maxBat)-1 
      sC = res%LSAO(indABCD)%startLocalOrb(1+(batchC-1)*maxAng+2*maxAng*maxBat)-1 
      sD = res%LSAO(indABCD)%startLocalOrb(1+(batchD-1)*maxAng+3*maxAng*maxBat)-1 
+
+     IF (translate) THEN
+       call mem_workpointer_alloc(QPmat5,nA*nB*nC*nD*ndim5*nPasses)
+       QPmat5 = 0.0E0_realk
+       call daxpy(nA*nB*nC*nD*ndim5*nPasses,-1.0E0_realk,QPmat3,1,QPmat5,1)
+     ENDIF
+
      IF (permuteOD) THEN
         indCDAB = res%index(atomC,atomD,atomA,atomB)
         CDAB => res%LSAO(indCDAB)%elms
@@ -1737,10 +1776,17 @@ DO iPassP=1,P%nPasses
        ENDIF
        Dim5(1) = iDim5
        nPermute = 1
+       IF (translate) iTrans = derivInfo%Atom(derivInfo%translate)
+       negative(:) = .FALSE.
        IF (input%geoDerivOrder.EQ. 1)THEN
           iDer = derivInfo%dirComp(1,iDeriv)
           iAtom = derivInfo%Atom(derivInfo%AO(1,iDeriv))
           Dim5(1) = 3*(iAtom-1)+ider
+          IF (translate) THEN
+            nPermute = nPermute + 1
+            Dim5(2) = 3*(iTrans-1)+ider
+            negative(2) = .TRUE.
+          ENDIF
        ELSEIF (input%geoDerivOrder.EQ. 2)THEN
           iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
           iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
@@ -1751,6 +1797,45 @@ DO iPassP=1,P%nPasses
           nPermute=2
           same12 = (Dim5(1).EQ.Dim5(2)).AND.(derivInfo%AO(1,iDeriv).EQ.derivInfo%AO(2,iDeriv))
           IF (same12) nPermute=1
+          IF (translate) THEN
+            IF (iAtom1.EQ.iAtom2) THEN
+              IF ((.NOT.same12).AND.(iAtom1.EQ.iTrans)) THEN
+                nPermute = nPermute - 1
+              ENDIF
+              Dim5(nPermute+1) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom1-1)+i1
+              Dim5(nPermute+2) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i1
+              Dim5(nPermute+3) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iTrans-1)+i2
+              Dim5(nPermute+4) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iTrans-1)+i1
+              negative(nPermute+1) = .TRUE.
+              negative(nPermute+2) = .TRUE.
+              nPermute = nPermute + 4
+              IF (same12.OR.(iAtom1.EQ.iTrans)) nPermute = nPermute-1
+            ELSE
+              Dim5(nPermute+1) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom1-1)+i1
+              Dim5(nPermute+2) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iAtom2-1)+i2
+              negative(nPermute+1) = .TRUE.
+              negative(nPermute+2) = .TRUE.
+              IF (iAtom1.EQ.iTrans.AND.i1.EQ.i2) THEN
+                nPermute = nPermute - 1
+              ELSE
+                Dim5(nPermute+3) = 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iTrans-1)+i2
+                negative(nPermute+3) = .TRUE.
+              ENDIF
+              IF (iAtom2.EQ.iTrans.AND.i1.EQ.i2) THEN
+                nPermute = nPermute - 1
+              ELSE
+                Dim5(nPermute+4) = 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i1
+                negative(nPermute+4) = .TRUE.
+              ENDIF
+              Dim5(nPermute+5) = 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iTrans-1)+i1
+              IF (i1.EQ.i2.AND.((iAtom1.EQ.iTrans).OR.(iAtom2.EQ.iTrans))) THEN
+                nPermute = nPermute - 1
+              ELSE
+                Dim5(nPermute+6) = 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iTrans-1)+i2
+              ENDIF
+              nPermute = nPermute + 6
+            ENDIF
+          ENDIF
        ELSEIF (input%geoDerivOrder.EQ. 3)THEN
           iAtom1 = derivInfo%Atom(derivInfo%AO(1,iDeriv))
           iAtom2 = derivInfo%Atom(derivInfo%AO(2,iDeriv))
@@ -1782,205 +1867,142 @@ DO iPassP=1,P%nPasses
             nPermute=3
             Dim5(3) = dim5(5)
           ENDIF
+          IF (translate) THEN
+            call lsquit('Error in generalDistributePQ - geoDerivORder 3 and translate not implemented',-1)
+!            ! 3 2 1
+!            Dim5(7) = 9*nAtoms*nAtoms*(3*(iTrans-1)+i3-1) + 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom1-1)+i1
+!            Dim5(8) = 9*nAtoms*nAtoms*(3*(iAtom3-1)+i3-1) + 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom1-1)+i1
+!            Dim5(9) = 9*nAtoms*nAtoms*(3*(iAtom3-1)+i3-1) + 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i1
+!
+!            ! 3 1 2
+!            Dim5(10) = 9*nAtoms*nAtoms*(3*(iTrans-1)+i3-1) + 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom2-1)+i2
+!            Dim5(11) = 9*nAtoms*nAtoms*(3*(iAtom3-1)+i3-1) + 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iAtom2-1)+i2
+!            Dim5(12) = 9*nAtoms*nAtoms*(3*(iAtom3-1)+i3-1) + 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iTrans-1)+i2
+!
+!            ! 2 3 1
+!            Dim5(13) = 9*nAtoms*nAtoms*(3*(iTrans-1)+i2-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iAtom1-1)+i1
+!            Dim5(14) = 9*nAtoms*nAtoms*(3*(iAtom2-1)+i2-1) + 3*nAtoms*(3*(iTrans-1)+i3-1) + 3*(iAtom1-1)+i1
+!            Dim5(15) = 9*nAtoms*nAtoms*(3*(iAtom2-1)+i2-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iTrans-1)+i1
+!
+!            ! 2 1 3
+!            Dim5(16) = 9*nAtoms*nAtoms*(3*(iTrans-1)+i2-1) + 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iAtom3-1)+i3
+!            Dim5(17) = 9*nAtoms*nAtoms*(3*(iAtom2-1)+i2-1) + 3*nAtoms*(3*(iTrans-1)+i1-1) + 3*(iAtom3-1)+i3
+!            Dim5(18) = 9*nAtoms*nAtoms*(3*(iAtom2-1)+i2-1) + 3*nAtoms*(3*(iAtom1-1)+i1-1) + 3*(iTrans-1)+i3
+!
+!            ! 1 2 3
+!            Dim5(19) = 9*nAtoms*nAtoms*(3*(iTrans-1)+i1-1) + 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iAtom3-1)+i3
+!            Dim5(20) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iTrans-1)+i2-1) + 3*(iAtom3-1)+i3
+!            Dim5(21) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iAtom2-1)+i2-1) + 3*(iTrans-1)+i3
+!
+!            ! 1 3 2
+!            Dim5(22) = 9*nAtoms*nAtoms*(3*(iTrans-1)+i1-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iAtom2-1)+i2
+!            Dim5(23) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iTrans-1)+i3-1) + 3*(iAtom2-1)+i2
+!            Dim5(24) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iTrans-1)+i2
+!
+!!           Dim5(13) = 9*nAtoms*nAtoms*(3*(iAtom1-1)+i1-1) + 3*nAtoms*(3*(iAtom3-1)+i3-1) + 3*(iAtom2-1)+i2
+            
+          ENDIF
        ELSE IF (input%geoDerivOrder.GE. 4)THEN
          call lsquit('Error in generalDistributePQ - geoDerivORder > 3 not implemented',-1)
        ENDIF
        DO iPermute=1,nPermute
-       iDim5 = Dim5(iPermute)
-       IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
-          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-       ELSE IF (permuteOD.AND.permuteCD) THEN
-          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-       ELSE IF (permuteOD.AND.permuteAB) THEN
-          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-       ELSE IF (antipermuteAB.AND.permuteCD) THEN
-          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-       ELSE IF (permuteAB.AND.antipermuteCD) THEN
-          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_IntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-       ELSE IF (permuteAB.AND.permuteCD) THEN
-          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-       ELSE IF (antipermuteAB) THEN
-          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-       ELSE IF (permuteAB) THEN
-          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-       ELSE IF (antipermuteCD) THEN
-          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-       ELSE IF (permuteCD) THEN
-          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-       ELSE IF (permuteOD) THEN
-          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-       ELSE
-          CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-               & QPmat3,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-       ENDIF
-       translate = .FALSE.
-       if(nderiv.GT.1)then
-          translate = derivInfo%translate.GT. 0
-       endif
-       IF (translate) THEN
-          iTrans = derivInfo%Atom(derivInfo%translate)
-          iDim5 = 3*(iTrans-1)+ider
-          call mem_workpointer_alloc(QPmat5,nA*nB*nC*nD*ndim5*nPasses)
-          QPmat5 = 0.0E0_realk
-          call daxpy(nA*nB*nC*nD*ndim5*nPasses,-1.0E0_realk,QPmat3,1,QPmat5,1)
-          IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
-             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          ELSE IF (permuteOD.AND.permuteCD) THEN
-             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          ELSE IF (permuteOD.AND.permuteAB) THEN
-             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          ELSE IF (antipermuteAB.AND.permuteCD) THEN
-             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          ELSE IF (permuteAB.AND.antipermuteCD) THEN
-             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_IntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          ELSE IF (permuteAB.AND.permuteCD) THEN
-             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          ELSE IF (antipermuteAB) THEN
-             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          ELSE IF (permuteAB) THEN
-             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          ELSE IF (antipermuteCD) THEN
-             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          ELSE IF (permuteCD) THEN
-             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          ELSE IF (permuteOD) THEN
-             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-             CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          ELSE
-             CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
-                  & QPmat5,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
-          ENDIF
-          call mem_workpointer_dealloc(QPmat5)
-       ENDIF !translate
+        iDim5 = Dim5(iPermute)
+        IF (negative(iPermute)) THEN
+          QPmat6 => QPmat5
+        ELSE
+          QPmat6 => QPmat3
+        ENDIF
+        IF (permuteOD.AND.permuteCD.AND.permuteAB) THEN
+           CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intDCBA(DCBA,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+        ELSE IF (permuteOD.AND.permuteCD) THEN
+           CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intDCAB(DCAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+        ELSE IF (permuteOD.AND.permuteAB) THEN
+           CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intCDBA(CDBA,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+        ELSE IF (antipermuteAB.AND.permuteCD) THEN
+           CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+        ELSE IF (permuteAB.AND.antipermuteCD) THEN
+           CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_IntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_AntiIntBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+        ELSE IF (permuteAB.AND.permuteCD) THEN
+           CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intBADC(BADC,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+        ELSE IF (antipermuteAB) THEN
+           CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_AntiIntBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+        ELSE IF (permuteAB) THEN
+           CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intBACD(BACD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+        ELSE IF (antipermuteCD) THEN
+           CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_AntiIntABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+        ELSE IF (permuteCD) THEN
+           CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intABDC(ABDC,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+        ELSE IF (permuteOD) THEN
+           CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+           CALL GDPQ_intCDAB(CDAB,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+        ELSE
+           CALL GDPQ_intABCD(ABCD,n1,n2,n3,n4,sA,sB,sC,sD,&
+                & QPmat6,add,nA,nB,nC,nD,ndim5output,idim5,iPass,ideriv,nPasses,ndim5,lupri)
+        ENDIF
        ENDDO !Permute
 #ifdef VAR_LSDEBUGINT
        IF (IPRINT.GT.40) THEN
@@ -2041,10 +2063,15 @@ DO iPassP=1,P%nPasses
 !     ENDDO !iDerivQ
 !    ENDDO !iDerivP
      ENDDO !iDeriv
+     IF (translate) THEN
+       call mem_workpointer_dealloc(QPmat5)
+     ENDIF
     ENDIF 
   ENDDO !iPassQ
 ENDDO !iPassP
 IF (nderiv.GT. 1) CALL freeDerivativeOverlapInfo(derivInfo)
+call mem_dealloc(negative)
+call mem_dealloc(Dim5)
 IF(Input%LinComCarmomType.GT.0)THEN
    call mem_workpointer_dealloc(QPmat3)
 ELSEIF(PQ%reverseOrder)THEN

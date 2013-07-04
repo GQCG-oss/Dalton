@@ -599,7 +599,7 @@ C
          MULTS = ISPIN
 
          IF (DONEVPT .AND. MS2 .NE. MULTS-1) THEN
-            WRITE (LUPRI,'(/A)')
+            WRITE (LUWCIX,'(/A)')
      &      ' INFO: MS2 reset to max 2*MS value for NEVPT2'
             MS2 = MULTS - 1
          END IF

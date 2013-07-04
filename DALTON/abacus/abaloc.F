@@ -2595,6 +2595,8 @@ Cend-PFP
 #include "chrsgn.h"
 #include "chrnos.h"
 #include "ibtfun.h"
+#include "codata.h"
+C from codata: XTANG
 CPFP with g77
 C#include <molde.h>
 Cend-PFP

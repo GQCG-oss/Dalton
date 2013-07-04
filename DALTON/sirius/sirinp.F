@@ -3194,7 +3194,7 @@ C     Option 26 >MEP   <
 C
  2000 CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
+C         ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRRHF = THRRHF*THR_REDFAC
@@ -3571,7 +3571,7 @@ C *** Option 33 >FOCKON< Only FOCK (no no:s ) for TRACI and output
 C
  9000 CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
+C         ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRMC = THRMC*THR_REDFAC
@@ -3730,7 +3730,7 @@ C                        CI diagonalization.
 C
  8000 CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
+C         ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRCI = THRCI*THR_REDFAC
@@ -4520,7 +4520,7 @@ C *** Option  108 >      <
 C
  8000 CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
+C         ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRP = THRP*THR_REDFAC
@@ -5869,7 +5869,7 @@ C
 C
  8000 CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
+C         ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRNEVPT = THRNEVPT*THR_REDFAC

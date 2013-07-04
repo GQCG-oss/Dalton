@@ -23,7 +23,7 @@ cd $TMP_DIR/build
 #make depend
 #make
 #make Nightly
-ctest -D Nightly -L lsdalton 
+ctest -D Nightly -L linsca
 
 exit 0
 

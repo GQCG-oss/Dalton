@@ -43,6 +43,9 @@ option(ENABLE_LSEEK          "Enable lseek"                                     
 option(ENABLE_DEBUGPBC       "Enable DEBUG_PBC"                                 OFF)
 option(ENABLE_MPI2_DETECTION "Enable detection of MPI-2 standard"               OFF)
 
+# this code lives on the k4mirror branch
+option(ENABLE_K4MIRROR       "Enable k4mirror integral code"                    OFF)
+
 set(LIBS)
 
 include(ConfigVersion)

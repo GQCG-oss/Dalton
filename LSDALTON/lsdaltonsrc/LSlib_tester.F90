@@ -805,6 +805,103 @@ write(lupri,'(A80,2F18.10)') 'Coulomb Cubic force from diff-eri (Mulliken): RMS 
 deallocate(TempCubic)
 #endif
 
+!*****************************************************************************
+!******                             First derivative nuclear-electron attraction integrals
+!*****************************************************************************
+
+deallocate(eri)
+nullify(eri)
+allocate(eri(nbast,nbast,1,1,3*nAtoms))
+call ls_dzero(eri,nbast*nbast*1*1*3*nAtoms)
+
+CALL LSlib_get_nucel_geoderiv(eri,nbast,nAtoms,1,3*nAtoms,lupri,luerr)
+
+call ls_dzero(TempGrad,natoms*3)
+
+iGrad = 0
+DO n=1,nAtoms
+  DO x=1,3
+   iGrad = iGrad+1
+   DO l=1,1
+    DO k=1,1
+     DO j=1,nbast
+      DO i=1,nbast
+       TempGrad(x,n,1) = TempGrad(x,n,1) + 2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iGrad)
+      ENDDO
+     ENDDO
+    ENDDO
+   ENDDO
+  ENDDO
+ENDDO
+   
+tmp1 = 0.0_realk
+tmp2 = 0.0_realk
+ij=0
+DO j=1,natoms
+  DO i=1,3
+    ij=ij+1
+    tmp1=tmp1+TempGrad(i,j,1)*TempGrad(i,j,1)
+    tmp2=tmp2+TempGrad(i,j,1)*ij
+  ENDDO
+ENDDO
+write(lupri,'(A80,2F18.10)') 'Nuclear-electron attraction gradient: RMS and index-weighted sum',&
+     &                     sqrt(tmp1/natoms/3),tmp2/natoms/3
+
+
+!*****************************************************************************
+!******                             Second derivative nuclear-electron attraction integrals
+!*****************************************************************************
+
+deallocate(eri)
+nullify(eri)
+allocate(eri(nbast,nbast,1,1,9*nAtoms*nAtoms))
+call ls_dzero(eri,nbast*nbast*1*1*9*nAtoms*nAtoms)
+
+CALL LSlib_get_nucel_geoderiv(eri,nbast,nAtoms,2,9*nAtoms*nAtoms,lupri,luerr)
+
+nullify(TempHess)
+allocate(TempHess(3,nAtoms,3,nAtoms,1))
+call ls_dzero(TempHess,natoms*3*nAtoms*3)
+
+iHess = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        iHess = iHess+1
+        DO l=1,1
+         DO k=1,1
+          DO j=1,nbast
+           DO i=1,nbast
+            TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + 2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iHess)
+           ENDDO
+          ENDDO
+         ENDDO
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+   
+tmp1 = 0.0_realk
+tmp2 = 0.0_realk
+iHess = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        iHess = iHess+1
+        tmp1=tmp1+TempHess(y,m,x,n,1)*TempHess(y,m,x,n,1)
+        tmp2=tmp2+TempHess(y,m,x,n,1)*iHess
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+write(lupri,'(A80,2F18.10)') 'Nuclear-electron attraction Hessian: RMS and index-weighted sum',&
+     &                     sqrt(tmp1/natoms/natoms/9),tmp2/natoms/natoms/9
+deallocate(TempHess)
+
+
 
 deallocate(eri)
 deallocate(TempGrad)
