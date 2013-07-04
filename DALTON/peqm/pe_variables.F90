@@ -133,6 +133,7 @@ module pe_variables
     ! ----------------------
     integer, save :: nqmpoltensors = 0
     real(dp), dimension(:,:), allocatable, save :: qmpoltensors
+    real(dp), save :: qmdamp
     ! ----------------------
 
     ! specifies what type of parameters are present
