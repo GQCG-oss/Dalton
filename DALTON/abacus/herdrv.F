@@ -424,7 +424,7 @@ C     Bin Gao, Oct. 3, 2011
 !                    233        234        235        236
      &             '.MQDPTS', '.ORB-OR', '.DERAM ', '.DIPANH',
 !                    237        238        239        240
-     &             '.NEWTRA', '.KINADI', '.GENINT', 'S2MBRA',
+     &             '.NEWTRA', '.KINADI', '.GENINT', '.S2MBRA',
 !                    241        242        243
      &             '.S2MKET', '.S2MMIX', '.LRINTS'/
 C

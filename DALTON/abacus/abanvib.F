@@ -1630,6 +1630,7 @@ C     **********************************************
 #include "numder.h"
       PARAMETER (IPRTRH = 20 )
       LOGICAL USED, CUBEXS
+      INTEGER SORTAR
       DIMENSION TDER(NDCOOR,NDCOOR,NDCOOR),
      &          SORTAR(NCOOR-NDCOOR+1:NCOOR),
      &          USED(NCOOR), FREQ(NCOOR)
@@ -1683,7 +1684,7 @@ C     *** Read the cubic forcefield and add it to TDER ***
       CALL GPCLOSE (LUC4IF,'KEEP')
  
 C     *** Print the cubic forcefield ***
-      IF ( IPRINT .GE. IPRTHR ) THEN
+      IF ( IPRINT .GE. IPRTRH ) THEN
          CALL HEADER('Diagonal of cubic force field, F(I,J,J)',-1)
          DO IDX = 1, NDCOOR
             DO JDX = 1, NDCOOR, 6          

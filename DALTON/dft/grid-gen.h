@@ -12,9 +12,9 @@ typedef real (*GridGeneratingFunc)(real x, real y, real z, void* arg);
 
 struct GridGenAtom_ {
     real x, y, z; /* coordinates of the atom */
-    int icent;    /* number of atom in dalton common blocks */
-    int Z;        /* its Z number            */
-    int mult;     /* number of symmetry equivalent atoms of this type *
+    integer icent;    /* number of atom in dalton common blocks */
+    integer Z;        /* its Z number            */
+    integer mult;     /* number of symmetry equivalent atoms of this type *
                    * instead of having separate atoms, we multiply the *
                    * grid weights by this value. */
 };
@@ -31,7 +31,7 @@ typedef enum {
     GRID_RAD_LMG
 } GridGenQuad;
 
-extern int dftgrid_adaptive;
+extern integer dftgrid_adaptive;
 
 struct RhoEvalData {
     DftGrid* grid;
@@ -43,11 +43,11 @@ struct RhoEvalData {
 
 real rho_grid_func(real x, real y, real z, void* arg);
 
-int grid_gen_save(const char* filename, GridGenMolGrid* mgrid);
-int grid_gen_generate(const char* filename, integer atom_cnt, 
+integer grid_gen_save(const char* filename, GridGenMolGrid* mgrid);
+integer grid_gen_generate(const char* filename, integer atom_cnt, 
                       const GridGenAtom* atom_arr, real threshold,
                       GridGeneratingFunc generating_function, void* data,
-                      int minang, int maxang, real* work, integer *lwork);
+                      integer minang, integer maxang, real* work, integer *lwork);
 void grid_gen_set_part_scheme(GridGenPartScheme scheme);
 
 typedef struct DftGridReader_ DftGridReader;
@@ -56,7 +56,7 @@ DftGridReader* grid_open(integer nbast, real *dmat, real *work, integer *lwork, 
 DftGridReader* grid_open_cmo(integer nbast, const real *cmo, 
                              real *work, integer *lwork, integer iprint);
 
-int
+integer
 grid_getchunk_blocked(DftGridReader* rawgrid, integer maxlen,
                       integer *nblocks, integer (*shlblocks)[2], 
                       real (*coor)[3], real *weight);
@@ -66,7 +66,7 @@ grid_getchunk_blocked(DftGridReader* rawgrid, integer maxlen,
 void grid_close(DftGridReader *rawgrid);
 
 /* CARTESIAN GRID ROUTINES */
-void do_cartesian_grid(int nbast, const real* dmat, DftGridReader* res);
+void do_cartesian_grid(integer nbast, const real* dmat, DftGridReader* res);
 
 #endif /* !defined(GRID_GEN_H) */
 

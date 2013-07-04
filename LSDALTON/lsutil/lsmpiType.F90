@@ -5311,13 +5311,15 @@ contains
 #endif
   end subroutine lsmpi_win_fence_special
 
-  subroutine lsmpi_win_lock(dest,win,typeoflock)
+  subroutine lsmpi_win_lock(dest,win,typeoflock,ass)
     implicit none
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in),optional :: ass
     character, intent(in) :: typeoflock
     integer(kind=ls_mpik) :: ierr, assert
     assert = 0
+    if(present(ass))assert=ass
     ierr = 0
 #ifdef VAR_MPI   
     if(typeoflock=='e')then
@@ -5358,7 +5360,7 @@ contains
     integer(kind=MPI_ADDRESS_KIND) :: offset
     ierr = 0
     n  = 1
-    offset = pos-1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
     call MPI_PUT(buf,n,MPI_DOUBLE_PRECISION,dest, &
      & offset,n,MPI_DOUBLE_PRECISION,win,ierr)
     if(ierr.ne.0)then
@@ -5387,7 +5389,7 @@ contains
     else
       ierr = 0
       n  = nelms
-      offset = pos-1
+      offset = int(pos-1,kind=MPI_ADDRESS_KIND)
       call MPI_PUT(buf,n,MPI_DOUBLE_PRECISION,dest, &
        & offset,n,MPI_DOUBLE_PRECISION,win,ierr)
       if(ierr.ne.0)then
@@ -5408,7 +5410,7 @@ contains
     integer(kind=MPI_ADDRESS_KIND) :: offset
     ierr = 0
     n  = nelms
-    offset = pos-1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
     call MPI_PUT(buf,n,MPI_DOUBLE_PRECISION,dest, &
      & offset,n,MPI_DOUBLE_PRECISION,win,ierr)
     if(ierr.ne.0)then
@@ -5429,7 +5431,7 @@ contains
     integer(kind=MPI_ADDRESS_KIND) :: offset
     ierr = 0
     n  = 1
-    offset = pos-1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
     call MPI_GET(buf,n,MPI_INTEGER8,dest, &
      & offset,n,MPI_INTEGER8,win,ierr)
     if(ierr.ne.0)then
@@ -5448,7 +5450,7 @@ contains
     integer(kind=MPI_ADDRESS_KIND) :: offset
     ierr = 0
     n  = 1
-    offset = pos-1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
     call MPI_GET(buf,n,MPI_INTEGER4,dest, &
      & offset,n,MPI_INTEGER4,win,ierr)
     if(ierr.ne.0)then
@@ -5467,7 +5469,7 @@ contains
     integer(kind=MPI_ADDRESS_KIND) :: offset
     ierr = 0
     n  = 1
-    offset = pos-1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
     call MPI_GET(buf,n,MPI_DOUBLE_PRECISION,dest, &
      & offset,n,MPI_DOUBLE_PRECISION,win,ierr)
     if(ierr.ne.0)then
@@ -5496,7 +5498,7 @@ contains
     else
       ierr = 0
       n  = nelms
-      offset = pos-1
+      offset = int(pos-1,kind=MPI_ADDRESS_KIND)
       call MPI_GET(buf,n,MPI_DOUBLE_PRECISION,dest, &
        & offset,n,MPI_DOUBLE_PRECISION,win,ierr)
       if(ierr.ne.0)then
@@ -5537,7 +5539,7 @@ contains
     integer(kind=MPI_ADDRESS_KIND) :: offset
     ierr = 0
     n  = nelms
-    offset = pos-1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
     call MPI_GET(buf,n,MPI_DOUBLE_PRECISION,dest, &
      & offset,n,MPI_DOUBLE_PRECISION,win,ierr)
     if(ierr.ne.0)then
@@ -5558,7 +5560,7 @@ contains
     integer(kind=MPI_ADDRESS_KIND) :: offset
     ierr = 0
     n  = 1
-    offset = pos-1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
     call MPI_ACCUMULATE(buf,n,MPI_INTEGER8,dest, &
      & offset,n,MPI_INTEGER8,MPI_SUM,win,ierr)
     if(ierr.ne.0)then
@@ -5577,7 +5579,7 @@ contains
     integer(kind=MPI_ADDRESS_KIND) :: offset
     ierr = 0
     n  = 1
-    offset = pos-1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
     call MPI_ACCUMULATE(buf,n,MPI_INTEGER4,dest, &
      & offset,n,MPI_INTEGER4,MPI_SUM,win,ierr)
     if(ierr.ne.0)then
@@ -5596,7 +5598,7 @@ contains
     integer(kind=MPI_ADDRESS_KIND) :: offset
     ierr = 0
     n  = 1
-    offset = pos-1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
     call MPI_ACCUMULATE(buf,n,MPI_DOUBLE_PRECISION,dest, &
      & offset,n,MPI_DOUBLE_PRECISION,MPI_SUM,win,ierr)
     if(ierr.ne.0)then
@@ -5625,7 +5627,7 @@ contains
     else
       ierr = 0
       n  = nelms
-      offset = pos-1
+      offset = int(pos-1,kind=MPI_ADDRESS_KIND)
       call MPI_ACCUMULATE(buf,n,MPI_DOUBLE_PRECISION,dest, &
        & offset,n,MPI_DOUBLE_PRECISION,MPI_SUM,win,ierr)
       if(ierr.ne.0)then
@@ -5646,7 +5648,7 @@ contains
     integer(kind=MPI_ADDRESS_KIND) :: offset
     ierr = 0
     n  = nelms
-    offset = pos-1
+    offset = int(pos-1,kind=MPI_ADDRESS_KIND)
     call MPI_ACCUMULATE(buf,n,MPI_DOUBLE_PRECISION,dest, &
      & offset,n,MPI_DOUBLE_PRECISION,MPI_SUM,win,ierr)
     if(ierr.ne.0)then

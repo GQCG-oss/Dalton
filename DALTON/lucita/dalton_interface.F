@@ -553,6 +553,7 @@ C
 !     write(lupri,*) 'GET_CMOAO_DALTON: NSM  = ',NSM         !hjaaj DEBUG
 !     write(lupri,*) 'GET_CMOAO_DALTON: NBAS = ',NBAS(1:NSM) !hjaaj DEBUG
 !     write(lupri,*) 'GET_CMOAO_DALTON: NMO  = ',NMO (1:NSM) !hjaaj DEBUG
+      NTEST  = 0
       ITAP30 = 16
       OPEN(ITAP30,STATUS='OLD',FORM='UNFORMATTED',FILE='SIRIFC')
       REWIND ITAP30
@@ -2112,6 +2113,7 @@ C?    print *,' ijPairs,klPairs',ijPairs,klPairs
 C     COMMON/CRUN/MAXIT,IRESTR,INTIMP,NP1,NP2,NQ,INCORE,MXCIV,ICISTR,
 C    &            NOCSF,IDIAG
 #include "mxpdim.inc"
+#include "parluci.h"
 #include "crun.inc"
 *.Input
       DIMENSION IREOTS(*)
@@ -2144,7 +2146,7 @@ C?          WRITE(lupri,*) ' I II J JJ ',I,II,J, JJ
 *
       NTEST = 0
       IF(NTEST.NE.0) THEN
-        WRITE(lupri,*) ' RJ and RK from GTJK '
+        WRITE(luwrt,*) ' RJ and RK from GTJK '
         CALL WRTMT_LU(RJ,NTOOB,NTOOB,NTOOB,NTOOB)
         CALL WRTMT_LU(RK,NTOOB,NTOOB,NTOOB,NTOOB)
       END IF
@@ -2334,6 +2336,7 @@ C?          WRITE(lupri,*) ' I II J JJ ',I,II,J, JJ
 #include "clunit.inc"
       Character*8   Fmt
       Character*70  Line,StLine
+      integer    :: lpaper = 120 
 *----------------------------------------------------------------------*
 *     Start and define the paper width                                 *
 *     Initialize blank and header lines                                *
