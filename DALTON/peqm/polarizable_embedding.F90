@@ -1523,6 +1523,12 @@ subroutine pe_sync()
         call mpi_bcast(pe_damp, 1, lmpi, 0, comm, ierr)
         call mpi_bcast(damp, 1, rmpi, 0, comm, ierr)
         call mpi_bcast(pe_qmdamping, 1, lmpi, 0, comm, ierr)
+        if (pe_qmdamping) then
+            call mpi_bcast(nqmpoltensors, 1, impi, 0, comm, ierr)
+            if (myid /= 0 .and. .not. allocated(qmpoltensors)) &
+                & allocate(qmpoltensors(6, nqmpoltensors))
+            call mpi_bcast(qmpoltensors, 6*nqmpoltensors, rmpi, 0, comm, ierr)
+        endif
     end if
 
     call mpi_bcast(pe_fd, 1, lmpi, 0, comm, ierr)
