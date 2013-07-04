@@ -41,14 +41,15 @@
 #endif
 #include <math.h>
 #include <stddef.h>
+#include "general.h"
 
 #define __CVERSION__
 
 #include "functionals.h"
 
 /* INTERFACE PART */
-static int lyp_isgga(void) { return 1; }
-static int lyp_read(const char* conf_line);
+static integer lyp_isgga(void) { return 1; }
+static integer lyp_read(const char* conf_line);
 static real lyp_energy(const FunDensProp* dp);
 static void lyp_first(FunFirstFuncDrv *ds,   real fac, const FunDensProp* dp);
 static void lyp_second(FunSecondFuncDrv *ds, real fac, const FunDensProp* dp);
@@ -69,7 +70,7 @@ Functional LYPFunctional = {
 };
 
 /* IMPLEMENTATION PART */
-static int
+static integer
 lyp_read(const char* conf_line)
 {
     fun_set_hf_weight(0.0);

@@ -30,7 +30,7 @@ cd $TMP_DIR/build
 #make depend
 #make Nightly
 #make Experimental
-ctest -D Nightly -L lsdalton
+ctest -D Nightly -L linsca
 
 exit 0
 

@@ -554,7 +554,7 @@ C...  terminates Gen1Int interface
       call gen1int_host_finalize()
 #endif
 
-      call parallel_models_finalize_mpi()
+      call parallel_models_finalize_mpi(nodtot+1)
 
       CALL MPIXFINALIZE
 C

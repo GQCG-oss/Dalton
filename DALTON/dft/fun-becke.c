@@ -48,14 +48,15 @@
 
 #include <math.h>
 #include <stddef.h>
+#include "general.h"
 
 #define __CVERSION__
 
 #include "functionals.h"
 
 /* INTERFACE PART */
-static int  becke_isgga(void) { return 1; }
-static int  becke_read(const char* conf_line);
+static integer  becke_isgga(void) { return 1; }
+static integer  becke_read(const char* conf_line);
 static real becke_energy(const FunDensProp* dens_prop);
 static void becke_first(FunFirstFuncDrv *ds, real factor, 
                         const FunDensProp* dens_prop);
@@ -81,7 +82,7 @@ Functional BeckeFunctional = {
 
 /* IMPLEMENTATION PART */
 
-static int
+static integer
 becke_read(const char* conf_line)
 {
     fun_set_hf_weight(0.0);

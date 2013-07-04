@@ -98,14 +98,15 @@ K(rhoa,grada,rhob,gradb,gradab):=(rhoa+rhob)*(eps(rhoa,rhob)+H(d(rhoa,rhob,grada
 #endif
 #include <math.h>
 #include <stddef.h>
- 
+#include "general.h"
+
 #define __CVERSION__
  
 #include "functionals.h"
  
 /* INTERFACE PART */
-static int pw91c_isgga(void) { return 1; } /* FIXME: detect! */
-static int pw91c_read(const char *conf_line);
+static integer pw91c_isgga(void) { return 1; } /* FIXME: detect! */
+static integer pw91c_read(const char *conf_line);
 static real pw91c_energy(const FunDensProp *dp);
 static void pw91c_first(FunFirstFuncDrv *ds,   real factor,
                          const FunDensProp *dp);
@@ -127,7 +128,7 @@ Functional PW91cFunctional = {
 };
  
 /* IMPLEMENTATION PART */
-static int
+static integer
 pw91c_read(const char *conf_line)
 {
     fun_set_hf_weight(0);
