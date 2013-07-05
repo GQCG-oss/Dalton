@@ -395,11 +395,12 @@ C
 
       if (peqm) then
         if (.not. tdhf) then 
-             write(lupri,*) '*** WARNING peqm MCSCF QR ***  '
-             write(lupri,*) '    Highly experimental version'
-             write(lupri,*) '    Results *WILL* be wrong    '
-!            call quit('ERROR: MCSCF quadratic response not'//
-!     &                ' implemented with PE module.')
+!            edh: This part is not ready yet and should quit   
+!            write(lupri,*) '*** WARNING peqm MCSCF QR ***  '
+!            write(lupri,*) '    Highly experimental version'
+!            write(lupri,*) '    Results *WILL* be wrong    '
+            call quit('ERROR: MCSCF quadratic response not'//
+     &                ' implemented with PE module.')
 
             write(lupri,*)'KFREE', KFREE
             write(lupri,*)'LFREE', LFREE
