@@ -12,7 +12,7 @@ use precision
 use dft_ld_module
 use files
 use Fundamental, only: bohr_to_angstrom
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_mod
 #endif
@@ -172,11 +172,11 @@ call mem_grid_dealloc(RADIALWEIGHT)
 call mem_grid_dealloc(nRadialPoints)   
 call mem_grid_dealloc(GRIDANG)
 GRIDDONE=1
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
 call stats_grid_mem(lupri)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ENDIF
 #endif
 
@@ -244,7 +244,7 @@ logical,pointer :: skip(:),skip2(:)
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 #endif
 type(gridboxtype),pointer :: GridBox
-#ifndef VAR_LSMPI
+#ifndef VAR_MPI
 integer :: infpar
 #endif
 !logical,pointer :: SHELLLIST(:)
@@ -301,14 +301,14 @@ call init_grid_threadmemvar()
 #ifdef VAR_OMP
 nthreads=OMP_GET_NUM_THREADS()
 tid = omp_get_thread_num()
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
 !$OMP MASTER
 WRITE(lupri,'(4X,A,I3,A)')'This is an OpenMP Gridgeneration calculation using',&
      &omp_get_num_threads(),' threads.'
 !$OMP END MASTER
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ENDIF
 #endif
 #else
@@ -532,7 +532,7 @@ LUGRID=-1
 call get_quadfilename(filename,nbast,node,GridId)
 CALL LSOPEN(LUGRID,filename,'NEW','UNFORMATTED')
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF(USE_MPI)THEN 
    nprocessors = numnodes
    mynum = node
@@ -1326,94 +1326,204 @@ Subroutine BlockPartitioning(Center,NATOMS,atomcenterX,atomcenterY,&
   real(realk),parameter :: D1=1E0_realk,D05=0.5E0_realk,D3=3E0_realk
   real(realk) :: dist,Xatomcoor,Yatomcoor,Zatomcoor,DX,DY,DZ,DIST2,R
   real(realk) :: X,Y,Z,B,FACTOR
-  real(realk) :: MU1
+  real(realk) :: MU1,MUTMP1(4),MUTMP2(4),MUTMP3(4),MUTMP4(4)
+  logical     :: modnpoints
   integer     :: relevant_atoms(NATOMS),IATOM,h,nRELEVANT_ATOMS
-  integer     :: IATOM_REL,I,JATOM,JATOM_REL,Ipoint
+  integer     :: IATOM_REL,I,JATOM,JATOM_REL,Ipoint,npoints2
   integer     :: NGRIDPOINTINBATCH,IT,I3
   real(realk),pointer :: RIJ(:,:),TMP2(:,:),MU(:),MU2(:)
-  !determine relevant atoms
-  nRELEVANT_ATOMS=0
-  DO IATOM=1,NATOMS
-     DX = atomcenterX(IATOM) - CENTER(1)
-     DY = atomcenterY(IATOM) - CENTER(2)
-     DZ = atomcenterZ(IATOM) - CENTER(3)
-     DIST2=DX*DX + DY*DY + DZ*DZ  
-     r = RADIALPOINTS(1,IATOM) + CELL_SIZE;
-     IF(r*r>dist2)THEN
-        nRELEVANT_ATOMS=nRELEVANT_ATOMS+1
-        relevant_atoms(nRELEVANT_ATOMS) = IATOM
-     ENDIF
-  ENDDO
-  IF(nRELEVANT_ATOMS.EQ. 0)CALL LSQUIT('CRITICAL ERROR QUIT TK1253',-1)
-  IF(nRELEVANT_ATOMS.GT. 1)THEN  
-     call mem_grid_alloc(MU,npoints)
-     call mem_grid_alloc(MU2,npoints)     
-     call mem_grid_alloc(RIJ,npoints,nRELEVANT_ATOMS)
-     call mem_grid_alloc(TMP2,npoints,NATOMS)     
-     call build_rij(nRELEVANT_ATOMS,relevant_atoms,NATOMS,atomcenterX,&
-          & atomcenterY,atomcenterZ,points,npoints,COOR2,GlobalmaxGridpoints,RIJ)
-     call ls_SetToOne(TMP2,NATOMS*npoints)
-     DO IATOM_REL=2,nRELEVANT_ATOMS
-        IATOM=relevant_atoms(IATOM_REL) 
-        DO JATOM_REL = 1,IATOM_REL-1
-           JATOM = relevant_atoms(JATOM_REL) 
-           dist = inverseDistance12(JATOM,IATOM)
-           B = BFAC(JATOM,IATOM)
-           DO Ipoint=1,npoints
-              MU1=(RIJ(Ipoint,IATOM_REL)-RIJ(Ipoint,JATOM_REL))*dist
-              MU1=MU1+B*(D1-MU1*MU1)
-              MU(Ipoint) = MU1
-              MU2(Ipoint) = MU1*MU1
-           ENDDO
-           DO h=1,ihardness-1              
+  IF(ihardness.EQ.3)THEN !unroll the hardness loop
+     !determine relevant atoms
+     nRELEVANT_ATOMS=0
+     DO IATOM=1,NATOMS
+        DX = atomcenterX(IATOM) - CENTER(1)
+        DY = atomcenterY(IATOM) - CENTER(2)
+        DZ = atomcenterZ(IATOM) - CENTER(3)
+        DIST2=DX*DX + DY*DY + DZ*DZ  
+        r = RADIALPOINTS(1,IATOM) + CELL_SIZE;
+        IF(r*r>dist2)THEN
+           nRELEVANT_ATOMS=nRELEVANT_ATOMS+1
+           relevant_atoms(nRELEVANT_ATOMS) = IATOM
+        ENDIF
+     ENDDO
+     IF(nRELEVANT_ATOMS.EQ. 0)CALL LSQUIT('CRITICAL ERROR QUIT TK1253',-1)
+     IF(nRELEVANT_ATOMS.GT. 1)THEN  
+        call mem_grid_alloc(MU,npoints)
+!        call mem_grid_alloc(MU2,npoints)     
+        call mem_grid_alloc(RIJ,npoints,nRELEVANT_ATOMS)
+        call mem_grid_alloc(TMP2,npoints,NATOMS)     
+        call build_rij(nRELEVANT_ATOMS,relevant_atoms,NATOMS,atomcenterX,&
+             & atomcenterY,atomcenterZ,points,npoints,COOR2,GlobalmaxGridpoints,RIJ)
+        call ls_SetToOne(TMP2,NATOMS*npoints)
+        npoints2 = (npoints/4)*4          !unroll with 4
+        modnpoints = (mod(npoints,4).GT.0)
+        DO IATOM_REL=2,nRELEVANT_ATOMS
+           IATOM=relevant_atoms(IATOM_REL) 
+           DO JATOM_REL = 1,IATOM_REL-1
+              JATOM = relevant_atoms(JATOM_REL) 
+              dist = inverseDistance12(JATOM,IATOM)
+              B = BFAC(JATOM,IATOM)
+              DO Ipoint=1,npoints2,4
+                 MUTMP1(1) = (RIJ(Ipoint,IATOM_REL)-RIJ(Ipoint,JATOM_REL))*dist
+                 MUTMP1(2) = (RIJ(Ipoint+1,IATOM_REL)-RIJ(Ipoint+1,JATOM_REL))*dist
+                 MUTMP1(3) = (RIJ(Ipoint+2,IATOM_REL)-RIJ(Ipoint+2,JATOM_REL))*dist
+                 MUTMP1(4) = (RIJ(Ipoint+3,IATOM_REL)-RIJ(Ipoint+3,JATOM_REL))*dist
+
+                 MUTMP2(1) = MUTMP1(1)+B*(D1-MUTMP1(1)*MUTMP1(1))
+                 MUTMP2(2) = MUTMP1(2)+B*(D1-MUTMP1(2)*MUTMP1(2))
+                 MUTMP2(3) = MUTMP1(3)+B*(D1-MUTMP1(3)*MUTMP1(3))
+                 MUTMP2(4) = MUTMP1(4)+B*(D1-MUTMP1(4)*MUTMP1(4))
+
+                 MUTMP3(1) = D05*MUTMP2(1)*(D3-MUTMP2(1)*MUTMP2(1)) 
+                 MUTMP3(2) = D05*MUTMP2(2)*(D3-MUTMP2(2)*MUTMP2(2)) 
+                 MUTMP3(3) = D05*MUTMP2(3)*(D3-MUTMP2(3)*MUTMP2(3)) 
+                 MUTMP3(4) = D05*MUTMP2(4)*(D3-MUTMP2(4)*MUTMP2(4)) 
+
+                 MUTMP4(1) = D05*MUTMP3(1)*(D3-MUTMP3(1)*MUTMP3(1))
+                 MUTMP4(2) = D05*MUTMP3(2)*(D3-MUTMP3(2)*MUTMP3(2))
+                 MUTMP4(3) = D05*MUTMP3(3)*(D3-MUTMP3(3)*MUTMP3(3))
+                 MUTMP4(4) = D05*MUTMP3(4)*(D3-MUTMP3(4)*MUTMP3(4))
+
+                 mu(Ipoint)   = D05*MUTMP4(1)*(D3-MUTMP4(1)*MUTMP4(1))
+                 mu(Ipoint+1) = D05*MUTMP4(2)*(D3-MUTMP4(2)*MUTMP4(2))
+                 mu(Ipoint+2) = D05*MUTMP4(3)*(D3-MUTMP4(3)*MUTMP4(3))
+                 mu(Ipoint+3) = D05*MUTMP4(4)*(D3-MUTMP4(4)*MUTMP4(4))
+              ENDDO
+              IF(modnpoints)THEN
+                 DO Ipoint=npoints2+1,npoints
+                    MUTMP1(1) = (RIJ(Ipoint,IATOM_REL)-RIJ(Ipoint,JATOM_REL))*dist
+                    MUTMP2(1) = MUTMP1(1)+B*(D1-MUTMP1(1)*MUTMP1(1))
+                    MUTMP3(1) = D05*MUTMP2(1)*(D3-MUTMP2(1)*MUTMP2(1)) 
+                    MUTMP4(1) = D05*MUTMP3(1)*(D3-MUTMP3(1)*MUTMP3(1))
+                    mu(Ipoint)   = D05*MUTMP4(1)*(D3-MUTMP4(1)*MUTMP4(1))
+                 ENDDO
+              ENDIF
               DO Ipoint=1,npoints
-                 mu(Ipoint) = D05*mu(Ipoint)*(D3-mu2(Ipoint)) 
-                 mu2(Ipoint) = mu(Ipoint)*mu(Ipoint)
+                 TMP2(Ipoint,IATOM) = TMP2(Ipoint,IATOM)*D05*(D1-mu(Ipoint)) 
+                 TMP2(Ipoint,JATOM) = TMP2(Ipoint,JATOM)*D05*(D1+mu(Ipoint)) 
               ENDDO
            ENDDO
-           !        h=ihardness
-           DO Ipoint=1,npoints
-              mu(Ipoint) = D05*mu(Ipoint)*(D3-mu2(Ipoint))    
-           ENDDO
-           DO Ipoint=1,npoints
-              TMP2(Ipoint,IATOM) = TMP2(Ipoint,IATOM)*D05*(D1-mu(Ipoint)) 
-              TMP2(Ipoint,JATOM) = TMP2(Ipoint,JATOM)*D05*(D1+mu(Ipoint)) 
-           ENDDO
         ENDDO
-     ENDDO
-     call mem_grid_dealloc(RIJ)
-     IATOM = relevant_atoms(1) 
-     DO Ipoint=1,npoints
-        MU(Ipoint)=TMP2(Ipoint,IATOM)
-     ENDDO
-     DO IATOM_REL=2,nRELEVANT_ATOMS
-        IATOM = relevant_atoms(IATOM_REL) 
+        call mem_grid_dealloc(RIJ)
+        IATOM = relevant_atoms(1) 
         DO Ipoint=1,npoints
-           MU(Ipoint)=MU(Ipoint) + TMP2(Ipoint,IATOM)
+           MU(Ipoint)=TMP2(Ipoint,IATOM)
         ENDDO
-     ENDDO
-     if(npoints.GT.maxNBUFLEN)THEN
-        CALL WRITE_COORD4(npoints,ITERATIONS,points,COOR2,WG2,MU,TMP2,NATOMS,&
-             & GlobalmaxGridpoints,NSHELLBLOCKS,SHELLBLOCKS,atom_idx,weight_thr,&
-             & maxNBUFLEN,LUGRID,COOR3,WG3)
+        DO IATOM_REL=2,nRELEVANT_ATOMS
+           IATOM = relevant_atoms(IATOM_REL) 
+           DO Ipoint=1,npoints
+              MU(Ipoint)=MU(Ipoint) + TMP2(Ipoint,IATOM)
+           ENDDO
+        ENDDO
+        if(npoints.GT.maxNBUFLEN)THEN
+           CALL WRITE_COORD4(npoints,ITERATIONS,points,COOR2,WG2,MU,TMP2,NATOMS,&
+                & GlobalmaxGridpoints,NSHELLBLOCKS,SHELLBLOCKS,atom_idx,weight_thr,&
+                & maxNBUFLEN,LUGRID,COOR3,WG3)
+        ELSE
+           CALL WRITE_COORD3(npoints,ITERATIONS,points,COOR2,WG2,MU,TMP2,NATOMS,&
+                & GlobalmaxGridpoints,NSHELLBLOCKS,SHELLBLOCKS,atom_idx,weight_thr,&
+                & maxNBUFLEN,LUGRID,COOR3,WG3)
+        ENDIF
+        call mem_grid_dealloc(TMP2) 
+        call mem_grid_dealloc(MU)
+!        call mem_grid_dealloc(MU2)         
      ELSE
-        CALL WRITE_COORD3(npoints,ITERATIONS,points,COOR2,WG2,MU,TMP2,NATOMS,&
-             & GlobalmaxGridpoints,NSHELLBLOCKS,SHELLBLOCKS,atom_idx,weight_thr,&
-             & maxNBUFLEN,LUGRID,COOR3,WG3)
-     ENDIF 
-     call mem_grid_dealloc(TMP2) 
-     call mem_grid_dealloc(MU)
-     call mem_grid_dealloc(MU2)         
+        if(npoints.GT.maxNBUFLEN)THEN
+           CALL WRITE_COORD2(npoints,ITERATIONS,points(1:npoints),&
+                & COOR2,WG2,GlobalmaxGridpoints,NSHELLBLOCKS,SHELLBLOCKS,&
+                & maxNBUFLEN,LUGRID,COOR3,WG3)
+        else
+           CALL WRITE_COORD1(npoints,ITERATIONS,points(1:npoints),&
+                & COOR2,WG2,GlobalmaxGridpoints,NSHELLBLOCKS,SHELLBLOCKS,&
+                & maxNBUFLEN,LUGRID,COOR3,WG3)
+        endif
+     ENDIF
+
   ELSE
-     if(npoints.GT.maxNBUFLEN)THEN
-        CALL WRITE_COORD2(npoints,ITERATIONS,points(1:npoints),&
-             & COOR2,WG2,GlobalmaxGridpoints,NSHELLBLOCKS,SHELLBLOCKS,&
-             & maxNBUFLEN,LUGRID,COOR3,WG3)
-     else
-        CALL WRITE_COORD1(npoints,ITERATIONS,points(1:npoints),&
-             & COOR2,WG2,GlobalmaxGridpoints,NSHELLBLOCKS,SHELLBLOCKS,&
-             & maxNBUFLEN,LUGRID,COOR3,WG3)
-     endif
+     !determine relevant atoms
+     nRELEVANT_ATOMS=0
+     DO IATOM=1,NATOMS
+        DX = atomcenterX(IATOM) - CENTER(1)
+        DY = atomcenterY(IATOM) - CENTER(2)
+        DZ = atomcenterZ(IATOM) - CENTER(3)
+        DIST2=DX*DX + DY*DY + DZ*DZ  
+        r = RADIALPOINTS(1,IATOM) + CELL_SIZE;
+        IF(r*r>dist2)THEN
+           nRELEVANT_ATOMS=nRELEVANT_ATOMS+1
+           relevant_atoms(nRELEVANT_ATOMS) = IATOM
+        ENDIF
+     ENDDO
+     IF(nRELEVANT_ATOMS.EQ. 0)CALL LSQUIT('CRITICAL ERROR QUIT TK1253',-1)
+     IF(nRELEVANT_ATOMS.GT. 1)THEN  
+        call mem_grid_alloc(MU,npoints)
+        call mem_grid_alloc(MU2,npoints)     
+        call mem_grid_alloc(RIJ,npoints,nRELEVANT_ATOMS)
+        call mem_grid_alloc(TMP2,npoints,NATOMS)     
+        call build_rij(nRELEVANT_ATOMS,relevant_atoms,NATOMS,atomcenterX,&
+             & atomcenterY,atomcenterZ,points,npoints,COOR2,GlobalmaxGridpoints,RIJ)
+        call ls_SetToOne(TMP2,NATOMS*npoints)
+        DO IATOM_REL=2,nRELEVANT_ATOMS
+           IATOM=relevant_atoms(IATOM_REL) 
+           DO JATOM_REL = 1,IATOM_REL-1
+              JATOM = relevant_atoms(JATOM_REL) 
+              dist = inverseDistance12(JATOM,IATOM)
+              B = BFAC(JATOM,IATOM)
+              DO Ipoint=1,npoints
+                 MU1=(RIJ(Ipoint,IATOM_REL)-RIJ(Ipoint,JATOM_REL))*dist
+                 MU1=MU1+B*(D1-MU1*MU1)
+                 MU(Ipoint) = MU1
+                 MU2(Ipoint) = MU1*MU1
+              ENDDO
+              DO h=1,ihardness-1              
+                 DO Ipoint=1,npoints
+                    mu(Ipoint) = D05*mu(Ipoint)*(D3-mu2(Ipoint)) 
+                    mu2(Ipoint) = mu(Ipoint)*mu(Ipoint)
+                 ENDDO
+              ENDDO
+              !        h=ihardness
+              DO Ipoint=1,npoints
+                 mu(Ipoint) = D05*mu(Ipoint)*(D3-mu2(Ipoint))    
+              ENDDO
+              DO Ipoint=1,npoints
+                 TMP2(Ipoint,IATOM) = TMP2(Ipoint,IATOM)*D05*(D1-mu(Ipoint)) 
+                 TMP2(Ipoint,JATOM) = TMP2(Ipoint,JATOM)*D05*(D1+mu(Ipoint)) 
+              ENDDO
+           ENDDO
+        ENDDO
+        call mem_grid_dealloc(RIJ)
+        IATOM = relevant_atoms(1) 
+        DO Ipoint=1,npoints
+           MU(Ipoint)=TMP2(Ipoint,IATOM)
+        ENDDO
+        DO IATOM_REL=2,nRELEVANT_ATOMS
+           IATOM = relevant_atoms(IATOM_REL) 
+           DO Ipoint=1,npoints
+              MU(Ipoint)=MU(Ipoint) + TMP2(Ipoint,IATOM)
+           ENDDO
+        ENDDO
+        if(npoints.GT.maxNBUFLEN)THEN
+           CALL WRITE_COORD4(npoints,ITERATIONS,points,COOR2,WG2,MU,TMP2,NATOMS,&
+                & GlobalmaxGridpoints,NSHELLBLOCKS,SHELLBLOCKS,atom_idx,weight_thr,&
+                & maxNBUFLEN,LUGRID,COOR3,WG3)
+        ELSE
+           CALL WRITE_COORD3(npoints,ITERATIONS,points,COOR2,WG2,MU,TMP2,NATOMS,&
+                & GlobalmaxGridpoints,NSHELLBLOCKS,SHELLBLOCKS,atom_idx,weight_thr,&
+                & maxNBUFLEN,LUGRID,COOR3,WG3)
+        ENDIF
+        call mem_grid_dealloc(TMP2) 
+        call mem_grid_dealloc(MU)
+        call mem_grid_dealloc(MU2)         
+     ELSE
+        if(npoints.GT.maxNBUFLEN)THEN
+           CALL WRITE_COORD2(npoints,ITERATIONS,points(1:npoints),&
+                & COOR2,WG2,GlobalmaxGridpoints,NSHELLBLOCKS,SHELLBLOCKS,&
+                & maxNBUFLEN,LUGRID,COOR3,WG3)
+        else
+           CALL WRITE_COORD1(npoints,ITERATIONS,points(1:npoints),&
+                & COOR2,WG2,GlobalmaxGridpoints,NSHELLBLOCKS,SHELLBLOCKS,&
+                & maxNBUFLEN,LUGRID,COOR3,WG3)
+        endif
+     ENDIF
   ENDIF
 END Subroutine BLOCKPARTITIONING
 
@@ -2265,7 +2375,7 @@ character(len=22) :: filename
 integer,intent(in) :: nbast,gridid
 integer(kind=ls_mpik),intent(in) :: node
 filename(1:11)='DALTON.QUAD'
-#ifdef VAR_LSMPI 
+#ifdef VAR_MPI 
 filename(12:16)=Char(node/10000+48)//Char(mod(node,10000)/1000+48)&
    &//Char(mod(mod(node,10000),1000)/100+48)&
    &//Char(mod(mod(mod(node,10000),1000),100)/10+48)&

@@ -275,7 +275,7 @@ useFTUV = INPUT%DO_JENGINE .AND. IELECTRON.EQ. 2
  P%nPrimitives   = np
 ! Default is to build OD-batches first, and then later collect into passes
  P%nPasses       = 1
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
  IF (np.EQ. 0) call lsquit('np=0. this should never happen! TK',lupri)
 #endif
 !==========================================================================
@@ -316,7 +316,7 @@ useFTUV = INPUT%DO_JENGINE .AND. IELECTRON.EQ. 2
  P%maxAngmom = maxAngmom-(P%endGeoOrder+CMorder+P%magderiv)
  P%minAngmom = minAngmom-(P%endGeoOrder+CMorder+P%magderiv)
  P%startAngmom = 0
- IF (P%type_hermite_single) P%startAngmom = minAngmom
+ IF (P%type_hermite_single) P%startAngmom = P%minAngmom
  IF( INPUT%operator .EQ. KineticOperator .AND. LHS) THEN
     IF (P%type_hermite_single) P%startAngmom = P%startAngmom + 2
     P%endAngmom   = maxAngmom + 2
@@ -390,7 +390,7 @@ ENDDO
   BatchA = P%orb1batch(1)
   BatchB = P%orb2batch(1)
   Gindex = GAB2%INDEX(AtomA,AtomB,1,1)
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
   IF(Gindex.EQ.0)THEN
      call lsquit('lstensor allocation error in SET_OVERLAP',lupri)
   ENDIF
@@ -419,7 +419,7 @@ ENDDO
        screen = .FALSE.
      ENDIF
      IF (.NOT.screen) THEN
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
        IF(size(P%preExpFac).NE.P%nPrimAlloc*P%nAngAlloc)call lsquit('PreExpFac dim error',-1)
 #endif
        offset = i12*3
@@ -479,7 +479,7 @@ ENDIF
 !   Determine if we should perform a basisset contraction, this should be done 
 !   before Etensor is calculated (before P%preExpFac(1) is used)  
 !========================================================================== 
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(size(P%preExpFac).NE.P%nPrimAlloc*P%nAngAlloc)call lsquit('PreExpFac dim error2',-1)
 #endif
 IF(Input%PS_int)THEN
@@ -1255,7 +1255,7 @@ Integer             :: SAA,atomC,atomD,batchC,batchD,Dcdindex,maxAng
 Integer             :: Ddcindex,sC,sD,iSC,iSD,elms,n1,n2,offset,maxBat
 Logical             :: spherical
 
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(size(P%FTUV).NE.P%nPrimAlloc*P%nTUVAlloc*Input%NDMAT_RHS)call lsquit('FTUV dim error',-1)
 IF(P%nTUV*P%nPrimitives*Input%NDMAT_RHS.GT.size(P%FTUV))call lsquit('FTUV dim error',-1)
 #endif
@@ -1329,7 +1329,7 @@ IF(Dcdindex.NE.0)THEN
       ENDIF
 
       call mem_workpointer_dealloc(CC)
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
       IF(P%nPrimitives*nTUV*Input%NDMAT_RHS.GT.P%nPrimAlloc*P%nTUVAlloc*Input%NDMAT_RHS)call lsquit('FTUV dim error',-1)
 #endif
       CALL SetUpFTUVs1(P%FTUV,P%nPrimitives,nTUV,Input%NDMAT_RHS,lm,ContractedDmat,Ecoeffs,P%nTUVAlloc,P%nPrimAlloc)
@@ -1501,7 +1501,7 @@ IF(INPUT%PS_SCREEN.AND.(.NOT.P%type_Empty))THEN
   BatchA = P%orb1batch(1)
   BatchB = P%orb2batch(1)
   Gindex = GAB%INDEX(atomA,atomB,1,1)
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
   IF(Gindex.EQ.0)THEN
      call lsquit('lstensor allocation error in SET_OVERLAP',lupri)
   ENDIF
@@ -1682,7 +1682,7 @@ IF(.NOT.P%type_FTUV)THEN
       ENDDO
       WRITE(IUNIT,'(3X,A)')    '-------------------------------------------------------------------------'
       WRITE(IUNIT,'(3X,A)')    ' iPrim   iAngmom   PreExpFac '
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
       IF(size(P%preExpFac).NE.P%nPrimAlloc*P%nAngAlloc)call lsquit('PreExpFac dim error3',-1)
 #endif
       do ia=1,P%nAngmom
@@ -1701,7 +1701,7 @@ ELSE
          WRITE(IUNIT,'(5X,I4,3F8.4,2ES10.3)') i, P%center(1+(i-1)*3), P%center(2+(i-1)*3), P%center(3+(i-1)*3), &
               &  P%exponents(i), P%reducedExponents(i)
       ENDDO
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
       IF(size(P%preExpFac).NE.P%nPrimAlloc*P%nAngAlloc)call lsquit('PreExpFac dim error4',-1)
 #endif
       WRITE(IUNIT,'(3X,A)')    '-------------------------------------------------------------------------'
@@ -1829,7 +1829,7 @@ Sph1 = P%orbital1%spherical.AND.(ang1.GT. 1)
 Sph2 = P%orbital2%spherical.AND.(ang2.GT. 1)
 Spherical = P%sphericalEcoeff.AND.(Sph1.OR.Sph2)
 !Test consistency for derivatice case
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF (Spherical.AND.P%endGeoOrder.GT. 0) CALL LSQUIT('Error in BuildEcoeffTensor. Spherical and deriv>0!',lupri)
 #endif
 IF (Spherical) THEN
@@ -1922,7 +1922,7 @@ CALL LS_DZERO(Ecoeffs,Nijk*ntuv*nprim)
 ncent = 1 + der
 IF (P%single) ncent = 1
 
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(size(P%preExpFac).NE.P%nPrimAlloc*P%nAngAlloc)call lsquit('PreExpFac dim error5',-1)
 #endif
 pref => P%preExpFac
@@ -1933,7 +1933,7 @@ ELSE
 ENDIF
 
 offset = (iAngmom-1)*P%nPrimAlloc
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(iAngmom.GT.P%nAngAlloc)call lsquit('PreExpFac dim error6',-1)
 #endif
 ijk=0
@@ -2113,7 +2113,7 @@ CALL GET_ECOEFF(ETIJ,nprim,l1+l2,l1,l2,P%nPrimitives,nPasses,P,LUPRI,IPRINT)
 
 CALL LS_DZERO(Ecoeffs,nPrim*Nijk*ntuv)
 offset = (iAngmom-1)*P%nPrimAlloc
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(size(P%preExpFac).NE.P%nPrimAlloc*P%nAngAlloc)call lsquit('PreExpFac dim error6',-1)
 IF(iAngmom.GT.P%nAngAlloc)call lsquit('PreExpFac dim error6',-1)
 #endif
@@ -3264,7 +3264,7 @@ F%maxGab = max(INT(F%maxGab),INT(Q%maxGab))
 F%ODextent = Q%ODextent
 F%ODcenter = Q%ODcenter
 F%nPrimitives = F%nPrimitives + np
-#ifdef VAR_DEBUGINT
+#ifdef VAR_LSDEBUGINT
 IF(size(Q%preExpFac).NE.Q%nPrimAlloc*Q%nAngAlloc)call lsquit('PreExpFac dim error9',-1)
 IF(size(F%preExpFac).NE.F%nPrimAlloc*F%nAngAlloc)call lsquit('PreExpFac dim error10',-1)
 IF(Q%nPrimAlloc.GT.F%nPrimAlloc)call lsquit('PreExpFac dim error11A',-1)

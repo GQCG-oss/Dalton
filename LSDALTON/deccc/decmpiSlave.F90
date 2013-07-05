@@ -1,4 +1,4 @@
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     subroutine dec_lsmpi_slave(comm)
       use precision

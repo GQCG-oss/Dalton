@@ -559,6 +559,55 @@ call config_free(config)
 
 END SUBROUTINE LSlib_get_4center_eri_geoderiv
 
+!> \brief Calculates the differentiated 1-electron AO integrals
+!> \author S. Reine
+!> \date 2013-01-20
+!> \param eri The 4-center 2-electron AO integrals
+!> \param nbast The number of oribtals
+!> \param geoOrder The the geometry differential order (0 regular integrals, 1 first order integral derivatives, etc.)
+!> \param nGeoComp The number of derivative components (1 for 0th order, 3*nAtoms for 1st order, (3*nAtoms)**2 for 2nd, etc.)
+!> \param dirac Specifies Dirac or Mulliken notation
+!> \param lupri The default print-unit. If -1 on input it opens default LSDALTON.OUT
+!> \param lupri The default print-unit. If -1 on input it opens default LSDALTON.OUT
+!> \param luerr The dafault error-unit. If -1 on input it opens default LSDALTON.ERR
+!> Note that if both LSDALTON.OUT and LSDALTON.ERR are already open, and the -1 
+!> unit-numbers are provided, the code will crash (when attemting to reopen
+!> a file that is already open).
+SUBROUTINE LSlib_get_nucel_geoderiv(nucel,nbast,nAtoms,geoOrder,nGeoComp,lupri,luerr)
+  use precision
+  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+  use TYPEDEF  
+  use TYPEDEFTYPE  
+  use Matrix_module
+  use Matrix_Operations
+  use ls_Integral_Interface
+  use daltonInfo
+  use integralinterfaceMod
+  use memory_handling
+IMPLICIT NONE
+Integer,intent(in)      :: nbast,nAtoms,lupri,luerr
+Real(realk),intent(out) :: nucel(nbast,nbast,1,1,nGeoComp)
+Integer,intent(IN)      :: geoOrder,nGeoComp
+!
+type(lsitem)        :: ls
+Integer             :: nbasis
+type(configItem)    :: config
+
+!Initialize the ls-item from LSDALTON.INP and MOLECULE.INP
+call config_set_default_config(config)
+call config_read_input(config,lupri,luerr)
+call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
+
+IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_nucel_geoderiv. Basis-function mismatch',lupri)
+
+CALL II_get_nucel_diff(lupri,luerr,ls%setting,nucel,nbast,nbast,nGeoComp,geoderiv=geoOrder)
+
+call ls_free(ls)
+call config_shutdown(config)
+call config_free(config)
+
+END SUBROUTINE LSlib_get_nucel_geoderiv
+
 !> \brief Calculates the gradient of the nuclear potential
 !> \author S. Reine
 !> \date 2010-02-26
@@ -1556,7 +1605,7 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
   use integral_type
   use memory_handling
   use io
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use lsmpi_type
 #endif
   implicit none
@@ -1639,7 +1688,7 @@ subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
   CALL typedef_init_setting(setting)
   CALL typedef_set_default_setting(setting,input)
   setting%SCHEME%DoSpherical = .TRUE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   call get_rank_for_comm(MPI_COMM_LSDALTON,mynum)
   CALL get_size_for_comm(MPI_COMM_LSDALTON,nodtot, ierr)
   setting%numNodes = nodtot 

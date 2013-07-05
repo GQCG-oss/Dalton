@@ -36,7 +36,7 @@ SUBROUTINE screen_init()!(SCREEN)
 !  TYPE(SCREENITEM)  :: SCREEN
   nullify(SCREENFROMLSSCREEN%start)
   nullify(SCREENFROMLSSCREEN%end)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   IF(infpar%mynum.EQ.infpar%master)THEN
      call ls_mpibcast(IISCREENINIT,infpar%master,MPI_COMM_LSDALTON)
   ENDIF
@@ -308,7 +308,7 @@ IF(associated(screenFromlsScreen%start))THEN
 ENDIF
 nullify(ScreenFromlsScreen%start)
 nullify(ScreenFromlsScreen%end)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   IF(infpar%mynum.EQ.infpar%master)THEN
      call ls_mpibcast(IISCREENFREE,infpar%master,MPI_COMM_LSDALTON)
   ENDIF

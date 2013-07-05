@@ -97,6 +97,7 @@ C
       real(8), allocatable :: tmp_space(:)
  
 #include "sirbkd.h"
+#include "center.h"
 C
 C *** Call setup to define limits and I/O units
 C     and maybe open some files (depending on host)
@@ -170,7 +171,9 @@ Cbm initialized PCMSV
       PCMSV   = PCM
 c     WRITE(LUPRI,*)'INIZIALIZZO PCMSV',PCMSV
 c     IF (PCM) WRITE(LUPRI,*) ' CHIAMA SOLVNT'
-      IF (PCM) CALL PCMSOLVNT(WORK,LWORK)
+      IF (PCM) THEN
+         CALL PCMSOLVNT(WORK,LWORK)
+      END IF
 C
 C
 C ***************************************************
@@ -407,6 +410,22 @@ C
          FLAG(34)   = FLAGSV(34)
          FLAG(14)   = .FALSE.
          FLAGSV(14) = .FALSE.
+      END IF
+C
+C ***************************************************
+C        *** SELACT ***
+C
+      IF (ACTSEL .AND. (.NOT. DOCCSD)) THEN
+         NUMRUN = NUMRUN + 1
+         IF (DORHF .AND. ICONV .LE. 0) THEN
+            WRITE (LUPRI,7021)
+            WRITE (LUERR ,7021)
+            GO TO 8000
+         END IF
+ 7021    FORMAT(//' Selection of active orbitals aborted because',
+     *      ' preceeding Hartree-Fock not converged.')
+C
+         CALL CC_SELACT(WORK,LWORK)
       END IF
 C
 C ***************************************************

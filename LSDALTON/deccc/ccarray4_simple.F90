@@ -17,7 +17,7 @@ module array4_simple_operations
   ! DEC DEPENDENCIES (within deccc directory)   
   ! *****************************************
   use array4_memory_manager
-  use manual_reorderings_module!,only:manual_4231_reordering,&
+  use reorder_frontend_module!,only:manual_4231_reordering,&
                                !     &manual_2413_reordering,&
                                !     &manual_3214_reordering,&
                                !     &manual_1324_reordering,&
@@ -1831,27 +1831,27 @@ contains
 
 
   !> \brief Transpose data
-  subroutine mat_transp(mat_in,dim1,dim2,mat_out)
-    implicit none
-    integer,intent(in) :: dim1,dim2
-    real(realk), dimension(dim1,dim2), intent(in) :: mat_in
-    real(realk), dimension(dim2,dim1), intent(inout) :: mat_out
-    real(realk) :: t0,t1
-    integer :: i
-
-    call cpu_time(t0)
-    !#ifdef USE_BLAS
-    do i=1,dim2
-       call dcopy(dim1,mat_in(1,i),1,mat_out(i,1),dim2)
-    end do
-    !#else
-    !    mat_out = transpose(mat_in)
-    !#endif
-    call cpu_time(t1)
-    time_array4_mat_transpose = time_array4_mat_transpose + (t1-t0)
-
-    return
-  end subroutine mat_transp
+!  subroutine mat_transp(mat_in,dim1,dim2,mat_out)
+!    implicit none
+!    integer,intent(in) :: dim1,dim2
+!    real(realk), dimension(dim1,dim2), intent(in) :: mat_in
+!    real(realk), dimension(dim2,dim1), intent(inout) :: mat_out
+!    real(realk) :: t0,t1
+!    integer :: i
+!
+!    call cpu_time(t0)
+!    !#ifdef USE_BLAS
+!    do i=1,dim2
+!       call dcopy(dim1,mat_in(1,i),1,mat_out(i,1),dim2)
+!    end do
+!    !#else
+!    !    mat_out = transpose(mat_in)
+!    !#endif
+!    call cpu_time(t1)
+!    time_array4_mat_transpose = time_array4_mat_transpose + (t1-t0)
+!
+!    return
+!  end subroutine mat_transp
 
 
   !> \brief partial transposition of multi index quantity
@@ -1861,206 +1861,206 @@ contains
     integer :: i
     real(realk), dimension(m*n) :: y
     do i=1, o, 1
-      call mat_transpose(x((o-1)*m*n),m,n,y)
+      call mat_transpose(m,n,1.0E0_realk,x((o-1)*m*n),0.0E0_realk,y)
       do j=1, m*n, 1
         x(j+(o-1)*m*n) = y(j)
       enddo
     enddo
   end subroutine partial_transpose_ip
 
-  !> \brief partial transposition of multi index quantity
-  subroutine partial_transpose(x,m,n,o,y)
-    integer,intent(in) :: m, n, o
-    real(realk), dimension(m*n*o),intent(inout) :: x
-    integer :: i
-    real(realk), dimension(m*n*o) :: y
-    do i=1, o, 1
-      call mat_transpose(x((o-1)*m*n),m,n,y((o-1)*m*n))
-    enddo
-  end subroutine partial_transpose
-
-  !> \author Patrick Ettenhuber
-  !> \brief Transpose data fast with adding to the destination matrix
-  subroutine mat_transpose_p(x,r,c,y)
-    integer,intent(in) :: r, c
-    real(realk), dimension(r,c), intent(in) :: x
-    real(realk), dimension(c,r), intent(inout) :: y
-    integer :: i,j, s, p, k, a, b,e,f
-    integer :: nr, nc, rr, rc, IOK, kb,d, iwrk
-    real(realk) :: val
-    real(realk), dimension(:)  , pointer :: sm
-    integer,     dimension(:)  , pointer :: h
-    kb = 512 !cache size of cpu --> /proc/cpuinfo
-    s = kb * 1024 / 8
-    k = int(0.9*sqrt(float(s)))
-    nr=r/k
-    nc=c/k
-    rr=mod(r,k)
-    rc=mod(c,k)
-    d = max(rr,rc)
-    iwrk = (d+k) / 4
-    call mem_alloc(sm,k*k)
-    call mem_alloc(h,iwrk)
-
-    do a = 0, nr-1, 1
-      do b = 0, nc-1, 1
-        do j=1,k,1
-          do i=1,k,1
-            sm((j-1)*k+i) = x(i+a*k,j+b*k)
-          enddo
-        enddo
-        call alg513(sm,k,k,k*k,h,iwrk,IOK)
-        do j=1,k,1
-          do i=1,k,1
-            y(i+b*k,j+a*k) = y(i+b*k,j+a*k) + sm((j-1)*k+i)
-          enddo
-        enddo
-      enddo
-    enddo
-
-    if (rc>0) then
-      iwrk = (rc+k)/4
-      do a = 0, nr-1, 1
-        do j=1,rc,1
-          do i=1,k,1
-            sm((j-1)*k+i) = x(i+a*k,j+nc*k)
-          enddo
-        enddo
-        call alg513(sm,k,rc,k*rc,h,iwrk,IOK)
-        do i=1,rc,1
-          do j=1,k,1
-            y(i+nc*k,j+a*k) = y(i+b*k,j+a*k) + sm((j-1)*rc+i)
-          enddo
-        enddo
-      enddo
-    endif
-
-    if (rr>0) then
-      iwrk = (rr+k)/4
-      do b = 0, nc-1, 1
-        do j=1,k,1
-          do i=1,rr,1
-            sm((j-1)*rr+i) = x(i+nr*k,j+b*k)
-          enddo
-        enddo
-        call alg513(sm,rr,k,k*rr,h,iwrk,IOK)
-        do j=1,rr,1
-          do i=1,k,1
-            y(i+b*k,j+nr*k) = y(i+b*k,j+nr*k) + sm((j-1)*k+i)
-          enddo
-        enddo
-      enddo
-    endif
-
-    if (rr>0 .and. rc>0) then
-      iwrk = (rc+rr)/4
-      do j=1,rc,1
-        do i=1,rr,1
-          sm((j-1)*rr+i) = x(i+nr*k,j+nc*k)
-        enddo
-      enddo
-      call alg513(sm,rr,rc,rc*rr,h,iwrk,IOK)
-      do j=1,rr,1
-        do i=1,rc,1
-          y(i+nc*k,j+nr*k) = y(i+nc*k,j+nr*k) + sm((j-1)*rc+i)
-        enddo
-      enddo
-    endif
-    call mem_dealloc(h)
-    call mem_dealloc(sm)
-  end subroutine mat_transpose_p
-
-
-  !> \author Patrick Ettenhuber
-  !> \brief Transpose data fast
-  subroutine mat_transpose(x,r,c,y)
-    integer,intent(in) :: r, c
-    real(realk), dimension(r,c), intent(in) :: x
-    real(realk), dimension(c,r), intent(inout) :: y
-    integer :: i,j, s, p, k, a, b,e,f
-    integer :: nr, nc, rr, rc, IOK, kb,d, iwrk
-    real(realk) :: val
-    real(realk), dimension(:)  , pointer :: sm
-    integer,     dimension(:)  , pointer :: h
-    kb = 512 !cache size of cpu --> /proc/cpuinfo
-    s = kb * 1024 / 8
-    k = int(0.9*sqrt(float(s)))
-    nr=r/k
-    nc=c/k
-    rr=mod(r,k)
-    rc=mod(c,k)
-    d = max(rr,rc)
-    iwrk = (d+k) / 4
-    call mem_alloc(sm,k*k)
-    call mem_alloc(h,iwrk)
-
-    do a = 0, nr-1, 1
-      do b = 0, nc-1, 1
-        do j=1,k,1
-          do i=1,k,1
-            sm((j-1)*k+i) = x(i+a*k,j+b*k)
-          enddo
-        enddo
-        call alg513(sm,k,k,k*k,h,iwrk,IOK)
-        do j=1,k,1
-          do i=1,k,1
-            y(i+b*k,j+a*k) = sm((j-1)*k+i)
-          enddo
-        enddo
-      enddo
-    enddo
-
-    if (rc>0) then
-      iwrk = (rc+k)/4
-      do a = 0, nr-1, 1
-        do j=1,rc,1
-          do i=1,k,1
-            sm((j-1)*k+i) = x(i+a*k,j+nc*k)
-          enddo
-        enddo
-        call alg513(sm,k,rc,k*rc,h,iwrk,IOK)
-        do i=1,rc,1
-          do j=1,k,1
-            y(i+nc*k,j+a*k) = sm((j-1)*rc+i)
-          enddo
-        enddo
-      enddo
-    endif
-
-    if (rr>0) then
-      iwrk = (rr+k)/4
-      do b = 0, nc-1, 1
-        do j=1,k,1
-          do i=1,rr,1
-            sm((j-1)*rr+i) = x(i+nr*k,j+b*k)
-          enddo
-        enddo
-        call alg513(sm,rr,k,k*rr,h,iwrk,IOK)
-        do j=1,rr,1
-          do i=1,k,1
-            y(i+b*k,j+nr*k) = sm((j-1)*k+i)
-          enddo
-        enddo
-      enddo
-    endif
-
-    if (rr>0 .and. rc>0) then
-      iwrk = (rc+rr)/4
-      do j=1,rc,1
-        do i=1,rr,1
-          sm((j-1)*rr+i) = x(i+nr*k,j+nc*k)
-        enddo
-      enddo
-      call alg513(sm,rr,rc,rc*rr,h,iwrk,IOK)
-      do j=1,rr,1
-        do i=1,rc,1
-          y(i+nc*k,j+nr*k) = sm((j-1)*rc+i)
-        enddo
-      enddo
-    endif
-    call mem_dealloc(h)
-    call mem_dealloc(sm)
-  end subroutine mat_transpose
+!  !> \brief partial transposition of multi index quantity
+!  subroutine partial_transpose(x,m,n,o,y)
+!    integer,intent(in) :: m, n, o
+!    real(realk), dimension(m*n*o),intent(inout) :: x
+!    integer :: i
+!    real(realk), dimension(m*n*o) :: y
+!    do i=1, o, 1
+!      call mat_transpose(x((o-1)*m*n),m,n,y((o-1)*m*n))
+!    enddo
+!  end subroutine partial_transpose
+!
+!  !> \author Patrick Ettenhuber
+!  !> \brief Transpose data fast with adding to the destination matrix
+!  subroutine mat_transpose_p(x,r,c,y)
+!    integer,intent(in) :: r, c
+!    real(realk), dimension(r,c), intent(in) :: x
+!    real(realk), dimension(c,r), intent(inout) :: y
+!    integer :: i,j, s, p, k, a, b,e,f
+!    integer :: nr, nc, rr, rc, IOK, kb,d, iwrk
+!    real(realk) :: val
+!    real(realk), dimension(:)  , pointer :: sm
+!    integer,     dimension(:)  , pointer :: h
+!    kb = 512 !cache size of cpu --> /proc/cpuinfo
+!    s = kb * 1024 / 8
+!    k = int(0.9*sqrt(float(s)))
+!    nr=r/k
+!    nc=c/k
+!    rr=mod(r,k)
+!    rc=mod(c,k)
+!    d = max(rr,rc)
+!    iwrk = (d+k) / 4
+!    call mem_alloc(sm,k*k)
+!    call mem_alloc(h,iwrk)
+!
+!    do a = 0, nr-1, 1
+!      do b = 0, nc-1, 1
+!        do j=1,k,1
+!          do i=1,k,1
+!            sm((j-1)*k+i) = x(i+a*k,j+b*k)
+!          enddo
+!        enddo
+!        call alg513(sm,k,k,k*k,h,iwrk,IOK)
+!        do j=1,k,1
+!          do i=1,k,1
+!            y(i+b*k,j+a*k) = y(i+b*k,j+a*k) + sm((j-1)*k+i)
+!          enddo
+!        enddo
+!      enddo
+!    enddo
+!
+!    if (rc>0) then
+!      iwrk = (rc+k)/4
+!      do a = 0, nr-1, 1
+!        do j=1,rc,1
+!          do i=1,k,1
+!            sm((j-1)*k+i) = x(i+a*k,j+nc*k)
+!          enddo
+!        enddo
+!        call alg513(sm,k,rc,k*rc,h,iwrk,IOK)
+!        do i=1,rc,1
+!          do j=1,k,1
+!            y(i+nc*k,j+a*k) = y(i+b*k,j+a*k) + sm((j-1)*rc+i)
+!          enddo
+!        enddo
+!      enddo
+!    endif
+!
+!    if (rr>0) then
+!      iwrk = (rr+k)/4
+!      do b = 0, nc-1, 1
+!        do j=1,k,1
+!          do i=1,rr,1
+!            sm((j-1)*rr+i) = x(i+nr*k,j+b*k)
+!          enddo
+!        enddo
+!        call alg513(sm,rr,k,k*rr,h,iwrk,IOK)
+!        do j=1,rr,1
+!          do i=1,k,1
+!            y(i+b*k,j+nr*k) = y(i+b*k,j+nr*k) + sm((j-1)*k+i)
+!          enddo
+!        enddo
+!      enddo
+!    endif
+!
+!    if (rr>0 .and. rc>0) then
+!      iwrk = (rc+rr)/4
+!      do j=1,rc,1
+!        do i=1,rr,1
+!          sm((j-1)*rr+i) = x(i+nr*k,j+nc*k)
+!        enddo
+!      enddo
+!      call alg513(sm,rr,rc,rc*rr,h,iwrk,IOK)
+!      do j=1,rr,1
+!        do i=1,rc,1
+!          y(i+nc*k,j+nr*k) = y(i+nc*k,j+nr*k) + sm((j-1)*rc+i)
+!        enddo
+!      enddo
+!    endif
+!    call mem_dealloc(h)
+!    call mem_dealloc(sm)
+!  end subroutine mat_transpose_p
+!
+!
+!  !> \author Patrick Ettenhuber
+!  !> \brief Transpose data fast
+!  subroutine mat_transpose(x,r,c,y)
+!    integer,intent(in) :: r, c
+!    real(realk), dimension(r,c), intent(in) :: x
+!    real(realk), dimension(c,r), intent(inout) :: y
+!    integer :: i,j, s, p, k, a, b,e,f
+!    integer :: nr, nc, rr, rc, IOK, kb,d, iwrk
+!    real(realk) :: val
+!    real(realk), dimension(:)  , pointer :: sm
+!    integer,     dimension(:)  , pointer :: h
+!    kb = 512 !cache size of cpu --> /proc/cpuinfo
+!    s = kb * 1024 / 8
+!    k = int(0.9*sqrt(float(s)))
+!    nr=r/k
+!    nc=c/k
+!    rr=mod(r,k)
+!    rc=mod(c,k)
+!    d = max(rr,rc)
+!    iwrk = (d+k) / 4
+!    call mem_alloc(sm,k*k)
+!    call mem_alloc(h,iwrk)
+!
+!    do a = 0, nr-1, 1
+!      do b = 0, nc-1, 1
+!        do j=1,k,1
+!          do i=1,k,1
+!            sm((j-1)*k+i) = x(i+a*k,j+b*k)
+!          enddo
+!        enddo
+!        call alg513(sm,k,k,k*k,h,iwrk,IOK)
+!        do j=1,k,1
+!          do i=1,k,1
+!            y(i+b*k,j+a*k) = sm((j-1)*k+i)
+!          enddo
+!        enddo
+!      enddo
+!    enddo
+!
+!    if (rc>0) then
+!      iwrk = (rc+k)/4
+!      do a = 0, nr-1, 1
+!        do j=1,rc,1
+!          do i=1,k,1
+!            sm((j-1)*k+i) = x(i+a*k,j+nc*k)
+!          enddo
+!        enddo
+!        call alg513(sm,k,rc,k*rc,h,iwrk,IOK)
+!        do i=1,rc,1
+!          do j=1,k,1
+!            y(i+nc*k,j+a*k) = sm((j-1)*rc+i)
+!          enddo
+!        enddo
+!      enddo
+!    endif
+!
+!    if (rr>0) then
+!      iwrk = (rr+k)/4
+!      do b = 0, nc-1, 1
+!        do j=1,k,1
+!          do i=1,rr,1
+!            sm((j-1)*rr+i) = x(i+nr*k,j+b*k)
+!          enddo
+!        enddo
+!        call alg513(sm,rr,k,k*rr,h,iwrk,IOK)
+!        do j=1,rr,1
+!          do i=1,k,1
+!            y(i+b*k,j+nr*k) = sm((j-1)*k+i)
+!          enddo
+!        enddo
+!      enddo
+!    endif
+!
+!    if (rr>0 .and. rc>0) then
+!      iwrk = (rc+rr)/4
+!      do j=1,rc,1
+!        do i=1,rr,1
+!          sm((j-1)*rr+i) = x(i+nr*k,j+nc*k)
+!        enddo
+!      enddo
+!      call alg513(sm,rr,rc,rc*rr,h,iwrk,IOK)
+!      do j=1,rr,1
+!        do i=1,rc,1
+!          y(i+nc*k,j+nr*k) = sm((j-1)*rc+i)
+!        enddo
+!      enddo
+!    endif
+!    call mem_dealloc(h)
+!    call mem_dealloc(sm)
+!  end subroutine mat_transpose
 
 
 

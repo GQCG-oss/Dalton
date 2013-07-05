@@ -184,31 +184,31 @@ Functional* available_functionals[] = {
     NULL
 };
 
-static int my_printf(const char *fmt, ...)
+static integer my_printf(const char *fmt, ...)
 {
-    int i;va_list ap; va_start(ap, fmt); i= vprintf(fmt, ap); va_end(ap);
+    integer i;va_list ap; va_start(ap, fmt); i= vprintf(fmt, ap); va_end(ap);
     puts("");
     return i;
 }
  
 static void set_hf_weight(real w)         {}
 static real get_hf_weight(void)           {return 0;}
-static void set_cam_param(int cnt, const real *w, const real *b) {}
+static void set_cam_param(integer cnt, const real *w, const real *b) {}
 
 Functional* selected_func = &LDAFunctional;
-int (*fun_printf)(const char *fmt, ...) = my_printf;
+integer (*fun_printf)(const char *fmt, ...) = my_printf;
 void (*fun_set_hf_weight)(real w)         = set_hf_weight;
 real (*fun_get_hf_weight)(void)           = get_hf_weight;
 void (*fun_set_mp2_weight)(real w)        = set_hf_weight;
 real (*fun_get_mp2_weight)(void)          = get_hf_weight;
-void (*fun_set_cam_param)(int cnt, const real *mu, const real *b)
+void (*fun_set_cam_param)(integer cnt, const real *mu, const real *b)
      = set_cam_param;
 
 /* =================================================================== */
 enum FunError
 fun_select_by_name(const char *conf_string)
 {
-    int ok, i;
+    integer ok, i;
     char func_name[20];
 
     sscanf(conf_string,"%20s", func_name);
@@ -245,15 +245,15 @@ drv4_clear(FunFourthFuncDrv* gga)
     memset(gga, 0, sizeof(*gga));
 }
 
-int fun_true(void)  { return 1; }
-int fun_false(void) { return 0; }
+integer fun_true(void)  { return 1; }
+integer fun_false(void) { return 0; }
 
 /* Fortran interface. We specify different names suffixes so that
  * library can be linked with code compiled with different compilers
  * or different compilation options. */
 
 void
-funset(const char *str, int *info, int len)
+funset(const char *str, integer *info, integer len)
 {
     switch(fun_select_by_name(str)) {
     case FUN_OK:         *info = 0; break;
@@ -262,7 +262,7 @@ funset(const char *str, int *info, int len)
     }
 }
 void
-funset_(const char *str, int *info, int len)
+funset_(const char *str, integer *info, integer len)
 {
     switch(fun_select_by_name(str)) {
     case FUN_OK:         *info = 0; break;
@@ -271,10 +271,10 @@ funset_(const char *str, int *info, int len)
     }
 }
 
-int
+integer
 funisgga(void)
 { return selected_func->is_gga(); }
-int
+integer
 funisgga_(void)
 { return selected_func->is_gga(); }
 
@@ -311,30 +311,30 @@ dftreport_(void)
 void
 dftlistfuncs_(void)
 {
-    int i;
+    integer i;
     fun_printf("\nAvailable functionals:");
     for(i=0; available_functionals[i]; i++)
         fun_printf(available_functionals[i]->name);
 }
 
 /* declare both known fortran name-mangled variants */
-int
+integer
 dft_isgga_(void)
 { return selected_func->is_gga(); }
 
-int
+integer
 dft_isgga__(void)
 { return selected_func->is_gga(); }
 
 
 // find out whether functional is tested for qr and higher
-int
+integer
 fun_is_ready_for_qr_(void)
 { return (selected_func->highest_tested_resp_order > 1); }
 
 
 // find out whether functional is tested for cr and higher
-int
+integer
 fun_is_ready_for_cr_(void)
 { return (selected_func->highest_tested_resp_order > 2); }
 

@@ -11,7 +11,7 @@ MODULE memory_handling
    use dec_typedef_module
    use OverlapType
    use tensor_type_def_module
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   include 'mpif.h'
 !   use mpi
 #endif
@@ -1490,7 +1490,8 @@ integer (kind=long) :: nsize
    nullify(A)
    ALLOCATE(A(n),STAT = IERR)
    IF (IERR.NE. 0) THEN
-     write(*,*) 'Error in real_allocate_1dim_int64',IERR,n
+     write(*,'("ERROR(real_allocate_1dim_int64),status=",I6," n=",I15," GBallocd=",f19.10)')&
+     &IERR,n,1.0E-9_realk*mem_allocated_global
      CALL memory_error_quit('Error in real_allocate_1dim_int64')
    ENDIF
    nsize = size(A,KIND=long)*mem_realsize
@@ -1909,7 +1910,7 @@ type(c_ptr), intent(inout) :: cip
 integer (kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    nullify(A)
    info = MPI_INFO_NULL
@@ -1918,7 +1919,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
 
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_dV8):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
     endif
 
@@ -1926,7 +1927,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_dV8):error in alloc",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_dV8):error in alloc",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
@@ -1949,7 +1950,7 @@ type(c_ptr), intent(inout) :: cip
 integer (kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    nullify(A)
    info = MPI_INFO_NULL
@@ -1958,7 +1959,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
 
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_dV4):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
     endif
 
@@ -1966,7 +1967,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_dV4):error in alloc",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_dV4):error in alloc",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
@@ -1989,7 +1990,7 @@ type(c_ptr), intent(inout) :: cip
 integer(kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    nullify(A)
 
@@ -1998,7 +1999,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    call MPI_TYPE_GET_EXTENT(MPI_INTEGER,lb,mpi_intlen,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_allocate_iV):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
@@ -2006,7 +2007,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    call MPI_ALLOC_MEM(bytes,info,cip,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_iV):error in alloc",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_iV):error in alloc",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
    call c_f_pointer(cip,A,[n])
@@ -2028,14 +2029,14 @@ type(c_ptr), intent(inout) :: cip
 integer(kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
    info = MPI_INFO_NULL
 
    call MPI_TYPE_GET_EXTENT(MPI_INTEGER,lb,mpi_intlen,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_iV):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
@@ -2049,7 +2050,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_intlen,lb,bytes
 
    call MPI_FREE_MEM(A,IERR)
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_iV):error in MPI_FREE_MEM",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_iV):error in MPI_FREE_MEM",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 
@@ -2068,14 +2069,14 @@ type(c_ptr), intent(inout) :: cip
 integer(kind=ls_mpik) :: IERR,info
 integer (kind=long) :: nsize
 character(120) :: errmsg
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    info = MPI_INFO_NULL
 
    call MPI_TYPE_GET_EXTENT(MPI_DOUBLE_PRECISION,lb,mpi_realk,IERR)
    if(IERR/=0)then
      write (errmsg,'("ERROR(mpi_deallocate_dV):error in&
-          & mpi_type_get_extent",I5)'), IERR
+          & mpi_type_get_extent",I5)') IERR
      call memory_error_quit(errmsg)
    endif
 
@@ -2090,7 +2091,7 @@ integer(kind=MPI_ADDRESS_KIND) :: mpi_realk,lb,bytes
    call MPI_FREE_MEM(A,IERR)
 
    IF (IERR.NE. 0) THEN
-     write (errmsg,'("ERROR(mpi_allocate_dV):error in MPI_FREE_MEM",I5)'), IERR
+     write (errmsg,'("ERROR(mpi_allocate_dV):error in MPI_FREE_MEM",I5)') IERR
      CALL memory_error_quit(errmsg)
    ENDIF
 

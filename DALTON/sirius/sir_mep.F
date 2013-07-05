@@ -337,6 +337,7 @@ C  /* Deck MEP_LOOP */
       DIMENSION DENS(NNBASX)
       DIMENSION WRK(LWRK)
 
+      LOCDEB=.FALSE.
       KMAT = 1
       KMATEF = KMAT + NNBASX
       KWRK = KMATEF + 3*NNBASX

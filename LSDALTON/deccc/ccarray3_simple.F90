@@ -12,18 +12,13 @@ module array3_simple_operations
   use files!,only: lsopen,lsclose
   use LSTIMING!,only:lstimer
   use memory_handling!, only: mem_alloc,mem_dealloc
+  use reorder_frontend_module
 
 
   ! DEC DEPENDENCIES (within deccc directory)                                                         
   ! *****************************************
   use array3_memory_manager!, only: memory_allocate_3d, memory_deallocate_3d
 !  use dec_fragment_utils
-  use manual_reorderings_module!,only:manual_321_reordering,&
-!                                    &manual_312_reordering,&
-!                                    &manual_132_reordering,&
-!                                    &manual_231_reordering,&
-!                                    &manual_213_reordering
-
 
   !> Number of array
   integer(kind=long) :: ArrayNumber=0
@@ -315,7 +310,7 @@ contains
 
     ! get new order
     do i=1,3
-!!$#ifdef VAR_DEBUG
+!!$#ifdef VAR_LSDEBUG
 !!$       print *, array%order(i),'(',array%dims(i), &
 !!$            ') => ',array%order(order(i)),' (',array%dims(order(i)),')'
 !!$#endif

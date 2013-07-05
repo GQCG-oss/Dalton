@@ -7,12 +7,149 @@ module lspdm_basic_module
   use precision
   use LSTIMING!,only:lstimer
   use memory_handling
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_type
 #endif
+  use reorder_frontend_module
   use tensor_type_def_module
+
+  interface get_tile_dim
+    module procedure get_tileinfo_nels_frombas,&
+                    &get_tileinfo_nelspmode_frombas,&
+                    &get_tileinfo_nels_fromarr8,&
+                    &get_tileinfo_nels_fromarr4,&
+                    &get_tileinfo_nelspermode_fromarr4,&
+                    &get_tileinfo_nelspermode_fromarr8
+  end interface get_tile_dim
+
   contains
+
+  subroutine get_tileinfo_nels_frombas(sze,tileidx,dims,tdim,mode,offset)
+    implicit none
+    integer, intent(out) :: sze
+    integer,intent(in) :: tileidx,mode,dims(mode),tdim(mode)
+    integer,intent(in),optional :: offset
+    integer :: j,orig_addr(mode),offs,ntpm(mode)
+    offs=1
+    if(present(offset))offs=offset
+    do j=1,mode
+      ntpm(j)=dims(j)/tdim(j)
+      if(mod(dims(j),tdim(j))>0)ntpm(j)=ntpm(j)+1
+    enddo
+    call get_midx(tileidx,orig_addr,ntpm,mode)
+    sze=1
+    do j=offs, mode
+      if(((dims(j)-(orig_addr(j)-1)*tdim(j))/tdim(j))>=1)then
+        sze=sze*tdim(j)
+      else
+        sze=sze*mod(dims(j),tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels_frombas
+
+  !> \brief this function returns the number of elements of a tile where the tile index is
+  ! a global tile index
+  !> \author Patrick Ettenhuber
+  subroutine get_tileinfo_nels_fromarr8(nels,arr,tnumber)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(array),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=long), intent(in) :: tnumber
+    !> return value, number of elements in the desired tile
+    integer :: nels
+    integer ::orig_addr(arr%mode),j
+    call get_midx(tnumber,orig_addr,arr%ntpm,arr%mode)
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels=nels*arr%tdim(j)
+      else
+        nels=nels*mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels_fromarr8
+
+  subroutine get_tileinfo_nels_fromarr4(nels,arr,tnumber)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(array),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=4), intent(in) :: tnumber
+    !> return value, number of elements in the desired tile
+    integer :: nels
+    integer ::orig_addr(arr%mode),j
+    call get_midx(tnumber,orig_addr,arr%ntpm,arr%mode)
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels=nels*arr%tdim(j)
+      else
+        nels=nels*mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nels_fromarr4
+
+  subroutine get_tileinfo_nelspermode_fromarr8(nels,arr,tnumber)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(array),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=long), intent(in) :: tnumber
+    !> return value, number of elements in the desired tile
+    integer :: nels(arr%mode)
+    integer ::orig_addr(arr%mode),j
+    call get_midx(tnumber,orig_addr,arr%ntpm,arr%mode)
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels(j)=arr%tdim(j)
+      else
+        nels(j)=mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspermode_fromarr8
+
+  subroutine get_tileinfo_nelspermode_fromarr4(nels,arr,tnumber)
+    implicit none
+    !> array for which nels shoulb be calculated
+    type(array),intent(in) :: arr
+    !> global tile index for which nels should be calculated
+    integer(kind=4), intent(in) :: tnumber
+    !> return value, number of elements in the desired tile
+    integer :: nels(arr%mode)
+    integer ::orig_addr(arr%mode),j
+    call get_midx(tnumber,orig_addr,arr%ntpm,arr%mode)
+    nels=1
+    do j=1, arr%mode
+      if(((arr%dims(j)-(orig_addr(j)-1)*arr%tdim(j))/arr%tdim(j))>=1)then
+        nels(j)=arr%tdim(j)
+      else
+        nels(j)=mod(arr%dims(j),arr%tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspermode_fromarr4
+
+  subroutine get_tileinfo_nelspmode_frombas(sze,tileidx,dims,tdim,mode)
+    implicit none
+    integer,intent(in) :: tileidx,mode,dims(mode),tdim(mode)
+    integer, dimension(mode),intent(out) :: sze
+    integer :: j,orig_addr(mode),ntpm(mode)
+    do j=1,mode
+      ntpm(j)=dims(j)/tdim(j)
+      if(mod(dims(j),tdim(j))>0)ntpm(j)=ntpm(j)+1
+    enddo
+    call get_midx(tileidx,orig_addr,ntpm,mode)
+    do j=1, mode
+      if(((dims(j)-(orig_addr(j)-1)*tdim(j))/tdim(j))>=1)then
+        sze(j)=tdim(j)
+      else
+        sze(j)=mod(dims(j),tdim(j))
+      endif
+    enddo
+  end subroutine get_tileinfo_nelspmode_frombas
+
   subroutine memory_deallocate_window(arr)
     implicit none
     type(array),intent(inout) :: arr
@@ -25,7 +162,7 @@ module lspdm_basic_module
     !call memory_deallocate_array(arr)
     if(associated(arr%wi)) then
        do i=1,arr%ntiles
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          !call lsmpi_win_fence(arr%wi(i),.false.)
          call lsmpi_win_free(arr%wi(i))
 #else
@@ -88,7 +225,7 @@ module lspdm_basic_module
     master = .true.
     nnod=1
     me=0
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     !print *,infpar%lg_mynum,"in routine"
     nnod=infpar%lg_nodtot
     me=infpar%lg_mynum
@@ -120,7 +257,7 @@ module lspdm_basic_module
     if(arr%zeros)then
       do i=1,arr%ntiles
         doit=.true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
         if(.not.mod(i+arr%offset,infpar%lg_nodtot)==infpar%lg_mynum)doit=.false.
 #endif
         if(doit)then
@@ -150,7 +287,7 @@ module lspdm_basic_module
 
         !Check if the current tile resides on the current node
         doit=.true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
         if(arr%atype==TILED_DIST.and.&
         &.not.mod(i-1+arr%offset,infpar%lg_nodtot)==infpar%lg_mynum)doit=.false.
 #endif
@@ -179,7 +316,7 @@ module lspdm_basic_module
             arr%ti(loc_idx)%e=arr%ti(loc_idx)%e*arr%ti(loc_idx)%d(j)
           enddo
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
           !if(act_ts/=arr%ti(loc_idx)%e)print*,"something wrong"
           call mem_alloc(arr%ti(loc_idx)%t,arr%ti(loc_idx)%c,arr%ti(loc_idx)%e)
           call lsmpi_win_create(arr%ti(loc_idx)%t,arr%wi(i),arr%ti(loc_idx)%e,infpar%lg_comm)
@@ -196,11 +333,11 @@ module lspdm_basic_module
         else
          !open a window of size zero on the nodes where the tile does not
          !reside
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
           call lsmpi_win_create(arr%dummy,arr%wi(i),0,infpar%lg_comm)
 #endif
         endif
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
         call lsmpi_win_fence(arr%wi(i),.true.)
 #endif
       enddo
@@ -237,7 +374,7 @@ module lspdm_basic_module
 
       vector_size = dble(nelms)*realk
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       call mem_alloc(arr%dummy,arr%dummyc,nelms)
 #endif
 
@@ -264,7 +401,7 @@ module lspdm_basic_module
       if(associated(arr%dummy)) then
          dim1 = dble(size(arr%dummy(:)))
          vector_size = dim1*realk
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          call mem_dealloc(arr%dummy,arr%dummyc)
 #endif
          nullify(arr%dummy)

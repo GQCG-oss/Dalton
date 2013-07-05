@@ -60,7 +60,7 @@ MODULE ls_Integral_Interface
   use files,only: lsclose, lsopen
   use SphCart_Matrices, only: spherical_transformation
   use Thermite_OD, only: getTotalGeoComp
-#if VAR_LSMPI
+#if VAR_MPI
   use lsmpi_type, only:LSGETINT,LSJENGIN,LSLINK, ls_mpibcast, lsmpi_barrier, lsmpi_reduction
   use lsmpi_op, only: LSTASK, LS_TASK_MANAGER, LSMPI_TASK_LIST,&
   & lsmpi_lstensor_reduction, lsmpi_probe_and_irecv_add_lstmemrealkbuf,&
@@ -70,7 +70,7 @@ MODULE ls_Integral_Interface
        & lsmpi_free_MPI_task_list, lsmpi_time_harvest,&
        & set_reduced_screen_info, ls_print_tasks
   use infpar_module
-!#ifdef VAR_LSMPI
+!#ifdef VAR_MPI
 !include 'mpif.h'
 !#endif
 #endif
@@ -323,8 +323,9 @@ type(lstensor),pointer  :: dmat_lhs,dmat_rhs,result_tensor
 type(lstensor),pointer  :: dmat_lhs_full,dmat_rhs_full,result_tensor_full
 type(lstensor),pointer  :: gabCS_rhs,gabCS_lhs
 type(lstensor),pointer  :: gabCS_rhs_full,gabCS_lhs_full
+character(len=7)           :: LSTYPE
 !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 Integer                    :: itask,nAtoms(4),ntasks_lhs,ntasks_rhs,iAO,atomDim
 Real(realk),pointer        :: Integrals(:,:,:,:,:)
 Real(realk),pointer        :: SubBlockInt(:,:,:,:,:)
@@ -358,8 +359,11 @@ ENDIF
 ndim2 = setting%output%ndim
 IntegralTransformGC = .FALSE.
 CALL ls_setDefaultFragments(setting)
-
-CALL ls_create_lstensor_full(setting,'FULLINT',AO1,AO2,AO3,AO4,Oper,Spec,intType,&
+LSTYPE = 'FULLINT'
+IF(Spec.EQ.GeoDerivCoulombSpec)THEN
+   LSTYPE = 'AB_TYPE'
+ENDIF
+CALL ls_create_lstensor_full(setting,LSTYPE,AO1,AO2,AO3,AO4,Oper,Spec,intType,&
      & result_tensor_full,dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created,&
      & gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created,&
      & PermuteResultTensor,doscreen,lupri,luerr,.FALSE.,.TRUE.)
@@ -367,7 +371,7 @@ CALL ls_create_lstensor_full(setting,'FULLINT',AO1,AO2,AO3,AO4,Oper,Spec,intType
 geoOrder = 0
 IF(present(geoDerivOrder)) geoOrder = geoDerivOrder
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
 !write(6,*) 'timer for ',setting%node
 !CALL LSTIMER('ls_create GI',TS,TE,6)
@@ -418,7 +422,7 @@ DO itask=1,task_list%numMPItasks
   CALL getTaskDimension(tasks%orbInfo,rhs_current,AO3,AO4,'RHS',Spec,nbast3,nbast4,lupri)
   call SET_SAMEALLFRAG(sameAllFrag,setting%sameFrag,setting%nAO)
 ! CALL LSTIMER('gi-set-tf',TS,TE,6)
-  CALL ls_create_lstensor_task(setting,result_tensor,'FULLINT',dmat_lhs,dmat_rhs,&
+  CALL ls_create_lstensor_task(setting,result_tensor,LSTYPE,dmat_lhs,dmat_rhs,&
        & result_tensor_full,dmat_lhs_full,dmat_rhs_full,&
        & gabCS_rhs_full,gabCS_lhs_full,gabCS_rhs,gabCS_lhs,&
        & rhsCS_created,lhsCS_created,&
@@ -448,7 +452,7 @@ DO itask=1,task_list%numMPItasks
   CALL ls_getIntegrals1(AO1,AO2,AO3,AO4,Oper,Spec,intType,geoOrder,SETTING,LUPRI,LUERR)
   call ls_free_lstensors_from_setting(setting,lupri)
   CALL ls_free_gab_from_setting(setting,lupri)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   CALL LS_GETTIM(t3,t4)
   t(3) = t(3) + t3 - t1 !Node CPU time  += task CPU time
   t(4) = t(4) + t4 - t2 !Node wall time += task wall time
@@ -462,7 +466,7 @@ DO itask=1,task_list%numMPItasks
   ! ***************************************************************************
   ! *                                MPI Specific                             *
   ! ***************************************************************************
-  call ls_extract_and_annihilate_lstensor_task(setting,result_tensor,'FULLINT',dmat_lhs,dmat_rhs,result_tensor_full,&
+  call ls_extract_and_annihilate_lstensor_task(setting,result_tensor,LSTYPE,dmat_lhs,dmat_rhs,result_tensor_full,&
        & dmat_lhs_full,dmat_rhs_full,nbast1,nbast2,nbast3,nbast4,lhs_created,&
        & rhs_created,gabCS_rhs,gabCS_lhs,rhsCS_created,&
        & lhsCS_created,lhs_current,rhs_current,&
@@ -560,7 +564,7 @@ ENDIF
 CALL ls_free_lstensors(dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created)
 if (doscreen) Call ls_free_screeninglstensors(gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ENDIF
 #endif
 END SUBROUTINE ls_getIntegrals
@@ -708,6 +712,7 @@ IF (Spec.EQ.EcontribSpec) THEN
 ENDIF
 
 CALL ls_setDensityDimensions(INT_INPUT,SETTING,lupri)
+
 call MAIN_INTEGRAL_DRIVER(LUPRI,SETTING%SCHEME%INTPRINT,INT_INPUT,setting%OUTPUT)
 CALL FreeInputAO(AObuild,nAObuilds,LUPRI)
 IF(doscreen) CALL free_screening_matrices(INT_INPUT,SETTING,LUPRI,LUERR)
@@ -923,7 +928,7 @@ integer              :: AO1,AO2,AO3,AO4,Oper,intType,Spec
 Type(LSSETTING)      :: SETTING
 Integer              :: LUPRI,LUERR
 !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 integer                    :: ndim_full(5),itask,jtask,I,J
 integer                    :: nbast1,nbast2,nbast3,nbast4
 logical                    :: CS_SCREEN,PS_SCREEN,BOTHpartioning
@@ -949,7 +954,7 @@ CALL ls_create_lstensor_full(setting,'AC_TYPE',AO1,AO3,AO2,AO4,Oper,Spec,&
      & intType,Kmat_full,dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created,&
      & gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created,&
      & PermuteResultTensor,doscreen,lupri,luerr,.TRUE.,useMPI)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ! *******************************************************************************
 ! *  MPI Specific: Wake slaves and call this subroutine                         *
 ! *******************************************************************************
@@ -976,7 +981,7 @@ CALL ls_attach_gab_to_setting(setting,gabCS_lhs,gabCS_rhs)
 Call ls_get_exchange_mat1(AO1,AO3,AO2,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
 call ls_free_lstensors_from_setting(setting,lupri)
 CALL ls_free_gab_from_setting(setting,lupri)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ! *******************************************************************************
 ! *  MPI Specific: Reduction off the Exchange Matrix                            *
 ! *******************************************************************************
@@ -998,7 +1003,7 @@ ENDIF
 #endif
 
 IF (setting%node.NE.0) THEN
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    ! *******************************************************************************
    ! *  MPI Slaves Specific: Free mem and put slaves to sleep                      *
    ! *******************************************************************************
@@ -1038,7 +1043,7 @@ END SUBROUTINE ls_get_exchange_mat
 !!$Type(LSSETTING)      :: SETTING
 !!$Integer              :: LUPRI,LUERR
 !!$!
-!!$#ifdef VAR_LSMPI
+!!$#ifdef VAR_MPI
 !!$integer                    :: ndim_full(5),itask,jtask,I,J
 !!$integer                    :: nbast1,nbast2,nbast3,nbast4
 !!$logical                    :: CS_SCREEN,PS_SCREEN,BOTHpartioning,SameAllFrag
@@ -1055,7 +1060,7 @@ END SUBROUTINE ls_get_exchange_mat
 !!$logical :: lhs_created,rhs_created,lhsCS_created,PermuteResultTensor
 !!$logical :: sameMolSave(4,4)
 !!$
-!!$#ifdef VAR_LSMPI
+!!$#ifdef VAR_MPI
 !!$!HACK Turn off permutational symmetries in case of MPI
 !!$!ToDo Make MPI work with permutational symmetries
 !!$sameMolSave = setting%sameMol
@@ -1080,7 +1085,7 @@ END SUBROUTINE ls_get_exchange_mat
 !!$     & gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created,&
 !!$     & PermuteResultTensor,doscreen,lupri,luerr,.TRUE.)
 !!$
-!!$#ifdef VAR_LSMPI
+!!$#ifdef VAR_MPI
 !!$ndim_full = setting%output%ndim
 !!$CS_screen = setting%scheme%CS_SCREEN
 !!$PS_screen = setting%scheme%PS_SCREEN
@@ -1135,7 +1140,7 @@ END SUBROUTINE ls_get_exchange_mat
 !!$  Call ls_get_exchange_mat1(AO1,AO3,AO2,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
 !!$  call ls_free_lstensors_from_setting(setting,lupri)
 !!$  CALL ls_free_gab_from_setting(setting,lupri)
-!!$#ifdef VAR_LSMPI
+!!$#ifdef VAR_MPI
 !!$  call ls_extract_and_annihilate_lstensor_task(setting,kmat,'AC_TYPE',dmat_lhs,dmat_rhs,kmat_full,&
 !!$         & dmat_lhs_full,dmat_rhs_full,nbast1,nbast2,nbast3,nbast4,lhs_created,&
 !!$         & rhs_created,gabCS_rhs,gabCS_lhs,rhsCS_created,&
@@ -1728,7 +1733,7 @@ logical :: IntegralTransformGC
 Logical :: rhsCS_created,lhsCS_created,rhsPS_created,lhsPS_created
 Logical                    :: PermuteResultTensor,doscreen
 !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 Integer                    :: itask,nAtoms(4),ntasks_lhs,ntasks_rhs,iAO,atomDim
 Real(realk),pointer        :: Integrals(:,:,:,:,:)
 Real(realk),pointer        :: SubBlockInt(:,:,:,:,:)
@@ -1761,7 +1766,7 @@ ELSE
    ENDIF
 #endif
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 CALL LS_GETTIM(t1,t2)
 t = 0E0_realk
 #endif
@@ -1773,7 +1778,7 @@ CALL ls_create_lstensor_full(setting,'AB_TYPE',AO1,AO2,AO3,AO4,Oper,Spec,intType
      & gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created,&
      & PermuteResultTensor,doscreen,lupri,luerr,.FALSE.,.TRUE.)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
 ndim_full = setting%output%ndim 
 CS_screen = setting%scheme%CS_SCREEN
@@ -1842,7 +1847,7 @@ DO itask=1,task_list%numMPItasks
   CALL ls_jengine1(AO1,AO2,AO3,AO4,Oper,Spec,intType,SETTING,LUPRI,LUERR)
   call ls_free_lstensors_from_setting(setting,lupri)
   CALL ls_free_gab_from_setting(setting,lupri)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   CALL LS_GETTIM(t3,t4)
   t(3) = t(3) + t3 - t1 !Node CPU time  += task CPU time
   t(4) = t(4) + t4 - t2 !Node wall time += task wall time
@@ -1912,7 +1917,7 @@ setting%output%ndim = ndim_full
 CALL ls_free_lstensors(dmat_lhs_full,dmat_rhs_full,lhs_created,rhs_created)
 if (doscreen) Call ls_free_screeninglstensors(gabCS_rhs_full,gabCS_lhs_full,rhsCS_created,lhsCS_created)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 CALL LS_GETTIM(t3,t4)
 t(5) = t3 - t1 !Node CPU time  += task CPU time
 t(6) = t4 - t2 !Node wall time += task wall time
@@ -1970,7 +1975,7 @@ logical :: IntegralTransformGC
 Logical :: rhsCS_created,lhsCS_created,rhsPS_created,lhsPS_created
 Logical                    :: PermuteResultTensor,doscreen
 !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 Integer                    :: itask,nAtoms(4),ntasks_lhs,ntasks_rhs,iAO,atomDim
 Logical                    :: sameAOsLHS,sameAOsRHS,sameODs,sameAllMOL,sameAllFRAG
 Logical                    :: lhs_aux,rhs_aux,noA,noB,LHSpartioning,RHSpartioning
@@ -4929,7 +4934,7 @@ end subroutine SetScalapackDmatToFull
 SUBROUTINE ls_LHSSameAsRHSDmatToSetting(setting)
 implicit none
 TYPE(LSSETTING)   :: SETTING
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !due to fragmentation this is not the case. 
 setting%LHSSameAsRHSDmat  = .FALSE.
 #else
@@ -5261,7 +5266,7 @@ dmat_lhs => INT_INPUT%lst_DLHS
 dmat_rhs => INT_INPUT%lst_DRHS
 
 !call lstimer('cr-id',ts,te,6)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF(UseMPI)THEN
    !Permutational Symmetry
    !In order to exploit permutational symmetry we set the lower triangular density matrix to 0
@@ -5340,7 +5345,7 @@ IF (doscreen) THEN
      CS_lhs_full => INT_INPUT%LST_GAB_LHS
      lhsCS_created = .TRUE.
    ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    !Permutational Symmetry
    !In order to exploit permutational symmetry we set the lower triangular screening matrices
    !to zero. In the case of sameODs the two matrices will point to the same memory location, 
@@ -5532,7 +5537,7 @@ ELSE
 ENDIF
 !call lstimer('cr-5-dim',ts,te,6)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF(UseMPI)THEN
    CALL set_reduced_screen_info(setting%redCS,INT_INPUT%AO,dmat_lhs,dmat_rhs,lhs_created,rhs_created,&
         &                      CS_rhs_full,CS_lhs_full,INT_INPUT%CS_THRLOG,doscreen,lupri)
@@ -5565,7 +5570,7 @@ Logical,intent(OUT)           :: rhsCS_created,lhsCS_created
 Logical,intent(OUT)           :: PermuteResultTensor,doscreen
 Logical,intent(IN)            :: LHSpartioning,RHSpartioning,BOTHpartioning
 !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 TYPE(INTEGRALINPUT)  :: INT_INPUT
 TYPE(AOITEM),target  :: AObuild(4),AObuild2(4)
 Integer              :: nAObuilds,nAObuilds2,nAtoms1,nAtoms2,nAtoms3,nAtoms4
@@ -5904,7 +5909,7 @@ integer,intent(in) :: natom1,natom2
 integer,intent(in) :: atoms1(natom1),atoms2(natom2)
 logical :: LHSpartioning
 !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 TYPE(INTEGRALINPUT)  :: INT_INPUT
 TYPE(AOITEM),target  :: AObuild(4)
 Integer              :: nAObuilds
@@ -5944,7 +5949,7 @@ INTEGER,intent(IN)            :: lupri,luerr
 integer,intent(in) :: natom1,natom2,atoms1(natom1),atoms2(natom2)
 logical :: RHSpartioning
 !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 TYPE(INTEGRALINPUT)  :: INT_INPUT
 TYPE(AOITEM),target  :: AObuild(4)
 Integer              :: nAObuilds
@@ -5985,7 +5990,7 @@ integer,intent(IN) :: natom1,natom2
 integer,intent(IN) :: atoms1(natom1),atoms2(natom2)
 logical,intent(IN) :: LHSpartioning
 !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 TYPE(INTEGRALINPUT)  :: INT_INPUT
 TYPE(AOITEM),target  :: AObuild(4)
 Integer              :: nAObuilds
@@ -6152,7 +6157,7 @@ nullify(setting%LST_GAB_RHS)
 nullify(setting%LST_GAB_LHS)
 end subroutine ls_free_gab_from_setting
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 SUBROUTINE ls_create_lstensor_task(setting,result_tensor,lstype,dmat_lhs,dmat_rhs,&
      & result_tensor_full,dmat_lhs_full,dmat_rhs_full,&
      & gabCS_rhs_full,gabCS_lhs_full,gabCS_rhs,gabCS_lhs,&
@@ -6736,7 +6741,7 @@ ENDIF
 
 END SUBROUTINE SET_PROPINFO2
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !> \brief Adds a sub gradient to a full gradient
 !> \author T. Kjærgaard
 !> \date 2010
@@ -6848,7 +6853,7 @@ END SUBROUTINE ls_subScreenAtomic
 
 END MODULE ls_Integral_Interface
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 SUBROUTINE lsmpi_getIntegrals_masterToSlave(AO1,AO2,AO3,AO4,Oper,Spec,intType,geoOrder,SETTING,LUPRI,LUERR)
 use lsmpi_op, only: mpicopy_setting
 use Integralparameters

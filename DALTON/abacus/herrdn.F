@@ -483,15 +483,15 @@ C           ... must close LUCMD again before RETURN, when opened here
          ELSE
             LUINFO = -1
          END IF
+         IF (IPREAD .GT.  0) THEN
+           CALL TITLER(
+     &   'Output of molecule and basis set information','*',115)
+         ELSE
+           CALL TITLER(
+     &   'Output of molecule and basis set info suppressed','*',118)
+         END IF
       END IF
       IF (IPREAD .GE. 11) CALL TIMER('START ',TIMSTR,TIMEND)
-      IF (IPREAD .GT.  0) THEN
-         CALL TITLER(
-     &   'Output of molecule and basis set information','*',115)
-      ELSE
-         CALL TITLER(
-     &   'Output of molecule and basis set info suppressed','*',118)
-      END IF
 C
 C Only the master in a parallel calculation reads the input file. The
 C slaves do not read the input file in RDLINE but use the input lines
@@ -761,9 +761,11 @@ C*****************************************************************************
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A72)',IOSTAT=IOS) TTITLE(2)
       IF (IPREAD .GT. 0) THEN
+        IF ((.NOT.SLAVE) .OR. (NODTOT.LE.20)) THEN
          WRITE (LUPRI,'(/4X,A/4X,A/2A/2A/4X,A)')
      &   'The two title cards from your ".mol" input:', SEPARATOR(1:72),
      &   ' 1: ',TTITLE(1),' 2: ',TTITLE(2),SEPARATOR(1:72)
+         END IF
          IF (LUCME.GT.0) WRITE (LUCME,'(2X,A)')
      &      SEPARATOR(1:72),TTITLE(1),TTITLE(2),SEPARATOR(1:72)
       END IF
@@ -4102,6 +4104,13 @@ C
 #include "huckel.h"
 casm
 #include "suscc.h"
+#include "center.h"
+#include "infpar.h"
+C
+      LOGICAL FNDEOI
+      DATA FNDEOI /.FALSE./
+      SAVE FNDEOI
+      CHARACTER*7 TMPWRD
 casm
 
 C
@@ -4281,6 +4290,88 @@ C
             END IF
          END DO
       END DO
+C
+C     Select atoms for Cholesky decomposition (only in master)
+C
+      IF (SLAVE) GOTO 100
+C
+      ACTSEL = .FALSE.
+C
+      REWIND(LUCMD)
+      DO WHILE (.NOT. FNDEOI)
+         READ(LUCMD,'(A7)') TMPWRD
+         CALL UPCASE(TMPWRD)
+         IF (TMPWRD(1:7) .EQ. '*CHOACT') THEN
+            ACTSEL = .TRUE.
+            FNDEOI = .TRUE.
+         ELSE IF ((TMPWRD(1:7) .EQ. '*END OF') .OR.
+     &            (TMPWRD(1:7) .EQ. '**END O')) THEN
+            FNDEOI = .TRUE.
+         END IF
+      END DO
+C
+      IF (.NOT. ACTSEL) GOTO 100
+C
+      CALL SYSTEM('cp molden.inp MOLDEN2.INP')
+C
+      ICOUNT = 0
+      DO ISYM = 1,MAXREP+1
+         DO I = 1,NAOS(ISYM)
+            ICOUNT = ICOUNT + 1
+            ICENT  = IPCEN(ICOUNT)
+            NBCENT(ICENT,ISYM) = NBCENT(ICENT,ISYM) + 1
+         END DO
+      END DO
+C
+      ICOUNT = 0
+      DO ISYM = 1,MAXREP+1
+         DO ICENT = 1,NUCIND
+            IBCENT(ICENT,ISYM) = ICOUNT
+            ICOUNT = ICOUNT + NBCENT(ICENT,ISYM)
+         END DO
+      END DO
+C
+      ICOUN0 = 0
+      DO ICENT = 1,NUCIND
+         ICOUN1 = 0
+         DO ISYM = 1,MAXREP + 1
+            ICOUN2 = IBCENT(ICENT,ISYM)
+            DO I = 1,NBCENT(ICENT,ISYM)
+               ICOUN1 = ICOUN1 + 1
+               IF (ICOUN1 .GT. MXBSCE) THEN
+                  WRITE(LUPRI,*) 'Maximum number of basis functions ',
+     &                  'on a sigle independent center is ', MXBSCE
+                  WRITE(LUPRI,*) 'Fix it in center.h'
+                  STOP 'Too many basis on one center'
+               END IF
+               ICOUN2 = ICOUN2 + 1
+               KBSCEN(ICOUN1,ICENT) = ICOUN2
+            END DO
+         END DO
+         NBSCEN(ICENT) = ICOUN1
+         ICOUN0 = ICOUN0 + ICOUN1
+      END DO
+      NCHKBS = ICOUN0
+C
+      WRITE(LUPRI,'(//,A,/,A,/)') 'Center information',
+     &                            '------------------'
+      WRITE(LUPRI,'(/,A,20X,A)') 'Nucleus','Number of basis'
+      WRITE(LUPRI,'(10X,A,8I5)') 'Sym.',(I,I=1,MAXREP+1)
+      DO ICENT = 1,NUCIND
+         WRITE(LUPRI,'(3X,I3,8X,8I5)') ICENT,
+     &                        (NBCENT(ICENT,ISYM),ISYM=1,MAXREP+1)
+      END DO
+C
+      DO ICENT = 1,NUCIND
+         WRITE(LUPRI,'(//I5,A,A,I5,A)')
+     &        NBSCEN(ICENT),' basis functions centered',
+     &       ' on nucleus',ICENT,' :'
+         WRITE(LUPRI,'(12I6)') (KBSCEN(I,ICENT),I=1,NBSCEN(ICENT))
+      END DO
+C
+  100 CONTINUE
+C
+Casm_end
 C
       RETURN
       END
@@ -5637,7 +5728,7 @@ C
       call header('priccf',-1)
       call output(priccf,1,npshel,1,mxcont,mxprim,mxcont,-1,lupri)
       call header('pricrx',-1)
-      call output(pricrx,1,npshel,1,3,mxprim,3,1,-lupri)
+      call output(pricrx,1,npshel,1,3,mxprim,3,1,lupri)
       WRITE(LUPRI,*) ' kmax ', kmax
       call header('cent',-1)
       call output(cent,1,kmax,1,3,mxshel,3,1,lupri)
@@ -6802,6 +6893,8 @@ C
 #include "dummy.h"
 #include "priunit.h"
 #include "pcmlog.h"
+#include "mxcent.h"
+#include "maxorb.h"
       CHARACTER TMPLN*80, BASNAM*80, BKPLIN*80, FRMT*5
       LOGICAL BASIS, ATOMBA, LMULBS, FOUNDR, FOUNDA
       DIMENSION JCO(KANG)

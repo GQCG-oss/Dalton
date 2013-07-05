@@ -109,6 +109,7 @@ C
 #include "inforb.h"
 #include "infvar.h"
 #include "infpri.h"
+#include "gnrinf.h"
 C
 Cholesky
 #include "ccdeco.h"
@@ -134,6 +135,14 @@ C
 C
       KFREE  = KFRSAV
       LFREE  = LFRSAV
+
+
+      ! QM/NP/MM embedding
+      IF (QMNPMM) THEN
+         call quit('not implemented in this version')
+      ELSE 
+         KRELMAT = 1 
+      END IF
 C
 CHJMAERKE: define IPR_DIIS separately?
 C
@@ -259,7 +268,8 @@ C
       CALL DIIS_CTL(CMO,WRK(KCMO1),WRK(KBMAT),WRK(KH1AO),
      &            WRK(KFSAV),WRK(KEVSAV),WRK(KEGSAV),MXERRV,C2DIIS,
      &            WRK(KSMOAO),WRK(KDCAO),WRK(KFCAO),WRK(KDSAV),WRK(KDV),
-     &            WRK(KCVEC),WRK(KTNLM),WRK,KFREE,LFREE,IPR_DIIS,ICONV)
+     &            WRK(KCVEC),WRK(KTNLM),WRK(KRELMAT),WRK,KFREE,
+     &            LFREE,IPR_DIIS,ICONV)
 C
  9990 CALL MEMREL('SRDIIS',WRK,KFRSAV,KFRSAV,KFREE,LFREE)
  9999 CALL FLSHFO(LUW4)
@@ -269,8 +279,16 @@ C
       END
 C  /* Deck DIIS_CTL */
       SUBROUTINE DIIS_CTL(CMO,CMO1,BMAT,H1AO,FAOSAV,EVCSAV,EGSAV,MXERRV,
-     *                   C2DIIS,SMOAO,DCAO,FCAO,DAOSAV,DV,CVEC,
-     *                   TNLM,WRK,KFRSAV,LFRSAV,IPR_DIIS,ICONV)
+     *                    C2DIIS,SMOAO,DCAO,FCAO,DAOSAV,DV,CVEC,
+     *                    TNLM,RCPMAT,WRK,KFRSAV,LFRSAV,
+     *                    IPR_DIIS,ICONV)
+
+!#define USE_XCINT
+#ifdef USE_XCINT
+      use xcint_integrator
+      use interface_ao_specific
+#endif
+
 C
 C L.r. 5-May-1994 hjaaj / 1-Apr-1997
 C
@@ -286,6 +304,16 @@ C
       DIMENSION SMOAO(*), DCAO(*), FCAO(*), DAOSAV(NNBAST,*), CVEC(*)
       DIMENSION DV(*)
       DIMENSION EGSAV(2,MXERRV), TNLM(*), WRK(*)
+
+      ! rcpmat is used on branch qmcmm, please do not remove
+      DIMENSION RCPMAT(*)
+
+#ifdef USE_XCINT
+      real(8), allocatable :: dmat_ao(:)
+      real(8), allocatable :: fmat_ao(:)
+      real(8), allocatable :: fmat_ao_tri(:)
+#endif
+
 C
 C Used from common blocks:
 C  INFINP : FLAG(*)
@@ -367,7 +395,7 @@ CAMT  If requested calculate the DFT-D energy correction
 
 C
       IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM) THEN
 C     this also includes the case of MMPCM   
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
@@ -484,7 +512,8 @@ C------------------
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
      &     .AND. .NOT.AOSAVE   .AND. .NOT. CHOINT
-     &     .and. .not. peqm    .and. .not. pe_savden
+     &     .AND. .NOT.QMNPMM   .and. .not. peqm
+     &     .and. .not. pe_savden
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
@@ -690,19 +719,53 @@ C                  = DVAO(p,q)FC2AO(p,q) + DVAO(p,q)H1AO(p,q)
      &                 FAOSAV(1,INDEVC,1),1)
             END IF
          END IF
-         IF (DODFT) CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
+         IF (DODFT) then
+#ifdef USE_XCINT
+             allocate(dmat_ao(nbast*nbast))
+             allocate(fmat_ao(nbast*nbast))
+             allocate(fmat_ao_tri(nnbast))
+             dmat_ao     = 0.0d0
+             fmat_ao     = 0.0d0
+             fmat_ao_tri = 0.0d0
+             xc_energy   = 0.0d0
+             call daxpy(nbast*nbast, 0.5d0, dcao, 1,
+     &                  dmat_ao, 1)
+             call interface_ao_write()
+             call xc_integrate(
+     &                         xc_mat_dim=nbast,
+     &                         xc_nr_dmat=1,
+     &                         xc_dmat=dmat_ao,
+     &                         xc_nr_geo_pert=0,
+     &                         xc_nr_fld_pert=0,
+     &                         xc_energy=xc_energy,
+     &                         xc_fmat=fmat_ao
+     &                        )
+             emy = emy + xc_energy
+
+             call dgetsp(nbast, fmat_ao, fmat_ao_tri)
+             call daxpy(nnbast, 1.0d0, fmat_ao_tri, 1,
+     &                  faosav(1, indevc, 1), 1)
+
+             deallocate(dmat_ao)
+             deallocate(fmat_ao)
+             deallocate(fmat_ao_tri)
+#else
+                        CALL DFT_ADD_KS(ONLYFC,EMY,DCAO,NDMAT,
      &                  FAOSAV(1,INDEVC,1),FAOSAV(1,INDEVC,2),
      &                  WRK(KFREE),LFREE,IPR_DIIS)
-
+#endif
+         end if
 CAMT If calculated add the empirical dispersion energy correction
          IF (DODFTD) THEN
            EMY = EMY + EDISP
          END IF
 
+
 C
 c        we need to divide the solvent calls into mmpcm and not mmpcm
 c        since we in the latter iterate between the mm and pcm for a given QM
 c        density    
+       
          IF (.NOT. MMPCM) THEN ! do as we usually do ...
            ESOLT = D0
            IF (QM3 .AND. .NOT. DOCCSD) THEN
@@ -740,6 +803,7 @@ c        density
      &                   WRK(KFREE),LFREE,IPR_DIIS)
              CALL DAXPY(NNBAST,D1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
              CALL MEMREL('DISCTL.SOLFCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+
            ELSE IF (PCM) THEN
              CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
              CALL PCMFCK(DAOSAV(1,1),DAOSAV(1,2),WRK(KFCSOL),
@@ -749,8 +813,6 @@ c        density
            END IF
          ELSE  ! the mmpcm interface is only implemented for hf/dft so
 C                no reference to doccsd
-           if (nodtot.ge.1) write(lupri,*) 'WARNING: qm3pcm is
-     & not parallelized, so it will be slower than expected!'
 C          parameters on input: MXITMP and THRSMP
            LCONV = .FALSE. 
            XTEST1 = D0
@@ -852,7 +914,8 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
-            IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. peqm) THEN
+            IF (FLAG(16) .OR. PCM .OR. QM3
+     &                   .OR. QMMM .or. QMNPMM .or. peqm) THEN
 C           this also includes the case of MMPCM
                IF (.NOT.AUTOCC) THEN
                   WRITE (LUW4,'(I4,1P,G20.12,G20.12,D15.5,D12.2)')
@@ -1396,9 +1459,18 @@ C
      &              NSYM,NBAS,NORB)
       END IF
 C
-      IF (IPRENR .GT. 0) THEN
+C      if qm3 .or. pcm then also mmpcm automatically
+       IF (IPRENR .GT. 0) THEN
+C
+         IF (CMOPRI) THEN
+            IPR4SA = IPRI4
+            IPR6SA = IPRI6
+            IPRI4  = 11
+            IPRI6  = 11
+         END IF
+C
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
-         IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
+         IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
          if (peqm) write(luw4,'(a)')
      &    '   (incl. contribution from polarizable embedding potential)'
@@ -1406,7 +1478,7 @@ C
 C-------------------
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
-            IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM)
+            IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
             if (peqm) write(lupri,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'
@@ -1414,6 +1486,12 @@ C-------------------
          END IF
 C-------------------
 C        CALL RHFENR(IPRINT,LUPRI,FC,FV,SCRA,LSCRA)
+C
+         IF (CMOPRI) THEN
+            IPRI4 = IPR4SA
+            IPRI6 = IPR6SA
+         END IF
+C
       END IF
       ! needed to get specific PE energy contributions for printout
       ! when converged

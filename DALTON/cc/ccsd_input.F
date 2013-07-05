@@ -137,7 +137,7 @@ Cring-CCD for triplet (rTCCD), and SOSEX added
      &            '.NOEONL','.DIRDER','*CCTPA ','.INT4V ','.ONLYMO',
      &            '.THRVEC','.MTRIP ','.SOPPA2','.AO-SOP','.NOSORT',
      &            '.KEPAOI','*CHO(T)','*CHOCC2','*CHOMP2','*CHODBG',
-     &            '.D01SKI','*ACTIVE','.CHO(T)','.T2UPDA','.RCCD  ',
+     &            '.D01SKI','*CHOACT','.CHO(T)','.T2UPDA','.RCCD  ',
      &            '.RTCCD ','.DRCCD ','.SOSEX ','.T2STAR','.HURWIT',
      &            '.DCPT2 '/
 
@@ -914,8 +914,8 @@ C                '.D01SKI'
                  D01SKIP = .TRUE.
                GO TO 1000
  117           CONTINUE 
-C                '*ACTIVE'
-                 ACTIVE = .TRUE.
+C                '*CHOACT'
+                 ACTSEL = .TRUE.
                  CALL CC_ACTINP(WORD,MSYM)
                GO TO 1000
  118           CONTINUE 
@@ -9878,23 +9878,24 @@ C     Alfredo Sanchez de Meras. May 2008
 C
 C     Purpose: Read input for CC Active section
 C
-#include "implicit.h"
+#include <implicit.h>
       CHARACTER*7 WORD
-#include "priunit.h"
-#include "mxcent.h"
-#include "nuclei.h"
-#include "center.h"
+#include <priunit.h>
+#include <mxcent.h>
+#include <nuclei.h>
+#include <center.h>
 
       CHARACTER*9 SECNAM
       PARAMETER (SECNAM = 'CC_ACTINP')
 C
       PARAMETER (NTABLE = 15)
       CHARACTER*7 TABLE(NTABLE)
-      DATA TABLE /'.ATOMIC','.BOXDEF','.ACTFRE','.DIFADD','.NBOEXP',
-     &            '.SELDIR','.THACOC','.THACVI','.SELDIA','.ORDER ',
-     &            '.FULDEC','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
+      DATA TABLE /'.ATOMIC','.ACTFRE','.DIFADD','.NOSLDR','.THACOC',
+     &            '.THACVI','.SELDIA','.FULDEC','.DOSPRE','.MINSPR',
+     &            '.LIMLOC','.XXXXXX','.XXXXXX','.XXXXXX','.XXXXXX'/
 C
       LOGICAL SET, CHKACT
+      LOGICAL USRTHO, USRTHV
       SAVE SET
       DATA SET /.FALSE./
       DATA CHKACT /.FALSE./
@@ -9908,22 +9909,28 @@ C
       ATOMIC = .FALSE.
       ACTFRE = .FALSE.
       DIFADD = .FALSE.
-      NBOEXP = .FALSE.
-      SELDIR = .FALSE.
-      ACTIVE = .TRUE.
+      SELDIR = .TRUE.
+      ACTSEL = .TRUE.
+      LIMLOC = .FALSE.
 C
-      THACOC = 1.0D-4
-      THACVI = 1.0D-4
+      DOSPREAD = .FALSE.
+      MINSPR   = .FALSE.
 C
-ctmp  DO I = 1,NUCIND
-ctmp     IORDEC(I) = I
-ctmp  END DO
+      THACOC = 0.2D0
+      THACVI = 0.2D0
+      USRTHO = .FALSE.
+      USRTHV = .FALSE.
+C
+      DO I = 1,MSYM
+         MXOCC(I) = 9999
+         MXVIR(I) = 9999
+      END DO
 C
       ICHANG  = 0
 C
 C     Process input section.
 C
-      IF (WORD(1:7) .EQ. '*ACTIVE') THEN
+      IF (WORD(1:7) .EQ. '*CHOACT') THEN
 C
   100    CONTINUE
 C
@@ -9955,13 +9962,34 @@ C                    Select active atoms (no boxes)
                      ATOMIC = .TRUE.
                      CHKACT = .TRUE.
                      READ(LUCMD,*) NACINP
-                     IF (NACINP .GT. MXACAT) THEN
+                     IF (ABS(NACINP) .GT. MXACAT) THEN
                         WRITE(LUPRI,*) 'ERROR: From center.h, ' ,
      &                                 'maximum number of active ',
      &                                 'atoms is',MXACAT
                         STOP 'Too many active atoms'
                      END IF
-                     READ(LUCMD,*) (LACINP(I), I=1,NACINP)
+C
+                     IF (NACINP .GT. 0) THEN
+                        READ(LUCMD,*) (LACINP(I), I=1,NACINP)
+                     ELSE IF (NACINP .LT. 0) THEN
+                        NACINP = -NACINP
+                        ILAST  = 0
+                        DO WHILE (ILAST .LT. NACINP)
+                           IFIRST = ILAST + 1
+                           READ(LUCMD,*) NACTMP
+                           ILAST = ILAST + NACTMP
+                           READ(LUCMD,*) (LACINP(I),I=IFIRST,ILAST)
+                        END DO
+                        IF (ILAST .NE. NACINP) THEN
+                           WRITE(LUPRI,*) 'Error in number of ',
+     &                            'active atoms : NACINP/ILAST',
+     &                            NACINP,ILAST
+                           STOP 'Error defining active atoms'
+                        END IF
+                     ELSE
+                        WRITE(LUPRI,*) 'Number of active atoms is zero'
+                        STOP 'NACINP = 0'
+                     END IF
 C
                      DO I = 1,NACINP
                         DO J = 1,I-1
@@ -9980,20 +10008,13 @@ C
                   GOTO 100   
 C
     2             CONTINUE
-C                    '.BOXDEF'
-C                    Boxes definition.           
-                     CHKACT = .TRUE.
-C_to_do              copy & paste from mkinp.f
-                  GOTO 100   
-C
-    3             CONTINUE
 C                    '.ACTFRE'
 C                    Freeze orbitals in active atomic space
                      ACTFRE = .TRUE.
                      READ(LUCMD,*) NACTFR
                   GOTO 100
 C
-    4             CONTINUE
+    3             CONTINUE
 C                    '.DIFADD'
 C                    Include in active space selected (diffuse) basis
                      DIFADD = .TRUE.
@@ -10004,45 +10025,106 @@ C                    Include in active space selected (diffuse) basis
                      END DO
                   GOTO 100
 C
+    4             CONTINUE
+C                    '.NOSLDR'
+C                    Decompose all OM's in atom-by-atom scheme
+                     SELDIR = .FALSE.
+                     IF (.NOT. USRTHO) THACOC = 1.0D-4
+                     IF (.NOT. USRTHV) THACVI = 1.0D-4
+                  GOTO 100
+C
     5             CONTINUE
-C                    '.NBOEXP'
-C                    n-body interactions among boxes
-                     NBOEXP = .TRUE.
-C_to_do              copy & paste from mkinp.f
-                  GOTO 100
-    6             CONTINUE
-C                    '.SELDIR'
-C                    Decompose only selected centers
-                     SELDIR = .TRUE.
-                  GOTO 100
-    7             CONTINUE
 C                    '.THACOC'
 C                    Threshold for decomposition of active occupied block
+                     USRTHO = .TRUE.
                      READ(LUCMD,*) THACOC
                   GOTO 100
-    8             CONTINUE
+C
+    6             CONTINUE
 C                    '.THACVI'
 C                    Threshold for decomposition of virtual occupied block
+                     USRTHV = .TRUE.
                      READ(LUCMD,*) THACVI
                   GOTO 100
-    9             CONTINUE
+C
+    7             CONTINUE
+C
 C                    '.SELDIA'
-C                    Select which diagonals to decompose in one atom
-                     READ(LUCMD,*) IAT1,NSLTMP
-                     NSELD(IAT1) = NSLTMP
-                     READ(LUCMD,*) (ISELD(I,IAT1),I=1,NSELD(IAT1))
-                     DIASEL(IAT1) = .TRUE.
+C                    Give list of diagonals to decompose
+                     DIALST = .TRUE.
+                     CHKACT = .TRUE.
+                     READ(LUCMD,*) NABSOC
+                     IF (NABSOC .GT. MXACBS) THEN
+                        WRITE(LUPRI,*) 'Number of occupied diagonals',
+     &                                 NABSOC
+                        WRITE(LUPRI,*) 'Maximum allowed :',MXACBS
+                        STOP 'Too many occupied diagonals under SELDIA'
+                     END IF
+                     READ(LUCMD,*) (LACBAS(I),I=1,NABSOC)
+                     READ(LUCMD,*) NABSVI
+                     IF (NABSVI .GT. MXACBS) THEN
+                        WRITE(LUPRI,*) 'Number of virtual diagonals',
+     &                                 NABSVI
+                        WRITE(LUPRI,*) 'Maximum allowed :',MXACBS
+                        STOP 'Too many virtual diagonals under SELDIA'
+                     END IF
+                     IF (NABSVI .LT. 0) THEN
+                        NABSVI = -NABSVI
+                        ILAST = 0
+                        DO WHILE (ILAST .LT. NABSVI)
+                           READ(LUCMD,*) NDITMP
+                           IFIRST = ILAST + 1
+                           ILAST  = ILAST + NDITMP
+                           READ(LUCMD,*) (LACBSV(I), I=IFIRST,ILAST)
+                        END DO
+                        IF (ILAST .NE. NABSVI) THEN
+                           WRITE(LUPRI,*) 'Error in number of ',
+     &                            'active basis : NABSVI/ILAST',
+     &                            NABSVI,ILAST
+                           STOP 'Error defining active basis'
+                        END IF
+                     ELSE
+                        READ(LUCMD,*) (LACBSV(I),I=1,NABSVI)
+                     END IF
                   GOTO 100
-   10             CONTINUE
-C                    '.ORDER'
-C                    Order to decompose atoms
-ctmp                 READ(LUCMD,*) (IORDEC(I), I=1,NUCIND)
-                  GOTO 100
-   11             CONTINUE             
+C
+    8             CONTINUE             
 C                    '.FULDEC'
 C                    Select all the atoms
                      FULDEC = .TRUE.
                      SELDIR = .TRUE.
+                     CHKACT = .TRUE.
+                  GOTO 100
+C
+    9             CONTINUE             
+C                    '.DOSPRE'
+C                    Calculate orbital spread
+                     DOSPREAD = .TRUE.
+                     IF (MSYM .GT. 1) THEN
+                        WRITE(LUPRI,*) 'Calculation of orbital',
+     &                       ' spreads is only possible w/o symmetry'
+                        STOP 'DOSPRE with NSYM .GT. 1'
+                     END IF
+                  GOTO 100
+C
+   10             CONTINUE             
+C                    'MINSPR'
+C                    Select diagonals to minimize orbital spreads
+                     MINSPR   = .TRUE.
+                     DOSPREAD = .TRUE.
+                     IF (MSYM .GT. 1) THEN
+                        WRITE(LUPRI,*) 'Calculation of orbital',
+     &                       ' spreads is only possible w/o symmetry'
+                        STOP 'MINSPR with NSYM .GT. 1'
+                     END IF
+                  GOTO 100
+C
+   11             CONTINUE             
+C                    'LIMLOC'
+C                    Get limited number of localized orbitals
+                     LIMLOC = .TRUE.
+                     READ(LUCMD,*) (MXOCC(I), I=1,MSYM)
+                     READ(LUCMD,*) (MXVIR(I), I=1,MSYM)
                   GOTO 100
 C                    '.XXXXXX'
    12             CONTINUE             
@@ -10079,10 +10161,10 @@ C
       WRITE(LUPRI,'(A)') '          Info from Selact input'
       WRITE(LUPRI,'(A,/)') '       ----------------------------'
 C
-      IF (ACTIVE .AND. (.NOT.  CHKACT)) THEN
+      IF (ACTSEL .AND. (.NOT.  CHKACT)) THEN
          WRITE(LUPRI,'(//,A,/,3A,/,A,//)') '>>> ERROR :',
-     &                '>>> *ACTIVE was specified, but no definition',
-     &                ' of active atoms, boxes or basis',
+     &                '>>> *CHOACT was specified, but no definition',
+     &                ' of active atoms or basis',
      &                ' functions was given',
      &                '    Program will stop'
          CALL QUIT(SECNAM//' called but no selection data given')
@@ -10106,8 +10188,19 @@ C
      &                  'select afterwards'
       END IF
 C
+      IF (LIMLOC) THEN
+         IF (.NOT. SELDIR) THEN
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*)
+            WRITE(LUPRI,*) 'Fixed number of localized orbitals only',
+     &                     ' available when direct selection in use'
+            WRITE(LUPRI,*) 'LIMLOC will be ignored'
+         END IF
+      END IF
+C
       WRITE(LUPRI,*)
       WRITE(LUPRI,*)
 C
       RETURN
       END
+

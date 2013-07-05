@@ -2011,9 +2011,9 @@ C
 C -- local variables and constants
 C
 #if defined(BUILD_GEN1INT)
-      PARAMETER (NTBMOD = 25)
+      PARAMETER (NTBMOD = 26)
 #else
-      PARAMETER (NTBMOD = 24)
+      PARAMETER (NTBMOD = 25)
 #endif
       CHARACTER WORD*7, PROMPT*1, TABMOD(NTBMOD)*7
       LOGICAL   ALLOPT, PTABMO, lucita_input_provided
@@ -2030,9 +2030,11 @@ C
      *            '*UPDATE','*SOLVEN','*PRINT ','*AUXILI','*HF INP',
      *            '*MP2 IN','*HAMILT','*CC INP','*DFT IN','*NEVPT2',
 #if defined(BUILD_GEN1INT)
-     *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*END OF'/
+     *            '*AUXILL','*LUCITA','*STEX  ','*CUBE  ','*CHOACT',
+     *            '*END OF'/
 #else
-     *            '*AUXILL','*LUCITA','*STEX  ','*END OF'/
+     *            '*AUXILL','*LUCITA','*STEX  ','*CHOACT',
+     *            '*END OF'/
 #endif
 C
 C
@@ -2054,9 +2056,9 @@ C
                GO TO (1100,1200,1300,1400,1500,1600,1700,1800,1900,
      *                2500,2100,2200,2300,2400,2500,2600,2700,2800,
 #if defined(BUILD_GEN1INT)
-     *                2900,3000,2400,3200,3300,3600,8000), I
+     *                2900,3000,2400,3200,3300,3600,3400,8000), I
 #else
-     *                2900,3000,2400,3200,3300,8000), I
+     *                2900,3000,2400,3200,3300,3400,8000), I
 #endif
             END IF
  920     CONTINUE
@@ -2141,6 +2143,8 @@ C March 9, 2012
  3600  call gen1int_host_cube_init(LUCMD, LUPRI, WORD)
        goto 910
 #endif
+ 3400  CALL CC_ACTINP(WORD,NSYM)
+       GO TO 910
 C  Here if "*END OF"
  8000  CONTINUE
        IF (ALLOPT .AND. .NOT.PTABMO) THEN
@@ -2187,6 +2191,12 @@ C
       END
 C  /* Deck sir_geninp */
       SUBROUTINE SIR_GENINP(WORD,INPERR,IREST,NUMRUN,ALLOPT)
+
+#ifdef MOD_XCINT
+      use xcint_integrator
+      use eri_contractions
+#endif
+
 C
 C 1-Oct 1987 Hans Agren
 C
@@ -2198,6 +2208,9 @@ C
       LOGICAL ALLOPT
       PARAMETER (NPDIM = 50)
       INTEGER NPATH(NPDIM)
+#ifdef MOD_XCINT
+      real(8) :: hfx_out, mu_out, beta_out
+#endif
 C
 C Used from common:
 C  INFINP : FLAG(*), IORTO, DO*
@@ -2477,6 +2490,20 @@ C        ... no P-supermatrix for DFT
 #ifdef MOD_XCFUN
          CALL xcfun_select(TITLIN)
 #endif
+#ifdef MOD_XCINT
+         call parse_functional(titlin, hfx_out, mu_out, beta_out)
+         open(42,
+     &        file   = 'xc_functional',
+     &        status = 'unknown',
+     &        form   = 'formatted',
+     &        access = 'sequential')
+         rewind(42)
+         write(42, *) titlin
+         close(42, status = 'keep')
+
+         call set_eri_contractions_xfac(hfx_out)
+#endif
+
          IF (WDFTMP.NE.0.0D0) THEN
             DOMP2    = .TRUE.
             FLAG(9)  = .TRUE.
@@ -3167,7 +3194,7 @@ C     Option 26 >MEP   <
 C
  2000 CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
+C         ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRRHF = THRRHF*THR_REDFAC
@@ -3544,7 +3571,7 @@ C *** Option 33 >FOCKON< Only FOCK (no no:s ) for TRACI and output
 C
  9000 CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
+C         ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRMC = THRMC*THR_REDFAC
@@ -3703,7 +3730,7 @@ C                        CI diagonalization.
 C
  8000 CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
+C         ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRCI = THRCI*THR_REDFAC
@@ -4493,7 +4520,7 @@ C *** Option  108 >      <
 C
  8000 CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
+C         ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRP = THRP*THR_REDFAC
@@ -4726,12 +4753,14 @@ C
 #include "infpri.h"
 #include "inftra.h"
 C
-      DATA TABLE /'XXXXXXX','.IPRKAP','.IPRDIA','.IPRSIG','.IPRDNS',
+      DATA TABLE /'.CMOPRI','.IPRKAP','.IPRDIA','.IPRSIG','.IPRDNS',
      *            '.IPRSOL','.RESFIL','.PRINTL','.PRINTF','.IPRCIX',
      *            '.THRPWF','.IPRCNO','.NOSUMM','.CANONI','.IPRAVE',
      *            '.IPRFCK','.POPPRI'/
 C
 C     ***** PROCESS INPUT FOR PRIINP *****
+C
+      CMOPRI = .FALSE.
 C
       IF (WORD .NE. '*PRINT ') THEN
          WRITE(LUPRI,*) 'ERROR, PRIINP call with ',WORD,
@@ -4774,6 +4803,7 @@ C
 C *** Option 1 >      < 
 C
   101 CONTINUE
+      CMOPRI = .TRUE.
       GO TO 100
 C
 C *** Option 2 >IPRKAP<  Prinout level for NEXKAP section.
@@ -5839,7 +5869,7 @@ C
 C
  8000 CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
+C         ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          THRNEVPT = THRNEVPT*THR_REDFAC

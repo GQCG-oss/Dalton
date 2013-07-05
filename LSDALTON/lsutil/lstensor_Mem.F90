@@ -312,7 +312,7 @@ if(lstmem_chain%next%index.EQ.index)then
    maxInt = SIZE(current%LSTMEM_INTWORK)
    maxRealk = SIZE(current%LSTMEM_REALKWORK)
    maxIntS = SIZE(current%LSTMEM_INTSWORK)
-#if VAR_DEBUGINT
+#if VAR_LSDEBUGINT
    IF(maxInt.NE.SIZE(lstmem_chain%next%LSTMEM_INTWORK))&
         & call lsquit('dim1 mismatch lstememcopy',-1)
    IF(maxIntS.NE.SIZE(lstmem_chain%next%LSTMEM_INTSWORK))&
@@ -339,7 +339,7 @@ if(chit%index.EQ.index)then
    maxInt = SIZE(chit%LSTMEM_INTWORK)
    maxRealk = SIZE(chit%LSTMEM_REALKWORK)
    maxIntS = SIZE(chit%LSTMEM_INTSWORK)
-#if VAR_DEBUGINT
+#if VAR_LSDEBUGINT
    IF(maxInt.NE.SIZE(current%LSTMEM_INTWORK))&
         & call lsquit('dim1 mismatch lstememcopy',-1)
    IF(maxIntS.NE.SIZE(current%LSTMEM_INTSWORK))&

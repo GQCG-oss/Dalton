@@ -3,12 +3,13 @@ module polarizable_embedding
     use pe_precision
     use pe_blas_wrappers
     use pe_lapack_wrappers
+    use pe_integral_wrappers
     use pe_variables
 
 #if defined(VAR_MPI)
 #if defined(VAR_USE_MPIF)
     implicit none
-#include "mpif.h"
+!#include "mpif.h"
 #else
     use mpi
     implicit none
@@ -30,7 +31,6 @@ module polarizable_embedding
 
 ! TODO:
 ! handle interface better, e.g. scale or remove higher order moments and pols
-! damping of electric field from QM system?
 ! find better solution for electric field calculation from fragment densities
 ! higher order polarizabilities
 ! write list of publications which should be cited
@@ -159,6 +159,18 @@ subroutine pe_init(lupri, coords, charges)
                                    & will be damped'
             write(luout,'(4x,a,f8.4)') 'using damping coefficient:', damp
         end if
+        if (pe_qmdamping) then
+            write(luout,'(/4x,a)') 'Interactions between QM and PE moments&
+             & will be damped with THOLE damping'
+            write(luout,'(4x,a)') 'using the following polarizability&
+                                   & tensors:'
+            if(qmnucs /= nqmpoltensors) stop 'ERROR: number of QM &
+             polarizability tensors do not match number of QM atoms.'
+            do i = 1, qmnucs
+                write(luout,'(8x,6f8.4)') (qmpoltensors(j,i),j=1,6)
+            enddo
+            write(luout,'(/4x,a,f8.4)') 'and damping coefficient:', qmdamp
+        endif
     end if
     if (pe_fd) then
         write(luout,'(/4x,a,i4)') 'Number of fragment densities: ', nfds
@@ -609,6 +621,28 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 read(luinp,*) damp
             end if
             pe_damp = .true.
+        ! damp fields from mm region onto qm region via
+        ! thole damping. this requires us to read a polarizability
+        ! tensor for each core. here we have no clue about the core
+        ! so do it the manual way
+        else if (trim(option(2:)) == 'QMDAMP') then
+            read(luinp,*) qmdamp
+            read(luinp,*) nqmpoltensors
+            read(luinp,*) option
+            !no backspace here, apparently :-/
+            !backspace(luinp)
+            allocate(qmpoltensors(6,nqmpoltensors))
+            qmpoltensors = 0.0d0
+            do i=1,nqmpoltensors
+                if (trim(option).eq.'ISO') then
+                    read(luinp, *) qmpoltensors(1,i)
+                    qmpoltensors(4,i) = qmpoltensors(1,i)
+                    qmpoltensors(6,i) = qmpoltensors(1,i)
+                else
+                    read(luinp, *) qmpoltensors(:,i)
+                endif
+            enddo
+            pe_qmdamping = .true.
         ! neglect dynamic response from environment
         else if (trim(option(2:)) == 'GSPOL') then
             pe_gspol = .true.
@@ -1490,6 +1524,14 @@ subroutine pe_sync()
         call mpi_bcast(pe_nomb, 1, lmpi, 0, comm, ierr)
         call mpi_bcast(pe_damp, 1, lmpi, 0, comm, ierr)
         call mpi_bcast(damp, 1, rmpi, 0, comm, ierr)
+        call mpi_bcast(pe_qmdamping, 1, lmpi, 0, comm, ierr)
+        if (pe_qmdamping) then
+            call mpi_bcast(qmdamp, 1, rmpi, 0, comm, ierr)
+            call mpi_bcast(nqmpoltensors, 1, impi, 0, comm, ierr)
+            if (myid /= 0 .and. .not. allocated(qmpoltensors)) &
+                & allocate(qmpoltensors(6, nqmpoltensors))
+            call mpi_bcast(qmpoltensors, 6*nqmpoltensors, rmpi, 0, comm, ierr)
+        endif
     end if
 
     call mpi_bcast(pe_fd, 1, lmpi, 0, comm, ierr)
@@ -1841,7 +1883,7 @@ subroutine es_fragment_densities(denmats, Eel, Enuc, fckmats)
                     call Tk_tensor(Tfm, Rfm)
                     Enn = Enn + Zm(1,k) * Zfd(1,j) * Tfm(1)
                 end do
-    !            call Tk_integrals('es', Zfd_ints, nnbas, 1, Rfd(:,j)) 
+    !            call Tk_integrals('es', Zfd_ints, Rfd(:,j)) 
     !            Zfd_ints = Zfd(1,j) * Zfd_ints
                 call Mk_integrals(Zfd_ints, Rfd(:,j), Zfd(:,j))
                 do m = 1, ndens
@@ -1934,8 +1976,6 @@ end subroutine es_multipoles
 !------------------------------------------------------------------------------
 
 subroutine pe_polarization(denmats, fckmats)
-
-    external :: Tk_integrals
 
     real(dp), dimension(:), intent(in), optional :: denmats
     real(dp), dimension(:), intent(inout), optional :: fckmats
@@ -2138,7 +2178,7 @@ subroutine pe_polarization(denmats, fckmats)
             i = 0
             do site = site_start, site_finish
                 if (zeroalphas(site)) cycle
-                call Tk_integrals('es', Fel_ints, nnbas, 3, Rs(:,site))
+                call Tk_integrals('es', Fel_ints, Rs(:,site))
                 do j = 1, 3
                     do k = 1, ndens
                         l = (k - 1) * nnbas + 1
@@ -2155,7 +2195,7 @@ subroutine pe_polarization(denmats, fckmats)
             i = 1
             allocate(Vel_ints(nnbas,1))
             do site = surp_start, surp_finish
-                call Tk_integrals('es', Vel_ints, nnbas, 1, Rsp(:,site))
+                call Tk_integrals('es', Vel_ints, Rsp(:,site))
                 do k = 1, ndens
                     l = (k - 1) * nnbas + 1
                     m = k * nnbas
@@ -2189,7 +2229,7 @@ subroutine pe_polarization(denmats, fckmats)
                     write(lunoneq) fckmats(l:m)
                 end do
                 close(lunoneq)
-                call Tk_integrals('es', Vel_ints, nnbas, 1, Rsp(:,site))
+                call Tk_integrals('es', Vel_ints, Rsp(:,site))
                 do k = 1, ndens
                     l = (k - 1) * nnbas + 1
                     m = k * nnbas
@@ -2857,8 +2897,6 @@ end subroutine mixed_solver
 
 subroutine electron_potentials(Vels, denmats)
 
-    external :: Tk_integrals
-
     real(dp), dimension(:,:), intent(out) :: Vels
     real(dp), dimension(:), intent(in) :: denmats
 
@@ -2871,7 +2909,7 @@ subroutine electron_potentials(Vels, denmats)
 
     i = 1
     do site = surp_start, surp_finish 
-        call Tk_integrals('es', Vel_ints, nnbas, 1, Rsp(:,site))
+        call Tk_integrals('es', Vel_ints, Rsp(:,site))
         do k = 1, ndens
             l = (k - 1) * nnbas + 1
             m = k * nnbas
@@ -2910,8 +2948,6 @@ end subroutine electron_potentials
 
 subroutine electron_fields(Fels, denmats)
 
-    external :: Tk_integrals
-
     real(dp), dimension(:,:), intent(inout) :: Fels
     real(dp), dimension(:), intent(in) :: denmats
 
@@ -2919,6 +2955,7 @@ subroutine electron_fields(Fels, denmats)
     integer :: site
     integer :: i, j, k, l, m
     real(dp), dimension(nnbas,3) :: Fel_ints
+    real(dp) :: dfact
 
     Fels = 0.0d0
 
@@ -2935,7 +2972,15 @@ subroutine electron_fields(Fels, denmats)
                 cycle
             end if
         end if
-        call Tk_integrals('es', Fel_ints, nnbas, 3, Rs(:,site))
+        call Tk_integrals('es', Fel_ints, Rs(:,site))
+        if(pe_qmdamping) then
+            call thole_damping_for_site(Rs(:,site), P1s(:,site), dfact)
+            if(pe_debug) then
+                write(luout,'(a,i4,a,f8.4)') 'damping electric field &
+               &from site',site,' with a factor of',dfact
+            endif
+            Fel_ints = Fel_ints * dfact
+        endif
         do j = 1, 3
             do k = 1, ndens
                 l = (k - 1) * nnbas + 1
@@ -3045,6 +3090,7 @@ subroutine nuclear_fields(Fnucs)
     integer :: lu, site
     integer :: i, j, k
     real(dp), dimension(3) :: Rms, Tms
+    real(dp) :: dfact
 
     if (myid == 0) then
         inquire(file='pe_nuclear_field.bin', exist=lexist)
@@ -3078,11 +3124,19 @@ subroutine nuclear_fields(Fnucs)
                     cycle
                 end if
             end if
+            dfact = 1.0d0
+            if(pe_qmdamping) then
+                call thole_damping_for_site(Rs(:,site), P1s(:,site), dfact)
+                if(pe_debug) then
+                    write(luout,'(a,i4,a,f8.4)') 'damping nuclear field &
+                   &from site',site,' with a factor of',dfact
+                endif
+            endif
             do j = 1, qmnucs
                 Rms = Rs(:,site) - Rm(:,j)
                 call Tk_tensor(Tms, Rms)
                 do k = 1, 3
-                    Fnucs(i+k) = Fnucs(i+k) - Zm(1,j) * Tms(k)
+                    Fnucs(i+k) = Fnucs(i+k) - Zm(1,j) * Tms(k) * dfact
                 end do
             end do
             i = i + 3
@@ -3852,8 +3906,6 @@ end subroutine Tk_tensor
 
 subroutine Mk_integrals(Mk_ints, Rij, Mk)
 
-    external :: Tk_integrals
-
     real(dp), dimension(:,:), intent(out) :: Mk_ints
     real(dp), dimension(:), intent(in) :: Mk
     real(dp), dimension(3), intent(in) :: Rij
@@ -3873,7 +3925,7 @@ subroutine Mk_integrals(Mk_ints, Rij, Mk)
 
     ncomps = size(Mk_ints, 2)
 
-    call Tk_integrals('es', Mk_ints, nnbas, ncomps, Rij)
+    call Tk_integrals('es', Mk_ints, Rij)
 
     ! get symmetry factors
     allocate(factors(ncomps))
@@ -4133,8 +4185,6 @@ end subroutine chcase
 subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb, coords,&
                           & charges, dalwrk)
 
-    external :: Tk_integrals
-
     integer, intent(in) :: nbas, nocc, norb
     real(dp), dimension(:), intent(in) :: denmat
     real(dp), dimension(:), intent(in) :: mofckmat
@@ -4220,7 +4270,7 @@ subroutine pe_save_density(denmat, mofckmat, cmo, nbas, nocc, norb, coords,&
     allocate(T0_ints(nnbas,1)); T0_ints = 0.0d0
     Ene = 0.0d0
     do i = 1, corenucs
-        call Tk_integrals('es', T0_ints, nnbas, 1, Rc(:,i))
+        call Tk_integrals('es', T0_ints, Rc(:,i))
         T0_ints = Zc(1,i) * T0_ints
         Ene = Ene + dot(denmat, T0_ints(:,1))
     end do
@@ -5045,7 +5095,7 @@ subroutine compute_mep(denmats)
         allocate(Tk_ints(nnbas,1))
         k = 1
         do i = mep_start, mep_finish
-            call Tk_integrals('es', Tk_ints(:,1), nnbas, 1, Rp(:,i))
+            call Tk_integrals('es', Tk_ints, Rp(:,i))
             Vqm(k,1) = dot(denmats, Tk_ints(:,1))
             do j = 1, qmnucs
                 call multipole_potential(Vqm(k,1), Rp(:,i) - Rm(:,j), Zm(:,j))
@@ -5358,7 +5408,7 @@ subroutine compute_mep(denmats)
             allocate(Tk_ints(nnbas,3))
             k = 1
             do i = mep_start, mep_finish
-                call Tk_integrals('es', Tk_ints, nnbas, 3, Rp(:,i))
+                call Tk_integrals('es', Tk_ints, Rp(:,i))
                 do j = 1, 3
                     Fqm(k,j) = dot(denmats, Tk_ints(:,j))
                 end do
@@ -6120,7 +6170,7 @@ subroutine pe_diis_solver_charges(Mkinds, Fs)
     IF(NTSATM.EQ.960) DISM0 = 0.1000D+00*aa2au 
     FACTOR  = 1.0d0/SQRT(4.0d0*pi)/1.07D+00
     DSCALE   = (eps - 1.0d0)/eps 
-    print *, dscale
+    if(pe_debug) write(luout,'(a,F9.4)') 'eps =', dscale
     
     do n = 1, ndens
       
@@ -7450,14 +7500,47 @@ subroutine pe_compute_london(fckmats)
 
     integer :: k, lu
     real(dp), dimension(:,:), allocatable :: Mkinds
+    real(dp), dimension(:,:), allocatable :: Qinds
     logical :: lexist
 
     fckmats = 0.0d0
 
+! static multipole moment contribution
     if (lmul(0)) call lao_multipoles(M0s, fckmats)
     if (lmul(1)) call lao_multipoles(M1s, fckmats)
     if (lmul(2)) call lao_multipoles(M2s, fckmats)
 
+! cosmo contribution
+    if(pe_sol) then
+        allocate(Qinds(1,nsurp))
+        if (myid == 0) then
+            inquire(file='pe_induced_charges.bin', exist=lexist)
+        end if
+#if     defined(VAR_MPI)
+        if (nprocs > 1) then
+            call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
+        end if
+#endif
+        if (lexist) then
+            if (myid == 0) then
+                call openfile('pe_induced_charges.bin', lu, 'old', 'unformatted')
+                rewind(lu)
+                read(lu) Qinds
+                close(lu)
+            end if
+        else
+            stop 'ERROR: pe_induced_charges.bin does not exist'
+        end if
+#if defined(VAR_MPI)
+        if (nprocs > 1) then
+            call mpi_bcast(Mkinds, nsurp, rmpi, 0, comm, ierr)
+        end if
+#endif
+        call lao_cosmo(Qinds, fckmats)
+        deallocate(Qinds, stat=ierr)
+    endif
+
+! polarization contribution
     if (lpol(1)) then
         allocate(Mkinds(3,npols))
         if (myid == 0) then
@@ -7501,6 +7584,33 @@ end subroutine pe_compute_london
 
 !------------------------------------------------------------------------------
 
+subroutine lao_cosmo(Mks, fckmats)
+
+    real(dp), dimension(:,:), intent(in) :: Mks
+    real(dp), dimension(:), intent(inout) :: fckmats
+
+    integer :: site, ncomps
+    integer :: i, j, ifrom, ito
+    real(dp), dimension(:,:,:), allocatable :: Mk_ints
+
+    ncomps = size(Mks, 1)
+    allocate(Mk_ints(n2bas,3,ncomps))
+    do site = 1, nsurp
+        call Mk_lao_integrals(Mk_ints, Rsp(:,site), Mks(:,site))
+
+        ! update for all directions of the magnetic field
+        do j = 1, 3
+            ifrom = (j - 1) * n2bas + 1
+            ito   = j * n2bas
+            fckmats(ifrom:ito) = fckmats(ifrom:ito) + sum(Mk_ints(:,j,:), 2)
+        end do
+    end do
+    deallocate(Mk_ints)
+
+end subroutine lao_cosmo
+
+!------------------------------------------------------------------------------
+
 subroutine lao_multipoles(Mks, fckmats, linduced)
 
     real(dp), dimension(:,:), intent(in) :: Mks
@@ -7509,7 +7619,6 @@ subroutine lao_multipoles(Mks, fckmats, linduced)
 
     integer :: i, j, ifrom, ito
     integer :: site, ncomps
-    real(dp), dimension(:), allocatable :: symfacs
     real(dp), dimension(:,:,:), allocatable :: Mk_ints
     logical :: pol
 
@@ -7583,5 +7692,50 @@ subroutine Mk_lao_integrals(Mk_ints, Rij, Mk)
     deallocate(factors)
 
 end subroutine Mk_lao_integrals
+
+subroutine thole_damping_for_site(Ri, P1i, dfact)
+
+    real(dp), dimension(3), intent(in) :: Ri
+    real(dp), dimension(6), intent(in) :: P1i
+    real(dp), intent(out) :: dfact
+    !integer, intent(in), optional :: qmnuc
+
+    integer :: a
+    real(dp) :: R2, Ria, uia
+    real(dp) :: alphai, alphaa, alpha
+    integer :: iqmnuc
+
+    real(dp), parameter :: d3i = 1.0d0 / 3.0d0
+    real(dp), parameter :: d6i = 1.0d0 / 6.0d0
+
+    ! set some sensible standards
+    dfact = 1.0d0
+    Ria = 30.0d10
+
+    ! index and check to see if we found a QM nucleus
+    iqmnuc = -1
+
+    ! locate the nuclei closes to site i if it has not been provided
+    do a=1,qmnucs
+        R2 = (Ri(1) - Rm(1,a))**2 + &
+           & (Ri(2) - Rm(2,a))**2 + &
+           & (Ri(3) - Rm(3,a))**2
+        if(R2.le.Ria) then
+            Ria = R2
+            iqmnuc = a
+        endif
+    enddo
+
+    if(iqmnuc.eq.-1) stop 'ERROR: QM damping failed. QM site not found.'
+    alphaa = d3i*(qmpoltensors(1,iqmnuc) &
+               & +qmpoltensors(4,iqmnuc) &
+               & +qmpoltensors(6,iqmnuc))
+    alphai = d3i*(P1i(1)+P1i(4)+P1i(6))
+    alpha = (alphaa*alphai)**d6i
+    uia = sqrt(Ria)*qmdamp / alpha
+
+    dfact = 1.0d0 - (1.0d0 + uia + 0.5d0*uia*uia)*exp(-uia)
+
+end subroutine thole_damping_for_site
 
 end module polarizable_embedding

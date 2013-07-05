@@ -1,0 +1,30 @@
+macro(add_dalton_test _name _labels)
+    add_test(
+        ${_name}
+        ${CMAKE_SOURCE_DIR}/DALTON/test/TEST -dalton ${CMAKE_BINARY_DIR}/dalton -log /dev/null -result-directory ${CMAKE_BINARY_DIR}/test_${_name} ${_name}
+        )
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
+macro(add_dalton_perl_test _name _labels)
+    add_test(perl_${_name} ${CMAKE_SOURCE_DIR}/DALTON/test/test.pl --dalton=${CMAKE_BINARY_DIR}/dalton --tstdir=${CMAKE_SOURCE_DIR}/DALTON/test --list=${_name})
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(perl_${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
+macro(add_lsdalton_test _name _labels)
+    add_test(${_name} ${CMAKE_SOURCE_DIR}/LSDALTON/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton ${_name})
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()
+
+macro(add_lslib_test _name _labels)
+    add_test(${_name} ${CMAKE_SOURCE_DIR}/LSDALTON/test/TEST -lsdalton ${CMAKE_BINARY_DIR}/lsdalton -param "-lslib_test" ${_name})
+    if(NOT "${_labels}" STREQUAL "")
+        set_tests_properties(${_name} PROPERTIES LABELS "${_labels}")
+    endif()
+endmacro()

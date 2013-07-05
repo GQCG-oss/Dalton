@@ -25,7 +25,8 @@ should always end with *END OF INPUT.
 This input module defines the way the integrals should be calculated.
 \begin{description}
 
-\item[\Key{SCALAPACK}] Use SCALAPACK matrices. NB: Requires linking to the scalapack lib (provided by MKL)
+\item[\Key{SCALAPACK}] Use SCALAPACK matrices. NB: Requires linking to the scalapack lib (provided by MKL).
+{\bf Warning: The .SCALAPACK keyword cannot be used with the **DEC or *CC sections!}
 \item[\Key{SCALAPACKBLOCKSIZE}] the blocksize used in SCALAPACK matrices
 \item[\Key{CSR}] Use Compressed-Sparse Row matrices. NB: Requires linking to MKL library!
 \item[\Key{TIME}] Activate the printout of timings.
@@ -651,7 +652,7 @@ are possible with the \verb|GGAKey| keyword.
 
 \subsubsection{XCFUN functionals}
 
-Recently some support have been added for using the functionals from the XCFUN lib\cite{XCFUN}. Full 
+Recently some support have been added for using the functionals from the XCFUN lib \textbf{fixme: insert proper reference}. Full 
 support is expected in the next release, but unfortunetly time constraints did not allow for 
 full support in this release. 
 
@@ -1275,8 +1276,8 @@ This keyword will make sure second and fourth moment orbital spreads are printed
 
 
 \item[\Key{Orbital Plot}]\verb| | \newline
-\verb|<orbital specification>|\newline
-Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plottinge other orbitals, use the **PLT option described in section \ref{sec:plt}. 
+\verb|<orbital specification>|\newline	
+Generates .plt file for either the least local or the most local orbitals. To generate .plt files for the least local orbitals use orbital specification   LEASTL, whereas to generate .plt files for the most local orbitals use specification MOSTL. If both least local and most local are wanted, make two \Key{Orbital Plot} sections with each of the specifications. The .plt files may be plotted using for example the UCSF Chimera program package \cite{chimera}. Note: for plottinge other orbitals, use the **PLT option described in section \ref{sec:plt}. Also note that the grid dimensions may be modified as described in Section~\ref{sec:pltgrid}.
 \end{description}
 
 
@@ -1830,7 +1831,7 @@ The density matrix from HF and DFT calculation are saved in a file \emph{dens.re
 The canonical MO coefficients are saved in the file \emph{cmo\_orbitals.u}, while localized molecular orbitals are saved in a file \emph{lcm\_orbitals.u} (if requested).
 The definition of the grid points is described in the **PLTGRID section.
 
-KK fixme: Insert reference to orbital section here!
+Note that it is also possible to generate .plt files for orbitals on the run as described in Section \ref{subsec:orbloc}.
 
 \begin{description}
 \item[\Key{INPUT}] \verb| | \newline
@@ -1898,8 +1899,7 @@ lcm\_orbitals.u \newline
 \section{**PLTGRID}\label{sec:pltgrid}
 Definition of 3-dimensinal grid used for generation of .plt files in **PLT section.
 The default grid choice should suffice for most visualization purposes. This section is only for the advanced user who wishes to modify the default choice of grid.
-
-KK fixme: Insert reference to orbital section here!
+This also modifies the grid used when .plt files for local orbitals are generated on the run, see Section \ref{subsec:orbloc}.
 
 The grid box is defined in the following manner:
 \begin{itemize}

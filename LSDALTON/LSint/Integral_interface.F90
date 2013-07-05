@@ -33,9 +33,10 @@ MODULE IntegralInterfaceMOD
   use matrix_operations, only: mat_dotproduct, matrix_type, mtype_unres_dense,&
        & mat_daxpy, mat_init, mat_free, mat_write_to_disk, mat_print, mat_zero,&
        & mat_scal, mat_mul, mat_assign, mat_trans, mat_copy, mat_add
-  use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym, mcweeney_purify
+  use matrix_util, only: mat_get_isym, util_get_symm_part,util_get_antisymm_part, matfull_get_isym, mcweeney_purify, &
+                         util_get_symm_and_antisymm_part_full
   use memory_handling, only: mem_alloc, mem_dealloc
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use screen_modMPI, only: mpicopy_screen
   use lsmpi_type!, only: ls_mpiFinalizeBuffer, ls_mpiInitBuffer, &
 !       & LSMPIBROADCAST,  ls_mpibcast, get_rank_for_comm
@@ -61,7 +62,7 @@ MODULE IntegralInterfaceMOD
        & II_get_magderivOverlap,II_get_maggradOverlap,II_get_magderivOverlapR,&
        & II_get_magderivOverlapL,II_get_ep_integrals,II_get_ep_integrals2,&
        & II_get_ep_integrals3,II_GET_MOLECULAR_GRADIENT,&
-       & II_get_twoElectron_gradient,II_get_K_gradient,&
+       & II_get_twoElectron_gradient,II_get_K_gradient,II_get_K_gradientfull,&
        & II_get_regular_K_gradient,II_get_J_gradient,&
        & II_get_J_gradient_regular,II_get_oneElectron_gradient,&
        & II_get_ne_gradient,II_get_kinetic_gradient,II_get_nucpot,&
@@ -70,8 +71,8 @@ MODULE IntegralInterfaceMOD
        & II_get_prop_expval,II_get_integral,II_get_integral_full,&
        & II_get_sphmom,II_carmom_to_shermom,II_get_3center_overlap,&
        & II_get_2center_eri,II_get_4center_eri,II_get_4center_eri_diff,&
-       & II_precalc_ScreenMat, &
-#ifdef VAR_LSMPI
+       & II_get_nucel_diff,II_precalc_ScreenMat, &
+#ifdef VAR_MPI
        & II_bcast_screen, II_screeninit, II_screenfree,&
 #endif
        & II_get_2int_ScreenMat,II_get_maxGabelm_ScreenMat,II_setIncremental,&
@@ -1039,7 +1040,6 @@ call II_split_dmats(DmatLHS,DmatRHS,ndlhs,ndrhs,DLHS,DRHS,symLHS,symRHS,nlhs,nrh
 
 
 IF (nlhs.EQ. 0) RETURN
-
 ! Actual calculation
 
 nAtoms = setting%molecule(1)%p%nAtoms
@@ -1076,7 +1076,7 @@ setting%scheme%daScreen_THRLOG = 0
 call initIntegralOutputDims(setting%Output,3,nAtoms,1,1,1)
 call ls_get_exchange_mat(AORdefault,AORdefault,AORdefault,AORdefault,&
      &                   Oper,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ! Hack - since symmetry is currently turned off in exchange the resultTensor 
 !        currently has dimension 3,nAtom*4
   call mem_alloc(grad,3,nAtoms*4)
@@ -1111,6 +1111,181 @@ setting%scheme%daScreen_THRLOG = Dascreen_thrlog
 
 SETTING%SCHEME%CS_THRESHOLD = OLDTHRESH
 END SUBROUTINE II_get_regular_K_gradient
+
+!> \brief Calculates the exchange contribution to the molecular gradient
+!> \author S. Reine
+!> \date 2010-03-01
+!> \param kGrad The exchange gradient
+!> \param DmatLHS The left-hand-side (or first electron) density matrix
+!> \param DmatRHS The reft-hand-side (or second electron) density matrix
+!> \param ndlhs The number of LHS density matrices
+!> \param ndrhs The number of RHS density matrices
+!> \param setting Integral evalualtion settings
+!> \param lupri Default print unit
+!> \param luerr Unit for error printing
+SUBROUTINE II_get_K_gradientfull(kGrad,DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,setting,lupri,luerr)
+IMPLICIT NONE
+TYPE(LSSETTING)               :: setting
+Integer,intent(IN)            :: ndlhs,ndrhs,lupri,luerr,nbast
+Real(realk),intent(INOUT)     :: kGrad(3,setting%molecule(1)%p%nAtoms)
+Real(realk),intent(IN)         :: DmatLHS(nbast,nbast,ndlhs)
+Real(realk),intent(IN)         :: DmatRHS(nbast,nbast,ndrhs)
+!
+logical                       :: ADMMexchange
+call time_II_operations1()
+ADMMexchange = setting%scheme%ADMM_EXCHANGE
+IF (setting%scheme%ADMM_GCBASIS) ADMMexchange = .FALSE.
+IF (ADMMexchange) THEN
+   call lsquit('ADMM exchange not implemented for full Dmat.',-1)
+ELSE
+   CALL II_get_regular_K_gradientfull(kGrad,DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,setting,lupri,luerr)
+ENDIF
+call time_II_operations2(JOB_II_GET_K_GRADIENT)
+END SUBROUTINE II_get_K_gradientfull
+
+!> \brief Calculates the regular exchange contribution to the molecular gradient
+!> \author S. Reine
+!> \date 2010-03-01
+!> \param kGrad The exchange gradient
+!> \param DmatLHS The left-hand-side (or first electron) density matrix
+!> \param DmatRHS The reft-hand-side (or second electron) density matrix
+!> \param ndlhs The number of LHS density matrices
+!> \param ndrhs The number of RHS density matrices
+!> \param setting Integral evalualtion settings
+!> \param lupri Default print unit
+!> \param luerr Unit for error printing
+SUBROUTINE II_get_regular_K_gradientfull(kGrad,DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,setting,lupri,luerr)
+IMPLICIT NONE
+TYPE(LSSETTING) :: SETTING
+Real(realk),intent(INOUT)       :: kGrad(3,setting%molecule(1)%p%nAtoms)
+Integer,intent(IN)            :: lupri,luerr,ndlhs,ndrhs,nbast
+Real(realk),intent(IN)         :: DmatLHS(nbast,nbast,ndlhs)
+Real(realk),intent(IN)         :: DmatRHS(nbast,nbast,ndrhs)
+integer :: Oper
+IF (SETTING%SCHEME%CAM) THEN
+  Oper = CAMOperator       !Coulomb attenuated method
+ELSEIF (SETTING%SCHEME%SR_EXCHANGE) THEN
+  Oper = ErfcOperator      !Short-Range Coulomb screened exchange
+ELSE
+  Oper = CoulombOperator   !Regular Coulomb metric 
+ENDIF
+call II_get_regular_K_gradientmixedfull(kGrad,DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,setting,&
+     & AORdefault,AORdefault,AORdefault,AORdefault,Oper,lupri,luerr)
+
+end SUBROUTINE II_get_regular_K_gradientfull
+
+
+!> \brief Calculates the regular exchange contribution to the molecular gradient
+!> \author S. Reine
+!> \date 2010-03-01
+!> \param kGrad The exchange gradient
+!> \param DmatLHS The left-hand-side (or first electron) density matrix
+!> \param DmatRHS The reft-hand-side (or second electron) density matrix
+!> \param ndlhs The number of LHS density matrices
+!> \param ndrhs The number of RHS density matrices
+!> \param setting Integral evalualtion settings
+!> \param lupri Default print unit
+!> \param luerr Unit for error printing
+SUBROUTINE II_get_regular_K_gradientmixedfull(kGrad,DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,setting,&
+     & AO1,AO2,AO3,AO4,Oper,lupri,luerr)
+IMPLICIT NONE
+TYPE(LSSETTING) :: SETTING
+Real(realk),intent(INOUT)       :: kGrad(3,setting%molecule(1)%p%nAtoms)
+Integer,intent(IN)            :: lupri,luerr,ndlhs,ndrhs,AO1,AO2,AO3,AO4,Oper,nbast
+Real(realk),intent(IN)         :: DmatLHS(nbast,nbast,ndlhs)
+Real(realk),intent(IN)         :: DmatRHS(nbast,nbast,ndrhs)
+!Type(matrixp),intent(IN)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
+!
+integer               :: nAtoms,iDmat,I,J
+real(realk)           :: Factor, symthresh,OLDTHRESH
+Integer                :: symLHS(ndlhs),symRHS(ndrhs)
+Integer                :: nlhs,nrhs,Dascreen_thrlog
+!Type(matrixp)          :: DLHS(2*ndlhs),DRHS(2*ndrhs)
+!Type(matrix)           :: DLHS_AO(2*ndlhs),DRHS_AO(2*ndrhs)
+logical                :: Dalink,IntegralTransformGC
+Real(realk),pointer   :: DRHS(:,:,:),DRHStmp(:,:,:)
+Real(realk),pointer   :: DLHS(:,:,:),DLHStmp(:,:,:)
+real(realk),pointer :: grad(:,:)
+! Check first if the exchange-contribution should be calculated. If not exit 
+! this subroutine
+IF (SETTING%SCHEME%exchangeFactor.EQ. 0.0E0_realk) RETURN
+
+! we screenin based on the non differentiated integrals
+! so we loosen the screening threshold with a factor 10
+! and use DaLink to speed up the calculation. 
+OLDTHRESH = SETTING%SCHEME%CS_THRESHOLD
+SETTING%SCHEME%CS_THRESHOLD = SETTING%SCHEME%CS_THRESHOLD*1.0E-1
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%K_THR
+
+! Check symetry. Split non-symmetric matrices to symmetric and anti symmetric parts. 
+! Symmetric, anti-symmetric and anti-symmetric, symmetric paris vanish.
+!thresh=MAX(1.0E-14_realk,SETTING%SCHEME%CS_THRESHOLD*SETTING%SCHEME%THRESHOLD)
+!you can chose a screening threshold below 15 but not this thresh.
+symthresh = 1.0E-14_realk
+call II_split_dmatsFULL(DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,DLHStmp,DRHStmp,symLHS,symRHS,nlhs,nrhs,symthresh)
+
+IF (nlhs.EQ. 0) RETURN
+
+! Actual calculation
+
+nAtoms = setting%molecule(1)%p%nAtoms
+IF(setting%IntegralTransformGC)THEN
+   call mem_alloc(DRHS,nbast,nbast,nrhs)
+   call GCAO2AO_transform_fullD(DRHStmp,DRHS,nbast,nrhs,setting,lupri)
+   call mem_alloc(DLHS,nbast,nbast,nlhs)
+   call GCAO2AO_transform_fullD(DLHStmp,DLHS,nbast,nlhs,setting,lupri)
+   IntegralTransformGC = .TRUE.
+   CALL ls_attachDmatToSetting(DLHS,nbast,nbast,nlhs,setting,'LHS',1,3,lupri)
+   CALL ls_attachDmatToSetting(DRHS,nbast,nbast,nrhs,setting,'RHS',2,4,lupri)
+ELSE
+   CALL ls_attachDmatToSetting(DLHStmp,nbast,nbast,nlhs,setting,'LHS',1,3,lupri)
+   CALL ls_attachDmatToSetting(DRHStmp,nbast,nbast,nrhs,setting,'RHS',2,4,lupri)
+   IntegralTransformGC=.FALSE.
+ENDIF
+setting%IntegralTransformGC = .FALSE.
+
+Dalink = setting%scheme%daLinK
+Dascreen_thrlog = setting%scheme%daScreen_THRLOG
+setting%scheme%daLinK = .TRUE.
+setting%scheme%daScreen_THRLOG = 0
+!Calculates the HF-exchange contribution
+
+call initIntegralOutputDims(setting%Output,3,nAtoms,1,1,1)
+call ls_get_exchange_mat(AORdefault,AORdefault,AORdefault,AORdefault,&
+     &                   Oper,GradientSpec,ContractedInttype,SETTING,LUPRI,LUERR)
+#ifdef VAR_MPI
+! Hack - since symmetry is currently turned off in exchange the resultTensor 
+!        currently has dimension 3,nAtom*4
+  call mem_alloc(grad,3,nAtoms*4)
+  CALL retrieve_Output(lupri,setting,grad,.FALSE.)
+  Kgrad(:,1:nAtoms) = grad(:,1:nAtoms)
+  call mem_dealloc(grad)
+#else
+CALL retrieve_Output(lupri,setting,kGrad,.FALSE.)
+#endif
+
+Factor = SETTING%SCHEME%exchangeFactor
+do I=1,3
+   do J=1,natoms
+      kgrad(I,J)=Factor*kGrad(I,J)
+   enddo
+enddo
+
+CALL ls_freeDmatFromSetting(setting)
+IF(IntegralTransformGC)THEN
+   call mem_dealloc(DRHS)
+   call mem_dealloc(DLHS)
+ENDIF
+setting%IntegralTransformGC = IntegralTransformGC
+
+! Free allocated memory
+call II_free_split_dmatsFull(DLHStmp,DRHStmp)
+setting%scheme%daLinK=Dalink
+setting%scheme%daScreen_THRLOG = Dascreen_thrlog
+
+SETTING%SCHEME%CS_THRESHOLD = OLDTHRESH
+END SUBROUTINE II_get_regular_K_gradientmixedfull
 
 !> \brief Driver for calculating the electron-electron repulsion contribution to the molecular gradient
 !> \author S. Reine
@@ -2362,6 +2537,68 @@ ENDIF
 
 END SUBROUTINE II_get_4center_eri_diff
 
+!> \brief Calculates the differentiated nuclear-electron attraction integral tensor: d/dR_e sum_C (ab|C)Z_C 
+!> \author S. Reine
+!> \date 2013-02-05
+!> \param lupri Default print unit
+!> \param luerr Default error print unit
+!> \param setting Integral evalualtion settings
+!> \param outputintegral the differentiated ne d/dR_e sum_C (ab|C)Z_C
+!> \param DIM1 the dimension of orbital alpha
+!> \param DIM2 the dimension of orbital beta
+!> \param DIM5 the number of differential components
+!> \param geoderiv Specifies the geoemetrical derivative order
+SUBROUTINE II_get_nucel_diff(LUPRI,LUERR,SETTING,outputintegral,dim1,dim2,dim5,geoderiv)
+IMPLICIT NONE
+TYPE(LSSETTING)       :: SETTING
+INTEGER               :: LUPRI,LUERR,dim1,dim2,dim5
+REAL(REALK),target,intent(inout) :: outputintegral(:,:,:,:,:) !dim1,dim2,1,1,dim5
+Integer,optional      :: geoderiv
+!
+Logical             :: dogeoderiv,nofamily
+integer             :: i,j,k,l,n,intSpec,geoOrder
+
+!set threshold 
+SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
+
+!Specify geometrical derivative order if any
+dogeoderiv = .FALSE.
+geoOrder   = 0
+IF (present(geoderiv)) THEN
+  dogeoderiv = geoderiv.NE.0
+  geoOrder   = geoderiv
+ENDIF
+
+IF (dogeoderiv) THEN
+  IF (geoderiv.GE.1) THEN
+    intSpec = GeoDerivSpec
+  ENDIF
+
+  !Simen Hack - GeoDerivSpec currently not working with family-type basis sets
+  nofamily = setting%scheme%nofamily
+  setting%scheme%nofamily = .TRUE.
+ELSE
+  intSpec = RegularSpec
+ENDIF
+
+
+call initIntegralOutputDims(setting%output,dim1,dim2,1,1,dim5)
+call ls_dzero(outputintegral,dim1*dim2*dim5)
+ 
+CALL ls_getIntegrals(AORdefault,AORdefault,AONuclear,AOEmpty,&
+     &NucpotOperator,intSpec,ContractedInttype,SETTING,LUPRI,LUERR,geoOrder)
+
+IF(setting%IntegralTransformGC)THEN
+  call lsquit('Error in II_get_nucel_diff - IntegralTransformGC not implemented',lupri)
+ELSE
+  CALL retrieve_Output(lupri,setting,outputintegral,setting%IntegralTransformGC)
+  IF (dogeoderiv) THEN
+    setting%scheme%nofamily = nofamily
+  ENDIF
+ENDIF
+
+END SUBROUTINE II_get_nucel_diff
+
 !> \brief Calculates and stores the screening integrals
 !> \author T. Kjaergaard
 !> \date 2010
@@ -2483,7 +2720,7 @@ IF(SETTING%SCHEME%saveGABtoMem)THEN
     ENDDO
  ENDIF
 ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 call ls_mpibcast(IISCREEN,infpar%master,setting%comm)
 call II_bcast_screen(setting%comm)
 #endif
@@ -2491,7 +2728,7 @@ call time_II_operations2(JOB_II_precalc_ScreenMat)
 
 END SUBROUTINE II_precalc_ScreenMat
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 subroutine II_bcast_screen(comm)
 implicit none
 integer(kind=ls_mpik) :: comm,Master,mynum
@@ -3218,6 +3455,131 @@ DO idmat=1,ndrhs
 ENDDO
 
 END SUBROUTINE II_free_split_dmats
+
+!> \brief split the dmats
+!> \author S. Reine
+!> \date 2010
+!> \param DmatLHS The left-hand-side density matrix
+!> \param DmatRHS The right-hand-side density matrix
+!> \param ndlhs The number of LHS density matrices
+!> \param ndrhs The number of RHS density matrices
+!> \param DLHS The output left-hand-side density matrix
+!> \param DRHS The output right-hand-side density matrix
+!> \param symLHS The symmetry of LHS density matrices
+!> \param symRHS The symmetry of RHS density matrices
+!> \param nlhs The output number of LHS density matrices
+!> \param nrhs The output number of RHS density matrices
+SUBROUTINE II_split_dmatsfull(DmatLHS,DmatRHS,nbast,ndlhs,ndrhs,DLHS,DRHS,&
+     & symLHS,symRHS,nlhs,nrhs,symthresh)
+  implicit none
+  Integer,intent(in)          :: ndlhs,ndrhs,nbast
+  real(realk),intent(IN)      :: DmatLHS(nbast,nbast,ndlhs),DmatRHS(nbast,nbast,ndrhs)
+  Integer,intent(inout)       :: symLHS(ndlhs),symRHS(ndrhs)
+  Integer,intent(inout)       :: nlhs,nrhs
+  real(realk),pointer         :: DLHS(:,:,:),DRHS(:,:,:)
+  Real(realk),intent(in) :: symthresh 
+  !
+  Integer                :: idmat,isym, ILHS, IRHS
+
+  IF (ndlhs.NE.ndrhs) CALL lsquit('Error in II_split_dmats: ndlhs different from ndrhs.',-1)
+
+  ! Make symmetry check
+!  symthresh = 1.0E-14_realk
+  do idmat=1,ndlhs
+     ILHS = matfull_get_isym(DmatLHS(:,:,idmat),nbast,nbast,symthresh)
+     IRHS = matfull_get_isym(DmatRHS(:,:,idmat),nbast,nbast,symthresh)
+     if(ILHS==IRHS) then ! Set symmetries to those found by mat_get_isym
+        symLHS(idmat) = ILHS
+        symRHS(idmat) = IRHS
+     else
+        ! If symmetries are different, set them both to have no symmetry (=3)
+        ! to make all special cases run through.
+        print '(a,2i4)', 'WARNING: Different symmetries in II_split_dmats:', ILHS,IRHS
+        symLHS(idmat) = 3
+        symRHS(idmat) = 3
+     end if
+  end do
+
+  nlhs = 0
+  DO idmat=1,ndlhs
+     isym = symLHS(idmat)
+     If (isym.EQ. 1) THEN
+        nlhs = nlhs + 1
+     ELSE IF  (isym.EQ. 3) THEN
+        nlhs = nlhs + 2
+     ELSE IF ((isym.EQ. 2).OR.(isym.EQ. 4)) THEN
+        ! Do nothing (i.e. remove the component from the calculation)
+     ELSE
+        call lsquit('Error in II_split_dmats. isym wrong in lhs-loop!',-1)
+     ENDIF
+  ENDDO
+  IF (nlhs.EQ. 0) RETURN
+
+  call mem_alloc(DLHS,nbast,nbast,nlhs)
+  nlhs = 0
+  DO idmat=1,ndlhs
+     isym = symLHS(idmat)
+     If (isym.EQ. 1) THEN
+        nlhs = nlhs + 1
+        call dcopy(nbast*nbast,DmatLHS(:,:,idmat),1,DLHS(:,:,nlhs),1)
+     ELSE IF  (isym.EQ. 3) THEN
+        nlhs = nlhs + 2
+        ! Asym  DLHS(:,:,nlhs-1)
+        ! AntiSym  DLHS(:,:,nlhs)
+        call util_get_symm_And_antisymm_part_full(DmatLHS(:,:,idmat),DLHS(:,:,nlhs-1),DLHS(:,:,nlhs),nbast)
+     ELSE IF ((isym.EQ. 2).OR.(isym.EQ. 4)) THEN
+        ! Do nothing (i.e. remove the component from the calculation)
+     ELSE
+        call lsquit('Error in II_split_dmats. isym wrong in lhs-loop!',-1)
+     ENDIF
+  ENDDO
+
+  nrhs = 0
+  DO idmat=1,ndrhs
+     isym = symRHS(idmat)
+     If (isym.EQ. 1) THEN
+        nrhs = nrhs + 1
+     ELSE IF  (isym.EQ. 3) THEN
+        nrhs = nrhs + 2
+     ELSE IF ((isym.EQ. 2).OR.(isym.EQ. 4)) THEN
+        ! Do nothing (i.e. remove the component from the calculation)
+     ELSE
+        call lsquit('II_split_dmats in II_symmetrize_dmats. isym wrong in rhs-loop!',-1)
+     ENDIF
+  ENDDO
+  call mem_alloc(DRHS,nbast,nbast,nrhs)
+
+  nrhs = 0
+  DO idmat=1,ndrhs
+     isym = symRHS(idmat)
+     If (isym.EQ. 1) THEN
+        nrhs = nrhs + 1
+        call dcopy(nbast*nbast,DmatRHS(:,:,idmat),1,DRHS(:,:,nrhs),1)
+     ELSE IF  (isym.EQ. 3) THEN
+        nrhs = nrhs + 2
+        ! Asym  DRHS(:,:,nrhs-1)
+        ! AntiSym  DRHS(:,:,nrhs)
+        call util_get_symm_And_antisymm_part_full(DmatRHS(:,:,idmat),DRHS(:,:,nrhs-1),DRHS(:,:,nrhs),nbast)
+     ELSE IF ((isym.EQ. 2).OR.(isym.EQ. 4)) THEN
+        ! Do nothing (i.e. remove the component from the calculation)
+     ELSE
+        call lsquit('II_split_dmats in II_symmetrize_dmats. isym wrong in rhs-loop!',-1)
+     ENDIF
+  ENDDO
+
+END SUBROUTINE II_split_dmatsfull
+
+!> \brief free the split dmats
+!> \author T. Kjaergaard
+!> \date 2013
+!> \param DLHS The left-hand-side density matrix
+!> \param DRHS The right-hand-side density matrix
+SUBROUTINE II_free_split_dmatsfull(DLHS,DRHS)
+implicit none
+real(realk),pointer         :: DLHS(:,:,:),DRHS(:,:,:)
+call mem_dealloc(DLHS)
+call mem_dealloc(DRHS)
+END SUBROUTINE II_free_split_dmatsfull
 
 !> \brief calculate ...
 !> \author S. Reine
@@ -4207,10 +4569,8 @@ DO I=1,4
    setting%MOLECULE(I)%p => Point(I)%p
 ENDDO
 call initIntegralOutputDims(setting%output,5,5,5,5,1)
-setting%scheme%intprint=1000
 CALL ls_getIntegrals(AOD1p1cSeg,AOD1p1cSeg,AOD1p1cSeg,AOD1p1cSeg,&
      &CoulombOperator,RegularSpec,ContractedInttype,SETTING,LUPRI,LUERR)
-setting%scheme%intprint=0
 IF(setting%IntegralTransformGC)THEN
    call lsquit('Error in II_get_test4center_eri - IntegralTransformGC not implemented',lupri)
 ELSE
@@ -4680,6 +5040,14 @@ logical             :: ADMMexchange,testNelectrons,unres,grid_done
 real(realk)         :: ex2(1),ex3(1),Edft_corr,ts,te,hfweight
 integer             :: nbast,nbast2,AOdfold,AORold,AO2,AO3
 character(21)       :: L2file,L3file
+real(realk)         :: GGAXfactor
+
+IF (setting%scheme%cam) THEN
+  GGAXfactor = 1.0E0_realk
+ELSE
+  GGAXfactor = setting%scheme%exchangeFactor
+ENDIF
+
 IF(ndmat.GT.1)call lsquit('II_get_admm_exchange_mat ndmat.GT.1',-1)
 nbast = F%nrow
 unres = matrix_type .EQ. mtype_unres_dense
@@ -4750,13 +5118,9 @@ call mat_zero(F2(1))
 !Subtract XC-correction
 
 !****Calculation of Level 2 XC matrix from level 2 Density matrix starts here
-!FOR CAM  
-!WORD = "Camcompx" ! lr only GGAX
-!WORD = "Camx" ! sr only GGAX
-WORD = "BX"  ! full Becke
-call II_DFTsetFunc(WORD(1:80),hfweight) !Here hfweight is only used as a dummy variable
+call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight) !Here hfweight is only used as a dummy variable
 !Print the functional used at this stage 
-call DFTREPORT(lupri) 
+!call DFTREPORT(lupri) 
 !use this call to add a functional instead of replacing it. 
 !call II_DFTaddFunc(setting%scheme%dft%dftfunc,hfweight)
 
@@ -4771,7 +5135,7 @@ setting%scheme%dft%testNelectrons = setting%scheme%ADMM_MCWEENY
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast2,D2,F2,EX2,1)
 !Transform to level 3
 call transformed_F2_to_F3(TMPF,F2(1),setting,lupri,luerr,nbast2,nbast,AO2,AO3,GC2,GC3)
-call mat_daxpy(-setting%scheme%exchangeFactor,TMPF,dXC)
+call mat_daxpy(-GGAXfactor,TMPF,dXC)
 setting%scheme%dft%testNelectrons = testNelectrons
 
 !Re-set to default (level 3) grid
@@ -4788,13 +5152,13 @@ setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 CALL mat_init(F3(1),nbast,nbast)
 CALL mat_zero(F3(1))
 call II_get_xc_Fock_mat(LUPRI,LUERR,SETTING,nbast,(/D/),F3,EX3,1)
-CALL mat_daxpy(setting%scheme%exchangeFactor,F3(1),dXC)
+CALL mat_daxpy(GGAXfactor,F3(1),dXC)
 CALL mat_free(F3(1))
 
-EdXC = (EX3(1)-EX2(1))*setting%scheme%exchangeFactor
+EdXC = (EX3(1)-EX2(1))*GGAXfactor
 
 !Restore dft functional to original
-IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%dftfunc,hfweight)
+IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
          
 !the remainder =================================================
 !call mat_zero(TMPF)
@@ -4922,22 +5286,29 @@ type(MatrixP),intent(in)      :: DmatLHS(ndlhs),DmatRHS(ndrhs)
 !
 real(realk),pointer :: grad_k2(:,:),grad_xc2(:,:),grad_XC3(:,:),ADMM_proj(:,:)
 integer             :: nbast,nbast2,AO2,AO3,idmat,nAtoms
-real(realk)         :: ts,te,hfweight,EX3
+real(realk)         :: ts,te,hfweight
 real(realk)         :: Exc2(1)
 type(Matrix),target :: D2
-type(Matrix)        :: k2,xc2,zeromat,F3
+type(Matrix)        :: k2,xc2,zeromat
 type(matrixp)       :: D2p(1)
 logical             :: GC3,GC2,testNelectrons,grid_done,DSym,unres
 integer             :: AOdfold,AORold
 character(len=80)   :: WORD
 character(21)       :: L2file,L3file
+real(realk)         :: GGAXfactor
 !
 call lstimer('START',ts,te,lupri)
 
+IF (setting%scheme%cam) THEN
+  GGAXfactor = 1.0E0_realk
+ELSE
+  GGAXfactor = setting%scheme%exchangeFactor
+ENDIF
+
 IF (ndrhs.NE.ndlhs) call lsquit('II_get_ADMM_K_gradient:Different LHS/RHS density matrices not implemented',-1)
 
-admm_Kgrad = 0E0_realk
 nAtoms = setting%molecule(1)%p%nAtoms
+call ls_dzero(admm_Kgrad,3*nAtoms)
 nbast  = DmatLHS(1)%p%nrow
 unres  = matrix_type .EQ. mtype_unres_dense
 
@@ -4984,18 +5355,14 @@ DO idmat=1,ndrhs
    call II_get_exchange_mat(lupri,luerr,setting,D2,1,Dsym,k2)
    
    call mem_alloc(grad_k2,3,nAtoms)
-   grad_k2 = 0E0_realk
+   call ls_dzero(grad_k2,3*nAtoms)
    call II_get_regular_K_gradient(grad_k2,D2p,D2p,1,1,setting,lupri,luerr)
    call DAXPY(3*nAtoms,4E0_realk,grad_k2,1,admm_Kgrad,1) !Include factor 4 to use D instead of 2D
    call mem_dealloc(grad_k2)
    
    ! XC-correction
    !****Calculation of Level 2 XC gradient from level 2 Density matrix starts here
-   !FOR CAM  
-   !WORD = "Camcompx" !lr only GGA X
-   !WORD = "Camx"     !sr only GGA X
-   WORD = "BX"      !full Becke
-   call II_DFTsetFunc(WORD(1:80),hfweight) !Here hfweight is only used as a dummy variable
+   call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_ADMML2),hfweight)
    
    !choose the ADMM Level 2 grid
    setting%scheme%dft%igrid = Grid_ADMML2
@@ -5008,13 +5375,14 @@ DO idmat=1,ndrhs
    !Level 2 XC matrix
    call mat_init(xc2,nbast2,nbast2)
    call mat_zero(xc2)
+   Exc2(1) = 0.0E0_realk
    call II_get_xc_Fock_mat(lupri,luerr,setting,nbast2,D2,xc2,Exc2,1)
  
    !Level 2 XC gradient
    call mem_alloc(grad_xc2,3,nAtoms)
-   grad_xc2 = 0E0_realk
+   call ls_dzero(grad_xc2,3*nAtoms)
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast2,D2,grad_xc2,nAtoms)
-   call DAXPY(3*nAtoms,-setting%scheme%exchangeFactor,grad_xc2,1,admm_Kgrad,1)
+   call DAXPY(3*nAtoms,-GGAXfactor,grad_xc2,1,admm_Kgrad,1)
    call mem_dealloc(grad_xc2)
    
 
@@ -5026,31 +5394,26 @@ DO idmat=1,ndrhs
    setting%IntegralTransformGC = GC3     !Restore GC transformation to level 3
 
    call mem_alloc(grad_XC3,3,nAtoms)
-   grad_XC3(:,:) = 0E0_realk
+   call ls_dzero(grad_XC3,3*nAtoms)
    call II_get_xc_geoderiv_molgrad(lupri,luerr,setting,nbast,DmatLHS(idmat)%p,grad_XC3,nAtoms)
-   call DAXPY(3*nAtoms,setting%scheme%exchangeFactor,grad_XC3,1,admm_Kgrad,1)
+   call DAXPY(3*nAtoms,GGAXfactor,grad_XC3,1,admm_Kgrad,1)
    call mem_dealloc(grad_XC3)
 
    
    ! set back the default choice for testing the nb. of electrons
    setting%scheme%dft%testNelectrons = testNelectrons
    
-   ! Additional (reorthonormalisation like) projection terms coming from the derivative of the small d2 Density matrix
+   ! Additional (reorthonormalisation like) projection terms coming from the 
+   ! derivative of the small d2 Density matrix
+   ! calculating Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
    call mem_alloc(ADMM_proj,3,nAtoms)
-   ADMM_proj = 0E0_realk
-   call mat_init(zeromat,nbast2,nbast2)
-   call mat_zero(zeromat)
+   call ls_dzero(ADMM_proj,3*nAtoms)
 
-   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,zeromat,DmatLHS(idmat)%p,D2,&
-        &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
+   call get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,DmatLHS(idmat)%p,D2,&
+        &   nbast2,nbast,nAtoms,GGAXfactor,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) 2 k22(D2)))
    call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
-   call get_ADMM_K_gradient_projection_term(ADMM_proj,zeromat,xc2,DmatLHS(idmat)%p,D2,&
-        &   nbast2,nbast,nAtoms,AO2,AO3,GC2,GC3,setting,lupri,luerr) ! Tr(T^x D3 trans(T) [2 k22(D2) - xc2(D2)]))
-   call DAXPY(3*nAtoms,2E0_realk,ADMM_proj,1,admm_Kgrad,1)
-
 
    !FREE MEMORY
-   call mat_free(zeromat)
    call mem_dealloc(ADMM_proj)
    call mat_free(k2)
    call mat_free(xc2)
@@ -5060,49 +5423,49 @@ ENDDO !idmat
 call DSCAL(3*nAtoms,0.25_realk,admm_Kgrad,1)
 
 !Restore dft functional to original
-IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%dftfunc,hfweight)
+IF (setting%do_dft) call II_DFTsetFunc(setting%scheme%dft%DFTfuncObject(dftfunc_Default),hfweight)
 
 CONTAINS
-    SUBROUTINE get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,D3,D2,n2,n3,nAtoms,AO2,AO3,GCAO2,GCAO3,setting,lupri,luerr)
+    SUBROUTINE get_ADMM_K_gradient_projection_term(ADMM_proj,k2,xc2,D3,D2,n2,n3,nAtoms,GGAXfactor,&
+      &                                            AO2,AO3,GCAO2,GCAO3,setting,lupri,luerr)
         implicit none
         type(lssetting),intent(inout) :: setting
         real(realk),intent(inout)  :: ADMM_proj(3,nAtoms)
-        type(matrix),intent(in)    :: D3 !level 3 matrix input 
-        type(matrix),intent(in)    :: D2 !level 2 matrix input 
-        type(matrix),intent(in)    :: k2 !level 2 exact exchange matrix (not transformed to level3)
-        type(matrix),intent(in)    :: xc2 !level 2 exchange-corr. matrix (not transformed to level3)
+        type(matrix),intent(in)    :: D3 !Regular density matrix
+        type(matrix),intent(in)    :: D2 !ADMM projected density matrix
+        type(matrix),intent(in)    :: k2 !ADMM exchange matrix k2(d2)
+        type(matrix),intent(in)    :: xc2 !ADMM XC matrix xc2(d2)
         integer,intent(in)         :: nAtoms
         integer,intent(in)         :: n2,n3,lupri,luerr
         integer,intent(in)         :: AO2,AO3
         logical,intent(in)         :: GCAO2,GCAO3
+        real(realk),intent(in)     :: GGAXfactor
         !
         type(matrix),target        :: A22,B32,C22
-        type(matrix)               :: S22,S22inv,S23,T23,tmp32,tmp22
+        type(matrix)               :: S22,S22inv,T23,tmp32,tmp22
         type(matrixp)              :: tmpDFD(1)
         real(realk),pointer        :: reOrtho1(:,:)
         real(realk),pointer        :: reOrtho2(:,:)
         integer :: i,j
         !
         call mat_init(T23,n2,n3)
-        call mat_init(S23,n2,n3)
+        call mat_zero(T23)
         call get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
-        ! A22 = 2*k2(d2) - xc2(d2)
+        ! A22 = 2*[ k2(d2) - xc2(d2) ]
         call mat_init(A22,n2,n2)
         call mat_zero(A22)
-        call mat_add(2E0_realk,k2,-setting%scheme%exchangeFactor*2E0_realk, xc2, A22)
+        call mat_add(2E0_realk,k2,-GGAXfactor*2E0_realk, xc2, A22)
 
         ! S22^(-1)
         call mat_init(S22,n2,n2)
         call mat_zero(S22)
         call mat_init(S22inv,n2,n2)       
-        call mat_zero(S22inv)
         call II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
         call mat_inv(S22,S22inv)
 
         ! B32 = D33 T32 A22 S22inv
         call mat_init(B32,n3,n2)
         call mat_init(tmp32,n3,n2)
-        call mat_zero(B32)
         call mat_mul(D3 ,T23,'n','t',1E0_realk,0E0_realk,B32)
         call mat_mul(B32,A22,'n','n',1E0_realk,0E0_realk,tmp32)
         call mat_mul(tmp32,S22inv,'n','n',1E0_realk,0E0_realk,B32)
@@ -5110,24 +5473,22 @@ CONTAINS
         ! C22 = D22 A22 S22inv
         call mat_init(C22,n2,n2)
         call mat_init(tmp22,n2,n2)
-        call mat_zero(C22)
-        call mat_zero(tmp22)
         call mat_mul(D2 ,A22,'n','n',1E0_realk,0E0_realk,tmp22)
         call mat_mul(tmp22,S22inv,'n','n',1E0_realk,0E0_realk,C22)
         
         ! 2 correction terms similar in the form to the reorthonormalisation gradient term 
         tmpDFD(1)%p => C22
         call mem_alloc(reOrtho2,3,nAtoms)
-        reOrtho2 = 0E0_realk
+	call ls_dzero(reOrtho2,3*nAtoms)
         call II_get_reorthoNormalization_mixed(reOrtho2,tmpDFD,1,AO2,AO2,GCAO2,GCAO2,setting,&
      &                                         lupri,luerr)
         tmpDFD(1)%p => B32
         call mem_alloc(reOrtho1,3,nAtoms)
-        reOrtho1 = 0E0_realk
+	call ls_dzero(reOrtho1,3*nAtoms)
         call II_get_reorthoNormalization_mixed(reOrtho1,tmpDFD,1,AO3,AO2,GCAO3,GCAO2,setting,&
      &                                         lupri,luerr)
 
-        ADMM_proj = 0E0_realk
+	call ls_dzero(ADMM_proj,3*nAtoms)
         call DAXPY(3*nAtoms, 1E0_realk,reOrtho1,1,ADMM_proj,1)
         call DAXPY(3*nAtoms,-1E0_realk,reOrtho2,1,ADMM_proj,1)
         
@@ -5137,7 +5498,6 @@ CONTAINS
         call mat_free(S22inv)
         call mat_free(S22)
         call mat_free(T23)
-        call mat_free(S23)
         call mat_free(A22)
         call mat_free(B32)
         call mat_free(C22)
@@ -5159,8 +5519,9 @@ CONTAINS
    
    
      CALL mat_init(T23,n2,n3)
+     CALL mat_zero(T23)	
      CALL mat_init(S23,n2,n3)
-   
+
      CALL get_T23(setting,lupri,luerr,T23,n2,n3,AO2,AO3,GCAO2,GCAO3)
    
      CALL mat_mul(T23,D,'n','n',1E0_realk,0E0_realk,S23)
@@ -5168,6 +5529,7 @@ CONTAINS
     
      IF (McWeeny) THEN
        CALL mat_init(S22,n2,n3)
+       CALL mat_zero(S22)	
        CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
        CALL McWeeney_purify(S22,D2,purify_failed)
        IF (purify_failed) THEN
@@ -5198,8 +5560,11 @@ CONTAINS
      call io_read_mat(T23,Filename,setting%IO,OnMaster,LUPRI,LUERR)
    ELSE
      CALL mat_init(S22,n2,n2)
+     CALL mat_zero(S22)	
      CALL mat_init(S22inv,n2,n2)
+     CALL mat_zero(S22inv)	
      CALL mat_init(S23,n2,n3)
+     CALL mat_zero(S23)	
      
      CALL II_get_mixed_overlap(lupri,luerr,setting,S22,AO2,AO2,GCAO2,GCAO2)
      CALL II_get_mixed_overlap(lupri,luerr,setting,S23,AO2,AO3,GCAO2,GCAO3)

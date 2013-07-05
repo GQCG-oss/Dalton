@@ -46,14 +46,15 @@
 #endif
 #include <math.h>
 #include <stddef.h>
+#include "general.h"
 
 #define __CVERSION__
 
 #include "functionals.h"
 
 /* INTERFACE PART */
-static int lypr_isgga(void) { return 1; }
-static int lypr_read(const char* conf_line);
+static integer lypr_isgga(void) { return 1; }
+static integer lypr_read(const char* conf_line);
 static real lypr_energy(const FunDensProp* dp);
 static void lypr_first(FunFirstFuncDrv *ds,   real fac, const FunDensProp* dp);
 static void lypr_second(FunSecondFuncDrv *ds, real fac, const FunDensProp* dp);
@@ -74,7 +75,7 @@ Functional LYPrFunctional = {
 };
 
 /* IMPLEMENTATION PART */
-static int
+static integer
 lypr_read(const char* conf_line)
 {
     fun_set_hf_weight(0.0);

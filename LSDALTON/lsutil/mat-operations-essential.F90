@@ -24,7 +24,7 @@ MODULE matrix_operations
    use matrix_operations_dense
    use matrix_operations_scalapack
    use LSTIMING
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    use lsmpi_type, only: MATRIXTY
 #endif
    use matrix_operations_csr
@@ -119,7 +119,7 @@ end type matrixmembuf
 !> \date 2003
 !> \param a Indicates the matrix type (see module documentation) 
      SUBROUTINE mat_select_type(a,lupri,nbast)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
        use infpar_module
        use lsmpi_type
 #endif
@@ -133,7 +133,7 @@ end type matrixmembuf
           WRITE(6,*)'We therefore use the dense unrestricted type - which do not use memory distribution'
        else
           matrix_type = a
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
           IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
             select case(matrix_type)             
@@ -148,7 +148,7 @@ end type matrixmembuf
             case default
                call lsquit("Unknown type of matrix",-1)
             end select
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
           ENDIF
           IF (infpar%mynum.EQ.infpar%master) THEN
              call ls_mpibcast(MATRIXTY,infpar%master,MPI_COMM_LSDALTON)
@@ -189,12 +189,12 @@ end type matrixmembuf
      END SUBROUTINE mat_select_type
 
      SUBROUTINE mat_finalize()
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
        use infpar_module
        use lsmpi_type
 #endif
        implicit none
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
        if(matrix_type.EQ.mtype_scalapack)then
           CALL PDM_GRIDEXIT
        endif
@@ -1627,6 +1627,7 @@ end type matrixmembuf
       integer, intent(in) :: from_row, to_row, from_col, to_col
       type(Matrix), intent(inout) :: Asec  !output
       type(Matrix) :: B,Bsec
+      real(realk),pointer :: Afull(:,:),Bsecfull(:,:)
       
       !Check if Asec is inside A
       if (to_row > A%nrow .or. from_row < 1 .or. from_col < 1 .or. A%ncol < to_col) then
@@ -1645,19 +1646,26 @@ end type matrixmembuf
       select case(matrix_type)
       case(mtype_dense)
          call mat_dense_section(A,from_row,to_row,from_col,to_col,Asec)
-#ifndef UNITTEST
-#endif
       case(mtype_unres_dense)
          call mat_unres_dense_section(A,from_row,to_row,from_col,to_col,Asec)
       case(mtype_scalapack)
          write(*,'(A)') 'Fallback mat_section for mtype_scalapack'
+         call mem_alloc(Afull,A%nrow,A%ncol)
          call mat_dense_init(B,A%nrow,A%ncol)
+         !transform from type to dense type
+         call mat_to_full(A,1E0_realk,Afull)
+         call mat_dense_set_from_full(Afull,1E0_realk,B)
+         call mem_dealloc(Afull)
+         !build section from dense mat
          call mat_dense_init(Bsec,Asec%nrow,Asec%ncol)
-         call mat_to_full(A,1E0_realk,B%elms)
          call mat_dense_section(B,from_row,to_row,from_col,to_col,Bsec)
-         call mat_set_from_full(Bsec%elms,1E0_realk,Asec)
          call mat_dense_free(B)
+         !build full from dense section mat
+         call mem_alloc(Bsecfull,Asec%nrow,Asec%ncol)
+         call mat_dense_to_full(Bsec, 1E0_realk, Bsecfull)
          call mat_dense_free(Bsec)
+         call mat_set_from_full(Bsecfull,1E0_realk,Asec)
+         call mem_dealloc(Bsecfull)
          write(*,'(A)') 'debug: fallback mat_section finished'
       case default
          call lsquit("mat_section not implemented for this type of matrix",-1)
@@ -2710,7 +2718,7 @@ end subroutine set_lowertriangular_zero
     
 END MODULE Matrix_Operations
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       !> \brief Pass matrix_type to other MPI nodes
       !> \author T. Kjaergaard
       !> \date 2011

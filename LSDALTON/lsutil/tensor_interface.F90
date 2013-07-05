@@ -10,7 +10,7 @@ module tensor_interface_module
   use precision
   use files!,only: lsopen,lsclose
   use LSTIMING!,only:lstimer
-  use manual_reorderings_module 
+  use reorder_frontend_module
   use lspdm_tensor_operations_module
 
 
@@ -45,6 +45,7 @@ module tensor_interface_module
                     &array_print_norm_nrm,&
                     &array2_print_norm_nrm,&
                     &array4_print_norm_nrm,&
+                    &matrix_print_norm_nrm,&
                     &print_norm_fort_wrapper1_customprint,&
                     &print_norm_fort_wrapper2_customprint,&
                     &print_norm_fort_wrapper3_customprint,&
@@ -109,7 +110,11 @@ contains
     !> scaling factor for array y
     real(realk),intent(in) :: b
     real(realk),pointer :: buffer(:)
-    integer :: ti,nel
+    integer :: ti,i,nel,o(x%mode)
+    do i=1,x%mode
+      o(i) = i
+    enddo
+
     select case(x%atype)
     case(DENSE)
       select case(y%atype)
@@ -123,7 +128,7 @@ contains
         do ti=1,y%ntiles
           call get_tile_dim(nel,y,ti)
           call array_get_tile(y,ti,buffer,nel)
-          call add_tile_to_fort(buffer,ti,y%tdim,x%elm1,x%dims,x%mode,b)
+          call tile_in_fort(b,buffer,ti,y%tdim,1.0E0_realk,x%elm1,x%dims,x%mode,o)
         enddo
         call mem_dealloc(buffer)
       case default
@@ -143,7 +148,7 @@ contains
         do ti=1,y%ntiles
           call get_tile_dim(nel,y,ti)
           call array_get_tile(y,ti,buffer,nel)
-          call add_tile_to_fort(buffer,ti,y%tdim,x%elm1,x%dims,x%mode,b)
+          call tile_in_fort(b,buffer,ti,y%tdim,1.0E0_realk,x%elm1,x%dims,x%mode,o)
         enddo
         call mem_dealloc(buffer)
         call array_sync_replicated(x)
@@ -579,7 +584,7 @@ contains
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in) :: nmodes, dims(nmodes)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr=array_init_tiled(dims,nmodes,MASTER_INIT)
     CreatedPDMArrays = CreatedPDMArrays+1
     arr%atype=TILED_DIST
@@ -596,7 +601,7 @@ contains
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in) :: nmodes, dims(nmodes)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr=array_init_tiled(dims,nmodes,MASTER_INIT)
     CreatedPDMArrays = CreatedPDMArrays+1
     call memory_allocate_array_dense(arr)
@@ -614,7 +619,7 @@ contains
     type(array) :: arr
     !> nmodes=order of the array, dims=dimensions in each mode
     integer, intent(in) :: nmodes, dims(nmodes)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr=array_init_replicated(dims,nmodes,MASTER_INIT)
     CreatedPDMArrays = CreatedPDMArrays+1
     arr%atype=DENSE
@@ -631,7 +636,7 @@ contains
   subroutine array_free_rpseudo_dense(arr)
     !> the array to free
     type(array) :: arr
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr%atype=REPLICATED
 #endif
     call array_free(arr)
@@ -645,7 +650,7 @@ contains
   subroutine array_free_tdpseudo_dense(arr)
     !> the array to free
     type(array) :: arr
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr%atype=TILED_DIST
 #endif
     call array_free(arr)
@@ -776,7 +781,7 @@ contains
     implicit none
     !> array to change the array type
     type(array),intent(inout) :: arr
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr%atype=TILED_DIST
     if(associated(arr%elm1))then
       call memory_deallocate_array_dense(arr)
@@ -794,7 +799,7 @@ contains
     implicit none
     !> array to change the array type
     type(array),intent(inout) :: arr
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr%atype=REPLICATED
 #else
     return
@@ -809,7 +814,7 @@ contains
     implicit none
     !> array to change the array type
     type(array),intent(inout) :: arr
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     arr%atype=DENSE
 #else
     return
@@ -857,7 +862,7 @@ contains
     type(array),intent(inout) :: arr
     logical, intent(in) :: change
     logical :: pdm
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     pdm=.false.
     if(.not.associated(arr%elm1))then
       call lsquit("ERROR(array_cp_dense2tiled):dense is NOT allocated,&
@@ -960,11 +965,16 @@ contains
     integer, intent(in),optional :: order(arr%mode)
     !> checkmem is outdated
     real(realk) :: tilemem,MemFree
-    integer :: i,o(arr%mode)
+    integer :: i,o(arr%mode),fullfortdims(arr%mode)
     real(realk) :: nrm
     do  i=1,arr%mode
       o(i)=i
     enddo
+    if(present(order))o=order
+    do  i=1,arr%mode
+      fullfortdims(o(i))=arr%dims(i)
+    enddo
+    
     if(nelms/=arr%nelms)call lsquit("ERROR(array_convert_fort2arr):array&
     &dimensions are not the same",-1)
     select case(arr%atype)
@@ -976,15 +986,12 @@ contains
         !if enough memory is available the lower one should be faster      
         if(arr%init_type==ALL_INIT)then
           do i=1,arr%nlti
-            if(present(order))call extract_tile_from_fort(fortarr,arr%mode,arr%ti(i)%gt,arr%dims,&
-                                              &arr%tdim,arr%ti(i)%t,order)
-            if(.not.present(order))call extract_tile_from_fort(fortarr,arr%mode,arr%ti(i)%gt,arr%dims,&
-                                              &arr%tdim,arr%ti(i)%t,o)
+            call tile_from_fort(1.0E0_realk,fortarr,fullfortdims,arr%mode,&
+                               &0.0E0_realk,arr%ti(i)%t,arr%ti(i)%gt,arr%tdim,o)
           enddo
         else
           !call cp_data2tiled_lowmem(arr,fortarr,arr%dims,arr%mode)
-          if(present(order))call cp_data2tiled_intiles(arr,fortarr,arr%dims,arr%mode,order)
-          if(.not.present(order))call cp_data2tiled_intiles(arr,fortarr,arr%dims,arr%mode)
+          call cp_data2tiled_intiles(arr,fortarr,arr%dims,arr%mode,o)
         endif
       case default
         call lsquit("ERROR(array_convert_fort2arr) the array type is not implemented",-1)
@@ -1268,7 +1275,7 @@ contains
     alln = .false.
     red = .false.
     master=.true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     if(infpar%lg_mynum/=0)master=.false.
     nnod=infpar%lg_nodtot
 #endif
@@ -1276,7 +1283,7 @@ contains
     if(present(reducetocheck))then
       red=.true.
       if(red.and.master)then
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
       call mem_alloc(red_info,nnod*8)
 #else
       call mem_alloc(red_info,8)
@@ -1421,6 +1428,17 @@ contains
     if(.not.present(square))call print_norm_fort_customprint(arrf%val,nelms,msg)
     if(present(square))call print_norm_fort_customprint(arrf%val,nelms,msg,square)
   end subroutine array4_print_norm_customprint
+  subroutine matrix_print_norm_nrm(mat,nrm,square)
+    implicit none
+    type(matrix),intent(in) :: mat
+    real(realk),intent(inout), optional :: nrm
+    logical,intent(in),optional :: square
+    integer(kind=8) :: nelms
+    nelms = int(mat%nrow*mat%ncol,kind=8)
+    if(present(nrm).and..not.present(square))call print_norm_fort_nrm(mat%elms,nelms,nrm)
+    if(present(nrm).and.present(square))call print_norm_fort_nrm(mat%elms,nelms,nrm,square)
+    if(.not.present(nrm).and..not.present(square))call print_norm_fort_nrm(mat%elms,nelms)
+  end subroutine matrix_print_norm_nrm
 
   subroutine print_norm_fort_nrm(fort,nelms,nrm,returnsquared)
     implicit none
@@ -1465,841 +1483,6 @@ contains
   !!!!!   ARRAY TESTCASES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-  subroutine test_array_reorderings()
-    implicit none
-
-    type(array) :: test,test2
-    real(realk),pointer :: datatata(:),tileget(:)
-    real(realk),pointer :: tileget2(:),datata(:)
-    real(realk) :: normher,ref1,ref2
-    integer(kind=long) :: testint
-    logical :: master,rigorous
-    integer :: no,nv,nb,na,a,b,c,d
-    character(len=7) :: teststatus
-    master = .true.
-    rigorous=.true.
-    nb =  82
-    nv =  81
-    no =  80
-    na =  0
-    !for the upper parameters not all reorderings work!!!!!
-    !nb =  9
-    !nv =  8
-    !no =  7
-    !na =  6
-
-    write(DECinfo%output,'(" Using",f8.3," GB of mem for the testarray")')&
-    &(nv*no*(nv+nb)*8.0E0_realk)/(1024.E0_realk*1024.E0_realk*1024.E0_realk)
-    call mem_alloc(datatata,nb*nv*no)
-    call mem_alloc(datata,nb*nv*no)
-    testint=2
-    call random_number(datatata)
-    call print_norm(datatata,int(nb*nv*no,kind=8),ref1)
-    ref2=0.5E0_realk*ref1
-    write(DECinfo%output,'("REFERENCE NORM1:",f19.10)')ref1
-    write(DECinfo%output,'("REFERENCE NORM2:",f19.10)')ref2
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"TESTING 3D REORDERINGS"
-    write (DECinfo%output,*)"**********************"
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"reorder"
-
-    teststatus="SUCCESS"
-    call array_reorder_3d(1.0E0_realk,datatata,nb,nv,no,[1,2,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    if(rigorous)then
-      do a=1,nb
-        do b=1,nv
-          do c=1,no
-            if(abs(datatata(a+(b-1)*nb+(c-1)*nv*nb)-datata(a+(b-1)*nb+(c-1)*nv*nb))&
-              & >1.0E-11_realk)teststatus=" FAILED"
-          enddo
-        enddo
-      enddo
-    endif
-    write (DECinfo%output,'(" r 123: ",f19.10," : ",A7)')normher,teststatus
-
-    teststatus="SUCCESS"
-    call array_reorder_3d(1.0E0_realk,datatata,nb,nv,no,[1,3,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    if(rigorous)then
-      do a=1,nb
-        do b=1,nv
-          do c=1,no
-            if(abs(datatata(a+(b-1)*nb+(c-1)*nv*nb)-datata(a+(c-1)*nb+(b-1)*no*nb))&
-              & >1.0E-11_realk)teststatus=" FAILED"
-          enddo
-        enddo
-      enddo
-    endif
-    write (DECinfo%output,'(" r 132: ",f19.10," : ",A7)')normher,teststatus
-
-    teststatus="SUCCESS"
-    call array_reorder_3d(1.0E0_realk,datatata,nb,nv,no,[2,1,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    if(rigorous)then
-      do a=1,nb
-        do b=1,nv
-          do c=1,no
-            if(abs(datatata(a+(b-1)*nb+(c-1)*nv*nb)-datata(b+(a-1)*nv+(c-1)*nv*nb))&
-              & >1.0E-11_realk)teststatus=" FAILED"
-          enddo
-        enddo
-      enddo
-    endif
-    write (DECinfo%output,'(" r 213: ",f19.10," : ",A7)')normher,teststatus
-
-    teststatus="SUCCESS"
-    call array_reorder_3d(1.0E0_realk,datatata,nb,nv,no,[2,3,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    if(rigorous)then
-      do a=1,nb
-        do b=1,nv
-          do c=1,no
-            if(abs(datatata(a+(b-1)*nb+(c-1)*nv*nb)-datata(b+(c-1)*nv+(a-1)*nv*no))&
-              & >1.0E-11_realk)teststatus=" FAILED"
-          enddo
-        enddo
-      enddo
-    endif
-    write (DECinfo%output,'(" r 231: ",f19.10," : ",A7)')normher,teststatus
-
-    teststatus="SUCCESS"
-    call array_reorder_3d(1.0E0_realk,datatata,nb,nv,no,[3,1,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    if(rigorous)then
-      do a=1,nb
-        do b=1,nv
-          do c=1,no
-            if(abs(datatata(a+(b-1)*nb+(c-1)*nv*nb)-datata(c+(a-1)*no+(b-1)*nb*no))&
-              & >1.0E-11_realk)teststatus=" FAILED"
-          enddo
-        enddo
-      enddo
-    endif
-    write (DECinfo%output,'(" r 312: ",f19.10," : ",A7)')normher,teststatus
-
-    teststatus="SUCCESS"
-    call array_reorder_3d(1.0E0_realk,datatata,nb,nv,no,[3,2,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    if(rigorous)then
-      do a=1,nb
-        do b=1,nv
-          do c=1,no
-            if(abs(datatata(a+(b-1)*nb+(c-1)*nv*nb)-datata(c+(b-1)*no+(a-1)*nv*no))&
-              & >1.0E-11_realk)teststatus=" FAILED"
-          enddo
-        enddo
-      enddo
-    endif
-    write (DECinfo%output,'(" r 321: ",f19.10," : ",A7)')normher,teststatus
-
-
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"reorder and add"
-    datata=0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_3d(1.0E0_realk,datatata,nb,nv,no,[1,2,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra123: ",f19.10," : ",A7)')normher,teststatus
-    datata=0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_3d(1.0E0_realk,datatata,nb,nv,no,[1,3,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra132: ",f19.10," : ",A7)')normher,teststatus
-
-    datata=0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_3d(1.0E0_realk,datatata,nb,nv,no,[2,1,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra213: ",f19.10," : ",A7)')normher,teststatus
-    datata=0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_3d(1.0E0_realk,datatata,nb,nv,no,[2,3,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra231: ",f19.10," : ",A7)')normher,teststatus
-
-    datata=0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_3d(1.0E0_realk,datatata,nb,nv,no,[3,1,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra312: ",f19.10," : ",A7)')normher,teststatus
-    datata=0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_3d(1.0E0_realk,datatata,nb,nv,no,[3,2,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra321: ",f19.10," : ",A7)')normher,teststatus
-
-
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"scale and reorder"
-    teststatus="SUCCESS"
-    call array_reorder_3d(0.5E0_realk,datatata,nb,nv,no,[1,2,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 123: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_3d(0.5E0_realk,datatata,nb,nv,no,[1,3,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 132: ",f19.10," : ",A7)')normher,teststatus
-
-    teststatus="SUCCESS"
-    call array_reorder_3d(0.5E0_realk,datatata,nb,nv,no,[2,1,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 213: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_3d(0.5E0_realk,datatata,nb,nv,no,[2,3,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 231: ",f19.10," : ",A7)')normher,teststatus
-
-    teststatus="SUCCESS"
-    call array_reorder_3d(0.5E0_realk,datatata,nb,nv,no,[3,1,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 312: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_3d(0.5E0_realk,datatata,nb,nv,no,[3,2,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 321: ",f19.10," : ",A7)')normher,teststatus
-
-
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"scale, reorder and add"
-    datata=0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_3d(0.5E0_realk,datatata,nb,nv,no,[1,2,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra123: ",f19.10," : ",A7)')normher,teststatus
-    datata=0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_3d(0.5E0_realk,datatata,nb,nv,no,[1,3,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra132: ",f19.10," : ",A7)')normher,teststatus
-
-    datata=0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_3d(0.5E0_realk,datatata,nb,nv,no,[2,1,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra213: ",f19.10," : ",A7)')normher,teststatus
-    datata=0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_3d(0.5E0_realk,datatata,nb,nv,no,[2,3,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra231: ",f19.10," : ",A7)')normher,teststatus
-
-    datata=0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_3d(0.5E0_realk,datatata,nb,nv,no,[3,1,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra312: ",f19.10," : ",A7)')normher,teststatus
-    datata=0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_3d(0.5E0_realk,datatata,nb,nv,no,[3,2,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-11_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra321: ",f19.10," : ",A7)')normher,teststatus
-
-    call mem_dealloc(datatata)
-    call mem_dealloc(datata)
-    nb =  49
-    nv =  37
-    no =  31
-    na =  29
-
-    !nb =  30
-    !nv =  30
-    !no =  30
-    !na =  30
-    call mem_alloc(datatata,nb*na*nv*no)
-    call mem_alloc(datata,nb*na*nv*no)
-    call random_number(datatata)
-    call print_norm(datatata,int(nb*na*nv*no,kind=8),ref1)
-    ref2=0.5E0_realk*ref1
-    write (DECinfo%output,*)""
-    write(DECinfo%output,'("REFERENCE NORM3:",f19.10)')ref1
-    write(DECinfo%output,'("REFERENCE NORM4:",f19.10)')ref2
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"TESTING 4D REORDERINGS"
-    write (DECinfo%output,*)"**********************"
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"reorder"
-    
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[1,2,3,4],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 1234: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[1,2,4,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 1243: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[1,3,2,4],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 1324: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[1,3,4,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 1342: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[1,4,2,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 1423: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[1,4,3,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 1432: ",f19.10," : ",A7)')normher,teststatus
-
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[2,1,3,4],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 2134: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[2,1,4,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 2143: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[2,3,1,4],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 2314: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[2,3,4,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 2341: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[2,4,1,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 2413: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[2,4,3,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 2431: ",f19.10," : ",A7)')normher,teststatus
-
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[3,1,2,4],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 3124: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[3,1,4,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 3142: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[3,2,1,4],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 3214: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[3,2,4,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 3241: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[3,4,1,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 3412: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[3,4,2,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 3421: ",f19.10," : ",A7)')normher,teststatus
-    
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[4,1,2,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 4123: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[4,1,3,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 4132: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[4,2,1,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 4213: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[4,2,3,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 4231: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[4,3,1,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 4312: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[4,3,2,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" r 4321: ",f19.10," : ",A7)')normher,teststatus
-
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"reorder and add"
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[1,2,3,4],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra1234: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[1,2,4,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra1243: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[1,3,2,4],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra1324: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[1,3,4,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra1342: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[1,4,2,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra1423: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[1,4,3,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra1432: ",f19.10," : ",A7)')normher,teststatus
-
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[2,1,3,4],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra2134: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[2,1,4,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra2143: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[2,3,1,4],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra2314: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[2,3,4,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra2341: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[2,4,1,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra2413: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[2,4,3,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra2431: ",f19.10," : ",A7)')normher,teststatus
-
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[3,1,2,4],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra3124: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[3,1,4,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra3142: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[3,2,1,4],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra3214: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[3,2,4,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra3241: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[3,4,1,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra3412: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[3,4,2,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra3421: ",f19.10," : ",A7)')normher,teststatus
-    
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[4,1,2,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra4123: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[4,1,3,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra4132: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[4,2,1,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra4213: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[4,2,3,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra4231: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[4,3,1,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra4312: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(1.0E0_realk,datatata,nb,na,nv,no,[4,3,2,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref1)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'(" ra4321: ",f19.10," : ",A7)')normher,teststatus
-
-
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"scale and reorder"
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[1,2,3,4],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 1234: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[1,2,4,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 1243: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[1,3,2,4],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 1324: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[1,3,4,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 1342: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[1,4,2,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 1423: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[1,4,3,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 1432: ",f19.10," : ",A7)')normher,teststatus
-
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[2,1,3,4],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 2134: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[2,1,4,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 2143: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[2,3,1,4],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 2314: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[2,3,4,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 2341: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[2,4,1,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 2413: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[2,4,3,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 2431: ",f19.10," : ",A7)')normher,teststatus
-
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[3,1,2,4],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 3124: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[3,1,4,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 3142: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[3,2,1,4],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 3214: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[3,2,4,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 3241: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[3,4,1,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 3412: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[3,4,2,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 3421: ",f19.10," : ",A7)')normher,teststatus
-    
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[4,1,2,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 4123: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[4,1,3,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 4132: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[4,2,1,3],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 4213: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[4,2,3,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 4231: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[4,3,1,2],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 4312: ",f19.10," : ",A7)')normher,teststatus
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[4,3,2,1],0.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sr 4321: ",f19.10," : ",A7)')normher,teststatus
-
-
-    write (DECinfo%output,*)""
-    write (DECinfo%output,*)"scale, reorder and add"
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[1,2,3,4],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra1234: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[1,2,4,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra1243: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[1,3,2,4],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra1324: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[1,3,4,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra1342: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[1,4,2,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra1423: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[1,4,3,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra1432: ",f19.10," : ",A7)')normher,teststatus
-
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[2,1,3,4],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra2134: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[2,1,4,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra2143: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[2,3,1,4],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra2314: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[2,3,4,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra2341: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[2,4,1,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra2413: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[2,4,3,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra2431: ",f19.10," : ",A7)')normher,teststatus
-
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[3,1,2,4],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra3124: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[3,1,4,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra3142: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[3,2,1,4],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra3214: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[3,2,4,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra3241: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[3,4,1,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra3412: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[3,4,2,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra3421: ",f19.10," : ",A7)')normher,teststatus
-    
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[4,1,2,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra4123: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[4,1,3,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra4132: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[4,2,1,3],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra4213: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[4,2,3,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra4231: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[4,3,1,2],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra4312: ",f19.10," : ",A7)')normher,teststatus
-    datata = 0.0E0_realk
-    teststatus="SUCCESS"
-    call array_reorder_4d(0.5E0_realk,datatata,nb,na,nv,no,[4,3,2,1],1.0E0_realk,datata)
-    call print_norm(datata,int(nb*na*nv*no,kind=8),normher)
-    if(abs(normher-ref2)>1.0E-10_realk)teststatus=" FAILED"
-    write (DECinfo%output,'("sra4321: ",f19.10," : ",A7)')normher,teststatus
-
-    call mem_dealloc(datata)
-    call mem_dealloc(datatata)
-  end subroutine test_array_reorderings 
 
   !> \brief Test the array structure 
   !> \author Patrick Ettenhuber
@@ -2318,7 +1501,7 @@ contains
     character(len=7) :: teststatus
     character(ARR_MSG_LEN) :: msg
     master = .true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     if(infpar%lg_mynum /= 0) then
       master =.false.
     endif
@@ -2328,7 +1511,7 @@ contains
     no =  12
     na =  7
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     if(master)then
       write(DECinfo%output,*)"TESTING PDM TILED ARRAY ALLOCATIONS"
       write(DECinfo%output,'(" Using",f8.3," GB of mem for the testarray")')&
@@ -2608,6 +1791,8 @@ contains
     call print_norm(test%elm1,test%nelms,ref)
     call array_convert(test%elm1,test2,[4,2,1,3])
     call lsmpi_barrier(infpar%lg_comm)
+    call print_norm(test2,normher)
+    print *,"convert",ref,normher
     call array_mv_dense2tiled(test,.false.)
     call memory_allocate_array_dense(test2)
     call lsmpi_barrier(infpar%lg_comm)
@@ -2616,7 +1801,8 @@ contains
       call get_tile_dim(j,test2,i)
       call mem_alloc(tileget,j)
       call array_get_tile(test2,i,tileget,j)
-      call put_tile_in_fort(tileget,i,test2%tdim,test2%elm1,test2%dims,4,[4,2,1,3])
+      call tile_in_fort(1.0E0_realk,tileget,i,test2%tdim,0.0E0_realk,&
+                        &test2%elm1,test%dims,4,[3,2,4,1])
       call mem_dealloc(tileget)
     enddo
     call lsmpi_barrier(infpar%lg_comm)
@@ -2655,7 +1841,7 @@ contains
 end module tensor_interface_module
 
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 subroutine get_slaves_to_array_test()
   use precision
   use tensor_interface_module,only:test_array_struct

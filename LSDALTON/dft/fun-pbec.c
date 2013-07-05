@@ -41,7 +41,7 @@ C
    derivative evaluation", Pawel Salek, 2005
 
     This functional is connected by making following changes:
-    1. add "extern Functional pbecFunctional;" to 'functionals.h'
+    1. add "extern Functional pbecFunctional;" to 'lsdalton_functionals.h'
     2. add "&pbecFunctional," to 'functionals.c'
     3. add "fun-pbec.c" to 'Makefile.am', 'Makefile.in' or 'Makefile'.
 
@@ -115,11 +115,11 @@ K(rhoa,grada,rhob,gradb,gradab):=
 #endif
 #include <math.h>
 #include <stddef.h>
-#include "general.h"
+#include "lsdalton_general.h"
  
 #define __CVERSION__
  
-#include "functionals.h"
+#include "lsdalton_functionals.h"
  
 /* INTERFACE PART */
 static integer pbec_isgga(void) { return 1; } /* FIXME: detect! */

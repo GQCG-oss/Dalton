@@ -1233,6 +1233,7 @@ C  Initializing ABSLRS
        DATA ABSLRS/.FALSE./,ABSLRS_INTERVAL/.FALSE./
        DATA ABSLRS_ALPHA/.FALSE./,ABS_BATCH/.FALSE./
        DATA ABSLRS_ANALYZE/.FALSE./,ABS_IMFREQ/.FALSE./
+       DATA ABS_XREL/.FALSE./
        DATA ABS_MAXITER/150/,IPRABSLRS/0/,ABS_NFREQ_ALPHA/1/
        DATA ABS_NFREQ_BETA_B/1/,ABS_NFREQ_BETA_C/1/
        DATA ABS_MAXRM/1000/
@@ -1676,7 +1677,7 @@ C
      *      ,EPSOL
          END IF
 
-         IF (QM3 .OR. QMMM) THEN
+         IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
             IF (.NOT. SOPRPA .AND. SOPPA) THEN
                WRITE (LUPRI,*)
@@ -2250,6 +2251,10 @@ C
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
+         
+         IF (QMNPMM) THEN
+             WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
+         END IF    
 
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
@@ -4084,6 +4089,8 @@ C CBN+JK 03.01.06
 C--------------------
 #include "gnrinf.h"
 #include "qm3.h"
+#include "mxcent.h"
+#include "wavpcm.h"
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -4320,6 +4327,10 @@ C
         DO I = 1,NNORBT
            FC(I) = FC(I) + WRK(I)
         ENDDO
+      ELSE IF (WAVPCM) THEN
+         DO I = 1,NNORBT
+            FC(I) = FC(I) + WAVFCK(I)
+         ENDDO
       END IF
 
       IF ((NCONRF .GT. 1) .AND. QMMM ) THEN

@@ -52,7 +52,7 @@ use ks_settings, only: ks_free_incremental_fock
 use memory_handling, only: mem_alloc,mem_dealloc
 use dft_typetype
 use plt_driver_module
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 use infpar_module
 use lsmpi_mod
 use lsmpi_type, only: DFTSETFU
@@ -135,7 +135,7 @@ implicit none
   call pltinfo_set_default_config(config%Plt)
   config%doplt=.false.
   
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   infpar%inputBLOCKSIZE = 0
 #endif
 end subroutine config_set_default_config
@@ -214,7 +214,7 @@ INTEGER            :: LUCMD !Logical unit number for the daltoninput
 INTEGER            :: IDUMMY,IPOS,IPOS2,COUNTER
 character(len=80)  :: WORD,TMPWORD
 character(len=2)   :: PROMPT
-LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS,doresponse
+LOGICAL            :: DONE,file_exists,READWORD,LSDALTON,STARTGUESS
 !LINSCA variables:
 real(realk)        :: shift, min_density_overlap, maxratio, zero
 integer            :: nvec, i
@@ -223,7 +223,6 @@ Real(realk)  :: hfweight
 STARTGUESS = .FALSE.
 Config%integral%cfg_lsdalton = .TRUE.
 COUNTER = 0
-doresponse=.false.
 
 INQUIRE(file='LSDALTON.INP',EXIST=file_exists) 
 IF(file_exists)THEN
@@ -364,7 +363,7 @@ DO
                      config%integral%exchangeFactor = hfweight
                      config%integral%dft%HFexchangeFac = hfweight
 #ifdef BUILD_CGTODIFF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
                      call lsquit('cgto_diff_eri not testet for MPI',-1)
 #endif                     
 !                     call cgto_diff_eri_xfac_general(config%integral%exchangeFactor)
@@ -652,7 +651,6 @@ DO
 
    ! KK, change from $RESPONS to **RESPONS to be consistent with other input structure.
    ResponseInput: IF (WORD(1:9) == '**RESPONS') THEN
-      doresponse=.true.
       READWORD=.TRUE.
       call config_rsp_input(config,lucmd,readword,WORD)
    END IF ResponseInput
@@ -818,8 +816,6 @@ if(config%solver%do_dft)THEN
    call init_gridObject(config%integral%dft,config%integral%DFT%GridObject)
    call init_dftfunc(config%integral%DFT)
 endif
-! Check that DEC input is consistent with geometry optimization and orbital localization.
-call DEC_meaningful_input(config,doresponse)
 
 END SUBROUTINE read_dalton_input
 
@@ -829,20 +825,23 @@ END SUBROUTINE read_dalton_input
 !> If necessary, modify config structure to comply with DEC calculation.
 !> \author Kasper Kristensen
 !> \date April 2013
-subroutine DEC_meaningful_input(config,doresponse)
+subroutine DEC_meaningful_input(config)
   implicit none
   !> Contains info, settings and data for entire calculation
   type(ConfigItem), intent(inout) :: config
-  !> Do Response calculation?
-  logical,intent(in) :: doresponse
 
 
   ! Only make modifications to config for DEC calculation AND if it is not
   ! a full CC calculation
   DECcalculation: if(config%doDEC) then
 
+     ! DEC does not work for SCALAPACK
+     if(matrix_type==mtype_scalapack) then
+        call lsquit('Error in input: **DEC or **CC cannot be used together with .SCALAPACK!',-1)
+     end if
+
      ! DEC and response do not go together right now...
-     if(doresponse) then
+     if(config%response%tasks%doResponse) then
         call lsquit('Error in input: **DEC or **CC cannot be used together with **RESPONS!',-1)
      end if
 
@@ -892,9 +891,6 @@ subroutine DEC_meaningful_input(config,doresponse)
      end if OrbLocCheck
 
   end if DECcalculation
-
-
-  ! Special case: Restart full calculation fr
 
 
 end subroutine DEC_meaningful_input
@@ -974,7 +970,7 @@ subroutine GENERAL_INPUT(config,readword,word,lucmd,lupri)
         SELECT CASE(WORD) 
         CASE('.CSR');        config%opt%cfg_prefer_CSR = .true.
         CASE('.SCALAPACK');  config%opt%cfg_prefer_SCALAPACK = .true.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
         CASE('.SCALAPACKBLOCKSIZE');  
            READ(LUCMD,*) infpar%inputBLOCKSIZE
 #endif
@@ -1046,10 +1042,10 @@ subroutine INTEGRAL_INPUT(integral,readword,word,lucmd,lupri)
         CASE ('.BASPRINT');  READ(LUCMD,*) INTEGRAL%BASPRINT
         CASE ('.DEBUGPROP');  INTEGRAL%DEBUGPROP = .TRUE.
         CASE ('.DEBUGGEN1INT')
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
            INTEGRAL%DEBUGGEN1INT = .TRUE.
 #else
-           call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT',-1)
+           call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT_LSDALTON',-1)
 #endif
         CASE ('.DEBUGCGTODIFF')
 #ifdef BUILD_CGTODIFF
@@ -1287,10 +1283,10 @@ subroutine GEOHESSIAN_INPUT(geoHessian,readword,word,lucmd,lupri)
      IF(PROMPT(1:1) .EQ. '.') THEN
         SELECT CASE(WORD) 
         CASE ('.TEST'); GEOHESSIAN%testContrib=.TRUE.
-#ifdef BUILD_GEN1INT
+#ifdef BUILD_GEN1INT_LSDALTON
            GEOHESSIAN%DebugGen1Int = .TRUE.
 !#else
-!           call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT',-1)
+!           call lsquit('.DEBUGGEN1INT requires OpenRSP -DBUILD_GEN1INT_LSDALTON',-1)
 #endif
         CASE ('.INTPRINT');  READ(LUCMD,*) GEOHESSIAN%IntPrint
         CASE DEFAULT
@@ -3366,28 +3362,28 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
          call lsquit('SCALAPACK not implemented for unrestricted!',config%lupri)
       else
 #ifdef VAR_SCALAPACK
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors combinded'
          WRITE(lupri,'(4X,A)')'with SCALAPACK for memory distribution and parallelization.'
          CALL mat_select_type(mtype_scalapack,lupri,nbast)
 
 #ifdef VAR_INT64
-#ifdef VAR_LSMPI_32
+#ifdef VAR_MPI_32BIT_INT
          print*,'you cannot compile using a 64 bit integers, when linking to a 32 bit integer library and'
          print*,'use the 64 bit integer BLACS/SCALAPACK provided by MKL/intel'
          write(config%lupri,*)'you cannot compile using a 64 bit integers, when linking to a 32 bit integer library and'
          write(config%lupri,*)'use the 64 bit integer BLACS/SCALAPACK provided by MKL/intel'
-         call lsquit('you cannot compile with VAR_INT64 and SCALAPACK and VAR_LSMPI32',-1)
+         call lsquit('you cannot compile with VAR_INT64 and SCALAPACK and VAR_MPI32',-1)
 #endif 
 #endif
 
 #else
-         !VAR_SCALAPACK but no VAR_LSMPI
-         CALL LSQUIT('SCALAPACK requires MPI - recompile using MPI and the -DVAR_LSMPI flag',config%lupri)
+         !VAR_SCALAPACK but no VAR_MPI
+         CALL LSQUIT('SCALAPACK requires MPI - recompile using MPI and the -DVAR_MPI flag',config%lupri)
 #endif
 #else
          !no VAR_SCALAPACK
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
          WRITE(lupri,'(4X,A,I3,A)')'This is an MPI calculation using ',infpar%nodtot,' processors.'
          call lsquit('.SCALAPACK requires -DVAR_SCALAPACK precompiler flag',config%lupri)
 #else
@@ -3438,7 +3434,9 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
        write(config%lupri,*) ' system, use options  .START/TRILEVEL and .LCM in *DENSOPT section.   '  
        write(config%lupri,*) 
    endif 
-   
+
+   ! Check that DEC input is consistent with geometry optimization and orbital localization.
+   call DEC_meaningful_input(config)
 
    write(config%lupri,*)
    write(config%lupri,*) 'End of configuration!'
@@ -3554,7 +3552,7 @@ END SUBROUTINE TRIM_STRING
 
 end module configuration
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 subroutine lsmpi_setmasterToSlaveFunc(WORD)
 use infpar_module
 use xcfun_host,only: USEXCFUN

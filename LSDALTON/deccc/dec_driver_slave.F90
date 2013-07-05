@@ -2,7 +2,7 @@
 !> MPI routines for main DEC driver.
 !> \author Kasper Kristensen
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 module dec_driver_slave_module
 
 
@@ -64,16 +64,9 @@ subroutine main_fragment_driver_slave()
   ! ************
   ! Just in case, initialize using default settings
   call dec_set_default_config(0)
-  siz=sizeof(DECinfo)
-  ! Get DEC settings for current calculation from master (quick and dirty bcast...)
-  ierr=0
+  ! Get DEC settings for current calculation from master
+  call mpibcast_dec_settings(DECinfo,MPI_COMM_LSDALTON)
 
-    call MPI_BCAST(DECinfo,siz,MPI_CHARACTER,master,MPI_COMM_LSDALTON,ierr)
-
-  if(ierr/=0) then
-     call  lsquit('main_fragment_driver_slave: Something went wrong when &
-          & bcasting DEC structure!',-1)
-  end if
   ! Set output unit number to 0 for slaves
   DECinfo%output=0
 

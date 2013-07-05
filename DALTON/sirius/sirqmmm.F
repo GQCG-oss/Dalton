@@ -3513,7 +3513,7 @@ C       See if the quadrupole moment at this site is zero
      &              KPATOM,TRIMAT,DUMMY,EXP1VL,DUMMY,IPRTMP)
       RUNQM3=.FALSE.
 
-      IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
+      IF ( (IPRTMP.GT.15) .OR. (LOCDEB) ) THEN
          WRITE (LUPRI,'(/A)') ' E_xx_matrix in QMMM_FCK:'
          CALL OUTPAK(WRK(KMAT),NBAST,1,LUPRI)
             
@@ -3699,7 +3699,7 @@ C     Calculate gradient of these integrals
       CALL DSCAL(6*NNBASX,FSCAL,WRK(KMAT1),1)
       CALL DZERO(WRK(KMAT2),6*NNBASX)
 
-      IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
+      IF ( (IPRTMP.GT.15) .OR. (LOCDEB) ) THEN
          WRITE (LUPRI,'(/A)') ' E_xxz_matrix in QMMM_FCK:'
          CALL OUTPAK(WRK(KMAT1),NBAST,1,LUPRI)
           
@@ -3744,7 +3744,7 @@ C       Calculate gradient of these integrals
       CALL DSCAL(6*NNBASX,FSCAL,WRK(KMAT2),1)
       CALL DZERO(WRK(KMAT3),6*NNBASX)
 
-      IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
+      IF ( (IPRTMP.GT.15) .OR. (LOCDEB) ) THEN
          WRITE (LUPRI,'(/A)') ' E_xxy_matrix in QMMM_FCK:'
          CALL OUTPAK(WRK(KMAT2),NBAST,1,LUPRI)
 
@@ -3789,7 +3789,7 @@ C     Calculate gradient of these integrals
       CALL DSCAL(6*NNBASX,FSCAL,WRK(KMAT3),1)
       CALL DZERO(WRK(KMAT4),6*NNBASX)
 
-      IF ( (IPRINT.GT.15) .OR. (LOCDEB) ) THEN
+      IF ( (IPRTMP.GT.15) .OR. (LOCDEB) ) THEN
          WRITE (LUPRI,'(/A)') ' E_xxx_matrix in QMMM_FCK:'
          CALL OUTPAK(WRK(KMAT3),NBAST,1,LUPRI)
          

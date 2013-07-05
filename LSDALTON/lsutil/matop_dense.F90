@@ -10,6 +10,7 @@
 module matrix_operations_dense
   use memory_handling
   use matrix_module
+  use reorder_frontend_module
   contains
 !> \brief See mat_init in mat-operations.f90
   subroutine mat_dense_init(A,nrow,ncol)
@@ -97,11 +98,12 @@ module matrix_operations_dense
 !!     call mkl_domatcopy('R', 'T', A%nrow, A%ncol, 1.0E0_realk, A%elms, 1, B%elms,1)
 !!#else
 !     call ls_transpose(A%elms,B%elms,A%nrow)
-     do j = 1,a%ncol
-       do i = 1,a%nrow
-         b%elms(b%nrow*(i-1)+j) = a%elms(a%nrow*(j-1)+i)
-       enddo
-     enddo
+     call mat_transpose(a%nrow,a%ncol,1.0E0_realk,a%elms,0.0E0_realk,b%elms)
+     !do j = 1,a%ncol
+     !  do i = 1,a%nrow
+     !    b%elms(b%nrow*(i-1)+j) = a%elms(a%nrow*(j-1)+i)
+     !  enddo
+     !enddo
 !!#endif
   end subroutine mat_dense_trans
 
@@ -125,7 +127,7 @@ module matrix_operations_dense
 #ifndef UNITTEST
 !> \brief See mat_mpicopy in mat-operations.f90
   subroutine mat_dense_mpicopy(a,slave,master)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     use lsmpi_type
 #endif
      implicit none
@@ -133,7 +135,7 @@ module matrix_operations_dense
      logical,intent(in)               :: slave
      integer(kind=ls_mpik),intent(in) :: master
      integer                          :: i
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
      call LS_MPI_BUFFER(a%nrow,Master)
      call LS_MPI_BUFFER(a%ncol,Master)
      call LS_MPI_BUFFER(a%complex,Master)
@@ -383,15 +385,45 @@ module matrix_operations_dense
 !
     real(realk),pointer :: work(:)
     integer :: infdiag,lwork
+#ifdef VAR_LSESSL
+    integer :: liwork
+    integer, pointer:: iwork(:)
+    liwork=-1
+#endif
     infdiag=0
     lwork = -1
-    call mem_alloc(work,5)
+ 
     ! we inquire the size of lwork
+#ifdef VAR_LSESSL
+    call mem_alloc(work,1)
+    call mem_alloc(iwork,1)
+    iwork = 0.0E0_realk
+    !print *,"here1 and trialrun",lwork,liwork,work(1),iwork(1)
+    call DSYEVD('V','U',ndim,S%elms,ndim,eival,work,lwork,iwork,liwork,infdiag)
+    !print *,work,lwork,iwork,liwork
+    liwork = iwork(1)
+    call mem_dealloc(iwork)
+    call mem_alloc(iwork,liwork)
+#else
+    call mem_alloc(work,5)
     call DSYEV('V','U',ndim,S%elms,ndim,eival,work,lwork,infdiag)
+#endif
+    if(infdiag.ne. 0) then
+       print*,'mat_dsyev: dsyev query failed, info=',infdiag
+       call lsquit('mat_dsyev: query failed.',-1)
+    end if
+
+
     lwork = NINT(work(1))
     call mem_dealloc(work)
     call mem_alloc(work,lwork)
+#ifdef VAR_LSESSL
+    !print *,"here1 and run",lwork,liwork,work(1),iwork(1)
+    call DSYEVD('V','U',ndim,S%elms,ndim,eival,work,lwork,iwork,liwork,infdiag)
+    call mem_dealloc(iwork)
+#else
     call DSYEV('V','U',ndim,S%elms,ndim,eival,work,lwork,infdiag)
+#endif
     call mem_dealloc(work)
     if(infdiag.ne. 0) then
        print*,'mat_dsyev: dsyev failed, info=',infdiag

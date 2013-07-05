@@ -22,7 +22,7 @@ MODULE TYPEDEF
  use LSTENSOR_OPERATIONSMOD
  use LSTENSOR_typetype
  use Integralparameters
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
  use infpar_module
 #endif
 INTERFACE retrieve_output
@@ -431,7 +431,7 @@ READ(LUN) DALTON%Hermiteecoeff
 READ(LUN) DALTON%DoSpherical
 READ(LUN) DALTON%UNCONT
 READ(LUN) DALTON%NOSEGMENT
-READ(LUN) DALTON%DO3CENTEROVL
+Read(LUN) DALTON%DO3CENTEROVL
 READ(LUN) DALTON%DO2CENTERERI
 READ(LUN) DALTON%MIXEDOVERLAP
 READ(LUN) DALTON%CS_SCREEN
@@ -1591,7 +1591,7 @@ TYPE(LSSETTING) :: SETTING
 INTEGER :: LUPRI
 !
 INTEGER :: I
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 write(lupri,*)'PrintFragmentInfoAndBlocks: infpar%mynum=',infpar%mynum
 #endif
 DO I=1,SETTING%nAO
@@ -2656,7 +2656,7 @@ TYPE(LSSETTING)   :: SETTING
 TYPE(DALTONINPUT) :: INPUT
 !
 Integer :: iAO
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 SETTING%comm = MPI_COMM_LSDALTON
 #else
 SETTING%comm = 0
@@ -2870,25 +2870,25 @@ IF(ASSOCIATED(setting%DsymRHS))THEN
 ENDIF
 
 IF(associated(setting%LST_GAB_LHS))THEN
-   DEALLOCATE(SETTING%LST_GAB_LHS)
-   NULLIFY(SETTING%LST_GAB_LHS)
-#ifdef VAR_LSMPI
-! FIXME THIS IS UGLY
-   IF(setting%node.NE.infpar%master)then
-      call lstensor_free(setting%LST_GAB_LHS) 
-   ENDIF
-#endif
+  DEALLOCATE(SETTING%LST_GAB_LHS)
+  NULLIFY(SETTING%LST_GAB_LHS)
+!#ifdef VAR_MPI
+!! FIXME THIS IS UGLY
+!   IF(setting%node.NE.infpar%master)then
+!      call lstensor_free(setting%LST_GAB_LHS) 
+!   ENDIF
+!#endif
 ENDIF
 
 IF(associated(setting%LST_GAB_RHS))THEN
    DEALLOCATE(SETTING%LST_GAB_RHS)
    NULLIFY(SETTING%LST_GAB_RHS)
-#ifdef VAR_LSMPI 
-! FIXME THIS IS UGLY
-   IF(setting%node.NE.infpar%master)then
-      call lstensor_free(setting%LST_GAB_RHS) 
-   ENDIF
-#endif
+!#ifdef VAR_MPI 
+!! FIXME THIS IS UGLY
+!   IF(setting%node.NE.infpar%master)then
+!      call lstensor_free(setting%LST_GAB_RHS) 
+!   ENDIF
+!#endif
 ENDIF
 
 IF(SETTING%LHSdfull.AND.SETTING%LHSdalloc)THEN
@@ -3845,7 +3845,7 @@ logical :: doall
 IF (iprint.GE.1) THEN
   WRITE(IUNIT,'(A,I4)') 'Printing reduced screening information with print level',iprint
   IF (redCS%isset) THEN
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     WRITE(IUNIT,'(A,G10.4)') 'Screening threshold is ',(1E1_realk)**redCS%CS_THRLOG
     DO iAO=1,4
       IF (IPRINT.GE.5) write(IUNIT,'(3X,A,I1)') 'Printing AO item info for iAO ',iAO
@@ -3888,7 +3888,7 @@ IF (iprint.GE.1) THEN
 ENDIF
 END SUBROUTINE print_reduced_screening_info
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 SUBROUTINE print_aoAtomInfo(AO,iprint,iunit)
 implicit none
 TYPE(aoAtomInfo),intent(IN) :: AO
@@ -3929,7 +3929,7 @@ TYPE(ReducedScreeningInfo),intent(IN)    :: oldRedCS
 !
 Integer :: iAO
 !
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   CALL init_reduced_screen_info(newRedCS)
   newRedCS%isset = oldRedCS%isset
   IF (newRedCS%isset) THEN
@@ -3956,7 +3956,7 @@ TYPE(ReducedScreeningInfo),intent(INOUT) :: redCS
 integer :: iAO
 !
 redCS%isset = .FALSE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 redCS%CS_THRLOG = shortzero
 DO iAO=1,4
   call init_aoAtomInfo(redCS%AO(iAO))
@@ -3972,7 +3972,7 @@ redCS%maxgablhs = shortzero
 #endif
 END SUBROUTINE init_reduced_screen_info
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 SUBROUTINE init_aoAtomInfo(AO)
 implicit none
 TYPE(aoAtomInfo),intent(INOUT) :: AO
@@ -3989,7 +3989,7 @@ TYPE(ReducedScreeningInfo),intent(INOUT) :: redCS
 integer :: iAO
 !
 IF (redCS%isset) THEN
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   redCS%isset = .FALSE.
   redCS%CS_THRLOG = shortzero
   DO iAO=1,4
@@ -4019,7 +4019,7 @@ IF (redCS%isset) THEN
 ENDIF
 END SUBROUTINE free_reduced_screen_info
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 SUBROUTINE free_aoAtomInfo(AO)
 implicit none
 TYPE(aoAtomInfo),intent(INOUT) :: AO

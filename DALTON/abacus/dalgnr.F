@@ -414,6 +414,16 @@ C
       IF (QM3 .AND. .NOT.ONLYOV) CALL QM3_RDPOT()
 C
 C     ***************************************************************
+C     Reading in the interaction parameters for the NP and MM 
+C     subsystems needed by QM/NP/MM embedding scheme
+C     ***************************************************************
+C
+      IF (QMNPMM .AND. .NOT.ONLYOV) THEN
+         call quit('not available in this version')
+!        CALL READ_POT_QMNPMM()
+      END IF
+C
+C     ***************************************************************
 C     Read initial geometry, orbital spec., etc. (MOLECULE format).
 C     ***************************************************************
 C
@@ -627,6 +637,7 @@ C
 #include "cbisol.h"
 #include "taymol.h"
 #include "pcmlog.h"
+#include "wavpcm.h"
 Cef begin
 #include "incore.h"
 Cef end
@@ -988,6 +999,49 @@ C
                GOTO 133
             END IF
  134        CONTINUE 
+
+#ifdef BUILD_OPENRSP
+C added by Bin Gao, April 2, 2009
+C for response theory in atomic orbital basis
+            REWIND(LUCMD)
+C search for $RESPON in input (legacy driver)
+            DO
+               READ (LUCMD,'(A7)',END=135) WORD
+               IF (WORD .EQ. '$RESPON') THEN
+                  CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9,WAVPCM)
+                  EXIT
+               END IF
+            END DO
+ 135        CONTINUE
+C
+C     Search for **OPENRSP input
+C
+            REWIND (LUCMD)
+            DO
+               READ (LUCMD,'(A)',END=137) WORD
+               IF (WORD .EQ. '**OPENR') THEN
+                  CALL OPENRSP_DRIVER(WORK(10),LMWORK-9,WAVPCM)
+                  EXIT
+               END IF
+            END DO
+ 137        CONTINUE
+#endif
+
+#ifdef BUILD_TDRSP
+C added by Bin Gao, March 21, 2010
+C solves the equation of motion of reduced single-electron density matrix in real time domain
+            rewind( LUCMD )
+C tries to find $TDRSP input
+            do while ( .true. )
+              read( LUCMD, '(A6)', end=136 ) WORD
+              if ( WORD .eq. '$TDRSP' ) then
+                call tdrsp_driver( WORK(10), LMWORK-9 )
+                exit
+              end if
+            end do
+136         continue
+#endif
+
             IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
          ELSE IF (ITERNR .GT. ITERMX) THEN
             CALL TITLER('WARNING - Geometry not converged',' ',200)
@@ -1007,7 +1061,7 @@ Cholesky
 Cholesky
          IF (RNSIRI) CALL EXESIR(WORK(0),LMWORK,WRKDLM)
 Cact
-         IF (ACTIVE) CALL EXEACT(WORK(0),LMWORK,WRKDLM)
+         IF (ACTSEL) CALL EXEACT(WORK(0),LMWORK,WRKDLM)
 Cact
          IF (DOCCSD) CALL EXECC (WORK(0),LMWORK,WRKDLM)
 C
@@ -1056,7 +1110,57 @@ C
             CALL TITLER(
      &         'End of Dynamic Property Section (RESPONS)',' ',200)
          END IF
-C
+
+#ifdef BUILD_OPENRSP
+C added by Bin Gao, April 2, 2009
+C for response theory in atomic orbital basis
+         IF (LUCMD .LT. 0) THEN
+            CALL GPOPEN(LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
+     &                  IDUMMY, .FALSE.)
+         END IF
+         REWIND(LUCMD)
+C search for $RESPON in input
+         DO
+            READ (LUCMD,'(A7)',END=145) WORD
+            IF (WORD .EQ. '$RESPON') then
+               CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9,WAVPCM)
+               EXIT
+            END IF
+         END DO
+ 145     CONTINUE
+!        search **OPENRSP in input, then run openrsp
+         rewind (lucmd)
+         do
+            read (lucmd, '(a)', end=147) word
+            if (word == '**OPENR') then
+               call read_openrsp_input('DALTON.INP', lucmd)
+               exit
+            end if
+         end do
+         call openrsp_driver(work(10), lmwork-9, wavpcm)
+ 147     if (lucmd > 0) call gpclose(lucmd, 'KEEP')
+#endif
+
+#ifdef BUILD_TDRSP
+C added by Bin Gao, March 21, 2010
+C solves the equation of motion of reduced single-electron density matrix in real time domain
+         if ( LUCMD .lt. 0 ) then
+           call GPOPEN( LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
+     &                  IDUMMY, .FALSE. )
+         end if
+         rewind( LUCMD )
+C tries to find $TDRSP input
+         do while ( .true. )
+           read( LUCMD, '(A)', end=146 ) WORD
+           if ( WORD .eq. '$TDRSP' ) then
+             call tdrsp_driver( WORK(10), LMWORK-9 )
+             exit
+           end if
+         end do
+146      if ( LUCMD .gt. 0 ) call GPCLOSE( LUCMD, 'KEEP' )
+#endif
+
+
          IF (RNABAC) THEN
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
             CALL WLKINI
@@ -1134,6 +1238,7 @@ C
 #include "pcmdef.h"
 #include "pcm.h"
 #include "pcmlog.h"
+#include "wavpcm.h"
 CSONIA
 #include "grdccpt.h"
 #include "infpar.h"
@@ -1142,7 +1247,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 11, NTABLE = 33, D0 = 0.D0)
+      PARAMETER (NDIR = 12, NTABLE = 34, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1155,7 +1260,7 @@ C
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
      &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
-     &            '*READIN'/
+     &            '*READIN', '*QMNPMM'/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
      &            '.INTEGR', '.WAVE F', '.PROPER', !  6
      &            '.INPTES', '.PARALL', '.DIRECT',
@@ -1166,7 +1271,8 @@ C
      &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
-     &            '.THRRED', '.DOUGLA', '.PEQM  '/
+     &            '.THRRED', '.DOUGLA', '.PEQM  ',
+     &            '.WAVPCM'/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1215,6 +1321,7 @@ C
       DIRCAL = .FALSE.
       DOCCSD = .FALSE.
       WESTA  = .FALSE.
+      QMNPMM = .FALSE.
 C     NEWTRA is in /INFTRA/ for practical reasons
       NEWTRA = .FALSE.
       OPTNEW = .FALSE.
@@ -1227,6 +1334,8 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       DKTRAN = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
+      WAVPCM = .FALSE.
+      peqm   = .false.
       IF (NODTOT.GE.1) THEN
          PARCAL = .TRUE.
          DIRCAL = .TRUE.
@@ -1286,7 +1395,6 @@ C
 C
 Cholesky
       CHOINT = .FALSE.
-      ACTIVE = .FALSE.
 Cholesky
 C
 C     Initialize /GRDCCPT/
@@ -1337,7 +1445,7 @@ C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-33: '.THRRED', '.DOUGLA', '.PEQM  '.
+C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.WAVPCM', 
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1351,7 +1459,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                131,132,133), I
+     &                131,132,133,134), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1475,6 +1583,9 @@ C        '.DOUGLA'
  133     continue
             peqm = .true.
          goto 100
+ 134     CONTINUE
+            WAVPCM = .TRUE.
+         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1592,15 +1703,9 @@ C
 Cholesky
       IF (CHOINT) WRITE (LUPRI,'(4X,A)')
      &  'Cholesky decomposition-based calculation will be done'
-      IF (ACTIVE) WRITE (LUPRI,'(4X,A)')
-     &  'Selection of active atoms switched on'
 Cholesky
 C
       WRITE (LUPRI,'(1X,A)') SEPARATOR
-C
-C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
-C              '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
-C              '*READIN', '*GEN1IN'
 C
 C     Initialize for REAINP and READIN (reading of .mol input file)
       IPREAD_ini = IPRUSR + 1
@@ -1614,7 +1719,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10,11), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1696,7 +1801,12 @@ C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
         WRITE(LUPRI,'(//A/)')
      &    ' INFO : "*READIN" is deprecated, use instead "*MOLBAS"'
       GO TO 6
-
+C
+C     "*QMNPMM" input
+   12 CONTINUE
+        call quit('not available in this version')
+!       CALL QMNPINP(WORD)
+      GO TO 200    
 C     "*END OF" or "**something"
     1 CONTINUE
 C
@@ -1977,19 +2087,18 @@ C
 C
 C     Select orbitals and basis fucntions for hybrid CC models.
 C
-      CALL QENTER('SELACT')
+      CALL QENTER('EXEACT')
 C
-      CALL TITLER('Starting in Selact Section',' ',200)
+      CALL TITLER('Starting in Choact Section',' ',200)
 C
-C_not_yet     CALL CC_SELACT(WORK(1),LMWORK)
-      write(lupri,*) 'INFO: SELACT is not yet implemented. Skipped.'
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SELECT_ACTIVE')
+      CALL CC_SELACT(WORK(1),LMWORK)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOACT')
 C
 ctst  CLOSE(24)
-      CALL TITLER('End of Selact Section',' ',200)
+      CALL TITLER('End of Choact Section',' ',200)
 C
       CALL FLSHFO(LUPRI)
-      CALL QEXIT('SELACT')
+      CALL QEXIT('EXEACT')
       RETURN
       END
 C --- end of dalgnr.F ---

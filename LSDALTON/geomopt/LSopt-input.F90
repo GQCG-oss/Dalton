@@ -334,7 +334,7 @@ Do
                  Case('.NUMOPT')
                     WRITE(LUPRI,*) 'Numerical Gradient geometry optimization calculations are carried out'
                     optinfo%doNumGradGeomOpt = .True.
-                 Case('.NUMMESH')
+                 Case('.NUMESH')
                     Read(lucmd,*) optinfo%findif_mesh
                  Case('.BAKER')
                    optinfo%Baker = .TRUE.

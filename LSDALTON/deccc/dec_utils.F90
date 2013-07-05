@@ -17,7 +17,7 @@ module dec_fragment_utils
   use matrix_operations
   use IntegralInterfaceMOD!, only: ii_get_h1, ii_get_nucpot
   use BUILDAOBATCH
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
 #endif
 
@@ -2098,7 +2098,7 @@ retval=0
     end if
 
     ! delete dalton input
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
     ! Quick fix such that lsitem is never handled for global master                                
     ! as this will destroy the overall MPI framework.
     if(infpar%mynum/=infpar%master) call ls_free(fragment%mylsitem)

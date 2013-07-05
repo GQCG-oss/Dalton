@@ -6,12 +6,12 @@ use IIDFTINT, only: II_DFTINT, II_DFTDISP, TEST_NELECTRONS
 use dft_type
 use dft_memory_handling
 use IIDFTKSMWORK
-#if MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
 use IIABSVALINT
 #endif
 !WARNING you must not add memory_handling, all memory goes through 
 !grid_memory_handling  module so as to determine the memory used in this module.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
   use infpar_module
   use lsmpi_mod
   use Integralparameters,only: LSMPI_IIDFTKSM,IIDFTGEO,IIDFTLIN,IIDFTQRS,&
@@ -62,7 +62,7 @@ NGEODRV=0
 DOLND=.FALSE.
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !MPI Specific
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(LSMPI_IIDFTKSM,infpar%master,setting%comm)
@@ -87,7 +87,7 @@ IF(DOGGA) THEN
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODRV,DOLND,&
            & II_DFT_KSMGGA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !=================MPI Specific================================
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
@@ -132,7 +132,7 @@ ELSE
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODRV,DOLND,&
            & II_DFT_KSMLDA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    END IF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !=================MPI Specific================================
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
@@ -155,7 +155,7 @@ ELSE
 #endif
 ENDIF
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF(setting%node.EQ.infpar%master) THEN
    !master test for the correct number of electrons
    IF (SETTING%SCHEME%DFT%testNelectrons) THEN
@@ -183,7 +183,7 @@ IF(setting%node.EQ.infpar%master) THEN
    
    ENERGY = DFTDATA%ENERGY
    call mem_dft_dealloc(DFTDATA%ENERGY)
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ENDIF
 #endif
 
@@ -212,12 +212,12 @@ REAL(REALK),intent(in) :: CMAT(NBAST,NBAST)
 !> absolute valued Overlap matrix
 REAL(REALK),intent(inout) :: ABSVALOVERLAP(NBAST,NBAST)
 !
-#if MOD_UNRELEASED
+#ifdef MOD_UNRELEASED
 LOGICAL          :: USE_MPI
 REAL(REALK)      :: DFTHRI
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !MPI Specific
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(LSMPI_IIDFTABSVALOVERLAP,infpar%master,setting%comm)
@@ -231,7 +231,7 @@ DFTHRI = 1.0E-16_realk
 call II_ABSVALINT(LUPRI,IPRINT,SETTING,CMAT,NBAST,ABSVALOVERLAP,USE_MPI,&
      & DFTHRI)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !=================MPI Specific================================
 IF(USE_MPI)THEN
    call lsmpi_barrier(setting%comm)    
@@ -285,7 +285,7 @@ DOLND=.FALSE.
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !MPI Specific
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(LSMPI_IIDFTKSME,infpar%master,setting%comm)
@@ -307,7 +307,7 @@ IF(DOGGA) THEN
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODRV,DOLND,&
            & II_DFT_KSMEGGA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !=================MPI Specific================================
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
@@ -339,7 +339,7 @@ ELSE
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,NGEODRV,DOLND,&
            & II_DFT_KSMELDA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    END IF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 !=================MPI Specific================================
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
@@ -361,7 +361,7 @@ ELSE
 #endif
 ENDIF
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF(setting%node.EQ.infpar%master) THEN
    !master test for the correct number of electrons
    CALL TEST_NELECTRONS(ELECTRONS,SETTING%MOLECULE(1)%p%NELECTRONS,&
@@ -388,7 +388,7 @@ IF(setting%node.EQ.infpar%master) THEN
    ENERGY = DFTDATA%ENERGY
    call mem_dft_dealloc(DFTDATA%ENERGY)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ENDIF !(setting%node.EQ.infpar%master) THEN
 #endif
 
@@ -430,7 +430,7 @@ REAL(REALK)      :: ELECTRONS(ndmat)
 ELECTRONS = 0E0_realk
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTGEO,infpar%master,setting%comm)
    IF(USE_MPI)call lsmpi_XCgeneric_masterToSlave(SETTING,LUPRI,IPRINT,nbast,&
@@ -452,7 +452,7 @@ ELSE
    CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,1,.FALSE.,&
         & II_geoderiv_molgrad_worker_lda,DFTDATA,UNRES,ELECTRONS,USE_MPI)
 ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
       CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,MPI_COMM_LSDALTON)
@@ -463,13 +463,13 @@ IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
      &     'KS electrons:', ELECTRONS(1),' rel.err:', (ELECTRONS(1)-NELE)/(NELE)
 #endif
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
 #endif
    ! add eventually empirical dispersion correction \Andreas Krapp Only Master
    CALL II_DFTDISP(SETTING,DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,1,LUPRI,IPRINT)
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 ENDIF
 #endif
 
@@ -506,7 +506,7 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTLIN,infpar%master,setting%comm)
    IF(USE_MPI)call lsmpi_XCgeneric_masterToSlave(SETTING,LUPRI,IPRINT,nbast,&
@@ -530,7 +530,7 @@ IF(DOGGA) THEN
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,0,.FALSE.,&
            & II_DFT_LINRSPGGA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
       CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,DFTDATA%NBMAT,infpar%master,MPI_COMM_LSDALTON)
@@ -560,14 +560,14 @@ ELSE
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,0,.FALSE.,&
            & II_DFT_LINRSPLDA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    END IF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
       CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,DFTDATA%NBMAT,infpar%master,MPI_COMM_LSDALTON)
    ENDIF
 #endif
 ENDIF
-#ifndef VAR_LSMPI
+#ifndef VAR_MPI
 NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
 IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
      &     'KS electrons:', ELECTRONS(1),&
@@ -606,7 +606,7 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTQRS,infpar%master,setting%comm)
    IF(USE_MPI)call lsmpi_XCgeneric_masterToSlave(SETTING,LUPRI,IPRINT,nbast,&
@@ -629,7 +629,7 @@ IF(DOGGA) THEN
            & II_DFT_QUADRSPGGA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
       !        CALL LSQUIT('II_DFT_QUADRSPGGA NOT DONE YET',lupri)
    ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
       CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,MPI_COMM_LSDALTON)
@@ -657,7 +657,7 @@ ELSE
       CALL II_DFTINT(LUPRI,IPRINT,SETTING,DMAT,NBAST,NDMAT,0,.FALSE.,&
            & II_DFT_QUADRSPLDA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    END IF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
       CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT,infpar%master,MPI_COMM_LSDALTON)
@@ -665,7 +665,7 @@ ELSE
 #endif
 ENDIF
 
-#ifndef VAR_LSMPI
+#ifndef VAR_MPI
   NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
   IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
        &     'KS electrons:', ELECTRONS(1),&
@@ -705,7 +705,7 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTMAG,infpar%master,setting%comm)
    IF(USE_MPI)call lsmpi_XCgeneric_masterToSlave(SETTING,LUPRI,IPRINT,nbast,&
@@ -742,7 +742,7 @@ ELSE
            & II_DFT_magderiv_kohnshamLDA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    END IF
 ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
       CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NDMAT*3,infpar%master,MPI_COMM_LSDALTON)
@@ -792,7 +792,7 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTMAL,infpar%master,setting%comm)
    IF(USE_MPI)call lsmpi_XCgeneric_masterToSlave(SETTING,LUPRI,IPRINT,nbast,&
@@ -830,7 +830,7 @@ ELSE
            & II_DFT_MAGDERIV_LINRSPLDA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    END IF
 ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
       CALL lsmpi_reduction(DFTDATA%FKSM,NBAST,NBAST,NBMAT*3,infpar%master,MPI_COMM_LSDALTON)
@@ -858,7 +858,7 @@ ENDIF
         END DO
      END DO
   END DO
-#ifndef VAR_LSMPI
+#ifndef VAR_MPI
   NELE = REAL(SETTING%MOLECULE(1)%p%NELECTRONS)
   IF(IPRINT.GE. 0) WRITE(LUPRI,'(A,F20.14,A,E9.2)')&
        &     'KS electrons:', ELECTRONS(1),&
@@ -898,7 +898,7 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTGKS,infpar%master,setting%comm)
    IF(USE_MPI)call lsmpi_XCgeneric_masterToSlave(SETTING,LUPRI,IPRINT,nbast,&
@@ -937,7 +937,7 @@ ELSE
            & II_DFT_geoderiv_kohnshamLDA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    END IF
 ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
       CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,MPI_COMM_LSDALTON)
@@ -977,7 +977,7 @@ ELECTRONS = 0E0_realk
 
 USE_MPI = .TRUE.
 IF(SETTING%MOLECULE(1)%p%NATOMS.EQ.1)USE_MPI=.FALSE.
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 IF (setting%node.EQ.infpar%master) THEN
    IF(USE_MPI)call ls_mpibcast(IIDFTGLR,infpar%master,setting%comm)
    IF(USE_MPI)call lsmpi_XCgeneric_masterToSlave(SETTING,LUPRI,IPRINT,nbast,&
@@ -1016,7 +1016,7 @@ ELSE
            & II_DFT_geoderiv_linrspLDA,DFTDATA,UNRES,ELECTRONS,USE_MPI)
    END IF
 ENDIF
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
    IF(USE_MPI)THEN
       call lsmpi_barrier(setting%comm)    
       CALL lsmpi_reduction(DFTDATA%GRAD,3,SETTING%MOLECULE(1)%p%NATOMS,infpar%master,MPI_COMM_LSDALTON)
@@ -1027,7 +1027,7 @@ END SUBROUTINE II_DFT_GEODERIV_LINRSPGRAD
 
 END MODULE IIDFTKSM
 
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 SUBROUTINE lsmpi_bufferDFTessentials1(LUPRI,IPRINT,NBAST,NDMAT,UNRES,comm)
 use lsmpi_mod
 use infpar_module
