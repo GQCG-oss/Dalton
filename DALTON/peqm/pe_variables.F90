@@ -69,7 +69,7 @@ module pe_variables
     real(dp), save :: thriter = 1.0d-8
     real(dp), save :: damp = 2.1304
     real(dp), save :: Rmin = 2.2
-    integer, save :: nredist = 3
+    integer, save :: nredist = 1
     character(len=6), save :: border_type = 'REDIST'
     ! use Cholesky factorization of classical response matrix
     logical, save :: chol = .true.
