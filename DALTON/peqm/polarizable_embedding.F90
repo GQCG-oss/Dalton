@@ -199,6 +199,10 @@ subroutine pe_init(lupri, coords, charges)
             end do
         else if ((border_type == 'REDIST') .or. (border_type == 'REDISA') .or.&
                 &(border_type == 'REDISC')) then
+            if (border_type == 'REDIST') then
+                border_type = 'REDISA'
+                nredist = 1
+            end if
             redist = real(nredist, dp)
             allocate(redists(nsites))
             redists = .false.
@@ -346,7 +350,7 @@ subroutine pe_init(lupri, coords, charges)
                 if (lpol(1)) then
                     P1s(:,idxs(i)) = 0.0d0
                 end if
-                if ((border_type == 'REDISC') .or. (border_type == 'REDIST')) then
+                if (border_type == 'REDISC') then
                     write(luout,'(/4x,a,i6)') 'Redistributing charges from site:',&
                                               & idxs(i)
                     if (nredist == 3) then
