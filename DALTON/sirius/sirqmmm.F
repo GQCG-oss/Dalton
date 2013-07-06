@@ -1081,7 +1081,7 @@ C     file. ELSE: read matrix from the file. CONMAT = CONstruct MATrix
 
         CALL MAKE_QMMM_INVERSE_RESPONSE_MATRIX(INVMAT,POLDIM) ! Construct inverse response matrix
 
-        IF (IPRINT .GT. 15) THEN
+        IF (IPRINT .GT. 1) THEN
           WRITE(LUPRI,*)
           WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' explicitly constructed. '
@@ -1141,7 +1141,7 @@ C       We write the classical response matrix to file
 
       ELSE  ! read the inverted matrix from the file
 
-        IF (IPRINT .GT. 15) THEN
+        IF (IPRINT .GT. 5) THEN
           WRITE(LUPRI,*)
           WRITE(LUPRI,*) ' The classical response matrix is'//
      &                   ' read from the file. '

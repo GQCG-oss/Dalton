@@ -13,5 +13,5 @@
 !     around 2000 - 3000!!! Remember to set MXQM3 = MXCENT_QM in qm3.h!!!
 !
       INTEGER MXCENT_QM, MXCENT, MXCOOR
-      PARAMETER (MXCENT_QM = 250, MXCENT = 250, MXCOOR = 3*MXCENT)
+      PARAMETER (MXCENT_QM =120, MXCENT = 120, MXCOOR = 3*MXCENT)
 ! -- end of mxcent.h --

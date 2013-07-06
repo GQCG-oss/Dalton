@@ -401,7 +401,6 @@ C
 !            write(lupri,*) '    Results *WILL* be wrong    '
             call quit('ERROR: MCSCF quadratic response not'//
      &                ' implemented with PE module.')
-
             write(lupri,*)'KFREE', KFREE
             write(lupri,*)'LFREE', LFREE
 
@@ -417,7 +416,6 @@ C
             call quit('ERROR: triplets not implemented for quadratic'//
      &                ' response with PE module.')
         endif
-        
         call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
      &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
      &                 isyma, isymb, isymc, cmo, mjwop)

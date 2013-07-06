@@ -57,7 +57,7 @@ C
       CALL QENTER('QMMMFIRST')
       IF (MMTIME) DTIME = SECOND()
 
-      LOCDEB = .TRUE.
+      LOCDEB = .FALSE.
 
 C     If we have BOTH permanent dipoles AND induced dipoles then these
 C     can be added together and we can treat the effect of those

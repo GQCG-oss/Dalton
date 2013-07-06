@@ -758,13 +758,15 @@ C
         real*8, dimension(:), allocatable :: ovlp
         logical :: lexist, lopen
 
+        call qenter('pe_rsplno')
+
         ! return if no polarization and not MCSCF
         if ((kzconf == 0) .and. .not. pe_polar) then
             return
         ! no polarization for triplet excitations in closed shell
         else if ((nasht == 0) .and. trplet) then
             return
-        ! ground state polarization
+        ! ground state polarization approximation
         else if (pe_gspol) then
             return
         ! triplet response for open shell systems not ready yet
@@ -776,8 +778,7 @@ C
 
         lopen = .false.
 
-        call qenter('pe_rsplno')
-         
+        
         if (.not. tdhf) then
             ! Read Fg = V - <0|F|0>Fe from file
             allocate(fpemo(nnorbx))
@@ -826,7 +827,6 @@ C
 !            if (trplet) then
 !                call dgefsp(nbast, dcaotr, daotrs(j))
 !            end if
-   
         end do
         deallocate(dcao, dvao)
 !        if (trplet) then
@@ -1251,8 +1251,6 @@ C
         end subroutine pe_rspmcqr
 
 !------------------------------------------------------------------------------
-
-
 
       subroutine pe_rspqro(vecb, vecc, etrs, xindx, zymb, zymc,
      &                 udv, wrk, nwrk, kzyva, kzyvb, kzyvc,

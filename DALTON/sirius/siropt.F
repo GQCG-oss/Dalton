@@ -2561,10 +2561,7 @@ C
 #include "cbirea.h"
 #include "r12int.h"
 #include "qmmm.h"
-C----------------
-C CBN+JK 03.01.06 gnrinf.h included
 #include "gnrinf.h"
-C----------------
 C
       LOGICAL     FNDLAB, ORBHES, LGLOCAL, EXP1VL, TOFILE
 C
