@@ -469,7 +469,6 @@ C
          CALL pe_lin(ncsim, nosim, bcvecs, bovecs, cref, cmo, indxci,
      &               dv, wrk(kdtv), wrk(kscvec), wrk(ksovec), orblin,
      &               wrk(k3a), l3a)
-         CALL FLSHFO(LUPRI)
          CALL GETTIM(T5,W5)
       ELSE
          T5 = T4

@@ -92,7 +92,7 @@ module pe_variables
     real(dp), save :: gauss_factor = 1.0
     real(dp), dimension(3), save :: repfacs = 1.0
     real(dp), save :: Rmin = 2.2
-    integer, save :: nredist = 3
+    integer, save :: nredist = 1
     character(len=6), save :: border_type = 'REDIST'
     ! use Cholesky factorization of classical response matrix
     logical, save :: chol = .true.
@@ -135,6 +135,7 @@ module pe_variables
     ! ----------------------
     integer, save :: nqmpoltensors = 0
     real(dp), dimension(:,:), allocatable, save :: qmpoltensors
+    real(dp), save :: qmdamp
     ! ----------------------
 
     ! specifies what type of parameters are present

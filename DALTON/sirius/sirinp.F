@@ -5349,13 +5349,13 @@ C          to get here unless someone modifies SIRIUS incorrectly
             IF (WFTYPE .EQ. ' ') WFTYPE='KS-DFT'
             WRITE (IWUNIT,1053) ' Kohn-Sham DFT calculation.'
             IF ( DORSP ) WRITE (IWUNIT,1050)
-     &          'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
+     *         'Time-dependent Kohn-Sham DFT calculation (TD-DFT).'
          ELSE
             IF (WFTYPE .EQ. ' ') WFTYPE='HF'
             WRITE (IWUNIT,1053) ' Hartree-Fock calculation.'
             IF ( DORSP ) WRITE (IWUNIT,1050)
-     *          'Time-dependent Hartree-Fock calculation '//
-     *          '(random phase approximation).'
+     *         'Time-dependent Hartree-Fock calculation '//
+     *         '(random phase approximation).'
          END IF
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE

@@ -169,6 +169,7 @@ subroutine pe_init(lupri, coords, charges)
             do i = 1, qmnucs
                 write(luout,'(8x,6f8.4)') (qmpoltensors(j,i),j=1,6)
             enddo
+            write(luout,'(/4x,a,f8.4)') 'and damping coefficient:', qmdamp
         endif
     end if
     if (pe_fd) then
@@ -245,6 +246,10 @@ subroutine pe_init(lupri, coords, charges)
             end do
         else if ((border_type == 'REDIST') .or. (border_type == 'REDISA') .or.&
                 &(border_type == 'REDISC')) then
+            if (border_type == 'REDIST') then
+                border_type = 'REDISA'
+                nredist = 1
+            end if
             redist = real(nredist, dp)
             allocate(redists(nsites))
             redists = .false.
@@ -392,7 +397,7 @@ subroutine pe_init(lupri, coords, charges)
                 if (lpol(1)) then
                     P1s(:,idxs(i)) = 0.0d0
                 end if
-                if ((border_type == 'REDISC') .or. (border_type == 'REDIST')) then
+                if (border_type == 'REDISC') then
                     write(luout,'(/4x,a,i6)') 'Redistributing charges from site:',&
                                               & idxs(i)
                     if (nredist == 3) then
@@ -625,6 +630,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
         ! tensor for each core. here we have no clue about the core
         ! so do it the manual way
         else if (trim(option(2:)) == 'QMDAMP') then
+            read(luinp,*) qmdamp
             read(luinp,*) nqmpoltensors
             read(luinp,*) option
             !no backspace here, apparently :-/
@@ -1576,6 +1582,7 @@ subroutine pe_sync()
         call mpi_bcast(damp, 1, rmpi, 0, comm, ierr)
         call mpi_bcast(pe_qmdamping, 1, lmpi, 0, comm, ierr)
         if (pe_qmdamping) then
+            call mpi_bcast(qmdamp, 1, rmpi, 0, comm, ierr)
             call mpi_bcast(nqmpoltensors, 1, impi, 0, comm, ierr)
             if (myid /= 0 .and. .not. allocated(qmpoltensors)) &
                 & allocate(qmpoltensors(6, nqmpoltensors))
@@ -8115,7 +8122,6 @@ subroutine thole_damping_for_site(Ri, P1i, dfact)
 
     real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
-    real(dp), parameter :: k = 2.1304
 
     ! set some sensible standards
     dfact = 1.0d0
@@ -8141,7 +8147,7 @@ subroutine thole_damping_for_site(Ri, P1i, dfact)
                & +qmpoltensors(6,iqmnuc))
     alphai = d3i*(P1i(1)+P1i(4)+P1i(6))
     alpha = (alphaa*alphai)**d6i
-    uia = sqrt(Ria)*k / alpha
+    uia = sqrt(Ria)*qmdamp / alpha
 
     dfact = 1.0d0 - (1.0d0 + uia + 0.5d0*uia*uia)*exp(-uia)
 

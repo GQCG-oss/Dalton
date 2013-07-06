@@ -445,7 +445,6 @@ C
 C We keep to outer loop over NDMAT, but the actual work is
 C transfered to FCKCON, which is also used by eri and sirius.
 C
-
       DO 400 I = 1,NDMAT
         FCM = DNSBUF(1,I)*AOMAX
         FEM = DNSBUF(2,I)*AOMAX

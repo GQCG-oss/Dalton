@@ -451,7 +451,6 @@ C           workspace for array SORTED.
       IF (NEWGEO) NEWGEO = .FALSE.
       IF (NEWBAS) NEWBAS = .FALSE.
 C
-
       CALL QEXIT('HER_PARDRV_1')
       RETURN
       END
