@@ -835,9 +835,9 @@ subroutine DEC_meaningful_input(config)
   ! a full CC calculation
   DECcalculation: if(config%doDEC) then
 
-     ! Full CCSD does not work for SCALAPACK, Hubi please fix!
-     if(matrix_type==mtype_scalapack .and. DECinfo%full_molecular_cc) then
-        call lsquit('Error in input: **CC cannot be used together with .SCALAPACK!',-1)
+     ! CCSD does not work for SCALAPACK, Hubi please fix!
+     if(matrix_type==mtype_scalapack .and. (DECinfo%ccmodel/=1) ) then
+        call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .SCALAPACK!',-1)
      end if
 
      ! DEC and response do not go together right now...
