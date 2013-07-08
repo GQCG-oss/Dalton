@@ -634,6 +634,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
   integer :: scheme,nocc,nunocc,MinAObatch,iter
   real(realk) :: MemFree
+  integer(kind=8) :: dummy
 
   ! Initialize stuff (just dummy arguments here)
   nullify(orb2batchAlpha)
@@ -663,7 +664,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
      call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch)
      call get_currently_available_memory(MemFree)
      call get_max_batch_sizes(scheme,MyFragment%number_basis,nunocc,nocc,bat%MaxAllowedDimAlpha,&
-          & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.)
+          & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,dummy)
   end if
 
 

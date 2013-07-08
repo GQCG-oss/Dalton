@@ -211,7 +211,11 @@ contains
         if(present(wrk).and.present(iwrk))then
           call add_data2tiled_intiles_explicitbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o,wrk,iwrk)
         else
-          call add_data2tiled_intiles_stackbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o)
+          if(b==1.0E0_realk)then
+            call add_data2tiled_intiles_nobuffer(arrx,fortarry,arrx%dims,arrx%mode,o)
+          else
+            call add_data2tiled_intiles_stackbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o)
+          endif
         endif
     end select
   end subroutine array_add_fullfort2arr
