@@ -1469,7 +1469,7 @@ module lspdm_tensor_operations_module
     integer,pointer :: u_o(:),u_ro(:),tinfo(:,:)
     integer,pointer ::for3,for4
     real(realk), pointer :: p_fort(:,:,:)
-    integer :: tsze(arr%mode),nelmsit,b1,b2
+    integer :: tsze(arr%mode),mult1,mult2
     procedure(lsmpi_put_realk), pointer :: pga => null()
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: source
@@ -1520,12 +1520,16 @@ module lspdm_tensor_operations_module
       for3 => fx(3)
       for4 => fx(4) 
       tidx = 1
+      mult1 = arr%ntpm(1) * arr%ntpm(2)
+      mult2 = arr%ntpm(1) * arr%ntpm(2) * arr%ntpm(3)
 
       !precalculate tile dimensions and positions
-      call mem_alloc(tinfo,arr%ntiles,5)
+      call mem_alloc(tinfo,arr%ntiles,7)
       do ctidx = 1, arr%ntiles
         tinfo(ctidx,1) = get_residence_of_tile(ctidx,arr)
         call get_tile_dim(tinfo(ctidx,2:5),arr,ctidx)
+        tinfo(ctidx,6) = tinfo(ctidx,2) * tinfo(ctidx,3)
+        tinfo(ctidx,7) = tinfo(ctidx,2) * tinfo(ctidx,3) * tinfo(ctidx,4)
       enddo
       call ass_D1to3(fort,p_fort,[tl,fordims(3),fordims(4)])
 
@@ -1543,8 +1547,12 @@ module lspdm_tensor_operations_module
                 idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
               enddo
        
-              ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
-              cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
+              !ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
+              ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                       & mult1 + (tidx(4)-1) * mult2
+              !cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
+              cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                       &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
        
               call pga(p_fort(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
             enddo
@@ -1564,8 +1572,12 @@ module lspdm_tensor_operations_module
                 idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
               enddo
        
-              ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
-              cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
+              !ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
+              ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                       & mult1 + (tidx(4)-1) * mult2
+              !cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
+              cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                       &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
        
               call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
               call pga(p_fort(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
@@ -1591,46 +1603,34 @@ module lspdm_tensor_operations_module
         do c1 = fel, lel
           call get_midx(c1,fx(1:n2comb),fordims(1:n2comb),n2comb)
  
-          !if(infpar%lg_mynum==1)then
-          !  print *,"full: ",fx
-          !endif
           !get the information about the required index in the context of the
           !array, i.e. which tile and which index in the tile
           !also get the position of the index in the batched matrix
+
           do i = 1, arr%mode
-            !oldidx(i) = fx(u_ro(i))
             tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
             idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
           enddo
-          !if(infpar%lg_mynum==1)then
-          !  print *,"old:  ",oldidx
-          !  print *,"tidx: ",tidx
-          !  print *,"idxt: ",idxt
-          !endif
-          !get the combined indices
+
+          !get the combined indices, find all positions
           ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
           call get_tile_dim(tsze,arr,ctidx)
           cidxt  = get_cidx(idxt,tsze,arr%mode)
           source = get_residence_of_tile(ctidx,arr)
           cidxf  = get_cidx([c1-fel+1,c2],[tl,comb2],2)
- 
-          !if(infpar%lg_mynum==1)then
-          !  print *,"ctidx:",ctidx,arr%ntiles
-          !  print *,"cidxt:",cidxt,tsze
-          !  print *,"cidxf:",cidxf,tl*comb2,c1-fel+1,c2,comb1,comb2
-          !endif
+     
+          !get the element from the correct place to the correct place
           if(.not.lock_outside)call arr_lock_win(arr,ctidx,'s')
           call pga(fort(cidxf),cidxt,source,arr%wi(ctidx))
-          !if(op=='g')call lsmpi_get(fort(cidxf),cidxt,source,arr%wi(ctidx))
-          !if(op=='p')call lsmpi_put(fort(cidxf),cidxt,source,arr%wi(ctidx))
-          !if(op=='a')call lsmpi_acc(fort(cidxf),cidxt,source,arr%wi(ctidx))
           if(.not.lock_outside)call arr_unlock_win(arr,ctidx)
+
         enddo
       enddo
     endif
 
     u_o  => null()
     u_ro => null()
+    pga  => null()
 #else
     call lsquit("ERROR(array_gather_to_two_dim_1batch):this routine is MPI only",-1)
 #endif
