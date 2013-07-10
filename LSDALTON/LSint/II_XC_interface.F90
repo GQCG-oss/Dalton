@@ -12,6 +12,7 @@ module II_XC_interfaceModule
   use IIDFTKSM
   use IIDFTINT, only: II_DFTDISP
   use DFT_type
+  use GCtransMod
   private
   public :: II_get_xc_Fock_mat,&
        & II_get_AbsoluteValue_overlap, II_get_xc_energy,&

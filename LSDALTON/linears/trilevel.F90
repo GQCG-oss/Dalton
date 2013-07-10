@@ -897,7 +897,7 @@ end subroutine trilevel_ALLOC_SYNC_GCTRANS
 !> \param opt optItem containing info about scf optimization
 !> \param ls lsitem structure containing integral,molecule,basis info
 !> \param ai trilevel_atominfo structure containing info about the unique atoms
-SUBROUTINE trilevel_gcbasis(opt,ls,ai,LUPRI,LUERR)
+SUBROUTINE trilevel_gcbasis(opt,ls,ai,matrix_sav,LUPRI,LUERR)
 use READMOLEFILE
 use BUILDBASISSET
 use opttype
@@ -906,9 +906,10 @@ use memory_handling
 use typedeftype, only: lssetting, lsitem
 use molecule_typetype, only: moleculeinfo
 use basis_typetype, only: basisinfo, basissetinfo
+use GCtransMod, only: write_GCtransformationmatrix
 IMPLICIT NONE
 type(optItem)       :: opt
-INTEGER             :: I,LUPRI,LUERR,IPRINT
+INTEGER             :: I,LUPRI,LUERR,IPRINT,matrix_sav
 TYPE(lsitem),intent(inout) :: ls
 type(trilevel_atominfo) :: ai
 TYPE(lsitem),pointer :: atomic_ls
@@ -1015,7 +1016,10 @@ enddo
 ls%setting%integraltransformGC = integraltransformGC
 IF(ls%setting%integraltransformGC)THEN
    nbast = getNbasis(AORdefault,Contractedinttype,ls%input%MOLECULE,LUPRI)
+   !we in some cases write the transformation matrix in type matrix format to be used later
+   call mat_select_type(matrix_sav,lupri)
    call write_GCtransformationmatrix(nbast,ls%setting,lupri)
+   call mat_select_type(mtype_dense,lupri)
 ENDIF
 ls%optlevel = 3
 
@@ -1388,7 +1392,7 @@ logical                 :: unres_sav
      call trilevel_atominfo_init(ai,ls,gcopt%LUPRI)
      
      !main driver to build the grand canonical basis
-     call trilevel_gcbasis(gcopt,ls,ai,gcopt%LUPRI,gcopt%LUERR)
+     call trilevel_gcbasis(gcopt,ls,ai,matrix_sav,gcopt%LUPRI,gcopt%LUERR)
      
      !free atominfo
      call trilevel_atominfo_free(ai)
