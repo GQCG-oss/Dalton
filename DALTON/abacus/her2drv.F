@@ -30,7 +30,7 @@ C  /* Deck twoint */
      &                  JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRINTD,
      &                  RETUR,ISHLA,I2TYP,JSTRSH,NPRIMS,NCONTS,
      &                  IORBSH,ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                  DINTSKP,RELCAL,GENCNT)
+     &                  DINTSKP,RELCAL)
 C
 C     Trygve Helgaker, University of Oslo, Norway, 1984
 C
@@ -63,7 +63,7 @@ C
       PARAMETER (D0 = 0.00 D00)
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DIRFCK, RETUR, TTIME,
      &        NOCONT, SPNORB, DIA2SO, ZFS2EL, DISTRI, SQ12EL, LONDON,
-     &        SUSCEP, DDFOCK, ADISTR,SOFOCK,RELCAL,GENCNT
+     &        SUSCEP, DDFOCK, ADISTR,SOFOCK,RELCAL
       DIMENSION HESSEE(*),DMAT(*), FMAT(*), GMAT(*), IREPDM(*),
      &        IFCTYP(*),DINTSKP(*),GABRAO(*),DMRAO(*),DMRSO(*),
      &        JSTRSH(*), NPRIMS(*), NCONTS(*), IORBSH(*),
@@ -171,7 +171,7 @@ C
      &            MAXDIS,SQ12EL,RETUR,NHTYP,IREPDM,IFCTYP,ISHLA,ADISTR,
      &            ITYPE,JSTRSH,NPRIMS,NCONTS,IORBSH,
      &            I2TYP,ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,
-     &            RELCAL,GENCNT)
+     &            RELCAL)
       CALL GETTIM(TIMEND,DUMTIM)
       T2INT = TIMEND - T2INT
 C
@@ -264,7 +264,7 @@ C  /* Deck twocal */
      &            MAXDIS,SQ12EL,RETUR,NHTYP,IREPDM,IFCTYP,ISHLA,ADISTR,
      &            ITYPE,JSTRSH,NPRIMS,NCONTS,IORBSH,
      &            I2TYP,ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,
-     &            RELCAL,GENCNT)
+     &            RELCAL)
       use pe_variables, only: pe_twoint
 #include "implicit.h"
 #include "priunit.h"
@@ -273,7 +273,7 @@ C  /* Deck twocal */
 #include "maxorb.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK, RETUR,
      &        NOCONT, LONDON, SPNORB, DIA2SO, ZFS2EL, DISTRI, SQ12EL,
-     &        SUSCEP, ADISTR, RELCAL, GENCNT
+     &        SUSCEP, ADISTR, RELCAL
       DIMENSION DMAT(*), FMAT(*), HESSEE(*),GMAT(*), IREPDM(*),
      &          IFCTYP(*), INDXAB(*), JSTRSH(*), NPRIMS(*), NCONTS(*),
      &          IORBSH(*),GABRAO(*),DMRAO(*), DMRSO(*),DINTSKP(*),
@@ -345,7 +345,7 @@ C
      &               NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,
      &               IPRNTD,NUMDIS,MAXDIS,SQ12EL,WORK(KINDHR),
      &               WORK(KINDSQ),WORK(KIODHR),IFCTYP,ADISTR,I2TYP,
-     &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL,GENCNT)
+     &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL)
       ELSE IF (ADISTR) THEN
 C
 C        All g_abcd for given index a
@@ -358,7 +358,7 @@ C
      &               NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &               RETUR,SQ12EL,WORK(KINDHR),WORK(KINDSQ),
      &               WORK(KIODHR),IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,
-     &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL,GENCNT)
+     &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL)
 C
       else if (pe_twoint) then
 !
@@ -398,7 +398,7 @@ C
      &           WORK(KTKCPU),WORK(KWHICH),WORK(KIJS),
      &           IREPDM,IFCTYP,ADISTR,ITYPE,JSTRSH,NPRIMS,NCONTS,
      &           IORBSH,I2TYP,ICEDIF,IFTHRS,
-     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,GENCNT)
+     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL)
          ELSE
 #endif
             CALL TWOLOP(WORK(KLAST),LWRK,HESSEE,FMAT,DMAT,NDMAT,
@@ -409,7 +409,7 @@ C
      &           SQ12EL,WORK(KINDHR),WORK(KINDSQ),WORK(KIODHR),
      &           IREPDM,IFCTYP,ADISTR,I2TYP,JSTRSH,NPRIMS,NCONTS,
      &           IORBSH,ICEDIF,IFTHRS,
-     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,WORK(KTFMAT),GENCNT)
+     &           GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,WORK(KTFMAT))
 #if defined (VAR_MPI) || defined (VAR_PVM)
          END IF
 #endif
@@ -425,7 +425,7 @@ C  /* Deck twolop */
      &                  IPRNTC,IPRNTD,RETUR,SQ12EL,INDHER,INDHSQ,IODDHR,
      &                  IREPDM,IFCTYP,ADISTR,I2TYP,JSTRSH,NPRIMS,NCONTS,
      &                  IORBSH,ICEDIF,IFTHRS,
-     &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,TFMAT,GENCNT)
+     &                  GABRAO,DMRAO,DMRSO,DINTSKP,RELCAL,TFMAT)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -437,7 +437,7 @@ C
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR,
-     &        SOFOCK,RELCAL, DIA2SO, ZFS2EL, GENCNT
+     &        SOFOCK,RELCAL, DIA2SO, ZFS2EL
       DIMENSION DMAT(*), GMAT(*), HESSEE(*), IREPDM(*),
      &        IFCTYP(*), INDHSQ(*), IODDHR(*), INDHER(*),
      &        IORBSH(MXSHEL,MXAOVC), JSTRSH(*), NPRIMS(*), NCONTS(*),
@@ -781,7 +781,7 @@ C
      &                        FIRST,SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
      &                        ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,DUMMY,
      &                        ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,
-     &                        DMRSO,IREPDM,GENCNT)
+     &                        DMRSO,IREPDM)
 
        ELSE
 #endif
@@ -793,7 +793,7 @@ C
      &                        FIRST,SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,
      &                        ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,DUMMY,
      &                        ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,
-     &                        DMRSO,IREPDM,GENCNT)
+     &                        DMRSO,IREPDM)
 #if defined (VAR_VECTOR)
        END IF
 #endif
@@ -1266,7 +1266,7 @@ C  /* Deck twodsa */
      &                  NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,IPRNTB,
      &                  IPRNTC,IPRNTD,RETUR,SQ12EL,INDHER,INDHSQ,IODDHR,
      &                  IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,JSTRSH,NPRIMS,
-     &                  NCONTS,IORBSH,RELCAL,GENCNT)
+     &                  NCONTS,IORBSH,RELCAL)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1280,7 +1280,7 @@ C      PARAMETER (LBUF = 600)
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        RETUR, FIRST, SQ12EL, LONDON, SUSCEP, ADISTR, DOINDX,
-     &        SOFOCK,RELCAL, DIA2SO, ZFS2EL, GENCNT
+     &        SOFOCK,RELCAL, DIA2SO, ZFS2EL
       DIMENSION DMAT(*), FMAT(*), GMAT(*), HESSEE(*), IREPDM(*),
      &        IFCTYP(*), INDHSQ(*), IODDHR(*), INDHER(*),
      &        IORBSH(MXSHEL,MXAOVC), JSTRSH(*), NPRIMS(*), NCONTS(*),
@@ -1592,7 +1592,7 @@ C
      &                     SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,ADISTR,
      &                     JSTRSH,NPRIMS,NCONTS,IORBSH,WORK(KDSBUF),
      &                     IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                     IDUMMY,GENCNT)
+     &                     IDUMMY)
 C
                IF (RETUR) THEN
                   IF (ISHELA .EQ. IPRNTA .AND.
@@ -1614,7 +1614,7 @@ C  /* Deck twodis */
      &                  MULTE,NODV,NOPV,NOCONT,THRESH,JPRINT,IPRNTA,
      &                  IPRNTB,IPRNTC,IPRNTD,NUMDIS,MAXDIS,SQ12EL,
      &                  INDHER,INDHSQ,IODDHR,IFCTYP,ADISTR,I2TYP,JSTRSH,
-     &                  NPRIMS,NCONTS,IORBSH,RELCAL,GENCNT)
+     &                  NPRIMS,NCONTS,IORBSH,RELCAL)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1625,7 +1625,7 @@ C
       LOGICAL NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, DIA2SO,
      &        FIRST, DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR, SOFOCK,
-     &        RELCAL, ZFS2EL, GENCNT
+     &        RELCAL, ZFS2EL
       DIMENSION DMAT(*), FMAT(*), GMAT(*), HESSEE(*), IFCTYP(*),
      &        INDXAB(MAXDIS), INDHSQ(*), IODDHR(*),
      &        IORBSH(MXSHEL,MXAOVC), JSTRSH(*), NPRIMS(*), NCONTS(*),
@@ -1751,7 +1751,7 @@ C
      &            PERTUR,IATOM,MULE,MULTE,NODV,NOPV,NOCONT,THRESH,
      &            JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,SQ12EL,INDHSQ,
      &            IODDHR,INDHER,IFCTYP,ADISTR,I2TYP,
-     &            JSTRSH,NPRIMS,NCONTS,IORBSH,MBSAB,GENCNT)
+     &            JSTRSH,NPRIMS,NCONTS,IORBSH,MBSAB)
  999  ISHLAB = ISHLAB + 1
 C
  9999 CONTINUE
@@ -1767,7 +1767,7 @@ C  /* Deck dislop */
      &                  THRESH,JPRINT,IPRNTA,IPRNTB,IPRNTC,IPRNTD,
      &                  SQ12EL,INDHSQ,IODDHR,INDHER,IFCTYP,ADISTR,
      &                  JSTRSH,NPRIMS,NCONTS,IORBSH,I2TYP,
-     &                  MBSAB,GENCNT)
+     &                  MBSAB)
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -1779,7 +1779,7 @@ C
       LOGICAL PRINTA, PRINTB, PRINTC, PRINTD, NOPV, NODV, PERTUR,
      &        EXPECT, UNDIFF, DDFOCK, DIRFCK, NOCONT, SPNORB, DIA2SO,
      &        FIRST, SQ12EL, DISTRI, LONDON, SUSCEP, ADISTR, SOFOCK,
-     &        ZFS2EL, GENCNT
+     &        ZFS2EL
       DIMENSION GMAT(*), DMAT(*), FMAT(*), HESSEE(*), IFCTYP(*),
      &          INDHSQ(*), IODDHR(*), INDHER(*), IORBSH(MXSHEL,MXAOVC),
      &          JSTRSH(*), NPRIMS(*), NCONTS(*), WORK(LWORK)
@@ -1900,7 +1900,7 @@ C
      &                  IODDHR,INDHER,IFCTYP,ADISTR,JSTRSH,NPRIMS,
      &                  NCONTS,IORBSH,DUMMY,
      &                  IDUMMY,IDUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
-     &                  IDUMMY,GENCNT)
+     &                  IDUMMY)
   200    CONTINUE
   100 CONTINUE
       CALL QEXIT('DISLOP')
@@ -1914,7 +1914,7 @@ C  /* Deck twoods */
      &                  NODV,NOPV,THRESH,IPRINT,FIRST,SQ12EL,INDHSQ,
      &                  IODDHR,INDHER,IFCTYP,ADISTR,JSTRSH,NPRIMS,
      &                  NCONTS,IORBSH,WRKBUF,ICEDIF,
-     &                  IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,IREPDM,GENCNT)
+     &                  IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,IREPDM)
 #include "implicit.h"
 #include "priunit.h"
 #include "aovec.h"
@@ -1924,7 +1924,7 @@ C  /* Deck twoods */
 #include "mxcent.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, NOCONT, SPNORB, FIRST,
      &        DDFOCK, DIRFCK, DISTRI, SQ12EL, LONDON, SUSCEP, ADISTR,
-     &        SOFOCK, DIA2SO, ZFS2EL, GENCNT
+     &        SOFOCK, DIA2SO, ZFS2EL
       DIMENSION DMAT(*), FMAT(*), GMAT(*), HESSEE(*), IFCTYP(*),
      &          INDHSQ(*), IODDHR(*), INDHER(*), WRKBUF(*), JSTRSH(*),
      &          NPRIMS(*), NCONTS(*), IORBSH(*), WORK(LWORK),
@@ -2152,7 +2152,7 @@ C
      &            WORK(KPNTAB),WORK(KPNTCD),WORK(KREDAB),WORK(KREDCD),
      &            IFCTYP,ADISTR,JSTRSH,NPRIMS,NCONTS,IORBSH,WRKBUF,
      &            GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,
-     &            WORK(KIXPAB),WORK(KIXPCD),GENCNT)
+     &            WORK(KIXPAB),WORK(KIXPCD))
 C
       LWTOT  = LWTOT - KLAST
       RETURN
@@ -2169,8 +2169,7 @@ C  /* Deck twood1 */
      &                  NINDCD,INDHSQ,IODDHR,INDHER,LMNVLS,NPNTAB,
      &                  NPNTCD,NREDAB,NREDCD,IFCTYP,ADISTR,JSTRSH,
      &                  NPRIMS,NCONTS,IORBSH,WRKBUF,
-     &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,IXPAB,IXPCD,
-     &                  GENCNT)
+     &                  GABRAO,DMRAO,DMRSO,DINTSKP,IREPDM,IXPAB,IXPCD)
 #include "implicit.h"
 #include "priunit.h"
 #include "r12int.h"
@@ -2182,8 +2181,7 @@ C  /* Deck twood1 */
 #include "maxorb.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, UNDIFF, DDFOCK, DIRFCK,
      &        DISTRI, NOCONT, LONDON, SPNORB, DIA2SO, ZFS2EL, ONECEN,
-     &        FIRST, LAST, SQ12EL, SUSCEP, TPRAB, TPRCD, ADISTR, SOFOCK,
-     &        GENCNT
+     &        FIRST, LAST, SQ12EL, SUSCEP, TPRAB, TPRCD, ADISTR, SOFOCK
       DIMENSION WORK(LWORK), DMAT(*), FMAT(*), GMAT(*), PSO(*), PSA(*),
      &          HESSEE(*), IFCTYP(*), INDHSQ(*), IODDHR(*), INDHER(*),
      &          CONTA(*), CONTB(*), CONTC(*), CONTD(*),
@@ -2392,7 +2390,7 @@ C
      &               NUCTAB,NUCTCD,INDHSQ,IODDHR,INDHER,LMNVLS,NPNTAB,
      &               NPNTCD,NREDAB,NREDCD,IFCTYP,ADISTR,IORBSH,WRKBUF,
      &               GABRAO,DMRAO,DMRSO,DINTSKP,WORK(KDNSBF),IREPDM,
-     &               IXPAB,IXPCD,CHOINT,gencnt)
+     &               IXPAB,IXPCD,CHOINT)
 C
          LWTOT = LWTOT - KLAST
       END IF
@@ -2413,7 +2411,7 @@ C  /* Deck symlop */
      &                  INDHER,LMNVLS,NPNTAB,NPNTCD,NREDAB,NREDCD,
      &                  IFCTYP,ADISTR,IORBSH,WRKBUF,
      &                  GABRAO,DMRAO,DMRSO,DINTSKP,DNSBUF,IREPDM,
-     &                  IXPAB,IXPCD,CHOINT,gencnt)
+     &                  IXPAB,IXPCD,CHOINT)
 #include "implicit.h"
 #include "priunit.h"
 #include "maxaqn.h"
@@ -2440,7 +2438,7 @@ C  /* Deck symlop */
      &        PERTUR, EXPECT, INTS, UNDIFF, CAEQCB, CCEQCD, ABADX,
      &        ABADY,  ABADZ, DDFOCK, DIRFCK, DISTRI, NOCONT, SPNORB,
      &        DIA2SO, ZFS2EL, ONECEN, FIRST, LAST, SQ12EL, SOP000,
-     &        IPNTLG(3,*), LONDON, SUSCEP, ADISTR,SOFOCK, GENCNT
+     &        IPNTLG(3,*), LONDON, SUSCEP, ADISTR,SOFOCK
       DIMENSION SOINT(NSOINT,*), PSO(NPMAT), PSA(NPMAT), HESSEE(*),
      &          WORK(LWORK), DMAT(*), IFCTYP(*),
      &          INDHSQ(*), IODDHR(*), INDHER(*), FMAT(*), GMAT(*),
@@ -2982,8 +2980,7 @@ C
      &              SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &              NINDCD,NPNTAB(1,1,NSYMR),NPNTCD(1,1,NSYMS),
      &              NREDAB,NREDCD,IFCTYP,HESSEE,DNSBUF,DINTSKP,
-     &              NSOINT,IXPAB(1,1,NSYMR),IXPCD(1,1,NSYMS),
-     &              GENCNT)
+     &              NSOINT,IXPAB(1,1,NSYMR),IXPCD(1,1,NSYMS))
                LWTOT  = LWTOT - KLAST
 C
 C               write(lupri,*) 'WORK(KAOINT)2: ',(WORK(KAOINT+II-1),
@@ -3083,6 +3080,7 @@ C
      &                        THRESH,NINDAB,NINDCD,IPRINT)
                END IF
             ELSE
+C           ... ADISTR true: Distributions (all gabcd for fixed a)
                IF (U21INT) THEN
                   CALL US2OUT(SOINT,NSOINT,WRKBUF,IPNTNO,IPNTRP,IPNTLG,
      &                        FIRST,LAST,THRESH,NINDAB,NINDCD,
@@ -3187,7 +3185,7 @@ C  /* Deck caoint */
      &                  IPNTAO,IPNTOP,NPCOA,NPCOB,NPCOC,NPCOD,NUCSAB,
      &                  NUCSCD,SIGNT,INDHSQ,IODDHR,INDHER,LMNVLS,NINDAB,
      &                  NINDCD,NPNTAB,NPNTCD,NREDAB,NREDCD,IFCTYP,
-     &                  HESSEE,DNSBUF,DINTSKP,NSOINT,IXPAB,IXPCD,GENCNT)
+     &                  HESSEE,DNSBUF,DINTSKP,NSOINT,IXPAB,IXPCD)
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -3201,7 +3199,7 @@ C  /* Deck caoint */
 #include "twosta.h"
       LOGICAL NOPV, NODV, PERTUR, EXPECT, NOINT, DDFOCK, DIRFCK, DISTRI,
      &        INTS, UNDIFF, NOCONT, SPNORB, DIA2SO, BIGVEC, ONECEN,
-     &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK, ZFS2EL, GENCNT
+     &        SQ12EL, SOP000, LONDON, SUSCEP, SOFOCK, ZFS2EL
       DIMENSION AOINT(NCCINT,NINTYP), SOINT(NSOINT,*), PSO(*),PSA(*),
      &          COEFAB(*), COEFCD(*), COORAB(*), COORCD(*), EXPAB(*),
      &          EXPCD(*), CONTA(*), CONTB(*), CONTC(*), CONTD(*),
@@ -3320,7 +3318,7 @@ C
      &                     ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
      &                     HKABCD,IPRINT,NOPV,NODV,EXPECT,LONDON,SUSCEP,
      &                     DIA2SO,ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,
-     &                     IFCTYP,GENCNT)
+     &                     IFCTYP)
                IF (TKTIME) THEN
                   CALL GETTIM(TIMEND,DUMTIM)
                   TINTEX = TINTEX + TIMEND - TIMSTR
@@ -3364,7 +3362,7 @@ C
      &                     ISYMT,ICORBA,ICORBB,ICORBC,ICORBD,THRESH,
      &                     HKABCD,IPRINT,NOPV,NODV,EXPECT,LONDON,SUSCEP,
      &                     DIA2SO,ZFS2EL,DDFOCK,SPNORB,IXPAB,IXPCD,
-     &                     IFCTYP,GENCNT)
+     &                     IFCTYP)
                IF (TKTIME) THEN
                   CALL GETTIM(TIMEND,DUMTIM)
                   TINTEX = TINTEX + TIMEND - TIMSTR
@@ -3388,7 +3386,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP,GENCNT)
+     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
@@ -3418,7 +3416,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP,GENCNT)
+     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
@@ -3434,7 +3432,7 @@ C
      &                  NINTYP,WORK,LWORK,ISYMR,ISYMS,ISYMT,ICORBA,
      &                  ICORBB,ICORBC,ICORBD,THRESH,HKABCD,IPRINT,
      &                  NOPV,NODV,EXPECT,LONDON,SUSCEP,DIA2SO,ZFS2EL,
-     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP,GENCNT)
+     &                  DDFOCK,SPNORB,IXPAB,IXPCD,IFCTYP)
             IF (TKTIME) THEN
                CALL GETTIM(TIMEND,DUMTIM)
                TINTEX = TINTEX + TIMEND - TIMSTR
