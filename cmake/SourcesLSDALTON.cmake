@@ -342,7 +342,7 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/Build_AOBATCH.F90
     LSDALTON/lsutil/lspdm_basic.F90
     LSDALTON/lsutil/tensor_basic.F90
-    LSDALTON/lsutil/lspdm_tensor_operations.F90
+    LSDALTON/lsutil/lspdm_tensor_operations.F03
     )
 set(LSUTILLIB_SOURCES
     LSDALTON/lsutil/lowdin.F90

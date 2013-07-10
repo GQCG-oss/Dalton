@@ -3130,11 +3130,15 @@ contains
        faif = 1
        lead = tl
        !use w3 as buffer which is allocated largest possible
-       print *,"elements to add",els2add
        w2size  = tlov
-       w3size  = tlov + els2add
+       w3size  = min(o2v2,tlov + els2add)
      else
        call lsquit("ERROR(get_cnd_terms_mo):no valid scheme",-1)
+     endif
+
+     if(me==0.and.DECinfo%PL>2)then
+       print *,"w2size(2)",w2size
+       print *,"w3size(2)",w3size
      endif
 
      call mem_alloc(w2,w2size)

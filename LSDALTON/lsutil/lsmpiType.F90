@@ -5444,7 +5444,7 @@ contains
     call MPI_GET(buf,n,MPI_INTEGER8,dest, &
      & offset,n,MPI_INTEGER8,win,ierr)
     if(ierr.ne.0)then
-      call lsquit("Error(lsmpi_get_realk)",ierr)
+      call lsquit("Error(lsmpi_get_int8)",ierr)
     endif
 #endif
   end subroutine lsmpi_get_int8
@@ -5463,7 +5463,7 @@ contains
     call MPI_GET(buf,n,MPI_INTEGER4,dest, &
      & offset,n,MPI_INTEGER4,win,ierr)
     if(ierr.ne.0)then
-      call lsquit("Error(lsmpi_get_realk)",ierr)
+      call lsquit("Error(lsmpi_get_int4)",ierr)
     endif
 #endif
   end subroutine lsmpi_get_int4

@@ -1450,7 +1450,7 @@ module lspdm_tensor_operations_module
 #endif
   end subroutine array_gather
 
-  subroutine array_two_dim_1batch(arr,o,op,fort,n2comb,fel,tl,lock_outside)  
+  subroutine array_two_dim_1batch(arr,o,op,fort,n2comb,fel,tl,lock_outside)
     implicit none
     type(array),intent(in) :: arr
     real(realk),intent(inout) :: fort(*)
@@ -1458,21 +1458,28 @@ module lspdm_tensor_operations_module
     integer, intent(in),target :: o(arr%mode)
     integer, intent(in) :: fel,tl,n2comb
     logical, intent(in) :: lock_outside
-    integer :: fordims(arr%mode),foridx(arr%mode)
+    integer :: fordims(arr%mode)
+    integer,target :: fx(arr%mode)
     integer :: oldidx(arr%mode)
     integer :: i,lel
     integer,target :: ro(arr%mode)
     integer :: comb1,comb2,c1,c2
     integer :: tidx(arr%mode),idxt(arr%mode)
-    integer :: ctidx, cidxt, cidxf
-    integer,pointer :: u_o(:),u_ro(:)
-    integer :: tsze(arr%mode)
+    integer :: ctidx, cidxt, cidxf, st_tiling
+    integer,pointer :: u_o(:),u_ro(:),tinfo(:,:)
+    integer,pointer ::for3,for4
+    real(realk), pointer :: p_fort(:,:,:)
+    integer :: tsze(arr%mode),nelmsit,b1,b2
+    procedure(lsmpi_put_realk), pointer :: pga => null()
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: source
 
     if( op/='a'.and.op/='p'.and.op/='g')then
       call lsquit("ERROR(array_two_dim_1batch):unknown choice of operator",-1)
     endif 
+    if(op=='p') pga => lsmpi_put_realk
+    if(op=='g') pga => lsmpi_get_realk
+    if(op=='a') pga => lsmpi_acc_realk
 
     do i = 1,arr%mode
       ro(o(i))      = i
@@ -1503,49 +1510,124 @@ module lspdm_tensor_operations_module
       comb2          = comb2 * fordims(i)
     enddo
 
-
-    do c2 = 1, comb2
-      foridx = 0
-      call get_midx(c2,foridx(n2comb+1:arr%mode),fordims(n2comb+1:arr%mode),arr%mode-n2comb)
-
-      do c1 = fel, lel
-        call get_midx(c1,foridx(1:n2comb),fordims(1:n2comb),n2comb)
-
-        !if(infpar%lg_mynum==1)then
-        !  print *,"full: ",foridx
-        !endif
-        !get the information about the required index in the context of the
-        !array, i.e. which tile and which index in the tile
-        !also get the position of the index in the batched matrix
-        do i = 1, arr%mode
-          oldidx(i) = foridx(u_ro(i))
-          tidx(i)   = (foridx(u_ro(i))-1) / arr%tdim(i) + 1
-          idxt(i)   = mod((foridx(u_ro(i))-1), arr%tdim(i)) + 1
-        enddo
-        !if(infpar%lg_mynum==1)then
-        !  print *,"old:  ",oldidx
-        !  print *,"tidx: ",tidx
-        !  print *,"idxt: ",idxt
-        !endif
-        !get the combined indices
-        ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
-        call get_tile_dim(tsze,arr,ctidx)
-        cidxt  = get_cidx(idxt,tsze,arr%mode)
-        source = get_residence_of_tile(ctidx,arr)
-        cidxf  = get_cidx([c1-fel+1,c2],[tl,comb2],2)
-
-        !if(infpar%lg_mynum==1)then
-        !  print *,"ctidx:",ctidx,arr%ntiles
-        !  print *,"cidxt:",cidxt,tsze
-        !  print *,"cidxf:",cidxf,tl*comb2,c1-fel+1,c2,comb1,comb2
-        !endif
-        if(.not.lock_outside)call arr_lock_win(arr,ctidx,'s')
-        if(op=='g')call lsmpi_get(fort(cidxf:cidxf),1,cidxt,source,arr%wi(ctidx))
-        if(op=='p')call lsmpi_put(fort(cidxf:cidxf),1,cidxt,source,arr%wi(ctidx))
-        if(op=='a')call lsmpi_acc(fort(cidxf:cidxf),1,cidxt,source,arr%wi(ctidx))
-        if(.not.lock_outside)call arr_unlock_win(arr,ctidx)
+    if(arr%mode==4.and.n2comb==2)then
+      do i = 1, 4
+        if(arr%ntpm(i)/=1)then
+          st_tiling = i
+          exit
+        endif
       enddo
-    enddo
+      for3 => fx(3)
+      for4 => fx(4) 
+      tidx = 1
+
+      !precalculate tile dimensions and positions
+      call mem_alloc(tinfo,arr%ntiles,5)
+      do ctidx = 1, arr%ntiles
+        tinfo(ctidx,1) = get_residence_of_tile(ctidx,arr)
+        call get_tile_dim(tinfo(ctidx,2:5),arr,ctidx)
+      enddo
+      call ass_D1to3(fort,p_fort,[tl,fordims(3),fordims(4)])
+
+      if(lock_outside) then
+        do c1 = 1, tl
+          call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+          do for4 = 1, fordims(4)
+            do for3 = 1, fordims(3)
+       
+              do i = st_tiling, 4
+                tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+              enddo
+             
+              do i = 1, 4
+                idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+              enddo
+       
+              ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
+              cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
+       
+              call pga(p_fort(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+            enddo
+          enddo
+        enddo
+      else
+        do c1 = 1, tl
+          call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+          do for4 = 1, fordims(4)
+            do for3 = 1, fordims(3)
+       
+              do i = st_tiling, 4
+                tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+              enddo
+             
+              do i = 1, 4
+                idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+              enddo
+       
+              ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
+              cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
+       
+              call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
+              call pga(p_fort(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+              call lsmpi_win_unlock(tinfo(ctidx,1),arr%wi(ctidx))
+            enddo
+          enddo
+        enddo
+      endif
+
+      call lsmpi_barrier(infpar%lg_comm)
+      call mem_dealloc(tinfo)
+      for3 => null()
+      for4 => null()
+
+    else
+ 
+      print *,"WARINING(array_two_dim_1batch):this is a slow fallback option"
+
+      do c2 = 1, comb2
+        fx = 0
+        call get_midx(c2,fx(n2comb+1:arr%mode),fordims(n2comb+1:arr%mode),arr%mode-n2comb)
+ 
+        do c1 = fel, lel
+          call get_midx(c1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+ 
+          !if(infpar%lg_mynum==1)then
+          !  print *,"full: ",fx
+          !endif
+          !get the information about the required index in the context of the
+          !array, i.e. which tile and which index in the tile
+          !also get the position of the index in the batched matrix
+          do i = 1, arr%mode
+            !oldidx(i) = fx(u_ro(i))
+            tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+            idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+          enddo
+          !if(infpar%lg_mynum==1)then
+          !  print *,"old:  ",oldidx
+          !  print *,"tidx: ",tidx
+          !  print *,"idxt: ",idxt
+          !endif
+          !get the combined indices
+          ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
+          call get_tile_dim(tsze,arr,ctidx)
+          cidxt  = get_cidx(idxt,tsze,arr%mode)
+          source = get_residence_of_tile(ctidx,arr)
+          cidxf  = get_cidx([c1-fel+1,c2],[tl,comb2],2)
+ 
+          !if(infpar%lg_mynum==1)then
+          !  print *,"ctidx:",ctidx,arr%ntiles
+          !  print *,"cidxt:",cidxt,tsze
+          !  print *,"cidxf:",cidxf,tl*comb2,c1-fel+1,c2,comb1,comb2
+          !endif
+          if(.not.lock_outside)call arr_lock_win(arr,ctidx,'s')
+          call pga(fort(cidxf),cidxt,source,arr%wi(ctidx))
+          !if(op=='g')call lsmpi_get(fort(cidxf),cidxt,source,arr%wi(ctidx))
+          !if(op=='p')call lsmpi_put(fort(cidxf),cidxt,source,arr%wi(ctidx))
+          !if(op=='a')call lsmpi_acc(fort(cidxf),cidxt,source,arr%wi(ctidx))
+          if(.not.lock_outside)call arr_unlock_win(arr,ctidx)
+        enddo
+      enddo
+    endif
 
     u_o  => null()
     u_ro => null()
@@ -1555,85 +1637,6 @@ module lspdm_tensor_operations_module
   end subroutine array_two_dim_1batch
 
 
-  subroutine array_acc_from_two_dim_1batch(arr,o,fort,n2comb,fel,tl,lock_outside)  
-    implicit none
-    type(array),intent(in) :: arr
-    real(realk),intent(inout) :: fort(*)
-    integer, intent(in) :: o(arr%mode),fel,tl,n2comb
-    logical, intent(in) :: lock_outside
-    integer :: fordims(arr%mode),foridx(arr%mode)
-    integer :: oldidx(arr%mode)
-    integer :: i,lel,ro(arr%mode)
-    integer :: comb1,comb2,c1,c2
-    integer :: tidx(arr%mode),idxt(arr%mode)
-    integer :: ctidx, cidxt, cidxf
-    integer :: tsze(arr%mode)
-#ifdef VAR_MPI
-    integer(kind=ls_mpik) :: source
-  
-    lel = fel + tl -1
-
-    do i = 1,arr%mode
-      fordims(i) = arr%dims(o(i))
-      ro(o(i))      = i
-    enddo
-
-    comb1 = 1
-    do i = 1, n2comb
-      comb1   = comb1 * fordims(i)
-    enddo
-
-    comb2 = 1
-    do i = n2comb + 1, arr%mode
-      comb2          = comb2 * fordims(i)
-    enddo
-
-    
-    do c2 = 1, comb2
-      foridx = 0
-      call get_midx(c2,foridx(n2comb+1:arr%mode),fordims(n2comb+1:arr%mode),arr%mode-n2comb)
-
-      do c1 = fel, lel
-        call get_midx(c1,foridx(1:n2comb),fordims(1:n2comb),n2comb)
-
-        !if(infpar%lg_mynum==1)then
-        !  print *,"full: ",foridx
-        !endif
-        !get the information about the required index in the context of the
-        !array, i.e. which tile and which index in the tile
-        !also get the position of the index in the batched matrix
-        do i = 1, arr%mode
-          oldidx(i) = foridx(ro(i))
-          tidx(i)   = (foridx(ro(i))-1) / arr%tdim(i) + 1
-          idxt(i)   = mod((foridx(ro(i))-1), arr%tdim(i)) + 1
-        enddo
-        !if(infpar%lg_mynum==1)then
-        !  print *,"old:  ",oldidx
-        !  print *,"tidx: ",tidx
-        !  print *,"idxt: ",idxt
-        !endif
-        !get the combined indices
-        ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
-        call get_tile_dim(tsze,arr,ctidx)
-        cidxt  = get_cidx(idxt,tsze,arr%mode)
-        source = get_residence_of_tile(ctidx,arr)
-        cidxf  = get_cidx([c1-fel+1,c2],[tl,comb2],2)
-
-        !if(infpar%lg_mynum==1)then
-        !  print *,"ctidx:",ctidx,arr%ntiles
-        !  print *,"cidxt:",cidxt,tsze
-        !  print *,"cidxf:",cidxf,tl*comb2,c1-fel+1,c2,comb1,comb2
-        !endif
-        if(.not.lock_outside)call arr_lock_win(arr,ctidx,'s')
-        call lsmpi_acc(fort(cidxf:cidxf),1,cidxt,source,arr%wi(ctidx))
-        if(.not.lock_outside)call arr_unlock_win(arr,ctidx)
-      enddo
-    enddo
-
-#else
-    call lsquit("ERROR(array_gather_to_two_dim_1batch):this routine is MPI only",-1)
-#endif
-  end subroutine array_acc_from_two_dim_1batch
 
   subroutine add_data2tiled_lowmem(arr,mult,A,dims,mode)
     implicit none
@@ -2204,6 +2207,122 @@ module lspdm_tensor_operations_module
     enddo
     call mem_dealloc(buf)
   end subroutine cp_data2tiled_intiles
+
+
+
+
+  subroutine array_gatheradd_tilestofort(arr,sc,fort,nelms,nod,optorder)
+    implicit none
+    type(array),intent(in) :: arr
+    real(realk),intent(in) :: sc
+    real(realk),intent(inout) :: fort(*)
+    integer(kind=long), intent(in) :: nelms
+    integer(kind=ls_mpik) :: nod
+    integer, intent(in), optional :: optorder(arr%mode)
+    integer(kind=ls_mpik) :: src,me,nnod
+    integer :: i,ltidx,order(arr%mode)
+    integer :: nelintile,fullfortdim(arr%mode)
+    real(realk), pointer :: tmp(:)
+#ifdef VAR_MPI
+
+    do i=1,arr%mode
+      order(i)=i
+    enddo
+    if(present(optorder))order=optorder
+   
+    me=0
+    nnod=1
+    me=infpar%lg_mynum
+    nnod=infpar%lg_nodtot
+    if(nelms/=arr%nelms)call lsquit("ERROR(cp_tileddate2fort):array&
+        &dimensions are not the same",DECinfo%output)
+
+    do i = 1, arr%mode
+      fullfortdim(i) = arr%dims(order(i))
+    enddo
+
+    call mem_alloc(tmp,arr%tsize)
+
+    do i=1,arr%ntiles
+      src=get_residence_of_tile(i,arr)
+      if(src==me.or.nod==me)then
+        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+        if(src==me.and.nod==me)then
+          ltidx = (i - 1) /nnod + 1
+          call tile_in_fort(sc,arr%ti(ltidx)%t,i,arr%tdim,&
+               &1.0E0_realk,fort,fullfortdim,arr%mode,order)
+        elseif(src==me)then
+          ltidx = (i - 1) /nnod + 1
+          call lsmpi_send(arr%ti(ltidx)%t,nelintile,infpar%lg_comm,nod)
+        elseif(nod==me)then
+          call lsmpi_recv(tmp,nelintile,infpar%lg_comm,src)
+          call tile_in_fort(sc,tmp,i,arr%tdim,&
+               &1.0E0_realk,fort,fullfortdim,arr%mode,order)
+        endif
+      endif
+    enddo
+
+    call mem_dealloc(tmp)
+#else
+    call lsquit("ERROR(array_gatheradd_tilestofort):this routine is MPI only",-1)
+#endif
+  end subroutine array_gatheradd_tilestofort
+
+
+
+  subroutine array_gather_tilesinfort(arr,fort,nelms,nod,optorder)
+    implicit none
+    type(array),intent(in) :: arr
+    real(realk),intent(inout) :: fort(*)
+    integer(kind=long), intent(in) :: nelms
+    integer(kind=ls_mpik) :: nod
+    integer, intent(in), optional :: optorder(arr%mode)
+    integer(kind=ls_mpik) :: src,me,nnod
+    integer :: i,j,k,ltidx
+    integer :: nelintile,order(arr%mode)
+    integer :: fullfortdim(arr%mode)
+    real(realk), pointer :: tmp(:)
+#ifdef VAR_MPI
+    do i = 1, arr%mode
+      order(i) = i
+    enddo
+    if(present(optorder))order=optorder
+    do i = 1, arr%mode
+      fullfortdim(i) = arr%dims(order(i))
+    enddo
+    me=0
+    nnod=1
+    me=infpar%lg_mynum
+    nnod=infpar%lg_nodtot
+    if(nelms/=arr%nelms)call lsquit("ERROR(cp_tileddate2fort):array&
+        &dimensions are not the same",DECinfo%output)
+
+    call mem_alloc(tmp,arr%tsize)
+
+    do i=1,arr%ntiles
+      src=get_residence_of_tile(i,arr)
+      if(src==me.or.nod==me)then
+        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+        if(src==me.and.nod==me)then
+          ltidx = (i - 1) /nnod + 1
+          call tile_in_fort(1.0E0_realk,arr%ti(ltidx)%t,i,arr%tdim,&
+                           &0.0E0_realk,fort,fullfortdim,arr%mode,order)
+        elseif(src==me)then
+          ltidx = (i - 1) /nnod + 1
+          call lsmpi_send(arr%ti(ltidx)%t,nelintile,infpar%lg_comm,nod)
+        elseif(nod==me)then
+          call lsmpi_recv(tmp,nelintile,infpar%lg_comm,src)
+          call tile_in_fort(1.0E0_realk,tmp,i,arr%tdim,&
+                           &0.0E0_realk,fort,fullfortdim,arr%mode,order)
+        endif
+      endif
+    enddo
+
+    call mem_dealloc(tmp)
+#else
+    call lsquit("ERROR(array_gather_tilesinfort):this routine is MPI only",-1)
+#endif
+  end subroutine array_gather_tilesinfort
 
 
   subroutine array_scatter_densetotiled(arr,A,nelms,nod,optorder)
