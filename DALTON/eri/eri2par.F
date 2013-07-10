@@ -27,13 +27,13 @@ C  /* Deck pardrv */
       SUBROUTINE PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,WORK,NSTAT,
      &                  HESSEE,LWORK,ITYPE,MAXDIF,IATOM,NODV,NOPV,
      &                  NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
-     &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP,GENCTR)
+     &                  ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,DINTSKP)
 C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
 #include "mtags.h"
-      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME,GENCTR
+      LOGICAL NODV,NOPV,NOCONT,RETUR,TKTIME
       DIMENSION FMAT(*),DMAT(*),ISYMDM(*),IFCTYP(*),WORK(LWORK),
      &          NSTAT(NODTOT), HESSEE(*)
 CTROND
@@ -84,7 +84,7 @@ C
      &                   WORK,LWORK,ITYPE,MAXDIF,IATOM,NODV,
      &                   NOPV,NOCONT,TKTIME,RETUR,IPRINT,
      &                   ICEDIF,IFTHRS,GABRAO,DMRAO,DMRSO,
-     &                   DINTSKP,RELCAL,GENCTR)
+     &                   DINTSKP,RELCAL)
       ELSE
          if (iprint .gt. 3)
      &    write (lupri,*) 'Calling parallel ERI routines.'
@@ -952,12 +952,6 @@ C  /* Deck nodedriver */
 #if defined (VAR_MPI)
       SUBROUTINE NODEDRIVER(MWORK,WRKDLM)
 C
-#ifdef MOD_CGTO_DIFF_ERI
-      use eri_basis_loops
-#endif
-#ifdef MOD_XCINT
-      use xcint_integrator, only: xc_integrate_worker
-#endif
       use polarizable_embedding, only: pe_mpi
 #include "implicit.h"
 #include "priunit.h"
@@ -1095,20 +1089,6 @@ C added by Bin Gao, May 12, 2012
          ELSE IF (IPRTYP.EQ.GEN1INT_GET_CUBE) THEN
             CALL gen1int_worker_get_cube(MWORK,WORK(1),LUPRI,IPRINT)
 #endif
-#ifdef MOD_CGTO_DIFF_ERI
-C added by Bin Gao, Oct. 27, 2012
-C cgto-diff-eri code to calculate arbitray order geometric derivatives
-C of two-electron integrals
-         ELSE IF (IPRTYP.EQ.CGTO_DIFF_ERI_INIT) THEN
-            CALL unopt_geodiff_loop_worker(LUPRI,IPRINT)
-#endif
-
-#ifdef MOD_XCINT
-         ! XCint: XC integration, added by R. Bast
-         else if (iprtyp == XCINT_MPI_WAKEUP_SIGNAL) then
-            call xc_integrate_worker()
-#endif
-
          ELSE
             WRITE(LUPRI,'(/A,I5,A,I10)')
      &         '(NODEDRIVER) ERROR on slave',MYTID,
