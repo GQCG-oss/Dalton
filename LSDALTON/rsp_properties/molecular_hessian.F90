@@ -503,11 +503,11 @@ CONTAINS
         call mat_zero(GDa(i))
     ENDDO
     call II_get_coulomb_mat(lupri,luerr,setting,Da,GDa,ndmat)
-    dSYM = .FALSE.
-    DO i=1,3*Natoms
-        call II_get_exchange_mat(lupri,luerr,setting,Da(i),1,Dsym,temp)
-        call mat_daxpy(1.0E0_realk,temp,GDa(i))
-    ENDDO
+    Dsym = .FALSE.
+!    DO i=1,3*Natoms
+!        call II_get_exchange_mat(lupri,luerr,setting,Da(i),1,Dsym,temp)
+!        call mat_daxpy(1.0E0_realk,temp,GDa(i))
+!    ENDDO
     call lstimer('GDa_build',ts,te,lupri)
   END SUBROUTINE get_twoElectron_mat_of_first_geoderiv_refDmat
 
