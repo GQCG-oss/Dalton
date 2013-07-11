@@ -22,7 +22,7 @@ module mp2_gradient_module
 !       & init_threadmemvar, collect_thread_memory, mem_turnoffthread_memory
   use dec_typedef_module
   use IntegralInterfaceMOD!,only: ii_get_twoelectron_gradient, ii_get_reorthonormalization, &
-!       & ii_get_oneelectron_gradient, ii_get_nn_gradient, ii_get_k_gradient
+!       & ii_get_oneelectron_gradient, ii_get_nn_gradient
 
 
   ! DEC DEPENDENCIES (within deccc directory)   
@@ -469,11 +469,8 @@ contains
     type(mp2grad), intent(inout) :: grad
     type(array4) :: ThetaAO, dens4index
     type(array2) :: CvirtAOS, CoccEOS
-    integer :: noccEOS, nvirtAOS, nbasis, matdim,ij,i,j,natoms
-    type(matrixp), pointer :: dens4index_matp(:), ThetaAO_matp(:)
-    type(matrix), pointer :: dens4index_mat(:), ThetaAO_mat(:)
-    type(matrix) :: tmp_matrix
-    real(realk) :: tcpu,twall,tKcpu1,tKwall1,tKcpu2,tKwall2
+    integer :: noccEOS, nvirtAOS, nbasis, matdim,i,j,natoms
+    real(realk) :: tcpu,twall,tKcpu1,tKwall1
     logical :: something_wrong
 
     ! If only MP2 density is requested, skip expensive Ltheta calculation,
@@ -498,10 +495,6 @@ contains
     natoms = MyFragment%number_atoms
     ! Number of AO matrices to use as input in exchange gradient routine
     matdim = noccEOS*noccEOS
-    call mem_alloc(dens4index_mat,matdim)
-    call mem_alloc(ThetaAO_mat,matdim)
-    call mem_alloc(dens4index_matp,matdim)
-    call mem_alloc(ThetaAO_matp,matdim)
 
 
     ! Sanity check 1: Consistency of fragment and LSitem
@@ -534,7 +527,7 @@ contains
 
 
     ! Prepare arrays for constructing Ltheta gradient
-    ! *************************************************
+    ! ***********************************************
 
     ! Get virtual MO coefficient matrix in array2 form
     CvirtAOS = array2_init([nbasis,nvirtAOS],&
@@ -545,7 +538,6 @@ contains
     call extract_occupied_EOS_MO_indices(CoccEOS,MyFragment)
 
     ! Transform virtual Theta indices to AO indices
-    ! (required for calling gradient exchange routine).
     call transform_virtual_Theta_indices_to_AO(ThetaOCC, CvirtAOS, ThetaAO)
 
     ! Get 4-index density: dens4index(mu,nu,i,j) = Cocc(mu,i)*Cocc(nu,j)
@@ -557,59 +549,13 @@ contains
     call array2_free(CoccEOS)
 
 
-
-    ! Convert DEC arrays to type matrix
-    ! *********************************
-
-    ! Convert ThetaAO and 4-index density arrays into vectors
-    ! containing of matdim=nocc^2 matrices each of dimension (nbasis*nbasis)
-    ! (I.e. one nbasis*nbasis matrix for each set of occupied i,j indices).
-    call mat_init(tmp_matrix,nbasis,nbasis)
-    ij = 0
-    do j=1,noccEOS
-       do i=1,noccEOS
-          ij = ij+1
-
-          ! Theta array
-          ! -----------
-          call mat_set_from_full( ThetaAO%val(1:nbasis,1:nbasis,i,j), 1E0_realk, tmp_matrix )
-          call mat_init(ThetaAO_mat(ij),nbasis,nbasis)
-          ! Transpose due to conventions in II_get_K_gradient
-!ThetaAO_mat(ij) = tmp_matrix
-          call mat_trans(tmp_matrix,ThetaAO_mat(ij))
-          ! Associate pointer with calculated (IJ)-matrices
-          ThetaAO_matp(ij)%p => ThetaAO_mat(ij)
-
-
-          ! Density array
-          ! -------------
-          call mat_set_from_full( Dens4index%val(1:nbasis,1:nbasis,i,j), 1E0_realk, tmp_matrix )
-          call mat_init(Dens4index_mat(ij),nbasis,nbasis)
-          ! Transpose due to conventions in II_get_K_gradient
-!dens4index_mat(ij) = tmp_matrix
-          call mat_trans(tmp_matrix,Dens4index_mat(ij))
-          ! Associate pointer with calculated (IJ)-matrices
-          Dens4index_matp(ij)%p => Dens4index_mat(ij)
-
-       enddo
-    enddo
-
-    ! Done with 4 dimensional arrays in type array4 form and tmp_matrix
-    call mat_free(tmp_matrix)
-    call array4_free(ThetaAO)
-    call array4_free(dens4index)
-
-
-
     ! Calculate Ltheta contribution
     ! *****************************
 
     call LSTIMER('START',tKcpu1,tKwall1,DECinfo%output)
-    call II_get_K_gradient(Grad%Ltheta(1:3,1:natoms),&
-         & dens4index_matp,ThetaAO_matp,matdim,matdim,&
+    call II_get_K_gradientfull(Grad%Ltheta(1:3,1:natoms),&
+         & dens4index%val,ThetaAO%val,nbasis,matdim,matdim,&
          & MyFragment%MyLsitem%setting,DECinfo%output,DECinfo%output)
-    call LSTIMER('START',tKcpu2,tKwall2,DECinfo%output)
-
     ! Timing
     call LSTIMER('LTHETA K GRAD',tKcpu1,tKwall1,DECinfo%output)
 
@@ -618,7 +564,7 @@ contains
     !
     ! Ltheta = 1/2 * sum_{ijab} Theta_{ij}^{ab} gx_{ij}^{ab}
     !
-    ! Due to conventions in II_get_K_gradient we effectively get
+    ! Due to conventions in II_get_K_gradientfull we effectively get
     ! -1/4 sum_{ijab} Theta_{ij}^{ab} gx_{ij}^{ab}
     ! using the procedure above.
     ! Therefore we multiply the final result by (-2)
@@ -626,19 +572,9 @@ contains
 
 
 
-    ! Free remaining matrices
-    ! ***********************
-    do i=1,matdim
-       call mat_free(ThetaAO_mat(i))
-       call mat_free(dens4index_mat(i))
-    end do
-
-    call mem_dealloc(dens4index_matp)
-    call mem_dealloc(ThetaAO_matp)
-    call mem_dealloc(dens4index_mat)
-    call mem_dealloc(ThetaAO_mat)
-
-
+    ! Free stuff
+    call array4_free(ThetaAO)
+    call array4_free(dens4index)
     call LSTIMER('LTHETA TOTAL',tcpu,twall,DECinfo%output)
 
 
@@ -953,10 +889,8 @@ contains
     type(array4) :: ThetaAO, dens4index
     type(array2) :: CvirtAOS, CoccEOS
     integer ::nvirtAOS, nbasis, matdim,ij,i,j,natoms_frag
-    type(matrixp), pointer :: dens4index_matp(:), ThetaAO_matp(:)
-    type(matrix), pointer  :: dens4index_mat(:), ThetaAO_mat(:)
-    type(matrix) :: tmp_matrix
-    real(realk) :: tcpu,twall,tKcpu1,tKwall1,tKcpu2,tKwall2
+    real(realk),pointer :: dens4index_pair(:,:,:), ThetaAO_pair(:,:,:)
+    real(realk) :: tcpu,twall,tKcpu1,tKwall1
     logical :: something_wrong
 
 
@@ -979,13 +913,6 @@ contains
     natoms_frag = PairFragment%number_atoms
     ! Number of occupied pairs to consider
     matdim = count(dopair_occ)
-
-
-    ! Number of AO matrices to use as input in exchange gradient routine
-    call mem_alloc(dens4index_mat,matdim)
-    call mem_alloc(ThetaAO_mat,matdim)
-    call mem_alloc(dens4index_matp,matdim)
-    call mem_alloc(ThetaAO_matp,matdim)
 
 
     ! Sanity check 1: Consistency of fragment and LSitem
@@ -1042,38 +969,31 @@ contains
 
 
 
-    ! Convert DEC arrays to type matrix
-    ! *********************************
+    ! Extract occupied pair EOS indices where "i" and "j" are assigned to different atoms
+    ! ***********************************************************************************
 
-    ! Convert ThetaAO and 4-index density arrays into vectors
-    ! containing "matdim" matrices each of dimension (nbasis*nbasis)
-    ! -- i.e. one nbasis*nbasis matrix for each set of occupied i,j indices satisfying (*).
-    call mat_init(tmp_matrix,nbasis,nbasis)
+    ! ThetaAO and 4-index density arrays contain all (i,j) combinations where
+    ! i and j are assigned to atom P OR atom Q. We now extract the ones where
+    !
+    ! (i assigned to P,   j assigned to Q)           or
+    ! (j assigned to P,   i assigned to Q)          
+    !
+    ! The are matdim possible (i,j) combinations satisfying this.
+    call mem_alloc(dens4index_pair,nbasis,nbasis,matdim)
+    call mem_alloc(thetaAO_pair,nbasis,nbasis,matdim)
+
     ij = 0
     do j=1,noccEOS
        do i=1,noccEOS
 
-          if(dopair_occ(i,j)) then !DoOrbitalPair
+          if(dopair_occ(i,j)) then ! Extract orbital pair information
              ij = ij+1
 
              ! Theta array
-             ! -----------
-             call mat_set_from_full( ThetaAO%val(1:nbasis,1:nbasis,i,j), 1E0_realk, tmp_matrix )
-             call mat_init(ThetaAO_mat(ij),nbasis,nbasis)
-             ! Transpose due to conventions in II_get_K_gradient
-             call mat_trans(tmp_matrix,ThetaAO_mat(ij))
-             ! Associate pointer with calculated (IJ)-matrices
-             ThetaAO_matp(ij)%p => ThetaAO_mat(ij)
-
+             thetaAO_pair(:,:,ij) = ThetaAO%val(:,:,i,j)
 
              ! Density array
-             ! -------------
-             call mat_set_from_full( Dens4index%val(1:nbasis,1:nbasis,i,j), 1E0_realk, tmp_matrix )
-             call mat_init(Dens4index_mat(ij),nbasis,nbasis)
-             ! Transpose due to conventions in II_get_K_gradient
-             call mat_trans(tmp_matrix,Dens4index_mat(ij))
-             ! Associate pointer with calculated (IJ)-matrices
-             Dens4index_matp(ij)%p => Dens4index_mat(ij)
+             dens4index_pair(:,:,ij) = dens4index%val(:,:,i,j)
 
           end if
 
@@ -1087,8 +1007,7 @@ contains
        call lsquit('pair_fragment_Ltheta_contribution: ij counter is different from matdim', DECinfo%output)
     end if
 
-    ! Done with 4 dimensional arrays in type array4 form and tmp_matrix
-    call mat_free(tmp_matrix)
+    ! Done with 4 dimensional arrays in type array4 form
     call array4_free(ThetaAO)
     call array4_free(dens4index)
 
@@ -1096,14 +1015,10 @@ contains
 
     ! Calculate Ltheta contribution
     ! *****************************
-
     call LSTIMER('START',tKcpu1,tKwall1,DECinfo%output)
-    call II_get_K_gradient(Grad%Ltheta(1:3,1:natoms_frag),&
-         &dens4index_matp,ThetaAO_matp,matdim,matdim,&
+    call II_get_K_gradientfull(Grad%Ltheta,&
+         & dens4index_pair,ThetaAO_pair,nbasis,matdim,matdim,&
          & PairFragment%MyLsitem%setting,DECinfo%output,DECinfo%output)
-    call LSTIMER('START',tKcpu2,tKwall2,DECinfo%output)
-
-    ! Timing
     call LSTIMER('LTHETA K GRAD',tKcpu1,tKwall1,DECinfo%output)
 
 
@@ -1118,18 +1033,9 @@ contains
     Grad%Ltheta(1:3,1:natoms_frag) = -2E0_realk*Grad%Ltheta(1:3,1:natoms_frag)
 
 
-    ! Free remaining matrices
-    ! ***********************
-    do i=1,matdim
-       call mat_free(ThetaAO_mat(i))
-       call mat_free(dens4index_mat(i))
-    end do
-
-    call mem_dealloc(dens4index_matp)
-    call mem_dealloc(ThetaAO_matp)
-    call mem_dealloc(dens4index_mat)
-    call mem_dealloc(ThetaAO_mat)
-
+    ! Free stuff
+    call mem_dealloc(dens4index_pair)
+    call mem_dealloc(thetaAO_pair)
     call LSTIMER('LTHETA TOTAL',tcpu,twall,DECinfo%output)
 
 
@@ -1143,7 +1049,7 @@ contains
   !> sum_{CD} Cvirt_{alpha C} Cvirt_{beta D} ThetaMO_{IJ}^{CD}
   !> ThetaAO is also initialized here.
   !> Input order: (C,I,J,D)
-  !> Output order: (beta,alpha,J,I)
+  !> Output order: (beta,alpha,J,I)  ( equivalent to (alpha,beta,I,J) )
   !> where D-->beta and C--> alpha.
   !> \author Kasper Kristensen
   !> \date October 2011

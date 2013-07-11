@@ -6,6 +6,8 @@ add_library(
     ${GENERATED_FILES}
     )
 
+add_dependencies(dalton generate_binary_info)
+
 if(ENABLE_GEN1INT)
     add_subdirectory(DALTON/gen1int ${CMAKE_BINARY_DIR}/gen1int)
     add_dependencies(dalton gen1int_interface)

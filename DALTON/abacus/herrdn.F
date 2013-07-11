@@ -2349,6 +2349,8 @@ C*****************************************************************************
 #include "aosotr.h"
 #include "r12int.h"
 #include "qm3.h"
+#include "gnrinf.h"
+      LOGICAL, SAVE :: FIRSTDK = .TRUE.
 C
       IF (DIRAC) THEN
          SET_TYPE(1) = 'large component basis functions'
@@ -2557,9 +2559,13 @@ C
      &               JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),
      &               WORK(KIPCON),KATOM,KANG,KBLOCK,
      &               KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
-         CALL MOGTO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
-     &              NUC(1,1),NRC(1,1),SEG(1,1),KATOM,KANG,KBLOCK,
-     &              KPRIM,CPRIMU,NRMPRI)
+         IF (DKTRAN .AND. FIRSTDK) THEN
+            FIRSTDK = .FALSE.
+         ELSE
+             CALL MOGTO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
+     &                  NUC(1,1),NRC(1,1),SEG(1,1),KATOM,KANG,KBLOCK,
+     &                  KPRIM,CPRIMU,NRMPRI)
+         END IF
       END IF
       IF (IPREAD .GE. 2) THEN
 C*****************************************************************************

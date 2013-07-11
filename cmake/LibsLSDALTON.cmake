@@ -103,6 +103,8 @@ add_library(
     ${GENERATED_FILES}
     )
 
+add_dependencies(lsutillib generate_binary_info)
+
 target_link_libraries(lsutillib lsutiltypelib_common)
 
 add_library(
