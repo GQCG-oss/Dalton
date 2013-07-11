@@ -971,9 +971,6 @@ do i=1, ai%ND
       atomicSetting%molecule(iAO)%p => atomicmolecule
       atomicSetting%fragment(iAO)%p => atomicmolecule
    enddo
-   atomicSetting%numNodes = 1
-   atomicSetting%numFragments = 1
-   atomicSetting%scheme%fragment = .FALSE.
    !deactivate density fitting, FMM and screening - provide no speedup and just complicates things
    atomicSetting%scheme%densfit = .FALSE.
    atomicSetting%scheme%df_k = .FALSE.
