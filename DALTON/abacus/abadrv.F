@@ -2098,11 +2098,12 @@ C
          CALL QUIT('ERROR: Inconsistent input (Raman with symmetry)')
       END IF
 C
-      IF (DKTRAN .AND. MOLGRD) THEN
-         WRITE(LUPRI,'(/A)') 'ERROR: molecular gradient not implemented'
-     &   //' for Douglas-Kroll-Hess Hamiltonian'
-         CALL QUIT('ERROR: mol. grad. not implemented for DKH(2)')
-      END IF
+! hjaaj July 2013: yes, we can use MOLGRD with DKTRAN, although numerical gradient
+!     IF (DKTRAN .AND. MOLGRD) THEN
+!        WRITE(LUPRI,'(/A)') 'ERROR: molecular gradient not implemented'
+!    &   //' for Douglas-Kroll-Hess Hamiltonian'
+!        CALL QUIT('ERROR: mol. grad. not implemented for DKH(2)')
+!     END IF
       IF (DKTRAN .AND. .NOT.NOLOND) THEN
          WRITE(LUPRI,'(/A)') 'ERROR: London orbitals not implemented'
      &   //' for Douglas-Kroll-Hess Hamiltonian'
