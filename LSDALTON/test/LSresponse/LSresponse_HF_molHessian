@@ -91,13 +91,13 @@ CTRL[2]=1
 ERROR[2]="Memory leak -"
 
 # MOLHESSIAN: Cumul. norm of the first derivative of the reference density matrix
-CRIT1=`$GREP "Cumul. norm of Da:.*0.504424" $log | wc -l`
+CRIT1=`$GREP "Cumul. norm of Da:.*0.504445" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="Error in the first derivative of the reference density matrix in the geometrical Hessian"
 
 # MOLHESSIAN: Cumul. norm of the first derivative of the exchange term
-CRIT1=`$GREP "Cumul. norm of Da:.*0.5044246" $log | wc -l`
+CRIT1=`$GREP "Cumul. norm of Ka:.*0.5044246" $log | wc -l`
 TEST[4]=`expr  $CRIT1`
 CTRL[4]=1
 ERROR[4]="Error in the first derivative of the exchange term"

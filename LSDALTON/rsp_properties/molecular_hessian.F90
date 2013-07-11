@@ -4,26 +4,39 @@
 MODULE molecular_hessian_mod
 #ifdef MOD_UNRELEASED
   use precision ! realk
-  use matrix_module, only: matrix
-  use matrix_Operations, only: mat_mul, mat_free, mat_zero, mat_tr, &
-       & mat_sqnorm2, mat_init
-  use typedeftype, only: LSsetting,geoHessianConfig
-  use memory_handling, only: mem_alloc,mem_dealloc
-  use matrix_util, only: VerifyMatrices
-  use lstiming, only: lstimer
-  use integralinterfaceMod, only: ii_get_geoderivexchange, ii_get_overlap, &
-       & ii_get_geoderivoverlap
+  use matrix_module,        only: matrix, matrixp
+  use matrix_Operations,    only: mat_mul, mat_daxpy, &
+                                & mat_free, &
+                                & mat_zero, &
+                                & mat_tr, &
+                                & mat_sqnorm2, &
+                                & mat_init, &  
+                                & mat_set_from_full
+  use typedeftype,          only: LSsetting,geoHessianConfig
+  use memory_handling,      only: mem_alloc,mem_dealloc
+  use matrix_util,          only: VerifyMatrices
+  use lstiming,             only: lstimer
+  use integralinterfaceMod, only: II_get_overlap, &
+                                & II_get_geoderivoverlap, &
+                                & II_get_geoderivKinetic, &
+                                & II_get_geoderivnucel, &
+                                & II_get_geoderivCoulomb, &
+                                & II_get_geoderivexchange 
 #endif
 #ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
 #endif
 
   private
-  public :: dummy_subroutine_hessian,&
-       & geohessian_set_default_config,&
-       & get_molecular_hessian,&
-       & get_first_geoderiv_overlap,&
-       & get_first_geoderiv_refDmat
+
+  public  :: dummy_subroutine_hessian,&
+           & geohessian_set_default_config,&
+           & get_molecular_hessian, &
+           & get_first_geoderiv_oneElectronHamiltonian, &
+           & get_first_geoderiv_overlap,&
+           & get_first_geoderiv_refDmat,&
+           & get_geom_first_order_RHS_HF
+
 
 CONTAINS
 
@@ -31,7 +44,8 @@ CONTAINS
   END SUBROUTINE dummy_subroutine_hessian
 
 #ifdef MOD_UNRELEASED
-  !> \brief Set default settings for the geometrical Hessian calculation (default: run nothing)
+  !> \brief Set default settings for the geometrical Hessian calculation 
+  !>        (default: do not compute the geometrical molecular Hessian)
   !> \author Patrick Merlot
   !> \date October,26 2012
   SUBROUTINE geohessian_set_default_config(geoHessianConf)
@@ -61,10 +75,11 @@ CONTAINS
     Type(LSSETTING),INTENT(INOUT)     :: setting
     Type(geoHessianConfig),INTENT(IN) :: config_hessian
     Integer,INTENT(IN)                :: Natoms,lupri,luerr
-    Type(matrix),INTENT(IN)           :: F,D
+    Type(matrix),INTENT(IN)           :: F
+    Type(matrix),INTENT(IN)           :: D
     Type(matrix)           :: S
-    Type(matrix),pointer   :: Sa(:),Ka(:),Da(:) !Sx,Sy,Sz for each atom
-    Type(matrix),pointer   :: ha(:)
+    Type(matrix),pointer   :: Sa(:),Ja(:),Ka(:),Da(:) !Sx,Sy,Sz for each atom
+    Type(matrix),pointer   :: ha(:),RHS_HF(:)
     Integer                :: i,nbast,iprint,ndmat
     Real(realk)            :: ts,te,sum
     !
@@ -93,12 +108,52 @@ CONTAINS
     call get_first_geoderiv_refDmat(Da,D,Sa,Natoms,setting,lupri,luerr,iprint)
 
 
-    ! calculate the 1st geo. deriv. of the one-electron Hamiltonian
+    ! calculate the 1st geo. deriv. of the one-electron Hamiltonian h^a
     call mem_alloc(ha,3*Natoms)
     DO i=1,3*Natoms
-       call mat_init(ha(i),nbast,nbast)
+        call mat_init(ha(i),nbast,nbast)
+        call mat_zero(ha(i))
     ENDDO
-    ! call gen1int_host_get_first_geoderiv_h1(setting,ha,Natoms,lupri)
+    call get_first_geoderiv_oneElectronHamiltonian(ha,Natoms,setting,lupri,luerr)
+    !call gen1int_host_get_first_geoderiv_h1(setting,ha,Natoms,lupri)
+
+    ! calculate 1st geo. deriv. of the Coulomb and Exchange contrib.: J^a, K^a
+    call mem_alloc(Ja,3*Natoms)
+    call mem_alloc(Ka,3*Natoms)
+    DO i=1,3*Natoms
+       call mat_init(Ja(i),nbast,nbast)
+       call mat_init(Ka(i),nbast,nbast)
+    ENDDO
+    call II_get_geoderivCoulomb( Ja,D,Natoms,setting,lupri,luerr)
+    call II_get_geoderivExchange(Ka,D,Natoms,setting,lupri,luerr)
+    IF (IPRINT .GE. 3) THEN
+       sum = 0.0E0_realk
+       DO i=1,3*Natoms
+          sum = sum + mat_sqnorm2(Ja(i))
+       ENDDO
+       WRITE(LUPRI,*) '   - Cumul. norm of Ja: ', sum
+       WRITE(*,*)     '   - Cumul. norm of Ja: ', sum
+       sum = 0.0E0_realk
+       DO i=1,3*Natoms
+          sum = sum + mat_sqnorm2(Ka(i))
+       ENDDO
+       WRITE(LUPRI,*) '   - Cumul. norm of Ka: ', sum
+       WRITE(*,*)     '   - Cumul. norm of Ka: ', sum
+    ENDIF
+
+
+    ! generate the Right-Hand Side of the 1st order geo. response equation
+    call mem_alloc(RHS_HF,3*Natoms)
+    DO i=1,3*Natoms
+       call mat_init(RHS_HF(i),nbast,nbast)
+    ENDDO
+    call get_geom_first_order_RHS_HF(RHS_HF,Natoms,S,Sa,F,D,Da,Ja,Ka,&
+                                & setting,lupri,luerr)
+
+    ! Solve the 1st order geo. resp. eq., and get the response vectors
+    ! Calcualte 2nd deriv. of the density matrix and of D_{2n+1}
+
+
 
     ! calculate the 2nd geo. deriv. of the overlap matrix Sab
     ! call gen1int_host_get_second_geoderiv_overlap(ls_setting, Sxy, natoms,io_viewer)
@@ -107,28 +162,6 @@ CONTAINS
     ! call gen1int_host_get_second_geoderiv_h1_expval(ls_setting, D,h1xy, natoms,io_viewer)
 
     ! calculate the 2nd geo. deriv. of the nuc-nuc repulsion
-
-    ! generate the Right-Hand Side of the 1st order geo. response equation
-    ! Solve the 1st order geo. resp. eq., and get the response vectors
-    ! Calcualte 2nd deriv. of the density matrix and of D_{2n+1}
-
-    ! CAN CHECK HESSIAN FOR ONE-ELECTRON SYSTEMS
-
-    ! calculate the 1st geo. deriv. of the Coulomb contrib.
-    ! calculate the 1st geo. deriv. of the Exchange contrib.
-    call mem_alloc(Ka,3*Natoms)
-    DO i=1,3*Natoms
-       call mat_init(Ka(i),nbast,nbast)
-    ENDDO
-    call II_get_geoderivExchange(Ka,D,Natoms,setting,lupri,luerr)
-    IF (IPRINT .GE. 3) THEN
-       sum = 0.0E0_realk
-       DO i=1,3*Natoms
-          sum = sum + mat_sqnorm2(Ka(i))
-       ENDDO
-       WRITE(LUPRI,*) '   - Cumul. norm of Ka: ', sum
-       WRITE(*,*)     '   - Cumul. norm of Ka: ', sum
-    ENDIF
 
     ! calculate the 2nd geo. deriv. of the Coulomb contrib.
     ! calculate the 2nd geo. deriv. of the Exchange contrib.
@@ -157,13 +190,17 @@ CONTAINS
     ! free memory
      DO i=1,3*Natoms
         call mat_free(Sa(i))
+        call mat_free(Ja(i))
         call mat_free(Ka(i))
+        call mat_free(RHS_HF(i))
         call mat_free(ha(i))
         call mat_free(Da(i))
      ENDDO
 
      call mem_dealloc(ha)
+     call mem_dealloc(Ja)
      call mem_dealloc(Ka)
+     call mem_dealloc(RHS_HF)
      call mem_dealloc(Da)
      call mem_dealloc(Sa)
      call mat_free(S)
@@ -173,45 +210,46 @@ CONTAINS
 
 
 
-!   !> \brief Calculates the Right Hand Side for 1st order HF density-matrix 
-!   !> \brief response equation for geometrical perturbation
-!   !> \latexonly
-!   !>        $RHS = -\textit{P_A} \[ \textbf{h}^a \textbf{DS} + \textbf{G(D)DS}^a + \textbf{FDS}^a 
-!   !>                + \textbf{K(D^a_{2n+1})}  \] $
-!   !>  ref. http://dx.doi.org/10.1063.1.1415082
-!   !> \endlatexonly
-!   !> \author \latexonly P. Merlot  \endlatexonly
-!   !> \date 2012-09-11
-!   !> \param RHS The Right Hand Side of 1st order response equation
-!   !> \param S The overlap matrix
-!   !> \param S_a The 1st order geo. deriv. of the S
-!   !> \param F The Fock/Kohn-Sham matrix
-!   !> \param D The reference density matrix
-!   !> \param Da The 1st geo. deriv. of the reference matrix D0
-!   !> \param Jmat_a The 1st geo. deriv. of Jmat
-!   !> \param Kmat_a The 1st geo. deriv. of Kmat
-!   !> \param setting Integral evalualtion settings
-!   !> \param lupri Default print unit
-!   !> \param luerr Default error print unit
-!   SUBROUTINE get_geom_first_order_RHS_HF(RHS,Natoms,S,S_a,F,D,Da,Jmat_a,Kmat_a,setting,lupri,luerr)
-!     !
-!     IMPLICIT NONE
-!     Integer,INTENT(IN)            :: Natoms,lupri,luerr
-!     TYPE(LSSETTING),intent(INOUT) :: setting
-!     Type(matrix),INTENT(INOUT)    :: RHS(3*Natoms) ! derivative along x,y and z for each atom
-!     Type(matrix),INTENT(IN)       :: S ! Overlap matrix
-!     Type(matrix),INTENT(IN)       :: S_a(3*Natoms) ! 1st geo. deriv. of S
-!     Type(matrix),intent(IN)       :: D ! Density matrix
-!     Type(matrix),intent(IN)       :: F ! Fock matrix
-!     Type(matrix),INTENT(IN)       :: Da(3*Natoms) ! 1st geo. deriv. of D
-!     Type(matrix),INTENT(IN)       :: Jmat_a(3*Natoms) ! 1st geo. deriv. of Jmat
-!     Type(matrix),INTENT(IN)       :: Kmat_a(3*Natoms) ! 1st geo. deriv. of Kmat
-!     !
-!     Integer          :: nbast
-!     !
-!     nbast = S%nrow
-
-!   END  SUBROUTINE get_geom_first_order_RHS_HF
+   !> \brief Calculates the Right Hand Side for 1st order HF density-matrix 
+   !> \brief response equation for geometrical perturbation
+   !> \latexonly
+   !>        $RHS = -\textit{P_A} \[ \textbf{h}^a \textbf{DS} + \textbf{G(D)DS}^a + \textbf{FDS}^a 
+   !>                + \textbf{K(D^a_{2n+1})}  \] $
+   !>  ref. http://dx.doi.org/10.1063.1.1415082
+   !> \endlatexonly
+   !> \author \latexonly P. Merlot  \endlatexonly
+   !> \date 2012-09-11
+   !> \param RHS The Right Hand Side of 1st order response equation
+   !> \param S The overlap matrix
+   !> \param Sa The 1st order geo. deriv. of the S
+   !> \param F The Fock/Kohn-Sham matrix
+   !> \param D The reference density matrix
+   !> \param Da The 1st geo. deriv. of the reference matrix D0
+   !> \param Ja The 1st geo. deriv. of Jmat
+   !> \param Ka The 1st geo. deriv. of Kmat
+   !> \param setting Integral evalualtion settings
+   !> \param lupri Default print unit
+   !> \param luerr Default error print unit
+   SUBROUTINE get_geom_first_order_RHS_HF(RHS,Natoms,S,Sa,F,D,Da,Ja,Ka,setting,lupri,luerr)
+    !
+    IMPLICIT NONE
+    Integer,INTENT(IN)            :: Natoms,lupri,luerr
+    Type(LSSETTING),intent(INOUT) :: setting
+    Type(matrix),INTENT(INOUT)    :: RHS(3*Natoms) ! derivative along x,y and z for each atom
+    Type(matrix),INTENT(IN)       :: S ! Overlap matrix
+    Type(matrix),INTENT(IN)       :: Sa(3*Natoms) ! 1st geo. deriv. of S
+    Type(matrix),intent(IN)       :: D ! Density matrix
+    Type(matrix),intent(IN)       :: F ! Fock matrix
+    Type(matrix),INTENT(IN)       :: Da(3*Natoms) ! 1st geo. deriv. of D
+    Type(matrix),INTENT(IN)       :: Ja(3*Natoms) ! 1st geo. deriv. of Jmat
+    Type(matrix),INTENT(IN)       :: Ka(3*Natoms) ! 1st geo. deriv. of Kmat
+    !
+    Integer          :: nbast
+    !
+    nbast = S%nrow
+    ! RHS = 0.5 SD {ha + Ga(D) + G(Da) } -  0.5 {ha+Ga(D)+G(Da)} DS + SaDF + SDaF - FDaS  - FDSa
+    !     
+   END  SUBROUTINE get_geom_first_order_RHS_HF
 
 
   !> \brief Calculates the first geometric derivative of the overlap matrix
@@ -233,6 +271,43 @@ CONTAINS
     call lstimer('Sa_build',ts,te,lupri)
   END SUBROUTINE get_first_geoderiv_overlap
 
+  !> \brief Calculates the first geometric derivative of the one-electron Hamiltonian
+  !> Nuclear-electron attraction + kinetic energy gradient
+  !> \author P. Merlot
+  !> \date 2012-09-11
+  !> \param ha The 3*Natoms first geometric derivative components of the one-electron Hamiltonian
+  !> \param Natoms Nb. of atoms in the molecule
+  !> \param Dmat The density matrix
+  !> \param ndmat The number of density matrices
+  !> \param setting Integral evalualtion settings
+  !> \param lupri Default print unit
+  !> \param luerr Unit for error printing
+  SUBROUTINE get_first_geoderiv_oneElectronHamiltonian(ha,Natoms,setting,lupri,luerr)
+    !
+    IMPLICIT NONE
+    Integer,INTENT(IN)              :: Natoms,lupri,luerr
+    Type(LSSETTING),intent(INOUT)   :: setting
+    Type(matrix),INTENT(INOUT)      :: ha(3*Natoms) ! derivative along x,y and z for each atom
+    !
+    Real(realk)                     :: ts,te 
+    Integer                         :: i, nbast
+    Type(matrix), pointer           :: Va(:) 
+    !
+    call lstimer('START ',ts,te,lupri)
+    nbast = ha(1)%nrow
+    call mem_alloc(Va,3*Natoms)
+     DO i=1,3*Natoms
+        call mat_init(Va(i),nbast,nbast)
+     ENDDO
+    call II_get_geoderivKinetic(ha,Natoms,setting,lupri,luerr)
+    call II_get_geoderivnucel(Va,Natoms,setting,lupri,luerr)
+    DO i=1,3*Natoms
+        call mat_daxpy(1.0E0_realk,Va(i),ha(i))
+        call mat_free(Va(i))
+     ENDDO
+    call mem_dealloc(Va)
+    call lstimer('ha_build',ts,te,lupri)
+  END SUBROUTINE get_first_geoderiv_oneElectronHamiltonian
 
   !> \brief Calculates the first geometric derivative of the reference density matrix
   !> \author \latexonly P. Merlot  \endlatexonly

@@ -4,28 +4,32 @@
 MODULE test_molecular_hessian_mod
 #ifdef MOD_UNRELEASED
   use precision ! realk
-  use matrix_module, only: matrix, matrixp
-  use matrix_Operations, only: mat_init, mat_mul, mat_free, mat_zero, mat_tr, &
-       & mat_trab
-  use typedeftype, only: LSsetting,geoHessianConfig
+  use matrix_module,          only: matrix, matrixp
+  use matrix_Operations,      only: mat_init, mat_mul, mat_free,&
+                                  & mat_zero, mat_tr, &
+                                  & mat_trab
+  use typedeftype,            only: LSsetting,geoHessianConfig
 !  use typedef
-  use memory_handling, only: mem_dealloc, mem_alloc
-  use matrix_util,only: VerifyMatrices
-  use lstiming, only: lstimer
-  use molecular_hessian_mod, only: get_first_geoderiv_overlap, &
-       & get_first_geoderiv_refdmat
-  use integralinterfaceMOD, only: II_get_K_gradient, &
-       & II_get_reorthoNormalization, ii_get_geoderivexchange       
+  use memory_handling,        only: mem_dealloc, mem_alloc
+  use matrix_util,            only: VerifyMatrices
+  use lstiming,               only: lstimer
+  use molecular_hessian_mod,  only: get_first_geoderiv_overlap, &
+                                  & get_first_geoderiv_oneElectronHamiltonian, &
+                                  & get_first_geoderiv_refdmat
+  use integralinterfaceMOD,   only: II_get_K_gradient, &
+                                  & II_get_reorthoNormalization,&
+                                  & II_get_geoderivexchange       
 #endif
 #ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
 #endif
 
-  private :: test_first_geoderiv_overlap,&
-           & test_first_geoderiv_refDmat,&
-           & test_get_geoderivExchange
-  public :: dummy_subroutine_hessian_test,&
-          & test_Hessian_contributions
+  private ::  test_first_geoderiv_overlap,&
+            & test_first_geoderiv_oneElectronHamiltonian,&
+            & test_first_geoderiv_refDmat,&
+            & test_get_geoderivExchange
+  public  ::  dummy_subroutine_hessian_test,&
+            & test_Hessian_contributions
 
 CONTAINS
 
@@ -44,7 +48,7 @@ CONTAINS
 !> \param lupri Default print unit
 !> \param luerr Unit for error printing
 !> \param iprint the printlevel, determining how much output should be generated
-SUBROUTINE test_Hessian_contributions(F,D,Natoms,ndmat,setting,lupri,luerr)
+SUBROUTINE test_HESSIAN_contributions(F,D,Natoms,ndmat,setting,lupri,luerr)
   !
   IMPLICIT NONE
   Integer,INTENT(IN)            :: Natoms,lupri,luerr
@@ -71,6 +75,9 @@ SUBROUTINE test_Hessian_contributions(F,D,Natoms,ndmat,setting,lupri,luerr)
   ! Testing the geometric first derivative of the overlap matrix vs gen1int matrices
   call test_first_geoderiv_overlap(Natoms,nbast,thresh,setting,lupri,luerr)
 
+  ! Testing the geometric first derivative of the one-electron Hamil. matrix
+  call test_first_geoderiv_oneElectronHamiltonian(Natoms,nbast,thresh,setting,lupri,luerr)
+
   ! Testing the  geometric first derivative of the reference density matrix using a gradient contribution
   ! \latexonly
   !   $Tr(\textbf{FD^a_0}) =Tr(\textbf{FD_0S^aD_0})=Tr(\textbf{D_0FD_0S^a})$ 
@@ -96,7 +103,7 @@ SUBROUTINE test_Hessian_contributions(F,D,Natoms,ndmat,setting,lupri,luerr)
 
   
   call lstimer('testHessian',ts,te,lupri)
-END SUBROUTINE test_Hessian_contributions
+END SUBROUTINE test_HESSIAN_contributions
 
 !> \brief Test the first derivative of the overlap matrix vs gen1int routine
 !> \author \latexonly P. Merlot  \endlatexonly
@@ -113,6 +120,8 @@ SUBROUTINE test_first_geoderiv_overlap(Natoms,nbast,thresh,setting,lupri,luerr)
   Integer,INTENT(IN)            :: Natoms,lupri,luerr,nbast
   TYPE(LSSETTING),intent(INOUT) :: setting
   Real(realk),intent(IN)        :: THRESH
+  !
+  Type(matrix),pointer :: genSa(:) 
   Type(matrix),pointer :: Sa(:) ! derivative along x,y and z for each atom
   Integer              :: i
   Real(realk)          :: ts,te
@@ -130,20 +139,20 @@ SUBROUTINE test_first_geoderiv_overlap(Natoms,nbast,thresh,setting,lupri,luerr)
 #ifdef BUILD_GEN1INT_LSDALTON 
 ! PATRICK would you pleas ensure that your fucking code compiles!!!!
 
-!!$  ! test only possible if gen1int available
-!!$  call mem_alloc(genSa,3*nAtoms)
-!!$  DO i=1,3*Natoms
-!!$     call mat_init(genSa(i),nbast,nbast)
-!!$     call mat_zero(genSa(i))
-!!$  ENDDO
-!!$  call gen1int_host_get_first_geoderiv_overlap(setting,genSa,nAtoms,lupri)
-!!$  DO i=1,3*Natoms
-!!$     call VerifyMatrices(Sa(i),genSa(i),'genSa',THRESH,lupri)
-!!$     call mat_free(genSa(i))
-!!$  ENDDO
-!!$  call mem_dealloc(genSa)
-!!$  write (lupri,*) '   - geometric first derivative of the overlap matrix: OK'
-!!$  write (*,*)     '   - geometric first derivative of the overlap matrix: OK'
+  ! test only possible if gen1int available
+  call mem_alloc(genSa,3*nAtoms)
+  DO i=1,3*Natoms
+     call mat_init(genSa(i),nbast,nbast)
+     call mat_zero(genSa(i))
+  ENDDO
+  call gen1int_host_get_first_geoderiv_overlap(setting,genSa,nAtoms,lupri)
+  DO i=1,3*Natoms
+     call VerifyMatrices(Sa(i),genSa(i),'genSa',THRESH,lupri)
+     call mat_free(genSa(i))
+  ENDDO
+  call mem_dealloc(genSa)
+  write (lupri,*) '   - geometric first derivative of the overlap matrix: OK'
+  write (*,*)     '   - geometric first derivative of the overlap matrix: OK'
 #endif
   DO i=1,3*Natoms
      call mat_free(Sa(i))
@@ -151,6 +160,64 @@ SUBROUTINE test_first_geoderiv_overlap(Natoms,nbast,thresh,setting,lupri,luerr)
   call mem_dealloc(Sa)
   call lstimer('test_Sa',ts,te,lupri)
 END SUBROUTINE test_first_geoderiv_overlap
+
+
+
+!> \brief Test the first derivative of the one-electron Hamiltonian
+!>        vs gen1int routine
+!> \author P. Merlot
+!> \date 2013-07-10
+!> \param Natoms The nb. of atoms in the molecule
+!> \param nbast The rank of the density matrix (nb. atomic orbitals)
+!> \param Thresh The threshold used for comparing the resulting matrix elements
+!> \param setting Integral evalualtion settings
+!> \param lupri Default print unit
+!> \param luerr Unit for error printing
+SUBROUTINE test_first_geoderiv_oneElectronHamiltonian(Natoms,nbast,thresh,setting,lupri,luerr)
+  !
+  IMPLICIT NONE
+  Integer,INTENT(IN)            :: Natoms,lupri,luerr,nbast
+  TYPE(LSSETTING),intent(INOUT) :: setting
+  Real(realk),intent(IN)        :: THRESH
+  !
+  Type(matrix),pointer :: genHa(:) 
+  Type(matrix),pointer :: ha(:) ! derivative along x,y and z for each atom
+  Integer              :: i
+  Real(realk)          :: ts,te
+  !
+  call lstimer('START ',ts,te,lupri)
+  !------------------------------------------------------
+  ! Testing the geometric first derivative matrix
+  call mem_alloc(ha,3*Natoms)
+  DO i=1,3*Natoms
+     call mat_init(ha(i),nbast,nbast)
+  ENDDO
+  call get_first_geoderiv_oneElectronHamiltonian(ha,Natoms,setting,lupri,luerr)
+  
+
+#ifdef BUILD_GEN1INT_LSDALTON 
+  ! test only possible if gen1int available
+  call mem_alloc(genHa,3*nAtoms)
+  DO i=1,3*Natoms
+     call mat_init(genHa(i),nbast,nbast)
+     call mat_zero(genHa(i))
+  ENDDO
+  call gen1int_host_get_first_geoderiv_h1(setting,genHa,Natoms,lupri)
+  DO i=1,3*Natoms
+     call VerifyMatrices(Sa(i),genHa(i),'genHa',THRESH,lupri)
+     call mat_free(genHa(i))
+  ENDDO
+  call mem_dealloc(genHa)
+  write (lupri,*) '   - geometric first derivative of the one-electron Hamiltonian: OK'
+  write (*,*)     '   - geometric first derivative of the one-electron Hamiltonian: OK'
+#endif
+  DO i=1,3*Natoms
+     call mat_free(ha(i))
+  ENDDO
+  call mem_dealloc(ha)
+  call lstimer('test_ha',ts,te,lupri)
+END SUBROUTINE test_first_geoderiv_oneElectronHamiltonian
+
 
 !> \brief Tests the geometric first derivative of the reference
 !>        density matrix using the gradient reOrthonomalization term
