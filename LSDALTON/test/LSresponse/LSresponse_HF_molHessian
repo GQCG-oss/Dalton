@@ -85,8 +85,8 @@ CTRL[1]=1
 ERROR[1]="HF ENERGY NOT CORRECT -"
 
 # Memory test
-CRIT2=`$GREP "Allocated memory (TOTAL): * 0 byte" $log | wc -l`
-TEST[2]=`expr  $CRIT2`
+CRIT1=`$GREP "Allocated memory (TOTAL): * 0 byte" $log | wc -l`
+TEST[2]=`expr  $CRIT1`
 CTRL[2]=1
 ERROR[2]="Memory leak -"
 
@@ -96,14 +96,20 @@ TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="Error in the first derivative of the reference density matrix in the geometrical Hessian"
 
-# MOLHESSIAN: Cumul. norm of the first derivative of the exchange term
-CRIT1=`$GREP "Cumul. norm of Ka:.*0.5044246" $log | wc -l`
+# MOLHESSIAN: Cumul. norm of the first derivative of the Coulomb term
+CRIT1=`$GREP "Cumul. norm of Ja:.*606.417079" $log | wc -l`
 TEST[4]=`expr  $CRIT1`
 CTRL[4]=1
-ERROR[4]="Error in the first derivative of the exchange term"
+ERROR[4]="Error in the first derivative of the Coulomb term"
+
+# MOLHESSIAN: Cumul. norm of the first derivative of the exchange term
+CRIT1=`$GREP "Cumul. norm of Ka:.*44.416565" $log | wc -l`
+TEST[5]=`expr  $CRIT1`
+CTRL[5]=1
+ERROR[5]="Error in the first derivative of the exchange term"
 
 PASSED=1
-for i in 1 2 3
+for i in 1 2 3 4 5
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo ${ERROR[i]}
