@@ -3,43 +3,45 @@
 !> \brief Contains Hessian specific routines.
 MODULE molecular_hessian_mod
 #ifdef MOD_UNRELEASED
-  use precision ! realk
-  use matrix_module,        only: matrix, matrixp
-  use matrix_Operations,    only: mat_mul, mat_daxpy, &
-                                & mat_free, mat_scal, &
-                                & mat_zero, mat_tr, &
-                                & mat_sqnorm2, mat_init, &  
-                                & mat_set_from_full
-  use typedeftype,          only: LSsetting, geoHessianConfig
-  use memory_handling,      only: mem_alloc, mem_dealloc
-  use matrix_util,          only: VerifyMatrices
-  use lstiming,             only: lstimer
-  use integralinterfaceMod, only: II_get_overlap, &
-                                & II_get_geoderivoverlap, &
-                                & II_get_geoderivKinetic, &
-                                & II_get_geoderivnucel, &
-                                & II_get_geoderivCoulomb, &
-                                & II_get_geoderivexchange, &
-                                & II_get_coulomb_mat, &
-                                & II_get_exchange_mat
+    use precision ! realk
+    use matrix_module,          only: matrix, matrixp
+    use matrix_Operations,      only: mat_mul, mat_daxpy, &
+                                    & mat_free, mat_scal, &
+                                    & mat_zero, mat_tr, &
+                                    & mat_sqnorm2, mat_init, &  
+                                    & mat_set_from_full
+    use typedeftype,            only: LSsetting, geoHessianConfig
+    use configurationType,      only: ConfigItem
+    use memory_handling,        only: mem_alloc, mem_dealloc
+    use matrix_util,            only: VerifyMatrices
+    use lstiming,               only: lstimer
+    use integralinterfaceMod,   only: II_get_overlap, &
+                                    & II_get_geoderivoverlap, &
+                                    & II_get_geoderivKinetic, &
+                                    & II_get_geoderivnucel, &
+                                    & II_get_geoderivCoulomb, &
+                                    & II_get_geoderivexchange, &
+                                    & II_get_coulomb_mat, &
+                                    & II_get_exchange_mat
+    use rspsolver,              only: prop_molcfg, init_prop_molcfg
 #endif
 #ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
 #endif
 
-  private
+  private   ::  get_first_order_rsp_vectors
 
-  public  ::  dummy_subroutine_hessian,&
-            & geohessian_set_default_config,&
-            & get_molecular_hessian, &
-            & get_first_geoderiv_overlap,&
-            & get_first_geoderiv_refDmat,&
-            & get_first_geoderiv_H1_mat, &
-            & get_first_geoderiv_Coulomb_mat, &
-            & get_first_geoderiv_exchange_mat, &
-            & get_first_geoderiv_twoElectron_mat, &
-            & get_first_geoderiv_Fock_mat,&
-            & get_geom_first_order_RHS_HF
+  public    ::  dummy_subroutine_hessian,&
+                & geohessian_set_default_config,&
+                & get_molecular_hessian, &
+                & get_first_geoderiv_overlap,&
+                & get_first_geoderiv_refDmat,&
+                & get_first_geoderiv_H1_mat, &
+                & get_first_geoderiv_Coulomb_mat, &
+                & get_first_geoderiv_exchange_mat, &
+                & get_first_geoderiv_twoElectron_mat, &
+                & get_first_geoderiv_Fock_mat,&
+                & get_geom_first_order_RHS_HF
 
 
 CONTAINS
@@ -48,6 +50,7 @@ CONTAINS
   END SUBROUTINE dummy_subroutine_hessian
 
 #ifdef MOD_UNRELEASED
+
   !> \brief Set default settings for the geometrical Hessian calculation 
   !>        (default: do not compute the geometrical molecular Hessian)
   !> \author Patrick Merlot
@@ -70,20 +73,22 @@ CONTAINS
   !> \param F The Fock/Kohn-Sham matrix
   !> \param D The "reference" Density matrix D0
   !> \param setting Integral evalualtion settings
+  !> \param config ???????????????????????????????????????????????????
   !> \param lupri Default print unit
   !> \param luerr Default error print unit
-  SUBROUTINE get_molecular_hessian(Hessian,Natoms,F,D,setting,config_hessian,lupri,luerr)
+  SUBROUTINE get_molecular_hessian(Hessian,Natoms,F,D,setting,config,lupri,luerr)
     !
     IMPLICIT NONE
     Real(realk),INTENT(INOUT)         :: Hessian(3*Natoms,3*Natoms)
     Type(LSSETTING),INTENT(INOUT)     :: setting
-    Type(geoHessianConfig),INTENT(IN) :: config_hessian
+    Type(ConfigItem),INTENT(IN)       :: config
     Integer,INTENT(IN)                :: Natoms,lupri,luerr
     Type(matrix),INTENT(IN)           :: F
     Type(matrix),INTENT(IN)           :: D
     Type(matrix)           :: S
     Type(matrix),pointer   :: Sa(:),Da(:),ha(:) !Sx,Sy,Sz for each atom
     Type(matrix),pointer   :: Ga(:),GDa(:),Fa(:),RHS_HF(:)
+    Type(matrix),pointer   :: Xa(:)
     Integer                :: i,nbast,iprint,ndmat
     Real(realk)            :: ts,te
     !
@@ -91,7 +96,7 @@ CONTAINS
     ndmat = 1
     nbast = D%nrow
     Hessian = 0E0_realk
-    iprint = config_hessian%intprint
+    iprint = config%geoHessian%intprint
 
     ! calculate the overlap matrix S
     call mat_init(S,nbast,nbast)
@@ -148,9 +153,15 @@ CONTAINS
                                     & setting,lupri,luerr)
 
     ! Solve the 1st order geo. resp. eq., and get the response vectors
-    ! Calcualte 2nd deriv. of the density matrix and of D_{2n+1}
+    !> LINEQ == TRUE to solve with a RHS ( E(2)-w(I)S(2))X(I) - GD = 0 )
+    call mem_alloc(Xa,3*Natoms)
+     DO i=1,3*Natoms
+        call mat_init(Xa(i),nbast,nbast)
+     ENDDO
+    call get_first_order_rsp_vectors(Xa,S,D,ha,Ga,GDa,Natoms,setting,config,lupri,luerr)
 
 
+    ! Calcualte 2nd deriv. of the density matrix and of D_{2n+1} 
 
     ! calculate the 2nd geo. deriv. of the overlap matrix Sab
     ! call gen1int_host_get_second_geoderiv_overlap(ls_setting, Sxy, natoms,io_viewer)
@@ -163,26 +174,6 @@ CONTAINS
     ! calculate the 2nd geo. deriv. of the Coulomb contrib.
     ! calculate the 2nd geo. deriv. of the Exchange contrib.
 
-    ! ! calculate the RHS of the response equations
-
-    ! ! solve the response equations
-    ! !> LINEQ == TRUE to solve with a RHS ( E(2)-w(I)S(2))X(I) - GD = 0 )
-    ! DO i=1,3*Natoms
-    !    ! Initialize solver parameters.
-    !    call init_prop_molcfg(molcfg,S,Natoms,lupri,luerr,setting,config%decomp,config%solver)
-    !    !!!   rsp_init(ntrial, nrhs, nsol, nomega, nstart)
-    !    !call rsp_init(rsp_number_of_current_trial,rsp_number_of_rhs,&
-    !    !        &rsp_number_of_sols,rsp_number_of_omegas,rsp_number_of_startvecs)
-    !    call rsp_init(nexci_max,1,nexci_max,nexci_max,nstart)
-    !    ! Calling solver. 
-    !    LINEQ = .TRUE.
-    !    nb_eq = 1
-    !    ExEnergies = 0
-    !    call rsp_solver(molcfg,D,S,F,LINEQ,nb_eq,RHS,ExEnergies,Xa)
-    !    ! At this point Dx contain the excitation vectors, not the transition densities.
-                     
-    !     ENDDO
-
 
     ! free memory
      DO i=1,3*Natoms
@@ -192,6 +183,7 @@ CONTAINS
         call mat_free(Ga(i))
         call mat_free(GDa(i))
         call mat_free(Fa(i))
+        call mat_free(Xa(i))
         call mat_free(RHS_HF(i))
      ENDDO
      call mem_dealloc(Sa)
@@ -200,9 +192,10 @@ CONTAINS
      call mem_dealloc(Ga)
      call mem_dealloc(GDa)
      call mem_dealloc(Fa)
+     call mem_dealloc(Xa)
      call mem_dealloc(RHS_HF)
      call mat_free(S)
-     call lstimer('geoHessian_build',ts,te,lupri)
+     call lstimer('geoHess_build',ts,te,lupri)
   END SUBROUTINE get_molecular_hessian
 
 
@@ -601,5 +594,54 @@ CONTAINS
     call lstimer('Fa_build',ts,te,lupri)
   END SUBROUTINE get_first_geoderiv_Fock_mat
 
+
+  !> \brief Solve the 1st-order resp. eq. to get the response vectors Xa
+  !> \author P. Merlot
+  !> \date 2013-07-10
+  !> \param Fa The 3*Natoms first geometric derivative components of F
+  !> \param D The reference density matrix
+  !> \param ha The 3*Natoms first geometric derivative components of H1
+  !> \param Ga The 3*Natoms first geometric derivative components: G^a(D)
+  !> \param Natoms Nb. of atoms in the molecule
+  !> \param setting Integral evalualtion settings
+  !> \param lupri Default print unit
+  !> \param luerr Unit for error printing
+  SUBROUTINE get_first_order_rsp_vectors(Xa,S,D,ha,Ga,GDa,Natoms,setting,config,lupri,luerr)
+    !
+    IMPLICIT NONE
+    Integer,INTENT(IN)                  :: Natoms,lupri,luerr
+    Type(ConfigItem),INTENT(IN)         :: config
+    Type(matrix),INTENT(IN)             :: S,D
+    Type(matrix),INTENT(IN)             :: ha(3*Natoms),Ga(3*Natoms),GDa(3*Natoms)
+    Type(LSSETTING),INTENT(INOUT)       :: setting
+    Type(matrix),INTENT(INOUT)          :: Xa(3*Natoms) ! derivative along x,y and z for each atom
+    !
+    Real(realk)                     :: ts,te 
+    Integer                         :: i, nbast
+    type(prop_molcfg)               :: molcfg
+    !
+    call lstimer('START ',ts,te,lupri)
+    DO i=1,3*Natoms
+        ! Initialize solver parameters.
+        call init_prop_molcfg(molcfg, S, Natoms,&
+                            & lupri, luerr, setting,&
+                            & config%decomp,config%response%rspsolverinput)
+
+!        !!!   rsp_init(ntrial, nrhs, nsol, nomega, nstart)
+!        !call rsp_init(rsp_number_of_current_trial,rsp_number_of_rhs,&
+!        !        &rsp_number_of_sols,rsp_number_of_omegas,rsp_number_of_startvecs)
+!        call rsp_init(nexci_max,1,nexci_max,nexci_max,nstart)
+!        ! Calling solver. 
+!        LINEQ = .TRUE.
+!        nb_eq = 1
+!        ExEnergies = 0
+!        call rsp_solver(molcfg,D,S,F,LINEQ,nb_eq,RHS,ExEnergies,Xa)
+!        ! At this point Dx contain the excitation vectors, not the transition densities.
+    ENDDO
+    call lstimer('Xa_build',ts,te,lupri)
+  END SUBROUTINE get_first_order_rsp_vectors
+
+
 #endif
 END MODULE molecular_hessian_mod
+
