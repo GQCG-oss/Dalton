@@ -73,7 +73,7 @@ contains
     type(array) :: cbai_pdm ! v^3 tiles from cbai, 1 == i, 2 == j, 3 == k
 #endif
     !> integers
-    integer :: i,j,k,idx,tuple_type
+    integer :: nodtotal,i,j,k,idx,tuple_type
     !> mpi stuff
 #ifdef VAR_MPI
     !> logical determining whether a parallel task should be joined by several procs
@@ -105,8 +105,10 @@ contains
 
 #ifdef VAR_MPI
 
+    nodtotal = infpar%lg_nodtot
+
     ! bcast the JOB specifier and distribute data to all the slaves within local group
-    waking_the_slaves: if ((infpar%lg_nodtot .gt. 1) .and. (infpar%lg_mynum .eq. infpar%master)) then
+    waking_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .eq. infpar%master)) then
 
        ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
@@ -198,6 +200,20 @@ contains
 #ifdef VAR_MPI
 
     cbai_pdm = array_init([nvirt,nvirt,nvirt,3],4)
+
+    ! create job distribution list
+    ! first, determine batch size and integer remainder from number of tasks and nodes
+
+    ntasks = (nocc*(nocc + 1)) / 2
+    b_size = int(ntasks,nodtotal)
+
+    ! init list
+
+    call mem_alloc(jobs,b_size + 1)
+
+    ! fill the list
+
+    call job_distrib_ccsdpt(b_size,jobs)
 
 #endif
 
@@ -654,14 +670,14 @@ contains
   !> \brief: make job distribution list for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine job_distrib_ccsdpt(no,j_size,jobs)
+  subroutine job_distrib_ccsdpt(b_size,jobs)
 
     implicit none
 
-    !> jobs size (without remainder contribution
-    integer, intent(in) :: j_size
+    !> batch size (without remainder contribution) 
+    integer, intent(in) :: b_size
     !> jobs array
-    integer, dimension(j_size+1), intent(inout) :: jobs
+    integer, dimension(b_size+1), intent(inout) :: jobs
     !> integers
     integer :: fill, nodtotal
 
@@ -672,9 +688,13 @@ contains
     ! fill the jobs array with values of ij
     ! there are nocc*(nocc + 1)/2 tasks in total (ntasks)
 
-    ! the below algorithm distributes the jobs evenly among the nodes. NO weighting yet... 
+    ! first, init jobs array with negative numbers such that these won't appear for any value of ij
 
-    do fill = 0,j_size
+    jobs = -1
+
+    ! the below algorithm distributes the jobs evenly among the nodes. NO weighting yet...
+
+    do fill = 0,b_size
 
        jobs(fill+1) = infpar%lg_mynum + 1 + fill*nodtotal 
 
