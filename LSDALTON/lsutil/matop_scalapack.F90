@@ -765,8 +765,8 @@ module matrix_operations_scalapack
     TYPE(Matrix),intent(in) :: a 
     real(realk), intent(in) :: alpha
     real(realk)  :: afull(n1,n2,n3)
-    INTEGER      :: DESC_AF(9), DESC_A(9), I,nsize,shift
-    INTEGER :: J,IP,IQ,P,Q,ip2,iq2,NBJ,NBI,iproc,preproc,nprow,npcol
+    INTEGER      :: DESC_AF(9), DESC_A(9), I,nsize
+    INTEGER      :: J,n,m,mp1,OFFSET
     real(realk),pointer :: Afulltmp(:)
 #ifdef VAR_SCALAPACK
     nsize = a%nrow*a%ncol
