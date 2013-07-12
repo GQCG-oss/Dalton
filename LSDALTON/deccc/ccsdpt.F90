@@ -73,12 +73,17 @@ contains
     type(array) :: cbai_pdm ! v^3 tiles from cbai, 1 == i, 2 == j, 3 == k
 #endif
     !> integers
-    integer :: nodtotal,i,j,k,idx,tuple_type
+    integer :: i,j,k,idx,tuple_type
     !> mpi stuff
 #ifdef VAR_MPI
-    !> logical determining whether a parallel task should be joined by several procs
-    logical :: collab
+    integer :: ntasks,nodtotal,ij,ij_count
+    integer, pointer :: jobs(:)
 #endif
+!    !> mpi stuff
+!#ifdef VAR_MPI
+!    !> logical determining whether a parallel task should be joined by several procs
+!    logical :: collab
+!#endif
     !> orbital energies
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
     !> MOs and unitary transformation matrices
@@ -202,17 +207,14 @@ contains
     cbai_pdm = array_init([nvirt,nvirt,nvirt,3],4)
 
     ! create job distribution list
-    ! first, determine batch size and integer remainder from number of tasks and nodes
-
-    ntasks = (nocc*(nocc + 1)) / 2
+    ! first, determine common batch size from number of tasks and nodes
+    ntasks = (nocc**2 + nocc)/2
     b_size = int(ntasks,nodtotal)
 
-    ! init list
-
+    ! init list (one more than b_size since mod(ntasks,nodtotal) is not necessearily zero
     call mem_alloc(jobs,b_size + 1)
 
     ! fill the list
-
     call job_distrib_ccsdpt(b_size,jobs)
 
 #endif
@@ -229,10 +231,10 @@ contains
            ! get value of ij from job disttribution list
            ij = jobs(ij_count)
 
-           if (ij = -1) cycle ijrun
+           ! no more jobs to be done? otherwise leave the loop
+           if (ij .lt. 0) exit
 
            ! calculate i and j from composite ij value
-
            call calc_i_and_j(ij,nocc,i,j)
 
            ! get i and j time ** need i_old and i=j checks!
@@ -601,8 +603,18 @@ contains
                 end select TypeOfTuple
 
              end do krun
+
+#ifdef VAR_MPI
+
+       end do ijrun
+
+#else
+
           end do jrun
        end do irun
+
+#endif
+
 
     ! *************************************************
     ! *********** done w/ trip generation *************
@@ -618,7 +630,7 @@ contains
 #ifdef VAR_MPI
 
     ! reduce singles and doubles arrays into that residing on the master
-    reducing_to_master: if (infpar%lg_nodtot .gt. 1) then
+    reducing_to_master: if (nodtotal .gt. 1) then
 
        call lsmpi_local_reduction(ccsdpt_singles%val,nocc,nvirt,infpar%master)
        call lsmpi_local_reduction(ccsdpt_doubles%val,nvirt,nocc,nvirt,nocc,infpar%master)
@@ -627,7 +639,7 @@ contains
     end if reducing_to_master
 
     ! release stuff located on slaves
-    releasing_the_slaves: if ((infpar%lg_nodtot .gt. 1) .and. (infpar%lg_mynum .ne. infpar%master)) then
+    releasing_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .ne. infpar%master)) then
 
        ! release stuff initialized herein
        call array2_free(Uocc)
@@ -635,6 +647,7 @@ contains
        call array4_free(ccsdpt_doubles_2) 
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
+       call mem_dealloc(jobs)
        call array4_free(abij)
        call array_free(cbai)
        call array_free(cbai_pdm)
@@ -676,6 +689,7 @@ contains
     call array_free(cbai)
 #ifdef VAR_MPI
     call array_free(cbai_pdm)
+    call mem_dealloc(jobs)
 #endif
     call array4_free(jaik)
 
@@ -709,7 +723,7 @@ contains
     nodtotal = infpar%lg_nodtot
 
     ! fill the jobs array with values of ij
-    ! there are nocc*(nocc + 1)/2 tasks in total (ntasks)
+    ! there are (nocc**2 + nocc)/2 tasks in total (ntasks)
 
     ! first, init jobs array with negative numbers such that these won't appear for any value of ij
 
