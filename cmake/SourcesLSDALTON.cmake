@@ -338,6 +338,7 @@ set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/Basisinfo_operations.F90
     LSDALTON/lsutil/IntegralOutput_operations.F90 
     LSDALTON/lsutil/TYPE-OP.F90
+    LSDALTON/lsutil/GCtrans.F90
     LSDALTON/lsutil/pbc_lattice_type.F90
     LSDALTON/lsutil/Build_AOBATCH.F90
     LSDALTON/lsutil/lspdm_basic.F90

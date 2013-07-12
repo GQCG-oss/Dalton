@@ -388,7 +388,7 @@ data iter /0/
   do i=ncore+1,nocc
 
 !$OMP PARALLEL DO DEFAULT(SHARED)  PRIVATE(j,tmp,spread,T) &
-!$OMP& FIRSTPRIVATE(CMO,uindex) SCHEDULE(DYNAMIC,1) 
+!$OMP FIRSTPRIVATE(CMO,uindex) SCHEDULE(DYNAMIC,1) 
      do j=nocc,n
 
        if (j.gt.nocc) then

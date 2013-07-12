@@ -325,6 +325,7 @@ C     and parts of qm3.h
 C
 #include "implicit.h"
 #include "maxorb.h"
+#include "mxcent.h"
       LOGICAL RELCAL, TSTINP
 #include "infpar.h"
 #include "maxaqn.h"
@@ -333,8 +334,8 @@ C
 #include "ecpinf.h"
 #include "qm3.h"
 #include "r12int.h"
-Caspg adding numder.h to set NOMOVE
 #include "numder.h"
+#include "nuclei.h"
 C
       LOGICAL FIRST_CALL
       SAVE    FIRST_CALL
@@ -355,7 +356,6 @@ C
 C
 C     cbirea.h:
 C
-      NOMOVE = .FALSE.
       IPREAD = IPREAD_ini
       LUMLCL = -1
       MAXPRI = MAXPRD
@@ -374,6 +374,14 @@ C     ... parameter MAXPRD is in cbirea.h
       ZCMVAL = 1.0D0
       LCMMAX = -1
       LCNTNUUM = .false.
+C
+C     numder.h
+C
+      NOMOVE = .FALSE.
+C
+C     nuclei.h:
+C
+      NUCIND = -1 ! to tell that READIN has never been called
 C
 C     Initialize effective core potential parameters (ecpinf.h)
 C
@@ -2160,7 +2168,7 @@ C*****************************************************************************
 C
 C     Set up a contraction matrix in case of Douglas-Kroll integrals
 C
-      IF (DKTRAN) THEN
+      IF (DKTRAN .AND. .NOT.DKHINT) THEN
          KLPRIM = 1
          KDKWRK = KLPRIM + KPRIM
          LDKWRK = LWORK - KDKWRK
@@ -2349,6 +2357,7 @@ C*****************************************************************************
 #include "aosotr.h"
 #include "r12int.h"
 #include "qm3.h"
+#include "gnrinf.h"
 C
       IF (DIRAC) THEN
          SET_TYPE(1) = 'large component basis functions'
@@ -2557,9 +2566,12 @@ C
      &               JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),
      &               WORK(KIPCON),KATOM,KANG,KBLOCK,
      &               KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
-         CALL MOGTO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
-     &              NUC(1,1),NRC(1,1),SEG(1,1),KATOM,KANG,KBLOCK,
-     &              KPRIM,CPRIMU,NRMPRI)
+         IF (.NOT. DKHINT) THEN
+         ! do not save MOLDEN info for uncontracted basis set for DKH2
+             CALL MOGTO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
+     &                  NUC(1,1),NRC(1,1),SEG(1,1),KATOM,KANG,KBLOCK,
+     &                  KPRIM,CPRIMU,NRMPRI)
+         END IF
       END IF
       IF (IPREAD .GE. 2) THEN
 C*****************************************************************************

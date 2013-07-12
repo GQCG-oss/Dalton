@@ -514,7 +514,7 @@ module matrix_operations_scalapack
       CALL PDM_SYNC(Job_trans,A,B)
       CALL PDM_DSCINIT(DESC_A,A)
       CALL PDM_DSCINIT(DESC_B,B)
-      CALL PDTRAN(A%nrow,A%ncol,1.0E0_realk,A%p,1,1,DESC_A,&
+      CALL PDTRAN(A%ncol,A%nrow,1.0E0_realk,A%p,1,1,DESC_A,&
            & 0.0E0_realk,B%p,1,1,DESC_B)
 #endif
     END SUBROUTINE PDM_TRANS
@@ -3148,7 +3148,7 @@ module matrix_operations_scalapack
    CASE(Job_trans)
       CALL PDM_DSCINIT(DESC_A,A)
       CALL PDM_DSCINIT(DESC_B,B)
-      CALL PDTRAN(A%nrow,A%ncol,1.0E0_realk,A%p,1,1,DESC_A,&
+      CALL PDTRAN(A%ncol,A%nrow,1.0E0_realk,A%p,1,1,DESC_A,&
                   &0.0E0_realk,B%p,1,1,DESC_B)
    CASE(Job_trace)
       CALL PDM_DSCINIT(DESC_A,A)

@@ -317,7 +317,7 @@ INTERFACE mem_alloc
      &             AOBATCH_allocate_1dim, ODBATCH_allocate_1dim, CCORBITAL_allocate_1dim, &
      &             LSAOTENSOR_allocate_1dim, SLSAOTENSOR_allocate_1dim, &
      &             GLOBALLSAOTENSOR_allocate_1dim, ATOMTYPEITEM_allocate_1dim, &
-     &             ATOMITEM_allocate_1dim, LSMATRIX_allocate_1dim, LSMATRIXP_allocate_1dim, &
+     &             ATOMITEM_allocate_1dim, LSMATRIX_allocate_1dim,&! LSMATRIXP_allocate_1dim, &
      &             MATRIX_allocate_1dim, MATRIXP_allocate_1dim, CCATOM_allocate_1dim, &
      &             BATCHTOORB_allocate_1dim,MYPOINTER_allocate_1dim, MYPOINTER_allocate_2dim, &
      &             ARRAY2_allocate_1dim,ARRAY4_allocate_1dim,MP2DENS_allocate_1dim, &
@@ -343,7 +343,7 @@ INTERFACE mem_dealloc
      &             AOBATCH_deallocate_1dim, ODBATCH_deallocate_1dim, CCORBITAL_deallocate_1dim, &
      &             LSAOTENSOR_deallocate_1dim, SLSAOTENSOR_deallocate_1dim, &
      &             GLOBALLSAOTENSOR_deallocate_1dim, ATOMTYPEITEM_deallocate_1dim, &
-     &             ATOMITEM_deallocate_1dim, LSMATRIX_deallocate_1dim, LSMATRIXP_deallocate_1dim, &
+     &             ATOMITEM_deallocate_1dim, LSMATRIX_deallocate_1dim, &!LSMATRIXP_deallocate_1dim, &
      &             MATRIX_deallocate_1dim, MATRIXP_deallocate_1dim,CCATOM_deallocate_1dim, &
      &             BATCHTOORB_deallocate_1dim,MYPOINTER_deallocate_1dim,MYPOINTER_deallocate_2dim, &
      &             ARRAY2_deallocate_1dim,ARRAY4_deallocate_1dim,MP2DENS_deallocate_1dim, &
@@ -3728,40 +3728,40 @@ integer (kind=long) :: nsize
    NULLIFY(LSMATRIXITEM)
 END SUBROUTINE LSMATRIX_deallocate_1dim
 
-SUBROUTINE LSMATRIXP_allocate_1dim(LSMATRIXITEM,n)
-implicit none
-integer,intent(in) :: n
-TYPE(LSMATRIXpointer),pointer    :: LSMATRIXITEM(:)
-integer :: IERR
-integer (kind=long) :: nsize
-nullify(LSMATRIXITEM)
-ALLOCATE(LSMATRIXITEM(n),STAT = IERR)
-IF (IERR.NE. 0) THEN
-   write(*,*) 'Error in LSMATRIX_allocate_1dim',IERR,n
-   CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_allocate_1dim')
-ENDIF
-nsize = size(LSMATRIXITEM,KIND=long)*8
-call mem_allocated_mem_LSMATRIX(nsize)
-END SUBROUTINE LSMATRIXP_allocate_1dim
-
-SUBROUTINE LSMATRIXP_deallocate_1dim(LSMATRIXITEM)
-implicit none
-TYPE(LSMATRIXpointer),pointer :: LSMATRIXITEM(:)
-integer :: IERR
-integer (kind=long) :: nsize
-   nsize = size(LSMATRIXITEM,KIND=long)*8
-   call mem_deallocated_mem_LSMATRIX(nsize)
-   if (.not.ASSOCIATED(LSMATRIXITEM)) then
-      print *,'Memory previously released!!'
-      call memory_error_quit('Error in LSMATRIX_deallocate_1dim - memory previously released')
-   endif
-   DEALLOCATE(LSMATRIXITEM,STAT = IERR)
-   IF (IERR.NE. 0) THEN
-      write(*,*) 'Error in LSMATRIX_deallocate_1dim',IERR
-      CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_deallocate_1dim')
-   ENDIF
-   NULLIFY(LSMATRIXITEM)
-END SUBROUTINE LSMATRIXP_deallocate_1dim
+!SUBROUTINE LSMATRIXP_allocate_1dim(LSMATRIXITEM,n)
+!implicit none
+!integer,intent(in) :: n
+!TYPE(LSMATRIXpointer),pointer    :: LSMATRIXITEM(:)
+!integer :: IERR
+!integer (kind=long) :: nsize
+!nullify(LSMATRIXITEM)
+!ALLOCATE(LSMATRIXITEM(n),STAT = IERR)
+!IF (IERR.NE. 0) THEN
+!   write(*,*) 'Error in LSMATRIX_allocate_1dim',IERR,n
+!   CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_allocate_1dim')
+!ENDIF
+!nsize = size(LSMATRIXITEM,KIND=long)*8
+!call mem_allocated_mem_LSMATRIX(nsize)
+!END SUBROUTINE LSMATRIXP_allocate_1dim
+!
+!SUBROUTINE LSMATRIXP_deallocate_1dim(LSMATRIXITEM)
+!implicit none
+!TYPE(LSMATRIXpointer),pointer :: LSMATRIXITEM(:)
+!integer :: IERR
+!integer (kind=long) :: nsize
+!   nsize = size(LSMATRIXITEM,KIND=long)*8
+!   call mem_deallocated_mem_LSMATRIX(nsize)
+!   if (.not.ASSOCIATED(LSMATRIXITEM)) then
+!      print *,'Memory previously released!!'
+!      call memory_error_quit('Error in LSMATRIX_deallocate_1dim - memory previously released')
+!   endif
+!   DEALLOCATE(LSMATRIXITEM,STAT = IERR)
+!   IF (IERR.NE. 0) THEN
+!      write(*,*) 'Error in LSMATRIX_deallocate_1dim',IERR
+!      CALL MEMORY_ERROR_QUIT('Error in LSMATRIX_deallocate_1dim')
+!   ENDIF
+!   NULLIFY(LSMATRIXITEM)
+!END SUBROUTINE LSMATRIXP_deallocate_1dim
 
 !----- ALLOCATE MATRIX POINTERS -----!
 

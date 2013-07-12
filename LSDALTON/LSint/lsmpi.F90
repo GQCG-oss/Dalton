@@ -1379,44 +1379,48 @@ ENDIF
        ENDDO !iD
       ENDDO !iC
  ELSE
+! TO WHOEVER WROTE THIS CODE (Simen I guess) THIS IS A CODE FOR NOT
+! USING screening - then why the fuck do you use setting%redCS
     DO iA=1,nA
-       aoA => setting%redCS%AO(1)%batch(iA)
+!       aoA => setting%redCS%AO(1)%batch(iA)
        startB = 1
        IF (sameAB) startB=iA
        DO iB=startB,nB
-          aoB => setting%redCS%AO(2)%batch(iB)
-          ABatomPairTE = 0_realk
-          DO ibatchA=1,aoA%nBatches
-             DO ibatchB=1,aoB%nBatches
-                batchTE = aoA%nPrim(ibatchA)*aoB%nPrim(iBatchB)&
-     &               *(aoA%maxAng(iBatchA)+aoB%maxAng(iBatchB)+10E0_realk)**POWER
-                ABatomPairTE = ABatomPairTE + batchTE
-             ENDDO !ibatchB
-          ENDDO !ibatchA
-          tmLHS(iA,iB) = ABatomPairTE
+!          aoB => setting%redCS%AO(2)%batch(iB)
+!          ABatomPairTE = 0_realk
+!          DO ibatchA=1,aoA%nBatches
+!             DO ibatchB=1,aoB%nBatches
+!                batchTE = aoA%nPrim(ibatchA)*aoB%nPrim(iBatchB)&
+!     &               *(aoA%maxAng(iBatchA)+aoB%maxAng(iBatchB)+10E0_realk)**POWER
+!                ABatomPairTE = ABatomPairTE + batchTE
+!             ENDDO !ibatchB
+!          ENDDO !ibatchA
+!          tmLHS(iA,iB) = ABatomPairTE
+          tmLHS(iA,iB) = 1.0E0_realk
        ENDDO !iB
     ENDDO !iA    
     DO iC=1,nC
-       aoC => setting%redCS%AO(3)%batch(iC)
+!       aoC => setting%redCS%AO(3)%batch(iC)
        startD = 1
        IF (sameCD) startD=iC
        DO iD=startD,nD
-          aoD => setting%redCS%AO(4)%batch(iD)
-          CDatomPairTE = 0_realk
-          DO ibatchC=1,aoC%nBatches
-             DO ibatchD=1,aoD%nBatches
-                !*******************************************************************************************
-                !      Time estimate (in terms of # of operations, not actual time) for the 
-                !      four-center two-electron AObatch-quadruplet integrals
-                !*******************************************************************************************
-                ! ToDo 1. refine and test
-                ! ToDo 2. account for primitive screening, maybe some nPrimAB*nPrimCD
-                batchTE = aoc%nPrim(ibatchc)*aoD%nPrim(iBatchD)&
-                     &     *(aoC%maxAng(iBatchC)+aoD%maxAng(iBatchD)+10E0_realk)**POWER
-                CDatomPairTE = CDatomPairTE + batchTE
-             ENDDO !ibatchD
-          ENDDO !ibatchC
-          tmRHS(iC,iD) = CDatomPairTE
+!          aoD => setting%redCS%AO(4)%batch(iD)
+!          CDatomPairTE = 0_realk
+!          DO ibatchC=1,aoC%nBatches
+!             DO ibatchD=1,aoD%nBatches
+!                !*******************************************************************************************
+!                !      Time estimate (in terms of # of operations, not actual time) for the 
+!                !      four-center two-electron AObatch-quadruplet integrals
+!                !*******************************************************************************************
+!                ! ToDo 1. refine and test
+!                ! ToDo 2. account for primitive screening, maybe some nPrimAB*nPrimCD
+!                batchTE = aoc%nPrim(ibatchc)*aoD%nPrim(iBatchD)&
+!                     &     *(aoC%maxAng(iBatchC)+aoD%maxAng(iBatchD)+10E0_realk)**POWER
+!                CDatomPairTE = CDatomPairTE + batchTE
+!             ENDDO !ibatchD
+!          ENDDO !ibatchC
+!          tmRHS(iC,iD) = CDatomPairTE
+          tmRHS(iC,iD) = 1.0E0_realk
        ENDDO !iD
     ENDDO !iC
  ENDIF

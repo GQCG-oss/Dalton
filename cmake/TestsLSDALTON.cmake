@@ -15,6 +15,7 @@ if(ENABLE_MPI AND ENABLE_SCALAPACK AND NOT USE_32BIT_MPI_INTERFACE)
     add_lsdalton_test(SCALAPACK/LSresponse_DFT_beta_SCALAPACK         "linsca;scalapack")
     add_lsdalton_test(SCALAPACK/linsca_arh_SCALAPACK_MEMDIST          "linsca;scalapack")
     add_lsdalton_test(SCALAPACK/linsca_atoms_SCALAPACK_MEMDIST        "linsca;scalapack")
+    add_lsdalton_test(SCALAPACK/decmp2_geoopt_scalapack               "linsca;scalapack;dec")
 endif()
 
 if(ENABLE_XCFUN)

@@ -2177,7 +2177,7 @@ END SUBROUTINE INIT_LSTENSOR_5DIM
     ENDIF
   end SUBROUTINE build_sublstensor_from_full_lstensor
 
-  !> \brief copy an lstensor to a new lstensor
+  !> \brief 
   !> \author T. Kjaergaard
   !> \date 2010
   !> \param TENSOR1 dummy full lstensor
@@ -3316,6 +3316,81 @@ end subroutine memdist_lstensor_SetupFullinfo
     call lsquit('called memdist_lstensor_SetupFullinfo but no MPI',-1)
 #endif
   end SUBROUTINE memdist_lstensor_SetupLocalinfo
+
+  !> \brief 
+  !> \author T. Kjaergaard
+  !> \date 2010
+  !> \param TENSOR1 the original lstensor
+  !> \param TENSOR2 the new sublstensor
+  SUBROUTINE build_empty_sublstensor(TENSOR)
+    implicit none
+    TYPE(LSTENSOR)     :: TENSOR
+#ifdef VAR_MPI
+    !
+    TYPE(AOITEMPOINTER) :: AOT(2)
+    TYPE(AOITEM),target :: AOTE
+    integer :: lstmem_index
+    integer(kind=long) :: nmemsize,AllocInt,AllocIntS,AllocRealk
+
+    call LSTENSOR_mem_est(TENSOR,nmemsize)
+    call remove_mem_from_global(nmemsize)
+
+    call SET_EMPTY_AO(AOTE)
+    AOT(1)%p => AOTE
+    AOT(2)%p => AOTE
+
+    call mem_alloc(TENSOR%G_fullatoms1,1)
+    TENSOR%G_fullatoms1(1) = 1
+    call mem_alloc(TENSOR%G_fullatoms2,1)
+    TENSOR%G_fullatoms2(1) = 1
+
+    nullify(TENSOR%nAOBATCH)
+    IF(ASSOCIATED(TENSOR%G_nAOBATCH))THEN
+       call mem_alloc(TENSOR%nAOBATCH,1,2)
+       TENSOR%nAOBATCH(1,1) = 1
+       TENSOR%nAOBATCH(1,2) = 1
+    ENDIF
+
+    TENSOR%natom(1) = 0
+    TENSOR%natom(2) = 0
+    TENSOR%natom(3) = 0
+    TENSOR%natom(4) = 0
+    TENSOR%nbast(1) = 0
+    TENSOR%nbast(2) = 0
+    TENSOR%nbast(3) = 0
+    TENSOR%nbast(4) = 0
+    TENSOR%nLSAO  = 0
+    NULLIFY(TENSOR%INDEX)
+    CALL MEM_ALLOC(TENSOR%INDEX,1,1,1,1)
+    !memory estimation
+    CALL MEM_ALLOC(TENSOR%LSAO,1)
+    AllocInt = 1
+    AllocRealk = 1
+    AllocInts = 1
+    call init_lstensorMem(AllocInt,AllocRealk,AllocInts,lstmem_index)
+    call zero_lstensorMem
+    TENSOR%lstmem_index = lstmem_index
+    call FREE_EMPTY_AO(AOTE)
+    call LSTENSOR_mem_est(TENSOR,nmemsize)
+    call add_mem_to_global(nmemsize)
+#else
+    call lsquit('called build_empty_sublstensor but no MPI',-1)
+#endif
+  end SUBROUTINE build_empty_sublstensor
+
+  !> \brief copy an lstensor to a new lstensor
+  !> \author T. Kjaergaard
+  !> \date 2010
+  !> \param TENSOR1 the original lstensor
+  !> \param TENSOR2 the new sublstensor
+  SUBROUTINE alloc_build_empty_sublstensor(TENSOR2)
+    implicit none
+    TYPE(LSTENSOR)     :: TENSOR2
+    integer(kind=long) :: nmemsize
+    call LSTENSOR_nullify(TENSOR2)
+    call LSTENSOR_mem_est(TENSOR2,nmemsize)
+    call add_mem_to_global(nmemsize)
+  end SUBROUTINE alloc_build_empty_sublstensor
 
   !> \brief build full 5 dimensional array from an lstensor 
   !> \author T. Kjaergaard
