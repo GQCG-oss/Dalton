@@ -144,8 +144,8 @@ CONTAINS
     DO i=1,3*Natoms
        call mat_init(RHS_HF(i),nbast,nbast)
     ENDDO
-    !call get_geom_first_order_RHS_HF(RHS_HF,Natoms,S,Sa,F,D,Da,Ja,Ka,&
-    !                            & setting,lupri,luerr)
+    call get_geom_first_order_RHS_HF(RHS_HF,Natoms,S,D,F,Sa,Da,Fa,&
+                                    & setting,lupri,luerr)
 
     ! Solve the 1st order geo. resp. eq., and get the response vectors
     ! Calcualte 2nd deriv. of the density matrix and of D_{2n+1}
@@ -215,37 +215,61 @@ CONTAINS
    !>                + \textbf{K(D^a_{2n+1})}  \] $
    !>  ref. http://dx.doi.org/10.1063.1.1415082
    !> \endlatexonly
-   !> \author \latexonly P. Merlot  \endlatexonly
-   !> \date 2012-09-11
+   !> \author P. Merlot
+   !> \date 2013-07-11
    !> \param RHS The Right Hand Side of 1st order response equation
    !> \param S The overlap matrix
-   !> \param Sa The 1st order geo. deriv. of the S
+   !> \param D The reference density matrix D0
    !> \param F The Fock/Kohn-Sham matrix
-   !> \param D The reference density matrix
+   !> \param Sa The 1st order geo. deriv. of the S
    !> \param Da The 1st geo. deriv. of the reference matrix D0
-   !> \param Ja The 1st geo. deriv. of Jmat
-   !> \param Ka The 1st geo. deriv. of Kmat
+   !> \param Fa The 1st order geo. deriv. of the Fock/Kohn-Sham matrix
    !> \param setting Integral evalualtion settings
    !> \param lupri Default print unit
    !> \param luerr Default error print unit
-   SUBROUTINE get_geom_first_order_RHS_HF(RHS,Natoms,S,Sa,F,D,Da,Ja,Ka,setting,lupri,luerr)
+   SUBROUTINE get_geom_first_order_RHS_HF(RHS,Natoms,S,D,F,Sa,Da,Fa,setting,lupri,luerr)
     !
     IMPLICIT NONE
     Integer,INTENT(IN)            :: Natoms,lupri,luerr
     Type(LSSETTING),intent(INOUT) :: setting
     Type(matrix),INTENT(INOUT)    :: RHS(3*Natoms) ! derivative along x,y and z for each atom
     Type(matrix),INTENT(IN)       :: S ! Overlap matrix
-    Type(matrix),INTENT(IN)       :: Sa(3*Natoms) ! 1st geo. deriv. of S
     Type(matrix),intent(IN)       :: D ! Density matrix
     Type(matrix),intent(IN)       :: F ! Fock matrix
+    Type(matrix),INTENT(IN)       :: Sa(3*Natoms) ! 1st geo. deriv. of S
     Type(matrix),INTENT(IN)       :: Da(3*Natoms) ! 1st geo. deriv. of D
-    Type(matrix),INTENT(IN)       :: Ja(3*Natoms) ! 1st geo. deriv. of Jmat
-    Type(matrix),INTENT(IN)       :: Ka(3*Natoms) ! 1st geo. deriv. of Kmat
+    Type(matrix),INTENT(IN)       :: Fa(3*Natoms) ! 1st geo. deriv. of F
     !
     Integer          :: nbast
+    Type(matrix)     :: temp
     !
     nbast = S%nrow
-    ! RHS = 0.5 SD {ha + Ga(D) + G(Da) } -  0.5 {ha+Ga(D)+G(Da)} DS + SaDF + SDaF - FDaS  - FDSa
+    ! RHS = 0.5 { SDFa - FaDS + SaDF + SDaF - FDaS  - FDSa }
+    call lstimer('START ',ts,te,lupri)
+    nbast = D%nrow
+    call mat_init(temp,nbast,nbast)
+    
+
+    call mat_mul(S,D,'N','N',1E0_realk,0E0_realk,temp) ! temp = SD
+    DO i=1,3*Natoms
+        call mat_mul(temp,Fa(i),'N','N', 1E0_realk,0E0_realk,RHS(i)) ! RHS = SDFa
+        call mat_mul(Fa(i),temp,'N','T',-1E0_realk,1E0_realk,RHS(i)) ! RHS = SDFa - FaDS
+    ENDDO
+    call mat_mul(D,F,'N','N',1E0_realk,0E0_realk,temp) ! temp = DF
+    DO i=1,3*Natoms
+        call mat_mul(Sa(i),temp,'N','N', 1E0_realk,1E0_realk,RHS(i)) ! RHS += SaDF
+        call mat_mul(temp,Fa(i),'T','N',-1E0_realk,1E0_realk,RHS(i)) ! RHS -= FDSa 
+    ENDDO
+    DO i=1,3*Natoms
+        call mat_mul(S,Da(i),'N','N', 1E0_realk,0E0_realk,temp)   ! temp = SDa(i)
+        call mat_mul(temp,F ,'N','N', 1E0_realk,1E0_realk,RHS(i)) ! RHS += FDSa 
+        call mat_mul(F,Da(i),'N','N',-1E0_realk,0E0_realk,temp)   ! temp = -FDa(i)
+        call mat_mul(temp,S ,'N','N', 1E0_realk,1E0_realk,RHS(i)) ! RHS -= FDaS 
+    ENDDO
+
+    call mat_scal(0.5E0_realk,RHS)
+    call mat_free(temp)
+    call lstimer('RHS_HF_build',ts,te,lupri)
     !     
    END  SUBROUTINE get_geom_first_order_RHS_HF
 
@@ -462,8 +486,8 @@ CONTAINS
     call get_first_geoderiv_exchange_mat(Ka,D,Natoms,setting,lupri,luerr,0)
 
     DO i=1,3*Natoms
-        call mat_daxpy(1.0E0_realk,Ja(i),Ga(i))
-        call mat_daxpy(1.0E0_realk,Ka(i),Ga(i))
+        call mat_daxpy( 1.0E0_realk,Ja(i),Ga(i))
+        call mat_daxpy(-1.0E0_realk,Ka(i),Ga(i))
         call mat_free(Ja(i))
         call mat_free(Ka(i))
     ENDDO
