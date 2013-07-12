@@ -141,6 +141,11 @@ C
       KLAMHY = KLAMPY + NLAMDT
       KEND2  = KLAMHY + NLAMDT
       LWRK2  = LWORK  - KEND2
+C arnfinn: remove compiler warning
+      IF (.NOT.HAVET31)THEN
+        KTAMPX3 = KEND2
+        KTAMPY3 = KEND2
+      ENDIF
       IF (LWRK2.LT.0)CALL QUIT('Out of memory in CCSDT_O32_NODDY (2a)')
 
       CALL CCSDT_T32_AAPREP_NODDY(

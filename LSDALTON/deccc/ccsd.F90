@@ -103,6 +103,10 @@ contains
     &(qqfock%atype==DENSE.or.qqfock%atype==REPLICATED))then
       prec = array_init(dims,4)
      
+      !$OMP PARALLEL DEFAULT(NONE) SHARED(prec,dims,omega2,ppfock,qqfock) &
+      !$OMP PRIVATE(i,j,a,b)
+      
+      !$OMP DO COLLAPSE(4)
       do j=1,dims(4)
         do i=1,dims(3)
           do b=1,dims(2)
@@ -116,6 +120,8 @@ contains
           end do
         end do
       end do
+      !$OMP END DO
+      !$OMP END PARALLEL
 
     elseif(omega2%atype==TILED_DIST.and.&
           &associated(ppfock%addr_p_arr).and.associated(qqfock%addr_p_arr))then
@@ -1590,7 +1596,7 @@ contains
     !special arrays for scheme=1
     type(array) :: t2jabi,u2kcjb
     integer,pointer :: mpi_task_distribution(:)
-    integer(kind=ls_mpik) :: win_in_g
+    integer(kind=ls_mpik) :: win_in_g,me
 #ifdef VAR_MPI
     ! stuff for direct communication
     type(c_ptr) :: gvvoo_c,gvoov_c,sio4_c,gvvoo_p,gvoov_p
@@ -1600,6 +1606,7 @@ contains
     character*(MPI_MAX_PROCESSOR_NAME) :: hname
     real(realk),pointer :: mpi_stuff(:)
     type(c_ptr) :: mpi_ctasks
+    logical :: lock_outside
     !integer(kind=ls_mpik),pointer :: win_in_g(:)
 #endif
 
@@ -1647,9 +1654,12 @@ contains
     integer, external :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
 #endif
     TYPE(DECscreenITEM)    :: DecScreen
+
+
     restart=.false.
     if(present(rest))restart=rest
     master = .true.
+    me=int(0,kind=ls_mpik)
     def_atype = DENSE
     scheme = 0
     dynamic_load = DECinfo%dyn_load
@@ -1671,10 +1681,15 @@ contains
     INTSPEC(4)='R' !R = Regular Basis set on the 4th center 
     INTSPEC(5)='C' !C = Coulomb operator
 #ifdef VAR_MPI
+    me = infpar%lg_mynum
     master=(infpar%lg_mynum == 0)
     nnod=infpar%lg_nodtot
     call get_int_dist_info(int(no*no*nv*nv,kind=8),fintel,nintel)
     def_atype=TILED_DIST
+    lock_outside=.false.
+#ifdef VAR_LSMPICH
+    lock_outside=.true.
+#endif
 #endif
 
     ! Some timings
@@ -1943,10 +1958,6 @@ contains
         call mem_alloc(gvvoo,gvvoo_c,o2v2)
         call lsmpi_win_create(gvoov,gvoov_w,o2v2,infpar%lg_comm)
         call lsmpi_win_create(gvvoo,gvvoo_w,o2v2,infpar%lg_comm)
-        !do nctr=0,nnod-1
-        !  call lsmpi_win_lock(nctr,gvoov_w,'s')!,MPI_MODE_NOCHECK)
-        !  call lsmpi_win_lock(nctr,gvvoo_w,'s')!,MPI_MODE_NOCHECK)
-        !enddo
 #else
         call mem_alloc(gvoov,o2v2)
         call mem_alloc(gvvoo,o2v2)
@@ -1961,10 +1972,6 @@ contains
         gvoov_r=0.0E0_realk
         call lsmpi_win_create(gvoov_r,gvoov_w,int(nintel,kind=long),infpar%lg_comm)
         call lsmpi_win_create(gvvoo_r,gvvoo_w,int(nintel,kind=long),infpar%lg_comm)
-        !do nctr=0,nnod-1
-        !  call lsmpi_win_lock(nctr,gvoov_w,'e',MPI_MODE_NOCHECK)
-        !  call lsmpi_win_lock(nctr,gvvoo_w,'e',MPI_MODE_NOCHECK)
-        !enddo
 #else
         call mem_alloc(gvoov,int(no2*nv2,kind=long))
         call mem_alloc(gvvoo,int(no2*nv2,kind=long))
@@ -2192,11 +2199,8 @@ contains
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,1.0E0_realk,gvvoo,nv)
         elseif(scheme==3)then
 #ifdef VAR_MPI
-          do nctr=0,nnod-1
-            call lsmpi_win_lock(nctr,gvvoo_w,'s')!,MPI_MODE_NOCHECK)
-          enddo
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,0.0E0_realk,w2,nv)
-          call dist_int_contributions(w2,o2v2,gvvoo_w,.false.)
+          call dist_int_contributions(w2,o2v2,gvvoo_w)
 #else
           call lsquit("ERROR(ccsd_integral_driven):this should never appear gvvoo_w",-1)
 #endif
@@ -2214,15 +2218,6 @@ contains
        call dgemm('n','n',la,no,nv*no*lg,1.0E0_realk,w3,la,uigcj,nv*no*lg,1.0E0_realk,Gbi(fa),nb)
        call lsmpi_poke()
        
-#ifdef VAR_MPI
-       if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2)) then
-         if(scheme==3)then
-           do nctr=0,nnod-1
-             call lsmpi_win_unlock(nctr,gvvoo_w)
-           enddo
-         endif
-       endif
-#endif
        !CALCULATE govov FOR ENERGY
        !Reorder I [alpha j gamma b]                      -> I [alpha j b gamma]
        if(iter==1.or.(scheme==4.or.scheme==3.or.scheme==2))&
@@ -2239,14 +2234,18 @@ contains
          else
            ! i a j b
            call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,0.0E0_realk,w2,no)
+           !call arr_lock_wins(govov,'e')
            call array_add(govov,1.0E0_realk,w2,[1,4,2,3])
+           !call arr_unlock_wins(govov)
          endif
          call lsmpi_poke()
        endif
 
        !VOOV
-       if((restart.and.iter==1).and..not.scheme==4)&
-         &call array_reorder_4d(1.0E0_realk,w3,la,no,lg,nv,[1,2,4,3],0.0E0_realk,w2)
+       if((restart.and.iter==1).and..not.scheme==4)then
+         !call arr_unlock_wins(govov)
+         call array_reorder_4d(1.0E0_realk,w3,la,no,lg,nv,[1,2,4,3],0.0E0_realk,w2)
+       endif
        if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2).and.(iter/=1.or.restart)) then
         ! gvoov = (vo|ov) constructed from w2               = I [alpha j b  gamma]
         !I [alpha  j b gamma] * Lambda^h [gamma i]          = I [alpha j b i]
@@ -2258,10 +2257,7 @@ contains
         elseif(scheme==3)then
 #ifdef VAR_MPI
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1,la,0.0E0_realk,w2,nv)
-          do nctr=0,nnod-1
-            call lsmpi_win_lock(nctr,gvoov_w,'s')!,MPI_MODE_NOCHECK)
-          enddo
-          call dist_int_contributions(w2,int(no2*nv2,kind=long),gvoov_w,.false.)
+          call dist_int_contributions(w2,o2v2,gvoov_w)
 #else
           call lsquit("ERROR(ccsd_integral_driven):this should never appear gvoov_w",-1)
 #endif
@@ -2282,16 +2278,6 @@ contains
             & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),dimAlpha,nb,dimGamma,nb,nbatches,INTSPEC,fullRHS)
        call lsmpi_poke()
        !Mylsitem%setting%scheme%intprint=0
-
-#ifdef VAR_MPI
-       if (DECinfo%ccModel>2.and.(scheme==4.or.scheme==3.or.scheme==2).and.(iter/=1.or.restart)) then
-         if(scheme==3)then
-           do nctr=0,nnod-1
-             call lsmpi_win_unlock(nctr,gvoov_w)
-           enddo
-         endif
-       endif
-#endif
 
       if(DECinfo%ccmodel>2)then
         if(fa<=fg+lg-1)then
@@ -2446,10 +2432,6 @@ contains
 #endif    
     !free windows and deallocate partial int matrices in scheme 1
     if(DECinfo%ccModel>2.and.(scheme==3.or.scheme==4))then
-      !do nctr=0,nnod-1
-      !  call lsmpi_win_unlock(nctr,gvoov_w)
-      !  call lsmpi_win_unlock(nctr,gvvoo_w)
-      !enddo
       call lsmpi_win_free(gvoov_w)
       call lsmpi_win_free(gvvoo_w)
       if(scheme==3)then
@@ -2473,8 +2455,12 @@ contains
 #endif
       write(msg,*)"NORM(omega2 after main loop):"
       if(master.and.scheme==4)call print_norm(w1,o2v2,msg)
-      write(msg,*)"NORM(govov):"
-      if(master.and.scheme==4)call print_norm(govov,msg)
+      write(msg,*)"NORM(govov a-l):"
+      if(master.and.scheme==4)then
+        call print_norm(govov,msg)
+      else
+        call print_norm(govov,msg)
+      endif
       write(msg,*)"NORM(gvvoo):"
       if(master.and.scheme==4)call print_norm(gvvoo,o2v2,msg)
       write(msg,*)"NORM(gvoov):"
@@ -2546,7 +2532,7 @@ contains
     endif
 
 
-    !IN CASE OF MPI (AND CORRECT SCHEEME) REDUCE TO MASTER
+    !IN CASE OF MPI (AND CORRECT SCHEME) REDUCE TO MASTER
     !*****************************************************
 #ifdef VAR_MPI
     if(infpar%lg_nodtot>1) then
@@ -2578,11 +2564,16 @@ contains
       if(scheme==4.or.scheme==3)call array_free(u2)
       return
     endif
+
     if(print_debug)then
       write(msg,*)"NORM(Gbi):"
       call print_norm(Gbi,int(no*nb,kind=8),msg)
       write(msg,*)"NORM(Had):"
       call print_norm(Had,int(nv*nb,kind=8),msg)
+      write(msg,*)"NORM(omega2 s-o):"
+      call print_norm(omega2,msg)
+      write(msg,*)"NORM(govov s-o):"
+      call print_norm(govov,msg)
     endif
 
     !allocate the density matrix
@@ -3444,7 +3435,7 @@ contains
    
 
     !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-    !$OMP& PRIVATE(i,j,pos1,pos2)
+    !$OMP PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
       !$OMP DO 
       do i=j,1,-1
@@ -3818,10 +3809,10 @@ contains
 
 #ifndef VAR_LSESSL
     !$OMP PARALLEL DEFAULT(NONE)&
-    !$OMP& SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
-    !$OMP& full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
-    !$OMP& PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
-    !$OMP& dims,drain,source)
+    !$OMP SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
+    !$OMP full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
+    !$OMP PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
+    !$OMP dims,drain,source)
     !$OMP DO
 #endif
     do occ=1,nor
@@ -3988,7 +3979,7 @@ contains
     ! add up contributions in the residual with keeping track of i<j
 
     !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-    !$OMP& PRIVATE(i,j,pos1,pos2)
+    !$OMP PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
       !$OMP DO 
       do i=j,1,-1
@@ -4048,7 +4039,7 @@ contains
       call lsmpi_poke()
 
       !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-      !$OMP& PRIVATE(i,j,pos1,pos2)
+      !$OMP PRIVATE(i,j,pos1,pos2)
       do j=no,1,-1
         !$OMP DO 
         do i=j,1,-1
@@ -4153,7 +4144,7 @@ contains
     call omp_set_num_threads(nthr)
 #endif
     !$OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
-    !$OMP& PRIVATE(pos,pos2,d,tid,doit)
+    !$OMP PRIVATE(pos,pos2,d,tid,doit)
 #ifdef VAR_OMP
     tid = omp_get_thread_num()
 #else 
@@ -4230,8 +4221,8 @@ contains
             if(fa+alpha==fg+gamm)   call dscal(nb*nb,0.5E0_realk,w2(1+elsqre),1)
             call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
             !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-            !$OMP& SHARED(bs,bctr,trick,nb,aleg,nbnb,modb)&
-            !$OMP& DEFAULT(NONE)
+            !$OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb)&
+            !$OMP DEFAULT(NONE)
             if(nbnb>0)then
               !$OMP DO
               do delta_b=1,nbnb,bs
@@ -4325,8 +4316,8 @@ contains
             elsqre = alpha*nb*nb+gamm*nb*nb*la
             call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
             !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-            !$OMP& SHARED(bctr,bs,trick,nb,aleg,nbnb,modb)&
-            !$OMP& DEFAULT(NONE)
+            !$OMP SHARED(bctr,bs,trick,nb,aleg,nbnb,modb)&
+            !$OMP DEFAULT(NONE)
             if(nbnb>0)then
               !$OMP DO
               do delta_b=1,nbnb,bs

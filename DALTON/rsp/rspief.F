@@ -836,7 +836,7 @@ C  /* Deck pcm_comp_pot */
       IF (VSE1FLG .EQ. -1) THEN
          CALL DZERO(VSE1, NTS*NOSIM)
          CALL PCM_COMP_EL_POT1(VSE1, NOSIM, DENMAT, DENTRP, JWOPSY, 
-     &                         MOCOEF, BOVECS, XJSQ, XJSQT, TRPLET,
+     &                         MOCOEF, BOVECS, XJSQ, XJSQT,
      &                         WORK, LWORK)
          VSE1FLG = 1
       END IF
@@ -882,12 +882,17 @@ C /* Deck pcm_comp_el_pot */
 
 C /* Deck pcm_comp_el_pot1 */
       SUBROUTINE PCM_COMP_EL_POT1(VSE1, NOSIM, UDV, UDVTR, JWOPSY, 
-     &                            CMO, BOVECS, XJSQ, XJSQT, TRPLET, 
+     &                            CMO, BOVECS, XJSQ, XJSQT,
      &                            WORK, LWORK)
-#include <implicit.h>
-#include <inforb.h>
-#include <priunit.h>
-      LOGICAL TRPLET, TOFILE
+#include "implicit.h"
+#include "inforb.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "qm3.h"
+
+      LOGICAL TOFILE
       DIMENSION BOVECS(*), UDV(*), UDVTR(*), CMO(*), WORK(*)
 
 C      iprrsp = 1
@@ -916,7 +921,7 @@ C      iprrsp = 1
      *        I3,' of',I3,')')
 
 #if defined (VAR_MPI)
-      IF (NODTOT.ge.1) THEN
+      IF (NODTOT .GE. 1 .AND. .NOT. MMPCM) THEN
          CALL J1XP(NOSIM,VSE1,WORK(KUCMO),WORK(KUBO),UDV,UDVTR,
      &          XJ1SQ,XJ1SQT,
      &          .FALSE.,TRPLET,JWOPSY,WORK(KFREE),LFREE)

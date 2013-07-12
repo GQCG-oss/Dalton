@@ -1247,6 +1247,14 @@ C /* Deck erisds */
          END DO
       END DO
       NDST = IDIST
+      IF (IDIST.GT.MXDIST) THEN
+         WRITE(LUPRI,'(/,1X,A,/,A,/,A,2I5,/,A)') 
+     *       ' The arrays NCCDST/NCCFST are out of bound.',
+     *       ' Please increase MXDIST in eridst.h and recompile.',
+     *       ' IDIST, MXDIST = ',IDIST,MXDIST,
+     *       ' Calculation stopped.'
+         CALL QUIT("Error in ERISDS")
+      END IF
       RETURN
       END
 C /* Deck erisdm */

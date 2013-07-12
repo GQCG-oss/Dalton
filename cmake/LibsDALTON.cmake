@@ -3,8 +3,10 @@ add_library(
     ${DALTON_C_SOURCES}
     ${DALTON_FREE_FORTRAN_SOURCES}
     ${DALTON_FIXED_FORTRAN_SOURCES}
-    ${GENERATED_FILES}
+    ${CMAKE_BINARY_DIR}/binary_info.F90
     )
+
+add_dependencies(dalton generate_binary_info)
 
 if(ENABLE_GEN1INT)
     add_subdirectory(DALTON/gen1int ${CMAKE_BINARY_DIR}/gen1int)

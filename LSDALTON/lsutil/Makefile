@@ -123,6 +123,7 @@ F90_OBJS = \
 	ks-settings.o\
 	dec_typedef.o\
 	SphCartMatrices.o\
+	GCtrans.o\
 	TYPE-DEF.o\
 	TYPE-OP.o\
 	pbc_lattice_type.o\

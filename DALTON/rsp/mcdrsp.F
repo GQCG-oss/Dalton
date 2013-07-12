@@ -1346,7 +1346,7 @@ C    *         CALL DCOPY(LBZY,BVECS(IBVEC),1,BVECS(IBVECX),1)
 !
       IF ((IBPREV-NBPREV).NE. NBNEW) THEN
          WRITE(LUPRI,'(A,I5,A,I5,A)')
-     &      'RSPNOR:',NBNEW - IPREV + NBPREV,' out of',
+     &      'RSPNOR:',NBNEW - IBPREV + NBPREV,' out of',
      &       NBNEW,' new trial vectors linear dependent'
              call flshfo(lupri)
       END IF
@@ -1764,7 +1764,7 @@ C    *         CALL DCOPY(LBZY,BVECS(IBVEC),1,BVECS(IBVECX),1)
 !
       IF (IBPREV-NBPREV .NE. NBNEW) THEN
          WRITE(LUPRI,'(A,I5,A,I5,A)')
-     &      'RSPORTMCD:',NBNEW - IPREV + NBPREV,' out of',
+     &      'RSPORTMCD:',NBNEW - IBPREV + NBPREV,' out of',
      &       NBNEW,' new trial vectors linear dependent'
       END IF
       NBNEW = IBPREV - NBPREV

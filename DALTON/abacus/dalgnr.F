@@ -432,7 +432,9 @@ C     the necessary integrals in the primitive basis.
 C     See further notes in DKH_INTF routine.
 C
       IF (DKTRAN .AND. RNHERM) THEN
+         DKHINT = .TRUE. ! now we are calculating DKH 1-el. integrals
          CALL DKH_INTF(WORK(1),LMWORK)
+         DKHINT = .FALSE.
          NEWPRP = .TRUE.
       END IF
 C
@@ -637,7 +639,6 @@ C
 #include "cbisol.h"
 #include "taymol.h"
 #include "pcmlog.h"
-#include "wavpcm.h"
 Cef begin
 #include "incore.h"
 Cef end
@@ -999,49 +1000,6 @@ C
                GOTO 133
             END IF
  134        CONTINUE 
-
-#ifdef BUILD_OPENRSP
-C added by Bin Gao, April 2, 2009
-C for response theory in atomic orbital basis
-            REWIND(LUCMD)
-C search for $RESPON in input (legacy driver)
-            DO
-               READ (LUCMD,'(A7)',END=135) WORD
-               IF (WORD .EQ. '$RESPON') THEN
-                  CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9,WAVPCM)
-                  EXIT
-               END IF
-            END DO
- 135        CONTINUE
-C
-C     Search for **OPENRSP input
-C
-            REWIND (LUCMD)
-            DO
-               READ (LUCMD,'(A)',END=137) WORD
-               IF (WORD .EQ. '**OPENR') THEN
-                  CALL OPENRSP_DRIVER(WORK(10),LMWORK-9,WAVPCM)
-                  EXIT
-               END IF
-            END DO
- 137        CONTINUE
-#endif
-
-#ifdef BUILD_TDRSP
-C added by Bin Gao, March 21, 2010
-C solves the equation of motion of reduced single-electron density matrix in real time domain
-            rewind( LUCMD )
-C tries to find $TDRSP input
-            do while ( .true. )
-              read( LUCMD, '(A6)', end=136 ) WORD
-              if ( WORD .eq. '$TDRSP' ) then
-                call tdrsp_driver( WORK(10), LMWORK-9 )
-                exit
-              end if
-            end do
-136         continue
-#endif
-
             IF (LUCMD .GT. 0) CALL GPCLOSE(LUCMD,'KEEP')
          ELSE IF (ITERNR .GT. ITERMX) THEN
             CALL TITLER('WARNING - Geometry not converged',' ',200)
@@ -1110,57 +1068,7 @@ C
             CALL TITLER(
      &         'End of Dynamic Property Section (RESPONS)',' ',200)
          END IF
-
-#ifdef BUILD_OPENRSP
-C added by Bin Gao, April 2, 2009
-C for response theory in atomic orbital basis
-         IF (LUCMD .LT. 0) THEN
-            CALL GPOPEN(LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
-     &                  IDUMMY, .FALSE.)
-         END IF
-         REWIND(LUCMD)
-C search for $RESPON in input
-         DO
-            READ (LUCMD,'(A7)',END=145) WORD
-            IF (WORD .EQ. '$RESPON') then
-               CALL OPENRSP_DALDRV_OLD(WORK(10),LMWORK-9,WAVPCM)
-               EXIT
-            END IF
-         END DO
- 145     CONTINUE
-!        search **OPENRSP in input, then run openrsp
-         rewind (lucmd)
-         do
-            read (lucmd, '(a)', end=147) word
-            if (word == '**OPENR') then
-               call read_openrsp_input('DALTON.INP', lucmd)
-               exit
-            end if
-         end do
-         call openrsp_driver(work(10), lmwork-9, wavpcm)
- 147     if (lucmd > 0) call gpclose(lucmd, 'KEEP')
-#endif
-
-#ifdef BUILD_TDRSP
-C added by Bin Gao, March 21, 2010
-C solves the equation of motion of reduced single-electron density matrix in real time domain
-         if ( LUCMD .lt. 0 ) then
-           call GPOPEN( LUCMD, 'DALTON.INP', 'OLD', ' ', 'FORMATTED',
-     &                  IDUMMY, .FALSE. )
-         end if
-         rewind( LUCMD )
-C tries to find $TDRSP input
-         do while ( .true. )
-           read( LUCMD, '(A)', end=146 ) WORD
-           if ( WORD .eq. '$TDRSP' ) then
-             call tdrsp_driver( WORK(10), LMWORK-9 )
-             exit
-           end if
-         end do
-146      if ( LUCMD .gt. 0 ) call GPCLOSE( LUCMD, 'KEEP' )
-#endif
-
-
+C
          IF (RNABAC) THEN
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
             CALL WLKINI
@@ -1238,7 +1146,6 @@ C
 #include "pcmdef.h"
 #include "pcm.h"
 #include "pcmlog.h"
-#include "wavpcm.h"
 CSONIA
 #include "grdccpt.h"
 #include "infpar.h"
@@ -1247,7 +1154,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 12, NTABLE = 34, D0 = 0.D0)
+      PARAMETER (NDIR = 12, NTABLE = 33, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1271,8 +1178,7 @@ C
      &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
-     &            '.THRRED', '.DOUGLA', '.PEQM  ',
-     &            '.WAVPCM'/
+     &            '.THRRED', '.DOUGLA', '.PEQM  '/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1332,10 +1238,9 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       RELCAL = .FALSE.
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
+      DKHINT = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
-      WAVPCM = .FALSE.
-      peqm   = .false.
       IF (NODTOT.GE.1) THEN
          PARCAL = .TRUE.
          DIRCAL = .TRUE.
@@ -1445,7 +1350,7 @@ C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-34: '.THRRED', '.DOUGLA', '.PEQM  ', '.WAVPCM', 
+C 31-33: '.THRRED', '.DOUGLA', '.PEQM  '.
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1459,7 +1364,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                131,132,133,134), I
+     &                131,132,133), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1583,9 +1488,6 @@ C        '.DOUGLA'
  133     continue
             peqm = .true.
          goto 100
- 134     CONTINUE
-            WAVPCM = .TRUE.
-         GOTO 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE

@@ -16,14 +16,18 @@ export OMP_NUM_THREADS=3
 export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NR_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
-./setup --fc=pgf90 --cc=pgcc --explicit-libs="-Llib -L/com/acml-4.1.0-pgi/pgi64_mp_int64/lib -lacml -lacml_mv -lm -lpthread -lrt -pgf90libs" --omp -D BUILDNAME="RB-Grendel-linux-PGI-release"
+./setup --fc=pgf90 --cc=pgcc --omp -D BUILDNAME="RB-Grendel-linux-PGI-release"
+#--explicit-libs="-Llib -L/com/acml-4.1.0-pgi/pgi64_mp_int64/lib -lacml -lacml_mv -lm -lpthread -lrt -pgf90libs"
 #--scratch=$SCRATCH_DIR 
 #./setup --fc=pgf90 --cc=pgcc --internal-math --omp --scratch=$SCRATCH_DIR -D BUILDNAME="Grendel-linux-PGI-release"
 cd $TMP_DIR/build
 #make depend
 #make VERBOSE=1
 #make Nightly 
-ctest -D Nightly -L lsdalton
+#ctest -D Nightly -L linsca
+make -j4 lsdalton.x 
+ctest -L linsca -D NightlyTest
+ctest -L linsca -D NightlySubmit
 
 exit 0
 

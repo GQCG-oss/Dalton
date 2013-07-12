@@ -53,6 +53,7 @@ MODULE IntegralInterfaceMOD
   use SphCart_Matrices, only: BUILD_CART_TO_SPH_MAT
   use gridgenerationmodule
   use II_XC_interfaceModule
+  use GCtransMod
   use dft_typetype
   use ls_util, only: ls_print_gradient
   public::  II_get_overlap, II_get_mixed_overlap,II_get_mixed_overlap_full,&

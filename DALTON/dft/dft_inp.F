@@ -199,7 +199,8 @@ CAMT >.DFTVXC< Consruct V_xc Explicitly and Use in KS Matrix for SCF
 
  300  CONTINUE
       IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
+C arnfinn: ichang is not defined or used...
+C         ICHANG = ICHANG + 1
          WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
      &   ' thresholds multiplied with general factor',THR_REDFAC
          RADINT = RADINT*THR_REDFAC

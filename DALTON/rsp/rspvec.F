@@ -701,7 +701,7 @@ C
          WRITE (LUPRI,'(//A,I3,/2A,/A,I3,/A,(T25,5F10.6))')
      &   ' QRLRVE -- linear response calculation for symmetry',KSYMOP,
      &   ' QRLRVE -- operator label : ',LRLAB(ILRLAB),
-     &   ' QRLRVE -- operator spin  : ',OPRANK(INDPRP(LRLAB(IRLAB))),
+     &   ' QRLRVE -- operator spin  : ',OPRANK(INDPRP(LRLAB(ILRLAB))),
      &   ' QRLRVE -- frequencies :',(WRK(KEIVAL+I),I=0,NFREQ-1)
          IF (GPNORM .LT. THRSML) THEN
             WRITE (LUPRI,*) ' >>> RSPCTL skipped because norm of'
