@@ -3174,8 +3174,8 @@ contains
 
           end if
 
-          write (DECinfo%output, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")'),infpar%lg_mynum,alphaB,&
-                          &nbatchesAlpha,gammaB,nbatchesGamma
+          write (DECinfo%output, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') &
+                              &infpar%lg_mynum,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
 
 #endif
 
