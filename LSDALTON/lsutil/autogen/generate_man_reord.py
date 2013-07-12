@@ -311,11 +311,11 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
     if ad != "": 
       for j in range(modes):
         omppar += "b"+abc[j]+"f,"
-    omppar = omppar[0:-1] + ")&\n      !$OMP& SHARED(bcntr,pre1,pre2,bs,array_in,array_out, &\n      !$OMP& "
+    omppar = omppar[0:-1] + ")&\n      !$OMP SHARED(bcntr,pre1,pre2,bs,array_in,array_out, &\n      !$OMP "
     for j in range(modes):
       omppar += "d"+abc[j] +",d"+abc[j]+"2,mod"+abc[j]+","
     if ad != "":
-      omppar += "&\n      !$OMP& "
+      omppar += "&\n      !$OMP "
       for j in range(modes):
         omppar += "f"+abc[j] +","
     omppar = omppar[0:-1]+")\n"
