@@ -17,6 +17,7 @@ F90_OBJS = \
         arh_driver.o \
         average_util.o \
 	LocTypes.o \
+	ChargePrec.o\
 	ChargeLoc.o \
 	configurationType.o \
 	davidson_settings.o \
