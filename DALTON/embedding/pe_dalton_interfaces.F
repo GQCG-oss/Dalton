@@ -4,7 +4,7 @@
 !                based on PCMGRAD 
 !
 !     Purpose:  calculate (MCSCF) energy and gradient contribution
-!               from a PE potential using the PE module
+!               from a PE potential using the PE library
 !
 !     Output:
 !     grd       MCSCF gradient with PE contribution added
@@ -100,7 +100,7 @@
 !
 !     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen
 !
-!     Purpose:  Get PE operator in MO basis using PE module
+!     Purpose:  Get PE operator in MO basis using PE library
 !
 !     Output:
 !     fckmo     PE operator in MO basis
@@ -777,7 +777,7 @@ C
         lopen = .false.
 
         call qenter('pe_rsplno')
-        
+
         if (.not. tdhf) then
             ! Read Fg = V - <0|F|0>Fe from file
             allocate(fpemo(nnorbx))

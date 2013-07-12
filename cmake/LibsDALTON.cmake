@@ -16,6 +16,31 @@ if(ENABLE_GEN1INT)
         )
 endif()
 
+if(ENABLE_PELIB)
+    if(ENABLE_GEN1INT)
+        set(PARENT_DEFINITIONS "-DBUILD_GEN1INT -DPRG_DALTON")
+    endif()
+    if(MPI_FOUND)
+        set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
+    endif()
+    set(ExternalProjectCMakeArgs
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DPARENT_INCLUDE_DIR=${PROJECT_SOURCE_DIR}/DALTON/include
+        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+        )
+    add_external(pelib)
+    add_dependencies(dalton pelib)
+    add_dependencies(pelib gen1int_interface)
+    add_definitions(-DBUILD_PELIB)
+    set(LIBS
+        ${PROJECT_BINARY_DIR}/external/lib/libpelib.a
+        ${LIBS}
+        )
+endif()
+
 add_executable(
     dalton.x
     ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F

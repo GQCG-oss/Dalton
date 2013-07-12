@@ -401,14 +401,13 @@ C
 !            write(lupri,*) '    Results *WILL* be wrong    '
             call quit('ERROR: MCSCF quadratic response not'//
      &                ' implemented with PE module.')
-            write(lupri,*)'KFREE', KFREE
-            write(lupri,*)'LFREE', LFREE
-
-             call pe_rspmcqr(vecb, vecc, etrs, xindx, 
-     &                       wrk(kzymb), wrk(kzymc), wrk(kden1), udv, 
-     &                       wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
-     &                       isyma, isymb, isymc, cmo, mjwop)
-
+!            write(lupri,*)'KFREE', KFREE
+!            write(lupri,*)'LFREE', LFREE
+!
+!             call pe_rspmcqr(vecb, vecc, etrs, xindx, 
+!     &                       wrk(kzymb), wrk(kzymc), wrk(kden1), udv, 
+!     &                       wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
+!     &                       isyma, isymb, isymc, cmo, mjwop)
         else if (nasht > 0) then
             call quit('ERROR: quadratic response not implemented for'//
      &                ' open shell systems with PE module.')

@@ -31,6 +31,7 @@ option(ENABLE_RELEASE        "Test release mode which undefines MOD_UNRELEASED" 
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
+option(ENABLE_PELIB          "Enable PE library"                                ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
