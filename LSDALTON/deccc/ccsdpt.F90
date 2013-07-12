@@ -651,6 +651,40 @@ contains
   end subroutine ccsdpt_driver
 
 
+  !> \brief: make job distribution list for ccsd(t)
+  !> \author: Janus Juul Eriksen
+  !> \date: july 2013
+  subroutine job_distrib_ccsdpt(no,j_size,jobs)
+
+    implicit none
+
+    !> jobs size (without remainder contribution
+    integer, intent(in) :: j_size
+    !> jobs array
+    integer, dimension(j_size+1), intent(inout) :: jobs
+    !> integers
+    integer :: fill, nodtotal
+
+#ifdef VAR_MPI
+
+    nodtotal = infpar%lg_nodtot
+
+    ! fill the jobs array with values of ij
+    ! there are nocc*(nocc + 1)/2 tasks in total (ntasks)
+
+    ! the below algorithm distributes the jobs evenly among the nodes. NO weighting yet... 
+
+    do fill = 0,j_size
+
+       jobs(fill+1) = infpar%lg_mynum + 1 + fill*nodtotal 
+
+    end do
+
+#endif
+
+  end subroutine job_distrib_ccsdpt
+
+
   !> \brief: driver routine for contractions in case(1) of ccsdpt_driver
   !> \author: Janus Juul Eriksen
   !> \date: march 2013
