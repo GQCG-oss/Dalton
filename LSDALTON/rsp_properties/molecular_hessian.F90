@@ -130,7 +130,7 @@ CONTAINS
     DO i=1,3*Natoms
         call mat_init(GDa(i),nbast,nbast)
     ENDDO
-    call get_twoElectron_mat_of_first_geoderiv_refDmat(GDa,Da,Natoms,setting,lupri,luerr)
+    call get_twoElectron_mat_of_first_geoderiv_refDmat(GDa,Da,Natoms,setting,lupri,luerr,iprint)
 
     ! calculate the 1st geo. deriv. of the Fock matrix F^a
     call mem_alloc(Fa,3*Natoms)
@@ -248,8 +248,6 @@ CONTAINS
     call lstimer('START ',ts,te,lupri)
     nbast = D%nrow
     call mat_init(temp,nbast,nbast)
-    
-
     call mat_mul(S,D,'N','N',1E0_realk,0E0_realk,temp) ! temp = SD
     DO i=1,3*Natoms
         call mat_mul(temp,Fa(i),'N','N', 1E0_realk,0E0_realk,RHS(i)) ! RHS = SDFa
@@ -507,7 +505,7 @@ CONTAINS
   !> \param setting Integral evalualtion settings
   !> \param lupri Default print unit
   !> \param luerr Unit for error printing
-  SUBROUTINE get_twoElectron_mat_of_first_geoderiv_refDmat(GDa,Da,Natoms,setting,lupri,luerr)
+  SUBROUTINE get_twoElectron_mat_of_first_geoderiv_refDmat(GDa,Da,Natoms,setting,lupri,luerr,iprint)
     !
     IMPLICIT NONE
     Integer,INTENT(IN)              :: Natoms,lupri,luerr
@@ -516,7 +514,7 @@ CONTAINS
     Type(matrix),INTENT(INOUT)      :: GDa(3*Natoms) ! derivative along x,y and z for each atom
     !
     Type(matrix), pointer           :: tempK(:)
-    Real(realk)                     :: ts,te 
+    Real(realk)                     :: ts,te,sum
     Integer                         :: i, nbast, ndmat
     LOGICAL                         :: Dsym
     !
@@ -530,12 +528,29 @@ CONTAINS
         call mat_zero(tempK(i))
     ENDDO
     call II_get_coulomb_mat( lupri,luerr,setting,Da,GDa,ndmat)
+    IF (iprint .GE. 3) THEN
+       sum = 0.0E0_realk
+       DO i=1,3*Natoms
+          sum = sum + mat_sqnorm2(GDa(i))
+       ENDDO
+       WRITE(LUPRI,*) '   - Cumul. norm of J(Da): ', sum
+       WRITE(*,*)     '   - Cumul. norm of J(Da): ', sum
+    ENDIF
     Dsym = .FALSE.
     call II_get_exchange_mat(lupri,luerr,setting,Da,ndmat,Dsym,tempK)
-
+    IF (iprint .GE. 3) THEN
+       sum = 0.0E0_realk
+       DO i=1,3*Natoms
+          sum = sum + mat_sqnorm2(GDtempKa(i))
+       ENDDO
+       WRITE(LUPRI,*) '   - Cumul. norm of K(Da): ', sum
+       WRITE(*,*)     '   - Cumul. norm of K(Da): ', sum
+    ENDIF
     DO i=1,3*Natoms
         call mat_daxpy(-1.0E0_realk,tempK(i),GDa(i))
+        call mat_free(tempK(i))
     ENDDO
+    call mem_dealloc(tempK)
     call lstimer('GDa_build',ts,te,lupri)
   END SUBROUTINE get_twoElectron_mat_of_first_geoderiv_refDmat
 
