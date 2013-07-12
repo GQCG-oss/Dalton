@@ -218,42 +218,63 @@ contains
 #endif
 
     ! a note on the mpi scheme.
-    ! in order to minimize the number of mpi_get calls, we fork at the irun level.
-    ! each node works on a separate i-tile ** as long as ** the remainder up to nocc is less than
-    ! the total number of nodes within the local group. this way, no node will have to wait on the 
-    ! remaining notes at the end of the i,j,k nested loop.
-    !
-    ! a note on the number of mpi_get calls.
-    !  - at the irun level, there will be [(nocc - lg_nodtot + 1) + (lg_nodtot - 1) * lg_nodtot] number of calls,
-    ! where (nocc - lg_nodtot + 1) is the number of 'collab == .false.' calls,
-    ! and (lg_nodtot - 1) * lg_nodtot is the number of 'collab == .true.' calls
-    !  - at the jrun level, there will be [(nocc/2) * (1 + nocc)] number of calls (minimum number of calls)
-    !  - at the krun level, there will be [(nocc/6) * (nocc + 1) * (nocc + 2)] number of calls (minimum number of calls)
-
- irun: do i=1,nocc
+    ! since we (in a dec picture) often have many nodes compared to nocc, we explicitly collapse the i- and j-loop.
+    ! by doing this, we are guaranteed that all nodes participate.
+    ! the composite index ij is incremented in the collapsed loop, and we may calculate i and j from ij.
 
 #ifdef VAR_MPI
 
-          if ((infpar%lg_nodtot + i - 1) .le. nocc) then
+ ijrun: do ij_count = 1,b_size + 1
 
-             collab = .false.
- 
-             ! determine if this is my job or not
-             if (infpar%lg_mynum .ne. mod(i,infpar%lg_nodtot)) cycle irun
-   
-             ! get the i'th v^3 tile
-             call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
+           ! get value of ij from job disttribution list
+           ij = jobs(ij_count)
 
-          else
+           if (ij = -1) cycle ijrun
 
-             collab = .true.
-   
-             ! get the i'th v^3 tile
-             call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
+           ! calculate i and j from composite ij value
 
-          end if
+           call calc_i_and_j(ij,nocc,i,j)
 
-#endif
+           ! get i and j time ** need i_old and i=j checks!
+
+           ! get the i'th and j'th v^3 tile
+           call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
+           call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
+
+          ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+          call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
+                  & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
+
+          ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+          call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
+                  & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
+
+#else
+
+ irun: do i=1,nocc
+
+!#ifdef VAR_MPI
+!
+!          if ((infpar%lg_nodtot + i - 1) .le. nocc) then
+!
+!             collab = .false.
+! 
+!             ! determine if this is my job or not
+!             if (infpar%lg_mynum .ne. mod(i,infpar%lg_nodtot)) cycle irun
+!   
+!             ! get the i'th v^3 tile
+!             call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
+!
+!          else
+!
+!             collab = .true.
+!   
+!             ! get the i'th v^3 tile
+!             call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
+!
+!          end if
+!
+!#endif
 
           ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
           call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
@@ -261,28 +282,30 @@ contains
 
     jrun: do j=1,i
 
-#ifdef VAR_MPI
-
-             if (.not. collab) then
-
-                ! get the j'th tile
-                call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
-
-             else
-
-                ! determine if this is my job or not
-                if (infpar%lg_mynum .ne. mod(j,infpar%lg_nodtot)) cycle jrun
- 
-                ! get the j'th tile
-                call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
-
-             end if
-
-#endif
+!#ifdef VAR_MPI
+!
+!             if (.not. collab) then
+!
+!                ! get the j'th tile
+!                call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
+!
+!             else
+!
+!                ! determine if this is my job or not
+!                if (infpar%lg_mynum .ne. mod(j,infpar%lg_nodtot)) cycle jrun
+! 
+!                ! get the j'th tile
+!                call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
+!
+!             end if
+!
+!#endif
 
              ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
+
+#endif
 
        krun: do k=1,j
 
@@ -703,6 +726,48 @@ contains
 #endif
 
   end subroutine job_distrib_ccsdpt
+
+
+  !> \brief: determine i and j from ij
+  !> \author: Janus Juul Eriksen
+  !> \date: july 2013
+  subroutine calc_i_and_j(ij,no,i,j)
+
+    implicit none
+
+    !> composite ij index
+    integer, intent(in) :: ij,no
+    !> i and j
+    integer, intent(inout) :: i,j
+    !> integers
+    integer :: triang_sum,triang_sum_old,series,series_old
+
+    do series = 1,nocc
+
+       triang_sum = (series**2 + series)/2
+
+       if (triang_sum .lt. ij) then
+
+          series_old = series
+          triang_sum_old = triang_sum
+
+          cycle
+
+       else if (triang_sum .eq. ij) then
+
+          j = series
+          i = series
+
+       else
+
+          j = ij - triang_sum_old
+          i = series_old
+
+       end if
+
+    end do
+
+  end subroutine calc_i_and_j
 
 
   !> \brief: driver routine for contractions in case(1) of ccsdpt_driver
