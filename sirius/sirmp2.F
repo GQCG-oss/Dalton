@@ -177,8 +177,8 @@ C *** Option 12 >RSDHF< compute the RSDHf energy
   112 DO_RSDHF = .TRUE.
       SRMP2_SRINTS = .TRUE.   ! .RSDHF activates .SRINTS
       IPRMP2 = MAX(IPRMP2,1)
-      LAMSR = 1.0D0           ! original RSDHf model 
-!     READ(LUCMD,*) LAMSR     ! read the fraction lambda of srHFX and
+!     LAMSR = 1.0D0           ! original RSDHf model 
+      READ(LUCMD,*) LAMSR     ! read the fraction lambda of srHFX and
 !                               lr-sr MP2 coupling  
       write(lupri,*)''
       write(lupri,*)'just after reading, lamsr =', LAMSR
