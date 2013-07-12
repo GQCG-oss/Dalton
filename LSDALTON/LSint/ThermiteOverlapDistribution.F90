@@ -1037,11 +1037,11 @@ IF(.NOT.FTUVorb)THEN
 !        & + mem_intsize*size(Orb%nOrbitals)
 !   call mem_allocated_mem_overlap(nsize)
    
-   call mem_alloc(Orb%CC,maxangmom)
+!   call mem_alloc(Orb%CC,maxangmom)
    Orb%FTUVorb = .FALSE.
 ELSE
    Orb%FTUVorb = .TRUE.
-   NULLIFY(Orb%CC)
+!   NULLIFY(Orb%CC)
 ENDIF
 
 END SUBROUTINE ALLOC_ORBITAL
@@ -1220,10 +1220,10 @@ SUBROUTINE FREE_OVERLAP(P)
 Implicit none
 TYPE(Overlap) :: P
 IF(.NOT. P%orbital1%FTUVorb)THEN
-   call mem_dealloc(P%orbital1%CC)
+!   call mem_dealloc(P%orbital1%CC)
 ENDIF
 IF(.NOT. P%orbital2%FTUVorb)THEN
-   call mem_DEALLOC(P%orbital2%CC)
+!   call mem_DEALLOC(P%orbital2%CC)
 ENDIF
 END SUBROUTINE FREE_OVERLAP
 
