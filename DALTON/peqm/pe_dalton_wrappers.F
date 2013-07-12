@@ -758,8 +758,6 @@ C
         real*8, dimension(:), allocatable :: ovlp
         logical :: lexist, lopen
 
-        call qenter('pe_rsplno')
-
         ! return if no polarization and not MCSCF
         if ((kzconf == 0) .and. .not. pe_polar) then
             return
@@ -778,6 +776,7 @@ C
 
         lopen = .false.
 
+        call qenter('pe_rsplno')
         
         if (.not. tdhf) then
             ! Read Fg = V - <0|F|0>Fe from file
