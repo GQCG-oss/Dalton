@@ -23,7 +23,9 @@ MODULE molecular_hessian_mod
                                     & II_get_geoderivexchange, &
                                     & II_get_coulomb_mat, &
                                     & II_get_exchange_mat
-    use rspsolver,              only: prop_molcfg, init_prop_molcfg
+    use RSPsolver,              only: prop_molcfg,&
+                                    & init_prop_molcfg,&
+                                    & rsp_init
 #endif
 #ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
@@ -157,9 +159,9 @@ CONTAINS
     call mem_alloc(Xa,3*Natoms)
      DO i=1,3*Natoms
         call mat_init(Xa(i),nbast,nbast)
+        call mat_zero(Xa(i))
      ENDDO
-    call get_first_order_rsp_vectors(Xa,S,D,ha,Ga,GDa,Natoms,setting,config,lupri,luerr)
-
+    call get_first_order_rsp_vectors(Xa,S,D,F,RHS_HF,Natoms,setting,config,lupri,luerr)
 
     ! Calcualte 2nd deriv. of the density matrix and of D_{2n+1} 
 
@@ -597,22 +599,23 @@ CONTAINS
 
   !> \brief Solve the 1st-order resp. eq. to get the response vectors Xa
   !> \author P. Merlot
-  !> \date 2013-07-10
-  !> \param Fa The 3*Natoms first geometric derivative components of F
+  !> \date 2013-07-11
+  !> \param S The overlap matrix
   !> \param D The reference density matrix
-  !> \param ha The 3*Natoms first geometric derivative components of H1
-  !> \param Ga The 3*Natoms first geometric derivative components: G^a(D)
+  !> \param F The Fock/Kohn-Sham matrix
+  !> \param RHS The Right Hand Side of 1st order response equation
   !> \param Natoms Nb. of atoms in the molecule
   !> \param setting Integral evalualtion settings
+  !> \param config ???????????????????????????????????????????????????
   !> \param lupri Default print unit
   !> \param luerr Unit for error printing
-  SUBROUTINE get_first_order_rsp_vectors(Xa,S,D,ha,Ga,GDa,Natoms,setting,config,lupri,luerr)
+  SUBROUTINE get_first_order_rsp_vectors(Xa,S,D,F,RHS,Natoms,setting,config,lupri,luerr)
     !
     IMPLICIT NONE
     Integer,INTENT(IN)                  :: Natoms,lupri,luerr
     Type(ConfigItem),INTENT(IN)         :: config
-    Type(matrix),INTENT(IN)             :: S,D
-    Type(matrix),INTENT(IN)             :: ha(3*Natoms),Ga(3*Natoms),GDa(3*Natoms)
+    Type(matrix),INTENT(IN)             :: S,D,F
+    Type(matrix),INTENT(INOUT)          :: RHS(3*Natoms)
     Type(LSSETTING),INTENT(INOUT)       :: setting
     Type(matrix),INTENT(INOUT)          :: Xa(3*Natoms) ! derivative along x,y and z for each atom
     !
@@ -627,11 +630,15 @@ CONTAINS
                             & lupri, luerr, setting,&
                             & config%decomp,config%response%rspsolverinput)
 
-!        !!!   rsp_init(ntrial, nrhs, nsol, nomega, nstart)
-!        !call rsp_init(rsp_number_of_current_trial,rsp_number_of_rhs,&
-!        !        &rsp_number_of_sols,rsp_number_of_omegas,rsp_number_of_startvecs)
-!        call rsp_init(nexci_max,1,nexci_max,nexci_max,nstart)
-!        ! Calling solver. 
+        !> ntrial: (Max.) number of trial vectors in a given iteration
+        !> nrhs:    Number of right-hand sides. Only relevant for linear equations (always 1 for eigenvalue problem)
+        !> nsol:    Number of solution (output) vectors
+        !> nomega:  If LINEQ, number of laser freq.s (input). Otherwise number of excitation energies (output) 
+        !> Number of start vectors. Only relevant for eigenvalue problem
+        !!!  rsp_init(ntrial, nrhs, nsol, nomega, nstart)
+        call rsp_init(1,      1,    1,    0,      1)
+
+        ! Calling solver. 
 !        LINEQ = .TRUE.
 !        nb_eq = 1
 !        ExEnergies = 0
