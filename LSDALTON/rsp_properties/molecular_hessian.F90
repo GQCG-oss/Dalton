@@ -491,7 +491,7 @@ CONTAINS
     Type(LSSETTING),intent(INOUT)   :: setting
     Type(matrix),INTENT(INOUT)      :: GDa(3*Natoms) ! derivative along x,y and z for each atom
     !
-    Type(matrix)                    :: temp
+    Type(matrix), pointer           :: tempK(:)
     Real(realk)                     :: ts,te 
     Integer                         :: i, nbast, ndmat
     LOGICAL                         :: Dsym
@@ -499,15 +499,19 @@ CONTAINS
     call lstimer('START ',ts,te,lupri)
     nbast = Da(1)%nrow
     ndmat = 3*Natoms
+    call mem_alloc(tempK,3*Natoms)
     DO i=1,3*Natoms
         call mat_zero(GDa(i))
+        call mat_init(tempK(i),nbast,nbast)
+        call mat_zero(tempK(i))
     ENDDO
-    call II_get_coulomb_mat(lupri,luerr,setting,Da,GDa,ndmat)
+    call II_get_coulomb_mat( lupri,luerr,setting,Da,GDa,ndmat)
     Dsym = .FALSE.
-!    DO i=1,3*Natoms
-!        call II_get_exchange_mat(lupri,luerr,setting,Da(i),1,Dsym,temp)
-!        call mat_daxpy(1.0E0_realk,temp,GDa(i))
-!    ENDDO
+    call II_get_exchange_mat(lupri,luerr,setting,Da,ndmat,Dsym,tempK)
+
+    DO i=1,3*Natoms
+        call mat_daxpy(-1.0E0_realk,tempK(i),GDa(i))
+    ENDDO
     call lstimer('GDa_build',ts,te,lupri)
   END SUBROUTINE get_twoElectron_mat_of_first_geoderiv_refDmat
 
