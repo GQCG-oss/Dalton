@@ -331,7 +331,11 @@ C
           CALL REWINE(LU1,-1)
           IBASE = 1
           TEST = 1.0D-10
-          DO 100 IROOTSI = 1, ninvec
+!test     inideg  = -1
+          irootsi =  1
+          DO ! 100 IROOTSI = 1, ninvec
+
+            if(irootsi > ninvec) exit
 *. Number of degenerate elements
             NDEG = 1
             XVAL = SCR1(IBASE)
@@ -344,9 +348,9 @@ C
             END IF
 *
             IF (INIDEG.EQ.0.AND.NDEG.GT.1) THEN
-!             WRITE(luwrt,*) ' WARNING WARNING WARNING WARNING ! '
-!             WRITE(luwrt,*) ' DEGENERATE INITIAL VECTORS FOR CI '
-              NDEG = 1
+              WRITE(luwrt,*) ' NOTE! degenerate initial vectors for CI'
+              WRITE(luwrt,*) ' degree of degeneracy: ',NDEG 
+!old          NDEG = 1
             END IF
 
 *. Initial guess in compressed form in SCR1
@@ -357,7 +361,9 @@ C
                 SCR1(II) = (-1.0D0)**II * SCALE
 *. Symmetric combination
               ELSE IF (INIDEG.EQ.1.OR.INIDEG.EQ.0) THEN
-                SCR1(II) =  SCALE
+!               SCR1(II) =  SCALE
+                SCR1(II) = (-1.0D0)**(II-1) * SCALE
+!               write(luwrt,*) 'scr1(ii), ii ==> ',scr1(ii), ii
               END IF
   250       CONTINUE
             IF(IDIAG.EQ.2) THEN
@@ -365,18 +371,25 @@ C
             ELSE
               JPACK = 0
             END IF
-            IF (LUCI_NMPROC .GT. 1) THEN
+            do ii = 1, ndeg
+
+              if(ii > 1) SCR1(II) = (-1.0D0)**(II-1) * SCR1(II)
+
+              IF (LUCI_NMPROC .GT. 1) THEN
 #ifdef VAR_MPI
-               CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,
-     &                      IBLOCKAR,IBLKDSTND,NUM_BLOCKS2,JPACK,
-     &                      IROOTSI,LU1LIST)
+                 CALL WRSVCD_PAR(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,
+     &                           IBLOCKAR,IBLKDSTND,NUM_BLOCKS2,JPACK,
+     &                           IROOTSI,LU1LIST)
 #endif
-            ELSE
-               CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
-     &                  LUDIA,JPACK)
-            END IF
-            IBASE = IBASE + NDEG
-  100     CONTINUE
+              ELSE
+                 CALL WRSVCD(LU1,LBLK,VEC1,ISCR1(IBASE),SCR1,NDEG,NDIM,
+     &                       LUDIA,JPACK)
+              END IF
+            end do
+            IBASE   = IBASE   + NDEG
+            irootsi = irootsi + ndeg 
+! 100     continue
+          end do
         ELSE
 * =====================================
 *. Initial approximations are in PEIGVC
@@ -444,7 +457,7 @@ C
 
 ! Manu+Odile march 2013: testing a simple two-state ensemble CI-srDFT with w=0
 
-         weights(1) = 1.0d0
+!        weights(1) = 1.0d0
          write(luwrt,*) 'weights(1)',weights(1)
          write(luwrt,*) 'weights(2)',weights(2)
 
@@ -466,24 +479,36 @@ C
            call rewine(lu6,-1)
 !                                                            1: sigma vector
 !                                                            2: density matrix
-           call sigden_ci(vec1,vec2,c2,lu5,lu6,cdummy,sdummy,2, 1,
-     &                    xxs2dum)                          !   1: rhotype == 1 (regular 1p density matrix)
+           call sigden_ci(vec1,vec2,c2,lu5,lu6,cdummy,sdummy,2, 0,
+     &                    xxs2dum)                          !   1: rhotype == 1 (regular density matrix)
 !                                                           !   3: rhotype == 3 (transition density matrix)
-         
+!                                                           !   0: rhotype == 0 (regular density matrix run in CI)
+
+!********************
+!!! Odile+Manu debug
+#ifdef LUCI_DEBUG
+           CALL HEADER(
+     &     'lucita: individual one-el. density matrix, active part',-1)
+           CALL OUTPUT(work(krho1),1,ntoob,1,ntoob,ntoob,ntoob,
+     &                 -11,luwrt)
            write(luwrt,*) 'weights(i)',weights(i)
+#endif
+!!!!
+!********************
+
            call daxpy(ntoob**2,weights(i),work(krho1),1,
      &                work(KRHO1_ens),1)
+
          end do ! loop over # roots
 
          CALL HEADER(
      &   'lucita: ensemble one-el. density matrix, active part',-1)
          CALL OUTPUT(work(KRHO1_ens),1,ntoob,1,ntoob,ntoob,ntoob,
      &               -11,luwrt)
-
          call lucita_putdens_generic(work(krho1_ens),work(krho2),
      &                               fsr,xxdummy,xxdummy,i12,2,1,i)
-!                                                            2: density matrix 
-!                                                              1: rhotype
+!                                                            2: density matrix
+!                                                            1: rhotype
          CALL HEADER(
      &   'lucita: ensemble one-el. density matrix, ap reord   ',-1)
          CALL OUTPAK(work(krho1_ens),ntoob,-1,LUPRI)
@@ -495,7 +520,6 @@ C
 
          deallocate(fsr)
          close(luci_cvec,status='keep')
-
 
 !        dump ensemble density on file
          call lucita_putdens_ensemble(work(KRHO1_ens))
@@ -522,10 +546,10 @@ C
            EMYDFT_mc2lu = 
      &            EJCSR_mc2lu + EJVSR_mc2lu + EDSR_mc2lu + EDFT_mc2lu
 
-           write(luwrt,*) 'eigshf before',eigshf
+!          write(luwrt,*) 'eigshf before',eigshf
 !          in lucita: emy is eigshf at this point in the code
            eigshf = eigshf + EMYDFT_mc2lu
-           write(luwrt,*) 'eigshf after',eigshf
+!          write(luwrt,*) 'eigshf after',eigshf
 !          ... extract and save SR over active indices
            CALL GETAC(fsr,srdft_srac_lucita)
 
@@ -548,7 +572,7 @@ C
            CALL DGEFSP(ntoob,fsr,srdft_srac_lucita)
 
            ESRDV = DDOT(nnashx,work(KRHO1_ens),1,srdft_srac_lucita,1)
-           write(luwrt,*) 'esrdv... ',esrdv
+!          write(luwrt,*) 'esrdv... ',esrdv
          end if
 
 #ifdef VAR_MPI

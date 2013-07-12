@@ -5811,6 +5811,11 @@ C                   not exact Hamiltonian in use
                     I12_local = 1
                     IF(IDOH2.EQ.1) I12_local = 2
 *. RHO1, Rho2
+#ifdef LUCI_DEBUG
+                    ntest_save = ntest
+                    ntest = 100
+#undef LUCI_DEBUG
+#endif
                     IF(NTEST.GE.10) THEN
                       WRITE(luwrt,*) ' RSDNBB will be called for '
                       WRITE(luwrt,*) ' L block : '
@@ -5872,6 +5877,10 @@ C                   not exact Hamiltonian in use
                       write(luwrt,*) ' Updated rho1 '
                       call WRTMT_LU(WORK(KRHO1),nacob,nacob,nacob,nacob)
                     END IF
+#ifdef LUCI_DEBUG
+                    ntest = ntest_save
+#undef LUCI_DEBUG
+#endif
 
                   END IF
 

@@ -273,7 +273,7 @@ C
      >           d2Exdgrddgrd,d2Exdrhodgrd,
      >           Ec,d1Ecdrhot,d1Ecdrhos,d1Ecdgrd,d1Ecdgrda2,
      >           d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos,
-     >           d2Ecdgrddgrd,d2Ecdrhodgrd)
+     >           d2Ecdgrddgrd,d2Ecdrhodgrd,VLAMBDA)
 
 
 C      Summation with quadrature weigths
@@ -317,7 +317,7 @@ C        matrix 4 is DXSAO
          JDXSAO = 4
          CALL SRDFTLTRJT(JWOPSY,DMAT(1,JDXTAO),DMAT(1,JDXSAO),EXCMAT,
      &                 WGHTX,WGHTC, GSO(KSO0),GSO(KSO1),
-     &                 CHIVAL,ERFEXP,RHO,RHG, DMAGAOSR,DOGGA)
+     &                 CHIVAL,VLAMBDA,ERFEXP,RHO,RHG, DMAGAOSR,DOGGA)
        ENDIF
 
 C
@@ -406,7 +406,7 @@ C****************************************************************************
      >           d2Exdgrddgrd,d2Exdrhodgrd,
      >           Ec,d1Ecdrhot,d1Ecdrhos,d1Ecdgrd,d1Ecdgrda2,
      >           d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos,
-     >           d2Ecdgrddgrd,d2Ecdrhodgrd)
+     >           d2Ecdgrddgrd,d2Ecdrhodgrd,VLAMBDA)
 C*****************************************************************************
 C    Driver for short-range DFT exchange and correlation
 C    energies and derivatives
@@ -425,7 +425,7 @@ C*****************************************************************************
 #include "dftinf.h"
 #include "dftcom.h"
 
-      double precision rho(4),rhg(3,4),CHIVAL ! input
+      double precision rho(4),rhg(3,4),CHIVAL,VLAMBDA ! input
       double precision rhogrd(4) ! local variable for norm of RHG(1:3,*)
       integer NORDER
       logical ERFEXP(0:2)
@@ -576,7 +576,26 @@ C  Manu 01-02-2006 end
      >             d1Exdrhot,d1Exdrhos,
      >             d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos)
       ENDIF
- 
+
+C linear complement spin-dependent exchange LDA functional, Kamal SHARKAS 09-05-11
+      IF(DOLAX_LDAS)  THEN
+        call ELX_LDALAMSPIN (rho(1),rho(2),VLAMBDA,DFT_SPINDNS,Ex)
+        call DELSPIN(ESRX_LDAERFSPIN,rho(1),rho(2),VLAMBDA,DFT_SPINDNS,
+     >                NORDER,
+     >                d1Exdrhot,d1Exdrhos,
+     >                d2Exdrhotdrhot,d2Exdrhotdrhos,d2Exdrhosdrhos)
+      ENDIF
+
+C linear complement exchange PBE functional, Kamal SHARKAS 19-05-11
+      IF(DOLAX_PBEGWS) THEN
+
+        call ELAX_PBEGWS(rho,RHOGRD,VLAMBDA,Ex)
+        call DELA(ESRX_PBEGWSERF,rho,RHOGRD,VLAMBDA,NORDER,
+     >             d1Exdrhot,d1Exdgrd,d1Exdgrda2,
+     >             d2Exdrhotdrhot,d2Exdgrddgrd,d2Exdrhodgrd)
+      ENDIF
+
+
 C  Correlation  ----------------------------------------------------------
 
 C     Initialisations
@@ -649,6 +668,35 @@ C     Initialisations
      >             d1Ecdrhot,d1Ecdrhos,
      >             d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos)
       ENDIF
+C Kamal SHARKAS 20-05-11 beg
+C linear Complement spin-dependent (NON-Scaled) correlation LDA functional
+       IF(DOLANSC_LDAS) THEN
+        call ELC_LDALAMSPIN (rho(1),rho(2),VLAMBDA,DFT_SPINDNS,Ec)
+        call DELSPINnSC(ESRC_LDAERFSPIN,rho(1),rho(2),VLAMBDA,
+     >                DFT_SPINDNS,NORDER,
+     >                d1Ecdrhot,d1Ecdrhos,
+     >                d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos)
+       ENDIF
+
+C Complement (NON-Scaled) correlation PBE functional
+      IF(DOLANSC_PBEGWS) THEN
+        call ELAC_PBEGWS(rho,RHOGRD,VLAMBDA,Ec)
+        call DELANSC(ESRC_PBEGWSERF,rho,RHOGRD,VLAMBDA,NORDER,
+     >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
+     >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
+
+      ENDIF
+
+C Complement Scaled correlation PBE functional
+      IF(DOLASC_PBEGWS) THEN
+
+        call ELASC_PBEGWS(rho,RHOGRD,VLAMBDA,Ec)
+        call DELASC(ESRC_PBEGWSERF,rho,RHOGRD,VLAMBDA,NORDER,
+     >             d1Ecdrhot,d1Ecdgrd,d1Ecdgrda2,
+     >             d2Ecdrhotdrhot,d2Ecdgrddgrd,d2Ecdrhodgrd)
+
+      ENDIF
+C Kamal SHARKAS 20-05-11 end
 
 !     short-range spin-dependent correlation LDA with multideterminant reference (for OEP) ! JT 26-08-11
 !     ... or for RSDHf calculations (Manu 06-12-2012)  
@@ -700,7 +748,7 @@ C      mu_new = max(mu,CHIVAL)
 C**************************************************************************
       SUBROUTINE SRDFTLTRJT(KSYMOP,DTXMAT,DSXMAT,EXCMAT,
      &                      WGHTX,WGHTC,GAO,GAO1,
-     &                      CHIVAL,ERFEXP,RHO,RHG, DGAO,DOGGA)
+     &                      CHIVAL,VLAMBDA,ERFEXP,RHO,RHG, DGAO,DOGGA)
 C**************************************************************************
 C     Generate the 1-index transformed DFT Hessian
 C     needed in second-order optimization for short-range DFT hybrids.
@@ -776,7 +824,7 @@ CFRAN RHOSGRD ADDED!
      >           d2Exdgrddgrd,d2Exdrhodgrd,
      >           Ec,d1Ecdrhot,d1Ecdrhos,d1Ecdgrd,d1Ecdgrda2,
      >           d2Ecdrhotdrhot,d2Ecdrhotdrhos,d2Ecdrhosdrhos,
-     >           d2Ecdgrddgrd,d2Ecdrhodgrd)
+     >           d2Ecdgrddgrd,d2Ecdrhodgrd,VLAMBDA)
 
 
 C Total contribution -------------------------------------------------------
