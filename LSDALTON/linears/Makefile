@@ -16,6 +16,7 @@ F90_OBJS = \
         arh_debug.o \
         arh_driver.o \
         average_util.o \
+	LocTypes.o \
 	ChargeLoc.o \
 	configurationType.o \
 	davidson_settings.o \
@@ -38,10 +39,13 @@ F90_OBJS = \
         LSDALTON_RESPONSE.o        \
         LSDALTON_RESPONSE_type.o        \
 	minimize.o \
-	optimlocNONMOD.o \
+	optimlocModf.o \
+	orbspread_hess_prec.o \
+	localityMeasure.o \
 	OrbLoc_input.o  \
 	localization_charge.o \
 	localization_orbspread.o \
+	orbspread_util.o \
 	localization_util.o \
         prop_contribs.o \
         response_driver.o \
