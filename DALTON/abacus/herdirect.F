@@ -24,30 +24,30 @@
 #include "single.h"
 C
 #ifdef UNDEF
-===========================================================================
-/* Comdeck herdirect_log */
-941206-hjaaj
-HERPAR: new routine for defining parallel hermit calc. of Fock matr.
-HERFCK: call PARDRV if PARCAL true
-        changed STATIS to KPRINT.gt.0 (STATIS missing in newest
-        aba.cdk from oslo)
-941205-from oslo:
-HERFCK: also IPRINT = IPRFCK for PARCAL true (was = 0)
-941103-hjaaj:
-implemented ISYMDM(NDMAT), IFCTYP(NDMAT)
-HERDI1,HERDI2: excluded; not used, are also incomplete
-ABARUN: moved to here from abadrv.u (needed for HERMIT)
-931026-hjaaj: sether now calls READIN; + consistency check
-HERFCK: new parameter (print level in CBITWO)
-931025-hjaaj: sirdirn04.u (i.e. HERFCK,SETHER) added to herdirect.u
-GETFCK now calls HERFCK
-AOLABE renamed to AOLAB4, generalized, and moved to GP.
-GETFCK is now only internal test routine; HERFCK is called from the
-outside (SIRIUS and RESPONSE).
-921201-hjaaj:
-   new Sirius input routine for Hermit parameters ? an extended sether?
-   also direct calculation of solvent integrals ?
-===========================================================================
+!===========================================================================
+!/* Comdeck herdirect_log */
+!941206-hjaaj
+!HERPAR: new routine for defining parallel hermit calc. of Fock matr.
+!HERFCK: call PARDRV if PARCAL true
+!        changed STATIS to KPRINT.gt.0 (STATIS missing in newest
+!        aba.cdk from oslo)
+!941205-from oslo:
+!HERFCK: also IPRINT = IPRFCK for PARCAL true (was = 0)
+!941103-hjaaj:
+!implemented ISYMDM(NDMAT), IFCTYP(NDMAT)
+!HERDI1,HERDI2: excluded; not used, are also incomplete
+!ABARUN: moved to here from abadrv.u (needed for HERMIT)
+!931026-hjaaj: sether now calls READIN; + consistency check
+!HERFCK: new parameter (print level in CBITWO)
+!931025-hjaaj: sirdirn04.u (i.e. HERFCK,SETHER) added to herdirect.u
+!GETFCK now calls HERFCK
+!AOLABE renamed to AOLAB4, generalized, and moved to GP.
+!GETFCK is now only internal test routine; HERFCK is called from the
+!outside (SIRIUS and RESPONSE).
+!921201-hjaaj:
+!   new Sirius input routine for Hermit parameters ? an extended sether?
+!   also direct calculation of solvent integrals ?
+!===========================================================================
 #endif
 C  /* Deck tstdir */
       SUBROUTINE TSTDIR(FMAT,DMAT,NDMAT,WORK,LWORK,IPRINT)
@@ -719,14 +719,20 @@ C
             IATOM  = 1
             HFXFC0 = HFXFAC
             HFXFAC = HFXATT 
-            CALL MEMGET('REAL',KFCTMP,NDMAT*N2BASX,WORK,KFREE,LFREE)
-c           We have to use a temporary array because PARDRV
-c           overwrites the matrix from the phase one destroying 
-c           entirely the Coulomb contribution.
-c           This does not solve problems for LR phase of a QR
-c           calculation.
+!           the following is not necessary when we use the RMA parallelization model 
+!           of hermit - and yet more memory saving... sknecht - jan 2013
+            if(.not.rma_model)then
 
-            CALL DCOPY(NDMAT*N2BASX,FMAT,1,WORK(KFCTMP),1)
+              CALL MEMGET('REAL',KFCTMP,NDMAT*N2BASX,WORK,KFREE,LFREE)
+c             We have to use a temporary array because PARDRV
+c             overwrites the matrix from the phase one destroying 
+c             entirely the Coulomb contribution.
+c             This does not solve problems for LR phase of a QR
+c             calculation.
+
+              CALL DCOPY(NDMAT*N2BASX,FMAT,1,WORK(KFCTMP),1)
+            end if
+
             CALL PARDRV(FMAT,DMAT,NDMAT,ISYMDM,IFCTYP,
      &               WORK(KFREE),WORK(KNSTAT),DUMMY,LFREE,ITYPE,MAXDER,
      &               IATOM,NODV,NOPV,NOCONT,TKTIME,RETUR,IPRINT,IPRTYP,
@@ -737,7 +743,11 @@ c           calculation.
               WALL   = WALL1 - WALL2
               CALL SCRSTA('HRFCK1/PARDRV-hfxatt',WORK(KDSKP),WALL)
             END IF
-            CALL DAXPY(NDMAT*N2BASX,1D0,WORK(KFCTMP),1,FMAT,1)
+
+            if(.not.rma_model)then
+              CALL DAXPY(NDMAT*N2BASX,1D0,WORK(KFCTMP),1,FMAT,1)
+            end if
+
             HFXFAC = HFXFC0
          END IF
 

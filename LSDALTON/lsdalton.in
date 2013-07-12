@@ -1,11 +1,32 @@
-LSDALTON=@PROJECT_BINARY_DIR@/lsdalton.x
-EXTERNLOC=@PROJECT_BINARY_DIR@/externloc.x
-GRIDGEN=@PROJECT_BINARY_DIR@/gridgen.x
-LSLIB_TEST=@PROJECT_BINARY_DIR@/lslib_tester.x
-DALMPI=@PROJECT_BINARY_DIR@/lsdalton.x
+#!/bin/bash
+
+# radovan: this is to figure out the location of this script
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    [[ $SOURCE != /* ]] && SOURCE="$SCRIPT_DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+
+LSDALTON=$SCRIPT_DIR/lsdalton.x
+LSLIB_TEST=$SCRIPT_DIR/lslib_tester.x
+DALMPI=$SCRIPT_DIR/lsdalton.x
 MPIRUN=@MPIEXEC@
-INSTALL_BASDIR=@BASIS_DIR@
-[ -z "$TMPDIR" ] && TMPDIR=@SCRATCH_DIR@
+
+if [ -z "$DALTON_TMPDIR" ]; then
+    scratch_dir_candidates="/global/work/$USER /scratch/$USER /work /scratch /scr /temp /tmp"
+    for dir in $scratch_dir_candidates; do
+        if [ -d "$dir" ]; then
+            DALTON_TMPDIR=$dir
+            echo "found $dir and DALTON_TMPDIR set to $DALTON_TMPDIR"
+            break
+        fi
+    done
+fi
+
 WRKDIR=`pwd`
 export WRKDIR
 #
@@ -17,9 +38,7 @@ MOLEXT="mol"
 AUXEXT="MOL NCA ORB IRC TRJ CM HES MOPUN WLK"
 #deafult values for options
 opt_valgrind=0
-opt_externloc=0
 opt_lslib_test=0
-opt_gridgen=0
 opta=0
 optA=0
 optd=0
@@ -48,26 +67,24 @@ frl=rel
 usage (){
 	  echo
 	  echo "Usage:    lsdalton [-b directory] [-d] [-D] [-ext log | -o file] [-f] [-m mem | -M mem]"
-	  echo  "[-N nodes] [-lam file] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
+	  echo  "[-N cores] [-lam file] [-o file] [-t directory] [-w directory] dal{.$DALEXT} mol{.$MOLEXT}"
 	  echo
 	  echo 'Options:'
 	  echo ' -b dir    change directory where basis sets are searched for to dir'
-	  echo ' -d        delete TMPDIR before calculation starts'
+	  echo ' -d        delete DALTON_TMPDIR before calculation starts'
 	  echo ' -pg       do profiling'
 	  echo ' -dens     copy dens.restart and maybe fock.restart lcm_orbitals.u'
 	  echo ' -valgrind run with valgrind'
-	  echo ' -externloc run with externloc'	  
 	  echo ' -lslib_test run lslib test'	  
-	  echo ' -gridgen run with gridgen'	  
-	  echo ' -D        do not delete TMPDIR after calculation stops'
+	  echo ' -D        do not delete DALTON_TMPDIR after calculation stops'
 	  echo ' -ext log  change output extension from ".out" to ".log"'
 	  echo ' -o FILE   redirect output from program to FILE in WRKDIR'
-	  echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in TMPDIR before calculation starts'
+	  echo ' -f FILE   extract content of FILE.tar.gz from WRKDIR in DALTON_TMPDIR before calculation starts'
 	  echo ' -m mem    set scratch memory to mem Mwords'
 	  echo ' -M mem    set scratch memory to mem Mb'
-	  echo ' -N num    use MPI version with num nodes'
+	  echo ' -N num    use num MPI procs (defaults to DALTON_NR_MPI_PROCS)'
 	  echo ' -lam file call "lamboot file" and "wipe file" before and after mpirun'
-	  echo ' -t dir    change TMPDIR from default to dir'
+	  echo ' -t dir    change DALTON_TMPDIR from default to dir'
 	  echo ' -w dir    change WRKDIR from default to dir'
 	  echo ' -exe exec change the DALTON and DALMPI executables from default to exec'
 	  echo
@@ -103,9 +120,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -D ) optD=0;;
       -pg ) optpg=1;;
       -valgrind ) opt_valgrind=1;;
-      -externloc ) opt_externloc=1;;
       -lslib_test ) opt_lslib_test=1;;
-      -gridgen ) opt_gridgen=1;;
       -geo1 ) optgeo1=1;;
       -geo2 ) optgeo2=1;;
       -dens ) optdens=1;;
@@ -116,7 +131,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -m ) WRKMEM=$2; export WRKMEM; shift;;
       -M ) WRKMEM=`expr $2 "*" 128000`; export WRKMEM; shift;;
       -o ) OUTFIL=$2; export OUTFIL; opto=1; shift;;
-      -t ) TMPDIR=$2; shift;;
+      -t ) DALTON_TMPDIR=$2; shift;;
       -w ) WRKDIR="`pwd`/$2"; shift;;
       -exe ) DALTON=$2; DALMPI=$2; shift;;
       * ) usage; exit 1;;
@@ -129,6 +144,17 @@ if [ -z "$1" ]; then
    usage
    exit 1
 fi
+
+if [ -z "$DALTON_TMPDIR" ]; then
+    # DALTON_TMPDIR is still not set, better stop here
+    echo "ERROR: searched for suitable scratch directories"
+    echo "       among $scratch_dir_candidates"
+    echo "       but none of them exists"
+    echo "       please either set the DALTON_TMPDIR environment variable"
+    echo "       or use -t to set the scratch directory"
+    exit 1
+fi
+
 if [ -z "$2" ]; then
 #  remove .mol, if added by user
    molfil=`basename $1 .mol`
@@ -145,7 +171,7 @@ else
    fi
 fi
 #
-export TMPDIR
+export DALTON_TMPDIR
 #
 echo
 echo "   ******************************************* "
@@ -158,26 +184,26 @@ echo;
 echo "   Calculation: $outnam  (input files: $dalfil and $molfil)"
 echo "   PID        : $$"
 echo "   Input dir  : $WRKDIR"
-echo "   Scratch dir: $TMPDIR/$outnam"
+echo "   Scratch dir: $DALTON_TMPDIR/$outnam"
 #echo "  Work memory: $WRKMEM"
 echo;
 #
-if [ ! -d "$TMPDIR" ]; then
-   mkdir -p $TMPDIR
+if [ ! -d "$DALTON_TMPDIR" ]; then
+   mkdir -p $DALTON_TMPDIR
 fi
 
-SCRATCHDIR=$TMPDIR/$2;
+SCRATCHDIR=$DALTON_TMPDIR/$2;
 
-if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
+if [ -d "$DALTON_TMPDIR" -a -w "$DALTON_TMPDIR" ]; then
    if [ $optd -eq 1 ] ; then
-      rm -rf $TMPDIR/$outnam
+      rm -rf $DALTON_TMPDIR/$outnam
    fi
-   if [ ! -d "$TMPDIR/$outnam" ]; then
-      mkdir -p $TMPDIR/$outnam
+   if [ ! -d "$DALTON_TMPDIR/$outnam" ]; then
+      mkdir -p $DALTON_TMPDIR/$outnam
    fi
-   cd $TMPDIR/$outnam
+   cd $DALTON_TMPDIR/$outnam
    if [ -s $WRKDIR/$dalfil.$DALEXT -a -r $WRKDIR/$dalfil.$DALEXT ]; then
-      cp $WRKDIR/$dalfil.$DALEXT DALTON.INP
+      cp $WRKDIR/$dalfil.$DALEXT LSDALTON.INP
    else
       echo "$WRKDIR/$dalfil.$DALEXT does not exist or is not readable"
       exit 1
@@ -199,7 +225,7 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
       [ -f $WRKDIR/$molfil.runopt.history ] && cp -f $WRKDIR/$molfil.runopt.history runopt.history 
       [ -f $WRKDIR/$molfil.$MOLEXT ] && cp -f $WRKDIR/$molfil.$MOLEXT runopt.initMOLECULE
       if [ -s $WRKDIR/$dalfil.$DALEXT.2 -a -r $WRKDIR/$dalfil.$DALEXT.2 ]; then
-	  cp $WRKDIR/$dalfil.$DALEXT.2 DALTON.INP
+	  cp $WRKDIR/$dalfil.$DALEXT.2 LSDALTON.INP
       else
 	  echo "$WRKDIR/$dalfil.$DALEXT.2 does not exist or is not readable"
 	  exit 1
@@ -215,10 +241,18 @@ if [ -d "$TMPDIR" -a -w "$TMPDIR" ]; then
       fi
    fi
 else
-   echo "$TMPDIR does not exist or is not writeable"
+   echo "$DALTON_TMPDIR does not exist or is not writeable"
    exit 1
 fi
-#
+
+if [ -n "$DALTON_NR_MPI_PROCS" ]; then
+    if [ $optn -eq 0 ] ; then
+        # DALTON_NR_MPI_PROCS is set but -N is not
+        # in this case default -N to DALTON_NR_MPI_PROCS
+        optn=$DALTON_NR_MPI_PROCS
+    fi
+fi
+
 if [ $optn -gt 1 ] ; then
    if [ $opt_lslib_test -eq 1 ]; then
       MPI=$LSLIB_TEST
@@ -256,18 +290,6 @@ else
 	    valgrind --tool=memcheck --track-origins=yes --leak-check=full --show-reachable=yes $LSDALTON
 	    lsdalton_exitcode=$?
 	 else	
-	     if [ $opt_externloc -eq 1 ]; then	
-	         $LSDALTON
-		 echo 'EXTERNLOC lcm_orbitals.u something.u'
-                 $EXTERNLOC lcm_orbitals.u something.u 1 1 MLO >> EXTERNLOC.OUT
-		 lsdalton_exitcode=$?
-	     else	  
-	      if [ $opt_gridgen -eq 1 ]; then	
-	     	$LSDALTON
-		echo 'GRIDGEN '
-                $GRIDGEN lcm_orbitals.u orbital.plt PLT 1 >> GRIDGEN.OUT
-		lsdalton_exitcode=$?
-              else
                if [ $opt_lslib_test -eq 1 ]; then
                   $LSLIB_TEST
 	          lsdalton_exitcode=$?
@@ -275,8 +297,6 @@ else
 	          $LSDALTON	 	
 	          lsdalton_exitcode=$?
                fi
-              fi
- 	     fi
    	 fi		   
 	fi
       fi
@@ -339,7 +359,7 @@ fi
       else
          echo "$WRKDIR/$OUTFIL has not been created from the present run"
          if [ $optD -eq 1 ] ; then
-            echo "$TMPDIR/$outnam is therefore not deleted by this script."
+            echo "$DALTON_TMPDIR/$outnam is therefore not deleted by this script."
          fi
          exit 2
       fi
@@ -347,8 +367,6 @@ fi
       backup -v $WRKDIR/$outnam.$OUTEXT
       if [ -s LSDALTON.OUT -a -r LSDALTON.OUT ]; then
          cp LSDALTON.OUT $WRKDIR/$outnam.$OUTEXT
-         [ -f EXTERNLOC.OUT ] && cp -f EXTERNLOC.OUT $WRKDIR/$outnam.ext.$OUTEXT
-         [ -f GRIDGEN.OUT ] && cp -f GRIDGEN.OUT $WRKDIR/$outnam.grid.$OUTEXT
          [ -f PROFILE ] && cp -f PROFILE $WRKDIR/$outnam.prof.$OUTEXT
 	 if [ $optgeo1 -eq 1 ] ; then
 	 	 cp $WRKDIR/$outnam.$OUTEXT $WRKDIR/$outnam.$OUTEXT.original
@@ -356,16 +374,16 @@ fi
       else
          echo "LSDALTON.OUT has not been created from the present run."
          if [ $optD -eq 1 ] ; then
-            echo "$TMPDIR/$outnam is therefore not deleted by this script."
+            echo "$DALTON_TMPDIR/$outnam is therefore not deleted by this script."
          fi
-         echo "List of created files in $TMPDIR/$outnam :"
+         echo "List of created files in $DALTON_TMPDIR/$outnam :"
          ls -sltr
          exit 2
       fi
    fi
 cd $WRKDIR
 if [ $optD -eq 1 ] ; then
-   rm -rf $TMPDIR/$outnam
+   rm -rf $DALTON_TMPDIR/$outnam
 fi
 
 exit $lsdalton_exitcode

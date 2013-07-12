@@ -115,6 +115,7 @@ C
 #include "mxcent.h"
 #include "esrhfc.h"
 #include "abslrs.h"
+#include "infvar.h"
 C
       LOGICAL SAVLR, DORESP, FLAGSV, EX, NEED_PVX
 C
@@ -472,7 +473,10 @@ C
 C     Calculate response properties with absorption
 C     =============================================
 C
-      IF (ABSORP) THEN
+      IF (ABSORP .OR. (ABSLRS .AND. (NCONF.GT.1)).OR.
+     *   (ABSLRS .AND. (.NOT.DIRFCK))) THEN
+C     Use the old linear response solver
+C     for MCSCF (or SCF if OLDCPP is requested by user)         
          CALL ABSCALC(WRK(KCMO),WRK(KUDV),WRK(KPVX),WRK(KFOCK),
      *                WRK(KFC),WRK(KFV),WRK(KFCAC),WRK(KH2AC),
      *                WRK(KINDX),WRK(KWRK1),LWRK1)
@@ -642,7 +646,7 @@ C <<< GENERAL INPUT FOR RESPONSE >>>
 C
 #include "implicit.h"
 #include "dummy.h"
-      PARAMETER ( NTABLE = 12 )
+      PARAMETER ( NTABLE = 11 )
 C
 #include "priunit.h"
 #include "infpri.h"
@@ -669,7 +673,7 @@ C
 C
       DATA TABLE /'*END OF', '**RESPO', '*LINEAR', '*QUADRA',
      *            '*CUBIC ', '*C6    ', '*ESR   ', '*ABSORP',
-     *            '*SPIN-O', '*ESG   ', '*HFC   ', '*ABSLRS'/
+     *            '*SPIN-O', '*ESG   ', '*HFC   '/
 
       logical, external :: fun_is_ready_for_qr
       logical, external :: fun_is_ready_for_cr
@@ -716,7 +720,7 @@ C     end of this input module
       IF (PROMPT .EQ. '*') THEN
          DO I=1, NTABLE
             IF (WORD .EQ. TABLE(I)) THEN
-               GO TO (1,2,3,4,5,6,7,8,9,10,11,12), I
+               GO TO (1,2,3,4,5,6,7,8,9,10,11), I
             END IF
          END DO
 C
@@ -779,8 +783,6 @@ C
  10   CALL ESGINP(WORD)
       GO TO 200
  11   CALL HFCINP(WORD)
-      GO TO 200
- 12   CALL ABSLRS_INPUT(WORD)
       GO TO 200
 C
  1    CONTINUE
@@ -847,6 +849,7 @@ C
          IF (DOHFSRDFT .OR. DOMCSRDFT) DIRFCK = .TRUE.
          IF (NASHT .LE. 1 .OR. HSROHF) NOITRA = DIRFCK
          IF (DOMCSRDFT .OR. DOMC) NOITRA = .FALSE.
+         IF (DOMC) DIRFCK = .FALSE.
          MAXPHP = 100
          N1AVTOT = 0
          N2AVTOT = 0
@@ -865,7 +868,8 @@ C
                DO 200 I = 1, NTABLE
                   IF (TABLE(I) .EQ. WORD) THEN
                      GO TO (1,2,3,4,5,6,7,8,9,10,
-     *                    11,12,13,14,15,16,17,18,19,20,21,22,23,24), I
+     *                      11,12,13,14,15,16,17,18,19,20,21,22,23,
+     *                      24), I
                   END IF
   200          CONTINUE
                IF (WORD .EQ. '.OPTION') THEN
@@ -1211,6 +1215,7 @@ C  Initializing ABSORP
       DATA THCLR_ABSORP/1.0D-3/,THCPP_ABSORP/1.0D-3/
       DATA FREQ_ALPHA(1)/0.0D0/
       DATA FREQ_BETA_B(1)/0.0D0/,FREQ_BETA_C(1)/0.0D0/
+      DATA ABS_OLDCPP/.FALSE./
 C  Initializing CHANNEL
       DATA CHANNEL_CALC/.FALSE./,CHANNEL_VCALC/.FALSE./
       DATA CHANNEL_VIRT/-1,-1,-1,-1,-1,-1,-1,-1/
@@ -1228,10 +1233,13 @@ C  Initializing ABSLRS
        DATA ABSLRS/.FALSE./,ABSLRS_INTERVAL/.FALSE./
        DATA ABSLRS_ALPHA/.FALSE./,ABS_BATCH/.FALSE./
        DATA ABSLRS_ANALYZE/.FALSE./,ABS_IMFREQ/.FALSE./
+       DATA ABS_XREL/.FALSE./
        DATA ABS_MAXITER/150/,IPRABSLRS/0/,ABS_NFREQ_ALPHA/1/
-       DATA ABS_MAXRM/200/
+       DATA ABS_NFREQ_BETA_B/1/,ABS_NFREQ_BETA_C/1/
+       DATA ABS_MAXRM/1000/
        DATA ABS_FREQ_INTERVAL/0.0D0,0.0D0,1.0D0/,ABS_THD_LD/1.0D-8/
        DATA ABS_THCLR/1.0D-3/,ABS_FREQ_ALPHA(1)/0.0D0/
+       DATA ABS_FREQ_BETA_B(1)/0.0D0/,ABS_FREQ_BETA_C(1)/0.0D0/
        DATA LUSB/80/,LUAB/81/,LUSS/82/,LUAS/83/,LUABSVECS/84/
        DATA LUE1RED/85/,LUE2RED/86/,LUSRED/87/
       END
@@ -1245,6 +1253,7 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1668,7 +1677,7 @@ C
      *      ,EPSOL
          END IF
 
-         IF (QM3 .OR. QMMM) THEN
+         IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
             IF (.NOT. SOPRPA .AND. SOPPA) THEN
                WRITE (LUPRI,*)
@@ -1683,6 +1692,12 @@ C
      *     'Full solvent-SOPPA is not implemented, see output')
             END IF
          ENDIF
+
+         if (peqm) then
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
+            if (soppa) stop 'Not sure if SOPPA works with PE module yet'
+         end if
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
@@ -1792,6 +1807,7 @@ C
 C Read input options for LR = "Linear Response"
 C
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -2235,6 +2251,15 @@ C
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
+         
+         IF (QMNPMM) THEN
+             WRITE(LUPRI,'(A)') ' QM/NP/MM response calculation' 
+         END IF    
+
+         if (peqm) then
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
+         end if
 
          IF (CHANNEL_CALC) THEN
             WRITE(LUPRI,'(/A,10(/,10I5))')
@@ -4063,6 +4088,8 @@ C CBN+JK 03.01.06
 C--------------------
 #include "gnrinf.h"
 #include "qm3.h"
+#include "mxcent.h"
+#include "wavpcm.h"
 C--------------------
 C CBN+JK 03.01.06
 C--------------------
@@ -4299,6 +4326,10 @@ C
         DO I = 1,NNORBT
            FC(I) = FC(I) + WRK(I)
         ENDDO
+      ELSE IF (WAVPCM) THEN
+         DO I = 1,NNORBT
+            FC(I) = FC(I) + WAVFCK(I)
+         ENDDO
       END IF
 C
       IF (SOPPA) THEN
@@ -4669,6 +4700,7 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
+      use pe_variables, only: peqm
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )
@@ -4816,6 +4848,11 @@ C
          IF (QM3 .OR. QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
+
+         if (peqm) then
+            write(lupri,'(a)') ' Environment is modeled using'//
+     &                       ' polarizable embedding scheme (PE module)'
+         end if
 
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='

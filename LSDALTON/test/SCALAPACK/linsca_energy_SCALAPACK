@@ -45,13 +45,15 @@ H      0.55168  -0.77340   0.00000
 #  DALTON INPUT
 #######################################################################
 cat > linsca_energy_SCALAPACK.dal <<'%EOF%'
-**WAVE FUNCTIONS
-.HF
-*DENSOPT
+**GENERAL
 .SCALAPACK
 .SCALAPACKBLOCKSIZE
 11
-.TRSCF
+**WAVE FUNCTIONS
+.HF
+*DENSOPT
+.RH
+.DIIS
 .NVEC
 8
 .CONVTHR

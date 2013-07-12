@@ -9,4 +9,4 @@ decmp2_energy
 decmp2_density
 decmp2_gradient
 decmp2_geoopt
-fullmp2
+fullmp2_energy

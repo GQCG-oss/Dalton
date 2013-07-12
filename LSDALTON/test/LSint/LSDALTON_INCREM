@@ -72,12 +72,12 @@ cat > LSDALTON_INCREM.dal <<'%EOF%'
 .ANGINT
 31
 *DENSOPT
+.CHOLESKY
 .INCREM
 .CONVDYN
 TIGHT
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+**INFO
+.DEBUG_MPI_MEM
 *END OF INPUT
 %EOF%
 
@@ -95,7 +95,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-151\.85783244[2-3][0-9][0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * \-151\.85783220" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"

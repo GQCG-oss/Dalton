@@ -31,7 +31,7 @@
 #define __CVERSION__
 
 #include "integrator.h"
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 
 #include "inforb.h"
 

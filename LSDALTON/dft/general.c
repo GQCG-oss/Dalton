@@ -71,7 +71,7 @@ C
    (c) Pawel Salek, pawsa@theochem.kth.se, 2001-08-02
    NOTES: Adding new functionals:
    a. use fun-slater.c as template.
-   b. add 'extern Functional MyFunctional;' to functionals.h
+   b. add 'extern Functional MyFunctional;' to lsdalton_functionals.h
    c. add '&MyFunctional' to available_functionals below.
    d. have a beer. Or some crackers, if you prefer.
 */
@@ -96,9 +96,9 @@ C
 
 #define __CVERSION__
 
-#include "general.h"
+#include "lsdalton_general.h"
 /*#include "integrator.h"*/
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 
 /* C-wide constants */
 const integer ZEROI = 0,   ONEI = 1, THREEI = 3, FOURI = 4;
@@ -117,7 +117,7 @@ const real ZEROR = 0.0, ONER = 1.0, TWOR = 2.0, FOURR = 4.0;
 */
 static char* DftConfString = NULL;
 integer
-FSYM(dftsetfunc)(const char* line, real *hfweight)
+FSYM(dftsetfunc)(const char* line, real *hfweight, integer *ierror)
 {
   integer i, off, len;
   len=80;
@@ -133,16 +133,18 @@ FSYM(dftsetfunc)(const char* line, real *hfweight)
   DftConfString = malloc(i+1-off);
   strncpy(DftConfString, line+off, i-off); 
   DftConfString[i-off] = '\0';
-  
+  *ierror = 0;
   switch(fun_select_by_name(DftConfString, hfweight)) {    
   case FUN_OK: free(DftConfString); DftConfString = NULL; return 1; /* SUCCESS! */
   case FUN_UNKNOWN:
     printf("Unknown functional '%s'. Aborting.\n", DftConfString);
     dftlistfuncs_();
+    *ierror = 1;
     break;
   case FUN_CONF_ERROR:
     printf("Functional configuration '%s' is not understood. "
 	   "Aborting.\n", DftConfString);
+    *ierror = 1;
     break;
   }
   free(DftConfString);

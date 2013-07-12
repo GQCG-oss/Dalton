@@ -42,7 +42,7 @@
 
 #define __CVERSION__
 
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 #define LOG log
 #define ABS fabs
 #define ASINH asinh

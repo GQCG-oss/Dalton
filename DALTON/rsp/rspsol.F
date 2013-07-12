@@ -112,6 +112,7 @@ C
 C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
+      use pe_variables, only: peqm
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -311,16 +312,20 @@ C
       IF (QM3 .AND. (.NOT. MMPCM)) THEN
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)
      *   ' CONTRIBUTIONS FROM QM3LNO TO LINEAR TRANSFORMATION'
+#if defined(VAR_MPI)
          IF (NODTOT .GE. 1) THEN
             CALL QM3LNO_P(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &               WRK(KDV),WRK(KUDVTR),EVECS(NCSIM*KZYVAR+1),
      &               WRK(KFREE),LFREE)
          ELSE
+#endif
             CALL QM3LNO(NOSIM,BOVECS,WRK(KCREF),CMO,INDXCI,UDV,
      &               WRK(KDV),WRK(KUDVTR),WRK(KDVTR),
      &               EVECS(NCSIM*KZYVAR+1),
      &               WRK(KFREE),LFREE)
+#if defined(VAR_MPI)
          END IF
+#endif
       ENDIF
       IF (PCM .AND. (.NOT. MMPCM)) THEN
          LADDMM = .TRUE. 
@@ -366,6 +371,16 @@ C
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          FIRST1 = .FALSE.
       ENDIF
+      if (peqm) then
+        if (.not. tdhf) then
+            call quit('ERROR: MCSCF linear response not implemented'//
+     &                ' with PE module.')
+        endif
+        call pe_rsplin(ncsim, nosim, bcvecs, bovecs, wrk(kcref), cmo,
+     &                 indxci, udv, wrk(kdv), wrk(kudvtr), wrk(kdvtr),
+     &                 wrk(kdvt), wrk(kdvttr), evecs,
+     &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
+      end if
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)

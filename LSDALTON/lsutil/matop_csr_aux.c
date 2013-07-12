@@ -11,11 +11,20 @@ functionality implemented in matop_csr.f90.
 Rasmus Andersen <raand@chem.au.dk>, June 2010
 */
 
+#if defined(VAR_INT64)
+#include <stdint.h>
+   typedef long integer;
+   /* typedef long int; */
+#else
+   typedef int integer;
+#endif
+
+
 /*
 Print a Compressed Sparse Row matrix in a standard matrix fashion
 */
-int mat_csr_pretty_print_(double *val, int *col, int *row, int *nrow){
-  int i,j,k,cur_col, cur_val;
+integer mat_csr_pretty_print_(double *val, integer *col, integer *row, integer *nrow){
+  integer i,j,k,cur_col, cur_val;
   cur_val=0;
   /*printf("will loop nrows, from %i to %i\n", 0, *nrow);*/
   for (i=0; i<*nrow; i++){
@@ -49,8 +58,8 @@ Print a Compressed Sparse Row matrix in sets of 4 columns
 */
 
 /*
-int mat_csr_column_print_(int *fd, double *val, int *col, int *row, int *nrow){
-  int i,j,k,cur_col, cur_val;
+integer mat_csr_column_print_(integer *fd, double *val, integer *col, integer *row, integer *nrow){
+  integer i,j,k,cur_col, cur_val;
   
   printf("fd is %i\n", *fd);
   write(*fd, (const void *)fd, 4);
@@ -62,16 +71,16 @@ int mat_csr_column_print_(int *fd, double *val, int *col, int *row, int *nrow){
 Clean a CSR matrix, i.e. remove all elements in its values array that 
 are below a given threshold. Adjust col and row arrays accordingly.
 */
-int mat_csr_cleanup_(double *val, int *col, int *row, int *dim, int *nnz, double *tol){
+integer mat_csr_cleanup_(double *val, integer *col, integer *row, integer *dim, integer *nnz, double *tol){
   /*printf("In dcsr_cleanup, nnz is %i!!\n", *nnz);*/
   /*printf("Last element in c is : %1.14f\n", val[*nnz-1]);*/
   double *d1, *d2;
-  int *c1, *c2, *r1, *r2;
-  int nc, ncnew, rr, ic, ir, n;
+  integer *c1, *c2, *r1, *r2;
+  integer nc, ncnew, rr, ic, ir, n;
   size_t realloc_size;
   double *new_val;
-  int *new_col;
-  int i;
+  integer *new_col;
+  integer i;
 
   if (*nnz == 0){
     return 0;
@@ -118,8 +127,8 @@ int mat_csr_cleanup_(double *val, int *col, int *row, int *dim, int *nnz, double
   */
   realloc_size = *nnz * sizeof(double);
   new_val = (double *) realloc(val, realloc_size);
-  realloc_size = *nnz * sizeof(int);
-  new_col = (int *) realloc(col, realloc_size);
+  realloc_size = *nnz * sizeof(integer);
+  new_col = (integer *) realloc(col, realloc_size);
   if (*nnz == 0){
     val = new_val;
     col = new_col;

@@ -37,11 +37,11 @@ struct DftGrid_ {
     real gradb[3];/* beta, used only in open-shell calculations. */ 
     real *mov;
     real *mog;
-    int  curr_point;  /* index of the current point */
+    integer  curr_point;  /* index of the current point */
     real curr_weight; /* the weight at current grid point */
     integer dogga;    /* whether the functional requires gradient correction*/
-    int needgrad;     /* the property evaluator requires orbital derivatives*/
-    int needlap;      /* whether second order orbital derivatives are needed*/
+    integer needgrad;     /* the property evaluator requires orbital derivatives*/
+    integer needlap;      /* whether second order orbital derivatives are needed*/
     integer needgb;
 };
 
@@ -55,13 +55,13 @@ typedef struct DftCallbackData_ DftCallbackData;
 /* dft_grid_new: initialize grid/integrator. inform whether
    the callback will need orbital derivatives on its own.
 */
-DftGrid* dft_grid_new(int needgrad, int needlap, int needgb);
+DftGrid* dft_grid_new(integer needgrad, integer needlap, integer needgb);
 void dft_grid_free(DftGrid* res);
 real dft_integrate(real* cmo, real* work, integer* lwork, integer* iprint,
-		   const DftCallbackData* cbarr, int cbcount);
+		   const DftCallbackData* cbarr, integer cbcount);
 real dft_integrate_ao(DftDensity* dens, real* work, integer* lwork, integer* iprint,
-                      int needgrad, int needlap, int needgb,
-                      const DftCallbackData* cbarr, int cbcount);
+                      integer needgrad, integer needlap, integer needgb,
+                      const DftCallbackData* cbarr, integer cbcount);
 
 /* =================================================================== */
 /*                     BLOCKED INTEGRATORS                             */
@@ -80,7 +80,7 @@ typedef struct DftIntegratorBl_ {
                 * the dimensioning is (C syntax) [ntypso][nbast][bllen].
 		*/
     real dfthri; /* threshold on orbital values */
-    int nsym;
+    integer nsym;
     integer shl_bl_cnt, bas_bl_cnt[8];
     integer (*RESTRICT shlblocks)[2]; /* shell blocks   */
     integer (*RESTRICT basblocks)[2]; /* basis function blocks */
@@ -94,7 +94,7 @@ typedef struct DftIntegratorBl_ {
     integer london_off; /* offset of the "london" orbital derivatives */
     /* 1 - only values; 4 - values + (x,y,z) derivatives, etc */
 
-    int ndmat; /* 1 for closed shell, 2 for open shell */
+    integer ndmat; /* 1 for closed shell, 2 for open shell */
     /* for closed shell, only rho is set. For open shell, only rhoa and rhob
      * is set. */
     union {
@@ -111,7 +111,7 @@ typedef struct DftIntegratorBl_ {
     }g;
     /* public, read only */
     real tgrad[3];/* alpha, also used in closed-shell code */
-    int  curr_point;  /* index of the current point */
+    integer  curr_point;  /* index of the current point */
     real curr_weight; /* the weight at current grid point */
     integer dogga, needlap, needgb;
 } DftIntegratorBl;
@@ -120,11 +120,11 @@ typedef struct DftIntegratorBl_ {
    numerical integration in atomic orbitals, blocked scheme.
 */
 typedef void (*DftBlockCallback)(DftIntegratorBl* grid, real *tmp, 
-                                 int bllen, int blstart, int blend,
+                                 integer bllen, integer blstart, integer blend,
                                  void* cb_data);
 
-real dft_integrate_ao_bl(int ndmat, real *dmat, real* work, integer* lwork, integer* verbose,
-                         int needlnd, DftBlockCallback cb, void *cb_data);
+real dft_integrate_ao_bl(integer ndmat, real *dmat, real* work, integer* lwork, integer* verbose,
+                         integer needlnd, DftBlockCallback cb, void *cb_data);
 
 #else /* THE FORTRAN VERSION OF THE HEADERS */
 

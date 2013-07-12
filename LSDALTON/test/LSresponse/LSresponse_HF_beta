@@ -50,15 +50,11 @@ cat > LSresponse_HF_beta.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.RH                                                                                       
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
-$INFO
-DEBUG_MPI_MEM
-$END INFO
+.ARH DAVID                                                                                       
+.CONVDYN
+TIGHT
+**INFO
+.DEBUG_MPI_MEM
 **RESPONS
 *BETA
 .BFREQ

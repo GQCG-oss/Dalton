@@ -50,24 +50,14 @@ cat > LSresponse_DFT_beta.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*DFT INPUT
-.GRID TYPE
- BECKEORIG LMG
-.RADINT
-1.0D-11
-.ANGINT
-31
 *DENSOPT
-.RH                                                                       
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
+.ARH DAVID                                                                       
+.CONVDYN
+TIGHT
 **RESPONS
 *SOLVER
-.CONVTHR
-1.0D-6
+.CONVDYN
+TIGHT
 *BETA
 .BFREQ
 1
@@ -97,7 +87,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-149\.3649[0-1]" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * \-149\.3649" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"

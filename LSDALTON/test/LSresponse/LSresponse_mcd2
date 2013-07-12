@@ -43,21 +43,23 @@ H -0.300000    -0.173205     0.000000
 
 #######################################################################
 #  DALTON INPUT
+#  WARNING DO NOT USE THIS INPUT WITHOUT MODIFICATION
 #######################################################################
 cat > LSresponse_mcd2.dal <<'%EOF%'
+**GENERAL
+.NOGCBASIS
 **WAVE FUNCTIONS
 .DFT
 B3LYP
 *DENSOPT
-.TrFD
-.DSM
+.RH
+.DIIS
 .NVEC
 8
 .START
 H1DIAG
 .CONVTHR
 1.0D-7
-.NOGCBASIS
 **RESPONSE
 *QUASIMCD
 .NO ATERM
@@ -104,7 +106,7 @@ fi
 
 # ENERGY                                         
 CRIT1=`$GREP "This is a DFT calculation of type: B3LYP" $log | wc -l`  
-CRIT2=`$GREP "Final DFT energy\: *\-1\.001861461" $log | wc -l`       
+CRIT2=`$GREP "Final DFT energy\: *\-1\.001861447" $log | wc -l`       
 TEST[1]=`expr   $CRIT1 + $CRIT2`                        
 CTRL[1]=2                                                           
 ERROR[1]="DFT ENERGY NOT CORRECT -"  
@@ -113,7 +115,7 @@ ERROR[1]="DFT ENERGY NOT CORRECT -"
 CRIT2=`$GREP "9\.84000000[0-9][0-9]E\-01 * \-4\.397355[0-9][0-9][0-9][0-9]E\-04 * \-8\.360052[0-9][0-9][0-9][0-9]E\-05" $log | wc -l` 
 CRIT3=`$GREP "9\.82000000[0-9][0-9]E\-01 * \-4\.373961[0-9][0-9][0-9][0-9]E\-04 * \-8\.309917[0-9][0-9][0-9][0-9]E\-05" $log | wc -l` 
 CRIT4=`$GREP "9\.80000000[0-9][0-9]E\-01 * \-4\.350708[0-9][0-9][0-9][0-9]E\-04 * \-8\.260118[0-9][0-9][0-9][0-9]E\-05" $log | wc -l` 
-CRIT5=`$GREP "2\.15962912[0-9][0-9]E\+05 * \-8\.680933[0-9][0-9][0-9][0-9]E\-07 * \-1\.650379[0-9][0-9][0-9][0-9]E\-07" $log | wc -l` 
+CRIT5=`$GREP "2\.15962912[0-9][0-9]E\+05 * \-8\.680932[0-9][0-9][0-9][0-9]E\-07 * \-1\.650379[0-9][0-9][0-9][0-9]E\-07" $log | wc -l` 
 CRIT6=`$GREP "2\.15523963[0-9][0-9]E\+05 * \-8\.634749[0-9][0-9][0-9][0-9]E\-07 * \-1\.640482[0-9][0-9][0-9][0-9]E\-07" $log | wc -l` 
 CRIT7=`$GREP "2\.15085014[0-9][0-9]E\+05 * \-8\.588844[0-9][0-9][0-9][0-9]E\-07 * \-1\.630651[0-9][0-9][0-9][0-9]E\-07" $log | wc -l` 
 TEST[2]=`expr $CRIT2 + $CRIT3 + $CRIT4 + $CRIT5 + $CRIT6 + $CRIT7`     

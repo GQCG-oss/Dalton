@@ -45,21 +45,22 @@ H      0.55168  -0.77340   0.00000
 #  DALTON INPUT
 #######################################################################
 cat > linsca_trilevel_2nd_local_csr.dal <<'%EOF%'
+**GENERAL
+.CSR
 **INTEGRAL
 .DENSFIT
 **WAVE FUNCTIONS
 .HF
 *DENSOPT
-.DSM
+.DIIS
 .START
  TRILEVEL
 .NOATOMSTART
 .CONVDYN
  STANDARD
 .2ND_LOC
-$INFO
-INFO_LINEQ
-$END INFO
+**INFO
+.INFO_LINEQ
 *END OF INPUT
 %EOF%
 

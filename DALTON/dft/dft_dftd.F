@@ -171,7 +171,7 @@ CAMT Parameters k1, k2 and k3
       parameter (k2=4.0d0/3.0d0)
       parameter (k3=-4.0d0)
 
-CAMT Get the coordinates and charges, inparticular if using symmetry, unpack from
+CAMT Get the coordinates and charges, in particular if using symmetry, unpack from
 CAMT symmetry coordinates
 
       CALL GET_COORD_CHAR(FCOORD,FCOORD2,CHARGE2)
@@ -274,7 +274,7 @@ CAMT  Set the run type (currently only energy / gradients)
            CALL QUIT('ERROR: Grad. for 3-body Corrections NYI, E Only')
         ENDIF
       ELSE
-        CALL QUIT('ERROR IN DFT_D -- INVALID NDERIV')
+        CALL QUIT('ERROR: DFT_D - E and G only, use 1st Ord. Opts.')
       ENDIF
 
 CAMT  Calculate the Energy Correction
@@ -1338,7 +1338,7 @@ C Coord No.s in common block
       INTEGER MX_CORD,N_ELEM,MXCi(N_ELEM),NLINES
       REAL*8  C6AB(N_ELEM,N_ELEM,MX_CORD,MX_CORD,3)
       INTEGER IAT,JAT,L,J,K,IL,IADR,JADR,NN,KK
-#include "dft_dftd_pars.F"
+#include "dft_dftd_pars.h"
       !nlines set in the above file
       C6AB=-1
       MXCi=0

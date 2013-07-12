@@ -48,14 +48,15 @@
 
 #include <math.h>
 #include <stddef.h>
+#include "general.h"
 
 #define __CVERSION__
 
 #include "functionals.h"
 
 /* INTERFACE PART */
-static int  optx_isgga(void) { return 1; }
-static int  optx_read(const char* conf_line);
+static integer  optx_isgga(void) { return 1; }
+static integer  optx_read(const char* conf_line);
 static real optx_energy(const FunDensProp* dens_prop);
 static void optx_first(FunFirstFuncDrv *ds, real factor, 
                         const FunDensProp* dens_prop);
@@ -79,7 +80,7 @@ Functional OPTXFunctional = {
 
 /* IMPLEMENTATION PART */
 
-static int
+static integer
 optx_read(const char* conf_line)
 {
     fun_set_hf_weight(0.0);

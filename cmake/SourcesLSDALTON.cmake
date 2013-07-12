@@ -1,0 +1,411 @@
+# WARNING if you add a new set of sources that contain .F90 files 
+# remember to add it to the collection of all free fortran sources
+# LSDALTON_FREE_FORTRAN_SOURCES  
+# at the end of the file
+
+set(DEC_C_SOURCES
+    LSDALTON/deccc/crayio.c
+    )
+set(DFTFUNC_SOURCES
+    LSDALTON/dft/fun-example.c
+    LSDALTON/dft/fun-b97-1.c
+    LSDALTON/dft/fun-becke.c
+    LSDALTON/dft/fun-cam-b3lyp.c
+    LSDALTON/dft/fun-camx.c
+    LSDALTON/dft/fun-cam_compx.c
+    LSDALTON/dft/fun-gga.c
+    LSDALTON/dft/fun-hcth120.c
+    LSDALTON/dft/fun-hcth147.c
+    LSDALTON/dft/fun-hcth407.c
+    LSDALTON/dft/fun-hcth93.c
+    LSDALTON/dft/fun-kt.c
+    LSDALTON/dft/fun-lb94.c
+    LSDALTON/dft/fun-lyp.c
+    LSDALTON/dft/fun-optx.c
+    LSDALTON/dft/fun-p86c.c
+    LSDALTON/dft/fun-pbec.c
+    LSDALTON/dft/fun-pbex.c
+    LSDALTON/dft/fun-pw86x.c
+    LSDALTON/dft/fun-pw91c.c
+    LSDALTON/dft/fun-pz81.c
+    LSDALTON/dft/fun-slater.c
+    LSDALTON/dft/fun-vwn.c
+    LSDALTON/dft/functionals.c
+    LSDALTON/dft/general.c
+    )
+set(DFTFUNC_F_SOURCES
+    LSDALTON/dft/II_util.F90
+    )
+set(FMM_C_SOURCES
+    LSDALTON/mm/mm_proc_selector.c
+    )
+set(LSDALTONMAIN_FORTRAN_SOURCES
+    LSDALTON/lsdaltonsrc/numerical_derivatives.F90
+    LSDALTON/lsdaltonsrc/LSDALTON.F90
+    LSDALTON/lsdaltonsrc/LS_optimizer.F90
+    LSDALTON/lsdaltonsrc/LSdynamics.F90
+    LSDALTON/lsdaltonsrc/Energy_and_deriv.F90
+    LSDALTON/lsdaltonsrc/lsmpiSlave.F90
+    LSDALTON/lsdaltonsrc/init_lsdalton.F90
+    LSDALTON/lsdaltonsrc/configuration.F90
+    LSDALTON/lsdaltonsrc/LSlib.F90
+    LSDALTON/lsdaltonsrc/Profile.F90
+    )
+set(DDYNAM_SOURCES
+    LSDALTON/ddynam/LSinput.F90
+    LSDALTON/ddynam/Fock_mat_dyn.F90
+    LSDALTON/ddynam/Modules.F90
+    LSDALTON/ddynam/Temperature.F90
+    LSDALTON/ddynam/TimeRev_prop.F90
+    LSDALTON/ddynam/dyn_utilities.F90
+    )
+set(DEC_SOURCES
+    LSDALTON/deccc/array4_memory.F90
+    LSDALTON/deccc/array3_memory.F90
+    LSDALTON/deccc/ccarray3_simple.F90
+    LSDALTON/deccc/CABS.F90
+    LSDALTON/deccc/mp2.F90
+    LSDALTON/deccc/ccsdpt.F90
+    LSDALTON/deccc/cc_crop.F90
+    LSDALTON/deccc/ccsd.F90
+    LSDALTON/deccc/rpa.F90
+    LSDALTON/deccc/f12_integrals.F90
+    LSDALTON/deccc/cc_driver.F90
+    LSDALTON/deccc/cc_integrals.F90
+    LSDALTON/deccc/ccarray2_simple.F90
+    LSDALTON/deccc/ccarray4_simple.F90
+    LSDALTON/deccc/ccorbital.F90
+    LSDALTON/deccc/ccri_simple.F90
+    LSDALTON/deccc/dec_atom.F90
+    LSDALTON/deccc/dec_driver.F90
+    LSDALTON/deccc/dec_driver_slave.F90
+    LSDALTON/deccc/dec_main.F90
+    LSDALTON/deccc/dec_settings.F90
+    LSDALTON/deccc/dec_utils.F90
+    LSDALTON/deccc/full_driver_f12contractions.F90
+    LSDALTON/deccc/fullmolecule.F90
+    LSDALTON/deccc/mp2_gradient.F90
+    LSDALTON/deccc/fragment_energy.F90
+    LSDALTON/deccc/full_driver.F90
+    LSDALTON/deccc/decmpi.F90
+    LSDALTON/deccc/decmpiSlave.F90
+    )
+set(GEOOPT_SOURCES
+    LSDALTON/geomopt/LSopt-input.F90
+    LSDALTON/geomopt/ls_opt.F90
+    LSDALTON/geomopt/ls_opt2.F90
+    LSDALTON/geomopt/ls_redint.F90
+    )
+set(LINEARS_SOURCES	
+    LSDALTON/linears/configurationType.F90
+    LSDALTON/linears/ChargeLoc.F90
+    LSDALTON/linears/SCFLOOP.F90
+    LSDALTON/linears/trustradius.F90
+    LSDALTON/linears/LSDALTON_RESPONSE.F90
+    LSDALTON/linears/LSDALTON_RESPONSE_type.F90
+    LSDALTON/linears/arh_debug.F90
+    LSDALTON/linears/arh_driver.F90
+    LSDALTON/linears/average_util.F90
+    LSDALTON/linears/davidson_settings.F90
+    LSDALTON/linears/davidson_solver.F90
+    LSDALTON/linears/debug.F90
+    LSDALTON/linears/dens_subspace.F90
+    LSDALTON/linears/densopt.F90
+    LSDALTON/linears/diag.F90
+    LSDALTON/linears/diis.F90
+    LSDALTON/linears/dsm.F90
+    LSDALTON/linears/dsm_xterm.F90
+    LSDALTON/linears/ecdata_module.F90
+    LSDALTON/linears/extra-output.F90
+    LSDALTON/linears/fock-eval.F90
+    LSDALTON/linears/kurtosis.F90
+    LSDALTON/linears/leastchange.F90
+    LSDALTON/linears/levelshift.F90
+    LSDALTON/linears/minimize.F90
+    LSDALTON/linears/optimlocNONMOD.F90
+    LSDALTON/linears/OrbLoc_input.F90
+    LSDALTON/linears/localization_util.F90
+    LSDALTON/linears/localization_orbspread.F90
+    LSDALTON/linears/localization_charge.F90
+    LSDALTON/linears/prop_contribs.F90
+    LSDALTON/linears/response_driver.F90
+    LSDALTON/linears/response_prop.F90
+    LSDALTON/linears/rsp_equations.F90
+    LSDALTON/linears/scfopt-typedef.F90
+    LSDALTON/linears/soeo-redspace.F90
+    LSDALTON/linears/soeo-loop.F90
+    LSDALTON/linears/soeo-debug.F90
+    LSDALTON/linears/soeo-matop.F90
+    LSDALTON/linears/soeo-typedef.F90
+    LSDALTON/linears/soeo-util.F90
+    LSDALTON/linears/starting_guess.F90
+    LSDALTON/linears/statistics.F90
+    LSDALTON/linears/trilevel.F90
+    LSDALTON/linears/plt_driver.F90
+    )
+set(RSPSOLVER_SOURCES	
+    LSDALTON/responsesolver/rsp_cmplx_sym.F90
+    LSDALTON/responsesolver/rsp_complex.F90
+    LSDALTON/responsesolver/rsp_solver.F90
+    LSDALTON/responsesolver/rsp_std_sym.F90
+    )
+set(SOLVERUTIL_SOURCES	
+    LSDALTON/SolverUtilities/arh_density.F90
+    LSDALTON/SolverUtilities/dalton_interface.F90
+    LSDALTON/SolverUtilities/dd_utilities.F90
+    LSDALTON/SolverUtilities/dd_utilities_unres.F90
+    LSDALTON/SolverUtilities/decomp.F90
+    LSDALTON/SolverUtilities/lsdalton_modules.F90
+    LSDALTON/SolverUtilities/queue-operations.F90
+    LSDALTON/SolverUtilities/queue-typedef.F90
+    LSDALTON/SolverUtilities/rsp_precond.F90
+    LSDALTON/SolverUtilities/rsp_utilities.F90
+    )
+if(DEVELOPMENT_CODE)
+    set(RSP_PROPERTIES_SOURCES	
+        LSDALTON/rsp_properties/molecular_hessian.F90
+        LSDALTON/rsp_properties/test_molHessian.F90
+        )
+endif()
+set(PBC_FORTRAN_SOURCES
+    LSDALTON/pbc2/pbc_compare.F90
+    LSDALTON/pbc2/pbc-multipole.F90
+    LSDALTON/pbc2/pbc-matop.F90
+    LSDALTON/pbc2/pbc-harmonics.F90
+    LSDALTON/pbc2/pbc-msc.F90
+    LSDALTON/pbc2/pbc-krsp-op.F90
+    LSDALTON/pbc2/pbc_kscf.F90
+    LSDALTON/pbc2/pbc_mmit.F90
+    LSDALTON/pbc2/pbc_eigsolv.F90
+    LSDALTON/pbc2/pbc-data.F90
+    LSDALTON/pbc2/pbc-ffdata.F90
+    LSDALTON/pbc2/pbc_int.F90
+    )
+set(FMM_SOURCES
+    LSDALTON/mm/mm_T_contractors.F90
+    LSDALTON/mm/mm_T_pair_builder.F90
+    LSDALTON/mm/mm_T_pair_tests.F90
+    LSDALTON/mm/mm_T_worker.F90
+    LSDALTON/mm/mm_Vff_driver.F90
+    LSDALTON/mm/mm_Vff_processor.F90
+    LSDALTON/mm/mm_W_contractors.F90
+    LSDALTON/mm/mm_W_pair_builder.F90
+    LSDALTON/mm/mm_W_worker.F90
+    LSDALTON/mm/mm_box_builder.F90
+    LSDALTON/mm/mm_box_processor.F90
+    LSDALTON/mm/mm_buffers.F90
+    LSDALTON/mm/mm_densfit.F90
+    LSDALTON/mm/mm_driver.F90
+    LSDALTON/mm/mm_global_paras.F90
+    LSDALTON/mm/mm_grid_searcher.F90
+    LSDALTON/mm/mm_input.F90
+    LSDALTON/mm/mm_interface.F90
+    LSDALTON/mm/mm_map_builder.F90
+    LSDALTON/mm/mm_memory.F90
+    LSDALTON/mm/mm_memory_manager.F90
+    LSDALTON/mm/mm_overlap_tree.F90
+    LSDALTON/mm/mm_sort.F90
+    LSDALTON/mm/mm_stats.F90
+    LSDALTON/mm/mm_tree_T_buffer.F90
+    LSDALTON/mm/cbifmm_f90.F90
+    )
+set(INTERESTLIB_SOURCES
+    LSDALTON/interest/src/module_interest.f90
+    LSDALTON/interest/src/module_interest_hrr.f90
+    LSDALTON/interest/src/module_interest_osr.f90
+    )
+set(LSINT_SOURCES
+    LSDALTON/LSint/dft_gridLL.F90
+    LSDALTON/LSint/BuildBasis.F90
+    LSDALTON/LSint/BuildMolFile.F90
+    LSDALTON/LSint/II_Fragment.F90
+    LSDALTON/LSint/gridgeneration.F90
+    LSDALTON/LSint/gridgeneration_boxify.F90
+    LSDALTON/LSint/II_XC_interface.F90
+    LSDALTON/LSint/II_absval_int.F90
+    LSDALTON/LSint/II_dft_int.F90
+    LSDALTON/LSint/II_dft_ksm.F90
+    LSDALTON/LSint/II_dft_ksm_worker.F90
+    LSDALTON/LSint/Integral_interface.F90
+    LSDALTON/LSint/Integral_interfaceDEC.F90
+    LSDALTON/LSint/Integral_interfaceDF.F90
+    LSDALTON/LSint/Integral_interface_test.F90
+    LSDALTON/LSint/MBIE.F90
+    LSDALTON/LSint/Molecule.F90
+    LSDALTON/LSint/ODbatches.F90
+    LSDALTON/LSint/ReadMolFile.F90
+    LSDALTON/LSint/ThermiteDistribute.F90
+    LSDALTON/LSint/ThermiteDistributeK.F90
+    LSDALTON/LSint/ThermiteDistributeDEC.F90
+    LSDALTON/LSint/ThermiteDriver.F90
+    LSDALTON/LSint/ThermiteIntegrals.F90
+    LSDALTON/LSint/ThermiteOverlapDistribution.F90
+    LSDALTON/LSint/ThermiteProp.F90
+    LSDALTON/LSint/ThermiteMem.F90
+    LSDALTON/LSint/dalton-input.F90
+    LSDALTON/LSint/linsolv_df.F90
+    LSDALTON/LSint/ls_IntegralInterface.F90
+    LSDALTON/LSint/pari.F90
+    LSDALTON/LSint/lsmpi.F90
+    )
+#####################################################
+#WARNING: READ ME BEFORE ADDING FILES TO LSUTIL
+# lsutil is split into several bunches
+# The LSUTIL_PRECISION_SOURCES is the first to be compiled
+# and contains only lsutil/ls_precision.F90
+# the next be compiled is LSUTIL_MATRIXM_SOURCES
+# which contains the matrix type definition. 
+# then LSUTIL_COMMON_SOURCES which should only contain 
+# type definitions and files which only depend on 
+# lsutil/ls_precision.F90 and lsutil/matrix_module.F90
+# then LSUTIL_MATRIXO_SOURCES and LSUTIL_MATRIXO_C_SOURCES and
+# LSUTIL_MATRIXU_SOURCES is compiled. Then
+# LSUTIL_TYPE_SOURCES which despite the name
+# contains alot of files which deals wiht Operations of 
+# types. Then at the end some Utillities are gathered in
+# LSUTILLIB_SOURCES
+############################################################
+set(LSUTIL_PRECISION_SOURCES
+    LSDALTON/lsutil/ls_precision.F90
+    LSDALTON/lsutil/ptr_assoc.F90
+    )
+set(LSUTIL_MATRIXM_SOURCES
+    LSDALTON/lsutil/matrix_module.F90    LSDALTON/
+    )
+set(LSUTIL_COMMON_SOURCES
+    LSDALTON/lsutil/rsp-typedef.F90
+    LSDALTON/lsutil/tensor_type_def.F90
+    LSDALTON/lsutil/response_prop_type.F90
+    LSDALTON/lsutil/ls_IOType.F90
+    LSDALTON/lsutil/AOType.F90
+    LSDALTON/lsutil/dec_typedef.F90
+    LSDALTON/lsutil/MoleculeType.F90
+    LSDALTON/lsutil/ODType.F90
+    LSDALTON/lsutil/lstensorType.F90
+    LSDALTON/lsutil/dftType.F90
+    LSDALTON/lsutil/BasisinfoType.F90
+    LSDALTON/lsutil/IntegralOutputType.F90 
+    LSDALTON/lsutil/f12.F90
+    LSDALTON/lsutil/IntegralType.F90
+    LSDALTON/lsutil/TYPE-DEF.F90
+    LSDALTON/lsutil/memory.F90
+    LSDALTON/lsutil/gridgeneration_memory.F90
+    LSDALTON/lsutil/Time.F90
+    LSDALTON/lsutil/common_utilities.F90
+    LSDALTON/lsutil/ls_parameters.F90
+    LSDALTON/lsutil/par_mod.F90
+    LSDALTON/lsutil/lsmpiType.F90
+    LSDALTON/lsutil/TestMPI.F90
+    LSDALTON/lsutil/LSmatrixType.F90
+    LSDALTON/lsutil/lsmatop_dense.F90
+    LSDALTON/lsutil/file-operations.F90
+    LSDALTON/lsutil/grid_utilities.F90
+    LSDALTON/lsutil/mat3dim.F90
+    LSDALTON/lsutil/papi.F90
+    LSDALTON/lsutil/ls_math.F90
+    LSDALTON/lsutil/SphCartMatrices.F90
+    LSDALTON/lsutil/OverlapDistributionType.F90
+    )
+set(LSUTIL_MATRIXO_SOURCES
+    LSDALTON/lsutil/matop_csr.F90
+    LSDALTON/lsutil/matop_dense.F90
+    LSDALTON/lsutil/matop_dense_unrest.F90
+    LSDALTON/lsutil/matop_scalapack.F90    LSDALTON/
+    )
+set(LSUTIL_MATRIXO_C_SOURCES
+    LSDALTON/lsutil/matop_csr_aux.c
+    LSDALTON/lsutil/myPAPI_set_inherit.c
+    )
+set(LSUTIL_MATRIXU_SOURCES
+    LSDALTON/lsutil/mat-operations-aux.F90
+    LSDALTON/lsutil/mat-operations-essential.F90
+    LSDALTON/lsutil/matrix_utilities.F90
+    LSDALTON/lsutil/matrix_defop_backend.F90
+    LSDALTON/lsutil/matrix_defop_lowlevel.F90
+    LSDALTON/lsutil/matrix_defop.F90
+    )
+set(LSUTIL_TYPE_SOURCES
+    LSDALTON/lsutil/AO_operations.F90
+    LSDALTON/lsutil/Molecule_operations.F90
+    LSDALTON/lsutil/OD_operations.F90
+    LSDALTON/lsutil/lstensor_Mem.F90
+    LSDALTON/lsutil/lstensor_operations.F90
+    LSDALTON/lsutil/Integral_input.F90
+    LSDALTON/lsutil/ls_IO.F90
+    LSDALTON/lsutil/ls_screen.F90
+    LSDALTON/lsutil/dft_operations.F90
+    LSDALTON/lsutil/dftMem.F90
+    LSDALTON/lsutil/Basisinfo_operations.F90
+    LSDALTON/lsutil/IntegralOutput_operations.F90 
+    LSDALTON/lsutil/TYPE-OP.F90
+    LSDALTON/lsutil/GCtrans.F90
+    LSDALTON/lsutil/pbc_lattice_type.F90
+    LSDALTON/lsutil/Build_AOBATCH.F90
+    LSDALTON/lsutil/lspdm_basic.F90
+    LSDALTON/lsutil/tensor_basic.F90
+    LSDALTON/lsutil/lspdm_tensor_operations.F90
+    )
+set(LSUTILLIB_SOURCES
+    LSDALTON/lsutil/lowdin.F90
+    LSDALTON/lsutil/AtomicSparse.F90
+    LSDALTON/lsutil/fundamental.F90
+    LSDALTON/lsutil/ks-settings.F90
+    LSDALTON/lsutil/lsmpi-operations.F90
+    LSDALTON/lsutil/lsutilities.F90
+    LSDALTON/lsutil/ls_screenMPI.F90
+    LSDALTON/lsutil/LSoptType.F90
+    LSDALTON/lsutil/ddynType.F90
+    LSDALTON/lsutil/ProfileType.F90
+    LSDALTON/lsutil/pbc_lattice_vectors.F90
+    LSDALTON/lsutil/tensor_interface.F90
+    LSDALTON/lsutil/lspdm_slave.F90
+    )
+set(LSLIB_SOURCES
+    LSDALTON/lsdaltonsrc/LSlib.F90
+    LSDALTON/lsdaltonsrc/LSlib_tester.F90
+    )
+set(LSDALTON_FIXED_FORTRAN_SOURCES
+    LSDALTON/pdpack/jacobi.F
+    LSDALTON/pdpack/eispack.F
+    LSDALTON/pdpack/linpack.F
+    LSDALTON/pdpack/cholesky.F
+    LSDALTON/pdpack/invroutines.F
+    )
+set(LSDALTON_OWN_BLAS_SOURCES
+    LSDALTON/pdpack/blas_wrapper.F
+    LSDALTON/pdpack/gp_dblas1.F
+    LSDALTON/pdpack/gp_dblas2.F
+    LSDALTON/pdpack/gp_dblas3.F
+    LSDALTON/pdpack/gp_sblas.F
+    LSDALTON/pdpack/gp_qblas.F
+    LSDALTON/pdpack/gp_zblas.F
+    )
+set(LSDALTON_OWN_LAPACK_SOURCES
+    LSDALTON/pdpack/gp_dlapack.F
+    LSDALTON/pdpack/gp_zlapack.F
+    )
+# collect all free fortran sources
+set(LSDALTON_FREE_FORTRAN_SOURCES
+    ${DFTFUNC_F_SOURCES}
+    ${LSDALTONMAIN_FORTRAN_SOURCES}
+    ${DDYNAM_SOURCES}
+    ${DEC_SOURCES}
+    ${GEOOPT_SOURCES}
+    ${LINEARS_SOURCES}	
+    ${RSPSOLVER_SOURCES}	
+    ${SOLVERUTIL_SOURCES}	
+    ${RSP_PROPERTIES_SOURCES}	
+    ${PBC_FORTRAN_SOURCES}
+    ${FMM_SOURCES}
+    ${INTERESTLIB_SOURCES}
+    ${LSINT_SOURCES}
+    ${LSUTIL_PRECISION_SOURCES}
+    ${LSUTIL_MATRIXM_SOURCES}
+    ${LSUTIL_COMMON_SOURCES}
+    ${LSUTIL_MATRIXO_SOURCES}
+    ${LSUTIL_MATRIXO_C_SOURCES}
+    ${LSUTIL_MATRIXU_SOURCES}
+    ${LSUTIL_TYPE_SOURCES}
+    ${LSUTILLIB_SOURCES}
+    ${LSLIB_SOURCES}
+ )

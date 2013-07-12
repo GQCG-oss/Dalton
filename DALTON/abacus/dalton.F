@@ -32,6 +32,8 @@ C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
       PROGRAM DALTON2011_DALTON
 C
+      use parallel_models_mpi
+C
 #include "implicit.h"
 #include "dummy.h"
 #include "mtags.h"
@@ -60,10 +62,7 @@ C defined parallel calculation types
       character(100)     :: line
       logical            :: file_exists, file_open
 
-!     this is the "static" work array
-      real(8), allocatable :: WORK(:)
-
-!     memory-id tags for field 1 and 2+LMWORK
+!     memory-id tags for field 1 and 2+LMWORK in work (allocated in main driver routines)
       DATA WRKDLM/12345678D0/
 C
 C
@@ -71,6 +70,8 @@ C Start MPI, if parallel, in MPIXINIT; define MYNUM, MASTER, NODTOT
 C If not MPI, MPIXINIT defines: MYNUM  = 0; MASTER = 0; NODTOT = 0
 C
       CALL MPIXINIT
+
+      call parallel_models_initialize_mpi()
 
       CALL QENTER('DALTON main')
       PARIO = .FALSE.
@@ -116,16 +117,6 @@ C
          END IF
       END IF
  
-!     allocate memory using f90 utilities
-      allocate(work(lmwork+2),stat=i)
-
-      IF (I .NE. 0) THEN
-         WRITE (LUERR,*) MYNUM,': ALLOCATE command failed to allocate'//
-     &        ' the requested memory. Error code:',I
-         WRITE (LUERR,*) 'Reduce the memory demands and be welcome back'
-         CALL QUIT('Failed to allocate memory')
-      END IF
-
 Cef begin
 C If AOSAVE .eq. .TRUE. then run the incore-version of dalton where integrals
 C are stored in memory on each slave for reuse. Take a look at the header
@@ -164,11 +155,6 @@ Cef end
      &      MYNUM,': Directories for basis set searches:',
      &      BASDIR(1:LEN_BASDIR)
       END IF
-C
-C     Set memory traps and initialize unit numbers
-C
-      WORK(1)        = WRKDLM
-      WORK(2+LMWORK) = WRKDLM
 C
 C     Allowing now for parallelization over different molecular geometries,
 C     we must first check if this calculation indeed is of that kind.
@@ -309,6 +295,8 @@ C
      &  '(cubic response and complex response in RESPONS)',
      *'Jeppe Olsen,','Aarhus University,','Denmark',
      &  '(SIRIUS CI/density modules)',
+     *'Jogvan Magnus H. Olsen,','Univ. of Southern Denmark,', 'Denmark',
+     &  '(Polarizable embedding (PE) module)',
      *'Anders Osted,','Copenhagen University,','Denmark','(QM/MM code)',
      *'Martin J. Packer,','University of Sheffield,','UK',
      &  '(SOPPA)',
@@ -398,7 +386,7 @@ C           structure of BASDIR: 'dir1:dir2:dir3'
          write(lupri, '(//a/a/)')
      &     'Compilation information',
      &     '-----------------------'
-         call print_binary_info()
+         call print_binary_info(lupri)
 
 #if defined (VAR_MPI)
          IF (NODTOT .GT. 0) WRITE(LUPRI,'(/A,I5,A)')
@@ -466,7 +454,7 @@ C
          CALL RECVNAMES
 !
 !        call main driver routine
-         call dalton_exedrv(work,lmwork,wrkdlm)
+         call dalton_exedrv(lmwork,wrkdlm)
 
          CALL FLSHFO(LUPRI)
 
@@ -492,41 +480,44 @@ C
          CALL GPCLOSE(LUPRI,'KEEP')
       ELSE
 C     ... I am a "slave" ... (MYNUM .ne. MASTER)
-         CALL TITLER('DALTON - An electronic structure program',
+C ahs only print if number of cores are less than 20
+         IF (NODTOT .LE. 20) THEN
+           CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-         WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
-         CALL TSTAMP('INIT',LUPRI)
-         IF (GBYTES .GE. 1.D0) THEN
-           WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
+           WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
+           CALL TSTAMP('INIT',LUPRI)
+           IF (GBYTES .GE. 1.D0) THEN
+             WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
      &        LMWORK,' =',GBYTES,' gigabytes.'
-         ELSE
-           WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
+           ELSE
+             WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
      &        LMWORK,' =',XMBYTES,' megabytes.'
-         END IF
-         IF (AOSAVE) THEN
-           WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
+           END IF
+           IF (AOSAVE) THEN
+             WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
      &        MMCORE
-         END IF
-         CALL TITLER('DALTON - An electronic structure program',
+           END IF
+           CALL TITLER('DALTON - An electronic structure program',
      &               '*',111)
-         WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
-         CALL TSTAMP('INIT',LUPRI)
-         IF (GBYTES .GE. 1.D0) THEN
-           WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
+           WRITE(LUPRI,'(/A,I6)') ' * Output from slave no.',MYNUM
+           CALL TSTAMP('INIT',LUPRI)
+           IF (GBYTES .GE. 1.D0) THEN
+             WRITE(LUPRI,'(/A,I12,A,F7.3,A)')' * Work memory size :',
      &        LMWORK,' =',GBYTES,' gigabytes.'
-         ELSE
-           WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
+           ELSE
+             WRITE(LUPRI,'(/A,I12,A,F8.2,A)')' * Work memory size :',
      &        LMWORK,' =',XMBYTES,' megabytes.'
-         END IF
-         IF (AOSAVE) THEN
-           WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
+           END IF
+           IF (AOSAVE) THEN
+             WRITE(LUPRI,'(A,I12)')' + memory for in-core integrals :',
      &        MMCORE
+           END IF
          END IF
          IF (PARIO) THEN
             CALL DALTON_GNRLINP
 
 !           call main driver routine (co-workers do it as well if PARIO == .true.)
-            call dalton_exedrv(work,lmwork,wrkdlm)
+            call dalton_exedrv(lmwork,wrkdlm)
 
             LABEL1 = 'ALL_DONE'
             STHELP = 'THE_END   '
@@ -553,18 +544,17 @@ C
             CALL SENDNAME(MASTER,MYNUM)
 
 !           call main co-workers driver routine
-            call nodedriver(work,lmwork,wrkdlm)
+            call nodedriver(lmwork,wrkdlm)
          END IF
       END IF
-
-!     release dynamically allocated memory
-      deallocate(work)
 
 #if defined(BUILD_GEN1INT)
 C...  added by Bin Gao, May 13, 2012
 C...  terminates Gen1Int interface
       call gen1int_host_finalize()
 #endif
+
+      call parallel_models_finalize_mpi(nodtot+1)
 
       CALL MPIXFINALIZE
 C
@@ -584,16 +574,9 @@ C
       END IF
 #endif
 #if !defined (VAR_MPI)
-!     allocate memory using f90 utilities
-      allocate(work(lmwork+2),stat=i)
-      work(1)        = wrkdlm
-      work(2+lmwork) = wrkdlm
 
 !     call main co-workers driver routine
-      call dalton_exedrv(work,lmwork,wrkdlm)
-
-!     release dynamically allocated memory
-      deallocate(work)
+      call dalton_exedrv(lmwork,wrkdlm)
 
       LABEL1 = 'ALL_DONE'
       STHELP = 'THE_END   '
@@ -633,16 +616,23 @@ C
       END
 
       SUBROUTINE GETMMBAS(LMWORK,BASDIR,LBASDIR)
+
+!     module dependencies
+      use parallel_communication_models_mpi
+
 #include "implicit.h"
 #include "priunit.h"
       CHARACTER*(*) BASDIR
       CHARACTER*20  WRKMEM, NODE_WRKMEM
 #include "maxorb.h"
 #include "infpar.h"
-
+!     this is to scan the input file for asynchronous memory allocation (RMA model parallelization)
+      character(100)     :: line
+      logical            :: file_exists, file_open, rma_allocation
 C     If LMWORK .le. 0 use default value (LWORK_DEF)
       PARAMETER (LWORK_DEF = INSTALL_WRKMEM)
 
+      rma_allocation = .false.
 C
 C     Dynamic memory allocation; check for WRKMEM and NODE_WRKMEM in environment
 C
@@ -726,14 +716,56 @@ C
       END IF ! .not. slave
 
       IF (LNBLNK(BASDIR) .LT. 1) BASDIR = './:'
-#if defined(VAR_MPI)
-C
-C     Transfer LMWORK_NODES and BASDIR to slaves
-C
+#ifdef VAR_MPI
+
+!     scan input for RMA (remote memory access model parallelization) keyword
+!     reason: we need asynchronous memory allocation as this is our default RMA scheme in:
+!             --> hermit
+!             --> mcscf (soon)
+!             --> lucita/gasci (soon)
+      if(mynum == master)then
+!       print content of input file to output
+        inquire(file='DALTON.INP',exist=file_exists,opened=file_open)
+        if(file_exists) then
+          if(.not. file_open) then
+            LUCMD = -1
+            CALL GPOPEN(LUCMD,'DALTON.INP','OLD',' ','FORMATTED',
+     &                  IDUMMY,.FALSE.)
+          end if
+            rewind(LUCMD)
+         else
+            call quit('GETMMBAS: DALTON.INP file not found')
+        end if
+!       scan for .RMA-MD
+        do while (.true.)
+           read(LUCMD, '(a50)', end=81) line
+           if(line(1:7) == '.RMA-MD')then
+             rma_allocation = .true.
+             goto 81
+           end if
+        end do
+ 81     continue
+        if (.not. file_open) CALL GPCLOSE(LUCMD,'KEEP')
+      end if
+!     end of keyword scan
+
+!     Transfer LMWORK_NODES and BASDIR to slaves
+!     ------------------------------------------
+
       CALL MPIXBCAST(LMWORK_NODES,1,'INTEGE',MASTER)
+      CALL MPIXBCAST(LMWORK      ,1,'INTEGE',MASTER)
+      CALL MPIXBCAST(rma_allocation,1,'LOGICA',MASTER)
       CALL MPIXBCAST(BASDIR,LBASDIR,'STRING',MASTER)
-      IF (SLAVE) THEN
-         LMWORK = LMWORK_NODES
+
+      IF(SLAVE)THEN
+        if(rma_allocation)then
+!         node/NUMA master get the same memory as the master only real slaves get less
+          if(communication_info_mpi%my_shmem_node_id /= 0)then 
+            LMWORK = LMWORK_NODES
+          end if
+        else
+          LMWORK = LMWORK_NODES
+        end if
       END IF
 #endif /* defined(VAR_MPI) */
       END

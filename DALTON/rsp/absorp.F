@@ -38,7 +38,7 @@ C        hyperpolarizability",
 C        J. Chem. Phys. 123 (2005) 194103.
 C ============================================================================
 C
-      SUBROUTINE ABSORP_INPUT(WORD)
+      SUBROUTINE ABSORP_INTERFACE
 C
 C     Purpose:
 C     Read in user settings for imaginary polarizabilities describing
@@ -46,268 +46,42 @@ C     absorption in the optical processes.
 C
 #include "implicit.h"
 #include "priunit.h"
-#include "gnrinf.h"
 #include "absorp.h"
+#include "abslrs.h"
+#include "codata.h"
 #include "infrsp.h"
 C
-#include "maxaqn.h"
-#include "maxorb.h"
-#include "mxcent.h"
-#include "symmet.h"
-#include "codata.h"
-#include "infinp.h"
-C
-      LOGICAL NEWDEF, ALLCOMP
-      PARAMETER ( NTABLE = 22 )
-      PARAMETER ( D0=0.0D0, D1=1.0D0, THRFRQ=1.0D-14, THD=1.0D-6 )
-      CHARACTER PROMPT*1, WORD*7, WORD1*7, TABLE(NTABLE)*7
-      CHARACTER*8 DIPLEN(3), ANGMOM(3)
+      ABS_ALPHA=ABSLRS_ALPHA
+      ABS_BETA =ABSLRS_BETA 
+      ABS_GAMMA=ABSLRS_GAMMA
+      ABS_MCD=ABSLRS_MCD
+      ABS_SHG=ABSLRS_SHG
+c
+      NFREQ_ALPHA=ABS_NFREQ_ALPHA
+      DO I=1,NFREQ_ALPHA
+        FREQ_ALPHA(I)=ABS_FREQ_ALPHA(I)
+      ENDDO
+      NFREQ_BETA_B=ABS_NFREQ_BETA_B
+      NFREQ_BETA_C=ABS_NFREQ_BETA_C
+      DO I=1,NFREQ_BETA_B
+        FREQ_BETA_B(I)=ABS_FREQ_BETA_B(I)
+      ENDDO
+      DO I=1,NFREQ_BETA_C
+        FREQ_BETA_C(I)=ABS_FREQ_BETA_C(I)
+      ENDDO
+      DO I=1,3
+        FREQ_INTERVAL(I)=ABS_FREQ_INTERVAL(I)
+      ENDDO
+c
+      IPRABS=IPRABSLRS
+      DAMPING=ABS_DAMP
+      ABS_ANALYZE=ABSLRS_ANALYZE
+      ABS_INTERVAL=ABSLRS_INTERVAL
+      MAXRM=MAX(MAXRM,ABS_MAXRM)
+      IF (ABS_INTERVAL) ABS_REDUCE = .TRUE.
 
-      logical, external :: fun_is_ready_for_qr
 C
-      DATA DIPLEN/'XDIPLEN','YDIPLEN','ZDIPLEN'/
-      DATA ANGMOM/'XANGMOM','YANGMOM','ZANGMOM'/
-      DATA TABLE /'.ALPHA ','.FREQUE','.THCLR ','.MAX MI','.MAXITO',
-     &            '.PRINT ','.DAMPIN','.EXCITA','.MAX MA','.THCPP ',
-     &            '.BETA  ','.BFREQ ','.CFREQ ','.SHG   ','.ANALYZ',
-     &            '.BATCH ','.FREQ I','.MCD   ','.REDUCE','.XXCOMP',
-     &            '.YYCOMP','.ZZCOMP'/
-C
-      NEWDEF = (WORD .EQ. '*ABSORP')
-      ICHANG = 0
-C
-      ALLCOMP = .TRUE.
-      ICOMP=0
-C
-C     Set default values
-C
-      IF (NEWDEF) THEN
-C     Common default value of the damping parameter is set to
-C     be 1000 cm-1 = 4.556333D-3 a.u.
-         DAMPING = 1000/XTKAYS
-  100    CONTINUE
-C
-C     Read in input
-C
-            READ (LUCMD, '(A7)') WORD
-            CALL UPCASE(WORD)
-            PROMPT = WORD(1:1)
-            IF (PROMPT .EQ. '!' .OR. PROMPT .EQ. '#') GOTO 100
-            IF (PROMPT .EQ. '.') THEN
-               ICHANG = ICHANG + 1
-               DO I = 1, NTABLE
-                  IF (TABLE(I) .EQ. WORD)
-     &                GOTO (1,2,3,4,5,6,7,8,9,10,
-     &                 11,12,13,14,15,16,17,18,19,20,21,22),I
-               END DO
-               IF (WORD .EQ. '.OPTION') THEN
-                 CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-                 GOTO 100
-               END IF
-               WRITE (LUPRI,'(/,3A,/)') ' KEYWORD "',WORD,
-     *            '" NOT RECOGNIZED IN ABSORP_INPUT.'
-               CALL PRTAB(NTABLE,TABLE,WORD1//' input keywords',LUPRI)
-               CALL QUIT(' ILLEGAL KEYWORD IN ABSORP_INPUT ')
-C
- 1             CONTINUE
-               ABS_ALPHA=.TRUE.
-               ABS_BETA =.FALSE.
-               ABS_GAMMA=.FALSE.
-               GOTO 100
- 2             CONTINUE
-               IF (ABS_ALPHA) THEN
-                  READ (LUCMD,*) NFREQ_ALPHA
-                  IF (NFREQ_ALPHA.LE.MXFREQ) THEN
-                     READ (LUCMD,*) (FREQ_ALPHA(J),J=1,NFREQ_ALPHA)
-                  ELSE
-                     WRITE (LUPRI,'(3(/,A,I5),/)')
-     &               ' NUMBER OF FREQUENCIES SPECIFIED   :',NFREQ_ALPHA,
-     &               ' IS GREATER THAN THE ALLOWED NUMBER:',MXFREQ,
-     &               ' THE NUMBER IS RESET TO THE MAXIMUM:',MXFREQ
-                     READ (LUCMD,*) (FREQ_ALPHA(J),J=1,MXFREQ),
-     &                              (FFFF,J=MXFREQ+1,NFREQ_ALPHA)
-                     NFREQ_ALPHA = MXFREQ
-                  END IF
-                  CALL GPDSRT(NFREQ_ALPHA,FREQ_ALPHA,THD)
-               ELSE
-                  WRITE(LUPRI,1000) WORD
-                  READ(LUCMD,*)
-                  READ(LUCMD,*)
-               END IF
-               GOTO 100
- 3             CONTINUE
-                  READ (LUCMD,*) THCLR_ABSORP
-               GOTO 100
- 4             CONTINUE
-                  READ (LUCMD,*) MAX_MICRO
-               GOTO 100
- 5             CONTINUE
-                  READ (LUCMD,*) MAX_ITORB
-                  IF (MAX_ITORB .GT. 0) OPTORB = .TRUE.
-               GOTO 100
- 6             CONTINUE
-                  READ (LUCMD,*) IPRABS
-               GOTO 100
- 7             CONTINUE
-C     User input of damping parameter
-                  READ (LUCMD,*) DAMPING
-               GOTO 100
- 8             CONTINUE
-                  READ (LUCMD,*) NEXCITED_STATES
-               GOTO 100
- 9             CONTINUE
-                  READ (LUCMD,*) MAX_MACRO
-               GOTO 100
- 10            CONTINUE
-                  READ (LUCMD,*) THCPP_ABSORP
-               GOTO 100
- 11            CONTINUE
-               ABS_ALPHA=.FALSE.
-               ABS_BETA =.TRUE.
-               ABS_GAMMA=.FALSE.
-               GOTO 100
- 12            CONTINUE
-               IF (ABS_BETA .OR. ABS_MCD) THEN
-                  READ (LUCMD,*) NFREQ_BETA_B
-                  IF (NFREQ_BETA_B.LE.MXFREQ) THEN
-                     READ (LUCMD,*) (FREQ_BETA_B(J),J=1,NFREQ_BETA_B)
-                  ELSE
-                     WRITE (LUPRI,'(3(/,A,I5),/)')
-     &              ' NUMBER OF FREQUENCIES SPECIFIED   :',NFREQ_BETA_B,
-     &              ' IS GREATER THAN THE ALLOWED NUMBER:',MXFREQ,
-     &              ' THE NUMBER IS RESET TO THE MAXIMUM:',MXFREQ
-                     READ (LUCMD,*) (FREQ_BETA_B(J),J=1,MXFREQ),
-     &                              (FFFF,J=MXFREQ+1,NFREQ_BETA_B)
-                     NFREQ_BETA_B = MXFREQ
-                  END IF
-               ELSE
-                  WRITE(LUPRI,1010) WORD
-                  READ(LUCMD,*)
-                  READ(LUCMD,*)
-               END IF
-               GOTO 100
- 13            CONTINUE
-               IF (ABS_BETA) THEN
-                  READ (LUCMD,*) NFREQ_BETA_C
-                  IF (NFREQ_BETA_C.LE.MXFREQ) THEN
-                     READ (LUCMD,*) (FREQ_BETA_C(J),J=1,NFREQ_BETA_C)
-                  ELSE
-                     WRITE (LUPRI,'(3(/,A,I5),/)')
-     &              ' NUMBER OF FREQUENCIES SPECIFIED   :',NFREQ_BETA_C,
-     &              ' IS GREATER THAN THE ALLOWED NUMBER:',MXFREQ,
-     &              ' THE NUMBER IS RESET TO THE MAXIMUM:',MXFREQ
-                     READ (LUCMD,*) (FREQ_BETA_C(J),J=1,MXFREQ),
-     &                              (FFFF,J=MXFREQ+1,NFREQ_BETA_C)
-                     NFREQ_BETA_C = MXFREQ
-                  END IF
-               ELSE
-                  WRITE(LUPRI,1010) WORD
-                  READ(LUCMD,*)
-                  READ(LUCMD,*)
-               END IF
-               GOTO 100
- 14            CONTINUE
-               ABS_ALPHA=.FALSE.
-               ABS_BETA =.TRUE.
-               ABS_GAMMA=.FALSE.
-               ABS_SHG  =.TRUE.
-               GOTO 100
- 15            CONTINUE
-               ABS_ANALYZE=.TRUE.
-               GOTO 100
- 16            CONTINUE
-               READ(LUCMD,*) NFREQ_BATCH
-               IF (NFREQ_BATCH.GT.MXFREQ) THEN
-                  NFREQ_BATCH = MXFREQ
-               END IF
-               GOTO 100
- 17            CONTINUE
-               ABS_INTERVAL = .TRUE.
-               ABS_REDUCE = .TRUE.
-               READ(LUCMD,*) (FREQ_INTERVAL(I), I=1,3)
-               GOTO 100
- 18            CONTINUE
-               ABS_ALPHA=.FALSE.
-               ABS_BETA =.FALSE.
-               ABS_GAMMA=.FALSE.
-               ABS_MCD  =.TRUE.
-               GOTO 100
- 19            CONTINUE
-               ABS_REDUCE=.TRUE.
-               GOTO 100
- 20            CONTINUE
-               ALLCOMP=.FALSE.
-               ICOMP=1
-               GOTO 100
- 21            CONTINUE
-               ALLCOMP=.FALSE.
-               ICOMP=2
-               GOTO 100
- 22            CONTINUE
-               ALLCOMP=.FALSE.
-               ICOMP=3
-               GOTO 100
-            ELSE IF (PROMPT .EQ. '*') THEN
-               GOTO 300
-            ELSE
-               WRITE (LUPRI,'(/,3A,/)') ' PROMPT "',WORD,
-     *            '" NOT RECOGNIZED IN ABSORPTION INPUT.'
-               CALL QUIT(' ILLEGAL PROMPT IN ABSORPTION INPUT ')
-            END IF
-         GOTO 100
-      END IF
-  300 CONTINUE
-      IF (THR_REDFAC .GT. 0.0D0) THEN
-         ICHANG = ICHANG + 1
-         WRITE (LUPRI,'(3A,1P,D10.2)') '@ INFO ',WORD1,
-     &   ' thresholds multiplied with general factor',THR_REDFAC
-         THCLR_ABSORP = THCLR_ABSORP*THR_REDFAC
-         THCPP_ABSORP = THCPPPABSORP*THR_REDFAC
-      END IF
-C
-C     Process user input
-C
-
-#ifndef DISABLE_XC_RESPONSE_SANITY_CHECK
-!     sanity check for incomplete/untested xc functional implementations
-      if (abs_beta .and. dodft) then
-         if (.not. fun_is_ready_for_qr()) then
-            write(lupri, *) 'ERROR: functional not fully implemented'
-            write(lupri, *) '       or tested for QR'
-            write(lupri, *) 'to disable this stop recompile'
-            write(lupri, *) 'with -DDISABLE_XC_RESPONSE_SANITY_CHECK'
-            write(lupri, *) 'note that GGAKEY functionals are always'
-            write(lupri, *) 'stopped although they could be correct'
-            call quit('functional not fully implemented/tested for QR')
-         end if
-      end if
-#endif
-
-
-
-      ABSORP = ABS_ALPHA .OR. ABS_BETA .OR. ABS_GAMMA .OR. ABS_MCD
-      IF (.NOT.ABSORP) THEN
-         WRITE(LUPRI,'(/A)') ' Absorption input ignored because:'
-         WRITE(LUPRI,'(A,L2)')' No process requested:',
-     &        ' ABS_ALPHA = ABS_BETA = ABS_GAMMA = ABS_MCD = ', ABSORP
-      ELSE
-C
-C     Put operators in lists
-C
-         CALL IZERO(NOPER,8)
-         DO ILABEL=1,3
-            IF (ALLCOMP .OR. ICOMP.EQ.ILABEL) THEN
-               ISYM = ISYMAX(ILABEL,1)+1
-               NOPER(ISYM) = NOPER(ISYM) + 1
-               LABOP(NOPER(ISYM),ISYM) = DIPLEN(ILABEL)
-               IF (ABS_MCD) THEN
-                  ISYM = ISYMAX(ILABEL,2)+1
-                  NOPER(ISYM) = NOPER(ISYM) + 1
-                  LABOP(NOPER(ISYM),ISYM) = ANGMOM(ILABEL)
-               END IF
-            END IF
-         END DO
-C
+      IF (ABS_OLDCPP) THEN
          CALL AROUND('Variable settings for absorption calculation')
 C
          IF (ABS_ALPHA) THEN
@@ -354,22 +128,6 @@ C
             NEXCITED_STATES = MXSTATES
          END IF
 C
-         IF (ABS_INTERVAL) THEN
-            IF( FREQ_INTERVAL(1).GT.FREQ_INTERVAL(2) .OR.
-     &         (FREQ_INTERVAL(2)-FREQ_INTERVAL(1)).LT.FREQ_INTERVAL(3)
-     &         .OR. FREQ_INTERVAL(3).LE.0.0D0 ) THEN
-               WRITE(LUPRI,'(/,A,/,A,/,/,A,/,A,/,/,A)')
-     & ' Warning: Frequency interval for absorption calculation is not',
-     & '          correctly specified according to:',
-     & '                 .FREQ_INTERVAL',
-     & '                 STARTFREQ ENDFREQ STEPSIZE',
-     & '          This input will be ignored. Calculation continues.'
-               ABS_INTERVAL = .FALSE.
-               FREQ_INTERVAL(1)=D0
-               FREQ_INTERVAL(2)=D0
-               FREQ_INTERVAL(3)=D1
-            END IF
-         END IF
 C
          WRITE(LUPRI,'(A,F9.6,F8.1)')
      &      ' Damping parameter (a.u. and cm-1)        : DAMPING      ='
@@ -393,21 +151,6 @@ C
      &      ' Print level in absorption modules        : IPRABS       ='
      &       ,IPRABS
       END IF
-C
-C Messages
-C
- 1000 FORMAT(/,
-     &  ' Keyword:',A8,' ignored since an ALPHA calc not specified.',
-     &  /,' If asked for, the .ALPHA keyword should be placed first',
-     &  /,' of *ABSORPTION input keys.',
-     &  /,' The program will continue.')
-
- 1010 FORMAT(/,
-     &  ' Keyword:',A8,' ignored since a BETA calc not specified.',
-     &  /,' If asked for, the .BETA keyword should be placed first',
-     &  /,' of *ABSORPTION input keys.',
-     &  /,' The program will continue.')
-
 C
 C     End of ABSORP_INPUT
 C

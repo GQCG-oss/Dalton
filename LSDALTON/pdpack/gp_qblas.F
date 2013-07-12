@@ -4,7 +4,7 @@
 *
 * unfortunately, cannoy be compiled by gfortran-4.1.1
 #ifndef GFORTRAN   
-#ifndef VAR_PGI
+#ifndef VAR_PGF90
 #ifndef VAR_OPEN64
       subroutine  qzero(dx,n)
       implicit none
@@ -400,7 +400,8 @@ c
       REAL(quadk)   TEMP
 *     .. Parameters ..
       REAL(quadk)   ONE         , ZERO
-      PARAMETER        ( ONE = 1.0Q+0, ZERO = 0.0Q+0 )
+      PARAMETER        ( ONE = 1.0E0_quadk, ZERO = 0.0E0_quadk )
+*     PARAMETER        ( ONE = 1.0Q+0, ZERO = 0.0Q+0 )
 *     ..
 *     .. Executable Statements ..
 *

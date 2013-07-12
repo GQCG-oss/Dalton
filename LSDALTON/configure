@@ -403,7 +403,7 @@ fi
 #
 # For rs6000 we first try ESSL, then BLAS
 #
-pdpackextras="linpack.o eispack.o"
+pdpackextras="linpack.o eispack.o cholesky.o invroutines.o"
 
 LIB=''
 for testdir in $dirlist; do
@@ -976,14 +976,14 @@ if [ "$answer" = "y" ]; then
     $ECHO "\n-->Found Gen1Int $lib_genint"
     # everything is OK to install Gen1Int
     $ECHO "\n-->Modifying Makefile.config ..."
-    $ECHO "\n-->(1) Adding -DBUILD_GEN1INT to CPPFLAGS"
+    $ECHO "\n-->(1) Adding -DBUILD_GEN1INT_LSDALTON to CPPFLAGS"
     $ECHO "\n-->(2) Adding $lib_genint to LIBS"
-    cpp="-DBUILD_GEN1INT $cpp"
+    cpp="-DBUILD_GEN1INT_LSDALTON $cpp"
     LIB="$LIB $lib_genint"
   else
     $ECHO "\n-->Gen1Int libary was not found and Gen1Int code will not be activated!"
     $ECHO "\n-->You can still activate Gen1Int manually by modifying Makefile.config as follows:"
-    $ECHO "\n-->(1) Adding -DBUILD_GEN1INT to CPPFLAGS"
+    $ECHO "\n-->(1) Adding -DBUILD_GEN1INT_LSDALTON to CPPFLAGS"
     $ECHO "\n-->(2) Appending libgen1int.a to LIBS"
   fi
 fi
@@ -1157,8 +1157,8 @@ cat <<EOF > $INSTALL_DIR/lsdalton
 LSDALTON="$INSTALL_DIR/$DALEXE"
 DALMPI="$INSTALL_DIR/dalpar.x"
 MPIRUN="$mpirun"
-# set TMPDIR (if not defined by e.g. NQS) and WRKDIR
-[ -z "\$TMPDIR" ] && TMPDIR="$worksp/\$USER"
+# set DALTON_TMPDIR (if not defined by e.g. NQS) and WRKDIR
+[ -z "\$DALTON_TMPDIR" ] && DALTON_TMPDIR="$worksp/\$USER"
 EOF
 sed '1,5d' lsdalton.in >> $INSTALL_DIR/lsdalton
 chmod 755 $INSTALL_DIR/lsdalton

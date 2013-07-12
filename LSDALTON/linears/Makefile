@@ -7,13 +7,9 @@ INCLUDES := $(INCLUDES) -I../lsutil -I../LSint -I../geomopt -I../ddynam -I../dec
 # Keep the file lists sorted for easier modification.
 # PLEASE KEEP THEM SORTED ALPHABETICALLY!!!
 
-F_OBJS = \
-        cholesky.o \
-	invroutines.o
-
 #ajt Birefring compiles extremely slowly with pgf, so I disable compiling
 #ajt it until I have gotten around to simplifying the code.
-#ajt Calls to it from linscf.f90 have been commented out.
+#ajt Calls to it from linscf.F90 have been commented out.
 #ajt0410 Temporarily added again for Radovan's merging with other versions
 
 F90_OBJS = \
@@ -43,10 +39,10 @@ F90_OBJS = \
         LSDALTON_RESPONSE_type.o        \
 	minimize.o \
 	optimlocNONMOD.o \
+	OrbLoc_input.o  \
 	localization_charge.o \
 	localization_orbspread.o \
 	localization_util.o \
-	print_MO.o\
         prop_contribs.o \
         response_driver.o \
         response_prop.o \
@@ -60,6 +56,7 @@ F90_OBJS = \
 	soeo-debug.o \
 	starting_guess.o \
 	statistics.o   	\
+	plt_driver.o  \
         trilevel.o 
 #	cgop.o
 #C_OBJS = memory.o
@@ -78,8 +75,8 @@ clean :
 	$(RM) -f *.o *~ *.f *.lst *.i *.L i.*.f v.i.*.f *.a *.mod *.MOD
 
 
-Makefile.depend depend: $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90)
-	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../geomopt -M../deccc -M../SolverUtilities -M../responsesolver -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.f90) > Makefile.depend
+Makefile.depend depend: $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90)
+	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -M../lsutil -M../LSint -M../geomopt -M../deccc -M../SolverUtilities -M../responsesolver -- $(F_OBJS:.o=.F) $(F90_OBJS:.o=.F90) > Makefile.depend
 
 include Makefile.depend
 ######################################################################

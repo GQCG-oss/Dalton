@@ -67,7 +67,7 @@ C
      &            '.MAXRED', '.MAXPHP','.STATIC','.VIBGRE',
      &            '.OPTORB', '.FREQUE','.BATCH ','.PRINT ',
      &            '.DAMPIN', '.STOP  ','.FREQ I','.REDUCE',
-     &            '.ABSLRS'/
+     &            '.OLDCPP'/
 C
       NEWDEF = (WORD .EQ. '*ABALNR')
       ICHANG = 0
@@ -215,10 +215,13 @@ CSPAS:20/3-2011: allowing for perturbations in only one irrep
                   IF (IPRLNR .EQ. IPRDEF) ICHANG = ICHANG - 1
                GO TO 100
    13          CONTINUE
-                  ABSORP = .TRUE.
+                  ABSORP=.TRUE.
                   ICHANG = ICHANG + 1
                   READ (LUCMD,*) DAMPING
                   ABS_DAMP=DAMPING
+                  IF (.NOT. ABS_OLDCPP) THEN
+                    ABSLRS=.TRUE.
+                  ENDIF
                GO TO 100
    14          CONTINUE
                   CUT    = .TRUE.
@@ -233,7 +236,8 @@ CSPAS:20/3-2011: allowing for perturbations in only one irrep
                  ABS_REDUCE=.TRUE.
                GO TO 100
    17          CONTINUE
-                 ABSLRS=.TRUE.
+                  ABS_OLDCPP = .TRUE.
+                  ABSLRS =.FALSE.
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -325,8 +329,10 @@ C
                   NFRVAL = NFREQ_INTERVAL
                   DO I=1,NFRVAL
                      FRVAL(I)=FREQ_INTERVAL(1) + (I-1)*FREQ_INTERVAL(3)
-                  END DO                  
+                  END DO
                ENDIF
+                  ABS_MAXRM=MAX(MXRM,ABS_MAXRM)
+                  MXRM=MAX(MXRM,ABS_MAXRM)
                   NFREQ_ALPHA = NFRVAL
                   NFREQ_INTERVAL = NFRVAL
                   ABS_NFREQ_ALPHA = NFRVAL
@@ -903,14 +909,14 @@ C
      &                            WORK(KSLV),LABEL1,ISYM,
      &                             FRVAL(IFRVAL),ABS_THCLR,FOUND,CONV)
                               CLOSE(LUABSVECS,STATUS='KEEP')
-                          ELSE
+                          ENDIF
                             CALL GPOPEN(LURSP,'RSPVEC','OLD',' ',
      &                           ' ',IDUMMY,.FALSE.)
                             CALL REARSP(LURSP,4*NVARPT,WORK(KSLV),
      &                           LABEL1,'COMPLEX ',FRVAL(IFRVAL),0.0D0,
      &                           ISYM,0,THCLR_ABSORP,FOUND,CONV,ANTSYM)
                             CALL GPCLOSE(LURSP,'KEEP')
-                          ENDIF
+c                          ENDIF
                           SNDPRP(1)=DDOT(2*NVARPT,WORK(KSLV),1,
      &                                   WORK(KGD1),1)
                           SNDPRP(2)=DDOT(2*NVARPT,WORK(KSLV+2*NVARPT),1,

@@ -325,6 +325,7 @@ C     and parts of qm3.h
 C
 #include "implicit.h"
 #include "maxorb.h"
+#include "mxcent.h"
       LOGICAL RELCAL, TSTINP
 #include "infpar.h"
 #include "maxaqn.h"
@@ -333,8 +334,8 @@ C
 #include "ecpinf.h"
 #include "qm3.h"
 #include "r12int.h"
-Caspg adding numder.h to set NOMOVE
 #include "numder.h"
+#include "nuclei.h"
 C
       LOGICAL FIRST_CALL
       SAVE    FIRST_CALL
@@ -355,7 +356,6 @@ C
 C
 C     cbirea.h:
 C
-      NOMOVE = .FALSE.
       IPREAD = IPREAD_ini
       LUMLCL = -1
       MAXPRI = MAXPRD
@@ -374,6 +374,14 @@ C     ... parameter MAXPRD is in cbirea.h
       ZCMVAL = 1.0D0
       LCMMAX = -1
       LCNTNUUM = .false.
+C
+C     numder.h
+C
+      NOMOVE = .FALSE.
+C
+C     nuclei.h:
+C
+      NUCIND = -1 ! to tell that READIN has never been called
 C
 C     Initialize effective core potential parameters (ecpinf.h)
 C
@@ -483,15 +491,15 @@ C           ... must close LUCMD again before RETURN, when opened here
          ELSE
             LUINFO = -1
          END IF
+         IF (IPREAD .GT.  0) THEN
+           CALL TITLER(
+     &   'Output of molecule and basis set information','*',115)
+         ELSE
+           CALL TITLER(
+     &   'Output of molecule and basis set info suppressed','*',118)
+         END IF
       END IF
       IF (IPREAD .GE. 11) CALL TIMER('START ',TIMSTR,TIMEND)
-      IF (IPREAD .GT.  0) THEN
-         CALL TITLER(
-     &   'Output of molecule and basis set information','*',115)
-      ELSE
-         CALL TITLER(
-     &   'Output of molecule and basis set info suppressed','*',118)
-      END IF
 C
 C Only the master in a parallel calculation reads the input file. The
 C slaves do not read the input file in RDLINE but use the input lines
@@ -761,9 +769,11 @@ C*****************************************************************************
       CALL RDLINE(LUINFO)
       READ (MLINE(NMLINE),'(A72)',IOSTAT=IOS) TTITLE(2)
       IF (IPREAD .GT. 0) THEN
+        IF ((.NOT.SLAVE) .OR. (NODTOT.LE.20)) THEN
          WRITE (LUPRI,'(/4X,A/4X,A/2A/2A/4X,A)')
      &   'The two title cards from your ".mol" input:', SEPARATOR(1:72),
      &   ' 1: ',TTITLE(1),' 2: ',TTITLE(2),SEPARATOR(1:72)
+         END IF
          IF (LUCME.GT.0) WRITE (LUCME,'(2X,A)')
      &      SEPARATOR(1:72),TTITLE(1),TTITLE(2),SEPARATOR(1:72)
       END IF
@@ -2158,7 +2168,7 @@ C*****************************************************************************
 C
 C     Set up a contraction matrix in case of Douglas-Kroll integrals
 C
-      IF (DKTRAN) THEN
+      IF (DKTRAN .AND. .NOT.DKHINT) THEN
          KLPRIM = 1
          KDKWRK = KLPRIM + KPRIM
          LDKWRK = LWORK - KDKWRK
@@ -2347,6 +2357,7 @@ C*****************************************************************************
 #include "aosotr.h"
 #include "r12int.h"
 #include "qm3.h"
+#include "gnrinf.h"
 C
       IF (DIRAC) THEN
          SET_TYPE(1) = 'large component basis functions'
@@ -2555,9 +2566,12 @@ C
      &               JCO(1,1,1),NUC(1,1),NRC(1,1),SEG(1,1),
      &               WORK(KIPCON),KATOM,KANG,KBLOCK,
      &               KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
-         CALL MOGTO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
-     &              NUC(1,1),NRC(1,1),SEG(1,1),KATOM,KANG,KBLOCK,
-     &              KPRIM,CPRIMU,NRMPRI)
+         IF (.NOT. DKHINT) THEN
+         ! do not save MOLDEN info for uncontracted basis set for DKH2
+             CALL MOGTO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
+     &                  NUC(1,1),NRC(1,1),SEG(1,1),KATOM,KANG,KBLOCK,
+     &                  KPRIM,CPRIMU,NRMPRI)
+         END IF
       END IF
       IF (IPREAD .GE. 2) THEN
 C*****************************************************************************
@@ -2631,7 +2645,7 @@ C
 C*****************************************************************************
 #include "implicit.h"
 #include "maxaqn.h"
-      CHARACTER TSTRING*(6*MXAQN+3)
+      CHARACTER TSTRING*(6*MXQN+3)
       CHARACTER SPDCAR*1 ! type declaration for external function
       DIMENSION JCO(IQM),NRC(*),NUC(*)
 #include "ccom.h"
@@ -4102,6 +4116,13 @@ C
 #include "huckel.h"
 casm
 #include "suscc.h"
+#include "center.h"
+#include "infpar.h"
+C
+      LOGICAL FNDEOI
+      DATA FNDEOI /.FALSE./
+      SAVE FNDEOI
+      CHARACTER*7 TMPWRD
 casm
 
 C
@@ -4282,6 +4303,88 @@ C
          END DO
       END DO
 C
+C     Select atoms for Cholesky decomposition (only in master)
+C
+      IF (SLAVE) GOTO 100
+C
+      ACTSEL = .FALSE.
+C
+      REWIND(LUCMD)
+      DO WHILE (.NOT. FNDEOI)
+         READ(LUCMD,'(A7)') TMPWRD
+         CALL UPCASE(TMPWRD)
+         IF (TMPWRD(1:7) .EQ. '*CHOACT') THEN
+            ACTSEL = .TRUE.
+            FNDEOI = .TRUE.
+         ELSE IF ((TMPWRD(1:7) .EQ. '*END OF') .OR.
+     &            (TMPWRD(1:7) .EQ. '**END O')) THEN
+            FNDEOI = .TRUE.
+         END IF
+      END DO
+C
+      IF (.NOT. ACTSEL) GOTO 100
+C
+      CALL SYSTEM('cp molden.inp MOLDEN2.INP')
+C
+      ICOUNT = 0
+      DO ISYM = 1,MAXREP+1
+         DO I = 1,NAOS(ISYM)
+            ICOUNT = ICOUNT + 1
+            ICENT  = IPCEN(ICOUNT)
+            NBCENT(ICENT,ISYM) = NBCENT(ICENT,ISYM) + 1
+         END DO
+      END DO
+C
+      ICOUNT = 0
+      DO ISYM = 1,MAXREP+1
+         DO ICENT = 1,NUCIND
+            IBCENT(ICENT,ISYM) = ICOUNT
+            ICOUNT = ICOUNT + NBCENT(ICENT,ISYM)
+         END DO
+      END DO
+C
+      ICOUN0 = 0
+      DO ICENT = 1,NUCIND
+         ICOUN1 = 0
+         DO ISYM = 1,MAXREP + 1
+            ICOUN2 = IBCENT(ICENT,ISYM)
+            DO I = 1,NBCENT(ICENT,ISYM)
+               ICOUN1 = ICOUN1 + 1
+               IF (ICOUN1 .GT. MXBSCE) THEN
+                  WRITE(LUPRI,*) 'Maximum number of basis functions ',
+     &                  'on a sigle independent center is ', MXBSCE
+                  WRITE(LUPRI,*) 'Fix it in center.h'
+                  STOP 'Too many basis on one center'
+               END IF
+               ICOUN2 = ICOUN2 + 1
+               KBSCEN(ICOUN1,ICENT) = ICOUN2
+            END DO
+         END DO
+         NBSCEN(ICENT) = ICOUN1
+         ICOUN0 = ICOUN0 + ICOUN1
+      END DO
+      NCHKBS = ICOUN0
+C
+      WRITE(LUPRI,'(//,A,/,A,/)') 'Center information',
+     &                            '------------------'
+      WRITE(LUPRI,'(/,A,20X,A)') 'Nucleus','Number of basis'
+      WRITE(LUPRI,'(10X,A,8I5)') 'Sym.',(I,I=1,MAXREP+1)
+      DO ICENT = 1,NUCIND
+         WRITE(LUPRI,'(3X,I3,8X,8I5)') ICENT,
+     &                        (NBCENT(ICENT,ISYM),ISYM=1,MAXREP+1)
+      END DO
+C
+      DO ICENT = 1,NUCIND
+         WRITE(LUPRI,'(//I5,A,A,I5,A)')
+     &        NBSCEN(ICENT),' basis functions centered',
+     &       ' on nucleus',ICENT,' :'
+         WRITE(LUPRI,'(12I6)') (KBSCEN(I,ICENT),I=1,NBSCEN(ICENT))
+      END DO
+C
+  100 CONTINUE
+C
+Casm_end
+C
       RETURN
       END
 C  /* Deck symnco */
@@ -4403,6 +4506,8 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
+      use pe_variables, only: peqm, pe_mep
+      use polarizable_embedding, only: pe_init
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -4577,6 +4682,11 @@ C
       IF (IPREAD .GT. 0) WRITE(LUPRI,'(//A,F18.12,A)')
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
+
+      if (peqm .or. pe_mep) then
+        call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
+      end if
+
       RETURN
       END
 C  /* Deck priord */
@@ -6511,6 +6621,7 @@ C
 C
 C     Read in the fourth input line using the new input scheme
 C
+      use pe_variables, only: peqm
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -6691,6 +6802,17 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
          DOOWN  = CRT .EQ. 'X'
       END IF
       IF (ADDSYM) NSYMOP = 0
+      if (peqm) then
+        if (addsym) then
+            addsym = .false.
+        else if (nsymop > 0) then
+            write(lupri,'(/a)') 'ERROR: point group symmetry is'//
+     &                          ' incompatible with polarizable'//
+     &                          ' embedding'
+            call quit('point group symmetry is incompatible with'//
+     &                ' polarizable embedding')
+        end if
+      end if
       RETURN
  199  CONTINUE
       WRITE (LUPRI,'(/A)') ' Error in the determination of the number'

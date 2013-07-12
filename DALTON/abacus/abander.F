@@ -303,6 +303,7 @@ C     **** Subroutine that keeps track of the analytical ****
 C     **** for a given wave-function. NAORDR gives the   ****
 C     **** order of the analytical derivative.           ****
 C     *******************************************************
+      use pe_variables, only: peqm
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -335,22 +336,26 @@ C
       DOMCSRDFT  = .FALSE.
 #endif
 C
-      IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 .OR.
-     &    CCD   .OR. CC3   .OR. CCP3 .OR. CCRT .OR. CCR3 .OR.
+      IF (CCSDT .OR. CIS   .OR. CC1A .OR. CC1B .OR. MCC2 .OR. CCP2 
+     &    .OR. CC3   .OR. CCP3 .OR. CCRT .OR. CCR3 .OR.
      &    CCR1A .OR. CCR1B .OR. CCT  .OR.
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
-     &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN) THEN
+     &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN .OR.
+C JMHO: Only numerical derivs with polarizable embedding module atm.
+     &    peqm) THEN
          NAORDR = 0
-      ELSE IF (CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
+      ELSE IF (CCD. OR. CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
      &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR.
      &        (DFTRUN .AND. (NSYM.GT.1.OR.HFXMU.NE.D0)) .OR.
-     &        DPCM .OR. DOROHF) THEN
+!RPA Methods with analytic gradient only
+     &        DRCCD .OR. SOSEX .OR. RCCD .OR.
+     &        DPCM .OR. DOROHF .OR.
+CAMT Only gradients for empirical disp correction so far
+     &        DODFTD) THEN
          NAORDR = 1
       ELSE
          NAORDR = 2
       END IF
-CAMT Only gradients for empirical disp correction so far
-      IF (DODFTD) NAORDR = 1
 C
       WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
      &          'energy-derivatives available:', NAORDR
@@ -543,23 +548,18 @@ C
 C
       MAXADR = 1
       DO 200 J = NMORDR, 1, -2
-      DO 200 I = 1, J
-         MAXADR = MAXADR + 1
+         IF (J .GT. 0) MAXADR = MAXADR + J
  200  CONTINUE
 C     
 C     NDERIV -> number derivatives to save space 
 C               for in WORK
       DO 300 IORDR = 3, NMORDR+NAORDR
          IKDRV = 1
-         DO 400 IIORDR =1, IORDR
+         DO 400 IIORDR = 1, IORDR
             IKDRV = IKDRV*(NCOOR+IIORDR-1)/IIORDR
  400     CONTINUE
          NDERIV = NDERIV + IKDRV
  300  CONTINUE
-      if (nderiv .le. 0 .AND. .NOT. PRPONL ) then
-         write(lupri,*) 'hjaaj: nderiv .le. 0',nderiv
-         write(lupri,*) 'hjaaj: nmordr,naordr,ncoor',nmordr,naordr,ncoor
-      end if
 C
       DO 500 IORDR = 1, NMORDR
          IKDIME = 1
@@ -970,9 +970,7 @@ C
          END IF
 
       ELSE
-         WRITE (LUPRI,'(A)') '                                '
-         WRITE (LUPRI,'(A)') 'Reading in precalculated hessian'
-         WRITE (LUPRI,'(A)') '                                '
+         WRITE (LUPRI,'(/A/)') 'Reading in precalculated hessian'
 C
          KHSSIN = 1
          KLAST  = KHSSIN + NCOOR**2
@@ -3310,7 +3308,7 @@ C
 C
 C     ************************************
 C     *** Transformation to cartesian  ***
-C     ***  coordinstes, and printing.  ***
+C     ***  coordinates, and printing.  ***
 C     ************************************
 C
       IF ((FCLASS(1:3) .NE. 'C1 ').AND.(TEXT(1:6).NE.'normal')) THEN
@@ -3453,7 +3451,7 @@ C
 C
 C     ************************************
 C     *** Transformation to cartesian  ***
-C     ***  coordinstes, and printing.  ***
+C     ***  coordinates, and printing.  ***
 C     ************************************
 C
       IF ((FCLASS(1:3).NE.'C1 ').AND.(TEXT(1:6).NE.'normal')) THEN

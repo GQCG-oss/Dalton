@@ -383,6 +383,7 @@ C
       END IF
 C
       IF (ABSLRS) THEN
+        ABS_DIRFCK=DIRFCK
         CALL GPINQ('ABSVECS','EXIST',EX)
         IF (.NOT.EX) THEN
           OPEN(LUABSVECS,file='ABSVECS',status='new',form='unformatted')
@@ -677,7 +678,7 @@ C
 C
       KFREE = 1
       LFREE = LWRK
-      IF (ABSLRS) THEN
+      IF (ABSLRS .AND. ABS_DIRFCK .AND. NCONF.LE.1) THEN
         CALL MEMGET('REAL',KRES,2*3*3*NFREQ_INTERVAL,WRK,KFREE,
      &              LFREE)
         CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
@@ -688,11 +689,22 @@ C
         CALL ABS2INTER(WRK(KMJWOP),KZVAR)
         CALL GETGPV(LABEL,FC,FV,CMO,UDV,PV,XINDX,ANTSYM,
      &              WRK(KFREE),LFREE)
-          CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KGD),1)
+        CALL DCOPY(KZYVAR,WRK(KFREE),1,WRK(KGD),1)
+        GDNRM=DNRM2(2*KZVAR,WRK(KGD),1)
+        IF (GDNRM .LE. 1.0d-8) THEN
+          WRK(KXSOL:4*KZVAR-1)=0.0d0
+          RES0=0.0d0
+          DO K=1,NFREQ_ALPHA
+              CALL WRITE_XVEC(LUABSVECS,4*KZVAR,WRK(KXSOL),LABEL,
+     &                       ABS_FREQ_ALPHA(K),RES0)
+          ENDDO
+          WRITE(LUPRI,*) 'Vectors equal to zero'
+        ELSE
           CALL ABS_CTL(LABEL,KZVAR,WRK(KGD),WRK(KXSOL),
-     &                 ABS_FREQ_ALPHA,
-     &                 WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
-     &                 WRK(KRES),WRK(KFREE),LFREE)
+     &               ABS_FREQ_ALPHA,
+     &               WRK(KMJWOP),CMO,UDV,FC,FCAC,FV,PV,XINDX,
+     &               WRK(KRES),WRK(KFREE),LFREE)
+        ENDIF   
       ELSE
       CALL MEMGET('REAL',KREDE,MAXRM*MAXRM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KREDS,MAXRM*MAXRM,WRK,KFREE,LFREE)
@@ -705,7 +717,7 @@ C
       CALL MEMGET('REAL',KREDZGD,2*MAXRM,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KGD,KZYVAR,WRK,KFREE,LFREE)
 C
-      IF (ABSORP) THEN
+      IF (ABSORP .OR. ABSLRS) THEN
 C
 C     Nonzero damping parameter corresponds to complex response including 
 C     absorption in the system

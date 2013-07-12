@@ -80,10 +80,10 @@ C
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include "general.h"
+#include "lsdalton_general.h"
 #define __CVERSION__
 
-#include "functionals.h"
+#include "lsdalton_functionals.h"
 
 Functional* available_functionals[] = {
     /* generic functionals */
@@ -120,6 +120,8 @@ Functional* available_functionals[] = {
     &BP86Functional,
     &BPW91Functional,
     &Camb3lypFunctional,
+    &CamxFunctional,
+    &CamcompxFunctional,
     &GGAKeyFunctional,
     &KT1Functional,
     &KT2Functional,

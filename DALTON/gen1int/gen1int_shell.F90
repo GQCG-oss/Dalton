@@ -23,6 +23,12 @@
 !
 !...  This file takes care the atomic orbital (AO) sub-shell used in Gen1Int interface.
 !
+!...  2013-05-16, Bin Gao
+!...  * fix the bug of calculating expectation values in parallel
+!
+!...  2013-05-04, Bin Gao
+!...  * fix the bug of returning wrong partial geometric derivatives
+!
 !...  2012-05-10, Bin Gao
 !...  * implements manager/worker parallelization scheme in Gen1IntShellGetIntExpt and
 !...    Gen1IntShellGetMO
@@ -81,14 +87,6 @@ module gen1int_shell
     ! first atomic orbital in this shell minus 1
     integer base_idx
   end type sub_shell_t
-
-  ! types of returned total geometric derivatives, UNIQUE_GEO is for unique total
-  ! geometric derivatives, and REDUNDANT_GEO for redundant total geometric derivatives;
-  ! for instance, (xx,xy,yy,xz,yz,zz) are unique while (xx,yx,zx,xy,yy,zy,xz,yz,zz) are
-  ! redundant, note that the "triangular" total geometric derivatives could be obtained
-  ! from the unique total geometric derivatives by giving \var(max_num_cent)=\var(order_geo_total)
-  integer, public, parameter :: UNIQUE_GEO = 1
-  integer, public, parameter :: REDUNDANT_GEO = 3
 
   public :: Gen1IntShellCreate
 #if defined(VAR_MPI)
@@ -390,14 +388,15 @@ module gen1int_shell
   !> \param sub_shells_ket are the AO sub-shells on ket center
   !> \param same_braket indicates if the AO sub-shells are the same on bra and ket centers
   !> \param one_prop contains the information of one-electron property integrals
-  !> \param geom_tree contains the information of N-ary tree for total geometric derivatives
-  !> \param geom_type is the type of returned total geometric derivatives, UNIQUE_GEO is for unique total
-  !>        geometric derivatives, and REDUNDANT_GEO for redundant total geometric derivatives;
-  !>        for instance, (xx,xy,yy,xz,yz,zz) are unique while (xx,yx,zx,xy,yy,zy,xz,yz,zz) are
-  !>        redundant, note that the "triangular" total geometric derivatives could be obtained
-  !>        from the unique total geometric derivatives by giving \var(max_num_cent)=\var(order_geo_total)
+  !> \param nary_tree_bra is the N-ary tree for geometric derivatives on bra center
+  !> \param nary_tree_ket is the N-ary tree for geometric derivatives on ket center
+  !> \param nary_tree_total is the N-ary tree for total geometric derivatives
   !> \param api_comm is the MPI communicator
-  !> \param num_ints is the number of property integral matrices including various derivatives
+  !> \param num_prop is the number of property integrals including various derivatives (except
+  !>        geometric derivatives)
+  !> \param num_geo_bra is number of geometric derivatives on bra center
+  !> \param num_geo_ket is number of geometric derivatives on ket center
+  !> \param num_geo_total is number of total geometric derivatives
   !> \param num_dens is the number of AO density matrices
   !> \param ao_dens contains the AO density matrices
   !> \return val_ints contains the integral matrices
@@ -410,8 +409,11 @@ module gen1int_shell
   subroutine Gen1IntShellGetIntExpt(num_shells_bra, sub_shells_bra, &
                                     num_shells_ket, sub_shells_ket, &
                                     same_braket, one_prop,          &
-                                    geom_tree, geom_type, api_comm, &
-                                    num_ints, val_ints, write_ints, &
+                                    nary_tree_bra, nary_tree_ket,   &
+                                    nary_tree_total, api_comm,      &
+                                    num_prop, num_geo_bra,          &
+                                    num_geo_ket, num_geo_total,     &
+                                    val_ints, write_ints,           &
                                     num_dens, ao_dens, val_expt, write_expt)
     ! matrix module
     use gen1int_matrix
@@ -421,72 +423,160 @@ module gen1int_shell
     type(sub_shell_t), intent(in) :: sub_shells_ket(*)
     logical, intent(in) :: same_braket
     type(one_prop_t), intent(in) :: one_prop
-    type(geom_tree_t), optional, intent(inout) :: geom_tree
-    integer, optional, intent(in) :: geom_type
+    type(nary_tree_t), intent(inout) :: nary_tree_bra
+    type(nary_tree_t), intent(inout) :: nary_tree_ket
+    type(nary_tree_t), intent(inout) :: nary_tree_total
     integer, optional, intent(in) :: api_comm
-    integer, intent(in) :: num_ints
-    type(matrix), optional, intent(inout) :: val_ints(num_ints)
+    integer, intent(in) :: num_prop
+    integer, intent(in) :: num_geo_bra
+    integer, intent(in) :: num_geo_ket
+    integer, intent(in) :: num_geo_total
+    type(matrix), optional, intent(inout) :: val_ints(num_prop,    &
+                                                      num_geo_bra, &
+                                                      num_geo_ket, &
+                                                      num_geo_total)
     logical, optional, intent(in) :: write_ints
     integer, intent(in) :: num_dens
     type(matrix), optional, intent(in) :: ao_dens(num_dens)
-    real(REALK), optional, target, intent(inout) :: val_expt(num_ints,num_dens)
+    real(REALK), optional, target, intent(inout) :: val_expt(num_prop,      &
+                                                             num_geo_bra,   &
+                                                             num_geo_ket,   &
+                                                             num_geo_total, &
+                                                             num_dens)
     logical, optional, intent(in) :: write_expt
-    logical spher_gto                          !if using spherical GTOs
-    integer num_prop                           !number of property integrals
-    integer prop_sym                           !symmetry of property integrals
-    integer max_bra_ao                         !maximum number of AOs in a sub-shell on bra center
-    integer max_ket_ao                         !maximum number of AOs in a sub-shell on ket center
-    integer size_ao                            !size of AOs
-    integer num_pairs                          !number of AO sub-shell pairs to calculate
-    integer order_geo                          !order of total geometric derivatives
-    logical do_redunt_geo                      !calculates redundant total geometric derivatives
-    integer path_num_unique                    !number of unique derivatives of current path
-    integer path_num_redunt                    !number of redundnat derivatives of current path
-    integer, allocatable :: redunt_list(:,:)   !list addresses of redundant total geometric derivatives
-    integer num_redunt_geo                     !number of all redundant total geometric derivatives
-    integer path_offset                        !offset of unique derivatives of current path
-    integer num_matrices                       !number of integral matrices
-    integer size_ints                          !size of contracted integrals
-    real(REALK), allocatable :: contr_ints(:)  !contracted integrals between two AO sub-shells (pair)
-    logical p_write_ints                       !if writing integral matrices on file
-    logical p_write_expt                       !if writing expectation values on file
-    logical do_integral                        !if returning and/or writing integral matrices
-    logical do_expectation                     !if calculating or writing expectaion values on file
-    integer start_expt                         !start address of expectation values
-    integer end_expt                           !end address of expectation values
-    real(REALK), pointer :: unique_expt(:,:)   !expectation values with unique geometric derivatives
-    integer remaining_jobs                     !number of remaining jobs
-    integer shell_pair(2)                      !indices of AO sub-shell pair on bra and ket centers
-    integer min_row_idx, max_row_idx           !minimum and maximum indices of rows (on bra center)
-    integer min_col_idx, max_col_idx           !minimum and maximum indices of columns (on ket center)
-    integer offset_prop                        !offset of property integrals
-    integer offset_ints                        !offset of contracted integrals
-    integer start_ints, end_ints               !start and end addresses of contracted integrals
-    integer idens, igeo, iprop                 !incremental recorders
-    integer ierr                               !error information
+    logical spher_gto                               !if using spherical GTOs
+    integer prop_sym                                !symmetry of property integrals
+    integer num_cent_bra                            !number of differentiated centers on bra center
+    integer num_cent_ket                            !number of differentiated centers on ket center
+    integer idx_cent_bra(1)                         !indices of differentiated centers on bra center
+    integer idx_cent_ket(1)                         !indices of differentiated centers on ket center
+    integer order_cent_bra(1)                       !orders of differentiated centers on bra center
+    integer order_cent_ket(1)                       !orders of differentiated centers on ket center
+    integer min_shell_bra, max_shell_bra            !minimum and maximum of sub-shells on bra center for calculations
+    integer min_shell_ket, max_shell_ket            !minimum and maximum of sub-shells on ket center for calculations
+    integer max_ao_bra                              !maximum number of AOs in a sub-shell on bra center
+    integer max_ao_ket                              !maximum number of AOs in a sub-shell on ket center
+    integer size_ao                                 !size of AOs
+    integer num_pairs                               !number of AO sub-shell pairs to calculate
+    integer path_num_bgeo                           !number of geometric derivatives on bra center
+    integer path_num_kgeo                           !number of geometric derivatives on ket center
+    integer path_num_tgeo                           !number of unique total geometric derivatives of current path
+    integer path_offset_bgeo                        !offset of geometric derivatives on bra center
+    integer path_offset_kgeo                        !offset of geometric derivatives on ket center
+    integer path_offset_tgeo                        !offset of unique total geometric derivatives of current path
+    integer num_matrices                            !number of integral matrices
+    integer size_ints                               !size of contracted integrals
+    real(REALK), allocatable :: contr_ints(:)       !contracted integrals between two AO sub-shells (pair)
+    logical p_write_ints                            !if writing integral matrices on file
+    logical p_write_expt                            !if writing expectation values on file
+    logical do_integral                             !if returning and/or writing integral matrices
+    logical do_expectation                          !if calculating or writing expectaion values on file
+    real(REALK), pointer :: unique_expt(:,:,:,:,:)  !expectation values with unique geometric derivatives
+    integer remaining_jobs                          !number of remaining jobs
+    integer shell_pair(2)                           !indices of AO sub-shell pair on bra and ket centers
+    integer min_row_idx, max_row_idx                !minimum and maximum indices of rows (on bra center)
+    integer min_col_idx, max_col_idx                !minimum and maximum indices of columns (on ket center)
+    integer start_ints, end_ints                    !start and end addresses of contracted integrals
+    integer ishell, idens, bgeo, kgeo, tgeo, iprop  !incremental recorders
+    integer ierr                                    !error information
 #if defined(VAR_MPI)
 #include "mpif.h"
-    integer rank_proc                          !rank of processor
-    integer num_proc                           !number of processors
-    integer worker_request(3)                  !request from a worker, in which the first two elements
-                                               !are either \var(REQUEST_WORK) or the AO sub-shell pair
-                                               !to send back, the third is the rank of the worker
-    integer msg_tag                            !message tag
-    integer mpi_status(MPI_STATUS_SIZE)        !MPI status
+    integer rank_proc                               !rank of processor
+    integer num_proc                                !number of processors
+    integer worker_request(3)                       !request from a worker, in which the first two elements
+                                                    !are either \var(REQUEST_WORK) or the AO sub-shell pair
+                                                    !to send back, the third is the rank of the worker
+    integer msg_tag                                 !message tag
+    integer mpi_status(MPI_STATUS_SIZE)             !MPI status
 #endif
     ! since we do not use mixed CGTOs and SGTOs, we get this information only from
     ! the first sub-shell on bra center
     spher_gto = sub_shells_bra(1)%spher_gto
-    ! gets the number of property integrals
-    call OnePropGetNumProp(one_prop=one_prop, num_prop=num_prop)
+    ! gets the number of differentiated centers on bra and ket centers
+    call NaryTreePathGetNumCenters(nary_tree=nary_tree_bra, num_centers=num_cent_bra)
+    call NaryTreePathGetNumCenters(nary_tree=nary_tree_ket, num_centers=num_cent_ket)
+    if (num_cent_bra>1 .or. num_cent_ket>1) then
+      return
+    ! one-center partial geometric derivatives
+    else if (num_cent_bra==1 .and. num_cent_ket==1) then
+      ! gets the indices and orders of differentitated centers
+      call NaryTreePathGetIdxCent(nary_tree=nary_tree_bra, idx_cent=idx_cent_bra)
+      call NaryTreePathGetOrderCent(nary_tree=nary_tree_bra, order_cent=order_cent_bra)
+      call NaryTreePathGetIdxCent(nary_tree=nary_tree_ket, idx_cent=idx_cent_ket)
+      call NaryTreePathGetOrderCent(nary_tree=nary_tree_ket, order_cent=order_cent_ket)
+      ! finds the range of shells for calculations
+      min_shell_bra = num_shells_bra+1
+      max_shell_bra = 0
+      do ishell = 1, num_shells_bra
+        if (sub_shells_bra(ishell)%idx_cent==idx_cent_bra(1)) then
+          if (ishell<min_shell_bra) min_shell_bra = ishell
+          if (ishell>max_shell_bra) max_shell_bra = ishell
+        end if
+      end do
+      if (min_shell_bra>max_shell_bra) return
+      min_shell_ket = num_shells_ket+1
+      max_shell_ket = 0
+      do ishell = 1, num_shells_ket
+        if (sub_shells_ket(ishell)%idx_cent==idx_cent_ket(1)) then
+          if (ishell<min_shell_ket) min_shell_ket = ishell
+          if (ishell>max_shell_ket) max_shell_ket = ishell
+        end if
+      end do
+      if (min_shell_ket>max_shell_ket) return
+    ! one-center partial geometric derivatives on bra center
+    else if (num_cent_bra==1 .and. num_cent_ket==0) then
+      ! gets the indices and orders of differentitated centers
+      call NaryTreePathGetIdxCent(nary_tree=nary_tree_bra, idx_cent=idx_cent_bra)
+      call NaryTreePathGetOrderCent(nary_tree=nary_tree_bra, order_cent=order_cent_bra)
+      order_cent_ket = 0
+      ! finds the range of shells for calculations
+      min_shell_bra = num_shells_bra+1
+      max_shell_bra = 0
+      do ishell = 1, num_shells_bra
+        if (sub_shells_bra(ishell)%idx_cent==idx_cent_bra(1)) then
+          if (ishell<min_shell_bra) min_shell_bra = ishell
+          if (ishell>max_shell_bra) max_shell_bra = ishell
+        end if
+      end do
+      if (min_shell_bra>max_shell_bra) return
+      min_shell_ket = 1
+      max_shell_ket = num_shells_ket
+    ! one-center partial geometric derivatives on ket center
+    else if (num_cent_bra==0 .and. num_cent_ket==1) then
+      order_cent_bra = 0
+      ! gets the indices and orders of differentitated centers
+      call NaryTreePathGetIdxCent(nary_tree=nary_tree_ket, idx_cent=idx_cent_ket)
+      call NaryTreePathGetOrderCent(nary_tree=nary_tree_ket, order_cent=order_cent_ket)
+      ! finds the range of shells for calculations
+      min_shell_bra = 1
+      max_shell_bra = num_shells_bra
+      min_shell_ket = num_shells_ket+1
+      max_shell_ket = 0
+      do ishell = 1, num_shells_ket
+        if (sub_shells_ket(ishell)%idx_cent==idx_cent_ket(1)) then
+          if (ishell<min_shell_ket) min_shell_ket = ishell
+          if (ishell>max_shell_ket) max_shell_ket = ishell
+        end if
+      end do
+      if (min_shell_ket>max_shell_ket) return
+    ! no partial geometric derivatives
+    else
+      order_cent_bra = 0
+      order_cent_ket = 0
+      min_shell_bra = 1
+      max_shell_bra = num_shells_bra
+      min_shell_ket = 1
+      max_shell_ket = num_shells_ket
+    end if
     ! sets the maximum number of AOs in a sub-shell on bra center
-    max_bra_ao = 0
-    do ierr = 1, num_shells_bra
-      size_ao = sub_shells_bra(ierr)%num_ao*sub_shells_bra(ierr)%num_contr
-      if (max_bra_ao<size_ao) max_bra_ao = size_ao
+    max_ao_bra = 0
+    do ishell = min_shell_bra, max_shell_bra
+      size_ao = sub_shells_bra(ishell)%num_ao*sub_shells_bra(ishell)%num_contr
+      if (max_ao_bra<size_ao) max_ao_bra = size_ao
     end do
     ! sets the number of AO sub-shell pairs to calculate
-    if (same_braket .and. num_shells_bra==num_shells_ket) then
+    if (same_braket .and. num_shells_bra==num_shells_ket .and. &
+        num_cent_bra==0 .and. num_cent_ket==0) then
       ! gets the symmetry of property integrals
       call OnePropGetSymmetry(one_prop=one_prop, prop_sym=prop_sym)
       select case (prop_sym)
@@ -496,85 +586,34 @@ module gen1int_shell
         num_pairs = num_shells_bra*num_shells_ket
       end select
       ! sets the maximum number of AOs in a sub-shell on ket center
-      max_ket_ao = max_bra_ao
+      max_ao_ket = max_ao_bra
     else
       ! we need to calculate all the sub-shell pairs even for symmetric and anti-symmetric integrals
       prop_sym = SQUARE_INT_MAT
-      num_pairs = num_shells_bra*num_shells_ket
+      num_pairs = (max_shell_bra-min_shell_bra+1)*(max_shell_ket-min_shell_ket+1)
       ! sets the maximum number of AOs in a sub-shell on ket center
-      max_ket_ao = 0
-      do ierr = 1, num_shells_ket
-        size_ao = sub_shells_ket(ierr)%num_ao*sub_shells_ket(ierr)%num_contr
-        if (max_ket_ao<size_ao) max_ket_ao = size_ao
+      max_ao_ket = 0
+      do ishell = min_shell_ket, max_shell_ket
+        size_ao = sub_shells_ket(ishell)%num_ao*sub_shells_ket(ishell)%num_contr
+        if (max_ao_ket<size_ao) max_ao_ket = size_ao
       end do
     end if
-    ! sets total geometric derivatives
-    if (present(geom_tree)) then
-      ! gets the order of total geometric derivatives
-      call GeomTreeGetOrder(geom_tree=geom_tree, order_geo=order_geo)
-      ! sets the type of total geometric derivatives
-      if (order_geo>1) then
-        if (present(geom_type)) then
-          if (geom_type/=UNIQUE_GEO .and. geom_type/=REDUNDANT_GEO) then
-            stop "Gen1IntShellGetIntExpt>> invalid type of total geometric derivatives"
-          else
-            do_redunt_geo = geom_type==REDUNDANT_GEO
-          end if
-        ! default are unique total geometric derivatives
-        else
-          do_redunt_geo = .false.
-        end if
-      ! the first order total geometric derivatives are unique
-      else
-        do_redunt_geo = .false.
-      end if
-      ! gets the number of unique derivatives of current path
-      call GeomPathGetNumUnique(geom_tree=geom_tree, path_num_unique=path_num_unique)
-      ! redundant total geometric derivatives
-      if (do_redunt_geo) then
-        ! gets the number of redundant derivatives of current path
-        call GeomPathGetNumRedunt(geom_tree=geom_tree, &
-                                  path_num_redunt=path_num_redunt)
-        ! sets the list addresses of redundant total geometric derivatives
-        allocate(redunt_list(2,path_num_redunt), stat=ierr)
-        if (ierr/=0) then
-          stop "Gen1IntShellGetIntAve>> failed to allocate redunt_list!"
-        end if
-        call GeomPathGetReduntList(geom_tree=geom_tree, redunt_list=redunt_list)
-        do igeo = 1, path_num_redunt
-          redunt_list(:,igeo) = redunt_list(:,igeo)-1
-        end do
-        ! gets the number of all redundant derivatives in the N-ary tree
-        call GeomTreeGetNumAtoms(geom_tree=geom_tree, num_atoms=num_redunt_geo)
-        num_redunt_geo = (3*num_redunt_geo)**order_geo
-        ! sets the offset of unique derivatives of current path as 0, which will only
-        ! be used for calculating expecatation values \var(unique_expt)
-        path_offset = 0
-      else
-        path_num_redunt = 1  !not used
-        num_redunt_geo = 1   !not used
-        ! gets the offset of unique derivatives of current path
-        call GeomPathGetOffset(geom_tree=geom_tree, path_offset=path_offset)
-      end if
-    ! no total geometric derivatives
-    else
-      do_redunt_geo = .false.
-      path_num_unique = 1
-      path_num_redunt = 1  !not used
-      num_redunt_geo = 1   !not used
-      path_offset = 0
-    end if
+    ! gets the numbers of unique geometric derivatives of current path
+    path_num_bgeo = (order_cent_bra(1)+1)*(order_cent_bra(1)+2)/2
+    path_num_kgeo = (order_cent_ket(1)+1)*(order_cent_ket(1)+2)/2
+    call NaryTreePathGetNumUnique(nary_tree=nary_tree_total, path_num_unique=path_num_tgeo)
+    ! gets the offsets of geometric derivatives of current path
+    call NaryTreePathGetOffset(nary_tree=nary_tree_bra, path_offset=path_offset_bgeo)
+    call NaryTreePathGetOffset(nary_tree=nary_tree_ket, path_offset=path_offset_kgeo)
+    call NaryTreePathGetOffset(nary_tree=nary_tree_total, path_offset=path_offset_tgeo)
     ! sets the number of integral matrices
-    num_matrices = num_prop*path_num_unique
+    num_matrices = num_prop*path_num_bgeo*path_num_kgeo*path_num_tgeo
     ! allocates cache of contracted integrals between two AO sub-shells
-    size_ints = max_bra_ao*max_ket_ao*num_matrices
+    size_ints = max_ao_bra*max_ao_ket*num_matrices
     allocate(contr_ints(size_ints), stat=ierr)
     if (ierr/=0) then
       stop "Gen1IntShellGetIntExpt>> failed to allocate contr_ints!"
     end if
-    ! sets the start and end addresses of expectation values
-    start_expt = path_offset*num_prop+1
-    end_expt = path_offset*num_prop+num_matrices
 #if defined(VAR_MPI)
     ! gets the rank of this processor and the number of processors
     if (present(api_comm)) then
@@ -603,18 +642,18 @@ module gen1int_shell
       end if
       ! if calculating expectation values
       do_expectation = present(ao_dens) .and. (present(val_expt) .or. p_write_expt)
-      ! sets the information related to expectation values
+      ! sets the array of expectation values
       if (do_expectation) then
-        ! if redundant total geometric derivatives are required or no output argument is
-        ! given, we need to allocate memory to save the expectation values with the unique
-        ! total geometric derivatives
-        if (do_redunt_geo .or. .not.present(val_expt)) then
-          allocate(unique_expt(start_expt:end_expt,num_dens), stat=ierr)
+        if (.not. present(val_expt)) then
+          allocate(unique_expt(num_prop,                                          &
+                               path_offset_bgeo+1:path_offset_bgeo+path_num_bgeo, &
+                               path_offset_kgeo+1:path_offset_kgeo+path_num_kgeo, &
+                               path_offset_tgeo+1:path_offset_tgeo+path_num_tgeo, &
+                               num_dens), stat=ierr)
           if (ierr/=0) then
             stop "Gen1IntShellGetIntExpt>> failed to allocate unique_expt!"
           end if
           unique_expt = 0.0_REALK
-        ! for required unique total geometric derivatives, we just point \var(unique_expt) to them
         else
           unique_expt => val_expt
         end if
@@ -633,7 +672,11 @@ module gen1int_shell
         if (.not.present(ao_dens)) then
           stop "Gen1IntShellGetIntExpt>> worker processor does not have ao_dens!"
         end if
-        allocate(unique_expt(start_expt:end_expt,num_dens), stat=ierr)
+        allocate(unique_expt(num_prop,                                          &
+                             path_offset_bgeo+1:path_offset_bgeo+path_num_bgeo, &
+                             path_offset_kgeo+1:path_offset_kgeo+path_num_kgeo, &
+                             path_offset_tgeo+1:path_offset_tgeo+path_num_tgeo, &
+                             num_dens), stat=ierr)
         if (ierr/=0) then
           stop "Gen1IntShellGetIntExpt>> failed to allocate unique_expt on worker processor!"
         end if
@@ -650,8 +693,8 @@ module gen1int_shell
         ! to other worker processors)
         remaining_jobs = num_proc-1
         ! intializes the indices of AO sub-shell pair on bra and ket centers
-        shell_pair(1) = 0
-        shell_pair(2) = 1
+        shell_pair(1) = min_shell_bra-1
+        shell_pair(2) = min_shell_ket
         do while (remaining_jobs>0)
           ! receives a request from a woker
           call MPI_Recv(worker_request, 3, MPI_INTEGER, MPI_ANY_SOURCE, &
@@ -659,7 +702,7 @@ module gen1int_shell
           ! the worker requests new work
           if (worker_request(1)==REQUEST_WORK) then
             ! no more sub-shell pair to calculate
-            if (shell_pair(1)>=num_shells_bra .and. shell_pair(2)>=num_shells_ket) then
+            if (shell_pair(1)>=max_shell_bra .and. shell_pair(2)>=max_shell_ket) then
               call MPI_Send((/NO_MORE_WORK,NO_MORE_WORK/), 2, MPI_INTEGER, &
                             worker_request(3), msg_tag, api_comm, ierr)
               ! decreases the number of remaining jobs
@@ -677,11 +720,11 @@ module gen1int_shell
                   shell_pair(1) = 1
                 end if
               case default
-                if (shell_pair(1)<num_shells_bra) then
+                if (shell_pair(1)<max_shell_bra) then
                   shell_pair(1) = shell_pair(1)+1
                 else
                   shell_pair(2) = shell_pair(2)+1
-                  shell_pair(1) = 1
+                  shell_pair(1) = min_shell_bra
                 end if
               end select
               ! sends the next sub-shell pair to the worker
@@ -711,67 +754,35 @@ module gen1int_shell
                         * sub_shells_ket(worker_request(2))%num_contr
             ! assigns the returned integrals
             if (present(val_ints)) then
-              ! returns integral matrices with redundant total geometric derivatives
-              if (do_redunt_geo) then
-                do igeo = 1, path_num_redunt
-                  offset_prop = num_prop*redunt_list(2,igeo)
-                  offset_ints = size_ao*num_prop*redunt_list(1,igeo)
-                  start_ints = offset_ints
-                  do iprop = 1, num_prop
-                    end_ints = start_ints+size_ao
-                    start_ints = start_ints+1
-                    call MatSetValues(val_ints(offset_prop+iprop),     &
-                                      min_row_idx, max_row_idx,        &
-                                      min_col_idx, max_col_idx,        &
-                                      contr_ints(start_ints:end_ints), &
-                                      .false.)
-                    if (prop_sym==SYMM_INT_MAT .and. &
-                        worker_request(1)/=worker_request(2)) then
-                      call MatSetValues(val_ints(offset_prop+iprop),     &
-                                        min_row_idx, max_row_idx,        &
-                                        min_col_idx, max_col_idx,        &
-                                        contr_ints(start_ints:end_ints), &
-                                        .true.)
-                    else if (prop_sym==ANTI_INT_MAT .and. &
-                             worker_request(1)/=worker_request(2)) then
-                      call MatSetValues(val_ints(offset_prop+iprop),      &
-                                        min_row_idx, max_row_idx,         &
-                                        min_col_idx, max_col_idx,         &
-                                        -contr_ints(start_ints:end_ints), &
-                                        .true.)
-                    end if
-                    start_ints = end_ints
+              start_ints = 0
+              do tgeo = path_offset_tgeo+1, path_offset_tgeo+path_num_tgeo
+                do kgeo = path_offset_kgeo+1, path_offset_kgeo+path_num_kgeo
+                  do bgeo = path_offset_bgeo+1, path_offset_bgeo+path_num_bgeo
+                    do iprop = 1, num_prop
+                      end_ints = start_ints+size_ao
+                      start_ints = start_ints+1
+                      call MatSetValues(val_ints(iprop,bgeo,kgeo,tgeo), &
+                                        min_row_idx, max_row_idx,       &
+                                        min_col_idx, max_col_idx,       &
+                                        contr_ints(start_ints:end_ints), .false.)
+                      if (prop_sym==SYMM_INT_MAT .and. &
+                          worker_request(1)/=worker_request(2)) then
+                        call MatSetValues(val_ints(iprop,bgeo,kgeo,tgeo), &
+                                          min_row_idx, max_row_idx,       &
+                                          min_col_idx, max_col_idx,       &
+                                          contr_ints(start_ints:end_ints), .true.)
+                      else if (prop_sym==ANTI_INT_MAT .and. &
+                               worker_request(1)/=worker_request(2)) then
+                        call MatSetValues(val_ints(iprop,bgeo,kgeo,tgeo), &
+                                          min_row_idx, max_row_idx,       &
+                                          min_col_idx, max_col_idx,       &
+                                          -contr_ints(start_ints:end_ints), .true.)
+                      end if
+                      start_ints = end_ints
+                    end do
                   end do
                 end do
-              ! returns integrals matrices with unique total geometric derivatives
-              else
-                start_ints = 0
-                do igeo = 0, path_num_unique-1
-                  offset_prop = num_prop*(path_offset+igeo)
-                  do iprop = 1, num_prop
-                    end_ints = start_ints+size_ao
-                    start_ints = start_ints+1
-                    call MatSetValues(val_ints(offset_prop+iprop), &
-                                      min_row_idx, max_row_idx,    &
-                                      min_col_idx, max_col_idx,    &
-                                      contr_ints(start_ints:end_ints), .false.)
-                    if (prop_sym==SYMM_INT_MAT .and. &
-                        worker_request(1)/=worker_request(2)) then
-                      call MatSetValues(val_ints(offset_prop+iprop), &
-                                        min_row_idx, max_row_idx,    &
-                                        min_col_idx, max_col_idx,    &
-                                        contr_ints(start_ints:end_ints), .true.)
-                    else if (prop_sym==ANTI_INT_MAT .and. &
-                             worker_request(1)/=worker_request(2)) then
-                      call MatSetValues(val_ints(offset_prop+iprop), &
-                                        min_row_idx, max_row_idx,    &
-                                        min_col_idx, max_col_idx,    &
-                                        -contr_ints(start_ints:end_ints), .true.)
-                    end if
-                    start_ints = end_ints
-                  end do
-                end do
-              end if
+              end do
             end if
 !FIXME
             ! writes the integrals on file
@@ -781,9 +792,11 @@ module gen1int_shell
         end do
         ! receives expectation values from worker processors
         if (do_expectation) then
-          call MPI_Reduce(MPI_IN_PLACE, unique_expt(start_expt:end_expt,:), &
-                          num_matrices*num_dens, MPI_REALK, MPI_SUM,        &
-                          MANAGER, api_comm, ierr)
+          call MPI_Reduce(MPI_IN_PLACE,                                                     &
+                          unique_expt(:,path_offset_bgeo+1:path_offset_bgeo+path_num_bgeo,  &
+                                      path_offset_kgeo+1:path_offset_kgeo+path_num_kgeo,    &
+                                      path_offset_tgeo+1:path_offset_tgeo+path_num_tgeo,:), &
+                          num_matrices*num_dens, MPI_REALK, MPI_SUM, MANAGER, api_comm, ierr)
         end if
       ! worker code
       else
@@ -825,7 +838,9 @@ module gen1int_shell
                      contr_coef_ket=sub_shells_ket(shell_pair(2))%contr_coef, &
                      spher_gto=spher_gto,                                     &
                      one_prop=one_prop,                                       &
-                     geom_tree=geom_tree,                                     &
+                     order_geo_bra=order_cent_bra(1),                         &
+                     order_geo_ket=order_cent_ket(1),                         &
+                     nary_tree_total=nary_tree_total,                         &
                      num_gto_bra=sub_shells_bra(shell_pair(1))%num_ao,        &
                      num_gto_ket=sub_shells_ket(shell_pair(2))%num_ao,        &
                      num_opt=num_matrices, contr_ints=contr_ints)
@@ -862,7 +877,9 @@ module gen1int_shell
                      contr_coef_ket=sub_shells_ket(shell_pair(2))%contr_coef, &
                      spher_gto=spher_gto,                                     &
                      one_prop=one_prop,                                       &
-                     geom_tree=geom_tree,                                     &
+                     order_geo_bra=order_cent_bra(1),                         &
+                     order_geo_ket=order_cent_ket(1),                         &
+                     nary_tree_total=nary_tree_total,                         &
                      num_gto_bra=sub_shells_bra(shell_pair(1))%num_ao,        &
                      num_gto_ket=sub_shells_ket(shell_pair(2))%num_ao,        &
                      num_opt=num_matrices, contr_ints=contr_ints,             &
@@ -891,33 +908,36 @@ module gen1int_shell
                           * sub_shells_ket(shell_pair(2))%num_contr
               do idens = 1, num_dens
                 start_ints = 0
-                do igeo = 0, path_num_unique-1
-                  offset_prop = (path_offset+igeo)*num_prop
-                  do iprop = 1, num_prop
-                    end_ints = start_ints+size_ao
-                    start_ints = start_ints+1
-                    call MatMultBlockedTrace(ao_dens(idens),                       &
-                                             min_row_idx, max_row_idx,             &
-                                             min_col_idx, max_col_idx,             &
-                                             contr_ints(start_ints:end_ints),      &
-                                             unique_expt(offset_prop+iprop,idens), &
-                                             .false.)
-                    if (prop_sym==SYMM_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
-                      call MatMultBlockedTrace(ao_dens(idens),                       &
-                                               min_row_idx, max_row_idx,             &
-                                               min_col_idx, max_col_idx,             &
-                                               contr_ints(start_ints:end_ints),      &
-                                               unique_expt(offset_prop+iprop,idens), &
-                                               .true.)
-                    else if (prop_sym==ANTI_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
-                      call MatMultBlockedTrace(ao_dens(idens),                       &
-                                               min_row_idx, max_row_idx,             &
-                                               min_col_idx, max_col_idx,             &
-                                               -contr_ints(start_ints:end_ints),     &
-                                               unique_expt(offset_prop+iprop,idens), &
-                                               .true.)
-                    end if
-                    start_ints = end_ints
+                do tgeo = path_offset_tgeo+1, path_offset_tgeo+path_num_tgeo
+                  do kgeo = path_offset_kgeo+1, path_offset_kgeo+path_num_kgeo
+                    do bgeo = path_offset_bgeo+1, path_offset_bgeo+path_num_bgeo
+                      do iprop = 1, num_prop
+                        end_ints = start_ints+size_ao
+                        start_ints = start_ints+1
+                        call MatMultBlockedTrace(ao_dens(idens),                          &
+                                                 min_row_idx, max_row_idx,                &
+                                                 min_col_idx, max_col_idx,                &
+                                                 contr_ints(start_ints:end_ints),         &
+                                                 unique_expt(iprop,bgeo,kgeo,tgeo,idens), &
+                                                 .false.)
+                        if (prop_sym==SYMM_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
+                          call MatMultBlockedTrace(ao_dens(idens),                          &
+                                                   min_row_idx, max_row_idx,                &
+                                                   min_col_idx, max_col_idx,                &
+                                                   contr_ints(start_ints:end_ints),         &
+                                                   unique_expt(iprop,bgeo,kgeo,tgeo,idens), &
+                                                   .true.)
+                        else if (prop_sym==ANTI_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
+                          call MatMultBlockedTrace(ao_dens(idens),                          &
+                                                   min_row_idx, max_row_idx,                &
+                                                   min_col_idx, max_col_idx,                &
+                                                   -contr_ints(start_ints:end_ints),        &
+                                                   unique_expt(iprop,bgeo,kgeo,tgeo,idens), &
+                                                   .true.)
+                        end if
+                        start_ints = end_ints
+                      end do
+                    end do
                   end do
                 end do
               end do
@@ -936,8 +956,8 @@ module gen1int_shell
       ! initializes the number of remaining pairs to calculate
       remaining_jobs = num_pairs
       ! intializes the indices of AO sub-shell pair on bra and ket centers
-      shell_pair(1) = 0
-      shell_pair(2) = 1
+      shell_pair(1) = min_shell_bra-1
+      shell_pair(2) = min_shell_ket
       do while (remaining_jobs>0)
         ! prepares the next sub-shell pair to calculate
         select case (prop_sym)
@@ -951,11 +971,11 @@ module gen1int_shell
             shell_pair(1) = 1
           end if
         case default
-          if (shell_pair(1)<num_shells_bra) then
+          if (shell_pair(1)<max_shell_bra) then
             shell_pair(1) = shell_pair(1)+1
           else
             shell_pair(2) = shell_pair(2)+1
-            shell_pair(1) = 1
+            shell_pair(1) = min_shell_bra
           end if
         end select
         size_ao = sub_shells_bra(shell_pair(1))%num_ao    &
@@ -983,7 +1003,9 @@ module gen1int_shell
                  contr_coef_ket=sub_shells_ket(shell_pair(2))%contr_coef, &
                  spher_gto=spher_gto,                                     &
                  one_prop=one_prop,                                       &
-                 geom_tree=geom_tree,                                     &
+                 order_geo_bra=order_cent_bra(1),                         &
+                 order_geo_ket=order_cent_ket(1),                         &
+                 nary_tree_total=nary_tree_total,                         &
                  num_gto_bra=sub_shells_bra(shell_pair(1))%num_ao,        &
                  num_gto_ket=sub_shells_ket(shell_pair(2))%num_ao,        &
                  num_opt=num_matrices, contr_ints=contr_ints)
@@ -1020,7 +1042,9 @@ module gen1int_shell
                  contr_coef_ket=sub_shells_ket(shell_pair(2))%contr_coef, &
                  spher_gto=spher_gto,                                     &
                  one_prop=one_prop,                                       &
-                 geom_tree=geom_tree,                                     &
+                 order_geo_bra=order_cent_bra(1),                         &
+                 order_geo_ket=order_cent_ket(1),                         &
+                 nary_tree_total=nary_tree_total,                         &
                  num_gto_bra=sub_shells_bra(shell_pair(1))%num_ao,        &
                  num_gto_ket=sub_shells_ket(shell_pair(2))%num_ao,        &
                  num_opt=num_matrices, contr_ints=contr_ints,             &
@@ -1039,63 +1063,33 @@ module gen1int_shell
                     * sub_shells_ket(shell_pair(2))%num_contr
         ! assigns the returned integrals
         if (present(val_ints)) then
-          ! returns integral matrices with redundant total geometric derivatives
-          if (do_redunt_geo) then
-            do igeo = 1, path_num_redunt
-              offset_prop = num_prop*redunt_list(2,igeo)
-              offset_ints = size_ao*num_prop*redunt_list(1,igeo)
-              start_ints = offset_ints
-              do iprop = 1, num_prop
-                end_ints = start_ints+size_ao
-                start_ints = start_ints+1
-                call MatSetValues(val_ints(offset_prop+iprop),     &
-                                  min_row_idx, max_row_idx,        &
-                                  min_col_idx, max_col_idx,        &
-                                  contr_ints(start_ints:end_ints), &
-                                  .false.)
-                if (prop_sym==SYMM_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
-                  call MatSetValues(val_ints(offset_prop+iprop),     &
-                                    min_row_idx, max_row_idx,        &
-                                    min_col_idx, max_col_idx,        &
-                                    contr_ints(start_ints:end_ints), &
-                                    .true.)
-                else if (prop_sym==ANTI_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
-                  call MatSetValues(val_ints(offset_prop+iprop),      &
-                                    min_row_idx, max_row_idx,         &
-                                    min_col_idx, max_col_idx,         &
-                                    -contr_ints(start_ints:end_ints), &
-                                    .true.)
-                end if
-                start_ints = end_ints
+          start_ints = 0
+          do tgeo = path_offset_tgeo+1, path_offset_tgeo+path_num_tgeo
+            do kgeo = path_offset_kgeo+1, path_offset_kgeo+path_num_kgeo
+              do bgeo = path_offset_bgeo+1, path_offset_bgeo+path_num_bgeo
+                do iprop = 1, num_prop
+                  end_ints = start_ints+size_ao
+                  start_ints = start_ints+1
+                  call MatSetValues(val_ints(iprop,bgeo,kgeo,tgeo), &
+                                    min_row_idx, max_row_idx,       &
+                                    min_col_idx, max_col_idx,       &
+                                    contr_ints(start_ints:end_ints), .false.)
+                  if (prop_sym==SYMM_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
+                    call MatSetValues(val_ints(iprop,bgeo,kgeo,tgeo), &
+                                      min_row_idx, max_row_idx,       &
+                                      min_col_idx, max_col_idx,       &
+                                      contr_ints(start_ints:end_ints), .true.)
+                  else if (prop_sym==ANTI_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
+                    call MatSetValues(val_ints(iprop,bgeo,kgeo,tgeo), &
+                                      min_row_idx, max_row_idx,       &
+                                      min_col_idx, max_col_idx,       &
+                                      -contr_ints(start_ints:end_ints), .true.)
+                  end if
+                  start_ints = end_ints
+                end do
               end do
             end do
-          ! returns integrals matrices with unique total geometric derivatives
-          else
-            start_ints = 0
-            do igeo = 0, path_num_unique-1
-              offset_prop = num_prop*(path_offset+igeo)
-              do iprop = 1, num_prop
-                end_ints = start_ints+size_ao
-                start_ints = start_ints+1
-                call MatSetValues(val_ints(offset_prop+iprop), &
-                                  min_row_idx, max_row_idx,    &
-                                  min_col_idx, max_col_idx,    &
-                                  contr_ints(start_ints:end_ints), .false.)
-                if (prop_sym==SYMM_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
-                  call MatSetValues(val_ints(offset_prop+iprop), &
-                                    min_row_idx, max_row_idx,    &
-                                    min_col_idx, max_col_idx,    &
-                                    contr_ints(start_ints:end_ints), .true.)
-                else if (prop_sym==ANTI_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
-                  call MatSetValues(val_ints(offset_prop+iprop), &
-                                    min_row_idx, max_row_idx,    &
-                                    min_col_idx, max_col_idx,    &
-                                    -contr_ints(start_ints:end_ints), .true.)
-                end if
-                start_ints = end_ints
-              end do
-            end do
-          end if
+          end do
         end if
 !FIXME
         ! writes the integrals on file
@@ -1105,33 +1099,36 @@ module gen1int_shell
         if (do_expectation) then
           do idens = 1, num_dens
             start_ints = 0
-            do igeo = 0, path_num_unique-1
-              offset_prop = (path_offset+igeo)*num_prop
-              do iprop = 1, num_prop
-                end_ints = start_ints+size_ao
-                start_ints = start_ints+1
-                call MatMultBlockedTrace(ao_dens(idens),                       &
-                                         min_row_idx, max_row_idx,             &
-                                         min_col_idx, max_col_idx,             &
-                                         contr_ints(start_ints:end_ints),      &
-                                         unique_expt(offset_prop+iprop,idens), &
-                                         .false.)
-                if (prop_sym==SYMM_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
-                  call MatMultBlockedTrace(ao_dens(idens),                       &
-                                           min_row_idx, max_row_idx,             &
-                                           min_col_idx, max_col_idx,             &
-                                           contr_ints(start_ints:end_ints),      &
-                                           unique_expt(offset_prop+iprop,idens), &
-                                           .true.)
-                else if (prop_sym==ANTI_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
-                  call MatMultBlockedTrace(ao_dens(idens),                       &
-                                           min_row_idx, max_row_idx,             &
-                                           min_col_idx, max_col_idx,             &
-                                           -contr_ints(start_ints:end_ints),     &
-                                           unique_expt(offset_prop+iprop,idens), &
-                                           .true.)
-                end if
-                start_ints = end_ints
+            do tgeo = path_offset_tgeo+1, path_offset_tgeo+path_num_tgeo
+              do kgeo = path_offset_kgeo+1, path_offset_kgeo+path_num_kgeo
+                do bgeo = path_offset_bgeo+1, path_offset_bgeo+path_num_bgeo
+                  do iprop = 1, num_prop
+                    end_ints = start_ints+size_ao
+                    start_ints = start_ints+1
+                    call MatMultBlockedTrace(ao_dens(idens),                          &
+                                             min_row_idx, max_row_idx,                &
+                                             min_col_idx, max_col_idx,                &
+                                             contr_ints(start_ints:end_ints),         &
+                                             unique_expt(iprop,bgeo,kgeo,tgeo,idens), &
+                                             .false.)
+                    if (prop_sym==SYMM_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
+                      call MatMultBlockedTrace(ao_dens(idens),                          &
+                                               min_row_idx, max_row_idx,                &
+                                               min_col_idx, max_col_idx,                &
+                                               contr_ints(start_ints:end_ints),         &
+                                               unique_expt(iprop,bgeo,kgeo,tgeo,idens), &
+                                               .true.)
+                    else if (prop_sym==ANTI_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
+                      call MatMultBlockedTrace(ao_dens(idens),                          &
+                                               min_row_idx, max_row_idx,                &
+                                               min_col_idx, max_col_idx,                &
+                                               -contr_ints(start_ints:end_ints),        &
+                                               unique_expt(iprop,bgeo,kgeo,tgeo,idens), &
+                                               .true.)
+                    end if
+                    start_ints = end_ints
+                  end do
+                end do
               end do
             end do
           end do
@@ -1144,7 +1141,6 @@ module gen1int_shell
 #endif
     ! frees spaces
     deallocate(contr_ints)
-    if (allocated(redunt_list)) deallocate(redunt_list)
     if (do_expectation) then
 !FIXME
       ! writes expectation values \var(unique_expt) on file
@@ -1156,19 +1152,7 @@ module gen1int_shell
 #if defined(VAR_MPI)
       end if
 #endif
-      if (present(val_expt)) then
-        ! returns expectation values with redundant total geometric derivatives
-        if (do_redunt_geo) then
-          call GeomPathSetReduntExpt(geom_tree=geom_tree,                            &
-                                     num_opt=num_prop,                               &
-                                     path_num_unique=path_num_unique,                &
-                                     num_dens=num_dens,                              &
-                                     unique_expt=unique_expt(start_expt:end_expt,:), &
-                                     num_redunt_geo=num_redunt_geo,                  &
-                                     redunt_expt=val_expt)
-          deallocate(unique_expt)
-        end if
-      else
+      if (.not.present(val_expt)) then
         deallocate(unique_expt)
       end if
       nullify(unique_expt)
@@ -1179,7 +1163,7 @@ module gen1int_shell
 #endif
   end subroutine Gen1IntShellGetIntExpt
 
-  !> \brief calculates property integral matrices and/or expectation values for
+  !> \brief calculates property integrand matrices and/or expectation values for
   !>        given AO sub-shells on bra and ket centers
   !> \author Bin Gao and Radovan Bast
   !> \date 2012-05-15
@@ -1189,18 +1173,19 @@ module gen1int_shell
   !> \param sub_shells_ket are the AO sub-shells on ket center
   !> \param same_braket indicates if the AO sub-shells are the same on bra and ket centers
   !> \param one_prop contains the information of one-electron property integrals
-  !> \param geom_tree contains the information of N-ary tree for total geometric derivatives
-  !> \param geom_type is the type of returned total geometric derivatives, UNIQUE_GEO is for unique total
-  !>        geometric derivatives, and REDUNDANT_GEO for redundant total geometric derivatives;
-  !>        for instance, (xx,xy,yy,xz,yz,zz) are unique while (xx,yx,zx,xy,yy,zy,xz,yz,zz) are
-  !>        redundant, note that the "triangular" total geometric derivatives could be obtained
-  !>        from the unique total geometric derivatives by giving \var(max_num_cent)=\var(order_geo_total)
+  !> \param nary_tree_bra is the N-ary tree for geometric derivatives on bra center
+  !> \param nary_tree_ket is the N-ary tree for geometric derivatives on ket center
+  !> \param nary_tree_total is the N-ary tree for total geometric derivatives
   !> \param api_comm is the MPI communicator
   !> \param num_points is the number of grid points
   !> \param grid_points contains the coordinates of grid points
   !> \param num_dens is the number of AO density matrices
   !> \param ao_dens contains the AO density matrices
-  !> \param num_ints is the number of property integral matrices including various derivatives
+  !> \param num_prop is the number of property integrals including various derivatives (except
+  !>        geometric derivatives)
+  !> \param num_geo_bra is number of geometric derivatives on bra center
+  !> \param num_geo_ket is number of geometric derivatives on ket center
+  !> \param num_geo_total is number of total geometric derivatives
   !> \param io_viewer is the logical unit number of the viewer
   !> \param level_print is the level of print
   !> \return val_expt contains the one-electron property intergrands contracted with AO density matrices
@@ -1212,9 +1197,12 @@ module gen1int_shell
   subroutine Gen1IntShellGetFunExpt(num_shells_bra, sub_shells_bra, &
                                     num_shells_ket, sub_shells_ket, &
                                     same_braket, one_prop,          &
-                                    geom_tree, geom_type, api_comm, &
+                                    nary_tree_bra, nary_tree_ket,   &
+                                    nary_tree_total, api_comm,      &
                                     num_points, grid_points,        &
-                                    num_dens, ao_dens, num_ints, val_expt)
+                                    num_dens, ao_dens, num_prop,    &
+                                    num_geo_bra, num_geo_ket,       &
+                                    num_geo_total, val_expt)
     ! matrix module
     use gen1int_matrix
     integer, intent(in) :: num_shells_bra
@@ -1223,65 +1211,155 @@ module gen1int_shell
     type(sub_shell_t), intent(in) :: sub_shells_ket(*)
     logical, intent(in) :: same_braket
     type(one_prop_t), intent(in) :: one_prop
-    type(geom_tree_t), optional, intent(inout) :: geom_tree
-    integer, optional, intent(in) :: geom_type
+    type(nary_tree_t), intent(inout) :: nary_tree_bra
+    type(nary_tree_t), intent(inout) :: nary_tree_ket
+    type(nary_tree_t), intent(inout) :: nary_tree_total
     integer, optional, intent(in) :: api_comm
     integer, intent(in) :: num_points
     real(REALK), intent(in) :: grid_points(3,num_points)
     integer, intent(in) :: num_dens
     type(matrix), intent(in) :: ao_dens(num_dens)
-    integer, intent(in) :: num_ints
-    real(REALK), optional, target, intent(inout) :: val_expt(num_points,num_ints,num_dens)
-    logical spher_gto                           !if using spherical GTOs
-    integer num_prop                            !number of property integrals
-    integer prop_sym                            !symmetry of property integrals
-    integer max_bra_ao                          !maximum number of AOs in a sub-shell on bra center
-    integer max_ket_ao                          !maximum number of AOs in a sub-shell on ket center
-    integer size_ao                             !size of AOs
-    integer num_pairs                           !number of AO sub-shell pairs to calculate
-    integer order_geo                           !order of total geometric derivatives
-    logical do_redunt_geo                       !calculates redundant total geometric derivatives
-    integer path_num_unique                     !number of unique derivatives of current path
-    integer num_redunt_geo                      !number of all redundant total geometric derivatives
-    integer path_offset                         !offset of unique derivatives of current path
-    integer num_matrices                        !number of integral matrices
-    integer size_ints                           !size of contracted integrals
-    real(REALK), allocatable :: contr_ints(:)   !contracted integrals between two AO sub-shells (pair)
-    logical do_expectation                      !if calculating or writing expectaion values on file
-    integer start_expt                          !start address of expectation values
-    integer end_expt                            !end address of expectation values
-    real(REALK), pointer :: unique_expt(:,:,:)  !expectation values with unique geometric derivatives
-    integer remaining_jobs                      !number of remaining jobs
-    integer shell_pair(2)                       !indices of AO sub-shell pair on bra and ket centers
-    integer min_row_idx, max_row_idx            !minimum and maximum indices of rows (on bra center)
-    integer min_col_idx, max_col_idx            !minimum and maximum indices of columns (on ket center)
-    integer offset_prop                         !offset of property integrals
-    integer start_ints, end_ints                !start and end addresses of contracted integrals
-    integer idens, igeo, iprop, ipoint          !incremental recorders
-    integer ierr                                !error information
+    integer, intent(in) :: num_prop
+    integer, intent(in) :: num_geo_bra
+    integer, intent(in) :: num_geo_ket
+    integer, intent(in) :: num_geo_total
+    real(REALK), optional, target, intent(inout) :: val_expt(num_points,    &
+                                                             num_prop,      &
+                                                             num_geo_bra,   &
+                                                             num_geo_ket,   &
+                                                             num_geo_total, &
+                                                             num_dens)
+    logical spher_gto                                 !if using spherical GTOs
+    integer num_cent_bra                              !number of differentiated centers on bra center
+    integer num_cent_ket                              !number of differentiated centers on ket center
+    integer idx_cent_bra(1)                           !indices of differentiated centers on bra center
+    integer idx_cent_ket(1)                           !indices of differentiated centers on ket center
+    integer order_cent_bra(1)                         !orders of differentiated centers on bra center
+    integer order_cent_ket(1)                         !orders of differentiated centers on ket center
+    integer min_shell_bra, max_shell_bra              !minimum and maximum of sub-shells on bra center for calculations
+    integer min_shell_ket, max_shell_ket              !minimum and maximum of sub-shells on ket center for calculations
+    integer prop_sym                                  !symmetry of property integrals
+    integer max_ao_bra                                !maximum number of AOs in a sub-shell on bra center
+    integer max_ao_ket                                !maximum number of AOs in a sub-shell on ket center
+    integer size_ao                                   !size of AOs
+    integer num_pairs                                 !number of AO sub-shell pairs to calculate
+    integer path_num_bgeo                             !number of geometric derivatives on bra center
+    integer path_num_kgeo                             !number of geometric derivatives on ket center
+    integer path_num_tgeo                             !number of unique total geometric derivatives of current path
+    integer path_offset_bgeo                          !offset of geometric derivatives on bra center
+    integer path_offset_kgeo                          !offset of geometric derivatives on ket center
+    integer path_offset_tgeo                          !offset of unique total geometric derivatives of current path
+    integer num_matrices                              !number of integral matrices
+    integer size_ints                                 !size of contracted integrals
+    real(REALK), allocatable :: contr_ints(:)         !contracted integrals between two AO sub-shells (pair)
+    logical do_expectation                            !if calculating or writing expectaion values on file
+    real(REALK), pointer :: unique_expt(:,:,:,:,:,:)  !expectation values with unique geometric derivatives
+    integer remaining_jobs                            !number of remaining jobs
+    integer shell_pair(2)                             !indices of AO sub-shell pair on bra and ket centers
+    integer min_row_idx, max_row_idx                  !minimum and maximum indices of rows (on bra center)
+    integer min_col_idx, max_col_idx                  !minimum and maximum indices of columns (on ket center)
+    integer start_ints, end_ints                      !start and end addresses of contracted integrals
+    integer ishell, idens, bgeo, kgeo, tgeo, &        !incremental recorders
+            iprop, ipoint
+    integer ierr                                      !error information
 #if defined(VAR_MPI)
 #include "mpif.h"
-    integer rank_proc                           !rank of processor
-    integer num_proc                            !number of processors
-    integer worker_request(3)                   !request from a worker, in which the first two elements
-                                                !are either \var(REQUEST_WORK) or the AO sub-shell pair
-                                                !to send back, the third is the rank of the worker
-    integer msg_tag                             !message tag
-    integer mpi_status(MPI_STATUS_SIZE)         !MPI status
+    integer rank_proc                                 !rank of processor
+    integer num_proc                                  !number of processors
+    integer worker_request(3)                         !request from a worker, in which the first two elements
+                                                      !are either \var(REQUEST_WORK) or the AO sub-shell pair
+                                                      !to send back, the third is the rank of the worker
+    integer msg_tag                                   !message tag
+    integer mpi_status(MPI_STATUS_SIZE)               !MPI status
 #endif
     ! since we do not use mixed CGTOs and SGTOs, we get this information only from
     ! the first sub-shell on bra center
     spher_gto = sub_shells_bra(1)%spher_gto
-    ! gets the number of property integrals
-    call OnePropGetNumProp(one_prop=one_prop, num_prop=num_prop)
+    ! gets the number of differentiated centers on bra and ket centers
+    call NaryTreePathGetNumCenters(nary_tree=nary_tree_bra, num_centers=num_cent_bra)
+    call NaryTreePathGetNumCenters(nary_tree=nary_tree_ket, num_centers=num_cent_ket)
+    if (num_cent_bra>1 .or. num_cent_ket>1) then
+      return
+    ! one-center partial geometric derivatives
+    else if (num_cent_bra==1 .and. num_cent_ket==1) then
+      ! gets the indices and orders of differentitated centers
+      call NaryTreePathGetIdxCent(nary_tree=nary_tree_bra, idx_cent=idx_cent_bra)
+      call NaryTreePathGetOrderCent(nary_tree=nary_tree_bra, order_cent=order_cent_bra)
+      call NaryTreePathGetIdxCent(nary_tree=nary_tree_ket, idx_cent=idx_cent_ket)
+      call NaryTreePathGetOrderCent(nary_tree=nary_tree_ket, order_cent=order_cent_ket)
+      ! finds the range of shells for calculations
+      min_shell_bra = num_shells_bra+1
+      max_shell_bra = 0
+      do ishell = 1, num_shells_bra
+        if (sub_shells_bra(ishell)%idx_cent==idx_cent_bra(1)) then
+          if (ishell<min_shell_bra) min_shell_bra = ishell
+          if (ishell>max_shell_bra) max_shell_bra = ishell
+        end if
+      end do
+      if (min_shell_bra>max_shell_bra) return
+      min_shell_ket = num_shells_ket+1
+      max_shell_ket = 0
+      do ishell = 1, num_shells_ket
+        if (sub_shells_ket(ishell)%idx_cent==idx_cent_ket(1)) then
+          if (ishell<min_shell_ket) min_shell_ket = ishell
+          if (ishell>max_shell_ket) max_shell_ket = ishell
+        end if
+      end do
+      if (min_shell_ket>max_shell_ket) return
+    ! one-center partial geometric derivatives on bra center
+    else if (num_cent_bra==1 .and. num_cent_ket==0) then
+      ! gets the indices and orders of differentitated centers
+      call NaryTreePathGetIdxCent(nary_tree=nary_tree_bra, idx_cent=idx_cent_bra)
+      call NaryTreePathGetOrderCent(nary_tree=nary_tree_bra, order_cent=order_cent_bra)
+      order_cent_ket = 0
+      ! finds the range of shells for calculations
+      min_shell_bra = num_shells_bra+1
+      max_shell_bra = 0
+      do ishell = 1, num_shells_bra
+        if (sub_shells_bra(ishell)%idx_cent==idx_cent_bra(1)) then
+          if (ishell<min_shell_bra) min_shell_bra = ishell
+          if (ishell>max_shell_bra) max_shell_bra = ishell
+        end if
+      end do
+      if (min_shell_bra>max_shell_bra) return
+      min_shell_ket = 1
+      max_shell_ket = num_shells_ket
+    ! one-center partial geometric derivatives on ket center
+    else if (num_cent_bra==0 .and. num_cent_ket==1) then
+      order_cent_bra = 0
+      ! gets the indices and orders of differentitated centers
+      call NaryTreePathGetIdxCent(nary_tree=nary_tree_ket, idx_cent=idx_cent_ket)
+      call NaryTreePathGetOrderCent(nary_tree=nary_tree_ket, order_cent=order_cent_ket)
+      ! finds the range of shells for calculations
+      min_shell_bra = 1
+      max_shell_bra = num_shells_bra
+      min_shell_ket = num_shells_ket+1
+      max_shell_ket = 0
+      do ishell = 1, num_shells_ket
+        if (sub_shells_ket(ishell)%idx_cent==idx_cent_ket(1)) then
+          if (ishell<min_shell_ket) min_shell_ket = ishell
+          if (ishell>max_shell_ket) max_shell_ket = ishell
+        end if
+      end do
+      if (min_shell_ket>max_shell_ket) return
+    ! no partial geometric derivatives
+    else
+      order_cent_bra = 0
+      order_cent_ket = 0
+      min_shell_bra = 1
+      max_shell_bra = num_shells_bra
+      min_shell_ket = 1
+      max_shell_ket = num_shells_ket
+    end if
     ! sets the maximum number of AOs in a sub-shell on bra center
-    max_bra_ao = 0
-    do ierr = 1, num_shells_bra
-      size_ao = sub_shells_bra(ierr)%num_ao*sub_shells_bra(ierr)%num_contr
-      if (max_bra_ao<size_ao) max_bra_ao = size_ao
+    max_ao_bra = 0
+    do ishell = 1, num_shells_bra
+      size_ao = sub_shells_bra(ishell)%num_ao*sub_shells_bra(ishell)%num_contr
+      if (max_ao_bra<size_ao) max_ao_bra = size_ao
     end do
     ! sets the number of AO sub-shell pairs to calculate
-    if (same_braket .and. num_shells_bra==num_shells_ket) then
+    if (same_braket .and. num_shells_bra==num_shells_ket .and. &
+        num_cent_bra==0 .and. num_cent_ket==0) then
       ! gets the symmetry of property integrals
       call OnePropGetSymmetry(one_prop=one_prop, prop_sym=prop_sym)
       select case (prop_sym)
@@ -1291,71 +1369,34 @@ module gen1int_shell
         num_pairs = num_shells_bra*num_shells_ket
       end select
       ! sets the maximum number of AOs in a sub-shell on ket center
-      max_ket_ao = max_bra_ao
+      max_ao_ket = max_ao_bra
     else
       ! we need to calculate all the sub-shell pairs even for symmetric and anti-symmetric integrals
       prop_sym = SQUARE_INT_MAT
-      num_pairs = num_shells_bra*num_shells_ket
+      num_pairs = (max_shell_bra-min_shell_bra+1)*(max_shell_ket-min_shell_ket+1)
       ! sets the maximum number of AOs in a sub-shell on ket center
-      max_ket_ao = 0
-      do ierr = 1, num_shells_ket
-        size_ao = sub_shells_ket(ierr)%num_ao*sub_shells_ket(ierr)%num_contr
-        if (max_ket_ao<size_ao) max_ket_ao = size_ao
+      max_ao_ket = 0
+      do ishell = min_shell_ket, max_shell_ket
+        size_ao = sub_shells_ket(ishell)%num_ao*sub_shells_ket(ishell)%num_contr
+        if (max_ao_ket<size_ao) max_ao_ket = size_ao
       end do
     end if
-    ! sets total geometric derivatives
-    if (present(geom_tree)) then
-      ! gets the order of total geometric derivatives
-      call GeomTreeGetOrder(geom_tree=geom_tree, order_geo=order_geo)
-      ! sets the type of total geometric derivatives
-      if (order_geo>1) then
-        if (present(geom_type)) then
-          if (geom_type/=UNIQUE_GEO .and. geom_type/=REDUNDANT_GEO) then
-            stop "Gen1IntShellGetFunExpt>> invalid type of total geometric derivatives"
-          else
-            do_redunt_geo = geom_type==REDUNDANT_GEO
-          end if
-        ! default are unique total geometric derivatives
-        else
-          do_redunt_geo = .false.
-        end if
-      ! the first order total geometric derivatives are unique
-      else
-        do_redunt_geo = .false.
-      end if
-      ! gets the number of unique derivatives of current path
-      call GeomPathGetNumUnique(geom_tree=geom_tree, path_num_unique=path_num_unique)
-      ! redundant total geometric derivatives
-      if (do_redunt_geo) then
-        ! gets the number of all redundant derivatives in the N-ary tree
-        call GeomTreeGetNumAtoms(geom_tree=geom_tree, num_atoms=num_redunt_geo)
-        num_redunt_geo = (3*num_redunt_geo)**order_geo
-        ! sets the offset of unique derivatives of current path as 0, which will only
-        ! be used for calculating expecatation values \var(unique_expt)
-        path_offset = 0
-      else
-        num_redunt_geo = 1   !not used
-        ! gets the offset of unique derivatives of current path
-        call GeomPathGetOffset(geom_tree=geom_tree, path_offset=path_offset)
-      end if
-    ! no total geometric derivatives
-    else
-      do_redunt_geo = .false.
-      path_num_unique = 1
-      num_redunt_geo = 1   !not used
-      path_offset = 0
-    end if
+    ! gets the numbers of unique geometric derivatives of current path
+    path_num_bgeo = (order_cent_bra(1)+1)*(order_cent_bra(1)+2)/2
+    path_num_kgeo = (order_cent_ket(1)+1)*(order_cent_ket(1)+2)/2
+    call NaryTreePathGetNumUnique(nary_tree=nary_tree_total, path_num_unique=path_num_tgeo)
+    ! gets the offsets of geometric derivatives of current path
+    call NaryTreePathGetOffset(nary_tree=nary_tree_bra, path_offset=path_offset_bgeo)
+    call NaryTreePathGetOffset(nary_tree=nary_tree_ket, path_offset=path_offset_kgeo)
+    call NaryTreePathGetOffset(nary_tree=nary_tree_total, path_offset=path_offset_tgeo)
     ! sets the number of integral matrices
-    num_matrices = num_prop*path_num_unique
+    num_matrices = num_prop*path_num_bgeo*path_num_kgeo*path_num_tgeo
     ! allocates cache of contracted integrals between two AO sub-shells
-    size_ints = max_bra_ao*max_ket_ao*num_points*num_matrices
+    size_ints = max_ao_bra*max_ao_ket*num_points*num_matrices
     allocate(contr_ints(size_ints), stat=ierr)
     if (ierr/=0) then
       stop "Gen1IntShellGetFunExpt>> failed to allocate contr_ints!"
     end if
-    ! sets the start and end addresses of expectation values
-    start_expt = path_offset*num_prop+1
-    end_expt = path_offset*num_prop+num_matrices
 #if defined(VAR_MPI)
     ! gets the rank of this processor and the number of processors
     if (present(api_comm)) then
@@ -1370,21 +1411,9 @@ module gen1int_shell
 #endif
       ! if calculating expectation values
       do_expectation = present(val_expt)
-      ! sets the information related to expectation values
+      ! sets the array of expectation values
       if (do_expectation) then
-        ! if redundant total geometric derivatives are required or no output argument is
-        ! given, we need to allocate memory to save the expectation values with the unique
-        ! total geometric derivatives
-        if (do_redunt_geo) then
-          allocate(unique_expt(num_points,start_expt:end_expt,num_dens), stat=ierr)
-          if (ierr/=0) then
-            stop "Gen1IntShellGetFunExpt>> failed to allocate unique_expt!"
-          end if
-          unique_expt = 0.0_REALK
-        ! for required unique total geometric derivatives, we just point \var(unique_expt) to them
-        else
-          unique_expt => val_expt
-        end if
+        unique_expt => val_expt
       end if
 #if defined(VAR_MPI)
       ! broadcasts what kind of jobs to do
@@ -1395,7 +1424,12 @@ module gen1int_shell
     else
       call MPI_Bcast(do_expectation, 1, MPI_LOGICAL, MANAGER, api_comm, ierr)
       if (do_expectation) then
-        allocate(unique_expt(num_points,start_expt:end_expt,num_dens), stat=ierr)
+        allocate(unique_expt(num_points,                                        &
+                             num_prop,                                          &
+                             path_offset_bgeo+1:path_offset_bgeo+path_num_bgeo, &
+                             path_offset_kgeo+1:path_offset_kgeo+path_num_kgeo, &
+                             path_offset_tgeo+1:path_offset_tgeo+path_num_tgeo, &
+                             num_dens), stat=ierr)
         if (ierr/=0) then
           stop "Gen1IntShellGetFunExpt>> failed to allocate unique_expt on worker processor!"
         end if
@@ -1412,8 +1446,8 @@ module gen1int_shell
         ! to other worker processors)
         remaining_jobs = num_proc-1
         ! intializes the indices of AO sub-shell pair on bra and ket centers
-        shell_pair(1) = 0
-        shell_pair(2) = 1
+        shell_pair(1) = min_shell_bra-1
+        shell_pair(2) = min_shell_ket
         do while (remaining_jobs>0)
           ! receives a request from a woker
           call MPI_Recv(worker_request, 3, MPI_INTEGER, MPI_ANY_SOURCE, &
@@ -1421,7 +1455,7 @@ module gen1int_shell
           ! the worker requests new work
           if (worker_request(1)==REQUEST_WORK) then
             ! no more sub-shell pair to calculate
-            if (shell_pair(1)>=num_shells_bra .and. shell_pair(2)>=num_shells_ket) then
+            if (shell_pair(1)>=max_shell_bra .and. shell_pair(2)>=max_shell_ket) then
               call MPI_Send((/NO_MORE_WORK,NO_MORE_WORK/), 2, MPI_INTEGER, &
                             worker_request(3), msg_tag, api_comm, ierr)
               ! decreases the number of remaining jobs
@@ -1439,11 +1473,11 @@ module gen1int_shell
                   shell_pair(1) = 1
                 end if
               case default
-                if (shell_pair(1)<num_shells_bra) then
+                if (shell_pair(1)<max_shell_bra) then
                   shell_pair(1) = shell_pair(1)+1
                 else
                   shell_pair(2) = shell_pair(2)+1
-                  shell_pair(1) = 1
+                  shell_pair(1) = min_shell_bra
                 end if
               end select
               ! sends the next sub-shell pair to the worker
@@ -1457,9 +1491,13 @@ module gen1int_shell
         end do
         ! receives expectation values from worker processors
         if (do_expectation) then
-          call MPI_Reduce(MPI_IN_PLACE, unique_expt(:,start_expt:end_expt,:),   &
-                          num_points*num_matrices*num_dens, MPI_REALK, MPI_SUM, &
-                          MANAGER, api_comm, ierr)
+          call MPI_Reduce(MPI_IN_PLACE,                                                     &
+                          unique_expt(:,:,                                                  &
+                                      path_offset_bgeo+1:path_offset_bgeo+path_num_bgeo,    &
+                                      path_offset_kgeo+1:path_offset_kgeo+path_num_kgeo,    &
+                                      path_offset_tgeo+1:path_offset_tgeo+path_num_tgeo,:), &
+                          num_points*num_matrices*num_dens, MPI_REALK, MPI_SUM, MANAGER,    &
+                          api_comm, ierr)
         end if
       ! worker code
       else
@@ -1501,7 +1539,9 @@ module gen1int_shell
                      contr_coef_ket=sub_shells_ket(shell_pair(2))%contr_coef, &
                      spher_gto=spher_gto,                                     &
                      one_prop=one_prop,                                       &
-                     geom_tree=geom_tree,                                     &
+                     order_geo_bra=order_cent_bra(1),                         &
+                     order_geo_ket=order_cent_ket(1),                         &
+                     nary_tree_total=nary_tree_total,                         &
                      num_points=num_points,                                   &
                      grid_points=grid_points,                                 &
                      num_gto_bra=sub_shells_bra(shell_pair(1))%num_ao,        &
@@ -1540,7 +1580,9 @@ module gen1int_shell
                      contr_coef_ket=sub_shells_ket(shell_pair(2))%contr_coef, &
                      spher_gto=spher_gto,                                     &
                      one_prop=one_prop,                                       &
-                     geom_tree=geom_tree,                                     &
+                     order_geo_bra=order_cent_bra(1),                         &
+                     order_geo_ket=order_cent_ket(1),                         &
+                     nary_tree_total=nary_tree_total,                         &
                      num_points=num_points,                                   &
                      grid_points=grid_points,                                 &
                      num_gto_bra=sub_shells_bra(shell_pair(1))%num_ao,        &
@@ -1563,34 +1605,52 @@ module gen1int_shell
                           * sub_shells_ket(shell_pair(2))%num_contr
               do idens = 1, num_dens
                 start_ints = 0
-                do igeo = 0, path_num_unique-1
-                  offset_prop = (path_offset+igeo)*num_prop
-                  do iprop = 1, num_prop
-                    do ipoint = 1, num_points
-                      end_ints = start_ints+size_ao
-                      start_ints = start_ints+1
-                      call MatMultBlockedTrace(ao_dens(idens),                              &
-                                               min_row_idx, max_row_idx,                    &
-                                               min_col_idx, max_col_idx,                    &
-                                               contr_ints(start_ints:end_ints),             &
-                                               unique_expt(ipoint,offset_prop+iprop,idens), &
-                                               .false.)
-                      if (prop_sym==SYMM_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
-                        call MatMultBlockedTrace(ao_dens(idens),                              &
-                                                 min_row_idx, max_row_idx,                    &
-                                                 min_col_idx, max_col_idx,                    &
-                                                 contr_ints(start_ints:end_ints),             &
-                                                 unique_expt(ipoint,offset_prop+iprop,idens), &
-                                                 .true.)
-                      else if (prop_sym==ANTI_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
-                        call MatMultBlockedTrace(ao_dens(idens),                              &
-                                                 min_row_idx, max_row_idx,                    &
-                                                 min_col_idx, max_col_idx,                    &
-                                                 -contr_ints(start_ints:end_ints),            &
-                                                 unique_expt(ipoint,offset_prop+iprop,idens), &
-                                                 .true.)
-                      end if
-                      start_ints = end_ints
+                do tgeo = path_offset_tgeo+1, path_offset_tgeo+path_num_tgeo
+                  do kgeo = path_offset_kgeo+1, path_offset_kgeo+path_num_kgeo
+                    do bgeo = path_offset_bgeo+1, path_offset_bgeo+path_num_bgeo
+                      do iprop = 1, num_prop
+                        do ipoint = 1, num_points
+                          end_ints = start_ints+size_ao
+                          start_ints = start_ints+1
+                          call MatMultBlockedTrace(ao_dens(idens),                  &
+                                                   min_row_idx, max_row_idx,        &
+                                                   min_col_idx, max_col_idx,        &
+                                                   contr_ints(start_ints:end_ints), &
+                                                   unique_expt(ipoint,              &
+                                                               iprop,               &
+                                                               bgeo,                &
+                                                               kgeo,                &
+                                                               tgeo,                &
+                                                               idens),              &
+                                                   .false.)
+                          if (prop_sym==SYMM_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
+                            call MatMultBlockedTrace(ao_dens(idens),                  &
+                                                     min_row_idx, max_row_idx,        &
+                                                     min_col_idx, max_col_idx,        &
+                                                     contr_ints(start_ints:end_ints), &
+                                                     unique_expt(ipoint,              &
+                                                                 iprop,               &
+                                                                 bgeo,                &
+                                                                 kgeo,                &
+                                                                 tgeo,                &
+                                                                 idens),              &
+                                                     .true.)
+                          else if (prop_sym==ANTI_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
+                            call MatMultBlockedTrace(ao_dens(idens),                   &
+                                                     min_row_idx, max_row_idx,         &
+                                                     min_col_idx, max_col_idx,         &
+                                                     -contr_ints(start_ints:end_ints), &
+                                                     unique_expt(ipoint,               &
+                                                                 iprop,                &
+                                                                 bgeo,                 &
+                                                                 kgeo,                 &
+                                                                 tgeo,                 &
+                                                                 idens),               &
+                                                     .true.)
+                          end if
+                          start_ints = end_ints
+                        end do
+                      end do
                     end do
                   end do
                 end do
@@ -1610,8 +1670,8 @@ module gen1int_shell
       ! initializes the number of remaining pairs to calculate
       remaining_jobs = num_pairs
       ! intializes the indices of AO sub-shell pair on bra and ket centers
-      shell_pair(1) = 0
-      shell_pair(2) = 1
+      shell_pair(1) = min_shell_bra-1
+      shell_pair(2) = min_shell_ket
       do while (remaining_jobs>0)
         ! prepares the next sub-shell pair to calculate
         select case (prop_sym)
@@ -1625,11 +1685,11 @@ module gen1int_shell
             shell_pair(1) = 1
           end if
         case default
-          if (shell_pair(1)<num_shells_bra) then
+          if (shell_pair(1)<max_shell_bra) then
             shell_pair(1) = shell_pair(1)+1
           else
             shell_pair(2) = shell_pair(2)+1
-            shell_pair(1) = 1
+            shell_pair(1) = min_shell_bra
           end if
         end select
         size_ao = sub_shells_bra(shell_pair(1))%num_ao    &
@@ -1657,7 +1717,9 @@ module gen1int_shell
                  contr_coef_ket=sub_shells_ket(shell_pair(2))%contr_coef, &
                  spher_gto=spher_gto,                                     &
                  one_prop=one_prop,                                       &
-                 geom_tree=geom_tree,                                     &
+                 order_geo_bra=order_cent_bra(1),                         &
+                 order_geo_ket=order_cent_ket(1),                         &
+                 nary_tree_total=nary_tree_total,                         &
                  num_points=num_points,                                   &
                  grid_points=grid_points,                                 &
                  num_gto_bra=sub_shells_bra(shell_pair(1))%num_ao,        &
@@ -1696,7 +1758,9 @@ module gen1int_shell
                  contr_coef_ket=sub_shells_ket(shell_pair(2))%contr_coef, &
                  spher_gto=spher_gto,                                     &
                  one_prop=one_prop,                                       &
-                 geom_tree=geom_tree,                                     &
+                 order_geo_bra=order_cent_bra(1),                         &
+                 order_geo_ket=order_cent_ket(1),                         &
+                 nary_tree_total=nary_tree_total,                         &
                  num_points=num_points,                                   &
                  grid_points=grid_points,                                 &
                  num_gto_bra=sub_shells_bra(shell_pair(1))%num_ao,        &
@@ -1719,34 +1783,52 @@ module gen1int_shell
         if (do_expectation) then
           do idens = 1, num_dens
             start_ints = 0
-            do igeo = 0, path_num_unique-1
-              offset_prop = (path_offset+igeo)*num_prop
-              do iprop = 1, num_prop
-                do ipoint = 1, num_points
-                  end_ints = start_ints+size_ao
-                  start_ints = start_ints+1
-                  call MatMultBlockedTrace(ao_dens(idens),                              &
-                                           min_row_idx, max_row_idx,                    &
-                                           min_col_idx, max_col_idx,                    &
-                                           contr_ints(start_ints:end_ints),             &
-                                           unique_expt(ipoint,offset_prop+iprop,idens), &
-                                           .false.)
-                  if (prop_sym==SYMM_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
-                    call MatMultBlockedTrace(ao_dens(idens),                              &
-                                             min_row_idx, max_row_idx,                    &
-                                             min_col_idx, max_col_idx,                    &
-                                             contr_ints(start_ints:end_ints),             &
-                                             unique_expt(ipoint,offset_prop+iprop,idens), &
-                                             .true.)
-                  else if (prop_sym==ANTI_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
-                    call MatMultBlockedTrace(ao_dens(idens),                              &
-                                             min_row_idx, max_row_idx,                    &
-                                             min_col_idx, max_col_idx,                    &
-                                             -contr_ints(start_ints:end_ints),            &
-                                             unique_expt(ipoint,offset_prop+iprop,idens), &
-                                             .true.)
-                  end if
-                  start_ints = end_ints
+            do tgeo = path_offset_tgeo+1, path_offset_tgeo+path_num_tgeo
+              do kgeo = path_offset_kgeo+1, path_offset_kgeo+path_num_kgeo
+                do bgeo = path_offset_bgeo+1, path_offset_bgeo+path_num_bgeo
+                  do iprop = 1, num_prop
+                    do ipoint = 1, num_points
+                      end_ints = start_ints+size_ao
+                      start_ints = start_ints+1
+                      call MatMultBlockedTrace(ao_dens(idens),                  &
+                                               min_row_idx, max_row_idx,        &
+                                               min_col_idx, max_col_idx,        &
+                                               contr_ints(start_ints:end_ints), &
+                                               unique_expt(ipoint,              &
+                                                           iprop,               &
+                                                           bgeo,                &
+                                                           kgeo,                &
+                                                           tgeo,                &
+                                                           idens),              &
+                                               .false.)
+                      if (prop_sym==SYMM_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
+                        call MatMultBlockedTrace(ao_dens(idens),                  &
+                                                 min_row_idx, max_row_idx,        &
+                                                 min_col_idx, max_col_idx,        &
+                                                 contr_ints(start_ints:end_ints), &
+                                                 unique_expt(ipoint,              &
+                                                             iprop,               &
+                                                             bgeo,                &
+                                                             kgeo,                &
+                                                             tgeo,                &
+                                                             idens),              &
+                                                 .true.)
+                      else if (prop_sym==ANTI_INT_MAT .and. shell_pair(1)/=shell_pair(2)) then
+                        call MatMultBlockedTrace(ao_dens(idens),                   &
+                                                 min_row_idx, max_row_idx,         &
+                                                 min_col_idx, max_col_idx,         &
+                                                 -contr_ints(start_ints:end_ints), &
+                                                 unique_expt(ipoint,               &
+                                                             iprop,                &
+                                                             bgeo,                 &
+                                                             kgeo,                 &
+                                                             tgeo,                 &
+                                                             idens),               &
+                                                 .true.)
+                      end if
+                      start_ints = end_ints
+                    end do
+                  end do
                 end do
               end do
             end do
@@ -1761,17 +1843,6 @@ module gen1int_shell
     ! frees spaces
     deallocate(contr_ints)
     if (do_expectation) then
-      ! returns expectation values with redundant total geometric derivatives
-      if (do_redunt_geo) then
-        call GeomPathSetReduntExpt(geom_tree=geom_tree,                              &
-                                   num_opt=num_points*num_prop,                      &
-                                   path_num_unique=path_num_unique,                  &
-                                   num_dens=num_dens,                                &
-                                   unique_expt=unique_expt(:,start_expt:end_expt,:), &
-                                   num_redunt_geo=num_redunt_geo,                    &
-                                   redunt_expt=val_expt)
-        deallocate(unique_expt)
-      end if
       nullify(unique_expt)
     end if
 #if defined(VAR_MPI)
@@ -1796,6 +1867,7 @@ module gen1int_shell
   !>        NON_LAO implemented
   !> \param order_mag is the order of magnetic derivatives
   !> \param order_ram is the order of derivatives w.r.t. total rotational angular momentum
+!FIXME: check the implementation of \var(order_geo)
   !> \param order_geo is the order of geometric derivatives
   !> \return val_mo contains the value of molecular orbitals at grid points
   !> \note val_mo should be zero before
@@ -1949,12 +2021,9 @@ module gen1int_shell
       if (ierr/=0) then
         stop "Gen1IntShellGetMO>> failed to allocate mo_value!"
       end if
-      call MatGetValues(A=mo_coef,               &
-                        min_row_idx=min_row_idx, &
-                        max_row_idx=max_row_idx, &
-                        min_col_idx=1,           &
-                        max_col_idx=num_mo,      &
-                        values=mo_value)
+      call MatGetValues(mo_coef, min_row_idx, max_row_idx, 1, num_mo, mo_value)
+! mo_value(:,:,:) = reshape(mo_coef%elms(min_row_idx : max_row_idx, &
+!                                                  1 : num_mo, 1), shape(mo_value))
       ! gets the value of MOs at grid points
       do imo = 1, num_mo
         do iopt = 1, num_opt

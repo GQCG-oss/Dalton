@@ -414,6 +414,16 @@ C
       IF (QM3 .AND. .NOT.ONLYOV) CALL QM3_RDPOT()
 C
 C     ***************************************************************
+C     Reading in the interaction parameters for the NP and MM 
+C     subsystems needed by QM/NP/MM embedding scheme
+C     ***************************************************************
+C
+      IF (QMNPMM .AND. .NOT.ONLYOV) THEN
+         call quit('not available in this version')
+!        CALL READ_POT_QMNPMM()
+      END IF
+C
+C     ***************************************************************
 C     Read initial geometry, orbital spec., etc. (MOLECULE format).
 C     ***************************************************************
 C
@@ -422,7 +432,9 @@ C     the necessary integrals in the primitive basis.
 C     See further notes in DKH_INTF routine.
 C
       IF (DKTRAN .AND. RNHERM) THEN
+         DKHINT = .TRUE. ! now we are calculating DKH 1-el. integrals
          CALL DKH_INTF(WORK(1),LMWORK)
+         DKHINT = .FALSE.
          NEWPRP = .TRUE.
       END IF
 C
@@ -597,11 +609,11 @@ C
       RETURN
       END
 C  /* Deck dalton_exedrv */
-      SUBROUTINE DALTON_EXEDRV(WORK, LMWORK, WRKDLM)
+      SUBROUTINE DALTON_EXEDRV(LMWORK, WRKDLM)
 C
 C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
-C     variables and allocating WORK memory.
+C     variables.
 C
 #include "implicit.h"
 #include "dummy.h"
@@ -642,16 +654,30 @@ C
 !   WRKDLM (set in main program). This is a simple (not fool-proof) test
 !   that Dalton has not been out of bounds. Thus all subroutines called
 !   here needs to be called with WORK(1) (and not just WORK), __except__
-!   the subroutines EXE*. In these driver routines for some of the
+!   the subroutines EXE* (here: work(0)). In these driver routines for some of the
 !   major modules in Dalton, the WRKDLM is checked with BNDCHK (which is
 !   in this file). /HJAaJ, Jan. 2011
 !
-      DIMENSION WORK(0:LMWORK), CORBKP(3*MXCENT)
+      DIMENSION CORBKP(3*MXCENT)
       LOGICAL NEWWLK, EX
       CHARACTER FILENM*12, WORD*7
+      real(8), allocatable :: work(:)
       CALL QENTER('DALTON')
       CALL GETTIM(CSTR,WSTR)
 C
+!     allocate memory using f90 utilities
+      allocate(work(0:lmwork+1),stat=i)
+!     Set memory traps
+      work(0)        = wrkdlm
+      work(1+lmwork) = wrkdlm
+
+      if(i /= 0)then
+         write (luerr,*) mynum,': ALLOCATE command failed to allocate'//
+     &        ' the requested memory. Error code:',I
+         write (luerr,*) 'Reduce the memory demands and be welcome back'
+         call quit('Failed to allocate memory')
+      end if
+
       IPRINT = IPRUSR
 C
       WLKREJ = .FALSE.
@@ -690,7 +716,7 @@ C        ---------------------------------------
             WRITE (LUPRI,'(//5X,A,I5,A//)')
      &      '@@>>>>>>>>>> Geometry walk iteration number:',ITERNR,
      &       ' <<<<<<<<<<'
-            CALL EXEHER(WORK,LMWORK,WRKDLM)
+            CALL EXEHER(WORK(0),LMWORK,WRKDLM)
             IPREAD = IPREAD_reduced
 C           ... reduce output from READIN in following geometries
             WLKREJ = .FALSE.
@@ -714,8 +740,8 @@ Cef begin
 C     CALL CLEAR_INCOREMEM()
             END IF
 Cef end
-            CALL EXESIR(WORK,LMWORK,WRKDLM)
-            IF (DOCCSD) CALL EXECC(WORK,LMWORK,WRKDLM)
+            CALL EXESIR(WORK(0),LMWORK,WRKDLM)
+            IF (DOCCSD) CALL EXECC(WORK(0),LMWORK,WRKDLM)
 C
 C     If this is a solvent run, update information for abacus
 C     Add cavity center if solvent model (921014-kvm/hjaaj)
@@ -863,7 +889,7 @@ C     We may have more DOSYM under **START than under **PROPE
                   CALL WLKDRV(DUMMY,DUMMY,DUMMY,DUMMY,DUMMY,
      &                        WORK(1),LMWORK)
                ELSE
-                  CALL EXEABA(WORK,LMWORK,WRKDLM)
+                  CALL EXEABA(WORK(0),LMWORK,WRKDLM)
                END IF
                IF (.NOT. USRIPR .AND. ((IWKTYP .EQ. 3) 
      &              .OR. (IWKTYP .EQ. 6))) THEN
@@ -913,8 +939,8 @@ C
             ELSE IF (IWKTYP .EQ. 6) THEN
                RDINPC = .FALSE.
                SOLVNT = .FALSE.
-               CALL EXEHER(WORK,LMWORK,WRKDLM)
-               CALL EXESIR(WORK,LMWORK,WRKDLM)
+               CALL EXEHER(WORK(0),LMWORK,WRKDLM)
+               CALL EXESIR(WORK(0),LMWORK,WRKDLM)
                SOLVNT = FLAG(16)
               IF (SOLVNT) THEN
                NEWGEO = .TRUE.
@@ -946,7 +972,7 @@ C
               END IF
             END IF
             CALL ABAINP('**PROPE',WORK(1),LMWORK)
-            CALL EXEABA(WORK,LMWORK,WRKDLM)
+            CALL EXEABA(WORK(0),LMWORK,WRKDLM)
 C
 C     We also check to see if we have requested a RESPONSE calculations
 C     
@@ -984,18 +1010,18 @@ C
 C     ... not OPTWLK and not OPTNEW, i.e. not geometry optimization
          NEWGEO = .TRUE.
 Chj      IF (RNHERM .OR. TESTIN) CALL EXEHER(WORK,LMWORK,WRKDLM)
-         CALL EXEHER(WORK,LMWORK,WRKDLM)
+         CALL EXEHER(WORK(0),LMWORK,WRKDLM)
 Chj always call EXEHER to read MOLECULE.INP (not read in abactl any more)
 Chj instead "IF (RNHERM) CALL HERCTL" inside EXEHER /April 2009 hjaaj
 C
 Cholesky
-         IF (CHOINT) CALL EXECHO(WORK,LMWORK,WRKDLM)
+         IF (CHOINT) CALL EXECHO(WORK(0),LMWORK,WRKDLM)
 Cholesky
-         IF (RNSIRI) CALL EXESIR(WORK,LMWORK,WRKDLM)
+         IF (RNSIRI) CALL EXESIR(WORK(0),LMWORK,WRKDLM)
 Cact
-         IF (ACTIVE) CALL EXEACT(WORK,LMWORK,WRKDLM)
+         IF (ACTSEL) CALL EXEACT(WORK(0),LMWORK,WRKDLM)
 Cact
-         IF (DOCCSD) CALL EXECC (WORK,LMWORK,WRKDLM)
+         IF (DOCCSD) CALL EXECC (WORK(0),LMWORK,WRKDLM)
 C
 C     If this is a solvent run, update information for abacus
 C     Add cavity center if solvent model (921014-kvm/hjaaj)
@@ -1059,7 +1085,7 @@ C
                CALL WLKINP(WORD)
                CALL GPCLOSE(LUCMD,'KEEP')
             END IF
-            CALL EXEABA(WORK,LMWORK,WRKDLM)
+            CALL EXEABA(WORK(0),LMWORK,WRKDLM)
          END IF
       END IF
  87   CONTINUE
@@ -1085,6 +1111,9 @@ C
 C     Stamp date and time and hostname to output
 C
       CALL TSTAMP(' ',LUPRI)
+
+!     release dynamically allocated memory
+      deallocate(work)
 C
       CALL QEXIT('DALTON')
       RETURN
@@ -1094,6 +1123,8 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
+      use pe_variables, only: peqm
+      use polarizable_embedding, only: pe_dalton_input
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1123,7 +1154,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 10, NTABLE = 32, D0 = 0.D0)
+      PARAMETER (NDIR = 12, NTABLE = 33, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1135,7 +1166,8 @@ C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
-     &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*READIN'/
+     &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
+     &            '*READIN', '*QMNPMM'/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
      &            '.INTEGR', '.WAVE F', '.PROPER', !  6
      &            '.INPTES', '.PARALL', '.DIRECT',
@@ -1146,7 +1178,7 @@ C
      &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
-     &            '.THRRED', '.DOUGLA'/
+     &            '.THRRED', '.DOUGLA', '.PEQM  '/
 C
       CALL QENTER('DALTON_GNRLINP')
 C
@@ -1195,6 +1227,7 @@ C
       DIRCAL = .FALSE.
       DOCCSD = .FALSE.
       WESTA  = .FALSE.
+      QMNPMM = .FALSE.
 C     NEWTRA is in /INFTRA/ for practical reasons
       NEWTRA = .FALSE.
       OPTNEW = .FALSE.
@@ -1205,6 +1238,7 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       RELCAL = .FALSE.
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
+      DKHINT = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
       IF (NODTOT.GE.1) THEN
@@ -1266,7 +1300,6 @@ C
 C
 Cholesky
       CHOINT = .FALSE.
-      ACTIVE = .FALSE.
 Cholesky
 C
 C     Initialize /GRDCCPT/
@@ -1310,14 +1343,14 @@ C         if reading input from a terminal
 C
 C     ***** Process input for COMMON  /GENINF/  *****
 C
-C Table(01:32) :
+C Table(01:33) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
 C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
-C 31-32: '.THRRED', '.DOUGLA'
+C 31-33: '.THRRED', '.DOUGLA', '.PEQM  '.
 C
       IPRSTAT = -10
   100 READ (LUCMD, '(A7)') WORD
@@ -1331,7 +1364,7 @@ C
                GO TO (101,102,103,104,105,106,107,108,109,110,
      &                111,112,113,114,115,116,117,118,119,120,
      &                121,122,123,124,125,126,127,128,129,129,
-     &                131,132), I
+     &                131,132,133), I
             END IF
    99    CONTINUE
             IF (WORD .EQ. '.OPTION') THEN
@@ -1451,6 +1484,10 @@ C        '.DOUGLA'
  132     CONTINUE
             DKTRAN = .TRUE.
          GOTO 100
+!        .PEQM
+ 133     continue
+            peqm = .true.
+         goto 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
       ELSE
@@ -1561,19 +1598,16 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
+        if (peqm) write(lupri,'(4x,a)')
+     &   'Environment is modeled using polarizable embedding scheme'//
+     &   ' (PE module)'
 C
 Cholesky
       IF (CHOINT) WRITE (LUPRI,'(4X,A)')
      &  'Cholesky decomposition-based calculation will be done'
-      IF (ACTIVE) WRITE (LUPRI,'(4X,A)')
-     &  'Selection of active atoms switched on'
 Cholesky
 C
       WRITE (LUPRI,'(1X,A)') SEPARATOR
-C
-C     TABDIR : '*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
-C              '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*READIN',
-C              '*GEN1IN'
 C
 C     Initialize for REAINP and READIN (reading of .mol input file)
       IPREAD_ini = IPRUSR + 1
@@ -1587,7 +1621,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1657,13 +1691,24 @@ C     "*QMMM  " input
     9 CONTINUE
         CALL QMMMIN(WORD)
       GO TO 200
+
+!     "*PEQM  " input
+   10 continue
+        call pe_dalton_input(word, lucmd, lupri)
+      goto 200
+
 C
 C     "*READIN" input ( DEPRECATED !!! Use "*MOLBAS")
-   10 CONTINUE
+   11 CONTINUE
         WRITE(LUPRI,'(//A/)')
      &    ' INFO : "*READIN" is deprecated, use instead "*MOLBAS"'
       GO TO 6
-
+C
+C     "*QMNPMM" input
+   12 CONTINUE
+        call quit('not available in this version')
+!       CALL QMNPINP(WORD)
+      GO TO 200    
 C     "*END OF" or "**something"
     1 CONTINUE
 C
@@ -1944,19 +1989,18 @@ C
 C
 C     Select orbitals and basis fucntions for hybrid CC models.
 C
-      CALL QENTER('SELACT')
+      CALL QENTER('EXEACT')
 C
-      CALL TITLER('Starting in Selact Section',' ',200)
+      CALL TITLER('Starting in Choact Section',' ',200)
 C
-C_not_yet     CALL CC_SELACT(WORK(1),LMWORK)
-      write(lupri,*) 'INFO: SELACT is not yet implemented. Skipped.'
-      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'SELECT_ACTIVE')
+      CALL CC_SELACT(WORK(1),LMWORK)
+      CALL BNDCHK(WORK(0), LMWORK+2, WRKDLM, 'CHOACT')
 C
 ctst  CLOSE(24)
-      CALL TITLER('End of Selact Section',' ',200)
+      CALL TITLER('End of Choact Section',' ',200)
 C
       CALL FLSHFO(LUPRI)
-      CALL QEXIT('SELACT')
+      CALL QEXIT('EXEACT')
       RETURN
       END
 C --- end of dalgnr.F ---

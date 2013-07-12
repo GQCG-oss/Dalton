@@ -48,20 +48,10 @@ cat > LSresponse_DFT_tpa.dal <<'%EOF%'
 **WAVE FUNCTIONS
 .DFT
 B3LYP
-*DFT INPUT
-.GRID TYPE
- BECKEORIG LMG
-.RADINT
-1.0D-11
-.ANGINT
-31
 *DENSOPT
-.RH     
-.DIIS
-.NVEC
-8
-.CONVTHR
-1.0D-6
+.ARH DAVID     
+.CONVDYN
+TIGHT
 **RESPONSE
 .NEXCIT 
 3
@@ -88,7 +78,7 @@ else
 fi
 
 # Energy
-CRIT1=`$GREP "Final * DFT energy\: * \-98\.8868" $log | wc -l`
+CRIT1=`$GREP "Final * DFT energy\: * \-98\.886[7-8]" $log | wc -l`
 TEST[1]=`expr   $CRIT1`
 CTRL[1]=1
 ERROR[1]="DFT ENERGY NOT CORRECT -"
@@ -100,7 +90,7 @@ CTRL[2]=1
 ERROR[2]="Memory leak -"
 
 # Excitation energy and isotropically averaged TPA
-CRIT1=`$GREP "3 * 0.744[0-9][0-9][0-9][0-9][0-9] * 1.281[0-9][0-9][0-9][0-9] * 0\.528" $log | wc -l`
+CRIT1=`$GREP "3 * 0.744[0-9][0-9][0-9][0-9][0-9] * 1.282[0-9][0-9][0-9][0-9] * 0\.528" $log | wc -l`
 TEST[3]=`expr  $CRIT1`
 CTRL[3]=1
 ERROR[3]="Error in excitation energy / isotropically averaged TPA"

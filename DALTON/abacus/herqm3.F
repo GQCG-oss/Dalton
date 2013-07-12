@@ -44,7 +44,8 @@ C
 #include "maxaqn.h"
 #include "mxsymm.h"
 #include "qm3.h"
-!#include <qmmm.h>
+#include "maxorb.h"
+#include "infpar.h"
 C
       PARAMETER ( NTABLE = 20, D1 = 1.0D0)
       LOGICAL NEWDEF
@@ -354,15 +355,28 @@ C
         END IF
         IF (MMPCM) THEN
           WRITE(LUPRI,*) ' MM/PCM interface active'
+          if (nodtot.ge.1) write(lupri,*) 'WARNING: qm3pcm is
+     & not parallelized, so it will be much slower than expected!'
         END IF
 
-        
+        IF (NODTOT .GE. 1 .AND. .NOT. INTDIR) THEN
+          WRITE(LUPRI,*) ' WARNING: QM3 .INTDIR activated since',
+     *                   ' this is a parallel calculation'
+          INTDIR = .TRUE.
+        ENDIF
+
         WRITE(LUPRI,'(A2,30A1)') ' +',('-',J=1,18),'+'
 
         IF (QMDAMP .AND. (.NOT. INTDIR)) THEN
           CALL QUIT('QM damping only implemented for .INTDIR option')
         ENDIF
 C
+        IF (MMPCM .AND. .NOT. INTDIR) THEN
+          WRITE(LUPRI,*) ' WARNING: QM3 .INTDIR activated since',
+     *                   ' this is a QM/MM/PCM calculation'
+          INTDIR = .TRUE.
+        ENDIF
+
       END IF
 C
       CALL QEXIT('QM3INP')

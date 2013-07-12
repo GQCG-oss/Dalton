@@ -41,7 +41,7 @@ C----------------------------------------------
 C     Read MO-coefficients from interface file.
 C----------------------------------------------
 C
-      IF (LUSIFC .LE. O) CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ',
+      IF (LUSIFC .LE. 0) CALL GPOPEN(LUSIFC,'SIRIFC','OLD',' ',
      &                               'UNFORMATTED',IDUMMY,.FALSE.)
       REWIND LUSIFC
 C

@@ -4599,11 +4599,16 @@ C     Purpose: To calculate the ab & ij parts of the CCSD kappa-bar-0,
 C              from right-hand-sides (ZKDIA on input) and canonical
 C              orbital energies.
 C     Control numerical instabilities. Sonia, 2002
+C     Additional numerical stability, Thomas Bondo Pedersen, Jan. 2013.
+C        - if RHS (eta) is zero, then kappa-bar-0 is set to zero.
+C        - if RHS is non-zero and denominator is zero, the equation
+C          system is singular and we have to quit.
+C        - in addition, redundant copying and zeroing eliminated.
 C
 #include "implicit.h"
 #include "dummy.h"
-      PARAMETER(ZERO = 0.0D0, HALF = 0.5D0, ONE = 1.0D0, TWO = 2.0D0)
-      PARAMETER (THRDNM = 1.0D-12)
+      PARAMETER(HALF = 0.5D0)
+      PARAMETER (EPSN = 1.0D-12, EPSD=1.0d-12)
       DIMENSION ZKDIA(*), WORK(LWORK)
 #include "priunit.h"
 #include "maxorb.h"
@@ -4621,20 +4626,13 @@ C     Work space allocation.
 C---------------------------
 C
       KFOCKD = 1
-      KETAIJ = KFOCKD + NORBTS
-      KETAAB = KETAIJ + NMATIJ(1)
-      KEND1  = KETAAB + NMATAB(1)
+      KEND1  = KFOCKD + NORBTS
       LWRK1  = LWORK  - KEND1
 C
       IF (LWRK1 .LT. 0) THEN
          WRITE(LUPRI,*) 'Need:', KEND1, 'Available:', LWORK
          CALL QUIT('Insufficient memory for allocation in CCSD_ZKBLO')
       ENDIF
-C
-      CALL DZERO(WORK,KEND1)
-      CALL DCOPY(NMATIJ(1),ZKDIA(1),1,WORK(KETAIJ),1)
-      CALL DCOPY(NMATAB(1),ZKDIA(NMATIJ(1)+1),1,WORK(KETAAB),1)
-      CALL DZERO(ZKDIA,NMATIJ(1)+NMATAB(1))
 C
 C-------------------------------------
 C     Read canonical orbital energies.
@@ -4664,48 +4662,45 @@ C     Calculate the results:
 C     Occupied block:
 C---------------------------
 C
-      DO 100 ISYMI = 1,NSYM
+      DO ISYMI = 1,NSYM
          ISYMJ = ISYMI
-         DO 110 J = 1,NRHF(ISYMJ)
+         DO J = 1,NRHF(ISYMJ)
+            NJJ = IMATIJ(ISYMJ,ISYMJ) + NRHF(ISYMJ)*(J - 1) + J
+            ZKDIA(NJJ) = 0.0D0
             KOFFJ = KFOCKD + IRHF(ISYMJ) + J - 1
-            DO 120 I = J+1,NRHF(ISYMI)
+            DO I = J+1,NRHF(ISYMI)
                KOFFI = KFOCKD + IRHF(ISYMI) + I - 1
                DENOM = WORK(KOFFJ) - WORK(KOFFI)
-               IF (ABS(DENOM) .GT. THRDNM) THEN
-                  NIJ = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J - 1) + I
-                  NJI = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I - 1) + J
-C
-                  ZKDIA(NIJ) = HALF*WORK(KETAIJ+NIJ-1)/DENOM
-                  ZKDIA(NJI) = ZKDIA(NIJ)
-               END IF
-C
-  120       CONTINUE
-  110    CONTINUE
-  100 CONTINUE
+               NIJ = IMATIJ(ISYMI,ISYMJ) + NRHF(ISYMI)*(J - 1) + I
+               ETAIJ = HALF*ZKDIA(NIJ)
+               ZKDIA(NIJ) = CC_PROTECTED_DIVISION(ETAIJ,DENOM,EPSN,EPSD)
+               NJI = IMATIJ(ISYMJ,ISYMI) + NRHF(ISYMJ)*(I - 1) + J
+               ZKDIA(NJI) = ZKDIA(NIJ)
+            END DO  
+         END DO
+      END DO  
 C
 C-------------------
 C     Virtual block:
 C-------------------
 C
-      DO 130 ISYMA = 1,NSYM
+      DO ISYMA = 1,NSYM
          ISYMB = ISYMA
-         DO 140 B = 1,NVIR(ISYMB)
+         DO B = 1,NVIR(ISYMB)
+            NBB = NMATIJ(1)+IMATAB(ISYMB,ISYMB)+NVIR(ISYMB)*(B-1)+B
+            ZKDIA(NBB) = 0.0D0
             KOFFB = KFOCKD + IVIR(ISYMB) + B - 1
-            DO 150 A = B+1,NVIR(ISYMA)
+            DO A = B+1,NVIR(ISYMA)
                KOFFA = KFOCKD + IVIR(ISYMA) + A - 1
                DENOM = WORK(KOFFB) - WORK(KOFFA)
-               IF (ABS(DENOM) .GT. THRDNM) THEN
-                  NAB = IMATAB(ISYMA,ISYMB) + NVIR(ISYMA)*(B - 1) + A
-                  NBA = IMATAB(ISYMB,ISYMA) + NVIR(ISYMB)*(A - 1) + B
-C
-                  ZKDIA(NMATIJ(1) + NAB) = HALF*WORK(KETAAB+NAB-1)/
-     *                                     DENOM
-                  ZKDIA(NMATIJ(1) + NBA) = ZKDIA(NMATIJ(1) + NAB)
-               END IF
-C
-  150       CONTINUE
-  140    CONTINUE
-  130 CONTINUE
+               NAB = NMATIJ(1)+IMATAB(ISYMA,ISYMB)+NVIR(ISYMA)*(B-1)+A
+               ETAAB = HALF*ZKDIA(NAB)
+               ZKDIA(NAB) = CC_PROTECTED_DIVISION(ETAAB,DENOM,EPSN,EPSD)
+               NBA = NMATIJ(1)+IMATAB(ISYMB,ISYMA)+NVIR(ISYMB)*(A-1)+B
+               ZKDIA(NBA) = ZKDIA(NAB)
+            END DO
+         END DO
+      END DO
 C
       CALL QEXIT('CCSD_ZKBLO')
 C
@@ -5734,4 +5729,51 @@ C
 C
       RETURN
       END
+C  /* Deck cc_protected_division */
+      Real*8 Function cc_protected_division(nominator,denominator,
+     *                                      epsn,epsd)
+C
+C     Thomas Bondo Pedersen, Jan. 2013.
+C
+C     Compute
+C
+C        x=nominator/denominator
+C
+C     If |nominator|<epsn:
+C        x=0
+C     Else:
+C        If |denominator|<epsd:
+C           quit
+C        Else:
+C           x=nominator/denominator
+C
+      Implicit None
+      Real*8 nominator
+      Real*8 denominator
+      Real*8 epsn
+      Real*8 epsd
+#include "priunit.h"
+
+      Real*8 x
+
+      If (abs(nominator).lt.epsn) Then
+         x=0.0d0
+      Else
+         If (abs(denominator).lt.epsd) Then
+            Write(lupri,'(A)') 'Singularity: nominator/denominator'
+            Write(lupri,'(A,1P,D25.16,A,D25.16)')
+     *      'nominator=',nominator,' denominator=',denominator
+            Write(lupri,'(A,1P,D25.16,A,D25.16)')
+     *      'epsn=     ',epsn,' epsd=       ',epsd
+            Call Quit('Singularity (division by zero)')
+            x=0.0d0
+         Else
+            x=nominator/denominator
+         End If
+      End If
+
+      cc_protected_division=x
+
+      Return
+      End
 

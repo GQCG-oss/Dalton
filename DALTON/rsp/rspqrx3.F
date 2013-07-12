@@ -241,6 +241,7 @@ C  /* Deck e3init */
      *                  ETRS,XINDX,UDV,PV,WRK,LWRK,KZYVA,KZYVB,KZYVC,
      *                  ISYMA,ISYMB,ISYMC,ISPINA,ISPINB,ISPINC,CMO,FC,
      *                  FV,MJWOP)
+      use pe_variables, only: peqm
 C
 C
 #include "implicit.h"
@@ -392,8 +393,25 @@ C
          END IF
       END IF
 
+      if (peqm) then
+        if (.not. tdhf) then 
+            call quit('ERROR: MCSCF quadratic response not'//
+     &                ' implemented with PE module.')
+        else if (nasht > 0) then
+            call quit('ERROR: quadratic response not implemented for'//
+     &                ' open shell systems with PE module.')
+        else if (trplet) then
+            call quit('ERROR: triplets not implemented for quadratic'//
+     &                ' response with PE module.')
+        endif
+        call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
+     &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
+     &                 isyma, isymb, isymc, cmo, mjwop)
+      end if
+
       IF (QM3) THEN
          IF (TDHF) THEN
+#if defined(VAR_MPI)
             IF (NODTOT.GE.1) THEN
                CALL QM3QRO_P(VECB,VECC,
      *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
@@ -404,6 +422,7 @@ C
      *                 UDV,WRK(KFREE),LFREE,
      *                 KZYVA,KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP)
             ELSE
+#endif
                CALL QM3QRO(VECB,VECC,
      *                 ETRS,XINDX,WRK(KZYMB),WRK(KZYMC),
      *                 UDV,WRK(KFREE),LFREE,
@@ -412,7 +431,9 @@ C
      *                 ETRS,XINDX,WRK(KZYMC),WRK(KZYMB),
      *                 UDV,WRK(KFREE),LFREE,
      *                 KZYVA,KZYVC,KZYVB,ISYMA,ISYMC,ISYMB,CMO,MJWOP)
+#if defined(VAR_MPI)
             ENDIF
+#endif
          END IF
       END IF
 
