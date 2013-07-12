@@ -77,6 +77,7 @@ module matrix_operations_scalapack
   integer,parameter  :: Job_hdiv = 49
   integer,parameter  :: Job_min = 50
   integer,parameter  :: Job_scal_dia_vec = 51
+  integer,parameter  :: Job_to_full3D = 52
   Type(Grid) SLGrid
   
   Type(Matrix) :: darray(500)
@@ -756,6 +757,73 @@ module matrix_operations_scalapack
 #endif
 
   end subroutine mat_scalapack_to_full
+
+!> \brief See mat_to_full in mat-operations.f90
+  subroutine mat_scalapack_to_full3D(a,alpha,afull,n1,n2,n3,i3)
+     implicit none
+    integer, INTENT(IN)     :: n1,n2,n3,i3
+    TYPE(Matrix),intent(in) :: a 
+    real(realk), intent(in) :: alpha
+    real(realk)  :: afull(n1,n2,n3)
+    INTEGER      :: DESC_AF(9), DESC_A(9), I,nsize,shift
+    INTEGER :: J,IP,IQ,P,Q,ip2,iq2,NBJ,NBI,iproc,preproc,nprow,npcol
+    real(realk),pointer :: Afulltmp(:)
+#ifdef VAR_SCALAPACK
+    nsize = a%nrow*a%ncol
+    IF(n1*n2.NE.nsize)call lsquit('dim mismatch mat_scalapack_to_full3D',-1)
+!    integer :: localnrow(0:infpar%nodtot-1)
+!    integer :: localncol(0:infpar%nodtot-1)
+!    TYPE(matrix),pointer :: localA(:)
+    CALL PDM_SYNC(Job_to_full3D,A)
+    CALL PDM_DSCINIT(DESC_AF,A,A%nrow,A%ncol)
+    CALL PDM_DSCINIT(DESC_A, A)
+    ! Master Part: Collects full matrix AFull (on master) from SCALAPACK distributed matrix A
+    call mem_alloc(Afulltmp,n1*n2)
+    CALL PDGEMR2D(A%nrow,A%ncol,A%p,1,1,DESC_A,&
+         &AFulltmp,1,1,DESC_AF,SLGrid%ictxt)    
+
+    N = a%nrow    !change diff
+    M = MOD(N,7)  !change diff
+    IF (M.NE.0) THEN
+       do j = 1,a%ncol
+          offset = (j-1)*N
+          DO I = 1,M
+             afull(i,j,i3) = alpha*afulltmp(i+offset)              
+          ENDDO
+       enddo
+       MP1 = M + 1
+       IF (N.GE.7)THEN
+          do j = 1,a%ncol
+             offset = (j-1)*N
+             DO I = MP1,N,7
+                afull(i,j,i3) = alpha*afulltmp(i+offset)
+                afull(i+1,j,i3) = alpha*afulltmp(i+1+offset)
+                afull(i+2,j,i3) = alpha*afulltmp(i+2+offset)
+                afull(i+3,j,i3) = alpha*afulltmp(i+3+offset)
+                afull(i+4,j,i3) = alpha*afulltmp(i+4+offset)
+                afull(i+5,j,i3) = alpha*afulltmp(i+5+offset)
+                afull(i+6,j,i3) = alpha*afulltmp(i+6+offset)
+             END DO
+          enddo
+       ENDIF
+    ELSE
+       do j = 1,a%ncol
+          offset = (j-1)*N
+          DO I = 1,N,7
+             afull(i,j,i3) = alpha*afulltmp(i+offset)
+             afull(i+1,j,i3) = alpha*afulltmp(i+1+offset)
+             afull(i+2,j,i3) = alpha*afulltmp(i+2+offset)
+             afull(i+3,j,i3) = alpha*afulltmp(i+3+offset)
+             afull(i+4,j,i3) = alpha*afulltmp(i+4+offset)
+             afull(i+5,j,i3) = alpha*afulltmp(i+5+offset)
+             afull(i+6,j,i3) = alpha*afulltmp(i+6+offset)
+          END DO
+       ENDDO
+    ENDIF
+    call mem_dealloc(Afulltmp)
+#endif
+
+  end subroutine mat_scalapack_to_full3D
 
   subroutine GRIDINFO_SETUP(nbast)
     implicit none
@@ -3128,6 +3196,12 @@ module matrix_operations_scalapack
 !      IF(A%localnrow*A%localncol.GT. 0)THEN
 !         call ls_mpirecv(A%p,A%localnrow,A%localncol,infpar%master)
 !      ENDIF
+   CASE(Job_to_full3D)
+      CALL PDM_DSCINIT(DESC_AF,A,A%nrow,A%ncol)
+      CALL PDM_DSCINIT(DESC_A,A)
+      ! Slave Part: Collects full matrix AFull (on master) from SCALAPACK distributed matrix A
+      CALL PDGEMR2D(A%nrow,A%ncol,A%p,1,1,DESC_A,&
+           &AF,1,1,DESC_AF,SLGrid%ictxt)
    CASE(Job_to_full)
       CALL PDM_DSCINIT(DESC_AF,A,A%nrow,A%ncol)
       CALL PDM_DSCINIT(DESC_A,A)
