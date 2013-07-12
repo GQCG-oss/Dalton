@@ -116,7 +116,7 @@ CONTAINS
      DO i=1,3*Natoms
         call mat_init(ha(i),nbast,nbast)
     ENDDO
-    call get_first_geoderiv_H1_mat(ha,Natoms,setting,lupri,luerr)
+    call get_first_geoderiv_H1_mat(ha,Natoms,setting,lupri,luerr,iprint)
 
     ! calculate 1st geo. deriv. of the Coulomb and Exchange contrib.: G^a(D)=J^a(D)-K^a(D)
     call mem_alloc(Ga,3*Natoms)
@@ -202,7 +202,7 @@ CONTAINS
      call mem_dealloc(Fa)
      call mem_dealloc(RHS_HF)
      call mat_free(S)
-     call lstimer('geoHessian',ts,te,lupri)
+     call lstimer('geoHessian_build',ts,te,lupri)
   END SUBROUTINE get_molecular_hessian
 
 
@@ -240,8 +240,9 @@ CONTAINS
     Type(matrix),INTENT(IN)       :: Da(3*Natoms) ! 1st geo. deriv. of D
     Type(matrix),INTENT(IN)       :: Fa(3*Natoms) ! 1st geo. deriv. of F
     !
-    Integer          :: nbast
+    Integer          :: nbast,i
     Type(matrix)     :: temp
+    Real(realk)      :: ts,te
     !
     nbast = S%nrow
     ! RHS = 0.5 { SDFa - FaDS + SaDF + SDaF - FDaS  - FDSa }
@@ -265,7 +266,11 @@ CONTAINS
         call mat_mul(temp,S ,'N','N', 1E0_realk,1E0_realk,RHS(i)) ! RHS -= FDaS 
     ENDDO
 
-    call mat_scal(0.5E0_realk,RHS)
+    DO i=1,3*Natoms
+        ! RHS = 0.5 { SDFa - FaDS + SaDF - FDSa + SDaF - FDaS }
+        call mat_scal(0.5E0_realk,RHS(i))
+    ENDDO
+
     call mat_free(temp)
     call lstimer('RHS_HF_build',ts,te,lupri)
     !     
@@ -302,14 +307,15 @@ CONTAINS
   !> \param setting Integral evalualtion settings
   !> \param lupri Default print unit
   !> \param luerr Unit for error printing
-  SUBROUTINE get_first_geoderiv_H1_mat(ha,Natoms,setting,lupri,luerr)
+  !> \param iprint the printlevel, determining how much output should be generated
+  SUBROUTINE get_first_geoderiv_H1_mat(ha,Natoms,setting,lupri,luerr,iprint)
     !
     IMPLICIT NONE
-    Integer,INTENT(IN)              :: Natoms,lupri,luerr
+    Integer,INTENT(IN)              :: Natoms,lupri,luerr,iprint
     Type(LSSETTING),intent(INOUT)   :: setting
     Type(matrix),INTENT(INOUT)      :: ha(3*Natoms) ! derivative along x,y and z for each atom
     !
-    Real(realk)                     :: ts,te 
+    Real(realk)                     :: ts,te,sum
     Integer                         :: i, nbast
     Type(matrix), pointer           :: Va(:) 
     !
@@ -325,6 +331,14 @@ CONTAINS
         call mat_daxpy(1.0E0_realk,Va(i),ha(i))
         call mat_free(Va(i))
      ENDDO
+    IF (iprint .GE. 3) THEN
+       sum = 0.0E0_realk
+       DO i=1,3*Natoms
+          sum = sum + mat_sqnorm2(ha(i))
+       ENDDO
+       WRITE(LUPRI,*) '   - Cumul. norm of H1a: ', sum
+       WRITE(*,*)     '   - Cumul. norm of H1a: ', sum
+    ENDIF
     call mem_dealloc(Va)
     call lstimer('ha_build',ts,te,lupri)
   END SUBROUTINE get_first_geoderiv_H1_mat
@@ -505,10 +519,11 @@ CONTAINS
   !> \param setting Integral evalualtion settings
   !> \param lupri Default print unit
   !> \param luerr Unit for error printing
+  !> \param iprint the printlevel, determining how much output should be generated
   SUBROUTINE get_twoElectron_mat_of_first_geoderiv_refDmat(GDa,Da,Natoms,setting,lupri,luerr,iprint)
     !
     IMPLICIT NONE
-    Integer,INTENT(IN)              :: Natoms,lupri,luerr
+    Integer,INTENT(IN)              :: Natoms,lupri,luerr,iprint
     Type(matrix),INTENT(IN)         :: Da(3*Natoms)
     Type(LSSETTING),intent(INOUT)   :: setting
     Type(matrix),INTENT(INOUT)      :: GDa(3*Natoms) ! derivative along x,y and z for each atom
@@ -541,7 +556,7 @@ CONTAINS
     IF (iprint .GE. 3) THEN
        sum = 0.0E0_realk
        DO i=1,3*Natoms
-          sum = sum + mat_sqnorm2(GDtempKa(i))
+          sum = sum + mat_sqnorm2(tempK(i))
        ENDDO
        WRITE(LUPRI,*) '   - Cumul. norm of K(Da): ', sum
        WRITE(*,*)     '   - Cumul. norm of K(Da): ', sum

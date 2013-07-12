@@ -188,7 +188,7 @@ SUBROUTINE test_first_geoderiv_H1_mat(Natoms,nbast,thresh,setting,lupri,luerr)
   DO i=1,3*Natoms
      call mat_init(ha(i),nbast,nbast)
   ENDDO
-  call get_first_geoderiv_H1_mat(ha,Natoms,setting,lupri,luerr)
+  call get_first_geoderiv_H1_mat(ha,Natoms,setting,lupri,luerr,0)
   
 
 #ifdef BUILD_GEN1INT_LSDALTON 
@@ -264,7 +264,7 @@ SUBROUTINE test_first_geoderiv_refDmat(F,D,Natoms,ndmat,thresh,setting,lupri,lue
      call mat_init(Sa(i),nbast,nbast)
   ENDDO
   call get_first_geoderiv_overlap(Sa,Natoms,setting,lupri,luerr)
-  call  get_first_geoderiv_refDmat(Da,D,Sa,Natoms,setting,lupri,luerr,0) ! Da=DSaD
+  call get_first_geoderiv_refDmat(Da,D,Sa,Natoms,setting,lupri,luerr,0) ! Da=DSaD
   DO i=1,Natoms
      diffx = ABS(mat_trAB(F,Da(3*(i-1)+1))+reOrtho(1,i))
      diffy = ABS(mat_trAB(F,Da(3*(i-1)+2))+reOrtho(2,i))

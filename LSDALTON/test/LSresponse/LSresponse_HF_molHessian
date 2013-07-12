@@ -48,6 +48,8 @@ H           .000000    -1.00000   -1.324164
 #  DALTON INPUT
 #######################################################################
 cat > LSresponse_HF_molHessian.dal <<'%EOF%'
+**GENERAL
+.TIME
 **INTEGRALS
 **WAVE FUNCTIONS
 .HF
