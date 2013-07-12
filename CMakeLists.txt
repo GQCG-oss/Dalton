@@ -124,18 +124,6 @@ if(USE_OWN_LAPACK)
         )
 endif()
 
-# add binary_info.F90
-set(GENERATED_FILES
-    ${CMAKE_BINARY_DIR}/binary_info.F90
-    )
-
-# always invalidate generated files
-add_custom_target(generated_files
-    ALL
-    DEPENDS
-    ${GENERATED_FILES}
-)
-
 include(LibsDALTON)
 include(LibsLSDALTON)
 
