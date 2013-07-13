@@ -970,9 +970,7 @@ C
          END IF
 
       ELSE
-         WRITE (LUPRI,'(A)') '                                '
-         WRITE (LUPRI,'(A)') 'Reading in precalculated hessian'
-         WRITE (LUPRI,'(A)') '                                '
+         WRITE (LUPRI,'(/A/)') 'Reading in precalculated hessian'
 C
          KHSSIN = 1
          KLAST  = KHSSIN + NCOOR**2
@@ -3310,7 +3308,7 @@ C
 C
 C     ************************************
 C     *** Transformation to cartesian  ***
-C     ***  coordinstes, and printing.  ***
+C     ***  coordinates, and printing.  ***
 C     ************************************
 C
       IF ((FCLASS(1:3) .NE. 'C1 ').AND.(TEXT(1:6).NE.'normal')) THEN
@@ -3453,7 +3451,7 @@ C
 C
 C     ************************************
 C     *** Transformation to cartesian  ***
-C     ***  coordinstes, and printing.  ***
+C     ***  coordinates, and printing.  ***
 C     ************************************
 C
       IF ((FCLASS(1:3).NE.'C1 ').AND.(TEXT(1:6).NE.'normal')) THEN

@@ -1875,8 +1875,8 @@ contains
     ccsdpt_e5 = 0.0E0_realk
 
                     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,a,a_eos,energy_tmp),&
-                    !$OMP& SHARED(ccsd_singles,ccsdpt_singles,nocc_eos,nvirt_eos,MyFragment),&
-                    !$OMP& REDUCTION(+:ccsdpt_e5)
+                    !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc_eos,nvirt_eos,MyFragment),&
+                    !$OMP REDUCTION(+:ccsdpt_e5)
   ido_frag_singles: do i=1,nocc_eos
                     i_eos = MyFragment%idxo(i)
      ado_frag_singles: do a=1,nvirt_eos
@@ -2086,8 +2086,8 @@ contains
     energy_res_exc = 0.0E0_realk
 
                         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-                        !$OMP& SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
-                        !$OMP& REDUCTION(+:energy_res_cou),REDUCTION(+:virt_contribs)
+                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
+                        !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:virt_contribs)
   jdo_frag_doubles_cou: do j=1,nocc_eos
                         j_eos = MyFragment%idxo(j)
      ido_frag_doubles_cou: do i=1,nocc_eos
@@ -2118,8 +2118,8 @@ contains
     call array4_reorder(ccsd_doubles,[1,2,4,3])
 
                         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-                        !$OMP& SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
-                        !$OMP& REDUCTION(+:energy_res_exc),REDUCTION(+:virt_contribs)
+                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,MyFragment),&
+                        !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:virt_contribs)
   jdo_frag_doubles_exc: do j=1,nocc_eos
                         j_eos = MyFragment%idxo(j)
      ido_frag_doubles_exc: do i=1,nocc_eos
@@ -2166,8 +2166,8 @@ contains
     energy_res_exc = 0.0E0_realk
 
                         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-                        !$OMP& SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
-                        !$OMP& REDUCTION(+:energy_res_exc),REDUCTION(+:occ_contribs)
+                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
+                        !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:occ_contribs)
   bdo_frag_doubles_exc: do b=1,nvirt_eos
                         b_eos = MyFragment%idxu(b)
      ado_frag_doubles_exc: do a=1,nvirt_eos
@@ -2198,8 +2198,8 @@ contains
     call array4_reorder(ccsd_doubles,[2,1,3,4])
 
                         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-                        !$OMP& SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
-                        !$OMP& REDUCTION(+:energy_res_cou),REDUCTION(+:occ_contribs)
+                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,MyFragment),&
+                        !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:occ_contribs)
   bdo_frag_doubles_cou: do b=1,nvirt_eos
                         b_eos = MyFragment%idxu(b)
      ado_frag_doubles_cou: do a=1,nvirt_eos
@@ -2315,8 +2315,8 @@ contains
     energy_res_exc = 0.0E0_realk
 
                         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-                        !$OMP& SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
-                        !$OMP& PairFragment,dopair_occ),REDUCTION(+:energy_res_cou)
+                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
+                        !$OMP PairFragment,dopair_occ),REDUCTION(+:energy_res_cou)
   jdo_pair_doubles_cou: do j=1,nocc_eos
                         j_eos = PairFragment%idxo(j)
      ido_pair_doubles_cou: do i=1,nocc_eos
@@ -2342,8 +2342,8 @@ contains
     call array4_reorder(ccsd_doubles,[1,2,4,3])
 
                         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,i_eos,j,j_eos,a,b,energy_tmp),&
-                        !$OMP& SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
-                        !$OMP& PairFragment,dopair_occ),REDUCTION(+:energy_res_exc)
+                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nocc_eos,nvirt_aos,&
+                        !$OMP PairFragment,dopair_occ),REDUCTION(+:energy_res_exc)
   jdo_pair_doubles_exc: do j=1,nocc_eos
                         j_eos = PairFragment%idxo(j)
      ido_pair_doubles_exc: do i=1,nocc_eos
@@ -2385,8 +2385,8 @@ contains
     energy_res_exc = 0.0E0_realk
 
                         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-                        !$OMP& SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
-                        !$OMP& PairFragment,dopair_virt),REDUCTION(+:energy_res_exc)
+                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
+                        !$OMP PairFragment,dopair_virt),REDUCTION(+:energy_res_exc)
   bdo_pair_doubles_exc: do b=1,nvirt_eos
                         b_eos = PairFragment%idxu(b)
      ado_pair_doubles_exc: do a=1,nvirt_eos
@@ -2412,8 +2412,8 @@ contains
     call array4_reorder(ccsd_doubles,[2,1,3,4])
 
                         !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(a,a_eos,b,b_eos,i,j,energy_tmp),&
-                        !$OMP& SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
-                        !$OMP& PairFragment,dopair_virt),REDUCTION(+:energy_res_cou)
+                        !$OMP SHARED(ccsd_doubles,ccsdpt_doubles,nvirt_eos,nocc_aos,&
+                        !$OMP PairFragment,dopair_virt),REDUCTION(+:energy_res_cou)
   bdo_pair_doubles_cou: do b=1,nvirt_eos
                         b_eos = PairFragment%idxu(b)
      ado_pair_doubles_cou: do a=1,nvirt_eos
@@ -2493,7 +2493,7 @@ contains
     ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp),REDUCTION(+:energy_res_cou),&
-    !$OMP& REDUCTION(+:eccsdpt_matrix_cou),SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
+    !$OMP REDUCTION(+:eccsdpt_matrix_cou),SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
     do j=1,nocc
     atomJ = occ_orbitals(j+offset)%CentralAtom
        do i=1,nocc
@@ -2517,7 +2517,7 @@ contains
     call array4_reorder(ccsd_doubles,[1,2,4,3])
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp),REDUCTION(+:energy_res_exc),&
-    !$OMP& REDUCTION(+:eccsdpt_matrix_exc),SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
+    !$OMP REDUCTION(+:eccsdpt_matrix_exc),SHARED(ccsd_doubles,ccsdpt_doubles,nocc,nvirt,occ_orbitals,offset)
     do j=1,nocc
     atomJ = occ_orbitals(j+offset)%CentralAtom
        do i=1,nocc
@@ -2669,8 +2669,8 @@ contains
     ! so we only assign orbitals for the space in which the core orbitals (the offset) are omited
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-    !$OMP& REDUCTION(+:energy_res_cou),REDUCTION(+:eccsdpt_matrix_cou),&
-    !$OMP& SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset)
+    !$OMP REDUCTION(+:energy_res_cou),REDUCTION(+:eccsdpt_matrix_cou),&
+    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset)
     do j=1,nocc
     atomJ = occ_orbitals(j+offset)%CentralAtom
        do i=1,nocc
@@ -2695,8 +2695,8 @@ contains
     call array4_reorder(integral,[1,2,4,3])
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,atomI,j,atomJ,a,b,energy_tmp_1,energy_tmp_2),&
-    !$OMP& REDUCTION(+:energy_res_exc),REDUCTION(+:eccsdpt_matrix_exc),&
-    !$OMP& SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset)
+    !$OMP REDUCTION(+:energy_res_exc),REDUCTION(+:eccsdpt_matrix_exc),&
+    !$OMP SHARED(ccsd_doubles,ccsd_singles,integral,nocc,nvirt,occ_orbitals,offset)
     do j=1,nocc
     atomJ = occ_orbitals(j+offset)%CentralAtom
        do i=1,nocc
@@ -2864,8 +2864,8 @@ contains
     ccsdpt_e5 = 0.0E0_realk
 
     !$OMP PARALLEL DO DEFAULT(NONE),PRIVATE(i,a,energy_tmp,AtomI,AtomA),&
-    !$OMP& SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,offset,occ_orbitals,unocc_orbitals),&
-    !$OMP& REDUCTION(+:ccsdpt_e5),REDUCTION(+:e5_matrix)
+    !$OMP SHARED(ccsd_singles,ccsdpt_singles,nocc,nvirt,offset,occ_orbitals,unocc_orbitals),&
+    !$OMP REDUCTION(+:ccsdpt_e5),REDUCTION(+:e5_matrix)
     do i=1,nocc
     AtomI = occ_orbitals(i+offset)%CentralAtom
        do a=1,nvirt

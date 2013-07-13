@@ -468,7 +468,7 @@ SUBROUTINE lsdalton
            call mem_alloc(geomHessian,3*Natoms,3*Natoms)
            write (lupri,*) 'Calculate the Hessian'
            write (*,*)     'Calculate the Hessian'
-           call get_molecular_hessian(geomHessian,Natoms,F(1),D(1),ls%setting,config%geoHessian,lupri,luerr)   
+           call get_molecular_hessian(geomHessian,Natoms,F(1),D(1),ls%setting,config,lupri,luerr)   
            call mem_dealloc(geomHessian)
         ENDIF
 #endif

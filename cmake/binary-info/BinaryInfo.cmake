@@ -46,7 +46,7 @@ configure_file(
 add_custom_target(
     generate_binary_info
     COMMAND python ${CMAKE_BINARY_DIR}/binary_info.py > ${CMAKE_BINARY_DIR}/binary_info.F90
-    COMMAND rm     ${CMAKE_BINARY_DIR}/binary_info.py
+#   COMMAND rm     ${CMAKE_BINARY_DIR}/binary_info.py
     )
 
 set_source_files_properties(${CMAKE_BINARY_DIR}/binary_info.F90 PROPERTIES GENERATED 1)
