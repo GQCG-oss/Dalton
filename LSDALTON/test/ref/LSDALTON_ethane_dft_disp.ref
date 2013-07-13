@@ -1,0 +1,1967 @@
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+      This is output from LINSCA DALTON (Release 1.0 )
+            Authors:                                  
+      Sonia Coriani,         University of Trieste,        Italy  
+      Trygve Helgaker,       University of Oslo,           Norway 
+      Stinne Hoest,          Aarhus University,            Denmark
+      Branislav Jansik,      Aarhus University,            Denmark
+      Poul Joergensen,       Aarhus University,            Denmark
+      Joanna Kauczor,        Aarhus University,            Denmark
+      Thomas Kjaergaard,     Aarhus University,            Denmark
+      Kasper Kristensen,     Aarhus University,            Denmark
+      Jeppe Olsen,           Aarhus University,            Denmark
+      Simen Reine,           University of Oslo,           Norway 
+      Pawel Salek,           KTH Stockholm,                Sweden 
+      Andreas Thorvaldsen,   University of Tromsoe,        Norway 
+      Lea Thoegersen,        Aarhus University,            Denmark
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using SCF wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "LSDalton, a molecular electronic structure program, Release 2010,
+      written by <INSERT AUTHOR LIST>"
+ 
+ .HERMIT NOT IMPLEMENTED IN NEW DRIVER
+ .PRPSTH NOT IMPLEMENTED IN NEW DRIVER
+ WORD LEAVING FCK3 
+ *LINSCA                                                               
+ Ground state molecular gradient calculations are carried out.
+
+ 
+     Date and time (Linux)  : Thu Nov 18 13:26:11 2010
+     Host name              : login-0-1.local                         
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  6-31G                                   
+  D-BLYP energy and gradient              
+  Ethane                                  
+      2   0                                                   
+          6.    2                                             
+  C      1.4496747688     -0.0000010117     0.0000000000      
+  C     -1.4496747688      0.0000010117     0.0000000000      
+          1.    6                                             
+  H      2.1888645654     -0.9728762646     1.6850699397      
+  H      2.1888645654     -0.9728762646    -1.6850699397      
+  H     -2.1888645654      0.9728762646     1.6850699397      
+  H     -2.1888645654      0.9728762646    -1.6850699397      
+  H      2.1888617992      1.9457507963     0.0000000000      
+  H     -2.1888617992     -1.9457507963     0.0000000000      
+                      
+ -----------------------------------------
+          PRINTING THE DALTON.INP FILE 
+ -----------------------------------------
+                      
+  **DALTON INPUT                          
+  .RUN PROPERTIES                         
+  .RUN WAVE FUNCTION                      
+  .DIRECT                                 
+  .RUN LINSCA                             
+  **INTEGRAL                              
+  .LINSCA                                 
+  *FCK3                                   
+  .HERMIT                                 
+  .PRPSTH                                 
+   1.0d-15                                
+  *END OF LINSCA                          
+  **WAVE FUNCTIONS                        
+  .DFT                                    
+   BLYP                                   
+  *DFT INPUT                              
+  .DISPER                                 
+  *DENSOPT                                
+  .DSM                                    
+  **RESPONS                               
+  *MOLGRA                                 
+  **PROPERTIES                            
+  .MOLGRA                                 
+  *END OF INPUT                           
+  
+  MOLPRINT IS SET TO       0
+        Integral threshold is set to the default 1.00D-15
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates: 24
+
+   1   C        x      1.4496747688
+   2            y     -0.0000010117
+   3            z      0.0000000000
+
+   4   C        x     -1.4496747688
+   5            y      0.0000010117
+   6            z      0.0000000000
+
+   7   H        x      2.1888645654
+   8            y     -0.9728762646
+   9            z      1.6850699397
+
+  10   H        x      2.1888645654
+  11            y     -0.9728762646
+  12            z     -1.6850699397
+
+  13   H        x     -2.1888645654
+  14            y      0.9728762646
+  15            z      1.6850699397
+
+  16   H        x     -2.1888645654
+  17            y      0.9728762646
+  18            z     -1.6850699397
+
+  19   H        x      2.1888617992
+  20            y      1.9457507963
+  21            z      0.0000000000
+
+  22   H        x     -2.1888617992
+  23            y     -1.9457507963
+  24            z      0.0000000000
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR BASIS
+   
+
+ Default basis set library used:
+        /usit/titan/u1/andrekra/SVN_DALTON/release/basis/                     
+ OPENING FILE/usit/titan/u1/andrekra/SVN_DALTON/release/basis/6-31G
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  6-31G                                             
+  CHARGES:   6   1
+                      
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+    Molecular Charge                 :    0.0000
+    Regular basisfunctions             :       30
+    Auxiliary basisfunctions           :        0
+    Huckel basisfunctions              :        0
+    Primitive Regular basisfunctions   :       68
+    Primitive Auxiliary basisfunctions :        0
+    Primitive Huckel basisfunctions    :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis    GHOST   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   6.000  6-31G           F             22           9
+     2   6.000  6-31G           F             22           9
+     3   1.000  6-31G           F              4           2
+     4   1.000  6-31G           F              4           2
+     5   1.000  6-31G           F              4           2
+     6   1.000  6-31G           F              4           2
+     7   1.000  6-31G           F              4           2
+     8   1.000  6-31G           F              4           2
+                      
+  ATOM  NAME  ISOTOPE        X             Y             Z     
+    1    C          1    1.44967477   -0.00000101    0.00000000
+    2    C          1   -1.44967477    0.00000101    0.00000000
+    3    H          1    2.18886457   -0.97287626    1.68506994
+    4    H          1    2.18886457   -0.97287626   -1.68506994
+    5    H          1   -2.18886457    0.97287626    1.68506994
+    6    H          1   -2.18886457    0.97287626   -1.68506994
+    7    H          1    2.18886180    1.94575080    0.00000000
+    8    H          1   -2.18886180   -1.94575080    0.00000000
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      8
+  THE  REGULAR   is on R =   0
+---------------------------------------------------------------------
+ atom label charge  basisset            prim cont basis
+---------------------------------------------------------------------
+      1 C      6.000 6-31G                     22        9 [10s4p|3s2p]             
+      2 C      6.000 6-31G                     22        9 [10s4p|3s2p]             
+      3 H      1.000 6-31G                      4        2 [4s|2s]                  
+      4 H      1.000 6-31G                      4        2 [4s|2s]                  
+      5 H      1.000 6-31G                      4        2 [4s|2s]                  
+      6 H      1.000 6-31G                      4        2 [4s|2s]                  
+      7 H      1.000 6-31G                      4        2 [4s|2s]                  
+      8 H      1.000 6-31G                      4        2 [4s|2s]                  
+---------------------------------------------------------------------
+total         18                              68      30
+---------------------------------------------------------------------
+                      
+ Configuration - as obtained from new input structure:
+ 
+     This is a DFT2 calculation of type: BLYP
+ Weighted mixed functional:
+                       LYP:    1.00000
+                     Becke:    1.00000
+                    Slater:    1.00000
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           7
+Convergence threshold for gradient:   0.10E-03
+ End of configuration from new input structure!
+ 
+ Add empirical dispersion corr. to the XC-energy/gradient
+   following S. Grimme,   
+   JCC 2004, 25, 1463. and
+   JCC 2006, 27, 1787.    
+     S6 factor   1.20
+     C6 factors:
+    C     1.750
+    C     1.750
+    H     0.140
+    H     0.140
+    H     0.140
+    H     0.140
+    H     0.140
+    H     0.140
+ dispersion correction to the KS-energy:           -0.0041331087
+ 
+ >>>  CPU Time used in *INPUT          is   0.00 seconds
+ Level 1 atomic calculation on 6-31G Charge   6
+ Init: matrices allocated:           1
+ Init: matrices allocated:           2
+ Init: matrices allocated:           3
+ Init: matrices allocated:           4
+ Init: matrices allocated:           5
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ Init: matrices allocated:           6
+ Free: matrices allocated:           5
+ Init: matrices allocated:           6
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 9048 compressed from  9048 ( 84 radial)
+ Number of grid points:     9048 Grid generation time:       0.0 s
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.01 seconds
+KS electrons/energy:    5.99999999998820   -5.82021351909691 rel.err:-0.20E-11
+ >>>  CPU Time used in xc-Fock         is   0.05 seconds
+ Init: matrices allocated:           7
+ Free: matrices allocated:           6
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.05 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Init: matrices allocated:           9
+ Free: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -36.7640060924    0.00000000000    0.00      0.00000    0.00    0.0000000    0.18E+01  ###
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Init: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    5.99999999999117   -4.79993811202501 rel.err:-0.15E-11
+ >>>  CPU Time used in xc-Fock         is   0.04 seconds
+ Init: matrices allocated:          10
+ Free: matrices allocated:           9
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.04 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Init: matrices allocated:          12
+ Free: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+  2    -37.4815740798   -0.71756798736    0.00      0.00000    0.00    0.0000000    0.12E+01  ###
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Init: matrices allocated:          12
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    5.99999999999809   -5.13504730413209 rel.err:-0.32E-12
+ >>>  CPU Time used in xc-Fock         is   0.04 seconds
+ Init: matrices allocated:          13
+ Free: matrices allocated:          12
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.04 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Init: matrices allocated:          15
+ Free: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+  3    -37.7787676090   -0.29719352921   -1.00      0.00000    0.00    0.0000000    0.55E-01  ###
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Init: matrices allocated:          15
+ Init: matrices allocated:          16
+ Init: matrices allocated:          17
+ Free: matrices allocated:          16
+ Free: matrices allocated:          15
+ Init: matrices allocated:          16
+ Init: matrices allocated:          17
+ Free: matrices allocated:          16
+ Free: matrices allocated:          15
+ Init: matrices allocated:          16
+ Init: matrices allocated:          17
+ Free: matrices allocated:          16
+ Free: matrices allocated:          15
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    5.99999999999839   -5.15129028406683 rel.err:-0.27E-12
+ >>>  CPU Time used in xc-Fock         is   0.04 seconds
+ Init: matrices allocated:          16
+ Free: matrices allocated:          15
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.04 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ Init: matrices allocated:          16
+ Init: matrices allocated:          17
+ Init: matrices allocated:          18
+ Free: matrices allocated:          17
+ Free: matrices allocated:          16
+ Free: matrices allocated:          15
+  4    -37.7793281644   -0.00056055544   -1.00      0.00000    0.00    0.0000000    0.14E-02  ###
+ Init: matrices allocated:          16
+ Init: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    5.99999999999834   -5.15175422246164 rel.err:-0.28E-12
+ >>>  CPU Time used in xc-Fock         is   0.04 seconds
+ Init: matrices allocated:          19
+ Free: matrices allocated:          18
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.04 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+  5    -37.7793285760   -0.00000041159   -1.00      0.00000    0.00    0.0000000    0.57E-04  ###
+ Free: matrices allocated:          17
+ Free: matrices allocated:          16
+ Free: matrices allocated:          15
+ Free: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ Free: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Free: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+ Free: matrices allocated:           5
+ Free: matrices allocated:           4
+ Free: matrices allocated:           3
+ Free: matrices allocated:           2
+ Free: matrices allocated:           1
+ Free: matrices allocated:           0
+ Level 1 atomic calculation on 6-31G Charge   1
+ Init: matrices allocated:           1
+ Init: matrices allocated:           2
+ Init: matrices allocated:           3
+ Init: matrices allocated:           4
+ Init: matrices allocated:           5
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ Init: matrices allocated:           6
+ Free: matrices allocated:           5
+ Init: matrices allocated:           6
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 9158 compressed from  9158 ( 61 radial)
+ Number of grid points:     9158 Grid generation time:       0.0 s
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.01 seconds
+KS electrons/energy:    0.99999999999842   -0.27403367336916 rel.err:-0.16E-11
+ >>>  CPU Time used in xc-Fock         is   0.04 seconds
+ Init: matrices allocated:           7
+ Free: matrices allocated:           6
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.04 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Init: matrices allocated:           9
+ Free: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1     -0.4579107573    0.00000000000    0.00      0.00000    0.00    0.0000000    0.54E-01  ###
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Init: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    0.99999999999825   -0.26544286070925 rel.err:-0.17E-11
+ >>>  CPU Time used in xc-Fock         is   0.03 seconds
+ Init: matrices allocated:          10
+ Free: matrices allocated:           9
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.03 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Init: matrices allocated:          12
+ Free: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+  2     -0.4585001171   -0.00058935981    0.00      0.00000    0.00    0.0000000    0.73E-02  ###
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Init: matrices allocated:          12
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    0.99999999999830   -0.26645957052425 rel.err:-0.17E-11
+ >>>  CPU Time used in xc-Fock         is   0.03 seconds
+ Init: matrices allocated:          13
+ Free: matrices allocated:          12
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.03 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Init: matrices allocated:          15
+ Free: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+  3     -0.4585114039   -0.00001128677   -1.00      0.00000    0.00    0.0000000    0.26E-04  ###
+ Free: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Free: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+ Free: matrices allocated:           5
+ Free: matrices allocated:           4
+ Free: matrices allocated:           3
+ Free: matrices allocated:           2
+ Free: matrices allocated:           1
+ Free: matrices allocated:           0
+ >>>  CPU Time used in *ATOM           is   0.34 seconds
+ Init: matrices allocated:           1
+ Init: matrices allocated:           2
+ Init: matrices allocated:           3
+ Init: matrices allocated:           4
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in *S              is   0.00 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.01 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.00 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.04 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.00 seconds
+ Init: matrices allocated:           5
+ Free: matrices allocated:           4
+ >>>  CPU Time used in *H1             is   0.10 seconds
+ First density: Atoms in molecule guess
+ Init: matrices allocated:           5
+ Init: matrices allocated:           6
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+ Init: matrices allocated:           7
+ Init: matrices allocated:           8
+ Free: matrices allocated:           7
+ Free: matrices allocated:           6
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 8953 compressed from  9048 ( 84 radial)
+ Atom:    2*1 points= 8953 compressed from  9048 ( 84 radial)
+ Atom:    3*1 points= 9049 compressed from  9158 ( 61 radial)
+ Atom:    4*1 points= 9049 compressed from  9158 ( 61 radial)
+ Atom:    5*1 points= 9049 compressed from  9158 ( 61 radial)
+ Atom:    6*1 points= 9049 compressed from  9158 ( 61 radial)
+ Atom:    7*1 points= 9042 compressed from  9158 ( 61 radial)
+ Atom:    8*1 points= 9042 compressed from  9158 ( 61 radial)
+ Number of grid points:    72186 Grid generation time:       0.1 s
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.11 seconds
+KS electrons/energy:   17.99996060251702  -12.58536117917146 rel.err:-0.22E-05
+ >>>  CPU Time used in xc-Fock         is   0.72 seconds
+ dispersion correction to the KS-energy:           -0.0041331087
+ 
+ Init: matrices allocated:           7
+ Free: matrices allocated:           6
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.72 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     1.00 seconds
+  Iteration 0 energy:  -79.7956339553893     
+ Free: matrices allocated:           5
+ Free: matrices allocated:           4
+ 
+Max no. of matrices allocated in Level 2 / get_initial_dens:         21
+ >>>  CPU Time used in *START          is   0.75 seconds
+ Init: matrices allocated:           5
+ Init: matrices allocated:           6
+ Init: matrices allocated:           7
+Matrix S     has nnz=       656 sparsity:     72.889 %
+Matrix AO D  has nnz=       756 sparsity:     84.000 %
+Matrix AO F  has nnz=       831 sparsity:     92.444 %
+ Relative convergence threshold for solver:  1.000000000000000E-002
+ >>>  CPU Time used in INIT SCF        is   0.00 seconds
+ Init: matrices allocated:           8
+** Get Fock matrix number   1
+ Init: matrices allocated:           9
+ Init: matrices allocated:          10
+ Free: matrices allocated:           9
+ Free: matrices allocated:           8
+ Init: matrices allocated:           9
+ Init: matrices allocated:          10
+ Free: matrices allocated:           9
+ Free: matrices allocated:           8
+ Init: matrices allocated:           9
+ Init: matrices allocated:          10
+ Free: matrices allocated:           9
+ Free: matrices allocated:           8
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99998515916004  -13.35207466972984 rel.err:-0.82E-06
+ >>>  CPU Time used in xc-Fock         is   0.74 seconds
+ dispersion correction to the KS-energy:           -0.0041331087
+ 
+ Init: matrices allocated:           9
+ Free: matrices allocated:           8
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.74 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     1.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.86 seconds
+ Init: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Free: matrices allocated:           8
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -79.6234720040    0.00000000000    0.00      0.00000    0.00    0.0000000    0.26E+01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   1
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.173 MB
+  Max allocated memory, type(matrix)           77.344 kB
+  Max allocated memory, real                  164.095 MB
+  Max allocated memory, integer               158.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               844.172 kB
+  Max allocated memory, ODitem                 78.312 kB
+ 
+  Allocated memory,     TOTAL                  56.250 kB
+  Allocated memory,     type(matrix)           56.250 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ Init: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Init: matrices allocated:          12
+ Free: matrices allocated:          11
+ Free: matrices allocated:          10
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ Init: matrices allocated:          11
+ Init: matrices allocated:          12
+ Free: matrices allocated:          11
+ Free: matrices allocated:          10
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.87 seconds
+** Get Fock matrix number   2
+ Init: matrices allocated:          11
+ Init: matrices allocated:          12
+ Free: matrices allocated:          11
+ Free: matrices allocated:          10
+ Init: matrices allocated:          11
+ Init: matrices allocated:          12
+ Free: matrices allocated:          11
+ Free: matrices allocated:          10
+ Init: matrices allocated:          11
+ Init: matrices allocated:          12
+ Free: matrices allocated:          11
+ Free: matrices allocated:          10
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99997959384542  -12.60936505508614 rel.err:-0.11E-05
+ >>>  CPU Time used in xc-Fock         is   0.73 seconds
+ dispersion correction to the KS-energy:           -0.0041331087
+ 
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.73 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     1.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.86 seconds
+ Init: matrices allocated:          11
+ Init: matrices allocated:          12
+ Init: matrices allocated:          13
+ Free: matrices allocated:          12
+ Free: matrices allocated:          11
+ Free: matrices allocated:          10
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  2    -79.4661616305    0.15731037355    0.00      0.00000    0.00    0.0000000    0.37E+01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   2
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.173 MB
+  Max allocated memory, type(matrix)           91.406 kB
+  Max allocated memory, real                  164.095 MB
+  Max allocated memory, integer               158.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               844.172 kB
+  Max allocated memory, ODitem                 78.312 kB
+ 
+  Allocated memory,     TOTAL                  70.312 kB
+  Allocated memory,     type(matrix)           70.312 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ Init: matrices allocated:          11
+ Init: matrices allocated:          12
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ DSM - Vectors in queue:           2
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Init: matrices allocated:          15
+ Init: matrices allocated:          16
+ Init: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Init: matrices allocated:          29
+ Free: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Init: matrices allocated:          29
+ Free: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Init: matrices allocated:          29
+ Free: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Init: matrices allocated:          29
+ Free: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Free: matrices allocated:          16
+ Free: matrices allocated:          15
+ Free: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.87 seconds
+** Get Fock matrix number   3
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99998162462238  -13.01880681654717 rel.err:-0.10E-05
+ >>>  CPU Time used in xc-Fock         is   0.74 seconds
+ dispersion correction to the KS-energy:           -0.0041331087
+ 
+ Init: matrices allocated:          13
+ Free: matrices allocated:          12
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.74 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     1.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.87 seconds
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Init: matrices allocated:          15
+ Free: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  3    -79.7518830213   -0.28572139081    0.00      0.00000    0.00    0.0000000    0.48E-01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   3
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.173 MB
+  Max allocated memory, type(matrix)          203.906 kB
+  Max allocated memory, real                  164.095 MB
+  Max allocated memory, integer               158.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               844.172 kB
+  Max allocated memory, ODitem                 78.312 kB
+ 
+  Allocated memory,     TOTAL                  84.375 kB
+  Allocated memory,     type(matrix)           84.375 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Init: matrices allocated:          15
+ Init: matrices allocated:          16
+ Free: matrices allocated:          15
+ Free: matrices allocated:          14
+ DSM - Vectors in queue:           3
+ Init: matrices allocated:          15
+ Init: matrices allocated:          16
+ Init: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Init: matrices allocated:          29
+ Init: matrices allocated:          30
+ Init: matrices allocated:          31
+ Init: matrices allocated:          32
+ Init: matrices allocated:          33
+ Init: matrices allocated:          34
+ Init: matrices allocated:          35
+ Free: matrices allocated:          34
+ Free: matrices allocated:          33
+ Free: matrices allocated:          32
+ Free: matrices allocated:          31
+ Free: matrices allocated:          30
+ Free: matrices allocated:          29
+ Free: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Init: matrices allocated:          29
+ Init: matrices allocated:          30
+ Init: matrices allocated:          31
+ Init: matrices allocated:          32
+ Init: matrices allocated:          33
+ Init: matrices allocated:          34
+ Init: matrices allocated:          35
+ Free: matrices allocated:          34
+ Free: matrices allocated:          33
+ Free: matrices allocated:          32
+ Free: matrices allocated:          31
+ Free: matrices allocated:          30
+ Free: matrices allocated:          29
+ Free: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Init: matrices allocated:          29
+ Init: matrices allocated:          30
+ Init: matrices allocated:          31
+ Init: matrices allocated:          32
+ Init: matrices allocated:          33
+ Init: matrices allocated:          34
+ Init: matrices allocated:          35
+ Free: matrices allocated:          34
+ Free: matrices allocated:          33
+ Free: matrices allocated:          32
+ Free: matrices allocated:          31
+ Free: matrices allocated:          30
+ Free: matrices allocated:          29
+ Free: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Free: matrices allocated:          16
+ Free: matrices allocated:          15
+ Free: matrices allocated:          14
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ Init: matrices allocated:          15
+ Init: matrices allocated:          16
+ Free: matrices allocated:          15
+ Free: matrices allocated:          14
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.87 seconds
+** Get Fock matrix number   4
+ Init: matrices allocated:          15
+ Init: matrices allocated:          16
+ Free: matrices allocated:          15
+ Free: matrices allocated:          14
+ Init: matrices allocated:          15
+ Init: matrices allocated:          16
+ Free: matrices allocated:          15
+ Free: matrices allocated:          14
+ Init: matrices allocated:          15
+ Init: matrices allocated:          16
+ Free: matrices allocated:          15
+ Free: matrices allocated:          14
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99998193129890  -13.01752756410119 rel.err:-0.10E-05
+ >>>  CPU Time used in xc-Fock         is   0.73 seconds
+ dispersion correction to the KS-energy:           -0.0041331087
+ 
+ Init: matrices allocated:          15
+ Free: matrices allocated:          14
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.73 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     1.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.86 seconds
+ Init: matrices allocated:          15
+ Init: matrices allocated:          16
+ Init: matrices allocated:          17
+ Free: matrices allocated:          16
+ Free: matrices allocated:          15
+ Free: matrices allocated:          14
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  4    -79.7519772985   -0.00009427727    0.00      0.00000    0.00    0.0000000    0.80E-02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   4
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.173 MB
+  Max allocated memory, type(matrix)          246.094 kB
+  Max allocated memory, real                  164.095 MB
+  Max allocated memory, integer               158.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               844.172 kB
+  Max allocated memory, ODitem                 78.312 kB
+ 
+  Allocated memory,     TOTAL                  98.438 kB
+  Allocated memory,     type(matrix)           98.438 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ Init: matrices allocated:          15
+ Init: matrices allocated:          16
+ Init: matrices allocated:          17
+ Init: matrices allocated:          18
+ Free: matrices allocated:          17
+ Free: matrices allocated:          16
+ DSM - Vectors in queue:           4
+ Init: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Init: matrices allocated:          29
+ Init: matrices allocated:          30
+ Init: matrices allocated:          31
+ Init: matrices allocated:          32
+ Init: matrices allocated:          33
+ Init: matrices allocated:          34
+ Init: matrices allocated:          35
+ Init: matrices allocated:          36
+ Init: matrices allocated:          37
+ Init: matrices allocated:          38
+ Init: matrices allocated:          39
+ Init: matrices allocated:          40
+ Init: matrices allocated:          41
+ Free: matrices allocated:          40
+ Free: matrices allocated:          39
+ Free: matrices allocated:          38
+ Free: matrices allocated:          37
+ Free: matrices allocated:          36
+ Free: matrices allocated:          35
+ Free: matrices allocated:          34
+ Free: matrices allocated:          33
+ Free: matrices allocated:          32
+ Free: matrices allocated:          31
+ Free: matrices allocated:          30
+ Free: matrices allocated:          29
+ Free: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Init: matrices allocated:          29
+ Init: matrices allocated:          30
+ Init: matrices allocated:          31
+ Init: matrices allocated:          32
+ Init: matrices allocated:          33
+ Init: matrices allocated:          34
+ Init: matrices allocated:          35
+ Init: matrices allocated:          36
+ Init: matrices allocated:          37
+ Init: matrices allocated:          38
+ Init: matrices allocated:          39
+ Init: matrices allocated:          40
+ Init: matrices allocated:          41
+ Free: matrices allocated:          40
+ Free: matrices allocated:          39
+ Free: matrices allocated:          38
+ Free: matrices allocated:          37
+ Free: matrices allocated:          36
+ Free: matrices allocated:          35
+ Free: matrices allocated:          34
+ Free: matrices allocated:          33
+ Free: matrices allocated:          32
+ Free: matrices allocated:          31
+ Free: matrices allocated:          30
+ Free: matrices allocated:          29
+ Free: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Free: matrices allocated:          16
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ Init: matrices allocated:          17
+ Init: matrices allocated:          18
+ Free: matrices allocated:          17
+ Free: matrices allocated:          16
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.87 seconds
+** Get Fock matrix number   5
+ Init: matrices allocated:          17
+ Init: matrices allocated:          18
+ Free: matrices allocated:          17
+ Free: matrices allocated:          16
+ Init: matrices allocated:          17
+ Init: matrices allocated:          18
+ Free: matrices allocated:          17
+ Free: matrices allocated:          16
+ Init: matrices allocated:          17
+ Init: matrices allocated:          18
+ Free: matrices allocated:          17
+ Free: matrices allocated:          16
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99998190862553  -13.01738990504898 rel.err:-0.10E-05
+ >>>  CPU Time used in xc-Fock         is   0.73 seconds
+ dispersion correction to the KS-energy:           -0.0041331087
+ 
+ Init: matrices allocated:          17
+ Free: matrices allocated:          16
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.73 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.86 seconds
+ Init: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Free: matrices allocated:          18
+ Free: matrices allocated:          17
+ Free: matrices allocated:          16
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  5    -79.7519798079   -0.00000250937    0.00      0.00000    0.00    0.0000000    0.44E-03  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   5
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.173 MB
+  Max allocated memory, type(matrix)          288.281 kB
+  Max allocated memory, real                  164.095 MB
+  Max allocated memory, integer               158.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               844.172 kB
+  Max allocated memory, ODitem                 78.312 kB
+ 
+  Allocated memory,     TOTAL                 112.500 kB
+  Allocated memory,     type(matrix)          112.500 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ Init: matrices allocated:          17
+ Init: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ DSM - Vectors in queue:           5
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Init: matrices allocated:          22
+ Init: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Init: matrices allocated:          29
+ Init: matrices allocated:          30
+ Init: matrices allocated:          31
+ Init: matrices allocated:          32
+ Init: matrices allocated:          33
+ Init: matrices allocated:          34
+ Init: matrices allocated:          35
+ Init: matrices allocated:          36
+ Init: matrices allocated:          37
+ Init: matrices allocated:          38
+ Init: matrices allocated:          39
+ Init: matrices allocated:          40
+ Init: matrices allocated:          41
+ Init: matrices allocated:          42
+ Init: matrices allocated:          43
+ Init: matrices allocated:          44
+ Init: matrices allocated:          45
+ Init: matrices allocated:          46
+ Init: matrices allocated:          47
+ Free: matrices allocated:          46
+ Free: matrices allocated:          45
+ Free: matrices allocated:          44
+ Free: matrices allocated:          43
+ Free: matrices allocated:          42
+ Free: matrices allocated:          41
+ Free: matrices allocated:          40
+ Free: matrices allocated:          39
+ Free: matrices allocated:          38
+ Free: matrices allocated:          37
+ Free: matrices allocated:          36
+ Free: matrices allocated:          35
+ Free: matrices allocated:          34
+ Free: matrices allocated:          33
+ Free: matrices allocated:          32
+ Free: matrices allocated:          31
+ Free: matrices allocated:          30
+ Free: matrices allocated:          29
+ Free: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Init: matrices allocated:          29
+ Init: matrices allocated:          30
+ Init: matrices allocated:          31
+ Init: matrices allocated:          32
+ Init: matrices allocated:          33
+ Init: matrices allocated:          34
+ Init: matrices allocated:          35
+ Init: matrices allocated:          36
+ Init: matrices allocated:          37
+ Init: matrices allocated:          38
+ Init: matrices allocated:          39
+ Init: matrices allocated:          40
+ Init: matrices allocated:          41
+ Init: matrices allocated:          42
+ Init: matrices allocated:          43
+ Init: matrices allocated:          44
+ Init: matrices allocated:          45
+ Init: matrices allocated:          46
+ Init: matrices allocated:          47
+ Free: matrices allocated:          46
+ Free: matrices allocated:          45
+ Free: matrices allocated:          44
+ Free: matrices allocated:          43
+ Free: matrices allocated:          42
+ Free: matrices allocated:          41
+ Free: matrices allocated:          40
+ Free: matrices allocated:          39
+ Free: matrices allocated:          38
+ Free: matrices allocated:          37
+ Free: matrices allocated:          36
+ Free: matrices allocated:          35
+ Free: matrices allocated:          34
+ Free: matrices allocated:          33
+ Free: matrices allocated:          32
+ Free: matrices allocated:          31
+ Free: matrices allocated:          30
+ Free: matrices allocated:          29
+ Free: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Init: matrices allocated:          26
+ Init: matrices allocated:          27
+ Init: matrices allocated:          28
+ Free: matrices allocated:          27
+ Free: matrices allocated:          26
+ Free: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Init: matrices allocated:          24
+ Init: matrices allocated:          25
+ Free: matrices allocated:          24
+ Free: matrices allocated:          23
+ Free: matrices allocated:          22
+ Free: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.87 seconds
+** Get Fock matrix number   6
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99998190799754  -13.01737185349277 rel.err:-0.10E-05
+ >>>  CPU Time used in xc-Fock         is   0.73 seconds
+ dispersion correction to the KS-energy:           -0.0041331087
+ 
+ Init: matrices allocated:          19
+ Free: matrices allocated:          18
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.73 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   0.86 seconds
+ Init: matrices allocated:          19
+ Init: matrices allocated:          20
+ Init: matrices allocated:          21
+ Free: matrices allocated:          20
+ Free: matrices allocated:          19
+ Free: matrices allocated:          18
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  6    -79.7519798146   -0.00000000671    0.00      0.00000    0.00    0.0000000    0.17E-04  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   6
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.173 MB
+  Max allocated memory, type(matrix)          330.469 kB
+  Max allocated memory, real                  164.095 MB
+  Max allocated memory, integer               158.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               844.172 kB
+  Max allocated memory, ODitem                 78.312 kB
+ 
+  Allocated memory,     TOTAL                 126.562 kB
+  Allocated memory,     type(matrix)          126.562 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ >>>  CPU Time used in **ITER          is   5.22 seconds
+ 
+Total no. of matmuls in SCF optimization:        366
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2    0.15731037355    0.0000    0.0000    0.0000000
+  3   -0.28572139081    0.0000    0.0000    0.0000000
+  4   -0.00009427727    0.0000    0.0000    0.0000000
+  5   -0.00000250937    0.0000    0.0000    0.0000000
+  6   -0.00000000671    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1           -79.62347200401930535918      0.260734579392899D+01
+    2           -79.46616163046633118938      0.368573956841588D+01
+    3           -79.75188302127452288914      0.477157267734491D-01
+    4           -79.75197729854555461770      0.800214633819276D-02
+    5           -79.75197980791209317886      0.443297670175613D-03
+    6           -79.75197981462619623017      0.172074621047866D-04
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final DFT energy:                  -79.751979814626
+      Nuclear repulsion:                  41.982234322450
+      Electronic energy:                -121.734214137077
+ 
+ Free: matrices allocated:          17
+ Free: matrices allocated:          16
+ Free: matrices allocated:          15
+ Free: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ Free: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Free: matrices allocated:           8
+ Free: matrices allocated:           7
+ Init: matrices allocated:           8
+ Init: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Init: matrices allocated:          12
+ Init: matrices allocated:          13
+ Init: matrices allocated:          14
+ Init: matrices allocated:          15
+ Free: matrices allocated:          14
+ Free: matrices allocated:          13
+ Free: matrices allocated:          12
+ Free: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Free: matrices allocated:           8
+ 
+ 
+ 
+                       Permanent dipole moment
+                       -----------------------
+               au              Debye           10**-30 C m
+           0.209761E-11      0.533159E-11      0.177842E-10
+ 
+ 
+                       Dipole moment components
+                       ------------------------
+               au              Debye           10**-30 C m
+ x        -0.269319E-12     -0.684542E-12     -0.228338E-11
+ y         0.207992E-11      0.528664E-11      0.176343E-10
+ z        -0.368071E-13     -0.935545E-13     -0.312064E-12
+ 
+ 
+ 
+ 
+ 
+ 
+        *************************************************************
+        *            MOLECULAR GRADIENT RESULTS (in a.u.)           *
+        *************************************************************
+ 
+ 
+ Init: matrices allocated:           9
+
+
+                   nuclear rep contribution to gradient
+                   ------------------------------------
+
+   C       -3.7393622548            0.0000042667            0.0000000000
+   C        3.7393622548           -0.0000042667            0.0000000000
+   H       -0.9040338753            0.8252028549           -1.4292934221
+   H       -0.9040338753            0.8252028549            1.4292934221
+   H        0.9040338753           -0.8252028549           -1.4292934221
+   H        0.9040338753           -0.8252028549            1.4292934221
+   H       -0.9040326183           -1.6504070600            0.0000000000
+   H        0.9040326183            1.6504070600            0.0000000000
+ >>>  CPU Time used in nn-grad         is   0.00 seconds
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Init: matrices allocated:          10
+ Free: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+
+
+                     Coulomb contribution to gradient
+                     --------------------------------
+
+   C       -2.9160171260            0.0000160396            0.0000000000
+   C        2.9160171260           -0.0000160397            0.0000000000
+   H       -1.1349992590            1.2263432848           -2.1240959660
+   H       -1.1349992590            1.2263432848            2.1240959660
+   H        1.1349992590           -1.2263432848           -2.1240959660
+   H        1.1349992590           -1.2263432848            2.1240959660
+   H       -1.1349874936           -2.4526847691            0.0000000000
+   H        1.1349874936            2.4526847691            0.0000000000
+
+
+                    exchange contribution to gradient
+                    ---------------------------------
+
+   C        0.0000000000            0.0000000000            0.0000000000
+   C        0.0000000000            0.0000000000            0.0000000000
+   H        0.0000000000            0.0000000000            0.0000000000
+   H        0.0000000000            0.0000000000            0.0000000000
+   H        0.0000000000            0.0000000000            0.0000000000
+   H        0.0000000000            0.0000000000            0.0000000000
+   H        0.0000000000            0.0000000000            0.0000000000
+   H        0.0000000000            0.0000000000            0.0000000000
+
+
+                   twoElectron contribution to gradient
+                   ------------------------------------
+
+   C       -2.9160171260            0.0000160396            0.0000000000
+   C        2.9160171260           -0.0000160397            0.0000000000
+   H       -1.1349992590            1.2263432848           -2.1240959660
+   H       -1.1349992590            1.2263432848            2.1240959660
+   H        1.1349992590           -1.2263432848           -2.1240959660
+   H        1.1349992590           -1.2263432848            2.1240959660
+   H       -1.1349874936           -2.4526847691            0.0000000000
+   H        1.1349874936            2.4526847691            0.0000000000
+ >>>  CPU Time used in two-grad        is   0.19 seconds
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+
+
+                   nuclear att contribution to gradient
+                   ------------------------------------
+
+   C        6.6979462437           -0.0000210276            0.0000000000
+   C       -6.6979462437            0.0000210276            0.0000000000
+   H        2.1459976473           -2.1919448715            3.7965674906
+   H        2.1459976473           -2.1919448715           -3.7965674906
+   H       -2.1459976473            2.1919448715            3.7965674907
+   H       -2.1459976473            2.1919448715           -3.7965674907
+   H        2.1459834302            4.3838888515            0.0000000000
+   H       -2.1459834302           -4.3838888515            0.0000000000
+ >>>  CPU Time used in ne-grad         is   0.02 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons:   17.99998190799754 rel.err:-0.10E-05
+ 
+ Add empirical dispersion corr. to the XC-energy/gradient
+   following S. Grimme,   
+   JCC 2004, 25, 1463. and
+   JCC 2006, 27, 1787.    
+     S6 factor   1.20
+     C6 factors:
+    C     1.750
+    C     1.750
+    H     0.140
+    H     0.140
+    H     0.140
+    H     0.140
+    H     0.140
+    H     0.140
+ dispersion correction to the KS-energy:           -0.0041331087
+
+
+                 XC-gradient including empir. disp. corr.
+                 ----------------------------------------
+
+   C       -0.0677907878           -0.0000096480            0.0000000000
+   C        0.0677907878            0.0000096480            0.0000000000
+   H        0.0741296732           -0.0983433958            0.1703364172
+   H        0.0741296732           -0.0983433958           -0.1703364172
+   H       -0.0741296732            0.0983433958            0.1703364172
+   H       -0.0741296732            0.0983433958           -0.1703364172
+   H        0.0741288870            0.1966863499            0.0000000000
+   H       -0.0741288870           -0.1966863499            0.0000000000
+ 
+ >>>  CPU Time used in geoderiv_molgrd is   2.02 seconds
+ >>>  CPU  Time used II_get_xc_geoderiv_molgrad is     2.02 seconds
+ >>>  WALL Time used II_get_xc_geoderiv_molgrad is     2.00 seconds
+
+
+                  exchange-corr contribution to gradient
+                  --------------------------------------
+
+   C       -0.0677907878           -0.0000096480            0.0000000000
+   C        0.0677907878            0.0000096480            0.0000000000
+   H        0.0741296732           -0.0983433958            0.1703364172
+   H        0.0741296732           -0.0983433958           -0.1703364172
+   H       -0.0741296732            0.0983433958            0.1703364172
+   H       -0.0741296732            0.0983433958           -0.1703364172
+   H        0.0741288870            0.1966863499            0.0000000000
+   H       -0.0741288870           -0.1966863499            0.0000000000
+ >>>  CPU Time used in xc-grad         is   2.02 seconds
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+
+
+                     kinetic contribution to gradient
+                     --------------------------------
+
+   C        0.0330707656            0.0000008510            0.0000000000
+   C       -0.0330707656           -0.0000008510            0.0000000000
+   H       -0.1399875335            0.1821644520           -0.3155184514
+   H       -0.1399875335            0.1821644520            0.3155184514
+   H        0.1399875335           -0.1821644520           -0.3155184514
+   H        0.1399875335           -0.1821644520            0.3155184514
+   H       -0.1399863486           -0.3643285936            0.0000000000
+   H        0.1399863486            0.3643285936            0.0000000000
+ >>>  CPU Time used in kin-grad        is   0.00 seconds
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Init: matrices allocated:          10
+ Init: matrices allocated:          11
+ Free: matrices allocated:          10
+ Free: matrices allocated:           9
+ Free: matrices allocated:           8
+
+
+                  reorthonomal contribution to gradient
+                  -------------------------------------
+
+   C       -0.0115040757            0.0000009298            0.0000000000
+   C        0.0115040757           -0.0000009298            0.0000000000
+   H       -0.0430668691            0.0576074388           -0.0997795640
+   H       -0.0430668691            0.0576074388            0.0997795640
+   H        0.0430668691           -0.0576074388           -0.0997795640
+   H        0.0430668691           -0.0576074388            0.0997795640
+   H       -0.0430659869           -0.1152146742            0.0000000000
+   H        0.0430659869            0.1152146742            0.0000000000
+ >>>  CPU Time used in reorth-g        is   0.00 seconds
+
+
+                         Molecular gradient (au)
+                         -----------------------
+
+   C       -0.0036572350           -0.0000085884            0.0000000000
+   C        0.0036572350            0.0000085884            0.0000000000
+   H       -0.0019602164            0.0010297632           -0.0017834956
+   H       -0.0019602164            0.0010297632            0.0017834956
+   H        0.0019602164           -0.0010297632           -0.0017834956
+   H        0.0019602164           -0.0010297632            0.0017834956
+   H       -0.0019601302           -0.0020598956            0.0000000000
+   H        0.0019601302            0.0020598956            0.0000000000
+ 
+ 
+ RMS gradient norm (au):      0.0017707850452706
+ 
+ 
+ >>>  CPU Time used in LSDALTON RSP    is   2.23 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON RESPONSE:    2.23066000000000         **
+ *****************************************************
+ Free: matrices allocated:           7
+ >>>  CPU Time used in *SCF            is   7.45 seconds
+ 
+ Free: matrices allocated:           6
+ Free: matrices allocated:           5
+ Free: matrices allocated:           4
+ Free: matrices allocated:           3
+ Free: matrices allocated:           2
+ Free: matrices allocated:           1
+ Free: matrices allocated:           0
+Total no. of matmuls used:                       368
+Total no. of Fock/KS matrix evaluations:           7
+Max no. of matrices allocated in Level 3:         47
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                 164.173 MB
+  Max allocated memory, type(matrix)          330.469 kB
+  Max allocated memory, real(realk)           164.095 MB
+  Max allocated memory, integer               158.383 kB
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, Overlap               844.172 kB
+  Max allocated memory, ODitem                 78.312 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ >>>  CPU Time used in LSDALTON        is   8.65 seconds

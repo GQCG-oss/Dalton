@@ -1,0 +1,24 @@
+#!/bin/bash
+export PATH=/usr/local/torque/bin:/com/pgi/linux86-64/12.4/bin:/com/pgi/linux86-64/12.4/lib:/com/bin:/usr/local/bin:/bin:/usr/bin:/com/pgi/linux86-64/11.10:/com/pgi/linux86-64/11.10/libso:/com/pgi/linux86-64/12.4/bin:/com/pgi/linux86-64/12.4/lib
+export LD_LIBRARY_PATH=/com/pgi/linux86-64/12.4/bin:/com/pgi/linux86-64/12.4/lib:/com/acml-4.1.0-pgi/pgi64_mp_int64/lib:/com/pgi/linux86-64/11.10:/com/pgi/linux86-64/11.10/libso:/com/pgi/linux86-64/12.4/bin:/com/pgi/linux86-64/12.4/lib
+#libpgbind.so is only in the old version of pgi but acml seem to need this file 
+#so it must be built for/with the old pgi version:  needs /com/pgi/linux86-64/11.10/libso/libpgbind.so  
+TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonPGIRelease
+SCRATCH_DIR=/scratch/tkjaer/DaltonPGIRelease
+rm -rf $TMP_DIR
+rm -rf $SCRATCH_DIR
+git clone git@repo.ctcc.no:dalton.git $TMP_DIR
+cd $TMP_DIR
+git checkout linsca-develop
+export OMP_NUM_THREADS=3
+./setup --fc=pgf90 --cc=pgcc --math="-Llib -L/com/acml-4.1.0-pgi/pgi64_mp_int64/lib -lacml -lacml_mv -lm -lpthread -lrt -pgf90libs" --omp --scratch=$SCRATCH_DIR -D BUILDNAME="Grendel-linux-PGI-release"
+#./setup --fc=pgf90 --cc=pgcc --internal-math --omp --scratch=$SCRATCH_DIR -D BUILDNAME="Grendel-linux-PGI-release"
+cd $TMP_DIR/build
+make depend
+make VERBOSE=1
+make Nightly
+rm -rf $TMP_DIR 
+rm -rf $SCRATCH_DIR
+
+exit 0
+

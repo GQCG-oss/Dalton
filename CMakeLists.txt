@@ -94,7 +94,7 @@ set(2EL_MEM_WORDS
 add_definitions(-DINSTALL_MMWORK=${2EL_MEM_WORDS})
 
 # find a good default scratch base directory
-foreach(dir "/global/work/$ENV{USER}" "/work" "/scratch" "/scr" "/temp" "/tmp")
+foreach(dir "/global/work/$ENV{USER}" "/scratch/$ENV{USER}" "/work" "/scratch" "/scr" "/temp" "/tmp")
    if(EXISTS "${dir}/")
        set(DEFAULT_SCRATCH_BASE_DIR ${dir})
        break()
@@ -143,11 +143,39 @@ configure_script(
     ${CMAKE_BINARY_DIR}/dalton
     )
 
+# if BLAS and/or LAPACK not found, add own sources to the list of
+# sources to compile
+if(USE_OWN_BLAS)
+    set(FIXED_FORTRAN_SOURCES
+        ${FIXED_FORTRAN_SOURCES}
+        ${OWN_BLAS_SOURCES}
+        )
+endif()
+if(USE_OWN_LAPACK)
+    set(FIXED_FORTRAN_SOURCES
+        ${FIXED_FORTRAN_SOURCES}
+        ${OWN_LAPACK_SOURCES}
+        )
+endif()
+
+# add binary_info.F90
+set(GENERATED_FILES
+    ${CMAKE_BINARY_DIR}/binary_info.F90
+    )
+
+# always invalidate generated files
+add_custom_target(dalton_interfaces
+    ALL
+    DEPENDS
+    ${GENERATED_FILES}
+)
+
 add_library(
     dalton
     ${C_SOURCES}
     ${FREE_FORTRAN_SOURCES}
     ${FIXED_FORTRAN_SOURCES}
+    ${GENERATED_FILES}
     )
 
 if(ENABLE_GEN1INT)

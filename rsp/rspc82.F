@@ -657,6 +657,7 @@ C    *              XINDX,CMO,WRK,LWRK)
       CALL FLSHFO(LUPRI)
 C
 C FLAG(16) MEANS SOLVENT CALCULATION with spherical cavity
+C CBN+JK 03.01.06 : This covers also mm/pcm
 C
       IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or.
      &    (peqm .and. pe_polar)) THEN
@@ -1040,6 +1041,7 @@ C
 #include "infdim.h"
 #include "abares.h"
 #include "thrldp.h"
+#include "qm3.h"
 C
       LOGICAL LINEQ,OLSEN1,LMAXIT
       real(8), allocatable :: THCORP(:),EOVAL(:)
@@ -1497,6 +1499,16 @@ C
             ENDIF
  2000    CONTINUE
          NTCONV = NTCONV + NOTCNV
+
+         IF (MMPCM) THEN
+             IF (NSTATES.LE.0) THEN
+              CALL QUIT('NSTATES.LE.0 for MMPCM')
+            ENDIF 
+            DO 3333 KL=1,NBX
+              ICQM3(KL) = KEX(KL)
+ 3333       CONTINUE
+         ENDIF
+
          IF (NTCONV.EQ.0 .OR. NCSIM+NOSIM.EQ.0) GO TO 3999
 C        ... NTCONV is number of non-converged response vectors
 C

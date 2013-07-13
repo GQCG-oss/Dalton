@@ -492,6 +492,7 @@ C
 C
 C Used from common blocks:
 C   INFORB: NNASHX, NNBASX, NNORBX, etc.
+C   INFPRI: LUERR,  LUPRI
 C
 #include "pcm.h"
 #include "pcmlog.h"
@@ -506,6 +507,8 @@ C
 #include "scbrhf.h"
 #include "maxaqn.h"
 #include "symmet.h"
+#include "qm3.h"
+#include "gnrinf.h"
 C
 #include "orgcom.h"
 #include "dftcom.h"
@@ -515,7 +518,8 @@ C
       LOGICAL FNDLAB, EXP1VL, TOFILE
       DIMENSION DVAO(NNBAST), DCAO(NNBAST)
       DIMENSION FSOL(*), CMO(*), WRK(LFREE)
-      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0,  D2 = 2.0D0, DP5 = 0.5D0 )
+      PARAMETER ( D0 = 0.0D0, D1 = 1.0D0,  D2 = 2.0D0, DP5 = 0.5D0)
+      PARAMETER ( DM1 = -1.0D0 )
 C
       LOGICAL     MOBAS
       LOGICAL     FIRST
@@ -535,34 +539,69 @@ C        UCMO   CMO unpacked (i.e. no symmetry blocking)
 C        RLM    R(l,m) integrals for current l,m value in l,m loop
 C
 C
-      KJENAO = 1
-      KJ1AO  = KJENAO + NNBASX
-      KJAO   = KJ1AO  + NNBASX
-      KWRK1  = KJAO   + NNBASX
-      LWRK1  = LFREE  - KWRK1
+      KJENAO  = 1
+      KXAO    = KJENAO  + NNBASX
+      KJ1AO   = KXAO    + NNBASX
+      KJAO    = KJ1AO   + NNBASX
+      KTJ2    = KJAO    + NNBASX
+      KPOTMM  = KTJ2    + NTS
+      KPOTQMM = KPOTMM  + NTS
+      KQMAT   = KPOTQMM + NTS
+      KWRK1   = KQMAT   + NTS * NTSIRR
+      LWRK1   = LFREE   - KWRK1
       IF (LWRK1 .LT. 0) CALL ERRWRK('PCMFCK',-KWRK1,LFREE)
 C
       ESOLT = D0
       QET   = D0
 C
       CALL DZERO(POTCAVELE, NTS)
+      CALL DZERO(WRK(KXAO),NNBASX)
+      CALL DZERO(WRK(KJENAO),NNBASX)
 
+Cahs       CALL COMP_NUC_POT_CAV(WRK(KPTQMN), .TRUE., .FALSE.,.FALSE.)
+
+      IF(MMPCM .AND. QM3) THEN
+C     Arnfinn ->
+C     Seperated the potential made of the charge and dipole of MM molecules
+C     false true false makes potential from charge
+C     false false true makes potential from dipole
+C     false true true makes the potential from both charge and dipole
+         CALL DZERO(WRK(KPOTMM), NTS)
+         CALL DZERO(WRK(KPOTQMM),NTS)
+         CALL DZERO(QSMM,MXTS)
+C     KPOTMM is the potential from MM charges, while kpotmm2 is the
+C     potential both from mm charges and induced dipoles.
+C     The kpotqmm is only used 
+C Test line...
+         CALL COMP_NUC_POT_CAV(WRK(KPOTMM), .FALSE., .TRUE.,.FALSE.)
+         CALL COMP_NUC_POT_CAV(WRK(KPOTQMM),.FALSE., .TRUE.,.TRUE.)
+Clf         CALL DSCAL(NTSIRR,DM1,WRK(KPOTMM),1)
+         CALL V2Q(WRK(KQMAT), WRK(KPOTQMM), QSMM, QTMM, .FALSE.)
+Clf         CALL DSCAL(NTSIRR,DM1,WRK(KPOTMM),1)
+      ELSE
+         CALL DZERO(WRK(KPOTMM), NTS)
+         CALL DZERO(QSMM,MXTS)
+      ENDIF
+
+Clf      CALL V2Q(WRK(KQMAT), WRK(KPTQMN), QSENEQ, XXX, .FALSE.)
 C
-C        Read JEN in ao basis 
+C        Read JEN in ao basis (\sum_i V^e_{\mu \nu, i} (q^n_i+q^{mm}_i))
 C
       LUPBKP = LUPROP
       IF (LUPROP .LT. 0) CALL GPOPEN(LUPROP,'AOPROPER','UNKNOWN',
      &     'SEQUENTIAL','UNFORMATTED',IDUMMY,.FALSE.)
-      IF (.NOT. (FNDLAB('NE-PCMIN',LUPROP))) THEN
+Clf      IF ((.NOT.(FNDLAB('NE-PCMIN',LUPROP))).OR.(MMPCM.AND.QM3)) THEN
+      IF (.true.) THEN
          CALL PCMJMAT(WRK(KJENAO),NNBASX,WRK(KWRK1),LWRK1)
+      ELSE
+         REWIND (LUPROP)
+         CALL REAPCM('NE-PCMIN','PCMFCK  ',LUPROP,WRK(KJENAO),NNBASX)
       END IF
-      REWIND (LUPROP)
-      CALL REAPCM('NE-PCMIN','PCMFCK  ',LUPROP,WRK(KJENAO),NNBASX)
       IF (IPRINT .GE. 15) THEN
          WRITE (LUPRI,'(/A)') ' PCMFCK - JNE_ao matrix:'
          CALL OUTPAK(WRK(KJENAO),NBAST,1,LUPRI)
       END IF
-C
+C     
       IF (.NOT. MOBAS) THEN
 C
 C     Loop over all tesserae.
@@ -582,13 +621,14 @@ C
          END IF
 C
 C     PCMEN = interaction solute electrons - polarization nuclear charges
-C     PCMEN = sum_i [Vel(i) * QSN(i)]
+C     PCMEN = sum_i [Vel(i) * QSN(i)+QSMM(i)]
 C
-         PCMEN  = -DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1)
+         PCMEN_op = -DDOT(NNBASX,WRK(KDAOX),1,WRK(KJENAO),1)
          EXP1VL = .TRUE.
          TOFILE = .FALSE.
          CALL J1INT(POTCAVELE,EXP1VL,WRK(KDAOX),1,TOFILE,'NPETES ',
      &              1,WRK(KWRK1),LWRK1)
+C         CALL V2Q(WRK(KQMAT),WRK(KTJ2),QSE,QET,.FALSE.)
          CALL V2Q(WRK(KWRK1),POTCAVELE,QSE,QET,.FALSE.)
          IF ((NASHT.GT.0) .AND. .NOT. DFTADD) THEN
             CALL DCOPY(NNBASX,DCAO,1,WRK(KWRK1),1)
@@ -658,7 +698,7 @@ C Adding the 2el term (X) to the PCM Fock operator
 C
       EXP1VL = .FALSE.
       TOFILE = .FALSE.
-      CALL J1INT(QSE,EXP1VL,WRK(KJENAO),1,TOFILE,'NPETES ',
+      CALL J1INT(QSE,EXP1VL,WRK(KXAO),1,TOFILE,'NPETES ',
      &           1,WRK(KWRK1),LWRK1)
 
 C     Electrostatic contributions:
@@ -671,32 +711,73 @@ C             PCMNE = sum_i [Vnuc(i) * QSE(i)]
 C     PCMEE = interaction solute electrons - polarization electronic charges
 C             PCMEE = sum_i [Vel(i) * QSE(i)]
 C
-      IF (.NOT.MOBAS) THEN
-         PCMEE = D0
-         PCMNE = D0
-         PCMEN = D0
-         PCMNN = D0
-         DO ITS = 1, NTSIRR
-            PCMEE = PCMEE + QSE(ITS) * POTCAVELE(ITS)
-            PCMNE = PCMNE + QSN(ITS) * POTCAVELE(ITS)
-            PCMEN = PCMEN + QSE(ITS) * POTCAVNUC(ITS)
-            PCMNN = PCMNN + QSN(ITS) * POTCAVNUC(ITS)
-         ENDDO
-         
-         ESOLT = DP5 * (PCMEE + PCMEN + PCMNE + PCMNN)
-C     
+      PCMEE = D0
+      PCMEN = D0
+      PCMNE = D0
+      PCMMM = D0
+      PCMNM = D0
+      PCMMN = D0
+      PCMME = D0
+      PCMEM = D0
+      PCMNN = D0
+
+      DO ITS = 1, NTSIRR
+         PCMMM = PCMMM + NSYM * QSMM(ITS) * WRK(KPOTMM + ITS -1)
+         PCMNN = PCMNN + QSN(ITS)  * POTCAVNUC(ITS)
+         PCMEE = PCMEE + QSE(ITS)  * POTCAVELE(ITS)
+
+         PCMEN = PCMEN + QSN(ITS) * POTCAVELE(ITS)
+         PCMNE = PCMNE + QSE(ITS) * POTCAVNUC(ITS)
+
+         PCMEM = PCMEM + NSYM * QSMM(ITS) * POTCAVELE(ITS)
+         PCMME = PCMME + NSYM * QSE(ITS)  * WRK(KPOTMM + ITS -1)
+
+         PCMMN = PCMMN + QSMM(ITS) * POTCAVNUC(ITS)
+         PCMNM = PCMNM + NSYM * QSN(ITS)  * WRK(KPOTMM + ITS -1)
+      ENDDO
+      IF (.NOT. MOBAS) THEN
+         PCMEE_op = -DDOT(NNBASX,WRK(KDAOX),1,WRK(KXAO),1)
+C
+C     Electrostatic contribution:
+C     GES = 1/2 (PCMEN + PCMNE) + 1/2 PCMEE + PCMNN
+C     PCMNN = 1/2 interaction nuclei - polarization nuclear charges
+C     PCMMN =     interaction mm chg - polarization nuclear charges
+C     PCMNM =     interaction nuclei - polarization mm chg         
+C     PCMMM =     interaction mm chg - polarization mm chg         
+         ESOLT = DP5 * (PCMEN + PCMNE + PCMEE + PCMNN) + 
+     *           DP5 * (PCMMM + PCMMN + PCMNM) +
+     *           DP5 * (PCMEM + PCMME)
+C
 C        Nuclear energy divided by two for backward compatibility /lf
 C     
          PCMNN = PCMNN * 0.5D0
 C
-         IF (IPRINT .GT. 1) WRITE(LUPRI,'(A,5F12.5)')
-     &   'PCMFCK: PCMEE, PCMEN, PCMNE, PCMNN, ESOLT',
-     &            PCMEE, PCMEN, PCMNE, PCMNN, ESOLT
+         IF (IPRINT .GT. 1) THEN 
+            WRITE(LUPRI,'(A)')
+     *           'PCMFCK: PCM solvation energy contributions'
+            WRITE(LUPRI,*) 'PCMEE_op', PCMEE_op
+            WRITE(LUPRI,*) 'PCMEE', PCMEE
+            WRITE(LUPRI,*) 'PCMNN', PCMNN
+            WRITE(LUPRI,*) 'PCMMM', PCMMM
+
+            WRITE(LUPRI,*) 'PCMEN', PCMEN
+            WRITE(LUPRI,*) 'PCMNE', PCMNE
+
+            WRITE(LUPRI,*) 'PCMEM', PCMEM
+            WRITE(LUPRI,*) 'PCMME', PCMME
+
+            WRITE(LUPRI,*) 'PCMNM', PCMNM
+            WRITE(LUPRI,*) 'PCMMN', PCMMN
+
+            WRITE(LUPRI,*) 'PCMEN_op', PCMEN_op, PCMEN + PCMEM
+            WRITE(LUPRI,*) 'ESOLT', ESOLT
+         ENDIF
       END IF
 C     
 C     Symmetry pack TAO using WRK(KJAO)
 C     Transform to MO basis
 C
+      CALL DAXPY(NNBASX,1.0D0,WRK(KXAO),1,WRK(KJENAO),1)
       CALL PKSYM1(WRK(KJENAO),WRK(KJAO),NBAS,NSYM,+1)
       IF (IPRINT .GE. 15) THEN
          WRITE (LUPRI,'(/A)')

@@ -1,0 +1,1551 @@
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+      This is output from LINSCA DALTON (Release 1.0 )
+            Authors:                                  
+      Trygve Helgaker,       University of Oslo,           Norway 
+      Poul Joergensen,       Aarhus University,            Denmark
+      Jeppe Olsen,           Aarhus University,            Denmark
+      Sonia Coriani,         University of Trieste,        Italy  
+      Stinne Hoest,          Aarhus University,            Denmark
+      Branislav Jansik,      Aarhus University,            Denmark
+      Joanna Kauczor,        Aarhus University,            Denmark
+      Thomas Kjaergaard,     Aarhus University,            Denmark
+      Kasper Kristensen,     Aarhus University,            Denmark
+      Simen Reine,           University of Oslo,           Norway 
+      Pawel Salek,           KTH Stockholm,                Sweden 
+      Andreas Thorvaldsen,   University of Tromsoe,        Norway 
+      Lea Thoegersen,        Aarhus University,            Denmark
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using SCF wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "LSDalton, a molecular electronic structure program, Release 2010,
+      written by <INSERT AUTHOR LIST>"
+
+
+ 
+     Date and time (Linux)  : Thu Sep 30 10:33:30 2010 
+     Host name              : kasperk.chem.au.dk                      
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  6-31G                                   
+  Hydrogen Peroxide                       
+                                          
+  AtomTypes=2 Generators=0                                    
+  Charge=8.0 Atoms=2                                          
+  O    -0.00000000  1.40784586 -0.09885600                    
+  O     0.00000000 -1.40784586 -0.09885600                    
+  Charge=1.0 Atoms=2                                          
+  H     0.69081489  1.72614891  1.56891868                    
+  H    -0.69081489 -1.72614891  1.56891868                    
+                      
+ -----------------------------------------
+          PRINTING THE DALTON.INP FILE 
+ -----------------------------------------
+                      
+  **DALTON INPUT                          
+  .RUN LINSCA                             
+  **WAVE FUNCTIONS                        
+  .HF                                     
+  *LINSCA                                 
+  .RH                                     
+  .DIIS                                   
+  .NVEC                                   
+  8                                       
+  .CONVTHR                                
+  1.0D-6                                  
+  **RESPONS                               
+  *SOLVER                                 
+  .CONVTHR                                
+  1.0D-6                                  
+  *ALPHA                                  
+  .BFREQ                                  
+  2                                       
+  0.1  0.20007543                         
+  .IMBFREQ                                
+  2                                       
+  0.0  0.001                              
+  *END OF INPUT                           
+  
+  MOLPRINT IS SET TO       0
+  Integral threshold is set to the default 1.00D-15
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates: 12
+
+   1   O        x      0.0000000000
+   2            y      1.4078458600
+   3            z     -0.0988560000
+
+   4   O        x      0.0000000000
+   5            y     -1.4078458600
+   6            z     -0.0988560000
+
+   7   H        x      0.6908148900
+   8            y      1.7261489100
+   9            z      1.5689186800
+
+  10   H        x     -0.6908148900
+  11            y     -1.7261489100
+  12            z      1.5689186800
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR BASIS
+   
+
+ Default basis set library used:
+        /Users/kasperkristensen/bin/Dalton-august2010/basis/                  
+ OPENING FILE/Users/kasperkristensen/bin/Dalton-august2010/basis/6-31G
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  6-31G                                             
+  CHARGES:   8   1
+                      
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+    Molecular Charge                 :    0.0000
+    Regular basisfunctions             :       22
+    Auxiliary basisfunctions           :        0
+    Huckel basisfunctions              :        0
+    Primitive Regular basisfunctions   :       52
+    Primitive Auxiliary basisfunctions :        0
+    Primitive Huckel basisfunctions    :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis    GHOST   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   8.000  6-31G           F             22           9
+     2   8.000  6-31G           F             22           9
+     3   1.000  6-31G           F              4           2
+     4   1.000  6-31G           F              4           2
+                      
+  ATOM  NAME  ISOTOPE        X             Y             Z     
+    1    O          1    0.00000000    1.40784586   -0.09885600
+    2    O          1    0.00000000   -1.40784586   -0.09885600
+    3    H          1    0.69081489    1.72614891    1.56891868
+    4    H          1   -0.69081489   -1.72614891    1.56891868
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      4
+  THE  REGULAR   is on R =   0
+---------------------------------------------------------------------
+ atom label charge  basisset            prim cont basis
+---------------------------------------------------------------------
+      1 O      8.000 6-31G                     22        9 [10s4p|3s2p]             
+      2 O      8.000 6-31G                     22        9 [10s4p|3s2p]             
+      3 H      1.000 6-31G                      4        2 [4s|2s]                  
+      4 H      1.000 6-31G                      4        2 [4s|2s]                  
+---------------------------------------------------------------------
+total         18                              52      22
+---------------------------------------------------------------------
+                      
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+
+LINSCF configuration :
+Density subspace min. method    : DIIS                    
+Density optimization : Diagonalization                    
+
+
+ Maximum size of Fock/density queue in averaging:           8
+Convergence threshold for gradient:   0.10E-05
+ End of configuration from new input structure!
+
+No frequencies specified in input. Only static properties will be  calculated.
+
+ >>>  CPU Time used in *INPUT          is   0.00 seconds
+ Level 1 atomic calculation on 6-31G Charge   8
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.01 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.01 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -71.4946859143    0.00000000000    0.00      0.00000    0.00    0.0000000    0.45E+01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+  2    -73.8341599123   -2.33947399805    0.00      0.00000    0.00    0.0000000    0.27E+01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+  3    -74.2580432558   -0.42388334348   -1.00      0.00000    0.00    0.0000000    0.16E+00  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+  4    -74.2598387062   -0.00179545041   -1.00      0.00000    0.00    0.0000000    0.32E-01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+  5    -74.2598920070   -0.00005330082   -1.00      0.00000    0.00    0.0000000    0.26E-02  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+  6    -74.2598924085   -0.00000040150   -1.00      0.00000    0.00    0.0000000    0.15E-05  ###
+ Level 1 atomic calculation on 6-31G Charge   1
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1     -0.3410549973    0.00000000000    0.00      0.00000    0.00    0.0000000    0.20E+00  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+  2     -0.3488197504   -0.00776475307    0.00      0.00000    0.00    0.0000000    0.13E-01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+  3     -0.3488518065   -0.00003205613   -1.00      0.00000    0.00    0.0000000    0.39E-04  ###
+ >>>  CPU Time used in *ATOM           is   0.19 seconds
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in *S              is   0.00 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.02 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.00 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.05 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.00 seconds
+ >>>  CPU Time used in *H1             is   0.10 seconds
+ First density: Atoms in molecule guess
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+  Iteration 0 energy:  -150.748494614108     
+ >>>  CPU Time used in *START          is   0.20 seconds
+Matrix S     has nnz=       240 sparsity:     49.587 %
+Matrix AO D  has nnz=       484 sparsity:    100.000 %
+Matrix AO F  has nnz=         8 sparsity:      1.653 %
+ micthrs =  1.000000000000000E-002
+ >>>  CPU Time used in INIT SCF        is   0.00 seconds
+** Get Fock matrix number   1
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in FCK_FO          is   0.20 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1   -150.6589838843    0.00000000000    0.00      0.00000    0.00    0.0000000    0.11E+01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   1
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)           41.594 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  30.250 kB
+  Allocated memory,     type(matrix)           30.250 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.20 seconds
+** Get Fock matrix number   2
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in FCK_FO          is   0.20 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  2   -150.6906340432   -0.03165015888    0.00      0.00000    0.00    0.0000000    0.39E+00  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   2
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)           52.938 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  41.594 kB
+  Allocated memory,     type(matrix)           41.594 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.20 seconds
+** Get Fock matrix number   3
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in FCK_FO          is   0.20 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  3   -150.6935796450   -0.00294560184   -1.00      0.00000    0.00    0.0000000    0.94E-01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   3
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)           64.281 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  52.938 kB
+  Allocated memory,     type(matrix)           52.938 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.20 seconds
+** Get Fock matrix number   4
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in FCK_FO          is   0.20 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  4   -150.6938531766   -0.00027353160   -1.00      0.00000    0.00    0.0000000    0.19E-01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   4
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)           75.625 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  64.281 kB
+  Allocated memory,     type(matrix)           64.281 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.20 seconds
+** Get Fock matrix number   5
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in FCK_FO          is   0.20 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  5   -150.6938758032   -0.00002262656   -1.00      0.00000    0.00    0.0000000    0.41E-02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   5
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)           86.969 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  75.625 kB
+  Allocated memory,     type(matrix)           75.625 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.20 seconds
+** Get Fock matrix number   6
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in FCK_FO          is   0.20 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  6   -150.6938776036   -0.00000180036   -1.00      0.00000    0.00    0.0000000    0.14E-02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   6
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)           98.313 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  86.969 kB
+  Allocated memory,     type(matrix)           86.969 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.20 seconds
+** Get Fock matrix number   7
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in FCK_FO          is   0.20 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  7   -150.6938778715   -0.00000026797   -1.00      0.00000    0.00    0.0000000    0.26E-03  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   7
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)          109.656 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  98.313 kB
+  Allocated memory,     type(matrix)           98.313 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.20 seconds
+** Get Fock matrix number   8
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in FCK_FO          is   0.20 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  8   -150.6938778791   -0.00000000761   -1.00      0.00000    0.00    0.0000000    0.68E-04  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   8
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)          121.000 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                 109.656 kB
+  Allocated memory,     type(matrix)          109.656 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.20 seconds
+** Get Fock matrix number   9
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in FCK_FO          is   0.20 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  9   -150.6938778798   -0.00000000063   -1.00      0.00000    0.00    0.0000000    0.15E-04  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   9
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)          132.344 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                 121.000 kB
+  Allocated memory,     type(matrix)          121.000 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.20 seconds
+** Get Fock matrix number  10
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in FCK_FO          is   0.20 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ 10   -150.6938778798   -0.00000000002   -1.00      0.00000    0.00    0.0000000    0.24E-05  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration  10
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)          132.344 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                 121.000 kB
+  Allocated memory,     type(matrix)          121.000 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.20 seconds
+** Get Fock matrix number  11
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in FCK_FO          is   0.20 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ 11   -150.6938778798    0.00000000000   -1.00      0.00000    0.00    0.0000000    0.27E-06  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration  11
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)          132.344 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                 121.000 kB
+  Allocated memory,     type(matrix)          121.000 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+ >>>  CPU Time used in **ITER          is   2.17 seconds
+
+Total no. of matmuls in SCF optimization:         60
+
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.03165015888    0.0000    0.0000    0.0000000
+  3   -0.00294560184   -1.0000    0.0000    0.0000000
+  4   -0.00027353160   -1.0000    0.0000    0.0000000
+  5   -0.00002262656   -1.0000    0.0000    0.0000000
+  6   -0.00000180036   -1.0000    0.0000    0.0000000
+  7   -0.00000026797   -1.0000    0.0000    0.0000000
+  8   -0.00000000761   -1.0000    0.0000    0.0000000
+  9   -0.00000000063   -1.0000    0.0000    0.0000000
+ 10   -0.00000000002   -1.0000    0.0000    0.0000000
+ 11    0.00000000000   -1.0000    0.0000    0.0000000
+
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1          -150.65898388430372278890      0.107556936042833D+01
+    2          -150.69063404318700349904      0.388475200765677D+00
+    3          -150.69357964502603408619      0.941086152209376D-01
+    4          -150.69385317662403167560      0.191941448879257D-01
+    5          -150.69387580318743857788      0.414988732431517D-02
+    6          -150.69387760355147065638      0.141929331842657D-02
+    7          -150.69387787152498958676      0.256588686241101D-03
+    8          -150.69387787913854026556      0.680595227478288D-04
+    9          -150.69387787976799586431      0.150199191025807D-04
+   10          -150.69387787978922688126      0.238346856166174D-05
+   11          -150.69387787978956794177      0.272697417272566D-06
+
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+
+
+      Final HF energy:                  -150.693877879790
+      Nuclear repulsion:                  36.151288508275
+      Electronic energy:                -186.845166388065
+
+
+
+
+                       Permanent dipole moment
+                       -----------------------
+               au              Debye           10**-30 C m
+            1.52858           3.88526           12.9598    
+
+
+                       Dipole moment components
+                       ------------------------
+               au              Debye           10**-30 C m
+ x        -0.276307E-13     -0.702303E-13     -0.234263E-12
+ y        -0.875966E-13     -0.222649E-12     -0.742675E-12
+ z          1.52858           3.88526           12.9598    
+
+
+
+ Starting linear response function calculation for: << EL  ; EL  >>
+
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+ Response convergence threshold is  1.000000000000000E-006
+Residual norm for vector   1 is:   0.396528E+00    and frequency =     0.100000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.199639E+00    and frequency =     0.100000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.479649E-01    and frequency =     0.100000   It =   3 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.198840E-01    and frequency =     0.100000   It =   4 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.162961E-01    and frequency =     0.100000   It =   5 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.742268E-02    and frequency =     0.100000   It =   6 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.238631E-02    and frequency =     0.100000   It =   7 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.883973E-03    and frequency =     0.100000   It =   8 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.237511E-03    and frequency =     0.100000   It =   9 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          10
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.530884E-04    and frequency =     0.100000   It =  10 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          11
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.178009E-04    and frequency =     0.100000   It =  11 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          12
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.551106E-05    and frequency =     0.100000   It =  12 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          13
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.113048E-05    and frequency =     0.100000   It =  13 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          14
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.189881E-06    and frequency =     0.100000   It =  14 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+ Response convergence threshold is  1.000000000000000E-006
+Residual norm for vector   1 is:   0.213807E+01    and frequency =     0.100000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.618463E+00    and frequency =     0.100000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.129361E+00    and frequency =     0.100000   It =   3 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.515736E-01    and frequency =     0.100000   It =   4 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.367868E-01    and frequency =     0.100000   It =   5 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.238879E-01    and frequency =     0.100000   It =   6 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.744207E-02    and frequency =     0.100000   It =   7 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.166735E-02    and frequency =     0.100000   It =   8 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.512915E-03    and frequency =     0.100000   It =   9 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          10
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.158410E-03    and frequency =     0.100000   It =  10 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          11
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.476244E-04    and frequency =     0.100000   It =  11 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          12
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.174862E-04    and frequency =     0.100000   It =  12 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          13
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.320610E-05    and frequency =     0.100000   It =  13 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          14
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.801838E-06    and frequency =     0.100000   It =  14 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+
+
+
+ <<<  SOLVING SETS OF LINEAR EQUATIONS FOR LINEAR RESPONSE PROPERTIES >>>
+
+
+ MO preconditioning
+  ** RSP_SOLVER MICROITERATION NUMBER           1
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+ Response convergence threshold is  1.000000000000000E-006
+Residual norm for vector   1 is:   0.856382E+00    and frequency =     0.100000   It =   1 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           2
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.218048E+00    and frequency =     0.100000   It =   2 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           3
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.444105E-01    and frequency =     0.100000   It =   3 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           4
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.157835E-01    and frequency =     0.100000   It =   4 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           5
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.741727E-02    and frequency =     0.100000   It =   5 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           6
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.358235E-02    and frequency =     0.100000   It =   6 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           7
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.125682E-02    and frequency =     0.100000   It =   7 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           8
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.310440E-03    and frequency =     0.100000   It =   8 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER           9
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.166628E-03    and frequency =     0.100000   It =   9 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          10
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.564967E-04    and frequency =     0.100000   It =  10 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          11
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.102399E-04    and frequency =     0.100000   It =  11 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          12
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.153983E-05    and frequency =     0.100000   It =  12 CONV = F
+ MO preconditioning
+ >>>  CPU Time used in RSP_IT          is   0.20 seconds
+  ** RSP_SOLVER MICROITERATION NUMBER          13
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in LINTRA          is   0.20 seconds
+ omega in build_reduc..   0.100000000000000     
+Residual norm for vector   1 is:   0.269958E-06    and frequency =     0.100000   It =  13 CONV = T
+
+ *** THE REQUESTED              1 SOLUTION VECTORS CONVERGED
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ Starting linear response function calculation for: << EL  ; EL  >>
+
+ Entering the complex rsp solver, gamma=  1.000000000000000E-003
+ ------------------
+ Start macroiteration:           1
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.22 seconds
+ >>>  CPU Time used in reg-F           is   0.22 seconds
+Residual norm for real vector   1 is:   0.212896E+00    and frequency =     0.200075   It =   1 CONV = F
+Residual norm for img vector   1 is:   0.750261E-03    and frequency =     0.200075   It =   1 CONV = F
+ Dispersion value macroiteration:           1 for  frequency  0.200075430000000      =  0.909367080848795     
+ Absorption value in macroiteration:           1 for  frequency   0.200075430000000      =  9.402147143809734E-004
+ ------------------
+ Start macroiteration:           2
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.22 seconds
+ >>>  CPU Time used in reg-F           is   0.22 seconds
+Residual norm for real vector   1 is:   0.712858E-01    and frequency =     0.200075   It =   2 CONV = F
+Residual norm for img vector   1 is:   0.490380E-03    and frequency =     0.200075   It =   2 CONV = F
+ Dispersion value macroiteration:           2 for  frequency  0.200075430000000      =  0.922135526716002     
+ Absorption value in macroiteration:           2 for  frequency   0.200075430000000      =  1.051788359996262E-003
+ ------------------
+ Start macroiteration:           3
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.22 seconds
+ >>>  CPU Time used in reg-F           is   0.22 seconds
+Residual norm for real vector   1 is:   0.578945E-01    and frequency =     0.200075   It =   3 CONV = F
+Residual norm for img vector   1 is:   0.785632E-03    and frequency =     0.200075   It =   3 CONV = F
+ Dispersion value macroiteration:           3 for  frequency  0.200075430000000      =  0.990296871068567     
+ Absorption value in macroiteration:           3 for  frequency   0.200075430000000      =  1.533907781451079E-003
+ ------------------
+ Start macroiteration:           4
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.548472E-01    and frequency =     0.200075   It =   4 CONV = F
+Residual norm for img vector   1 is:   0.131552E-02    and frequency =     0.200075   It =   4 CONV = F
+ Dispersion value macroiteration:           4 for  frequency  0.200075430000000      =  0.975530710256768     
+ Absorption value in macroiteration:           4 for  frequency   0.200075430000000      =  1.505208026683490E-003
+ ------------------
+ Start macroiteration:           5
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.720115E-01    and frequency =     0.200075   It =   5 CONV = F
+Residual norm for img vector   1 is:   0.339116E-02    and frequency =     0.200075   It =   5 CONV = F
+ Dispersion value macroiteration:           5 for  frequency  0.200075430000000      =  0.968595309816883     
+ Absorption value in macroiteration:           5 for  frequency   0.200075430000000      =  1.392813386245116E-003
+ ------------------
+ Start macroiteration:           6
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.159000E+00    and frequency =     0.200075   It =   6 CONV = F
+Residual norm for img vector   1 is:   0.527508E-01    and frequency =     0.200075   It =   6 CONV = F
+ Dispersion value macroiteration:           6 for  frequency  0.200075430000000      =   1.09360638284331     
+ Absorption value in macroiteration:           6 for  frequency   0.200075430000000      =  4.415884506443560E-002
+ ------------------
+ Start macroiteration:           7
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.337664E-02    and frequency =     0.200075   It =   7 CONV = F
+Residual norm for img vector   1 is:   0.162713E+00    and frequency =     0.200075   It =   7 CONV = F
+ Dispersion value macroiteration:           7 for  frequency  0.200075430000000      =  0.956639950957286     
+ Absorption value in macroiteration:           7 for  frequency   0.200075430000000      =  0.480444279630971     
+ ------------------
+ Start macroiteration:           8
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.152852E-01    and frequency =     0.200075   It =   8 CONV = F
+Residual norm for img vector   1 is:   0.578232E-01    and frequency =     0.200075   It =   8 CONV = F
+ Dispersion value macroiteration:           8 for  frequency  0.200075430000000      =  0.846522033290952     
+ Absorption value in macroiteration:           8 for  frequency   0.200075430000000      =  0.462060653071535     
+ ------------------
+ Start macroiteration:           9
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.255709E-02    and frequency =     0.200075   It =   9 CONV = F
+Residual norm for img vector   1 is:   0.268161E-01    and frequency =     0.200075   It =   9 CONV = F
+ Dispersion value macroiteration:           9 for  frequency  0.200075430000000      =   1.01292187831887     
+ Absorption value in macroiteration:           9 for  frequency   0.200075430000000      =  0.457930327821627     
+ ------------------
+ Start macroiteration:          10
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.697517E-03    and frequency =     0.200075   It =  10 CONV = F
+Residual norm for img vector   1 is:   0.111343E-01    and frequency =     0.200075   It =  10 CONV = F
+ Dispersion value macroiteration:          10 for  frequency  0.200075430000000      =   1.00133437438041     
+ Absorption value in macroiteration:          10 for  frequency   0.200075430000000      =  0.458411351719324     
+ ------------------
+ Start macroiteration:          11
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.174037E-03    and frequency =     0.200075   It =  11 CONV = F
+Residual norm for img vector   1 is:   0.447994E-02    and frequency =     0.200075   It =  11 CONV = F
+ Dispersion value macroiteration:          11 for  frequency  0.200075430000000      =  0.958540484127193     
+ Absorption value in macroiteration:          11 for  frequency   0.200075430000000      =  0.464917802934879     
+ ------------------
+ Start macroiteration:          12
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.22 seconds
+ >>>  CPU Time used in reg-F           is   0.22 seconds
+Residual norm for real vector   1 is:   0.849098E-04    and frequency =     0.200075   It =  12 CONV = F
+Residual norm for img vector   1 is:   0.141031E-02    and frequency =     0.200075   It =  12 CONV = F
+ Dispersion value macroiteration:          12 for  frequency  0.200075430000000      =  0.952471148026243     
+ Absorption value in macroiteration:          12 for  frequency   0.200075430000000      =  0.464635226448744     
+ ------------------
+ Start macroiteration:          13
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.258945E-04    and frequency =     0.200075   It =  13 CONV = F
+Residual norm for img vector   1 is:   0.420354E-03    and frequency =     0.200075   It =  13 CONV = F
+ Dispersion value macroiteration:          13 for  frequency  0.200075430000000      =  0.954597567923868     
+ Absorption value in macroiteration:          13 for  frequency   0.200075430000000      =  0.464939583776538     
+ ------------------
+ Start macroiteration:          14
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.131032E-04    and frequency =     0.200075   It =  14 CONV = F
+Residual norm for img vector   1 is:   0.199768E-03    and frequency =     0.200075   It =  14 CONV = F
+ Dispersion value macroiteration:          14 for  frequency  0.200075430000000      =  0.955303211148391     
+ Absorption value in macroiteration:          14 for  frequency   0.200075430000000      =  0.465043093893402     
+ ------------------
+ Start macroiteration:          15
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.331302E-05    and frequency =     0.200075   It =  15 CONV = F
+Residual norm for img vector   1 is:   0.469921E-04    and frequency =     0.200075   It =  15 CONV = F
+ Dispersion value macroiteration:          15 for  frequency  0.200075430000000      =  0.954960437961807     
+ Absorption value in macroiteration:          15 for  frequency   0.200075430000000      =  0.465005272075010     
+ ------------------
+ Start macroiteration:          16
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.695451E-06    and frequency =     0.200075   It =  16 CONV = T
+Residual norm for img vector   1 is:   0.940485E-05    and frequency =     0.200075   It =  16 CONV = F
+ Dispersion value macroiteration:          16 for  frequency  0.200075430000000      =  0.954880993412160     
+ Absorption value in macroiteration:          16 for  frequency   0.200075430000000      =  0.464998285197042     
+ ------------------
+ Start macroiteration:          17
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+Residual norm for real vector   1 is:   0.132873E-06    and frequency =     0.200075   It =  17 CONV = T
+Residual norm for img vector   1 is:   0.168719E-05    and frequency =     0.200075   It =  17 CONV = F
+ Dispersion value macroiteration:          17 for  frequency  0.200075430000000      =  0.954867132884459     
+ Absorption value in macroiteration:          17 for  frequency   0.200075430000000      =  0.464997285271577     
+ ------------------
+ Start macroiteration:          18
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+Residual norm for real vector   1 is:   0.468159E-07    and frequency =     0.200075   It =  18 CONV = T
+Residual norm for img vector   1 is:   0.434098E-06    and frequency =     0.200075   It =  18 CONV = T
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ Entering the complex rsp solver, gamma=  1.000000000000000E-003
+ ------------------
+ Start macroiteration:           1
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.688338E+00    and frequency =     0.200075   It =   1 CONV = F
+Residual norm for img vector   1 is:   0.130255E-02    and frequency =     0.200075   It =   1 CONV = F
+ Dispersion value macroiteration:           1 for  frequency  0.200075430000000      =   4.00493418362411     
+ Absorption value in macroiteration:           1 for  frequency   0.200075430000000      =  5.559034440512128E-003
+ ------------------
+ Start macroiteration:           2
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.254656E+00    and frequency =     0.200075   It =   2 CONV = F
+Residual norm for img vector   1 is:   0.168381E-02    and frequency =     0.200075   It =   2 CONV = F
+ Dispersion value macroiteration:           2 for  frequency  0.200075430000000      =   4.93772504762769     
+ Absorption value in macroiteration:           2 for  frequency   0.200075430000000      =  1.104429842037689E-002
+ ------------------
+ Start macroiteration:           3
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.152516E+00    and frequency =     0.200075   It =   3 CONV = F
+Residual norm for img vector   1 is:   0.253153E-02    and frequency =     0.200075   It =   3 CONV = F
+ Dispersion value macroiteration:           3 for  frequency  0.200075430000000      =   5.49996670047761     
+ Absorption value in macroiteration:           3 for  frequency   0.200075430000000      =  1.638404145471824E-002
+ ------------------
+ Start macroiteration:           4
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.231031E+00    and frequency =     0.200075   It =   4 CONV = F
+Residual norm for img vector   1 is:   0.946779E-02    and frequency =     0.200075   It =   4 CONV = F
+ Dispersion value macroiteration:           4 for  frequency  0.200075430000000      =   5.22681374504671     
+ Absorption value in macroiteration:           4 for  frequency   0.200075430000000      =  9.064291479504931E-003
+ ------------------
+ Start macroiteration:           5
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.315667E+00    and frequency =     0.200075   It =   5 CONV = F
+Residual norm for img vector   1 is:   0.358779E-01    and frequency =     0.200075   It =   5 CONV = F
+ Dispersion value macroiteration:           5 for  frequency  0.200075430000000      =   5.36226376017497     
+ Absorption value in macroiteration:           5 for  frequency   0.200075430000000      =  2.094716258790156E-002
+ ------------------
+ Start macroiteration:           6
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.22 seconds
+Residual norm for real vector   1 is:   0.386987E+00    and frequency =     0.200075   It =   6 CONV = F
+Residual norm for img vector   1 is:   0.590046E+00    and frequency =     0.200075   It =   6 CONV = F
+ Dispersion value macroiteration:           6 for  frequency  0.200075430000000      =   3.96647845066287     
+ Absorption value in macroiteration:           6 for  frequency   0.200075430000000      =   2.04435853272686     
+ ------------------
+ Start macroiteration:           7
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.682010E-02    and frequency =     0.200075   It =   7 CONV = F
+Residual norm for img vector   1 is:   0.387393E+00    and frequency =     0.200075   It =   7 CONV = F
+ Dispersion value macroiteration:           7 for  frequency  0.200075430000000      =   5.25857804523797     
+ Absorption value in macroiteration:           7 for  frequency   0.200075430000000      =   2.44611804703351     
+ ------------------
+ Start macroiteration:           8
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.649577E-01    and frequency =     0.200075   It =   8 CONV = F
+Residual norm for img vector   1 is:   0.154454E+00    and frequency =     0.200075   It =   8 CONV = F
+ Dispersion value macroiteration:           8 for  frequency  0.200075430000000      =   6.18665011769125     
+ Absorption value in macroiteration:           8 for  frequency   0.200075430000000      =   2.09053721185260     
+ ------------------
+ Start macroiteration:           9
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.347253E-02    and frequency =     0.200075   It =   9 CONV = F
+Residual norm for img vector   1 is:   0.591689E-01    and frequency =     0.200075   It =   9 CONV = F
+ Dispersion value macroiteration:           9 for  frequency  0.200075430000000      =   5.16416064082245     
+ Absorption value in macroiteration:           9 for  frequency   0.200075430000000      =   2.46524030273538     
+ ------------------
+ Start macroiteration:          10
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.134656E-02    and frequency =     0.200075   It =  10 CONV = F
+Residual norm for img vector   1 is:   0.285148E-01    and frequency =     0.200075   It =  10 CONV = F
+ Dispersion value macroiteration:          10 for  frequency  0.200075430000000      =   5.19787972627859     
+ Absorption value in macroiteration:          10 for  frequency   0.200075430000000      =   2.46106034691771     
+ ------------------
+ Start macroiteration:          11
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.176294E-03    and frequency =     0.200075   It =  11 CONV = F
+Residual norm for img vector   1 is:   0.787928E-02    and frequency =     0.200075   It =  11 CONV = F
+ Dispersion value macroiteration:          11 for  frequency  0.200075430000000      =   5.27223876380889     
+ Absorption value in macroiteration:          11 for  frequency   0.200075430000000      =   2.47095974737879     
+ ------------------
+ Start macroiteration:          12
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.836958E-04    and frequency =     0.200075   It =  12 CONV = F
+Residual norm for img vector   1 is:   0.289843E-02    and frequency =     0.200075   It =  12 CONV = F
+ Dispersion value macroiteration:          12 for  frequency  0.200075430000000      =   5.25993316715544     
+ Absorption value in macroiteration:          12 for  frequency   0.200075430000000      =   2.47022827666116     
+ ------------------
+ Start macroiteration:          13
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.219037E-04    and frequency =     0.200075   It =  13 CONV = F
+Residual norm for img vector   1 is:   0.575530E-03    and frequency =     0.200075   It =  13 CONV = F
+ Dispersion value macroiteration:          13 for  frequency  0.200075430000000      =   5.25003969946342     
+ Absorption value in macroiteration:          13 for  frequency   0.200075430000000      =   2.46947679579456     
+ ------------------
+ Start macroiteration:          14
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.321425E-05    and frequency =     0.200075   It =  14 CONV = F
+Residual norm for img vector   1 is:   0.101111E-03    and frequency =     0.200075   It =  14 CONV = F
+ Dispersion value macroiteration:          14 for  frequency  0.200075430000000      =   5.24948978442518     
+ Absorption value in macroiteration:          14 for  frequency   0.200075430000000      =   2.46936287687717     
+ ------------------
+ Start macroiteration:          15
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.577596E-06    and frequency =     0.200075   It =  15 CONV = T
+Residual norm for img vector   1 is:   0.207215E-04    and frequency =     0.200075   It =  15 CONV = F
+ Dispersion value macroiteration:          15 for  frequency  0.200075430000000      =   5.24991079174248     
+ Absorption value in macroiteration:          15 for  frequency   0.200075430000000      =   2.46932882497987     
+ ------------------
+ Start macroiteration:          16
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+Residual norm for real vector   1 is:   0.445438E-06    and frequency =     0.200075   It =  16 CONV = T
+Residual norm for img vector   1 is:   0.348018E-05    and frequency =     0.200075   It =  16 CONV = F
+ Dispersion value macroiteration:          16 for  frequency  0.200075430000000      =   5.25003626537730     
+ Absorption value in macroiteration:          16 for  frequency   0.200075430000000      =   2.46933052382141     
+ ------------------
+ Start macroiteration:          17
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+Residual norm for real vector   1 is:   0.434427E-06    and frequency =     0.200075   It =  17 CONV = T
+Residual norm for img vector   1 is:   0.605083E-06    and frequency =     0.200075   It =  17 CONV = T
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ Entering the complex rsp solver, gamma=  1.000000000000000E-003
+ ------------------
+ Start macroiteration:           1
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.302935E+00    and frequency =     0.200075   It =   1 CONV = F
+Residual norm for img vector   1 is:   0.775668E-03    and frequency =     0.200075   It =   1 CONV = F
+ Dispersion value macroiteration:           1 for  frequency  0.200075430000000      =   2.26851105860565     
+ Absorption value in macroiteration:           1 for  frequency   0.200075430000000      =  2.370598367734997E-003
+ ------------------
+ Start macroiteration:           2
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.22 seconds
+ >>>  CPU Time used in reg-F           is   0.22 seconds
+Residual norm for real vector   1 is:   0.894089E-01    and frequency =     0.200075   It =   2 CONV = F
+Residual norm for img vector   1 is:   0.743368E-03    and frequency =     0.200075   It =   2 CONV = F
+ Dispersion value macroiteration:           2 for  frequency  0.200075430000000      =   2.33532228145180     
+ Absorption value in macroiteration:           2 for  frequency   0.200075430000000      =  2.784948601176234E-003
+ ------------------
+ Start macroiteration:           3
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.221572E-01    and frequency =     0.200075   It =   3 CONV = F
+Residual norm for img vector   1 is:   0.345294E-03    and frequency =     0.200075   It =   3 CONV = F
+ Dispersion value macroiteration:           3 for  frequency  0.200075430000000      =   2.40507906234507     
+ Absorption value in macroiteration:           3 for  frequency   0.200075430000000      =  2.921596868960069E-003
+ ------------------
+ Start macroiteration:           4
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.117954E-01    and frequency =     0.200075   It =   4 CONV = F
+Residual norm for img vector   1 is:   0.222754E-03    and frequency =     0.200075   It =   4 CONV = F
+ Dispersion value macroiteration:           4 for  frequency  0.200075430000000      =   2.39992318206935     
+ Absorption value in macroiteration:           4 for  frequency   0.200075430000000      =  2.828448013184123E-003
+ ------------------
+ Start macroiteration:           5
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.988845E-02    and frequency =     0.200075   It =   5 CONV = F
+Residual norm for img vector   1 is:   0.271779E-03    and frequency =     0.200075   It =   5 CONV = F
+ Dispersion value macroiteration:           5 for  frequency  0.200075430000000      =   2.39687288386602     
+ Absorption value in macroiteration:           5 for  frequency   0.200075430000000      =  2.753994488115171E-003
+ ------------------
+ Start macroiteration:           6
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.346990E-02    and frequency =     0.200075   It =   6 CONV = F
+Residual norm for img vector   1 is:   0.109901E-03    and frequency =     0.200075   It =   6 CONV = F
+ Dispersion value macroiteration:           6 for  frequency  0.200075430000000      =   2.40072474410812     
+ Absorption value in macroiteration:           6 for  frequency   0.200075430000000      =  2.865905033441776E-003
+ ------------------
+ Start macroiteration:           7
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.152059E-02    and frequency =     0.200075   It =   7 CONV = F
+Residual norm for img vector   1 is:   0.883809E-04    and frequency =     0.200075   It =   7 CONV = F
+ Dispersion value macroiteration:           7 for  frequency  0.200075430000000      =   2.40065654385057     
+ Absorption value in macroiteration:           7 for  frequency   0.200075430000000      =  2.858118404207402E-003
+ ------------------
+ Start macroiteration:           8
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.22 seconds
+Residual norm for real vector   1 is:   0.385629E-03    and frequency =     0.200075   It =   8 CONV = F
+Residual norm for img vector   1 is:   0.209878E-03    and frequency =     0.200075   It =   8 CONV = F
+ Dispersion value macroiteration:           8 for  frequency  0.200075430000000      =   2.40097002114304     
+ Absorption value in macroiteration:           8 for  frequency   0.200075430000000      =  2.861064570255653E-003
+ ------------------
+ Start macroiteration:           9
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.280159E-03    and frequency =     0.200075   It =   9 CONV = F
+Residual norm for img vector   1 is:   0.213306E-03    and frequency =     0.200075   It =   9 CONV = F
+ Dispersion value macroiteration:           9 for  frequency  0.200075430000000      =   2.40099701689411     
+ Absorption value in macroiteration:           9 for  frequency   0.200075430000000      =  2.856319021711503E-003
+ ------------------
+ Start macroiteration:          10
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.105728E-03    and frequency =     0.200075   It =  10 CONV = F
+Residual norm for img vector   1 is:   0.620597E-05    and frequency =     0.200075   It =  10 CONV = F
+ Dispersion value macroiteration:          10 for  frequency  0.200075430000000      =   2.40096578015561     
+ Absorption value in macroiteration:          10 for  frequency   0.200075430000000      =  2.874861180802686E-003
+ ------------------
+ Start macroiteration:          11
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.342497E-04    and frequency =     0.200075   It =  11 CONV = F
+Residual norm for img vector   1 is:   0.691227E-05    and frequency =     0.200075   It =  11 CONV = F
+ Dispersion value macroiteration:          11 for  frequency  0.200075430000000      =   2.40094900636455     
+ Absorption value in macroiteration:          11 for  frequency   0.200075430000000      =  2.872509238588246E-003
+ ------------------
+ Start macroiteration:          12
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.165698E-04    and frequency =     0.200075   It =  12 CONV = F
+Residual norm for img vector   1 is:   0.155657E-05    and frequency =     0.200075   It =  12 CONV = F
+ Dispersion value macroiteration:          12 for  frequency  0.200075430000000      =   2.40095378540711     
+ Absorption value in macroiteration:          12 for  frequency   0.200075430000000      =  2.872972993985189E-003
+ ------------------
+ Start macroiteration:          13
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.21 seconds
+ >>>  CPU Time used in reg-F           is   0.21 seconds
+Residual norm for real vector   1 is:   0.429200E-05    and frequency =     0.200075   It =  13 CONV = F
+Residual norm for img vector   1 is:   0.504042E-06    and frequency =     0.200075   It =  13 CONV = T
+ Dispersion value macroiteration:          13 for  frequency  0.200075430000000      =   2.40095241026901     
+ Absorption value in macroiteration:          13 for  frequency   0.200075430000000      =  2.873057901895399E-003
+ ------------------
+ Start macroiteration:          14
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+Residual norm for real vector   1 is:   0.109848E-05    and frequency =     0.200075   It =  14 CONV = F
+Residual norm for img vector   1 is:   0.441361E-06    and frequency =     0.200075   It =  14 CONV = T
+ Dispersion value macroiteration:          14 for  frequency  0.200075430000000      =   2.40095264572099     
+ Absorption value in macroiteration:          14 for  frequency   0.200075430000000      =  2.873076164316638E-003
+ ------------------
+ Start macroiteration:          15
+ ------------------
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+Residual norm for real vector   1 is:   0.304533E-06    and frequency =     0.200075   It =  15 CONV = T
+Residual norm for img vector   1 is:   0.420350E-06    and frequency =     0.200075   It =  15 CONV = T
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+
+
+
+ *************************************************************
+ *          POLARIZABILITY TENSOR RESULTS (in a.u.)          *
+ *************************************************************
+
+
+
+
+ Frequency = .10000     + 0.0000    i
+ ====================================
+
+
+ Real part of polarizability tensor
+ ''''''''''''''''''''''''''''''''''
+                 Ex               Ey               Ez
+ Ex         3.5571078         1.6199382        0.43848258E-12
+ Ey         1.6199382         18.104062       -0.37769787E-11
+ Ez       -0.20483615E-12    0.48050453E-12     8.8453388    
+
+ Isotropic real polarizability =      10.168836    
+
+
+ Imaginary part of polarizability tensor
+ '''''''''''''''''''''''''''''''''''''''
+                 Ex               Ey               Ez
+ Ex         0.0000000         0.0000000         0.0000000    
+ Ey         0.0000000         0.0000000         0.0000000    
+ Ez         0.0000000         0.0000000         0.0000000    
+
+ Isotropic imaginary polarizability =      0.0000000    
+
+
+
+
+
+ Frequency = .20008     + .10000E-02i
+ ====================================
+
+
+ Real part of polarizability tensor
+ ''''''''''''''''''''''''''''''''''
+                 Ex               Ey               Ez
+ Ex         3.8194783         1.9143205        0.57248414E-05
+ Ey         1.9143051         21.000151        0.13744483E-04
+ Ez        0.10528683E-06    0.81148803E-06     9.6038113    
+
+ Isotropic real polarizability =      11.474480    
+
+
+ Imaginary part of polarizability tensor
+ '''''''''''''''''''''''''''''''''''''''
+                 Ex               Ey               Ez
+ Ex         1.8599903         4.2762693       -0.83709003E-06
+ Ey         4.2762695         9.8773212       -0.73820409E-07
+ Ez       -0.23868729E-06    0.59355306E-06    0.11492416E-01
+
+ Isotropic imaginary polarizability =      3.9162680    
+
+
+
+
+
+ >>>  CPU Time used in LSDALTON RSP    is  21.60 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON RESPONSE:    21.5957700000000         **
+ *****************************************************
+ >>>  CPU Time used in *SCF            is  23.77 seconds
+
+Total no. of matmuls used:                      7075
+Total no. of Fock/KS matrix evaluations:          11
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)          185.281 kB
+  Max allocated memory, real(realk)           164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, Overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+ >>>  CPU Time used in LSDALTON        is  24.26 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON:    24.2639740000000         **
+ *****************************************************

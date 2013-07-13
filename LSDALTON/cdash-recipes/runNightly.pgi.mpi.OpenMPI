@@ -1,0 +1,37 @@
+#!/bin/bash
+source /com/OpenMPI/1.4.1/intel/bin/openmpi.sh
+source /com/intel/Compiler/11.1/064/mkl/tools/environment/mklvarsem64t.sh
+TMP_DIR=/home/tkjaer/NightlyTestingCdash/tmp/DaltonPGIReleaseMPI
+SCRATCH_DIR=/home/tkjaer/NightlyTestingCdash/tmp/scratch/DaltonPGIReleaseMPIopenmpi
+rm -rf $TMP_DIR
+rm -rf $SCRATCH_DIR
+mkdir -p $TMP_DIR
+mkdir -p $SCRATCH_DIR
+
+svn co http://dirac.chem.sdu.dk/svnDalton/dalton/branches/linsca-develop $TMP_DIR
+cd $TMP_DIR
+export OMP_NUM_THREADS=3
+#mkdir $TMP_DIR/build
+#cd $TMP_DIR/build
+#cmake -DCMAKE_Fortran_COMPILER=/com/mpich2-1.0.3/bin/mpif90 -DCMAKE_C_COMPILER=/com/mpich2-1.0.3/bin/mpicc -DSCRATCH_DIR=$SCRATCH_DIR -DENABLE_MPI=1 -DMPIEXEC=/com/mpich2-1.0.3/bin/mpiexec -DMPI_COMPILER=/com/lam-pgi/bin/mpic++ -DCMAKE_BUILD_TYPE=Release -DBUILDNAME=Grendel-linux-pgi-MPI-release /home/tkjaer/NightlyTestingCdash/tmp/DaltonPGIReleaseMPI
+
+source /com/OpenMPI/1.4.1/intel/bin/openmpi.sh
+./setup --fc=mpif90 --cc=mpicc --mpi --scratch=/scratch/tkjaer/DaltonPGIReleaseMPIopenmpi -D BUILDNAME="Grendel-linux-pgi-openMPI-release"
+#--math="-Llib -L/com/intel/mkl/10.1.1.019/lib/em64t -lmkl -lmkl_core -lmkl_lapack  -lmkl_intel_thread -lguide -lpthread" 
+#-DENABLE_MPI=1 
+#
+#MPI_EXTRA_LIBRARY=/com/lam-pgi/lib/liblammpi++.a;/com/lam-pgi/lib/liblamf77mpi.a;/com/lam-pgi/lib/libmpi.a;/com/lam-pgi/lib/liblam.a;/usr/lib64/libutil.so;/usr/lib64/libpthread.so;/usr/lib64/libpthread.so;/usr/lib64/libdl.so
+cd $TMP_DIR/build
+make Nightly
+
+#cd $TMP_DIR/build
+#make Experimental
+#export OMP_NUM_THREADS=2
+#make VERBOSE=1
+#make test
+#make Nightly
+rm -rf $TMP_DIR 
+rm -rf $SCRATCH_DIR
+
+exit 0
+

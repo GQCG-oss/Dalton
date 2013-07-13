@@ -1,0 +1,905 @@
+
+ Work memory size (LMWORK+2):   100000002 =  762.94 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:27:12 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Integral sections will be executed
+    "Old" integral transformation used (limited to max 255 basis functions)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - Cartesian multipole moment integrals of orders 4 and lower
+ *LINSCA specified in old input
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one- and two-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - Cartesian multipole moment integrals of orders 4 and lower
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+ Warning: Not enough memory allocated for readin.   101256671
+          needed, but only    100000000  specified.
+          Trying to allocate needed memory.
+
+
+  Title Cards
+  -----------
+
+  Methane with -OH, -F, and Cl                                            
+  b3lyp/6-31+g(d,p) optimized geo.                                        
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H           1.007825
+                           H           1.007825
+                           C          12.000000
+                           O          15.994915
+                           F          18.998403
+                           Cl         34.968853
+
+                       Total mass:    83.977821 amu
+                       Natural abundance:  74.734 %
+
+ Center-of-mass coordinates (A):   -0.032707    0.025417   -0.020233
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     5
+  Total number of atoms:    6
+
+  Basis set used is "3-21G" from the basis set library.
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H           1       1       3       2      [3s|2s]                                                                          
+  H           1       1       3       2      [3s|2s]                                                                          
+  C           1       6      15       9      [6s3p|3s2p]                                                                      
+  O           1       8      15       9      [6s3p|3s2p]                                                                      
+  F           1       9      15       9      [6s3p|3s2p]                                                                      
+  Cl          1      17      27      13      [9s6p|4s3p]                                                                      
+  ----------------------------------------------------------------------
+  total:      6      42      78      44
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.06 seconds
+
+
+ >>> Time used in OVERLA is   0.01 seconds
+
+
+ >>> Time used in CARMOM is   0.00 seconds
+
+
+ >>> Time used in CARMOM is   0.01 seconds
+
+
+ >>> Time used in CARMOM is   0.01 seconds
+
+
+ >>> Time used in CARMOM is   0.01 seconds
+
+
+ >>> Time used in CARMOM is   0.01 seconds
+
+
+ >>> Time used in ONEDRV is   0.02 seconds
+
+
+ Number of two-electron integrals written:      482199 ( 98.3% )
+ Megabytes written:                              5.524
+
+
+
+ >>> Time used in TWOINT is   0.79 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.94 seconds
+ >>>> Total wall time used in HERMIT:   0.93 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:27:13 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+ Title lines from integral program:
+     Methane with -OH, -F, and Cl                                            
+     b3lyp/6-31+g(d,p) optimized geo.                                        
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Hartree-Fock calculation.
+
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         42
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 44
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          44
+     Number of basis functions         44
+
+      ** Automatic occupation of RHF orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals             21
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING CARMOM IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+ LSint is requested by *LINSCA under **INTEGRALS 
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:          10
+Convergence threshold for gradient:   0.10E-03
+ End of configuration from new input structure!
+ Replace S with S build from new integral driver
+ QQQ New Overlap S1:   120.221843656599     
+ QQQ Old Overlap S:   120.221843656599     
+ QQQ DIFF S-S1:  1.342477798639759E-029
+  SUCCESFULLY REPLACED OLD OVERLAP WITH NEW
+ QQQ New H1:   111521.828468235     
+ QQQ Old H1:   111521.828468259     
+ QQQ DIFF H-H1:  7.341685147853524E-021
+  SUCCESFULLY REPLACED OLD h1 WITH NEW
+ Take first density from Hueckel guess
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   2.57 seconds
+ >>> wall Time used in **INIT          is   0.18 seconds
+** Get Fock matrix number   1
+
+ Precalculated two-electron integrals are transformed to P-supermatrix elements.
+ Threshold for discarding integrals :  1.00D-15
+
+ >>> Time used in FRMSUP is   1.76 seconds
+
+ Replace F with F build from new integral driver
+ QQQ New  F:   59166.3673042719     
+ QQQ Old  F:   59166.3673042851     
+ QQQ DIFF  :  2.199003433236761E-020
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  18.94 seconds
+ >>> wall Time used in FCK_FO          is   2.65 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   16.9247299791040     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1   -658.3128307237    0.00000000000    0.00      0.00000    0.00    0.0000000    0.17E+02  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.02 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+ Replace F with F build from new integral driver
+ QQQ New  F:   62157.0201144781     
+ QQQ Old  F:   62157.0201144922     
+ QQQ DIFF  :  2.115634624981251E-020
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  15.13 seconds
+ >>> wall Time used in FCK_FO          is   1.55 seconds
+ >>>  CPU Time used in G_GRAD          is   1.47 seconds
+ >>> wall Time used in G_GRAD          is   0.10 seconds
+ gradnrm   1.93587606354991     
+  2   -661.7144260978   -3.40159537415    0.00      0.00000    0.00    0.0000000    0.19E+01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.12 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.02 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+ Replace F with F build from new integral driver
+ QQQ New  F:   60887.8953538807     
+ QQQ Old  F:   60887.8953538944     
+ QQQ DIFF  :  2.108665503405482E-020
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  16.68 seconds
+ >>> wall Time used in FCK_FO          is   1.76 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm   1.08241819445047     
+  3   -661.8868406757   -0.17241457786    0.00      0.00000    0.00    0.0000000    0.11E+01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.17 seconds
+ >>> wall Time used in AVERAG          is   0.01 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.03 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+ Replace F with F build from new integral driver
+ QQQ New  F:   61248.5643730951     
+ QQQ Old  F:   61248.5643731089     
+ QQQ DIFF  :  2.110714529543210E-020
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  22.43 seconds
+ >>> wall Time used in FCK_FO          is   1.59 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.111667961368355     
+  4   -661.9085249558   -0.02168428013    0.00      0.00000    0.00    0.0000000    0.11E+00  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.15 seconds
+ >>> wall Time used in AVERAG          is   0.02 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   5
+ Replace F with F build from new integral driver
+ QQQ New  F:   61215.4788116785     
+ QQQ Old  F:   61215.4788116923     
+ QQQ DIFF  :  2.112557286942354E-020
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  16.33 seconds
+ >>> wall Time used in FCK_FO          is   1.74 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.198321618539001E-002
+  5   -661.9092237900   -0.00069883420    0.00      0.00000    0.00    0.0000000    0.32E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.16 seconds
+ >>> wall Time used in AVERAG          is   0.02 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.02 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   6
+ Replace F with F build from new integral driver
+ QQQ New  F:   61220.7547503331     
+ QQQ Old  F:   61220.7547503470     
+ QQQ DIFF  :  2.113004785378089E-020
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  17.23 seconds
+ >>> wall Time used in FCK_FO          is   1.68 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  8.438917815617538E-003
+  6   -661.9092743329   -0.00005054293    0.00      0.00000    0.00    0.0000000    0.84E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           6
+ >>>  CPU Time used in AVERAG          is   0.29 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   7
+ Replace F with F build from new integral driver
+ QQQ New  F:   61220.2528052436     
+ QQQ Old  F:   61220.2528052575     
+ QQQ DIFF  :  2.113573572555371E-020
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  17.37 seconds
+ >>> wall Time used in FCK_FO          is   1.66 seconds
+ >>>  CPU Time used in G_GRAD          is   0.01 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.799470219867332E-003
+  7   -661.9092777130   -0.00000338008    0.00      0.00000    0.00    0.0000000    0.28E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           7
+ >>>  CPU Time used in AVERAG          is   0.35 seconds
+ >>> wall Time used in AVERAG          is   0.02 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.03 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   8
+ Replace F with F build from new integral driver
+ QQQ New  F:   61220.2496756670     
+ QQQ Old  F:   61220.2496756809     
+ QQQ DIFF  :  2.113276185972655E-020
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  20.80 seconds
+ >>> wall Time used in FCK_FO          is   1.80 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  5.049867996037064E-004
+  8   -661.9092780299   -0.00000031683    0.00      0.00000    0.00    0.0000000    0.50E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           8
+ >>>  CPU Time used in AVERAG          is   0.27 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.02 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   9
+ Replace F with F build from new integral driver
+ QQQ New  F:   61220.2436638931     
+ QQQ Old  F:   61220.2436639070     
+ QQQ DIFF  :  2.113200583128874E-020
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  16.05 seconds
+ >>> wall Time used in FCK_FO          is   1.81 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.007840056856170E-004
+  9   -661.9092780521   -0.00000002229    0.00      0.00000    0.00    0.0000000    0.10E-03  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           9
+ >>>  CPU Time used in AVERAG          is   0.33 seconds
+ >>> wall Time used in AVERAG          is   0.03 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.02 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number  10
+ Replace F with F build from new integral driver
+ QQQ New  F:   61220.2717777943     
+ QQQ Old  F:   61220.2717778082     
+ QQQ DIFF  :  2.113121246696642E-020
+  SUCCESFULLY REPLACED OLD F WITH NEW F
+ >>>  CPU Time used in FCK_FO          is  16.83 seconds
+ >>> wall Time used in FCK_FO          is   1.86 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.492606396243017E-005
+ 10   -661.9092780531   -0.00000000100    0.00      0.00000    0.00    0.0000000    0.25E-04  ###
+ >>>  CPU Time used in **ITER          is   0 hours  3 minutes  1 second 
+ >>> wall Time used in **ITER          is  18.37 seconds
+Total no. of matmuls in SCF optimization:        823
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -3.40159537415    0.0000    0.0000    0.0000000
+  3   -0.17241457786    0.0000    0.0000    0.0000000
+  4   -0.02168428013    0.0000    0.0000    0.0000000
+  5   -0.00069883420    0.0000    0.0000    0.0000000
+  6   -0.00005054293    0.0000    0.0000    0.0000000
+  7   -0.00000338008    0.0000    0.0000    0.0000000
+  8   -0.00000031683    0.0000    0.0000    0.0000000
+  9   -0.00000002229    0.0000    0.0000    0.0000000
+ 10   -0.00000000100    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1          -658.31283072367216391285      0.169247299791040D+02
+    2          -661.71442609782184263167      0.193587606354991D+01
+    3          -661.88684067568635782663      0.108241819445047D+01
+    4          -661.90852495581145831238      0.111667961368355D+00
+    5          -661.90922379001619901828      0.319832161853900D-01
+    6          -661.90927433294370985095      0.843891781561754D-02
+    7          -661.90927771302347082383      0.279947021986733D-02
+    8          -661.90927802985436301242      0.504986799603706D-03
+    9          -661.90927805214289492142      0.100784005685617D-03
+   10          -661.90927805314379384072      0.249260639624302D-04
+ 
+      SCF converged !!!! 
+ LABEL=CM000000
+ QQQ OldCM000000   120.221843656599     
+ LABEL=CM010000
+ QQQ OldCM010000   154.425108834234     
+ LABEL=CM000100
+ QQQ OldCM000100   97.2514534523955     
+ LABEL=CM000001
+ QQQ OldCM000001   66.6225753621576     
+ LABEL=CM020000
+ QQQ OldCM020000   614.866968765274     
+ LABEL=CM010100
+ QQQ OldCM010100   136.108115275567     
+ LABEL=CM010001
+ QQQ OldCM010001   62.7361946081158     
+ LABEL=CM000200
+ QQQ OldCM000200   319.960623618400     
+ LABEL=CM000101
+ QQQ OldCM000101   41.1133178952820     
+ LABEL=CM000002
+ QQQ OldCM000002   222.337099378712     
+ LABEL=CM030000
+ QQQ OldCM030000   3457.73506088952     
+ LABEL=CM020100
+ QQQ OldCM020100   503.468063097040     
+ LABEL=CM020001
+ QQQ OldCM020001   232.766556002031     
+ LABEL=CM010200
+ QQQ OldCM010200   418.287728465387     
+ LABEL=CM010101
+ QQQ OldCM010101   37.2944353483688     
+ LABEL=CM010002
+ QQQ OldCM010002   189.949792614531     
+ LABEL=CM000300
+ QQQ OldCM000300   1212.78555452696     
+ LABEL=CM000201
+ QQQ OldCM000201   118.491181074561     
+ LABEL=CM000102
+ QQQ OldCM000102   91.2248229599770     
+ LABEL=CM000003
+ QQQ OldCM000003   827.347938998353     
+ LABEL=CM040000
+ QQQ OldCM040000   30609.9239272961     
+ LABEL=CM030100
+ QQQ OldCM030100   2876.78304252056     
+ LABEL=CM030001
+ QQQ OldCM030001   1389.41260273026     
+ LABEL=CM020200
+ QQQ OldCM020200   1876.74655526965     
+ LABEL=CM020101
+ QQQ OldCM020101   153.767462621465     
+ LABEL=CM020002
+ QQQ OldCM020002   1046.77786630937     
+ LABEL=CM010300
+ QQQ OldCM010300   1703.89716109826     
+ LABEL=CM010201
+ QQQ OldCM010201   128.317313110135     
+ LABEL=CM010102
+ QQQ OldCM010102   109.567428912066     
+ LABEL=CM010003
+ QQQ OldCM010003   698.660027748010     
+ LABEL=CM000400
+ QQQ OldCM000400   8813.03746970073     
+ LABEL=CM000301
+ QQQ OldCM000301   542.740151956089     
+ LABEL=CM000202
+ QQQ OldCM000202   527.701444509489     
+ LABEL=CM000103
+ QQQ OldCM000103   416.251461120246     
+ LABEL=CM000004
+ QQQ OldCM000004   7127.59397492252     
+ Replace Carmom3 with Carmom3 build from new integral driver
+ done Replace Carmom3 with Carmom3 build from new integral driver
+ QQQ NEWCM000000   120.221843656599     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:           1  1.902657831706053E-029
+   
+ QQQ NEWCM010000   154.425108834234     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:           2  2.171633412255274E-029
+   
+ QQQ NEWCM000100   97.2514534523955     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:           3  1.862065510533369E-029
+   
+ QQQ NEWCM000001   66.6225753621576     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:           4  6.016700242011515E-030
+   
+ QQQ NEWCM020000   614.866968765274     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:           5  7.254761658623285E-029
+   
+ QQQ NEWCM010100   136.108115275567     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:           6  2.787908566042058E-029
+   
+ QQQ NEWCM010001   62.7361946081158     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:           7  8.889727244170697E-030
+   
+ QQQ NEWCM000200   319.960623618400     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:           8  7.791016481371620E-029
+   
+ QQQ NEWCM000101   41.1133178952820     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:           9  7.607889841893933E-030
+   
+ QQQ NEWCM000002   222.337099378712     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          10  3.904359767571594E-029
+   
+ QQQ NEWCM030000   3457.73506088952     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          11  3.557886665987748E-028
+   
+ QQQ NEWCM020100   503.468063097040     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          12  9.850224248840356E-029
+   
+ QQQ NEWCM020001   232.766556002031     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          13  2.659746080316954E-029
+   
+ QQQ NEWCM010200   418.287728465387     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          14  9.412868701694124E-029
+   
+ QQQ NEWCM010101   37.2944353483688     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          15  6.529012124936231E-030
+   
+ QQQ NEWCM010002   189.949792614531     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          16  2.847295355888914E-029
+   
+ QQQ NEWCM000300   1212.78555452696     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          17  2.816106203585523E-028
+   
+ QQQ NEWCM000201   118.491181074561     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          18  1.945936694532180E-029
+   
+ QQQ NEWCM000102   91.2248229599769     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          19  1.254417388955835E-029
+   
+ QQQ NEWCM000003   827.347938998353     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          20  9.514469740312689E-029
+   
+ QQQ NEWCM040000   30609.9239272960     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          21  4.399554469759905E-027
+   
+ QQQ NEWCM030100   2876.78304252056     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          22  3.897246603709024E-028
+   
+ QQQ NEWCM030001   1389.41260273026     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          23  1.445907661587073E-028
+   
+ QQQ NEWCM020200   1876.74655526965     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          24  3.435661436344386E-028
+   
+ QQQ NEWCM020101   153.767462621465     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          25  2.423020572450223E-029
+   
+ QQQ NEWCM020002   1046.77786630937     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          26  9.566864651885049E-029
+   
+ QQQ NEWCM010300   1703.89716109826     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          27  4.449702250408281E-028
+   
+ QQQ NEWCM010201   128.317313110135     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          28  3.051099210307740E-029
+   
+ QQQ NEWCM010102   109.567428912066     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          29  1.786021579921675E-029
+   
+ QQQ NEWCM010003   698.660027748010     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          30  1.059102539328017E-028
+   
+ QQQ NEWCM000400   8813.03746970073     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          31  1.733988099074218E-027
+   
+ QQQ NEWCM000301   542.740151956089     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          32  1.279896797850399E-028
+   
+ QQQ NEWCM000202   527.701444509488     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          33  9.556734024493998E-029
+   
+ QQQ NEWCM000103   416.251461120245     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          34  7.709000884218329E-029
+   
+ QQQ NEWCM000004   7127.59397492252     
+ QQQ DIFF MATRIX CarmomNEW-Carmom:          35  1.420147762805229E-027
+   
+ QQQ OldCM000000   120.221843656599     
+ QQQ NEWCM000000   120.221843656599     
+ QQQ DIFF CarmomNEW-Carmom:  1.902657831706053E-029
+ QQQ OldCM010000   154.425108834234     
+ QQQ NEWCM010000   154.425108834234     
+ QQQ DIFF CarmomNEW-Carmom:  2.171633412255274E-029
+ QQQ OldCM000100   97.2514534523955     
+ QQQ NEWCM000100   97.2514534523955     
+ QQQ DIFF CarmomNEW-Carmom:  1.862065510533369E-029
+ QQQ OldCM000001   66.6225753621576     
+ QQQ NEWCM000001   66.6225753621576     
+ QQQ DIFF CarmomNEW-Carmom:  6.016700242011515E-030
+ QQQ OldCM020000   614.866968765274     
+ QQQ NEWCM020000   614.866968765274     
+ QQQ DIFF CarmomNEW-Carmom:  7.254761658623285E-029
+ QQQ OldCM010100   136.108115275567     
+ QQQ NEWCM010100   136.108115275567     
+ QQQ DIFF CarmomNEW-Carmom:  2.787908566042058E-029
+ QQQ OldCM010001   62.7361946081158     
+ QQQ NEWCM010001   62.7361946081158     
+ QQQ DIFF CarmomNEW-Carmom:  8.889727244170697E-030
+ QQQ OldCM000200   319.960623618400     
+ QQQ NEWCM000200   319.960623618400     
+ QQQ DIFF CarmomNEW-Carmom:  7.791016481371620E-029
+ QQQ OldCM000101   41.1133178952820     
+ QQQ NEWCM000101   41.1133178952820     
+ QQQ DIFF CarmomNEW-Carmom:  7.607889841893933E-030
+ QQQ OldCM000002   222.337099378712     
+ QQQ NEWCM000002   222.337099378712     
+ QQQ DIFF CarmomNEW-Carmom:  3.904359767571594E-029
+ QQQ OldCM030000   3457.73506088952     
+ QQQ NEWCM030000   3457.73506088952     
+ QQQ DIFF CarmomNEW-Carmom:  3.557886665987748E-028
+ QQQ OldCM020100   503.468063097040     
+ QQQ NEWCM020100   503.468063097040     
+ QQQ DIFF CarmomNEW-Carmom:  9.850224248840356E-029
+ QQQ OldCM020001   232.766556002031     
+ QQQ NEWCM020001   232.766556002031     
+ QQQ DIFF CarmomNEW-Carmom:  2.659746080316954E-029
+ QQQ OldCM010200   418.287728465387     
+ QQQ NEWCM010200   418.287728465387     
+ QQQ DIFF CarmomNEW-Carmom:  9.412868701694124E-029
+ QQQ OldCM010101   37.2944353483688     
+ QQQ NEWCM010101   37.2944353483688     
+ QQQ DIFF CarmomNEW-Carmom:  6.529012124936231E-030
+ QQQ OldCM010002   189.949792614531     
+ QQQ NEWCM010002   189.949792614531     
+ QQQ DIFF CarmomNEW-Carmom:  2.847295355888914E-029
+ QQQ OldCM000300   1212.78555452696     
+ QQQ NEWCM000300   1212.78555452696     
+ QQQ DIFF CarmomNEW-Carmom:  2.816106203585523E-028
+ QQQ OldCM000201   118.491181074561     
+ QQQ NEWCM000201   118.491181074561     
+ QQQ DIFF CarmomNEW-Carmom:  1.945936694532180E-029
+ QQQ OldCM000102   91.2248229599770     
+ QQQ NEWCM000102   91.2248229599769     
+ QQQ DIFF CarmomNEW-Carmom:  1.254417388955835E-029
+ QQQ OldCM000003   827.347938998353     
+ QQQ NEWCM000003   827.347938998353     
+ QQQ DIFF CarmomNEW-Carmom:  9.514469740312689E-029
+ QQQ OldCM040000   30609.9239272961     
+ QQQ NEWCM040000   30609.9239272960     
+ QQQ DIFF CarmomNEW-Carmom:  4.399554469759905E-027
+ QQQ OldCM030100   2876.78304252056     
+ QQQ NEWCM030100   2876.78304252056     
+ QQQ DIFF CarmomNEW-Carmom:  3.897246603709024E-028
+ QQQ OldCM030001   1389.41260273026     
+ QQQ NEWCM030001   1389.41260273026     
+ QQQ DIFF CarmomNEW-Carmom:  1.445907661587073E-028
+ QQQ OldCM020200   1876.74655526965     
+ QQQ NEWCM020200   1876.74655526965     
+ QQQ DIFF CarmomNEW-Carmom:  3.435661436344386E-028
+ QQQ OldCM020101   153.767462621465     
+ QQQ NEWCM020101   153.767462621465     
+ QQQ DIFF CarmomNEW-Carmom:  2.423020572450223E-029
+ QQQ OldCM020002   1046.77786630937     
+ QQQ NEWCM020002   1046.77786630937     
+ QQQ DIFF CarmomNEW-Carmom:  9.566864651885049E-029
+ QQQ OldCM010300   1703.89716109826     
+ QQQ NEWCM010300   1703.89716109826     
+ QQQ DIFF CarmomNEW-Carmom:  4.449702250408281E-028
+ QQQ OldCM010201   128.317313110135     
+ QQQ NEWCM010201   128.317313110135     
+ QQQ DIFF CarmomNEW-Carmom:  3.051099210307740E-029
+ QQQ OldCM010102   109.567428912066     
+ QQQ NEWCM010102   109.567428912066     
+ QQQ DIFF CarmomNEW-Carmom:  1.786021579921675E-029
+ QQQ OldCM010003   698.660027748010     
+ QQQ NEWCM010003   698.660027748010     
+ QQQ DIFF CarmomNEW-Carmom:  1.059102539328017E-028
+ QQQ OldCM000400   8813.03746970073     
+ QQQ NEWCM000400   8813.03746970073     
+ QQQ DIFF CarmomNEW-Carmom:  1.733988099074218E-027
+ QQQ OldCM000301   542.740151956089     
+ QQQ NEWCM000301   542.740151956089     
+ QQQ DIFF CarmomNEW-Carmom:  1.279896797850399E-028
+ QQQ OldCM000202   527.701444509489     
+ QQQ NEWCM000202   527.701444509488     
+ QQQ DIFF CarmomNEW-Carmom:  9.556734024493998E-029
+ QQQ OldCM000103   416.251461120246     
+ QQQ NEWCM000103   416.251461120245     
+ QQQ DIFF CarmomNEW-Carmom:  7.709000884218329E-029
+ QQQ OldCM000004   7127.59397492252     
+ QQQ NEWCM000004   7127.59397492252     
+ QQQ DIFF CarmomNEW-Carmom:  1.420147762805229E-027
+  SUCCESFULLY REPLACED OLD Carmom WITH NEW Carmom
+ Total no. of matmuls used:         823
+ Total no. of Fock/KS matrix evaluations:          10
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                   1.718 GB
+  Max allocated memory, type(matrix)           97.520 MB
+  Max allocated memory, real(realk)             1.717 GB
+  Max allocated memory, integer               165.906 kB
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               2.769 MB
+  Max allocated memory, integralitem            1.716 GB
+  Max allocated memory, Overlap                 4.224 MB
+  Max allocated memory, ODitem                 32.500 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    185.6828        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final HF energy:            -661.909278053144
+     Nuclear repulsion:           316.807555888350
+     Electronic energy:          -978.716833941494
+
+     Final gradient norm:           0.000024926064
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:27:32 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+
+
+ >>>> Total CPU  time used in SIRIUS :    187.24 seconds
+ >>>> Total wall time used in SIRIUS :     18.90 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:27:32 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:  3 minutes  8 seconds
+ >>>> Total wall time used in DALTON:  19.84 seconds
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:27:32 2010
+     Host name              : fe2.grendel.cscaa.dk                    

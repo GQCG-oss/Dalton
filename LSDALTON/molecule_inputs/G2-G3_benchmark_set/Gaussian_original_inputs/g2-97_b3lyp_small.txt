@@ -1,0 +1,1106 @@
+B3LYP/6-31G* geometries
+
+ Testset of molecules and atoms used for calculating ionization 
+ potentials, electron affinities, and proton affinities in
+ L. A. Curtiss, K. Raghavachari, G. W. Trucks, and J.
+ A. Pople, J. Chem. Phys. Vol. 94, p. 7221 (1991).
+ The geometries for most of the neutrals needed for calculating
+ the IPs, EAs, and PAs are included in the G2/97 neutral
+ test set located elsewhere on this website.
+
+no. of atomic species:36
+H, Li, Be, B, C, N, O, F, Na, Mg, Al, Si, P, S, Cl, Li+, Be+, B+, 
+C+, N+, O+, F+, Na+, Mg+, Al+, Si+, P+, S+, Cl+,C-, O-, F-, Si-, P-, 
+S-, Cl-
+
+no of molecules: 52
+CH4+, NH3+, OH+, OH2+, FH+, SiH4+, PH+, PH2+, PH3+, SH+, SH2+(2B1), 
+SH2+(2A1), ClH+, C2H2+, C2H4+, CO+, N2+(2Sig), N2+(2Pi), O2+, P2+, 
+S2+, Cl2+, ClF+, CS+,CH-, CH2-, CH3-, NH-, NH2-, OH-, SiH-, SiH2-, 
+SiH3-, PH-, PH2-, SH-, O2-, NO-, CN-, PO-, S2-, Cl2-, NH4+, OH3+, 
+C2H3+, SiH5+, PH4+, SH3+, ClH2+, PO, PH, SiH
+
+notes:
+P2+: 2-Pi state, alter B 14,15
+PO: scf=qc on 6-31g* initial guess
+
+
+%mem=5000000
+%chk=filename
+# hf/6-31g*
+
+h 
+
+0 2
+h
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g*
+
+li 
+
+0 2
+li
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+  be
+
+ 0 1
+be 
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g*
+
+  b
+
+ 0 2
+B
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ C  
+
+ 0 3
+ C
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+  N
+
+ 0 4
+ N
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ O  
+
+ 0 3
+ O
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+  F
+
+ 0 2
+ F
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+na hf(full)/6-31g*
+
+0 2
+na
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g*
+
+  mg
+
+ 0 1
+mg 
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+  al
+
+ 0 2
+al 
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g*
+
+ Si  
+
+ 0 3
+ Si
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+  p
+
+ 0 4
+ p
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ S  
+
+ 0 3
+ S
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+  cl
+
+ 0 2
+ cl
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ li+ hf(full)/6-31g* -7.2359397
+
+ +1 1
+li
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ Be+
+
+ +1 2
+be
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g*
+
+ B+
+
+ +1 1
+B
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g*
+
+ C+ 
+
+ +1 2
+C
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ N+
+
+ +1 3
+N
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g*
+
+ O+
+
+ +1 4
+O
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ F+ 
+
+ +1 3
+F
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ na+
+
+ +1 1
+na
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g*
+
+ mg+ 
+
+ +1 2
+mg
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ Al+
+
+ +1 1
+Al
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ Si+
+
+ +1 2
+Si
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ P+ 
+
+ +1 3
+P
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ S+
+
+ +1 4
+S
+
+@inputbasis.gbs
+
+--link1--
+%mem=5000000
+%chk=filename
+# hf/6-31g* 
+
+ Cl+ 
+
+ +1 3
+Cl
+
+@inputbasis.gbs
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct 
+
+CH4+ B3LYP/6-31G* optimized geometry
+B3LYP/6-31G*=-40.0519854    2B2 state (D2d)
+
+1 2
+C 0. 0. 0.
+ H -1.0565328358 0. 0.3828847802
+ H 1.0565328358 0. 0.3828847802
+ H 0. 1.0565328358 -0.3828847802
+ H 0. -1.0565328358 -0.3828847802
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+PLANAR AMMONIA CATION B3LYP*/6-31G* optimized geometry
+
+1,2
+N
+H,1,RNH
+H,1,RNH,2,120.
+H,1,RNH,2,120.,3,180.,0
+
+RNH=1.02916436
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+OH+ 3-SIGMA B3LYP/6-31G* optimized geometry
+
+1,3
+H
+O,1,R
+
+R=1.04379973 
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+WATER CATION OPTIMIZATION B3LYP/6-31G* optimized geometry
+
+1,2
+O
+H,1,R
+H,1,R,2,A
+
+R=1.01249046 
+A=109.71689068
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+FH+ B3LYP/6-31G* optimized geometry
+
+1,2
+F
+H,1,R
+
+R=1.0335114
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+SIH4+ H2---SIH2+ CS B3LYP/6-31G* optimized geometry 
+
+1,2
+14 0.000000 0.209826 0.000000
+1 -0.711485 0.037116 1.287308
+1 -0.711485 0.037116 -1.287308
+1 0.373480 -1.696682 0.000000
+1 1.049490 -1.315119 0.000000 
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+PH+ B3LYP/6-31G* optimized geometry
+
+1,2
+P
+H,1,A
+
+A=1.4358
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+PH2+ 1A1 B3LYP/6-31G* optimized geometry
+
+1,1
+P
+H,1,R1
+H,1,R1,2,A
+
+R1=1.42948506
+A=92.15030317
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+PH3+ B3LYP/6-31G* optimized geometry
+
+1,2
+15 0.000000 0.000000 0.063609
+1 0.000000 1.351917 -0.318043
+1 1.170794 -0.675958 -0.318043
+1 -1.170794 -0.675958 -0.318043
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+SH+ B3LYP/6-31G* optimized geometry
+
+1,3
+S
+H,1,R1
+
+R1=1.37078136
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+SH2+ 2B1 B3LYP/6-31G* optimized geometry
+
+1,2
+S
+H,1,R1
+H,1,R1,2,A
+
+R1=1.36397438
+A=93.70959937
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  guess=alter
+
+SH2+ 2A1 B3LYP/6-31G* optimized geometry
+B3LYP/6-31G*=-398.9201172 a.u.
+
+1,2
+S
+H,1,R1
+H,1,R1,2,A
+
+R1=1.36707495
+A=125.9655714
+
+8 9
+
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+HCL+ B3LYP/6-31G* optimized geometry
+
+1,2
+Cl
+H,1,R
+
+R=1.32437507
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+HCCH+ 2-PI-U LINEAR B3LYP/6-31G* optimized geometry
+
+1,2
+1 0.000000 0.000000 -1.709056
+6 0.000000 0.000000 -0.625956
+6 0.000000 0.000000 0.625956
+1 0.000000 0.000000 1.709056
+
+--Link1--
+#p  B3LYP/6-31G* opt guess=alter
+
+   C2H4+ B3LYP/6-31G(d) geom E =-78.2155549a.u.
+
+1 2
+C
+C,1,CC
+H,1,CH,2,HCC
+H,1,CH,2,HCC,3,180.,0
+H,2,CH,1,HCC,3,Dih,0
+H,2,CH,1,HCC,5,180.,0
+
+CC=1.40086232
+CH=1.09221926
+HCC=121.11197218
+Dih=25.83436341
+
+8 9
+
+--Link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+CO+ B3LYP/6-31G* optimized geometry
+
+1 2
+C
+O,1,R
+
+R=1.12152978
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+N2+ 2-sigma-g //B3LYP/6-31G* optimized geometry
+B3LYP/6-31G*=-108.94640a.u.
+
+1,2
+N
+N,1,NN
+
+NN=1.11692482
+ 
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  guess=alter
+
+N2+ 2 pi-u  //B3LYP/6-31G* optimized geometry
+B3LYP/6-31G*=-108.9166975 a.u.
+
+1,2
+N
+N,1,NN
+
+NN=1.1788 
+
+
+6 7
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+O2+ B3LYP/6-31G* optimized geometry
+
+1,2
+O
+O,1,OO
+
+OO=1.1213368
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  GUESS=ALTER
+
+P2+ 2-PIU B3LYP/6-31G* optimized geometry
+B3LYP/6-31G*=-682.3070856a.u.
+
+1,2
+P
+P,1,R1
+
+R1=1.993898
+
+14 15
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+S2+ 2-PIG B3LYP/6-31G* optimized geometry
+
+1,2
+S
+S,1,R1
+
+R1=1.84443083
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+Cl2+ 2-PIG B3LYP/6-31G* optimized geometry
+
+1,2
+Cl
+Cl,1,R1
+
+R1=1.93961801 
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+ClF+ B3LYP/6-31G* optimized geometry
+
+1,2
+Cl
+F,1,r
+
+r=1.57240822
+
+
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+CS+ 2-SG B3LYP/6-31G* optimized geometry
+
+1,2
+C
+S,1,R1
+
+R1=1.49884919
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* 
+
+cl singlet B3LYP/6-31G* 
+
+-1 1
+cl
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt  
+
+CH- B3LYP/6-31G* optimized geometry
+
+-1 3
+c
+h c A
+
+A=1.1787
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+CH2- //B3LYP/6-31G* optimized geometry
+
+-1,2
+C
+H,1,r
+H,1,r,2,a
+
+r=1.15671603
+a=95.98751019
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+METHYL ANION C3V B3LYP/6-31G* optimized geometry
+
+-1 1
+6 0.000000 0.000000 0.176607
+1 1.001350 0.000000 -0.353215
+1 -0.500675 -0.867195 -0.353215
+1 -0.500675 0.867195 -0.353215
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+NH- B3LYP/6-31G* optimized geometry
+
+-1,2
+N
+H,1,r
+
+r=1.0695106
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+nh2- B3LYP/6-31G* optimized geometry
+
+-1,1
+N
+H,1,RNH
+H,1,RNH,2,HNH
+
+RNH=1.05166696
+HNH=97.2583252
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+OH- B3LYP/6-31G* optimized geometry
+
+-1,1
+O
+H,1,r
+
+r=0.98737037
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+SIH- 3-sigma B3LYP/6-31G* optimized geometry
+
+-1,3
+Si
+H,1,R
+
+R=1.57433229
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+SIH2- 2-B-1 B3LYP/6-31G* optimized geometry
+
+-1,2
+14 0.000000 0.000000 0.136554
+1 0.000000 1.117819 -0.955881
+1 0.000000 -1.117819 -0.955881
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+SIH3- C3V B3LYP/6-31G* optimized geometry
+
+-1,1
+14 0.000000 0.000000 0.148042
+1 0.000000 1.305692 -0.690861
+1 1.130763 -0.652846 -0.690861
+1 -1.130763 -0.652846 -0.690861
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+PH- B3LYP/6-31G* optimized geometry
+
+-1,2
+P
+H,1,R
+
+R=1.45731028
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+ph2- B3LYP/6-31G* optimized geometry
+
+-1,1
+15 0.000000 0.000000 0.119166
+1 0.000000 1.036070 -0.893746
+1 0.000000 -1.036070 -0.893746
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+SH- B3LYP/6-31G* optimized geometry
+
+-1,1
+S
+H,1,R
+
+R=1.36254525
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+o2- B3LYP/6-31G* optimized geometry
+
+-1,2
+O
+O,1,OO
+
+OO=1.35322873
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+NO- 3Sigma- B3LYP/6-31G* optimized geometry
+
+-1,3
+N
+O,1,NO
+
+NO=1.27915356
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+CN- B3LYP/6-31G* optimized geometry
+
+-1,1
+C
+N,1,CN
+
+CN=1.18407696
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+PO- 3-sigma B3LYP/6-31G* optimized geometry
+
+-1,3
+P
+O,1,R
+
+R=1.57608009
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+s2- 2-sigma B3LYP/6-31G* optimized geometry
+
+-1,2
+S
+S,1,R
+
+R=2.05060401
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+cl2- B3LYP/6-31G* optimized geometry
+
+-1,2
+Cl
+Cl,1,R
+
+R=2.75233453
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+Ammonium, NH4+, B3LYP/6-31G* optimized geometry
+
+1,1
+7 0.000000 0.000000 0.000000
+1 0.594352 0.594352 0.594352
+1 -0.594352 -0.594352 0.594352
+1 0.594352 -0.594352 -0.594352
+1 -0.594352 0.594352 -0.594352
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+Hydronium, H3O+, B3LYP/6-31G* optimized geometry
+
+1,1
+8 -0.034427 -0.066313 -0.023475
+1 -0.038775 -0.074689 0.964635
+1 0.883829 -0.074689 -0.388419
+1 -0.569640 0.679885 -0.388419 
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+nonclassical vinyl cation, B3LYP/6-31G* optimized geometry
+
+1,1
+6 0.000000 0.612834 -0.075222
+1 0.000000 0.000000 1.058563
+6 0.000000 -0.612834 -0.075222
+1 0.000000 1.695170 -0.077952
+1 0.000000 -1.695170 -0.077952
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+  
+
+SiH5+ C1 B3LYP/6-31G* optimized geometry
+
+1,1
+14 -0.176285 0.000208 -0.003421
+1 1.675240 -0.387492 0.047316
+1 1.675980 0.381829 0.046085
+1 -0.375574 -0.023073 1.450761
+1 -0.250820 1.277602 -0.726966
+1 -0.256834 -1.251777 -0.769302
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+PH4+ B3LYP/6-31G* optimized geometry
+
+1,1
+15 0.000000 0.000000 0.000000
+1 0.808640 0.808640 0.808640
+1 -0.808640 -0.808640 0.808640
+1 -0.808640 0.808640 -0.808640
+1 0.808640 -0.808640 -0.808640
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+SH3+ B3LYP/6-31G* optimized geometry
+
+1,1
+16 0.000000 0.000000 0.112291
+1 0.000000 1.156497 -0.598887
+1 1.001556 -0.578248 -0.598887
+1 -1.001556 -0.578248 -0.598887
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+H2Cl+ B3LYP/6-31G* optimized geometry
+
+1,1
+Cl
+H,1,R1
+H,1,R1,2,A
+
+R1=1.31406268
+A=96.01004493
+
+--link1--
+%chk=small
+%mem=4000000
+#p B3LYP/6-31G* opt scf=direct  
+
+PO 2-PI B3LYP/6-31G* optimized geometry 
+B3LYP/6-31G*=-416.530558a.u.
+
+0,2
+P
+O,1,R
+
+R=1.49856123
+
+--link1--
+%chk=small
+#p B3LYP/6-31G* opt scf=direct  
+
+PH TRIPLET B3LYP/6-31G* optimized geometry
+
+0,3
+P
+H,1,R
+
+R=1.43707178
+
+--link1--
+%chk=small
+mem=3000000
+#p B3LYP/6-31G* opt scf=direct  
+
+SiH B3LYP/6-31G* optimized geometry
+
+0 2
+si
+h si 1.5389
+
+
+
+
+

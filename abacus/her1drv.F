@@ -502,6 +502,9 @@ C
          CALL DSYM1(DENMAT,FOCMAT,WORK(KDSO),WORK(KFSO),.TRUE.,
      &              NBAST,IPRINT)
       END IF
+Ckr
+Ckr   Get QMMM gradient/Hessian integrals
+Ckr
 C
 C     ********************************************************
 C     ***** Preparation for solvent contributions        *****
@@ -870,6 +873,9 @@ C
 C        CALL HEADER('GRADFT in DFT_MOLGRAD ',-1)
 C        CALL OUTPUT(GRADFT,1,3,1,NATOMS,3,NATOMS,1,LUPRI)
       END IF
+Ckr
+Ckr   Get QMMM gradient/Hessian integrals
+Ckr
 C
 C     *************************
 C     ***** Print Section *****

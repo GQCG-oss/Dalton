@@ -671,7 +671,7 @@ C     Include block data RSPINF which initializes /INFRSP/
 C
       EXTERNAL RSPINF
 C
-      WRITE (LUPRI,'(//,A,//)')
+      WRITE (LUPRI,'(//A//)')
      *   ' <<<<<<<<<< OUTPUT FROM RESPONSE INPUT PROCESSING >>>>>>>>>>'
 C
 C     ***** PROCESS INPUT FOR RESPONSE *****
@@ -937,12 +937,12 @@ C
    19          CONTINUE
                   DIROIT = .FALSE.
                GO TO 100
- 20            CONTINUE
+   20          CONTINUE
 c              compute DFT_SO integrals
                   DFT_SO = .TRUE.
                GO TO 100
 C              .PROP2Average
- 21            CONTINUE
+   21          CONTINUE
                   N2AVTOT = N2AVTOT + 1
                   IF ( N2AVTOT .GT. MAX2AV ) THEN
                    WRITE(LUPRI,'(//A,I5)')
@@ -2234,7 +2234,10 @@ C
      *      ,EPSINF
          END IF
 
-         IF (QM3 .OR. QMMM) THEN
+         IF (QM3) THEN
+           WRITE(LUPRI,'(A)') ' QM/MM response calculation type "QM3"'
+         END IF
+         IF (QMMM) THEN
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
@@ -4287,18 +4290,29 @@ C     (i) read solvent t matrix (ii) subtract it from FC
 C     (because the response program requires a FC matrix
 C      without solvent contributions).
 C
+
+      IF (QM3) THEN
+        IF (OLDTG .OR. (.NOT. LOSPC)) THEN
+          CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
+          CALL READT (LUSIFC,NNORBT,WRK)
+          DO 21 I = 1,NNORBT
+             FC(I) = FC(I) - WRK(I)
+ 21       CONTINUE
+        END IF
+      END IF
+
       IF (FLAG(16)) THEN
-        CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
-        CALL READT (LUSIFC,NNORBT,WRK)
-        DO 20 I = 1,NNORBT
-           FC(I) = FC(I) - WRK(I)
- 20     CONTINUE
-      ELSEIF(PCM) THEN
-        CALL MOLLAB('PCMJXMAT',LUSIFC,LUPRI)
-        CALL READT (LUSIFC,NNORBT,WRK)
-        DO I = 1,NNORBT
-           FC(I) = FC(I) + WRK(I)
-        ENDDO
+         CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
+         CALL READT (LUSIFC,NNORBT,WRK)
+         DO 20 I = 1,NNORBT
+            FC(I) = FC(I) - WRK(I)
+ 20      CONTINUE
+      ELSE IF(PCM) THEN
+         CALL MOLLAB('PCMJXMAT',LUSIFC,LUPRI)
+         CALL READT (LUSIFC,NNORBT,WRK)
+         DO I = 1,NNORBT
+            FC(I) = FC(I) + WRK(I)
+         ENDDO
       END IF
 C
       
@@ -4315,16 +4329,6 @@ c         WRITE(LUPRI,*) 'Going to PCM-like implementation'
          DO I = 1,NNORBT
              FC(I) = FC(I) - WRK(I)
          ENDDO
-      END IF
-
-      IF (QM3) THEN
-        IF (OLDTG .OR. (.NOT. LOSPC)) THEN
-          CALL MOLLAB('SOLVTMAT',LUSIFC,LUPRI)
-          CALL READT (LUSIFC,NNORBT,WRK)
-          DO 21 I = 1,NNORBT
-             FC(I) = FC(I) - WRK(I)
- 21       CONTINUE
-        END IF
       END IF
 
       IF (SOPPA) THEN
@@ -4377,7 +4381,7 @@ C        UDV contains the MP2 one-density. Remove the diagonal
 C        contribution from the zeroth order. (Added in MP2FAC)
 C
          CALL SOPUDV(UDV)
-      END IF
+      END IF ! (SOPPA)
 C
       IF (IPRRSP.GT.20) THEN
          DO 60 ISYM = 1,NSYM

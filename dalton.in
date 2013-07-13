@@ -82,6 +82,7 @@ usage (){
         echo ' -put "file1 file2" : put files to TMPDIR before calculation starts'
         echo ' -mmsv file : copy MM relay matrix from TMPDIR to WRKDIR/file'
         echo ' -mmcp file : copy MM relay matrix from WRKDIR/file to TMPDIR'
+	echo ' -nocpex    : force to not copy dalton executable from master node to slave nodes (for global work)'
         echo ' -valgrind  : run with valgrind'
         echo
          }
@@ -119,6 +120,7 @@ while [ -n "`echo $1 | grep '^-'`" ]; do
       -nobackup ) opt_nobackup=1;;
       -noarch ) opt_noarch=1;;
       -valgrind ) opt_valgrind=1;;
+      -nocpex ) opt_nocpex=1;;
       -ext ) OUTEXT=$2; shift;;
       -get ) GET_FILES=$2; shift;;
       -put ) PUT_FILES=$2; shift;;
@@ -323,8 +325,8 @@ if [ $optn -gt 1 ] ; then
    if [ -s "$MPIRUN" -a -x "$MPIRUN" ]; then
       if [ -s "$DALMPI" -a -x "$DALMPI" ]; then
          cp $DALMPI ./dalton_mpi_copy.x
-         echo 'Copying dalton executable from master node: ' ${HOSTNAME}
-         if [ -n "$PBS_NODEFILE" ] ; then
+         if [ -n "$PBS_NODEFILE" -a "$opt_nocpex" != "1" ] ; then
+	     echo 'Copying dalton executable from master node: ' ${HOSTNAME}
              # $PBS_NODEFILE is defined, then do the instructions below
              cat $PBS_NODEFILE | sort | uniq
              for node in `cat $PBS_NODEFILE | sort | uniq`

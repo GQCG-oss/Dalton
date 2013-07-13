@@ -1,0 +1,696 @@
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+      This is output from LINSCA DALTON (Release 1.0 )
+            Authors:                                  
+      Trygve Helgaker,       University of Oslo,           Norway 
+      Poul Joergensen,       Aarhus University,            Denmark
+      Jeppe Olsen,           Aarhus University,            Denmark
+      Sonia Coriani,         University of Trieste,        Italy  
+      Stinne Hoest,          Aarhus University,            Denmark
+      Branislav Jansik,      Aarhus University,            Denmark
+      Joanna Kauczor,        Aarhus University,            Denmark
+      Thomas Kjaergaard,     Aarhus University,            Denmark
+      Kasper Kristensen,     Aarhus University,            Denmark
+      Simen Reine,           University of Oslo,           Norway 
+      Pawel Salek,           KTH Stockholm,                Sweden 
+      Andreas Thorvaldsen,   University of Tromsoe,        Norway 
+      Lea Thoegersen,        Aarhus University,            Denmark
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using SCF wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "LSDalton, a molecular electronic structure program, Release 2010,
+      written by <INSERT AUTHOR LIST>"
+
+
+ 
+     Date and time (Linux)  : Thu Sep 30 10:37:35 2010 
+     Host name              : kasperk.chem.au.dk                      
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  6-31G                                   
+  Hydrogen Peroxide                       
+                                          
+  AtomTypes=2 Generators=0                                    
+  Charge=8.0 Atoms=2                                          
+  O    -0.00000000  1.40784586 -0.09885600                    
+  O     0.00000000 -1.40784586 -0.09885600                    
+  Charge=1.0 Atoms=2                                          
+  H     0.69081489  1.72614891  1.56891868                    
+  H    -0.69081489 -1.72614891  1.56891868                    
+                      
+ -----------------------------------------
+          PRINTING THE DALTON.INP FILE 
+ -----------------------------------------
+                      
+  **DALTON INPUT                          
+  .RUN LINSCA                             
+  **WAVE FUNCTIONS                        
+  .DFT                                    
+  B3LYP                                   
+  *LINSCA                                 
+  .RH                                     
+  .DIIS                                   
+  .NVEC                                   
+  8                                       
+  .CONVTHR                                
+  1.0D-6                                  
+  *END OF INPUT                           
+  
+  MOLPRINT IS SET TO       0
+  Integral threshold is set to the default 1.00D-15
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates: 12
+
+   1   O        x      0.0000000000
+   2            y      1.4078458600
+   3            z     -0.0988560000
+
+   4   O        x      0.0000000000
+   5            y     -1.4078458600
+   6            z     -0.0988560000
+
+   7   H        x      0.6908148900
+   8            y      1.7261489100
+   9            z      1.5689186800
+
+  10   H        x     -0.6908148900
+  11            y     -1.7261489100
+  12            z      1.5689186800
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR BASIS
+   
+
+ Default basis set library used:
+        /Users/kasperkristensen/bin/Dalton-august2010/basis/                  
+ OPENING FILE/Users/kasperkristensen/bin/Dalton-august2010/basis/6-31G
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  6-31G                                             
+  CHARGES:   8   1
+                      
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+    Molecular Charge                 :    0.0000
+    Regular basisfunctions             :       22
+    Auxiliary basisfunctions           :        0
+    Huckel basisfunctions              :        0
+    Primitive Regular basisfunctions   :       52
+    Primitive Auxiliary basisfunctions :        0
+    Primitive Huckel basisfunctions    :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis    GHOST   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   8.000  6-31G           F             22           9
+     2   8.000  6-31G           F             22           9
+     3   1.000  6-31G           F              4           2
+     4   1.000  6-31G           F              4           2
+                      
+  ATOM  NAME  ISOTOPE        X             Y             Z     
+    1    O          1    0.00000000    1.40784586   -0.09885600
+    2    O          1    0.00000000   -1.40784586   -0.09885600
+    3    H          1    0.69081489    1.72614891    1.56891868
+    4    H          1   -0.69081489   -1.72614891    1.56891868
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      4
+  THE  REGULAR   is on R =   0
+---------------------------------------------------------------------
+ atom label charge  basisset            prim cont basis
+---------------------------------------------------------------------
+      1 O      8.000 6-31G                     22        9 [10s4p|3s2p]             
+      2 O      8.000 6-31G                     22        9 [10s4p|3s2p]             
+      3 H      1.000 6-31G                      4        2 [4s|2s]                  
+      4 H      1.000 6-31G                      4        2 [4s|2s]                  
+---------------------------------------------------------------------
+total         18                              52      22
+---------------------------------------------------------------------
+                      
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+
+LINSCF configuration :
+Density subspace min. method    : DIIS                    
+Density optimization : Diagonalization                    
+
+
+ Maximum size of Fock/density queue in averaging:           8
+Convergence threshold for gradient:   0.10E-05
+ End of configuration from new input structure!
+
+ >>>  CPU Time used in *INPUT          is   0.00 seconds
+ Level 1 atomic calculation on 6-31G Charge   8
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.01 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.01 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 8724 compressed from  8724 ( 84 radial)
+ Number of grid points:     8724 Grid generation time:       0.0 s
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.01 seconds
+KS electrons/energy:    7.99999999997234   -7.91335148913077 rel.err:-0.35E-11
+ >>>  CPU Time used in xc-Fock         is   0.15 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.15 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -72.2598996390    0.00000000000    0.00      0.00000    0.00    0.0000000    0.45E+01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    8.00000000002589   -5.87284937018831 rel.err: 0.32E-11
+ >>>  CPU Time used in xc-Fock         is   0.14 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.14 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  2    -73.3096204152   -1.04972077618    0.00      0.00000    0.00    0.0000000    0.49E+01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    8.00000000000967   -6.60831683182417 rel.err: 0.12E-11
+ >>>  CPU Time used in xc-Fock         is   0.14 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.14 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  3    -74.8526605266   -1.54304011139   -1.00      0.00000    0.00    0.0000000    0.63E+00  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    8.00000000000689   -6.71344060611094 rel.err: 0.86E-12
+ >>>  CPU Time used in xc-Fock         is   0.14 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.14 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  4    -74.8748332281   -0.02217270155   -1.00      0.00000    0.00    0.0000000    0.50E-01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    8.00000000000651   -6.72290516125210 rel.err: 0.81E-12
+ >>>  CPU Time used in xc-Fock         is   0.14 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.14 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  5    -74.8749757601   -0.00014253199   -1.00      0.00000    0.00    0.0000000    0.18E-02  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    8.00000000000667   -6.72260094420445 rel.err: 0.83E-12
+ >>>  CPU Time used in xc-Fock         is   0.14 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.14 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  6    -74.8749759413   -0.00000018124   -1.00      0.00000    0.00    0.0000000    0.15E-03  ###
+ Level 1 atomic calculation on 6-31G Charge   1
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 9158 compressed from  9158 ( 61 radial)
+ Number of grid points:     9158 Grid generation time:       0.0 s
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.01 seconds
+KS electrons/energy:    0.99999999999842   -0.22355794176458 rel.err:-0.16E-11
+ >>>  CPU Time used in xc-Fock         is   0.12 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.12 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1     -0.4388706084    0.00000000000    0.00      0.00000    0.00    0.0000000    0.84E-01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    0.99999999999819   -0.21356077419062 rel.err:-0.18E-11
+ >>>  CPU Time used in xc-Fock         is   0.11 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.11 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  2     -0.4403058570   -0.00143524859    0.00      0.00000    0.00    0.0000000    0.70E-02  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:    0.99999999999821   -0.21431317096543 rel.err:-0.18E-11
+ >>>  CPU Time used in xc-Fock         is   0.11 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     0.11 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  3     -0.4403160550   -0.00001019803   -1.00      0.00000    0.00    0.0000000    0.32E-04  ###
+ >>>  CPU Time used in *ATOM           is   1.38 seconds
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in *S              is   0.00 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.02 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.00 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.05 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.00 seconds
+ >>>  CPU Time used in *H1             is   0.10 seconds
+ First density: Atoms in molecule guess
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ Radial Quadrature : LMG scheme
+ Space partitioning: Original Becke partitioning
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 8705 compressed from  8724 ( 84 radial)
+ Atom:    2*1 points= 8705 compressed from  8724 ( 84 radial)
+ Atom:    3*1 points= 9140 compressed from  9158 ( 61 radial)
+ Atom:    4*1 points= 9140 compressed from  9158 ( 61 radial)
+ Number of grid points:    35690 Grid generation time:       0.1 s
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.09 seconds
+KS electrons/energy:   17.99999239566076  -14.15785425624466 rel.err:-0.42E-06
+ >>>  CPU Time used in xc-Fock         is   1.16 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     1.16 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+  Iteration 0 energy:  -151.557853349554     
+ >>>  CPU Time used in *START          is   1.36 seconds
+Matrix S     has nnz=       240 sparsity:     49.587 %
+Matrix AO D  has nnz=       484 sparsity:    100.000 %
+Matrix AO F  has nnz=       418 sparsity:     86.570 %
+ micthrs =  1.000000000000000E-002
+ >>>  CPU Time used in INIT SCF        is   0.00 seconds
+** Get Fock matrix number   1
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99999160468260  -14.54317911651095 rel.err:-0.47E-06
+ >>>  CPU Time used in xc-Fock         is   1.07 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     1.07 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   1.27 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1   -151.3650177220    0.00000000000    0.00      0.00000    0.00    0.0000000    0.14E+01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   1
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)           41.594 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  30.250 kB
+  Allocated memory,     type(matrix)           30.250 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   1.27 seconds
+** Get Fock matrix number   2
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99999200754197  -14.15571759859548 rel.err:-0.44E-06
+ >>>  CPU Time used in xc-Fock         is   1.08 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     1.08 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   1.28 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  2   -151.3577884131    0.00722930887    0.00      0.00000    0.00    0.0000000    0.16E+01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   2
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)           52.938 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  41.594 kB
+  Allocated memory,     type(matrix)           41.594 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   1.28 seconds
+** Get Fock matrix number   3
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99999168433705  -14.37616965195937 rel.err:-0.46E-06
+ >>>  CPU Time used in xc-Fock         is   1.07 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     1.07 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   1.27 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  3   -151.4090796327   -0.05129121964   -1.00      0.00000    0.00    0.0000000    0.38E-01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   3
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)           64.281 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  52.938 kB
+  Allocated memory,     type(matrix)           52.938 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   1.27 seconds
+** Get Fock matrix number   4
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99999169427883  -14.37232061363031 rel.err:-0.46E-06
+ >>>  CPU Time used in xc-Fock         is   1.07 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     1.07 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   1.27 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  4   -151.4091208392   -0.00004120647   -1.00      0.00000    0.00    0.0000000    0.36E-02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   4
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)           75.625 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  64.281 kB
+  Allocated memory,     type(matrix)           64.281 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   1.27 seconds
+** Get Fock matrix number   5
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99999169268959  -14.37279155508487 rel.err:-0.46E-06
+ >>>  CPU Time used in xc-Fock         is   1.07 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     1.07 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   1.27 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  5   -151.4091211218   -0.00000028259   -1.00      0.00000    0.00    0.0000000    0.12E-03  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   5
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)           86.969 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  75.625 kB
+  Allocated memory,     type(matrix)           75.625 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   1.27 seconds
+** Get Fock matrix number   6
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99999169265241  -14.37279713744064 rel.err:-0.46E-06
+ >>>  CPU Time used in xc-Fock         is   1.07 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     1.07 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   1.27 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  6   -151.4091211226   -0.00000000083   -1.00      0.00000    0.00    0.0000000    0.16E-04  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   6
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)           98.313 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  86.969 kB
+  Allocated memory,     type(matrix)           86.969 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   1.27 seconds
+** Get Fock matrix number   7
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99999169264598  -14.37279685623981 rel.err:-0.46E-06
+ >>>  CPU Time used in xc-Fock         is   1.08 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     1.08 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   1.27 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  7   -151.4091211226   -0.00000000002   -1.00      0.00000    0.00    0.0000000    0.39E-05  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   7
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)          109.656 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                  98.313 kB
+  Allocated memory,     type(matrix)           98.313 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   1.28 seconds
+** Get Fock matrix number   8
+ Using purely new Integrals
+ >>>  CPU Time used in reg-Fbuild      is   0.20 seconds
+ >>>  CPU Time used in reg-F           is   0.20 seconds
+ >>>  WALL Time used in gridgeneration is     0.00 seconds
+ >>>  CPU  Time used in gridgeneration is     0.00 seconds
+KS electrons/energy:   17.99999169264537  -14.37279652046877 rel.err:-0.46E-06
+ >>>  CPU Time used in xc-Fock         is   1.08 seconds
+ >>>  CPU  Time used II_get_xc_Fock_mat is     1.08 seconds
+ >>>  WALL Time used II_get_xc_Fock_mat is     0.00 seconds
+ >>>  CPU Time used in FCK_FO          is   1.28 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  8   -151.4091211226    0.00000000000   -1.00      0.00000    0.00    0.0000000    0.29E-06  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   8
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)          121.000 kB
+  Max allocated memory, real                  164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+
+  Allocated memory,     TOTAL                 109.656 kB
+  Allocated memory,     type(matrix)          109.656 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+ >>>  CPU Time used in **ITER          is  10.18 seconds
+
+Total no. of matmuls in SCF optimization:         51
+
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2    0.00722930887    0.0000    0.0000    0.0000000
+  3   -0.05129121964   -1.0000    0.0000    0.0000000
+  4   -0.00004120647   -1.0000    0.0000    0.0000000
+  5   -0.00000028259   -1.0000    0.0000    0.0000000
+  6   -0.00000000083   -1.0000    0.0000    0.0000000
+  7   -0.00000000002   -1.0000    0.0000    0.0000000
+  8    0.00000000000   -1.0000    0.0000    0.0000000
+
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1          -151.36501772197274817700      0.137787174980258D+01
+    2          -151.35778841310170150791      0.164669824875767D+01
+    3          -151.40907963274301550882      0.378020135582041D-01
+    4          -151.40912083920810005111      0.364974171522059D-02
+    5          -151.40912112180257054206      0.119304072641543D-03
+    6          -151.40912112263274025281      0.157783761089049D-04
+    7          -151.40912112264851430155      0.393123744650548D-05
+    8          -151.40912112264854272325      0.292081119463416D-06
+
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+
+
+      Final DFT energy:                 -151.409121122649
+      Nuclear repulsion:                  36.151288508275
+      Electronic energy:                -187.560409630924
+
+
+
+
+                       Permanent dipole moment
+                       -----------------------
+               au              Debye           10**-30 C m
+            1.40904           3.58144           11.9464    
+
+
+                       Dipole moment components
+                       ------------------------
+               au              Debye           10**-30 C m
+ x        -0.565381E-13     -0.143706E-12     -0.479350E-12
+ y        -0.268896E-12     -0.683466E-12     -0.227979E-11
+ z          1.40904           3.58144           11.9464    
+
+
+
+ >>>  CPU Time used in LSDALTON RSP    is   0.01 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON RESPONSE:   5.656999999999357E-003    **
+ *****************************************************
+ >>>  CPU Time used in *SCF            is  10.18 seconds
+
+Total no. of matmuls used:                        51
+Total no. of Fock/KS matrix evaluations:           8
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                 164.099 MB
+  Max allocated memory, type(matrix)          121.000 kB
+  Max allocated memory, real(realk)           164.043 MB
+  Max allocated memory, integer                77.383 kB
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand              21.362 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, Overlap               781.656 kB
+  Max allocated memory, ODitem                 37.813 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+
+ >>>  CPU Time used in LSDALTON        is  13.04 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON:    13.0366870000000         **
+ *****************************************************

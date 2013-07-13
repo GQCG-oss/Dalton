@@ -7,6 +7,7 @@
       LOGICAL SKIPNC, VDWSKP, MYITE, MYMAT, EXPON
       LOGICAL PRFQM3, INTDIR, FORQM3, REDCNT, LGSPOL, RUNQM3
       LOGICAL QMDAMP, NYQMMM, HFFLD, CCFIXF, FFIRST
+      LOGICAL MMPCM, LADDMM, FIRST1
 ! 
 ! ---------------------------------------------------------
 ! In the present implementation the MXQM3 parameter follows 
@@ -18,11 +19,14 @@
       INTEGER NSISY, ISYTP, NTOTQM3, IQM3PR, ICHRGS
       INTEGER MXDIIT, NUSITE, MXQM3, MXTYPE, NCOMS
       INTEGER NTOTIN, NUALIS, NQMBAS,NMMBA1, NREPMT
-      INTEGER ISIGEPS, NSIGEPS
+      INTEGER ISIGEPS, NSIGEPS, MXQ, NSTATES, ICQM3
+      INTEGER NOSIMOLD, NOSIMFIRST, MXITMP
 !
       PARAMETER(NMMBA1 = 5000)
       PARAMETER(MXQM3  = 120) ! should be equal to MXCENT_QM in include/mxcent.h
       PARAMETER(MXTYPE = 20)
+      PARAMETER(MXQ = MXQM3)
+      PARAMETER(NSTATES = 120)
 !
       CHARACTER MDLWRD*7
 !
@@ -40,6 +44,9 @@
       REAL ALTZZ,ECLPOL,ECLVDW,ECLQM3
       REAL THDISC,ENUQM3,CHAOLD
       REAL EMMPOL,EMMVDW,EMMELC,EMM_MM,EVDWSH,PEDIP1
+      REAL XMMQ, YMMQ, ZMMQ, MMQ
+      REAL XMMMY, YMMMY, ZMMMY, MMMYX, MMMYY, MMMYZ 
+      REAL THRSMP, DMMSAVE
       REAL QMCOM, ADAMP
 #else
       DOUBLE PRECISION QM3CHG,QM3LJA,QM3LJB
@@ -50,22 +57,28 @@
       DOUBLE PRECISION EMMPOL,EMMVDW,EMMELC,EMM_MM
       DOUBLE PRECISION EVDWSH,PEDIP1
       DOUBLE PRECISION ENSQM3,EPOQM3
+      DOUBLE PRECISION XMMQ,YMMQ,ZMMQ,MMQ
+      DOUBLE PRECISION XMMMY,YMMMY,ZMMMY,MMMYX,MMMYY,MMMYZ
+      DOUBLE PRECISION THRSMP, DMMSAVE
       DOUBLE PRECISION QMCOM, ADAMP
 #endif
 
       COMMON /REAQM3/ THDISC,ECLPOL,ECLVDW,ECLQM3,ENUQM3,               &
      &                EMMPOL,EMMVDW,EMMELC,EMM_MM,EVDWSH,               &
-     &                PEDIP1,ENSQM3,EPOQM3,QMCOM(3),ADAMP
+     &                PEDIP1,ENSQM3,EPOQM3,THRSMP,DMMSAVE,              &
+     &                QMCOM(3),ADAMP
 
       COMMON /LOGQM3/ RDFILE,DISMOD,QM3LO1,QM3LO2,CCMM,FIXMOM,          &
      &                OLDTG,ONLYOV,LONUPO,LOELFD,LOSPC,LOEC3,NYQMMM,    &
      &                SHAWFC,LOSHAW,REPTST,RELMOM,SLOTH,HFFLD,CCFIXF,   &
      &                LONEPAR,LTWOPAR,LEPSADD,LSIGADD,LOCLAS,           &
      &                SKIPNC,VDWSKP,MYITE,MYMAT,EXPON,PRFQM3,FFIRST,    &
-     &                INTDIR, FORQM3, REDCNT, RUNQM3, LGSPOL,QMDAMP
+     &                INTDIR, FORQM3, REDCNT, LGSPOL, MMPCM,            &
+     &                LADDMM, FIRST1, RUNQM3, QMDAMP
 
       COMMON /INTQM3/ IQM3PR,ISYTP,NTOTQM3,NUSITE,NCOMS,NTOTIN,         &
-     &                MXDIIT, NQMBAS, NREPMT, NSIGEPS
+     &                MXDIIT, NQMBAS, NREPMT, NSIGEPS, NOSIMOLD,        &
+     &                NOSIMFIRST, MXITMP
 
       COMMON /QM3WRD/ MDLWRD(0:MXTYPE)
 
@@ -73,7 +86,7 @@
      &                NSYSBG(0:MXTYPE),NSYSED(0:MXTYPE),                &
      &                NSISY(0:MXTYPE),                                  &
      &                ICHRGS(0:MXTYPE),NUALIS(0:MXTYPE),                &
-     &                ISIGEPS(0:MXTYPE)
+     &                ISIGEPS(0:MXTYPE),ICQM3(NSTATES)
 
       COMMON /QM3SYS/ QM3CHG(0:MXTYPE,MXQM3),                           &
      &                QM3LJA(0:MXTYPE,0:MXTYPE),                        &
@@ -81,5 +94,8 @@
      &                ALPIMM(0:MXTYPE,MXQM3),CHAOLD(MXQM3),             &
      &                ALTXX(0:MXTYPE),ALTXY(0:MXTYPE),                  &
      &                ALTXZ(0:MXTYPE),ALTYY(0:MXTYPE),                  &
-     &                ALTYZ(0:MXTYPE),ALTZZ(0:MXTYPE)
+     &                ALTYZ(0:MXTYPE),ALTZZ(0:MXTYPE),                  &
+     &                XMMQ(MXQ),YMMQ(MXQ),ZMMQ(MXQ),MMQ(MXQ),           &
+     &                XMMMY(MXQ),YMMMY(MXQ),ZMMMY(MXQ),                 &
+     &                MMMYX(MXQ),MMMYY(MXQ),MMMYZ(MXQ)
 ! --- end of qm3.h ---
