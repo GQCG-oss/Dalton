@@ -76,7 +76,7 @@ contains
     integer :: i,j,k,idx,tuple_type
     !> mpi stuff
 #ifdef VAR_MPI
-    integer :: ntasks,nodtotal,ij,ij_count
+    integer :: b_size,ntasks,nodtotal,ij,ij_count
     integer, pointer :: jobs(:)
 #endif
 !    !> mpi stuff
@@ -209,13 +209,18 @@ contains
     ! create job distribution list
     ! first, determine common batch size from number of tasks and nodes
     ntasks = (nocc**2 + nocc)/2
-    b_size = int(ntasks,nodtotal)
+    b_size = int(ntasks/nodtotal)
+
+    print *,'ntasks = ',ntasks
+    print *,'b_size = ',b_size
 
     ! init list (one more than b_size since mod(ntasks,nodtotal) is not necessearily zero
     call mem_alloc(jobs,b_size + 1)
 
     ! fill the list
-    call job_distrib_ccsdpt(b_size,jobs)
+    call job_distrib_ccsdpt(b_size,ntasks,jobs)
+
+    print *,'rank = ',infpar%lg_mynum,'printing jobs = ',jobs
 
 #endif
 
@@ -225,6 +230,9 @@ contains
     ! the composite index ij is incremented in the collapsed loop, and we may calculate i and j from ij.
 
 #ifdef VAR_MPI
+
+    ! init ij
+    ij = 0
 
  ijrun: do ij_count = 1,b_size + 1
 
@@ -237,7 +245,9 @@ contains
            ! calculate i and j from composite ij value
            call calc_i_and_j(ij,nocc,i,j)
 
-           ! get i and j time ** need i_old and i=j checks!
+           print *,'rank = ',infpar%lg_mynum,'ij = ',ij,'i = ',i,'j = ',j
+
+           ! ** need i_old and i=j checks!
 
            ! get the i'th and j'th v^3 tile
            call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
@@ -707,16 +717,16 @@ contains
   !> \brief: make job distribution list for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine job_distrib_ccsdpt(b_size,jobs)
+  subroutine job_distrib_ccsdpt(b_size,ntasks,jobs)
 
     implicit none
 
     !> batch size (without remainder contribution) 
-    integer, intent(in) :: b_size
+    integer, intent(in) :: b_size,ntasks
     !> jobs array
     integer, dimension(b_size+1), intent(inout) :: jobs
     !> integers
-    integer :: fill, nodtotal
+    integer :: nodtotal,fill,fill_sum
 
 #ifdef VAR_MPI
 
@@ -725,15 +735,22 @@ contains
     ! fill the jobs array with values of ij
     ! there are (nocc**2 + nocc)/2 tasks in total (ntasks)
 
-    ! first, init jobs array with negative numbers such that these won't appear for any value of ij
-
-    jobs = -1
-
     ! the below algorithm distributes the jobs evenly among the nodes. NO weighting yet...
 
     do fill = 0,b_size
 
-       jobs(fill+1) = infpar%lg_mynum + 1 + fill*nodtotal 
+       fill_sum = infpar%lg_mynum + 1 + fill*nodtotal
+
+       if (fill_sum .le. ntasks) then
+
+          jobs(fill+1) = infpar%lg_mynum + 1 + fill*nodtotal 
+
+       else
+
+          ! fill jobs array with negative number such that this number won't appear for any value of ij
+          jobs(fill+1) = -1
+
+       end if
 
     end do
 
@@ -754,15 +771,14 @@ contains
     !> i and j
     integer, intent(inout) :: i,j
     !> integers
-    integer :: triang_sum,triang_sum_old,series,series_old
+    integer :: triang_sum,triang_sum_old,series
 
-    do series = 1,nocc
+    do series = 1,no
 
        triang_sum = (series**2 + series)/2
 
        if (triang_sum .lt. ij) then
 
-          series_old = series
           triang_sum_old = triang_sum
 
           cycle
@@ -772,10 +788,14 @@ contains
           j = series
           i = series
 
+          exit
+
        else
 
           j = ij - triang_sum_old
-          i = series_old
+          i = series
+
+          exit
 
        end if
 
