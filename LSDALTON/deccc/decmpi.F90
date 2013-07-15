@@ -540,6 +540,9 @@ contains
        call mem_alloc(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%ppfock,MyMolecule%numocc,MyMolecule%numocc)
        call mem_alloc(MyMolecule%qqfock,MyMolecule%numvirt,MyMolecule%numvirt)
+       call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%numocc)
+       call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%numvirt)
+       call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
     end if
 
 
@@ -558,7 +561,9 @@ contains
     call ls_mpibcast(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ppfock,MyMolecule%numocc,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%qqfock,MyMolecule%numvirt,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
-
+    call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%carmomvirt,3,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
 
   end subroutine mpi_bcast_fullmolecule
 
@@ -1708,6 +1713,7 @@ contains
     call ls_mpi_buffer(DECitem%simple_mulliken_threshold,Master)
     call ls_mpi_buffer(DECitem%approximated_norm_threshold,Master)
     call ls_mpi_buffer(DECitem%mulliken,Master)
+    call ls_mpi_buffer(DECitem%distance,Master)
     call ls_mpi_buffer(DECitem%FOT,Master)
     call ls_mpi_buffer(DECitem%MaxIter,Master)
     call ls_mpi_buffer(DECitem%FOTlevel,Master)
