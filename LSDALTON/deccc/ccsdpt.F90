@@ -79,11 +79,6 @@ contains
     integer :: b_size,ntasks,nodtotal,ij,ij_count
     integer, pointer :: ij_array(:),jobs(:)
 #endif
-!    !> mpi stuff
-!#ifdef VAR_MPI
-!    !> logical determining whether a parallel task should be joined by several procs
-!    logical :: collab
-!#endif
     !> orbital energies
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
     !> MOs and unitary transformation matrices
@@ -211,22 +206,17 @@ contains
     ntasks = (nocc**2 + nocc)/2
     b_size = int(ntasks/nodtotal)
 
-    print *,'ntasks = ',ntasks
-    print *,'b_size = ',b_size
-
+    ! ij_array stores all jobs for composite ij indices in decending order
     call mem_alloc(ij_array,ntasks)
     ! init list (one more than b_size since mod(ntasks,nodtotal) is not necessearily zero
     call mem_alloc(jobs,b_size + 1)
 
+    ! create ij_array
     call create_ij_array_ccsdpt(ntasks,nocc,ij_array)
-    if (infpar%lg_mynum .eq. infpar%master) then
-       print *,'rank = ',infpar%lg_mynum,'ij_array = ',ij_array
-    end if
     ! fill the list
     call job_distrib_ccsdpt(b_size,ntasks,ij_array,jobs)
 
-    print *,'rank = ',infpar%lg_mynum,'printing jobs = ',jobs
-
+    ! release ij_array
     call mem_dealloc(ij_array)
 
 #endif
@@ -252,8 +242,6 @@ contains
            ! calculate i and j from composite ij value
            call calc_i_and_j(ij,nocc,i,j)
 
-           print *,'rank = ',infpar%lg_mynum,'ij = ',ij,'i = ',i,'j = ',j
-
            ! ** need i_old and i=j checks!
 
            ! get the i'th and j'th v^3 tile
@@ -272,53 +260,11 @@ contains
 
  irun: do i=1,nocc
 
-!#ifdef VAR_MPI
-!
-!          if ((infpar%lg_nodtot + i - 1) .le. nocc) then
-!
-!             collab = .false.
-! 
-!             ! determine if this is my job or not
-!             if (infpar%lg_mynum .ne. mod(i,infpar%lg_nodtot)) cycle irun
-!   
-!             ! get the i'th v^3 tile
-!             call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
-!
-!          else
-!
-!             collab = .true.
-!   
-!             ! get the i'th v^3 tile
-!             call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
-!
-!          end if
-!
-!#endif
-
           ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
           call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
                   & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
 
     jrun: do j=1,i
-
-!#ifdef VAR_MPI
-!
-!             if (.not. collab) then
-!
-!                ! get the j'th tile
-!                call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
-!
-!             else
-!
-!                ! determine if this is my job or not
-!                if (infpar%lg_mynum .ne. mod(j,infpar%lg_nodtot)) cycle jrun
-! 
-!                ! get the j'th tile
-!                call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
-!
-!             end if
-!
-!#endif
 
              ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
@@ -735,15 +681,26 @@ contains
     !> integers
     integer :: counter,offset,fill_1,fill_2
 
+    ! since i .ge. j, the composite ij indices will make up a lower triangular matrix
+    ! for each ij, k (where j .ge. k) jobs have to be carried out.
+    ! thus, the largest jobs for a given i-value will be those that have the largest j-value,
+    ! and the largest jobs will thus be those for which the ij index appears near the diagonal.
+    ! as the value of j specifies how large a given job is, we fill up the ij_array with jobs
+    ! for j-values in decending order.
+
+    ! counter specifies the index of ij_array
     counter = 1
 
     do fill_1 = 0,no-1
 
+       ! zero the offset
        offset = 0
 
        if (fill_1 .eq. 0) then
 
+          ! this is largest possible job
           ij_array(counter) = ntasks
+          ! increment counter
           counter = counter + 1
 
        else
@@ -752,13 +709,18 @@ contains
 
              if (fill_2 .eq. 0) then
 
+                ! this is the largest i-value, for which we have to do k number of jobs
                 ij_array(counter) = ntasks - fill_1
+                ! increment counter
                 counter = counter + 1
 
              else
 
+                ! we loop through the i-value keeping the j-value (and k-value of course) fixed
+                ! we thus loop from i == nocc up towards the diagonal of the lower triangular matrix
                 offset = offset + (no - fill_2)
                 ij_array(counter) = ntasks - fill_1 - offset
+                ! increment counter
                 counter = counter + 1
 
              end if
@@ -792,7 +754,7 @@ contains
 
     nodtotal = infpar%lg_nodtot
 
-    ! fill the jobs array with values of ij
+    ! fill the jobs array with values of ij stored in ij_array
     ! there are (nocc**2 + nocc)/2 tasks in total (ntasks)
 
     ! the below algorithm distributes the jobs evenly among the nodes.
@@ -831,19 +793,27 @@ contains
     !> i and j
     integer, intent(inout) :: i,j
     !> integers
-    integer :: triang_sum,triang_sum_old,series
+    integer :: gauss_sum,gauss_sum_old,series
+
+    ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements
+    ! this is a gauss sum of 1 + 2 + 3 + ... + N-2 + N-1 + N
+    ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum)
+    ! if gauss_sum for a given i (series) is smaller than ij, we loop.
+    ! when gauss_sum is greater than ij, we use the value of i for the present loop cycle
+    ! and calculate the value of j from the present ij and previous gauss_sum values.
+    ! when gauss_sum is equal to ij, we are on the diagonal and i == j (== series).
 
     do series = 1,no
 
-       triang_sum = (series**2 + series)/2
+       gauss_sum = (series**2 + series)/2
 
-       if (triang_sum .lt. ij) then
+       if (gauss_sum .lt. ij) then
 
-          triang_sum_old = triang_sum
+          gauss_sum_old = gauss_sum
 
           cycle
 
-       else if (triang_sum .eq. ij) then
+       else if (gauss_sum .eq. ij) then
 
           j = series
           i = series
@@ -852,7 +822,7 @@ contains
 
        else
 
-          j = ij - triang_sum_old
+          j = ij - gauss_sum_old
           i = series
 
           exit
