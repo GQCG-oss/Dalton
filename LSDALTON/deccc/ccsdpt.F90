@@ -77,7 +77,7 @@ contains
     !> mpi stuff
 #ifdef VAR_MPI
     integer :: b_size,ntasks,nodtotal,ij,ij_count
-    integer, pointer :: jobs(:)
+    integer, pointer :: ij_array(:),jobs(:)
 #endif
 !    !> mpi stuff
 !#ifdef VAR_MPI
@@ -214,13 +214,20 @@ contains
     print *,'ntasks = ',ntasks
     print *,'b_size = ',b_size
 
+    call mem_alloc(ij_array,ntasks)
     ! init list (one more than b_size since mod(ntasks,nodtotal) is not necessearily zero
     call mem_alloc(jobs,b_size + 1)
 
+    call create_ij_array_ccsdpt(ntasks,nocc,ij_array)
+    if (infpar%lg_mynum .eq. infpar%master) then
+       print *,'rank = ',infpar%lg_mynum,'ij_array = ',ij_array
+    end if
     ! fill the list
-    call job_distrib_ccsdpt(b_size,ntasks,jobs)
+    call job_distrib_ccsdpt(b_size,ntasks,ij_array,jobs)
 
     print *,'rank = ',infpar%lg_mynum,'printing jobs = ',jobs
+
+    call mem_dealloc(ij_array)
 
 #endif
 
@@ -714,15 +721,68 @@ contains
   end subroutine ccsdpt_driver
 
 
+  !> \brief: create ij_array for ccsd(t)
+  !> \author: Janus Juul Eriksen
+  !> \date: july 2013
+  subroutine create_ij_array_ccsdpt(ntasks,no,ij_array)
+
+    implicit none
+
+    !> batch size (without remainder contribution)
+    integer, intent(in) :: ntasks,no
+    !> jobs array
+    integer, dimension(ntasks), intent(inout) :: ij_array
+    !> integers
+    integer :: counter,offset,fill_1,fill_2
+
+    counter = 1
+
+    do fill_1 = 0,no-1
+
+       offset = 0
+
+       if (fill_1 .eq. 0) then
+
+          ij_array(counter) = ntasks
+          counter = counter + 1
+
+       else
+
+          do fill_2 = 0,fill_1
+
+             if (fill_2 .eq. 0) then
+
+                ij_array(counter) = ntasks - fill_1
+                counter = counter + 1
+
+             else
+
+                offset = offset + (no - fill_2)
+                ij_array(counter) = ntasks - fill_1 - offset
+                counter = counter + 1
+
+             end if
+
+          end do
+
+       end if
+
+    end do
+
+  end subroutine create_ij_array_ccsdpt
+
+
   !> \brief: make job distribution list for ccsd(t)
   !> \author: Janus Juul Eriksen
   !> \date: july 2013
-  subroutine job_distrib_ccsdpt(b_size,ntasks,jobs)
+  subroutine job_distrib_ccsdpt(b_size,ntasks,ij_array,jobs)
 
     implicit none
 
     !> batch size (without remainder contribution) 
     integer, intent(in) :: b_size,ntasks
+    !> ij_array
+    integer, dimension(ntasks), intent(inout) :: ij_array
     !> jobs array
     integer, dimension(b_size+1), intent(inout) :: jobs
     !> integers
@@ -735,7 +795,7 @@ contains
     ! fill the jobs array with values of ij
     ! there are (nocc**2 + nocc)/2 tasks in total (ntasks)
 
-    ! the below algorithm distributes the jobs evenly among the nodes. NO weighting yet...
+    ! the below algorithm distributes the jobs evenly among the nodes.
 
     do fill = 0,b_size
 
@@ -743,12 +803,12 @@ contains
 
        if (fill_sum .le. ntasks) then
 
-          jobs(fill+1) = infpar%lg_mynum + 1 + fill*nodtotal 
+          jobs(fill + 1) = ij_array(infpar%lg_mynum + 1 + fill*nodtotal) 
 
        else
 
           ! fill jobs array with negative number such that this number won't appear for any value of ij
-          jobs(fill+1) = -1
+          jobs(fill + 1) = -1
 
        end if
 
