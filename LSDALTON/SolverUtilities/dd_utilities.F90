@@ -10,6 +10,7 @@ use decompMod
 use files
 use lstiming
 use queue_ops
+use queue_module
 use typedeftype
 
 !> \brief Contains stuff concerning HOMO-LUMO gap and Hessian eigenvalues

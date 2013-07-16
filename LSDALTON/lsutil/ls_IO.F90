@@ -5,6 +5,7 @@ use io_type
 use files
 use precision
 use Integralparameters
+use matrix_module
 use matrix_operations
 use memory_handling
 use mat3d_mod, only: read_mat3d_from_disk, mat3d

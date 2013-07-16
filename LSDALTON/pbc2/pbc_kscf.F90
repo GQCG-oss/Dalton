@@ -13,7 +13,7 @@ MODULE pbc_interactions
   USE harmonics_pbc
   USE lattice_type
   USE lattice_vectors
-
+  use lstiming
   CONTAINS
 
 
