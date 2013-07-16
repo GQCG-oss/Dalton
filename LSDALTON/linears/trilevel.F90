@@ -1539,6 +1539,7 @@ use IntegralInterfaceMOD
 use diagonalization
 use scfloop_module
 use molecule_module
+use optimlocMOD, only: optimloc
 implicit none
 TYPE(lsitem),target :: ls
 TYPE(trilevel_atominfo) :: ai
@@ -1558,19 +1559,6 @@ type(ConfigItem) :: config
 real(realk),parameter :: THRNEL=1E-3_realk
 real(realk),external :: HOMO_energy
 type(LowAccuracyStartType)  :: LAStype
-interface 
-   subroutine optimloc(CMO,nocc,m,ls,CFG)
-     use davidson_settings
-     use matrix_module, only: matrix
-     use typedeftype
-     implicit none
-     type(RedSpaceItem) :: CFG
-     type(Matrix), target:: CMO
-     TYPE(lsitem) , intent(inout) :: ls
-     integer,       intent(in)    :: nocc
-     integer,       intent(in)    :: m(2)
-   end subroutine optimloc
-end interface
 
   ndmat = 1
   OnMaster = .TRUE.
