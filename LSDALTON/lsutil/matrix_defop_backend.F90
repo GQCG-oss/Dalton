@@ -7,11 +7,10 @@
 !
 ! Only intended as hidden back-end for matrix_defop.
 module matrix_backend
-
+  use precision
   use matrix_module
   use matrix_operations,    &
-      only: mat_nullify,    &
-            lsdalton_mat_init => mat_init, &
+      only: lsdalton_mat_init => mat_init, &
             lsdalton_mat_free => mat_free, &
             mat_mul,        &
             mat_zero,       &
@@ -19,8 +18,7 @@ module matrix_backend
             mat_scal,       &
             mat_trans,      &
             mat_trab,       &
-            mat_dotproduct, &
-            mat_init_magic_value
+            mat_dotproduct            
   implicit none
 
   public matrix
