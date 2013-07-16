@@ -3682,7 +3682,35 @@ contains
   
     ! Print out and sanity check
     ! ==========================
-  
+ 
+#ifdef VAR_MPI
+
+    if (infpar%lg_mynum .eq. infpar%master) then
+
+       write(DECinfo%output,*)
+       write(DECinfo%output,*)
+       write(DECinfo%output,*) '======================================================================='
+       write(DECinfo%output,*) '                     CCSD(T) INTEGRALS: MEMORY SUMMARY                 '
+       write(DECinfo%output,*) '======================================================================='
+       write(DECinfo%output,*)
+       write(DECinfo%output,*) 'To be on the safe side we use only 85% of the estimated available memory'
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,g10.3)') '85% of available memory (GB)            =', MemoryAvailable
+       write(DECinfo%output,*)
+       write(DECinfo%output,'(1X,a,i8)')    'Number of atomic basis functions        =', nbasis
+       write(DECinfo%output,'(1X,a,i8)')    'Number of occupied orbitals             =', nocc
+       write(DECinfo%output,'(1X,a,i8)')    'Number of virtual  orbitals             =', nvirt
+       write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', alphadim
+       write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', gammadim
+       write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 1                     =', size1*realk*1.0E-9
+       write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9
+       write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
+       write(DECinfo%output,*)
+
+    end if
+
+#else
+
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,*) '======================================================================='
@@ -3702,6 +3730,8 @@ contains
     write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9
     write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
     write(DECinfo%output,*)
+
+#endif
   
     ! Sanity check
     call get_max_arraysizes_for_ccsdpt_integrals(alphadim,gammadim,nbasis,nocc,nvirt,&
