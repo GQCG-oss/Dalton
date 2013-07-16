@@ -398,9 +398,10 @@ real(realk),pointer :: RHOA(:,:),GRADA(:,:,:),TAU(:,:),WEIGHT(:)
 real(realk),pointer :: COOR(:,:)
 real(realk),pointer :: ACTIVE_DMAT(:)
 real(realk),pointer :: GAO(:) 
+real(realk),pointer :: GAOGMX(:)
 !INTEGER,pointer :: SHELLBLOCKS(:,:),BLOCKS(:,:)
 !INTEGER :: NactBAS
-
+REAL(REALK) :: GAOMAX
 REAL(REALK),pointer :: COOR_pt(:,:),WORK(:)
 integer :: XX,NSHELLBLOCKS,NLEN,IPT,NCURLEN,I,IDMAT,WORKLENGTH,WORKLENGTH2
 integer :: W1,W2,W3,W4,W5,W6,W7,W8,nthreads,tid,lugrid,idmat1,idmat2
@@ -427,8 +428,9 @@ myBoxMemRequirement = BoxMemRequirement
 IF(.NOT.noOMP) call mem_dft_TurnONThread_Memory()
 !$OMP PARALLEL IF(.NOT.noOMP) PRIVATE(XX,NSHELLBLOCKS,SHELLBLOCKS,COOR,COOR_pt,WEIGHT,IPT,NCURLEN,&
 !$OMP ACTIVE_DMAT,BLOCKS,RHOA,GRADA,TAU,GAO,NLEN,NactBAS,INXACT,I,IDMAT,myDFTdata,WORK,WORKLENGTH,W1,&
-!$OMP W2,W3,W4,W5,W6,W7,W8,tid,nthreads,IDMAT1,IDMAT2,WORKLENGTH2) FIRSTPRIVATE(myBoxMemRequirement)& 
-!$OMP SHARED(ushells,CC,CCSTART,CCINDEX,CENT,Dmat,Spherical,&
+!$OMP W2,W3,W4,W5,W6,W7,W8,tid,nthreads,IDMAT1,IDMAT2,WORKLENGTH2,GAOGMX,&
+!$OMP GAOMAX) FIRSTPRIVATE(myBoxMemRequirement)& 
+!$OMP SHARED(ushells,CC,CCSTART,CCINDEX,CENT,Dmat,Spherical,dometa,&
 !$OMP dogga,PRIEXPSTART,nsob,shellangmom,MMM,maxangmom,nstart,priexp,rhothr,spsize,spsize2,sphmat,&
 !$OMP spindex,DFTdata,noOMP,NBUFLEN,it,lupri,nbast,maxnshell,ndmat,nder,mxprim,unres,&
 !$OMP ntypso,dfthri,dolnd,LVALUE,MVALUE,NVALUE,MaxNactBast,lugrid) REDUCTION(+:TELECTRONS)
@@ -451,6 +453,7 @@ call mem_dft_alloc(WEIGHT,NBUFLEN)
 call mem_dft_alloc(COOR,3,NBUFLEN)
 call mem_dft_alloc(ACTIVE_DMAT,maxNactBAST*maxNactBAST*NDMAT)
 call mem_dft_alloc(GAO,MXBLLEN*maxNactBAST*NTYPSO) 
+call mem_dft_alloc(GAOGMX,maxNactBAST)
 !mem required in the ksm_worker routines
 WORKLENGTH = DFTdata%nWorkNactBastNblen*myBoxMemRequirement &
      &     + DFTdata%nWorkNactBast*maxNactBAST &
@@ -518,41 +521,40 @@ DO XX=1+tid,IT,nthreads
       !     After requested geometric derivatives, london related derivatives
       !     are placed.
       IF(DOMETA) THEN
-         W1 = 1; W2 = NactBAS*NactBAS                           !Dred(NactBas*NactBas)
-         W3 = NactBAS*NactBAS+1; W4 = NactBAS*NactBAS+NactBAS   !GAOGMX(NactBAS)
-         W5=  NactBAS*NactBAS+NactBAS+1
-         W6 = NactBAS*NactBAS+NactBAS+4*NCURLEN*NactBAS         !GAORED(NCURLEN,NactBAS,4)
-         W7 = NactBAS*NactBAS+NactBAS+4*NCURLEN*NactBAS+1       
-         W8 = NactBAS*NactBAS+NactBAS+8*NCURLEN*NactBAS         !TMP(NCURLEN,NactBAS)
+         W1 = 1; W2 = NactBAS*NactBAS                   !Dred(NactBas*NactBas)
+         W3 = NactBAS*NactBAS+1
+         W4 = NactBAS*NactBAS+4*NCURLEN*NactBAS         !GAORED(NCURLEN,NactBAS,4)
+         W5 = NactBAS*NactBAS+4*NCURLEN*NactBAS+1       
+         W6 = NactBAS*NactBAS+8*NCURLEN*NactBAS         !TMP(NCURLEN,NactBAS,4)
          CALL II_GETRHO_BLOCKED_META(LUPRI,ACTIVE_DMAT,NactBAS,GAO,NTYPSO,&
               & NSHELLBLOCKS,MAXNSHELL,BLOCKS,NCURLEN,NDMAT,RHOA,GRADA,TAU,RHOTHR,MXBLLEN,WORK(W1:W2),&
-              & WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
+              & GAOGMX,GAOMAX,WORK(W3:W4),WORK(W5:W6),maxNactBAST)
          ! computes rho_a and gradients of rho, Dmat is a density matrix
          ! (it can be a total density and then one will get total density,
          ! or it can be an alpha/beta density    assert(NTYPSO>=NRHO)
       ELSE IF(DOGGA) THEN
-         W1 = 1; W2 = NactBAS*NactBAS                           !Dred(NactBas*NactBas)
-         W3 = NactBAS*NactBAS+1; W4 = NactBAS*NactBAS+NactBAS   !GAOGMX(NactBAS)
-         W5=  NactBAS*NactBAS+NactBAS+1
-         W6 = NactBAS*NactBAS+NactBAS+4*NCURLEN*NactBAS         !GAORED(NCURLEN,NactBAS,4)
-         W7 = NactBAS*NactBAS+NactBAS+4*NCURLEN*NactBAS+1       
-         W8 = NactBAS*NactBAS+NactBAS+5*NCURLEN*NactBAS         !TMP(NCURLEN,NactBAS)
+         W1 = 1; W2 = NactBAS*NactBAS                   !Dred(NactBas*NactBas)
+         W3=  NactBAS*NactBAS+1
+         W4 = NactBAS*NactBAS+4*NCURLEN*NactBAS         !GAORED(NCURLEN,NactBAS,4)
+         W5 = NactBAS*NactBAS+4*NCURLEN*NactBAS+1       
+         W6 = NactBAS*NactBAS+5*NCURLEN*NactBAS         !TMP(NCURLEN,NactBAS)
          CALL II_GETRHO_BLOCKED_GGA(LUPRI,ACTIVE_DMAT,NactBAS,GAO,NTYPSO,&
-              & NSHELLBLOCKS,MAXNSHELL,BLOCKS,NCURLEN,NDMAT,RHOA,GRADA,RHOTHR,MXBLLEN,WORK(W1:W2),&
-              & WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
+              & NSHELLBLOCKS,MAXNSHELL,BLOCKS,NCURLEN,NDMAT,RHOA,GRADA,&
+              & RHOTHR,MXBLLEN,WORK(W1:W2),GAOGMX,GAOMAX,WORK(W3:W4),&
+              & WORK(W5:W6),maxNactBAST)
          ! computes rho_a and gradients of rho, Dmat is a density matrix
          ! (it can be a total density and then one will get total density,
          ! or it can be an alpha/beta density    assert(NTYPSO>=NRHO)
       ELSE
-         W1 = 1; W2 = NactBAS*NactBAS                           !Dred(NactBas*NactBas)
-         W3 = NactBAS*NactBAS+1; W4 = NactBAS*NactBAS+NactBAS   !GAOGMX(NactBAS)
-         W5=  NactBAS*NactBAS+NactBAS+1
-         W6 = NactBAS*NactBAS+NactBAS+NCURLEN*NactBAS           !GAORED(NCURLEN,NactBAS)
-         W7 = NactBAS*NactBAS+NactBAS+NCURLEN*NactBAS+1       
-         W8 = NactBAS*NactBAS+NactBAS+2*NCURLEN*NactBAS         !TMP(NCURLEN,NactBAS)
+         W1 = 1; W2 = NactBAS*NactBAS                   !DRED(NactBas*NactBas)
+         W3=  NactBAS*NactBAS+1
+         W4 = NactBAS*NactBAS+NCURLEN*NactBAS           !GAORED(NCURLEN,NactBAS)
+         W5 = NactBAS*NactBAS+NCURLEN*NactBAS+1       
+         W6 = NactBAS*NactBAS+2*NCURLEN*NactBAS         !TMP(NCURLEN,NactBAS)
          CALL II_GETRHO_BLOCKED_LDA(LUPRI,ACTIVE_DMAT,NactBAS,GAO,NTYPSO,&
-              & NSHELLBLOCKS,MAXNSHELL,BLOCKS,NCURLEN,NDMAT,RHOA,RHOTHR,MXBLLEN,WORK(W1:W2),&
-              & WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
+              & NSHELLBLOCKS,MAXNSHELL,BLOCKS,NCURLEN,NDMAT,RHOA,RHOTHR,&
+              & MXBLLEN,WORK(W1:W2),GAOGMX,GAOMAX,WORK(W3:W4),WORK(W5:W6),&
+              & maxNactBAST)
       END IF
       IF(UNRES)THEN
        DO IDMAT = 1,NDMAT/2
@@ -574,7 +576,7 @@ DO XX=1+tid,IT,nthreads
       ENDIF
       CALL CB(LUPRI,NCURLEN,NSHELLBLOCKS,BLOCKS(:,:),INXACT(:),NactBas,NBAST,NDMAT,ACTIVE_DMAT(:),NTYPSO,GAO(:),&
            &RHOA(:,:),GRADA(:,:,:),TAU(:,:),MXBLLEN,COOR(:,IPT:IPT+NCURLEN-1),WEIGHT(IPT:IPT+NCURLEN-1),&
-           &myDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+           &myDFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,maxNactBAST)
    ENDDO
 ENDDO
 
@@ -589,6 +591,7 @@ call mem_dft_dealloc(GAO)
 call mem_dft_dealloc(INXACT)
 call mem_dft_dealloc(SHELLBLOCKS)
 call mem_dft_dealloc(BLOCKS)
+call mem_dft_dealloc(GAOGMX)
 
 call DFTdataReduction(myDFTdata,DFTdata)
 call mem_dft_dealloc(WORK)
@@ -900,22 +903,22 @@ END SUBROUTINE II_BLGETSOS
 !>
 !>     computes  <o|dmat|o'>  i.e rho_a where dmat is a density matrix.
 !>
-SUBROUTINE II_GETRHO_BLOCKED_LDA(LUPRI,DMAT,NactBAS,GAO,NTYPSO,NBLOCKS,MAXNSHELL,BLOCKS,NVCLEN,&
-     & NDMAT,RHO,RHOTHR,MXBLLEN,DRED,GAOGMX,GAORED,TMP)
+SUBROUTINE II_GETRHO_BLOCKED_LDA(LUPRI,DMAT,NactBAS,GAO,NTYPSO,NBLOCKS,MAXNSHELL,&
+     & BLOCKS,NVCLEN,NDMAT,RHO,RHOTHR,MXBLLEN,DRED,GAOGMX,GAOMAX,GAORED,TMP,maxNactBAST)
 IMPLICIT NONE
 INTEGER,intent(in)     :: NactBAS,NVCLEN,NBLOCKS,NTYPSO,LUPRI,ndmat,MXBLLEN,MAXNSHELL
-REAL(REALK),intent(in) :: DMAT(NactBAS,NactBAS,ndmat), GAO(NVCLEN,NactBAS,NTYPSO),RHOTHR
-INTEGER,intent(in)     :: BLOCKS(2,MAXNSHELL)
+REAL(REALK),intent(in) :: DMAT(NactBAS,NactBAS,ndmat),GAO(NVCLEN,NactBAS,NTYPSO),RHOTHR
+INTEGER,intent(in)     :: BLOCKS(2,MAXNSHELL),maxNactBAST
 real(realk),intent(inout) :: RHO(MXBLLEN,NDMAT)
 !tmp
 REAL(REALK),intent(inout) :: TMP(NVCLEN,NactBAS)
-REAL(REALK),intent(inout) :: GAOGMX(NactBAS)
+REAL(REALK),intent(inout) :: GAOGMX(maxNactBAST),GAOMAX
 REAL(REALK),intent(inout) :: GAORED(NVCLEN,NactBAS)
 REAL(REALK),intent(inout) :: DRED(Nactbas*Nactbas)
 !
 INTEGER     :: IBL,ISTART,IBLEN,JBL,JSTART,JBLEN
 INTEGER     :: IDX,JTOP,JDX,K,I,J,IEND,JEND
-REAL(REALK) :: GAOMAX,DMAX
+REAL(REALK) :: DMAX,GAOMAXTMP
 INTEGER     :: NRED,JRED,IRED,idmat,offset
 INTEGER,pointer :: INXRED(:)
 call mem_dft_alloc(INXRED,NactBAS)
@@ -923,22 +926,24 @@ call mem_dft_alloc(INXRED,NactBAS)
 GAOMAX = 0.0E0_realk
 DO IBL=1, NBLOCKS
    DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
-      GAOGMX(I) = 0.0E0_realk
+      GAOMAXTMP = 0.0E0_realk
       DO K = 1, NVCLEN
-         GAOMAX = MAX(GAOMAX,ABS(GAO(K,I,1)))
+         GAOMAXTMP = MAX(GAOMAXTMP,ABS(GAO(K,I,1)))
       ENDDO
-      GAOGMX(I) = MAX(GAOGMX(I),GAOMAX)
+      GAOGMX(I) = GAOMAXTMP
+      GAOMAX = MAX(GAOMAX,GAOMAXTMP)
    ENDDO
 ENDDO
+
 IF(NDMAT.GT.1)THEN
-   !       Set up maximum density-matrix elements
+   ! Set up maximum density-matrix elements
    DMAX = 0.0E0_realk
-   DO JBL=1, NBLOCKS
-    JSTART = BLOCKS(1,JBL)
-    JEND = BLOCKS(2,JBL)
-    DO IBL=1, NBLOCKS
-     ISTART = BLOCKS(1,IBL)
-     IEND = BLOCKS(2,IBL)
+   DO IBL=1, NBLOCKS
+    ISTART = BLOCKS(1,IBL)
+    IEND = BLOCKS(2,IBL)
+    DO JBL=1, IBL  !assume symmetric density matrix
+     JSTART = BLOCKS(1,JBL)
+     JEND = BLOCKS(2,JBL)
      DO IDMAT=1,NDMAT
       DO J = JSTART, JEND
        DO I = ISTART, IEND
@@ -949,14 +954,14 @@ IF(NDMAT.GT.1)THEN
     ENDDO
    ENDDO
 ELSE
-   !       Set up maximum density-matrix elements
+   ! Set up maximum density-matrix elements
    DMAX = 0.0E0_realk
-   DO JBL=1, NBLOCKS
-    JSTART = BLOCKS(1,JBL)
-    JEND = BLOCKS(2,JBL)
-    DO IBL=1, NBLOCKS
-     ISTART = BLOCKS(1,IBL)
-     IEND = BLOCKS(2,IBL)
+   DO IBL=1, NBLOCKS
+    ISTART = BLOCKS(1,IBL)
+    IEND = BLOCKS(2,IBL)
+    DO JBL=1, IBL  !assume symmetric density matrix
+     JSTART = BLOCKS(1,JBL)
+     JEND = BLOCKS(2,JBL)
      DO J = JSTART, JEND
       DO I = ISTART, IEND
        DMAX = MAX(DMAX,ABS(DMAT(I,J,1)))
@@ -981,21 +986,21 @@ ENDDO
 
 IF (NRED.GT. 0) THEN
    DO IDMAT=1,NDMAT
-      !         Set up reduced density-matrix
+      ! Set up reduced density-matrix
       DO JRED=1,NRED
          J = INXRED(JRED)
          offset = (JRED-1)*NRED
          DO IRED=1,NRED
             I = INXRED(IRED)
             DRED(IRED+offset) = DMAT(I,J,IDMAT)
-            !            DRED(IRED,JRED) = DMAT(I,J,IDMAT)
+            ! DRED(IRED,JRED) = DMAT(I,J,IDMAT)
          ENDDO
       ENDDO
-      !         First half-contraction of Gaussian AO with density-matrix
+      ! First half-contraction of Gaussian AO with density-matrix
       CALL DGEMM("N","N",NVCLEN,NRED,NRED,1E0_realk,GAORED,NVCLEN,&
            &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
       !           &     DRED(1:NRED*NRED),NRED,0.0E0_realk,TMP,NVCLEN)
-      !         Second half-contraction
+      ! Second half-contraction
       DO K = 1, NVCLEN
          RHO(K,IDMAT)= GAORED(K,1)*TMP(K,1)
       END DO
@@ -1004,9 +1009,9 @@ IF (NRED.GT. 0) THEN
             RHO(K,IDMAT)    = RHO(K,IDMAT) + GAORED(K,I)*TMP(K,I)
          END DO
       END DO
-      !Hack Severeal functionals does not handle a zero density - so
-      !     we set these values explicitly to some small value.
-      !     Should instead skip these contributions.
+      ! Hack Severeal functionals does not handle a zero density - so
+      ! we set these values explicitly to some small value.
+      ! Should instead skip these contributions.
       DO K = 1, NVCLEN
          IF (ABS(RHO(K,IDMAT)).LE. 1.0E-20_realk) RHO(K,IDMAT) = 1.0E-20_realk
       END DO
@@ -1033,19 +1038,19 @@ END SUBROUTINE II_GETRHO_BLOCKED_LDA
 !>     assert(NTYPSO>=NRHO)
 !>
 SUBROUTINE II_GETRHO_BLOCKED_GGA(LUPRI,DMAT,NactBAS,GAO,NTYPSO,NBLOCKS,MAXNSHELL,BLOCKS,&
-     & NVCLEN,NDMAT,RHO,GRAD,RHOTHR,MXBLLEN,DRED,GAOGMX,GAORED,TMP)
+     & NVCLEN,NDMAT,RHO,GRAD,RHOTHR,MXBLLEN,DRED,GAOGMX,GAOMAX,GAORED,TMP,maxNactBAST)
 IMPLICIT NONE
 INTEGER,intent(in)     :: NactBAS,NVCLEN,NBLOCKS,NTYPSO,LUPRI,ndmat,MXBLLEN,MAXNSHELL!,nbast
 REAL(REALK),intent(in) :: DMAT(NactBAS,NactBAS,ndmat), GAO(NVCLEN,NactBAS,NTYPSO)
-INTEGER,intent(in)     :: BLOCKS(2,MAXNSHELL)
+INTEGER,intent(in)     :: BLOCKS(2,MAXNSHELL),MaxNactBast
 REAL(REALK),intent(inout) :: RHO(MXBLLEN,NDMAT), GRAD(3,MXBLLEN,NDMAT)
 REAL(REALK),intent(inout) :: DRED(NactBAS*NactBAS)
-REAL(REALK),intent(inout) :: GAOGMX(NactBAS)
+REAL(REALK),intent(inout) :: GAOGMX(maxNactBAST),GAOMAX
 REAL(REALK),intent(inout) :: GAORED(NVCLEN,NactBAS,4)
 REAL(REALK),intent(inout) :: TMP(NVCLEN,NactBAS)
 !
-REAL(REALK) :: GAOMAX,DMAX,RHOTHR
-INTEGER :: INXRED(NactBAS)
+REAL(REALK) :: DMAX,RHOTHR,GAOMAXTMP
+INTEGER     :: INXRED(NactBAS)
 INTEGER     :: IBL,ISTART,IBLEN,JBL,JSTART,JBLEN,IDX,JTOP,JDX
 INTEGER     :: K,I,J,NRED,JRED,IRED,idmat,offset,JEND,IEND
 
@@ -1053,20 +1058,24 @@ INTEGER     :: K,I,J,NRED,JRED,IRED,idmat,offset,JEND,IEND
 GAOMAX = 0.0E0_realk
 DO IBL=1, NBLOCKS
    DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
-      GAOGMX(I) = 0.0E0_realk
-      DO J=1,4
+      GAOMAXTMP = 0.0E0_realk
+      DO K = 1, NVCLEN
+         GAOMAXTMP = MAX(GAOMAXTMP,ABS(GAO(K,I,1)))
+      ENDDO
+      GAOMAX = MAX(GAOMAX,GAOMAXTMP)
+      DO J=2,4
          DO K = 1, NVCLEN
-            GAOMAX = MAX(GAOMAX,ABS(GAO(K,I,J)))
+            GAOMAXTMP = MAX(GAOMAXTMP,ABS(GAO(K,I,J)))
          ENDDO
       ENDDO
-      GAOGMX(I) = MAX(GAOGMX(I),GAOMAX)
+      GAOGMX(I) = GAOMAXTMP
    ENDDO
 ENDDO
 ! Set up maximum density-matrix elements
 DMAX = 0.0E0_realk
 DO IDMAT=1,NDMAT
- DO JBL=1, NBLOCKS
-  DO IBL=1, NBLOCKS
+ DO IBL=1, NBLOCKS
+  DO JBL=1, IBL  !assume symmetric density matrix
     DO J = BLOCKS(1,JBL),BLOCKS(2,JBL)
      DO I = BLOCKS(1,IBL),BLOCKS(2,IBL)
       DMAX = MAX(DMAX,ABS(DMAT(I,J,IDMAT)))
@@ -1167,18 +1176,18 @@ END SUBROUTINE II_GETRHO_BLOCKED_GGA
 !>     assert(NTYPSO>=NRHO)
 !>
 SUBROUTINE II_GETRHO_BLOCKED_META(LUPRI,DMAT,NactBAS,GAO,NTYPSO,NBLOCKS,MAXNSHELL,BLOCKS,&
-     & NVCLEN,NDMAT,RHO,GRAD,TAU,RHOTHR,MXBLLEN,DRED,GAOGMX,GAORED,TMP)
+     & NVCLEN,NDMAT,RHO,GRAD,TAU,RHOTHR,MXBLLEN,DRED,GAOGMX,GAOMAX,GAORED,TMP,maxNactBAST)
 IMPLICIT NONE
 INTEGER,intent(in)     :: NactBAS,NVCLEN,NBLOCKS,NTYPSO,LUPRI,ndmat,MXBLLEN,MAXNSHELL!,nbast
 REAL(REALK),intent(in) :: DMAT(NactBAS,NactBAS,ndmat), GAO(NVCLEN,NactBAS,NTYPSO)
-INTEGER,intent(in)     :: BLOCKS(2,MAXNSHELL)
+INTEGER,intent(in)     :: BLOCKS(2,MAXNSHELL),MaxNactBast
 REAL(REALK),intent(inout) :: RHO(MXBLLEN,NDMAT), GRAD(3,MXBLLEN,NDMAT), TAU(MXBLLEN,NDMAT)
 REAL(REALK),intent(inout) :: DRED(NactBAS*NactBAS)
-REAL(REALK),intent(inout) :: GAOGMX(NactBAS)
+REAL(REALK),intent(inout) :: GAOGMX(maxNactBAST),GAOMAX
 REAL(REALK),intent(inout) :: GAORED(NVCLEN,NactBAS,4)
 REAL(REALK),intent(inout) :: TMP(NVCLEN,NactBAS,4)
 !
-REAL(REALK) :: GAOMAX,DMAX,RHOTHR
+REAL(REALK) :: DMAX,RHOTHR,GAOMAXTMP
 INTEGER :: INXRED(NactBAS)
 INTEGER     :: IBL,ISTART,IBLEN,JBL,JSTART,JBLEN,IDX,JTOP,JDX
 INTEGER     :: K,I,J,NRED,JRED,IRED,idmat,offset,JEND,IEND
@@ -1187,15 +1196,20 @@ INTEGER     :: K,I,J,NRED,JRED,IRED,idmat,offset,JEND,IEND
 GAOMAX = 0.0E0_realk
 DO IBL=1, NBLOCKS
    DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
-      GAOGMX(I) = 0.0E0_realk
-      DO J=1,4
+      GAOMAXTMP = 0.0E0_realk
+      DO K = 1, NVCLEN
+         GAOMAXTMP = MAX(GAOMAXTMP,ABS(GAO(K,I,1)))
+      ENDDO
+      GAOMAX = MAX(GAOMAX,GAOMAXTMP)
+      DO J=2,4
          DO K = 1, NVCLEN
-            GAOMAX = MAX(GAOMAX,ABS(GAO(K,I,J)))
+            GAOMAXTMP = MAX(GAOMAXTMP,ABS(GAO(K,I,J)))
          ENDDO
       ENDDO
-      GAOGMX(I) = MAX(GAOGMX(I),GAOMAX)
+      GAOGMX(I) = GAOMAXTMP
    ENDDO
 ENDDO
+
 ! Set up maximum density-matrix elements
 DMAX = 0.0E0_realk
 DO IDMAT=1,NDMAT
