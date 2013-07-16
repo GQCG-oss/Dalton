@@ -3390,8 +3390,8 @@ contains
 
           end if
 
-          write (DECinfo%output, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")') &
-                              &infpar%lg_mynum,alphaB,nbatchesAlpha,gammaB,nbatchesGamma
+!          write (DECinfo%output, '("Rank(T) ",I3," starting job (",I3,"/",I3,",",I3,"/",I3,")")'),infpar%lg_mynum,alphaB,&
+!                          &nbatchesAlpha,gammaB,nbatchesGamma
 
 #endif
 
@@ -3406,23 +3406,26 @@ contains
                & batchsizeAlpha(alphaB),batchsizeGamma(gammaB),nbasis,nbasis,dimAlpha,dimGamma,&
                & FullRHS,nbatches,INTSPEC)
 
-          ! tmp2(delta,alphaB,gammaB;A) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T [Cvirt(beta,A)}^T
+          ! tmp2(delta,alphaB,gammaB;A) = sum_{beta} [tmp1(beta;delta,alphaB,gammaB)]^T Cvirt(beta,A)
           m = nbasis*dimGamma*dimAlpha
           k = nbasis
           n = nvirt
-          call dec_simple_dgemm(m,k,n,tmp1,CvirtT,tmp2,'T','T')
+!          call dec_simple_dgemm(m,k,n,tmp1,CvirtT,tmp2,'T','T')
+          call dgemm('T','N',m,n,k,1.0E0_realk,tmp1,k,Cvirt,k,0.0E0_realk,tmp2,m)
 
           ! tmp3(B;alphaB,gammaB,A) = sum_{delta} CvirtT(B,delta) tmp2(delta;alphaB,gammaB,A)
           m = nvirt
           k = nbasis
           n = dimAlpha*dimGamma*nvirt
-          call dec_simple_dgemm(m,k,n,CvirtT,tmp2,tmp3,'N','N')
+!          call dec_simple_dgemm(m,k,n,CvirtT,tmp2,tmp3,'N','N')
+          call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT,m,tmp2,k,0.0E0_realk,tmp3,m)
 
-          ! tmp1(I;,alphaB,gammaB,A) = sum_{delta} [Cocc(delta,I)]^T tmp2(delta,alphaB,gammaB,A)
+          ! tmp1(I;,alphaB,gammaB,A) = sum_{delta} CoccT(I,delta) tmp2(delta,alphaB,gammaB,A)
           m = nocc
           k = nbasis
           n = dimAlpha*dimGamma*nvirt
-          call dec_simple_dgemm(m,k,n,CoccT,tmp2,tmp1,'N','N')
+!          call dec_simple_dgemm(m,k,n,CoccT,tmp2,tmp1,'N','N')
+          call dgemm('N','N',m,n,k,1.0E0_realk,CoccT,m,tmp2,k,0.0E0_realk,tmp1,m)
 
           ! Reorder: tmp1(I,alphaB;gammaB,A) --> tmp2(gammaB,A;I,alphaB)
           m = nocc*dimAlpha
@@ -3433,21 +3436,26 @@ contains
           m = nocc
           k = dimGamma
           n = nvirt*nocc*dimAlpha
-          call dec_simple_dgemm(m,k,n,CoccT(1:nocc,GammaStart:GammaEnd),tmp2,tmp1,'N','N')
+!          call dec_simple_dgemm(m,k,n,CoccT(1:nocc,GammaStart:GammaEnd),tmp2,tmp1,'N','N')
+          call dgemm('N','N',m,n,k,1.0E0_realk,CoccT(1:nocc,GammaStart:GammaEnd),m,tmp2,k,0.0E0_realk,tmp1,m)
 
-          ! JAIK(J,A,I;K) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) [CoccT(K,alpha)]^T
+          ! JAIK(J,A,I;K) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cocc(alpha,K)
           m = nvirt*nocc**2
           k = dimAlpha
           n = nocc
-          call dec_simple_dgemm_update(m,k,n,tmp1,&
-                                     & CoccT(1:nocc,AlphaStart:AlphaEnd),JAIK%val,'N','T')
+!          call dec_simple_dgemm_update(m,k,n,tmp1,&
+!                                     & CoccT(1:nocc,AlphaStart:AlphaEnd),JAIK%val,'N','T')
+!          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart:AlphaEnd,1:nocc),k,1.0E0_realk,JAIK%val,m)
+          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cocc(AlphaStart:,:),nbasis-AlphaStart+1,1.0E0_realk,JAIK%val,m)
 
-          ! JAIB(J,A,I;B) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) [CvirtT(B,alpha)]^T
+          ! JAIB(J,A,I;B) += sum_{alpha in alphaB} tmp1(J,A,I,alpha) Cvirt(alpha,B)
           m = nvirt*nocc**2
           k = dimAlpha
           n = nvirt
-          call dec_simple_dgemm_update(m,k,n,tmp1,&
-                                     & CvirtT(1:nvirt,AlphaStart:AlphaEnd),JAIB%val,'N','T')
+!          call dec_simple_dgemm_update(m,k,n,tmp1,&
+!                                     & CvirtT(1:nvirt,AlphaStart:AlphaEnd),JAIB%val,'N','T')
+!          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart:AlphaEnd,1:nvirt),k,1.0E0_realk,JAIB%val,m)
+          call dgemm('N','N',m,n,k,1.0E0_realk,tmp1,m,Cvirt(AlphaStart:,:),nbasis-AlphaStart+1,1.0E0_realk,JAIB%val,m)
 
           ! Reorder: tmp3(B,alphaB;gammaB,A) --> tmp1(gammaB,A;B,alphaB)
           m = nvirt*dimAlpha
@@ -3458,7 +3466,8 @@ contains
           m = nvirt
           k = dimGamma
           n = dimAlpha*nvirt**2
-          call dec_simple_dgemm(m,k,n,CvirtT(1:nvirt,GammaStart:GammaEnd),tmp1,tmp3,'N','N')
+!          call dec_simple_dgemm(m,k,n,CvirtT(1:nvirt,GammaStart:GammaEnd),tmp1,tmp3,'N','N')
+          call dgemm('N','N',m,n,k,1.0E0_realk,CvirtT(:,GammaStart:),m,tmp1,k,0.0E0_realk,tmp3,m)
 
           ! reorder tmp1 and do CBAI(B,A,C,I) += sum_{i in IB} tmp1(B,A,C,i)
           m = nvirt**3
@@ -3469,8 +3478,9 @@ contains
 
           do i=1,nocc
 
-             ! tmp1(C,A,B,i) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) [CoccT(i,alpha)]^T
-             call dec_simple_dgemm(m,k,n,tmp3,CoccT(i,AlphaStart:AlphaEnd),tmp1,'N','T')
+             ! tmp1(C,A,B,i) = sum_{alpha in alphaB} tmp3(C,A,B,alpha) Cocc(alpha,i)
+!             call dec_simple_dgemm(m,k,n,tmp3,CoccT(i,AlphaStart:AlphaEnd),tmp1,'N','T')
+             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart:,i),nbasis-AlphaStart+1,0.0E0_realk,tmp1,m)
 
              ! *** tmp1 corresponds to (AB|iC) in Mulliken notation. Noting that the v³o integrals
              ! are normally written as g_{AIBC}, we may also write this Mulliken integral (with substitution
@@ -3493,7 +3503,8 @@ contains
           do i=1,nocc
 
              ! for description, see mpi section above
-             call dec_simple_dgemm(m,k,n,tmp3,CoccT(i,AlphaStart:AlphaEnd),tmp1,'N','T')
+!             call dec_simple_dgemm(m,k,n,tmp3,CoccT(i,AlphaStart:AlphaEnd),tmp1,'N','T')
+             call dgemm('N','N',m,n,k,1.0E0_realk,tmp3,m,Cocc(AlphaStart:,i),nbasis-AlphaStart+1,0.0E0_realk,tmp1,m)
 
              call array_reorder_3d(1.0E0_realk,tmp1,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,CBAI%elm4(:,:,:,i))
 
@@ -3685,31 +3696,9 @@ contains
  
 #ifdef VAR_MPI
 
-    if (infpar%lg_mynum .eq. infpar%master) then
+    if (infpar%lg_mynum .ne. infpar%master) goto 666
 
-       write(DECinfo%output,*)
-       write(DECinfo%output,*)
-       write(DECinfo%output,*) '======================================================================='
-       write(DECinfo%output,*) '                     CCSD(T) INTEGRALS: MEMORY SUMMARY                 '
-       write(DECinfo%output,*) '======================================================================='
-       write(DECinfo%output,*)
-       write(DECinfo%output,*) 'To be on the safe side we use only 85% of the estimated available memory'
-       write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,g10.3)') '85% of available memory (GB)            =', MemoryAvailable
-       write(DECinfo%output,*)
-       write(DECinfo%output,'(1X,a,i8)')    'Number of atomic basis functions        =', nbasis
-       write(DECinfo%output,'(1X,a,i8)')    'Number of occupied orbitals             =', nocc
-       write(DECinfo%output,'(1X,a,i8)')    'Number of virtual  orbitals             =', nvirt
-       write(DECinfo%output,'(1X,a,i8)')    'Maximum alpha batch dimension           =', alphadim
-       write(DECinfo%output,'(1X,a,i8)')    'Maximum gamma batch dimension           =', gammadim
-       write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 1                     =', size1*realk*1.0E-9
-       write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9
-       write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
-       write(DECinfo%output,*)
-
-    end if
-
-#else
+#endif
 
     write(DECinfo%output,*)
     write(DECinfo%output,*)
@@ -3730,9 +3719,13 @@ contains
     write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 2                     =', size2*realk*1.0E-9
     write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
     write(DECinfo%output,*)
+  
+#ifdef VAR_MPI
+
+666 continue
 
 #endif
-  
+
     ! Sanity check
     call get_max_arraysizes_for_ccsdpt_integrals(alphadim,gammadim,nbasis,nocc,nvirt,&
          & size1,size2,size3,MemoryNeeded)  
@@ -3784,9 +3777,10 @@ contains
     size1 = max(size1,i8*nvirt*nocc**2*alphadim)
     size1 = max(size1,i8*nvirt**3)
   
-    ! tmp array 2 (two candidates)
+    ! tmp array 2 (three candidates)
     size2 = i8*alphadim*gammadim*nbasis*nvirt
-    size2 = max(size2,size1)
+    size2 = max(size2,alphadim*gammadim*nvirt*nocc)
+    size2 = max(size2,i8*nvirt**3)
   
     ! Tmp array3 (two candidates)
     size3 = i8*alphadim*gammadim*nvirt**2
