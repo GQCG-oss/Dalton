@@ -1003,8 +1003,8 @@ write(lupri,'(A80,2F18.10)') 'Overlap Hessian: RMS and index-weighted sum',&
 
 deallocate(eri)
 nullify(eri)
-allocate(eri(nbast,nbast,nbast,nbast,27*nAtoms*nAtoms*nAtoms))
-call ls_dzero(eri,nbast*nbast*nbast*nbast*27*nAtoms*nAtoms*nAtoms)
+allocate(eri(nbast,nbast,1,1,27*nAtoms*nAtoms*nAtoms))
+call ls_dzero(eri,nbast*nbast*1*1*27*nAtoms*nAtoms*nAtoms)
 
 CALL LSlib_get_1el_geoderiv(eri,'overlap',nbast,nAtoms,3,27*nAtoms*nAtoms*nAtoms,lupri,luerr)
 
@@ -1050,7 +1050,7 @@ DO n=1,nAtoms
             iCubic = iCubic+1
             tmp1=tmp1+TempCubic(z,o,y,m,x,n,1)*TempCubic(z,o,y,m,x,n,1)
             tmp2=tmp2+TempCubic(z,o,y,m,x,n,1)*iCubic
-!write(*,'(A,7I4,F21.9)') 'debug:overlapHess:',iCubic,o,m,n,z,y,x,TempCubic(z,o,y,m,x,n,1)
+!write(*,'(A,7I4,F21.9)') 'debug:overlapHess:',iCubic,z,o,y,m,x,n,TempCubic(z,o,y,m,x,n,1)
           ENDDO
         ENDDO
       ENDDO
