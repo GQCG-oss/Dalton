@@ -1368,7 +1368,7 @@ CASE(GradientSpec)
    INT_INPUT%geoderOrderP  = 1
    INT_INPUT%geoderOrderQ  = 0
    INT_INPUT%sameODs       = .FALSE.
-   INT_INPUT%NGEODERIVCOMP = getTotalGeoComp(1,.TRUE.,.FALSE.,singleP,singleQ)
+   INT_INPUT%NGEODERIVCOMP = getTotalGeoComp(1,.TRUE.,.FALSE.,singleP,singleQ,emptyP,emptyQ)
    INT_INPUT%AddToIntegral = .TRUE.
    INT_INPUT%GEODERIVORDER = max(INT_INPUT%geoderOrderP,INT_INPUT%geoderOrderQ)
 
@@ -1378,7 +1378,7 @@ CASE(GeoDerivLHSSpec)
    INT_INPUT%geoderOrderP  = 1
    INT_INPUT%geoderOrderQ  = 0
    INT_INPUT%sameODs       = .FALSE.
-   INT_INPUT%NGEODERIVCOMP = getTotalGeoComp(1,.TRUE.,.FALSE.,singleP,singleQ)
+   INT_INPUT%NGEODERIVCOMP = getTotalGeoComp(1,.TRUE.,.FALSE.,singleP,singleQ,emptyP,emptyQ)
    INT_INPUT%AddToIntegral = .TRUE.
    INT_INPUT%GEODERIVORDER = max(INT_INPUT%geoderOrderP,INT_INPUT%geoderOrderQ)
 CASE(GeoDerivRHSSpec)
@@ -1386,7 +1386,7 @@ CASE(GeoDerivRHSSpec)
    INT_INPUT%geoderOrderP  = 0
    INT_INPUT%geoderOrderQ  = 1
    INT_INPUT%sameODs       = .FALSE.
-   INT_INPUT%NGEODERIVCOMP = getTotalGeoComp(1,.FALSE.,.TRUE.,singleP,singleQ)
+   INT_INPUT%NGEODERIVCOMP = getTotalGeoComp(1,.FALSE.,.TRUE.,singleP,singleQ,emptyP,emptyQ)
    INT_INPUT%AddToIntegral = .TRUE.
    INT_INPUT%GEODERIVORDER = max(INT_INPUT%geoderOrderP,INT_INPUT%geoderOrderQ)
 CASE(GeoDerivSpec)
@@ -1394,7 +1394,7 @@ CASE(GeoDerivSpec)
    INT_INPUT%geoderOrderP  = geoOrder
    INT_INPUT%geoderOrderQ  = geoOrder
 !  INT_INPUT%sameODs       = .FALSE.
-   INT_INPUT%NGEODERIVCOMP = getTotalGeoComp(geoOrder,.TRUE.,.TRUE.,singleP,singleQ)
+   INT_INPUT%NGEODERIVCOMP = getTotalGeoComp(geoOrder,.TRUE.,.TRUE.,singleP,singleQ,emptyP,emptyQ)
    INT_INPUT%AddToIntegral = .TRUE.
    INT_INPUT%GEODERIVORDER = max(INT_INPUT%geoderOrderP,INT_INPUT%geoderOrderQ)
 CASE(GeoDerivCoulombSpec)
@@ -1402,7 +1402,7 @@ CASE(GeoDerivCoulombSpec)
    INT_INPUT%geoderOrderP  = 1
    INT_INPUT%geoderOrderQ  = 0
    INT_INPUT%sameODs       = .FALSE.
-   INT_INPUT%NGEODERIVCOMP = getTotalGeoComp(1,.TRUE.,.FALSE.,singleP,singleQ)
+   INT_INPUT%NGEODERIVCOMP = getTotalGeoComp(1,.TRUE.,.FALSE.,singleP,singleQ,emptyP,emptyQ)
    INT_INPUT%AddToIntegral = .TRUE.
    INT_INPUT%GEODERIVORDER = max(INT_INPUT%geoderOrderP,INT_INPUT%geoderOrderQ)
    INT_INPUT%DO_FOCK = .TRUE.
@@ -4122,7 +4122,7 @@ Integer               :: nAObuilds
 Integer               :: MMunique_ID1,MMunique_ID2,sA,sB
 TYPE(INTEGRALINPUT)   :: INT_INPUT
 TYPE(INTEGRALOUTPUT)  :: INT_OUTPUT
-Logical               :: singleP
+Logical               :: singleP,emptyP
 
 CALL init_integral_input(INT_INPUT,SETTING)
 INT_INPUT%LU_MMDATA = SETTING%SCHEME%LU_LUINTM
@@ -4172,7 +4172,8 @@ IF(INT_OUTPUT%DOGRAD) THEN
    INT_INPUT%GEODERIVORDER = 1
    singleP                 = ((AO1.EQ.AOEmpty).OR.(AO2.EQ.AOEmpty)).AND.&
      &                        .NOT.((AO1.EQ.AOEmpty).AND.(AO2.EQ.AOEmpty))
-   INT_INPUT%NGEODERIVCOMP = getTotalGeoComp(1,.TRUE.,.FALSE.,singleP,.FALSE.)
+   emptyP = (AO1.EQ.AOEmpty).AND.(AO2.EQ.AOEmpty)
+   INT_INPUT%NGEODERIVCOMP = getTotalGeoComp(1,.TRUE.,.FALSE.,singleP,.FALSE.,emptyP,.TRUE.)
 
    IF ((AO1.EQ.AOEmpty).AND.(AO2.EQ.AOEmpty)) THEN
      CALL LSQUIT('Error in MM_Kernel DO_GRADIENT and AO1=AO2="Empty"',-1)

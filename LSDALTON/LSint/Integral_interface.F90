@@ -2600,7 +2600,7 @@ case ('nucel')
   Oper = NucpotOperator
 case ('overlap')
   Oper = OverlapOperator
-  intSpec = GeoDerivLHSSpec
+! intSpec = GeoDerivLHSSpec
 case ('kinetic')
   n2   = 1
   n3   = dim2

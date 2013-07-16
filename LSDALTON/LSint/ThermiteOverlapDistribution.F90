@@ -4608,16 +4608,16 @@ call ADD_BUFCOUNTERS(3,nint,nrealk)
 
 END SUBROUTINE MEM_PASS_FROM_OVERLAP
 
-INTEGER FUNCTION getTotalGeoComp(derOrder,LHS,RHS,singleP,singleQ)
+INTEGER FUNCTION getTotalGeoComp(derOrder,LHS,RHS,singleP,singleQ,emptyP,emptyQ)
 implicit none
 Integer,intent(IN) :: derOrder
-Logical,intent(IN) :: singleP,singleQ,LHS,RHS
+Logical,intent(IN) :: singleP,singleQ,LHS,RHS,emptyP,emptyQ
 Integer :: iOrder,geoComp,startLHS,endLHS
 geoComp=0
 startLHS = 0
 endLHS   = derOrder
-IF (.NOT.LHS) endLHS   = 0
-IF (.NOT.RHS) startLHS = derORder
+IF (.NOT.LHS.OR.emptyP) endLHS   = 0
+IF (.NOT.RHS.OR.emptyQ) startLHS = derORder
 
 DO iOrder=startLHS,endLHS
   geoComp = geoComp + getODgeoComp(iOrder,singleP)*getODgeoComp(derOrder-iOrder,singleQ)

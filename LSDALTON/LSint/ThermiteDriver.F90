@@ -564,7 +564,7 @@ ELSEIF (DO_INTEREST) THEN
 #endif
 ELSE
 !  Settings for derivative loop structure
-   call getInputDerivativeInfo(derOrder,startDer,endDer,input)
+   call getInputDerivativeInfo(derOrder,startDer,endDer,input,P%TYPE_Empty,Q%TYPE_Empty)
    
    CALL Build_Integrand(PQ,P,Q,INPUT,ILHS,IRHS,LUPRI,IPRINT)
    !   Hermite 2-electron integral over general operator w
@@ -7496,18 +7496,6 @@ DO iLHS=0,Alloc%maxAngmomLHS
 ENDDO
 
 END subroutine getIntegralDimsJengine2
-
-SUBROUTINE getInputDerivativeInfo(derOrder,startDer,endDer,input)
-implicit none
-Integer,intent(OUT)            :: derOrder,startDer,endDer
-TYPE(integralinput),intent(IN) :: input
-  derOrder = input%GEODERIVORDER
-  startDer = 0
-  endDer   = derOrder
-  IF (INPUT%geoderOrderP.EQ.0) endDer = 0           !Ie. iDerLHS = 0,        iDerRHS = derOrder
-  IF (INPUT%geoderOrderQ.EQ.0) startDer = derOrder  !Ie. iDerLHS = derOrder, iDerRHS = 0
-
-END SUBROUTINE getInputDerivativeInfo
 
 SUBROUTINE setIntegralDerivativOrders(Integral,iDerLHS,derOrder,singleP,singleQ)
 implicit none

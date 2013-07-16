@@ -674,8 +674,8 @@ Type(integrand),intent(in)          :: PQ
 Type(IntegralInput),intent(in)      :: Input
 Type(derivativeInfo), intent(INOUT) :: derivInfo
 !
-Logical :: emptyA,emptyB,emptyC,emptyD,singleP,singleQ
-Integer :: iP,iQ,nP,nQ,n,derP,derQ,nDer,iDerP,iDer,iDeriv
+Logical :: emptyA,emptyB,emptyC,emptyD,singleP,singleQ,emptyP,emptyQ
+Integer :: iP,iQ,nP,nQ,n,derP,derQ,nDer,iDerP,iDer,iDeriv,startDer,endDer
 !
 derivInfo%atom = 0
 !
@@ -703,20 +703,23 @@ emptyA=PQ%P%p%orbital1%type_empty
 emptyB=PQ%P%p%orbital2%type_empty
 emptyC=PQ%Q%p%orbital1%type_empty
 emptyD=PQ%Q%p%orbital2%type_empty
+emptyP  = emptyA.AND.emptyB
+emptyQ  = emptyC.AND.emptyD
 singleP = (emptyA.OR.emptyB).AND..NOT.(emptyA.AND.emptyB)
 singleQ = (emptyC.OR.emptyD).AND..NOT.(emptyC.AND.emptyD)
 
 derP = Input%geoderorderP
 derQ = Input%geoderorderQ
 nDer = Input%geoderivorder
-n    = getTotalGeoComp(nDer,derP.GT.0,derQ.GT.0,singleP,singleQ)
+n    = getTotalGeoComp(nDer,derP.GT.0,derQ.GT.0,singleP,singleQ,emptyP,emptyQ)
+call getInputDerivativeInfo(nDer,startDer,endDer,input,emptyP,emptyQ)
 derivInfo%ngeoderivcomp = nDer
 derivInfo%derivComp     = n
 call mem_alloc(derivInfo%dirComp,nDer,n)
 call mem_alloc(derivInfo%AO,nDer,n)
 
 iDeriv = 0
-DO iDer=nDer,0,-1
+DO iDer=endDer,startDer,-1
   iP = iDer
   iQ = nDer - iDer
   IF (iP.GT.derP) CYCLE
@@ -3406,6 +3409,20 @@ ENDDO
 END SUBROUTINE JCONT_ABCD2
 
 END SUBROUTINE distributeJcont
+
+SUBROUTINE getInputDerivativeInfo(derOrder,startDer,endDer,input,emptyP,emptyQ)
+implicit none
+Integer,intent(OUT)            :: derOrder,startDer,endDer
+TYPE(integralinput),intent(IN) :: input
+Logical,intent(IN)             :: emptyP,emptyQ
+
+  derOrder = input%GEODERIVORDER
+  startDer = 0
+  endDer   = derOrder
+  IF ((INPUT%geoderOrderP.EQ.0).OR.emptyP) endDer = 0           !Ie. iDerLHS = 0,        iDerRHS = derOrder
+  IF ((INPUT%geoderOrderQ.EQ.0).OR.emptyQ) startDer = derOrder  !Ie. iDerLHS = derOrder, iDerRHS = 0
+
+END SUBROUTINE getInputDerivativeInfo
 
 END MODULE thermite_distribute
 
