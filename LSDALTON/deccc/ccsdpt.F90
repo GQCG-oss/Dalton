@@ -76,7 +76,7 @@ contains
     integer :: i,j,k,idx,tuple_type
     !> mpi stuff
 #ifdef VAR_MPI
-    integer :: b_size,ntasks,nodtotal,ij,ij_count
+    integer :: b_size,ntasks,nodtotal,ij,ij_count,i_old,j_old
     integer, pointer :: ij_array(:),jobs(:)
 #endif
     !> orbital energies
@@ -228,8 +228,10 @@ contains
 
 #ifdef VAR_MPI
 
-    ! init ij
+    ! init ij and i_old/j_old
     ij = 0
+    i_old = 0
+    j_old = 0
 
  ijrun: do ij_count = 1,b_size + 1
 
@@ -242,19 +244,50 @@ contains
            ! calculate i and j from composite ij value
            call calc_i_and_j(ij,nocc,i,j)
 
-           ! ** need i_old and i=j checks!
+           ! has the i and j index changed?
+           if (i .eq. i_old) then
 
-           ! get the i'th and j'th v^3 tile
-           call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
-           call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
+              ! get the j'th v^3 tile only
+              call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
 
-          ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
-          call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
-                  & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
+              ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
+                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
 
-          ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
-          call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
-                  & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
+              ! store j index
+              j_old = j
+
+           else if (j .eq. j_old) then
+
+              ! get the i'th v^3 tile only
+              call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
+
+              ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
+                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
+
+              ! store i index
+              i_old = i
+
+           else
+
+              ! get the i'th and j'th v^3 tile
+              call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
+              call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
+
+              ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
+                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
+   
+              ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
+                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
+
+              ! store i and j indices
+              i_old = i
+              j_old = j
+
+           end if
 
 #else
 
