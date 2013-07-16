@@ -29,6 +29,8 @@ module scfloop_module
   use density_subspace_min!, only: density_subspace_minimization
   use trustradius_mod!, only: update_trustradius
   use arh_debugging!, only: debug_diag_full_hessian
+  private 
+  public :: scfloop, scf_afterplay
 CONTAINS
 !> \brief Contains the main SCF loop for LSDALTON
 !> \author T. Kjaergaard, S. Reine
