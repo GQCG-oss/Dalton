@@ -3694,7 +3694,7 @@ contains
     ! Print out and sanity check
     ! ==========================
  
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
     if (infpar%lg_mynum .ne. infpar%master) goto 666
 
@@ -3720,7 +3720,7 @@ contains
     write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
     write(DECinfo%output,*)
   
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
 666 continue
 
