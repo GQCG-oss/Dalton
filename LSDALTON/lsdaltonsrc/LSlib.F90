@@ -562,7 +562,7 @@ END SUBROUTINE LSlib_get_4center_eri_geoderiv
 !> \brief Calculates the differentiated 1-electron AO integrals
 !> \author S. Reine
 !> \date 2013-01-20
-!> \param eri The 4-center 2-electron AO integrals
+!> \param 1el The 2-center 1-electron AO integrals (for nucel the nucei are implictly summed)
 !> \param nbast The number of oribtals
 !> \param geoOrder The the geometry differential order (0 regular integrals, 1 first order integral derivatives, etc.)
 !> \param nGeoComp The number of derivative components (1 for 0th order, 3*nAtoms for 1st order, (3*nAtoms)**2 for 2nd, etc.)
@@ -573,7 +573,7 @@ END SUBROUTINE LSlib_get_4center_eri_geoderiv
 !> Note that if both LSDALTON.OUT and LSDALTON.ERR are already open, and the -1 
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
-SUBROUTINE LSlib_get_nucel_geoderiv(nucel,nbast,nAtoms,geoOrder,nGeoComp,lupri,luerr)
+SUBROUTINE LSlib_get_1el_geoderiv(oneEl,oneElType,nbast,nAtoms,geoOrder,nGeoComp,lupri,luerr)
   use precision
   use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
@@ -586,8 +586,9 @@ SUBROUTINE LSlib_get_nucel_geoderiv(nucel,nbast,nAtoms,geoOrder,nGeoComp,lupri,l
   use memory_handling
 IMPLICIT NONE
 Integer,intent(in)      :: nbast,nAtoms,lupri,luerr
-Real(realk),intent(out) :: nucel(nbast,nbast,1,1,nGeoComp)
+Real(realk),intent(out) :: oneEl(nbast,nbast,1,1,nGeoComp)
 Integer,intent(IN)      :: geoOrder,nGeoComp
+Character(*),intent(IN) :: oneElType
 !
 type(lsitem)        :: ls
 Integer             :: nbasis
@@ -598,15 +599,15 @@ call config_set_default_config(config)
 call config_read_input(config,lupri,luerr)
 call ls_init(ls,lupri,luerr,nbasis,config%integral,.false.,.false.,.false.)
 
-IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_nucel_geoderiv. Basis-function mismatch',lupri)
+IF (nbasis.NE.nbast) CALL lsQUIT('Error in LSlib_get_1el_geoderiv. Basis-function mismatch',lupri)
 
-CALL II_get_nucel_diff(lupri,luerr,ls%setting,nucel,nbast,nbast,nGeoComp,geoderiv=geoOrder)
+CALL II_get_1el_diff(lupri,luerr,ls%setting,oneEl,oneElType,nbast,nbast,nGeoComp,geoderiv=geoOrder)
 
 call ls_free(ls)
 call config_shutdown(config)
 call config_free(config)
 
-END SUBROUTINE LSlib_get_nucel_geoderiv
+END SUBROUTINE LSlib_get_1el_geoderiv
 
 !> \brief Calculates the gradient of the nuclear potential
 !> \author S. Reine
