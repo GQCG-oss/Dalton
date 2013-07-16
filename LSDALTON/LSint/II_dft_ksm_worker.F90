@@ -40,7 +40,8 @@ END SUBROUTINE DFT_DOGGA_DOMETA
 !> Worker routine that for a batch of gridpoints build the LDA kohn-sham matrix
 !>
 SUBROUTINE II_DFT_KSMLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                   RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                   GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -50,6 +51,8 @@ INTEGER,intent(in) :: NBLEN
 INTEGER,intent(in) :: nBLOCKS
 !> Number of active basis functions
 INTEGER,intent(in) :: Nactbast
+!> Max Number of active basis functions
+INTEGER,intent(in) :: MaxNactbast
 !> Number of basis functions
 INTEGER,intent(in) :: Nbast
 !> Number of density matrices
@@ -85,6 +88,10 @@ REAL(REALK),intent(in) :: DFTHRI
 integer,intent(in)        :: WORKLENGTH
 !> tmp array to avoid allocation and deallocation of mem
 REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
 !
 REAL(REALK) :: VX(5),DFTENE
 INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
@@ -148,7 +155,8 @@ END SUBROUTINE II_DFT_KSMLDA
 !> Worker routine that for a batch of gridpoints build the unrestricted LDA kohn-sham matrix
 !>
 SUBROUTINE II_DFT_KSMLDAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                        RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                        GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -158,6 +166,7 @@ INTEGER,intent(in) :: NBLEN
 INTEGER,intent(in) :: nBLOCKS
 !> Number of active basis functions
 INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
 !> Number of basis functions
 INTEGER,intent(in) :: Nbast
 !> Number of density matrices
@@ -194,6 +203,10 @@ REAL(REALK),intent(in) :: DFTHRI
 integer,intent(in)        :: WORKLENGTH
 !> tmp array to avoid allocation and deallocation of mem
 REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
 !
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
 INTEGER     :: IPNT,I,J,IDMAT,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT1,IDMAT2
@@ -267,109 +280,12 @@ call lsquit('II_DFT_KSMLDAUNRES not implemented',-1)
 #endif
 END SUBROUTINE II_DFT_KSMLDAUNRES
 
-!> \brief main kohn-sham matrix driver
-!> \author T. Kjaergaard
-!> \date 2008
-!>
-!> routine that does the actual work see II_dft_ksm.tex
-!>
-SUBROUTINE II_DFT_DIST_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-     &                    COEF,GAOS,EXCMAT,DFTHRI,GAORED,EXCRED,GAOGMX,TMP)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> coefficient (combination of functional derivative)
-REAL(REALK),intent(in) :: COEF(NBLEN)
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAOS(NBLEN,NACTBAST)
-!> The Kohn-Sham matrix
-REAL(REALK),intent(inout) :: EXCMAT(NBAST,NBAST)
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-! TEMPORARY MEM FROM WORK
-REAL(REALK),intent(inout) :: TMP(NBLEN,NACTBAST) 
-REAL(REALK),intent(inout) :: GAOGMX(NACTBAST)
-REAL(REALK),intent(inout) :: GAORED(NBLEN,NactBAST)
-REAL(REALK),intent(inout) :: EXCRED(Nactbast*NactBAST)
-!REAL(REALK) :: GAOGMX(NACTBAST)
-!REAL(REALK) :: GAORED(NBLEN,NactBAST)
-!REAL(REALK),pointer :: TMP(:,:)!NBLEN,NACTBAST) 
-!REAL(REALK),pointer :: EXCRED(:,:)!Nactbast,NactBAST)
-!
-REAL(REALK) :: GAOMAX
-INTEGER     :: ISTART,IBL,I,ILEN,JBL,J,K,JSTART,JLEN,NRED
-INTEGER     :: INXRED(NACTBAST),IRED,JRED,offset
-
-NRED = 0 
-GAOMAX = 0.0E0_realk
-!        Set up maximum Gaussian AO elements
-DO JBL = 1, NBLOCKS
-   DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)
-      GAOGMX(J) = 0.0E0_realk
-      DO K = 1, NBLEN
-         GAOMAX = MAX(GAOMAX,ABS(GAOS(K,J)))
-         GAOGMX(J) = MAX(GAOGMX(J),ABS(GAOS(K,J)))
-      ENDDO
-   ENDDO
-ENDDO
-!        Set up reduced Gaussian AO's
-DO JBL = 1, NBLOCKS
-   DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)
-      IF (GAOGMX(J)*GAOMAX.GT.DFTHRI) THEN
-         NRED = NRED + 1
-         INXRED(NRED) = INXACT(J) 
-         DO K = 1, NBLEN
-            GAORED(K,NRED) = GAOS(K,J)
-         ENDDO
-      ENDIF
-   ENDDO
-ENDDO
-IF (NRED.GT. 0) THEN
-   !  First half-contraction of GAO's with potential
-!   call mem_dft_alloc(TMP,NBLEN,NRED)
-    DO J=1,NRED
-     DO K=1, NBLEN
-      TMP(K,J) =  coef(K)* GAORED(K,J)
-     ENDDO
-    ENDDO
-!   call mem_dft_alloc(EXCRED,NRED,NRED)
-   !  Second half-contraction of GAO's with potential
-!   call mem_dft_alloc(EXCRED,NRED,NRED)
-   CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,&
-        &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
-        &                EXCRED(1:NRED*NRED),NRED)
-   !  Distribute contributions to KS-matrix
-   DO JRED=1,NRED         !Jred is reduced index
-      J = INXRED(JRED)    !J is orbitalindex
-      offset = (JRED-1)*NRED
-      DO IRED=1,NRED      !Ired is reduced index
-         I = INXRED(IRED) !I is orbitalindex
-         EXCMAT(I,J) = EXCMAT(I,J) + EXCRED(IRED+offset)
-      ENDDO
-   ENDDO
-!   call mem_dft_dealloc(TMP)
-!   call mem_dft_dealloc(EXCRED)
-ENDIF
-
-END SUBROUTINE II_DFT_DIST_LDA
-
 !> \brief main closed shell GGA kohn-sham matrix driver
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DFT_KSMGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                   RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                   GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -379,6 +295,7 @@ INTEGER,intent(in) :: NBLEN
 INTEGER,intent(in) :: nBLOCKS
 !> Number of active basis functions
 INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
 !> Number of basis functions
 INTEGER,intent(in) :: Nbast
 !> Number of density matrices
@@ -415,6 +332,10 @@ REAL(REALK),intent(in) :: DFTHRI
 integer,intent(in)        :: WORKLENGTH
 !> tmp array to avoid allocation and deallocation of mem
 REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
 !
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D05 = 0.5E0_realk
 Real(realk), parameter :: D8 = 8.0E0_realk,D4 = 4.0E0_realk 
@@ -509,15 +430,13 @@ W2 = NBLEN*Nactbast*4                        !W1 - 1 + NBLEN*Nactbast*4 -> GAORE
 W3 = 4*NBLEN*Nactbast+1                      !W2 + 1
 W4 = (4*NBLEN+Nactbast)*Nactbast             !W3 - 1 + Nactbast*Nactbast  -> EXCRED
 W5 = (4*NBLEN+Nactbast)*Nactbast + 1         !W4 + 1 
-W6 = (4*NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
-W7 = (4*NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
-W8 = (5*NBLEN+Nactbast + 1) * Nactbast       !W7 - 1 + NBLEN*Nactbast    -> TMP
+W6 = (5*NBLEN+Nactbast)*Nactbast             !W5 - 1 + NBLEN*Nactbast    -> TMP
 #ifdef VAR_LSDEBUGINT
-IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDA',lupri)
+IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDA',lupri)
 #endif
 
 CALL II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,NactBast,NBAST,NTYPSO,NDMAT,&
-     & VXC,GAO,DFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
+     & VXC,GAO,DFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),GAOGMX,GAOMAX,WORK(W5:W6),MaxNactbast)
 call mem_dft_dealloc(VXC)
 
 END SUBROUTINE II_DFT_KSMGGA
@@ -526,7 +445,8 @@ END SUBROUTINE II_DFT_KSMGGA
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DFT_KSMMETA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                    RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                    GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -536,6 +456,7 @@ INTEGER,intent(in) :: NBLEN
 INTEGER,intent(in) :: nBLOCKS
 !> Number of active basis functions
 INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
 !> Number of basis functions
 INTEGER,intent(in) :: Nbast
 !> Number of density matrices
@@ -572,6 +493,10 @@ REAL(REALK),intent(in) :: DFTHRI
 integer,intent(in)        :: WORKLENGTH
 !> tmp array to avoid allocation and deallocation of mem
 REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
 !
 Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D05 = 0.5E0_realk
 Real(realk), parameter :: D8 = 8.0E0_realk
@@ -628,65 +553,12 @@ call mem_dft_dealloc(VXC)
 
 END SUBROUTINE II_DFT_KSMMETA
 
-SUBROUTINE LB94correction(rho,GRD,HFexchangeFac,WGHT,VX)
-implicit none
-REAL(REALK),intent(in)    :: rho,GRD,HFexchangeFac,WGHT
-REAL(REALK),intent(inout) :: VX
-Real(realk), parameter :: D3 = 3.0E0_realk,D05 = 0.5E0_realk
-Real(realk), parameter :: D005 = 0.05E0_realk,D1=1.0E0_realk,D08=0.8E0_realk
-REAL(REALK) :: scaled_grad,rho13,rho43,sg2,gdenom,g
-
-!LB94 correction
-rho13 = rho**(1.d0/3.d0)
-rho43 = rho13*rho
-IF(rho43.GT.1.0E-13_realk)THEN
-   scaled_grad = GRD/rho43
-ELSE
-   scaled_grad = GRD/1.0E-13_realk
-ENDIF
-!BETA=D005
-sg2 = scaled_grad*scaled_grad
-gdenom = D1 + D3*D005*scaled_grad*log(scaled_grad+dsqrt(1d0+scaled_grad*scaled_grad))
-g = -D005*sg2/gdenom
-VX = VX + (D1-HFexchangeFac)*rho13*g*WGHT
-end SUBROUTINE LB94correction
-
-SUBROUTINE CS00correction(rho,GRD,HFexchangeFac,WGHT,VX,CS00SHIFT,CS00eHOMO,CS00ZND1,CS00ZND2)
-implicit none
-REAL(REALK),intent(in)    :: rho,GRD,HFexchangeFac,WGHT,CS00SHIFT,CS00eHOMO,CS00ZND1,CS00ZND2
-REAL(REALK),intent(inout) :: VX
-Real(realk), parameter :: D3 = 3.0E0_realk,D05 = 0.5E0_realk
-Real(realk), parameter :: D005 = 0.05E0_realk,D1=1.0E0_realk,D08=0.8E0_realk
-REAL(REALK) :: scaled_grad,rho13,rho43,sg2,gdenom,g,delta,P1,P2
-
-!LB94 correction
-IF(ABS(CS00SHIFT).LT.1.0E-12_realk)THEN
-   delta = -CS00ZND1*CS00eHOMO + CS00ZND2
-ELSE
-   delta = CS00SHIFT
-ENDIF
-
-rho13 = rho**(1.d0/3.d0)
-rho43 = rho13*rho
-IF(rho43.GT.1.0E-13_realk)THEN
-   scaled_grad = GRD/rho43
-ELSE
-   scaled_grad = GRD/1.0E-13_realk
-ENDIF
-!BETA=D005
-sg2 = scaled_grad*scaled_grad
-gdenom = D1 + D3*D005*scaled_grad*log(scaled_grad+dsqrt(1d0+scaled_grad*scaled_grad))
-g = -D005*sg2/gdenom
-P1 = VX + (D1-HFexchangeFac)*rho13*g*WGHT
-P2 = VX - D05*delta*WGHT
-VX = MAX(P1,P2)
-end SUBROUTINE CS00correction
-
 !> \brief main unrestricted GGA kohn-sham matrix driver
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DFT_KSMGGAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
+     &                        RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                        GAOGMX,GAOMAX,MaxNactbast)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -696,6 +568,7 @@ INTEGER,intent(in) :: NBLEN
 INTEGER,intent(in) :: nBLOCKS
 !> Number of active basis functions
 INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
 !> Number of basis functions
 INTEGER,intent(in) :: Nbast
 !> Number of density matrices
@@ -732,6 +605,10 @@ REAL(REALK),intent(in) :: DFTHRI
 integer,intent(in)        :: WORKLENGTH
 !> tmp array to avoid allocation and deallocation of mem
 REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
 !
 Real(realk), parameter :: D4 = 4.0E0_realk,D2 = 2.0E0_realk,DUMMY = 0E0_realk
 INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT,IDMAT1,IDMAT2
@@ -833,6 +710,2822 @@ call lsquit('II_DFT_KSMGGAUNRES not implemented',-1)
 #endif
 
 END SUBROUTINE II_DFT_KSMGGAUNRES
+
+!> \brief GGA Exchange-correlation contribution to molecular gradient
+!> \author T. Kjaergaard
+!> \date 2008
+SUBROUTINE II_geoderiv_molgrad_worker_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
+     & NDMAT,DMAT,NTYPSO,GAOS,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,&
+     & WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+  IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAOS(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D05 = 0.5E0_realk
+Real(realk), parameter :: D8 = 8.0E0_realk, D4 = 4E0_realk
+REAL(REALK) :: VXC(2,NBLEN),VX(5),GRDA,GRD,DMAX
+INTEGER  :: IPNT,I,J,JBL,IBL,K
+LOGICAL,EXTERNAL :: DFT_ISGGA
+LOGICAL :: DOGGA
+INTEGER     :: KVALS(3,3)
+REAL(REALK),pointer :: GAORED(:,:,:),GDRED(:,:,:)
+REAL(REALK),pointer :: DRED(:,:)
+INTEGER     :: INXRED(NACTBAST),IRED,JRED,NRED,orb2atom(nbast)
+INTEGER     :: atom(NACTBAST),iatom,IX,K1,K2,K3,KA,ik,jk
+REAL(REALK) :: FRC,GA,GA2,GFS,XCFUNINPUT(1,1),XCFUNOUTPUT(2,1)
+
+orb2atom = DFTDATA%orb2atom
+KVALS(1:3,1) = (/1, 2, 3/)
+KVALS(1:3,2) = (/2, 4, 5/)
+KVALS(1:3,3) = (/3, 5, 6/)
+GRD = 0.D0
+DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1).GT.RHOTHR) THEN
+      !get the functional derivatives 
+      !vx(1) = drvs.df1000 = \frac{\partial f}{\partial \rho_{\alpha}}        
+#ifdef VAR_XCFUN
+      IF(.NOT.USEXCFUN)THEN
+#endif
+         CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+         VXC(1,IPNT) = D2*VX(1) 
+#ifdef VAR_XCFUN
+      ELSE
+         XCFUNINPUT(1,1) = RHO(IPNT,1)
+         call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+         IF(DFTDATA%LB94)THEN
+            call lsquit('error lb94 not implemented for xcfun',-1)
+         ELSEIF(DFTDATA%CS00)THEN
+            call lsquit('error cs00 not implemented for xcfun',-1)
+         ENDIF
+         VXC(1,IPNT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+      ENDIF
+#endif
+   ELSE
+      VXC(1,IPNT) = 0E0_realk
+   END IF
+END DO
+
+! Set up maximum density-matrix elements
+DMAX = 0.0E0_realk
+DO JBL=1, NBLOCKS
+   DO IBL=1, NBLOCKS
+      DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)        !J is active index
+         DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)  !I is active index
+            DMAX = MAX(DMAX,ABS(DMAT(I,J,1)))
+         ENDDO
+      ENDDO
+   ENDDO
+ENDDO
+! Count reduced number of AO's
+NRED = 0
+DO IBL=1, NBLOCKS
+   DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
+      IF (GAOGMX(I)*GAOMAX*DMAX.GT.RHOTHR) THEN
+         NRED = NRED + 1
+      ENDIF
+   ENDDO
+ENDDO
+
+IF (NRED.GT. 0) THEN
+   call mem_dft_alloc(DRED,NRED,NRED)
+   call mem_dft_alloc(GAORED,NBLEN,NRED,NTYPSO)
+   call mem_dft_alloc(GDRED,NBLEN,NRED,NTYPSO)
+   ! Set up reduced Gaussian AO's
+   IRED = 0
+   DO IBL=1, NBLOCKS
+      DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
+         IF (GAOGMX(I)*GAOMAX*DMAX.GT.RHOTHR) THEN
+            IRED = IRED + 1
+            INXRED(IRED) = I
+            DO J=1,NTYPSO
+               DO K = 1, NBLEN
+                  GAORED(K,IRED,J)  = GAOS(K,I,J)
+               ENDDO
+            ENDDO
+         ENDIF
+      ENDDO
+   ENDDO
+   ! Set up reduced density-matrix
+   DO JRED=1,NRED            !Jred is reduced index
+      J = INXRED(JRED)       !J is active index
+      DO IRED=1,NRED         !Ired is reduced index
+         I = INXRED(IRED)    !I is active index
+         DRED(IRED,JRED) = DMAT(I,J,1)
+      ENDDO
+   ENDDO
+   ! Set up reduced coordinate index in gradient
+   DO IRED=1,NRED
+      I = INXACT(INXRED(IRED)) !I is orbital index
+      atom(IRED) = orb2atom(I)
+   ENDDO
+   
+   ! Density-matrix contraction
+   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
+        &                 NBLEN,DRED,NRED,0.0E0_realk,GDRED,NBLEN    )
+   DO IRED=1,NRED
+      iatom = atom(IRED)
+      KA = INXRED(IRED)  !KA is active index
+      DO IX=1,3
+         FRC = 0E0_realk
+         DO I = 1, NBLEN
+            FRC = FRC + VXC(1,I)*GDRED(I,IRED,1)*GAOS(I,KA,IX+1)
+         END DO
+         DFTDATA%GRAD(IX,iatom) = DFTDATA%GRAD(IX,iatom) - FRC
+      ENDDO ! IX
+   ENDDO ! IA
+   call mem_dft_dealloc(DRED)
+   call mem_dft_dealloc(GAORED)
+   call mem_dft_dealloc(GDRED)
+ENDIF !NRED GT 0
+
+END SUBROUTINE II_GEODERIV_MOLGRAD_WORKER_LDA
+
+!> \brief GGA Exchange-correlation contribution to molecular gradient
+!> \author T. Kjaergaard
+!> \date 2008
+SUBROUTINE II_geoderiv_molgrad_worker_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
+     & NDMAT,DMAT,NTYPSO,GAOS,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,&
+     & WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+  IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAOS(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D05 = 0.5E0_realk
+Real(realk), parameter :: D8 = 8.0E0_realk, D4 = 4E0_realk
+REAL(REALK) :: VXC(4,NBLEN),VX(5),GRDA,GRD,DMAX
+INTEGER  :: IPNT,I,J,JBL,IBL,K
+LOGICAL,EXTERNAL :: DFT_ISGGA
+LOGICAL :: DOGGA
+INTEGER     :: KVALS(3,3)
+REAL(REALK),pointer :: GAORED(:,:,:),GDRED(:,:,:)
+REAL(REALK),pointer :: DRED(:,:)
+INTEGER     :: INXRED(NACTBAST),IRED,JRED,NRED,orb2atom(nbast)
+INTEGER     :: atom(NACTBAST),iatom,IX,K1,K2,K3,KA,ik,jk
+REAL(REALK) :: FRC,GA,GA2,GFS,XCFUNINPUT2(4,1),XCFUNOUTPUT2(5,1)
+
+orb2atom = DFTDATA%orb2atom
+KVALS(1:3,1) = (/1, 2, 3/)
+KVALS(1:3,2) = (/2, 4, 5/)
+KVALS(1:3,3) = (/3, 5, 6/)
+DO IPNT = 1, NBLEN
+   GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+        &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
+      !get the functional derivatives 
+#ifdef VAR_XCFUN
+      IF(.NOT.USEXCFUN)THEN
+#endif
+         CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+         IF(DFTDATA%LB94)THEN
+            CALL LB94correction(rho(IPNT,1),GRD,DFTDATA%HFexchangeFac,&
+                 & WGHT(IPNT),VX(1))            
+         ELSEIF(DFTDATA%CS00)THEN
+            CALL CS00correction(rho(IPNT,1),GRD,DFTDATA%HFexchangeFac,&
+                 & WGHT(IPNT),VX(1),DFTDATA%CS00SHIFT,DFTDATA%CS00eHOMO,DFTDATA%CS00ZND1,DFTDATA%CS00ZND2)
+         ENDIF
+         VXC(1,IPNT) = D2*VX(1) 
+         IF(GRD.GT. 1E-40_realk) THEN
+            GRDA = D05*GRD
+            VXC(2,IPNT) = (VX(2)/GRDA + VX(3))*GRAD(1,IPNT,1)
+            VXC(3,IPNT) = (VX(2)/GRDA + VX(3))*GRAD(2,IPNT,1)
+            VXC(4,IPNT) = (VX(2)/GRDA + VX(3))*GRAD(3,IPNT,1)
+         ELSE
+            VXC(2,IPNT) = 0E0_realk
+            VXC(3,IPNT) = 0E0_realk
+            VXC(4,IPNT) = 0E0_realk
+         ENDIF
+#ifdef VAR_XCFUN
+      ELSE
+         XCFUNINPUT2(1,1) = RHO(IPNT,1)
+         XCFUNINPUT2(2,1) = GRAD(1,IPNT,1)
+         XCFUNINPUT2(3,1) = GRAD(2,IPNT,1)
+         XCFUNINPUT2(4,1) = GRAD(3,IPNT,1)
+         ! Input:
+         !rho   = XCFUNINPUT(1,1)
+         !grad_x = XCFUNINPUT(2,1)
+         !grad_y = XCFUNINPUT(3,1)
+         !grad_z = XCFUNINPUT(4,1)
+         call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,5,XCFUNOUTPUT2,1)
+         ! Output
+         ! Order 0
+         ! out(1,1) Exc
+         ! Order 1
+         ! out(2,1) d^1 Exc / d rho
+         ! out(3,1) d^1 Exc / d grad_x
+         ! out(4,1) d^1 Exc / d grad_y
+         ! out(5,1) d^1 Exc / d grad_z
+         IF(DFTDATA%LB94)THEN
+            call lsquit('error lb94 not implemented for xcfun',-1)
+         ELSEIF(DFTDATA%CS00)THEN
+            call lsquit('error cs00 not implemented for xcfun',-1)
+         ENDIF
+         VXC(1,IPNT) = D2*XCFUNOUTPUT2(2,1)*WGHT(IPNT)
+         VXC(2,IPNT) = D2*XCFUNOUTPUT2(3,1)*WGHT(IPNT)
+         VXC(3,IPNT) = D2*XCFUNOUTPUT2(4,1)*WGHT(IPNT)
+         VXC(4,IPNT) = D2*XCFUNOUTPUT2(5,1)*WGHT(IPNT)
+      ENDIF
+#endif
+   ELSE
+      VXC(1,IPNT) = 0E0_realk
+      VXC(2,IPNT) = 0E0_realk
+      VXC(3,IPNT) = 0E0_realk
+      VXC(4,IPNT) = 0E0_realk
+   END IF
+END DO
+
+! Set up maximum density-matrix elements
+DMAX = 0.0E0_realk
+DO JBL=1, NBLOCKS
+   DO IBL=1, NBLOCKS
+      DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)        !J is active index
+         DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)  !I is active index
+            DMAX = MAX(DMAX,ABS(DMAT(I,J,1)))
+         ENDDO
+      ENDDO
+   ENDDO
+ENDDO
+! Count reduced number of AO's
+NRED = 0
+DO IBL=1, NBLOCKS
+   DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
+      IF (GAOGMX(I)*GAOMAX*DMAX.GT.RHOTHR) THEN
+         NRED = NRED + 1
+      ENDIF
+   ENDDO
+ENDDO
+
+IF (NRED.GT. 0) THEN
+   call mem_dft_alloc(DRED,NRED,NRED)
+   call mem_dft_alloc(GAORED,NBLEN,NRED,NTYPSO)
+   call mem_dft_alloc(GDRED,NBLEN,NRED,NTYPSO)
+   ! Set up reduced Gaussian AO's
+   IRED = 0
+   DO IBL=1, NBLOCKS
+      DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
+         IF (GAOGMX(I)*GAOMAX*DMAX.GT.RHOTHR) THEN
+            IRED = IRED + 1
+            INXRED(IRED) = I
+            DO J=1,NTYPSO
+               DO K = 1, NBLEN
+                  GAORED(K,IRED,J)  = GAOS(K,I,J)
+               ENDDO
+            ENDDO
+         ENDIF
+      ENDDO
+   ENDDO
+   ! Set up reduced density-matrix
+   DO JRED=1,NRED            !Jred is reduced index
+      J = INXRED(JRED)       !J is active index
+      DO IRED=1,NRED         !Ired is reduced index
+         I = INXRED(IRED)    !I is active index
+         DRED(IRED,JRED) = DMAT(I,J,1)
+      ENDDO
+   ENDDO
+   ! Set up reduced coordinate index in gradient
+   DO IRED=1,NRED
+      I = INXACT(INXRED(IRED)) !I is orbital index
+      atom(IRED) = orb2atom(I)
+   ENDDO
+   
+   ! Density-matrix contraction  
+   ! \chi_{\mu}_{A,B} D_{\mu \nu}
+   ! \frac{\partial \chi_{\mu}}{\frac \partial x} D_{\mu \nu}
+   ! \frac{\partial \chi_{\mu}}{\frac \partial y} D_{\mu \nu}
+   ! \frac{\partial \chi_{\mu}}{\frac \partial z} D_{\mu \nu}
+   DO J=1,4
+      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(1,1,J),&
+           &                  NBLEN,DRED,NRED,0.0E0_realk,GDRED(1,1,J),NBLEN )
+   ENDDO
+   DO IRED=1,NRED
+      iatom = atom(IRED)
+      KA = INXRED(IRED) !KA is active index
+      DO IX=1,3
+         K1 = KVALS(1,IX) + 4
+         K2 = KVALS(2,IX) + 4
+         K3 = KVALS(3,IX) + 4
+         FRC = 0E0_realk
+         ! Assuming E_{\xc}=\int f[\rho ,\nabla \rho] d\textbf{r}
+         ! \frac{ \partial E^{xc}[\rho]}{\partial R} =  
+         ! \int \frac{\partial f }{\partial \rho} \frac{\partial \rho(\textbf{r})}{\partial R} d\textbf{r} + 
+         ! \int \frac{\partial f }{\partial |\nabla \rho_{\alpha}|} \frac{\nabla \rho(\textbf{r})}{|\nabla \rho_{\alpha}|}  
+         ! \frac{\partial \nabla \rho(\textbf{r})}{\partial R} d\textbf{r}
+         ! VXC(1,I) = \frac{\partial f }{\partial \rho}
+         ! VXC(2,I) = \int \frac{\partial f }{\partial |\nabla \rho_{\alpha}|}
+         DO I = 1, NBLEN
+            !\frac{\partial \chi_{\mu}}{\partial R_{\gamma}}
+!            GA  = GAOS(I,KA,IX+1)
+            !\nabla \rho \nabla \chi_{\mu} D_{\mu \nu}
+!            GFS = VXC(2,I)*GDRED(I,IRED,2)+VXC(3,I)*GDRED(I,IRED,3)+VXC(4,I)*GDRED(I,IRED,4)
+            !\nabla \rho \frac{\partial \nabla \chi_{\mu}}{\partial R_{\gamma}}
+!            GA2 = VXC(2,I)*GAOS(I,KA,K1)  +VXC(3,I)*GAOS(I,KA,K2)  +VXC(4,I)*GAOS(I,KA,K3)
+            !\int VXC(1)\frac{\partial \chi_{\mu}}{\partial R_{\gamma}}\chi_{\nu}D_{\mu \nu}
+            ! + VXC(2) \nabla \rho \frac{\partial \nabla \chi_{\mu}}{\partial R_{\gamma}} \chi_{\nu}D_{\mu \nu}
+            ! + VXC(2) \nabla \rho \nabla \chi_{\mu} \frac{\partial \chi_{\mu}}{\partial R_{\gamma}} D_{\mu \nu}
+!            FRC = FRC + VXC(1,I)*GDRED(I,IRED,1)*GA + GDRED(I,IRED,1)*GA2 + GFS*GA
+
+            FRC = FRC + VXC(1,I)*GDRED(I,IRED,1)*GAOS(I,KA,IX+1) &
+            &+ VXC(2,I)*(GDRED(I,IRED,1)*GAOS(I,KA,K1) + GDRED(I,IRED,2)*GAOS(I,KA,IX+1)) &
+            &+ VXC(3,I)*(GDRED(I,IRED,1)*GAOS(I,KA,K2) + GDRED(I,IRED,3)*GAOS(I,KA,IX+1)) &
+            &+ VXC(4,I)*(GDRED(I,IRED,1)*GAOS(I,KA,K3) + GDRED(I,IRED,4)*GAOS(I,KA,IX+1))
+
+         END DO
+         DFTDATA%GRAD(IX,iatom) = DFTDATA%GRAD(IX,iatom) - FRC
+      ENDDO ! IX
+   ENDDO ! IRED
+   call mem_dft_dealloc(DRED)
+   call mem_dft_dealloc(GAORED)
+   call mem_dft_dealloc(GDRED)
+ENDIF !NRED GT 0
+
+END SUBROUTINE II_GEODERIV_MOLGRAD_WORKER_GGA
+
+!> \brief Main LDA linear response driver
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE ii_dft_linrsplda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
+     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                     GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+REAL(REALK),pointer :: EXPVAL(:,:),VXC(:,:)
+!EXPVAL(NBLEN,DFTDATA%NBMAT),VXC(NBLEN,DFTDATA%NBMAT),VX(9),DFTENE
+REAL(REALK) :: VX(14),DFTENE
+INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred,W1,W2,W3,W4,W5,W6,W7,W8
+LOGICAL     :: DOCALC
+Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
+Real(realk), parameter :: D4 = 4.0E0_realk
+REAL(REALK) :: fRR
+REAL(REALK) :: XCFUNINPUT(1,1),XCFUNOUTPUT(4,1)
+
+W1 = 1
+W2 = NBLEN*Nactbast                        !W1 - 1 + NBLEN*Nactbast    -> GAORED 
+W3 = NBLEN*Nactbast+1                      !W2 + 1
+W4 = (NBLEN+Nactbast)*Nactbast             !W3 - 1 + Nactbast*Nactbast -> EXCRED
+W5 = (NBLEN+Nactbast)*Nactbast + 1         !W4 + 1 
+W6 = (NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
+W7 = (NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
+W8 = (2*NBLEN+Nactbast + 1) * Nactbast     !W7 - 1 + NBLEN*Nactbast    -> TMP
+#ifdef VAR_LSDEBUGINT
+IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in ii_dft_linrsplda',lupri)
+#endif
+
+call mem_dft_alloc(EXPVAL,NBLEN,DFTDATA%NBMAT)
+call mem_dft_alloc(VXC,NBLEN,DFTDATA%NBMAT)
+NBMAT = DFTDATA%NBMAT
+DOCALC = .FALSE.
+DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+      DOCALC = .TRUE.
+      EXIT
+   ENDIF
+ENDDO
+IF(DOCALC)THEN
+   !get expectation value of BMAT = \sum_{\mu \nu} \chi_{\mu} \chi_{\nu} BMAT_{\mu \nu}
+ call II_get_expval_lda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+        &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,DFTDATA%nBMAT,DFTHRI,NRED)
+ IF(NRED.GT. 0)THEN
+  DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+    !get the functional derivatives 
+#ifdef VAR_XCFUN
+      IF(.NOT.USEXCFUN)THEN
+#endif
+         CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
+         !fRR = 0.5*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
+         fRR = VX(6) + VX(7)     
+         DO IBMAT = 1,NBMAT
+            !THE factor 0.5 IN fRR cancels a factor 2.0 in VXC so  
+            VXC(IPNT,IBMAT) = D2*fRR*EXPVAL(IPNT,IBMAT) ! D4*fRR*EXPVAL(IPNT,IBMAT)
+            !WARNING the factor 4 is due to 
+            ! G_{\rho \sigma} &=& \frac{\delta (F^{\alpha} + F^{\beta})}{\delta D^{\alpha}_{\nu \mu}}\kappa^{\alpha}_{\nu \mu}\\
+            ! &+& \frac{\delta (F^{\alpha} + F^{\beta})}{\delta D^{\beta}_{\nu \mu}}\kappa^{\beta}_{\nu \mu}\\
+            ! G_{\rho \sigma} &=& 4 \frac{\delta (F^{\alpha}{\delta D^{\alpha}_{\nu \mu}} \kappa^{\alpha}_{\nu \mu}\\
+            ! G_{\rho \sigma} &=& 4 \int \frac{\partial^{2} f }{\partial \rho^{2}_{\alpha}} \Omega_{\rho \sigma}
+            ! \Omega_{\mu \nu} \kappa^{\alpha}_{\mu \nu} d\textbf{r}
+         ENDDO
+#ifdef VAR_XCFUN
+      ELSE
+         XCFUNINPUT(1,1) = RHO(IPNT,1)
+         call xcfun2_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+         !1 = E
+         !2 = fR
+         !3 = fRR
+         DO IBMAT = 1,NBMAT
+            VXC(IPNT,IBMAT) =D4*XCFUNOUTPUT(3,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)
+         ENDDO
+      ENDIF
+#endif
+   ELSE
+         VXC(IPNT,:) = 0.0E0_realk
+   ENDIF
+  END DO
+  DO IBMAT = 1,NBMAT
+   CALL II_DFT_DIST_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
+        & VXC(:,IBMAT),GAO(:,:,1),DFTDATA%FKSM(:,:,IBMAT),DFTHRI,&
+        & WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
+  ENDDO
+ ENDIF
+ENDIF
+call mem_dft_dealloc(EXPVAL)
+call mem_dft_dealloc(VXC)
+
+END SUBROUTINE II_DFT_LINRSPLDA
+
+!> \brief main unrestricted LDA linear response driver
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE II_DFT_LINRSPLDAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,&
+     & NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     & GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+CALL LSQUIT('II_DFT_LINRSPLDAUNRES not implemented yet',lupri)
+
+END SUBROUTINE II_DFT_LINRSPLDAUNRES
+
+!> \brief main GGA linear response driver
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE II_DFT_LINRSPGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
+     &                      RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                      GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+REAL(REALK),pointer :: EXPVAL(:,:),VXC(:,:,:),EXPGRAD(:,:,:)
+REAL(REALK) :: VX(14),DFTENE,GRD,GRDA,MIXEDGRDA
+INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred,W1,W2,W3,W4,W5,W6,W7,W8
+LOGICAL     :: DOCALC
+Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk
+Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
+Real(realk), parameter :: D16 = 16.0E0_realk,D32 = 32.0E0_realk
+REAL(REALK) :: fR,fZ,fRR,fRZ,fZZ,fRG,fZG,fGG,fG,A,B
+REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(6,1)
+REAL(REALK) :: XCFUNINPUT2(4,1),XCFUNOUTPUT2(15,1)
+NBMAT = DFTDATA%NBMAT
+call mem_dft_alloc(EXPVAL,NBLEN,NBMAT)
+call mem_dft_alloc(EXPGRAD,3,NBLEN,NBMAT)
+call mem_dft_alloc(VXC,4,NBLEN,NBMAT)
+DOCALC = .FALSE.
+DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+      DOCALC = .TRUE.
+      EXIT
+   ENDIF
+ENDDO
+IF(DOCALC)THEN
+  !CALC
+  !EXPVAL : the expectation value of BMAT = \sum_{\mu \nu} \chi_{\mu} \chi_{\nu} BMAT_{\mu \nu}
+  !EXPGRAD: the gradient components of BMAT = \sum_{\mu \nu} \nabla (\chi_{\mu} \chi_{\nu}) BMAT_{\mu \nu}
+  W1 = 1
+  W2 = NBLEN*Nactbast             !W1 - 1 + NBLEN*Nactbast -> GAORED1 
+  W3 = NBLEN*Nactbast+1
+  W4 = NBLEN*Nactbast*4           !W1 - 1 + NBLEN*Nactbast*3 -> GAORED2 
+  W5 = (4*NBLEN)*Nactbast + 1     !W4 + 1
+  W6 = (5*NBLEN)*Nactbast + 1     !W5 - 1 + NBLEN*Nactbast -> TMP
+#ifdef VAR_LSDEBUGINT
+  IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_LINRSPGGA',lupri)
+#endif
+  call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+       & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
+       & DFTDATA%nBMAT,DFTHRI,NRED,WORK(W1:W2),WORK(W3:W4),GAOGMX,GAOMAX,&
+       & WORK(W5:W6),MaxNactBast)
+ IF(NRED.GT. 0)THEN
+  DO IPNT = 1, NBLEN
+   GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+        &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+   IF(GRD.LT. 1E-40_realk) GRD = 1E-40_realk
+   GRDA = D05*GRD
+   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
+    !get the functional derivatives 
+#ifdef VAR_XCFUN
+    IF(.NOT.USEXCFUN)THEN
+#endif
+       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
+       fZ  = VX(3)                    !drvs.df0010;
+       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
+       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
+       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
+       fRG = D05*VX(10)             !0.5*drvs.df10001;   
+       fZG = D05*VX(13)             !0.5*drvs.df00101; 
+       fGG = D025*VX(14)            !0.25*drvs.df00002; 
+       fG  = D05*VX(5)               !0.5*drvs.df00001;  
+       DO IBMAT = 1,NBMAT
+          MIXEDGRDA = (EXPGRAD(1,IPNT,IBMAT)*GRAD(1,IPNT,1)&
+               &+EXPGRAD(2,IPNT,IBMAT)*GRAD(2,IPNT,1)&
+               &+EXPGRAD(3,IPNT,IBMAT)*GRAD(3,IPNT,1))
+          !the LDA part
+          VXC(1,IPNT,IBMAT) =D4*fRR*EXPVAL(IPNT,IBMAT)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
+          !the non LDA parts
+          A = D8*((fRZ/GRD + fRG)*EXPVAL(IPNT,IBMAT)&
+               & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
+          B= D8*(fZ/GRD + fG)
+          VXC(2,IPNT,IBMAT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,IBMAT)
+          VXC(3,IPNT,IBMAT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,IBMAT)
+          VXC(4,IPNT,IBMAT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,IBMAT)
+       ENDDO
+#ifdef VAR_XCFUN
+    ELSE
+       XCFUNINPUT2(1,1) = RHO(IPNT,1)
+       XCFUNINPUT2(2,1) = GRAD(1,IPNT,1)
+       XCFUNINPUT2(3,1) = GRAD(2,IPNT,1)
+       XCFUNINPUT2(4,1) = GRAD(3,IPNT,1)
+       ! Input:
+       !rho   = XCFUNINPUT(1,1)
+       !grad_x = XCFUNINPUT(2,1)
+       !grad_y = XCFUNINPUT(3,1)
+       !grad_z = XCFUNINPUT(4,1)
+       call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,15,XCFUNOUTPUT2,2)
+       ! Output
+       ! Order 0
+       ! out(1,1) Exc
+       ! Order 1
+       ! out(2,1) d^1 Exc / d n
+       ! out(3,1) d^1 Exc / d nx
+       ! out(4,1) d^1 Exc / d ny
+       ! out(5,1) d^1 Exc / d nz
+       ! Order 2
+       ! out(6,1) d^2 Exc / d n n
+       ! out(7,1) d^2 Exc / d n nx
+       ! out(8,1) d^2 Exc / d n ny
+       ! out(9,1) d^2 Exc / d n nz
+       ! out(10,1) d^2 Exc / d nx nx
+       ! out(11,1) d^2 Exc / d nx ny
+       ! out(12,1) d^2 Exc / d nx nz
+       ! out(13,1) d^2 Exc / d ny ny
+       ! out(14,1) d^2 Exc / d ny nz
+       ! out(15,1) d^2 Exc / d nz nz
+       DO IBMAT = 1,NBMAT
+          !the \Omega_{\mu \nu} part
+          VXC(1,IPNT,IBMAT) = &
+               &   D4*XCFUNOUTPUT2(6,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT) &
+               & + D4*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
+               & + D4*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
+               & + D4*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+          !the \frac{\partial \Omega_{\mu \nu}}{\partial x} part
+          VXC(2,IPNT,IBMAT) = &
+               &   D8*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT2(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+          !the \frac{\partial \Omega_{\mu \nu}}{\partial y} part             
+          VXC(3,IPNT,IBMAT) = &
+               &   D8*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT2(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+          !the \frac{\partial \Omega_{\mu \nu}}{\partial z} part =
+          !     (d^2 Exc/d rho d gz)kappa + (d^2 Exc/d gx d gz)dkappa/dx
+          !+ (d^2 Exc/d gy d gz)dkappa/dy + (d^2 Exc/d gz d gz)dkappa/dz 
+          VXC(4,IPNT,IBMAT) = &
+               &   D8*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
+               & + D8*XCFUNOUTPUT2(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
+       ENDDO
+
+    ENDIF
+#endif
+   ELSE
+    VXC(:,IPNT,:) = 0.0E0_realk
+   ENDIF
+  END DO
+  W1 = 1
+  W2 = NBLEN*Nactbast*4                        !W1 - 1 + NBLEN*Nactbast*4 -> GAORED 
+  W3 = 4*NBLEN*Nactbast+1                      !W2 + 1
+  W4 = (4*NBLEN+Nactbast)*Nactbast             !W3 - 1 + Nactbast*Nactbast  -> EXCRED
+  W5 = (4*NBLEN+Nactbast)*Nactbast + 1         !W4 + 1
+  W6 = (5*NBLEN+Nactbast)*Nactbast             !W5 - 1 + NBLEN*Nactbast    -> TMP
+#ifdef VAR_LSDEBUGINT
+  IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
+#endif
+  CALL II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NTYPSO,NBMAT,&
+       & VXC,GAO,DFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),GAOGMX,GAOMAX,WORK(W5:W6),MaxNactBast)
+ ENDIF
+ENDIF
+call mem_dft_dealloc(EXPVAL)
+call mem_dft_dealloc(EXPGRAD)
+call mem_dft_dealloc(VXC)
+
+END SUBROUTINE II_DFT_LINRSPGGA
+
+!> \brief main unrestricted GGA linear response driver
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE II_DFT_LINRSPGGAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
+     &                           RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                           GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+CALL LSQUIT('II_DFT_LINRSPGGAUNRES not implemented yet',lupri)
+
+END SUBROUTINE II_DFT_LINRSPGGAUNRES
+
+!> \brief LDA Exchange-correlation contribution to quadratic response 
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE ii_dft_quadrsplda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
+     &                       RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                       GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+REAL(REALK),pointer :: EXPVAL(:,:),VXC(:)
+!EXPVAL(NBLEN,DFTDATA%NBMAT),VXC(NBLEN,DFTDATA%NBMAT),VX(9),DFTENE
+REAL(REALK) :: VX(27),DFTENE
+INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred
+INTEGER     :: W1,W2,W3,W4,W5,W6,W7,W8
+LOGICAL     :: DOCALC
+Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D3 = 3.0E0_realk
+REAL(REALK) :: fRRR
+
+W1 = 1
+W2 = NBLEN*Nactbast                        !W1 - 1 + NBLEN*Nactbast    -> GAORED 
+W3 = NBLEN*Nactbast+1                      !W2 + 1
+W4 = (NBLEN+Nactbast)*Nactbast             !W3 - 1 + Nactbast*Nactbast -> EXCRED
+W5 = (NBLEN+Nactbast)*Nactbast + 1         !W4 + 1 
+W6 = (NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
+W7 = (NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
+W8 = (2*NBLEN+Nactbast + 1) * Nactbast     !W7 - 1 + NBLEN*Nactbast    -> TMP
+#ifdef VAR_LSDEBUGINT
+IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPLDA',lupri)
+#endif
+
+call mem_dft_alloc(EXPVAL,NBLEN,DFTDATA%NBMAT)
+call mem_dft_alloc(VXC,NBLEN)
+NBMAT = DFTDATA%NBMAT
+DOCALC = .FALSE.
+DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+      DOCALC = .TRUE.
+      EXIT
+   ENDIF
+ENDDO
+IF(DOCALC)THEN
+!get expectation value of BMAT=\sum_{\mu \nu}\chi_{\mu}\chi_{\nu}BMAT_{\mu \nu}
+ call II_get_expval_lda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+        &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,DFTDATA%nBMAT,DFTHRI,NRED)
+ IF(NRED.GT. 0)THEN
+  DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+    !get the functional derivatives 
+#ifdef VAR_XCFUN
+    IF(.NOT.USEXCFUN)THEN
+#endif
+       CALL dft_funcderiv3(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
+       !    fR  = VX(1)              !drvs.df1000;
+       !radovan: factor 0.5 "missing" here compared to "true" derivative wrt RR i'm 
+       !sure it's compensated elsewhere but can be confusing when comparing with 
+       !other codes
+       !     fRR = (VX(6) + VX(7))   !(drvs.df2000 + drvs.df1100);
+       !radovan: factor 0.25 "missing" here compared to "true" derivative wrt RRR
+       !        (i'm sure it's compensated elsewhere)
+       !         but can be confusing when comparing with other codes
+       fRRR = (VX(15)+D3*VX(16))     !(drvs.df3000 + 3*drvs.df2100);
+       !    VXCB(IPNT) = fRR*EXPVALB(IPNT) 
+       !    VXCC(IPNT) = fRR*EXPVALC(IPNT) 
+       VXC(IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)  
+#ifdef VAR_XCFUN
+    ELSE
+       call lsquit('xcfun version of quadratic response not implemented',-1)
+    ENDIF
+#endif
+   ELSE
+    VXC(IPNT) = 0.0E0_realk
+   ENDIF
+  END DO
+   CALL II_DFT_DIST_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
+        & VXC(:),GAO(:,:,1),DFTDATA%FKSM(:,:,1),DFTHRI,WORK(W1:W2),&
+        & WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
+ ENDIF
+ENDIF
+call mem_dft_dealloc(EXPVAL)
+call mem_dft_dealloc(VXC)
+
+END SUBROUTINE II_DFT_QUADRSPLDA
+
+!> \brief GGA Exchange-correlation contribution to quadratic response 
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE II_DFT_QUADRSPGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
+     &                       RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                       GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+REAL(REALK),pointer :: EXPVAL(:,:),VXC(:,:),EXPGRAD(:,:,:)
+REAL(REALK) :: VX(27),DFTENE,GRD,GRDA,MIXEDGRDA
+INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred,W1,W2,W3,W4,W5,W6,W7,W8
+LOGICAL     :: DOCALC
+Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk,D3 = 3E0_realk
+Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
+REAL(REALK) :: GRD2,GRDA2,GRDA3
+REAL(REALK) :: fRZ,fRG,fZZ,fRRR,fRRZ,fRRG,fRRGX,fRZZ,fZZZ,gradY,gradZ,gradYZ,A,B,C
+REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(10,1)
+NBMAT = DFTDATA%NBMAT
+IF(NBMAT.NE. 2)call lsquit('QRSP XC error',lupri)
+call mem_dft_alloc(EXPVAL,NBLEN,NBMAT)
+call mem_dft_alloc(EXPGRAD,3,NBLEN,NBMAT)
+call mem_dft_alloc(VXC,4,NBLEN)
+DOCALC = .FALSE.
+DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+      DOCALC = .TRUE.
+      EXIT
+   ENDIF
+ENDDO
+IF(DOCALC)THEN
+ W1 = 1
+ W2 = NBLEN*Nactbast             !W1 - 1 + NBLEN*Nactbast -> GAORED1 
+ W3 = NBLEN*Nactbast+1
+ W4 = NBLEN*Nactbast*4           !W1 - 1 + NBLEN*Nactbast*3 -> GAORED2 
+ W5 = 4*NBLEN*Nactbast + 1   !W6 + 1
+ W6 = 5*NBLEN*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
+#ifdef VAR_LSDEBUGINT
+ IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPGGA',lupri)
+#endif
+ call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+      & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
+      & DFTDATA%nBMAT,DFTHRI,NRED,WORK(W1:W2),WORK(W3:W4),&
+      & GAOGMX,GAOMAX,WORK(W5:W6),MaxNactBast)
+ IF(NRED.GT. 0)THEN
+  DO IPNT = 1, NBLEN
+   GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+        &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+   IF(GRD.LT. 1E-40_realk) GRD = 1E-40_realk
+   GRDA = D05*GRD
+   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
+    !get the functional derivatives 
+    GRD2 = GRD*GRD
+    GRDA2 = GRDA*GRDA
+    GRDA3 = GRDA2*GRDA
+#ifdef VAR_XCFUN
+    IF(.NOT.USEXCFUN)THEN
+#endif
+       CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+       fRZ = (VX(8)+VX(9))/GRD              !(drvs.df1010 + drvs.df1001)/(2*grada)
+       fRG = D2*VX(10)                      !2*drvs.df10001   
+       fZZ = (VX(11)+VX(12))/GRD2-VX(3)/(GRD2*GRDA) !(drvs.df0020 + drvs.df0011)/(4*grada2)-drvs.df0010/(4*grada3)
+       fRRR = VX(15)+D3*VX(16)              !(drvs.df3000 + 3*drvs.df2100) 
+       fRRZ = (VX(17)+VX(18)+D2*VX(20))/GRD !(drvs.df2010+drvs.df2001+2*drvs.df1110)/(2*grada)
+       fRRG = VX(19)+VX(21)                 !drvs.df20001+drvs.df11001
+       fRRGX = D2*(VX(19)+VX(21))           !2*(drvs.df20001+drvs.df11001)
+       fRZZ = (VX(22)+VX(24)+D2*VX(23))/GRD2 - (VX(8)+VX(9))/(GRD2*GRDA)  !(drvs.df1020+drvs.df0120+2*drvs.df1011)/(4*grada2)-(drvs.df1010+drvs.df1001)/(4*grada3)
+       fZZZ = ((VX(25)+D3*VX(26))/(GRDA3)-D3*(VX(11)+VX(12))/(GRDA2*GRDA2)+D3*VX(3)/(GRDA3*GRDA2))/D8
+       !((drvs.df0030 + 3*drvs.df0021)/grada3& 
+       !         &-3*(drvs.df0020 + drvs.df0011)/(grada2*grada2)&
+       !         &+3*drvs.df0010/(grada3*grada2))/8.0
+       gradY = D05*(EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+       gradZ = D05*(EXPGRAD(1,IPNT,2)*GRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,2)*GRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,2)*GRAD(3,IPNT,1))
+       gradYZ = (EXPGRAD(1,IPNT,2)*EXPGRAD(1,IPNT,1) &
+            &+EXPGRAD(2,IPNT,2)*EXPGRAD(2,IPNT,1) &
+            &+EXPGRAD(3,IPNT,2)*EXPGRAD(3,IPNT,1))
+       VXC(1,IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &!OK
+            &+D4*(fRRZ*EXPVAL(IPNT,1)*gradZ+fRRZ*EXPVAL(IPNT,2)*gradY) & !OK
+            &+D8*gradZ*gradY*fRZZ &! OK
+            &+D4*gradYZ*fRZ &! OK  
+            &+D4*fRRG*EXPVAL(IPNT,1)*gradZ &! OK
+            &+D4*fRRG*EXPVAL(IPNT,2)*gradY+D2*fRG*gradYZ !OK
+       
+       A = D8*fZZZ*gradY*gradZ &
+            & + D4*(fRZZ*EXPVAL(IPNT,1)*gradZ + fRZZ*EXPVAL(IPNT,2)*gradY) &
+            & + D2*fRRZ*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &
+            & + fRRGX*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) + D4*fZZ*gradYZ
+       B = D8*fZZ*gradY + D4*fRZ*EXPVAL(IPNT,1) + D2*fRG*EXPVAL(IPNT,1)
+       C = D8*fZZ*gradZ + D4*fRZ*EXPVAL(IPNT,2) + D2*fRG*EXPVAL(IPNT,2)
+       
+       VXC(2,IPNT) = D2*A*GRAD(1,IPNT,1) + D2*B*EXPGRAD(1,IPNT,2) + D2*C*EXPGRAD(1,IPNT,1)
+       VXC(3,IPNT) = D2*A*GRAD(2,IPNT,1) + D2*B*EXPGRAD(2,IPNT,2) + D2*C*EXPGRAD(2,IPNT,1)
+       VXC(4,IPNT) = D2*A*GRAD(3,IPNT,1) + D2*B*EXPGRAD(3,IPNT,2) + D2*C*EXPGRAD(3,IPNT,1)
+#ifdef VAR_XCFUN
+    ELSE
+       call lsquit('xcfun version of quadratic response not implemented',-1)
+    ENDIF
+#endif
+   ELSE
+    VXC(:,IPNT) = 0.0E0_realk
+   ENDIF
+  END DO
+  W1 = 1
+  W2 = NBLEN*Nactbast*4                        !W1 - 1 + NBLEN*Nactbast*4 -> GAORED 
+  W3 = 4*NBLEN*Nactbast+1                      !W2 + 1
+  W4 = (4*NBLEN+Nactbast)*Nactbast             !W3 - 1 + Nactbast*Nactbast  -> EXCRED
+  W5 = (4*NBLEN+Nactbast)*Nactbast + 1         !W4 + 1
+  W6 = (5*NBLEN+Nactbast)*Nactbast             !W5 - 1 + NBLEN*Nactbast    -> TMP
+#ifdef VAR_LSDEBUGINT
+  IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPGGA',lupri)
+#endif
+  CALL II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NTYPSO,1,&
+       & VXC,GAO,DFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),GAOGMX,GAOMAX,WORK(W5:W6),MaxNactBast)
+ ENDIF
+ENDIF
+call mem_dft_dealloc(EXPVAL)
+call mem_dft_dealloc(EXPGRAD)
+call mem_dft_dealloc(VXC)
+
+END SUBROUTINE II_DFT_QUADRSPGGA
+
+!> \brief magnetic derivative Kohn-sham matrix LDA closed shell worker routine
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE II_DFT_magderiv_kohnshamLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
+     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+Real(realk), parameter :: D4 = 4.0E0_realk,DUMMY = 0E0_realk
+REAL(REALK) :: VXC(NBLEN),VX(5),DFTENE
+INTEGER     :: I,J,IPNT
+REAL(REALK) :: XCFUNINPUT(1,1),XCFUNOUTPUT(2,1)
+
+! LDA Exchange-correlation contribution to Kohn-Sham energy
+DO IPNT = 1, NBLEN
+!   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+      !get the functional derivatives 
+      !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}}
+#ifdef VAR_XCFUN
+   IF(.NOT.USEXCFUN)THEN
+#endif
+      CALL dft_funcderiv1(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
+      !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
+      VXC(IPNT) = VX(1)*D4 
+#ifdef VAR_XCFUN
+   ELSE
+      call lsquit('xcfun version of II_DFT_MAGDERIV_KOHNSHAMLDA not implemented',-1)
+      XCFUNINPUT(1,1) = RHO(IPNT,1)
+      call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+      !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
+      VXC(IPNT) = D4*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+      call lsquit('xcfun inconsistency',-1)
+   ENDIF
+#endif
+!   ELSE
+!      VXC(IPNT) = 0.0E0_realk
+!   ENDIF
+END DO
+!ntypso should be 4
+CALL II_DFT_distmagderiv_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
+     &VXC,GAO(:,:,:),DFTDATA%FKSM(:,:,1:3),COORD,DFTHRI,NTYPSO)
+
+END SUBROUTINE II_DFT_MAGDERIV_KOHNSHAMLDA
+
+!> \brief  magnetic derivative Kohn-sham matrix GGA closed shell worker routine
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE II_DFT_magderiv_kohnshamGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
+     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D3 = 3.0E0_realk,D05 = 0.5E0_realk
+REAL(REALK) :: VX(5),DFTENE,GRD,GRDA,A,XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
+REAL(REALK),pointer :: VXC(:,:)
+INTEGER     :: I,J
+IDMAT = 1
+IF(NDMAT.GT.1)CALL LSQUIT('II_DFT_MAGDERIV_KOHNSHAMGGA ndmat',-1)
+call mem_dft_alloc(VXC,4,NBLEN)
+DO IPNT = 1, NBLEN
+   GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+        &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
+#ifdef VAR_XCFUN
+      IF(.NOT.USEXCFUN)THEN
+#endif
+         CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+         IF(DFTDATA%LB94)THEN
+            CALL LB94correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
+                 & WGHT(IPNT),VX(1))            
+         ELSEIF(DFTDATA%CS00)THEN
+            CALL CS00correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
+                 & WGHT(IPNT),VX(1),DFTDATA%CS00SHIFT,DFTDATA%CS00eHOMO,DFTDATA%CS00ZND1,DFTDATA%CS00ZND2)
+         ENDIF
+         VXC(1,IPNT) = D2*VX(1) 
+         IF(GRD.GT. 1E-40_realk) THEN
+            GRDA = D05*GRD
+            A = D2*(VX(2)/GRDA + VX(3))
+            VXC(2,IPNT) = A*GRAD(1,IPNT,1)
+            VXC(3,IPNT) = A*GRAD(2,IPNT,1)
+            VXC(4,IPNT) = A*GRAD(3,IPNT,1)
+         ELSE
+            VXC(2,IPNT) = 0E0_realk
+            VXC(3,IPNT) = 0E0_realk
+            VXC(4,IPNT) = 0E0_realk
+         ENDIF
+#ifdef VAR_XCFUN
+      ELSE
+         call lsquit('xcfun version of II_DFT_MAGDERIV_KOHNSHAMGGA not implemented',-1)
+         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
+         XCFUNINPUT(2,1) = GRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
+              &+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+              &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1)
+         call xcfun_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+
+         IF(DFTDATA%LB94)THEN
+            call lsquit('error lb94 xcfun',-1)
+         ELSEIF(DFTDATA%CS00)THEN
+            call lsquit('error cs00 xcfun',-1)
+         ENDIF
+
+         VXC(1,IPNT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
+         VXC(2,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(1,IPNT,IDMAT)
+         VXC(3,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
+         VXC(4,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
+         call lsquit('XCFUN',-1)
+      ENDIF
+#endif
+   ELSE
+      VXC(:,IPNT) = 0E0_realk
+   END IF
+END DO
+CALL II_DFT_distmagderiv_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
+     &VXC,GAO,DFTDATA%FKSM,COORD,DFTHRI,NTYPSO)
+call mem_dft_dealloc(VXC)
+
+END SUBROUTINE II_DFT_MAGDERIV_KOHNSHAMGGA
+
+!> \brief magnetic derivative Kohn-sham matrix LDA closed shell worker routine
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE II_DFT_MAGDERIV_LINRSPLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
+     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+Real(realk), parameter :: D4 = 4.0E0_realk,DUMMY = 0E0_realk
+REAL(REALK) :: fRR,VX(14)
+INTEGER     :: I,J,NBMAT,ibmat,N,NRED,IPNT
+LOGICAL     :: DOCALC,dosympart
+REAL(REALK),parameter :: D2=2E0_realk
+REAL(REALK),pointer :: EXPVAL(:,:),VXC(:,:)
+REAL(REALK),pointer :: EXPGRAD(:,:,:),VXC2(:,:,:)
+
+NBMAT = DFTDATA%NBMAT
+dosympart = DFTDATA%dosympart
+call mem_dft_alloc(EXPVAL,NBLEN,NBMAT)
+call mem_dft_alloc(EXPGRAD,NBLEN,3,NBMAT)!magnetic gradients of EXPVAL=BMAT*chi(r)*chi(r)
+call mem_dft_alloc(VXC,NBLEN,NBMAT)
+call mem_dft_alloc(VXC2,NBLEN,NBMAT,3)
+DOCALC = .FALSE.
+DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+      DOCALC = .TRUE.
+      EXIT
+   ENDIF
+ENDDO
+IF(DOCALC)THEN
+!get expectation value of BMAT
+ call II_get_magderiv_expval_lda(LUPRI,NTYPSO,NBLEN,NBLOCKS,BLOCKS,&
+        & INXACT,Nactbast,NBAST,GAO,COORD,EXPVAL,EXPGRAD,DFTDATA%BMAT,nBMAT,&
+        & NRED,DFTHRI,dosympart)
+ IF(NRED.GT. 0)THEN
+  VXC2 = 0.0E0_realk
+  DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+    !get the functional derivatives 
+#ifdef VAR_XCFUN
+     IF(.NOT.USEXCFUN)THEN
+#endif
+        CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
+        !fRR = 0.5*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
+        fRR = VX(6) + VX(7)     
+        !THE factor 0.5 IN fRR cancels a factor 2.0 in VXC so  
+        DO IBMAT = 1,NBMAT
+           VXC(IPNT,IBMAT) = D2*fRR*EXPVAL(IPNT,IBMAT)!D4*fRR*EXPVAL(IPNT,IBMAT)
+        ENDDO
+        DO N=1,3
+           DO IBMAT = 1,NBMAT
+              VXC2(IPNT,IBMAT,N)=D2*fRR*EXPGRAD(IPNT,N,IBMAT)
+           ENDDO
+        ENDDO
+#ifdef VAR_XCFUN
+     ELSE
+        call lsquit('xcfun version of II_DFT_MAGDERIV_LINRSPLDA not implemented',-1)
+     ENDIF
+#endif
+   ELSE
+    VXC(IPNT,:) = 0.0E0_realk
+   ENDIF
+  END DO
+  CALL II_DFT_DISTMAGDERIV_linrsp_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+    &Nactbast,NBAST,VXC,VXC2,NBMAT,GAO,DFTDATA%FKSM,DFTDATA%FKSMS,COORD,DFTHRI,NTYPSO,dosympart)
+ ENDIF
+ENDIF
+call mem_dft_dealloc(EXPVAL)
+call mem_dft_dealloc(EXPGRAD)
+call mem_dft_dealloc(VXC)
+call mem_dft_dealloc(VXC2)
+
+END SUBROUTINE II_DFT_MAGDERIV_LINRSPLDA
+
+!> \brief magnetic derivative linrsp matrix GGA closed shell worker routine
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE II_DFT_MAGDERIV_LINRSPGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
+     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+INTEGER     :: I,J,NBMAT,ibmat,N,NRED,IPNT
+REAL(REALK) :: VX(14),GRD,GRDA,MIXEDGRDA,MIXEDGRDAMAG(3)
+LOGICAL     :: DOCALC,dosympart
+REAL(REALK),pointer :: VXC1(:,:),VXC1MAG(:,:,:)
+REAL(REALK),pointer :: EXPGRAD(:,:,:,:),VXC2(:,:,:),VXC2MAG(:,:,:,:)
+Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk
+Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
+REAL(REALK) :: fR,fZ,fRR,fRZ,fZZ,fRG,fZG,fGG,fG,A,B,AMAG(3)
+NBMAT = DFTDATA%NBMAT
+dosympart = DFTDATA%dosympart
+call mem_dft_alloc(EXPGRAD,NBLEN,4,4,NBMAT)!mixed geo,magn gradients of EXPVAL
+call mem_dft_alloc(VXC1,NBLEN,NBMAT)
+call mem_dft_alloc(VXC1MAG,NBLEN,NBMAT,3)
+call mem_dft_alloc(VXC2,NBLEN,NBMAT,3)
+call mem_dft_alloc(VXC2MAG,NBLEN,NBMAT,3,3)
+DOCALC = .FALSE.
+DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+      DOCALC = .TRUE.
+      EXIT
+   ENDIF
+ENDDO
+IF(DOCALC)THEN
+!get expectation value of BMAT
+ call II_get_magderiv_expval_gga(LUPRI,NTYPSO,NBLEN,NBLOCKS,BLOCKS,&
+        & INXACT,Nactbast,NBAST,GAO,COORD,EXPGRAD,DFTDATA%BMAT,nBMAT,&
+        & NRED,DFTHRI,dosympart)
+ IF(NRED.GT. 0)THEN
+  VXC2 = 0.0E0_realk
+  DO IPNT = 1, NBLEN
+   GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+        &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
+    IF(GRD.LT. 1E-40_realk) GRD = 1E-40_realk
+    GRDA = D05*GRD
+    !get the functional derivatives 
+#ifdef VAR_XCFUN
+    IF(.NOT.USEXCFUN)THEN
+#endif
+       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
+       fZ  = VX(3)                    !drvs.df0010;
+       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
+       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
+       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
+       fRG = D05*VX(10)             !0.5*drvs.df10001;   
+       fZG = D05*VX(13)             !0.5*drvs.df00101; 
+       fGG = D025*VX(14)            !0.25*drvs.df00002; 
+       fG  = D05*VX(5)               !0.5*drvs.df00001;  
+       DO IBMAT = 1,NBMAT
+          MIXEDGRDA = (EXPGRAD(IPNT,2,1,IBMAT)*GRAD(1,IPNT,1)&
+               &+EXPGRAD(IPNT,3,1,IBMAT)*GRAD(2,IPNT,1)&
+               &+EXPGRAD(IPNT,4,1,IBMAT)*GRAD(3,IPNT,1))
+          VXC1(IPNT,IBMAT) =D4*fRR*EXPGRAD(IPNT,1,1,IBMAT)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
+          !magnetic differentiation of VXC1
+          DO N=1,3
+             MIXEDGRDAMAG(N) = (EXPGRAD(IPNT,2,N+1,IBMAT)*GRAD(1,IPNT,1)&
+                  &+EXPGRAD(IPNT,3,N+1,IBMAT)*GRAD(2,IPNT,1)&
+                  &+EXPGRAD(IPNT,4,N+1,IBMAT)*GRAD(3,IPNT,1))
+          ENDDO
+          DO N=1,3
+             VXC1MAG(IPNT,IBMAT,N)=D4*(fRZ/GRD+fRG)*MIXEDGRDAMAG(N)+D4*fRR*EXPGRAD(IPNT,1,1+N,IBMAT)
+          ENDDO
+          A = D8*((fRZ/GRD + fRG)*EXPGRAD(IPNT,1,1,IBMAT)&
+               & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
+          B= D8*(fZ/GRD + fG)
+          VXC2(IPNT,IBMAT,1) = A*GRAD(1,IPNT,1)+B*EXPGRAD(IPNT,2,1,IBMAT)
+          VXC2(IPNT,IBMAT,2) = A*GRAD(2,IPNT,1)+B*EXPGRAD(IPNT,3,1,IBMAT)
+          VXC2(IPNT,IBMAT,3) = A*GRAD(3,IPNT,1)+B*EXPGRAD(IPNT,4,1,IBMAT)
+          !magnetic differentiation of VXC2
+          DO N=1,3
+             AMAG(N) = D8*((fRZ/GRD + fRG)*EXPGRAD(IPNT,1,N+1,IBMAT)&
+                  & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDAMAG(N))
+          ENDDO
+          DO N=1,3
+             VXC2MAG(IPNT,IBMAT,1,N)=AMAG(N)*GRAD(1,IPNT,1)+B*EXPGRAD(IPNT,2,1+N,IBMAT)
+             VXC2MAG(IPNT,IBMAT,2,N)=AMAG(N)*GRAD(2,IPNT,1)+B*EXPGRAD(IPNT,3,1+N,IBMAT)
+             VXC2MAG(IPNT,IBMAT,3,N)=AMAG(N)*GRAD(3,IPNT,1)+B*EXPGRAD(IPNT,4,1+N,IBMAT)
+          ENDDO
+       ENDDO
+#ifdef VAR_XCFUN
+    ELSE
+        call lsquit('xcfun version of II_DFT_MAGDERIV_LINRSPGGA not implemented',-1)
+    ENDIF
+#endif
+   ELSE
+    VXC1(IPNT,:) = 0.0E0_realk
+    VXC1MAG(IPNT,:,:) = 0.0E0_realk
+    VXC2(IPNT,:,:) = 0.0E0_realk
+    VXC2MAG(IPNT,:,:,:) = 0.0E0_realk
+   ENDIF
+  END DO
+  CALL II_DFT_DISTMAGDERIV_linrsp_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+    &Nactbast,NBAST,VXC1,VXC1MAG,VXC2,VXC2MAG,NBMAT,GAO,&
+    &DFTDATA%FKSM,DFTDATA%FKSMS,COORD,DFTHRI,NTYPSO,dosympart)
+ ENDIF
+ENDIF
+call mem_dft_dealloc(EXPGRAD)
+call mem_dft_dealloc(VXC1)
+call mem_dft_dealloc(VXC2)
+call mem_dft_dealloc(VXC1MAG)
+call mem_dft_dealloc(VXC2MAG)
+
+END SUBROUTINE II_DFT_MAGDERIV_LINRSPGGA
+
+!> \brief geometrical derivative Kohn-sham matrix LDA closed shell worker routine
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE II_DFT_geoderiv_kohnshamLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
+     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+REAL(REALK) :: VX(14),DFTENE,EXPVAL(NBLEN,1)
+REAL(REALK) :: fR(NBLEN),fRR(NBLEN)
+REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,DUMMY = 0E0_realk 
+INTEGER     :: I,J,nred,nbmat,ipnt
+logical :: DOCALC
+nbmat=1
+DOCALC = .FALSE.
+DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+      DOCALC = .TRUE.
+      EXIT
+   ENDIF
+ENDDO
+IF(DOCALC)THEN
+ call II_get_expval_lda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+!      &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,DFTDATA%nBMAT,DFTHRI,NRED)
+      &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,1,DFTHRI,NRED)
+ IF(NRED.GT. 0)THEN
+  DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+#ifdef VAR_XCFUN
+    IF(.NOT.USEXCFUN)THEN
+#endif
+      CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
+      fR(IPNT) = VX(1)*D4 
+      fRR(IPNT) = D2*(VX(6) + VX(7))*EXPVAL(IPNT,1) 
+#ifdef VAR_XCFUN
+    ELSE
+       call lsquit('xcfun version of II_DFT_GEODERIV_KOHNSHAMLDA not implemented',-1)
+    ENDIF
+#endif
+   ELSE
+      fR(IPNT) = 0.0E0_realk
+      fRR(IPNT) = 0.0E0_realk
+   ENDIF
+  END DO
+   CALL II_DFT_distgeoderiv_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
+        &NBAST,fR,fRR,GAO(:,:,:),DFTDATA%GRAD,DFTDATA%orb2atom,&
+        &DFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
+ ENDIF
+ENDIF
+END SUBROUTINE II_DFT_GEODERIV_KOHNSHAMLDA
+
+!> \brief geometrical derivative Kohn-sham matrix GGA closed shell worker routine
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE II_DFT_geoderiv_kohnshamGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
+     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+REAL(REALK) :: VX(14),DFTENE,EXPVAL(NBLEN,1)
+REAL(REALK) :: EXPGRAD(3,NBLEN,1),GRD,GRDA,MIXEDGRDA
+REAL(REALK) :: fR,fRR,fZ,fRZ,fZZ,fRG,fZG,fGG,fG,A,B
+REAL(REALK) :: VXC1(NBLEN),VXC2(3,NBLEN),VXC3(NBLEN),VXC4(3,NBLEN)
+REAL(REALK),parameter :: D2=2E0_realk, D4=4E0_realk, DUMMY = 0E0_realk, D05=0.5E0_realk, D025=0.25E0_realk 
+REAL(REALK),parameter :: D8=8E0_realk
+REAL(REALK) :: XCFUNINPUT2(4,1),XCFUNOUTPUT2(15,1)
+INTEGER     :: I,J,nred,nbmat,IPNT,W1,W2,W3,W4,W7,W8,W5,W6,W9,W10
+logical :: DOCALC
+nbmat=1
+DOCALC = .FALSE.
+DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+      DOCALC = .TRUE.
+      EXIT
+   ENDIF
+ENDDO
+IF(DOCALC)THEN
+ W1 = 1
+ W2 = NBLEN*Nactbast             !W1 - 1 + NBLEN*Nactbast -> GAORED1 
+ W3 = NBLEN*Nactbast+1
+ W4 = NBLEN*Nactbast*4           !W1 - 1 + NBLEN*Nactbast*3 -> GAORED2 
+ W5 = 4*NBLEN*Nactbast + 1       !W4 + 1
+ W6 = 5*NBLEN*Nactbast + 1       !W5 - 1 + NBLEN*Nactbast -> TMP
+#ifdef VAR_LSDEBUGINT
+ IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_kohnshamGGA',lupri)
+#endif
+ call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+      & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
+      & DFTDATA%nBMAT,DFTHRI,NRED,WORK(W1:W2),WORK(W3:W4),&
+      & GAOGMX,GAOMAX,WORK(W5:W6),MaxNactBast)
+ IF(NRED.GT. 0)THEN
+  DO IPNT = 1, NBLEN
+     GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+          &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+     GRDA = D05*GRD
+     IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
+#ifdef VAR_XCFUN
+      IF(.NOT.USEXCFUN)THEN
+#endif
+       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
+       fZ  = VX(3)                    !drvs.df0010;
+       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
+       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
+       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
+       fRG = D05*VX(10)             !0.5*drvs.df10001;   
+       fZG = D05*VX(13)             !0.5*drvs.df00101; 
+       fGG = D025*VX(14)            !0.25*drvs.df00002; 
+       fG  = D05*VX(5)               !0.5*drvs.df00001;  
+       MIXEDGRDA = (EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
+            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+
+       VXC1(IPNT) = D4*VX(1)
+       A = D2*(VX(3)/GRDA + VX(5))
+       VXC2(1,IPNT) = A*GRAD(1,IPNT,1)
+       VXC2(2,IPNT) = A*GRAD(2,IPNT,1)
+       VXC2(3,IPNT) = A*GRAD(3,IPNT,1)
+       !the LDA part
+       VXC3(IPNT) =D4*fRR*EXPVAL(IPNT,1)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
+       !the non LDA parts
+       A = D4*((fRZ/GRD + fRG)*EXPVAL(IPNT,1)&
+            & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
+       B= D4*(fZ/GRD + fG)
+       VXC4(1,IPNT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,1)
+       VXC4(2,IPNT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,1)
+       VXC4(3,IPNT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,1)
+#ifdef VAR_XCFUN
+      ELSE
+       call lsquit('xcfun version of II_DFT_GEODERIV_KOHNSHAMGGA not implemented',-1)
+       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
+       fZ  = VX(3)                    !drvs.df0010;
+       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
+       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
+       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
+       fRG = D05*VX(10)             !0.5*drvs.df10001;   
+       fZG = D05*VX(13)             !0.5*drvs.df00101; 
+       fGG = D025*VX(14)            !0.25*drvs.df00002; 
+       fG  = D05*VX(5)               !0.5*drvs.df00001;  
+       MIXEDGRDA = (EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
+            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+
+       VXC1(IPNT) = D4*VX(1)
+       print*,'VXC1(IPNT)',VXC1(IPNT)
+       A = D2*(VX(3)/GRDA + VX(5))
+       VXC2(1,IPNT) = A*GRAD(1,IPNT,1)
+       VXC2(2,IPNT) = A*GRAD(2,IPNT,1)
+       VXC2(3,IPNT) = A*GRAD(3,IPNT,1)
+       print*,'VXC2(1,IPNT)',VXC2(1,IPNT)
+       print*,'VXC2(2,IPNT)',VXC2(2,IPNT)
+       print*,'VXC2(3,IPNT)',VXC2(3,IPNT)
+       !the LDA part
+       VXC3(IPNT) =D4*fRR*EXPVAL(IPNT,1)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
+       print*,'VXC3(IPNT)',VXC3(IPNT)
+       !the non LDA parts
+       A = D4*((fRZ/GRD + fRG)*EXPVAL(IPNT,1)&
+            & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
+       B= D4*(fZ/GRD + fG)
+       VXC4(1,IPNT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,1)
+       VXC4(2,IPNT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,1)
+       VXC4(3,IPNT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,1)
+       print*,'VXC4(1,IPNT)',VXC4(1,IPNT)
+       print*,'VXC4(2,IPNT)',VXC4(2,IPNT)
+       print*,'VXC4(3,IPNT)',VXC4(3,IPNT)
+
+       XCFUNINPUT2(1,1) = RHO(IPNT,1)
+       XCFUNINPUT2(2,1) = GRAD(1,IPNT,1)
+       XCFUNINPUT2(3,1) = GRAD(2,IPNT,1)
+       XCFUNINPUT2(4,1) = GRAD(3,IPNT,1)
+       ! Input:
+       !rho   = XCFUNINPUT(1,1)
+       !grad_x = XCFUNINPUT(2,1)
+       !grad_y = XCFUNINPUT(3,1)
+       !grad_z = XCFUNINPUT(4,1)
+       call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,15,XCFUNOUTPUT2,2)
+       ! Output
+       ! Order 0
+       ! out(1,1) Exc
+       ! Order 1
+       ! out(2,1) d^1 Exc / d n
+       ! out(3,1) d^1 Exc / d nx
+       ! out(4,1) d^1 Exc / d ny
+       ! out(5,1) d^1 Exc / d nz
+       ! Order 2
+       ! out(6,1) d^2 Exc / d n n
+       ! out(7,1) d^2 Exc / d n nx
+       ! out(8,1) d^2 Exc / d n ny
+       ! out(9,1) d^2 Exc / d n nz
+       ! out(10,1) d^2 Exc / d nx nx
+       ! out(11,1) d^2 Exc / d nx ny
+       ! out(12,1) d^2 Exc / d nx nz
+       ! out(13,1) d^2 Exc / d ny ny
+       ! out(14,1) d^2 Exc / d ny nz
+       ! out(15,1) d^2 Exc / d nz nz
+       !the \Omega_{\mu \nu} part
+       VXC1(IPNT) = D2*XCFUNOUTPUT2(2,1)*WGHT(IPNT)
+       print*,'NEW VXC1(IPNT)',VXC1(IPNT)
+       VXC2(1,IPNT) = D4*XCFUNOUTPUT2(3,1)*WGHT(IPNT)
+       VXC2(2,IPNT) = D4*XCFUNOUTPUT2(4,1)*WGHT(IPNT)
+       VXC2(3,IPNT) = D4*XCFUNOUTPUT2(5,1)*WGHT(IPNT)
+       print*,'NEW VXC2(1,IPNT)',VXC2(1,IPNT)
+       print*,'NEW VXC2(2,IPNT)',VXC2(2,IPNT)
+       print*,'NEW VXC2(3,IPNT)',VXC2(3,IPNT)
+
+       VXC3(IPNT) = &
+               &   D4*XCFUNOUTPUT2(6,1)*WGHT(IPNT)*EXPVAL(IPNT,1) &
+               & + D4*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
+               & + D4*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
+               & + D4*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
+       print*,'NEW VXC3(IPNT)',VXC3(IPNT)
+       VXC4(1,IPNT) = &
+            &   D8*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
+            & + D8*XCFUNOUTPUT2(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
+            & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
+            & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
+       VXC4(2,IPNT) = &
+            &   D8*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
+            & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
+            & + D8*XCFUNOUTPUT2(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
+            & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
+       VXC4(3,IPNT) = &
+            &   D8*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
+            & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
+            & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
+            & + D8*XCFUNOUTPUT2(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
+       print*,'NEW VXC4(1,IPNT)',VXC4(1,IPNT)
+       print*,'NEW VXC4(2,IPNT)',VXC4(2,IPNT)
+       print*,'NEW VXC4(3,IPNT)',VXC4(3,IPNT)
+      ENDIF
+#endif
+    ELSE
+       VXC1(IPNT) = 0.0E0_realk
+       VXC2(:,IPNT) = 0.0E0_realk
+       VXC3(IPNT) = 0.0E0_realk
+       VXC4(:,IPNT) = 0.0E0_realk
+    ENDIF
+  END DO
+  W1  = 1
+  W2  = NBLEN*Nactbast*NTYPSO      !W1 - 1 + NBLEN*Nactbast*NTYPSO -> GAORED
+  W3  = W2+1                       
+  W4  = W2+NBLEN*NactBast          !TMP(NBLEN,NactBast)
+  W5  = W4+1                       
+  W6  = W4+NBLEN*NactBast          !TMPX(NBLEN,NactBast)
+  W7  = W6+1                       
+  W8  = W6+NBLEN*NactBast          !TMPY(NBLEN,NactBast)
+  W9  = W8+1                       
+  W10 = W8+NBLEN*NactBast          !TMPZ(NBLEN,NactBast)
+#ifdef VAR_LSDEBUGINT
+  IF(W10.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_kohnshamGGA',lupri)
+#endif
+  CALL II_DFT_distgeoderiv_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
+      &NBAST,VXC1,VXC2,VXC3,VXC4,GAO(:,:,:),DFTDATA%GRAD,&
+      &DFTDATA%orb2atom,DFTDATA%BMAT,DMAT,DFTDATA%natoms,&
+      &COORD,DFTHRI,NTYPSO,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),&
+      &WORK(W7:W8),WORK(W9:W10))
+ ENDIF
+ENDIF
+END SUBROUTINE II_DFT_GEODERIV_KOHNSHAMGGA
+
+!> \brief LDA geometrical derivative linear response driver
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE II_DFT_geoderiv_linrspLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
+     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+REAL(REALK) :: VX(27),DFTENE,EXPVAL(NBLEN,2)
+REAL(REALK) :: fRRR(NBLEN),fRR(2,NBLEN),A
+REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,D3=3E0_realk,DUMMY = 0E0_realk 
+INTEGER     :: I,J,nred,nbmat,IPNT
+logical :: DOCALC
+nbmat=DFTDATA%nBMAT
+IF(nbmat.NE. 2)call LSQUIT('II_DFT_geoderiv_linrspLDA requires 2 matrices',lupri)
+DOCALC = .FALSE.
+DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+      DOCALC = .TRUE.
+      EXIT
+   ENDIF
+ENDDO
+IF(DOCALC)THEN
+ call II_get_expval_lda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+      &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,nbmat,DFTHRI,NRED)
+ IF(NRED.GT. 0)THEN
+  DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+#ifdef VAR_XCFUN
+     IF(.NOT.USEXCFUN)THEN
+#endif
+      CALL dft_funcderiv3(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
+      A = D4*(VX(6) + VX(7))
+      fRR(1,IPNT) = A*EXPVAL(IPNT,1) 
+      fRR(2,IPNT) = A*EXPVAL(IPNT,2) 
+      A = D2*(VX(15) + D3*VX(16))
+      fRRR(IPNT) = A*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)
+#ifdef VAR_XCFUN
+     ELSE
+        call lsquit('xcfun version of II_DFT_GEODERIV_LINRSPLDA not implemented',-1)
+     ENDIF
+#endif
+   ELSE
+      fRR(1,IPNT) = 0.0E0_realk
+      fRR(2,IPNT) = 0.0E0_realk
+      fRRR(IPNT) = 0.0E0_realk
+   ENDIF
+  END DO
+   CALL II_DFT_distgeoderiv2_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
+        &NBAST,fRR,fRRR,GAO(:,:,:),DFTDATA%GRAD,DFTDATA%orb2atom,&
+        &DFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
+ ENDIF
+ENDIF
+END SUBROUTINE II_DFT_GEODERIV_LINRSPLDA
+
+!> \brief the GGA geometrical derivative linear response driver
+!> \author T. Kjaergaard
+!> \date 2010
+SUBROUTINE II_DFT_geoderiv_linrspGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
+     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER,intent(in)     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+REAL(REALK) :: VX(27),DFTENE,EXPVAL(NBLEN,2)
+REAL(REALK) :: EXPGRAD(3,NBLEN,2)
+REAL(REALK) :: VXC1(2,NBLEN),VXC2(3,NBLEN,2),VXC3(4,NBLEN)
+REAL(REALK) :: ARHOGRAD,BRHOGRAD,ABRHOGRAD,GRDA,GRD2,GRD,GRDA2,GRDA3
+REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,DUMMY = 0E0_realk,D05=0.5E0_realk,D025=0.25E0_realk 
+REAL(REALK),parameter :: D8=8E0_realk,D3=3E0_realk,D16=16E0_realk
+REAL(REALK) :: fR,fZ,fRZ,fZZ,fRG,fZG,fGG,fG,B,facW,factorRZ,A,fRR,fRRR,fRRZ,fRRG
+REAL(REALK) :: fRRGX,fRZZ,fZZZ,gradA,gradB,gradAB,C
+INTEGER     :: I,J,nred,nbmat,IPNT,W1,W2,W3,W4,W7,W8,W5,W6
+logical :: DOCALC
+nbmat=DFTDATA%nBMAT
+IF(nbmat.NE. 2)call LSQUIT('II_DFT_geoderiv_linrspGGA requires 2 matrices',lupri)
+DOCALC = .FALSE.
+DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
+      DOCALC = .TRUE.
+      EXIT
+   ENDIF
+ENDDO
+IF(DOCALC)THEN
+ W1 = 1
+ W2 = NBLEN*Nactbast             !W1 - 1 + NBLEN*Nactbast -> GAORED1 
+ W3 = NBLEN*Nactbast+1
+ W4 = NBLEN*Nactbast*4           !W1 - 1 + NBLEN*Nactbast*3 -> GAORED2 
+ W5 = 4*NBLEN*Nactbast + 1       !W4 + 1
+ W6 = 5*NBLEN*Nactbast           !W5 - 1 + NBLEN*Nactbast -> TMP
+#ifdef VAR_LSDEBUGINT
+ IF(W6.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_linrspGGA',lupri)
+#endif
+ call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
+      & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
+      & DFTDATA%nBMAT,DFTHRI,NRED,WORK(W1:W2),WORK(W3:W4),&
+      & GAOGMX,GAOMAX,WORK(W5:W6),MaxNactBast)
+ IF(NRED.GT. 0)THEN
+  DO IPNT = 1, NBLEN
+   GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+        &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+   GRDA = D05*GRD
+   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
+    ARHOGRAD = (EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
+         &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
+         &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
+    BRHOGRAD = (EXPGRAD(1,IPNT,2)*GRAD(1,IPNT,1)&
+         &+EXPGRAD(2,IPNT,2)*GRAD(2,IPNT,1)&
+         &+EXPGRAD(3,IPNT,2)*GRAD(3,IPNT,1))
+    ABRHOGRAD = (EXPGRAD(1,IPNT,1)*EXPGRAD(1,IPNT,2)&
+         &+EXPGRAD(2,IPNT,1)*EXPGRAD(2,IPNT,2)&
+         &+EXPGRAD(3,IPNT,1)*EXPGRAD(3,IPNT,2))     
+    GRD2 = GRD*GRD
+    GRDA2 = GRDA*GRDA
+    GRDA3 = GRDA2*GRDA
+#ifdef VAR_XCFUN
+    IF(.NOT.USEXCFUN)THEN
+#endif
+       CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
+       !THE NON DIFFERENTIATED PART
+       fR  = D05*(VX(1) + VX(2))    !0.5*(drvs.df1000 + drvs.df0100);
+       fZ  = VX(3)                  !drvs.df0010;
+       fRR = D05*(VX(6) + VX(7))    !0.5*(drvs.df2000 + drvs.df1100);
+       fRZ = D05*(VX(8) + VX(9))    !0.5*(drvs.df1010 + drvs.df1001);
+       fZZ = D05*(VX(11) + VX(12))  !0.5*(drvs.df0020 + drvs.df0011);
+       fRG = D05*VX(10)             !0.5*drvs.df10001;   
+       fZG = D05*VX(13)             !0.5*drvs.df00101; 
+       fGG = D025*VX(14)            !0.25*drvs.df00002; 
+       fG  = D05*VX(5)              !0.5*drvs.df00001;  
+       VXC1(1,IPNT) = D8*fRR*EXPVAL(IPNT,1) + D8*(fRZ/GRD+fRG)*ARHOGRAD
+       VXC1(2,IPNT) = D8*fRR*EXPVAL(IPNT,2) + D8*(fRZ/GRD+fRG)*BRHOGRAD
+       B= D8*(fZ/GRD + fG)
+       FacW = D8*(((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)
+       FactorRZ = D8*(fRZ/GRD + fRG)
+       A = FactorRZ*EXPVAL(IPNT,1)+FacW*ARHOGRAD
+       VXC2(1,IPNT,1) = B*EXPGRAD(1,IPNT,1)+A*GRAD(1,IPNT,1)
+       VXC2(2,IPNT,1) = B*EXPGRAD(2,IPNT,1)+A*GRAD(2,IPNT,1)
+       VXC2(3,IPNT,1) = B*EXPGRAD(3,IPNT,1)+A*GRAD(3,IPNT,1)
+       A = FactorRZ*EXPVAL(IPNT,2)+FacW*BRHOGRAD
+       VXC2(1,IPNT,2) = B*EXPGRAD(1,IPNT,2)+A*GRAD(1,IPNT,1)
+       VXC2(2,IPNT,2) = B*EXPGRAD(2,IPNT,2)+A*GRAD(2,IPNT,1)
+       VXC2(3,IPNT,2) = B*EXPGRAD(3,IPNT,2)+A*GRAD(3,IPNT,1)
+       !THE DIFFERENTIATED PART
+       fRRR = (VX(15) + D3*VX(16))
+       fRZ = (VX(8)+VX(9))/GRD  !warning change definition of fRZ
+       fRG = D4*fRG                 !D2*VX(10)                      
+       fZZ = (VX(11)+VX(12))/GRD2-VX(3)/(GRD2*GRDA)
+       fRRZ = (VX(17)+VX(18)+D2*VX(20))/GRD 
+       fRRG = VX(19)+VX(21)                 
+       fRRGX = D2*(VX(19)+VX(21))           
+       fRZZ = (VX(22)+VX(24)+D2*VX(23))/GRD2 - (VX(8)+VX(9))/(GRD2*GRDA)  
+       fZZZ = ((VX(25)+D3*VX(26))/(GRDA3)-D3*(VX(11)+VX(12))/(GRDA2*GRDA2)+D3*VX(3)/(GRDA3*GRDA2))/D8
+       
+       VXC3(1,IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) & 
+            &+D2*fRRZ*(EXPVAL(IPNT,1)*BRHOGRAD+EXPVAL(IPNT,2)*ARHOGRAD) & 
+            &+D2*BRHOGRAD*ARHOGRAD*fRZZ& 
+            &+D4*ABRHOGRAD*fRZ &
+            &+D2*fRRG*(EXPVAL(IPNT,1)*BRHOGRAD+EXPVAL(IPNT,2)*ARHOGRAD)&
+            &+D2*fRG*ABRHOGRAD 
+       
+       A = D2*fZZZ*ARHOGRAD*BRHOGRAD &
+            & + D2*(fRZZ*EXPVAL(IPNT,1)*BRHOGRAD + fRZZ*EXPVAL(IPNT,2)*ARHOGRAD) &
+            & + D2*fRRZ*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &
+            & + fRRGX*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) + D4*fZZ*ABRHOGRAD
+       B = D4*fZZ*ARHOGRAD + D4*fRZ*EXPVAL(IPNT,1) + D2*fRG*EXPVAL(IPNT,1)
+       C = D4*fZZ*BRHOGRAD + D4*fRZ*EXPVAL(IPNT,2) + D2*fRG*EXPVAL(IPNT,2)
+       
+       VXC3(2,IPNT) = A*GRAD(1,IPNT,1) + B*EXPGRAD(1,IPNT,2) + C*EXPGRAD(1,IPNT,1)
+       VXC3(3,IPNT) = A*GRAD(2,IPNT,1) + B*EXPGRAD(2,IPNT,2) + C*EXPGRAD(2,IPNT,1)
+       VXC3(4,IPNT) = A*GRAD(3,IPNT,1) + B*EXPGRAD(3,IPNT,2) + C*EXPGRAD(3,IPNT,1)
+#ifdef VAR_XCFUN
+    ELSE
+        call lsquit('xcfun version of II_DFT_GEODERIV_LINRSPGGA not implemented',-1)
+    ENDIF
+#endif
+   ELSE
+      VXC1(:,IPNT) = 0.0E0_realk
+      VXC2(:,IPNT,:) = 0.0E0_realk
+      VXC3(:,IPNT) = 0.0E0_realk
+   ENDIF
+  END DO
+  CALL II_DFT_distgeoderiv2_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
+       &NBAST,VXC1,VXC2,VXC3,GAO(:,:,:),DFTDATA%GRAD,DFTDATA%orb2atom,&
+       &DFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
+ ENDIF
+ENDIF
+END SUBROUTINE II_DFT_GEODERIV_LINRSPGGA
+
+!> \brief main kohn-sham matrix driver
+!> \author T. Kjaergaard
+!> \date 2008
+!>
+!> Worker routine that for a batch of gridpoints build the LDA kohn-sham matrix
+!>
+SUBROUTINE II_DFT_KSMELDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
+     &                    RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                    GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+REAL(REALK) :: VX(5),DFTENE, Econt,XCFUNINPUT(1,1),XCFUNOUTPUT(2,1)
+INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
+Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
+EXTERNAL DFTENE
+! LDA Exchange-correlation contribution to Kohn-Sham energy
+DO IDMAT = 1, NDMAT
+ Econt = 0.0E0_realk
+ DO IPNT = 1, NBLEN
+   IF(RHO(IPNT,IDMAT) .GT. RHOTHR)THEN
+#ifdef VAR_XCFUN        
+     IF(.NOT.USEXCFUN)THEN
+#endif
+        Econt = Econt + DFTENE(RHO(IPNT,IDMAT),DUMMY)*WGHT(IPNT)
+#ifdef VAR_XCFUN        
+     ELSE
+        XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
+        call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+        DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
+     ENDIF
+#endif
+   ENDIF
+ END DO
+ DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + Econt
+ENDDO
+
+END SUBROUTINE II_DFT_KSMELDA
+
+!> \brief main kohn-sham matrix driver
+!> \author T. Kjaergaard
+!> \date 2008
+!>
+!> Worker routine that for a batch of gridpoints build the unrestricted LDA kohn-sham matrix
+!>
+SUBROUTINE II_DFT_KSMELDAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,&
+     &                         GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,&
+     &                         WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
+INTEGER     :: IPNT,I,J,IDMAT,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT1,IDMAT2
+REAL(REALK) :: VX(5),DFTENEUNRES
+EXTERNAL DFTENEUNRES
+#ifdef MOD_UNRELEASED
+! LDA Exchange-correlation contribution to Kohn-Sham energy
+DO IDMAT = 1, NDMAT/2
+ IDMAT1 = 1 + (IDMAT-1)*2
+ IDMAT2 = 2 + (IDMAT-1)*2
+ DO IPNT = 1, NBLEN
+  IF(RHO(IPNT,IDMAT1) .GT. RHOTHR .OR. RHO(IPNT,IDMAT2) .GT. RHOTHR)THEN
+      !get the functional derivatives 
+      !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}} 
+      !and same for beta
+#ifdef VAR_XCFUN
+     IF(.NOT.USEXCFUN)THEN
+#endif
+        !      CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY,WGHT(IPNT),VX)
+        DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY)*WGHT(IPNT)
+#ifdef VAR_XCFUN
+     ELSE
+        call lsquit('xcfun version of II_DFT_KSMELDAUNRES not implemented',-1)
+     ENDIF
+#endif
+   ENDIF
+ END DO
+ENDDO
+#else
+call lsquit('II_DFT_KSMELDAUNRES not implemented',-1)
+#endif
+
+END SUBROUTINE II_DFT_KSMELDAUNRES
+
+!> \brief main closed shell GGA kohn-sham matrix driver
+!> \author T. Kjaergaard
+!> \date 2008
+SUBROUTINE II_DFT_KSMEGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
+     &                    RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,&
+     &                    GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D3 = 3.0E0_realk,D05 = 0.5E0_realk
+INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
+REAL(REALK) :: VX(5),DFTENE,GRD,GRDA,A,Econt
+REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(1,1)
+REAL(REALK),pointer :: VXC(:,:,:)
+EXTERNAL DFTENE
+!     GGA Exchange-correlation contribution to Kohn-Sham matrix
+DO IDMAT=1,NDMAT
+ Econt = 0.0E0_realk
+ DO IPNT = 1, NBLEN
+   GRD = SQRT(GRAD(1,IPNT,IDMAT)*GRAD(1,IPNT,IDMAT)+GRAD(2,IPNT,IDMAT)*GRAD(2,IPNT,IDMAT)&
+        &+GRAD(3,IPNT,IDMAT)*GRAD(3,IPNT,IDMAT))
+   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,IDMAT).GT.RHOTHR) THEN
+#ifdef VAR_XCFUN
+      IF(.NOT.USEXCFUN)THEN
+#endif
+         Econt = Econt + DFTENE(RHO(IPNT,IDMAT),GRD)*WGHT(IPNT)
+#ifdef VAR_XCFUN
+      ELSE
+         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
+!         XCFUNINPUT(2,1) = GRAD(1,IPNT,IDMAT)*GRAD(1,IPNT,IDMAT)&
+!              &+GRAD(2,IPNT,IDMAT)*GRAD(2,IPNT,IDMAT)&
+!              &+GRAD(3,IPNT,IDMAT)*GRAD(3,IPNT,IDMAT)
+         XCFUNINPUT(2,1) = GRAD(1,IPNT,IDMAT)
+         XCFUNINPUT(3,1) = GRAD(2,IPNT,IDMAT)
+         XCFUNINPUT(4,1) = GRAD(3,IPNT,IDMAT)
+!         call xcfun_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
+         call xcfun_gga_components_xc_single_eval(XCFUNINPUT,1,XCFUNOUTPUT,0)
+         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
+      ENDIF
+#endif
+   END IF
+ END DO
+ DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + Econt
+ENDDO
+END SUBROUTINE II_DFT_KSMEGGA
+
+!> \brief main unrestricted GGA kohn-sham matrix driver
+!> \author T. Kjaergaard
+!> \date 2008
+SUBROUTINE II_DFT_KSMEGGAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,&
+     & GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH,GAOGMX,GAOMAX,MaxNactbast)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+!> Max Number of active basis functions
+INTEGER,intent(in) :: MaxNactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> Number of density matrices
+INTEGER,intent(in) :: NDMAT
+!> Density matrix
+REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
+!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
+INTEGER     :: NTYPSO
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
+!> the electron density for all gridpoints
+REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
+!> the gradient of electron density for all gridpoints
+REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
+!> the grad dot grad tau
+REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
+!> max number of gridpoints
+INTEGER     :: MXBLLEN
+!> grippoint coordinates
+REAL(REALK),intent(in) :: COORD(3,NBLEN)
+!> grippoint weights
+REAL(REALK),intent(in) :: WGHT(NBLEN)
+!> contains all info required which is not directly related to the integration
+TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
+!> threshold on the electron density
+REAL(REALK),intent(in) :: RHOTHR
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+!> length of tmp array
+integer,intent(in)        :: WORKLENGTH
+!> tmp array to avoid allocation and deallocation of mem
+REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
+!> Maximum gaussian atomic orbital values for each basis function
+REAL(REALK),intent(in) :: GAOGMX(MAXNACTBAST)
+!> Maximum gaussian atomic orbital value (non differentiated)
+REAL(REALK),intent(in) :: GAOMAX
+!
+Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
+INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT,IDMAT1,IDMAT2
+REAL(REALK) :: VXC(NBLEN,2,2),VXM(NBLEN),VX(5),DFTENEUNRES,GRDA,GRDB
+EXTERNAL DFTENEUNRES
+
+!     GGA Exchange-correlation contribution to Kohn-Sham matrix
+DO IDMAT = 1,NDMAT
+ IDMAT1 = 1 + (IDMAT-1)*2
+ IDMAT2 = 2 + (IDMAT-1)*2
+ DO IPNT = 1, NBLEN
+   GRDA = SQRT(GRAD(1,IPNT,IDMAT1)*GRAD(1,IPNT,IDMAT1)+GRAD(2,IPNT,IDMAT1)*GRAD(2,IPNT,IDMAT1)+&
+        &GRAD(3,IPNT,IDMAT1)*GRAD(3,IPNT,IDMAT1))
+   GRDB = SQRT(GRAD(1,IPNT,IDMAT2)*GRAD(1,IPNT,IDMAT2)+GRAD(2,IPNT,IDMAT2)*GRAD(2,IPNT,IDMAT2)+&
+        &GRAD(3,IPNT,IDMAT2)*GRAD(3,IPNT,IDMAT2))
+   IF((GRDA .GT. RHOTHR .OR. RHO(IPNT,IDMAT1).GT.RHOTHR).OR.&
+        &(GRDB .GT. RHOTHR .OR. RHO(IPNT,IDMAT2).GT.RHOTHR))then 
+      IF(GRDA.LT. 1E-40_realk) GRDA = 1E-40_realk
+      IF(GRDB.LT. 1E-40_realk) GRDB = 1E-40_realk
+#ifdef VAR_XCFUN
+      IF(.NOT.USEXCFUN)THEN
+#endif
+         !      CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB,WGHT(IPNT),VX)
+         DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB)*WGHT(IPNT)
+#ifdef VAR_XCFUN
+      ELSE
+         call lsquit('xcfun version of II_DFT_KSMEGGAUNRES not implemented',-1)
+      ENDIF
+#endif
+   END IF
+ END DO
+ENDDO
+END SUBROUTINE II_DFT_KSMEGGAUNRES
+
+!=====================================================================================
+!
+! Routines that distribute contributions to Result like Fock Matrix or gradient
+! And Routines that calculated expectation values. 
+!
+!=====================================================================================
+
+!> \brief main kohn-sham matrix driver
+!> \author T. Kjaergaard
+!> \date 2008
+!>
+!> routine that does the actual work see II_dft_ksm.tex
+!>
+SUBROUTINE II_DFT_DIST_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
+     &                    COEF,GAOS,EXCMAT,DFTHRI,GAORED,EXCRED,GAOGMX,TMP)
+IMPLICIT NONE
+!> the logical unit number for the output file
+INTEGER,intent(in) :: LUPRI
+!> the number of gridpoints
+INTEGER,intent(in) :: NBLEN
+!> number of blocks
+INTEGER,intent(in) :: nBLOCKS
+!> Number of active basis functions
+INTEGER,intent(in) :: Nactbast
+!> Number of basis functions
+INTEGER,intent(in) :: Nbast
+!> contains the start and end index of active orbitals
+INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
+!> for a given active index INXACT provide the orbital index 
+INTEGER,intent(in)     :: INXACT(NACTBAST)
+!> coefficient (combination of functional derivative)
+REAL(REALK),intent(in) :: COEF(NBLEN)
+!> gaussian atomic orbitals
+REAL(REALK),intent(in) :: GAOS(NBLEN,NACTBAST)
+!> The Kohn-Sham matrix
+REAL(REALK),intent(inout) :: EXCMAT(NBAST,NBAST)
+!> threshold on the value of GAOs
+REAL(REALK),intent(in) :: DFTHRI
+! TEMPORARY MEM FROM WORK
+REAL(REALK),intent(inout) :: TMP(NBLEN,NACTBAST) 
+REAL(REALK),intent(inout) :: GAOGMX(NACTBAST)
+REAL(REALK),intent(inout) :: GAORED(NBLEN,NactBAST)
+REAL(REALK),intent(inout) :: EXCRED(Nactbast*NactBAST)
+!REAL(REALK) :: GAOGMX(NACTBAST)
+!REAL(REALK) :: GAORED(NBLEN,NactBAST)
+!REAL(REALK),pointer :: TMP(:,:)!NBLEN,NACTBAST) 
+!REAL(REALK),pointer :: EXCRED(:,:)!Nactbast,NactBAST)
+!
+REAL(REALK) :: GAOMAX
+INTEGER     :: ISTART,IBL,I,ILEN,JBL,J,K,JSTART,JLEN,NRED
+INTEGER     :: INXRED(NACTBAST),IRED,JRED,offset
+
+NRED = 0 
+GAOMAX = 0.0E0_realk
+!        Set up maximum Gaussian AO elements
+DO JBL = 1, NBLOCKS
+   DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)
+      GAOGMX(J) = 0.0E0_realk
+      DO K = 1, NBLEN
+         GAOMAX = MAX(GAOMAX,ABS(GAOS(K,J)))
+         GAOGMX(J) = MAX(GAOGMX(J),ABS(GAOS(K,J)))
+      ENDDO
+   ENDDO
+ENDDO
+!        Set up reduced Gaussian AO's
+DO JBL = 1, NBLOCKS
+   DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)
+      IF (GAOGMX(J)*GAOMAX.GT.DFTHRI) THEN
+         NRED = NRED + 1
+         INXRED(NRED) = INXACT(J) 
+         DO K = 1, NBLEN
+            GAORED(K,NRED) = GAOS(K,J)
+         ENDDO
+      ENDIF
+   ENDDO
+ENDDO
+IF (NRED.GT. 0) THEN
+   !  First half-contraction of GAO's with potential
+!   call mem_dft_alloc(TMP,NBLEN,NRED)
+    DO J=1,NRED
+     DO K=1, NBLEN
+      TMP(K,J) =  coef(K)* GAORED(K,J)
+     ENDDO
+    ENDDO
+!   call mem_dft_alloc(EXCRED,NRED,NRED)
+   !  Second half-contraction of GAO's with potential
+!   call mem_dft_alloc(EXCRED,NRED,NRED)
+   CALL DGEMM('T','N',NRED,NRED,NBLEN,1E0_realk,&
+        &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+        &                EXCRED(1:NRED*NRED),NRED)
+   !  Distribute contributions to KS-matrix
+   DO JRED=1,NRED         !Jred is reduced index
+      J = INXRED(JRED)    !J is orbitalindex
+      offset = (JRED-1)*NRED
+      DO IRED=1,NRED      !Ired is reduced index
+         I = INXRED(IRED) !I is orbitalindex
+         EXCMAT(I,J) = EXCMAT(I,J) + EXCRED(IRED+offset)
+      ENDDO
+   ENDDO
+!   call mem_dft_dealloc(TMP)
+!   call mem_dft_dealloc(EXCRED)
+ENDIF
+
+END SUBROUTINE II_DFT_DIST_LDA
 
 !> \brief a distribution routine 
 !> \author T. Kjaergaard
@@ -947,7 +3640,8 @@ END SUBROUTINE II_DISTGGABUNRES
 !> \author T. Kjaergaard
 !> \date 2008
 SUBROUTINE II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-     & NTYPSO,NDMAT,COEF,GAOS,EXCMAT,DFTHRI,GAORED,EXCRED,GAOGMX,TMP)
+     & NTYPSO,NDMAT,COEF,GAOS,EXCMAT,DFTHRI,GAORED,EXCRED,GAOGMX,GAOMAX,&
+     & TMP,MAXNACTBAST)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -957,6 +3651,8 @@ INTEGER,intent(in) :: NBLEN
 INTEGER,intent(in) :: nBLOCKS
 !> Number of active basis functions
 INTEGER,intent(in) :: Nactbast
+!> Maximum number of active basis functions
+INTEGER,intent(in) :: MaxNactbast
 !> Number of basis functions
 INTEGER,intent(in) :: Nbast
 !> Number of GAOs types
@@ -977,36 +3673,18 @@ REAL(REALK),intent(inout) :: EXCMAT(NBAST,NBAST,NDMAT)
 REAL(REALK),intent(in) :: DFTHRI
 !
 REAL(REALK),intent(inout) :: TMP(NBLEN,NACTBAST)
-REAL(REALK),intent(inout) :: GAOGMX(NACTBAST)
+REAL(REALK),intent(in)    :: GAOGMX(MAXNACTBAST),GAOMAX
 REAL(REALK),intent(inout) :: GAORED(NBLEN,NACTBAST,4)
 REAL(REALK),intent(inout) :: EXCRED(NactBAST*NactBAST)
-REAL(REALK) :: GAOMAX,GAOMAXTMP
 INTEGER     :: ISTART,IBL,I,ILEN,JBL,J,K,JSTART,JLEN
 INTEGER     :: IRED,JRED,NRED,offset,IDMAT
 INTEGER,pointer :: INXRED(:)
 call mem_dft_alloc(INXRED,NACTBAST)
-DO IDMAT = 1,NDMAT
- NRED = 0
- GAOMAX = 0.0E0_realk
- ! Set up maximum Gaussian AO elements
- DO JBL = 1, NBLOCKS
-   DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)
-      GAOMAXTMP = 0.0E0_realk
-      DO K = 1, NBLEN
-         GAOMAXTMP = MAX(GAOMAXTMP,ABS(GAOS(K,J,1)))
-      ENDDO
-      GAOMAX = MAX(GAOMAX,GAOMAXTMP)
-      DO I=2,4
-         DO K = 1, NBLEN
-            GAOMAXTMP = MAX(GAOMAXTMP,ABS(GAOS(K,J,I)))
-         ENDDO
-      ENDDO
-      GAOGMX(J) = GAOMAXTMP      
-   ENDDO
- ENDDO
-
- ! Set up reduced Gaussian AO's
- DO JBL = 1, NBLOCKS
+NRED = 0
+! TODO: change the NRED from being individual to be BLOCKS => more efficient EXCRED
+ 
+! Set up reduced Gaussian AO's
+DO JBL = 1, NBLOCKS
    DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)
       IF (GAOGMX(J)*GAOMAX.GT.DFTHRI) THEN
          NRED = NRED + 1
@@ -1018,34 +3696,35 @@ DO IDMAT = 1,NDMAT
          ENDDO
       ENDIF
    ENDDO
- ENDDO
- IF (NRED.GT. 0) THEN
- !  First half-contraction of GAO's with potential
-   DO J=1,NRED
-      DO K=1, NBLEN
-         TMP(K,J) =  coef(1,K,IDMAT)*GAORED(K,J,1)&
-              &   + coef(2,K,IDMAT)*GAORED(K,J,2)&
-              &   + coef(3,K,IDMAT)*GAORED(K,J,3)&
-              &   + coef(4,K,IDMAT)*GAORED(K,J,4)
-      ENDDO
-   ENDDO
-!  Second half-contraction of GAO's with potential
-!   CALL MEM_DFT_ALLOC(EXCRED,NRED,NRED)
-   CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
-        &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
-        &                EXCRED(1:NRED*NRED),NRED)
-!  Distribute contributions to KS-matrix
-   DO JRED=1,NRED          !Jred is reduced index
-      J = INXRED(JRED)     !J is orbital index
-      offset = (JRED-1)*NRED
-      DO IRED=1,NRED       !Ired is reduced index
-         I = INXRED(IRED)  !I is orbital index
-         EXCMAT(I,J,IDMAT) = EXCMAT(I,J,IDMAT) + EXCRED(IRED+offset)
-      ENDDO
-   ENDDO
-!   CALL MEM_DFT_DEALLOC(EXCRED)
- ENDIF
 ENDDO
+IF (NRED.GT. 0) THEN
+   DO IDMAT = 1,NDMAT
+      !  First half-contraction of GAO's with potential
+      DO J=1,NRED
+         DO K=1, NBLEN
+            TMP(K,J) =  coef(1,K,IDMAT)*GAORED(K,J,1)&
+                 &   + coef(2,K,IDMAT)*GAORED(K,J,2)&
+                 &   + coef(3,K,IDMAT)*GAORED(K,J,3)&
+                 &   + coef(4,K,IDMAT)*GAORED(K,J,4)
+         ENDDO
+      ENDDO
+      !  Second half-contraction of GAO's with potential
+      !   CALL MEM_DFT_ALLOC(EXCRED,NRED,NRED)
+      CALL DGEMM('T','N',NRED,NRED,NBLEN,1.0E0_realk,&
+           &                GAORED,NBLEN,TMP,NBLEN,0.0E0_realk,&
+           &                EXCRED(1:NRED*NRED),NRED)
+      !  Distribute contributions to KS-matrix
+      DO JRED=1,NRED          !Jred is reduced index
+         J = INXRED(JRED)     !J is orbital index
+         offset = (JRED-1)*NRED
+         DO IRED=1,NRED       !Ired is reduced index
+            I = INXRED(IRED)  !I is orbital index
+            EXCMAT(I,J,IDMAT) = EXCMAT(I,J,IDMAT) + EXCRED(IRED+offset)
+         ENDDO
+      ENDDO
+      !   CALL MEM_DFT_DEALLOC(EXCRED)
+   ENDDO
+ENDIF
 call mem_dft_dealloc(INXRED)
 
 END SUBROUTINE II_DISTGGA
@@ -1157,581 +3836,59 @@ call mem_dft_dealloc(INXRED)
 
 END SUBROUTINE II_DISTMETA
 
-!> \brief GGA Exchange-correlation contribution to molecular gradient
-!> \author T. Kjaergaard
-!> \date 2008
-SUBROUTINE II_geoderiv_molgrad_worker_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAOS,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-  IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAOS(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D05 = 0.5E0_realk
-Real(realk), parameter :: D8 = 8.0E0_realk, D4 = 4E0_realk
-REAL(REALK) :: VXC(2,NBLEN),VX(5),GRDA,GRD,GAOMAX,DMAX
-INTEGER  :: IPNT,I,J,JBL,IBL,K
-LOGICAL,EXTERNAL :: DFT_ISGGA
-LOGICAL :: DOGGA
-INTEGER     :: KVALS(3,3)
-REAL(REALK) :: GAOGMX(NACTBAST)
-REAL(REALK),pointer :: GAORED(:,:,:),GDRED(:,:,:)
-REAL(REALK),pointer :: DRED(:,:)
-INTEGER     :: INXRED(NACTBAST),IRED,JRED,NRED,orb2atom(nbast)
-INTEGER     :: atom(NACTBAST),iatom,IX,K1,K2,K3,KA,ik,jk
-REAL(REALK) :: FRC,GA,GA2,GFS,XCFUNINPUT(1,1),XCFUNOUTPUT(2,1)
+SUBROUTINE LB94correction(rho,GRD,HFexchangeFac,WGHT,VX)
+implicit none
+REAL(REALK),intent(in)    :: rho,GRD,HFexchangeFac,WGHT
+REAL(REALK),intent(inout) :: VX
+Real(realk), parameter :: D3 = 3.0E0_realk,D05 = 0.5E0_realk
+Real(realk), parameter :: D005 = 0.05E0_realk,D1=1.0E0_realk,D08=0.8E0_realk
+REAL(REALK) :: scaled_grad,rho13,rho43,sg2,gdenom,g
 
-orb2atom = DFTDATA%orb2atom
-KVALS(1:3,1) = (/1, 2, 3/)
-KVALS(1:3,2) = (/2, 4, 5/)
-KVALS(1:3,3) = (/3, 5, 6/)
-GRD = 0.D0
-DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1).GT.RHOTHR) THEN
-      !get the functional derivatives 
-      !vx(1) = drvs.df1000 = \frac{\partial f}{\partial \rho_{\alpha}}        
-#ifdef VAR_XCFUN
-      IF(.NOT.USEXCFUN)THEN
-#endif
-         CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-         VXC(1,IPNT) = D2*VX(1) 
-#ifdef VAR_XCFUN
-      ELSE
-         XCFUNINPUT(1,1) = RHO(IPNT,1)
-         call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
-         IF(DFTDATA%LB94)THEN
-            call lsquit('error lb94 not implemented for xcfun',-1)
-         ELSEIF(DFTDATA%CS00)THEN
-            call lsquit('error cs00 not implemented for xcfun',-1)
-         ENDIF
-         VXC(1,IPNT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
-      ENDIF
-#endif
-   ELSE
-      VXC(1,IPNT) = 0E0_realk
-   END IF
-END DO
-
-GAOMAX = 0.0E0_realk
-! Set up maximum Gaussian AO elements
-DO JBL = 1, NBLOCKS
-   DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)
-      GAOGMX(J) = 0.0E0_realk
-      DO I=1,NTYPSO
-         DO K = 1,NBLEN
-            GAOMAX = MAX(GAOMAX,ABS(GAOS(K,J,I)))
-            GAOGMX(J) = MAX(GAOGMX(J),ABS(GAOS(K,J,I)))
-         ENDDO
-      ENDDO
-   ENDDO
-ENDDO
-
-! Set up maximum density-matrix elements
-DMAX = 0.0E0_realk
-DO JBL=1, NBLOCKS
-   DO IBL=1, NBLOCKS
-      DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)        !J is active index
-         DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)  !I is active index
-            DMAX = MAX(DMAX,ABS(DMAT(I,J,1)))
-         ENDDO
-      ENDDO
-   ENDDO
-ENDDO
-! Count reduced number of AO's
-NRED = 0
-DO IBL=1, NBLOCKS
-   DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
-      IF (GAOGMX(I)*GAOMAX*DMAX.GT.RHOTHR) THEN
-         NRED = NRED + 1
-      ENDIF
-   ENDDO
-ENDDO
-
-IF (NRED.GT. 0) THEN
-   call mem_dft_alloc(DRED,NRED,NRED)
-   call mem_dft_alloc(GAORED,NBLEN,NRED,NTYPSO)
-   call mem_dft_alloc(GDRED,NBLEN,NRED,NTYPSO)
-   ! Set up reduced Gaussian AO's
-   IRED = 0
-   DO IBL=1, NBLOCKS
-      DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
-         IF (GAOGMX(I)*GAOMAX*DMAX.GT.RHOTHR) THEN
-            IRED = IRED + 1
-            INXRED(IRED) = I
-            DO J=1,NTYPSO
-               DO K = 1, NBLEN
-                  GAORED(K,IRED,J)  = GAOS(K,I,J)
-               ENDDO
-            ENDDO
-         ENDIF
-      ENDDO
-   ENDDO
-   ! Set up reduced density-matrix
-   DO JRED=1,NRED            !Jred is reduced index
-      J = INXRED(JRED)       !J is active index
-      DO IRED=1,NRED         !Ired is reduced index
-         I = INXRED(IRED)    !I is active index
-         DRED(IRED,JRED) = DMAT(I,J,1)
-      ENDDO
-   ENDDO
-   ! Set up reduced coordinate index in gradient
-   DO IRED=1,NRED
-      I = INXACT(INXRED(IRED)) !I is orbital index
-      atom(IRED) = orb2atom(I)
-   ENDDO
-   
-   ! Density-matrix contraction
-   CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED,&
-        &                 NBLEN,DRED,NRED,0.0E0_realk,GDRED,NBLEN    )
-   DO IRED=1,NRED
-      iatom = atom(IRED)
-      KA = INXRED(IRED)  !KA is active index
-      DO IX=1,3
-         FRC = 0E0_realk
-         DO I = 1, NBLEN
-            FRC = FRC + VXC(1,I)*GDRED(I,IRED,1)*GAOS(I,KA,IX+1)
-         END DO
-         DFTDATA%GRAD(IX,iatom) = DFTDATA%GRAD(IX,iatom) - FRC
-      ENDDO ! IX
-   ENDDO ! IA
-   call mem_dft_dealloc(DRED)
-   call mem_dft_dealloc(GAORED)
-   call mem_dft_dealloc(GDRED)
-ENDIF !NRED GT 0
-
-END SUBROUTINE II_GEODERIV_MOLGRAD_WORKER_LDA
-
-!> \brief GGA Exchange-correlation contribution to molecular gradient
-!> \author T. Kjaergaard
-!> \date 2008
-SUBROUTINE II_geoderiv_molgrad_worker_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAOS,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-  IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAOS(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D05 = 0.5E0_realk
-Real(realk), parameter :: D8 = 8.0E0_realk, D4 = 4E0_realk
-REAL(REALK) :: VXC(4,NBLEN),VX(5),GRDA,GRD,GAOMAX,DMAX
-INTEGER  :: IPNT,I,J,JBL,IBL,K
-LOGICAL,EXTERNAL :: DFT_ISGGA
-LOGICAL :: DOGGA
-INTEGER     :: KVALS(3,3)
-REAL(REALK) :: GAOGMX(NACTBAST)
-REAL(REALK),pointer :: GAORED(:,:,:),GDRED(:,:,:)
-REAL(REALK),pointer :: DRED(:,:)
-INTEGER     :: INXRED(NACTBAST),IRED,JRED,NRED,orb2atom(nbast)
-INTEGER     :: atom(NACTBAST),iatom,IX,K1,K2,K3,KA,ik,jk
-REAL(REALK) :: FRC,GA,GA2,GFS,XCFUNINPUT2(4,1),XCFUNOUTPUT2(5,1)
-
-orb2atom = DFTDATA%orb2atom
-KVALS(1:3,1) = (/1, 2, 3/)
-KVALS(1:3,2) = (/2, 4, 5/)
-KVALS(1:3,3) = (/3, 5, 6/)
-DO IPNT = 1, NBLEN
-   GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-        &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
-      !get the functional derivatives 
-#ifdef VAR_XCFUN
-      IF(.NOT.USEXCFUN)THEN
-#endif
-         CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-         IF(DFTDATA%LB94)THEN
-            CALL LB94correction(rho(IPNT,1),GRD,DFTDATA%HFexchangeFac,&
-                 & WGHT(IPNT),VX(1))            
-         ELSEIF(DFTDATA%CS00)THEN
-            CALL CS00correction(rho(IPNT,1),GRD,DFTDATA%HFexchangeFac,&
-                 & WGHT(IPNT),VX(1),DFTDATA%CS00SHIFT,DFTDATA%CS00eHOMO,DFTDATA%CS00ZND1,DFTDATA%CS00ZND2)
-         ENDIF
-         VXC(1,IPNT) = D2*VX(1) 
-         IF(GRD.GT. 1E-40_realk) THEN
-            GRDA = D05*GRD
-            VXC(2,IPNT) = (VX(2)/GRDA + VX(3))*GRAD(1,IPNT,1)
-            VXC(3,IPNT) = (VX(2)/GRDA + VX(3))*GRAD(2,IPNT,1)
-            VXC(4,IPNT) = (VX(2)/GRDA + VX(3))*GRAD(3,IPNT,1)
-         ELSE
-            VXC(2,IPNT) = 0E0_realk
-            VXC(3,IPNT) = 0E0_realk
-            VXC(4,IPNT) = 0E0_realk
-         ENDIF
-#ifdef VAR_XCFUN
-      ELSE
-         XCFUNINPUT2(1,1) = RHO(IPNT,1)
-         XCFUNINPUT2(2,1) = GRAD(1,IPNT,1)
-         XCFUNINPUT2(3,1) = GRAD(2,IPNT,1)
-         XCFUNINPUT2(4,1) = GRAD(3,IPNT,1)
-         ! Input:
-         !rho   = XCFUNINPUT(1,1)
-         !grad_x = XCFUNINPUT(2,1)
-         !grad_y = XCFUNINPUT(3,1)
-         !grad_z = XCFUNINPUT(4,1)
-         call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,5,XCFUNOUTPUT2,1)
-         ! Output
-         ! Order 0
-         ! out(1,1) Exc
-         ! Order 1
-         ! out(2,1) d^1 Exc / d rho
-         ! out(3,1) d^1 Exc / d grad_x
-         ! out(4,1) d^1 Exc / d grad_y
-         ! out(5,1) d^1 Exc / d grad_z
-         IF(DFTDATA%LB94)THEN
-            call lsquit('error lb94 not implemented for xcfun',-1)
-         ELSEIF(DFTDATA%CS00)THEN
-            call lsquit('error cs00 not implemented for xcfun',-1)
-         ENDIF
-         VXC(1,IPNT) = D2*XCFUNOUTPUT2(2,1)*WGHT(IPNT)
-         VXC(2,IPNT) = D2*XCFUNOUTPUT2(3,1)*WGHT(IPNT)
-         VXC(3,IPNT) = D2*XCFUNOUTPUT2(4,1)*WGHT(IPNT)
-         VXC(4,IPNT) = D2*XCFUNOUTPUT2(5,1)*WGHT(IPNT)
-      ENDIF
-#endif
-   ELSE
-      VXC(1,IPNT) = 0E0_realk
-      VXC(2,IPNT) = 0E0_realk
-      VXC(3,IPNT) = 0E0_realk
-      VXC(4,IPNT) = 0E0_realk
-   END IF
-END DO
-
-GAOMAX = 0.0E0_realk
-! Set up maximum Gaussian AO elements
-DO JBL = 1, NBLOCKS
-   DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)
-      GAOGMX(J) = 0.0E0_realk
-      DO I=1,NTYPSO
-         DO K = 1,NBLEN
-            GAOMAX = MAX(GAOMAX,ABS(GAOS(K,J,I)))
-            GAOGMX(J) = MAX(GAOGMX(J),ABS(GAOS(K,J,I)))
-         ENDDO
-      ENDDO
-   ENDDO
-ENDDO
-
-! Set up maximum density-matrix elements
-DMAX = 0.0E0_realk
-DO JBL=1, NBLOCKS
-   DO IBL=1, NBLOCKS
-      DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)        !J is active index
-         DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)  !I is active index
-            DMAX = MAX(DMAX,ABS(DMAT(I,J,1)))
-         ENDDO
-      ENDDO
-   ENDDO
-ENDDO
-! Count reduced number of AO's
-NRED = 0
-DO IBL=1, NBLOCKS
-   DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
-      IF (GAOGMX(I)*GAOMAX*DMAX.GT.RHOTHR) THEN
-         NRED = NRED + 1
-      ENDIF
-   ENDDO
-ENDDO
-
-IF (NRED.GT. 0) THEN
-   call mem_dft_alloc(DRED,NRED,NRED)
-   call mem_dft_alloc(GAORED,NBLEN,NRED,NTYPSO)
-   call mem_dft_alloc(GDRED,NBLEN,NRED,NTYPSO)
-   ! Set up reduced Gaussian AO's
-   IRED = 0
-   DO IBL=1, NBLOCKS
-      DO I = BLOCKS(1,IBL), BLOCKS(2,IBL)
-         IF (GAOGMX(I)*GAOMAX*DMAX.GT.RHOTHR) THEN
-            IRED = IRED + 1
-            INXRED(IRED) = I
-            DO J=1,NTYPSO
-               DO K = 1, NBLEN
-                  GAORED(K,IRED,J)  = GAOS(K,I,J)
-               ENDDO
-            ENDDO
-         ENDIF
-      ENDDO
-   ENDDO
-   ! Set up reduced density-matrix
-   DO JRED=1,NRED            !Jred is reduced index
-      J = INXRED(JRED)       !J is active index
-      DO IRED=1,NRED         !Ired is reduced index
-         I = INXRED(IRED)    !I is active index
-         DRED(IRED,JRED) = DMAT(I,J,1)
-      ENDDO
-   ENDDO
-   ! Set up reduced coordinate index in gradient
-   DO IRED=1,NRED
-      I = INXACT(INXRED(IRED)) !I is orbital index
-      atom(IRED) = orb2atom(I)
-   ENDDO
-   
-   ! Density-matrix contraction  
-   ! \chi_{\mu}_{A,B} D_{\mu \nu}
-   ! \frac{\partial \chi_{\mu}}{\frac \partial x} D_{\mu \nu}
-   ! \frac{\partial \chi_{\mu}}{\frac \partial y} D_{\mu \nu}
-   ! \frac{\partial \chi_{\mu}}{\frac \partial z} D_{\mu \nu}
-   DO J=1,4
-      CALL DGEMM('N','N',NBLEN,NRED,NRED,1.0E0_realk,GAORED(1,1,J),&
-           &                  NBLEN,DRED,NRED,0.0E0_realk,GDRED(1,1,J),NBLEN )
-   ENDDO
-   DO IRED=1,NRED
-      iatom = atom(IRED)
-      KA = INXRED(IRED) !KA is active index
-      DO IX=1,3
-         K1 = KVALS(1,IX) + 4
-         K2 = KVALS(2,IX) + 4
-         K3 = KVALS(3,IX) + 4
-         FRC = 0E0_realk
-         ! Assuming E_{\xc}=\int f[\rho ,\nabla \rho] d\textbf{r}
-         ! \frac{ \partial E^{xc}[\rho]}{\partial R} =  
-         ! \int \frac{\partial f }{\partial \rho} \frac{\partial \rho(\textbf{r})}{\partial R} d\textbf{r} + 
-         ! \int \frac{\partial f }{\partial |\nabla \rho_{\alpha}|} \frac{\nabla \rho(\textbf{r})}{|\nabla \rho_{\alpha}|}  
-         ! \frac{\partial \nabla \rho(\textbf{r})}{\partial R} d\textbf{r}
-         ! VXC(1,I) = \frac{\partial f }{\partial \rho}
-         ! VXC(2,I) = \int \frac{\partial f }{\partial |\nabla \rho_{\alpha}|}
-         DO I = 1, NBLEN
-            !\frac{\partial \chi_{\mu}}{\partial R_{\gamma}}
-!            GA  = GAOS(I,KA,IX+1)
-            !\nabla \rho \nabla \chi_{\mu} D_{\mu \nu}
-!            GFS = VXC(2,I)*GDRED(I,IRED,2)+VXC(3,I)*GDRED(I,IRED,3)+VXC(4,I)*GDRED(I,IRED,4)
-            !\nabla \rho \frac{\partial \nabla \chi_{\mu}}{\partial R_{\gamma}}
-!            GA2 = VXC(2,I)*GAOS(I,KA,K1)  +VXC(3,I)*GAOS(I,KA,K2)  +VXC(4,I)*GAOS(I,KA,K3)
-            !\int VXC(1)\frac{\partial \chi_{\mu}}{\partial R_{\gamma}}\chi_{\nu}D_{\mu \nu}
-            ! + VXC(2) \nabla \rho \frac{\partial \nabla \chi_{\mu}}{\partial R_{\gamma}} \chi_{\nu}D_{\mu \nu}
-            ! + VXC(2) \nabla \rho \nabla \chi_{\mu} \frac{\partial \chi_{\mu}}{\partial R_{\gamma}} D_{\mu \nu}
-!            FRC = FRC + VXC(1,I)*GDRED(I,IRED,1)*GA + GDRED(I,IRED,1)*GA2 + GFS*GA
-
-            FRC = FRC + VXC(1,I)*GDRED(I,IRED,1)*GAOS(I,KA,IX+1) &
-            &+ VXC(2,I)*(GDRED(I,IRED,1)*GAOS(I,KA,K1) + GDRED(I,IRED,2)*GAOS(I,KA,IX+1)) &
-            &+ VXC(3,I)*(GDRED(I,IRED,1)*GAOS(I,KA,K2) + GDRED(I,IRED,3)*GAOS(I,KA,IX+1)) &
-            &+ VXC(4,I)*(GDRED(I,IRED,1)*GAOS(I,KA,K3) + GDRED(I,IRED,4)*GAOS(I,KA,IX+1))
-
-         END DO
-         DFTDATA%GRAD(IX,iatom) = DFTDATA%GRAD(IX,iatom) - FRC
-      ENDDO ! IX
-   ENDDO ! IRED
-   call mem_dft_dealloc(DRED)
-   call mem_dft_dealloc(GAORED)
-   call mem_dft_dealloc(GDRED)
-ENDIF !NRED GT 0
-
-END SUBROUTINE II_GEODERIV_MOLGRAD_WORKER_GGA
-
-!> \brief Main LDA linear response driver
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE ii_dft_linrsplda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-
-!
-REAL(REALK),pointer :: EXPVAL(:,:),VXC(:,:)
-!EXPVAL(NBLEN,DFTDATA%NBMAT),VXC(NBLEN,DFTDATA%NBMAT),VX(9),DFTENE
-REAL(REALK) :: VX(14),DFTENE
-INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred,W1,W2,W3,W4,W5,W6,W7,W8
-LOGICAL     :: DOCALC
-Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
-Real(realk), parameter :: D4 = 4.0E0_realk
-REAL(REALK) :: fRR
-REAL(REALK) :: XCFUNINPUT(1,1),XCFUNOUTPUT(4,1)
-
-W1 = 1
-W2 = NBLEN*Nactbast                        !W1 - 1 + NBLEN*Nactbast    -> GAORED 
-W3 = NBLEN*Nactbast+1                      !W2 + 1
-W4 = (NBLEN+Nactbast)*Nactbast             !W3 - 1 + Nactbast*Nactbast -> EXCRED
-W5 = (NBLEN+Nactbast)*Nactbast + 1         !W4 + 1 
-W6 = (NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
-W7 = (NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
-W8 = (2*NBLEN+Nactbast + 1) * Nactbast     !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_LSDEBUGINT
-IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in ii_dft_linrsplda',lupri)
-#endif
-
-call mem_dft_alloc(EXPVAL,NBLEN,DFTDATA%NBMAT)
-call mem_dft_alloc(VXC,NBLEN,DFTDATA%NBMAT)
-NBMAT = DFTDATA%NBMAT
-DOCALC = .FALSE.
-DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-      DOCALC = .TRUE.
-      EXIT
-   ENDIF
-ENDDO
-IF(DOCALC)THEN
-   !get expectation value of BMAT = \sum_{\mu \nu} \chi_{\mu} \chi_{\nu} BMAT_{\mu \nu}
- call II_get_expval_lda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-        &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,DFTDATA%nBMAT,DFTHRI,NRED)
- IF(NRED.GT. 0)THEN
-  DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-    !get the functional derivatives 
-#ifdef VAR_XCFUN
-      IF(.NOT.USEXCFUN)THEN
-#endif
-         CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
-         !fRR = 0.5*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
-         fRR = VX(6) + VX(7)     
-         DO IBMAT = 1,NBMAT
-            !THE factor 0.5 IN fRR cancels a factor 2.0 in VXC so  
-            VXC(IPNT,IBMAT) = D2*fRR*EXPVAL(IPNT,IBMAT) ! D4*fRR*EXPVAL(IPNT,IBMAT)
-            !WARNING the factor 4 is due to 
-            ! G_{\rho \sigma} &=& \frac{\delta (F^{\alpha} + F^{\beta})}{\delta D^{\alpha}_{\nu \mu}}\kappa^{\alpha}_{\nu \mu}\\
-            ! &+& \frac{\delta (F^{\alpha} + F^{\beta})}{\delta D^{\beta}_{\nu \mu}}\kappa^{\beta}_{\nu \mu}\\
-            ! G_{\rho \sigma} &=& 4 \frac{\delta (F^{\alpha}{\delta D^{\alpha}_{\nu \mu}} \kappa^{\alpha}_{\nu \mu}\\
-            ! G_{\rho \sigma} &=& 4 \int \frac{\partial^{2} f }{\partial \rho^{2}_{\alpha}} \Omega_{\rho \sigma}
-            ! \Omega_{\mu \nu} \kappa^{\alpha}_{\mu \nu} d\textbf{r}
-         ENDDO
-#ifdef VAR_XCFUN
-      ELSE
-         XCFUNINPUT(1,1) = RHO(IPNT,1)
-         call xcfun2_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
-         !1 = E
-         !2 = fR
-         !3 = fRR
-         DO IBMAT = 1,NBMAT
-            VXC(IPNT,IBMAT) =D4*XCFUNOUTPUT(3,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)
-         ENDDO
-      ENDIF
-#endif
-   ELSE
-         VXC(IPNT,:) = 0.0E0_realk
-   ENDIF
-  END DO
-  DO IBMAT = 1,NBMAT
-   CALL II_DFT_DIST_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-        & VXC(:,IBMAT),GAO(:,:,1),DFTDATA%FKSM(:,:,IBMAT),DFTHRI,&
-        & WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
-  ENDDO
- ENDIF
+!LB94 correction
+rho13 = rho**(1.d0/3.d0)
+rho43 = rho13*rho
+IF(rho43.GT.1.0E-13_realk)THEN
+   scaled_grad = GRD/rho43
+ELSE
+   scaled_grad = GRD/1.0E-13_realk
 ENDIF
-call mem_dft_dealloc(EXPVAL)
-call mem_dft_dealloc(VXC)
+!BETA=D005
+sg2 = scaled_grad*scaled_grad
+gdenom = D1 + D3*D005*scaled_grad*log(scaled_grad+dsqrt(1d0+scaled_grad*scaled_grad))
+g = -D005*sg2/gdenom
+VX = VX + (D1-HFexchangeFac)*rho13*g*WGHT
+end SUBROUTINE LB94correction
 
-END SUBROUTINE II_DFT_LINRSPLDA
+SUBROUTINE CS00correction(rho,GRD,HFexchangeFac,WGHT,VX,CS00SHIFT,CS00eHOMO,CS00ZND1,CS00ZND2)
+implicit none
+REAL(REALK),intent(in)    :: rho,GRD,HFexchangeFac,WGHT,CS00SHIFT,CS00eHOMO,CS00ZND1,CS00ZND2
+REAL(REALK),intent(inout) :: VX
+Real(realk), parameter :: D3 = 3.0E0_realk,D05 = 0.5E0_realk
+Real(realk), parameter :: D005 = 0.05E0_realk,D1=1.0E0_realk,D08=0.8E0_realk
+REAL(REALK) :: scaled_grad,rho13,rho43,sg2,gdenom,g,delta,P1,P2
+
+!LB94 correction
+IF(ABS(CS00SHIFT).LT.1.0E-12_realk)THEN
+   delta = -CS00ZND1*CS00eHOMO + CS00ZND2
+ELSE
+   delta = CS00SHIFT
+ENDIF
+
+rho13 = rho**(1.d0/3.d0)
+rho43 = rho13*rho
+IF(rho43.GT.1.0E-13_realk)THEN
+   scaled_grad = GRD/rho43
+ELSE
+   scaled_grad = GRD/1.0E-13_realk
+ENDIF
+!BETA=D005
+sg2 = scaled_grad*scaled_grad
+gdenom = D1 + D3*D005*scaled_grad*log(scaled_grad+dsqrt(1d0+scaled_grad*scaled_grad))
+g = -D005*sg2/gdenom
+P1 = VX + (D1-HFexchangeFac)*rho13*g*WGHT
+P2 = VX - D05*delta*WGHT
+VX = MAX(P1,P2)
+end SUBROUTINE CS00correction
 
 !> \brief computes the expectation value of a matrix BMAT
 !> \author T. Kjaergaard
@@ -1861,282 +4018,12 @@ call mem_dft_dealloc(INXRED)
 
 END SUBROUTINE II_GET_EXPVAL_LDA
 
-!> \brief main unrestricted LDA linear response driver
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE II_DFT_LINRSPLDAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-CALL LSQUIT('II_DFT_LINRSPLDAUNRES not implemented yet',lupri)
-
-END SUBROUTINE II_DFT_LINRSPLDAUNRES
-
-!> \brief main GGA linear response driver
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE II_DFT_LINRSPGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-REAL(REALK),pointer :: EXPVAL(:,:),VXC(:,:,:),EXPGRAD(:,:,:)
-REAL(REALK) :: VX(14),DFTENE,GRD,GRDA,MIXEDGRDA
-INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred,W1,W2,W3,W4,W5,W6,W7,W8
-LOGICAL     :: DOCALC
-Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk
-Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
-Real(realk), parameter :: D16 = 16.0E0_realk,D32 = 32.0E0_realk
-REAL(REALK) :: fR,fZ,fRR,fRZ,fZZ,fRG,fZG,fGG,fG,A,B
-REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(6,1)
-REAL(REALK) :: XCFUNINPUT2(4,1),XCFUNOUTPUT2(15,1)
-NBMAT = DFTDATA%NBMAT
-call mem_dft_alloc(EXPVAL,NBLEN,NBMAT)
-call mem_dft_alloc(EXPGRAD,3,NBLEN,NBMAT)
-call mem_dft_alloc(VXC,4,NBLEN,NBMAT)
-DOCALC = .FALSE.
-DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-      DOCALC = .TRUE.
-      EXIT
-   ENDIF
-ENDDO
-IF(DOCALC)THEN
-  !CALC
-  !EXPVAL : the expectation value of BMAT = \sum_{\mu \nu} \chi_{\mu} \chi_{\nu} BMAT_{\mu \nu}
-  !EXPGRAD: the gradient components of BMAT = \sum_{\mu \nu} \nabla (\chi_{\mu} \chi_{\nu}) BMAT_{\mu \nu}
-  W1 = 1
-  W2 = NBLEN*Nactbast             !W1 - 1 + NBLEN*Nactbast -> GAORED1 
-  W3 = NBLEN*Nactbast+1
-  W4 = NBLEN*Nactbast*4           !W1 - 1 + NBLEN*Nactbast*3 -> GAORED2 
-
-  W5 = 4*NBLEN*Nactbast+1         !W2 + 1
-  W6 = (4*NBLEN+1)*Nactbast       !W3 - 1 + Nactbast  -> GAOGMX
-
-  W7 = (4*NBLEN+1)*Nactbast + 1   !W6 + 1
-  W8 = (5*NBLEN+1)*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
-#ifdef VAR_LSDEBUGINT
-  IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_LINRSPGGA',lupri)
-#endif
-  call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-       & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
-       & DFTDATA%nBMAT,DFTHRI,NRED,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),&
-       & WORK(W7:W8))
- IF(NRED.GT. 0)THEN
-  DO IPNT = 1, NBLEN
-   GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-        &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-   IF(GRD.LT. 1E-40_realk) GRD = 1E-40_realk
-   GRDA = D05*GRD
-   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
-    !get the functional derivatives 
-#ifdef VAR_XCFUN
-    IF(.NOT.USEXCFUN)THEN
-#endif
-       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
-       fZ  = VX(3)                    !drvs.df0010;
-       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
-       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
-       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
-       fRG = D05*VX(10)             !0.5*drvs.df10001;   
-       fZG = D05*VX(13)             !0.5*drvs.df00101; 
-       fGG = D025*VX(14)            !0.25*drvs.df00002; 
-       fG  = D05*VX(5)               !0.5*drvs.df00001;  
-       DO IBMAT = 1,NBMAT
-          MIXEDGRDA = (EXPGRAD(1,IPNT,IBMAT)*GRAD(1,IPNT,1)&
-               &+EXPGRAD(2,IPNT,IBMAT)*GRAD(2,IPNT,1)&
-               &+EXPGRAD(3,IPNT,IBMAT)*GRAD(3,IPNT,1))
-          !the LDA part
-          VXC(1,IPNT,IBMAT) =D4*fRR*EXPVAL(IPNT,IBMAT)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
-          !the non LDA parts
-          A = D8*((fRZ/GRD + fRG)*EXPVAL(IPNT,IBMAT)&
-               & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
-          B= D8*(fZ/GRD + fG)
-          VXC(2,IPNT,IBMAT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,IBMAT)
-          VXC(3,IPNT,IBMAT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,IBMAT)
-          VXC(4,IPNT,IBMAT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,IBMAT)
-       ENDDO
-#ifdef VAR_XCFUN
-    ELSE
-       XCFUNINPUT2(1,1) = RHO(IPNT,1)
-       XCFUNINPUT2(2,1) = GRAD(1,IPNT,1)
-       XCFUNINPUT2(3,1) = GRAD(2,IPNT,1)
-       XCFUNINPUT2(4,1) = GRAD(3,IPNT,1)
-       ! Input:
-       !rho   = XCFUNINPUT(1,1)
-       !grad_x = XCFUNINPUT(2,1)
-       !grad_y = XCFUNINPUT(3,1)
-       !grad_z = XCFUNINPUT(4,1)
-       call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,15,XCFUNOUTPUT2,2)
-       ! Output
-       ! Order 0
-       ! out(1,1) Exc
-       ! Order 1
-       ! out(2,1) d^1 Exc / d n
-       ! out(3,1) d^1 Exc / d nx
-       ! out(4,1) d^1 Exc / d ny
-       ! out(5,1) d^1 Exc / d nz
-       ! Order 2
-       ! out(6,1) d^2 Exc / d n n
-       ! out(7,1) d^2 Exc / d n nx
-       ! out(8,1) d^2 Exc / d n ny
-       ! out(9,1) d^2 Exc / d n nz
-       ! out(10,1) d^2 Exc / d nx nx
-       ! out(11,1) d^2 Exc / d nx ny
-       ! out(12,1) d^2 Exc / d nx nz
-       ! out(13,1) d^2 Exc / d ny ny
-       ! out(14,1) d^2 Exc / d ny nz
-       ! out(15,1) d^2 Exc / d nz nz
-       DO IBMAT = 1,NBMAT
-          !the \Omega_{\mu \nu} part
-          VXC(1,IPNT,IBMAT) = &
-               &   D4*XCFUNOUTPUT2(6,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT) &
-               & + D4*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D4*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D4*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
-          !the \frac{\partial \Omega_{\mu \nu}}{\partial x} part
-          VXC(2,IPNT,IBMAT) = &
-               &   D8*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
-          !the \frac{\partial \Omega_{\mu \nu}}{\partial y} part             
-          VXC(3,IPNT,IBMAT) = &
-               &   D8*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
-          !the \frac{\partial \Omega_{\mu \nu}}{\partial z} part =
-          !     (d^2 Exc/d rho d gz)kappa + (d^2 Exc/d gx d gz)dkappa/dx
-          !+ (d^2 Exc/d gy d gz)dkappa/dy + (d^2 Exc/d gz d gz)dkappa/dz 
-          VXC(4,IPNT,IBMAT) = &
-               &   D8*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPVAL(IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,IBMAT)&
-               & + D8*XCFUNOUTPUT2(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,IBMAT)
-       ENDDO
-
-    ENDIF
-#endif
-   ELSE
-    VXC(:,IPNT,:) = 0.0E0_realk
-   ENDIF
-  END DO
-  W1 = 1
-  W2 = NBLEN*Nactbast*4                        !W1 - 1 + NBLEN*Nactbast*4 -> GAORED 
-  W3 = 4*NBLEN*Nactbast+1                      !W2 + 1
-  W4 = (4*NBLEN+Nactbast)*Nactbast             !W3 - 1 + Nactbast*Nactbast  -> EXCRED
-  W5 = (4*NBLEN+Nactbast)*Nactbast + 1         !W4 + 1 
-  W6 = (4*NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
-  W7 = (4*NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
-  W8 = (5*NBLEN+Nactbast + 1) * Nactbast       !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_LSDEBUGINT
-  IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_KSMLDAUNRES',lupri)
-#endif
-  CALL II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NTYPSO,NBMAT,&
-       & VXC,GAO,DFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
- ENDIF
-ENDIF
-call mem_dft_dealloc(EXPVAL)
-call mem_dft_dealloc(EXPGRAD)
-call mem_dft_dealloc(VXC)
-
-END SUBROUTINE II_DFT_LINRSPGGA
-
 !> \brief computes the expectation value and and gradient of it
 !> \author T. Kjaergaard
 !> \date 2010
 SUBROUTINE II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
      &Nactbast,NBAST,GAOS,EXPVAL,EXPGRAD,BMAT,nBMAT,DFTHRI,NRED,&
-     &GAORED1,GAORED2,GAOGMX,TMP)
+     &GAORED1,GAORED2,GAOGMX,GAOMAX,TMP,MAXNACTBAST)
 IMPLICIT NONE
 !> the logical unit number for the output file
 INTEGER,intent(in) :: LUPRI
@@ -2150,6 +4037,8 @@ INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
 INTEGER,intent(in)     :: INXACT(NACTBAST)
 !> Number of active basis functions
 INTEGER,intent(in) :: Nactbast
+!> Maximum number of active basis functions
+INTEGER,intent(in) :: MaxNactbast
 !> Number of basis functions
 INTEGER,intent(in) :: Nbast
 !> gaussian atomic orbitals
@@ -2166,9 +4055,10 @@ INTEGER,intent(in) :: NBMAT
 REAL(REALK),intent(in) :: DFTHRI
 !> number of reduced orbitals
 INTEGER,intent(inout) :: NRED
+REAL(REALK),intent(in) :: GAOMAX,GAOGMX(MAXNACTBAST)
 !
-REAL(REALK) :: GAOMAX,BREDIJ,BREDJI,BREDCOMBI,BMAX,TMPGAOMAX
-REAL(REALK),intent(inout) :: GAORED1(NBLEN,NACTBAST),GAORED2(NBLEN,NACTBAST,3),GAOGMX(NACTBAST),TMP(NBLEN,NACTBAST)
+REAL(REALK) :: BREDIJ,BREDJI,BREDCOMBI,BMAX,TMPGAOMAX
+REAL(REALK),intent(inout) :: GAORED1(NBLEN,NACTBAST),GAORED2(NBLEN,NACTBAST,3),TMP(NBLEN,NACTBAST)
 integer     :: INXRED(NACTBAST)
 INTEGER     :: ISTART,IBL,I,ILEN,JBL,J,K,JSTART,JLEN
 INTEGER     :: IRED,JRED,IORB,JORB,IBMAT
@@ -2177,23 +4067,6 @@ REAL(REALK),pointer :: BRED(:,:)
 INTEGER     :: ORBBLOCKS(2,NBLOCKS)
 
 ! Set up maximum Gaussian AO elements
-GAOMAX = 0.0E0_realk
-DO JBL = 1, NBLOCKS
-   DO J = BLOCKS(1,JBL), BLOCKS(2,JBL)
-      TMPGAOMAX = 0.0E0_realk
-      DO K = 1,NBLEN
-         TMPGAOMAX = MAX(TMPGAOMAX,ABS(GAOS(K,J,1)))
-      ENDDO
-      GAOMAX = MAX(GAOMAX,TMPGAOMAX)
-      DO I=2,4
-         DO K = 1,NBLEN
-            TMPGAOMAX = MAX(TMPGAOMAX,ABS(GAOS(K,J,I)))
-         ENDDO
-      ENDDO
-      GAOGMX(J) = TMPGAOMAX
-   ENDDO
-ENDDO
-
 DO IBL=1, NBLOCKS
    ORBBLOCKS(1,IBL) = INXACT(BLOCKS(1,IBL))
    ORBBLOCKS(2,IBL) = INXACT(BLOCKS(2,IBL))
@@ -2272,445 +4145,6 @@ IF (NRED.GT. 0) THEN
 ENDIF
 
 END SUBROUTINE II_GET_EXPVAL_GGA
-
-!> \brief main unrestricted GGA linear response driver
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE II_DFT_LINRSPGGAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-CALL LSQUIT('II_DFT_LINRSPGGAUNRES not implemented yet',lupri)
-
-END SUBROUTINE II_DFT_LINRSPGGAUNRES
-
-!> \brief LDA Exchange-correlation contribution to quadratic response 
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE ii_dft_quadrsplda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-REAL(REALK),pointer :: EXPVAL(:,:),VXC(:)
-!EXPVAL(NBLEN,DFTDATA%NBMAT),VXC(NBLEN,DFTDATA%NBMAT),VX(9),DFTENE
-REAL(REALK) :: VX(27),DFTENE
-INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred
-INTEGER     :: W1,W2,W3,W4,W5,W6,W7,W8
-LOGICAL     :: DOCALC
-Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D3 = 3.0E0_realk
-REAL(REALK) :: fRRR
-
-W1 = 1
-W2 = NBLEN*Nactbast                        !W1 - 1 + NBLEN*Nactbast    -> GAORED 
-W3 = NBLEN*Nactbast+1                      !W2 + 1
-W4 = (NBLEN+Nactbast)*Nactbast             !W3 - 1 + Nactbast*Nactbast -> EXCRED
-W5 = (NBLEN+Nactbast)*Nactbast + 1         !W4 + 1 
-W6 = (NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
-W7 = (NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
-W8 = (2*NBLEN+Nactbast + 1) * Nactbast     !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_LSDEBUGINT
-IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPLDA',lupri)
-#endif
-
-call mem_dft_alloc(EXPVAL,NBLEN,DFTDATA%NBMAT)
-call mem_dft_alloc(VXC,NBLEN)
-NBMAT = DFTDATA%NBMAT
-DOCALC = .FALSE.
-DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-      DOCALC = .TRUE.
-      EXIT
-   ENDIF
-ENDDO
-IF(DOCALC)THEN
-!get expectation value of BMAT=\sum_{\mu \nu}\chi_{\mu}\chi_{\nu}BMAT_{\mu \nu}
- call II_get_expval_lda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-        &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,DFTDATA%nBMAT,DFTHRI,NRED)
- IF(NRED.GT. 0)THEN
-  DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-    !get the functional derivatives 
-#ifdef VAR_XCFUN
-    IF(.NOT.USEXCFUN)THEN
-#endif
-       CALL dft_funcderiv3(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
-       !    fR  = VX(1)              !drvs.df1000;
-       !radovan: factor 0.5 "missing" here compared to "true" derivative wrt RR i'm 
-       !sure it's compensated elsewhere but can be confusing when comparing with 
-       !other codes
-       !     fRR = (VX(6) + VX(7))   !(drvs.df2000 + drvs.df1100);
-       !radovan: factor 0.25 "missing" here compared to "true" derivative wrt RRR
-       !        (i'm sure it's compensated elsewhere)
-       !         but can be confusing when comparing with other codes
-       fRRR = (VX(15)+D3*VX(16))     !(drvs.df3000 + 3*drvs.df2100);
-       !    VXCB(IPNT) = fRR*EXPVALB(IPNT) 
-       !    VXCC(IPNT) = fRR*EXPVALC(IPNT) 
-       VXC(IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)  
-#ifdef VAR_XCFUN
-    ELSE
-       call lsquit('xcfun version of quadratic response not implemented',-1)
-    ENDIF
-#endif
-   ELSE
-    VXC(IPNT) = 0.0E0_realk
-   ENDIF
-  END DO
-   CALL II_DFT_DIST_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-        & VXC(:),GAO(:,:,1),DFTDATA%FKSM(:,:,1),DFTHRI,WORK(W1:W2),&
-        & WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
- ENDIF
-ENDIF
-call mem_dft_dealloc(EXPVAL)
-call mem_dft_dealloc(VXC)
-
-END SUBROUTINE II_DFT_QUADRSPLDA
-
-!> \brief GGA Exchange-correlation contribution to quadratic response 
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE II_DFT_QUADRSPGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-REAL(REALK),pointer :: EXPVAL(:,:),VXC(:,:),EXPGRAD(:,:,:)
-REAL(REALK) :: VX(27),DFTENE,GRD,GRDA,MIXEDGRDA
-INTEGER     :: I,J,NBMAT,IPNT,IBMAT,nred,W1,W2,W3,W4,W5,W6,W7,W8
-LOGICAL     :: DOCALC
-Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk,D3 = 3E0_realk
-Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
-REAL(REALK) :: GRD2,GRDA2,GRDA3
-REAL(REALK) :: fRZ,fRG,fZZ,fRRR,fRRZ,fRRG,fRRGX,fRZZ,fZZZ,gradY,gradZ,gradYZ,A,B,C
-REAL(REALK) :: XCFUNINPUT(2,1),XCFUNOUTPUT(10,1)
-NBMAT = DFTDATA%NBMAT
-IF(NBMAT.NE. 2)call lsquit('QRSP XC error',lupri)
-call mem_dft_alloc(EXPVAL,NBLEN,NBMAT)
-call mem_dft_alloc(EXPGRAD,3,NBLEN,NBMAT)
-call mem_dft_alloc(VXC,4,NBLEN)
-DOCALC = .FALSE.
-DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-      DOCALC = .TRUE.
-      EXIT
-   ENDIF
-ENDDO
-IF(DOCALC)THEN
- W1 = 1
- W2 = NBLEN*Nactbast             !W1 - 1 + NBLEN*Nactbast -> GAORED1 
- W3 = NBLEN*Nactbast+1
- W4 = NBLEN*Nactbast*4           !W1 - 1 + NBLEN*Nactbast*3 -> GAORED2 
- W5 = 4*NBLEN*Nactbast+1         !W2 + 1
- W6 = (4*NBLEN+1)*Nactbast       !W3 - 1 + Nactbast  -> GAOGMX
- W7 = (4*NBLEN+1)*Nactbast + 1   !W6 + 1
- W8 = (5*NBLEN+1)*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
-#ifdef VAR_LSDEBUGINT
- IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPGGA',lupri)
-#endif
- call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-      & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
-      & DFTDATA%nBMAT,DFTHRI,NRED,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),&
-      & WORK(W7:W8))
- IF(NRED.GT. 0)THEN
-  DO IPNT = 1, NBLEN
-   GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-        &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-   IF(GRD.LT. 1E-40_realk) GRD = 1E-40_realk
-   GRDA = D05*GRD
-   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
-    !get the functional derivatives 
-    GRD2 = GRD*GRD
-    GRDA2 = GRDA*GRDA
-    GRDA3 = GRDA2*GRDA
-#ifdef VAR_XCFUN
-    IF(.NOT.USEXCFUN)THEN
-#endif
-       CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-       fRZ = (VX(8)+VX(9))/GRD              !(drvs.df1010 + drvs.df1001)/(2*grada)
-       fRG = D2*VX(10)                      !2*drvs.df10001   
-       fZZ = (VX(11)+VX(12))/GRD2-VX(3)/(GRD2*GRDA) !(drvs.df0020 + drvs.df0011)/(4*grada2)-drvs.df0010/(4*grada3)
-       fRRR = VX(15)+D3*VX(16)              !(drvs.df3000 + 3*drvs.df2100) 
-       fRRZ = (VX(17)+VX(18)+D2*VX(20))/GRD !(drvs.df2010+drvs.df2001+2*drvs.df1110)/(2*grada)
-       fRRG = VX(19)+VX(21)                 !drvs.df20001+drvs.df11001
-       fRRGX = D2*(VX(19)+VX(21))           !2*(drvs.df20001+drvs.df11001)
-       fRZZ = (VX(22)+VX(24)+D2*VX(23))/GRD2 - (VX(8)+VX(9))/(GRD2*GRDA)  !(drvs.df1020+drvs.df0120+2*drvs.df1011)/(4*grada2)-(drvs.df1010+drvs.df1001)/(4*grada3)
-       fZZZ = ((VX(25)+D3*VX(26))/(GRDA3)-D3*(VX(11)+VX(12))/(GRDA2*GRDA2)+D3*VX(3)/(GRDA3*GRDA2))/D8
-       !((drvs.df0030 + 3*drvs.df0021)/grada3& 
-       !         &-3*(drvs.df0020 + drvs.df0011)/(grada2*grada2)&
-       !         &+3*drvs.df0010/(grada3*grada2))/8.0
-       gradY = D05*(EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1) &
-            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1) &
-            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-       gradZ = D05*(EXPGRAD(1,IPNT,2)*GRAD(1,IPNT,1) &
-            &+EXPGRAD(2,IPNT,2)*GRAD(2,IPNT,1) &
-            &+EXPGRAD(3,IPNT,2)*GRAD(3,IPNT,1))
-       gradYZ = (EXPGRAD(1,IPNT,2)*EXPGRAD(1,IPNT,1) &
-            &+EXPGRAD(2,IPNT,2)*EXPGRAD(2,IPNT,1) &
-            &+EXPGRAD(3,IPNT,2)*EXPGRAD(3,IPNT,1))
-       VXC(1,IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &!OK
-            &+D4*(fRRZ*EXPVAL(IPNT,1)*gradZ+fRRZ*EXPVAL(IPNT,2)*gradY) & !OK
-            &+D8*gradZ*gradY*fRZZ &! OK
-            &+D4*gradYZ*fRZ &! OK  
-            &+D4*fRRG*EXPVAL(IPNT,1)*gradZ &! OK
-            &+D4*fRRG*EXPVAL(IPNT,2)*gradY+D2*fRG*gradYZ !OK
-       
-       A = D8*fZZZ*gradY*gradZ &
-            & + D4*(fRZZ*EXPVAL(IPNT,1)*gradZ + fRZZ*EXPVAL(IPNT,2)*gradY) &
-            & + D2*fRRZ*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &
-            & + fRRGX*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) + D4*fZZ*gradYZ
-       B = D8*fZZ*gradY + D4*fRZ*EXPVAL(IPNT,1) + D2*fRG*EXPVAL(IPNT,1)
-       C = D8*fZZ*gradZ + D4*fRZ*EXPVAL(IPNT,2) + D2*fRG*EXPVAL(IPNT,2)
-       
-       VXC(2,IPNT) = D2*A*GRAD(1,IPNT,1) + D2*B*EXPGRAD(1,IPNT,2) + D2*C*EXPGRAD(1,IPNT,1)
-       VXC(3,IPNT) = D2*A*GRAD(2,IPNT,1) + D2*B*EXPGRAD(2,IPNT,2) + D2*C*EXPGRAD(2,IPNT,1)
-       VXC(4,IPNT) = D2*A*GRAD(3,IPNT,1) + D2*B*EXPGRAD(3,IPNT,2) + D2*C*EXPGRAD(3,IPNT,1)
-#ifdef VAR_XCFUN
-    ELSE
-       call lsquit('xcfun version of quadratic response not implemented',-1)
-    ENDIF
-#endif
-   ELSE
-    VXC(:,IPNT) = 0.0E0_realk
-   ENDIF
-  END DO
-  W1 = 1
-  W2 = NBLEN*Nactbast*4                        !W1 - 1 + NBLEN*Nactbast*4 -> GAORED 
-  W3 = 4*NBLEN*Nactbast+1                      !W2 + 1
-  W4 = (4*NBLEN+Nactbast)*Nactbast             !W3 - 1 + Nactbast*Nactbast  -> EXCRED
-  W5 = (4*NBLEN+Nactbast)*Nactbast + 1         !W4 + 1 
-  W6 = (4*NBLEN+Nactbast + 1) * Nactbast       !W5 - 1 + Nactbast          -> GAOGMX
-  W7 = (4*NBLEN+Nactbast + 1) * Nactbast + 1   !W6 + 1
-  W8 = (5*NBLEN+Nactbast + 1) * Nactbast       !W7 - 1 + NBLEN*Nactbast    -> TMP
-#ifdef VAR_LSDEBUGINT
-  IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_QUADRSPGGA',lupri)
-#endif
-  CALL II_DISTGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NTYPSO,1,&
-       & VXC,GAO,DFTDATA%FKSM,DFTHRI,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),WORK(W7:W8))
- ENDIF
-ENDIF
-call mem_dft_dealloc(EXPVAL)
-call mem_dft_dealloc(EXPGRAD)
-call mem_dft_dealloc(VXC)
-
-END SUBROUTINE II_DFT_QUADRSPGGA
-
-!> \brief magnetic derivative Kohn-sham matrix LDA closed shell worker routine
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE II_DFT_magderiv_kohnshamLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-Real(realk), parameter :: D4 = 4.0E0_realk,DUMMY = 0E0_realk
-REAL(REALK) :: VXC(NBLEN),VX(5),DFTENE
-INTEGER     :: I,J,IPNT
-REAL(REALK) :: XCFUNINPUT(1,1),XCFUNOUTPUT(2,1)
-
-! LDA Exchange-correlation contribution to Kohn-Sham energy
-DO IPNT = 1, NBLEN
-!   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-      !get the functional derivatives 
-      !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}}
-#ifdef VAR_XCFUN
-   IF(.NOT.USEXCFUN)THEN
-#endif
-      CALL dft_funcderiv1(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
-      !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
-      VXC(IPNT) = VX(1)*D4 
-#ifdef VAR_XCFUN
-   ELSE
-      call lsquit('xcfun version of II_DFT_MAGDERIV_KOHNSHAMLDA not implemented',-1)
-      XCFUNINPUT(1,1) = RHO(IPNT,1)
-      call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
-      !WARNING the factor 2 is due to F=F_alpha + F_beta = 2 F_alpha 
-      VXC(IPNT) = D4*XCFUNOUTPUT(2,1)*WGHT(IPNT)
-      call lsquit('xcfun inconsistency',-1)
-   ENDIF
-#endif
-!   ELSE
-!      VXC(IPNT) = 0.0E0_realk
-!   ENDIF
-END DO
-!ntypso should be 4
-CALL II_DFT_distmagderiv_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-     &VXC,GAO(:,:,:),DFTDATA%FKSM(:,:,1:3),COORD,DFTHRI,NTYPSO)
-
-END SUBROUTINE II_DFT_MAGDERIV_KOHNSHAMLDA
 
 !> \brief distribution routine for magnetic derivative Kohn-sham matrix LDA closed shell worker routine
 !> \author T. Kjaergaard
@@ -2821,123 +4255,6 @@ call mem_dft_dealloc(GAORED)
 call mem_dft_dealloc(TMP)
 
 END SUBROUTINE II_DFT_DISTMAGDERIV_LDA
-
-!> \brief  magnetic derivative Kohn-sham matrix GGA closed shell worker routine
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE II_DFT_magderiv_kohnshamGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D3 = 3.0E0_realk,D05 = 0.5E0_realk
-REAL(REALK) :: VX(5),DFTENE,GRD,GRDA,A,XCFUNINPUT(2,1),XCFUNOUTPUT(3,1)
-REAL(REALK),pointer :: VXC(:,:)
-INTEGER     :: I,J
-IDMAT = 1
-IF(NDMAT.GT.1)CALL LSQUIT('II_DFT_MAGDERIV_KOHNSHAMGGA ndmat',-1)
-call mem_dft_alloc(VXC,4,NBLEN)
-DO IPNT = 1, NBLEN
-   GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-        &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
-#ifdef VAR_XCFUN
-      IF(.NOT.USEXCFUN)THEN
-#endif
-         CALL dft_funcderiv1(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-         IF(DFTDATA%LB94)THEN
-            CALL LB94correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
-                 & WGHT(IPNT),VX(1))            
-         ELSEIF(DFTDATA%CS00)THEN
-            CALL CS00correction(rho(IPNT,IDMAT),GRD,DFTDATA%HFexchangeFac,&
-                 & WGHT(IPNT),VX(1),DFTDATA%CS00SHIFT,DFTDATA%CS00eHOMO,DFTDATA%CS00ZND1,DFTDATA%CS00ZND2)
-         ENDIF
-         VXC(1,IPNT) = D2*VX(1) 
-         IF(GRD.GT. 1E-40_realk) THEN
-            GRDA = D05*GRD
-            A = D2*(VX(2)/GRDA + VX(3))
-            VXC(2,IPNT) = A*GRAD(1,IPNT,1)
-            VXC(3,IPNT) = A*GRAD(2,IPNT,1)
-            VXC(4,IPNT) = A*GRAD(3,IPNT,1)
-         ELSE
-            VXC(2,IPNT) = 0E0_realk
-            VXC(3,IPNT) = 0E0_realk
-            VXC(4,IPNT) = 0E0_realk
-         ENDIF
-#ifdef VAR_XCFUN
-      ELSE
-         call lsquit('xcfun version of II_DFT_MAGDERIV_KOHNSHAMGGA not implemented',-1)
-         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
-         XCFUNINPUT(2,1) = GRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
-              &+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-              &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1)
-         call xcfun_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
-
-         IF(DFTDATA%LB94)THEN
-            call lsquit('error lb94 xcfun',-1)
-         ELSEIF(DFTDATA%CS00)THEN
-            call lsquit('error cs00 xcfun',-1)
-         ENDIF
-
-         VXC(1,IPNT) = D2*XCFUNOUTPUT(2,1)*WGHT(IPNT)
-         VXC(2,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(1,IPNT,IDMAT)
-         VXC(3,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(2,IPNT,IDMAT)
-         VXC(4,IPNT) = XCFUNOUTPUT(3,1)*WGHT(IPNT)*D8*GRAD(3,IPNT,IDMAT)
-         call lsquit('XCFUN',-1)
-      ENDIF
-#endif
-   ELSE
-      VXC(:,IPNT) = 0E0_realk
-   END IF
-END DO
-CALL II_DFT_distmagderiv_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,&
-     &VXC,GAO,DFTDATA%FKSM,COORD,DFTHRI,NTYPSO)
-call mem_dft_dealloc(VXC)
-
-END SUBROUTINE II_DFT_MAGDERIV_KOHNSHAMGGA
 
 !> \brief distribution routine for magnetic derivative Kohn-sham matrix GGA
 !> \author T. Kjaergaard
@@ -3081,124 +4398,6 @@ call mem_dft_dealloc(GAOGMX)
 call mem_dft_dealloc(TMP)
 
 END SUBROUTINE II_DFT_DISTMAGDERIV_GGA
-
-!> \brief magnetic derivative Kohn-sham matrix LDA closed shell worker routine
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE II_DFT_MAGDERIV_LINRSPLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-Real(realk), parameter :: D4 = 4.0E0_realk,DUMMY = 0E0_realk
-REAL(REALK) :: fRR,VX(14)
-INTEGER     :: I,J,NBMAT,ibmat,N,NRED,IPNT
-LOGICAL     :: DOCALC,dosympart
-REAL(REALK),parameter :: D2=2E0_realk
-REAL(REALK),pointer :: EXPVAL(:,:),VXC(:,:)
-REAL(REALK),pointer :: EXPGRAD(:,:,:),VXC2(:,:,:)
-
-NBMAT = DFTDATA%NBMAT
-dosympart = DFTDATA%dosympart
-call mem_dft_alloc(EXPVAL,NBLEN,NBMAT)
-call mem_dft_alloc(EXPGRAD,NBLEN,3,NBMAT)!magnetic gradients of EXPVAL=BMAT*chi(r)*chi(r)
-call mem_dft_alloc(VXC,NBLEN,NBMAT)
-call mem_dft_alloc(VXC2,NBLEN,NBMAT,3)
-DOCALC = .FALSE.
-DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-      DOCALC = .TRUE.
-      EXIT
-   ENDIF
-ENDDO
-IF(DOCALC)THEN
-!get expectation value of BMAT
- call II_get_magderiv_expval_lda(LUPRI,NTYPSO,NBLEN,NBLOCKS,BLOCKS,&
-        & INXACT,Nactbast,NBAST,GAO,COORD,EXPVAL,EXPGRAD,DFTDATA%BMAT,nBMAT,&
-        & NRED,DFTHRI,dosympart)
- IF(NRED.GT. 0)THEN
-  VXC2 = 0.0E0_realk
-  DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-    !get the functional derivatives 
-#ifdef VAR_XCFUN
-     IF(.NOT.USEXCFUN)THEN
-#endif
-        CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
-        !fRR = 0.5*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
-        fRR = VX(6) + VX(7)     
-        !THE factor 0.5 IN fRR cancels a factor 2.0 in VXC so  
-        DO IBMAT = 1,NBMAT
-           VXC(IPNT,IBMAT) = D2*fRR*EXPVAL(IPNT,IBMAT)!D4*fRR*EXPVAL(IPNT,IBMAT)
-        ENDDO
-        DO N=1,3
-           DO IBMAT = 1,NBMAT
-              VXC2(IPNT,IBMAT,N)=D2*fRR*EXPGRAD(IPNT,N,IBMAT)
-           ENDDO
-        ENDDO
-#ifdef VAR_XCFUN
-     ELSE
-        call lsquit('xcfun version of II_DFT_MAGDERIV_LINRSPLDA not implemented',-1)
-     ENDIF
-#endif
-   ELSE
-    VXC(IPNT,:) = 0.0E0_realk
-   ENDIF
-  END DO
-  CALL II_DFT_DISTMAGDERIV_linrsp_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-    &Nactbast,NBAST,VXC,VXC2,NBMAT,GAO,DFTDATA%FKSM,DFTDATA%FKSMS,COORD,DFTHRI,NTYPSO,dosympart)
- ENDIF
-ENDIF
-call mem_dft_dealloc(EXPVAL)
-call mem_dft_dealloc(EXPGRAD)
-call mem_dft_dealloc(VXC)
-call mem_dft_dealloc(VXC2)
-
-END SUBROUTINE II_DFT_MAGDERIV_LINRSPLDA
 
 !> \brief computes the expectation value and the magnetic derivative of it
 !> \author T. Kjaergaard
@@ -3543,163 +4742,6 @@ call mem_dft_dealloc(GAORED)
 call mem_dft_dealloc(TMP)
 
 END SUBROUTINE II_DFT_DISTMAGDERIV_linrsp_LDA
-
-!> \brief magnetic derivative linrsp matrix GGA closed shell worker routine
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE II_DFT_MAGDERIV_LINRSPGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-INTEGER     :: I,J,NBMAT,ibmat,N,NRED,IPNT
-REAL(REALK) :: VX(14),GRD,GRDA,MIXEDGRDA,MIXEDGRDAMAG(3)
-LOGICAL     :: DOCALC,dosympart
-REAL(REALK),pointer :: VXC1(:,:),VXC1MAG(:,:,:)
-REAL(REALK),pointer :: EXPGRAD(:,:,:,:),VXC2(:,:,:),VXC2MAG(:,:,:,:)
-Real(realk), parameter :: D4 = 4.0E0_realk, DUMMY = 0E0_realk,D05 = 0.5E0_realk
-Real(realk), parameter :: D2 = 2.0E0_realk, D8 = 8.0E0_realk,D025 = 0.25E0_realk
-REAL(REALK) :: fR,fZ,fRR,fRZ,fZZ,fRG,fZG,fGG,fG,A,B,AMAG(3)
-NBMAT = DFTDATA%NBMAT
-dosympart = DFTDATA%dosympart
-call mem_dft_alloc(EXPGRAD,NBLEN,4,4,NBMAT)!mixed geo,magn gradients of EXPVAL
-call mem_dft_alloc(VXC1,NBLEN,NBMAT)
-call mem_dft_alloc(VXC1MAG,NBLEN,NBMAT,3)
-call mem_dft_alloc(VXC2,NBLEN,NBMAT,3)
-call mem_dft_alloc(VXC2MAG,NBLEN,NBMAT,3,3)
-DOCALC = .FALSE.
-DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-      DOCALC = .TRUE.
-      EXIT
-   ENDIF
-ENDDO
-IF(DOCALC)THEN
-!get expectation value of BMAT
- call II_get_magderiv_expval_gga(LUPRI,NTYPSO,NBLEN,NBLOCKS,BLOCKS,&
-        & INXACT,Nactbast,NBAST,GAO,COORD,EXPGRAD,DFTDATA%BMAT,nBMAT,&
-        & NRED,DFTHRI,dosympart)
- IF(NRED.GT. 0)THEN
-  VXC2 = 0.0E0_realk
-  DO IPNT = 1, NBLEN
-   GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-        &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
-    IF(GRD.LT. 1E-40_realk) GRD = 1E-40_realk
-    GRDA = D05*GRD
-    !get the functional derivatives 
-#ifdef VAR_XCFUN
-    IF(.NOT.USEXCFUN)THEN
-#endif
-       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
-       fZ  = VX(3)                    !drvs.df0010;
-       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
-       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
-       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
-       fRG = D05*VX(10)             !0.5*drvs.df10001;   
-       fZG = D05*VX(13)             !0.5*drvs.df00101; 
-       fGG = D025*VX(14)            !0.25*drvs.df00002; 
-       fG  = D05*VX(5)               !0.5*drvs.df00001;  
-       DO IBMAT = 1,NBMAT
-          MIXEDGRDA = (EXPGRAD(IPNT,2,1,IBMAT)*GRAD(1,IPNT,1)&
-               &+EXPGRAD(IPNT,3,1,IBMAT)*GRAD(2,IPNT,1)&
-               &+EXPGRAD(IPNT,4,1,IBMAT)*GRAD(3,IPNT,1))
-          VXC1(IPNT,IBMAT) =D4*fRR*EXPGRAD(IPNT,1,1,IBMAT)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
-          !magnetic differentiation of VXC1
-          DO N=1,3
-             MIXEDGRDAMAG(N) = (EXPGRAD(IPNT,2,N+1,IBMAT)*GRAD(1,IPNT,1)&
-                  &+EXPGRAD(IPNT,3,N+1,IBMAT)*GRAD(2,IPNT,1)&
-                  &+EXPGRAD(IPNT,4,N+1,IBMAT)*GRAD(3,IPNT,1))
-          ENDDO
-          DO N=1,3
-             VXC1MAG(IPNT,IBMAT,N)=D4*(fRZ/GRD+fRG)*MIXEDGRDAMAG(N)+D4*fRR*EXPGRAD(IPNT,1,1+N,IBMAT)
-          ENDDO
-          A = D8*((fRZ/GRD + fRG)*EXPGRAD(IPNT,1,1,IBMAT)&
-               & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
-          B= D8*(fZ/GRD + fG)
-          VXC2(IPNT,IBMAT,1) = A*GRAD(1,IPNT,1)+B*EXPGRAD(IPNT,2,1,IBMAT)
-          VXC2(IPNT,IBMAT,2) = A*GRAD(2,IPNT,1)+B*EXPGRAD(IPNT,3,1,IBMAT)
-          VXC2(IPNT,IBMAT,3) = A*GRAD(3,IPNT,1)+B*EXPGRAD(IPNT,4,1,IBMAT)
-          !magnetic differentiation of VXC2
-          DO N=1,3
-             AMAG(N) = D8*((fRZ/GRD + fRG)*EXPGRAD(IPNT,1,N+1,IBMAT)&
-                  & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDAMAG(N))
-          ENDDO
-          DO N=1,3
-             VXC2MAG(IPNT,IBMAT,1,N)=AMAG(N)*GRAD(1,IPNT,1)+B*EXPGRAD(IPNT,2,1+N,IBMAT)
-             VXC2MAG(IPNT,IBMAT,2,N)=AMAG(N)*GRAD(2,IPNT,1)+B*EXPGRAD(IPNT,3,1+N,IBMAT)
-             VXC2MAG(IPNT,IBMAT,3,N)=AMAG(N)*GRAD(3,IPNT,1)+B*EXPGRAD(IPNT,4,1+N,IBMAT)
-          ENDDO
-       ENDDO
-#ifdef VAR_XCFUN
-    ELSE
-        call lsquit('xcfun version of II_DFT_MAGDERIV_LINRSPGGA not implemented',-1)
-    ENDIF
-#endif
-   ELSE
-    VXC1(IPNT,:) = 0.0E0_realk
-    VXC1MAG(IPNT,:,:) = 0.0E0_realk
-    VXC2(IPNT,:,:) = 0.0E0_realk
-    VXC2MAG(IPNT,:,:,:) = 0.0E0_realk
-   ENDIF
-  END DO
-  CALL II_DFT_DISTMAGDERIV_linrsp_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-    &Nactbast,NBAST,VXC1,VXC1MAG,VXC2,VXC2MAG,NBMAT,GAO,&
-    &DFTDATA%FKSM,DFTDATA%FKSMS,COORD,DFTHRI,NTYPSO,dosympart)
- ENDIF
-ENDIF
-call mem_dft_dealloc(EXPGRAD)
-call mem_dft_dealloc(VXC1)
-call mem_dft_dealloc(VXC2)
-call mem_dft_dealloc(VXC1MAG)
-call mem_dft_dealloc(VXC2MAG)
-
-END SUBROUTINE II_DFT_MAGDERIV_LINRSPGGA
 
 !> \brief distribution routine for magnetic derivative linrsp matrix GGA closed shell worker routine
 !> \author T. Kjaergaard
@@ -4155,102 +5197,6 @@ call mem_dft_dealloc(TMP)
 NRED = NACTBAST
 END SUBROUTINE II_GET_MAGDERIV_EXPVAL_GGA
 
-
-!> \brief geometrical derivative Kohn-sham matrix LDA closed shell worker routine
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE II_DFT_geoderiv_kohnshamLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-REAL(REALK) :: VX(14),DFTENE,EXPVAL(NBLEN,1)
-REAL(REALK) :: fR(NBLEN),fRR(NBLEN)
-REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,DUMMY = 0E0_realk 
-INTEGER     :: I,J,nred,nbmat,ipnt
-logical :: DOCALC
-nbmat=1
-DOCALC = .FALSE.
-DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-      DOCALC = .TRUE.
-      EXIT
-   ENDIF
-ENDDO
-IF(DOCALC)THEN
- call II_get_expval_lda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-!      &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,DFTDATA%nBMAT,DFTHRI,NRED)
-      &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,1,DFTHRI,NRED)
- IF(NRED.GT. 0)THEN
-  DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-#ifdef VAR_XCFUN
-    IF(.NOT.USEXCFUN)THEN
-#endif
-      CALL dft_funcderiv2(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
-      fR(IPNT) = VX(1)*D4 
-      fRR(IPNT) = D2*(VX(6) + VX(7))*EXPVAL(IPNT,1) 
-#ifdef VAR_XCFUN
-    ELSE
-       call lsquit('xcfun version of II_DFT_GEODERIV_KOHNSHAMLDA not implemented',-1)
-    ENDIF
-#endif
-   ELSE
-      fR(IPNT) = 0.0E0_realk
-      fRR(IPNT) = 0.0E0_realk
-   ENDIF
-  END DO
-   CALL II_DFT_distgeoderiv_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
-        &NBAST,fR,fRR,GAO(:,:,:),DFTDATA%GRAD,DFTDATA%orb2atom,&
-        &DFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
- ENDIF
-ENDIF
-END SUBROUTINE II_DFT_GEODERIV_KOHNSHAMLDA
-
 !> \brief distribution routine for geometrical derivative Kohn-sham matrix LDA closed shell worker routine
 !> \author T. Kjaergaard
 !> \date 2010
@@ -4414,262 +5360,6 @@ call mem_dft_dealloc(TMPD)
 call mem_dft_dealloc(GAORED)
 
 END SUBROUTINE II_DFT_DISTGEODERIV_LDA
-
-!> \brief geometrical derivative Kohn-sham matrix GGA closed shell worker routine
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE II_DFT_geoderiv_kohnshamGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-REAL(REALK) :: VX(14),DFTENE,EXPVAL(NBLEN,1)
-REAL(REALK) :: EXPGRAD(3,NBLEN,1),GRD,GRDA,MIXEDGRDA
-REAL(REALK) :: fR,fRR,fZ,fRZ,fZZ,fRG,fZG,fGG,fG,A,B
-REAL(REALK) :: VXC1(NBLEN),VXC2(3,NBLEN),VXC3(NBLEN),VXC4(3,NBLEN)
-REAL(REALK),parameter :: D2=2E0_realk, D4=4E0_realk, DUMMY = 0E0_realk, D05=0.5E0_realk, D025=0.25E0_realk 
-REAL(REALK),parameter :: D8=8E0_realk
-REAL(REALK) :: XCFUNINPUT2(4,1),XCFUNOUTPUT2(15,1)
-INTEGER     :: I,J,nred,nbmat,IPNT,W1,W2,W3,W4,W7,W8,W5,W6,W9,W10
-logical :: DOCALC
-nbmat=1
-DOCALC = .FALSE.
-DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-      DOCALC = .TRUE.
-      EXIT
-   ENDIF
-ENDDO
-IF(DOCALC)THEN
- W1 = 1
- W2 = NBLEN*Nactbast             !W1 - 1 + NBLEN*Nactbast -> GAORED1 
- W3 = NBLEN*Nactbast+1
- W4 = NBLEN*Nactbast*4           !W1 - 1 + NBLEN*Nactbast*3 -> GAORED2 
- W5 = 4*NBLEN*Nactbast+1         !W2 + 1
- W6 = (4*NBLEN+1)*Nactbast       !W3 - 1 + Nactbast  -> GAOGMX
- W7 = (4*NBLEN+1)*Nactbast + 1   !W6 + 1
- W8 = (5*NBLEN+1)*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
-#ifdef VAR_LSDEBUGINT
- IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_kohnshamGGA',lupri)
-#endif
- call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-      & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
-      & DFTDATA%nBMAT,DFTHRI,NRED,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),&
-      & WORK(W7:W8))
- IF(NRED.GT. 0)THEN
-  DO IPNT = 1, NBLEN
-     GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-          &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-     GRDA = D05*GRD
-     IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
-#ifdef VAR_XCFUN
-      IF(.NOT.USEXCFUN)THEN
-#endif
-       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
-       fZ  = VX(3)                    !drvs.df0010;
-       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
-       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
-       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
-       fRG = D05*VX(10)             !0.5*drvs.df10001;   
-       fZG = D05*VX(13)             !0.5*drvs.df00101; 
-       fGG = D025*VX(14)            !0.25*drvs.df00002; 
-       fG  = D05*VX(5)               !0.5*drvs.df00001;  
-       MIXEDGRDA = (EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
-            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-
-       VXC1(IPNT) = D4*VX(1)
-       A = D2*(VX(3)/GRDA + VX(5))
-       VXC2(1,IPNT) = A*GRAD(1,IPNT,1)
-       VXC2(2,IPNT) = A*GRAD(2,IPNT,1)
-       VXC2(3,IPNT) = A*GRAD(3,IPNT,1)
-       !the LDA part
-       VXC3(IPNT) =D4*fRR*EXPVAL(IPNT,1)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
-       !the non LDA parts
-       A = D4*((fRZ/GRD + fRG)*EXPVAL(IPNT,1)&
-            & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
-       B= D4*(fZ/GRD + fG)
-       VXC4(1,IPNT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,1)
-       VXC4(2,IPNT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,1)
-       VXC4(3,IPNT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,1)
-#ifdef VAR_XCFUN
-      ELSE
-       call lsquit('xcfun version of II_DFT_GEODERIV_KOHNSHAMGGA not implemented',-1)
-       CALL dft_funcderiv2(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-       fR  = D05*(VX(1) + VX(2))   !0.5*(drvs.df1000 + drvs.df0100);
-       fZ  = VX(3)                    !drvs.df0010;
-       fRR = D05*(VX(6) + VX(7))   !0.5*(drvs.df2000 + drvs.df1100);
-       fRZ = D05*(VX(8) + VX(9))   !0.5*(drvs.df1010 + drvs.df1001);
-       fZZ = D05*(VX(11) + VX(12)) !0.5*(drvs.df0020 + drvs.df0011);
-       fRG = D05*VX(10)             !0.5*drvs.df10001;   
-       fZG = D05*VX(13)             !0.5*drvs.df00101; 
-       fGG = D025*VX(14)            !0.25*drvs.df00002; 
-       fG  = D05*VX(5)               !0.5*drvs.df00001;  
-       MIXEDGRDA = (EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
-            &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-            &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-
-       VXC1(IPNT) = D4*VX(1)
-       print*,'VXC1(IPNT)',VXC1(IPNT)
-       A = D2*(VX(3)/GRDA + VX(5))
-       VXC2(1,IPNT) = A*GRAD(1,IPNT,1)
-       VXC2(2,IPNT) = A*GRAD(2,IPNT,1)
-       VXC2(3,IPNT) = A*GRAD(3,IPNT,1)
-       print*,'VXC2(1,IPNT)',VXC2(1,IPNT)
-       print*,'VXC2(2,IPNT)',VXC2(2,IPNT)
-       print*,'VXC2(3,IPNT)',VXC2(3,IPNT)
-       !the LDA part
-       VXC3(IPNT) =D4*fRR*EXPVAL(IPNT,1)+D4*(fRZ/GRD+fRG)*MIXEDGRDA
-       print*,'VXC3(IPNT)',VXC3(IPNT)
-       !the non LDA parts
-       A = D4*((fRZ/GRD + fRG)*EXPVAL(IPNT,1)&
-            & + (((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)*MIXEDGRDA)
-       B= D4*(fZ/GRD + fG)
-       VXC4(1,IPNT) = A*GRAD(1,IPNT,1)+B*EXPGRAD(1,IPNT,1)
-       VXC4(2,IPNT) = A*GRAD(2,IPNT,1)+B*EXPGRAD(2,IPNT,1)
-       VXC4(3,IPNT) = A*GRAD(3,IPNT,1)+B*EXPGRAD(3,IPNT,1)
-       print*,'VXC4(1,IPNT)',VXC4(1,IPNT)
-       print*,'VXC4(2,IPNT)',VXC4(2,IPNT)
-       print*,'VXC4(3,IPNT)',VXC4(3,IPNT)
-
-       XCFUNINPUT2(1,1) = RHO(IPNT,1)
-       XCFUNINPUT2(2,1) = GRAD(1,IPNT,1)
-       XCFUNINPUT2(3,1) = GRAD(2,IPNT,1)
-       XCFUNINPUT2(4,1) = GRAD(3,IPNT,1)
-       ! Input:
-       !rho   = XCFUNINPUT(1,1)
-       !grad_x = XCFUNINPUT(2,1)
-       !grad_y = XCFUNINPUT(3,1)
-       !grad_z = XCFUNINPUT(4,1)
-       call xcfun_gga_components_xc_single_eval(XCFUNINPUT2,15,XCFUNOUTPUT2,2)
-       ! Output
-       ! Order 0
-       ! out(1,1) Exc
-       ! Order 1
-       ! out(2,1) d^1 Exc / d n
-       ! out(3,1) d^1 Exc / d nx
-       ! out(4,1) d^1 Exc / d ny
-       ! out(5,1) d^1 Exc / d nz
-       ! Order 2
-       ! out(6,1) d^2 Exc / d n n
-       ! out(7,1) d^2 Exc / d n nx
-       ! out(8,1) d^2 Exc / d n ny
-       ! out(9,1) d^2 Exc / d n nz
-       ! out(10,1) d^2 Exc / d nx nx
-       ! out(11,1) d^2 Exc / d nx ny
-       ! out(12,1) d^2 Exc / d nx nz
-       ! out(13,1) d^2 Exc / d ny ny
-       ! out(14,1) d^2 Exc / d ny nz
-       ! out(15,1) d^2 Exc / d nz nz
-       !the \Omega_{\mu \nu} part
-       VXC1(IPNT) = D2*XCFUNOUTPUT2(2,1)*WGHT(IPNT)
-       print*,'NEW VXC1(IPNT)',VXC1(IPNT)
-       VXC2(1,IPNT) = D4*XCFUNOUTPUT2(3,1)*WGHT(IPNT)
-       VXC2(2,IPNT) = D4*XCFUNOUTPUT2(4,1)*WGHT(IPNT)
-       VXC2(3,IPNT) = D4*XCFUNOUTPUT2(5,1)*WGHT(IPNT)
-       print*,'NEW VXC2(1,IPNT)',VXC2(1,IPNT)
-       print*,'NEW VXC2(2,IPNT)',VXC2(2,IPNT)
-       print*,'NEW VXC2(3,IPNT)',VXC2(3,IPNT)
-
-       VXC3(IPNT) = &
-               &   D4*XCFUNOUTPUT2(6,1)*WGHT(IPNT)*EXPVAL(IPNT,1) &
-               & + D4*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
-               & + D4*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
-               & + D4*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
-       print*,'NEW VXC3(IPNT)',VXC3(IPNT)
-       VXC4(1,IPNT) = &
-            &   D8*XCFUNOUTPUT2(7,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
-            & + D8*XCFUNOUTPUT2(10,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
-       VXC4(2,IPNT) = &
-            &   D8*XCFUNOUTPUT2(8,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
-            & + D8*XCFUNOUTPUT2(11,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(13,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
-       VXC4(3,IPNT) = &
-            &   D8*XCFUNOUTPUT2(9,1)*WGHT(IPNT)*EXPVAL(IPNT,1)&
-            & + D8*XCFUNOUTPUT2(12,1)*WGHT(IPNT)*EXPGRAD(1,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(14,1)*WGHT(IPNT)*EXPGRAD(2,IPNT,1)&
-            & + D8*XCFUNOUTPUT2(15,1)*WGHT(IPNT)*EXPGRAD(3,IPNT,1)
-       print*,'NEW VXC4(1,IPNT)',VXC4(1,IPNT)
-       print*,'NEW VXC4(2,IPNT)',VXC4(2,IPNT)
-       print*,'NEW VXC4(3,IPNT)',VXC4(3,IPNT)
-      ENDIF
-#endif
-    ELSE
-       VXC1(IPNT) = 0.0E0_realk
-       VXC2(:,IPNT) = 0.0E0_realk
-       VXC3(IPNT) = 0.0E0_realk
-       VXC4(:,IPNT) = 0.0E0_realk
-    ENDIF
-  END DO
-  W1  = 1
-  W2  = NBLEN*Nactbast*NTYPSO      !W1 - 1 + NBLEN*Nactbast*NTYPSO -> GAORED
-  W3  = W2+1                       
-  W4  = W2+NBLEN*NactBast          !TMP(NBLEN,NactBast)
-  W5  = W4+1                       
-  W6  = W4+NBLEN*NactBast          !TMPX(NBLEN,NactBast)
-  W7  = W6+1                       
-  W8  = W6+NBLEN*NactBast          !TMPY(NBLEN,NactBast)
-  W9  = W8+1                       
-  W10 = W8+NBLEN*NactBast          !TMPZ(NBLEN,NactBast)
-#ifdef VAR_LSDEBUGINT
-  IF(W10.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_kohnshamGGA',lupri)
-#endif
-  CALL II_DFT_distgeoderiv_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
-      &NBAST,VXC1,VXC2,VXC3,VXC4,GAO(:,:,:),DFTDATA%GRAD,&
-      &DFTDATA%orb2atom,DFTDATA%BMAT,DMAT,DFTDATA%natoms,&
-      &COORD,DFTHRI,NTYPSO,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),&
-      &WORK(W7:W8),WORK(W9:W10))
- ENDIF
-ENDIF
-END SUBROUTINE II_DFT_GEODERIV_KOHNSHAMGGA
 
 !> \brief distribution routine for geometrical derivative Kohn-sham matrix GGA closed shell worker routine
 !> \author T. Kjaergaard
@@ -4880,105 +5570,6 @@ ENDIF
 
 END SUBROUTINE II_DFT_DISTGEODERIV_GGA
 
-!> \brief LDA geometrical derivative linear response driver
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE II_DFT_geoderiv_linrspLDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-REAL(REALK) :: VX(27),DFTENE,EXPVAL(NBLEN,2)
-REAL(REALK) :: fRRR(NBLEN),fRR(2,NBLEN),A
-REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,D3=3E0_realk,DUMMY = 0E0_realk 
-INTEGER     :: I,J,nred,nbmat,IPNT
-logical :: DOCALC
-nbmat=DFTDATA%nBMAT
-IF(nbmat.NE. 2)call LSQUIT('II_DFT_geoderiv_linrspLDA requires 2 matrices',lupri)
-DOCALC = .FALSE.
-DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-      DOCALC = .TRUE.
-      EXIT
-   ENDIF
-ENDDO
-IF(DOCALC)THEN
- call II_get_expval_lda(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-      &Nactbast,NBAST,GAO,EXPVAL,DFTDATA%BMAT,nbmat,DFTHRI,NRED)
- IF(NRED.GT. 0)THEN
-  DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-#ifdef VAR_XCFUN
-     IF(.NOT.USEXCFUN)THEN
-#endif
-      CALL dft_funcderiv3(RHO(IPNT,1),DUMMY,WGHT(IPNT),VX)
-      A = D4*(VX(6) + VX(7))
-      fRR(1,IPNT) = A*EXPVAL(IPNT,1) 
-      fRR(2,IPNT) = A*EXPVAL(IPNT,2) 
-      A = D2*(VX(15) + D3*VX(16))
-      fRRR(IPNT) = A*EXPVAL(IPNT,1)*EXPVAL(IPNT,2)
-#ifdef VAR_XCFUN
-     ELSE
-        call lsquit('xcfun version of II_DFT_GEODERIV_LINRSPLDA not implemented',-1)
-     ENDIF
-#endif
-   ELSE
-      fRR(1,IPNT) = 0.0E0_realk
-      fRR(2,IPNT) = 0.0E0_realk
-      fRRR(IPNT) = 0.0E0_realk
-   ENDIF
-  END DO
-   CALL II_DFT_distgeoderiv2_LDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
-        &NBAST,fRR,fRRR,GAO(:,:,:),DFTDATA%GRAD,DFTDATA%orb2atom,&
-        &DFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
- ENDIF
-ENDIF
-END SUBROUTINE II_DFT_GEODERIV_LINRSPLDA
-
 !> \brief distribution routine LDA geometrical derivative linear response driver
 !> \author T. Kjaergaard
 !> \date 2010
@@ -5165,184 +5756,6 @@ call mem_dft_dealloc(TMPD)
 call mem_dft_dealloc(TMPA)
 
 END SUBROUTINE II_DFT_DISTGEODERIV2_LDA
-
-!> \brief the GGA geometrical derivative linear response driver
-!> \author T. Kjaergaard
-!> \date 2010
-SUBROUTINE II_DFT_geoderiv_linrspGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-     & Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,&
-     & DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER,intent(in)     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-REAL(REALK) :: VX(27),DFTENE,EXPVAL(NBLEN,2)
-REAL(REALK) :: EXPGRAD(3,NBLEN,2)
-REAL(REALK) :: VXC1(2,NBLEN),VXC2(3,NBLEN,2),VXC3(4,NBLEN)
-REAL(REALK) :: ARHOGRAD,BRHOGRAD,ABRHOGRAD,GRDA,GRD2,GRD,GRDA2,GRDA3
-REAL(REALK),parameter :: D2=2E0_realk,D4=4E0_realk,DUMMY = 0E0_realk,D05=0.5E0_realk,D025=0.25E0_realk 
-REAL(REALK),parameter :: D8=8E0_realk,D3=3E0_realk,D16=16E0_realk
-REAL(REALK) :: fR,fZ,fRZ,fZZ,fRG,fZG,fGG,fG,B,facW,factorRZ,A,fRR,fRRR,fRRZ,fRRG
-REAL(REALK) :: fRRGX,fRZZ,fZZZ,gradA,gradB,gradAB,C
-INTEGER     :: I,J,nred,nbmat,IPNT,W1,W2,W3,W4,W7,W8,W5,W6
-logical :: DOCALC
-nbmat=DFTDATA%nBMAT
-IF(nbmat.NE. 2)call LSQUIT('II_DFT_geoderiv_linrspGGA requires 2 matrices',lupri)
-DOCALC = .FALSE.
-DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,1) .GT. RHOTHR)THEN
-      DOCALC = .TRUE.
-      EXIT
-   ENDIF
-ENDDO
-IF(DOCALC)THEN
- W1 = 1
- W2 = NBLEN*Nactbast             !W1 - 1 + NBLEN*Nactbast -> GAORED1 
- W3 = NBLEN*Nactbast+1
- W4 = NBLEN*Nactbast*4           !W1 - 1 + NBLEN*Nactbast*3 -> GAORED2 
- W5 = 4*NBLEN*Nactbast+1         !W2 + 1
- W6 = (4*NBLEN+1)*Nactbast       !W3 - 1 + Nactbast  -> GAOGMX
- W7 = (4*NBLEN+1)*Nactbast + 1   !W6 + 1
- W8 = (5*NBLEN+1)*Nactbast + 1   !W7 - 1 + NBLEN*Nactbast -> TMP
-#ifdef VAR_LSDEBUGINT
- IF(W8.GT.WORKLENGTH) CALL LSQUIT('WORKLENGTH error in II_DFT_geoderiv_linrspGGA',lupri)
-#endif
- call II_get_expval_gga(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,&
-      & Nactbast,NBAST,GAO,EXPVAL,EXPGRAD,DFTDATA%BMAT,&
-      & DFTDATA%nBMAT,DFTHRI,NRED,WORK(W1:W2),WORK(W3:W4),WORK(W5:W6),&
-      & WORK(W7:W8))
- IF(NRED.GT. 0)THEN
-  DO IPNT = 1, NBLEN
-   GRD = SQRT(GRAD(1,IPNT,1)*GRAD(1,IPNT,1)+GRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-        &+GRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-   GRDA = D05*GRD
-   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,1).GT.RHOTHR) THEN
-    ARHOGRAD = (EXPGRAD(1,IPNT,1)*GRAD(1,IPNT,1)&
-         &+EXPGRAD(2,IPNT,1)*GRAD(2,IPNT,1)&
-         &+EXPGRAD(3,IPNT,1)*GRAD(3,IPNT,1))
-    BRHOGRAD = (EXPGRAD(1,IPNT,2)*GRAD(1,IPNT,1)&
-         &+EXPGRAD(2,IPNT,2)*GRAD(2,IPNT,1)&
-         &+EXPGRAD(3,IPNT,2)*GRAD(3,IPNT,1))
-    ABRHOGRAD = (EXPGRAD(1,IPNT,1)*EXPGRAD(1,IPNT,2)&
-         &+EXPGRAD(2,IPNT,1)*EXPGRAD(2,IPNT,2)&
-         &+EXPGRAD(3,IPNT,1)*EXPGRAD(3,IPNT,2))     
-    GRD2 = GRD*GRD
-    GRDA2 = GRDA*GRDA
-    GRDA3 = GRDA2*GRDA
-#ifdef VAR_XCFUN
-    IF(.NOT.USEXCFUN)THEN
-#endif
-       CALL dft_funcderiv3(RHO(IPNT,1),GRD,WGHT(IPNT),VX)
-       !THE NON DIFFERENTIATED PART
-       fR  = D05*(VX(1) + VX(2))    !0.5*(drvs.df1000 + drvs.df0100);
-       fZ  = VX(3)                  !drvs.df0010;
-       fRR = D05*(VX(6) + VX(7))    !0.5*(drvs.df2000 + drvs.df1100);
-       fRZ = D05*(VX(8) + VX(9))    !0.5*(drvs.df1010 + drvs.df1001);
-       fZZ = D05*(VX(11) + VX(12))  !0.5*(drvs.df0020 + drvs.df0011);
-       fRG = D05*VX(10)             !0.5*drvs.df10001;   
-       fZG = D05*VX(13)             !0.5*drvs.df00101; 
-       fGG = D025*VX(14)            !0.25*drvs.df00002; 
-       fG  = D05*VX(5)              !0.5*drvs.df00001;  
-       VXC1(1,IPNT) = D8*fRR*EXPVAL(IPNT,1) + D8*(fRZ/GRD+fRG)*ARHOGRAD
-       VXC1(2,IPNT) = D8*fRR*EXPVAL(IPNT,2) + D8*(fRZ/GRD+fRG)*BRHOGRAD
-       B= D8*(fZ/GRD + fG)
-       FacW = D8*(((-fZ/GRD+fZZ)/GRD + D2*fZG)/GRD + fGG)
-       FactorRZ = D8*(fRZ/GRD + fRG)
-       A = FactorRZ*EXPVAL(IPNT,1)+FacW*ARHOGRAD
-       VXC2(1,IPNT,1) = B*EXPGRAD(1,IPNT,1)+A*GRAD(1,IPNT,1)
-       VXC2(2,IPNT,1) = B*EXPGRAD(2,IPNT,1)+A*GRAD(2,IPNT,1)
-       VXC2(3,IPNT,1) = B*EXPGRAD(3,IPNT,1)+A*GRAD(3,IPNT,1)
-       A = FactorRZ*EXPVAL(IPNT,2)+FacW*BRHOGRAD
-       VXC2(1,IPNT,2) = B*EXPGRAD(1,IPNT,2)+A*GRAD(1,IPNT,1)
-       VXC2(2,IPNT,2) = B*EXPGRAD(2,IPNT,2)+A*GRAD(2,IPNT,1)
-       VXC2(3,IPNT,2) = B*EXPGRAD(3,IPNT,2)+A*GRAD(3,IPNT,1)
-       !THE DIFFERENTIATED PART
-       fRRR = (VX(15) + D3*VX(16))
-       fRZ = (VX(8)+VX(9))/GRD  !warning change definition of fRZ
-       fRG = D4*fRG                 !D2*VX(10)                      
-       fZZ = (VX(11)+VX(12))/GRD2-VX(3)/(GRD2*GRDA)
-       fRRZ = (VX(17)+VX(18)+D2*VX(20))/GRD 
-       fRRG = VX(19)+VX(21)                 
-       fRRGX = D2*(VX(19)+VX(21))           
-       fRZZ = (VX(22)+VX(24)+D2*VX(23))/GRD2 - (VX(8)+VX(9))/(GRD2*GRDA)  
-       fZZZ = ((VX(25)+D3*VX(26))/(GRDA3)-D3*(VX(11)+VX(12))/(GRDA2*GRDA2)+D3*VX(3)/(GRDA3*GRDA2))/D8
-       
-       VXC3(1,IPNT) = D2*fRRR*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) & 
-            &+D2*fRRZ*(EXPVAL(IPNT,1)*BRHOGRAD+EXPVAL(IPNT,2)*ARHOGRAD) & 
-            &+D2*BRHOGRAD*ARHOGRAD*fRZZ& 
-            &+D4*ABRHOGRAD*fRZ &
-            &+D2*fRRG*(EXPVAL(IPNT,1)*BRHOGRAD+EXPVAL(IPNT,2)*ARHOGRAD)&
-            &+D2*fRG*ABRHOGRAD 
-       
-       A = D2*fZZZ*ARHOGRAD*BRHOGRAD &
-            & + D2*(fRZZ*EXPVAL(IPNT,1)*BRHOGRAD + fRZZ*EXPVAL(IPNT,2)*ARHOGRAD) &
-            & + D2*fRRZ*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) &
-            & + fRRGX*EXPVAL(IPNT,1)*EXPVAL(IPNT,2) + D4*fZZ*ABRHOGRAD
-       B = D4*fZZ*ARHOGRAD + D4*fRZ*EXPVAL(IPNT,1) + D2*fRG*EXPVAL(IPNT,1)
-       C = D4*fZZ*BRHOGRAD + D4*fRZ*EXPVAL(IPNT,2) + D2*fRG*EXPVAL(IPNT,2)
-       
-       VXC3(2,IPNT) = A*GRAD(1,IPNT,1) + B*EXPGRAD(1,IPNT,2) + C*EXPGRAD(1,IPNT,1)
-       VXC3(3,IPNT) = A*GRAD(2,IPNT,1) + B*EXPGRAD(2,IPNT,2) + C*EXPGRAD(2,IPNT,1)
-       VXC3(4,IPNT) = A*GRAD(3,IPNT,1) + B*EXPGRAD(3,IPNT,2) + C*EXPGRAD(3,IPNT,1)
-#ifdef VAR_XCFUN
-    ELSE
-        call lsquit('xcfun version of II_DFT_GEODERIV_LINRSPGGA not implemented',-1)
-    ENDIF
-#endif
-   ELSE
-      VXC1(:,IPNT) = 0.0E0_realk
-      VXC2(:,IPNT,:) = 0.0E0_realk
-      VXC3(:,IPNT) = 0.0E0_realk
-   ENDIF
-  END DO
-  CALL II_DFT_distgeoderiv2_GGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,&
-       &NBAST,VXC1,VXC2,VXC3,GAO(:,:,:),DFTDATA%GRAD,DFTDATA%orb2atom,&
-       &DFTDATA%BMAT,nbmat,DMAT,ndmat,DFTDATA%natoms,COORD,DFTHRI,NTYPSO)
- ENDIF
-ENDIF
-END SUBROUTINE II_DFT_GEODERIV_LINRSPGGA
 
 !> \brief distribution routine GGA geometrical derivative linear response driver
 !> \author T. Kjaergaard
@@ -5576,345 +5989,6 @@ call mem_dft_dealloc(TMPBZ)
 call mem_dft_dealloc(GAORED)
 
 END SUBROUTINE II_DFT_DISTGEODERIV2_GGA
-
-!> \brief main kohn-sham matrix driver
-!> \author T. Kjaergaard
-!> \date 2008
-!>
-!> Worker routine that for a batch of gridpoints build the LDA kohn-sham matrix
-!>
-SUBROUTINE II_DFT_KSMELDA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-REAL(REALK) :: VX(5),DFTENE, Econt,XCFUNINPUT(1,1),XCFUNOUTPUT(2,1)
-INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
-Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
-EXTERNAL DFTENE
-! LDA Exchange-correlation contribution to Kohn-Sham energy
-DO IDMAT = 1, NDMAT
- Econt = 0.0E0_realk
- DO IPNT = 1, NBLEN
-   IF(RHO(IPNT,IDMAT) .GT. RHOTHR)THEN
-#ifdef VAR_XCFUN        
-     IF(.NOT.USEXCFUN)THEN
-#endif
-        Econt = Econt + DFTENE(RHO(IPNT,IDMAT),DUMMY)*WGHT(IPNT)
-#ifdef VAR_XCFUN        
-     ELSE
-        XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
-        call xcfun_lda_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
-        DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
-     ENDIF
-#endif
-   ENDIF
- END DO
- DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + Econt
-ENDDO
-
-END SUBROUTINE II_DFT_KSMELDA
-
-!> \brief main kohn-sham matrix driver
-!> \author T. Kjaergaard
-!> \date 2008
-!>
-!> Worker routine that for a batch of gridpoints build the unrestricted LDA kohn-sham matrix
-!>
-SUBROUTINE II_DFT_KSMELDAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
-INTEGER     :: IPNT,I,J,IDMAT,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT1,IDMAT2
-REAL(REALK) :: VX(5),DFTENEUNRES
-EXTERNAL DFTENEUNRES
-#ifdef MOD_UNRELEASED
-! LDA Exchange-correlation contribution to Kohn-Sham energy
-DO IDMAT = 1, NDMAT/2
- IDMAT1 = 1 + (IDMAT-1)*2
- IDMAT2 = 2 + (IDMAT-1)*2
- DO IPNT = 1, NBLEN
-  IF(RHO(IPNT,IDMAT1) .GT. RHOTHR .OR. RHO(IPNT,IDMAT2) .GT. RHOTHR)THEN
-      !get the functional derivatives 
-      !vx(1) = drvs.df1000   = \frac{\partial  f}{\partial \rho_{\alpha}} 
-      !and same for beta
-#ifdef VAR_XCFUN
-     IF(.NOT.USEXCFUN)THEN
-#endif
-        !      CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY,WGHT(IPNT),VX)
-        DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),DUMMY,DUMMY)*WGHT(IPNT)
-#ifdef VAR_XCFUN
-     ELSE
-        call lsquit('xcfun version of II_DFT_KSMELDAUNRES not implemented',-1)
-     ENDIF
-#endif
-   ENDIF
- END DO
-ENDDO
-#else
-call lsquit('II_DFT_KSMELDAUNRES not implemented',-1)
-#endif
-
-END SUBROUTINE II_DFT_KSMELDAUNRES
-
-!> \brief main closed shell GGA kohn-sham matrix driver
-!> \author T. Kjaergaard
-!> \date 2008
-SUBROUTINE II_DFT_KSMEGGA(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk,D3 = 3.0E0_realk,D05 = 0.5E0_realk
-INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT
-REAL(REALK) :: VX(5),DFTENE,GRD,GRDA,A,Econt
-REAL(REALK) :: XCFUNINPUT(4,1),XCFUNOUTPUT(1,1)
-REAL(REALK),pointer :: VXC(:,:,:)
-EXTERNAL DFTENE
-!     GGA Exchange-correlation contribution to Kohn-Sham matrix
-DO IDMAT=1,NDMAT
- Econt = 0.0E0_realk
- DO IPNT = 1, NBLEN
-   GRD = SQRT(GRAD(1,IPNT,IDMAT)*GRAD(1,IPNT,IDMAT)+GRAD(2,IPNT,IDMAT)*GRAD(2,IPNT,IDMAT)&
-        &+GRAD(3,IPNT,IDMAT)*GRAD(3,IPNT,IDMAT))
-   IF(GRD .GT. RHOTHR .OR. RHO(IPNT,IDMAT).GT.RHOTHR) THEN
-#ifdef VAR_XCFUN
-      IF(.NOT.USEXCFUN)THEN
-#endif
-         Econt = Econt + DFTENE(RHO(IPNT,IDMAT),GRD)*WGHT(IPNT)
-#ifdef VAR_XCFUN
-      ELSE
-         XCFUNINPUT(1,1) = RHO(IPNT,IDMAT)
-!         XCFUNINPUT(2,1) = GRAD(1,IPNT,IDMAT)*GRAD(1,IPNT,IDMAT)&
-!              &+GRAD(2,IPNT,IDMAT)*GRAD(2,IPNT,IDMAT)&
-!              &+GRAD(3,IPNT,IDMAT)*GRAD(3,IPNT,IDMAT)
-         XCFUNINPUT(2,1) = GRAD(1,IPNT,IDMAT)
-         XCFUNINPUT(3,1) = GRAD(2,IPNT,IDMAT)
-         XCFUNINPUT(4,1) = GRAD(3,IPNT,IDMAT)
-!         call xcfun_gga_xc_single_eval(XCFUNINPUT,XCFUNOUTPUT)
-         call xcfun_gga_components_xc_single_eval(XCFUNINPUT,1,XCFUNOUTPUT,0)
-         DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + XCFUNOUTPUT(1,1)*WGHT(IPNT)
-      ENDIF
-#endif
-   END IF
- END DO
- DFTDATA%ENERGY(IDMAT) = DFTDATA%ENERGY(IDMAT) + Econt
-ENDDO
-END SUBROUTINE II_DFT_KSMEGGA
-
-!> \brief main unrestricted GGA kohn-sham matrix driver
-!> \author T. Kjaergaard
-!> \date 2008
-SUBROUTINE II_DFT_KSMEGGAUNRES(LUPRI,NBLEN,NBLOCKS,BLOCKS,INXACT,Nactbast,NBAST,NDMAT,DMAT,NTYPSO,GAO,&
-     &                     RHO,GRAD,TAU,MXBLLEN,COORD,WGHT,DFTDATA,RHOTHR,DFTHRI,WORK,WORKLENGTH)
-IMPLICIT NONE
-!> the logical unit number for the output file
-INTEGER,intent(in) :: LUPRI
-!> the number of gridpoints
-INTEGER,intent(in) :: NBLEN
-!> number of blocks
-INTEGER,intent(in) :: nBLOCKS
-!> contains the start and end index of active orbitals
-INTEGER,intent(in)     :: BLOCKS(2,NBLOCKS)
-!> for a given active index INXACT provide the orbital index 
-INTEGER,intent(in)     :: INXACT(NACTBAST)
-!> Number of active basis functions
-INTEGER,intent(in) :: Nactbast
-!> Number of basis functions
-INTEGER,intent(in) :: Nbast
-!> Number of density matrices
-INTEGER,intent(in) :: NDMAT
-!> Density matrix
-REAL(REALK),intent(in) :: DMAT(NACTBAST,NACTBAST,NDMAT)
-!> The number of gaussian atomic orbitals ( and geometrical deriv, london derivatives)
-INTEGER     :: NTYPSO
-!> gaussian atomic orbitals
-REAL(REALK),intent(in) :: GAO(NBLEN,NACTBAST,NTYPSO)
-!> the electron density for all gridpoints
-REAL(REALK),intent(in) :: RHO(MXBLLEN,NDMAT)
-!> the gradient of electron density for all gridpoints
-REAL(REALK),intent(in) :: GRAD(3,MXBLLEN,NDMAT)
-!> the grad dot grad tau
-REAL(REALK),intent(in) :: TAU(MXBLLEN,NDMAT)
-!> max number of gridpoints
-INTEGER     :: MXBLLEN
-!> grippoint coordinates
-REAL(REALK),intent(in) :: COORD(3,NBLEN)
-!> grippoint weights
-REAL(REALK),intent(in) :: WGHT(NBLEN)
-!> contains all info required which is not directly related to the integration
-TYPE(DFTDATATYPE),intent(inout) :: DFTDATA
-!> threshold on the electron density
-REAL(REALK),intent(in) :: RHOTHR
-!> threshold on the value of GAOs
-REAL(REALK),intent(in) :: DFTHRI
-!> length of tmp array
-integer,intent(in)        :: WORKLENGTH
-!> tmp array to avoid allocation and deallocation of mem
-REAL(REALK),intent(inout) :: WORK(WORKLENGTH)
-!
-Real(realk), parameter :: D2 = 2.0E0_realk,DUMMY = 0E0_realk
-INTEGER     :: IPNT,I,J,W1,W2,W3,W4,W5,W6,W7,W8,IDMAT,IDMAT1,IDMAT2
-REAL(REALK) :: VXC(NBLEN,2,2),VXM(NBLEN),VX(5),DFTENEUNRES,GRDA,GRDB
-EXTERNAL DFTENEUNRES
-
-!     GGA Exchange-correlation contribution to Kohn-Sham matrix
-DO IDMAT = 1,NDMAT
- IDMAT1 = 1 + (IDMAT-1)*2
- IDMAT2 = 2 + (IDMAT-1)*2
- DO IPNT = 1, NBLEN
-   GRDA = SQRT(GRAD(1,IPNT,IDMAT1)*GRAD(1,IPNT,IDMAT1)+GRAD(2,IPNT,IDMAT1)*GRAD(2,IPNT,IDMAT1)+&
-        &GRAD(3,IPNT,IDMAT1)*GRAD(3,IPNT,IDMAT1))
-   GRDB = SQRT(GRAD(1,IPNT,IDMAT2)*GRAD(1,IPNT,IDMAT2)+GRAD(2,IPNT,IDMAT2)*GRAD(2,IPNT,IDMAT2)+&
-        &GRAD(3,IPNT,IDMAT2)*GRAD(3,IPNT,IDMAT2))
-   IF((GRDA .GT. RHOTHR .OR. RHO(IPNT,IDMAT1).GT.RHOTHR).OR.&
-        &(GRDB .GT. RHOTHR .OR. RHO(IPNT,IDMAT2).GT.RHOTHR))then 
-      IF(GRDA.LT. 1E-40_realk) GRDA = 1E-40_realk
-      IF(GRDB.LT. 1E-40_realk) GRDB = 1E-40_realk
-#ifdef VAR_XCFUN
-      IF(.NOT.USEXCFUN)THEN
-#endif
-         !      CALL dft_funcderiv1unres(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB,WGHT(IPNT),VX)
-         DFTDATA%ENERGY(IDMAT1) = DFTDATA%ENERGY(IDMAT1) + DFTENEUNRES(RHO(IPNT,IDMAT1),RHO(IPNT,IDMAT2),GRDA,GRDB)*WGHT(IPNT)
-#ifdef VAR_XCFUN
-      ELSE
-         call lsquit('xcfun version of II_DFT_KSMEGGAUNRES not implemented',-1)
-      ENDIF
-#endif
-   END IF
- END DO
-ENDDO
-END SUBROUTINE II_DFT_KSMEGGAUNRES
 
 END MODULE IIDFTKSMWORK
 

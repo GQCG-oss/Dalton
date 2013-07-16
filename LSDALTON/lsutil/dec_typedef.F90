@@ -225,6 +225,8 @@ module dec_typedef_module
      real(realk) :: approximated_norm_threshold
      !> Use Mulliken population analysis to assign orbitals (default: Lowdin, only for Boughton-Pulay)
      logical :: mulliken
+     !> Use Distance criteria to determine central atom
+     logical :: Distance
      ! --
 
 
@@ -435,6 +437,12 @@ module dec_typedef_module
      real(realk), pointer :: ppfock(:,:) => null()
      !> Virt-virt block of Fock matrix in MO basis
      real(realk), pointer :: qqfock(:,:) => null()
+     !> carmom coord for occ
+     real(realk), pointer :: carmomocc(:,:) => null()
+     !> carmom coord for virt
+     real(realk), pointer :: carmomvirt(:,:) => null()
+     !> atomic centers
+     real(realk), pointer :: AtomCenters(:,:) => null()
 
   end type fullmolecule
 
