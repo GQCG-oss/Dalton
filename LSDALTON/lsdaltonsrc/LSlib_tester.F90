@@ -852,6 +852,8 @@ write(lupri,'(A80,2F18.10)') 'Nuclear-electron attraction gradient: RMS and inde
 !******                             Second derivative nuclear-electron attraction integrals
 !*****************************************************************************
 
+nullify(TempHess)
+allocate(TempHess(3,nAtoms,3,nAtoms,1))
 deallocate(eri)
 nullify(eri)
 allocate(eri(nbast,nbast,1,1,9*nAtoms*nAtoms))
@@ -859,8 +861,6 @@ call ls_dzero(eri,nbast*nbast*1*1*9*nAtoms*nAtoms)
 
 CALL LSlib_get_1el_geoderiv(eri,'nucel',nbast,nAtoms,2,9*nAtoms*nAtoms,lupri,luerr)
 
-nullify(TempHess)
-allocate(TempHess(3,nAtoms,3,nAtoms,1))
 call ls_dzero(TempHess,natoms*3*nAtoms*3)
 
 iHess = 0
@@ -899,7 +899,6 @@ DO n=1,nAtoms
 ENDDO
 write(lupri,'(A80,2F18.10)') 'Nuclear-electron attraction Hessian: RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/natoms/9),tmp2/natoms/natoms/9
-deallocate(TempHess)
 
 !*****************************************************************************
 !******                             First derivative overlap integrals
@@ -922,8 +921,8 @@ DO n=1,nAtoms
     DO k=1,1
      DO j=1,nbast
       DO i=1,nbast
-!      TempGrad(x,n,1) = TempGrad(x,n,1) + 2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iGrad)
-       TempGrad(x,n,1) = TempGrad(x,n,1) + DFD(i,j,1)*eri(i,j,k,l,iGrad)
+!      TempGrad(x,n,1) = TempGrad(x,n,1) + DFD(i,j,1)*eri(i,j,k,l,iGrad)
+       TempGrad(x,n,1) = TempGrad(x,n,1) + eri(i,j,k,l,iGrad)
       ENDDO
      ENDDO
     ENDDO
@@ -939,10 +938,63 @@ DO j=1,natoms
     ij=ij+1
     tmp1=tmp1+TempGrad(i,j,1)*TempGrad(i,j,1)
     tmp2=tmp2+TempGrad(i,j,1)*ij
+write(*,'(A,2I2,F18.12)') 'debug:OverlapGrad',i,j,TempGrad(i,j,1)
   ENDDO
 ENDDO
 write(lupri,'(A80,2F18.10)') 'Reorthonormalization gradient using 1el_diff: RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/3),tmp2/natoms/3
+
+!*****************************************************************************
+!******                             Second derivative overlap integrals
+!*****************************************************************************
+
+deallocate(eri)
+nullify(eri)
+allocate(eri(nbast,nbast,1,1,9*nAtoms*nAtoms))
+call ls_dzero(eri,nbast*nbast*1*1*9*nAtoms*nAtoms)
+
+CALL LSlib_get_1el_geoderiv(eri,'overlap',nbast,nAtoms,2,9*nAtoms*nAtoms,lupri,luerr)
+
+call ls_dzero(TempHess,natoms*3*nAtoms*3)
+
+iHess = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        iHess = iHess+1
+        DO l=1,1
+         DO k=1,1
+          DO j=1,nbast
+           DO i=1,nbast
+!           TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + 2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iHess)
+            TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + eri(i,j,k,l,iHess)
+           ENDDO
+          ENDDO
+         ENDDO
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+   
+tmp1 = 0.0_realk
+tmp2 = 0.0_realk
+iHess = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        iHess = iHess+1
+        tmp1=tmp1+TempHess(y,m,x,n,1)*TempHess(y,m,x,n,1)
+        tmp2=tmp2+TempHess(y,m,x,n,1)*iHess
+write(*,'(A,4I2,F18.12)') 'debug:OverlapHess',y,m,x,n,TempHess(y,m,x,n,1)
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+write(lupri,'(A80,2F18.10)') 'Overlap Hessian: RMS and index-weighted sum',&
+     &                     sqrt(tmp1/natoms/natoms/9),tmp2/natoms/natoms/9
 
 
 !*****************************************************************************
@@ -966,7 +1018,8 @@ DO n=1,nAtoms
     DO k=1,1
      DO j=1,nbast
       DO i=1,nbast
-       TempGrad(x,n,1) = TempGrad(x,n,1) + 2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iGrad)
+!      TempGrad(x,n,1) = TempGrad(x,n,1) + 2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iGrad)
+       TempGrad(x,n,1) = TempGrad(x,n,1) + eri(i,j,k,l,iGrad)
       ENDDO
      ENDDO
     ENDDO
@@ -982,15 +1035,69 @@ DO j=1,natoms
     ij=ij+1
     tmp1=tmp1+TempGrad(i,j,1)*TempGrad(i,j,1)
     tmp2=tmp2+TempGrad(i,j,1)*ij
+write(*,*) 'debug:TempGradT',i,j,TempGrad(i,j,1)
   ENDDO
 ENDDO
 write(lupri,'(A80,2F18.10)') 'Kinetic gradient using 1el_diff: RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/3),tmp2/natoms/3
 
 
+!*****************************************************************************
+!******                             Second derivative kinetic energy integrals
+!*****************************************************************************
+
+deallocate(eri)
+nullify(eri)
+allocate(eri(nbast,nbast,1,1,9*nAtoms*nAtoms))
+call ls_dzero(eri,nbast*nbast*1*1*9*nAtoms*nAtoms)
+
+CALL LSlib_get_1el_geoderiv(eri,'kinetic',nbast,nAtoms,2,9*nAtoms*nAtoms,lupri,luerr)
+
+call ls_dzero(TempHess,9*nAtoms*nAtoms)
+
+iHess = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+       iHess = iHess+1
+       DO l=1,1
+        DO k=1,1
+         DO j=1,nbast
+          DO i=1,nbast
+    !      TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + 2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iHess)
+           TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + eri(i,j,k,l,iHess)
+          ENDDO
+         ENDDO
+        ENDDO
+       ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+   
+tmp1 = 0.0_realk
+tmp2 = 0.0_realk
+ij=0
+DO j=1,natoms
+  DO i=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        ij=ij+1
+        tmp1=tmp1+TempHess(y,m,i,j,1)*TempHess(y,m,i,j,1)
+        tmp2=tmp2+TempHess(y,m,i,j,1)*ij
+write(*,*) 'debug:TempHessT',y,m,i,j,TempHess(y,m,i,j,1)
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+write(lupri,'(A80,2F18.10)') 'Kinetic Hessian using 1el_diff: RMS and index-weighted sum',&
+     &                     sqrt(tmp1/natoms/natoms/9),tmp2/natoms/natoms/9
+
 
 
 deallocate(eri)
+deallocate(TempHess)
 deallocate(TempGrad)
 deallocate(TempMat)
 deallocate(h1)
