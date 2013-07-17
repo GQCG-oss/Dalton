@@ -19,9 +19,6 @@ module init_lsdalton_mod
   use IIDFTINT, only: II_DFTDISP
   use matrix_operations, only: mat_no_of_matmuls, mat_pass_info, no_of_matmuls
   use lsmpi_type, only: lsmpi_finalize, lsmpi_print
-  private
-  public :: open_lsdalton_files,init_lsdalton_and_get_lsitem, &
-       & get_lsitem_from_input
 contains
 
 !> \brief Initilize lsitem and config structures from LSDALTON.INP and MOLECULE.INP

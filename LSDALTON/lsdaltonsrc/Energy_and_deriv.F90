@@ -26,8 +26,6 @@ use dec_main_mod!, only: get_total_mp2energy_from_inputs, get_mp2gradient_and_en
 use ls_util, only: ls_print_gradient
 use molecule_typetype, only: moleculeinfo
 use optimlocMOD, only: optimloc
-private
-public :: Get_Energy, Get_Gradient
 !
 contains
 ! Get energy: calculates energy in a general way

@@ -6,7 +6,6 @@ MODULE CABS_operations
   use lowdin_module
   use matrix_operations
   use integralinterfaceMod
-  use lstiming
 SAVE
 logical  :: CMO_CABS_save_created
 TYPE(Matrix) :: CMO_CABS_save

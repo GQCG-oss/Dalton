@@ -5,17 +5,11 @@
 !> \author S. Host
 !> \date 2007
 module decompMod
-use memory_handling
 use matrix_module
 use precision
 use matrix_operations
 use lowdin_module
 use lstiming
-private
-public :: orbspread_data,  DecompItem, decomp_set_default_config, &
-     & save_decomposition, restore_decomposition, decomp_init, decomp_shutdown,&
-     & decomposition, res_to_oao_basis, res_from_oao_basis, x_to_oao_basis,&
-     & x_from_oao_basis, get_oao_transformed_matrices, project_oao_basis
 
 type orbspread_data
  integer :: norb
@@ -673,9 +667,6 @@ end module decompMod
 !> \author B. Jansik
 !> \date 2006
 subroutine lowdin_diagonalize(lupri,unres,S,U,U_inv)
-  use memory_handling
-  use precision
-  use matrix_module
   use matrix_operations
   use matrix_operations_aux, only: mat_to_full2
   use lowdin_module

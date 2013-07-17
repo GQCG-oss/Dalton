@@ -5,8 +5,7 @@
 !> author C. Nygaard
 !> date 2010.07.07
 module soeo_typedef
-use precision
-use matrix_module
+
 use matrix_operations
 
 implicit none

@@ -10,12 +10,7 @@ use decompMod
 use files
 use lstiming
 use queue_ops
-use queue_module
 use typedeftype
-use precision
-use matrix_module
-use matrix_operations
-use matrix_operations_aux
 
 !> \brief Contains stuff concerning HOMO-LUMO gap and Hessian eigenvalues
 !> \author S. Host

@@ -65,9 +65,6 @@ use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
-private
-public :: config_set_default_config, config_read_input, config_shutdown,&
-     & config_free, set_final_config_and_print, scf_purify
 contains
 
 !> \brief Call routines to set default values for different structures.

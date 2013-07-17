@@ -30,40 +30,6 @@ MODULE matrix_operations
    use matrix_operations_csr
    use matrix_operations_unres_dense
 
-   private
-   public ::  matrixfiletype2, matrixfiletype, matrixmembuf, matmembuf,&
-        & mtype_symm_dense, mtype_dense, mtype_unres_dense, mtype_csr,&
-        & mtype_scalapack, matrix_type, &
-        & SET_MATRIX_DEFAULT, mat_select_type, mat_finalize, mat_pass_info,&
-        & mat_timings, mat_no_of_matmuls,&
-        & mat_init, mat_free, allocated_memory,&
-        & stat_deallocated_memory,mat_set_from_full,mat_to_full,mat_print,&
-        & mat_trans,mat_chol,mat_dpotrf,mat_dpotrs,mat_dpotri,mat_inv,&
-        & mat_clone,mat_assign,mat_mpicopy,mat_copy,mat_mul,mat_add,mat_daxpy,&
-        & mat_dposv,mat_abs_max_elm,mat_max_elm,mat_min_elm,mat_max_diag_elm,&
-        & mat_diag_f,mat_dsyev,mat_dsyevx,mat_section,mat_insert_section,&
-        & mat_identity,mat_add_identity,mat_create_block,mat_add_block,&
-        & mat_retrieve_block,mat_scal,mat_scal_dia,mat_scal_dia_vec,mat_zero,&
-        & mat_setlowertriangular_zero,set_lowertriangular_zero,&
-        & mat_write_to_disk,mat_write_info_to_disk,mat_read_from_disk,&
-        & mat_read_info_from_disk,mat_extract_diagonal,&
-        & no_of_matmuls, mat_tr, mat_trab, mat_dotproduct, mat_sqnorm2, &
-        & mat_outdia_sqnorm2, info_memory, max_no_of_matrices, no_of_matrices,&
-        & MatrixmemBuf_init, MatrixmemBuf_free,matrixmembuf_print,&
-        & matrixmembuf_open, matrixmembuf_close, matrixmembuf_overwrite
-
-!        matrixmembuf_new_iunit
-!FindIunit,FindIunitFileUnit,matrixmembuf_FindFile
-!FindIunit2,FindIunitFileUnit2,Matrixmembuf_setmatrixcurrent
-!Setmatrixcurrent1
-!Free_fileUnit,Free_fileMatrix
-!print_fileUnit,print_fileMatrix,matrixmembuf_Open
-!Matrixmembuf_Overwrite,OverwriteIunitFileUnit2,matrixmembuf_Close
-!FindIunitAndFree,matrixmembuf_write_to_mem,FindIunitAnd_write_to_mem
-!matrixmembuf_write_to_mem1,matrixmembuf_read_from_mem,FindIunitAnd_read_from_mem
-!matrixmembuf_read_from_mem1,free_matlist,matrixmembuf_FreeFile,FreeIunit2
-!FreeIunitFileUnit2,lsmpi_set_matrix_type_master,lsmpi_set_matrix_type_slave
-
 !FrameWork to write to memory - usefull for scalapack 
 !and when disk space is limited
 type matrixfiletype2

@@ -14,10 +14,8 @@
 module extra_output
 
 use files
-use precision
-use matrix_module
 use matrix_operations
-use memory_handling
+
 contains
 
 !> \brief Find and print MO energies and occupations, print MO's to file
