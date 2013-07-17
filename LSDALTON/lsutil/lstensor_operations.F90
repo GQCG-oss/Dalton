@@ -5,7 +5,6 @@ MODULE LSTENSOR_OPERATIONSMOD
   use precision
   use basis_type
   use Matrix_module
-  use matrix_operations_csr, only: zeroCSR
   use matrix_operations
   use memory_handling
   use OD_Type

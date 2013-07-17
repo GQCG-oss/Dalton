@@ -8,7 +8,6 @@ module matrix_operations_scalapack
   use memory_handling
   use matrix_module
   use LSmatrix_type
-  use precision
 #ifdef VAR_MPI
   use infpar_module
   use lsmpi_type

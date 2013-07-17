@@ -10,7 +10,7 @@ MODULE diagonalization
    USE matrix_operations
    USE matrix_operations_aux, only:mat_column_norm,mat_density_from_orbs
    use matrix_util
-   use memory_handling
+   
    !> Smallest accepted overlap when using levelshift = MOchange
    real(realk),save :: accpr 
    !> Largest accepted Dorth ratio when using levelshift = Dorth

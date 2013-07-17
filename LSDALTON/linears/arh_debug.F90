@@ -5,17 +5,13 @@
 !> \author S. Host
 !> \date 2005
 module arh_debugging
-use precision
-use matrix_module
 use matrix_operations
 use matrix_operations_aux
 use matrix_util
-use matrix_operations_unres_dense, only: mat_unres_dense_create_elm_alph,&
-     & mat_unres_dense_create_elm_beta
-!> True if the debug header should be printed. Set to false after 1st iteration.
-logical, save :: print_header = .true.
+         !> True if the debug header should be printed. Set to false after 1st iteration.
+         logical, save :: print_header = .true.
 
-contains
+   contains
 
 !> \brief Compare numerical and analytical ARH Hessians and gradients.
 !> \author S. Host
@@ -112,11 +108,11 @@ contains
             call mat_VEC_TO_MAT('a', x_trial, scr)
             !write (LUPRI,*) "xmat:"
             !call MAT_PRINT(scr, 1, scr%nrow, 1, scr%ncol, LUPRI)
-            call project_oao_basis(decomp, scr, arh_antisymmetric, x_trial_mat)
+            call project_oao_basis(decomp, scr, antisymmetric, x_trial_mat)
             !write (LUPRI,*) "xmat projected:"
             !call MAT_PRINT(x_trial_mat, 1, x_trial_mat%nrow, 1, x_trial_mat%ncol, LUPRI)
             !column = m'th column of hessian:
-            call arh_lintrans(solver,decomp,x_trial_mat,arh_antisymmetric,0.0E0_realk,scr)
+            call arh_lintrans(solver,decomp,x_trial_mat,antisymmetric,0.0E0_realk,scr)
             call MAT_TO_VEC('a', scr, column)
             do l = 1, hesdim !Put elements of column in m'th column of hessian
                call mat_create_elm(l,m,column%elms(l),hessian)
@@ -198,11 +194,11 @@ contains
          call mat_VEC_TO_MAT('a', x_trial, scr)
          !write (decomp%LUPRI,*) "xmat:"
          !call MAT_PRINT(scr, 1, scr%nrow, 1, scr%ncol, decomp%LUPRI)
-         call project_oao_basis(decomp, scr, arh_antisymmetric, x_trial_mat)
+         call project_oao_basis(decomp, scr, antisymmetric, x_trial_mat)
          !write (decomp%LUPRI,*) "xmat projected:"
          !call MAT_PRINT(x_trial_mat, 1, x_trial_mat%nrow, 1, x_trial_mat%ncol, decomp%LUPRI)
          !column = m'th column of hessian:
-         call arh_lintrans(solver,decomp,x_trial_mat,arh_antisymmetric,0.0E0_realk,scr)
+         call arh_lintrans(solver,decomp,x_trial_mat,antisymmetric,0.0E0_realk,scr)
          !write (decomp%LUPRI,*) "Linear transformation:"
          !call MAT_PRINT(scr, 1, scr%nrow, 1, scr%ncol, decomp%LUPRI)
          call MAT_TO_VEC('a', scr, column)

@@ -1,5 +1,4 @@
 module leastchange_module
-use precision
 use decompMod
 use TYPEDEF, only: getNbasis
 use TYPEDEFTYPE, only: lssetting, lsitem
@@ -8,7 +7,6 @@ use matrix_util
 use matrix_module
 use matrix_operations
 use integralparameters
-use memory_handling
 use TYPEDEF,only: count_ncore
 contains
 
@@ -439,12 +437,10 @@ end subroutine leastchange_rowsort_bf
 end module leastchange_module
 
 subroutine leastchangeOrbspreadStandalone(mx,ls,CMO,lupri,luerr)
-use precision
 use TYPEDEFTYPE, only: lsitem
 use IntegralInterfaceMOD
 use matrix_operations
 use matrix_module
-use memory_handling
 implicit none
 real(realk)              :: mx
 TYPE(lsitem)             :: ls
@@ -595,13 +591,10 @@ end subroutine leastchangeOrbspreadStandalone
 
 
 subroutine leastchange_lcv(decomp,CMO,nocc,ls)
-use precision
 use leastchange_module
 use decompMod
 use loc_utils
 use matrix_module
-use matrix_operations
-use memory_handling
 implicit none
 type(decompItem) :: decomp
 type(Matrix) :: CMO
@@ -668,10 +661,7 @@ subroutine leastchange_lcm(decomp,CMO,nocc,ls)
 use leastchange_module
 use decompMod
 use loc_utils
-use precision
 use matrix_module
-use matrix_operations
-use memory_handling
 implicit none
 type(decompItem),intent(in) :: decomp
 type(Matrix) :: CMO
@@ -727,9 +717,6 @@ subroutine get_PAOs(Cmo,S,MyLsitem,lupri)
   use files
   use TYPEDEFTYPE, only: lsitem
   use matrix_module
-  use precision
-  use matrix_operations
-  use memory_handling
 
   implicit none
   !> Optimized MO coeffiecient (both occupied and virtual)

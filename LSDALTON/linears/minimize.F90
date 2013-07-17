@@ -1,7 +1,6 @@
 module minimize_module
 ! original code by Stinne Host
 ! modifications by B. Jansik, Arhus, Jun 2006
-use precision
 use Matrix_module
 #define VERBOSE 0
 

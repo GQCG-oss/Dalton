@@ -30,18 +30,6 @@ MODULE matrix_operations_aux
    use matrix_operations_csr
 !   Use matrix_operations_unres_symm_dense
    use matrix_operations_unres_dense
-   
-   private
-   public :: mat_density_from_orbs, mat_eigenvalues_to_aux, &
-        & mat_set_from_full2, mat_to_full2, mat_TrAB_ab, mat_ab_daxpy,&
-        & mat_section2, mat_mix_homolumo, mat_precond, mat_mo_precond,&
-        & mat_new_mo_precond, mat_new_complex_precond, mat_mo_precond_complex,&
-        & mat_ao_precond_fallback, mat_ao_precond, mat_create_elm, &
-        & mat_create_ab_elms, mat_get_elm, mat_get_ab_elms, mat_zerohalf,&
-        & mat_write_to_disk2, mat_read_from_disk2, mat_VEC_TO_MAT,&
-        & MAT_TO_VEC, mat_report_sparsity, mat_inquire_cutoff, mat_dmul,&
-        & mat_hmul, mat_hdiv, mat_dger, mat_dhmul, mat_zero_cutoff,&
-        & mat_dE_dmu, mat_column_norm, mat_sum
    contains
 !> \brief Make c = a(1:ndim,1:nocc)*a^T(1:nocc,1:ndim) where a and c are type(matrix) 
 !> \author T. Kjærgaard

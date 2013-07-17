@@ -2,8 +2,6 @@ module lowdin_module
 ! Implements Lowdin decomposition of S to S^1/2 and S^-1/2
 ! by diagonalization or in linearly scaling Schulz iterations.
 ! B. Jansik, Arhus, Jun 2006
-use precision
-use matrix_module
 use matrix_operations
 use matrix_operations_aux
 

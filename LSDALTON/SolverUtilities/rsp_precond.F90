@@ -10,20 +10,13 @@
 module rspPrecond
 use decompMod
 use files
-use precision
-use matrix_module
 use matrix_operations
 use matrix_operations_aux,only:mat_zerohalf,mat_ao_precond
 
-private
-public :: rsp_Ared, rsp_Gred, rsp_Sred, rsp_boverlaps, lusigmarsp, lubrsp, lurhors,&
-     & oao_rsp_solver, oao_rsp_setup_redspace, oao_rsp_solve_in_red_space, oao_red_space_EIGEN,&
-     & oao_rsp_lintrans, oao_rsp_orthonormalize, oao_rsp_symm_orthonormalize, &
-     & oao_rsp_test_for_symmetry, rsp_diag_precond
-!For reduced space iterative solver. Should be put into structure
-!instead of being global!
-real(realk), allocatable, save :: rsp_Ared(:,:), rsp_Gred(:), rsp_Sred(:,:), rsp_boverlaps(:,:)
-integer, save      :: lusigmarsp, lubrsp, lurhorsp
+         !For reduced space iterative solver. Should be put into structure
+         !instead of being global!
+         real(realk), allocatable, save :: rsp_Ared(:,:), rsp_Gred(:), rsp_Sred(:,:), rsp_boverlaps(:,:)
+         integer, save      :: lusigmarsp, lubrsp, lurhorsp
 
 contains
 

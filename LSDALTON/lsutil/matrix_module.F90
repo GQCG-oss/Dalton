@@ -15,11 +15,8 @@
 !>     see mat_assign. \n
 !> ALWAYS and ONLY call mat_free on a matrix you have initialized with mat_init
 !>
-MODULE Matrix_module  
+MODULE Matrix_module
    use precision
-   private
-   public :: mat_lu,mat_info,mat_mem_monitor, Matrix, Matrixp, MAT_NULLIFY, &
-        & mat_init_magic_value
    !> Logical unit number of file LSDALTON.OUT used by matrix operation modules
    integer, save :: mat_lu
    !> True if various info from matrix module should be printed

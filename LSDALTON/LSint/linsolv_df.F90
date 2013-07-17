@@ -6,7 +6,7 @@ use TYPEDEF
 use matrix_operations
 use ls_Integral_Interface
 use Integralparameters
-use lstiming
+
 CONTAINS
 
 !> \brief  Driver for the density-fitting linear-equation solver, A c = b. Includes the calculation

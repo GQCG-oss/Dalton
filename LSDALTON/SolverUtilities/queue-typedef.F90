@@ -5,10 +5,8 @@
 !> \author Stinne Host
 !> \date 2007
 module queue_module
-  use precision
-  use matrix_module
-   private
-   public :: integerp,modFIFO,queue_module_void
+use matrix_module
+
    !> Pointer to an integer. Necessary if we want arrays of pointers!
    type integerp
       integer, pointer :: p
