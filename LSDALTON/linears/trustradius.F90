@@ -263,7 +263,4 @@ type(lsitem), intent(in)   :: ls
 
 end subroutine arhupdate_trustradius_david
 
-
-
-
  end module trustradius_mod

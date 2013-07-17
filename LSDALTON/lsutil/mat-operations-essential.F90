@@ -481,6 +481,53 @@ end type matrixmembuf
          call time_mat_operations2(JOB_mat_to_full)
       END SUBROUTINE mat_to_full
 
+!> \brief Convert a type(matrix) to a standard 3D fortran matrix - USAGE DISCOURAGED!
+!> \author L. Thogersen
+!> \date 2003
+!> \param a The type(matrix) that should be converted (n x n)
+!> \param afull The output standard fortran matrix ((2n x 2n) if unrestricted, (n x n) otherwise)
+!> \param alpha The output standard fortran matrix is multiplied by alpha
+!> \param mat_label If the character label is present, sparsity will be printed if using block-sparse matrices
+!>  
+!> BE VERY CAREFUL WHEN USING mat_set_from_full AND mat_to_full!!!!!!
+!> Usage of these routines should be avoided whenever possible, since
+!> you have to hardcode an interface to make them work with unrestriced
+!> matrices (see e.g. di_get_fock in dalton_interface.f90)
+!>
+     SUBROUTINE mat_to_full3D(a, alpha, afull,n1,n2,n3,i3,i4)
+
+         implicit none
+         integer, INTENT(IN)           :: n1,n2,n3,i3
+         integer, INTENT(IN), OPTIONAL :: i4 !for unres
+         TYPE(Matrix), intent(in):: a
+         real(realk), intent(in) :: alpha
+         real(realk), intent(inout):: afull(n1,n2,n3)  !output
+         integer :: local_i4
+         IF(present(i4))THEN
+            local_i4=i4 
+            !this means place alpha in A(:,:,i3) place beta in A(:,:,i4)
+         ELSE
+            local_i4=i3 !this means add alpha and beta for unres 
+         ENDIF
+         call time_mat_operations1
+         if (info_memory) write(mat_lu,*) 'Before mat_to_full: mem_allocated_global =', mem_allocated_global
+         select case(matrix_type)
+         case(mtype_dense)
+             call mat_dense_to_full3d(a, alpha, afull,n1,n2,n3,i3)
+         case(mtype_csr)
+             call mat_csr_to_full3d(a, alpha, afull,n1,n2,n3,i3)
+         case(mtype_scalapack)
+            call mat_scalapack_to_full3d(a, alpha, afull,n1,n2,n3,i3)
+         case(mtype_unres_dense)
+             call mat_unres_dense_to_full3d(a, alpha, afull,n1,n2,n3,i3,local_i4)
+         case default
+              call lsquit("mat_to_full3D not implemented for this type of matrix",-1)
+         end select
+         !if (INFO_TIME_MAT) CALL LSTIMER('TOFULL',mat_TSTR,mat_TEN,mat_lu)
+         if (info_memory) write(mat_lu,*) 'After mat_to_full: mem_allocated_global =', mem_allocated_global
+         call time_mat_operations2(JOB_mat_to_full)
+       END SUBROUTINE mat_to_full3D
+
 !> \brief Print a type(matrix) to file in pretty format
 !> \author L. Thogersen
 !> \date 2003
