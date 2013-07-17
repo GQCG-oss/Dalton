@@ -6,11 +6,9 @@
 !> \date 2010-02-21
 MODULE molecule_module
 use precision
-use typedeftype
 use typedef
 use memory_handling
 use molecule_type
-use molecule_typetype
 use integralparameters
 CONTAINS
 
