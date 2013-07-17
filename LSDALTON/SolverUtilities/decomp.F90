@@ -11,6 +11,11 @@ use precision
 use matrix_operations
 use lowdin_module
 use lstiming
+private
+public :: orbspread_data,  DecompItem, decomp_set_default_config, &
+     & save_decomposition, restore_decomposition, decomp_init, decomp_shutdown,&
+     & decomposition, res_to_oao_basis, res_from_oao_basis, x_to_oao_basis,&
+     & x_from_oao_basis, get_oao_transformed_matrices, project_oao_basis
 
 type orbspread_data
  integer :: norb

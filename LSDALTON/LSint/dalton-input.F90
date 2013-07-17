@@ -21,6 +21,8 @@ use BuildBasisSet, only: Build_BASIS
 use lstiming, only: lstimer
 use molecule_module, only: build_fragment
 use screen_mod, only: screen_init, screen_free
+private
+public ::  ls_init, ls_free, build_ccfragmentlsitem, dalton_finalize
 CONTAINS 
 !> \brief initiate the lsitem structure which contain all info about integralevaluation schemes, molecule and basisset.
 !> \author T. Kjaergaard

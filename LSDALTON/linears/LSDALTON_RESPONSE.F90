@@ -29,6 +29,10 @@ use TYPEDEFTYPE,   only: LSSETTING,lsitem
 use matrix_module, only: matrix
 use memory_handling, only: mem_alloc,mem_dealloc
 use integralinterfaceMod, only: ii_get_molecular_gradient
+
+private
+public :: lsdalton_response, get_excitation_energy, &
+     & GET_EXCITED_STATE_GRADIENT, LS_rsp_eq_sol_empty
 contains
   SUBROUTINE lsdalton_response(ls,config,F,D,S)
     implicit none
