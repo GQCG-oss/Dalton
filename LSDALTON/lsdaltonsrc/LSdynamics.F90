@@ -24,8 +24,6 @@ use lsdalton_rsp_mod, only: lsdalton_response
 use temperature, only: maxwell_sampling, andersen_thermostat
 use energy_and_deriv, only: get_energy, get_gradient
 use memory_handling, only: mem_alloc,mem_dealloc
-private
-public :: LS_dyn_run
 Contains
 !===================!
 ! LS_dyn_run        !

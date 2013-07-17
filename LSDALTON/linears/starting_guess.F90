@@ -25,8 +25,8 @@ MODULE initial_guess
   use memory_handling
   use precision
   implicit none
-  private
-  public :: starting_guess_entry, get_initial_dens, asymmetrize_starting_guess
+
+  public starting_guess_entry, get_initial_dens
 
 CONTAINS
 
