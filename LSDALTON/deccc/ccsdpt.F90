@@ -1017,21 +1017,20 @@ contains
     integer :: idx
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
-    ! we do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
+    ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
     ! performed, and in order to take optimal advantage of the symmetry of the amplitudes, we carry out
     ! the amplitudes in accordance to the following scheme
     !
-    ! ijj(a,b,c) --> ijj(b,c,a) --> ijj(c,a,b) == this is the jij amplitude
-    ! similarly, we get:
-    ! jij --> jij --> jij == jji
-    ! jji --> jji --> jji, and then we are DONE for our choice of 'ijk'
+    ! in 11/12   : ijj --312--> jij --312--> jji
+    ! in 211/212 : jij ........ jji ........ ijj
+    ! in 221/222 : jji ........ ijj ........ jij
 
     do idx = 1,3
 
-       ! calculate contributions to ccsdpt_singles:
-
        if (idx .eq. 1) then
-   
+  
+          ! calculate contributions to ccsdpt_singles:
+ 
           call ccsdpt_contract_11(oindex1,oindex2,oindex2,nv,abij,ccsdpt_singles,&
                        & trip,.true.)
           call ccsdpt_contract_12(oindex1,oindex2,oindex2,nv,abij,ccsdpt_singles,&
@@ -1039,22 +1038,14 @@ contains
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex1,oindex2,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o2,.false.)
-          call ccsdpt_contract_212(oindex1,oindex2,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1)
+          call ccsdpt_contract_211(oindex2,oindex1,oindex2,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o2,.true.)
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex1,oindex2,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex2,oindex2,oindex1,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex1,oindex2,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex2,oindex2,oindex1,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip)
 
        else if (idx .eq. 2) then
@@ -1062,34 +1053,11 @@ contains
           ! this case is redundant since both the coulumb and the exchange contributions
           ! will be contructed from the ampl_jij trip amplitudes and therefore end up
           ! canceling each other when added to T_star
-   
-          ! calculate contributions to ccsdpt_doubles (virt part):
 
           ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex2,oindex1,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o2,.true.)
-
-          ! now do occ part:
-
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex2,oindex1,oindex2,no,nv,jaik,&
-                           & ccsdpt_doubles_2,trip,.true.)
-
-       else if (idx .eq. 3) then
-   
-          call ccsdpt_contract_11(oindex2,oindex2,oindex1,nv,abij,ccsdpt_singles,&
-                       & trip,.false.)
-          call ccsdpt_contract_12(oindex2,oindex2,oindex1,nv,abij,ccsdpt_singles,&
-                       & trip,.false.)
+          call array3_reorder(trip,[3,1,2])
    
           ! calculate contributions to ccsdpt_doubles (virt part):
-
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
 
           call ccsdpt_contract_211(oindex2,oindex2,oindex1,nv,&
                            & ccsdpt_doubles,trip,int_virt_tile_o1,.false.)
@@ -1098,13 +1066,34 @@ contains
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex2,oindex2,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex1,oindex2,oindex2,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex2,oindex2,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex1,oindex2,oindex2,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip)
+
+       else if (idx .eq. 3) then
+
+          ! initially, reorder trip
+          call array3_reorder(trip,[3,1,2])
+
+          ! calculate contributions to ccsdpt_singles:
+   
+          call ccsdpt_contract_11(oindex2,oindex2,oindex1,nv,abij,ccsdpt_singles,&
+                       & trip,.false.)
+          call ccsdpt_contract_12(oindex2,oindex2,oindex1,nv,abij,ccsdpt_singles,&
+                       & trip,.false.)
+   
+          ! calculate contributions to ccsdpt_doubles (virt part):
+
+          call ccsdpt_contract_211(oindex1,oindex2,oindex2,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o2,.false.)
+          call ccsdpt_contract_212(oindex1,oindex2,oindex2,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o1)
+
+          ! now do occ part:
+
+          call ccsdpt_contract_221(oindex2,oindex1,oindex2,no,nv,jaik,&
+                           & ccsdpt_doubles_2,trip,.true.)
 
        end if
 
