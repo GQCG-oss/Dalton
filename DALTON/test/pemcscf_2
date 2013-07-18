@@ -17,17 +17,17 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > mcscf-peqm4.info <<'%EOF%'
-   mcscf-peqm4
+cat > pemcscf_2.info <<'%EOF%'
+   pemcscf_2
    -----------
    Molecule:         CH2O(DFT)/2 H2O(MM)
-   Wave Function:    CASSCF(6,4) / 6-31G
+   Wave Function:    CASSCF(4,6) / 6-31G
    Test Purpose:     Test of energy, dipole moment and excitation energy through ABACUS
 %EOF%
 #######################################################################
 #  INTEGRAL INPUT
 #######################################################################
-cat > mcscf-peqm4.mol <<'%EOF%'
+cat > pemcscf_2.mol <<'%EOF%'
 ATOMBASIS
 CH2O PLUS 2 WATERS
 ------------------------
@@ -43,7 +43,7 @@ H           -2.508043   -1.382001     .040282
 #######################################################################
 #  QM/MM INTERACTION INPUT
 #######################################################################
-cat > mcscf-peqm4.pot <<'%EOF%'
+cat > pemcscf_2.pot <<'%EOF%'
 coordinates
 6
 AA
@@ -98,16 +98,10 @@ exlists
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > mcscf-peqm4.dal <<'%EOF%'
+cat > pemcscf_2.dal <<'%EOF%'
 **DALTON
 .RUN PROPERTIES
-*PEQM
 .PEQM
-.PRINT
- 1 
-.MMPROP
-**INTEGRALS
-.DIPLEN
 **WAVE FUNCTIONS
 .HF
 .MCSCF
@@ -123,11 +117,11 @@ cat > mcscf-peqm4.dal <<'%EOF%'
 .SPIN MUL
  1
 .INACTIVE
- 5
-.ELECTRONS
  6
-.CAS SPACE
+.ELECTRONS
  4
+.CAS SPACE
+ 6
 **PROPERTIES
 .EXCITA
 *EXCITA
@@ -143,8 +137,8 @@ cat > mcscf-peqm4.dal <<'%EOF%'
 #  CHECK SCRIPT
 #######################################################################
 #
-echo $CHECK_SHELL >mcscf-peqm4.check
-cat >>mcscf-peqm4.check <<'%EOF%'
+echo $CHECK_SHELL >pemcscf_2.check
+cat >>pemcscf_2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -166,16 +160,16 @@ CRIT7=`$GREP "Nuclear * ( |0)\.065515" $log | wc -l`
 CRIT8=`$GREP "Multipole * ( \-|\-0)\.0056033" $log | wc -l`
 CRIT9=`$GREP "Total PE energy: * ( \-|\-0)\.030066" $log | wc -l`
 CRIT10=`$GREP "Final MCSCF energy: * \-113\.913571" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
 CTRL[1]=10
 ERROR[1]="GENERAL PEQM or PEQM ENERGY CONTRIBUTIONS NOT CORRECT"
 
 #
 # Test of PEQM dipole moment
 #
-CRIT1=`$GREP "x * ( |0)\.14722" $log | wc -l`
-CRIT2=`$GREP "y * \-1\.27427" $log | wc -l`
-CRIT3=`$GREP "z * ( |0)\.037331" $log | wc -l`
+CRIT1=`$GREP "x * ( |0)\.14741" $log | wc -l`
+CRIT2=`$GREP "y * \-1\.28042" $log | wc -l`
+CRIT3=`$GREP "z * ( |0)\.03758" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[2]=3
 ERROR[2]="PEQM DIPOLE MOMENT NOT CORRECT"
@@ -183,8 +177,8 @@ ERROR[2]="PEQM DIPOLE MOMENT NOT CORRECT"
 #
 # Test of PEQM excitation energies
 #
-CRIT1=`$GREP "1        1  *  ( |0)\.1511" $log | wc -l`
-CRIT2=`$GREP "1        2  *  ( |0)\.3353" $log | wc -l`
+CRIT1=`$GREP "1        1  *  ( |0)\.1559" $log | wc -l`
+CRIT2=`$GREP "1        2  *  ( |0)\.3537" $log | wc -l`
 TEST[3]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[3]=2
 ERROR[3]="PEQM EXCITATION ENERGIES NOT CORRECT"
@@ -207,5 +201,5 @@ else
   exit 1
 fi                
 %EOF%
-chmod +x mcscf-peqm4.check
+chmod +x pemcscf_2.check
 #######################################################################
