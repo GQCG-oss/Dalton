@@ -12,6 +12,7 @@ module full_molecule
   use precision
   use lstiming!, only: lstimer
   use typedeftype!,only: lsitem
+  use typedef!,only: lsitem
   use files!,only:lsopen,lsclose
   use matrix_module!, only:matrix
   use matrix_util!,only:mat_init,mat_zero,mat_daxpy,mat_free,mat_to_full,&
@@ -64,6 +65,7 @@ contains
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule)
     end if
+    call molecule_get_carmom(molecule,mylsitem)
 
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
 
@@ -106,6 +108,7 @@ contains
     if(DECinfo%use_canonical) then ! overwrite local orbitals and use canonical orbitals
        call dec_get_canonical_orbitals(molecule)
     end if
+    call molecule_get_carmom(molecule,mylsitem)
 
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
 
@@ -470,6 +473,88 @@ contains
 
   end subroutine molecule_get_overlap
 
+  !> \brief Read or construct (if it does not already exist) the carmom matrices
+  !> \author Thomas Kjaergaard
+  !> \date January 2013
+  subroutine molecule_get_carmom(molecule,mylsitem)
+    implicit none
+    !> Full molecule info
+    type(fullmolecule), intent(inout) :: molecule
+    !> LSitem
+    type(lsitem), intent(inout) :: mylsitem
+    type(matrix) :: XYZmat(4),Cocc,Cvirt,Xocc,Xvirt
+    integer :: nbasis,nocc,nvirt,natoms,nmat,nderiv,XYZ,I
+    real(realk) :: CenterX,CenterY,CenterZ
+    
+    ! Init stuff
+    nbasis = molecule%nbasis
+    nocc = molecule%numocc
+    nvirt = molecule%numvirt
+    natoms = molecule%natoms
+
+!    inquire(file='carmommatrix',exist=carmom_exist)
+    ! Read or construct carmom matrices
+    ! ********************************
+!    if(carmom_exist) then
+!       call lsquit('not implemented',-1)
+       ! Read overlap matrix from file
+!       write(DECinfo%output,*) 'Reading carmom matrices from file carmommatrix...'
+!       write(DECinfo%output,*)
+!       call dec_read_mat_array_from_file('carmommatrix',nbasis,nbasis,molecule%carmom,3)
+!    else
+       ! Calculate carmom matrix from scratch
+       write(DECinfo%output,*) 'Calculating carmom matrix for DEC calculation...'
+       call mat_init(XYZmat(1),nbasis,nbasis) !overlap matrix
+       call mat_init(XYZmat(2),nbasis,nbasis) !X matrix
+       call mat_init(XYZmat(3),nbasis,nbasis) !Y matrix
+       call mat_init(XYZmat(4),nbasis,nbasis) !Z matrix
+!       call mat_zero(XYZmat)
+       nMat = 4
+       nDeriv = 1
+       CenterX = 0.0E0_realk
+       CenterY = 0.0E0_realk
+       CenterZ = 0.0E0_realk
+       call II_get_carmom(DECinfo%output,DECinfo%output,mylsitem%setting,XYZmat,&
+            & nMat,nDeriv,CenterX,CenterY,CenterZ)
+
+       call mat_free(XYZmat(1)) !no need for overlap matrix
+       
+       ! Set MO orbitals
+       ! ****************
+       call mat_init(Cocc,nbasis,nocc)
+       call mat_init(Cvirt,nbasis,nvirt)
+       call mat_init(Xocc,nocc,nocc)
+       call mat_init(Xvirt,nvirt,nvirt)
+
+       call mat_set_from_full(Molecule%ypo(1:nbasis,1:nocc), 1E0_realk,Cocc)
+       call mat_set_from_full(Molecule%ypv(1:nbasis,1:nvirt), 1E0_realk,Cvirt)
+
+       call mem_alloc(molecule%carmomocc,3,nocc)
+       call mem_alloc(molecule%carmomvirt,3,nvirt)
+
+       do XYZ=1,3
+          call util_AO_to_MO_different_trans(Cocc, XYZmat(XYZ+1), Cocc, Xocc)
+          call util_AO_to_MO_different_trans(Cvirt, XYZmat(XYZ+1), Cvirt, Xvirt)
+          call mat_free(XYZmat(XYZ+1)) 
+          !extract diagonal for X
+          do I = 1,nocc
+             molecule%carmomocc(XYZ,I) = Xocc%elms(I+(I-1)*nocc)
+          enddo
+          do I = 1,nvirt
+             molecule%carmomvirt(XYZ,I) = Xvirt%elms(I+(I-1)*nvirt)
+          enddo
+       enddo
+       
+       call mat_free(Cocc)
+       call mat_free(Cvirt)
+       call mat_free(Xocc)
+       call mat_free(Xvirt)
+       
+       call mem_alloc(molecule%AtomCenters,3,nAtoms)
+       call getAtomicCenters(mylsitem%setting,molecule%AtomCenters,nAtoms)
+!endif
+  end subroutine molecule_get_carmom
+
 
   !> \brief Destroy fullmolecule structure
   !> \param molecule Full molecular info
@@ -520,6 +605,18 @@ contains
 
     if(associated(molecule%overlap)) then
        call mem_dealloc(molecule%overlap)
+    end if
+
+    if(associated(molecule%carmomocc)) then
+       call mem_dealloc(molecule%carmomocc)
+    end if
+
+    if(associated(molecule%carmomvirt)) then
+       call mem_dealloc(molecule%carmomvirt)
+    end if
+
+    if(associated(molecule%AtomCenters)) then
+       call mem_dealloc(molecule%AtomCenters)
     end if
 
   end subroutine molecule_finalize

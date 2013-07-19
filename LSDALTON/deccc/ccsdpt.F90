@@ -76,8 +76,8 @@ contains
     integer :: i,j,k,idx,tuple_type
     !> mpi stuff
 #ifdef VAR_MPI
-    !> logical determining whether a parallel task should be joined by several procs
-    logical :: collab
+    integer :: b_size,ntasks,nodtotal,ij,ij_count,i_old,j_old
+    integer, pointer :: ij_array(:),jobs(:)
 #endif
     !> orbital energies
     real(realk), pointer :: eivalocc(:), eivalvirt(:)
@@ -105,8 +105,10 @@ contains
 
 #ifdef VAR_MPI
 
+    nodtotal = infpar%lg_nodtot
+
     ! bcast the JOB specifier and distribute data to all the slaves within local group
-    waking_the_slaves: if ((infpar%lg_nodtot .gt. 1) .and. (infpar%lg_mynum .eq. infpar%master)) then
+    waking_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .eq. infpar%master)) then
 
        ! slaves are in lsmpi_slave routine (or corresponding dec_mpi_slave) and are now awaken
        call ls_mpibcast(CCSDPTSLAVE,infpar%master,infpar%lg_comm)
@@ -199,45 +201,97 @@ contains
 
     cbai_pdm = array_init([nvirt,nvirt,nvirt,3],4)
 
+    ! create job distribution list
+    ! first, determine common batch size from number of tasks and nodes
+    ntasks = (nocc**2 + nocc)/2
+    b_size = int(ntasks/nodtotal)
+
+    ! ij_array stores all jobs for composite ij indices in decending order
+    call mem_alloc(ij_array,ntasks)
+    ! init list (one more than b_size since mod(ntasks,nodtotal) is not necessearily zero
+    call mem_alloc(jobs,b_size + 1)
+
+    ! create ij_array
+    call create_ij_array_ccsdpt(ntasks,nocc,ij_array)
+    ! fill the list
+    call job_distrib_ccsdpt(b_size,ntasks,ij_array,jobs)
+
+    ! release ij_array
+    call mem_dealloc(ij_array)
+
 #endif
 
     ! a note on the mpi scheme.
-    ! in order to minimize the number of mpi_get calls, we fork at the irun level.
-    ! each node works on a separate i-tile ** as long as ** the remainder up to nocc is less than
-    ! the total number of nodes within the local group. this way, no node will have to wait on the 
-    ! remaining notes at the end of the i,j,k nested loop.
-    !
-    ! a note on the number of mpi_get calls.
-    !  - at the irun level, there will be [(nocc - lg_nodtot + 1) + (lg_nodtot - 1) * lg_nodtot] number of calls,
-    ! where (nocc - lg_nodtot + 1) is the number of 'collab == .false.' calls,
-    ! and (lg_nodtot - 1) * lg_nodtot is the number of 'collab == .true.' calls
-    !  - at the jrun level, there will be [(nocc/2) * (1 + nocc)] number of calls (minimum number of calls)
-    !  - at the krun level, there will be [(nocc/6) * (nocc + 1) * (nocc + 2)] number of calls (minimum number of calls)
-
- irun: do i=1,nocc
+    ! since we (in a dec picture) often have many nodes compared to nocc, we explicitly collapse the i- and j-loop.
+    ! by doing this, we are guaranteed that all nodes participate.
+    ! the composite index ij is incremented in the collapsed loop, and we may calculate i and j from ij.
 
 #ifdef VAR_MPI
 
-          if ((infpar%lg_nodtot + i - 1) .le. nocc) then
+    ! init ij and i_old/j_old
+    ij = 0
+    i_old = 0
+    j_old = 0
 
-             collab = .false.
- 
-             ! determine if this is my job or not
-             if (infpar%lg_mynum .ne. mod(i,infpar%lg_nodtot)) cycle irun
+ ijrun: do ij_count = 1,b_size + 1
+
+           ! get value of ij from job disttribution list
+           ij = jobs(ij_count)
+
+           ! no more jobs to be done? otherwise leave the loop
+           if (ij .lt. 0) exit
+
+           ! calculate i and j from composite ij value
+           call calc_i_and_j(ij,nocc,i,j)
+
+           ! has the i and j index changed?
+           if (i .eq. i_old) then
+
+              ! get the j'th v^3 tile only
+              call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
+
+              ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
+                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
+
+              ! store j index
+              j_old = j
+
+           else if (j .eq. j_old) then
+
+              ! get the i'th v^3 tile only
+              call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
+
+              ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
+                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
+
+              ! store i index
+              i_old = i
+
+           else
+
+              ! get the i'th and j'th v^3 tile
+              call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
+              call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
+
+              ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
+              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
+                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,1))
    
-             ! get the i'th v^3 tile
-             call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
+              ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
+              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
+                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
 
-          else
+              ! store i and j indices
+              i_old = i
+              j_old = j
 
-             collab = .true.
-   
-             ! get the i'th v^3 tile
-             call array_get_tile(cbai,i,cbai_pdm%elm1(1:nvirt**3),nvirt**3)
+           end if
 
-          end if
+#else
 
-#endif
+ irun: do i=1,nocc
 
           ! store portion of ccsd_doubles (the i'th index) to avoid unnecessary reorderings
           call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,i),nvirt,nvirt,&
@@ -245,28 +299,11 @@ contains
 
     jrun: do j=1,i
 
-#ifdef VAR_MPI
-
-             if (.not. collab) then
-
-                ! get the j'th tile
-                call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
-
-             else
-
-                ! determine if this is my job or not
-                if (infpar%lg_mynum .ne. mod(j,infpar%lg_nodtot)) cycle jrun
- 
-                ! get the j'th tile
-                call array_get_tile(cbai,j,cbai_pdm%elm1(nvirt**3+1:2*nvirt**3),nvirt**3)
-
-             end if
-
-#endif
-
              ! store portion of ccsd_doubles (the j'th index) to avoid unnecessary reorderings
              call array_reorder_3d(1.0E0_realk,ccsd_doubles%val(:,:,:,j),nvirt,nvirt,&
                      & nocc,[3,2,1],0.0E0_realk,ccsd_doubles_portions%elm4(:,:,:,2))
+
+#endif
 
        krun: do k=1,j
 
@@ -562,8 +599,18 @@ contains
                 end select TypeOfTuple
 
              end do krun
+
+#ifdef VAR_MPI
+
+       end do ijrun
+
+#else
+
           end do jrun
        end do irun
+
+#endif
+
 
     ! *************************************************
     ! *********** done w/ trip generation *************
@@ -579,7 +626,7 @@ contains
 #ifdef VAR_MPI
 
     ! reduce singles and doubles arrays into that residing on the master
-    reducing_to_master: if (infpar%lg_nodtot .gt. 1) then
+    reducing_to_master: if (nodtotal .gt. 1) then
 
        call lsmpi_local_reduction(ccsdpt_singles%val,nocc,nvirt,infpar%master)
        call lsmpi_local_reduction(ccsdpt_doubles%val,nvirt,nocc,nvirt,nocc,infpar%master)
@@ -588,7 +635,7 @@ contains
     end if reducing_to_master
 
     ! release stuff located on slaves
-    releasing_the_slaves: if ((infpar%lg_nodtot .gt. 1) .and. (infpar%lg_mynum .ne. infpar%master)) then
+    releasing_the_slaves: if ((nodtotal .gt. 1) .and. (infpar%lg_mynum .ne. infpar%master)) then
 
        ! release stuff initialized herein
        call array2_free(Uocc)
@@ -596,6 +643,7 @@ contains
        call array4_free(ccsdpt_doubles_2) 
        call mem_dealloc(eivalocc)
        call mem_dealloc(eivalvirt)
+       call mem_dealloc(jobs)
        call array4_free(abij)
        call array_free(cbai)
        call array_free(cbai_pdm)
@@ -637,6 +685,7 @@ contains
     call array_free(cbai)
 #ifdef VAR_MPI
     call array_free(cbai_pdm)
+    call mem_dealloc(jobs)
 #endif
     call array4_free(jaik)
 
@@ -649,6 +698,173 @@ contains
     call array4_reorder(ccsd_doubles,[4,3,2,1])
 
   end subroutine ccsdpt_driver
+
+
+  !> \brief: create ij_array for ccsd(t)
+  !> \author: Janus Juul Eriksen
+  !> \date: july 2013
+  subroutine create_ij_array_ccsdpt(ntasks,no,ij_array)
+
+    implicit none
+
+    !> batch size (without remainder contribution)
+    integer, intent(in) :: ntasks,no
+    !> jobs array
+    integer, dimension(ntasks), intent(inout) :: ij_array
+    !> integers
+    integer :: counter,offset,fill_1,fill_2
+
+    ! since i .ge. j, the composite ij indices will make up a lower triangular matrix
+    ! for each ij, k (where j .ge. k) jobs have to be carried out.
+    ! thus, the largest jobs for a given i-value will be those that have the largest j-value,
+    ! and the largest jobs will thus be those for which the ij index appears near the diagonal.
+    ! as the value of j specifies how large a given job is, we fill up the ij_array with jobs
+    ! for j-values in decending order.
+
+    ! counter specifies the index of ij_array
+    counter = 1
+
+    do fill_1 = 0,no-1
+
+       ! zero the offset
+       offset = 0
+
+       if (fill_1 .eq. 0) then
+
+          ! this is largest possible job
+          ij_array(counter) = ntasks
+          ! increment counter
+          counter = counter + 1
+
+       else
+
+          do fill_2 = 0,fill_1
+
+             if (fill_2 .eq. 0) then
+
+                ! this is the largest i-value, for which we have to do k number of jobs
+                ij_array(counter) = ntasks - fill_1
+                ! increment counter
+                counter = counter + 1
+
+             else
+
+                ! we loop through the i-value keeping the j-value (and k-value of course) fixed
+                ! we thus loop from i == nocc up towards the diagonal of the lower triangular matrix
+                offset = offset + (no - fill_2)
+                ij_array(counter) = ntasks - fill_1 - offset
+                ! increment counter
+                counter = counter + 1
+
+             end if
+
+          end do
+
+       end if
+
+    end do
+
+  end subroutine create_ij_array_ccsdpt
+
+
+  !> \brief: make job distribution list for ccsd(t)
+  !> \author: Janus Juul Eriksen
+  !> \date: july 2013
+  subroutine job_distrib_ccsdpt(b_size,ntasks,ij_array,jobs)
+
+    implicit none
+
+    !> batch size (without remainder contribution) 
+    integer, intent(in) :: b_size,ntasks
+    !> ij_array
+    integer, dimension(ntasks), intent(inout) :: ij_array
+    !> jobs array
+    integer, dimension(b_size+1), intent(inout) :: jobs
+    !> integers
+    integer :: nodtotal,fill,fill_sum
+
+#ifdef VAR_MPI
+
+    nodtotal = infpar%lg_nodtot
+
+    ! fill the jobs array with values of ij stored in ij_array
+    ! there are (nocc**2 + nocc)/2 tasks in total (ntasks)
+
+    ! the below algorithm distributes the jobs evenly among the nodes.
+
+    do fill = 0,b_size
+
+       fill_sum = infpar%lg_mynum + 1 + fill*nodtotal
+
+       if (fill_sum .le. ntasks) then
+
+          jobs(fill + 1) = ij_array(infpar%lg_mynum + 1 + fill*nodtotal) 
+
+       else
+
+          ! fill jobs array with negative number such that this number won't appear for any value of ij
+          jobs(fill + 1) = -1
+
+       end if
+
+    end do
+
+#endif
+
+  end subroutine job_distrib_ccsdpt
+
+
+  !> \brief: determine i and j from ij
+  !> \author: Janus Juul Eriksen
+  !> \date: july 2013
+  subroutine calc_i_and_j(ij,no,i,j)
+
+    implicit none
+
+    !> composite ij index
+    integer, intent(in) :: ij,no
+    !> i and j
+    integer, intent(inout) :: i,j
+    !> integers
+    integer :: gauss_sum,gauss_sum_old,series
+
+    ! in a N x N lower triangular matrix, there is a total of (N**2 + N)/2 elements
+    ! this is a gauss sum of 1 + 2 + 3 + ... + N-2 + N-1 + N
+    ! for a given value of i, the value of ij can thus at max be (i**2 + i)/2 (gauss_sum)
+    ! if gauss_sum for a given i (series) is smaller than ij, we loop.
+    ! when gauss_sum is greater than ij, we use the value of i for the present loop cycle
+    ! and calculate the value of j from the present ij and previous gauss_sum values.
+    ! when gauss_sum is equal to ij, we are on the diagonal and i == j (== series).
+
+    do series = 1,no
+
+       gauss_sum = (series**2 + series)/2
+
+       if (gauss_sum .lt. ij) then
+
+          gauss_sum_old = gauss_sum
+
+          cycle
+
+       else if (gauss_sum .eq. ij) then
+
+          j = series
+          i = series
+
+          exit
+
+       else
+
+          j = ij - gauss_sum_old
+          i = series
+
+          exit
+
+       end if
+
+    end do
+
+  end subroutine calc_i_and_j
 
 
   !> \brief: driver routine for contractions in case(1) of ccsdpt_driver
@@ -678,20 +894,19 @@ contains
     integer :: idx
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
-    ! we do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
+    ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
     ! performed, and in order to take optimal advantage of the symmetry of the amplitudes, we carry out
     ! the amplitudes in accordance to the following scheme
     !
-    ! iik(a,b,c) --> iik(b,c,a) --> iik(c,a,b) == this is the kii amplitude
-    ! similarly, we get:
-    ! kii --> kii --> kii == iki
-    ! iki --> iki --> iki, and then we are DONE for our choice of 'ijk'
+    ! in 11/12   : iik --312--> kii --312--> iki
+    ! in 211/212 : kii ........ iki ........ iik
+    ! in 221/222 : iki ........ iik ........ kii
 
     do idx = 1,3
 
-       ! calculate contribution to ccsdpt_singles:
-
        if (idx .eq. 1) then
+
+          ! calculate contribution to ccsdpt_singles:
 
           call ccsdpt_contract_11(oindex1,oindex1,oindex3,nv,abij,ccsdpt_singles,&
                        & trip,.false.)
@@ -700,25 +915,20 @@ contains
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex1,oindex1,oindex3,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o3,.false.)
-          call ccsdpt_contract_212(oindex1,oindex1,oindex3,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1)
+          call ccsdpt_contract_211(oindex3,oindex1,oindex1,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o1,.false.)
+          call ccsdpt_contract_212(oindex3,oindex1,oindex1,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o3)
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex1,oindex1,oindex3,no,nv,jaik,&
-                           & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex1,oindex1,oindex3,no,nv,jaik,&
-                           & ccsdpt_doubles_2,trip)
+          call ccsdpt_contract_221(oindex1,oindex3,oindex1,no,nv,jaik,&
+                           & ccsdpt_doubles_2,trip,.true.)
 
        else if (idx .eq. 2) then
+
+          ! initially, reorder trip
+          call array3_reorder(trip,[3,1,2])
 
           call ccsdpt_contract_11(oindex3,oindex1,oindex1,nv,abij,ccsdpt_singles,&
                        & trip,.true.)
@@ -727,22 +937,14 @@ contains
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex3,oindex1,oindex1,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1,.false.)
-          call ccsdpt_contract_212(oindex3,oindex1,oindex1,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o3)
+          call ccsdpt_contract_211(oindex1,oindex3,oindex1,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o1,.true.)
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex3,oindex1,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex1,oindex1,oindex3,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex3,oindex1,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex1,oindex1,oindex3,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip)
 
        else if (idx .eq. 3) then
@@ -751,21 +953,22 @@ contains
           ! will be contructed from the ampl_iki trip amplitudes and therefore end up
           ! canceling each other when added to ccsdpt_singles
 
+          ! initially, reorder trip
+          call array3_reorder(trip,[3,1,2])
+
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex1,oindex3,oindex1,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1,.true.)
+          call ccsdpt_contract_211(oindex1,oindex1,oindex3,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o3,.false.)
+          call ccsdpt_contract_212(oindex1,oindex1,oindex3,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o1)
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex1,oindex3,oindex1,no,nv,jaik,&
-                           & ccsdpt_doubles_2,trip,.true.)
+          call ccsdpt_contract_221(oindex3,oindex1,oindex1,no,nv,jaik,&
+                           & ccsdpt_doubles_2,trip,.false.)
+          call ccsdpt_contract_222(oindex3,oindex1,oindex1,no,nv,jaik,&
+                           & ccsdpt_doubles_2,trip)
 
        end if
 
@@ -801,21 +1004,20 @@ contains
     integer :: idx
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
-    ! we do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
+    ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
     ! performed, and in order to take optimal advantage of the symmetry of the amplitudes, we carry out
     ! the amplitudes in accordance to the following scheme
     !
-    ! ijj(a,b,c) --> ijj(b,c,a) --> ijj(c,a,b) == this is the jij amplitude
-    ! similarly, we get:
-    ! jij --> jij --> jij == jji
-    ! jji --> jji --> jji, and then we are DONE for our choice of 'ijk'
+    ! in 11/12   : ijj --312--> jij --312--> jji
+    ! in 211/212 : jij ........ jji ........ ijj
+    ! in 221/222 : jji ........ ijj ........ jij
 
     do idx = 1,3
 
-       ! calculate contributions to ccsdpt_singles:
-
        if (idx .eq. 1) then
-   
+  
+          ! calculate contributions to ccsdpt_singles:
+ 
           call ccsdpt_contract_11(oindex1,oindex2,oindex2,nv,abij,ccsdpt_singles,&
                        & trip,.true.)
           call ccsdpt_contract_12(oindex1,oindex2,oindex2,nv,abij,ccsdpt_singles,&
@@ -823,22 +1025,14 @@ contains
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex1,oindex2,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o2,.false.)
-          call ccsdpt_contract_212(oindex1,oindex2,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1)
+          call ccsdpt_contract_211(oindex2,oindex1,oindex2,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o2,.true.)
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex1,oindex2,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex2,oindex2,oindex1,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex1,oindex2,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex2,oindex2,oindex1,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip)
 
        else if (idx .eq. 2) then
@@ -846,34 +1040,11 @@ contains
           ! this case is redundant since both the coulumb and the exchange contributions
           ! will be contructed from the ampl_jij trip amplitudes and therefore end up
           ! canceling each other when added to T_star
-   
-          ! calculate contributions to ccsdpt_doubles (virt part):
 
           ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex2,oindex1,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o2,.true.)
-
-          ! now do occ part:
-
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex2,oindex1,oindex2,no,nv,jaik,&
-                           & ccsdpt_doubles_2,trip,.true.)
-
-       else if (idx .eq. 3) then
-   
-          call ccsdpt_contract_11(oindex2,oindex2,oindex1,nv,abij,ccsdpt_singles,&
-                       & trip,.false.)
-          call ccsdpt_contract_12(oindex2,oindex2,oindex1,nv,abij,ccsdpt_singles,&
-                       & trip,.false.)
+          call array3_reorder(trip,[3,1,2])
    
           ! calculate contributions to ccsdpt_doubles (virt part):
-
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
 
           call ccsdpt_contract_211(oindex2,oindex2,oindex1,nv,&
                            & ccsdpt_doubles,trip,int_virt_tile_o1,.false.)
@@ -882,13 +1053,34 @@ contains
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex2,oindex2,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex1,oindex2,oindex2,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex2,oindex2,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex1,oindex2,oindex2,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip)
+
+       else if (idx .eq. 3) then
+
+          ! initially, reorder trip
+          call array3_reorder(trip,[3,1,2])
+
+          ! calculate contributions to ccsdpt_singles:
+   
+          call ccsdpt_contract_11(oindex2,oindex2,oindex1,nv,abij,ccsdpt_singles,&
+                       & trip,.false.)
+          call ccsdpt_contract_12(oindex2,oindex2,oindex1,nv,abij,ccsdpt_singles,&
+                       & trip,.false.)
+   
+          ! calculate contributions to ccsdpt_doubles (virt part):
+
+          call ccsdpt_contract_211(oindex1,oindex2,oindex2,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o2,.false.)
+          call ccsdpt_contract_212(oindex1,oindex2,oindex2,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o1)
+
+          ! now do occ part:
+
+          call ccsdpt_contract_221(oindex2,oindex1,oindex2,no,nv,jaik,&
+                           & ccsdpt_doubles_2,trip,.true.)
 
        end if
 
@@ -925,24 +1117,19 @@ contains
     integer :: idx
 
     ! before the calls to the contractions in ccsdpt_contract_211/212 and ccsdpt_contract_221/222,
-    ! we do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
+    ! we implicitly do a [2,3,1] reordering. in order to minimize the number of reorderings needed to be
     ! performed, and in order to take optimal advantage of the symmetry of the amplitudes, we carry out
     ! the amplitudes in accordance to the following scheme
     !
-    ! ijk(a,b,c) --> ijk(b,c,a) --> ijk(c,a,b) == this is the kij amplitude
-    ! similarly, we get:
-    ! kij --> kij --> kij == jki
-    ! jki --> jki --> jki == ijk, thus at idx .eq. 3, we need to do a [3,2,1] reordering to get
-    ! the kji amplitude. then we continue as above
-    ! kji --> kji --> kji == ikj
-    ! ikj --> ikj --> ikj == jik
-    ! jik --> jik --> jik, and then we are DONE for our choice of 'ijk'
+    ! in 11/12   : ijk --312--> kij --312--> jki --213--> kji --312--> ikj --312--> jik
+    ! in 211/212 : kij ........ jki ........ ijk ........ ikj ........ jik ........ kji
+    ! in 221/222 : jki ........ ijk ........ kij ........ jik ........ kji ........ ikj
 
     do idx = 1,6
 
-       ! calculate contributions to ccsdpt_singles:
-
        if (idx .eq. 1) then
+
+          ! calculate contributions to ccsdpt_singles:
 
           call ccsdpt_contract_11(oindex1,oindex2,oindex3,nv,abij,ccsdpt_singles,&
                        & trip,.false.)
@@ -951,25 +1138,24 @@ contains
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex1,oindex2,oindex3,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o3,.false.)
-          call ccsdpt_contract_212(oindex1,oindex2,oindex3,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1)
+          call ccsdpt_contract_211(oindex3,oindex1,oindex2,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o2,.false.)
+          call ccsdpt_contract_212(oindex3,oindex1,oindex2,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o3)
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex1,oindex2,oindex3,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex2,oindex3,oindex1,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex1,oindex2,oindex3,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex2,oindex3,oindex1,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip)
 
        else if (idx .eq. 2) then
+
+          ! initially, reorder trip
+          call array3_reorder(trip,[3,1,2])
+
+          ! calculate contributions to ccsdpt_singles:
 
           call ccsdpt_contract_11(oindex3,oindex1,oindex2,nv,abij,ccsdpt_singles,&
                        & trip,.false.)
@@ -978,25 +1164,24 @@ contains
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex3,oindex1,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o2,.false.)
-          call ccsdpt_contract_212(oindex3,oindex1,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o3)
+          call ccsdpt_contract_211(oindex2,oindex3,oindex1,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o1,.false.)
+          call ccsdpt_contract_212(oindex2,oindex3,oindex1,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o2)
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex3,oindex1,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex1,oindex2,oindex3,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex3,oindex1,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex1,oindex2,oindex3,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip)
 
        else if (idx .eq. 3) then
+
+          ! initially, reorder trip
+          call array3_reorder(trip,[3,1,2])
+
+          ! calculate contributions to ccsdpt_singles:
 
           call ccsdpt_contract_11(oindex2,oindex3,oindex1,nv,abij,ccsdpt_singles,&
                        & trip,.false.)
@@ -1005,32 +1190,26 @@ contains
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex2,oindex3,oindex1,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1,.false.)
-          call ccsdpt_contract_212(oindex2,oindex3,oindex1,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o2)
+          call ccsdpt_contract_211(oindex1,oindex2,oindex3,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o3,.false.)
+          call ccsdpt_contract_212(oindex1,oindex2,oindex3,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o1)
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex2,oindex3,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex3,oindex1,oindex2,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex2,oindex3,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex3,oindex1,oindex2,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip)
 
        else if (idx .eq. 4) then
 
           !******
-          !
           ! generate the kji amplitude (see note above)
-          call array3_reorder(trip,[3,2,1])
-          !
+          call array3_reorder(trip,[2,1,3])
           !******
+
+          ! calculate contributions to ccsdpt_singles:
 
           call ccsdpt_contract_11(oindex3,oindex2,oindex1,nv,abij,ccsdpt_singles,&
                        & trip,.false.)
@@ -1039,25 +1218,24 @@ contains
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex3,oindex2,oindex1,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1,.false.)
-          call ccsdpt_contract_212(oindex3,oindex2,oindex1,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o3)
+          call ccsdpt_contract_211(oindex1,oindex3,oindex2,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o2,.false.)
+          call ccsdpt_contract_212(oindex1,oindex3,oindex2,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o1)
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex3,oindex2,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex2,oindex1,oindex3,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex3,oindex2,oindex1,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex2,oindex1,oindex3,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip)
 
        else if (idx .eq. 5) then
+
+          ! initially, reorder trip
+          call array3_reorder(trip,[3,1,2])
+
+          ! calculate contributions to ccsdpt_singles:
 
           call ccsdpt_contract_11(oindex1,oindex3,oindex2,nv,abij,ccsdpt_singles,&
                        & trip,.false.)
@@ -1066,25 +1244,24 @@ contains
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex1,oindex3,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o2,.false.)
-          call ccsdpt_contract_212(oindex1,oindex3,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1)
+          call ccsdpt_contract_211(oindex2,oindex1,oindex3,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o3,.false.)
+          call ccsdpt_contract_212(oindex2,oindex1,oindex3,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o2)
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex1,oindex3,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex3,oindex2,oindex1,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex1,oindex3,oindex2,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex3,oindex2,oindex1,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip)
 
        else if (idx .eq. 6) then
+
+          ! initially, reorder trip
+          call array3_reorder(trip,[3,1,2])
+
+          ! calculate contributions to ccsdpt_singles:
 
           call ccsdpt_contract_11(oindex2,oindex1,oindex3,nv,abij,ccsdpt_singles,&
                        & trip,.false.)
@@ -1093,22 +1270,16 @@ contains
 
           ! calculate contributions to ccsdpt_doubles (virt part):
 
-          ! initially, reorder trip
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_211(oindex2,oindex1,oindex3,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o3,.false.)
-          call ccsdpt_contract_212(oindex2,oindex1,oindex3,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o2)
+          call ccsdpt_contract_211(oindex3,oindex2,oindex1,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o1,.false.)
+          call ccsdpt_contract_212(oindex3,oindex2,oindex1,nv,&
+                           & ccsdpt_doubles,trip,int_virt_tile_o3)
 
           ! now do occ part:
 
-          ! reorder trip yet again
-          call array3_reorder(trip,[2,3,1])
-
-          call ccsdpt_contract_221(oindex2,oindex1,oindex3,no,nv,jaik,&
+          call ccsdpt_contract_221(oindex1,oindex3,oindex2,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip,.false.)
-          call ccsdpt_contract_222(oindex2,oindex1,oindex3,no,nv,jaik,&
+          call ccsdpt_contract_222(oindex1,oindex3,oindex2,no,nv,jaik,&
                            & ccsdpt_doubles_2,trip)
 
        end if
@@ -3478,12 +3649,12 @@ contains
     ! Print out and sanity check
     ! ==========================
  
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
-    if (infpar%lg_mynum .ne. 0) goto 666
+    if (infpar%lg_mynum .ne. infpar%master) goto 666
 
 #endif
- 
+
     write(DECinfo%output,*)
     write(DECinfo%output,*)
     write(DECinfo%output,*) '======================================================================='
@@ -3504,7 +3675,7 @@ contains
     write(DECinfo%output,'(1X,a,g14.3)') 'Size of tmp array 3                     =', size3*realk*1.0E-9
     write(DECinfo%output,*)
   
-#ifdef VAR_LSMPI
+#ifdef VAR_MPI
 
 666 continue
 
