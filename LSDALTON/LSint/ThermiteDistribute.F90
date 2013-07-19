@@ -676,11 +676,15 @@ Type(derivativeInfo), intent(INOUT) :: derivInfo
 !
 Logical :: emptyA,emptyB,emptyC,emptyD,singleP,singleQ,emptyP,emptyQ
 Integer :: iP,iQ,nP,nQ,n,derP,derQ,nDer,iDerP,iDer,iDeriv,startDer,endDer
+
+Logical :: dohodi
+
+dohodi = (input%geoderOrderP.GT.0) .AND. (input%geoderOrderQ .GT.0)
 !
 derivInfo%atom = 0
 !
 !Set up translation (if no translation translate=0)
-IF (PQ%P%p%type_nucleus.OR.PQ%Q%p%type_nucleus) THEN
+IF ((PQ%P%p%type_nucleus.OR.PQ%Q%p%type_nucleus).AND..NOT.dohodi) THEN
 !  If one side is equal to nuclei we exploit translational symmetry
   IF (PQ%P%p%type_nucleus) THEN
     IF (PQ%P%p%orbital1%type_nucleus) THEN

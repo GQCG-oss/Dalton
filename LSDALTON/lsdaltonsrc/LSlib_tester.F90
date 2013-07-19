@@ -826,7 +826,8 @@ DO n=1,nAtoms
     DO k=1,1
      DO j=1,nbast
       DO i=1,nbast
-       TempGrad(x,n,1) = TempGrad(x,n,1) + 2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iGrad)
+!      TempGrad(x,n,1) = TempGrad(x,n,1) + 2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iGrad)
+       TempGrad(x,n,1) = TempGrad(x,n,1) + eri(i,j,k,l,iGrad)
       ENDDO
      ENDDO
     ENDDO
@@ -842,6 +843,7 @@ DO j=1,natoms
     ij=ij+1
     tmp1=tmp1+TempGrad(i,j,1)*TempGrad(i,j,1)
     tmp2=tmp2+TempGrad(i,j,1)*ij
+!write(*,*) 'debug:TempGrad',i,j,TempGrad(i,j,1)
   ENDDO
 ENDDO
 write(lupri,'(A80,2F18.10)') 'Nuclear-electron attraction gradient: RMS and index-weighted sum',&
@@ -873,7 +875,8 @@ DO n=1,nAtoms
          DO k=1,1
           DO j=1,nbast
            DO i=1,nbast
-            TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + 2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iHess)
+!           TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + 2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iHess)
+            TempHess(y,m,x,n,1) = TempHess(y,m,x,n,1) + eri(i,j,k,l,iHess)
            ENDDO
           ENDDO
          ENDDO
@@ -893,6 +896,7 @@ DO n=1,nAtoms
         iHess = iHess+1
         tmp1=tmp1+TempHess(y,m,x,n,1)*TempHess(y,m,x,n,1)
         tmp2=tmp2+TempHess(y,m,x,n,1)*iHess
+!write(*,*) 'debug:TempHess',y,m,x,n,TempHess(y,m,x,n,1)
       ENDDO
     ENDDO
   ENDDO
@@ -900,6 +904,69 @@ ENDDO
 write(lupri,'(A80,2F18.10)') 'Nuclear-electron attraction Hessian: RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/natoms/9),tmp2/natoms/natoms/9
 
+!*****************************************************************************
+!******                             Third derivative nuclear-electron attraction integrals 
+!*****************************************************************************
+
+deallocate(eri)
+nullify(eri)
+allocate(eri(nbast,nbast,1,1,27*nAtoms*nAtoms*nAtoms))
+call ls_dzero(eri,nbast*nbast*1*1*27*nAtoms*nAtoms*nAtoms)
+
+CALL LSlib_get_1el_geoderiv(eri,'nucel',nbast,nAtoms,3,27*nAtoms*nAtoms*nAtoms,lupri,luerr)
+
+nullify(TempCubic)
+allocate(TempCubic(3,nAtoms,3,nAtoms,3,nAtoms,1))
+call ls_dzero(TempCubic,natoms*3*nAtoms*3*nAtoms*3)
+
+iCubic = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        DO o=1,nAtoms
+          DO z=1,3
+            iCubic = iCubic+1
+            DO l=1,1
+             DO k=1,1
+              DO j=1,nbast
+               DO i=1,nbast
+!               TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + &
+!    &             2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
+                TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + eri(i,j,k,l,iCubic)
+             ENDDO
+            ENDDO
+           ENDDO
+          ENDDO
+         ENDDO
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+   
+tmp1 = 0.0_realk
+tmp2 = 0.0_realk
+iCubic = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        DO o=1,nAtoms
+          DO z=1,3
+            iCubic = iCubic+1
+            tmp1=tmp1+TempCubic(z,o,y,m,x,n,1)*TempCubic(z,o,y,m,x,n,1)
+            tmp2=tmp2+TempCubic(z,o,y,m,x,n,1)*iCubic
+!write(*,*) 'debug:TempCubic',z,o,y,m,x,n,TempCubic(z,o,y,m,x,n,1)
+          ENDDO
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+write(lupri,'(A80,2F18.10)') 'Cubic nuclear-electron attraction derivative integrals: RMS and index-weighted sum',&
+     &                     sqrt(tmp1/natoms/natoms/natoms/27),tmp2/natoms/natoms/natoms/27
+deallocate(TempCubic)
 !*****************************************************************************
 !******                             First derivative overlap integrals
 !*****************************************************************************
