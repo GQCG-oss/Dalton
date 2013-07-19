@@ -938,7 +938,6 @@ DO j=1,natoms
     ij=ij+1
     tmp1=tmp1+TempGrad(i,j,1)*TempGrad(i,j,1)
     tmp2=tmp2+TempGrad(i,j,1)*ij
-!write(*,'(A,2I2,F18.12)') 'debug:OverlapGrad',i,j,TempGrad(i,j,1)
   ENDDO
 ENDDO
 write(lupri,'(A80,2F18.10)') 'Reorthonormalization gradient using 1el_diff: RMS and index-weighted sum',&
@@ -988,7 +987,6 @@ DO n=1,nAtoms
         iHess = iHess+1
         tmp1=tmp1+TempHess(y,m,x,n,1)*TempHess(y,m,x,n,1)
         tmp2=tmp2+TempHess(y,m,x,n,1)*iHess
-!write(*,'(A,4I2,F18.12)') 'debug:OverlapHess',y,m,x,n,TempHess(y,m,x,n,1)
       ENDDO
     ENDDO
   ENDDO
@@ -1050,14 +1048,13 @@ DO n=1,nAtoms
             iCubic = iCubic+1
             tmp1=tmp1+TempCubic(z,o,y,m,x,n,1)*TempCubic(z,o,y,m,x,n,1)
             tmp2=tmp2+TempCubic(z,o,y,m,x,n,1)*iCubic
-!write(*,'(A,7I4,F21.9)') 'debug:overlapHess:',iCubic,z,o,y,m,x,n,TempCubic(z,o,y,m,x,n,1)
           ENDDO
         ENDDO
       ENDDO
     ENDDO
   ENDDO
 ENDDO
-write(lupri,'(A80,2F18.10)') 'Coulomb Cubic force from diff-eri (Mulliken): RMS and index-weighted sum',&
+write(lupri,'(A80,2F18.10)') 'Cubic overlap derivative integrals: RMS and index-weighted sum',&
      &                     sqrt(tmp1/natoms/natoms/natoms/27),tmp2/natoms/natoms/natoms/27
 deallocate(TempCubic)
 !*****************************************************************************
@@ -1098,7 +1095,6 @@ DO j=1,natoms
     ij=ij+1
     tmp1=tmp1+TempGrad(i,j,1)*TempGrad(i,j,1)
     tmp2=tmp2+TempGrad(i,j,1)*ij
-write(*,*) 'debug:TempGradT',i,j,TempGrad(i,j,1)
   ENDDO
 ENDDO
 write(lupri,'(A80,2F18.10)') 'Kinetic gradient using 1el_diff: RMS and index-weighted sum',&
@@ -1149,7 +1145,6 @@ DO j=1,natoms
         ij=ij+1
         tmp1=tmp1+TempHess(y,m,i,j,1)*TempHess(y,m,i,j,1)
         tmp2=tmp2+TempHess(y,m,i,j,1)*ij
-write(*,*) 'debug:TempHessT',y,m,i,j,TempHess(y,m,i,j,1)
       ENDDO
     ENDDO
   ENDDO
@@ -1158,6 +1153,71 @@ write(lupri,'(A80,2F18.10)') 'Kinetic Hessian using 1el_diff: RMS and index-weig
      &                     sqrt(tmp1/natoms/natoms/9),tmp2/natoms/natoms/9
 
 
+!*****************************************************************************
+!******                             Third derivative kinetic energy integrals 
+!*****************************************************************************
+
+deallocate(eri)
+nullify(eri)
+allocate(eri(nbast,nbast,1,1,27*nAtoms*nAtoms*nAtoms))
+call ls_dzero(eri,nbast*nbast*1*1*27*nAtoms*nAtoms*nAtoms)
+
+CALL LSlib_get_1el_geoderiv(eri,'kinetic',nbast,nAtoms,3,27*nAtoms*nAtoms*nAtoms,lupri,luerr)
+
+nullify(TempCubic)
+allocate(TempCubic(3,nAtoms,3,nAtoms,3,nAtoms,1))
+call ls_dzero(TempCubic,natoms*3*nAtoms*3*nAtoms*3)
+
+iCubic = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        DO o=1,nAtoms
+          DO z=1,3
+            iCubic = iCubic+1
+            DO l=1,1
+             DO k=1,1
+              DO j=1,nbast
+               DO i=1,nbast
+!               TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + &
+!    &             2.0_realk*Dmat(i,j,1)*eri(i,j,k,l,iCubic)*Dmat(k,l,1)
+                TempCubic(z,o,y,m,x,n,1) = TempCubic(z,o,y,m,x,n,1) + eri(i,j,k,l,iCubic)
+             ENDDO
+            ENDDO
+           ENDDO
+          ENDDO
+         ENDDO
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+   
+tmp1 = 0.0_realk
+tmp2 = 0.0_realk
+iCubic = 0
+DO n=1,nAtoms
+  DO x=1,3
+    DO m=1,nAtoms
+      DO y=1,3
+        DO o=1,nAtoms
+          DO z=1,3
+            iCubic = iCubic+1
+            tmp1=tmp1+TempCubic(z,o,y,m,x,n,1)*TempCubic(z,o,y,m,x,n,1)
+            tmp2=tmp2+TempCubic(z,o,y,m,x,n,1)*iCubic
+          ENDDO
+        ENDDO
+      ENDDO
+    ENDDO
+  ENDDO
+ENDDO
+write(lupri,'(A80,2F18.10)') 'Cubic kinetic enerh derivative integrals: RMS and index-weighted sum',&
+     &                     sqrt(tmp1/natoms/natoms/natoms/27),tmp2/natoms/natoms/natoms/27
+deallocate(TempCubic)
+!*****************************************************************************
+!******                             First derivative kinetic energy integrals
+!*****************************************************************************
 
 deallocate(eri)
 deallocate(TempHess)

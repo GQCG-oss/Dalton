@@ -80,6 +80,7 @@ INTEGER                :: nPrim
 INTEGER                :: nOrb
 INTEGER                :: nTUV
 INTEGER                :: nEFG !multipole orders
+Logical                :: dohodi
 INTEGER                :: nGeoDeriv
 INTEGER                :: lhsGeoOrder
 INTEGER                :: rhsGeoOrder
@@ -317,12 +318,8 @@ useFTUV = INPUT%DO_JENGINE .AND. IELECTRON.EQ. 2
  P%minAngmom = minAngmom-(P%endGeoOrder+CMorder+P%magderiv)
  P%startAngmom = 0
  IF (P%type_hermite_single) P%startAngmom = P%minAngmom
- IF( INPUT%operator .EQ. KineticOperator .AND. LHS) THEN
-    IF (P%type_hermite_single) P%startAngmom = P%startAngmom + 2
-    P%endAngmom   = maxAngmom + 2
- ELSE
-    P%endAngmom   = maxAngmom
- ENDIF  
+ P%endAngmom   = maxAngmom
+
  P%nTUV = (P%endAngmom+1)*(P%endAngmom+2)*(P%endAngmom+3)/6 - &
     &     P%startAngmom*(P%startAngmom+1)*(P%startAngmom+2)/6
 !==========================================================================
@@ -3653,13 +3650,10 @@ DO iODtype=1,nODTypes
    minangmom = minangmom
    startAngmom = 0
    IF (type_hermite_single) startAngmom = minAngmom 
-   IF( INPUT%operator .EQ. KineticOperator )THEN
-      startAngmom = startAngmom + 2
-      endAngmom = maxAngmom + 2
-   ELSE
-      endAngmom = maxAngmom
-   ENDIF
+   endAngmom = maxAngmom
    nTUV = (endAngmom+1)*(endAngmom+2)*(endAngmom+3)/6
+   IF (INPUT%operator .EQ. KineticOperator) nTUV = (endAngmom+3)*(endAngmom+4)*(endAngmom+5)/6
+
    IF (Side.EQ.'LHS') THEN
       IF (endAngmom+1.GT. 20) CALL LSQUIT('Error maxPrimAngmomLHS SelectODTypesFromODbatch',lupri)
       alloc%maxPrimAngmomLHS(endAngmom+1) = max(alloc%maxPrimAngmomLHS(endAngmom+1),np)

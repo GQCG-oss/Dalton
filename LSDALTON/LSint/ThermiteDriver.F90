@@ -565,12 +565,13 @@ ELSEIF (DO_INTEREST) THEN
 ELSE
 !  Settings for derivative loop structure
    call getInputDerivativeInfo(derOrder,startDer,endDer,input,P%TYPE_Empty,Q%TYPE_Empty)
+   Integral%startDerivativeIndex = 0
+   Integral%nDerivComp = input%NGEODERIVCOMP
+   Integral%dohodi = startDer.NE.endDer
    
    CALL Build_Integrand(PQ,P,Q,INPUT,ILHS,IRHS,LUPRI,IPRINT)
    !   Hermite 2-electron integral over general operator w
    CALL Build_HermiteTUV(INTEGRAL,INPUT,PQ,LUPRI,IPRINT)
-   Integral%startDerivativeIndex = 0
-   Integral%nDerivComp = input%NGEODERIVCOMP
    DO iDerLHS = endDer,startDer,-1
      call setIntegralDerivativOrders(Integral,iDerLHS,derOrder,P%single,Q%single)
      CALL Contract_Q(INTEGRAL,PQ,Input,LUPRI,IPRINT)
@@ -3027,7 +3028,6 @@ integer :: i
  PQ%startAngmom    = P%startAngmom   + Q%startAngmom 
  PQ%endAngmom      = PQ%maxAngmom    + INPUT%geoDerivOrder + input%CMorder &
      &               + INPUT%magderOrderP + INPUT%magderOrderQ
- IF (INPUT%operator.EQ.KineticOperator) PQ%endAngmom = PQ%endAngmom + 2
 
  PQ%samePQ         = INPUT%sameODs .AND. (ILHS .EQ. IRHS)
  PQ%nAngmom        = P%nAngmom       * Q%nAngmom 
@@ -3902,10 +3902,8 @@ Integer             :: LUPRI,IPRINT,iAngmom
 Integer :: ntuvP,ntuvPfull,nP,nOrbQ,startOrbQ,endOrbQ
 Integer :: startP,fullSP,endP,ioffP,fullOP,jP,tP,uP,vP,ituvP,ifullP,iOrbQ,iPrimP
 Integer :: ifullp1,ifullp2,ifullp3,end2P,der
-Logical :: dohodi
 !
 der = integral%lhsGeoOrder + PQ%P%p%magderiv
-dohodi = (input%geoderOrderP.GT.0).AND.(input%geoderOrderQ.GT.0)
 
 startP = 0
 IF (PQ%P%p%type_hermite_single) startP = PQ%P%p%angmom(iAngmom) + der
@@ -3917,30 +3915,21 @@ ioffP    = startP*(startP+1)*(startP+2)/6
 fullOP   = fullSP*(fullSP+1)*(fullSP+2)/6
 ntuvP    = (endP+1)*(endP+2)*(endP+3)/6 - ioffP
 ntuvPfull = PQ%P%p%nTUV
-IF (dohodi.AND.(.NOT.PQ%kinetic)) ntuvPfull = ntuvP !Special case for HODI
+
+IF (integral%dohodi) THEN !Special case for HODI
+  ntuvPfull = ntuvP 
+  fullOP    = ioffP
+ENDIF
 
 nOrbQ = PQ%Q%p%orbital1%totOrbitals*PQ%Q%p%orbital2%totOrbitals
 IF (.NOT.PQ%Q%p%type_ftuv) nOrbQ = nOrbQ*PQ%Q%p%nPasses*integral%rhsGeoComp*PQ%Q%p%nCartesianMomentComp
 IF (INPUT%DO_MULMOM) nOrbQ = Input%nMultipoleMomentComp
-
 
 Integral%nAng  = ntuvP
 Integral%nPrim = np
 Integral%nOrb  = nOrbQ
 Integral%ngeoDeriv  = 1
 
-IF(PQ%kinetic)THEN
-#ifdef VAR_LSDEBUGINT
-IF(nP*nOrbQ*ntuvP.GT.allocIntmaxTUVdim)THEN
-   call lsquit('DistributeHermiteP_kinetic alloc error1',lupri)
-ENDIF
-IF(nP*PQ%P%p%nTUV*nOrbQ.GT.allocIntmaxTUVdim)THEN
-   call lsquit('DistributeHermiteP_kinetic alloc error2',lupri)
-ENDIF
-#endif
-   CALL DistributeHermiteP_kinetic(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-     &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,der.EQ. 1,LUPRI,IPRINT)
-ELSE
 #ifdef VAR_LSDEBUGINT
 IF(nP*nOrbQ*ntuvP.GT.allocIntmaxTUVdim)THEN
    call lsquit('DistributeHermiteP_regular alloc error3',lupri)
@@ -3949,18 +3938,17 @@ IF(nP*PQ%P%p%nTUV*nOrbQ.GT.allocIntmaxTUVdim)THEN
    call lsquit('DistributeHermiteP_regular alloc error4',lupri)
 ENDIF
 #endif
-   IF(nP.GT. 2)THEN !General case
-      CALL DistributeHermiteP_regularGen(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-           &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,LUPRI,IPRINT)
-   ELSEIF(nP.EQ. 1)THEN !Special case for nPrim=1
-      CALL DistributeHermiteP_regular1(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-           &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,LUPRI,IPRINT)
+IF(nP.GT. 2)THEN !General case
+   CALL DistributeHermiteP_regularGen(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
+        &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,LUPRI,IPRINT)
+ELSEIF(nP.EQ. 1)THEN !Special case for nPrim=1
+   CALL DistributeHermiteP_regular1(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
+        &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,LUPRI,IPRINT)
 
-   ELSE !Special case for nPrim=2
-      CALL DistributeHermiteP_regular2(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
-           &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,LUPRI,IPRINT)
+ELSE !Special case for nPrim=2
+   CALL DistributeHermiteP_regular2(Integral%IN,Integral%tuvQ,Integral%TUV%TUVindex,&
+        &                             startP,endP,nP,ioffP,fullOP,ntuvPfull,ntuvP,nOrbQ,LUPRI,IPRINT)
 
-   ENDIF
 ENDIF
 
 IF (IPRINT.GT. 20) THEN
@@ -4130,8 +4118,8 @@ END SUBROUTINE DistributeHermiteP_regular2
 !> \param nOrbQ the total number of orbitals
 !> \param LUPRI the logical unit number for the output file
 !> \param IPRINT the printlevel, determining how much output should be generated
-SUBROUTINE DistributeHermiteP_kinetic(IntegralIN,TUVQ,TUVindex,startP,endP,nP,ioffP,&
-     &                                fullOP,ntuvFull,ntuvP,nOrbQ,deriv,LUPRI,IPRINT)
+SUBROUTINE WTUV_extract_kinetic(IntegralIN,TUVQ,TUVindex,startP,endP,nP,ioffP,&
+     &                          fullOP,ntuvFull,ntuvP,nOrbQ,deriv,LUPRI,IPRINT)
 implicit none
 Integer,intent(in) :: startP,endP,nP,ioffP,fullOP,ntuvFull,ntuvP,nOrbQ,LUPRI,IPRINT
 Real(realk),intent(inout) :: IntegralIN(nP,nOrbQ,ntuvP)
@@ -4169,7 +4157,7 @@ DO jP = startP,endP
       ENDDO
    ENDDO
 ENDDO
-END SUBROUTINE DistributeHermiteP_kinetic
+END SUBROUTINE WTUV_extract_kinetic
 
 !> \brief contract the RHS overlap Q (primitive to contracted functions, Ecoeff contraction,..)
 !> \author S. Reine and T. Kjaergaard
@@ -4226,7 +4214,7 @@ END SUBROUTINE Contract_Q
 !> \param ideriv the derivative index
 !> \param LUPRI the logical unit number for the output file
 !> \param IPRINT the printlevel, determining how much output should be generated
-SUBROUTINE  ContractEcoeffQ(Integral,PQ,iAngmom,iDeriv,LUPRI,IPRINT)
+SUBROUTINE ContractEcoeffQ(Integral,PQ,iAngmom,iDeriv,LUPRI,IPRINT)
 implicit none
 TYPE(Integralitem)  :: INTEGRAL
 TYPE(Integrand)     :: PQ
@@ -4253,8 +4241,7 @@ derP = Integral%lhsGeoOrder
 derQ = Integral%rhsGeoOrder
 
 startP = P%startAngmom
-!ToDo - hack here - find better solution
-IF (derQ.GT.0) THEN
+IF (integral%dohodi) THEN
   endP   = P%maxAngmom + derP
   IF (P%type_hermite_single) startP = endP
 ELSE
@@ -4270,7 +4257,8 @@ nP     = P%nPrimitives*P%nPasses
 nQ     = Q%nPrimitives*Q%nPasses
 ioffP  = startP*(startP+1)*(startP+2)/6
 ioffQ  = startQ*(startQ+1)*(startQ+2)/6
-sPQ    = startP+Q%startAngmom
+!sPQ    = startP+Q%startAngmom
+sPQ    = PQ%startAngmom
 ioffPQ = sPQ*(sPQ+1)*(sPQ+2)/6
 endPQ  = maxQ + P%endAngmom
 ntuvP  = (endP+1)*(endP+2)*(endP+3)/6-ioffP
@@ -4287,7 +4275,7 @@ IF (.FALSE.) THEN
 ELSE
    IF (Q%type_hermite_single) THEN
       CALL DirectSingleHermiteEcoeff(Integral,Q,nP,nQ,startP,endP,startQ,endQ,ioffP,ioffQ,ioffPQ,ntuvPQ*nEFG,&
-             &                       ntuvPQ,ntuvP,ntuvQ,ideriv,signQ,iAngmom,lupri)
+             &                       ntuvPQ,ntuvP,ntuvQ,ideriv,signQ,derQ,iAngmom,lupri)
    ELSE
       l1 = Q%orbital1%angmom(Q%indexAng1(iangmom))
       l2 = Q%orbital2%angmom(Q%indexAng2(iangmom))
@@ -4342,7 +4330,7 @@ ELSE
       Integral%nAng = ijk
    ENDIF
 ENDIF
-IF(IPRINT.GT. 100)THEN
+IF(IPRINT.GE. 100)THEN
   CALL Print_DirectContractOutput(Integral%IN,Integral%nPrim,Integral%nOrb,Integral%nAng,lupri)
 ENDIF
 END SUBROUTINE ContractEcoeffQ
@@ -4473,12 +4461,12 @@ ENDDO
 END SUBROUTINE SingleHermiteEcoeff1seg
 
 SUBROUTINE DirectSingleHermiteEcoeff(Integral,Q,nP,nQ,startP,endP,startQ,endQ,ioffP,ioffQ,ioffPQ,ntuvPQnEFG,&
-             &                       ntuvPQ,ntuvP,ntuvQ,ideriv,signQ,iAngmom,lupri)
+             &                       ntuvPQ,ntuvP,ntuvQ,ideriv,signQ,derQ,iAngmom,lupri)
 implicit none
 Type(integralItem),intent(inout) :: Integral
 Type(overlap),intent(in)         :: Q
 Integer,intent(IN)               :: nP,nQ,startP,endP,startQ,endQ,ioffP,ioffQ,ioffPQ,ntuvPQnEFG
-Integer,intent(IN)               :: ntuvPQ,ntuvP,ntuvQ,ideriv,iAngmom,lupri
+Integer,intent(IN)               :: ntuvPQ,ntuvP,ntuvQ,ideriv,derQ,iAngmom,lupri
 Real(realk),intent(IN)           :: signQ
 
 integer     :: l1,l2,nPrim1,nPrim2
@@ -4487,10 +4475,10 @@ Real(realk),parameter :: D1 = 1E0_realk
 
 l1 = Q%orbital1%angmom(Q%indexAng1(iangmom))
 l2 = Q%orbital2%angmom(Q%indexAng2(iangmom))
-IF(l1.EQ. 0 .AND. l2 .EQ. 0)THEN
+IF(l1.EQ. 0 .AND. l2 .EQ. 0 .AND. derQ.EQ.0)THEN
    sign = D1
 ELSE
-   sign = signQ**(l1+l2)
+   sign = signQ**(l1+l2+derQ)
 ENDIF
 nPrim1 = Q%orbital1%nPrimitives
 nPrim2 = Q%orbital2%nPrimitives
@@ -5358,12 +5346,18 @@ Integer :: nC,nD,startC,startD,nPassQ,angC,AngD,nDer,nDerTUV,startDer,endDer
 Integer :: startP,endP
 Integer,target  :: iDer,iOne=1
 Integer,pointer :: jDer
-TYPE(Overlap),pointer :: Q
+TYPE(Overlap),pointer :: Q,P
 Logical :: permute
 
-nPrimP  = PQ%P%p%nPrimitives*PQ%P%p%nPasses
-startP  = PQ%P%p%startAngmom
-endP    = PQ%P%p%endAngmom - PQ%P%p%endGeoOrder + Integral%lhsGeoOrder
+P => PQ%P%p
+nPrimP  = P%nPrimitives*PQ%P%p%nPasses
+startP  = P%startAngmom
+endP    = P%endAngmom
+IF (integral%dohodi) THEN
+  endP = P%maxAngmom + Integral%lhsGeoOrder
+  IF (P%type_hermite_single) startP = endP
+ENDIF
+  
 nTUVP   = (endP+1)*(endP+2)*(endP+3)/6 - startP*(startP+1)*(startP+2)/6
 
 nP      = nPrimP*nTUVP
@@ -6372,6 +6366,7 @@ call mem_allocated_mem_integralitem(nsize2)
 
 Integral%startDerivativeIndex = 0
 Integral%nDerivComp = 1
+Integral%dohodi = .FALSE.
 
 END SUBROUTINE allocIntegrals
 
@@ -6617,14 +6612,24 @@ TYPE(Integralitem)      :: integral
 TYPE(Integralinput)     :: input
 real(realk),pointer     :: SJ0002(:,:)
 real(realk),pointer     :: temp(:)
+real(realk),pointer     :: wtuv(:)
 INTEGER                 :: LUPRI,SUM,J,K,T,U,V,TUV,IOFF
 INTEGER                 :: nPrim,IPRINT,ntuv,L,I,offsetTUV,offset,offset2
 INTEGER                 :: zeroX,zeroY,zeroZ,Jmax,Jstart,nPrimP,nPassQ,iPass
 real(realk)             :: X0,Y0,Z0
+Integer                 :: der,ntuvFull,fullOP,ioffP
+Logical                 :: kinetic,facone
+
+kinetic = INPUT%operator .EQ. KineticOperator
 !
 NPrim=PQ%nPrimitives
 JMAX=PQ%endAngmom
 Jstart=PQ%startAngmom
+
+IF (kinetic) THEN
+  JMAX=PQ%endAngmom + 2
+  Jstart=PQ%startAngmom + 2
+ENDIF
 
 #ifdef VAR_LSDEBUGINT
 IF(nPrim*(JMAX+1).GT.allocIntmaxTUVdim)THEN
@@ -6692,8 +6697,29 @@ IF(nPrim*nTUV.GT.allocIntmaxTUVdim)THEN
 ENDIF
 #endif
 
-CALL WTUVrecurrence(Integral%Rtuv,Integral%IN,Integral%TUV,PQ%distance,&
+IF (kinetic) THEN
+  wtuv => Integral%OUT
+ELSE
+  wtuv => Integral%Rtuv
+ENDIF
+
+CALL WTUVrecurrence(wtuv,Integral%IN,Integral%TUV,PQ%distance,&
      &              jStart,jMax,nPrim,ntuv,lupri,iprint)
+
+
+IF (kinetic) THEN
+  der = input%GEODERIVORDER
+  facone = (der.EQ.1).AND..NOT.integral%dohodi
+  ntuvFull = ntuv
+  fullOP = Jstart*(Jstart+1)*(Jstart+2)/6
+  JMAX=PQ%endAngmom
+  Jstart=PQ%startAngmom
+  ntuv=(JMAX+1)*(JMAX+2)*(JMAX+3)/6-Jstart*(Jstart+1)*(Jstart+2)/6
+  ioffP = Jstart*(Jstart+1)*(Jstart+2)/6
+  CALL WTUV_extract_kinetic(Integral%Rtuv,wtuv,Integral%TUV%TUVindex,&
+     &                      Jstart,jmax,nPrim,ioffP,fullOP,ntuvfull,ntuv,1,facone,LUPRI,IPRINT)
+  INTEGRAL%nTUV=ntuv
+ENDIF
 
 IF (IPRINT .GE. 10) THEN
    CALL LSHEADER(LUPRI,'Output from WTUVrecurrence')

@@ -2607,7 +2607,6 @@ case ('kinetic')
   AO2  = AOEmpty
   AO3  = AORdefault
   Oper = KineticOperator
-  intSpec = GeoDerivLHSSpec
 case default
   call lsquit('Error in II_get_1el_diff - Unknown 1-electron case',lupri)
 end select
