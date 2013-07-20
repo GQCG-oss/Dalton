@@ -1694,9 +1694,9 @@ C
          ENDIF
 
          if (peqm) then
-            write(lupri,'(a)') ' Environment is modeled using'//
-     &                       ' polarizable embedding scheme (PE module)'
-            if (soppa) stop 'Not sure if SOPPA works with PE module yet'
+           write(lupri,'(a)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
+           if (soppa) stop 'Not sure if SOPPA works with PE library yet'
          end if
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
@@ -2254,7 +2254,7 @@ C
 
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
-     &                       ' polarizable embedding scheme (PE module)'
+     &                  ' the polarizable embedding scheme (PE library)'
          end if
 
          IF (CHANNEL_CALC) THEN
@@ -4841,7 +4841,7 @@ C
 
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
-     &                       ' polarizable embedding scheme (PE module)'
+     &                  ' the polarizable embedding scheme (PE library)'
          end if
 
          WRITE(LUPRI,'(A,I4)')

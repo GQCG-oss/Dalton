@@ -1,3 +1,27 @@
+!
+!   Polarizable Embedding (PE) library
+!   Copyright (C) 2013 Jógvan Magnus Haugaard Olsen
+!
+!   This file is part of the PE library.
+!
+!   The PE library is free software: you can redistribute it and/or modify
+!   it under the terms of the GNU Lesser General Public License as
+!   published by the Free Software Foundation, either version 3 of the
+!   License, or (at your option) any later version.
+!
+!   The PE library is distributed in the hope that it will be useful,
+!   but WITHOUT ANY WARRANTY; without even the implied warranty of
+!   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!   GNU Lesser General Public License for more details.
+!
+!   You should have received a copy of the GNU Lesser General Public License
+!   along with the PE library. If not, see <http://www.gnu.org/licenses/>.
+!
+!   Contact information:
+!
+!   Jógvan Magnus Haugaard Olsen
+!   E-mail: foeroyingur@gmail.com
+!
 module pe_variables
 
     use pe_precision
@@ -20,7 +44,6 @@ module pe_variables
     logical, save :: pe_gspol = .false.
     logical, save :: pe_nomb = .false.
     logical, save :: pe_polar = .false.
-    logical, save :: pe_mep = .false.
     logical, save :: pe_cube = .false.
     logical, save :: pe_restart = .false.
     logical, save :: pe_verbose = .false.
@@ -30,7 +53,6 @@ module pe_variables
     logical, save :: fock = .false.
     logical, save :: energy = .false.
     logical, save :: response = .false.
-    logical, save :: mep = .false.
 
     ! temporary solution for work array thing
     real(dp), dimension(:), pointer :: work
@@ -47,12 +69,12 @@ module pe_variables
 #endif
     integer, save :: myid, nprocs, ierr
     integer, save :: site_start, site_finish
-    integer, save :: mep_start, mep_finish
+    integer, save :: cube_start, cube_finish
     logical, save :: synced = .false.
     integer, dimension(:), save, allocatable :: siteloops
-    integer, dimension(:), save, allocatable :: meploops
+    integer, dimension(:), save, allocatable :: cubeloops
     integer, dimension(:), save, allocatable :: poldists, sitedists
-    integer, dimension(:), save, allocatable :: mepdists
+    integer, dimension(:), save, allocatable :: cubedists
     integer, dimension(:), save, allocatable :: displs
 
     ! logical unit for output file (default is stdout)
@@ -142,17 +164,8 @@ module pe_variables
 
     ! CUBE stuff
     ! ---------
-    ! options for MEP
-    ! create QM cubes
-    logical, save :: mep_qmcube = .true.
-    ! create multipole cubes
-    logical, save :: mep_mulcube = .true.
-    ! external electric field
-    logical, save :: mep_extfld = .false.
-    real(dp), dimension(3), save :: extfld = 0.0d0
     ! calculate electric field
-    logical, save :: mep_field = .false.
-    logical, save :: mep_fldnrm = .false.
+    logical, save :: cube_field = .false.
     ! general cube information
     ! number of grid points
     integer, save :: npoints

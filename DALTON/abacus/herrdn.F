@@ -4506,7 +4506,7 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
-      use pe_variables, only: peqm, pe_mep
+      use pe_variables, only: peqm
       use polarizable_embedding, only: pe_init
 #include "implicit.h"
 #include "dummy.h"
@@ -4683,7 +4683,7 @@ C
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
 
-      if (peqm .or. pe_mep) then
+      if (peqm) then
         call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
       end if
 

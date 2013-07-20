@@ -1589,7 +1589,7 @@ C     ... default print level for statistics /hjaaj apr 2000
      &  'Information for WESTA will be calculated and written to files.'
         if (peqm) write(lupri,'(4x,a)')
      &   'Environment is modeled using polarizable embedding scheme'//
-     &   ' (PE module)'
+     &   ' (PE library)'
 C
 Cholesky
       IF (CHOINT) WRITE (LUPRI,'(4X,A)')

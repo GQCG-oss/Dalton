@@ -5128,7 +5128,7 @@ C
 #include "spinfo.h"
 C
       CHARACTER*6 RDMOLB(12)
-      CHARACTER*8  WFTYPE
+      CHARACTER*12  WFTYPE
       DATA RDMOLB/'--1-- ','--2-- ','FORM18','FORM12','--5-- ',
      &            '--6-- ','OLDORB','H1DIAG','NEWORB','SIRIFC',
      &            'EHT   ','EWMO  '/
@@ -5480,8 +5480,10 @@ C
      &   'For the specification of the GAS CI in LUCITA: see later.'
       END IF
       if (peqm) then
-        write(iwunit,'(/5x,a)') 'Wave function environment is modeled'
-        write(iwunit,'(5x,a/)') 'using the polarizable embedding model.'
+        write(iwunit,'(/5x,a)')
+     &                  'Wave function environment is modeled using the'
+        write(iwunit,'(5x,a/)')
+     &                  'polarizable embedding model (PE library).'
         WFTYPE = 'PE-'//WFTYPE
       end if
 C     for SIRIUS (not LUCITA) :
@@ -5489,7 +5491,7 @@ C     for SIRIUS (not LUCITA) :
       CALL MOLCHR(ICHARG)
 C     ... get total charge
       IF (.NOT. (DOLUCITA .AND. NUMRUN.EQ.1) ) WRITE(IWUNIT,1002)
-     &   WFTYPE,NINEL,NACTEL,ICHARG,ISPIN,MS2,NSYM,LSYM
+     &   TRIM(WFTYPE),NINEL,NACTEL,ICHARG,ISPIN,MS2,NSYM,LSYM
  1000 FORMAT(/5X,'Wave function specification'
      *       /5X,'============================')
  1002 FORMAT( 5X,'For the wave function of type :      >>> ',A,' <<<',

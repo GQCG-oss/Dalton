@@ -55,7 +55,7 @@ elif len(line) == 4:
 else:
     exit('Error reading line')
 
-exlists = []
+exclists = []
 elements = []
 coords = []
 Q0s = []
@@ -78,8 +78,8 @@ for line in fin:
     line = line.split()
     if not line:
         continue
-    exlist = [int(n) for n in line[0:lexlst]]
-    exlists.append(exlist)
+    exclist = [int(n) for n in line[0:lexlst]]
+    exclists.append(exclist)
     coord = [float(x) for x in line[lexlst+elems:lexlst+elems+3]]
     coords.append(coord)
     if elems == 1:
@@ -156,11 +156,11 @@ if polorder == 2:
     for i, alpha in enumerate(alphas):
         body += '{0:{1}d} {2[0]:12.6f} {2[1]:12.6f} {2[2]:12.6f} {2[3]:12.6f} {2[4]:12.6f} {2[5]:12.6f}\n'.format(i+1, ndec, alpha)
 
-if exlists:
-    body += 'exlists\n'
+if exclists:
+    body += 'exclists\n'
     body += '{}\n'.format(lexlst)
-    for i, exlist in enumerate(exlists):
-        for ex in exlist:
+    for i, exclist in enumerate(exclists):
+        for ex in exclist:
             body += ' {0:{1}}'.format(ex, ndec)
         body += '\n'
 
