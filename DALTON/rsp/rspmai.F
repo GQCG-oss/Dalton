@@ -1691,18 +1691,6 @@ C
 
          IF (QM3 .OR. QMMM) THEN
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-            IF (.NOT. SOPRPA .AND. SOPPA) THEN
-               WRITE (LUPRI,*)
-     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA'
-               WRITE (LUPRI,*)
-     *     'Full solvent model SOPPA not implemented.'
-               WRITE (LUPRI,*)
-     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))'
-               WRITE (LUPRI,*)
-     *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
-               CALL QUIT(
-     *     'Full solvent-SOPPA is not implemented, see output')
-            END IF
          ENDIF
 
          if (peqm) then
@@ -1729,6 +1717,22 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSINF
          END IF
+C
+         if (QM3 .or. QMMM .or. peqm .or. PCM) then
+            IF (.NOT. SOPRPA .AND. SOPPA) THEN
+               WRITE (LUPRI,*)
+     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA'
+               WRITE (LUPRI,*)
+     *     'Full solvent model SOPPA not implemented.'
+               WRITE (LUPRI,*)
+     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))'
+               WRITE (LUPRI,*)
+     *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
+               CALL QUIT(
+     *     'Full solvent-SOPPA is not implemented, see output')
+            END IF   
+         end if
+C
          IF (DOESA) THEN
             WRITE(LUPRI,'(A,L1,/)')
      *      ' Excited state absorption calculattion requested: DOESA  ='
