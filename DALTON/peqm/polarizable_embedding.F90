@@ -6,16 +6,10 @@ module polarizable_embedding
     use pe_variables
 
 #if defined(VAR_MPI)
-#if defined(VAR_USE_MPIF)
-    implicit none
-!#include "mpif.h"
-#else
     use mpi
-    implicit none
 #endif
-#else
+
     implicit none
-#endif
 
     private
 
@@ -123,10 +117,6 @@ subroutine pe_init(lupri, coords, charges)
             write(luout,'(/4x,a)') 'Iterative solver for induced moments will&
                                    & be used'
             write(luout,'(4x,a,es7.1)') 'with convergence threshold: ', thriter
-            if (pe_redthr) then
-                write(luout,'(/4x,a)') 'Using reduced threshold in first few&
-                                       & SCF iterations.'
-            end if
         else
             write(luout,'(/4x,a)') 'Direct solver for induced moments will be&
                                   & used.'
@@ -516,9 +506,6 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 read(luinp,*) thriter
             end if
             pe_iter = .true.
-        ! use reduced threshold in iterative induced moments solver
-        else if (trim(option(2:)) == 'REDTHR') then
-            pe_redthr = .true.
         ! handling sites near quantum-classical border
          else if (trim(option(2:)) == 'BORDER') then
             read(luinp,*) option
@@ -680,9 +667,8 @@ subroutine read_potential(filename)
     if (lexist) then
         call openfile(filename, lupot, 'old', 'formatted')
     else
-        return
-!        write(luout,*) 'ERROR: input potential not found: ', filename
-!        stop 'ERROR: input potential not found'
+        write(luout,*) 'ERROR: potential input file not found'
+        stop 'ERROR: potential input file not found'
     end if
 
     do
@@ -1291,7 +1277,7 @@ subroutine pe_electrostatic(denmats, fckmats)
         call mpi_bcast(lexist, 1, lmpi, 0, comm, ierr)
     end if
 #endif
-    if (lexist .and. fock .and. (scfcycle > 1)) then
+    if (lexist .and. fock .and. ((scfcycle > 1) .or. pe_restart)) then
         if (myid == 0) then
             call openfile('pe_electrostatics.bin', lu, 'old', 'unformatted')
             rewind(lu)
@@ -1680,21 +1666,10 @@ subroutine iterative_solver(Mkinds, Fs)
     logical :: converged = .false.
     real(dp) :: fe = 1.0d0
     real(dp) :: ft = 1.0d0
-    real(dp) :: R, R3, R5, Rd, ai, aj, norm, redthr
+    real(dp) :: R, R3, R5, Rd, ai, aj, norm
     real(dp), parameter :: d3i = 1.0d0 / 3.0d0
     real(dp), parameter :: d6i = 1.0d0 / 6.0d0
     real(dp), dimension(:), allocatable :: T, Rij, Ftmp, M1tmp
-
-    if (myid == 0) then
-        if (fock .and. scfcycle <= - nint(log10(thriter)) .and. .not.&
-           & pe_restart .and. pe_redthr) then
-            redthr = 10**(- log10(thriter) - scfcycle)
-            write(luout,'(a)') 'INFO: using reduced threshold to determine&
-                               & induced dipole moments.'
-        else
-            redthr = 1.0d0
-        end if
-    end if
 
     if (myid == 0) then
         inquire(file='pe_induced_dipoles.bin', exist=lexist)
@@ -1717,7 +1692,7 @@ subroutine iterative_solver(Mkinds, Fs)
 
     allocate(T(6), Rij(3), Ftmp(3), M1tmp(3))
     do n = 1, ndens
-        if (.not.lexist .or. response) then
+        if (.not. lexist .or. response) then
 #if defined(VAR_MPI)
             if (myid == 0 .and. nprocs > 1) then
                 displs(0) = 0
@@ -1857,7 +1832,7 @@ subroutine iterative_solver(Mkinds, Fs)
             end do
 
             if (myid == 0) then
-                if (norm < redthr * thriter) then
+                if (norm < thriter) then
                     if (pe_verbose) then
                         write (luout,'(4x,a,i2,a)') 'Induced dipole moments&
                                                     & converged in ', iter,&
@@ -1913,7 +1888,7 @@ subroutine direct_solver(Mkinds, Fs)
     allocate(B((3*npols)*(3*npols+1)/2))
 
     inquire(file='pe_response_matrix.bin', exist=lexist)
-    if (lexist) then
+    if (lexist .and. ((scfcycle > 1) .or. pe_restart)) then
         call openfile('pe_response_matrix.bin', lu, 'old', 'unformatted')
         rewind(lu)
         if (chol) then
@@ -1937,7 +1912,7 @@ subroutine direct_solver(Mkinds, Fs)
                 allocate(ipiv(3*npols))
                 call sptrf(B, 'L', ipiv, info)
                 if (info /= 0) then
-                    stop 'ERROR: cannot create response matrix.'
+                    stop 'ERROR: cannot create classical response matrix.'
                 else
                     chol = .false.
                 end if
@@ -1946,7 +1921,7 @@ subroutine direct_solver(Mkinds, Fs)
             allocate(ipiv(3*npols))
             call sptrf(B, 'L', ipiv, info)
             if (info /= 0) then
-                stop 'ERROR: cannot create response matrix.'
+                stop 'ERROR: cannot create classical response matrix.'
             end if
         end if
 
@@ -1975,10 +1950,28 @@ subroutine direct_solver(Mkinds, Fs)
 
     Mkinds = Fs
     if (chol) then
-        call pptrs(B, Mkinds, 'L')
+        call pptrs(B, Mkinds, 'L', info)
+        if ((info /= 0) .and. (lexist .and. ((scfcycle > 1) .or. pe_restart))) then
+            call openfile('pe_response_matrix.bin', lu, 'old', 'unformatted')
+            rewind(lu)
+            allocate(ipiv(3*npols))
+            read(lu) B, ipiv
+            close(lu)
+            call sptrs(B, Mkinds, ipiv, 'L', info)
+            if (info /= 0) then
+                stop 'ERROR: cannot create classical response matrix.'
+            end if
+            deallocate(ipiv)
+            chol = .false.
+        else if ((info /= 0) .and. .not. (lexist .and. ((scfcycle > 1) .or. pe_restart))) then
+            stop 'ERROR: cannot create classical response matrix.'
+        end if
         deallocate(B)
     else
-        call sptrs(B, Mkinds, ipiv, 'L')
+        call sptrs(B, Mkinds, ipiv, 'L', info)
+        if (info /= 0) then
+            stop 'ERROR: cannot create classical response matrix.'
+        end if
         deallocate(B, ipiv)
     end if
 
@@ -2055,7 +2048,7 @@ subroutine nuclear_fields(Fnucs)
     end if
 #endif
 
-    if (lexist .and. (scfcycle > 1)) then
+    if (lexist .and. ((scfcycle > 1) .or. pe_restart)) then
         if (myid == 0) then
             call openfile('pe_nuclear_field.bin', lu, 'old', 'unformatted')
             rewind(lu)
@@ -2120,7 +2113,7 @@ subroutine multipole_fields(Fmuls)
     end if
 #endif
 
-    if (lexist) then
+    if (lexist .and. ((scfcycle > 1) .or. pe_restart)) then
         if (myid == 0) then
             call openfile('pe_multipole_field.bin', lu, 'old', 'unformatted')
             rewind(lu)
@@ -2668,25 +2661,6 @@ end function elem2charge
 
 !------------------------------------------------------------------------------
 
-function charge2vdw(charge) result(vdw)
-
-    real(dp), intent(in) :: charge
-
-    integer :: i
-    real(dp) :: vdw
-    real(dp), dimension(19) :: radii
-
-    radii = (/ 1.20, 1.40, 2.20, 1.90, 1.80, 1.70, 1.60, 1.55, 1.50, 1.54,&
-            &  2.40, 2.20, 2.10, 2.10, 1.95, 1.80, 1.80, 1.88, 1.90 /)
-
-    i = nint(charge)
-    if (i > 19) stop 'vdw radius not defined for Z > 19'
-    vdw = radii(i) * aa2au
-
-end function charge2vdw
-
-!------------------------------------------------------------------------------
-
 subroutine chcase(string, uplo)
 
     character(len=*), intent(inout) :: string
@@ -2793,6 +2767,7 @@ subroutine compute_cube(denmats)
         else
             write(luout,*) 'WARNING: pe_induced_dipoles.bin not found'
             write(luout,*) '         cannot create cube file.'
+            return
         end if
 #if defined(VAR_MPI)
         if (nprocs > 1) then

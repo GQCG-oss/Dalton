@@ -15,7 +15,6 @@ module pe_variables
     ! options
     logical, save :: peqm = .false.
     logical, save :: pe_iter = .true.
-    logical, save :: pe_redthr = .false.
     logical, save :: pe_border = .false.
     logical, save :: pe_damp = .false.
     logical, save :: pe_gspol = .false.

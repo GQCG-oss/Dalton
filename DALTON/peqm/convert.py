@@ -1,6 +1,22 @@
 #!/usr/bin/env python
 
+import os
 import sys
+
+pyver = sys.version_info
+if pyver[0] < 2 or pyver[0] == 2 and pyver[1] < 7:
+    exit('ERROR: Python >= 2.7 required.')
+
+try:
+    if sys.argv[1]:
+        pass
+except:
+    exit('ERROR: no input file specified.')
+
+if not os.path.isfile(sys.argv[1]):
+    exit('ERROR: {} not found.'.format(sys.argv[1]))
+
+directory, filename = os.path.split(sys.argv[1])
 
 charge2elem = { 0:  'X',  1:  'H',  2: 'He',  3: 'Li',  4: 'Be',  5:  'B',
                 6:  'C',  7:  'N',  8:  'O',  9:  'F', 10: 'Ne', 11: 'Na',
@@ -97,7 +113,7 @@ if unit == 'AU':
 
 ndec = len(str(nsites)) + 1
 
-fout = open('new_{}'.format(sys.argv[1]), 'w')
+fout = open('new_{}'.format(filename), 'w')
 body = 'coordinates\n'
 body += '{}\n'.format(nsites)
 body += 'AA\n'
