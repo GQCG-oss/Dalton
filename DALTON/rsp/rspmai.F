@@ -1689,7 +1689,7 @@ C
      *      ,EPSOL
          END IF
 
-         IF (QM3 .OR. QMMM .OR. QMNPMM .OR. EMBEDDING) THEN
+         IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
             IF (.NOT. SOPRPA .AND. SOPPA) THEN
                WRITE (LUPRI,*)
