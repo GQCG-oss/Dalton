@@ -54,23 +54,6 @@ subroutine Tk_integrals(inttype, Tk_ints, nnbas, ncomps, coord)
                            coord_nuclei=coord,      &
                            charge_nuclei=charge,    &
                            order_geo_pot=k)
-    else if (inttype == 'gaussian') then
-!        call OnePropCreate(prop_name=INT_GAUSSIAN_POT,&
-!                           one_prop=prop_operator,    &
-!                           info_prop=ierr,            &
-!                           idx_gauorg=(/-1/),         &
-!                           gaupot_origin=coord,       &
-!                           gaupot_charge=charge,      &
-!                           gaupot_expt=gauexp,        &
-!                           order_geo_pot=k)
-    else if (inttype == 'molgrad') then
-        call OnePropCreate(prop_name=INT_POT_ENERGY,&
-                           one_prop=prop_operator,  &
-                           info_prop=ierr,          &
-                           idx_nuclei=(/-1/),       &
-                           coord_nuclei=coord,      &
-                           charge_nuclei=charge,    &
-                           order_geo_pot=k)
     else
         stop 'ERROR: unknown integral type'
     end if
