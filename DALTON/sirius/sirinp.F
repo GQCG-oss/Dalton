@@ -202,6 +202,9 @@ C                   ERRINP (ERROR message OUTPUT ROUTINE)
 C
 C******************************************
 C
+Cjje
+      use pe_variables, only: peqm
+Cjje
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -1649,7 +1652,7 @@ C
 C  Do we use embedding ?
 C  (that is, is QM part embedded in environment)
 C
-      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM
+      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .or. peqm
 C
 C ***  PRINT INPUT DATA *****
 C
@@ -5466,6 +5469,7 @@ C
        IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
        IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
        IF (QMMM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QMMM'
+       IF (peqm) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
       END IF
 C
 C ***** Wave function specifications

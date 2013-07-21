@@ -887,6 +887,13 @@ C
                GO TO 100
     3          CONTINUE
                   SOPPA = .TRUE.
+                  IF (SOPPA .AND. EMBEDDING) THEN
+                    WRITE (LUPRI,'(/A)')
+     &              'Full SOPPA + Embedding model not implmented '//
+     &               '- use .SOPRPA instead'
+                    CALL QUIT('RSPINP: Full SOPPA + Embedding model '//
+     &                    'not implmented.-use .SOPRPA instead')
+                  END IF
                GO TO 100
     4          CONTINUE
                GO TO 100
@@ -970,6 +977,11 @@ C              .PROP2Average
  24            CONTINUE
                   SOPRPA = .TRUE.
                   SOPPA = .TRUE.
+                  IF (SOPRPA .AND. (.NOT. EMBEDDING)) THEN
+                    WRITE (LUPRI,'(/A)')
+     &              'Vacuum calc. - use .SOPPA instead'
+                    CALL QUIT('RSPINP: Vacuum calc.-use .SOPPA instead')
+                  END IF
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1677,7 +1689,7 @@ C
      *      ,EPSOL
          END IF
 
-         IF (QM3 .OR. QMMM) THEN
+         IF (QM3 .OR. QMMM .OR. EMBEDDING) THEN
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
             IF (.NOT. SOPRPA .AND. SOPPA) THEN
                WRITE (LUPRI,*)
@@ -1696,7 +1708,6 @@ C
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
      &                       ' polarizable embedding scheme (PE module)'
-            if (soppa) stop 'Not sure if SOPPA works with PE module yet'
          end if
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
