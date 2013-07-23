@@ -916,9 +916,9 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex3,oindex1,oindex1,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1,.false.)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o1,.false.)
           call ccsdpt_contract_212(oindex3,oindex1,oindex1,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o3)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o3)
 
           ! now do occ part:
 
@@ -940,7 +940,7 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex1,oindex3,oindex1,nv,&
-                           & ccsdpt_doubles,wrk_3d,int_virt_tile_o1,.true.)
+                           & ccsdpt_doubles,trip,wrk_3d,int_virt_tile_o1,.true.)
 
           ! now do occ part:
 
@@ -963,9 +963,9 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex1,oindex1,oindex3,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o3,.false.)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o3,.false.)
           call ccsdpt_contract_212(oindex1,oindex1,oindex3,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o1)
 
           ! now do occ part:
 
@@ -1030,7 +1030,7 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex2,oindex1,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o2,.true.)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o2,.true.)
 
           ! now do occ part:
 
@@ -1053,9 +1053,9 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex2,oindex2,oindex1,nv,&
-                           & ccsdpt_doubles,wrk_3d,int_virt_tile_o1,.false.)
+                           & ccsdpt_doubles,trip,wrk_3d,int_virt_tile_o1,.false.)
           call ccsdpt_contract_212(oindex2,oindex2,oindex1,nv,&
-                           & ccsdpt_doubles,wrk_3d,int_virt_tile_o2)
+                           & ccsdpt_doubles,trip,wrk_3d,int_virt_tile_o2)
 
           ! now do occ part:
 
@@ -1081,9 +1081,9 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex1,oindex2,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o2,.false.)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o2,.false.)
           call ccsdpt_contract_212(oindex1,oindex2,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o1)
 
           ! now do occ part:
 
@@ -1147,9 +1147,9 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex3,oindex1,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o2,.false.)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o2,.false.)
           call ccsdpt_contract_212(oindex3,oindex1,oindex2,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o3)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o3)
 
           ! now do occ part:
 
@@ -1175,9 +1175,9 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex2,oindex3,oindex1,nv,&
-                           & ccsdpt_doubles,wrk_3d,int_virt_tile_o1,.false.)
+                           & ccsdpt_doubles,trip,wrk_3d,int_virt_tile_o1,.false.)
           call ccsdpt_contract_212(oindex2,oindex3,oindex1,nv,&
-                           & ccsdpt_doubles,wrk_3d,int_virt_tile_o2)
+                           & ccsdpt_doubles,trip,wrk_3d,int_virt_tile_o2)
 
           ! now do occ part:
 
@@ -1203,9 +1203,9 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex1,oindex2,oindex3,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o3,.false.)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o3,.false.)
           call ccsdpt_contract_212(oindex1,oindex2,oindex3,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o1)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o1)
 
           ! now do occ part:
 
@@ -1232,9 +1232,9 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex1,oindex3,oindex2,nv,&
-                           & ccsdpt_doubles,wrk_3d,int_virt_tile_o2,.false.)
+                           & ccsdpt_doubles,trip,wrk_3d,int_virt_tile_o2,.false.)
           call ccsdpt_contract_212(oindex1,oindex3,oindex2,nv,&
-                           & ccsdpt_doubles,wrk_3d,int_virt_tile_o1)
+                           & ccsdpt_doubles,trip,wrk_3d,int_virt_tile_o1)
 
           ! now do occ part:
 
@@ -1260,9 +1260,9 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex2,oindex1,oindex3,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o3,.false.)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o3,.false.)
           call ccsdpt_contract_212(oindex2,oindex1,oindex3,nv,&
-                           & ccsdpt_doubles,trip,int_virt_tile_o2)
+                           & ccsdpt_doubles,wrk_3d,trip,int_virt_tile_o2)
 
           ! now do occ part:
 
@@ -1288,9 +1288,9 @@ contains
           ! calculate contributions to ccsdpt_doubles (virt part):
 
           call ccsdpt_contract_211(oindex3,oindex2,oindex1,nv,&
-                           & ccsdpt_doubles,wrk_3d,int_virt_tile_o1,.false.)
+                           & ccsdpt_doubles,trip,wrk_3d,int_virt_tile_o1,.false.)
           call ccsdpt_contract_212(oindex3,oindex2,oindex1,nv,&
-                           & ccsdpt_doubles,wrk_3d,int_virt_tile_o3)
+                           & ccsdpt_doubles,trip,wrk_3d,int_virt_tile_o3)
 
           ! now do occ part:
 
@@ -1710,19 +1710,19 @@ contains
   !> param: oindex1-oindex3 are outside loop indices of driver routine.
   !> nv is nvirt and T_star is T_ast_1 of driver. trip_ampl is the triples amplitude array.
   !> int_virt_tile is a v^3 tile determined by driver occ index
+  !> tmp_g is a 3d work array
   subroutine ccsdpt_contract_211(oindex1,oindex2,oindex3,nv,&
-       & T_star,trip_ampl,int_virt_tile,special)
+       & T_star,tmp_g,trip_ampl,int_virt_tile,special)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, nv
     type(array4), intent(inout) :: T_star
-    type(array3), intent(inout) :: trip_ampl
+    type(array3), intent(inout) :: tmp_g,trip_ampl
     real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
     logical, intent(in) :: special
     !> temporary quantities
     integer :: contraction_type, idx, dim1, dim2, dim3
-    type(array3) :: tmp_g
 
     ! NOTE: incoming array(4) structures are ordered according to:
     ! int_virt_tile(c,b,a,x)
@@ -1737,9 +1737,6 @@ contains
 
     ! contraction time (here: over virtual indices 'c' and 'd') with "coulumb minus exchange"
     ! version of canAIBC (2 * canAIBC(b,c,k,d) - canAIBC(b,d,k,c)) and (if special) canAIBC(b,c,k,d)
-
-    ! first, init temporary tmp_g array3
-    tmp_g = array3_init_standard([nv,nv,nv])
 
     TypeofContraction_211: select case(contraction_type)
 
@@ -1789,9 +1786,6 @@ contains
 
     end select TypeofContraction_211
 
-    ! release temporary tmp_g array3
-    call array3_free(tmp_g)
-
   end subroutine ccsdpt_contract_211
 
   !> brief: do the second of the two contractions over 'cdk' (here: 'cd', 'k' is the summation in driver routine)
@@ -1801,17 +1795,17 @@ contains
   !> param: oindex1-oindex3 are outside loop indices of driver routine.
   !> nv is nvirt and T_star is T_ast_1 of driver. trip_ampl is the triples amplitude array.
   !> int_virt_tile is a v^3 tile determined by driver occ index
+  !> tmp_g is a 3d work array
   subroutine ccsdpt_contract_212(oindex1,oindex2,oindex3,nv,&
-       & T_star,trip_ampl,int_virt_tile)
+       & T_star,tmp_g,trip_ampl,int_virt_tile)
 
     implicit none
     !> input
     integer, intent(in) :: oindex1, oindex2, oindex3, nv
     type(array4), intent(inout) :: T_star
     real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
-    type(array3), intent(inout) :: trip_ampl
+    type(array3), intent(inout) :: tmp_g,trip_ampl
     !> temporary quantities
-    type(array3) :: tmp_g
     integer :: dim1, dim2, dim3
 
     ! NOTE: incoming array(4) structures are ordered according to:
@@ -1820,9 +1814,6 @@ contains
 
     ! contraction time (here: over virtual indices 'c' and 'd') with canAIBC(b,c,k,d)
 
-    ! init temporary tmp_g array3 structure
-    tmp_g = array3_init_standard([nv,nv,nv])
-
     ! reorder to obtain tmp_g(c,d,b)
     call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[1,3,2],0.0E0_realk,tmp_g%val)
 
@@ -1830,11 +1821,8 @@ contains
     dim1=trip_ampl%dims(3)
     dim2=trip_ampl%dims(1)*trip_ampl%dims(2)
     dim3=tmp_g%dims(3)
-    call dgemm('t','n',dim1,dim3,dim2, &
-         -1.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex3,oindex2),dim1)
-
-    ! release temporary array2s and array3s
-    call array3_free(tmp_g)
+    call dgemm('t','n',dim1,dim3,dim2,&
+         & -1.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex3,oindex2),dim1)
 
   end subroutine ccsdpt_contract_212
 
