@@ -1751,8 +1751,7 @@ contains
     real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, idx
-    type(array2) :: interm_cou, interm_cou_2, interm_exc
+    integer :: contraction_type, idx, dim1, dim2, dim3
     type(array3) :: tmp_g
 
     ! NOTE: incoming array(4) structures are ordered according to:
@@ -1769,10 +1768,8 @@ contains
     ! contraction time (here: over virtual indices 'c' and 'd') with "coulumb minus exchange"
     ! version of canAIBC (2 * canAIBC(b,c,k,d) - canAIBC(b,d,k,c)) and (if special) canAIBC(b,c,k,d)
 
-    ! init temporary arrays, tmp_g array3 in addition to interm_cou and interm_exc array2s
+    ! first, init temporary tmp_g array3
     tmp_g = array3_init_standard([nv,nv,nv])
-    interm_cou = array2_init_plain([nv,nv])
-    interm_exc = array2_init_plain([nv,nv])
 
     TypeofContraction_211: select case(contraction_type)
 
@@ -1783,18 +1780,20 @@ contains
        ! reorder to obtain tmp_g(c,d,b)
        call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[1,3,2],0.0E0_realk,tmp_g%val)
 
-       ! now contract coulumb term over 2 first indices into interm_cou(a,b) array2
-       call array3_contract2(trip_ampl,tmp_g,interm_cou)
+       ! now contract coulumb term over 2 first indices
+       dim1=trip_ampl%dims(3)
+       dim2=trip_ampl%dims(1)*trip_ampl%dims(2)
+       dim3=tmp_g%dims(3)
+
+       call dgemm('t','n',dim1,dim3,dim2, &
+            1.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),dim1)
 
        ! reorder tmp_g to obtain exchange term, i.e., tmp_g(c,d,b) --> tmp_g(d,c,b)
        call array3_reorder(tmp_g,[2,1,3])
 
-       ! now contract exchange term over 2 first indices into interm_exc(a,b) array2
-       call array3_contract2(trip_ampl,tmp_g,interm_exc)
-
-       ! now collect in T_star array4 structure
-       call daxpy(nv**2,1.0E0_realk,interm_cou%val,1,T_star%val(:,:,oindex1,oindex2),1) 
-       call daxpy(nv**2,-1.0E0_realk,interm_exc%val,1,T_star%val(:,:,oindex1,oindex2),1) 
+       ! now contract exchange term over 2 first indices2
+       call dgemm('t','n',dim1,dim3,dim2, &
+            -1.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),dim1)
 
     case(1)
 
@@ -1803,26 +1802,25 @@ contains
        ! reorder to obtain tmp_g(c,d,b)
        call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[1,3,2],0.0E0_realk,tmp_g%val)
 
-       ! now contract coulumb term over 2 first indices into interm_cou(a,b) array2
-       call array3_contract2(trip_ampl,tmp_g,interm_cou)
+       ! now contract coulumb term over 2 first indices
+       dim1=trip_ampl%dims(3)
+       dim2=trip_ampl%dims(1)*trip_ampl%dims(2)
+       dim3=tmp_g%dims(3)
+
+       call dgemm('t','n',dim1,dim3,dim2, &
+            2.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),dim1)
 
        ! reorder tmp_g to obtain exchange term, i.e., tmp_g(c,d,b) --> tmp_g(d,c,b)
        call array3_reorder(tmp_g,[2,1,3])
 
-       ! now contract exchange term over 2 first indices into interm_exc(a,b) array2
-       call array3_contract2(trip_ampl,tmp_g,interm_exc)
-
-       ! now collect in T_star array4 structure
-       ! load in interm_cou and interm_exc as an L_{bckd}-contracted quantity
-       call daxpy(nv**2,2.0E0_realk,interm_cou%val,1,T_star%val(:,:,oindex1,oindex2),1)
-       call daxpy(nv**2,-1.0E0_realk,interm_exc%val,1,T_star%val(:,:,oindex1,oindex2),1)
+       ! now contract exchange term over 2 first indices
+       call dgemm('t','n',dim1,dim3,dim2, &
+            -1.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),dim1)
 
     end select TypeofContraction_211
 
-    ! release temporary array2s and array3s
+    ! release temporary tmp_g array3
     call array3_free(tmp_g)
-    call array2_free(interm_cou)
-    call array2_free(interm_exc)
 
   end subroutine ccsdpt_contract_211
 
