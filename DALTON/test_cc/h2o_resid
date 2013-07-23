@@ -1,0 +1,197 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > h2o_resid.info <<'%EOF%'
+   h2o_resid
+   ---------
+   Molecule:         H2O in C2v
+   Wave Function:    CC3 / STO-3G
+   Test Purpose:     transition moments between excited states and
+                     excited state polarizabilities / two-photon
+                     transitions between excited states
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > h2o_resid.mol <<'%EOF%'
+BASIS
+STO-3G
+Properties of excited state
+H2O in minimal basis
+    2    2  X  Y      1.00D-15
+        8.0   1    2    2    1
+O     0.0000000000000000  0.0000000000000000 -0.1359422200000000       *
+        1.0   1    1    1
+H     0.0000000000000000  1.447614500000000   1.07875057000000         *
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > h2o_resid.dal <<'%EOF%'
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRALS
+.DIPLEN
+**SIRIUS
+.CC
+*ORBITALS
+.NOSUPSYM
+*HAMILTONIAN
+*SCF INPUT
+.THRESH
+1.0D-10
+*CC INP
+.CCSD
+.CC3
+.THRENR
+ 1.0D-11
+.THRLEQ
+ 1.0D-11
+.NSIMLE
+ 5
+.PRINT
+ 6
+.MAX IT
+  150
+*CCEXCI
+.NCCEXCI
+ 1 1 1 1
+.R3DIIS
+.TOLSC
+ 1.0D-09
+.THREXC
+ 1.0D-09
+*CCXOPA
+.DIPLEN
+.SELEXC
+ 2 1 4 1
+ 2 1 1 1
+ 2 1 3 1
+ 4 1 1 1
+ 4 1 3 1
+ 1 1 3 1
+ 1 1 4 1
+ 1 1 2 1 
+*CCEXLR
+.NOPROJ    ! switches of projection
+.OPERATOR
+ZDIPLEN ZDIPLEN
+XDIPLEN XDIPLEN
+YDIPLEN YDIPLEN
+XDIPLEN YDIPLEN
+ZDIPLEN YDIPLEN
+.SELSTA
+ 2 1 2 1
+ 2 1 4 1
+ 2 1 1 1
+.FREQUE
+  2
+ 0.0 0.10
+**END OF DALTON
+%EOF%
+#######################################################################
+
+ 
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >h2o_resid.check
+cat >>h2o_resid.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CCSD energies:
+CRIT1=`$GREP "Final *HF energy:" $log | $GREP "\-74.9656569916" | wc -l`
+CRIT2=`$GREP "Total MP2   energy:  *\-75.00556505" $log | wc -l`
+CRIT3=`$GREP "Total CCSD  energy:  *\-75.02150754" $log | wc -l`
+CRIT4=`$GREP "Total CC3   energy:  *\-75.02157690" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=7
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# CCSD excitation energy for 1. state in symmetry 1
+# ..  |    1   |     0.4199847  |      11.42837  |     92175.984  |  94.29  |
+CRIT1=`$GREP "\|    1   \|     ( |0)\.41998..  \|      11\.4283.  \|     92175\....  \|  94\.29" $log | wc -l`
+TEST[2]=`expr $CRIT1` 
+CTRL[2]=1
+ERROR[2]="CCSD EXCITATION ENERGY IS NOT CORRECT"
+
+# CC3 excitation energy for 1. state in symmetry 1
+# ..  |    1   |     0.4207453  |      11.44906  |     92342.918  |  94.25  |
+CRIT1=`$GREP "\|    1   \|     ( |0)\.42074..  \|      11\.4490.  \|     92342\....  \|  94\.25" $log | wc -l`
+TEST[3]=`expr $CRIT1` 
+CTRL[3]=1
+ERROR[3]="CC3 EXCITATION ENERGY IS NOT CORRECT"
+
+# CC3 oscillator strengths 
+CRIT1=`$GREP "oscillator strength .length gauge. *: * ( |0)\.024593" $log | wc -l`
+CRIT2=`$GREP "oscillator strength .length gauge. *: * ( |0)\.005217" $log | wc -l`
+CRIT3=`$GREP "oscillator strength .length gauge. *: * ( |0)\.002937" $log | wc -l`
+CRIT4=`$GREP "oscillator strength .length gauge. *: * ( |0)\.033527" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[3]=5
+ERROR[3]="CC3 OSCILLATOR STRENGTH IS NOT CORRECT"
+
+# CC3 excited state polarizabilities
+CRIT1=`$GREP "(-0|-)\.1000 *(0|)\.1000 *(-0|-)\.84323190" $log | wc -l`
+CRIT2=`$GREP "XDIPLEN *(|-|-0|0)\.0000 *XDIPLEN *(|-|-0|0)\.0000 *1\.2969444" $log | wc -l`
+CRIT3=`$GREP "(-0|-)\.1000 *(0|)\.1000 *1\.7005047" $log | wc -l`
+CRIT4=`$GREP "YDIPLEN *(|-|-0|0)\.0000 *YDIPLEN *(|-|-0|0)\.0000 *15\.132611" $log | wc -l`
+CRIT5=`$GREP "(-0|-)\.1000 *(0|)\.1000 *-14\.913389" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`  
+CTRL[4]=5
+ERROR[4]="CC3 EXCITED STATE POLARIZABILITIES NOT CORRECT"
+
+# CC3 twophoton strengths between excited states
+CRIT1=`$GREP "ZDIPLEN *(-0|-)\.0660 *YDIPLEN *(0| )\.0000 *(\-| )3\.8258326 * (\-| )3\.8153715 * 14\.596973" $log | wc -l`
+CRIT2=`$GREP "(-0|-)\.1660 * (0| )\.1000 * (\-| )2\.2163178 * (\-| )2\.1973786 * 4\.8700894" $log | wc -l`
+TEST[5]=`expr $CRIT1 \+ $CRIT2`
+CTRL[5]=2
+ERROR[5]="CC3 TWOPHOTON STRENGTHS BETWEEN EXCITED STATES IS NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi                
+%EOF%
+#######################################################################

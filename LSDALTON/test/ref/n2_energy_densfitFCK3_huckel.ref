@@ -1,0 +1,776 @@
+
+ Work memory size (LMWORK+2):   123123125 =  939.35 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:35:16 2010
+     Host name              : login-0-1.local                         
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Integrals are calculated using ERI instead of HERMIT (where possible)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  Energy calculation without symmetry                                     
+  Basis set specified with ATOMBASIS                                      
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           N          14.003074
+                           N          14.003074
+
+                       Total mass:    28.006148 amu
+                       Natural abundance:  99.261 %
+
+ Center-of-mass coordinates (A):    0.000000    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     1
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  N           1       7      42      30      [10s5p2d1f|4s3p2d1f]                                                             
+  N           1       7      42      30      [10s5p2d1f|4s3p2d1f]                                                             
+  ----------------------------------------------------------------------
+  total:      2      14      84      60
+  ----------------------------------------------------------------------
+  Spherical harmonic basis used.
+
+  Threshold for integrals:  1.00D-15
+ 
+ 
+  Auxiliary basis is "cc-pVTZdenfit" from the basis set library.
+
+
+
+  Cartesian Coordinates
+  ---------------------
+
+  Total number of coordinates:  6
+
+   1   N        x      0.0000000000
+   2            y      0.0000000000
+   3            z      1.0370000000
+
+   4   N        x      0.0000000000
+   5            y      0.0000000000
+   6            z     -1.0370000000
+
+
+   Interatomic separations (in Angstroms):
+   ---------------------------------------
+
+            N           N     
+            ------      ------
+ N     :    0.000000
+ N     :    1.097514    0.000000
+
+
+  Max interatomic separation is    1.0975 Angstroms
+  between atoms "N     " and "N     ".
+
+
+  Bond distances (angstroms):
+  ---------------------------
+
+                  atom 1     atom 2       distance
+                  ------     ------       --------
+  bond distance:  N          N            1.097514
+
+
+
+
+ Principal moments of inertia (u*A**2) and principal axes
+ --------------------------------------------------------
+
+   IA    0.000000          0.000000    0.000000    1.000000
+   IB    8.433603          0.000000    1.000000    0.000000
+   IC    8.433603          1.000000    0.000000    0.000000
+
+
+ Rotational constants
+ --------------------
+
+ The molecule is linear.
+
+               B =        59924.45 MHz     (    1.998864 cm-1)
+
+
+  Nuclear repulsion energy :     23.625843780135
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.00 seconds
+
+
+ >>> Time used in ONEDRV is   0.01 seconds
+
+
+ >>> Time used in GABGEN is   0.02 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.04 seconds
+ >>>> Total wall time used in HERMIT:   0.04 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+
+
+ Settings for DFT calculation:
+ -----------------------------
+
+     Default thresholds:                       0.10D-08    0.10D-09    0.20D-11
+     Default threshold for number of electrons:                        0.10D-02
+     DFT radial quadrature accuracy/ang. expansion order:  0.10E-12  35
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:35:16 2010
+     Host name              : login-0-1.local                         
+
+ Title lines from integral program:
+     Energy calculation without symmetry                                     
+     Basis set specified with ATOMBASIS                                      
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Kohn-Sham calculation.
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons         14
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                 60
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+ 
+     This is a DFT calculation of type: LDA
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals          60
+     Number of basis functions         60
+
+      ** Automatic occupation of RKS orbitals **
+      -- Initial occupation of symmetries is determined from Huckel guess.                    
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              7
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+
+
+ >>>>> DIIS optimization of Hartree-Fock <<<<<
+
+ C1-DIIS algorithm; max error vectors =   10
+
+ Automatic occupation of symmetries with  14 electrons.
+
+ Iter     Total energy    Error norm  Delta(E)    HF occupation
+ -----------------------------------------------------------------------------
+ Screening settings in next iteration (IFTHRS/DIFDEN)    7    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in GALPHA is   0.02 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in FIT-J  is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.08 seconds
+
+
+ >>> Time used in FCK2el is   0.08 seconds
+
+ Radial Quadrature : LMG scheme
+ Space partitioning: Becke partitioning with atomic radius correction
+ Radial integration threshold: 1e-13
+ Angular integration order range: [5 35] Angular points 434
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points=14804 compressed from 14818 (125 radial)
+ Atom:    2*1 points=14804 compressed from 14818 (125 radial)
+ Number of grid points:    29608 Grid generation time:       0.0 s
+KS electrons/energy:   14.00000054571955  -12.55717945709407 rel.err: 0.39E-07
+
+ >>> Time used in DFT_KS is   0.50 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   1   -108.192948367399   4.27D+00  -1.08D+02    7
+
+ >>> Time used in FCKEIG is   0.01 seconds
+
+
+ >>> Time used in DISITR is   0.59 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)    8    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in GALPHA is   0.02 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in FCK2el is   0.03 seconds
+
+KS electrons/energy:   14.00000056398663  -13.08486617597841 rel.err: 0.40E-07
+
+ >>> Time used in DFT_KS is   0.48 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   2   -108.539928839359   1.83D+00  -3.47D-01    7
+
+ >>> Time used in FCKEIG is   0.01 seconds
+
+
+ >>> Time used in DISITR is   0.52 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in GALPHA is   0.02 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in FCK2el is   0.03 seconds
+
+KS electrons/energy:   14.00000055298637  -12.64488372812117 rel.err: 0.39E-07
+
+ >>> Time used in DFT_KS is   0.48 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   3   -108.671057148112   5.84D-01  -1.31D-01    7
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.51 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)    9    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in GALPHA is   0.02 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in FIT-J  is   0.02 seconds
+
+
+ >>> Time used in JBUILD is   0.04 seconds
+
+
+ >>> Time used in FCK2el is   0.04 seconds
+
+KS electrons/energy:   14.00000055627882  -12.80094831092169 rel.err: 0.40E-07
+
+ >>> Time used in DFT_KS is   0.47 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   4   -108.686827046690   9.76D-02  -1.58D-02    7
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.52 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   10    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in GALPHA is   0.02 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in FCK2el is   0.03 seconds
+
+KS electrons/energy:   14.00000055599885  -12.77665349851093 rel.err: 0.40E-07
+
+ >>> Time used in DFT_KS is   0.48 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   5   -108.687297720950   5.66D-03  -4.71D-04    7
+
+ >>> Time used in FCKEIG is   0.01 seconds
+
+
+ >>> Time used in DISITR is   0.52 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   11    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in GALPHA is   0.02 seconds
+
+
+ >>> Time used in LINSOL is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.03 seconds
+
+
+ >>> Time used in FCK2el is   0.03 seconds
+
+KS electrons/energy:   14.00000055600139  -12.77729078146657 rel.err: 0.40E-07
+
+ >>> Time used in DFT_KS is   0.48 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   6   -108.687299124836   3.55D-04  -1.40D-06    7
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.51 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   12    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in GALPHA is   0.02 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.04 seconds
+
+
+ >>> Time used in FCK2el is   0.04 seconds
+
+KS electrons/energy:   14.00000055600234  -12.77737643572727 rel.err: 0.40E-07
+
+ >>> Time used in DFT_KS is   0.48 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   7   -108.687299132210   9.48D-06  -7.37D-09    7
+
+ >>> Time used in FCKEIG is   0.00 seconds
+
+
+ >>> Time used in DISITR is   0.52 seconds
+
+ Screening settings in next iteration (IFTHRS/DIFDEN)   14    F
+ Entering DENS_FIT driver
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.02 seconds
+
+
+ >>> Time used in GALPHA is   0.02 seconds
+
+
+ >>> Time used in LINSOL is   0.01 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.01 seconds
+
+
+ >>> Time used in FIT-J  is   0.01 seconds
+
+
+ >>> Time used in JBUILD is   0.04 seconds
+
+
+ >>> Time used in FCK2el is   0.04 seconds
+
+KS electrons/energy:   14.00000055600242  -12.77737811209277 rel.err: 0.40E-07
+
+ >>> Time used in DFT_KS is   0.47 seconds
+
+Robust density-fitting contribution added to the total energy    0.0000000000
+   8   -108.687299132214   2.00D-07  -4.18D-12    7
+ DIIS converged in   8 iterations !
+
+
+ *** RHF orbital energy analysis ***
+
+ Only the five lowest virtual orbital energies printed in each symmetry.
+
+ Number of electrons :   14
+ Orbital occupations :    7
+
+ Hartree-Fock orbital energies, symmetry 1
+
+       -13.96052125   -13.95917686    -1.03434857    -0.48876343    -0.43245920
+        -0.43245920    -0.37650958    -0.07415853    -0.07415853     0.27214317
+         0.35236351     0.35236351
+
+    E(LUMO) :    -0.07415853 au (symmetry 1)
+  - E(HOMO) :    -0.37650958 au (symmetry 1)
+  ------------------------------------------
+    gap     :     0.30235106 au
+
+ >>> Time used in DISCTL is   4.21 seconds
+
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final DFT energy:           -108.687299132214
+     Nuclear repulsion:            23.625843780135
+     Electronic energy:          -132.313142912349
+
+     Final gradient norm:           0.000000199859
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:35:21 2010
+     Host name              : login-0-1.local                         
+
+     Molecular orbitals for symmetry species   1
+
+ Orbital          1        2        3        4        5        6        7
+   1  N   1s    -0.6947   0.6906   0.0326   0.0068   0.0000   0.0000  -0.0076
+   2  N   1s     0.0158  -0.0292  -0.5921  -0.6416   0.0000   0.0000   0.2145
+   3  N   1s    -0.0210   0.0230  -0.0059  -0.0072   0.0000   0.0000   0.0021
+   4  N   1s    -0.0079   0.0198   0.1309  -0.0882   0.0000   0.0000   0.2089
+   5  N   2px    0.0000   0.0000   0.0000   0.0000   0.5265   0.4505   0.0000
+   6  N   2py    0.0000   0.0000   0.0000   0.0000   0.4505  -0.5265   0.0000
+   7  N   2pz    0.0060  -0.0050   0.3845  -0.3111   0.0000   0.0000   0.7245
+   8  N   2px    0.0000   0.0000   0.0000   0.0000  -0.0349  -0.0299   0.0000
+   9  N   2py    0.0000   0.0000   0.0000   0.0000  -0.0299   0.0349   0.0000
+  10  N   2pz   -0.0038   0.0085  -0.0614   0.0262   0.0000   0.0000  -0.0817
+  11  N   2px    0.0000   0.0000   0.0000   0.0000  -0.0472  -0.0404   0.0000
+  12  N   2py    0.0000   0.0000   0.0000   0.0000  -0.0404   0.0472   0.0000
+  13  N   2pz   -0.0020  -0.0010  -0.1101   0.0272   0.0000   0.0000  -0.0858
+  14  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  15  N   3d1-   0.0000   0.0000   0.0000   0.0000  -0.0111   0.0129   0.0000
+  16  N   3d0   -0.0003   0.0002  -0.0170   0.0059   0.0000   0.0000  -0.0171
+  17  N   3d1+   0.0000   0.0000   0.0000   0.0000  -0.0129  -0.0111   0.0000
+  18  N   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  19  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  20  N   3d1-   0.0000   0.0000   0.0000   0.0000  -0.0194   0.0227   0.0000
+  21  N   3d0    0.0012  -0.0020  -0.0124   0.0150   0.0000   0.0000  -0.0134
+  22  N   3d1+   0.0000   0.0000   0.0000   0.0000  -0.0227  -0.0194   0.0000
+  23  N   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  24  N   4f3-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  25  N   4f2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  26  N   4f1-   0.0000   0.0000   0.0000   0.0000   0.0045  -0.0052   0.0000
+  27  N   4f0   -0.0010  -0.0002   0.0061  -0.0005   0.0000   0.0000   0.0033
+  28  N   4f1+   0.0000   0.0000   0.0000   0.0000   0.0052   0.0045   0.0000
+  29  N   4f2+   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  30  N   4f3+   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  31  N   1s    -0.6947  -0.6906   0.0326  -0.0068   0.0000   0.0000  -0.0076
+  32  N   1s     0.0158   0.0292  -0.5921   0.6416   0.0000   0.0000   0.2145
+  33  N   1s    -0.0210  -0.0230  -0.0059   0.0072   0.0000   0.0000   0.0021
+  34  N   1s    -0.0079  -0.0198   0.1309   0.0882   0.0000   0.0000   0.2089
+  35  N   2px    0.0000   0.0000   0.0000   0.0000   0.5265   0.4505   0.0000
+  36  N   2py    0.0000   0.0000   0.0000   0.0000   0.4505  -0.5265   0.0000
+  37  N   2pz   -0.0060  -0.0050  -0.3845  -0.3111   0.0000   0.0000  -0.7245
+  38  N   2px    0.0000   0.0000   0.0000   0.0000  -0.0349  -0.0299   0.0000
+  39  N   2py    0.0000   0.0000   0.0000   0.0000  -0.0299   0.0349   0.0000
+  40  N   2pz    0.0038   0.0085   0.0614   0.0262   0.0000   0.0000   0.0817
+  41  N   2px    0.0000   0.0000   0.0000   0.0000  -0.0472  -0.0404   0.0000
+  42  N   2py    0.0000   0.0000   0.0000   0.0000  -0.0404   0.0472   0.0000
+  43  N   2pz    0.0020  -0.0010   0.1101   0.0272   0.0000   0.0000   0.0858
+  44  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  45  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0111  -0.0129   0.0000
+  46  N   3d0   -0.0003  -0.0002  -0.0170  -0.0059   0.0000   0.0000  -0.0171
+  47  N   3d1+   0.0000   0.0000   0.0000   0.0000   0.0129   0.0111   0.0000
+  48  N   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  49  N   3d2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  50  N   3d1-   0.0000   0.0000   0.0000   0.0000   0.0194  -0.0227   0.0000
+  51  N   3d0    0.0012   0.0020  -0.0124  -0.0150   0.0000   0.0000  -0.0134
+  52  N   3d1+   0.0000   0.0000   0.0000   0.0000   0.0227   0.0194   0.0000
+  53  N   3d2+   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  54  N   4f3-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  55  N   4f2-   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  56  N   4f1-   0.0000   0.0000   0.0000   0.0000   0.0045  -0.0052   0.0000
+  57  N   4f0    0.0010  -0.0002  -0.0061  -0.0005   0.0000   0.0000  -0.0033
+  58  N   4f1+   0.0000   0.0000   0.0000   0.0000   0.0052   0.0045   0.0000
+  59  N   4f2+   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+  60  N   4f3+   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000   0.0000
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      4.24 seconds
+ >>>> Total wall time used in SIRIUS :      4.25 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:35:21 2010
+     Host name              : login-0-1.local                         
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:   4.28 seconds
+ >>>> Total wall time used in DALTON:   4.29 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:35:21 2010
+     Host name              : login-0-1.local                         

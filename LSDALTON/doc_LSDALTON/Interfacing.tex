@@ -1,0 +1,109 @@
+\chapter{Interfacing to {\lsdalton}}\label{interfacing}
+
+In this chapter we give an introduction to the normalization, basis set and ordering of atomic orbitals used in the {\lsdalton} program. 
+
+This is provided in case you want to interface to the {\lsdalton} program or want to read one of the files written by the {\lsdalton} program, for instance 
+the local orbitals.
+\section{The Grand Canonical Basis}
+
+Unlike all other Quantum Chemistry Programs the {\lsdalton} program, uses the so called grand canonical basis as the internal default basis. The results therefore cannot directly be compared to other programs unless the 
+\begin{verbatim}
+.NOGCBASIS
+\end{verbatim}
+keyword. This keyword deactivates the use of the grand canonical basis and uses the input basis instead. 
+
+\section{Basisset and Ordering}
+
+In {\lsdalton} the default basis set are real-valued spherical harmonic Gaussian type
+orbitals (GTOs)
+\begin{equation}
+G_{ilm}(\textbf{r}; a_{i};\textbf{A}) = S_{lm}(x_{A}; y_{A}; z_{A}) \exp(-a_{i}r^{2}_{A})
+\end{equation}
+where $S_{lm}(x_{A}; y_{A}; z_{A})$ is a real solid harmonic introduced in section 6.4.2 of Ref. [THE BOOK], (see Table 6.3).
+Concerning the ordering of basis functions, it is one atomtype after the other as given
+in the input, and for each atomtype, it is one atom after another as given in input. For
+each atom increasing with angular momentum $l$, within one angular momentum $l$, the ordering 
+is first the components (e.g. $p_{x},p_{y},p_{z}$), and then the contracted functions.
+
+
+
+So for an atom consiting of 2 s functions 2 p functions and 1 d function, the ordering is
+$\{1s; 2s; 3s; 1p_{x};1p_{y};1p_{z}; 2p_{x};2p_{y};2p_{z}; 1d_{xy}; 1d_{yz}; 1d_{z2-r2} ; 1d_{xz}; 1d_{x2-y2}\}$
+In {\lsdalton} the ordering of the basis functions are $m = \{-l,\cdots,0,\cdots,l\}$ for a given
+angular momentum $l$. Although for computational efficiency the p orbitals are treated as a
+special case with $p = \{ p_{x},p_{y},p_{z} \}$ which corresponds to $m = \{1,-1,0 \}$.
+
+\section{Normalization}
+
+For an unnormalized primitive spherical harmonic GTO, the overlap is given by
+\begin{equation}
+\left\langle \chi^{GTO}_{i lm} | \chi^{GTO}_{i lm} \right\rangle = (N_i^{p})^2 \left(\frac{\pi}{2a_i}\right)^{3/2}\frac{1}{(4a_i)^l}
+\end{equation}
+(where the last term corresponds to $1/(2p)^l$ according to for example Eq. 9.3.8 of Ref. [THE BOOK]). This gives 
+the primitive normalization factor $N^{p}$
+\begin{equation}
+  N^{p}_i = \frac{(4a_i)^{l/2+3/4}}{\pi^{3/4}}
+\end{equation}
+Naturally the default in {\lsdalton} is not primitive GTOs but contracted GTOs written as linear combinations of primitive spherical-harmonic GTOs of different exponents
+\begin{equation}
+G_{\mu lm}(\textbf{r}; a;\textbf{A}) = \sum_{i} G_{ilm}(\textbf{r}; a_{i};\textbf{A})d^{norm}_{i\mu}
+\end{equation}
+in {\lsdalton} we determine $d^{norm}_{i\mu}$ as
+\begin{equation}
+d^{norm}_{i\mu} = N^{p}_{i}N^{c}_{i\mu}d^{unmod}_{i\mu}
+\end{equation}
+As explained, $N^{p}_{i}$ is the normalization of the primitive GTOs, $d^{unmod}_{i\mu}$ are the 
+unmodified contraction coefficients read from the basis set file. $N^{c}_{i}$ is the normalization of the contracted functions and is determined using the overlap between two normalized primitive GTOs of the same angular momentum, but different exponents
+\begin{eqnarray}
+\left\langle \chi^{GTO}_{a_{i}lm} | \chi^{GTO}_{a_{j}lm} \right\rangle = \biggl( \frac{\sqrt{ 4 a_{i} a_{j}}}{a_{i}+a_{j}} \biggr)^{\frac{3}{2}+l}
+\end{eqnarray}
+so that the contraction coefficients for the contracted function $N^{c}_{i}$ are found by first finding the overlap
+\begin{eqnarray}
+\mathcal{S}_{\mu} = \sum_{ij} d_{i\mu}^{unmod} d_{j\mu}^{unmod} \left\langle \chi^{GTO}_{ilm} | \chi^{GTO}_{jlm} \right\rangle = \sum_{ij} d_{i\mu}^{unmod} d_{j\mu}^{unmod} \biggl( \frac{\sqrt{ 4 a_{i} a_{j}}}{a_{i}+a_{j}} \biggr)^{\frac{3}{2}+l}
+\end{eqnarray}
+where $d_{i\mu}^{unmod}$ are the unmodified coefficients and then construct the coefficients
+\begin{eqnarray}
+d_{i\mu}^{norm} &=& N^{p}_{i}N^{c}_{i\mu}d^{unmod}_{i\mu} = N^{p}_{i}\frac{d^{unmod}_{i\mu}}{\sqrt{ \mathcal{S}_{\mu} }} = \frac{d_{i\mu}^{unmod}}{\sqrt{\mathcal{S}_{\mu}}} \biggl( 4 a_{i}\biggr)^{\frac{l}{2} + \frac{3}{4}} \biggl( \frac{1}{\pi} \biggr)^{\frac{3}{4}}\end{eqnarray}
+
+\section{Matrix File Format}
+
+During an {\lsdalton} calculation a number of files may be generated. This list of files include 
+
+\begin{verbatim}
+dens.restart - The density matrix
+fock.restart - The fock matrix
+overlapmatrix - The overlap matrix
+cmo_orbitals.u - The canonical Molecular orbitals 
+lcm_orbitals.u - The local Molecular orbitals 
+\end{verbatim}
+
+the files are all written using the Fortran 90 code
+
+\begin{lstlisting}
+OPEN(UNIT=IUNIT,FILE='dens.restart',STATUS='UNKNOWN',FORM='UNFORMATTED',IOSTAT=IOS)
+WRITE(iunit) A%Nrow, A%Ncol
+WRITE(iunit)(A%elms(I),I=1,A%nrow*A%ncol)
+CLOSE(UNIT=IUNIT,,STATUS='KEEP')
+\end{lstlisting}
+
+Where A is a derived type containing the number of rows (A$\%$nrow), the number of columns (A$\%$ncol), and the elements stored in a vector array (A$\%$elms). 
+
+The dens.restart is different as it contains an additional logical 
+\begin{lstlisting}
+OPEN(UNIT=IUNIT,FILE='dens.restart',STATUS='UNKNOWN',FORM='UNFORMATTED',IOSTAT=IOS)
+WRITE(iunit) A%Nrow, A%Ncol
+WRITE(iunit)(A%elms(I),I=1,A%nrow*A%ncol)
+WRITE(iunit) GCBASIS
+CLOSE(UNIT=IUNIT,,STATUS='KEEP')
+\end{lstlisting}
+The logical GCBASIS should always be false. If the logical GCBASIS is true 
+the dens.restart is given in terms of the grand canonical basis. 
+In order to ensure that the dens.restart is written in the input basis the keyword
+\begin{verbatim}
+.NOGCBASIS
+\end{verbatim}
+should be used. 
+
+
+
+

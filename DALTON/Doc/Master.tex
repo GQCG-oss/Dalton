@@ -1,0 +1,305 @@
+\documentclass[11pt]{report}  
+\usepackage{a4}
+\usepackage{makeidx}
+% separate longtable is needed for tetex-latex-2.0.2-21.3
+\usepackage{supertabular,longtable,hyperref}
+\usepackage{color}
+% Specifies the document style.
+\usepackage{bibentry}
+\usepackage[numbers]{natbib}
+
+
+\newcommand{\ignore}[1]{}
+\newcommand{\nobibentry}[1]{{\let\nocite\ignore\bibentry{#1}}}
+% apsrev entries in the text need definitions of these commands
+\newcommand{\bibfnamefont}[1]{#1}
+\newcommand{\bibnamefont}[1]{#1}
+
+
+\typeout{***               }
+\typeout{***   Modification history: }
+\typeout{***   version 1.0 by PRT, June 1992 }
+\typeout{***   version 2.0 by Kenneth Ruud, autumn 1994 and spring 1995}
+\typeout{***   Converted to LaTeX2e in April 1995, Kenneth Ruud}
+\typeout{***   Added response manual from Linkoeping in Feb.96, Kenneth Ruud}
+\typeout{***   Added Sirius manual from Hans J\o rgen/Hans \AA gren in Feb.96, kr}
+\typeout{***   Added cc manual in Mar. 2001, Christof Haettig}
+\typeout{***   Revision for Dalton 1.2 in May 2001, Kenneth Ruud}
+\typeout{***   Revision for Dalton 2.0 in 2004/2005, Kenneth Ruud++}
+\typeout{***   Revision for Dalton 2011 in 2011, Hans J\o rgen Aa. Jensen }
+\typeout{***               }
+
+\setcounter{secnumdepth}{3}
+
+\pagestyle{headings}
+\oddsidemargin=0in
+\evensidemargin=0in
+\textwidth=6.0in
+%\headheight=0pt
+%\headsep=0pt
+\topmargin=0in
+\textheight=8.0in
+\parindent=35pt
+\makeindex
+%
+%    Options for Sirius
+%
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\beqar}{\begin{eqnarray}}
+\newcommand{\eeqar}{\end{eqnarray}}
+\newcommand{\bcen}{\begin{center}}
+\newcommand{\ecen}{\end{center}}
+\newcommand{\lrar}{\mbox{$\leftrightarrow$}}
+\newcommand{\kwlabel}[1]{
+{\tt \obeyspaces \frenchspacing #1 \hfill}
+\index{#1@{\normalfont\ttfamily #1}}}
+%\newenvironment{keywords}{
+%  \noindent{\bf Keywords:}
+%  \list{}{
+%    \settowidth{\leftmargin}{\tt MM}
+%    \setlength{\rightmargin}{1.0cm}
+%    \setlength{\labelwidth}{\linewidth}
+%      \addtolength{\labelwidth}{-\rightmargin}
+%    \setlength{\labelsep}{0cm}
+%    \setlength{\itemindent}{-\leftmargin}
+%      \addtolength{\itemindent}{\labelwidth}
+%      \addtolength{\itemindent}{\labelsep}
+%    \let\makelabel\kwlabel
+%  }
+%}
+%}{\endlist}
+%\newcommand{\bkw}{\begin{keywords}}
+%\newcommand{\ekw}{\end{keywords}}
+%hjorig \newcommand{\kw}[1]{\verb+#1+}
+%hjorig \newcommand{\quotekw}[1]{``\kw{#1}\nolinebreak''}
+\newcommand{\kw}[1]{#1}
+\newcommand{\quotekw}[1]{"#1"}
+%agren \newcommand{\kw}[1]{\tt #1}
+%agren \newcommand{\quotekw}[1]{"{\tt #1}"}
+\newcommand{\starkey}{\quotekw{*}}
+\newcommand{\dotkey}{\quotekw{.}}
+\newcommand{\f}[1]{{"{f#1}" }}
+\newenvironment{inputex}%
+{ \hspace{1cm} \begin{minipage}{15cm} }%
+{ \end{minipage} }
+
+%\newif\ifmetecc
+%\meteccfalse
+%\newif\ifddfock
+%\newif\ifsolvent
+%\newif\ifabacus
+%\newif\ifrespons
+%\ifmetecc
+%   \ddfockfalse \solventtrue \abacusfalse \responsfalse
+%\else
+%   \ddfocktrue \solventtrue \abacustrue \responstrue
+%\fi
+
+% Sirius limits for Sirius manual:
+\def\sirver{n07 }
+\def\mxfelt{20 }
+% end of SIRIUS limits file
+%
+%           
+%\renewcommand{\thetable}{\Roman{table}}
+\newcommand{\dalton}{{\sc dalton2011}}
+\newcommand{\her}{{\sc hermit}\index{\sc hermit}}
+\newcommand{\hermit}{{\sc hermit}\index{\sc hermit}}
+\newcommand{\sir}{{\sc sirius}\index{\sc sirius}}
+%
+\newcommand{\choles}{{\sc cholesky}\index{\sc cholesky}}
+%
+\newcommand{\sirius}{{\sc sirius}\index{\sc sirius}}
+\newcommand{\aba}{{\sc abacus}\index{\sc abacus}}
+\newcommand{\abacus}{{\sc abacus}\index{\sc abacus}}
+\newcommand{\resp}{{\sc response}\index{\sc response}}
+\newcommand{\response}{{\sc response}\index{\sc response}}
+\newcommand{\mol}{{\sc molecule}\index{\sc molecule}}
+\newcommand{\molecule}{{\sc molecule}\index{\sc molecule}}
+\newcommand{\cc}{{\sc cc}\index{\sc cc}}
+\newcommand{\eri}{{\sc eri}\index{\sc eri}}
+\newcommand{\twoint}{{\sc twoint}\index{\sc twoint}}
+\newcommand{\lucita}{{\sc lucita}\index{\sc lucita}}
+\newcommand{\OM}{\mbox{1-matrix}}
+\newcommand{\TM}{\mbox{2-matrix}}
+\newcommand{\grp}[1]{\mbox{$\cal #1$}}
+\newcommand{\dcr}[1]{\mbox{\Fatnormalfont #1}}
+\newcommand{\sdcr}[1]{\mbox{\Fatscriptfont #1}}
+\newcommand{\bigtit}[1]{\centering{\Titfont #1}}
+\newcommand{\Forall}{\mbox{$\;\forall\;$}}
+\newcommand{\pgrp}[1]{\mbox{${\cal{S}}(#1)$}}
+\newcommand{\oper}[1]{\mbox{$\hat #1$}}
+\newcommand{\fixindent}[1]{\mbox{\hspace{#1 in}}}
+\newcommand{\tone}{${\cal{T}}_1$}
+\newcommand{\qone}{${\cal{Q}}_1$}
+\newcommand{\NP}{\mbox{$N$-particle}}
+\newcommand{\NE}{\mbox{$N$-electron}}
+\newcommand{\OP}{\mbox{one-particle}}
+\newcommand{\COP}{\mbox{One-particle}}
+\newcommand{\OEL}{\mbox{one-electron}}
+\newcommand{\usp}[2]{(#1$s$~#2$p$)}
+\newcommand{\uspd}[3]{(#1$s$~#2$p$~#3$d$)}
+\newcommand{\uspdf}[4]{(#1$s$~#2$p$~#3$d$~#4$f$)}
+\newcommand{\uspdfg}[5]{(#1$s$~#2$p$~#3$d$~#4$f$~#5$g$)}
+\newcommand{\uspdfgh}[6]{(#1$s$~#2$p$~#3$d$~#4$f$~#5$g$~#6$h$)}
+\newcommand{\csp}[2]{[#1$s$~#2$p$]}
+\newcommand{\cspd}[3]{[#1$s$~#2$p$~#3$d$]}
+\newcommand{\cspdf}[4]{[#1$s$~#2$p$~#3$d$~#4$f$]}
+\newcommand{\cspdfg}[5]{[#1$s$~#2$p$~#3$d$~#4$f$~#5$g$]}
+\newcommand{\cspdfgh}[6]{[#1$s$~#2$p$~#3$d$~#4$f$~#5$g$~#6$h$]}
+\newcommand{\cspdsp}[5]{[#1$s$~#2$p$~#3$d$/#4$s$~#5$p$]}
+\newcommand{\cspdfspd}[7]{[#1$s$~#2$p$~#3$d$~#4$f$/#5$s$~#6$p$~#7$d$]}
+%
+% New definitions, KR
+%
+\newcommand{\Key}[1]{{\normalfont
+\ttfamily{.#1}}\index{#1@{\normalfont \ttfamily{.#1}}}}
+\newcommand{\Keym}[1]{{\normalfont
+\ttfamily{.#1}}\index{#1@{\normalfont \ttfamily{.#1}}|textbf}}
+\newcommand{\Sec}[1]{{\normalfont
+\ttfamily{*#1}}\index{#1@{\normalfont \ttfamily{*#1}}}}
+\newcommand{\Secm}[1]{{\section{*#1}}\index{#1@{\normalfont
+\ttfamily{*#1}}|textbf}}
+\newcommand{\Subsecm}[1]{{\subsection{*#1}}\index{#1@{\normalfont
+\ttfamily{*#1}}|textbf}}
+\renewcommand{\descriptionlabel}[1]{\hspace{\labelsep}\ttfamily{#1}}
+\begin{document}
+\nobibliography*
+%
+%
+\baselineskip=15pt
+%
+\title{DALTON2011 Program Manual}
+
+%
+\author{C.~Angeli,
+K.~L.~Bak,
+V.~Bakken,
+O.~Christiansen,
+R.~Cimiraglia,\\
+S.~Coriani,
+P.~Dahle,
+E.~K.~Dalskov,
+T.~Enevoldsen,
+B.~Fernandez,\\
+L.~Ferrighi,
+L.~Frediani,
+C.~H{\"a}ttig,
+K.~Hald,
+A.~Halkier, \\
+H.~Heiberg,
+T.~Helgaker,
+H.~Hettema,
+B.~Jansik,
+H.~J.~Aa.~Jensen, \\
+D.~Jonsson,
+P.~J{\o}rgensen,
+S.~Kirpekar,
+W.~Klopper,
+S.~Knecht,\\
+R.~Kobayashi,
+J.~Kongsted,
+H.~Koch,
+A.~Ligabue,
+O.~B.~Lutn\ae s,\\
+K.~V.~Mikkelsen,
+C.~B.~Nielsen,
+P.~Norman,
+J.~Olsen,
+A.~Osted,\\
+M.~J.~Packer,
+F.~Pawlowski,
+T.~B.~Pedersen,
+Z.~Rinkevicius,
+E.~Rudberg,
+T.~A.~Ruden,\\
+K.~Ruud,
+P.~Sa\l ek,
+C.~C.~M.~Samson,
+A.~Sanchez de Meras,
+T.~Saue,\\
+S.~P.~A.~Sauer,
+B.~Schimmelpfennig,
+A.~H.~Steindal,
+K.~O.~Sylvester-Hvid,\\
+P.~R.~Taylor,
+O.~Vahtras,
+D.~J.~Wilson,
+and H.~{\AA}gren,
+}
+%
+\date{\mbox{\ }}
+%
+\maketitle
+%\begin{titlepage}
+%\mbox{ }\newline
+%\end{titlepage}
+%
+\include{Preface}
+\include{Intro}
+\include{New12}
+\part{DALTON Installation Guide}
+\include{Install}
+\include{Maintain}
+\part{DALTON User's Guide}
+\include{Starting}
+\include{wfguide}
+\include{walkchap}
+\include{vibchap}
+\include{electricchap}
+\include{magneticchap}
+\include{optchap}
+\include{rspchap}
+\include{dirpar}
+\include{finitefield}
+\include{Solvent}
+\include{vibave}
+\include{relativity}
+\include{soppa}
+\include{nevpt}
+\include{lucitaexamples}
+\include{ccexamples}
+\include{cholexamples}
+\part{DALTON Reference Manual}
+\include{General}
+\include{Choles}
+\include{Hermit}
+\include{Molecule}
+\include{Sirius}
+\include{Abacus}
+\include{Response}
+%%%%%% CI %%%%%%%
+\include{Lucita}
+%%%%%% CC %%%%%%%
+\include{ccintro}
+\include{ccgeneral}
+\include{ccfop}
+\include{cclr}
+\include{ccqr}
+\include{cccr}
+\include{ccexci}
+\include{cclrsd}
+\include{ccsm}
+\include{cctm}
+\include{ccmcd}
+\include{ccqr2r}
+\include{ccexgr}
+\include{ccexlr}
+%\include{ccslv}
+\include{ccgr}
+\include{ccr12}
+\include{chomp2}
+\include{chocc2}
+\include{chopt}
+\include{choact}
+%%%%%% end of CC %%%%%%%
+\part{Appendix: DALTON Tool box}
+\include{Appendix}
+\part{References}
+\bibliographystyle{unsrt}
+\bibliography{dalton,dft}
+%
+\part{Index}
+\printindex
+\end{document}

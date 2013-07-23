@@ -1,0 +1,1530 @@
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+      This is output from LINSCA DALTON (Release 1.0 )
+      Principal authors (alphabetically):
+      Trygve Helgaker,       University of Oslo,           Norway 
+      Poul Joergensen,       Aarhus University,            Denmark
+      Jeppe Olsen,           Aarhus University,            Denmark
+      Contributors (alphabetically):
+      Sonia Coriani,         University of Trieste,        Italy  
+      Stinne Hoest,          Aarhus University,            Denmark
+      Branislav Jansik,      Aarhus University,            Denmark
+      Thomas Kjaergaard,     Aarhus University,            Denmark
+      Simen Reine,           University of Oslo,           Norway 
+      Pawel Salek,           KTH Stockholm,                Sweden 
+      Lea Thoegersen,        Aarhus University,            Denmark
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using SCF wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "LSDalton, a molecular electronic structure program, Release 1.0
+     (2004), written by <INSERT AUTHOR LIST>"
+ 
+  Keyword **RESPONSE                                                             
+  not recognized in read_dalton_input
+  Keyword .NEXCIT                                                               
+  not recognized in read_dalton_input
+
+ 
+     Date and time (Linux)  : Tue Aug  3 13:15:03 2010
+     Host name              : fe2.grendel.cscaa.dk                    
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  BASIS                                   
+  6-31G Aux=Ahlrichs-Coulomb-Fit          
+  2 H2 molecules                          
+  ---------------------                   
+  Atomtypes=1 Nosymmetry                                      
+  Charge=1.0 Atoms=4                                          
+  H      0.00000   0.72476   0.00000                          
+  H      0.00000  -0.72476   0.00000                          
+  H     14.00000   0.72476   0.00000                          
+  H     14.00000  -0.72476   0.00000                          
+                      
+ -----------------------------------------
+          PRINTING THE DALTON.INP FILE 
+ -----------------------------------------
+                      
+  **DALTON INPUT                          
+  .RUN LINSCA                             
+  **INTEGRAL                              
+  .LINSCA                                 
+  *LINSCA                                 
+  .LOCALLINK                              
+  1                                       
+  .LOCALLINKmulthr                        
+  1.D-3                                   
+  **WAVE FUNCTIONS                        
+  .HF                                     
+  *LINSCA                                 
+  .RH                                     
+  .DIIS                                   
+  .LCVBF                                  
+  .START                                  
+  TRILEVEL                                
+  #H1DIAG                                 
+  .NOINCREM                               
+  .CONVDYN                                
+  TIGHT                                   
+  **RESPONSE                               
+  .NEXCIT                                 
+  2                                       
+  *END OF INPUT                           
+  
+  MOLPRINT IS SET TO       0
+  Integral threshold is set to the default 1.00D-15
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates: 12
+
+   1   H        x      0.0000000000
+   2            y      0.7247600000
+   3            z      0.0000000000
+
+   4   H        x      0.0000000000
+   5            y     -0.7247600000
+   6            z      0.0000000000
+
+   7   H        x     14.0000000000
+   8            y      0.7247600000
+   9            z      0.0000000000
+
+  10   H        x     14.0000000000
+  11            y     -0.7247600000
+  12            z      0.0000000000
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR BASIS
+   
+
+ Default basis set library used:
+        /home/stinne/prog/feb2010_svn/dalton/basis/                           
+ OPENING FILE/home/stinne/prog/feb2010_svn/dalton/basis/6-31G
+ NO SEGMENTATION IS USED
+   
+BASISSETLIBRARY
+ Number of Basisset           2
+ BASISSET:  6-31G                                             
+  CHARGES:   1
+ BASISSET:  Ahlrichs-Coulomb-Fit                              
+  CHARGES:   1
+                      
+   
+  CALLING BUILD BASIS WITH DEFAULT AUXILIARY BASIS
+   
+
+ Default basis set library used:
+        /home/stinne/prog/feb2010_svn/dalton/basis/                           
+ OPENING FILE/home/stinne/prog/feb2010_svn/dalton/basis/Ahlrichs-Coulomb-Fit
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+                      
+Atoms and basis sets
+  Total number of atoms        :      4
+  THE  AUXILIARY is on R =   2
+---------------------------------------------------------------------
+ atom label charge  basisset            prim cont basis
+---------------------------------------------------------------------
+      1 H      1.000 Ahlrichs-Coulomb-Fit      15       14 [4s2p1d|3s2p1d]          
+      2 H      1.000 Ahlrichs-Coulomb-Fit      15       14 [4s2p1d|3s2p1d]          
+      3 H      1.000 Ahlrichs-Coulomb-Fit      15       14 [4s2p1d|3s2p1d]          
+      4 H      1.000 Ahlrichs-Coulomb-Fit      15       14 [4s2p1d|3s2p1d]          
+---------------------------------------------------------------------
+total          4                              60      56
+---------------------------------------------------------------------
+                      
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+    Molecular Charge                 :    0.0000
+    Regular basisfunctions             :        8
+    Auxiliary basisfunctions           :       56
+    Huckel basisfunctions              :        0
+    Primitive Regular basisfunctions   :       16
+    Primitive Auxiliary basisfunctions :       60
+    Primitive Huckel basisfunctions    :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis      Auxiliarybasisset   GHOST   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   1.000  6-31G         Ahlrichs-Coulomb-Fit    F              4           2
+     2   1.000  6-31G         Ahlrichs-Coulomb-Fit    F              4           2
+     3   1.000  6-31G         Ahlrichs-Coulomb-Fit    F              4           2
+     4   1.000  6-31G         Ahlrichs-Coulomb-Fit    F              4           2
+                      
+  ATOM  NAME  ISOTOPE        X             Y             Z     
+    1    H          1    0.00000000    0.72476000    0.00000000
+    2    H          1    0.00000000   -0.72476000    0.00000000
+    3    H          1   14.00000000    0.72476000    0.00000000
+    4    H          1   14.00000000   -0.72476000    0.00000000
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      4
+  THE  REGULAR   is on R =   1
+---------------------------------------------------------------------
+ atom label charge  basisset            prim cont basis
+---------------------------------------------------------------------
+      1 H      1.000 6-31G                      4        2 [4s|2s]                  
+      2 H      1.000 6-31G                      4        2 [4s|2s]                  
+      3 H      1.000 6-31G                      4        2 [4s|2s]                  
+      4 H      1.000 6-31G                      4        2 [4s|2s]                  
+---------------------------------------------------------------------
+total          4                              16       8
+---------------------------------------------------------------------
+                      
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DIIS                    
+Density optimization : Diagonalization                    
+ 
+ 
+ Maximum size of Fock/density queue in averaging:          10
+Dynamic convergence threshold for gradient:   0.20E-05
+ 
+ End of configuration from new input structure!
+ 
+ >>>  CPU Time used in *INPUT          is   0.00 seconds
+ >>> wall Time used in *INPUT          is   0.00 seconds
+ Level 1 atomic calculation on 6-31G Charge   1
+ >>>  CPU Time used in ls_getIntegrals is   0.76 seconds
+ >>> wall Time used in ls_getIntegrals is   0.08 seconds
+ >>>  CPU Time used in OVERLAP         is   0.76 seconds
+ >>> wall Time used in OVERLAP         is   0.08 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.16 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in CSConNucneneS0S is   0.00 seconds
+ >>> wall Time used in CSConNucneneS0S is   0.00 seconds
+ >>>  CPU Time used in CSPriCourrrrS0S is   0.16 seconds
+ >>> wall Time used in CSPriCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in CSPriNucneneS0S is   0.00 seconds
+ >>> wall Time used in CSPriNucneneS0S is   0.00 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.49 seconds
+ >>> wall Time used in ls_getIntegrals is   0.03 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.10 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.12 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.17 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.19 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1     -0.3410549973    0.00000000000    0.00      0.00000    0.00    0.0000000    0.20E+00  ###
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.09 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.10 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.12 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+  2     -0.3488197504   -0.00776475307    0.00      0.00000    0.00    0.0000000    0.13E-01  ###
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.10 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.10 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.12 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+  3     -0.3488518065   -0.00003205613   -1.00      0.00000    0.00    0.0000000    0.39E-04  ###
+ >>>  CPU Time used in *ATOM           is   2.14 seconds
+ >>> wall Time used in *ATOM           is   0.18 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.09 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in OVERLAP         is   0.09 seconds
+ >>> wall Time used in OVERLAP         is   0.01 seconds
+ >>>  CPU Time used in *S              is   0.09 seconds
+ >>> wall Time used in *S              is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in CSConNucneneS0S is   0.00 seconds
+ >>> wall Time used in CSConNucneneS0S is   0.00 seconds
+ >>>  CPU Time used in CSPriCourrrrS0S is   0.22 seconds
+ >>> wall Time used in CSPriCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in CSPriNucneneS0S is   0.00 seconds
+ >>> wall Time used in CSPriNucneneS0S is   0.00 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.61 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.12 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in *H1             is   0.73 seconds
+ >>> wall Time used in *H1             is   0.05 seconds
+ First density: Trilevel procedure 
+ Level 2 molecular calculation
+ >>>  CPU Time used in ls_getIntegrals is   0.12 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in OVERLAP         is   0.12 seconds
+ >>> wall Time used in OVERLAP         is   0.01 seconds
+ >>>  CPU Time used in CSConCourrrrS0S is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in CSConNucneneS0S is   0.00 seconds
+ >>> wall Time used in CSConNucneneS0S is   0.00 seconds
+ >>>  CPU Time used in CSPriCourrrrS0S is   0.18 seconds
+ >>> wall Time used in CSPriCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in CSPriNucneneS0S is   0.00 seconds
+ >>> wall Time used in CSPriNucneneS0S is   0.00 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.53 seconds
+ >>> wall Time used in ls_getIntegrals is   0.04 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.10 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.12 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.23 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.27 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+  Iteration 0 energy:  -1.70624927624916     
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.01 seconds
+ >>> wall Time used in LWDIAG          is   0.00 seconds
+Matrix S     has nnz=        16 sparsity:    100.000 %
+Matrix AO D  has nnz=        16 sparsity:    100.000 %
+Matrix AO F  has nnz=        16 sparsity:    100.000 %
+ micthrs =  1.000000000000000E-002
+ >>>  CPU Time used in INIT SCF        is   0.01 seconds
+ >>> wall Time used in INIT SCF        is   0.00 seconds
+** Get Fock matrix number   1
+ Using purely new Integrals
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.30 seconds
+ >>> wall Time used in Jengine         is   0.02 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.26 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.29 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU Time used in FCK_FO          is   0.62 seconds
+ >>> wall Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1     -2.0845222164    0.00000000000    0.00      0.00000    0.00    0.0000000    0.16E-07  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   1
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 214.729 MB
+  Max allocated memory, type(matrix)            4.000 kB
+  Max allocated memory, real                  214.623 MB
+  Max allocated memory, integer               293.871 kB
+  Max allocated memory, logical                 1.000 kB
+  Max allocated memory, linkshell               0.328 kB
+  Max allocated memory, integrand               8.750 MB
+  Max allocated memory, integralitem          205.273 MB
+  Max allocated memory, overlap                 1.888 MB
+  Max allocated memory, ODitem                  6.500 kB
+ 
+  Allocated memory,     TOTAL                   3.625 kB
+  Allocated memory,     type(matrix)            3.625 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ >>>  CPU Time used in **ITER          is   0.62 seconds
+ >>> wall Time used in **ITER          is   0.04 seconds
+ 
+Total no. of matmuls in SCF optimization:         12
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1            -2.08452221642241886101      0.163727026242059D-07
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final HF energy:                    -2.084522216422
+      Nuclear repulsion:                   1.664721772821
+      Electronic energy:                  -3.749243989244
+ 
+ L2 minimization done!
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.15 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.10 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ >>>  CPU Time used in *START          is   2.26 seconds
+ >>> wall Time used in *START          is   0.16 seconds
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.00 seconds
+ >>> wall Time used in LWDIAG          is   0.00 seconds
+Matrix S     has nnz=        56 sparsity:     87.500 %
+Matrix AO D  has nnz=        16 sparsity:     25.000 %
+Matrix AO F  has nnz=        14 sparsity:     21.875 %
+ micthrs =  1.000000000000000E-002
+ >>>  CPU Time used in INIT SCF        is   0.00 seconds
+ >>> wall Time used in INIT SCF        is   0.00 seconds
+** Get Fock matrix number   1
+ Using purely new Integrals
+ >>>  CPU Time used in CSConCourrrrS0S is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS0S is   0.01 seconds
+ >>>  CPU Time used in CSPriCourrrrS0S is   0.22 seconds
+ >>> wall Time used in CSPriCourrrrS0S is   0.01 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.14 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.20 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.24 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU Time used in FCK_FO          is   0.82 seconds
+ >>> wall Time used in FCK_FO          is   0.06 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1     -2.0845222164    0.00000000000    0.00      0.00000    0.00    0.0000000    0.26E+01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   1
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 497.143 MB
+  Max allocated memory, type(matrix)            7.633 kB
+  Max allocated memory, real                  497.106 MB
+  Max allocated memory, integer               308.902 kB
+  Max allocated memory, logical                 1.000 kB
+  Max allocated memory, linkshell               0.328 kB
+  Max allocated memory, integrand               8.750 MB
+  Max allocated memory, integralitem          496.484 MB
+  Max allocated memory, overlap                 2.006 MB
+  Max allocated memory, ODitem                  6.500 kB
+ 
+  Allocated memory,     TOTAL                   6.000 kB
+  Allocated memory,     type(matrix)            6.000 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.83 seconds
+ >>> wall Time used in SCF iteration   is   0.06 seconds
+** Get Fock matrix number   2
+ >>>  CPU Time used in lec diag        is   0.00 seconds
+ >>> wall Time used in lec diag        is   0.00 seconds
+ LOCALLINK called with   nocc           2
+  LOCALLINK             T
+  LOCALLINKmulthr             0.00100000
+  LOCALLINKsimmul       F
+  LOCALLINKoption              1
+  LOCALLINKincrem       F
+  LOCALLINKDcont        F
+  LOCALLINKDthr               0.00000000
+Matrix Dref  has nnz=        64 sparsity:    100.000 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.22 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.26 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU Time used in ref exchange    is   0.26 seconds
+ >>> wall Time used in ref exchange    is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.13 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Orbspread before:    7.48506355414745     
+ >>>  CPU Time used in ls_getIntegrals is   0.09 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Orbspread after :    2.58297236756410     
+ >>>  CPU Time used in II_get_2int_Scr is   0.17 seconds
+ >>> wall Time used in II_get_2int_Scr is   0.02 seconds
+
+-- Full moleculecular info --
+Number of atoms            :      4
+Number of basis func.      :      8
+Number of occ. orbitals    :      2
+   1   4    0.5000000000
+   2   3    0.5000000000
+   3   1    0.0000000000
+   4   2    0.0000000000
+New approximated orbital norm:        0.864338
+old orbital norm with cutoff :        0.296969
+Error in New app norm        :        0.135662
+Error in old cutoff norm     :        0.703031
+Number of atoms   :    1
+
+           4
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.929431        0.929431        0.000000
+   2        0.022265        0.022265        0.000000
+-------
+New approximated orbital norm:        1.000000
+old orbital norm with cutoff :        1.000000
+Error in New app norm        :        0.000000
+Error in old cutoff norm     :        0.000000
+Number of atoms   :    2
+
+           3
+           4
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.929431        0.929431        0.000000
+   2        0.022265        0.022265        0.000000
+   3        0.929431        0.929431        0.000000
+   4        0.022265        0.022265        0.000000
+-------
+
+Orbital                 :    1
+Central atom            :    4
+
+Number of atoms         :    2
+
+           3
+           4
+
+
+i  Mul.Ch.  Atom.Norm.  Atom.Dens.
+   1    0.5000000000    0.0000000000
+   2    0.5000000000    0.0000000000
+   3    0.0000000000    0.2969688657
+   4    0.0000000000    0.2969688657
+   1   2    0.5000000000
+   2   1    0.5000000000
+   3   4    0.0000000000
+   4   3    0.0000000000
+New approximated orbital norm:        0.864338
+old orbital norm with cutoff :        0.296969
+Error in New app norm        :        0.135662
+Error in old cutoff norm     :        0.703031
+Number of atoms   :    1
+
+           2
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.929431        0.929431        0.000000
+   2        0.022265        0.022265        0.000000
+-------
+New approximated orbital norm:        1.000000
+old orbital norm with cutoff :        1.000000
+Error in New app norm        :        0.000000
+Error in old cutoff norm     :        0.000000
+Number of atoms   :    2
+
+           1
+           2
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.929431        0.929431        0.000000
+   2        0.022265        0.022265        0.000000
+   3        0.929431        0.929431        0.000000
+   4        0.022265        0.022265        0.000000
+-------
+
+Orbital                 :    2
+Central atom            :    2
+
+Number of atoms         :    2
+
+           1
+           2
+
+
+i  Mul.Ch.  Atom.Norm.  Atom.Dens.
+   1    0.5000000000    0.2969688657
+   2    0.5000000000    0.2969688657
+   3    0.0000000000    0.0000000000
+   4    0.0000000000    0.0000000000
+ >>>  CPU Time used in ls_getIntegrals is   0.08 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Orbspread after generate orbitals:    2.58297236756410     
+  FragmentP    : 
+  Atom         :            2
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+Matrix DlocP has nnz=        16 sparsity:    100.000 %
+ >>>  CPU Time used in CSConCourrrrS37 is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS37 is   0.01 seconds
+ >>>  CPU Time used in CSPriCourrrrS37 is   0.19 seconds
+ >>> wall Time used in CSPriCourrrrS37 is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.20 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.55 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.05 seconds
+  Fragment(K-P): 
+  Atom         :            2
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+ >>>  CPU Time used in CSConCourrrrS37 is   0.18 seconds
+ >>> wall Time used in CSConCourrrrS37 is   0.01 seconds
+ >>>  CPU Time used in CSPriCourrrrS37 is   0.19 seconds
+ >>> wall Time used in CSPriCourrrrS37 is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.24 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.64 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.05 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.00 seconds
+Matrix DmisP has nnz=        24 sparsity:     37.500 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.24 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.27 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU  Time used in LocalExchangeP=2   1.48 seconds
+ >>>  Wall Time used in LocalExchangeP=2   0.12 seconds
+  FragmentP    : 
+  Atom         :            4
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+Matrix DlocP has nnz=        16 sparsity:    100.000 %
+ >>>  CPU Time used in CSConCourrrrS93 is   0.13 seconds
+ >>> wall Time used in CSConCourrrrS93 is   0.01 seconds
+ >>>  CPU Time used in CSPriCourrrrS93 is   0.16 seconds
+ >>> wall Time used in CSPriCourrrrS93 is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.15 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.49 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.04 seconds
+  Fragment(K-P): 
+  Atom         :            4
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+ >>>  CPU Time used in CSConCourrrrS93 is   0.14 seconds
+ >>> wall Time used in CSConCourrrrS93 is   0.01 seconds
+ >>>  CPU Time used in CSPriCourrrrS93 is   0.16 seconds
+ >>> wall Time used in CSPriCourrrrS93 is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.15 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.49 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.03 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.00 seconds
+Matrix DmisP has nnz=        32 sparsity:     50.000 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.24 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.27 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU  Time used in LocalExchangeP=4   1.26 seconds
+ >>>  Wall Time used in LocalExchangeP=4   0.09 seconds
+ >>>  CPU  Time used in LocalExchange is       2.74 seconds
+ >>>  Wall Time used in LocalExchange is       0.20 seconds
+ >>>  CPU  Time including work with orbitals   3.27 seconds
+ >>>  Wall Time including work with orbitals   0.25 seconds
+ QQQ K DIFF    :  7.979371551903490E-016
+ QQQ K maxDIFF :  8.000746403349008E-009
+ QQQ K test DIFF    :  5.860348929790277E-017
+ QQQ K test maxDIFF :  3.313793472787822E-009
+ QQQ D DIFF    :  4.011214193483023E-014
+ QQQ D maxDIFF :  4.925320242626929E-008
+ QQQ Dloc+Dmiss DIFF    :  2.472275353925373E-027
+ QQQ Dloc+Dmiss maxDIFF :  1.504352198367087E-014
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.13 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.12 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.23 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.26 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ QQQ K+J DIFF :  7.979371551903473E-016
+ >>>  CPU Time used in FCK_FO          is   4.11 seconds
+ >>> wall Time used in FCK_FO          is   0.31 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  2     -2.2484518915   -0.16392967504    0.00      0.00000    0.00    0.0000000    0.38E+00  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   2
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 497.151 MB
+  Max allocated memory, type(matrix)           16.133 kB
+  Max allocated memory, real                  497.106 MB
+  Max allocated memory, integer               308.902 kB
+  Max allocated memory, logical                 1.000 kB
+  Max allocated memory, linkshell               0.328 kB
+  Max allocated memory, integrand               8.750 MB
+  Max allocated memory, integralitem          496.484 MB
+  Max allocated memory, overlap                 2.006 MB
+  Max allocated memory, ODitem                  6.500 kB
+ 
+  Allocated memory,     TOTAL                   7.500 kB
+  Allocated memory,     type(matrix)            7.500 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   4.12 seconds
+ >>> wall Time used in SCF iteration   is   0.31 seconds
+** Get Fock matrix number   3
+ >>>  CPU Time used in lec diag        is   0.00 seconds
+ >>> wall Time used in lec diag        is   0.00 seconds
+ LOCALLINK called with   nocc           2
+  LOCALLINK             T
+  LOCALLINKmulthr             0.00100000
+  LOCALLINKsimmul       F
+  LOCALLINKoption              1
+  LOCALLINKincrem       F
+  LOCALLINKDcont        F
+  LOCALLINKDthr               0.00000000
+Matrix Dref  has nnz=        64 sparsity:    100.000 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.24 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.28 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU Time used in ref exchange    is   0.28 seconds
+ >>> wall Time used in ref exchange    is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.10 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Orbspread before:    7.50050994456670     
+ >>>  CPU Time used in ls_getIntegrals is   0.10 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Orbspread after :    2.58297236756410     
+ >>>  CPU Time used in II_get_2int_Scr is   0.13 seconds
+ >>> wall Time used in II_get_2int_Scr is   0.01 seconds
+
+-- Full moleculecular info --
+Number of atoms            :      4
+Number of basis func.      :      8
+Number of occ. orbitals    :      2
+   1   3    0.5000000000
+   2   4    0.5000000000
+   3   2    0.0000000000
+   4   1    0.0000000000
+New approximated orbital norm:        0.857659
+old orbital norm with cutoff :        0.299882
+Error in New app norm        :        0.142341
+Error in old cutoff norm     :        0.700118
+Number of atoms   :    1
+
+           3
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.925066        0.925066        0.000000
+   2        0.043723        0.043723        0.000000
+-------
+New approximated orbital norm:        1.000000
+old orbital norm with cutoff :        1.000000
+Error in New app norm        :        0.000000
+Error in old cutoff norm     :        0.000000
+Number of atoms   :    2
+
+           3
+           4
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.925066        0.925066        0.000000
+   2        0.043723        0.043723        0.000000
+   3        0.925066        0.925066        0.000000
+   4        0.043723        0.043723        0.000000
+-------
+
+Orbital                 :    1
+Central atom            :    3
+
+Number of atoms         :    2
+
+           3
+           4
+
+
+i  Mul.Ch.  Atom.Norm.  Atom.Dens.
+   1    0.5000000000    0.0000000000
+   2    0.5000000000    0.0000000000
+   3    0.0000000000    0.2998818008
+   4    0.0000000000    0.2998818008
+   1   2    0.5000000000
+   2   1    0.5000000000
+   3   3    0.0000000000
+   4   4    0.0000000000
+New approximated orbital norm:        0.857659
+old orbital norm with cutoff :        0.299882
+Error in New app norm        :        0.142341
+Error in old cutoff norm     :        0.700118
+Number of atoms   :    1
+
+           2
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.925066        0.925066        0.000000
+   2        0.043723        0.043723        0.000000
+-------
+New approximated orbital norm:        1.000000
+old orbital norm with cutoff :        1.000000
+Error in New app norm        :        0.000000
+Error in old cutoff norm     :        0.000000
+Number of atoms   :    2
+
+           1
+           2
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.925066        0.925066        0.000000
+   2        0.043723        0.043723        0.000000
+   3        0.925066        0.925066        0.000000
+   4        0.043723        0.043723        0.000000
+-------
+
+Orbital                 :    2
+Central atom            :    2
+
+Number of atoms         :    2
+
+           1
+           2
+
+
+i  Mul.Ch.  Atom.Norm.  Atom.Dens.
+   1    0.5000000000    0.2998818008
+   2    0.5000000000    0.2998818008
+   3    0.0000000000    0.0000000000
+   4    0.0000000000    0.0000000000
+ >>>  CPU Time used in ls_getIntegrals is   0.09 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Orbspread after generate orbitals:    2.58297236756410     
+  FragmentP    : 
+  Atom         :            2
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+Matrix DlocP has nnz=        16 sparsity:    100.000 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.15 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.18 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+  Fragment(K-P): 
+  Atom         :            2
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.14 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.15 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.00 seconds
+Matrix DmisP has nnz=        24 sparsity:     37.500 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.23 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.26 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU  Time used in LocalExchangeP=2   0.60 seconds
+ >>>  Wall Time used in LocalExchangeP=2   0.04 seconds
+  FragmentP    : 
+  Atom         :            3
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+Matrix DlocP has nnz=        16 sparsity:    100.000 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.15 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.16 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+  Fragment(K-P): 
+  Atom         :            3
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.14 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.16 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.00 seconds
+Matrix DmisP has nnz=        24 sparsity:     37.500 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.23 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.27 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU  Time used in LocalExchangeP=3   0.61 seconds
+ >>>  Wall Time used in LocalExchangeP=3   0.04 seconds
+ >>>  CPU  Time used in LocalExchange is       1.21 seconds
+ >>>  Wall Time used in LocalExchange is       0.08 seconds
+ >>>  CPU  Time including work with orbitals   1.69 seconds
+ >>>  Wall Time including work with orbitals   0.12 seconds
+ QQQ K DIFF    :  7.049578688391325E-016
+ QQQ K maxDIFF :  7.519525248787284E-009
+ QQQ K test DIFF    :  5.217588209771419E-017
+ QQQ K test maxDIFF :  3.108211542838921E-009
+ QQQ D DIFF    :  3.573828331699281E-014
+ QQQ D maxDIFF :  4.519838254363195E-008
+ QQQ Dloc+Dmiss DIFF    :  2.182970952089971E-027
+ QQQ Dloc+Dmiss maxDIFF :  1.293409823688307E-014
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.13 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.13 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.25 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.28 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ QQQ K+J DIFF :  7.049578688391232E-016
+ >>>  CPU Time used in FCK_FO          is   2.56 seconds
+ >>> wall Time used in FCK_FO          is   0.18 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  3     -2.2517855706   -0.00333367912   -1.00      0.00000    0.00    0.0000000    0.27E-02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   3
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 497.153 MB
+  Max allocated memory, type(matrix)           17.633 kB
+  Max allocated memory, real                  497.106 MB
+  Max allocated memory, integer               308.902 kB
+  Max allocated memory, logical                 1.000 kB
+  Max allocated memory, linkshell               0.328 kB
+  Max allocated memory, integrand               8.750 MB
+  Max allocated memory, integralitem          496.484 MB
+  Max allocated memory, overlap                 2.006 MB
+  Max allocated memory, ODitem                  6.500 kB
+ 
+  Allocated memory,     TOTAL                   9.000 kB
+  Allocated memory,     type(matrix)            9.000 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   2.57 seconds
+ >>> wall Time used in SCF iteration   is   0.18 seconds
+** Get Fock matrix number   4
+ >>>  CPU Time used in lec diag        is   0.00 seconds
+ >>> wall Time used in lec diag        is   0.00 seconds
+ LOCALLINK called with   nocc           2
+  LOCALLINK             T
+  LOCALLINKmulthr             0.00100000
+  LOCALLINKsimmul       F
+  LOCALLINKoption              1
+  LOCALLINKincrem       F
+  LOCALLINKDcont        F
+  LOCALLINKDthr               0.00000000
+Matrix Dref  has nnz=        64 sparsity:    100.000 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.25 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.28 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU Time used in ref exchange    is   0.28 seconds
+ >>> wall Time used in ref exchange    is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.11 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Orbspread before:    7.50050189135193     
+ >>>  CPU Time used in ls_getIntegrals is   0.08 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Orbspread after :    2.58297236756410     
+ >>>  CPU Time used in II_get_2int_Scr is   0.14 seconds
+ >>> wall Time used in II_get_2int_Scr is   0.01 seconds
+
+-- Full moleculecular info --
+Number of atoms            :      4
+Number of basis func.      :      8
+Number of occ. orbitals    :      2
+   1   3    0.5000000000
+   2   4    0.5000000000
+   3   2    0.0000000000
+   4   1    0.0000000000
+New approximated orbital norm:        0.857611
+old orbital norm with cutoff :        0.299903
+Error in New app norm        :        0.142389
+Error in old cutoff norm     :        0.700097
+Number of atoms   :    1
+
+           3
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.925033        0.925033        0.000000
+   2        0.043876        0.043876        0.000000
+-------
+New approximated orbital norm:        1.000000
+old orbital norm with cutoff :        1.000000
+Error in New app norm        :        0.000000
+Error in old cutoff norm     :        0.000000
+Number of atoms   :    2
+
+           3
+           4
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.925033        0.925033        0.000000
+   2        0.043876        0.043876        0.000000
+   3        0.925033        0.925033        0.000000
+   4        0.043876        0.043876        0.000000
+-------
+
+Orbital                 :    1
+Central atom            :    3
+
+Number of atoms         :    2
+
+           3
+           4
+
+
+i  Mul.Ch.  Atom.Norm.  Atom.Dens.
+   1    0.5000000000    0.0000000000
+   2    0.5000000000    0.0000000000
+   3    0.0000000000    0.2999028778
+   4    0.0000000000    0.2999028778
+   1   2    0.5000000000
+   2   1    0.5000000000
+   3   3    0.0000000000
+   4   4    0.0000000000
+New approximated orbital norm:        0.857611
+old orbital norm with cutoff :        0.299903
+Error in New app norm        :        0.142389
+Error in old cutoff norm     :        0.700097
+Number of atoms   :    1
+
+           2
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.925033        0.925033        0.000000
+   2        0.043876        0.043876        0.000000
+-------
+New approximated orbital norm:        1.000000
+old orbital norm with cutoff :        1.000000
+Error in New app norm        :        0.000000
+Error in old cutoff norm     :        0.000000
+Number of atoms   :    2
+
+           1
+           2
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.925033        0.925033        0.000000
+   2        0.043876        0.043876        0.000000
+   3        0.925033        0.925033        0.000000
+   4        0.043876        0.043876        0.000000
+-------
+
+Orbital                 :    2
+Central atom            :    2
+
+Number of atoms         :    2
+
+           1
+           2
+
+
+i  Mul.Ch.  Atom.Norm.  Atom.Dens.
+   1    0.5000000000    0.2999028778
+   2    0.5000000000    0.2999028778
+   3    0.0000000000    0.0000000000
+   4    0.0000000000    0.0000000000
+ >>>  CPU Time used in ls_getIntegrals is   0.11 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Orbspread after generate orbitals:    2.58297236756410     
+  FragmentP    : 
+  Atom         :            2
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+Matrix DlocP has nnz=        16 sparsity:    100.000 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.14 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.16 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+  Fragment(K-P): 
+  Atom         :            2
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.15 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.16 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.00 seconds
+Matrix DmisP has nnz=        24 sparsity:     37.500 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.23 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.26 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU  Time used in LocalExchangeP=2   0.59 seconds
+ >>>  Wall Time used in LocalExchangeP=2   0.04 seconds
+  FragmentP    : 
+  Atom         :            3
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+Matrix DlocP has nnz=        16 sparsity:    100.000 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.18 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.19 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+  Fragment(K-P): 
+  Atom         :            3
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.15 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.16 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.02 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.00 seconds
+Matrix DmisP has nnz=        24 sparsity:     37.500 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.23 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.26 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU  Time used in LocalExchangeP=3   0.63 seconds
+ >>>  Wall Time used in LocalExchangeP=3   0.04 seconds
+ >>>  CPU  Time used in LocalExchange is       1.22 seconds
+ >>>  Wall Time used in LocalExchange is       0.09 seconds
+ >>>  CPU  Time including work with orbitals   1.72 seconds
+ >>>  Wall Time including work with orbitals   0.12 seconds
+ QQQ K DIFF    :  7.069718377547303E-016
+ QQQ K maxDIFF :  7.539850991939564E-009
+ QQQ K test DIFF    :  5.213110561729032E-017
+ QQQ K test maxDIFF :  3.106736764911597E-009
+ QQQ D DIFF    :  3.580526960984943E-014
+ QQQ D maxDIFF :  4.500265254198110E-008
+ QQQ Dloc+Dmiss DIFF    :  2.170946722050126E-027
+ QQQ Dloc+Dmiss maxDIFF :  1.298960938811433E-014
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.14 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.11 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.23 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.26 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ QQQ K+J DIFF :  7.069718377547247E-016
+ >>>  CPU Time used in FCK_FO          is   2.57 seconds
+ >>> wall Time used in FCK_FO          is   0.18 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  4     -2.2517857390   -0.00000016845   -1.00      0.00000    0.00    0.0000000    0.23E-04  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   4
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 497.154 MB
+  Max allocated memory, type(matrix)           19.133 kB
+  Max allocated memory, real                  497.106 MB
+  Max allocated memory, integer               308.902 kB
+  Max allocated memory, logical                 1.000 kB
+  Max allocated memory, linkshell               0.328 kB
+  Max allocated memory, integrand               8.750 MB
+  Max allocated memory, integralitem          496.484 MB
+  Max allocated memory, overlap                 2.006 MB
+  Max allocated memory, ODitem                  6.500 kB
+ 
+  Allocated memory,     TOTAL                  10.500 kB
+  Allocated memory,     type(matrix)           10.500 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+ >>> wall Time used in AVERAG          is   0.00 seconds
+** Get new density 
+No. of matmuls in get_density:     0
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>> wall Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   2.58 seconds
+ >>> wall Time used in SCF iteration   is   0.18 seconds
+** Get Fock matrix number   5
+ >>>  CPU Time used in lec diag        is   0.00 seconds
+ >>> wall Time used in lec diag        is   0.00 seconds
+ LOCALLINK called with   nocc           2
+  LOCALLINK             T
+  LOCALLINKmulthr             0.00100000
+  LOCALLINKsimmul       F
+  LOCALLINKoption              1
+  LOCALLINKincrem       F
+  LOCALLINKDcont        F
+  LOCALLINKDthr               0.00000000
+Matrix Dref  has nnz=        64 sparsity:    100.000 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.22 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.26 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU Time used in ref exchange    is   0.26 seconds
+ >>> wall Time used in ref exchange    is   0.02 seconds
+ >>>  CPU Time used in ls_getIntegrals is   0.10 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Orbspread before:    7.50050185078842     
+ >>>  CPU Time used in ls_getIntegrals is   0.08 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Orbspread after :    2.58297236756410     
+ >>>  CPU Time used in II_get_2int_Scr is   0.14 seconds
+ >>> wall Time used in II_get_2int_Scr is   0.01 seconds
+
+-- Full moleculecular info --
+Number of atoms            :      4
+Number of basis func.      :      8
+Number of occ. orbitals    :      2
+   1   3    0.5000000000
+   2   4    0.5000000000
+   3   2    0.0000000000
+   4   1    0.0000000000
+New approximated orbital norm:        0.857610
+old orbital norm with cutoff :        0.299903
+Error in New app norm        :        0.142390
+Error in old cutoff norm     :        0.700097
+Number of atoms   :    1
+
+           3
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.925033        0.925033        0.000000
+   2        0.043877        0.043877        0.000000
+-------
+New approximated orbital norm:        1.000000
+old orbital norm with cutoff :        1.000000
+Error in New app norm        :        0.000000
+Error in old cutoff norm     :        0.000000
+Number of atoms   :    2
+
+           3
+           4
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.925033        0.925033        0.000000
+   2        0.043877        0.043877        0.000000
+   3        0.925033        0.925033        0.000000
+   4        0.043877        0.043877        0.000000
+-------
+
+Orbital                 :    1
+Central atom            :    3
+
+Number of atoms         :    2
+
+           3
+           4
+
+
+i  Mul.Ch.  Atom.Norm.  Atom.Dens.
+   1    0.5000000000    0.0000000000
+   2    0.5000000000    0.0000000000
+   3    0.0000000000    0.2999030576
+   4    0.0000000000    0.2999030576
+   1   2    0.5000000000
+   2   1    0.5000000000
+   3   3    0.0000000000
+   4   4    0.0000000000
+New approximated orbital norm:        0.857610
+old orbital norm with cutoff :        0.299903
+Error in New app norm        :        0.142390
+Error in old cutoff norm     :        0.700097
+Number of atoms   :    1
+
+           2
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.925033        0.925033        0.000000
+   2        0.043877        0.043877        0.000000
+-------
+New approximated orbital norm:        1.000000
+old orbital norm with cutoff :        1.000000
+Error in New app norm        :        0.000000
+Error in old cutoff norm     :        0.000000
+Number of atoms   :    2
+
+           1
+           2
+-------
+  mu  FullMoS(mu)     ApproxMoS(mu)     Difference  
+   1        0.925033        0.925033        0.000000
+   2        0.043877        0.043877        0.000000
+   3        0.925033        0.925033        0.000000
+   4        0.043877        0.043877        0.000000
+-------
+
+Orbital                 :    2
+Central atom            :    2
+
+Number of atoms         :    2
+
+           1
+           2
+
+
+i  Mul.Ch.  Atom.Norm.  Atom.Dens.
+   1    0.5000000000    0.2999030576
+   2    0.5000000000    0.2999030576
+   3    0.0000000000    0.0000000000
+   4    0.0000000000    0.0000000000
+ >>>  CPU Time used in ls_getIntegrals is   0.10 seconds
+ >>> wall Time used in ls_getIntegrals is   0.01 seconds
+ Orbspread after generate orbitals:    2.58297236756410     
+  FragmentP    : 
+  Atom         :            2
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+Matrix DlocP has nnz=        16 sparsity:    100.000 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.14 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.16 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+  Fragment(K-P): 
+  Atom         :            2
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.13 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.15 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.00 seconds
+Matrix DmisP has nnz=        24 sparsity:     37.500 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.21 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.24 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU  Time used in LocalExchangeP=2   0.56 seconds
+ >>>  Wall Time used in LocalExchangeP=2   0.04 seconds
+  FragmentP    : 
+  Atom         :            3
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+Matrix DlocP has nnz=        16 sparsity:    100.000 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.14 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.17 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+  Fragment(K-P): 
+  Atom         :            3
+  Tot u.atom   :            2
+  Tot b.fs.    :            4
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.01 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.16 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.18 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.01 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.01 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.00 seconds
+Matrix DmisP has nnz=        24 sparsity:     37.500 %
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.24 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.27 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ >>>  CPU  Time used in LocalExchangeP=3   0.63 seconds
+ >>>  Wall Time used in LocalExchangeP=3   0.04 seconds
+ >>>  CPU  Time used in LocalExchange is       1.19 seconds
+ >>>  Wall Time used in LocalExchange is       0.08 seconds
+ >>>  CPU  Time including work with orbitals   1.67 seconds
+ >>>  Wall Time including work with orbitals   0.12 seconds
+ QQQ K DIFF    :  7.069911509900776E-016
+ QQQ K maxDIFF :  7.540021391229234E-009
+ QQQ K test DIFF    :  5.213072382084001E-017
+ QQQ K test maxDIFF :  3.106724183249997E-009
+ QQQ D DIFF    :  3.580600376757177E-014
+ QQQ D maxDIFF :  4.500136650820163E-008
+ QQQ Dloc+Dmiss DIFF    :  2.199828459718147E-027
+ QQQ Dloc+Dmiss maxDIFF :  1.326716514427062E-014
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.13 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ Jengine integrals are calculated using passes with maxPrimPass=          64
+ >>>  CPU Time used in Jengine         is   0.12 seconds
+ >>> wall Time used in Jengine         is   0.01 seconds
+ OVERALL WALL TIMINGS 
+ >>>  WALL Time used in Link is                0.02 seconds
+ OVERALL CPU TIMINGS 
+ >>>  CPU Time used in Link is                0.23 seconds
+ >>>  CPU Time used in LINK-Kbuild     is   0.26 seconds
+ >>> wall Time used in LINK-Kbuild     is   0.02 seconds
+ QQQ K+J DIFF :  7.069911509900769E-016
+ >>>  CPU Time used in FCK_FO          is   2.50 seconds
+ >>> wall Time used in FCK_FO          is   0.18 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ >>> wall Time used in G_GRAD          is   0.00 seconds
+  5     -2.2517857391   -0.00000000001   -1.00      0.00000    0.00    0.0000000    0.52E-07  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   5
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 497.156 MB
+  Max allocated memory, type(matrix)           20.633 kB
+  Max allocated memory, real                  497.106 MB
+  Max allocated memory, integer               308.902 kB
+  Max allocated memory, logical                 1.000 kB
+  Max allocated memory, linkshell               0.328 kB
+  Max allocated memory, integrand               8.750 MB
+  Max allocated memory, integralitem          496.484 MB
+  Max allocated memory, overlap                 2.006 MB
+  Max allocated memory, ODitem                  6.500 kB
+ 
+  Allocated memory,     TOTAL                  12.000 kB
+  Allocated memory,     type(matrix)           12.000 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ >>>  CPU Time used in **ITER          is  12.60 seconds
+ >>> wall Time used in **ITER          is   0.90 seconds
+ 
+Total no. of matmuls in SCF optimization:        113
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.16392967504    0.0000    0.0000    0.0000000
+  3   -0.00333367912   -1.0000    0.0000    0.0000000
+  4   -0.00000016845   -1.0000    0.0000    0.0000000
+  5   -0.00000000001   -1.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1            -2.08452221642174073679      0.264468220637651D+01
+    2            -2.24845189146404811353      0.378901229493434D+00
+    3            -2.25178557058662098811      0.268956569870359D-02
+    4            -2.25178573904108914050      0.227988079645264D-04
+    5            -2.25178573905319368009      0.521206336042650D-07
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final HF energy:                    -2.251785739053
+      Nuclear repulsion:                   1.664721772821
+      Electronic energy:                  -3.916507511874
+ 
+ >>>  CPU Time used in LSDALTON RSP    is   0.00 seconds
+ >>> wall Time used in LSDALTON RSP    is   0.00 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON RESPONSE:   0.000000000000000E+000    **
+ *****************************************************
+ >>>  CPU Time used in *SCF            is  12.62 seconds
+ >>> wall Time used in *SCF            is   0.90 seconds
+ 
+Total no. of matmuls used:                       121
+Total no. of Fock/KS matrix evaluations:           2
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                 497.156 MB
+  Max allocated memory, type(matrix)           20.633 kB
+  Max allocated memory, real(realk)           497.106 MB
+  Max allocated memory, integer               308.902 kB
+  Max allocated memory, logical                 1.000 kB
+  Max allocated memory, linkshell               0.328 kB
+  Max allocated memory, integrand               8.750 MB
+  Max allocated memory, integralitem          496.484 MB
+  Max allocated memory, Overlap                 2.006 MB
+  Max allocated memory, ODitem                  6.500 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ >>>  CPU Time used in LSDALTON        is  17.84 seconds
+ >>> wall Time used in LSDALTON        is   1.30 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON:    17.8392880000000         **
+ *****************************************************

@@ -1,0 +1,880 @@
+  
+     ******************************************************************    
+     **********  LSDALTON - An electronic structure program  **********    
+     ******************************************************************    
+  
+      This is output from LINSCA DALTON (Release 1.0 )
+            Authors:                                  
+      Trygve Helgaker,       University of Oslo,           Norway 
+      Poul Joergensen,       Aarhus University,            Denmark
+      Jeppe Olsen,           Aarhus University,            Denmark
+      Sonia Coriani,         University of Trieste,        Italy  
+      Stinne Hoest,          Aarhus University,            Denmark
+      Branislav Jansik,      Aarhus University,            Denmark
+      Joanna Kauczor,        Aarhus University,            Denmark
+      Thomas Kjaergaard,     Aarhus University,            Denmark
+      Kasper Kristensen,     Aarhus University,            Denmark
+      Simen Reine,           University of Oslo,           Norway 
+      Pawel Salek,           KTH Stockholm,                Sweden 
+      Andreas Thorvaldsen,   University of Tromsoe,        Norway 
+      Lea Thoegersen,        Aarhus University,            Denmark
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using SCF wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "LSDalton, a molecular electronic structure program, Release 2010,
+      written by <INSERT AUTHOR LIST>"
+ 
+
+ 
+     Date and time (Linux)  : Wed Sep 22 10:11:22 2010
+     Host name              : localhost.localdomain                   
+                      
+ -----------------------------------------
+          PRINTING THE MOLECULE.INP FILE 
+ -----------------------------------------
+                      
+  ATOMBASIS                               
+  HF                                      
+  ===                                     
+  Atomtypes=2  Generators=0 Bohr Cartesian                    
+  Charge=1 Atoms=1 Basis=6-31G                                
+  H    0.000000000000  0.000000000000 -4.306871942321         
+  Charge=9 Atoms=1 Basis=6-31G                                
+  F    0.000000000000  0.000000000000  0.228470430269         
+                      
+ -----------------------------------------
+          PRINTING THE DALTON.INP FILE 
+ -----------------------------------------
+                      
+  **DALTON INPUT                          
+  .RUN LINSCA                             
+  .DIRECT                                 
+  **INTEGRAL                              
+  .LINSCA                                 
+  **WAVE FUNCTIONS                        
+  .HF                                     
+  *LINSCA                                 
+  .TrFD                                   
+  .DSM                                    
+  .NVEC                                   
+  8                                       
+  .CONVDYN                                
+  STANDARD                                
+  .STABILITY                              
+  .UNREST                                 
+  $INFO                                   
+  INFO_STABILITY                          
+  $END INFO                               
+  *END OF INPUT                           
+  
+  MOLPRINT IS SET TO       0
+  Integral threshold is set to the default 1.00D-15
+
+
+                    Cartesian Coordinates Linsca (au)
+                    ---------------------------------
+
+   Total number of coordinates:  6
+
+   1   H        x      0.0000000000
+   2            y      0.0000000000
+   3            z     -4.3068719423
+
+   4   F        x      0.0000000000
+   5            y      0.0000000000
+   6            z      0.2284704303
+   
+  CALLING BUILD BASIS WITH DEFAULT REGULAR BASIS
+   
+
+ Default basis set library used:
+        /home/tkjaer/daltondevelopment/IFORT-CVSTEST/basis/                   
+ OPENING FILE/home/tkjaer/daltondevelopment/IFORT-CVSTEST/basis/6-31G
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+ NO SEGMENTATION IS USED
+   
+BASISSETLIBRARY
+ Number of Basisset           1
+ BASISSET:  6-31G                                             
+  CHARGES:   1   9
+                      
+                      
+THE MOLECULE
+ --------------------------------------------------------------------
+    Molecular Charge                 :    0.0000
+    Regular basisfunctions             :       11
+    Auxiliary basisfunctions           :        0
+    Huckel basisfunctions              :        0
+    Primitive Regular basisfunctions   :       26
+    Primitive Auxiliary basisfunctions :        0
+    Primitive Huckel basisfunctions    :        0
+ --------------------------------------------------------------------
+                      
+                      
+ --------------------------------------------------------------------
+  atom  charge  Atomicbasis    GHOST   nPrimREG  nContREG
+ --------------------------------------------------------------------
+     1   1.000  6-31G           F              4           2
+     2   9.000  6-31G           F             22           9
+                      
+  ATOM  NAME  ISOTOPE        X             Y             Z     
+    1    H          1    0.00000000    0.00000000   -4.30687194
+    2    F          1    0.00000000    0.00000000    0.22847043
+                      
+                      
+Atoms and basis sets
+  Total number of atoms        :      2
+  THE  REGULAR   is on R =   0
+---------------------------------------------------------------------
+ atom label charge  basisset            prim cont basis
+---------------------------------------------------------------------
+      1 H      1.000 6-31G                      4        2 [4s|2s]                  
+      2 F      9.000 6-31G                     22        9 [10s4p|3s2p]             
+---------------------------------------------------------------------
+total         10                              26      11
+---------------------------------------------------------------------
+                      
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Direct density optimization        
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           8
+ WARNING WARNING WARNING spin check commented out!!! /Stinne
+
+ --------------------------
+ <Unrestricted calculation>
+ --------------------------
+ ALPHA spin occupancy =     5
+ BETA  spin occupancy =     5
+
+Dynamic convergence threshold for gradient:   0.32E-04
+ 
+ End of configuration from new input structure!
+ 
+ WARNING WARNING WARNING spin check commented out!!!
+ Spin:           0
+ Nelectrons:          10
+ MOD(Nelectrons,2):           0
+
+ --------------------------
+ <Unrestricted calculation>
+ --------------------------
+ ALPHA spin occupancy =     5
+ BETA  spin occupancy =     5
+
+ >>>  CPU Time used in *INPUT          is   0.00 seconds
+ Level 1 atomic calculation on 6-31G Charge   1
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.01 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.00 seconds
+ >>>  CPU Time used in reg-F           is   0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1     -0.3410549973    0.00000000000    0.00      0.00000    0.00    0.0000000    0.20E+00  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+  2     -0.3488197504   -0.00776475307    0.00      0.00000    0.00    0.0000000    0.13E-01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.00 seconds
+ >>>  CPU Time used in reg-F           is   0.00 seconds
+  3     -0.3488518065   -0.00003205613   -1.00      0.00000    0.00    0.0000000    0.39E-04  ###
+ Level 1 atomic calculation on 6-31G Charge   9
+ >>>  CPU Time used in OVERLAP         is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.01 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.01 seconds
+ >>>  CPU Time used in CS_GCATOM       is   0.00 seconds
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.02 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -94.7995379512    0.00000000000    0.00      0.00000    0.00    0.0000000    0.70E+01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+  2    -98.2788617065   -3.47932375527    0.00      0.00000    0.00    0.0000000    0.45E+01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+  3    -99.0114716316   -0.73260992515   -1.00      0.00000    0.00    0.0000000    0.27E+00  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+  4    -99.0141526171   -0.00268098546   -1.00      0.00000    0.00    0.0000000    0.38E-01  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+  5    -99.0142033822   -0.00005076506   -1.00      0.00000    0.00    0.0000000    0.30E-02  ###
+ >>>  CPU Time used in reg-Fbuild      is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.01 seconds
+  6    -99.0142037661   -0.00000038394   -1.00      0.00000    0.00    0.0000000    0.92E-05  ###
+ >>>  CPU Time used in *ATOM           is   0.12 seconds
+ >>>  CPU Time used in OVERLAP         is   0.01 seconds
+ >>>  CPU Time used in *S              is   0.01 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.00 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.00 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.00 seconds
+ >>>  CPU Time used in CS_INPUT-Molecu is   0.00 seconds
+ >>>  CPU Time used in *H1             is   0.02 seconds
+ First density: Atoms in molecule guess
+ Using purely new Integrals
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+  Iteration 0 energy:  -99.3689541392499     
+ >>>  CPU Time used in *START          is   0.04 seconds
+ FALLBACK: open shell currently works only with cholesky decomposition
+ - Ask Dr. Jansik to fix it for Lowdin!
+ Preparing to do cholesky decomposition...
+ >>>  CPU Time used in CHOLDC          is   0.00 seconds
+ micthrs =  1.000000000000000E-002
+ >>>  CPU Time used in INIT SCF        is   0.00 seconds
+** Get Fock matrix number   1
+ Using purely new Integrals
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1    -99.5114057537    0.00000000000    0.00      0.00000    0.00    0.0000000    0.29E+01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   1
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 149.132 MB
+  Max allocated memory, type(matrix)           34.031 kB
+  Max allocated memory, real                  149.084 MB
+  Max allocated memory, integer                21.383 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                  9.812 kB
+ 
+  Allocated memory,     TOTAL                  28.359 kB
+  Allocated memory,     type(matrix)           28.359 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  0.713864085179433     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.1868081375 (mu =   0.00, xmax = 0.703787E+00, xnorm = 0.144996E+01, THR = 0.713864E-02)
+  Error of red space iteration  2:      0.1873309978 (mu =  -0.32, xmax = 0.243300E+00, xnorm = 0.585769E+00, THR = 0.713864E-02)
+  Error of red space iteration  3:      0.1013865651 (mu =  -0.32, xmax = 0.250933E+00, xnorm = 0.581983E+00, THR = 0.713864E-02)
+  Error of red space iteration  4:      0.0121721361 (mu =  -0.36, xmax = 0.239575E+00, xnorm = 0.550109E+00, THR = 0.713864E-02)
+  Error of red space iteration  5:      0.0014701455 (mu =  -0.36, xmax = 0.252917E+00, xnorm = 0.573746E+00, THR = 0.713864E-02)
+ mumax = -0.360893239561103     
+  Error of red space iteration  6:      0.0183941496 (mu =  -0.30, xmax = 0.332244E+00, xnorm = 0.721584E+00, THR = 0.713864E-02)
+  Error of red space iteration  7:      0.0075327093 (mu =  -0.30, xmax = 0.336010E+00, xnorm = 0.728229E+00, THR = 0.713864E-02)
+  Error of red space iteration  8:      0.0015956230 (mu =  -0.29, xmax = 0.346048E+00, xnorm = 0.746965E+00, THR = 0.713864E-02)
+Newton equations converged in  8 iterations!
+ >>>  CPU Time used in CROP solver     is   0.02 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    81
+ >>>  CPU Time used in G_DENS          is   0.02 seconds
+ >>>  CPU Time used in SCF iteration   is   0.06 seconds
+** Get Fock matrix number   2
+ Using purely new Integrals
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  2    -99.6297529388   -0.11834718507    0.00      0.00000    0.29    0.0000000    0.20E+01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   2
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 149.136 MB
+  Max allocated memory, type(matrix)           58.609 kB
+  Max allocated memory, real                  149.084 MB
+  Max allocated memory, integer                21.383 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                  9.812 kB
+ 
+  Allocated memory,     TOTAL                  32.141 kB
+  Allocated memory,     type(matrix)           32.141 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ OAO gradnorm  0.383842526664871     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0304128967 (mu =   0.00, xmax = 0.864227E-01, xnorm = 0.241242E+00, THR = 0.383843E-02)
+  Error of red space iteration  2:      0.0042137541 (mu =   0.00, xmax = 0.837668E-01, xnorm = 0.241987E+00, THR = 0.383843E-02)
+  Error of red space iteration  3:      0.0008793155 (mu =   0.00, xmax = 0.865486E-01, xnorm = 0.245344E+00, THR = 0.383843E-02)
+Newton equations converged in  3 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    44
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.05 seconds
+** Get Fock matrix number   3
+ Using purely new Integrals
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  3    -99.6787414871   -0.04898854832    0.00      0.00000    0.00    0.0000000    0.31E+00  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   3
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 149.140 MB
+  Max allocated memory, type(matrix)           68.062 kB
+  Max allocated memory, real                  149.084 MB
+  Max allocated memory, integer                21.383 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                  9.812 kB
+ 
+  Allocated memory,     TOTAL                  35.922 kB
+  Allocated memory,     type(matrix)           35.922 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  9.769886333666036E-002
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0103035619 (mu =   0.00, xmax = 0.697669E-01, xnorm = 0.145285E+00, THR = 0.976989E-03)
+  Error of red space iteration  2:      0.0019609857 (mu =   0.00, xmax = 0.737430E-01, xnorm = 0.152567E+00, THR = 0.976989E-03)
+  Error of red space iteration  3:      0.0004958719 (mu =   0.00, xmax = 0.749586E-01, xnorm = 0.154892E+00, THR = 0.976989E-03)
+Newton equations converged in  3 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    44
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+ >>>  CPU Time used in SCF iteration   is   0.05 seconds
+** Get Fock matrix number   4
+ Using purely new Integrals
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  4    -99.6823004057   -0.00355891858    0.00      0.00000    0.00    0.0000000    0.28E+00  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   4
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 149.143 MB
+  Max allocated memory, type(matrix)           79.406 kB
+  Max allocated memory, real                  149.084 MB
+  Max allocated memory, integer                21.383 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                  9.812 kB
+ 
+  Allocated memory,     TOTAL                  39.703 kB
+  Allocated memory,     type(matrix)           39.703 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  5.028843361574314E-002
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0037729713 (mu =   0.00, xmax = 0.172210E-01, xnorm = 0.414026E-01, THR = 0.502884E-03)
+  Error of red space iteration  2:      0.0007501538 (mu =   0.00, xmax = 0.172148E-01, xnorm = 0.418959E-01, THR = 0.502884E-03)
+  Error of red space iteration  3:      0.0001268396 (mu =   0.00, xmax = 0.175858E-01, xnorm = 0.424249E-01, THR = 0.502884E-03)
+Newton equations converged in  3 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    41
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.04 seconds
+** Get Fock matrix number   5
+ Using purely new Integrals
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  5    -99.6830524233   -0.00075201754    0.00      0.00000    0.00    0.0000000    0.94E-01  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   5
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 149.147 MB
+  Max allocated memory, type(matrix)           90.750 kB
+  Max allocated memory, real                  149.084 MB
+  Max allocated memory, integer                21.383 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                  9.812 kB
+ 
+  Allocated memory,     TOTAL                  43.484 kB
+  Allocated memory,     type(matrix)           43.484 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ OAO gradnorm  1.157123097942555E-002
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0016630215 (mu =   0.00, xmax = 0.827839E-02, xnorm = 0.171016E-01, THR = 0.115712E-03)
+  Error of red space iteration  2:      0.0003776242 (mu =   0.00, xmax = 0.904486E-02, xnorm = 0.186637E-01, THR = 0.115712E-03)
+  Error of red space iteration  3:      0.0000550757 (mu =   0.00, xmax = 0.919534E-02, xnorm = 0.189288E-01, THR = 0.115712E-03)
+Newton equations converged in  3 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    41
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.05 seconds
+** Get Fock matrix number   6
+ Using purely new Integrals
+ >>>  CPU Time used in reg-J           is   0.03 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  6    -99.6831818744   -0.00012945114    0.00      0.00000    0.00    0.0000000    0.33E-02  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   6
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 149.151 MB
+  Max allocated memory, type(matrix)          102.094 kB
+  Max allocated memory, real                  149.084 MB
+  Max allocated memory, integer                21.383 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                  9.812 kB
+ 
+  Allocated memory,     TOTAL                  47.266 kB
+  Allocated memory,     type(matrix)           47.266 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           6
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ OAO gradnorm  5.743754727917425E-004
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000805094 (mu =   0.00, xmax = 0.225051E-03, xnorm = 0.512286E-03, THR = 0.574375E-05)
+  Error of red space iteration  2:      0.0000155181 (mu =   0.00, xmax = 0.240464E-03, xnorm = 0.556722E-03, THR = 0.574375E-05)
+  Error of red space iteration  3:      0.0000020520 (mu =   0.00, xmax = 0.245222E-03, xnorm = 0.562157E-03, THR = 0.574375E-05)
+Newton equations converged in  3 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    39
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.05 seconds
+** Get Fock matrix number   7
+ Using purely new Integrals
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  7    -99.6831820135   -0.00000013907    0.00      0.00000    0.00    0.0000000    0.40E-03  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   7
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 149.155 MB
+  Max allocated memory, type(matrix)          113.438 kB
+  Max allocated memory, real                  149.084 MB
+  Max allocated memory, integer                21.383 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                  9.812 kB
+ 
+  Allocated memory,     TOTAL                  51.047 kB
+  Allocated memory,     type(matrix)           51.047 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           7
+ >>>  CPU Time used in AVERAG          is   0.01 seconds
+** Get new density 
+ OAO gradnorm  6.539783645965510E-005
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000058004 (mu =   0.00, xmax = 0.302243E-04, xnorm = 0.680797E-04, THR = 0.653978E-06)
+  Error of red space iteration  2:      0.0000008957 (mu =   0.00, xmax = 0.313364E-04, xnorm = 0.696134E-04, THR = 0.653978E-06)
+  Error of red space iteration  3:      0.0000002327 (mu =   0.00, xmax = 0.319268E-04, xnorm = 0.705963E-04, THR = 0.653978E-06)
+Newton equations converged in  3 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    38
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+ >>>  CPU Time used in SCF iteration   is   0.05 seconds
+** Get Fock matrix number   8
+ Using purely new Integrals
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  CPU Time used in FCK_FO          is   0.04 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+  8    -99.6831820158   -0.00000000237    0.00      0.00000    0.00    0.0000000    0.16E-04  ###
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics, iteration   8
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Max allocated memory, TOTAL                 149.158 MB
+  Max allocated memory, type(matrix)          124.781 kB
+  Max allocated memory, real                  149.084 MB
+  Max allocated memory, integer                21.383 kB
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, overlap               439.531 kB
+  Max allocated memory, ODitem                  9.812 kB
+ 
+  Allocated memory,     TOTAL                  54.828 kB
+  Allocated memory,     type(matrix)           54.828 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ >>>  CPU Time used in **ITER          is   0.39 seconds
+ 
+Total no. of matmuls in SCF optimization:        932
+ 
+ Number of occupied alpha orbitals:           5
+ Number of occupied beta orbitals:           5
+ 
+ Number of virtual alpha orbitals:           6
+ Number of virtual beta orbitals:           6
+ 
+ Number of occupied alpha orbital energies to be found:           1
+ Number of occupied beta orbital energies to be found:           1
+ 
+ Number of virtual alpha orbital energies to be found:           1
+ Number of virtual beta orbital energies to be found:           1
+ 
+ 
+Calculation of orbital energies
+===============================
+ 
+Alfa occupied orbitals:
+=======================
+ Threshold for iterative determination of orbital energies:
+  1.000000000000000E-006
+    FUP/FUQ eival: Residual for vector   1:  0.5954995290E-01 and mu: 0.2625017438E+02  It =   1  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.5954995290E-01
+          VECTOR   1: Error of PCG iteration  1:  0.2275167750E-01
+          VECTOR   1: Error of PCG iteration  2:  0.8148272956E-02
+          VECTOR   1: Error of PCG iteration  3:  0.4819962777E-16
+          VECTOR   1: PCG converged in   3 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.8360846775E-01 and mu: 0.4385805432E+00  It =   2  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.8360846775E-01
+          VECTOR   1: Error of PCG iteration  1:  0.2459275253E-01
+          VECTOR   1: Error of PCG iteration  2:  0.1414657645E-01
+          VECTOR   1: Error of PCG iteration  3:  0.6097229130E-16
+          VECTOR   1: PCG converged in   3 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.8519332359E-14 and mu: 0.4316076598E+00  It =   3  Conv =  T
+    Convergence of all vectors!
+   Eigenvalue for vector  1 is:  0.431608E+00
+ 
+Beta occupied orbitals:
+=======================
+ Threshold for iterative determination of orbital energies:
+  1.000000000000000E-006
+    FUP/FUQ eival: Residual for vector   1:  0.5954995290E-01 and mu: 0.2625017438E+02  It =   1  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.5954995290E-01
+          VECTOR   1: Error of PCG iteration  1:  0.2275167750E-01
+          VECTOR   1: Error of PCG iteration  2:  0.8148272956E-02
+          VECTOR   1: Error of PCG iteration  3:  0.4819962777E-16
+          VECTOR   1: PCG converged in   3 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.8360846775E-01 and mu: 0.4385805432E+00  It =   2  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.8360846775E-01
+          VECTOR   1: Error of PCG iteration  1:  0.2459275253E-01
+          VECTOR   1: Error of PCG iteration  2:  0.1414657645E-01
+          VECTOR   1: Error of PCG iteration  3:  0.6097229130E-16
+          VECTOR   1: PCG converged in   3 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.8519332359E-14 and mu: 0.4316076598E+00  It =   3  Conv =  T
+    Convergence of all vectors!
+   Eigenvalue for vector  1 is:  0.431608E+00
+ 
+Alfa virtual orbitals:
+=====================
+ Threshold for iterative determination of orbital energies:
+  1.000000000000000E-006
+    FUP/FUQ eival: Residual for vector   1:  0.5317674809E-01 and mu: 0.1724308484E+01  It =   1  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.5317674809E-01
+          VECTOR   1: Error of PCG iteration  1:  0.5940667312E-02
+          VECTOR   1: Error of PCG iteration  2:  0.4406165162E-03
+          VECTOR   1: PCG converged in   2 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.5364049938E+00 and mu: 0.4889765525E+00  It =   2  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.5364049938E+00
+          VECTOR   1: Error of PCG iteration  1:  0.2507999323E+00
+          VECTOR   1: Error of PCG iteration  2:  0.2900210396E-01
+          VECTOR   1: Error of PCG iteration  3:  0.1076684854E-02
+          VECTOR   1: PCG converged in   3 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.2905185349E-01 and mu: -.1362073781E+00  It =   3  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.2905185349E-01
+          VECTOR   1: Error of PCG iteration  1:  0.8753483738E-02
+          VECTOR   1: Error of PCG iteration  2:  0.1581205491E-02
+          VECTOR   1: Error of PCG iteration  3:  0.1119670253E-03
+          VECTOR   1: PCG converged in   3 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.6906351507E-15 and mu: -.1367087709E+00  It =   4  Conv =  T
+    Convergence of all vectors!
+   Eigenvalue for vector  1 is: -0.136709E+00
+ 
+Beta virtual orbitals:
+=====================
+ Threshold for iterative determination of orbital energies:
+  1.000000000000000E-006
+    FUP/FUQ eival: Residual for vector   1:  0.5317674809E-01 and mu: 0.1724308484E+01  It =   1  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.5317674809E-01
+          VECTOR   1: Error of PCG iteration  1:  0.5940667312E-02
+          VECTOR   1: Error of PCG iteration  2:  0.4406165162E-03
+          VECTOR   1: PCG converged in   2 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.5364049938E+00 and mu: 0.4889765525E+00  It =   2  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.5364049938E+00
+          VECTOR   1: Error of PCG iteration  1:  0.2507999323E+00
+          VECTOR   1: Error of PCG iteration  2:  0.2900210396E-01
+          VECTOR   1: Error of PCG iteration  3:  0.1076684854E-02
+          VECTOR   1: PCG converged in   3 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.2905185349E-01 and mu: -.1362073781E+00  It =   3  Conv =  F
+          VECTOR   1: Error of PCG iteration  0:  0.2905185349E-01
+          VECTOR   1: Error of PCG iteration  1:  0.8753483738E-02
+          VECTOR   1: Error of PCG iteration  2:  0.1581205491E-02
+          VECTOR   1: Error of PCG iteration  3:  0.1119670253E-03
+          VECTOR   1: PCG converged in   3 iterations! 
+    FUP/FUQ eival: Residual for vector   1:  0.6906351507E-15 and mu: -.1367087709E+00  It =   4  Conv =  T
+    Convergence of all vectors!
+   Eigenvalue for vector  1 is: -0.136709E+00
+ 
+    E(LUMO), alpha:                         -0.136709 au
+   -E(HOMO), alpha:                         -0.431608 au
+   -------------------------------------
+    "Alpha" HOMO-LUMO Gap (iteratively):     0.294899 au
+ 
+ 
+    E(LUMO), beta:                          -0.136709 au
+   -E(HOMO), beta:                          -0.431608 au
+   -------------------------------------
+    "Beta" HOMO-LUMO Gap (iteratively):      0.294899 au
+ 
+ 
+    E(LUMO):                                -0.136709 au
+   -E(HOMO):                                -0.431608 au
+   -------------------------------------
+    "Overall" HOMO-LUMO Gap (iteratively):   0.294899 au
+ 
+ >>>  CPU Time used in HL GAP          is   1.66 seconds
+ 
+Checking stability of solution: Calculation of lowest Hessian eigenvalue
+========================================================================
+ 
+        Alpha occ. eigenvalues
+        ======================
+
+               Column   1
+       1      -0.43160766
+ 
+        Beta occ. eigenvalues
+        =====================
+
+               Column   1
+       1      -0.43160766
+ 
+        Alpha virt. eigenvalues
+        =======================
+
+               Column   1
+       1      -0.13670877
+ 
+        Beta virt. eigenvalues
+        ======================
+
+               Column   1
+       1      -0.13670877
+ 
+ Alpha orbital energy differences  (occ index, virt index):
+ ==========================================================
+    1         0.2948989                  1          1
+ 
+ Beta orbital energy differences  (occ index, virt index):
+ =========================================================
+    1         0.2948989                  1          1
+ 
+     Sorted orbital energy differences:
+ ==========================================
+Root no.   1   0.2948989   Position:   1 (BETA)
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+    Hessian eival: Residual for vector   1:  0.6358857371E+00 and eival: 0.5070184367E+00  It =     1  Conv =  F
+                    Error of PCG iteration  1:      0.0365085209 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0017808374 (mu =   0.00)
+                    PCG converged in   2 iterations!
+                    PCG: residual reduced by     95.12%  (mu =   0.00)
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  CPU Time used in HES IT          is   0.03 seconds
+    Hessian eival: Residual for vector   1:  0.9636077894E-01 and eival: 0.3627072614E+00  It =     2  Conv =  F
+                    Error of PCG iteration  1:      0.0191272016 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0010210489 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0002144286 (mu =   0.00)
+                    PCG converged in   3 iterations!
+                    PCG: residual reduced by     98.88%  (mu =   0.00)
+ >>>  CPU Time used in reg-J           is   0.01 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  CPU Time used in HES IT          is   0.04 seconds
+    Hessian eival: Residual for vector   1:  0.2374453883E-01 and eival: 0.3545329858E+00  It =     3  Conv =  F
+                    Error of PCG iteration  1:      0.0022744237 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0001317218 (mu =   0.00)
+                    PCG converged in   2 iterations!
+                    PCG: residual reduced by     94.21%  (mu =   0.00)
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  CPU Time used in HES IT          is   0.04 seconds
+    Hessian eival: Residual for vector   1:  0.2875024969E-02 and eival: 0.3544992433E+00  It =     4  Conv =  F
+                    Error of PCG iteration  1:      0.0001437699 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0000129208 (mu =   0.00)
+                    PCG converged in   2 iterations!
+                    PCG: residual reduced by     91.01%  (mu =   0.00)
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.04 seconds
+ >>>  CPU Time used in HES IT          is   0.04 seconds
+    Hessian eival: Residual for vector   1:  0.2294611609E-03 and eival: 0.3544979844E+00  It =     5  Conv =  F
+                    Error of PCG iteration  1:      0.0000161191 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0000022000 (mu =   0.00)
+                    PCG converged in   2 iterations!
+                    PCG: residual reduced by     86.35%  (mu =   0.00)
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  CPU Time used in HES IT          is   0.03 seconds
+    Hessian eival: Residual for vector   1:  0.4690865983E-04 and eival: 0.3544979548E+00  It =     6  Conv =  F
+                    Error of PCG iteration  1:      0.0000036694 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0000005349 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0000000525 (mu =   0.00)
+                    PCG converged in   3 iterations!
+                    PCG: residual reduced by     98.57%  (mu =   0.00)
+ >>>  CPU Time used in reg-J           is   0.02 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.01 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  CPU Time used in HES IT          is   0.04 seconds
+    Hessian eival: Residual for vector   1:  0.1140369319E-04 and eival: 0.3544979544E+00  It =     7  Conv =  F
+                    Error of PCG iteration  1:      0.0000012344 (mu =   0.00)
+                    Error of PCG iteration  2:      0.0000001727 (mu =   0.00)
+                    Error of PCG iteration  3:      0.0000000060 (mu =   0.00)
+                    PCG converged in   3 iterations!
+                    PCG: residual reduced by     99.52%  (mu =   0.00)
+ >>>  CPU Time used in reg-J           is   0.01 seconds
+ >>>  CPU Time used in st-Kbuild       is   0.02 seconds
+ >>>  CPU Time used in reg-F           is   0.03 seconds
+ >>>  CPU Time used in HES IT          is   0.04 seconds
+    Hessian eival: Residual for vector   1:  0.5323152678E-06 and eival: 0.3544979544E+00  It =     8  Conv =  T
+    Convergence of all vectors!
+    Eigenvalue for vector            1  is:   0.354497954389987     
+ 
+*======================================================================*
+                Hessian eigenvalue no.  1:     0.354498      
+*======================================================================*
+ >>>  CPU Time used in HESEIG          is   0.30 seconds
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.11834718507    0.0000    0.2913    0.0000000
+  3   -0.04898854832    0.0000    0.0000    0.0000000
+  4   -0.00355891858    0.0000    0.0000    0.0000000
+  5   -0.00075201754    0.0000    0.0000    0.0000000
+  6   -0.00012945114    0.0000    0.0000    0.0000000
+  7   -0.00000013907    0.0000    0.0000    0.0000000
+  8   -0.00000000237    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1           -99.51140575374816421572      0.290686881811238D+01
+    2           -99.62975293881422089726      0.201615824441466D+01
+    3           -99.67874148712944304407      0.312478160519151D+00
+    4           -99.68230040571211247880      0.279490479401665D+00
+    5           -99.68305242325627091304      0.939025455862232D-01
+    6           -99.68318187439192001875      0.327964588951354D-02
+    7           -99.68318201346534124241      0.396080227713272D-03
+    8           -99.68318201583954873968      0.155979886015842D-04
+ 
+      SCF converged !!!! 
+         >>> Final results from LSDALTON <<<
+ 
+ 
+      Final HF energy:                   -99.683182015840
+      Nuclear repulsion:                   1.984414683750
+      Electronic energy:                -101.667596699589
+ 
+ >>>  CPU Time used in LSDALTON RSP    is   0.00 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON RESPONSE:   0.000000000000000E+000    **
+ *****************************************************
+ >>>  CPU Time used in *SCF            is   2.35 seconds
+ 
+Total no. of matmuls used:                      1110
+Total no. of Fock/KS matrix evaluations:           8
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                 149.179 MB
+  Max allocated memory, type(matrix)          124.781 kB
+  Max allocated memory, real(realk)           149.084 MB
+  Max allocated memory, integer                21.383 kB
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               6.462 MB
+  Max allocated memory, integralitem          141.814 MB
+  Max allocated memory, Overlap               439.531 kB
+  Max allocated memory, ODitem                  9.812 kB
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ >>>  CPU Time used in LSDALTON        is   2.54 seconds
+ *****************************************************
+ **     CPU-TIME USED IN LSDALTON:    2.55161200000000         **
+ *****************************************************

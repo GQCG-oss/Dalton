@@ -1,0 +1,239 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > rsp_soppapolarnosymm.info <<'%EOF%'
+   rsp_soppapolarnosymm
+   --------------------
+   Molecule:         H2O
+   Wave Function:    MP2 (SOPPA) / cc-pVDZ
+   Test Purpose:     Polarizability and C6/C8. No symmetry
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > rsp_soppapolarnosymm.mol <<'%EOF%'
+BASIS
+cc-pVDZ
+SOPPA singlet properties without symmetry.
+
+    2    0
+        8.    1
+O     0.0 -0.2249058930 0.0
+        1.    2
+H     1.45235 0.899623 0.0
+H    -1.45235 0.899623 0.0
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > rsp_soppapolarnosymm.dal <<'%EOF%'
+**DALTON INPUT
+.RUN RESPONSE
+**WAVE FUNCTION
+.HF
+.MP2
+**RESPONSE
+.S0MIX
+.SOPPA
+*LINEAR
+.DIPLEN
+.FREQUE
+ 2
+0.0 0.0592
+*C6
+.PRINT
+  5
+.DIPLEN
+.MAXMOM
+  6
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >rsp_soppapolarnosymm.check
+cat >>rsp_soppapolarnosymm.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# Basis set
+CRIT1=`$GREP "O * 1 * 8\.0000 * 26 * 14 * \[9s4p1d\|3s2p1d\]" $log | wc -l`
+CRIT2=`$GREP "H * 2 * 1\.0000 * 7 * 5 * \[4s1p\|2s1p\]" $log | wc -l`
+CRIT3=`$GREP "total\: * 3 * 10\.0000 * 40 * 24" $log | wc -l`
+CRIT4=`$GREP "Spherical harmonic basis used\." $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[1]=4
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "Total number of coordinates\: * 9" $log | wc -l`
+CRIT2=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "2 * y * (\-0|\-)\.2249058930" $log | wc -l`
+CRIT4=`$GREP "3 * z * (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "4 * x * 1\.4523500000" $log | wc -l`
+CRIT6=`$GREP "5 * y * (0| )\.8996230000" $log | wc -l`
+CRIT7=`$GREP "6 * z * (0| )\.0000000000" $log | wc -l`
+CRIT8=`$GREP "7 * x * \-1\.4523500000" $log | wc -l`
+CRIT9=`$GREP "8 * y * (0| )\.8996230000" $log | wc -l`
+CRIT10=`$GREP "9 * z * (0| )\.0000000000" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10`
+CTRL[2]=10
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# Energies
+CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.02568148[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.23066683[0-9][0-9]" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="ENERGIES NOT CORRECT"
+
+# Static polarizabilites
+CRIT1=`$GREP "\@.*XDIPLEN .* XDIPLEN .* 7\.3966(8|9).......(D|E)\+00" $log | wc -l`
+CRIT2=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 5\.50008(2|3)......(D|E)\+00" $log | wc -l`
+CRIT3=`$GREP "\@.*ZDIPLEN .* ZDIPLEN .* 3\.206925......(D|E)\+00" $log | wc -l`
+TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[4]=3
+ERROR[4]="STATIC POLARIZABILITIES NOT CORRECT"
+
+# Frequency dependent polarizabilites
+CRIT1=`$GREP "\@ *a\.u\.\: * 5\.9200000(D|E)\-02" $log | wc -l`
+CRIT2=`$GREP "\@.*XDIPLEN .* XDIPLEN .* 7\.46290.*(D|E)\+00" $log | wc -l`
+CRIT3=`$GREP "\@.*YDIPLEN .* YDIPLEN .* 5\.56057.*(D|E)\+00" $log | wc -l`
+CRIT4=`$GREP "\@.*ZDIPLEN .* ZDIPLEN .* 3\.25179.*(D|E)\+00" $log | wc -l`
+TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[5]=4
+ERROR[5]="FREQUENCY DEPENDENT POLARIZABILITIES NOT CORRECT"
+
+# Static C6/C8 polarizabilities
+CRIT1=`$GREP "XDIPLEN .* XDIPLEN .* 7\.3966(8|9)....." $log | wc -l`
+CRIT2=`$GREP "YDIPLEN .* YDIPLEN .* 5\.50008(2|3)...." $log | wc -l`
+CRIT3=`$GREP "ZDIPLEN .* ZDIPLEN .* 3\.20692[4-6]...." $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[6]=24
+ERROR[6]="STATIC C6/C8 POLARIZABILITIES NOT CORRECT"
+
+# Cauchy moments
+CRIT1=`$GREP "0 * 7\.39669..............[0-9](D|E)\+00" $log | wc -l`
+CRIT2=`$GREP "2 * 1\.86536..............[0-9](D|E)\+01" $log | wc -l`
+CRIT3=`$GREP "4 * 6\.74411..............[0-9](D|E)\+01" $log | wc -l`
+CRIT4=`$GREP "6 * 2\.66843..............[0-9](D|E)\+02" $log | wc -l`
+CRIT5=`$GREP "8 * 1\.09260..............[0-9](D|E)\+03" $log | wc -l`
+CRIT6=`$GREP "10 * 4\.5792(6|7)..............[0-9](D|E)\+03" $log | wc -l`
+CRIT7=`$GREP "12 * 1\.9586(6|7)..............[0-9](D|E)\+04" $log | wc -l`
+CRIT8=`$GREP "14 * 8\.5338...............[0-9](D|E)\+04" $log | wc -l`
+CRIT9=`$GREP "16 * 3\.78002..............[0-9](D|E)\+05" $log | wc -l`
+CRIT10=`$GREP "18 * 1\.69851..............[0-9](D|E)\+06" $log | wc -l`
+CRIT11=`$GREP "20 * 7\.7251...............[0-9](D|E)\+06" $log | wc -l`
+CRIT12=`$GREP "22 * 3\.548(8|9)...............[0-9](D|E)\+07" $log | wc -l`
+CRIT13=`$GREP "24 * 1\.64360..............[0-9](D|E)\+08" $log | wc -l`
+CRIT14=`$GREP "26 * 7\.6613...............[0-9](D|E)\+08" $log | wc -l`
+CRIT15=`$GREP "28 * 3\.5893...............[0-9](D|E)\+09" $log | wc -l`
+CRIT16=`$GREP "30 * 1\.68822..............[0-9](D|E)\+10" $log | wc -l`
+CRIT17=`$GREP "32 * 7\.9647...............[0-9](D|E)\+10" $log | wc -l`
+CRIT18=`$GREP "34 * 3\.7664...............[0-9](D|E)\+11" $log | wc -l`
+CRIT19=`$GREP "36 * 1\.78426..............[0-9](D|E)\+12" $log | wc -l`
+CRIT20=`$GREP "38 * 8\.4640...............[0-9](D|E)\+12" $log | wc -l`
+CRIT21=`$GREP "0 * 5\.50008..............[0-9](D|E)\+00" $log | wc -l`
+CRIT22=`$GREP "2 * 1\.69082..............[0-9](D|E)\+01" $log | wc -l`
+CRIT23=`$GREP "4 * 9\.8169(2|3)..............[0-9](D|E)\+01" $log | wc -l`
+CRIT24=`$GREP "6 * 6\.4(4000|3999)..............[0-9](D|E)\+02" $log | wc -l`
+CRIT25=`$GREP "8 * 4\.35077..............[0-9](D|E)\+03" $log | wc -l`
+CRIT26=`$GREP "10 * 2\.9665.*[0-9](D|E)\+04" $log | wc -l`
+CRIT27=`$GREP "12 * 2\.0291.*[0-9](D|E)\+05" $log | wc -l`
+CRIT28=`$GREP "14 * 1\.3895.*[0-9](D|E)\+06" $log | wc -l`
+CRIT29=`$GREP "16 * 9\.5192.*[0-9](D|E)\+06" $log | wc -l`
+CRIT30=`$GREP "18 * 6\.5221.*[0-9](D|E)\+07" $log | wc -l`
+CRIT31=`$GREP "20 * 4\.4688.*[0-9](D|E)\+08" $log | wc -l`
+CRIT32=`$GREP "22 * 3\.0620.*[0-9](D|E)\+09" $log | wc -l`
+CRIT33=`$GREP "24 * 2\.0981.*[0-9](D|E)\+10" $log | wc -l`
+CRIT34=`$GREP "26 * 1\.4376.*[0-9](D|E)\+11" $log | wc -l`
+CRIT35=`$GREP "28 * 9\.85(10|09).*[0-9](D|E)\+11" $log | wc -l`
+CRIT36=`$GREP "30 * 6\.7499.*[0-9](D|E)\+12" $log | wc -l`
+CRIT37=`$GREP "32 * 4\.6251.*[0-9](D|E)\+13" $log | wc -l`
+CRIT38=`$GREP "34 * 3\.1691.*[0-9](D|E)\+14" $log | wc -l`
+CRIT39=`$GREP "36 * 2\.1715.*[0-9](D|E)\+15" $log | wc -l`
+CRIT40=`$GREP "38 * 1\.4879.*[0-9](D|E)\+16" $log | wc -l`
+CRIT41=`$GREP "0 * 3\.206925.............[0-9](D|E)\+00" $log | wc -l`
+CRIT42=`$GREP "2 * 1\.228879[6-7]............[0-9](D|E)\+01" $log | wc -l`
+CRIT43=`$GREP "4 * 1\.40520(7|8).............[0-9](D|E)\+02" $log | wc -l`
+CRIT44=`$GREP "6 * 1\.72246..............[0-9](D|E)\+03" $log | wc -l`
+CRIT45=`$GREP "8 * 2\.1201(3|4)..............[0-9](D|E)\+04" $log | wc -l`
+CRIT46=`$GREP "10 * 2\.6106...............[0-9](D|E)\+05" $log | wc -l`
+CRIT47=`$GREP "12 * 3\.214(6|7)...............[0-9](D|E)\+06" $log | wc -l`
+CRIT48=`$GREP "14 * 3\.958(5|6)...............[0-9](D|E)\+07" $log | wc -l`
+CRIT49=`$GREP "16 * 4\.874[4-6]...............[0-9](D|E)\+08" $log | wc -l`
+CRIT50=`$GREP "18 * 6\.002[4-6]...............[0-9](D|E)\+09" $log | wc -l`
+CRIT51=`$GREP "20 * 7\.391[3-6]...............[0-9](D|E)\+10" $log | wc -l`
+CRIT52=`$GREP "22 * 9\.1020...............[0-9](D|E)\+11" $log | wc -l`
+CRIT53=`$GREP "24 * 1\.120(7|8)...............[0-9](D|E)\+13" $log | wc -l`
+CRIT54=`$GREP "26 * 1\.3801...............[0-9](D|E)\+14" $log | wc -l`
+CRIT55=`$GREP "28 * 1\.699(4|5)...............[0-9](D|E)\+15" $log | wc -l`
+CRIT56=`$GREP "30 * 2\.092[6-8]...............[0-9](D|E)\+16" $log | wc -l`
+CRIT57=`$GREP "32 * 2\.5771...............[0-9](D|E)\+17" $log | wc -l`
+CRIT58=`$GREP "34 * 3\.173[2-4]...............[0-9](D|E)\+18" $log | wc -l`
+CRIT59=`$GREP "36 * 3\.907[4-8]...............[0-9](D|E)\+19" $log | wc -l`
+CRIT60=`$GREP "38 * 4\.81(1|2)................[0-9](D|E)\+20" $log | wc -l`
+TEST[7]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ \
+		$CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 \+ $CRIT11 \+ $CRIT12 \+ \
+		$CRIT13 \+ $CRIT14 \+ $CRIT15 \+ $CRIT16 \+ $CRIT17 \+ $CRIT18 \+ \
+		$CRIT19 \+ $CRIT20 \+ $CRIT21 \+ $CRIT22 \+ $CRIT23 \+ $CRIT24 \+ \
+		$CRIT25 \+ $CRIT26 \+ $CRIT27 \+ $CRIT28 \+ $CRIT29 \+ $CRIT30 \+ \
+		$CRIT31 \+ $CRIT32 \+ $CRIT33 \+ $CRIT34 \+ $CRIT35 \+ $CRIT36 \+ \
+		$CRIT37 \+ $CRIT38 \+ $CRIT39 \+ $CRIT40 \+ $CRIT41 \+ $CRIT42 \+ \
+		$CRIT43 \+ $CRIT44 \+ $CRIT45 \+ $CRIT46 \+ $CRIT47 \+ $CRIT48 \+ \
+		$CRIT49 \+ $CRIT50 \+ $CRIT51 \+ $CRIT52 \+ $CRIT53 \+ $CRIT54 \+ \
+		$CRIT55 \+ $CRIT56 \+ $CRIT57 \+ $CRIT58 \+ $CRIT59 \+ $CRIT60`
+CTRL[7]=60
+DIFF[7]=`expr ${CTRL[7]} \- ${TEST[7]}`
+ERROR[7]="${DIFF[7]} OUT OF ${CTRL[7]} CAUCHY MOMENTS NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6 7
+do
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################

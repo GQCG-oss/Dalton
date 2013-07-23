@@ -1,0 +1,439 @@
+#!/bin/bash    
+#########################################################################
+#
+# Shell script for running DALTON test suite
+#
+# First version by Christof Haettig and Kasper Hald, Sep. 2000
+#
+#########################################################################
+
+# Note: $DALTON points to the default "DALTON/build/dalton" script.
+#       If another name than "build" has been chosen for the build directory,
+#       then you should modify the BUILD_DIR defintion to point to that place.
+
+BUILD_DIR="../../build"
+
+# radovan: this is to figure out the location of this script
+# http://stackoverflow.com/questions/59895/can-a-bash-script-tell-what-directory-its-stored-in
+SOURCE="${BASH_SOURCE[0]}"
+while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+    SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+    SOURCE="$(readlink "$SOURCE")"
+    # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    [[ $SOURCE != /* ]] && SOURCE="$SCRIPT_DIR/$SOURCE"
+done
+SCRIPT_DIR="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
+cd $SCRIPT_DIR
+
+if [ -x '/usr/bin/time' ]; then
+ TIMING_OF="/usr/bin/time" #hjaaj sep07: gnu time gives more info than built-in time
+else
+ TIMING_OF=" "
+fi
+if [ -x "$BUILD_DIR/dalton" ]; then
+  DALTON="`pwd`/$BUILD_DIR/dalton"
+else
+  DALTON=NON_DEFAULT
+fi
+
+#########################################################################
+# function usage(): print usage information 
+#########################################################################
+usage() {
+ cat <<%EOF%
+Usage: $0 [-h|-help|--help] [-keep] [-reftest] [-benchmark]
+            [-param "option list"] [-dalton script] [-log logfile] testcase
+
+       -h | -help | --help    : show this help description
+       -keep                  : keep *.mol, *.dal, *.check and *.log files
+       -reftest               : test reference file(s); do not run any calculations
+       -benchmark             : print CPU time for each testcase as part of the summary
+       -param "option list"   : pass "option list" to dalton-script
+       -dalton script         : use "script" instead of the default
+                                dalton-script "`pwd`/../dalton" (absolute path) 
+       -log logfile           : write output into logfile instead of to "DALTON_TESTLOG"
+       -result-directory path : change default result directory to path
+%EOF%
+exit 1
+}
+
+#########################################################################
+# function myprint(string): print to stdout and $listing
+#########################################################################
+myprint(){
+ echo "$1";
+ echo "$1" >> $listing;
+}
+
+errprint(){
+ echo "$1" >> /dev/stderr;
+}
+
+#########################################################################
+#########################################################################
+# start with real work:
+#########################################################################
+#########################################################################
+
+#########################################################################
+# set defaults and evaluate parameters
+#########################################################################
+TESTparams="$0 $*"
+help=""
+keep="false"
+paramlist=""
+par_paramlist="-N 4"
+reftest=""
+benchmark=""
+listing="DALTON_TESTLOG"
+emptystring="                                "
+keep_quiet=
+result_directory=''
+
+tmpfile=/tmp/dalton-$$.log
+touch "$tmpfile"   || { echo "cannot create temporary file. Aborting execution."; exit 1; }
+test -f "$tmpfile" || { echo "Possible security breach related to temporary file."; exit 1; }
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+while echo $1 | egrep -q '^-'; do
+   case $1 in
+     "-h" | "-help" | "--help" ) help="true" ; break;;
+     "-dalton" )  shift; DALTON=$1; shift;;
+     "-log" ) shift; listing=$1; shift;;
+     "-result-directory" ) shift; result_directory=$1; shift;;
+     "-keep" ) keep="true"; shift;;
+     -param* ) shift; paramlist="$1"; shift;;
+     "-reftest" ) reftest="true"; shift;;
+     "-q") keep_quiet=true; shift;;
+     "-benchmark" ) benchmark="true"; shift;;
+     * ) echo "---> ERROR: $1 is an unknown option!"; usage;;
+   esac
+done
+if [ $help ]; then
+  usage
+fi
+
+if [ "${DALTON:0:1}" != "/" ]; then
+  DALTON="$PWD/$DALTON"   # we need absolute path, not relative path
+fi
+
+if [ ! -x $DALTON ]; then
+   echo ' '
+   echo '----> ERROR, the "dalton" job script '
+   echo    '"'$DALTON'"'
+   echo '  does not exist or is not executable.'
+   echo 'The person who installed dalton has probably selected'
+   echo '  another place for the "dalton" job script.'
+   echo 'Please modify the DALTON variable in this script (i.e. '$0')'
+   echo '  to point to that place.    Alternatively, you may'
+   echo '  specify where the dalton script is with the -dalton option'
+   echo ' '
+   exit 1
+fi
+
+#########################################################################
+# set list of test cases:
+#########################################################################
+testcase=$*
+if [ "$testcase" = "" ]; then
+  echo '    ***********************************'
+  echo '    * ERROR: No testcase(s) specified *'
+  echo '    ***********************************'
+  usage
+fi
+testcase=""
+while [ -n "$1" ]; do
+   case $1 in
+   * )
+   testcase="$testcase $1"; 
+   shift ;;
+   esac
+done
+
+if [ "$result_directory" = "" ]; then
+    # create a unique directory for test output
+    testdir="`date +'%Y-%m-%dT%H_%M'`-testjob-pid-$$"
+    while [ -e $testdir ]; do
+       testdir=${testdir}x
+    done
+    mkdir $testdir 
+else
+    # user specifies explicit result directory
+    testdir=$result_directory
+    if [ ! -e $testdir ]; then mkdir $testdir; fi
+fi
+cp functions $testdir
+cd $testdir || exit 1
+
+myprint "#####################################################################"
+myprint "                          DALTON test suite"
+myprint "#####################################################################"
+myprint "invoked with          : $TESTparams"
+myprint "date and time         : `date`"
+myprint "dalton script         : $TIMING_OF $DALTON"
+myprint "parameter list passed : $paramlist"
+myprint "test job directory    : $testdir"
+myprint "test listing          : $listing"
+myprint "test cases            : $testcase"
+
+#########################################################################
+# loop over test cases:
+#########################################################################
+passedall="ALL TESTS ENDED PROPERLY!"
+problems=""
+exitcode=0
+numresult=0
+num_reftests_not_found=0
+
+total_tests=0
+for item in ${testcase}
+do
+  total_tests=`expr $total_tests \+ 1`
+done
+
+total_failed=0
+total_tests_run=0
+
+for item in ${testcase}
+do
+  total_tests_run=`expr $total_tests_run \+ 1`
+  trouble=0
+  case $item in
+    par* | *parallel* )  # assume parallel test if name contains "parallel" or name starts with "par"
+      paramlist_this_test="$paramlist $par_paramlist"
+      shift ;;
+    * )
+      paramlist_this_test="$paramlist"
+      shift ;;
+  esac
+
+  # errprint is necessary to see what test a system error message came from, in case stderr and stdout are different
+  errprint "##########################################################################################"
+  errprint "`date` -- Starting test number $total_tests_run out of $total_tests: $item"
+
+  myprint  "##########################################################################################"
+  myprint  "`date` -- Starting test number $total_tests_run out of $total_tests: $item"
+  myprint  "------------------------------------------------------------------------------------------"
+  chmod +x $SCRIPT_DIR/$item || exit 1
+  $SCRIPT_DIR/$item
+# remove any directory path now the files are unpacked
+  item=`basename $item`
+  if [ -f $item.info -a "$keep_quiet" = "" ]; then
+    cat $item.info
+    cat $item.info >> $listing
+  fi
+# Check if this is a multistep job
+  numsteps=1
+  if [ -r ./$item'__'1.dal ]; then
+      multi=1
+      numsteps=`ls ./$item\_\_[0-9].dal | wc -l`
+      myprint "   This is a multi-step job consisting of $numsteps steps"
+      rm -f ./$item'__'[0-9]'_'$item.log
+      chmod +x ./$item'__'[0-9].check
+  else
+      multi=0
+      rm -f ./$item.log
+      chmod +x ./$item.check
+  fi
+# Multi-step tests loop over the different jobsteps, regular tests just
+# go through this once
+  step=1
+  while [ "$step" -le "$numsteps" ]
+  do
+      potfile=
+      if [ "$multi" -eq 1 ]; then
+          myprint "---------------------------------------------------------------------"
+          myprint "  Start $item step $step of $numsteps :"
+          myprint "---------------------------------------------------------------------"
+          # use unique molfile for this step if available
+          if [ -r $item'__'$step.mol ]; then
+              cp -v $item'__'$step'.mol' $item'.mol'
+          fi
+          molfile=$item
+          if [ -r $item.pot ]; then potfile=$item ; fi
+          cp $item'__'$step'.dal' $item'.dal'
+          dalfile=$item
+          logfile=./$item'__'$step'_'$item.log
+          checkfile=./$item'__'$step.check
+          reffile=../trueresult/$item'__'$step'_'$item.*ref
+          moldenfile=./$item'__'$step'_'$item.molden
+      else
+          molfile=$item
+          if [ -r $item.pot ]; then potfile=$item ; fi
+          dalfile=$item
+          logfile=./$item.log
+          checkfile=./$item.check
+          reffile=../trueresult/$item.*ref
+          moldenfile=./$item.molden
+      fi
+# If it's a reftest, no calculation is performed
+      if [ "$reftest" = "true" ]; then
+          myprint ""
+          myprint "evaluate reference output file $reffile:"
+          if [ ! -r $reffile ]; then
+              myprint "     PROBLEM: reference output $reffile is not available"
+              num_reftests_not_found=`expr $num_reftests_not_found \+ 1`
+              checkout="TEST ENDED PROPERLY"
+          else
+              checkout=`$checkfile $reffile`
+              if [ "$benchmark" = "true" ]; then
+                 if [ `$GREP "CPU  time used in DALTON" $reffile | wc -l` = 1 ]; then
+                     CPU_usage=`$GREP "CPU  time used in DALTON" $reffile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+                 else
+                     CPU_usage="N/A"
+                 fi
+              fi
+              if [ "$checkout" = "TEST ENDED AS EXPECTED" ]; then
+                 myprint "     $checkout"
+                 checkout="TEST ENDED PROPERLY"
+              fi
+          fi
+      else
+          failed=false
+          if [ "$step" -eq "1" ]; then
+#             make sure that directory is clear before start
+              $TIMING_OF $DALTON -d $paramlist_this_test -ext log $dalfile $molfile $potfile > "$tmpfile"
+              if [ $? -ne 0 ]; then failed=true; fi
+          else
+#             copy $item.tar.gz for multistep jobs (-f option)
+              $TIMING_OF $DALTON -f $item $paramlist_this_test -ext log $dalfile $molfile $potfile > "$tmpfile"
+              if [ $? -ne 0 ]; then failed=true; fi
+          fi
+          grep -v '\*\*\*' $tmpfile | grep -v -i 'WARNING' | grep -v -i 'INFO'| \
+          grep -v 'OUTPUT FROM' | grep -v 'Version' | grep -v 'PID' | \
+          grep -v '^$' | tee -a $listing
+
+          if [ "$multi" -eq 1 ]; then
+             cp $molfile'.log' $logfile
+          fi
+          myprint ""
+          myprint "evaluate output file $logfile:"
+
+          if [ -s "$logfile" ]; then
+              checkout=`$checkfile $logfile`
+          else
+              checkout="THERE IS A PROBLEM: no output was produced"
+              failed=true
+          fi
+
+          # Successful tests report "TEST ENDED PROPERLY" unless
+          # the test is meant to return non-zero exit code.  These
+          # return "TEST ENDED AS EXPECTED".  In the latter case, we
+          # change it to "TEST ENDED PROPERLY" if the exit code was
+          # nonzero, otherwise we return "DALTON SCRIPT ERROR"
+
+          if [ "$checkout" = "TEST ENDED PROPERLY" ]; then
+              [ "$failed" = "true" ] && checkout="TEST FAILED ABNORMALLY"
+          elif [ "$checkout" = "TEST ENDED AS EXPECTED" ]; then
+              myprint "     checkout=$checkout, failed=$failed"
+              if [ "$failed" = "true" ]; then
+                  checkout="TEST ENDED PROPERLY"
+              else
+                  checkout="DALTON SCRIPT ERROR"                  
+              fi
+          fi
+          if [ "$benchmark" = "true" ]; then
+              if [ `$GREP "CPU  time used in DALTON" $logfile | wc -l` = 1 ]; then
+                  CPU_usage=`$GREP "CPU  time used in DALTON" $logfile | sed s/">>>> Total CPU  time used in DALTON\:"/""/`
+              else
+                  CPU_usage="N/A"
+              fi
+          fi
+      fi
+      if [ "$benchmark" = "true" ]; then
+          numresult=`expr $numresult \+ 1`
+          if [ $step -eq 1 ]; then
+              testlist[$numresult]="$item"
+          else
+              testlist[$numresult]="...step$step"
+          fi
+          timelist[$numresult]="$CPU_usage"
+      fi
+      passed=`echo $checkout | grep "TEST ENDED PROPERLY"`
+      if [ -z "$passed" ]; then
+        trouble=`expr $trouble \+ 1`
+        passedall="THERE IS A PROBLEM IN SOME TEST CASE(S)"
+        if [ "$trouble" -eq 1 ]; then
+            problems="$problems $item"
+            total_failed=`expr $total_failed \+ 1`
+        fi
+        exitcode=1
+      elif [ "$keep" = "false" ]; then
+        #rm -f $dalfile.dal $dalfile.BAS $checkfile $logfile $item.info
+        rm -f $dalfile.dal $dalfile.BAS $checkfile $item.info # keep $logfile, can be interesting to look closer at
+        if [ "$step" -eq "$numsteps" ]; then
+#       only delete restart files in last step of multistep test !!!
+           rm -f $dalfile.tar.gz
+        fi
+#     else everything OK and -keep defined
+      fi
+      myprint "     $checkout -- $total_failed tests failed out of the $total_tests_run tests run so far"
+      step=`expr $step \+ 1`
+  done
+  if [ "$trouble" -eq 0 ]; then
+      if [ "$keep" = "false" ]; then
+          rm -f $molfile.mol
+          rm -f $potfile.pot
+      fi
+  fi
+done
+
+
+#########################################################################
+# final result:
+#########################################################################
+
+myprint ""
+myprint "#####################################################################"
+myprint "                              Summary"
+myprint "#####################################################################"
+myprint ""
+
+if [ "$benchmark" = "true" ]; then
+    if [ "$numresult" -gt 0  ]; then
+      ind=1
+      while [ "$ind" -le "$numresult" ]; do
+        awk "END{printf \"%32s %s\\n\", \"${testlist[$ind]}\",\"${timelist[$ind]}\"}"</dev/null 
+        awk "END{printf \"%32s %s\\n\", \"${testlist[$ind]}\",\"${timelist[$ind]}\"}"</dev/null >> $listing
+        ind=`expr $ind \+ 1`
+      done
+      myprint ""
+    fi
+fi
+
+if [ "$reftest" = "true" ]; then
+   myprint " >>>>> THIS IS A TEST OF THE REFERENCE OUTPUTS >>>>>"
+   myprint ""
+fi
+
+myprint "$passedall"
+if [ $total_failed -gt 0 ]; then
+   myprint "$total_failed tests failed"
+   myprint "$problems"
+fi
+if [ "$num_reftests_not_found" -gt 0  ]; then
+   myprint ""
+   myprint "WARNING: $num_reftests_not_found reference outputs were not found."
+   myprint ""
+fi
+rm "$tmpfile"
+myprint "date and time         : `date`"
+
+if [ "$result_directory" != "" ]; then
+  cd ..   # do not rm or mv your working directory
+  if [ "$exitcode" -eq 0 ]; then
+      # test passed, we remove the custom result directory
+      if [ "$keep" = "false" ]; then
+         rm -r $result_directory
+      fi
+  else
+      mv $result_directory ${result_directory}_failed_"`date +'%Y-%m-%dT%H_%M'`-$$"
+  fi
+fi
+
+exit $exitcode

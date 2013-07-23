@@ -1,0 +1,46 @@
+#!/bin/sh
+
+. ./functions || { echo "current dir is not the test dir" ; exit 1; }
+
+info="
+   energy_hsrohf
+   ------------------
+   Molecule:         O2
+   Wave Functions:   HSROHF + MP2 with open shell orbitals frozen
+   Test Purpose:     High spin ROHF and MP2 with open shell orbitals frozen
+"
+
+molecule="BASIS
+cc-pVDZ
+O2 - Oxygen molecule - cc-pVDZ
+
+    1              
+        8.    2
+O     0.00000000     0.00000000     1.1405
+O     0.00000000     0.00000000    -1.1405
+"
+
+dalton="**DALTON
+.RUN WAVE
+.DIRECT
+**WAVE FUNCTION
+.HF
+.MP2
+*SCF INPUT
+.DOUBLY
+ 3 1 1 0 2 0 0 0
+.SINGLY
+ 0 0 0 0 0 1 1 0
+*MP2 INPUT
+.PRINT
+ 5
+**END OF
+"
+
+test="
+check_scf_energy HF -149.608171287437 1e-6
+check_MP2_energy    -149.4423634226   1e-5
+"
+
+check_gen_input "$0" "$info" "$molecule" "$dalton" "$test"
+

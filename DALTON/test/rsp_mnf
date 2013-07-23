@@ -1,0 +1,191 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > rsp_mnf.info <<'%EOF%'
+   rsp_mnf
+   -------
+   Molecule:         O2
+   Wave Function:    MCSCF (CAS) / ANO (Atombasis)
+   Test Purpose:     Atomic mean field (AMFI) linear response spin-orbit
+%EOF%
+
+#######################################################################
+#  MOLECULE INPUT
+#######################################################################
+cat > rsp_mnf.mol <<'%EOF%'
+ATOMBASIS
+AMFI linear response spin-orbit
+Note: only spherical GTOs allowed with AMFI
+    1    3  X  Y  Z     1.D-12
+        8.    1 Basis=ano-1 3  2  1  0
+O      0.00000   0.00000   1.14050
+O      0.00000   0.00000  -1.14050
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > rsp_mnf.dal <<'%EOF%'
+**DALTON INPUT
+.RUN RESPONSE
+**INTEGRALS
+.MNF-SO       
+!.PRINT
+!6
+**WAVE FUNCTIONS
+.MCSCF
+*CONFIGURATION INPUT
+.SYMMETRY
+ 1
+.SPIN MULT
+ 1
+.INACTIVE SPACE
+ 3 1 1 0 2 0 0 0
+.ELECTRONS
+ 2
+.CAS SPACE
+ 0 0 0 0 0 1 1 0
+*CI VECTOR
+.PLUS COMBINATIONS
+*OPTIMIZATION
+.DETERMINANTS
+**RESPONSE
+.TRPFLG
+*LINEAR
+.SINGLE RESIDUE
+.PROPRT
+Z1MNF-SO   
+.ROOTS
+ 0 0 0 1 0 0 0 0
+**END OF DALTON INPUT
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >rsp_mnf.check
+cat >>rsp_mnf.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a -i"
+else
+   GREP="egrep -i"
+fi
+
+# Basis set
+CRIT1=`$GREP "O * 2 * 8\.0000 * 61 * 14 * \[14s9p4d\|3s2p1d\]" $log | wc -l`
+CRIT2=`$GREP "total\: * 2 * 16\.0000 * 122 * 28" $log | wc -l`
+CRIT3=`$GREP "Spherical harmonic basis used" $log | wc -l`
+TEST[1]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[1]=3
+ERROR[1]="BASIS SET NOT READ CORRECTLY"
+
+# Geometry
+CRIT1=`$GREP "1 * x * (0| )\.0000000000" $log | wc -l`
+CRIT2=`$GREP "2 * y * (0| )\.0000000000" $log | wc -l`
+CRIT3=`$GREP "3 * z * 1\.1405000000" $log | wc -l`
+CRIT4=`$GREP "4 * x * (0| )\.0000000000" $log | wc -l`
+CRIT5=`$GREP "5 * y * (0| )\.0000000000" $log | wc -l`
+CRIT6=`$GREP "6 * z * \-1\.1405000000" $log | wc -l`
+TEST[2]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
+CTRL[2]=6
+ERROR[2]="GEOMETRY NOT READ CORRECTLY"
+
+# Symmatry
+CRIT1=`$GREP "Number of coordinates in each symmetry\: * 1 * 1 * 1 * 0 * 1 * 1 * 1 * 0" $log | wc -l`
+CRIT2=`$GREP "Number of orbitals in each symmetry\: * 7 * 3 * 3 * 1 * 7 * 3 * 3 * 1" $log | wc -l`
+TEST[3]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[3]=2
+ERROR[3]="SYMMETRY NOT CORRECT"
+
+# Integrals
+CRIT1=`$GREP "SO\-integrals are calculated for * O\: \[He\]2s\^2 2p\^4" $log | wc -l`
+# hjaaj: I have reduced print level. The headings doesn't say anything about the integrals correct anyway.
+#CRIT2=`$GREP "\! Integrals of operator\: X1MNF\-SO \!" $log | wc -l`
+#CRIT3=`$GREP "\! Integrals of operator\: Y1MNF\-SO \!" $log | wc -l`
+#CRIT4=`$GREP "\! Integrals of operator\: Z1MNF\-SO \!" $log | wc -l`
+#TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+TEST[4]=`expr	$CRIT1`
+CTRL[4]=1
+ERROR[4]="MNF-SO INTEGRALS NOT SET UP CORRECTLY"
+
+# Energy
+CRIT1=`$GREP "Final MCSCF energy\: * \-149\.5554630357" $log | wc -l`
+TEST[5]=`expr	$CRIT1`
+CTRL[5]=1
+ERROR[5]="MCSCF ENERGY NOT CORRECT"
+
+# Response setup
+CRIT1=`$GREP -i "\*\* CALCULATION OF TRIPLET RESPONSE PROPERTIES * \*\* * TRPFLG \= T * TRPLET \= T" $log | wc -l`
+CRIT2=`$GREP -i "USING FOCK TYPE DECOUPLING OF THE TWO\-ELECTRON DENSITY MATRIX \:" $log | wc -l`
+CRIT3=`$GREP -i "ADD DV\*\(FC\+FV\) INSTEAD OF DV\*FC TO E\[2\] APPROXIMATE ORBITAL DIAGONAL" $log | wc -l`
+#CRIT4=`$GREP "AVDIA \= T" $log | wc -l`
+TEST[6]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 # \+ $CRIT4`
+CTRL[6]=3
+ERROR[6]="RESPONSE CALCULATION NOT SET UP CORRECTLY"
+
+# Transition moment
+CRIT1=`$GREP "\@ *Transition operator type\: * Z1MNF\-SO" $log | wc -l`
+CRIT2=`$GREP "\@ *STATE NO\: * 1 \*TRANSITION MOMENT\: *\-*8\.70408[0-9]*(D|E)\-04 \*ENERGY\(eV\)\: * \-2\.91254" $log | wc -l`
+TEST[7]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[7]=2
+ERROR[7]="TRANSITION MOMENT NOT CORRECT"
+
+# Excitation energy
+CRIT1=`$GREP "\@.*Excit.* operator sym.* * 4" $log | wc -l`
+CRIT2=`$GREP "\@.*Excited * state * sym.* * 4" $log | wc -l`
+CRIT3=`$GREP "\@ *Excitation energy \: \-0*\.1070339. * au" $log | wc -l`
+CRIT4=`$GREP "\@ *Total energy \: * \-149\.662[45]. * au" $log | wc -l`
+TEST[8]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[8]=4
+ERROR[8]="EXCITATION ENERGY NOT CORRECT"
+
+# Spin-orbit
+CRIT1=`$GREP "\@ *Operator type\: * Z1MNF\-SO" $log | wc -l`
+CRIT2=`$GREP "\@ *Spin\-orbit coupling constant \(Z1MNF\-SO\) \: * \-*191\.0325. * cm\-1" $log | wc -l`
+TEST[9]=`expr	$CRIT1 \+ $CRIT2`
+CTRL[9]=2
+ERROR[9]="SPIN-ORBIT COUPLING CONSTANT NOT CORRECT"
+
+PASSED=1
+for i in 1 2 3 4 5 6 7 8 9
+do
+   if [ ${TEST[i]} -lt ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi
+
+%EOF%
+#######################################################################

@@ -1,0 +1,122 @@
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > CARBON_pol.info <<%EOF%
+   CARBON_pol
+   -----------
+   Molecule:         Carbon ATOM
+   Theory Level:     CC3 / (three-function basis)
+   Test Purpose:     Polarizability for 0.00 and 0.50 frequencies 
+                     for non-totally symmetric operator
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > CARBON_pol.mol <<%EOF%
+INTGRL
+C atom
+CC3 polarizability
+    1  0 3  X  Y  Z
+        6.    1    2    0    1
+C     0.0     0.0      0.0
+    3    2
+      1.3148331  0.15591627 0.0
+      0.3055389  0.60768372 0.0
+      0.0993707  0.00000000 1.0
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > CARBON_pol.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.THETA
+.QUADRU
+**WAVE FUNCTION
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-12
+.NODIIS
+*ORBITAL INPUT
+.NOSUPSYM
+.MOSTART
+.H1DIAG
+*CC INP
+.CC3
+.PRINT
+ 1
+.THRENR
+1.0D-12
+.THRLEQ
+1.0D-12
+.MAX IT
+ 100
+*CCLR
+.OPERATOR
+XYQUADRUXYQUADRU
+.FREQUE
+ 2
+0.00 0.50
+**END OF DALTON
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CC3 energies:
+CRIT1=`$GREP "Total SCF   energy: * -12\.7064119390" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -12\.7830171936" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -12\.7839653358" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[1]=6
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# CC3 polarizability :
+CRIT1=`$GREP  "XYQUADRU *\(unrel\.\) *(|-|-0|0)\.0000 *XYQUADRU \(unrel\.\) *(|-|-0|0)\.0000 *(|0)\.52547754" $log | wc -l`
+CRIT2=`$GREP  " *(-|-0)\.5000 *(|0)\.5000 *(|0)\.95888344" $log | wc -l`
+
+TEST[2]=`expr $CRIT1  \+ $CRIT2`
+CTRL[2]=2
+ERROR[2]="CC3 POLARIZABILITY NOT CORRECT"
+
+PASSED=1
+for i in 1 2
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > CARBON_pol.check
+#######################################################################

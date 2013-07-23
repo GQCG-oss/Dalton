@@ -1,0 +1,136 @@
+ 
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > LIH_431G_cauchy_12.info <<%EOF%
+   LIH_431G_cauchy_12
+   -----------
+   Molecule:         LiH
+   Theory Level:     CC3 / 4-31G
+   Test Purpose:     Cauchy moments
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > LIH_431G_cauchy_12.mol <<%EOF%
+BASIS
+4-31G
+Lithium flourid
+small test basis
+    2    0  Y  X      1.00D-15
+        3.0   1
+Li    0.0000000000000000  0.0000000000000000 1.30000000000000000
+        1.0   1
+H     0.0000000000000000  0.0000000000000000 0.00000000000000000
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > LIH_431G_cauchy_12.dal <<%EOF%
+**DALTON
+.RUN WAVEFUNCTIONS
+**INTEGRAL
+.DIPLEN
+.ANGMOM
+.THETA
+**WAVE FUNCTIONS
+.CC
+*ORBITALS
+.NOSUPSYM
+!.MOSTART
+!.H1DIAG
+*SCF INPUT
+.THRESH
+ 1.0d-12
+*CC INPUT
+.CC3
+.THRENR
+ 1.0d-14
+.THRLEQ
+ 1.0d-10
+.PRINT
+ 1
+.MAXRED
+ 1000
+.MXLRV
+ 111
+.RESTART
+*CCLR
+!.ASYMSD
+!.OLD_LR
+.OPERATOR
+ZDIPLEN ZDIPLEN
+.DISPCF
+  12
+!*NODDY
+!.XI
+!.ETA
+!.FMAT
+!.FNOALT
+!.XIDEN
+!.ETADEN
+**END OF DALTON
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CC3 energies:
+CRIT1=`$GREP "Total SCF   energy: * -7\.5755889529" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -7\.5941367951" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -7\.6021077986" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[1]=6
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# CC3 cauchy moments :
+CRIT1=`$GREP  "   ZDIPLEN     ZDIPLEN       0        12\.9559198882" $log | wc -l`
+CRIT2=`$GREP  "                             2        920\.450029980" $log | wc -l`
+CRIT3=`$GREP  "                             4        83755\.8824075" $log | wc -l` 
+CRIT4=`$GREP  "                             6        7971366\.12693" $log | wc -l` 
+CRIT5=`$GREP  "                             8        764788701\.16." $log | wc -l` 
+CRIT6=`$GREP  "                            10        73478812219\.2" $log | wc -l` 
+CRIT7=`$GREP  "                            12       ( |0)\.706138027779E\+13" $log | wc -l`      
+
+
+TEST[2]=`expr $CRIT1  \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7`
+CTRL[2]=7
+ERROR[2]="CC3 CAUCHY MOMENTS NOT CORRECT"
+
+PASSED=1
+for i in 1 2
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > LIH_431G_cauchy_12.check
+#######################################################################

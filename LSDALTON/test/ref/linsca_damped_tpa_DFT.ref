@@ -1,0 +1,910 @@
+
+ Work memory size (LMWORK+2):   123123125 =  939.35 megabytes.
+
+
+    ******************************************************************
+    ***********  DALTON - An electronic structure program  ***********
+    ******************************************************************
+
+          This is output from DALTON (Release 2.0 rev. 0, ? 2004)
+
+                          Principal authors:
+
+          Trygve Helgaker,       University of Oslo,           Norway 
+          Hans Joergen Jensen,   SDU - Odense University,      Denmark
+          Poul Joergensen,       Aarhus University,            Denmark
+          Jeppe Olsen,           Aarhus University,            Denmark
+          Kenneth Ruud,          University of Tromsoe,        Norway 
+          Hans Aagren,           KTH Stockholm,                Sweden 
+
+                          Contributors:
+
+          Alexander A. Auer,     University of Mainz,          Germany
+          Keld L. Bak,           UNI-C,                        Denmark
+          Vebjoern Bakken,       University of Oslo,           Norway 
+          Ove Christiansen,      University of Lund,           Sweden 
+          Sonia Coriani,         University of Trieste,        Italy  
+          Paal Dahle,            University of Oslo,           Norway 
+          Erik K. Dalskov,       UNI-C,                        Denmark
+          Thomas Enevoldsen,     SDU - Odense University,      Denmark
+          Berta Fernandez,       U. of Santiago de Compostela, Spain  
+          Christof Haettig,      Forschungszentrum Karlsruhe,  Germany
+          Kasper Hald,           Aarhus University,            Denmark
+          Asger Halkier,         Aarhus University,            Denmark
+          Hanne Heiberg,         University of Oslo,           Norway 
+          Hinne Hettema,         University of Auckland,       NZ     
+          Dan Jonsson,           KTH Stockholm                 Sweden 
+          Sheela Kirpekar,       SDU - Odense University,      Denmark
+          Wim Klopper,           University of Karlsruhe,      Germany
+          Rika Kobayashi,        Cambridge University,         England
+          Henrik Koch,           University of Trondheim,      Norway 
+          Kurt V. Mikkelsen,     University of Copenhagen,     Denmark
+          Patrick Norman,        University of Linkoeping,     Sweden 
+          Thomas B. Pedersen,    U. of Santiago de Compostela, Spain  
+          Martin J. Packer,      University of Sheffield,      UK     
+          Zilvinas Rinkevicius   KTH Stockholm,                Sweden 
+          Torgeir A. Ruden,      University of Oslo,           Norway 
+          Pawel Salek,           KTH Stockholm,                Sweden 
+          Alfredo Sanchez,       University of Valencia,       Spain  
+          Trond Saue,            University of Toulouse,       France 
+          Stephan P. A. Sauer,   University of Copenhagen,     Denmark
+          Bernd Schimmelpfennig, KTH Stockholm,                Sweden 
+          K. O. Sylvester-Hvid,  University of Copenhagen,     Denmark
+          Peter R. Taylor,       University of Warwick,        UK     
+          Olav Vahtras,          KTH Stockholm,                Sweden 
+
+ ---------------------------------------------------------------------
+
+     NOTE:
+      
+     This is an experimental code for the evaluation of molecular
+     properties using (MC)SCF and CC wave functions. The authors
+     accept no responsibility for the performance of the code or
+     for the correctness of the results.
+      
+     The code (in whole or part) is provided under a licence and
+     is not to be reproduced for further distribution without
+     the written permission of the authors or their representatives.
+      
+     See the home page "http://www.kjemi.uio.no/software/dalton"
+     for further information.
+      
+     If results obtained with this code are published,
+     an appropriate citation would be:
+      
+     "Dalton, a molecular electronic structure program, Release 2.0
+     (2004), written by <INSERT AUTHOR LIST>"
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:08:30 2010
+     Host name              : login-0-1.local                         
+
+ <<<<<<<<<< OUTPUT FROM GENERAL INPUT PROCESSING >>>>>>>>>>
+
+
+ Default print level:        0
+
+    Direct calculation
+    Integral sections will be executed
+    Integrals are calculated using ERI instead of HERMIT (where possible)
+    Wave function sections will be executed
+
+Starting in Integral Section -
+
+ Resetting list of lattice vectors and operator matrix data.
+
+
+ *************************************************************************
+ ****************** Output from HERMIT input processing ******************
+ *************************************************************************
+
+
+ Default print level:        1
+
+ * Nuclear model: Point charge
+
+ Calculation of one-electron Hamiltonian integrals.
+
+ The following one-electron property integrals are calculated:
+          - overlap integrals
+          - dipole length integrals
+
+
+ *************************************************************************
+ ****************** Output from READIN input processing ******************
+ *************************************************************************
+
+
+
+  Title Cards
+  -----------
+
+  LiH in STO-3G basis                                                     
+  -----------test----------                                               
+
+
+                      SYMGRP:Point group information
+                      ------------------------------
+
+Point group: C1 
+
+   * Character table
+
+        |  E 
+   -----+-----
+    A   |   1
+
+   * Direct product table
+
+        | A  
+   -----+-----
+    A   | A  
+
+
+                             Isotopic Masses
+                             ---------------
+
+                           H           1.007825
+                           Li          7.016005
+
+                       Total mass:     8.023830 amu
+                       Natural abundance:  92.486 %
+
+ Center-of-mass coordinates (A):    2.636304    0.000000    0.000000
+
+
+  Atoms and basis sets
+  --------------------
+
+  Number of atom types:     2
+  Total number of atoms:    2
+
+  label    atoms   charge   prim    cont     basis
+  ----------------------------------------------------------------------
+  H           1       1       3       1      [3s|1s]                                                                          
+  Li          1       3      15       5      [6s3p|2s1p]                                                                      
+  ----------------------------------------------------------------------
+  total:      2       4      18       6
+  ----------------------------------------------------------------------
+
+  Threshold for integrals:  1.00D-15
+
+
+ ************************************************************************
+ ************************** Output from HERINT **************************
+ ************************************************************************
+
+
+ >>> Time used in HUCKEL is   0.00 seconds
+
+
+ >>> Time used in OVERLA is   0.00 seconds
+
+
+ >>> Time used in DIPLEN is   0.00 seconds
+
+
+ >>> Time used in ONEDRV is   0.00 seconds
+
+
+ >>> Time used in GABGEN is   0.00 seconds
+
+ >>>> Total CPU  time used in HERMIT:   0.00 seconds
+ >>>> Total wall time used in HERMIT:   0.01 seconds
+
+- End of Integral Section
+
+
+Starting in Wave Function Section -
+
+ 
+The response functions will be calculated for each of the   1 chosen frequencies.
+ 
+Linsca mode: not looking for lin.deps.
+Linsca mode: delaying starting guess.
+ **********************************************************************
+ *SIRIUS* a direct, restricted step, second order MCSCF program       *
+ **********************************************************************
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:08:30 2010
+     Host name              : login-0-1.local                         
+
+ Title lines from integral program:
+     LiH in STO-3G basis                                                     
+     -----------test----------                                               
+
+ Print level on unit LUPRI =   2 is   0
+ Print level on unit LUW4  =   2 is   5
+
+     Restricted, closed shell Kohn-Sham calculation.
+
+               Fock matrices are calculated directly
+               without use of integrals on disk.
+
+ Initial molecular orbitals are obtained according to
+ ".MOSTART HUCKEL" input option.
+
+     Wave function specification
+     ============================
+     Number of closed shell electrons          4
+     Number of electrons in active shells      0
+     Total charge of the molecule              0
+
+     Number of active orbitals                 0
+     Total number of orbitals                  6
+
+     Spin multiplicity                         1
+     Total number of symmetries                1
+     Reference state symmetry                  1
+ 
+     This is a DFT calculation of type: B3LYP
+ Weighted mixed functional:
+               HF exchange:    0.20000
+                       VWN:    0.19000
+                       LYP:    0.81000
+                     Becke:    0.72000
+                    Slater:    0.80000
+
+     Orbital specifications
+     ======================
+     Abelian symmetry species           1
+                                       --
+     Total number of orbitals           6
+     Number of basis functions          6
+
+      ** Automatic occupation of RKS orbitals **
+      -- Initial occupation of symmetries is determined from diagonal of H1 matrix.           
+      -- Initial occupation of symmetries is : --
+
+     Occupied SCF orbitals              2
+
+     Maximum number of Fock   iterations      0
+     Maximum number of DIIS   iterations     60
+     Maximum number of QC-SCF iterations     15
+     Threshold for SCF convergence     1.00D-06
+ linsca: no orthogonalization needed
+ WARNING DIPLEN IS NOT YET IMPLEMENTED IN THE NEW INT DRIVER
+
+ Keyword "0.005d0                                 " not recognized in config_rsp_input
+
+
+ Keyword "1 0.0693d0                              " not recognized in config_rsp_input
+
+
+ Keyword "1                                       " not recognized in config_rsp_input
+
+
+ Keyword "XXXX                                    " not recognized in config_rsp_input
+
+
+ Keyword "1.0D-6                                  " not recognized in config_rsp_input
+
+ Configuration - as obtained from new input structure:
+     DFT LSint thresholds:                     0.10D-08    0.20D-09    0.20D-11
+     DFT LSint threshold for number of electrons:                      0.10D-02
+     DFT LSint radial quadrature accuracy/ang.  expansion order:  0.1000D-10  31
+ 
+LINSCF configuration :
+Density subspace min. method    : DSM                     
+  dsm approach: Standard DSM                                     
+Density optimization : Direct density optimization        
+ 
+ 
+ Maximum size of Fock/density queue in averaging:           8
+Convergence threshold for gradient:   0.10E-05
+ End of configuration from new input structure!
+ Take first density from Hueckel guess
+ Preparing to do S^1/2 decomposition...
+ >>>  CPU Time used in LWDIAG          is   0.00 seconds
+ Micro threshold for linear equations =  1.000000000000000E-002
+ >>>  CPU Time used in **INIT          is   0.00 seconds
+** Get Fock matrix number   1
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+ Radial Quadrature : LMG scheme
+ Space partitioning: Blocked partitioning for large molecules/parallel calc:s. b
+ ased on Beckes scheme with atomic radius correct
+ Radial integration threshold: 1e-11
+ Angular integration order range: [5 31] Angular points 350
+ Hardness of the partioning function: 3
+ Grid pruning: on
+ Atom:    1*1 points= 9124 compressed from  9124 ( 56 radial)
+ Atom:    2*1 points= 8372 compressed from  8372 ( 70 radial)
+ Postprocessing compression: from 17496 to 17411
+ Number of grid points:    17411 Grid generation time:       0.0 s
+KS electrons/energy:    4.00001488349757   -1.83845033659295 rel.err: 0.37E-05
+ >>>  CPU Time used in DFT_KS          is   0.11 seconds
+ >>>  CPU Time used in FCK_FO          is   0.11 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  0.634472875294458     
+*********************************************************************************************###
+ it        E(HF)            dE(HF)      DSMexit  DSM_alpha RHshift   RHinfo     gradient     ###
+*********************************************************************************************###
+  1     -7.9081307377    0.00000000000    0.00      0.00000    0.00    0.0000000    0.63E+00  ###
+** Make average of the last F and D matrices
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  0.179961202088050     
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0283498056 (mu =   0.00, xmax = 0.126327E+00, xnorm = 0.252713E+00, THR = 0.179961E-02)
+  Error of red space iteration  2:      0.0146484826 (mu =   0.00, xmax = 0.132402E+00, xnorm = 0.274391E+00, THR = 0.179961E-02)
+  Error of red space iteration  3:      0.0094221042 (mu =   0.00, xmax = 0.147739E+00, xnorm = 0.307980E+00, THR = 0.179961E-02)
+  Error of red space iteration  4:      0.0004797699 (mu =   0.00, xmax = 0.157611E+00, xnorm = 0.338443E+00, THR = 0.179961E-02)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    53
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   2
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.01 seconds
+
+KS electrons/energy:    4.00001237606767   -1.82292815823925 rel.err: 0.31E-05
+ >>>  CPU Time used in DFT_KS          is   0.08 seconds
+ >>>  CPU Time used in FCK_FO          is   0.09 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  4.152131111466641E-002
+  2     -7.9472581657   -0.03912742806    0.00      0.00000    0.00    0.0000000    0.42E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           2
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  1.499401151666155E-002
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0050903604 (mu =   0.00, xmax = 0.177704E-01, xnorm = 0.314672E-01, THR = 0.149940E-03)
+  Error of red space iteration  2:      0.0007178885 (mu =   0.00, xmax = 0.156886E-01, xnorm = 0.274209E-01, THR = 0.149940E-03)
+  Error of red space iteration  3:      0.0003871195 (mu =   0.00, xmax = 0.162379E-01, xnorm = 0.281143E-01, THR = 0.149940E-03)
+  Error of red space iteration  4:      0.0000009232 (mu =   0.00, xmax = 0.167281E-01, xnorm = 0.287613E-01, THR = 0.149940E-03)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    48
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   3
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+KS electrons/energy:    4.00001147805894   -1.81660790434254 rel.err: 0.29E-05
+ >>>  CPU Time used in DFT_KS          is   0.09 seconds
+ >>>  CPU Time used in FCK_FO          is   0.09 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.984061633822164E-002
+  3     -7.9475181577   -0.00025999197    0.00      0.00000    0.00    0.0000000    0.20E-01  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           3
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  4.059553531610086E-003
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0013454519 (mu =   0.00, xmax = 0.576279E-02, xnorm = 0.925685E-02, THR = 0.405955E-04)
+  Error of red space iteration  2:      0.0007647290 (mu =   0.00, xmax = 0.600945E-02, xnorm = 0.965665E-02, THR = 0.405955E-04)
+  Error of red space iteration  3:      0.0001895432 (mu =   0.00, xmax = 0.712185E-02, xnorm = 0.115977E-01, THR = 0.405955E-04)
+  Error of red space iteration  4:      0.0000006824 (mu =   0.00, xmax = 0.748190E-02, xnorm = 0.123129E-01, THR = 0.405955E-04)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    47
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   4
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+KS electrons/energy:    4.00001179151985   -1.81938330531862 rel.err: 0.29E-05
+ >>>  CPU Time used in DFT_KS          is   0.09 seconds
+ >>>  CPU Time used in FCK_FO          is   0.09 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  2.534537156242426E-003
+  4     -7.9475784655   -0.00006030785    0.00      0.00000    0.00    0.0000000    0.25E-02  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           4
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  7.808996828208868E-004
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0003228798 (mu =   0.00, xmax = 0.106117E-02, xnorm = 0.181705E-02, THR = 0.780900E-05)
+  Error of red space iteration  2:      0.0001316399 (mu =   0.00, xmax = 0.100132E-02, xnorm = 0.179459E-02, THR = 0.780900E-05)
+  Error of red space iteration  3:      0.0000256178 (mu =   0.00, xmax = 0.115351E-02, xnorm = 0.220214E-02, THR = 0.780900E-05)
+  Error of red space iteration  4:      0.0000000188 (mu =   0.00, xmax = 0.118078E-02, xnorm = 0.229183E-02, THR = 0.780900E-05)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver     is   0.01 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    46
+ >>>  CPU Time used in G_DENS          is   0.01 seconds
+** Get Fock matrix number   5
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+KS electrons/energy:    4.00001175583364   -1.81921554240745 rel.err: 0.29E-05
+ >>>  CPU Time used in DFT_KS          is   0.08 seconds
+ >>>  CPU Time used in FCK_FO          is   0.08 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.095029888408332E-005
+  5     -7.9475797937   -0.00000132814    0.00      0.00000    0.00    0.0000000    0.31E-04  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           5
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  7.827991868072060E-006
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000009275 (mu =   0.00, xmax = 0.745391E-05, xnorm = 0.141282E-04, THR = 0.782799E-07)
+  Error of red space iteration  2:      0.0000003454 (mu =   0.00, xmax = 0.682212E-05, xnorm = 0.129453E-04, THR = 0.782799E-07)
+  Error of red space iteration  3:      0.0000000115 (mu =   0.00, xmax = 0.697659E-05, xnorm = 0.132438E-04, THR = 0.782799E-07)
+Newton equations converged in  3 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    38
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   6
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.01 seconds
+
+KS electrons/energy:    4.00001175534503   -1.81921167793079 rel.err: 0.29E-05
+ >>>  CPU Time used in DFT_KS          is   0.08 seconds
+ >>>  CPU Time used in FCK_FO          is   0.09 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  1.623347526384862E-006
+  6     -7.9475797938   -0.00000000012    0.00      0.00000    0.00    0.0000000    0.16E-05  ###
+** Make average of the last F and D matrices
+ DSM - Vectors in queue:           6
+ >>>  CPU Time used in AVERAG          is   0.00 seconds
+** Get new density 
+ OAO gradnorm  3.099738489552140E-007
+CROP scheme with full subspace (DISK)
+ First mu:  0.000000000000000E+000
+  Error of red space iteration  1:      0.0000001084 (mu =   0.00, xmax = 0.428197E-06, xnorm = 0.690358E-06, THR = 0.309974E-08)
+  Error of red space iteration  2:      0.0000000609 (mu =   0.00, xmax = 0.447257E-06, xnorm = 0.722025E-06, THR = 0.309974E-08)
+  Error of red space iteration  3:      0.0000000102 (mu =   0.00, xmax = 0.547037E-06, xnorm = 0.899739E-06, THR = 0.309974E-08)
+  Error of red space iteration  4:      0.0000000001 (mu =   0.00, xmax = 0.567132E-06, xnorm = 0.940283E-06, THR = 0.309974E-08)
+Newton equations converged in  4 iterations!
+ >>>  CPU Time used in CROP solver     is   0.00 seconds
+ >>>  CPU Time used in NEW D           is   0.00 seconds
+No. of matmuls in get_density:    45
+ >>>  CPU Time used in G_DENS          is   0.00 seconds
+** Get Fock matrix number   7
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+KS electrons/energy:    4.00001175536825   -1.81921189376226 rel.err: 0.29E-05
+ >>>  CPU Time used in DFT_KS          is   0.09 seconds
+ >>>  CPU Time used in FCK_FO          is   0.09 seconds
+ >>>  CPU Time used in G_GRAD          is   0.00 seconds
+ gradnrm  3.913232231390704E-009
+  7     -7.9475797938    0.00000000000    0.00      0.00000    0.00    0.0000000    0.39E-08  ###
+ >>>  CPU Time used in **ITER          is   0.65 seconds
+Total no. of matmuls in SCF optimization:        722
+ 
+ Number of occupied orbitals:           2
+ Number of virtual orbitals:           4
+ 
+ Number of occupied orbital energies to be found:           1
+ Number of virtual orbital energies to be found:           1
+ 
+ 
+Calculation of HOMO-LUMO gap
+============================
+ 
+    E(LUMO):                        -0.009292 au
+   -E(HOMO):                        -0.174461 au
+   ------------------------------
+    HOMO-LUMO Gap (iteratively):     0.165169 au
+ 
+ >>>  CPU Time used in HL GAP          is   0.39 seconds
+ 
+********************************************************
+ it       dE(HF)       DSMexit   RHshift    RHinfo 
+********************************************************
+  1    0.00000000000    0.0000    0.0000    0.0000000
+  2   -0.03912742806    0.0000    0.0000    0.0000000
+  3   -0.00025999197    0.0000    0.0000    0.0000000
+  4   -0.00006030785    0.0000    0.0000    0.0000000
+  5   -0.00000132814    0.0000    0.0000    0.0000000
+  6   -0.00000000012    0.0000    0.0000    0.0000000
+  7    0.00000000000    0.0000    0.0000    0.0000000
+ 
+======================================================================
+                   LINSCF ITERATIONS:
+  It.nr.               Energy                    Gradient norm
+======================================================================
+    1            -7.90813073766685636912      0.634472875294458D+00
+    2            -7.94725816572629462087      0.415213111146664D-01
+    3            -7.94751815769774339060      0.198406163382216D-01
+    4            -7.94757846554309033138      0.253453715624243D-02
+    5            -7.94757979367952316352      0.309502988840833D-04
+    6            -7.94757979380376777812      0.162334752638486D-05
+    7            -7.94757979380412926673      0.391323223139070D-08
+ 
+      SCF converged !!!! 
+ call util_save_MOinfo
+ CALCULATING TPA STRENGTHS IN DAMPED RESPONSE THEORY FOR THE FOLLOWING COMPONENT
+ S:
+ XXXX
+ 
+Starting damped TPA calculation for frequency   1 of  1 frequencies:  0.069300
+ Entering the complex rsp solver, gamma=  5.000000000000000E-003
+ ------------------
+ Start macroiteration:           1
+ ------------------
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+ Electrons: 4.000012( 1.18e-05): LR-DFT(AO)*1 eval. time:       0.1 s
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.01 seconds
+
+ Electrons: 4.000012( 1.18e-05): LR-DFT(AO)*1 eval. time:       0.1 s
+ Dynamic response convergence threshold set to  2.987903390455882E-005
+Residual norm for real vector   1 is:   0.558903E+00    and frequency =     0.069300   It =   1 CONV = F
+Residual norm for img vector   1 is:   0.386773E-01    and frequency =     0.069300   It =   1 CONV = F
+ Dispersion value macroiteration:           1 for  frequency
+  6.930000000000000E-002 =   2.34491744804166     
+ Absorption value in macroiteration:           1 for  frequency 
+  6.930000000000000E-002 =  6.745755611689958E-002
+ ------------------
+ Start macroiteration:           2
+ ------------------
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+ Electrons: 4.000012( 1.18e-05): LR-DFT(AO)*1 eval. time:       0.1 s
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.01 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+ Electrons: 4.000012( 1.18e-05): LR-DFT(AO)*1 eval. time:       0.1 s
+Residual norm for real vector   1 is:   0.423900E-07    and frequency =     0.069300   It =   2 CONV = T
+Residual norm for img vector   1 is:   0.345592E-08    and frequency =     0.069300   It =   2 CONV = T
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+ Electrons: 4.000012( 1.18e-05): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 4.000012( 1.18e-05): LR-DFT(AO)*1 eval. time:       0.1 s
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+ Electrons: 4.000012( 1.18e-05): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 4.000012( 1.18e-05): LR-DFT(AO)*1 eval. time:       0.1 s
+ Electrons: 4.000012( 1.18e-05): QR-DFT/b evaluation time:       0.1 s
+ Electrons: 4.000012( 1.18e-05): QR-DFT/b evaluation time:       0.1 s
+ Electrons: 4.000012( 1.18e-05): QR-DFT/b evaluation time:       0.1 s
+ Electrons: 4.000012( 1.18e-05): QR-DFT/b evaluation time:       0.1 s
+ Entering the complex rsp solver, gamma=  5.000000000000000E-003
+ ------------------
+ Start macroiteration:           1
+ ------------------
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+ Electrons: 4.000012( 1.18e-05): LR-DFT(AO)*1 eval. time:       0.1 s
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+ Electrons: 4.000012( 1.18e-05): LR-DFT(AO)*1 eval. time:       0.1 s
+ Dynamic response convergence threshold set to  7.334733978464688E-004
+Residual norm for real vector   1 is:   0.898563E+01    and frequency =     0.138600   It =   1 CONV = F
+Residual norm for img vector   1 is:   0.568384E+01    and frequency =     0.138600   It =   1 CONV = F
+ Dispersion value macroiteration:           1 for  frequency
+  0.138600000000000      =  -77046.7316582272     
+ Absorption value in macroiteration:           1 for  frequency 
+  0.138600000000000      =   55076.7190986763     
+ ------------------
+ Start macroiteration:           2
+ ------------------
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+ Electrons: 4.000012( 1.18e-05): LR-DFT(AO)*1 eval. time:       0.1 s
+
+ >>> Time used in SETMM  is   0.00 seconds
+
+
+ >>> Time used in GTFCK3 is   0.00 seconds
+
+
+ >>> Time used in JBUILD is   0.00 seconds
+
+  Thresholds for exchange:     0.10E-09    0.10E-12    0.10E-14
+
+ >>> Time used in XBUILD is   0.00 seconds
+
+ Electrons: 4.000012( 1.18e-05): LR-DFT(AO)*1 eval. time:       0.1 s
+Residual norm for real vector   1 is:   0.469820E-05    and frequency =     0.138600   It =   2 CONV = T
+Residual norm for img vector   1 is:   0.357716E-05    and frequency =     0.138600   It =   2 CONV = T
+ 
+ 
+ *******************************************************************************
+ **
+ *                                                                              
+  *
+ *                TWO-PHOTON ABSORPTION IN DAMPED RESPONSE THEORY               
+  *
+ *                          (all quantities are in a.u.)                        
+  *
+ *                                                                              
+  *
+ *******************************************************************************
+ **
+ 
+ 
+ Frequency      TPA component: XXXX
+ 0.069300       2.48037E+05
+ 
+ 
+ 
+ *******************************************************************************
+ **
+ *                                                                              
+  *
+ *                ONE-PHOTON ABSORPTION IN DAMPED RESPONSE THEORY               
+  *
+ *                          (all quantities are in a.u.)                        
+  *
+ *                                                                              
+  *
+ *******************************************************************************
+ **
+ 
+ 
+ Frequency      One-photon absorption component: X
+ 0.069300       4.56093E-01
+ 
+ -------------------------------------------------------------------------------
+ --
+ 
+ 
+ Total no. of matmuls used:        1299
+ Total no. of Fock/KS matrix evaluations:           7
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+                  Memory statistics          
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+  Allocated memory (TOTAL):                 0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (type(matrix)):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (real):                  0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integer):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (logical):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (linkshell):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integrand):             0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (integralitem):          0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (overlap):               0 byte  - Should be zero - otherwise a leakage is present
+  Allocated memory (ODitem):                0 byte  - Should be zero - otherwise a leakage is present
+  Max allocated memory, TOTAL                  16.875 kB
+  Max allocated memory, type(matrix)           16.875 kB
+  Max allocated memory, real(realk)             0.000 Byte
+  Max allocated memory, integer                 0.000 Byte
+  Max allocated memory, logical                 0.000 Byte
+  Max allocated memory, linkshell               0.000 Byte
+  Max allocated memory, integrand               0.000 Byte
+  Max allocated memory, integralitem            0.000 Byte
+  Max allocated memory, Overlap                 0.000 Byte
+  Max allocated memory, ODitem                  0.000 Byte
+*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*
+ 
+ *****************************************************
+ **     CPU-TIME USED IN LINSCF:    2.636599        **
+ *****************************************************
+
+
+                    >>> FINAL RESULTS FROM SIRIUS <<<
+
+     Spin multiplicity:           1
+     Spatial symmetry:            1
+     Total charge of molecule:    0
+
+     Final DFT energy:             -7.947579793804
+     Nuclear repulsion:             0.995024875622
+     Electronic energy:            -8.942604669426
+
+     Final gradient norm:           0.000000003913
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:08:32 2010
+     Host name              : login-0-1.local                         
+
+
+
+ >>>> Total CPU  time used in SIRIUS :      2.64 seconds
+ >>>> Total wall time used in SIRIUS :      2.65 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:08:32 2010
+     Host name              : login-0-1.local                         
+
+- End of Wave Function Section
+
+ >>>> Total CPU  time used in DALTON:   2.65 seconds
+ >>>> Total wall time used in DALTON:   2.66 seconds
+
+ 
+     Date and time (Linux)  : Wed Aug  4 10:08:32 2010
+     Host name              : login-0-1.local                         

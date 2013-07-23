@@ -1,0 +1,120 @@
+ 
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > HF_631G_pol.info <<%EOF%
+   HF_631G_pol
+   -----------
+   Molecule:         HF
+   Theory Level:     CC3 / 6-31G
+   Test Purpose:     Polarizability for 0.00 and 0.50 frequencies 
+                     for non-totally symmetric operator
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > HF_631G_pol.mol <<%EOF%
+BASIS
+6-31G
+CC3 polarizability
+HF molecule
+    2    2  X  Y  Z   1.00D-15
+        9.0   1    2    1    1
+F     0.0000000000000000   0.000000000   0.08729478
+        1.0   1    1    1
+H     0.0000000000000000   0.000000000  -1.64558444
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > HF_631G_pol.dal <<%EOF%
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+.THETA
+**WAVE FUNCTION
+.CC
+*SCF INPUT
+.THRESH
+ 1.0D-12
+.NODIIS
+*ORBITAL INPUT
+.NOSUPSYM
+.MOSTART
+.H1DIAG
+*CC INP
+.CC3
+.PRINT
+ 1
+.THRENR
+1.0D-12
+.THRLEQ
+1.0D-12
+.MAX IT
+ 100
+*CCLR
+.OPERATOR
+YDIPLEN YDIPLEN
+.FREQUE
+ 2
+0.00 0.50
+**END OF DALTON
+%EOF%
+#######################################################################
+
+
+
+#######################################################################
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo '#!/bin/ksh
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CC3 energies:
+CRIT1=`$GREP "Total SCF   energy: * -99\.9834089353" $log | wc -l`
+CRIT2=`$GREP "Total MP2   energy: * -100\.1121031642" $log | wc -l`
+CRIT3=`$GREP "Total CC3   energy: * -100\.1153427592" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3` 
+CTRL[1]=6
+ERROR[1]="ENERGIES NOT CORRECT"
+
+
+# CC3 polarizability :
+CRIT1=`$GREP  "YDIPLEN *\(unrel\.\) *(|-|-0|0)\.0000 *YDIPLEN *\(unrel\.\)  (|-|-0|0)\.0000 *(|0)\.68743753" $log | wc -l`
+CRIT2=`$GREP  " *(-|-0)\.5000 *(|0)\.5000 *(|0)\.19660267" $log | wc -l`
+
+TEST[2]=`expr $CRIT1  \+ $CRIT2`
+CTRL[2]=2
+ERROR[2]="CC3 POLARIZABILITY NOT CORRECT"
+
+PASSED=1
+for i in 1 2
+do 
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done 
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM 
+  exit 1
+fi
+
+' > HF_631G_pol.check
+#######################################################################

@@ -1,0 +1,8 @@
+# only configure-related ignores should be here
+*.o
+*.mod
+*.a
+Makefile.depend
+Makefile.config
+lsdalton
+lsdalton.x

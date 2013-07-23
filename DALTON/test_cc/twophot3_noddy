@@ -1,0 +1,237 @@
+#!/bin/sh
+#
+# This is the script for generating files for a specific Dalton test job.
+#
+# For the .check file ksh or bash is preferred, otherwise use sh
+# (and hope it is not the old Bourne shell, which will not work)
+#
+if [ -x /bin/ksh ]; then
+   CHECK_SHELL='#!/bin/ksh'
+elif [ -x /bin/bash ]; then
+   CHECK_SHELL='#!/bin/bash'
+else
+   CHECK_SHELL='#!/bin/sh'
+fi
+
+
+#######################################################################
+#  TEST DESCRIPTION
+#######################################################################
+cat > twophot3_noddy.info <<'%EOF%'
+   twophot3_noddy
+   --------------
+   Molecule:         He2 in C1
+   Wave Function:    CCSD and CC3 / cc-pVDZ
+   Test Purpose:     finite difference on transition moments
+%EOF%
+
+#######################################################################
+#  INTEGRAL INPUT
+#######################################################################
+cat > twophot3_noddy.mol <<'%EOF%'
+BASIS
+cc-pVDZ
+
+
+    1    0  Y  X  Z   1.00D-15
+        2.0   2
+He    0.0000000000000000  0.0000000000000000 0.00000000000000000      
+He    0.0000000000000000  0.0000000000000000 1.50000000000000000      
+%EOF%
+
+#######################################################################
+#  DALTON INPUT
+#######################################################################
+cat > twophot3_noddy.dal <<'%EOF%'
+**DALTON
+.RUN WAVE FUNCTIONS
+**INTEGRAL
+.DIPLEN
+**SIRIUS
+.CC
+*ORBITALS 
+.NOSUPSYM
+*SCF INPUT 
+.THRESH
+ 1.0d-12
+*CC INPUT 
+.RESTART
+.CCSD
+.CC3
+.THRENR
+ 1.0d-10
+.THRLEQ
+ 1.0d-10
+*CCEXCI
+.NCCEXCI
+ 4 
+.THREXC
+ 1.0d-8
+.R3DIIS
+*CCOPA
+.DIPLEN
+*CCTPA
+.SELEXC
+ 1 1 0.0
+ 1 2 0.0
+ 1 3 0.0
+ 1 4 0.0
+.HALFFR
+.DIPLEN
+*NODDY
+.GMAT
+.FMAT
+.FAMAT
+.XIDEN
+.ETADEN
+.AAMAT
+**END OF DALTON
+%EOF%
+#######################################################################
+
+
+#######################################################################
+#  CHECK SCRIPT
+#######################################################################
+echo $CHECK_SHELL >twophot3_noddy.check
+cat >>twophot3_noddy.check <<'%EOF%'
+log=$1
+
+if [ `uname` = Linux ]; then
+   GREP="egrep -a"
+else
+   GREP="egrep"
+fi
+
+# SCF, MP2 and CC2 energies:
+CRIT1=`$GREP "Final * HF energy:" $log | $GREP "\-5.3614342832" | wc -l`
+CRIT2=`$GREP "Total CCSD * energy: * \-5.4317381158" $log | wc -l`
+CRIT3=`$GREP "Total CC3 * energy:  * \-5.4318075446" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3`
+CTRL[1]=5
+ERROR[1]="ENERGIES NOT CORRECT (noddy)"
+
+# CCSD excitation energies
+CRIT1=`$GREP "\^1A * . * 1 * . * 1\.351930. * . * 36\.7879. * . * 296714\.... * . * 98\.93" $log | wc -l`
+CRIT2=`$GREP "\^1A * . * 2 * . * 1\.586139. * . * 43\.1610. * . * 348117\.... * . * 98\.84" $log | wc -l`
+CRIT3=`$GREP "\^1A * . * 3 * . * 2\.045322. * . * 55\.6560. * . * 448896\.... * . * 99\.16" $log | wc -l`
+CRIT4=`$GREP "\^1A * . * 4 * . * 2\.124874. * . * 57\.8207. * . * 466355\.... * . * 96\.75" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[2]=4
+ERROR[2]="CCSD EXCITATION ENERGIES NOT CORRECT (noddy)"
+
+# CC3 excitation energies
+CRIT1=`$GREP "\^1A * . * 1 * . * 1\.351786. * . * 36\.7839. * . * 296682\.... * . * 98\.92" $log | wc -l`
+CRIT2=`$GREP "\^1A * . * 2 * . * 1\.585795. * . * 43\.1516. * . * 348041\.... * . * 98\.83" $log | wc -l`
+CRIT3=`$GREP "\^1A * . * 3 * . * 2\.045085. * . * 55\.6496. * . * 448844\.... * . * 99\.14" $log | wc -l`
+CRIT4=`$GREP "\^1A * . * 4 * . * 2\.124499. * . * 57\.8105. * . * 466273\.... * . * 96\.67" $log | wc -l`
+TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
+CTRL[3]=4
+ERROR[3]="CC3 EXCITATION ENERGIES NOT CORRECT (noddy)"
+
+# CCSD onephoton transition moments:
+CRIT1=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.480779.. *. * (0| |\-|\-0)\.952311.. *. * (0| )\.457851" $log | wc -l`
+CRIT4=`$GREP "oscillator strength .length gauge. * . * (0| )\.41265595" $log | wc -l`
+TEST[4]=`expr $CRIT1 \+ $CRIT4`
+CTRL[4]=2
+ERROR[4]="CCSD ONEPHOTON TRANSITION MOMENTS NOT CORRECT (noddy)"
+
+
+# CC3 onephoton transition moments:
+CRIT1=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.480793.. *. * (0| |\-|\-0)\.951746.. *. * (0| )\.457593" $log | wc -l`
+CRIT4=`$GREP "oscillator strength .length gauge. * . * (0| )\.41237882" $log | wc -l`
+TEST[5]=`expr $CRIT1 \+ $CRIT4`
+CTRL[5]=2
+ERROR[5]="CC3 ONEPHOTON TRANSITION MOMENTS NOT CORRECT (noddy)"
+
+#########################################
+###### OLD WITH MISLEADING ZEROS ########
+#########################################
+## CCSD onephoton transition moments:
+#CRIT1=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.480779.. *. * (0| |\-|\-0)\.952311.. *. * (0| )\.457851" $log | wc -l`
+#CRIT2=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.000000.. *. * (0| |\-|\-0)\.000000.. *. * (0| )\.000000" $log | wc -l`
+#CRIT3=`$GREP "(X|Y)DIPLEN * . * (0| |\-|\-0)\.000000.. *. * (0| |\-|\-0)\.000000.. *. * (0| )\.000000" $log | wc -l`
+#CRIT4=`$GREP "oscillator strength .length gauge. * . * (0| )\.41265595" $log | wc -l`
+#CRIT5=`$GREP "oscillator strength .length gauge. * . * (0| )\.00000000" $log | wc -l`
+#TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+#CTRL[4]=86
+#ERROR[4]="CCSD ONEPHOTON TRANSITION MOMENTS NOT CORRECT (noddy)"
+#
+#
+## CC3 onephoton transition moments:
+#CRIT1=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.480793.. *. * (0| |\-|\-0)\.951746.. *. * (0| )\.457593" $log | wc -l`
+#CRIT2=`$GREP "ZDIPLEN * . * (0| |\-|\-0)\.000000.. *. * (0| |\-|\-0)\.000000.. *. * (0| )\.000000" $log | wc -l`
+#CRIT3=`$GREP "(X|Y)DIPLEN * . * (0| |\-|\-0)\.000000.. *. * (0| |\-|\-0)\.000000.. *. * (0| )\.000000" $log | wc -l`
+#CRIT4=`$GREP "oscillator strength .length gauge. * . * (0| )\.41237882" $log | wc -l`
+#CRIT5=`$GREP "oscillator strength .length gauge. * . * (0| )\.00000000" $log | wc -l`
+#TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5`
+#CTRL[5]=86
+#ERROR[5]="CC3 ONEPHOTON TRANSITION MOMENTS NOT CORRECT (noddy)"
+
+# CCSD twophoton transition moment:
+#  +-------------------+----------------+----------------+----------------+
+#  | XDIPLEN  XDIPLEN  |     0.03981353 |     0.01999618 |     0.00079612 |
+#  | YDIPLEN  YDIPLEN  |     0.03981353 |     0.01999618 |     0.00079612 |
+#  | ZDIPLEN  ZDIPLEN  |     3.38844509 |     1.69515911 |     5.74395355 |
+#  | YDIPLEN  ZDIPLEN  |    -0.44581107 |    -0.22413633 |     0.09992246 |
+#  | ZDIPLEN  YDIPLEN  |    -0.44581107 |    -0.22413633 |     0.09992246 |
+#  | XDIPLEN  XDIPLEN  |     0.21028360 |     0.10411844 |     0.02189440 |
+#  | YDIPLEN  YDIPLEN  |     0.21028360 |     0.10411844 |     0.02189440 |
+#  | ZDIPLEN  ZDIPLEN  |    -4.43982838 |    -2.20775829 |     9.80206792 |
+#  +-------------------+----------------+----------------+----------------+
+CRIT1=`$GREP "XDIPLEN *XDIPLEN *. *(0| |\-0|\-)\.039813.. *. *(0| |\-0|\-)\.019996.. *. *(0| )\.000796.." $log | wc -l`
+CRIT2=`$GREP "YDIPLEN *YDIPLEN *. *(0| |\-0|\-)\.039813.. *. *(0| |\-0|\-)\.019996.. *. *(0| )\.000796.." $log | wc -l`
+CRIT3=`$GREP "ZDIPLEN *ZDIPLEN *. *( |\-)3\.388445.. *. *( |\-)1\.695159.. *. *5\.743953.." $log | wc -l`
+CRIT4=`$GREP "(X|Y)DIPLEN *ZDIPLEN *. *(0| |\-0|\-)\.445811.. *. *(0| |\-0|\-)\.224136.. *. *(0| )\.099922.." $log | wc -l`
+CRIT5=`$GREP "ZDIPLEN *(X|Y)DIPLEN *. *(0| |\-0|\-)\.445811.. *. *(0| |\-0|\-)\.224136.. *. *(0| )\.099922.." $log | wc -l`
+CRIT6=`$GREP "XDIPLEN *XDIPLEN *. *(0| |\-0|\-)\.210283.. *. *(0| |\-0|\-)\.104118.. *. *(0| )\.021894.." $log | wc -l`
+CRIT7=`$GREP "YDIPLEN *YDIPLEN *. *(0| |\-0|\-)\.210283.. *. *(0| |\-0|\-)\.104118.. *. *(0| )\.021894.." $log | wc -l`
+CRIT8=`$GREP "ZDIPLEN *ZDIPLEN *. *( |\-)4\.439828.. *. *( |\-)2\.207758.. *. *9\.802067.." $log | wc -l`
+TEST[6]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8`
+CTRL[6]=8
+ERROR[6]="CCSD TWOPHOTON TRANSITION MOMENTS OR STRENGTHS NOT CORRECT (noddy)"
+
+# CC3 twophoton transition moment:
+#  +-------------------+----------------+----------------+----------------+
+#  | XDIPLEN  XDIPLEN  |     0.04020665 |     0.02018381 |     0.00081152 |
+#  | YDIPLEN  YDIPLEN  |     0.04020665 |     0.02018381 |     0.00081152 |
+#  | ZDIPLEN  ZDIPLEN  |     3.38404781 |     1.69672093 |     5.74178474 |
+#  | YDIPLEN  ZDIPLEN  |    -0.44540985 |    -0.22439528 |     0.09994787 |
+#  | ZDIPLEN  YDIPLEN  |    -0.44540985 |    -0.22439528 |     0.09994787 |
+#  | XDIPLEN  XDIPLEN  |     0.21050431 |     0.10431905 |     0.02195961 |
+#  | YDIPLEN  YDIPLEN  |     0.21050431 |     0.10431905 |     0.02195961 |
+#  | ZDIPLEN  ZDIPLEN  |    -4.44815317 |    -2.20677048 |     9.81605309 |
+#  +-------------------+----------------+----------------+----------------+
+CRIT1=`$GREP "XDIPLEN *XDIPLEN *. *(0| |\-0|\-)\.040206.. *. *(0| |\-0|\-)\.020183.. *. *(0| )\.000811.." $log | wc -l`
+CRIT2=`$GREP "YDIPLEN *YDIPLEN *. *(0| |\-0|\-)\.040206.. *. *(0| |\-0|\-)\.020183.. *. *(0| )\.000811.." $log | wc -l`
+CRIT3=`$GREP "ZDIPLEN *ZDIPLEN *. *( |\-)3\.384047.. *. *( |\-)1\.696720.. *. *5\.741784.." $log | wc -l`
+CRIT4=`$GREP "(X|Y)DIPLEN *ZDIPLEN *. *(0| |\-0|\-)\.445409.. *. *(0| |\-0|\-)\.224395.. *. *(0| )\.099947.." $log | wc -l`
+CRIT5=`$GREP "ZDIPLEN *(X|Y)DIPLEN *. *(0| |\-0|\-)\.445409.. *. *(0| |\-0|\-)\.224395.. *. *(0| )\.099947.." $log | wc -l`
+CRIT6=`$GREP "XDIPLEN *XDIPLEN *. *(0| |\-0|\-)\.210504.. *. *(0| |\-0|\-)\.104319.. *. *(0| )\.021959.." $log | wc -l`
+CRIT7=`$GREP "YDIPLEN *YDIPLEN *. *(0| |\-0|\-)\.210504.. *. *(0| |\-0|\-)\.104319.. *. *(0| )\.021959.." $log | wc -l`
+CRIT8=`$GREP "ZDIPLEN *ZDIPLEN *. *( |\-)4\.448153.. *. *( |\-)2\.206770.. *. *9\.816053.." $log | wc -l`
+TEST[7]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8`
+CTRL[7]=8
+ERROR[7]="CC3 TWOPHOTON TRANSITION MOMENTS OR STRENGTHS NOT CORRECT (noddy)"
+
+# CCSD twophoton transition moment:
+
+PASSED=1
+for i in 1 2 3 4 5 6 7
+do
+   if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
+     echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
+     PASSED=0
+   fi
+done
+
+if [ $PASSED -eq 1 ]
+then
+  echo TEST ENDED PROPERLY
+  exit 0
+else
+  echo THERE IS A PROBLEM
+  exit 1
+fi                
+%EOF%
+#######################################################################
