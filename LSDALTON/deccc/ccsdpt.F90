@@ -1837,9 +1837,7 @@ contains
     type(array3), intent(inout) :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, idx1
-    type(array2) :: tmp_g_1, tmp_g_2
-    type(array3) :: interm_cou, interm_exc, interm_cou_2
+    integer :: contraction_type, idx
 
     ! NOTE: incoming array4 structures are ordered according to:
     ! canAIJK(j,c,l,k) (MEST nomenclature)
@@ -1855,62 +1853,46 @@ contains
     ! contraction time (here: over virtual index 'c') with "coulumb minus exchange"
     ! version of canAIBC (2 * canAIJK(k,j,l,c) - canAIBC(l,j,k,c)) and (if special) canAIBC(k,j,l,c)
 
-    ! init temporary arrays, tmp_g_1 and tmp_g_2 array2s in addition to interm_cou, interm_exc, and
-    ! interm_cou_2 array3s.
-    tmp_g_1 = array2_init_plain([no,nv])
-    tmp_g_2 = array2_init_plain([no,nv])
-    interm_cou = array3_init_standard([no,nv,nv])
-    interm_exc = array3_init_standard([no,nv,nv])
-
     TypeofContraction_221: select case(contraction_type)
 
     case(0)
 
-       ! canAIJK(j,c,l,k) --> tmp_g_1(j,c) (coulumb)
-       call dcopy(no*nv,int_occ%val(:,:,oindex3,oindex2),1,tmp_g_1%val,1)
-       ! canAIJK(j,c,k,l) --> tmp_g_2(j,c) (exchange)
-       call dcopy(no*nv,int_occ%val(:,:,oindex2,oindex3),1,tmp_g_2%val,1)
+       ! now contract coulumb term over first index.
+       ! for this special case, we only have to subtract one coulumb term
+       do idx=1,trip_ampl%dims(3)
+          call dgemm('n','n',int_occ%dims(1),trip_ampl%dims(2),int_occ%dims(2),&
+             & -1.0E0_realk,int_occ%val(:,:,oindex3,oindex2),int_occ%dims(1),&
+             & trip_ampl%val(:,:,idx),trip_ampl%dims(1),1.0E0_realk,&
+             & T_star%val(:,:,idx,oindex1),T_star%dims(1))
+       end do
 
-       ! now contract coulumb term over first index into interm_cou(_2)(j,a,b) array3
-       ! for idx .eq. 2, interm_cou and inter_cou_2 will be equal to one another,
-       ! thus we only construct interm_cou and include interm_cou_2 implicitly
-       ! by only adding 1*coulumb to T_star
-       call array3_contract1(trip_ampl,tmp_g_1,interm_cou,.true.,.false.)
-
-       ! now contract exchange term over first index into interm_exc(j,a,b) array3
-       call array3_contract1(trip_ampl,tmp_g_2,interm_exc,.true.,.false.)
-
-       ! now collect in T_star array4 structure
-       ! 1. load in (-1)*interm_cou
-       ! 2. subtract (-1)*interm_exc
-       call daxpy(no*nv**2,-1.0E0_realk,interm_cou%val,1,T_star%val(:,:,:,oindex1),1)
-       call daxpy(no*nv**2,1.0E0_realk,interm_exc%val,1,T_star%val(:,:,:,oindex1),1)
+       ! now contract exchange term over first index
+       do idx=1,trip_ampl%dims(3)
+          call dgemm('n','n',int_occ%dims(1),trip_ampl%dims(2),int_occ%dims(2),&
+             & 1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),int_occ%dims(1),&
+             & trip_ampl%val(:,:,idx),trip_ampl%dims(1),1.0E0_realk,&
+             & T_star%val(:,:,idx,oindex1),T_star%dims(1))
+       end do
 
     case(1)
+ 
+       ! now contract coulumb term over first index
+       do idx=1,trip_ampl%dims(3)
+          call dgemm('n','n',int_occ%dims(1),trip_ampl%dims(2),int_occ%dims(2),&
+             & -2.0E0_realk,int_occ%val(:,:,oindex3,oindex2),int_occ%dims(1),&
+             & trip_ampl%val(:,:,idx),trip_ampl%dims(1),1.0E0_realk,&
+             & T_star%val(:,:,idx,oindex1),T_star%dims(1))
+       end do 
 
-       ! canAIJK(j,c,l,k) --> tmp_g_1(j,c) (coulumb)
-       call dcopy(no*nv,int_occ%val(:,:,oindex3,oindex2),1,tmp_g_1%val,1)
-       ! canAIJK(j,c,k,l) --> tmp_g_2(j,c) (exchange)
-       call dcopy(no*nv,int_occ%val(:,:,oindex2,oindex3),1,tmp_g_2%val,1)
- 
-       ! now contract coulumb term over first index into interm_cou(_2)(j,a,b) array3
-       call array3_contract1(trip_ampl,tmp_g_1,interm_cou,.true.,.false.)
- 
-       ! now contract exchange term over first index into interm_exc(j,a,b) array3
-       call array3_contract1(trip_ampl,tmp_g_2,interm_exc,.true.,.false.)
- 
-       ! now collect in T_star array4 structure
-       ! load in interm_cou and interm_exc as an (-1)*L_{kjlc}-contracted quantity
-       call daxpy(no*nv**2,-2.0E0_realk,interm_cou%val,1,T_star%val(:,:,:,oindex1),1)
-       call daxpy(no*nv**2,1.0E0_realk,interm_exc%val,1,T_star%val(:,:,:,oindex1),1)
+       ! now contract exchange term over first index
+       do idx=1,trip_ampl%dims(3)
+          call dgemm('n','n',int_occ%dims(1),trip_ampl%dims(2),int_occ%dims(2),&
+             & 1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),int_occ%dims(1),&
+             & trip_ampl%val(:,:,idx),trip_ampl%dims(1),1.0E0_realk,&
+             & T_star%val(:,:,idx,oindex1),T_star%dims(1))
+       end do
 
     end select TypeofContraction_221
-
-    ! release temporary array2s and array3s
-    call array2_free(tmp_g_1)
-    call array2_free(tmp_g_2)
-    call array3_free(interm_cou)
-    call array3_free(interm_exc)
 
   end subroutine ccsdpt_contract_221
 
