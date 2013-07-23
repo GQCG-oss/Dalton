@@ -1730,7 +1730,7 @@ contains
 
        ! note: here we collect contract over L_{dkbc} and g_{dkbc} in one go.
 
-       ! reorder to obtain tmp_g(c,d,b)
+       ! reorder to obtain coulumb term, tmp_g(c,d,b)
        call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[1,3,2],0.0E0_realk,tmp_g%val)
 
        ! now contract coulumb term over 2 first indices
@@ -1741,8 +1741,8 @@ contains
        call dgemm('t','n',dim1,dim3,dim2, &
             1.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),dim1)
 
-       ! reorder tmp_g to obtain exchange term, i.e., tmp_g(c,d,b) --> tmp_g(d,c,b)
-       call array3_reorder(tmp_g,[2,1,3])
+       ! reorder to obtain exchange term, tmp_g(d,c,b)
+       call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[3,1,2],0.0E0_realk,tmp_g%val)
 
        ! now contract exchange term over 2 first indices2
        call dgemm('t','n',dim1,dim3,dim2, &
@@ -1752,7 +1752,7 @@ contains
 
        ! note: here we contract over L_{dkbc}.
 
-       ! reorder to obtain tmp_g(c,d,b)
+       ! reorder to obtain coulumb term, tmp_g(c,d,b)
        call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[1,3,2],0.0E0_realk,tmp_g%val)
 
        ! now contract coulumb term over 2 first indices
@@ -1763,8 +1763,8 @@ contains
        call dgemm('t','n',dim1,dim3,dim2, &
             2.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),dim1)
 
-       ! reorder tmp_g to obtain exchange term, i.e., tmp_g(c,d,b) --> tmp_g(d,c,b)
-       call array3_reorder(tmp_g,[2,1,3])
+       ! reorder to obtain exchange term, tmp_g(d,c,b)
+       call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[3,1,2],0.0E0_realk,tmp_g%val)
 
        ! now contract exchange term over 2 first indices
        call dgemm('t','n',dim1,dim3,dim2, &
