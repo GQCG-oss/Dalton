@@ -1841,8 +1841,8 @@ contains
     real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
     type(array3), intent(inout) :: trip_ampl
     !> temporary quantities
-    type(array2) :: interm_cou!, interm_cou_2, interm_exc
     type(array3) :: tmp_g
+    integer :: dim1, dim2, dim3
 
     ! NOTE: incoming array(4) structures are ordered according to:
     ! int_virt_tile(c,b,a,x)
@@ -1850,23 +1850,21 @@ contains
 
     ! contraction time (here: over virtual indices 'c' and 'd') with canAIBC(b,c,k,d)
 
-    ! init temporary tmp_g array3 structure in addition to 
-    ! interm_cou array2
+    ! init temporary tmp_g array3 structure
     tmp_g = array3_init_standard([nv,nv,nv])
-    interm_cou = array2_init_plain([nv,nv])
 
     ! reorder to obtain tmp_g(c,d,b)
     call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[1,3,2],0.0E0_realk,tmp_g%val)
 
-    ! now contract coulumb term over 2 first indices into interm_cou(_2)(a,b) array2
-    call array3_contract2(trip_ampl,tmp_g,interm_cou)
-
-    ! now collect in T_star array4 structure
-    call daxpy(nv**2,-1.0E0_realk,interm_cou%val,1,T_star%val(:,:,oindex3,oindex2),1)
+    ! now contract coulumb term over 2 first indices
+    dim1=trip_ampl%dims(3)
+    dim2=trip_ampl%dims(1)*trip_ampl%dims(2)
+    dim3=tmp_g%dims(3)
+    call dgemm('t','n',dim1,dim3,dim2, &
+         -1.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex3,oindex2),dim1)
 
     ! release temporary array2s and array3s
     call array3_free(tmp_g)
-    call array2_free(interm_cou)
 
   end subroutine ccsdpt_contract_212
 
