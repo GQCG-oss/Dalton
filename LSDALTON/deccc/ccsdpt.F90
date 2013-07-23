@@ -1639,7 +1639,6 @@ contains
     logical, intent(in) :: special
     !> temporary quantities
     integer :: contraction_type!, idx, p0(5), p1(6), p2(6), p3(6)
-    real(realk), pointer :: interm_cou(:), interm_exc(:)!, interm_cou_2(:), interm_exc_2(:)
 
     ! NOTE: incoming array4 structures are ordered according to:
     ! canAIBJ(c,d,k,l) (MEST nomenclature)
@@ -1658,53 +1657,31 @@ contains
     ! contraction time (here: over virtual indices 'c' and 'd') with "coulumb minus exchange"
     ! version of canAIBJ (2 * canAIJK(c,k,d,l) - canAIBC(c,l,d,k))
 
-    ! init temporary pointers
-    call mem_alloc(interm_cou,nv)
-    call mem_alloc(interm_exc,nv)
-
     TypeofContraction_12: select case(contraction_type)
 
     case(0)
 
-       ! canAIBJ(c,d,k,l) --> tmp_g_1(c,d) (coulumb)
-       ! here, the coulumb and exchange parts will be equal and we thus only need to contract with the coulumb part. 
+       ! here, the coulumb and exchange parts will be equal
+       ! and we thus only need to contract with (-1)*coulumb part. 
 
-       ! now contract coulumb term over both indices into interm_cou(a) 1d pointer
+       ! now contract coulumb term over both indices
        call dgemm('n','n',nv,1,nv**2,&
-                & 1.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex2,oindex1),&
-                & nv**2,0.0E0_realk,interm_cou,nv)
-
-       ! as the exchange contributions for the present case will be the same as the
-       ! coulumb contributions, we do not need to construct these as we may include them
-       ! implicitly by only adding 1*coulumb
-
-       ! now collect in T_star array2 structure
-       call daxpy(nv,-1.0E0_realk,interm_cou,1,T_star%val(:,oindex3),1)
+                & -1.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex2,oindex1),&
+                & nv**2,1.0E0_realk,T_star%val(:,oindex3),nv)
 
     case(1)
 
-       ! canAIBJ(c,d,k,l) --> tmp_g_1(c,d) (coulumb)
-       ! canAIBJ(c,d,l,k) --> tmp_g_2(c,d) (exchange)
-
-       ! now contract coulumb term over both indices into interm_cou(a) 1d pointer
+       ! now contract coulumb term over both indices
        call dgemm('n','n',nv,1,nv**2,&
-                & 1.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex2,oindex1),&
-                & nv**2,0.0E0_realk,interm_cou,nv)
+                & -2.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex2,oindex1),&
+                & nv**2,1.0E0_realk,T_star%val(:,oindex3),nv)
 
-       ! now contract exchange term over both indices into interm_exc(a) 1d pointer
+       ! now contract exchange term over both indices
        call dgemm('n','n',nv,1,nv**2,&
                 & 1.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex1,oindex2),&
-                & nv**2,0.0E0_realk,interm_exc,nv)
-
-       ! now collect in T_star array2 structure
-       call daxpy(nv,-2.0E0_realk,interm_cou,1,T_star%val(:,oindex3),1)
-       call daxpy(nv,1.0E0_realk,interm_exc,1,T_star%val(:,oindex3),1)
+                & nv**2,1.0E0_realk,T_star%val(:,oindex3),nv)
 
     end select TypeofContraction_12
-
-    ! release temporary stuff
-    call mem_dealloc(interm_cou)
-    call mem_dealloc(interm_exc)
 
   end subroutine ccsdpt_contract_12
 
