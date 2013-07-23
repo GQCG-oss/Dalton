@@ -1910,9 +1910,8 @@ contains
     integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
     type(array4), intent(inout) :: int_occ, T_star
     type(array3), intent(inout) :: trip_ampl
-    !> temporary quantities
-    type(array2) :: tmp_g_1
-    type(array3) :: interm_cou
+    !> integer
+    integer :: idx
 
     ! NOTE: incoming array4 structures are ordered according to:
     ! canAIJK(j,c,l,k) (MEST nomenclature)
@@ -1920,26 +1919,13 @@ contains
 
     ! contraction time (here: over virtual index 'c') with canAIBC(k,j,l,c)
 
-    ! init temporary arrays, tmp_g_1 and tmp_g_2 array2s in addition to interm_cou, interm_exc, and
-    ! interm_cou_2 array3s.
-    tmp_g_1 = array2_init_plain([no,nv])
-    interm_cou = array3_init_standard([no,nv,nv])
-
-
-    ! canAIJK(j,c,l,k) --> tmp_g_1(j,c) (coulumb)
-    call dcopy(no*nv,int_occ%val(:,:,oindex1,oindex2),1,tmp_g_1%val,1)
-
-    ! now contract coulumb term over first index into interm_cou(_2)(j,a,b) array3
-    call array3_contract1(trip_ampl,tmp_g_1,interm_cou,.true.,.false.)
-
-
-    ! now collect in T_star array4 structure
-    call daxpy(no*nv**2,1.0E0_realk,interm_cou%val,1,T_star%val(:,:,:,oindex3),1)
-
-
-    ! release temporary array2s and array3s
-    call array2_free(tmp_g_1)
-    call array3_free(interm_cou)
+    ! contract coulumb term over first index
+    do idx=1,trip_ampl%dims(3)
+       call dgemm('n','n',int_occ%dims(1),trip_ampl%dims(2),int_occ%dims(2),&
+          & 1.0E0_realk,int_occ%val(:,:,oindex1,oindex2),int_occ%dims(1),&
+          & trip_ampl%val(:,:,idx),trip_ampl%dims(1),1.0E0_realk,&
+          & T_star%val(:,:,idx,oindex3),T_star%dims(1))
+    end do
 
   end subroutine ccsdpt_contract_222
 
