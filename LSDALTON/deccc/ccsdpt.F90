@@ -1821,38 +1821,22 @@ contains
 
        ! now contract coulumb term over first index.
        ! for this special case, we only have to subtract one coulumb term
-       do idx=1,trip_ampl%dims(3)
-          call dgemm('n','n',int_occ%dims(1),trip_ampl%dims(2),int_occ%dims(2),&
-             & -1.0E0_realk,int_occ%val(:,:,oindex3,oindex2),int_occ%dims(1),&
-             & trip_ampl%val(:,:,idx),trip_ampl%dims(1),1.0E0_realk,&
-             & T_star%val(:,:,idx,oindex1),T_star%dims(1))
-       end do
+       call dgemm('n','n',no,nv**2,nv,-1.0E0_realk,int_occ%val(:,:,oindex3,oindex2),no,&
+                      & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex1),no)
 
        ! now contract exchange term over first index
-       do idx=1,trip_ampl%dims(3)
-          call dgemm('n','n',int_occ%dims(1),trip_ampl%dims(2),int_occ%dims(2),&
-             & 1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),int_occ%dims(1),&
-             & trip_ampl%val(:,:,idx),trip_ampl%dims(1),1.0E0_realk,&
-             & T_star%val(:,:,idx,oindex1),T_star%dims(1))
-       end do
+       call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),no,&
+                      & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex1),no)
 
     case(1)
  
        ! now contract coulumb term over first index
-       do idx=1,trip_ampl%dims(3)
-          call dgemm('n','n',int_occ%dims(1),trip_ampl%dims(2),int_occ%dims(2),&
-             & -2.0E0_realk,int_occ%val(:,:,oindex3,oindex2),int_occ%dims(1),&
-             & trip_ampl%val(:,:,idx),trip_ampl%dims(1),1.0E0_realk,&
-             & T_star%val(:,:,idx,oindex1),T_star%dims(1))
-       end do 
+       call dgemm('n','n',no,nv**2,nv,-2.0E0_realk,int_occ%val(:,:,oindex3,oindex2),no,&
+                      & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex1),no)
 
        ! now contract exchange term over first index
-       do idx=1,trip_ampl%dims(3)
-          call dgemm('n','n',int_occ%dims(1),trip_ampl%dims(2),int_occ%dims(2),&
-             & 1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),int_occ%dims(1),&
-             & trip_ampl%val(:,:,idx),trip_ampl%dims(1),1.0E0_realk,&
-             & T_star%val(:,:,idx,oindex1),T_star%dims(1))
-       end do
+       call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),no,&
+                      & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex1),no)
 
     end select TypeofContraction_221
 
@@ -1882,12 +1866,8 @@ contains
     ! contraction time (here: over virtual index 'c') with canAIBC(k,j,l,c)
 
     ! contract coulumb term over first index
-    do idx=1,trip_ampl%dims(3)
-       call dgemm('n','n',int_occ%dims(1),trip_ampl%dims(2),int_occ%dims(2),&
-          & 1.0E0_realk,int_occ%val(:,:,oindex1,oindex2),int_occ%dims(1),&
-          & trip_ampl%val(:,:,idx),trip_ampl%dims(1),1.0E0_realk,&
-          & T_star%val(:,:,idx,oindex3),T_star%dims(1))
-    end do
+    call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ%val(:,:,oindex1,oindex2),no,&
+                   & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex3),no)
 
   end subroutine ccsdpt_contract_222
 
