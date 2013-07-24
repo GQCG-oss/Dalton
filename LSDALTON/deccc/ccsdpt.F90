@@ -1427,7 +1427,9 @@ contains
     real(realk), dimension(nv,nv), intent(in) :: doub_ampl_v2
     type(array3), intent(inout) :: trip
     !> temporary quantities
-    integer :: idx
+    integer :: nv2
+
+    nv2 = nv**2
 
     ! important: notation adapted from eq. (14.6.60) of MEST. herein, 'e' is the running index of the
     ! equation in the book (therein: 'd')
@@ -1441,14 +1443,7 @@ contains
     ! ***************************************************
 
     ! do v^4o^3 contraction
-!    do idx = 1,nv
-!
-!       call dgemm('t','n',nv,nv,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile(:,:,idx),nv,&
-!                      & 1.0E0_realk,trip%val(:,:,idx),nv)
-!
-!    end do
-    ! alternative rectangular version
-    call dgemm('t','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
+    call dgemm('t','n',nv,nv2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
                    & 0.0E0_realk,trip%val,nv)
 
   end subroutine trip_amplitudes_virt
@@ -1471,7 +1466,9 @@ contains
     real(realk), dimension(no,nv,nv), intent(in) :: doub_ampl_ov2
     type(array3), intent(inout) :: trip
     !> temporary quantities
-    integer :: idx!,collection_type
+    integer :: nv2
+
+    nv2 = nv**2
 
     ! important: notation adapted from eq. (14.6.60) of MEST. herein, 'm' is the running index of the
     ! equation in the book (therein: 'l')
@@ -1485,14 +1482,7 @@ contains
     ! ****************************************************
 
     ! do v^3o^4 contraction
-!    do idx = 1,nv
-!
-!       call dgemm('t','n',nv,nv,no,1.0E0_realk,int_occ_portion,no,doub_ampl_ov2(:,:,idx),no,&
-!                      & 1.0E0_realk,trip%val(:,:,idx),nv)
-!
-!    end do
-    ! alternative rectangular version
-    call dgemm('t','n',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
+    call dgemm('t','n',nv,nv2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
                    & 1.0E0_realk,trip%val,nv)
 
   end subroutine trip_amplitudes_occ
@@ -1553,7 +1543,9 @@ contains
     type(array3), optional, intent(inout) :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type
+    integer :: contraction_type, nv2
+
+    nv2 = nv**2
 
     ! NOTE: incoming array4 structures are ordered according to:
     ! canAIBJ(c,d,k,l) (MEST nomenclature)
@@ -1576,21 +1568,21 @@ contains
        ! here, the coulumb and exchange parts will be equal and we thus only need to contract with the coulumb part. 
 
        ! now contract coulumb term over both indices
-       call dgemm('n','n',nv,1,nv**2,&
+       call dgemm('n','n',nv,1,nv2,&
                 & 1.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex2,oindex3),&
-                & nv**2,1.0E0_realk,T_star%val(:,oindex1),nv)
+                & nv2,1.0E0_realk,T_star%val(:,oindex1),nv)
 
     case(1)
 
        ! now contract coulumb term over both indices
-       call dgemm('n','n',nv,1,nv**2,&
+       call dgemm('n','n',nv,1,nv2,&
                 & 2.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex2,oindex3),&
-                & nv**2,1.0E0_realk,T_star%val(:,oindex1),nv)
+                & nv2,1.0E0_realk,T_star%val(:,oindex1),nv)
 
        ! now contract exchange term over both indices
-       call dgemm('n','n',nv,1,nv**2,&
+       call dgemm('n','n',nv,1,nv2,&
                 & -1.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex3,oindex2),&
-                & nv**2,1.0E0_realk,T_star%val(:,oindex1),nv)
+                & nv2,1.0E0_realk,T_star%val(:,oindex1),nv)
 
     end select TypeofContraction_11
 
@@ -1612,7 +1604,9 @@ contains
     type(array3), optional, intent(inout) :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type!, idx, p0(5), p1(6), p2(6), p3(6)
+    integer :: contraction_type, nv2
+
+    nv2 = nv**2
 
     ! NOTE: incoming array4 structures are ordered according to:
     ! canAIBJ(c,d,k,l) (MEST nomenclature)
@@ -1639,21 +1633,21 @@ contains
        ! and we thus only need to contract with (-1)*coulumb part. 
 
        ! now contract coulumb term over both indices
-       call dgemm('n','n',nv,1,nv**2,&
+       call dgemm('n','n',nv,1,nv2,&
                 & -1.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex2,oindex1),&
-                & nv**2,1.0E0_realk,T_star%val(:,oindex3),nv)
+                & nv2,1.0E0_realk,T_star%val(:,oindex3),nv)
 
     case(1)
 
        ! now contract coulumb term over both indices
-       call dgemm('n','n',nv,1,nv**2,&
+       call dgemm('n','n',nv,1,nv2,&
                 & -2.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex2,oindex1),&
-                & nv**2,1.0E0_realk,T_star%val(:,oindex3),nv)
+                & nv2,1.0E0_realk,T_star%val(:,oindex3),nv)
 
        ! now contract exchange term over both indices
-       call dgemm('n','n',nv,1,nv**2,&
+       call dgemm('n','n',nv,1,nv2,&
                 & 1.0E0_realk,trip_ampl%val,nv,int_normal%val(:,:,oindex1,oindex2),&
-                & nv**2,1.0E0_realk,T_star%val(:,oindex3),nv)
+                & nv2,1.0E0_realk,T_star%val(:,oindex3),nv)
 
     end select TypeofContraction_12
 
@@ -1679,7 +1673,9 @@ contains
     real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, idx, dim1, dim2, dim3
+    integer :: contraction_type, nv2
+
+    nv2 = nv**2
 
     ! NOTE: incoming array(4) structures are ordered according to:
     ! int_virt_tile(c,b,a,x)
@@ -1705,19 +1701,15 @@ contains
        call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[1,3,2],0.0E0_realk,tmp_g%val)
 
        ! now contract coulumb term over 2 first indices
-       dim1=trip_ampl%dims(3)
-       dim2=trip_ampl%dims(1)*trip_ampl%dims(2)
-       dim3=tmp_g%dims(3)
-
-       call dgemm('t','n',dim1,dim3,dim2, &
-            1.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),dim1)
+       call dgemm('t','n',nv,nv,nv2, &
+            1.0E0_realk,trip_ampl%val,nv2,tmp_g%val,nv2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),nv)
 
        ! reorder to obtain exchange term, tmp_g(d,c,b)
        call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[3,1,2],0.0E0_realk,tmp_g%val)
 
        ! now contract exchange term over 2 first indices2
-       call dgemm('t','n',dim1,dim3,dim2, &
-            -1.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),dim1)
+       call dgemm('t','n',nv,nv,nv2, &
+            -1.0E0_realk,trip_ampl%val,nv2,tmp_g%val,nv2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),nv)
 
     case(1)
 
@@ -1727,19 +1719,15 @@ contains
        call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[1,3,2],0.0E0_realk,tmp_g%val)
 
        ! now contract coulumb term over 2 first indices
-       dim1=trip_ampl%dims(3)
-       dim2=trip_ampl%dims(1)*trip_ampl%dims(2)
-       dim3=tmp_g%dims(3)
-
-       call dgemm('t','n',dim1,dim3,dim2, &
-            2.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),dim1)
+       call dgemm('t','n',nv,nv,nv2, &
+            2.0E0_realk,trip_ampl%val,nv2,tmp_g%val,nv2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),nv)
 
        ! reorder to obtain exchange term, tmp_g(d,c,b)
        call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[3,1,2],0.0E0_realk,tmp_g%val)
 
        ! now contract exchange term over 2 first indices
-       call dgemm('t','n',dim1,dim3,dim2, &
-            -1.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),dim1)
+       call dgemm('t','n',nv,nv,nv2, &
+            -1.0E0_realk,trip_ampl%val,nv2,tmp_g%val,nv2,1.0E0_realk,T_star%val(:,:,oindex1,oindex2),nv)
 
     end select TypeofContraction_211
 
@@ -1763,7 +1751,9 @@ contains
     real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
     type(array3), intent(inout) :: tmp_g,trip_ampl
     !> temporary quantities
-    integer :: dim1, dim2, dim3
+    integer :: nv2
+
+    nv2 = nv**2
 
     ! NOTE: incoming array(4) structures are ordered according to:
     ! int_virt_tile(c,b,a,x)
@@ -1775,11 +1765,8 @@ contains
     call array_reorder_3d(1.0E0_realk,int_virt_tile,nv,nv,nv,[1,3,2],0.0E0_realk,tmp_g%val)
 
     ! now contract coulumb term over 2 first indices
-    dim1=trip_ampl%dims(3)
-    dim2=trip_ampl%dims(1)*trip_ampl%dims(2)
-    dim3=tmp_g%dims(3)
-    call dgemm('t','n',dim1,dim3,dim2,&
-         & -1.0E0_realk,trip_ampl%val,dim2,tmp_g%val,dim2,1.0E0_realk,T_star%val(:,:,oindex3,oindex2),dim1)
+    call dgemm('t','n',nv,nv,nv2,&
+         & -1.0E0_realk,trip_ampl%val,nv2,tmp_g%val,nv2,1.0E0_realk,T_star%val(:,:,oindex3,oindex2),nv)
 
   end subroutine ccsdpt_contract_212
 
@@ -1799,7 +1786,9 @@ contains
     type(array3), intent(inout) :: trip_ampl
     logical, intent(in) :: special
     !> temporary quantities
-    integer :: contraction_type, idx
+    integer :: contraction_type, nv2
+
+    nv2 = nv**2
 
     ! NOTE: incoming array4 structures are ordered according to:
     ! canAIJK(j,c,l,k) (MEST nomenclature)
@@ -1821,21 +1810,21 @@ contains
 
        ! now contract coulumb term over first index.
        ! for this special case, we only have to subtract one coulumb term
-       call dgemm('n','n',no,nv**2,nv,-1.0E0_realk,int_occ%val(:,:,oindex3,oindex2),no,&
+       call dgemm('n','n',no,nv2,nv,-1.0E0_realk,int_occ%val(:,:,oindex3,oindex2),no,&
                       & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex1),no)
 
        ! now contract exchange term over first index
-       call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),no,&
+       call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),no,&
                       & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex1),no)
 
     case(1)
  
        ! now contract coulumb term over first index
-       call dgemm('n','n',no,nv**2,nv,-2.0E0_realk,int_occ%val(:,:,oindex3,oindex2),no,&
+       call dgemm('n','n',no,nv2,nv,-2.0E0_realk,int_occ%val(:,:,oindex3,oindex2),no,&
                       & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex1),no)
 
        ! now contract exchange term over first index
-       call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),no,&
+       call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ%val(:,:,oindex2,oindex3),no,&
                       & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex1),no)
 
     end select TypeofContraction_221
@@ -1857,7 +1846,9 @@ contains
     type(array4), intent(inout) :: int_occ, T_star
     type(array3), intent(inout) :: trip_ampl
     !> integer
-    integer :: idx
+    integer :: nv2
+
+    nv2 = nv**2
 
     ! NOTE: incoming array4 structures are ordered according to:
     ! canAIJK(j,c,l,k) (MEST nomenclature)
@@ -1866,7 +1857,7 @@ contains
     ! contraction time (here: over virtual index 'c') with canAIBC(k,j,l,c)
 
     ! contract coulumb term over first index
-    call dgemm('n','n',no,nv**2,nv,1.0E0_realk,int_occ%val(:,:,oindex1,oindex2),no,&
+    call dgemm('n','n',no,nv2,nv,1.0E0_realk,int_occ%val(:,:,oindex1,oindex2),no,&
                    & trip_ampl%val,nv,1.0E0_realk,T_star%val(:,:,:,oindex3),no)
 
   end subroutine ccsdpt_contract_222
