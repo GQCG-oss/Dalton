@@ -88,6 +88,7 @@ contains
     integer, dimension(3) :: dims_aaa
     integer, dimension(4) :: dims_iaai, dims_aaii
     !> input for the actual triples computation
+    !> NOTE, trip_tmp is a 3d work array
     type(array3) :: trip_tmp, trip_ampl
     type(array4) :: ccsdpt_doubles_2
     type(array4),intent(inout) :: ccsdpt_doubles
@@ -187,13 +188,6 @@ contains
     ! initially, reorder ccsd_doubles
     call array4_reorder(ccsd_doubles,[3,1,4,2]) ! ccsd_doubles(a,i,b,j) --> ccsd_doubles(b,a,j,i)
 
-    ! init triples tuples array3 structures
-    trip_tmp  = array3_init_standard(dims_aaa)
-    trip_ampl = array3_init_standard(dims_aaa)
-
-    ! init ccsd_doubles help array
-    ccsd_doubles_portions = array_init([nocc,nvirt,nvirt,3],4)
-
     ! if cbai is tiled distributed, then put the three tiles into
     ! an array structure, cbai_pdm. here, initialize the array structure.
 
@@ -220,6 +214,14 @@ contains
     call mem_dealloc(ij_array)
 
 #endif
+
+    ! init triples tuples array3 structure
+    trip_ampl = array3_init_standard(dims_aaa)
+    ! init 3d wrk array
+    trip_tmp  = array3_init_standard(dims_aaa)
+
+    ! init ccsd_doubles help array
+    ccsd_doubles_portions = array_init([nocc,nvirt,nvirt,3],4)
 
     ! a note on the mpi scheme.
     ! since we (in a dec picture) often have many nodes compared to nocc, we explicitly collapse the i- and j-loop.
@@ -336,32 +338,50 @@ contains
 
 #ifdef VAR_MPI
 
-                   ! generate the iik amplitude
-                   call trip_amplitudes(i,i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles_portions%elm4(:,:,:,1),&
-                           & cbai_pdm%elm4(:,:,:,3),jaik%val(:,:,k,i),trip=trip_tmp)
+!                   ! generate the iik amplitude
+!                   call trip_amplitudes(i,i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),ccsd_doubles_portions%elm4(:,:,:,1),&
+!                           & cbai_pdm%elm4(:,:,:,3),jaik%val(:,:,k,i),trip=trip_tmp)
 
+!                   trip_ampl%val = trip_tmp%val
+
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
+
+                   ! iik,iki
+                   call trip_amplitudes_virt(i,i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,i),cbai_pdm%elm4(:,:,:,3),trip_tmp)
+                   call trip_amplitudes_occ(i,k,i,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,1),jaik%val(:,:,i,k),trip_tmp)
                    trip_ampl%val = trip_tmp%val
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
 
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
+!                   call trip_amplitudes(k,i,i,nocc,nvirt,ccsd_doubles%val(:,:,i,k),ccsd_doubles_portions%elm4(:,:,:,3),&
+!                           & cbai_pdm%elm4(:,:,:,1),jaik%val(:,:,i,i),trip=trip_tmp)
 
-                   call trip_amplitudes(k,i,i,nocc,nvirt,ccsd_doubles%val(:,:,i,k),ccsd_doubles_portions%elm4(:,:,:,3),&
-                           & cbai_pdm%elm4(:,:,:,1),jaik%val(:,:,i,i),trip=trip_tmp)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
 
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
 
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
+                   ! kii,iik
+                   call trip_amplitudes_virt(k,i,i,nocc,nvirt,ccsd_doubles%val(:,:,i,k),cbai_pdm%elm4(:,:,:,1),trip_tmp)
+                   call trip_amplitudes_occ(i,i,k,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,1),jaik%val(:,:,k,i),trip_tmp)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
 
-                   call trip_amplitudes(i,k,i,nocc,nvirt,ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions%elm4(:,:,:,1),&
-                           & cbai_pdm%elm4(:,:,:,1),jaik%val(:,:,i,k),trip=trip_tmp)
+!                   call trip_amplitudes(i,k,i,nocc,nvirt,ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions%elm4(:,:,:,1),&
+!                           & cbai_pdm%elm4(:,:,:,1),jaik%val(:,:,i,k),trip=trip_tmp)
 
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
 
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
+
+                   ! iki.kii
+                   call trip_amplitudes_virt(i,k,i,nocc,nvirt,ccsd_doubles%val(:,:,k,i),cbai_pdm%elm4(:,:,:,1),trip_tmp)
+                   call trip_amplitudes_occ(k,i,i,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,3),jaik%val(:,:,i,i),trip_tmp)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
 
 #else
    
@@ -418,32 +438,50 @@ contains
 
 #ifdef VAR_MPI
 
-                   ! generate the ijj amplitude
-                   call trip_amplitudes(i,j,j,nocc,nvirt,ccsd_doubles%val(:,:,j,i),ccsd_doubles_portions%elm4(:,:,:,1),&
-                           & cbai_pdm%elm4(:,:,:,2),jaik%val(:,:,j,j),trip=trip_tmp)
+!                   ! generate the ijj amplitude
+!                   call trip_amplitudes(i,j,j,nocc,nvirt,ccsd_doubles%val(:,:,j,i),ccsd_doubles_portions%elm4(:,:,:,1),&
+!                           & cbai_pdm%elm4(:,:,:,2),jaik%val(:,:,j,j),trip=trip_tmp)
  
+!                   trip_ampl%val = trip_tmp%val
+ 
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
+
+                   ! ijj.jji
+                   call trip_amplitudes_virt(i,j,j,nocc,nvirt,ccsd_doubles%val(:,:,j,i),cbai_pdm%elm4(:,:,:,2),trip_tmp)
+                   call trip_amplitudes_occ(j,j,i,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,2),jaik%val(:,:,i,j),trip_tmp)
                    trip_ampl%val = trip_tmp%val
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
  
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
+!                   call trip_amplitudes(j,i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles_portions%elm4(:,:,:,2),&
+!                           & cbai_pdm%elm4(:,:,:,2),jaik%val(:,:,j,i),trip=trip_tmp)
  
-                   call trip_amplitudes(j,i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles_portions%elm4(:,:,:,2),&
-                           & cbai_pdm%elm4(:,:,:,2),jaik%val(:,:,j,i),trip=trip_tmp)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
  
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
+
+                   ! jij,ijj
+                   call trip_amplitudes_virt(j,i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,j),cbai_pdm%elm4(:,:,:,2),trip_tmp)
+                   call trip_amplitudes_occ(i,j,j,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,1),jaik%val(:,:,j,j),trip_tmp)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
  
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
+!                   call trip_amplitudes(j,j,i,nocc,nvirt,ccsd_doubles%val(:,:,j,j),ccsd_doubles_portions%elm4(:,:,:,2),&
+!                           & cbai_pdm%elm4(:,:,:,1),jaik%val(:,:,i,j),trip=trip_tmp)
  
-                   call trip_amplitudes(j,j,i,nocc,nvirt,ccsd_doubles%val(:,:,j,j),ccsd_doubles_portions%elm4(:,:,:,2),&
-                           & cbai_pdm%elm4(:,:,:,1),jaik%val(:,:,i,j),trip=trip_tmp)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
  
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
- 
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
+
+                   ! jji,jij
+                   call trip_amplitudes_virt(j,j,i,nocc,nvirt,ccsd_doubles%val(:,:,j,j),cbai_pdm%elm4(:,:,:,1),trip_tmp)
+                   call trip_amplitudes_occ(j,i,j,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,2),jaik%val(:,:,j,i),trip_tmp)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
 
 #else
 
@@ -500,41 +538,86 @@ contains
 
 #ifdef VAR_MPI
 
-                   ! generate the ijk amplitude
-                   call trip_amplitudes(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,j,i),ccsd_doubles_portions%elm4(:,:,:,1),&
-                           & cbai_pdm%elm4(:,:,:,3),jaik%val(:,:,k,j),trip=trip_tmp)
+!                   call trip_amplitudes(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,j,i),ccsd_doubles_portions%elm4(:,:,:,1),&
+!                           & cbai_pdm%elm4(:,:,:,3),jaik%val(:,:,k,j),trip=trip_tmp)
  
-                   trip_ampl%val = trip_tmp%val
+!                   trip_ampl%val = trip_tmp%val
+
+                   ! ijk.jki
+                   call trip_amplitudes_virt(i,j,k,nocc,nvirt,ccsd_doubles%val(:,:,j,i),cbai_pdm%elm4(:,:,:,3),trip_ampl)
+                   call trip_amplitudes_occ(j,k,i,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,2),jaik%val(:,:,i,k),trip_ampl)
+!!                   call trip_amplitudes_occ(i,j,k,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,1),jaik%val(:,:,k,j),trip_tmp)
+!!                   call array_reorder_3d(-1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
  
-                   call trip_amplitudes(k,i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,k),ccsd_doubles_portions%elm4(:,:,:,3),&
-                           & cbai_pdm%elm4(:,:,:,2),jaik%val(:,:,j,i),trip=trip_tmp)
+!                   call trip_amplitudes(k,i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,k),ccsd_doubles_portions%elm4(:,:,:,3),&
+!                           & cbai_pdm%elm4(:,:,:,2),jaik%val(:,:,j,i),trip=trip_tmp)
+
+                   ! kij,ijk
+                   call trip_amplitudes_virt(k,i,j,nocc,nvirt,ccsd_doubles%val(:,:,i,k),cbai_pdm%elm4(:,:,:,2),trip_tmp)
+                   call trip_amplitudes_occ(i,j,k,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,1),jaik%val(:,:,k,j),trip_tmp)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
+!!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
+!!                   call trip_amplitudes_occ(k,i,j,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,3),jaik%val(:,:,j,i),trip_tmp)
+!!                   call array_reorder_3d(-1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
  
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[2,3,1],1.0E0_realk,trip_ampl%val)
  
-                   call trip_amplitudes(j,k,i,nocc,nvirt,ccsd_doubles%val(:,:,k,j),ccsd_doubles_portions%elm4(:,:,:,2),&
-                           & cbai_pdm%elm4(:,:,:,1),jaik%val(:,:,i,k),trip=trip_tmp)
+!                   call trip_amplitudes(j,k,i,nocc,nvirt,ccsd_doubles%val(:,:,k,j),ccsd_doubles_portions%elm4(:,:,:,2),&
+!                           & cbai_pdm%elm4(:,:,:,1),jaik%val(:,:,i,k),trip=trip_tmp)
+
+                   ! jki,kij
+                   call trip_amplitudes_virt(j,k,i,nocc,nvirt,ccsd_doubles%val(:,:,k,j),cbai_pdm%elm4(:,:,:,1),trip_tmp)
+                   call trip_amplitudes_occ(k,i,j,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,3),jaik%val(:,:,j,i),trip_tmp)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
+!!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
+!!                   call trip_amplitudes_occ(j,k,i,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,2),jaik%val(:,:,i,k),trip_tmp)
+!!                   trip_ampl%val = trip_ampl%val - trip_tmp%val
  
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[3,1,2],1.0E0_realk,trip_ampl%val)
  
-                   call trip_amplitudes(i,k,j,nocc,nvirt,ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions%elm4(:,:,:,1),&
-                           & cbai_pdm%elm4(:,:,:,2),jaik%val(:,:,j,k),trip=trip_tmp)
+!                   call trip_amplitudes(i,k,j,nocc,nvirt,ccsd_doubles%val(:,:,k,i),ccsd_doubles_portions%elm4(:,:,:,1),&
+!                           & cbai_pdm%elm4(:,:,:,2),jaik%val(:,:,j,k),trip=trip_tmp)
+
+                   ! ikj,kji
+                   call trip_amplitudes_virt(i,k,j,nocc,nvirt,ccsd_doubles%val(:,:,k,i),cbai_pdm%elm4(:,:,:,2),trip_tmp)
+                   call trip_amplitudes_occ(k,j,i,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,3),jaik%val(:,:,i,j),trip_tmp)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
+!!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
+!!                   call trip_amplitudes_occ(i,k,j,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,1),jaik%val(:,:,j,k),trip_tmp)
+!!                   call array_reorder_3d(-1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
  
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
  
-                   call trip_amplitudes(j,i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles_portions%elm4(:,:,:,2),&
-                           & cbai_pdm%elm4(:,:,:,3),jaik%val(:,:,k,i),trip=trip_tmp)
+!                   call trip_amplitudes(j,i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),ccsd_doubles_portions%elm4(:,:,:,2),&
+!                           & cbai_pdm%elm4(:,:,:,3),jaik%val(:,:,k,i),trip=trip_tmp)
+
+                   ! jik,ikj
+                   call trip_amplitudes_virt(j,i,k,nocc,nvirt,ccsd_doubles%val(:,:,i,j),cbai_pdm%elm4(:,:,:,3),trip_tmp)
+                   call trip_amplitudes_occ(i,k,j,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,1),jaik%val(:,:,j,k),trip_tmp)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
+!!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
+!!                   call trip_amplitudes_occ(j,i,k,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,2),jaik%val(:,:,k,i),trip_tmp)
+!!                   call array_reorder_3d(-1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
  
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[2,1,3],1.0E0_realk,trip_ampl%val)
  
-                   call trip_amplitudes(k,j,i,nocc,nvirt,ccsd_doubles%val(:,:,j,k),ccsd_doubles_portions%elm4(:,:,:,3),&
-                           & cbai_pdm%elm4(:,:,:,1),jaik%val(:,:,i,j),trip=trip_tmp)
+!                   call trip_amplitudes(k,j,i,nocc,nvirt,ccsd_doubles%val(:,:,j,k),ccsd_doubles_portions%elm4(:,:,:,3),&
+!                           & cbai_pdm%elm4(:,:,:,1),jaik%val(:,:,i,j),trip=trip_tmp)
+
+                   ! kji,jik
+                   call trip_amplitudes_virt(k,j,i,nocc,nvirt,ccsd_doubles%val(:,:,j,k),cbai_pdm%elm4(:,:,:,1),trip_tmp)
+                   call trip_amplitudes_occ(j,i,k,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,2),jaik%val(:,:,k,i),trip_tmp)
+                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
+!!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
+!!                   call trip_amplitudes_occ(k,j,i,nocc,nvirt,ccsd_doubles_portions%elm4(:,:,:,3),jaik%val(:,:,i,j),trip_tmp)
+!!                   call array_reorder_3d(-1.0E0_realk,trip_tmp%val,nvirt,nvirt,nvirt,[1,3,2],1.0E0_realk,trip_ampl%val)
  
-                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
-                           & nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
+!                   call array_reorder_3d(1.0E0_realk,trip_tmp%val,nvirt,nvirt,&
+!                           & nvirt,[3,2,1],1.0E0_realk,trip_ampl%val)
 
 #else
 
@@ -1493,9 +1576,6 @@ contains
     ! ** contraction time (over the virtual index 'e') **
     ! ***************************************************
 
-    ! first, zero the temp array
-    trip%val = 0.0E0_realk
-
     ! do v^4o^3 contraction
 !    do idx = 1,nv
 !
@@ -1505,7 +1585,7 @@ contains
 !    end do
     ! alternative rectangular version
     call dgemm('t','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
-                   & 1.0E0_realk,trip%val,nv)
+                   & 0.0E0_realk,trip%val,nv)
 
     ! ****************************************************
     ! ** contraction time (over the occupied index 'm') **
@@ -1539,8 +1619,97 @@ contains
 
   end subroutine trip_amplitudes
 
+  !> \brief: create VIRTUAL part of a triples amplitude ([a,b,c] tuple) for a fixed [i,j,k] tuple, that is, t^{***}_{ijk}
+  !          saved as an array3 structure (amplitudes)
+  !> \author: Janus Juul Eriksen
+  !> \date: july 2012
+  !> \param: oindex1, oindex2, and oindex3 are the three occupied indices of the outer loop in the ccsd(t) driver
+  !> \param: no and nv are nocc and nvirt, respectively
+  !> \param: doub_ampl are ccsd ampltidues, t^{ab}_{ij}
+  !> \param: int_virt is a v^3 part of cbai of driver routine
+  !> \param: trip holds the triples tuple [a,b,c], that is, of the size (virt)³ kept in memory
+  subroutine trip_amplitudes_virt(oindex1,oindex2,oindex3,no,nv,doub_ampl_v2,int_virt_tile,trip)
 
-  !> \brief: multiply the [a,b,c] triples ampl. by the orbital energy difference.
+    implicit none
+    !> input
+    integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
+    real(realk), dimension(nv,nv,nv), intent(in) :: int_virt_tile
+    real(realk), dimension(nv,nv), intent(in) :: doub_ampl_v2
+    type(array3), intent(inout) :: trip
+    !> temporary quantities
+    integer :: idx
+
+    ! important: notation adapted from eq. (14.6.60) of MEST. herein, 'e' is the running index of the
+    ! equation in the book (therein: 'd')
+
+    ! NOTE: incoming array structures are ordered according to:
+    ! canTaibj(a,b,j,i) - in doub_ampl_v2 we have (a,b)
+    ! int_virt_tile(c,b,a,i) - only (c,a,b)
+
+    ! ***************************************************
+    ! ** contraction time (over the virtual index 'e') **
+    ! ***************************************************
+
+    ! do v^4o^3 contraction
+!    do idx = 1,nv
+!
+!       call dgemm('t','n',nv,nv,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile(:,:,idx),nv,&
+!                      & 1.0E0_realk,trip%val(:,:,idx),nv)
+!
+!    end do
+    ! alternative rectangular version
+    call dgemm('t','n',nv,nv**2,nv,1.0E0_realk,doub_ampl_v2,nv,int_virt_tile,nv,&
+                   & 0.0E0_realk,trip%val,nv)
+
+  end subroutine trip_amplitudes_virt
+
+  !> \brief: create OCCUPIED part of a triples amplitude ([a,b,c] tuple) for a fixed [i,j,k] tuple, that is, t^{***}_{ijk}
+  !          saved as an array3 structure (amplitudes)
+  !> \author: Janus Juul Eriksen
+  !> \date: july 2012
+  !> \param: oindex1, oindex2, and oindex3 are the three occupied indices of the outer loop in the ccsd(t) driver
+  !> \param: no and nv are nocc and nvirt, respectively
+  !> \param: doub_ampl are ccsd ampltidues, t^{ab}_{ij}
+  !> \param: int_occ is a ov part of jaik of driver routine
+  !> \param: trip holds the triples tuple [c,a,b], that is, of the size (virt)³ kept in memory
+  subroutine trip_amplitudes_occ(oindex1,oindex2,oindex3,no,nv,doub_ampl_ov2,int_occ_portion,trip)
+
+    implicit none
+    !> input
+    integer, intent(in) :: oindex1, oindex2, oindex3, no, nv
+    real(realk), dimension(no,nv), intent(in) :: int_occ_portion
+    real(realk), dimension(no,nv,nv), intent(in) :: doub_ampl_ov2
+    type(array3), intent(inout) :: trip
+    !> temporary quantities
+    integer :: idx!,collection_type
+
+    ! important: notation adapted from eq. (14.6.60) of MEST. herein, 'm' is the running index of the
+    ! equation in the book (therein: 'l')
+
+    ! NOTE: incoming array structures are ordered according to:
+    ! canTaibj(a,b,j,i) - in doub_ampl_ov2 we have (j,a,b)
+    ! canAIJK(j,a,i,k) - in int_occ_portion we have only (j,a)
+
+    ! ****************************************************
+    ! ** contraction time (over the occupied index 'm') **
+    ! ****************************************************
+
+    ! do v^3o^4 contraction
+!    do idx = 1,nv
+!
+!       call dgemm('t','n',nv,nv,no,1.0E0_realk,int_occ_portion,no,doub_ampl_ov2(:,:,idx),no,&
+!                      & 1.0E0_realk,trip%val(:,:,idx),nv)
+!
+!    end do
+    ! alternative rectangular version
+!    call dgemm('t','n',nv,nv**2,no,1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
+!                   & 0.0E0_realk,trip%val,nv)
+    call dgemm('t','n',nv,nv**2,no,-1.0E0_realk,int_occ_portion,no,doub_ampl_ov2,no,&
+                   & 1.0E0_realk,trip%val,nv)
+
+  end subroutine trip_amplitudes_occ
+
+
   !> \author: Janus Juul Eriksen
   !> \date: july 2012
   !> \param: oindex1, oindex2, and oindex3 are the three occupied indices of the outer loop in the ccsd(t) driver
