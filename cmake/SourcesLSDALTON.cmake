@@ -132,10 +132,8 @@ set(LINEARS_SOURCES
     LSDALTON/linears/localization_orbspread.F90
     LSDALTON/linears/orbspread_util.F90
     LSDALTON/linears/localization_charge.F90
-    LSDALTON/linears/prop_contribs.F90
     LSDALTON/linears/response_driver.F90
     LSDALTON/linears/response_prop.F90
-    LSDALTON/linears/rsp_equations.F90
     LSDALTON/linears/scfopt-typedef.F90
     LSDALTON/linears/soeo-redspace.F90
     LSDALTON/linears/soeo-loop.F90

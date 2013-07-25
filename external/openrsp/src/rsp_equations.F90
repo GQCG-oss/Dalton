@@ -18,7 +18,7 @@
 !           equations. Separated some utility routines from rsp_solve_eq.
 !
 !> Delivers perturbed density matrices (solutions of response equations).
-!> Property integrals are obtained through module prop_contribs.
+!> Property integrals are obtained through module rsp_contribs.
 !> Right-hand-sides are contracted here, and solutions are obtained
 !> by invoking one of several response solvers, configured at compile
 !> time by #define statements.
@@ -32,8 +32,8 @@ module rsp_equations
 
    use precision
    use matrix_defop  !matrix type and operators
-   use prop_contribs !integrals and integral contractions
-   use RSPsolver, only: prop_molcfg
+   use rsp_contribs  !integrals and integral contractions
+   use RSPsolver, only: rsp_molcfg
    implicit none
 
    public pert_fock    !contract perturbed Fock-matrices
@@ -56,14 +56,14 @@ module rsp_equations
    !> Note that D is not a vector, thus all fld%ncomp == 1
    type rsp_saved_sol
       !> molecule and settings for this equation
-      type(prop_molcfg), pointer :: mol
+      type(rsp_molcfg), pointer :: mol
       !> Field lables, component indices and frequencies.
       !> Should be ordered according to:
-      !> 1) decreasing label (index within field_list in prop_contribs),
+      !> 1) decreasing label (index within field_list in rsp_contribs),
       !> 2) increasing component indices %comp,
       !> 2) decreasing abs(dreal(frequency)) (- before +),
       !> 4) decreasing abs(imag(frequency)) (- before +),
-      !> function pert_order(fld(:)) in prop_contribs gives proper ordering.
+      !> function pert_order(fld(:)) in rsp_contribs gives proper ordering.
       type(pert_field), pointer :: fld(:)
       !> the density matrix solving the response equation
       !> ajt FIXME keep the 'actual' matrix here, but return aliases
@@ -95,7 +95,7 @@ contains
    !> Optionally, also return the corresponding perturbed overlap integrals
    subroutine pert_fock(mol, p, dimp, D, F, S, comp, freq)
       !> mol/basis/decomp/thresh needed by integrals and solver
-      type(prop_molcfg), intent(inout) :: mol
+      type(rsp_molcfg), intent(inout) :: mol
       !> perturbation lables
       character(*),      intent(in) :: p(:)
       !> dimension of each p, and thus also of F
@@ -135,19 +135,19 @@ contains
       end if
       ! fill F with perturbed one-electron integrals, and
       ! optionally S with perturbed overlap integrals
-      call prop_oneint(mol, D(1), p, dimp, F, S, comp=ccomp, freq=ffreq)
+      call rsp_oneint(mol, D(1), p, dimp, F, S, comp=ccomp, freq=ffreq)
       ! add p-perturbed Coulomb-exchange+Kohn-Sham contracted against
-      call prop_twoint(mol, p, D(1:1), dimp, F, comp=ccomp) !unperturbed D
+      call rsp_twoint(mol, p, D(1:1), dimp, F, comp=ccomp) !unperturbed D
       ! add unperturbed Coulomb-exchange+Kohn-Sham contribution
-      call prop_twoint(mol, UNP, D, dimp, F)
+      call rsp_twoint(mol, UNP, D, dimp, F)
       ! additional contributions for each basis-dependent subset of p
       bas = pert_basdep(p)
       if (size(p)==2 .and. bas(size(p))) then
-         call prop_twoint(mol, p(2:2), D(1:1+dimp(1)), &
+         call rsp_twoint(mol, p(2:2), D(1:1+dimp(1)), &
               dimp, F, perm=(/2,1/), comp=ccomp(2:2))
       endif
       if (size(p)==2 .and. bas(1))then
-         call prop_twoint(mol, p(1:1), (/D(1),D(1+dimp(1)+1:1+dimp(1)+dimp(2))/), &
+         call rsp_twoint(mol, p(1:1), (/D(1),D(1+dimp(1)+1:1+dimp(1)+dimp(2))/), &
               dimp, F, comp=ccomp(1:1))
       endif
       if (size(p) > 2 .and. any(bas)) &
@@ -160,7 +160,7 @@ contains
    subroutine pert_scf_eq(mol, S0, p, dimp, Dp, Fp, FDSp, DSDp, comp, freq)
      implicit none
       !> mol/basis/decomp/thresh needed by integrals and solver
-      type(prop_molcfg), intent(inout) :: mol
+      type(rsp_molcfg), intent(inout) :: mol
       !> unperturbed overlap matrix
       type(matrix),      intent(in) :: S0
       !> perturbation lables
@@ -232,7 +232,7 @@ contains
          if (presnt) then
             DSp(1) = Dp(1)*S0
             if (bas(1)) FDp(1) = Fp(1)*Dp(1)
-            if (bas(1)) call prop_oneint(mol, S0, p, dimp, S=Sp(2:1+dimp(1)), comp=c)
+            if (bas(1)) call rsp_oneint(mol, S0, p, dimp, S=Sp(2:1+dimp(1)), comp=c)
             do i0 = 1, dimp(1)
                i = 1+i0
                FDSp(i0) =            (Fp(i) - w(1)/2 * Sp(i)) * DSp(1)
@@ -253,8 +253,8 @@ contains
          if (presnt) then
             DSp(1) = Dp(1) * S0
             if (all(bas)) FDp(1) = Fp(1) * Dp(1)
-            if (all(bas))call prop_oneint(mol, S0, p, dimp, S=Sp(2+dimp(1)+dimp(2) : &
-                                          (dimp(1)+1)*(dimp(2)+1)), comp=c)
+            if (all(bas))call rsp_oneint(mol, S0, p, dimp, S=Sp(2+dimp(1)+dimp(2) : &
+                                         (dimp(1)+1)*(dimp(2)+1)), comp=c)
             do i0 = 1, dimp(1)*dimp(2)
                i = 1+dimp(1)+dimp(2)+i0
                FDSp(i0) =            (Fp(i) - (w(1)+w(2))/2 * Sp(i)) * DSp(1)
@@ -272,10 +272,10 @@ contains
          presnt = .not.all((/(iszero(Dp(i)), i=2,1+dimp(1))/)) .and. &
                   .not.all((/(iszero(Dp(j)), j=2+dimp(1),1+dimp(1)+dimp(2))/))
          if (presnt) then
-            if (bas(1)) call prop_oneint(mol, S0, p(1:1), dimp(1:1), &
-                                         S=Sp(2:1+dimp(1)), comp=c(1:1))
-            if (bas(2)) call prop_oneint(mol, S0, p(2:2), dimp(2:2), S=Sp(2+dimp(1): &
-                                         1+dimp(1)+dimp(2)), comp=c(2:2))
+            if (bas(1)) call rsp_oneint(mol, S0, p(1:1), dimp(1:1), &
+                                        S=Sp(2:1+dimp(1)), comp=c(1:1))
+            if (bas(2)) call rsp_oneint(mol, S0, p(2:2), dimp(2:2), S=Sp(2+dimp(1): &
+                                        1+dimp(1)+dimp(2)), comp=c(2:2))
             do j0 = 0, dimp(2)-1
                j = 2+dimp(1)+j0
                DSp(j) = Dp(j)*S0 + Dp(1)*Sp(j)
@@ -322,7 +322,7 @@ contains
    subroutine pert_dens(mol, S0, p, dimp, D, F, Dp, Fp, comp, freq)
      implicit none
       !> mol/basis/decomp/thresh needed by integrals and solver
-      type(prop_molcfg), target, intent(inout) :: mol
+      type(rsp_molcfg), target, intent(inout) :: mol
       !> unperturbed overlap matrix
       type(matrix), intent(in) :: S0
       !> perturbation lables
@@ -553,7 +553,7 @@ contains
 
 
    !> Free stored response equations
-   !> ajt FIXME add optional prop_molcfg argument for masking
+   !> ajt FIXME add optional rsp_molcfg argument for masking
    !> ajt FIXME add optional pert_field argument for masking
    subroutine rsp_eq_sol_empty()
      integer :: i
@@ -587,7 +587,7 @@ contains
       use COMPLEXSOLVER, only: rsp_complex_init, rsp_complex_solver
       use COMPLEXSYMSOLVER, only: rsp_sym_complex_init, rsp_sym_complex_solver
       !> mol/basis/decomp/thresh needed by integrals and solver
-      type(prop_molcfg), intent(inout) :: mol
+      type(rsp_molcfg), intent(inout) :: mol
       !> unperturbed overlap matrix
       type(matrix),      intent(in) :: S0
       !> unperturbed density matrix
@@ -763,7 +763,7 @@ contains
       end if
       DS = 0
       ! add last contribution G(Dp) to Fp
-      call prop_twoint(mol, UNP, (/D0, Dp/), (/neq/), Fp)
+      call rsp_twoint(mol, UNP, (/D0, Dp/), (/neq/), Fp)
 #ifdef SYS_AIX
       !ajt Xlf for some reason does copy-in-copy-out of Dp and Fp, which will
       !    offset type(matrix)%init_self_ptr, resulting in memory-leak.
@@ -782,7 +782,7 @@ contains
    !> (this is for numerical stability). Precalculated DS is taken as input.
    subroutine scf_eq_prep_rhs(mol, D0, DS, sym, neq, FDSp, DSDp, Fp, Dp)
       !> mol/basis/decomp/thresh needed by integrals and solver
-      type(prop_molcfg), intent(inout) :: mol
+      type(rsp_molcfg),  intent(inout) :: mol
       type(matrix),      intent(in)    :: D0, DS, Fp(neq)
       integer,           intent(in)    :: sym, neq
       type(matrix),      intent(inout) :: FDSp(neq), DSDp(neq), Dp(neq)
@@ -805,7 +805,7 @@ contains
          DSDp(i) = 0
       end do
       ! contract Coulomb-exchange+Kohn-Sham with particular components Dp(;)
-      call prop_twoint(mol, UNP, (/D0, Dp/), (/neq/), FDSp)
+      call rsp_twoint(mol, UNP, (/D0, Dp/), (/neq/), FDSp)
       ! complete right-hand-sides
       do i=1, neq
          if (sym /= 0) then
@@ -822,7 +822,7 @@ contains
    !> If yes, allocate iexci(:), and fill it with indices in rsp_eq_sol
    subroutine scf_eq_find_resonances(mol, freq, iexci)
       !ajt FIXME use response_wrapper_type_module, only: RSPSOLVERinputitem
-      type(prop_molcfg), target, intent(in)  :: mol
+      type(rsp_molcfg),  target, intent(in)  :: mol
       complex(realk),            intent(in)  :: freq
       integer, pointer :: iexci(:)
       real(realk) :: dif, mindif, thr

@@ -1,4 +1,4 @@
-!> @file
+!> @filed
 !> Contains response_driver_module.
 
 !> Calculates linear, quadratic, and cubic response functions and their residues.
@@ -11,9 +11,9 @@ module response_driver_module
   use matrix_defop
   !use scf_config, only: AOR_stacksize, cfg_rsp_imfreqs_specified, cfg_rsp_complex
   use precision
-  use prop_contribs
+  use rsp_contribs
   use rsp_equations
-  use RSPsolver, only: rsp_init, rsp_solver,prop_molcfg  
+  use RSPsolver, only: rsp_init, rsp_solver, rsp_molcfg  
   use RSPsymsolver, only: rsp_sym_init, rsp_sym_solver
   use matrix_operations, only: mat_write_to_disk, mat_read_from_disk
   use TYPEDEFTYPE, only: LSSETTING
@@ -28,7 +28,7 @@ module response_driver_module
 
      !> order of response function (2 for linear, 3 for quadratic, 4 for cubic)
      integer                 :: order
-     !> code(i): Operator code (see prop_contribs.f90) for operator (i)
+     !> code(i): Operator code (see rsp_contribs.F90) for operator (i)
      character*4             :: code(max_order)
      !> first_comp(i): First field component to be calculated for operator (i)
      integer                 :: first_comp(max_order)
@@ -111,7 +111,7 @@ Contains
   !> <<A;B>> for the frequencies 0.1 and 0.2 are requested two .RESPONSE-FUNCTION 
   !> inputs are required!
   !> If no frequencies are specified all frequencies are set to zero.
-  !> See pert_table in prop_contribs.f90 for a list of operator abbreviations.
+  !> See pert_table in rsp_contribs.F90 for a list of operator abbreviations.
 
   !> <br> <br>
 
@@ -331,7 +331,7 @@ Contains
   !    !> stripped from (potential) comment lines
   !    character(len=40), intent(inout)  :: AOR_input(AOR_stacksize)
   !    !> Info on molecule needed by solver and integral programs
-  !    type(prop_molcfg)                 :: molcfg
+  !    type(rsp_molcfg)                  :: molcfg
   !    !> Total number of response functions and transition moments requested
   !    integer                           :: n_rspfunc
   !    !> The position of the highest lying excited state requested
@@ -347,9 +347,9 @@ Contains
   !
   !    allocate(RspFunc_stack(n_rspfunc))
   !
-  !    !create config struct to be passed to prop_contribs / rsp_equations
-  !    call init_prop_molcfg(molcfg,S,setting%MOLECULE(1)%p%Natoms, &
-  !                        & decomp%lupri,decomp%luerr,setting,decomp,solver)
+  !    !create config struct to be passed to rsp_contribs / rsp_equations
+  !    call init_rsp_molcfg(molcfg,S,setting%MOLECULE(1)%p%Natoms, &
+  !                       & decomp%lupri,decomp%luerr,setting,decomp,solver)
   !
   !    ! Set up response input to prepare response calculation(s)
   !    call response_input(molcfg,F,D,S,AOR_input,RspFunc_stack,n_rspfunc, &
@@ -380,7 +380,7 @@ Contains
   !  subroutine response_input(molcfg,F,D,S,AOR_input,RspFunc_stack,n_rspfunc, &
   !       & nexci_max,ExEnergies_requested)
   !    !> Info on molecule needed by solver and integral programs
-  !    type(prop_molcfg),intent(inout)      :: molcfg
+  !    type(rsp_molcfg), intent(inout)   :: molcfg
   !    !> Unperturbed Fock matrix
   !    type(matrix), intent(in)          :: F
   !    !> Unperturbed density matrix
@@ -454,7 +454,7 @@ Contains
   !          ! code(2) = 'MAG '
   !          ! code(i) = 'NOOP'    (i=3, max_order)
   !          ! (num_aux is only relevant for properties using the HERMIT integral label, see
-  !          !  pert_table in prop_table in prop_contribs.f90)
+  !          !  pert_table in rsp_contribs.F90)
   !          call read_words_from_string(word(2:40),MyRspFunc%order, MyRspFunc%code,num_aux)
   !
   !
@@ -951,7 +951,7 @@ Contains
   !> \date 2010-01
   subroutine rspfunc_or_transmoment(molcfg,F,D,S,RspFunc_stack,n_rspfunc)
     !> Info on molecule and other info needed by solver and integral routines
-    type(prop_molcfg), intent(inout)     :: molcfg
+    type(rsp_molcfg), intent(inout)   :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -1162,7 +1162,7 @@ Contains
     !> Order of response funciton.
     integer, intent(in)             :: order
     !> Counter used when perturbations are specified using the HERMIT integral label
-    !> (see pert_table in prop_contribs.f90).
+    !> (see pert_table in rsp_contribs.F90).
     integer, intent(inout)          :: num_aux
     !> Local variables
     character(len=8)                :: code_temp
@@ -1178,7 +1178,7 @@ Contains
        code_temp(1:8) = '        '
 
        ! If the position in string is NOT an empty space we read in the code for the operator
-       ! ('EL' for electric dipole etc., see pert_table in prop_contribs.f90).
+       ! ('EL' for electric dipole etc., see pert_table in rsp_contribs.F90).
        ! Two string letters of the form ' X' where X is the beginning of the operator code
        ! indicates that a new operator is written in the string.
        if(string(i:i) == ' ' .and. string(i+1:i+1) /= ' ') then
@@ -1194,13 +1194,13 @@ Contains
           k=k+1
 
           ! If code_temp contains 4 letters or less it can be directly copied to code(k)
-          ! using the nomenclature in pert_table in prop_contribs.f90.
+          ! using the nomenclature in pert_table in rsp_contribs.F90.
           if(code_temp(5:8) == '    ') then
              code(k) = code_temp(1:4)
 
 
              ! Else, e.g. for input XDIPLEN, we must assign a 4-letter code AUXI (I=0,9)
-             ! to prop_auxlab in prop_contribs.f90.
+             ! to prop_auxlab in rsp_contribs.F90.
              ! For example we may have prop_auxlab(2)='XDIPLEN ', then code(k)='AUX2'.
              ! In this case code(k) implicitly refers to XDIPLEN via entry 2
              ! in prop_auxlab.
@@ -1261,7 +1261,7 @@ Contains
   !> \date 2010-01 
   subroutine transition_moment_density_matrix(molcfg,F,D,S,nexci_max)
     !> Info on molecule needed by solver and integral programs
-    type(prop_molcfg),target,intent(inout) :: molcfg
+    type(rsp_molcfg),target,intent(inout) :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)       :: F
     !> Unperturbed density matrix
@@ -1358,7 +1358,7 @@ Contains
     !ajt PS This line is redundant if there is "implicit none"
     implicit none  !in the encompassing module
     !> Info on molecule and other info needed by solver and integral routines
-    type(prop_molcfg), intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout)  :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)         :: F
     !> Unperturbed density matrix
@@ -1398,16 +1398,16 @@ Contains
     ! One-electron contributions
     if(pdbs(1)) then ! Sx*DFD contribution
        W = D*F*D
-       call prop_oneave(molcfg, S, MyRspFunc%code(1:1), (/D/), shape(property), &
+       call rsp_oneave(molcfg, S, MyRspFunc%code(1:1), (/D/), shape(property), &
             & property,comp= (/MyRspFunc%first_comp(1)/), DFD=(/W/) )
     else
-       call prop_oneave(molcfg, S, MyRspFunc%code(1:1), (/D/), shape(property), &
+       call rsp_oneave(molcfg, S, MyRspFunc%code(1:1), (/D/), shape(property), &
             & property,comp= (/MyRspFunc%first_comp(1)/) )
     end if
 
 
     ! Two-electron contributions
-    call prop_twoave(molcfg, MyRspFunc%code(1:1), (/D/), &
+    call rsp_twoave(molcfg, MyRspFunc%code(1:1), (/D/), &
          & shape(property), property, &
          & comp=(/MyRspFunc%first_comp(1)/) )
 
@@ -1460,7 +1460,7 @@ Contains
   subroutine linear_response(molcfg,F,D,S,MyRspFunc, rsp_results_vec,response_size)
     implicit none
     !> Info on molecule and other info needed by solver and integral routines
-    type(prop_molcfg), intent(inout)     :: molcfg
+    type(rsp_molcfg), intent(inout)   :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -1531,12 +1531,12 @@ Contains
        call get_W_matrix(F,D,S,MyRspFunc,0,pdbs,W)
 
        ! One-electron contributions to E^{0,ab} - S^{ab}*W
-       call prop_oneave(molcfg, S, MyRspFunc%code(1:2), (/D/), shape(lin_RspFunc), lin_RspFunc, &
+       call rsp_oneave(molcfg, S, MyRspFunc%code(1:2), (/D/), shape(lin_RspFunc), lin_RspFunc, &
             & comp= (/MyRspFunc%first_comp(1), MyRspFunc%first_comp(2)/), &
             & freq= (/MyRspFunc%freq(1), MyRspFunc%freq(2) /), DFD=(/W/) )
 
        ! Two-electron contributions to E^{0,ab} - S^{ab}*W
-       call prop_twoave(molcfg, MyRspFunc%code(1:2), (/D/), shape(lin_RspFunc), lin_RspFunc, &
+       call rsp_twoave(molcfg, MyRspFunc%code(1:2), (/D/), shape(lin_RspFunc), lin_RspFunc, &
             & comp= (/MyRspFunc%first_comp(1), MyRspFunc%first_comp(2)/) )
 
        ! Free W
@@ -1559,20 +1559,20 @@ Contains
        ! manually now to determine Wb below.
        if(MyRspFunc%trans_moment) then
           Fb(1)=0E0_realk*F
-          call prop_twoint(molcfg, NOOP, (/D,Db(1)/), (/1/), Fb(1))
+          call rsp_twoint(molcfg, NOOP, (/D,Db(1)/), (/1/), Fb(1))
        endif
 
        ! Determine Wb [Eq. 213 in jcp, 129, 214108 (2008)]
        call get_W_matrix(F,D,S,MyRspFunc,1,pdbs,Wb,ops=(/2/),Dx=Db,Fx=Fb)
 
        ! One electron contributions to E^{1,a}*Db - S^{a}*Wb
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(1)/), (/Db/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(1)/), (/Db/), &
             & shape(lin_RspFunc), lin_RspFunc, &
             & comp=(/MyRspFunc%first_comp(1)/), &
             & freq=(/MyRspFunc%freq(1)/), DFD=(/Wb/) )
 
        ! Two electron contributions to E^{1,a}*Db - S^{a}*Wb 
-       call prop_twoave(molcfg, (/ MyRspFunc%code(1) /), (/D, Db/), &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(1) /), (/D, Db/), &
             & shape(lin_RspFunc), lin_RspFunc, &
             & comp=(/MyRspFunc%first_comp(1)/) )
 
@@ -1582,7 +1582,7 @@ Contains
        ! [see Eq. 209 in jcp, 129, 214108 (2008)]
 
        ! One electron contributions to E^{1,a}*Db 
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(1)/), (/Db/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(1)/), (/Db/), &
             & shape(lin_RspFunc), lin_RspFunc, &
             & comp=(/MyRspFunc%first_comp(1)/), &
             & freq=(/MyRspFunc%freq(1)/) )
@@ -1653,7 +1653,7 @@ Contains
   subroutine quadratic_response_2nplus1(molcfg,F,D,S,MyRspFunc, rsp_results_vec,response_size)
     implicit none
     !> References to molecule input, and solver and integral settings
-    type(prop_molcfg),intent(inout)      :: molcfg
+    type(rsp_molcfg), intent(inout)   :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -1717,7 +1717,7 @@ Contains
        ! residues in the beginning of the module and Sec. IV.H. of jcp, 129, 214108).
        Db(1) = -trans(rsp_eq_sol(MyRspFunc%ExNumber2)%D)
        Fb(1)=0E0_realk*F
-       call prop_twoint(molcfg, NOOP, (/D,Db(1)/), (/1/), Fb(1))
+       call rsp_twoint(molcfg, NOOP, (/D,Db(1)/), (/1/), Fb(1))
     else ! if single residue or ordinary quadratic response function
        ! KK quick fix. If A and B refer to the same operators and frequencies,
        ! we simply copy the matrices already calculated for A.
@@ -1744,7 +1744,7 @@ Contains
        Dc(1) = rsp_eq_sol(MyRspFunc%ExNumber1)%D
        ! Determine Fc
        Fc(1)=0E0_realk*F
-       call prop_twoint(molcfg, NOOP, (/D,Dc(1)/), (/1/), Fc(1))
+       call rsp_twoint(molcfg, NOOP, (/D,Dc(1)/), (/1/), Fc(1))
     else ! ordinary quadratic response function
        ! KK quick fix. If B and C refer to the same operators and frequencies,
        ! we simply copy the matrices already calculated for B.
@@ -1766,9 +1766,9 @@ Contains
     ! *******************************************************************************************
 
     ! Determine Sa
-    ! KK fix: Added "comp=..." in prop_oneint call. Necessary if the first component is not 1... 
+    ! KK fix: Added "comp=..." in rsp_oneint call. Necessary if the first component is not 1... 
     if(pdbs(1)) then
-       call prop_oneint(molcfg, S, (/MyRspFunc%code(1) /), (/MyRspFunc%dims(1) /), &
+       call rsp_oneint(molcfg, S, (/MyRspFunc%code(1) /), (/MyRspFunc%dims(1) /), &
             comp=(/MyRspFunc%first_comp(1)/), S=Sa)
     else
        do i=1,MyRspFunc%dims(1)
@@ -1778,7 +1778,7 @@ Contains
 
     ! Determine Sb
     if(pdbs(2)) then
-       call prop_oneint(molcfg, S, (/MyRspFunc%code(2) /), (/MyRspFunc%dims(2) /), &
+       call rsp_oneint(molcfg, S, (/MyRspFunc%code(2) /), (/MyRspFunc%dims(2) /), &
             comp=(/MyRspFunc%first_comp(2)/), S=Sb)
     else
        do i=1,MyRspFunc%dims(2)
@@ -1791,7 +1791,7 @@ Contains
     ! Setting Sc=0 for trans_moment ensures that possible terms containing Sc
     ! do not contribute to the transition moment.
     if(pdbs(3) .and. .not. MyRspFunc%trans_moment) then
-       call prop_oneint(molcfg, S, (/MyRspFunc%code(3) /), (/MyRspFunc%dims(3) /), &
+       call rsp_oneint(molcfg, S, (/MyRspFunc%code(3) /), (/MyRspFunc%dims(3) /), &
             comp=(/MyRspFunc%first_comp(3)/), S=Sc)
     else
        do i=1,MyRspFunc%dims(3)
@@ -1820,14 +1820,14 @@ Contains
        ! Calculate zeroth order W
        call get_W_matrix(F,D,S,MyRspFunc,0,pdbs,W)
 
-       call prop_oneave(molcfg, S, MyRspFunc%code(1:3), (/D/), shape(quad_RspFunc), quad_RspFunc, &
+       call rsp_oneave(molcfg, S, MyRspFunc%code(1:3), (/D/), shape(quad_RspFunc), quad_RspFunc, &
             & comp= (/ MyRspFunc%first_comp(1:3) /), &
             & freq= (/ MyRspFunc%freq(1:3) /), DFD=(/W/) )
 
        ! Two-electron contributions to E^{0,abc}
        ! only if ALL perturbation use PDBS.
        if(all(pdbs)) then
-          call prop_twoave(molcfg, MyRspFunc%code(1:3), (/D/), shape(quad_RspFunc), quad_RspFunc, &
+          call rsp_twoave(molcfg, MyRspFunc%code(1:3), (/D/), shape(quad_RspFunc), quad_RspFunc, &
                & comp= (/ MyRspFunc%first_comp(1:3) /) )
        endif
 
@@ -1845,14 +1845,14 @@ Contains
        call get_W_matrix(F,D,S,MyRspFunc,1,pdbs,Wa,ops=(/1/),Dx=Da,Fx=Fa)
 
        ! One-electron contributions to E^{1,bc}*Da - S^{bc}*Wa
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(2:3) /), (/Da/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(2:3) /), (/Da/), &
             & shape(quad_RspFunc), quad_RspFunc, &
             & comp=(/MyRspFunc%first_comp(2:3)/), &
             & perm = (/2,3,1 /), &
             & freq=(/MyRspFunc%freq(2:3)/), DFD=(/Wa/) )
 
        ! Two-electron contributions to E^{1,bc}*Da
-       call prop_twoave(molcfg, (/ MyRspFunc%code(2:3) /), (/D, Da/), &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(2:3) /), (/D, Da/), &
             & shape(quad_RspFunc), quad_RspFunc, &
             & perm = (/2,3,1 /), &
             & comp=(/MyRspFunc%first_comp(2:3)/) )
@@ -1871,14 +1871,14 @@ Contains
        call get_W_matrix(F,D,S,MyRspFunc,1,pdbs,Wb,ops=(/2/),Dx=Db,Fx=Fb)
 
        ! One-electron contributions to E^{1,ac}*Db - S^{ac}*Wb
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(1), MyRspFunc%code(3) /), (/Db/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(1), MyRspFunc%code(3) /), (/Db/), &
             & shape(quad_RspFunc), quad_RspFunc, &
             & comp=(/MyRspFunc%first_comp(1), MyRspFunc%first_comp(3) /), &
             & perm = (/1,3,2 /), &
             & freq=(/MyRspFunc%freq(1), MyRspFunc%freq(3) /), DFD=(/Wb/) )
 
        ! Two-electron contributions to E^{1,ac}*Db
-       call prop_twoave(molcfg, (/ MyRspFunc%code(1), MyRspFunc%code(3) /), (/D, Db/), &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(1), MyRspFunc%code(3) /), (/D, Db/), &
             & shape(quad_RspFunc), quad_RspFunc, &
             & perm = (/1,3,2 /), &
             & comp=(/MyRspFunc%first_comp(1), MyRspFunc%first_comp(3) /) )
@@ -1897,14 +1897,14 @@ Contains
        call get_W_matrix(F,D,S,MyRspFunc,1,pdbs,Wc,ops=(/3/),Dx=Dc,Fx=Fc)
 
        ! One-electron contributions to E^{1,ab}*Dc - S^{ab}*Wc
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(1:2) /), (/Dc/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(1:2) /), (/Dc/), &
             & shape(quad_RspFunc), quad_RspFunc, &
             & comp=(/MyRspFunc%first_comp(1:2)/), &
             & perm = (/1,2,3 /), &
             & freq=(/MyRspFunc%freq(1:2)/), DFD=(/Wc/) )
 
        ! Two-electron contributions to E^{1,bc}*Da
-       call prop_twoave(molcfg, (/ MyRspFunc%code(1:2) /), (/D, Dc/), &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(1:2) /), (/D, Dc/), &
             & shape(quad_RspFunc), quad_RspFunc, &
             & perm = (/1,2,3 /), &
             & comp=(/MyRspFunc%first_comp(1:2)/) )
@@ -1922,7 +1922,7 @@ Contains
 
     ! E^{2,c} Da Db, never for transition moments
     if(.not. MyRspFunc%trans_moment) then
-       call prop_twoave(molcfg, (/ MyRspFunc%code(3) /), (/D, Da, Db, &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(3) /), (/D, Da, Db, &
             & ( zeroD, i=1,MyRspFunc%dims(1)*MyRspFunc%dims(2) ) /), &
             & shape(quad_RspFunc), quad_RspFunc, perm=(/3,1,2/), &
             & comp=(/MyRspFunc%first_comp(3)/) )
@@ -1930,7 +1930,7 @@ Contains
 
     ! E^{2,b} Da Dc, may contribute to single transition moment
     if(MyRspFunc%trans_moment_order /= 2) then
-       call prop_twoave(molcfg, (/ MyRspFunc%code(2) /), (/D, Da, Dc, &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(2) /), (/D, Da, Dc, &
             & ( zeroD, i=1,MyRspFunc%dims(1)*MyRspFunc%dims(3) ) /), &
             & shape(quad_RspFunc), quad_RspFunc, perm=(/2,1,3/), &
             & comp=(/MyRspFunc%first_comp(2)/) )
@@ -1939,7 +1939,7 @@ Contains
     ! E^{2,a} Db Dc, may contribute to single transition moment.
     ! This is the first term that may contribute to double transition moment
     ! since both Db and Dc occur.
-    call prop_twoave(molcfg, (/ MyRspFunc%code(1) /), (/D, Db, Dc, &
+    call rsp_twoave(molcfg, (/ MyRspFunc%code(1) /), (/D, Db, Dc, &
          & ( zeroD, i=1,MyRspFunc%dims(2)*MyRspFunc%dims(3) ) /), &
          & shape(quad_RspFunc), quad_RspFunc, perm=(/1,2,3/), &
          & comp=(/MyRspFunc%first_comp(1)/) )
@@ -1947,7 +1947,7 @@ Contains
     ! E^{3,0} Da Db Dc (only DFT)                                           !
     !************************************************************************
 
-    call prop_twoave(molcfg, NOOP, (/D, Da, Db, Dc, &
+    call rsp_twoave(molcfg, NOOP, (/D, Da, Db, Dc, &
          & ( zeroD, i=1,MyRspFunc%dims(1)*MyRspFunc%dims(2) ), &
          & ( zeroD, i=1,MyRspFunc%dims(1)*MyRspFunc%dims(3) ), &
          & ( zeroD, i=1,MyRspFunc%dims(2)*MyRspFunc%dims(3) ), &
@@ -2080,7 +2080,7 @@ Contains
   subroutine quadratic_response_nplus1(molcfg,F,D,S,MyRspFunc, rsp_results_vec,response_size)
     implicit none
     !> References to molecule input, and solver and integral settings
-    type(prop_molcfg),intent(inout)      :: molcfg
+    type(rsp_molcfg), intent(inout)   :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -2141,7 +2141,7 @@ Contains
        ! residues in the beginning of the module and Sec. IV.H. if jcp, 129, 214108).
        Db(1) = -trans(rsp_eq_sol(MyRspFunc%ExNumber2)%D)
        Fb(1)=0E0_realk*F
-       call prop_twoint(molcfg, NOOP, (/D,Db(1)/), (/1/), Fb(1))
+       call rsp_twoint(molcfg, NOOP, (/D,Db(1)/), (/1/), Fb(1))
     else ! single residue or ordinary quadratic response function
        call pert_dens(molcfg, S, (/ MyRspFunc%code(2) /), (/MyRspFunc%dims(2)/), (/D/), (/F/), &
             & Db, Fb, comp=(/MyRspFunc%first_comp(2)/), freq=(/MyRspFunc%freq(2)/) )
@@ -2156,7 +2156,7 @@ Contains
        Dc(1) = rsp_eq_sol(MyRspFunc%ExNumber1)%D
        ! Determine Fc
        Fc(1)=0E0_realk*F
-       call prop_twoint(molcfg, NOOP, (/D,Dc(1)/), (/1/), Fc(1))
+       call rsp_twoint(molcfg, NOOP, (/D,Dc(1)/), (/1/), Fc(1))
     else ! ordinary quadratic response function
        call pert_dens(molcfg, S, (/ MyRspFunc%code(3) /), (/MyRspFunc%dims(3)/), (/D/), (/F/), &
             & Dc, Fc, comp=(/MyRspFunc%first_comp(3)/), freq=(/MyRspFunc%freq(3)/) )
@@ -2176,7 +2176,7 @@ Contains
 
     ! Determine Sb
     if(pdbs(2)) then
-       call prop_oneint(molcfg, S, (/MyRspFunc%code(2) /), (/MyRspFunc%dims(2) /), &
+       call rsp_oneint(molcfg, S, (/MyRspFunc%code(2) /), (/MyRspFunc%dims(2) /), &
             comp=(/MyRspFunc%first_comp(2)/), S=Sb)
     else
        do i=1,MyRspFunc%dims(2)
@@ -2188,7 +2188,7 @@ Contains
     ! Setting Sc=0 for trans_moment ensures that possible terms containing Sc
     ! do not contribute to the transition moment.
     if(pdbs(3) .and. .not. MyRspFunc%trans_moment) then
-       call prop_oneint(molcfg, S, (/MyRspFunc%code(3) /), (/MyRspFunc%dims(3) /), &
+       call rsp_oneint(molcfg, S, (/MyRspFunc%code(3) /), (/MyRspFunc%dims(3) /), &
             comp=(/MyRspFunc%first_comp(3)/), S=Sc)
     else
        do i=1,MyRspFunc%dims(3)
@@ -2217,14 +2217,14 @@ Contains
        ! Calculate zeroth order W
        call get_W_matrix(F,D,S,MyRspFunc,0,pdbs,W)
 
-       call prop_oneave(molcfg, S, MyRspFunc%code(1:3), (/D/), shape(quad_RspFunc), quad_RspFunc, &
+       call rsp_oneave(molcfg, S, MyRspFunc%code(1:3), (/D/), shape(quad_RspFunc), quad_RspFunc, &
             & comp= (/ MyRspFunc%first_comp(1:3) /), &
             & freq= (/ MyRspFunc%freq(1:3) /), DFD=(/W/) )
 
        ! Two-electron contributions to E^{0,abc}
        ! only if ALL perturbation use PDBS.
        if(all(pdbs)) then
-          call prop_twoave(molcfg, MyRspFunc%code(1:3), (/D/), shape(quad_RspFunc), quad_RspFunc, &
+          call rsp_twoave(molcfg, MyRspFunc%code(1:3), (/D/), shape(quad_RspFunc), quad_RspFunc, &
                & comp= (/ MyRspFunc%first_comp(1:3) /) )
        endif
 
@@ -2243,14 +2243,14 @@ Contains
        call get_W_matrix(F,D,S,MyRspFunc,1,pdbs,Wb,ops=(/2/),Dx=Db,Fx=Fb)
 
        ! One-electron contributions to E^{1,ac}*Db - S^{ac}*Wb
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(1), MyRspFunc%code(3) /), (/Db/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(1), MyRspFunc%code(3) /), (/Db/), &
             & shape(quad_RspFunc), quad_RspFunc, &
             & comp=(/MyRspFunc%first_comp(1), MyRspFunc%first_comp(3) /), &
             & perm = (/1,3,2 /), &
             & freq=(/MyRspFunc%freq(1), MyRspFunc%freq(3) /), DFD=(/Wb/) )
 
        ! Two-electron contributions to E^{1,ac}*Db
-       call prop_twoave(molcfg, (/ MyRspFunc%code(1), MyRspFunc%code(3) /), (/D, Db/), &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(1), MyRspFunc%code(3) /), (/D, Db/), &
             & shape(quad_RspFunc), quad_RspFunc, &
             & perm = (/1,3,2 /), &
             & comp=(/MyRspFunc%first_comp(1), MyRspFunc%first_comp(3) /) )
@@ -2270,14 +2270,14 @@ Contains
        call get_W_matrix(F,D,S,MyRspFunc,1,pdbs,Wc,ops=(/3/),Dx=Dc,Fx=Fc)
 
        ! One-electron contributions to E^{1,ab}*Dc - S^{ab}*Wc
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(1:2) /), (/Dc/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(1:2) /), (/Dc/), &
             & shape(quad_RspFunc), quad_RspFunc, &
             & comp=(/MyRspFunc%first_comp(1:2)/), &
             & perm = (/1,2,3 /), &
             & freq=(/MyRspFunc%freq(1:2)/), DFD=(/Wc/) )
 
        ! Two-electron contributions to E^{1,ab}*Dc
-       call prop_twoave(molcfg, (/ MyRspFunc%code(1:2) /), (/D, Dc/), &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(1:2) /), (/D, Dc/), &
             & shape(quad_RspFunc), quad_RspFunc, &
             & perm = (/1,2,3 /), &
             & comp=(/MyRspFunc%first_comp(1:2)/) )
@@ -2294,7 +2294,7 @@ Contains
          Dy=Dc,Fy=Fc,Sy=Sc, Dxy=Dbc, Fxy=Fbc)
 
     ! One-electron part of E^{1,a} Dbc - Sa Wbc
-    call prop_oneave(molcfg, S, (/MyRspFunc%code(1) /), (/Dbc/), &
+    call rsp_oneave(molcfg, S, (/MyRspFunc%code(1) /), (/Dbc/), &
          & shape(quad_RspFunc), quad_RspFunc, &
          & comp=(/MyRspFunc%first_comp(1)/), &
          & perm = (/1,2,3 /), &
@@ -2303,7 +2303,7 @@ Contains
     if(isdef(Wbc(1,1))) Wbc(:,:)=0
 
     ! Two-electron part of E^{1,a} Dbc and  E^{2,a} Db Dc (the latter is purely two-electron)
-    call prop_twoave(molcfg, (/ MyRspFunc%code(1) /), (/D, Db,Dc,Dbc/), &
+    call rsp_twoave(molcfg, (/ MyRspFunc%code(1) /), (/D, Db,Dc,Dbc/), &
          & shape(quad_RspFunc), quad_RspFunc, &
          & perm = (/1,2,3 /), &
          & comp=(/MyRspFunc%first_comp(1)/) )
@@ -2384,7 +2384,7 @@ Contains
 
     implicit none
     !> References to molecule input, and solver and integral settings
-    type(prop_molcfg),intent(inout)      :: molcfg
+    type(rsp_molcfg), intent(inout)   :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -2432,7 +2432,7 @@ Contains
     character(4)                   :: NOOP(1)
     complex(realk) :: freqA,freqB,freqC,freqD
     integer :: nA, nB, nC, nD, first_compA,first_compB, first_compC, first_compD
-    ! KK HACK: Quick fix of problem that "MAG, nd > 2 not implemented" in prop_contribs.f90
+    ! KK HACK: Quick fix of problem that "MAG, nd > 2 not implemented" in rsp_contribs.F90
     complex(realk), allocatable :: hack_bcad(:,:,:), hack_bdac(:,:,:), &
          & hack_cbad(:,:,:), hack_cdab(:,:,:), &
          & hack_dbac(:,:,:), hack_dcab(:,:,:)
@@ -2457,7 +2457,7 @@ Contains
     first_compC = MyRspFunc%first_comp(3)
     first_compD = MyRspFunc%first_comp(4)
 
-    ! KK HACK: Quick fix of problem that "MAG, nd > 2 not implemented" in prop_contribs.f90
+    ! KK HACK: Quick fix of problem that "MAG, nd > 2 not implemented" in rsp_contribs.F90
     allocate(hack_bcad(nB,nC,nA*nD))
     allocate(hack_bdac(nB,nD,nA*nC))
     allocate(hack_cbad(nC,nB,nA*nD))
@@ -2526,14 +2526,14 @@ Contains
        call get_W_matrix(F,D,S,MyRspFunc,0,pdbs,W)
 
        ! One-electron contributions to E^{0,abcd} - S^{abcd}*W
-       call prop_oneave(molcfg, S, MyRspFunc%code(1:4), (/D/), shape(cubic_RspFunc), cubic_RspFunc, &
+       call rsp_oneave(molcfg, S, MyRspFunc%code(1:4), (/D/), shape(cubic_RspFunc), cubic_RspFunc, &
             & comp= (/ MyRspFunc%first_comp(1:4) /), &
             & freq= (/ MyRspFunc%freq(1:4) /), DFD=(/W/) )
 
        ! Two-electron contributions to E^{0,abcd},
        ! only if ALL perturbations use PDBS.
        if(all(pdbs)) then
-          call prop_twoave(molcfg, MyRspFunc%code(1:4), (/D/), shape(cubic_RspFunc), cubic_RspFunc, &
+          call rsp_twoave(molcfg, MyRspFunc%code(1:4), (/D/), shape(cubic_RspFunc), cubic_RspFunc, &
                & comp= (/ MyRspFunc%first_comp(1:4) /) )
        endif
 
@@ -2553,14 +2553,14 @@ Contains
        call get_W_matrix(F,D,S,MyRspFunc,1,pdbs,Wa,ops=(/1/),Dx=Da,Fx=Fa)
 
        ! One-electron contributions to E^{1,bcd}*Da - S^{bcd}*Wa
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(2:4) /), (/Da/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(2:4) /), (/Da/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & comp=(/first_compB,first_compC,first_compD/), &
             & perm = (/2,3,4,1 /), &   ! Order b-c-d-a in E^{1,bcd}*Da
             & freq=(/freqB,freqC,freqD/), DFD=(/Wa/) )
 
        ! Two-electron contributions to E^{1,bcd}*Da
-       call prop_twoave(molcfg, (/ MyRspFunc%code(2:4) /), (/D, Da/), &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(2:4) /), (/D, Da/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & perm = (/2,3,4,1 /), &
             & comp=(/first_compB,first_compC,first_compD/) )
@@ -2581,14 +2581,14 @@ Contains
        call get_W_matrix(F,D,S,MyRspFunc,1,pdbs,Wb,ops=(/2/),Dx=Db,Fx=Fb)
 
        ! One-electron contributions to E^{1,acd}*Db - S^{acd}*Wb
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(1), MyRspFunc%code(3:4) /), (/Db/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(1), MyRspFunc%code(3:4) /), (/Db/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & comp=(/first_compA, first_compC, first_compD /), &
             & perm = (/1,3,4,2 /), &   ! Order a-c-d-b in E^{1,acd}*Db
             & freq=(/freqA, freqC, freqD /), DFD=(/Wb/) )
 
        ! Two-electron contributions to E^{1,acd}*Db
-       call prop_twoave(molcfg, (/MyRspFunc%code(1), MyRspFunc%code(3:4) /), (/D, Db/), &
+       call rsp_twoave(molcfg, (/MyRspFunc%code(1), MyRspFunc%code(3:4) /), (/D, Db/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & perm = (/1,3,4,2 /), &
             & comp=(/first_compA, first_compC, first_compD /) )
@@ -2609,14 +2609,14 @@ Contains
        call get_W_matrix(F,D,S,MyRspFunc,1,pdbs,Wc,ops=(/3/),Dx=Dc,Fx=Fc)
 
        ! One-electron contributions to E^{1,abd}*Dc - S^{abd}*Wc
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(1:2), MyRspFunc%code(4) /), (/Dc/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(1:2), MyRspFunc%code(4) /), (/Dc/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & comp=(/ first_compA, first_compB, first_compD /), &
             & perm = (/1,2,4,3 /), &   ! Order a-b-d-c in E^{1,abd}*Dc
             & freq=(/freqA, freqB, freqD /), DFD= (/Wc/) )
 
        ! Two-electron contributions to E^{1,abd}*Dc
-       call prop_twoave(molcfg, (/MyRspFunc%code(1:2), MyRspFunc%code(4) /), (/D, Dc/), &
+       call rsp_twoave(molcfg, (/MyRspFunc%code(1:2), MyRspFunc%code(4) /), (/D, Dc/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & perm = (/1,2,4,3 /), &
             & comp=(/first_compA, first_compB, first_compD /) )
@@ -2637,14 +2637,14 @@ Contains
        call get_W_matrix(F,D,S,MyRspFunc,1,pdbs,Wd,ops=(/4/),Dx=Dd,Fx=Fd)
 
        ! One-electron contributions to E^{1,abc}*Dd - S^{abc}*Wd
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(1:3) /), (/Dd/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(1:3) /), (/Dd/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & comp=(/ first_compA, first_compB, first_compC/), &
             & perm = (/1,2,3,4 /), &   ! Order a-b-c-d in E^{1,abc}*Dd
             & freq=(/freqA, freqB, freqC/), DFD=(/Wd/) )
 
        ! Two-electron contributions to E^{1,abc}*Dd
-       call prop_twoave(molcfg, (/ MyRspFunc%code(1:3) /), (/D, Dd/), &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(1:3) /), (/D, Dd/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & perm = (/1,2,3,4 /), &
             & comp=(/ first_compA, first_compB, first_compC/) )
@@ -2668,7 +2668,7 @@ Contains
             Dy=Db,Fy=Fb,Sy=Sb, Dxy=Dab, Fxy=Fab)
 
        ! One-electron contributions
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(3:4) /), (/Dab/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(3:4) /), (/Dab/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & comp=(/first_compC, first_compD/), &
             & perm = (/3,4,1,2 /), &   ! Order c-d-a-b in E^{1,cd}*Dab
@@ -2676,7 +2676,7 @@ Contains
 
 
        ! Two-electron contributions
-       call prop_twoave(molcfg, (/ MyRspFunc%code(3:4) /), (/D, Da, Db, Dab/), &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(3:4) /), (/D, Da, Db, Dab/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & perm = (/3,4,1,2 /), &
             & comp=(/first_compC, first_compD/) )
@@ -2700,14 +2700,14 @@ Contains
             Dy=Dc,Fy=Fc,Sy=Sc, Dxy=Dac, Fxy=Fac)
 
        ! One-electron contributions
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(2), MyRspFunc%code(4) /), (/Dac/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(2), MyRspFunc%code(4) /), (/Dac/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & comp=(/first_compB, first_compD/), &
             & perm = (/2,4,1,3 /), &   ! Order b-d-a-c in E^{1,bd}*Dac
             & freq=(/freqB, freqD/), DFD=(/Wac/) )
 
        ! Two-electron contributions
-       call prop_twoave(molcfg, (/MyRspFunc%code(2), MyRspFunc%code(4) /), &
+       call rsp_twoave(molcfg, (/MyRspFunc%code(2), MyRspFunc%code(4) /), &
             (/D, Da, Dc, Dac/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & perm = (/2,4,1,3 /), &
@@ -2730,14 +2730,14 @@ Contains
        call get_W_matrix(F,D,S,MyRspFunc,2,pdbs,Wad,ops=(/1,4/),Dx=Da,Fx=Fa,Sx=Sa,&
             Dy=Dd,Fy=Fd,Sy=Sd, Dxy=Dad, Fxy=Fad)
 
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(2:3) /), (/Dad/), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(2:3) /), (/Dad/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & comp=(/first_compB, first_compC/), &
             & perm = (/2,3,1,4 /), &   ! Order b-c-a-d in E^{1,bc}*Dad
             & freq=(/freqB, freqC/), DFD=(/Wad/) )
 
        ! Two-electron contributions
-       call prop_twoave(molcfg, (/ MyRspFunc%code(2:3) /), (/D, Da, Dd, Dad/), &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(2:3) /), (/D, Da, Dd, Dad/), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & perm = (/2,3,1,4 /), &
             & comp=(/first_compB, first_compC/) )
@@ -2765,7 +2765,7 @@ Contains
 
     ! One-electron contributions
     ! In this case, -Sab*Wcd is the only 'one-electron' contribution
-    call prop_oneave(molcfg, S, (/MyRspFunc%code(1:2) /), &
+    call rsp_oneave(molcfg, S, (/MyRspFunc%code(1:2) /), &
          & (/ ( zeroD, i=1,nC*nD ) /), &
          & shape(cubic_RspFunc), cubic_RspFunc, &
          & comp=(/first_compA, first_compB/), &
@@ -2773,7 +2773,7 @@ Contains
          & freq=(/freqA, freqB/), DFD=(/Wcd/) )
 
     ! Two-electron contributions
-    call prop_twoave(molcfg, (/ MyRspFunc%code(1:2) /), &
+    call rsp_twoave(molcfg, (/ MyRspFunc%code(1:2) /), &
          & (/ D, Dc, Dd, (zeroD, i=1,nC*nD) /), &
          & shape(cubic_RspFunc), cubic_RspFunc, &
          & perm = (/1,2,3,4 /), &
@@ -2799,7 +2799,7 @@ Contains
 
        ! One-electron contributions
        ! In this case, -Sac*Wbd is the only 'one-electron' contribution
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(1),MyRspFunc%code(3) /), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(1),MyRspFunc%code(3) /), &
             & (/ ( zeroD, i=1,nB*nD ) /), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & comp=(/first_compA,first_compC/), &
@@ -2807,7 +2807,7 @@ Contains
             & freq=(/freqA,freqC/), DFD=(/Wbd/) )
 
        ! Two-electron contributions
-       call prop_twoave(molcfg, (/ MyRspFunc%code(1),MyRspFunc%code(3) /), &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(1),MyRspFunc%code(3) /), &
             & (/ D, Db, Dd, (zeroD, i=1,nB*nD) /), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & perm = (/1,3,2,4 /), &
@@ -2835,7 +2835,7 @@ Contains
 
        ! One-electron contributions
        ! In this case, -Sad*Wbc is the only 'one-electron' contribution
-       call prop_oneave(molcfg, S, (/MyRspFunc%code(1),MyRspFunc%code(4) /), &
+       call rsp_oneave(molcfg, S, (/MyRspFunc%code(1),MyRspFunc%code(4) /), &
             & (/ ( zeroD, i=1,nB*nC ) /), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & comp=(/first_compA,first_compD/), &
@@ -2843,7 +2843,7 @@ Contains
             & freq=(/freqA,freqD/), DFD=(/Wbc/) )
 
        ! Two-electron contributions
-       call prop_twoave(molcfg, (/ MyRspFunc%code(1),MyRspFunc%code(4) /), &
+       call rsp_twoave(molcfg, (/ MyRspFunc%code(1),MyRspFunc%code(4) /), &
             & (/ D, Db, Dc, (zeroD, i=1,nB*nC) /), &
             & shape(cubic_RspFunc), cubic_RspFunc, &
             & perm = (/1,4,2,3 /), &
@@ -2861,13 +2861,13 @@ Contains
     ! Only if b uses PDBS
     if(pdbs(2)) then
 
-       ! KK HACK: Circumvent problem that "MAG, nd > 2 not implmented" in prop_twoave.
+       ! KK HACK: Circumvent problem that "MAG, nd > 2 not implmented" in rsp_twoave.
        ! Temporary solution: For E^{2,b} Dac Dd = E^{2,b} Dd Dac
        ! we consider Dac and Dd as first order matrices!
        ! (And similarly for the other terms with abcd permuted)
 
        ! E^{2,b} Dd Dac
-       call prop_twoave(molcfg, (/MyRspFunc%code(2) /), &
+       call rsp_twoave(molcfg, (/MyRspFunc%code(2) /), &
             & (/D,Dd,Dac, &
             & (zeroD, i=1,nD*nA*nC) /), &
             & shape(hack_bdac), hack_bdac, &
@@ -2888,7 +2888,7 @@ Contains
        end do
 
        ! E^{2,b} Dc Dad
-       call prop_twoave(molcfg, (/MyRspFunc%code(2) /), &
+       call rsp_twoave(molcfg, (/MyRspFunc%code(2) /), &
             & (/D,Dc,Dad, &
             & (zeroD, i=1,nC*nA*nD) /), &
             & shape(hack_bcad), hack_bcad, &
@@ -2918,7 +2918,7 @@ Contains
     if(pdbs(3) .and. MyRspFunc%trans_moment_order/=2 ) then
 
        ! E^{2,c} Db Dad
-       call prop_twoave(molcfg, (/MyRspFunc%code(3) /), &
+       call rsp_twoave(molcfg, (/MyRspFunc%code(3) /), &
             & (/D,Db,Dad, &
             & (zeroD, i=1,nB*nA*nD) /), &
             & shape(hack_cbad), hack_cbad, &
@@ -2939,7 +2939,7 @@ Contains
        end do
 
        ! E^{2,c} Dd Dab
-       call prop_twoave(molcfg, (/MyRspFunc%code(3) /), &
+       call rsp_twoave(molcfg, (/MyRspFunc%code(3) /), &
             & (/D,Dd,Dab, &
             & (zeroD, i=1,nD*nA*nB) /), &
             & shape(hack_cdab), hack_cdab, &
@@ -2969,7 +2969,7 @@ Contains
     if(pdbs(4) .and. MyRspFunc%code(4) /= 'EXCI') then
 
        ! E^{2,d} Dc Dab
-       call prop_twoave(molcfg, (/MyRspFunc%code(4) /), &
+       call rsp_twoave(molcfg, (/MyRspFunc%code(4) /), &
             & (/D,Dc,Dab, &
             & (zeroD, i=1,nC*nA*nB) /), &
             & shape(hack_dcab), hack_dcab, &
@@ -2990,7 +2990,7 @@ Contains
        end do
 
        ! E^{2,d} Db Dac
-       call prop_twoave(molcfg, (/MyRspFunc%code(4) /), &
+       call rsp_twoave(molcfg, (/MyRspFunc%code(4) /), &
             & (/D,Db,Dac, &
             & (zeroD, i=1,nB*nA*nC) /), &
             & shape(hack_dbac), hack_dbac, &
@@ -3021,7 +3021,7 @@ Contains
     ! DFT stuff is not working right now and therefore it is commented out.
 !!$      if(pdbs(1)) then
 !!$
-!!$         call prop_twoave(molcfg, (/MyRspFunc%code(1) /), (/D,Db,Dc,Dd,&
+!!$         call rsp_twoave(molcfg, (/MyRspFunc%code(1) /), (/D,Db,Dc,Dd,&
 !!$              & (zeroD, i=1,nB*nC), &
 !!$              & (zeroD, i=1,nB*nD), &
 !!$              & (zeroD, i=1,nC*nD), &
@@ -3041,7 +3041,7 @@ Contains
     ! DFT stuff is not working right now and therefore it is commented out.
 !!$      if(pdbs(2)) then
 !!$
-!!$         call prop_twoave(molcfg, (/MyRspFunc%code(2) /), (/D,Da,Dc,Dd,&
+!!$         call rsp_twoave(molcfg, (/MyRspFunc%code(2) /), (/D,Da,Dc,Dd,&
 !!$              & (zeroD, i=1,nA*nC), &
 !!$              & (zeroD, i=1,nA*nD), &
 !!$              & (zeroD, i=1,nC*nD), &
@@ -3060,7 +3060,7 @@ Contains
     ! DFT stuff is not working right now and therefore it is commented out.
 !!$      if(pdbs(3) .and. MyRspFunc%trans_moment_order/=2) then
 !!$
-!!$         call prop_twoave(molcfg, (/MyRspFunc%code(3) /), (/D,Da,Db,Dd,&
+!!$         call rsp_twoave(molcfg, (/MyRspFunc%code(3) /), (/D,Da,Db,Dd,&
 !!$              & (zeroD, i=1,nA*nB), &
 !!$              & (zeroD, i=1,nA*nD), &
 !!$              & (zeroD, i=1,nB*nD), &
@@ -3079,7 +3079,7 @@ Contains
     ! DFT stuff is not working right now and therefore it is commented out.
 !!$      if(pdbs(4) .and. MyRspFunc%code(4) /= 'EXCI') then
 !!$
-!!$         call prop_twoave(molcfg, (/MyRspFunc%code(4) /), (/D,Da,Db,Dc,&
+!!$         call rsp_twoave(molcfg, (/MyRspFunc%code(4) /), (/D,Da,Db,Dc,&
 !!$              & (zeroD, i=1,nA*nB), &
 !!$              & (zeroD, i=1,nA*nC), &
 !!$              & (zeroD, i=1,nB*nC), &
@@ -3096,7 +3096,7 @@ Contains
     !        + E^{3,0} Dad Db Dc  + E^{4,0} Da Db Dc Dd      (only DFT)     !
     !************************************************************************
     ! DFT stuff is not working right now and therefore it is commented out.
-    call prop_twoave(molcfg, (/NOOP/), (/D,Da,Db,Dc,Dd,Dab,Dac, &
+    call rsp_twoave(molcfg, (/NOOP/), (/D,Da,Db,Dc,Dd,Dab,Dac, &
          & ( zeroD, i=1,nB*nC ), Dad, &
          & ( zeroD, i=1,nB*nD ), &
          & ( zeroD, i=1,nC*nD ), &
@@ -3139,7 +3139,7 @@ Contains
 
     ! FREE Stuff
 
-    ! KK HACK: Quick fix of problem that "MAG, nd > 2 not implemented" in prop_contribs.f90
+    ! KK HACK: Quick fix of problem that "MAG, nd > 2 not implemented" in rsp_contribs.F90
     deallocate(hack_bcad, hack_bdac, hack_cbad, hack_cdab, hack_dbac, hack_dcab)
 
     ! Matrices always used
@@ -3170,7 +3170,7 @@ Contains
 
     implicit none
     !> References to molecule input, and solver and integral settings
-    type(prop_molcfg),intent(inout)      :: molcfg
+    type(rsp_molcfg), intent(inout)   :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -3256,7 +3256,7 @@ Contains
        Dc(1) = -trans(rsp_eq_sol(MyRspFunc%ExNumber2)%D)
        ! Determine transition Fock matrix Fc => Fn = G(-Dn^T)
        Fc(1)=0E0_realk*F
-       call prop_twoint(molcfg, NOOP, (/D,Dc(1)/), (/1/), Fc(1))
+       call rsp_twoint(molcfg, NOOP, (/D,Dc(1)/), (/1/), Fc(1))
     else ! ordinary cubic response function or single transition moment
        if(AeqC) then
           do i=1,MyRspFunc%dims(1) - MyRspFunc%first_comp(1) + 1
@@ -3286,7 +3286,7 @@ Contains
        Dd(1) = rsp_eq_sol(MyRspFunc%ExNumber1)%D
        ! Determine transition Fock matrix Fd => Fm = G(Dm)
        Fd(1)=0E0_realk*F
-       call prop_twoint(molcfg, NOOP, (/D,Dd(1)/), (/1/), Fd(1))
+       call rsp_twoint(molcfg, NOOP, (/D,Dd(1)/), (/1/), Fd(1))
     else ! ordinary cubic response function
        if(AeqD) then
           do i=1,MyRspFunc%dims(1) - MyRspFunc%first_comp(1) + 1
@@ -3367,7 +3367,7 @@ Contains
 
     implicit none
     !> References to molecule input, and solver and integral settings
-    type(prop_molcfg),intent(inout)      :: molcfg
+    type(rsp_molcfg), intent(inout)   :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
@@ -3419,7 +3419,7 @@ Contains
 
     ! Determine Sa
     if(pdbs(1)) then
-       call prop_oneint(molcfg, S, (/MyRspFunc%code(1) /), (/nA /), & 
+       call rsp_oneint(molcfg, S, (/MyRspFunc%code(1) /), (/nA /), & 
             comp=(/first_compA/), S=Sa)
     else
        do i=1,nA
@@ -3429,7 +3429,7 @@ Contains
 
     ! Determine Sb
     if(pdbs(2)) then
-       call prop_oneint(molcfg, S, (/MyRspFunc%code(2) /), (/nB /), &
+       call rsp_oneint(molcfg, S, (/MyRspFunc%code(2) /), (/nB /), &
             comp=(/first_compB/), S=Sb)
     else
        do i=1,nB
@@ -3439,7 +3439,7 @@ Contains
 
     ! Determine Sc
     if(pdbs(3) .and. MyRspFunc%code(3) /= 'EXCI') then
-       call prop_oneint(molcfg, S, (/MyRspFunc%code(3) /), (/nC /), &
+       call rsp_oneint(molcfg, S, (/MyRspFunc%code(3) /), (/nC /), &
             comp=(/first_compC/), S=Sc)
     else ! If not pdbs or if we take the residue: freqC -> -Excitation energy.
        do i=1,nC
@@ -3449,7 +3449,7 @@ Contains
 
     ! Determine Sd
     if(pdbs(4) .and. MyRspFunc%code(4) /= 'EXCI') then
-       call prop_oneint(molcfg, S, (/MyRspFunc%code(4) /), (/nD /), &
+       call rsp_oneint(molcfg, S, (/MyRspFunc%code(4) /), (/nD /), &
             comp=(/first_compD/), S=Sd)
     else ! If not pdbs or if we take the residue: freqD -> Excitation energy.
        do i=1,nD
@@ -3460,7 +3460,7 @@ Contains
 
     ! Determine Sab
     if(pdbs(1) .and. pdbs(2)) then
-       call prop_oneint(molcfg, S, (/ MyRspFunc%code(1),MyRspFunc%code(2) /), &
+       call rsp_oneint(molcfg, S, (/ MyRspFunc%code(1),MyRspFunc%code(2) /), &
             (/ nA,nB /), &
             comp=(/ first_compA,first_compB /), S=Sab)
     else
@@ -3481,7 +3481,7 @@ Contains
              enddo
           enddo
        else
-          call prop_oneint(molcfg, S, (/ MyRspFunc%code(1),MyRspFunc%code(3) /), &
+          call rsp_oneint(molcfg, S, (/ MyRspFunc%code(1),MyRspFunc%code(3) /), &
                (/ nA,nC /), &
                comp=(/ first_compA,first_compC /), S=Sac)
        end if IfBeqC
@@ -3513,7 +3513,7 @@ Contains
              enddo
           enddo
        else
-          call prop_oneint(molcfg, S, (/ MyRspFunc%code(1),MyRspFunc%code(4) /), &
+          call rsp_oneint(molcfg, S, (/ MyRspFunc%code(1),MyRspFunc%code(4) /), &
                (/ nA,nD /), &
                comp=(/ first_compA,first_compD /), S=Sad)
        end if IfBeqD_or_CeqD
@@ -3542,7 +3542,7 @@ Contains
 
     implicit none
     !> References to molecule input, and solver and integral settings
-    type(prop_molcfg),intent(inout)      :: molcfg
+    type(rsp_molcfg), intent(inout)   :: molcfg
     !> Unperturbed Fock matrix
     type(matrix), intent(in)          :: F
     !> Unperturbed density matrix
