@@ -325,9 +325,6 @@ set(LSUTIL_MATRIXU_SOURCES
     LSDALTON/lsutil/mat-operations-aux.F90
     LSDALTON/lsutil/mat-operations-essential.F90
     LSDALTON/lsutil/matrix_utilities.F90
-    LSDALTON/lsutil/matrix_defop_backend.F90
-    LSDALTON/lsutil/matrix_defop_lowlevel.F90
-    LSDALTON/lsutil/matrix_defop.F90
     )
 set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/AO_operations.F90

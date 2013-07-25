@@ -80,6 +80,20 @@ add_library(
 
 target_link_libraries(matrixulib matrixolib)
 
+set(ExternalProjectCMakeArgs
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+    )
+add_external(matrix-defop)
+set(LIBS
+    ${PROJECT_BINARY_DIR}/external/lib/libmatrix-defop.a
+    ${LIBS}
+    )
+
+add_dependencies(matrix-defop matrixmlib)
+add_dependencies(matrix-defop matrixolib)
+
 add_library(
     pdpacklib
     ${LSDALTON_FIXED_FORTRAN_SOURCES}
@@ -223,6 +237,7 @@ add_library(
     )
 
 target_link_libraries(linearslib rspsolverlib)
+add_dependencies(linearslib matrix-defop)
 
 if(DEVELOPMENT_CODE)
     add_library(
