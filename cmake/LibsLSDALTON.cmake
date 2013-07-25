@@ -229,6 +229,7 @@ if(DEVELOPMENT_CODE)
         rsp_propertieslib
         ${RSP_PROPERTIES_SOURCES}
         )
+    add_dependencies(rsp_propertieslib linearslib)
     target_link_libraries(rsp_propertieslib lsintlib)
 endif()
 
