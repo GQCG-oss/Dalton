@@ -1481,19 +1481,16 @@ subroutine pe_polarization(denmats, fckmats)
     integer :: i, j, k, l, m, n
     logical :: skip
     real(dp), dimension(3) :: indtot
-    real(dp), dimension(:,:), allocatable :: Vels
-    real(dp), dimension(:), allocatable :: Vnucs, Vmuls, Vfds
     real(dp), dimension(:,:), allocatable :: Fels
-    real(dp), dimension(:), allocatable :: Fnucs, Fmuls, Ffds
+    real(dp), dimension(:), allocatable :: Fnucs, Fmuls
     real(dp), dimension(:,:), allocatable :: Mkinds, Fktots
     real(dp), dimension(:,:), allocatable :: Fel_ints, Vel_ints
-    
+
     allocate(Mkinds(3*npols,ndens), Fktots(3*npols,ndens))
     Mkinds = 0.0d0; Fktots = 0.0d0
     if (lpol(1)) then
         allocate(Fels(3*npols,ndens))
-        allocate(Fnucs(3*npols), Fmuls(3*npols), Ffds(3*npols))
-        Ffds = 0.0d0
+        allocate(Fnucs(3*npols), Fmuls(3*npols))
     end if
 
     if (response) then
@@ -1513,7 +1510,7 @@ subroutine pe_polarization(denmats, fckmats)
         if (myid == 0) then
             do i = 1, ndens
                 if (lpol(1)) then
-                    Fktots(:3*npols,i) = Fels(:,i) + Fnucs + Fmuls + Ffds
+                    Fktots(:3*npols,i) = Fels(:,i) + Fnucs + Fmuls
                 end if
             end do
         end if
@@ -1612,7 +1609,7 @@ subroutine pe_polarization(denmats, fckmats)
     deallocate(Mkinds, Fktots)
     if (lpol(1)) then
         deallocate(Fels)
-        deallocate(Fnucs, Fmuls, Ffds)
+        deallocate(Fnucs, Fmuls)
     end if
 
 end subroutine pe_polarization
@@ -2002,13 +1999,15 @@ subroutine electron_fields(Fels, denmats)
 
     external :: Tk_integrals
 
-    real(dp), dimension(:,:), intent(inout) :: Fels
+    real(dp), dimension(:,:), intent(out) :: Fels
     real(dp), dimension(:), intent(in) :: denmats
 
     logical :: skip
     integer :: site
     integer :: i, j, k, l, m
-    real(dp), dimension(nnbas,3) :: Fel_ints
+    real(dp), dimension(:,:), allocatable :: Fel_ints
+
+    allocate(Fel_ints(nnbas,3))
 
     Fels = 0.0d0
 
@@ -2043,6 +2042,8 @@ subroutine electron_fields(Fels, denmats)
         end do
     end if
 #endif
+
+    deallocate(Fel_ints)
 
 end subroutine electron_fields
 
