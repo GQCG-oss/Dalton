@@ -1924,7 +1924,14 @@ CAMT--------------
       if (peqm) then
         write(lupri,'(6x,a)') 'Environment is modeled using'//
      &                 ' the polarizable embedding scheme (PE library).'
-! PE TODO: consistency checks, i.e. check peqm compatibility with...
+        if (polar) then
+         write (lupri,'(\a,3a)') 'ERROR: .POLARI and .PEQM are not',
+                             'compatible. Please use either .ALPHA',
+                             'or the RESPONSE module and set frequency',
+                             'to zero.'
+         call quit('ERROR: .POLARI and .PEQM are not compatible')
+
+        end if
       end if
 
 C
