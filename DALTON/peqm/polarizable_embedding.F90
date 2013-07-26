@@ -59,7 +59,7 @@ subroutine pe_init(lupri, coords, charges)
     integer, dimension(:), allocatable :: idxs
     logical, dimension(:), allocatable :: redists
     logical :: lexist
-    real(dp) :: rclose, redist
+    real(dp) :: rclose
 
     if (allocated(Rm) .and. allocated(Zm)) then
         Rm(:,:) = coords
@@ -187,8 +187,8 @@ subroutine pe_init(lupri, coords, charges)
         if (border_type == 'REMOVE') then
             write(luout,*) ''
             do i = 1, nidx
-                write(luout,'(4x,a,i6,2x,a)') 'Removing parameters on site:',&
-                                              & idxs(i) !, elems(idxs(i))
+                write(luout,'(4x,a,i6,2x,a)')&
+                                   &'Removing all parameters on site:', idxs(i)
                 if (lmul(0)) then
                     M0s(:,idxs(i)) = 0.0d0
                 endif
@@ -211,13 +211,7 @@ subroutine pe_init(lupri, coords, charges)
                     P1s(:,idxs(i)) = 0.0d0
                 end if
             end do
-        else if ((border_type == 'REDIST') .or. (border_type == 'REDISA') .or.&
-                &(border_type == 'REDISC')) then
-            if (border_type == 'REDIST') then
-                border_type = 'REDISA'
-                nredist = 1
-            end if
-            redist = real(nredist, dp)
+        else if (border_type == 'REDIST') then
             allocate(redists(nsites))
             redists = .false.
             do i = 1, nidx
@@ -236,29 +230,50 @@ subroutine pe_init(lupri, coords, charges)
                         idx = j
                     end if
                 end do
-                if (lmul(0)) then
-                    M0s(:,idx) = M0s(:,idx) + M0s(:,idxs(i)) / redist
-                endif
-                if (border_type == 'REDISA') then
+
+                if (abs(redist_order) >= 1) then
+                    if (lmul(0)) then
+                        M0s(:,idx) = M0s(:,idx) + M0s(:,idxs(i))&
+                                                    & / real(nredist, dp)
+                    endif
+                end if
+                if (abs(redist_order) >= 2) then
                     if (lmul(1)) then
-                        M1s(:,idx) = M1s(:,idx) + M1s(:,idxs(i)) / redist
+                        M1s(:,idx) = M1s(:,idx) + M1s(:,idxs(i))&
+                                                    & / real(nredist, dp)
                     endif
+                end if
+                if (abs(redist_order) >= 3) then
                     if (lmul(2)) then
-                        M2s(:,idx) = M2s(:,idx) + M2s(:,idxs(i)) / redist
+                        M2s(:,idx) = M2s(:,idx) + M2s(:,idxs(i))&
+                                                    & / real(nredist, dp)
                     endif
+                end if
+                if (abs(redist_order) >= 4) then
                     if (lmul(3)) then
-                        M3s(:,idx) = M3s(:,idx) + M3s(:,idxs(i)) / redist
+                        M3s(:,idx) = M3s(:,idx) + M3s(:,idxs(i))&
+                                                    & / real(nredist, dp)
                     endif
+                end if
+                if (abs(redist_order) >= 5) then
                     if (lmul(4)) then
-                        M4s(:,idx) = M4s(:,idx) + M4s(:,idxs(i)) / redist
+                        M4s(:,idx) = M4s(:,idx) + M4s(:,idxs(i))&
+                                                    & / real(nredist, dp)
                     endif
+                end if
+                if (abs(redist_order) >= 6) then
                     if (lmul(5)) then
-                        M5s(:,idx) = M5s(:,idx) + M5s(:,idxs(i)) / redist
+                        M5s(:,idx) = M5s(:,idx) + M5s(:,idxs(i))&
+                                                    & / real(nredist, dp)
                     endif
+                end if
+                if (redist_order <= -1) then
                     if (lpol(1)) then
-                        P1s(:,idx) = P1s(:,idx) + P1s(:,idxs(i)) / redist
+                        P1s(:,idx) = P1s(:,idx) + P1s(:,idxs(i))&
+                                                    & / real(nredist, dp)
                     end if
                 end if
+
                 if (nredist > 1) then
                     rclose = 1.0d10
                     do j = 1, nsites
@@ -276,27 +291,46 @@ subroutine pe_init(lupri, coords, charges)
                             jdx = j
                         end if
                     end do
-                    if (lmul(0)) then
-                        M0s(:,jdx) = M0s(:,jdx) + M0s(:,idxs(i)) / redist
-                    endif
-                    if (border_type == 'REDISA') then
+                    if (abs(redist_order) >= 1) then
+                        if (lmul(0)) then
+                            M0s(:,jdx) = M0s(:,jdx) + M0s(:,idxs(i))&
+                                                        & / real(nredist, dp)
+                        endif
+                    end if
+                    if (abs(redist_order) >= 2) then
                         if (lmul(1)) then
-                            M1s(:,jdx) = M1s(:,jdx) + M1s(:,idxs(i)) / redist
+                            M1s(:,jdx) = M1s(:,jdx) + M1s(:,idxs(i))&
+                                                        & / real(nredist, dp)
                         endif
+                    end if
+                    if (abs(redist_order) >= 3) then
                         if (lmul(2)) then
-                            M2s(:,jdx) = M2s(:,jdx) + M2s(:,idxs(i)) / redist
+                            M2s(:,jdx) = M2s(:,jdx) + M2s(:,idxs(i))&
+                                                        & / real(nredist, dp)
                         endif
+                    end if
+                    if (abs(redist_order) >= 4) then
                         if (lmul(3)) then
-                            M3s(:,jdx) = M3s(:,jdx) + M3s(:,idxs(i)) / redist
+                            M3s(:,jdx) = M3s(:,jdx) + M3s(:,idxs(i))&
+                                                        & / real(nredist, dp)
                         endif
+                    end if
+                    if (abs(redist_order) >= 5) then
                         if (lmul(4)) then
-                            M4s(:,jdx) = M4s(:,jdx) + M4s(:,idxs(i)) / redist
+                            M4s(:,jdx) = M4s(:,jdx) + M4s(:,idxs(i))&
+                                                        & / real(nredist, dp)
                         endif
+                    end if
+                    if (abs(redist_order) >= 6) then
                         if (lmul(5)) then
-                            M5s(:,jdx) = M5s(:,jdx) + M5s(:,idxs(i)) / redist
+                            M5s(:,jdx) = M5s(:,jdx) + M5s(:,idxs(i))&
+                                                        & / real(nredist, dp)
                         endif
+                    end if
+                    if (redist_order <= -1) then
                         if (lpol(1)) then
-                            P1s(:,jdx) = P1s(:,jdx) + P1s(:,idxs(i)) / redist
+                            P1s(:,jdx) = P1s(:,jdx) + P1s(:,idxs(i))&
+                                                        & / real(nredist, dp)
                         end if
                     end if
                 end if
@@ -318,27 +352,46 @@ subroutine pe_init(lupri, coords, charges)
                             kdx = j
                         end if
                     end do
-                    if (lmul(0)) then
-                        M0s(:,kdx) = M0s(:,kdx) + M0s(:,idxs(i)) / redist
-                    endif
-                    if (border_type == 'REDISA') then
+                    if (abs(redist_order) >= 1) then
+                        if (lmul(0)) then
+                            M0s(:,kdx) = M0s(:,kdx) + M0s(:,idxs(i))&
+                                                        & / real(nredist, dp)
+                        endif
+                    end if
+                    if (abs(redist_order) >= 2) then
                         if (lmul(1)) then
-                            M1s(:,kdx) = M1s(:,kdx) + M1s(:,idxs(i)) / redist
+                            M1s(:,kdx) = M1s(:,kdx) + M1s(:,idxs(i))&
+                                                        & / real(nredist, dp)
                         endif
+                    end if
+                    if (abs(redist_order) >= 3) then
                         if (lmul(2)) then
-                            M2s(:,kdx) = M2s(:,kdx) + M2s(:,idxs(i)) / redist
+                            M2s(:,kdx) = M2s(:,kdx) + M2s(:,idxs(i))&
+                                                        & / real(nredist, dp)
                         endif
+                    end if
+                    if (abs(redist_order) >= 4) then
                         if (lmul(3)) then
-                            M3s(:,kdx) = M3s(:,kdx) + M3s(:,idxs(i)) / redist
+                            M3s(:,kdx) = M3s(:,kdx) + M3s(:,idxs(i))&
+                                                        & / real(nredist, dp)
                         endif
+                    end if
+                    if (abs(redist_order) >= 5) then
                         if (lmul(4)) then
-                            M4s(:,kdx) = M4s(:,kdx) + M4s(:,idxs(i)) / redist
+                            M4s(:,kdx) = M4s(:,kdx) + M4s(:,idxs(i))&
+                                                        & / real(nredist, dp)
                         endif
+                    end if
+                    if (abs(redist_order) >= 6) then
                         if (lmul(5)) then
-                            M5s(:,kdx) = M5s(:,kdx) + M5s(:,idxs(i)) / redist
+                            M5s(:,kdx) = M5s(:,kdx) + M5s(:,idxs(i))&
+                                                        & / real(nredist, dp)
                         endif
+                    end if
+                    if (redist_order <= -1) then
                         if (lpol(1)) then
-                            P1s(:,kdx) = P1s(:,kdx) + P1s(:,idxs(i)) / redist
+                            P1s(:,kdx) = P1s(:,kdx) + P1s(:,idxs(i))&
+                                                        & / real(nredist, dp)
                         end if
                     end if
                 end if
@@ -364,49 +417,66 @@ subroutine pe_init(lupri, coords, charges)
                 if (lpol(1)) then
                     P1s(:,idxs(i)) = 0.0d0
                 end if
-                if (border_type == 'REDISC') then
-                    write(luout,'(/4x,a,i6)') 'Redistributing charges from site:',&
-                                              & idxs(i)
-                    if (nredist == 3) then
-                        write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
-                                                  & idx, jdx, kdx
-                    else if (nredist == 2) then
-                        write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
-                                                  & idx, jdx
-                    else if (nredist == 1) then
-                        write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
-                                                  & idx
-                    end if
-                    write(luout,'(4x,a)') 'and removing all other parameters.'
-                else if (border_type == 'REDISA') then
-                    write(luout,'(/4x,a,i6)') 'Redistributing parameters from site:',&
-                                              & idxs(i)
-                    if (nredist == 3) then
-                        write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
-                                                  & idx, jdx, kdx
-                    else if (nredist == 2) then
-                        write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
-                                                  & idx, jdx
-                    else if (nredist == 1) then
-                        write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
-                                                  & idx
-                    end if
+
+                if (redist_order == 1) then
+                    write(luout,10) 'Redistributing multipoles upto 0th order'
+                else if (redist_order == 2) then
+                    write(luout,10) 'Redistributing multipoles upto 1st order'
+                else if (redist_order == 3) then
+                    write(luout,10) 'Redistributing multipoles upto 2nd order'
+                else if (redist_order == 4) then
+                    write(luout,10) 'Redistributing multipoles upto 3rd order'
+                else if (redist_order == 5) then
+                    write(luout,10) 'Redistributing multipoles upto 4th order'
+                else if (redist_order == 6) then
+                    write(luout,10) 'Redistributing multipoles upto 5th order'
+                else if (redist_order == -1) then
+                    write(luout,10) 'Redistributing multipoles upto 0th order'&
+                                    &//' and polarizabilities'
+                else if (redist_order == -2) then
+                    write(luout,10) 'Redistributing multipoles upto 1st order'&
+                                    &//' and polarizabilities'
+                else if (redist_order == -3) then
+                    write(luout,10) 'Redistributing multipoles upto 2nd order'&
+                                    &//' and polarizabilities'
+                else if (redist_order == -4) then
+                    write(luout,10) 'Redistributing multipoles upto 3rd order'&
+                                    &//' and polarizabilities'
+                else if (redist_order == -5) then
+                    write(luout,10) 'Redistributing multipoles upto 4th order'&
+                                    &//' and polarizabilities'
+                else if (redist_order == -6) then
+                    write(luout,10) 'Redistributing multipoles upto 5th order'&
+                                    &//' and polarizabilities'
+                end if
+                write(luout,'(4x,a,i6)') 'from site:', idxs(i)
+                if (nredist == 3) then
+                    write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
+                                              & idx, jdx, kdx
+                else if (nredist == 2) then
+                    write(luout,'(4x,a,3i6)') 'to neighbouring sites:',&
+                                              & idx, jdx
+                else if (nredist == 1) then
+                    write(luout,'(4x,a,3i6)') 'to neighbouring site:',&
+                                              & idx
                 end if
                 redists(idx) = .true.
                 if (nredist > 1) redists(jdx) = .true.
                 if (nredist > 2) redists(kdx) = .true.
             end do
-            if (lmul(0)) then
-                write(luout,'(/6x,a)') ' Resulting monopoles: '
-                write(luout,'(6x,a)') '----------------------'
-                do i = 1, nsites
-                    if (redists(i)) then
-                        write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
-                                                            & M0s(:,i)
-                    end if
-                end do
+            if (abs(redist_order) >= 1) then
+                if (lmul(0)) then
+                    write(luout,'(/6x,a)') ' Resulting monopoles: '
+                    write(luout,'(6x,a)') '----------------------'
+                    do i = 1, nsites
+                        if (redists(i)) then
+                            write(luout,'(7x,a,1x,i6,2x,f9.4)') elems(i), i,&
+                                                                & M0s(:,i)
+                        end if
+                    end do
+                end if
             end if
-            if (border_type == 'REDISA') then
+            if (abs(redist_order) >= 2) then
                 if (lmul(1)) then
                     write(luout,'(/6x,a)') ' Resulting dipoles: '
                     write(luout,'(6x,a)') '--------------------'
@@ -417,6 +487,8 @@ subroutine pe_init(lupri, coords, charges)
                         end if
                     end do
                 end if
+            end if
+            if (abs(redist_order) >= 3) then
                 if (lmul(2)) then
                     write(luout,'(/6x,a)') ' Resulting quadrupoles: '
                     write(luout,'(6x,a)') '------------------------'
@@ -427,6 +499,8 @@ subroutine pe_init(lupri, coords, charges)
                         end if
                     end do
                 end if
+            end if
+            if (abs(redist_order) >= 4) then
                 if (lmul(3)) then
                     write(luout,'(/6x,a)') ' Resulting octopoles: '
                     write(luout,'(6x,a)') '----------------------'
@@ -437,6 +511,8 @@ subroutine pe_init(lupri, coords, charges)
                         end if
                     end do
                 end if
+            end if
+            if (abs(redist_order) >= 5) then
                 if (lmul(4)) then
                     write(luout,'(/6x,a)') ' Resulting hexadecapoles: '
                     write(luout,'(6x,a)') '--------------------------'
@@ -447,6 +523,8 @@ subroutine pe_init(lupri, coords, charges)
                         end if
                     end do
                 end if
+            end if
+            if (abs(redist_order) >= 6) then
                 if (lmul(5)) then
                     write(luout,'(/6x,a)') ' Resulting ditriacontapoles: '
                     write(luout,'(6x,a)') '-----------------------------'
@@ -457,6 +535,8 @@ subroutine pe_init(lupri, coords, charges)
                         end if
                     end do
                 end if
+            end if
+            if (redist_order <= -1) then
                 if (lpol(1)) then
                     write(luout,'(/6x,a)') ' Resulting polarizabilities: '
                     write(luout,'(6x,a)') '-----------------------------'
@@ -487,6 +567,8 @@ subroutine pe_init(lupri, coords, charges)
     end if
 
     nullify(work)
+
+ 10 format(/4x,a)
 
 end subroutine pe_init
 
@@ -540,21 +622,19 @@ subroutine pe_dalton_input(word, luinp, lupri)
                 backspace(luinp)
                 call chcase(border_type)
                 if ((trim(border_type) /= 'REMOVE') .and.&
-                   & (trim(border_type) /= 'REDIST') .and.&
-                   & (trim(border_type) /= 'REDISC') .and.&
-                   & (trim(border_type) /= 'REDISA')) then
-                    stop 'ERROR: unknown handling of border sites!'
+                   & (trim(border_type) /= 'REDIST')) then! .and.&
+!                   & (trim(border_type) /= 'CUSTOM')) then
+                    stop 'ERROR: unknown handling of border sites'
                 else if (trim(border_type) == 'REMOVE') then
                     read(luinp,*) border_type, Rmin, auoraa
                 else if (trim(border_type) == 'REDIST') then
-                    read(luinp,*) border_type, Rmin, auoraa
-                else if ((trim(border_type) == 'REDISC') .or.&
-                        & (trim(border_type) == 'REDISA')) then
-                    read(luinp,*) border_type, Rmin, auoraa, nredist
+                    read(luinp,*) border_type, redist_order, Rmin, auoraa, nredist
                     if ((nredist > 3) .or. (nredist < 1)) then
                         stop 'ERROR: parameters cannot only be distributed to&
-                             & minimum one site and maximum three sites.'
+                             & minimum one site and maximum three sites'
                     end if
+!                else if (trim(border_type) /= 'CUSTOM') then
+!                    read(luinp,*) border_type, nredist
                 end if
                 call chcase(auoraa)
                 if (trim(auoraa) == 'AA') Rmin = Rmin * aa2au
@@ -609,7 +689,7 @@ subroutine pe_dalton_input(word, luinp, lupri)
                     else if (option(1:1) == '!' .or. option(1:1) == '#') then
                         cycle
                     else
-                        stop 'ERROR: unknown option present in .CUBE section.'
+                        stop 'ERROR: unknown input under .CUBE option'
                     end if
                 end do
             end if
@@ -627,7 +707,8 @@ subroutine pe_dalton_input(word, luinp, lupri)
         else if (option(1:1) == '!' .or. option(1:1) == '#') then
             cycle
         else
-            write(luout,*) 'Unknown option:', option
+            write(luout,*) 'ERROR: unknown option:', option
+            stop 'ERROR: unknown option in *PEQM section'
         end if
     end do
 
