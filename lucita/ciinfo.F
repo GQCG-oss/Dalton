@@ -269,21 +269,35 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
       END
 ***********************************************************************
       SUBROUTINE EN_FROM_DENS(E,I12)
-*
-* Obtain energy from densities and integrals
-*
-*
-* E = SUM(i,j) H(i,j) * RHO1(i,j)
-*          + 0.5*SUM(i,j,K,L) (I J K L ) * RHO2( I J K L )
-*
-* Jeppe Olsen, Early 1997
-*              Sept. 98    : I12 added
-*
+!
+! Obtain energy from densities and integrals
+!
+!
+! E = SUM(i,j) H(i,j) * RHO1(i,j)
+!          + 0.5*SUM(i,j,K,L) (I J K L ) * RHO2( I J K L )
+!
+! Jeppe Olsen, Early 1997
+!              Sept. 98    : I12 added
+!
+!              notes from stefan:
+!
+!              i12 == 1: only one-electron operators active
+!              i12  > 1: one- and two-electron operators active
+!
+!              this routine assumes that the (one-/two-) particle density 
+!              has been computed before entering and placed on default memory locations
+!              work(krho1) and work(krho2). 
+!              integrals have to be read-in as well...    
+!
+!              total energy can be compared to the output of the Davidson driver routine, 
+!              energies have to match otherwise something is clearly wrong.
+!
       use lucita_energy_types
       IMPLICIT REAL*8(A-H,O-Z)
       INTEGER*8 KLINT, KLDEN
       ! for addressing of WORK
       REAL*8 INPROD
+#include "parluci.h"
 *. Input
 #include "mxpdim.inc"
 #include "wrkspc.inc"
@@ -293,8 +307,11 @@ C       WRITE(6,*)  ' ICREA21,IANNI21 ', ICREA21,IANNI21
 *
       COMMON/CINTFO/I12S,I34S,I1234S,NINT1,NINT2,NBINT1,NBINT2
 *
-C?    WRITE(6,*) ' Energy under construction '
-C?    WRITE(6,*) ' =========================='
+      WRITE(LUWRT,*) ' '
+      WRITE(LUWRT,*) ' Recompute energy from 1-/2- particle dens mats  '
+      WRITE(LUWRT,*) ' (additional check of correctness of the results)'
+      WRITE(LUWRT,*) ' ================================================'
+
       CALL MEMMAN(IDUM,IDUM,'MARK ',IDUM,'EN_FRM')
       E1 = 0.0D0
       E2 = 0.0D0
@@ -312,7 +329,6 @@ CTF
       MX4IBLK = MXTSOB_L ** 4
       CALL MEMMAN(KLINT,MX4IBLK,'ADDL  ',2,'KLINT')
       CALL MEMMAN(KLDEN,MX4IBLK,'ADDL  ',2,'KLDEN')
-      ONE = 1.0D0
       DO ISM = 1, NSMOB
        DO JSM = 1, NSMOB
         CALL  SYMCOM(3,1,ISM,JSM,IJSM)
@@ -349,7 +365,7 @@ C?           CALL WRTMT_LU(WORK(KLDEN),NI,NJ,NI,NJ)
              CALL  SYMCOM(3,1,IJSM,KSM,IJKSM)
              IJKLSM = 1
              CALL  SYMCOM(2,1,IJKSM,LSM,IJKLSM)
-C?           WRITE(6,*) ' IJSM IJKSM LSM ',IJSM,IJKSM,IJKLSM
+C?           WRITE(LUWRT,*) ' IJSM IJKSM LSM ',IJSM,IJKSM,IJKLSM
 *
              DO KGAS = 1, NGAS
              DO LGAS = 1, NGAS
@@ -363,16 +379,16 @@ C?           WRITE(6,*) ' IJSM IJKSM LSM ',IJSM,IJKSM,IJKLSM
      &               IXCHNG,0,0,ICOUL)
                 CALL GETD2 (WORK(KLDEN),
      &               ISM,IGAS,JSM,JGAS,KSM,KGAS,LSM,LGAS,ICOUL)
-C?              write(6,*) ' Ism Jsm Ksm Lsm' , Ism,Jsm,Ksm,Lsm
-C?              write(6,*)
+C?              write(LUWRT,*) ' Ism Jsm Ksm Lsm' , Ism,Jsm,Ksm,Lsm
+C?              write(LUWRT,*)
 C?   &          ' Igas Jgas Kgas Lgas' , Igas,Jgas,Kgas,Lgas
-C?              WRITE(6,*) ' Integral block'
+C?              WRITE(LUWRT,*) ' Integral block'
 C?              CALL WRTMT_LU(WORK(KLINT),NI*NJ,NK*NL,NI*NJ,NK*NL)
-C?              WRITE(6,*) ' Density block '
+C?              WRITE(LUWRT,*) ' Density block '
 C?              CALL WRTMT_LU(WORK(KLDEN),NI*NJ,NK*NL,NI*NJ,NK*NL)
                 NIJKL = NI*NJ*NK*NL
                 E2 = E2 + 0.5D0*INPROD(WORK(KLDEN),WORK(KLINT),NIJKL)
-C?              write(6,*) ' Updated 2e-energy ', E2
+C?              write(LUWRT,*) ' Updated 2e-energy ', E2
              END DO
              END DO
            END DO
@@ -384,22 +400,14 @@ C?              write(6,*) ' Updated 2e-energy ', E2
       END DO
 *
       E = ECORE + E1 + E2
-      NTEST = 100
-      IF(NTEST.GE.100) THEN
-        WRITE(6,*)
-        WRITE(6,*) ' Output from EN_FROM_DEN'
-        WRITE(6,*)
-        WRITE(6,*) ' One-electron energy ', E1
-        IF(I12.EQ.2) THEN
-          WRITE(6,*) ' Two-electron energy ', E2
-        END IF
-        WRITE(6,*)
-        WRITE(6,*) ' Total energy : ', E
-      END IF
-*
+      WRITE(luwrt,*) ' One-electron energy:',E1
+      IF(I12.EQ.2) WRITE(luwrt,*) ' Two-electron energy:',E2
+      WRITE(luwrt,*) ' ===================='
+      WRITE(luwrt,*) ' Total energy       :', E
+      WRITE(LUWRT,*) ' '
+
       CALL MEMMAN(IDUM,IDUM,'FLUSM',IDUM,'EN_FRM')
-*
-      RETURN
+
       END
 ***********************************************************************
       SUBROUTINE EXCCLS2(NCLS,IACTIN,IACTOUT,IEXC,

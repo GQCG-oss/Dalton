@@ -970,7 +970,7 @@ C             write(6,*) ' Loop 9999 ILPERM = ', ILPERM
 * Obtain element of two-electron density matrix
 * Currently stored without symmetry
 *
-*. 2-electron density is assumed stored in wotk(krho2)
+*. 2-electron density is assumed stored in work(krho2)
 *
       IMPLICIT REAL*8(A-H,O-Z)
 #include "mxpdim.inc"

@@ -430,6 +430,7 @@ contains
 !-------------------------------------------------------------------------------
       real(8)                          :: work
 #include "wrkspc.inc"
+      real(8)                          :: test_energy
       real(8)                          :: exps2
       real(8)                          :: cv_dummy, hcv_dummy
       integer, parameter               :: isigden = 2 ! density matrix switch for sigden_ci
@@ -774,6 +775,8 @@ contains
 
           call memman(kdum ,idum,'FLUSM ',2,'Xpden2')
         end if
+
+        if(i12 > 1) call en_from_dens(test_energy,i12)
 
       end do ! loop over eigen states
 
