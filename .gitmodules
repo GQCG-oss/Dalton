@@ -4,3 +4,7 @@
 [submodule "external/xcfun"]
 	path = external/xcfun
 	url = git://repo.ctcc.no/xcfun
+[submodule "external/matrix-defop"]
+	path = external/matrix-defop
+	url = git@repo.ctcc.no:matrix-defop.git
+	branch = for-lsdalton

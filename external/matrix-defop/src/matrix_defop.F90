@@ -33,21 +33,6 @@
 !
 ! To check the state of matrices: Whether defined: isdef(A),
 ! whether zero: iszero(A) (zero matrices do not allocate memory)
-!
-! NB: matrix_defop strives to follow fortran 90 standard, but if you run a rigorous
-!     checker (eg. 'forcheck'), you will find numerous instances of the following errors:
-!
-!    **[539 E] procedure must have private accessibility (because arg type private)
-!    **[620 E] dummy input argument must not be defined  (because proxy arg intent in)
-!
-! This is because we have made type(proxy), which is used during formula evaluation,
-! private, to prevent users from declaring and programming with type(proxy)
-! in their code. We also destroy (clear fields of) each type(proxy) after use, to
-! avoid littering memory with the type(matrix) contained within them. If your compiler
-! chokes on these even with 'strict' mode turned off, it might be because it wishes
-! to optimize by reusing type(proxy), which would anyway break matrix_defop.
-! In that case you probably won't be able to use matrix_defop.
-!
 module matrix_defop
 
   use matrix_backend, &
@@ -72,9 +57,6 @@ module matrix_defop
   public mat_ensure_alloc
   public mat_get_part
   public matrix_defop_debug
-  
-  ! uncomment if compiler complains about type(proxy) being private
-  ! public proxy
 
   ! for switching debugging on or off
   logical :: matrix_defop_debug = .false.
@@ -151,7 +133,6 @@ module matrix_defop
   ! private type used to contain intermediates during matrix
   ! algebra evaluation
   type proxy
-     ! private
      real(realk)  f          !scale factor. A must be zero when f=0
      logical      ta, hb, tb !A(^T), have B, B(^T)
      type(matrix) A, B       !matrices in f*A*B
@@ -176,7 +157,7 @@ contains
   ! current allocation (if any)
   subroutine mat_eq_mat(B, A)
     type(matrix), target, intent(inout) :: B
-    type(matrix), target, intent(in)    :: A
+    type(matrix), target                :: A
     call mat_axpy(1E0_realk, A, .false., .true., B)
   end subroutine
 
@@ -454,12 +435,12 @@ contains
     type(matrix), target, intent(in) :: A
     type(proxy),  target             :: P
     ! early return if z real
-    if (aimag(z)==0) call real_times_mat_subr(real(z), A, P)
-    if (aimag(z)==0) return
+    if (dimag(z)==0) call real_times_mat_subr(real(z), A, P)
+    if (dimag(z)==0) return
     ! imag part, then add real part
     call clear_proxy(P)
-    call mat_imag_times_mat(aimag(z), A, P%A)
-    call mat_axpy(real(z), A, .false., .false., P%A)
+    call mat_imag_times_mat(dimag(z), A, P%A)
+    call mat_axpy(dreal(z), A, .false., .false., P%A)
     call prepare_result_proxy(P)
   end function
 
@@ -535,8 +516,8 @@ contains
     type(proxy), target              :: P
     type(proxy), target, intent(out) :: R
     ! early return if z is real
-    if (aimag(z)==0) call real_times_prx_subr(real(z), P, R)
-    if (aimag(z)==0) return
+    if (dimag(z)==0) call real_times_prx_subr(real(z), P, R)
+    if (dimag(z)==0) return
     call rectify_input_proxy(P)
     call clear_proxy(R)
     ! reduce P of the form P=f*A*B to f*A
@@ -547,8 +528,8 @@ contains
        call clear_proxy(P)
     end if
     ! place i*zi*P%f*P%A in R%A, and add zr*P%f*P%A to it
-    call mat_imag_times_mat(aimag(z)*P%f, P%A, R%A)
-    call mat_axpy(real(z)*P%f, P%A, .false., .false., R%A)
+    call mat_imag_times_mat(dimag(z)*P%f, P%A, R%A)
+    call mat_axpy(dreal(z)*P%f, P%A, .false., .false., R%A)
     call mat_remove(P%A)
     R%ta = P%ta
     call prepare_result_proxy(R)
