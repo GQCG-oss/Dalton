@@ -53,7 +53,9 @@ C
 C
 
       use lucita_orbital_spaces
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 
 #include "implicit.h"
 C
@@ -337,8 +339,10 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
+#if defined (BUILD_PELIB)
             if (peqm) call quit('ERROR: DIIS failed to converge'//
      &                 'and QC-SCF is not implemented with PE library')
+#endif
             IF (QMMM) CALL QUIT('DIIS failed to converge for QMMM'//
      &         ' and QC-SCF is not implemented for QMMM')
             FLAG( 2) = .TRUE.

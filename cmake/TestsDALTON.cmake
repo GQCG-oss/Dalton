@@ -269,6 +269,7 @@ add_dalton_test(choles_cc2_polar     "dalton;cholesky;medium")
 
 add_dalton_test(choles_ccsdpt_energy "dalton;cholesky;long")
 
+if(ENABLE_PELIB)
 add_dalton_test(pehf_iter    "dalton;peqm;parallel;short")
 add_dalton_test(pehf_direct  "dalton;peqm;parallel;short")
 add_dalton_test(pehf_gspol   "dalton;peqm;parallel;short")
@@ -282,6 +283,7 @@ add_dalton_test(pehf_beta    "dalton;peqm;parallel;short")
 add_dalton_test(pehf_cube    "dalton;peqm;parallel;short")
 add_dalton_test(perohf_prop  "dalton;peqm;parallel;short")
 add_dalton_test(pehsrohf_wft "dalton;peqm;parallel;short")
+endif()
 
 add_dalton_test(energy_corehole               "dalton;medium")
 add_dalton_test(energy_solv                   "dalton;medium")

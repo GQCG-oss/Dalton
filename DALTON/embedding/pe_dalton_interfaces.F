@@ -21,6 +21,7 @@
 !...      http://daltonprogram.org
 !
 !
+#if defined (BUILD_PELIB)
       subroutine pe_rsplin(ncsim, nosim, bcvecs, bovecs, cref, cmo,
      &                     cindx, udv, dv, udvtr, dvtr, dtv, dtvtr,
      &                     scvecs, sovecs, wrk, nwrk)
@@ -297,3 +298,4 @@
          deallocate(fcaos, fcmo, ufcmo)
 
       end subroutine pe_rspqro
+#endif

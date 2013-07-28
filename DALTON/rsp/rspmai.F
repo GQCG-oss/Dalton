@@ -1265,7 +1265,9 @@ C tbp, may 2005: keywords .ECD  (electronic circular dichroism) and
 C                         .OECD (oriented electronic circular dichroism)
 C                for linear response residues introduced.
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 #include "mxcent.h"
 #include "pcmdef.h"
@@ -1693,10 +1695,12 @@ C
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
+#if defined (BUILD_PELIB)
          if (peqm) then
            write(lupri,'(a)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          end if
+#endif
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
             WRITE(LUPRI,'(A,L1,/)')
@@ -1718,7 +1722,7 @@ C
      *      ,EPSINF
          END IF
 C
-         if (QM3 .or. QMMM .or. peqm .or. PCM) then
+         IF (QM3 .OR. QMMM .OR. PCM) THEN
             IF (.NOT. SOPRPA .AND. SOPPA) THEN
                WRITE (LUPRI,*)
      *     'RSPPP-ERROR: solvent response is not implemented for SOPPA'
@@ -1730,8 +1734,20 @@ C
      *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
                CALL QUIT(
      *     'Full solvent-SOPPA is not implemented, see output')
-            END IF   
-         end if
+            END IF
+#if defined (BUILD_PELIB)
+         else if (peqm .and. .not. soprpa .and. soppa) then
+            write(lupri,*) 
+     &      'ERROR: SOPPA not implemented with PE library.'
+            write(lupri,*)
+     &      'Full polarizable embedding with SOPPA not implemented.'
+            write(lupri,*)
+     &      'For PE with SOPPA/RPA (JCC, 2012-2022, 33, (2012)),'
+            write(lupri,*)
+     &      'use .SOPRPA under **RESPONSE.'
+            call quit('ERROR: SOPPA not implemented with PE library.')
+#endif
+         END IF
 C
          IF (DOESA) THEN
             WRITE(LUPRI,'(A,L1,/)')
@@ -1822,7 +1838,9 @@ C
 C Read input options for LR = "Linear Response"
 C
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 C
 #include "priunit.h"
@@ -2267,10 +2285,12 @@ C
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
+#if defined (BUILD_PELIB)
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          end if
+#endif
 
          IF (CHANNEL_CALC) THEN
             WRITE(LUPRI,'(/A,10(/,10I5))')
@@ -4705,7 +4725,9 @@ C
 
 
       SUBROUTINE ESGGRINP(WORD)
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
       LOGICAL NEWDEF, SPNDEF
       PARAMETER ( NTABLE = 8 )
@@ -4854,10 +4876,12 @@ C
            WRITE(LUPRI,'(A)') ' QM/MM response calculation'
          ENDIF
 
+#if defined (BUILD_PELIB)
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
      &                  ' the polarizable embedding scheme (PE library)'
          end if
+#endif
 
          WRITE(LUPRI,'(A,I4)')
      *      ' Print level for eigenval.eqs.                  : IPRPP  ='
