@@ -60,7 +60,7 @@ contains
     use RSPsolver
     implicit none
 !    type(decompItem),intent(inout) :: decomp
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     integer, intent(in)         :: ngd,ifreq 
     type(Matrix), intent(in)    :: D,S,F
     logical,intent(in)          :: gd_complex
@@ -115,7 +115,7 @@ end subroutine rsp_complex_solver
 !
 implicit none
 !type(decompItem),intent(inout)      :: decomp
-type(prop_molcfg),intent(inout)     :: molcfg
+type(rsp_molcfg), intent(inout)     :: molcfg
 type(Matrix),intent(in)             :: F,D,S
 type(Matrix),intent(inout)          :: GDB(rsp_number_of_rhs)
 type(Matrix),intent(inout),optional :: GDI(rsp_number_of_rhs)
@@ -386,7 +386,7 @@ subroutine extend_complex_reduced_matrices(molcfg,n_red,nx_new,ngd,gd,xsolvec,si
 !
 !================================================================  
 implicit none
-type(prop_molcfg),intent(inout)     :: molcfg
+type(rsp_molcfg), intent(inout)  :: molcfg
 integer,intent(inout)            :: n_red
 integer, intent(in)              :: nx_new,ngd
 type(Matrix),intent(in)          :: xsolvec(:),sigmas(:),rhos(:)
@@ -568,7 +568,7 @@ call mat_free(sigmaT)
 !
 !**************************************************************************
     implicit none
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     type(Matrix),intent(in)    :: D,S
     integer, intent(in)        :: Nb_prev
     integer, intent(inout)     :: Nb_new
@@ -741,7 +741,7 @@ subroutine complex_solver_check(molcfg,F,D,S,gd,XI,XR,omega,gd_complex,conv,gdi)
 !*************************************************************
 implicit none
 !    type(decompItem),intent(in) :: decomp
-    type(prop_molcfg),intent(inout)  :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     type(Matrix), intent(in)        :: F,D,S,gd
     type(Matrix)                    :: XR,XI
     type(Matrix),intent(in),optional:: gdi
@@ -814,7 +814,7 @@ subroutine solve_complex(molcfg,ndim,ndim_red,ngd,freq,red_X,red_Xi,gd_complex)
 !  red_X:    the ngd reduced space real solution vectors
 !  red_X:    the ngd reduced space real solution vectors
     implicit none
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     integer, intent(in)        :: ndim_red, ngd,ndim
     real(realk),intent(in)     :: freq(:)
     logical                    :: gd_complex
@@ -923,7 +923,7 @@ subroutine solve_complex(molcfg,ndim,ndim_red,ngd,freq,red_X,red_Xi,gd_complex)
 !  xsolvector(nx_new) new trial vectors
 !******************************************************************
 
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout)  :: molcfg
     integer,intent(in)               :: itmic,ndim_red,ngd
     type(Matrix),intent(in)          :: F,D,S
     type(Matrix),intent(in)          :: gd(:)
@@ -1111,7 +1111,7 @@ subroutine solve_complex(molcfg,ndim,ndim_red,ngd,freq,red_X,red_Xi,gd_complex)
 !(E[2]-wS[2])X0[I]=G[I]+gammaS[2]X0[R]
 !================================================================ 
 !    type(decompItem),intent(inout):: decomp
-    type(prop_molcfg),intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     type(Matrix),intent(in)    :: F,D,S
     type(Matrix),intent(inout) :: RHS_real(:),RHS_img(:)
     type(Matrix),intent(inout) :: xsolvector(:)

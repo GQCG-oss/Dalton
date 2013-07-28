@@ -19,8 +19,8 @@ use response_wrapper_module,only: get_dipole_moment, &
 use precision
 use configurationType, only: configitem
 use lstiming,      only: lstimer
-use prop_contribs, only: prop_oneave
-use rspsolver,     only: prop_molcfg, init_prop_molcfg
+use rsp_contribs,  only: rsp_oneave
+use rspsolver,     only: rsp_molcfg, init_rsp_molcfg
 use rsp_equations, only: rsp_eq_sol_empty
 use rsp_util,      only: util_save_MOinfo,util_free_MOstuff
 use TYPEDEFTYPE,   only: LSSETTING,lsitem
@@ -39,7 +39,7 @@ contains
     real(realk)             :: Tstart,Tend,t1,t2 !,ten,tstr,E,gradnrm
     real(realk)             :: DipoleMoment(3)
     TYPE(Matrix)            :: F,D,S
-    type(prop_molcfg)       :: molcfg
+    type(rsp_molcfg)        :: molcfg
     ! Molecular gradient
     real(realk), pointer   :: Grad(:,:)
 
@@ -52,11 +52,11 @@ contains
     call CPU_TIME(tstart)
     call LSTIMER('START',t1,t2,LU_PRI)
 
-    !create config struct to be passed to prop_contribs / rsp_equations
-    !    molcfg = prop_molcfg(0E0_realk*S,ls%setting%MOLECULE(1)%p%Natoms, &
+    !create config struct to be passed to rsp_contribs / rsp_equations
+    !    molcfg = rsp_molcfg(0E0_realk*S,ls%setting%MOLECULE(1)%p%Natoms, &
     !         & config%decomp%lupri,config%decomp%luerr, &
     !         & ls%setting,config%decomp,config%response%rspsolverinput)
-    call init_prop_molcfg(molcfg,S,ls%setting%MOLECULE(1)%p%Natoms, &
+    call init_rsp_molcfg(molcfg,S,ls%setting%MOLECULE(1)%p%Natoms, &
          & config%decomp%lupri,config%decomp%luerr, &
          & ls%setting,config%decomp,config%response%rspsolverinput)
 
@@ -182,13 +182,13 @@ contains
     TYPE(lsitem),target     :: ls
     type(configItem),target :: config
     TYPE(Matrix)            :: F,D,S
-    type(prop_molcfg)       :: molcfg
+    type(rsp_molcfg)        :: molcfg
     real(realk)             :: ExcitE
     real(realk),pointer     :: Excit(:)
     !integer
     integer :: i
     lupri = config%lupri
-    call init_prop_molcfg(molcfg,S,ls%setting%MOLECULE(1)%p%Natoms, &
+    call init_rsp_molcfg(molcfg,S,ls%setting%MOLECULE(1)%p%Natoms, &
          & config%decomp%lupri,config%decomp%luerr, &
          & ls%setting,config%decomp,config%response%rspsolverinput)
     call mem_alloc(Excit,molcfg%decomp%cfg_rsp_nexcit)
@@ -237,11 +237,11 @@ contains
     real(realk)             :: Tstart,Tend,t1,t2 !,ten,tstr,E,gradnrm
     real(realk)             :: DipoleMoment(3)
     TYPE(Matrix)            :: F,D,S
-    type(prop_molcfg)       :: molcfg
+    type(rsp_molcfg)        :: molcfg
     ! Molecular gradient
 
     lupri = config%lupri
-    call init_prop_molcfg(molcfg,S,ls%setting%MOLECULE(1)%p%Natoms, &
+    call init_rsp_molcfg(molcfg,S,ls%setting%MOLECULE(1)%p%Natoms, &
          & config%decomp%lupri,config%decomp%luerr, &
          & ls%setting,config%decomp,config%response%rspsolverinput)
     ! The excited states should already be stored in rsp_eq_sol

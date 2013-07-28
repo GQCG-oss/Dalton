@@ -396,13 +396,13 @@ C
       if (peqm) then
         if (.not. tdhf) then 
             call quit('ERROR: MCSCF quadratic response not'//
-     &                ' implemented with PE module.')
+     &                ' implemented with the PE library.')
         else if (nasht > 0) then
             call quit('ERROR: quadratic response not implemented for'//
-     &                ' open shell systems with PE module.')
+     &                ' open shell systems with the PE library.')
         else if (trplet) then
             call quit('ERROR: triplets not implemented for quadratic'//
-     &                ' response with PE module.')
+     &                ' response with the PE library.')
         endif
         call pe_rspqro(vecb, vecc, etrs, xindx, wrk(kzymb), wrk(kzymc),
      &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,

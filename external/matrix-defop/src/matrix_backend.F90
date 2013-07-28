@@ -109,7 +109,6 @@ contains
   end subroutine
 
 
-  ! private per-part axpy
   subroutine axpy_real(a, X, tx, ey, Y)
     use matrix_operations, only: matrix_type, mtype_dense
     real(realk),  intent(in)    :: a
@@ -384,11 +383,9 @@ contains
 
   ! matrix trace = sum Aii, for A square
   function mat_trace(A)
-    implicit none
     type(matrix), intent(in) :: A
-    real(realk) :: mat_trace
-    integer :: i
-    i=0
+    real(realk) mat_trace
+    integer i
     call mat_assert_def(A, 'mat_trace(A) called with matrix A undefined')
     if (A%nrow/=A%ncol) call quit('mat_trace called with non-square matrix A')
     mat_trace = 0
@@ -512,7 +509,7 @@ contains
     if (A%complex) then
        call axpy_real(-f, mat_get_part(A, imag=.true.), .false., .true., Bb)
     else
-       call axpy_real(0E0_realk, A, .false., .true., Bb)
+       call axpy_real(0E0_realk, Bb, .false., .true., Bb)
     end if
     call mat_set_part(Bb, B, imag=.false.)
     ! im(B) = f*re*(A)
@@ -585,7 +582,7 @@ contains
   function mat_acquire_block(A, minrow, maxrow, mincol, maxcol)
     type(matrix), target :: A !no intent to allow use in intent(in) routines
     integer,  intent(in) :: minrow, maxrow, mincol, maxcol
-    real(realk), pointer :: mat_acquire_block(:,:)
+    real(8), pointer :: mat_acquire_block(:,:)
     if (A%init_magic_tag == magic_val_temp) then
        call quit('mat_acquire_block called with matrix A already acquired')
     else if (A%init_magic_tag == magic_val_zero) then
@@ -604,8 +601,8 @@ contains
   end function
 
   subroutine mat_unacquire_block(A, block)
-    type(matrix), target :: A !no intent to allow use in intent(in) routines
-    real(realk),  pointer :: block(:,:) !intent(inout), but pointer can't have intent
+    type(matrix),     target        :: A !no intent to allow use in intent(in) routines
+    real(8), pointer, intent(inout) :: block(:,:)
     if (A%init_magic_tag /= magic_val_temp) &
        call quit('mat_unacquire_block called with matrix A not already acquired')
     nullify(block)
@@ -622,6 +619,10 @@ contains
     type(matrix), intent(inout) :: A
     integer,      intent(in)    :: root
     integer,      intent(in)    :: mat_comm
+#ifdef VAR_MPI
+#include "mpif.h"
+#error mat_mpi_bcast has not yet been implemented in LSdalton
+#endif
   end subroutine
 
   ! LSdalton uses lsquit(msg,lupri) instead of quit, so make this proxy.

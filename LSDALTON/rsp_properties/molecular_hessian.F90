@@ -23,8 +23,8 @@ MODULE molecular_hessian_mod
                                     & II_get_geoderivexchange, &
                                     & II_get_coulomb_mat, &
                                     & II_get_exchange_mat
-    use RSPsolver,              only: prop_molcfg,&
-                                    & init_prop_molcfg,&
+    use RSPsolver,              only: rsp_molcfg,&
+                                    & init_rsp_molcfg,&
                                     & rsp_init
 #endif
 #ifdef BUILD_GEN1INT_LSDALTON
@@ -621,14 +621,14 @@ CONTAINS
     !
     Real(realk)                     :: ts,te 
     Integer                         :: i, nbast
-    type(prop_molcfg)               :: molcfg
+    type(rsp_molcfg)                :: molcfg
     !
     call lstimer('START ',ts,te,lupri)
     DO i=1,3*Natoms
         ! Initialize solver parameters.
-        call init_prop_molcfg(molcfg, S, Natoms,&
-                            & lupri, luerr, setting,&
-                            & config%decomp,config%response%rspsolverinput)
+        call init_rsp_molcfg(molcfg, S, Natoms,&
+                           & lupri, luerr, setting,&
+                           & config%decomp,config%response%rspsolverinput)
 
         !> ntrial: (Max.) number of trial vectors in a given iteration
         !> nrhs:    Number of right-hand sides. Only relevant for linear equations (always 1 for eigenvalue problem)

@@ -44,10 +44,10 @@ contains
   subroutine mat_set_block(A, minrow, maxrow, mincol, maxcol, values, trans)
     type(matrix), intent(inout) :: A
     integer,      intent(in)    :: minrow, maxrow, mincol, maxcol
-    real(realk),  intent(in)    :: values(minrow : maxrow, mincol : maxcol)
+    real(8),      intent(in)    :: values(minrow : maxrow, mincol : maxcol)
     logical, optional, intent(in) :: trans
     logical p_trans
-    real(realk), pointer :: block(:,:)
+    real(8), pointer :: block(:,:)
     p_trans = .false.
     if (present(trans)) p_trans = trans
     if (p_trans) then
@@ -72,8 +72,8 @@ contains
   subroutine mat_get_block(A, minrow, maxrow, mincol, maxcol, values)
     type(matrix)                :: A !intent in, but changed underway
     integer,      intent(in)    :: minrow, maxrow, mincol, maxcol
-    real(realk),  intent(out)   :: values(minrow : maxrow, mincol : maxcol)
-    real(realk), pointer :: block(:,:)
+    real(8),      intent(out)   :: values(minrow : maxrow, mincol : maxcol)
+    real(8), pointer :: block(:,:)
     block => mat_acquire_block(A, minrow, maxrow, mincol, maxcol)
     values(:,:) = block
     call mat_unacquire_block(A, block)
@@ -84,11 +84,11 @@ contains
   function mat_dot_block(A, minrow, maxrow, mincol, maxcol, values, trans)
     type(matrix)                     :: A !intent in, but changed underway
     integer,           intent(in)    :: minrow, maxrow, mincol, maxcol
-    real(realk),       intent(in)    :: values(minrow : maxrow, mincol : maxcol)
+    real(8),           intent(in)    :: values(minrow : maxrow, mincol : maxcol)
     logical, optional, intent(in)    :: trans
-    real(realk) mat_dot_block
+    real(8) mat_dot_block
     logical p_trans !indicates if transposing the values (private)
-    real(realk), pointer :: block(:,:)
+    real(8), pointer :: block(:,:)
     call mat_assert_def(A, 'mat_dot_block called with matrix A undefined')
     p_trans = .false.
     if (present(trans)) p_trans = trans
@@ -119,7 +119,7 @@ contains
     character(8) fmt
     character(4) spr
     type(matrix) Aa
-    real(realk), pointer :: ptr(:,:)
+    real(8), pointer :: ptr(:,:)
     call mat_assert_def(A, 'mat_print called with undefined matrix A')
     ! process optional argument unit, which defaults to stdout
     uni = 6
@@ -161,7 +161,7 @@ contains
   contains
     ! number of pre-decimals in the printing of number
     integer function pre_decimals(r)
-      real(realk), intent(in) :: r
+      real(8), intent(in) :: r
       ! treat nan and inf as zero
       if (.not.(r==r) .or. r > huge(r) .or. r < -huge(r)) then
          pre_decimals = -huge(1)
@@ -172,10 +172,8 @@ contains
     ! number of pre-decimals for a (real) matrix
     integer function pre_decimals_mat(A)
       type(matrix) :: A
-      real(realk), pointer :: elms(:,:)
-      integer :: i, j
-      i=0
-      j=0
+      real(8), pointer :: elms(:,:)
+      integer i, j
       elms => mat_acquire_block(A, 1, nrow, 1, ncol)
       pre_decimals_mat = maxval((/((pre_decimals(elms(i,j)), i=1,nrow), j=1,ncol)/))
       call mat_unacquire_block(A, elms)
@@ -185,15 +183,12 @@ contains
       type(matrix) :: mat !intent in but changed underway
       character(ncol*(wid+1)+3) line
       integer i, j, l
-      real(realk), pointer :: elms(:,:)
+      real(8), pointer :: elms(:,:)
       if (mat_is_zero(mat)) then
          write (uni,'(a)') 'zero matrix'
          return
       end if
       elms => mat_acquire_block(mat, 1, nrow, 1, ncol)
-#ifdef PRG_DIRAC
-      call output(elms, 1, nrow,1, ncol, nrow, ncol, -1, uni)
-#else
       do i = 1, nrow
          line(1:1) = merge(spr(1:1),' ',i==1)
          line(2:2) = spr(1:1)
@@ -213,7 +208,6 @@ contains
             write (uni,'(a)') line(2:len(line)-2)
          end if
       end do
-#endif /* ifdef PRG_DIRAC */
       call mat_unacquire_block(mat, elms)
     end subroutine
   end subroutine

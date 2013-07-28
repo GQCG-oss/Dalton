@@ -3,12 +3,12 @@
 ! GNU Lesser General Public License.
 
 !> @file
-!> Contains module prop_contribs
+!> Contains module rsp_contribs
 
 !> This module contains routines for calculating contributions
 !> to molecular properties (1st order, linear response, etc.),
 !> and perturbed Fock matrices. 
-module prop_contribs
+module rsp_contribs
   use precision
   use integraloutput_type,   only: initIntegralOutputDims
   use ls_Integral_Interface, only: ls_getIntegrals, &
@@ -18,18 +18,18 @@ module prop_contribs
   use TYPEDEF, only: retrieve_output, GCAO2AO_transform_matrixD2
   use Integralparameters
   use matrix_defop
-  use RSPsolver, only: prop_molcfg
+  use RSPsolver, only: rsp_molcfg
   use dal_interface , only: di_GET_GbDs, di_GET_GbDs_and_XC_linrsp
   use matrix_module, only: Matrixp, matrix
   use matrix_operations, only: mat_init, mat_assign, mat_free
   use integralinterfaceMod
   use II_XC_interfaceModule
    implicit none
-   public prop_oneave
-   public prop_twoave
-   public prop_oneint
-   public prop_twoint
-!   public prop_molcfg
+   public rsp_oneave
+   public rsp_twoave
+   public rsp_oneint
+   public rsp_twoint
+!   public rsp_molcfg
    public pert_basdep
    public pert_shape
    public pert_antisym
@@ -131,10 +131,10 @@ contains
    !> E(:). Front for the private subroutine 'oneave' below, checking the
    !> arguments' dimensions, and doing permutations
    !> S0 is passed as argument only as reference to nuclei and basis set
-   subroutine prop_oneave(mol, S0, p, D, dime, E, perm, comp, freq, DFD)
+   subroutine rsp_oneave(mol, S0, p, D, dime, E, perm, comp, freq, DFD)
      implicit none
       !> structure containing integral program settings
-      type(prop_molcfg), intent(inout) :: mol
+      type(rsp_molcfg),  intent(inout) :: mol
       !> unperturbed overlap matrix
       type(matrix),      intent(in) :: S0
       !> p(np) perturbation lables
@@ -202,9 +202,9 @@ contains
          j = i
       end do
       ! check dimensions argument dime, verify that dimensions are positive
-      if (size(dime) < size(p)) call lsquit('prop_oneave argument error: ' &
+      if (size(dime) < size(p)) call lsquit('rsp_oneave argument error: ' &
                // 'More perturbations than dimensions of property, size(dime) < size(p)', mol%lupri)
-      if (any(dime <= 0)) call lsquit('prop_oneave argument error: ' &
+      if (any(dime <= 0)) call lsquit('rsp_oneave argument error: ' &
                // 'Property has a zero or negative dimension, dime <= 0', mol%lupri)
       ! compute step lengths in E (cumulative products of dimensions)
       stepe(1) = 1
@@ -214,12 +214,12 @@ contains
       ! reorder dimensions and step lengths in E according to permutation argument perm
       ddime = dime
       if (present(perm)) then
-         if (size(perm) /= size(dime)) call lsquit('prop_oneave argument ' &
+         if (size(perm) /= size(dime)) call lsquit('rsp_oneave argument ' &
                // 'error: Wrong length of permutation vector, size(perm) /= size(dime)', mol%lupri)
          ! verify that perm is indeed a permutation
          do i = 1, size(dime)-1
             if (perm(i) <= 0 .or. perm(i) > size(dime) .or. &
-                any(perm(i) == perm(i+1:size(dime)))) call lsquit('prop_oneave ' &
+                any(perm(i) == perm(i+1:size(dime)))) call lsquit('rsp_oneave ' &
                       // 'argument error: Permutation must contain each number exactly once', mol%lupri)
          end do
          ddime = (/( dime(perm(i)), i=1,size(dime))/)
@@ -228,19 +228,19 @@ contains
       ! check optional arg comp, default to 1 1 ... 1
       ccomp = 1
       if (present(comp)) then
-         if (size(comp) /= size(p)) call lsquit('prop_oneave argument error: ' &
+         if (size(comp) /= size(p)) call lsquit('rsp_oneave argument error: ' &
                     // 'Wrong number of lowest component indices, size(comp) /= size(p)', mol%lupri)
-         if (any(comp <= 0)) call lsquit('prop_oneave argument error: ' &
+         if (any(comp <= 0)) call lsquit('rsp_oneave argument error: ' &
                     // 'Lowest component indices must be positive, comp <= 0', mol%lupri)
          ccomp = comp
       end if
       if (any(ccomp + ddime(:size(p)) - 1 > pert_shape(mol,p))) &
-         call lsquit('prop_oneave argument error: Lowest component index plus ' &
+         call lsquit('rsp_oneave argument error: Lowest component index plus ' &
                 // 'dimension exceeds dimension of perturbation, comp + dime > pert_shape(mol,p)', mol%lupri)
       ! check optional argument freq, default to zero
       ffreq = 0
       if (present(freq)) then
-         if (size(freq) /= size(p)) call lsquit('prop_oneave ' &
+         if (size(freq) /= size(p)) call lsquit('rsp_oneave ' &
                // 'argument error: Wrong number of frequencies, size(freq) /= size(p)', mol%lupri)
          ffreq = freq
       end if
@@ -270,24 +270,24 @@ contains
       end do
       ! verify that we have the correct number of perturbed densities
       nd = product(ddime(size(p)+1:size(dime)))
-      if (size(D) /= nd) call lsquit('prop_oneave error: Number of' &
+      if (size(D) /= nd) call lsquit('rsp_oneave error: Number of' &
                // 'perturbed densities D does not correspond to dime (and perm)', mol%lupri)
       ! verify number of DFD, and that all are defined
       bas = all((/(field_list(idxp(i))%bas, i=1,size(p))/))
       if (present(DFD)) then
-         if (size(DFD) /= nd) call lsquit('prop_oneave error: Number of' &
+         if (size(DFD) /= nd) call lsquit('rsp_oneave error: Number of' &
                // 'perturbed DFD differs from number of perturbed densities D', mol%lupri)
          ! if no basis perturbation (or zero perturbed integrals,
          ! DFD will not be used, so verify they are defined
          if (.not.bas .or. zero) then
             if (.not.all((/(isdef(DFD(i)), i=1,nd)/))) &
-               call lsquit('prop_oneave error: Undefined matrix in argument DFD(:)', mol%lupri)
+               call lsquit('rsp_oneave error: Undefined matrix in argument DFD(:)', mol%lupri)
          end if
       end if
       ! arguments checked. If perturbed integrals are zero, verify all D defined, return
       if (zero) then
          if (.not.all((/(isdef(D(i)), i=1,nd)/))) &
-            call lsquit('prop_oneave error: Undefined matrix in argument D(:)', mol%lupri)
+            call lsquit('rsp_oneave error: Undefined matrix in argument D(:)', mol%lupri)
          return
       end if
       ! everything set up, so call core procedure oneave.
@@ -314,7 +314,7 @@ contains
    subroutine oneave(mol, S0, np, p, c, dp, w, nd, D, E, DFD)
      implicit none
       !> structure containing integral program settings
-      type(prop_molcfg), intent(inout):: mol 
+      type(rsp_molcfg),  intent(inout):: mol 
       !> unperturbed overlap, to know its dimension
       type(matrix),      intent(in)  :: S0
       !> number of perturbations and order of density
@@ -352,7 +352,7 @@ contains
       A(1) = 0*S0
       A(2:) = (/(A(1), i=2,size(A))/) !scratch matrices
       if (np==0) then
-         call lsquit('prop_oneave error: unperturbed one-electron contribution requested', mol%lupri)
+         call lsquit('rsp_oneave error: unperturbed one-electron contribution requested', mol%lupri)
       else if (np==1 .and. p(1)=='EL  ') then
          ! contract -dipole integrals 'DIPLEN ' with densities
          ! direct calculation of oneel integrals in LSDALTON
@@ -386,9 +386,9 @@ contains
          A(:3) = 0
       else if (np==1 .and. p(1)=='MAG ' .and. nd/=0) then
          if (w(1)/=0) &
-            call lsquit('prop_oneave error: MAG with freq/=0 not implemented', mol%lupri)
+            call lsquit('rsp_oneave error: MAG with freq/=0 not implemented', mol%lupri)
          if (.not.present(DFD)) &
-            call lsquit('prop_oneave error: MAG must have matrix DFD present', mol%lupri)
+            call lsquit('rsp_oneave error: MAG must have matrix DFD present', mol%lupri)
          do i=1,6
             A(i) = 0*S0
             call mat_ensure_alloc(A(i))
@@ -491,9 +491,9 @@ contains
          enddo
          deallocate(expval)
       else
-         print *,'prop_oneave: no integrals for these perturbations: ', &
+         print *,'rsp_oneave: no integrals for these perturbations: ', &
                  (p(i)//' ', i=1,np)
-         call lsquit('prop_oneave: no such integrals', mol%lupri)
+         call lsquit('rsp_oneave: no such integrals', mol%lupri)
       end if
       A(:) = 0 !delete scratch matrices
    end subroutine
@@ -506,10 +506,10 @@ contains
    !> array E(:). Front for the private subroutine 'twoave' below, checking the
    !> arguments' dimensions, and doing permutations
    !> D(1) serves as reference to nuclei, basis and model/functional
-   subroutine prop_twoave(mol, p, D, dime, E, perm, comp)
+   subroutine rsp_twoave(mol, p, D, dime, E, perm, comp)
      implicit none
       !> structure containing integral program settings
-      type(prop_molcfg), intent(in) :: mol
+      type(rsp_molcfg),  intent(in) :: mol
       !> p(np) perturbation lables
       character(*),      intent(in) :: p(:)
       !> (un)perturbed density matrices to contract perturbed one-electron
@@ -550,9 +550,9 @@ contains
                     field_list(idxp(i))%quad .or. &
                .not.field_list(idxp(i))%bas,  i=1,sizep)/))
       ! check dimensions argument dime, verify that dimensions are positive
-      if (size(dime) < sizep) call lsquit('prop_twoave argument error: ' &
+      if (size(dime) < sizep) call lsquit('rsp_twoave argument error: ' &
                // 'More perturbations than dimensions of property, size(dime) < sizep',-1)
-      if (any(dime <= 0)) call lsquit('prop_twoave argument error: ' &
+      if (any(dime <= 0)) call lsquit('rsp_twoave argument error: ' &
                // 'Property has a zero or negative dimension, dime <= 0',-1)
       ! compute step lengths in E (cumulative products of dimensions)
       stepe(1) = 1
@@ -562,12 +562,12 @@ contains
       ! reorder dimensions and step lengths in E according to permutation argument perm
       ddime = dime
       if (present(perm)) then
-         if (size(perm) /= size(dime)) call lsquit('prop_twoave argument ' &
+         if (size(perm) /= size(dime)) call lsquit('rsp_twoave argument ' &
                // 'error: Wrong length of permutation vector, size(perm) /= size(dime)',-1)
          ! verify that perm is indeed a permutation
          do i = 1, size(dime)-1
             if (perm(i) <= 0 .or. perm(i) > size(dime) .or. &
-                any(perm(i) == perm(i+1:size(dime)))) call lsquit('prop_twoave ' &
+                any(perm(i) == perm(i+1:size(dime)))) call lsquit('rsp_twoave ' &
                       // 'argument error: Permutation must contain each number exactly once',-1)
          end do
          ddime = (/( dime(perm(i)), i=1,size(dime))/)
@@ -576,15 +576,15 @@ contains
       ! check optional arg comp, default to 1 1 ... 1
       ccomp = 1
       if (present(comp)) then
-         if (size(comp) /= sizep) call lsquit('prop_twoave argument error: ' &
+         if (size(comp) /= sizep) call lsquit('rsp_twoave argument error: ' &
                     // 'Wrong number of lowest component indices, size(comp) /= size(p)',-1)
-         if (any(comp <= 0)) call lsquit('prop_twoave argument error: ' &
+         if (any(comp <= 0)) call lsquit('rsp_twoave argument error: ' &
                     // 'Lowest component indices must be positive, comp <= 0',-1)
          ccomp = comp
       end if
       if(sizeP.GT.0)then
          if (any(ccomp + ddime(:sizep) - 1 > pert_shape(mol,p))) &
-              call lsquit('prop_twoave argument error: Lowest component index plus ' &
+              call lsquit('rsp_twoave argument error: Lowest component index plus ' &
               // 'dimension exceeds dimension of perturbation, comp + dime > pert_shape(mol,p)',-1)
       endif
       ! sort perturbations p so that idxp is descending
@@ -605,12 +605,12 @@ contains
       end do
       ! verify that we have the correct number of perturbed densities
       nd = product(1+ddime(sizep+1:size(dime)))
-      if (size(D) /= nd) call lsquit('prop_twoave error: Number of' &
+      if (size(D) /= nd) call lsquit('rsp_twoave error: Number of' &
                // 'perturbed densities D does not correspond to dime (and perm)',-1)
       ! arguments checked. If perturbed integrals are zero, verify all D defined, return
       if (zero) then
          if (.not.all((/(isdef(D(i)), i=1,nd)/))) &
-            call lsquit('prop_twoave error: Undefined matrix in argument D(:)',-1)
+            call lsquit('rsp_twoave error: Undefined matrix in argument D(:)',-1)
          deallocate(Etmp)
          return
       end if
@@ -638,7 +638,7 @@ contains
    subroutine twoave(mol, np, nd, p, c, de, D, E)
      implicit none
       !> structure containing integral program settings
-      type(prop_molcfg), intent(in)  :: mol
+      type(rsp_molcfg),  intent(in)  :: mol
       !> number of perturbations and order of density
       integer,           intent(in)  :: np, nd
       !> perturbation lables
@@ -707,12 +707,12 @@ contains
       pd  = product(de(np+1:np+nd))   !product of density dimensions
       pd1 = product(1+de(np+1:np+nd)) !size of D(*)
       if (np==0) then
-         if (nd==0) call lsquit('prop_twoave: unperturbed energy/integrals requested', &
+         if (nd==0) call lsquit('rsp_twoave: unperturbed energy/integrals requested', &
                                 mol%lupri)
          !The highest order Ds multiply the unperturbed F, which is unknown here,
          !so insist that no highest-order Ds are present
          if (.not.all((/(iszero(D(i)), i=pd1-pd+1,pd1)/))) &
-            call lsquit('prop_twoave: unperturbed Fock matrix requested', mol%lupri)
+            call lsquit('rsp_twoave: unperturbed Fock matrix requested', mol%lupri)
          !ajt fixme Stopping at nd=2, for now
          if (nd==2) then
             ! contract first density to Fock matrix, then trace with last
@@ -740,7 +740,7 @@ contains
             ! contract first-order densities to Fock, then trace with second-order
             !ajt Fixme
             if (.not.all((/(iszero(D(i)), i=2+de(1)+de(2)+de(3),pd1)/))) &
-               call lsquit('prop_twoave: nd = 3 not fully implemented', mol%lupri)
+               call lsquit('rsp_twoave: nd = 3 not fully implemented', mol%lupri)
          else if (nd==4) then
             !ajt FIXME dft-cubic contributions should go here
             ! verify that the contribution is zero (HF), otherwise quit
@@ -774,12 +774,12 @@ contains
             if (ok .and. .not.mol%setting%do_dft) then
                E(:de(1)*de(2)*de(3)*de(4)) = 0
             else if (mol%setting%do_dft) then
-               call lsquit('prop_twoave: XC-contribution to cubic (nd=4) not implemented', mol%lupri)
+               call lsquit('rsp_twoave: XC-contribution to cubic (nd=4) not implemented', mol%lupri)
             else
-               call lsquit('prop_twoave: nd = 4 not fully implemented', mol%lupri)
+               call lsquit('rsp_twoave: nd = 4 not fully implemented', mol%lupri)
             end if
          else if (nd > 4) then
-            call lsquit('prop_twoave: nd > 3 not implemented', mol%lupri)
+            call lsquit('rsp_twoave: nd > 3 not implemented', mol%lupri)
          end if
       !London magnetic, no nd==0 because because MAG anti
       else if (np==1 .and. p(1)=='MAG' .and. nd /= 0) then
@@ -853,7 +853,7 @@ contains
                end do
             end do
          else
-            call lsquit('prop_twoave: MAG, nd > 2 not implemented',-1)
+            call lsquit('rsp_twoave: MAG, nd > 2 not implemented',-1)
          end if
          do i = 4, 6
             A(i)=0  
@@ -914,14 +914,14 @@ contains
                end do
             end do
          else
-            call lsquit('prop_twoave: GEO, nd > 2 not implemented', mol%lupri)
+            call lsquit('rsp_twoave: GEO, nd > 2 not implemented', mol%lupri)
          end if
          deallocate(RR)
          if (mol%setting%do_dft) print* !after all the "...integrated to nn electrons..." prints
       else
-         print *,'prop_twoave: no integrals for these perturbations: ', &
+         print *,'rsp_twoave: no integrals for these perturbations: ', &
                  (p(i)//' ', i=1,np)
-         call lsquit('prop_twoave: no such integrals', mol%lupri)
+         call lsquit('rsp_twoave: no such integrals', mol%lupri)
       end if
       A(:) = 0 !delete scratch matrices
    end subroutine
@@ -933,10 +933,10 @@ contains
    !> Front for the private subroutine 'oneint' below, checking the
    !> arguments' dimensions, and doing permutations
    !> S0 is passed as argument only as reference to nuclei and basis set
-   subroutine prop_oneint(mol, S0, p, dimp, F, S, comp, freq)
+   subroutine rsp_oneint(mol, S0, p, dimp, F, S, comp, freq)
      implicit none
       !> mol/basis data needed by integral program
-      type(prop_molcfg), intent(inout) :: mol
+      type(rsp_molcfg),  intent(inout) :: mol
       !> unperturbed overlap matrix
       type(matrix),      intent(in) :: S0
       !> perturbation lables
@@ -996,9 +996,9 @@ contains
          j = i
       end do
       ! check dimensions argument dimp, verify that dimensions are positive
-      if (size(dimp) /= size(p)) call lsquit('prop_oneint argument error: ' &
+      if (size(dimp) /= size(p)) call lsquit('rsp_oneint argument error: ' &
                // 'Different number of perturbations and dimensions, size(dimp) /= size(p)', mol%lupri)
-      if (any(dimp <= 0)) call lsquit('prop_oneint argument error: ' &
+      if (any(dimp <= 0)) call lsquit('rsp_oneint argument error: ' &
                // 'Perturbations have a zero or negative dimension, dimp <= 0', mol%lupri)
       ! compute step lengths in F (cumulative product of dimp)
       stepf(1) = 1
@@ -1008,19 +1008,19 @@ contains
       ! check optional arg comp, default to 1 1 ... 1
       ccomp = 1
       if (present(comp)) then
-         if (size(comp) /= size(p)) call lsquit('prop_oneint argument error: ' &
+         if (size(comp) /= size(p)) call lsquit('rsp_oneint argument error: ' &
                     // 'Wrong number of lowest component indices, size(comp) /= size(p)', mol%lupri)
-         if (any(comp <= 0)) call lsquit('prop_oneint argument error: ' &
+         if (any(comp <= 0)) call lsquit('rsp_oneint argument error: ' &
                     // 'Lowest component indices must be positive, but comp <= 0', mol%lupri)
          ccomp = comp
       end if
       if (any(ccomp + dimp - 1 > pert_shape(mol,p))) &
-         call lsquit('prop_oneint argument error: Lowest component index plus ' &
+         call lsquit('rsp_oneint argument error: Lowest component index plus ' &
                 // 'dimension exceeds dimension of perturbation, comp + dimp - 1 > pert_shape(mol,p)', mol%lupri)
       ! check optional argument freq, default to zero
       ffreq = 0
       if (present(freq)) then
-         if (size(freq) /= size(p)) call lsquit('prop_oneave ' &
+         if (size(freq) /= size(p)) call lsquit('rsp_oneave ' &
                // 'argument error: Wrong number of frequencies, size(freq) /= size(p)', mol%lupri)
          ffreq = freq
       end if
@@ -1079,7 +1079,7 @@ contains
 
    subroutine oneint(mol, S0, np, p, c, dp, w, F, S)
       !> mol/basis data needed by integral program
-      type(prop_molcfg), intent(inout) :: mol
+      type(rsp_molcfg),  intent(inout) :: mol
       !> unperturbed overlap matrix
       type(matrix),      intent(in) :: S0
       !> number of perturbations
@@ -1102,7 +1102,7 @@ contains
       type(matrix) :: A(6) !scratch matrices
       real(realk)  :: R(1) !dummy
       if (np==0) then
-         call lsquit('prop_oneint error:' &
+         call lsquit('rsp_oneint error:' &
                 // ' Unperturbed one-electron integrals requested', mol%lupri)
       else if (np==1 .and. p(1)=='EL  ') then
          do i=1,3
@@ -1151,9 +1151,9 @@ contains
          end if
          A(:3) = 0
       else
-         print *,'prop_oneint: No integrals for these perturbations:', &
+         print *,'rsp_oneint: No integrals for these perturbations:', &
                     (' ' // p(i),i=1,np)
-         call lsquit('prop_oneint: No such integrals', mol%lupri)
+         call lsquit('rsp_oneint: No such integrals', mol%lupri)
       end if
     end subroutine
 
@@ -1165,10 +1165,10 @@ contains
    !> Front for the private subroutine 'twoave' below, checking the arguments'
    !> dimensions, and doing permutations
    !> D(1) serves as reference to nuclei, basis and model/functional
-   subroutine prop_twoint(mol, p, D, dimf, F, perm, comp)
+   subroutine rsp_twoint(mol, p, D, dimf, F, perm, comp)
      implicit none
       !> mol/basis data needed by integral program
-      type(prop_molcfg), intent(in) :: mol
+      type(rsp_molcfg),  intent(in) :: mol
       !> p(np) perturbation lables
       character(*),      intent(in) :: p(:)
       !> (un)perturbed density matrices to contract perturbed
@@ -1210,9 +1210,9 @@ contains
                     field_list(idxp(i))%quad .or. &
                .not.field_list(idxp(i))%bas, i=1,sizep)/))
       ! check dimensions argument dime, verify that dimensions are positive
-      if (size(dimf) < sizep) call lsquit('prop_twoint argument error: ' &
+      if (size(dimf) < sizep) call lsquit('rsp_twoint argument error: ' &
                // 'More perturbations than dimensions of F(:), size(dimf) < size(p)',-1)
-      if (any(dimf <= 0)) call lsquit('prop_twoint argument error: ' &
+      if (any(dimf <= 0)) call lsquit('rsp_twoint argument error: ' &
                // 'Perturbed Fock F(:) has a zero or negative dimension, dimf <= 0',-1)
       ! compute step lengths in E (cumulative products of dimensions)
       stepf(1) = 1
@@ -1222,12 +1222,12 @@ contains
       ! reorder dimensions and step lengths in F according to permutation argument perm
       ddimf = dimf
       if (present(perm)) then
-         if (size(perm) /= size(dimf)) call lsquit('prop_twoint argument ' &
+         if (size(perm) /= size(dimf)) call lsquit('rsp_twoint argument ' &
                // 'error: Wrong length of permutation vector, size(perm) /= size(dimf)',-1)
          ! verify that perm is indeed a permutation
          do i = 1, size(dimf)-1
             if (perm(i) <= 0 .or. perm(i) > size(dimf) .or. &
-                any(perm(i) == perm(i+1:size(dimf)))) call lsquit('prop_twoint ' &
+                any(perm(i) == perm(i+1:size(dimf)))) call lsquit('rsp_twoint ' &
                       // 'argument error: Permutation must contain each number exactly once',-1)
          end do
          ddimf = (/( dimf(perm(i)), i=1,size(dimf))/)
@@ -1236,15 +1236,15 @@ contains
       ! check optional arg comp, default to 1 1 ... 1
       ccomp = 1
       if (present(comp)) then
-         if (size(comp) /= sizep) call lsquit('prop_twoint argument error: ' &
+         if (size(comp) /= sizep) call lsquit('rsp_twoint argument error: ' &
                     // 'Wrong number of lowest component indices, size(comp) /= size(p)',-1)
-         if (any(comp <= 0)) call lsquit('prop_twoint argument error: ' &
+         if (any(comp <= 0)) call lsquit('rsp_twoint argument error: ' &
                     // 'Lowest component indices must be positive, comp <= 0',-1)
          ccomp = comp
       end if
       if(sizeP.GT.0)then
          if (any(ccomp + ddimf(:sizep) - 1 > pert_shape(mol,p))) &
-              call lsquit('prop_twoint argument error: Lowest component index plus ' &
+              call lsquit('rsp_twoint argument error: Lowest component index plus ' &
               // 'dimension exceeds dimension of perturbation, comp + dimf > pert_shape(mol,p)',-1)
       endif
       ! sort perturbations p so that idxp is descending
@@ -1265,12 +1265,12 @@ contains
       end do
       ! verify that we have the correct number of perturbed densities
       nd = product(1+ddimf(sizep+1:size(dimf)))
-      if (size(D) /= nd) call lsquit('prop_twoint error: Number of' &
+      if (size(D) /= nd) call lsquit('rsp_twoint error: Number of' &
                // 'perturbed densities D does not correspond to dimf (and perm)',-1)
       ! arguments checked. If perturbed integrals are zero, verify all D defined, return
       if (zero) then
          if (.not.all((/(isdef(D(i)), i=1,nd)/))) &
-            call lsquit('prop_twoint error: Undefined matrix in argument D(:)',-1)
+            call lsquit('rsp_twoint error: Undefined matrix in argument D(:)',-1)
          return
       end if
       ! permute perturbed Fock matrices in F(:) over to Ftmp(:)
@@ -1303,7 +1303,7 @@ contains
 
    subroutine twoint(mol, np, nd, p, c, df, D, F)
       !> mol/basis data needed by integral program
-      type(prop_molcfg), intent(in) :: mol
+      type(rsp_molcfg),  intent(in) :: mol
       !> number of perturbations and order of density
       integer,           intent(in) :: np, nd
       !> perturbation lables
@@ -1347,7 +1347,7 @@ contains
       pd  = product(df(np+1:np+nd))   !product of density dimensions
       pd1 = product(1+df(np+1:np+nd)) !size of D(*)
       if (np==0) then
-         if (nd==0) call lsquit('prop_twoint error: Unperturbed ' &
+         if (nd==0) call lsquit('rsp_twoint error: Unperturbed ' &
                            // 'two-electron Fock matrix requested',-1)
          ! di_GET_GbDs and di_get_sigma expects A initialized (allocated)
          call mat_ensure_alloc(A(1))
@@ -1368,7 +1368,7 @@ contains
                end do
             end do
          else
-            call lsquit('prop_twoint: nd > 2 not implemented with DFT', mol%lupri)
+            call lsquit('rsp_twoint: nd > 2 not implemented with DFT', mol%lupri)
          end if
          A(1)=0
       else if (np==1 .and. p(1)=='MAG ') then
@@ -1442,9 +1442,9 @@ contains
          ! if nd>=2: lsquit - not implemented
          A(:3) = 0
       else
-         print *,'prop_twoint: No integrals for these perturbations: ', &
+         print *,'rsp_twoint: No integrals for these perturbations: ', &
                  (p(i)//' ', i=1,np)
-         call lsquit('prop_twoint: No such integrals', mol%lupri)
+         call lsquit('rsp_twoint: No such integrals', mol%lupri)
       end if
       A(:) = 0 !delete scratch matrices
     end subroutine twoint
@@ -1504,7 +1504,7 @@ contains
 
    subroutine twofck_ks(mol, n, D, F)
      implicit none
-      type(prop_molcfg), intent(in)    :: mol
+      type(rsp_molcfg),  intent(in)    :: mol
       integer,           intent(in)    :: n
       type(matrix),      intent(in)    :: D(n+1)
       type(matrix),      intent(inout) :: F
@@ -1543,7 +1543,7 @@ contains
       A(1) = 0*D(1)
       call mat_ensure_alloc(A(1))
       if (n==0) then
-         call lsquit('prop_contribs/twofck_ks error: Kohn-Sham contribution ' &
+         call lsquit('rsp_contribs/twofck_ks error: Kohn-Sham contribution ' &
                 // 'to unperturbed Fock matrix requested, but not implemented', mol%lupri)
       else if (n==1) then
          if (D(2)%complex) then
@@ -1598,7 +1598,7 @@ contains
                                    mat_get_part(D(3), imag=.true.), D(1), A(1))
          if (D(2)%complex .and. D(3)%complex) F = F - A(1)
       else
-         call lsquit('prop_contribs/twofck_ks error: n > 2 not implemented', mol%lupri)
+         call lsquit('rsp_contribs/twofck_ks error: n > 2 not implemented', mol%lupri)
       end if
       A(1) = 0
    end subroutine
@@ -1614,7 +1614,7 @@ contains
       if (p(1:min(3,len(p))) == 'AUX') then
          read (p(min(4,len(p)):),'(i1)', iostat=j) i
          if (j /= 0 .or. i < 0 .or. i > 9) &
-            call lsquit('prop_contribs error: ' &
+            call lsquit('rsp_contribs error: ' &
                      // 'Auxiliary label index should be within 0..9, ' // p,-1)
          idx = 1
          return
@@ -1637,7 +1637,7 @@ contains
    function pert_shape(mol, p)
      implicit none
       !> structure containing the integral program settings
-      type(prop_molcfg), intent(in) :: mol
+      type(rsp_molcfg),  intent(in) :: mol
       !> field lables
       character(*),      intent(in) :: p(:)
       integer :: pert_shape(size(p)), i,sizep
@@ -1722,7 +1722,7 @@ contains
    !>     prop_intifc_ksm and prop_intifc_1el
    subroutine prop_intifc_nuc(mol, flds, pnuc)
       !> structure containing the integral program settings
-      type(prop_molcfg), intent(in)  :: mol
+      type(rsp_molcfg),  intent(in)  :: mol
       !> field lables, must currently be either EL or ELGR
       character(4),      intent(in)  :: flds(:)
       !> resulting integral averages
@@ -1734,13 +1734,13 @@ contains
       ! verify label and size
       select case(flds(1))
       case ('EL')
-         ! ajt-to-Thomas: insert direct call in prop_oneave, and remove this
+         ! ajt-to-Thomas: insert direct call in rsp_oneave, and remove this
          if (size(pnuc) /= 3) &
             call lsquit('prop_intifc_nuc: For field EL, size(pnuc) must be 3', mol%lupri)
          call II_get_nucdip(mol%setting, pnuc)
          pnuc = -pnuc
       case ('GEO ')
-         ! ajt-to-Thomas: insert direct call in prop_oneave, and remove this
+         ! ajt-to-Thomas: insert direct call in rsp_oneave, and remove this
          if (size(pnuc) /= 3 * mol%natoms) &
             call lsquit('prop_intifc_nuc: For field ELGR, size(pnuc) must be 6', mol%lupri)
          call II_get_nn_gradient(pnuc, mol%setting, mol%lupri, mol%luerr)
@@ -1774,7 +1774,7 @@ contains
          integer       :: fac
       end type
       !> structure containing the integral program settings
-      type(prop_molcfg), intent(in)    :: mol
+      type(rsp_molcfg),  intent(in)    :: mol
       !> field lables, must currently be either (/'EL'/) or (/'ELGR'/)
       character(4),      intent(in)    :: flds(:)
       !> density matrices to contract integrals with
@@ -1888,7 +1888,7 @@ contains
    !> FIXME Should support several avg / fock contractions at once
    subroutine prop_intifc_2el(mol, flds, dens, avgs, fock)
       !> structure containing the integral program settings
-      type(prop_molcfg),    intent(in) :: mol
+      type(rsp_molcfg),     intent(in) :: mol
       !> field lables, must currently be (/'GEO'/)
       character(4),         intent(in) :: flds(:)
       !> density matrices to contract integrals with
