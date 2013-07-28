@@ -55,7 +55,9 @@ C         .gt.0  MCSCF converged.
 C         -----  ICONV can be used for conditional call of
 C                subsequent steps requiring a converged w.f.
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #ifdef VAR_MPI
       use par_mcci_io
 #endif
@@ -523,9 +525,11 @@ C        CALL SOLGRD(CREF,CMO,INDXCI,DV,G,ESOLT,ERLM,WRK,LFREE)
       ELSEIF (QMMM) THEN
          CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),WRK(KDV),
      &               WRK(KGTOT),ESOLT,WRK(KWRKG),LWRKG)
+#if defined (BUILD_PELIB)
       else if (peqm) then
          call pe_grad(wrk(kcref), wrk(kcmo), wrk(kcindx), wrk(kdv),
      &                wrk(kgtot), esolt, wrk(kwrkg), lwrkg)
+#endif
       ELSE
          ESOLT = D0
       END IF
@@ -589,13 +593,17 @@ chj   END IF
       IF (PCM)    WRITE (LUW4,1019) ESOLT
       IF (QM3)    WRITE (LUW4,1017) EQM3
       IF (QMMM)   WRITE (LUW4,1017) ESOLT
+#if defined (BUILD_PELIB)
       if (peqm)   write (luw4,1021) esolt
+#endif
       WRITE (LUW4,1020) GNORM(3),GNORM(1),GNORM(2)
       IF (LUPRI.NE.LUW4) THEN
          IF (SOLVNT.OR.PCM) WRITE (LUPRI,1016) ESOLT
          IF (QM3) WRITE (LUPRI,1017) EQM3
          IF (QMMM) WRITE (LUPRI,1017) ESOLT
+#if defined (BUILD_PELIB)
          if (peqm) write(lupri,1021) esolt
+#endif
          WRITE (LUPRI,1020) GNORM(3),GNORM(1),GNORM(2)
       END IF
  1005 FORMAT(/' Total MCSCF energy       :',F30.15,T54,
@@ -609,7 +617,9 @@ chj   END IF
      *       /' - Active energy          :',F30.15)
  1016 FORMAT( ' - Dielec. solvation ener.:',F30.15)
  1017 FORMAT( ' - QM/MM solvation energy :',F30.15)
+#if defined (BUILD_PELIB)
  1021 format( ' - Embedding energy       :',f30.15)
+#endif
  1018 FORMAT( ' - srDFT effective energy :',F30.15)
  1019 FORMAT( ' - PCM solvation energy   :',F30.15)
  1020 FORMAT(/' Norm of total gradient   :',F27.12,
@@ -739,10 +749,12 @@ C                    need higher int. transf. level for NEO/NR
                      CALL PEGRD(WRK(KCREF),WRK(KCMO),WRK(KCINDX),
      *                  WRK(KDV),WRK(KGTOT),ESOLT,
      *                  WRK(KWRKG),LWRKG)
+#if defined (BUILD_PELIB)
                   else if (peqm) then
                     call pe_grad(wrk(kcref), wrk(kcmo), wrk(kcindx),
      &                           wrk(kdv), wrk(kgtot), esolt,
      &                           wrk(kwrkg), lwrkg)
+#endif
                   END IF
 #endif
                ELSE
@@ -1106,6 +1118,7 @@ C------------------
          CALL PEFCMO(WRK(KCMO),WRK(KFCSOL),WRK(KDV),
      &               WRK(KWRKG),LWRKG,IPRINT)     ! NB: only works without symmetry
          CALL DAXPY(NNORBT,D1,WRK(KFC),1,WRK(KFCSOL),1)
+#if defined (BUILD_PELIB)
       else if (peqm) then
         kfcsol = kwrkg
         kwrkg = kfcsol + nnorbx
@@ -1113,6 +1126,7 @@ C------------------
         call pe_fckmo(wrk(kcmo), wrk(kfcsol), wrk(kwrkg), wrk(kdv),
      &                wrk(kwrkg+1), lwrkg)
         call daxpy(nnorbx, 1.0d0, wrk(kfc), 1, wrk(kfcsol), 1)
+#endif
       ELSE
          KFCSOL = KFC
       END IF
@@ -1123,19 +1137,23 @@ C        then remember to add FCSOL and FV to FD for RHFENR call
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (SOLVNT .OR. QM3)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
+#if defined (BUILD_PELIB)
          if (peqm) then
             write(luw4,'(a)')
      &   '    (incl. contribution from polarizable embedding potential)'
          end if
+#endif
          CALL RHFENR(IPRI4,LUW4,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (SOLVNT .OR. QM3)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
-         if (peqm) then
-            write(luw4,'(a)') 
+#if defined (BUILD_PELIB)
+            if (peqm) then
+                write(luw4,'(a)') 
      &   '    (incl. contribution from polarizable embedding potential)'
-         end if
+            end if
+#endif
             CALL RHFENR(IPRI6,LUPRI,WRK(KFCSOL), WRK(KWRKG),LWRKG)
          END IF
 C        CALL RHFENR(IPRINT,LUPRI,FD,SCRA,LSCRA)
@@ -2520,8 +2538,10 @@ C    *) NSYM, NORBT, ...
 C    *) FCDIA, ISMO
 C    *) CMO
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
-
+#endif
+C
 #include "implicit.h"
       DIMENSION CMO(*),DV(*),PV(*),FC(*),FV(*),FQ(NORBT,*),XINDX(*)
       DIMENSION ERLM(NLMSOL,2),GORB(*),CREF(*),FCAC(*),H2AC(*),WRK(*)
@@ -2937,6 +2957,7 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          CALL WRITT (LUSIFC,MMORBT,WRK(KMATMO))
       END IF
 
+#if defined (BUILD_PELIB)
       if (peqm) then
          allocate(pefckmo(nnorbx))
          call pe_fckmo(cmo, pefckmo, peenergy, dv, wrk(kwrk1), 
@@ -2945,6 +2966,7 @@ C Write qm/mm solvent part of the Fock matrix to interface file
          call writt(lusifc, mmorbt, pefckmo)
          deallocate(pefckmo)
       end if
+#endif
 C
 C     Revision 2000/05/24 12:43:25  hjj
 C     Write CREF in determinants here, if NCDETS .gt. NCONF

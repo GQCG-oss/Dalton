@@ -265,7 +265,9 @@ C  /* Deck twocal */
      &            ITYPE,JSTRSH,NPRIMS,NCONTS,IORBSH,
      &            I2TYP,ICEDIF,IFTHRS,DINTSKP,GABRAO,DMRAO,DMRSO,
      &            RELCAL)
+#if defined (BUILD_PELIB)
       use pe_variables, only: pe_twoint
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "iratdef.h"
@@ -360,6 +362,7 @@ C
      &               WORK(KIODHR),IREPDM,IFCTYP,ISHLA,ADISTR,I2TYP,
      &               JSTRSH,NPRIMS,NCONTS,IORBSH,RELCAL)
 C
+#if defined (BUILD_PELIB)
       else if (pe_twoint) then
 !
 !        Only intermolecular integrals for peqm module
@@ -373,6 +376,7 @@ C
      &              WORK(KIODHR),IREPDM,IFCTYP,ADISTR,I2TYP,JSTRSH,
      &              NPRIMS,NCONTS,IORBSH,ICEDIF,IFTHRS,GABRAO,DMRAO,
      &              DMRSO,DINTSKP,RELCAL,WORK(KTFMAT))
+#endif
       ELSE
 C
 C        All integrals
@@ -866,6 +870,7 @@ C
  9999 CALL QEXIT('TWOLOP')
       RETURN
       END
+#if defined (BUILD_PELIB)
 C  /* Deck twopeqm */
       subroutine twopeqm(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,GMAT,
      &                   MAXDER,EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,
@@ -1258,6 +1263,7 @@ C     Print Fock matrices
  9999 CALL QEXIT('TWOPEQM')
       RETURN
       end subroutine twopeqm
+#endif
 C  /* Deck twodsa */
       SUBROUTINE TWODSA(WORK,LWORK,HESSEE,FMAT,DMAT,NDMAT,GMAT,MAXDER,
      &                  EXPECT,SUSCEP,UNDIFF,DDFOCK,DIRFCK,SOFOCK,

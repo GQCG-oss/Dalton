@@ -692,7 +692,9 @@ C
 C Scratch:
 C  WRK(LFREE)
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
       DIMENSION CREF(*), CMO(*), DV(*), PV(*), FC(*), FV(*)
       DIMENSION G(*), EVAL(*), EVEC(NREDL,*), IBNDX(*), WRK(*)
@@ -764,10 +766,13 @@ C     ... symmetrize CI vector
 C----------------------
 C CBN+JK 03.01.06
 C----------------------
-      IF (SOLVNT .OR. PCM .OR. QM3 .OR. QMMM .or. peqm) DOPHP = .FALSE.
+      IF (SOLVNT .OR. PCM .OR. QM3 .OR. QMMM) DOPHP = .FALSE.
 C-----------------------
 C CBN+JK 03.01.06
 C----------------------
+#if defined (BUILD_PELIB)
+      if (peqm) dophp = .false.
+#endif
       IF (BETA .NE. D1) DOPHP = .FALSE.
 C     ... only use PHP for beta = 1
 C     PHPMAERKE: implement for beta .ne. 1
