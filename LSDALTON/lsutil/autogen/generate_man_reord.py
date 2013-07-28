@@ -80,11 +80,13 @@ def main():
   if(not os.path.exists(installdir+"reorder_frontend.F90")):
     writenew = True
   else:
-    reordmod  = time.ctime(os.path.getmtime(installdir+"reorder_frontend.F90"))
-    scriptmod = time.ctime(os.path.getmtime(sys.argv[0]))
+#    reordmod  = time.ctime(os.path.getmtime(installdir+"reorder_frontend.F90"))
+    reordmod  = os.path.getmtime(installdir+"reorder_frontend.F90")
+#    scriptmod = time.ctime(os.path.getmtime(sys.argv[0]))
+    scriptmod = os.path.getmtime(sys.argv[0])
     if(scriptmod>reordmod):
       print "REORDER GENERATOR IS NEWER THAN REORDERING FILES - GENERATING NEW ONES"
-      writenew =True
+      writenew = True
   if(not os.path.exists(installdir+"reord2d_2_reord.F90")):
     writenew = True
   if(not os.path.exists(installdir+"reord3d_1_reord.F90")):
@@ -319,10 +321,33 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
       for j in range(modes):
         omppar += "f"+abc[j] +","
     omppar = omppar[0:-1]+")\n"
-   
+  
+    #WRITE OpenACC PARALLEL STATEMENT HERE
+    oaccpar ="!$acc parallel default(none) private("
+    for j in range(modes):
+      oaccpar += abc[j]+",b"+abc[j]+","
+    if ad != "":
+      for j in range(modes):
+        oaccpar += "b"+abc[j]+"f,"
+    oaccpar = oaccpar[0:-1] + ")&\n!$acc firstprivate(bcntr,pre1,pre2,bs,&\n!$acc "
+#    oaccpar = oaccpar[0:-1] + ")\n"
+#    oaccpar = oaccpar[0:-1] + ")"
+    for j in range(modes):
+      oaccpar += "d"+abc[j] +",d"+abc[j]+"2,mod"+abc[j]+","
+    if ad != "":
+      oaccpar += "&\n!$acc "
+      for j in range(modes):
+        oaccpar += "f"+abc[j] +","
+    oaccpar = oaccpar[0:-1]+")&\n!$acc"
+    oaccpar += " present(array_in,array_out)\n"
+ 
     if(not debug_loops): 
       f.write("#ifndef VAR_LSESSL\n")
+      f.write("#ifdef VAR_OPENACC\n")
+      f.write(oaccpar)
+      f.write("#else\n")
       f.write(omppar)
+      f.write("#endif\n")
       f.write("#endif\n")
   
     #get the batched space
@@ -386,8 +411,21 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
               ompdo += " COLLAPSE("+str(modes-len(oldr))+")\n"
             else:
               ompdo += "\n"
+        #WRITE OpenACC DO STUFF HERE
+            oacccache = "!$acc cache(array_in,array_out)\n"
+            oaccdo = "!$acc loop gang"
+#            if (modes-len(oldr)>1 and (not nocollapse)):
+            if modes-len(oldr)>1:
+              oaccdo += " collapse("+str(modes-len(oldr))+")\n"
+            else:
+              oaccdo += "\n"
             f.write("#ifndef VAR_LSESSL\n")
+            f.write("#ifdef VAR_OPENACC\n")
+            f.write(oacccache)
+            f.write(oaccdo)
+            f.write("#else\n")
             f.write(ompdo)
+            f.write("#endif\n")
             f.write("#endif\n")
   
         #ORDER THE LOOPS, this depends on the architecture and may be modified
@@ -445,18 +483,44 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
           for j in  range(len(outeri)):
             if ad != "":
               f.write(offsetstr2+"b"+abc[outeri[j]]+"f = f"+abc[outeri[j]]+" + b"+abc[outeri[j]]+"\n")          
-          f.write("\n")
+#          f.write("\n")
         else:
           offsetstr2 = offsetstr + "  "        
-          f.write("\n")
+#          f.write("\n")
        
 #        offsetstr2 = offsetstr + "  "
-        #WRITING THE INNER FOR LOOPS HERE:
+        #WRITING THE INNER FOR LOOPS HERE: 
         if(not debug_loops):
+#          oaccinnerdo = "!$acc loop vector collapse("+str(modes)+")\n"
+          oaccworkerdo = "!$acc loop worker\n"
+          f.write("#ifdef VAR_OPENACC\n")
+#          f.write(oacccache)
+          f.write(oaccworkerdo)
+          f.write("#endif\n")
           for j in range(modes):
             if(inneri[j] in newr):
+              if (modes == 4 and j == 2):  
+                oaccvectordo = "!$acc loop vector\n"
+                f.write("#ifdef VAR_OPENACC\n")
+                f.write(oaccvectordo)
+                f.write("#endif\n")
+              elif (modes == 3 and j == 1):
+                oaccvectordo = "!$acc loop vector\n"
+                f.write("#ifdef VAR_OPENACC\n")
+                f.write(oaccvectordo)
+                f.write("#endif\n")
               f.write(offsetstr2+"do "+abc[inneri[j]]+"=d"+abc[inneri[j]]+"2+1,d"+abc[inneri[j]]+"\n")
             elif(inneri[j] in newu):
+              if (modes == 4 and j == 2):
+                oaccvectordo = "!$acc loop vector\n"
+                f.write("#ifdef VAR_OPENACC\n")
+                f.write(oaccvectordo)
+                f.write("#endif\n")
+              elif (modes == 3 and j == 1):
+                oaccvectordo = "!$acc loop vector\n"
+                f.write("#ifdef VAR_OPENACC\n")
+                f.write(oaccvectordo)
+                f.write("#endif\n")
               f.write(offsetstr2+"do "+abc[inneri[j]]+"=0,bcntr\n")
             else:
               print "FUCKING INVALID STUFF HAPPENING HERE"
@@ -535,7 +599,22 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
         for j in  range(modes-1,-1,-1):
           f.write(offsetstr2+"enddo\n")
           offsetstr2 = offsetstr2[0:-2]
-  
+          if (modes == 4 and j == 2):
+            f.write("#ifdef VAR_OPENACC\n")
+            f.write("!$acc end loop\n")
+            f.write("#endif\n")
+          if (modes == 4 and j == 0):
+            f.write("#ifdef VAR_OPENACC\n")
+            f.write("!$acc end loop\n")  
+            f.write("#endif\n")
+          if (modes == 3 and j == 1):
+            f.write("#ifdef VAR_OPENACC\n")
+            f.write("!$acc end loop\n")
+            f.write("#endif\n")
+          if (modes == 3 and j == 0):
+            f.write("#ifdef VAR_OPENACC\n")
+            f.write("!$acc end loop\n")
+            f.write("#endif\n")
         f.write("\n")
   
         #WRITING THE OUTER ENDOFOR HERE:
@@ -545,9 +624,16 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
             offsetstr = offsetstr[0:-2]
          
           if(modes-len(oldr)> 0):
-            ompdo ="        !$OMP END DO NOWAIT\n" 
+            ompdo ="        !$OMP END DO NOWAIT\n"
+            oaccdo ="!$acc end loop\n" 
+            oacccache = "!$acc end cache\n"
             f.write("#ifndef VAR_LSESSL\n")
+            f.write("#ifdef VAR_OPENACC\n")
+            f.write(oaccdo)
+            f.write(oacccache)
+            f.write("#else\n")
             f.write(ompdo)
+            f.write("#endif\n")
             f.write("#endif\n")
          
           conditionalstatement="      endif "+label1+"\n"
@@ -556,8 +642,13 @@ def write_subroutine_body(f,idxarr,perm,modes,args,ad):
       if(not debug_loops):
         if(i==modes-1):
           ompdo = "      !$OMP END PARALLEL\n"
+          oaccdo = "!$acc end parallel\n"
           f.write("#ifndef VAR_LSESSL\n")
+          f.write("#ifdef VAR_OPENACC\n")
+          f.write(oaccdo)
+          f.write("#else\n")
           f.write(ompdo)
+          f.write("#endif\n")
           f.write("#endif\n")
   
     if(cas==len(cases)-1):
@@ -624,8 +715,11 @@ def write_subroutine_header(f,idxarr,perm,now,modes,ad,deb):
   subheaderstr+= "    logical :: "
   for i in range(modes):
     subheaderstr+= "mod"+abc[i]+","
-  subheaderstr = subheaderstr[0:-1]
-  subheaderstr += "\n\n"
+#  subheaderstr = subheaderstr[0:-1]
+  subheaderstr = subheaderstr[0:-1] + "\n"
+  subheaderstr += "!$acc declare present(array_in,array_out)\n"
+#  subheaderstr += "\n\n"
+  subheaderstr += "\n"
   for i in range(modes):
     subheaderstr+= "    d"+abc[i]+"=dims("+str(i+1)+")\n"
   subheaderstr+= "\n"
