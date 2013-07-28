@@ -160,7 +160,6 @@ C     multipoles when the calculation is done in parallel
 C     1) The charge correction to the Fock/KS operator
         IF (NMULT .GE. 0) CALL QMMM_CHARGE(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)
-
 C     2) The dipole correction to the Fock/KS operator
         IF (NMULT .GE. 1) CALL QMMM_DIPOLE(DCAO,ESOLT,WRK(KTAO),
      &                       LOCDEB,FIRST,WRK(KWRK1),LWRK1,IPRINT)

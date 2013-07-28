@@ -295,7 +295,7 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-      use pe_variables, only: peqm, pe_mep
+      use pe_variables, only: peqm
       use polarizable_embedding, only: pe_master
 #include "implicit.h"
 #include "dummy.h"
@@ -1501,10 +1501,6 @@ C
      &                    denmats=(daosav(:,1) + daosav(:,2)),
      &                    nmats=1, dalwrk=wrk(kfree:lfree))
         end if
-      end if
-      if (pe_mep) then
-        call pe_master(runtype='mep', denmats=daosav(:,1), nmats=1,
-     &                 dalwrk=wrk(kfree:lfree))
       end if
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC

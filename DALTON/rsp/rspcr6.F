@@ -249,8 +249,8 @@ C
       END IF
 C
       if (peqm) then
-        call quit('ERROR: cubic response not implemented using PE'//
-     &            ' module')
+        call quit('ERROR: cubic response not implemented using the'//
+     &            ' PE library')
       end if
 C
       IF (QMMM) THEN

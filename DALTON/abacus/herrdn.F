@@ -4506,7 +4506,7 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
-      use pe_variables, only: peqm, pe_mep
+      use pe_variables, only: peqm
       use polarizable_embedding, only: pe_init
 #include "implicit.h"
 #include "dummy.h"
@@ -4543,7 +4543,7 @@ C
       IPTEST = MIN(NUCDEP/13,2)
 C     hjaaj: x,y,z normally only interesting for
 C            small molecules, otherwise just a lot of lines.
-      IF ( (IPREAD .GT. IPTEST) .OR. QMMM )  THEN
+      IF ( (IPREAD .GT. IPTEST) .OR. QMMM .or. peqm )  THEN
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
       END IF
@@ -4571,7 +4571,7 @@ C
          NAME   = NAMEX(3*ICENT)(1:4)
          IF (MULT(MULCNT) .EQ. 1) THEN
             IPCMN = IPCMN + 1
-            IF ( (IPREAD .GT. IPTEST) .OR. QMMM ) THEN
+            IF ( (IPREAD .GT. IPTEST) .OR. QMMM .or. peqm) THEN
                WRITE (LUPRI,'(2X,A,3X," : ",3(I5,2X,A,F15.10))')
      &              NAME, ICRX  , CHRXYZ(-1), CORD(1,ICENT),
      &                    ICRX+1, CHRXYZ(-2), CORD(2,ICENT),
@@ -4683,7 +4683,7 @@ C
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
 
-      if (peqm .or. pe_mep) then
+      if (peqm) then
         call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
       end if
 

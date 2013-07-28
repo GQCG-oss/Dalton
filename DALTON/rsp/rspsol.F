@@ -374,7 +374,7 @@ C
       if (peqm) then
         if (.not. tdhf) then
             call quit('ERROR: MCSCF linear response not implemented'//
-     &                ' with PE module.')
+     &                ' with the PE library.')
         endif
         call pe_rsplin(ncsim, nosim, bcvecs, bovecs, wrk(kcref), cmo,
      &                 indxci, udv, wrk(kdv), wrk(kudvtr), wrk(kdvtr),
