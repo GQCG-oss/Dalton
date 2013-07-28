@@ -943,8 +943,9 @@ C           this also includes the case of MMPCM
                END IF
 #if defined (BUILD_PELIB)
             else if (peqm) then
-               write(luw4,'(i4,1p,g20.12,g20.12,d15.5,d12.2)')
-     &               itdiis, emcscf, esolt, grdnrm, emcdif
+               write (luw4,'(i4,1p,g20.12,g20.12,d15.5,d12.2)')
+     &                itdiis,emcscf,esolt,grdnrm,emcdif
+            end if
 #endif
             ELSE
                IF (.NOT.AUTOCC) THEN
