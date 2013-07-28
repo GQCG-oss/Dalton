@@ -62,7 +62,7 @@ contains
  ! Joanna, July 2010
  !=========================================================================
     implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     integer, intent(in)         :: ngd,ifreq 
     type(Matrix), intent(in)    :: D,S,F
     logical,intent(in)          :: gd_complex
@@ -123,7 +123,7 @@ endif
       !
       use RSPSYMSOLVER
       implicit none
-      type(prop_molcfg), intent(inout)    :: molcfg
+      type(rsp_molcfg), intent(inout)     :: molcfg
       type(Matrix),intent(in)             :: F,D,S
       type(Matrix),intent(inout)          :: GDB(rsp_number_of_rhs)
       type(Matrix),intent(inout),optional :: GDI(rsp_number_of_rhs)
@@ -726,7 +726,7 @@ subroutine extend_new_complex_reduced_matrices(molcfg,n_red,nm_red,ni_red,&
 !Joanna, July 2010
 !================================================================  
 implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+type(rsp_molcfg), intent(inout) :: molcfg
 integer,intent(in)            :: n_red,nm_red,nt_red
 integer,intent(in)            :: ni_red,nmi_red,nti_red
 integer, intent(in)              :: nx_new,nm_new,ngd
@@ -1166,7 +1166,7 @@ subroutine solve_complex(molcfg,ndim,ndim_red,nm_red,ni_red,nmi_red,ngd,freq,red
 !  red_Xmi:    the ngd reduced space img u solution vectors
 !  red_Xi:    the ngd reduced space img g solution vectors
     implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     integer, intent(in)      :: ndim_red, ngd,ndim,nm_red
     integer,intent(in)       :: ni_red, nmi_red
     real(realk),intent(in)   :: freq(:)
@@ -1337,7 +1337,7 @@ type(prop_molcfg), intent(inout)    :: molcfg
 ! res_norm_tot : norm of residual to check if convergence not "stuck"
 !******************************************************************
 
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout)  :: molcfg
     integer,intent(in)               :: itmic,ndim_red,ngd,nm_red,ni_red,nmi_red,nt_red,nti_red
     type(Matrix),intent(in)          :: F,D,S
     type(Matrix),intent(in)          :: gd(:)
@@ -1573,7 +1573,7 @@ endif
 ! by preconditioning the RHS vectors.
 ! g and u components obtianed directly.
 !================================================================ 
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     type(Matrix),intent(in)    :: F,D,S
     type(Matrix),intent(inout) :: RHS_real(:),RHS_img(:)
     type(Matrix),intent(inout) :: xp(:),xm(:),xpi(:),xmi(:)

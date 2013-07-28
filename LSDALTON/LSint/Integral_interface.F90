@@ -72,7 +72,7 @@ MODULE IntegralInterfaceMOD
        & II_get_prop_expval,II_get_integral,II_get_integral_full,&
        & II_get_sphmom,II_carmom_to_shermom,II_get_3center_overlap,&
        & II_get_2center_eri,II_get_4center_eri,II_get_4center_eri_diff,&
-       & II_get_nucel_diff,II_precalc_ScreenMat, &
+       & II_get_1el_diff,II_precalc_ScreenMat, &
 #ifdef VAR_MPI
        & II_bcast_screen, II_screeninit, II_screenfree,&
 #endif
@@ -2544,20 +2544,23 @@ END SUBROUTINE II_get_4center_eri_diff
 !> \param lupri Default print unit
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
-!> \param outputintegral the differentiated ne d/dR_e sum_C (ab|C)Z_C
+!> \param outputintegral the differentiated 1-electron integral - for nucel the
+!>        nuclei are summed over according to  d/dR_e sum_C (ab|C)Z_C
 !> \param DIM1 the dimension of orbital alpha
 !> \param DIM2 the dimension of orbital beta
 !> \param DIM5 the number of differential components
 !> \param geoderiv Specifies the geoemetrical derivative order
-SUBROUTINE II_get_nucel_diff(LUPRI,LUERR,SETTING,outputintegral,dim1,dim2,dim5,geoderiv)
+SUBROUTINE II_get_1el_diff(LUPRI,LUERR,SETTING,outputintegral,oneElType,dim1,dim2,dim5,geoderiv)
 IMPLICIT NONE
-TYPE(LSSETTING)       :: SETTING
-INTEGER               :: LUPRI,LUERR,dim1,dim2,dim5
-REAL(REALK),target,intent(inout) :: outputintegral(:,:,:,:,:) !dim1,dim2,1,1,dim5
-Integer,optional      :: geoderiv
+TYPE(LSSETTING)         :: SETTING
+INTEGER                 :: LUPRI,LUERR,dim1,dim2,dim5
+REAL(REALK),target,intent(inout) :: outputintegral(:,:,:,:,:)
+Character(*),intent(IN) :: oneElType
+Integer,optional        :: geoderiv
 !
 Logical             :: dogeoderiv,nofamily
 integer             :: i,j,k,l,n,intSpec,geoOrder
+integer             :: AO1,AO2,AO3,AO4,Oper,n1,n2,n3,n4,n5
 
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
@@ -2582,15 +2585,39 @@ ELSE
   intSpec = RegularSpec
 ENDIF
 
+n1   = dim1
+n2   = dim2
+n3   = 1
+n4   = 1
+n5   = dim5
+AO1  = AORdefault
+AO2  = AORdefault
+AO3  = AOEmpty
+AO4  = AOEmpty
+select case(oneElType)
+case ('nucel')
+  AO3  = AONuclear
+  Oper = NucpotOperator
+case ('overlap')
+  Oper = OverlapOperator
+! intSpec = GeoDerivLHSSpec
+case ('kinetic')
+  n2   = 1
+  n3   = dim2
+  AO2  = AOEmpty
+  AO3  = AORdefault
+  Oper = KineticOperator
+case default
+  call lsquit('Error in II_get_1el_diff - Unknown 1-electron case',lupri)
+end select
 
-call initIntegralOutputDims(setting%output,dim1,dim2,1,1,dim5)
-call ls_dzero(outputintegral,dim1*dim2*dim5)
+call initIntegralOutputDims(setting%output,n1,n2,n3,n4,n5)
+call ls_dzero(outputintegral,n1*n2*n3*n4*n5)
  
-CALL ls_getIntegrals(AORdefault,AORdefault,AONuclear,AOEmpty,&
-     &NucpotOperator,intSpec,ContractedInttype,SETTING,LUPRI,LUERR,geoOrder)
+CALL ls_getIntegrals(AO1,AO2,AO3,AO4,Oper,intSpec,ContractedInttype,SETTING,LUPRI,LUERR,geoOrder)
 
 IF(setting%IntegralTransformGC)THEN
-  call lsquit('Error in II_get_nucel_diff - IntegralTransformGC not implemented',lupri)
+  call lsquit('Error in II_get_1el_diff - IntegralTransformGC not implemented',lupri)
 ELSE
   CALL retrieve_Output(lupri,setting,outputintegral,setting%IntegralTransformGC)
   IF (dogeoderiv) THEN
@@ -2598,7 +2625,7 @@ ELSE
   ENDIF
 ENDIF
 
-END SUBROUTINE II_get_nucel_diff
+END SUBROUTINE II_get_1el_diff
 
 !> \brief Calculates and stores the screening integrals
 !> \author T. Kjaergaard

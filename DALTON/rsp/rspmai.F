@@ -887,6 +887,13 @@ C
                GO TO 100
     3          CONTINUE
                   SOPPA = .TRUE.
+                  IF (SOPPA .AND. EMBEDDING) THEN
+                    WRITE (LUPRI,'(/A)')
+     &              'Full SOPPA + Embedding model not implemented '//
+     &               '- use .SOPRPA instead'
+                    CALL QUIT('RSPINP: Full SOPPA + Embedding model '//
+     &                    'not implemented - use .SOPRPA instead')
+                  END IF
                GO TO 100
     4          CONTINUE
                GO TO 100
@@ -968,8 +975,13 @@ C              .PROP2Average
                   CISRPA = .TRUE.
                GO TO 100
  24            CONTINUE
-                  SOPRPA = .TRUE.
-                  SOPPA = .TRUE.
+                 SOPRPA = .TRUE.
+                 SOPPA = .TRUE.
+                 IF (SOPRPA .AND. (.NOT. EMBEDDING)) THEN
+                  WRITE (LUPRI,'(/A)')
+     &             'Vacuum calc. - use .SOPPA instead'
+                  CALL QUIT('RSPINP: Vacuum calc. - use .SOPPA instead')
+                 END IF
                GO TO 100
             ELSE IF (PROMPT .EQ. '*') THEN
                GO TO 300
@@ -1679,24 +1691,11 @@ C
 
          IF (QM3 .OR. QMMM .OR. QMNPMM) THEN
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
-            IF (.NOT. SOPRPA .AND. SOPPA) THEN
-               WRITE (LUPRI,*)
-     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA'
-               WRITE (LUPRI,*)
-     *     'Full solvent model SOPPA not implemented.'
-               WRITE (LUPRI,*)
-     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))'
-               WRITE (LUPRI,*)
-     *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
-               CALL QUIT(
-     *     'Full solvent-SOPPA is not implemented, see output')
-            END IF
          ENDIF
 
          if (peqm) then
-            write(lupri,'(a)') ' Environment is modeled using'//
-     &                       ' polarizable embedding scheme (PE module)'
-            if (soppa) stop 'Not sure if SOPPA works with PE module yet'
+           write(lupri,'(a)') ' Environment is modeled using'//
+     &                  ' the polarizable embedding scheme (PE library)'
          end if
 
          IF (PCM .AND. .NOT.NEQRSP) THEN
@@ -1718,6 +1717,22 @@ C
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSINF
          END IF
+C
+         if (QM3 .or. QMMM .or. peqm .or. PCM) then
+            IF (.NOT. SOPRPA .AND. SOPPA) THEN
+               WRITE (LUPRI,*)
+     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA'
+               WRITE (LUPRI,*)
+     *     'Full solvent model SOPPA not implemented.'
+               WRITE (LUPRI,*)
+     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))'
+               WRITE (LUPRI,*)
+     *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
+               CALL QUIT(
+     *     'Full solvent-SOPPA is not implemented, see output')
+            END IF   
+         end if
+C
          IF (DOESA) THEN
             WRITE(LUPRI,'(A,L1,/)')
      *      ' Excited state absorption calculattion requested: DOESA  ='
@@ -2258,7 +2273,7 @@ C
 
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
-     &                       ' polarizable embedding scheme (PE module)'
+     &                  ' the polarizable embedding scheme (PE library)'
          end if
 
          IF (CHANNEL_CALC) THEN
@@ -4871,7 +4886,7 @@ C
 
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
-     &                       ' polarizable embedding scheme (PE module)'
+     &                  ' the polarizable embedding scheme (PE library)'
          end if
 
          WRITE(LUPRI,'(A,I4)')

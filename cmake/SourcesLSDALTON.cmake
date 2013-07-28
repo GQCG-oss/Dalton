@@ -132,10 +132,8 @@ set(LINEARS_SOURCES
     LSDALTON/linears/localization_orbspread.F90
     LSDALTON/linears/orbspread_util.F90
     LSDALTON/linears/localization_charge.F90
-    LSDALTON/linears/prop_contribs.F90
     LSDALTON/linears/response_driver.F90
     LSDALTON/linears/response_prop.F90
-    LSDALTON/linears/rsp_equations.F90
     LSDALTON/linears/scfopt-typedef.F90
     LSDALTON/linears/soeo-redspace.F90
     LSDALTON/linears/soeo-loop.F90
@@ -325,9 +323,6 @@ set(LSUTIL_MATRIXU_SOURCES
     LSDALTON/lsutil/mat-operations-aux.F90
     LSDALTON/lsutil/mat-operations-essential.F90
     LSDALTON/lsutil/matrix_utilities.F90
-    LSDALTON/lsutil/matrix_defop_backend.F90
-    LSDALTON/lsutil/matrix_defop_lowlevel.F90
-    LSDALTON/lsutil/matrix_defop.F90
     )
 set(LSUTIL_TYPE_SOURCES
     LSDALTON/lsutil/AO_operations.F90

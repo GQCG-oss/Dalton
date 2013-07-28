@@ -55,7 +55,7 @@ contains
  !=========================================================================
 !
 implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+type(rsp_molcfg), intent(inout)     :: molcfg
 logical, intent(in)                 :: LINEQ
 type(Matrix),intent(in)             :: F,D,S
 type(Matrix),intent(inout)          :: GDB(rsp_number_of_rhs)
@@ -497,7 +497,7 @@ subroutine extend_new_reduced_matrices(molcfg,n_red,nm_red,nt_red,nx_new,nm_new,
 !
 !================================================================  
 implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+type(rsp_molcfg), intent(inout)  :: molcfg
 integer,intent(in)               :: n_red,nm_red,nt_red
 integer, intent(in)              :: nx_new,nm_new,ngd
 logical                          :: lineq
@@ -719,7 +719,7 @@ subroutine solve_std(molcfg,ndim,ndim_red,nm_red,ngd,freq,red_X,red_Xm)
 !
 !------------------------------------------------------------------
     implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     integer, intent(in)      :: ndim_red, ngd,ndim,nm_red
     real(realk),intent(in)   :: freq(:)
     real(realk),intent(inout):: red_X(:,:),red_Xm(:,:)
@@ -824,7 +824,7 @@ type(prop_molcfg), intent(inout)    :: molcfg
 ! res_norm_tot : norm of residual to check if convergence not "stuck"
 !******************************************************************
 
-    type(prop_molcfg), intent(inout) :: molcfg
+    type(rsp_molcfg), intent(inout)  :: molcfg
     logical,intent(in)               :: lineq
     integer,intent(in)               :: itmic,ngd,nt_red,ndim_red,nm_red
     type(Matrix),intent(in)          :: F,D,S
@@ -1041,7 +1041,7 @@ call mat_free(scr)
 ! by preconditioning the RHS vectors.
 ! g and u components obtianed directly.
 !================================================================ 
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     type(Matrix),intent(in)    :: S,D,F
     type(Matrix),intent(inout) :: RHS_real(:),RHS_img(:)
     type(Matrix),intent(inout) :: xp(:),xm(:)
@@ -1089,7 +1089,7 @@ end subroutine get_start_vectors
 !
 !**************************************************************************
     implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     type(Matrix),intent(in)    :: D,S
     integer, intent(in)        :: Nb_prev
     integer, intent(inout)     :: Nb_new
@@ -1242,7 +1242,7 @@ type(prop_molcfg), intent(inout)    :: molcfg
 !******************************************************
     !expanded_vec must be zeroed outside first time it is used!!!
     implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     integer, intent(in) :: ndim_red, lu_basis, ndim
     real(realk), intent(in) :: red_eivec_i(:)
     type(Matrix), intent(inout) :: expanded_vec  
@@ -1279,7 +1279,7 @@ type(prop_molcfg), intent(inout)    :: molcfg
 ! Purpose: set up initial trial vectors 
 !--------------------------------------
     implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout)      :: molcfg
     logical                              :: lineq
     type(Matrix), intent(in)             :: F,D,S
     type(Matrix), intent(inout),optional :: gdp(rsp_number_of_rhs),gdm(rsp_number_of_rhs)
@@ -1310,7 +1310,7 @@ type(prop_molcfg), intent(inout)    :: molcfg
 ! ÅLea and Sonia, Feb. 2005/Sonia, Nov. 2005
 !*******************************************************
     implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     integer,intent(in)         :: nexcit     !number of roots (required in input)
     type(Matrix),intent(in)    :: D,S
     type(Matrix),intent(inout) :: bvecs(rsp_bvec_dim),bvecsm(rsp_bvec_dim)  !output   
@@ -1424,7 +1424,7 @@ subroutine solve_red_eigen(molcfg,ndim,ndim_red,nm_red,nexci,eival,red_X,red_Xm)
 !  red_X:    the ngd reduced space real solution vectors
 !  red_X:    the ngd reduced space real solution vectors
     implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     integer, intent(in)      :: ndim_red, nexci,ndim,nm_red
     real(realk),intent(inout)   :: eival(:)
     real(realk),intent(inout):: red_X(:,:),red_Xm(:,:)
@@ -1575,7 +1575,7 @@ type(prop_molcfg), intent(inout)    :: molcfg
 !******************************************************
     !expanded_vec must be zeroed outside first time it is used!!!
     implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     integer, intent(in) :: nt_red, lu_basis, ndim
     real(realk), intent(in) :: red_eivec_i(:),red_eivec_m(:)
     type(Matrix), intent(inout) :: expanded_vec,expanded_vecm  
@@ -1647,7 +1647,7 @@ type(prop_molcfg), intent(inout)    :: molcfg
     !
     !**************************************************************************
     implicit none
-    type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     type(Matrix),intent(in)    :: D,S
     integer, intent(in)        :: Nb_prev
     integer, intent(inout)     :: Nb_new,nm_new
@@ -1866,7 +1866,7 @@ type(prop_molcfg), intent(inout)    :: molcfg
 !   lin_depend_i: linear dependence indicator: 1 if non-dep, set to 0 if lin dep     (OUT)
 !   Bvec_temp_i,  the i'th bvector to be normalized				     (INOUT)
     implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+    type(rsp_molcfg), intent(inout) :: molcfg
     integer, intent(in) :: iturn,i
     integer, intent(inout) :: lin_depend_i
     type(Matrix), intent(inout) :: Bvec_tmp_i
@@ -1954,7 +1954,7 @@ endif
 ! Based on RSPORD
 !
   implicit none
-type(prop_molcfg), intent(inout)    :: molcfg
+  type(rsp_molcfg), intent(inout) :: molcfg
   integer, intent(in) :: NDIM
   integer, intent(inout) :: ISNDX(3)
   real(realk),intent(in) :: SRED(NDIM,NDIM) 

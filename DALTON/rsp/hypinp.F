@@ -542,7 +542,7 @@ C
 
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
-     &                       ' polarizable embedding scheme (PE module)'
+     &                  ' the polarizable embedding scheme (PE library)'
          end if
 
          IF (QRSHG) THEN
@@ -1014,7 +1014,7 @@ C
 
          if (peqm) then
             write(lupri,'(a)') ' Environment is modeled using'//
-     &                       ' polarizable embedding scheme (PE module)'
+     &                  ' the polarizable embedding scheme (PE library)'
          end if
 
          IF (MCDCAL) THEN
