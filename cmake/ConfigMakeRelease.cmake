@@ -29,7 +29,9 @@ add_custom_target(
     COMMAND ${CMAKE_SOURCE_DIR}/maintenance/release/remove_unreleased_code ${EXPORT_DIR}
     COMMAND rm -rf ${EXPORT_DIR}/external/gen1int/.git
     COMMAND rm -rf ${EXPORT_DIR}/external/xcfun/.git
-    COMMAND rm -rf ${EXPORT_DIR}/external/pelib/.git
+    if(ENABLE_PELIB)
+        COMMAND rm -rf ${EXPORT_DIR}/external/pelib/.git
+    endif()
     COMMAND echo "${GIT_REVISION}" > ${EXPORT_DIR}/cmake/GIT_HASH
     COMMAND make package_source
     COMMENT "Packaging source files"
