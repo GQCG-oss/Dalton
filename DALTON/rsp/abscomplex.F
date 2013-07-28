@@ -1164,7 +1164,9 @@ c
 C
 C PURPOSE:
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 #include "abslrs.h"
 #include "thrzer.h"
@@ -1199,6 +1201,13 @@ C     local
       REAL*8  DUMMY
       INTEGER IDUMMY
       PARAMETER ( DUMMY = 1.0D20 , IDUMMY = - 9999999 )
+C
+      logical :: polemb = .false.
+#if defined (BUILD_PELIB)
+      if (peqm) then
+        polemb = .true.
+      end if
+#endif
 C
       CALL QENTER('ABS_LINE2')
 C
@@ -1265,7 +1274,7 @@ c
 C
 C     FLAG(16) MEANS SOLVENT CALCULATION
 C
-      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. peqm) THEN
+      IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. polemb) THEN
          CALL RSPSLV(0,NNMAX,DUMMY,XTEMP,CMO,XINDX,UDV,
      &               XTMP,WRK(KFREE),LFREE)
       ENDIF

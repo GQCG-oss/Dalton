@@ -4092,7 +4092,9 @@ C
 C   We assume that either the SIRIUS module or the SETSIR
 C   subroutine has been called before RSPMC.
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 #include "infdim.h"
 C
@@ -4378,7 +4380,8 @@ C
              FC(I) = FC(I) - WRK(I)
          ENDDO
       END IF
-           
+ 
+#if defined (BUILD_PELIB)
       if (peqm .and. .not. tdhf) then
         write(lupri,*) 'Running PE-MCSCF response calculation.'
         write(lupri,*) '=> Subtracting PE Fock matrix'
@@ -4386,6 +4389,7 @@ C
         call readt (lusifc, nnorbt, wrk)
         fc(1:nnorbt) = fc(1:nnorbt) - wrk(1:nnorbt)
        endif
+#endif
 
       IF (SOPPA) THEN
 C

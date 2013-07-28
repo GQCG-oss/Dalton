@@ -1705,8 +1705,10 @@ C  /* Deck onedrl */
       SUBROUTINE ONEDRL(KEY,OMATX,OMATY,OMATZ,IATOM,DERX,DERY,DERZ,WORK,
      &                  LWORK,IPRINT,INTPRI)
 C
+#if defined (BUILD_PELIB)
        use pe_variables, only: peqm
        use polarizable_embedding, only: pe_master
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -1867,6 +1869,7 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
             IF (IPQMMM .GT. 1) CALL TIMER('QMMMFIRST',TIMSTR,TIMEND)
          END IF
 
+#if defined (BUILD_PELIB)
          if (peqm .and. (key .eq. 'HMAT') .and. .not. nolond) then
             ktmat = kwrk
             mwrk  = ktmat + 3 * n2basx
@@ -1876,6 +1879,7 @@ C     Calls QM3FIRST_P if parallel and with #nodes>1, Arnfinn nov. -08
      &                     nmats=1, dalwrk=work(mwrk:lleft))
             call daxpy(n2basx*3, d1, work(ktmat), 1, work(kmats), 1)
          end if
+#endif
 
          IF (DERX) CALL DCOPY(N2BASX,WORK(KMATS         ),1,OMATX,1)
          IF (DERY) CALL DCOPY(N2BASX,WORK(KMATS+  N2BASX),1,OMATY,1)
