@@ -879,9 +879,9 @@ C           this also includes the case of MMPCM
      &                 (NISH(I),I=1,NSYM)
                END IF
 #if defined (BUILD_PELIB)
-            if (peqm) then
-                  write (luw4,'(i4,1p,g20.12,g20.12,d15.5,d12.2)')
-     &               itdiis,emcscf,esolt,grdnrm,emcdif
+            else if (peqm) then
+               write (luw4,'(i4,1p,g20.12,g20.12,d15.5,d12.2)')
+     &                itdiis,emcscf,esolt,grdnrm,emcdif
             end if
 #endif
             ELSE
