@@ -203,7 +203,9 @@ C
 C******************************************
 C
 Cjje
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 Cjje
 #include "implicit.h"
 #include "dummy.h"
@@ -1652,7 +1654,10 @@ C
 C  Do we use embedding ?
 C  (that is, is QM part embedded in environment)
 C
-      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM .or. peqm
+      EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM
+#if defined (BUILD_PELIB)
+      embedding = peqm
+#endif
 C
 C ***  PRINT INPUT DATA *****
 C
@@ -2203,7 +2208,6 @@ C  /* Deck sir_geninp */
 C
 C 1-Oct 1987 Hans Agren
 C
-      use pe_variables, only: peqm
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
@@ -5112,7 +5116,9 @@ C             using at most 72 characters per row
 C
 C  CALLED FROM SIRRDI
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 C
 C Used from common blocks:
@@ -5490,7 +5496,9 @@ C
        IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
        IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
        IF (QMMM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QMMM'
+#if defined (BUILD_PELIB)
        IF (peqm) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
+#endif
       END IF
 C
 C ***** Wave function specifications
@@ -5504,6 +5512,7 @@ C
          WRITE(IWUNIT,'(/5X,A/)')
      &   'For the specification of the GAS CI in LUCITA: see later.'
       END IF
+#if defined (BUILD_PELIB)
       if (peqm) then
         write(iwunit,'(/5x,a)')
      &                  'Wave function environment is modeled using the'
@@ -5511,6 +5520,7 @@ C
      &                  'polarizable embedding model (PE library).'
         WFTYPE = 'PE-'//WFTYPE
       end if
+#endif
 C     for SIRIUS (not LUCITA) :
       NINEL = 2*NISHT
       CALL MOLCHR(ICHARG)

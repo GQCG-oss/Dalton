@@ -241,7 +241,10 @@ C  /* Deck e3init */
      *                  ETRS,XINDX,UDV,PV,WRK,LWRK,KZYVA,KZYVB,KZYVC,
      *                  ISYMA,ISYMB,ISYMC,ISPINA,ISPINB,ISPINC,CMO,FC,
      *                  FV,MJWOP)
+C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 C
 C
 #include "implicit.h"
@@ -393,6 +396,7 @@ C
          END IF
       END IF
 
+#if defined (BUILD_PELIB)
       if (peqm) then
         if (.not. tdhf) then 
 !            edh: This part is not ready yet and should quit   
@@ -419,6 +423,7 @@ C
      &                 udv, wrk(kfree), lfree, kzyva, kzyvb, kzyvc,
      &                 isyma, isymb, isymc, cmo, mjwop)
       end if
+#endif
 
       IF (QM3) THEN
          IF (TDHF) THEN

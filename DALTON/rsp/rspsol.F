@@ -112,7 +112,10 @@ C
 C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
+C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -371,12 +374,14 @@ C
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          FIRST1 = .FALSE.
       ENDIF
+#if defined (BUILD_PELIB)
       if (peqm) then
         call pe_rsplin(ncsim, nosim, bcvecs, bovecs, wrk(kcref), cmo,
      &                 indxci, udv, wrk(kdv), wrk(kudvtr), wrk(kdvtr),
      &                 wrk(kdvt), wrk(kdvttr), evecs,
      &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
       end if
+#endif
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)

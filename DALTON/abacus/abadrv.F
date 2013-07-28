@@ -714,7 +714,9 @@ C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
 C             (Feb 2003: one of **START, **PROPE, or **FINAL)
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 #include "iratdef.h"
 #include "dummy.h"
@@ -1920,7 +1922,7 @@ CAMT quit here to catch this...
             CALL QUIT('Specified Mag. Props. NYI with Symm for DFT')
       ENDIF
 CAMT--------------
-
+#if defined (BUILD_PELIB)
       if (peqm) then
         write(lupri,'(6x,a)') 'Environment is modeled using'//
      &                 ' the polarizable embedding scheme (PE library).'
@@ -1933,6 +1935,7 @@ CAMT--------------
 
         end if
       end if
+#endif
 
 C
 C

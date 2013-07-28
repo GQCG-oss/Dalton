@@ -20,6 +20,7 @@
 !...   For further information, including how to get a licence, see:
 !...      http://daltonprogram.org
 !
+#if defined (BUILD_PELIB)
       subroutine pe_grad(cref, cmo, cindx, dv, grd, energy, wrk, nwrk)
 !
 !     Written by Erik Donovan Hedegård (edh) and Jógvan Magnus H. Olsen
@@ -1914,3 +1915,4 @@ C     as to what works best for singly bonded C,N,O
       diporg = backup
   
       end subroutine Tk_lao_integrals
+#endif
