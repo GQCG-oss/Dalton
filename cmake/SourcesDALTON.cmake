@@ -444,6 +444,7 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/dft/dft_mos.F
     DALTON/dft/dft_rho.F
     DALTON/dft/dso_cb.F
+    DALTON/embedding/pe_dalton_interfaces.F
     DALTON/eri/eri2aob.F
     DALTON/eri/eri2ave.F
     DALTON/eri/eri2car1.F
@@ -504,7 +505,6 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/pdpack/linextra.F
     DALTON/pdpack/linpack.F
     DALTON/pdpack/printpkg.F
-    DALTON/peqm/pe_dalton_wrappers.F
     DALTON/rsp/absorp.F
     DALTON/rsp/abscomplex.F
     DALTON/rsp/complexpp.F
@@ -745,12 +745,6 @@ set(DALTON_FREE_FORTRAN_SOURCES
     DALTON/lucita/par_io.F90
     DALTON/lucita/par_io_fh.F90
     DALTON/lucita/par_sync_cw.F90
-    DALTON/peqm/pe_integral_wrappers.F90
-    DALTON/peqm/pe_precision.F90
-    DALTON/peqm/pe_blas_wrappers.F90
-    DALTON/peqm/pe_lapack_wrappers.F90
-    DALTON/peqm/pe_variables.F90
-    DALTON/peqm/polarizable_embedding.F90
     DALTON/abacus/parallel_models_mpi.F90
     DALTON/abacus/parallel_communication_models_mpi.F90
     DALTON/gp/one_sided_communication_wrappers.F90

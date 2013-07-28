@@ -202,6 +202,11 @@ C                   ERRINP (ERROR message OUTPUT ROUTINE)
 C
 C******************************************
 C
+Cjje
+#if defined (BUILD_PELIB)
+      use pe_variables, only: peqm
+#endif
+Cjje
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -1650,6 +1655,9 @@ C  Do we use embedding ?
 C  (that is, is QM part embedded in environment)
 C
       EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM
+#if defined (BUILD_PELIB)
+      embedding = peqm
+#endif
 C
 C ***  PRINT INPUT DATA *****
 C
@@ -2200,7 +2208,6 @@ C  /* Deck sir_geninp */
 C
 C 1-Oct 1987 Hans Agren
 C
-      use pe_variables, only: peqm
 #include "implicit.h"
       PARAMETER (NTABLE = 35)
       CHARACTER WORD*7, WORD1*7, PROMPT*1, TABLE(NTABLE)*7,
@@ -2616,8 +2623,6 @@ C
       GO TO 100
 C
  8000 CONTINUE
-!     No QC if PE module is used
-      if (peqm) flag(21) = .false.
 C     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT
       IF (ADDSRI) CALL SRFUN_INPUT(SR_FUNCS)
@@ -5111,7 +5116,9 @@ C             using at most 72 characters per row
 C
 C  CALLED FROM SIRRDI
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 C
 C Used from common blocks:
@@ -5151,7 +5158,7 @@ C
 #include "spinfo.h"
 C
       CHARACTER*6 RDMOLB(12)
-      CHARACTER*8  WFTYPE
+      CHARACTER*12  WFTYPE
       DATA RDMOLB/'--1-- ','--2-- ','FORM18','FORM12','--5-- ',
      &            '--6-- ','OLDORB','H1DIAG','NEWORB','SIRIFC',
      &            'EHT   ','EWMO  '/
@@ -5489,6 +5496,9 @@ C
        IF (PCM)  WRITE (IWUNIT,'(/A,9X,A)') '@','Solvation model: PCM'
        IF (QM3)  WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QM3'
        IF (QMMM) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: QMMM'
+#if defined (BUILD_PELIB)
+       IF (peqm) WRITE (IWUNIT,'(/A,9X,A)') '@','Model: PE'
+#endif
       END IF
 C
 C ***** Wave function specifications
@@ -5502,17 +5512,21 @@ C
          WRITE(IWUNIT,'(/5X,A/)')
      &   'For the specification of the GAS CI in LUCITA: see later.'
       END IF
+#if defined (BUILD_PELIB)
       if (peqm) then
-        write(iwunit,'(/5x,a)') 'Wave function environment is modeled'
-        write(iwunit,'(5x,a/)') 'using the polarizable embedding model.'
+        write(iwunit,'(/5x,a)')
+     &                  'Wave function environment is modeled using the'
+        write(iwunit,'(5x,a/)')
+     &                  'polarizable embedding model (PE library).'
         WFTYPE = 'PE-'//WFTYPE
       end if
+#endif
 C     for SIRIUS (not LUCITA) :
       NINEL = 2*NISHT
       CALL MOLCHR(ICHARG)
 C     ... get total charge
       IF (.NOT. (DOLUCITA .AND. NUMRUN.EQ.1) ) WRITE(IWUNIT,1002)
-     &   WFTYPE,NINEL,NACTEL,ICHARG,ISPIN,MS2,NSYM,LSYM
+     &   TRIM(WFTYPE),NINEL,NACTEL,ICHARG,ISPIN,MS2,NSYM,LSYM
  1000 FORMAT(/5X,'Wave function specification'
      *       /5X,'============================')
  1002 FORMAT( 5X,'For the wave function of type :      >>> ',A,' <<<',

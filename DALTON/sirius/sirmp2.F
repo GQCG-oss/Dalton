@@ -1272,7 +1272,6 @@ C Scratch:
 C  FC; the inactive Fock matrix and scratch area for overlap matrix
 C  SCRA; general scratch area
 C
-      use pe_variables, only: peqm
 #include "implicit.h"
       DIMENSION CMO(*),FC(*),ORBEN(*),SCRA(*)
       LOGICAL   FCKFRO, FOUND
@@ -1331,7 +1330,7 @@ C
 C
 C     Step 1 : Construct or read the inactive Fock matrix
 C
-      IF (EMBEDDING .or. peqm) THEN ! read EMY and Fock matrix from SIRFC
+      IF (EMBEDDING) THEN ! read EMY and Fock matrix from SIRFC
          WRITE (LUPRI,'(/A)')
      &   ' MP2 for embedded QM system, reading Fock matrix from SIRIFC'
          WRITE (LUPRI,'(/A)')

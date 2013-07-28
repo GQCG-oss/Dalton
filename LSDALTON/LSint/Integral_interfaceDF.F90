@@ -16,6 +16,7 @@ MODULE IntegralInterfaceModuleDF
   use memory_handling
   use AtomSparse
   use linsolvdf
+  use GCtransMod
   use screen_mod
   public :: II_get_df_coulomb_mat,II_get_df_J_gradient, &
        & II_get_df_exchange_mat, II_get_pari_df_exchange_mat

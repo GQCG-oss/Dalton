@@ -53,9 +53,10 @@ C
 C
 
       use lucita_orbital_spaces
+#if defined (BUILD_PELIB)
       use pe_variables, only: pe_twoint
       use polarizable_embedding, only: pe_twoints
-
+#endif
 #include "implicit.h"
 C
       DIMENSION WORK(LWORK)

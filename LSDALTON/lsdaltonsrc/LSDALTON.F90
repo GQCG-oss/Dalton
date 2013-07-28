@@ -62,6 +62,7 @@ SUBROUTINE lsdalton
   use integralinterfaceMod, only: II_get_overlap, II_get_h1, &
        & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter
   use dec_main_mod!, only: dec_main_prog
+  use optimlocMOD, only: optimloc
   implicit none
   integer             :: nbast,lupri, luerr, lucmo
   TYPE(lsitem),target :: ls
@@ -86,19 +87,6 @@ SUBROUTINE lsdalton
 #endif
 
   type(LowAccuracyStartType)  :: LAStype
-  Interface 
-     subroutine optimloc(CMO,nocc,m,ls,CFG)
-       use davidson_settings,only: RedSpaceItem
-       use matrix_module !matrix
-       use typedeftype !lsitem
-       implicit none
-       type(RedSpaceItem) :: CFG
-       type(Matrix), target:: CMO
-       TYPE(lsitem) , intent(inout) :: ls
-       integer,       intent(in)    :: nocc
-       integer,       intent(in)    :: m(2)
-     end subroutine optimloc
-  end Interface 
   OnMaster = .TRUE.
   ! Set lupri and luerr to zero here to make sure they are not unintialized for MPI slaves
   luerr=0
@@ -468,7 +456,7 @@ SUBROUTINE lsdalton
            call mem_alloc(geomHessian,3*Natoms,3*Natoms)
            write (lupri,*) 'Calculate the Hessian'
            write (*,*)     'Calculate the Hessian'
-           call get_molecular_hessian(geomHessian,Natoms,F(1),D(1),ls%setting,config%geoHessian,lupri,luerr)   
+           call get_molecular_hessian(geomHessian,Natoms,F(1),D(1),ls%setting,config,lupri,luerr)   
            call mem_dealloc(geomHessian)
         ENDIF
 #endif
@@ -600,6 +588,7 @@ SUBROUTINE lsinit_all()
   use memory_handling, only: init_globalmemvar
   use lstiming, only: init_timers
   use lspdm_tensor_operations_module,only:init_persistent_array
+  use GCtransMod, only: init_AO2GCAO_GCAO2AO
 #ifdef VAR_PAPI
   use papi_module, only: mypapi_init, eventset
 #endif
@@ -614,6 +603,7 @@ implicit none
   call init_rsp_util      !initialize response util module
   call lstmem_init
   call MatrixmemBuf_init()
+  call init_AO2GCAO_GCAO2AO()
   call init_persistent_array
   call init_timers !initialize timers
   ! MPI initialization
@@ -626,11 +616,13 @@ SUBROUTINE lsfree_all()
   use matrix_operations, only: MatrixmemBuf_free
   use lstensorMem, only: lstmem_free
   use lspdm_tensor_operations_module,only:free_persistent_array
+  use GCtransMod, only: free_AO2GCAO_GCAO2AO
 implicit none
   
   call lstmem_free
 
   call MatrixmemBuf_free()
+  call free_AO2GCAO_GCAO2AO()
   call free_persistent_array
 
 END SUBROUTINE lsfree_all

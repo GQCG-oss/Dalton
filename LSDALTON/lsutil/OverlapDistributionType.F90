@@ -3,6 +3,7 @@
 MODULE OverlapType
 use precision
 use LSmatrix_type
+use AO_TypeType
 
 TYPE SPHMAT
 REAL(REALK),pointer  :: elms(:)
@@ -22,7 +23,8 @@ integer,pointer               :: nOrbitals(:)
 !Dimensions according to nPrimitives
 real(realk),pointer           :: exponents(:)
 !Dimensions according to nPrimitives,maxContracted,nAngmom
-type(lsmatrixpointer),pointer :: CC(:)
+!type(lsmatrixpointer),pointer :: CC(:)
+type(lsmatrixpointer)         :: CC(maxAOangmom)
 !Only one of these types can be true
 Integer                       :: nAngmom
 Integer                       :: nPrimitives

@@ -83,7 +83,10 @@ C
       CALL QENTER('DEQ27')
 C
 C     MAERKE 931116; mjp+hjaaj
-      IF (SOPPA) THEN
+C      IF (SOPPA) THEN
+C     JJE 2013-07-20: allow for entry into deq27 if SOPRPA == .true.
+C                     due to PE module
+      IF (SOPPA .and. (.not. SOPRPA)) THEN
          CALL QDUMP(6)
          CALL QUIT('DEQ27 fatal error: SOPPA not implemented yet!')
       END IF

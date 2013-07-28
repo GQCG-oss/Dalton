@@ -5,13 +5,15 @@ module II_XC_interfaceModule
   use Matrix_module, only: matrix
   use Matrix_Operations, only: mat_to_full, mat_init, mat_daxpy, &
        & mat_set_from_full, mat_assign, &
-       & mat_free, mat_scal, mtype_unres_dense, matrix_type
+       & mat_free, mat_scal, mtype_unres_dense, matrix_type,&
+       & mat_to_full3D
   use dft_memory_handling
 !  use memory_handling
   use lstiming
   use IIDFTKSM
   use IIDFTINT, only: II_DFTDISP
   use DFT_type
+  use GCtransMod
   private
   public :: II_get_xc_Fock_mat,&
        & II_get_AbsoluteValue_overlap, II_get_xc_energy,&
@@ -73,7 +75,7 @@ REAL(REALK),intent(inout)           :: EDFT(ndmat)
 TYPE(MATRIX)          :: temp
 INTEGER               :: i,j,ndmat2,idmat
 TYPE(DFTDATATYPE)     :: DFTDATA
-REAL(REALK),pointer   :: Dmat(:,:,:),DmatAO(:,:,:),EDFT2(:)
+REAL(REALK),pointer   :: DmatAO(:,:,:),EDFT2(:)
 REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2,CPUTIME,WALLTIME
 REAL(REALK)   :: DUMMY(1,1)
 LOGICAL               :: UNRES
@@ -105,40 +107,18 @@ ndmat2=ndmat
 IF(UNRES)ndmat2=2*ndmat
 call mem_dft_alloc(EDFT2,ndmat2)
 DFTDATA%ndmat = ndmat2
-call mem_dft_alloc(Dmat,nbast,nbast,ndmat2)
+call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 DFTDATA%nfmat = ndmat2
 call mem_dft_alloc(DFTDATA%FKSM,nbast,nbast,ndmat2)
 CALL LS_DZERO(DFTDATA%FKSM,nbast*nbast*ndmat2)
 
-!WARNING: the densitymatrix for an unrestriced calculation fullfill 
-! Tr(DS)= N   
-!while the closed shell calculation fullfill
-! Tr(DS)=N/2
-!we therefore have to multiply the closed shell density with 2 in
-!order to get a physical electron density $ \int \rho(r) dr = N $
-
-IF(UNRES)THEN
-   do idmat = 1,ndmat
-      CALL DCOPY(nbast*nbast,D(idmat)%elms,1,Dmat(:,:,1+(idmat-1)*2),1)
-      CALL DCOPY(nbast*nbast,D(idmat)%elmsb,1,Dmat(:,:,2+(idmat-1)*2),1)
-   enddo
-ELSE !CLOSED_SHELL
-   do idmat = 1,ndmat
-      call mat_to_full(D(idmat),1E0_realk,Dmat(:,:,idmat))
-      CALL DSCAL(nbast*nbast,2E0_realk,Dmat(:,:,idmat),1)
-   enddo
-ENDIF
-IF(setting%IntegralTransformGC)THEN
-   call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
-   CALL GCAO2AO_transform_fullD(Dmat,DmatAO,nbast,ndmat2,setting,lupri)
-   call mem_dft_dealloc(Dmat)
-ELSE
-   DmatAO => Dmat
-ENDIF
+call II_XC_TransformDmatToAOFull(D,ndmat,nbast,DmatAO,ndmat2,.TRUE.,setting,lupri)
 
 CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_KSM(SETTING,LUPRI,1,nbast,ndmat2,DmatAO,DFTDATA,EDFT2,UNRES)
 CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
+
+call mem_dft_dealloc(DmatAO)
 
 IF(SETTING%SCHEME%DFT%DODISP) THEN 
     ! add empirical dispersion correction \Andreas Krapp
@@ -147,7 +127,6 @@ IF(SETTING%SCHEME%DFT%DODISP) THEN
       EDFT2(idmat) = EDFT2(idmat) + SETTING%EDISP
    enddo
 ENDIF
-call mem_dft_dealloc(DmatAO)
 
 IF(UNRES)THEN
    do idmat = 1,ndmat
@@ -286,7 +265,7 @@ INTEGER               :: ndmat
 TYPE(MATRIX)          :: temp
 INTEGER               :: i,j,ndmat2,idmat
 TYPE(DFTDATATYPE)     :: DFTDATA
-REAL(REALK),pointer   :: Dmat(:,:,:),DmatAO(:,:,:),EDFT2(:)
+REAL(REALK),pointer   :: DmatAO(:,:,:),EDFT2(:)
 REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2,CPUTIME,WALLTIME
 REAL(REALK)   :: DUMMY(1,1),RHOTHR,DFTHRI
 LOGICAL               :: UNRES
@@ -304,34 +283,11 @@ ndmat2=ndmat
 IF(UNRES)ndmat2=2*ndmat
 call mem_dft_alloc(EDFT2,ndmat2)
 DFTDATA%ndmat = ndmat2
-call mem_dft_alloc(Dmat,nbast,nbast,ndmat2)
+call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 !reduced accuracy !!
 !SETTING%SCHEME%DFT%RHOTHR = SETTING%SCHEME%DFT%RHOTHR*100.0E0_realk
-!WARNING: the densitymatrix for an unrestriced calculation fullfill 
-! Tr(DS)= N   
-!while the closed shell calculation fullfill
-! Tr(DS)=N/2
-!we therefore have to multiply the closed shell density with 2 in
-!order to get a physical electron density $ \int \rho(r) dr = N $
 
-IF(UNRES)THEN
-   do idmat = 1,ndmat
-      CALL DCOPY(nbast*nbast,D(idmat)%elms,1,Dmat(:,:,1+(idmat-1)*2),1)
-      CALL DCOPY(nbast*nbast,D(idmat)%elmsb,1,Dmat(:,:,2+(idmat-1)*2),1)
-   enddo
-ELSE !CLOSED_SHELL
-   do idmat = 1,ndmat
-      call mat_to_full(D(idmat),1E0_realk,Dmat(:,:,idmat))
-      CALL DSCAL(nbast*nbast,2E0_realk,Dmat(:,:,idmat),1)
-   enddo
-ENDIF
-IF(setting%IntegralTransformGC)THEN
-   call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
-   CALL GCAO2AO_transform_fullD(Dmat,DmatAO,nbast,ndmat2,setting,lupri)
-   call mem_dft_dealloc(Dmat)
-ELSE
-   DmatAO => Dmat
-ENDIF
+call II_XC_TransformDmatToAOFull(D,ndmat,nbast,DmatAO,ndmat2,.TRUE.,setting,lupri)
 
 !save parameters
 DFTHRI = SETTING%scheme%DFT%DFTHRI 
@@ -344,6 +300,8 @@ CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_KSME(SETTING,LUPRI,1,nbast,ndmat2,DmatAO,DFTDATA,EDFT2,UNRES)
 CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
 
+call mem_dft_dealloc(DmatAO)
+
 !revert to default grid
 SETTING%scheme%DFT%DFTHRI = DFTHRI
 SETTING%scheme%DFT%RHOTHR = RHOTHR
@@ -355,7 +313,6 @@ IF(SETTING%SCHEME%DFT%DODISP) THEN
       EDFT2(idmat) = EDFT2(idmat) + SETTING%EDISP
    enddo
 ENDIF
-call mem_dft_dealloc(DmatAO)
 
 IF(UNRES)THEN
    do idmat = 1,ndmat
@@ -398,12 +355,11 @@ INTEGER               :: natoms
 !
 INTEGER               :: i,j
 TYPE(DFTDATATYPE)     :: DFTDATA
-REAL(REALK),pointer   :: Dmat(:,:,:)
 REAL(REALK),pointer   :: DmatAO(:,:,:)
 REAL(REALK)           :: TS,TE
 REAL(REALK)           :: CPU1,CPU2,WALL1,WALL2
 REAL(REALK)           :: CPUTIME,WALLTIME
-INTEGER               :: ndmat,norb,norbitals
+INTEGER               :: ndmat,norb,norbitals,ndmat2
 LOGICAL               :: UNRES
 call time_II_operations1
 
@@ -414,10 +370,11 @@ ELSE
 ENDIF
 call init_dftmemvar
 ndmat = 1
+ndmat2 = 1
 call initDFTdatatype(DFTDATA)
-IF(matrix_type .EQ. mtype_unres_dense)ndmat=2
-DFTDATA%ndmat = ndmat
-call mem_dft_alloc(Dmat,nbast,nbast,ndmat)
+IF(matrix_type .EQ. mtype_unres_dense)ndmat2=2
+DFTDATA%ndmat = ndmat2
+call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 call mem_dft_alloc(DFTDATA%grad,3,natoms)
 DFTDATA%grad = 0E0_realk
 
@@ -450,28 +407,7 @@ ENDDO
 IF(nOrbitals .NE. nbast)&
      &CALL LSQUIT('mismatch in orbital dimension in II_get_xc_geoderiv_molgrad',-1)
 
-!WARNING: the densitymatrix for an unrestriced calculation fullfill 
-! Tr(DS)= N   
-!while the closed shell calculation fullfill
-! Tr(DS)=N/2
-!we therefore have to multiply the closed shell density with 2 in
-!order to get a physical electron density $ \int \rho(r) dr = N $
-
-IF(matrix_type .EQ. mtype_unres_dense)THEN
-   CALL LSQUIT('not working - not implemented',-1)
-   CALL DCOPY(D%nrow*D%ncol,D%elms,1,Dmat(:,:,1),1)
-   CALL DCOPY(D%nrow*D%ncol,D%elmsb,1,Dmat(:,:,2),1)
-ELSE !CLOSED_SHELL
-   call mat_to_full(D,1E0_realk,Dmat(:,:,1))
-   CALL DSCAL(nbast*nbast,2E0_realk,Dmat(:,:,1),1)
-ENDIF
-IF(setting%IntegralTransformGC)THEN
-   call mem_dft_alloc(DmatAO,D%nrow,D%ncol,ndmat)
-   CALL GCAO2AO_transform_fullD(Dmat,DmatAO,nbast,ndmat,setting,lupri)
-   call mem_dft_dealloc(Dmat)
-ELSE
-   DmatAO => Dmat
-ENDIF
+call II_XC_TransformDmatToAOFull_single(D,ndmat,nbast,DmatAO,ndmat2,.TRUE.,setting,lupri)
 
 CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_dft_geoderiv_molgrad(setting,LUPRI,1,nbast,ndmat,DmatAO,DFTDATA,UNRES)
@@ -515,12 +451,11 @@ TYPE(MATRIX),intent(inout) :: G(nbmat)
 INTEGER               :: i,j,ndmat
 TYPE(MATRIX)          :: temp
 TYPE(DFTDATATYPE)  :: DFTDATA
-REAL(REALK),pointer   :: Dmat(:,:,:)
 REAL(REALK),pointer   :: DmatAO(:,:,:)
 REAL(REALK)           :: TS,TE
 REAL(REALK)           :: CPU1,CPU2,WALL1,WALL2
 REAL(REALK)           :: CPUTIME,WALLTIME
-INTEGER               :: ibmat
+INTEGER               :: ibmat,ndmat2
 LOGICAL               :: UNRES
 call time_II_operations1
 
@@ -534,55 +469,26 @@ CALL LS_GETTIM(CPU1,WALL1)
 call initDFTdatatype(DFTDATA)
 DFTDATA%nbast = nbast
 ndmat = 1
-IF(matrix_type .EQ. mtype_unres_dense)ndmat=2
-DFTDATA%ndmat = ndmat
+ndmat2 = 1
+IF(matrix_type .EQ. mtype_unres_dense)ndmat2=2
+DFTDATA%ndmat = ndmat2
 DFTDATA%nbmat = nbmat
-call mem_dft_alloc(Dmat,nbast,nbast,ndmat)
+call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 DFTDATA%nfmat = nbmat
 call mem_dft_alloc(DFTDATA%FKSM,nbast,nbast,nbmat)
 CALL LS_DZERO(DFTDATA%FKSM,nbast*nbast*nbmat)
 
-!WARNING: the densitymatrix for an unres calc fullfill Tr(DS)= N   
-!while the closed shell calculation fullfill Tr(DS)=N/2
-!we therefore have to multiply the closed shell density with 2 in
-!order to get a physical electron density $ \int \rho(r) dr = N $
-
 IF(matrix_type .EQ. mtype_unres_dense)THEN
    CALL LSQUIT('NOT IMPLEMENTED YET',-1)
-!   CALL DCOPY(D%nrow*D%ncol,D%elms,1,Dmat(:,:,1),1)
-!   CALL DCOPY(D%nrow*D%ncol,D%elmsb,1,Dmat(:,:,2),1)   
-!   call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,2*nbmat)
-!   CALL DCOPY(b%nrow*b%ncol,b%elms,1,DFTDATA%bmat(:,:,1),1)
-!   CALL DCOPY(b%nrow*b%ncol,b%elmsb,1,DFTDATA%bmat(:,:,2),1)
-ELSE !CLOSED_SHELL
-   call mat_to_full(D,1E0_realk,Dmat(:,:,1))
-   CALL DSCAL(nbast*nbast,2E0_realk,Dmat(:,:,1),1)
-
-   call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
-   IF(setting%IntegralTransformGC)THEN
-      !we use DmatAO as a temporary array
-      call mem_dft_alloc(DmatAO,nbast,nbast,nbmat)
-      DO IBMAT=1,nbmat
-         call mat_to_full(b(IBMAT),1E0_realk,DmatAO(:,:,IBMAT))
-      ENDDO
-      CALL GCAO2AO_transform_fullD(DmatAO,DFTDATA%BMAT,nbast,nbmat,setting,lupri)
-      call mem_dft_dealloc(DmatAO)
-   ELSE
-      DO IBMAT=1,nbmat
-         call mat_to_full(b(IBMAT),1E0_realk,DFTDATA%bmat(:,:,IBMAT))
-      ENDDO
-   ENDIF
-ENDIF
-IF(setting%IntegralTransformGC)THEN
-   call mem_dft_alloc(DmatAO,D%nrow,D%ncol,ndmat)
-   CALL GCAO2AO_transform_fullD(Dmat,DmatAO,nbast,ndmat,setting,lupri)
-   call mem_dft_dealloc(Dmat)
 ELSE
-   DmatAO => Dmat
+   call II_XC_TransformDmatToAOFull_single(D,ndmat,nbast,DmatAO,ndmat2,.TRUE.,setting,lupri)
 ENDIF
+
+call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
+call II_XC_TransformDmatToAOFull(b,nbmat,nbast,DFTDATA%BMAT,nbmat,.FALSE.,setting,lupri)
 
 CALL LSTIMER('START',TS,TE,LUPRI)
-CALL II_DFT_LINRSP(SETTING,LUPRI,1,nbast,ndmat,DmatAO,DFTDATA,UNRES)
+CALL II_DFT_LINRSP(SETTING,LUPRI,1,nbast,ndmat2,DmatAO,DFTDATA,UNRES)
 CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
 
 IF(matrix_type .EQ. mtype_unres_dense)THEN
@@ -635,9 +541,8 @@ TYPE(MATRIX)          :: D
 !> The xc cont to the quadratic response
 TYPE(MATRIX)          :: T
 !
-INTEGER               :: i,j,ndmat,nbmat
+INTEGER               :: i,j,ndmat,ndmat2,nbmat
 TYPE(DFTDATATYPE)     :: DFTDATA
-REAL(REALK),pointer   :: Dmat(:,:,:)
 REAL(REALK),pointer   :: DmatAO(:,:,:)
 REAL(REALK)           :: TS,TE
 REAL(REALK)           :: CPU1,CPU2,WALL1,WALL2
@@ -655,53 +560,27 @@ call initDFTdatatype(DFTDATA)
 CALL LS_GETTIM(CPU1,WALL1)
 DFTDATA%nbast = nbast
 ndmat = 1
+ndmat2 = 1
 nbmat = 2
 IF(matrix_type .EQ. mtype_unres_dense)ndmat=2
-DFTDATA%ndmat = ndmat
+DFTDATA%ndmat = ndmat2
 DFTDATA%nbmat = nbmat
-call mem_dft_alloc(Dmat,nbast,nbast,ndmat)
+call mem_dft_alloc(DmatAO,nbast,nbast,ndmat)
 DFTDATA%nfmat = ndmat
 call mem_dft_alloc(DFTDATA%FKSM,nbast,nbast,ndmat)
 CALL LS_DZERO(DFTDATA%FKSM,nbast*nbast*ndmat)
 
-!WARNING: the densitymatrix for an unres calc fullfill Tr(DS)= N   
-!while the closed shell calculation fullfill Tr(DS)=N/2
-!we therefore have to multiply the closed shell density with 2 in
-!order to get a physical electron density $ \int \rho(r) dr = N $
-
 IF(matrix_type .EQ. mtype_unres_dense)THEN
    CALL LSQUIT('NOT IMPLEMENTED YET',-1)
-!   CALL DCOPY(D%nrow*D%ncol,D%elms,1,Dmat(:,:,1),1)
-!   CALL DCOPY(D%nrow*D%ncol,D%elmsb,1,Dmat(:,:,2),1)   
-!   call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,2*nbmat)
-!   CALL DCOPY(b%nrow*b%ncol,b%elms,1,DFTDATA%bmat(:,:,1),1)
-!   CALL DCOPY(b%nrow*b%ncol,b%elmsb,1,DFTDATA%bmat(:,:,2),1)
-ELSE !CLOSED_SHELL
-   call mat_to_full(D,1E0_realk,Dmat(:,:,1))
-   CALL DSCAL(nbast*nbast,2E0_realk,Dmat(:,:,1),1)
-   call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
-   IF(setting%IntegralTransformGC)THEN
-      !we use DmatAO as temporary array
-      call mem_dft_alloc(DmatAO,nbast,nbast,nbmat)
-      call mat_to_full(b,1E0_realk,DmatAO(:,:,1))
-      call mat_to_full(c,1E0_realk,DmatAO(:,:,2))
-      CALL GCAO2AO_transform_fullD(DmatAO,DFTDATA%BMAT,nbast,nbmat,setting,lupri)
-      call mem_dft_dealloc(DmatAO)
-   ELSE
-      call mat_to_full(b,1E0_realk,DFTDATA%bmat(:,:,1))
-      call mat_to_full(c,1E0_realk,DFTDATA%bmat(:,:,2))
-   ENDIF
-ENDIF
-IF(setting%IntegralTransformGC)THEN
-   call mem_dft_alloc(DmatAO,D%nrow,D%ncol,ndmat)
-   CALL GCAO2AO_transform_fullD(Dmat,DmatAO,nbast,ndmat,setting,lupri)
-   call mem_dft_dealloc(Dmat)
 ELSE
-   DmatAO => Dmat
+   call II_XC_TransformDmatToAOFull_single(D,ndmat,nbast,DmatAO,ndmat2,.TRUE.,setting,lupri)
 ENDIF
 
+call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
+call II_XC_TransformDmatToAOFull_bc(b,c,nbast,DFTDATA%BMAT,nbmat,.FALSE.,setting,lupri)
+
 CALL LSTIMER('START',TS,TE,LUPRI)
-CALL II_DFT_QUADRSP(SETTING,LUPRI,1,nbast,ndmat,DmatAO,DFTDATA,UNRES)
+CALL II_DFT_QUADRSP(SETTING,LUPRI,1,nbast,ndmat2,DmatAO,DFTDATA,UNRES)
 CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
 
 IF(matrix_type .EQ. mtype_unres_dense)THEN
@@ -749,9 +628,8 @@ INTEGER               :: nbast
 TYPE(MATRIX)          :: D
 !> The xc cont to the magnetic deriv of F
 TYPE(MATRIX)          :: F(3) !x,y and z components
-INTEGER               :: i,j,ndmat
+INTEGER               :: i,j,ndmat,ndmat2
 TYPE(DFTDATATYPE)     :: DFTDATA
-REAL(REALK),pointer   :: Dmat(:,:,:)
 REAL(REALK),pointer   :: DmatAO(:,:,:)
 REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2
 REAL(REALK)           :: CPUTIME,WALLTIME
@@ -768,38 +646,22 @@ call initDFTdatatype(DFTDATA)
 CALL LS_GETTIM(CPU1,WALL1)
 DFTDATA%nbast = nbast
 ndmat = 1
-IF(matrix_type .EQ. mtype_unres_dense)ndmat=2
-DFTDATA%ndmat = ndmat
-call mem_dft_alloc(Dmat,nbast,nbast,ndmat)
-DFTDATA%nfmat = 3*ndmat
-call mem_dft_alloc(DFTDATA%FKSM,nbast,nbast,3*ndmat)
-CALL LS_DZERO(DFTDATA%FKSM,nbast*nbast*3*ndmat)
-
-!WARNING: the densitymatrix for an unrestriced calculation fullfill 
-! Tr(DS)= N   
-!while the closed shell calculation fullfill
-! Tr(DS)=N/2
-!we therefore have to multiply the closed shell density with 2 in
-!order to get a physical electron density $ \int \rho(r) dr = N $
+ndmat2 = 1
+IF(matrix_type .EQ. mtype_unres_dense)ndmat2=2
+DFTDATA%ndmat = ndmat2
+call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
+DFTDATA%nfmat = 3*ndmat2
+call mem_dft_alloc(DFTDATA%FKSM,nbast,nbast,3*ndmat2)
+CALL LS_DZERO(DFTDATA%FKSM,nbast*nbast*3*ndmat2)
 
 IF(matrix_type .EQ. mtype_unres_dense)THEN
    CALL LSQUIT('II_get_xc_magderiv_kohnsham_mat not implemented for unrestricted yet',lupri)
-!   CALL DCOPY(D%nrow*D%ncol,D%elms,1,Dmat(:,:,1),1)
-!   CALL DCOPY(D%nrow*D%ncol,D%elmsb,1,Dmat(:,:,2),1)
-ELSE !CLOSED_SHELL
-   call mat_to_full(D,1E0_realk,Dmat(:,:,1))
-   CALL DSCAL(nbast*nbast,2E0_realk,Dmat(:,:,1),1)
-ENDIF
-IF(setting%IntegralTransformGC)THEN
-   call mem_dft_alloc(DmatAO,D%nrow,D%ncol,ndmat)
-   CALL GCAO2AO_transform_fullD(Dmat,DmatAO,nbast,ndmat,setting,lupri)
-   call mem_dft_dealloc(Dmat)
 ELSE
-   DmatAO => Dmat
+   call II_XC_TransformDmatToAOFull_single(D,ndmat,nbast,DmatAO,ndmat2,.TRUE.,setting,lupri)
 ENDIF
 
 CALL LSTIMER('START',TS,TE,LUPRI)
-CALL II_dft_magderiv_kohnsham_mat(SETTING,LUPRI,1,nbast,ndmat,DmatAO,DFTDATA,UNRES)
+CALL II_dft_magderiv_kohnsham_mat(SETTING,LUPRI,1,nbast,ndmat2,DmatAO,DFTDATA,UNRES)
 CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
 
 !WARNING: 
@@ -815,7 +677,7 @@ IF(matrix_type .EQ. mtype_unres_dense)THEN
 !   CALL DCOPY(D%nrow*D%ncol,DFTDATA%FKSM(:,:,2),1,temp%elmsb,1)
 !   CALL mat_DAXPY(1.0E0_realk,temp,F)
 ELSE !CLOSED_SHELL
-   do I=1,3*ndmat
+   do I=1,3*ndmat2
       CALL mat_set_from_full(DFTDATA%FKSM(:,:,I),1E0_realk,F(I),'XCmat')
       IF(setting%IntegralTransformGC)THEN
          call AO2GCAO_transform_matrixF(F(I),setting,lupri)
@@ -858,10 +720,9 @@ TYPE(MATRIX)          :: D
 TYPE(MATRIX)          :: G(3*nbmat)
 !> number of B matrices
 INTEGER               :: nbmat
-INTEGER               :: i,j,ndmat
+INTEGER               :: i,j,ndmat,ndmat2
 TYPE(MATRIX)          :: temp
 TYPE(DFTDATATYPE)  :: DFTDATA
-REAL(REALK),pointer   :: Dmat(:,:,:)
 REAL(REALK),pointer   :: DmatAO(:,:,:)
 REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2
 REAL(REALK)           :: CPUTIME,WALLTIME
@@ -881,10 +742,11 @@ WRITE(lupri,*)'STARTING II_get_xc_magderiv_linrsp'
 CALL LS_GETTIM(CPU1,WALL1)
 DFTDATA%nbast = nbast
 ndmat = 1
-IF(matrix_type .EQ. mtype_unres_dense)ndmat=2
-DFTDATA%ndmat = ndmat
+ndmat2 = 1
+IF(matrix_type .EQ. mtype_unres_dense)ndmat2=2
+DFTDATA%ndmat = ndmat2
 DFTDATA%nbmat = nbmat
-call mem_dft_alloc(Dmat,nbast,nbast,ndmat)
+call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 DFTDATA%nfmat = 3*nbmat
 call mem_dft_alloc(DFTDATA%FKSM,nbast,nbast,3*nbmat)
 CALL LS_DZERO(DFTDATA%FKSM,nbast*nbast*3*nbmat)
@@ -907,46 +769,18 @@ IF(DFTDATA%dosympart)THEN
    call mem_dft_alloc(DFTDATA%FKSMS,nbast,nbast,3*nbmat)
    CALL LS_DZERO(DFTDATA%FKSMS,nbast*nbast*3*nbmat)
 ENDIF
-!WARNING: the densitymatrix for an unres calc fullfill Tr(DS)= N   
-!while the closed shell calculation fullfill Tr(DS)=N/2
-!we therefore have to multiply the closed shell density with 2 in
-!order to get a physical electron density $ \int \rho(r) dr = N $
 
 IF(matrix_type .EQ. mtype_unres_dense)THEN
    CALL LSQUIT('NOT IMPLEMENTED YET',-1)
-!   CALL DCOPY(D%nrow*D%ncol,D%elms,1,Dmat(:,:,1),1)
-!   CALL DCOPY(D%nrow*D%ncol,D%elmsb,1,Dmat(:,:,2),1)   
-!   call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,2*nbmat)
-!   CALL DCOPY(b%nrow*b%ncol,b%elms,1,DFTDATA%bmat(:,:,1),1)
-!   CALL DCOPY(b%nrow*b%ncol,b%elmsb,1,DFTDATA%bmat(:,:,2),1)
-ELSE !CLOSED_SHELL
-   call mat_to_full(D,1E0_realk,Dmat(:,:,1))
-   CALL DSCAL(nbast*nbast,2E0_realk,Dmat(:,:,1),1)
-   call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
-   IF(setting%IntegralTransformGC)THEN
-      !we use DmatAO as a temporary array
-      call mem_dft_alloc(DmatAO,nbast,nbast,nbmat)
-      DO IBMAT=1,nbmat
-         call mat_to_full(b(IBMAT),1E0_realk,DmatAO(:,:,IBMAT))
-      ENDDO
-      CALL GCAO2AO_transform_fullD(DmatAO,DFTDATA%BMAT,nbast,nbmat,setting,lupri)
-      call mem_dft_dealloc(DmatAO)
-   ELSE
-      DO IBMAT=1,nbmat
-         call mat_to_full(b(IBMAT),1E0_realk,DFTDATA%bmat(:,:,IBMAT))
-      ENDDO
-   ENDIF
-ENDIF
-IF(setting%IntegralTransformGC)THEN
-   call mem_dft_alloc(DmatAO,D%nrow,D%ncol,ndmat)
-   CALL GCAO2AO_transform_fullD(Dmat,DmatAO,nbast,ndmat,setting,lupri)
-   call mem_dft_dealloc(Dmat)
 ELSE
-   DmatAO => Dmat
+   call II_XC_TransformDmatToAOFull_single(D,ndmat,nbast,DmatAO,ndmat2,.TRUE.,setting,lupri)
 ENDIF
 
+call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
+call II_XC_TransformDmatToAOFull(b,nbmat,nbast,DFTDATA%BMAT,nbmat,.FALSE.,setting,lupri)
+
 CALL LSTIMER('START',TS,TE,LUPRI)
-CALL II_DFT_MAGDERIV_LINRSP(SETTING,LUPRI,1,nbast,ndmat,DmatAO,DFTDATA,UNRES)
+CALL II_DFT_MAGDERIV_LINRSP(SETTING,LUPRI,1,nbast,ndmat2,DmatAO,DFTDATA,UNRES)
 CALL LSTIMER('xc-Fock',TS,TE,LUPRI)
 
 IF(matrix_type .EQ. mtype_unres_dense)THEN
@@ -1012,11 +846,10 @@ INTEGER               :: natoms
 !
 INTEGER               :: i,j
 TYPE(DFTDATATYPE)     :: DFTDATA
-REAL(REALK),pointer   :: Dmat(:,:,:)
 REAL(REALK),pointer   :: DmatAO(:,:,:)
 REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2
 REAL(REALK)           :: CPUTIME,WALLTIME
-INTEGER               :: ndmat,norb,norbitals,nbmat,ibmat
+INTEGER               :: ndmat,ndmat2,norb,norbitals,nbmat,ibmat
 LOGICAL               :: UNRES
 call time_II_operations1
 
@@ -1029,12 +862,13 @@ call init_dftmemvar
 call initDFTdatatype(DFTDATA)
 
 ndmat = 1
+ndmat2 = 1
 nbmat = 1
-IF(matrix_type .EQ. mtype_unres_dense)ndmat=2
-DFTDATA%ndmat = ndmat
+IF(matrix_type .EQ. mtype_unres_dense)ndmat2=2
+DFTDATA%ndmat = ndmat2
 DFTDATA%nbmat = nbmat
 DFTDATA%nfmat = 0
-call mem_dft_alloc(Dmat,nbast,nbast,ndmat)
+call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 call mem_dft_alloc(DFTDATA%grad,3,natoms)
 DFTDATA%grad = 0E0_realk
 
@@ -1054,38 +888,13 @@ ENDDO
 IF(nOrbitals .NE. nbast)&
      &CALL LSQUIT('mismatch in orbital dimension in II_get_xc_geoderiv_FxDgrad',-1)
 
-!WARNING: the densitymatrix for an unrestriced calculation fullfill 
-! Tr(DS)= N   
-!while the closed shell calculation fullfill
-! Tr(DS)=N/2
-!we therefore have to multiply the closed shell density with 2 in
-!order to get a physical electron density $ \int \rho(r) dr = N $
-
 IF(matrix_type .EQ. mtype_unres_dense)THEN
    CALL LSQUIT('not working - not implemented',-1)
-   CALL DCOPY(D%nrow*D%ncol,D%elms,1,Dmat(:,:,1),1)
-   CALL DCOPY(D%nrow*D%ncol,D%elmsb,1,Dmat(:,:,2),1)
-ELSE !CLOSED_SHELL
-   call mat_to_full(D,1E0_realk,Dmat(:,:,1))
-   CALL DSCAL(nbast*nbast,2E0_realk,Dmat(:,:,1),1)
-   call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
-   IF(setting%IntegralTransformGC)THEN
-      !we use DmatAO as a temporary array
-      call mem_dft_alloc(DmatAO,nbast,nbast,nbmat)
-      call mat_to_full(b,1E0_realk,DmatAO(:,:,1))
-      CALL GCAO2AO_transform_fullD(DmatAO,DFTDATA%BMAT,nbast,nbmat,setting,lupri)
-      call mem_dft_dealloc(DmatAO)
-   ELSE
-      call mat_to_full(b,1E0_realk,DFTDATA%bmat(:,:,1))
-   ENDIF
-ENDIF
-IF(setting%IntegralTransformGC)THEN
-   call mem_dft_alloc(DmatAO,D%nrow,D%ncol,ndmat)
-   CALL GCAO2AO_transform_fullD(Dmat,DmatAO,nbast,ndmat,setting,lupri)
-   call mem_dft_dealloc(Dmat)
 ELSE
-   DmatAO => Dmat
+   call II_XC_TransformDmatToAOFull_single(D,ndmat,nbast,DmatAO,ndmat2,.TRUE.,setting,lupri)
 ENDIF
+call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
+call II_XC_TransformDmatToAOFull_single(B,nbmat,nbast,DFTDATA%BMAT,nbmat,.FALSE.,setting,lupri)
 
 CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_geoderiv_kohnsham_mat(setting,LUPRI,1,nbast,1,DmatAO,DFTDATA,UNRES)
@@ -1132,11 +941,10 @@ INTEGER               :: natoms
 !
 INTEGER               :: i,j
 TYPE(DFTDATATYPE)     :: DFTDATA
-REAL(REALK),pointer   :: Dmat(:,:,:)
 REAL(REALK),pointer   :: DmatAO(:,:,:)
 REAL(REALK)           :: TS,TE,CPU1,CPU2,WALL1,WALL2
 REAL(REALK)           :: CPUTIME,WALLTIME
-INTEGER               :: ndmat,norb,norbitals,nbmat,ibmat
+INTEGER               :: ndmat,ndmat2,norb,norbitals,nbmat,ibmat
 LOGICAL               :: UNRES
 call time_II_operations1
 IF(matrix_type .EQ. mtype_unres_dense)THEN
@@ -1148,11 +956,12 @@ call init_dftmemvar
 call initDFTdatatype(DFTDATA)
 
 ndmat = 1
+ndmat2 = 1
 nbmat = 2
 DFTDATA%nbmat = nbmat
-IF(matrix_type .EQ. mtype_unres_dense)ndmat=2
-DFTDATA%ndmat = ndmat
-call mem_dft_alloc(Dmat,nbast,nbast,ndmat)
+IF(matrix_type .EQ. mtype_unres_dense)ndmat2=2
+DFTDATA%ndmat = ndmat2
+call mem_dft_alloc(DmatAO,nbast,nbast,ndmat2)
 call mem_dft_alloc(DFTDATA%grad,3,natoms)
 DFTDATA%grad = 0E0_realk
 
@@ -1172,40 +981,13 @@ ENDDO
 IF(nOrbitals .NE. nbast)&
      &CALL LSQUIT('mismatch in orbital dimension in II_get_xc_geoderiv_FxDgrad',-1)
 
-!WARNING: the densitymatrix for an unrestriced calculation fullfill 
-! Tr(DS)= N   
-!while the closed shell calculation fullfill
-! Tr(DS)=N/2
-!we therefore have to multiply the closed shell density with 2 in
-!order to get a physical electron density $ \int \rho(r) dr = N $
-
 IF(matrix_type .EQ. mtype_unres_dense)THEN
    CALL LSQUIT('not working - not implemented',-1)
-   CALL DCOPY(D%nrow*D%ncol,D%elms,1,Dmat(:,:,1),1)
-   CALL DCOPY(D%nrow*D%ncol,D%elmsb,1,Dmat(:,:,2),1)
-ELSE !CLOSED_SHELL
-   call mat_to_full(D,1E0_realk,Dmat(:,:,1))
-   CALL DSCAL(nbast*nbast,2E0_realk,Dmat(:,:,1),1)
-   call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
-   IF(setting%IntegralTransformGC)THEN
-      !we use DmatAO as temporary array
-      call mem_dft_alloc(DmatAO,nbast,nbast,nbmat)
-      call mat_to_full(a,1E0_realk,DmatAO(:,:,1))
-      call mat_to_full(b,1E0_realk,DmatAO(:,:,2))
-      CALL GCAO2AO_transform_fullD(DmatAO,DFTDATA%BMAT,nbast,nbmat,setting,lupri)
-      call mem_dft_dealloc(DmatAO)
-   ELSE
-      call mat_to_full(a,1E0_realk,DFTDATA%bmat(:,:,1))
-      call mat_to_full(b,1E0_realk,DFTDATA%bmat(:,:,2))
-   ENDIF
-ENDIF
-IF(setting%IntegralTransformGC)THEN
-   call mem_dft_alloc(DmatAO,D%nrow,D%ncol,ndmat)
-   CALL GCAO2AO_transform_fullD(Dmat,DmatAO,nbast,ndmat,setting,lupri)
-   call mem_dft_dealloc(Dmat)
 ELSE
-   DmatAO => Dmat
+   call II_XC_TransformDmatToAOFull_single(D,ndmat,nbast,DmatAO,ndmat2,.TRUE.,setting,lupri)
 ENDIF
+call mem_dft_alloc(DFTDATA%BMAT,nbast,nbast,nbmat)
+call II_XC_TransformDmatToAOFull_bc(A,B,nbast,DFTDATA%BMAT,nbmat,.FALSE.,setting,lupri)
 
 CALL LSTIMER('START',TS,TE,LUPRI)
 CALL II_DFT_geoderiv_linrspgrad(setting,LUPRI,1,nbast,1,DmatAO,DFTDATA,UNRES)
@@ -1225,5 +1007,182 @@ call stats_dft_mem(lupri)
 call time_II_operations2(JOB_II_get_xc_geoderiv_GxDgrad)
 
 END SUBROUTINE II_get_xc_geoderiv_GxDgrad
+
+subroutine II_XC_TransformDmatToAOFull(D,ndmat,nbast,Dmat,ndmat2,Dens2scal,setting,lupri)
+implicit none
+!> logical unit number for printing
+INTEGER,intent(in)    :: lupri
+!> number of basis functions
+INTEGER,intent(in)    :: nbast
+!> number of Densitymatrices
+INTEGER,intent(in)    :: ndmat,ndmat2
+!> The density matrix
+TYPE(MATRIX),intent(in) :: D(ndmat)
+!> The full density matrix
+real(realk) :: Dmat(nbast,nbast,ndmat2)
+logical,intent(in)    :: Dens2scal
+!> info about molecule,basis and dft parameters
+TYPE(LSSETTING)       :: SETTING
+!
+LOGICAL               :: UNRES
+TYPE(MATRIX) :: DAO
+integer :: idmat
+real(realk) :: Factor
+
+IF(Dens2scal)THEN
+   Factor = 2.0E0_realk
+ELSE
+   Factor = 1.0E0_realk
+ENDIF
+
+IF(matrix_type .EQ. mtype_unres_dense)THEN
+   UNRES=.TRUE.
+ELSE
+   UNRES=.FALSE.
+ENDIF
+
+IF(setting%IntegralTransformGC)THEN
+   call mat_init(DAO,nbast,nbast)
+   do idmat=1,ndmat
+      call GCAO2AO_transform_matrixD2(D(idmat),DAO,setting,lupri)
+      IF(UNRES)THEN
+         call mat_to_full3D(DAO, 1.0E0_realk, Dmat,nbast,nbast,ndmat2,1+(idmat-1)*2,2+(idmat-1)*2)
+      ELSE !CLOSED_SHELL
+         call mat_to_full3D(DAO, Factor, Dmat,nbast,nbast,ndmat2,idmat,idmat)
+      endif
+   enddo
+   call mat_free(DAO)
+ELSE
+   IF(UNRES)THEN
+      do idmat = 1,ndmat
+         call mat_to_full3D(D(idmat), 1.0E0_realk, Dmat,nbast,nbast,ndmat2,1+(idmat-1)*2,2+(idmat-1)*2)
+      enddo
+   ELSE !CLOSED_SHELL
+      do idmat = 1,ndmat
+         call mat_to_full3D(D(idmat), Factor, Dmat,nbast,nbast,ndmat2,idmat,idmat)
+      enddo
+   ENDIF
+ENDIF
+end subroutine II_XC_TransformDmatToAOFull
+
+subroutine II_XC_TransformDmatToAOFull_bc(b,c,nbast,Dmat,ndmat2,Dens2scal,setting,lupri)
+implicit none
+!> logical unit number for printing
+INTEGER,intent(in)    :: lupri
+!> number of basis functions
+INTEGER,intent(in)    :: nbast
+!> number of Densitymatrices
+INTEGER,intent(in)    :: ndmat2
+!> The Bmat matrix
+TYPE(MATRIX),intent(in) :: B
+!> The Cmat matrix
+TYPE(MATRIX),intent(in) :: C
+!> The full density matrix
+real(realk) :: Dmat(nbast,nbast,ndmat2)
+logical,intent(in)    :: dens2scal
+!> info about molecule,basis and dft parameters
+TYPE(LSSETTING)       :: SETTING
+!
+LOGICAL               :: UNRES
+TYPE(MATRIX) :: DAO
+integer :: idmat
+real(realk) :: Factor
+
+IF(matrix_type .EQ. mtype_unres_dense)THEN
+   UNRES=.TRUE.
+   print*,'ndmat2',ndmat2
+   IF(ndmat2.NE.4)call lsquit('Error II_XC_TransformDmatToAOFull_bc unres',-1)
+ELSE
+   UNRES=.FALSE.
+   print*,'ndmat2',ndmat2
+   IF(ndmat2.NE.2)call lsquit('Error II_XC_TransformDmatToAOFull_bc',-1)
+ENDIF
+
+IF(Dens2scal)THEN
+   Factor = 2.0E0_realk
+ELSE
+   Factor = 1.0E0_realk
+ENDIF
+
+IF(setting%IntegralTransformGC)THEN
+   call mat_init(DAO,nbast,nbast)
+   !B vec
+   call GCAO2AO_transform_matrixD2(B,DAO,setting,lupri)
+   IF(UNRES)THEN
+      call mat_to_full3D(DAO, 1.0E0_realk, Dmat,nbast,nbast,ndmat2,1,2)
+   ELSE !CLOSED_SHELL
+      call mat_to_full3D(DAO, Factor, Dmat,nbast,nbast,ndmat2,1,1)
+   endif
+   !C vec
+   call GCAO2AO_transform_matrixD2(C,DAO,setting,lupri)
+   IF(UNRES)THEN
+      call mat_to_full3D(DAO, 1.0E0_realk, Dmat,nbast,nbast,ndmat2,3,4)
+   ELSE !CLOSED_SHELL
+      call mat_to_full3D(DAO, Factor, Dmat,nbast,nbast,ndmat2,2,2)
+   endif
+   call mat_free(DAO)
+ELSE
+   IF(UNRES)THEN
+      call mat_to_full3D(B, 1.0E0_realk, Dmat,nbast,nbast,ndmat2,1,2)
+      call mat_to_full3D(C, 1.0E0_realk, Dmat,nbast,nbast,ndmat2,3,4)
+   ELSE !CLOSED_SHELL
+      call mat_to_full3D(B, Factor, Dmat,nbast,nbast,ndmat2,1,1)
+      call mat_to_full3D(C, Factor, Dmat,nbast,nbast,ndmat2,2,2)
+   ENDIF
+ENDIF
+end subroutine II_XC_TransformDmatToAOFull_bc
+
+
+subroutine II_XC_TransformDmatToAOFull_single(D,ndmat,nbast,Dmat,ndmat2,Dens2scal,setting,lupri)
+implicit none
+!> logical unit number for printing
+INTEGER,intent(in)    :: lupri
+!> number of basis functions
+INTEGER,intent(in)    :: nbast
+!> number of Densitymatrices
+INTEGER,intent(in)    :: ndmat,ndmat2
+!> The density matrix
+TYPE(MATRIX),intent(in) :: D
+!> The full density matrix
+real(realk) :: Dmat(nbast,nbast,ndmat2)
+logical,intent(in)    :: dens2scal
+!> info about molecule,basis and dft parameters
+TYPE(LSSETTING)       :: SETTING
+!
+LOGICAL               :: UNRES
+TYPE(MATRIX) :: DAO
+integer :: idmat
+real(realk) :: Factor
+IF(ndmat.NE.1)call lsquit('error in II_XC_TransformDmatToAOFull_single',-1)
+
+IF(matrix_type .EQ. mtype_unres_dense)THEN
+   UNRES=.TRUE.
+ELSE
+   UNRES=.FALSE.
+ENDIF
+
+IF(Dens2scal)THEN
+   Factor = 2.0E0_realk
+ELSE
+   Factor = 1.0E0_realk
+ENDIF
+
+IF(setting%IntegralTransformGC)THEN
+   call mat_init(DAO,nbast,nbast)
+   call GCAO2AO_transform_matrixD2(D,DAO,setting,lupri)
+   IF(UNRES)THEN
+      call mat_to_full3D(DAO, 1.0E0_realk, Dmat,nbast,nbast,ndmat2,1,2)
+   ELSE !CLOSED_SHELL
+      call mat_to_full3D(DAO, Factor, Dmat,nbast,nbast,ndmat2,1,1)
+   endif
+   call mat_free(DAO)
+ELSE
+   IF(UNRES)THEN
+      call mat_to_full3D(D, 1.0E0_realk,Dmat,nbast,nbast,ndmat2,1,2)
+   ELSE !CLOSED_SHELL
+      call mat_to_full3D(D, Factor, Dmat,nbast,nbast,ndmat2,1,1)
+   ENDIF
+ENDIF
+end subroutine II_XC_TransformDmatToAOFull_single
 
 end module II_XC_interfaceModule

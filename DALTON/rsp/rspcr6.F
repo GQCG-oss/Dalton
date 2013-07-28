@@ -162,7 +162,9 @@ C
      *                  ISYMA,ISYMB,ISYMC,ISYMD,CMO,FC,MJWOP)
 C
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 C
       PARAMETER ( D0 = 0.0D0, D1 = 1.0D0, DM1 = -1.0D0 )
@@ -248,6 +250,7 @@ C
      *          DDOT(KZYVA,VECA,1,ETRS,1) - VAL
       END IF
 C
+#if defined (BUILD_PELIB)
       if (peqm) then
         if (.not. tdhf) then
             call quit('ERROR: MCSCF cubic response not'//
@@ -264,6 +267,7 @@ C
      &                 kzyva, kzyvb, kzyvc, kzyvd, isyma, isymb, isymc,
      &                 isymd, cmo, mjwop)
       end if
+#endif
 C
       IF (QMMM) THEN
          IF (TDHF) THEN

@@ -26,7 +26,9 @@ C
 C
       CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',
      *        'UNFORMATTED',IDUMMY,.FALSE.)
-      IF (NCSIM .GT. 0) THEN
+C     if SOPRPA, then only put PCM contribs into RPA part
+C      IF (NCSIM .GT. 0) THEN
+      IF ((NCSIM .GT. 0) .and. (.not. SOPRPA)) THEN
          IF (IPRRSP.GT.101) THEN
 C         IF (.true.) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
@@ -759,7 +761,10 @@ C \sigma_{oo} = <0|[q_j,\tilde{Z}]|0>
       ELSE
          CALL SLVSOR(.TRUE.,.TRUE., NOSIM,UDV,  SVEC(1,1),WRK(KPCMX))
       ENDIF
-      IF (KZCONF.GT.0 .AND. IREFSY.EQ.KSYMST) THEN
+C     allow for SOPRPA
+C      IF (KZCONF.GT.0 .AND. IREFSY.EQ.KSYMST) THEN
+      IF ((KZCONF.GT.0) .AND. (IREFSY.EQ.KSYMST) 
+     *   .AND. (.NOT. SOPRPA)) THEN
          IF (NCREF .NE. KZCONF) CALL QUIT('IEFLNO: NCREF .ne. KZCONF')
 C
 C        ... test orthogonality

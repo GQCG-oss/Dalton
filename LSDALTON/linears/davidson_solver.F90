@@ -1,16 +1,17 @@
 
 MODULE  davidson_solv_mod
 use precision
-use pipek
 use matrix_module
 use matrix_operations
 use davidson_settings
+!use pipek
 use typedef
 use decompMod
 use arhDensity
 use kurtosis
 use direct_dens_util
 use memory_handling
+use orbspread_hess_prec_mod,only: orbspread_hesslin, orbspread_precond
 CONTAINS
 
 !> \brief Contains reduced space solver which solves the (level-shifted) Newton equation (Hoeyvik et al., JCTC, 8)
@@ -225,19 +226,6 @@ subroutine LinearTransformations(CFG,X,HX,G)
  type(MATRIX),intent(in) :: X,G
  type(matrix)            :: HX
  integer :: n
- interface 
-    subroutine orbspread_hesslin(Hv,V,mu,norb,orbspread_input)
-      use decompMod
-      use precision
-      use matrix_module, only: matrix
-      implicit none
-      Type(Matrix), intent(inout) :: Hv
-      Type(Matrix), intent(in)  :: V
-      real(realk), intent(in)   :: mu
-      integer, intent(in)       :: norb
-      type(orbspread_data), intent(in), target :: orbspread_input
-    end subroutine orbspread_hesslin
- end interface
  if (CFG%arh_davidson .and. CFG%arh_lintrans) then
     call arh_lintrans(CFG%arh,CFG%decomp,X,CFG%symm,0.0_realk,HX,CFG%fifoqueue)
     return

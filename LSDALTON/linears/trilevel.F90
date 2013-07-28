@@ -971,9 +971,6 @@ do i=1, ai%ND
       atomicSetting%molecule(iAO)%p => atomicmolecule
       atomicSetting%fragment(iAO)%p => atomicmolecule
    enddo
-   atomicSetting%numNodes = 1
-   atomicSetting%numFragments = 1
-   atomicSetting%scheme%fragment = .FALSE.
    !deactivate density fitting, FMM and screening - provide no speedup and just complicates things
    atomicSetting%scheme%densfit = .FALSE.
    atomicSetting%scheme%df_k = .FALSE.
@@ -1013,10 +1010,6 @@ do i=1, ai%ND
 enddo
 !reverted back
 ls%setting%integraltransformGC = integraltransformGC
-IF(ls%setting%integraltransformGC)THEN
-   nbast = getNbasis(AORdefault,Contractedinttype,ls%input%MOLECULE,LUPRI)
-   call write_GCtransformationmatrix(nbast,ls%setting,lupri)
-ENDIF
 ls%optlevel = 3
 
 end subroutine trilevel_gcbasis
@@ -1357,12 +1350,15 @@ use precision
 use memory_handling
 use Matrix_Operations, only: matrix_type,mtype_dense,mat_select_type
 use lstiming
+use typedef, only: getNbasis
+use GCtransMod, only: write_GCtransformationmatrix
+use Integralparameters
 implicit none
 type(optItem), intent(inout) :: opt
 type(optItem)             :: gcopt
 TYPE(lsitem) :: ls
 TYPE(trilevel_atominfo) :: ai
-integer                 :: CFG_averaging_sav, matrix_sav
+integer                 :: CFG_averaging_sav, matrix_sav,nbast
 logical                 :: unres_sav
 
   IF(ls%input%basis%REGULAR%GCbasis)THEN
@@ -1396,6 +1392,12 @@ logical                 :: unres_sav
      call mat_select_type(matrix_sav,gcopt%lupri,ls%input%MOLECULE%nbastREG)
      !  matrix_type = matrix_sav !this is not allowed due to MPI complications
      
+     !This must be done after the mat_select_type
+     IF(ls%setting%integraltransformGC)THEN
+        nbast = getNbasis(AORdefault,Contractedinttype,ls%input%MOLECULE,gcopt%LUPRI)
+        call write_GCtransformationmatrix(nbast,ls%setting,gcopt%lupri)
+     ENDIF
+
      !CFG_averaging = CFG_averaging_sav
      !we have written screening matrices which should not 
      !be used in the rest of the calculations so we reset the IO  
@@ -1542,6 +1544,7 @@ use IntegralInterfaceMOD
 use diagonalization
 use scfloop_module
 use molecule_module
+use optimlocMOD, only: optimloc
 implicit none
 TYPE(lsitem),target :: ls
 TYPE(trilevel_atominfo) :: ai
@@ -1561,19 +1564,6 @@ type(ConfigItem) :: config
 real(realk),parameter :: THRNEL=1E-3_realk
 real(realk),external :: HOMO_energy
 type(LowAccuracyStartType)  :: LAStype
-interface 
-   subroutine optimloc(CMO,nocc,m,ls,CFG)
-     use davidson_settings
-     use matrix_module, only: matrix
-     use typedeftype
-     implicit none
-     type(RedSpaceItem) :: CFG
-     type(Matrix), target:: CMO
-     TYPE(lsitem) , intent(inout) :: ls
-     integer,       intent(in)    :: nocc
-     integer,       intent(in)    :: m(2)
-   end subroutine optimloc
-end interface
 
   ndmat = 1
   OnMaster = .TRUE.

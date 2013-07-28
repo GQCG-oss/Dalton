@@ -81,6 +81,7 @@ contains
     DECinfo%user_defined_orbitals=.false.
     DECinfo%AbsorbHatoms=.true.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken=.false.
+    DECinfo%Distance=.false.
     DECinfo%BoughtonPulay=.false.
     DECinfo%FitOrbitals=.true.
     DECinfo%simple_orbital_threshold=0.05E0_realk
@@ -390,6 +391,7 @@ contains
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
+       case('.DISTANCE'); DECinfo%distance=.true.
        case('.BOUGHTONPULAY'); DECinfo%BoughtonPulay=.true.
        case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
        case('.SIMPLEORBITALTHRESH')

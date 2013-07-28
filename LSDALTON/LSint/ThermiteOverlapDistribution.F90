@@ -80,6 +80,7 @@ INTEGER                :: nPrim
 INTEGER                :: nOrb
 INTEGER                :: nTUV
 INTEGER                :: nEFG !multipole orders
+Logical                :: dohodi
 INTEGER                :: nGeoDeriv
 INTEGER                :: lhsGeoOrder
 INTEGER                :: rhsGeoOrder
@@ -317,12 +318,8 @@ useFTUV = INPUT%DO_JENGINE .AND. IELECTRON.EQ. 2
  P%minAngmom = minAngmom-(P%endGeoOrder+CMorder+P%magderiv)
  P%startAngmom = 0
  IF (P%type_hermite_single) P%startAngmom = P%minAngmom
- IF( INPUT%operator .EQ. KineticOperator .AND. LHS) THEN
-    IF (P%type_hermite_single) P%startAngmom = P%startAngmom + 2
-    P%endAngmom   = maxAngmom + 2
- ELSE
-    P%endAngmom   = maxAngmom
- ENDIF  
+ P%endAngmom   = maxAngmom
+
  P%nTUV = (P%endAngmom+1)*(P%endAngmom+2)*(P%endAngmom+3)/6 - &
     &     P%startAngmom*(P%startAngmom+1)*(P%startAngmom+2)/6
 !==========================================================================
@@ -1037,11 +1034,11 @@ IF(.NOT.FTUVorb)THEN
 !        & + mem_intsize*size(Orb%nOrbitals)
 !   call mem_allocated_mem_overlap(nsize)
    
-   call mem_alloc(Orb%CC,maxangmom)
+!   call mem_alloc(Orb%CC,maxangmom)
    Orb%FTUVorb = .FALSE.
 ELSE
    Orb%FTUVorb = .TRUE.
-   NULLIFY(Orb%CC)
+!   NULLIFY(Orb%CC)
 ENDIF
 
 END SUBROUTINE ALLOC_ORBITAL
@@ -1220,10 +1217,10 @@ SUBROUTINE FREE_OVERLAP(P)
 Implicit none
 TYPE(Overlap) :: P
 IF(.NOT. P%orbital1%FTUVorb)THEN
-   call mem_dealloc(P%orbital1%CC)
+!   call mem_dealloc(P%orbital1%CC)
 ENDIF
 IF(.NOT. P%orbital2%FTUVorb)THEN
-   call mem_DEALLOC(P%orbital2%CC)
+!   call mem_DEALLOC(P%orbital2%CC)
 ENDIF
 END SUBROUTINE FREE_OVERLAP
 
@@ -3653,13 +3650,10 @@ DO iODtype=1,nODTypes
    minangmom = minangmom
    startAngmom = 0
    IF (type_hermite_single) startAngmom = minAngmom 
-   IF( INPUT%operator .EQ. KineticOperator )THEN
-      startAngmom = startAngmom + 2
-      endAngmom = maxAngmom + 2
-   ELSE
-      endAngmom = maxAngmom
-   ENDIF
+   endAngmom = maxAngmom
    nTUV = (endAngmom+1)*(endAngmom+2)*(endAngmom+3)/6
+   IF (INPUT%operator .EQ. KineticOperator) nTUV = (endAngmom+3)*(endAngmom+4)*(endAngmom+5)/6
+
    IF (Side.EQ.'LHS') THEN
       IF (endAngmom+1.GT. 20) CALL LSQUIT('Error maxPrimAngmomLHS SelectODTypesFromODbatch',lupri)
       alloc%maxPrimAngmomLHS(endAngmom+1) = max(alloc%maxPrimAngmomLHS(endAngmom+1),np)
@@ -4608,16 +4602,16 @@ call ADD_BUFCOUNTERS(3,nint,nrealk)
 
 END SUBROUTINE MEM_PASS_FROM_OVERLAP
 
-INTEGER FUNCTION getTotalGeoComp(derOrder,LHS,RHS,singleP,singleQ)
+INTEGER FUNCTION getTotalGeoComp(derOrder,LHS,RHS,singleP,singleQ,emptyP,emptyQ)
 implicit none
 Integer,intent(IN) :: derOrder
-Logical,intent(IN) :: singleP,singleQ,LHS,RHS
+Logical,intent(IN) :: singleP,singleQ,LHS,RHS,emptyP,emptyQ
 Integer :: iOrder,geoComp,startLHS,endLHS
 geoComp=0
 startLHS = 0
 endLHS   = derOrder
-IF (.NOT.LHS) endLHS   = 0
-IF (.NOT.RHS) startLHS = derORder
+IF (.NOT.LHS.OR.emptyP) endLHS   = 0
+IF (.NOT.RHS.OR.emptyQ) startLHS = derORder
 
 DO iOrder=startLHS,endLHS
   geoComp = geoComp + getODgeoComp(iOrder,singleP)*getODgeoComp(derOrder-iOrder,singleQ)
