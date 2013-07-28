@@ -1500,6 +1500,25 @@ contains
     print *,string,norm
   end subroutine print_norm_fort_customprint
 
+
+
+  subroutine array_scale(arr,sc)
+    implicit none
+    type(array) :: arr
+    real(realk) :: sc
+    
+    select case(arr%atype)
+    case(DENSE)
+      call dscal(int(arr%nelms),sc,arr%elm1,1)
+    case(REPLICATED)
+      call dscal(int(arr%nelms),sc,arr%elm1,1)
+      call array_sync_replicated(arr)
+    case(TILED_DIST)
+      call array_scale_td(arr,sc)
+    case default
+      call lsquit("ERROR(array_scale):not yet implemented",DECinfo%output)
+    end select
+  end subroutine array_scale
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!   ARRAY TESTCASES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

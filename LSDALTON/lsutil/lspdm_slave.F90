@@ -101,6 +101,9 @@ subroutine pdm_array_slave()
        call mem_dealloc(dims2)
      CASE(JOB_CHANGE_INIT_TYPE)
        call change_init_type_td(A,i)
+     CASE(JOB_ARRAY_SCALE)
+       call ls_mpibcast(AF,infpar%master,infpar%lg_comm)
+       call array_scale_td(A,AF)
    END SELECT
 #endif
 end subroutine pdm_array_slave
