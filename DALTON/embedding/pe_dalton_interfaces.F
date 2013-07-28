@@ -21,9 +21,8 @@
 !...      http://daltonprogram.org
 !
 !
-!------------------------------------------------------------------------------
       subroutine pe_rsplin(ncsim, nosim, bcvecs, bovecs, cref, cmo,
-     &                     cindx, udv, dv, udvtr, dvtr, dvt, dvttr,
+     &                     cindx, udv, dv, udvtr, dvtr, dtv, dtvtr,
      &                     scvecs, sovecs, wrk, nwrk)
 
         implicit none
@@ -37,7 +36,7 @@
         integer :: ncsim, nosim, nwrk
         real*8, dimension(*) :: bcvecs, bovecs
         real*8, dimension(*) :: cref, cmo, cindx, udv, dv
-        real*8, dimension(*) :: udvtr, dvtr, dvt, dvttr
+        real*8, dimension(*) :: udvtr, dvtr, dtv, dtvtr
         real*8, dimension(*) :: scvecs, sovecs
         real*8, dimension(nwrk) :: wrk
 
@@ -49,7 +48,7 @@
         end if
 
         if (nosim > 0) then
-            call pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx,
+            call pe_rsplno(ncsim, nosim, bovecs, cref, cmo, cindx, 
      &                     udv, dv, udvtr, dvtr, sovecs, wrk, nwrk)
         end if
 
@@ -82,12 +81,12 @@
 
         integer :: i, j
         real*8, dimension(:), allocatable :: dcao, dvao
-        real*8, dimension(:), allocatable :: dcaotr, dvaotr
+!        real*8, dimension(:), allocatable :: dcaotr, dvaotr
         real*8, dimension(:), allocatable :: daos, fckaos
-        real*8, dimension(:), allocatable :: daotrs, fckaotrs
+!        real*8, dimension(:), allocatable :: daotrs, fckaotrs
         real*8, dimension(:), allocatable :: evec
         real*8, dimension(:,:), allocatable :: ubovecs, evecs
-        real*8, dimension(:,:), allocatable :: evectrs, eactrs
+!        real*8, dimension(:,:), allocatable :: evectrs, eactrs
         logical :: lexist
 
         ! return if no polarization
@@ -101,46 +100,46 @@
             return
         ! triplet response for open shell systems not ready yet
         else if ((nasht > 0) .and. trplet) then
-            stop 'ERROR: triplet response for open shell systems not
-     & implemented'
+            stop 'ERROR: triplet operators for open shell systems not'//
+     &           ' implemented'
         end if
 
         call qenter('pe_rsplno')
-         
+
         allocate(ubovecs(n2orbx,nosim))
         call rspzym(nosim, bovecs, ubovecs)
 
         ubovecs = - ubovecs
 
         allocate(dcao(n2basx), dvao(n2basx), daos(nosim*nnbasx))
-        if (trplet) then
-            allocate(dcaotr(n2basx), dvaotr(n2basx),
-     &               daotrs(nosim*nnbasx))
-        end if
+!        if (trplet) then
+!            allocate(dcaotr(n2basx), dvaotr(n2basx),
+!     &               daotrs(nosim*nnbasx))
+!        end if
 
         do i = 1, nosim
             j = (i - 1) * nnbasx + 1
             call deq27(cmo, ubovecs(:,i), udv, dcao, dvao,
      &                 wrk, nwrk)
-            if (trplet) then
-                call deq27(cmo, ubovecs(:,i), udvtr, dcaotr, dvaotr,
-     &                     wrk, nwrk)
-            end if
+!            if (trplet) then
+!                call deq27(cmo, ubovecs(:,i), udvtr, dcaotr, dvaotr,
+!     &                     wrk, nwrk)
+!            end if
             if (nasht > 0) then
                 dcao = dcao + 0.5d0 * dvao
-                if (trplet) then
-                    dcaotr = dcaotr + dvaotr
-                end if
+!                if (trplet) then
+!                    dcaotr = dcaotr + 0.50d0 * dvaotr
+!                end if
             end if
             call dgefsp(nbast, dcao, daos(j))
-            if (trplet) then
-                call dgefsp(nbast, dcaotr, daotrs(j))
-            end if
+!            if (trplet) then
+!                call dgefsp(nbast, dcaotr, daotrs(j))
+!            end if
         end do
         deallocate(dcao, dvao)
-        if (trplet) then
-            deallocate(dcaotr, dvaotr)
-        end if
+!        if (trplet) then
+!            deallocate(dcaotr, dvaotr)
+!        end if
 
         allocate(fckaos(nosim*nnbasx))
         call pe_master(runtype='response', denmats=daos,
@@ -148,44 +147,43 @@
      &                 dalwrk=wrk)
         deallocate(daos)
         fckaos = 2.0d0 * fckaos
-        if (trplet) then
-            allocate(fckaotrs(nosim*nnbasx))
-            call pe_master(runtype='response', denmats=daotrs,
-     &                     fckmats=fckaotrs, nmats=nosim,
-     &                     dalwrk=wrk)
-            fckaotrs = 2.0d0 * fckaotrs
-            deallocate(daotrs)
-        end if
+!        if (trplet) then
+!            allocate(fckaotrs(nosim*nnbasx))
+!            call pe_master(runtype='response', denmats=daotrs,
+!     &                     fckmats=fckaotrs, nmats=nosim,
+!     &                     dalwrk=wrk)
+!            deallocate(daotrs)
+!        end if
 
         allocate(evec(nnorbx))
         allocate(evecs(n2orbx,nosim))
         evecs = 0.0d0
-        if (trplet) then
-            allocate(evectrs(n2orbx,nosim), eactrs(n2ashx,nosim))
-        end if
+!        if (trplet) then
+!            allocate(evectrs(n2orbx,nosim), eactrs(n2ashx,nosim))
+!        end if
 
         do i = 1, nosim
             j = (i - 1) * nnbasx + 1
             call uthu(fckaos(j), evec, cmo, wrk, nbast, norbt)
             call dsptsi(norbt, evec, evecs(:,i))
-            if (trplet) then
-                call uthu(fckaotrs(j), evec, cmo, wrk, nbast, norbt)
-                call dsptsi(norbt, evec, evectrs(:,i))
-            end if
+!            if (trplet) then
+!                call uthu(fckaotrs(j), evec, cmo, wrk, nbast, norbt)
+!                call dsptsi(norbt, evec, evectrs(:,i))
+!            end if
         end do
 
         deallocate(evec)
-        if (trplet) then
-            call slvsor(.true., .false., nosim, udvtr, sovecs, evectrs)
+!        if (trplet) then
+!            call slvsor(.true., .false., nosim, udvtr, sovecs, evectrs)
+!            call slvsor(.true., .true., nosim, udv, sovecs, evecs)
+!        else
             call slvsor(.true., .true., nosim, udv, sovecs, evecs)
-        else
-            call slvsor(.true., .true., nosim, udv, sovecs, evecs)
-        end if
+!        end if
 
         deallocate(evecs)
-        if (trplet) then
-            deallocate(evectrs, eactrs)
-        end if
+!        if (trplet) then
+!            deallocate(evectrs, eactrs)
+!        end if
 
         call qexit('pe_rsplno')
 

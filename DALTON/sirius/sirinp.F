@@ -2596,7 +2596,7 @@ C
       GO TO 100
 C
  8000 CONTINUE
-!     No QC if PE module is used
+!     No QC if PE library is used
       if (peqm) flag(21) = .false.
 C     if long-range WFT short-range DFT, process functional keywords :
 #ifdef MOD_SRDFT

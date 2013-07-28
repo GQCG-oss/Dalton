@@ -209,7 +209,7 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
 # Induced dipole moments in environment
 #
 CRIT1=`$GREP "*  1 * (|0)\.140114.. * (|0)\.193037.. * (|0)\.000042.." $log | wc -l`
-CRIT2=`$GREP "*  2 * (\-|\-0)\.289498.. * (|0)\.050489.. * (|0)\.000094.." $log | wc -l`
+CRIT2=`$GREP "*  6 * (\-|\-0)\.289498.. * (|0)\.050489.. * (|0)\.000094.." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[4]=2
 ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
@@ -283,7 +283,7 @@ ERROR[3]="ENERGY CONTRIBUTIONS NOT CORRECT"
 # Induced dipole moments in environment
 #
 CRIT1=`$GREP "*  1 * (|0)\.140114.. * (|0)\.193037.. * (|0)\.000042.." $log | wc -l`
-CRIT2=`$GREP "*  2 * (\-|\-0)\.289498.. * (|0)\.050489.. * (|0)\.000094.." $log | wc -l`
+CRIT2=`$GREP "*  6 * (\-|\-0)\.289498.. * (|0)\.050489.. * (|0)\.000094.." $log | wc -l`
 TEST[4]=`expr $CRIT1 \+ $CRIT2 `
 CTRL[4]=2
 ERROR[4]="INDUCED DIPOLE MOMENTS NOT CORRECT"
