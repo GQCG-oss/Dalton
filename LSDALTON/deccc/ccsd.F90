@@ -2764,10 +2764,9 @@ contains
     endif
     
 
-    print *,"entering e2"
     !GET DOUBLES E2 TERM - AND INTRODUCE PERMUTATIONAL SYMMMETRY
     !***********************************************************
-    call calculate_E2_and_permute(ppfock,qqfock,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,scheme,print_debug)
+    call calculate_E2_and_permute(ppfock,qqfock,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,scheme,print_debug,lock_outside)
 
     call mem_dealloc(Had)
     call mem_dealloc(Gbi)
@@ -2802,7 +2801,8 @@ contains
 
   end subroutine get_ccsd_residual_integral_driven
 
-  subroutine calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,pd)
+  subroutine calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,&
+  &omega2,s,pd,lock_outside)
     implicit none
     real(realk),intent(inout)::ppf(:)
     real(realk),intent(inout)::qqf(:)
@@ -2816,7 +2816,7 @@ contains
     type(array),intent(inout) :: omega2
     integer, intent(in) :: s
     logical, intent(in) :: pd
-    logical :: lock_outside
+    logical,intent(inout) :: lock_outside
     integer :: no2,nv2,v2o,o2v
     logical :: master 
     real(realk),pointer :: w2(:),w3(:)
@@ -2827,7 +2827,7 @@ contains
     integer :: fri,tri
     character(ARR_MSG_LEN) :: msg
     real(realk) :: nrm
-    integer(kind=8) :: o2v2
+    integer(kind=8) :: o2v2,w3size
 
     lock_outside = .true.
     master       = .true.
@@ -2841,7 +2841,7 @@ contains
 #ifdef VAR_MPI
     master=(infpar%lg_mynum==infpar%master)
     if((s==2.or.s==1).and.master)then
-      call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s)
+      call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lock_outside)
     endif
 #endif
 
@@ -2893,7 +2893,8 @@ contains
         write(DECinfo%output,'("Trafolength in striped E1:",I5," ",I5)')tl1,tl2
       endif
 
-      call mem_alloc(w3,max(tl1*no,tl2*nv))
+      w3size = max(tl1*no,tl2*nv)
+      call mem_alloc(w3,w3size)
       call mem_alloc(w2,max(nv2,no2))
 
       !DO ALL THINGS DEPENDING ON 1
@@ -2928,70 +2929,90 @@ contains
         endif
         w1=0.0E0_realk
       else
-        w1=0.0E0_realk
         call arr_unlock_wins(t2)
       endif
-      call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1(fai1),v2o)
-      call lsmpi_local_reduction(w1,int(nv*nv*no*no,kind=long),infpar%master)
-      call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,int(nv*nv*no*no,kind=long),infpar%master)
-      !if(me==0)then
-      !  call array_add(omega2,1.0E0_realk,w1,omega2%nelms)
-      !endif
+   
+      if(.not.lock_outside)then
+        call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1(fai1),v2o)
+        call lsmpi_local_reduction(w1,int(nv*nv*no*no,kind=long),infpar%master)
+        call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
+      else
+        call arr_lock_wins(omega2,'s',MPI_MODE_NOCHECK)
+        call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1,tl1)
+        call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,lock_outside)
+      endif
 
 
       !DO ALL THINGS DEPENDING ON 2
+      if(lock_outside)then
+        call arr_lock_wins(t2,'s',MPI_MODE_NOCHECK)
+        call array_two_dim_2batch(t2,[1,2,3,4],'g',w3,3,fai2,tl2,lock_outside)
+      endif
 
       !calculate second part of doubles E term
       ! F [b c] - Had [a delta] * Lambda^h [delta c] = H' [b c]
       call dcopy(nv2,qqf,1,w2,1)
       if (DECinfo%ccModel>2) call dgemm('n','n',nv,nv,nb,-1.0E0_realk,Had,nv,yv,nb,1.0E0_realk,w2,nv)
+
       ! H'[a c] * t [c b i j] =+ Omega [a b i j]
-      !if(me==0) call array_convert(t2,w1,t2%nelms)
-      call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2)
-      do nod=1,nnod-1
-        call mo_work_dist(nv*no*no,fri,tri,nod)
+      if(.not.lock_outside)then
+        call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2)
+        do nod=1,nnod-1
+          call mo_work_dist(nv*no*no,fri,tri,nod)
+          if(me==0)then
+            do i=1,tri
+              call dcopy(nv,w1(1+(fri+i-2)*nv),1,w3(1+(i-1)*nv),1)
+            enddo
+          endif
+          if(me==0.or.me==nod)then
+            call ls_mpisendrecv(w3(1:nv*tri),int(nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
+          endif
+        enddo
         if(me==0)then
-          do i=1,tri
-            call dcopy(nv,w1(1+(fri+i-2)*nv),1,w3(1+(i-1)*nv),1)
+          do i=1,tl2
+            call dcopy(nv,w1(1+(fai2+i-2)*nv),1,w3(1+(i-1)*nv),1)
           enddo
         endif
-        if(me==0.or.me==nod)then
-          call ls_mpisendrecv(w3(1:nv*tri),int(nv*tri,kind=long),infpar%lg_comm,infpar%master,nod)
-        endif
-      enddo
-      if(me==0)then
-        do i=1,tl2
-          call dcopy(nv,w1(1+(fai2+i-2)*nv),1,w3(1+(i-1)*nv),1)
-        enddo
+        w1=0.0E0_realk
+      else
+        call arr_unlock_wins(t2)
       endif
-      w1=0.0E0_realk
-      call dgemm('n','n',nv,tl2,nv,1.0E0_realk,w2,nv,w3,nv,0.0E0_realk,w1(1+(fai2-1)*nv),nv)
-      call lsmpi_local_reduction(w1,o2v2,infpar%master)
-      call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
-      !if(me==0)then
-      !  call array_add(omega2,1.0E0_realk,w1,omega2%nelms)
-      !endif
+
+
+      if(.not.lock_outside)then
+        call dgemm('n','n',nv,tl2,nv,1.0E0_realk,w2,nv,w3,nv,0.0E0_realk,w1(1+(fai2-1)*nv),nv)
+        call lsmpi_local_reduction(w1,o2v2,infpar%master)
+        call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
+      else
+        call arr_unlock_wins(omega2)
+        call dgemm('n','n',nv,tl2,nv,1.0E0_realk,w2,nv,w3,nv,0.0E0_realk,w1,nv)
+        call array_two_dim_2batch(omega2,[1,2,3,4],'a',w1,3,fai2,tl2,.false.)
+        call lsmpi_barrier(infpar%lg_comm)
+      endif
+      
       
       call mem_dealloc(w2)
-      call mem_dealloc(w3)
-      
+
       !INTRODUCE PERMUTATION
-      !please note: the barrier statements are crucial because one sided
-      !communcation is used
-      omega2%init_type=MASTER_INIT
-      t2%init_type=MASTER_INIT
-      !call lsmpi_barrier(infpar%lg_comm)
-      !if(me==0)then
-      !  call array_convert(omega2,w1,omega2%nelms)
-      !  call array_add(w1,1.0E0_realk,omega2,omega2%nelms,[2,1,4,3])
-      !call lsmpi_barrier(infpar%lg_comm)
-      !  call array_convert(w1,omega2,omega2%nelms)
-      !endif
-      !call lsmpi_barrier(infpar%lg_comm)
-      call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1,int(nv*nv*no*no,kind=long))
-      call array_gather(1.0E0_realk,omega2,1.0E0_realk,w1,int(nv*nv*no*no,kind=long),&
-                          &oo=[2,1,4,3])
-      call array_scatter_densetotiled(omega2,w1,int(no*no*nv*nv,kind=long),infpar%master)
+      omega2%init_type = MASTER_INIT
+      t2%init_type     = MASTER_INIT
+
+      if(.not.lock_outside)then
+        call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1,o2v2)
+        call array_gather(1.0E0_realk,omega2,1.0E0_realk,w1,o2v2,oo=[2,1,4,3])
+        call array_scatter_densetotiled(omega2,w1,o2v2,infpar%master)
+      else
+        if(me==0)then
+          call arr_lock_wins(omega2,'s',MPI_MODE_NOCHECK)
+          call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
+          call arr_unlock_wins(omega2,.true.)
+          call arr_lock_wins(omega2,'s',MPI_MODE_NOCHECK)
+          call array_scatter(1.0E0_realk,w1,1.0E0_realk,omega2,o2v2,wrk=w3,iwrk=w3size)
+          call arr_unlock_wins(omega2,.true.)
+        endif
+      endif
+
+      call mem_dealloc(w3)
 #endif
     endif
     
@@ -5852,18 +5873,19 @@ subroutine calculate_E2_and_permute_slave()
         use decmpi_module, only: share_E2_with_slaves
         use ccsd_module, only:calculate_E2_and_permute
         implicit none
-real(realk),pointer :: ppf(:),qqf(:),xo(:),yv(:),Gbi(:),Had(:)
+        real(realk),pointer :: ppf(:),qqf(:),xo(:),yv(:),Gbi(:),Had(:)
         integer :: no,nv,nb,s
         type(array) :: t2,omega2
-real(realk),pointer :: w1(:)
+        real(realk),pointer :: w1(:)
+        logical :: lo
 
-        call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s)
+        call share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
         call mem_alloc(ppf,no*no)
         call mem_alloc(qqf,nv*nv)
         call ls_mpibcast(ppf,no*no,infpar%master,infpar%lg_comm)
         call ls_mpibcast(qqf,nv*nv,infpar%master,infpar%lg_comm)
         call mem_alloc(w1,int(no*no*nv*nv,kind=8))
-call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,.false.)
+        call calculate_E2_and_permute(ppf,qqf,w1,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,.false.,lo)
 
         call mem_dealloc(ppf)
         call mem_dealloc(qqf)

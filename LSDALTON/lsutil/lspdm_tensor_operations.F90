@@ -1624,7 +1624,10 @@ module lspdm_tensor_operations_module
       comb2          = comb2 * fordims(i)
     enddo
 
-    if(arr%mode==4.and.n2comb==3)then
+    if(arr%mode==4.and.n2comb==3.and.o(1)==1.and.o(2)==2.and.o(3)==3)then
+      !ATTENTION ONLY WORKS IF TL <= cons_el_in_t --> always given if order = 1,2,3,4
+      !if modification needed for other types, compare the elseif statement
+      !where n2comb==2, this has been implemented generally
 
       cons_el_in_t = 1_long
       do i = 1, 4
@@ -1635,8 +1638,8 @@ module lspdm_tensor_operations_module
         endif
       enddo
       cons_els = min(cons_el_in_t,int(tl,kind=8))
-      print *,"NEWOPTION",cons_els
 
+      st_tiling = 4
       do i = 1, 4
         if(arr%ntpm(i)/=1)then
           st_tiling = i
@@ -1647,6 +1650,8 @@ module lspdm_tensor_operations_module
       tidx = 1
       mult1 = arr%ntpm(1) * arr%ntpm(2)
       mult2 = arr%ntpm(1) * arr%ntpm(2) * arr%ntpm(3)
+      !print *,"NEWOPTION",cons_els,st_tiling
+       
 
 
       !precalculate tile dimensions and positions
@@ -1686,7 +1691,6 @@ module lspdm_tensor_operations_module
         enddo
       endif
 
-      call lsmpi_barrier(infpar%lg_comm)
       call mem_dealloc(tinfo)
       for3 => null()
       for4 => null()
@@ -1720,7 +1724,7 @@ module lspdm_tensor_operations_module
           exit
         endif
       enddo
-      !ref = max(cons_el_in_t,int(tl,kind=8))
+
       !precalculate tile dimensions and positions
       call mem_alloc(tinfo,arr%ntiles,7)
       do ctidx = 1, arr%ntiles
@@ -1742,17 +1746,9 @@ module lspdm_tensor_operations_module
         tl_mod = mod(tl ,cons_els)
         fx=1
         call get_midx(fel,fx(1:n2comb),fordims(1:n2comb),n2comb)
-        do i = st_tiling, 4
-          tidx(i)   = (fx(u_ro(i))-1)  / arr%tdim(i) + 1
-        enddo
         do i = 1, 4
           idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
         enddo
-        ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
-                 & mult1 + (tidx(4)-1) * mult2
-        cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
-                 &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
-        print *,infpar%lg_mynum,"Fts",fx,idxt,diff_ord,tl_max,tl_mod,tl
         part1 = 1
         part2 = 1
         do i = 1,min(diff_ord,2)
@@ -1766,13 +1762,8 @@ module lspdm_tensor_operations_module
             part2 = part2 * arr%tdim(i)
           endif
         enddo
-        print *,infpar%lg_mynum,"parts determinded",cons_els,part1,part2
-        call lsmpi_barrier(infpar%lg_comm)
-        !stop 0
       else
-        print *,"FUUUUCKYEAH"
         cons_els = tl
-        !cons_els = 1_long
         tl_max = (tl / cons_els) * cons_els
         tl_mod = mod(tl,cons_els)
         part1 = cons_els
@@ -1801,10 +1792,9 @@ module lspdm_tensor_operations_module
                   idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
                 enddo
         
-                !ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
                 ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
                          & mult1 + (tidx(4)-1) * mult2
-                !cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
+
                 cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
                          &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
         
@@ -1815,19 +1805,6 @@ module lspdm_tensor_operations_module
 
         !IF MORE THAN ONE ELEMENT CAN BE TRANSFERRED AT A TIME
         else
-          !cons_els = 1
-          !tl_max = tl
-          !tl_mod = 0
-          if(infpar%lg_mynum==0)then
-            print *,"OLDOPTION NEW FEAT",o
-            print *,tl_max,tl_mod,cons_els
-            print *,cons_el_rd,tl
-            print *,st_tiling
-            print *,arr%ntpm
-            print *,arr%tdim
-          endif
-
-          print *,infpar%lg_mynum,"has",split_in,diff_ord,part1,part2
 
           do c1 = 1, tl_max, cons_els
             call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
@@ -1841,20 +1818,11 @@ module lspdm_tensor_operations_module
                   idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
                 enddo
         
-                !ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
                 ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
                          & mult1 + (tidx(4)-1) * mult2
-                !cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
                 cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
                          &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
         
-                call get_tile_dim(dummy,arr,ctidx)
-                if(c1>tl_max.or.c1+part1-1>tl_max.or.cidxt>dummy)then
-                  print *,"SOMETHING WRONG"
-                  print *,c1,c1+part1-1,tl
-                  print *,cidxt,cidxt+part1-1,dummy
-                  stop 0
-                endif
                 !FOR PART 1
                 call pgav(p_fort3(c1:c1+part1-1,for3,for4),part1,&
                 &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
@@ -1863,10 +1831,8 @@ module lspdm_tensor_operations_module
           enddo
 
           if(part2/=0)then
-            print *,"NOT TO HAPPEN STUFF"
             do c1 = part1 + 1, tl_max, cons_els
               call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
-              print *,"huuuuuuuuuuhuuuuuuuuuu",fx
               do for4 = 1, fordims(4)
                 flx(4) = fx(4) 
                 do for3 = 1, fordims(3)
@@ -1877,27 +1843,17 @@ module lspdm_tensor_operations_module
                     idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
                   enddo
          
-                  !ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
                   ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
                            & mult1 + (tidx(4)-1) * mult2
-                  !cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
                   cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
                            &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
          
-                  call get_tile_dim(dummy,arr,ctidx)
-                  if(c1>tl_max.or.c1+part2-1>tl_max.or.cidxt>dummy)then
-                    print *,"SOMETHING WRONG pt2"
-                    print *,c1,c1+part2-1,tl
-                    print *,cidxt,cidxt+cons_els-1,dummy
-                    stop 0
-                  endif
                   !FOR PART 2
                   call pgav(p_fort3(c1:c1+part2-1,for3,for4),part2,&
                   &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
                 enddo
               enddo
             enddo
-            print *,infpar%lg_mynum,"last",c1+part1+part2-1,tl,tl_max,tl_mod
           endif
 
 
@@ -1905,7 +1861,6 @@ module lspdm_tensor_operations_module
             modp1=min(tl_mod,part1)
             modp2=tl_mod - modp1
             call get_midx(tl_max+fel,fx(1:n2comb),fordims(1:n2comb),n2comb)
-            print *,infpar%lg_mynum,"MOD1",fx,part1
             do for4 = 1, fordims(4)
               do for3 = 1, fordims(3)
           
@@ -1917,21 +1872,11 @@ module lspdm_tensor_operations_module
                   idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
                 enddo
           
-                !ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
                 ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
                          & mult1 + (tidx(4)-1) * mult2
-                !cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
                 cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
                          &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
 
-                call get_tile_dim(dummy,arr,ctidx)
-                if(tl_max+1>tl.or.tl_max+modp1>tl.or.cidxt>dummy)then
-                  print *,infpar%lg_mynum,"SOMETHING WRONG MOD1"
-                  print *,infpar%lg_mynum,"SMOD1:",tl_max+1,tl_max+modp1,tl,tl_mod
-                  print *,infpar%lg_mynum,"SMOD1:",cidxt,cidxt+cons_els-1,dummy
-                  stop 0
-                endif
-          
                 call pgav(p_fort3(tl_max+1:tl_max+part1,for3,for4),modp1,&
                 &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
               enddo
@@ -1939,7 +1884,6 @@ module lspdm_tensor_operations_module
 
             if(tl_mod>part1)then
               call get_midx(tl_max+fel+modp1,fx(1:n2comb),fordims(1:n2comb),n2comb)
-              print *,infpar%lg_mynum,"MOD2",fx,tl_mod-part1
               do for4 = 1, fordims(4)
                 do for3 = 1, fordims(3)
            
@@ -1951,23 +1895,11 @@ module lspdm_tensor_operations_module
                     idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
                   enddo
            
-                  !ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
                   ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
                            & mult1 + (tidx(4)-1) * mult2
-                  !cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
                   cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
                            &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
              
-#ifdef VAR_LSDEBUG
-                  call get_tile_dim(dummy,arr,ctidx)
-                  if(tl_max+modp1+1>tl.or.tl_max+modp1+modp2>tl.or.cidxt>dummy)then
-                    print *,infpar%lg_mynum,"SOMETHING WRONG MOD2"
-                    print *,"MOD2",tl_max+modp1+1,tl_max+modp1+modp2
-                    print *,"MOD2",cidxt,cidxt+cons_els-1,dummy
-                    stop 0
-                  endif
-#endif
-           
                   call pgav(p_fort3(tl_max+modp1+1:tl_max+tl_mod,for3,for4),modp2,&
                   &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
                 enddo
@@ -1978,36 +1910,149 @@ module lspdm_tensor_operations_module
         endif
 
       else
+      !CASE arr%mode==4,n2comb==2 and lock_outside = .false.
+        if(cons_els==1)then
 
-        do c1 = 1, tl
-          call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
-          do for4 = 1, fordims(4)
-            do for3 = 1, fordims(3)
-       
-              do i = st_tiling, 4
-                tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+          do c1 = 1, tl
+            call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+            do for4 = 1, fordims(4)
+              do for3 = 1, fordims(3)
+        
+                do i = st_tiling, 4
+                  tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+                enddo
+               
+                do i = 1, 4
+                  idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                enddo
+        
+                ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                         & mult1 + (tidx(4)-1) * mult2
+                cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                         &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+        
+                call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
+                call pga(p_fort3(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                call lsmpi_win_unlock(tinfo(ctidx,1),arr%wi(ctidx))
               enddo
-             
-              do i = 1, 4
-                idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
-              enddo
-       
-              !ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
-              ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
-                       & mult1 + (tidx(4)-1) * mult2
-              !cidxt  = get_cidx(idxt,tinfo(ctidx,2:5),arr%mode)
-              cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
-                       &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
-       
-              call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
-              call pga(p_fort3(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
-              call lsmpi_win_unlock(tinfo(ctidx,1),arr%wi(ctidx))
             enddo
           enddo
-        enddo
+
+        else
+
+          do c1 = 1, tl_max, cons_els
+            call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+            do for4 = 1, fordims(4)
+              flx(4) = fx(4) 
+              do for3 = 1, fordims(3)
+                do i = st_tiling, 4
+                  tidx(i)   = (fx(u_ro(i))-1)  / arr%tdim(i) + 1
+                enddo
+                do i = 1, 4
+                  idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                enddo
+        
+                ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                         & mult1 + (tidx(4)-1) * mult2
+                cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                         &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+        
+                !FOR PART 1
+                call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
+                call pgav(p_fort3(c1:c1+part1-1,for3,for4),part1,&
+                &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                call lsmpi_win_unlock(tinfo(ctidx,1),arr%wi(ctidx))
+              enddo
+            enddo
+          enddo
+
+          if(part2/=0)then
+            do c1 = part1 + 1, tl_max, cons_els
+              call get_midx(c1+fel-1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+              do for4 = 1, fordims(4)
+                flx(4) = fx(4) 
+                do for3 = 1, fordims(3)
+                  do i = st_tiling, 4
+                    tidx(i)   = (fx(u_ro(i))-1)  / arr%tdim(i) + 1
+                  enddo
+                  do i = 1, 4
+                    idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                  enddo
+         
+                  ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                           & mult1 + (tidx(4)-1) * mult2
+                  cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                           &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+         
+                  !FOR PART 2
+                  call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
+                  call pgav(p_fort3(c1:c1+part2-1,for3,for4),part2,&
+                  &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                  call lsmpi_win_unlock(tinfo(ctidx,1),arr%wi(ctidx))
+                enddo
+              enddo
+            enddo
+          endif
+
+
+          if(tl_mod/=0)then
+            modp1=min(tl_mod,part1)
+            modp2=tl_mod - modp1
+            call get_midx(tl_max+fel,fx(1:n2comb),fordims(1:n2comb),n2comb)
+            do for4 = 1, fordims(4)
+              do for3 = 1, fordims(3)
+          
+                do i = st_tiling, 4
+                  tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+                enddo
+               
+                do i = 1, 4
+                  idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                enddo
+          
+                ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                         & mult1 + (tidx(4)-1) * mult2
+                cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                         &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+
+                call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
+                call pgav(p_fort3(tl_max+1:tl_max+part1,for3,for4),modp1,&
+                &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                call lsmpi_win_unlock(tinfo(ctidx,1),arr%wi(ctidx))
+              enddo
+            enddo
+
+            if(tl_mod>part1)then
+              call get_midx(tl_max+fel+modp1,fx(1:n2comb),fordims(1:n2comb),n2comb)
+              do for4 = 1, fordims(4)
+                do for3 = 1, fordims(3)
+           
+                  do i = st_tiling, 4
+                    tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+                  enddo
+                 
+                  do i = 1, 4
+                    idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+                  enddo
+           
+                  ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                           & mult1 + (tidx(4)-1) * mult2
+                  cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                           &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+             
+                  call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
+                  call pgav(p_fort3(tl_max+modp1+1:tl_max+tl_mod,for3,for4),modp2,&
+                  &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+                  call lsmpi_win_unlock(tinfo(ctidx,1),arr%wi(ctidx))
+                enddo
+              enddo
+            endif
+          endif
+
+        endif
+      
       endif
 
-      call lsmpi_barrier(infpar%lg_comm)
       call mem_dealloc(tinfo)
       for3 => null()
       for4 => null()
@@ -2055,6 +2100,218 @@ module lspdm_tensor_operations_module
     call lsquit("ERROR(array_gather_to_two_dim_1batch):this routine is MPI only",-1)
 #endif
   end subroutine array_two_dim_1batch
+
+  subroutine array_two_dim_2batch(arr,o,op,fort,n2comb,fel,tl,lock_outside)
+    implicit none
+    type(array),intent(in) :: arr
+    real(realk),intent(inout) :: fort(*)
+    character, intent(in) :: op
+    integer, intent(in),target :: o(arr%mode)
+    integer, intent(in) :: fel,tl,n2comb
+    logical, intent(in) :: lock_outside
+    integer :: fordims(arr%mode)
+    integer,target :: fx(arr%mode)
+    integer,target :: flx(arr%mode)
+    integer :: oldidx(arr%mode)
+    integer :: i,lel
+    integer,target :: ro(arr%mode)
+    integer :: comb1,comb2,c1,c2
+    integer :: tidx(arr%mode),idxt(arr%mode)
+    integer :: tlidx(arr%mode),lidxt(arr%mode)
+    integer :: ctidx, cidxt, cidxf, st_tiling
+    integer,pointer :: u_o(:),u_ro(:),tinfo(:,:)
+    integer,pointer ::for3,for4
+    real(realk), pointer :: p_fort3(:,:,:),p_fort2(:,:)
+    integer :: tsze(arr%mode),mult1,mult2,dummy
+    integer(kind=8) :: cons_el_in_t,cons_els,tl_max,tl_mod
+    integer(kind=8) :: cons_el_rd
+    integer(kind=8) :: part1,part2,split_in, diff_ord,modp1,modp2
+    logical :: goto_default
+    procedure(lsmpi_put_realk), pointer :: pga => null()
+    procedure(lsmpi_put_realkV_wrapper8), pointer :: pgav => null()
+#ifdef VAR_MPI
+    integer(kind=ls_mpik) :: source
+
+    goto_default = .false.
+
+    if( op/='a'.and.op/='p'.and.op/='g')then
+      call lsquit("ERROR(array_two_dim_2batch):unknown choice of operator",-1)
+    endif 
+    if(op=='p')then
+      pga  => lsmpi_put_realk
+      pgav => lsmpi_put_realkV_wrapper8
+    elseif(op=='g')then
+      pga  => lsmpi_get_realk
+      pgav => lsmpi_get_realkV_wrapper8
+    elseif(op=='a')then
+      pga  => lsmpi_acc_realk
+      pgav => lsmpi_acc_realkV_wrapper8
+    endif
+
+    do i = 1,arr%mode
+      ro(o(i))      = i
+    enddo
+
+    if(op=='g')then
+      u_o(1:arr%mode)  => o(1:arr%mode)
+      u_ro(1:arr%mode) => ro(1:arr%mode)
+    else
+      u_o(1:arr%mode)  => ro(1:arr%mode)
+      u_ro(1:arr%mode) => o(1:arr%mode)
+    endif
+
+  
+    lel = fel + tl -1
+
+    do i = 1,arr%mode
+      fordims(i) = arr%dims(u_o(i))
+    enddo
+
+    comb1 = 1
+    do i = 1, arr%mode-n2comb
+      comb1   = comb1 * fordims(i)
+    enddo
+
+    comb2 = 1
+    do i = arr%mode-n2comb+1 , arr%mode
+      comb2          = comb2 * fordims(i)
+    enddo
+    
+    if(arr%ntpm(1)>1)then
+      goto_default = .true.
+      print *,"WARNING(array_two_dim_2batch):going to slow default option"
+    endif
+
+    if(arr%mode==4.and.n2comb==3.and.o(1)==1.and..not.goto_default)then
+
+      cons_el_in_t = 1_long
+      do i = 1, 4
+        if(o(i)==i)then
+          cons_el_in_t = cons_el_in_t * arr%tdim(i)
+        else
+          exit
+        endif
+      enddo
+
+      cons_els = int(arr%tdim(1),kind=8)
+
+      st_tiling = 4
+      do i = 1, 4
+        if(arr%ntpm(i)/=1)then
+          st_tiling = i
+          exit
+        endif
+      enddo
+      tidx = 1
+      mult1 = arr%ntpm(1) * arr%ntpm(2)
+      mult2 = arr%ntpm(1) * arr%ntpm(2) * arr%ntpm(3)
+
+
+      !precalculate tile dimensions and positions
+      call mem_alloc(tinfo,arr%ntiles,7)
+      do ctidx = 1, arr%ntiles
+        tinfo(ctidx,1) = get_residence_of_tile(ctidx,arr)
+        call get_tile_dim(tinfo(ctidx,2:5),arr,ctidx)
+        tinfo(ctidx,6) = tinfo(ctidx,2) * tinfo(ctidx,3)
+        tinfo(ctidx,7) = tinfo(ctidx,2) * tinfo(ctidx,3) * tinfo(ctidx,4)
+      enddo
+      call ass_D1to2(fort,p_fort2,[tl,fordims(4)])
+
+      if(lock_outside) then
+        do c1 = 1, tl
+          fx(1)=1
+          call get_midx(c1+fel-1,fx(2:4),fordims(2:4),n2comb)
+
+          do i = 1, 4
+            tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+          enddo
+          
+          do i = 1, 4
+            idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+          enddo
+
+          ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                   & mult1 + (tidx(4)-1) * mult2
+          cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                   &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+       
+          call pgav(fort(1+(c1-1)*cons_els:c1*cons_els),cons_els,&
+          &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+
+        enddo
+      else
+        do c1 = 1, tl
+          fx(1)=1
+          call get_midx(c1+fel-1,fx(2:4),fordims(2:4),n2comb)
+
+          do i = st_tiling, 4
+            tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+          enddo
+          
+          do i = 1, 4
+            idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+          enddo
+
+          ctidx  = tidx(1) + (tidx(2)-1) * arr%ntpm(1) + (tidx(3)-1) *&
+                   & mult1 + (tidx(4)-1) * mult2
+          cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
+                   &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
+       
+          call arr_lock_win(arr,ctidx,'s')
+          call pgav(fort(1+(c1-1)*cons_els:c1*cons_els),cons_els,&
+          &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
+          call arr_unlock_win(arr,ctidx)
+
+        enddo
+      endif
+
+      call mem_dealloc(tinfo)
+      for3 => null()
+      for4 => null()
+
+    else
+ 
+      print *,"WARINING(array_two_dim_2batch):this is a slow fallback option"
+
+      do c1 = 1, comb1
+        fx = 0
+        call get_midx(c1,fx(1:arr%mode-n2comb),fordims(1:arr%mode-n2comb),arr%mode-n2comb)
+        print *,c1,fx
+        do c2 = fel, lel
+          call get_midx(c2,fx(arr%mode-n2comb+1:arr%mode),fordims(arr%mode-n2comb+1:arr%mode),n2comb)
+ 
+          !get the information about the required index in the context of the
+          !array, i.e. which tile and which index in the tile
+          !also get the position of the index in the batched matrix
+
+          do i = 1, arr%mode
+            tidx(i)   = (fx(u_ro(i))-1) / arr%tdim(i) + 1
+            idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+          enddo
+
+          !get the combined indices, find all positions
+          ctidx  = get_cidx(tidx,arr%ntpm,arr%mode)
+          call get_tile_dim(tsze,arr,ctidx)
+          cidxt  = get_cidx(idxt,tsze,arr%mode)
+          source = get_residence_of_tile(ctidx,arr)
+          cidxf  = get_cidx([c1,c2-fel+1],[comb1,tl],2)
+     
+          !get the element from the correct place to the correct place
+          if(.not.lock_outside)call arr_lock_win(arr,ctidx,'s')
+          call pga(fort(cidxf),cidxt,source,arr%wi(ctidx))
+          if(.not.lock_outside)call arr_unlock_win(arr,ctidx)
+
+        enddo
+      enddo
+    endif
+
+    u_o  => null()
+    u_ro => null()
+    pga  => null()
+#else
+    call lsquit("ERROR(array_gather_to_two_dim_2batch):this routine is MPI only",-1)
+#endif
+  end subroutine array_two_dim_2batch
 
 
 
