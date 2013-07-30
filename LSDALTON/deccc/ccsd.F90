@@ -2526,6 +2526,7 @@ contains
       if(master.and.scheme==4)call print_norm(gvoov,o2v2,msg)
     endif
 #endif
+
     w1=0.0E0_realk
 
     !reorder integral for use within the solver and the c and d terms
