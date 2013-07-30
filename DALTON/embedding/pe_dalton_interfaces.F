@@ -45,7 +45,7 @@
 
         if (.not. tdhf) then
             write(lupri,*) 'ERROR: PE-MCSCF response not implemented.'
-            stop 'ERROR: PE-MCSCF response not implemented.'
+            call quit('ERROR: PE-MCSCF response not implemented.')
         end if
 
         if (nosim > 0) then
@@ -101,8 +101,8 @@
             return
         ! triplet response for open shell systems not ready yet
         else if ((nasht > 0) .and. trplet) then
-            stop 'ERROR: triplet operators for open shell systems not'//
-     &           ' implemented'
+            call quit('ERROR: triplet operators for open shell'//
+     &                ' systems not implemented'
         end if
 
         call qenter('pe_rsplno')
