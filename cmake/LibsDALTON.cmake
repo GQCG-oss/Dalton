@@ -1,3 +1,5 @@
+set(DALTON_LIBS)
+
 add_library(
     dalton
     ${DALTON_C_SOURCES}
@@ -11,10 +13,10 @@ add_dependencies(dalton generate_binary_info)
 if(ENABLE_GEN1INT)
     add_subdirectory(DALTON/gen1int ${CMAKE_BINARY_DIR}/gen1int)
     add_dependencies(dalton gen1int_interface)
-    set(LIBS
+    set(DALTON_LIBS
         gen1int_interface
         ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
-        ${LIBS}
+        ${DALTON_LIBS}
         )
 endif()
 
@@ -40,9 +42,9 @@ if(ENABLE_PELIB)
     add_dependencies(dalton pelib)
     add_dependencies(pelib gen1int_interface)
     add_definitions(-DBUILD_PELIB)
-    set(LIBS
+    set(DALTON_LIBS
         ${PROJECT_BINARY_DIR}/external/lib/libpelib.a
-        ${LIBS}
+        ${DALTON_LIBS}
         )
 endif()
 
@@ -57,6 +59,7 @@ target_link_libraries(
     dalton.x
     dalton
     ${LIBS}
+    ${DALTON_LIBS}
     )
 
 # compile Peter's utilities
