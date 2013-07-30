@@ -102,7 +102,7 @@
         ! triplet response for open shell systems not ready yet
         else if ((nasht > 0) .and. trplet) then
             call quit('ERROR: triplet operators for open shell'//
-     &                ' systems not implemented'
+     &                ' systems not implemented')
         end if
 
         call qenter('pe_rsplno')
