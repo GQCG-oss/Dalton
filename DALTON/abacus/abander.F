@@ -358,7 +358,7 @@ CAMT Only gradients for empirical disp correction so far
       END IF
 #if defined (BUILD_PELIB)
       if (peqm) then
-        naordr = 0
+        naordr = 1
       end if
 #endif
 C

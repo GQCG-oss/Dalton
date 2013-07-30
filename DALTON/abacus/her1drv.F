@@ -375,7 +375,7 @@ C... added by Bin Gao, Feb. 16, 2011
 C... for ECP
 #include "ecpinf.h"
 !     peqm
-      real*8, dimension(:), allocatable :: molgrad
+      real*8, dimension(:,:), allocatable :: molgrad
       IF (IPRINT .GE. 5) CALL TITLER('Output from ONEDR1','*',103)
 C
       TIMHER = D0
@@ -890,12 +890,16 @@ C     NHL 03/13
       ! den dalwrk vi sender ind kommer til at holde PE-gradientbidrag.
 
       if (propty .and. peqm) then
-         allocate(molgrad(3*natoms))
+         allocate(molgrad(3,natoms))
          call pe_master(runtype='molgrad', denmats=denmat,
      &                  molgrads=molgrad, nmats=1,
      &                  dalwrk=work(1:lwork))
          pegrad = 0.0d0
-         pegrad(1:3*natoms) = molgrad
+         do i = 1, natoms
+             j = (i - 1) * 3 + 1
+             k = i * 3
+             pegrad(j:k)= pegrad(j:k) + molgrad(:,i)
+         end do
          deallocate(molgrad)
 !     når man giver input variable ved "navn=", så kan man skrive dem i
 !     vilkårlig rækkefølge     
