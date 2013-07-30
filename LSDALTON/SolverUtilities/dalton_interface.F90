@@ -2374,8 +2374,14 @@ CONTAINS
             call mat_init(GxcArray(1),nbast,nbast)
             call mat_assign(GxcArray(1),Gxc)
         ENDIF
-        call di_GET_GbDs_and_XC_linrsp_Array(GbDsArray,GxcArray,lupri,&
-                        &luerr,BmatArray,1,nbast,Dmat,do_dft,setting)
+
+        if(present(setting)) then
+           call di_GET_GbDs_and_XC_linrsp_Array(GbDsArray,GxcArray,lupri,&
+                &luerr,BmatArray,1,nbast,Dmat,do_dft,setting)
+        else
+           call di_GET_GbDs_and_XC_linrsp_Array(GbDsArray,GxcArray,lupri,&
+                &luerr,BmatArray,1,nbast,Dmat,do_dft)           
+        end if
         call mat_assign(GbDs,GbDSArray(1))
         call mat_free(GbDSArray(1))
         call mat_free(BmatArray(1))

@@ -792,8 +792,8 @@ C
             return
         ! triplet response for open shell systems not ready yet
         else if ((nasht > 0) .and. trplet) then
-            stop 'ERROR: triplet response for open shell systems not
-     & ready yet'
+            call quit('ERROR: triplet operators for open shell'//
+     &                ' systems not implemented')
         end if
 
         lopen = .false.
