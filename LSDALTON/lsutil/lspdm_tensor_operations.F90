@@ -1422,8 +1422,8 @@ module lspdm_tensor_operations_module
       tmps = arr%tsize
       call mem_alloc(tmp,tmps)
     else
-      tmps         =  iwrk
-      tmp(1:tmps)  => wrk(1:tmps)
+      tmps =  iwrk
+      tmp  => wrk(1:tmps)
     endif
   
     maxintmp = tmps / arr%tsize
@@ -1475,7 +1475,7 @@ module lspdm_tensor_operations_module
     integer               :: nelintile,fullfortdim(arr%mode)
     real(realk), pointer  :: tmp(:)
     integer               :: tmps 
-    logical               :: internal_alloc,lock_outside
+    logical               :: internal_alloc,lock_outside,so
     integer               :: maxintmp,b,e,minstart
 #ifdef VAR_MPI
   
@@ -1483,6 +1483,11 @@ module lspdm_tensor_operations_module
       o(i)=i
     enddo
     if(present(oo))o=oo
+ 
+    so = .true.
+    do i=1,arr%mode
+      if(o(i)/=i)so = .false.
+    enddo
 
 #ifdef VAR_LSDEBUG
     if((present(wrk).and..not.present(iwrk)).or.(.not.present(wrk).and.present(iwrk)))then
@@ -1491,6 +1496,8 @@ module lspdm_tensor_operations_module
     endif
 #endif
 
+
+    !CHECK IF INTERNAL MEMORY ALLOCATION IS NEEDED
     internal_alloc = .true.
     if(present(wrk).and.present(iwrk))then
       if(iwrk>arr%tsize)then
@@ -1516,49 +1523,65 @@ module lspdm_tensor_operations_module
       fullfortdim(i) = arr%dims(o(i))
     enddo
 
-    if(internal_alloc)then
-      tmps = arr%tsize
-      call mem_alloc(tmp,tmps)
-    else
-      tmps         =  iwrk
-      tmp(1:tmps)  => wrk(1:tmps)
-    endif
   
     maxintmp = tmps / arr%tsize
 
-    do i=1,arr%ntiles
-      if(i>maxintmp)then
-        b = 1 + mod(i - maxintmp - 1, maxintmp) * arr%tsize
-        e = b + arr%tsize -1
-        if(arr%lock_set(i-maxintmp))call arr_unlock_win(arr,i-maxintmp)
-        call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,&
-               &pre2,fort,fullfortdim,arr%mode,o)
+    if(so.and.pre2==0.0E0_realk)then
+      b=1
+      do i=1,arr%ntiles
+        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+        e = b + nelintile - 1
+        call array_get_tile(arr,i,fort(b:e),nelintile,arr%lock_set(i))
+        b = e + 1
+      enddo
+    else
+
+      if(internal_alloc)then
+#ifdef VAR_LSDEBUG
+        print *,"WARINING(array_gather):Allocating internally"
+#endif
+        tmps = arr%tsize
+        call mem_alloc(tmp,tmps)
+      else
+        tmps =  iwrk
+        tmp  => wrk(1:tmps)
       endif
-      b = 1 + mod(i - 1, maxintmp) * arr%tsize
-      e = b + arr%tsize -1
-      call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
-      call array_get_tile(arr,i,tmp(b:e),nelintile,arr%lock_set(i))
-    enddo
 
-    if(arr%ntiles - maxintmp >= 0)then
-      minstart = arr%ntiles - maxintmp + 1
-    else
-      minstart = 1
+      do i=1,arr%ntiles
+        if(i>maxintmp)then
+          b = 1 + mod(i - maxintmp - 1, maxintmp) * arr%tsize
+          e = b + arr%tsize -1
+          if(arr%lock_set(i-maxintmp))call arr_unlock_win(arr,i-maxintmp)
+          call tile_in_fort(pre1,tmp(b:e),i-maxintmp,arr%tdim,&
+                 &pre2,fort,fullfortdim,arr%mode,o)
+        endif
+        b = 1 + mod(i - 1, maxintmp) * arr%tsize
+        e = b + arr%tsize -1
+        call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
+        call array_get_tile(arr,i,tmp(b:e),nelintile,arr%lock_set(i))
+      enddo
+     
+      if(arr%ntiles - maxintmp >= 0)then
+        minstart = arr%ntiles - maxintmp + 1
+      else
+        minstart = 1
+      endif
+     
+      do i=minstart, arr%ntiles
+        b = 1 + mod(i - 1, maxintmp) * arr%tsize
+        e = b + arr%tsize -1
+        if(arr%lock_set(i))call arr_unlock_win(arr,i)
+        call tile_in_fort(pre1,tmp(b:e),i,arr%tdim,&
+               &pre2,fort,fullfortdim,arr%mode,o)
+      enddo
+
+      if(internal_alloc)then
+        call mem_dealloc(tmp)
+      else
+        tmp  => null()
+      endif
     endif
 
-    do i=minstart, arr%ntiles
-      b = 1 + mod(i - 1, maxintmp) * arr%tsize
-      e = b + arr%tsize -1
-      if(arr%lock_set(i))call arr_unlock_win(arr,i)
-      call tile_in_fort(pre1,tmp(b:e),i,arr%tdim,&
-             &pre2,fort,fullfortdim,arr%mode,o)
-    enddo
-
-    if(internal_alloc)then
-      call mem_dealloc(tmp)
-    else
-      tmp  => null()
-    endif
 #else
     call lsquit("ERROR(array_gather):this routine is MPI only",-1)
 #endif
@@ -1613,11 +1636,11 @@ module lspdm_tensor_operations_module
     enddo
 
     if(op=='g')then
-      u_o(1:arr%mode)  => o(1:arr%mode)
-      u_ro(1:arr%mode) => ro(1:arr%mode)
+      u_o  => o(1:arr%mode)
+      u_ro => ro(1:arr%mode)
     else
-      u_o(1:arr%mode)  => ro(1:arr%mode)
-      u_ro(1:arr%mode) => o(1:arr%mode)
+      u_o  => ro(1:arr%mode)
+      u_ro => o(1:arr%mode)
     endif
 
   
@@ -2166,11 +2189,11 @@ module lspdm_tensor_operations_module
     enddo
 
     if(op=='g')then
-      u_o(1:arr%mode)  => o(1:arr%mode)
-      u_ro(1:arr%mode) => ro(1:arr%mode)
+      u_o  => o(1:arr%mode)
+      u_ro => ro(1:arr%mode)
     else
-      u_o(1:arr%mode)  => ro(1:arr%mode)
-      u_ro(1:arr%mode) => o(1:arr%mode)
+      u_o  => ro(1:arr%mode)
+      u_ro => o(1:arr%mode)
     endif
 
   
