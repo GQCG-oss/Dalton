@@ -1656,7 +1656,7 @@ C  (that is, is QM part embedded in environment)
 C
       EMBEDDING = FLAG(16) .or. PCM .or. QM3 .or. QMMM
 #if defined (BUILD_PELIB)
-      embedding = peqm
+      embedding = embedding .or. peqm
 #endif
 C
 C ***  PRINT INPUT DATA *****
