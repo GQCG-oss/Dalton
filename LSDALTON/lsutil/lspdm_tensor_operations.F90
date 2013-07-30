@@ -42,6 +42,22 @@ module lspdm_tensor_operations_module
                     &array_accumulate_tile_modeidx
   end interface array_accumulate_tile 
 
+  abstract interface
+    subroutine put_acc_tile(arr,globtilenr,fort,nelms,lock_set)
+      import
+      implicit none
+      type(array),intent(in) :: arr
+      integer,intent(in) :: globtilenr
+#ifdef VAR_INT64
+      integer(kind=8),intent(in) :: nelms
+#else
+      integer(kind=4),intent(in) :: nelms
+#endif
+      real(realk),intent(inout) :: fort(*)
+      logical, optional, intent(in) :: lock_set
+    end subroutine put_acc_tile
+  end interface
+
   !interface array_accumulate_tile_nobuff
   !  module procedure array_accumulate_tile_combidx4_nobuff,&
   !                  &array_accumulate_tile_combidx8_nobuff,&
@@ -1349,11 +1365,8 @@ module lspdm_tensor_operations_module
     integer               :: tmps 
     logical               :: internal_alloc,lock_outside
     integer               :: maxintmp,b,e,minstart
-#ifdef VAR_INT64
-    procedure(array_puttile_combidx8), pointer :: put_acc => null()
-#else
-    procedure(array_puttile_combidx4), pointer :: put_acc => null()
-#endif
+    procedure(put_acc_tile), pointer :: put_acc => null()
+
 #ifdef VAR_MPI
   
     do i=1,arr%mode
