@@ -10,6 +10,7 @@ use decompMod
 use files
 use lstiming
 use queue_ops
+use queue_module
 use typedeftype
 use precision
 use matrix_module

@@ -5,6 +5,7 @@
 !> \author S. Host
 !> \date 2007
 module decompMod
+use memory_handling
 use matrix_module
 use precision
 use matrix_operations
@@ -672,6 +673,9 @@ end module decompMod
 !> \author B. Jansik
 !> \date 2006
 subroutine lowdin_diagonalize(lupri,unres,S,U,U_inv)
+  use memory_handling
+  use precision
+  use matrix_module
   use matrix_operations
   use matrix_operations_aux, only: mat_to_full2
   use lowdin_module
