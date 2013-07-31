@@ -475,8 +475,8 @@ END SUBROUTINE LSlib_get_h1
 !> a file that is already open).
 SUBROUTINE LSlib_get_4center_eri(eri,nbast,dirac,lupri,luerr)
   use precision
-  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
-!  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+  use configurationType, only: configitem
+  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
