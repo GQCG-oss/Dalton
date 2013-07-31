@@ -12,12 +12,15 @@ module LS_optimizer_mod
   use WRITEMOLEFILE!, only: write_molecule_output
   use Energy_and_deriv!, only: get_energy, get_gradient
   use Fundamental  
+  use dec_typedef_module
   use lsdalton_rsp_mod,only: LS_RSP_EQ_SOL_EMPTY
 !===========================================================!
 !    The main driver for geometry optimization in LSDALTON  !
 !===========================================================!
 ! Written by Vladimir Rybkin in 11/2010
 !
+  private
+  public :: LS_RUNOPT
 CONTAINS
   SUBROUTINE LS_RUNOPT(E,config,H1,F,D,S,CMO,ls)
     use DEC_settings_mod

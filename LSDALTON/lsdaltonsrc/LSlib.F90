@@ -11,7 +11,8 @@
 !> a file that is already open).
 SUBROUTINE LSlib_get_dimensions(nbast,natoms,nelectrons,lupri,luerr)
   use precision
-  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+  use configurationType, only: configitem
+  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -56,8 +57,8 @@ END SUBROUTINE LSlib_get_dimensions
 !> a file that is already open).
 SUBROUTINE LSlib_get_overlap(S,nbast,lupri,luerr)
   use precision
-  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
-!  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+  use configurationType, only: configitem
+  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -117,7 +118,8 @@ END SUBROUTINE LSlib_get_overlap
 !> a file that is already open).
 SUBROUTINE LSlib_get_Fock(F,D,nbast,ndmat,dsym,lupri,luerr,testElectrons)
   use precision
-  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+  use configurationType, only: configitem
+  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -191,8 +193,8 @@ END SUBROUTINE LSlib_get_Fock
 !> a file that is already open).
 SUBROUTINE LSlib_get_Coulomb(J,D,nbast,ndmat,lupri,luerr)
   use precision
-  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
-!  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+  use configurationType, only: configitem
+  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -262,7 +264,8 @@ END SUBROUTINE LSlib_get_Coulomb
 !> a file that is already open).
 SUBROUTINE LSlib_get_Exchange(K,D,nbast,ndmat,dsym,lupri,luerr,testElectrons)
   use precision
-  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+  use configurationType, only: configitem
+  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -344,7 +347,8 @@ END SUBROUTINE LSlib_get_Exchange
 !> a file that is already open).
 SUBROUTINE LSlib_get_XC(XC,D,EXC,nbast,ndmat,lupri,luerr,testElectrons)
   use precision
-  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+  use configurationType, only: configitem
+  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -417,8 +421,8 @@ END SUBROUTINE LSlib_get_XC
 !> a file that is already open).
 SUBROUTINE LSlib_get_h1(h1,nbast,lupri,luerr)
   use precision
-  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
-!  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+  use configurationType, only: configitem
+  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -475,8 +479,8 @@ END SUBROUTINE LSlib_get_h1
 !> a file that is already open).
 SUBROUTINE LSlib_get_4center_eri(eri,nbast,dirac,lupri,luerr)
   use precision
-  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
-!  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+  use configurationType, only: configitem
+  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -525,7 +529,8 @@ END SUBROUTINE LSlib_get_4center_eri
 !> a file that is already open).
 SUBROUTINE LSlib_get_4center_eri_geoderiv(eri,nbast,geoOrder,nGeoComp,dirac,lupri,luerr)
   use precision
-  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+  use configurationType, only: configitem
+  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module
@@ -620,7 +625,8 @@ END SUBROUTINE LSlib_get_1el_geoderiv
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_nn_gradient(nucGrad,nAtoms,lupri,luerr)
-use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+use configurationType, only: configitem
+use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -661,7 +667,8 @@ END SUBROUTINE LSlib_get_nn_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_oneElectron_gradient(oneGrad,D,nbast,nAtoms,lupri,luerr)
-use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+use configurationType, only: configitem
+use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -725,7 +732,8 @@ END SUBROUTINE LSlib_get_oneElectron_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_ne_gradient(neGrad,D,nbast,nAtoms,lupri,luerr)
-use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+use configurationType, only: configitem
+use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -1119,7 +1127,8 @@ END SUBROUTINE LSlib_get_K_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_kinetic_gradient(kinGrad,D,nbast,nAtoms,lupri,luerr)
-use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+use configurationTYPE, only: configitem
+use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -1185,7 +1194,8 @@ END SUBROUTINE LSlib_get_kinetic_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_reorthoNormalization(reOrtho,DFD,nbast,ndmat,nAtoms,lupri,luerr)
-use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+use configurationTYPE, only: configitem
+use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
 use daltonInfo
@@ -1242,6 +1252,7 @@ END SUBROUTINE LSlib_get_reorthoNormalization
 !> \date 2010-03-17
 ! this routine can be call directly from lsdalton_wrapper
 SUBROUTINE LSlib_build_exchange()
+  use configurationType
   use configuration
   use TYPEDEF  
   use TYPEDEFTYPE  
@@ -1252,6 +1263,7 @@ SUBROUTINE LSlib_build_exchange()
   use integralinterfaceMod
   use memory_handling
   use files
+  use lstiming
 IMPLICIT NONE
 Integer      :: lupri,luerr
 !
@@ -1594,7 +1606,8 @@ END SUBROUTINE Lsdalton_get_ZDIPLEN
 subroutine build_setting_from_scratch(input,setting,nbast,nAtoms,Coord,Charge,&
      & BasisString,lupri)
   use precision
-  use configuration, only: configitem, config_set_default_config, config_read_input, config_shutdown, config_free
+  use configurationType, only: configitem
+  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
   use Matrix_module
   use Matrix_Operations
   use ls_Integral_Interface
