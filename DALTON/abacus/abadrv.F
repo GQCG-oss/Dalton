@@ -714,7 +714,9 @@ C     General input for ABACUS
 C     input:  WRDSRC - which ABACUS label to look for in input file
 C             (Feb 2003: one of **START, **PROPE, or **FINAL)
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 #include "iratdef.h"
 #include "dummy.h"
@@ -1517,11 +1519,6 @@ C
 
       IF (QMMM) WRITE(LUPRI,*) 'QMMM calculation'
 
-      if (peqm) then
-        write(lupri,'(2x,a)') 'Environment is modeled using'//
-     &                        ' the polarizable embedding (PE) scheme.'
-      end if
-
       CALL HEADER('The following molecular properties will be'//
      *            ' calculated in this run:',0)
       WRITE (LUPRI,'(A,I5/)') ' Default print level:    ',IPRDEF
@@ -1925,6 +1922,20 @@ CAMT quit here to catch this...
             CALL QUIT('Specified Mag. Props. NYI with Symm for DFT')
       ENDIF
 CAMT--------------
+#if defined (BUILD_PELIB)
+      if (peqm) then
+        write(lupri,'(6x,a)') 'Environment is modeled using'//
+     &                 ' the polarizable embedding scheme (PE library).'
+        if (polar) then
+         write (lupri,'(4a)') 'ERROR: .POLARI and .PEQM are not',
+     &                       'compatible. Please use either .ALPHA',
+     &                       'or the RESPONSE module and set frequency',
+     &                       'to zero.'
+         call quit('ERROR: .POLARI and .PEQM are not compatible')
+
+        end if
+      end if
+#endif
 
 C
 C
