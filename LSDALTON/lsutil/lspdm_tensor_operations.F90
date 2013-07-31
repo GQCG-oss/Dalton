@@ -1524,9 +1524,8 @@ module lspdm_tensor_operations_module
     enddo
 
   
-    maxintmp = tmps / arr%tsize
 
-    if(so.and.pre2==0.0E0_realk)then
+    if(so.and.pre1==1.0E0_realk.and.pre2==0.0E0_realk)then
       b=1
       do i=1,arr%ntiles
         call get_tile_dim(nelintile,i,arr%dims,arr%tdim,arr%mode)
@@ -1546,6 +1545,8 @@ module lspdm_tensor_operations_module
         tmps =  iwrk
         tmp  => wrk(1:tmps)
       endif
+
+      maxintmp = tmps / arr%tsize
 
       do i=1,arr%ntiles
         if(i>maxintmp)then
