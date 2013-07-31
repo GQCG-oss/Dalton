@@ -5,12 +5,17 @@ MODULE LSTENSOR_OPERATIONSMOD
   use precision
   use basis_type
   use Matrix_module
+  use matrix_operations_csr, only: zeroCSR
+  use matrix_operations_scalapack
   use matrix_operations
   use memory_handling
   use OD_Type
   use AO_Type
   use OD_TypeType
   use AO_TypeType
+#ifdef VAR_MPI
+  use infpar_module
+#endif
   use LSTENSORmem
   INTERFACE Build_mat_from_lst
      MODULE PROCEDURE Build_singlemat_from_lst, &
@@ -3286,7 +3291,8 @@ end subroutine memdist_lstensor_SetupFullinfo
                    lsao%nLocal(iAO) = nLocal(iAO)
                    IF(nLocal(iAO).NE.TENSOR%G_LSAO(I1)%G_nLocal(iAO))THEN
                       print*,'iAO',iAO,'infpar%mynum',infpar%mynum
-                      print*,'nLocal(iAO)',nLocal(iAO),'I2',I2,'IATOM',IATOM2,JATOM2,'infpar%mynum',infpar%mynum
+                      print*,'nLocal(iAO)',nLocal(iAO),'I2',I2,'IATOM',IATOM2,JATOM2,&
+                           & 'infpar%mynum',infpar%mynum
                       print*,'TENSOR%G_LSAO(I2)%G_nLocal(iAO)',TENSOR%G_LSAO(I2)%G_nLocal(iAO),'I1',&
      &                        I1,'IATOM',IATOM1,JATOM1,'infpar%mynum',infpar%mynum
                       CALL LSQUIT('nLocal mismatch localinfo',-1)
@@ -4956,7 +4962,6 @@ END SUBROUTINE Build_single_dense_mat_from_lst
 !> \param TENSOR the lstensor
 !> \param MAT the type matrix
 subroutine Build_single_csr_mat_from_lst(TENSOR,MAT)
-use matrix_operations_csr
 !include 'mkl_spblas.fi'
 implicit none
 TYPE(LSTENSOR)     :: TENSOR
