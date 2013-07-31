@@ -1,5 +1,8 @@
 module COMPLEXSYMSOLVER
+  use memory_handling  
   use decompMod
+  use precision
+  use matrix_module
   use matrix_operations
   use RSPSOLVER
   use RSPSYMSOLVER

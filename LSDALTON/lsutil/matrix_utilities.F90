@@ -11,10 +11,12 @@
 !> that it belongs somewhere else than here.
 !> 
 module matrix_util
+use precision
+use matrix_module
 use matrix_operations
 use matrix_operations_aux, only: mat_to_full2, mat_set_from_full2,mat_density_from_orbs
 use files
-
+use memory_handling
 contains 
   subroutine VerifyMatrices(MAT1,MAT2,STRING,THR,lu)
     implicit none
