@@ -5,7 +5,7 @@ MODULE LSTENSOR_OPERATIONSMOD
   use precision
   use basis_type
   use Matrix_module
-  use matrix_operations_csr, only: zeroCSR
+  use matrix_operations_csr, only: zeroCSR,mat_csr_allocate
   use matrix_operations_scalapack
   use matrix_operations
   use memory_handling

@@ -56,7 +56,7 @@ module gen1int_host
   !> \param ls_setting is the settings from linsca
   !> \param io_viewer is the logical unit number of the viewer
   subroutine gen1int_host_init(ls_setting, io_viewer)
-    use TYPEDEF, only: LSSETTING
+    use TYPEDEFTYPE, only: LSSETTING
     use molecule_type, only: copy_molecule
     use BUILDAOBATCH, only: BUILD_AO
     use Integralinfo, only: init_integral_INPUT
