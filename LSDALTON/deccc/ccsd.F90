@@ -3335,7 +3335,9 @@ contains
        enddo
      elseif(s==2)then
 #ifdef VAR_MPI
-       call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2,oo=[1,4,2,3])
+       if(lock_outside)call arr_lock_wins(t2,'s',MPI_MODE_NOCHECK)
+       call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2,oo=[1,4,2,3],wrk=w3,iwrk=w3size)
+       if(lock_outside)call arr_unlock_wins(t2,.true.)
        call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w1,no*nv,0.0E0_realk,w3,lead)
 #endif
      endif
