@@ -15,7 +15,8 @@ module rsp_contribs
        ls_attachDmatToSetting, &
        ls_freeDmatFromSetting
   use TYPEDEFTYPE, only: LSSETTING
-  use TYPEDEF, only: retrieve_output, GCAO2AO_transform_matrixD2
+  use TYPEDEF, only: retrieve_output
+  use GCtransMod, only: GCAO2AO_transform_matrixD2
   use Integralparameters
   use matrix_defop
   use RSPsolver, only: rsp_molcfg
@@ -1465,9 +1466,10 @@ contains
       type(matrix) reimF(1)
       integer      nf, i
       type(matrix) :: Gxc(1)
-      integer      :: nbast
+      integer      :: nbast, ndmat, luoutout
       type(matrix) :: D_complex(1)
       nf = size(F)
+      luoutout = 6
       !make usre F is properly allocated
       do i = 1, nf
          if (iszero(F(i)) .or. (Bmat(1)%complex .and. .not.F(i)%complex)) then
@@ -1483,19 +1485,22 @@ contains
          reimF(1:1) = (/mat_get_part(F(1), imag=.false.)/)
          !call di_GET_GbDs(6, 6, mat_get_part(Bmat(1), imag=.false.), reimF(1))
          call mat_assign(D_complex(1), mat_get_part(Bmat(1), imag=.false.))
-         call di_GET_GbDs_and_XC_linrsp(reimF, Gxc, 6, 6, D_complex, 1, nbast, Dmat, .false.)
+         ndmat = 1
+         call di_GET_GbDs_and_XC_linrsp(reimF, Gxc, luoutout, luoutout, D_complex, ndmat, nbast, Dmat, .false.)
 
          ! imaginary part
          reimF(1:1) = (/mat_get_part(F(1), imag=.true.)/)
          !call di_GET_GbDs(6, 6, mat_get_part(Bmat(1), imag=.true.), reimF(1))
          call mat_assign(D_complex(1), mat_get_part(Bmat(1), imag=.true.))
-         call di_GET_GbDs_and_XC_linrsp(reimF, Gxc, 6, 6, D_complex, 1, nbast, Dmat, .false.)
+         ndmat = 1
+         call di_GET_GbDs_and_XC_linrsp(reimF, Gxc, luoutout, luoutout, D_complex, ndmat, nbast, Dmat, .false.)
        
          
          reimF(1:1) = 0
       else
          !call di_GET_GbDs(6, 6, D(1), F(1))
-         call di_GET_GbDs_and_XC_linrsp(F, Gxc, 6, 6, Bmat, 1, nbast, Dmat, .false.)
+         ndmat = 1
+         call di_GET_GbDs_and_XC_linrsp(F, Gxc, luoutout, luoutout, Bmat, ndmat, nbast, Dmat, .false.)
       end if
       call mat_free(D_complex(1))
    end subroutine
