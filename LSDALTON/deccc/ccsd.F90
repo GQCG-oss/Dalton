@@ -2950,7 +2950,7 @@ contains
    
       if(.not.lock_outside)then
         call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1(fai1),v2o)
-        call lsmpi_local_reduction(w1,int(nv*nv*no*no,kind=long),infpar%master)
+        call lsmpi_local_reduction(w1,o2v2,infpar%master)
         call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
       else
         call arr_lock_wins(omega2,'s',MPI_MODE_NOCHECK)
@@ -3139,7 +3139,6 @@ contains
     real(realk), intent(inout) :: w1(:)
     real(realk),pointer :: w2(:),w3(:)
     !> the t1-transformed integrals
-    !real(realk), intent(in) :: gvvoo(:),gvoov(:)
     type(array), intent(inout) :: govov,gvvoo,gvoov
     !> number of occupied orbitals 
     integer, intent(in) :: no
@@ -3149,10 +3148,8 @@ contains
     !real(realk), intent(in) :: t2(:)
     type(array), intent(inout) :: t2
     !> u on input u{aibj}=2t{aibj}-t{ajbi} ordered as abij
-    !real(realk), intent(in) :: u2(:)
     type(array), intent(inout) :: u2
     !> the residual to add the contribution
-    !real(realk), intent(inout) :: omega2(:)
     type(array), intent(inout) :: omega2
     !> integer specifying the scheme
     integer, intent(in) :: s
