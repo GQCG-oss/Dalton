@@ -285,8 +285,8 @@ module gen1int_host
   !> \param D contains the AO density matrix
   !> \param io_viewer logical unit number of the standard output
   subroutine gen1int_host_test(ls_setting, D, io_viewer)
-    use TYPEDEF, only: LSSETTING, &
-                       getNbasis
+    use TYPEDEFTYPE, only: LSSETTING
+    use TYPEDEF, only: getNbasis
     use Matrix_module, only: Matrix
     use matrix_operations, only: mat_init,  &
                                  mat_print, &
