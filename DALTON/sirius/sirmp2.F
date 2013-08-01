@@ -121,7 +121,7 @@ C
 C *** Option 4 >TDASOP<  Diagonal 2. order 2p-2h correction in SOPPA
   104 MP2_TDA = .TRUE.
       GO TO 100
-C *** Option 5 >SC_SRM<  self-consistent short-range contributions included
+C *** Option 5 >SC_SRMP2<  self-consistent short-range contributions included
 #ifdef MOD_SRDFT
   105 SRMP2_SELFCONSISTENT = .TRUE.
       IPRMP2 = MAX(IPRMP2,1)
@@ -177,26 +177,26 @@ C ==========================================================================
          MP2_SCALEFAC(1) = P_S + P_T
          MP2_SCALEFAC(2) =     - P_T
          IF (MP2_SCS) THEN
-            WRITE(LUPRI,'(/A)') " S. Grimme's SCS MP2 requested."
+            WRITE(LUPRI,'(/A)') "@ S. Grimme's SCS MP2 requested."
          ELSE IF (MP2_SOS) THEN
-            WRITE(LUPRI,'(/A)') " M. Head-Gordon's SOS MP2 requested."
+            WRITE(LUPRI,'(/A)') "@ M. Head-Gordon's SOS MP2 requested."
          ELSE
-            WRITE(LUPRI,'(/A)') ' User-scaled MP2 requested.'
+            WRITE(LUPRI,'(/A)') '@ User-scaled MP2 requested.'
             IF (P_T .EQ. 0.0D0) MP2_SOS = .TRUE.
 C           ... SOS-MP2 but not Head-Gordon's original SOS-MP2
          END IF
          WRITE(LUPRI,'(A,2F14.6)')
-     &      ' Scale factors p_S and p_T:',P_S, P_T
+     &      '@ Scale factors p_S and p_T:',P_S, P_T
       END IF
       IF (MP2_LSHIFT .NE. 0.0D0) WRITE(LUPRI,'(/A,F14.6)')
-     &   ' Level-shift of MP2 denominator: ',MP2_LSHIFT
+     &   '@ Level-shift of MP2 denominator: ',MP2_LSHIFT
       IF (MP2_NO_OCCVIR) WRITE(LUPRI,'(/A)')
-     &   ' ".NO OV BLOCK": Occ-virt block of MP2 density matrix ignored'
+     &  '@ ".NO OV BLOCK": Occ-virt block of MP2 density matrix ignored'
 C
       IF (DCPT2) THEN
          WRITE(LUPRI,'(/A/A)')
-     &   ' WORK-IN-PROGRESS: Degeneracy corrected PT2 requested.',
-     &   ' WORK-IN-PROGRESS: NB! results may not be correct !!!!'
+     &   '@ WORK-IN-PROGRESS: Degeneracy corrected PT2 requested.',
+     &   '@ WORK-IN-PROGRESS: NB! results may not be correct !!!!'
          IF (MP2_SCALED .OR. (MP2_LSHIFT /= 0.0d0)) THEN
             WRITE(LUPRI,'(/A)') ' FATAL ERROR: .DCPT2 cannot be'//
      &      'combined with scaled MP2 and level-shfit in MP2'
@@ -235,7 +235,7 @@ C     EXEINF: FTRCTL
 C     INFORB: NORBT,NRHF,?
 C     SCBRHF: NFRRHF()
 C     INFMP2: NPHSYM, MP2FRO
-C     INFINP: FLAG(25),DIRFCK
+C     INFINP: FLAG(25), DIRFCK
 C     INFIND: ISX, ISMO
 C     INFTRA: NEWTRA, AO2INTFILE_LABEL
 C
@@ -273,7 +273,7 @@ C
       CALL MEMGET('REAL',KCMO  ,NCMOT ,WRK,KFREE,LFREE)
       CALL MEMGET('INTE',KIADR1,MAXVIR*MAXOCC,WRK,KFREE,LFREE)
 C
-C     READ IN MO'S AND CHECK FOR CANONICAL HARTREE FOCK ORBITALS
+C     Read in MOs and check for canonical Hartree-Fock orbitals
 C     Use DONE as scratch for FC in MP2FCK.
 C
       KFC = KDONE
@@ -282,8 +282,8 @@ C
 C     CALL MP2FCK(FCKFRO,EMY,CMO,FC,ORBEN,SCRA,LSCRA)
 C
 C
-C     DETERMINE NUMBER OF PARTICLES AND HOLES AND SET UP AN
-C     INDEX ARRAY FOR PARTICLES AND HOLES
+C     Determine number of particles and holes and set up an
+C     index array for particles and holes
 C
 C     Variables MP2FRO, IPHORD, IFRMP2, INDXPH, NP, NH placed in INFMP2
 C
@@ -824,9 +824,9 @@ C
 C  /* Deck natorb */
       SUBROUTINE NATORB(IPRNO,DONE,CMO,WRK,LFRSAV)
 C
-C PURPOSE: DETERMINE NATURAL ORBITALS
+C PURPOSE : DETERMINE NATURAL ORBITALS
 C
-C INPUT  : DONE IS ONE ELECTRON DENSITY MATRIX
+C INPUT   : DONE IS TOTAL ONE ELECTRON CHARGE DENSITY MATRIX
 C
 C
 #include "implicit.h"
@@ -851,8 +851,8 @@ C
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LFRSAV
-      CALL MEMGET('REAL',KORBNO,N2ORBT,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KORBEN,NORBT ,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KORBNO,NORBT ,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KDMAT ,NNORBT,WRK,KFREE,LFREE)
       CALL MEMGET('WORK',KWRK1 ,LWRK1 ,WRK,KFREE,LFREE)
       IJ     = 0
       DO 150 ISYM = 1,NSYM
@@ -861,48 +861,48 @@ C
          DO 160 I = 1,NORBI
             DO 170 J = 1,I
                IJ = IJ + 1
-               WRK(KORBNO-1+IJ) = DONE(IORBI+J,IORBI+I)
+               WRK(KDMAT -1+IJ) = DONE(IORBI+J,IORBI+I)
  170        CONTINUE
  160     CONTINUE
  150  CONTINUE
 C
       DO 200 ISYM = 1,NSYM
-         NORBI = NORB(ISYM)
-         IORBI = IORB(ISYM)
+         NORBI  = NORB(ISYM)
       IF (NORBI.EQ.0) GO TO 200
-         NBASI = NBAS(ISYM)
+         IORBI  = IORB(ISYM)
+         NBASI  = NBAS(ISYM)
          IIORBI = IIORB(ISYM)
-         ICSYM = ICMO(ISYM)
+         ICSYM  = ICMO(ISYM)
 C
-         CALL JACO(WRK(KORBNO+IIORBI),CMO(1+ICSYM),NORBI,NORBI,
-     *             NBASI,WRK(KWRK1),WRK(KWRK1+NORBI))
+         CALL JACO(WRK(KDMAT+IIORBI),CMO(1+ICSYM),
+     &             NORBI,NORBI,NBASI,WRK(KWRK1),WRK(KWRK1+NORBI))
 C        CALL JACO(F,VEC,NB,NMAX,NROWV,BIG,JBIG)
 C
          OCCSUM = D0
          DO 175 I=1,NORBI
             II = IIORBI + (I*I+I)/2
-            WRK(KORBEN-1+IORBI+I)=WRK(KORBNO-1+II)
-            OCCSUM = OCCSUM + WRK(KORBEN-1+IORBI + I)
+            WRK(KORBNO-1+IORBI+I)=WRK(KDMAT -1+II)
+            OCCSUM = OCCSUM + WRK(KORBNO-1+IORBI + I)
   175    CONTINUE
 #if !defined (VAR_MP2SUPSYM)
-         CALL ORDER2(CMO(1+ICSYM),WRK(KORBEN+IORBI),NORBI,NBASI)
+         CALL ORDER2(CMO(1+ICSYM),WRK(KORBNO+IORBI),NORBI,NBASI)
 #else
 C     HJ : implement SUPSYM in MP2 ????? 940823 hjaaj
 C          Done, Aug. 2004 /hjaaj
-         CALL ORD2SS(CMO(1+ICSYM),WRK(KORBEN+IORBI),
+         CALL ORD2SS(CMO(1+ICSYM),WRK(KORBNO+IORBI),
      &               ISSMO(1+IORBI),NORBI,NBASI)
 #endif
          IF (IPRNO .GE. 1) THEN
             OCCRHF = 2 * NRHF(ISYM) + NASH(ISYM)
             WRITE (LUPRI,1840) ISYM,OCCSUM,OCCRHF,OCCSUM-OCCRHF
 #if !defined (VAR_MP2SUPSYM)
-            WRITE (LUPRI,1850) (WRK(KORBEN-1+IORBI+I),I=1,NORBI)
+            WRITE (LUPRI,1850) (WRK(KORBNO-1+IORBI+I),I=1,NORBI)
 #else
             IF (.NOT.SUPSYM) THEN
-               WRITE (LUPRI,1850) (WRK(KORBEN-1+IORBI+I),I=1,NORBI)
+               WRITE (LUPRI,1850) (WRK(KORBNO-1+IORBI+I),I=1,NORBI)
             ELSE
                WRITE (LUPRI,1851)
-     &            (WRK(KORBEN-1+IORBI+I),ISSMO(IORBI+I),I=1,NORBI)
+     &            (WRK(KORBNO-1+IORBI+I),ISSMO(IORBI+I),I=1,NORBI)
             END IF
 #endif
          END IF
@@ -1015,7 +1015,7 @@ C
      *      ' Orbital energy of MP orbital  :', ORBEN(IMP),
      *      ' Orbital energy of AH orbital  :', ORBEN(IAH)
 
-         write(lupri,*) 'DONE MP2MUL start:'
+         write(lupri,*) 'DONE matrix MP2MUL start:'
          call output(done,1,4,1,4,norbt, norbt,1,lupri)
       END IF
       EMP2BF = EMP2
@@ -1089,7 +1089,7 @@ C
             H2M(IBH,INP) = H2M(INP,IBH)
  200     CONTINUE
  100  CONTINUE
-cmjp Pack the correlation coefficients into COEMP2 if SOPPA follow
+cmjp Pack the correlation coefficients into COEMP2 if SOPPA follows
       IF (FLAG(25) .AND. KFRO .GE. 0) THEN
          CALL PHPACK(H2D,COEMP2(IADR1(JMP,JAH)+1),ISYMAM,1,-1)
       ENDIF
@@ -1149,7 +1149,7 @@ C
          WRITE (LUPRI,'(1P,2(/A,2D11.4))')
      *   ' del(EMP2), EMP2 after this distribution :',EMP2-EMP2BF,EMP2,
      *   ' T = sum (a(MA,NB)**2) after this distr. :',TVALUE
-         write(lupri,*) 'DONE MP2MUL end:'
+         write(lupri,*) 'DONE matrix MP2MUL end:'
          call output(done,1,4,1,4,norbt, norbt,1,lupri)
       END IF
  8000 CALL QEXIT('MP2DEN')
@@ -1257,12 +1257,10 @@ C  /* Deck mp2fck */
       SUBROUTINE MP2FCK(FCKFRO,EMY,CMO,FC,ORBEN,SCRA,LSCRA)
 C
 C Purpose:
-C  CONSTRUCT INACTIVE FOCK MATRIX AND CHECK IF ORBITALS ARE
-C  CANONICAL HARTREE-FOCK ORBITALS
+C  Construct inactive Fock matrix and
+C  check if orbitals are canonical Hartree-Fock orbitals
 C
 C Input:
-C  CMO; initial molecular orbitals used to build Fock matrix,
-C       assumed to be orthonormal.
 C
 C Output:
 C  EMY; Fock energy
@@ -1305,8 +1303,8 @@ C
       CALL QENTER('MP2FCK')
 
       IF (IOPRHF .GT. 0 .OR. NASHT .GT. 0) THEN
-         WRITE (LUPRI,'(//A)') ' INFO:'//
-     &   ' all open shell orbitals are frozen in the MP2 calculation.'
+         WRITE (LUPRI,'(//A)') '@ INFO:'//
+     &   ' All open shell orbitals are frozen in the MP2 calculation.'
 !        WRITE (LUPRI,'(//A)')
 !    &   ' FATAL ERROR in MP2 module: MP2 is not implemented for'//
 !    &   ' open-shell Hartree-Fock'
@@ -1316,7 +1314,7 @@ C
       IF (IPRMP2 .GE. 3) THEN
          WRITE (LUPRI,'(/A//A,I5/A,8I5)')
      &   ' Checking that the closed shell orbitals are'//
-     &     ' canonical HARTREE-FOCK orbitals',
+     &     ' canonical Hartree-Fock orbitals',
      &   '    Number of electrons  :',2*NRHFT+NASHT,
      &   '    Closed shell orbitals:',(NRHF(I),I=1,NSYM)
          IF (NASHT .GT. 0) WRITE (LUPRI,'(A,8I5)')
@@ -1333,10 +1331,8 @@ C
       IF (EMBEDDING) THEN ! read EMY and Fock matrix from SIRFC
          WRITE (LUPRI,'(/A)')
      &   ' MP2 for embedded QM system, reading Fock matrix from SIRIFC'
-         WRITE (LUPRI,'(/A)')
-     &   ' NOTE: The present MP2 model is a PTE-like solvent MP2 model'
-         WRITE (LUPRI,'(/A)')
-     &   ' Please see JCC, 2012-2022, 33, (2012) for reference.'
+     &  ,'@ NOTE: The present MP2 model is a PTE-like solvent MP2 model'
+     &  ,'@ Please see JCC, 2012-2022, 33, (2012) for reference.'
          KCMO      = 1
          KCMO_diff = KCMO  + NCMOT
          KWRK      = KCMO_diff  + NCMOT
@@ -1587,9 +1583,9 @@ C
 C  /* Deck MP2IFC */
         SUBROUTINE MP2IFC(DONE,COEMP2)
 C
-C This routine prepares the SOPPA interface for RESPONSE storing
+C This routine prepares the SOPPA interface for RESPONSE by storing
 C the correlation coefficients and the second order one-density
-C matrix on the end of the LUSIFC file.
+C matrix at the end of the LUSIFC file.
 C    MJP 181093
 C
 #include "implicit.h"
@@ -1636,7 +1632,7 @@ C  /* Deck mp2mul */
      *                  H2M,H2D,IFRRHF,EMP2,EMP2FL,IADR1,
      *                  WRK,KFRSAV,LFRSAV)
 C
-C WRITTEN APRIL-1-87
+C Written April-1-87
 C   Revision 891017-hjaaj: use NXTH2M
 C 011293 mjp call to MP2DEN altered since IPHPORD etc. now in /INFMP2/
 C
@@ -1761,7 +1757,7 @@ C        H2M is modified in MP2DEN and it will be needed below if
 C        MP2FRO true.
 C
          IF (MP2FRO) CALL DCOPY(N2ORBX,H2M,1,WRK(KH2M1),1)
-         IF (IPRMP2 .GE. 10) THEN
+         IF (IPRMP2 .GE. 25) THEN
             WRITE(LUPRI,*) 'MP2MUL IC, ID =',IC,ID
          END IF
          IF ( IFRMP2(IC).EQ.0 .AND. IFRMP2(ID).EQ.0 ) THEN
