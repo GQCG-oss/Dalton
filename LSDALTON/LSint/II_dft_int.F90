@@ -172,8 +172,7 @@ INTEGER :: iprune,L_prev,L_curr,IPT,spSIZE,L,NCURLEN,I,J
 INTEGER,pointer     :: SPINDEX(:)
 INTEGER   :: KCKTA,KHKTA,SHELLANGMOMA,IT,IBUF,IBUF_PREV,IDUM,ILEN,K,NactBAS,NRED,NRED2,IDMAT
 INTEGER   :: spsize2,IJ
-REAL(REALK) :: TELECTRONS(ndmat),ERROR,CPUTIME,CPU2,CPU1
-REAL(REALK) :: WALLTIME,WALL2,WALL1,DMAX,GAOMAX
+REAL(REALK) :: TELECTRONS(ndmat),ERROR,TS,TE,DMAX,GAOMAX
 REAL(REALK),pointer :: SPHMAT(:)
 LOGICAL     :: CHECKELS,SETIT,LDUM,PRINTTIM
 integer,pointer :: LVALUE(:,:),MVALUE(:,:),NVALUE(:,:)
@@ -195,7 +194,7 @@ ENDIF
 IPRUNE = 1
 IF (GridObject%NOPRUN) IPRUNE = 0
 
-CALL LS_GETTIM(CPU1,WALL1)
+CALL LSTIMER('START',TS,TE,LUPRI)
 GridObject%NBUFLEN=1024
 BoxMemRequirement = NBAST*NBAST
 
@@ -207,14 +206,10 @@ CALL GenerateGrid(NBAST,GridObject%radint,GridObject%angmin,GridObject%angint,&
      & GridObject%PARTITIONING,BAS%nstart,MaxNactBast,LUPRI,&
      & IPRINT,USE_MPI,numnodes,node,GridObject%Id)
 IF(PRINTTIM)THEN
-   CALL LS_GETTIM(CPU2,WALL2)
-   CPUTIME = CPU2-CPU1
-   WALLTIME = WALL2-WALL1
 #ifdef VAR_MPI
    IF (infpar%mynum.EQ.infpar%master) THEN
 #endif
-      CALL LS_TIMTXT('>>>  CPU  Time used in gridgeneration2 is  ',CPUTIME,LUPRI)
-      CALL LS_TIMTXT('>>>  WALL Time used in gridgeneration2 is  ',WALLTIME,LUPRI)
+      CALL LSTIMER('gridgeneration2',TS,TE,LUPRI)
 #ifdef VAR_MPI
    ENDIF
 #endif

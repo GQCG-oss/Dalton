@@ -270,16 +270,13 @@ SUBROUTINE scfloop(H1,F,D,S,E,ls,config)
          write(config%lupri,*) '- now moving on to calculate lowest Hessian eigenvalue for this point.'
          exit
       ENDIF
-      write(config%lupri,*)'general fifoqueue%offset',fifoqueue%offset
       WRITE(config%LUPRI,'("** Make average of the last F and D matrices")')
       CALL Density_subspace_minimization(config, fifoqueue, queue, E(1), S, H1, grad, F(1), D(1), iteration)
-      write(config%lupri,*)'after general fifoqueue%offset',fifoqueue%offset
       CALL LSTIMER('AVERAG',TIMSTR,TIMEND,config%LUPRI)
 
       WRITE(config%LUPRI,'("** Get new density ")')
       call mat_no_of_matmuls(matmul1)
       CALL DOPT_get_density(config, fifoqueue, queue, F(1), H1, D(1), iteration,ls)
-      write(config%lupri,*)'after DOPT_get_density fifoqueue%offset',fifoqueue%offset
       call mat_no_of_matmuls(matmul2)
       WRITE(config%LUPRI,'("No. of matmuls in get_density: ",I5)') matmul2-matmul1
       CALL LSTIMER('G_DENS',TIMSTR,TIMEND,config%LUPRI)

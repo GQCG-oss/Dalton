@@ -17,7 +17,9 @@ MODULE molecular_hessian_mod
 #ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
 #endif
-
+  private
+  public :: get_molecular_hessian, geohessian_set_default_config,&
+       & get_first_geoderiv_overlap, get_first_geoderiv_refdmat
 CONTAINS
 
   SUBROUTINE dummy_subroutine_hessian()

@@ -18,6 +18,8 @@ module LS_optimizer_mod
 !===========================================================!
 ! Written by Vladimir Rybkin in 11/2010
 !
+  private
+  public :: LS_RUNOPT
 CONTAINS
   SUBROUTINE LS_RUNOPT(E,config,H1,F,D,S,CMO,ls)
     use DEC_settings_mod

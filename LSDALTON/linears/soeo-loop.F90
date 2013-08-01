@@ -18,8 +18,8 @@ use Matrix_Operations_aux
 use soeo_debug
 use extra_output
 use dal_interface, only: di_get_dipole
-
-implicit none
+private
+public :: soeoloop, soeo_restart
 
 !Contains:
 !  soeoloop
@@ -916,7 +916,7 @@ end subroutine soeo_stepback
 !> \param D Density matrix, output
 !=======================================================================
 subroutine soeo_restart (unres, lupri, S, F, D)
-
+implicit none
 logical, intent(in)         :: unres
 integer, intent(in)         :: lupri
 type(matrix), intent(in)    :: S
