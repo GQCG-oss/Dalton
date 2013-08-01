@@ -25,13 +25,13 @@
 C
 C     Original: abamolden  alex a auer 5.2.99
 C
-C This file contains all output routines thar write parts of the molden.inp 
+C This file contains all output routines thar write parts of the molden.inp
 C file which will be read by Molden.
 C Info about Molden can be obtained at :
 C        http://www.caos.kun.nl/~schaft/molden/molden.html
 C
 C
-       SUBROUTINE MOHEAD
+       SUBROUTINE MOLDEN_HEAD
 #include "implicit.h"
 #include "dummy.h"
 #include "maxorb.h"
@@ -43,7 +43,7 @@ C
       DONEIV=.FALSE.
       DONEIW=.FALSE.
       DONEIX=.FALSE.
-      IXYZPRINTS = 0 
+      IXYZPRINTS = 0
       CALL GPOPEN(LUMOLDEN,'molden.inp','UNKNOWN',' ','FORMATTED',
      &            IDUMMY,.FALSE.)
       REWIND LUMOLDEN
@@ -51,7 +51,7 @@ C
       CALL FLSHFO(LUMOLDEN)
       RETURN
       END
-      SUBROUTINE MOGTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
+      SUBROUTINE MOLDEN_GTO(NONTYP,NONT,IQM,NBLCK,JCO,NUC,NRC,SEG,
      &                 KATOM,KANG,KBLOCK,KPRIM,CPRIMU,NRMPRI)
 
 #include "implicit.h"
@@ -116,12 +116,12 @@ c
                         ITYP = NHKOFF(J)
                         IPSTRT = IPRIM
                         IPRIM = IPRIM + NNUC
-                        ITYP = ITYP + 1  
+                        ITYP = ITYP + 1
                         DO 420 INNRC = 1, NNRC
-                           
+
 Clf                  DO 400 L = 1, NDEG
 Clf                     IF (.NOT. INON .EQ. I .OR. .NOT. ILL .EQ. L )
-Clf                     INON = I      
+Clf                     INON = I
 Clf                     ILL  = L
                            WRITE (LUMOLDEN,'(1X,A1,1X,I3,A5)')
      &                          GTOTMP, NNUC, ' 1.00'
@@ -129,7 +129,7 @@ Clf                     ILL  = L
                               WRITE (LUMOLDEN,'(1X,F15.7,1X,F15.10)')
      &                             PRIEXP(IPSTRT+INNUC),
      &                             CPRIMU(INNUC,INNRC,KBCH)
-                              
+
  410                       CONTINUE
 Clf 400              CONTINUE
  420                    CONTINUE
@@ -139,7 +139,7 @@ Clf 400              CONTINUE
  110           CONTINUE
             IBLOCK = IBLOCK + NBLCK(I)
  100     CONTINUE
-         
+
       ENDIF
 
       DONEIT=.TRUE.
@@ -147,8 +147,8 @@ Clf 400              CONTINUE
       RETURN
       END
 
-      SUBROUTINE MOATOMS(WORD)
-C          
+      SUBROUTINE MOLDEN_ATOMS(WORD)
+C
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -176,10 +176,10 @@ C     include character ASYMB(103)*2 with atomic symbols
        IF (.NOT. DONEIU .OR. WORD .EQ. 'XYZ' .OR. WORD .EQ. 'FREQ') THEN
 
           NCOOR = 3*NUCDEP
-          IF (WORD .EQ. 'XYZ ') WRITE(LUMOLDEN,'(I5/)') NUCDEP 
-          IF (WORD .EQ. 'ATOM') WRITE(LUMOLDEN,'(A)') '[Atoms] AU' 
-          IF (WORD .EQ. 'FREQ') WRITE(LUMOLDEN,'(/A)')'[FR-COORD]' 
-       
+          IF (WORD .EQ. 'XYZ ') WRITE(LUMOLDEN,'(I5/)') NUCDEP
+          IF (WORD .EQ. 'ATOM') WRITE(LUMOLDEN,'(A)') '[Atoms] AU'
+          IF (WORD .EQ. 'FREQ') WRITE(LUMOLDEN,'(/A)')'[FR-COORD]'
+
           IATOM = 0
           DO 100 ICENT = 1, NUCIND
              MULCNT = ISTBNU(ICENT)
@@ -231,7 +231,7 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
                       END IF
                    END IF
  200            CONTINUE
-             END IF        
+             END IF
  100      CONTINUE
 
        END IF
@@ -240,7 +240,7 @@ C FIXME ?          hjaaj Oct 2003: should we remove point charges ??
        RETURN
        END
 
-      SUBROUTINE MOMOS(ITASK,CMO,OCCUP,ORBTRA,UCMO,ORBVEC)
+      SUBROUTINE MOLDEN_MOS(ITASK,CMO,OCCUP,ORBTRA,UCMO,ORBVEC)
 C
 C CMO    =  contains MO coefficients, symmetry packed
 C UCMO   =  contains MO coefficients, symmetry unpacked
@@ -264,7 +264,7 @@ C           2 : save orbital energies in OREN in molde.h
 #include "pgroup.h"
 ! ccom.h: SPHNRM
 #include "ccom.h"
-    
+
       LOGICAL WRTELEM,WRTZERO
       DIMENSION CMO(*), OCCUP(*), ORBTRA(*), UCMO(NBAST,NORBT)
       DIMENSION ORBVEC(*)
@@ -279,9 +279,10 @@ C           2 : save orbital energies in OREN in molde.h
      &         'Molden is only implemented for spherical GTOs'
             DONEIV = .TRUE.
          END IF
-         IF (.NOT. DONEIV) THEN 
-            WRITE(LUMOLDEN,'(/A)') '[5D]' 
-            WRITE(LUMOLDEN,'(/A)') '[MO]' 
+         IF (.NOT. DONEIV) THEN
+            WRITE(LUMOLDEN,'(/A)') '[5D]' ! 5d, 7f
+            WRITE(LUMOLDEN,'(/A)') '[9G]' ! 9g
+            WRITE(LUMOLDEN,'(/A)') '[MO]'
 C           call traorb to generate SO to AO transformation
             CALL TRAORB(ORBTRA,NBAST,-1,MOPRIN)
             CALL DZERO(UCMO,  NBAST * NORBT)
@@ -293,7 +294,7 @@ C           call traorb to generate SO to AO transformation
                NOCCI = NOCC(ISYM)
                DO I=1,NORB(ISYM)
                   jORB = jORB + 1
-                  II = IORB(ISYM) + I         
+                  II = IORB(ISYM) + I
                   WRITE(LUMOLDEN,'(2A)')     'Sym= ',REP(ISYM-1)
                   WRITE(LUMOLDEN,'(A,F9.4)') 'Ene= ',OREN(II)
                   WRITE(LUMOLDEN,'(A)')      'Spin= Alpha'
@@ -307,12 +308,12 @@ C           call traorb to generate SO to AO transformation
                   CALL DGEMV('T',NBAST,NBAST,1.0D0,ORBTRA,NBAST,
      $                 UCMO(1,jORB),1,0.0D0,ORBVEC,1)
                   DO IB=1,NBAST
-                     WRITE(LUMOLDEN,'(I5,1X,2F15.6)') 
+                     WRITE(LUMOLDEN,'(I5,1X,2F15.6)')
      $                    IB,ORBVEC(JAOAO(IB,2))
                   END DO
                END DO
             END DO
-            CALL MOATOMS('ATOM') 
+            CALL MOLDEN_ATOMS('ATOM')
          END IF
          DONEIV = .TRUE.
       END IF
@@ -323,11 +324,11 @@ C           call traorb to generate SO to AO transformation
          ENDDO
       END IF
       CALL FLSHFO(LUMOLDEN)
-      RETURN 
+      RETURN
       END
 
-      SUBROUTINE MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
-#include "implicit.h" 
+      SUBROUTINE MOLDEN_FREQ(EVEC,NUMMOD,NCORD,FREQAU)
+#include "implicit.h"
 #include "maxorb.h"
 #include "codata.h"
 #include "molde.h"
@@ -341,33 +342,33 @@ C           call traorb to generate SO to AO transformation
          WRITE(LUMOLDEN,'(F10.2)') FREQAU(IMODE)*XTKAYS
       END DO
 
-      CALL MOATOMS('FREQ')       
+      CALL MOLDEN_ATOMS('FREQ')
 
       WRITE(LUMOLDEN,'(/A)') '[FR-NORM-COORD]'
       DO IMODE = 1, NUMMOD
-         WRITE(LUMOLDEN,'(A,I10)') 'Vibration ',IMODE 
-         WRITE(LUMOLDEN,'(3(1X,F20.8))') 
+         WRITE(LUMOLDEN,'(A,I10)') 'Vibration ',IMODE
+         WRITE(LUMOLDEN,'(3(1X,F20.8))')
      &    (SXFAMU*EVEC(I,IMODE),I=1,NCORD)
       END DO
       CALL FLSHFO(LUMOLDEN)
       END
 
-      SUBROUTINE MOSCFCON(ITER,EMCSCF,WRITENOW)
-#include "implicit.h" 
+      SUBROUTINE MOLDEN_SCFCON(ITER,EMCSCF,WRITENOW)
+#include "implicit.h"
 #include "maxorb.h"
 #include "codata.h"
 #include "molde.h"
 #include "inftap.h"
         LOGICAL WRITENOW
         IF(WRITENOW)THEN
-           IF (.NOT. DONEIW) THEN 
-         
+           IF (.NOT. DONEIW) THEN
+
               WRITE(LUMOLDEN,'(A)') '[SCFCONV]'
               WRITE(LUMOLDEN,'(A,I3)') 'scf-first  1  THROUGH ',ITER
               WRITE(LUMOLDEN,'(F20.10)') (OROC(I),I=1,ITER)
               CALL FLSHFO(LUMOLDEN)
 
-           END IF 
+           END IF
            DONEIW = .TRUE.
 
         ELSE
@@ -377,29 +378,29 @@ C           call traorb to generate SO to AO transformation
         RETURN
       END
 
-      SUBROUTINE MOGECON(WRITENOW,EMCSCF)
-#include "implicit.h" 
+      SUBROUTINE MOLDEN_GECON(WRITENOW,EMCSCF)
+#include "implicit.h"
 #include "maxorb.h"
 #include "codata.h"
 #include "molde.h"
 #include "inftap.h"
       LOGICAL WRITENOW
       IF(WRITENOW)THEN
-         
+
          WRITE(LUMOLDEN,'(A)') '[GEOCONV]'
          WRITE(LUMOLDEN,'(A)') 'energy'
 
          DO 100 I=1,IXYZPRINTS
             WRITE(LUMOLDEN,'(F20.10)') EMCEN(I)
  100     CONTINUE
-            
+
       ELSE
-         IF (.NOT. DONEIX) THEN  
+         IF (.NOT. DONEIX) THEN
             WRITE(LUMOLDEN,'(A)') '[GEOMETRIES] XYZ'
             DONEIX = .TRUE.
          END IF
 
-         CALL MOATOMS('XYZ ')
+         CALL MOLDEN_ATOMS('XYZ ')
          IXYZPRINTS = IXYZPRINTS + 1
          EMCEN(IXYZPRINTS) = EMCSCF
       ENDIF

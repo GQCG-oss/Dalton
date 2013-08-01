@@ -2568,7 +2568,7 @@ C
      &               KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
          IF (.NOT. DKHINT) THEN
          ! do not save MOLDEN info for uncontracted basis set for DKH2
-             CALL MOGTO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
+             CALL MOLDEN_GTO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
      &                  NUC(1,1),NRC(1,1),SEG(1,1),KATOM,KANG,KBLOCK,
      &                  KPRIM,CPRIMU,NRMPRI)
          END IF

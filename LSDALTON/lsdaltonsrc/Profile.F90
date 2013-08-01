@@ -19,6 +19,13 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
   use daltoninfo       
   use IntegralInterfaceMOD
   use II_XC_interfaceModule
+private
+public :: di_profile_lsint
+CONTAINS
+!> \brief Driver for stand-alone f90 linear scaling SCF.
+!> \author \latexonly T. Kj{\ae}rgaard, S. Reine  \endlatexonly
+!> \date 2008-10-26
+SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
   implicit none
   TYPE(lsitem)        :: ls
   type(configItem)    :: config

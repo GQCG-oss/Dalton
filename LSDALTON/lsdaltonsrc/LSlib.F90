@@ -751,7 +751,7 @@ END SUBROUTINE LSlib_get_ne_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_twoElectron_gradient(eeGrad,DLHS,DRHS,nbast,ndlhs,ndrhs,nAtoms,lupri,luerr,testElectrons)
-use configurationTYPE, only: configitem
+use configurationType, only: configitem
 use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
@@ -1077,7 +1077,7 @@ END SUBROUTINE LSlib_get_K_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_kinetic_gradient(kinGrad,D,nbast,nAtoms,lupri,luerr)
-use configurationTYPE, only: configitem
+use configurationType, only: configitem
 use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
@@ -1144,7 +1144,7 @@ END SUBROUTINE LSlib_get_kinetic_gradient
 !> unit-numbers are provided, the code will crash (when attemting to reopen
 !> a file that is already open).
 SUBROUTINE LSlib_get_reorthoNormalization(reOrtho,DFD,nbast,ndmat,nAtoms,lupri,luerr)
-use configurationTYPE, only: configitem
+use configurationType, only: configitem
 use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free
 use TYPEDEF
 use TYPEDEFTYPE
@@ -1202,8 +1202,8 @@ END SUBROUTINE LSlib_get_reorthoNormalization
 !> \date 2010-03-17
 ! this routine can be call directly from lsdalton_wrapper
 SUBROUTINE LSlib_build_exchange()
-  use configurationType
-  use configuration
+  use configurationType, only: configitem
+  use configuration, only: config_set_default_config, config_read_input, config_shutdown, config_free, set_final_config_and_print
   use TYPEDEF  
   use TYPEDEFTYPE  
   use Matrix_module

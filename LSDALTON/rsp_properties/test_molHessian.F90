@@ -20,7 +20,8 @@ MODULE test_molecular_hessian_mod
 #ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
 #endif
-
+  private
+  public :: test_Hessian_contributions
 CONTAINS
 
   SUBROUTINE dummy_subroutine_hessian_test()
