@@ -44,6 +44,7 @@ module lspdm_tensor_operations_module
 
   abstract interface
     subroutine put_acc_tile(arr,globtilenr,fort,nelms,lock_set)
+      use precision
       import
       implicit none
       type(array),intent(in) :: arr
@@ -56,6 +57,29 @@ module lspdm_tensor_operations_module
       real(realk),intent(inout) :: fort(*)
       logical, optional, intent(in) :: lock_set
     end subroutine put_acc_tile
+  end interface
+
+  abstract interface
+    subroutine put_acc_el(buf,pos,dest,win)
+      use precision
+      implicit none
+      real(realk),intent(in) :: buf
+      integer, intent(in) :: pos
+      integer(kind=ls_mpik),intent(in) :: dest
+      integer(kind=ls_mpik),intent(in) :: win
+    end subroutine put_acc_el
+  end interface
+
+  abstract interface
+    subroutine put_acc_vec(buf,nelms,pos,dest,win)
+      use precision
+      implicit none
+      real(realk),intent(in) :: buf(*)
+      integer, intent(in) :: pos
+      integer(kind=8) :: nelms
+      integer(kind=ls_mpik),intent(in) :: dest
+      integer(kind=ls_mpik),intent(in) :: win
+    end subroutine put_acc_vec
   end interface
 
   !interface array_accumulate_tile_nobuff
@@ -1613,8 +1637,8 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: cons_el_in_t,cons_els,tl_max,tl_mod
     integer(kind=8) :: cons_el_rd
     integer(kind=8) :: part1,part2,split_in, diff_ord,modp1,modp2
-    procedure(lsmpi_put_realk), pointer :: pga => null()
-    procedure(lsmpi_put_realkV_wrapper8), pointer :: pgav => null()
+    procedure(put_acc_el), pointer :: pga => null()
+    procedure(put_acc_vec), pointer :: pgav => null()
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: source
 
@@ -2164,8 +2188,8 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: cons_el_rd
     integer(kind=8) :: part1,part2,split_in, diff_ord,modp1,modp2
     logical :: goto_default
-    procedure(lsmpi_put_realk), pointer :: pga => null()
-    procedure(lsmpi_put_realkV_wrapper8), pointer :: pgav => null()
+    procedure(put_acc_el), pointer :: pga => null()
+    procedure(put_acc_vec), pointer :: pgav => null()
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: source
 
