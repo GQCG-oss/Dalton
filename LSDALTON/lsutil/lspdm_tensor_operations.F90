@@ -2717,17 +2717,14 @@ module lspdm_tensor_operations_module
     integer :: nelmsit
     integer(kind=8) ::i,b,e,maxntiinwrk,mod_el
     integer :: fullfortdims(arr%mode)
+#ifdef VAR_MPI
 
     do i=1,arr%mode
       fullfortdims(o(i)) = arr%dims(i)
     enddo
 
-    me = 0
-    nnod=1
-#ifdef VAR_MPI
-    me=infpar%lg_mynum
-    nnod=infpar%lg_nodtot
-#endif
+    me   = infpar%lg_mynum
+    nnod = infpar%lg_nodtot
 
     !compute the maximum number of tiles to be stored in the workspace
     maxntiinwrk = int(iwrk/arr%tsize,kind=8)
@@ -2762,11 +2759,10 @@ module lspdm_tensor_operations_module
       b = 1       + mod(i-1,maxntiinwrk) * arr%tsize
       e = nelmsit + mod(i-1,maxntiinwrk) * arr%tsize
       call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,wrk(b),int(i),arr%tdim,o)
-#ifdef VAR_MPI
       call array_accumulate_tile(arr,int(i),wrk(b:e),nelmsit,lock_set=arr%lock_set(i))
-#endif
     enddo
 
+#endif
   end subroutine add_data2tiled_intiles_explicitbuffer
 
   subroutine cp_data2tiled_lowmem(arr,A,dims,mode)
