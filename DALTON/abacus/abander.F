@@ -303,7 +303,9 @@ C     **** Subroutine that keeps track of the analytical ****
 C     **** for a given wave-function. NAORDR gives the   ****
 C     **** order of the analytical derivative.           ****
 C     *******************************************************
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 #include "priunit.h"
 #include "maxorb.h"
@@ -340,9 +342,7 @@ C
      &    .OR. CC3   .OR. CCP3 .OR. CCRT .OR. CCR3 .OR.
      &    CCR1A .OR. CCR1B .OR. CCT  .OR.
      &    DOHFSRDFT .OR. DOCISRDFT .OR. DOMCSRDFT .OR.
-     &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN .OR.
-C JMHO: Only numerical derivs with polarizable embedding module atm.
-     &    peqm) THEN
+     &    (DMP2.AND..NOT.MCSCF) .OR. ECP .OR. DKTRAN) THEN
          NAORDR = 0
       ELSE IF (CCD. OR. CCSD .OR. CCS .OR. CC2 .OR. MP2 .OR.
      &         CCPT .OR. (DFTRUN .AND. (NASHT.GT.0)) .OR.
@@ -356,6 +356,11 @@ CAMT Only gradients for empirical disp correction so far
       ELSE
          NAORDR = 2
       END IF
+#if defined (BUILD_PELIB)
+      if (peqm) then
+        naordr = 0
+      end if
+#endif
 C
       WRITE (LUPRI,'(/5X,A,I4)') 'Order of analytical ' //
      &          'energy-derivatives available:', NAORDR
@@ -970,9 +975,7 @@ C
          END IF
 
       ELSE
-         WRITE (LUPRI,'(A)') '                                '
-         WRITE (LUPRI,'(A)') 'Reading in precalculated hessian'
-         WRITE (LUPRI,'(A)') '                                '
+         WRITE (LUPRI,'(/A/)') 'Reading in precalculated hessian'
 C
          KHSSIN = 1
          KLAST  = KHSSIN + NCOOR**2
@@ -3310,7 +3313,7 @@ C
 C
 C     ************************************
 C     *** Transformation to cartesian  ***
-C     ***  coordinstes, and printing.  ***
+C     ***  coordinates, and printing.  ***
 C     ************************************
 C
       IF ((FCLASS(1:3) .NE. 'C1 ').AND.(TEXT(1:6).NE.'normal')) THEN
@@ -3453,7 +3456,7 @@ C
 C
 C     ************************************
 C     *** Transformation to cartesian  ***
-C     ***  coordinstes, and printing.  ***
+C     ***  coordinates, and printing.  ***
 C     ************************************
 C
       IF ((FCLASS(1:3).NE.'C1 ').AND.(TEXT(1:6).NE.'normal')) THEN

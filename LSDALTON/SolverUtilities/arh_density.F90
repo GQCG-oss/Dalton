@@ -24,10 +24,18 @@ use files
 use matrix_util
 use typedeftype
 use II_XC_interfaceModule
+private
+public :: arh_symmetric, arh_antisymmetric, SolverItem, arh_set_default_config,&
+     & arh_test_convergence, fifo_inverse_metric,&
+     & arh_get_weights, arh_get_M, fifo_inv_metric_times_vector,&
+     & arh_precond, arh_PCG, arh_lintrans, arh_xdep_matrices,&
+     & debug_get_hessian, arh_crop_x_and_res,  arh_crop_intermed_sub,&
+     & arh_crop_setup_redsp, arh_crop_optimal_x, arh_crop_extra_dim,&
+     & arh_get_TR_denom!, epred
 !> Used to pass info about symmetry of trial vectors/matrices
-integer, parameter :: symmetric = 1
+integer, parameter :: arh_symmetric = 1
 !> Used to pass info about symmetry of trial vectors/matrices
-integer, parameter :: antisymmetric = 2
+integer, parameter :: arh_antisymmetric = 2
 
 !> \author S. Host
 !> \date March 2010
@@ -1039,7 +1047,7 @@ contains
 
       call MAT_MUL(scr1,x_in,'n','n',1.0E0_realk,0.0E0_realk,AX) !AX = (FUQ-FUP)*X
       call mat_trans(AX,scr1)
-      if (symm == antisymmetric) then
+      if (symm == arh_antisymmetric) then
          call mat_scal(-1.0E0_realk,scr1)
       endif                                          !scr1 = X*(FUQ-FUP)
 
@@ -1168,7 +1176,7 @@ contains
     !Get projected input matrix = DX - XD:
     call MAT_MUL(decomp%DU,x,'n','n',1.0E0_realk,0.0E0_realk,wrk1)
     call mat_trans(wrk1,wrk2)
-    if (symm == antisymmetric) then
+    if (symm == arh_antisymmetric) then
        call mat_scal(-1.0E0_realk,wrk2)
     endif
     call MAT_ADD(1.0E0_realk, wrk1, -1.0E0_realk, wrk2, Ax) !Ax = x projected, DX - XD
@@ -1283,15 +1291,15 @@ contains
          call mat_VEC_TO_MAT('a', x_trial, scr)
       !write (LUPRI,*) "xmat:"
       !call MAT_PRINT(scr, 1, scr%nrow, 1, scr%ncol, LUPRI)
-         call project_oao_basis(decomp, scr, antisymmetric, x_trial_mat)  
+         call project_oao_basis(decomp, scr, arh_antisymmetric, x_trial_mat)  
       !write (LUPRI,*) "xmat projected:"
       !call MAT_PRINT(x_trial_mat, 1, x_trial_mat%nrow, 1, x_trial_mat%ncol, LUPRI)
-         call project_oao_basis(decomp, x_trial_mat, antisymmetric, scr)
+         call project_oao_basis(decomp, x_trial_mat, arh_antisymmetric, scr)
       !write (LUPRI,*) "xmat projected again:"
       !call MAT_PRINT(scr, 1, x_trial_mat%nrow, 1, x_trial_mat%ncol, LUPRI)
          !column = m'th column of hessian:
       !write(lupri,*) 'antisymmetric:', antisymmetric
-         call arh_lintrans(arh,decomp,x_trial_mat,antisymmetric,0.0E0_realk,scr,fifoqueue)
+         call arh_lintrans(arh,decomp,x_trial_mat,arh_antisymmetric,0.0E0_realk,scr,fifoqueue)
          call MAT_TO_VEC('a', scr, column)
          do l = 1, vecdim !Put elements of column in m'th column of hessian
             call mat_create_elm(l,m,column%elms(l),hes)

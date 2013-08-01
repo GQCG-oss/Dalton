@@ -12,6 +12,7 @@ module tensor_interface_module
   use LSTIMING!,only:lstimer
   use reorder_frontend_module
   use lspdm_tensor_operations_module
+  use matrix_module
 
 
   !> Number of created arrays
@@ -206,7 +207,7 @@ contains
           call lsquit("ERROR(array_add_fullfort2arr1):not implemented",-1)
         endif
       case(TILED)
-        call lsquit("ERROR(array_add_fullfort2arr2):not implemented",-1)
+        call lsquit("ERROR(array_add_fullfort2arr):not implemented",-1)
       case(TILED_DIST)
         if(present(wrk).and.present(iwrk))then
           call add_data2tiled_intiles_explicitbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o,wrk,iwrk)

@@ -392,7 +392,7 @@ if [ "$2" = "" ]; then
 fi
 $AWK 'function e(v,r){#print "checking ",v, r;
 return(v>r||v<-r)}
-/Energy at final geometry is/ { exit(e($7-('$1'),'$2'))  }
+/Energy at final geometry is/ { exit(e($8-('$1'),'$2'))  }
 ' $log || ERRLIST="$ERRLIST; final energy"
 }
 

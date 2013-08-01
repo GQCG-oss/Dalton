@@ -422,7 +422,9 @@ C     the necessary integrals in the primitive basis.
 C     See further notes in DKH_INTF routine.
 C
       IF (DKTRAN .AND. RNHERM) THEN
+         DKHINT = .TRUE. ! now we are calculating DKH 1-el. integrals
          CALL DKH_INTF(WORK(1),LMWORK)
+         DKHINT = .FALSE.
          NEWPRP = .TRUE.
       END IF
 C
@@ -1111,8 +1113,10 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
       use polarizable_embedding, only: pe_dalton_input
+#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1225,6 +1229,7 @@ C     NEWTRA is in /INFTRA/ for practical reasons
       RELCAL = .FALSE.
       NMWALK = .FALSE.
       DKTRAN = .FALSE.
+      DKHINT = .FALSE.
       GEOALL = .FALSE.
       NPCMIN = .TRUE.
       IF (NODTOT.GE.1) THEN
@@ -1472,7 +1477,12 @@ C        '.DOUGLA'
          GOTO 100
 !        .PEQM
  133     continue
+#if defined (BUILD_PELIB)
             peqm = .true.
+#else
+            write(lupri,*) 'ERROR: PE library not enabled.'
+            call quit('ERROR: PE library not enabled.')
+#endif
          goto 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
@@ -1584,9 +1594,11 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
+#if defined (BUILD_PELIB)
         if (peqm) write(lupri,'(4x,a)')
      &   'Environment is modeled using polarizable embedding scheme'//
-     &   ' (PE module)'
+     &   ' (PE library)'
+#endif
 C
 Cholesky
       IF (CHOINT) WRITE (LUPRI,'(4X,A)')
@@ -1684,7 +1696,11 @@ C     "*QMMM  " input
 
 !     "*PEQM  " input
    10 continue
+#if defined (BUILD_PELIB)
         call pe_dalton_input(word, lucmd, lupri)
+#else
+        call quit('ERROR: PE library not enabled.')
+#endif
       goto 200
 
 C

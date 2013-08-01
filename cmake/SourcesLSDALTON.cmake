@@ -98,6 +98,8 @@ set(GEOOPT_SOURCES
     )
 set(LINEARS_SOURCES	
     LSDALTON/linears/configurationType.F90
+    LSDALTON/linears/LocTypes.F90
+    LSDALTON/linears/ChargePrec.F90
     LSDALTON/linears/ChargeLoc.F90
     LSDALTON/linears/SCFLOOP.F90
     LSDALTON/linears/trustradius.F90
@@ -122,10 +124,13 @@ set(LINEARS_SOURCES
     LSDALTON/linears/leastchange.F90
     LSDALTON/linears/levelshift.F90
     LSDALTON/linears/minimize.F90
-    LSDALTON/linears/optimlocNONMOD.F90
+    LSDALTON/linears/optimlocModf.F90
+    LSDALTON/linears/orbspread_hess_prec.F90
+    LSDALTON/linears/localityMeasure.F90
     LSDALTON/linears/OrbLoc_input.F90
     LSDALTON/linears/localization_util.F90
     LSDALTON/linears/localization_orbspread.F90
+    LSDALTON/linears/orbspread_util.F90
     LSDALTON/linears/localization_charge.F90
     LSDALTON/linears/prop_contribs.F90
     LSDALTON/linears/response_driver.F90

@@ -1,7 +1,10 @@
 MODULE RSP_type_module
+ use precision
  use matrix_module
 !FIXME: does the use of definition 'real' only for freq and Output
 !       have consequencies on the accuracy of the result????
+ private
+ public :: Equation_item, QR_ITEM, LOOP_item, PDBS_ITEM, PDBSvec
 Type Equation_item
  real(realk)      :: freq
  CHARACTER(len=8) :: Glabel

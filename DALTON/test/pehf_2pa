@@ -17,21 +17,20 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > pehf_small_2pa.info <<'%EOF%'
-   pehf_small_2pa
+cat > pehf_2pa.info <<'%EOF%'
+   pehf_2pa
    -----------
    Molecule:         Acrolein and two classical water molecules
-   Wave Function:    PE-HF / 6-31+G*
+   Wave Function:    PE-HF / STO-3G
    Test Purpose:     Test of two-photon absorption properties through
-                     RESPONSE using the default iterative solver for
-                     induced moments
+                     RESPONSE using the PE library
 %EOF%
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > pehf_small_2pa.mol <<'%EOF%'
+cat > pehf_2pa.mol <<'%EOF%'
 BASIS
-6-31+G*
+STO-3G
 Acrolein
 ------------------------
 AtomTypes=3 NoSymmetry Angstrom
@@ -50,8 +49,8 @@ H              2.675323   -2.516779   -0.000673
 #######################################################################
 #  POTENTIAL INPUT
 #######################################################################
-cat > pehf_small_2pa.pot <<'%EOF%'
-! Two water molecules modelled by a Polarizable Embedding potential
+cat > pehf_2pa.pot <<'%EOF%'
+! Two water molecules
 coordinates
 10
 AA
@@ -137,31 +136,25 @@ exclists
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > pehf_small_2pa.dal <<'%EOF%'
+cat > pehf_2pa.dal <<'%EOF%'
 **DALTON
 .RUN RESPONSE
-*PEQM
 .PEQM
-.ITERATIVE
-1.0d-8
 **WAVE FUNCTIONS
 .HF
-*SCF INPUT
-.THRESHOLD
-1.0d-8
 **RESPONSE
 *QUADRATIC
 .SINGLE
 .TWO-PHOTON
 .ROOTS
-5
+4
 **END OF
 %EOF%
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL > pehf_small_2pa.check
-cat >> pehf_small_2pa.check <<'%EOF%'
+echo $CHECK_SHELL > pehf_2pa.check
+cat >> pehf_2pa.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -171,68 +164,33 @@ else
 fi
 
 #
-# Potential readin test
+# Test of two-photon transition tensor S
 #
-CRIT1=`$GREP "Number of classical sites: * 10" $log | wc -l`
-CRIT2=`$GREP "Multipole moments upto 3rd order." $log | wc -l`
-CRIT3=`$GREP "Dipole-dipole polarizabilities." $log | wc -l`
-CRIT4=`$GREP "Iterative solver for induced moments" $log | wc -l`
-CRIT5=`$GREP "convergence threshold: 1.0E-08" $log | wc -l`
-TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
-CTRL[1]=5
-ERROR[1]="INCORRECT POTENTIAL"
+CRIT1=`$GREP " * 1 * 1 * 4\.25 * (0||\-0|\-)\.0 * (0||\-0|\-)\.0 * (0||\-0|\-)\.0 * (0||\-0|\-)\.0 * (0|)\.5 * (0|)\.4" $log | wc -l`
+CRIT2=`$GREP " * 1 * 2 * 8\.40 * \-7\.4 * \-3\.4 * (\-0|\-)\.3 * 5\.8 * (0||\-0|\-)\.0 * (0||\-0|\-)\.0" $log | wc -l`
+CRIT3=`$GREP " * 1 * 3 * 8\.76 * (0||\-0|\-)\.0 * (0||\-0|\-)\.0 * (0||\-0|\-)\.0 * (0||\-0|\-)\.0 * (\-0|\-)\.7 * 1\.8" $log | wc -l`
+CRIT4=`$GREP " * 1 * 4 * 10\.36 * (0||\-0|\-)\.0 * (0||\-0|\-)\.0 * (0||\-0|\-)\.0 * (0||\-0|\-)\.0 * \-1\.0 * \-1\.1" $log | wc -l`
+TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 `
+CTRL[1]=4
+ERROR[1]="TWO-PHOTON TRANSITION TENSOR NOT CORRECT"
+
 #
-# Potential readin test
+# Test of two-photon absorption
 #
-CRIT1=`$GREP "*** DIIS converged in  18 iterations" $log | wc -l`
-TEST[2]=`expr $CRIT1 `
-CTRL[2]=1
-ERROR[2]="CONVERGENCE PROBLEM"
-#
-# Energy tests
-#
-CRIT1=`$GREP "Monopoles * (\-|\-0)\.028474" $log | wc -l`
-CRIT2=`$GREP "Dipoles * (|0)\.006956" $log | wc -l`
-CRIT3=`$GREP "Quadrupoles * (\-|\-0)\.009139" $log | wc -l`
-CRIT4=`$GREP "Octopoles * (\-|\-0)\.002683" $log | wc -l`
-CRIT5=`$GREP "Electronic * (\-|\-0)\.087358" $log | wc -l`
-CRIT6=`$GREP "Nuclear       * (|0)\.084104" $log | wc -l`
-CRIT7=`$GREP "Multipole * (|0)\.000258" $log | wc -l`
-CRIT8=`$GREP "Total PE energy: * (\-|\-0)\.036337" $log | wc -l`
-CRIT9=`$GREP "Final HF energy: * \-190\.797638" $log | wc -l`
-TEST[3]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 `
-CTRL[3]=9
-ERROR[3]="PE-HF ENERGY CONTRIBUTIONS NOT CORRECT"
-#
-# Test of PE-HF two-photon transition tensor S
-#
-CRIT1=`$GREP " * 1 * 1 * 5\.15 * (\-0|\-)\.0 * (\-0|\-)\.0 * (0| )\.0 * (0| )\.0 * (\-0|\-)\.6 * (0| )\.4" $log | wc -l`
-CRIT2=`$GREP " * 1 * 2 * 6\.56 * 11\.3 * (\-0|\-)\.9 * \-3\.2 * \-5\.6 * (\-0|\-)\.0 * (0| )\.0" $log | wc -l`
-CRIT3=`$GREP " * 1 * 3 * 8\.45 * (\-0|\-)\.0 * (\-0|\-)\.0 * (\-0|\-)\.0 * (0| )\.0 * \-7\.7 * 12\.3" $log | wc -l`
-CRIT4=`$GREP " * 1 * 4 * 8\.79 * (0| )\.0 * (\-0|\-)\.0 * (\-0|\-)\.0 * (0| )\.0 * 1\.5 * 1\.3" $log | wc -l`
-CRIT5=`$GREP " * 1 * 5 * 9\.03 * (0| )\.4 * (0| )\.5 * (0| )\.4 * (\-0|\-)\.4 * \-8\.0 * \-6\.7" $log | wc -l`
-TEST[4]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 `
-CTRL[4]=5
-ERROR[4]="PE-HF TWO-PHOTON TRANSITION TENSOR NOT CORRECT"
-#
-# Test of PE-HF two-photon absorption
-#
-CRIT1=`$GREP " * 1 * 1 * 5\.15 * Linear * (0| )\.422E\-07 * (0| )\.312E\-01 * (0| )\.125E\+00 * (0| )\.971E\-02 * 1\.50" $log | wc -l`
-CRIT2=`$GREP " * 1 * 1 * 5\.15 * Circular * (0| )\.422E\-07 * (0| )\.312E\-01 * (0| )\.187E\+00 * (0| )\.146E\-01 * 1\.50" $log | wc -l`
-CRIT3=`$GREP " * 1 * 2 * 6\.56 * Linear * (0| )\.177E\+01 * (0| )\.669E\+01 * (0| )\.303E\+02 * (0| )\.382E\+01 * 1\.21" $log | wc -l`
-CRIT4=`$GREP " * 1 * 2 * 6\.56 * Circular * (0| )\.177E\+01 * (0| )\.669E\+01 * (0| )\.366E\+02 * (0| )\.461E\+01 * 1\.21" $log | wc -l`
-CRIT5=`$GREP " * 1 * 3 * 8\.45 * Linear * (0| )\.789E\-05 * (0| )\.140E\+02 * (0| )\.558E\+02 * (0| )\.117E\+02 * 1\.50" $log | wc -l`
-CRIT6=`$GREP " * 1 * 3 * 8\.45 * Circular * (0| )\.789E\-05 * (0| )\.140E\+02 * (0| )\.837E\+02 * (0| )\.175E\+02 * 1\.50" $log | wc -l`
-CRIT7=`$GREP " * 1 * 4 * 8\.79 * Linear * (0| )\.124E\-05 * (0| )\.269E\+00 * (0| )\.107E\+01 * (0| )\.243E\+00 * 1\.50" $log | wc -l`
-CRIT8=`$GREP " * 1 * 4 * 8\.79 * Circular * (0| )\.124E\-05 * (0| )\.269E\+00 * (0| )\.161E\+01 * (0| )\.365E\+00 * 1\.50" $log | wc -l`
-CRIT9=`$GREP " * 1 * 5 * 9\.03 * Linear * (0| )\.582E\-01 * (0| )\.733E\+01 * (0| )\.294E\+02 * (0| )\.704E\+01 * 1\.49" $log | wc -l`
-CRIT10=`$GREP " * 1 * 5 * 9\.03 * Circular * (0| )\.582E\-01 * (0| )\.733E\+01 * (0| )\.439E\+02 * (0| )\.105E\+02 * 1\.49" $log | wc -l`
-TEST[5]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 \+ $CRIT9 \+ $CRIT10 `
-CTRL[5]=10
-ERROR[5]="PE-HF TWO-PHOTON ABSORPTION PROPERTIES NOT CORRECT"
+CRIT1=`$GREP " * 1 * 1 * 4\.25 * Linear * (0|)\.313E\-08 * (0|)\.285E\-01 * (0|)\.114E\+00 * (0|)\.604E\-02 * 1\.50" $log | wc -l`
+CRIT2=`$GREP " * 1 * 1 * 4\.25 * Circular * (0|)\.313E\-08 * (0|)\.285E\-01 * (0|)\.171E\+00 * (0|)\.906E\-02 * 1\.50" $log | wc -l`
+CRIT3=`$GREP " * 1 * 2 * 8\.40 * Linear * (0|)\.412E\+01 * (0|)\.444E\+01 * (0|)\.260E\+02 * (0|)\.537E\+01 * (|0)\.71" $log | wc -l`
+CRIT4=`$GREP " * 1 * 2 * 8\.40 * Circular * (0|)\.412E\+01 * (0|)\.444E\+01 * (0|)\.184E\+02 * (0|)\.380E\+01 * (|0)\.71" $log | wc -l`
+CRIT5=`$GREP " * 1 * 3 * 8\.76 * Linear * (0|)\.317E\-06 * (0|)\.253E\+00 * (0|)\.101E\+01 * (0|)\.228E\+00 * 1\.50" $log | wc -l`
+CRIT6=`$GREP " * 1 * 3 * 8\.76 * Circular * (0|)\.317E\-06 * (0|)\.253E\+00 * (0|)\.152E\+01 * (0|)\.342E\+00 * 1\.50" $log | wc -l`
+CRIT7=`$GREP " * 1 * 4 * 10\.36 * Linear * (0|)\.495E\-07 * (0|)\.146E\+00 * (0|)\.582E\+00 * (0|)\.183E\+00 * 1\.50" $log | wc -l`
+CRIT8=`$GREP " * 1 * 4 * 10\.36 * Circular * (0|)\.495E\-07 * (0|)\.146E\+00 * (0|)\.873E\+00 * (0|)\.275E\+00 * 1\.50" $log | wc -l`
+TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 \+ $CRIT7 \+ $CRIT8 `
+CTRL[2]=8
+ERROR[2]="TWO-PHOTON ABSORPTION PROPERTIES NOT CORRECT"
 
 PASSED=1 
-for i in 1 2 3 4 5
+for i in 1 2
 do
    if [ ${TEST[i]} -ne ${CTRL[i]} ]; then
      echo "${ERROR[i]} ( test = ${TEST[i]}; control = ${CTRL[i]} ); "
@@ -249,5 +207,5 @@ else
   exit 1
 fi                
 %EOF%
-chmod +x pehf_small_2pa.check
+chmod +x pehf_2pa.check
 #######################################################################

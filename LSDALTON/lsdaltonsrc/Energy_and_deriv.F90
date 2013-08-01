@@ -23,6 +23,9 @@ use integralinterfaceMod, only: II_get_molecular_gradient,&
      & II_get_nucpot,II_get_overlap,II_get_h1
 use lsdalton_rsp_mod,only: get_excitation_energy, GET_EXCITED_STATE_GRADIENT
 use dec_main_mod!, only: get_total_mp2energy_from_inputs, get_mp2gradient_and_energy_from_inputs
+use optimlocMOD, only: optimloc
+private
+public :: Get_Energy, Get_Gradient
 !
 contains
 ! Get energy: calculates energy in a general way
@@ -49,19 +52,6 @@ contains
     Integer :: NAtoms,i,lupri,luerr,nbast
     Real(realk) :: DUMMY(1,1),ExcitE
     Logical :: do_decomp,integraltransformGC
-    interface 
-       subroutine optimloc(CMO,nocc,m,ls,CFG)
-         use davidson_settings,only: RedSpaceItem
-         use matrix_module, only: matrix
-         use typedeftype,only: lsitem
-         implicit none
-         type(RedSpaceItem) :: CFG
-         type(Matrix), target:: CMO
-         TYPE(lsitem) , intent(inout) :: ls
-         integer,       intent(in)    :: nocc
-         integer,       intent(in)    :: m(2)
-       end subroutine optimloc
-    end interface
 
 
        Eerr = 0E0_realk

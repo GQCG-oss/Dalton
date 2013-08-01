@@ -104,7 +104,7 @@ contains
       prec = array_init(dims,4)
      
       !$OMP PARALLEL DEFAULT(NONE) SHARED(prec,dims,omega2,ppfock,qqfock) &
-      !$OMP& PRIVATE(i,j,a,b)
+      !$OMP PRIVATE(i,j,a,b)
       
       !$OMP DO COLLAPSE(4)
       do j=1,dims(4)
@@ -3541,7 +3541,7 @@ contains
    
 
     !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w1,nv)&
-    !$OMP& PRIVATE(i,j,pos1,pos2)
+    !$OMP PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
       !$OMP DO 
       do i=j,1,-1
@@ -3919,10 +3919,10 @@ contains
 
 #ifndef VAR_LSESSL
     !$OMP PARALLEL DEFAULT(NONE)&
-    !$OMP& SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
-    !$OMP& full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
-    !$OMP& PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
-    !$OMP& dims,drain,source)
+    !$OMP SHARED(w0,w3,case_sel,nor,goffs,lg,la,full1,full1T,ttri,tred,&
+    !$OMP full2,full2T,tlen,l1,second_trafo_step,aoffs,dim_big,dim_small,l2)&
+    !$OMP PRIVATE(occ,gamm,gamm_i_b,pos,nel2cp,pos2,jump,ft1,ft2,ncph,pos21,&
+    !$OMP dims,drain,source)
     !$OMP DO
 #endif
     do occ=1,nor
@@ -4089,7 +4089,7 @@ contains
     ! add up contributions in the residual with keeping track of i<j
 
     !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-    !$OMP& PRIVATE(i,j,pos1,pos2)
+    !$OMP PRIVATE(i,j,pos1,pos2)
     do j=no,1,-1
       !$OMP DO 
       do i=j,1,-1
@@ -4153,7 +4153,7 @@ contains
       call lsmpi_poke()
 
       !$OMP PARALLEL DEFAULT(NONE) SHARED(no,w2,nv)&
-      !$OMP& PRIVATE(i,j,pos1,pos2)
+      !$OMP PRIVATE(i,j,pos1,pos2)
       do j=no,1,-1
         !$OMP DO 
         do i=j,1,-1
@@ -4261,7 +4261,7 @@ contains
     call omp_set_num_threads(nthr)
 #endif
     !$OMP PARALLEL DEFAULT(NONE) SHARED(int_in,int_out,m,nv,nthr)&
-    !$OMP& PRIVATE(pos,pos2,d,tid,doit)
+    !$OMP PRIVATE(pos,pos2,d,tid,doit)
 #ifdef VAR_OMP
     tid = omp_get_thread_num()
 #else 
@@ -4338,8 +4338,8 @@ contains
             if(fa+alpha==fg+gamm)   call dscal(nb*nb,0.5E0_realk,w2(1+elsqre),1)
             call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
             !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-            !$OMP& SHARED(bs,bctr,trick,nb,aleg,nbnb,modb)&
-            !$OMP& DEFAULT(NONE)
+            !$OMP SHARED(bs,bctr,trick,nb,aleg,nbnb,modb)&
+            !$OMP DEFAULT(NONE)
             if(nbnb>0)then
               !$OMP DO
               do delta_b=1,nbnb,bs
@@ -4433,8 +4433,8 @@ contains
             elsqre = alpha*nb*nb+gamm*nb*nb*la
             call dcopy(nb*nb,w2(1+elsqre),1,w2(1+eldiag),1)
             !$OMP PARALLEL PRIVATE(el,delta_b,beta_b,beta,delta)&
-            !$OMP& SHARED(bctr,bs,trick,nb,aleg,nbnb,modb)&
-            !$OMP& DEFAULT(NONE)
+            !$OMP SHARED(bctr,bs,trick,nb,aleg,nbnb,modb)&
+            !$OMP DEFAULT(NONE)
             if(nbnb>0)then
               !$OMP DO
               do delta_b=1,nbnb,bs

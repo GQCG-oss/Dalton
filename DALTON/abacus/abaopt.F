@@ -172,12 +172,7 @@ C     satisfactorily yet.
       GRDTHR = DEFTH2
       THRSTP = DEFTH2
       THRERG = DEFTHE
-C     When running linsca version, NATNRM is always used
-#ifdef VAR_LINSCA
-      NATNRM = .TRUE.
-#else
       NATNRM = .FALSE.
-#endif
       THRSYM = MIN(5.0D-3,SQRT(DEFTHE))
       ICONDI = 2
       NCRTOT = 0
@@ -1059,12 +1054,6 @@ C
       IF (BAKER) THEN
          WRITE(LUPRI,'(/A/)')
      &        ' Baker''s convergence criteria will be used.'
-#ifdef VAR_LINSCA
-         WRITE(LUPRI,'(/A)')' ERROR! Can not use .BAKER when ' //
-     &        'running linsca. Only NATNRM can be used!'
-         CALL QUIT('Conflicting specifications of ' //
-     &        'convergence setup in '//WORD1)
-#endif     
          IF (NATNRM) THEN
             WRITE(LUPRI,'(/A/)')
      &        ' INFO:  .NATNRM is ignored when .BAKER requested!'
@@ -1369,19 +1358,22 @@ C     The call is also necessary for PREOPT with different basis, see
 C     INIPRE.
 C     Using "INPTST true" to only run the necessary parts of READIN.
 C
-      TSTIN  = INPTST
-      INPTST = .TRUE.
-      IPRUSR_SAV = IPRUSR
-      IPREAD_SAV = IPREAD
-      IPRUSR = -10
-      IPREAD = -10
-C     Third parameter .FALSE. in call indicates that LUONEL will NOT be written.
-      write (lupri,*) 'Read .mol file to determine number of atoms:'
-      CALL READIN(WORK(2),LWORK-2,.FALSE.)
-      INPTST = TSTIN
-      IPRUSR = IPRUSR_SAV
-      IPREAD = IPREAD_SAV
-      HRINPC = .FALSE.
+      IF (NUCIND .LE. 0) THEN ! testing if READIN has already been called
+         TSTIN  = INPTST
+         INPTST = .TRUE.
+         IPRUSR_SAV = IPRUSR
+         IPREAD_SAV = IPREAD
+         IPRUSR = -10
+         IPREAD = -10
+C        Third parameter .FALSE. in call indicates that LUONEL will NOT be written.
+         write (lupri,'(A)')
+     &      ' Reading .mol file to determine number of atoms:'
+         CALL READIN(WORK(2),LWORK-2,.FALSE.)
+         INPTST = TSTIN
+         IPRUSR = IPRUSR_SAV
+         IPREAD = IPREAD_SAV
+         HRINPC = .FALSE.
+      END IF
 C
       IF (FINDRE .OR. DELINT .OR. REDINT .OR. INRDHS .OR. INMDHS) THEN
          KATARR = 2
@@ -1847,11 +1839,6 @@ C     maximum number of iterations is reached.
 C
  10   CONTINUE
       IF ((ITRNMR .LT. ITRMAX) .AND. (.NOT. GECONV)) THEN
-#ifdef VAR_LINSCA
-CANDREAS: reset the SAVEAOPT parameter. There might be a better place to do this, but where?
-         CALL DASINI
-CANDREAS END.
-#endif
          ITRNMR = ITRNMR + 1
          ERGPRO = ERGPRD
          NCRD = NCRTOT
@@ -1884,11 +1871,9 @@ C
          IF (REDINT .OR. DELINT) THEN
             CALL GETWIL(MXRCRD,MX2CRD,WORK(KTEMP1),WILBMT,
      &           BMTRAN,WORK(KTEMP2))
-#ifndef VAR_LINSCA
             IF (IPRINT .GE. IPRMAX)
      &           CALL GETDWL(MXRCRD,WORK(KTEMP1),WORK(KTEMP2),
      &           WORK(KTEMP3),WILBMT)
-#endif
             CALL GTBINV(MXRCRD,WORK(KTEMP1),WORK(KTEMP2),WORK(KTEMP3),
      &           WORK(KTEMP4),WILBMT,BMTRAN,WORK(KBMINV),WORK(KPJINM),
      &           WORK(KTEMP5),WORK(KTEMP6),WORK(KWRK2),LWRK2)
@@ -2156,10 +2141,10 @@ C
          IF (MOLDEN) CALL MOGECON(.TRUE.,DUMMY)
          CALL TITLER(' End of Optimization ','<',120)
          CALL PRIINF(GEINFO,WORK(2),LWORK)
-         WRITE(LUPRI,*)
          IF (CONOPT) THEN
-            WRITE(LUPRI,*) 'Constrained optimization converged in ',
-     &           ITRNMR+1, ' iterations!'
+            WRITE(LUPRI,'(/A,I3,A)')
+     &         '@ Constrained optimization converged in',
+     &         ITRNMR+1, ' iterations!'
             IF (GRADNM .GT. GRDTHR) THEN
                WRITE(LUPRI,*) 'Removing the '
      &           // 'constraint(s) might decrease the energy further.'
@@ -2167,33 +2152,33 @@ C
                WRITE(LUPRI,*) 'A saddle point might have been reached.'
             END IF
          ELSE
-            WRITE(LUPRI,*) 'Geometry converged in ', ITRNMR+1,
-     &           ' iterations!'
+            WRITE(LUPRI,'(/A,I3,A)') '@ Geometry converged in',
+     &         ITRNMR+1, ' iterations!'
          END IF
          IF (ITRBRK .GE. 0) THEN
-            WRITE(LUPRI,*) 'Please note that symmetry '
+            WRITE(LUPRI,'(A)') '@ Please note that symmetry '
      &           // 'was broken during this optimization.'
          ELSE IF (NOBRKS .AND. BRKSYM) THEN
-            WRITE(LUPRI,*) 'Symmetry was not broken. '
+            WRITE(LUPRI,'(A)') '@ Symmetry was not broken. '
      &           // 'Minimum was reached within the given symmetry.'
-            WRITE(LUPRI,*) 'Please note that breaking this '
+            WRITE(LUPRI,'(A)') '@ Please note that breaking this '
      &           // 'symmetry will decrease the energy further.'
          END IF
          IF (NEWTON .AND. SADDLE .AND. (INDTOT .NE. 1)) THEN
             WRITE(LUPRI,'(/A,I3,/A)')
-     &         ' WARNING: Please note that the Hessian index',INDTOT,
+     &         '@ WARNING: Please note that the Hessian index',INDTOT,
      &         ' does not correspond to a first order saddle point ' //
      &           '(transition state).'
          END IF
          ENERGY = GEINFO(ITRNMR,1)
          WRITE(LUPRI,'(/A,F14.6,A)')
-     &        ' Energy at final geometry is       : ',ENERGY,' a.u.'
+     &        '@ Energy at final geometry is       : ',ENERGY,' a.u.'
          ERGDIF = ENERGY - GEINFO (0,1)
          WRITE(LUPRI,'(A,F14.6,A)')
-     &        ' Energy change during optimization : ',ERGDIF,' a.u.'
+     &        '@ Energy change during optimization : ',ERGDIF,' a.u.'
          ERGDIF = ERGDIF * XKJMOL
          WRITE(LUPRI,'(A,F14.3,A)')
-     &        '                                     ',ERGDIF,' kJ/mol'
+     &        '@                                     ',ERGDIF,' kJ/mol'
          IF (DOPRE) THEN
             WRITE(LUPRI,'(/A)') ' Preoptimization was performed using'//
      &           ' the basis set(s):'
@@ -2203,30 +2188,28 @@ C
          END IF
          IF (DOSPE) THEN
             ENERGY = GEINFO(ITRNMR+1,1)
-            WRITE(LUPRI,'(/A,A60)') ' Using the basis ',SPBSTX
+            WRITE(LUPRI,'(/A,A60)') '@ Using the basis ',SPBSTX
             WRITE(LUPRI,'(A,F14.6,A)')
-     &          ' single point energy was calculated: ',ENERGY,' a.u.'
+     &          '@ single point energy was calculated: ',ENERGY,' a.u.'
          END IF
          WRITE(LUPRI,*)
 C
 C     Finished case 2: Exceeded maximum number of iterations.
 C
       ELSE
-C     No single point energy has been calculated.
          TMPLOG = DOSPE
          DOSPE = .FALSE.
          CALL TITLER('Optimization Control Center','<',120)
          CALL PRIINF(GEINFO,WORK(2),LWORK)
          DOSPE = TMPLOG
-         WRITE(LUPRI,*)
-         WRITE(LUPRI,*) 'WARNING: Geometry has NOT converged!'
-         WRITE(LUPRI,*) 'Maximum number of iterations (', ITRMAX,
-     &                                        ') has been reached and'
-         WRITE(LUPRI,*) 'optimization halted. Increase number or ',
-     &                                   'restart from last geometry.'
-         IF (DOSPE) WRITE(LUPRI,*)
-     &                  'No single point energy has been calculated.'
-         WRITE(LUPRI,*)
+         WRITE(LUPRI,'(/A/A,I3,A/A/)')
+     &      '@ WARNING: Geometry has NOT converged!',
+     &      '@ Maximum number of iterations (', ITRMAX,
+     &         ') has been reached and',
+     &      '@ optimization halted. Increase number or ',
+     &         'restart from last geometry.'
+         IF (DOSPE) WRITE(LUPRI,'(A/)')
+     &      '@ Therefore, no single point energy has been calculated.'
       END IF
       CALL QEXIT('RUNOPT')
       RETURN
@@ -2235,10 +2218,13 @@ C     No single point energy has been calculated.
 C  /* Deck priall */
       SUBROUTINE PRIALL(CSTEP,CORDNW)
 C
-C     Prints important information for the current iteration.
+C     Prints important information for the current geometry iteration.
 C
 #include "implicit.h"
 #include "mxcent.h"
+
+      DIMENSION   CSTEP(MXCOOR), CORDNW(3,MXCENT)
+
 #include "optinf.h"
 #include "gnrinf.h"
 #include "priunit.h"
@@ -2248,10 +2234,8 @@ C
 #include "symmet.h"
 #include "nuclei.h"
 #include "infinp.h"
-#ifndef VAR_LINSCA
 #include "pcmlog.h"
-#endif
-      DIMENSION CSTEP(MXCOOR), CORDNW(3,MXCENT)
+
       CHARACTER*1 MARK
       INTEGER     START
 C
@@ -2269,9 +2253,7 @@ C
       IF (.NOT. GECONV) THEN
          CALL HEADER('Next geometry (au)',-1)
          CALL PRIGEO(CORDNW)
-#ifndef VAR_LINSCA
          IF (PCM) CALL UPDCAV(CORDNW)
-#endif
       ELSE
          CALL HEADER('Final geometry (au)',-1)
          CALL PRIGEO(CORD)
@@ -2361,12 +2343,11 @@ C
       RED = .FALSE.
       CALL HEADER('Final geometry',-1)
       CALL PRIGEO(CORD)
-      WRITE(LUPRI,*)
-     & 'Iter      Energy        Change       GradNorm  Index   StepLen'
-     & // '    TrustRad #Rej'
-      WRITE(LUPRI,*)
-     & '-------------------------------------------------------------'
-     & // '------------------'
+      WRITE(LUPRI,'(A)')
+     & '@ Iter      Energy        Change       GradNorm  Index   '
+     & // 'StepLen    TrustRad #Rej',
+     & '@ -------------------------------------------------------'
+     & // '------------------------'
       DO 10 I = 0, ITRNMR
          IF (I .GT. 0) TMPNRG = GEINFO(I,1) - GEINFO(I-1,1)
 C
@@ -2385,27 +2366,26 @@ C
             REDMRK = '#'
             RED = .TRUE.
          END IF
-         WRITE(LUPRI,'(I4,A1,F15.6,2F13.6,I5,F12.6,A1,F11.6,I4,A1)')
-     &        I,BRKMRK,GEINFO(I,1),TMPNRG,GEINFO(I,2),
+         WRITE(LUPRI,'(A1,I4,A1,F15.6,2F13.6,I5,F12.6,A1,F11.6,I4,A1)')
+     &        '@',I,BRKMRK,GEINFO(I,1),TMPNRG,GEINFO(I,2),
      &        NINT(ABS(GEINFO(I,3))),GEINFO(I,4),NWSMRK,GEINFO(I,5),
      &        NINT(GEINFO(I,6)),REDMRK
  10   CONTINUE
 C
 C     We also write the single point energy, if calculated.
 C
-      IF (DOSPE) WRITE(LUPRI,'(A5,F12.6,F11.6)') '  SP ',
+      IF (DOSPE) WRITE(LUPRI,'(A5,F12.6,F11.6)') '@ SP ',
      &          GEINFO(ITRNMR+1,1),GEINFO(ITRNMR+1,1)-GEINFO(ITRNMR,1)
-      WRITE(LUPRI,*)
-      WRITE(LUPRI,*) '*) Newton step taken.'
-      IF (ITRBRK .GE. 0) WRITE(LUPRI,*)
-     &     'x) Symmetry was broken after this iteration.'
+      WRITE(LUPRI,'(/A)') '@  *) Newton step taken.'
+      IF (ITRBRK .GE. 0) WRITE(LUPRI,'(A)')
+     &     '@  x) Symmetry was broken after this iteration.'
       IF (RED) THEN
          IF (NEWTON) THEN
-            WRITE(LUPRI,*)
-     &     '#) Dropped half of the dihedral angles to ' //
+            WRITE(LUPRI,'(A)')
+     &     '@  #) Dropped half of the dihedral angles to ' //
      &     'reduce redundancy.'
          ELSE
-            WRITE(LUPRI,*) '#) Hessian initialized to unity.'
+            WRITE(LUPRI,'(A)') '@  #) Hessian initialized to unity.'
          END IF
       END IF
       CALL GEOANA(CORD,.TRUE.,.FALSE.,NBONDS,-1,WORK,LWORK)
@@ -2433,21 +2413,12 @@ CRF Added
 #include "maxaqn.h"
 #include "symmet.h"
 CRFend
-#ifndef VAR_LINSCA
 #include "pcmlog.h"
-#endif
 #include "molinp.h"
 #include "abainf.h"
 #include "rspprp.h"
 #include "esg.h"
-#ifdef VAR_LINSCA
-#include "esg2.h"
-#endif
-Cef begin
-#ifndef VAR_LINSCA
 #include "incore.h"
-#endif
-Cef end
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
       DIMENSION WORK(LWORK)
       REAL EXCQQ2
@@ -2461,7 +2432,6 @@ Cef end
 CRF HERMIT might have updated the symmetry. We need to set NSYM before running SIRIUS
          NSYM   = MAXREP + 1
       END IF
-#ifndef VAR_LINSCA
       IF (AOSAVE .AND. NEWGEO) THEN
          LINTSV = .FALSE.
          LINTMP = .FALSE.
@@ -2479,7 +2449,6 @@ CRF HERMIT might have updated the symmetry. We need to set NSYM before running S
          INDX_SHL4 = 0
 C     CALL CLEAR_INCOREMEM()
       END IF
-#endif
 Cef end
 C ach 
       IF (DFTRUN .OR. DOHFSRDFT .OR. DOMCSRDFT) GRDONE = .FALSE.
@@ -2518,17 +2487,8 @@ c           END IF
          END IF
          IF (DOCCSD) THEN
 C
-#ifdef VAR_LINSCA
-#ifdef MOD_CC
             CALL CC_GEOFLAG
             CALL EXECC(WORK,LWORK-1,WRKDLM)
-#else
-            CALL QUIT('CC disabled in this build')
-#endif
-#else
-            CALL CC_GEOFLAG
-            CALL EXECC(WORK,LWORK-1,WRKDLM)
-#endif
          ENDIF
          EXSIR = .TRUE.
       END IF
@@ -2569,13 +2529,7 @@ C     Well, en excited electronic state cannot necessarily be expected to be
 C     as quadratic as the ground state, and thus we should not walk to far 
 C     away. This is necessary for instance to get test15 through....
 C
-#ifdef VAR_LINSCA
-      IF ((ISTATE .GT. 1 .OR.(FNDKEY('*LINSCA').AND. FNDKEY('.ESGRSP')))
-     &      .AND. ITRNMR .EQ. 0) 
-     &   THEN
-#else
       IF (ISTATE .GT. 1 .AND. ITRNMR .EQ. 0) THEN
-#endif
          WRITE (LUPRI,'(/A)') ' INFO >>>> As this is an excited '//
      &        'optimization some thresholds have been updated'
          IF (TRSTRA .EQ. 0.5D0) TRSTRA = 0.25D0
@@ -2611,13 +2565,6 @@ Cdj moved from gtgrad
          CALL RSPDRV(WORK,LWORK)
          ENERGY = ENERGY + EXCITA(ISYME,IESG,1)
       END IF
-#ifdef VAR_LINSCA
-      IF (FNDKEY('*LINSCA').AND. FNDKEY('.ESGRSP')) THEN
-         MOLGRD = .TRUE.
-         CALL PRIOMA(EXCQQ2)
-         ENERGY= ENERGY + EXCQQ2
-      END IF
-#endif
       CALL QEXIT('GTNRGY')
       RETURN
       END
@@ -2646,9 +2593,6 @@ C
 #include "pvibav.h"
 #include "rspprp.h"
 #include "esg.h"
-#ifdef VAR_LINSCA
-#include "esg2.h"
-#endif
       LOGICAL EXHER, EXSIR, EXABA, EXESG, FNDKEY
       DIMENSION WORK(LWORK)
       DIMENSION EGRAD(MXCOOR)
@@ -2681,12 +2625,7 @@ chj-e-090516
 #endif
 C
 C     Find out if we are running an excited state calculation
-#ifdef VAR_LINSCA
-      IF (.NOT.( FNDKEY('*ESG   ') .OR. 
-     &    (FNDKEY('*LINSCA').AND. FNDKEY('.ESGRSP')) )) THEN
-#else
       IF (.NOT. FNDKEY('*ESG   ')) THEN
-#endif
 C
 C     TR: Using FNDANA to find highest order of analytical 
 C         derivatives (NAORDR). If this is 0, we use numerical 
@@ -2706,11 +2645,7 @@ C
             IF (ITRNMR .EQ. 0) THEN
                CALL ABAINP('**START',WORK(KFREE),LFREE)
             ELSE
-#ifdef VAR_LINSCA
-               CALL ABAINP('**PROPE',WORK(KFREE),LWORK)
-#else
                CALL ABAINP('**EACH ',WORK(KFREE),LWORK)
-#endif
             END IF
 C        *** For numerical differentiation (vibrational ***
 C        *** average), we don't nescesarily calculate   ***
@@ -2721,17 +2656,8 @@ C
             END IF
 C     
             IF ( DOCCSD ) THEN
-#ifdef VAR_LINSCA
-#ifdef MOD_CC
                CALL CC_GEOFLAG
                CALL EXECC(WORK,LWORK-1,WRKDLM)
-#else
-               CALL QUIT('CC disabled in this build')
-#endif
-#else
-               CALL CC_GEOFLAG
-               CALL EXECC(WORK,LWORK-1,WRKDLM)
-#endif
             ELSE
                CALL EXEABA(WORK,LWORK-1,WRKDLM)
             END IF
@@ -2742,11 +2668,6 @@ C
       END IF
       CALL TRAGRD(GRDMOL,EGRAD,WORK(KFREE),
      &            WORK(KFREE + MXCOOR*MXCOOR),NCRREP(0,1),3*NUCDEP)
-#ifdef VAR_LINSCA
-      IF (FNDKEY('*LINSCA').AND. FNDKEY('.ESGRSP')) THEN
-        MOLGRD = .TRUE.
-      END IF
-#endif
       CALL QEXIT('GTGRAD')
       RETURN
       END
@@ -2783,9 +2704,6 @@ C
       CALL DZERO(EGRAD,MXCOOR)
       CALL DZERO(EHESS,MXCOOR*MXCOOR)
       CALL GTNRGY(EXHER,EXSIR,EXABA,.FALSE.,WORK,LWORK,WRKDLM)
-#ifdef VAR_LINSCA
-      CLOSE (13)
-#endif
 C
 C     Using FNDANA to find highest order of analytical 
 C     derivatives (NAORDR). If this is 0, we use numerical 
@@ -2807,11 +2725,7 @@ C
       IF (ITRNMR .EQ. 0) THEN
          CALL ABAINP('**START',WORK(KFREE),LFREE)
       ELSE
-#ifdef VAR_LINSCA
-         CALL ABAINP('**PROPE',WORK(KFREE),LWORK)
-#else
          CALL ABAINP('**EACH ',WORK(KFREE),LFREE)
-#endif
       END IF
 C
 C     *** For numerical differentiation (vibrational ***
@@ -5557,18 +5471,6 @@ C
       ERGDIF = ENERGY - ERGOLD
       REJGEO = .FALSE.
       REBILD = .FALSE.
-#ifdef VAR_LINSCA
-cfilip - print always info about the actual and predicted energy (according to Vebjorn's
-c        suggestion). 07.11.2008.
-      call header('StepInfo:Energy difference to previous geometry:',-1)
-      write(lupri,'(/a),/)')
-     &'      Energy       Old_Energy     Actual_diff  Predicted_diff'
-     & //'  Ratio'
-      write(lupri,'(2F20.10,3F15.10)')
-     & ENERGY, ERGOLD, ERGDIF, ERGPRD, ERGDIF/ERGPRD
-      write(lupri,*)
-cfilip - end.
-#endif
 C
 C     The ratio between actual and predicted energy change is calculated,
 C     and this ratio is then used to update the trust radius.
@@ -6428,9 +6330,6 @@ C
 #include "priunit.h"
 #include "rspprp.h"
 #include "esg.h"
-#ifdef VAR_LINSCA
-#include "esg2.h"
-#endif
       DIMENSION CSTEP(MXCOOR), EGRAD(MXCOOR)
       DIMENSION COONEW(3,MXCENT), COOOLD(3,MXCENT), ICRD(3)
       DIMENSION WORK(LWORK)

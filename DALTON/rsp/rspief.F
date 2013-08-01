@@ -26,7 +26,9 @@ C
 C
       CALL GPOPEN(LUPROP,'AOPROPER','OLD',' ',
      *        'UNFORMATTED',IDUMMY,.FALSE.)
-      IF (NCSIM .GT. 0) THEN
+C     if SOPRPA, then only put PCM contribs into RPA part
+C      IF (NCSIM .GT. 0) THEN
+      IF ((NCSIM .GT. 0) .and. (.not. SOPRPA)) THEN
          IF (IPRRSP.GT.101) THEN
 C         IF (.true.) THEN
             WRITE(LUPRI,*)' LINEAR TRANSFORMED CONFIGURATION VECTOR'
@@ -759,7 +761,10 @@ C \sigma_{oo} = <0|[q_j,\tilde{Z}]|0>
       ELSE
          CALL SLVSOR(.TRUE.,.TRUE., NOSIM,UDV,  SVEC(1,1),WRK(KPCMX))
       ENDIF
-      IF (KZCONF.GT.0 .AND. IREFSY.EQ.KSYMST) THEN
+C     allow for SOPRPA
+C      IF (KZCONF.GT.0 .AND. IREFSY.EQ.KSYMST) THEN
+      IF ((KZCONF.GT.0) .AND. (IREFSY.EQ.KSYMST) 
+     *   .AND. (.NOT. SOPRPA)) THEN
          IF (NCREF .NE. KZCONF) CALL QUIT('IEFLNO: NCREF .ne. KZCONF')
 C
 C        ... test orthogonality
@@ -836,7 +841,7 @@ C  /* Deck pcm_comp_pot */
       IF (VSE1FLG .EQ. -1) THEN
          CALL DZERO(VSE1, NTS*NOSIM)
          CALL PCM_COMP_EL_POT1(VSE1, NOSIM, DENMAT, DENTRP, JWOPSY, 
-     &                         MOCOEF, BOVECS, XJSQ, XJSQT, TRPLET,
+     &                         MOCOEF, BOVECS, XJSQ, XJSQT,
      &                         WORK, LWORK)
          VSE1FLG = 1
       END IF
@@ -882,12 +887,17 @@ C /* Deck pcm_comp_el_pot */
 
 C /* Deck pcm_comp_el_pot1 */
       SUBROUTINE PCM_COMP_EL_POT1(VSE1, NOSIM, UDV, UDVTR, JWOPSY, 
-     &                            CMO, BOVECS, XJSQ, XJSQT, TRPLET, 
+     &                            CMO, BOVECS, XJSQ, XJSQT,
      &                            WORK, LWORK)
-#include <implicit.h>
-#include <inforb.h>
-#include <priunit.h>
-      LOGICAL TRPLET, TOFILE
+#include "implicit.h"
+#include "inforb.h"
+#include "priunit.h"
+#include "infrsp.h"
+#include "maxorb.h"
+#include "infpar.h"
+#include "qm3.h"
+
+      LOGICAL TOFILE
       DIMENSION BOVECS(*), UDV(*), UDVTR(*), CMO(*), WORK(*)
 
 C      iprrsp = 1
@@ -916,7 +926,7 @@ C      iprrsp = 1
      *        I3,' of',I3,')')
 
 #if defined (VAR_MPI)
-      IF (NODTOT.ge.1) THEN
+      IF (NODTOT .GE. 1 .AND. .NOT. MMPCM) THEN
          CALL J1XP(NOSIM,VSE1,WORK(KUCMO),WORK(KUBO),UDV,UDVTR,
      &          XJ1SQ,XJ1SQT,
      &          .FALSE.,TRPLET,JWOPSY,WORK(KFREE),LFREE)

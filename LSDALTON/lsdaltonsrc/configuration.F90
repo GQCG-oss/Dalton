@@ -65,6 +65,9 @@ use scf_stats, only: scf_stats_arh_header
 use molecular_hessian_mod, only: geohessian_set_default_config
 #endif
 use xcfun_host,only: xcfun_host_init, USEXCFUN, XCFUNDFTREPORT
+private
+public :: config_set_default_config, config_read_input, config_shutdown,&
+     & config_free, set_final_config_and_print, scf_purify
 contains
 
 !> \brief Call routines to set default values for different structures.
@@ -835,9 +838,9 @@ subroutine DEC_meaningful_input(config)
   ! a full CC calculation
   DECcalculation: if(config%doDEC) then
 
-     ! DEC does not work for SCALAPACK
-     if(matrix_type==mtype_scalapack) then
-        call lsquit('Error in input: **DEC or **CC cannot be used together with .SCALAPACK!',-1)
+     ! CCSD does not work for SCALAPACK, Hubi please fix!
+     if(matrix_type==mtype_scalapack .and. (DECinfo%ccmodel/=1) ) then
+        call lsquit('Error in input: Coupled-cluster beyond MP2 is not implemented for .SCALAPACK!',-1)
      end if
 
      ! DEC and response do not go together right now...

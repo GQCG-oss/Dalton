@@ -33,7 +33,8 @@ MODULE ls_Integral_Interface
        & memdist_lstensor_setupfullinfo, lstensor_zero_lowertriangular,&
        & lstensor_force_symmat_to_triangularmat, lstensor_local_free,&
        & memdist_lstensor_buildfromscalapack, &
-       & Build_lst_from_matarray
+       & Build_lst_from_matarray, build_empty_sublstensor,&
+       & alloc_build_empty_sublstensor
   use integraloutput_type, only: initintegraloutputdims1
   use TYPEDEF, only: getNbasis, set_sameallfrag, LS_FREEMMBUF, ls_emptyibuf,&
        & ls_emptyrbuf, ls_emptynucbuf, ls_fillnucbuf, ls_initmmbuf,&
@@ -1979,7 +1980,7 @@ Logical                    :: PermuteResultTensor,doscreen
 Integer                    :: itask,nAtoms(4),ntasks_lhs,ntasks_rhs,iAO,atomDim
 Logical                    :: sameAOsLHS,sameAOsRHS,sameODs,sameAllMOL,sameAllFRAG
 Logical                    :: lhs_aux,rhs_aux,noA,noB,LHSpartioning,RHSpartioning
-logical                    :: sameMolSave(4,4),ForceRHSsymDMAT,ForceLHSsymDMAT
+logical                    :: sameMolSave(4,4),ForceRHSsymDMAT,ForceLHSsymDMAT,LOCALINFOSETUP
 Logical                    :: saveCSscreen,savePSscreen,CS_screen,PS_screen,BOTHpartioning
 integer                    :: ndim_full(5),iatom,jatom,ilsao,iatom2,jatom2,node
 type(ls_task_manager)      :: tasks
@@ -2113,6 +2114,7 @@ IF(RHSpartioning)THEN
    ! THE INFO ABOUT WHICH NODE HAVE WHICH ATOMS IS A LITTLE MORE EASILY AVALIBLE 
    !STEP 1 : Determine which nodes own which part of the lstensor 
    rhs_current => tasks%rhs%first
+   IF(tasks%rhs%ntasks.GT.setting%numnodes)call lsquit('MPI MEMDIST RHS error',-1)
    DO J=1,tasks%rhs%ntasks
       ! I always set the mynum in the global info of the lstensor
       call set_single_atomspointers(rhs_current,natom1,natom2,atoms1,atoms2)
@@ -2131,8 +2133,10 @@ IF(RHSpartioning)THEN
    IF(rhs_created)Dmat_rhs%LowerDiagZero = ForceRHSsymDMAT
    !STEP 2 : setup node local info for the memory distributed lstensor
    rhs_current => tasks%rhs%first
+   LOCALINFOSETUP = .FALSE.
    DO J=1,tasks%rhs%ntasks
       IF(J-1.EQ.setting%node)THEN
+         LOCALINFOSETUP = .TRUE.
          CALL SetTaskFragments(SETTING,rhs_current,'RHS',tasks%rhs_aux,.FALSE.,.FALSE.,.FALSE.,lupri)
          CALL getTaskDimension(tasks%orbInfo,rhs_current,AO3,AO4,'RHS',Spec,nbast3,nbast4,lupri)
          ! I always set the mynum in the global info of the lstensor
@@ -2152,6 +2156,17 @@ IF(RHSpartioning)THEN
       ENDIF
       rhs_current => rhs_current%next
    ENDDO !J
+   IF(.NOT.LOCALINFOSETUP)THEN
+      print*,'WARNING: no RHS tasks for mynum',setting%node
+      IF(rhs_created)THEN
+         call build_empty_sublstensor(dmat_rhs)
+      ENDIF
+      IF(rhsCS_created)THEN
+         nullify(gabCS_rhs)
+         allocate(gabCS_rhs)
+         call alloc_build_empty_sublstensor(gabCS_rhs)
+      ENDIF
+   ENDIF
    if(dmat_rhs%ndim5.GT.1) call lsquit('error',-1)
    !STEP 3 : build memory distributed lstensor from scalapack formattet Density matrix
    IF(rhs_created)THEN
@@ -2175,6 +2190,7 @@ IF(LHSpartioning)THEN
    ! THE INFO ABOUT WHICH NODE HAVE WHICH ATOMS IS A LITTLE MORE EASILY AVALIBLE 
    !STEP 1 : Determine which nodes own which part of the lstensor 
    lhs_current => tasks%lhs%first
+   IF(tasks%lhs%ntasks.GT.setting%numnodes)call lsquit('MPI MEMDIST LHS error',-1)
    DO I=1,tasks%lhs%ntasks
       ! I always set the mynum in the global info of the lstensor
       call set_single_atomspointers(lhs_current,natom1,natom2,atoms1,atoms2)
@@ -2193,8 +2209,10 @@ IF(LHSpartioning)THEN
    IF(lhs_created)Dmat_lhs%LowerDiagZero = ForceLHSsymDMAT
    !STEP 2 : setup node local info for the memory distributed lstensor
    lhs_current => tasks%lhs%first
+   LOCALINFOSETUP = .FALSE.
    DO I=1,tasks%lhs%ntasks
       IF(I-1.EQ.setting%node)THEN
+         LOCALINFOSETUP = .TRUE.
          CALL SetTaskFragments(SETTING,lhs_current,'LHS',tasks%lhs_aux,.FALSE.,.FALSE.,.FALSE.,lupri)
          CALL getTaskDimension(tasks%orbInfo,lhs_current,AO3,AO4,'LHS',Spec,nbast3,nbast4,lupri)
          ! I always set the mynum in the global info of the lstensor
@@ -2217,6 +2235,18 @@ IF(LHSpartioning)THEN
       ENDIF
       lhs_current => lhs_current%next
    ENDDO !I
+   IF(.NOT.LOCALINFOSETUP)THEN
+      print*,'WARNING: no LHS tasks for mynum',setting%node
+      call build_empty_sublstensor(jmat)
+      IF(lhs_created)THEN
+         call build_empty_sublstensor(dmat_lhs)
+      ENDIF
+      IF(lhsCS_created)THEN
+         nullify(gabCS_lhs)
+         allocate(gabCS_lhs)
+         call alloc_build_empty_sublstensor(gabCS_lhs)
+      ENDIF
+   ENDIF
    if(jmat%ndim5.GT.1) call lsquit('error',-1)
    !STEP 3 : build memory distributed lstensor from scalapack formattet Density matrix
    IF(lhs_created)THEN

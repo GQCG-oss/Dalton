@@ -25,5 +25,7 @@ cmake -DCMAKE_Fortran_COMPILER=/com/gfortran/4.4.3/bin/gfortran -DCMAKE_C_COMPIL
 #make Nightly
 #make Experimental
 ctest -D Nightly -L linsca
+#make -j4 
+#ctest -L linsca -j4
 exit 0
 

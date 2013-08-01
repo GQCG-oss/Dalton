@@ -1336,7 +1336,14 @@ contains
       lupri = mol%lupri
       luerr = mol%luerr
       A(1) = 0*D(1)
-      A(2:) = (/(A(1), i=2,size(A))/) !scratch matrices
+      ! ajt: ifort 11.1 (at least) seems to miscompile this line, somehow, resulting in a leaving a 
+      !      seemingly valid and initialized type(matrix) on the stack, where it will coincide with 
+      !      local variable A(2) in a subsequent call to subroutine oneint, causing an error when
+      !      attempting to change that matrix (deallocate previous content)
+      ! A(2:) = (/(A(1), i=2,size(A))/) !scratch matrices
+      do i = 2, size(A)
+         A(i) = A(1)
+      end do
       pd  = product(df(np+1:np+nd))   !product of density dimensions
       pd1 = product(1+df(np+1:np+nd)) !size of D(*)
       if (np==0) then

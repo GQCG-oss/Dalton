@@ -100,8 +100,10 @@ target_link_libraries(lsutiltypelib_common pdpacklib)
 add_library(
     lsutillib
     ${LSUTILLIB_SOURCES}
-    ${GENERATED_FILES}
+    ${CMAKE_BINARY_DIR}/binary_info.F90
     )
+
+add_dependencies(lsutillib generate_binary_info)
 
 target_link_libraries(lsutillib lsutiltypelib_common)
 

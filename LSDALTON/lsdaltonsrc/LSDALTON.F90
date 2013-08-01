@@ -62,6 +62,7 @@ SUBROUTINE lsdalton
   use integralinterfaceMod, only: II_get_overlap, II_get_h1, &
        & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter
   use dec_main_mod!, only: dec_main_prog
+  use optimlocMOD, only: optimloc
   implicit none
   integer             :: nbast,lupri, luerr, lucmo
   TYPE(lsitem),target :: ls
@@ -86,19 +87,6 @@ SUBROUTINE lsdalton
 #endif
 
   type(LowAccuracyStartType)  :: LAStype
-  Interface 
-     subroutine optimloc(CMO,nocc,m,ls,CFG)
-       use davidson_settings,only: RedSpaceItem
-       use matrix_module !matrix
-       use typedeftype !lsitem
-       implicit none
-       type(RedSpaceItem) :: CFG
-       type(Matrix), target:: CMO
-       TYPE(lsitem) , intent(inout) :: ls
-       integer,       intent(in)    :: nocc
-       integer,       intent(in)    :: m(2)
-     end subroutine optimloc
-  end Interface 
   OnMaster = .TRUE.
   ! Set lupri and luerr to zero here to make sure they are not unintialized for MPI slaves
   luerr=0
