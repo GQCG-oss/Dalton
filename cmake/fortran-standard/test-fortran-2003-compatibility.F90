@@ -46,8 +46,6 @@
      fptr2 => null()
      
 
-     print *,success
-
      contains
        subroutine mult(a,b,c)
          real, intent(in)  :: a,b
