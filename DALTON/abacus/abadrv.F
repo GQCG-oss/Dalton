@@ -26,6 +26,7 @@ C
 C  /* Deck abactl */
       SUBROUTINE ABACTL(WORK,LWORK)
 C
+        use pe_variables, only: peqm
 #include "implicit.h"
 #include "priunit.h"
 #include "mxcent.h"
@@ -574,6 +575,7 @@ CAMT Add empirical DFT-D gradient...
          IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLTT)
          IF (SOLVNT.OR.PCM) CALL ADDGRD(GSOLNN)
          IF (PCM) CALL ADDGRD(GSOLCV)
+         if (peqm) call addgrd(pegrad)
       END IF
 C
 C     Calculated dipole moment
