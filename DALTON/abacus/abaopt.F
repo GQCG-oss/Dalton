@@ -1572,7 +1572,7 @@ C
 C
 C     Save initial geometry and energy to MOLDEN file
 C
-      IF (MOLDEN) CALL MOGECON(.FALSE.,ENERGY)
+      IF (MOLDEN) CALL MOLDEN_GECON(.FALSE.,ENERGY)
 C
 C     Count coordinates.
 C
@@ -1761,7 +1761,7 @@ C
 C
 C     Save this geometry and energy to MOLDEN file
 C
-      IF (MOLDEN) CALL MOGECON(.FALSE.,ENERGY)
+      IF (MOLDEN) CALL MOLDEN_GECON(.FALSE.,ENERGY)
 C
       NEWSTP = .FALSE.
 C
@@ -1971,7 +1971,7 @@ C
 C
 C        save this geometry and energy to MOLDEN file
 C
-         IF (MOLDEN) CALL MOGECON(.FALSE.,ENERGY)
+         IF (MOLDEN) CALL MOLDEN_GECON(.FALSE.,ENERGY)
 C
          IF (REDINT .AND. (IPRINT .GE. 1)) THEN
             CALL ATMINI(WORK(KTEMP1),IATOM,.TRUE.)
@@ -2138,7 +2138,7 @@ C
 C
 C     Final results are printed, partially through PRIINF.
 C
-         IF (MOLDEN) CALL MOGECON(.TRUE.,DUMMY)
+         IF (MOLDEN) CALL MOLDEN_GECON(.TRUE.,DUMMY)
          CALL TITLER(' End of Optimization ','<',120)
          CALL PRIINF(GEINFO,WORK(2),LWORK)
          IF (CONOPT) THEN

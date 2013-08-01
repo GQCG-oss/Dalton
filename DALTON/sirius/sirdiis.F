@@ -898,7 +898,7 @@ C           this also includes the case of MMPCM
             END IF
             CALL FLSHFO(LUW4)
          END IF
-         IF (MOLDEN) CALL MOSCFCON(ITDIIS,EMCSCF,.FALSE.)
+         IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.FALSE.)
 C
 C        Test and exit if energy is increasing
 C        (from itdiis .ge. 7, second iteration is Roothaan step
@@ -944,13 +944,13 @@ C
  4010 FORMAT(' DIIS aborted because energy increased in this iteration.'
      &      /' Program aborted because this means automatic symmetry'
      &      /' designation of occupied orbitals is not possible!',
-     &      /' Please send this output to hjj@dou.dk !!!',
+     &      /' Please send this output to dalton users mailing list !!!',
      &      /' You may try again with explicit specfication of .DOUBLY')
  4020 FORMAT(' DIIS aborted because energy increased in this iteration!'
      &      /' Backstep to orbitals from previous iteration.')
 C
          IF (GRDNRM .LE. THDIIS) THEN
-            IF (MOLDEN) CALL MOSCFCON(ITDIIS,EMCSCF,.TRUE.)
+            IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.TRUE.)
             ICONV = 1
             WRITE (LUPRI,4110) ITDIIS,EMCSCF,GRDNRM
             IF (LUW4 .NE. LUPRI) WRITE (LUW4,4110) ITDIIS,EMCSCF,GRDNRM
