@@ -18,6 +18,7 @@ module profile_int
 private
 public :: di_profile_lsint
 
+CONTAINS
 !> \brief Driver for stand-alone f90 linear scaling SCF.
 !> \author \latexonly T. Kj{\ae}rgaard, S. Reine  \endlatexonly
 !> \date 2008-10-26
