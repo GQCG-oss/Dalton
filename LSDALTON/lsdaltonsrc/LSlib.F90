@@ -1213,6 +1213,7 @@ SUBROUTINE LSlib_build_exchange()
   use integralinterfaceMod
   use memory_handling
   use files
+  use lstiming
 IMPLICIT NONE
 Integer      :: lupri,luerr
 !

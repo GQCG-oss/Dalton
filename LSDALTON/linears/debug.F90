@@ -9,6 +9,7 @@ module LINSCA_DEBUG
   use files, only: lsopen, lsclose
   use matrix_module,only: matrix
   use matrix_operations
+  use matrix_operations_csr
   use matrix_operations_aux, only: mat_write_to_disk2, mat_read_from_disk2
   use integralinterfaceMod, only: II_get_overlap, II_get_nucel_mat, II_get_kinetic
   use opttype, only: optItem

@@ -9,7 +9,12 @@ module dec_typedef_module
   use,intrinsic :: iso_c_binding, only:c_ptr
   use TYPEDEFTYPE, only: lsitem
   use Matrix_module, only: matrix
-
+  !Could someone please rename ri to something less generic. TK!!
+  private
+  public :: DECinfo, ndecenergies,DECsettings,array2,array3,array4,ccorbital,ri,&
+       & fullmolecule,ccatom,FullMP2grad,mp2dens,mp2grad,&
+       & mp2_batch_construction,mypointer,joblist,traceback,batchTOorb,&
+       & SPgridbox
   ! IMPORTANT: Number of possible energies to calculate using the DEC scheme
   ! MUST BE UPDATED EVERYTIME SOMEONE ADDS A NEW MODEL TO THE DEC SCHEME!!!!
   ! MODIFY FOR NEW MODEL
@@ -115,6 +120,8 @@ module dec_typedef_module
      logical :: ccsd_old
      !> skip reading the old amplitudes from disk
      logical :: CCSDno_restart
+     !> if mpich is used CCSD has some special treats that can be used
+     logical :: CCSD_MPICH
      !> prevent canonicalization in the ccsolver
      logical :: CCSDpreventcanonical
      !> do not update the singles residual

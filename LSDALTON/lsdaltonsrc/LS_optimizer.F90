@@ -12,6 +12,7 @@ module LS_optimizer_mod
   use WRITEMOLEFILE!, only: write_molecule_output
   use Energy_and_deriv!, only: get_energy, get_gradient
   use Fundamental  
+  use dec_typedef_module
   use lsdalton_rsp_mod,only: LS_RSP_EQ_SOL_EMPTY
 !===========================================================!
 !    The main driver for geometry optimization in LSDALTON  !

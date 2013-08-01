@@ -9,6 +9,7 @@
 module matrix_operations_csr
   use matrix_module
   use memory_handling
+  use precision
 ! HACK
   use matrix_operations_dense
 ! HACK

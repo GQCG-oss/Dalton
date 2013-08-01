@@ -1,9 +1,9 @@
 SUBROUTINE II_test_uncontAObatch(LUPRI,LUERR,SETTING)
   use precision
-  use TYPEDEF  
+  use TYPEDEFTYPE  
+  use TYPEDEF
   use Matrix_module
-  use Matrix_Operations
-  use Matrix_Operations_aux, only: mat_init,mat_add,mat_free,mat_trab
+  use Matrix_Operations, only: mat_init,mat_add,mat_free,mat_trab
   use ls_Integral_Interface
   use integralparameters
 IMPLICIT NONE
