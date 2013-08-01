@@ -1,26 +1,6 @@
    !SIMPLE TEST PROGRAM FOR A FEW FORTRAN 2003 STANDARD TESTS
-
-   module simple_stuff
-     implicit none
-     save
-     contains
-       subroutine mult(a,b,c)
-         real, intent(in)  :: a,b
-         real, intent(out) :: c
-         c = a * b
-       end subroutine mult
-       subroutine add(a,b,c)
-         real, intent(in)  :: a,b
-         real, intent(out) :: c
-         c = a + b
-       end subroutine add
-
-   end module simple_stuff
-
    program test
      use, intrinsic :: iso_c_binding
-     use simple_stuff
-
      implicit none
      abstract interface
        subroutine testroutine(a,b,c)
@@ -65,5 +45,17 @@
      deallocate(fptr1)
      fptr2 => null()
      
-   end program
 
+     contains
+       subroutine mult(a,b,c)
+         real, intent(in)  :: a,b
+         real, intent(out) :: c
+         c = a * b
+       end subroutine mult
+       subroutine add(a,b,c)
+         real, intent(in)  :: a,b
+         real, intent(out) :: c
+         c = a + b
+       end subroutine add
+
+   end program
