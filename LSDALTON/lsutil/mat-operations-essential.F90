@@ -50,7 +50,8 @@ MODULE matrix_operations
         & no_of_matmuls, mat_tr, mat_trab, mat_dotproduct, mat_sqnorm2, &
         & mat_outdia_sqnorm2, info_memory, max_no_of_matrices, no_of_matrices,&
         & MatrixmemBuf_init, MatrixmemBuf_free,matrixmembuf_print,&
-        & matrixmembuf_open, matrixmembuf_close, matrixmembuf_overwrite
+        & matrixmembuf_open, matrixmembuf_close, matrixmembuf_overwrite,&
+        & mat_to_full3D
 
 !        matrixmembuf_new_iunit
 !FindIunit,FindIunitFileUnit,matrixmembuf_FindFile
