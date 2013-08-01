@@ -3862,6 +3862,7 @@ module lspdm_tensor_operations_module
     implicit none
     type(array) :: arr
     real(realk) :: sc
+#ifdef VAR_MPI
     integer     :: i
 
     if(arr%init_type==MASTER_INIT)then
@@ -3872,6 +3873,7 @@ module lspdm_tensor_operations_module
     do i=1,arr%nlti
       call dscal(int(arr%ti(i)%e),sc,arr%ti(i)%t,1)
     enddo
+#endif
   end subroutine array_scale_td
 end module lspdm_tensor_operations_module
 
