@@ -1848,18 +1848,20 @@ module lspdm_tensor_operations_module
         endif
         part1 = max(tl,tl - part1)
         part2 = max(0, tl - part1)
-        !part1 = arr%tdim(1) - idxt(1) + 1
-        !part2 = tl - (arr%tdim(1) - idxt(1) + 1)
+        part1 = arr%tdim(1) - idxt(1) + 1
+        part2 = tl - (arr%tdim(1) - idxt(1) + 1)
       endif
 
       tl_max = (tl / cons_els) * cons_els
       tl_mod = mod(tl ,cons_els)
 
       if(infpar%lg_mynum==4)then
-        print *,fel,st_tiling,cons_el_in_t,diff_ord,cons_el_rd
-        print *,tl,part1,part2,tl_max,tl_mod
-        print *,fx
-        print *,idxt
+        !print *,fel,st_tiling,cons_el_in_t,diff_ord,cons_el_rd
+        !print *,tl,part1,part2,tl_max,tl_mod
+        !print *,fx
+        !print *,idxt
+        !print *,arr%tdim
+        !print *,u_o
         !stop 0 
       endif
       call lsmpi_barrier(infpar%lg_comm)
@@ -2755,13 +2757,10 @@ module lspdm_tensor_operations_module
     do i=1,arr%mode
       fullfortdims(o(i)) = arr%dims(i)
     enddo
-
-    me = 0
-    nnod=1
 #ifdef VAR_MPI
-    me=infpar%lg_mynum
-    nnod=infpar%lg_nodtot
-#endif
+
+    me   = infpar%lg_mynum
+    nnod = infpar%lg_nodtot
 
     !compute the maximum number of tiles to be stored in the workspace
     maxntiinwrk = int(iwrk/arr%tsize,kind=8)
@@ -2796,11 +2795,10 @@ module lspdm_tensor_operations_module
       b = 1       + mod(i-1,maxntiinwrk) * arr%tsize
       e = nelmsit + mod(i-1,maxntiinwrk) * arr%tsize
       call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,wrk(b),int(i),arr%tdim,o)
-#ifdef VAR_MPI
       call array_accumulate_tile(arr,int(i),wrk(b:e),nelmsit,lock_set=arr%lock_set(i))
-#endif
     enddo
 
+#endif
   end subroutine add_data2tiled_intiles_explicitbuffer
 
   subroutine cp_data2tiled_lowmem(arr,A,dims,mode)
