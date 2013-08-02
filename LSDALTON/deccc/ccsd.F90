@@ -1603,7 +1603,7 @@ contains
     ! stuff for direct communication
     type(c_ptr) :: gvvoo_c,gvoov_c,sio4_c,gvvoo_p,gvoov_p
     integer(kind=ls_mpik) :: gvvoo_w, gvoov_w, sio4_w
-    integer(kind=ls_mpik) :: ierr, hstatus, nctr
+    integer(kind=ls_mpik) :: ierr, hstatus, nctr,mode
     integer :: rcnt(infpar%lg_nodtot),dsp(infpar%lg_nodtot)
     character*(MPI_MAX_PROCESSOR_NAME) :: hname
     real(realk),pointer :: mpi_stuff(:)
@@ -1710,6 +1710,7 @@ contains
     nnod                     = infpar%lg_nodtot
     def_atype                = TILED_DIST
     lock_outside             = DECinfo%CCSD_MPICH
+    mode                     = int(MPI_MODE_NOCHECK,kind=ls_mpik)
     call get_int_dist_info(o2v2,fintel,nintel)
 #endif
 
@@ -2195,9 +2196,11 @@ contains
         if(scheme==4)then
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,1.0E0_realk,gvvooa%elm1,nv)
         elseif(scheme==3.or.scheme==2)then
-          if(lock_outside) call arr_lock_wins(gvvooa,'s',MPI_MODE_NOCHECK)
+#if VAR_MPI
+          if(lock_outside) call arr_lock_wins(gvvooa,'s',mode)
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w3,la,0.0E0_realk,w2,nv)
           call array_add(gvvooa,1.0E0_realk,w2,wrk=w0,iwrk=w0size)
+#endif
         endif
         call lsmpi_poke()
        endif
@@ -2224,7 +2227,7 @@ contains
          else
            ! i a j b
 #ifdef VAR_MPI
-           if(lock_outside)call arr_lock_wins(govov,'s',MPI_MODE_NOCHECK)
+           if(lock_outside)call arr_lock_wins(govov,'s',mode)
 #endif
            call dgemm('t','n',no,v2o,la,1.0E0_realk,xo(fa),nb,w1,la,0.0E0_realk,w2,no)
            call array_add(govov,1.0E0_realk,w2,order=[1,4,2,3],wrk=w3,iwrk=w3size)
@@ -2249,7 +2252,7 @@ contains
         elseif(scheme==3.or.scheme==2)then
 #ifdef VAR_MPI
           call dgemm('t','n',nv,o2v,la,1.0E0_realk,xv(fa),nb,w1,la,0.0E0_realk,w2,nv)
-          if(lock_outside)call arr_lock_wins(gvoova,'s',MPI_MODE_NOCHECK)
+          if(lock_outside)call arr_lock_wins(gvoova,'s',mode)
           call array_add(gvoova,1.0E0_realk,w2)
 #endif
         endif
@@ -2310,9 +2313,11 @@ contains
       call lsmpi_poke()
       ! Omega += Lambda^p[alpha a]^T (w3):I[b i j alpha]^T
       if(scheme==2)then
-        if(lock_outside)call arr_lock_wins(omega2,'s',MPI_MODE_NOCHECK)
+#ifdef VAR_MPI
+        if(lock_outside)call arr_lock_wins(omega2,'s',mode)
         call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3,o2v,0.0E0_realk,w2,nv)
         call array_add(omega2,1.0E0_realk,w2,wrk=w0,iwrk=w0size)
+#endif
       else
         call dgemm('t','t',nv,o2v,la,0.5E0_realk,xv(fa),nb,w3,o2v,1.0E0_realk,omega2%elm1,nv)
       endif
@@ -2379,11 +2384,12 @@ contains
     max_wait_time = wait_time
 
     if(DECinfo%ccmodel>2.and.scheme==3)then
-
+#if VAR_MPI
       if(lock_outside)then
-        call arr_lock_wins(gvoova,'s',MPI_MODE_NOCHECK)
-        call arr_lock_wins(gvvooa,'s',MPI_MODE_NOCHECK)
+        call arr_lock_wins(gvoova,'s',mode)
+        call arr_lock_wins(gvvooa,'s',mode)
       endif
+#endif
       call array_gather(1.0E0_realk,gvoova,0.0E0_realk,gvoov,o2v2)
       call array_gather(1.0E0_realk,gvvooa,0.0E0_realk,gvvoo,o2v2)
     
@@ -2852,6 +2858,7 @@ contains
     character(ARR_MSG_LEN) :: msg
     real(realk) :: nrm
     integer(kind=8) :: o2v2,w3size
+    integer(kind=ls_mpik) :: mode
 
     master       = .true.
     nrm          = 0.0E0_realk
@@ -2910,6 +2917,7 @@ contains
        t2%init_type     = ALL_INIT
        nnod             = infpar%lg_nodtot
        me               = infpar%lg_mynum
+       mode             = int(MPI_MODE_NOCHECK,kind=ls_mpik)
       
       !Setting transformation variables for each rank
       !**********************************************
@@ -2927,7 +2935,7 @@ contains
 
       !DO ALL THINGS DEPENDING ON 1
       if(lock_outside)then
-        call arr_lock_wins(t2,'s',MPI_MODE_NOCHECK)
+        call arr_lock_wins(t2,'s',mode)
         call array_two_dim_1batch(t2,[1,2,3,4],'g',w3,3,fai1,tl1,lock_outside,.true.)
       endif
       
@@ -2965,7 +2973,7 @@ contains
         call lsmpi_local_reduction(w1,o2v2,infpar%master)
         call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
       else
-        call arr_lock_wins(omega2,'s',MPI_MODE_NOCHECK)
+        call arr_lock_wins(omega2,'s',mode)
         call dgemm('n','n',tl1,no,no,-1.0E0_realk,w3,tl1,w2,no,0.0E0_realk,w1,tl1)
         call array_two_dim_1batch(omega2,[1,2,3,4],'a',w1,3,fai1,tl1,lock_outside,debug=.true.)
       endif
@@ -2973,7 +2981,7 @@ contains
 
       !DO ALL THINGS DEPENDING ON 2
       if(lock_outside)then
-        call arr_lock_wins(t2,'s',MPI_MODE_NOCHECK)
+        call arr_lock_wins(t2,'s',mode)
         call array_two_dim_2batch(t2,[1,2,3,4],'g',w3,3,fai2,tl2,lock_outside)
       endif
 
@@ -3013,7 +3021,7 @@ contains
         call array_scatteradd_densetotiled(omega2,1.0E0_realk,w1,o2v2,infpar%master)
       else
         call arr_unlock_wins(omega2,.true.)
-        call arr_lock_wins(omega2,'s',MPI_MODE_NOCHECK)
+        call arr_lock_wins(omega2,'s',mode)
         call dgemm('n','n',nv,tl2,nv,1.0E0_realk,w2,nv,w3,nv,0.0E0_realk,w1,nv)
         call array_two_dim_2batch(omega2,[1,2,3,4],'a',w1,3,fai2,tl2,lock_outside)
         call arr_unlock_wins(omega2)
@@ -3033,10 +3041,10 @@ contains
         call array_scatter_densetotiled(omega2,w1,o2v2,infpar%master)
       else
         if(me==0)then
-          call arr_lock_wins(omega2,'s',MPI_MODE_NOCHECK)
+          call arr_lock_wins(omega2,'s',mode)
           call array_gather(1.0E0_realk,omega2,0.0E0_realk,w1,o2v2,oo=[2,1,4,3],wrk=w3,iwrk=w3size)
           call arr_unlock_wins(omega2,.true.)
-          call arr_lock_wins(omega2,'s',MPI_MODE_NOCHECK)
+          call arr_lock_wins(omega2,'s',mode)
           call array_scatter(1.0E0_realk,w1,1.0E0_realk,omega2,o2v2,wrk=w3,iwrk=w3size)
           call arr_unlock_wins(omega2,.true.)
         endif
@@ -3173,7 +3181,7 @@ contains
     integer(kind=8),intent(in) :: els2add
     integer :: tl,fai,lai,i,faif,lead
     integer :: l,ml
-    integer(kind=ls_mpik) :: nod,me,nnod
+    integer(kind=ls_mpik) :: nod,me,nnod,mode
     real(realk) :: nrm1,nrm2,nrm3,nrm4
     integer :: a,b,j,fri,tri
     integer(kind=8) :: o2v2,tlov,w1size,w2size,w3size
@@ -3186,6 +3194,7 @@ contains
 #ifdef VAR_MPI
       nnod   = infpar%lg_nodtot
       me     = infpar%lg_mynum
+      mode   = MPI_MODE_NOCHECK
 #endif
       o2v2   = int(no*no*nv*nv,kind=8)
       w1size = o2v2
@@ -3240,7 +3249,7 @@ contains
      elseif(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)then
-         call arr_lock_wins(gvvoo,'s',MPI_MODE_NOCHECK)
+         call arr_lock_wins(gvvoo,'s',mode)
          call array_two_dim_1batch(gvvoo,[1,3,4,2],'g',w2,2,fai,tl,lock_outside,debug=.true.)
          call arr_unlock_wins(gvvoo,.true.)
          write (msg,*),infpar%lg_mynum,"w2"
@@ -3272,7 +3281,7 @@ contains
      if(s==2.and.lock_outside)then
 #ifdef VAR_MPI
        call arr_unlock_wins(omega2,.true.)
-       call arr_lock_wins(govov,'s',MPI_MODE_NOCHECK)
+       call arr_lock_wins(govov,'s',mode)
        call array_gather(1.0E0_realk,govov,0.0E0_realk,w1,o2v2,oo=[2,3,4,1],wrk=w3,iwrk=w3size)
        call arr_unlock_wins(govov,.true.)
        write (msg,*),infpar%lg_mynum,"w1"
@@ -3291,7 +3300,7 @@ contains
      elseif(s==2)then
 #ifdef VAR_MPI
        if(lock_outside)then
-         call arr_lock_wins(t2,'s',MPI_MODE_NOCHECK)
+         call arr_lock_wins(t2,'s',mode)
          call array_two_dim_1batch(t2,[1,4,2,3],'g',w3,2,fai,tl,lock_outside,.true.)
          call arr_unlock_wins(t2,.true.)
          write (msg,*),infpar%lg_mynum,"w3 ERSCHDE"
@@ -3354,7 +3363,7 @@ contains
        enddo
      elseif(s==2)then
 #ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(t2,'s',MPI_MODE_NOCHECK)
+       if(lock_outside)call arr_lock_wins(t2,'s',mode)
        call array_gather(1.0E0_realk,t2,0.0E0_realk,w1,o2v2,oo=[1,4,2,3],wrk=w3,iwrk=w3size)
        if(lock_outside)call arr_unlock_wins(t2,.true.)
        call dgemm('n','t',tl,no*nv,no*nv,-1.0E0_realk,w2(faif),lead,w1,no*nv,0.0E0_realk,w3,lead)
@@ -3373,7 +3382,7 @@ contains
        call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,4,2],1.0E0_realk,omega2%elm1)
      elseif(s==2)then
 #ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(omega2,'s',MPI_MODE_NOCHECK)
+       if(lock_outside)call arr_lock_wins(omega2,'s',mode)
        call array_two_dim_1batch(omega2,[1,3,4,2],'a',w3,2,fai,tl,lock_outside,debug=.true.)
        call dcopy(tlov,w3,1,w2,1)
        call dscal(tlov,0.5E0_realk,w2,1)
@@ -3405,8 +3414,8 @@ contains
        enddo
      elseif(s==2)then
 #ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(gvoov,'s',MPI_MODE_NOCHECK)
-       if(lock_outside)call arr_lock_wins(gvvoo,'s',MPI_MODE_NOCHECK)
+       if(lock_outside)call arr_lock_wins(gvoov,'s',mode)
+       if(lock_outside)call arr_lock_wins(gvvoo,'s',mode)
        call array_two_dim_1batch(gvoov,[1,4,2,3],'g',w2,2,fai,tl,lock_outside,debug=.true.)
        call array_two_dim_1batch(gvvoo,[1,3,2,4],'g',w3,2,fai,tl,lock_outside,debug=.true.)
        if(lock_outside)call arr_unlock_wins(gvoov,.true.)
@@ -3424,10 +3433,10 @@ contains
      !(-1) * govov [l c k d] + 2*govov[l d k c] = L [l d k c]
      if(s==2)then
 #ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(govov,'s',MPI_MODE_NOCHECK)
+       if(lock_outside)call arr_lock_wins(govov,'s',mode)
        call array_gather(2.0E0_realk,govov,0.0E0_realk,w1,o2v2,wrk=w3,iwrk=w3size)
        if(lock_outside)call arr_unlock_wins(govov,.true.)
-       if(lock_outside)call arr_lock_wins(govov,'s',MPI_MODE_NOCHECK)
+       if(lock_outside)call arr_lock_wins(govov,'s',mode)
        call array_gather(-1.0E0_realk,govov,1.0E0_realk,w1,o2v2,oo=[1,4,3,2],wrk=w3,iwrk=w3size)
        if(lock_outside)call arr_unlock_wins(govov,.true.)
 #endif
@@ -3443,7 +3452,7 @@ contains
        enddo
      elseif(s==2)then
 #ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(u2,'s',MPI_MODE_NOCHECK)
+       if(lock_outside)call arr_lock_wins(u2,'s',mode)
        call array_two_dim_1batch(u2,[2,3,4,1],'g',w3,2,fai,tl,lock_outside,.true.)
        if(lock_outside)call arr_unlock_wins(u2,.true.)
        write (msg,*),infpar%lg_mynum,"w3 D2"
@@ -3480,7 +3489,7 @@ contains
          call dcopy(no*nv,w3(i),tl,w1(fai+i-1),no*nv)
        enddo
      elseif(s==2)then
-       if(lock_outside)call arr_lock_wins(u2,'s',MPI_MODE_NOCHECK)
+       if(lock_outside)call arr_lock_wins(u2,'s',mode)
        call array_gather(1.0E0_realk,u2,0.0E0_realk,w1,o2v2,oo=[2,3,4,1],wrk=w3,iwrk=w3size)
        if(lock_outside)call arr_unlock_wins(u2,.true.)
        call dgemm('n','t',tl,nv*no,nv*no,0.5E0_realk,w2(faif),lead,w1,nv*no,0.0E0_realk,w3,lead)
@@ -3494,7 +3503,7 @@ contains
        call array_reorder_4d(1.0E0_realk,w1,nv,no,nv,no,[1,3,2,4],1.0E0_realk,omega2%elm1)
      elseif(s==2)then
 #ifdef VAR_MPI
-       if(lock_outside)call arr_lock_wins(omega2,'s',MPI_MODE_NOCHECK)
+       if(lock_outside)call arr_lock_wins(omega2,'s',mode)
        call array_two_dim_1batch(omega2,[1,3,2,4],'a',w3,2,fai,tl,lock_outside,debug=.true.)
        if(lock_outside)call arr_unlock_wins(omega2,.true.)
 #endif
@@ -3529,16 +3538,17 @@ contains
     integer :: nor,i,j,pos
     integer :: ml,l,tl,fai,lai
     integer :: tri,fri
-    integer(kind=ls_mpik) :: nod,me,nnod,massa
+    integer(kind=ls_mpik) :: nod,me,nnod,massa,mode
     real(realk) :: nrm1,nrm2,nrm3,nrm4
     integer :: pos1, pos2, mv((nv*nv)/2),st
-    me   = 0
+    me    = 0
     massa = 0
-    nnod = 1
+    nnod  = 1
 #ifdef VAR_MPI
     massa = infpar%master
-    nnod = infpar%lg_nodtot
-    me   = infpar%lg_mynum
+    nnod  = infpar%lg_nodtot
+    me    = infpar%lg_mynum
+    mode  = int(MPI_MODE_NOCHECK,kind=ls_mpik)
 #endif
       
     !Setting transformation variables for each rank
@@ -3558,7 +3568,7 @@ contains
     elseif(s==2)then
 #ifdef VAR_MPI
       call mem_alloc(w2,tl*no*no)
-      if(lock_outside)call arr_lock_wins(t2,'s',MPI_MODE_NOCHECK)
+      if(lock_outside)call arr_lock_wins(t2,'s',mode)
       call array_two_dim_1batch(t2,[1,2,3,4],'g',w2,2,fai,tl,lock_outside)
       if(lock_outside)call arr_unlock_wins(t2,.true.)
 
@@ -3605,7 +3615,7 @@ contains
 #ifdef VAR_MPI
       !call lsmpi_local_reduction(w1,int(nv*nv*no*no,kind=long),infpar%master)
       !call array_scatteradd_densetotiled(om2,1.0E0_realk,w1,int(no*no*nv*nv,kind=long),infpar%master)
-       if(lock_outside)call arr_lock_wins(om2,'s',MPI_MODE_NOCHECK)
+       if(lock_outside)call arr_lock_wins(om2,'s',mode)
        call array_two_dim_1batch(om2,[1,2,3,4],'a',w1,2,1,nv*nv,lock_outside,debug=.true.)
 #endif
     endif
@@ -3825,8 +3835,12 @@ contains
     integer :: mv((nv*nv)/2),st,pos1,dims(2)
     real(realk),pointer :: source(:,:),drain(:,:)
     logical :: lock_outside
+    integer(kind=ls_mpik) :: mode
 
     lock_outside=DECinfo%CCSD_MPICH
+#ifdef VAR_MPI
+    mode = int(MPI_MODE_NOCHECK,kind=ls_mpik)
+#endif
 
     scaleitby=0.5E0_realk
     second_trafo_step=.false.
@@ -4152,8 +4166,10 @@ contains
     if(s==4.or.s==3)then
       call daxpy(int(no*no*nv*nv),scaleitby,w2,1,omega%elm1,1)
     elseif(s==2)then
-      if(lock_outside)call arr_lock_wins(omega,'s',MPI_MODE_NOCHECK)
+#ifdef VAR_MPI
+      if(lock_outside)call arr_lock_wins(omega,'s',mode)
       call array_add(omega,scaleitby,w2,wrk=w3,iwrk=wszes(4))
+#endif
     endif
     call lsmpi_poke()
 
