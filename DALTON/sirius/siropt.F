@@ -1405,7 +1405,10 @@ C                     because the Fock matrix is not zero for these
             WRITE (LUPRI,1750) ISYM,(SCRA(IORBI+I),I=1,NLAST)
          END IF
   200 CONTINUE
-      IF (MOLDEN) CALL MOMOS(2,SCRA,DUMMY,DUMMY,DUMMY,DUMMY)
+
+!     save orbital energies for MOLDEN
+      IF (MOLDEN) CALL MOLDEN_MOS(2,SCRA,DUMMY,DUMMY,DUMMY,DUMMY)
+
 C     take care of 1-electron case and no virtuals case
       IF (EHOMO .EQ. -DBIG) EHOMO = D0
       IF (ELUMO .EQ.  DBIG) ELUMO = D0
@@ -1435,12 +1438,12 @@ C     take care of 1-electron case and no virtuals case
      *   ' MOLECULAR ORBITALS ARE NOT CANONICAL HARTREE-FOCK ORBITALS',
      *   ' Largest off-diagonal Fock matrix element is',VALCON
          IF (IPRINT .GT. 10) THEN
-            WRITE(LUPRI,'(/A)') ' THE TOTAL FOCK MATRIX :'
+            WRITE(LUPRI,'(/A)') ' The total Fock matrix :'
             CALL OUTPKB(FD,NORB,NSYM,1,LUPRI)
          END IF
       ELSE IF (IPRINT .GT. 10) THEN
          WRITE(LUPRI,'(/A/A,1P,D10.2)')
-     *      ' Deviation from canonical HARTREE-FOCK orbitals :',
+     *      ' Deviation from canonical Hartree-Fock orbitals :',
      *      ' Largest off-diagonal Fock matrix element is',VALCON
       END IF
 CVW Catch orbital energies

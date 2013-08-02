@@ -96,6 +96,23 @@ module tensor_basic_module
         arr%tdim(i)=tdims(i)
       enddo
     end subroutine arr_set_tdims
+  
+    subroutine arr_init_lock_set(arr)
+      implicit none
+      type(array),intent(inout) :: arr
+      real(realk) :: vector_size
+
+      if(.not.associated(arr%lock_set))then
+        call mem_alloc(arr%lock_set,arr%ntiles)
+!$OMP CRITICAL
+        vector_size = dble(size(arr%lock_set))
+        array_aux_allocd_mem = array_aux_allocd_mem + vector_size
+        array_memory_in_use  = array_memory_in_use  + vector_size
+!$OMP END CRITICAL
+        arr%lock_set = .false.
+      endif
+      
+    end subroutine arr_init_lock_set
 
     !> \brief to accurately account for mem on each node
     ! count mem allocated in each of the arrays many pointers
@@ -428,6 +445,14 @@ module tensor_basic_module
         array_memory_in_use    = array_memory_in_use  - vector_size
 !$OMP END CRITICAL
         call mem_dealloc(arr%addr_p_arr)
+      endif
+      if (associated(arr%lock_set))then
+!$OMP CRITICAL
+        vector_size = dble(size(arr%lock_set))
+        array_aux_deallocd_mem = array_aux_deallocd_mem + vector_size
+        array_memory_in_use    = array_memory_in_use  - vector_size
+!$OMP END CRITICAL
+        call mem_dealloc(arr%lock_set)
       endif
       if(array_aux_deallocd_mem > array_aux_allocd_mem) &
       &print *,"WARNING(arr_free_aux)more memory deallocated than allocated"

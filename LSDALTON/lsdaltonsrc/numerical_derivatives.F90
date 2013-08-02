@@ -16,7 +16,8 @@ use typedef, only: copy_molecule
 use matrix_operations, only :mat_init,mat_free
 use energy_and_deriv, only: get_energy, get_gradient
 use ls_util, only: ls_print_gradient
-
+private
+public :: get_numerical_hessian
 contains
 
 !> \brief 

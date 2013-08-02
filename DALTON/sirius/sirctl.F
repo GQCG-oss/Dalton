@@ -183,11 +183,11 @@ C
       IF (DORHF .OR. DOMP2) THEN
          MCTYPE   = 0
          IF (DOCINO .OR. DOCI .OR. DOMC) THEN
-            FLAG(25)=.FALSE.
+            FLAG(25) = .FALSE. ! do not write to SIRIFC if RHF followed by MC or CI
             IF (DOMP2) THEN
-               FLAG(16)= .FALSE.
-               PCMSV   = PCM
-               PCM     = .FALSE.
+               FLAG(16) = .FALSE.
+               PCMSV    = PCM
+               PCM      = .FALSE.
             END IF
          END IF
 C        ... do not write interface file if RHF or MP2 not final calc.

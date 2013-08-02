@@ -18,6 +18,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/compilers
     ${CMAKE_SOURCE_DIR}/cmake/math
     ${CMAKE_SOURCE_DIR}/cmake/mpi
+    ${CMAKE_SOURCE_DIR}/cmake/fortran-standard/
     ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_BINARY_DIR}
     )
@@ -54,6 +55,7 @@ include(SourcesDALTON)
 include(SourcesLSDALTON)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
+include(CheckFortranStandardCompatibility)
 include(ConfigExternal)
 include(ConfigOMP)
 include(ConfigMath)
