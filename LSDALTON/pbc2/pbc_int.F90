@@ -15,6 +15,8 @@ MODULE pbc_setup
   USE pbc_scfdiis
   USE pbc_interactions
   USE pbc_ff_contrib
+  private
+  public :: set_pbc_molecules
 contains
 
 !Subroutine to copy atoms and interface it with the integration code developed

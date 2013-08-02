@@ -1020,7 +1020,7 @@ C
  410     CONTINUE
          ISTR = ISTR + 5
  400  CONTINUE
-      IF (MOLDEN) CALL MOFREQ(EVEC,NUMMOD,NCORD,FREQAU)
+      IF (MOLDEN) CALL MOLDEN_FREQ(EVEC,NUMMOD,NCORD,FREQAU)
 C
 C     We punch out the normal coordinates on the file DALTON.NCA for
 C     use with the Gamess-US visualization software
