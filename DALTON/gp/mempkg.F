@@ -372,13 +372,13 @@ C
      *      ' expected           :',MEMID
          WRITE (LUWMEM,'(/A/A)')
      &      ' Dump of allocations before invalid memget id:',
-     &      ' IALLOC #    IDENT     KBASE         Length'
+     &      ' IALLOC #    IDENT       KBASE         Length'
          KALLOC = KFIRST
          IF (KALLOC .EQ. 1) KALLOC = 1 + LENID
          DO I = 1, IALLOC
             WRITE (IDENT8,'(A8)') WORK(KALLOC-LENID)
             WLREAL = WORK(KALLOC-LENID+1)
-            WRITE (LUWMEM,'(I5,2X,A8,2I15)') I,IDENT8,KALLOC,LREAL
+            WRITE (LUWMEM,'(I7,5X,A8,I13,I15)') I,IDENT8,KALLOC,LREAL
             KALLOC = KALLOC + LENID + LREAL
          END DO
 #ifdef DBG_LENID
