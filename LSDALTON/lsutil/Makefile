@@ -132,7 +132,7 @@ F90_OBJS = \
 	rsp-typedef.o\
 	response_prop_type.o\
         fundamental.o\
-	lspdm_tensor_operations.o
+	lspdm_tensor_operations.o\
 	papi.o
 
 #F03_OBJS = \
@@ -149,7 +149,8 @@ clean :
 
 
 #Makefile.depend depend: $(F03_OBJS:.o=.F03) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
-#	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -- $(F03_OBJS:.o=.F03) $(F90_Makefile.depend depend: $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
+#	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -- $(F03_OBJS:.o=.F03) $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c) > Makefile.depend
+Makefile.depend depend: $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c)
 	../tools/f90dep.pl $(CPPFLAGS) $(INCLUDES) -- $(F90_OBJS:.o=.F90) $(C_OBJS:.o=.c) > Makefile.depend
 
 include Makefile.depend
