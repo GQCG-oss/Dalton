@@ -25,7 +25,7 @@ use lsdalton_rsp_mod,only: get_excitation_energy, GET_EXCITED_STATE_GRADIENT
 use dec_main_mod!, only: get_total_mp2energy_from_inputs, get_mp2gradient_and_energy_from_inputs
 use optimlocMOD, only: optimloc
 private
-public :: Get_Energy, Get_Gradient
+public :: Get_Energy, Get_Gradient, get_num_grad
 !
 contains
 ! Get energy: calculates energy in a general way
