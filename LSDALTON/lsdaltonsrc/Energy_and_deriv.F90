@@ -27,7 +27,7 @@ use ls_util, only: ls_print_gradient
 use molecule_typetype, only: moleculeinfo
 use optimlocMOD, only: optimloc
 private
-public :: Get_Energy, Get_Gradient
+public :: Get_Energy, Get_Gradient, get_num_grad
 !
 contains
 ! Get energy: calculates energy in a general way

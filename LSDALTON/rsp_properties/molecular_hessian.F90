@@ -46,21 +46,6 @@ MODULE molecular_hessian_mod
                 & get_geom_first_order_RHS_HF
 
 
-  private   ::  get_first_order_rsp_vectors
-
-  public    ::  dummy_subroutine_hessian,&
-                & geohessian_set_default_config,&
-                & get_molecular_hessian, &
-                & get_first_geoderiv_overlap,&
-                & get_first_geoderiv_refDmat,&
-                & get_first_geoderiv_H1_mat, &
-                & get_first_geoderiv_Coulomb_mat, &
-                & get_first_geoderiv_exchange_mat, &
-                & get_first_geoderiv_twoElectron_mat, &
-                & get_first_geoderiv_Fock_mat,&
-                & get_geom_first_order_RHS_HF
-
-
 CONTAINS
 
   SUBROUTINE dummy_subroutine_hessian()
