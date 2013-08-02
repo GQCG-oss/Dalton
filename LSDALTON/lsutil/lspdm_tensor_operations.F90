@@ -1612,7 +1612,7 @@ module lspdm_tensor_operations_module
 #endif
   end subroutine array_gather
 
-  subroutine array_two_dim_1batch(arr,o,op,fort,n2comb,fel,tl,lock_outside)
+  subroutine array_two_dim_1batch(arr,o,op,fort,n2comb,fel,tl,lock_outside,debug)
     implicit none
     type(array),intent(in) :: arr
     real(realk),intent(inout) :: fort(*)
@@ -1620,6 +1620,7 @@ module lspdm_tensor_operations_module
     integer, intent(in),target :: o(arr%mode)
     integer, intent(in) :: fel,tl,n2comb
     logical, intent(in) :: lock_outside
+    logical, intent(in),optional :: debug
     integer :: fordims(arr%mode)
     integer,target :: fx(arr%mode)
     integer,target :: flx(arr%mode)
@@ -1637,10 +1638,14 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: cons_el_in_t,cons_els,tl_max,tl_mod
     integer(kind=8) :: cons_el_rd
     integer(kind=8) :: part1,part2,split_in, diff_ord,modp1,modp2
+    logical :: deb
     procedure(put_acc_el), pointer :: pga => null()
     procedure(put_acc_vec), pointer :: pgav => null()
 #ifdef VAR_MPI
     integer(kind=ls_mpik) :: source
+
+    deb = .false.
+    if(present(debug))deb = debug
 
     if( op/='a'.and.op/='p'.and.op/='g')then
       call lsquit("ERROR(array_two_dim_1batch):unknown choice of operator",-1)
@@ -1685,7 +1690,7 @@ module lspdm_tensor_operations_module
       comb2          = comb2 * fordims(i)
     enddo
 
-    if(arr%mode==4.and.n2comb==3.and.o(1)==1.and.o(2)==2.and.o(3)==3)then
+    if(arr%mode==4.and.n2comb==3.and.o(1)==1.and.o(2)==2.and.o(3)==3.and..not.deb)then
       !ATTENTION ONLY WORKS IF TL <= cons_el_in_t --> always given if order = 1,2,3,4
       !if modification needed for other types, compare the elseif statement
       !where n2comb==2, this has been implemented generally
@@ -1757,7 +1762,7 @@ module lspdm_tensor_operations_module
       for4 => null()
 
 
-    elseif(arr%mode==4.and.n2comb==2)then
+    elseif(arr%mode==4.and.n2comb==2.and..not.deb)then
       st_tiling = 4
       do i = 1, 4
         if(arr%ntpm(i)/=1)then
@@ -1800,23 +1805,24 @@ module lspdm_tensor_operations_module
       tlidx = 1
       mult1 = arr%ntpm(1) * arr%ntpm(2)
       mult2 = arr%ntpm(1) * arr%ntpm(2) * arr%ntpm(3)
+   
+      fx=1
+      call get_midx(fel,fx(1:n2comb),fordims(1:n2comb),n2comb)
+      do i = 1, 4
+        idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
+      enddo
 
-      if(cons_el_in_t<tl)then
+      !DETERMINE THE PARTS
+      part1 = 1
+      part2 = 1
+      if(cons_el_rd<tl)then
         cons_els = cons_el_rd
-        tl_max = (tl / cons_els) * cons_els
-        tl_mod = mod(tl ,cons_els)
-        fx=1
-        call get_midx(fel,fx(1:n2comb),fordims(1:n2comb),n2comb)
-        do i = 1, 4
-          idxt(i)   = mod((fx(u_ro(i))-1), arr%tdim(i)) + 1
-        enddo
-        part1 = 1
-        part2 = 1
         do i = 1,min(diff_ord,2)
           split_in = i
-          if(i>=diff_ord)then
+          if(i>=2)then
             part1 = part1 * (arr%tdim(i) - idxt(i) + 1)
             part2 = part2 * (idxt(i) - 1)
+            
             exit
           else
             part1 = part1 * arr%tdim(i)
@@ -1825,12 +1831,38 @@ module lspdm_tensor_operations_module
         enddo
       else
         cons_els = tl
-        tl_max = (tl / cons_els) * cons_els
-        tl_mod = mod(tl,cons_els)
-        part1 = cons_els
-        part2 = 0
+        do i = 1,min(diff_ord,2)
+          split_in = i
+          if(i>=2)then
+            part1 = part1 * (arr%tdim(i) - idxt(i) + 1)
+            part2 = part2 * (idxt(i) - 1)
+            exit
+          else
+            part1 = part1 * arr%tdim(i)
+            part2 = part2 * arr%tdim(i)
+          endif
+        enddo
+        
+        if(infpar%lg_mynum==4)then
+          print *,part1,part2,tl
+        endif
+        part1 = max(tl,tl - part1)
+        part2 = max(0, tl - part1)
+        !part1 = arr%tdim(1) - idxt(1) + 1
+        !part2 = tl - (arr%tdim(1) - idxt(1) + 1)
       endif
+
       tl_max = (tl / cons_els) * cons_els
+      tl_mod = mod(tl ,cons_els)
+
+      if(infpar%lg_mynum==4)then
+        print *,fel,st_tiling,cons_el_in_t,diff_ord,cons_el_rd
+        print *,tl,part1,part2,tl_max,tl_mod
+        print *,fx
+        print *,idxt
+        !stop 0 
+      endif
+      call lsmpi_barrier(infpar%lg_comm)
 
 
       call ass_D1to3(fort,p_fort3,[tl,fordims(3),fordims(4)])
@@ -1992,9 +2024,9 @@ module lspdm_tensor_operations_module
                 cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
                          &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
         
-                call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
+                call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
                 call pga(p_fort3(c1,for3,for4),cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
-                call lsmpi_win_unlock(tinfo(ctidx,1),arr%wi(ctidx))
+                call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
               enddo
             enddo
           enddo
@@ -2019,10 +2051,10 @@ module lspdm_tensor_operations_module
                          &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
         
                 !FOR PART 1
-                call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
+                call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
                 call pgav(p_fort3(c1:c1+part1-1,for3,for4),part1,&
                 &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
-                call lsmpi_win_unlock(tinfo(ctidx,1),arr%wi(ctidx))
+                call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
               enddo
             enddo
           enddo
@@ -2046,10 +2078,10 @@ module lspdm_tensor_operations_module
                            &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
          
                   !FOR PART 2
-                  call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
+                  call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
                   call pgav(p_fort3(c1:c1+part2-1,for3,for4),part2,&
                   &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
-                  call lsmpi_win_unlock(tinfo(ctidx,1),arr%wi(ctidx))
+                  call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
                 enddo
               enddo
             enddo
@@ -2076,10 +2108,10 @@ module lspdm_tensor_operations_module
                 cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
                          &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
 
-                call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
+                call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
                 call pgav(p_fort3(tl_max+1:tl_max+part1,for3,for4),modp1,&
                 &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
-                call lsmpi_win_unlock(tinfo(ctidx,1),arr%wi(ctidx))
+                call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
               enddo
             enddo
 
@@ -2101,10 +2133,10 @@ module lspdm_tensor_operations_module
                   cidxt  = idxt(1) + (idxt(2)-1) * tinfo(ctidx,2) + (idxt(3)-1) *&
                            &tinfo(ctidx,6) + (idxt(4)-1) * tinfo(ctidx,7)
              
-                  call lsmpi_win_lock(tinfo(ctidx,1),arr%wi(ctidx),'s')
+                  call lsmpi_win_lock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx),'s')
                   call pgav(p_fort3(tl_max+modp1+1:tl_max+tl_mod,for3,for4),modp2,&
                   &cidxt,int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
-                  call lsmpi_win_unlock(tinfo(ctidx,1),arr%wi(ctidx))
+                  call lsmpi_win_unlock(int(tinfo(ctidx,1),kind=ls_mpik),arr%wi(ctidx))
                 enddo
               enddo
             endif
@@ -2120,7 +2152,9 @@ module lspdm_tensor_operations_module
 
     else
  
-      print *,"WARINING(array_two_dim_1batch):this is a slow fallback option"
+      !ONLY PRINT IF DEBUG IS NOT GIVEN, ELSE THE USER IS ASSUMED TO KNOW THAT
+      !IT IS SLOWER
+      if(.not.deb)print *,"WARINING(array_two_dim_1batch):this is a slow fallback option"
 
       do c2 = 1, comb2
         fx = 0
@@ -2717,14 +2751,17 @@ module lspdm_tensor_operations_module
     integer :: nelmsit
     integer(kind=8) ::i,b,e,maxntiinwrk,mod_el
     integer :: fullfortdims(arr%mode)
-#ifdef VAR_MPI
 
     do i=1,arr%mode
       fullfortdims(o(i)) = arr%dims(i)
     enddo
 
-    me   = infpar%lg_mynum
-    nnod = infpar%lg_nodtot
+    me = 0
+    nnod=1
+#ifdef VAR_MPI
+    me=infpar%lg_mynum
+    nnod=infpar%lg_nodtot
+#endif
 
     !compute the maximum number of tiles to be stored in the workspace
     maxntiinwrk = int(iwrk/arr%tsize,kind=8)
@@ -2759,10 +2796,11 @@ module lspdm_tensor_operations_module
       b = 1       + mod(i-1,maxntiinwrk) * arr%tsize
       e = nelmsit + mod(i-1,maxntiinwrk) * arr%tsize
       call tile_from_fort(mult,A,fullfortdims,arr%mode,0.0E0_realk,wrk(b),int(i),arr%tdim,o)
+#ifdef VAR_MPI
       call array_accumulate_tile(arr,int(i),wrk(b:e),nelmsit,lock_set=arr%lock_set(i))
+#endif
     enddo
 
-#endif
   end subroutine add_data2tiled_intiles_explicitbuffer
 
   subroutine cp_data2tiled_lowmem(arr,A,dims,mode)
