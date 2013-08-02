@@ -5123,6 +5123,7 @@ C
 #include "maxash.h"
 #include "maxorb.h"
 C
+#include "gnrinf.h"
 #include "infinp.h"
 #include "infvar.h"
 #include "infind.h"
@@ -5137,12 +5138,10 @@ C
 #include "dfterg.h"
 #include "dftacb.h"
 #include "siripc.h"
-#include "gnrinf.h"
 #include "pcmlog.h"
 #include "spinfo.h"
 C
       CHARACTER*6 RDMOLB(12)
-      CHARACTER*12  WFTYPE
       DATA RDMOLB/'--1-- ','--2-- ','FORM18','FORM12','--5-- ',
      &            '--6-- ','OLDORB','H1DIAG','NEWORB','SIRIFC',
      &            'EHT   ','EWMO  '/
@@ -5312,12 +5311,20 @@ C          to get here unless someone modifies SIRIUS incorrectly
          END IF
          IF (FLAG(23)) THEN
             WRITE(IWUNIT,1051)
-     *      '      Selected active-active rotations included by user.'
+     &      '      Selected active-active rotations included by user.'
          END IF
       ELSE IF ( DOMP2 ) THEN
          IF (WFTYPE .EQ. ' ') WFTYPE='MP2'
-         WRITE (IWUNIT,1050)
-     &      'MP2, Moeller-Plesset second-order calculation.'
+         IF (MP2_SCS) THEN
+            WRITE(IWUNIT,1050) 'SCS-MP2'
+         ELSE IF (MP2_SOS) THEN
+            WRITE(IWUNIT,1050) 'SOS-MP2'
+         ELSE
+            WRITE(IWUNIT,1050) 'MP2, '//
+     &         'closed-shell Moeller-Plesset second-order calculation.'
+         END IF
+         IF (IOPRHF .NE. 0 .OR. HSROHF) WRITE (IWUNIT,1051)
+     &      '      (ROHF open shell orbitals are not include.)'
          NUMRUN_LOCAL = NUMRUN_LOCAL - 1
       ELSE IF ( DOCCSD) THEN
          IF (WFTYPE .EQ. ' ') WFTYPE='CC'
