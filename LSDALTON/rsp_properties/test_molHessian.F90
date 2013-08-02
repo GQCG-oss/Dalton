@@ -21,7 +21,14 @@ MODULE test_molecular_hessian_mod
   use gen1int_host
 #endif
   private
-  public :: test_Hessian_contributions
+!  private ::  test_first_geoderiv_overlap,&
+!            & test_first_geoderiv_H1_mat,&
+!            & test_first_geoderiv_refDmat,&
+!            & test_first_geoderiv_Coulomb,&
+!            & test_first_geoderiv_Exchange
+  public  ::  dummy_subroutine_hessian_test,&
+            & test_Hessian_contributions
+
 CONTAINS
 
   SUBROUTINE dummy_subroutine_hessian_test()
