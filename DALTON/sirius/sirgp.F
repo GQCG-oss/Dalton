@@ -2178,7 +2178,7 @@ C           this is an old LUIT1 file (before 5-Aug-1986)
 C        else only reference vector saved
          END IF
          CALL READT (LUIT1,NCONF,CREF)
-      ELSE
+      ELSE IF (NCONF .EQ. 1) THEN
          CREF(1) = D1
       END IF
 C
