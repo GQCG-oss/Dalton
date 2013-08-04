@@ -89,8 +89,8 @@ C
       KFREE  = KFRSAV
       LFREE  = LFRSAV
 C .. 1.1 .. (SIRCNO)
-      CALL MEMGET('REAL',KCINDX,LCINDX,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KAOCC,NASHT,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','CINDX',KCINDX,LCINDX,WRK,KFREE,LFREE)
+      CALL MEMGET2('REAL','AOCC' ,KAOCC ,NASHT, WRK,KFREE,LFREE)
 C
 C Step 1: Get CI index information (CINDX)
 C         Read molecular orbitals (CMO) from disk
@@ -117,6 +117,7 @@ C
      *   WRITE (LUW4,'(//A/A)')
      *   ' Occupancies of natural active orbitals',
      *   ' --------------------------------------'
+
       CALL DZERO(OCC,NORBT)
       IF (NASHT .EQ. 1) WRK(KAOCC) = NACTEL
       IAOCC = KAOCC-1
@@ -170,9 +171,9 @@ C     CALL SIRSAV (KEYWRD,CMO,IBNDX,REDL,EVEC,XKAP,INDXCI,WRK,LFREE)
          CALL MOLLAB('NEWORB  ',LUIT1,lupri)
          READ (LUIT1)
          CALL GETDAT(LAB123(2),LAB123(3))
-         WRITE (LUIT1) LAB123(1),LAB123(2),'(SIRCAN)','NATOCCAC'
-         NAT4 = MAX(NASHT,4)
-         CALL WRITT(LUIT1,NAT4,WRK(KAOCC))
+         WRITE (LUIT1) LAB123(1),LAB123(2),'(SIRCAN)','NATOCC  '
+         NORBT4 = MAX(NORBT,4)
+         CALL WRITT(LUIT1,NORBT4,OCC)
          WRITE (LUIT1) LAB123,'EODATA  '
          REWIND LUIT1
       END IF

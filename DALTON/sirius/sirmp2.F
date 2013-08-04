@@ -269,6 +269,7 @@ C
       KFREE = KFRSAV
       LFREE = LFRSAV
       CALL MEMGET('REAL',KORBEN,NORBT ,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KOCCUP,NORBT ,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KDONE ,N2ORBX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMO  ,NCMOT ,WRK,KFREE,LFREE)
       CALL MEMGET('INTE',KIADR1,MAXVIR*MAXOCC,WRK,KFREE,LFREE)
@@ -588,7 +589,8 @@ C
      &    ,' contributions are NOT taken into account.'
      &    ,' *******************************************************'
 C
-      CALL NATORB(IPRMP2,WRK(KDONE),WRK(KCMO),WRK(KFREE),LFREE)
+      CALL NATORB(IPRMP2,WRK(KOCCUP),WRK(KDONE),WRK(KCMO),
+     &            WRK(KFREE),LFREE)
 C
 #ifdef MOD_SRDFT
 C     ======================================================
@@ -628,7 +630,8 @@ C
 C
 C        Get the SRMP2_SELFCONSISTENT natural orbitals and occ. numbers
 C
-         CALL NATORB(IPRMP2,WRK(KDONE),WRK(KCMO),WRK(KFREE),LFREE)
+         CALL NATORB(IPRMP2,WRK(KOCCUP),WRK(KDONE),WRK(KCMO),
+     &               WRK(KFREE),LFREE)
 C
 C
       END IF
@@ -639,6 +642,12 @@ C     Save MP2 orbitals for MCSCF/CI if not SOPPA
 C
       IF (.NOT.FLAG(25)) THEN
          CALL NEWORB('MP2SAVE ',WRK(KCMO),.TRUE.)
+         CALL MOLLAB('EODATA  ',LUIT1,LUPRI)
+         BACKSPACE LUIT1
+         WRITE(LUIT1) '********MP2SAVE         NATOCC  '
+         NORBT4 = MAX(NORBT,4)
+         CALL WRITT(LUIT1,NORBT4,WRK(KOCCUP))
+         WRITE(LUIT1) '********MP2SAVE         EODATA  '
       END IF
 C
    20 CONTINUE
@@ -751,7 +760,8 @@ C
      &    ,' contributions are NOT taken into account.'
      &    ,' *******************************************************'
 C
-         CALL NATORB(IPRMP2,WRK(KDONEF),WRK(KCMO1),WRK(KFREE),LFREE)
+         CALL NATORB(IPRMP2,WRK(KOCCUP),WRK(KDONEF),WRK(KCMO1),
+     &               WRK(KFREE),LFREE)
 C
 C        Manu June 07 : If MP2SRDFT calculation ...
 C
@@ -789,7 +799,8 @@ C
 C
 C           Get the natural orbitals and occ. numbers
 C
-            CALL NATORB(IPRMP2,WRK(KDONEF),WRK(KCMO1),WRK(KFREE),LFREE)
+            CALL NATORB(IPRMP2,WRK(KOCCUP),WRK(KDONEF),WRK(KCMO1),
+     &                  WRK(KFREE),LFREE)
 C
 #endif
 C
@@ -822,7 +833,7 @@ C
       RETURN
       END
 C  /* Deck natorb */
-      SUBROUTINE NATORB(IPRNO,DONE,CMO,WRK,LFRSAV)
+      SUBROUTINE NATORB(IPRNO,OCCUP,DONE,CMO,WRK,LFRSAV)
 C
 C PURPOSE : DETERMINE NATURAL ORBITALS
 C
@@ -830,7 +841,7 @@ C INPUT   : DONE IS TOTAL ONE ELECTRON CHARGE DENSITY MATRIX
 C
 C
 #include "implicit.h"
-      DIMENSION DONE(NORBT,NORBT),CMO(*),WRK(*)
+      DIMENSION OCCUP(NORBT),DONE(NORBT,NORBT),CMO(*),WRK(*)
 C
       PARAMETER ( D0 = 0.0D0 )
 C
@@ -851,7 +862,6 @@ C
       KFRSAV = 1
       KFREE  = KFRSAV
       LFREE  = LFRSAV
-      CALL MEMGET('REAL',KORBNO,NORBT ,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KDMAT ,NNORBT,WRK,KFREE,LFREE)
       CALL MEMGET('WORK',KWRK1 ,LWRK1 ,WRK,KFREE,LFREE)
       IJ     = 0
@@ -881,28 +891,28 @@ C
          OCCSUM = D0
          DO 175 I=1,NORBI
             II = IIORBI + (I*I+I)/2
-            WRK(KORBNO-1+IORBI+I)=WRK(KDMAT -1+II)
-            OCCSUM = OCCSUM + WRK(KORBNO-1+IORBI + I)
+            OCCUP(IORBI + I) = WRK(KDMAT-1 + II)
+            OCCSUM = OCCSUM + OCCUP(IORBI + I)
   175    CONTINUE
 #if !defined (VAR_MP2SUPSYM)
-         CALL ORDER2(CMO(1+ICSYM),WRK(KORBNO+IORBI),NORBI,NBASI)
+         CALL ORDER2(CMO(1+ICSYM),OCCUP(1+IORBI),NORBI,NBASI)
 #else
 C     HJ : implement SUPSYM in MP2 ????? 940823 hjaaj
 C          Done, Aug. 2004 /hjaaj
-         CALL ORD2SS(CMO(1+ICSYM),WRK(KORBNO+IORBI),
+         CALL ORD2SS(CMO(1+ICSYM),OCCUP(1+IORBI),
      &               ISSMO(1+IORBI),NORBI,NBASI)
 #endif
          IF (IPRNO .GE. 1) THEN
             OCCRHF = 2 * NRHF(ISYM) + NASH(ISYM)
             WRITE (LUPRI,1840) ISYM,OCCSUM,OCCRHF,OCCSUM-OCCRHF
 #if !defined (VAR_MP2SUPSYM)
-            WRITE (LUPRI,1850) (WRK(KORBNO-1+IORBI+I),I=1,NORBI)
+            WRITE (LUPRI,1850) (OCCUP(IORBI+I),I=1,NORBI)
 #else
             IF (.NOT.SUPSYM) THEN
-               WRITE (LUPRI,1850) (WRK(KORBNO-1+IORBI+I),I=1,NORBI)
+               WRITE (LUPRI,1850) (OCCUP(IORBI+I),I=1,NORBI)
             ELSE
                WRITE (LUPRI,1851)
-     &            (WRK(KORBNO-1+IORBI+I),ISSMO(IORBI+I),I=1,NORBI)
+     &            (OCCUP(IORBI+I),ISSMO(IORBI+I),I=1,NORBI)
             END IF
 #endif
          END IF
@@ -1613,7 +1623,7 @@ C Open the FNSIFC file
      &   'UNKNOWN',' ','UNFORMATTED',IDUMMY,.FALSE.)
 C Append MP2->SOPPA info at the end of the file
       REWIND (LUSIFC)
-      CALL MOLLAB(LABEOD,LUSIFC,LUERR)
+      CALL MOLLAB(LABEOD,LUSIFC,LUPRI)
       BACKSPACE (LUSIFC)
 C Write "MP2INFO " label
       WRITE (LUSIFC) LAB123,LMP2INFO
