@@ -717,7 +717,7 @@ C   INFVAR : NCONF,NWOPT,NVAR
 C   INFOPT : BETA,RTRUST,NREDL,NROOTC,JROOT(*),GRDNRM
 C   INFDIM : LPHPMX
 C   INFTAP : LUIT2,LUIT3,LUIT5
-C   INFPRI : LUERR
+C   INFPRI : 
 C
 #include "maxorb.h"
 #include "priunit.h"
@@ -2029,7 +2029,7 @@ C
       IF (NROOTX .GT. 0) THEN
          IF (FIRST) THEN
             REWIND LUIT1
-            CALL MOLLB2(LABIT1,LABINF,LUIT1,LUERR)
+            CALL MOLLB2(LABIT1,LABINF,LUIT1,LUPRI)
             READ (LABINF(1),'(4X,I4)') JSTA
             IF (JSTA .LT. 0) THEN
                NWARN = NWARN + 1
@@ -2267,7 +2267,7 @@ C        else if (orbital-type) then
  1920       CONTINUE
          ELSE
             IF (IBNDX(K).NE.JBONDX .AND. IBNDX(K).NE.JBCNDX) THEN
-               WRITE (LUERR,'(/1X,A,2I5)')
+               WRITE (LUPRI,'(/1X,A,2I5)')
      *           'ORTBVC, illegal IBNDX value; K,IBNDX(K) =',K,IBNDX(K)
                CALL QUIT('SIRIUS ERROR: illegal IBNDX value in ORTBVC')
             END IF
