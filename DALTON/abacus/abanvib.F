@@ -135,7 +135,7 @@ CRF 12/11 - 12 Test keywords for splitting force field from property derivatives
             GOTO 100
  8       CONTINUE  ! .P-BASIS
 CRF This only works if basis set library is used
-            IF (.NOT. MLINE(1)(1:5) .EQ. 'BASIS') THEN
+            IF (MLINE(1)(1:5) .NE. 'BASIS') THEN
                WRITE(LUPRI,'(/A,/A)')
      &           '*** ERROR *** ' //
      &           'Keyword .P-BASIS only works  when ' //

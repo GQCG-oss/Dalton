@@ -44,6 +44,7 @@ C
       DONEIW=.FALSE.
       DONEIX=.FALSE.
       IXYZPRINTS = 0
+      IF (LUMOLDEN .GT. 0) CALL GPCLOSE(LUMOLDEN,'DELETE') ! we may have changed basis set
       CALL GPOPEN(LUMOLDEN,'molden.inp','UNKNOWN',' ',
      &            'FORMATTED',IDUMMY,.FALSE.)
       REWIND LUMOLDEN
@@ -55,6 +56,7 @@ C
 !     (This is a lot easier than checking in SIRIUS and during geometry optimization which set of MO coefficients
 !      is the final. We cannot use SIRIUS.RST or SIRIFC as they are now for this, because they do not always contain
 !      the orbital energy and occupation information. /hjaaj Aug. 2013)
+      IF (LUMOLDEN_MOS .GT. 0) CALL GPCLOSE(LUMOLDEN_MOS,'DELETE')
       CALL GPOPEN(LUMOLDEN_MOS,'molden_MOS.tmp','UNKNOWN',' ',
      &            'FORMATTED',IDUMMY,.FALSE.)
       REWIND LUMOLDEN_MOS
@@ -107,6 +109,7 @@ C
   300 CONTINUE
 
  9000 CONTINUE
+      WRITE(LUMOLDEN,'(A)') '[End of Molden output from Dalton2013]'
       CALL GPCLOSE(LUMOLDEN    ,'KEEP')
       CALL GPCLOSE(LUMOLDEN_MOS,'KEEP')
       RETURN
@@ -158,8 +161,8 @@ c
                ICENT = ICENT + 1
                NDEG  = NUCDEG(ICENT)
                ILL   = 0
-               DO L = 1, NDEG
-                  WRITE (LUMOLDEN,'(/I5,A2)') ICENTO+L-1,' 0'
+               DO, L = 1, NDEG
+                  WRITE (LUMOLDEN,'(I5,A2)') ICENTO+L-1,' 0'
                   KBCH  = IBLOCK
                   IF (L.EQ.1) THEN
                      IPROLD  = IPRIM
@@ -179,10 +182,6 @@ c
                         ITYP = ITYP + 1
                         DO 420 INNRC = 1, NNRC
 
-Clf                  DO 400 L = 1, NDEG
-Clf                     IF (.NOT. INON .EQ. I .OR. .NOT. ILL .EQ. L )
-Clf                     INON = I
-Clf                     ILL  = L
                            WRITE (LUMOLDEN,'(1X,A1,1X,I3,A5)')
      &                          GTOTMP, NNUC, ' 1.00'
                            DO 410 INNUC = 1, NNUC
@@ -191,10 +190,10 @@ Clf                     ILL  = L
      &                             CPRIMU(INNUC,INNRC,KBCH)
 
  410                       CONTINUE
-Clf 400              CONTINUE
  420                    CONTINUE
  200                 CONTINUE
-                  END DO
+                     WRITE(LUMOLDEN,'()')
+                  END DO ! L = 1, NDEG
                   ICENTO = ICENTO + NDEG
  110           CONTINUE
             IBLOCK = IBLOCK + NBLCK(I)
@@ -370,9 +369,10 @@ C           2 : save orbital energies in OREN in molde.h
 ! ccom.h: SPHNRM
 #include "ccom.h"
 
-      LOGICAL WRTELEM,WRTZERO
-      DIMENSION CMO(*), OCCUP(*), ORBTRA(*), UCMO(NBAST,NORBT)
-      DIMENSION ORBVEC(*)
+      LOGICAL     WRTELEM,WRTZERO
+      CHARACTER*8 MDATE, MTIME
+      DIMENSION   CMO(*), OCCUP(*), ORBTRA(*), UCMO(NBAST,NORBT)
+      DIMENSION   ORBVEC(*)
 
 #include "chrsgn.h"
 
@@ -380,10 +380,11 @@ C           2 : save orbital energies in OREN in molde.h
 
          REWIND LUMOLDEN_MOS
 
-         WRITE(LUMOLDEN_MOS,'(A/2A)')
+         CALL GETDAT(MDATE,MTIME)
+         WRITE(LUMOLDEN_MOS,'(A/2A,2X,A,2X,A)')
      &      '[TITLE]',
      &      '*** Dalton2013 interface to Molden, wave function type : ',
-     &         WFTYPE
+     &         WFTYPE,MDATE,MTIME
 
          CALL MOLDEN_ATOMS('ATOM',LUMOLDEN_MOS) ! atomic coordinates are OK, also for Cartesian GTOs ;-)
 
