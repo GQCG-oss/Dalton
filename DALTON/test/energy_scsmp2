@@ -148,8 +148,8 @@ ERROR[6]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy:
 # hjaaj Jan 05: decreased number of digits as MP2 energy is only of lin.acc.
-CRIT1=` $GREP "Scaled MP2 second order energy : * \-76\.2268745" $log | wc -l` # SCS-MP2 energy
-#CRIT1=`$GREP "MP2 second order energy : * \-76\.2306668" $log | wc -l` # normal MP2 energy
+CRIT1=` $GREP "Scaled MP2 second order energy *: * \-76\.2268745" $log | wc -l` # SCS-MP2 energy
+#CRIT1=`$GREP "MP2 second order energy *: * \-76\.2306668" $log | wc -l` # normal MP2 energy
 
 TEST[7]=`expr $CRIT1`
 CTRL[7]=1

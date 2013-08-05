@@ -111,8 +111,8 @@ CTRL[2]=10
 ERROR[2]="GEOMETRY NOT READ CORRECTLY"
 
 # Energies
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-76\.02568148[0-9][0-9]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-76\.23066683[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-76\.02568148[0-9][0-9]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy *\: * \-76\.23066683[0-9][0-9]" $log | wc -l`
 TEST[3]=`expr	$CRIT1 \+ $CRIT2`
 CTRL[3]=2
 ERROR[3]="ENERGIES NOT CORRECT"
