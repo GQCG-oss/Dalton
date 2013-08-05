@@ -4009,7 +4009,9 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
+#ifdef VAR_MPI
     call lsmpi_put_realkV_wrapper8(buf,nelms,pos,dest,win)
+#endif
   end subroutine lsmpi_put_realkV_w8
   subroutine lsmpi_get_realkV_w8(buf,nelms,pos,dest,win)
     implicit none
@@ -4018,7 +4020,9 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
+#ifdef VAR_MPI
     call lsmpi_get_realkV_wrapper8(buf,nelms,pos,dest,win)
+#endif
   end subroutine lsmpi_get_realkV_w8
   subroutine lsmpi_acc_realkV_w8(buf,nelms,pos,dest,win)
     implicit none
@@ -4027,7 +4031,9 @@ module lspdm_tensor_operations_module
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
+#ifdef VAR_MPI
     call lsmpi_acc_realkV_wrapper8(buf,nelms,pos,dest,win)
+#endif
   end subroutine lsmpi_acc_realkV_w8
 end module lspdm_tensor_operations_module
 
