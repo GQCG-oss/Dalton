@@ -1,3 +1,6 @@
+# The scripts add_dalton_test() and add_dalton_perl_test() are defined in TestsCommon.cmake
+# ALL tests here should contain the label "dalton"
+
 add_dalton_test(gen1int_fluorobenzene_cart  "dalton;gen1int;short;parallel")
 add_dalton_test(gen1int_fluorobenzene_spher "dalton;gen1int;short;parallel")
 add_dalton_test(gen1int_water_cart          "dalton;gen1int;short;parallel")
@@ -204,7 +207,7 @@ add_dalton_test(cc_rsp_twophot5               "dalton;cc;short")
 add_dalton_test(cc_rsp_twophotb               "dalton;cc;short")
 add_dalton_test(cc_grad                       "dalton;cc;short")
 add_dalton_test(cc_geoopt_mp2                 "dalton;cc;short")
-add_dalton_test(cc_fop_cc3                    "dalton;cc;short")
+add_dalton_test(cc_fop_cc3                    "dalton;cc;cc3;short")
 add_dalton_test(cc_rsp_ctocd                  "dalton;cc;short")
 add_dalton_test(cc_grad_ccpt_hf               "dalton;cc;short")
 add_dalton_test(cc_geopt_ccpt_hf              "dalton;cc;short")
@@ -425,8 +428,8 @@ add_dalton_test(cc2_r12_aux_ch4_a2            "dalton;ccr12;longccr12")
 add_dalton_test(cc2_r12_aux_ch4_sym_a2        "dalton;ccr12;longccr12")
 add_dalton_test(cc2_r12_aux_ch4_sym_a3        "dalton;ccr12;longccr12")
 add_dalton_test(cc2_r12_aux_benzene_sym_fop   "dalton;ccr12;longccr12")
-add_dalton_test(cc3r12_n2_sym_exc             "dalton;ccr12;longccr12")
-add_dalton_test(cc3r12_n2_sym_exc_lhtr        "dalton;ccr12;longccr12")
+add_dalton_test(cc3r12_n2_sym_exc             "dalton;ccr12;cc3;longccr12")
+add_dalton_test(cc3r12_n2_sym_exc_lhtr        "dalton;ccr12;cc3;longccr12")
 add_dalton_test(cc2_r12_aux_ch4_cbs2a         "dalton;ccr12;longccr12")
 
 add_dalton_test(dpt_hf                        "dalton;dpt")
