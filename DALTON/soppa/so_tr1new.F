@@ -21,6 +21,10 @@ C
       INTEGER   POINT(LPOINT)
       DIMENSION DENSIJ(LDENSIJ), DENSAB(LDENSAB)
       DIMENSION WORK(LWORK)
+
+
+
+
 C
 C------------------
 C     Add to trace.

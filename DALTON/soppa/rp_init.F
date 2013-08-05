@@ -228,7 +228,7 @@ C
       CCSLV  = .FALSE.
       NCCSLV = 0
 
-      HERDIR = .FALSE.
+      HERDIR = .FALSE. !I've commented this out, put it back in TODO
 
       ANAAOD   = .FALSE.
       MAXRED   = 200

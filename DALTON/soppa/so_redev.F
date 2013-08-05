@@ -17,8 +17,12 @@ C NEXCI           # of excitation energies to be calculated in the
 C                 given symmetry
 C NOLDTR          # of old trial vectors
 C NNEWTR          # of new trial vectors
-C
-C23456789012345678901234567890123456789012345678901234567890123456789012
+C ISYMTR
+C REDE
+C REDS
+C LREDOL
+C EXVAL
+C LEXVAL
 C
 #include "implicit.h"
 #include "priunit.h"
@@ -173,7 +177,9 @@ C
       CALL DCOPY(LREDE*LREDE,REDE,1,WORK(KREDES),1)
       CALL DCOPY(LREDS*LREDS,REDS,1,WORK(KREDSS),1)
 C
-      MATZ  = 1
+C Online documentation for EISPACK routine RGG on netlib.org/eispack/rgg.f
+C WORK(KEIVEC) is the output with real and imaginary parts of the eigenvectors.
+      MATZ  = 1 
       CALL RGG(LREDE,NTRIAL,REDE,REDS,WORK(KALFAR),WORK(KALFAI),
      &         WORK(KBETA),MATZ,WORK(KEIVEC),IERR)
 C

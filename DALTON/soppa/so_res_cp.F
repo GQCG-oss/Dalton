@@ -336,7 +336,7 @@ C              Work space allocation no. 3.
 C------------------------------------------
 C
                LXINT  = NDISAO(ISYDIS)
-               LRECNR = ( (NBUF -1) / IRAT ) + 1
+               LRECNR = ( (NBUFX(0) -1) / IRAT ) + 1
 C
                KXINT   = KEND2
                KRECNR  = KXINT  + LXINT

@@ -108,6 +108,25 @@ C
       RETURN
       END
 C  /* Deck eridi2 */
+C  F.Beyer July 2013 added comments on routine name and parameters after
+C  private communication with Dalton developers. This is not canon!
+C  Make sure this information is correct if it's imperative for whatever
+C  you are programming.
+C
+C  ERIDI2 means: Electron Repulsion Integrals, Direct method.
+
+C  NGDER: Order of Geometrical Derivate
+C
+C  NBDER: Order of Magnetic Field Derivative
+C
+C  CCFBT: Contraction Coefficients for all primitive orbitals in the 
+C      basis set
+C
+C  INDXBT: Is used in the sorting algorithm  for the two-electron 
+C     integrals. Dimensions of INDXBT is MXSHEL*MXCONT*8. INDXBT 
+C     contains the adresses for the primitive orbitals.
+C
+
       SUBROUTINE ERIDI2(ICALL,INDEXA,NUMDIS,NGDER,NBDER,
      &                  IODCL1,IODCL2,
      &                  IODBC1,IODBC2,RODBC1,RODBC2,
@@ -129,7 +148,7 @@ C  /* Deck eridi2 */
      &          RODPP1(NODPP1,NRTPP), RODPP2(NODPP2,NRTPP),
      &          INDEXA(*), CCFBT(*), INDXBT(*), WORK(LWORK)
       LOGICAL   OLDDX
-#include "ccom.h"
+#include "ccom.h" 
 #include "cbieri.h"
 #include "ericom.h"
 #include "erithr.h"
@@ -153,6 +172,7 @@ C
       ELSE
          UNDIFF = .FALSE.
       END IF
+C
       WRTINT = .TRUE.
       FCKINT = .FALSE.
       EXPERI = .FALSE.

@@ -304,7 +304,7 @@ C    &                             IPRINT)
                   DTIME     = SECOND()  - DTIME
                   SOTIME(9) = SOTIME(9) + DTIME
 C
-                  LRECNR = ( (NBUF -1) / IRAT ) + 1
+                  LRECNR = ( (NBUFX(0) -1) / IRAT ) + 1
 C
                   KRECNR  = KEND2
                   KEND2   = KRECNR + LRECNR

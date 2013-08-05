@@ -168,6 +168,7 @@ C--------------------------------------------------------------
 C
          CALL GETTIM (DUMMY,WTIMES)
          DTIME      = SECOND()
+
          CALL SO_SRES(NOLDTR,NNEWTR,DENSIJ,LDENSIJ,DENSAB,LDENSAB,
      &                ISYMTR,WORK(KEND1),LWORK1)
          DTIME      = SECOND()   - DTIME
@@ -199,6 +200,7 @@ C
          DTIME      = SECOND()
          CALL SO_REDEV(NEXCI,NOLDTR,NNEWTR,ISYMTR,REDE,LREDE,REDS,LREDS,
      &                 LREDOL,EXVAL,LEXVAL,WORK(KEND1),LWORK1)
+
          DTIME      = SECOND()   - DTIME
          SOTIME(33) = SOTIME(33) + DTIME
          CALL GETTIM (DUMMY,WTIMEE)
@@ -213,7 +215,7 @@ C
          NOLDTR = MIN(NOLDTR + NNEWTR, (NSAVMX - 1) * NEXCI )
 C
 C-------------------------------------------------------------------
-C        Determine the residues from the current optimal solution 
+C        Determine the residual from the current optimal solution 
 C        vectors and decide if convergence is obtained for any of
 C        the vectors. For the non-converged vectors create new
 C        trial-vectors. These are orthogonalized against the 
@@ -262,7 +264,7 @@ C     Go to next iteration if all eigenvalues are not converged and if
 C     the maximum number of iterations have not been reached.
 C---------------------------------------------------------------------
 C
-      IF ( (NNEWTR .GT. 0) .AND. (NIT .LT. MAXIT) ) GO TO 100
+      IF ( (NNEWTR .GT. 0) .AND. (NIT .LT. MAXIT) ) GOTO 100
 C
       IF ((NNEWTR .EQ. 0) .AND. (NIT.LT.MAXIT)) THEN
 C

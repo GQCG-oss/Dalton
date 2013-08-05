@@ -40,6 +40,9 @@ C
       CHARACTER MODEL*5
       dimension rint(10,10,10,10)
       logical   sonod
+
+
+
 C
 #include "ccorb.h"
 #include "infind.h"
@@ -260,16 +263,25 @@ C=======================================================
 C
          IF (DIRECT) THEN
             NTOSYM = 1
-            DTIME     = SECOND()
-C           CALL HERDI1(WORK(KEND2),LWORK2,IPRINT)
-            CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
-     &                  KODPP1,KODPP2,KRDPP1,KRDPP2,
-     &                  KFREE,LFREE,KEND2,
-     &                  WORK(KEND2),LWORK2,IPRERI)
-            KEND2  = KFREE
-            LWORK2 = LFREE
-            DTIME     = SECOND()  - DTIME
-            SOTIME(8) = SOTIME(8) + DTIME
+            DTIME = SECOND()
+            IF (HERDIR) THEN
+               CALL HERDI1(WORK(KEND1),LWRK1,IPRERI)
+            ELSE
+               KCCFB1 = KEND2
+               KINDXB = KCCFB1 + MXPRIM*MXCONT
+               KEND2  = KINDXB + (8*MXSHEL*MXCONT + 1)/IRAT
+               LWORK2  = LWORK  - KEND2
+
+               CALL ERIDI1(KODCL1,KODCL2,KODBC1,KODBC2,KRDBC1,KRDBC2,
+     &                     KODPP1,KODPP2,KRDPP1,KRDPP2,KFREE,LFREE,
+     &                     KEND2,WORK(KCCFB1),WORK(KINDXB),WORK(KEND2),
+     &                     LWORK2,IPRERI)
+
+               KEND2  = KFREE
+               LWORK2 = LFREE
+               DTIME     = SECOND()  - DTIME
+               SOTIME(8) = SOTIME(8) + DTIME
+            ENDIF
          ELSE
             NTOSYM = NSYM
          ENDIF
@@ -281,7 +293,7 @@ C
 C
          DO 210 ISYMD1 = 1,NTOSYM
 C
-            IF (DIRECT) THEN
+            IF (DIRECT) THEN  ! CC code has a HERDIR test, why is that not here? Compare with ccsd_energy.F
                NTOT = MXCALL
             ELSE
                NTOT = NBAS(ISYMD1)
@@ -298,21 +310,26 @@ C
                   KEND2  = KENDSV
                   LWORK2 = LWORKSV
 C
-                  DTIME     = SECOND()
-C                 CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
-C    &                             IPRINT)
-                  CALL ERIDI2(ILLL,INDEXA,NUMDIS,
-     &                        WORK(KODCL1),WORK(KODCL2),
-     &                        WORK(KODBC1),WORK(KODBC2),
-     &                        WORK(KRDBC1),WORK(KRDBC2),
-     &                        WORK(KODPP1),WORK(KODPP2),
-     &                        WORK(KRDPP1),WORK(KRDPP2),
-     &                        WORK(KEND2), LWORK2,IPRERI)
-                  DTIME     = SECOND()  - DTIME
-                  SOTIME(9) = SOTIME(9) + DTIME
-C
-                  LRECNR = ( (NBUF -1) / IRAT ) + 1
-C
+                  DTIME  = SECOND()
+                  IF (HERDIR) THEN
+                    CALL HERDI2(WORK(KEND2),LWORK2,INDEXA,ILLL,NUMDIS,
+     &                             IPRERI)
+                  ELSE
+
+                     CALL ERIDI2(ILLL,INDEXA,NUMDIS,0,0,
+     &                           WORK(KODCL1),WORK(KODCL2),
+     &                           WORK(KODBC1),WORK(KODBC2),
+     &                           WORK(KRDBC1),WORK(KRDBC2),
+     &                           WORK(KODPP1),WORK(KODPP2),
+     &                           WORK(KRDPP1),WORK(KRDPP2),
+     &                           WORK(KCCFB1),WORK(KINDXB), 
+     &                           WORK(KEND2),LWORK2,IPRINT)
+
+                     DTIME     = SECOND()  - DTIME
+                     SOTIME(9) = SOTIME(9) + DTIME
+                  ENDIF
+
+                  LRECNR = ( (NBUFX(0) -1) / IRAT ) + 1
                   KRECNR  = KEND2
                   KEND2   = KRECNR + LRECNR
                   LWORK2  = LWORK  - KEND2
@@ -331,9 +348,10 @@ C--------------------------------------------------------
 C
                DO 230 IDEL2 = 1,NUMDIS
 C
+
                   IF (DIRECT) THEN
                      IDEL  = INDEXA(IDEL2)
-                     ISYMD = ISAO(IDEL)
+                     ISYMD = ISAO(IDEL) !keeps track of current symmetry
                   ELSE
                      IDEL  = IBAS(ISYMD1) + ILLL
                      ISYMD = ISYMD1
@@ -540,7 +558,7 @@ C
                   DTIME      = SECOND()   - DTIME
                   SOTIME(17) = SOTIME(17) + DTIME
 C
-  230          CONTINUE
+  230          CONTINUE 
 C
   220       CONTINUE
 C
@@ -620,6 +638,8 @@ C
      &                   LDENSAB,ISYRES,ISYMTR)
          DTIME      = SECOND()   - DTIME
          SOTIME(21) = SOTIME(21) + DTIME
+
+
 C
 C------------------------------------------------------------------
 C        Calculate and add the RPA one-particle parts to the result
@@ -654,7 +674,7 @@ C
          CALL SO_WRITE(WORK(KRES2E),LRES2E,LURS2E,FNRS2E,INEW)
          CALL SO_WRITE(WORK(KRES2D),LRES2D,LURS2D,FNRS2D,INEW)
 C
-  100 CONTINUE
+  100 CONTINUE 
 C
 C==================================
 C     End of loop over excitations.

@@ -31,7 +31,6 @@ C950621-vebjornb: First working optimization, GRAND changed to PSISTAR
 C950516-vebjornb: First effort to link all programs: GRAND
 C=========================================================================
       PROGRAM DALTON2011_DALTON
-C
 #include "implicit.h"
 #include "dummy.h"
 #include "mtags.h"

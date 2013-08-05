@@ -1979,6 +1979,7 @@ C
 #include "ccfield.h"
 #include "r12int.h"
       DIMENSION XAIBJ(*),T1AM(*),WORK(*),INDEXA(MXCORB)
+
       INTEGER IDUM,LUNITR12,LUNITR12_2
       LOGICAL LDUM,LHTF,MKVAJKL,CCR12RSP
       INTEGER KO2AM,YS2AM,KOFFH,KOFFD
@@ -2318,7 +2319,7 @@ C
      &                        WORK(KODBC2),WORK(KRDBC1),WORK(KRDBC2),
      &                        WORK(KODPP1),WORK(KODPP2),WORK(KRDPP1),
      &                        WORK(KRDPP2),WORK(KCCFB1),WORK(KINDXB),
-     &                        WORK(KEND1), LWRK1,IPRERI)
+     &                        WORK(KEND1) ,       LWRK1,     IPRERI)
                ENDIF
 C
                KRECNR = KEND1
@@ -2375,10 +2376,11 @@ C              Read in batch of integrals.
 C-----------------------------------------
 C
                IOFFU21 = NDISAO(ISYDIS)
+
                CALL DZERO(WORK(KXINT),2*NDISAO(ISYDIS))
                CALL CCRDAO(WORK(KXINT),IDEL,IDEL2,WORK(KEND2),LWRK2,
      *                     WORK(KRECNR),DIRECT)
-C
+
 C-----------------------------------------
 C              compute the AO-Fock matrix:
 C-----------------------------------------
@@ -2703,6 +2705,7 @@ C
   120       CONTINUE
 C
   110    CONTINUE
+
 C
   100 CONTINUE
 C

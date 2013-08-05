@@ -5806,30 +5806,32 @@ C
       IDUM = 1
 C
       IF (NIBUF .EQ. 1) THEN
-C
          DO 100 J = 1,NBUFX(0)
-C
             IRECJ = IRECNR(J)
             IF (NOAUXB.AND..NOT.LOOPDP) THEN
                IDUM = 1
                CALL IJKAUX(IRECJ,IDUM,IDUM,IDUM)
             END IF
+
             IF (IRECJ .EQ. IDELTA) THEN
                ICOUNT = ICOUNT + 1
                NREC   = J
                READ(LUAORC(0),ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
+
                DO 110 I = 1,LENGTH
                   IP = IBTAND(       IBUF(I,1)         ,IBIT1)
                   IQ = IBTAND(IBTSHR(IBUF(I,1),  NBITS),IBIT1)
                   IR = IBTAND(IBTSHR(IBUF(I,1),2*NBITS),IBIT1)
+
                   IF (NOAUXB) THEN
                      IDUM = 1
                      CALL IJKAUX(IP,IQ,IR,IDUM)
                   END IF
+
                   IADR = KADR1(IR) + KADR2(IP,IQ) + 1
                   XINT(IADR) = RBUF(I)
-              
   110          CONTINUE
+
                IF (U21INT) THEN
                READ(LU21INT,ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
                DO 115 I = 1,LENGTH
@@ -5842,6 +5844,7 @@ C
                   END IF 
                   IADR = KADR1(IR) + KADR2(IP,IQ) + 1
                   XINT(IADR + IOFFU21) = RBUF(I)
+
   115          CONTINUE
                ENDIF
             ENDIF
@@ -5871,6 +5874,7 @@ C
                   END IF
                   IADR = KADR1(IR) + KADR2(IP,IQ) + 1
                   XINT(IADR) = RBUF(I)
+
   130          CONTINUE
                IF (U21INT) THEN
                READ(LU21INT,ERR=2000,REC=NREC) RBUF,IBUF,LENGTH
@@ -5884,6 +5888,7 @@ C
                   END IF
                   IADR = KADR1(IR) + KADR2(IP,IQ) + 1
                   XINT(IADR + IOFFU21) = RBUF(I)
+
   135          CONTINUE
                ENDIF
             ENDIF
