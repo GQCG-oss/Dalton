@@ -1,3 +1,8 @@
+# The script add_lsdalton_test() is defined in TestsCommon.cmake
+# ALL tests here should contain the label "linsca"
+# (label "lsdalton" will be matched by "ctest -L dalton" and should
+#  therefore not be used.)
+
 if(ENABLE_64BIT_INTEGERS)
     add_lsdalton_test(linsca/linsca_trilevel_64bit "linsca;int64")
     add_lsdalton_test(linsca/linsca_atoms_64bit    "linsca;int64")
