@@ -117,10 +117,10 @@ C
 C
       TIMRSP = SECOND()
       CALL GETTIM(CSTR,WSTR)
-      WRITE (LUPRI,'(/1X,78A1/A/1X,78A1)') ('-',I=1,78),
-     &   '  RESPONSE  -  '//
-     &   'an MCSCF, MC-srDFT, DFT, and SOPPA response property program',
-     &   ('-',I=1,78)
+      WRITE (LUPRI,'(/1X,88A1/A/1X,88A1)') ('-',I=1,88),
+     &   '  RESPONSE  -  an MCSCF, MC-srDFT, DFT, '//
+     &   'SOPPA and SOPPA-srDFT response property program',
+     &   ('-',I=1,88)
 C
 C     *************************
 C     ***** INPUT SECTION *****
@@ -1668,13 +1668,10 @@ C
          IF (QM3 .OR. QMMM) THEN
             WRITE(LUPRI,'(A)') ' QM/MM response calculation'
             IF (.NOT. SOPRPA .AND. SOPPA) THEN
-               WRITE (LUPRI,*)
-     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA'
-               WRITE (LUPRI,*)
-     *     'Full solvent model SOPPA not implemented.'
-               WRITE (LUPRI,*)
-     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))'
-               WRITE (LUPRI,*)
+               WRITE (LUPRI,'(A)')
+     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA',
+     *     'Full solvent model SOPPA not implemented.',
+     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))',
      *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
                CALL QUIT(
      *     'Full solvent-SOPPA is not implemented, see output')
