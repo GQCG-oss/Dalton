@@ -1,4 +1,4 @@
-#!/bin/sh
+*#!/bin/sh
 #
 # This is the script for generating files for a specific Dalton test job.
 #
@@ -121,8 +121,8 @@ CTRL[3]=2
 ERROR[3]="SYMMETRY NOT CORRECT"
 
 # Energies
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-7\.9773493[6-7]" $log | wc -l`
-CRIT2=`$GREP "\= MP2 second order energy \: * \-7\.9901927" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-7\.9773493[6-7]" $log | wc -l`
+CRIT2=`$GREP "\= MP2 second order energy *\: * \-7\.9901927" $log | wc -l`
 CRIT3=`$GREP "Final MCSCF energy\: * \-7\.9941305[2-3]" $log | wc -l`
 TEST[4]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3`
 CTRL[4]=3
