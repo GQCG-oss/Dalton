@@ -528,7 +528,7 @@ C
      &     '@   = short-range MP2 second order energy        :',EMY+EMP2
          ELSE IF (.NOT.DODFT) THEN
             IF (MP2_SCALED) THEN
-               WRITE (LUPRI,'(/2(/A,F32.10),(/A,F25.10))')
+               WRITE (LUPRI,'(/3(/A,F25.10))')
      &       '@   Hartree-Fock total energy        :',EMY,
      &       '@   + Scaled MP2 contribution        :',EMP2,
      &       '@   = Scaled MP2 second order energy :',EMY+EMP2
@@ -539,9 +539,9 @@ C
      &       '@   = DCPT2 energy              :',EMY+EMP2
             ELSE
                WRITE (LUPRI,'(/,3(/A,F25.10))')
-     &       '@   Hartree-Fock total energy :',EMY,
-     &       '@   + MP2 contribution        :',EMP2,
-     &       '@   = MP2 second order energy :',EMY+EMP2
+     &       '@   Hartree-Fock total energy   :',EMY,
+     &       '@   + MP2 contribution          :',EMP2,
+     &       '@   = MP2 second order energy   :',EMY+EMP2
             END IF
          ELSE ! DFT
             WRITE (LUPRI,'(/,(/A,F25.10),(/A,F25.10,A,F8.5,A,F15.10),
@@ -644,10 +644,10 @@ C
          CALL NEWORB('MP2SAVE ',WRK(KCMO),.TRUE.)
          CALL MOLLAB('EODATA  ',LUIT1,LUPRI)
          BACKSPACE LUIT1
-         WRITE(LUIT1) '********MP2SAVE         NATOCC  '
+         WRITE(LUIT1) '********        MP2SAVE NATOCC  '
          NORBT4 = MAX(NORBT,4)
          CALL WRITT(LUIT1,NORBT4,WRK(KOCCUP))
-         WRITE(LUIT1) '********MP2SAVE         EODATA  '
+         WRITE(LUIT1) '********        MP2SAVE EODATA  '
       END IF
 C
    20 CONTINUE

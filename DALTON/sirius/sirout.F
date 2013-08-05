@@ -272,7 +272,16 @@ C
 C           CALL SIRCAN(IPRCAN,CREF,CMO,OCC,WRK,KFREE,LFREE)
          END IF
       END IF
-      IF (.NOT. FLAG(3)) THEN
+C
+C     Now read the final orbitals and occupation numbers from SIRIUS.RST
+C
+      REWIND LUIT1
+      CALL READMO(WRK(KCMO),9,WRK(KFREE),LFREE)
+      REWIND LUIT1
+      IF ( FNDLAB('NATOCC  ',LUIT1) ) THEN
+         CALL READT(LUIT1,NORBT,WRK(KOCCNO))
+      ELSE
+         CALL DZERO(WRK(KOCCNO),NORBT)
       END IF
 C
 C *** FINAL RESULTS
@@ -440,10 +449,15 @@ C
 C       stamp date, time, and hostname to LUPRI
         CALL TSTAMP(' ',LUPRI)
 C
-      IF (MCTYPE .GT. 0 .AND. .NOT.(FLAG(3) .AND. MCTYPE.EQ.1) .AND.
-     &    .NOT.(CICALC.AND.DOCINO) ) THEN
+C     Natural orbital analysis of MCSCF, also when orbitals are not natural orbitals
+C
+      IF (MCTYPE .EQ. 0) THEN
+         MOISNO = .TRUE.
+      ELSE IF (.NOT.(FLAG(3) .AND. MCTYPE.EQ.1) .AND.
+     &         .NOT.(CICALC  .AND. DOCINO) ) THEN
 C     if MC/CI and NO's not already printed
          KREL1 = KFREE
+         CALL MEMGET2('REAL','OCC  ',KOCC,  NORBT,WRK,KFREE,LFREE) ! we do not want to overwrite WRK(KOCCNO)
          CALL MEMGET2('REAL','UNO',  KUNO,  N2ASHX,WRK,KFREE,LFREE)
          CALL MEMGET2('REAL','CINDX',KCINDX,LCINDX,WRK,KFREE,LFREE)
          IPRNO = MAX(1,IPRI4-5)
@@ -452,7 +466,7 @@ C        980903-hjaaj: IPRI4 = IPRUSR + 5 as default in sirinp.F
             CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
             CALL RDCREF(WRK(KCREF))
          END IF
-         CALL GETNO(WRK(KCREF),LSYM,WRK(KOCCNO),WRK(KUNO),WRK(KCMO),
+         CALL GETNO(WRK(KCREF),LSYM,WRK(KOCC),WRK(KUNO),WRK(KCMO),
      *              .FALSE.,.FALSE.,.TRUE.,MOISNO,WRK(KCINDX),
      *              WRK,KFREE,LFREE,LUPRI,IPRNO)
 C        CALL GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,ORDER,NATORB,NOAVER,
@@ -465,83 +479,24 @@ C    *              MOISNO,INDXCI,WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
          CALL MEMREL('SIROUT.GETNO ',WRK,KFRSAV,KREL1,KFREE,LFREE)
       END IF
 C
-      IF (MOLDEN) THEN
-         REWIND LUIT1
-         IF ( .NOT. FNDLAB(TABLE(3),LUIT1) ) THEN
-            NWARN = NWARN + 1
-            WRITE (LUPRI,'(//A/)')
-     *         ' WARNING, new orbitals not found on SIRIUS.RST,'//
-     *         ' will try "OLDORB "'
-            REWIND LUIT1
-            CALL MOLLAB(TABLE(2),LUIT1,lupri)
-         END IF
-         CALL READT(LUIT1,NCMOT,WRK(KCMO))
-         CALL DZERO(WRK(KOCCNO),NORBT)
-C
-       IF (CICALC .AND. DOCINO) THEN
-C         ... we do not know the orbital occupation for CINO
-C             any more and cannot calculate them again 
-C             (CREF was not saved on file)
-       ELSE
-         KREL1 = KFREE
-         CALL MEMGET2('REAL','UNO',  KUNO,  N2ASHX,WRK,KFREE,LFREE)
-         CALL MEMGET2('REAL','CINDX',KCINDX,LCINDX,WRK,KFREE,LFREE)
-         IPRNO = -1
-         IF (NASHT .GT. 1) THEN ! MCSCF or HSROHF
-            CALL GETCIX(WRK(KCINDX),LSYM,LSYM,WRK(KFREE),LFREE,0)
-            CALL RDCREF(WRK(KCREF))
-            CALL GETNO(WRK(KCREF),LSYM,WRK(KOCCNO),WRK(KUNO),WRK(KCMO),
-     &              .TRUE.,.TRUE.,.TRUE.,MOISNO,WRK(KCINDX),
-     &              WRK,KFREE,LFREE,LUPRI,IPRNO)
-         ELSE
-            CALL GETNO(WRK(KCREF),LSYM,WRK(KOCCNO),WRK(KUNO),WRK(KCMO),
-     &              .FALSE.,.FALSE.,.TRUE.,MOISNO,WRK(KCINDX),
-     &              WRK,KFREE,LFREE,LUPRI,IPRNO)
-         END IF
-C        CALL GETNO(CVEC,ICSYM,OCCNO,UNO,CMO,
-C    &              ORDER,NATORB,NOAVER,MOISNO,INDXCI,
-C    &              WRK,KFRSAV,LFRSAV,LUPRI,IPRINT)
-         CALL MEMREL('SIROUT.MOLDEN.GETNO',WRK,KFRSAV,KREL1,KFREE,LFREE)
-       END IF
-
-       IF (DOMEP) THEN
+      IF (DOMEP) THEN
          CALL CALC_MEP(WRK(KCMO),WRK,KFREE,LFREE)
-       ENDIF
+      ENDIF
 
-       KREL2 = KFREE
-       CALL MEMGET('REAL', KAOSO, N2BASX,      WRK, KFREE, LFREE)
-       CALL MEMGET('REAL', KUCMO, NORBT*NBAST, WRK, KFREE, LFREE)
-       CALL MEMGET('REAL', KOVEC, NBAST,       WRK, KFREE, LFREE)
-       CALL MOLDEN_MOS(1,WRK(KCMO), WRK(KOCCNO), WRK(KAOSO),
-     $            WRK(KUCMO), WRK(KOVEC))
-       CALL MEMREL('SIROUT.MOLDEN_MOS',WRK,KREL2,KREL2,KFREE,LFREE)
+      IF (MOLDEN) THEN
+         KREL2 = KFREE
+         CALL MEMGET('REAL', KAOSO, N2BASX,      WRK, KFREE, LFREE)
+         CALL MEMGET('REAL', KUCMO, NORBT*NBAST, WRK, KFREE, LFREE)
+         CALL MEMGET('REAL', KOVEC, NBAST,       WRK, KFREE, LFREE)
+         CALL MOLDEN_MOS(1,WRK(KCMO), WRK(KOCCNO), WRK(KAOSO),
+     &                   WRK(KUCMO), WRK(KOVEC))
+         CALL MEMREL('SIROUT.MOLDEN_MOS',WRK,KREL2,KREL2,KFREE,LFREE)
       END IF ! (MOLDEN)
 C     
 C ***  Print final MCSCF orbitals ***
 C
       IF (IPRI4 .GE. 5) P4FLAG(5) = .TRUE.
       IF (P4FLAG(5)) THEN
-         IF (.NOT.FLAG(3)) THEN
-            REWIND LUIT1
-            IF ( .NOT. FNDLAB(TABLE(3),LUIT1) ) THEN
-               NWARN = NWARN + 1
-               WRITE (LUPRI,'(//A/)')
-     *            ' WARNING, new orbitals not found on SIRIUS.RST,'//
-     *            ' will try "OLDORB "'
-               REWIND LUIT1
-               CALL MOLLAB(TABLE(2),LUIT1,lupri)
-            END IF
-            CALL READT(LUIT1,NCMOT,WRK(KCMO))
-         ELSE
-            IF (NASHT .GT. 1) THEN
-               WRITE(LUPRI,'(//A/A/)') ' Natural orbitals :',
-     *                                ' =================='
-            ELSE
-               WRITE(LUPRI,'(//A/A/)') ' Canonical orbitals :',
-     *                                ' ===================='
-            END IF
-         END IF
-C        IF (IPRI4 .GT. 10) THEN
          IF ((IPRI4 .GT. 10) .OR. CMOPRI) THEN
             CALL PRORB(WRK(KCMO), .FALSE., LUPRI)
          ELSE
