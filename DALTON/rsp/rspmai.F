@@ -4349,13 +4349,16 @@ C
         DO 20 I = 1,NNORBT
            FC(I) = FC(I) - WRK(I)
  20     CONTINUE
-      ELSEIF(PCM) THEN
+Cjje
+      ELSE IF(PCM .and. (.not. SOPRPA)) then
+!      ELSEIF(PCM) THEN
         CALL MOLLAB('PCMJXMAT',LUSIFC,LUPRI)
         CALL READT (LUSIFC,NNORBT,WRK)
         DO I = 1,NNORBT
            FC(I) = FC(I) + WRK(I)
         ENDDO
       END IF
+Cjje
 C
       IF (SOPPA) THEN
 C
