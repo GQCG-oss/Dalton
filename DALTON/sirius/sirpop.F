@@ -39,14 +39,17 @@ C
       DIMENSION      DV(*), WRK(*)
 C
 C   INFINP : FLAG(*)
+C   INFIND : ISX()
 C   INFORB ? NBAST,
 C   INFPOP ? a lot
 C   INFTAP : LUIT1
 C
 #include "maxorb.h"
+#include "maxash.h"
 #include "mxcent.h"
 #include "priunit.h"
 #include "infinp.h"
+#include "infind.h"
 #include "inforb.h"
 #include "infpop.h"
 #include "inftap.h"
@@ -110,7 +113,7 @@ C
 C     The structure of the working area will be
 C
 C       1) CMO      MO coefficients
-C       2) OCCUP    occupation numbers (inactive and active only)
+C       2) OCCUP    occupation numbers
 C       3) T or S   kinetic energy matrix, overlap matrix
 C       4) CMOCGT   MO coefficients in cgto basis
 C       5) SS       overlap matrix in cgto basis
@@ -119,7 +122,7 @@ C
       KFREE = KFREE_INPUT
       LFREE = LFREE_INPUT
       CALL MEMGET('REAL',KCMO  ,NCMOT ,WRK,KFREE,LFREE)
-      CALL MEMGET('REAL',KOCCUP,NOCCT ,WRK,KFREE,LFREE)
+      CALL MEMGET('REAL',KOCCUP,NORBT ,WRK,KFREE,LFREE)
 C
       CALL MEMGET('REAL',KOVLP ,N2BASX,WRK,KFREE,LFREE)
       CALL MEMGET('REAL',KCMOCG,NBAST*NOCCT,WRK,KFREE,LFREE)
@@ -142,19 +145,30 @@ C
       REWIND LUIT1
       CALL READMO (WRK(KCMO),9,DUMMY,0)
       REWIND LUIT1
-      CALL MEMGET('REAL',KAOCC ,NASHT ,WRK,KFREE,LFREE)
-      IF (NASHT .LE. 1) THEN
-         IF (NASHT .EQ. 1) WRK(KAOCC) = NACTEL
-      ELSE IF (HSROHF) THEN
-         DO, I = 1,NASHT
-            WRK(KAOCC-1+I) = 1.0D0
+      IF ( FNDLAB('NATOCC  ',LUIT1) ) THEN
+         CALL READT(LUIT1,NORBT,WRK(KOCCUP))
+!        IF (INDEX(WFTYPE,'MP2') .GT. 0) THEN
+! hjaaj: NOCCT should be NORBT for MP2 !!! TODO /aug2013
+!        END IF
+      ELSE IF (HSROHF .OR. NASHT .LE. 1) THEN
+         CALL DZERO(WRK(KOCCUP),NORBT)
+         DO, I = 1, NISHT
+            IX = ISX(I)
+            WRK(KOCCUP-1+IX) = 2.0D0
          END DO
-      ELSE IF ( FNDLAB('NATOCCAC',LUIT1) ) THEN
-         CALL READT(LUIT1,NASHT,WRK(KAOCC))
+         IF (HSROHF) THEN
+            DO, I = NISHT+1, NOCCT
+               IX = ISX(I)
+               WRK(KOCCUP-1+IX) = 1.0D0
+            END DO
+         ELSE IF (NASHT .EQ. 1) THEN
+            IX = ISX(NISHT+1)
+            WRK(KOCCUP-1+IX) = NACTEL
+         END IF
       ELSE
          NWARN = NWARN + 1
          WRITE (LUPRI,'(//A//A/A/A/)')
-     &      ' *** Label "NATOCCAC" not found on unit LUIT1 in SIRPOP',
+     &      ' *** Label "NATOCC  " not found on SIRIUS.RST in SIRPOP',
      &      ' WARNING, occupation of active orbitals not available',
      &      '          population analysis aborted.',
      &      '          Use ".TRACI" option.'
@@ -169,28 +183,6 @@ C
      &       ' one-electron density matrix which',
      &       '          couple the different RAS spaces are ignored.'
       END IF
-C
-      IEOCC = 0
-      DO 40 ISYM = 1,NSYM
-         NOCCI = NOCC(ISYM)
-      IF (NOCCI.EQ.0)   GO TO 40
-         NBASI = NBAS(ISYM)
-C
-C     Get the occupation numbers for occupied orbitals
-C     (2 for inactive and from WRK(KAOCC) for active orbitals)
-C
-         ISTOCC = IEOCC + 1
-         IEOCC  = IEOCC + NOCCI
-         ISTASH = ISTOCC+ NISH(ISYM)
-         DO I = ISTOCC,(ISTASH-1)
-            WRK(KOCCUP-1+I) = 2.0D0
-         END DO
-         NASHI = NASH(ISYM)
-         IF (NASHI.GT.0)  THEN
-            CALL DCOPY(NASHI,WRK(KAOCC+IASH(ISYM)),1,
-     &                       WRK(KOCCUP -1+ISTASH),1)
-         END IF
-   40 CONTINUE
 C
 C     *****     Perform energy analysis
 C
@@ -253,17 +245,20 @@ C
 #include "implicit.h"
 #include "dummy.h"
 C
-      DIMENSION CMO(NCMOT),OCCUP(NOCCT),T(NNBAST)
+      DIMENSION CMO(NCMOT),OCCUP(NORBT),T(NNBAST)
 C
 C   INFINP : POTNUC,
+C   INFIND : ISX()
 C   INFORB : NBAST,
 C   INFOPT : EMCSCF,
 C
 #include "maxorb.h"
+#include "maxash.h"
 #include "mxcent.h"
 #include "priunit.h"
 #include "infpop.h"
 #include "infinp.h"
+#include "infind.h"
 #include "inforb.h"
 #include "infopt.h"
 #include "infpri.h"
@@ -312,14 +307,15 @@ C
             DO 30 J = 1,NBASI
                JORB = IPSTRT + J
 C
-               FAC = 2.0D0*CMO(JORB)*OCCUP(IP)
+               IPX = ISX(IP)
+               FAC = 2.0D0*CMO(JORB)*OCCUP(IPX)
                DO 20 K = 1,J-1
                   TK = TK + FAC*CMO(IPSTRT+K)*T(IST+K)
    20          CONTINUE
 C
 C              Take care of the case j = k
 C
-               TK = TK + CMO(JORB)*CMO(JORB)*OCCUP(IP)*T(IST+J)
+               TK = TK + CMO(JORB)*CMO(JORB)*OCCUP(IPX)*T(IST+J)
                IST = IST + J
    30       CONTINUE
 C
@@ -513,15 +509,15 @@ C
 #include "aosotr.h"
 #include "nuclei.h"
 
-      DIMENSION OCCUP(NOCCT),
+      DIMENSION OCCUP(NORBT),
      &          POPNAB(NATOMS,NATOMS),POPABI(NATOMS,NATOMS),
      &          POPCGT(NBAST),POPC(NBAST,NOCCT),CMOCGT(NBAST,NOCCT),
      &          SS(NBAST,NBAST),POPNET(NBAST,NBAST)
 C
 C Used from common blocks:
 C   INFPOP ? MAXTYP, ...
-C   INFORB ? NBAST,
 C   INFIND : ISX(:), ISMO(:)
+C   INFORB ? NBAST,
 C   INFTAP : LUTEMP
 C   CCOM   : GTOTYP(:)
 C   SHELLS : NCENT(:)
@@ -529,8 +525,8 @@ C
 #include "maxaqn.h"
 #include "maxash.h"
 #include "infpop.h"
-#include "inforb.h"
 #include "infind.h"
+#include "inforb.h"
 #include "inftap.h"
 #include "infpri.h"
 #include "ccom.h"
@@ -576,10 +572,11 @@ C
          REWIND LUTEMP
       END IF
       DO 80 IP = 1,NOCCT
+         IPX = ISX(IP)
          CALL DZERO(POPABI,N2_POPNAB)
 C
          DO 75 IA = 1,NBAST
-            POPAB_FAC = CMOCGT(IA,IP)*OCCUP(IP)
+            POPAB_FAC = CMOCGT(IA,IP)*OCCUP(IPX)
             NUCA = IAOINFO(IA,2)
          IF (NUCA .GT. NATOMS) GO TO 75 ! skip auxilliary basis centers
          IF (ABS(POPAB_FAC) .LT. 1.0D-14) GO TO 75
@@ -688,8 +685,9 @@ C
          REWIND LUTEMP
          ISYM = 1
          DO 130 IP = 1,NOCCT
-            IP_SYM = ISMO( ISX(IP) )
-            WRITE (LUPRI,1002) IP, OCCUP(IP), IP_SYM
+            IPX = ISX(IP)
+            IP_SYM = ISMO( IPX )
+            WRITE (LUPRI,1002) IP, OCCUP(IPX), IP_SYM
  1002       FORMAT (/6X,'Molecular orbital number',I4,
      &      ', occupation',F8.5,', symmetry',I3)
 C
@@ -730,8 +728,9 @@ C
      &   /6X,'Gross populations of AO basis functions for each MO',
      &   /6X,'Type:',A)
          DO 160 IP = 1,NOCCT
-            IP_SYM = ISMO( ISX(IP) )
-            WRITE (LUPRI,1002) IP, OCCUP(IP), IP_SYM
+            IPX = ISX(IP)
+            IP_SYM = ISMO( IPX )
+            WRITE (LUPRI,1002) IP, OCCUP(IPX), IP_SYM
             WRITE (LUPRI,1006) (IA,POPC(IA,IP),IA=1,NBAST)
   160    CONTINUE
  1006    FORMAT (10(I4,F8.4))
@@ -771,8 +770,9 @@ C
      &           /6X,'distributed over AO types for each center',
      &           /6X,'Type:',A)
          DO 200 IP = 1,NOCCT
-            IP_SYM = ISMO( ISX(IP) )
-            WRITE (LUPRI,1002) IP,OCCUP(IP),IP_SYM
+            IPX = ISX(IP)
+            IP_SYM = ISMO( IPX )
+            WRITE (LUPRI,1002) IP,OCCUP(IPX),IP_SYM
 C
             CALL DZERO(POPTY, MAXTYP*NATOMS)
 C
@@ -862,8 +862,9 @@ C
             POPABI(NUC,1) = POPABI(NUC,1) + POPC(IA,IP)
           ENDDO
 C
-          IP_SYM = ISMO( ISX(IP) )
-          WRITE (LUPRI,1002) IP, OCCUP(IP), IP_SYM
+          IPX = ISX(IP)
+          IP_SYM = ISMO( IPX )
+          WRITE (LUPRI,1002) IP, OCCUP(IPX), IP_SYM
           WRITE (LUPRI,1015) (NAMDEP(NUC),POPABI(NUC,1),NUC=1,NATOMS)
 c1015     FORMAT (4(1X,A6,F10.4))
  1015     FORMAT (5(1X,A6,F8.2,' ;'))
@@ -936,13 +937,16 @@ C     Compute the electronic and total dipole moments
 C
 #include "implicit.h"
 C
-      DIMENSION CMO(NCMOT),DIPMAT(MATDIM,3),OCCUP(NOCCT)
+      DIMENSION CMO(NCMOT),DIPMAT(MATDIM,3),OCCUP(NORBT)
 C
 C   INFORB ? NBAST,
 C
+#include "maxorb.h"
+#include "maxash.h"
 #include "mxcent.h"
 #include "priunit.h"
 #include "infpop.h"
+#include "infind.h"
 #include "inforb.h"
 #include "infpri.h"
 C
@@ -978,6 +982,7 @@ C
 C
          DO 40 ICC = 1,NOCCI
             IP = IP + 1
+            IPX = ISX(IP)
             IST = MATBLK
             DX = 0.0D0
             DY = 0.0D0
@@ -987,7 +992,7 @@ C
                JORB = IPSTRT + J
 C
                DO 20 K = 1,(J-1)
-                  DENS = 2.0D0*CMO(JORB)*CMO(IPSTRT+K)*OCCUP(IP)
+                  DENS = 2.0D0*CMO(JORB)*CMO(IPSTRT+K)*OCCUP(IPX)
                   DX = DX + DENS*DIPMAT(IST+K,1)
                   DY = DY + DENS*DIPMAT(IST+K,2)
                   DZ = DZ + DENS*DIPMAT(IST+K,3)
@@ -996,7 +1001,7 @@ C
 C              Case j = k, divide by two
 C              because no (j,k) permutation exist
 C
-               DENS = CMO(JORB)*CMO(JORB)*OCCUP(IP)
+               DENS = CMO(JORB)*CMO(JORB)*OCCUP(IPX)
                DX = DX + DENS*DIPMAT(IST+J,1)
                DY = DY + DENS*DIPMAT(IST+J,2)
                DZ = DZ + DENS*DIPMAT(IST+J,3)
@@ -1012,7 +1017,7 @@ C
             DIPOL(2) = DIPOL(2) - DY
             DIPOL(3) = DIPOL(3) - DZ
             IF (IPRMUL .GE. 3) THEN
-               WRITE (LUPRI,1003) IP,DX,DY,DZ,OCCUP(IP)
+               WRITE (LUPRI,1003) IP,DX,DY,DZ,OCCUP(IPX)
  1003          FORMAT(10X,I4,7X,4F12.6)
             END IF
 C
@@ -1059,12 +1064,16 @@ C    relative to origo).  Print <r2>.
 C
 #include "implicit.h"
 C
-      DIMENSION CMO(NCMOT),QUMAT(MATDIM,6),OCCUP(NOCCT)
+      DIMENSION CMO(NCMOT),QUMAT(MATDIM,6),OCCUP(NORBT)
 C
+C   INFIND : ISX()
 C   INFORB ? NBAST,
 C
 #include "mxcent.h"
+#include "maxorb.h"
+#include "maxash.h"
 #include "priunit.h"
+#include "infind.h"
 #include "inforb.h"
 #include "infpop.h"
 #include "infpri.h"
@@ -1117,6 +1126,7 @@ C
 C
          DO 80 ICC = 1,NOCCI
             IP = IP + 1
+            IPX = ISX(IP)
             DO 30 ICOMP = 1,6
                QUPOL(ICOMP) = 0.0D0
    30       CONTINUE
@@ -1148,7 +1158,7 @@ C           R2 = < r**2 > for this orbital
             R2 = QUPOL(1) + QUPOL(2) + QUPOL(3)
 C
             DO 70 ICOMP = 1,6
-               QUPOL(ICOMP)  = QUPOL(ICOMP)*OCCUP(IP)
+               QUPOL(ICOMP)  = QUPOL(ICOMP)*OCCUP(IPX)
                ELQPOL(ICOMP) = ELQPOL(ICOMP) - QUPOL(ICOMP)
    70       CONTINUE
             RR = QUPOL(1) + QUPOL(2) + QUPOL(3)

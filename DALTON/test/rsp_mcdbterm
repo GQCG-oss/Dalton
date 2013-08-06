@@ -97,13 +97,13 @@ fi
 
 #
 # SCF energy
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-1\.22513194[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-1\.22513194[0-9][0-9]" $log | wc -l`
 TEST[1]=`expr	$CRIT1`
 CTRL[1]=1
 ERROR[1]="SCF ENERGY NOT CORRECT"
 #
 # MP2 energy
-CRIT1=`$GREP "\= MP2 second order energy \: * \-1\.24212961[0-9][0-9]" $log | wc -l`
+CRIT1=`$GREP "\= MP2 second order energy *\: * \-1\.24212961[0-9][0-9]" $log | wc -l`
 TEST[2]=`expr	$CRIT1`
 CTRL[2]=1
 ERROR[2]="MP2 ENERGY NOT CORRECT"

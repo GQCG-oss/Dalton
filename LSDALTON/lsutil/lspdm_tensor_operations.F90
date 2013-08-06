@@ -57,9 +57,6 @@ module lspdm_tensor_operations_module
       real(realk),intent(inout) :: fort(*)
       logical, optional, intent(in) :: lock_set
     end subroutine put_acc_tile
-  end interface
-
-  abstract interface
     subroutine put_acc_el(buf,pos,dest,win)
       use precision
       implicit none
@@ -68,9 +65,6 @@ module lspdm_tensor_operations_module
       integer(kind=ls_mpik),intent(in) :: dest
       integer(kind=ls_mpik),intent(in) :: win
     end subroutine put_acc_el
-  end interface
-
-  abstract interface
     subroutine put_acc_vec(buf,nelms,pos,dest,win)
       use precision
       implicit none
@@ -151,6 +145,18 @@ module lspdm_tensor_operations_module
   real(realk) :: time_pdm_get          = 0.0E0_realk
   integer(kind=long) :: bytes_transferred_get = 0
   integer(kind=long) :: nmsg_get = 0
+
+  procedure(array_acct4),pointer :: acc_ti4 
+  procedure(array_acct8),pointer :: acc_ti8 
+  procedure(array_gett4),pointer :: get_ti4 
+  procedure(array_gett8),pointer :: get_ti8 
+  procedure(array_putt4),pointer :: put_ti4 
+  procedure(array_putt8),pointer :: put_ti8 
+
+
+  !procedure(lsmpi_put_realkV_w8),pointer :: put_rk8 
+  !procedure(lsmpi_get_realkV_w8),pointer :: get_rk8 
+  !procedure(lsmpi_acc_realkV_w8),pointer :: acc_rk8 
   contains
 
   !>  \brief intitialize storage room for the tiled distributed arrays
@@ -1392,6 +1398,10 @@ module lspdm_tensor_operations_module
     procedure(put_acc_tile), pointer :: put_acc => null()
 
 #ifdef VAR_MPI
+    acc_ti8 => array_acct8
+    acc_ti4 => array_acct4
+    put_ti8 => array_putt8
+    put_ti4 => array_putt4
   
     do i=1,arr%mode
       o(i)=i
@@ -1399,11 +1409,11 @@ module lspdm_tensor_operations_module
     if(present(oo))o=oo
 
 #ifdef VAR_INT64
-    if(pre2==0.0E0_realk) put_acc => array_puttile_combidx8
-    if(pre2/=0.0E0_realk) put_acc => array_accumulate_tile_combidx8
+    if(pre2==0.0E0_realk) put_acc => put_ti8
+    if(pre2/=0.0E0_realk) put_acc => acc_ti8
 #else
-    if(pre2==0.0E0_realk) put_acc => array_puttile_combidx4
-    if(pre2/=0.0E0_realk) put_acc => array_accumulate_tile_combidx4
+    if(pre2==0.0E0_realk) put_acc => put_ti4
+    if(pre2/=0.0E0_realk) put_acc => acc_ti4
 #endif
    
     if(pre2/=0.0E0_realk.and.pre2/=1.0E0_realk)then
@@ -1652,13 +1662,13 @@ module lspdm_tensor_operations_module
     endif 
     if(op=='p')then
       pga  => lsmpi_put_realk
-      pgav => lsmpi_put_realkV_wrapper8
+      pgav => lsmpi_put_realkV_w8
     elseif(op=='g')then
       pga  => lsmpi_get_realk
-      pgav => lsmpi_get_realkV_wrapper8
+      pgav => lsmpi_get_realkV_w8
     elseif(op=='a')then
       pga  => lsmpi_acc_realk
-      pgav => lsmpi_acc_realkV_wrapper8
+      pgav => lsmpi_acc_realkV_w8
     endif
 
     do i = 1,arr%mode
@@ -2236,13 +2246,13 @@ module lspdm_tensor_operations_module
     endif 
     if(op=='p')then
       pga  => lsmpi_put_realk
-      pgav => lsmpi_put_realkV_wrapper8
+      pgav => lsmpi_put_realkV_w8
     elseif(op=='g')then
       pga  => lsmpi_get_realk
-      pgav => lsmpi_get_realkV_wrapper8
+      pgav => lsmpi_get_realkV_w8
     elseif(op=='a')then
       pga  => lsmpi_acc_realk
-      pgav => lsmpi_acc_realkV_wrapper8
+      pgav => lsmpi_acc_realkV_w8
     endif
 
     do i = 1,arr%mode
@@ -3416,6 +3426,16 @@ module lspdm_tensor_operations_module
     cidx=get_cidx(modidx,arr%ntpm,arr%mode)
     call array_accumulate_tile(arr,cidx,fort,nelms,lock_set=ls)
   end subroutine array_accumulate_tile_modeidx
+  subroutine array_acct4(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=4),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    if(present(lock_set))call array_accumulate_tile_combidx4(arr,globtilenr,fort,nelms,lock_set)
+    if(.not.present(lock_set))call array_accumulate_tile_combidx4(arr,globtilenr,fort,nelms)
+  end subroutine array_acct4
   subroutine array_accumulate_tile_combidx4(arr,globtilenr,fort,nelms,lock_set)
     implicit none
     type(array),intent(in) :: arr
@@ -3442,6 +3462,16 @@ module lspdm_tensor_operations_module
     nmsg_acc = nmsg_acc + 1
 #endif
   end subroutine array_accumulate_tile_combidx4
+  subroutine array_acct8(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=8),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    if(present(lock_set))call array_accumulate_tile_combidx8(arr,globtilenr,fort,nelms,lock_set)
+    if(.not.present(lock_set))call array_accumulate_tile_combidx8(arr,globtilenr,fort,nelms)
+  end subroutine array_acct8
   subroutine array_accumulate_tile_combidx8(arr,globtilenr,fort,nelms,lock_set)
     implicit none
     type(array),intent(in) :: arr
@@ -3664,6 +3694,16 @@ module lspdm_tensor_operations_module
     call array_put_tile(arr,cidx,fort,nelms,lock_set=ls)
   end subroutine array_puttile_modeidx
 
+  subroutine array_putt8(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=8),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    if(present(lock_set))call array_puttile_combidx8(arr,globtilenr,fort,nelms,lock_set)
+    if(.not.present(lock_set))call array_puttile_combidx8(arr,globtilenr,fort,nelms)
+  end subroutine array_putt8
   subroutine array_puttile_combidx8(arr,globtilenr,fort,nelms,lock_set)
     implicit none
     type(array),intent(in) :: arr
@@ -3688,6 +3728,16 @@ module lspdm_tensor_operations_module
     nmsg_put = nmsg_put + 1
 #endif
   end subroutine array_puttile_combidx8
+  subroutine array_putt4(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=4),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    if(present(lock_set))call array_puttile_combidx4(arr,globtilenr,fort,nelms,lock_set)
+    if(.not.present(lock_set))call array_puttile_combidx4(arr,globtilenr,fort,nelms)
+  end subroutine array_putt4
   subroutine array_puttile_combidx4(arr,globtilenr,fort,nelms,lock_set)
     implicit none
     type(array),intent(in) :: arr
@@ -3732,6 +3782,16 @@ module lspdm_tensor_operations_module
     cidx=get_cidx(modidx,arr%ntpm,arr%mode)
     call array_get_tile(arr,cidx,fort,nelms,lock_set=ls)
   end subroutine array_gettile_modeidx
+  subroutine array_gett8(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=8),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    if(present(lock_set))call array_gettile_combidx8(arr,globtilenr,fort,nelms,lock_set)
+    if(.not.present(lock_set))call array_gettile_combidx8(arr,globtilenr,fort,nelms)
+  end subroutine array_gett8
   subroutine array_gettile_combidx8(arr,globtilenr,fort,nelms,lock_set)
     implicit none
     type(array),intent(in) :: arr
@@ -3757,6 +3817,16 @@ module lspdm_tensor_operations_module
     nmsg_get = nmsg_get + 1
 #endif
   end subroutine array_gettile_combidx8
+  subroutine array_gett4(arr,globtilenr,fort,nelms,lock_set)
+    implicit none
+    type(array),intent(in) :: arr
+    integer,intent(in) :: globtilenr
+    integer(kind=4),intent(in) :: nelms
+    real(realk),intent(inout) :: fort(*)
+    logical, optional, intent(in) :: lock_set
+    if(present(lock_set))call array_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set)
+    if(.not.present(lock_set))call array_gettile_combidx4(arr,globtilenr,fort,nelms)
+  end subroutine array_gett4
   subroutine array_gettile_combidx4(arr,globtilenr,fort,nelms,lock_set)
     implicit none
     type(array),intent(in) :: arr
@@ -3931,6 +4001,40 @@ module lspdm_tensor_operations_module
     enddo
 #endif
   end subroutine array_scale_td
+
+  subroutine lsmpi_put_realkV_w8(buf,nelms,pos,dest,win)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+#ifdef VAR_MPI
+    call lsmpi_put_realkV_wrapper8(buf,nelms,pos,dest,win)
+#endif
+  end subroutine lsmpi_put_realkV_w8
+  subroutine lsmpi_get_realkV_w8(buf,nelms,pos,dest,win)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+#ifdef VAR_MPI
+    call lsmpi_get_realkV_wrapper8(buf,nelms,pos,dest,win)
+#endif
+  end subroutine lsmpi_get_realkV_w8
+  subroutine lsmpi_acc_realkV_w8(buf,nelms,pos,dest,win)
+    implicit none
+    real(realk),intent(in) :: buf(*)
+    integer, intent(in) :: pos
+    integer(kind=8) :: nelms
+    integer(kind=ls_mpik),intent(in) :: dest
+    integer(kind=ls_mpik),intent(in) :: win
+#ifdef VAR_MPI
+    call lsmpi_acc_realkV_wrapper8(buf,nelms,pos,dest,win)
+#endif
+  end subroutine lsmpi_acc_realkV_w8
 end module lspdm_tensor_operations_module
 
 

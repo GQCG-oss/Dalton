@@ -15,7 +15,7 @@ Note that if you set the DALTON_NR_MPI_PROCS to something different from 1 it wi
 Testing
 -------
 
-You can run the test set either using::
+You can run the whole test set either using::
 
   $ make test
 
@@ -29,13 +29,13 @@ cores::
 
   $ ctest -j4
 
-You can run a subset of tests matching test names to a regular expression::
+You can select the subset of tests by matching test names to a regular expression::
 
-  $ ctest -R dft*
+  $ ctest -R dft
 
-Alternatively you can run a subtest with a specific label::
+Alternatively you can select the tests with a label matching a regular expression::
 
-  $ ctest -L linsca
+  $ ctest -L rsp
 
 The following command will give you all available labels::
 
@@ -51,12 +51,11 @@ Only DALTON tests::
 
 Only LSDALTON tests::
 
-  $ ctest -L lsdalton
+  $ ctest -L linsca
 
 All tests::
 
   $ ctest
-
 
 Reporting to the testing dashboard
 ----------------------------------
@@ -90,7 +89,7 @@ Currently the above recipes for Nightly/Experimental will compile all targets.
 If you want to compile only LSDALTON within Nightly/Experimental, you can do this::
 
   $ make lsdalton.x
-  $ ctest -L lsdalton -D NightlyTest
-  $ ctest -L lsdalton -D NightlySubmit
+  $ ctest -L linsca -D NightlyTest
+  $ ctest -L linsca -D NightlySubmit
 
 This does not report configure/build problems. We will streamline this soon.

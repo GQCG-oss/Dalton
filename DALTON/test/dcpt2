@@ -23,7 +23,7 @@ cat > dcpt2.info <<'%EOF%'
    Molecule:         F2 
    Wave Function:    DCPT2 / 6-311G**
    Test Purpose:     Degeneracy-Corrected PT2 Energy of Assfeld, Almlof
-                     and Trulhar. Via the CC module.
+                     and Truhlar. Via the CC module.
 %EOF%
 
 #######################################################################

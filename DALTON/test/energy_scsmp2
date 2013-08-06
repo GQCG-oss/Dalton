@@ -17,22 +17,22 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > energy_symm.info <<'%EOF%'
-   energy_symm
-   -----------
+cat > energy_scsmp2.info <<'%EOF%'
+   energy_scsmp2
+   -------------
    Molecule:         H2O
-   Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ
-   Test Purpose:     Check energy calculation with symmetry
+   Wave Functions:   RHF, SCS-MP2 / cc-pVDZ
+   Test Purpose:     Check SCS-MP2 energy calculation with symmetry
 %EOF%
 
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > energy_symm.mol <<'%EOF%'
+cat > energy_scsmp2.mol <<'%EOF%'
 BASIS
 cc-pVDZ
    Wave Functions:   RHF, SOS-MP2, and MCSCF (CAS) / cc-pVDZ
-   Test Purpose:     Check energy calculation with symmetry
+   Test Purpose:     Check SCS-MP2 energy calculation with symmetry
     2
         8.    1
 O     0.0 -0.2249058930 0.0
@@ -44,15 +44,14 @@ H_b  -1.45235 0.899623 0.0
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > energy_symm.dal <<'%EOF%'
+cat > energy_scsmp2.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE FUNCTION
 **WAVE FUNCTIONS
 .HF
 .MP2
-.MCSCF
 *MP2 INPUT
-.SOSMP2
+.SCSMP2
 *CONFIGURATION INPUT
 .SYMMETRY
  1
@@ -80,8 +79,8 @@ cat > energy_symm.dal <<'%EOF%'
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >energy_symm.check
-cat >>energy_symm.check <<'%EOF%'
+echo $CHECK_SHELL >energy_scsmp2.check
+cat >>energy_scsmp2.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
@@ -119,11 +118,11 @@ CTRL[3]=1
 ERROR[3]="NUCLEAR REPULSION ENERGY NOT CORRECT"
 
 # Wave function:
-CRIT1=`$GREP "Number of closed shell electrons * 2" $log | wc -l`
-CRIT2=`$GREP "Number of electrons in active shells * 8" $log | wc -l`
-CRIT3=`$GREP " active orbitals * 8" $log | wc -l`
+CRIT1=`$GREP "Number of closed shell electrons * 10" $log | wc -l`
+CRIT2=`$GREP "Number of electrons in active shells * 0" $log | wc -l`
+CRIT3=`$GREP " wave function of type .* MP2" $log | wc -l`
 CRIT4=`$GREP "Total number of orbitals * 24" $log | wc -l`
-CRIT5=`$GREP "Spin multiplicity .* 1" $log | wc -l`
+CRIT5=`$GREP "Spin multiplicity .* 1  * 0" $log | wc -l`
 CRIT6=`$GREP "Total number of symmetries * 4" $log | wc -l`
 CRIT7=`$GREP "Reference state symmetry * 1" $log | wc -l`
 TEST[4]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5  \+ \
@@ -134,8 +133,8 @@ ERROR[4]="INCORRECT WAVE FUNCTION"
 # Symmetry:
 CRIT1=`$GREP "Number of coordinates in each symmetry: .* 3 * 2 * 3 * 1" $log | wc -l`
 CRIT2=`$GREP "Number of orbitals in each symmetry: .* 11 * 4 * 7 * 2" $log | wc -l`
-CRIT3=`$GREP "Inactive orbitals .* 1 * 0 * 0 * 0" $log | wc -l`
-CRIT4=`$GREP "Active orbitals .* 4 * 2 * 2 * 0" $log | wc -l`
+CRIT3=1 # `$GREP "Inactive orbitals .* 1 * 0 * 0 * 0" $log | wc -l`
+CRIT4=1 # `$GREP "Active orbitals .* 4 * 2 * 2 * 0" $log | wc -l`
 CRIT5=`$GREP "Occupied SCF orbitals .* 3 * 1 * 1 * 0" $log | wc -l`
 TEST[5]=`expr $CRIT1  \+ $CRIT2  \+ $CRIT3  \+ $CRIT4  \+ $CRIT5`
 CTRL[5]=5
@@ -149,27 +148,25 @@ ERROR[6]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy:
 # hjaaj Jan 05: decreased number of digits as MP2 energy is only of lin.acc.
-CRIT1=` $GREP "MP2 second order energy *: * \-76\.2249784" $log | wc -l` # SOS-MP2 energy
+CRIT1=` $GREP "Scaled MP2 second order energy *: * \-76\.2268745" $log | wc -l` # SCS-MP2 energy
 #CRIT1=`$GREP "MP2 second order energy *: * \-76\.2306668" $log | wc -l` # normal MP2 energy
 
 TEST[7]=`expr $CRIT1`
 CTRL[7]=1
-ERROR[7]="MP2 ENERGY NOT CORRECT"
+ERROR[7]="SCS-MP2 ENERGY NOT CORRECT"
 
-# MCSCF energy:
-CRIT1=`$GREP "Final MCSCF energy: * \-76\.1476141590" $log | wc -l`
-TEST[8]=`expr $CRIT1`
-CTRL[8]=1
-ERROR[8]="MCSCF ENERGY NOT CORRECT"
+TEST[8]=0
+CTRL[8]=0
+ERROR[8]="TEST 8 NOT CORRECT"
 
 # Occupancy of orbitals:
-CRIT1=`$GREP "2.000000000 * 1.989080.* * 1.976436.* * 0*.024209.* * 0*.011251" $log | wc -l`
-CRIT2=`$GREP "1.981380.* * 0*.017798" $log | wc -l`
-CRIT3=`$GREP "1.974627.* * 0*.02521[45]" $log | wc -l`
-CRIT4=`$GREP "No occupied orbitals" $log | wc -l`
+CRIT1=`$GREP "1.9999187. * 1.9865298. * 1.9704430. * 0*.0216386. * 0*.0102709." $log | wc -l`
+CRIT2=`$GREP "1.9752325. * 0*.0165969. * 0*.0037653. * 0*.0005046." $log | wc -l`
+CRIT3=`$GREP "1.9680919. * 0*.0238841. * 0*.0052212. * 0*.0009503. * 0*.0006122." $log | wc -l`
+CRIT4=`$GREP "0*.0043429. * 0*.0006666." $log | wc -l`
 TEST[9]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
-CTRL[9]=6  # 1 + 2 + 2 + 1
-ERROR[9]="NATORB OCCUPANCY NOT CORRECT"
+CTRL[9]=4
+ERROR[9]="MP2 NATORB OCCUPANCY NOT CORRECT"
 
 # Check for WARNING for .mol line longer than 80 char
 #  WARNING -- line in ".mol" file truncated, line     5
