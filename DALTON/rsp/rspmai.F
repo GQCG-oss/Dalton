@@ -889,10 +889,12 @@ C
                   SOPPA = .TRUE.
                   IF (SOPPA .AND. EMBEDDING) THEN
                     WRITE (LUPRI,'(/A)')
-     &              'Full SOPPA + Embedding model not implemented '//
-     &               '- use .SOPRPA instead'
-                    CALL QUIT('RSPINP: Full SOPPA + Embedding model '//
-     &                    'not implemented - use .SOPRPA instead')
+     &              '@ **INFO**'//
+     &               ' This is a solvent-SOPPA calculation w/ dynamic'//
+     &               ' solvent response at RPA level only,'//
+     &               ' cf. JCC, 2012-2022, 33, (2012) for reference.'
+cjje: change this if full solvent soppa is ever implemented
+                    SOPRPA = .TRUE.
                   END IF
                GO TO 100
     4          CONTINUE
@@ -977,6 +979,11 @@ C              .PROP2Average
  24            CONTINUE
                  SOPRPA = .TRUE.
                  SOPPA = .TRUE.
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            'This is a solvent-SOPPA calculation w/ dynamic'//
+     &            'solvent response at RPA level only,'//
+     &            'cf. JCC, 2012-2022, 33, (2012) for reference.'
                  IF (SOPRPA .AND. (.NOT. EMBEDDING)) THEN
                   WRITE (LUPRI,'(/A)')
      &             'Vacuum calc. - use .SOPPA instead'
@@ -1720,33 +1727,6 @@ C
             WRITE(LUPRI,'(A,F8.4)')
      *      ' Optical dielectric constant                    : EPSOL  ='
      *      ,EPSINF
-         END IF
-C
-         IF (QM3 .OR. QMMM .OR. PCM) THEN
-            IF (.NOT. SOPRPA .AND. SOPPA) THEN
-               WRITE (LUPRI,*)
-     *     'RSPPP-ERROR: solvent response is not implemented for SOPPA'
-               WRITE (LUPRI,*)
-     *     'Full solvent model SOPPA not implemented.'
-               WRITE (LUPRI,*)
-     *     'Only SOPPA/RPA (reference: JCC, 2012-2022, 33, (2012))'
-               WRITE (LUPRI,*)
-     *     'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
-               CALL QUIT(
-     *     'Full solvent-SOPPA is not implemented, see output')
-            END IF
-#if defined (BUILD_PELIB)
-         else if (peqm .and. .not. soprpa .and. soppa) then
-            write(lupri,*) 
-     &      'ERROR: SOPPA not implemented with PE library.'
-            write(lupri,*)
-     &      'Full polarizable embedding with SOPPA not implemented.'
-            write(lupri,*)
-     &      'For PE with SOPPA/RPA (JCC, 2012-2022, 33, (2012)),'
-            write(lupri,*)
-     &      'use .SOPRPA under **RESPONSE.'
-            call quit('ERROR: SOPPA not implemented with PE library.')
-#endif
          END IF
 C
          IF (DOESA) THEN
