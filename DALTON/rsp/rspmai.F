@@ -890,8 +890,12 @@ C
                   IF (SOPPA .AND. EMBEDDING) THEN
                     WRITE (LUPRI,'(/A)')
      &              '@ **INFO**'//
-     &               ' This is a solvent-SOPPA calculation w/ dynamic'//
-     &               ' solvent response at RPA level only,'//
+     &               ' This is a solvent-SOPPA calculation w/ dynamic'
+                    WRITE (LUPRI,'(/A)')
+     &              '@ **INFO**'//
+     &               ' solvent response at RPA level only,'
+                    WRITE (LUPRI,'(/A)')
+     &              '@ **INFO**'//
      &               ' cf. JCC, 2012-2022, 33, (2012) for reference.'
 cjje: change this if full solvent soppa is ever implemented
                     SOPRPA = .TRUE.
@@ -981,9 +985,13 @@ C              .PROP2Average
                  SOPPA = .TRUE.
                  WRITE (LUPRI,'(/A)')
      &           '@ **INFO**'//
-     &            'This is a solvent-SOPPA calculation w/ dynamic'//
-     &            'solvent response at RPA level only,'//
-     &            'cf. JCC, 2012-2022, 33, (2012) for reference.'
+     &            ' This is a solvent-SOPPA calculation w/ dynamic'
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' solvent response at RPA level only,'
+                 WRITE (LUPRI,'(/A)')
+     &           '@ **INFO**'//
+     &            ' cf. JCC, 2012-2022, 33, (2012) for reference.'
                  IF (SOPRPA .AND. (.NOT. EMBEDDING)) THEN
                   WRITE (LUPRI,'(/A)')
      &             'Vacuum calc. - use .SOPPA instead'
