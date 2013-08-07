@@ -566,13 +566,17 @@ C
          ENDDO
          QFACTOR = QSN(I)+QSE(I)
          IF (MMPCM) QFACTOR = QSN(I)+QSE(I)+QSMM(I)
-         IF (TRPLET) THEN
-            CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),
-     &                1,WRK(KPCMXT),1)
-         ELSE
-            CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),
-     &                 1,WRK(KPCMX),1)
-         ENDIF
+Cjje
+         IF(.not. SOPRPA) then 
+            IF (TRPLET) THEN
+               CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),
+     &                   1,WRK(KPCMXT),1)
+            ELSE
+               CALL DAXPY(NOSIM*N2ORBX,QFACTOR,WRK(KJ1XSQ),
+     &                   1,WRK(KPCMX),1)
+            ENDIF
+         END IF
+Cjje
 C KPCMX: \tilde{J} + \tilde{X}
 C
 C     For non-totally symmetric perturbation operators
