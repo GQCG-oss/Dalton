@@ -2508,11 +2508,13 @@ contains
     if(iter==1.and.scheme==4)then
       call array_reorder_4d(1.0E0_realk,govov%elm1,no,no,nv,nv,[1,4,2,3],0.0E0_realk,w1)
       govov%elm1(1:o2v2) = w1(1:o2v2)
+#ifdef VAR_MPI
       if(DECinfo%solver_par)then
         govov%atype     = TILED_DIST
       endif
       call array_convert(w1,govov)
       govov%atype = DENSE
+#endif
     endif
 
     if(DECinfo%ccModel>2)then
