@@ -2814,9 +2814,7 @@ contains
     endif
 #endif
 
-    print *,"dealloc w1"
     call mem_dealloc(w1)
-    print *,"dealloc u2",u2%tdim,u2%ntpm
     call array_free(u2)
 
     call LSTIMER('CCSD part C',time_start,timewall_start,DECinfo%output)
