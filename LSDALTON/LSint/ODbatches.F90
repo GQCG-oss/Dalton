@@ -2,6 +2,7 @@
 !> Module containing information about the OD-batches (combination of zero, one or two AO-batches)
 MODULE ODbatches
  use precision
+ use typedeftype
  use typedef
  use memory_handling
  use ls_util

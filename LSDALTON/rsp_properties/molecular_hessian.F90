@@ -30,8 +30,8 @@ MODULE molecular_hessian_mod
 #ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
 #endif
-
-  private   ::  get_first_order_rsp_vectors
+  private
+!  private   ::  get_first_order_rsp_vectors
 
   public    ::  dummy_subroutine_hessian,&
                 & geohessian_set_default_config,&

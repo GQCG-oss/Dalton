@@ -7,12 +7,9 @@ module orbspread_hess_prec_mod
 !#                                                        #
 !##########################################################
   use precision
-!  use Pipek
-!  use orbspread_module
-!  use charge_module
-!  use davidson_settings
   use matrix_module, only: matrix
   use matrix_operations 
+  use matrix_operations_aux 
   use matrix_util, only: matrix_exponential
   use matrix_util
   use loc_utils

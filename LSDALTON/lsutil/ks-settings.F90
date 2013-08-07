@@ -1,4 +1,5 @@
 MODULE KS_settings
+use precision
 use matrix_module
 use matrix_operations
 ! This module evaluates the Fock/Kohn-Sham matrix using chosen

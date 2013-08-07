@@ -169,9 +169,9 @@ fi
 #
 CRIT1=`$GREP "@ \-<< XDIPLEN  ; XDIPLEN  >> =  2\.10082.......D\+01" $log | wc -l`
 CRIT2=`$GREP "@ \-<< XDIPLEN  ; YDIPLEN  >> = \-8\.67354.......D\+00" $log | wc -l`
-CRIT3=`$GREP "@ \-<< XDIPLEN  ; ZDIPLEN  >> = \-7\.72660.......D\-03" $log | wc -l`
+CRIT3=`$GREP "@ \-<< XDIPLEN  ; ZDIPLEN  >> = \-7\.726.........D\-03" $log | wc -l`
 CRIT4=`$GREP "@ \-<< YDIPLEN  ; YDIPLEN  >> =  3\.35324.......D\+01" $log | wc -l`
-CRIT5=`$GREP "@ \-<< YDIPLEN  ; ZDIPLEN  >> = \-9\.97334.......D\-04" $log | wc -l`
+CRIT5=`$GREP "@ \-<< YDIPLEN  ; ZDIPLEN  >> = \-9\.9(7|6)..........D\-04" $log | wc -l`
 CRIT6=`$GREP "@ \-<< ZDIPLEN  ; ZDIPLEN  >> =  4\.58232.......D\+00" $log | wc -l`
 TEST[1]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6`
 CTRL[1]=6
@@ -181,9 +181,9 @@ ERROR[1]="FREQUENCY INDEPENDENT POLARIZABILITY NOT CORRECT"
 #
 CRIT1=`$GREP "@ \-<< XDIPLEN  ; XDIPLEN  >> =  2.11397.......D\+01" $log | wc -l`
 CRIT2=`$GREP "@ \-<< XDIPLEN  ; YDIPLEN  >> = \-8.83363.......D\+00" $log | wc -l`
-CRIT3=`$GREP "@ \-<< XDIPLEN  ; ZDIPLEN  >> = \-7.76163.......D\-03" $log | wc -l`
+CRIT3=`$GREP "@ \-<< XDIPLEN  ; ZDIPLEN  >> = \-7.761.........D\-03" $log | wc -l`
 CRIT4=`$GREP "@ \-<< YDIPLEN  ; YDIPLEN  >> =  3.38562.......D\+01" $log | wc -l`
-CRIT5=`$GREP "@ \-<< YDIPLEN  ; ZDIPLEN  >> = \-9.66867.......D\-04" $log | wc -l`
+CRIT5=`$GREP "@ \-<< YDIPLEN  ; ZDIPLEN  >> = \-9.66..........D\-04" $log | wc -l`
 CRIT6=`$GREP "@ \-<< ZDIPLEN  ; ZDIPLEN  >> =  4.59733.......D\+00" $log | wc -l`
 TEST[2]=`expr $CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4 \+ $CRIT5 \+ $CRIT6 `
 CTRL[2]=6

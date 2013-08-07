@@ -417,6 +417,14 @@ SUBROUTINE lsdalton
            Endif
         endif
 
+        !PROPERTIES SECTION
+
+        if (config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. & 
+             & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
+             & config%decomp%cfg_check_converged_solution .or. config%decomp%cfg_rsp_nexcit > 0) then   
+           call get_oao_transformed_matrices(config%decomp,F(1),D(1))
+        endif
+
         call lsdalton_response(ls,config,F(1),D(1),S)
         
         call config_shutdown(config)
@@ -461,13 +469,8 @@ SUBROUTINE lsdalton
         ENDIF
 #endif
 
-        ! PROPERTIES SECTION
+        ! END OF PROPERTIES SECTION
         !
-        if (config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. & 
-             & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
-             & config%decomp%cfg_check_converged_solution .or. config%decomp%cfg_rsp_nexcit > 0) then   
-           call get_oao_transformed_matrices(config%decomp,F(1),D(1))
-        endif
         if (do_decomp) then
            call decomp_shutdown(config%decomp)
            !call dd_shutdown(config%decomp%cfg_unres)

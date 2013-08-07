@@ -127,14 +127,14 @@ CTRL[4]=7
 ERROR[4]="INCORRECT WAVE FUNCTION"
 
 # SCF energy:
-CRIT1=`$GREP "Hartree-Fock total energy : * \-76\.025681483[0-9]" $log | wc -l`
+CRIT1=`$GREP "Hartree-Fock total energy *: * \-76\.025681483[0-9]" $log | wc -l`
 TEST[5]=`expr $CRIT1`
 CTRL[5]=1
 ERROR[5]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy:
 # hjaaj Jan 05: decreased number of digits as MP2 energy is only of lin.acc.
-CRIT1=`$GREP "MP2 second order energy : * \-76\.2306668" $log | wc -l`
+CRIT1=`$GREP "MP2 second order energy *: * \-76\.2306668" $log | wc -l`
 TEST[6]=`expr $CRIT1`
 CTRL[6]=1
 ERROR[6]="MP2 ENERGY NOT CORRECT"

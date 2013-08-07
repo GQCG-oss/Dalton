@@ -5,6 +5,7 @@
 module matrix_operations_unres_dense
   use matrix_module
   use memory_handling
+  use precision
   contains
 !> \brief See mat_init in mat-operations.f90
   subroutine mat_unres_dense_init(a,nrow,ncol)
