@@ -21,6 +21,16 @@ export DALTON_TMPDIR=$SCRATCH_DIR
 export DALTON_NR_MPI_PROCS=1
 export CTEST_PROJECT_NAME=LSDALTON
 cmake -DCMAKE_Fortran_COMPILER=/com/gfortran/4.4.3/bin/gfortran -DCMAKE_C_COMPILER=/com/gfortran/4.4.3/bin/gcc -DENABLE_OMP=1 -DCMAKE_BUILD_TYPE=Release -DEXPLICIT_LIBS="-L$MATH_ROOT/lib/em64t -lmkl_gf_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm" -DBUILDNAME=RB-Grendel-linux-gfortran443-omp-release /home/tkjaer/NightlyTestingCdash/tmp/DaltonGfortranRelease
+
+make release
+#mv DALTON-2013.0-Source.tar.gz $TMP_DIR/../DaltonGfortranReleaseRELEASE/DALTON-2013.0-Source.tar.gz
+#cd $TMP_DIR/../DaltonGfortranReleaseRELEASE
+tar xzf DALTON-2013.0-Source.tar.gz
+cd DALTON-2013.0-Source
+./setup --fc=/com/gfortran/4.4.3/bin/gfortran --cc=/com/gfortran/4.4.3/bin/gcc --omp --explicit-libs="-L$MATH_ROOT/lib/em64t -lmkl_gf_lp64 -lmkl_intel_thread -lmkl_core -liomp5 -lpthread -lm" -D BUILDNAME="RB-Grendel-linux-gfortran443-omp-release" build
+
+cd build
+#make
 #make depend
 #make Nightly
 #make Experimental
