@@ -2061,7 +2061,9 @@ C
      *   ' B operator label,  symmetry, spin: ',
      *      BSMLB(MSYMB,IBOP),MSYMB,ISPINB,
      *   ' Excited state no., symmetry, spin: ',IC,MSYMCX,ISPINC
-                        WRITE(LUPRI,'(/A,3F12.6)')
+C needed other format to test sth - JC
+                        WRITE(LUPRI,'(/A,3ES18.7)')
+C                        WRITE(LUPRI,'(/A,3F12.6)')
      *   ' omega B, excitation energy, moment :',
      *      BSMFR(IBFR),EXCITA(MSYMC,IC,ISPINC+1),SMOM
                               IF (PHOSPH .AND.
