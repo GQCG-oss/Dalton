@@ -196,7 +196,7 @@ C     satisfactorily yet.
       CALL DZERO(CRDIN1,8*MXCENT)
       CALL IZERO(ICNSTR,8*MXCENT)
       CALL IZERO(IADDCR,11*4)
-      CALL IZERO(IFREEZ,11)
+      CALL IZERO(IFREEZ,MX_IFREEZ)
       DO 123 I = 0, 7
          CNDHES(I) = D0
          INDHES(I) = 0
@@ -469,6 +469,11 @@ C           .VR-SYM
                   CALL QUIT('Illegal frozen atom.')
                END IF
                IFREEZ(0) = IFREEZ(0) + 1
+               IF (IFREEZ(0) .GT. MX_IFREEZ) THEN
+                  WRITE(LUPRI,*) 'ERROR for .FREEZE Input,'//
+     &               ' max number frozen atoms is',MX_IFREEZ
+                  CALL QUIT('Too many atoms frozen with .FREEZE')
+               END IF
                IFREEZ(IFREEZ(0)) = NFRZ
  474        CONTINUE
             GOTO 100
