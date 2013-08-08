@@ -931,9 +931,9 @@ subroutine PROFILE_INPUT(profinput,readword,word,lucmd,lupri)
         CASE ('.EXCHANGE MANYD'); PROFINPUT%EXCHANGEmanyD = .TRUE.
         CASE ('.XC'); PROFINPUT%XC = .TRUE.
         CASE ('.XC LINRSP'); PROFINPUT%XCLINRSP = .TRUE.
-        CASE ('.XC FGRAD'); PROFINPUT%XCFGRAD = .TRUE.
         CASE ('.XC ENERGY'); PROFINPUT%XCENERGY = .TRUE.
         CASE ('.FOCK');  PROFINPUT%FOCK = .TRUE.
+        CASE ('.NEGRAD'); PROFINPUT%NEGRAD = .TRUE.
         CASE DEFAULT
            WRITE (LUPRI,'(/,3A,/)') ' Keyword "',WORD,&
                 & '" not recognized in **PROFILE readin.'
