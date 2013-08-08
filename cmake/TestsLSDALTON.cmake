@@ -196,7 +196,7 @@ endif()
     add_lsdalton_test(plt/plt_dens                                   "linsca")
     add_lsdalton_test(plt/plt_ep                                     "linsca")
 
-if(NOT ENABLE_RELEASE)
+if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
     add_lsdalton_test(LSint/LSDALTON_uncontAObatch         "linsca")
     add_lsdalton_test(LSint/LSDALTON_UDFT                  "linsca")
     add_lsdalton_test(LSint/LSDALTON_UHF_DEFAULT           "linsca")
