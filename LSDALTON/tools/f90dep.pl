@@ -29,7 +29,7 @@ sub processFile($$) {
     }
     print STDERR "Processing '$file'\n";
     my $objectFile = $file;
-    $objectFile =~ s/\.(f90|F|F90)$/.o/;
+    $objectFile =~ s/\.(f90|F|F90|F03)$/.o/;
     print STDERR $file. "\n" if $verbose;
     while(<FL>) {
         my ($module) = ($_ =~ /^ *MODULE +(\w+)/i);
@@ -83,7 +83,7 @@ while($i = shift @ARGV) {
 	    exit 0;
 	} elsif($i =~ /^-M/) {
 	    my $dirToProcess = ($i eq '-M') ? shift @ARGV : substr $i, 2;
-	    my @fileList = glob $dirToProcess . '/*.(F90|f90)';
+	    my @fileList = glob $dirToProcess . '/*.(F03|F90|f90)';
 	    foreach my $f(@fileList) {
 		processFile 1, $f;
 	    }

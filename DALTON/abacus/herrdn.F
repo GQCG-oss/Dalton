@@ -2568,7 +2568,7 @@ C
      &               KPRIM,CPRIMU,NRMPRI,KASYM,NSYMOP)
          IF (.NOT. DKHINT) THEN
          ! do not save MOLDEN info for uncontracted basis set for DKH2
-             CALL MOGTO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
+             CALL MOLDEN_GTO(NONTYP,NONT,IQM(1,1),NBLCK(1,1),JCO(1,1,1),
      &                  NUC(1,1),NRC(1,1),SEG(1,1),KATOM,KANG,KBLOCK,
      &                  KPRIM,CPRIMU,NRMPRI)
          END IF
@@ -4506,8 +4506,10 @@ C
 C     tuh 081188 - Bush elected
 Clf       031104 - Bush Jr. re-elected
 C
-      use pe_variables, only: peqm, pe_mep
+#if defined (BUILD_PELIB)
+      use pe_variables, only: peqm
       use polarizable_embedding, only: pe_init
+#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -4534,6 +4536,11 @@ C
 #include "chrnos.h"
 #include "ibtfun.h"
 C
+      LOGICAL :: POLEMB = .FALSE.
+#if defined (BUILD_PELIB)
+      POLEMB = .TRUE.
+#endif
+C
       NCOOR = 3*NUCDEP
 C
 C     *********************************
@@ -4543,7 +4550,7 @@ C
       IPTEST = MIN(NUCDEP/13,2)
 C     hjaaj: x,y,z normally only interesting for
 C            small molecules, otherwise just a lot of lines.
-      IF ( (IPREAD .GT. IPTEST) .OR. QMMM )  THEN
+      IF ( (IPREAD .GT. IPTEST) .OR. QMMM .OR. POLEMB )  THEN
          CALL HEADER('Cartesian Coordinates (a.u.)',1)
          WRITE (LUPRI,'(A,I5)')'  Total number of coordinates:',NCOOR
       END IF
@@ -4571,7 +4578,7 @@ C
          NAME   = NAMEX(3*ICENT)(1:4)
          IF (MULT(MULCNT) .EQ. 1) THEN
             IPCMN = IPCMN + 1
-            IF ( (IPREAD .GT. IPTEST) .OR. QMMM ) THEN
+            IF ( (IPREAD .GT. IPTEST) .OR. QMMM .OR. POLEMB ) THEN
                WRITE (LUPRI,'(2X,A,3X," : ",3(I5,2X,A,F15.10))')
      &              NAME, ICRX  , CHRXYZ(-1), CORD(1,ICENT),
      &                    ICRX+1, CHRXYZ(-2), CORD(2,ICENT),
@@ -4683,9 +4690,11 @@ C
      &   '@  Nuclear repulsion energy :',POTNUC,' Hartree'
       END IF
 
-      if (peqm .or. pe_mep) then
+#if defined (BUILD_PELIB)
+      if (peqm) then
         call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
       end if
+#endif
 
       RETURN
       END
@@ -6621,7 +6630,9 @@ C
 C
 C     Read in the fourth input line using the new input scheme
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -6802,6 +6813,7 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
          DOOWN  = CRT .EQ. 'X'
       END IF
       IF (ADDSYM) NSYMOP = 0
+#if defined (BUILD_PELIB)
       if (peqm) then
         if (addsym) then
             addsym = .false.
@@ -6813,6 +6825,7 @@ C        Also automatic symmetry detection for Dinfh or Cinfv
      &                ' polarizable embedding')
         end if
       end if
+#endif
       RETURN
  199  CONTINUE
       WRITE (LUPRI,'(/A)') ' Error in the determination of the number'

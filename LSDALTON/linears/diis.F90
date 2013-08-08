@@ -7,6 +7,10 @@
 module LINSCA_DIIS
   use av_utilities
   use scf_stats, only: stat_current_iteration, stat_tab
+  use memory_handling
+  use matrix_module
+  use matrix_operations
+  use precision
   private
   public :: DIIS, simple_averaging
   contains
@@ -130,6 +134,10 @@ end module LINSCA_DIIS
 !> \date 2003
 module LINSCA_EDIIS
   use av_utilities
+  use memory_handling
+  use matrix_module
+  use matrix_operations
+  use precision
   contains
 !> \brief Modified DIIS. Averaging is based on energy minimization.
 !> \author L. Thogersen

@@ -105,7 +105,7 @@ TEST[2]=`expr	$CRIT1`
 CTRL[2]=1
 ERROR[2]="BASIS SET NOT CHANGED"
 
-sed -n -e '/Basis set changed to 3-21G/,$ { /Starting geometry./,/Harmonic contribution/  p } ' $log > ${log}_0
+sed -n -e '/Basis set changed to 3-21G/,$p' $log | sed -n -e '/Starting geometry./,/Harmonic contribution/p' > ${log}_0
 log=${log}_0
 
 # Coupling constants at equilibrium geometry

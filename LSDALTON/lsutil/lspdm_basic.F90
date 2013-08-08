@@ -23,7 +23,15 @@ module lspdm_basic_module
                     &get_tileinfo_nelspermode_fromarr8
   end interface get_tile_dim
 
+  !interface get_tile_idx
+  !  module procedure get_tile_idx_from_global_idx
+  !end interface get_tile_idx
+
   contains
+  !subroutine get_tile_idx_from_global_idx()
+  !  implicit none
+  !end subroutine get_tile_idx_from_global_idx
+  
 
   subroutine get_tileinfo_nels_frombas(sze,tileidx,dims,tdim,mode,offset)
     implicit none

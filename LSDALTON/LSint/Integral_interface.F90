@@ -72,7 +72,7 @@ MODULE IntegralInterfaceMOD
        & II_get_prop_expval,II_get_integral,II_get_integral_full,&
        & II_get_sphmom,II_carmom_to_shermom,II_get_3center_overlap,&
        & II_get_2center_eri,II_get_4center_eri,II_get_4center_eri_diff,&
-       & II_get_nucel_diff,II_precalc_ScreenMat, &
+       & II_get_1el_diff,II_precalc_ScreenMat, &
 #ifdef VAR_MPI
        & II_bcast_screen, II_screeninit, II_screenfree,&
 #endif
@@ -92,7 +92,7 @@ MODULE IntegralInterfaceMOD
        & II_get_exchange_mat_regular_full, II_get_admm_exchange_mat,&
        & II_get_ADMM_K_gradient, II_get_coulomb_mat,ii_get_exchange_mat_mixed,&
        & II_get_exchange_mat,II_get_coulomb_and_exchange_mat, II_get_Fock_mat,&
-       & II_get_coulomb_mat_mixed
+       & II_get_coulomb_mat_mixed, II_GET_DISTANCEPLOT_4CENTERERI
   private
 
 INTERFACE II_get_coulomb_mat
@@ -2544,20 +2544,23 @@ END SUBROUTINE II_get_4center_eri_diff
 !> \param lupri Default print unit
 !> \param luerr Default error print unit
 !> \param setting Integral evalualtion settings
-!> \param outputintegral the differentiated ne d/dR_e sum_C (ab|C)Z_C
+!> \param outputintegral the differentiated 1-electron integral - for nucel the
+!>        nuclei are summed over according to  d/dR_e sum_C (ab|C)Z_C
 !> \param DIM1 the dimension of orbital alpha
 !> \param DIM2 the dimension of orbital beta
 !> \param DIM5 the number of differential components
 !> \param geoderiv Specifies the geoemetrical derivative order
-SUBROUTINE II_get_nucel_diff(LUPRI,LUERR,SETTING,outputintegral,dim1,dim2,dim5,geoderiv)
+SUBROUTINE II_get_1el_diff(LUPRI,LUERR,SETTING,outputintegral,oneElType,dim1,dim2,dim5,geoderiv)
 IMPLICIT NONE
-TYPE(LSSETTING)       :: SETTING
-INTEGER               :: LUPRI,LUERR,dim1,dim2,dim5
-REAL(REALK),target,intent(inout) :: outputintegral(:,:,:,:,:) !dim1,dim2,1,1,dim5
-Integer,optional      :: geoderiv
+TYPE(LSSETTING)         :: SETTING
+INTEGER                 :: LUPRI,LUERR,dim1,dim2,dim5
+REAL(REALK),target,intent(inout) :: outputintegral(:,:,:,:,:)
+Character(*),intent(IN) :: oneElType
+Integer,optional        :: geoderiv
 !
 Logical             :: dogeoderiv,nofamily
 integer             :: i,j,k,l,n,intSpec,geoOrder
+integer             :: AO1,AO2,AO3,AO4,Oper,n1,n2,n3,n4,n5
 
 !set threshold 
 SETTING%SCHEME%intTHRESHOLD=SETTING%SCHEME%THRESHOLD*SETTING%SCHEME%J_THR
@@ -2582,15 +2585,39 @@ ELSE
   intSpec = RegularSpec
 ENDIF
 
+n1   = dim1
+n2   = dim2
+n3   = 1
+n4   = 1
+n5   = dim5
+AO1  = AORdefault
+AO2  = AORdefault
+AO3  = AOEmpty
+AO4  = AOEmpty
+select case(oneElType)
+case ('nucel')
+  AO3  = AONuclear
+  Oper = NucpotOperator
+case ('overlap')
+  Oper = OverlapOperator
+! intSpec = GeoDerivLHSSpec
+case ('kinetic')
+  n2   = 1
+  n3   = dim2
+  AO2  = AOEmpty
+  AO3  = AORdefault
+  Oper = KineticOperator
+case default
+  call lsquit('Error in II_get_1el_diff - Unknown 1-electron case',lupri)
+end select
 
-call initIntegralOutputDims(setting%output,dim1,dim2,1,1,dim5)
-call ls_dzero(outputintegral,dim1*dim2*dim5)
+call initIntegralOutputDims(setting%output,n1,n2,n3,n4,n5)
+call ls_dzero(outputintegral,n1*n2*n3*n4*n5)
  
-CALL ls_getIntegrals(AORdefault,AORdefault,AONuclear,AOEmpty,&
-     &NucpotOperator,intSpec,ContractedInttype,SETTING,LUPRI,LUERR,geoOrder)
+CALL ls_getIntegrals(AO1,AO2,AO3,AO4,Oper,intSpec,ContractedInttype,SETTING,LUPRI,LUERR,geoOrder)
 
 IF(setting%IntegralTransformGC)THEN
-  call lsquit('Error in II_get_nucel_diff - IntegralTransformGC not implemented',lupri)
+  call lsquit('Error in II_get_1el_diff - IntegralTransformGC not implemented',lupri)
 ELSE
   CALL retrieve_Output(lupri,setting,outputintegral,setting%IntegralTransformGC)
   IF (dogeoderiv) THEN
@@ -2598,7 +2625,7 @@ ELSE
   ENDIF
 ENDIF
 
-END SUBROUTINE II_get_nucel_diff
+END SUBROUTINE II_get_1el_diff
 
 !> \brief Calculates and stores the screening integrals
 !> \author T. Kjaergaard
@@ -4643,6 +4670,103 @@ setting%sameMol = OLDsameMOLE
 call mem_dealloc(OLDsameMOLE) 
 
 END SUBROUTINE II_get_ABres_4CenterEri
+
+!> \brief Calculates the (ab|cd) with fixed a and b batchindexes so that the output would be a 4dim tensor with dim (dimAbatch,dimBbatch,fulldimC,fulldimD)
+!> \author T. Kjaergaard
+!> \date 2010-03-17
+!> \param integrals the (ab|cd) tensor
+!> \param batchA the requested A batchindex
+!> \param batchB the requested B batchindex
+!> \param dimA dimension of the requested  A batchindex
+!> \param dimB dimension of the requested  B batchindex
+!> \param nbast The number of oribtals (or basis functions) for c and d
+!> \param lupri The default print-unit. If -1 on input it opens default LSDALTON.OUT
+!> \param luerr The dafault error-unit. If -1 on input it opens default LSDALTON.ERR
+!> Note that if both LSDALTON.OUT and LSDALTON.ERR are already open, and the -1 
+!> unit-numbers are provided, the code will crash (when attemting to reopen
+!> a file that is already open).
+SUBROUTINE II_get_DistancePlot_4CenterEri(setting,luINT,lupri,luerr)
+IMPLICIT NONE
+TYPE(LSSETTING)         :: SETTING
+Integer,intent(in)      :: luint,lupri,luerr
+!   
+type(moleculeinfo),target :: atomicmoleculeP
+type(moleculeinfo),target :: atomicmoleculeQ
+integer :: I,J,iAO,nAtoms,nbastP,nbastQ,ATOMP,ATOMQ
+integer :: IA,IB,IC,ID
+real(realk) :: Xp,Yp,Zp,Xq,Yq,Zq,DISTX,DISTY,DISTZ,Rpq
+logical,pointer       :: OLDsameMOLE(:,:)
+real(realk),pointer   :: integrals(:,:,:,:)
+type(MOLECULE_PT)   :: temp,Point
+
+temp%p  => setting%MOLECULE(1)%p
+call mem_alloc(OLDsameMOLE,4,4)
+OLDsameMOLE = setting%sameMol
+
+setting%sameMol(1,2)=.TRUE.
+setting%sameMol(2,1)=.TRUE.
+setting%sameMol(3,4)=.TRUE.
+setting%sameMol(4,3)=.TRUE.
+DO I=1,2
+   DO J=3,4
+      setting%sameMol(I,J)=.FALSE.
+      setting%sameMol(J,I)=.FALSE.
+   ENDDO
+ENDDO
+nAtoms = setting%molecule(1)%p%nAtoms
+WRITE(luint,'(A16,3X,A16)')'Distance','IntegralValue'
+do ATOMP = 1,nAtoms 
+   CALL build_atomicmolecule(temp%p,atomicmoleculeP,ATOMP,lupri)
+   do iAO=1,2
+      Setting%molecule(iAO)%p => atomicmoleculeP
+      Setting%fragment(iAO)%p => atomicmoleculeP
+   enddo
+   nbastP = getNbasis(AORdefault,Contractedinttype,setting%MOLECULE(1)%p,lupri)
+
+   Xp = - Setting%molecule(1)%p%ATOM(1)%CENTER(1) 
+   Yp = - Setting%molecule(1)%p%ATOM(1)%CENTER(1) 
+   Zp = - Setting%molecule(1)%p%ATOM(1)%CENTER(1) 
+   do ATOMQ = ATOMP,nAtoms 
+      CALL build_atomicmolecule(temp%p,atomicmoleculeQ,ATOMQ,lupri)
+      do iAO=3,4
+         Setting%molecule(iAO)%p => atomicmoleculeQ
+         Setting%fragment(iAO)%p => atomicmoleculeQ
+      enddo
+      nbastQ = getNbasis(AORdefault,Contractedinttype,setting%MOLECULE(3)%p,lupri)
+      call mem_alloc(integrals,nbastP,nbastP,nbastQ,nbastQ)
+      CALL II_get_4center_eri(LUPRI,LUERR,SETTING,integrals,nbastP,nbastP,nbastQ,nbastQ)
+
+      Xq = Setting%molecule(3)%p%ATOM(1)%CENTER(1) 
+      Yq = Setting%molecule(3)%p%ATOM(1)%CENTER(1) 
+      Zq = Setting%molecule(3)%p%ATOM(1)%CENTER(1) 
+      DISTX = Xp + Xq
+      DISTY = Yp + Yq
+      DISTZ = Zp + Zq
+      Rpq = SQRT(DISTX*DISTX + DISTY*DISTY + DISTZ*DISTZ)
+      DO ID=1,nbastQ
+         DO IC=ID,nbastQ
+            DO IB=1,nbastP
+               DO IA=IB,nbastP
+                  IF(ABS(integrals(IA,IB,IC,ID)).GT.1.0E-15_realk)THEN
+                     WRITE(luint,'(ES16.8,3X,ES16.8)')Rpq,integrals(IA,IB,IC,ID)
+                  ENDIF
+               ENDDO
+            ENDDO
+         ENDDO
+      ENDDO
+      call mem_dealloc(integrals)
+      call free_Moleculeinfo(atomicmoleculeQ)
+   enddo
+   call free_Moleculeinfo(atomicmoleculeP)
+enddo
+setting%sameMol = OLDsameMOLE
+call mem_dealloc(OLDsameMOLE) 
+do iAO=1,4
+   setting%MOLECULE(iAO)%p => temp%p
+   setting%Fragment(iAO)%p => temp%p
+enddo
+
+END SUBROUTINE II_get_DistancePlot_4CenterEri
 
 !==========================================================================
 !

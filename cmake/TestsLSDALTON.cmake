@@ -1,3 +1,8 @@
+# The script add_lsdalton_test() is defined in TestsCommon.cmake
+# ALL tests here should contain the label "linsca"
+# (label "lsdalton" will be matched by "ctest -L dalton" and should
+#  therefore not be used.)
+
 if(ENABLE_64BIT_INTEGERS)
     add_lsdalton_test(linsca/linsca_trilevel_64bit "linsca;int64")
     add_lsdalton_test(linsca/linsca_atoms_64bit    "linsca;int64")
@@ -154,6 +159,7 @@ endif()
     add_lsdalton_test(LSresponse/LSresponse_DFT_esd                  "linsca")
     add_lsdalton_test(LSresponse/LSresponse_DFT_esg                  "linsca")
     add_lsdalton_test(LSresponse/LSresponse_DFT_esg_LDA              "linsca")
+    add_lsdalton_test(LSresponse/LSresponse_DFT_excit                "linsca")
     add_lsdalton_test(LSresponse/LSresponse_DFT_dtpa                 "linsca")
     add_lsdalton_test(LSresponse/LSresponse_DFT_molgra               "linsca")
     add_lsdalton_test(LSresponse/LSresponse_DFT_opa                  "linsca")
@@ -190,7 +196,7 @@ endif()
     add_lsdalton_test(plt/plt_dens                                   "linsca")
     add_lsdalton_test(plt/plt_ep                                     "linsca")
 
-if(NOT ENABLE_RELEASE)
+if(DEVELOPMENT_CODE AND NOT ENABLE_RELEASE)
     add_lsdalton_test(LSint/LSDALTON_uncontAObatch         "linsca")
     add_lsdalton_test(LSint/LSDALTON_UDFT                  "linsca")
     add_lsdalton_test(LSint/LSDALTON_UHF_DEFAULT           "linsca")

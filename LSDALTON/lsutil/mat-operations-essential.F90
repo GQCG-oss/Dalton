@@ -30,6 +30,41 @@ MODULE matrix_operations
    use matrix_operations_csr
    use matrix_operations_unres_dense
 
+   private
+   public ::  matrixfiletype2, matrixfiletype, matrixmembuf, matmembuf,&
+        & mtype_symm_dense, mtype_dense, mtype_unres_dense, mtype_csr,&
+        & mtype_scalapack, matrix_type, &
+        & SET_MATRIX_DEFAULT, mat_select_type, mat_finalize, mat_pass_info,&
+        & mat_timings, mat_no_of_matmuls,&
+        & mat_init, mat_free, allocated_memory,&
+        & stat_deallocated_memory,mat_set_from_full,mat_to_full,mat_print,&
+        & mat_trans,mat_chol,mat_dpotrf,mat_dpotrs,mat_dpotri,mat_inv,&
+        & mat_clone,mat_assign,mat_mpicopy,mat_copy,mat_mul,mat_add,mat_daxpy,&
+        & mat_dposv,mat_abs_max_elm,mat_max_elm,mat_min_elm,mat_max_diag_elm,&
+        & mat_diag_f,mat_dsyev,mat_dsyevx,mat_section,mat_insert_section,&
+        & mat_identity,mat_add_identity,mat_create_block,mat_add_block,&
+        & mat_retrieve_block,mat_scal,mat_scal_dia,mat_scal_dia_vec,mat_zero,&
+        & mat_setlowertriangular_zero,set_lowertriangular_zero,&
+        & mat_write_to_disk,mat_write_info_to_disk,mat_read_from_disk,&
+        & mat_read_info_from_disk,mat_extract_diagonal,&
+        & no_of_matmuls, mat_tr, mat_trab, mat_dotproduct, mat_sqnorm2, &
+        & mat_outdia_sqnorm2, info_memory, max_no_of_matrices, no_of_matrices,&
+        & MatrixmemBuf_init, MatrixmemBuf_free,matrixmembuf_print,&
+        & matrixmembuf_open, matrixmembuf_close, matrixmembuf_overwrite,&
+        & mat_to_full3D
+
+!        matrixmembuf_new_iunit
+!FindIunit,FindIunitFileUnit,matrixmembuf_FindFile
+!FindIunit2,FindIunitFileUnit2,Matrixmembuf_setmatrixcurrent
+!Setmatrixcurrent1
+!Free_fileUnit,Free_fileMatrix
+!print_fileUnit,print_fileMatrix,matrixmembuf_Open
+!Matrixmembuf_Overwrite,OverwriteIunitFileUnit2,matrixmembuf_Close
+!FindIunitAndFree,matrixmembuf_write_to_mem,FindIunitAnd_write_to_mem
+!matrixmembuf_write_to_mem1,matrixmembuf_read_from_mem,FindIunitAnd_read_from_mem
+!matrixmembuf_read_from_mem1,free_matlist,matrixmembuf_FreeFile,FreeIunit2
+!FreeIunitFileUnit2,lsmpi_set_matrix_type_master,lsmpi_set_matrix_type_slave
+
 !FrameWork to write to memory - usefull for scalapack 
 !and when disk space is limited
 type matrixfiletype2
@@ -480,6 +515,53 @@ end type matrixmembuf
          if (info_memory) write(mat_lu,*) 'After mat_to_full: mem_allocated_global =', mem_allocated_global
          call time_mat_operations2(JOB_mat_to_full)
       END SUBROUTINE mat_to_full
+
+!> \brief Convert a type(matrix) to a standard 3D fortran matrix - USAGE DISCOURAGED!
+!> \author L. Thogersen
+!> \date 2003
+!> \param a The type(matrix) that should be converted (n x n)
+!> \param afull The output standard fortran matrix ((2n x 2n) if unrestricted, (n x n) otherwise)
+!> \param alpha The output standard fortran matrix is multiplied by alpha
+!> \param mat_label If the character label is present, sparsity will be printed if using block-sparse matrices
+!>  
+!> BE VERY CAREFUL WHEN USING mat_set_from_full AND mat_to_full!!!!!!
+!> Usage of these routines should be avoided whenever possible, since
+!> you have to hardcode an interface to make them work with unrestriced
+!> matrices (see e.g. di_get_fock in dalton_interface.f90)
+!>
+     SUBROUTINE mat_to_full3D(a, alpha, afull,n1,n2,n3,i3,i4)
+
+         implicit none
+         integer, INTENT(IN)           :: n1,n2,n3,i3
+         integer, INTENT(IN), OPTIONAL :: i4 !for unres
+         TYPE(Matrix), intent(in):: a
+         real(realk), intent(in) :: alpha
+         real(realk), intent(inout):: afull(n1,n2,n3)  !output
+         integer :: local_i4
+         IF(present(i4))THEN
+            local_i4=i4 
+            !this means place alpha in A(:,:,i3) place beta in A(:,:,i4)
+         ELSE
+            local_i4=i3 !this means add alpha and beta for unres 
+         ENDIF
+         call time_mat_operations1
+         if (info_memory) write(mat_lu,*) 'Before mat_to_full: mem_allocated_global =', mem_allocated_global
+         select case(matrix_type)
+         case(mtype_dense)
+             call mat_dense_to_full3d(a, alpha, afull,n1,n2,n3,i3)
+         case(mtype_csr)
+             call mat_csr_to_full3d(a, alpha, afull,n1,n2,n3,i3)
+         case(mtype_scalapack)
+            call mat_scalapack_to_full3d(a, alpha, afull,n1,n2,n3,i3)
+         case(mtype_unres_dense)
+             call mat_unres_dense_to_full3d(a, alpha, afull,n1,n2,n3,i3,local_i4)
+         case default
+              call lsquit("mat_to_full3D not implemented for this type of matrix",-1)
+         end select
+         !if (INFO_TIME_MAT) CALL LSTIMER('TOFULL',mat_TSTR,mat_TEN,mat_lu)
+         if (info_memory) write(mat_lu,*) 'After mat_to_full: mem_allocated_global =', mem_allocated_global
+         call time_mat_operations2(JOB_mat_to_full)
+       END SUBROUTINE mat_to_full3D
 
 !> \brief Print a type(matrix) to file in pretty format
 !> \author L. Thogersen

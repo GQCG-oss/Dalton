@@ -53,7 +53,9 @@ C
 C
 
       use lucita_orbital_spaces
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 
 #include "implicit.h"
 C
@@ -173,11 +175,11 @@ C
       IF (DORHF .OR. DOMP2) THEN
          MCTYPE   = 0
          IF (DOCINO .OR. DOCI .OR. DOMC) THEN
-            FLAG(25)=.FALSE.
+            FLAG(25) = .FALSE. ! do not write to SIRIFC if RHF followed by MC or CI
             IF (DOMP2) THEN
-               FLAG(16)= .FALSE.
-               PCMSV   = PCM
-               PCM     = .FALSE.
+               FLAG(16) = .FALSE.
+               PCMSV    = PCM
+               PCM      = .FALSE.
             END IF
          END IF
 C        ... do not write interface file if RHF or MP2 not final calc.
@@ -339,8 +341,10 @@ C        Call SIROPT to perform QC-SCF iterations
 C
          ICONVI = ICONV 
          IF (FLAG(21) .AND. ICONV .LE. 0) THEN
+#if defined (BUILD_PELIB)
             if (peqm) call quit('ERROR: DIIS failed to converge'//
-     &                 'and QC-SCF is not implemented with PE module')
+     &                 'and QC-SCF is not implemented with PE library')
+#endif
             IF (QMMM) CALL QUIT('DIIS failed to converge for QMMM'//
      &         ' and QC-SCF is not implemented for QMMM')
             FLAG( 2) = .TRUE.

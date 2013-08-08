@@ -1544,17 +1544,20 @@ DO I=1,Nsegments
        SEGMENTcol(I)=SEGMENTcol(I)+1
        SEGMENTrow(I)=ELEMENTS-(SEGMENTcol(I)-1)*nprim
        DO K=1,SEGMENTrow(I)
-!          WRITE(LUPRI,*)'CC(',Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1,')=',Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)
           IF(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1.LE.nprim*norbital)THEN
-             IF(ABS(Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)) .GT. 1.0E-30_realk)&
-                  & CALL LSQUIT('something is wrong in ANALYSE_CONTRACTIONMATRIX',lupri)
+             IF(ABS(Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)) .GT. 1.0E-30_realk)THEN
+                WRITE(LUPRI,*)'CC(',Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1,')=',&
+                     &Contractionmatrix%elms(Nstart(I)+K+(SEGMENTcol(I)+1-1)*nprim-1)
+                CALL LSQUIT('something is wrong in ANALYSE_CONTRACTIONMATRIX',lupri)
+             ENDIF
           ENDIF
        ENDDO
        EXTRAROWS=0
        DO L=1,SEGMENTcol(I)
+          IF(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim.LE.nprim*norbital)THEN
 !          WRITE(LUPRI,*)'CC(',Nstart(I)+SEGMENTrow(I)+(L-1)*nprim,')=',Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)
-          
-          IF(ABS(Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)) .GT. 1.0E-30_realk)EXTRAROWS=EXTRAROWS+1          
+             IF(ABS(Contractionmatrix%elms(Nstart(I)+SEGMENTrow(I)+(L-1)*nprim)) .GT. 1.0E-30_realk)EXTRAROWS=EXTRAROWS+1          
+          ENDIF
        ENDDO
        IF(EXTRAROWS .GT. 0) SEGMENTrow(I)=SEGMENTrow(I)+1
     ELSE

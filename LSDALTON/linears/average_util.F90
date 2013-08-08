@@ -10,8 +10,14 @@
 !>
 MODULE av_utilities
    use files
+   use precision
+   use Matrix_module
    USE Matrix_operations
-
+   private
+   public :: util_HistoryStore, cfg_set, AvItem, av_set_default_config,&
+        & av_shutdown, queue_init, queue_free, queue_on_disk, queue_from_disk,&
+        & add_to_queue, Queue_update_TrDSDS, flush_queue, get_average_arr, &
+        & util_GET_PROJ_PART
    !> \brief Stores Fock/density mats for DIIS and EDIIS
    !> \author L. Thogersen
    !> \date 2003

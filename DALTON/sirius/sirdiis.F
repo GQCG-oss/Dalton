@@ -33,9 +33,6 @@ C
 !Revision 1.9  2001/02/01 17:30:12  hjj
 !restart DIIS if DIIS is stalled ...
 !
-!Revision 1.8  2001/01/31 13:49:00  hjj
-!allocate FQ matrix for open shell before WR_SIRIFC
-!
 !Revision 1.6  2000/05/24 12:28:27  hjj
 !1) fixed solvent calculations (DIFDEN must be false for solvent)
 !2) fixed WR_SIRIFC call for open shell and solvent
@@ -50,11 +47,7 @@ C
 !950824-hjaaj
 !DIIS_CTL: output for AUTOCC
 !FCKEIG: also AUTOCC for open shell plus smaller changes.
-!9505-k.ruud
-!c: implemented AUTOCC option
-!940916-hjaaj
-!DIIS_CTL: changed print of energy from F18.12 to F22.12
-!  (to avoid stars for e.g. Pb)
+!9505-k.ruud implemented AUTOCC option
 !940701-hjaaj
 !SRDIIS: let MXERRV to default to MAX(2,MIN(NWOPT,10)) (was MXDIIS).
 !  This fixes linear dependency problem for very small debug runs:
@@ -295,8 +288,10 @@ C
 C DFT modifications T.  Helgaker
 C
 C
-      use pe_variables, only: peqm, pe_mep
+#if defined (BUILD_PELIB)
+      use pe_variables, only: peqm
       use polarizable_embedding, only: pe_master
+#endif
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -415,10 +410,12 @@ C     this also includes the case of MMPCM
      &      ' Iter     Total energy      Solvation energy  Error norm'//
      &      '  Delta(E)  Sym.  Closed shell occupation'
       END IF
+#if defined (BUILD_PELIB)
       else if (peqm) then
         write(luw4,'(/a)')
      &      ' Iter      Total energy     Embedding energy      '//
      &      'Error norm     Delta(E)'
+#endif
       ELSE ! no solvation energy
       IF (.NOT.AUTOCC) THEN
          WRITE (LUW4,'(/A)')
@@ -476,7 +473,7 @@ C             convergence threshold:
 C     SCRFAC = 100*NBAST
       SCRFAC = 100*N2BAST
       IFTMAX = INT(-LOG10(THDIIS/SCRFAC)) + 1
-      IFTMIN = INT(-LOG10(1.0D-1/SCRFAC)) + 1
+      IFTMIN = INT(-LOG10( 0.1D0/SCRFAC)) + 1
 Chjaaj: screening factor for safe Fock matrix construction
 C       is chosen to be 100 (we want accuracy to 0.1 times THDIIS)
 C       F_ij ~ sum(kl) (ij|kl) * D_kl, where sum(kl) is over
@@ -512,7 +509,12 @@ C------------------
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
      &     .AND. .NOT.AOSAVE   .AND. .NOT. CHOINT
      &     .AND. .NOT.QMNPMM   
-     &     .and. .not. peqm
+C
+#if defined (BUILD_PELIB)
+      if (peqm) then
+        dodifden = .false.
+      end if
+#endif
 C------------------
 Chjaaj: DIFDEN does not work with solvent/PCM/QM3
 C       because FC_sol is added to the old FC matrix, but not the new!
@@ -854,7 +856,8 @@ Clf             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
            IF (.NOT. LCONV) write(lupri,*) 'MMPCM not converged !'
            CALL MEMREL('DISCTL.PCMQM3FCK',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
          ENDIF
-
+C
+#if defined (BUILD_PELIB)
          if (peqm) then
            call memget('REAL', kfpe, nnbasx, wrk, kfree, lfree)
            call memget('REAL', kepe, 1, wrk, kfree, lfree)
@@ -876,6 +879,7 @@ Clf             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
            call memrel('DIIS_CTL.pe_master', wrk, kfrsav, kfpe,
      &                 kfree, lfree)
          end if
+#endif
 C
          EMCDIF = EMCSCF
          EMCSCF = EMY + EACTIV + EPOT + ESOLT
@@ -892,7 +896,8 @@ C
 C        CALL DIIS_EVC(SMOAO,DCAO,DVAO,H1AO,FDAO,FVAO,CMO1,
 C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
          IF (IPR_DIIS .GT. 20) THEN
-            WRITE (LUPRI,*) ' Test output of EVCSAV:'
+            WRITE (LUPRI,*) ' Test output of all of EVCSAV, newest is',
+     &         INDEVC
             CALL OUTPUT(EVCSAV,1,NNORBT,1,NEVC,NNORBT,NEVC,1,LUPRI)
          ELSE IF (IPR_DIIS .GT. 10) THEN
             WRITE (LUPRI,*) ' Error vector, DIIS iteration',ITDIIS
@@ -901,50 +906,54 @@ C    &               ERRVEC,WRK,KFRSAV,LFRSAV,IPR_DIIS)
          GRDNRM = DNRM2(NNORBT,EVCSAV(1,INDEVC),1)
          EGSAV(2,INDEVC) = GRDNRM
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .GT. 1) THEN
-            WRITE (LUPRI,'(/A/A,I5,1P,G22.12,D15.5,D12.2,I5,L5)')
+            WRITE (LUPRI,'(/A/A,I4,1P,G22.12,D15.5,D12.2,I5,L5)')
      &' ITDIIS, energy, error norm, change in energy, scr.thr., difden:'
-     & ,' DIIS iter.',ITDIIS,EMCSCF,GRDNRM,EMCDIF,-IFTHRS,DIFDEN
+     &,'@ DIIS iter.',ITDIIS,EMCSCF,GRDNRM,EMCDIF,-IFTHRS,DIFDEN
             IF (AUTOCC) THEN
                WRITE (LUPRI,'(/A,8I4)')
-     &         ' AUTOCC: current SCF occupation',(NISH(I),I=1,NSYM)
+     &         '@ AUTO OCC: current SCF occupation',(NISH(I),I=1,NSYM)
                IF (IOPRHF .NE. 0) WRITE (LUPRI,'(A,I4)')
-     &         ' AUTOCC: current open shell symmetry',IOPRHF
+     &         '@ AUTO OCC: current open shell symmetry',IOPRHF
             END IF
             CALL FLSHFO(LUPRI)
          END IF
          IF (LUW4 .NE. LUPRI .OR. IPR_DIIS .LE. 1) THEN
-            IF (FLAG(16) .OR. PCM .OR. QM3
-     &                   .OR. QMMM .or. QMNPMM .or. peqm) THEN
+            IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .or. QMNPMM) THEN
 C           this also includes the case of MMPCM
                IF (.NOT.AUTOCC) THEN
-                  WRITE (LUW4,'(I4,1P,G20.12,G20.12,D15.5,D12.2)')
-     &               ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF
+                  WRITE (LUW4,'(A,I3,1P,2G20.12,D15.5,D12.2)')
+     &                 '@',ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF
                ELSE IF (IOPRHF .EQ. 0) THEN
-                 WRITE (LUW4,'(I4,1P,G20.12,G20.12,D11.2,D11.2,2X,8I3)')
-     &                 ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,
+                  WRITE (LUW4,'(A,I3,1P,2G20.12,2D11.2,2X,8I4)')
+     &                 '@',ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,
      &                 (NISH(I),I=1,NSYM)
                ELSE
-                 WRITE (LUW4,'(I4,1P,G20.12,G20.12,D11.2,D11.2,
-     &                 I4,2X,8I3)')
-     &                 ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,IOPRHF,
-     &                 (NISH(I),I=1,NSYM)
+                  WRITE (LUW4,'(A,I3,1P,2G20.12,2D11.2,I4,2X,8I4)')
+     &                 '@',ITDIIS,EMCSCF,ESOLT,GRDNRM,EMCDIF,
+     &                 IOPRHF,(NISH(I),I=1,NSYM)
                END IF
+#if defined (BUILD_PELIB)
+            else if (peqm) then
+               write (luw4,'(a,i3,1p,2g20.12,d15.5,d12.2)')
+     &                '@',itdiis,emcscf,esolt,grdnrm,emcdif
+#endif
             ELSE
                IF (.NOT.AUTOCC) THEN
-                  WRITE (LUW4,'(I4,1P,G22.12,D15.5,D12.2,I5)')
-     &                 ITDIIS,EMCSCF,GRDNRM,EMCDIF,NEVC
+                  WRITE (LUW4,'(A,I3,1P,G22.12,D15.5,D12.2,I5)')
+     &                 '@',ITDIIS,EMCSCF,GRDNRM,EMCDIF,NEVC
                ELSE IF (IOPRHF .EQ. 0) THEN
-                  WRITE (LUW4,'(I4,1P,G20.12,D11.2,D11.2,2X,8I3)')
-     &                 ITDIIS,EMCSCF,GRDNRM,EMCDIF,(NISH(I),I=1,NSYM)
-               ELSE
-                  WRITE (LUW4,'(I4,1P,G20.12,D11.2,D11.2,I4,2X,8I3)')
-     &                 ITDIIS,EMCSCF,GRDNRM,EMCDIF,IOPRHF,
+                  WRITE (LUW4,'(A,I3,1P,G20.12,2D11.2,2X,8I4)')
+     &                 '@',ITDIIS,EMCSCF,GRDNRM,EMCDIF,
      &                 (NISH(I),I=1,NSYM)
+               ELSE
+                  WRITE (LUW4,'(A,I3,1P,G20.12,2D11.2,I4,2X,8I4)')
+     &                 '@',ITDIIS,EMCSCF,GRDNRM,EMCDIF,
+     &                 IOPRHF,(NISH(I),I=1,NSYM)
                END IF
             END IF
             CALL FLSHFO(LUW4)
          END IF
-         IF (MOLDEN) CALL MOSCFCON(ITDIIS,EMCSCF,.FALSE.)
+         IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.FALSE.)
 C
 C        Test and exit if energy is increasing
 C        (from itdiis .ge. 7, second iteration is Roothaan step
@@ -990,13 +999,13 @@ C
  4010 FORMAT(' DIIS aborted because energy increased in this iteration.'
      &      /' Program aborted because this means automatic symmetry'
      &      /' designation of occupied orbitals is not possible!',
-     &      /' Please send this output to hjj@dou.dk !!!',
+     &      /' Please send this output to dalton users mailing list !!!',
      &      /' You may try again with explicit specfication of .DOUBLY')
  4020 FORMAT(' DIIS aborted because energy increased in this iteration!'
      &      /' Backstep to orbitals from previous iteration.')
 C
          IF (GRDNRM .LE. THDIIS) THEN
-            IF (MOLDEN) CALL MOSCFCON(ITDIIS,EMCSCF,.TRUE.)
+            IF (MOLDEN) CALL MOLDEN_SCFCON(ITDIIS,EMCSCF,.TRUE.)
             ICONV = 1
             WRITE (LUPRI,4110) ITDIIS,EMCSCF,GRDNRM
             IF (LUW4 .NE. LUPRI) WRITE (LUW4,4110) ITDIIS,EMCSCF,GRDNRM
@@ -1040,10 +1049,10 @@ C           Too many DIIS iterations, save final CMO before exit
 C           ... REWIT1 false: do not destroy any GEOWALK information
             GO TO 1100
          END IF
- 4110 FORMAT(/' *** DIIS converged in',I4,' iterations !',
-     &       /'@    Converged SCF energy, gradient:',F20.12,1P,D12.2)
- 4115 FORMAT( '   - total time used in SIRFCK :' ,F18.2,' seconds')
- 4116 FORMAT( '   - total time used for ',A13,':',F12.2,' seconds')
+ 4110 FORMAT(/'@ *** DIIS converged in',I4,' iterations !',
+     &       /'@     Converged SCF energy, gradient:',F20.12,1P,D12.2)
+ 4115 FORMAT( '    - total time used in SIRFCK :' ,F18.2,' seconds')
+ 4116 FORMAT( '    - total time used for ',A13,':',F12.2,' seconds')
  4120 FORMAT(/
      & 'WARNING !!! DIIS aborted because max DIIS iterations reached !')
 C
@@ -1468,16 +1477,20 @@ C
          WRITE (LUW4,'(//A)') ' *** SCF orbital energy analysis ***'
          IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &     WRITE (LUW4,'(A)') '    (incl. solvent contribution)'
+#if defined (BUILD_PELIB)
          if (peqm) write(luw4,'(a)')
      &    '   (incl. contribution from polarizable embedding potential)'
+#endif
          CALL RHFENR(IPRI4,LUW4,FCAO, WRK(KFREE),LFREE)
 C-------------------
          IF (LUPRI .NE. LUW4) THEN
             WRITE (LUPRI,'(//A)') ' *** SCF orbital energy analysis ***'
             IF (FLAG(16) .OR. PCM .OR. QM3 .OR. QMMM .OR. QMNPMM)
      &        WRITE (LUPRI,'(A)') '    (incl. solvent contribution)'
+#if defined (BUILD_PELIB)
             if (peqm) write(lupri,'(A)')
      &    '   (incl. contribution from polarizable embedding potential)'
+#endif
             CALL RHFENR(IPRI6,LUPRI,FCAO, WRK(KFREE),LFREE)
          END IF
 C-------------------
@@ -1489,8 +1502,7 @@ C
          END IF
 C
       END IF
-      ! needed to get specific PE energy contributions for printout
-      ! when converged
+#if defined (BUILD_PELIB)
       if (peqm) then
         if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
            call pe_master(runtype='energy',
@@ -1502,10 +1514,7 @@ C
      &                    nmats=1, dalwrk=wrk(kfree:lfree))
         end if
       end if
-      if (pe_mep) then
-        call pe_master(runtype='mep', denmats=daosav(:,1), nmats=1,
-     &                 dalwrk=wrk(kfree:lfree))
-      end if
+#endif
 C
 C     If (FLAG(25) .OR. INERSI) write to SIRIFC
 C       FLAG(25) is true for .ABACUS (geometry optimization)

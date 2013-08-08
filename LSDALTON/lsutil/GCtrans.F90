@@ -6,6 +6,7 @@ MODULE GCtransMod
  use matrix_module
  use typedeftype
  use matrix_operations
+ use memory_handling
 private
 !STILL NEED TO GET UNRES WORKING AND TEST THE SCALAPACK THING (test without scalapack)
 public :: init_AO2GCAO_GCAO2AO, free_AO2GCAO_GCAO2AO, &

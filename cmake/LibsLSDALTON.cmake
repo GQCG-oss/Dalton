@@ -80,6 +80,20 @@ add_library(
 
 target_link_libraries(matrixulib matrixolib)
 
+set(ExternalProjectCMakeArgs
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+    )
+add_external(matrix-defop)
+set(LIBS
+    ${PROJECT_BINARY_DIR}/external/lib/libmatrix-defop.a
+    ${LIBS}
+    )
+
+add_dependencies(matrix-defop matrixmlib)
+add_dependencies(matrix-defop matrixolib)
+
 add_library(
     pdpacklib
     ${LSDALTON_FIXED_FORTRAN_SOURCES}
@@ -217,18 +231,36 @@ add_library(
 
 target_link_libraries(rspsolverlib solverutillib)
 
+set(ExternalProjectCMakeArgs
+    -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+    -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+    )
+add_external(openrsp)
+set(LIBS
+    ${PROJECT_BINARY_DIR}/external/lib/libopenrsp.a
+    ${LIBS}
+    )
+
+add_dependencies(openrsp matrix-defop)
+add_dependencies(openrsp solverutillib)
+add_dependencies(openrsp rspsolverlib)
+
 add_library(
     linearslib
     ${LINEARS_SOURCES}
     )
 
 target_link_libraries(linearslib rspsolverlib)
+add_dependencies(linearslib openrsp)
+add_dependencies(linearslib matrix-defop)
 
 if(DEVELOPMENT_CODE)
     add_library(
         rsp_propertieslib
         ${RSP_PROPERTIES_SOURCES}
         )
+    add_dependencies(rsp_propertieslib linearslib)
     target_link_libraries(rsp_propertieslib lsintlib)
 endif()
 

@@ -1,3 +1,5 @@
+set(DALTON_LIBS)
+
 add_library(
     dalton
     ${DALTON_C_SOURCES}
@@ -11,10 +13,41 @@ add_dependencies(dalton generate_binary_info)
 if(ENABLE_GEN1INT)
     add_subdirectory(DALTON/gen1int ${CMAKE_BINARY_DIR}/gen1int)
     add_dependencies(dalton gen1int_interface)
-    set(LIBS
+    set(DALTON_LIBS
         gen1int_interface
         ${PROJECT_BINARY_DIR}/external/lib/libgen1int.a
-        ${LIBS}
+        ${DALTON_LIBS}
+        )
+endif()
+
+if(ENABLE_PELIB)
+    set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
+    if(ENABLE_GEN1INT)
+        set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DBUILD_GEN1INT")
+    else()
+        message(FATAL_ERROR "-- Gen1Int not enabled. The PE library requires the Gen1Int library.")
+    endif()
+    if(MPI_FOUND)
+        set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
+    endif()
+    set(ExternalProjectCMakeArgs
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+        -DENABLE_BOUNDS_CHECK=${ENABLE_BOUNDS_CHECK}
+        -DENABLE_CODE_COVERAGE=${ENABLE_CODE_COVERAGE}
+        -DENABLE_STATIC_LINKING=${ENABLE_STATIC_LINKING}
+        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+        )
+    add_external(pelib)
+    add_dependencies(dalton pelib)
+    add_dependencies(pelib gen1int_interface)
+    add_definitions(-DBUILD_PELIB)
+    set(DALTON_LIBS
+        ${PROJECT_BINARY_DIR}/external/lib/libpelib.a
+        ${DALTON_LIBS}
         )
 endif()
 
@@ -29,6 +62,7 @@ target_link_libraries(
     dalton.x
     dalton
     ${LIBS}
+    ${DALTON_LIBS}
     )
 
 # compile Peter's utilities

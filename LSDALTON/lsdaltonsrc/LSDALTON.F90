@@ -62,6 +62,7 @@ SUBROUTINE lsdalton
   use integralinterfaceMod, only: II_get_overlap, II_get_h1, &
        & II_precalc_ScreenMat, II_get_GaussianGeminalFourCenter
   use dec_main_mod!, only: dec_main_prog
+  use optimlocMOD, only: optimloc
   implicit none
   integer             :: nbast,lupri, luerr, lucmo
   TYPE(lsitem),target :: ls
@@ -86,19 +87,6 @@ SUBROUTINE lsdalton
 #endif
 
   type(LowAccuracyStartType)  :: LAStype
-  Interface 
-     subroutine optimloc(CMO,nocc,m,ls,CFG)
-       use davidson_settings,only: RedSpaceItem
-       use matrix_module !matrix
-       use typedeftype !lsitem
-       implicit none
-       type(RedSpaceItem) :: CFG
-       type(Matrix), target:: CMO
-       TYPE(lsitem) , intent(inout) :: ls
-       integer,       intent(in)    :: nocc
-       integer,       intent(in)    :: m(2)
-     end subroutine optimloc
-  end Interface 
   OnMaster = .TRUE.
   ! Set lupri and luerr to zero here to make sure they are not unintialized for MPI slaves
   luerr=0
@@ -429,6 +417,14 @@ SUBROUTINE lsdalton
            Endif
         endif
 
+        !PROPERTIES SECTION
+
+        if (config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. & 
+             & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
+             & config%decomp%cfg_check_converged_solution .or. config%decomp%cfg_rsp_nexcit > 0) then   
+           call get_oao_transformed_matrices(config%decomp,F(1),D(1))
+        endif
+
         call lsdalton_response(ls,config,F(1),D(1),S)
         
         call config_shutdown(config)
@@ -468,18 +464,13 @@ SUBROUTINE lsdalton
            call mem_alloc(geomHessian,3*Natoms,3*Natoms)
            write (lupri,*) 'Calculate the Hessian'
            write (*,*)     'Calculate the Hessian'
-           call get_molecular_hessian(geomHessian,Natoms,F(1),D(1),ls%setting,config%geoHessian,lupri,luerr)   
+           call get_molecular_hessian(geomHessian,Natoms,F(1),D(1),ls%setting,config,lupri,luerr)   
            call mem_dealloc(geomHessian)
         ENDIF
 #endif
 
-        ! PROPERTIES SECTION
+        ! END OF PROPERTIES SECTION
         !
-        if (config%opt%cfg_density_method == config%opt%cfg_f2d_direct_dens .or. & 
-             & config%opt%cfg_density_method == config%opt%cfg_f2d_arh .or. &
-             & config%decomp%cfg_check_converged_solution .or. config%decomp%cfg_rsp_nexcit > 0) then   
-           call get_oao_transformed_matrices(config%decomp,F(1),D(1))
-        endif
         if (do_decomp) then
            call decomp_shutdown(config%decomp)
            !call dd_shutdown(config%decomp%cfg_unres)

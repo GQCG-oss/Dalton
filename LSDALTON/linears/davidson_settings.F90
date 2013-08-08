@@ -1,12 +1,12 @@
 module davidson_settings
-use kurtosis!, only: KurtosisItem
+use kurtosis, only: PFMitem !KurtosisItem
 use precision
 use matrix_module!, only: matrix
 use loc_types!, only: OrbitalLoc
 use decompMod!, only: orbspread_data, decompitem
 use queue_module!, only: modFIFO
 use arhDensity!, only: solveritem
-
+use ChargePrecMod !charge_precond, pmlowdin_lintra, pmmull_lintra, cllineartrans
 TYPE RedSpaceItem
 
 ! *********************

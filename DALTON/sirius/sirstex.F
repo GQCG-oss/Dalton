@@ -2490,9 +2490,11 @@ cvc stampa ridotta alle prime 10 colonne
                CALL OUTFUL(WORK(KVWMO),NORBT,10,STREXC//'(MO)')
             END IF
          ELSE
-      write(LUPRI,*) ' scrive matrice exch1 (ij|**) base AO su unita',luaug
+      write(LUPRI,*) ' scrive matrice exch1 (ij|**) base AO su unita',
+     &   luaug
             CALL WRITT(LUAUG,N2BASX,WORK(KVWMAT+ICOFF))
-      write(LUPRI,*) ' scrive matrice exch2 (i*|*j)base AO su unita',luaug
+      write(LUPRI,*) ' scrive matrice exch2 (i*|*j)base AO su unita',
+     &   luaug
             CALL WRITT(LUAUG,N2BASX,WORK(KVWMAT+IXOFF))
          END IF
          ICOFF = ICOFF + 2*N2BASX

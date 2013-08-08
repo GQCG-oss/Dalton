@@ -7,8 +7,15 @@
 MODULE queue_ops
 use files
 use queue_module
+use precision
+use matrix_module
 use Matrix_Operations
-
+private
+public :: modFIFO_init, modFIFO_free, add_to_modFIFO, add_to_modFIFO_memory,&
+     & add_to_modFIFO_disk, remove_from_modFIFO, remove_from_modFIFO_disk,&
+     & remove_from_modFIFO_memory, change_exp_modFIFO, get_from_modFIFO,&
+     & get_from_modFIFO_disk, get_from_modFIFO_memory, fifoqueue_on_disk,&
+     & fifoqueue_from_disk
 contains
 !> \brief Initialize a type(modFIFO).
 !> \author Stinne Host
