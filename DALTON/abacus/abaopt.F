@@ -460,6 +460,10 @@ C           .VR-SYM
      &              // 'be between 1 and', MXCENT,'!'
                CALL QUIT('Illegal number of frozen atoms.')
             END IF
+            IF (.NOT. CARTCO) THEN 
+               CALL QUIT('FREEZE option only available in Cartesian'
+     &              // ' coords. Set .CARTES keyword in *OPTIMIZE')
+            END IF
             DO 474 I = 1, NFREEZ
                READ (LUCMD,*) NFRZ
                IF ((NFRZ .LE. 0) .OR. (NFRZ .GT. MXCENT)) THEN
@@ -1722,7 +1726,8 @@ C
 C     Note that the contents of WORK(KTEMP1) is passed on
 C     from PROJGH to DIAHES below.
 C
-         CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
+         IF (IFREEZ(0) .EQ. 0)   ! project out trans-rot if no nuclei frozen
+     &   CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
      &        WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4))
          IF (LNSRCH .AND. RATFUN .AND. (ITRNMR .GT. 0))
      &        CALL LINSRC(NCART,MXCOOR,EGRAD,GRDARR(1,1),CSTEP,
@@ -1935,7 +1940,8 @@ C
      &           WORK(KTEMP5),WORK(KWRK2),LWRK2)
             IF (RATFUN .AND. SADDLE) NCRDHS = NCRDHS + 1
          ELSE
-            CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
+            IF (IFREEZ(0) .EQ. 0)   ! project out trans-rot if no nuclei frozen
+     &      CALL PROJGH(EGRAD,WORK(KEHESS),WORK(KALHES),WORK(KTEMP1),
      &           WORK(KTEMP2),WORK(KTEMP3),WORK(KTEMP4))
             IF (LNSRCH .AND. RATFUN .AND. (ITRNMR .GT. 0))
      &           CALL LINSRC(NCART,MXCOOR,EGRAD,GRDARR(1,1),CSTEP,
@@ -3008,8 +3014,12 @@ C
             CALL OUTPUT(HESINT,1,IINTCR,1,IINTCR,
      &                                       MXRCRD,MXRCRD,1,LUPRI)
          END IF
-         IF ((INRDHS .OR. INMDHS) .AND. ((.NOT. REDINT)
-     &        .AND. (.NOT. DELINT))) THEN
+!        if (initial Hessian in internal coordinates and
+!            not optimization in internal coordinates) then
+         IF ( (INRDHS .OR. INMDHS) .AND. 
+     &        .NOT.( REDINT .OR. DELINT) ) THEN
+!           Then transform Hessian HESINT in internal coordinates
+!           to Hessian HESMOL in Cartesian coordinates
             CALL DZERO(HESMOL,MXCOOR*MXCOOR)
             CALL HQ2HX(MXRCRD,MX2CRD,TMPMAT,TMPMT2,TMPMT3,HESINT,
      &           GRDINT,HESMOL,WILBMT,BMTRAN,WORK,LWORK)
@@ -3050,6 +3060,11 @@ C
      &                                                         1,LUPRI)
                END IF
             END IF
+C
+C           Zero elements of initial Hessian in HESMOL for nuclei frozen with .FREEZE
+C
+            CALL FREEZE_COORDINATES(WORK,LWORK)
+
             DO 25 J = 1, ICRTCR
                GRDOLD(J) = GRDMOL(J)
                DO 27 I = 1, ICRTCR
@@ -3058,6 +3073,7 @@ C
      &                                             *SCLVEC(J)*SCLVEC(J)
  27            CONTINUE
  25         CONTINUE
+
          ELSE
             DO 30 J = 1, IINTCR
                GRDOLD(J) = GRDINT(J)
@@ -5320,7 +5336,12 @@ C
       DIMENSION HESPCK(NCRDHS*NCRDHS)
       DIMENSION WORK(LWORK)
       LOGICAL PRJTRO
-      PRJTRO = .TRUE.
+      IF (IFREEZ(0) .GT. 0) THEN
+         ! no removal of trans-rot with projection when frozen atoms
+         PRJTRO = .FALSE.
+      ELSE
+         PRJTRO = .TRUE.
+      END IF
 C
       CALL DZERO(GRDDIA,MXRCRD)
       CALL WLKEIG(EGRAD,ALLHES,EVAL,EVCTMP,GRDDIA,TMAT,THRLDP,
@@ -6163,8 +6184,18 @@ C
 C
 C     Newton step is calculated.
 C
+         INDTOT_eff = INDTOT
          DO 30 I = 1, NVEC
-            STPDIA(I) = -GRDDIA(I)/EVAL(I)
+            IF (EVAL(I) .LE. 0.0D0 .AND.
+     &          ABS(GRDDIA(I)) .LT. GRDTHR/NVEC) THEN
+            ! this direction is converged, cf. GRDDIA value, but
+            ! Hessian element .le. zero. This can be the case for
+            ! a rotational coordinate when .FREEZE
+               IF (EVAL(I) .LT. 0.0D0) INDTOT_eff = INDTOT_eff - 1
+               STPDIA(I) = 0.0D0
+            ELSE
+               STPDIA(I) = -GRDDIA(I)/EVAL(I)
+            END IF
  30      CONTINUE
          STPNRM = SQRT(DDOT(NVEC,STPDIA,1,STPDIA,1))
 C
@@ -6174,10 +6205,10 @@ C     the level-shifted step will also be employed, provided the
 C     Newton step is larger than 0.5D-3. For saddle points we
 C     employ the level-shift when the index is different from 1.
 C
-         IF (((STPNRM .GT. TRSTRA) .AND. (.NOT. NOTRST)) .OR.
-     &        ((.NOT. SADDLE) .AND. (INDTOT .GT. 0) .AND.
-     &        (STPNRM .GE. 0.5D-3)) .OR. (SADDLE .AND.
-     &        (INDTOT .NE. 1))) THEN
+         IF (((STPNRM .GT. TRSTRA) .AND. (.NOT. NOTRST))
+     &      .OR. ((.NOT. SADDLE) .AND. (INDTOT_eff .GT. 0)
+     &            .AND. (STPNRM .GE. 0.5D-3))
+     &      .OR. (SADDLE .AND.  (INDTOT_eff .NE. 1))) THEN
             IF (IPRINT .GT. 5) THEN
                WRITE(LUPRI,'(/A,F15.10)')' Norm of Newton step:', STPNRM
                WRITE(LUPRI,'(A,F15.10/)')' Trust radius       :', TRSTRA
@@ -7920,5 +7951,49 @@ C
 C
       CALL QEXIT('NUMGRD')
       RETURN
+      END
+C
+      SUBROUTINE FREEZE_COORDINATES(WORK,LWORK)
+C
+C     Nanna List & Hans Joergen Aa. Jensen, Aug. 2013
+C
+C     Zero gradient and Hessian elements for atoms frozen
+C     with .FREEZE keywords.
+C
+#include "implicit.h"
+#include "mxcent.h"
+#include "priunit.h"
+
+#include "taymol.h"
+#include "nuclei.h"
+#include "optinf.h"
+
+      IF (IFREEZ(0) .GT. 0) THEN
+
+         NCOORD = 3*NUCDEP
+         
+         DO, I = 1, IFREEZ(0)
+            IC_OFF = 3*(IFREEZ(I)-1)
+            DO, IC = 1, 3
+               IC_TOT = IC_OFF + IC
+               GRDMOL(IC_TOT) = 0.0D0
+               DO, JC = 1, NCOORD
+                  HESMOL(JC,IC_TOT) = 0.0D0
+                  HESMOL(IC_TOT,JC) = 0.0D0
+               END DO
+               HESMOL(IC_TOT,IC_TOT) = 10.0D0
+            END DO
+         END DO
+    
+         if (iprint .gt. 1) then 
+            write (lupri,*) 'Molecular gradient after freeze:'
+            do i = 1,ncoord
+                write(lupri,*) 'i,grdmol(i)',i,grdmol(i)
+            end do
+            write (lupri,*) 'Molecular Hessian after freeze:'
+            call output(hesmol,1,ncoord,1,ncoord,mxcoor,mxcoor,-1,lupri)
+         end if
+      END IF
+
       END
 C --- end of abaopt.F ---

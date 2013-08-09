@@ -629,6 +629,13 @@ C
       CALL FLTORB(WORK(KLST2),LWRK1)
       CALL FLSHFO(LUPRI)
 C
+C     *******************************************************
+C     ***** Freezing any coordinates ???                *****
+C     *******************************************************
+C
+      CALL FREEZE_COORDINATES(WORK(KLST2),LWRK1)
+      CALL FLSHFO(LUPRI)
+C
 C     **************************
 C     ***** Output section *****
 C     **************************
