@@ -18,8 +18,8 @@
        end subroutine
      end interface
 
-     procedure(mult_real),pointer :: mp => null()
-     procedure(add_real),pointer  :: ap => null()
+!     procedure(mult_real),pointer :: mp => null()
+!     procedure(add_real),pointer  :: ap => null()
 
 
      contains
@@ -47,16 +47,18 @@
          fptr2(3) = fptr2(1) + fptr2(2)
          fptr2(6) = fptr2(4) * fptr2(5)
        endif
-       mp => mult_real
-       ap => add_real
+!       mp => mult_real
+!       ap => add_real
       
        success = .true.
      
-       funcptr => ap
-      
+!       funcptr => ap
+      funcptr => add_real	 
+
        call funcptr(fptr1(1),fptr1(2),fptr1(7))
       
-       funcptr => mp
+!       funcptr => mp
+       funcptr => mult_real
        
        call funcptr(fptr1(4),fptr1(5),fptr1(8))
       
