@@ -294,7 +294,7 @@ contains
     ! while we make the alpha batch as small as possible
 
     ! Minimum AO batch size
-    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAObatchSize)
+    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAObatchSize,'R')
 
     ! Maximum AO batch size (all basis functions)
     MaxAObatchSize = nbasis
@@ -311,7 +311,7 @@ contains
     ! ----------------------------
     call mem_alloc(orb2batchGamma,nbasis)
     call build_batchesofAOS(DECinfo%output,mysetting,GammaBatchSize,nbasis,MaxActualDimGamma,&
-         & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma)
+         & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
 
     ! Batch to orbital information
     ! ----------------------------
@@ -335,7 +335,7 @@ contains
     ! ----------------------------
     call mem_alloc(orb2batchAlpha,nbasis)
     call build_batchesofAOS(DECinfo%output,mysetting,AlphaBatchSize,nbasis,&
-         & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha)
+         & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
 
     ! Batch to orbital information
     ! ----------------------------

@@ -3037,7 +3037,7 @@ contains
     call mem_alloc(orb2batchGamma,nbasis)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,gammadim,&
          & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
-         & nbatchesGamma,orb2BatchGamma)
+         & nbatchesGamma,orb2BatchGamma,'R')
 
     write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
@@ -3071,7 +3071,7 @@ contains
     call mem_alloc(orb2batchAlpha,nbasis)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,alphadim,&
          & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,&
-         & nbatchesAlpha,orb2BatchAlpha)
+         & nbatchesAlpha,orb2BatchAlpha,'R')
 
     write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
 
@@ -3401,7 +3401,7 @@ contains
     ! The smallest possible AO batch depends on the basis set
     ! (More precisely, if all batches are made as small as possible, then the
     !  call below determines the largest of these small batches).
-    call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch)
+    call determine_maxBatchOrbitalsize(DECinfo%output,mylsitem%setting,MinAObatch,'R')
   
   
     ! Initialize batch sizes to be the minimum possible and then start increasing sizes below
@@ -3432,7 +3432,7 @@ contains
     ! The optimal gamma batch size is GammaOpt.
     ! We now find the maximum possible gamma batch size smaller than or equal to GammaOpt
     ! and store this number in gammadim.
-    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,GammaOpt,gammadim)
+    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,GammaOpt,gammadim,'R')
   
   
     ! Largest possible alpha batch size
@@ -3458,7 +3458,7 @@ contains
     ! The optimal alpha batch size is AlphaOpt.
     ! We now find the maximum possible alpha batch size smaller than or equal to AlphaOpt
     ! and store this number in alphadim.
-    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim)
+    call determine_MaxOrbitals(DECinfo%output,mylsitem%setting,AlphaOpt,alphadim,'R')
   
   
     ! Print out and sanity check
