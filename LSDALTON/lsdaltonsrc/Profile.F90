@@ -174,6 +174,29 @@ SUBROUTINE di_profile_lsint(ls,config,lupri,nbast)
      call mem_dealloc(Dvec)
      call mem_dealloc(Evec)
   ENDIF
+  IF(config%prof%NEGRAD)THEN
+     call mem_alloc(GRAD,3,natoms)
+     call mem_alloc(Dvecp,1)
+     call mat_init(TMP,nbast,nbast)
+     call mat_assign(TMP,D(1))
+     !we need a nonsym matrix
+     TMP%elms(2) = TMP%elms(2)+0.7654E0_realk
+     TMP%elms(nbast) = TMP%elms(nbast)-0.7654E0_realk
+     TMP%elms(2*nbast-1) = TMP%elms(nbast)+0.2654E0_realk
+     TMP%elms(nbast*nbast-1) = TMP%elms(nbast)-0.3654E0_realk
+     TMP%elms((nbast-1)*nbast-1) = TMP%elms(nbast)-0.4654E0_realk
+     Dvecp(1)%p => TMP
+     CALL II_get_ne_gradient(Grad,Dvecp,1,ls%setting,lupri,6)
+     WRITE(lupri,*)'NEGRAD gradX=',grad(1,1)
+     WRITE(lupri,*)'NEGRAD gradY=',grad(2,1)
+     WRITE(lupri,*)'NEGRAD gradZ=',grad(3,1)
+     WRITE(6,*)'NEGRAD gradX=',grad(1,1)
+     WRITE(6,*)'NEGRAD gradY=',grad(2,1)
+     WRITE(6,*)'NEGRAD gradZ=',grad(3,1)
+     call mem_dealloc(GRAD)
+     call mem_dealloc(Dvecp)
+     CALL LSTIMER('NEGRADPROF',ts,te,lupri)
+  ENDIF
   IF(config%prof%Exchangegrad)THEN
      call mem_alloc(GRAD,3,natoms)
      call mem_alloc(Dvecp,30)

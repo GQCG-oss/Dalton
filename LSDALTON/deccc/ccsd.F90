@@ -1773,7 +1773,7 @@ contains
 
     ! Get free memory and determine maximum batch sizes
     ! -------------------------------------------------
-      call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch)
+      call determine_maxBatchOrbitalsize(DECinfo%output,MyLsItem%setting,MinAObatch,'R')
       call get_currently_available_memory(MemFree)
       call get_max_batch_sizes(scheme,nb,nv,no,MaxAllowedDimAlpha,MaxAllowedDimGamma,&
            &MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,els2add)
@@ -1861,7 +1861,7 @@ contains
     call mem_alloc(orb2batchGamma,nb)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimGamma,&
          & nb,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,&
-         &nbatchesGamma,orb2BatchGamma)
+         &nbatchesGamma,orb2BatchGamma,'R')
     if(master)write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma,&
                                        & 'with maximum size',MaxActualDimGamma
 
@@ -1889,7 +1889,7 @@ contains
     ! ----------------------------
     call mem_alloc(orb2batchAlpha,nb)
     call build_batchesofAOS(DECinfo%output,mylsitem%setting,MaxAllowedDimAlpha,&
-         & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha)
+         & nb,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
     if(master)write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha&
                                       &, 'with maximum size',MaxActualDimAlpha
 

@@ -8,6 +8,10 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_CURRENT_SOURCE_DIR}/cmake/compilers
     )
 
+option(ENABLE_64BIT_INTEGERS "Enable 64-bit integers" OFF)
+
+include(ConfigSafeGuards)
+
 set(CMAKE_Fortran_MODULE_DIRECTORY ${PROJECT_BINARY_DIR}/modules)
 include(ConfigParentSettings)
 

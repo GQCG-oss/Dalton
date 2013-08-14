@@ -81,8 +81,10 @@ add_library(
 target_link_libraries(matrixulib matrixolib)
 
 set(ExternalProjectCMakeArgs
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
     -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     )
 add_external(matrix-defop)
@@ -232,8 +234,10 @@ add_library(
 target_link_libraries(rspsolverlib solverutillib)
 
 set(ExternalProjectCMakeArgs
+    -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
     -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
     -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+    -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
     -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
     )
 add_external(openrsp)
