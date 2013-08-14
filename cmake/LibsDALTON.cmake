@@ -51,6 +51,32 @@ if(ENABLE_PELIB)
         )
 endif()
 
+if(ENABLE_PCMSOLVER)
+    set(PARENT_DEFINITIONS "-DPRG_DALTON -DDALTON_MASTER")
+    if(MPI_FOUND)
+        set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
+    endif()
+    set(ExternalProjectCMakeArgs
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external
+        -DCMAKE_Fortran_COMPILER=${CMAKE_Fortran_COMPILER}
+        -DENABLE_64BIT_INTEGERS=${ENABLE_64BIT_INTEGERS}
+        -DENABLE_BOUNDS_CHECK=${ENABLE_BOUNDS_CHECK}
+        -DENABLE_CODE_COVERAGE=${ENABLE_CODE_COVERAGE}
+        -DENABLE_STATIC_LINKING=${ENABLE_STATIC_LINKING}
+        -DPARENT_MODULE_DIR=${PROJECT_BINARY_DIR}/modules
+        -DPARENT_DEFINITIONS=${PARENT_DEFINITIONS}
+        )
+    add_external(pcmsolver)
+    add_dependencies(dalton pcmsolver)
+    add_definitions(-DPCM_MODULE)
+    set(DALTON_LIBS
+        ${PROJECT_BINARY_DIR}/external/lib/libpcm.a
+	${PROJECT_BINARY_DIR}/external/lib/libgetkw.a
+        ${DALTON_LIBS}
+        )
+endif()
+
 add_executable(
     dalton.x
     ${CMAKE_SOURCE_DIR}/DALTON/abacus/dalton.F

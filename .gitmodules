@@ -11,3 +11,7 @@
 [submodule "external/matrix-defop"]
 	path = external/matrix-defop
 	url = git@repo.ctcc.no:matrix-defop.git
+[submodule "external/pcmsolver"]
+	path = external/pcmsolver
+	url = git@repo.ctcc.no:pcmsolver.git
+	branch = master
