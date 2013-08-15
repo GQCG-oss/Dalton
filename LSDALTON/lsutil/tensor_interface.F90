@@ -1548,13 +1548,13 @@ contains
       master =.false.
     endif
     nnod = infpar%lg_nodtot
+    if(nnod < 5) call lsquit("ERROR(test_array_struct): This needs to be run with at least 5 processes",-1)
 #endif
     nb =  21
     nv =  18
     no =  12
     na =  7
  
-    if(nnod < 5) call lsquit("ERROR(test_array_struct): This needs to be run with at least 5 processes",-1)
 
 #ifdef VAR_MPI
     if(master)then
