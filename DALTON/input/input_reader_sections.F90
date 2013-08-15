@@ -14,7 +14,7 @@
       case ('*LUCITA')
         call read_input_lucita(word, kw_section)
       
-      case ('*PCM   ')
+      case ('*EXTPCM')
         call read_input_pcm(word, kw_section)
          
       case default
@@ -233,6 +233,8 @@
 
 #ifdef PCM_MODULE
      call reset_available_kw_list()
+
+     pcmmod_is_pcm_calculation = .true.
 
      if (kw_matches(word, '.SEPARA')) then
 !        Split potentials and polarization charges in nuclear and electronic

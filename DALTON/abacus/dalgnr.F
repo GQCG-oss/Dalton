@@ -1129,7 +1129,7 @@ C
 #endif
 
 #ifdef PCM_MODULE
-      !use pcmmod_cfg
+      use pcmmod_cfg
 #endif
 
 #include "implicit.h"
@@ -1153,7 +1153,6 @@ C
 #include "pcmdef.h"
 #include "pcm.h"
 #include "pcmlog.h"
-#include "extpcm.h"
 CSONIA
 #include "grdccpt.h"
 #include "infpar.h"
@@ -1162,7 +1161,7 @@ Cholesky
 #include "ccdeco.h"
 #include "center.h"
 C
-      PARAMETER (NDIR = 12, NTABLE = 33, D0 = 0.D0)
+      PARAMETER (NDIR = 13, NTABLE = 33, D0 = 0.D0)
 #if defined (VAR_VECTOR)
       PARAMETER (IVECDF = 128)
 #else
@@ -1170,12 +1169,17 @@ C
 #endif
 C
       LOGICAL ALLOPT
+
+#ifdef PCM_MODULE
+      logical extpcm_input_provided
+#endif
+
 C
       CHARACTER WORD*7, PROMPT*1, TABDIR(NDIR)*7, TABLE(NTABLE)*7,
      *          REWORD*12, RWORD*6, WORD1*7
       DATA TABDIR/'*END OF', '*PARALL', '*WALK  ', '*OPTIMI', '*NMDDRV',
      &            '*MOLBAS', '*PCM   ', '*QM3   ', '*QMMM  ', '*PEQM  ',
-     &            '*READIN', '*QMNPMM'/
+     &            '*READIN', '*QMNPMM', '*EXTPCM'/
       DATA TABLE /'.PRINT ', '.ITERAT', '.PRIERR',
      &            '.INTEGR', '.WAVE F', '.PROPER', !  6
      &            '.INPTES', '.PARALL', '.DIRECT',
@@ -1288,7 +1292,9 @@ C         been calculated.
 C
 C     Initialize /PCMLOG/ and /EXTPCM/
 C
-      EXTPCM = .FALSE.
+#ifdef PCM_MODULE
+      extpcm_input_provided = .false.
+#endif PCM_MODULE
       PCM    = .FALSE.
       OUTFLD = .FALSE.
       NEWMAT = .TRUE.
@@ -1356,7 +1362,7 @@ C Table(01:33) :
 C 01-05: '.PRINT ', '.ITERAT', '.PRIERR', '.INTEGR', '.WAVE F',
 C 06-10: '.PROPER', '.INPTES', '.PARALL', '.DIRECT', '.WALK  ',
 C 11-15: '.MAX IT', '.RESPON', '.RUN PR', '.RUN RE', '.RUN WA',
-C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.xxxxxx',
+C 16-20: '.PRESOR', '.WESTA ', '.NEWTRA', '.CHOLES', '.EXTPCM',
 C 21-25: '.XXXXXX', '.XXXXXX', '.OPTIMI', '.TOTSYM', '.VECLEN',
 C 26-30: '.RUNERI', '.XXXXXX', '.RUN AL', '.NMDDRV', '.PARNMD',
 C 31-33: '.THRRED', '.DOUGLA', '.PEQM  '.
@@ -1452,14 +1458,8 @@ C        ".WALK  "
             DIRCAL = .TRUE.
          GO TO 100
  119     CONTINUE
-#ifdef PCM_MODULE
-            WRITE(LUPRI,'(//A/)') 'INFO: External PCM module activated'
-            EXTPCM = .TRUE.
-#else
-            WRITE(LUPRI,'(//A/)') 
-     $           'ERROR: EXTPCM requested but PCM Module not compiled'
-            CALL QUIT('Recompile including the PCM Module')
-#endif
+            extpcm_input_provided = .true.
+         goto 100
  120     CONTINUE
  121     CONTINUE
  122     CONTINUE
@@ -1644,7 +1644,7 @@ C
       ELSE IF (PROMPT .EQ. '*') THEN
          DO 210 I = 1, NDIR
             IF (WORD .EQ. TABDIR(I)) THEN
-               GOTO (1,2,3,4,5,6,7,8,9,10,11,12), I
+               GOTO (1,2,3,4,5,6,7,8,9,10,11,12,13), I
             END IF
   210    CONTINUE
          IF (WORD(1:2) .EQ. '**') GO TO 1
@@ -1735,10 +1735,33 @@ C     "*QMNPMM" input
    12 CONTINUE
         call quit('not available in this version')
 !       CALL QMNPINP(WORD)
-      GO TO 200    
+      GO TO 200
+
+!     *EXTPCM input
+   13 CONTINUE
+#ifdef PCM_MODULE
+            WRITE(LUPRI,'(//A/)') 'INFO: External PCM module activated'
+            call move_to_next_star(word,lucmd)
+#else
+            WRITE(LUPRI,'(//A/)') 
+     $           'ERROR: EXTPCM requested but PCM Module not compiled'
+            CALL QUIT('Recompile including the PCM Module')
+#endif
+      GOTO 200
 C     "*END OF" or "**something"
     1 CONTINUE
 C
+#ifdef PCM_MODULE
+!     read EXTPCM input if applicable
+      if(extpcm_input_provided)then
+        call read_menu_input('DALTON.INP', lucmd,
+     &                       '*EXTPCM', extpcm_input_provided)
+        if (.not. extpcm_input_provided) then
+        call quit('Oops, read_menu_input could not find *EXTPCM input')
+        end if
+      end if
+#endif
+
 #if defined (VAR_MPI) || defined (VAR_PVM)
       CALL PRLINP(WORD)
 #endif

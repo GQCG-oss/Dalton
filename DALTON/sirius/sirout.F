@@ -59,6 +59,9 @@ C
 #if defined (BUILD_PELIB)
       use pe_variables, only: peqm
 #endif
+#ifdef PCM_MODULE
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 C
 #include "litinfo.h"
@@ -91,7 +94,6 @@ C
 #include "qm3.h"
 #include "qmmm.h"
 #include "wavpcm.h"
-#include "extpcm.h"
 ! MOLDEN
 #include "molde.h"
 C
@@ -334,7 +336,7 @@ csonia 04/10/95
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
      *           ,'dielectric constant =',EPS
          END IF
-      ELSE IF (EXTPCM) THEN
+      ELSE IF (pcmmod_is_pcm_calculation) THEN
          WRITE (LUPRI,'(/5X,A,(/10X,A,F12.6))')
      *        'SOLVATION MODEL: polarizable continuum model (PCM),'
          WRITE(LUPRI,'(5X,A24,F20.12)') 'Solvation energy:     ',ESOLT

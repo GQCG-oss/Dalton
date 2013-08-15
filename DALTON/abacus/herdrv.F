@@ -70,6 +70,11 @@ C
 C     Magnetic field derivative integrals of dipole length
 C     K.Ruud, Aug.-93
 C
+
+#ifdef PCM_MODULE
+      use pcmmod_cfg
+#endif
+
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -89,7 +94,6 @@ C
 #include "r12int.h"
 #include "nuclei.h"
 #include "pcmlog.h"
-#include "extpcm.h"
 C
 Cholesky
 #include "ccdeco.h"
@@ -99,6 +103,7 @@ C inftra : USE_INTSORT
 C
 #include "inftra.h"
 C
+
       LOGICAL SET, FEXIST
 C
       DIMENSION WORK(LWORK)
@@ -209,8 +214,9 @@ C
       END IF
 
 #ifdef PCM_MODULE
-      IF(EXTPCM) THEN
+      IF(pcmmod_is_pcm_calculation) THEN
          call init_pcm
+         call print_pcm
          print *, 'after init pcm'
       END IF
 #endif

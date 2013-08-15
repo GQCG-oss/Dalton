@@ -292,6 +292,9 @@ C
       use pe_variables, only: peqm
       use polarizable_embedding, only: pe_master
 #endif
+#ifdef PCM_MODULE
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 #include "dummy.h"
       DIMENSION CMO(*), CMO1(*), BMAT(*), H1AO(*)
@@ -344,7 +347,6 @@ C
 #include "infloc.h"
 #include "mmtimes.h"
 #include "infpar.h"
-#include "extpcm.h"
 C
 Cholesky
 #include "ccdeco.h"
@@ -518,7 +520,7 @@ C
 #endif
 
 #ifdef PCM_MODULE
-      if (EXTPCM) then
+      if (pcmmod_is_pcm_calculation) then
               dodifden = .false.
       end if
 #endif
@@ -889,7 +891,7 @@ C
 #endif
 
 #ifdef PCM_MODULE
-         IF (EXTPCM) THEN
+         IF (pcmmod_is_pcm_calculation) THEN
             CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
             CALL DZERO(WRK(KFCSOL), NNBASX)
             CALL ENERGY_PCM_DRV(DAOSAV(1,1), DAOSAV(1,2), ESOLT, 
