@@ -499,6 +499,11 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/lucita/transform.F
     DALTON/lucita/utils.F
     DALTON/lucita/vecmat.F
+    #    DALTON/pcm/electrostatic_potential.F90
+    DALTON/pcm/integrals.F
+    #    DALTON/pcm/pcm_interface.F90
+    DALTON/pcm/pcmmod_cfg.F90
+    DALTON/pcm/pcm_write.F90
     DALTON/pdpack/arhpack.F
     DALTON/pdpack/eispack.F
     DALTON/pdpack/jacobi.F

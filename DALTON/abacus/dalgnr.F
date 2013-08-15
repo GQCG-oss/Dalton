@@ -1127,6 +1127,11 @@ C
       use pe_variables, only: peqm
       use polarizable_embedding, only: pe_dalton_input
 #endif
+
+#ifdef PCM_MODULE
+      !use pcmmod_cfg
+#endif
+
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1148,6 +1153,7 @@ C
 #include "pcmdef.h"
 #include "pcm.h"
 #include "pcmlog.h"
+#include "extpcm.h"
 CSONIA
 #include "grdccpt.h"
 #include "infpar.h"
@@ -1176,7 +1182,7 @@ C
      &            '.WALK  ', '.MAX IT', '.RESPON', ! 12
      &            '.RUN PR', '.RUN RE', '.RUN WA',
      &            '.PRESOR', '.WESTA ', '.CHOLES', ! 18
-     &            'xxxxxxx', 'xxxxxxx', 'xxxxxxx',
+     &            '.EXTPCM', 'xxxxxxx', 'xxxxxxx',
      &            'xxxxxxx', '.OPTIMI', '.TOTSYM', ! 24
      &            '.VECLEN', '.RUNERI', '.NEWTRA',
      &            '.RUN AL', '.NMDDRV', '.PARNMD', ! 30
@@ -1280,8 +1286,9 @@ C         but we may restart with old integrals. FTRCTL is set
 C         true by EXEHER signalling that new AO integrals have
 C         been calculated.
 C
-C     Initialize /PCMLOG/
+C     Initialize /PCMLOG/ and /EXTPCM/
 C
+      EXTPCM = .FALSE.
       PCM    = .FALSE.
       OUTFLD = .FALSE.
       NEWMAT = .TRUE.
@@ -1445,6 +1452,14 @@ C        ".WALK  "
             DIRCAL = .TRUE.
          GO TO 100
  119     CONTINUE
+#ifdef PCM_MODULE
+            WRITE(LUPRI,'(//A/)') 'INFO: External PCM module activated'
+            EXTPCM = .TRUE.
+#else
+            WRITE(LUPRI,'(//A/)') 
+     $           'ERROR: EXTPCM requested but PCM Module not compiled'
+            CALL QUIT('Recompile including the PCM Module')
+#endif
  120     CONTINUE
  121     CONTINUE
  122     CONTINUE
