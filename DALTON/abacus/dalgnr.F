@@ -1130,6 +1130,7 @@ C
 
 #ifdef PCM_MODULE
       use pcmmod_cfg
+      use pcm_write
 #endif
 
 #include "implicit.h"
@@ -1294,6 +1295,7 @@ C     Initialize /PCMLOG/ and /EXTPCM/
 C
 #ifdef PCM_MODULE
       extpcm_input_provided = .false.
+      pcmmod_is_pcm_calculation = .false.
 #endif PCM_MODULE
       PCM    = .FALSE.
       OUTFLD = .FALSE.
@@ -1756,9 +1758,13 @@ C
       if(extpcm_input_provided)then
         call read_menu_input('DALTON.INP', lucmd,
      &                       '*EXTPCM', extpcm_input_provided)
+        pcmmod_is_pcm_calculation = .true.
         if (.not. extpcm_input_provided) then
         call quit('Oops, read_menu_input could not find *EXTPCM input')
         end if
+      end if
+      if(pcmmod_is_pcm_calculation) then
+              call report_after_pcm_input(lupri)
       end if
 #endif
 
