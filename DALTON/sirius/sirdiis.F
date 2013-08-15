@@ -344,6 +344,7 @@ C
 #include "infloc.h"
 #include "mmtimes.h"
 #include "infpar.h"
+#include "extpcm.h"
 C
 Cholesky
 #include "ccdeco.h"
@@ -508,11 +509,17 @@ C------------------
      &     .AND. .NOT.FLAG(16) .AND. .NOT.PCM
      &     .AND. .NOT.QM3      .AND. .NOT. QMMM
      &     .AND. .NOT.AOSAVE   .AND. .NOT. CHOINT
-     &     .AND. .NOT.QMNPMM   
+     &     .AND. .NOT.QMNPMM
 C
 #if defined (BUILD_PELIB)
       if (peqm) then
         dodifden = .false.
+      end if
+#endif
+
+#ifdef PCM_MODULE
+      if (EXTPCM) then
+              dodifden = .false.
       end if
 #endif
 C------------------
@@ -880,6 +887,22 @@ C
      &                 kfree, lfree)
          end if
 #endif
+
+#ifdef PCM_MODULE
+         IF (EXTPCM) THEN
+            CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
+            CALL DZERO(WRK(KFCSOL), NNBASX)
+            CALL ENERGY_PCM_DRV(DAOSAV(1,1), DAOSAV(1,2), ESOLT, 
+     $           WRK(KFREE), LFREE)
+            CALL OPER_AO_PCM_DRV(WRK(KFCSOL), 'TotChg'//CHAR(0), 
+     $           WRK(KFREE), LFREE)
+            CALL DAXPY(NNBAST,DM1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
+Clf            WRITE(LUPRI,*) 'EXTPCM FOCK matrix'
+Clf            CALL OUTPAK(WRK(KFCSOL),NBAST,1,LUPRI)
+            CALL MEMREL('DIIS_CTL.EXTPCM',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
+         END IF
+#endif
+
 C
          EMCDIF = EMCSCF
          EMCSCF = EMY + EACTIV + EPOT + ESOLT

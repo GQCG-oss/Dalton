@@ -56,6 +56,7 @@ if(ENABLE_PCMSOLVER)
     if(MPI_FOUND)
         set(PARENT_DEFINITIONS "${PARENT_DEFINITIONS} -DVAR_MPI")
     endif()
+    set(LIBS stdc++ ${LIBS})
     set(ExternalProjectCMakeArgs
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
         -DCMAKE_INSTALL_PREFIX=${PROJECT_BINARY_DIR}/external

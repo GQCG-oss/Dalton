@@ -89,6 +89,7 @@ C
 #include "r12int.h"
 #include "nuclei.h"
 #include "pcmlog.h"
+#include "extpcm.h"
 C
 Cholesky
 #include "ccdeco.h"
@@ -206,6 +207,14 @@ C
       IF (PCM) THEN
          CALL IEFMAT(WORK,LWORK)
       END IF
+
+#ifdef PCM_MODULE
+      IF(EXTPCM) THEN
+         call init_pcm
+         print *, 'after init pcm'
+      END IF
+#endif
+
 C
       IF ( (QM3) .AND. (.NOT.INTDIR) ) THEN
         DO 752 KI = 1, ISYTP

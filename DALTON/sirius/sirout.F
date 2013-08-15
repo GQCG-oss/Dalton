@@ -91,6 +91,7 @@ C
 #include "qm3.h"
 #include "qmmm.h"
 #include "wavpcm.h"
+#include "extpcm.h"
 ! MOLDEN
 #include "molde.h"
 C
@@ -333,6 +334,10 @@ csonia 04/10/95
      *           'SOLVATION MODEL: polarizable continuum model (PCM),'
      *           ,'dielectric constant =',EPS
          END IF
+      ELSE IF (EXTPCM) THEN
+         WRITE (LUPRI,'(/5X,A,(/10X,A,F12.6))')
+     *        'SOLVATION MODEL: polarizable continuum model (PCM),'
+         WRITE(LUPRI,'(5X,A24,F20.12)') 'Solvation energy:     ',ESOLT
 
       ELSE IF (QM3 .AND. (.NOT.MMPCM)) THEN
         WRITE(LUPRI,'(/5X,A/)') 'QM/MM "QM3" calculation converged :'
