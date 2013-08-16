@@ -151,11 +151,16 @@ module pcm_interface
         integer      :: lfree
 ! Local variables
         character(7) :: potName, chgName, chgName1, chgName2
-        integer(4)   :: nts
+        integer(4)   :: nts 
         integer      :: kda, kdb, kpot, kcent, kfree, lwork
+        real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:), ele_pot(:), ele_pol_chg(:)
         real(8)      :: factor
                                                                                       
         call get_cavity_size(nts)
+        allocate(nuc_pot(nts))
+        allocate(nuc_pol_chg(nts))
+        allocate(ele_pot(nts))
+        allocate(ele_pol_chg(nts))
         kda   = 1
         kdb   = kda   + nnbasx
         kpot  = kdb   + nnbasx
@@ -181,15 +186,19 @@ module pcm_interface
 ! 3) Compute charges
         potName = 'NucPot'//CHAR(0)
         chgName = 'NucChg'//CHAR(0)
-        call nuc_pot_pcm(nts, work(kcent), work(kpot))
-        call set_surface_function(nts, work(kpot), potName)
+        !call nuc_pot_pcm(nts, work(kcent), work(kpot))
+        call nuc_pot_pcm(nts, work(kcent), nuc_pot)
+        call set_surface_function(nts, nuc_pot, potName)
         call comp_chg_pcm(potName, chgName)
+        call get_surface_function(nts, nuc_pol_chg, chgName)
                                                                                       
         potName = 'ElePot'//CHAR(0)
         chgName = 'EleChg'//CHAR(0)
-        call ele_pot_pcm(nts, work(kcent), work(kpot), work(kda), work(kfree), lfree)
-        call set_surface_function(nts, work(kpot), potName)
+        call ele_pot_pcm(nts, work(kcent), ele_pot, work(kda), work(kfree), lfree)
+        call set_surface_function(nts, ele_pot, potName)
         call comp_chg_pcm(potName, chgName)
+        call get_surface_function(nts, ele_pol_chg, chgName)
+
         call comp_pol_ene_pcm(pol_ene, 0)
                                                                                       
         chgName  = 'TotChg'//CHAR(0)
@@ -201,6 +210,9 @@ module pcm_interface
         factor =  1.0
         call add_surface_function(chgName, factor, chgName1)
         call add_surface_function(chgName, factor, chgName2)
+
+! Write to file MEP and ASC
+        call pcm_write_file_separate(nts, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
 
       end subroutine
       
