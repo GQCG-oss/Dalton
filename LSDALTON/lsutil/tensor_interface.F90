@@ -1538,19 +1538,23 @@ contains
     integer(kind=long) :: testint
     logical :: master
     integer :: no,nv,nb,na,i,j,succ
-    integer(kind=ls_mpik) :: sender, recver
+    integer(kind=ls_mpik) :: sender, recver, nnod
     character(len=7) :: teststatus
     character(ARR_MSG_LEN) :: msg
     master = .true.
+    nnod   = 1_ls_mpik
 #ifdef VAR_MPI
     if(infpar%lg_mynum /= 0) then
       master =.false.
     endif
+    nnod = infpar%lg_nodtot
+    if(nnod < 5) call lsquit("ERROR(test_array_struct): This needs to be run with at least 5 processes",-1)
 #endif
     nb =  21
     nv =  18
     no =  12
     na =  7
+ 
 
 #ifdef VAR_MPI
     if(master)then

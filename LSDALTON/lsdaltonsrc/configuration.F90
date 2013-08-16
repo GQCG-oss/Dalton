@@ -2696,6 +2696,7 @@ implicit none
         & 'Level shifting by ||Dorth|| ratio  ',&
         & 'No level shifting                  ',&
         & 'Van Lenthe fixed level shifts      '/)
+   integer :: nocc,nvirt
 #ifdef VAR_OMP
 integer, external :: OMP_GET_NUM_THREADS,OMP_GET_THREAD_NUM
 integer, external :: OMP_GET_NESTED
@@ -3130,6 +3131,17 @@ write(config%lupri,*) 'WARNING WARNING WARNING spin check commented out!!! /Stin
    ! - if not, we can print a warning instead of quitting if convergence fails
    if (config%decomp%cfg_check_converged_solution .or. config%decomp%cfg_rsp_nexcit > 0) then
       config%decomp%cfg_hlgap_needed = .true.
+   endif
+   !Check if (# unoccupied)*(# occupied) is less then the number of excitations asked for
+   nocc = config%decomp%nocc
+   nvirt = (nbast-nocc)
+   if (nocc*nvirt .LT. MAX(config%decomp%cfg_rsp_nexcit,config%response%MCDinput%nexci)) then
+      write(lupri,*)'The number of Occupied Orbitals  :',nocc
+      write(lupri,*)'The number of Unoccupied Orbitals:',nvirt
+      write(lupri,*)'The Maximum number of allowed excitation energies:',nvirt*nocc
+      print*,'The Maximum number of allowed excitation energies:',nvirt*nocc,'you asked for',&
+           & MAX(config%decomp%cfg_rsp_nexcit,config%response%MCDinput%nexci)
+      Call lsquit("Error in Input. The maximim number of excitation energies exceed.",-1)
    endif
 
 ! Check for Cartesian basis functions 

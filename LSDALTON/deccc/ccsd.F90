@@ -2284,7 +2284,7 @@ contains
         !and the difference between first element of alpha batch and last element
         !of gamma batch
         call get_a22_and_prepb22_terms_ex(w0,w1,w2,w3,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
-             &xo,yo,xv,yv,omega2,sio4,scheme,[w0size,w1size,w2size,w3size])
+             &xo,yo,xv,yv,omega2,sio4,scheme,[w0size,w1size,w2size,w3size],lock_outside)
         call lsmpi_poke()
 
         endif
@@ -3674,7 +3674,7 @@ contains
   !> \author Patrick Ettenhuber
   !> \date December 2012
   subroutine get_a22_and_prepb22_terms_ex(w0,w1,w2,w3,tpl,tmi,no,nv,nb,fa,fg,la,lg,&
-  &xo,yo,xv,yv,om2,sio4,s,wszes)
+  &xo,yo,xv,yv,om2,sio4,s,wszes,lo)
     implicit none
     !> workspace with exchange integrals
     real(realk),intent(inout) :: w0(:)
@@ -3698,6 +3698,7 @@ contains
     real(realk),intent(inout) ::sio4(:)
     !> scheme
     integer,intent(in) :: s
+    logical,intent(in) :: lo
     !> W0 SIZE
     integer(kind=8),intent(in) :: wszes(4)
     integer :: goffs,aoffs,tlen,tred,nor,nvr
@@ -3784,14 +3785,14 @@ contains
     !(w2):sigma[alpha<=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] + 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
     !(w2):sigma[alpha>=gamma i<=j]=0.5*(w3.1):sigma+ [alpha<=gamma i<=j] - 0.5*(w3.2):sigma- [alpha <=gamm i<=j]
     call combine_and_transform_sigma(om2,w0,w2,w3,xv,xo,sio4,nor,&
-    &tlen,tred,fa,fg,la,lg,no,nv,nb,goffs,aoffs,s,wszes)  
+    &tlen,tred,fa,fg,la,lg,no,nv,nb,goffs,aoffs,s,wszes,lo)  
   end subroutine get_a22_and_prepb22_terms_ex
 
   !> \brief Combine sigma matrixes in symmetric and antisymmetric combinations 
   !> \author Patrick Ettenhuber
   !> \date October 2012
   subroutine combine_and_transform_sigma(omega,w0,w2,w3,xvirt,xocc,sio4,nor,&
-  &tlen,tred,fa,fg,la,lg,no,nv,nb,goffs,aoffs,s,wszes)
+  &tlen,tred,fa,fg,la,lg,no,nv,nb,goffs,aoffs,s,wszes,lock_outside)
     implicit none
     !\> omega should be the residual matrix which contains the second parts
     !of the A2 and B2 term
@@ -3827,6 +3828,7 @@ contains
     integer,intent(in)::goffs,aoffs
     !> scheme
     integer,intent(in)::s
+    logical,intent(in) :: lock_outside
     !> size of w0
     integer(kind=8),intent(in):: wszes(4)
     !> the doubles amplitudes
@@ -3835,14 +3837,14 @@ contains
     real(realk) :: scaleitby
     integer ::occ,gamm,alpha,pos,pos2,pos21,nel2cp,case_sel,full1,full2,offset1,offset2,ttri
     integer :: l1,l2,i,j,lsa,lsg,gamm_i_b,a,b,full1T,full2T,tsq,jump,dim_big,dim_small,ft1,ft2,ncph
-    logical :: second_trafo_step
-    real(realk),pointer :: dumm(:)
-    integer :: mv((nv*nv)/2),st,pos1,dims(2)
-    real(realk),pointer :: source(:,:),drain(:,:)
-    logical :: lock_outside
+    logical               :: second_trafo_step
+    real(realk),pointer   :: dumm(:)
+    integer               :: mv((nv*nv)/2),st,pos1,dims(2)
+    real(realk),pointer   :: source(:,:),drain(:,:)
     integer(kind=ls_mpik) :: mode
+    integer(kind=long)    :: o2v2
 
-    lock_outside=DECinfo%CCSD_MPICH
+    o2v2 = int(no*no*nv*nv,kind=long)
 #ifdef VAR_MPI
     mode = int(MPI_MODE_NOCHECK,kind=ls_mpik)
 #endif
@@ -4173,7 +4175,8 @@ contains
     elseif(s==2)then
 #ifdef VAR_MPI
       if(lock_outside)call arr_lock_wins(omega,'s',mode)
-      call array_add(omega,scaleitby,w2,wrk=w3,iwrk=wszes(4))
+      w2(1:o2v2) = scaleitby*w2(1:o2v2)
+      call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
 #endif
     endif
     call lsmpi_poke()
@@ -4238,7 +4241,8 @@ contains
       if(s==4.or.s==3)then
         call daxpy(no*no*nv*nv,scaleitby,w2,1,omega%elm1,1)
       elseif(s==2)then
-        call array_add(omega,scaleitby,w2,wrk=w3,iwrk=wszes(4))
+        w2(1:o2v2) = scaleitby*w2(1:o2v2)
+        call array_add(omega,1.0E0_realk,w2,wrk=w3,iwrk=wszes(4))
       endif
       call lsmpi_poke()
     endif
