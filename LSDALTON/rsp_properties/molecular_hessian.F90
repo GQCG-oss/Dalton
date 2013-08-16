@@ -9,7 +9,8 @@ MODULE molecular_hessian_mod
                                     & mat_free, mat_scal, &
                                     & mat_zero, mat_tr, &
                                     & mat_sqnorm2, mat_init, &  
-                                    & mat_set_from_full
+                                    & mat_set_from_full, &
+                                    & mat_assign
     use typedeftype,            only: LSsetting, geoHessianConfig
     use configurationType,      only: ConfigItem
     use memory_handling,        only: mem_alloc, mem_dealloc
@@ -25,7 +26,9 @@ MODULE molecular_hessian_mod
                                     & II_get_exchange_mat
     use RSPsolver,              only: prop_molcfg,&
                                     & init_prop_molcfg,&
-                                    & rsp_init
+                                    & rsp_init,&
+                                    & rsp_solver
+    use RSP_util,               only: util_save_MOinfo
 #endif
 #ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
@@ -75,7 +78,8 @@ CONTAINS
   !> \param F The Fock/Kohn-Sham matrix
   !> \param D The "reference" Density matrix D0
   !> \param setting Integral evalualtion settings
-  !> \param config ???????????????????????????????????????????????????
+  !> \param config Info/Settings/Data for entire calculation
+  !>               (defaults or read from input file)
   !> \param lupri Default print unit
   !> \param luerr Default error print unit
   SUBROUTINE get_molecular_hessian(Hessian,Natoms,F,D,setting,config,lupri,luerr)
@@ -262,7 +266,7 @@ CONTAINS
     ENDDO
 
     DO i=1,3*Natoms
-        ! RHS = 0.5 { SDFa - FaDS + SaDF - FDSa + SDaF - FDaS }
+        ! RHS = 0.5 { ... }
         call mat_scal(0.5E0_realk,RHS(i))
     ENDDO
 
@@ -606,7 +610,8 @@ CONTAINS
   !> \param RHS The Right Hand Side of 1st order response equation
   !> \param Natoms Nb. of atoms in the molecule
   !> \param setting Integral evalualtion settings
-  !> \param config ???????????????????????????????????????????????????
+  !> \param config Info/Settings/Data for entire calculation
+  !>               (defaults or read from input file)
   !> \param lupri Default print unit
   !> \param luerr Unit for error printing
   SUBROUTINE get_first_order_rsp_vectors(Xa,S,D,F,RHS,Natoms,setting,config,lupri,luerr)
@@ -620,31 +625,45 @@ CONTAINS
     Type(matrix),INTENT(INOUT)          :: Xa(3*Natoms) ! derivative along x,y and z for each atom
     !
     Real(realk)                     :: ts,te 
-    Integer                         :: i, nbast
+    Integer                         :: i, nbast, nb_eq
     type(prop_molcfg)               :: molcfg
+    logical                         :: LINEQ_x
+    Real(realk)                     :: EiVal_ExEnergies(1)
+    Type(matrix)                    :: oneRHS(1),oneXa(1)
     !
     call lstimer('START ',ts,te,lupri)
+    nbast = D%nrow
+    call mat_init(oneRHS(1),nbast,nbast)
+    call mat_init(oneXa(1),nbast,nbast)
+
+    ! Initialize solver parameters.
+    call init_prop_molcfg(molcfg, S, Natoms,&
+                        & lupri, luerr, setting,&
+                        & config%decomp,config%response%rspsolverinput)
+
+    !> ntrial: (Max.) number of trial vectors in a given iteration
+    !> nrhs:    Number of right-hand sides. Only relevant for linear equations (always 1 for eigenvalue problem)
+    !> nsol:    Number of solution (output) vectors
+    !> nomega:  If LINEQ, number of laser freq.s (input). Otherwise number of excitation energies (output) 
+    !> Number of start vectors. Only relevant for eigenvalue problem
+    !!!  rsp_init(ntrial, nrhs, nsol, nomega, nstart)
+    call util_save_MOinfo(F,S,config%decomp%nocc) !nocc: Number of occupied orbitals (if restricted)
+    call rsp_init(1,      1,    1,    1,      1)
+
+    ! Calling the repsonse solver
+    LINEQ_x = .TRUE. ! Linear system, not an eigenvalue problem
+    nb_eq = 1
+    EiVal_ExEnergies(1) = 0.0E0_realk
     DO i=1,3*Natoms
-        ! Initialize solver parameters.
-        call init_prop_molcfg(molcfg, S, Natoms,&
-                            & lupri, luerr, setting,&
-                            & config%decomp,config%response%rspsolverinput)
-
-        !> ntrial: (Max.) number of trial vectors in a given iteration
-        !> nrhs:    Number of right-hand sides. Only relevant for linear equations (always 1 for eigenvalue problem)
-        !> nsol:    Number of solution (output) vectors
-        !> nomega:  If LINEQ, number of laser freq.s (input). Otherwise number of excitation energies (output) 
-        !> Number of start vectors. Only relevant for eigenvalue problem
-        !!!  rsp_init(ntrial, nrhs, nsol, nomega, nstart)
-        call rsp_init(1,      1,    1,    0,      1)
-
-        ! Calling solver. 
-!        LINEQ = .TRUE.
-!        nb_eq = 1
-!        ExEnergies = 0
-!        call rsp_solver(molcfg,D,S,F,LINEQ,nb_eq,RHS,ExEnergies,Xa)
-!        ! At this point Dx contain the excitation vectors, not the transition densities.
+        write(*,*) "Solving response vector #",i, "out of ", 3*Natoms
+        call mat_assign(oneRHS(1), RHS(i))
+        call mat_zero(oneXa(1))
+        call rsp_solver(molcfg, D, S, F, &
+                        & LINEQ_x, nb_eq, oneRHS, EiVal_ExEnergies,oneXa)
+        call mat_assign(Xa(i), oneXa(1))
     ENDDO
+    call mat_free(oneRHS(1))
+    call mat_free(oneXa(1))
     call lstimer('Xa_build',ts,te,lupri)
   END SUBROUTINE get_first_order_rsp_vectors
 
