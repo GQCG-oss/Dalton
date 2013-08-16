@@ -293,6 +293,7 @@ C
       use polarizable_embedding, only: pe_master
 #endif
 #ifdef PCM_MODULE
+      use pcm_interface
       use pcmmod_cfg
 #endif
 #include "implicit.h"
@@ -891,18 +892,18 @@ C
 #endif
 
 #ifdef PCM_MODULE
-         IF (pcmmod_is_pcm_calculation) THEN
-            CALL MEMGET('REAL',KFCSOL,NNBASX,WRK,KFREE,LFREE)
-            CALL DZERO(WRK(KFCSOL), NNBASX)
-            CALL ENERGY_PCM_DRV(DAOSAV(1,1), DAOSAV(1,2), ESOLT, 
-     $           WRK(KFREE), LFREE)
-            CALL OPER_AO_PCM_DRV(WRK(KFCSOL), 'TotChg'//CHAR(0), 
-     $           WRK(KFREE), LFREE)
-            CALL DAXPY(NNBAST,DM1,WRK(KFCSOL),1,FAOSAV(1,INDEVC,1),1)
-Clf            WRITE(LUPRI,*) 'EXTPCM FOCK matrix'
-Clf            CALL OUTPAK(WRK(KFCSOL),NBAST,1,LUPRI)
-            CALL MEMREL('DIIS_CTL.EXTPCM',WRK,KFRSAV,KFCSOL,KFREE,LFREE)
-         END IF
+         if (pcmmod_is_pcm_calculation) then
+            call memget('REAL',kfcsol,nnbasx,wrk,kfree,lfree)
+            call dzero(wrk(kfcsol), nnbasx)
+            call energy_pcm_drv(daosav(1,1), daosav(1,2), esolt, 
+     $           wrk(kfree), lfree)
+            call oper_ao_pcm_drv(wrk(kfcsol), 'TotChg'//CHAR(0), 
+     $           wrk(kfree), lfree)
+            call daxpy(nnbast,dm1,wrk(kfcsol),1,faosav(1,indevc,1),1)
+clf            write(lupri,*) 'extpcm fock matrix'
+clf            call outpak(wrk(kfcsol),nbast,1,lupri)
+            call memrel('DIIS_CTL.extpcm',wrk,kfrsav,kfcsol,kfree,lfree)
+         end if
 #endif
 
 C
