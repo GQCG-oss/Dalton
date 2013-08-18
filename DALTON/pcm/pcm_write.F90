@@ -29,26 +29,32 @@ module pcm_write
               write(print_here, *) ' ===== Polarizable Continuum Model calculation set-up ====='
               write(print_here, *) '* Polarizable Continuum Model using PCMSolver external module:'                              
               write(print_here, *) '  1: Converged potentials and charges at tesserae representative points written on file.'
+
+              if (pcmmod_old_integration) then
+                 write(print_here, *) '  2: Use point-by-point charge-attraction integrals evaluation subroutines.'
+              else
+                 write(print_here, *) '  2: Use vectorized charge-attraction integrals evaluation subroutines.'
+              end if
               
               if (pcmmod_separate) then
-                 write(print_here, *) '  2: Separate potentials and apparent charges in nuclear and electronic.'
+                 write(print_here, *) '  3: Separate potentials and apparent charges in nuclear and electronic.'
               else
-                 write(print_here, *) '  2: Use total potentials and apparent charges.'
+                 write(print_here, *) '  3: Use total potentials and apparent charges.'
               end if
               
               if (pcmmod_print > 5 .and. pcmmod_print < 10) then
-                 write(print_here, *) '  3: Print potentials at tesserae representative points.'
+                 write(print_here, *) '  4: Print potentials at tesserae representative points.'
               else if (pcmmod_print > 10) then
-                 write(print_here, *) '  3: Print potentials and charges at tesserae representative points.'
+                 write(print_here, *) '  4: Print potentials and charges at tesserae representative points.'
               else
-                 write(print_here, *) '  3: Do not print potentials and charges.'
+                 write(print_here, *) '  4: Do not print potentials and charges.'
               end if     
       ! Should print info for the cavity and the solver here.
               write(print_here, *) '* References: '                                                               
-              write(print_here, *) '  - J. Tomasi, B. Mennucci and R. Cammi:',                &
-              '   "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999' 
-              write(print_here, *) '  - PCMSolver, an API for the Polarizable Continuum Model electrostatic problem',   &    
-              '    L. Frediani et al. '
+              write(print_here, *) '  - J. Tomasi, B. Mennucci and R. Cammi:'                
+              write(print_here, *) '   "Quantum Mechanical Continuum Solvation Models", Chem. Rev., 105 (2005) 2999' 
+              write(print_here, *) '  - PCMSolver, an API for the Polarizable Continuum Model electrostatic problem'    
+              write(print_here, *) '    L. Frediani, R. Di Remigio, K. Mozgawa'
       else
               print_here = 0
               write(*, *) ' ===== Polarizable Continuum Model calculation set-up ====='                                         

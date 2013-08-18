@@ -234,6 +234,11 @@
 #ifdef PCM_MODULE
      call reset_available_kw_list()
 
+     if (kw_matches(word, '.OLDINT')) then
+!        Use "old" (point-by-point) charge-attraction integrals evaluation subroutines
+         pcmmod_old_integration = .true.
+     end if
+
      if (kw_matches(word, '.SEPARA')) then
 !        Split potentials and polarization charges in nuclear and electronic
         pcmmod_separate = .true.
@@ -245,7 +250,7 @@
 
      call check_whether_kw_found(word, kw_section)
 #else
-     call quit('Polarizable Continuum Model not included in this version')
+     call quit('PCMSolver not included in this version.')
 #endif
 
   end subroutine
