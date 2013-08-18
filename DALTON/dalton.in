@@ -51,6 +51,7 @@ OUTEXT="out"
 DALEXT="dal"
 MOLEXT="mol"
 POTEXT="pot"
+PCMEXT="pcm"
 
 GET_FILES=''
 PUT_FILES=''
@@ -81,7 +82,7 @@ opt_noappend=0
 usage (){
         echo
         echo "Usage: $0 [-b dir] [-d] [-D] [-ext log | -o file] [-f dalmol] [-mb mb] [-nb mb]"
-        echo  " [-N num] [-t dir] dalinp{.$DALEXT} [molinp{.$MOLEXT} [potinp{.$POTEXT}]]"
+        echo  " [-N num] [-t dir] dalinp{.$DALEXT} [molinp{.$MOLEXT} [potinp{.$POTEXT}] [pcmsolver{.$PCMEXT}]]"
         echo
         echo 'Options:'
         echo ' -b dir     : prepend dir to directory list for basis set searches'
@@ -215,6 +216,9 @@ if [ -z "$2" ]; then
     if [ -s ${dalfil}.pot ]; then
       potfil=$dalfil
       input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
+    elif [ -s ${dalfil}.pcm ]; then
+      pcmfil=$dalfil
+      input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $pcmfil.$PCMEXT"      
     else
       input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
     fi
@@ -235,17 +239,34 @@ else
    input_files="input files: $dalfil.$DALEXT and $molfil.$MOLEXT"
 fi
 #  Added option for including a potential.inp file for QM3 calculations
+#  or a pcmsolver.pcm file for PCM calculations
 if [ -n "$3" ]; then
+   filename=`echo $3`
+#  get filename extension. 
+#  !WARNING! If input files are given without extension the following fails.
+   extension="${filename##*.}"
+   if [ "$extension" == "pot" ]; then
 #  remove .pot, if added by user
-   potfil=`echo $3 | sed "s/\.$POTEXT//"`
-   if [ "$potfil" = "$molfil" ] && [ "$potfil" = "$dalfil" ]; then
-      outnam=$potfil
+      potfil=`echo $3 | sed "s/\.$POTEXT//"`
+      if [ "$potfil" = "$molfil" ] && [ "$potfil" = "$dalfil" ]; then
+         outnam=$potfil
+      else
+         outnam=${dalfil}_${molfil}_${potfil}
+      fi
+      input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
    else
-      outnam=${dalfil}_${molfil}_${potfil}
+#  remove .pcm, if added by user
+      pcmfil=`echo $3 | sed "s/\.$PCMEXT//"`                                           
+      if [ "$pcmfil" = "$molfil" ] && [ "$pcmfil" = "$dalfil" ]; then
+         outnam=$pcmfil
+      else
+         outnam=${dalfil}_${molfil}_${pcmfil}
+      fi
+      input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $pcmfil.$PCMEXT"
    fi
-   input_files="input files: $dalfil.$DALEXT, $molfil.$MOLEXT, and $potfil.$POTEXT"
 fi
 #
+
 export DALTON_TMPDIR
 if [ ! -d "$DALTON_TMPDIR" ]; then
     mkdir -p $DALTON_TMPDIR
@@ -327,6 +348,20 @@ ierr=0
         echo "$WRKDIR/$potfil.$POTEXT for QM/MM does not exist or is not readable"
         ierr=1
      fi
+   fi
+   
+   if [ "x$pcmfil" != "x" ]; then 
+     if [ -s $WRKDIR/$pcmfil.$PCMEXT -a -r $WRKDIR/$pcmfil.$PCMEXT ]; then
+        cp $WRKDIR/$pcmfil.$PCMEXT pcmsolver.inp
+	python $PCMSOLVER_PARSE_DALTON --dryrun
+     else
+        echo "$WRKDIR/$pcmfil.$PCMEXT for PCM does not exist or is not readable"
+        ierr=1
+     fi
+   fi
+
+   if [ -s $WRKDIR/mep.inp ] ; then
+     cp $WRKDIR/mep.inp MEP.INP
    fi
 
    # put files listed under -put to scratch directory
@@ -440,7 +475,7 @@ fi
 # for subsequent calculations
 #
 
-filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off FCIDUMP pe_*.bin"
+filelist="DALTON.STAT SIRIUS.RST RESULTS.RSP RESPONSE.C8 RSPVEC ABSVECS SIRIFC* DALTON.NCA DALTON.MOL DALTON.ORB DALTON.IRC DALTON.BAS DALTON.TRJ DALTON.CM DALTON.HES DALTON.MOPUN DALTON.WLK molden.inp DALTON.PROP LUCITA_CVECS.a LUCITA_CVECS.b LUCITA_CVECS.c LUCITA_CVECS.d LUCITA_CVECS.e LUCITA_CVECS.f LUCITA_CVECS.g LUCITA_CVECS.h gv.off FCIDUMP pe_*.bin cavity.off PEDRA.OUT PCM_mep_asc"
 
 if [ -s DALTON.OUT.n001 -a -r DALTON.OUT.n001 ]; then
    tarfilelist="DALTON.OUT.n*"
