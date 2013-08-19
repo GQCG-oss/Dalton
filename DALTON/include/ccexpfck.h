@@ -1,6 +1,6 @@
 *======================================================================*
-*    
-*     Purpose: store information about expectation values and 
+*
+*     Purpose: store information about expectation values and
 *              effective Fock matrices:
 *              1) label list initialized by CC_EXPFCK_INIT and
 *                 maintained via functions IEXPECT/IEFFFOCK
@@ -11,7 +11,7 @@
 *         LEXPTOPN      --  flag to allow/disallow extension for expect.
 *         MAXEXPFCKLBL  --  maximum dimension of the list
 *         NEXPFCKLBL    --  list length
-*         LBLEXPFCK(*)  --  labels of the operators 
+*         LBLEXPFCK(*)  --  labels of the operators
 *         ORDEXPFCK(*)  --  derivative order of the operator
 *         LEXPFCK(2,*)  --  flags for expt. values and fock matrices
 *         ISYEFCK(*)    --  symmetry of the results
@@ -47,7 +47,7 @@
       DOUBLE PRECISION EXPVALUE(4,MAXEXPFCKLBL)
 #endif
 
-      COMMON/IEXPFCK/ ISYEXPFCK, ORDEXPFCK, IADRFCK, NEXPFCKLBL, 
+      COMMON/IEXPFCK/ ISYEXPFCK, ORDEXPFCK, IADRFCK, NEXPFCKLBL,
      &                LEXPFCK, LEFCKOPN, LEXPTOPN
       COMMON/CEXPFCK/ LBLEXPFCK
       COMMON/REXPFCK/ EXPVALUE

@@ -1,5 +1,5 @@
 !     FILE: iratdef.h
-!     
+!
 !     IRAT  = (real word length) / (integer word length)
 !     LRAT  = (real word length) / (logical word length)
 !
