@@ -1,5 +1,5 @@
 *----------------------------------------------------------------------*
-* flags for test (noddy) implementation of CC3 response: 
+* flags for test (noddy) implementation of CC3 response:
 *----------------------------------------------------------------------*
       CHARACTER*12 FILNODFOCK, FILNODINTS, FILNODINTT, FILNODINTV,
      &             FILNODINTX, FILNODT30,  FILNODL30
@@ -13,7 +13,7 @@
 
       LOGICAL NODDY_XI, NODDY_ETA, NODDY_XI_ALTER, NODDY_OVLP,
      &        NODDY_ETA_ALTER, NODDY_FMAT, CCSDT_F_ALTER, NODDY_OMEGA,
-     &        NODDY_LHTR, NODDY_RHTR, NODDY_DEN, NODDY_FAMAT, 
+     &        NODDY_LHTR, NODDY_RHTR, NODDY_DEN, NODDY_FAMAT,
      &        NODDY_GMAT, NODDY_BMAT, NODDY_AAMAT, NODDY_INIT,
      &        NODDY_HMAT, NODDY_FA_ALTER
 

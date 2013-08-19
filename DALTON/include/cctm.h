@@ -5,7 +5,7 @@
       INTEGER IPRTM, NTMSEL, NTMOPER
 
       INTEGER IATMOP, IBTMOP, ICTMOP, IDTMOP, IETMOP, IFTMOP
-     
+
       INTEGER NTMSELX, ITMSELX, ITMSEL
 
 #if defined (SYS_CRAY)
@@ -14,7 +14,7 @@
       DOUBLE PRECISION EXTMFR, BTMFR, CTMFR
 #endif
       COMMON /INFTMCC/  EXTMFR(MXTMSEL), BTMFR(MXTMSEL), CTMFR(MXTMSEL),
-     *                   ITMSEL(MXTMSEL,2), 
+     *                   ITMSEL(MXTMSEL,2),
      *                   IATMOP(MXTMOP), IBTMOP(MXTMOP), ICTMOP(MXTMOP),
      *                   IDTMOP(MXTMOP), IETMOP(MXTMOP), IFTMOP(MXTMOP),
      *                   NTMSEL, IPRTM, NTMOPER,
