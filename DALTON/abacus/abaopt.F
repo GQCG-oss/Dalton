@@ -1325,6 +1325,7 @@ C  /* Deck optmin */
 #include "maxorb.h"
 #include "infpar.h"
 #include "inftap.h"
+#include "nuclei.h"
 #if defined (VAR_MPI)
       INCLUDE 'mpif.h'
 #endif
