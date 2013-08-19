@@ -11,6 +11,7 @@ module matrix_operations_dense
   use memory_handling
   use matrix_module
   use reorder_frontend_module
+  use precision
   contains
 !> \brief See mat_init in mat-operations.f90
   subroutine mat_dense_init(A,nrow,ncol)
@@ -78,6 +79,54 @@ module matrix_operations_dense
      if (ABS(alpha-1.0E0_realk).GT.1.0E-15_realk) call dscal(i,alpha,afull,1)
 
   end subroutine mat_dense_to_full
+
+!> \brief See mat_to_full3D in mat-operations.f90
+  subroutine mat_dense_to_full3D(a, alpha, afull,n1,n2,n3,i3)
+     implicit none
+     integer, INTENT(IN)           :: n1,n2,n3,i3
+     TYPE(Matrix), intent(in):: a
+     real(realk), intent(in) :: alpha
+     real(realk), intent(inout):: afull(n1,n2,n3)  
+     integer                 :: i,N,M,MP1,j,offset
+     N = a%nrow
+     M = MOD(N,7)
+     IF (M.NE.0) THEN
+        do j = 1,a%ncol
+           offset = (j-1)*N
+           DO I = 1,M
+              afull(i,j,i3) = alpha*a%elms(i+offset)              
+           ENDDO
+        enddo
+        MP1 = M + 1
+        IF (N.GE.7)THEN
+           do j = 1,a%ncol
+              offset = (j-1)*N
+              DO I = MP1,N,7
+                 afull(i,j,i3) = alpha*a%elms(i+offset)
+                 afull(i+1,j,i3) = alpha*a%elms(i+1+offset)
+                 afull(i+2,j,i3) = alpha*a%elms(i+2+offset)
+                 afull(i+3,j,i3) = alpha*a%elms(i+3+offset)
+                 afull(i+4,j,i3) = alpha*a%elms(i+4+offset)
+                 afull(i+5,j,i3) = alpha*a%elms(i+5+offset)
+                 afull(i+6,j,i3) = alpha*a%elms(i+6+offset)
+              END DO
+           enddo
+        ENDIF
+     ELSE
+        do j = 1,a%ncol
+           offset = (j-1)*N
+           DO I = 1,N,7
+              afull(i,j,i3) = alpha*a%elms(i+offset)
+              afull(i+1,j,i3) = alpha*a%elms(i+1+offset)
+              afull(i+2,j,i3) = alpha*a%elms(i+2+offset)
+              afull(i+3,j,i3) = alpha*a%elms(i+3+offset)
+              afull(i+4,j,i3) = alpha*a%elms(i+4+offset)
+              afull(i+5,j,i3) = alpha*a%elms(i+5+offset)
+              afull(i+6,j,i3) = alpha*a%elms(i+6+offset)
+           END DO
+        ENDDO
+     ENDIF
+  end subroutine mat_dense_to_full3D
 
 !> \brief See mat_print in mat-operations.f90
   subroutine mat_dense_print(a, i_row1, i_rown, j_col1, j_coln, lu)

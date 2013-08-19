@@ -188,7 +188,7 @@ C
       call nwadd(nwall,ncdets*8)
       allocate (cvec(ncdets))
       rewind (luit1)
-      CALL MOLLB2 ('STARTVEC',RTNLBL,LUIT1,LUERR)
+      CALL MOLLB2 ('STARTVEC',RTNLBL,LUIT1,LUPRI)
       if (.not.doci) then
          ioldstate=istate
          istate=1
@@ -427,7 +427,7 @@ C
 
       if (DOCI) then
         REWIND LUIT1
-        CALL MOLLAB('ENERGIES',LUIT1,LUERR)
+        CALL MOLLAB('ENERGIES',LUIT1,LUPRI)
         READ (LUIT1) (escf,I=1,ISTNEVCI)
       else
         escf=emcscf

@@ -183,13 +183,13 @@ CTRL[6]=2
 ERROR[6]="INERTIAL POLARIZATION NOT REQUESTED"
 
 # SCF energy
-CRIT1=`$GREP "Hartree\-Fock total energy \: * \-113\.416137335" $log | wc -l`
+CRIT1=`$GREP "Hartree\-Fock total energy *\: * \-113\.416137335" $log | wc -l`
 TEST[7]=`expr	$CRIT1`
 CTRL[7]=1
 ERROR[7]="SCF ENERGY NOT CORRECT"
 
 # MP2 energy
-CRIT1=`$GREP "\= MP2 second order energy \: * \-113\.609683[4-5]" $log | wc -l`
+CRIT1=`$GREP "\= MP2 second order energy *\: * \-113\.609683[4-5]" $log | wc -l`
 TEST[8]=`expr	$CRIT1`
 CTRL[8]=1
 ERROR[8]="MP2 ENERGY  NOT CORRECT"

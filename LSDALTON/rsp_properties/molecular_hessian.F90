@@ -632,6 +632,10 @@ CONTAINS
     logical                         :: LINEQ_x
     Real(realk)                     :: laser_freq(1)
     Type(matrix)                    :: oneRHS(1),oneXa(1)
+    Real(realk)                     :: ts,te 
+    Integer                         :: i, nbast
+    type(rsp_molcfg)                :: molcfg
+
     !
     call lstimer('START ',ts,te,lupri)
     nbast = D%nrow

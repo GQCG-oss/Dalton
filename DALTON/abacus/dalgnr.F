@@ -1123,8 +1123,10 @@ C  /* Deck gnrlin */
 C
 C     GENERAL input for Dalton
 C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
       use polarizable_embedding, only: pe_dalton_input
+#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "mxcent.h"
@@ -1486,7 +1488,12 @@ C        '.DOUGLA'
          GOTO 100
 !        .PEQM
  133     continue
+#if defined (BUILD_PELIB)
             peqm = .true.
+#else
+            write(lupri,*) 'ERROR: PE library not enabled.'
+            call quit('ERROR: PE library not enabled.')
+#endif
          goto 100
       ELSE IF (PROMPT .EQ. '*') THEN
          GO TO 999
@@ -1560,7 +1567,6 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Only totally symmetric part of molecular Hessian calculated'
       IF (DIRCAL) WRITE(LUPRI,'(4X,A)')
      &   'AO-direct calculation (in sections where implemented)'
-      IF (MOLDEN) CALL MOHEAD
       IF (DKTRAN) WRITE (LUPRI,'(4X,A)') 
      &   'The second order Douglas-Kroll-Hess transformation is applied'
       IF (RNHERM) WRITE (LUPRI,'(4X,A)')
@@ -1598,9 +1604,11 @@ C     ... default print level for statistics /hjaaj apr 2000
      &   'Numerical derivatives will be calculated'
       IF (WESTA) WRITE (LUPRI,'(4X,A)') 
      &  'Information for WESTA will be calculated and written to files.'
+#if defined (BUILD_PELIB)
         if (peqm) write(lupri,'(4x,a)')
      &   'Environment is modeled using polarizable embedding scheme'//
-     &   ' (PE module)'
+     &   ' (PE library)'
+#endif
 C
 Cholesky
       IF (CHOINT) WRITE (LUPRI,'(4X,A)')
@@ -1694,7 +1702,11 @@ C     "*QMMM  " input
 
 !     "*PEQM  " input
    10 continue
+#if defined (BUILD_PELIB)
         call pe_dalton_input(word, lucmd, lupri)
+#else
+        call quit('ERROR: PE library not enabled.')
+#endif
       goto 200
 
 C

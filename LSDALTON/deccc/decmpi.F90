@@ -540,6 +540,9 @@ contains
        call mem_alloc(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis)
        call mem_alloc(MyMolecule%ppfock,MyMolecule%numocc,MyMolecule%numocc)
        call mem_alloc(MyMolecule%qqfock,MyMolecule%numvirt,MyMolecule%numvirt)
+       call mem_alloc(MyMolecule%carmomocc,3,MyMolecule%numocc)
+       call mem_alloc(MyMolecule%carmomvirt,3,MyMolecule%numvirt)
+       call mem_alloc(MyMolecule%AtomCenters,3,MyMolecule%natoms)
     end if
 
 
@@ -558,7 +561,9 @@ contains
     call ls_mpibcast(MyMolecule%overlap,MyMolecule%nbasis,MyMolecule%nbasis,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%ppfock,MyMolecule%numocc,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
     call ls_mpibcast(MyMolecule%qqfock,MyMolecule%numvirt,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
-
+    call ls_mpibcast(MyMolecule%carmomocc,3,MyMolecule%numocc,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%carmomvirt,3,MyMolecule%numvirt,master,MPI_COMM_LSDALTON)
+    call ls_mpibcast(MyMolecule%AtomCenters,3,MyMolecule%natoms,master,MPI_COMM_LSDALTON)
 
   end subroutine mpi_bcast_fullmolecule
 
@@ -826,12 +831,13 @@ contains
 
   End subroutine mpicopy_fragment
 
-  subroutine share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s)
+  subroutine share_E2_with_slaves(ppf,qqf,t2,xo,yv,Gbi,Had,no,nv,nb,omega2,s,lo)
     implicit none
     real(realk),pointer :: xo(:),yv(:),Gbi(:),Had(:)
     real(realk), intent(inout) :: ppf(:),qqf(:)
     integer :: no,nv,nb,s
     type(array),intent(inout) :: t2,omega2
+    logical :: lo
     integer :: oaddr(infpar%lg_nodtot)
     integer :: taddr(infpar%lg_nodtot)
     logical :: master
@@ -845,6 +851,7 @@ contains
     call ls_mpi_buffer(nv,infpar%master)
     call ls_mpi_buffer(nb,infpar%master)
     call ls_mpi_buffer(s,infpar%master)
+    call ls_mpi_buffer(lo,infpar%master)
     if(master)oaddr=omega2%addr_p_arr
     call ls_mpi_buffer(oaddr,infpar%lg_nodtot,infpar%master)
     if(master)taddr=t2%addr_p_arr
@@ -1666,6 +1673,7 @@ contains
     call ls_mpi_buffer(DECitem%dyn_load,Master)
     call ls_mpi_buffer(DECitem%ccsd_old,Master)
     call ls_mpi_buffer(DECitem%CCSDno_restart,Master)
+    call ls_mpi_buffer(DECitem%CCSD_MPICH,Master)
     call ls_mpi_buffer(DECitem%CCSDpreventcanonical,Master)
     call ls_mpi_buffer(DECitem%CCDhack,Master)
     call ls_mpi_buffer(DECitem%cc_driver_debug,Master)
@@ -1708,6 +1716,7 @@ contains
     call ls_mpi_buffer(DECitem%simple_mulliken_threshold,Master)
     call ls_mpi_buffer(DECitem%approximated_norm_threshold,Master)
     call ls_mpi_buffer(DECitem%mulliken,Master)
+    call ls_mpi_buffer(DECitem%distance,Master)
     call ls_mpi_buffer(DECitem%FOT,Master)
     call ls_mpi_buffer(DECitem%MaxIter,Master)
     call ls_mpi_buffer(DECitem%FOTlevel,Master)

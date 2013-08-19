@@ -112,7 +112,10 @@ C
 C  /* Deck rspslv */
       SUBROUTINE RSPSLV(NCSIM,NOSIM,BCVECS,BOVECS,CMO,INDXCI,
      &                  UDV,EVECS,WRK,LWRK)
+C
+#if defined (BUILD_PELIB)
       use pe_variables, only: peqm
+#endif
 C
 #include "implicit.h"
 #include "maxorb.h"
@@ -150,15 +153,6 @@ C     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
 C         CALL QUIT(
 C     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
 C      END IF
-      IF (.NOT. SOPRPA .AND. SOPPA) THEN
-         WRITE (LUPRI,*)
-     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA'
-         WRITE (LUPRI,*) 'Full solvent model SOPPA not implemented.'
-         WRITE (LUPRI,*) 'Only SOPPA/RPA (JCC, 2012-2022, 33, (2012))'
-         WRITE (LUPRI,*) 'For SOPPA/RPA, use .SOPRPA under **RESPONSE'
-         CALL QUIT(
-     &   'RSPSLV-ERROR: solvent response is not implemented for SOPPA')
-      END IF
 Clf      IF (IREFSY.EQ.KSYMST .AND. NASHT.GT.1 .AND. KZCONF.NE.NCREF)
 Clf     &   THEN
 ClfC
@@ -371,16 +365,18 @@ C
      &        EVECS,EVECS(NCSIM*KZYVAR+1),WRK(KFREE),LFREE)
          FIRST1 = .FALSE.
       ENDIF
+#if defined (BUILD_PELIB)
       if (peqm) then
         if (.not. tdhf) then
             call quit('ERROR: MCSCF linear response not implemented'//
-     &                ' with PE module.')
+     &                ' with the PE library.')
         endif
         call pe_rsplin(ncsim, nosim, bcvecs, bovecs, wrk(kcref), cmo,
      &                 indxci, udv, wrk(kdv), wrk(kudvtr), wrk(kdvtr),
      &                 wrk(kdvt), wrk(kdvttr), evecs,
      &                 evecs(ncsim*kzyvar+1), wrk(kfree), lfree)
       end if
+#endif
       IF (QMMM) THEN
          IF (IPQMMM .GT. 1) CALL TIMER('START ',TIMSTR,TIMEND)
          IF (IPRRSP .GT. 2) WRITE(LUPRI,*)

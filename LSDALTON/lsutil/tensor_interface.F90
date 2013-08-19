@@ -12,6 +12,7 @@ module tensor_interface_module
   use LSTIMING!,only:lstimer
   use reorder_frontend_module
   use lspdm_tensor_operations_module
+  use matrix_module
 
 
   !> Number of created arrays
@@ -54,6 +55,8 @@ module tensor_interface_module
                     &array2_print_norm_customprint,&
                     &array4_print_norm_customprint
   end interface print_norm
+
+
   interface array_add
     module procedure array_add_normal, array_add_arr2fullfort,array_add_fullfort2arr
   end interface array_add
@@ -175,7 +178,7 @@ contains
   !distribution for the array
   !> \author Patrick Ettenhuber
   !> \date late 2012
-  subroutine array_add_fullfort2arr(arrx,b,fortarry,order)
+  subroutine array_add_fullfort2arr(arrx,b,fortarry,order,wrk,iwrk)
     implicit none
     !> full fortan arra´y, this corresponds to y
     real(realk), intent(in) :: fortarry(*)
@@ -185,17 +188,36 @@ contains
     type(array), intent(inout) :: arrx
     !> order of the fortran array with respect to the array
     integer, intent(in),optional :: order(arrx%mode)
+    !> optinally workspace can be passed, the size is defined as iwrk
+    integer(kind=8), intent(in),optional :: iwrk
+    real(realk), intent(inout),optional :: wrk(*)
+    integer :: o(arrx%mode)
     !> check if there is enough memory to send a full tile, this will die out
     integer :: i
     real(realk) :: MemFree,tilemem
+    do i=1,arrx%mode
+      o(i) = i
+    enddo
+    if(present(order))o=order
     select case(arrx%atype)
       case(DENSE)
-        call daxpy(int(arrx%nelms),b,fortarry,1,arrx%elm1,1)
+        if(.not.present(order))then
+          call daxpy(int(arrx%nelms),b,fortarry,1,arrx%elm1,1)
+        else
+          call lsquit("ERROR(array_add_fullfort2arr1):not implemented",-1)
+        endif
       case(TILED)
         call lsquit("ERROR(array_add_fullfort2arr):not implemented",-1)
       case(TILED_DIST)
-        if(present(order))call add_data2tiled_intiles(arrx,b,fortarry,arrx%dims,arrx%mode,order)
-        if(.not.present(order))call add_data2tiled_intiles(arrx,b,fortarry,arrx%dims,arrx%mode)
+        if(present(wrk).and.present(iwrk))then
+          call add_data2tiled_intiles_explicitbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o,wrk,iwrk)
+        else
+          if(b==1.0E0_realk)then
+            call add_data2tiled_intiles_nobuffer(arrx,fortarry,arrx%dims,arrx%mode,o)
+          else
+            call add_data2tiled_intiles_stackbuffer(arrx,b,fortarry,arrx%dims,arrx%mode,o)
+          endif
+        endif
     end select
   end subroutine array_add_fullfort2arr
 
@@ -1479,6 +1501,25 @@ contains
     print *,string,norm
   end subroutine print_norm_fort_customprint
 
+
+
+  subroutine array_scale(arr,sc)
+    implicit none
+    type(array) :: arr
+    real(realk) :: sc
+    
+    select case(arr%atype)
+    case(DENSE)
+      call dscal(int(arr%nelms),sc,arr%elm1,1)
+    case(REPLICATED)
+      call dscal(int(arr%nelms),sc,arr%elm1,1)
+      call array_sync_replicated(arr)
+    case(TILED_DIST)
+      call array_scale_td(arr,sc)
+    case default
+      call lsquit("ERROR(array_scale):not yet implemented",DECinfo%output)
+    end select
+  end subroutine array_scale
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!   ARRAY TESTCASES !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -1497,19 +1538,23 @@ contains
     integer(kind=long) :: testint
     logical :: master
     integer :: no,nv,nb,na,i,j,succ
-    integer(kind=ls_mpik) :: sender, recver
+    integer(kind=ls_mpik) :: sender, recver, nnod
     character(len=7) :: teststatus
     character(ARR_MSG_LEN) :: msg
     master = .true.
+    nnod   = 1_ls_mpik
 #ifdef VAR_MPI
     if(infpar%lg_mynum /= 0) then
       master =.false.
     endif
+    nnod = infpar%lg_nodtot
+    if(nnod < 5) call lsquit("ERROR(test_array_struct): This needs to be run with at least 5 processes",-1)
 #endif
     nb =  21
     nv =  18
     no =  12
     na =  7
+ 
 
 #ifdef VAR_MPI
     if(master)then

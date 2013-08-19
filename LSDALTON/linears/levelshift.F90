@@ -5,9 +5,12 @@
 !> \author S. Host
 !> \date 2007
 module levelshift_mod
+use queue_module
 use queue_ops
+use precision
+use memory_handling
 use matrix_operations
-
+use matrix_module
 !> \brief Contains setting for level shift.
 !> \author S. Host
 !> \date March 2010

@@ -389,7 +389,7 @@ end if
     ! ----------------------------
     call mem_alloc(orb2batchGamma,nbasis)
     call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimGamma,&
-         & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma)
+         & nbasis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
 
     if(master) write(DECinfo%output,*) 'BATCH: Number of Gamma batches   = ', nbatchesGamma
 
@@ -418,7 +418,7 @@ end if
     ! ----------------------------
     call mem_alloc(orb2batchAlpha,nbasis)
     call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimAlpha,&
-         & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha)
+         & nbasis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
     if(master) write(DECinfo%output,*) 'BATCH: Number of Alpha batches   = ', nbatchesAlpha
 
     ! Translate batchindex to orbital index
@@ -1737,7 +1737,7 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     ! while we make the alpha batch as small as possible
 
     ! Minimum AO batch size
-    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAObatchSize)
+    call determine_maxBatchOrbitalsize(DECinfo%output,MySetting,MinAObatchSize,'R')
 
     ! Maximum AO batch size (all basis functions)
     MaxAObatchSize = nbasis
@@ -1757,7 +1757,7 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     ! ----------------------------
     call mem_alloc(orb2batchGamma,nbasis)
     call build_batchesofAOS(DECinfo%output,mysetting,GammaBatchSize,nbasis,MaxActualDimGamma,&
-         & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma)
+         & batchsizeGamma,batchdimGamma,batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
 
     ! Batch to orbital information
     ! ----------------------------
@@ -1784,7 +1784,7 @@ end subroutine MP2_integrals_and_amplitudes_workhorse
     ! ----------------------------
     call mem_alloc(orb2batchAlpha,nbasis)
     call build_batchesofAOS(DECinfo%output,mysetting,AlphaBatchSize,nbasis,&
-        & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha)
+        & MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
 
     ! Batch to orbital information
     ! ----------------------------
@@ -2131,7 +2131,7 @@ nthreads=1
   ! The smallest possible AO batch depends on the basis set
   ! (More precisely, if all batches are made as small as possible, then the
   !  call below determines the largest of these small batches).
-  call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%mylsitem%setting,MinAObatch)
+  call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%mylsitem%setting,MinAObatch,'R')
 
   ! The smallest/largest possible virtual batch is simply 1/number of virtual orbitals.
   MinVirtBatch = 1
@@ -2178,7 +2178,7 @@ nthreads=1
   ! The optimal gamma batch size is GammaOpt.
   ! We now find the maximum possible gamma batch size smaller than or equal to GammaOpt
   ! and store this number in bat%MaxAllowedDimGamma.
-  call determine_MaxOrbitals(DECinfo%output,MyFragment%mylsitem%setting,GammaOpt,bat%MaxAllowedDimGamma)
+  call determine_MaxOrbitals(DECinfo%output,MyFragment%mylsitem%setting,GammaOpt,bat%MaxAllowedDimGamma,'R')
 
   ! Max size with actual batchsizes
   call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
@@ -2218,7 +2218,7 @@ nthreads=1
   end if
 
   ! Find possible alpha batch size smaller than or equal to AlphaOpt
-  call determine_MaxOrbitals(DECinfo%output,MyFragment%mylsitem%setting,AlphaOpt,bat%MaxAllowedDimAlpha)
+  call determine_MaxOrbitals(DECinfo%output,MyFragment%mylsitem%setting,AlphaOpt,bat%MaxAllowedDimAlpha,'R')
   call max_arraysize_for_mp2_integrals(MyFragment,first_order_integrals,&
        & bat%MaxAllowedDimAlpha,bat%MaxAllowedDimGamma,bat%virtbatch, step,nthreads,bat%size1,MemoryNeeded)
   if(DECinfo%PL>0) write(DECinfo%output,'(1X,a,2i8,g10.3)') 'Optimal/actual alpha size, memory (GB) =', &

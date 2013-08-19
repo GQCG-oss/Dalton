@@ -634,6 +634,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   integer, pointer :: orb2batchGamma(:), batchdimGamma(:), batchsizeGamma(:), batchindexGamma(:)
   integer :: scheme,nocc,nunocc,MinAObatch,iter
   real(realk) :: MemFree
+  integer(kind=8) :: dummy
 
   ! Initialize stuff (just dummy arguments here)
   nullify(orb2batchAlpha)
@@ -660,10 +661,10 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
      call get_optimal_batch_sizes_for_mp2_integrals(MyFragment,DECinfo%first_order,bat,.false.)
   else  ! CC2 or CCSD
      iter=1
-     call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch)
+     call determine_maxBatchOrbitalsize(DECinfo%output,MyFragment%MyLsItem%setting,MinAObatch,'R')
      call get_currently_available_memory(MemFree)
      call get_max_batch_sizes(scheme,MyFragment%number_basis,nunocc,nocc,bat%MaxAllowedDimAlpha,&
-          & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.)
+          & bat%MaxAllowedDimGamma,MinAObatch,DECinfo%manual_batchsizes,iter,MemFree,.true.,dummy)
   end if
 
 
@@ -671,7 +672,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   call mem_alloc(orb2batchGamma,MyFragment%number_basis)
   call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimGamma,&
        & MyFragment%number_basis,MaxActualDimGamma,batchsizeGamma,batchdimGamma,&
-       & batchindexGamma,nbatchesGamma,orb2BatchGamma)
+       & batchindexGamma,nbatchesGamma,orb2BatchGamma,'R')
   call mem_dealloc(orb2batchGamma)
   call mem_dealloc(batchdimGamma)
   call mem_dealloc(batchsizeGamma)
@@ -681,7 +682,7 @@ subroutine get_number_of_integral_tasks_for_mpi(MyFragment,ntasks)
   call mem_alloc(orb2batchAlpha,MyFragment%number_basis)
   call build_batchesofAOS(DECinfo%output,MyFragment%mylsitem%setting,bat%MaxAllowedDimAlpha,&
        & MyFragment%number_basis,MaxActualDimAlpha,batchsizeAlpha,batchdimAlpha,&
-       & batchindexAlpha,nbatchesAlpha,orb2BatchAlpha)
+       & batchindexAlpha,nbatchesAlpha,orb2BatchAlpha,'R')
   call mem_dealloc(orb2batchAlpha)
   call mem_dealloc(batchdimAlpha)
   call mem_dealloc(batchsizeAlpha)

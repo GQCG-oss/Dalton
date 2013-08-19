@@ -1617,7 +1617,7 @@ C
                NLOC1 = NOCC1
             END IF
 C
-            CALL LOWDIN(IPRSOS,CLOCV(1,(I-1)*NV2LOC + 1),NVIRT,NLOC1,
+            CALL LOC_LOWDIN(IPRSOS,CLOCV(1,(I-1)*NV2LOC + 1),NVIRT,NLOC1,
      &                  LFLAG,WORK(KWORK1),LWORK1)
          END DO
 C
@@ -1631,7 +1631,7 @@ C
             ELSE
                NLOC1 = NOCC1
             END IF
-            CALL LOWDIN(IPRSOS,CLOCV(1,(I-1)*NLOCC + 1),NVIRT,NLOC1,
+            CALL LOC_LOWDIN(IPRSOS,CLOCV(1,(I-1)*NLOCC + 1),NVIRT,NLOC1,
      &                  LFLAG,WORK(KWORK1),LWORK1)
          END DO
 C
@@ -1741,12 +1741,12 @@ C
       END
 
 C*********************************************************************
-C  /* Deck lowdin */  'STOLEN BY ... ' from RPAC
-      SUBROUTINE LOWDIN(IPRSOS,OMAT,NOMAT,NSMAT,IFLAG,WORK,LWORK)
+C  /* Deck LOC_lowdin */  'STOLEN BY ... ' from RPAC
+      SUBROUTINE LOC_LOWDIN(IPRSOS,OMAT,NOMAT,NSMAT,IFLAG,WORK,LWORK)
 C
 C      Stephan P. A. Sauer 18/12-1999
 C
-C     LOWDIN ORTHOGONALIZATION OF NVEC VECTORS STORED IN OMAT.
+C     LOC_LOWDIN ORTHOGONALIZATION OF NVEC VECTORS STORED IN OMAT.
 C
 C     OMAT : Matrix containing Orbitals to be orthogonalized.
 C     NOMAT: N. of rows.
@@ -1774,7 +1774,7 @@ C
       DIMENSION   OMAT(NOMAT,NSMAT)
       DIMENSION   WORK(LWORK)
 C
-      CALL QENTER('LOWDIN')
+      CALL QENTER('LOC_LOWDIN')
 C
 C-----------------------
 C     Allocate workspace
@@ -1793,7 +1793,7 @@ C
       KWORK1  = KOVRLP + NSMAT2
       LWORK1  = LWORK  - KWORK1
 C
-      IF (LWORK1 .LT. 0) CALL STOPIT('LOWDIN.1',' ',LWORK1,LWORK)
+      IF (LWORK1 .LT. 0) CALL STOPIT('LOC_LOWDIN.1',' ',LWORK1,LWORK)
 C
       IFLAG = 0
 C
@@ -1827,7 +1827,7 @@ C     Stops Orthogonalization end gets out
 C
                 IFLAG = 1
 C
-                CALL QEXIT('LOWDIN')
+                CALL QEXIT('LOC_LOWDIN')
 C
                 RETURN
               END IF
@@ -1887,7 +1887,7 @@ C
           END DO
        END DO
 C
-      CALL QEXIT('LOWDIN')
+      CALL QEXIT('LOC_LOWDIN')
 C
       RETURN
       END

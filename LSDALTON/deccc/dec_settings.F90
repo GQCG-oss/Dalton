@@ -66,6 +66,7 @@ contains
     DECinfo%CCSDsaferun=.false.
     DECinfo%solver_par=.false.
     DECinfo%CCSDpreventcanonical=.false.
+    DECinfo%CCSD_MPICH=.false.
     DECinfo%CCDhack = .false.
 
     ! -- Output options 
@@ -81,6 +82,7 @@ contains
     DECinfo%user_defined_orbitals=.false.
     DECinfo%AbsorbHatoms=.true.  ! reassign H atoms to heavy atom neighbour
     DECinfo%mulliken=.false.
+    DECinfo%Distance=.false.
     DECinfo%BoughtonPulay=.false.
     DECinfo%FitOrbitals=.true.
     DECinfo%simple_orbital_threshold=0.05E0_realk
@@ -375,6 +377,7 @@ contains
        case('.CCSDSOLVER_SERIAL'); DECinfo%solver_par=.false.
        case('.CCSDDYNAMIC_LOAD'); DECinfo%dyn_load=.true.
        case('.CCSDNO_RESTART'); DECinfo%CCSDno_restart=.true.
+       case('.CCSD_WITH_MPICH'); DECinfo%CCSD_MPICH=.true.
        case('.CCSDPREVENTCANONICAL'); DECinfo%CCSDpreventcanonical=.true.
        case('.CCD'); DECinfo%CCDhack=.true.;DECinfo%ccModel=3; DECinfo%use_singles=.true.; DECinfo%solver_par=.true.
        case('.HACK'); DECinfo%hack=.true.
@@ -390,6 +393,7 @@ contains
        case('.NOTPREC'); DECinfo%use_preconditioner=.false.
        case('.NOTBPREC'); DECinfo%use_preconditioner_in_b=.false.
        case('.MULLIKEN'); DECinfo%mulliken=.true.
+       case('.DISTANCE'); DECinfo%distance=.true.
        case('.BOUGHTONPULAY'); DECinfo%BoughtonPulay=.true.
        case('.NOTFITORBITALS'); DECinfo%FitOrbitals=.false.
        case('.SIMPLEORBITALTHRESH')

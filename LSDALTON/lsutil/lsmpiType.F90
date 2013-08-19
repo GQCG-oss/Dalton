@@ -211,6 +211,7 @@ module lsmpi_type
   integer,parameter :: incremCha=1510,incremShort=incremInteger*int_to_short
   real(realk) :: poketime=0.0E0_realk
   integer(kind=long) :: poketimes = 0
+  real(realk) :: time_win_unlock = 0.0E0_realk
 
 !$OMP THREADPRIVATE(AddToBuffer,iLog,iDP,iInt4,iInt8,iSho,iCha,&
 !$OMP nLog,nDP,nInteger4,nInteger8,nShort,nCha,lsmpibufferDP,lsmpibufferInt4,&
@@ -5032,9 +5033,13 @@ contains
        !Total max_mem_used_global across all nodes
        CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
             & count,MPI_INTEGER8,MPI_SUM,root,MPI_COMM_LSDALTON,IERR)
+       !IF direct communication is used the unlock times are interesting
+       call lsmpi_reduction(time_win_unlock,infpar%master,MPI_COMM_LSDALTON)
+       print *,"YEAH DEBUG INFO TIME SPENT IN UNLOCK",infpar%mynum,time_win_unlock
        IF(infpar%mynum.eq.infpar%master) THEN
           WRITE(lupri,'(A)')'  The total memory used across all MPI nodes'
           call print_maxmem(lupri,recvbuffer,'TOTAL')
+          Write(lupri,'("time spent in unlock: ",f19.10)')time_win_unlock
        ENDIF
        !Largest max_mem_used_global including Master
        CALL MPI_REDUCE(max_mem_used_global,recvbuffer,&
@@ -5340,12 +5345,16 @@ contains
     integer(kind=ls_mpik),intent(in) :: dest
     integer(kind=ls_mpik),intent(in) :: win
     integer(kind=ls_mpik) :: ierr
+    real(realk) :: ta,te
 #ifdef VAR_MPI   
     ierr=0
+    ta = MPI_WTIME()
     call MPI_WIN_UNLOCK(dest,win,ierr)     
+    te = MPI_WTIME()
     if(ierr.ne.0)then
       call lsquit("Error(lsmpi_win_unlock): error in mpi",ierr)
     endif
+    time_win_unlock = time_win_unlock + te - ta
 #endif
   end subroutine lsmpi_win_unlock
 
@@ -5370,7 +5379,7 @@ contains
   end subroutine lsmpi_put_realk
   subroutine lsmpi_put_realkV_wrapper8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(:)
+    real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5400,7 +5409,7 @@ contains
   end subroutine lsmpi_put_realkV_wrapper8
   subroutine lsmpi_put_realkV(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(:)
+    real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5435,7 +5444,7 @@ contains
     call MPI_GET(buf,n,MPI_INTEGER8,dest, &
      & offset,n,MPI_INTEGER8,win,ierr)
     if(ierr.ne.0)then
-      call lsquit("Error(lsmpi_get_realk)",ierr)
+      call lsquit("Error(lsmpi_get_int8)",ierr)
     endif
 #endif
   end subroutine lsmpi_get_int8
@@ -5454,7 +5463,7 @@ contains
     call MPI_GET(buf,n,MPI_INTEGER4,dest, &
      & offset,n,MPI_INTEGER4,win,ierr)
     if(ierr.ne.0)then
-      call lsquit("Error(lsmpi_get_realk)",ierr)
+      call lsquit("Error(lsmpi_get_int4)",ierr)
     endif
 #endif
   end subroutine lsmpi_get_int4
@@ -5479,7 +5488,7 @@ contains
   end subroutine lsmpi_get_realk
   subroutine lsmpi_get_realkV_wrapper8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(:)
+    real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5509,7 +5518,7 @@ contains
   end subroutine lsmpi_get_realkV_wrapper8
   subroutine lsmpi_get_realkV_parts(buf,nelms,pos,dest,win,batchsze)
     implicit none
-    real(realk),intent(in) :: buf(:)
+    real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
     integer,intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5529,7 +5538,7 @@ contains
   end subroutine lsmpi_get_realkV_parts
   subroutine lsmpi_get_realkV(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(:)
+    real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5608,7 +5617,7 @@ contains
   end subroutine lsmpi_acc_realk
   subroutine lsmpi_acc_realkV_wrapper8(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(:)
+    real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=8) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5638,7 +5647,7 @@ contains
   end subroutine lsmpi_acc_realkV_wrapper8
   subroutine lsmpi_acc_realkV(buf,nelms,pos,dest,win)
     implicit none
-    real(realk),intent(in) :: buf(:)
+    real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
     integer(kind=4) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest
@@ -5658,7 +5667,7 @@ contains
   end subroutine lsmpi_acc_realkV
   subroutine lsmpi_acc_realkV_parts(buf,nelms,pos,dest,win,batchsze)
     implicit none
-    real(realk),intent(in) :: buf(:)
+    real(realk),intent(in) :: buf(*)
     integer, intent(in) :: pos
     integer,intent(in) :: nelms
     integer(kind=ls_mpik),intent(in) :: dest

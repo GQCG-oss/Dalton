@@ -237,7 +237,7 @@ contains
     real(realk) :: approx_vector_norm, full_vector_norm, approximated_norm, error, half_norm
     real(realk), pointer :: correct_vector_moS(:), approximated_orbital(:), tmp1(:)
     real(realk), pointer :: ShalfC(:,:)
-    integer :: tki,atom_start_i,atom_end_i,gamma,catom(1)
+    integer :: tki,atom_start_i,atom_end_i,gamma,catom(1),central_atom2
     integer, pointer :: atom_start(:) => null()
     integer, pointer :: atom_end(:) => null()
     real(realk) :: twall,tcpu
@@ -268,6 +268,11 @@ contains
     do i=1,size_of_set
 
 
+       if(DECinfo%Distance) then
+          ! Use Distance for orbital "i" to determine central atom 
+          call GetDistanceCentralAtom(offset+i,nbasis,natoms,MyMolecule,central_atom2)
+       endif
+       
        if(DECinfo%Mulliken) then
           ! Use Mulliken population analysis for orbital "i": gross_charge -> Mulliken
           call GetMullikenVector(offset+i,nbasis,natoms,MyMolecule,gross_charge,CtS)
@@ -285,6 +290,16 @@ contains
                   num_atoms_to_consider = num_atoms_to_consider + 1
           end do
 
+          if(DECinfo%Distance) then
+             if( abs(gross_charge(central_atom2)) > mulliken_threshold2)THEN
+                !the new central atom according to distance criteria
+                !is already included in the list
+             else
+                !add the central atom 
+                num_atoms_to_consider = num_atoms_to_consider + 1                
+             endif
+          endif
+
           call mem_alloc(list_of_atoms_to_consider,num_atoms_to_consider)
           list_of_atoms_to_consider = 0
           atom=1
@@ -295,11 +310,20 @@ contains
              end if
           end do
           ! --
-
-          ! -- number of atom with max value of the Mulliken charge
-          catom = maxloc(abs(gross_charge),dim=1)
-          central_atom = catom(1)
-
+          if(DECinfo%Distance) then
+             if( abs(gross_charge(central_atom2)) > mulliken_threshold2)THEN
+                !the new central atom according to distance criteria
+                !is already included in the list
+             else
+                !add the central atom
+                list_of_atoms_to_consider(atom) = central_atom2 
+             endif
+             central_atom = central_atom2 
+          else
+             ! -- number of atom with max value of the Mulliken charge
+             catom = maxloc(abs(gross_charge),dim=1)
+             central_atom = catom(1)
+          endif
        else
 
           ! sort mulliken charge/atomic density keeping track on the original index
@@ -428,6 +452,7 @@ contains
           write(DECinfo%output,'(/,a,i4)') 'Orbital                 : ',i
           write(DECinfo%output,'(a,i4)')   'Orbital # in full basis : ',offset+i
           write(DECinfo%output,'(a,i4,/)') 'Central atom            : ',central_atom
+          write(DECinfo%output,'(a,i4,/)') 'Central atom2           : ',central_atom2
           write(DECinfo%output,'(a,i4,/)') 'Number of atoms         : ',num_atoms_to_consider
           do j=1,num_atoms_to_consider
              write(DECinfo%output,*) list_of_atoms_to_consider(j)
@@ -493,16 +518,18 @@ contains
     type(ccorbital), intent(inout), dimension(nocc) :: OccOrbitals
     !> Unoccupied orbitals to create
     type(ccorbital), intent(inout), dimension(nunocc) :: UnoccOrbitals
-    integer :: i,j,atom,central_atom,n,norbital_extent,nbasis,heavyatom
+    integer :: i,j,atom,central_atom,n,norbital_extent,nbasis,heavyatom,ni
     integer, pointer :: list_of_atoms_to_consider(:)
     real(realk) :: error,charge,mindist,twall,tcpu,maxlowdin
     logical :: keepon
     real(realk), pointer :: ShalfC(:,:)
     real(realk), pointer :: lowdin_charge(:,:)
-    integer, pointer :: atomic_idx(:,:), countOcc(:), countUnocc(:)
+    integer, pointer :: atomic_idx(:,:), countOcc(:), countUnocc(:),central_atom2(:)
     integer :: maxidx,offset,changedatom,nreass
     logical,pointer :: which_hydrogens(:), dofrag(:)
     integer,pointer :: MyHeavyAtom(:),nhydrogens(:),CentralHydrogen(:)
+    real(realk),pointer :: tmplowdin_charge(:)
+    integer,pointer :: tmpatomic_idx(:)
 
 
     call LSTIMER('START',tcpu,twall,DECinfo%output)
@@ -516,6 +543,7 @@ contains
     call mem_alloc(lowdin_charge,natoms,nbasis)
     call mem_alloc(ShalfC,nbasis,nbasis)
     call mem_alloc(atomic_idx,natoms,nbasis)
+    call mem_alloc(central_atom2,nbasis)
 
     ! Get Lowdin matrix S^{1/2} C
     call Get_matrix_for_lowdin_analysis(MyMolecule, ShalfC)
@@ -526,6 +554,11 @@ contains
     ! ***********************************
     GetLowdinCharges: do i=1,nbasis
 
+       if(DECinfo%Distance) then
+          ! Use Distance criteria to determine central atom for orbital "i"  
+          call GetDistanceCentralAtom(i,nbasis,natoms,MyMolecule,central_atom2(i))
+       endif
+       
        ! Get vector with Lowdin charges for all atoms for orbital "i"
        call GetLowdinVector(i,nbasis,natoms,MyMolecule,ShalfC,lowdin_charge(:,i) )
 
@@ -545,8 +578,43 @@ contains
        charge = 0E0_realk
 
        ! Central atom is the one with largest Lowdin charge (although this may be modified below)
-       central_atom = atomic_idx(1,i)
-
+       if(DECinfo%Distance) then
+          !central atom determined from shortest distance from MO
+          central_atom = central_atom2(i)
+          IF(atomic_idx(1,i).EQ.central_atom)THEN
+             !do nothing the closest atom is also the one with the largest Lowdin charge             
+          ELSE
+             !we reorder the lowdin_charge(:,i) list to put the central atom on top
+             call mem_alloc(tmplowdin_charge,nAtoms)
+             call mem_alloc(tmpatomic_idx,nAtoms)
+             do n=1,natoms
+                tmplowdin_charge(n) = lowdin_charge(n,i)
+                tmpatomic_idx(n) = atomic_idx(n,i)
+                IF(atomic_idx(n,i).EQ.central_atom)THEN
+                   !found the central_atom in lowdin list
+                   ni = n
+                ENDIF
+             enddo             
+             !place the central atom first
+             lowdin_charge(1,i) = tmplowdin_charge(ni) 
+             atomic_idx(1,i) = tmpatomic_idx(ni)
+             !place the non central atoms in list
+             do n=1,ni-1                               
+                lowdin_charge(1+n,i) = tmplowdin_charge(n)
+                atomic_idx(1+n,i) = tmpatomic_idx(n)                
+             enddo
+             !number ni should not be placed because it is now number 1
+             !place the rest of the atoms in the list
+             do n=ni+1,nAtoms
+                lowdin_charge(n,i) = tmplowdin_charge(n)
+                atomic_idx(n,i) = tmpatomic_idx(n)                
+             enddo
+             call mem_dealloc(tmplowdin_charge)
+             call mem_dealloc(tmpatomic_idx)
+          ENDIF
+       ELSE
+          central_atom = atomic_idx(1,i)
+       ENDIF
        ! Add atoms until sum of Lowdin charges is close enough to 1
        LowdinAddLoop: do n=1,natoms
           charge = charge + lowdin_charge(n,i)
@@ -573,6 +641,8 @@ contains
           write(DECinfo%output,*) '-------------------------------------'
           write(DECinfo%output,'(1X,a,100i5)')    'ATOMS  : ', list_of_atoms_to_consider
           write(DECinfo%output,'(1X,a,100f10.3)') 'LOWDIN : ', lowdin_charge(1:norbital_extent,i)
+          write(DECinfo%output,'(1X,a,i6)') 'Central Atom : ', central_atom
+          write(DECinfo%output,'(1X,a,i6)') 'Central Atom : ', central_atom2(i)
           write(DECinfo%output,*)
        end if
 
@@ -836,6 +906,7 @@ contains
     call mem_dealloc(dofrag)
     call mem_dealloc(lowdin_charge)
     call mem_dealloc(atomic_idx)
+    call mem_dealloc(central_atom2)
     call mem_dealloc(centralHydrogen)
     call mem_dealloc(countOcc)
     call mem_dealloc(countUnocc)
@@ -1002,6 +1073,44 @@ contains
 
   end subroutine GetMullikenVector
 
+  !> \brief Get Mulliken gross charges for a given orbital on all atoms
+  subroutine GetDistanceCentralAtom(orbI,nbasis,natoms,MyMolecule,central_atom)
+    implicit none
+    integer, intent(in) :: orbI ! orbital number
+    integer, intent(in) :: natoms ! number of atoms
+    integer, intent(in) :: nbasis ! Number of basis functions
+    type(fullmolecule), intent(in) :: MyMolecule
+    integer, intent(inout) :: central_atom
+    !
+    integer :: atom,catom(1),nocc,nvirt
+    real(realk) :: XMO,YMO,ZMO,XATOM,YATOM,ZATOM,XDIST,YDIST,ZDIST
+    real(realk) :: SQDIST(nAtoms)    
+    nocc=MyMolecule%numocc
+    ! Init stuff
+    IF(orbI.GT.nocc)THEN
+       !virtual orbital
+       XMO = - MyMolecule%carmomvirt(1,orbI-nocc)
+       YMO = - MyMolecule%carmomvirt(2,orbI-nocc)
+       ZMO = - MyMolecule%carmomvirt(3,orbI-nocc)
+    ELSE
+       !occupied orbital
+       XMO = - MyMolecule%carmomocc(1,orbI)
+       YMO = - MyMolecule%carmomocc(2,orbI)
+       ZMO = - MyMolecule%carmomocc(3,orbI)
+    endif
+    ! Loop over atoms
+    do atom=1,natoms
+       XATOM = MyMolecule%AtomCenters(1,atom)
+       YATOM = MyMolecule%AtomCenters(2,atom)
+       ZATOM = MyMolecule%AtomCenters(3,atom)
+       XDIST = XATOM + XMO
+       YDIST = YATOM + YMO
+       ZDIST = ZATOM + ZMO
+       SQDIST(atom) = XDIST*XDIST + YDIST*YDIST + ZDIST*ZDIST
+    enddo
+    catom = MINLOC(SQDIST)
+    central_atom = catom(1)    
+  end subroutine GetDistanceCentralAtom
 
 
   !> \brief Lowdin population analysis: Get Lowdin charges on all atoms for a given orbital

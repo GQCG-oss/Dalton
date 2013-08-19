@@ -18,6 +18,7 @@ set(CMAKE_MODULE_PATH
     ${CMAKE_SOURCE_DIR}/cmake/compilers
     ${CMAKE_SOURCE_DIR}/cmake/math
     ${CMAKE_SOURCE_DIR}/cmake/mpi
+    ${CMAKE_SOURCE_DIR}/cmake/fortran-standard/
     ${CMAKE_SOURCE_DIR}/cmake
     ${CMAKE_BINARY_DIR}
     )
@@ -31,6 +32,7 @@ option(ENABLE_RELEASE        "Test release mode which undefines MOD_UNRELEASED" 
 option(ENABLE_CUDA           "Enable CUDA GPU acceleration"                     OFF)
 option(ENABLE_STATIC_LINKING "Enable static libraries linking"                  OFF)
 option(ENABLE_GEN1INT        "Enable Gen1Int library"                           ON)
+option(ENABLE_PELIB          "Enable PE library"                                ON)
 option(ALWAYS_RESET_EXTERNAL "Always remove builds stamps of external projects" ON)
 option(ENABLE_CSR            "Enable MKL compressed sparse row"                 OFF)
 option(ENABLE_SCALAPACK      "Enable SCALAPACK"                                 OFF)
@@ -53,6 +55,7 @@ include(SourcesDALTON)
 include(SourcesLSDALTON)
 include(ConfigArchitecture)
 include(ConfigCompilerFlags)
+include(CheckFortranStandardCompatibility)
 include(ConfigExternal)
 include(ConfigOMP)
 include(ConfigMath)

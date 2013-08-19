@@ -24,10 +24,10 @@ cd $TMP_DIR/build
 #make depend
 #make VERBOSE=1
 #make Nightly 
-#ctest -D Nightly -L linsca
-make -j4 lsdalton.x 
-ctest -L linsca -D NightlyTest
-ctest -L linsca -D NightlySubmit
+ctest -D Nightly -L linsca
+#make -j4 lsdalton.x 
+#ctest -L linsca -D NightlyTest
+#ctest -L linsca -D NightlySubmit
 
 exit 0
 

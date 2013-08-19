@@ -5,6 +5,7 @@
 module matrix_operations_unres_dense
   use matrix_module
   use memory_handling
+  use precision
   contains
 !> \brief See mat_init in mat-operations.f90
   subroutine mat_unres_dense_init(a,nrow,ncol)
@@ -156,6 +157,139 @@ module matrix_operations_unres_dense
      enddo
 
   end subroutine mat_unres_dense_set_from_full2
+
+!> \brief See mat_to_full in mat-operations.f90
+!>
+!> This routine works only for square matrices -
+!> for a(nbas,nbas), afull must be (2*nbas,2*nbas)
+!>
+  subroutine mat_unres_dense_to_full3D(a, alpha, afull,n1,n2,n3,i3,i4)
+     implicit none
+     integer, INTENT(IN)     :: n1,n2,n3,i3,i4
+     TYPE(Matrix), intent(in):: a
+     real(realk), intent(in) :: alpha
+     real(realk), intent(out):: afull(n1,n2,n3)  
+     integer                 :: i,j,k,n,mp1,m,offset
+     N = a%nrow
+     M = MOD(N,7)
+     IF (M.NE.0) THEN
+        do j = 1,a%ncol
+           offset = (j-1)*N
+           DO I = 1,M
+              afull(i,j,i3) = alpha*a%elms(i+offset)              
+           ENDDO
+        enddo
+        MP1 = M + 1
+        IF (N.GE.7)THEN
+           do j = 1,a%ncol
+              offset = (j-1)*N
+              DO I = MP1,N,7
+                 afull(i,j,i3) = alpha*a%elms(i+offset)
+                 afull(i+1,j,i3) = alpha*a%elms(i+1+offset)
+                 afull(i+2,j,i3) = alpha*a%elms(i+2+offset)
+                 afull(i+3,j,i3) = alpha*a%elms(i+3+offset)
+                 afull(i+4,j,i3) = alpha*a%elms(i+4+offset)
+                 afull(i+5,j,i3) = alpha*a%elms(i+5+offset)
+                 afull(i+6,j,i3) = alpha*a%elms(i+6+offset)
+              END DO
+           enddo
+        ENDIF
+     ELSE
+        do j = 1,a%ncol
+           offset = (j-1)*N
+           DO I = 1,N,7
+              afull(i,j,i3) = alpha*a%elms(i+offset)
+              afull(i+1,j,i3) = alpha*a%elms(i+1+offset)
+              afull(i+2,j,i3) = alpha*a%elms(i+2+offset)
+              afull(i+3,j,i3) = alpha*a%elms(i+3+offset)
+              afull(i+4,j,i3) = alpha*a%elms(i+4+offset)
+              afull(i+5,j,i3) = alpha*a%elms(i+5+offset)
+              afull(i+6,j,i3) = alpha*a%elms(i+6+offset)
+           END DO
+        ENDDO
+     ENDIF
+
+     IF(i3.NE.i4)THEN
+        N = a%nrow
+        M = MOD(N,7)
+        IF (M.NE.0) THEN
+           do j = 1,a%ncol
+              offset = (j-1)*N
+              DO I = 1,M
+                 afull(i,j,i4) = alpha*a%elmsb(i+offset)              
+              ENDDO
+           enddo
+           MP1 = M + 1
+           IF (N.GE.7)THEN
+              do j = 1,a%ncol
+                 offset = (j-1)*N
+                 DO I = MP1,N,7
+                    afull(i,j,i4) = alpha*a%elmsb(i+offset)
+                    afull(i+1,j,i4) = alpha*a%elmsb(i+1+offset)
+                    afull(i+2,j,i4) = alpha*a%elmsb(i+2+offset)
+                    afull(i+3,j,i4) = alpha*a%elmsb(i+3+offset)
+                    afull(i+4,j,i4) = alpha*a%elmsb(i+4+offset)
+                    afull(i+5,j,i4) = alpha*a%elmsb(i+5+offset)
+                    afull(i+6,j,i4) = alpha*a%elmsb(i+6+offset)
+                 END DO
+              enddo
+           ENDIF
+        ELSE
+           do j = 1,a%ncol
+              offset = (j-1)*N
+              DO I = 1,N,7
+                 afull(i,j,i4) = alpha*a%elmsb(i+offset)
+                 afull(i+1,j,i4) = alpha*a%elmsb(i+1+offset)
+                 afull(i+2,j,i4) = alpha*a%elmsb(i+2+offset)
+                 afull(i+3,j,i4) = alpha*a%elmsb(i+3+offset)
+                 afull(i+4,j,i4) = alpha*a%elmsb(i+4+offset)
+                 afull(i+5,j,i4) = alpha*a%elmsb(i+5+offset)
+                 afull(i+6,j,i4) = alpha*a%elmsb(i+6+offset)
+              END DO
+           ENDDO
+        ENDIF
+     ELSE !i3=i4  => ADD
+        N = a%nrow
+        M = MOD(N,7)
+        IF (M.NE.0) THEN
+           do j = 1,a%ncol
+              offset = (j-1)*N
+              DO I = 1,M
+                 afull(i,j,i4) = afull(i,j,i4) + alpha*a%elmsb(i+offset)
+              ENDDO
+           enddo
+           MP1 = M + 1
+           IF (N.GE.7)THEN
+              do j = 1,a%ncol
+                 offset = (j-1)*N
+                 DO I = MP1,N,7
+                    afull(i,j,i4) = afull(i,j,i4) + alpha*a%elmsb(i+offset)
+                    afull(i+1,j,i4) = afull(i+1,j,i4) + alpha*a%elmsb(i+1+offset)
+                    afull(i+2,j,i4) = afull(i+2,j,i4) + alpha*a%elmsb(i+2+offset)
+                    afull(i+3,j,i4) = afull(i+3,j,i4) + alpha*a%elmsb(i+3+offset)
+                    afull(i+4,j,i4) = afull(i+4,j,i4) + alpha*a%elmsb(i+4+offset)
+                    afull(i+5,j,i4) = afull(i+5,j,i4) + alpha*a%elmsb(i+5+offset)
+                    afull(i+6,j,i4) = afull(i+6,j,i4) + alpha*a%elmsb(i+6+offset)
+                 END DO
+              enddo
+           ENDIF
+        ELSE
+           do j = 1,a%ncol
+              offset = (j-1)*N
+              DO I = 1,N,7
+                 afull(i,j,i4) = afull(i,j,i4) + alpha*a%elmsb(i+offset)
+                 afull(i+1,j,i4) = afull(i+1,j,i4) + alpha*a%elmsb(i+1+offset)
+                 afull(i+2,j,i4) = afull(i+2,j,i4) + alpha*a%elmsb(i+2+offset)
+                 afull(i+3,j,i4) = afull(i+3,j,i4) + alpha*a%elmsb(i+3+offset)
+                 afull(i+4,j,i4) = afull(i+4,j,i4) + alpha*a%elmsb(i+4+offset)
+                 afull(i+5,j,i4) = afull(i+5,j,i4) + alpha*a%elmsb(i+5+offset)
+                 afull(i+6,j,i4) = afull(i+6,j,i4) + alpha*a%elmsb(i+6+offset)
+              END DO
+           ENDDO
+        ENDIF
+     ENDIF
+
+   end subroutine mat_unres_dense_to_full3D
 
 !> \brief See mat_set_from_full in mat-operations.f90
 !>

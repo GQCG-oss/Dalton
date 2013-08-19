@@ -78,15 +78,18 @@ C
 C Used from common blocks:
 C   INFINP : ISTATE,FLAG(*),?
 C   INFVAR : NCONF,NWOPT,NVAR
+C   INFIND : ISX()
 C   INFORB : NCMOT,N2BAST,NASHT,?
 C   INFOPT : EMCOLD,DEPRED,BETA,GAMMA,RTRUST,ITMAC,NREDL,?
 C   INFDIM : NORBMA,NBASMA,IVEX4,INTOT, MAXRL
 C   INFTAP : LUIT1,?
 C
 #include "maxorb.h"
+#include "maxash.h"
 #include "priunit.h"
 #include "infinp.h"
 #include "infvar.h"
+#include "infind.h"
 #include "inforb.h"
 #include "infopt.h"
 #include "infdim.h"
@@ -98,7 +101,7 @@ C
       CHARACTER*8 TABLE(9), STAKEY, RSTKEY, BLANK8, LAB123(3)
       DATA TABLE /'EODATA  ', 'OLDORB  ','STARTVEC', 'LREDUCED',
      *            'ROTKAPPA', 'NEWORB  ','RESTART ', 'GEOWALK ',
-     &            'NATOCCAC'/
+     &            'NATOCC  '/
       DATA BLANK8/'        '/
       DATA LAB123/'********','********','********'/
 C
@@ -642,8 +645,17 @@ C        write nat. orb. occupation numbers, when available
      &      (CNOLBL.NE.'ONLYFD' .AND. NASHT.GT.0)) THEN
             IF (NASHT.EQ.1) WRK(KAOCC) = NACTEL
             WRITE (LUIT1) LAB123,TABLE(9)
-            NAT4 = MAX(NASHT,4)
-            CALL WRITT(LUIT1,NAT4,WRK(KAOCC))
+            KOCCUP = KW31
+            DO, I = 1, NISHT
+               IX  = ISX(I)
+               WRK(KOCCUP-1+IX) = 2.0D0
+            END DO
+            DO, I = 1, NASHT
+               IX = ISX(NISHT+I)
+               WRK(KOCCUP-1+IX) = WRK(KAOCC-1+I)
+            END DO
+            NORBT4 = MAX(NORBT,4)
+            CALL WRITT(LUIT1,NORBT4,WRK(KOCCUP))
          END IF
 C        write the natural orbitals to LUIT1 label NEWORB
          CALL GETDAT(LAB123(2),LAB123(3))

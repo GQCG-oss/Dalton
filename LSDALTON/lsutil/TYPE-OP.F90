@@ -3590,7 +3590,23 @@ integer :: ncore, i, icharge,nAtoms
 
 end function count_ncore
 
+subroutine getAtomicCenters(setting,Centers,nAtoms)
+implicit none
+integer :: nAtoms
+real(realk) :: Centers(3,nAtoms)
+TYPE(LSSETTING) :: SETTING
+!
+integer :: I
 
+IF(SETTING%MOLECULE(1)%p%nAtoms.NE.nAtoms)THEN
+   call lsquit('Error in getAtomicCenters: dim mismatch',-1)
+ENDIF
+DO I=1,SETTING%MOLECULE(1)%p%nAtoms
+   Centers(1,I) = SETTING%MOLECULE(1)%p%ATOM(I)%CENTER(1)
+   Centers(2,I) = SETTING%MOLECULE(1)%p%ATOM(I)%CENTER(2)
+   Centers(3,I) = SETTING%MOLECULE(1)%p%ATOM(I)%CENTER(3)
+ENDDO
+end subroutine getAtomicCenters
 
 END MODULE TYPEDEF
 

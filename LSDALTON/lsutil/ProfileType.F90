@@ -16,6 +16,7 @@ module profile_type
      logical :: XCENERGY
      logical :: Fock
      logical :: overlap
+     logical :: NEGRAD
   end type profileinput
   
 CONTAINS
@@ -35,6 +36,7 @@ CONTAINS
     profinput%XClinrsp = .FALSE.
     profinput%Fock = .FALSE.
     profinput%Overlap = .FALSE.
+    profinput%NEGRAD = .FALSE.
   end subroutine prof_set_default_config
   
 end module profile_type
