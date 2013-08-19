@@ -5,11 +5,6 @@
 ! We divide the interface routines into:
 !   1. cavity-related routines;
 !   2. solver-related routines.
-! 
-! The driver routine and the solver-related routines will be provided
-! through a FORTRAN90 module. The cavity-related routines are called 
-! by C++. Thus we put them outside the module, to avoid confusion due
-! to name mangling.
 !
 
 !
@@ -29,90 +24,18 @@
 !      other spheres are created as in the Implicit mode.
 !
 
-      subroutine collect_nctot(nr_nuclei)
-              implicit none
-              integer(4), intent(out) :: nr_nuclei
-
-#include "mxcent.h"
-#include "nuclei.h"
-      
-              nr_nuclei = nucdep
-
-      end subroutine
-      
-      
-      subroutine collect_atoms(charges, centers)
-      implicit none
-
-#include "mxcent.h"
-#include "nuclei.h"
-      
-      real(8), intent(out) :: charges(*)
-      real(8), intent(out) :: centers(3,*)
-      
-      integer :: i, j, k 
-
-! Get coordinates
-      call getacord(centers)
-! Get charges      
-      i = 0
-      do j = 1, nucind
-         do k = 1, nucdeg(j)
-            i = i + 1
-            charges(i) = charge(j)
-         enddo
-      enddo
-      
-      end subroutine
-
-      subroutine getacord(coora)      
-!*****************************************************************************
-!
-!    getacord : Make list atomic coordinates
-!
-!               Written oct.2001 by Jesper Kielberg Pedersen
-!               Copied here from DIRAC by Roberto Di Remigio, February 2012
-!
-!*****************************************************************************
-#include "mxcent.h"
-#include "maxorb.h"
-#include "maxaqn.h"
-#include "nuclei.h"
-#include "symmet.h"
-#include "pgroup.h"
-      real(8), intent(out) :: coora(3,*)
-!
-!     Make the full matrix of cartesian coordinates from CORD(NUCIND)
-!
-      jatom = 0
-      do icent = 1, nucind
-         mulcnt = istbnu(icent)
-         if (mult(mulcnt) .eq. 1) then
-            jatom = jatom + 1
-            coora(1,jatom) = cord(1,icent)
-            coora(2,jatom) = cord(2,icent)
-            coora(3,jatom) = cord(3,icent)
-        else
-            do isymop = 0, maxopr
-            if (iand(isymop,mulcnt) .eq. 0) then
-                  jatom = jatom + 1
-                  coora(1,jatom) = pt(iand(isymax(1,1),isymop))*cord(1,icent)
-                  coora(2,jatom) = pt(iand(isymax(2,1),isymop))*cord(2,icent)
-                  coora(3,jatom) = pt(iand(isymax(3,1),isymop))*cord(3,icent)
-              end if
-            enddo
-        end if
-      enddo 
-
-     end subroutine
 
 module pcm_interface
-   
+  
+   use iso_c_binding     
    use pcm_write
    use pcmmod_cfg
+   use pcm_utils
 
    implicit none 
-  
+ 
+   public collect_nctot
+   public collect_atoms
    public energy_pcm_drv
    public oper_ao_pcm_drv
 !   public pcm_energy_driver   
@@ -130,6 +53,42 @@ module pcm_interface
    integer(4)           :: nr_points = -1
 
    contains 
+      
+       subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot_')
+              implicit none
+              integer(c_int), intent(out) :: nr_nuclei
+
+#include "mxcent.h"
+#include "nuclei.h"
+      
+              nr_nuclei = nucdep
+
+      end subroutine
+      
+      
+      subroutine collect_atoms(charges, centers) bind(c, name='collect_atoms_')
+      implicit none
+
+#include "mxcent.h"
+#include "nuclei.h"
+      
+      real(c_double), intent(out) :: charges(*)
+      real(c_double), intent(out) :: centers(3,*)
+      
+      integer :: i, j, k 
+
+! Get coordinates
+      call getacord(centers)
+! Get charges      
+      i = 0
+      do j = 1, nucind
+         do k = 1, nucdeg(j)
+            i = i + 1
+            charges(i) = charge(j)
+         enddo
+      enddo
+      
+      end subroutine
 
       subroutine energy_pcm_drv(dcao, dvao, pol_ene, work, lfree)
 
@@ -479,65 +438,5 @@ module pcm_interface
         diporg(3) = zdiporg
 
       end subroutine
-
-      function ibtand(i, j)
-                
-        integer :: i, j
-        integer ibtand
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-        ibtand = and(i, j)
-#else
-        ibtand = iand(i, j)
-#endif
-
-      end function
-      
-      function ibtor(i, j)
-                
-        integer :: i, j
-        integer ibtor
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-        ibtor = or(i, j)
-#else
-        ibtor = ior(i, j)
-#endif
-
-      end function
-      
-      function ibtshl(i, j)
-                
-        integer :: i, j
-        integer ibtshl
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-        ibtshl = shiftl(i, j)
-#else
-        ibtshl = ishft(i, j)
-#endif
-
-      end function
-
-      function ibtshr(i, j)
-                
-        integer :: i, j
-        integer ibtshr
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-        ibtshr = shiftr(i, j)
-#else
-        ibtshr = ishft(i, j)
-#endif
-
-      end function
-      
-      function ibtxor(i, j)
-                
-        integer :: i, j
-        integer ibtxor
-#if defined (SYS_CRAY) || defined (SYS_T3D) || defined (SYS_T90)
-        ibtxor = xor(i, j)
-#else
-        ibtxor = ieor(i, j)
-#endif
-
-      end function
 
 end module
