@@ -28,7 +28,8 @@ MODULE molecular_hessian_mod
                                     & init_prop_molcfg,&
                                     & rsp_init,&
                                     & rsp_solver
-    use RSP_util,               only: util_save_MOinfo
+    use RSP_util,               only: util_save_MOinfo,&
+                                    & util_free_MOstuff
 #endif
 #ifdef BUILD_GEN1INT_LSDALTON
   use gen1int_host
@@ -165,7 +166,7 @@ CONTAINS
         call mat_init(Xa(i),nbast,nbast)
         call mat_zero(Xa(i))
      ENDDO
-    call get_first_order_rsp_vectors(Xa,S,D,F,RHS_HF,Natoms,setting,config,lupri,luerr)
+    call get_first_order_rsp_vectors(Xa,S,D,F,RHS_HF,Natoms,setting,config,lupri,luerr,iprint)
 
     ! Calcualte 2nd deriv. of the density matrix and of D_{2n+1} 
 
@@ -267,7 +268,7 @@ CONTAINS
 
     DO i=1,3*Natoms
         ! RHS = 0.5 { ... }
-        call mat_scal(0.5E0_realk,RHS(i))
+        call mat_scal(0.25E0_realk,RHS(i))
     ENDDO
 
     call mat_free(temp)
@@ -614,21 +615,22 @@ CONTAINS
   !>               (defaults or read from input file)
   !> \param lupri Default print unit
   !> \param luerr Unit for error printing
-  SUBROUTINE get_first_order_rsp_vectors(Xa,S,D,F,RHS,Natoms,setting,config,lupri,luerr)
+  !> \param iprint the printlevel, determining how much output should be generated
+  SUBROUTINE get_first_order_rsp_vectors(Xa,S,D,F,RHS,Natoms,setting,config,lupri,luerr,iprint)
     !
     IMPLICIT NONE
-    Integer,INTENT(IN)                  :: Natoms,lupri,luerr
+    Integer,INTENT(IN)                  :: Natoms,lupri,luerr,iprint
     Type(ConfigItem),INTENT(IN)         :: config
     Type(matrix),INTENT(IN)             :: S,D,F
     Type(matrix),INTENT(INOUT)          :: RHS(3*Natoms)
     Type(LSSETTING),INTENT(INOUT)       :: setting
     Type(matrix),INTENT(INOUT)          :: Xa(3*Natoms) ! derivative along x,y and z for each atom
     !
-    Real(realk)                     :: ts,te 
+    Real(realk)                     :: ts,te, sum
     Integer                         :: i, nbast, nb_eq
     type(prop_molcfg)               :: molcfg
     logical                         :: LINEQ_x
-    Real(realk)                     :: EiVal_ExEnergies(1)
+    Real(realk)                     :: laser_freq(1)
     Type(matrix)                    :: oneRHS(1),oneXa(1)
     !
     call lstimer('START ',ts,te,lupri)
@@ -647,21 +649,35 @@ CONTAINS
     !> nomega:  If LINEQ, number of laser freq.s (input). Otherwise number of excitation energies (output) 
     !> Number of start vectors. Only relevant for eigenvalue problem
     !!!  rsp_init(ntrial, nrhs, nsol, nomega, nstart)
+    call rsp_init(1,      1,    1,    1,      0)
+
     call util_save_MOinfo(F,S,config%decomp%nocc) !nocc: Number of occupied orbitals (if restricted)
-    call rsp_init(1,      1,    1,    1,      1)
 
     ! Calling the repsonse solver
-    LINEQ_x = .TRUE. ! Linear system, not an eigenvalue problem
-    nb_eq = 1
-    EiVal_ExEnergies(1) = 0.0E0_realk
+    LINEQ_x = .TRUE. ! solving linear system, not eigenvalue problem
+    nb_eq = 1        ! one response vector at a time
+    laser_freq(1) = 0.0E0_realk
     DO i=1,3*Natoms
         write(*,*) "Solving response vector #",i, "out of ", 3*Natoms
         call mat_assign(oneRHS(1), RHS(i))
+        WRITE(*,*)     'norm of RHS(i): ', mat_sqnorm2(RHS(i))
         call mat_zero(oneXa(1))
+!        call rsp_solver(molcfg, D, S, F, &
+!                        & LINEQ_x, nb_eq, oneRHS, laser_freq, oneXa)
         call rsp_solver(molcfg, D, S, F, &
-                        & LINEQ_x, nb_eq, oneRHS, EiVal_ExEnergies,oneXa)
+                        & LINEQ_x, nb_eq, RHS(i:i), laser_freq(1:1), oneXa(1))
         call mat_assign(Xa(i), oneXa(1))
+        WRITE(*,*)     'norm of Xa(i): ', mat_sqnorm2(oneXa(1))
     ENDDO
+    call util_free_MOstuff()
+    IF (iprint .GE. 3) THEN
+       sum = 0.0E0_realk
+       DO i=1,3*Natoms
+          sum = sum + mat_sqnorm2(Xa(i))
+       ENDDO
+       WRITE(LUPRI,*) '   - Cumul. norm of Xa: ', sum
+       WRITE(*,*)     '   - Cumul. norm of Xa: ', sum
+    ENDIF
     call mat_free(oneRHS(1))
     call mat_free(oneXa(1))
     call lstimer('Xa_build',ts,te,lupri)
