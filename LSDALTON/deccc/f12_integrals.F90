@@ -595,29 +595,29 @@ contains
   !> Brief: Integral print
   !> Author: Yang M. Wang
   !> Data: August 2013
-  subroutine matrix_print_4d(A, p, q, r, s)
-    implicit none
-
-    real(realk),intent(in)  :: A(p,q,r,s)
-    integer,intent(in)      :: p,q,r,s
-    !
-    integer :: i,j,k,l
- 
-    do i=1, p
-       do j=1, q
-          do k=1, r
-             do l=1, s 
-                if(abs(A(i,j,k,l)) > 1E-10_realk) then
-                   print *, i,j,k,l, A(i,j,k,l)
-                else
-                   print *, i,j,k,l, 0E0_realk
-                endif
-             enddo
-          enddo
-       enddo
-    enddo
-    
-  end subroutine matrix_print_4d
+!!$  subroutine matrix_print_4d(A, p, q, r, s)
+!!$    implicit none
+!!$
+!!$    real(realk),intent(in)  :: A(p,q,r,s)
+!!$    integer,intent(in)      :: p,q,r,s
+!!$    !
+!!$    integer :: i,j,k,l
+!!$ 
+!!$    do i=1, p
+!!$       do j=1, q
+!!$          do k=1, r
+!!$             do l=1, s 
+!!$                if(abs(A(i,j,k,l)) > 1E-10_realk) then
+!!$                   print *, i,j,k,l, A(i,j,k,l)
+!!$                else
+!!$                   print *, i,j,k,l, 0E0_realk
+!!$                endif
+!!$             enddo
+!!$          enddo
+!!$       enddo
+!!$    enddo
+!!$    
+!!$  end subroutine matrix_print_4d
   
   
   !> Brief: Get <ij|OPERATOR|kl> integrals stored in the order (k,l,m,n).
