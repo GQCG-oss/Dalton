@@ -102,9 +102,9 @@ CTRL[2]=1
 ERROR[2]="Memory leak -"
 
 # excitation energies 
-CRIT1=`$GREP "* 1 * 0\.21562" $log | wc -l`
-CRIT2=`$GREP "* 2 * 0\.29489" $log | wc -l`
-CRIT3=`$GREP "* 3 * 0\.37450" $log | wc -l`
+CRIT1=`$GREP "1 * 0\.21562" $log | wc -l`
+CRIT2=`$GREP "2 * 0\.29489" $log | wc -l`
+CRIT3=`$GREP "3 * 0\.37450" $log | wc -l`
 
 TEST[3]=`expr  $CRIT1 \+ $CRIT2 \+ $CRIT3 `
 CTRL[3]=3

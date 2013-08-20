@@ -21,6 +21,8 @@ module full_molecule
   use dec_typedef_module
   use IntegralInterfaceMod
 
+  ! CABS
+  use CABS_operations
 
   ! DEC DEPENDENCIES (within deccc directory) 
   ! *****************************************
@@ -67,6 +69,10 @@ contains
     end if
     call molecule_get_carmom(molecule,mylsitem)
 
+   if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+       call dec_get_CABS_orbitals(molecule,mylsitem)
+    end if
+
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
 
   end subroutine molecule_init_from_files
@@ -109,6 +115,10 @@ contains
        call dec_get_canonical_orbitals(molecule)
     end if
     call molecule_get_carmom(molecule,mylsitem)
+
+    if(DECinfo%F12) then ! overwrite local orbitals and use CABS orbitals
+       call dec_get_CABS_orbitals(molecule,mylsitem)
+    end if
 
     call LSTIMER('DEC: MOL INIT',tcpu,twall,DECinfo%output)
 
@@ -575,6 +585,11 @@ contains
        call mem_dealloc(molecule%ypv)
     end if
 
+    !Deallocate CABS MO!
+    if(associated(molecule%cabsMOs)) then
+       call mem_dealloc(molecule%cabsMOs)
+    end if
+
     ! Delete AO fock matrix
     if(associated(molecule%fock)) then
        call mem_dealloc(molecule%fock)
@@ -840,7 +855,36 @@ contains
 
   end subroutine dec_get_density_matrix_from_file
 
-
+  
+  subroutine  dec_get_CABS_orbitals(molecule,mylsitem)
+    implicit none
+    
+    !> Full molecule structure to be initialized
+    type(fullmolecule), intent(inout) :: molecule
+    !> LS item info
+    type(lsitem), intent(inout) :: mylsitem
+    
+    type(matrix) :: CMO_cabs
+    integer :: ncabsAO,ncabs
+    integer :: lupri
+    
+    call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
+    
+    call mat_init(CMO_cabs,nCabsAO,nCabs)
+    
+    call init_cabs()
+    call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,lupri)
+    call free_cabs()
+    
+    ! NB! Memory leak need to be freed somewhere
+    call mem_alloc(molecule%cabsMOs,ncabsAO,nCabs) 
+    call mat_to_full(CMO_cabs,1.0E0_realk,molecule%cabsMOs)
+    
+    call mat_free(CMO_cabs)
+    
+  end subroutine dec_get_CABS_orbitals
+  
+  
   ! THIS ROUTINE SHOULD BE RECONSIDERED IF WE FIND A GOOD ORBITAL INTERACTION MATRIX TO USE
   ! FOR FRAGMENT EXPANSION:   
   !> Calculate occ and virt interaction matrices which are used for atomic fragment

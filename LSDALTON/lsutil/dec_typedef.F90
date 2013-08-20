@@ -155,12 +155,15 @@ module dec_typedef_module
      !> (obsolete for the moment, Patrick will remove when cleaning the CC solver)
      logical :: fock_with_ri
 
-
      !> F12 settings
      !> ************
      !> Use F12 correction
      logical :: F12
 
+     !> F12 debug settings
+     !> ************
+     !> Use F12 correction
+     logical :: F12DEBUG
 
      !> MPI settings
      !> ************
@@ -168,7 +171,6 @@ module dec_typedef_module
      integer :: mpisplit
      !> Manually set starting group size for local MPI group
      integer(kind=ls_mpik) :: MPIgroupsize
-
 
      !> Integral batching
      !> *****************
@@ -422,7 +424,6 @@ module dec_typedef_module
      !> Number of unoccupied orbitals
      integer :: numvirt
 
-
      !> Number of basis functions on atoms
      integer, pointer :: atom_size(:) => null()
      !> Index of the first basis function for an atom
@@ -434,6 +435,8 @@ module dec_typedef_module
      real(realk), pointer :: ypo(:,:) => null()
      !> Virtual MO coefficients (mu,a)
      real(realk), pointer :: ypv(:,:) => null()
+     !> CABS MO coefficients (mu,x)
+     real(realk), pointer :: cabsMOs(:,:) => null()
 
      !> Fock matrix (AO basis)
      real(realk), pointer :: fock(:,:) => null()
@@ -592,7 +595,9 @@ module dec_typedef_module
      real(realk), pointer :: ypo(:,:) => null()
      !> Virtual MO coefficients
      real(realk), pointer :: ypv(:,:) => null()
-     !> Core MO coefficients
+     !> Cabs MO coefficients
+     real(realk),pointer :: cabsMOs(:,:) => null()     
+     !> Core MO coefficients 
      real(realk),pointer :: CoreMO(:,:) => null()
 
      !> AO Fock matrix
