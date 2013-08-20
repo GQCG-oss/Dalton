@@ -49,14 +49,12 @@ H4    -.629889144   .629889144 -.629889144
 cat > extpcm_lda_energy.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE
-**WAVE FUNCTIONS
-.DFT
- LDA
 .EXTPCM
 *EXTPCM
 .OLDINT
 **WAVE FUNCTIONS
-.SCF
+.DFT
+ LDA
 **END OF DALTON INPUT
 %EOF%
 #######################################################################
