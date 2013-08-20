@@ -71,10 +71,6 @@ C     Magnetic field derivative integrals of dipole length
 C     K.Ruud, Aug.-93
 C
 
-#ifdef PCM_MODULE
-      use pcmmod_cfg
-#endif
-
 #include "implicit.h"
 #include "priunit.h"
 #include "dummy.h"
@@ -212,15 +208,6 @@ C
       IF (PCM) THEN
          CALL IEFMAT(WORK,LWORK)
       END IF
-
-#ifdef PCM_MODULE
-      IF(pcmmod_is_pcm_calculation) THEN
-         call init_pcm
-         call print_pcm
-         print *, 'after init pcm'
-      END IF
-#endif
-
 C
       IF ( (QM3) .AND. (.NOT.INTDIR) ) THEN
         DO 752 KI = 1, ISYTP

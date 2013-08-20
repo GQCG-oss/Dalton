@@ -4510,6 +4510,10 @@ C
       use pe_variables, only: peqm
       use polarizable_embedding, only: pe_init
 #endif
+#if defined (PCM_MODULE)
+      use pcm_interface, only: pcm_interface_initialize
+      use pcmmod_cfg
+#endif
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -4693,6 +4697,13 @@ C
 #if defined (BUILD_PELIB)
       if (peqm) then
         call pe_init(lupri, cord(:,1:natoms), charge(1:natoms))
+      end if
+#endif
+
+#if defined (PCM_MODULE)
+      if (pcmmod_is_pcm_calculation) then
+        call pcm_interface_initialize
+        write(lupri, *) "PCMSolver interface correctly initialized"
       end if
 #endif
 

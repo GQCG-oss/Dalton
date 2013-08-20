@@ -34,7 +34,10 @@ module pcm_interface
    use pcm_utils
 
    implicit none 
- 
+
+   public pcm_interface_initialize
+   public pcm_interface_finalize
+
    public collect_nctot
    public collect_atoms
    public energy_pcm_drv
@@ -46,15 +49,42 @@ module pcm_interface
 
    private
 
-   real(8), allocatable :: charges(:)
-   real(8), allocatable :: potentials(:)
-   real(8), allocatable :: tess_cent(:, :)
-   real(8)              :: pcm_energy
-! nr_points is 32 bit to avoid mess in passing it from C++ to FORTRAN
-   integer(4)           :: nr_points = -1
+!  if false the interface will refuse to be accessed
+   logical :: is_initialized = .false.
+
+   real(c_double), allocatable :: charges(:)
+   real(c_double), allocatable :: potentials(:)
+   real(c_double), allocatable :: tess_cent(:, :)
+   real(c_double)              :: pcm_energy
+   integer(c_int)              :: nr_points = -1
 
    contains 
       
+      subroutine pcm_interface_initialize()                              
+      
+      call init_pcm
+      call print_pcm
+              
+      is_initialized = .true.
+                                                                 
+      end subroutine
+                                                                    
+      subroutine pcm_interface_finalize()
+                                                                    
+      is_initialized = .false.
+                                                                    
+      end subroutine
+                                                                    
+      subroutine check_if_interface_is_initialized()
+
+      if (.not. is_initialized) then
+         print *, 'error: you try to access pcm_interface'
+         print *, '       but this interface is not initialized'
+         stop 1
+      end if
+
+      end subroutine
+                                                                    
       subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot_')
 
 #include "mxcent.h"
@@ -87,7 +117,7 @@ module pcm_interface
          enddo
       enddo
       
-      end subroutine
+      end subroutine collect_atoms
 
       subroutine energy_pcm_drv(dcao, dvao, pol_ene, work, lfree)
 
@@ -172,7 +202,7 @@ module pcm_interface
 ! Write to file MEP and ASC
         call pcm_write_file_separate(nts, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
 
-      end subroutine
+      end subroutine energy_pcm_drv
       
 !
 ! Calculate exp values of potentials on tesserae
@@ -206,6 +236,6 @@ module pcm_interface
         call j1int_pcm(work(kcharge), nts, work(kcenters), .false.,            & 
                        oper, 1, .false., 'NPETES ', 1, work(kfree), lfree)
 
-      end subroutine
+      end subroutine oper_ao_pcm_drv
 
 end module

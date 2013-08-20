@@ -292,7 +292,7 @@ C
       use pe_variables, only: peqm
       use polarizable_embedding, only: pe_master
 #endif
-#ifdef PCM_MODULE
+#if defined (PCM_MODULE)
       use pcm_interface
       use pcmmod_cfg
 #endif
@@ -520,7 +520,7 @@ C
       end if
 #endif
 
-#ifdef PCM_MODULE
+#if defined (PCM_MODULE)
       if (pcmmod_is_pcm_calculation) then
               dodifden = .false.
       end if
@@ -891,7 +891,7 @@ C
          end if
 #endif
 
-#ifdef PCM_MODULE
+#if defined (PCM_MODULE)
          if (pcmmod_is_pcm_calculation) then
             call memget('REAL',kfcsol,nnbasx,wrk,kfree,lfree)
             call dzero(wrk(kfcsol), nnbasx)

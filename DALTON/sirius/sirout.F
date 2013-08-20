@@ -59,7 +59,7 @@ C
 #if defined (BUILD_PELIB)
       use pe_variables, only: peqm
 #endif
-#ifdef PCM_MODULE
+#if defined (PCM_MODULE)
       use pcmmod_cfg
 #endif
 #include "implicit.h"

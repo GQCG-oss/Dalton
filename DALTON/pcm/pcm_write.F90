@@ -2,10 +2,10 @@ module pcm_write
    
    implicit none
       
-   character(*), parameter, public :: pcm_file_name = 'PCM_mep_asc'
-   integer,      parameter, public :: pcm_file_unit = 800 
-   logical                , public :: pcm_file_exists = .false.
-   logical                , public :: pcm_file_open = .false.
+   character(11), parameter, public :: pcm_file_name = 'PCM_mep_asc'
+   integer,       parameter, public :: pcm_file_unit = 800 
+   logical                 , public :: pcm_file_exists = .false.
+   logical                 , public :: pcm_file_open = .false.
 
    public report_after_pcm_input
    public pcm_write_file

@@ -615,6 +615,11 @@ C     Top driver for execution of Dalton.
 C     Called by PROGRAM DALTON after reading environment
 C     variables.
 C
+#if defined (PCM_MODULE)
+      use pcm_interface
+      use pcmmod_cfg
+#endif
+
 #include "implicit.h"
 #include "dummy.h"
 #include "priunit.h"
@@ -1105,6 +1110,15 @@ C
       CTOT = CEND - CSTR
       WTOT = WEND - WSTR
 C
+! Finalize pcm_interface if an EXTPCM calculation (PCM using PCMSolver
+! library) was requested.
+#if defined (PCM_MODULE)
+      if (pcmmod_is_pcm_calculation) then
+        call pcm_interface_finalize
+        write(lupri, '(//A/)') 'PCMSolver interface correctly finalized'
+      end if
+#endif
+
       CALL TIMTXT('>>>> Total CPU  time used in DALTON:',CTOT,LUPRI)
       CALL TIMTXT('>>>> Total wall time used in DALTON:',WTOT,LUPRI)
 C
@@ -1128,7 +1142,7 @@ C
       use polarizable_embedding, only: pe_dalton_input
 #endif
 
-#ifdef PCM_MODULE
+#if defined (PCM_MODULE)
       use pcmmod_cfg
       use pcm_write
 #endif
@@ -1171,7 +1185,7 @@ C
 C
       LOGICAL ALLOPT
 
-#ifdef PCM_MODULE
+#if defined (PCM_MODULE)
       logical extpcm_input_provided
 #endif
 
@@ -1293,10 +1307,14 @@ C         been calculated.
 C
 C     Initialize /PCMLOG/ and /EXTPCM/
 C
-#ifdef PCM_MODULE
+#if defined (PCM_MODULE)
       extpcm_input_provided = .false.
       pcmmod_is_pcm_calculation = .false.
-#endif PCM_MODULE
+#else
+      WRITE(LUPRI,'(//A/)') 
+     $           'ERROR: EXTPCM requested but PCM Module not compiled'
+      CALL QUIT('Recompile including the PCM Module')
+#endif
       PCM    = .FALSE.
       OUTFLD = .FALSE.
       NEWMAT = .TRUE.
@@ -1741,7 +1759,7 @@ C     "*QMNPMM" input
 
 !     *EXTPCM input
    13 CONTINUE
-#ifdef PCM_MODULE
+#if defined (PCM_MODULE)
             WRITE(LUPRI,'(//A/)') 'INFO: External PCM module activated'
             call move_to_next_star(word,lucmd)
 #else
@@ -1753,7 +1771,7 @@ C     "*QMNPMM" input
 C     "*END OF" or "**something"
     1 CONTINUE
 C
-#ifdef PCM_MODULE
+#if defined (PCM_MODULE)
 !     read EXTPCM input if applicable
       if(extpcm_input_provided)then
         call read_menu_input('DALTON.INP', lucmd,
@@ -1764,6 +1782,7 @@ C
         end if
       end if
       if(pcmmod_is_pcm_calculation) then
+! Print useful info about DALTON+PCMSolver input options specified              
               call report_after_pcm_input(lupri)
       end if
 #endif
