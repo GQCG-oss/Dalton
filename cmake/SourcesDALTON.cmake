@@ -501,6 +501,8 @@ set(DALTON_FIXED_FORTRAN_SOURCES
     DALTON/lucita/vecmat.F
     #    DALTON/pcm/electrostatic_potential.F90
     DALTON/pcm/pcm_interface.F90
+    DALTON/pcm/pcm_integrals.F90
+    DALTON/pcm/pcm_linear_response.F90
     DALTON/pcm/pcmmod_cfg.F90
     DALTON/pcm/pcm_write.F90
     DALTON/pcm/pcm_utils.F90

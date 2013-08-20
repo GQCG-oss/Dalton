@@ -1,0 +1,248 @@
+      module pcm_integrals
+
+      use pcm_utils
+
+      implicit none
+
+      public nuc_pot_pcm
+      public ele_pot_pcm
+      public pot_int_tess
+
+      contains
+             
+         subroutine nuc_pot_pcm(nts, centers, potential)              
+                                                          
+#include "mxcent.h"
+#include "nuclei.h"
+           
+         integer(4), intent(in) :: nts                           
+         real(8), intent(in)    :: centers(3, nts)               
+         real(8), intent(out)   :: potential(nts)                
+         real(8)                :: dist                          
+         integer                :: i, j, k                       
+                                                                 
+         do i = 1, nts                                           
+            potential(i) = 0.0d0                                 
+            do j = 1, nucdep                                     
+               dist = 0.0d0                                      
+               do k = 1, 3                                       
+                  dist = dist + (centers(k,i) - cord(k, j))**2   
+               end do                                            
+               dist = sqrt(dist)                                 
+               potential(i) = potential(i) + charge(j) / dist    
+            end do                                               
+         end do                                                  
+         
+         end subroutine nuc_pot_pcm
+         
+         subroutine ele_pot_pcm(nts, centers, potential, density, work, lwork)
+!                                                                                                          
+! Calculate exp values of potentials on tesserae
+! Input: symmetry packed Density matrix in AO basis
+!        cavity points
+! Output: expectation values of electrostatic potential on tesserae
+! Comment: the density should not be passed. I cannot assume that 
+! the density is in a given format here as this routine will be called by the module
+!                                                                                                          
+                                                                      
+         integer, intent(in)  :: nts                                    
+         real(8), intent(in)  :: centers(3, *)                          
+         real(8), intent(out) :: potential(nts)                         
+         real(8) :: density(*)                                          
+         real(8) :: work(*)                                             
+         integer :: lwork                                               
+                                                                        
+         call j1int_pcm(potential, nts, centers, .true., density, 1, .false., 'NPETES ', 1, work, lwork)  
+         
+         end subroutine ele_pot_pcm
+      
+         subroutine j1int_pcm(expval, nts, centers, exp1vl, denmat, nosim, tofile, intlab, ksymp, work, lwork)
+!
+! This subroutines is used both for the calculation of the electronic
+! MEP and the PCM Fock matrix contribution.
+! if (exp1vl) then
+!             density matrix as input and vector of electronic MEP as
+!             output
+! else
+!             vector of ASC and Fock matrix contribution as output 
+! end if
+!     
+#include "dummy.h"
+#include "mxcent.h"
+#include "nuclei.h"
+#include "inforb.h"
+#include "orgcom.h"
+#include "maxorb.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "infpar.h"
+#include "inftap.h"
+     
+         character(7) :: intlab                                                 
+         character(8) :: labint(9*mxcent)
+         integer(4)   :: nts
+         integer      :: isum
+         integer      :: nosim, ksymp, lwork, i, j, iaddr, iosim, iprpcm
+         integer      :: iadr, iprtyp, isymd, its, jmat, kden, klast
+         integer      :: kmat, kpatom, ktmp, l, lwrk, matdim, nbastold
+         integer      :: ncomp, nnbasxold, ntesp, ntsirr
+         real(8)      :: intrep(9*mxcent), intadr(9*mxcent), expval(nts, nosim)
+         real(8)      :: denmat(*), work(lwork), centers(3, nts)
+         real(8)      :: xdiporg, ydiporg, zdiporg
+         logical      :: tofile, trimat, vcheck, exp1vl
+      
+         nbastold  = nbast               
+         nnbasxold = nnbasx
+         nbast  = isum(maxrep+1,naos,1)
+         nnbasx = nbast * (nbast + 1)/2
+         n2basx = nbast*nbast
+         if (intlab .eq. 'PCMBSOL') then
+            matdim = n2basx
+            iprtyp = 13
+            ncomp  = 3
+            trimat = .false.
+         else
+            matdim = nnbasx
+            iprtyp = 11
+            ncomp  = 1
+            trimat = .true.
+         end if
+!
+! We use as a quick way of transfering tessera coordinates to hermit:
+! the dipole origin. Need to be restored.
+!
+         xdiporg = diporg(1)  
+         ydiporg = diporg(2)
+         zdiporg = diporg(3)
+!
+! 2) calculation of apparent charges generated by the solute's nuclei.
+!
+         iprpcm=0                     
+         if (exp1vl) then
+            kden = 1
+            klast = kden + nnbasx
+            lwrk  = lwork - klast
+            isymd = ksymp - 1
+            if (ksymp .eq. 1) then
+               call pksym1(denmat,work(klast),nbas,nsym,1)
+               call dsym1(work(kden),dummy,work(klast),dummy,.false.,nbast,iprpcm)
+            else
+               call dcopy(nnbasx,denmat,1,work(kden),1)
+            end if
+            if (nosim .gt. 1) call quit('nosim .gt. 1 and exp1vl not permitted in j1int')
+         else
+            kden = 1
+            if (nodtot .ge. 1) then
+               klast = kden + matdim*nosim
+               call dcopy(matdim*nosim,denmat,1,work(kden),1)
+            else
+               klast = kden
+            end if
+            lwrk = lwork - klast
+         end if
+         
+         do  its = 1, nts
+            diporg(1) = centers(1,its)
+            diporg(2) = centers(2,its)
+            diporg(3) = centers(3,its)
+                                                                       
+            ntesp = 1
+            kpatom = 0
+!                                                                       
+! calculates nuclear potential energy integrals (in ao basis) for the given tessera
+!                                                                       
+            l=1
+            ktmp = klast
+            if (.not. tofile .and. .not. exp1vl) then
+               kmat = ktmp + 8
+               if (iprtyp .eq. 11) then
+                  klast = kmat + (maxrep + 1)*matdim
+               else
+                  klast = kmat + (maxrep + 1)*matdim*ncomp
+               end if
+               ncomp = nsym
+            else
+               kmat  = ktmp + 8
+               klast = kmat
+               ncomp = 0
+            end if
+            call get1in(work(kmat),intlab,ncomp,work(klast),lwrk,labint, &
+                        intrep,intadr,l,tofile,kpatom,trimat,work(ktmp), &
+                        exp1vl,work(kden),iprpcm)
+            if (iprtyp .eq. 13) then
+               jmat = kmat
+               do iosim = 1, nosim
+                  call daxpy(matdim,expval(its,iosim),work(jmat),1,denmat(matdim*(iosim - 1) + 1),1)
+                  jmat = jmat + matdim
+               end do
+            else if (exp1vl) then
+               do i = 1, ncomp
+                  expval(its+(i-1)*ntsirr,1) = -work(ktmp+i-1)
+               end do
+            else if (.not. tofile) then
+               do iosim = 1, nosim
+                  iadr = kmat + (ksymp - 1)*matdim
+                  call daxpy(matdim,-expval(its,iosim),work(iadr),1,denmat(matdim*(iosim - 1) + 1),1)
+               end do
+            end if
+         enddo 
+         diporg(1) = xdiporg
+         diporg(2) = ydiporg
+         diporg(3) = zdiporg
+         nbast  = nbastold
+         nnbasx = nnbasxold
+      
+         end subroutine j1int_pcm
+      
+         subroutine pot_int_tess(potint, tessera, trimat, work, lwork)
+
+#include "dummy.h"
+#include "maxorb.h"
+#include "mxcent.h"
+#include "priunit.h"
+#include "orgcom.h"
+#include "inforb.h"
+        
+         real(8), intent(out) :: potint(*)                                        
+         real(8), intent(in)  :: tessera(3)
+         real(8)              :: work(*)
+         logical              :: trimat, tofile, exp1vl
+         character(7)         :: intlab
+         character(8)         :: labint(9*mxcent)
+         integer              :: intrep(9*mxcent), intadr(9*mxcent), lwork
+         integer              :: il, iprint, j, kfree, kpatom, lfree, ncomp
+         real(8)              :: xdiporg, ydiporg, zdiporg
+                                                                                  
+         xdiporg = diporg(1)                                             
+         ydiporg = diporg(2)
+         zdiporg = diporg(3)
+         diporg(1) = tessera(1)
+         diporg(2) = tessera(2)
+         diporg(3) = tessera(3)
+                                                                         
+         intlab = 'NPETES '
+         ncomp = nsym
+         il = 1
+         tofile = .false.
+         kpatom = 0
+         exp1vl = .false.
+         iprint = 0
+                                                                       
+         kfree = 1
+         lfree = lwork - kfree + 1
+         if (lfree .lt. 0) call errwrk('pot_int_tess', kfree, lwork) 
+                                                                        
+         call get1in(potint,intlab,ncomp,work(kfree),lfree,labint, &
+                     intrep,intadr,il,tofile,kpatom,trimat,dummy,  &
+                     exp1vl,dummy,iprint)
+                                                                        
+         write(lupri, *) "Potentials for tessera rsp",1,(diporg(j), j=1,3),mxcent
+         call outpak(potint, norbt, 1, lupri)
+                                                                        
+         diporg(1) = xdiporg
+         diporg(2) = ydiporg
+         diporg(3) = zdiporg
+
+         end subroutine pot_int_tess
+
+      end module pcm_integrals
