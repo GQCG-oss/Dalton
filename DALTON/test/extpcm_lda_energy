@@ -17,8 +17,8 @@ fi
 #######################################################################
 #  TEST DESCRIPTION
 #######################################################################
-cat > extpcm_energy.info <<'%EOF%'
-   extpcm_energy
+cat > extpcm_lda_energy.info <<'%EOF%'
+   extpcm_lda_energy
    -------------
    Molecule:         CH4 
    Wave Functions:   PCM-SCF / STO-3G
@@ -28,7 +28,7 @@ cat > extpcm_energy.info <<'%EOF%'
 #######################################################################
 #  MOLECULE INPUT
 #######################################################################
-cat > extpcm_energy.mol <<'%EOF%'
+cat > extpcm_lda_energy.mol <<'%EOF%'
 BASIS
 STO-3G
 Methane
@@ -46,7 +46,7 @@ H4    -.629889144   .629889144 -.629889144
 #######################################################################
 #  DALTON INPUT
 #######################################################################
-cat > extpcm_energy.dal <<'%EOF%'
+cat > extpcm_lda_energy.dal <<'%EOF%'
 **DALTON INPUT
 .RUN WAVE
 **WAVE FUNCTIONS
@@ -64,7 +64,7 @@ cat > extpcm_energy.dal <<'%EOF%'
 #######################################################################
 #  PCMSOLVER INPUT
 #######################################################################
-cat > extpcm_energy.pcm <<'%EOF%'
+cat > extpcm_lda_energy.pcm <<'%EOF%'
 Units = AU
 Medium 
 {
@@ -87,8 +87,8 @@ Cavity
 #######################################################################
 #  CHECK SCRIPT
 #######################################################################
-echo $CHECK_SHELL >extpcm_energy.check
-cat >>extpcm_energy.check <<'%EOF%'
+echo $CHECK_SHELL >extpcm_lda_energy.check
+cat >>extpcm_lda_energy.check <<'%EOF%'
 log=$1
 
 if [ `uname` = Linux ]; then
