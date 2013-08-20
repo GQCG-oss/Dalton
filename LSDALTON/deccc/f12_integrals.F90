@@ -1482,8 +1482,6 @@ contains
        end do BatchAlpha
     end do BatchGamma
 
-    print *,
-
     ! Free and nullify stuff
     ! **********************
     nullify(mysetting%LST_GAB_LHS)
