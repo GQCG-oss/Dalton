@@ -204,8 +204,8 @@ contains
     ! Get integrals <ij|r|pq> stored as (p,j,q,i)
     call get_mp2f12_MOmatrix_ijpq(MyFragment%MyLsitem%Setting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,Rpjqi,'RRRRC')
     ! Get integrals <ij|g|mc> stored as (m,j,c,i) where c = cabs (a')
-    !call get_mp2f12_MOmatrix_ijmc(MyFragment%MyLsitem%Setting,nbasis, &
-    !     & noccEOS,ncabsAO,ncabsMO,CoccEOS,Ccabs,Gmjci,'RCRRG')
+!    call get_mp2f12_MOmatrix_ijmc(MyFragment%MyLsitem%Setting,nbasis, &
+!         & noccEOS,ncabsAO,ncabsMO,CoccEOS,Ccabs,Gmjci,'RCRRG')
 
     !call get_mp2f12_MOmatrix_ijmc(MyFragment%MyLsitem%Setting,nbasis, &
     !     & noccEOS,nocvAOS,ncabsAO,ncabsMO,CoccEOS,CocvAOS,Ccabs,Rmjci,'RCRRC')
@@ -1329,7 +1329,9 @@ contains
     end do
 
     ! Integral screening stuff
-    doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
+    doscreen = .FALSE.!Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
+    MySetting%scheme%cs_screen = .FALSE.
+    MySetting%scheme%ps_screen = .FALSE.
     !doscreen = .FALSE.
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
          & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
@@ -1382,8 +1384,8 @@ contains
           print *,"FullRHS:", FullRHS
           print *,"norm2(tmp1):", norm2(tmp1)
           call mem_dealloc(tmp1)
-
-          STOP "wangy hack"
+          call lsquit('wangy hack',-1)
+!          STOP "wangy hack"
           
 !!$          ! Transform beta to occupied index "j".
 !!$          ! *************************************
@@ -1481,6 +1483,9 @@ contains
 
        end do BatchAlpha
     end do BatchGamma
+
+    MySetting%scheme%cs_screen = .TRUE.
+    MySetting%scheme%ps_screen = .TRUE.
 
     ! Free and nullify stuff
     ! **********************

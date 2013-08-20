@@ -866,14 +866,13 @@ contains
     
     type(matrix) :: CMO_cabs
     integer :: ncabsAO,ncabs
-    integer :: lupri
     
     call determine_CABS_nbast(ncabsAO,ncabs,mylsitem%setting,DECinfo%output)
     
     call mat_init(CMO_cabs,nCabsAO,nCabs)
     
     call init_cabs()
-    call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,lupri)
+    call build_CABS_MO(CMO_cabs,ncabsAO,mylsitem%SETTING,DECinfo%output)
     call free_cabs()
     
     ! NB! Memory leak need to be freed somewhere
