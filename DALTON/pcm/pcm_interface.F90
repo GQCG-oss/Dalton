@@ -36,12 +36,11 @@ module pcm_interface
 
    public collect_nctot
    public collect_atoms
-   public energy_pcm_drv
-   public oper_ao_pcm_drv
+   public pcm_energy_driver
+   public pcm_oper_ao_driver
 !   public pcm_energy_driver   
 !   public pcm_fock_driver
 !   public pcm_lintra_driver
-!   public get_pcm_energy
 
    private
 
@@ -55,11 +54,17 @@ module pcm_interface
    real(c_double), allocatable :: tess_cent(:, :)
    real(c_double)              :: pcm_energy
    integer(c_int)              :: nr_points = -1
+! A (maybe clumsy) way of passing LUPRI without using common blocks   
+   integer                     :: global_print_unit
 
    contains 
       
-      subroutine pcm_interface_initialize()                              
-      
+      subroutine pcm_interface_initialize(print_unit)                              
+     
+      integer, intent(in) :: print_unit
+
+      global_print_unit = print_unit 
+
       call init_pcm
       call print_pcm
 
@@ -116,11 +121,144 @@ module pcm_interface
 !      charge attraction integrals evaluation subroutines.
 !
       use pcm_integrals, only: nuc_pot_pcm, ele_pot_pcm
+      use pcm_write, only: pcm_write_file, pcm_write_file_separate
       use pcmmod_cfg
+
+#include "mxcent.h"
+#include "nuclei.h"
+#include "maxorb.h"
+#include "infinp.h"
+#include "inforb.h"
+#include "inftap.h"
+#include "maxaqn.h"
+#include "symmet.h"
+#include "orgcom.h"
+#include "dftcom.h"
 
       real(8), intent(in)    :: dcao(*), dvao(*)
       real(8), intent(inout) :: work(*)
       integer                :: lfree
+
+! Local variables
+      real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:)
+      real(8), allocatable :: ele_pot(:), ele_pol_chg(:)
+      character(7)         :: potName, chgName
+      character(7)         :: potName1, chgName1, potName2, chgName2
+      integer, save        :: counter = 0
+      logical, save        :: first_call = .true.
+      integer              :: kda, kdb, kpot, kcent, kfree, lwork, i
+      real(8)              :: factor = 1.0d0
+                                                                                    
+      kda   = 1
+      kdb   = kda   + nnbasx
+      kfree = kdb + nnbasx
+      lwork = lfree - kfree + 1
+      if (lwork .lt. 0) then 
+              call errwrk('compute_mep_asc', kfree, lfree) 
+      end if
+                                                                                    
+      if ((nasht.gt.0) .and. .not. dftadd) then
+         call dcopy(nnbasx, dcao, 1, work(kdb), 1)
+         call daxpy(nnbasx, 1.0d0, dvao, 1, work(kdb), 1)
+         call pksym1(work(kda), work(kdb), nbas, nsym, -1)
+      else
+         call pksym1(work(kda), dcao, nbas, nsym, -1)
+      end if
+
+      counter = counter + 1
+
+      if (first_call) then
+         first_call = .false.
+      end if
+
+      if (.not.(pcmmod_separate)) then
+         potName = 'TotPot'//char(0) 
+         chgName = 'TotChg'//char(0) 
+!         call get_mep(nr_points, tess_cent, potentials, dmat, work, lwork, 0)
+! Set a cavity surface function with the MEP
+         call set_surface_function(nr_points, mep, potName)
+         mep_is_done = .true.
+! Compute polarization charges and set the proper surface function
+         call comp_chg_pcm(potName, chgName)
+! Get polarization charges @tesserae centers
+         call get_surface_function(nr_points, asc, chgName)
+         asc_is_done = .true.
+
+! Print some information
+         if (pcmmod_print > 5) then
+            do i = 1, nr_points
+              write(global_print_unit, *) "MEP @point", i, mep(i)
+              if (pcmmod_print > 10) then
+                 write(global_print_unit, *) "ASC @point", i, asc(i)
+              end if
+            end do
+         end if
+
+! Write to file MEP and ASC
+         call pcm_write_file(nr_points, mep, asc)
+      else
+! Allocation
+         allocate(nuc_pot(nr_points))
+         nuc_pot = 0.0d0
+         allocate(nuc_pol_chg(nr_points))
+         nuc_pol_chg = 0.0d0
+         allocate(ele_pot(nr_points))
+         ele_pot = 0.0d0
+         allocate(ele_pol_chg(nr_points))
+         ele_pol_chg = 0.0d0
+      
+         potName1 = 'NucPot'//char(0)
+         chgName1 = 'NucChg'//char(0)
+         call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
+         call set_surface_function(nr_points, nuc_pot, potName1)
+         call comp_chg_pcm(potName1, chgName1)
+         call get_surface_function(nr_points, nuc_pol_chg, chgName1)
+
+         potName2 = 'ElePot'//char(0)
+         chgName2 = 'EleChg'//char(0)
+         call ele_pot_pcm(nr_points, tess_cent, ele_pot, work(kda), work(kfree), lfree)
+         call set_surface_function(nr_points, ele_pot, potName2)
+         call comp_chg_pcm(potName2, chgName2)
+         call get_surface_function(nr_points, ele_pol_chg, chgName2)
+
+! Print some information
+        if (pcmmod_print > 5) then
+           do i = 1, nr_points
+             write(global_print_unit, *) "NMEP @point", i, nuc_pot(i)
+             write(global_print_unit, *) "EMEP @point", i, ele_pot(i)
+             if (pcmmod_print > 10) then
+                write(global_print_unit, *) "NASC @point", i, nuc_pol_chg(i)
+                write(global_print_unit, *) "EASC @point", i, ele_pol_chg(i)
+             end if
+           end do
+        end if
+
+! Obtain vector of total MEP
+        potName  = 'TotPot'//char(0)
+        call append_surf_func(potName)
+        call clear_surf_func(potName)
+        call add_surface_function(potName, factor, potName1)
+        call add_surface_function(potName, factor, potName2)
+        call get_surface_function(nr_points, mep, potName)
+        mep_is_done = .true.
+
+! Obtain vector of total polarization charges 
+        chgName  = 'TotChg'//char(0)
+        call append_surf_func(chgName)
+        call clear_surf_func(chgName)
+        call add_surface_function(chgName, factor, chgName1)
+        call add_surface_function(chgName, factor, chgName2)
+        call get_surface_function(nr_points, asc, chgName)
+        asc_is_done = .true.
+
+! Write to file MEP and ASC
+        call pcm_write_file_separate(nr_points, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
+ 
+        deallocate(nuc_pot)
+        deallocate(nuc_pol_chg)
+        deallocate(ele_pot)
+        deallocate(ele_pol_chg)
+      end if
  
       end subroutine 
                                                                     
@@ -160,10 +298,11 @@ module pcm_interface
       
       end subroutine collect_atoms
 
-      subroutine energy_pcm_drv(dcao, dvao, pol_ene, work, lfree)
+      subroutine pcm_energy_driver(dcao, dvao, pol_ene, work, lfree)
 
       use pcm_integrals, only: nuc_pot_pcm, ele_pot_pcm
       use pcm_write, only: pcm_write_file_separate
+      use pcmmod_cfg
 
 #include "mxcent.h"
 #include "nuclei.h"
@@ -181,68 +320,22 @@ module pcm_interface
       real(8)      :: pol_ene
       real(8)      :: work(*)
       integer      :: lfree
-! Local variables
-      real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:)
-      real(8), allocatable :: ele_pot(:), ele_pol_chg(:)
-      integer              :: kda, kdb, kpot, kcent, kfree, lwork
-      character(7)         :: potName, chgName, chgName1, chgName2
-      real(8)              :: factor
-                                                                                    
-      allocate(nuc_pot(nr_points))
-      allocate(nuc_pol_chg(nr_points))
-      allocate(ele_pot(nr_points))
-      allocate(ele_pol_chg(nr_points))
 
-      kda   = 1
-      kdb   = kda   + nnbasx
-      kfree = kdb + nnbasx
-      lwork = lfree - kfree + 1
-      if (lwork .lt. 0) then 
-              call errwrk('energy_pcm_drv', kfree, lfree) 
+      call compute_mep_asc(dcao, dvao, work, lfree)
+
+! pcm_energy is the polarization energy:
+! U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
+      if (.not.pcmmod_separate) then
+         call comp_pol_ene_pcm(pol_ene, 1)
+      else 
+         call comp_pol_ene_pcm(pol_ene,0)
       end if
-                                                                                    
-      if ((nasht.gt.0) .and. .not. dftadd) then
-         call dcopy(nnbasx, dcao, 1, work(kdb), 1)
-         call daxpy(nnbasx, 1.0d0, dvao, 1, work(kdb), 1)
-         call pksym1(work(kda), work(kdb), nbas, nsym, -1)
-      else
-         call pksym1(work(kda), dcao, nbas, nsym, -1)
-      end if
-                                                                                    
-! 2) Compute potentials
-! 3) Compute charges
-      potName = 'NucPot'//CHAR(0)
-      chgName = 'NucChg'//CHAR(0)
-      call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
-      call set_surface_function(nr_points, nuc_pot, potName)
-      call comp_chg_pcm(potName, chgName)
-      call get_surface_function(nr_points, nuc_pol_chg, chgName)
-                                                                                    
-      potName = 'ElePot'//CHAR(0)
-      chgName = 'EleChg'//CHAR(0)
-      call ele_pot_pcm(nr_points, tess_cent, ele_pot, work(kda), work(kfree), lfree)
-      call set_surface_function(nr_points, ele_pot, potName)
-      call comp_chg_pcm(potName, chgName)
-      call get_surface_function(nr_points, ele_pol_chg, chgName)
 
-      call comp_pol_ene_pcm(pol_ene, 0)
-                                                                                      
-      chgName  = 'TotChg'//CHAR(0)
-      chgName1 = 'NucChg'//CHAR(0)
-      chgName2 = 'EleChg'//CHAR(0)
-                                                                                      
-      call append_surf_func(chgName)
-      call clear_surf_func(chgName)
-      factor =  1.0
-      call add_surface_function(chgName, factor, chgName1)
-      call add_surface_function(chgName, factor, chgName2)
+      pcm_energy = pol_ene
 
-! Write to file MEP and ASC
-      call pcm_write_file_separate(nr_points, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
-
-      end subroutine energy_pcm_drv
+      end subroutine pcm_energy_driver
       
-      subroutine oper_ao_pcm_drv(oper, charge, work, lwork)
+      subroutine pcm_oper_ao_driver(oper, charge, work, lwork)
 !
 ! Calculate exp values of potentials on tesserae
 ! Input: symmetry packed Density matrix in AO basis
@@ -264,13 +357,13 @@ module pcm_interface
       lfree = lwork - kfree
                                                                                   
       if(lfree .le. 0) then 
-              call quit('Not enough mem in oper_ao_pcm_drv')
+              call quit('Not enough mem in pcm_oper_ao_driver')
       end if
         
       call get_surface_function(nr_points, work(kcharge), charge)
       call j1int_pcm(work(kcharge), nr_points, tess_cent, .false.,    & 
                      oper, 1, .false., 'NPETES ', 1, work(kfree), lfree)
 
-      end subroutine oper_ao_pcm_drv
+      end subroutine pcm_oper_ao_driver
 
 end module

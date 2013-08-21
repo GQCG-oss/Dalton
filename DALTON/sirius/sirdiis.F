@@ -895,9 +895,9 @@ C
          if (pcmmod_is_pcm_calculation) then
             call memget('REAL',kfcsol,nnbasx,wrk,kfree,lfree)
             call dzero(wrk(kfcsol), nnbasx)
-            call energy_pcm_drv(daosav(1,1), daosav(1,2), esolt, 
+            call pcm_energy_driver(daosav(1,1), daosav(1,2), esolt, 
      $           wrk(kfree), lfree)
-            call oper_ao_pcm_drv(wrk(kfcsol), 'TotChg'//CHAR(0), 
+            call pcm_oper_ao_driver(wrk(kfcsol), 'TotChg'//char(0), 
      $           wrk(kfree), lfree)
             call daxpy(nnbast,dm1,wrk(kfcsol),1,faosav(1,indevc,1),1)
 clf            write(lupri,*) 'extpcm fock matrix'

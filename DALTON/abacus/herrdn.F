@@ -4702,7 +4702,7 @@ C
 
 #if defined (PCM_MODULE)
       if (pcmmod_is_pcm_calculation) then
-        call pcm_interface_initialize
+        call pcm_interface_initialize(lupri)
         write(lupri, *) "PCMSolver interface correctly initialized"
       end if
 #endif

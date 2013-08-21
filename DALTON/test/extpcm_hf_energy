@@ -52,6 +52,7 @@ cat > extpcm_hf_energy.dal <<'%EOF%'
 .EXTPCM
 *EXTPCM
 .OLDINT
+.SEPARATE
 **WAVE FUNCTIONS
 .SCF
 **END OF DALTON INPUT

@@ -52,6 +52,7 @@ cat > extpcm_lda_energy.dal <<'%EOF%'
 .EXTPCM
 *EXTPCM
 .OLDINT
+.SEPARATE
 **WAVE FUNCTIONS
 .DFT
  LDA
