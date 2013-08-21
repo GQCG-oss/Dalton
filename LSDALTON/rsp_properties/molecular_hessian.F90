@@ -24,8 +24,8 @@ MODULE molecular_hessian_mod
                                     & II_get_geoderivexchange, &
                                     & II_get_coulomb_mat, &
                                     & II_get_exchange_mat
-    use RSPsolver,              only: prop_molcfg,&
-                                    & init_prop_molcfg,&
+    use RSPsolver,              only: rsp_molcfg,&
+                                    & init_rsp_molcfg,&
                                     & rsp_init,&
                                     & rsp_solver
     use RSP_util,               only: util_save_MOinfo,&
@@ -268,7 +268,8 @@ CONTAINS
 
     DO i=1,3*Natoms
         ! RHS = 0.5 { ... }
-        call mat_scal(0.25E0_realk,RHS(i))
+        !call mat_scal(0.5E0_realk,RHS(i))
+        call mat_scal(0.125E0_realk,RHS(i))
     ENDDO
 
     call mat_free(temp)
@@ -628,14 +629,10 @@ CONTAINS
     !
     Real(realk)                     :: ts,te, sum
     Integer                         :: i, nbast, nb_eq
-    type(prop_molcfg)               :: molcfg
+    type(rsp_molcfg)                :: molcfg
     logical                         :: LINEQ_x
     Real(realk)                     :: laser_freq(1)
     Type(matrix)                    :: oneRHS(1),oneXa(1)
-    Real(realk)                     :: ts,te 
-    Integer                         :: i, nbast
-    type(rsp_molcfg)                :: molcfg
-
     !
     call lstimer('START ',ts,te,lupri)
     nbast = D%nrow
@@ -643,7 +640,7 @@ CONTAINS
     call mat_init(oneXa(1),nbast,nbast)
 
     ! Initialize solver parameters.
-    call init_prop_molcfg(molcfg, S, Natoms,&
+    call init_rsp_molcfg(molcfg, S, Natoms,&
                         & lupri, luerr, setting,&
                         & config%decomp,config%response%rspsolverinput)
 
