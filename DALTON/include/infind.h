@@ -15,7 +15,7 @@
 !
       INTEGER LIROW, JTFRO, JTINAC, JTACT, JTSEC, JTFRFR, JTINFR,       &
      &        JTACFR, JTSEFR, JTININ, JTACIN, JTACAC, JTSEIN, JTSEAC,   &
-     &        JTSESE 
+     &        JTSESE
       PARAMETER (LIROW  = 3*MXCORB + 3)
 !     Definition of readable codes for orbital types and 2-index orbital types
       PARAMETER (JTFRO  = 1, JTINAC = 2, JTACT  = 3, JTSEC  = 4)

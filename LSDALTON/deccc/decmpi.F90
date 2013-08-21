@@ -1690,6 +1690,7 @@ contains
     call ls_mpi_buffer(DECitem%simulate_eri,Master)
     call ls_mpi_buffer(DECitem%fock_with_ri,Master)
     call ls_mpi_buffer(DECitem%F12,Master)
+    call ls_mpi_buffer(DECitem%F12DEBUG,Master)
     call ls_mpi_buffer(DECitem%mpisplit,Master)
     call ls_mpi_buffer(DECitem%MPIgroupsize,Master)
     call ls_mpi_buffer(DECitem%manual_batchsizes,Master)

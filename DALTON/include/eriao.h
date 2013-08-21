@@ -1,7 +1,7 @@
       LOGICAL         SPHR1,  SPHR2,  SPHR3,  SPHR4,  SPHR12, SPHR34,
      &                GCON1,  GCON2,  GCON3,  GCON4,  GCON12, GCON34,
      &                TKMP12, TKMP34, TCMP12, TCMP34
-      COMMON /ERIAO/  IELCT1, IELCT2, 
+      COMMON /ERIAO/  IELCT1, IELCT2,
      &                NHKT1,  NHKT2, NHKT3, NHKT4,
      &                JMAX1,  JMAX2, JMAX3, JMAX4, JMAX12, JMAX34,
      &                JMXD1,  JMXD2, JMXD3, JMXD4, JMXD12, JMXD34,

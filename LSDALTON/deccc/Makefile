@@ -24,6 +24,8 @@ F90_OBJS = dec_settings.o \
 	ccsd.o \
 	rpa.o \
 	f12_integrals.o \
+	f12_routines.o \
+	wangy_playground.o \
 	cc_driver.o \
 	dec_atom.o \
 	mp2_gradient.o \

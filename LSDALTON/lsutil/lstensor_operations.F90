@@ -6778,11 +6778,11 @@ end subroutine determineODscreening
 !> \date 2010
 !> \param TENSOR1 the original full slstensor
 !> \param TENSOR2 the new batch slstensor
-SUBROUTINE build_BatchGab(AOfull,AO1,AO2,iBatch1,jBatch1,&
+SUBROUTINE build_BatchGab(AOfull1,AOfull2,AO1,AO2,iBatch1,jBatch1,&
      & ibatchStart,jbatchStart,dim1,dim2,TENSOR1,TENSOR2)
   implicit none
   integer,intent(in) :: dim1,dim2
-  type(AOITEM),intent(in) :: AOfull,AO1,AO2
+  type(AOITEM),intent(in) :: AOfull1,AOfull2,AO1,AO2
   TYPE(LSTENSOR),intent(in)     :: TENSOR1
   TYPE(LSTENSOR),intent(inout)  :: TENSOR2
   integer,intent(in)   :: iBatchStart,jBatchStart
@@ -6842,13 +6842,13 @@ SUBROUTINE build_BatchGab(AOfull,AO1,AO2,iBatch1,jBatch1,&
   DO jBatch2=1,nbatches2
      jBatch = jBatch + 1
      jBatchLoc2 = jBatchLoc2 + 1
-     jatom = AOfull%Batch(jBatch)%atom
+     jatom = AOfull2%Batch(jBatch)%atom
      IF(jatom.NE.jatom_old)then
         jatom_old = jatom
         jatom2 = Jatom2 +1 
         jBatchLoc2 = 1
      ENDIF
-     JbatchLoc = AOfull%Batch(jBatch)%batch
+     JbatchLoc = AOfull2%Batch(jBatch)%batch
 !     IF(JbatchLoc2.NE.AO2%Batch(JBatch2)%batch)CALL LSQUIT('batchlocB',-1)
      
      Iatom2 = 0
@@ -6858,13 +6858,13 @@ SUBROUTINE build_BatchGab(AOfull,AO1,AO2,iBatch1,jBatch1,&
      DO iBatch2=1,nbatches1
         iBatch = iBatch + 1
         iBatchLoc2 = iBatchLoc2 + 1
-        iatom = AOfull%Batch(iBatch)%atom
+        iatom = AOfull1%Batch(iBatch)%atom
         IF(iatom.NE.iatom_old)then
            iatom_old = iatom
            Iatom2 = Iatom2 +1 
            iBatchLoc2 = 1
         ENDIF
-        IbatchLoc = AOfull%Batch(iBatch)%batch
+        IbatchLoc = AOfull1%Batch(iBatch)%batch
 !        IF(IbatchLoc2.NE.AO1%Batch(iBatch2)%batch)CALL LSQUIT('batchlocA',-1)
         I1 = TENSOR1%INDEX(iatom,jatom,1,1)
         I2 = TENSOR2%INDEX(iatom2,jatom2,1,1)

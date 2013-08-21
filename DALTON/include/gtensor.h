@@ -2,7 +2,7 @@
 ! FILE: gtensor.h (used in rsp/ and abacus/ modules)
 !
       DOUBLE PRECISION REFSPIN, GRELMC
-      DOUBLE PRECISION GTENSOR(3,3), GC1(3,3), GC2(3,3), 
+      DOUBLE PRECISION GTENSOR(3,3), GC1(3,3), GC2(3,3),
      &                 GOZSO(3,3,3), ECCORG(3)
       INTEGER  NSO
       LOGICAL  DOALL, DORMC, DOGC1, DOGC2, DOOZSO1, DOOZSO2, DOOZSO

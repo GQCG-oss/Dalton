@@ -26,9 +26,9 @@ C     MAX and MIN not allowed by "g77"; zero size arrays not allowed
       COMMON /MPISAV/ INDMPI(MXTSK)
 #endif
 
-/* MMWORK and IEIR must be set to nonzero values here if the 
-  AOSAVE-feature of DALTON is to be used. Suggested values: 
-  MMWORK=80000000 and IEIR=3000000, 
+/* MMWORK and IEIR must be set to nonzero values here if the
+  AOSAVE-feature of DALTON is to be used. Suggested values:
+  MMWORK=80000000 and IEIR=3000000,
   if your hardware can take it.*/
 #endif
 ! -- end of incore.h --

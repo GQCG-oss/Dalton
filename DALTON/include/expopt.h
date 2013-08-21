@@ -1,5 +1,5 @@
 ! File : expopt.h
       LOGICAL EXPGRA
       COMMON /EXPOPT/ ALPGRD(MXPRIM),
-     &                EXPGRA 
+     &                EXPGRA
 ! -- end of expopt.h --
