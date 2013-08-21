@@ -28,10 +28,6 @@
 module pcm_interface
   
    use iso_c_binding
-   use pcm_integrals
-   use pcm_write
-   use pcmmod_cfg
-   use pcm_utils
 
    implicit none 
 
@@ -52,8 +48,10 @@ module pcm_interface
 !  if false the interface will refuse to be accessed
    logical :: is_initialized = .false.
 
-   real(c_double), allocatable :: charges(:)
-   real(c_double), allocatable :: potentials(:)
+   real(c_double), allocatable :: mep(:)
+   logical                     :: mep_is_done
+   real(c_double), allocatable :: asc(:)
+   logical                     :: asc_is_done
    real(c_double), allocatable :: tess_cent(:, :)
    real(c_double)              :: pcm_energy
    integer(c_int)              :: nr_points = -1
@@ -67,11 +65,16 @@ module pcm_interface
 
       call get_cavity_size(nr_points)
 
-      allocate(tess_cent(nr_points, 3))
+      allocate(tess_cent(3, nr_points))
+      tess_cent = 0.0d0
       call get_tess_centers(tess_cent)
 
-      allocate(potentials(nr_points))
-      allocate(charges(nr_points))
+      allocate(mep(nr_points))
+      mep = 0.0d0
+      mep_is_done = .false.
+      allocate(asc(nr_points))
+      asc = 0.0d0
+      asc_is_done = .false.
 
       pcm_energy = 0.0d0
               
@@ -80,6 +83,12 @@ module pcm_interface
       end subroutine
                                                                     
       subroutine pcm_interface_finalize()
+
+      deallocate(tess_cent)
+      deallocate(mep)
+      deallocate(asc)
+
+      call tear_down_pcm
                                                                     
       is_initialized = .false.
                                                                     
@@ -94,6 +103,26 @@ module pcm_interface
       end if
 
       end subroutine
+
+      subroutine compute_mep_asc(dcao, dvao, work, lfree)
+!
+! Calculate the molecular electrostatic potential and
+! the apparent surface charge at the cavity points.
+!
+! The user can control via the DALTON input the following:
+!    * switch between separate and total evaluation of the
+!      nuclear and electronic parts;
+!    * switch between point-by-point and vectorized
+!      charge attraction integrals evaluation subroutines.
+!
+      use pcm_integrals, only: nuc_pot_pcm, ele_pot_pcm
+      use pcmmod_cfg
+
+      real(8), intent(in)    :: dcao(*), dvao(*)
+      real(8), intent(inout) :: work(*)
+      integer                :: lfree
+ 
+      end subroutine 
                                                                     
       subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot_')
 
@@ -106,30 +135,35 @@ module pcm_interface
 
       end subroutine collect_nctot
       
-      subroutine collect_atoms(charges, centers) bind(c, name='collect_atoms_')
+      subroutine collect_atoms(atomic_charges, atomic_centers) bind(c, name='collect_atoms_')
+  
+      use pcm_utils, only: getacord
 
 #include "mxcent.h"
 #include "nuclei.h"
       
-      real(c_double), intent(out) :: charges(*)
-      real(c_double), intent(out) :: centers(3,*)
+      real(c_double), intent(out) :: atomic_charges(*)
+      real(c_double), intent(out) :: atomic_centers(3,*)
       
       integer :: i, j, k 
 
 ! Get coordinates
-      call getacord(centers)
+      call getacord(atomic_centers)
 ! Get charges      
       i = 0
       do j = 1, nucind
          do k = 1, nucdeg(j)
             i = i + 1
-            charges(i) = charge(j)
+            atomic_charges(i) = charge(j)
          enddo
       enddo
       
       end subroutine collect_atoms
 
       subroutine energy_pcm_drv(dcao, dvao, pol_ene, work, lfree)
+
+      use pcm_integrals, only: nuc_pot_pcm, ele_pot_pcm
+      use pcm_write, only: pcm_write_file_separate
 
 #include "mxcent.h"
 #include "nuclei.h"
@@ -215,6 +249,7 @@ module pcm_interface
 !        cavity points
 ! Output: expectation values of electrostatic potential on tesserae
 !
+      use pcm_integrals, only: j1int_pcm
 
       real(8), intent(out) :: oper(*)
       real(8)              :: work(*)

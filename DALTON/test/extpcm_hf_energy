@@ -21,7 +21,7 @@ cat > extpcm_hf_energy.info <<'%EOF%'
    extpcm_hf_energy
    -------------
    Molecule:         CH4 
-   Wave Functions:   PCM-SCF / STO-3G
+   Wave Functions:   PCM-SCF, HF / STO-3G
    Test Purpose:     Check energy calculation with PCMSolver module
 %EOF%
 

@@ -1,7 +1,5 @@
       module pcm_integrals
 
-      use pcm_utils
-
       implicit none
 
       public nuc_pot_pcm
@@ -10,32 +8,47 @@
 
       contains
              
-         subroutine nuc_pot_pcm(nts, centers, potential)              
+         subroutine nuc_pot_pcm(nr_points, centers, potential)
+
+         use pcm_utils, only: getacord
                                                           
 #include "mxcent.h"
 #include "nuclei.h"
            
-         integer(4), intent(in) :: nts                           
-         real(8), intent(in)    :: centers(3, nts)               
-         real(8), intent(out)   :: potential(nts)                
-         real(8)                :: dist                          
-         integer                :: i, j, k                       
-                                                                 
-         do i = 1, nts                                           
-            potential(i) = 0.0d0                                 
-            do j = 1, nucdep                                     
-               dist = 0.0d0                                      
-               do k = 1, 3                                       
-                  dist = dist + (centers(k,i) - cord(k, j))**2   
-               end do                                            
-               dist = sqrt(dist)                                 
-               potential(i) = potential(i) + charge(j) / dist    
-            end do                                               
-         end do                                                  
+         integer, intent(in)  :: nr_points                           
+         real(8), intent(in)  :: centers(3, nr_points)               
+         real(8), intent(out) :: potential(nr_points)
+
+         real(8)              :: coora(3, nucdep), charges(nucdep)
+         real(8)              :: dist, temp                          
+         integer              :: i, j, k, ipoint
+
+! Get coordinates and charges of all centers, not only the ones
+! that are symmetry independent      
+         call getacord(coora)
+         i = 0
+         do j = 1, nucind
+            do k = 1, nucdeg(j)
+               i = i + 1
+               charges(i) = charge(j)
+            enddo
+         enddo
+
+! Zero out, although it is already zeroed out before the call
+         potential = 0.0d0
+         do i = 1, nucdep
+            do ipoint = 1, nr_points
+               dist = (coora(1, i) - centers(1, ipoint))**2 +               &
+                      (coora(2, i) - centers(2, ipoint))**2 +               &
+                      (coora(3, i) - centers(3, ipoint))**2
+               dist = sqrt(dist)
+               potential(ipoint) = potential(ipoint) + (charges(i) / dist)
+            end do
+         end do
          
          end subroutine nuc_pot_pcm
          
-         subroutine ele_pot_pcm(nts, centers, potential, density, work, lwork)
+         subroutine ele_pot_pcm(nr_points, centers, potential, density, work, lwork)
 !                                                                                                          
 ! Calculate exp values of potentials on tesserae
 ! Input: symmetry packed Density matrix in AO basis
@@ -45,14 +58,14 @@
 ! the density is in a given format here as this routine will be called by the module
 !                                                                                                          
                                                                       
-         integer, intent(in)  :: nts                                    
-         real(8), intent(in)  :: centers(3, *)                          
-         real(8), intent(out) :: potential(nts)                         
+         integer, intent(in)  :: nr_points                                    
+         real(8), intent(in)  :: centers(3, nr_points)                          
+         real(8), intent(out) :: potential(nr_points)                         
          real(8)              :: density(*)                           
          real(8)              :: work(*)                              
          integer              :: lwork                                
                                                                         
-         call j1int_pcm(potential, nts, centers, .true., density, 1, .false., 'NPETES ', 1, work, lwork)  
+         call j1int_pcm(potential, nr_points, centers, .true., density, 1, .false., 'NPETES ', 1, work, lwork)  
          
          end subroutine ele_pot_pcm
       
