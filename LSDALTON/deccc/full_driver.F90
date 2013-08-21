@@ -330,13 +330,13 @@ contains
             & + mp2f12_E21(Vijij_term3,Vjiij_term3,nocc) + mp2f12_E21(Vijij_term4,Vjiij_term4,nocc) ) 
        print *, 'E21_debug: ', 2.0E0_REALK*mp2f12_E21(Vijij,Vjiij,nocc)
        print *, '----------------------------------------'
-       print *,'norm2(Fijkl): ', norm2(Fijkl)
-       print *,'norm2(Gipjq): ', norm2(Gipjq)
-       print *,'norm2(Ripjq): ', norm2(Ripjq)
-       print *, '----------------------------------------'
-       print *,'norm2(Gimjc): ', norm2(Gimjc)
-       print *,'norm2(Rimjc): ', norm2(Rimjc)
-       print *, '----------------------------------------'
+!!$       print *,'norm2(Fijkl): ', norm2(Fijkl)
+!!$       print *,'norm2(Gipjq): ', norm2(Gipjq)
+!!$       print *,'norm2(Ripjq): ', norm2(Ripjq)
+!!$       print *, '----------------------------------------'
+!!$       print *,'norm2(Gimjc): ', norm2(Gimjc)
+!!$       print *,'norm2(Rimjc): ', norm2(Rimjc)
+!!$       print *, '----------------------------------------'
     endif
     
     call mem_alloc(Ciajb,nocc,nvirt,nocc,nvirt)
@@ -458,12 +458,12 @@ contains
        call mp2f12_Xjiij_term3(Xjiij_term3,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
        call mp2f12_Xjiij_term4(Xjiij_term4,Gipjq,Tijkl,Gimjc,nocc,noccfull,nbasis,ncabs)
     
-       print *, '----------------------------------------'
-       print *,'norm2(Xijij_term1): ', norm2(Xijij_term1)
-       print *,'norm2(Xijij_term2): ', norm2(Xijij_term2)
-       print *,'norm2(Xijij_term3): ', norm2(Xijij_term3)
-       print *,'norm2(Xijij_term4): ', norm2(Xijij_term4)
-       print *, '----------------------------------------'
+!!$       print *, '----------------------------------------'
+!!$       print *,'norm2(Xijij_term1): ', norm2(Xijij_term1)
+!!$       print *,'norm2(Xijij_term2): ', norm2(Xijij_term2)
+!!$       print *,'norm2(Xijij_term3): ', norm2(Xijij_term3)
+!!$       print *,'norm2(Xijij_term4): ', norm2(Xijij_term4)
+!!$       print *, '----------------------------------------'
        
     endif
 
@@ -513,20 +513,20 @@ contains
        endif
        
        if(DECinfo%F12DEBUG) then
-          print *, '----------------------------------------'
-          print *, 'nbasis ncabsAO', nbasis, ncabsAO
-          print *, 'norm2(Fii): ', norm2(Fii%elms)
-          print *, '----------------------------------------'
-          print *, 'E22_X_term1: ', mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc)
-          print *, 'E22_X_term2: ', mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc)
-          print *, 'E22_X_term3: ', mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc)
-          print *, 'E22_X_term4: ', mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)
-          print *, '----------------------------------------'
-          print *, 'E22_Xsum: ',  mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc) & 
-               & + mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc) &
-               & + mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc) + mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)  
-          print *, 'E22_debug: ', E22_debug
-          print *, '----------------------------------------'
+!!$          print *, '----------------------------------------'
+!!$          print *, 'nbasis ncabsAO', nbasis, ncabsAO
+!!$          print *, 'norm2(Fii): ', norm2(Fii%elms)
+!!$          print *, '----------------------------------------'
+!!$          print *, 'E22_X_term1: ', mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc)
+!!$          print *, 'E22_X_term2: ', mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc)
+!!$          print *, 'E22_X_term3: ', mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc)
+!!$          print *, 'E22_X_term4: ', mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)
+!!$          print *, '----------------------------------------'
+!!$          print *, 'E22_Xsum: ',  mp2f12_E22(Xijij_term1,Xjiij_term1,Fii%elms,nocc) & 
+!!$               & + mp2f12_E22(Xijij_term2,Xjiij_term2,Fii%elms,nocc) &
+!!$               & + mp2f12_E22(Xijij_term3,Xjiij_term3,Fii%elms,nocc) + mp2f12_E22(Xijij_term4,Xjiij_term4,Fii%elms,nocc)  
+!!$          print *, 'E22_debug: ', E22_debug
+!!$          print *, '----------------------------------------'
        endif
        
     else
