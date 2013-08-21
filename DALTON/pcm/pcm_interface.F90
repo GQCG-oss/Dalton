@@ -64,6 +64,16 @@ module pcm_interface
       
       call init_pcm
       call print_pcm
+
+      call get_cavity_size(nr_points)
+
+      allocate(tess_cent(nr_points, 3))
+      call get_tess_centers(tess_cent)
+
+      allocate(potentials(nr_points))
+      allocate(charges(nr_points))
+
+      pcm_energy = 0.0d0
               
       is_initialized = .true.
                                                                  
@@ -132,109 +142,99 @@ module pcm_interface
 #include "orgcom.h"
 #include "dftcom.h"
 
-        real(8)      :: dcao(*)
-        real(8)      :: dvao(*)                                                       
-        real(8)      :: pol_ene
-        real(8)      :: work(*)
-        integer      :: lfree
+      real(8)      :: dcao(*)
+      real(8)      :: dvao(*)                                                       
+      real(8)      :: pol_ene
+      real(8)      :: work(*)
+      integer      :: lfree
 ! Local variables
-        character(7) :: potName, chgName, chgName1, chgName2
-        integer(4)   :: nts 
-        integer      :: kda, kdb, kpot, kcent, kfree, lwork
-        real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:), ele_pot(:), ele_pol_chg(:)
-        real(8)      :: factor
-                                                                                      
-        call get_cavity_size(nts)
-        allocate(nuc_pot(nts))
-        allocate(nuc_pol_chg(nts))
-        allocate(ele_pot(nts))
-        allocate(ele_pol_chg(nts))
-        kda   = 1
-        kdb   = kda   + nnbasx
-        kpot  = kdb   + nnbasx
-        kcent = kpot  + nts
-        kfree = kcent + 3 * nts
-        lwork = lfree - kfree + 1
-        if (lwork .lt. 0) then 
-                call errwrk('energy_pcm_drv', kfree, lfree) 
-        end if
-                                                                                      
-! 1) Get tessera data
-        call get_tess_centers(work(kcent))
-        
-        if ((nasht.gt.0) .and. .not. dftadd) then
-           call dcopy(nnbasx, dcao, 1, work(kdb), 1)
-           call daxpy(nnbasx, 1.0d0, dvao, 1, work(kdb), 1)
-           call pksym1(work(kda), work(kdb), nbas, nsym, -1)
-        else
-           call pksym1(work(kda), dcao, nbas, nsym, -1)
-        end if
-                                                                                      
+      real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:)
+      real(8), allocatable :: ele_pot(:), ele_pol_chg(:)
+      integer              :: kda, kdb, kpot, kcent, kfree, lwork
+      character(7)         :: potName, chgName, chgName1, chgName2
+      real(8)              :: factor
+                                                                                    
+      allocate(nuc_pot(nr_points))
+      allocate(nuc_pol_chg(nr_points))
+      allocate(ele_pot(nr_points))
+      allocate(ele_pol_chg(nr_points))
+
+      kda   = 1
+      kdb   = kda   + nnbasx
+      kfree = kdb + nnbasx
+      lwork = lfree - kfree + 1
+      if (lwork .lt. 0) then 
+              call errwrk('energy_pcm_drv', kfree, lfree) 
+      end if
+                                                                                    
+      if ((nasht.gt.0) .and. .not. dftadd) then
+         call dcopy(nnbasx, dcao, 1, work(kdb), 1)
+         call daxpy(nnbasx, 1.0d0, dvao, 1, work(kdb), 1)
+         call pksym1(work(kda), work(kdb), nbas, nsym, -1)
+      else
+         call pksym1(work(kda), dcao, nbas, nsym, -1)
+      end if
+                                                                                    
 ! 2) Compute potentials
 ! 3) Compute charges
-        potName = 'NucPot'//CHAR(0)
-        chgName = 'NucChg'//CHAR(0)
-        !call nuc_pot_pcm(nts, work(kcent), work(kpot))
-        call nuc_pot_pcm(nts, work(kcent), nuc_pot)
-        call set_surface_function(nts, nuc_pot, potName)
-        call comp_chg_pcm(potName, chgName)
-        call get_surface_function(nts, nuc_pol_chg, chgName)
-                                                                                      
-        potName = 'ElePot'//CHAR(0)
-        chgName = 'EleChg'//CHAR(0)
-        call ele_pot_pcm(nts, work(kcent), ele_pot, work(kda), work(kfree), lfree)
-        call set_surface_function(nts, ele_pot, potName)
-        call comp_chg_pcm(potName, chgName)
-        call get_surface_function(nts, ele_pol_chg, chgName)
+      potName = 'NucPot'//CHAR(0)
+      chgName = 'NucChg'//CHAR(0)
+      call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
+      call set_surface_function(nr_points, nuc_pot, potName)
+      call comp_chg_pcm(potName, chgName)
+      call get_surface_function(nr_points, nuc_pol_chg, chgName)
+                                                                                    
+      potName = 'ElePot'//CHAR(0)
+      chgName = 'EleChg'//CHAR(0)
+      call ele_pot_pcm(nr_points, tess_cent, ele_pot, work(kda), work(kfree), lfree)
+      call set_surface_function(nr_points, ele_pot, potName)
+      call comp_chg_pcm(potName, chgName)
+      call get_surface_function(nr_points, ele_pol_chg, chgName)
 
-        call comp_pol_ene_pcm(pol_ene, 0)
+      call comp_pol_ene_pcm(pol_ene, 0)
                                                                                       
-        chgName  = 'TotChg'//CHAR(0)
-        chgName1 = 'NucChg'//CHAR(0)
-        chgName2 = 'EleChg'//CHAR(0)
+      chgName  = 'TotChg'//CHAR(0)
+      chgName1 = 'NucChg'//CHAR(0)
+      chgName2 = 'EleChg'//CHAR(0)
                                                                                       
-        call append_surf_func(chgName)
-        call clear_surf_func(chgName)
-        factor =  1.0
-        call add_surface_function(chgName, factor, chgName1)
-        call add_surface_function(chgName, factor, chgName2)
+      call append_surf_func(chgName)
+      call clear_surf_func(chgName)
+      factor =  1.0
+      call add_surface_function(chgName, factor, chgName1)
+      call add_surface_function(chgName, factor, chgName2)
 
 ! Write to file MEP and ASC
-        call pcm_write_file_separate(nts, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
+      call pcm_write_file_separate(nr_points, nuc_pot, nuc_pol_chg, ele_pot, ele_pol_chg)
 
       end subroutine energy_pcm_drv
       
+      subroutine oper_ao_pcm_drv(oper, charge, work, lwork)
 !
 ! Calculate exp values of potentials on tesserae
 ! Input: symmetry packed Density matrix in AO basis
 !        cavity points
 ! Output: expectation values of electrostatic potential on tesserae
 !
-      subroutine oper_ao_pcm_drv(oper, charge, work, lwork)
 
-        real(8), intent(out) :: oper(*)
-        real(8)              :: work(*)
-        character            :: charge(*)
-        integer              :: lwork
+      real(8), intent(out) :: oper(*)
+      real(8)              :: work(*)
+      character            :: charge(*)
+      integer              :: lwork
 
-        integer(4)           :: nts
-        integer              :: kcharge, kcenters, kfree, lfree
+      integer              :: kcharge, kcenters, kfree, lfree
 
        
-        call get_cavity_size(nts)                                                      
-        kcharge = 1
-        kcenters = kcharge + nts
-        kfree = kcenters + 3 * nts
-        lfree = lwork - kfree
+      kcharge = 1
+      kfree = kcharge + nr_points
+      lfree = lwork - kfree
                                                                                   
-        if(lfree .le. 0) then 
-                call quit('Not enough mem in oper_ao_pcm_drv')
-        end if
+      if(lfree .le. 0) then 
+              call quit('Not enough mem in oper_ao_pcm_drv')
+      end if
         
-        call get_surface_function(nts, work(kcharge), charge)
-        call get_tess_centers(work(kcenters))
-        call j1int_pcm(work(kcharge), nts, work(kcenters), .false.,            & 
-                       oper, 1, .false., 'NPETES ', 1, work(kfree), lfree)
+      call get_surface_function(nr_points, work(kcharge), charge)
+      call j1int_pcm(work(kcharge), nr_points, tess_cent, .false.,    & 
+                     oper, 1, .false., 'NPETES ', 1, work(kfree), lfree)
 
       end subroutine oper_ao_pcm_drv
 
