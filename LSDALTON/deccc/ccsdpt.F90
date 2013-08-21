@@ -3111,7 +3111,7 @@ contains
        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,DECinfo%output,DECinfo%output)
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
 
     end if
 
@@ -3165,8 +3165,8 @@ contains
 
 #endif
 
-          if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%masterGabRHS
-          if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+          if (doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+          if (doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
 
 
           ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering

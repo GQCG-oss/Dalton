@@ -204,8 +204,8 @@ contains
     ! Get integrals <ij|r|pq> stored as (p,j,q,i)
     call get_mp2f12_MOmatrix_ijpq(MyFragment%MyLsitem%Setting,nbasis,noccEOS,nocvAOS,CoccEOS,CocvAOS,Rpjqi,'RRRRC')
     ! Get integrals <ij|g|mc> stored as (m,j,c,i) where c = cabs (a')
-!    call get_mp2f12_MOmatrix_ijmc(MyFragment%MyLsitem%Setting,nbasis, &
-!         & noccEOS,ncabsAO,ncabsMO,CoccEOS,Ccabs,Gmjci,'RCRRG')
+    call get_mp2f12_MOmatrix_ijmc(MyFragment%MyLsitem%Setting,nbasis, &
+         & noccEOS,ncabsAO,ncabsMO,CoccEOS,Ccabs,Gmjci,'RCRRG')
 
     !call get_mp2f12_MOmatrix_ijmc(MyFragment%MyLsitem%Setting,nbasis, &
     !     & noccEOS,nocvAOS,ncabsAO,ncabsMO,CoccEOS,CocvAOS,Ccabs,Rmjci,'RCRRC')
@@ -744,7 +744,7 @@ contains
        call II_getBatchOrbitalScreen(DecScreen,mysetting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,DECinfo%output,DECinfo%output)
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
     endif
     FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
 
@@ -777,8 +777,8 @@ contains
 
           call mem_alloc(tmp1,dim1)
           ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
-          IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
-          IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+          IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%masterGabRHS
+          IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), nbasis, nbasis, dimAlpha, dimGamma,FullRHS,&
@@ -1038,7 +1038,7 @@ contains
        call II_getBatchOrbitalScreen(DecScreen,mysetting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,DECinfo%output,DECinfo%output)
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
     endif
     FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
 
@@ -1071,8 +1071,8 @@ contains
 
           call mem_alloc(tmp1,dim1)
           ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
-          IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
-          IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+          IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%masterGabRHS
+          IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), nbasis, nbasis, dimAlpha, dimGamma,FullRHS,&
@@ -1329,9 +1329,7 @@ contains
     end do
 
     ! Integral screening stuff
-    doscreen = .FALSE.!Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
-    MySetting%scheme%cs_screen = .FALSE.
-    MySetting%scheme%ps_screen = .FALSE.
+    doscreen = Mysetting%scheme%cs_screen .or. Mysetting%scheme%ps_screen
     !doscreen = .FALSE.
     call II_precalc_DECScreenMat(DecScreen,DECinfo%output,6,mysetting,&
          & nbatches,nbatchesAlpha,nbatchesGamma,INTSPEC)
@@ -1339,7 +1337,7 @@ contains
        call II_getBatchOrbitalScreen(DecScreen,mysetting,&
             & nbasis,nbatchesAlpha,nbatchesGamma,&
             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,DECinfo%output,DECinfo%output)
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
     endif
     FullRHS = (nbatchesGamma.EQ.1).AND.(nbatchesAlpha.EQ.1)
 
@@ -1374,12 +1372,12 @@ contains
           tmp1 = 0.0_realk
 
           ! Store integral in tmp1(1:dim1) array in (beta,delta,alphaB,gammaB) order
-          IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%masterGabRHS
-          IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+          IF(doscreen) mysetting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+          IF(doscreen) mysetting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
           call II_GET_DECPACKED4CENTER_J_ERI(DECinfo%output,DECinfo%output, &
                & mysetting, tmp1, batchindexAlpha(alphaB), batchindexGamma(gammaB), &
                & batchsizeAlpha(alphaB), batchsizeGamma(gammaB), nbasis, ncabsAO, dimAlpha, dimGamma,FullRHS,&
-               & nbatches,'RCRRG')
+               & nbatches,INTSPEC)
 
           print *,"FullRHS:", FullRHS
           print *,"norm2(tmp1):", norm2(tmp1)
@@ -1483,9 +1481,6 @@ contains
 
        end do BatchAlpha
     end do BatchGamma
-
-    MySetting%scheme%cs_screen = .TRUE.
-    MySetting%scheme%ps_screen = .TRUE.
 
     ! Free and nullify stuff
     ! **********************

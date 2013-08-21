@@ -2025,11 +2025,11 @@ contains
        call II_getBatchOrbitalScreen(DecScreen,mylsitem%setting,&
             & nb,nbatchesAlpha,nbatchesGamma,&
             & batchsizeAlpha,batchsizeGamma,batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,DECinfo%output,DECinfo%output)
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
        call II_getBatchOrbitalScreenK(DecScreen,mylsitem%setting,&
             & nb,nbatchesAlpha,nbatchesGamma,batchsizeAlpha,batchsizeGamma,&
             & batchindexAlpha,batchindexGamma,&
-            & batchdimAlpha,batchdimGamma,DECinfo%output,DECinfo%output)
+            & batchdimAlpha,batchdimGamma,INTSPEC,DECinfo%output,DECinfo%output)
     ENDIF
     !setup LHS screening - the full AO basis is used so we can use the
     !                      full matrices:        FilenameCS and FilenamePS
@@ -2144,8 +2144,8 @@ contains
        !Note that it is faster to calculate the integrals in the form
        !(dimAlpha,dimGamma,nbasis,nbasis) so the subset of the AO basis is used on the LHS
        !but the integrals is stored and returned in (nbasis,nbasis,dimAlpha,dimGamma)
-       IF(doscreen) Mylsitem%setting%LST_GAB_RHS => DECSCREEN%masterGabLHS
-       IF(doscreen) mylsitem%setting%LST_GAB_LHS => DECSCREEN%batchGab(alphaB,gammaB)%p
+       IF(doscreen) Mylsitem%setting%LST_GAB_LHS => DECSCREEN%masterGabLHS
+       IF(doscreen) mylsitem%setting%LST_GAB_RHS => DECSCREEN%batchGab(alphaB,gammaB)%p
        ! Get (beta delta | alphaB gammaB) integrals using (beta,delta,alphaB,gammaB) ordering
        ! ************************************************************************************
        dim1 = nb*nb*dimAlpha*dimGamma   ! dimension for integral array

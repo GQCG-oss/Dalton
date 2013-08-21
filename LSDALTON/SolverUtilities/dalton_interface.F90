@@ -3029,7 +3029,7 @@ CONTAINS
       IF(doscreen)then
          call II_getBatchOrbitalScreenK(DecScreen,ls%setting,&
               & nbast,nbatchesXY,nbatchesXY,batchsize,batchsize,batchindex,batchindex,&
-              & batchdim,batchdim,lupri,luerr)
+              & batchdim,batchdim,INTSPEC,lupri,luerr)
       endif
       FullRHS = .FALSE.
 
