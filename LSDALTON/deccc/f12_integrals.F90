@@ -192,7 +192,7 @@ contains
     
     print *, '(Norm of CABS):'
     print *, '----------------------------------------'
-    print *, 'norm2(Ccabs):', norm2(Ccabs)
+    !print *, 'norm2(Ccabs):', norm2(Ccabs)
 
     ! ***********************************************************
     ! Creating the V matrix 
@@ -244,16 +244,16 @@ contains
     print *, '----------------------------------------'
     print *, '(E21 Terms):'
     print *, '----------------------------------------'
-    print *, 'norm2(V1ijkl):', norm2(V1ijkl)
+    !print *, 'norm2(V1ijkl):', norm2(V1ijkl)
     print *, '----------------------------------------'   
-    print *, 'norm2(Rpqij):', norm2(Rpqij)
-    print *, 'norm2(Gijpq):', norm2(Gijpq)
+    !print *, 'norm2(Rpqij):', norm2(Rpqij)
+    !print *, 'norm2(Gijpq):', norm2(Gijpq)
     print *, '----------------------------------------'
-    print *, 'norm2(Gmjci):', norm2(Gmjci)
-    print *, 'norm2(Rmjci):', norm2(Rmjci)
+    !print *, 'norm2(Gmjci):', norm2(Gmjci)
+    !print *, 'norm2(Rmjci):', norm2(Rmjci)
     print *, '----------------------------------------'
-    print *, 'norm2(V1ijkl):', norm2(V1ijkl)
-    print *, 'norm2(V2ijkl):', norm2(V2ijkl)
+    !print *, 'norm2(V1ijkl):', norm2(V1ijkl)
+    !print *, 'norm2(V2ijkl):', norm2(V2ijkl)
     print *, '----------------------------------------'
 
     V1energy = 0.0E0_realk
@@ -273,11 +273,11 @@ contains
 
     print *, '(E22 Terms):'
     print *, '----------------------------------------'
-    print *, 'norm2(Fij):'  , norm2(Fij)
-    print *, 'norm2(Xijkl):', norm2(X1ijkl)
-    print *, 'norm2(X2ijkl):', norm2(X2ijkl)
-    print *, 'norm2(Gijpq):', norm2(Gijpq)
-    print *, 'norm2(Gpqij):', norm2(Gpqij)
+    !print *, 'norm2(Fij):'  , norm2(Fij)
+    !print *, 'norm2(Xijkl):', norm2(X1ijkl)
+    !print *, 'norm2(X2ijkl):', norm2(X2ijkl)
+    !print *, 'norm2(Gijpq):', norm2(Gijpq)
+    !print *, 'norm2(Gpqij):', norm2(Gpqij)
     print *, '----------------------------------------'
     print *, '(Single Fragment Energies):'
     print *, '----------------------------------------'
@@ -435,7 +435,7 @@ contains
     
     print *, '(Inside Pair Fragment):'
     print *, '----------------------------------------'
-    print *, "norm2(Fijkl):", norm2(Fijkl) 
+    !print *, "norm2(Fijkl):", norm2(Fijkl) 
     print *, '----------------------------------------'
     
     print *, '(Pair Fragment Energies):'
@@ -1111,7 +1111,6 @@ contains
 
           !print *,"norm2(tmp3):", norm2(tmp1)
 
-
           ! Transpose to make alphaB and gammaB indices available
           ! *****************************************************
           dim2=dim1
@@ -1380,7 +1379,7 @@ contains
                & nbatches,INTSPEC)
 
           print *,"FullRHS:", FullRHS
-          print *,"norm2(tmp1):", norm2(tmp1)
+          !print *,"norm2(tmp1):", norm2(tmp1)
           call mem_dealloc(tmp1)
           call lsquit('wangy hack',-1)
 !          STOP "wangy hack"
