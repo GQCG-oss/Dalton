@@ -1760,7 +1760,6 @@ C     "*QMNPMM" input
 !     *EXTPCM input
    13 CONTINUE
 #if defined (PCM_MODULE)
-            WRITE(LUPRI,'(//A/)') 'INFO: External PCM module activated'
             call move_to_next_star(word,lucmd)
 #else
             WRITE(LUPRI,'(//A/)') 

@@ -48,9 +48,9 @@
          integer, intent(in)  :: nts                                    
          real(8), intent(in)  :: centers(3, *)                          
          real(8), intent(out) :: potential(nts)                         
-         real(8) :: density(*)                                          
-         real(8) :: work(*)                                             
-         integer :: lwork                                               
+         real(8)              :: density(*)                           
+         real(8)              :: work(*)                              
+         integer              :: lwork                                
                                                                         
          call j1int_pcm(potential, nts, centers, .true., density, 1, .false., 'NPETES ', 1, work, lwork)  
          
