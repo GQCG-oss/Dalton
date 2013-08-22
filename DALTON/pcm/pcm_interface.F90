@@ -109,7 +109,7 @@ module pcm_interface
 
       end subroutine
 
-      subroutine compute_mep_asc(dcao, dvao, work, lfree)
+      subroutine compute_mep_asc(density_matrix, work, lfree)
 !
 ! Calculate the molecular electrostatic potential and
 ! the apparent surface charge at the cavity points.
@@ -124,18 +124,7 @@ module pcm_interface
       use pcm_write, only: pcm_write_file, pcm_write_file_separate
       use pcmmod_cfg
 
-#include "mxcent.h"
-#include "nuclei.h"
-#include "maxorb.h"
-#include "infinp.h"
-#include "inforb.h"
-#include "inftap.h"
-#include "maxaqn.h"
-#include "symmet.h"
-#include "orgcom.h"
-#include "dftcom.h"
-
-      real(8), intent(in)    :: dcao(*), dvao(*)
+      real(8), intent(in)    :: density_matrix(*)
       real(8), intent(inout) :: work(*)
       integer                :: lfree
 
@@ -146,25 +135,11 @@ module pcm_interface
       character(7)         :: potName1, chgName1, potName2, chgName2
       integer, save        :: counter = 0
       logical, save        :: first_call = .true.
-      integer              :: kda, kdb, kpot, kcent, kfree, lwork, i
+      integer              :: kfree, i
       real(8)              :: factor = 1.0d0
+      
+      kfree   = 1
                                                                                     
-      kda   = 1
-      kdb   = kda   + nnbasx
-      kfree = kdb + nnbasx
-      lwork = lfree - kfree + 1
-      if (lwork .lt. 0) then 
-              call errwrk('compute_mep_asc', kfree, lfree) 
-      end if
-                                                                                    
-      if ((nasht.gt.0) .and. .not. dftadd) then
-         call dcopy(nnbasx, dcao, 1, work(kdb), 1)
-         call daxpy(nnbasx, 1.0d0, dvao, 1, work(kdb), 1)
-         call pksym1(work(kda), work(kdb), nbas, nsym, -1)
-      else
-         call pksym1(work(kda), dcao, nbas, nsym, -1)
-      end if
-
       counter = counter + 1
 
       if (first_call) then
@@ -172,8 +147,9 @@ module pcm_interface
       end if
 
       if (.not.(pcmmod_separate)) then
-         potName = 'TotPot'//char(0) 
-         chgName = 'TotChg'//char(0) 
+         potName = 'TotMEP'//char(0) 
+         chgName = 'TotASC'//char(0)
+! Calculate the (total) Molecular Electrostatic Potential
 !         call get_mep(nr_points, tess_cent, potentials, dmat, work, lwork, 0)
 ! Set a cavity surface function with the MEP
          call set_surface_function(nr_points, mep, potName)
@@ -207,16 +183,16 @@ module pcm_interface
          allocate(ele_pol_chg(nr_points))
          ele_pol_chg = 0.0d0
       
-         potName1 = 'NucPot'//char(0)
-         chgName1 = 'NucChg'//char(0)
+         potName1 = 'NucMEP'//char(0)
+         chgName1 = 'NucASC'//char(0)
          call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
          call set_surface_function(nr_points, nuc_pot, potName1)
          call comp_chg_pcm(potName1, chgName1)
          call get_surface_function(nr_points, nuc_pol_chg, chgName1)
 
-         potName2 = 'ElePot'//char(0)
-         chgName2 = 'EleChg'//char(0)
-         call ele_pot_pcm(nr_points, tess_cent, ele_pot, work(kda), work(kfree), lfree)
+         potName2 = 'EleMEP'//char(0)
+         chgName2 = 'EleASC'//char(0)
+         call ele_pot_pcm(nr_points, tess_cent, ele_pot, density_matrix, work(kfree), lfree)
          call set_surface_function(nr_points, ele_pot, potName2)
          call comp_chg_pcm(potName2, chgName2)
          call get_surface_function(nr_points, ele_pol_chg, chgName2)
@@ -234,7 +210,7 @@ module pcm_interface
         end if
 
 ! Obtain vector of total MEP
-        potName  = 'TotPot'//char(0)
+        potName  = 'TotMEP'//char(0)
         call append_surf_func(potName)
         call clear_surf_func(potName)
         call add_surface_function(potName, factor, potName1)
@@ -243,7 +219,7 @@ module pcm_interface
         mep_is_done = .true.
 
 ! Obtain vector of total polarization charges 
-        chgName  = 'TotChg'//char(0)
+        chgName  = 'TotASC'//char(0)
         call append_surf_func(chgName)
         call clear_surf_func(chgName)
         call add_surface_function(chgName, factor, chgName1)
@@ -298,30 +274,18 @@ module pcm_interface
       
       end subroutine collect_atoms
 
-      subroutine pcm_energy_driver(dcao, dvao, pol_ene, work, lfree)
+      subroutine pcm_energy_driver(density_matrix, pol_ene, work, lfree)
 
       use pcm_integrals, only: nuc_pot_pcm, ele_pot_pcm
       use pcm_write, only: pcm_write_file_separate
       use pcmmod_cfg
 
-#include "mxcent.h"
-#include "nuclei.h"
-#include "maxorb.h"
-#include "infinp.h"
-#include "inforb.h"
-#include "inftap.h"
-#include "maxaqn.h"
-#include "symmet.h"
-#include "orgcom.h"
-#include "dftcom.h"
-
-      real(8)      :: dcao(*)
-      real(8)      :: dvao(*)                                                       
+      real(8)      :: density_matrix(*)
       real(8)      :: pol_ene
       real(8)      :: work(*)
       integer      :: lfree
 
-      call compute_mep_asc(dcao, dvao, work, lfree)
+      call compute_mep_asc(density_matrix, work, lfree)
 
 ! pcm_energy is the polarization energy:
 ! U_pol = 0.5 * (U_NN + U_Ne + U_eN + U_ee)
@@ -335,7 +299,7 @@ module pcm_interface
 
       end subroutine pcm_energy_driver
       
-      subroutine pcm_oper_ao_driver(oper, charge, work, lwork)
+      subroutine pcm_oper_ao_driver(oper, charge_name, work, lwork)
 !
 ! Calculate exp values of potentials on tesserae
 ! Input: symmetry packed Density matrix in AO basis
@@ -346,7 +310,7 @@ module pcm_interface
 
       real(8), intent(out) :: oper(*)
       real(8)              :: work(*)
-      character            :: charge(*)
+      character            :: charge_name(*)
       integer              :: lwork
 
       integer              :: kcharge, kcenters, kfree, lfree
@@ -360,7 +324,7 @@ module pcm_interface
               call quit('Not enough mem in pcm_oper_ao_driver')
       end if
         
-      call get_surface_function(nr_points, work(kcharge), charge)
+      call get_surface_function(nr_points, work(kcharge), charge_name)
       call j1int_pcm(work(kcharge), nr_points, tess_cent, .false.,    & 
                      oper, 1, .false., 'NPETES ', 1, work(kfree), lfree)
 

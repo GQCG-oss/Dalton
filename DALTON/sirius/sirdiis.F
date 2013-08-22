@@ -893,16 +893,34 @@ C
 
 #if defined (PCM_MODULE)
          if (pcmmod_is_pcm_calculation) then
-            call memget('REAL',kfcsol,nnbasx,wrk,kfree,lfree)
-            call dzero(wrk(kfcsol), nnbasx)
-            call pcm_energy_driver(daosav(1,1), daosav(1,2), esolt, 
-     $           wrk(kfree), lfree)
-            call pcm_oper_ao_driver(wrk(kfcsol), 'TotChg'//char(0), 
-     $           wrk(kfree), lfree)
-            call daxpy(nnbast,dm1,wrk(kfcsol),1,faosav(1,indevc,1),1)
-clf            write(lupri,*) 'extpcm fock matrix'
-clf            call outpak(wrk(kfcsol),nbast,1,lupri)
-            call memrel('DIIS_CTL.extpcm',wrk,kfrsav,kfcsol,kfree,lfree)
+! Allocate the PCM Fock matrix contribution in AO basis. 
+! It is of dimension NNBASX and we take the memory from the WRK array. 
+! We zero it out afterwards.
+           call memget('REAL', kfcsol, nnbasx, wrk, kfree, lfree)
+           call dzero(wrk(kfcsol), nnbasx)
+! DAOSAV(:, 1) = DCAO (density matrix for closed shells)
+! DAOSAV(:, 2) = DVAO (density matrix for open shells)
+! PCM doesn't care about closed/open shells, so we decide at this
+! higher level which one of them to pass, based on the wavefunction asked.          
+           if (nasht == 0 .or. (nasht > 0 .and. dodft) .or. hsrohf) then
+! We pass just DCAO, i.e. density_matrix = DCAO
+             call pcm_energy_driver(daosav(:, 1), esolt, wrk(kfree), 
+     &                              lfree)
+             call pcm_oper_ao_driver(wrk(kfcsol), 'TotASC'//char(0), 
+     &                               wrk(kfree), lfree)
+           else
+! We sum DCAO and DVAO, i.e. density_matrix = DCAO + DVAO
+             call pcm_energy_driver((daosav(:, 1) + daosav(:, 2)), 
+     &                              esolt, wrk(kfree), lfree)
+             call pcm_oper_ao_driver(wrk(kfcsol), 'TotASC'//char(0), 
+     &                               wrk(kfree), lfree)
+           end if
+! Copy the PCM Fock matrix contribution on top of the AO basis Fock matrix            
+           call daxpy(nnbast,dm1,wrk(kfcsol),1,faosav(1,indevc,1),1)
+! We can print it here, if needed.
+!lf            write(lupri,*) 'extpcm fock matrix'
+!lf            call outpak(wrk(kfcsol), nbast, 1, lupri)
+           call memrel('DIIS_CTL.extpcm',wrk,kfrsav,kfcsol,kfree,lfree)
          end if
 #endif
 
