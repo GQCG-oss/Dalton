@@ -346,6 +346,7 @@ C
 #include "r12int.h"
 #include "codata.h"
 #include "denfit.h"
+#include "infpar.h"
 
 C     Keywords for R12 have been added (WK/UniKA/04-11-2002).
 cLig <> added RANGMO and RPSO
@@ -974,6 +975,7 @@ C&&& Nuclear model
             BGWEIN = D1 - D4*BGWEIN
             GOTO 100   
   197    CONTINUE
+            IF (NODTOT .GT. 0) CALL PARQUIT('FINDPT')
             IF (DIRCAL) CALL QUIT('No direct calculation with FINDPT')
             ONEPRP = .TRUE. 
             DPTPOT = .TRUE.
