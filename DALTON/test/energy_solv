@@ -169,7 +169,7 @@ ERROR[4]="SYMMETRY NOT CORRECT"
 # Solvation model
 CRIT1=`$GREP "SOLVATION MODEL\: molecule is in a spherical cavity in a dielectric medium\," $log | wc -l`
 CRIT2=`$GREP "dielectric constant \= * 13\.300000" $log | wc -l`
-CRIT3=`$GREP "cavity radius \= * 5\.000000" $log | wc -l`
+CRIT3=`$GREP "cavity radius.* \= * 5\.000000" $log | wc -l`
 CRIT4=`$GREP "max l value \= * 7" $log | wc -l`
 TEST[5]=`expr	$CRIT1 \+ $CRIT2 \+ $CRIT3 \+ $CRIT4`
 CTRL[5]=5
