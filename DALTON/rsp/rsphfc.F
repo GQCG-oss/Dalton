@@ -97,7 +97,7 @@ C
       END IF         
       IF (ICHANG .GT. 0) THEN
          CALL HEADER('Changes of defaults in HFC:',0)
-         IF (IPRHFC .NE. IPRDEF) WRITE(LUPRI,'(A,I5)')                                                                                                                                                      
+         IF (IPRHFC .NE. 0) WRITE(LUPRI,'(A,I5)')
      &       ' Print level in HFC:', IPRHFC
          IF (HFCFC) WRITE (LUPRI,'(A)') 
      &                 ' Isotropic Fermi contact contribution '//
@@ -946,3 +946,4 @@ C            Principal axes
 C
        RETURN 
        END  
+! -- end of rsp/rsphfc.F --

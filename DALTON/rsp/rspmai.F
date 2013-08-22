@@ -1255,7 +1255,7 @@ C  Initializing ESRHFC
       DATA HFCFC/.FALSE./,HFCSD/.FALSE./,HFCSO/.FALSE./
       DATA UNGAUSS/.TRUE./
       DATA HSOBRT/.FALSE./,HSOEFF/.FALSE./
-      DATA IPRHFC/5/
+      DATA IPRHFC/0/
 C  Initializing ABSLRS
        DATA ABSLRS/.FALSE./,ABSLRS_INTERVAL/.FALSE./
        DATA ABSLRS_ALPHA/.FALSE./,ABS_BATCH/.FALSE./
@@ -1633,8 +1633,8 @@ C .CHANNEL - restrict to excitations from particular orbitals
                DO I=1,NSYM
                   CHANNEL_NORB = CHANNEL_NORB + NUMBER_ORBS(I)
                END DO
-               IF (CHANNEL_NORB.GT.CHANNEL_MAX) CALL QUIT(
-     &               'Too many orbitals for CHANNEL calculation: ' //
+               IF (CHANNEL_NORB .GT. CHANNEL_MAX) CALL QUIT(
+     &               'Too many orbitals for .CHANNEL calculation: ' //
      &               'increase CHANNEL_MAX and recompile')
                IOFF=0
                DO ISYM=1,NSYM
