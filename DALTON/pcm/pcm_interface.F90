@@ -38,8 +38,6 @@ module pcm_interface
    public collect_atoms
    public pcm_energy_driver
    public pcm_oper_ao_driver
-!   public pcm_energy_driver   
-!   public pcm_fock_driver
 !   public pcm_lintra_driver
 
    private
@@ -47,10 +45,6 @@ module pcm_interface
 !  if false the interface will refuse to be accessed
    logical :: is_initialized = .false.
 
-   real(c_double), allocatable :: mep(:)
-   logical                     :: mep_is_done
-   real(c_double), allocatable :: asc(:)
-   logical                     :: asc_is_done
    real(c_double), allocatable :: tess_cent(:, :)
    real(c_double)              :: pcm_energy
    integer(c_int)              :: nr_points = -1
@@ -74,13 +68,6 @@ module pcm_interface
       tess_cent = 0.0d0
       call get_tess_centers(tess_cent)
 
-      allocate(mep(nr_points))
-      mep = 0.0d0
-      mep_is_done = .false.
-      allocate(asc(nr_points))
-      asc = 0.0d0
-      asc_is_done = .false.
-
       pcm_energy = 0.0d0
               
       is_initialized = .true.
@@ -88,10 +75,8 @@ module pcm_interface
       end subroutine
                                                                     
       subroutine pcm_interface_finalize()
-
+! Free the memory taken from the free store both in Fortran and in C++
       deallocate(tess_cent)
-      deallocate(mep)
-      deallocate(asc)
 
       call tear_down_pcm
                                                                     
@@ -129,14 +114,18 @@ module pcm_interface
       integer                :: lfree
 
 ! Local variables
-      real(8), allocatable :: nuc_pot(:), nuc_pol_chg(:)
-      real(8), allocatable :: ele_pot(:), ele_pol_chg(:)
-      character(7)         :: potName, chgName
-      character(7)         :: potName1, chgName1, potName2, chgName2
-      integer, save        :: counter = 0
-      logical, save        :: first_call = .true.
-      integer              :: kfree, i
-      real(8)              :: factor = 1.0d0
+      real(c_double), allocatable :: mep(:)
+      logical                     :: mep_is_done
+      real(c_double), allocatable :: asc(:)
+      logical                     :: asc_is_done
+      real(c_double), allocatable :: nuc_pot(:), nuc_pol_chg(:)
+      real(c_double), allocatable :: ele_pot(:), ele_pol_chg(:)
+      character(7)                :: potName, chgName
+      character(7)                :: potName1, chgName1, potName2, chgName2
+      integer, save               :: counter = 0
+      logical, save               :: first_call = .true.
+      integer                     :: kfree, i
+      real(8)                     :: factor = 1.0d0
       
       kfree   = 1
                                                                                     
@@ -146,7 +135,22 @@ module pcm_interface
          first_call = .false.
       end if
 
+      allocate(mep(nr_points))
+      mep = 0.0d0
+      mep_is_done = .false.
+      allocate(asc(nr_points))
+      asc = 0.0d0
+      asc_is_done = .false.
+
       if (.not.(pcmmod_separate)) then
+         allocate(nuc_pot(nr_points))
+         nuc_pot = 0.0d0
+         call nuc_pot_pcm(nr_points, tess_cent, nuc_pot)
+         allocate(ele_pot(nr_points))
+         ele_pot = 0.0d0
+         call ele_pot_pcm(nr_points, tess_cent, ele_pot, density_matrix, work(kfree), lfree)
+         mep(:) = nuc_pot(:) + ele_pot(:)
+
          potName = 'TotMEP'//char(0) 
          chgName = 'TotASC'//char(0)
 ! Calculate the (total) Molecular Electrostatic Potential
@@ -211,20 +215,24 @@ module pcm_interface
 
 ! Obtain vector of total MEP
         potName  = 'TotMEP'//char(0)
-        call append_surf_func(potName)
-        call clear_surf_func(potName)
-        call add_surface_function(potName, factor, potName1)
-        call add_surface_function(potName, factor, potName2)
-        call get_surface_function(nr_points, mep, potName)
+        !call append_surf_func(potName)
+        !call clear_surf_func(potName)
+        mep(:) = nuc_pot(:) + ele_pot(:)
+        call set_surface_function(nr_points, mep, potName)
+        !call add_surface_function(potName, factor, potName1)
+        !call add_surface_function(potName, factor, potName2)
+        !call get_surface_function(nr_points, mep, potName)
         mep_is_done = .true.
 
 ! Obtain vector of total polarization charges 
         chgName  = 'TotASC'//char(0)
-        call append_surf_func(chgName)
-        call clear_surf_func(chgName)
-        call add_surface_function(chgName, factor, chgName1)
-        call add_surface_function(chgName, factor, chgName2)
-        call get_surface_function(nr_points, asc, chgName)
+        asc(:) = nuc_pol_chg(:) + ele_pol_chg(:)
+        call set_surface_function(nr_points, asc, chgName)
+        !call append_surf_func(chgName)
+        !call clear_surf_func(chgName)
+        !call add_surface_function(chgName, factor, chgName1)
+        !call add_surface_function(chgName, factor, chgName2)
+        !call get_surface_function(nr_points, asc, chgName)
         asc_is_done = .true.
 
 ! Write to file MEP and ASC
@@ -235,7 +243,9 @@ module pcm_interface
         deallocate(ele_pot)
         deallocate(ele_pol_chg)
       end if
- 
+      deallocate(mep)
+      deallocate(asc)
+
       end subroutine 
                                                                     
       subroutine collect_nctot(nr_nuclei) bind(c, name='collect_nctot_')
@@ -308,25 +318,32 @@ module pcm_interface
 !
       use pcm_integrals, only: j1int_pcm
 
-      real(8), intent(out) :: oper(*)
-      real(8)              :: work(*)
-      character            :: charge_name(*)
-      integer              :: lwork
+      real(8), intent(out)        :: oper(*)
+      real(8)                     :: work(*)
+      character(*), intent(in)    :: charge_name
+      integer                     :: lwork
 
-      integer              :: kcharge, kcenters, kfree, lfree
+      real(c_double), allocatable :: asc(:)
+      integer                     :: kfree, lfree
 
-       
-      kcharge = 1
-      kfree = kcharge + nr_points
+      kfree = 1
       lfree = lwork - kfree
                                                                                   
       if(lfree .le. 0) then 
               call quit('Not enough mem in pcm_oper_ao_driver')
       end if
-        
-      call get_surface_function(nr_points, work(kcharge), charge_name)
-      call j1int_pcm(work(kcharge), nr_points, tess_cent, .false.,    & 
+       
+! Here we need the ASC, we can either get it from C++ (as it 
+! has been saved as a surface function) or from Fortran asking
+! for the mep and asc to be recomputed.
+! RDR, 220813 !WARNING! what happens in the second case if we use this
+! subroutine as a driver also for the linear response part??
+      allocate(asc(nr_points))
+      asc = 0.0d0
+      call get_surface_function(nr_points, asc, charge_name)
+      call j1int_pcm(asc, nr_points, tess_cent, .false.,    & 
                      oper, 1, .false., 'NPETES ', 1, work(kfree), lfree)
+      deallocate(asc)
 
       end subroutine pcm_oper_ao_driver
 
