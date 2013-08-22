@@ -3562,6 +3562,8 @@ contains
     LagEnergyExp = 0.0_realk
     OccEnergyExp = 0.0_realk
     VirtEnergyExp = 0.0_realk
+    call atomic_fragment_free(AtomicFragment)
+
     EXPANSION_LOOP: do iter = 1,DECinfo%MaxIter
        OccOld=Occ_atoms;VirtOld=Virt_atoms
        LagEnergyOld = AtomicFragment%LagFOP
@@ -3570,7 +3572,6 @@ contains
 
        call Expandfragment(Occ_atoms,Virt_atoms,DistTrackMyAtom,natoms,&
             & nocc_per_atom,nunocc_per_atom)
-       call atomic_fragment_free(AtomicFragment)
        call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
             & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
             & AtomicFragment)
@@ -3628,9 +3629,10 @@ contains
        ExpansionConvergence: if(lag_converged .and. occ_converged .and. virt_converged) then
           expansion_converged=.true.
           write(DECinfo%output,*) 'FOP Fragment expansion converged in iteration ', iter
-          exit
+          exit EXPANSION_LOOP
        end if ExpansionConvergence
 
+       call atomic_fragment_free(AtomicFragment)
 
     end do EXPANSION_LOOP
 
@@ -3642,112 +3644,14 @@ contains
             & Try to increase the number of expansion steps using the .MaxIter keyword',DECinfo%output)
     end if
 
-    ! Save energies for expanded fragment n+1 (i.e. the fragment which was too large)
-    LagEnergyExp = AtomicFragment%LagFOP
-    OccEnergyExp = AtomicFragment%EoccFOP
-    VirtEnergyExp = AtomicFragment%EvirtFOP
-    ! Note that our current fragment to use is fragment n.
-
-
-    ! ====================================================================================
-    !                         FINE TUNING ORBITAL SPACE
-    ! ====================================================================================
-    ! Here we try to compensate for the fact that we add "DECinfo%FragmentExpansionSize" 
-    ! atoms in each expansion step. Maybe we can remove a few more atoms and still have the
-    ! energy difference between fragment n+1 and the final fragment to be smaller than the FOT.
-    ! For example, if DECinfo%FragmentExpansionSize is 5, then fragment n+1 (corresponding to
-    ! the energies LagEnergyExp, OccEnergyExp, VirtEnergyExp) may contain 22 AOS atoms, while
-    ! fragment n then contains 17 atoms. We now that fragment n-1 then has 12 atoms and was too small.
-    ! However, it may be possible to generate a fragment with 13,14,15, or 16 AOS atoms, where
-    ! the energy error compared to fragment n+1 is still below the FOT.
-
-    ! Start with a fragment 1 more atoms than fragment n-1 (13 atoms for the example above).
-    natomsAOS = count(occold) - DECinfo%FragmentExpansionSize +1
-    ! (note that occold = virtold and that these refer to fragment n)
-
-    ! Special case for small molecules: Ensure that natomsAOS is at least 1
-    i=1
-    natomsAOS = max(natomsAOS,i)
-    write(DECinfo%output,'(a,i6)') 'FOP fine-tuning, #AOS atoms in converged fragment: ', count(occold)
-
-    ! Calculate energy for reduced fragments (AOS sizes between fragments n-1 and n)
-    finetuning_converged=.false.
-    FineTuning: do iter=1,DECinfo%FragmentExpansionSize-1
-
-       ! Check that we do not exceed size of fragment n 
-       if(natomsAOS==count(occold)) then
-          exit FineTuning          
-       end if
-
-       write(DECinfo%output,'(a,i6)') 'FOP fine-tuning, #AOS atoms: ', natomsAOS
-
-       ! Include natomsAOS atoms from list based on distance from central atom
-       call Set_fragment_fixed_AOSatoms(natomsAOS,natoms,&
-            & nocc_per_atom,nunocc_per_atom,DistTrackMyAtom,occ_atoms,virt_atoms)
-
-       ! Calculate fragment energy for reduced fragment
-       call atomic_fragment_free(AtomicFragment)
-       call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-            & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-            & AtomicFragment)
-       ! MPI fragment statistics
-       slavetime = slavetime +  AtomicFragment%slavetime
-       flops_slaves = flops_slaves + AtomicFragment%flops_slaves
-
-       ! Energy changes compared to fragment n+1
-       LagEnergyDiff=abs(LagEnergyExp-AtomicFragment%LagFOP)
-       OccEnergyDiff=abs(OccEnergyExp-AtomicFragment%EoccFOP)
-       VirtEnergyDiff=abs(VirtEnergyExp-AtomicFragment%EvirtFOP)
-       call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
-
-       ! Check for convergence
-       ! For only occ partitioning, set Lagrangian and virtual errors to zero
-       if(DECinfo%OnlyOccPart) then
-          LagEnergyDiff=0.0_realk
-          VirtEnergyDiff=0.0_realk
-       end if
-       if( (LagEnergyDiff < FOT) .and. (OccEnergyDiff< FOT) .and. (VirtEnergyDiff< FOT) ) then
-          write(DECinfo%output,'(a,i6)') 'FOP fine-tuning converged in iter ', iter
-          finetuning_converged=.true.
-          exit FineTuning
-       else
-          write(DECinfo%output,'(a,i6)') 'FOP fine-tuning not converged in iter ', iter
-          ! Increase number of AOS atoms by one
-          natomsAOS = natomsAOS +1 
-       end if
-
-    end do FineTuning
-
-    ! If fine tuning did not converge we go back to fragment n
-    FineTuningFailed: if(.not. finetuning_converged) then
-       write(DECinfo%output,'(a,i6)') 'FOP fine-tuning failed. Go back to converged fragment'
-
-       ! Set AtomicFragment to be the converged fragment
-       occ_atoms=occold
-       virt_atoms=virtold
-       call atomic_fragment_free(AtomicFragment)
-       call get_fragment_and_Energy(MyAtom,natoms,Occ_Atoms,Virt_Atoms,&
-            & MyMolecule,MyLsitem,nocc,nunocc,OccOrbitals,UnoccOrbitals,&
-            & AtomicFragment)
-
-    end if FineTuningFailed
-
+    ! Save energies for converged fragment from expansion
+    LagEnergyOld = AtomicFragment%LagFOP
+    OccEnergyOld = AtomicFragment%EoccFOP 
+    VirtEnergyOld =  AtomicFragment%EvirtFOP
 
     ! Save dimensions for statistics
     nocc_exp = AtomicFragment%noccAOS
     nvirt_exp = AtomicFragment%nunoccAOS
-
-    ! Print final fragment for optimal overview
-    write(DECinfo%output,'(a,i8)') 'FOP FRAGMENT CONVERGED FOR LOCAL ORBITALS FOR ATOM ', MyAtom
-    LagEnergyDiff=abs(LagEnergyExp-AtomicFragment%LagFOP)
-    OccEnergyDiff=abs(OccEnergyExp-AtomicFragment%EoccFOP)
-    VirtEnergyDiff=abs(VirtEnergyExp-AtomicFragment%EvirtFOP)
-    call fragopt_print_info(AtomicFragment,LagEnergyDiff,OccEnergyDiff,VirtEnergyDiff,iter)
-
-    ! Reference energies for FO reduction are the ones for converged fragment using local orbs.
-    LagEnergyOld = AtomicFragment%LagFOP
-    OccEnergyOld = AtomicFragment%EoccFOP 
-    VirtEnergyOld =  AtomicFragment%EvirtFOP
 
 
     write(DECinfo%output,*) ' FOP'
